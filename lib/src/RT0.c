@@ -145,6 +145,10 @@ void RT0__InitVParStack(OOC_INT32 bytes) {
   _ooc_end_vs = (char*)_ooc_top_vs+(bytes);
 }
 
+void RT0__CollectGarbage() {
+  GC_gcollect();
+}
+
 
 void RT0__ErrorIndexOutOfRange (RT0__Module mid, OOC_CHARPOS pos,
 				OOC_LEN index, OOC_LEN length) {

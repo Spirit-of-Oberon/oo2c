@@ -216,6 +216,9 @@ PROCEDURE InitVParStack* (bytes: LONGINT);
    to store the data on the normal C stack.  This procedure is called once,
    from the program's setup code.  *)
 
+PROCEDURE CollectGarbage*;
+(**Explicitly trigger a full, world-stop garbage collection.  *)
+
 
 PROCEDURE ErrorIndexOutOfRange* (mid: Module; pos: LONGINT;
                                  index, length: LONGINT);
