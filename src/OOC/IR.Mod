@@ -458,6 +458,7 @@ TYPE
 
 TYPE
   TypeTag* = POINTER TO TypeTagDesc;
+  TypeRef* = POINTER TO TypeRefDesc;
   TypeTagDesc = RECORD
     (**Computes the type tag of a record variable.  *)
     (OperatorDesc)
@@ -475,6 +476,11 @@ TYPE
     (OperatorDesc)
     expr-: Expression;
     referenceType-: Sym.Record;
+
+    origExpr-: Expression;
+    (**Unnormalized value of @ofield{expr}.  *)
+    origType-: TypeRef;
+    (**Unnormalized value of @ofield{referenceType}.  *)
   END;
   
 TYPE
@@ -512,7 +518,6 @@ TYPE
   END;
 
 TYPE
-  TypeRef* = POINTER TO TypeRefDesc;
   TypeRefDesc = RECORD
     (ReferenceDesc)
   END;
@@ -637,6 +642,11 @@ TYPE
     guard-: Expression;
     pathTrue-: StatementSeq;
     pathFalse-: StatementSeq;  (* NIL if the IF statement has no ELSE *)
+    isWithClause-: BOOLEAN;
+    (**If @code{TRUE}, then this statement was derived from a @code{WITH}
+       statement.  In this case, @ofield{guard} is a type test, and the guard
+       asserts that the tested variable is of the right hand side type across
+       the whole region of @ofield{pathTrue}.  *)
   END;
 
 TYPE
@@ -1617,17 +1627,21 @@ PROCEDURE (tag: TypeTag) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitTypeTest (test: TypeTest; sym: Symbol;
-                        expr: Expression; referenceType: Sym.Record);
+                        expr: Expression; referenceType: Sym.Record;
+                        origExpr: Expression; origType: TypeRef);
   BEGIN
     InitOperator (test, sym, Predef.GetType(Predef.boolean));
     test. expr := expr;
     test. referenceType := referenceType;
+    test. origExpr := origExpr;
+    test. origType := origType;
   END InitTypeTest;
 
-PROCEDURE (b: Builder) NewTypeTest (sym: Symbol; expr, referenceType: Expression): Expression;
+PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expression): Expression;
   VAR
     test: TypeTest;
     refType: Sym.Type;
+    origExpr: Expression;
   BEGIN
     IF (referenceType. type # b. typeType) THEN
       RETURN b. ErrExpr (notTypeExpression, referenceType. sym);
@@ -1636,13 +1650,15 @@ PROCEDURE (b: Builder) NewTypeTest (sym: Symbol; expr, referenceType: Expression
       IF ~b. typeRules. IsExtensionOf (refType, expr. type) THEN
         RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
       ELSE
+        origExpr := expr;
         IF (expr IS Deref) THEN
           expr := expr(Deref). pointer;
         ELSIF (expr. type IS Sym.Pointer) THEN
           refType := refType(Sym.Pointer). baseType;
         END;
         NEW (test);
-        InitTypeTest (test, sym, expr, refType(Sym.Record));
+        InitTypeTest (test, sym, expr, refType(Sym.Record),
+                      origExpr, referenceType(TypeRef));
         RETURN test;
       END;
     END;
@@ -2016,21 +2032,24 @@ PROCEDURE (forStatm: ForStatm) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitIfStatm (ifStatm: IfStatm; sym: Symbol; guard: Expression;
-                       pathTrue, pathFalse: StatementSeq);
+                       pathTrue, pathFalse: StatementSeq;
+                       isWithClause: BOOLEAN);
   BEGIN
     InitStatement (ifStatm, sym);
     ifStatm. guard := guard;
     ifStatm. pathTrue := pathTrue;
     ifStatm. pathFalse := pathFalse;
+    ifStatm. isWithClause := isWithClause;
   END InitIfStatm;
 
 PROCEDURE (b: Builder) NewIfStatm* (sym: Symbol; guard: Expression;
-                                    pathTrue, pathFalse: StatementSeq): IfStatm;
+                                    pathTrue, pathFalse: StatementSeq;
+                                    isWithClause: BOOLEAN): IfStatm;
   VAR
     ifStatm: IfStatm;
   BEGIN
     NEW (ifStatm);
-    InitIfStatm (ifStatm, sym, guard, pathTrue, pathFalse);
+    InitIfStatm (ifStatm, sym, guard, pathTrue, pathFalse, isWithClause);
     RETURN ifStatm
   END NewIfStatm;
 
@@ -2390,6 +2409,24 @@ PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List; type
     RETURN b
   END NewBuilder;
 
+
+PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest): Sym.Type;
+  VAR
+    var: Sym.VarDecl;
+    type: Sym.TypeDecl;
+    oldType: Sym.Type;
+  BEGIN
+    var := typeTest. expr(Var). decl(Sym.VarDecl);
+    type := typeTest. origType. decl(Sym.TypeDecl);
+    oldType := var. type;
+    var. SetType (type. type);
+    RETURN oldType;
+  END StartTypeGuard;
+
+PROCEDURE (b: Builder) EndTypeGuard* (typeTest: TypeTest; oldType: Sym.Type);
+  BEGIN
+    typeTest. expr(Var). decl(Sym.VarDecl). SetType (oldType);
+  END EndTypeGuard;
 
 PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item; 
                                      name: Symbol): Expression;

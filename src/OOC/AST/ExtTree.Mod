@@ -414,7 +414,7 @@ TYPE
     (NodeDesc)
     guardList-: AST.NodeList;
     else-: AST.Node;
-    elseStatmSeq-: AST.NodeList;
+    elseStatmSeq-: NodeList;
     end-: AST.Node;
   END;
 
@@ -1389,7 +1389,11 @@ PROCEDURE (b: Builder) WithStatm* (guardList: AST.NodeList; else: AST.Node; else
     NEW (w);
     w. guardList := guardList;
     w. else := else;
-    w. elseStatmSeq := elseStatmSeq;
+    IF (elseStatmSeq # NIL) THEN
+      w. elseStatmSeq := elseStatmSeq(NodeList);
+    ELSE
+      w. elseStatmSeq := NIL;
+    END;
     w. end := end;
     RETURN w
   END WithStatm;

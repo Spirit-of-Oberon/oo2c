@@ -256,7 +256,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
               (ifStatm. guardList. n[i](ExtTree.Terminal). sym,
                Expr (ifStatm. guardList. n[i+1](ExtTree.Node)),
                StatementSeq (ifStatm. guardList. n[i+3](ExtTree.NodeList)),
-               elseSeq);
+               elseSeq, FALSE);
           NEW (elseSeq, 1);
           elseSeq[0] := else;
           DEC (i, 4)
@@ -267,7 +267,6 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     PROCEDURE CaseStatm (caseStatm: ExtTree.CaseStatm): IR.Statement;
       VAR
         select: IR.Expression;
-        else: IR.Statement;
         elseSeq: IR.StatementSeq;
         i, count: LONGINT;
         caseList: IR.CaseList;
@@ -330,6 +329,42 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
                                  StatementSeq (whileStatm. statmSeq));
       END WhileStatm;
   
+    PROCEDURE WithStatm (withStatm: ExtTree.WithStatm): IR.Statement;
+      VAR
+        else: IR.Statement;
+        elseSeq, region: IR.StatementSeq;
+        i: LONGINT;
+        oldType: Sym.Type;
+        guard: IR.Expression;
+
+      PROCEDURE TypeTestExpr (op: ExtTree.Operator): IR.Expression;
+        BEGIN
+          RETURN b. NewTypeTest (op.op.sym, Expr (op. left), Expr (op. right));
+        END TypeTestExpr;
+      
+      BEGIN
+        IF (withStatm. else # NIL) THEN
+          elseSeq := StatementSeq (withStatm. elseStatmSeq)
+        ELSE
+          elseSeq := NIL
+        END;
+        i := withStatm. guardList. len-4;
+        REPEAT
+          guard := TypeTestExpr(withStatm.guardList.n[i+1](ExtTree.Operator));
+          oldType := b. StartTypeGuard (guard(IR.TypeTest));
+          region := StatementSeq(withStatm.guardList.n[i+3](ExtTree.NodeList));
+          b. EndTypeGuard (guard(IR.TypeTest), oldType);
+          
+          else := b. NewIfStatm
+              (withStatm. guardList. n[i](ExtTree.Terminal). sym,
+               guard, region, elseSeq, TRUE);
+          NEW (elseSeq, 1);
+          elseSeq[0] := else;
+          DEC (i, 4)
+        UNTIL (i < 0);
+        RETURN else
+      END WithStatm;
+  
     PROCEDURE ForStatm (forStatm: ExtTree.ForStatm): IR.Statement;
       PROCEDURE Step (): IR.Expression;
         BEGIN
@@ -385,6 +420,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           | n: ExtTree.CaseStatm DO
             statm := CaseStatm (n)
                 
+          | n: ExtTree.WithStatm DO
+            statm := WithStatm (n)
+
           | n: ExtTree.RepeatStatm DO
             statm := RepeatStatm (n)
               

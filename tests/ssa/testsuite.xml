@@ -11,7 +11,7 @@
   select ="&SetupTestCasesWithOut;
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
-  function1 function2 function3 if1 if2 if3 function4 function5
+  function1 function2 function3 if1 if2 if3 with1 with2 function4 function5
   designator1 function6 loop1 loop2 loop3 loop4 case1 and1 or1 varpar1
   record1 record2 record3 record4 record5 record6 record7 record8
   record9 procvar1 procvar2 procvar3 procvar4 procvar5
@@ -23,7 +23,7 @@
 
 <!-- <testsuite-ext -->
 <!--   profile="Test Suite for Framework Testing" -->
-<!--   select ="&SetupTestCasesWithOut; case1"> -->
+<!--   select ="&SetupTestCasesWithOut; with1 with2"> -->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -66,6 +66,19 @@
       file="HOTIf3.Mod" output="HOTIf3.Ref">
       A simple <code>IF-ELSIF-ELSE-END</code> statement, using 
       boolean parameters as guards.
+    </test>
+    
+    <test id="with1" type="run" file="With1.Mod" output="With1.Ref">
+      A simple <code>WITH</code> statement, serving as a sequence
+      of type tests.
+    </test>
+    
+    <test id="with2" type="run" file="With2.Mod" output="With2.Ref">
+      A simple <code>WITH</code> statement.  Fields of the guarded
+      variable are accessed under the guard.  The variable is
+      a parameter, but there is no recursive call involved.  That is,
+      a compiler passes this test even if it modifies the signature
+      of a procedure within a branch of a <code>WITH</code>.
     </test>
     
     <test id="function4" type="run"
