@@ -302,6 +302,11 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
           (*IF (str. array^ # "standard") THEN*)
             w. AttrStringLatin1 ("class", str. array^);
           (*END;*)
+          
+          IF (item.libraryName # NIL) THEN
+            w. AttrStringLatin1("library-name", item.libraryName.array^);
+          END;
+          
           str := item. CallConvToString();
           (*IF (str. array^ # "default") THEN*)
             w. AttrStringLatin1 ("call-conv", str. array^);

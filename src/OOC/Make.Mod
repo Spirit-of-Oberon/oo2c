@@ -4,7 +4,7 @@ IMPORT
   <*IF COMPILER_MAJOR>=2 THEN*>RT0,<*END*>
   Channel, Files, Msg, Out, StdChannels, Strings, Time,
 
-  ADT:Object, ADT:ArrayList, ADT:Dictionary, StringSearch,
+  ADT:Object, ADT:ArrayList, ADT:Dictionary, ADT:String, StringSearch,
   StringSearch:NoMatch, OS:Path,
   OSFiles := OS:Files, OS:ProcessManagement, URI, URI:Scheme:File,
 
@@ -36,6 +36,11 @@ TYPE
   Rules* = POINTER TO RulesDesc;
   RulesDesc* = RECORD
     backend: LONGINT;
+    libraryName: String.String;
+    (**If set, then all modules are compiled for this library.  *)
+    libraryVersion: String.String;
+    (**When building a library, then version used in the final link step
+       is taken from this field.  *)
     
     imports: POINTER TO ARRAY OF Rep.Module;
     mInfo: Dictionary.Dictionary;
@@ -103,6 +108,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 PROCEDURE InitRules* (r: Rules);
   BEGIN
     r.backend := backendSSAtoC;
+    r.libraryName := NIL;
+    r.libraryVersion := NIL;
     r.imports := NIL;
     r.mInfo := Dictionary.New();
     r.extensionDict := NIL;
@@ -123,6 +130,12 @@ PROCEDURE (r: Rules) SetBackend* (backend: LONGINT);
   BEGIN
     r.backend := backend;
   END SetBackend;
+
+PROCEDURE (r: Rules) SetLibraryName* (name, version: ARRAY OF CHAR);
+  BEGIN
+    r.libraryName := String.New(name);
+    r.libraryVersion := String.New(version);
+  END SetLibraryName;
 
 PROCEDURE (r: Rules) SetErrOut* (ch: Channel.Channel);
   BEGIN
@@ -325,6 +338,7 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
       (* the symbol file does not exist, or the source file is more recent
          than the symbol file: extract information from source file *)
       ParseModule.ParseModule(module, FALSE, FALSE, FALSE, TRUE,
+                              r.libraryName,
                               ast, symTab, pragmaHistory, errList);
       IF (errList.msgCount = 0) THEN
         module.SetInterfaceData(symTab, Rep.importsOnly);
@@ -373,7 +387,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       errList: Error.List;
       pragmaHistory: Pragmas.History;
     BEGIN
-      ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE,
+      ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE, r.libraryName,
                                ast, symTab, pragmaHistory, errList);
       RETURN errList;
     END DoEmptyBackend;
@@ -383,7 +397,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       t: TranslateToC.Translator;
     BEGIN
       t := SSAtoC.NewTranslator(inspectProc, inspectStage);
-      RETURN TranslateToC.Run(module, writeAST, writeIR, t);
+      RETURN TranslateToC.Run(module, r.libraryName, writeAST, writeIR, t);
     END DoSSAtoC;
   
   PROCEDURE DoIRtoC(): Error.List;
@@ -391,7 +405,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       t: TranslateToC.Translator;
     BEGIN
       t := IRtoC.NewTranslator();
-      RETURN TranslateToC.Run(module, writeAST, writeIR, t);
+      RETURN TranslateToC.Run(module, r.libraryName, writeAST, writeIR, t);
     END DoIRtoC;
   
   PROCEDURE DoSSAtoIA32(): Error.List;
@@ -399,7 +413,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       t: TranslateToIA32.Translator;
     BEGIN
       t := SSAtoIA32.NewTranslator(module, inspectProc, inspectStage);
-      RETURN TranslateToIA32.Run(module, writeAST, writeIR, t);
+      RETURN TranslateToIA32.Run(module, r.libraryName, writeAST, writeIR, t);
     END DoSSAtoIA32;
   
   BEGIN
@@ -572,7 +586,8 @@ PROCEDURE (r: Rules) UpdateInterfaceXML (module: Rep.Module): BOOLEAN;
         errList := CreateErrList(module);
 
         ParseModule.ParseModule(module, FALSE, TRUE, FALSE, FALSE,
-                                 ast, symTab, pragmaHistory, errList);
+                                r.libraryName,
+                                ast, symTab, pragmaHistory, errList);
         IF (errList.msgCount = 0) THEN
           outputChannel := module.GetOutputChannel(Rep.modInterfaceXML, TRUE, res);
           IF (outputChannel = NIL) THEN
@@ -954,6 +969,33 @@ PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
     RETURN success;
   END UpdateExecutable;
 
+PROCEDURE (r: Rules) UpdateLibrary(module: Rep.Module): BOOLEAN;
+(**Update or create a library that is described by the import list of
+   @oparam{module}.  Library name and version number are taken from the
+   module's source code.  Result is @code{TRUE} on success, and @code{FALSE} if
+   the current library is not up to date, and could not be rebuild.  *)
+  VAR
+    success: BOOLEAN;
+  BEGIN
+    success := r.GetImports(module);
+    
+    (* Discovery and object file creation: Update all modules from the current
+       repository that are imported by `module' for inclusion in the indicated
+       library.  It is an error if a module from the current repository is
+       already part of another library, or if a module imported from another
+       library is not part of a library.  *)
+
+    (* Collect library meta data: Scan for libraries that need to be linked
+       into this library.  Only consider libraries that are linked directly
+       into our library, and assume that libtool keeps track of nested
+       links.  *)
+
+    (* Create library files (static and shared).  *)
+
+    (* Write library meta file containing OOC's information about the new
+       library.  *)
+  END UpdateLibrary;
+
 PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
   VAR
     res: BOOLEAN;
@@ -968,6 +1010,8 @@ PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
       CASE fileId OF
       | Rep.modExecutable:
         res := r.UpdateExecutable(module);
+      | Rep.modLibrary:
+        res := r.UpdateLibrary(module);
       | Rep.modMainObjectFile:
         res := r.UpdateMainObjectFile(module);
       | Rep.modMainFileC:

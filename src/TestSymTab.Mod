@@ -54,7 +54,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
     errList: Error.List;
     pragmaHistory: Pragmas.History;
   BEGIN
-    ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE,
+    ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE, NIL,
                              ast, symTab, pragmaHistory, errList);
     (* symbol file is written by the `ParseModule' function *)
     r.WriteErrList(errList);
@@ -74,7 +74,7 @@ PROCEDURE (r: Rules) UpdateSymbolTableXML*(m: Rep.Module): BOOLEAN;
     pragmaHistory: Pragmas.History;
   BEGIN
     IF r.Update(m, Rep.modSymbolFile) THEN
-      ParseModule.ParseModule (m, FALSE, r.resolve, FALSE, FALSE,
+      ParseModule.ParseModule (m, FALSE, r.resolve, FALSE, FALSE, NIL,
                                ast, symTab, pragmaHistory, errList);
       IF (errList. msgCount = 0) THEN
         outputURI := m. GetURI (Rep.modSymbolTableXML);

@@ -21,7 +21,7 @@ MODULE OOC:Make:TranslateToC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Channel, Out, StdChannels, ADT:Dictionary, 
+  Channel, Out, StdChannels, ADT:String, ADT:Dictionary, 
   OOC:Config, OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
@@ -210,9 +210,8 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
   END WriteCodeFile;
 
 
-PROCEDURE Run*(m: Repository.Module;
-               writeAST: BOOLEAN;
-               writeIR: BOOLEAN;
+PROCEDURE Run*(m: Repository.Module; libraryName: String.String;
+               writeAST: BOOLEAN; writeIR: BOOLEAN;
                translator: Translator): Error.List;
 (**Compiles a module, creating the symbol file and all relevant C files.  *)
   VAR
@@ -265,7 +264,7 @@ PROCEDURE Run*(m: Repository.Module;
   BEGIN
     Out.String ("module: "); Out.String(m. name^); Out.Ln; Out.Flush;
     
-    ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE,
+    ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE, libraryName,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
        data in `symTab' to the view of client modules: declarations private to

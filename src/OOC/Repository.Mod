@@ -190,7 +190,20 @@ CONST
   modExecutable* = 18;
   (**Represents the executable one gets when using this module as a program's
      main module.  *)
-  resourceFile* = 19;
+  modLibrary* = 19;
+  (**An OS library created from a source file with a @samp{LIBRARY} directive.
+     The library includes a static part, and, optionally, a shared part.
+     Static libraries are included into the binary when building an executable,
+     while shared libaries are resolved and linked when the executable is
+     started.  From the point of view of the OOC make mechanism, a library is
+     an atomic entity.  It does not care whether shared libraries are supported
+     by the operating system, or how.  Building a library may result in just a
+     static part, or in both static and shared parts.
+
+     [These statements should be general enough to bes true.  Since this topic
+     is highly dependent on the operating system, I'm not willing to bet much
+     on this, though.  As it is, it is the current working hypothesis ;-)]  *)
+  resourceFile* = 20;
   (**A resource file is a non-Oberon file that accompanies a package.
      Resources are typically located in the @file{rsrc} subdirectory of a
      package or repository.  For example, XML DTD files and XSL stylesheets
@@ -385,6 +398,8 @@ PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF 
       COPY ("lib/obj", subdir)
     | modExecutable:
       COPY ("exe", subdir)
+    | modLibrary:
+      COPY ("lib", subdir)
     | resourceFile:
       COPY ("rsrc", subdir)
     END
@@ -427,6 +442,8 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
       COPY ("_.o", suffix)
     | modExecutable:
       COPY ("", suffix)
+    | modLibrary:
+      COPY (".Lib", suffix)
     | resourceFile:
       ASSERT (FALSE)
     END

@@ -1131,11 +1131,8 @@ PROCEDURE (b: Builder) [ABSTRACT] ProcWithoutBody* (moduleFlags, procFlags: Node
 PROCEDURE (b: Builder) [ABSTRACT] ProcIdFlag* (procId, equal, number: Node): Node;
   END ProcIdFlag;
 
-PROCEDURE (b: Builder) [ABSTRACT] LibraryFlag* (library, name, version, semicolon: Node): Node;
-  END LibraryFlag;
-
 PROCEDURE (b: Builder) [ABSTRACT] ModuleFlags* (
-                   library, external, callConv: Node; moduleFlags: NodeList;
+                   external, callConv: Node; moduleFlags: NodeList;
                    semicolon, link:Node;
                    linkSections: NodeList; end: Node): Node;
   END ModuleFlags;

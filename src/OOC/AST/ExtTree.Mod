@@ -454,20 +454,9 @@ TYPE
   END;
 
 TYPE
-  LibraryFlag* = POINTER TO LibraryFlagDesc;
-  LibraryFlagDesc = RECORD
-    (NodeDesc)
-    library-: AST.Node;
-    name-: AST.Node;
-    version-: AST.Node;
-    semicolon-: AST.Node;
-  END;
-
-TYPE
   ModuleFlags* = POINTER TO ModuleFlagsDesc;
   ModuleFlagsDesc = RECORD
     (NodeDesc)
-    library-: AST.Node;
     external-: Terminal;
     callConv-: Terminal;
     moduleFlags-: AST.NodeList;
@@ -652,9 +641,6 @@ PROCEDURE (v: Visitor) VisitFlags* (flags: Flags);
 
 PROCEDURE (v: Visitor) VisitProcIdFlag* (procIdFlag: ProcIdFlag);
   END VisitProcIdFlag;
-
-PROCEDURE (v: Visitor) VisitLibraryFlag* (libraryFlag: LibraryFlag);
-  END VisitLibraryFlag;
 
 PROCEDURE (v: Visitor) VisitModuleFlags* (moduleFlags: ModuleFlags);
   END VisitModuleFlags;
@@ -1518,26 +1504,8 @@ PROCEDURE (procIdFlag: ProcIdFlag) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) LibraryFlag* (library, name, version, semicolon: AST.Node): AST.Node;
-  VAR
-    lf: LibraryFlag;
-  BEGIN
-    NEW (lf);
-    lf. library := library;
-    lf. name := name;
-    lf. version := version;
-    lf. semicolon := semicolon;
-    RETURN lf
-  END LibraryFlag;
-
-PROCEDURE (libraryFlag: LibraryFlag) Accept* (v: Visitor);
-  BEGIN
-    v. VisitLibraryFlag (libraryFlag)
-  END Accept;
-
-
 PROCEDURE (b: Builder) ModuleFlags* (
-             library, external,  callConv: AST.Node; moduleFlags: AST.NodeList;
+             external,  callConv: AST.Node; moduleFlags: AST.NodeList;
              semicolon, link: AST.Node;
              linkSections: AST.NodeList; end: AST.Node): AST.Node;
   VAR
@@ -1546,7 +1514,6 @@ PROCEDURE (b: Builder) ModuleFlags* (
     NEW (mf);
     mf. external := external(Terminal);
     mf. callConv := callConv(Terminal);
-    mf. library := library;
     mf. moduleFlags := moduleFlags;
     mf. semicolon := semicolon;
     mf. link := link;

@@ -1,7 +1,7 @@
 MODULE OOC:Auxiliary:ParseModule;
 
 IMPORT
-  Msg, URI,
+  Msg, URI, ADT:String,
   OOC:Config, OOC:Config:Pragmas, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
@@ -16,6 +16,7 @@ IMPORT
 PROCEDURE ParseModule* (m: Repository.Module;
                         checkModuleName, createNamespace,
                         writeSymbolFile, abortAfterImport: BOOLEAN;
+                        libraryName: String.String;
                         VAR ast: AST.Node;
                         VAR symTab: Sym.Module;
                         VAR pragmaHistory: Pragmas.History;
@@ -85,7 +86,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
       IF (errList. msgCount = 0) THEN
         stb := Builder.New();
         symTab := CreateSymTab.CreateSymTab
-          (ast, stb, m. GetURI (Repository.modModuleSource),
+          (ast, stb, libraryName, m. GetURI (Repository.modModuleSource),
            m. origin. baseURI);
         IF createNamespace THEN
           IF (errList. msgCount = 0) THEN

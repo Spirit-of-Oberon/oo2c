@@ -345,6 +345,11 @@ TYPE
     class-: ModuleClass;
     (**Identifies the class of the module.  It is one of @oconst{mcStandard},
        @oconst{mcInternal}, @oconst{mcForeign}, or @oconst{mcInterface}.  *)
+    libraryName-: String.String;
+    (**If the module is compiled to be part of a (static or shared) library,
+       then this field holds the name of the target library.  For a module that
+       is compiled to a standalone object file, @ofield{libraryName} is
+       @code{NIL}.  *)
     callConv-: CallConv;
     (**The default calling convention to be used for all procedures in the
        module.  If this is @oconst{callConvDefault}, then the final choice
@@ -1219,6 +1224,7 @@ PROCEDURE (mod: Module) Store* (w: Object.Writer);
     mod. Store^ (w);
     (* ignore field `ns' *)
     w. WriteSInt (mod. class);
+    w. WriteObject (mod.libraryName);
     w. WriteSInt (mod. callConv);
     w. WriteObject (mod. linkDirectives)
   END Store;
@@ -1230,6 +1236,12 @@ PROCEDURE (mod: Module) Load* (r: Object.Reader);
     mod. Load^ (r);
     mod. ns := NIL;
     r. ReadSInt (mod. class);
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      mod. libraryName := NIL;
+    ELSE
+      mod. libraryName := obj(String.String);
+    END;
     r. ReadSInt (mod. callConv);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
@@ -1245,6 +1257,11 @@ PROCEDURE (mod: Module) SetNamespace* (ns: Namespace);
   BEGIN
     mod. ns := ns;
   END SetNamespace;
+
+PROCEDURE (mod: Module) SetLibraryName* (name: String.String);
+  BEGIN
+    mod.libraryName := name;
+  END SetLibraryName;
 
 PROCEDURE (mod: Module) ClassToString*(): String.String;
   BEGIN

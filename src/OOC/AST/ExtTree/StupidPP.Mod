@@ -278,11 +278,11 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteLn
         
         | n: ExtTree.Operator DO
-          IF (n. op(ExtTree.Terminal). sym. id = Symbol.becomes) THEN
+          IF (n. op. sym. id = Symbol.becomes) THEN
             NewLine
           END;
           Node (n. left);
-          IF Symbol.IsKeyword (n. op(ExtTree.Terminal). sym. id) THEN
+          IF Symbol.IsKeyword (n. op. sym. id) THEN
             w. WriteString (" ");
             Node (n. op);
             w. WriteString (" ")
@@ -507,15 +507,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString ("PROC_ID=");
           Node (n. number)
         
-        | n: ExtTree.LibraryFlag DO
-          w. WriteString ("LIBRARY ");
-          Node (n. name);
-          w. WriteString (" ");
-          Node (n. version);
-          w. WriteString ("; ")
-        
         | n: ExtTree.ModuleFlags DO
-          Node (n. library);
           Node (n. external);
           w. WriteString (" ");
           Node (n. callConv);

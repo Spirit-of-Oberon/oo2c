@@ -373,17 +373,8 @@ PROCEDURE Write* (cw: Channel.Writer; m: ExtTree.Module);
           Node (n. number);
           w. EndTag
         
-        | n: ExtTree.LibraryFlag DO
-          w. StartTag ("library_flag", FALSE);
-          Node (n. library);
-          Node (n. name);
-          Node (n. version);
-          Node (n. semicolon);
-          w. EndTag
-        
         | n: ExtTree.ModuleFlags DO
           w. StartTag ("module_flags", FALSE);
-          Node (n. library);
           Node (n. external);
           Node (n. callConv);
           Node (n. moduleFlags);

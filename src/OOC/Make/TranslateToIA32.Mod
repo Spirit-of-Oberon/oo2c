@@ -21,7 +21,7 @@ MODULE OOC:Make:TranslateToIA32 [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, Channel, Msg, StdChannels, ADT:Dictionary, 
+  Ascii, Channel, Msg, StdChannels, ADT:String, ADT:Dictionary, 
   OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, Rep := OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
@@ -135,7 +135,8 @@ PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
   END WriteCodeFile;
 
 
-PROCEDURE Run*(m: Rep.Module; writeAST, writeIR: BOOLEAN;
+PROCEDURE Run*(m: Rep.Module; libraryName: String.String;
+               writeAST, writeIR: BOOLEAN;
                translator: Translator): Error.List;
 (**Compiles a module, creating the symbol file and the assembler file.  *)
   VAR
@@ -162,7 +163,7 @@ PROCEDURE Run*(m: Rep.Module; writeAST, writeIR: BOOLEAN;
     END CloseFile;
   
   BEGIN
-    ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE,
+    ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE, libraryName,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
        data in `symTab' to the view of client modules: declarations private to

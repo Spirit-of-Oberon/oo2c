@@ -237,6 +237,9 @@ PROCEDURE Write* (cw: Channel.Writer; module: Sym.Module);
             IF (str. array^ # "standard") THEN
               AttribString ("", "class", str. array^)
             END;
+            IF (item.libraryName # NIL) THEN
+              AttribString("", "library_name", item.libraryName.array^);
+            END;
             str := item. CallConvToString();
             IF (str. array^ # "default") THEN
               AttribString ("", "call_conv", str. array^)
