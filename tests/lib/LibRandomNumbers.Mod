@@ -25,6 +25,9 @@ PROCEDURE Test* ();
     
     RandomNumbers.PutSeed (2147483646);
     WriteRND;
+
+    RandomNumbers.PutSeed (12345);
+    Out.Real (RandomNumbers.Random(), 6); Out.Ln;
   END Test;
 
 END LibRandomNumbers.
