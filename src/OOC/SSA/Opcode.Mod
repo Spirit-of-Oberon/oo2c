@@ -58,7 +58,28 @@ CONST
   enter* = 4;
   select* = 5;
   (**Select one of several states, depending on the value of the selecting
-     expression.  FIXME... need more explanation.  *)
+     expression.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.arg
+     The selecting expression.
+
+     @item *OOC:SSA:Opnd.arg
+     A constant, one of the possible values of the first argument.
+
+     @item *OOC:SSA:Opnd.arg
+     The value of store if the first argument matches the preceeding constant.
+     @end table
+
+     There are as many pairs of @samp{(constant, store)} as there are paths
+     through the select statement.
+
+     The instruction has one mandatory result of class
+     @oconst{*OOC:SSA:Result.store}.  If there @var{store} arguments are
+     produced by @oconst{collect} statements, then there are additional
+     results, one for each collected value.
+
+     FIXME... still need more explanation.  *)
   collect* = 6;
   (**A @oconst{collect} instruction temporarily merges local values into the
      global @var{store} state.  This result is subsequently fed into an
