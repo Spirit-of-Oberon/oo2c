@@ -115,6 +115,8 @@ PROCEDURE RegisterCmdLineOptions (config: Config.Config);
                  "<options><set name='make'>TRUE</set></options>");
     ot := config. cmdLine. AddOptionTemplate ("--use-ssa",
                  "<options><set name='use-ssa'>TRUE</set></options>");
+    ot := config. cmdLine. AddOptionTemplate ("--write-ast",
+                 "<options><set name='write-ast'>TRUE</set></options>");
     ot := config. cmdLine. AddOptionTemplate ("--write-ir",
                  "<options><set name='write-ir'>TRUE</set></options>");
     ot := config. cmdLine. AddOptionTemplate ("--inspect",
