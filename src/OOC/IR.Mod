@@ -5230,7 +5230,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       ELSIF (id = Id.plus) & 
             (isChar OR
              TR.IsStringConst(left.type) OR
-             (left.type = b.stringType)) THEN
+             TR.IsSTRING(left.type)) THEN
         NEW(exprList, 2);
         exprList[0] := left;
         exprList[1] := right;
