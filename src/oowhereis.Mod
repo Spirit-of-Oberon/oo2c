@@ -40,6 +40,8 @@ PROCEDURE WriteHelp;
     Out.String ("Usage: oowhereis [options] <file>"); Out.Ln;
     Out.String ("Options:"); Out.Ln;
     Out.String ("--config <file>           Use <file> as primary configuration file."); Out.Ln;
+    Out.String ("--repository <directory>  Add repository."); Out.Ln;
+    Out.String ("-r <directory>            Add repository."); Out.Ln;
     Out.String ("--help, -h                Write this text and exit."); Out.Ln;
   END WriteHelp;
 
