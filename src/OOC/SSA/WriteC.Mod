@@ -958,6 +958,15 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       w. WriteString (")");
     END Shift;
 
+  PROCEDURE Indexed (instr: SSA.Instr);
+    BEGIN
+      w. Ref (instr. opndList);
+      w. WriteChar ("+");
+      w. Ref (instr. opndList. nextOpnd);
+      w. WriteChar ("*");
+      w. Ref (instr. opndList. nextOpnd. nextOpnd);
+    END Indexed;
+  
   PROCEDURE SimpleVarAccess (instr: SSA.Instr; adrClass: Opnd.Class): BOOLEAN;
     VAR
       adr: SSA.Result;
@@ -1094,6 +1103,8 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       WriteMonadicOp (instr, "_cap(", ")");
     | Opcode.entier:
       WriteMonadicOp (instr, "_entier(", ")");
+    | Opcode.indexed:
+      Indexed (instr);
     | Opcode.lsh:
       Shift (instr, FALSE);
     | Opcode.rot:

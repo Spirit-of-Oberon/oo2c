@@ -446,20 +446,22 @@ CONST
   (**Capitalize character.  *)
   entier* = 50;
   (**Floating point to integer, rounding to @samp{-inf}.  *)
-  lsh* = 51;
+  indexed* = 51;
+  (**Base + index*scale.  *)
+  lsh* = 52;
   (**Arithmetic shift.  *)
-  rot* = 52;
+  rot* = 53;
   (**Rotate bits.  *)
-  odd* = 53;
+  odd* = 54;
   (**Return @code{TRUE} for odd numbers.  *)
   
   
-  call* = 54;
+  call* = 55;
   (**Used to call a procedure or a function.  The first argument is the
      address of the procedure to be called, followed by the call's arguments.
      This opcode is used both for normal and type-bound procedures.  *)
   
-  getLength* = 55;
+  getLength* = 56;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -478,7 +480,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 56;
+  copyParameter* = 57;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -496,7 +498,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 57;
+  newObject* = 58;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -516,7 +518,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 58;
+  typeTag* = 59;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -527,7 +529,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 59;
+  typeTest* = 60;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -543,7 +545,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 60;
+  tbProcAddress* = 61;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -558,10 +560,10 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  assert* = 61;
-  halt* = 62;
+  assert* = 62;
+  halt* = 63;
   
-  checkIndex* = 63;
+  checkIndex* = 64;
   (**Ensures that an index is value with respect to a given array length.  An
      exception is raised if the index is negative, or less or equal to the
      array's length.
@@ -580,7 +582,7 @@ CONST
      The result of the instruction is the checked index.  One additional result
      is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  checkPointer* = 64;
+  checkPointer* = 65;
   (**Raise an exception if the pointer value is @code{NIL}.
 
      @table @oconst
@@ -594,7 +596,7 @@ CONST
      The result of the instruction is the checked pointer.  One additional
      result is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  typeGuard* = 65;
+  typeGuard* = 66;
   (**Raise an exception if the given type is not an extension of the type tag.
 
      @table @oconst
@@ -618,15 +620,15 @@ CONST
      of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
 
-  failedCase* = 66;
-  failedWith* = 67;
-  failedTypeAssert* = 68;
+  failedCase* = 67;
+  failedWith* = 68;
+  failedTypeAssert* = 69;
   
-  selectException* = 69;
+  selectException* = 70;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
   
-  labels* = 70;
+  labels* = 71;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  Every
      range and every single value is represented by two consecutive operands,
      the lower and the upper bound.  All operands are of class
@@ -775,6 +777,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | ash: cstr := "ash";
     | cap: cstr := "cap";
     | entier: cstr := "entier";
+    | indexed: cstr := "indexed";
     | lsh: cstr := "lsh";
     | rot: cstr := "rot";
     | odd: cstr := "odd";

@@ -925,7 +925,7 @@ PROCEDURE (instr: Instr) UniqueResult*(): BOOLEAN;
    of a volatile variable, or a call to the predefined procedure @code{NEW}. *)
   BEGIN
     CASE instr. opcode OF
-    | Opcode.newObject, Opcode.exit, Opcode.return:
+    | Opcode.newObject, Opcode.exit, Opcode.return, Opcode.indexed:
       RETURN TRUE;
     ELSE
       RETURN FALSE;

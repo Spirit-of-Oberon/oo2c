@@ -23,6 +23,7 @@ MODULE OOC:SSA:Algebraic;
 (* FIXME... add more transformations *)
 
 IMPORT
+  Log,
   Language, Language:Integer, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
 
 TYPE
@@ -68,7 +69,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       exp: LONGINT;
       new: SSA.Instr;
       
-    PROCEDURE Replace (instr: SSA.Instr; with: SSA.Opnd);
+    PROCEDURE Replace (instr: SSA.Instr; with: SSA.Result);
       VAR
         use: SSA.Opnd;
 
@@ -89,8 +90,13 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           AddToWorklist (use. instr);
           use := use. nextUse;
         END;
-        instr. ReplaceUses (with. arg);
+        instr. ReplaceUses (with);
       END Replace;
+
+    PROCEDURE ReplaceWithOpnd (instr: SSA.Instr; with: SSA.Opnd);
+      BEGIN
+        Replace (instr, with. arg);
+      END ReplaceWithOpnd;
 
     PROCEDURE Equals (opnd: SSA.Opnd; const: Language.Value): BOOLEAN;
       VAR
@@ -103,30 +109,69 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           RETURN FALSE;
         END;
       END Equals;
+
+    PROCEDURE Scaled (res: SSA.Result): BOOLEAN;
+    (* Return @code{TRUE} if @oparam{res} is an integer multiplication, and
+       the second arguments is an integer constant with a value of 1, 2, 4,
+       or 8.  *)
+      VAR
+        instr: SSA.Instr;
+        exp: LONGINT;
+      BEGIN
+        IF (res IS SSA.Instr) &
+           (res(SSA.Instr). opcode = Opcode.multiply) &
+           (res(SSA.Instr). subclass <= Opcode.scAddress) THEN
+          instr := res(SSA.Instr);
+          IF (instr. opndList. nextOpnd. arg IS SSA.Const) THEN
+            exp := IsPowerOf2 (instr. opndList. nextOpnd. arg(SSA.Const). value(Integer.Value));
+            RETURN (0 <= exp) & (exp <= 3);  (* 1, 2, 4, or 8 *)
+          END;
+        END;
+        RETURN FALSE;
+      END Scaled;
+
+    PROCEDURE ReplaceIndexed (instr: SSA.Instr; base, scale: SSA.Opnd);
+      VAR
+        new, s: SSA.Instr;
+      BEGIN
+        new := pb. AddInstr (Opcode.indexed, instr. subclass);
+        new. AddOpnd (base. arg, base. class);
+        s := scale. arg(SSA.Instr);
+        new. AddOpnd (s. opndList. arg, s. opndList. class);
+        new. AddOpnd (s. opndList. nextOpnd. arg,
+                      s. opndList. nextOpnd. class);
+        Replace (instr, new);
+      END ReplaceIndexed;
     
     BEGIN
       CASE instr. opcode OF
       | Opcode.add:
         IF Equals (instr. opndList, intZero) THEN (* 0+x = x *)
-          Replace (instr, instr. opndList. nextOpnd);
+          ReplaceWithOpnd (instr, instr. opndList. nextOpnd);
         ELSIF Equals (instr. opndList. nextOpnd, intZero) THEN (* x+0 = x *)
-          Replace (instr, instr. opndList);
+          ReplaceWithOpnd (instr, instr. opndList);
+        ELSIF Scaled (instr. opndList. arg) THEN
+          (* i*c+b = indexed(b,i,c) *)
+          ReplaceIndexed (instr, instr. opndList. nextOpnd, instr. opndList);
+        ELSIF Scaled (instr. opndList. nextOpnd. arg) THEN
+          (* b+i*c = indexed(b,i,c) *)
+          ReplaceIndexed (instr, instr. opndList, instr. opndList. nextOpnd);
         END;
         
       | Opcode.subtract:
         IF Equals (instr. opndList. nextOpnd, intZero) THEN (* x-0 = x *)
-          Replace (instr, instr. opndList);
+          ReplaceWithOpnd (instr, instr. opndList);
         END;
         
       | Opcode.multiply:
         IF Equals (instr. opndList, intOne) THEN (* 1*x = x *)
-          Replace (instr, instr. opndList. nextOpnd);
+          ReplaceWithOpnd (instr, instr. opndList. nextOpnd);
         ELSIF Equals (instr. opndList. nextOpnd, intOne) THEN (* x*1 = x *)
-          Replace (instr, instr. opndList);
+          ReplaceWithOpnd (instr, instr. opndList);
         ELSIF Equals (instr. opndList, intZero) THEN (* 0*x = 0 *)
-          Replace (instr, instr. opndList);
+          ReplaceWithOpnd (instr, instr. opndList);
         ELSIF Equals (instr. opndList. nextOpnd, intZero) THEN (* x*0 = 0 *)
-          Replace (instr, instr. opndList. nextOpnd);
+          ReplaceWithOpnd (instr, instr. opndList. nextOpnd);
         END;
 
       | Opcode.divide: (* replace DIV by power of two with right shift *)
