@@ -6,10 +6,10 @@
   profile="Test Suite for Framework Testing"
   select ="prepare_out_module var1 var2 var3 var3b var3c var4 var4b 
   var5 var5b var6 var6b var7 var7b var7c swap1 swap2
-  varpar1 varpar1b varpar1c">
+  varpar1 varpar1b varpar1c record1">
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module varpar1 varpar1b varpar1c">-->
+  select ="prepare_out_module record1">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -135,6 +135,10 @@
       a global variable because of its different type.  This means
       there is no need to retrieve either the global variable nor the
       variable parameter from memory.
+    </test>
+    
+    <test id="record1" type="run" file="Record1.Mod" output="Record1.Ref">
+      Assignments to the fields of a global record variable.
     </test>
   </testcases>
 </testsuite-ext>
