@@ -6,6 +6,10 @@
      Its meta data lists the files that are to be installed on the
      target system.
 
+     The primary purpose of the package support of the OOC compiler is
+     to aid in the deployment of libraries, and to build executables.
+     It is _not_ a general purpose installation tool.
+
      After installation, the package's meta data is incorporated into
      the target repository to provide information on how to deinstall
      the package cleanly.  -->
@@ -65,7 +69,10 @@
 <!ATTLIST executable main-module CDATA #REQUIRED>
 
 <!-- When a package is installed, files listed in the file-set 
-     elements are copied into the target repository.  -->
+     elements are copied into the target repository.  All paths
+     are interpreted relative to the current directory and the
+     target directory.  That is, this mechanism cannot be used
+     to copy files from/to arbitrary locations.  -->
 
 <!ELEMENT file-set (file-set|file)+>
 <!ATTLIST file-set source-dir CDATA #REQUIRED
