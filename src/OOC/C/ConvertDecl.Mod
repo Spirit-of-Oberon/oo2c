@@ -1,7 +1,7 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
-  ADT:Dictionary, 
+  IntStr, Strings, ADT:Dictionary, ADT:String,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -18,11 +18,43 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
   VAR
     sc: DeclWriter.StorageClass;
 
-  PROCEDURE ConvertType (resolvedType, type: Sym.Type): DeclWriter.Type;
+ PROCEDURE ConvertType (resolvedType, type: Sym.Type): DeclWriter.Type;
     VAR
       ptr: Sym.Item;
       fct: DeclWriter.Function;
 (*          decl: Sym.Declaration;*)
+
+    PROCEDURE ConvertParam (fct: DeclWriter.Function; param: Sym.VarDecl);
+      VAR
+        decl: DeclWriter.Declaration;
+
+      PROCEDURE AddArrayLength (type: Sym.Type; dim: LONGINT);
+        VAR
+          str: ARRAY 1024 OF CHAR;
+          length: DeclWriter.Declaration;
+        BEGIN
+          IF (type IS Sym.Array) & type(Sym.Array). isOpenArray THEN
+            IntStr.IntToStr (dim, str);
+            Strings.Insert ("_", 0, str);
+            Strings.Insert (param. name. str^, 0, str);
+            Strings.Append ("d", str);
+
+            length := w. NewDeclaration (String.New (str),
+                                         DeclWriter.tqNone,
+                                         DeclWriter.scAuto,
+                                         w. basicType[DeclWriter.lengthType]);
+            fct. AddParameter (length);
+            
+            AddArrayLength (type(Sym.Array). elementType, dim+1)
+          END;
+        END AddArrayLength;
+      
+      BEGIN
+        decl := ConvertDecl (w, param, modeWritePrivate);
+        fct. AddParameter (decl);
+        AddArrayLength (param. type, 0);
+      END ConvertParam;
+    
     BEGIN
       IF (type = NIL) THEN
         RETURN w. basicType[DeclWriter.void]
@@ -81,12 +113,12 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
         | type: Sym.FormalPars DO
           fct := w. NewFunction (ConvertType (type. resultType, type. srcCodeResultType));
           IF (type. receiver # NIL) THEN
-            fct. AddParameter (ConvertDecl (w, type. receiver, mode))
+            ConvertParam (fct, type. receiver)
           END;
           ptr := type. nestedItems;
           WHILE (ptr # NIL) DO
             WITH ptr: Sym.Declaration DO
-              fct. AddParameter (ConvertDecl (w, ptr, mode))
+              ConvertParam (fct, ptr(Sym.VarDecl))
             ELSE                     (* ignore non-declarations *)
             END;
             ptr := ptr. nextNested
