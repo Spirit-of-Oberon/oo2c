@@ -46,7 +46,7 @@ TYPE
   BasicTypeDesc = RECORD
     (TypeDesc)
     id: BasicTypeId;
-    repr: ARRAY 32 OF CHAR;
+    repr-: ARRAY 32 OF CHAR;
   END;
 
 TYPE
