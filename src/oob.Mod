@@ -312,7 +312,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
       IF (constDecl.value = NIL) THEN
         Out.String("NIL");
       ELSE
-        Out.Str(constDecl.value.ToString());
+        Out.Object(constDecl.value);
       END;
     END ConstDecl;
   
