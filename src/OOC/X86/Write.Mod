@@ -478,7 +478,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
   
   PROCEDURE RegisterToRegister(src, dest: S.Result): BOOLEAN;
     BEGIN
-      RETURN (src.adrMode = S.register) & (dest.adrMode = S.register);
+      RETURN (dest.adrMode = S.register) &
+          ((src.adrMode = S.register) OR (src.instr.opcode = S.const));
     END RegisterToRegister;
   
   PROCEDURE FixGatedValues(jump: S.Instr);

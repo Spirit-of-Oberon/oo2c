@@ -158,6 +158,9 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
                            designator, value);
           | S.return:
             (* nothing; FIXME... see loopExit *)
+
+          | S.exit:
+            (* nothing: we are at the end of the function *)
           END;
         END;
       END PropagateValue;

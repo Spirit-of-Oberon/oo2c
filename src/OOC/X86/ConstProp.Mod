@@ -26,7 +26,7 @@ PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
     i1, i2: BigInt.BigInt;
   BEGIN
     IF (instr.opcode = S.typeConv)  THEN
-      v := instr.designator[0](S.Const).value;
+      v := instr.opndList.arg.instr.designator[0](S.Const).value;
       IF (v IS BigInt.BigInt) & (instr.resultList.type < S.real32) THEN
         (* FIXME... check for overflow *)
         RETURN pb.AddConstType(NEW(S.Const, v), instr.resultList.type);
