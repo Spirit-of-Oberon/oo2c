@@ -875,7 +875,8 @@ PROCEDURE Parse* (sym: BasicList.Symbol; removeDecoration: BOOLEAN;
           ELSIF (class2Low <= token. id) & (token. id <= class2High) THEN
             mark := Doc.NewGlyph (IdToGlyph (token. id))
           ELSE
-            Err (invalidItemMark)
+            Err (invalidItemMark);
+            mark := Doc.NewGlyph(Doc.glyphBullet);
           END;
           NextToken;
           IF ~token. bol THEN
