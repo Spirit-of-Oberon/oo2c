@@ -72,8 +72,8 @@
 </xsl:template>
 
 <xsl:template match='procedure' mode='decl-sig'>
-  <xsl:apply-templates select='formal-parameters/receiver-decl'
-                       mode='decl-sig'/>
+  <!-- <xsl:apply-templates select='formal-parameters/receiver-decl'
+                       mode='decl-sig'/> -->
   <xsl:call-template name='IdentDefHREF'/>
   <xsl:apply-templates select='formal-parameters' mode='type-sig'/>
 </xsl:template>
