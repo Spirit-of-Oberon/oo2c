@@ -361,7 +361,7 @@ PROCEDURE (w: Writer) ClearError*;
     w.res := done
   END ClearError;
 
-PROCEDURE (w: Writer) WriteBytes * (VAR x: ARRAY OF SYSTEM.BYTE;
+PROCEDURE (w: Writer) WriteBytes * (x[NO_COPY]: ARRAY OF SYSTEM.BYTE;
                                     start, n: LONGINT);
 (* Write the bytes according to the native machine byte order. *)
   BEGIN
