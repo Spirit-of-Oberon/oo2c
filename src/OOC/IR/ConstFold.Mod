@@ -622,7 +622,11 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
       IF TR.IsIntegerType (op. type) &
          TR.IsCharType (op. expr. type) THEN
         (* type conversion from character to integer value (ORD) *)
-        value := Integer.New (ORD (value(String8.Value). value. array[0]));
+        IF TR.IsPredefType(op.expr.type, Predef.longchar) THEN
+          value := Integer.New (ORD (value(String16.Value). array[0]));
+        ELSE
+          value := Integer.New (ORD (value(String8.Value). value. array[0]));
+        END;
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
       ELSIF TR.IsCharType (op. type) &
