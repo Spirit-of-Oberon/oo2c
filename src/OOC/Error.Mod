@@ -112,7 +112,7 @@ PROCEDURE IsWarning (msg: Msg): BOOLEAN;
     template: ARRAY 128 OF LONGCHAR;
   BEGIN
     msg.context.GetTemplate(msg, template);
-    LongStrings.FindNext(": "+warningPrefix, template, 0, found, pos);
+    LongStrings.FindNext(warningPrefix, template, 0, found, pos);
     RETURN found;
   END IsWarning;
 
