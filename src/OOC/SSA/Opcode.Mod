@@ -57,6 +57,8 @@ CONST
   
   enter* = 4;
   select* = 5;
+  (**Select one of several states, depending on the value of the selecting
+     expression.  FIXME... need more explanation.  *)
   collect* = 6;
   (**A @oconst{collect} instruction temporarily merges local values into the
      global @var{store} state.  This result is subsequently fed into an
@@ -113,8 +115,8 @@ CONST
 
      The instruction has one result of class @oconst{*OOC:SSA:Result.store}.
      There is at least one use of this result, as operand of the procedure's
-     @oconst{selectReturn} instruction.  [Note: Don't know if there will be
-     more uses.  FIXME...]  *)
+     @oconst{selectReturn} instruction.  All other uses are unreachable from
+     the point of the @oconst{return} instruction.  *)
   
   selectReturn* = 8;
   (**Chooses the return statement that leaves the procedure or function.  The
@@ -259,50 +261,97 @@ CONST
      The instruction has one result of class @oconst{*OOC:SSA:Result.store},
      representing the new value of store with the updated variable.  *)
   copy* = 15;
+  (**Copy a record or array value.  Used for assignment statements where
+     the source and target are not scalar values.  Not implemented yet... *)  
+  copyString* = 16;
+  (**Copy a sequence of characters into a string variable.  This corresponds to
+     the @samp{COPY} statement.
 
-  add* = 16;
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.readAdr
+     Like the corresponding argument of @oconst{get}.
+
+     @item *OOC:SSA:Opnd.readDesign
+     Like the corresponding argument of @oconst{get}.
+
+     @item *OOC:SSA:Opnd.writeAdr
+     Like the corresponding argument of @oconst{set}.
+
+     @item *OOC:SSA:Opnd.writeDesign
+     Like the corresponding argument of @oconst{set}.
+
+     @item *OOC:SSA:Opnd.arg
+     The length of the target variable in characters.  At most this many minus
+     one characters are copied, and the termination character @samp{0X} is
+     added.
+     @end table
+
+     The result is undefined if the source value is not terminated with
+     @samp{0X}, or if the target as a length of zero characters.  The
+     instruction has one result of class @oconst{*OOC:SSA:Result.store},
+     representing the new value of store with the updated variable.  *)  
+  copyBytes* = 17;
+  (**Copy a memory block between two addresses in memory.  This corresponds to
+     the @samp{SYSTEM.MOVE} statement.  Not implemented yet...  *)
+  
+  add* = 18;
   (**Addition operator.  The two operands must be of the same type, which is at
      the same time the result of the operation.  There is one exception to this
      rule: if one of the operands is of type @oconst{scAddress}, then the other
      operand can be any integer type, signed or unsigned, and the result type
      is @oconst{scAddress}.  *)
-  subtract* = 17;
-  negate* = 18;
-  multiply* = 19;
+  subtract* = 19;
+  negate* = 20;
+  multiply* = 21;
   (**Multiplication.  The two operands must be of the same type, which is
      also the result of the operation.  There is one exception: when
      multiplying an index with the size of the element, then the result is
      a value of type @oconst{scAddress}.  *)
-  divide* = 20;
-  modulo* = 21;
+  divide* = 22;
+  modulo* = 23;
 
-  eql* = 22;
-  neq* = 23;
-  lss* = 24;
-  leq* = 25;
-  gtr* = 26;
-  geq* = 27;
+  eql* = 24;
+  neq* = 25;
+  lss* = 26;
+  leq* = 27;
+  gtr* = 28;
+  geq* = 29;
 
-  and* = 28;
-  or* = 29;
-  not* = 30;
+  and* = 30;
+  (**Boolean @samp{AND}.  Note: This opcode does not perform shortcut
+     evaluation.  That is, both arguments are always evaluated, irregardless
+     of the value of the first argument.  *)
+  or* = 31;
+  (**Boolean @samp{OR}.  Note: This opcode does not perform shortcut
+     evaluation.  That is, both arguments are always evaluated, irregardless
+     of the value of the first argument.  *)
+  not* = 32;
+  (**Boolean @samp{NOT}.  *)
 
-  typeConv* = 31;
+  typeConv* = 33;
   (**Type conversion operation.  Takes one argument, the value that should be
      converted.  The result type of the convertion is the instructions's
      subclass, the source type that of the first argument.  *)
-  setMember* = 32;
+  setMember* = 34;
   (**Set membership test.  First argument is an index, second is the
      set value.  *)
-  setRange* = 33;
+  setRange* = 35;
   (**Set range.  Produces a set with the elements [from, to] inclusive.
      The range is empty if to<from.  *)
-  cap* = 34;
+  cap* = 36;
+  (**Capitalize character.  *)
   
-  assert* = 35;
-  call* = 36;
+  assert* = 37;
   
-  getLength* = 37;
+  call* = 38;
+  (**Used to call a procedure or a function.  The first argument is the
+     address of the procedure to be called, followed by the call's arguments.
+     This opcode is used both for normal and type-bound procedures.  *)
+  
+  getLength* = 39;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -321,7 +370,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 38;
+  copyParameter* = 40;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -339,7 +388,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 39;
+  newObject* = 41;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -359,7 +408,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 40;
+  typeTag* = 42;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -370,7 +419,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 41;
+  typeTest* = 43;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -386,7 +435,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 42;
+  tbProcAddress* = 44;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -401,7 +450,7 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  labels* = 43;
+  labels* = 45;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -495,6 +544,9 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | get: cstr := "get";
     | set: cstr := "set";
     | copy: cstr := "copy";
+    | copyString: cstr := "copy-string";
+    | copyBytes: cstr := "copy-bytes";
+      
     | getLength: cstr := "get-length";
     | copyParameter: cstr := "copy-parameter";
     | newObject: cstr := "new-object";
