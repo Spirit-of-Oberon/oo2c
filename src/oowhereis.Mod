@@ -130,7 +130,7 @@ BEGIN
   Config.Read(cfgErrList);
   
   IF (cfgErrList. msgCount # 0) THEN
-    cfgErrList. Write (StdChannels.stdout);
+    cfgErrList. Write (StdChannels.stderr);
   END;
   IF ~cfgErrList.NoErrors() THEN
     HALT (1)
