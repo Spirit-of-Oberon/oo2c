@@ -17,8 +17,8 @@ PROCEDURE Test* ();
     Out.String (dest4); Out.Ln;
     Strings.Extract ("abc", 1, 2, dest4);
     Out.String (dest4); Out.Ln;
-(*    Strings.Extract ("abc", 0, 3, dest4);  hangs currently :-(
-    Out.String (dest4); Out.Ln;*)
+    Strings.Extract ("abc", 0, 3, dest4);
+    Out.String (dest4); Out.Ln;
   END Test;
 
 END LibStringsExtract1.
