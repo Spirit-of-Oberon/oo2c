@@ -97,6 +97,10 @@ this:
 Or on systems that have the `env' program, you can do it like this:
      env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
 
+With `--enable-threads=pthreads', the compiler is installed with
+support for the POSIX threads library.  For this to work, the garbage
+collector must be installed with threading support as well.
+
 Installation Names
 ==================
 

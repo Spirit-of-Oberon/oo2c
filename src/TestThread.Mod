@@ -1,4 +1,5 @@
 MODULE TestThread;
+<*Assertions := TRUE*>
 
 IMPORT
   Log, Exception, Thread:PThread;
