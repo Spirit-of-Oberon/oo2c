@@ -645,28 +645,28 @@ RAISES IO.Error;
         procDecl.formalPars.SetTypePars(class.typePars);
         (*item.formalPars.SetTypePars(receiver.type.typePars);*)
 
-        count := 0;
-        ptr := procDecl.formalPars.nestedItems;
-        WHILE (ptr # NIL) DO
-          WITH ptr: Sym.TypeDecl DO
-            IF (ptr.type = NIL) THEN
-              (* unfinished alias declaration: fixup type reference; if this
-                 is read from the symbol file, the `ptr.type' is alread set *)
-              ptr.type := class.typePars.params[count];
-              ptr.srcCodeType := ptr.type;
-            END;
-            INC(count);
-          ELSE
-            (* ignore *)
-          END;
-          ptr := ptr.nextNested;
-        END;
-
         IF (class.typePars = NIL) THEN
           IF receiver.hasAliasList THEN
             ErrType(cannotDefineTypeAliases, receiver.srcCodeType);
           END;
         ELSE
+          count := 0;
+          ptr := procDecl.formalPars.nestedItems;
+          WHILE (ptr # NIL) DO
+            WITH ptr: Sym.TypeDecl DO
+              IF (ptr.type = NIL) THEN
+                (* unfinished alias declaration: fixup type reference; if this
+                   is read from the symbol file, the `ptr.type' is alread set  *)
+                ptr.type := class.typePars.params[count];
+                ptr.srcCodeType := ptr.type;
+              END;
+              INC(count);
+            ELSE
+              (* ignore *)
+            END;
+            ptr := ptr.nextNested;
+          END;
+          
           IF ~receiver.hasAliasList OR
              (count # LEN(class.typePars.params^)) THEN
             ErrType(tooFewTypeAliases, receiver.srcCodeType);
