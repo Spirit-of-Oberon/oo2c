@@ -605,6 +605,7 @@ BEGIN
   false := NewBoolean(FALSE); falseString := Obj.NewLatin1("FALSE");
   
   zeroLongReal := NewLongReal(0.0);
+  zeroLongInt := NewLongInt(0);
 
   NEW(emptyString);
   emptyString.value := Obj.NewLatin1("");
