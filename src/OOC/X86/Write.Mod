@@ -492,10 +492,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       dummy: Block;
     BEGIN
       opc := cmp.opcode;
-      IF neg THEN opc := NegateBranch(opc); END;
-      block.SetArc(block.branch, w.GetBlock(path2),
-                   cmp.opndList.arg.type, opc);
-      block.SetArc(block.jump, w.GetBlock(path1), -1, S.jump);
+      IF (opc = S.const) THEN      (* condition with constant guard *)
+        IF (neg # cmp.resultList.IsTrue()) THEN
+          block.SetArc(block.jump, w.GetBlock(path2), -1, S.jump);
+        ELSE
+          block.SetArc(block.jump, w.GetBlock(path1), -1, S.jump);
+        END;
+      ELSE
+        IF neg THEN opc := NegateBranch(opc); END;
+        block.SetArc(block.branch, w.GetBlock(path2),
+                     cmp.opndList.arg.type, opc);
+        block.SetArc(block.jump, w.GetBlock(path1), -1, S.jump);
+      END;
       dummy := w.WriteBlock(path1);
       dummy := w.WriteBlock(path2);
     END WriteBranch2;
