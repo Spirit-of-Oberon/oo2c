@@ -434,6 +434,9 @@ PROCEDURE Resolve* (symTab: Sym.Module;
             ResolveInlineList (ptr. mark);
             ResolveBlockList (ptr. text);
             ResolveBlockList (ptr. itemList)
+          | ptr: Doc.Enumerate DO
+            ResolveBlockList (ptr. text);
+            ResolveBlockList (ptr. itemList)
           | ptr: Doc.FirstColumn DO
             ResolveInlineList (ptr. inlineText)
           | ptr: Doc.TableRow DO
