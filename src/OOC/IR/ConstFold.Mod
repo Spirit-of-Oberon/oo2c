@@ -549,6 +549,23 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     RETURN Boxed.NewBoolean(result);
   END BooleanOp;
 
+  PROCEDURE SetOp(): Boxed.Boolean;
+    VAR
+      left, right: Boxed.Set;
+      result: BOOLEAN;
+    BEGIN
+      left := l(Boxed.Set);
+      right := r(Boxed.Set);
+      
+      CASE op.variant OF
+      | IR.equal:        result := left.Equals(right);
+      | IR.notEqual:     result := ~left.Equals(right);
+      ELSE
+        c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+      END;
+      RETURN Boxed.NewBoolean(result);
+    END SetOp;
+
   BEGIN
     IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
       CASE op.left.type(Sym.PredefType).id OF
@@ -566,6 +583,8 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
         result := StringOp(); 
       | Predef.boolean:
         result := BooleanOp();
+      | Predef.set:
+        result := SetOp();
       END;
       IF result = NIL THEN 
         c.result := NIL

@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; opSet9 opSet10 opSet11 opSet12">-->
+  select ="&SetupTestCasesWithOut; constfold20">-->
 
   &TestSetupWithOut;
     
@@ -110,6 +110,10 @@
     <test id="constfold19" type="reject" file="ConstFold19.Mod">
       Regression test: Produce accurate error message of the length of
       an <code>ARRAY</code> definition is not a constant expression.
+    </test>
+
+    <test id="constfold20" type="accept" file="ConstFold20.Mod">
+      Regression test: Fold comparison of sets.
     </test>
   </testcases>
   
