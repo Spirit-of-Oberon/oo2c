@@ -602,6 +602,12 @@ PROCEDURE (instr: Instr) GetArgClass* (class: OpndClass.Class): Result;
     END
   END GetArgClass;
 
+PROCEDURE (instr: Instr) GetArgStore* (): Result;
+(**Short for @code{GetArgClass(store)}.  *)
+  BEGIN
+    RETURN instr. GetArgClass (OpndClass.store);
+  END GetArgStore;
+
 PROCEDURE (instr: Instr) NthResult* (nth: LONGINT): Result;
 (**Returns the @oparam{nth} result of @oparam{instr}.  A value of
    @samp{@oparam{nth}=@code{0}} returns the instruction itself
