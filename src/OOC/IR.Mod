@@ -1016,6 +1016,7 @@ CONST
   tooFewArguments = 38;
   tooManyArguments = 39;
   notVarParCompatible = 40;
+  redirectFailed = 41;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1162,6 +1163,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Too many arguments"
     | notVarParCompatible:
       t := "Actual parameter not compatible with formal VAR parameter"
+    | redirectFailed:
+      t := "Internal error: Name redirection failed"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -3862,11 +3865,13 @@ PROCEDURE (b: Builder) EndTypeGuard* (VAR namespace: Sym.Namespace);
     namespace := namespace(Namespace.Nested). nestedIn;
   END EndTypeGuard;
 
-PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item; 
+PROCEDURE (b: Builder) NewIdentRef* (baseNS, ns: Sym.Namespace;
+                                     context: Sym.Item; 
                                      name: Symbol): Expression;
   VAR
     decl: Sym.Declaration;
     varRef: Var;
+    redirModule: Sym.Item;
   BEGIN
     IF (name. id = Id.ident) THEN
       decl := ns. Identify (context, b. GetName (name), FALSE);
@@ -3889,6 +3894,15 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
           RETURN NewProcedureRef (name, decl)
         | decl: Sym.Import DO
           RETURN b. NewModuleRef (name, decl. externalSymTab)
+        | decl: Sym.Redirect DO
+          redirModule := baseNS.Identify(context, decl.module, FALSE);
+          IF (redirModule = NIL) OR ~(redirModule IS Sym.Import) THEN
+            b.ErrSym(redirectFailed, name);
+          ELSE
+            ns := redirModule(Sym.Import).externalSymTab.ns;
+            RETURN b.NewIdentRef(ns, ns, context,
+                                 BasicList.CloneSymbol(name, decl.ident.str^));
+          END;
         ELSE
           Log.Type ("Unknown decl in NewIdentRef", decl);
           ASSERT (FALSE);
@@ -3904,10 +3918,11 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
     RETURN b. errorExpr 
   END NewIdentRef;
 
-PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Sym.Item; 
+PROCEDURE (b: Builder) NewQualident* (baseNS: Sym.Namespace;
+                                      modref: ModuleRef; context: Sym.Item; 
                                       name: Symbol): Expression;
   BEGIN
-    RETURN b. NewIdentRef (modref. decl(Sym.Module). ns, context, name)
+    RETURN b. NewIdentRef (baseNS, modref. decl(Sym.Module). ns, context, name)
   END NewQualident;
 
 PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;

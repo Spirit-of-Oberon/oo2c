@@ -389,7 +389,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
        declarations.  This is used to resolve names used as pointer base
        types.  *)
       VAR
-        item: Sym.Item;
+        item, itemRedir, redirModule: Sym.Item;
         ns: Sym.Namespace;
       BEGIN
         WITH typeName: Sym.TypeName DO
@@ -412,14 +412,36 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           IF (item = NIL) & extendedSearch THEN
             item := ns. IdentifyLocal (contextOfUse, typeName. ident, TRUE);
           END;
+
           IF (item = NIL) THEN
             Err (undeclaredIdent, typeName);
             RETURN typeName
-          ELSIF ~(item IS Sym.TypeDecl) THEN
-            Err (notTypeName, typeName);
-            RETURN typeName
           ELSE
-            RETURN item(Sym.TypeDecl). type
+            (* if the type name refers to a name redirection, then resolve the
+               redirection and continue with the resulting symbol table entry  *)
+            itemRedir := item;
+            WITH itemRedir: Sym.Redirect DO
+              ns := contextOfUse.Namespace();
+              redirModule := ns.Identify(contextOfUse, itemRedir.module, FALSE);
+              IF (redirModule = NIL) THEN
+                Err(undeclaredModule, typeName);
+                RETURN typeName
+              ELSIF ~(redirModule IS Sym.Import) THEN
+                Err(notModule, typeName);
+                RETURN typeName
+              ELSE
+                ns := redirModule(Sym.Import).externalSymTab.ns;
+              END;
+              item := ns.Identify(contextOfUse, itemRedir.ident, FALSE);
+            ELSE;
+            END;
+            
+            IF ~(item IS Sym.TypeDecl) THEN
+              Err (notTypeName, typeName);
+              RETURN typeName
+            ELSE
+              RETURN item(Sym.TypeDecl). type
+            END
           END
         ELSE
           RETURN typeName

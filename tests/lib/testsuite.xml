@@ -17,7 +17,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_Ascii">-->
+  select ="prepare_out_module lib_rt1 lib_STRING">-->
 
   &TestSetupWithOut;
   
@@ -516,6 +516,11 @@
       Imports the module <code>BinaryRider</code>.  No further tests.
     </test>
     
+
+    <test id="lib_STRING" type="run" file="LibSTRING.Mod">
+      Tests integration of the string module with the predefined
+      type <code>STRING</code>.
+    </test>
   </testcases>
 
   &libadt-testcases;

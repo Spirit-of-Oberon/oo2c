@@ -184,6 +184,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
   VAR
     module: Sym.Module;
     ptype: Sym.PredefType;
+    redir: Sym.Redirect;
     
   PROCEDURE PredefConst (name: ARRAY OF CHAR; value: Language.Value;
                          type: Sym.PredefType);
@@ -238,6 +239,9 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
                          NIL, NIL);
     ptype := PredefType (stb, module, void, "", 0, 1,
                          NIL, NIL);
+
+    redir := stb. NewRedirect(module, GetName("STRING"),
+                              GetName("-Language:String0"), GetName("String"));
     
     PredefProc (stb, module, assert, "ASSERT", 1, 2);
     PredefProc (stb, module, halt, "HALT", 1, 1);

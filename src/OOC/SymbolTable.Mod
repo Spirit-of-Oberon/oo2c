@@ -635,6 +635,14 @@ TYPE
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
   END;
 
+TYPE
+  Redirect* = POINTER TO RedirectDesc;
+  RedirectDesc = RECORD
+    (DeclarationDesc)
+    module-: Name;
+    ident-: Name;
+  END;
+  
 VAR
   predefIdToType*: POINTER TO ARRAY OF PredefType;
   (**This array maps ids to instances of @otype{PredefType}.  It is set
@@ -1412,6 +1420,33 @@ PROCEDURE (typeDecl: TypeDecl) Load* (r: Object.Reader);
   END Load;
 
 
+PROCEDURE InitRedirect* (redir: Redirect; parent: Item; name: Name;
+                         module, ident: Name);
+  BEGIN
+    InitDeclaration (redir, parent, name, 0, nameExported, NIL);
+    redir. module := module;
+    redir. ident := ident;
+  END InitRedirect;
+
+PROCEDURE (redir: Redirect) Store* (w: Object.Writer);
+  BEGIN
+    redir. Store^ (w);
+    w. WriteObject (redir. module);
+    w. WriteObject (redir. ident);
+  END Store;
+
+PROCEDURE (redir: Redirect) Load* (r: Object.Reader);
+  VAR
+    obj: Object.Object;
+  BEGIN
+    redir. Load^ (r);
+    r. ReadObject (obj);
+    redir. module := obj(Name);
+    r. ReadObject (obj);
+    redir. ident := obj(Name);
+  END Load;
+
+
 PROCEDURE InitFieldDecl* (fieldDecl: FieldDecl; parent: Item; name: Name;
                         visibleFrom: ModulePos; exportMark: ExportMark;
                         docString: Doc.Document; type: Type);
@@ -2059,6 +2094,8 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
       RETURN NamespaceOfType (decl. type, decl. srcCodeType)
     | decl: TypeDecl DO
       RETURN NamespaceOfType (decl. type, decl. srcCodeType)
+    | decl: Redirect DO
+      RETURN NIL
     END
   END GetEmbeddedNamespace;
 

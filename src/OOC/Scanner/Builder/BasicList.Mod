@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Scanner:Builder:BasicList;
 (*  Converts sequence of symbols to a list, removing any whitespace.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:Scanner:Builder:BasicList;
 *)
 
 IMPORT
-  SYSTEM, OOC:Scanner:InputBuffer,
+  SYSTEM, Strings, OOC:Scanner:InputBuffer,
   Sym := OOC:Scanner:Symbol, B := OOC:Scanner:Builder;
 
 
@@ -95,6 +95,22 @@ PROCEDURE NewSymbol* (str: InputBuffer.CharArray; len: LONGINT): Symbol;
     sym. column := 0;
     RETURN sym
   END NewSymbol;
+
+PROCEDURE CloneSymbol* (old: Symbol; str: ARRAY OF InputBuffer.Char): Symbol;
+  VAR
+    sym: Symbol;
+  BEGIN
+    NEW (sym);
+    sym. next := NIL;
+    sym. id := old. id;
+    sym. len := Strings.Length (str);
+    NEW (sym. str, sym. len+1);
+    COPY (str, sym. str^);
+    sym. pos := old. pos;
+    sym. line := old. line;
+    sym. column := old. column;
+    RETURN sym
+  END CloneSymbol;
 
 PROCEDURE (b: Builder) Clear*;
   BEGIN

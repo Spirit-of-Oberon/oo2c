@@ -133,6 +133,16 @@ PROCEDURE (b: Builder) NewTypeDecl* (parent: Sym.Item; name: Sym.Name;
     RETURN t
   END NewTypeDecl;
 
+PROCEDURE (b: Builder) NewRedirect* (parent: Sym.Item; name: Sym.Name;
+                                     module, ident: Sym.Name): Sym.Redirect;
+  VAR
+    redir: Sym.Redirect;
+  BEGIN
+    NEW (redir);
+    Sym.InitRedirect (redir, parent, name, module, ident);
+    RETURN redir
+  END NewRedirect;
+
 PROCEDURE (b: Builder) NewVarDecl* (parent: Sym.Item; name: Sym.Name;
                                  visibleFrom: Sym.ModulePos;
                                  exportMark: Sym.ExportMark;
