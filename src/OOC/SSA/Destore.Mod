@@ -347,7 +347,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         VAR
           origin: OriginMap;
           i, memoryCount, registerCount: LONGINT;
-          collect: SSA.Instr;
+          collect, allTheSame: SSA.Instr;
 
         PROCEDURE GetCollect (select: SSA.Instr; pathNum: LONGINT): SSA.Instr;
           VAR
@@ -425,6 +425,17 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           ELSE
             origin := select. info(OriginMap);
             IF (origin. selectOut[var] = NIL) THEN
+              IF (select. opcode = Opcode.loopStart) THEN
+                (* place marker that enables us to detect loops when trying
+                   to retrieve the variable's variable for an input path *)
+                origin. selectOut[var] := select;
+                value := GetValue (origin. def[var, 1]);
+                IF (value = select) THEN
+                  origin. def[var, 1] := origin. def[var, 0]
+                END;
+              END;
+              
+              allTheSame := origin. def[var, 0];
               memoryCount := 0; registerCount := 0;
               FOR i := 0 TO LEN (origin. def^, 1)-1 DO
                 IF (origin. def[var, i] = unknownValue) THEN
@@ -432,15 +443,24 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
                 ELSE
                   INC (registerCount)
                 END;
+                IF (origin. def[var, i] # allTheSame) THEN
+                  allTheSame := NIL
+                END;
               END;
               
               IF (memoryCount = 0) THEN
-                FOR i := 0 TO LEN (origin. def^, 1)-1 DO
-                  collect := GetCollect (select, i);
-                  collect. AddOpnd (GetValue (origin. def[var, i]), Opnd.arg);
-                END;
-                origin. selectOut[var] :=
-                    select. AddResultSubclass (Result.selectValue, subclass);
+                IF (allTheSame # NIL) THEN
+                  (* all paths into the select/loop-start have the same value:
+                     use this value for the "get" *)
+                  origin. selectOut[var] := GetValue (allTheSame);
+                ELSE
+                  FOR i := 0 TO LEN (origin. def^, 1)-1 DO
+                    collect := GetCollect (select, i);
+                    collect. AddOpnd (GetValue (origin. def[var,i]), Opnd.arg);
+                  END;
+                  origin. selectOut[var] :=
+                      select. AddResultSubclass (Result.selectValue, subclass);
+                END
                 
               ELSIF (registerCount = 0) THEN
                 (* we have no information on a single branch: must read

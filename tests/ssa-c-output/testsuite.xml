@@ -4,11 +4,11 @@
 
 <testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module var1 var2 var3 var3b var4 var4b 
-  var5 var5b var6 var6b var7 var7b">
+  select ="prepare_out_module var1 var2 var3 var3b var3c var4 var4b 
+  var5 var5b var6 var6b var7 var7b var7c">
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module var7 var7b">-->
+  select ="prepare_out_module var3c var7c">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -39,6 +39,13 @@
     <test id="var3b" type="run" file="Var3b.Mod" output="Var3b.Ref">
       Similar to the preceding test case, with the added complication
       of a nested <code>IF</code> statement.
+    </test>
+    
+    <test id="var3c" type="run" file="Var3c.Mod" output="Var3c.Ref">
+      Like <code>var3</code>, with the added complication that the
+      life time of a local variable extends across an <code>IF</code>
+      statement.  The variable's value should not be passed through
+      the select.
     </test>
     
     <test id="var4" type="run" file="Var4.Mod" output="Var4.Ref">
@@ -87,6 +94,13 @@
       variable should not be read, although its value must be written
       with each iteration.  (Or, if the compiler is clever enough,
       once after the final iteration.)
+    </test>
+
+    <test id="var7c" type="run" file="Var7c.Mod" output="Var7c.Ref">
+      Like <code>var7</code>, with the added complication that the
+      life time of a local variable extends across an <code>IF</code>
+      statement.  The variable's value should not be passed through
+      the loop.
     </test>
   </testcases>
 </testsuite-ext>
