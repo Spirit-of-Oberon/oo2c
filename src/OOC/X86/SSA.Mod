@@ -572,6 +572,11 @@ TYPE
     localVars: IntDict.Dictionary;
     sizeLocalVars: LONGINT;
     maxSizeCallStack: LONGINT;
+    
+    checkFunctionResult-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the end
+       of the function body is reached without encountering any @code{RETURN}.
+       *)
   END;
 
 
@@ -2183,7 +2188,8 @@ PROCEDURE (b: Block) SetMarkers* (newInfo: Node; newMarker: LONGINT);
 
 
 
-PROCEDURE (b: FunctionBlock) INIT*(procDecl: Sym.ProcDecl);
+PROCEDURE (b: FunctionBlock) INIT*(procDecl: Sym.ProcDecl;
+                                   checkFunctionResult: BOOLEAN);
   BEGIN
     b.INIT^(function);
     b.procDecl := procDecl;
@@ -2192,6 +2198,7 @@ PROCEDURE (b: FunctionBlock) INIT*(procDecl: Sym.ProcDecl);
     b.localVars := IntDict.New();
     b.sizeLocalVars := 0;
     b.maxSizeCallStack := -1;
+    b.checkFunctionResult := checkFunctionResult;
   END INIT;
 
 PROCEDURE (b: FunctionBlock) SetEnter*(enter: Instr);

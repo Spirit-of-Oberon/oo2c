@@ -7,10 +7,15 @@ C1__Sub:
 	pushl %edi
 	pushl %esi
 	pushl %ebx
-	subl $0, %esp
+	subl $8, %esp
 	movl 8(%ebp), %eax
 	subl 12(%ebp), %eax
-	addl $0, %esp
+	jmp .LE_C1__Sub
+	movl $_mid, 0(%esp)
+	movl $22, 4(%esp)
+	call RT0__ErrorFailedFunction
+.LE_C1__Sub:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -32,7 +37,12 @@ C1__f:
 	movl %ecx, 0(%esp)
 	movl %eax, 4(%esp)
 	call C1__Sub
-	addl $8, %esp
+	jmp .LE_C1__f
+	movl $_mid, 0(%esp)
+	movl $97, 4(%esp)
+	call RT0__ErrorFailedFunction
+.LE_C1__f:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -48,7 +58,8 @@ OOC_C1_init:
 	pushl %esi
 	pushl %ebx
 	subl $0, %esp
-	addl $0, %esp
+.LE_OOC_C1_init:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi

@@ -8,9 +8,14 @@ T0__f:
 	pushl %edi
 	pushl %esi
 	pushl %ebx
-	subl $0, %esp
+	subl $8, %esp
 	movl 8(%ebp), %eax
-	addl $0, %esp
+	jmp .LE_T0__f
+	movl $_mid, 0(%esp)
+	movl $22, 4(%esp)
+	call RT0__ErrorFailedFunction
+.LE_T0__f:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -26,7 +31,8 @@ OOC_T0_init:
 	pushl %esi
 	pushl %ebx
 	subl $0, %esp
-	addl $0, %esp
+.LE_OOC_T0_init:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi

@@ -40,6 +40,7 @@ TYPE
     (* current function: *)
     fctBlock: S.FunctionBlock;
     name: STRING;
+    labelExit: STRING;
   END;
   
 CONST
@@ -707,6 +708,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           DirectOpnd(instr.opndList);
         | S.leave:
           (* undo local variables and call arguments: *)
+          sb.Append(nl+w.labelExit+":");
           sb.AppendLatin1(nlTab+"lea -12(%ebp), %esp");
           sb.AppendLatin1(nlTab+"popl %ebx");
           sb.AppendLatin1(nlTab+"popl %esi");
@@ -729,6 +731,10 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
             Opnd(instr.opndList);
             Comma();
             Result(instr.resultList);
+          END;
+          IF (instr.opcode = S.return) THEN
+            Opc("jmp");
+            sb.Append(w.labelExit);
           END;
         | S.get:
           type := instr.resultList.type;
@@ -831,7 +837,7 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
   VAR
     dummy: Block;
     
-  PROCEDURE StartFunction(fctBlock: S.FunctionBlock);
+  PROCEDURE StartFunction(fctBlock: S.FunctionBlock): STRING;
     PROCEDURE IsGlobal(procDecl: Sym.ProcDecl): BOOLEAN;
       BEGIN
         RETURN (procDecl.exportMark # Sym.nameNotExported) OR
@@ -854,6 +860,8 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
       END;
       w.w.WriteObject(nlTab+".type "+w.name+", @function");
       w.w.WriteObject(nl+w.name+":");
+
+      RETURN ".LE_"+w.name;
     END StartFunction;
   
   PROCEDURE EndFunction();
@@ -918,7 +926,7 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
     END EndFunction;
   
   BEGIN
-    StartFunction(b);
+    w.labelExit := StartFunction(b);
     dummy := w.WriteBlock(b);
     EndFunction();
   END WriteFunction;

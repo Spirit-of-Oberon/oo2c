@@ -8,7 +8,7 @@ T7a__f:
 	pushl %edi
 	pushl %esi
 	pushl %ebx
-	subl $0, %esp
+	subl $8, %esp
 	cmpb $0, 8(%ebp)
 	jne .L4
 .L1:
@@ -19,11 +19,17 @@ T7a__f:
 	jne .L4
 .L3:
 	movl $-9, %eax
+	jmp .LE_T7a__f
 	jmp .L5
 .L4:
 	movl $9, %eax
+	jmp .LE_T7a__f
 .L5:
-	addl $0, %esp
+	movl $_mid, 0(%esp)
+	movl $23, 4(%esp)
+	call RT0__ErrorFailedFunction
+.LE_T7a__f:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -39,7 +45,8 @@ OOC_T7a_init:
 	pushl %esi
 	pushl %ebx
 	subl $0, %esp
-	addl $0, %esp
+.LE_OOC_T7a_init:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi

@@ -8,7 +8,7 @@ T4__f:
 	pushl %edi
 	pushl %esi
 	pushl %ebx
-	subl $4, %esp
+	subl $12, %esp
 	cmpb $0, 8(%ebp)
 	je .L2
 .L1:
@@ -20,7 +20,12 @@ T4__f:
 	movl 12(%ebp), %eax
 	subl 16(%ebp), %eax
 .L3:
-	addl $4, %esp
+	jmp .LE_T4__f
+	movl $_mid, 0(%esp)
+	movl $22, 4(%esp)
+	call RT0__ErrorFailedFunction
+.LE_T4__f:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -36,7 +41,8 @@ OOC_T4_init:
 	pushl %esi
 	pushl %ebx
 	subl $0, %esp
-	addl $0, %esp
+.LE_OOC_T4_init:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi

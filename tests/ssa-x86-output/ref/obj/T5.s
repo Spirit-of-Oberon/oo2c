@@ -8,7 +8,7 @@ T5__f:
 	pushl %edi
 	pushl %esi
 	pushl %ebx
-	subl $4, %esp
+	subl $12, %esp
 	movl 12(%ebp), %eax
 	movl 8(%ebp), %ecx
 	cmpl %ecx, 12(%ebp)
@@ -18,7 +18,12 @@ T5__f:
 .L2:
 	subl %eax, %ecx
 	movl %ecx, %eax
-	addl $4, %esp
+	jmp .LE_T5__f
+	movl $_mid, 0(%esp)
+	movl $22, 4(%esp)
+	call RT0__ErrorFailedFunction
+.LE_T5__f:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -34,7 +39,8 @@ OOC_T5_init:
 	pushl %esi
 	pushl %ebx
 	subl $0, %esp
-	addl $0, %esp
+.LE_OOC_T5_init:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi

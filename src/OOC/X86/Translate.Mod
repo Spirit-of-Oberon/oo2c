@@ -46,6 +46,20 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       RETURN b.FixType(arg, S.length);
     END FixLength;
   
+  PROCEDURE FailedCheck(fctName: STRING; pos: LONGINT; arg: S.Result);
+    VAR
+      instr: S.Instr;
+    BEGIN
+      instr := b.AddInstr2(S.call, b.AddAdrRT(fctName), sp);
+      instr.AddOpnd(b.AddAdrModuleDescr());
+      instr.AddOpnd(b.AddConstLength(pos));
+      IF (arg # NIL) THEN
+        instr.AddOpnd(arg);
+      END;
+      MemoryCP(instr);
+      ControlCP(instr);
+    END FailedCheck;
+  
   PROCEDURE StatmSeq(statmSeq: IR.StatementSeq);
   (**Translates the statement sequence @oparam{statmSeq} into a straightforward
      SSA representation.  Instructions are added to the block @ovar{b}.  *)
@@ -304,18 +318,6 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN b.AddAdrTypeDescr(type);
         END;
       END TypeTag;
-    
-    PROCEDURE FailedCheck(fctName: STRING; pos: LONGINT; arg: S.Result);
-      VAR
-        instr: S.Instr;
-      BEGIN
-        instr := b.AddInstr2(S.call, b.AddAdrRT(fctName), sp);
-        instr.AddOpnd(b.AddAdrModuleDescr());
-        instr.AddOpnd(b.AddConstLength(pos));
-        instr.AddOpnd(arg);
-        MemoryCP(instr);
-        ControlCP(instr);
-      END FailedCheck;
     
     PROCEDURE Expression(expr: IR.Expression): S.Result;
       VAR
@@ -893,6 +895,10 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       leave: S.Instr;
       exit: S.ExitInstr;
     BEGIN
+      IF b.checkFunctionResult THEN
+        FailedCheck("RT0__ErrorFailedFunction", b.procDecl.name.pos, NIL);
+      END;
+      
       leave := b.AddInstr2(S.leave, sp, fp);
       sp := leave.AddResultReg(S.address, S.sp);
       fp := leave.AddResultReg(S.address, S.fp);
@@ -905,7 +911,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
 
   PROCEDURE Procedure(p: IR.Procedure);
     BEGIN
-      b := NEW(S.FunctionBlock, p.decl);
+      b := NEW(S.FunctionBlock, p.decl, p.checkFunctionResult);
       FctProlog(b);
       StatmSeq(p.statmSeq);
       FctEpilog(b);

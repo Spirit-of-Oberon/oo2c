@@ -8,7 +8,7 @@ L1__f:
 	pushl %edi
 	pushl %esi
 	pushl %ebx
-	subl $4, %esp
+	subl $12, %esp
 	mov $0, %edx
 .L1:
 	movl %edx, %eax
@@ -20,7 +20,12 @@ L1__f:
 	jmp .L1
 .L3:
 	movl %edx, %eax
-	addl $4, %esp
+	jmp .LE_L1__f
+	movl $_mid, 0(%esp)
+	movl $22, 4(%esp)
+	call RT0__ErrorFailedFunction
+.LE_L1__f:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -36,7 +41,8 @@ OOC_L1_init:
 	pushl %esi
 	pushl %ebx
 	subl $0, %esp
-	addl $0, %esp
+.LE_OOC_L1_init:
+	lea -12(%ebp), %esp
 	popl %ebx
 	popl %esi
 	popl %edi
