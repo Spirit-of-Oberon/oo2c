@@ -21,8 +21,12 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <errno.h>
+#ifdef __APPLE__
+/* APPLE sys/types.h defines FD_SET functions in terms of bzero/bcopy, but 
+   does not include a definition of these functions. Therefore, we need
+   string.h */
 #include <string.h>
-
+#endif
 #include "__oo2c.h"
 #include "__config.h"
 #include "IO/Select.d"
