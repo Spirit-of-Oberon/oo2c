@@ -6,13 +6,13 @@
   
   <processor name="TestCompile"
 	     version="devel"
-	     command="../../../TestCompile"
+	     command="../../TestCompile"
 	     config-file=""
-	     working-dir="./wd" 
-	     flags="-r ../../../lib -r ."
+	     working-dir="wd" 
+	     flags="-r ../../lib -r wd"
 	     filter-command="&OOEF;" 
 	     diff-command="$DIFF;" 
-	     check-reject-command="&PERL; ../../../rsrc/OOC/TestFramework/error-match.pl"
+	     check-reject-command="&PERL; ../../rsrc/OOC/TestFramework/error-match.pl"
 	     />
 
   <test-suite uri="testsuite.xml" />
