@@ -293,6 +293,16 @@ PROCEDURE NewLatin1*(str[NO_COPY]: ARRAY OF CHAR): StringBuffer;
     RETURN b;
   END NewLatin1;
 
+PROCEDURE NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR;
+                           start, end: LONGINT): StringBuffer;
+  VAR
+    b: StringBuffer;
+  BEGIN
+    b := NewCapacity(end-start);
+    b.AppendLatin1Region(str, start, end);
+    RETURN b;
+  END NewLatin1Region;
+
 PROCEDURE (b: StringBuffer) AppendInt* (val: LONGINT);
 (**Append the string representation of @code{LONGINT} @oparam{val} to the
    current string *)
