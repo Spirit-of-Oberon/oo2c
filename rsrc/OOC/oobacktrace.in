@@ -59,7 +59,7 @@ if (-s $tmp) {
   # get symbol data from command by running nm on the command name
   open F, "$nm_prog -n -l $ARGV[0] |" or die "Failed to call nm: $!";
   my @nm = grep {$_->[0] =~ /[0-9a-f]+/} 
-    map {[ m:^(.+) .? ([a-zA-Z0-9_.@-]+)(\t.*)?$: ]} <F>;
+    map {[ m:^(.+) .? ([a-zA-Z0-9_.\@-]+)(\t.*)?$: ]} <F>;
   close F;
   for (@nm) {  # normalize address values to 64 bit
     $_->[0] = "0" x (16 - length($_->[0])) . $_->[0];
