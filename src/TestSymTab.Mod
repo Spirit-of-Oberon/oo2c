@@ -2,7 +2,7 @@ MODULE TestSymTab;
 
 IMPORT
   StdChannels, Out, Err, Msg, Channel, URI, ADT:String,
-  Config:Source:CmdLine, Config:Section:Arguments, OOC:Config, 
+  Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,
   OOC:Error, OOC:AST, Sym := OOC:SymbolTable, Rep := OOC:Repository,
@@ -143,28 +143,21 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
   
 
 
-PROCEDURE RegisterCmdLineOptions();
-  VAR
-    ot: CmdLine.OptionTemplate;
-  BEGIN
-    ot := Config.cmdLine. AddOptionTemplate ("--repository,-r",
-                 "<repositories><file-system>$1</file-system></repositories>");
-    ot := Config.cmdLine. AddOptionTemplate ("--names-only-xml",
-           "<options><set name='mode'>0</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--resolve-names-xml",
-           "<options><set name='mode'>1</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--interface-xml",
-           "<options><set name='mode'>2</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--terse-errors",
-           "<options><set name='oo2cStyleErrors'>TRUE</set></options>");
-  END RegisterCmdLineOptions;
-
 PROCEDURE NewConfig;
   BEGIN
     mode := Config.AddOption ("mode", IntegerValue.New (modeResolveNamesXML));
     oo2cStyleErrors := Config.AddOption ("oo2cStyleErrors", BooleanValue.New (FALSE));
     
-    RegisterCmdLineOptions;
+    Config.AddCmdLine ("--repository,-r",
+                 "<repositories><file-system>$1</file-system></repositories>");
+    Config.AddCmdLine ("--names-only-xml",
+           "<options><set name='mode'>0</set></options>");
+    Config.AddCmdLine ("--resolve-names-xml",
+           "<options><set name='mode'>1</set></options>");
+    Config.AddCmdLine ("--interface-xml",
+           "<options><set name='mode'>2</set></options>");
+    Config.AddCmdLine ("--terse-errors",
+           "<options><set name='oo2cStyleErrors'>TRUE</set></options>");
   END NewConfig;
 
 BEGIN

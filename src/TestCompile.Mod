@@ -1,10 +1,9 @@
 MODULE TestCompile;
 
 IMPORT
-  Log,
   StdChannels, Out, Err, Make, Make:Command:Target,
   StringSearch, StringSearch:RegexpDFA, 
-  Config:Source:CmdLine, Config:Section:Arguments, 
+  Config:Section:Arguments, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, ADT:String, Sym := OOC:SymbolTable,
   OOC:Config, OOC:Config:Assembler,
@@ -161,26 +160,6 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
   END GetCommand;
   
 
-PROCEDURE RegisterCmdLineOptions;
-  VAR
-    ot: CmdLine.OptionTemplate;
-  BEGIN
-    ot := Config.cmdLine. AddOptionTemplate ("--repository,-r",
-                 "<repositories><file-system>$1</file-system></repositories>");
-    ot := Config.cmdLine. AddOptionTemplate ("--make",
-                 "<options><set name='make'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--use-ssa",
-                 "<options><set name='use-ssa'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--ia32",
-                 "<options><set name='translate-ia32'>TRUE</set><set name='use-ssa'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--write-ast",
-                 "<options><set name='write-ast'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--write-ir",
-                 "<options><set name='write-ir'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--inspect",
-                 "<options><set name='inspect-proc'>$1</set><set name='inspect-stage'>$2</set></options>");
-  END RegisterCmdLineOptions;
-
 PROCEDURE NewConfig;
   BEGIN
     make := Config.AddOption ("make", BooleanValue.New (FALSE));
@@ -191,7 +170,20 @@ PROCEDURE NewConfig;
     inspectProc := Config.AddOption ("inspect-proc", StringValue.New ("$"));
     inspectStage := Config.AddOption ("inspect-stage", StringValue.New ("$"));
     
-    RegisterCmdLineOptions;
+    Config.AddCmdLine ("--repository,-r",
+                 "<repositories><file-system>$1</file-system></repositories>");
+    Config.AddCmdLine ("--make",
+                 "<options><set name='make'>TRUE</set></options>");
+    Config.AddCmdLine ("--use-ssa",
+                 "<options><set name='use-ssa'>TRUE</set></options>");
+    Config.AddCmdLine ("--ia32",
+                 "<options><set name='translate-ia32'>TRUE</set><set name='use-ssa'>TRUE</set></options>");
+    Config.AddCmdLine ("--write-ast",
+                 "<options><set name='write-ast'>TRUE</set></options>");
+    Config.AddCmdLine ("--write-ir",
+                 "<options><set name='write-ir'>TRUE</set></options>");
+    Config.AddCmdLine ("--inspect",
+                 "<options><set name='inspect-proc'>$1</set><set name='inspect-stage'>$2</set></options>");
   END NewConfig;
 
 BEGIN

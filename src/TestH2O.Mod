@@ -27,25 +27,6 @@ VAR
 
   processOptions : SET; 
 
-PROCEDURE RegisterCmdLineOptions;
-  VAR
-    ot: CmdLine.OptionTemplate;
-  BEGIN
-    ot := Config.cmdLine. AddOptionTemplate ("--repository,-r",
-                 "<repositories><file-system>$1</file-system></repositories>");
-    ot := Config.cmdLine. AddOptionTemplate ("--preprocess",
-                 "<options><set name='preprocess'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--strictRedefine",
-                 "<options><set name='strictRedefine'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--strictUndefine",
-                 "<options><set name='strictUndefine'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--debugDefine",
-                 "<options><set name='debugDefine'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--text",
-                 "<options><set name='text'>TRUE</set></options>");
-
-  END RegisterCmdLineOptions;
-
 PROCEDURE NewConfig;
   BEGIN
     strictRedefine := Config.AddOption("strictRedefine", BooleanValue.New(FALSE));
@@ -54,7 +35,18 @@ PROCEDURE NewConfig;
     text := Config.AddOption("text", BooleanValue.New(FALSE));
     preprocess := Config.AddOption("preprocess", BooleanValue.New(FALSE)); 
 
-    RegisterCmdLineOptions;
+    Config.AddCmdLine ("--repository,-r",
+                 "<repositories><file-system>$1</file-system></repositories>");
+    Config.AddCmdLine ("--preprocess",
+                 "<options><set name='preprocess'>TRUE</set></options>");
+    Config.AddCmdLine ("--strictRedefine",
+                 "<options><set name='strictRedefine'>TRUE</set></options>");
+    Config.AddCmdLine ("--strictUndefine",
+                 "<options><set name='strictUndefine'>TRUE</set></options>");
+    Config.AddCmdLine ("--debugDefine",
+                 "<options><set name='debugDefine'>TRUE</set></options>");
+    Config.AddCmdLine ("--text",
+                 "<options><set name='text'>TRUE</set></options>");
   END NewConfig;
 
 BEGIN

@@ -2,7 +2,7 @@ MODULE TestInterfaceGen;
 
 IMPORT
   StdChannels, Out, Err, Make, Make:Command:Target, Make:Entity:Group,
-  Config:Source:CmdLine, Config:Section:Arguments, OOC:Config, 
+  Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String,
   OOC:Make:Entity:ModuleFile,
@@ -75,27 +75,20 @@ PROCEDURE (context: Context) GetNamedEntity* (name: ARRAY OF CHAR): Make.Entity;
   END GetNamedEntity;
 
 
-PROCEDURE RegisterCmdLineOptions;
-  VAR
-    ot: CmdLine.OptionTemplate;
-  BEGIN
-    ot := Config.cmdLine. AddOptionTemplate ("--repository,-r",
-                 "<repositories><file-system>$1</file-system></repositories>");
-    ot := Config.cmdLine. AddOptionTemplate ("--html",
-                 "<options><set name='build-html'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--closure",
-                 "<options><set name='closure'>TRUE</set></options>");
-    ot := Config.cmdLine. AddOptionTemplate ("--error-style",
-                 "<options><set name='error-style'>$1</set></options>");
-  END RegisterCmdLineOptions;
-
 PROCEDURE NewConfig;
   BEGIN
     buildHTML := Config.AddOption ("build-html", BooleanValue.New (FALSE));
     closure := Config.AddOption ("closure", BooleanValue.New (FALSE));
     errorStyle := Config.AddOption ("error-style", StringValue.New ("default"));
     
-    RegisterCmdLineOptions;
+    Config.AddCmdLine ("--repository,-r",
+                 "<repositories><file-system>$1</file-system></repositories>");
+    Config.AddCmdLine ("--html",
+                 "<options><set name='build-html'>TRUE</set></options>");
+    Config.AddCmdLine ("--closure",
+                 "<options><set name='closure'>TRUE</set></options>");
+    Config.AddCmdLine ("--error-style",
+                 "<options><set name='error-style'>$1</set></options>");
   END NewConfig;
 
 BEGIN
