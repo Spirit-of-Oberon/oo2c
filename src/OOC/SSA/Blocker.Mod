@@ -87,7 +87,13 @@ TYPE
   ProxyDesc = RECORD
     (SSA.NodeDesc)
     nextProxy-, prevProxy: Proxy;
+    (**Links instructions within a region.  *)
+    
     instr-: SSA.Instr;
+    (**The SSA instruction that is represented by this object.  For a region,
+       this entry either refers to the last instruction of the region, or is
+       @code{NIL}, depending on the kind of region.  *)
+    
     region: Region;
     loopAssoc: Loop;
     (**Refers to the loop this instruction is part of.  An instruction is
@@ -109,13 +115,22 @@ TYPE
 
        This field is calculated by @oproc{ArrangeInstructions.AttachToLoop}.  *)
     visitedForLoop: Loop;
+    (**This field is used by @oproc{ArrangeInstructions.AttachToLoop}.  *)
     visitedResult: BOOLEAN;
+    (**This field is used by @oproc{ArrangeInstructions.AttachToLoop}.  *)
+    
     discoveredForLoop: Loop;
+    (**This field is used by @oproc{ArrangeInstructions.DiscoverLoopStructure}.  *)
   END;
   RegionDesc = RECORD
     (ProxyDesc)
     first-, last-: Proxy;
+    (**List of instructions local to this region.  Instructions are chained
+       using @ofield{Proxy.nextProxy}.  *)
+    
     nestingDepth: LONGINT;
+    (**Number of parents of the region.  The top-level region has a depth of
+       zero.  *)
   END;
   SelectDesc = RECORD
     (RegionDesc)
@@ -129,10 +144,27 @@ TYPE
   LoopDesc = RECORD
     (RegionDesc)
     nestedLoops: Loop;
+    (**List of loops nested in this one.  This data structure
+       disregards all other compound statements, only looking at the various
+       loop constructs.  The list is linked via @ofield{Loop.nextLoop}.
+       Loops are listed after all loops they depend on.  For loops that are
+       independent of each other, no particular order is guaranteed.  *)
+    
     nextLoop: Loop;
+    (**Refers to the next nested loop in the loop's parent.  *)
+    
     parentLoop: Loop;
+    (**The enclosing loop.  The procedure's top-level is also represented by a
+       @otype{Loop} as well.  *)
+    
     preceedingList: Preceeds;
+    (**Lists all loops on the same nesting level from which control can pass to
+       this loop.  Created by @oproc{ArrangeInstructions.DiscoverLoopStructure}
+       and used by @oproc{ArrangeInstructions.SortNestedLoops}.  *)
+    
     scheduled: BOOLEAN;
+    (**Used by @oproc{ArrangeInstructions.SortNestedLoops} to mark loops that
+       have been sorted already.  *)
   END;
 
   
@@ -335,6 +367,19 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
   PROCEDURE DiscoverLoopStructure (loop: Loop; storeIn: SSA.Result;
                                    endOfSearch: SSA.Instr;
                                    preceedingLoop: Loop);
+  (**Discover the loop structure within the parent region @oparam{loop}.
+     @oparam{loop} is either the procedure body, or another loop.  Discovered
+     loops are appended to @oparam{loop}'s nested loops.  @oparam{storeIn} is
+     the store value that is to be traced, and the trace ends once the store
+     value @oparam{endOfSearch} is reached.  The latter is the final
+     @var{store} that marks the end of the parent region.  If the search is
+     started by the caller after another loop in @oparam{loop}, then
+     @oparam{preceedingLoop} refers to this loop.
+
+     At the end, the field @ofield{loop.nestedLoops} represents the structure
+     of loops in @oparam{loop}.  This information is used later on to create
+     all the non-loop regions, and to place instructions into their final
+     region.  *)
     VAR
       use: SSA.Opnd;
       instr, loopEnd: SSA.Instr;
@@ -342,6 +387,8 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       dummy: Proxy;
 
     PROCEDURE RegisterPreceeding (preceeding, following: Loop);
+    (* Register `preceeding' as one of the loops that feed data into
+       `following'.  *)
       VAR
         pre: Preceeds;
       BEGIN
@@ -360,6 +407,10 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
           instr := use. instr;
           IF (instr # endOfSearch) THEN
             IF (instr. opcode = Opcode.loopStart) THEN
+              (* for each scan within a given parent, we may encounter one and
+                 the same nested loop multiple times; the preceeding loop 
+                 may differ for the encounters, so we note those down for each
+                 of them *)
               loopEnd := instr. GetLoopEnd();
               p := GetProxy (loopEnd);
               loopProxy := p(Loop);
@@ -431,10 +482,33 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     END SortNestedLoops;
   
   PROCEDURE AttachToLoop(loop: Loop);
+  (**Starting with the instructions using @oparam{loop}'s
+     @oconst{Opcode.loopStart} instruction, set the regions of all dependent
+     instructions to @oparam{loop} if they also contribute to the loop's
+     @oconst{Opcode.loopEnd}.  That is, for every instruction that is not loop
+     invariant with respect to @oparam{loop}, set its region to this loop.  To
+     make it unique, the established reference is always to the smallest
+     enclosing loop.
+
+     The procedure is called recursively on the loops nested into
+     @oparam{loop}, and the ones following it.  *)
     VAR
       dummy: BOOLEAN;
       
     PROCEDURE PartOfLoop(loop: Loop; instr: SSA.Instr): BOOLEAN;
+    (**Return @code{TRUE} iff @oparam{instr} is a loop variant instruction of
+       @oparam{loop}.  As a side-effect, the instruction's region is set to
+       @oparam{loop} in this case.
+
+       @precond
+       @oparam{instr} is directly or indirectly dependent on the
+       @oconst{Opcode.loopStart} instruction of @oparam{loop}.
+       @end precond
+
+       @postcond
+       Result is @code{TRUE} if the loop's @oconst{Opcode.loopEnd} depends on
+       @oparam{instr}.
+       @end postcond  *)
       VAR
         res: SSA.Result;
         use: SSA.Opnd;
@@ -494,7 +568,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
   (* Add additional operands that make the dependency of an instruction on a
      value produced within a nested loop explicit.  The new operand refers to
      the instruction that represents the loop region in question within the
-     region of the instruction.  That is, the additional operand always refer
+     region of the instruction.  That is, the additional operands always refer
      to instructions within the region of the operand's instruction.  This
      ensures that the depending instruction is placed after the loop body it
      is dependent on.  *)
@@ -552,15 +626,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       END;
     END AddLoopDeps;
   
-  PROCEDURE IsWrite (instr: SSA.Instr): BOOLEAN;
-    BEGIN
-      RETURN
-          (instr. GetResultStore() # NIL) &
-          ((instr. opcode = Opcode.set) OR
-           (instr. opcode = Opcode.copy) OR
-           (instr. opcode = Opcode.call))
-    END IsWrite;
-  
   PROCEDURE IgnoredUse (use: SSA.Opnd): BOOLEAN;
     BEGIN
       (* skip all but the first operand of "select-exit", and all of
@@ -573,19 +638,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
             (use. instr. opndList # use)
     END IgnoredUse;
 
-  PROCEDURE PassThrough (instr: SSA.Instr): BOOLEAN;
-    BEGIN
-      RETURN (instr. opcode = Opcode.checkIndex);
-    END PassThrough;
-
-  PROCEDURE UpwardStore (result: SSA.Result): SSA.Result;
-    BEGIN
-      WHILE PassThrough (result. instr) DO
-        result := result. instr. GetArgStore();
-      END;
-      RETURN result;
-    END UpwardStore;
-  
   PROCEDURE UpdateDefs (p: Proxy);
     VAR
       opnd: SSA.Opnd;
@@ -681,9 +733,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         loopProxy := p. loopAssoc;
         WHILE (loopProxy # NIL) DO
           ptr := loopProxy. region;
-(*          IF (ptr # NIL) & (ptr. instr = NIL) & (ptr. region # NIL) THEN
-            ptr := ptr. region;          (* skip path region with select *)
-          END;*)
           IF (ptr = region) THEN
             RETURN loopProxy;
           END;
