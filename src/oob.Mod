@@ -468,7 +468,7 @@ BEGIN
     errList := E.NewList("");
     ImportModules.ImportModules(CreateNamespace.systemModule, symTab, errList);
     IF errList.NoErrors() THEN
-      CreateNamespace.CreateNamespace(symTab, errList);
+      CreateNamespace.CreateNamespace(symTab, NIL, errList);
       IF errList.NoErrors() THEN
         WriteSymTab(symTab);
       END;
