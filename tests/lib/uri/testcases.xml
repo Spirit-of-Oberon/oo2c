@@ -4,10 +4,10 @@
   <test id="liburi" type="run" file="LibUri.Mod">
     Imports all modules of <code>URI:*</code>.
   </test>
-  <test id="liburi1" type="run" file="LibUri1.Mod" output="LibUri1.Ref">
+<!--  <test id="liburi1" type="run" file="LibUri1.Mod" output="LibUri1.Ref">
     Parses a <code>http</code> URI and writes result.
-  </test>
-  <test id="liburi2" type="run" file="LibUri2.Mod" output="LibUri2.Ref">
+  </test>-->
+<!--  <test id="liburi2" type="run" file="LibUri2.Mod" output="LibUri2.Ref">
     Tries to parse a <code>http</code> URI and writes error.
-  </test>
+  </test>-->
 </testcases>

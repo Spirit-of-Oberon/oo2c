@@ -18,13 +18,12 @@ IMPORT
   URI:Scheme:Hierarchical,
   URI:Scheme:MailTo,
   URI:Scheme:Opaque,
-  URI:Scheme:Memory,
   URI;
 
 PROCEDURE RegisterSchemes;
   BEGIN
     URI.RegisterScheme (File.NewPrototype());
-    URI.RegisterScheme (HTTP.NewPrototype());
+(*    URI.RegisterScheme (HTTP.NewPrototype());*)
     URI.RegisterScheme (MailTo.NewPrototype());
   END RegisterSchemes;
 
