@@ -8,10 +8,10 @@ AC_SUBST(OOC_DEV_ROOT,[`cd "$srcdir" && pwd`])
 dnl information on the package
 
 dnl checks for programs
-rm -f ./oo2c ./ooef ./oocn 2>/dev/null  # make sure no local files are found
 AC_PROG_INSTALL
-AC_PATH_PROG(OOC,oo2c,oo2c)
-AC_PATH_PROG(OOEF,ooef,ooef)
+AC_PATH_PROG(OOC,oo2c,[bin/oo2c --config oo2crc-install.xml])
+AC_PATH_PROG(OOEF,ooef,[bin/ooef])
+AC_PATH_PROG(OOEF,ooef,bin/ooef)
 AC_PATH_PROG(DIFF,diff,diff)
 AC_PATH_PROG(XSLTPROC,xsltproc,no)
 AC_PATH_PROG(PERL,perl,perl)

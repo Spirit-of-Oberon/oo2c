@@ -1203,7 +1203,6 @@ OOC_DEV_ROOT=`cd "$srcdir" && pwd`
 
 
 
-rm -f ./oo2c ./ooef ./oocn 2>/dev/null  # make sure no local files are found
 ac_aux_dir=
 for ac_dir in $srcdir $srcdir/.. $srcdir/../..; do
   if test -f $ac_dir/install-sh; then
@@ -1332,7 +1331,7 @@ do
 done
 done
 
-  test -z "$ac_cv_path_OOC" && ac_cv_path_OOC="oo2c"
+  test -z "$ac_cv_path_OOC" && ac_cv_path_OOC="bin/oo2c"
   ;;
 esac
 fi
@@ -1372,7 +1371,7 @@ do
 done
 done
 
-  test -z "$ac_cv_path_OOEF" && ac_cv_path_OOEF="ooef"
+  test -z "$ac_cv_path_OOEF" && ac_cv_path_OOEF="bin/ooef"
   ;;
 esac
 fi
