@@ -104,7 +104,7 @@ BEGIN
   Assembler.useAssembler := FALSE;
   
   IF (cfgErrList. msgCount # 0) THEN
-    cfgErrList. Write (StdChannels.stderr);
+    cfgErrList. Write (StdChannels.stdout);
     HALT (1)
   ELSIF (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: TestCompile [--config <cfg-file>] {-r <base-dir>} [--make] <file>"); Out.Ln;
