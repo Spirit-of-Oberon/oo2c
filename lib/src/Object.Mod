@@ -310,7 +310,7 @@ PROCEDURE NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT): St
    The characters in @oparam{str} are Latin-1 code points.
    @end precond  *)
   BEGIN
-    RETURN NewString8(S.ADR(str[start]), end-start);
+    RETURN NewString8(S.ADR(str)+start, end-start);
   END NewLatin1Region;
 
 PROCEDURE NewLatin1Char*(ch: CHAR): String8;
@@ -405,7 +405,7 @@ PROCEDURE NewUCS4Region*(str[NO_COPY]: ARRAY OF UCS4CHAR;
    All characters are Unicode 3.1 code points outside the surrogate areas.
    @end precond  *)
   BEGIN
-    RETURN NewString32 (S.ADR(str[start]), end-start);
+    RETURN NewString32 (S.ADR(str)+start*SIZE(UCS4CHAR), end-start);
   END NewUCS4Region;
 
 PROCEDURE NewUCS4Char*(ch: UCS4CHAR): String;
@@ -455,7 +455,7 @@ PROCEDURE Concat2* (s1, s2: String): String;
                     S.ADR(c8.data^),
                     s1.length*SIZE(CHAR));
         S.MOVE(S.ADR(s2.data^),
-                    S.ADR(c8.data[s1.length]),
+                    S.ADR(c8.data^)+s1.length,
                     s2.length*SIZE(CHAR)+SIZE(CHAR));
         RETURN c8;
         
@@ -467,7 +467,7 @@ PROCEDURE Concat2* (s1, s2: String): String;
           c32.data[i] := s1.data[i];
         END;
         S.MOVE(S.ADR(s2.data^),
-                    S.ADR(c32.data[s1.length]),
+                    S.ADR(c32.data^)+s1.length*SIZE(UCS4CHAR),
                     s2.length*SIZE(UCS4CHAR)+SIZE(UCS4CHAR));
         RETURN c32;
       END;
@@ -493,7 +493,7 @@ PROCEDURE Concat2* (s1, s2: String): String;
                     S.ADR(c32.data^),
                     s1.length*SIZE(UCS4CHAR));
         S.MOVE(S.ADR(s2.data^),
-                    S.ADR(c32.data[s1.length]),
+                    S.ADR(c32.data^)+s1.length*SIZE(UCS4CHAR),
                     s2.length*SIZE(UCS4CHAR)+SIZE(UCS4CHAR));
         RETURN c32;
       END;
@@ -761,12 +761,12 @@ PROCEDURE (s: String) [ABSTRACT] Substring* (start, end: LONGINT): String;
 
 PROCEDURE (s: String8) Substring* (start, end: LONGINT): String;
   BEGIN
-    RETURN NewString8(S.ADR(s. data[start]), end-start);
+    RETURN NewString8(S.ADR(s.data^)+start, end-start);
   END Substring;
 
 PROCEDURE (s: String32) Substring* (start, end: LONGINT): String;
   BEGIN
-    RETURN NewString32(S.ADR(s. data[start]), end-start);
+    RETURN NewString32(S.ADR(s.data^)+start*SIZE(UCS4CHAR), end-start);
   END Substring;
 
 
