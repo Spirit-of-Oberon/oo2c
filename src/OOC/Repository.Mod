@@ -1,4 +1,24 @@
+(* 	$Id$	 *)
 MODULE OOC:Repository [OOC_EXTENSIONS];
+(*  Abstraction of storage of source, intermediate, and target code.
+    Copyright (C) 2001  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
 
 IMPORT
   Msg, Channel, TextRider, Strings, Time, ADT:Object, URI, OS:Path,
@@ -222,6 +242,22 @@ PROCEDURE (m: Module) AddImport* (imported: Module);
     END
   END AddImport;
 
+PROCEDURE (m: Module) GetImport* (name: ARRAY OF CHAR): Module;
+  VAR
+    import: Import;
+  BEGIN
+    import := m. importList;
+    WHILE (import # NIL) & (import. imported. name^ # name) DO
+      import := import. nextImport
+    END;
+    IF (import = NIL) THEN
+      RETURN NIL
+    ELSE
+      RETURN import. imported
+    END
+  END GetImport;
+
+
 PROCEDURE (m: Module) [ABSTRACT] GetInputBuffer* (VAR msg: Msg.Msg): InputBuffer.Buffer;
 (* result is NIL in case of error, with msg holding the error message *)
   END GetInputBuffer;
@@ -426,6 +462,5 @@ PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Item.Module;
       RETURN NIL
     END
   END GetSymbolTable;
-
 
 END OOC:Repository.
