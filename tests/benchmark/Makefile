@@ -45,7 +45,7 @@ test-ooc1: compile-ooc1
 # Attempt to find the differences in assembled output
 # This is a quick hack, but probably as good as it will get
 
-asm: test
+asm: compile
 	for i in $(BENCHMARKS); do \
 	  $(CCC) wd/obj/$$i.c -o wd/asm/$$i.s; \
 	  $(CCC) wd/src/$${i}C.c -o wd/asm/$${i}C.s; \
