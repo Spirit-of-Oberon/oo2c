@@ -1,7 +1,29 @@
+(* 	$Id$	 *)
 MODULE OOC:Repository:GetImports;
+(*  Determine the list of modules imported by a given module.
+    Copyright (C) 2001  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
+
 
 IMPORT
-  Msg, URI, Rep := OOC:Repository, OOC:Config:Repositories, OOC:Config:Pragmas,
+  Msg, URI, Rep := OOC:Repository,
+  OOC:Config:Repositories, OOC:Config:Pragmas, OOC:Auxiliary:Config,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,
@@ -80,6 +102,27 @@ PROCEDURE GetImports* (m: Rep.Module;
       END
     END StoreImports;
 
+  PROCEDURE AppendRuntimeModule ();
+    VAR
+      import: Rep.Import;
+      rtModule: Rep.Module;
+    BEGIN
+      IF (m. name^ # Config.runtimeModule) THEN
+        import := m. importList;
+        WHILE (import # NIL) &
+              (import. imported. name^ # Config.runtimeModule) DO
+          import := import. nextImport;
+        END;
+        IF (import = NIL) THEN
+          rtModule := repositories. GetModule (Config.runtimeModule);
+          IF (rtModule # NIL) THEN
+            (* in a standard environment, this file should always exist *)
+            m. AddImport (rtModule);
+          END;
+        END;
+      END;
+    END AppendRuntimeModule;
+  
   BEGIN
     IF m. importListScanned THEN         (* imports are already known *)
       RETURN
@@ -99,6 +142,7 @@ PROCEDURE GetImports* (m: Rep.Module;
         END;
         item := item. nextNested
       END;
+      AppendRuntimeModule
     ELSE                                 (* take imports from source file *)
       
       inputBuffer := m. GetInputBuffer (res);
@@ -125,6 +169,7 @@ PROCEDURE GetImports* (m: Rep.Module;
            (ast(ExtTree.Module). importList # NIL) THEN
           StoreImports (m, ast(ExtTree.Module).
                         importList(ExtTree.ImportList). imports);
+          AppendRuntimeModule;
           m. AddImport (NIL)  (* mark module with "import scanned" *)
         END
       END
@@ -133,5 +178,5 @@ PROCEDURE GetImports* (m: Rep.Module;
 
 BEGIN
   NEW (getImportsContext);
-  Error.InitContext (getImportsContext, "OOC:Aux:GetImports")
+  Error.InitContext (getImportsContext, "OOC:Repository:GetImports")
 END OOC:Repository:GetImports.
