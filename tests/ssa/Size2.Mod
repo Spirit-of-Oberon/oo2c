@@ -1,0 +1,10 @@
+MODULE Size2;
+
+PROCEDURE P;
+  VAR
+    y: LONGINT;
+  BEGIN
+    y := SIZE(ARRAY 2 OF INTEGER);
+  END P;
+
+END Size2.

@@ -1,5 +1,9 @@
-10.3 Predeclared Procedures
----------------------------
+Still missing: General overflow tests for constant folding (arguments
+in legal range, result in legal range) -- best done in ConstFold, I
+believe.
+
+
+10.3 Predeclared Procedures ---------------------------
 
 The test cases listed below ignore overflow at run-time.  If overflow checking
 is to be implemented, these additional cases should be handled.
@@ -42,14 +46,14 @@ REJECT:
   1) x is not numeric (eg. CHAR)  [Abs2]
 
 
-  ASH(x, n)
+### ASH(x, n)
 
 ACCEPT:
 
-  1) x and n are integer types
+  1) x and n are integer types  [Ash1]
   2) n >= size of x (eg. ASH(shortint, 8)). This verifies that the "shift" is
-  done using the result type, not the original type.
-  3) x and n are constant (should be folded)
+     done using the result type, not the original type.  [Ash1]
+  3) x and n are constant (should be folded)  [Ash1]
 
 REJECT:
 
@@ -76,31 +80,33 @@ REJECT:
   1) x is not a CHAR  [Cap3 Cap4]
 
 
-  CHR(x)
+### CHR(x)
+### LONGCHR(x)
 
 ACCEPT:
 
-  1) x is an integer inside the range of CHAR
-  2) x is a constant (should be folded)
+  1) x is an integer inside the range of CHAR  [Chr1]
+  2) x is a constant (should be folded)  [Chr1]
 
 REJECT:
 
-  1) x is not an integer type
-  2) x is a constant integer outside the range of CHAR
+  1) x is not an integer type  [Chr2]
+  2) x is a constant integer outside the range of CHAR  [Chr3]
 
 
-  ENTIER(x)
+### ENTIER(x)
 
 ACCEPT:
 
-  1) x is REAL
-  2) x is LONGREAL
-  3) rounding is to -inf, both for positive and negative x
+  1) x is REAL  [Entier1]
+  2) x is LONGREAL  [Entier1]
+  3) rounding is to -inf, both for positive and negative x  [Entier1]
      
 REJECT:
 
-  1) x is not a real type (eg. INTEGER)
+  1) x is not a real type (eg. INTEGER)  [Entier2]
   2) x is constant and ENTIER(x) is outside the range of LONGINT
+     [postponed, should be done in ConstFold]
 
 
 ### LEN(v, n)
@@ -122,79 +128,84 @@ REJECT:
      strings, but this is forbidden on the level of the source code)  [Len4]
 
 
-  LONG(x)
+### LONG(x)
 
 ACCEPT:
 
-  1) x is SHORTINT
-  2) x is INTEGER
-  3) x is REAL
-  4) x is constant
+  1) x is SHORTINT  [Long1]
+  2) x is INTEGER  [Long1]
+  3) x is REAL  [Long1]
+  4) x is constant  [Long1]
 
 REJECT:
 
-  1) x is LONGINT
-  2) x is LONGREAL
-  3) x is not a numeric type
+  1) x is HUGEINT  [Long2]
+  2) x is LONGREAL  [Long3]
+  3) x is LONGCHAR  [Long4]
+  3) x is not a numeric type  [Long5 Long6]
 
 
-  SHORT(x)
+### SHORT(x)
 
 ACCEPT:
 
-  1) x is INTEGER
-  2) x is LONGINT
-  3) x is LONGREAL
-  4) is constant (eg. 0)
+  1) x is INTEGER  [Short1]
+  2) x is LONGINT  [Short1]
+  3) x is LONGREAL  [Short1]
+  4) x is LONGCHAR  [Short1]
+  5) is constant (eg. 0)  [Short1]
 
 REJECT:
 
-  1) x is SHORTINT
-  2) x is REAL
-  3) x is not a numeric type
+  1) x is SHORTINT  [Short2]
+  2) x is REAL  [Short3]
+  3) x is CHAR  [Short4]
+  3) x is not a numeric type  [Short5 Short6]
 
 
-  MAX(T)
-  MIN(T)
+### MAX(T)
+### MIN(T)
 
 ACCEPT:
 
-  1) T is an integer type (eg. SHORTINT, LONGINT)
-  2) T is a real type (eg. REAL, LONGREAL)
-  3) T is a character type (eg. CHAR)
-  4) T is a SET type
+  1) T is an integer type (eg. SHORTINT, LONGINT)  [MinMax1]
+  2) T is a real type (eg. REAL, LONGREAL)  [MinMax2]
+  3) T is a character type (eg. CHAR)  [MinMax3]
+  4) T is a SET type  [OpSet8]
 
 REJECT:
 
-  1) T is not a type (eg. a variable identifier)
-  2) T is not a basic type (eg. POINTER, RECORD)
-  3) T is BOOLEAN
+  1) T is not a type (eg. a variable identifier)  [MinMax4]
+  2) T is not a basic type (eg. POINTER, RECORD)  [MinMax5]
+  3) T is BOOLEAN  [MinMax5]
 
 
-  ODD(x)
+### ODD(x)
 
 ACCEPT:
 
-  1) x is an integer type (eg. SHORTINT, LONGINT)
-  2) x is constant (should be folded)
+  1) x is an integer type (eg. SHORTINT, LONGINT)   [Odd1]
+  2) x is constant (should be folded)  [Odd1]
 
 REJECT:
 
-  1) x is not an integer type
+  1) x is not an integer type  [Odd2]
 
 
-  SIZE(T)
+### SIZE(T)
 
 ACCEPT:
 
-  1) T is a basic type 
-  2) T is a POINTER, PROCEDURE, RECORD, or ARRAY type
+  1) T is a basic type [compile/ConstFold10]
+  2) T is a POINTER, PROCEDURE, RECORD, or ARRAY type [compile/ConstFold11]
 
 REJECT:
 
-  1) T is not a type
-  2) T is a type constructor eg. SIZE(ARRAY 2 OF INTEGER).
-  3) T is an open array type, for example ARRAY OF CHAR
+  1) T is not a type  [Size1]
+  2) T is a type constructor eg. SIZE(ARRAY 2 OF INTEGER)  [Size2]
+  3) T is an open array type, for example ARRAY OF CHAR  [Size3]
+
+
 
 
 Proper Procedures
