@@ -145,5 +145,11 @@ void OS_Files__Remove(Object__String path) {
   }
 }
 
+OOC_BOOLEAN OS_Files__Exists(Object__String path) {
+  struct stat buf;
+  
+  return (stat(OS_Path__Encode(path), &buf) == 0);
+}
+
 void OOC_OS_Files_init(void) {
 }

@@ -64,4 +64,7 @@ PROCEDURE Remove*(path: STRING)
 RAISES IO.Error;
 (**Removes the file @oparam{path}.  *)
 
+PROCEDURE Exists*(path: STRING): BOOLEAN;
+(**Return @code{TRUE} if an entity @oparam{path} exists.  *)
+
 END OS:Files.
