@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <package name="liboo2c">
+  <!-- Note: The package version is currently not used and should be 0:0:0.
+       The library version below is passed to call libtool's link command.  -->
   <version current="0" revision="0" age="0"/>
   
   <pragmas>
@@ -15,7 +17,7 @@
   </pragmas>
   
   <library name="oo2c" main-module="liboo2c">
-    <version current="0" revision="0" age="0"/>
+    <version current="1" revision="0" age="1"/>
   </library>
 
   <file-set source-dir="src">
