@@ -238,7 +238,7 @@ BEGIN
       c.result := c.ValueConst(Boxed.NewSet(-value(Boxed.Set).value), op);
     | Predef.real, Predef.longreal:
       IF foldReals THEN
-        c.result := c.ValueConst(value(Boxed.LongReal).Negate(), op);
+        c.result := c.ValueConst(value(Boxed.LongReal).Neg(), op);
       ELSE
         c.result := NIL;
       END;
@@ -363,14 +363,14 @@ VAR
     right := r(Boxed.LongReal);
     
     CASE op.variant OF
-    | IR.arithAdd:  RETURN left.Sum(right);
-    | IR.arithSub:  RETURN left.Difference(right);
-    | IR.arithMul:  RETURN left.Product(right);
+    | IR.arithAdd:  RETURN left.Add(right);
+    | IR.arithSub:  RETURN left.Sub(right);
+    | IR.arithMul:  RETURN left.Mul(right);
     | IR.arithDivR: 
       IF right.Sign() = 0 THEN
         c.builder.ErrSym(IR.divideByZero, op.sym);
       ELSE
-        RETURN left.Quotient(right);
+        RETURN left.Div(right);
       END;
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym);

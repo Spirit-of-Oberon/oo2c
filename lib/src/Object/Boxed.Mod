@@ -242,25 +242,25 @@ PROCEDURE (v: LongReal) ToLongReal*(): LONGREAL;
     RETURN v.value;
   END ToLongReal;
 
-PROCEDURE (v: LongReal) Sum*(right: LongReal): LongReal;
+PROCEDURE (v: LongReal) Add*(right: LongReal): LongReal;
   BEGIN
     RETURN NewLongReal(v.value + right.value);
-  END Sum;
+  END Add;
 
-PROCEDURE (v: LongReal) Difference*(right: LongReal): LongReal;
+PROCEDURE (v: LongReal) Sub*(right: LongReal): LongReal;
   BEGIN
     RETURN NewLongReal(v.value - right.value);
-  END Difference;
+  END Sub;
 
-PROCEDURE (v: LongReal) Product*(right: LongReal): LongReal;
+PROCEDURE (v: LongReal) Mul*(right: LongReal): LongReal;
   BEGIN
     RETURN NewLongReal(v.value * right.value);
-  END Product;
+  END Mul;
 
-PROCEDURE (v: LongReal) Quotient*(right: LongReal): LongReal;
+PROCEDURE (v: LongReal) Div*(right: LongReal): LongReal;
   BEGIN
     RETURN NewLongReal(v.value / right.value);
-  END Quotient;
+  END Div;
 
 PROCEDURE (v: LongReal) Cmp*(right: Obj.Object): LONGINT;
   BEGIN
@@ -278,10 +278,10 @@ PROCEDURE (v: LongReal) Sign*(): LONGINT;
     RETURN v.Cmp(zeroLongReal);
   END Sign;
 
-PROCEDURE (v: LongReal) Negate*(): LongReal;
+PROCEDURE (v: LongReal) Neg*(): LongReal;
   BEGIN
     RETURN NewLongReal(-v.value);
-  END Negate;
+  END Neg;
 
 (* Set
    ------------------------------------------------------------------------ *)
@@ -355,11 +355,6 @@ PROCEDURE (v: Set) ToString*(): Obj.String;
     SetToString(v.value, str);
     RETURN Obj.NewLatin1(str);
   END ToString;
-
-PROCEDURE (v: Set) ToLInt*(): LONGINT;
-  BEGIN
-    RETURN SYSTEM.VAL(LONGINT, v.value);
-  END ToLInt;
 
 PROCEDURE (v: Set) Store*(w: Storable.Writer);
   BEGIN

@@ -21,7 +21,7 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Channel, Err, Files, IntStr, Msg, Strings, TextRider,
+  SYSTEM, Channel, Err, Files, IntStr, Msg, Strings, TextRider,
   Object, Object:Boxed, Object:BigInt, ADT:ArrayList,
   URI, IO:Memory,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
@@ -515,17 +515,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
         END;
         
       | value: Boxed.Set DO
-        (* FIXME *)
-        IF (value. ToLInt() = MIN (LONGINT)) THEN
-          (* this assumes that MIN(LONGINT) is also the smallest value of
-             the C type "int"; to avoid overflow errors, we must rewrite
-             the value slightly *)
-          w. WriteString ("(-");
-          w. WriteLInt (MAX (LONGINT), 0);
-          w. WriteString ("-1)");
-        ELSE
-          w. WriteLInt(value.ToLInt(), 0);
-        END;
+        w.WriteConst(BigInt.NewInt(SYSTEM.VAL(LONGINT, value.value)), type);
       END;
     END;
   END WriteConst;
