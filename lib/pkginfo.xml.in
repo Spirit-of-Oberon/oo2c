@@ -3,8 +3,10 @@
   <version current="0" revision="0" age="0"/>
   
   <pragmas>
-    <define name="LIB_HAVE_LIBXNET" type="boolean">@have_libxnet@</define>
-    <define name="LIB_HAVE_LIBM" type="boolean">@have_libm@</define>
+    <define name="HAVE_LIB_XNET" type="boolean">@ooc_have_lib_xnet@</define>
+    <define name="HAVE_LIB_M" type="boolean">@ooc_have_lib_m@</define>
+    <define name="HAVE_LIB_MINGWEX" type="boolean">@ooc_have_lib_mingwex@</define>
+    <define name="HAVE_LIB_WSOCK32" type="boolean">@ooc_have_lib_wsock32@</define>
   </pragmas>
   
   <library name="oo2c" main-module="liboo2c">
