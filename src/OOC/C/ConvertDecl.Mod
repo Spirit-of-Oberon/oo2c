@@ -1,7 +1,6 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
-Log,OOC:SymbolTable:Item:XML,StdChannels,
   ADT:Dictionary, 
   OOC:Repository, OOC:SymbolTable:Item, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:WriteDecl;
@@ -144,8 +143,9 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
 
   BEGIN  (* pre: (exports. HasKey (ptr) = writeExported) *)
     WITH item: Item.Import DO
-      c. b. IncludeModule (c. m. GetImport (item. moduleName. str^))
-
+      c. b. IncludeModule (c. m. GetImport (item. moduleName. str^));
+      RETURN NIL;
+      
     | item: Item.ProcDecl DO
       CASE c. mode OF
       | modeWriteExported:

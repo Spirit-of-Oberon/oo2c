@@ -123,7 +123,9 @@ PROCEDURE InitBlock* (b: Block);
   BEGIN
     b. includes := ArrayList.New (4);
     b. declarations := ArrayList.New (16);
-    b. relativeIncludePaths := TRUE;
+    b. relativeIncludePaths := FALSE;
+    (* NOTE: relative paths are broken, because the file name are not
+       rewritten relative to the current file name... FIXME *)
   END InitBlock;
 
 PROCEDURE NewBlock* (): Block;
@@ -383,7 +385,9 @@ PROCEDURE (d: Declaration) Write* (w: TextRider.Writer);
 
 PROCEDURE (b: Block) AddDecl* (d: Declaration);
   BEGIN
-    b. declarations. Append (d)
+    IF (d # NIL) THEN
+      b. declarations. Append (d)
+    END;
   END AddDecl;
 
 PROCEDURE (b: Block) Write* (w: TextRider.Writer);
