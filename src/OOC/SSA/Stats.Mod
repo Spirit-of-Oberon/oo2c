@@ -198,9 +198,7 @@ PROCEDURE Write*();
     
     Sort();
     FOR k := 0 TO variantCount-1 DO
-      <*PUSH; Warnings:=FALSE*>
       j := o[k];
-      <*POP*>
       IF (j >= 0) THEN
         Opcode.GetName(SHORT(SHORT(j DIV subclassCount)),
                        SHORT(SHORT(j MOD subclassCount)), str);

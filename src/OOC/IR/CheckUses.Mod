@@ -27,6 +27,12 @@ IMPORT
   Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules, OOC:Error,
   OOC:Scanner:Builder:BasicList, OOC:IR, OOC:IR:VisitAll;
 
+(* Possible enhancements:
+   
+   For simple MOVE where source or target is an ADR(), evaluate this
+   instruction like an assignment.  See LRealConv, RealConv, Object:Boxed for
+   examples.  *)
+   
 CONST
   undefined = 0;
   maybeUndefined = 1;
