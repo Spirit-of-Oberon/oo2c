@@ -280,6 +280,13 @@ TYPE
   END;
 
 TYPE
+  Abs* = POINTER TO AbsDesc;
+  AbsDesc = RECORD
+    (OperatorDesc)
+    operand-: Expression;
+  END;
+
+TYPE
   Adr* = POINTER TO AdrDesc;
   AdrDesc = RECORD
     (**Produces the address of a designator.  Nodes of this type are
@@ -287,6 +294,13 @@ TYPE
        by reference arguments to procedure calls.  *)
     (OperatorDesc)
     design-: Expression;
+  END;
+
+TYPE
+  Ash* = POINTER TO AshDesc;
+  AshDesc = RECORD
+    (OperatorDesc)
+    value-, exp- :Expression;
   END;
 
 TYPE
@@ -303,20 +317,6 @@ TYPE
     (OperatorDesc)
     variant- : Variant;
     left-, right- : Expression;
-  END;
-
-TYPE
-  Abs* = POINTER TO AbsDesc;
-  AbsDesc = RECORD
-    (OperatorDesc)
-    operand-: Expression;
-  END;
-
-TYPE
-  Ash* = POINTER TO AshDesc;
-  AshDesc = RECORD
-    (OperatorDesc)
-    value-, exp- :Expression;
   END;
 
 TYPE
@@ -344,6 +344,13 @@ TYPE
     derefType-: Sym.Type;
   END;
   
+TYPE
+  Entier* = POINTER TO EntierDesc;
+  EntierDesc = RECORD
+    (OperatorDesc)
+    operand- : Expression;
+  END;
+
 TYPE
   Index* = POINTER TO IndexDesc;
   IndexDesc = RECORD
@@ -395,13 +402,6 @@ TYPE
 TYPE
   Not* = POINTER TO NotDesc;
   NotDesc = RECORD
-    (OperatorDesc)
-    operand- : Expression;
-  END;
-
-TYPE
-  Entier* = POINTER TO EntierDesc;
-  EntierDesc = RECORD
     (OperatorDesc)
     operand- : Expression;
   END;
@@ -1263,6 +1263,32 @@ PROCEDURE InitOperator* (op: Operator; sym: Symbol; type: Sym.Type);
     InitExpression (op, sym, type);
   END InitOperator;
 
+(* Operator Class: Abs
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitAbs (abs: Abs; sym: Symbol; operand: Expression);
+  BEGIN
+    InitOperator (abs, sym, operand. type);
+    abs. operand := operand;
+  END InitAbs;
+
+PROCEDURE (b: Builder) NewAbs (sym: Symbol; operand: Expression): Expression;
+  VAR
+    abs: Abs;
+  BEGIN
+    NEW (abs);
+    InitAbs (abs, sym, operand);
+    RETURN abs;
+  END NewAbs;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitAbs* (abs: Abs);
+  END VisitAbs;
+
+PROCEDURE (abs: Abs) Accept* (v: Visitor);
+  BEGIN
+    v. VisitAbs (abs)
+  END Accept;
+
 (* Operator Class: Adr
    ------------------------------------------------------------------------ *)
 
@@ -1287,6 +1313,33 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitAdr* (adr: Adr);
 PROCEDURE (adr: Adr) Accept* (v: Visitor);
   BEGIN
     v. VisitAdr (adr)
+  END Accept;
+
+(* Operator Class: Ash
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitAsh (ash: Ash; sym: Symbol; value, exp: Expression);
+  BEGIN
+    InitOperator (ash, sym, Predef.GetType (Predef.longint));
+    ash. value := value;
+    ash. exp := exp;
+  END InitAsh;
+
+PROCEDURE (b: Builder) NewAsh (sym: Symbol; value, exp: Expression): Expression;
+  VAR
+    ash: Ash;
+  BEGIN
+    NEW (ash);
+    InitAsh (ash, sym, value, exp);
+    RETURN ash;
+  END NewAsh;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitAsh* (ash: Ash);
+  END VisitAsh;
+
+PROCEDURE (ash: Ash) Accept* (v: Visitor);
+  BEGIN
+    v. VisitAsh (ash)
   END Accept;
 
 (* Operator Class: BinaryArith
@@ -1374,59 +1427,6 @@ PROCEDURE (cap: Cap) Accept* (v: Visitor);
     v. VisitCap (cap)
   END Accept;
 
-(* Operator Class: Abs
-   ------------------------------------------------------------------------ *)
-
-PROCEDURE InitAbs (abs: Abs; sym: Symbol; operand: Expression);
-  BEGIN
-    InitOperator (abs, sym, operand. type);
-    abs. operand := operand;
-  END InitAbs;
-
-PROCEDURE (b: Builder) NewAbs (sym: Symbol; operand: Expression): Expression;
-  VAR
-    abs: Abs;
-  BEGIN
-    NEW (abs);
-    InitAbs (abs, sym, operand);
-    RETURN abs;
-  END NewAbs;
-
-PROCEDURE (v: Visitor) [ABSTRACT] VisitAbs* (abs: Abs);
-  END VisitAbs;
-
-PROCEDURE (abs: Abs) Accept* (v: Visitor);
-  BEGIN
-    v. VisitAbs (abs)
-  END Accept;
-
-(* Operator Class: Ash
-   ------------------------------------------------------------------------ *)
-
-PROCEDURE InitAsh (ash: Ash; sym: Symbol; value, exp: Expression);
-  BEGIN
-    InitOperator (ash, sym, Predef.GetType (Predef.longint));
-    ash. value := value;
-    ash. exp := exp;
-  END InitAsh;
-
-PROCEDURE (b: Builder) NewAsh (sym: Symbol; value, exp: Expression): Expression;
-  VAR
-    ash: Ash;
-  BEGIN
-    NEW (ash);
-    InitAsh (ash, sym, value, exp);
-    RETURN ash;
-  END NewAsh;
-
-PROCEDURE (v: Visitor) [ABSTRACT] VisitAsh* (ash: Ash);
-  END VisitAsh;
-
-PROCEDURE (ash: Ash) Accept* (v: Visitor);
-  BEGIN
-    v. VisitAsh (ash)
-  END Accept;
-
 (* Operator Class: Compare
    ------------------------------------------------------------------------ *)
 
@@ -1501,6 +1501,32 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitDeref* (index: Deref);
 PROCEDURE (index: Deref) Accept* (v: Visitor);
   BEGIN
     v. VisitDeref (index)
+  END Accept;
+
+(* Operator Class: Entier
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitEntier (entier: Entier; sym: Symbol; expr: Expression);
+  BEGIN
+    InitOperator (entier, sym, Predef.GetType (Predef.longint));
+    entier. operand := expr;
+  END InitEntier;
+
+PROCEDURE (b: Builder) NewEntier (sym: Symbol; expr: Expression): Expression;
+  VAR
+    entier: Entier;
+  BEGIN
+    NEW (entier);
+    InitEntier (entier, sym, expr);
+    RETURN entier;
+  END NewEntier;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitEntier* (entier: Entier);
+  END VisitEntier;
+
+PROCEDURE (entier: Entier) Accept* (v: Visitor);
+  BEGIN
+    v. VisitEntier (entier)
   END Accept;
 
 (* Operator Class: Index
@@ -1683,32 +1709,6 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitNot* (neg: Not);
 PROCEDURE (neg: Not) Accept* (v: Visitor);
   BEGIN
     v. VisitNot (neg)
-  END Accept;
-
-(* Operator Class: Entier
-   ------------------------------------------------------------------------ *)
-
-PROCEDURE InitEntier (entier: Entier; sym: Symbol; expr: Expression);
-  BEGIN
-    InitOperator (entier, sym, Predef.GetType (Predef.longint));
-    entier. operand := expr;
-  END InitEntier;
-
-PROCEDURE (b: Builder) NewEntier (sym: Symbol; expr: Expression): Expression;
-  VAR
-    entier: Entier;
-  BEGIN
-    NEW (entier);
-    InitEntier (entier, sym, expr);
-    RETURN entier;
-  END NewEntier;
-
-PROCEDURE (v: Visitor) [ABSTRACT] VisitEntier* (entier: Entier);
-  END VisitEntier;
-
-PROCEDURE (entier: Entier) Accept* (v: Visitor);
-  BEGIN
-    v. VisitEntier (entier)
   END Accept;
 
 (* Operator Class: Odd
