@@ -54,7 +54,8 @@ PROCEDURE GetClass* (item: Sym.Item): Sym.Name;
       pos: INTEGER;
     BEGIN
       Strings.FindNext ("Init", procDecl. name. str^, 0, found, pos);
-      IF found & (pos = 0) & 
+      IF found & (pos = 0) &
+         (procDecl. formalPars. params # NIL) & 
          (LEN (procDecl. formalPars. params^) >= 1) &
          (procDecl. formalPars. resultType = NIL) &
          SameModule (procDecl, procDecl. formalPars. params[0]. type) THEN
