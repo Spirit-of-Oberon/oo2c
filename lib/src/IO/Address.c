@@ -3,10 +3,14 @@
 #include <IO/Address.d>
 
 #include <sys/types.h>
+#ifdef __MINGW32__
+#include <winsock.h>
+#else
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#endif
 #include <string.h>
 #ifdef HAVE_STDINT_H
 #  include <stdint.h>
