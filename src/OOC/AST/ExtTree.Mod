@@ -935,7 +935,7 @@ PROCEDURE (n: Node) AttachDocString* (docComment: Doc.Document);
 
 
 
-PROCEDURE (b: Builder) Terminal* (sym: SymList.Symbol): Node;
+PROCEDURE (b: Builder) Terminal* (sym: SymList.Symbol): Terminal;
 (**Takes the symbol @oparam{sym} and creates a terminal node of the syntax
    tree.  In this context, @dfn{terminal} means that the node is a leaf of
    the tree.  *)
@@ -963,7 +963,7 @@ PROCEDURE (terminal: Terminal) GetString* (stripQuotes: BOOLEAN): STRING;
   END GetString;
 
 
-PROCEDURE (b: Builder) IdentDef* (ident, mark: Node): Node;
+PROCEDURE (b: Builder) IdentDef* (ident, mark: Terminal): IdentDef;
 (**An identifier, possibly followed by an export mark.  This factory method
    is called for @emph{all} name definitions in a module, excluding import
    declarations and the module name itself.
@@ -979,16 +979,8 @@ PROCEDURE (b: Builder) IdentDef* (ident, mark: Node): Node;
     id: IdentDef;
   BEGIN
     NEW (id);
-    IF (ident # NIL) THEN
-      id. ident := ident(Terminal)
-    ELSE
-      id. ident := NIL
-    END;
-    IF (mark # NIL) THEN
-      id. mark := mark(Terminal)
-    ELSE
-      id. mark := NIL
-    END;
+    id. ident := ident;
+    id. mark := mark;
     id. docString := NIL;
     RETURN id
   END IdentDef;
@@ -1040,7 +1032,8 @@ PROCEDURE InitType (t: Type);
   BEGIN
   END InitType;
 
-PROCEDURE (b: Builder) ArrayType* (array, flags: Node; exprList: NodeList; of, type: Node): Node;
+PROCEDURE (b: Builder) ArrayType* (array: Node; flags: Flags;
+                                   exprList: NodeList; of, type: Node): Node;
 (**Array type constructor.
 
    @table @oparam
@@ -1105,11 +1098,7 @@ PROCEDURE (b: Builder) ArrayType* (array, flags: Node; exprList: NodeList; of, t
     NEW (at);
     InitType (at);
     at. array := array;
-    IF (flags # NIL) THEN
-      at. flags := flags(Flags);
-    ELSE
-      at. flags := NIL;
-    END;
+    at. flags := flags;
     at. exprList := exprList;
     at. of := of;
     at. type := type;
@@ -1160,7 +1149,9 @@ PROCEDURE (fieldList: FieldList) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) RecordType* (record, flags, lParen, baseType, rParen: Node; fieldLists: NodeList; end: Node): Node;
+PROCEDURE (b: Builder) RecordType* (record: Node; flags: Flags;
+                                    lParen, baseType, rParen: Node;
+                                    fieldLists: NodeList; end: Node): Node;
 (**Record type constructor.
 
    @table @oparam
@@ -1243,11 +1234,7 @@ PROCEDURE (b: Builder) RecordType* (record, flags, lParen, baseType, rParen: Nod
     NEW (rt);
     InitType (rt);
     rt. record := record;
-    IF (flags # NIL) THEN
-      rt. flags := flags(Flags);
-    ELSE
-      rt. flags := NIL;
-    END;
+    rt. flags := flags;
     rt. lParen := lParen;
     rt. baseType := baseType;
     rt. rParen := rParen;
@@ -1262,7 +1249,8 @@ PROCEDURE (recordType: RecordType) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) PointerType* (pointer, flags, to, type: Node): Node;
+PROCEDURE (b: Builder) PointerType* (pointer: Node; flags: Flags;
+                                     to, type: Node): Node;
 (**Pointer type constructor.
 
    @table @oparam
@@ -1284,11 +1272,7 @@ PROCEDURE (b: Builder) PointerType* (pointer, flags, to, type: Node): Node;
     NEW (pt);
     InitType (pt);
     pt. pointer := pointer;
-    IF (flags # NIL) THEN
-      pt. flags := flags(Flags);
-    ELSE
-      pt. flags := NIL;
-    END;
+    pt. flags := flags;
     pt. to := to;
     pt. type := type;
     RETURN pt
@@ -1343,7 +1327,7 @@ PROCEDURE (fpSection: FPSection) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) FormalPars* (flags, lParen: Node; fpSections: NodeList; rParen, colon, result, raises: Node; raisesList: NodeList): Node;
+PROCEDURE (b: Builder) FormalPars* (flags: Flags; lParen: Node; fpSections: NodeList; rParen, colon, result, raises: Node; raisesList: NodeList): Node;
 (**Formal parameter definition.  Note: If the formal parameter list is 
    completely empty, that is, if it does not even contain a parenthesis
    pair @samp{()}, all arguments from @oparam{lParen} onward are @code{NIL}.
@@ -1402,11 +1386,7 @@ PROCEDURE (b: Builder) FormalPars* (flags, lParen: Node; fpSections: NodeList; r
     fp: FormalPars;
   BEGIN
     NEW (fp);
-    IF (flags # NIL) THEN
-      fp. flags := flags(Flags);
-    ELSE
-      fp. flags := NIL;
-    END;
+    fp. flags := flags;
     fp. lParen := lParen;
     fp. fpSections := fpSections;
     fp. rParen := rParen;
@@ -1488,7 +1468,7 @@ PROCEDURE (tpSection: TPSection) Accept* (v: Visitor);
 
 PROCEDURE (b: Builder) TypePars* (lParen: Node;
                                   tpSections: NodeList;
-                                  rParen: Node): Node;
+                                  rParen: Node): TypePars;
 (**Type parameter definition.
 
    @table @oparam
@@ -1609,8 +1589,8 @@ PROCEDURE (importDecl: ImportDecl) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) ConstDecl* (identDef, flags, equal,
-                                   expr, semicolon: Node): Node;
+PROCEDURE (b: Builder) ConstDecl* (identDef: Node; flags: Flags;
+                                   equal, expr, semicolon: Node): Node;
 (**Constant declaration.
 
    @table @oparam
@@ -1636,11 +1616,7 @@ PROCEDURE (b: Builder) ConstDecl* (identDef, flags, equal,
   BEGIN
     NEW (cd);
     cd. identDef := identDef(IdentDef);
-    IF (flags = NIL) THEN
-      cd. flags := NIL;
-    ELSE
-      cd. flags := flags(Flags);
-    END;
+    cd. flags := flags;
     cd. equal := equal;
     cd. expr := expr;
     cd. semicolon := semicolon;
@@ -1653,7 +1629,8 @@ PROCEDURE (constDecl: ConstDecl) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) TypeDecl* (identDef, flags, typePars, equal,
+PROCEDURE (b: Builder) TypeDecl* (identDef: Node; flags: Flags;
+                                  typePars: TypePars; equal,
                                   type, semicolon: Node): Node;
 (**Type declaration.
 
@@ -1683,16 +1660,8 @@ PROCEDURE (b: Builder) TypeDecl* (identDef, flags, typePars, equal,
   BEGIN
     NEW (td);
     td. identDef := identDef(IdentDef);
-    IF (flags = NIL) THEN
-      td. flags := NIL;
-    ELSE
-      td. flags := flags(Flags);
-    END;
-    IF (typePars = NIL) THEN
-      td. typePars := NIL;
-    ELSE
-      td. typePars := typePars(TypePars);
-    END;
+    td. flags := flags;
+    td. typePars := typePars;
     td. equal := equal;
     td. type := type;
     td. semicolon := semicolon;
@@ -1749,10 +1718,10 @@ PROCEDURE (varDecl: VarDecl) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) Receiver* (lParen, var, ident, colon, type,
-                                  lParenAlias: Node;
+PROCEDURE (b: Builder) Receiver* (lParen, var: Node; ident: IdentDef;
+                                  colon, type: Node; lParenAlias: Terminal;
                                   aliasList: NodeList;
-                                  rParenAlias, rParen: Node): Node;
+                                  rParenAlias: Terminal; rParen: Node): Node;
 (**Receiver of the declaration of a type-bound procedure.
 
    @table @oparam
@@ -1793,18 +1762,12 @@ PROCEDURE (b: Builder) Receiver* (lParen, var, ident, colon, type,
     NEW (r);
     r. lParen := lParen;
     r. var := var;
-    r. ident := ident(IdentDef);
+    r. ident := ident;
     r. colon := colon;
     r. type := type;
-    IF (lParenAlias # NIL) THEN
-      r. lParenAlias := lParenAlias(Terminal);
-      r. aliasList := aliasList;
-      r. rParenAlias := rParenAlias(Terminal);
-    ELSE
-      r. lParenAlias := NIL;
-      r. aliasList := NIL;
-      r. rParenAlias := NIL;
-    END;
+    r. lParenAlias := lParenAlias;
+    r. aliasList := aliasList;
+    r. rParenAlias := rParenAlias;
     r. rParen := rParen;
     RETURN r
   END Receiver;
@@ -1815,9 +1778,10 @@ PROCEDURE (receiver: Receiver) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) ProcDecl*(proc, arrow, receiver, 
-                                 flags, identDef, formalPars, semicolon1,
-                                 body, semicolon2: Node): Node;
+PROCEDURE (b: Builder) ProcDecl*(proc, arrow, receiver: Node; 
+                                 flags: Flags;
+                                 identDef, formalPars, semicolon1: Node;
+                                 body: Body; semicolon2: Node): Node;
 (**Procedure declaration.
 
    @table @oparam
@@ -1862,19 +1826,11 @@ PROCEDURE (b: Builder) ProcDecl*(proc, arrow, receiver,
     pd. proc := proc(Terminal);
     pd. arrow := arrow;
     pd. receiver := receiver;
-    IF (flags # NIL) THEN
-      pd. flags := flags(Flags);
-    ELSE
-      pd. flags := NIL;
-    END;
+    pd. flags := flags;
     pd. identDef := identDef(IdentDef);
     pd. formalPars := formalPars;
     pd. semicolon1 := semicolon1;
-    IF (body = NIL) THEN
-      pd. body := NIL
-    ELSE
-      pd. body := body(Body)
-    END;
+    pd. body := body;
     pd. semicolon2 := semicolon2;
     RETURN pd
   END ProcDecl;
@@ -1924,7 +1880,7 @@ PROCEDURE (importList: ImportList) Accept* (v: Visitor);
 
 PROCEDURE (b: Builder) Body* (declSeq: NodeList;
                               begin: Node; statmSeq: NodeList; 
-                              end, name: Node): Node;
+                              end, name: Node): Body;
 (**Module or procedure body.
 
    @table @oparam
@@ -1974,11 +1930,7 @@ PROCEDURE (b: Builder) Body* (declSeq: NodeList;
     NEW (body);
     body. declSeq := declSeq;
     body. begin := begin;
-    IF (statmSeq = NIL) THEN
-      body. statmSeq := NIL;
-    ELSE
-      body. statmSeq := statmSeq
-    END;
+    body. statmSeq := statmSeq;
     body. end := end(Terminal);
     body. name := name;
     RETURN body
@@ -1990,9 +1942,10 @@ PROCEDURE (body: Body) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) Module* (module, name: Node;
-              flags, semicolon, importList, body, period: Node;
-              moduleName: Name): Node;
+PROCEDURE (b: Builder) Module* (module: Terminal; name: Node;
+                                flags: Flags; semicolon, importList: Node;
+                                body: Body; period: Node;
+                                moduleName: Name): Node;
 (**Module declaration.
 
    @table @oparam
@@ -2028,24 +1981,12 @@ PROCEDURE (b: Builder) Module* (module, name: Node;
     m: Module;
   BEGIN
     NEW (m);
-    IF (module = NIL) THEN
-      m. module := NIL
-    ELSE
-      m. module := module(Terminal)
-    END;
+    m. module := module;
     m. name := name(ModuleIdent);
-    IF (flags # NIL) THEN
-      m. flags := flags(Flags)
-    ELSE
-      m. flags := NIL
-    END;
+    m. flags := flags;
     m. semicolon := semicolon;
     m. importList := importList;
-    IF (body # NIL) THEN
-      m. body := body(Body)
-    ELSE
-      m. body := NIL
-    END;
+    m. body := body;
     m. period := period;
     m. moduleName := moduleName;
     RETURN m
@@ -2795,7 +2736,7 @@ PROCEDURE (tryStatm: TryStatm) Accept* (v: Visitor);
 
 
 PROCEDURE (b: Builder) Flags* (context: SHORTINT; lBrak: Node;
-                               flagList: NodeList; rBrak: Node): Node;
+                               flagList: NodeList; rBrak: Node): Flags;
   VAR
     f: Flags;
   BEGIN
