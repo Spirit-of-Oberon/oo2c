@@ -9,6 +9,7 @@ AC_SUBST(OOC_DEV_ROOT,[`cd "$srcdir" && pwd`])
 AC_SUBST(COMPILER_VERSION,[$PACKAGE_VERSION])
 AC_SUBST(COMPILER_MAJOR,[`echo $COMPILER_VERSION|sed -e 's:\..*$::'`])
 AC_SUBST(COMPILER_MINOR,[`echo $COMPILER_VERSION|sed -e 's:^[[^.]]*\.::' -e 's:\..*$::'`])
+AC_SUBST(OFLAGS)
 
 dnl checks for programs
 AC_PROG_INSTALL
