@@ -75,6 +75,10 @@ OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
   return (OOC_PTR)ptr;
 }
 
+void RT0__FreeBlock(OOC_PTR ptr) {
+  free(ptr);			/* inverse to RT0__NewBlock */
+}
+
 void RT0__InitVParStack(OOC_INT32 bytes) {
   _ooc_top_vs = (void*)malloc(bytes); /* not GC_malloc_atomic!!! */
   _ooc_end_vs = (char*)_ooc_top_vs+(bytes);

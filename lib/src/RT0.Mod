@@ -171,6 +171,9 @@ PROCEDURE NewBlock* (bytes: LONGINT): SYSTEM.PTR;
    collection.  That is, the block must not contain any references to objects
    on the heap that are not kept live by other pointers.  *)
 
+PROCEDURE FreeBlock* (ptr: SYSTEM.PTR);
+(**Frees a block of memory allocated with @oproc{NewBlock}.  *)
+
 PROCEDURE InitVParStack* (bytes: LONGINT);
 (**Allocates the heap block that serves as a stack for value parameters of
    open array type.  It is used as a fallback if no mechanism is available
