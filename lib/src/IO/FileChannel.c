@@ -221,6 +221,14 @@ void IO_FileChannel__ChannelDesc_CloseAndRegister(IO_FileChannel__Channel ch) {
     if (ch->tmpIndex >= 0) {
       char* fname = (char*)OOC_METHOD(ch->origName,Object__String8Desc_CharsLatin1)(ch->origName);
       char* tname = (char*)OOC_METHOD(ch->tmpName,Object__String8Desc_CharsLatin1)(ch->tmpName);
+#ifdef __MINGW32__
+/* Windows doesn't allow files to be renamed over existing files. Therefore,
+ * we first remove the destination file if it exists. */
+
+      if (access(fname, 0)==0) {
+        res = unlink(fname);
+      }
+#endif
       res = rename(tname, fname);
       remove_tmp_file(ch);
     }
