@@ -21,8 +21,7 @@ MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:String, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc,
-  Sym := OOC:SymbolTable;
+  ADT:String, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc;
 
 
 
@@ -387,17 +386,17 @@ TYPE
   ForStatm* = POINTER TO ForStatmDesc;
   ForStatmDesc = RECORD
     (NodeDesc)
-    for-: AST.Node;
-    ident-: AST.Node;
-    becomes-: AST.Node;
-    startValue-: AST.Node;
-    to-: AST.Node;
-    endValue-: AST.Node;
-    by-: AST.Node;
-    step-: AST.Node;
-    do-: AST.Node;
-    statmSeq-: AST.NodeList;
-    end-: AST.Node;
+    for-: Terminal;
+    ident-: Node;
+    becomes-: Terminal;
+    startValue-: Node;
+    to-: Terminal;
+    endValue-: Node;
+    by-: Terminal;
+    step-: Node;
+    do-: Terminal;
+    statmSeq-: NodeList;
+    end-: Terminal;
   END;
 
 TYPE
@@ -1337,17 +1336,22 @@ PROCEDURE (b: Builder) ForStatm* (for, ident, becomes, startValue, to, endValue,
     f: ForStatm;
   BEGIN
     NEW (f);
-    f. for := for;
-    f. ident := ident;
-    f. becomes := becomes;
-    f. startValue := startValue;
-    f. to := to;
-    f. endValue := endValue;
-    f. by := by;
-    f. step := step;
-    f. do := do;
-    f. statmSeq := statmSeq;
-    f. end := end;
+    f. for := for(Terminal);
+    f. ident := ident(Node);
+    f. becomes := becomes(Terminal);
+    f. startValue := startValue(Node);
+    f. to := to(Terminal);
+    f. endValue := endValue(Node);
+    IF (step = NIL) THEN
+      f. by := NIL;
+      f. step := NIL;
+    ELSE
+      f. by := by(Terminal);
+      f. step := step(Node);
+    END;
+    f. do := do(Terminal);
+    f. statmSeq := statmSeq(NodeList);
+    f. end := end(Terminal);
     RETURN f
   END ForStatm;
 

@@ -207,6 +207,16 @@ PROCEDURE (v : Visitor) VisitTypeConv* (op : IR.TypeConv);
     v. w. EndTag;
   END VisitTypeConv;
 
+
+PROCEDURE VisitStatementSeq (v: Visitor; statmSeq: IR.StatementSeq);
+  VAR
+    i: LONGINT;
+  BEGIN
+    FOR i := 0 TO LEN (statmSeq^)-1 DO
+      statmSeq[i]. Accept (v)
+    END;
+  END VisitStatementSeq;
+
 PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
   VAR
     i: LONGINT;
@@ -257,14 +267,26 @@ PROCEDURE (v: Visitor) VisitAssignOp* (assignOp: IR.AssignOp);
     v. w. EndTag;  (* assign-operation *)
   END VisitAssignOp;
 
-PROCEDURE VisitStatementSeq (v: Visitor; statmSeq: IR.StatementSeq);
-  VAR
-    i: LONGINT;
+PROCEDURE (v: Visitor) VisitForStatm* (whileStatm: IR.ForStatm);
   BEGIN
-    FOR i := 0 TO LEN (statmSeq^)-1 DO
-      statmSeq[i]. Accept (v)
-    END;
-  END VisitStatementSeq;
+    v. w. StartTag ("while-statm", FALSE);
+    v. w. StartTag ("variable", FALSE);
+    whileStatm. var. Accept (v);
+    v. w. EndTag;  (* variable *)
+    v. w. StartTag ("start-value", FALSE);
+    whileStatm. start. Accept (v);
+    v. w. EndTag;  (* start-value *)
+    v. w. StartTag ("end-value", FALSE);
+    whileStatm. end. Accept (v);
+    v. w. EndTag;  (* end-value *)
+    v. w. StartTag ("step", FALSE);
+    whileStatm. step. Accept (v);
+    v. w. EndTag;  (* step *)
+    v. w. StartTag ("body", FALSE);
+    VisitStatementSeq (v, whileStatm. body);
+    v. w. EndTag;  (* body *)
+    v. w. EndTag;  (* while-statm *)
+  END VisitForStatm;
 
 PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
@@ -284,6 +306,15 @@ PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
     END;
     v. w. EndTag;  (* if-statm *)
   END VisitIfStatm;
+
+PROCEDURE (v: Visitor) VisitLoopStatm* (loopStatm: IR.LoopStatm);
+  BEGIN
+    v. w. StartTag ("loop-statm", FALSE);
+    v. w. StartTag ("body", FALSE);
+    VisitStatementSeq (v, loopStatm. body);
+    v. w. EndTag;  (* body *)
+    v. w. EndTag;  (* loop-statm *)
+  END VisitLoopStatm;
 
 PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
   BEGIN

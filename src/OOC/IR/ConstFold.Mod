@@ -273,9 +273,17 @@ PROCEDURE VisitStatementSeq (c: ConstFold; statmSeq: IR.StatementSeq);
   BEGIN
   END VisitStatementSeq;
 
+PROCEDURE (c: ConstFold) VisitForStatm* (forStatm: IR.ForStatm);
+  BEGIN
+  END VisitForStatm;
+
 PROCEDURE (c: ConstFold) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
   END VisitIfStatm;
+
+PROCEDURE (c: ConstFold) VisitLoopStatm* (loopStatm: IR.LoopStatm);
+  BEGIN
+  END VisitLoopStatm;
 
 PROCEDURE (c: ConstFold) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
   BEGIN

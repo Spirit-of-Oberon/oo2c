@@ -473,6 +473,17 @@ TYPE
   END;
   
 TYPE
+  ForStatm* = POINTER TO ForStatmDesc;
+  ForStatmDesc = RECORD
+    (**Holds an @code{FOR-BY} statement.  *)
+    (StatementDesc)
+    var-: Expression;
+    start-, end-: Expression;
+    step-: Expression;
+    body-: StatementSeq;
+  END;
+  
+TYPE
   IfStatm* = POINTER TO IfStatmDesc;
   IfStatmDesc = RECORD
     (**Holds an @code{IF-ELSE-END} statement.  If there is no @code{ELSE}, then
@@ -484,6 +495,14 @@ TYPE
     pathFalse-: StatementSeq;  (* NIL if the IF statement has no ELSE *)
   END;
   
+TYPE
+  LoopStatm* = POINTER TO LoopStatmDesc;
+  LoopStatmDesc = RECORD
+    (**Holds an @code{LOOP-END} statement.  *)
+    (StatementDesc)
+    body-: StatementSeq;
+  END;
+
 TYPE
   RepeatStatm* = POINTER TO RepeatStatmDesc;
   RepeatStatmDesc = RECORD
@@ -798,6 +817,11 @@ PROCEDURE (b: Builder) NewSize* (sym: Symbol; type: Expression): Expression;
          Integer.NewLInt (type(TypeRef). decl(Sym.TypeDecl). type. size));
   END NewSize;
 
+PROCEDURE (b: Builder) GetOne (sym: Symbol; type: Sym.Type): Const;
+  BEGIN
+    RETURN b. NewConst (sym, type, Integer.NewLInt (1));
+  END GetOne;
+  
 (* Expression Class: Operator
    ------------------------------------------------------------------------ *)
 
@@ -1398,6 +1422,44 @@ PROCEDURE (cp: CopyParameter) Accept* (v: Visitor);
     v. VisitCopyParameter (cp)
   END Accept;
 
+(* Statement Class: ForStatm
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitForStatm (forStatm: ForStatm; sym: Symbol;
+                        var, start, end, step: Expression;
+                        body: StatementSeq);
+  BEGIN
+    InitStatement (forStatm, sym);
+    forStatm. var := var;
+    forStatm. start := start;
+    forStatm. end := end;
+    forStatm. step := step;
+    forStatm. body := body;
+  END InitForStatm;
+
+PROCEDURE (b: Builder) NewForStatm* (sym: Symbol;
+                                     var, start, end, step: Expression;
+                                     body: StatementSeq):ForStatm;
+  VAR
+    forStatm: ForStatm;
+  BEGIN
+    NEW (forStatm);
+    IF (step = NIL) THEN
+      step := b. NewConst
+          (sym, Predef.GetType (Predef.shortint), Integer.NewLInt (1));
+    END;
+    InitForStatm (forStatm, sym, var, start, end, step, body);
+    RETURN forStatm
+  END NewForStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitForStatm* (forStatm: ForStatm);
+  END VisitForStatm;
+
+PROCEDURE (forStatm: ForStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitForStatm (forStatm)
+  END Accept;
+
 (* Statement Class: IfStatm
    ------------------------------------------------------------------------ *)
 
@@ -1426,6 +1488,34 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitIfStatm* (ifStatm: IfStatm);
 PROCEDURE (ifStatm: IfStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitIfStatm (ifStatm)
+  END Accept;
+
+(* Statement Class: LoopStatm
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitLoopStatm (loopStatm: LoopStatm; sym: Symbol;
+                         body: StatementSeq);
+  BEGIN
+    InitStatement (loopStatm, sym);
+    loopStatm. body := body;
+  END InitLoopStatm;
+
+PROCEDURE (b: Builder) NewLoopStatm* (sym: Symbol;
+                                      body: StatementSeq):LoopStatm;
+  VAR
+    loopStatm: LoopStatm;
+  BEGIN
+    NEW (loopStatm);
+    InitLoopStatm (loopStatm, sym, body);
+    RETURN loopStatm
+  END NewLoopStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitLoopStatm* (loopStatm: LoopStatm);
+  END VisitLoopStatm;
+
+PROCEDURE (loopStatm: LoopStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitLoopStatm (loopStatm)
   END Accept;
 
 (* Statement Class: RepeatStatm
@@ -2000,11 +2090,6 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       RETURN exprList
     END TransformArgs;
   
-  PROCEDURE GetOne (type: Sym.Type): Const;
-    BEGIN
-      RETURN b. NewConst (design. sym, type, Integer.NewLInt (1));
-    END GetOne;
-  
   BEGIN
     WITH design: PredefProc DO
       (* note: predefined functions are handled by a specialization of thie
@@ -2027,16 +2112,16 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       | Predef.inc:
         ASSERT (LEN (arguments^) = 1);
         RETURN b. NewAssignOp (design. sym,
-                               b. NewBinaryArith (design. sym, arithAdd,
-                                                  arguments[0],
-                                                  GetOne (arguments[0].type)));
+                               b. NewBinaryArith
+                               (design. sym, arithAdd, arguments[0],
+                                b. GetOne (design. sym, arguments[0]. type)));
         
       | Predef.dec:
         ASSERT (LEN (arguments^) = 1);
         RETURN b. NewAssignOp (design. sym,
-                               b. NewBinaryArith (design. sym, arithSub,
-                                                  arguments[0],
-                                                  GetOne (arguments[0].type)));
+                               b. NewBinaryArith
+                               (design. sym, arithSub, arguments[0],
+                                b. GetOne (design. sym, arguments[0]. type)));
       | Predef.cap:
         ASSERT (LEN (arguments^) = 1);
         RETURN b. NewCap (design. sym, arguments[0]);
