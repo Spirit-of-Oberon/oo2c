@@ -1188,6 +1188,7 @@ CONST
   notExtensionOfBound = 72;         (* used as in CreateNamespace *)
   notRecordPointerType = 73;
   initWithoutSuperCall = 74;
+  forwardReferenceToInit = 75;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1400,6 +1401,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Not a record pointer type"
     | initWithoutSuperCall:
       t := Error.warningPrefix+"No call to the base type's INIT procedure"
+    | forwardReferenceToInit:
+      t := "The type's INIT procedure must be defined before its use";
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2399,7 +2402,7 @@ PROCEDURE (b: Builder) NewConstructor* (sym: Symbol; type: Expression;
     
     (* find out if an INIT method exists *)
     n := b.GetName2(sym, Predef.initMethod);
-    initDecl := consClass.ns.Identify(context, n, FALSE);
+    initDecl := consClass.ns.Identify(context, n, TRUE);
     Uses.Mark(initDecl, b.uses, n);
     init := NIL;
     IF (initDecl = NIL) OR ~(initDecl IS Sym.ProcDecl) THEN
@@ -2407,6 +2410,10 @@ PROCEDURE (b: Builder) NewConstructor* (sym: Symbol; type: Expression;
         RETURN b.ErrExpr(tooManyArguments, arguments[0].sym);
       END;
     ELSE
+      IF (initDecl.visibleFrom > sym.pos) THEN
+        b.ErrSym(forwardReferenceToInit, type.sym);
+      END;
+      
       pseudoDesign := b.NewNil(sym);
       pseudoDesign := b.NewSelectProc(sym, pseudoDesign, qualRecord,
                                       initDecl(Sym.ProcDecl), sym, TRUE);
