@@ -17,7 +17,6 @@ void Var2__Test() {
   i0 = Var2__x;
   Out__Int(i0, 0);
   Out__Ln();
-  return;
 }
 
 void Var2_init(void) {

@@ -5,19 +5,19 @@ static OOC_INT16 Var3b__F(OOC_CHAR8 a, OOC_CHAR8 b) {
   register OOC_INT32 i0,i1;
 
   i0 = a;
-  if (i0) goto l5;
+  if (i0) goto l7;
   i1 = b;
-  if (i1) goto l3;
+  if (i1) goto l5;
   i1=0;
-  goto l4;
-l3:
-  i1=1;
-l4:
-  i0=i1;
   goto l6;
 l5:
-  i0=2;
+  i1=1;
 l6:
+  i0=i1;
+  goto l8;
+l7:
+  i0=2;
+l8:
   return i0;
 }
 
@@ -36,7 +36,6 @@ void Var3b__Test() {
   i0 = Var3b__F(OOC_TRUE, OOC_TRUE);
   Out__Int(i0, 0);
   Out__Ln();
-  return;
 }
 
 void Var3b_init(void) {

@@ -21,7 +21,7 @@ MODULE OOC:SSA:Schedule [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
+  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Blocker;
 
 TYPE
   Block* = POINTER TO BlockDesc;
@@ -144,13 +144,18 @@ PROCEDURE InitInfo* (info: Info);
   BEGIN
   END InitInfo;
 
-PROCEDURE InitBlock (b: Block);
+PROCEDURE InitBlock (b: Block; dominator: Block);
   BEGIN
     Object.Init (b);
     b. proxyList := NIL;
     b. proxyTail := NIL;
-    b. parent := NIL;
-    b. nextDom := NIL;
+    b. parent := dominator;
+    IF (dominator # NIL) THEN
+      b. nextDom := dominator. domList;
+      dominator. domList := b;
+    ELSE
+      b. nextDom := NIL;
+    END;
     b. domList := NIL;
     b. dependentList := NIL;
     b. depCount := 0;
@@ -217,13 +222,6 @@ PROCEDURE ClearProxyList (b: Block);
     b. proxyTail := NIL;
   END ClearProxyList;
 
-PROCEDURE MakeDominator (dominator, child: Block);
-  BEGIN
-    child. nextDom := dominator. domList;
-    dominator. domList := child;
-    child. parent := dominator
-  END MakeDominator;
-
 PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
   BEGIN
     WHILE (child # NIL) & (child # dominator) DO
@@ -233,23 +231,23 @@ PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
   END Dominates;
 
 
-PROCEDURE InitBranchBlock (b: BranchBlock; predicate: SSA.Opnd;
-                           branchOnTrue: BOOLEAN);
+PROCEDURE InitBranchBlock (b: BranchBlock; dominator: Block;
+                           predicate: SSA.Opnd; branchOnTrue: BOOLEAN);
   BEGIN
-    InitBlock (b);
+    InitBlock (b, dominator);
     b. jump := NIL;
     b. predicate:= predicate;
     b. branchOnTrue := branchOnTrue;
     b. branchTo := NIL;
   END InitBranchBlock;
 
-PROCEDURE NewBranchBlock (predicate: SSA.Opnd;
+PROCEDURE NewBranchBlock (dominator: Block; predicate: SSA.Opnd;
                           branchOnTrue: BOOLEAN): BranchBlock;
   VAR
     b: BranchBlock;
   BEGIN
     NEW (b);
-    InitBranchBlock (b, predicate, branchOnTrue);
+    InitBranchBlock (b, dominator, predicate, branchOnTrue);
     RETURN b
   END NewBranchBlock;
 
@@ -264,18 +262,18 @@ PROCEDURE (b: BranchBlock) DefaultTarget*(): Block;
   END DefaultTarget;
 
 
-PROCEDURE InitJumpBlock (b: JumpBlock);
+PROCEDURE InitJumpBlock (b: JumpBlock; dominator: Block);
   BEGIN
-    InitBlock (b);
+    InitBlock (b, dominator);
     b. jump := NIL;
   END InitJumpBlock;
 
-PROCEDURE NewJumpBlock(): JumpBlock;
+PROCEDURE NewJumpBlock(dominator: Block): JumpBlock;
   VAR
     b: JumpBlock;
   BEGIN
     NEW (b);
-    InitJumpBlock (b);
+    InitJumpBlock (b, dominator);
     RETURN b
   END NewJumpBlock;
 
@@ -285,17 +283,17 @@ PROCEDURE (b: JumpBlock) DefaultTarget*(): Block;
   END DefaultTarget;
 
 
-PROCEDURE InitDeadEndBlock (b: DeadEndBlock);
+PROCEDURE InitDeadEndBlock (b: DeadEndBlock; dominator: Block);
   BEGIN
-    InitBlock (b);
+    InitBlock (b, dominator);
   END InitDeadEndBlock;
 
-PROCEDURE NewDeadEndBlock(): DeadEndBlock;
+PROCEDURE NewDeadEndBlock (dominator: Block): DeadEndBlock;
   VAR
     b: DeadEndBlock;
   BEGIN
     NEW (b);
-    InitDeadEndBlock (b);
+    InitDeadEndBlock (b, dominator);
     RETURN b
   END NewDeadEndBlock;
 
@@ -324,21 +322,9 @@ PROCEDURE NewInstrProxy (instr: SSA.Instr): InstrProxy;
     RETURN proxy
   END NewInstrProxy;
 
-PROCEDURE AddProxy (b: Block; proxy: InstrProxy);
-  BEGIN
-    proxy. nextProxy := b. proxyList;
-    proxy. prevProxy := NIL;
-    proxy. block := b;
-    IF (b. proxyList # NIL) THEN
-      b. proxyList. prevProxy := proxy
-    ELSE
-      b. proxyTail := proxy
-    END;
-    b. proxyList := proxy
-  END AddProxy;
-
 PROCEDURE AppendProxy (b: Block; proxy: InstrProxy);
   BEGIN
+    proxy. block := b;
     proxy. prevProxy := b. proxyTail;
     proxy. nextProxy := NIL;
     IF (b. proxyTail = NIL) THEN
@@ -369,284 +355,95 @@ PROCEDURE RemoveProxy (b: Block; proxy: InstrProxy);
 PROCEDURE MoveProxy (proxy: InstrProxy; to: Block);
   BEGIN
     RemoveProxy (proxy. block, proxy);
-    AddProxy (to, proxy)
+    AppendProxy  (to, proxy)
   END MoveProxy;
 
 
-PROCEDURE DebranchBlock (VAR enter: Block): Block;
-(* `enter' is the block that dominates all the instructions in the
-   sequence, and is changed by the function if there is a new
-   dominating block; result is the block whose `jump' field leaves
-   the sequence of instructions; this is always the original value
-   of `enter'
-
-   precond: instructions within the block are topologically sorted
-   in descending order; that is, if A depends on B, then B follows A *)
+PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpBlock;
   VAR
+    bProxy: Blocker.Proxy;
     proxy: InstrProxy;
 
-  PROCEDURE SplitSelect (VAR enter: Block; select: SSA.Instr): Block;
-    CONST
-      keepInEnter = 0;
-      moveToIn = 1;
-      moveToPath1 = 2;
-      moveToPath2 = 3;
+  PROCEDURE TransferSelect (select: Blocker.Select; block: JumpBlock): JumpBlock;
     VAR
-      in, path1, path2, exitPath1, exitPath2, exitEnter, exitIn, oldEnter: Block;
-      proxy: InstrProxy;
-      opnd: SSA.Opnd;
-
-    PROCEDURE Move (result: SSA.Result; source: Block;
-                    primary, secondary: LONGINT);
-    (**Recursively moves the instructions producing @oparam{result} into their
-       target blocks.  This procedure marks the instructions with the ids of
-       their targets blocks.  The actual transfer happens later.  *)
-      VAR
-        opnd: SSA.Opnd;
-        oldBlock, newBlock: LONGINT;
-        proxy: InstrProxy;
-      BEGIN
-        proxy := result. instr. info(InstrProxy);
-        IF (proxy. block = source) THEN
-          oldBlock := proxy. instr. marker;
-          IF (oldBlock = keepInEnter) THEN
-            newBlock := primary;
-          ELSIF (oldBlock = primary) THEN
-            newBlock := oldBlock;
-          ELSIF (oldBlock = secondary) THEN
-            newBlock := oldBlock;
-          ELSE  (* contributes to a different path: use secondary *)
-            newBlock := secondary;
-          END;
-
-          IF (newBlock # oldBlock) THEN
-            proxy. instr. marker := newBlock;
-            opnd := proxy. instr. opndList;
-            WHILE (opnd # NIL) DO
-              Move (opnd. arg, source, primary, secondary);
-              opnd := opnd. nextOpnd
-            END;
-          END;
-        END;
-      END Move;
-
-    PROCEDURE MarkInstructions (proxy: InstrProxy; marker: LONGINT);
-      BEGIN
-        WHILE (proxy # NIL) DO
-          proxy. instr. marker := marker;
-          proxy := proxy. nextProxy
-        END;
-      END MarkInstructions;
-
-    PROCEDURE MoveInstructions (proxy: InstrProxy; in, p1, p2: Block);
-      VAR
-        prev: InstrProxy;
-      BEGIN
-        WHILE (proxy # NIL) DO
-          prev := proxy. prevProxy;
-          CASE proxy. instr. marker OF
-          | keepInEnter: (* done *)
-          | moveToIn: MoveProxy (proxy, in)
-          | moveToPath1: MoveProxy (proxy, p1)
-          | moveToPath2: MoveProxy (proxy, p2)
-          END;
-          proxy := prev
-        END;
-      END MoveInstructions;
-    
+      branch: BranchBlock;
+      path1, path2, out: JumpBlock;
     BEGIN
-      oldEnter := enter;
-      path1 := NewJumpBlock();
-      path2 := NewJumpBlock();
-      in := NewBranchBlock
-          (select. opndList,
-           select. opndList. nextOpnd. arg. IsBooleanConst (TRUE));
-
-      MarkInstructions (enter. proxyList, keepInEnter);
-      Move (select. opndList. arg, enter, moveToIn, moveToIn);
-      Move (select. NthArg (2), enter, moveToPath1, moveToIn);
-      Move (select. NthArg (4), enter, moveToPath2, moveToIn);
-
-      (* if there are any instruction in `enter' that depend on results that
-         have been moved to `path1' or `path2', then move these results'
-         instructions into `in' *)
-      proxy := enter. proxyList;
-      WHILE (proxy # NIL) DO
-        IF (proxy. instr. marker = keepInEnter) &
-           (proxy. instr # select) &
-           (proxy. instr. opcode # Opcode.selectReturn) THEN
-          opnd := proxy. instr. opndList;
-          WHILE (opnd # NIL) DO
-            Move (opnd. arg, enter, keepInEnter, moveToIn);
-            opnd := opnd. nextOpnd
-          END;
-        END;
-        proxy := proxy. nextProxy
-      END;
+      branch := NewBranchBlock
+          (block,
+           select. instr. opndList,
+           select. instr. opndList. nextOpnd. arg. IsBooleanConst (TRUE));
+      SetJump (block. jump, block, branch);
       
-      (* transfer instructions into target blocks *)
-      MoveInstructions (enter. proxyTail, in, path1, path2);
-
-      exitPath1 := DebranchBlock (path1);
-      exitPath2 := DebranchBlock (path2);
-      exitIn := DebranchBlock (in);
-      select. opcode := -select. opcode;(* mask the current select statement *)
-      exitEnter := DebranchBlock (enter);
-      select. opcode := -select. opcode;(* unmask it again *)
-
-      SetJump (exitPath1(JumpBlock). jump, exitPath1, enter);
-      SetJump (exitPath2(JumpBlock). jump, exitPath2, enter);
-      SetJump (exitIn(BranchBlock). jump, exitIn, path2);
-      SetJump (exitIn(BranchBlock). branchTo, exitIn, path1);
+      path1 := NewJumpBlock (branch);
+      SetJump (branch. branchTo, branch, path1);
+      path1 := TransferInstructions (select. paths[0], path1);
       
-      MakeDominator (in, path1);
-      MakeDominator (in, path2);
-      MakeDominator (in, enter);
-
-      enter := in;
-      ASSERT (exitEnter = oldEnter);
-      RETURN exitEnter
-    END SplitSelect;
+      path2 := NewJumpBlock (branch);
+      SetJump (branch. jump, branch, path2);
+      path2 := TransferInstructions (select. paths[1], path2);
+      
+      out := NewJumpBlock (branch);
+      SetJump (path1. jump, path1, out);
+      SetJump (path2. jump, path2, out);
+      RETURN out
+    END TransferSelect;
   
-  PROCEDURE SplitLoop (VAR enter: Block; loopEnd: SSA.Instr): Block;
+  PROCEDURE TransferLoop (loop: Blocker.Loop; block: JumpBlock): JumpBlock;
     VAR
-      in, body, oldEnter, exitIn, exitBody, exitEnter: Block;
+      body, bodyEnd, backward, out: JumpBlock;
+      branch: BranchBlock;
       predicate: SSA.Opnd;
-      loopStart, backedgeStore: SSA.Instr;
-      adapter: JumpBlock;
-      
-    PROCEDURE Move (result: SSA.Result; source, target: Block);
-    (**Recursively moves the instructions producing @oparam{result} into
-       @oparam{target}.  Order of dependent instructions is kept unchanged.
-       That is, if an instruction @samp{A} depends on instruction @samp{B}, and
-       @samp{A} is placed before @samp{B} in the original block, then the same
-       holds for their respective placement in the target block.  *)
-      VAR
-        instr: SSA.Instr;
-        opnd: SSA.Opnd;
-      BEGIN
-        instr := result. instr;
-        proxy := instr. info(InstrProxy);
-        IF (proxy. block = source) THEN
-          MoveProxy (proxy, target);
-          opnd := instr. opndList;
-          WHILE (opnd # NIL) DO
-            IF (opnd. class # Opnd.forwardRef) THEN
-              Move (opnd. arg, source, target);
-            END;
-            opnd := opnd. nextOpnd
-          END;
-        END;
-      END Move;
-    
-    PROCEDURE MoveUses (instr: SSA.Instr; source, target: Block;
-                        loopEnd: SSA.Instr);
-    (**Recursively moves the instruction @oparam{instr} and all instructions
-       using on of its results into @oparam{target}.  Traversal stops at the
-       instruction @oparam{loopEnd}; that is, this instruction is not moved,
-       nor are any uses of its results inspected.
-
-       Order of dependent instructions is kept unchanged.  That is, if an
-       instruction @samp{A} depends on instruction @samp{B}, and @samp{A} is
-       placed before @samp{B} in the original block, then the same holds for
-       their respective placement in the target block.  *)
-      VAR
-        use: SSA.Opnd;
-        res: SSA.Result;
-        proxy: InstrProxy;
-      BEGIN
-        proxy := instr. info(InstrProxy);
-        IF (proxy. block = source) & (instr # loopEnd) THEN
-          res := instr;
-          WHILE (res # NIL) DO
-            use := res. useList;
-            WHILE (use # NIL) DO
-              IF (use. class # Opnd.forwardRef) THEN
-                MoveUses (use. instr, source, target, loopEnd);
-              END;
-              use := use. nextUse
-            END;
-            res := res. nextResult
-          END;
-          MoveProxy (proxy, target);
-        END;
-      END MoveUses;
-    
+      loopStart: SSA.Instr;
+      backwardStore: SSA.Result;
     BEGIN
-      oldEnter := enter;
+      (* transfer instructions of loop body *)
+      body := NewJumpBlock (block);
+      SetJump (block. jump, block, body);
+      bodyEnd := TransferInstructions (loop, body);
+      
+      (* attach a branch block to the end of the loop body *)
+      predicate := loop. instr. NthOpnd (2);
+      branch := NewBranchBlock
+          (bodyEnd, predicate,
+           predicate. nextOpnd. arg. IsBooleanConst (FALSE));
+      SetJump (bodyEnd. jump, bodyEnd, branch);
 
-      (* set up this block structure:
-         in: dominates all other instructions, jumps to body
-         body: jumps to the old enter, branches to its own beginning  *)
-      predicate := loopEnd. NthOpnd (2);
-      body := NewBranchBlock
-          (predicate, predicate. nextOpnd. arg. IsBooleanConst (FALSE));
-      in := NewJumpBlock();
-      
-      (* move all instructions contributing to the "loop-end" or to the forward
-         reference from "loop-start" into the `in' block; then, move all
-         instruction in `in' that derive input from "loop-start" into `body' *)
-      loopStart := loopEnd. opndList. arg(SSA.Instr);
-      ASSERT (loopStart. opcode = Opcode.loopStart);
-      Move (loopEnd. NthArg (1), enter, in);
-      Move (loopEnd. NthArg (2), enter, in);
-      Move (loopStart. NthArg (1), enter, in);
-      MoveUses (loopStart, in, body, loopEnd);
-      
-      exitIn := DebranchBlock (in);
-      exitBody := DebranchBlock (body);
-      loopEnd. opcode := -loopEnd. opcode; (* mask the current loopEnd *)
-      exitEnter := DebranchBlock (enter);
-      loopEnd. opcode := -loopEnd. opcode; (* unmask it again *)
-      
-      SetJump (exitIn(JumpBlock). jump, exitIn, body);
-      SetJump (exitBody(BranchBlock). jump, exitBody, enter);
-      SetJump (exitBody(BranchBlock). branchTo, exitBody, body);
-      
-      
-      (* check if the backedge refers to a collect; if this collect is located
-         in a branch, move it into a separate block; the back-edge store
-         is the second argument of the loop-start instruction *)
-      backedgeStore := loopEnd. opndList. arg(SSA.Instr). opndList. nextOpnd. arg. instr;
-      IF (backedgeStore. opcode = Opcode.collect) &
-         (backedgeStore. info(InstrProxy). block IS BranchBlock) THEN
-        ASSERT (backedgeStore. info(InstrProxy). block = exitBody);
-        adapter := NewJumpBlock ();
-        SetJump (adapter. jump, adapter, body);
-        SetJump (exitBody(BranchBlock). branchTo, exitBody, adapter);
-        MoveProxy (backedgeStore. info(InstrProxy), adapter);
-        MakeDominator (exitBody, adapter);
+      (* install backward jump; the collect is moved from the loop body
+         into the backward path *)
+      backward := NewJumpBlock (branch);
+      SetJump (branch. branchTo, branch, backward);
+      SetJump (backward. jump, backward, body);
+      loopStart := loop. instr. GetLoopStart();
+      backwardStore := loopStart. opndList. nextOpnd. arg;
+      IF (backwardStore. instr. opcode = Opcode.collect) THEN
+        MoveProxy (backwardStore. instr. info(InstrProxy), backward);
       END;
-
       
-      MakeDominator (in, body);
-      MakeDominator (body, enter);
-
-      enter := in;
-      ASSERT (exitEnter = oldEnter);
-      RETURN exitEnter
-    END SplitLoop;
+      (* install outgoing block *)
+      out := NewJumpBlock (branch);
+      SetJump (branch. jump, branch, out);
+      RETURN out
+    END TransferLoop;
   
   BEGIN
-    proxy := enter. proxyList;
-    WHILE (proxy # NIL) &
-          ((proxy. instr. opcode # Opcode.select) &
-           (proxy. instr. opcode # Opcode.loopEnd)) DO
-      proxy := proxy. nextProxy
-    END;
-    IF (proxy # NIL) THEN
-      CASE proxy. instr. opcode OF
-      | Opcode. select:
-        RETURN SplitSelect (enter, proxy. instr)
-      | Opcode.loopEnd:
-        RETURN SplitLoop (enter, proxy. instr)
+    bProxy := region. first;
+    WHILE (bProxy # NIL) DO
+      proxy := NewInstrProxy (bProxy. instr);
+      bProxy. instr. info := proxy;
+      
+      WITH bProxy: Blocker.Loop DO
+        block := TransferLoop (bProxy, block);
+      | bProxy: Blocker.Select DO
+        block := TransferSelect (bProxy, block);
+      ELSE
+        (* nothing to do *)
       END;
-    ELSE
-      RETURN enter
-    END
-  END DebranchBlock;
-
-
+      AppendProxy (block, proxy);
+      bProxy := bProxy. nextProxy;
+    END;
+    RETURN block;
+  END TransferInstructions;
 
 PROCEDURE TopSort (b: Block): BOOLEAN;
 (**Topological sort on instructions in @oparam{b}.  If there are no cyclic
@@ -718,7 +515,7 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
         proxy := proxy. nextProxy
       END;
       Remove (ready, proxy);
-
+      
       (* append `proxy' to list of instructions in `b' *)
       AppendProxy (b, proxy);
 
@@ -764,11 +561,10 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
 (**Takes a procedure representation in SSA format and converts it into a graph
    representation consisting of basic blocks.  *)
   VAR
-    b, exit: Block;
-    instr: SSA.Instr;
+    b, lastBlock: JumpBlock;
+    root: Blocker.Region;
     proxy: InstrProxy;
-    ok: BOOLEAN;
-
+    
   PROCEDURE ArrangeBlock (b: Block);
   (* arrange children within each block in such way that loop branches have a
      target earlier in the linear chain of blocks, and all other jumps and
@@ -971,26 +767,13 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     END CheckCollects;
   
   BEGIN
-    (* first, put all instructions into a single block; instructions are
-       sorted topological first, and this order is reversed when creating
-       the list of `InstrProxy' instances (for DebranchBlock) *)
-    ok := pb. TopSort();
-    ASSERT (ok);
-    pb. SetMarkers (NIL, -1);
-    b := NewDeadEndBlock();
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      proxy := NewInstrProxy (instr);
-      instr. info := proxy;
-      AddProxy (b, proxy);
-      instr := instr. nextInstr
-    END;
-
-    (* scan instructions for branches in the control flow; create new
-       blocks accordingly, and add links between them representing branches and
-       unconditional jumps  *)
-    exit := DebranchBlock (b);
-
+    root := Blocker.ArrangeInstructions (pb);
+    proxy := NewInstrProxy (root. instr);
+    root. instr. info := proxy;
+    b := NewJumpBlock (NIL);
+    lastBlock := TransferInstructions (root, b);
+    SetJump (lastBlock. jump, lastBlock, NewDeadEndBlock (lastBlock));
+    
     (* mark jump instructions that are loop backedges *)
     MarkBackedges (b);
     

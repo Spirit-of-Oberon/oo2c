@@ -16,10 +16,10 @@ l1_loop:
   i1 = (OOC_INT32)str+i0;
   i1 = *(OOC_UINT8*)i1;
   i1 = i1=='\000';
-  if (i1) goto l3;
+  if (i1) goto l4;
   
   goto l1_loop;
-l3:
+l4:
   OOC_POP_VPAR_STACK
   return i0;
 }
@@ -33,7 +33,6 @@ void Var7b__Test() {
   i0 = Var7b__Len((void*)"abc", 4);
   Out__Int(i0, 0);
   Out__Ln();
-  return;
 }
 
 void Var7b_init(void) {

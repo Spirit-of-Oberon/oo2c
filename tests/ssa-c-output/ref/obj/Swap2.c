@@ -5,17 +5,16 @@ static void Swap2__Swap(OOC_CHAR8 swap) {
   register OOC_INT32 i0,i1,i2;
 
   i0 = Swap2__x;
-  i1 = Swap2__y;
-  i2 = swap;
-  if (i2) goto l2;
-  
-  goto l3;
-l2:
-  {register OOC_INT32 h0=i0;i0=i1;i1=h0;}
+  i1 = swap;
+  i2 = Swap2__y;
+  if (i1) goto l3;
+  i1=i2;
+  goto l4;
 l3:
+  i1=i0;i0=i2;
+l4:
   Swap2__x = i0;
   Swap2__y = i1;
-  return;
 }
 
 void Swap2__Test() {
@@ -41,7 +40,6 @@ void Swap2__Test() {
   i0 = Swap2__y;
   Out__Int(i0, 2);
   Out__Ln();
-  return;
 }
 
 void Swap2_init(void) {

@@ -2,7 +2,7 @@
 #include "__oo2c.h"
 
 static OOC_INT16 Var7c__Len(OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
-  register OOC_INT32 i0,i1;
+  register OOC_INT32 i0,i1,i2;
   OOC_CHAR8 *str;
   OOC_PUSH_VPAR_STACK
 
@@ -15,13 +15,13 @@ l1_loop:
   i1 = (OOC_INT32)str+i0;
   i1 = *(OOC_UINT8*)i1;
   i1 = i1=='\000';
-  if (i1) goto l3;
+  i2 = i0+0;
+  if (i1) goto l4;
   
   goto l1_loop;
-l3:
-  i0 = i0+0;
+l4:
   OOC_POP_VPAR_STACK
-  return i0;
+  return i2;
 }
 
 void Var7c__Test() {
@@ -33,7 +33,6 @@ void Var7c__Test() {
   i0 = Var7c__Len((void*)"abc", 4);
   Out__Int(i0, 0);
   Out__Ln();
-  return;
 }
 
 void Var7c_init(void) {

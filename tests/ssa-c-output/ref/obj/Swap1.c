@@ -8,7 +8,6 @@ static void Swap1__Swap() {
   i1 = Swap1__y;
   Swap1__x = i1;
   Swap1__y = i0;
-  return;
 }
 
 void Swap1__Test() {
@@ -28,7 +27,6 @@ void Swap1__Test() {
   i0 = Swap1__y;
   Out__Int(i0, 2);
   Out__Ln();
-  return;
 }
 
 void Swap1_init(void) {
