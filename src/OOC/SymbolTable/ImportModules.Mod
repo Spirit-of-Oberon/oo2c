@@ -74,7 +74,6 @@ RAISES IO.Error;
   RAISES IO.Error;
     VAR
       m: Repository.Module;
-      res: Msg.Msg;
     BEGIN
       IF import. IsInternalImport() THEN
         import. SetExternalSymTab (systemModule)
@@ -87,21 +86,16 @@ RAISES IO.Error;
             (* we already read the symbol file, and it has not been
                invalidated at this time: take old data *)
             symTab := m.ifData;
-            res := NIL;
           ELSE
             symTab := m.ReadSymbolFile();
           END;
-          IF (res # NIL) THEN
-            Err (readErrorSymbolFile, import. moduleName);
-            lastError. SetMsgAttrib ("reason", res)
-          ELSE
-            (* when we reach this point, then the imported modules have
-               been processed one way or other, and we must make sure that
-               we only see exactly this processed data further on *)
-            m.SetInterfaceData(symTab, Repository.completeInterface, TRUE);
-            m.SetFingerprint(symTab.fingerprint);
-            import. SetExternalSymTab (symTab)
-          END
+          
+          (* when we reach this point, then the imported modules have
+             been processed one way or other, and we must make sure that
+             we only see exactly this processed data further on *)
+          m.SetInterfaceData(symTab, Repository.completeInterface, TRUE);
+          m.SetFingerprint(symTab.fingerprint);
+          import. SetExternalSymTab (symTab);
         END
       END
     END ReadSymbolFile;
