@@ -1496,6 +1496,7 @@
       Calling a type-bound procedure on a type variable is like
       calling it on the variable's type bound.
     </test>
+    <!-- generic51 is in tests/ssa-c-output/ -->
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">

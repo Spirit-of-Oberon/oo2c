@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; pre3">-->
+  select ="&SetupTestCasesWithOut; generic51">-->
   
   &TestSetupWithOut;
     
@@ -292,6 +292,10 @@
     <test id="noDescriptor1" type="accept" file="NoDescriptor1.Mod">
       A <code>NO_TYPE_TAG</code> record as a formal variable
       parameter is not accompanied by a type tag value.
+    </test>
+
+    <test id="generic51" type="run" file="Generic51.Mod">
+      Qualified pointer types may alias as well.
     </test>
   </testcases>
 </testsuite-ext>
