@@ -1,7 +1,8 @@
 MODULE Language:String8 [OOC_EXTENSIONS];
 
 IMPORT 
-  ADT:Object, ADT:String, ADT:StringBuffer, L := Language;
+  ADT:Object, ADT:String, ADT:StringBuffer,
+  L := Language, LString := Language:String;
 
 TYPE
   Type* = POINTER TO TypeDesc;
@@ -10,7 +11,8 @@ TYPE
 
 TYPE
   Value* = POINTER TO ValueDesc;
-  ValueDesc* = RECORD (L.ValueDesc)
+  ValueDesc* = RECORD
+    (LString.ValueDesc)
     value-: String.String;
   END;
 
@@ -61,6 +63,17 @@ PROCEDURE NewChar* (source: CHAR): Value;
     str[0] := source;
     RETURN NewRegion (str, 0, 1)
   END NewChar;
+
+PROCEDURE (v: Value) Length*(): LONGINT;
+  BEGIN
+    RETURN v. value. length;
+  END Length;
+
+PROCEDURE (v: Value) CharAt*(i: LONGINT): CHAR;
+  BEGIN
+    ASSERT ((0 <= i) & (i < v. value. length));
+    RETURN v. value. array[i];
+  END CharAt;
 
 PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   BEGIN
