@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
-<!-- Created on September, 3  2003 by texi2html 1.65 -->
+<!-- Created on November, 29  2003 by texi2html 1.65 -->
 <!-- 
 Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -39,9 +39,10 @@ Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC4">4. Doc Comments</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC14">5. Built-in Type STRING</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC15">6. Exceptions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
-<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC16">7. Parametric Types</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
-<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC17">8. Initialization Functions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
-<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC18">A. Example Module</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC19">7. Parametric Types</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC20">8. Initialization Functions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC21">A. Example Module</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC22">B. Document History</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 </TABLE></BLOCKQUOTE>
 <P>
 
@@ -527,7 +528,7 @@ values.
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC14"> &lt;&lt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC19"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
@@ -542,8 +543,9 @@ There are four user visible parts to exceptions:
 
 <UL>
 <LI>
-The module `<SAMP>Exception</SAMP>', defining the type `<SAMP>Exception</SAMP>' and
-implementing the required run-time support.
+The module `<SAMP>Exception</SAMP>', defining the types `<SAMP>Exception</SAMP>',
+`<SAMP>Checked</SAMP>', and `<SAMP>Unchecked</SAMP>' and implementing the required
+run-time support.
 <LI>
 A new statement, <CODE>TRY</CODE>, to transfer control to exception handlers
 if a statement sequence raises an exception.
@@ -551,8 +553,33 @@ if a statement sequence raises an exception.
 A new predefined procedure, <CODE>RAISE</CODE>, to raise an exception.
 <LI>
 An extended syntax for procedures and procedure types, to declare
-which checked exception can be raised by a procedure.
+which checked (or unchecked) exception can be raised by a procedure.
 </UL>
+<P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC16">6.1 <CODE>TRY</CODE> and <CODE>RAISE</CODE></A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC17">6.2 Checked vs Unchecked Exceptions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC18">6.3 Implementation Notes</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="TRY and RAISE"></A>
+<HR SIZE="6">
+<A NAME="SEC16"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC19"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 6.1 <CODE>TRY</CODE> and <CODE>RAISE</CODE> </H2>
+<!--docid::SEC16::-->
 <P>
 
 Exceptions behave pretty much like their counterparts in Python or
@@ -615,9 +642,40 @@ current exception that triggered the <CODE>CATCH</CODE>.  Its type is the one
 from the <CODE>CATCH</CODE> clause.  The variable is read-only.
 </P><P>
 
-An exception <VAR>E</VAR> must either be caught within a procedure, or the
-procedure must declare that it may pass an exception of type <VAR>E</VAR> up to
-its caller.  For example,
+Within the module body no exceptions can be passed up, because there
+is no caller.  As a consequence, any exception that is not caught
+explicitly is written to <VAR>stderr</VAR> and aborts the program.  For
+checked exceptions, the compiler emits a warning if they are not caught
+in the module body.
+</P><P>
+
+<A NAME="Checked vs Unchecked Exceptions"></A>
+<HR SIZE="6">
+<A NAME="SEC17"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC18"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC19"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 6.2 Checked vs Unchecked Exceptions </H2>
+<!--docid::SEC17::-->
+<P>
+
+There are two kinds of exceptions, checked and unchecked.  The
+compiler enforces a stricter set of restrictions on the usage of
+checked exceptions.  During program run-time, there is no difference
+between the two.
+</P><P>
+
+A <EM>checked</EM> exception <VAR>E</VAR> must either be caught within a
+procedure, or the procedure must declare that it may pass an exception
+of type <VAR>E</VAR> up to its caller.  For example,
 </P><P>
 
 <TABLE><tr><td>&nbsp;</td><td class=example><pre>PROCEDURE P() RAISES E;
@@ -627,18 +685,53 @@ declares that evaluation of `<SAMP>P</SAMP>' may raise an exception of type <VAR
 or an extension thereof.
 </P><P>
 
-Within the module body no exceptions can be passed up, because there is no
-caller.  As a consequence, any exception that is not caught explicitly is
-written to <VAR>stderr</VAR> and aborts the program.
+An exception is of the "checked" variant if it is an extension of
+the class `<SAMP>Exception.Checked</SAMP>'.  The base class
+`<SAMP>Exception.Exception</SAMP>' is also treated as "checked".
 </P><P>
 
-<EM>Implementation note</EM>: A <CODE>TRY</CODE> block is mapped to C's
-`<SAMP>setjmp()</SAMP>' function by <CODE>oo2c</CODE>.  The amount of data stored by
-this function depends on the target architecture and may differ by a
-factor of ten or more.  For example, on a `<SAMP>ix86</SAMP>' processor, only
-72 bytes are stored, while on a `<SAMP>PPC</SAMP>' this is 768 bytes.  As a
-consequence, the work done within a <CODE>TRY</CODE> should be large enough
-to amortize the costs of the <CODE>TRY</CODE> for all possible targets.
+On the other hand, an <EM>unchecked</EM> exception can be raised anytime,
+without the need to declare or catch it.  It is possible to add an
+unchecked exception to the `<SAMP>RAISES</SAMP>' list of a procedure
+declaration for documentation purposes.  In this case, it is
+<EM>not</EM> a compile time error if the caller does not catch this
+exception, and does not declare to pass it on.  An exception is
+"unchecked" if it is an extension of the class
+`<SAMP>Exception.Unchecked</SAMP>'.
+</P><P>
+
+Please note that the record type of the exception class,
+`<SAMP>Exception.ExceptionDesc</SAMP>', is no longer exported.  This means
+that it is not possible to extend it directly.  Applications must use
+either `<SAMP>Exception.CheckedDesc</SAMP>' or `<SAMP>Exception.UncheckedDesc</SAMP>'
+to create specialized exception classes.
+</P><P>
+
+<A NAME="Implementation Notes"></A>
+<HR SIZE="6">
+<A NAME="SEC18"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC19"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC19"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 6.3 Implementation Notes </H2>
+<!--docid::SEC18::-->
+<P>
+
+A <CODE>TRY</CODE> block is mapped to C's `<SAMP>setjmp()</SAMP>' function by
+<CODE>oo2c</CODE>.  The amount of data stored by this function depends on
+the target architecture and may differ by a factor of ten or more.
+For example, on a `<SAMP>ix86</SAMP>' processor, only 72 bytes are stored,
+while on a `<SAMP>PPC</SAMP>' this is 768 bytes.  As a consequence, the work
+done by the program within a <CODE>TRY</CODE> should be large enough to
+amortize the costs of the <CODE>TRY</CODE> for all possible targets.
 </P><P>
 
 On some systems<A NAME="DOCF2" HREF="oo2c-v2.html#FOOT2">(2)</A>, raising an exception also stores
@@ -648,30 +741,22 @@ well.  Therefore they should only be used to report exceptional
 conditions that are rarely triggered.
 </P><P>
 
-<EM>Possible changes</EM>: At the time of writing, only checked
-exceptions are supported.  That is, exceptions must be explicitly
-declared or caught.  It is expected that unchecked exceptions are
-added in the future, where a procedure may raise any exception without
-announcing it to its callers.  Which of the two modes, checked or
-unchecked, becomes then the default behavior is open to discussions.
-</P><P>
-
 <A NAME="Parametric Types"></A>
 <HR SIZE="6">
-<A NAME="SEC16"></A>
+<A NAME="SEC19"></A>
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &gt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC18"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC20"> &gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &lt;&lt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC20"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
 </TR></TABLE>
 <H1> 7. Parametric Types </H1>
-<!--docid::SEC16::-->
+<!--docid::SEC19::-->
 <P>
 
 A parametric type can be seen as a type definition with a certain
@@ -810,20 +895,20 @@ the acceptable argument lists of calls, are currently not supported.
 
 <A NAME="Initialization Functions"></A>
 <HR SIZE="6">
-<A NAME="SEC17"></A>
+<A NAME="SEC20"></A>
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC18"> &gt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &lt;&lt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC19"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC21"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC19"> &lt;&lt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC18"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC21"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
 </TR></TABLE>
 <H1> 8. Initialization Functions </H1>
-<!--docid::SEC17::-->
+<!--docid::SEC20::-->
 <P>
 
 The compiler provides a common notation to define an initialization
@@ -879,20 +964,20 @@ in the future.
 
 <A NAME="Example Module"></A>
 <HR SIZE="6">
-<A NAME="SEC18"></A>
+<A NAME="SEC21"></A>
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt; ]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &lt;&lt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC20"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC22"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC20"> &lt;&lt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC22"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
 </TR></TABLE>
 <H1> A. Example Module </H1>
-<!--docid::SEC18::-->
+<!--docid::SEC21::-->
 <P>
 
 The modules below exercise most of the features described above:
@@ -1002,6 +1087,36 @@ BEGIN
 END TestMap.
 </FONT></pre></td></tr></table></P><P>
 
+<A NAME="Document History"></A>
+<HR SIZE="6">
+<A NAME="SEC22"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC21"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC21"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> B. Document History </H1>
+<!--docid::SEC22::-->
+<P>
+
+<DL COMPACT>
+<DT><EM>1.5</EM>
+<DD>Adds information regarding "checked" vs "unchecked" exceptions,
+which were introduced with <CODE>oo2c-2.0.13</CODE>.  Covers
+<CODE>oo2c-2.0.15</CODE>.
+<P>
+
+<DT><EM>1.4</EM>
+<DD>First release.  Covers <CODE>oo2c-2.0.12</CODE>.
+</DL>
+<P>
+
 <HR SIZE="6">
 <A NAME="oo2c-v2.html"></A>
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
@@ -1049,11 +1164,21 @@ systems running with GNU <CODE>libc</CODE> and implementing the
 <BR>
 <A NAME="TOC15" HREF="oo2c-v2.html#SEC15">6. Exceptions</A>
 <BR>
-<A NAME="TOC16" HREF="oo2c-v2.html#SEC16">7. Parametric Types</A>
+<BLOCKQUOTE>
+<A NAME="TOC16" HREF="oo2c-v2.html#SEC16">6.1 <CODE>TRY</CODE> and <CODE>RAISE</CODE></A>
 <BR>
-<A NAME="TOC17" HREF="oo2c-v2.html#SEC17">8. Initialization Functions</A>
+<A NAME="TOC17" HREF="oo2c-v2.html#SEC17">6.2 Checked vs Unchecked Exceptions</A>
 <BR>
-<A NAME="TOC18" HREF="oo2c-v2.html#SEC18">A. Example Module</A>
+<A NAME="TOC18" HREF="oo2c-v2.html#SEC18">6.3 Implementation Notes</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC19" HREF="oo2c-v2.html#SEC19">7. Parametric Types</A>
+<BR>
+<A NAME="TOC20" HREF="oo2c-v2.html#SEC20">8. Initialization Functions</A>
+<BR>
+<A NAME="TOC21" HREF="oo2c-v2.html#SEC21">A. Example Module</A>
+<BR>
+<A NAME="TOC22" HREF="oo2c-v2.html#SEC22">B. Document History</A>
 <BR>
 </BLOCKQUOTE>
 <HR SIZE=1>
@@ -1078,11 +1203,13 @@ systems running with GNU <CODE>libc</CODE> and implementing the
 <BR>
 <A NAME="TOC15" HREF="oo2c-v2.html#SEC15">6. Exceptions</A>
 <BR>
-<A NAME="TOC16" HREF="oo2c-v2.html#SEC16">7. Parametric Types</A>
+<A NAME="TOC19" HREF="oo2c-v2.html#SEC19">7. Parametric Types</A>
 <BR>
-<A NAME="TOC17" HREF="oo2c-v2.html#SEC17">8. Initialization Functions</A>
+<A NAME="TOC20" HREF="oo2c-v2.html#SEC20">8. Initialization Functions</A>
 <BR>
-<A NAME="TOC18" HREF="oo2c-v2.html#SEC18">A. Example Module</A>
+<A NAME="TOC21" HREF="oo2c-v2.html#SEC21">A. Example Module</A>
+<BR>
+<A NAME="TOC22" HREF="oo2c-v2.html#SEC22">B. Document History</A>
 <BR>
 
 </BLOCKQUOTE>
@@ -1257,7 +1384,7 @@ the following structure:
 <BR>  
 <FONT SIZE="-1">
 This document was generated
-on <I>September, 3  2003</I>
+by <I>Michael van Acken</I> on <I>November, 29  2003</I>
 using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
 "><I>texi2html</I></A>
 </FONT>
