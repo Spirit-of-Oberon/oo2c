@@ -5171,6 +5171,7 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     NEW (p);
     statmSeq := AddSetupCode (sym, decl, statmSeq);
     InitProcedure (p, sym, decl, statmSeq, endOfProc,
+                   (decl.formalPars.resultType # NIL) &
                    GetPragmaValue (b, StdPragmas.functionResultCheck,
                                    decl. name. pos));
     RETURN p
