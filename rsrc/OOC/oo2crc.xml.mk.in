@@ -16,6 +16,8 @@
     <set name='uninstall'>rm -f</set>
     <set name='bindir'>%bindir%</set>
     <set name='oocdir'>%oocdir%</set>
+
+    <set name='xsltproc'>@XSLTPROC@</set>
   </options>
 
   <pragmas>

@@ -8,7 +8,7 @@ IMPORT
   StringSearch:NoMatch, OS:Path,
   OSFiles := OS:Files, OS:ProcessManagement, URI, URI:Scheme:File,
 
-  OOC:Logger, OOC:Error, OOC:Config,
+  OOC:Logger, OOC:Error, OOC:Config, StringValue := Config:Value:String,
   OOC:Config:Pragmas, OOC:Config:Repositories,
   OOC:Doc:ResolveRef, Rep := OOC:Repository, OOC:AST,
   Sym := OOC:SymbolTable, OOC:SymbolTable:CreateNamespace,
@@ -61,8 +61,8 @@ TYPE
   END;
 
 CONST
-  scriptPackageName = "OOC";
-  scriptResourcePath = "xml/gen-interface-description";
+  stylesheetPackageName = "OOC";
+  stylesheetPath = "xml/interface-description.xsl";
   backendNone* = 0;
   backendSSAtoC* = 1;
   backendIRtoC* = 2;
@@ -70,7 +70,7 @@ CONST
   
 VAR
   fileIdNames: ARRAY Rep.maxFileId+1 OF ARRAY 24 OF CHAR;
-  scriptSystemId: URI.URI;
+  stylesheetSystemId: URI.URI;
   inspectProc*, inspectStage*: StringSearch.Matcher;
   (**Debug options, not supported by all back-ends.  The matcher
      @ovar{inspectProc} is applied to procedure names.  On success, the
@@ -681,18 +681,18 @@ PROCEDURE (r: Rules) UpdateInterfaceHTML(module: Rep.Module): BOOLEAN;
 
   PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
     BEGIN
-      IF (scriptSystemId = NIL) THEN
-        scriptSystemId := repositories. GetResource (scriptPackageName, scriptResourcePath);
-        IF (scriptSystemId = NIL) THEN
-          Out.String ("Error: Cannot locate script "+scriptResourcePath+
-                      " from package "+scriptPackageName+" in any of the "+
+      IF (stylesheetSystemId = NIL) THEN
+        stylesheetSystemId := repositories. GetResource (stylesheetPackageName, stylesheetPath);
+        IF (stylesheetSystemId = NIL) THEN
+          Out.String ("Error: Cannot locate stylesheet "+stylesheetPath+
+                      " from package "+stylesheetPackageName+" in any of the "+
                       "configured repositories.");
           Out.Ln;
           HALT (1)
         END;
-        RETURN scriptSystemId
+        RETURN stylesheetSystemId
       ELSE
-        RETURN scriptSystemId
+        RETURN stylesheetSystemId
       END
     END GetSystemId;
   
@@ -703,17 +703,19 @@ PROCEDURE (r: Rules) UpdateInterfaceHTML(module: Rep.Module): BOOLEAN;
         exit := 0;
         uri := GetSystemId (Config.repositories);
         uri(File.URI). GetPath (str);
+        Strings.Insert(" ", 0, str);
+        Strings.Insert(Config.xsltproc.value(StringValue.Value).string^,
+                       0, str);
         
         uri := module. GetURI (Rep.modInterfaceDescr, TRUE);
         uri(File.URI). GetPath (path);
-        Strings.Append (" '", str);
+        Strings.Append (" ", str);
         Strings.Append (path, str);
-        Strings.Append ("' '", str);
+        Strings.Append (" >", str);
         
         uri := module. GetURI (Rep.modInterfaceHTML, TRUE);
         uri(File.URI). GetPath (path);
         Strings.Append (path, str);
-        Strings.Append ("'", str);
         
         Path.dirname (path, path);
         OSFiles.makedirs (path, OSFiles.defaultMode, res);
@@ -1213,7 +1215,7 @@ BEGIN
   inspectStage := NoMatch.matcher;
   writeAST := FALSE;
   writeIR := FALSE;
-  scriptSystemId := NIL;
+  stylesheetSystemId := NIL;
   
   fileIdNames[Rep.modExecutable] := "Executable";
   fileIdNames[Rep.modLibrary] := "Library";

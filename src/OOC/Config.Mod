@@ -21,6 +21,25 @@ CONST
   
 VAR
   config: Simple.Config;
+  xsltproc-: Options.Option;
+
+PROCEDURE AddOption* (name: ARRAY OF CHAR; init: Value.Value): Options.Option;
+(**Add the program option @oparam{name} to the configuration parser.
+   Its initial value is @oparam{init}.  The new option instance is
+   returned.  *)
+  BEGIN
+    RETURN options. Set (name, init);
+  END AddOption;
+
+PROCEDURE AddCmdLine* (options, template: ARRAY OF CHAR);
+(**Add the command line options listed in @oparam{options} to the configuration
+   parser.  The option names are mapped onto program options using the
+   rule in @oparam{template}.  *)
+  VAR
+    ot: CmdLine.OptionTemplate;
+  BEGIN
+    ot := cmdLine. AddOptionTemplate (options, template);
+  END AddCmdLine;
 
 PROCEDURE InitConfig (defaultConfigFile: ARRAY OF CHAR);
   VAR
@@ -43,25 +62,11 @@ PROCEDURE InitConfig (defaultConfigFile: ARRAY OF CHAR);
     StdPragmas.CreateVariables (pragmas);
     repositories := Repositories.New();
     config. sectionList. Add (repositories);
+
+    xsltproc := AddOption("xsltproc", String.New ("xsltproc"));
+    AddCmdLine ("--xsltproc",
+                "<options><set name='xsltproc'>$1</set></options>");
   END InitConfig;
-
-PROCEDURE AddOption* (name: ARRAY OF CHAR; init: Value.Value): Options.Option;
-(**Add the program option @oparam{name} to the configuration parser.
-   Its initial value is @oparam{init}.  The new option instance is
-   returned.  *)
-  BEGIN
-    RETURN options. Set (name, init);
-  END AddOption;
-
-PROCEDURE AddCmdLine* (options, template: ARRAY OF CHAR);
-(**Add the command line options listed in @oparam{options} to the configuration
-   parser.  The option names are mapped onto program options using the
-   rule in @oparam{template}.  *)
-  VAR
-    ot: CmdLine.OptionTemplate;
-  BEGIN
-    ot := cmdLine. AddOptionTemplate (options, template);
-  END AddCmdLine;
 
 PROCEDURE Read* (errList: Msg.MsgList);
   BEGIN
