@@ -115,9 +115,12 @@ PROCEDURE Install* (VAR scope : T.Object; tag : STRING; name : STRING; new : T.T
 VAR 
   obj : T.Object;
 BEGIN
-  IF T.FindObject(scope, name, obj) & ~T.AllowedRedefinition(new, obj.type) THEN
-    err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type);
-    obj.type := new;
+  IF T.FindObject(scope, name, obj) THEN
+    IF T.AllowedRedefinition(new, obj.type) THEN
+      obj.type := new;
+    ELSE
+      err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type);
+    END
   ELSE
     T.Bind(scope, name, 0, new, mod);
   END;
