@@ -101,7 +101,7 @@ Log,
    For every node @var{Foo}, be it an expression or a statement, the following
    declarations appear in the procedure area in this order:
 
-   @table
+   @table @asis
    @item Comment ``Class: @var{Foo}''
    For searches in the source text.
 
@@ -119,7 +119,7 @@ Log,
    The corresponding visit method for @otype{Visitor}.  (Does not exist
    for abstract classes.)
    
-   @item @var{Foo}.Accept}
+   @item @code{@var{Foo}.Accept}
    The corresponding accept method for @otype{Visitor}.  (Does not exist
    for abstract classes.)
    @end table
@@ -2057,6 +2057,18 @@ BEGIN
         END;
       ELSE
       END;
+    END;
+  ELSIF IsPredefType(exprType, Predef.char) & (expr IS Const) THEN
+    (* expression is constant character *)
+    length := expr(Const). value(String8.Value). value. length;
+    WITH type : Sym.Array DO
+      IF IsPredefType(type. elementType, Predef.char) &
+         (type.isOpenArray OR (type.length > 1)) THEN
+        (* char may be assigned to ARRAY OF CHAR with sufficient length *)
+        result := b.NewConst(expr.sym, Predef.GetType (Predef.charString),
+                             expr(Const). value);
+      END;
+    ELSE
     END;
   END;
   RETURN result;
