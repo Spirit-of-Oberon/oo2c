@@ -38,7 +38,7 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
     VAR
       i: LONGINT;
     BEGIN
-      IF (str[0] = "i") OR (str[0] = "l") OR
+      IF (str[0] = "i") OR (str[0] = "w") OR (str[0] = "l") OR
          (str[0] = "f") OR (str[0] = "d") THEN
         i := 1;
         WHILE ("0" <= str[i]) & (str[i] <= "9") DO
