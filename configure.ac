@@ -1,6 +1,6 @@
 dnl Autoconf requirements
 AC_PREREQ(2.53)
-AC_INIT(OOC,2.0.11.2,mva@users.sf.net)
+AC_INIT(OOC,2.0.11.4,mva@users.sf.net)
 AC_CONFIG_SRCDIR(src/OOC/Parser.Mod)
 AC_CONFIG_HEADER(lib/src/__config.h)
 
@@ -46,6 +46,7 @@ fi
 AC_SUBST(ooc_have_lib_gc)
 
 OOC_CHECK_LIB(xnet,socket)
+OOC_CHECK_LIB(rt,sem_init)
 if test $TARGET_OS = Win32; then
   ooc_have_lib_m=FALSE
   OOC_CHECK_LIB(mingwex,main)
