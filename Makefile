@@ -11,6 +11,7 @@ ifndef OOC_DEV_ROOT
 export OOC_DEV_ROOT=$(shell pwd)
 export MAIN_MAKEFILE=$(OOC_DEV_ROOT)/rsrc/OOC/Makefile.ooc-main
 endif
+export OO2CRC=$(OOC_DEV_ROOT)/oo2crc-install.xml
 
 include $(OOC_DEV_ROOT)/Makefile.config
 
@@ -131,7 +132,10 @@ rsrc/OOC/oo2crc.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
 ### library from scratch.  It must not refer to any stale data that may
 ### be present on the target system.
 $(OOC_DEV_ROOT)/oo2crc-install.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
-	sed -e 's:<file-system>:<!--:g' -e 's:</file-system>:-->:g' $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml >$(OOC_DEV_ROOT)/oo2crc-install.xml
+	sed -e 's:<file-system>:<!--:g' \
+		-e 's:</file-system>:-->:g' \
+		-e 's:<repositories>:<repositories><file-system>$(OOC_DEV_ROOT)/lib</file-system><file-system>$(OOC_DEV_ROOT)</file-system>:' \
+		 $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml >$(OOC_DEV_ROOT)/oo2crc-install.xml
 
 dist: $(OOC_DEV_ROOT)/oo2crc-install.xml
 	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1 2>/dev/null
