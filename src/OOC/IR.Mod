@@ -3446,8 +3446,9 @@ PROCEDURE (b: Builder) NewVar* (name: Symbol; decl: Sym.VarDecl): Var;
     type: Sym.Type;
     args: Sym.TypeRefArray;
     qualType: Sym.QualType;
-    i: LONGINT;
+    i, j: LONGINT;
     params: Sym.TypeVarArray;
+    recordArgs: Sym.TypeRefArray;
   BEGIN
     NEW (var);
     IF decl.isReceiver & (decl.type.typePars # NIL) THEN
@@ -3457,16 +3458,30 @@ PROCEDURE (b: Builder) NewVar* (name: Symbol; decl: Sym.VarDecl): Var;
       NEW(args, LEN(decl.type.typePars.params^));
       IF (decl.type IS Sym.Pointer) &
          (decl.type(Sym.Pointer).baseType IS Sym.QualType) THEN
-        (* FIXME... this assumes that there is a one-to-one relation between
-           the pointer and record parameters *)
+        (* the pointer type declaration's parameter list may not correspond
+           one-to-one with the one of the qualified record type; if possible,
+           insert as the top-level type argument a value that maps the type
+           variable onto itself in the qualified record type *)
         params := decl.type(Sym.Pointer).
             baseType(Sym.QualType).baseType(Sym.Record).typePars.params;
-        ASSERT(LEN(params^) = LEN(args^));
+        recordArgs := decl.type(Sym.Pointer).baseType(Sym.QualType).arguments;
+        FOR i := 0 TO LEN(args^)-1 DO
+          j := 0;
+          WHILE (j # LEN(recordArgs^)) &
+                (recordArgs[j].type # decl.type.typePars.params[i]) DO
+            INC(j);
+          END;
+          IF (j = LEN(recordArgs^)) THEN
+            Sym.InitTypeRef(args[i], decl.type.typePars.params[i]);
+          ELSE
+            Sym.InitTypeRef(args[i], params[j]);
+          END;
+        END;
       ELSE
         params := decl.type.typePars.params;
-      END;
-      FOR i := 0 TO LEN(args^)-1 DO
-        Sym.InitTypeRef(args[i], params[i]);
+        FOR i := 0 TO LEN(args^)-1 DO
+          Sym.InitTypeRef(args[i], params[i]);
+        END;
       END;
       
       NEW(qualType);
