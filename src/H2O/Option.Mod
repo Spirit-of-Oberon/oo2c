@@ -108,6 +108,18 @@ BEGIN
   END;
 END Write;
 
+PROCEDURE (l : StringList) Contains* (value : STRING) : BOOLEAN;
+VAR 
+  i : LONGINT;
+  string : STRING;
+BEGIN
+  FOR i := 0 TO l.value.Size() - 1 DO
+    string := l.value.Get(i);
+    IF string.Equals(value) THEN RETURN TRUE END;
+  END;
+  RETURN FALSE;
+END Contains;
+
 PROCEDURE (l : StringList) IsPrefix* (value : STRING; VAR base : STRING) : BOOLEAN;
 VAR 
   i : LONGINT;
