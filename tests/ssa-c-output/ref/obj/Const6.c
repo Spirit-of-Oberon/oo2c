@@ -1,5 +1,5 @@
-#include "Const6.d"
-#include "__oo2c.h"
+#include <Const6.d>
+#include <__oo2c.h>
 
 static void Const6__P(OOC_CHAR8 b) {
   register OOC_INT32 i0;

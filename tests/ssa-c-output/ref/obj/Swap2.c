@@ -1,5 +1,5 @@
-#include "Swap2.d"
-#include "__oo2c.h"
+#include <Swap2.d>
+#include <__oo2c.h>
 
 static void Swap2__Swap(OOC_CHAR8 swap) {
   register OOC_INT32 i0,i1,i2;

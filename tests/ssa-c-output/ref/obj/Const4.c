@@ -1,5 +1,5 @@
-#include "Const4.d"
-#include "__oo2c.h"
+#include <Const4.d>
+#include <__oo2c.h>
 
 static void Const4__P(OOC_CHAR8 b) {
 

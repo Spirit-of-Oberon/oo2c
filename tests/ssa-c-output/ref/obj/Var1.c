@@ -1,5 +1,5 @@
-#include "Var1.d"
-#include "__oo2c.h"
+#include <Var1.d>
+#include <__oo2c.h>
 
 static OOC_INT16 Var1__F(OOC_INT16 x) {
   register OOC_INT32 i0;

@@ -1,5 +1,5 @@
-#include "Cse3.d"
-#include "__oo2c.h"
+#include <Cse3.d>
+#include <__oo2c.h>
 
 static OOC_INT16 Cse3__F(OOC_INT16 x) {
   register OOC_INT32 i0;

@@ -1,5 +1,5 @@
-#include "Alloc1.d"
-#include "__oo2c.h"
+#include <Alloc1.d>
+#include <__oo2c.h>
 
 static void Alloc1__F(OOC_INT16 a) {
   register OOC_INT32 i0,i1;

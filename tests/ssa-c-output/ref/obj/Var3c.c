@@ -1,5 +1,5 @@
-#include "Var3c.d"
-#include "__oo2c.h"
+#include <Var3c.d>
+#include <__oo2c.h>
 
 static OOC_INT16 Var3c__F(OOC_CHAR8 b) {
   register OOC_INT32 i0;

@@ -1,5 +1,5 @@
-#include "NoDescriptor1.d"
-#include "__oo2c.h"
+#include <NoDescriptor1.d>
+#include <__oo2c.h>
 
 static void NoDescriptor1__P(struct NoDescriptor1__R *r) {
 

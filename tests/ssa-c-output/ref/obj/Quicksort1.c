@@ -1,5 +1,5 @@
-#include "Quicksort1.d"
-#include "__oo2c.h"
+#include <Quicksort1.d>
+#include <__oo2c.h>
 
 void Quicksort1__Sort(OOC_INT32 a[], OOC_LEN a_0d, OOC_INT32 m, OOC_INT32 n) {
   register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
