@@ -102,6 +102,9 @@ CONST
   flagDeprecated* = 10;
   flagOOCExtensions* = 11;
   flagExtensible* = 12;
+  (**This flag is disabled, because it causes a deref of NIL in
+     @omodule{*OOC:SymbolTable:InterfaceDescr} due to an unset
+     @ofield{Record.class}.  *)
   
 CONST
   nameNotExported* = 0;
@@ -1216,8 +1219,8 @@ PROCEDURE (item: Item) AddFlag* (name: Name);
       id := flagNoDescriptor;
     ELSIF (name.str^ = "NOT_EXTENSIBLE") THEN
       id := flagNotExtensible;
-    ELSIF (name.str^ = "EXTENSIBLE") THEN
-      id := flagExtensible;
+    (*ELSIF (name.str^ = "EXTENSIBLE") THEN
+      id := flagExtensible;*)
     ELSIF (name.str^ = "CSTRING") THEN
       id := flagCString;
     ELSIF (name.str^ = "NIL_COMPAT") THEN
