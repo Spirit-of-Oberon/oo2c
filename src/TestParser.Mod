@@ -4,7 +4,7 @@ IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Msg,
   Object, IO, IO:FileChannel, Std:=IO:StdChannels,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, 
-  OOC:Scanner, OOC:Scanner:SymList, OOC:Parser, OOC:AST, 
+  OOC:Scanner, OOC:Scanner:SymList, OOC:Parser, 
   OOC:AST:ExtTree, OOC:AST:ExtTree:XML, OOC:AST:ExtTree:StupidPP;
   
 CONST
@@ -21,7 +21,7 @@ VAR
   pragmaSection: Pragmas.Section;
   scannerBuilder: SymList.Builder;
   astBuilder: ExtTree.Builder;
-  ast: AST.Node;
+  ast: ExtTree.Node;
   mode: INTEGER;
 BEGIN
   IF (ProgramArgs.args. ArgNumber() = 0) THEN

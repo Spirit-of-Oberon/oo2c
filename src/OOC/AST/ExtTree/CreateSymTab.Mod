@@ -22,7 +22,7 @@ MODULE OOC:AST:ExtTree:CreateSymTab;
 
 IMPORT
   Object, Exception, URI, ParserURI := URI:Parser,
-  OOC:Scanner:Symbol, OOC:AST, OOC:Scanner:SymList, OOC:AST:ExtTree,
+  OOC:Scanner:Symbol, OOC:AST:ExtTree, OOC:Scanner:SymList,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   SymTabBuilder := OOC:SymbolTable:Builder;
 
@@ -53,7 +53,7 @@ TYPE
   END;
 
 
-PROCEDURE GetName* (node: AST.Node): Sym.Name;
+PROCEDURE GetName* (node: ExtTree.Node): Sym.Name;
   VAR
     sym: SymList.Symbol;
     name: Sym.Name;
@@ -68,7 +68,7 @@ PROCEDURE GetName* (node: AST.Node): Sym.Name;
     RETURN name
   END GetName;
 
-PROCEDURE GetPosition (node: AST.Node): Sym.Position;
+PROCEDURE GetPosition (node: ExtTree.Node): Sym.Position;
   VAR
     sym: SymList.Symbol;
     position: Sym.Position;
@@ -86,7 +86,7 @@ PROCEDURE GetPosition (node: AST.Node): Sym.Position;
     RETURN position
   END GetPosition;
 
-PROCEDURE ExportMark (id: AST.Node): Sym.ExportMark;
+PROCEDURE ExportMark (id: ExtTree.Node): Sym.ExportMark;
   BEGIN
     WITH id: ExtTree.IdentDef DO
       IF (id. mark = NIL) THEN
@@ -99,7 +99,7 @@ PROCEDURE ExportMark (id: AST.Node): Sym.ExportMark;
     END
   END ExportMark;
 
-PROCEDURE EndOfType (t: AST.Node): Sym.ModulePos;
+PROCEDURE EndOfType (t: ExtTree.Node): Sym.ModulePos;
   VAR
     end: Sym.ModulePos;
   BEGIN
@@ -141,16 +141,16 @@ PROCEDURE EndOfType (t: AST.Node): Sym.ModulePos;
     END
   END EndOfType;
 
-PROCEDURE Accept (v: Visitor; node: AST.Node);
+PROCEDURE Accept (v: Visitor; node: ExtTree.Node);
   VAR
     oldParent: Sym.Item;
   BEGIN
     oldParent := v. parent;
-    node(ExtTree.Node). Accept (v);
+    node. Accept (v);
     v. parent := oldParent
   END Accept;
 
-PROCEDURE AcceptParent (v: Visitor; node: AST.Node; newParent: Sym.Item);
+PROCEDURE AcceptParent (v: Visitor; node: ExtTree.Node; newParent: Sym.Item);
 (* Like @oproc{Accept} above, but change the field @samp{v.parent} to 
    @oparam{newParent} before calling @oproc{Accept} for @oparam{node}.
    Afterwards, the old value of @samp{v.parent} is restored.  *)
@@ -159,11 +159,11 @@ PROCEDURE AcceptParent (v: Visitor; node: AST.Node; newParent: Sym.Item);
   BEGIN
     oldParent := v. parent;
     v. parent := newParent;
-    node(ExtTree.Node). Accept (v);
+    node. Accept (v);
     v. parent := oldParent
   END AcceptParent;
 
-PROCEDURE GetType (v: Visitor; node: AST.Node): Sym.Type;
+PROCEDURE GetType (v: Visitor; node: ExtTree.Node): Sym.Type;
   VAR
     t: Sym.Type;
   BEGIN
@@ -174,7 +174,7 @@ PROCEDURE GetType (v: Visitor; node: AST.Node): Sym.Type;
     RETURN t
   END GetType;
 
-PROCEDURE GetTypeParent (v: Visitor; node: AST.Node; newParent: Sym.Item): Sym.Type;
+PROCEDURE GetTypeParent (v: Visitor; node: ExtTree.Node; newParent: Sym.Item): Sym.Type;
   VAR
     t: Sym.Type;
   BEGIN
@@ -192,9 +192,9 @@ PROCEDURE AddFlags (item: Sym.Item; flags: ExtTree.Flags);
     l: ExtTree.NodeList;
   BEGIN
     IF (flags # NIL) THEN
-      l := flags.flagList(ExtTree.NodeList);
+      l := flags.flagList;
       FOR i := 0 TO l. len-1 BY 2 DO
-        n := l. n[i](ExtTree.Node);
+        n := l. n[i];
         WITH n: ExtTree.Terminal DO
           item.AddFlag(GetName(n));
         END;
@@ -219,7 +219,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     uri: URI.URI;
     str, prefixOption, suffixOption: STRING;
     i, j: LONGINT;
-    n: AST.Node;
+    n: ExtTree.Node;
     depList: Object.StringArrayPtr;
   BEGIN
     moduleName := GetName (module. name. nameList. n[0]);
@@ -442,7 +442,7 @@ PROCEDURE (v: Visitor) VisitVarDecl* (varDecl: ExtTree.VarDecl);
     type: Sym.Type;
     var: Sym.VarDecl;
     i: LONGINT;
-    flags: AST.Node;
+    flags: ExtTree.Node;
   BEGIN
     type := GetType (v, varDecl. type);
     FOR i := 0 TO varDecl. identList. len-1 BY 3 DO
@@ -465,7 +465,7 @@ PROCEDURE (v: Visitor) VisitReceiver* (receiver: ExtTree.Receiver);
     var: Sym.VarDecl;
     alias: Sym.TypeDecl;
     i: LONGINT;
-    nodes: AST.NodeArray;
+    nodes: ExtTree.NodeArray;
   BEGIN
     type := GetType (v, receiver. type);
     var := v. stb. NewVarDecl (v. parent, 
@@ -489,7 +489,7 @@ PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
     type: Sym.Type;
     var: Sym.VarDecl;
     i: LONGINT;
-    flags: AST.Node;
+    flags: ExtTree.Node;
   BEGIN
     type := GetType (v, fpSection. type);
     FOR i := 0 TO fpSection. identList. len-1 BY 3 DO
@@ -511,7 +511,7 @@ PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
       n: ExtTree.Node;
     BEGIN
       FOR i := 0 TO flags. len-1 BY 2 DO
-        n := flags. n[i](ExtTree.Node);
+        n := flags. n[i];
         WITH n: ExtTree.Terminal DO
           CASE n.sym.id OF
           | Symbol.stringSingle, Symbol.stringDouble:
@@ -532,7 +532,7 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
     formalPars: Sym.FormalPars;
     endPos: Sym.ModulePos;
     i: LONGINT;
-    nodePtr: AST.Node;
+    nodePtr: ExtTree.Node;
 
   PROCEDURE ParseProcDeclFlags (proc: Sym.ProcDecl; flags: ExtTree.NodeList);
     VAR
@@ -540,7 +540,7 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
       n: ExtTree.Node;
     BEGIN
       FOR i := 0 TO flags. len-1 BY 2 DO
-        n := flags. n[i](ExtTree.Node);
+        n := flags. n[i];
         WITH n: ExtTree.Terminal DO
           CASE n.sym.id OF
           | Symbol.stringSingle, Symbol.stringDouble:
@@ -587,7 +587,7 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
     IF (procDecl. formalPars # NIL) THEN
       fpar := procDecl. formalPars(ExtTree.FormalPars);
       IF fpar.flags # NIL THEN
-        ParseFormalParsFlags(formalPars, fpar.flags.flagList(ExtTree.NodeList));
+        ParseFormalParsFlags(formalPars, fpar.flags.flagList);
       END;
       IF (fpar. fpSections # NIL) THEN
         FOR i := 0 TO fpar. fpSections. len-1 BY 2 DO
@@ -614,7 +614,7 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
       END;
     END;
     IF (procDecl. flags # NIL) THEN
-      ParseProcDeclFlags (proc, procDecl. flags. flagList(ExtTree.NodeList));
+      ParseProcDeclFlags (proc, procDecl. flags. flagList);
     END;
     
     IF (procDecl. body # NIL) THEN
@@ -627,7 +627,7 @@ PROCEDURE (v: Visitor) VisitFieldList* (fieldList: ExtTree.FieldList);
     field: Sym.FieldDecl;
     type: Sym.Type;
     i: LONGINT;
-    flags: AST.Node;
+    flags: ExtTree.Node;
   BEGIN
     type := GetType (v, fieldList. type);
     FOR i := 0 TO fieldList. identList. len-1 BY 3 DO
@@ -724,7 +724,7 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
     fpar: ExtTree.FormalPars;
     formalPars: Sym.FormalPars;
     i: LONGINT;
-    nodePtr: AST.Node;
+    nodePtr: ExtTree.Node;
     type: Sym.Type;
     fpars : ExtTree.FormalPars;
   BEGIN
@@ -740,7 +740,7 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
       fpars := procType.formalPars(ExtTree.FormalPars);
       IF fpars.flags # NIL THEN
         ParseFormalParsFlags(formalPars,
-          fpars.flags.flagList(ExtTree.NodeList))
+          fpars.flags.flagList)
       END
     END;
     IF (procType. formalPars # NIL) THEN
@@ -784,7 +784,7 @@ PROCEDURE (v: Visitor) VisitQualType* (qualType: ExtTree.QualType);
   END VisitQualType;
 
 
-PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder;
+PROCEDURE CreateSymTab* (module: ExtTree.Node; stb: SymTabBuilder.Builder;
                          libraryName: STRING;
                          baseURI, rootURI: URI.HierarchicalURI): Sym.Module;
 (**Creates a symbol table from the abstract syntax tree in @oparam{module}.

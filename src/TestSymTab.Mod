@@ -3,7 +3,7 @@ MODULE TestSymTab;
 IMPORT
   Object, StdChannels, Out, Err, IO, URI,
   CfgData := Config, Config:Section:Options, OOC:Config, OOC:Config:Pragmas,
-  OOC:Error, OOC:AST, Sym := OOC:SymbolTable, Rep := OOC:Repository,
+  OOC:Error, OOC:AST:ExtTree, Sym := OOC:SymbolTable, Rep := OOC:Repository,
   XML := OOC:SymbolTable:XML, OOC:Auxiliary:ParseModule, OOC:Make;
   
 CONST
@@ -50,7 +50,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module;
                                     analysisOnly: BOOLEAN): BOOLEAN
 RAISES IO.Error;
   VAR
-    ast: AST.Node;
+    ast: ExtTree.Node;
     symTab: Sym.Module;
     errList: Error.List;
     pragmaHistory: Pragmas.History;
@@ -67,7 +67,7 @@ RAISES IO.Error;
 (**Writes the description of the module's public interface as an XML document.
    *)
   VAR
-    ast: AST.Node;
+    ast: ExtTree.Node;
     symTab: Sym.Module;
     errList: Error.List;
     outputChannel: IO.ByteChannel;

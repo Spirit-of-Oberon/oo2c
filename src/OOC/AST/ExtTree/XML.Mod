@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree:XML;
 *)
 
 IMPORT
-  IO, OOC:Scanner:Symbol, OOC:AST, OOC:AST:ExtTree, XML:Writer,
+  IO, OOC:Scanner:Symbol, OOC:AST:ExtTree, XML:Writer,
   XML:UnicodeCodec:Latin1, OOC:Doc, DocXML := OOC:Doc:Output:XML;
 
 
@@ -55,7 +55,7 @@ RAISES IO.Error;
   VAR
     w: Writer.Writer;
   
-  PROCEDURE Node (n: AST.Node);
+  PROCEDURE Node (n: ExtTree.Node);
     VAR
       i: LONGINT;
 
@@ -68,7 +68,7 @@ RAISES IO.Error;
     
     BEGIN
       IF (n # NIL) THEN
-        WITH n: AST.NodeList DO
+        WITH n: ExtTree.NodeList DO
           w. StartTag ("node_list", FALSE);
           FOR i := 0 TO n. len-1 DO
             Node (n. n[i])

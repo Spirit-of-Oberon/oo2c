@@ -78,7 +78,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         i := 0;
         WHILE (i < design. indices. len) DO
           left := b. NewIndex (sym, left,
-                               Expr (design. indices. n[i](ExtTree.Node)));
+                               Expr (design. indices. n[i]));
           INC (i);
           IF (i < design. indices. len) THEN
             sym := design. indices. n[i](ExtTree.Terminal). sym;
@@ -130,9 +130,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN b. NewSetRange (sc. lBrace. sym, NIL, NIL, TRUE);
     ELSE
       len := (sc.elementList.len+1) DIV 2; 
-      result := Range(sc.elementList.n[0](ExtTree.Node), TRUE);
+      result := Range(sc.elementList.n[0], TRUE);
       FOR i := 1 TO len-1 DO
-        result := b.NewSetOp(NIL, IR.setUnion, result, Range(sc.elementList.n[i*2](ExtTree.Node), TRUE));
+        result := b.NewSetOp(NIL, IR.setUnion, result, Range(sc.elementList.n[i*2], TRUE));
       END;
       RETURN result;
     END;
@@ -148,7 +148,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       type := Designator(qualType.qualident);
       NEW(arguments, (qualType.arguments.len+1) DIV 2);
       FOR i := 0 TO LEN(arguments^)-1 DO
-        n := qualType.arguments.n[i*2](ExtTree.Node);
+        n := qualType.arguments.n[i*2];
         WITH n: ExtTree.QualType DO
           arguments[i] := QualType(n);
         ELSE
@@ -234,7 +234,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       design := Designator (call. design);
       NEW (arguments, (call. arguments. len+1) DIV 2);
       FOR i := 0 TO LEN (arguments^)-1 DO
-        arguments[i] := Expr (call. arguments. n[i*2](ExtTree.Node))
+        arguments[i] := Expr (call. arguments. n[i*2])
       END;
       RETURN b.NewCall(design, arguments, ~isProcCall, currentSourceContext,
                        call.rParen.sym);
@@ -274,7 +274,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           RETURN b. NewReturn (return. return. sym, NIL)
         ELSE
           RETURN b. NewReturn (return. return. sym,
-                               Expr (return. expr(ExtTree.Node)))
+                               Expr (return. expr))
         END;
       END Return;
 
@@ -302,7 +302,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         REPEAT
           else := b. NewIfStatm
               (ifStatm. guardList. n[i](ExtTree.Terminal). sym,
-               Expr (ifStatm. guardList. n[i+1](ExtTree.Node)),
+               Expr (ifStatm. guardList. n[i+1]),
                StatementSeq (ifStatm. guardList. n[i+3](ExtTree.NodeList)),
                elseSeq);
           NEW (elseSeq, 1);
@@ -326,7 +326,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         BEGIN
           NEW (setRanges, (labels. len+1) DIV 2);
           FOR i := 0 TO labels. len-1 BY 2 DO
-            setRanges[i DIV 2] := Range (labels. n[i](ExtTree.Node), FALSE);
+            setRanges[i DIV 2] := Range (labels. n[i], FALSE);
           END;
           RETURN setRanges;
         END Labels;
@@ -479,7 +479,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       count := 0;
       FOR i := 0 TO statmSeq. len-1 BY 2 DO
         IF (statmSeq. n[i] # NIL) THEN
-          n := statmSeq. n[i](ExtTree.Node);
+          n := statmSeq. n[i];
           WITH n: ExtTree.ProcedureCall DO
             statm := ProcedureCall (n);
             
@@ -685,7 +685,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       
       WITH item: Sym.Array DO
         IF ~item. isOpenArray THEN
-          expr := Expr (item. lengthExpr(ExtTree.Node));
+          expr := Expr (item. lengthExpr);
           IF (expr = b. errorExpr) THEN  (* error in array length *)
             item. SetLength(1);
           ELSE
@@ -694,7 +694,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         END;
 
       | item: Sym.ConstDecl DO
-        ConstDecl (item, item. constExpr(ExtTree.Node));
+        ConstDecl (item, item. constExpr);
         
       ELSE  (* ignore *)
       END;
