@@ -21,7 +21,8 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Channel, Err, Files, Msg, TextRider, ADT:Object, ADT:String, ADT:ArrayList,
+  Channel, Err, Files, IntStr, Msg, Strings, TextRider,
+  ADT:Object, ADT:String, ADT:ArrayList,
   URI, FileURI := URI:Scheme:File, IO:Memory, 
   Language, Language:Boolean, Language:String8,
   Language:Integer, Language:Set,
@@ -266,6 +267,7 @@ CONST
 
 PROCEDURE ^ NewBasicType (id: BasicTypeId; repr: ARRAY OF CHAR): BasicType;
 PROCEDURE ^ (d: Declaration) Write (w: Writer);
+PROCEDURE ^ (w: Writer) NewDeclaration* (name: String.String; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
 
 PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
                       baseURI: URI.HierarchicalURI);
@@ -758,6 +760,15 @@ PROCEDURE (struct: Struct) AddMember* (param: Declaration);
     struct. members. Append (param)
   END AddMember;
 
+PROCEDURE (struct: Struct) AddPadding* (w: Writer; offset: LONGINT);
+  VAR
+    str: ARRAY 32 OF CHAR;
+  BEGIN
+    IntStr.IntToStr (offset, str);
+    Strings.Insert ("__pad", 0, str);
+    struct. AddMember (w. NewDeclaration (String.New (str), tqNone, scMember,
+                                          w. basicType[char8]));
+  END AddPadding;
 
 PROCEDURE (struct: Struct) Priority (): SHORTINT;
   BEGIN

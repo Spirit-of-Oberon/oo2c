@@ -342,6 +342,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: IR.NewArray DO
         RETURN NewArray (expr);
         
+      | expr: IR.NewRecord DO
+        instr := pb. AddInstr (Opcode.newRecord, Opcode.scAddress);
+        instr. AddOpnd (s, Opnd.store);
+        instr. AddOpnd (pb. GetTypeRef (expr. type), Opnd.type);
+        Chain (instr);
+        RETURN instr;
+        
       | expr: IR.Call DO
         instr := Call (expr);
         (* the pessimistic assumption is that a function call can have

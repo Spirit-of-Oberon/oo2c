@@ -4,8 +4,12 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-
 #define ROUND_SIZE(s) ((s+7) & ~((size_t)7))
+
+#define PS(_str,_form,_size) \
+  _str.base = NULL; _str.size = _size; _str.len = -1; _str.form = _form
+
+
 OOC_PTR RT0__NewArray(RT0__Struct td, ...) {
   void* var;
   
@@ -49,8 +53,22 @@ OOC_PTR RT0__NewArray(RT0__Struct td, ...) {
   return (OOC_PTR)var;
 }
 
-#define PS(_str,_form,_size) \
-  _str.base = NULL; _str.size = _size; _str.len = -1; _str.form = _form
+OOC_PTR RT0__NewRecord(RT0__Struct td) {
+  void* var;
+  size_t size, prefix;
+  void* ptr;
+  
+  size = td->base->size;
+  if (size == 0) size++;
+  prefix = ROUND_SIZE(sizeof(RT0__Struct));
+  
+  ptr = malloc(prefix+size);
+  /* FIXME... check that result is not NULL */
+  var = (char*)ptr+prefix;
+  ((RT0__Struct*)var)[-1] = td;
+  
+  return (OOC_PTR)var;
+}
 
 void RT0_init() {
   PS(RT0__boolean , RT0__strBoolean , sizeof(OOC_BOOLEAN));

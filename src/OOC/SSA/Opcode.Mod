@@ -348,6 +348,20 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
+  newRecord* = 36;
+  (**Allocates space for a record object on the heap.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.type
+     The type of the pointer to which the new object will be assigned.
+     @end table
+
+     The result of the instruction is the address of the new object.  An
+     additional result is the new value of @var{store}.  *)
+  
 CONST
   scNone* = 0;
   (**The operation has no variants.  *)
@@ -440,6 +454,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | getLength: cstr := "get-length";
     | copyParameter: cstr := "copy-parameter";
     | newArray: cstr := "new-array";
+    | newRecord: cstr := "new-record";
 
     | add: cstr := "add";
     | subtract: cstr := "subtract";

@@ -207,6 +207,14 @@ PROCEDURE (v: Visitor) VisitNewArray* (new: IR.NewArray);
     v. w. EndTag;  (* new-array *)
   END VisitNewArray;
 
+PROCEDURE (v: Visitor) VisitNewRecord* (new: IR.NewRecord);
+  VAR
+    i: LONGINT;
+  BEGIN
+    v. w. StartTag ("new-record", FALSE);
+    v. w. EndTag;  (* new-record *)
+  END VisitNewRecord;
+
 PROCEDURE (v: Visitor) VisitCap* (neg: IR.Cap);
   BEGIN
     v. w. StartTag ("cap", FALSE);

@@ -265,6 +265,10 @@ PROCEDURE (c: ConstFold) VisitNewArray* (new: IR.NewArray);
   BEGIN
   END VisitNewArray;
 
+PROCEDURE (c: ConstFold) VisitNewRecord* (new: IR.NewRecord);
+  BEGIN
+  END VisitNewRecord;
+
 PROCEDURE (c: ConstFold) VisitCap* (op: IR.Cap);
 VAR 
   value : Language.Value;

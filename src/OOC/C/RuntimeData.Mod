@@ -105,6 +105,37 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       END;
     END ArrayTypeDescr;
   
+  PROCEDURE RecordTypeDescr (record: Sym.Record);
+    VAR
+      name: String.String;
+      base: Sym.Type;
+
+    PROCEDURE BaseTypes (t: Sym.Type): LONGINT;
+      BEGIN
+        IF (t = NIL) THEN
+          RETURN 0;
+        ELSE
+          RETURN BaseTypes (t(Sym.Record). baseType)+1;
+        END;
+      END BaseTypes;
+    
+    BEGIN
+      WriteDescrVariable (record);
+      IF ~writeHeader THEN
+        IF (record. baseType = NIL) THEN
+          w. WriteString ("NULL");       (* base *)
+        ELSE
+          name := Naming.NameOfTypeDescriptor (record. baseType);
+          w.WriteChar ("&");
+          w. WriteString (name. array^); (* base *)
+        END;
+        CNli; w.WriteLInt (record. size, 0); (* size *)
+        CNli; w. WriteLInt (BaseTypes (record. baseType), 0); (* len *)
+        CNli; WriteForm ("strRecord"); (* form *)
+        w. WriteString (" };");
+      END;
+    END RecordTypeDescr;
+  
   PROCEDURE PointerTypeDescr (pointer: Sym.Pointer);
     VAR
       name: String.String;
@@ -140,11 +171,12 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         IF ~IsParameter (item) THEN
           ArrayTypeDescr (item);
         END;
+
+      | item: Sym.Record DO
+        RecordTypeDescr (item);
         
       | item: Sym.Pointer DO
-        IF (item. baseType IS Sym.Array) THEN (* FIXME... add records *)
-          PointerTypeDescr (item);
-        END;
+        PointerTypeDescr (item);
         
       | item: Sym.ProcDecl DO            (* adjust current procedure *)
         proc := item;

@@ -33,9 +33,9 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
     ptr: Sym.Item;
     fct: DeclWriter.Function;
     struct: DeclWriter.Struct;
-    base: DeclWriter.Type;
     name: String.String;
     baseType, srcCodeBaseType: Sym.Type;
+    dummy: LONGINT;
 
   PROCEDURE ConvertParam (fct: DeclWriter.Function; param: Sym.VarDecl);
     VAR
@@ -64,6 +64,39 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
       AddArrayLength (param. type, 0);
     END ConvertParam;
 
+  PROCEDURE AddFields (struct: DeclWriter.Struct; type: Sym.Type): LONGINT;
+    VAR
+      offset, i: LONGINT;
+    BEGIN
+      IF (type = NIL) THEN
+        RETURN 0;
+      ELSE
+        offset := AddFields (struct, type(Sym.Record). baseType);
+        ptr := type(Sym.Record). nestedItems;
+        WHILE (ptr # NIL) DO
+          WITH ptr: Sym.FieldDecl DO
+            FOR i := offset TO ptr. offset-1 DO
+              struct. AddPadding (w, i);
+            END;
+            struct. AddMember (ConvertDecl (w, ptr, modeFormalParameter));
+            offset := ptr. offset+ptr. type. size;
+          ELSE                     (* ignore non-declarations *)
+          END;
+          ptr := ptr. nextNested;
+        END;
+
+        (* NOTE: this padding currently interferes with the initialization
+           of type descriptors for the .d files, and is therefore disabled
+        (* pad to end of record *)
+        FOR i := offset TO type. size-1 DO
+          struct. AddPadding (w, i);
+        END;
+        RETURN type. size;*)
+
+        RETURN offset;
+      END;
+    END AddFields;
+  
   BEGIN
     IF (type = NIL) THEN
       RETURN w. basicType[DeclWriter.void]
@@ -143,22 +176,13 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
         END;
           
       | type: Sym.Record DO
-        ASSERT (type. baseType = NIL);
-
         IF (type. namingDecl = NIL) THEN
           name := NIL;
         ELSE
           name := Naming.NameOfDeclaration (type. namingDecl);
         END;
         struct := w. NewStruct (type. isUnion, name);
-        ptr := type. nestedItems;
-        WHILE (ptr # NIL) DO
-          WITH ptr: Sym.FieldDecl DO
-            struct. AddMember (ConvertDecl (w, ptr, modeFormalParameter));
-          ELSE                     (* ignore non-declarations *)
-          END;
-          ptr := ptr. nextNested
-        END;
+        dummy := AddFields (struct, type);
         RETURN struct
       END
     END

@@ -368,6 +368,12 @@ TYPE
   END;
 
 TYPE
+  NewRecord* = POINTER TO NewRecordDesc;
+  NewRecordDesc = RECORD
+    (OperatorDesc)
+  END;
+
+TYPE
   SelectField* = POINTER TO SelectFieldDesc;
   SelectFieldDesc = RECORD
     (OperatorDesc)
@@ -1290,6 +1296,31 @@ PROCEDURE (new: NewArray) Accept* (v: Visitor);
     v. VisitNewArray (new)
   END Accept;
 
+(* Operator Class: NewRecord
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitNewRecord (new: NewRecord; sym: Symbol; type: Sym.Type);
+  BEGIN
+    InitOperator (new, sym, type);
+  END InitNewRecord;
+
+PROCEDURE (b: Builder) NewNewRecord (sym: Symbol; type: Sym.Type): Expression;
+  VAR
+    new: NewRecord;
+  BEGIN
+    NEW (new);
+    InitNewRecord (new, sym, type);
+    RETURN new;
+  END NewNewRecord;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitNewRecord* (new: NewRecord);
+  END VisitNewRecord;
+
+PROCEDURE (new: NewRecord) Accept* (v: Visitor);
+  BEGIN
+    v. VisitNewRecord (new)
+  END Accept;
+
 (* Operator Class: SelectField
    ------------------------------------------------------------------------ *)
 
@@ -2136,9 +2167,16 @@ PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Sym.Item;
 PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
                                    context: Sym.Item; name: Symbol): Expression;
 (**Resolves a field or type-bound procedure selector.  *)
+  VAR
+    varRef: Expression;
   BEGIN
-    ASSERT (var. type IS Sym.Record);
-    RETURN b. NewSelectField (sym, var, var. type(Sym.Record). ns.
+    IF (var. type IS Sym.Pointer) THEN
+      varRef := b. NewDeref (sym, var);
+    ELSE
+      varRef := var;
+    END;
+    ASSERT (varRef. type IS Sym.Record);
+    RETURN b. NewSelectField (sym, varRef, varRef. type(Sym.Record). ns.
                               Identify (context, b. GetName (name), FALSE));
   END NewSelect;
 
@@ -2372,6 +2410,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     call: Call;
     targetType: Sym.PredefId;
     dim: LONGINT;
+    type: Sym.Type;
 
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
                                       expr: Expression;
@@ -2489,12 +2528,20 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       | Predef.new:
         IF CheckNumberOfArguments (1, unlimited) THEN
           ASSERT (arguments[0]. type IS Sym.Pointer);
-          ASSERT (arguments[0]. type(Sym.Pointer). baseType IS Sym.Array);
-          IF CheckNumberOfArguments (1, 1+arguments[0]. type(Sym.Pointer). baseType(Sym.Array). GetOpenDimensions()) THEN
-            (* FIXME... check argument type here or in NewNewArray() *)
-            RETURN b. NewAssignment (design. sym,
-                                     arguments[0],
-                                     b. NewNewArray (design. sym, arguments));
+          type := arguments[0]. type(Sym.Pointer). baseType;
+          IF (type IS Sym.Array) THEN
+            IF CheckNumberOfArguments (1, 1+arguments[0]. type(Sym.Pointer). baseType(Sym.Array). GetOpenDimensions()) THEN
+              (* FIXME... check argument type here or in NewNewArray() *)
+              RETURN b. NewAssignment (design. sym,
+                                       arguments[0],
+                                       b. NewNewArray (design. sym, arguments));
+            END;
+          ELSE (* (type IS Sym.Record) *)
+            IF CheckNumberOfArguments (1, 1) THEN
+              RETURN b. NewAssignment
+                  (design. sym, arguments[0],
+                   b. NewNewRecord (design. sym, arguments[0]. type));
+            END;
           END;
         END;
         RETURN b. errorExpr;

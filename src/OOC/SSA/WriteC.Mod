@@ -507,6 +507,19 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (");");
     END NewArray;
   
+  PROCEDURE NewRecord (instr: SSA.Instr);
+    VAR
+      name: String.String;
+      opnd: SSA.Opnd;
+    BEGIN
+      CastFromPtr (instr);
+      w. WriteString ("RT0__NewRecord(");
+      opnd := instr. GetOpndClass (Opnd.type);
+      name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
+      w. WriteString (name. array^);
+      w. WriteString (".base);");
+    END NewRecord;
+  
   PROCEDURE CopyParameter (instr: SSA.Address);
     VAR
       varDecl: Sym.VarDecl;
@@ -751,6 +764,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
 
       | Opcode.newArray:
         NewArray (instr);
+      | Opcode.newRecord:
+        NewRecord (instr);
         
       | Opcode.add:
         WriteDyadicOp (instr, "+");
