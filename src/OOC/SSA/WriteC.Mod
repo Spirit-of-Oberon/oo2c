@@ -5,7 +5,7 @@ IMPORT
   ADT:Object, ADT:String, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
-  OOC:SSA:DeadCodeElimination, OOC:SSA:Destore,
+  OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter;
 
 
@@ -66,65 +66,22 @@ PROCEDURE Fixup (pb: SSA.ProcBlock);
   END Fixup;
 
 
-PROCEDURE AssignRegisters (w: DeclWriter.Writer; pb: SSA.ProcBlock): Dictionary.Dictionary;
-(**Assigns registers to values produced by SSA instructions.  For the moment,
-   a very simple allocator is sufficient: every value gets its very own
-   variable.  The C compiler will have to deal with this ;-) *)
-  VAR
-    registerMap: Dictionary.Dictionary;
-    instr: SSA.Instr;
-    res: SSA.Result;
-    type: Opcode.Subclass;
-    str: ARRAY 32 OF CHAR;
-    count: LONGINT;
-
-  PROCEDURE StoredInRegister (instr: SSA.Instr): BOOLEAN;
-    BEGIN
-      WITH instr: SSA.Const DO
-        RETURN FALSE
-      ELSE
-        RETURN TRUE
-      END;
-    END StoredInRegister;
-
-  PROCEDURE AssignRegister (result: SSA.Result; ctype: DeclWriter.BasicTypeId);
-    BEGIN
-      (* create name for result *)
-      IntStr.IntToStr (count, str);
-      Strings.Insert ("i", 0, str);
-      registerMap. Set (result, String.New (str));
-      INC (count);
-      
-      (* emit declaration for variable *)
-      w. WriteLn;
-      w. WriteString ("  register ");
-      w. WriteString (w. basicType[ctype]. repr);
-      w. WriteChar (" ");
-      w. WriteString (str);
-      w. WriteChar (";");
-    END AssignRegister;
-  
+PROCEDURE RegisterType (ctype: DeclWriter.BasicTypeId): DeclWriter.BasicTypeId;
   BEGIN
-    count := 0;
-    registerMap := Dictionary.New();
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      type := instr. GetResultType();
-      IF (type # Opcode.scNone) & StoredInRegister (instr) THEN
-        AssignRegister (instr, SubclassToBasicType (type));
-      END;
-      res := instr. nextResult;
-      WHILE (res # NIL) DO
-        IF (res. subclass # Opcode.scNone) THEN
-          AssignRegister (res, SubclassToBasicType (res. subclass))
-        END;
-        res := res. nextResult
-      END;
-      instr := instr. nextInstr
+    RETURN DeclWriter.int32
+  END RegisterType;
+
+PROCEDURE WriteTypeCast (w: DeclWriter.Writer; ctype: DeclWriter.BasicTypeId);
+  VAR
+    rtype: DeclWriter.BasicTypeId;
+  BEGIN
+    rtype := RegisterType (ctype);
+    IF (rtype # ctype) THEN
+      w. WriteChar ("(");
+      w. WriteString (w. basicType[rtype]. repr);
+      w. WriteChar (")");
     END;
-    w. WriteLn;
-    RETURN registerMap;
-  END AssignRegisters;
+  END WriteTypeCast;
 
 PROCEDURE WriteLocalDecl (w: DeclWriter.Writer;
                           pb: SSA.ProcBlock);
@@ -173,8 +130,6 @@ PROCEDURE WriteLocalDecl (w: DeclWriter.Writer;
       END;
       instr := instr. nextInstr
     END;
-    
-    w. WriteLn;
   END WriteLocalDecl;
 
 
@@ -202,7 +157,18 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
          intermediate register; the roundabout route is kind of unnatural
          for C code *)
       w. WriteConst (arg. value);
-      
+
+    | arg: SSA.Address DO
+      name := Naming.NameOfDeclaration (arg. decl);
+      WriteTypeCast (w, DeclWriter.ptr);
+      IF ~(arg. decl IS Sym.VarDecl) OR
+         ~(arg. decl(Sym.VarDecl). type IS Sym.Array) THEN
+        (* charming C: the address of the variable is its name, all
+           others need the address operator *)
+        w. WriteChar ("&");
+      END;
+      w. WriteString (name. array^);
+
     ELSE
       IF w. registerMap. HasKey (opnd. arg) THEN
         obj := w. registerMap. Get (opnd. arg);
@@ -219,7 +185,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
     instr: SSA.Instr;
     opnd: SSA.Opnd;
     target: Object.Object;
-    name: String.String;
 
   PROCEDURE ^ Call (call: SSA.Instr);
     
@@ -343,20 +308,13 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       
       CASE instr. opcode OF
       | Opcode.const:
-        (* nothing *)
+        (* nothing, handled in `Ref' *)
 
       | Opcode.declRef:
-        (* nothing *)
+        (* nothing, handled in `Ref' *)
         
       | Opcode.address:
-        name := Naming.NameOfDeclaration (instr(SSA.Address). decl);
-        IF ~(instr(SSA.Address). decl IS Sym.VarDecl) OR
-             ~(instr(SSA.Address). decl(Sym.VarDecl). type IS Sym.Array) THEN
-          (* charming C: the address of the variable is its name, all
-             others need the address operator *)
-          w. WriteChar ("&");
-        END;
-        w. WriteString (name. array^);
+        (* nothing, handled in `Ref' *)
 
       | Opcode.enter:
         (* nothing *)
@@ -483,9 +441,10 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
       END WriteLabel;
     
     BEGIN
-      IF (lastBlock # NIL) & (lastBlock. jump # currentBlock) THEN
+      IF (lastBlock # NIL) &
+         (Schedule.FollowJump (lastBlock. jump) # currentBlock) THEN
         w. Newline;
-        WriteGoto (lastBlock. jump);
+        WriteGoto (lastBlock. jump. dest);
         d := 0;
       ELSE
         d := 1
@@ -510,7 +469,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
         END;
         w. Ref (b. predicate);
         w. WriteString (") ");
-        WriteGoto (b. branchTo);
+        WriteGoto (b. branchTo. dest);
       ELSE (* standard block *)
       END;
       lastBlock := b;
@@ -540,6 +499,7 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     enter: SSA.Instr;
     s: SSA.Result;
     domRoot: Schedule.Block;
+    registerMap: Dictionary.Dictionary;
     w: Writer;
   BEGIN
     pb := SSA.NewProcBlock (procDecl. decl);
@@ -560,7 +520,9 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     
     Fixup (pb);
     WriteLocalDecl (cWriter, pb);
-    w := NewWriter (cWriter, AssignRegisters (cWriter, pb));
+    registerMap := Allocator.AssignRegisters (pb, domRoot, cWriter);
+    cWriter. WriteLn;
+    w := NewWriter (cWriter, registerMap);
     w. WriteBlocks (domRoot);
   END ProcBody;
 
