@@ -9,6 +9,7 @@
    class CDATA #REQUIRED
    href CDATA #REQUIRED">
 
+<!ENTITY % any-type "type-name|array|record|pointer|formal-parameters|qualified-type">
 
 <!ELEMENT interface-description (oberon-doc?,
                                  import-decl*, 
@@ -60,16 +61,23 @@
                     id ID #REQUIRED
                     export (yes|no|read-only) #REQUIRED>
 
+<!ELEMENT type-parameters (type-decl)*>
+
 <!ELEMENT var-decl (oberon-doc?, type)>
 <!ATTLIST var-decl name CDATA #REQUIRED
                    id ID #REQUIRED
                    export (yes|no|read-only) #REQUIRED>
 
-<!ELEMENT receiver-decl (oberon-doc?, type)>
+<!ELEMENT receiver-decl (oberon-doc?, type, type-alias-list?)>
 <!ATTLIST receiver-decl name CDATA #REQUIRED
                         id ID #REQUIRED
                         export (yes|no|read-only) #REQUIRED
                         variable-parameter (yes|no) #REQUIRED>
+
+<!ELEMENT type-alias-list (type-alias)*>
+<!ELEMENT type-alias EMPTY>
+<!ATTLIST type-alias name CDATA #REQUIRED
+                     id ID #REQUIRED>
 
 <!ELEMENT parameter-decl (oberon-doc?, type)>
 <!ATTLIST parameter-decl name CDATA #REQUIRED
@@ -109,7 +117,7 @@ first declaration is assigned an id.  -->
 
 <!ELEMENT length (#PCDATA)>
 
-<!ELEMENT element-type (type-name|array|record|pointer|formal-parameters)>
+<!ELEMENT element-type (%any-type;)>
 
 <!ELEMENT record (field-decl*)>
 
@@ -118,9 +126,13 @@ first declaration is assigned an id.  -->
 
 <!ELEMENT result-type (type-name)>
 
+<!ELEMENT qualified-type (type, type-arguments)>
+
+<!ELEMENT type-arguments (%any-type;)*>
+
 <!ELEMENT exceptions (type-name)*>
 
-<!ELEMENT type (type-name|pointer|array|record|formal-parameters)>
+<!ELEMENT type (%any-type;)>
 
 
 <!ELEMENT module-ref (ref-target+)>

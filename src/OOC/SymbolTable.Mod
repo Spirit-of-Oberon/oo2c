@@ -718,6 +718,11 @@ TYPE
 TYPE
   TypeClosure* = POINTER TO TypeClosureDesc;
   TypeClosureDesc = RECORD
+    (**Type closures are created while parsing designators in
+       @omodule{*OOC:IR}.  Instances of this class do @emph{not} appear in the
+       symbol table or symbol file.  For the most part, they correspond to
+       qualified types, although their base type may be an unnamed parametric
+       type.  *)
     (TypeDesc)
     baseType-: Type;
     params: TypeVarArray;
@@ -1962,6 +1967,34 @@ PROCEDURE (typeDecl: TypeDecl) Load* (r: Storable.Reader) RAISES IO.Error;
     typeDecl. type := typeDecl. srcCodeType;
   END Load;
 
+PROCEDURE (typeDecl: TypeDecl) HasTypeParameters*(): BOOLEAN;
+  VAR
+    typePars: TypePars;
+  BEGIN
+    typePars := typeDecl.type.typePars;
+    RETURN (typePars # NIL) & (typeDecl.type.parent = typePars);
+  END HasTypeParameters;
+
+PROCEDURE (typeDecl: TypeDecl) IsTypeParameter*(): BOOLEAN;
+  BEGIN
+    RETURN (typeDecl.parent IS TypePars);
+  END IsTypeParameter;
+
+PROCEDURE (typeDecl: TypeDecl) ParametricType*(): TypeDecl;
+(**Map a type variable declaration to the parametric type declaration it is
+   part of.  *)
+  VAR
+    ptr: Item;
+  BEGIN
+    ASSERT(typeDecl.IsTypeParameter());
+    ptr := typeDecl.parent.parent.nestedItems;
+    WHILE ~(ptr IS TypeDecl) OR
+          (ptr(TypeDecl).type.parent # typeDecl.parent) DO
+      ptr := ptr.nextNested;
+    END;
+    RETURN ptr(TypeDecl);
+  END ParametricType;
+
 
 PROCEDURE InitRedirect* (redir: Redirect; parent: Item; name: Name;
                          module, ident: Name);
@@ -2911,6 +2944,7 @@ PROCEDURE (decl: Declaration) GetId*(): NameString;
   VAR
     id: NameString;
     declWithType: Declaration;
+    parent, ptr: Item;
     
   PROCEDURE GetContainer (type: Type): Declaration;
     VAR
@@ -3005,8 +3039,17 @@ PROCEDURE (decl: Declaration) GetId*(): NameString;
            and use its id as prefix *)
         declWithType := GetContainer (decl(VarDecl). parent(FormalPars));
         id := Concat (declWithType. GetId(), decl. name. str)
+      ELSIF (decl IS TypeDecl) & decl(TypeDecl).IsTypeParameter() THEN
+        (* find the type declaration that has `decl.parent' as formal type
+           parameter list, and use its id as prefix *)
+        ptr := decl(TypeDecl).ParametricType();
+        id := Concat(ptr(TypeDecl).GetId(), decl.name.str);
       ELSE
-        id := Concat (decl. parent(Declaration). GetId(), decl. name. str)
+        parent := decl.parent;
+        WHILE ~(parent IS Declaration) DO
+          parent := parent.parent;
+        END;
+        id := Concat (parent(Declaration).GetId(), decl.name.str);
       END;
       decl. cachedId := id;
       RETURN id
