@@ -1736,6 +1736,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
         EXIT;
       END;
     END;
+    RemoveRegionDeps (pb);
     
 <*IF DEBUG_BLOCKER THEN*>
     Check.All(pb);
