@@ -22,13 +22,14 @@ MODULE OOC:SSA:PRE;
 
 (**Note: The algorithm implemented by this module is @emph{very} experimental
    and incomplete in the sense that it hoists expressions only over one level
-   of "select".  That is, it is only detected if an expression is partially
-   redundant with respect to the immediately preceding "select" instruction.
-   Partial redundancies in nested "select"s are not found.  *)
+   of "select" or "loop-start".  That is, it is only detected if an expression
+   is partially redundant with respect to the immediately preceding "select"
+   instruction.  Partial redundancies in nested "select"s are not found.  *)
 
 IMPORT
-  ADT:ArrayList, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
-  OOC:SSA:Blocker, OOC:SSA:CSE;
+  Log,
+  Object, ADT:ArrayList, ADT:Dictionary, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd,
+  OOC:SSA:Result, OOC:SSA:Blocker, OOC:SSA:CSE;
 
 PROCEDURE GetSelect(collect: SSA.Instr): SSA.Instr;
   VAR
@@ -38,12 +39,12 @@ PROCEDURE GetSelect(collect: SSA.Instr): SSA.Instr;
     CASE instr.opcode OF
     | Opcode.select:
       RETURN instr;
-    (*| Opcode.loopStart:
+    | Opcode.loopStart:
       IF (instr.opndList.arg.instr = collect) THEN
         RETURN NIL;
       ELSE
         RETURN instr;
-      END;*)
+      END;
     ELSE
       RETURN NIL;
     END;
@@ -78,12 +79,14 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     opnd: SSA.Opnd;
     dd: Blocker.DependenceData;
     i: LONGINT;
+    equivToCollect: Dictionary.Dictionary;
     
   PROCEDURE MigrateCandidates(collectOpnd: SSA.Opnd;
                               undefValue: SSA.Instr);
     VAR
       use, opnd: SSA.Opnd;
-      instr, collect, select, new, equiv, sameInstr, anchor, c: SSA.Instr;
+      instr, collect, select, new, equiv, sameInstr, anchor,
+          c, domReference: SSA.Instr;
       res, selectResult: SSA.Result;
       i: LONGINT;
       
@@ -110,7 +113,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           WHILE (use # NIL) DO
             IF (use.instr.opcode = Opcode.equivPRE) &
                (use.instr.opndList = use) &
-               (use.instr.NthArg(2) = collect) THEN
+               (equivToCollect.Get(use.instr) = collect) THEN
               (* if there is already an "equiv" entry for the result of the
                  "select" instruction, then return the constructed instruction
                  that is other side of the equivalence *)
@@ -126,6 +129,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       collect := collectOpnd.instr;
       select := GetSelect(collect);
       anchor := GetNoop(pb, select.nextResult);
+      IF (select.opcode = Opcode.loopStart) THEN
+        domReference := select.GetLoopEnd();
+        ASSERT(~dd.Dominates(select, domReference));
+      ELSE
+        domReference := select;
+      END;
       
       use := collectOpnd.arg.useList;
       WHILE (use # NIL) DO
@@ -143,7 +152,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             IF (res # NIL) THEN
               new.AddOpnd(res, opnd.class);
               opnd := opnd.nextOpnd;
-            ELSIF ~Dominates(opnd.arg, select) THEN
+            ELSIF (opnd.arg.info = NIL) OR  (* one of our new instructions *)
+                  ~Dominates(opnd.arg, domReference) THEN
               ASSERT(new.useList = NIL);
               pb.DeleteInstr(new);
               new := NIL;
@@ -180,7 +190,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             equiv := pb.AddInstr(Opcode.equivPRE, Opcode.scNone);
             equiv.AddOpnd(selectResult, Opnd.arg);
             equiv.AddOpnd(new, Opnd.arg);
-            equiv.AddOpnd(collect, Opnd.arg);
+            equivToCollect.Set(equiv, collect);
             dd.SetRegion(new, equiv);
             anchor.AddOpnd(equiv, Opnd.arg);
             
@@ -194,14 +204,15 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
   PROCEDURE ResolveEquiv(equiv: SSA.Instr);
     VAR
       collect, select, old, c, new, sameInstr: SSA.Instr;
-      arg, res: SSA.Result;
+      res: SSA.Result;
       opnd, h: SSA.Opnd;
       resultIndex, i: LONGINT;
+      obj: Object.Object;
     BEGIN
       ASSERT(equiv.opcode = Opcode.equivPRE);
-      
-      arg := equiv.NthArg(2);
-      collect := arg.instr;
+
+      obj := equivToCollect.Get(equiv);
+      collect := obj(SSA.Instr);
       select := GetSelect(collect);
       res := equiv.opndList.nextOpnd.arg;
       old := res.instr;
@@ -287,6 +298,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       instr := instr.nextInstr;
     END;
 
+    equivToCollect := Dictionary.New();
     enter := pb.GetEnter();
     WHILE (worklist.size # 0) DO
       opnd := worklist.array[worklist.size-1](SSA.Opnd);

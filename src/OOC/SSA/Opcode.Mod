@@ -769,9 +769,8 @@ CONST
      only loop rewriting makes use of this instruction, in combination with
      partial redundancy elimination.  *)
   equivPRE* = 85;
-  (**Like @oconst{equiv}, but this instruction has an additional operand
-     referring to a @oconst{collect} instruction.  Use for partial
-     redundancy elimination.  *)
+  (**Like @oconst{equiv}, but used only in the context of the algorithm for
+     partial redundancy elimination.  *)
      
   noop* = 86;
   (**No operation.  Used to anchor other information in the SSA graph.
