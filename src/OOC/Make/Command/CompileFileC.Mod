@@ -74,7 +74,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
          ((symTab. class = Sym.mcForeign) OR
           (symTab. class = Sym.mcInterface)) THEN
         cmd. externalSource := TRUE;
-        cmd. sourceURI := symTab. GetExternalSource()
+        cmd. sourceURI := symTab. GetExternalSource (module. origin. baseURI);
       END
     END;
     

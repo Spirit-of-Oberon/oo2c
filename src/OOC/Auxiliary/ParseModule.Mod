@@ -64,7 +64,8 @@ PROCEDURE ParseModule* (m: Repository.Module;
       IF (errList. msgCount = 0) THEN
         stb := Builder.New();
         symTab := CreateSymTab.CreateSymTab
-          (ast, stb, m. GetURI (Repository.modModuleSource));
+          (ast, stb, m. GetURI (Repository.modModuleSource),
+           m. origin. baseURI);
         IF createNamespace THEN
           IF (errList. msgCount = 0) THEN
             CreateNamespace.CreateNamespace (symTab, errList)

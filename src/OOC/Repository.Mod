@@ -292,7 +292,7 @@ PROCEDURE (m: Module) GetURI* (fileId: FileId): URI.HierarchicalURI;
        the given name, instead of the automatically generated one *)
     IF (fileId = modCodeFileC) & (m. symbolTable # NIL) &
        (m. symbolTable. class # Sym.mcStandard) THEN
-      RETURN m. symbolTable. GetExternalSource();
+      RETURN m. symbolTable. GetExternalSource (m. origin. baseURI);
     ELSE
       RETURN NIL;
     END;

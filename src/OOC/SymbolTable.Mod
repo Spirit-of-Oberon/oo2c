@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 
 IMPORT
   Language, Msg, Strings, ADT:Object, ADT:String, ADT:Dictionary,
-  URI, ParserURI := URI:Parser,
+  URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
 
 TYPE
@@ -641,6 +641,10 @@ VAR
      by @oproc{*OOC:SymbolTable:Predef.CreatePredef} and
      @oproc{*OOC:SymbolTable:Predef.CreateSYSTEM}.  *)
 
+  emptyBaseURI: URI.HierarchicalURI;
+  (* this URI is used to read relative URI strings from symbol files; it
+     is subsequently discarded *)
+  
 
 PROCEDURE InitNamespace* (ns: Namespace);
   BEGIN
@@ -998,8 +1002,12 @@ PROCEDURE (l: LinkFile) Load* (r: Object.Reader);
       res: Msg.Msg;
     BEGIN
       r. ReadString (b);
-      u := ParserURI.NewURI (b, NIL, res);
+      (* use emptyBaseURI so that the URI parser doesn't report an error for
+         the relative URI: *)
+      u := ParserURI.NewURI (b, emptyBaseURI, res);
       ASSERT (res = NIL);
+      (* eliminate emptyBaseURI, so that we get the original relative URI: *)
+      u := u(URI.HierarchicalURI). MakeRelative (emptyBaseURI);
       uri := u(URI.HierarchicalURI);
     END ReadURI;
   
@@ -1186,9 +1194,11 @@ PROCEDURE (mod: Module) AddLinkLib* (libraryName: String.String;
   END AddLinkLib;
 
 
-PROCEDURE (mod: Module) GetExternalSource* (): URI.HierarchicalURI;
+PROCEDURE (mod: Module) GetExternalSource* (rootURI: URI.HierarchicalURI): URI.HierarchicalURI;
 (**For a module of class @oconst{mcForeign} or @oconst{mcInterface}, return the
-   file path for the first @samp{FILE} directive.  Such an entry must exist.  *)
+   file path for the first @samp{FILE} directive.  Such an entry must exist.
+   The URI of the file is expanded relative to the root of the repository,
+   @oparam{rootURI}.  *)
   VAR
     l: LinkDirective;
   BEGIN
@@ -1198,7 +1208,8 @@ PROCEDURE (mod: Module) GetExternalSource* (): URI.HierarchicalURI;
       l := l. next
     END;
     ASSERT (l(LinkFile). file # NIL);
-    RETURN l(LinkFile). file
+    l(LinkFile). file. ResolveRelative (rootURI);
+    RETURN l(LinkFile). file;
   END GetExternalSource;
 
 PROCEDURE StringToCallConv*(str: ARRAY OF CHAR): CallConv;
@@ -2053,6 +2064,7 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
 
 BEGIN
   predefIdToType := NIL;
+  emptyBaseURI := File.ToURI("/");
   NEW (importPosition);
   InitPosition (importPosition, posImportedName, -1, -1);
 END OOC:SymbolTable.

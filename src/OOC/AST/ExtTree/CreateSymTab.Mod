@@ -46,6 +46,10 @@ TYPE
     (* any relative file names in the module are resolved relative to this
        base URI; currently, the only file names in question are the ones
        given in a module's LINK section *)
+    rootURI: URI.HierarchicalURI;
+    (* once expanded relative to @ofield{baseURI}, all URIs are made relative
+       again with respect to this URI; `rootURI' is currently the base
+       directory of the repository of the module *)
   END;
 
 
@@ -218,6 +222,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
           uri := ParserURI.NewURI (str. array^, v. baseURI, res);
           ASSERT (res = NIL);
           ASSERT (uri # NIL);
+          uri := uri. MakeRelative (v. rootURI);
           IF (n. prefixOpt # NIL) THEN
             prefixOption := n. prefixOpt. GetString (FALSE)
           ELSE
@@ -562,7 +567,7 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
   END VisitProcType;
 
 
-PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder; baseURI: URI.HierarchicalURI): Sym.Module;
+PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder; baseURI, rootURI: URI.HierarchicalURI): Sym.Module;
 (**Creates a symbol table from the abstract syntax tree in @oparam{module}.
    The elements of the symbol table are created by calling appropriate 
    factory methods of @oparam{stb}.  Result is the root object of the newly
@@ -576,6 +581,7 @@ PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder; baseURI: 
     v. type := NIL;
     v. root := NIL;
     v. baseURI := baseURI;
+    v. rootURI := rootURI;
     Accept (v, module);
     stb. Finalize (v. root);
     RETURN v. root
