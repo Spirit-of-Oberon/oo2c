@@ -1,8 +1,29 @@
+(* 	$Id$	 *)
 MODULE OOC:AST:ExtTree:CreateIR;
+(*  Creates an IR representation from the abstract syntax tree.
+    Copyright (C) 2001  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
 
 IMPORT
 OOC:AST:ExtTree:XML, StdChannels,
-  OOC:AST:ExtTree, OOC:AST:ExtTree:CreateSymTab, OOC:SymbolTable:Item, OOC:IR;
+  OOC:Scanner:Symbol, OOC:AST:ExtTree, OOC:AST:ExtTree:CreateSymTab,
+  OOC:SymbolTable:Item, OOC:IR;
 
 
 
@@ -20,10 +41,20 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     END GetName;
   
   PROCEDURE Designator (design: ExtTree.Node): IR.Expression;
+    VAR
+      left: IR.Expression;
     BEGIN
       WITH design: ExtTree.Terminal DO
         RETURN b. NewIdentRef (currentNamespace, currentSourceContext,
                                CreateSymTab.GetName (design))
+      | design: ExtTree.Operator DO
+        (* we only do qualified identifiers for now: "module.ident" *)
+        ASSERT (design. op. sym. id = Symbol.period);
+        left := Designator (design. left);
+        WITH left: IR.ModuleRef DO
+          RETURN b. NewQualident (left, currentSourceContext,
+                        CreateSymTab.GetName (design. right(ExtTree.Terminal)))
+        END
       END
     END Designator;
   
@@ -49,18 +80,20 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       END;
       RETURN b. NewCall (design, arguments)
     END FunctionCall;
-  
+
   PROCEDURE ProcedureCall (call: ExtTree.ProcedureCall): IR.Statement;
     VAR
       expr: IR.Expression;
+      arguments: IR.ExpressionList;
     BEGIN
       IF (call. call IS ExtTree.FunctionCall) THEN
         expr := FunctionCall (call. call(ExtTree.FunctionCall), TRUE);
-        RETURN expr(IR.Statement)
       ELSE
-        (* create procedure call from designator... *)
-        RETURN NIL
-      END
+        (* create procedure call from lonely designator *)
+        NEW (arguments, 0);
+        expr := b. NewCall (Designator (call. call), arguments)
+      END;
+      RETURN expr(IR.Statement)
     END ProcedureCall;
   
   PROCEDURE StatementSeq (statmSeq: ExtTree.NodeList): IR.StatementSeq;
@@ -72,16 +105,15 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       (* count number of statements, allocate array to hold IR of sequence *)
       count := 0;
       FOR i := 0 TO statmSeq. len-1 BY 2 DO
-        n := statmSeq. n[i](ExtTree.Node);
-        IF (n # NIL) THEN
+        IF (statmSeq. n[i] # NIL) THEN
           INC (count)
         END
       END;
       NEW (statmSeqIR, count);
       count := 0;
       FOR i := 0 TO statmSeq. len-1 BY 2 DO
-        n := statmSeq. n[i](ExtTree.Node);
-        IF (n # NIL) THEN
+        IF (statmSeq. n[i] # NIL) THEN
+          n := statmSeq. n[i](ExtTree.Node);
           WITH n: ExtTree.ProcedureCall DO
             statmSeqIR[count] := ProcedureCall (n);
           END;
@@ -113,6 +145,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       i, count: LONGINT;
       n: ExtTree.Node;
       procList: IR.ProcedureList;
+      statmSeq: IR.StatementSeq;
 
     PROCEDURE IsProc (n: ExtTree.Node): BOOLEAN;
       BEGIN
@@ -139,8 +172,14 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           INC (count)
         END
       END;
-
-      RETURN b. NewModule (module. moduleName, procList)
+      
+      IF (module. body = NIL) OR (module. body. statmSeq = NIL) THEN
+        NEW (statmSeq, 0)
+      ELSE
+        statmSeq := StatementSeq (module. body. statmSeq)
+      END;
+      
+      RETURN b. NewModule (module. moduleName, procList, statmSeq)
     END Module;
   
   BEGIN
