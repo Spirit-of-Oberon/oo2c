@@ -48,6 +48,7 @@ BEGIN
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);
+  ASSERT(Config.repositories.ParseMetaData());
   
   makeRules := Make.NewRules();
   IF useStderr.value(Boolean.Value).boolean THEN

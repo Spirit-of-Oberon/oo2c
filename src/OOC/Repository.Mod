@@ -268,10 +268,13 @@ PROCEDURE (rep: Repository) [ABSTRACT] GetResource* (package, path: ARRAY OF CHA
    @oparam{package} in the repository.  On success, an URI for the file is
    returned.  Otherwise, result is @code{NIL}.
 
+   An empty package name signals that a repository specific resource is
+   requested.
+   
    This function should never be called by directly, except from
    @oproc{*OOC:Config:Repositories.Section.GetResource}.  *)
   END GetResource;
-  
+
 PROCEDURE (rep: Repository) [ABSTRACT] DumpContent* (w: TextRider.Writer);
   END DumpContent;
 

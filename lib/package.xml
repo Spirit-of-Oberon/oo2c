@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<package name="liboo2c">
+  <version current="0" revision="0" age="0"/>
+  
+  <library name="foo" main-module="liboo2c">
+    <version current="0" revision="0" age="0"/>
+  </library>
+</package>

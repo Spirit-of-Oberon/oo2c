@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Config:Repositories [OOC_EXTENSIONS];
 (*  Management of a hierarchy of configured repositories.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,10 +21,10 @@ MODULE OOC:Config:Repositories [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Msg, Channel, TextRider, LongStrings,
+  Msg, Channel, TextRider, LongStrings, StdChannels,
   ADT:String, URI, URIParser := URI:Parser, URI:Scheme:File, 
   XML:DTD, XML:Locator, Config:Parser, CS := Config:Section,
-  OOC:Repository, OOC:Repository:FileSystem;
+  OOC:Error, OOC:Repository, OOC:Repository:FileSystem, OOC:Package;
 
 
 TYPE
@@ -44,7 +44,9 @@ TYPE
     name: ARRAY 32 OF DTD.Char;
   END;
 
-
+CONST
+  packageData = "package.xml";
+  
 CONST
   invalidContent = 1;
   invalidAttribute = 2;
@@ -346,6 +348,25 @@ PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
     END;
     RETURN result
   END GetIncludePaths;
+
+PROCEDURE (s: Section) ParseMetaData*(): BOOLEAN;
+  VAR
+    rep: Repository.Repository;
+    uri: URI.URI;
+    errList: Error.List;
+  BEGIN
+    errList := Error.NewList("");
+    rep := s. topLevelRep;
+    WHILE (rep # NIL) DO
+      uri := rep.GetResource("", packageData);
+      IF (uri # NIL) THEN
+        Package.ParseFile(uri, errList);
+      END;
+      rep := rep. baseRep
+    END;
+    errList.Write(StdChannels.stdout);
+    RETURN errList.NoErrors();
+  END ParseMetaData;
 
 BEGIN
   NEW (repositoriesContext);

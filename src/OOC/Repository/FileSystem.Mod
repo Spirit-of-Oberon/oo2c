@@ -157,15 +157,19 @@ PROCEDURE (rep: Repository) GetResource* (package, path: ARRAY OF CHAR): URI.URI
     res: URIError.Msg;
     uri: URI.URI;
   BEGIN
-    (* assemble file name from base URI, module name, and module suffix *)
-    rep. GetDefaultSubdir (Rep.resourceFile, p);
-    IF (p # "") & (p[Strings.Length (p)-1] # "/") THEN
-      Strings.Append ("/", p)
+    IF (package = "") THEN
+      COPY(path, p);
+    ELSE
+      (* assemble file name from base URI, module name, and module suffix *)
+      rep. GetDefaultSubdir (Rep.resourceFile, p);
+      IF (p # "") & (p[Strings.Length (p)-1] # "/") THEN
+        Strings.Append ("/", p)
+      END;
+      Strings.Append (package, p);
+      Strings.Append ("/", p);
+      Strings.Append (path, p);
     END;
-    Strings.Append (package, p);
-    Strings.Append ("/", p);
-    Strings.Append (path, p);
-    uri := URIParser.NewURI (p, rep. baseURI, res);
+    uri := URIParser.NewURI (p, rep. relativeBaseURI, res);
     
     IF (res # NIL) THEN
       RETURN NIL
