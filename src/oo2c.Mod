@@ -4,6 +4,7 @@ IMPORT
   StdChannels, Out, Err, Make, Make:Command:Target, StringSearch:NoMatch, 
   Config:Section:Arguments, Config:Section:Options, Config:Value:Boolean,
   OOC:Config, OOC:Config:CCompiler, OOC:Config:Assembler,
+  OOC:SymbolTable:Builder,
   OOC:Make:Entity:ModuleFile, OOC:Make:Command:TranslateToC, 
   OOC:Make:Command:WriteMainFileC, OOC:Make:Command:CompileFileC,
   OOC:Make:Command:LinkProgramC, OOC:Error, Rep := OOC:Repository,
@@ -90,6 +91,7 @@ PROCEDURE NewConfig;
 
 BEGIN
   Error.oo2cStyleErrors := TRUE;
+  Builder.doAutoImport := TRUE;
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);
