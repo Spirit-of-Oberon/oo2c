@@ -321,13 +321,15 @@ PROCEDURE (enc: CryptoEncoder) [ABSTRACT] SetKey* (key: String0.String8);
 PROCEDURE Get* (name: ARRAY OF CHAR): Codec;
   VAR
     obj: Object.Object;
+    norm: String.String;
   BEGIN
     Strings.Capitalize (name);
-    obj := reg. Get (String.New (name));
-    IF (obj = NIL) THEN
-      RETURN NIL;
-    ELSE
+    norm := String.New (name);
+    IF reg.HasKey(norm) THEN
+      obj := reg. Get (norm);
       RETURN obj(Codec);
+    ELSE
+      RETURN NIL;
     END;
   END Get;
 
