@@ -14,11 +14,11 @@ l3:
   i2 = i2!=0;
   i1=i2;
 l5:
-  if (!i1) goto l8;
+  if (!i1) goto l7;
   i0 = *(OOC_INT16*)i0;
   Out0__Int(i0, 0);
   Out0__Ln();
-l8:
+l7:
   return;
 }
 

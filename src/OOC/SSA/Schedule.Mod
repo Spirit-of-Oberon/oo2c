@@ -21,7 +21,6 @@ MODULE OOC:SSA:Schedule [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Log,Err,SYSTEM,
   ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Blocker;
 
 TYPE
@@ -261,6 +260,14 @@ PROCEDURE SetJump (VAR reference: Jump; src, dest: Block);
     dest. targetUseList := reference
   END SetJump;
 
+PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
+  BEGIN
+    WHILE (child # NIL) & (child # dominator) DO
+      child := child. parent
+    END;
+    RETURN (child # NIL)
+  END Dominates;
+
 PROCEDURE ChangeJumpTarget* (reference: Jump; dest: Block);
   BEGIN
     ASSERT (reference # NIL);
@@ -269,7 +276,10 @@ PROCEDURE ChangeJumpTarget* (reference: Jump; dest: Block);
     
     INC (dest. degreeIn);
     reference. dest := dest;
+    reference. isLoopBackedge :=
+        dest. isLoopHead & Dominates (dest, reference. src);
     reference. nextTargetUse := dest. targetUseList;
+    
     dest. targetUseList := reference
   END ChangeJumpTarget;
 
@@ -282,14 +292,6 @@ PROCEDURE ChangeTargets (oldTarget, newTarget: Block);
       ChangeJumpTarget (oldTarget. targetUseList, newTarget);
     END;
   END ChangeTargets;
-
-PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
-  BEGIN
-    WHILE (child # NIL) & (child # dominator) DO
-      child := child. parent
-    END;
-    RETURN (child # NIL)
-  END Dominates;
 
 
 PROCEDURE InitBranchBlock (b: BranchBlock; dominator: Block;
@@ -502,6 +504,7 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
     BEGIN
       (* transfer instructions of loop body *)
       body := NewJumpBlock (block);
+      body. isLoopHead := TRUE;
       SetJump (block. jump, block, body);
       bodyEnd := TransferInstructions (loop, body);
 
@@ -743,9 +746,6 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     PROCEDURE Check (jump: Jump);
       BEGIN
         jump. isLoopBackedge := Dominates (jump. dest, b);
-        IF jump. isLoopBackedge THEN
-          jump. dest. isLoopHead := TRUE;
-        END;
       END Check;
     
     BEGIN
@@ -836,9 +836,13 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         
         IF (b IS JumpBlock) &
            (b. proxyList = NIL) &
+           ~(b. parent IS SwitchBlock) &
            (b(JumpBlock). jump. dest # b) THEN
           ChangeTargets (b, b(JumpBlock). jump. dest);
           ASSERT (b. targetUseList = NIL);
+          ClearJump (b(JumpBlock). jump);
+          b(JumpBlock). jump := NIL;
+          
           IF (b. domList # NIL) THEN
             ASSERT (b. domList. nextDom = NIL);
             b. domList. nextDom := b. nextDom;
@@ -865,7 +869,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       END;
     END NumberBlocks;
 
-  PROCEDURE WriteBlocks (b: Block; indent: LONGINT);
+  (*PROCEDURE WriteBlocks (b: Block; indent: LONGINT);
     VAR
       nested: Block;
       i: LONGINT;
@@ -898,7 +902,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         WriteBlocks (nested, indent+1);
         nested := nested. nextDom;
       END;
-    END WriteBlocks;
+    END WriteBlocks;*)
   
   PROCEDURE Check (b: Block);
   (* Sanity checks on the generated blocks, their instructions, and their
@@ -1023,17 +1027,11 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     MarkBackedges (b);
 
     (* remove unreachable and empty blocks *)
-(*    Log.String ("pre", pb. procDecl. name. str^);
-    WriteBlocks(b,0);*)
-    Check(b);
     RemoveUnreachable (b. domList);
-    Check(b);
-(*    Log.String ("post RemoveUnreachable", pb. procDecl. name. str^);
-    WriteBlocks(b,0);
     RemoveEmpty (b. domList);
-    Log.String ("post RemoveEmpty", pb. procDecl. name. str^);
-    WriteBlocks(b,0);
-    Check(b);*)
+
+    (* some santity checks; this is mostly for debug purposes *)
+    Check(b);
     
     (* note: if ArrangeInstructions does not return a valid schedule, then
        the instructions within each basic block must be reordered here *)
