@@ -153,6 +153,9 @@ PROCEDURE (closure: TypeClosure) Closure*(type: Sym.Type): Sym.Type;
       IF (typeClosure.arguments[i].type IS Sym.TypeVar) THEN
         Log.LongInt("  arg.pos", typeClosure.arguments[i].type.position.pos);
       END;
+      IF (typeClosure.arguments[i].type.namingDecl # NIL) THEN
+        Log.String("  arg.name", typeClosure.arguments[i].type.namingDecl.name.str^);
+      END;
     END;
   END Log;*)
 
