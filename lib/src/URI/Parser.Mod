@@ -143,6 +143,10 @@ RAISES Exception.ParseError;
           END
         END
       ELSE
+        IF (schemeId # NIL) & hierURI.AuthorityMandatory() THEN
+          RAISE(NEW(Exception.ParseError,
+                    "The URI does must include an authority component", i));
+        END;
         hierURI. SetAuthority (NIL);
         IF (str[i] = "/") THEN
           Path (TRUE)

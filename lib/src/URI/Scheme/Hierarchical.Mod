@@ -579,7 +579,9 @@ PROCEDURE (uri: Generic) ToString*(): Object.String8;
     sb := StringBuffer.New("");
     uri. AppendScheme (sb);
     IF (uri. authority # NIL) THEN
-      uri. authority. Append (sb)
+      uri. authority. Append (sb);
+    ELSIF (uri.schemeId # NIL) & uri.AuthorityMandatory() THEN
+      sb.Append("//");
     END;
     uri. AppendPath (sb);
     IF (uri. query # NIL) THEN

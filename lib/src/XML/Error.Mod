@@ -241,7 +241,7 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
           uri := uriAttr(M.StringAttribute).string;
           COPY(uriAttr(M.StringAttribute).string^, text);
           TRY
-            cwd := "file:"+ProcessParameters.GetCwd()+"/";
+            cwd := "file://"+ProcessParameters.GetCwd()+"/";
             len := Strings.Length(text);
             IF (cwd.length < len) &
                cwd.Equals(Object.NewLatin1Region(text, 0, cwd.length)) THEN

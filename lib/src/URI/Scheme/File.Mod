@@ -56,6 +56,11 @@ PROCEDURE (file: URI) NewAuthority* (): URI0.Authority;
     RETURN ServerBased.New (NIL, "", -1, -1)
   END NewAuthority;
 
+PROCEDURE (file: URI) AuthorityMandatory*(): BOOLEAN;
+  BEGIN
+    RETURN TRUE;
+  END AuthorityMandatory;
+
 PROCEDURE (file: URI) NewQuery* (): URI0.Query;
   BEGIN
     RETURN NIL
@@ -129,7 +134,7 @@ PROCEDURE GetCwd*(): URI;
   BEGIN
     TRY
       cwd := HostPath.Normalize(ProcessParameters.GetCwd());
-      uriString := StringBuffer.New("file:");
+      uriString := StringBuffer.New("file://");
       String.AppendEscaped(cwd, CharClass.unreservedPChar+"/", uriString);
       IF (uriString.CharAt(uriString.length-1) # "/") THEN
         uriString.Append ("/");
@@ -161,7 +166,7 @@ PROCEDURE ToURI* (filePath: ARRAY OF CHAR): URI;
       normPath := HostPath.Normalize(Object.NewLatin1(filePath));
       
       IF (normPath.CharAt(0) = "/") THEN
-        uriString := StringBuffer.New("file:");
+        uriString := StringBuffer.New("file://");
         String.AppendEscaped (normPath, CharClass.unreservedPChar+"/", uriString);
         str := uriString.ToString();
         chars := str(Object.String8).CharsLatin1();

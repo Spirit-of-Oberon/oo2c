@@ -364,6 +364,16 @@ PROCEDURE InitHierarchicalURI* (uri: HierarchicalURI; schemeId: STRING;
     uri. query := query
   END InitHierarchicalURI;
 
+PROCEDURE (uri: HierarchicalURI) AuthorityMandatory*(): BOOLEAN;
+(**If @code{TRUE} and the URI has a scheme component, then require that an
+   authority is present when parsing the URI, and include an empty authority
+   part when converting the URI to a string, if no authority is defined.
+
+   By default, this method returns @code{FALSE}.  *)
+  BEGIN
+    RETURN FALSE;
+  END AuthorityMandatory;
+
 PROCEDURE (uri: HierarchicalURI) Copy* (dest: URI);
   BEGIN
     uri. Copy^ (dest);
