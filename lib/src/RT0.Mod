@@ -158,4 +158,10 @@ PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
    array's dimensions are passed as second, third, and so on, parameter.  They
    must be of type @code{LONGINT}.  *)
    
+PROCEDURE NewBlock* (bytes: LONGINT): SYSTEM.PTR;
+(**Allocates a memory block on the heap with a size of at least @oparam{bytes}
+   bytes.  Pointers in the allocated block are ignored during garbage
+   collection.  That is, the block must not contain any references to objects
+   on the heap that are not kept live by other pointers.  *)
+   
 END RT0.

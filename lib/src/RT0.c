@@ -67,6 +67,14 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   return (OOC_PTR)var;
 }
 
+OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
+  void *ptr;
+  
+  ptr = malloc(bytes);		/* GC_malloc_atomic */
+  /* FIXME... check that result is not NULL */
+  return (OOC_PTR)ptr;
+}
+
 void RT0_init() {
   PS(RT0__boolean , RT0__strBoolean , sizeof(OOC_BOOLEAN));
   PS(RT0__char    , RT0__strChar    , sizeof(OOC_CHAR8));
