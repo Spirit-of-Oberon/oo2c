@@ -28,7 +28,9 @@
     ("\\<UNTIL\\>" . until)
     ("\\<WHILE\\>" . while)
     ("\\<WITH\\>" . with)
-    ("\\<PROCEDURE\\>[ \t]*\\(([^)]*)\\s-*\\)?\\(\\sw+\\)" . proc))
+    ;; 'proc does not match procedure forward declarations
+    ("\\<PROCEDURE\\>[ \t]*\\(([^)]*)\\s-*\\)?\\(\\sw+\\)" . proc)
+    ("\\<PROCEDURE\\>[ \t]*\\^" . proc-forward))
 "Regexps matching code that affects indentation.
 A symbolic name belongs to each regexp.")
 
@@ -55,14 +57,27 @@ returned."
   (mapconcat 'identity
              (delq nil (mapcar (lambda (x) (ob2-get-indent-re x))
                                '(begin const-type-var else elsif end guard-sep
-                                       import proc end-proc-or-module until)))
+                                       import proc end-proc-or-module until
+				       proc-forward)))
              "\\|")
 "Regexp matching code that interrupt indentation of previous line.
 Indentation relative to the previous line is either incremented
 \(e.g. VAR after MODULE) or decremented (e.g. BEGIN after VAR). End of
 procedure is *included* in the regexp \\<END\\>.")
 
+(defconst ob2-statements-or-declarations-re
+  (mapconcat (lambda (x) (ob2-get-indent-re x))
+	     '(end-proc-or-module begin) "\\|")
+  "Regexp matching code that is used to determine if point is in a
+statement sequence or a list of declarations.")
 
+(defsubst ob2-inside-statement-sequence-p ()
+  "Return non-nil if point is inside a statement sequence.
+Else return nil."
+  (save-excursion
+    (if (ob2-re-search-backward-code ob2-statements-or-declarations-re)
+	(eq (ob2-get-indent-symbol (match-string-no-properties 0)) 'begin)
+      nil)))
 
 
 ;; ------
@@ -140,96 +155,48 @@ The function uses (`re-search-backward' REGEXP nil t)."
 "Indentation table.
 
 Key (A . B) and value C is interpreted as: If looking at A and have
-found B above point increment indentation with C steps.  One step
-equals `ob2-indent-level' blanks.")
+found B above point increment indentation with C steps.  If a particular
+pair is not in the hash, then C is assumed to be zero.  One step equals
+`ob2-indent-level' blanks.")
 
-;; FIXME... pull out table from defvar so that it is easily changed
+;; FIXME... put table into defvar again
 (setq ob2-indent-table
   (let ((table (make-hash-table :test 'equal)))
     ;; (puthash '(current . parent) delta table)
-    (puthash '(begin . const-type-var) -1 table)
-    (puthash '(begin . end) -2 table)
     (puthash '(begin . end-proc-or-module) -1 table)
-    (puthash '(begin . import) 0 table)
-    (puthash '(begin . module) 0 table)
-    (puthash '(begin . proc) 0 table)
-    (puthash '(const-type-var . const-type-var) 0 table)
+    (puthash '(begin . proc) 1 table)
     (puthash '(const-type-var . end) -1 table)
-    (puthash '(const-type-var . import) 0 table)
-    (puthash '(const-type-var . module) 1 table)
     (puthash '(const-type-var . proc) 1 table)
-    (puthash '(else . case) 0 table)
-    (puthash '(else . else) 0 table)
-    (puthash '(else . elsif) 0 table)
-    (puthash '(else . end) 0 table)
-    (puthash '(else . guard-sep) 0 table)
-    (puthash '(else . if) 0 table)
-    (puthash '(else . with) 0 table)
-    (puthash '(elsif . elsif) 0 table)
     (puthash '(elsif . end) -1 table)
-    (puthash '(elsif . if) 0 table)
-    (puthash '(end . begin) 0 table) ;nicer behaviour with abbrev expansion
-    (puthash '(end . case) 0 table)
-    (puthash '(end . else) 0 table)
-    (puthash '(end . elsif) 0 table)
     (puthash '(end . end) -1 table)
-    (puthash '(end . for) 0 table)
-    (puthash '(end . guard-sep) 0 table)
-    (puthash '(end . if) 0 table)
-    (puthash '(end . loop) 0 table)
-    (puthash '(end . proc) 0 table) ;nicer behaviour with abbrev expansion
-    (puthash '(end . record) 0 table)
     (puthash '(end . until) -1 table)
-    (puthash '(end . while) 0 table)
-    (puthash '(end . with) 0 table)
-    (puthash '(end-proc-or-module . begin) 0 table)
-    (puthash '(end-proc-or-module . const-type-var) -1 table)
     (puthash '(end-proc-or-module . end) -1 table)
     (puthash '(end-proc-or-module . end-proc-or-module) -1 table)
-    (puthash '(end-proc-or-module . proc) 0 table)
+    (puthash '(end-proc-or-module . proc) 1 table)
     (puthash '(end-proc-or-module . until) -1 table)
-    (puthash '(guard-sep . guard-sep) 0 table)
-    (puthash '(guard-sep . with) 0 table)
-    (puthash '(guard-sep . case) 0 table)
-    (puthash '(import . module) 0 table)
     (puthash '(other . begin) 1 table)
     (puthash '(other . case) 1 table)
     (puthash '(other . const-type-var) 1 table)
     (puthash '(other . else) 1 table)
     (puthash '(other . elsif) 1 table)
-    (puthash '(other . end) 0 table)
-    (puthash '(other . end-proc-or-module) 0 table)
     (puthash '(other . for) 1 table)
     (puthash '(other . if) 1 table)
     (puthash '(other . guard-sep) 1 table)
     (puthash '(other . import) 1 table)
     (puthash '(other . loop) 1 table)
-    (puthash '(other . module) 1 table)
     (puthash '(other . record) 1 table)
     (puthash '(other . repeat) 1 table)
     (puthash '(other . proc) 1 table)
-    (puthash '(other . until) 0 table)
     (puthash '(other . while) 1 table)
     (puthash '(other . with) 1 table)
-    (puthash '(proc . const-type-var) 0 table)
-    (puthash '(proc . end) -1 table)
-    (puthash '(proc . end-proc-or-module) 0 table)
-    (puthash '(proc . import) 0 table)
-    (puthash '(proc . module) 1 table)
+    (puthash '(proc . end-proc-or-module) -1 table)
     (puthash '(proc . proc) 1 table)
-    (puthash '(type . const-type-var) 0 table)
+    (puthash '(proc-forward . proc) 1 table)
     (puthash '(type . end) -1 table)
-    (puthash '(type . import) 0 table)
     (puthash '(type . module) 1 table)
     (puthash '(type . proc) 1 table)
     (puthash '(until . end) -1 table)
-    (puthash '(until . repeat) 0 table)
     (puthash '(until . until) -1 table)
-    (puthash '(var . const-type-var) 0 table)
-    (puthash '(var . end) -1 table)
-    (puthash '(var . import) 0 table)
-    (puthash '(var . module) 1 table)
-    (puthash '(var . proc) 1 table)
     table))
 
 
@@ -238,8 +205,9 @@ equals `ob2-indent-level' blanks.")
 
 Gets the indentation increment from `ob2-indent-table' coresponding to
 the key '(CURRENT PARENT).  See `ob2-indent-table'."
-  (message "(ob2-get-indent-increment %s %s)" current parent)
-  (gethash (cons current parent) ob2-indent-table))
+  (message "(ob2-get-indent-increment %s %s) --> %i" current parent
+	   (gethash (cons current parent) ob2-indent-table 0))
+  (gethash (cons current parent) ob2-indent-table 0))
 
 
 (defun ob2-indent-line ()
@@ -269,9 +237,6 @@ the key '(CURRENT PARENT).  See `ob2-indent-table'."
 	  ((ob2-first-case-or-with-case-p)
 	   (1- (ob2-calc-indent-normal)))
 
-          ((ob2-comment-before-first-proc-p)
-           (- (ob2-calc-indent-normal) ob2-indent-level))
-          
           (t (ob2-calc-indent-normal)))))
 
 
@@ -289,34 +254,38 @@ WITH statement starts on a line.  Else returns nil."
                  1)))))
 
 
+(defsubst ob2-re-search-backward-code-no-ref-param (regexp)
+  "Locate first preceeding word matching REGEXP that is not matching
+ob2-looking-at-ref-param-p.  Result is nil if there is no match."
+  (let ((foundp (ob2-re-search-backward-code regexp)))
+    (while (and foundp (ob2-looking-at-ref-param-p))
+      (setq foundp (ob2-re-search-backward-code regexp)))
+    foundp))
+
+
 (defun ob2-calc-indent-normal ()
   "Return correct indentation for current line (*normal* cases)."
-  (let ((foundp)
-        (saved-word)
+  (let ((saved-word)
         (saved-column))
-
     (save-excursion
-      ;; locate first preceeding word matching ob2-indent-re that is not
-      ;; matching ob2-looking-at-ref-param-p
-      (setq foundp (ob2-re-search-backward-code ob2-indent-re))
-      (while (and foundp (ob2-looking-at-ref-param-p))
-	(setq foundp (ob2-re-search-backward-code ob2-indent-re)))
-
-      (when foundp
+      (when (ob2-re-search-backward-code-no-ref-param ob2-indent-re)
         (setq saved-word (ob2-get-indent-symbol
                           (match-string-no-properties 0)))
 
 	;; special case with end of record
 	(when (and (eq saved-word 'end)
-		   (save-excursion (back-to-indentation)
-				   (looking-at "\\(TYPE\\|VAR\\)\\>")))
+		   (not (ob2-inside-statement-sequence-p)))
+	  (ob2-re-search-backward-code-no-ref-param
+	   (ob2-get-indent-re 'const-type-var))
 	  (setq saved-word 'const-type-var))
 
         (setq saved-column (current-indentation))))
     
+    ;;(message "save-column=%s, saved-word=%s" saved-column saved-word)
     (if (null saved-word)
         0
-      (let ((factor))
+      (let ((factor)
+	    (new-column))
         (if (looking-at ob2-indent-interrupt-re)
             (save-excursion               ;place re in match-string
               (ob2-re-search-forward-code ob2-indent-re)
@@ -326,9 +295,12 @@ WITH statement starts on a line.  Else returns nil."
                                                 0))
                                               saved-word)))
           (setq factor (ob2-get-indent-increment 'other saved-word)))
-        (if (null factor)
-            0
-          (+ saved-column (* factor ob2-indent-level)))))))
+	  (if (null factor)
+	      0
+	    (setq new-column (+ saved-column (* factor ob2-indent-level)))
+	    (if (< new-column 0)
+		0
+	      new-column))))))
 
 
 (defun ob2-inside-param-list-p ()
@@ -393,27 +365,6 @@ inside a multiline expression."
           (progn (goto-char (match-end 0))
                  (current-column))
         (+ (current-indentation) (* ob2-indent-level 2))))))
-
-
-(defun ob2-comment-before-first-proc-p ()
-  "Determine if point is on comment before *first* procedure.
-
-Returns non-nil if point is on the first row of a comment following an
-IMPORT, CONST, TYPE or VAR declaration and preceding a procedure
-declaration.  Else returns nil."
-  (save-excursion
-    (back-to-indentation)
-    (and (looking-at "(\\*")
-	 (save-excursion
-	   (and (ob2-re-search-backward-code
-		 (concat (ob2-get-indent-re 'import) "\\|"
-			 (ob2-get-indent-re 'const-type-var) "\\|"
-			 (ob2-get-indent-re 'end-proc-or-module)))
-		(not (looking-at (ob2-get-indent-re 'end-proc-or-module)))))
-	 (save-excursion
-	   (and (ob2-re-search-forward-code ob2-indent-re)
-		(string-match (ob2-get-indent-re 'proc)
-			      (match-string-no-properties 0)))))))
 
 
 (defun ob2-calc-indent-inside-multi-line-param-list ()
