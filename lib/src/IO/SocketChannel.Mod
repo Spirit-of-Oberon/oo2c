@@ -57,7 +57,7 @@ PROCEDURE (ch: Channel) FinishConnect*(): BOOLEAN;
   END FinishConnect;
 
 PROCEDURE (ch: Channel) Read*(VAR buffer: ARRAY OF SYSTEM.BYTE;
-                                start, length: LONGINT): LONGINT
+                              start, length: LONGINT): LONGINT
 RAISES IO.Error;
   VAR
     res: LONGINT;
@@ -70,7 +70,7 @@ RAISES IO.Error;
   END Read;
   
 PROCEDURE (ch: Channel) Write*(buffer[NO_COPY]: ARRAY OF SYSTEM.BYTE;
-                                 start, length: LONGINT): LONGINT
+                               start, length: LONGINT): LONGINT
 RAISES IO.Error;
   VAR
     res: LONGINT;
@@ -137,7 +137,7 @@ PROCEDURE (ch: ServerChannel) Accept*(): Channel RAISES IO.Error;
 (**Accepts a connection request from a remote socket.
 
    On success, result is a channel for the incoming connection.  If the server
-   socket is in non-blocking more, and there are no more pending connections,
+   socket is in non-blocking mode, and there are no more pending connections,
    then result is @code{NIL}.  An error raises an exception of type
    @otype{IO.Error}.  *)
   VAR

@@ -139,8 +139,8 @@ void IO_Socket__ServerDesc_SetBlocking(IO_Socket__Server s, OOC_CHAR8 block) {
 }
 
 void IO_Socket__ServerDesc_Bind(IO_Socket__Server s,
-				       IO_Address__Socket bindPoint,
-				       OOC_INT32 queueSize) {
+				IO_Address__Socket bindPoint,
+				OOC_INT32 queueSize) {
   struct sockaddr *addr;
   
   addr = (struct sockaddr *)
