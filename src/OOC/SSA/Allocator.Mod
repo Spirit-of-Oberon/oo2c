@@ -23,9 +23,10 @@ MODULE OOC:SSA:Allocator;
 <*DEFINE DEBUG_ALLOCATOR := FALSE*>
 
 IMPORT
-  <*IF DEBUG_ALLOCATOR THEN*>Out,SYSTEM,Log,Err,<*END*>
-  IntStr, Strings, ADT:ArrayList, ADT:Dictionary, ADT:String,
-  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd,
+  Log,
+  <*IF DEBUG_ALLOCATOR THEN*>SYSTEM,Log,Err,<*END*>
+  IntStr, Strings, ADT:Object, ADT:ArrayList, ADT:Dictionary, ADT:String,
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
   OOC:SSA:Schedule, OOC:SSA:IGraph, OOC:C:DeclWriter;
 
 
@@ -55,6 +56,44 @@ TYPE
     live: IGraph.Vector;
   END;
 
+TYPE
+  State = Dictionary.Dictionary;
+  (* Keeps track of the current values stored in register variables.  The
+     dictionary maps the names of register variables onto instances of
+     @otype{SSA.Result}, or one of the special values defined below.
+
+     For a given name @var{n}, @samp{State.get(@var{n})} can have one of these
+     meanings:
+
+     @table @asis
+     @item Key @var{n} does not exist.
+     In this case, the variable has not been set on any path leading to the
+     current state.  Use of this variable is an error.
+
+     @item @samp{State.get(@var{n})} equals @ovar{undefinedVar}.
+     The variable has been set on different paths leading to this state, but
+     the possibly different values has not been merged by means of one of the
+     @samp{select} instructions.  Use of this variable is an error.
+
+     @item Otherwise:
+     In all other cases, the variable is mapped to an instance of
+     @otype{SSA.Result}, meaning that its current value has been produced by
+     the given result of an SSA instruction.
+     @end table  *)
+
+TYPE
+  BlockInfo* = POINTER TO BlockInfoDesc;
+  BlockInfoDesc = RECORD
+    (Schedule.InfoDesc)
+    nextInfo: BlockInfo;
+    block: Schedule.Block;
+    mergeInstr: SSA.Instr;
+    initState: State;
+    inCollect: POINTER TO ARRAY OF SSA.Instr;
+    inState: POINTER TO ARRAY OF State;
+    marker: LONGINT;
+  END;
+  
   
 PROCEDURE NewRegisterFile (registerType: DeclWriter.BasicTypeId): RegisterFile;
   VAR
@@ -282,6 +321,20 @@ PROCEDURE AddToCollect (loopHead: Schedule.Block; res: SSA.Result);
     END;
   END AddToCollect;
 
+<*IF DEBUG_ALLOCATOR THEN*>
+PROCEDURE WriteRes (res: SSA.Result);
+  VAR
+    index: LONGINT;
+  BEGIN
+    Err.Hex (SYSTEM.VAL(LONGINT,res.instr), 8);
+    index := res. ResultIndex();
+    IF (index # 0) THEN
+      Err.Char (".");
+      Err.LongInt (index, 0);
+    END;
+  END WriteRes;
+<*END*>
+
 PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
                         live: IGraph.Vector): Schedule.Block;
 (* Result is loop block into whose collect any cross loop results have been
@@ -321,10 +374,9 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
 
   <*IF DEBUG_ALLOCATOR THEN*>
   PROCEDURE WriteLive (b: Schedule.Block; msg: ARRAY OF CHAR;
-                       g: IGraph.Graph; live: IGraph.Vector);
+                       live: IGraph.Vector);
     VAR
       i: LONGINT;
-      res: SSA.Result;
     BEGIN
       Err.String (msg);
       Err.String (" live set: ");
@@ -333,7 +385,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       FOR i := 0 TO rf. resultList. size-1 DO
         IF g. In (i, live) THEN
           Err.Char (" ");
-          Err.LongInt (i, 0);
+          WriteRes (rf. resultList. array[i](SSA.Result));
         END;
       END;
       Err.Ln;
@@ -342,7 +394,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
   
   BEGIN
     iGraph := rf. iGraph;
-    <*IF DEBUG_ALLOCATOR THEN*>WriteLive (b, "end of block", iGraph, live);<*END*>
+    <*IF DEBUG_ALLOCATOR THEN*>WriteLive (b, "end of block", live);<*END*>
     
     WITH b: Schedule.BranchBlock DO
       (* the predicate that is evaluated at the end of a branch block must
@@ -411,7 +463,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
     ELSE  (* nothing to do *)
     END;
 
-    <*IF DEBUG_ALLOCATOR THEN*>WriteLive (b, "beg of block", iGraph, live);<*END*>
+    <*IF DEBUG_ALLOCATOR THEN*>WriteLive (b, "beg of block", live);<*END*>
     
     IF (loopEnd # NIL) THEN
       loopBlock := GetLoop (loopEnd. block. parent,
@@ -487,7 +539,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
      @oparam{b}.  *)
     VAR
       ld: LiveData;
-      outgoingJumps: LONGINT;
+      outgoingJumps, i: LONGINT;
       loopBlock: Schedule.Block;
       
     PROCEDURE Propagate (jump: Schedule.Jump; loopBlock: Schedule.Block);
@@ -521,6 +573,22 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
             (jump. dest. isLoopHead & jump. isLoopBackedge)
       END BackedgeJump;
 
+    PROCEDURE Merge (ld: LiveData);
+      BEGIN
+        rf. iGraph. MergeVector (live, ld. live);
+        INC (ld. knownJumps);
+        ASSERT (ld. knownJumps <= ld. outgoingJumps);
+        
+        IF (ld. knownJumps = ld. outgoingJumps) THEN
+          live := ld. live;
+          loopBlock := SweepLiveSet (rf, b, live);
+          IF (b # enterBlock) THEN
+            Propagate (b. targetUseList, loopBlock)
+          END;
+          b. info := NIL;                (* clean up when done *)
+        END;
+      END Merge;
+    
     BEGIN
       (* a. for normal source blocks, do the same sweep
          b. for branch blocks, merge the life sets of both jump targets
@@ -543,17 +611,22 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
         ELSE
           ld := b. info(LiveData);
         END;
-        rf. iGraph. MergeVector (live, ld. live);
-        INC (ld. knownJumps);
-        
-        IF (ld. knownJumps = ld. outgoingJumps) THEN
-          live := ld. live;
-          loopBlock := SweepLiveSet (rf, b, live);
-          IF (b # enterBlock) THEN
-            Propagate (b. targetUseList, loopBlock)
+        Merge (ld);
+
+      | b: Schedule.SwitchBlock DO
+        IF (b. info = NIL) THEN
+          outgoingJumps := LEN (b. jump^);
+          FOR i := 0 TO LEN (b. jump^)-1 DO
+            IF BackedgeJump (b. jump[i]) THEN
+              DEC (outgoingJumps);
+            END;
           END;
-          b. info := NIL;                (* clean up when done *)
+          ld := NewLiveData (rf. iGraph, outgoingJumps);
+          b. info := ld
+        ELSE
+          ld := b. info(LiveData);
         END;
+        Merge (ld);
         
       ELSE  (* JumpBlock and DeadEndBlock *)
         loopBlock := SweepLiveSet (rf, b, live);
@@ -564,13 +637,6 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
     END TraverseBlocks;
 
   <*IF DEBUG_ALLOCATOR THEN*>
-  PROCEDURE WriteRes (res: SSA.Result);
-    BEGIN
-      Err.Hex (SYSTEM.VAL(LONGINT,res.instr), 8);
-      Err.Char (".");
-      Err.LongInt (res. ResultIndex(), 0);
-    END WriteRes;
-                             
   PROCEDURE WriteConflicts (rf: RegisterFile);
     VAR
       i, j: LONGINT;
@@ -585,7 +651,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
         FOR j := 0 TO rf. resultList. size-1 DO
           IF rf. iGraph. Conflicts (i, j) THEN
             Err.Char (" ");
-            Err.LongInt (j, 0);
+            WriteRes (rf. resultList. array[j](SSA.Result));
           END;
         END;
         Err.Ln;
@@ -702,6 +768,284 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
       END;
     END ClearBlockInfo;
 
+  PROCEDURE CheckRegisters (root: Schedule.Block;
+                            registerMap: Dictionary.Dictionary);
+    VAR
+      ready, current: BlockInfo;
+      undefinedVar: SSA.Result;
+
+    PROCEDURE ScanBlock (b: Schedule.Block);
+      VAR
+        bi: BlockInfo;
+        child: Schedule.Block;
+
+      PROCEDURE MergeInstr (proxy: Schedule.InstrProxy): SSA.Instr;
+        BEGIN
+          WHILE (proxy # NIL) DO
+            CASE proxy. instr. opcode OF
+            | Opcode.select, Opcode.loopStart, Opcode.loopEnd:
+              RETURN proxy. instr;
+            ELSE
+            END;
+            proxy := proxy. nextProxy;
+          END;
+          RETURN NIL;
+        END MergeInstr;
+      
+      BEGIN
+        NEW (bi);
+        Schedule.InitInfo (bi);
+        bi. nextInfo := NIL;
+        bi. block := b;
+        bi. initState := NIL;
+        bi. mergeInstr := MergeInstr (b. proxyList);
+        IF (b. parent = NIL) THEN (* change back to zero for top-level block *)
+          ASSERT (b = root);
+          bi. marker := b. degreeIn-1;
+        ELSE
+          bi. marker := b. degreeIn;
+        END;
+        IF (bi. marker > 1) THEN
+          ASSERT (bi. mergeInstr # NIL);
+        END;
+        NEW (bi. inCollect, bi. marker);
+        NEW (bi. inState, bi. marker);
+        
+        IF (bi. marker = 0) THEN
+          IF (b. parent = NIL) THEN
+            (* only add the root block to the ready list; discard any other
+               unrechable blocks within the procedure *)
+            bi. nextInfo := ready;
+            ready := bi;
+            bi. inCollect := NIL;
+            bi. inState := NIL;
+            bi. initState := Dictionary.New();
+          ELSE
+            ASSERT ((b. domList = NIL) OR
+                    (b. domList IS Schedule.DeadEndBlock));
+          END;
+        ELSE
+          (* Note: Due to the presence of unreachable blocks, it is possible
+             that there are blocks that may never be changed to "ready".  These
+             blocks are only reachable from unreachable blocks, and will never
+             be touched by `CheckRegisters'.  Since the waiting queue is (in
+             general) not shrunk to the empty set, no explicit waiting queue is
+             kept.  *)
+        END;
+        b. info := bi;
+
+        child := b. domList;
+        WHILE (child # NIL) DO
+          ScanBlock (child);
+          child := child. nextDom;
+        END;
+      END ScanBlock;
+
+    PROCEDURE CheckBlock (bi: BlockInfo; state: State);
+      VAR
+        proxy: Schedule.InstrProxy;
+        collect: SSA.Instr;
+        opnd: SSA.Opnd;
+        res: SSA.Result;
+        b: Schedule.Block;
+        i: LONGINT;
+
+      PROCEDURE UpdateTarget (jump: Schedule.Jump; state: State;
+                              collect: SSA.Instr);
+        VAR
+          di: BlockInfo;
+
+        PROCEDURE MergeVariables (di: BlockInfo): State;
+        (* pre: di.mergeInstr # NIL *)
+          VAR
+            outState: State;
+            allVarsMap: Dictionary.Dictionary;
+            vars: Object.ObjectArrayPtr;
+            i, j: LONGINT;
+            value: Object.Object;
+          BEGIN
+            (* if the merge has results that represent values passed from its
+               "collect" instructions, then we must simply rely on the back-end
+               to move the collected values into the registers mandated by the
+               results of the merging instruction *)
+
+            (* create a list of variable names that are defined on at least
+               one path into this merge *)
+            allVarsMap := Dictionary.New();
+            FOR i := 0 TO LEN (di. inState^)-1 DO
+              vars := di. inState[i]. Keys();
+              FOR j := 0 TO LEN (vars^)-1 DO
+                allVarsMap. Set (vars[j], NIL);
+              END;
+            END;
+            vars := allVarsMap. Keys();
+            
+            outState := Dictionary.New();
+            FOR i := 0 TO LEN (di. inState^)-1 DO
+              FOR j := 0 TO LEN (vars^)-1 DO
+                IF di. inState[i]. HasKey (vars[j]) THEN
+                  (* this path defines a value for the variable vars[j] *)
+                  value := di. inState[i]. Get (vars[j]);
+                  IF outState. HasKey (vars[j]) THEN
+                    IF (outState. Get (vars[j]) # value) THEN
+                      (* value on path disagrees with that on another path *)
+                      outState. Set (vars[j], undefinedVar);
+                    END;
+                  ELSE  (* first encounter of this variable *)
+                    outState. Set (vars[j], value);
+                  END;
+                ELSE
+                  (* this path doesn't define vars[j], but another does:
+                     the variable is undefined *)
+                  outState. Set (vars[j], undefinedVar);
+                END;
+              END;
+            END;
+            
+            (* for every result of the merging instruction that is passed in
+               a register, set the register variable to point to the result
+               instance *)
+            res := di. mergeInstr. nextResult. nextResult;
+            WHILE (res # NIL) DO
+              ASSERT (res. class = Result.selectValue);
+              IF registerMap. HasKey (res) THEN
+                outState. Set (registerMap. Get (res), res);
+              END;
+              res := res. nextResult;
+            END;
+
+            RETURN outState;
+          END MergeVariables;
+        
+        BEGIN
+          di := jump. dest. info(BlockInfo);
+          ASSERT (di. marker > 0);
+          DEC (di. marker);
+          di. inCollect[di. marker] := collect;
+          di. inState[di. marker] := state. Copy();
+          IF (di. marker = 0) THEN
+            (* merge state arriving at this block from all possible sources *)
+            IF (di. mergeInstr # NIL) THEN
+              di. initState := MergeVariables (di);
+            ELSE
+              ASSERT (LEN (di. inState^) = 1);
+              di. initState := di. inState[0];
+            END;
+            
+            (* add to `ready' queue *)
+            di. nextInfo := ready;
+            ready := di;
+          END;
+        END UpdateTarget;
+
+      PROCEDURE CheckOpnd (opnd: SSA.Opnd);
+        VAR
+          obj: Object.Object;
+          defVar: String.String;
+          currentValue: SSA.Result;
+        BEGIN
+          IF registerMap. HasKey (opnd. arg) THEN
+            (* the variable that holds the result `opnd.arg' must be known
+               at this point *)
+            obj := registerMap. Get (opnd. arg);
+            defVar := obj(String.String);
+            ASSERT (state. HasKey (defVar));
+            
+            (* the current value of the variable must be the expected
+               result *)
+            obj := state. Get (defVar);
+            currentValue := obj(SSA.Result);
+            IF currentValue # opnd. arg THEN
+              opnd. instr. LogId ("using instruction");
+              Log.LongInt ("  operand index", opnd. OpndIndex());
+              opnd. arg. LogId ("  expected value");
+              currentValue. LogId ("  actual value");
+              ASSERT (FALSE);
+            END;
+          END;
+        END CheckOpnd;
+      
+      BEGIN
+        collect := NIL;
+
+        b := bi. block;
+        IF (b IS Schedule.SwitchBlock) THEN
+          CheckOpnd (b(Schedule.SwitchBlock). expr);
+        END;
+        
+        proxy := b. proxyList;
+        WHILE (proxy # NIL) DO
+          IF (proxy. instr. opcode = Opcode.collect) THEN
+            ASSERT (collect = NIL);
+            ASSERT (proxy. nextProxy = NIL);
+            collect := proxy. instr;
+          ELSIF (proxy. instr. opcode = Opcode.select) THEN
+            ASSERT (proxy = b. proxyList);
+          END;
+          
+          (* for every operand that takes its value from a register variable,
+             check that the value of the expected result is still stored in the
+             register variable at the place of use *)
+          opnd := proxy. instr. opndList;
+          IF (proxy. instr. opcode = Opcode.select) THEN
+            (* the first argument of a "select" is actually used elsewhere:
+               for a SwitchBlock at the beginning of the block, and in a
+               BranchBlock at the end *)
+            opnd := opnd. nextOpnd;
+          END;
+          WHILE (opnd # NIL) DO
+            CheckOpnd (opnd);
+            opnd := opnd. nextOpnd;
+          END;
+          
+          res := proxy. instr;
+          WHILE (res # NIL) DO
+            (* for every result that is written to a register variable, update
+               the state to map the register variable to this result *)
+            IF registerMap. HasKey (res) THEN
+              state. Set (registerMap. Get (res), res);
+            END;
+            
+            res := res. nextResult;
+          END;
+
+          proxy := proxy. nextProxy;
+        END;
+        
+        IF (b IS Schedule.BranchBlock) THEN
+          CheckOpnd (b(Schedule.BranchBlock). predicate);
+        END;
+        
+        WITH b: Schedule.JumpBlock DO
+          UpdateTarget (b. jump, state, collect);
+        | b: Schedule.BranchBlock DO
+          UpdateTarget (b. jump, state, collect);
+          UpdateTarget (b. branchTo, state, collect);
+        | b: Schedule.SwitchBlock DO
+          FOR i := 0 TO LEN (b. jump^)-1 DO
+            UpdateTarget (b. jump[i], state, collect);
+          END;
+        | b: Schedule.DeadEndBlock DO
+          (* nothing to do *)
+        END;
+      END CheckBlock;
+    
+    BEGIN
+      undefinedVar := SSA.NewResult(NIL, -1, -1);
+      ready := NIL;
+      ScanBlock (root);
+      ASSERT (ready # NIL);
+      ASSERT (ready. nextInfo = NIL);
+      (* here holds: the ready list holds exactly one block, the root block
+         dominating all other blocks in the procedure *)
+
+      WHILE (ready # NIL) DO
+        current := ready;
+        ready := ready. nextInfo;
+        CheckBlock (current, current. initState);
+      END;
+    END CheckRegisters;
+  
   <*IF DEBUG_ALLOCATOR THEN*>
   PROCEDURE WriteBlock (b: Schedule.Block; indent: LONGINT);
     VAR
@@ -714,76 +1058,78 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
     PROCEDURE Indent();
       BEGIN
         FOR i := 1 TO indent DO
-          Out.String ("  ");
+          Err.String ("  ");
         END;
       END Indent;
     
     PROCEDURE Id (b: Schedule.Block);
       BEGIN
         WITH b: Schedule.SwitchBlock DO
-          Out.String ("SB(");
+          Err.String ("SB(");
         | b: Schedule.DeadEndBlock DO
-          Out.String ("DEB(");
+          Err.String ("DEB(");
         | b: Schedule.JumpBlock DO
-          Out.String ("JB(");
+          Err.String ("JB(");
         | b: Schedule.BranchBlock DO
-          Out.String ("BB(");
+          Err.String ("BB(");
         END;
-        Out.Hex (SYSTEM.VAL(LONGINT,b), 8);
-        Out.String (")");
+        Err.Hex (SYSTEM.VAL(LONGINT,b), 8);
+        Err.String (")");
       END Id;
     
     BEGIN
-      Out.Ln;
+      Err.Ln;
       Indent;
-      Out.String ("<<");
+      Err.String ("<<");
       Id (b);
-      Out.String ("[");
-      Out.LongInt (b. degreeIn, 0);
-      Out.String ("]");
+      Err.String ("[");
+      Err.LongInt (b. degreeIn, 0);
+      Err.String ("]");
       WITH b: Schedule.SwitchBlock DO
         FOR i := 0 TO LEN (b. jump^)-1 DO
-          Out.String (" -->");
+          Err.String (" -->");
           Id (b. jump[i]. dest);
         END;
       | b: Schedule.DeadEndBlock DO
       | b: Schedule.JumpBlock DO
-        Out.String (" -->");
+        Err.String (" -->");
         Id (b. jump. dest);
       | b: Schedule.BranchBlock DO
         IF b. branchOnTrue THEN
-          Out.String (" true");
+          Err.String (" true");
         ELSE
-          Out.String (" false");
+          Err.String (" false");
         END;
-        Out.String ("-->");
+        Err.String ("-->");
         Id (b. branchTo. dest);
         IF b. branchOnTrue THEN
-          Out.String (" false");
+          Err.String (" false");
         ELSE
-          Out.String (" true");
+          Err.String (" true");
         END;
-        Out.String ("-->");
+        Err.String ("-->");
         Id (b. jump. dest);
       END;
-      Out.String (">>");
-      Out.Ln;
+      Err.String (">>");
+      Err.Ln;
       
       proxy := b. proxyList;
       WHILE (proxy # NIL) DO
         Indent;
+        Err.Hex (SYSTEM.VAL (LONGINT, proxy. instr), 8);
+        Err.Char (" ");
         Opcode.GetName (proxy. instr. opcode, proxy. instr. subclass, name);
-        Out.String (name);
+        Err.String (name);
         
         opnd := proxy. instr. opndList;
         WHILE (opnd # NIL) DO
           IF (opnd. class = Opnd.loopExternalDef) THEN
-            Out.String (" loopExternalDef");
+            Err.String (" loopExternalDef");
           END;
           opnd := opnd. nextOpnd;
         END;
         
-        Out.Ln;
+        Err.Ln;
         proxy := proxy. nextProxy;
       END;
       
@@ -831,6 +1177,14 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
         WriteNames (w, rfs[i]. registerType, rfs[i]. names);
       END;
     END;
+
+    (* Sanity check: Traverse instructions from the beginning to the end of
+       the procedure, keeping track which register variable is in use, and
+       which value it holds.  Complain if the usage of a variable does not
+       match its current content.  *)
+    (*Blocker.WriteMarker (StdChannels.stderr, pb, registerMap);*)
+    CheckRegisters (domRoot, registerMap);
+    
     RETURN registerMap
   END AssignRegisters;
 
