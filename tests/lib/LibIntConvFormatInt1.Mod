@@ -30,6 +30,8 @@ PROCEDURE Test* ();
     WriteFormat ("10");
     WriteFormat ("+10");
     WriteFormat ("-10");
+    WriteFormat ("214748365");
+    WriteFormat ("-214748365");
     WriteFormat ("2147483647");
     WriteFormat ("-2147483648");
     WriteFormat ("2147483648");
