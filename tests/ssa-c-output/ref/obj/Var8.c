@@ -3,18 +3,17 @@
 #include <setjmp.h>
 
 static void Var8__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
-  register OOC_INT32 i0,i1,i2,i3;
+  register OOC_INT32 i0,i1,i2;
 
-  i0 = str_0d-1;
-  i1 = 0<=i0;
-  if (!i1) goto l8;
-  i1=0;
+  i0 = 0<str_0d;
+  if (!i0) goto l8;
+  i0=0;
 l3_loop:
-  i2 = i1+1;
-  i3 = i2<=i0;
-  *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i1, str_0d, OOC_UINT32, 148))) = (OOC_CHAR8)'\000';
-  if (!i3) goto l8;
-  i1=i2;
+  i1 = i0+1;
+  i2 = i1<str_0d;
+  *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT32, 148))) = (OOC_CHAR8)'\000';
+  if (!i2) goto l8;
+  i0=i1;
   goto l3_loop;
 l8:
   return;

@@ -12,7 +12,7 @@ static void Cse2__F(Cse2__P p) {
   goto l5;
 l3:
   i1 = *(OOC_INT16*)i0;
-  i1 = i1!=(OOC_INT32)0;
+  i1 = i1!=0;
   
 l5:
   if (!i1) goto l7;

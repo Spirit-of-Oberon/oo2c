@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Algebraic;
 (*  Algebraic transformations on SSA expressions.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -58,6 +58,23 @@ PROCEDURE IsPowerOf2 (value: BigInt.BigInt): LONGINT;
     RETURN -1;
   END IsPowerOf2;
 
+PROCEDURE IsNMinus1(res: SSA.Result): BOOLEAN;
+(* Return true if `res' is an integer operation "subtract x,1" that is not
+   checked for overflow.  *)
+  VAR
+    arg: SSA.Result;
+  BEGIN
+    IF (res IS SSA.Instr) &
+       (res(SSA.Instr).opcode = Opcode.subtract) &
+       (res.nextResult = NIL)  THEN  (* no overflow check *)
+      arg := res(SSA.Instr).NthArg(1);
+      RETURN (arg IS SSA.Const) &
+          BigInt.one.Equals(arg(SSA.Const).value);
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsNMinus1;
+
 PROCEDURE Transform* (pb: SSA.ProcBlock);
   VAR
     instr: SSA.Instr;
@@ -66,9 +83,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
   PROCEDURE InspectInstr (instr: SSA.Instr);
     VAR
       exp: LONGINT;
-      new: SSA.Instr;
+      new, sub: SSA.Instr;
       
-    PROCEDURE Replace (instr: SSA.Instr; with: SSA.Result);
+    PROCEDURE AddUsesToWorklist(instr: SSA.Instr);
       VAR
         use: SSA.Opnd;
 
@@ -89,6 +106,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           AddToWorklist (use. instr);
           use := use. nextUse;
         END;
+      END AddUsesToWorklist;
+    
+    PROCEDURE Replace (instr: SSA.Instr; with: SSA.Result);
+      BEGIN
+        AddUsesToWorklist(instr);
         instr. ReplaceUses (with);
       END Replace;
 
@@ -184,6 +206,22 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             instr. ReplaceUses (new);
             ASSERT (instr. nextResult = NIL);
           END;
+        END;
+
+      | Opcode.leq:
+        IF IsNMinus1(instr.NthArg(1)) THEN (* x<=n-1 = x<n *)
+          sub := instr.opndList.nextOpnd.arg(SSA.Instr);
+          instr.opndList.nextOpnd.ReplaceArg(sub.opndList.arg);
+          instr.opcode := Opcode.lss;
+          AddUsesToWorklist(instr);
+        END;
+        
+      | Opcode.gtr:
+        IF IsNMinus1(instr.NthArg(1)) THEN (* x>n-1 = x>=n *)
+          sub := instr.opndList.nextOpnd.arg(SSA.Instr);
+          instr.opndList.nextOpnd.ReplaceArg(sub.opndList.arg);
+          instr.opcode := Opcode.geq;
+          AddUsesToWorklist(instr);
         END;
       ELSE  (* ignore any other instructions *)
       END;
