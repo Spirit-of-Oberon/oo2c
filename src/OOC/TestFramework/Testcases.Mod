@@ -446,7 +446,7 @@ PROCEDURE Read* (byteReader: Ch.Reader; baseURI: URI.URI; VAR errList: XMLError.
   VAR
     elem: Element.Element;
   BEGIN
-    elem := Parser.Parse (byteReader, baseURI, NIL, TRUE, suiteRoot, 3, {}, errList);
+    elem := Parser.Parse (byteReader, baseURI, NIL, suiteRoot, 3, {Parser.validate}, errList);
     IF (elem # NIL) THEN
       RETURN elem(TestSuite)
     ELSE
