@@ -6,7 +6,7 @@ IMPORT
 TYPE
   Value* = POINTER TO ValueDesc;
   ValueDesc* = RECORD (L.ValueDesc)
-    value- : Integers.Integer;
+    value : Integers.Integer;
   END;
 
   Type* = POINTER TO TypeDesc;

@@ -1,12 +1,12 @@
 MODULE Language:Real [OOC_EXTENSIONS];
 
 IMPORT
-  Reals, ADT:Object, ADT:String, L := Language;
+  ADT:Object, ADT:String, L := Language, LRealStr;
 
 TYPE
   Value* = POINTER TO ValueDesc;
   ValueDesc* = RECORD (L.ValueDesc)
-    value- : Reals.Real;
+    value : LONGREAL;
   END;
 
   Type* = POINTER TO TypeDesc;
@@ -17,7 +17,9 @@ VAR
   type- : Type;
   typeName : String.String;
 
-PROCEDURE New* (val : Reals.Real) : Value;
+  zero- : Value;
+
+PROCEDURE NewLReal* (val : LONGREAL) : Value;
 (** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
 VAR 
   v : Value;
@@ -26,89 +28,116 @@ BEGIN
   L.InitValue (v, type);
   v.value := val;
   RETURN v;
-END New;
+END NewLReal;
 
-(*
-PROCEDURE NewLInt* (l : LONGINT) : Value;
+PROCEDURE NewReal* (val : REAL) : Value;
+(** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
+VAR 
+  v : Value;
 BEGIN
-  RETURN New(Integers.Long(l));
-END NewLInt;
-*)
-
-(*
-PROCEDURE NewInt* (i : INTEGER) : Value;
-BEGIN
-  RETURN NewLInt(i);
-END NewInt;
-*)
+  NEW(v);
+  L.InitValue (v, type);
+  v.value := val;
+  RETURN v;
+END NewReal;
 
 PROCEDURE (v: Value) Store* (w: Object.Writer);
-  VAR
-    i: LONGINT;
   BEGIN
     v. Store^ (w);
-    w. WriteNum (LEN (v. value^));
-    FOR i := 0 TO LEN (v. value^)-1 DO
-      w. WriteReal (v. value[i]);
-    END;
+    w. WriteLReal(v.value);
   END Store;
 
 PROCEDURE (v: Value) Load* (r: Object.Reader);
-  VAR
-    len, i: LONGINT;
   BEGIN
     v. Load^ (r);
-    r. ReadNum (len);
-    NEW (v. value, len);
-    FOR i := 0 TO len-1 DO
-      r. ReadReal (v. value[i]);
-    END;
+    r. ReadLReal(v.value);
   END Load;
 
 PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   BEGIN
-    RETURN (y IS Value) & (Reals.Cmp(y(Value).value^, v.value^) = 0);
+    RETURN (y IS Value) & (v.value = y(Value).value);
   END Equals;
   
 PROCEDURE (v: Value) HashCode* (): LONGINT;
-  VAR
-    h, i: LONGINT;
   BEGIN
-    HALT(0);
+    RETURN ENTIER(v.value);
   END HashCode;
-  
+
 PROCEDURE (v : Value) ToString* () : String.String;
-VAR str: ARRAY 128 OF CHAR;	(* FIXME! *)
+VAR 
+  str: ARRAY 128 OF CHAR;	(* FIXME! *)
 BEGIN
-  Reals.ToString(v.value, str, 0);
+  LRealStr.RealToFloat(v.value, 0, str);
   RETURN String.New (str)
 END ToString;
 
-(*
-PROCEDURE (v: Value) ToLInt*(): LONGINT;
-  BEGIN
-    RETURN Integers.Short (v. value);
-  END ToLInt;
-*)
-
-(*
-PROCEDURE (t : Type) ValueLInt* (val : LONGINT) : Value;
+PROCEDURE (v : Value) ToLReal*() : LONGREAL;
 BEGIN
-  RETURN New(Integers.Long(val));
-END ValueLInt;
-*)
+  RETURN v.value;
+END ToLReal;
 
-PROCEDURE (t : Type) Value* (val : Reals.Real) : Value;
+PROCEDURE (v : Value) ToReal*() : REAL;
 BEGIN
-  RETURN New(val);
+  RETURN SHORT(v.value);
+END ToReal;
+
+PROCEDURE (v : Value) Sum* (right : Value) : Value;
+BEGIN
+  RETURN NewLReal(v.value + right.value);
+END Sum;
+
+PROCEDURE (v : Value) Difference* (right : Value) : Value;
+BEGIN
+  RETURN NewLReal(v.value - right.value);
+END Difference;
+
+PROCEDURE (v : Value) Product* (right : Value) : Value;
+BEGIN
+  RETURN NewLReal(v.value * right.value);
+END Product;
+
+PROCEDURE (v : Value) Quotient* (right : Value) : Value;
+BEGIN
+  RETURN NewLReal(v.value / right.value);
+END Quotient;
+
+PROCEDURE (v : Value) Compare* (right : Value) : LONGINT;
+BEGIN
+  IF v.value = right.value THEN
+    RETURN 0;
+  ELSIF v.value < right.value THEN
+    RETURN -1;
+  ELSE
+    RETURN 1;
+  END;
+END Compare;
+
+PROCEDURE (v : Value) Sign* () : LONGINT;
+BEGIN
+  RETURN v.Compare(zero);
+END Sign;
+
+PROCEDURE (v : Value) Negate* () : Value;
+BEGIN
+  RETURN NewLReal(-v.value);
+END Negate;
+
+PROCEDURE (t : Type) Value* (val : LONGREAL) : Value;
+BEGIN
+  RETURN NewLReal(val);
 END Value;
 
 PROCEDURE (t : Type) ValueOf* (s : ARRAY OF CHAR) : Value;
-VAR
-  val : Reals.Real;
+VAR 
+  real : LONGREAL;
+  res : LRealStr.ConvResults;
 BEGIN
-  val := Reals.ToReal(s);
-  RETURN New(val);
+  LRealStr.StrToReal(s, real, res);
+  IF res = LRealStr.strAllRight THEN
+    RETURN NewLReal(real);
+  ELSE
+    RETURN NIL;
+  END;
 END ValueOf;
 
 PROCEDURE (t : Type) ToString* () : String.String;
@@ -117,6 +146,7 @@ BEGIN
 END ToString;
 
 BEGIN
+  zero := NewLReal(0.0);
   NEW(type);
   L.InitType(type);
   typeName := String.New("Real");
