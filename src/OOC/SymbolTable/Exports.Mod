@@ -129,7 +129,8 @@ PROCEDURE GetExports* (module: Sym.Module): Dictionary.Dictionary;
       WHILE (ptr # NIL) DO
         WITH ptr: Sym.Declaration DO
           IF (ptr. exportMark # Sym.nameNotExported) OR 
-             (ptr IS Sym.VarDecl) & ptr(Sym.VarDecl). isParameter THEN
+             (ptr IS Sym.VarDecl) & ptr(Sym.VarDecl). isParameter OR
+             (ptr IS Sym.Import) THEN
             MarkDecl (ptr)
           END
         ELSE                               (* ignore non-declarations *)
@@ -140,7 +141,8 @@ PROCEDURE GetExports* (module: Sym.Module): Dictionary.Dictionary;
   
   BEGIN
     dict := Dictionary.New();
-    MarkReferencedImports (module. docString);
+    (*MarkReferencedImports (module. docString);
+         --> obsolete, all imports must appear in the symbol file *)
     MarkList (module);
     RETURN dict
   END GetExports;
