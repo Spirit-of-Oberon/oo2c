@@ -40,7 +40,7 @@ TYPE
     nextDom-: Block;
     (**Link for list of @ofield{Block.domList}.  *)
     
-    proxyList-: InstrProxy;
+    proxyList-, proxyTail: InstrProxy;
     (**List with all instructions in this block.  *)
 
     domList-: Block;
@@ -78,6 +78,7 @@ PROCEDURE InitBlock (b: Block; jump: Block);
   BEGIN
     Object.Init (b);
     b. proxyList := NIL;
+    b. proxyTail := NIL;
     b. nextDom := NIL;
     b. domList := NIL;
     b. jump := jump;
@@ -93,6 +94,12 @@ PROCEDURE NewBlock (jump: Block): Block;
     InitBlock (b, jump);
     RETURN b
   END NewBlock;
+
+PROCEDURE ClearProxyList (b: Block);
+  BEGIN
+    b. proxyList := NIL;
+    b. proxyTail := NIL;
+  END ClearProxyList;
 
 PROCEDURE Dominates (dominator, child: Block);
   BEGIN
@@ -147,9 +154,23 @@ PROCEDURE AddProxy (b: Block; proxy: InstrProxy);
     proxy. block := b;
     IF (b. proxyList # NIL) THEN
       b. proxyList. prevProxy := proxy
+    ELSE
+      b. proxyTail := proxy
     END;
     b. proxyList := proxy
   END AddProxy;
+
+PROCEDURE AppendProxy (b: Block; proxy: InstrProxy);
+  BEGIN
+    proxy. prevProxy := b. proxyTail;
+    proxy. nextProxy := NIL;
+    IF (b. proxyTail = NIL) THEN
+      b. proxyList := proxy
+    ELSE
+      b. proxyTail. nextProxy := proxy
+    END;
+    b. proxyTail := proxy;
+  END AppendProxy;
 
 PROCEDURE RemoveProxy (b: Block; proxy: InstrProxy);
   BEGIN
@@ -160,6 +181,8 @@ PROCEDURE RemoveProxy (b: Block; proxy: InstrProxy);
     END;
     IF (proxy. nextProxy # NIL) THEN
       proxy. nextProxy. prevProxy := proxy. prevProxy
+    ELSE
+      b. proxyTail := proxy. prevProxy
     END;
     proxy. nextProxy := NIL;
     proxy. prevProxy := NIL;
@@ -186,43 +209,70 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
     proxy: InstrProxy;
 
   PROCEDURE SplitSelect (VAR enter: Block; select: SSA.Instr): Block;
+    CONST
+      keepInEnter = 0;
+      moveToIn = 1;
+      moveToPath1 = 2;
+      moveToPath2 = 3;
     VAR
       in, path1, path2, exitPath1, exitPath2, exitEnter, exitIn, oldEnter: Block;
 
-    PROCEDURE Move (result: SSA.Result; source, primary, secondary: Block);
+    PROCEDURE Move (result: SSA.Result; source: Block;
+                    primary, secondary: LONGINT);
     (**Recursively moves the instructions producing @oparam{result} into their
-       target blocks.  Order of dependent instructions is kept unchanged.  That
-       is, if an instruction @samp{A} depends on instruction @samp{B}, and
-       @samp{A} is placed before @samp{B} in the original block, then the same
-       holds for their respective placement in the target block.  *)
+       target blocks.  This procedure marks the instructions with the ids of
+       their targets blocks.  The actual transfer happens later.  *)
       VAR
-        instr: SSA.Instr;
         opnd: SSA.Opnd;
-        moved: BOOLEAN;
+        oldBlock, newBlock: LONGINT;
       BEGIN
-        instr := result. instr;
-        proxy := instr. info(InstrProxy);
-        moved := FALSE;
+        proxy := result. instr. info(InstrProxy);
         IF (proxy. block = source) THEN
-          MoveProxy (proxy, primary);
-          moved := TRUE
-        ELSIF (proxy. block = primary) THEN
-          (* nothing to do *)
-        ELSIF (proxy. block = secondary) THEN
-          (* nothing to do *)
-        ELSE  (* contributes to a different path: use secondary *)
-          MoveProxy (proxy, secondary);
-          moved := TRUE
-        END;
+          oldBlock := proxy. instr. marker;
+          IF (oldBlock = keepInEnter) THEN
+            newBlock := primary;
+          ELSIF (oldBlock = primary) THEN
+            newBlock := oldBlock;
+          ELSIF (oldBlock = secondary) THEN
+            newBlock := oldBlock;
+          ELSE  (* contributes to a different path: use secondary *)
+            newBlock := secondary;
+          END;
 
-        IF moved THEN
-          opnd := instr. opndList;
-          WHILE (opnd # NIL) DO
-            Move (opnd. arg, source, primary, secondary);
-            opnd := opnd. nextOpnd
+          IF (newBlock # oldBlock) THEN
+            proxy. instr. marker := newBlock;
+            opnd := proxy. instr. opndList;
+            WHILE (opnd # NIL) DO
+              Move (opnd. arg, source, primary, secondary);
+              opnd := opnd. nextOpnd
+            END;
           END;
         END;
       END Move;
+
+    PROCEDURE MarkInstructions (proxy: InstrProxy; marker: LONGINT);
+      BEGIN
+        WHILE (proxy # NIL) DO
+          proxy. instr. marker := marker;
+          proxy := proxy. nextProxy
+        END;
+      END MarkInstructions;
+
+    PROCEDURE MoveInstructions (proxy: InstrProxy; in, p1, p2: Block);
+      VAR
+        prev: InstrProxy;
+      BEGIN
+        WHILE (proxy # NIL) DO
+          prev := proxy. prevProxy;
+          CASE proxy. instr. marker OF
+          | keepInEnter: (* done *)
+          | moveToIn: MoveProxy (proxy, in)
+          | moveToPath1: MoveProxy (proxy, p1)
+          | moveToPath2: MoveProxy (proxy, p2)
+          END;
+          proxy := prev
+        END;
+      END MoveInstructions;
     
     BEGIN
       oldEnter := enter;
@@ -233,9 +283,11 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
            select. opndList. nextOpnd. arg. IsBooleanConst (TRUE),
            path1);
 
-      Move (select. opndList. arg, enter, in, in);
-      Move (select. NthArg (2), enter, path1, in);
-      Move (select. NthArg (4), enter, path2, in);
+      MarkInstructions (enter. proxyList, keepInEnter);
+      Move (select. opndList. arg, enter, moveToIn, moveToIn);
+      Move (select. NthArg (2), enter, moveToPath1, moveToIn);
+      Move (select. NthArg (4), enter, moveToPath2, moveToIn);
+      MoveInstructions (enter. proxyTail, in, path1, path2);
 
       exitPath1 := DebranchBlock (path1);
       exitPath2 := DebranchBlock (path2);
@@ -392,7 +444,7 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
 (**Topological sort on instructions in @oparam{b}.  If there are no cyclic
    dependencies between the instructions, the result is @code{TRUE}.  *)
   VAR
-    proxy, next, proxyTail: InstrProxy;
+    proxy, next: InstrProxy;
     ready, waiting: InstrProxy;
     res: SSA.Result;
     use, opnd: SSA.Opnd;
@@ -448,22 +500,13 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
       proxy := next
     END;
 
-    b. proxyList := NIL;
-    proxyTail := NIL;
+    ClearProxyList (b);
     WHILE (ready # NIL) DO
       proxy := ready;
       Remove (ready, proxy);
 
       (* append `proxy' to list of instructions in `b' *)
-      proxy. prevProxy := proxyTail;
-      proxy. nextProxy := NIL;
-      IF (proxyTail = NIL) THEN
-        b. proxyList := proxy;
-        proxyTail := proxy
-      ELSE
-        proxyTail. nextProxy := proxy
-      END;
-      proxyTail := proxy;
+      AppendProxy (b, proxy);
 
       (* decrement marker (=count of blocking results) for all uses of all
          results of `proxy' *)
@@ -471,7 +514,8 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
       WHILE (res # NIL) DO
         use := res. useList;
         WHILE (use # NIL) DO
-          IF (use. class # Opnd.forwardRef) THEN
+          IF (use. instr. info(InstrProxy). block = b) &
+             (use. class # Opnd.forwardRef) THEN
             DEC (use. instr. marker);
             IF (use. instr. marker = 0) THEN
               Remove (waiting, use. instr. info(InstrProxy));
