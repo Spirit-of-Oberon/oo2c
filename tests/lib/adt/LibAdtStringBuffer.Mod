@@ -49,7 +49,7 @@ PROCEDURE Test* ();
     b.Append(",");
     b.Append(b);
     b.Append(",");
-    (*b.AppendObject(m); omitted, because the memory address is not constant *)
+    (*b.Append(m); omitted, because the memory address is not constant *)
     OutString(b.ToString()); Out.Ln;
   END Test;
 
