@@ -109,7 +109,9 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
     END WriteModules;
   
   BEGIN
-    sizeVParStack := 64*1024;  (* should come from config data *)
+    (* this should come from config data; until we switch to alloca() or
+       something similar, use a value that is >>128k *)
+    sizeVParStack := 256*1024;
     
     ch := cmd. module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
     IF (res = Channel.done) THEN
