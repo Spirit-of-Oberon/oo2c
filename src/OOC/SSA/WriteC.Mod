@@ -12,7 +12,7 @@ IMPORT
 TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc = RECORD
-    w: DeclWriter.Writer;
+    (DeclWriter.WriterDesc)
     registerMap: Dictionary.Dictionary;
   END;
 
@@ -22,7 +22,7 @@ PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
     w: Writer;
   BEGIN
     NEW (w);
-    w. w := cWriter;
+    cWriter. CopyTo (w);
     w. registerMap := registerMap;
     RETURN w
   END NewWriter;
@@ -178,20 +178,10 @@ PROCEDURE WriteLocalDecl (w: DeclWriter.Writer;
   END WriteLocalDecl;
 
 
-PROCEDURE (w: Writer) WriteString (str[NO_COPY]: ARRAY OF CHAR);
-  BEGIN
-    w. w. WriteString (str)
-  END WriteString;
-
-PROCEDURE (w: Writer) WriteChar (ch: CHAR);
-  BEGIN
-    w. w. WriteChar (ch)
-  END WriteChar;
-
 PROCEDURE (w: Writer) Newline;
   BEGIN
-    w. w. WriteLn;
-    w. w. WriteString ("  ");
+    w. WriteLn;
+    w. WriteString ("  ");
   END Newline;
 
 PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
@@ -211,7 +201,7 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
       (* write constant values directly, without going through an
          intermediate register; the roundabout route is kind of unnatural
          for C code *)
-      w. w. WriteConst (arg. value);
+      w. WriteConst (arg. value);
       
     ELSE
       IF w. registerMap. HasKey (opnd. arg) THEN
@@ -385,14 +375,14 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         
       | Opcode.get:
         w. WriteString ("*(");
-        w. WriteString (w. w. basicType
+        w. WriteString (w. basicType
                         [SubclassToBasicType (instr. subclass)]. repr);
         w. WriteString ("*)");
         w. Ref (instr. opndList. nextOpnd);
         
       | Opcode.set:
         w. WriteString ("*(");
-        w. WriteString (w. w. basicType
+        w. WriteString (w. basicType
                         [SubclassToBasicType (instr. subclass)]. repr);
         w. WriteString ("*)");
         w. Ref (instr. opndList. nextOpnd);
@@ -487,7 +477,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
       
     PROCEDURE WriteLabel (b: Schedule.Block);
       BEGIN
-        w. w. WriteLn;
+        w. WriteLn;
         WriteBlockId (b);
         w. WriteChar (":");
       END WriteLabel;
