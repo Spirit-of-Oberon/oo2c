@@ -21,6 +21,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 *)
 
 IMPORT
+  OOC:SSA:Blocker,
   IntStr, Out, Strings, StringSearch, IO, IO:StdChannels,
   Object, Object:Boxed, ADT:Dictionary, ADT:ArrayList,
   Sym := OOC:SymbolTable,
@@ -29,7 +30,7 @@ IMPORT
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:CSE, OOC:SSA:Algebraic,
-  OOC:SSA:ConstProp, OOC:SSA:Stats,
+  OOC:SSA:ConstProp, OOC:SSA:LoopRewrite, OOC:SSA:Stats,
   OOC:SSA:Allocator, OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
   OOC:Make:TranslateToC;
 
@@ -1819,9 +1820,17 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     ConstProp.Transform (pb);
     DeadCodeElimination.Transform (pb);
     Write ("constprop-post", "algebraic-pre", TRUE);
-    Algebraic.Transform (pb);
+    Algebraic.Transform (pb, TRUE);  (* use FALSE with LoopRewrite *)
     DeadCodeElimination.Transform (pb);
-    Write ("algebraic-post", "cse-pre", TRUE);
+    
+    (*Write ("algebraic-post", "loop-pre", TRUE);
+    Blocker.Write (StdChannels.stdout, pb);
+    LoopRewrite.Transform (pb);
+    ConstProp.Transform (pb);
+    Algebraic.Transform (pb, TRUE);
+    DeadCodeElimination.Transform (pb);*)
+    
+    Write ("loop-post", "cse-pre", TRUE);
     CSE.Transform (pb);
     DeadCodeElimination.Transform (pb);
     Write ("cse-post", "final", TRUE);

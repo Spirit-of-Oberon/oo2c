@@ -75,7 +75,10 @@ PROCEDURE IsNMinus1(res: SSA.Result): BOOLEAN;
     END;
   END IsNMinus1;
 
-PROCEDURE Transform* (pb: SSA.ProcBlock);
+PROCEDURE Transform* (pb: SSA.ProcBlock; enableSubstitution: BOOLEAN);
+(**With @oparam{enableSubstitution} set, enable substitution of an instruction
+   by one of a different class (fFor example, division can turn into a shift,
+   and a+b*c into "indexed".  *)
   VAR
     instr: SSA.Instr;
     worklist: Worklist;
@@ -139,7 +142,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         instr: SSA.Instr;
         exp: LONGINT;
       BEGIN
-        IF (res IS SSA.Instr) &
+        IF enableSubstitution &
+           (res IS SSA.Instr) &
            (res(SSA.Instr). opcode = Opcode.multiply) &
            (res(SSA.Instr). subclass <= Opcode.scAddress) THEN
           instr := res(SSA.Instr);
@@ -196,7 +200,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         END;
 
       | Opcode.divide: (* replace DIV by power of two with right shift *)
-        IF (instr. subclass < Opcode.scReal32) &
+        IF enableSubstitution &
+           (instr. subclass < Opcode.scReal32) &
            (instr. opndList. nextOpnd. arg IS SSA.Const) THEN
           exp := IsPowerOf2 (instr. opndList. nextOpnd. arg(SSA.Const). value(BigInt.BigInt));
           IF (exp >= 0) THEN
