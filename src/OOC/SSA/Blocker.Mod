@@ -513,7 +513,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
      ensures that the depending instruction is placed after the loop body it
      is dependent on.  *)
     VAR
-      instr: SSA.Instr;
+      instr, dep: SSA.Instr;
       opnd: SSA.Opnd;
       instrLoop, opndLoop, l: Loop;
 
@@ -548,7 +548,15 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
                 l := l. parentLoop;
               END;
               IF (l # NIL) THEN
-                instr. AddOpnd(l. instr, Opnd.antiDependency);
+                IF (l. instr. opcode = Opcode.loopEnd) THEN
+                  dep := l. instr. GetSelectExit();
+                  IF (dep = NIL) THEN
+                    dep := l. instr;
+                  END;
+                ELSE
+                  dep := l. instr;
+                END;
+                instr. AddOpnd(dep, Opnd.antiDependency);
               END;
             END;
             opnd := opnd. nextOpnd;
@@ -1036,6 +1044,8 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
     BEGIN
       instr := p. instr;
       IF (instr = NIL) OR ~instr. IsConst() THEN
+        (*w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
+        w. WriteString ("  ");*)
         (*w. WriteString ("L:");
         IF (p. loopAssoc # NIL) THEN
           WriteResultId (p. loopAssoc. instr);
