@@ -249,6 +249,30 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         END;
       END Call;
     
+    PROCEDURE Copy(copy: IR.Copy);
+      VAR
+        size, from, to: S.Result;
+        instr: S.Instr;
+      BEGIN
+        size := b.AddConstLength(copy.dest.type.size);
+        from := Expression(copy.source);
+        to := Expression(copy.dest);
+        
+        IF copy.checkDynamicType THEN
+          (* FIXME... *)
+        END;
+        
+        instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
+        ASSERT(to.instr.opcode = S.get);
+        instr.AddOpnd(to.instr.opndList.arg);
+        ASSERT(from.instr.opcode = S.get);
+        instr.AddOpnd(from.instr.opndList.arg);
+        instr.AddOpnd(size);
+        
+        MemoryCP(instr);
+        ControlCP(instr);
+      END Copy;
+    
     PROCEDURE Expression(expr: IR.Expression): S.Result;
       VAR
         instr: S.Instr;
@@ -428,6 +452,58 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           
           RETURN instr.resultList;
         END Index;
+
+      PROCEDURE SelectField(selectOp: IR.SelectField): S.Result;
+        VAR
+          instr, fieldAdr: S.Instr;
+          baseResult: S.Result;
+          adrOpnd: S.Opnd;
+        BEGIN
+          (* take the "get" instruction of the record's designator and
+             change it into a "get" for the record field *)
+          baseResult := Expression(selectOp.record);
+          ASSERT (baseResult.instr.opcode = S.get);
+          instr := baseResult.instr;
+          
+          adrOpnd := instr.opndList;
+          fieldAdr := b.AddInstr2(S.add, adrOpnd.arg,
+                                  b.AddConstLength(selectOp.field.offset));
+          adrOpnd.ReplaceArg(fieldAdr.AddResult(S.address));
+          instr.resultList.SetType(S.MapType(selectOp.type));
+          
+          instr.ExtendDesignator(NEW(S.Field, selectOp.field));
+          
+          RETURN instr.resultList;
+        END SelectField;
+      
+      PROCEDURE TypeGuard(guard: IR.TypeGuard): S.Result;
+        BEGIN  (* FIXME... *)
+          RETURN Expression(guard.test.expr);
+        END TypeGuard;
+
+      PROCEDURE NewObject (new: IR.NewObject): S.Result;
+        VAR
+          instr, get1, get2: S.Instr;
+          ptrTypeDescr, objTypeDescr: S.Result;
+        BEGIN
+          (* compute typeDescr.baseTypes^[0] *)
+          ptrTypeDescr := b.AddAdrTypeDescr(new.type);
+          get1 := b.AddInstr1(S.get, ptrTypeDescr);
+          get2 := b.AddInstr1(S.get, get1.AddResult(S.address));
+          objTypeDescr := get2.AddResult(S.address);
+          
+          instr := b.AddInstr3(S.call, b.AddAdrRT("RT0__NewObject"), sp,
+                               objTypeDescr);
+          (*IF (new. length # NIL) THEN
+            FOR i := 0 TO LEN (new. length^)-1 DO
+              instr. AddOpnd (Expression (new. length[i]), Opnd.arg);
+            END;
+          END;*)
+          
+          MemoryCP(instr);
+          ControlCP(instr);
+          RETURN instr.AddResult(S.address);
+        END NewObject;
       
       BEGIN
         WITH expr: IR.Const DO
@@ -468,7 +544,32 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
                        CalculateSize(b, expr, 
                                      CalculateLength(b, expr, -1, baseArray)),
                        dim);
-
+          
+        | expr: IR.SelectField DO
+          RETURN SelectField(expr);
+          
+        | expr: IR.Deref DO
+          (* take the value of the pointer and use it to start a new "get"
+             instruction *)
+          adr := Expression(expr.pointer);
+          IF expr.checkPointer THEN
+            (*FIXME... check := AddException (pb, deref. sym,
+                                   Opcode.checkPointer, address. subclass);
+            check. AddOpnd (address, Opnd.arg);
+            address := check;*)
+          END;
+          
+          NEW(designator, 1);
+          designator[0] := NEW(S.HeapObj, b, expr.type, adr);
+          instr := b.AddInstr1(S.get, adr);
+          instr.SetDesignator(designator);
+          MemoryCP(instr);
+          ControlCP(instr);
+          RETURN instr.AddResultExpr(expr.type);
+          
+        | expr: IR.TypeGuard DO
+          RETURN TypeGuard(expr);
+              
         | expr: IR.BinaryArith DO
           CASE expr.variant OF
           | IR.arithAdd : opcode := S.add;
@@ -534,6 +635,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
 
         | expr: IR.Call DO
           RETURN Call(expr);
+        | expr: IR.NewObject DO
+          RETURN NewObject(expr);
         END;
       END Expression;
 
@@ -545,6 +648,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           var := Expression(statm.variable);
           var.instr.SetOpcode(S.set);
           var.instr.AddOpnd(res);
+        | statm: IR.Copy DO
+          Copy(statm);
           
         | statm: IR.IfStatm DO
           res := Expression(statm.guard);
@@ -672,7 +777,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       Procedure(p);
     END;
     Procedure(moduleIR.moduleBody);
-    
+
     w.EndFile();
   END Translate;
   

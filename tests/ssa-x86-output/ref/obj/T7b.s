@@ -50,3 +50,18 @@ OOC_T7b_init0:
 	call OOC_T7b_init
 	ret
 	.size OOC_T7b_init0, .-OOC_T7b_init0
+	.data
+	.align 4
+	.type _mid_name, @object
+	.size _mid_name, 4
+_mid_name:
+	.string "T7b"
+	.type _mid_tdlist, @object
+	.size _mid_tdlist, 4
+_mid_tdlist:
+	.long 0
+	.type _mid, @object
+	.size _mid, 8
+_mid:
+	.long _mid_name
+	.long _mid_tdlist

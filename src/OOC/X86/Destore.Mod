@@ -10,12 +10,21 @@ TYPE
     instr: S.Instr;
   END;
 
+CONST
+  read = 0;
+
 PROCEDURE Transform*(fctBlock: S.FunctionBlock);
   VAR
     worklist: Worklist;
     undefValue: S.Result;
     instr: S.Instr;
 
+  PROCEDURE AccessedByCall (calledAdr: S.Result; design: S.Designator;
+                            mode: SHORTINT): BOOLEAN;
+    BEGIN
+      RETURN TRUE;  (* FIXME... provide more accurate approximation *)
+    END AccessedByCall;
+  
   PROCEDURE AddToWorklist(instr: S.Instr);
     VAR
       entry: Worklist;
@@ -248,6 +257,14 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
           RETURN VisibleEffect(instr(S.LoopBackedgeInstr).start, set);
         | S.jump, S.loopExit:
           RETURN ReadingUse(instr.MergingTarget());
+        | S.call:
+          IF AccessedByCall (instr.opndList.arg, set.designator, read) THEN
+            RETURN TRUE;               (* assume the worst *)
+          ELSE
+            (* the called procedure cannot read the local variable  *)
+            RETURN VisibleEffect(instr, set)
+          END;
+          
         END;
       END ReadingUse;
     

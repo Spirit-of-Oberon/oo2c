@@ -214,6 +214,18 @@ TYPE
     (GlobalDesc)
     decl-: Sym.ProcDecl;
   END;
+  ProcName* = POINTER TO ProcNameDesc;
+  ProcNameDesc = RECORD
+    (**Refers to the address of the global function @ofield{name}.  *)
+    (GlobalDesc)
+    name-: STRING;
+  END;
+  TypeDescr* = POINTER TO TypeDescrDesc;
+  TypeDescrDesc = RECORD
+    (**Refers to the address of the type descriptor of @ofield{type}.  *)
+    (GlobalDesc)
+    type-: Sym.Type;
+  END;
   Const* = POINTER TO ConstDesc;
   ConstDesc = RECORD
     (SelectorDesc)
@@ -231,6 +243,12 @@ TYPE
     (**Array index. *)
     (SelectorDesc)
     indexStandin-: Instr;
+  END;
+  Field* = POINTER TO FieldDesc;
+  FieldDesc = RECORD
+    (**Record field. *)
+    (SelectorDesc)
+    field-: Sym.FieldDecl;
   END;
   
 TYPE
@@ -567,6 +585,28 @@ PROCEDURE (s: Proc) SameSelector*(sel: Selector): BOOLEAN;
     RETURN (sel IS Proc) & (s.decl = sel(Proc).decl);
   END SameSelector;
 
+PROCEDURE (s: ProcName) INIT*(name: STRING);
+  BEGIN
+    s.INIT^();
+    s.name := name;
+  END INIT;
+
+PROCEDURE (s: ProcName) SameSelector*(sel: Selector): BOOLEAN;
+  BEGIN
+    RETURN (sel IS ProcName) & (s.name.Equals(sel(ProcName).name));
+  END SameSelector;
+
+PROCEDURE (s: TypeDescr) INIT*(type: Sym.Type);
+  BEGIN
+    s.INIT^();
+    s.type := type;
+  END INIT;
+
+PROCEDURE (s: TypeDescr) SameSelector*(sel: Selector): BOOLEAN;
+  BEGIN
+    RETURN (sel IS TypeDescr) & (s.type = sel(TypeDescr).type);
+  END SameSelector;
+
 PROCEDURE (s: Const) INIT*(value: Boxed.Object);
   BEGIN
     s.INIT^();
@@ -607,6 +647,17 @@ PROCEDURE (s: Index) SameSelector*(sel: Selector): BOOLEAN;
   BEGIN
     RETURN (sel IS Index) &
         (s.indexStandin.opndList.arg = sel(Index).indexStandin.opndList.arg);
+  END SameSelector;
+
+PROCEDURE (s: Field) INIT*(field: Sym.FieldDecl);
+  BEGIN
+    s.INIT^();
+    s.field := field;
+  END INIT;
+
+PROCEDURE (s: Field) SameSelector*(sel: Selector): BOOLEAN;
+  BEGIN
+    RETURN (sel IS Field) & (s.field = sel(Field).field);
   END SameSelector;
 
 PROCEDURE SameDesignator*(d1, d2: Designator): BOOLEAN;
@@ -1794,6 +1845,32 @@ PROCEDURE (b: Block) AddAdr*(selector: Global): Result;
     b.Add(instr);
     RETURN instr.AddResult(address);
   END AddAdr;
+
+PROCEDURE (b: Block) AddAdrRT*(name: STRING): Result;
+  VAR
+    instr: Instr;
+    designator: Designator;
+  BEGIN
+    instr := NEW(Instr, const);
+    NEW(designator, 1);
+    designator[0] := NEW(ProcName, name);
+    instr.SetDesignator(designator);
+    b.Add(instr);
+    RETURN instr.AddResult(address);
+  END AddAdrRT;
+
+PROCEDURE (b: Block) AddAdrTypeDescr*(type: Sym.Type): Result;
+  VAR
+    instr: Instr;
+    designator: Designator;
+  BEGIN
+    instr := NEW(Instr, const);
+    NEW(designator, 1);
+    designator[0] := NEW(TypeDescr, type);
+    instr.SetDesignator(designator);
+    b.Add(instr);
+    RETURN instr.AddResult(address);
+  END AddAdrTypeDescr;
 
 PROCEDURE (b: Block) AddFramePointerOffset*(varDecl: Sym.VarDecl): Result;
   VAR

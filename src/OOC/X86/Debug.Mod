@@ -251,6 +251,10 @@ PROCEDURE (out: Output) WriteFunction*();
         END;
       | selector: S.Proc DO
         w.WriteObject("adr("+selector.decl.Name()+")");
+      | selector: S.ProcName DO
+        w.WriteObject('adr("'+selector.name+'")');
+      | selector: S.TypeDescr DO
+        w.WriteObject('adr("'+Naming.NameOfTypeDescriptor(selector.type, NIL)+'")');
       END;
     END WriteConst;
 
@@ -276,6 +280,16 @@ PROCEDURE (out: Output) WriteFunction*();
             w.WriteString("[");
             w.WriteObject(out.Label(s.indexStandin.opndList));
             w.WriteString("]");
+          | s: S.Field DO
+            w.WriteString(".");
+            w.WriteString(s.field.name.str^);
+            w.WriteString("]");
+          | s: S.ProcName DO
+            w.WriteObject('"'+s.name+'"');
+          | s: S.TypeDescr DO
+            w.WriteObject(Naming.NameOfTypeDescriptor(s.type, NIL));
+          | s: S.HeapObj DO
+            w.WriteObject("heap");
           END;
         END;
         w.WriteString("> ");

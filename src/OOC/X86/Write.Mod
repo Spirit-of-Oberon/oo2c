@@ -3,7 +3,7 @@ MODULE OOC:X86:Write;
 IMPORT
   SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
-  Sym := OOC:SymbolTable, OOC:C:Naming, S := OOC:X86:SSA;
+  Sym := OOC:SymbolTable, OOC:C:Naming, S := OOC:X86:SSA, OOC:X86:RuntimeData;
 
 TYPE
   Arc = POINTER TO ArcDesc;
@@ -179,6 +179,15 @@ PROCEDURE (w: Writer) GetBlock(b: S.Block): Block;
     END;
   END GetBlock;
 
+PROCEDURE (w: Writer) RuntimeData();
+  VAR
+    sb: StringBuffer.StringBuffer;
+  BEGIN
+    sb := NEW(StringBuffer.StringBuffer, 2048);
+    RuntimeData.Write(sb, w.module);
+    w.w.WriteObject(sb);
+  END RuntimeData;
+
 PROCEDURE (w: Writer) EndFile*();
   VAR
     name0, name: STRING;
@@ -191,6 +200,8 @@ PROCEDURE (w: Writer) EndFile*();
     w.w.WriteObject(nlTab+"call "+name);
     w.w.WriteObject(nlTab+"ret");
     w.w.WriteObject(nlTab+".size "+name0+", .-"+name0);
+
+    w.RuntimeData();
     
     w.w.WriteString(nl);
   END EndFile;
@@ -203,6 +214,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     sb: StringBuffer.StringBuffer;
     block, dummy: Block;
     opnd: S.Opnd;
+    qtdData: Naming.QualTypeData;
     
   PROCEDURE OpcT(opc[NO_COPY]: ARRAY OF CHAR; type1, type2: S.Type);
     VAR
@@ -327,6 +339,10 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         sb.AppendInt(w.fctBlock.Offset(s.decl));
       | s: S.Proc DO
         sb.Append(Naming.NameOfDeclaration(s.decl));
+      | s: S.ProcName DO
+        sb.Append(s.name);
+      | s: S.TypeDescr DO
+        sb.Append(Naming.NameOfTypeDescriptor(s.type, qtdData));
       END;
     END Const;
   
@@ -346,6 +362,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       WITH s: S.Var DO
         RETURN (s.decl = NIL);
       | s: S.Proc DO
+        RETURN FALSE;
+      | s: S.ProcName DO
         RETURN FALSE;
       ELSE
         RETURN TRUE;
@@ -509,6 +527,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     END WriteBranch2;
   
   BEGIN
+    qtdData := NIL;
     sb := NEW(StringBuffer.StringBuffer, 1024);
     block := w.GetBlock(b);
     block.instructions := sb;
