@@ -19,16 +19,16 @@ MODULE ADT:ArrayList;
 *)
 
 IMPORT
-  ADT:Storable, Object, IO;
+  SYSTEM, ADT:Storable, Object, IO;
 
 
 TYPE
-  Array = POINTER TO ARRAY OF Object.Object;
-  ArrayList* = POINTER TO ArrayListDesc;
-  ArrayListDesc* = RECORD
+  Array(E: Object.Object) = POINTER TO ARRAY OF E;
+  ArrayList*(E: Object.Object) = POINTER TO ArrayListDesc(E);
+  ArrayListDesc*(E: Object.Object) = RECORD
   (**Resizable-array implementation of a list.  *)
     (Storable.ObjectDesc)
-    array-: Array;
+    array-: Array(E);
     (**Holds the elements of the list.  The index values in
        @samp{[0..@ofield{size}-1]} refer to valid entries.  *)
     size-: LONGINT;
@@ -37,9 +37,9 @@ TYPE
   END;
 
 
-PROCEDURE CreateArray (size: LONGINT; old: ArrayList): Array;
+PROCEDURE (l: ArrayList(E)) CreateArray (size: LONGINT; old: ArrayList(E));
   VAR
-    new: Array;
+    new: Array(E);
     i: LONGINT;
   BEGIN
     IF (size < 2) THEN
@@ -55,16 +55,17 @@ PROCEDURE CreateArray (size: LONGINT; old: ArrayList): Array;
         old. array[i] := NIL             (* be nice to gc *)
       END
     END;
-    RETURN new
+    l.array := new;
   END CreateArray;
 
-PROCEDURE Init* (l: ArrayList; initialSize: LONGINT);
+
+PROCEDURE (l: ArrayList(E)) INIT*(initialSize: LONGINT);
 (**Initializes a list with the stated initial size.  *)
   BEGIN
     Storable.Init (l);
-    l. array := CreateArray (initialSize, NIL);
+    l. CreateArray (initialSize, NIL);
     l. size := 0
-  END Init;
+  END INIT;
 
 PROCEDURE New* (initialSize: LONGINT): ArrayList;
 (**Creates a new list with the stated initial size.
@@ -72,15 +73,11 @@ PROCEDURE New* (initialSize: LONGINT): ArrayList;
    @precond
    @samp{@oparam{initialSize} >= 0}
    @end precond  *)
-  VAR
-    l: ArrayList;
   BEGIN
-    NEW (l);
-    Init (l, initialSize);
-    RETURN l
+    RETURN NEW(ArrayList, initialSize);
   END New;
 
-PROCEDURE (l: ArrayList) Destroy*;
+PROCEDURE (l: ArrayList(E)) Destroy*;
   VAR
     i: LONGINT;
   BEGIN
@@ -90,14 +87,14 @@ PROCEDURE (l: ArrayList) Destroy*;
     l. array := NIL
   END Destroy;
 
-PROCEDURE (l: ArrayList) Copy*(): ArrayList;
+PROCEDURE (l: ArrayList(E)) Copy*(): ArrayList(E);
 (**Returns a shallow copy of @oparam{l}.  The elements themselves are not
    copied.  *)
   VAR
-    new: ArrayList;
+    new: ArrayList(E);
     i: LONGINT;
   BEGIN
-    new := New (l. size);
+    new := NEW(ArrayList(E), l. size);
     FOR i := 0 TO l. size-1 DO
       new. array[i] := l. array[i]
     END;
@@ -107,7 +104,7 @@ PROCEDURE (l: ArrayList) Copy*(): ArrayList;
 
 
 
-PROCEDURE (l: ArrayList) EnsureCapacity* (size: LONGINT);
+PROCEDURE (l: ArrayList(E)) EnsureCapacity* (size: LONGINT);
 (**Increases the capacity of @oparam{l}, if necessary, to ensure that it can
    hold at least the number of elements specified by the minimum capacity
    argument @oparam{size}.
@@ -117,11 +114,11 @@ PROCEDURE (l: ArrayList) EnsureCapacity* (size: LONGINT);
    @end precond  *)
   BEGIN
     IF (LEN (l. array^) < size) THEN
-      l. array := CreateArray (size, l)
+      l. CreateArray (size, l)
     END
   END EnsureCapacity;
 
-PROCEDURE (l: ArrayList) Clear*;
+PROCEDURE (l: ArrayList(E)) Clear*;
 (**Removes all of the elements from this list.  The list will be empty after
    this call returns.  *)
   VAR
@@ -133,17 +130,17 @@ PROCEDURE (l: ArrayList) Clear*;
     l. size := 0
   END Clear;
 
-PROCEDURE (l: ArrayList) Append* (obj: Object.Object);
+PROCEDURE (l: ArrayList(E)) Append* (obj: E);
 (**Appends the specified element @oparam{obj} to the end of this list.  *)
   BEGIN
     IF (l. size = LEN (l. array^)) THEN
-      l. array := CreateArray (l. size*2, l)
+      l. CreateArray (l. size*2, l)
     END;
     l. array[l. size] := obj;
     INC (l. size)
   END Append;
 
-PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Object.Object);
+PROCEDURE (l: ArrayList(E)) Insert* (index: LONGINT; obj: E);
 (**Inserts the specified element @oparam{obj} at the specified position
    @oparam{index} in this list.  Shifts the element currently at that position
    (if any) and any subsequent elements to the right (adds one to their
@@ -157,7 +154,7 @@ PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Object.Object);
   BEGIN
     ASSERT (index <= l. size);
     IF (l. size = LEN (l. array^)) THEN
-      l. array := CreateArray (l. size*2, l)
+      l. CreateArray (l. size*2, l)
     END;
     FOR i := l. size-1 TO index DO
       l. array[i+1] := l. array[i]
@@ -166,7 +163,7 @@ PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Object.Object);
     INC (l. size)
   END Insert;
 
-PROCEDURE (l: ArrayList) Get* (index: LONGINT): Object.Object;
+PROCEDURE (l: ArrayList(E)) Get* (index: LONGINT): E;
 (**Returns the element at the specified position @oparam{index} in this list.
 
    @precond
@@ -177,7 +174,7 @@ PROCEDURE (l: ArrayList) Get* (index: LONGINT): Object.Object;
     RETURN l. array[index]
   END Get;
 
-PROCEDURE (l: ArrayList) Set* (index: LONGINT; obj: Object.Object);
+PROCEDURE (l: ArrayList(E)) Set* (index: LONGINT; obj: E);
 (**Replaces the element at the specified position @oparam{index} in this list
    with the specified element @oparam{obj}.
 
@@ -189,7 +186,7 @@ PROCEDURE (l: ArrayList) Set* (index: LONGINT; obj: Object.Object);
     l. array[index] := obj
   END Set;
 
-PROCEDURE (l: ArrayList) RemoveRange* (fromIndex, toIndex: LONGINT);
+PROCEDURE (l: ArrayList(E)) RemoveRange* (fromIndex, toIndex: LONGINT);
 (**Removes from this List all of the elements whose index is between
    @oparam{fromIndex}, inclusive and @oparam{toIndex}, exclusive.  Shifts any
    succeeding elements to the left (reduces their index).  This call shortens
@@ -217,7 +214,7 @@ PROCEDURE (l: ArrayList) RemoveRange* (fromIndex, toIndex: LONGINT);
     DEC (l. size, delta)
   END RemoveRange;
 
-PROCEDURE (l: ArrayList) Remove* (index: LONGINT);
+PROCEDURE (l: ArrayList(E)) Remove* (index: LONGINT);
 (**Removes the element at the specified position @oparam{index} in this list.
    Shifts any subsequent elements to the left (subtracts one from their
    indices).
@@ -229,24 +226,24 @@ PROCEDURE (l: ArrayList) Remove* (index: LONGINT);
     l. RemoveRange (index, index+1)
   END Remove;
 
-PROCEDURE (l: ArrayList) TrimToSize*;
+PROCEDURE (l: ArrayList(E)) TrimToSize*;
 (**Trims the capacity of @oparam{l} to be the list's current size.  An
    application can use this operation to minimize the storage of an
    @otype{ArrayList} instance.  *)
   BEGIN
     IF (l. size # LEN (l. array^)) THEN
-      l. array := CreateArray (l. size, l)
+      l. CreateArray (l. size, l)
     END
   END TrimToSize;
 
 
-PROCEDURE (l: ArrayList) Size* (): LONGINT;
+PROCEDURE (l: ArrayList(E)) Size* (): LONGINT;
 (**Returns the number of elements in this list.  *)
   BEGIN
     RETURN l. size
   END Size;
 
-PROCEDURE (l: ArrayList) Contains* (obj: Object.Object): BOOLEAN;
+PROCEDURE (l: ArrayList(E)) Contains* (obj: E): BOOLEAN;
 (**Returns @code{TRUE} if this list contains the specified element.  *)
   VAR
     i: LONGINT;
@@ -259,7 +256,7 @@ PROCEDURE (l: ArrayList) Contains* (obj: Object.Object): BOOLEAN;
     RETURN FALSE
   END Contains;
 
-PROCEDURE (l: ArrayList) IndexOf* (obj: Object.Object): LONGINT;
+PROCEDURE (l: ArrayList(E)) IndexOf* (obj: E): LONGINT;
 (**Searches for the first occurence of the given argument, testing for equality
    using the @oproc{Object.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
@@ -274,7 +271,7 @@ PROCEDURE (l: ArrayList) IndexOf* (obj: Object.Object): LONGINT;
     RETURN -1
   END IndexOf;
 
-PROCEDURE (l: ArrayList) LastIndexOf* (obj: Object.Object): LONGINT;
+PROCEDURE (l: ArrayList(E)) LastIndexOf* (obj: E): LONGINT;
 (**Searches for the last occurence of the given argument, testing for equality
    using the @oproc{Object.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
@@ -289,7 +286,7 @@ PROCEDURE (l: ArrayList) LastIndexOf* (obj: Object.Object): LONGINT;
     RETURN -1
   END LastIndexOf;
 
-PROCEDURE (l: ArrayList) IsEmpty* (): BOOLEAN;
+PROCEDURE (l: ArrayList(E)) IsEmpty* (): BOOLEAN;
 (**Tests if this list has no elements.  *)
   BEGIN
     RETURN (l. size = 0)
@@ -297,21 +294,21 @@ PROCEDURE (l: ArrayList) IsEmpty* (): BOOLEAN;
 
 
 
-PROCEDURE (l: ArrayList) Equals* (obj: Object.Object): BOOLEAN;
+PROCEDURE (l: ArrayList(E)) Equals* (obj: Object.Object): BOOLEAN;
   BEGIN
 <*PUSH; Assertions:=TRUE*>
     ASSERT (FALSE);
 <*POP*>
   END Equals;
 
-PROCEDURE (l: ArrayList) HashCode* (): LONGINT;
+PROCEDURE (l: ArrayList(E)) HashCode* (): LONGINT;
   BEGIN
 <*PUSH; Assertions:=TRUE*>
     ASSERT (FALSE);
 <*POP*>
   END HashCode;
 
-PROCEDURE (l: ArrayList) Store* (w: Storable.Writer) RAISES IO.Error;
+PROCEDURE (l: ArrayList(E)) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Object.Object;
@@ -327,16 +324,16 @@ PROCEDURE (l: ArrayList) Store* (w: Storable.Writer) RAISES IO.Error;
     END
   END Store;
 
-PROCEDURE (l: ArrayList) Load* (r: Storable.Reader) RAISES IO.Error;
+PROCEDURE (l: ArrayList(E)) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i, size: LONGINT;
     obj: Storable.Object;
   BEGIN
     r. ReadNum (size);
-    Init (l, size);
+    l.INIT(size);
     FOR i := 0 TO size-1 DO
       r. ReadObject (obj);
-      l. array[i] := obj;
+      l. array[i] := SYSTEM.VAL(E, obj);
     END;
     l. size := size
   END Load;

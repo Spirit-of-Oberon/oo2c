@@ -1,7 +1,7 @@
 MODULE TestInterfaceGen;
 
 IMPORT
-  StdChannels, Out, Err, Object, ADT:Dictionary, ADT:ArrayList,
+  StdChannels, Out, Err, ADT:Dictionary, ADT:ArrayList,
   Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, OOC:SymbolTable:InterfaceDescr,
@@ -40,16 +40,15 @@ PROCEDURE NewConfig;
                  "<options><set name='error-style'>$1</set></options>");
   END NewConfig;
 
-PROCEDURE CollectExtensions (moduleList: ARRAY OF Rep.Module): Dictionary.Dictionary;
+PROCEDURE CollectExtensions (moduleList: ARRAY OF Rep.Module): Sym.ExtensionDict;
   VAR
-    extensionDict: Dictionary.Dictionary;
+    extensionDict: Sym.ExtensionDict;
     visited: Dictionary.Dictionary;
 
   PROCEDURE Scan(m: Rep.Module);
     VAR
       ptr: Sym.Item;
       base: Sym.Type;
-      obj: Object.Object;
       list: ArrayList.ArrayList;
       i: LONGINT;
     BEGIN
@@ -66,8 +65,7 @@ PROCEDURE CollectExtensions (moduleList: ARRAY OF Rep.Module): Dictionary.Dictio
             base := ptr(Sym.Record). baseType;
             ASSERT(base IS Sym.Record);
             IF extensionDict. HasKey (base) THEN
-              obj := extensionDict. Get (base);
-              list := obj(ArrayList.ArrayList)
+              list := extensionDict. Get (base);
             ELSE
               list := ArrayList.New (4);
               extensionDict. Set (base, list)
@@ -80,7 +78,7 @@ PROCEDURE CollectExtensions (moduleList: ARRAY OF Rep.Module): Dictionary.Dictio
     END Scan;
   
   BEGIN
-    extensionDict := Dictionary.New();
+    extensionDict := NEW(Sym.ExtensionDict);
     visited := Dictionary.New();
     FOR i := 0 TO LEN(moduleList)-1 DO
       Scan(moduleList[i]);

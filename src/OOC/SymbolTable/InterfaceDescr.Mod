@@ -52,7 +52,7 @@ PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
 
 PROCEDURE Write* (cw: IO.ByteChannel; baseURI: URI.HierarchicalURI;
                   module: Sym.Module; repositories: Repositories.Section;
-                  extensionDict: Dictionary.Dictionary)
+                  extensionDict: Sym.ExtensionDict)
 RAISES IO.Error;
 (**Writes the exported parts of the symbol table with root @oparam{module} as
    XML to the output writer @oparam{cw}.  Includes descriptions for
@@ -577,13 +577,11 @@ RAISES IO.Error;
   PROCEDURE WriteKnownExtensions (type: Object.Object);
     VAR
       i: LONGINT;
-      obj: Object.Object;
       list: ArrayList.ArrayList;
       item: Sym.Item;
     BEGIN
       IF (extensionDict # NIL) & extensionDict. HasKey (type) THEN
-        obj := extensionDict. Get (type);
-        list := obj(ArrayList.ArrayList);
+        list := extensionDict. Get (type);
         FOR i := 0 TO list. size-1 DO
           item := list. array[i](Sym.Record). parent. nestedItems;
           WHILE ~((item IS Sym.TypeDecl) &

@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 
 IMPORT
   Object, Object:Boxed, Msg, Strings, ADT:Dictionary:AddressKey,
-  ADT:Storable, ADT:ArrayList, IO,
+  ADT:Dictionary, ADT:Storable, ADT:ArrayList, IO,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
 
@@ -42,6 +42,7 @@ TYPE
   (**Column number in the source file, starting at 0.
      See @omodule{*OOC:Scanner:Builder} for more information.  *)
   Exports* = AddressKey.Dictionary;
+  ExtensionDict* = Dictionary.Dictionary(Object.Object, ArrayList.ArrayList);
 
 TYPE
   Position* = POINTER TO PositionDesc;

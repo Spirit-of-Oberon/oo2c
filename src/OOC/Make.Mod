@@ -71,7 +71,7 @@ TYPE
     imports-: ModuleList;
     mInfo: Dictionary.Dictionary;
     
-    extensionDict: Dictionary.Dictionary;
+    extensionDict: Sym.ExtensionDict;
     (**Used by @oproc{Rules.UpdateInterfaceDescr}.  It maps record types
        to a list of known extensions.  *)
        
@@ -208,7 +208,7 @@ PROCEDURE (r: Rules) UsageTracking*(extIdent: ARRAY OF CHAR): BOOLEAN;
     RETURN ~syntaxError;
   END UsageTracking;
 
-PROCEDURE (r: Rules) SetExtensionDict*(dict: Dictionary.Dictionary);
+PROCEDURE (r: Rules) SetExtensionDict*(dict: Sym.ExtensionDict);
   BEGIN
     r.extensionDict := dict;
   END SetExtensionDict;

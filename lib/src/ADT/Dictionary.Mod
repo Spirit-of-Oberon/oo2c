@@ -52,7 +52,7 @@ TYPE
   (**Type of value entries in the dictionary.  *)
   
 TYPE
-  Entry = RECORD
+  Entry(K: Key; V: Value) = RECORD
   (**Invariant for entries: When in use, @ofield{key} is not @code{NIL} and not
      @ovar{dummy}.  When not in use, @ofield{key} is either @code{NIL} or
      @ovar{dummy}.  A dummy key value cannot be replaced by @code{NIL}, since
@@ -60,17 +60,17 @@ TYPE
     hash: Hash;
     (**The hash value of the object stored in @ofield{key}.  This is computed
        once, at the time the object is added to the dictionary.  *)
-    key: Key;
+    key: K;
     (**Key object.  For an unused slot, this is either @code{NIL} or
        @ovar{dummy}.  Use @oproc{IsSet} to determine if a given key is part of
        a valid item.  *)
-    value: Value;
+    value: V;
   END;
-  Table = POINTER TO ARRAY OF Entry;
+  Table(K: Key; V: Value) = POINTER TO ARRAY OF Entry(K, V);
 
 TYPE
-  Dictionary* = POINTER TO DictionaryDesc;
-  DictionaryDesc = RECORD
+  Dictionary*(K: Key; V: Value) = POINTER TO DictionaryDesc(K, V);
+  DictionaryDesc(K: Key; V: Value) = RECORD
   (**Implements a dictionary that maps objects to objects.  The dictionary's
      keys are the object addresses (@code{NIL} is @emph{not} allowed as key),
      the values are arbitrary objects or @code{NIL}.
@@ -89,7 +89,7 @@ TYPE
     size: Index;
     (**Size of the table.  Always a power of 2.  *)
     poly: LONGINT;
-    table: Table;
+    table: Table(K, V);
     (**To ensure the lookup algorithm terminates, the table size must be a
        prime number and there must be at least one @code{NIL} key in the table.
        To avoid slowing down lookups on a near-full table, we resize the table
@@ -117,7 +117,7 @@ VAR
      2<=n<=30.  *)
   
 
-PROCEDURE Init* (dict: Dictionary);
+PROCEDURE (dict: Dictionary(K, V)) INIT*;
 (**Initializes @oparam{dict} to an empty dictionary.  *)
   BEGIN
     Storable.Init (dict);
@@ -126,19 +126,15 @@ PROCEDURE Init* (dict: Dictionary);
     dict. table := NIL;
     dict. fill := 0;
     dict. used := 0;
-  END Init;
+  END INIT;
 
 PROCEDURE New* (): Dictionary;
 (**Creates a new, empty dictionary.  *)
-  VAR
-    dict: Dictionary;
   BEGIN
-    NEW (dict);
-    Init (dict);
-    RETURN dict
+    RETURN NEW(Dictionary);
   END New;
 
-PROCEDURE (dict: Dictionary) Destroy*;
+PROCEDURE (dict: Dictionary(K, V)) Destroy*;
   VAR
     i: LONGINT;
   BEGIN
@@ -160,7 +156,7 @@ PROCEDURE IsSet (key: Key): BOOLEAN;
     RETURN (key # NIL) & (key # dummy)
   END IsSet;
 
-PROCEDURE Lookup (dict: Dictionary; key: Key; hash: Hash): LONGINT;
+PROCEDURE (dict: Dictionary(K, V)) Lookup (key: K; hash: Hash): LONGINT;
 (* Looks up the given (key, hash) pair in the dictionary.  Result is a valid
    index that either refers to an existing entry entry equal to `key', or an
    unused slot that can be filled with `key'.
@@ -184,7 +180,7 @@ PROCEDURE Lookup (dict: Dictionary; key: Key; hash: Hash): LONGINT;
   VAR
     i, incr, freeslot: Index;
     mask: SET;
-    t: Table;
+    t: Table(K, V);
   BEGIN
     t := dict. table;
     mask := S.VAL (SET, dict. size-1);
@@ -226,14 +222,13 @@ PROCEDURE Lookup (dict: Dictionary; key: Key; hash: Hash): LONGINT;
     END
   END Lookup;
 
-PROCEDURE Insert (dict: Dictionary; key: Key;
-                  hash: Hash; value: Value);
+PROCEDURE (dict: Dictionary(K, V)) Insert (key: K; hash: Hash; value: V);
 (**Internal procedure to insert a new item into the table.  Used both by the
    resize and the public insert routine.  *)
   VAR
     i: LONGINT;
   BEGIN
-    i := Lookup (dict, key, hash);
+    i := dict.Lookup(key, hash);
     IF IsSet (dict. table[i]. key) THEN  (* replacing old value *)
       dict. table[i]. value := value
     ELSE                                 (* inserting new value *)
@@ -247,7 +242,7 @@ PROCEDURE Insert (dict: Dictionary; key: Key;
     END
   END Insert;
 
-PROCEDURE Resize (dict: Dictionary; minUsed: LONGINT);
+PROCEDURE (dict: Dictionary(K, V)) Resize (minUsed: LONGINT);
 (**Resizes the table used by @oparam{dict} so that it can hold at least
    @oparam{minUsed} items.
 
@@ -255,7 +250,7 @@ PROCEDURE Resize (dict: Dictionary; minUsed: LONGINT);
    recreated from scratch.  *)
   VAR
     i, oldSize, newSize, newPoly: LONGINT;
-    oldTable, newTable: Table;
+    oldTable, newTable: Table(K, V);
   BEGIN
     oldSize := dict. size;
     oldTable := dict. table;
@@ -280,7 +275,7 @@ PROCEDURE Resize (dict: Dictionary; minUsed: LONGINT);
     
     FOR i := 0 TO oldSize-1 DO
       IF IsSet (oldTable[i]. key) THEN
-        Insert (dict, oldTable[i]. key, oldTable[i]. hash, oldTable[i]. value);
+        dict.Insert(oldTable[i]. key, oldTable[i]. hash, oldTable[i]. value);
         oldTable[i]. key := NIL;         (* be nice to gc *)
         oldTable[i]. value := NIL;
       END
@@ -288,7 +283,7 @@ PROCEDURE Resize (dict: Dictionary; minUsed: LONGINT);
   END Resize;
 
 
-PROCEDURE (dict: Dictionary) HasKey* (key: Key): BOOLEAN;
+PROCEDURE (dict: Dictionary(K, V)) HasKey* (key: K): BOOLEAN;
 (**Tests if an item in @oparam{dict} exists with the key @oparam{key}.
 
    @precond
@@ -300,18 +295,18 @@ PROCEDURE (dict: Dictionary) HasKey* (key: Key): BOOLEAN;
     IF (dict. used = 0) THEN
       RETURN FALSE
     ELSE
-      index := Lookup (dict, key, key. HashCode());
+      index := dict.Lookup(key, key.HashCode());
       RETURN IsSet (dict. table[index]. key)
     END
   END HasKey;
 
-PROCEDURE (dict: Dictionary) Size* (): LONGINT;
+PROCEDURE (dict: Dictionary(K, V)) Size* (): LONGINT;
 (**Returns the number of items in the dictionary.  *)
   BEGIN
     RETURN dict. used
   END Size;
 
-PROCEDURE (dict: Dictionary) Get* (key: Key): Value;
+PROCEDURE (dict: Dictionary(K, V)) Get* (key: K): V;
 (**Retrieves the value associated with @oparam{key} in the dictionary
    @oparam{dict}.
 
@@ -324,12 +319,12 @@ PROCEDURE (dict: Dictionary) Get* (key: Key): Value;
   BEGIN
     ASSERT (key # NIL);
     ASSERT (dict. used # 0);
-    i := Lookup (dict, key, key. HashCode());
+    i := dict.Lookup(key, key. HashCode());
     ASSERT (IsSet (dict. table[i]. key));
     RETURN dict. table[i]. value
   END Get;
 
-PROCEDURE (dict: Dictionary) Set* (key: Key; value: Value);
+PROCEDURE (dict: Dictionary(K, V)) Set* (key: K; value: V);
 (**Sets the value for key @oparam{key} in the dictionary @oparam{dict} to
    @oparam{value}.  If an item with this key already exists, its value is
    replaced.  Otherwise, a new item is created with the given (@oparam{key},
@@ -341,25 +336,25 @@ PROCEDURE (dict: Dictionary) Set* (key: Key; value: Value);
   BEGIN
     ASSERT (key # NIL);
     IF (dict. fill*3 >= dict. size*2) THEN
-      Resize (dict, dict. used*2)
+      dict.Resize(dict. used*2)
     END;
-    Insert (dict, key, key. HashCode(), value)
+    dict.Insert(key, key.HashCode(), value)
   END Set;
 
-PROCEDURE (dict: Dictionary) Copy* (): Dictionary;
+PROCEDURE (dict: Dictionary(K, V)) Copy* (): Dictionary(K, V);
 (**Creates a shallow copy of the dictionary @oparam{dict}.  The key and value
    objects themselves are not copied.  *)
   VAR
-    copy: Dictionary;
+    copy: Dictionary(K, V);
     i: LONGINT;
   BEGIN
-    copy := New();
+    copy := NEW(Dictionary(K, V));
     IF (dict. used > 0) THEN
-      Resize (copy, (dict. used*3) DIV 2);
+      copy.Resize((dict. used*3) DIV 2);
       FOR i := 0 TO dict. size-1 DO
         IF IsSet (dict. table[i]. key) THEN
-          Insert (copy, dict. table[i]. key, dict. table[i]. hash,
-                  dict. table[i]. value);
+          copy.Insert(dict.table[i].key, dict.table[i].hash,
+                      dict.table[i].value);
         END
       END
     END;
@@ -367,7 +362,7 @@ PROCEDURE (dict: Dictionary) Copy* (): Dictionary;
   END Copy;
 
 
-PROCEDURE (dict: Dictionary) Delete* (key: Key);
+PROCEDURE (dict: Dictionary(K, V)) Delete* (key: K);
 (**Removes the item with the key @oparam{key} from the dictionary
    @oparam{dict}.
 
@@ -380,14 +375,15 @@ PROCEDURE (dict: Dictionary) Delete* (key: Key);
   BEGIN
     ASSERT (key # NIL);
     ASSERT (dict. used # 0);
-    i := Lookup (dict, key, key. HashCode());
+    i := dict.Lookup(key, key. HashCode());
     ASSERT (IsSet (dict. table[i]. key));
-    dict. table[i]. key := dummy;       (* replace key with dummy, _not_ NIL *)
-    dict. table[i]. value := NIL;
+    (* replace key with dummy, _not_ NIL *)
+    dict.table[i].key := S.VAL(K, dummy);
+    dict.table[i].value := NIL;
     DEC (dict. used)
   END Delete;
 
-PROCEDURE (dict: Dictionary) Clear*;
+PROCEDURE (dict: Dictionary(K, V)) Clear*;
 (**Removes all items from the dictionary @oparam{dict}.  *)
   VAR
     i: LONGINT;
@@ -398,12 +394,12 @@ PROCEDURE (dict: Dictionary) Clear*;
         dict. table[i]. value := NIL;
         dict. table[i]. hash := 0
       END;
-      Init (dict)
+      dict.INIT();
     END
   END Clear;
 
 
-PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary(K, V)) Keys* (): Object.ObjectArrayPtr;
 (**Returns the list of keys of the dictionary @oparam{dict}.  The keys are
    listed in no particular order.  *)
   VAR
@@ -422,7 +418,7 @@ PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
     RETURN list
   END Keys;
 
-PROCEDURE (dict: Dictionary) Values* (): Object.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary(K, V)) Values* (): Object.ObjectArrayPtr;
 (**Returns the list of values of the dictionary @oparam{dict}.  The values are
    listed in no particular order.  *)
   VAR
@@ -442,21 +438,21 @@ PROCEDURE (dict: Dictionary) Values* (): Object.ObjectArrayPtr;
   END Values;
 
 
-PROCEDURE (dict: Dictionary) Equals* (obj: Object.Object): BOOLEAN;
+PROCEDURE (dict: Dictionary(K, V)) Equals* (obj: Object.Object): BOOLEAN;
   BEGIN
 <*PUSH; Assertions:=TRUE*>
     ASSERT (FALSE);
 <*POP*>
   END Equals;
 
-PROCEDURE (dict: Dictionary) HashCode* (): LONGINT;
+PROCEDURE (dict: Dictionary(K, V)) HashCode* (): LONGINT;
   BEGIN
 <*PUSH; Assertions:=TRUE*>
     ASSERT (FALSE);
 <*POP*>
   END HashCode;
 
-PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer) RAISES IO.Error;
+PROCEDURE (dict: Dictionary(K, V)) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Object.Object;
@@ -482,12 +478,12 @@ PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer) RAISES IO.Error;
     END
   END Store;
 
-PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader) RAISES IO.Error;
+PROCEDURE (dict: Dictionary(K, V)) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Storable.Object;
   BEGIN
-    Init (dict);
+    dict.INIT();
     r. ReadNum (dict. size);
     IF (dict. size # 0) THEN
       (* first create a pseudo dictionary that holds all the entries from the
@@ -495,12 +491,12 @@ PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader) RAISES IO.Error;
       NEW (dict. table, dict. size);
       FOR i := 0 TO dict. size-1 DO
         r. ReadObject (obj);
-        dict. table[i]. key := obj;
+        dict.table[i].key := S.VAL(K, obj);
         r. ReadObject (obj);
-        dict. table[i]. value := obj;
-        dict. table[i]. hash := dict. table[i]. key. HashCode()
+        dict.table[i].value := S.VAL(V, obj);;
+        dict.table[i].hash := dict.table[i].key.HashCode()
       END;
-      Resize (dict, (dict. size*3) DIV 2)
+      dict.Resize((dict. size*3) DIV 2);
     END
   END Load;
 
