@@ -1,0 +1,42 @@
+Summary of results for:
+
+  Benchmark --all --normalise
+
+All tests are based on oo2c-2.0.6.
+
+--------
+
+gcc-3.2.2, -march=pentium2 -O2, Mobile Pentium II, 400MHz (mva)
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  ZeroArray1         16664.2  100.0%
+  ZeroArray2         16661.0   99.9%
+  ZeroArray4         16659.9  100.0%
+  CopyArray1         11948.2   98.1%
+  CopyArray2         11457.3  104.3%
+  CopyArray4         10005.5   94.4%
+  CopyArrayMove      13090.2  100.0%
+  AddArray1           8788.5   97.0%
+  AddArray2           9148.0   90.4%
+  AddArray4          10929.0  100.6%
+  ZeroArray1C        16671.6
+  ZeroArray2C        16670.5
+  ZeroArray4C        16662.0
+  ZeroArrayBlockC    19696.7
+  CopyArray1C        12182.5
+  CopyArray2C        10983.1
+  CopyArray4C        10603.7
+  CopyArrayBlockC    13083.6
+  AddArray1C          9058.8
+  AddArray2C         10123.7
+  AddArray4C         10864.7
+  QSORT                369.9   99.3%
+  QSORTC               372.6
+  BSORT                157.6  100.0%
+  BSORTC               157.6
+  FFT                 4850.2  120.3%
+  FFTC                4031.0
+  FFT2                3661.4   87.5%
+  FFT2C               4185.2
+  -------------------------- -------
