@@ -1616,9 +1616,12 @@ The value of find-at-least is ignored and taken to be nil."
 	     ;; o2-compilation-mode-hook as local variable to this buffer.
 	     (setq o2-source-for-errors 
 		   (find-file-noselect
-		    (concat o2-cwd
-			    (buffer-substring (match-beginning file-group)
-					      (match-end file-group))))))
+		    (let ((file-name 
+			   (buffer-substring (match-beginning file-group)
+					     (match-end file-group))))
+		      (if (eq (aref file-name 0) ?/)
+			  file-name
+			(concat o2-cwd file-name))))))
 	    
 	    ((match-beginning error-group)
 	     ;; Extract the file position from the error message.
