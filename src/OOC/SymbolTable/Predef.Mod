@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Predef;
 (*  Defines symbol table of pseudo module with predefined entities.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -47,6 +47,12 @@ CONST
   void* = 14;
   lastId = void;
 
+  lengthType* = 5;
+  (**Alias for the integer type used to represent the length of an array.
+     This is also the result type of the predefined function @code{LEN}.
+     Normally, this is the same as @oconst{longint}.  Use this symbolic
+     name when producing values the are array indices or lengths.  *)
+  
 CONST
   (* These represent set of types that may be treated similarly. *)
 

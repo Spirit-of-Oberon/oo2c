@@ -1,7 +1,8 @@
 MODULE OOC:IR:Operator [OOC_EXTENSIONS];
 
 IMPORT
-  Log, Language, Language:Boolean, Language:Integer, Integers,
+  Integers, Log, ADT:ArrayList,
+  Language, Language:Boolean, Language:Integer, 
   OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, Sym := OOC:SymbolTable,
   OOC:IR, OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef;
 
@@ -71,6 +72,21 @@ TYPE
     (IR.OperatorDesc)
     variant- : Variant;
     left-, right- : IR.Expression;
+  END;
+
+TYPE
+  Len* = POINTER TO LenDesc;
+  LenDesc = RECORD
+    (**Represents a call to the predefined function @code{LEN}.
+
+       Note: Nodes of this type are also created implicitly, for example when
+       adding parameters to a procedure call to fill in the length of open
+       array parameters.  When passing a string constant to an character array
+       parameter, this operator is used to calculate the length of the array
+       parameter.  *)
+    (IR.OperatorDesc)
+    array-: IR.Expression;
+    dim-: LONGINT;
   END;
 
 TYPE
@@ -429,6 +445,40 @@ PROCEDURE (op: Compare) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
+PROCEDURE InitLen (len: Len; sym: IR.Symbol;
+                   array: IR.Expression; dim: LONGINT);
+  BEGIN
+    IR.InitOperator (len, sym, Predef.GetType (Predef.lengthType));
+    len.array := array;
+    len.dim := dim;
+  END InitLen;
+
+PROCEDURE (b: Builder) NewLen* (sym: IR.Symbol;
+                                array: IR.Expression; dim: LONGINT): Len;
+  VAR
+    len: Len;
+  BEGIN
+    NEW (len);
+    InitLen (len, sym, array, dim);
+    RETURN len
+  END NewLen;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitLen* (len: Len);
+  END VisitLen;
+
+PROCEDURE (len: Len) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitLen (len)
+  END Accept;
+
+PROCEDURE (len: Len) Evaluate* (VAR env : IR.Environment): Language.Value;
+  BEGIN
+    ASSERT(FALSE);
+    RETURN NIL;
+  END Evaluate;
+
+(* -------- *)
+
 PROCEDURE (i : Index) Evaluate* (VAR env : IR.Environment) : Language.Value;
 BEGIN
   env.Exception(IR.statusInvalidOp, i, NIL, NIL);
@@ -577,6 +627,45 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
   END NewOperator;
 
 (* -------- *)
+
+PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;
+                                       formalPars: Sym.VarDeclArray;
+                                       arguments: IR.ExpressionList): IR.ExpressionList;
+(**See @oproc{IR.Builder.TransformArgs}.  *)
+  VAR
+    newArgs: ArrayList.ArrayList;
+    i, fparIndex, argIndex: LONGINT;
+    fparType: Sym.Type;
+    exprList: IR.ExpressionList;
+  BEGIN
+    newArgs := ArrayList.New (LEN (arguments^));
+    
+    fparIndex := 0;
+    argIndex := 0;
+    WHILE (fparIndex # LEN (formalPars^)) &
+          (argIndex # LEN (arguments^)) DO
+      (* FIXME... need to check formal and actual type, insert type conversion,
+         and so on  *)
+      newArgs. Append (arguments[argIndex]);
+      
+      fparType := formalPars[fparIndex]. type;
+      WITH fparType: Sym.Array DO
+        FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
+          newArgs. Append (b. NewLen (sym, arguments[argIndex], i))
+        END;
+      ELSE  (* nothing to do *)
+      END;
+      
+      INC (argIndex);
+      INC (fparIndex);
+    END;
+    
+    NEW (exprList, newArgs. size);
+    FOR i := 0 TO newArgs. size-1 DO
+      exprList[i] := newArgs. array[i](IR.Expression)
+    END;
+    RETURN exprList
+  END TransformArgs;
 
 BEGIN
   real := Predef.GetType(Predef.real);

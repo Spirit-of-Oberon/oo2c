@@ -1,7 +1,8 @@
 MODULE OOC:SSA:IRtoSSA;
 
 IMPORT
-  Log,  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, OOC:IR:Operator,
+  Log, Language:String8,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, OOC:IR:Operator,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 
@@ -83,6 +84,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.readDesign);
         RETURN instr
 
+      | expr: Operator.Len DO
+        ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
+        RETURN pb. GetConstInt (expr. array(IR.Const). value(String8.Value). value. length+1);
+        
       | expr: Operator.Index DO
         RETURN Index (expr)
         
@@ -115,6 +120,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           Log.Type("++ Unknown variant of Compare in Expression", expr);
           ASSERT (FALSE);
         END;
+        
       | expr: IR.Call DO
         instr := Call (expr);
         (* the pessimistic assumption is that a function call can have
@@ -123,6 +129,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (s, Opnd.store);
         s := instr. AddResult (Result.store);
         RETURN instr
+            
       ELSE
         Log.Type("++ Unknown type in Expression", expr);
         ASSERT (FALSE)

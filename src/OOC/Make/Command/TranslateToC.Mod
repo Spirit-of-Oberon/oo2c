@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:Command:TranslateToC;
 (*  Translates a module file into a bunch of C code files.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,13 +22,13 @@ MODULE OOC:Make:Command:TranslateToC;
 
 IMPORT
   Log,
-  Channel, Make, StdChannels, ADT:String, ADT:Dictionary,
+  Channel, Make, StdChannels, ADT:String, ADT:Dictionary, Language:String8,
   OOC:Make:Entity:ModuleFile,
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, OOC:IR:Operator, IRtoXML := OOC:IR:XML,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Exports,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Predef,
   OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:Naming,
   WriteSSA := OOC:SSA:WriteC;
 
@@ -184,6 +184,12 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
         name := Naming.NameOfDeclaration (expr. decl);
         w. WriteString (name. array^)
         
+      | expr: Operator.Len DO
+        (* FIXME... there are a lot more variants to LEN than the length
+           of a string constant *)
+        ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
+        w. WriteLInt (expr. array(IR.Const). value(String8.Value). value. length+1, 0);
+                      
       | expr: Operator.Negate DO
         w. WriteChar ("-");
         WriteExpr (w, expr. operand);
@@ -199,10 +205,13 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
 	| Operator.arithMod:  w. WriteChar("%");
 	END;
         WriteExpr(w, expr. right);
+        
       | expr: Operator.TypeConv DO
         WriteExpr(w, expr.expr);  (* FIXME! generate type casts if required *)
+        
       | expr: IR.Call DO
         Call (expr)
+
       ELSE
         Log.Type("++ Unknown operator class in WriteExpr", expr);
         ASSERT (FALSE)

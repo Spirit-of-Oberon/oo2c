@@ -77,6 +77,14 @@ PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
     v. w. EndTag;  (* module-reference *)
   END VisitModuleRef;
 
+PROCEDURE (v: Visitor) VisitLen* (len: Operator.Len);
+  BEGIN
+    v. w. StartTag ("len", FALSE);
+    v. w. AttrInt ("dim", len. dim);
+    len. array. Accept (v);
+    v. w. EndTag;  (* len *)
+  END VisitLen;
+
 PROCEDURE (v: Visitor) VisitIndex* (index: Operator.Index);
   BEGIN
     v. w. StartTag ("index", FALSE);

@@ -3,7 +3,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 IMPORT
 Log,
   Language, Language:Boolean, Language:Char8, Language:String8,
-  Language:Integer,
+  Language:Integer, ADT:Object, 
   Config:Value, BooleanValue := Config:Value:Boolean, 
   SymbolId := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
@@ -56,6 +56,7 @@ TYPE
 TYPE
   Node* = POINTER TO NodeDesc;
   NodeDesc = RECORD [ABSTRACT]
+    (Object.ObjectDesc)
     sym-: Symbol;
     (**This symbol's location is used to refer to the node when writing an
        error or warning message.  For constants or name, this symbol is the
@@ -409,6 +410,7 @@ PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Expression;
 
 PROCEDURE InitNode* (n: Node; sym: Symbol);
   BEGIN
+    Object.Init (n);
     n. sym := sym;
   END InitNode;
 
@@ -905,7 +907,7 @@ PROCEDURE (whileStatm: WhileStatm) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitCall* (call: Call; design: Expression; arguments: ExpressionList);
+PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList);
   BEGIN
     InitStatement (call, design. sym);
     IF (design. type(Sym.FormalPars). resultType # NIL) THEN
@@ -915,6 +917,17 @@ PROCEDURE InitCall* (call: Call; design: Expression; arguments: ExpressionList);
     call. design := design;
     call. arguments := arguments;
   END InitCall;
+
+PROCEDURE (b: Builder) [ABSTRACT] TransformArgs* (sym: Symbol;
+                                       formalPars: Sym.VarDeclArray;
+                                       arguments: ExpressionList): ExpressionList;
+(**Takes the argument list from the parser and rewrites it to match the formal
+   parameters of the called procedure.  The translation includes changes to the
+   argument expressions (for example, type conversion to a different numeric
+   type) and insertion of additional arguments (for example, array length for
+   open array parameters, or insertion of a type tag for a @code{VAR} parameter
+   of record type).  *)
+  END TransformArgs;
 
 PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList): Expression;
   VAR
@@ -928,6 +941,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
                    GetPragmaValue (b, StdPragmas.assertions, design. sym. pos))
       END
     ELSE
+      arguments := b. TransformArgs (design. sym,
+                                     design. type(Sym.FormalPars). params,
+                                     arguments);
       InitCall (call, design, arguments)
     END;
     RETURN call

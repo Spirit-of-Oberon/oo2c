@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 (*  Defines classes to handle C declarations, types, and include statements.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -96,7 +96,16 @@ CONST
   real64* = 13;
   (**This is mapped to the IEEE 754 double precision floating point type,
      usually @code{double}.  *)
-  lastBasicType = real64;
+  
+  lengthType* = 14;
+  (**This basic type is used to store the length of arrays.  On the C level, it
+     is an alias for a signed integer type.  On 32 bit targets, @oconst{int32}
+     and @oconst{lengthType} are mapped to the same C type.  When working on
+     the level of the @emph{input} language, the symbol type
+     @oconst{*OOC:SymbolTable:Predef.lengthType} should be used.  *)
+  
+  lastBasicType = lengthType;
+
   
 TYPE
   BasicType* = POINTER TO BasicTypeDesc;
@@ -248,6 +257,7 @@ PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
     CreateBasicType (char16, "OOC_CHAR16");
     CreateBasicType (real32, "OOC_REAL32");
     CreateBasicType (real64, "OOC_REAL64");
+    CreateBasicType (lengthType, "OOC_LEN");
   END InitWriter;
 
 PROCEDURE NewWriter* (ch: Channel.Channel;
