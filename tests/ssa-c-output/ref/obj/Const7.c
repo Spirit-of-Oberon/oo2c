@@ -13,7 +13,7 @@ l3:
 
 void Const7__Test() {
 
-  Const7__P(OOC_TRUE);
+  Const7__P(1u);
   Out0__Ln();
   return;
   ;

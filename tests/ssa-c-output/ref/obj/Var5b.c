@@ -31,13 +31,13 @@ void Var5b__Test() {
   register OOC_INT32 i0;
 
   Var5b__x = -1;
-  i0 = Var5b__F(OOC_FALSE);
+  i0 = Var5b__F(0u);
   Out0__Int(i0, 0);
   Out0__Ln();
   i0 = Var5b__x;
   Out0__Int(i0, 0);
   Out0__Ln();
-  i0 = Var5b__F(OOC_TRUE);
+  i0 = Var5b__F(1u);
   Out0__Int(i0, 0);
   Out0__Ln();
   i0 = Var5b__x;

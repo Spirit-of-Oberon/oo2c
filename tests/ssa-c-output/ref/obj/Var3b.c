@@ -24,16 +24,16 @@ l8:
 void Var3b__Test() {
   register OOC_INT32 i0;
 
-  i0 = Var3b__F(OOC_FALSE, OOC_FALSE);
+  i0 = Var3b__F(0u, 0u);
   Out0__Int(i0, 0);
   Out0__Ln();
-  i0 = Var3b__F(OOC_FALSE, OOC_TRUE);
+  i0 = Var3b__F(0u, 1u);
   Out0__Int(i0, 0);
   Out0__Ln();
-  i0 = Var3b__F(OOC_TRUE, OOC_FALSE);
+  i0 = Var3b__F(1u, 0u);
   Out0__Int(i0, 0);
   Out0__Ln();
-  i0 = Var3b__F(OOC_TRUE, OOC_TRUE);
+  i0 = Var3b__F(1u, 1u);
   Out0__Int(i0, 0);
   Out0__Ln();
   return;

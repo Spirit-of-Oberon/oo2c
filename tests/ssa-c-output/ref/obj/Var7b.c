@@ -12,7 +12,7 @@ l1_loop:
   i0 = i0+1;
   Var7b__i = i0;
   i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT16, 187)));
-  i1 = i1==(OOC_CHAR8)'\000';
+  i1 = i1==0u;
   if (!i1) goto l1_loop;
 l5:
   return i0;

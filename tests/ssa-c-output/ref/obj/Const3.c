@@ -15,7 +15,7 @@ l1_loop:
 
 void Const3__Test() {
 
-  Const3__P(OOC_TRUE);
+  Const3__P(1u);
   Out0__Ln();
   return;
   ;

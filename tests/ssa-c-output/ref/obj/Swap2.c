@@ -22,19 +22,19 @@ void Swap2__Test() {
 
   Swap2__x = 1;
   Swap2__y = 2;
-  Swap2__Swap(OOC_FALSE);
+  Swap2__Swap(0u);
   i0 = Swap2__x;
   Out0__Int(i0, 2);
   i0 = Swap2__y;
   Out0__Int(i0, 2);
   Out0__Ln();
-  Swap2__Swap(OOC_TRUE);
+  Swap2__Swap(1u);
   i0 = Swap2__x;
   Out0__Int(i0, 2);
   i0 = Swap2__y;
   Out0__Int(i0, 2);
   Out0__Ln();
-  Swap2__Swap(OOC_TRUE);
+  Swap2__Swap(1u);
   i0 = Swap2__x;
   Out0__Int(i0, 2);
   i0 = Swap2__y;

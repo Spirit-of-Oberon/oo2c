@@ -16,7 +16,7 @@ l5:
 void Var10__Test() {
   register OOC_INT32 i0;
 
-  i0 = Var10__F(OOC_TRUE);
+  i0 = Var10__F(1u);
   Out0__Int(i0, 0);
   Out0__Ln();
   return;

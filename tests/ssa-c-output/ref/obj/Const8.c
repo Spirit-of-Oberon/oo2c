@@ -46,17 +46,17 @@ l4:
 
 void Const8__Test() {
 
-  Const8__Tand(OOC_TRUE);
-  Const8__Tand(OOC_FALSE);
+  Const8__Tand(1u);
+  Const8__Tand(0u);
   Out0__Ln();
-  Const8__Fand(OOC_TRUE);
-  Const8__Fand(OOC_FALSE);
+  Const8__Fand(1u);
+  Const8__Fand(0u);
   Out0__Ln();
-  Const8__Tor(OOC_TRUE);
-  Const8__Tor(OOC_FALSE);
+  Const8__Tor(1u);
+  Const8__Tor(0u);
   Out0__Ln();
-  Const8__For(OOC_TRUE);
-  Const8__For(OOC_FALSE);
+  Const8__For(1u);
+  Const8__For(0u);
   Out0__Ln();
   return;
   ;

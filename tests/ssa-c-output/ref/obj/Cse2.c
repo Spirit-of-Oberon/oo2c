@@ -8,7 +8,7 @@ static void Cse2__F(Cse2__P p) {
   i0 = (OOC_INT32)p;
   i1 = i0!=(OOC_INT32)0;
   if (i1) goto l3;
-  i1=OOC_FALSE;
+  i1=0u;
   goto l5;
 l3:
   i1 = *(OOC_INT16*)i0;

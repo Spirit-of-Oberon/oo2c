@@ -9,7 +9,7 @@ static void Var9__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
 l1_loop:
   i1 = i0!=str_0d;
   if (!i1) goto l6;
-  *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT16, 169))) = (OOC_CHAR8)'\000';
+  *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT16, 169))) = 0u;
   i0 = i0+1;
   
   goto l1_loop;
