@@ -163,7 +163,12 @@ void OS_Files__mkdir(const OS_Files__Path path, OOC_LEN path_0d,
                      OS_Files__Mode mode, Msg__Msg *res) {
   int rc;
 
+	fprintf(stderr, "mkdir(%s)\n", path);
+#ifdef __MINGW32__
+  rc = mkdir((const char*)path);
+#else
   rc = mkdir((const char*)path, mode);
+#endif
   if (rc) {
     *res = get_error(Msg__GetStringPtr(path, path_0d));
   } else {

@@ -35,4 +35,13 @@ PROCEDURE system* (command[NIL_COMPAT]: ARRAY OF CHAR): C.int;
    of the return value of the C @samp{system()} function, so the return value
    of this Oberon-2 function is system-dependent.  *)
 
+PROCEDURE ExitStatus* (status : C.int) : C.int;
+(**Returns the exit status for the command executed by @samp{system()}. If the
+   process terminated abnormally (eg. due to a signal), the value -1 is
+   returned. *)
+
+PROCEDURE TermSignal* (status : C.int) : C.int;
+(**Returns the termination signal for the command executed by @samp{system()}.
+   If the process terminated normally, the value -1 is returned. *)
+
 END OS:ProcessManagement.
