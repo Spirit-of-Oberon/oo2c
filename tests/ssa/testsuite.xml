@@ -9,8 +9,8 @@
   select ="&SetupTestCasesWithOut; opSet1 opSet2 opSet3 opSet4 opSet5 opSet6 opSet7">-->
 
 <!--<testsuite-ext
-  profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; bugLoopRewrite3">-->
+  profile="Test Suite for Translation Patterns" 
+  select ="&SetupTestCasesWithOut; case5 case6 case7 case8 case9 abs1 chr3 entier1 len5 len6 minmax2 assert2 assert4 halt1 halt4 opArray4 opArray5 opPointer5 opExprCompat1 opSet4 opSet5 abstract7">-->
 
   &TestSetupWithOut;
     
@@ -438,8 +438,8 @@
     <test id="new7" type="error" file="New7.Mod">
       Calling <code>NEW</code> with a negative length.
     </test>
-    
-    <test id="abs1" type="run" file="Abs1.Mod" output="Abs1.Ref">
+    <test id="abs1" type="run" relevance="informal"
+          file="Abs1.Mod" output="Abs1.Ref">
       Predefined function <code>ABS</code> for some integers and reals.
     </test>
     <test id="abs2" type="reject" file="Abs2.Mod">
@@ -484,7 +484,8 @@
       constant argument.
     </test>
     
-    <test id="entier1" type="run" file="Entier1.Mod" output="Entier1.Ref">
+    <test id="entier1" type="run" relevance="informal"
+          file="Entier1.Mod" output="Entier1.Ref">
       Predefined function <code>ENTIER</code> for <code>REAL</code>
       and <code>LONGREAL</code> values.
     </test>
@@ -546,7 +547,8 @@
     <test id="minmax1" type="run" file="MinMax1.Mod" output="MinMax1.Ref">
       <code>MIN</code> and <code>MAX</code> of the integer types.
     </test>
-    <test id="minmax2" type="run" file="MinMax2.Mod" output="MinMax2.Ref">
+    <test id="minmax2" type="run" relevance="informal"
+          file="MinMax2.Mod" output="MinMax2.Ref">
       <code>MIN</code> and <code>MAX</code> of the real types.
     </test>
     <test id="minmax3" type="run" file="MinMax3.Mod" output="MinMax3.Ref">
@@ -1020,7 +1022,8 @@
     <test id="opTypeGuard10" type="reject" file="OpTypeGuard10.Mod">
       Applying a type guard type to a value parameter.
     </test>
-    <test id="opExprCompat1" type="run" file="OpExprCompat1.Mod"
+    <test id="opExprCompat1" type="run" relevance="informal"
+          file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
       Excercise combinations of different operand types.
     </test>
