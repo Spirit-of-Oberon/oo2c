@@ -52,6 +52,7 @@ CONST
   abstractProcForConcreteRecord = 22;
   abstractProcNotExported = 23;
   procedureStillAbstract = 24;
+  requireOneLinkFile = 25;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -117,6 +118,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Abstract procedure must be exported"
     | procedureStillAbstract:
       t := "Inherited procedure `${name}' is still abstract"
+    | requireOneLinkFile:
+      t := "Module must provide exactly one LINK FILE directive"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -824,6 +827,8 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
                 SetFlag(item.hasDescriptor, FALSE);
               | Sym.flagNotExtensible:
                 SetFlag(item.isExtensible, FALSE);
+              | Sym.flagUnion:
+                SetFlag(item.isUnion, TRUE);
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;
@@ -904,10 +909,31 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
         END
       END
     END ResolveModifierFlags;
+
+  PROCEDURE LinkFileSections(ld: Sym.LinkDirective): LONGINT;
+    BEGIN
+      IF (ld = NIL) THEN
+        RETURN 0;
+      ELSE
+        WITH ld: Sym.LinkFile DO
+          RETURN LinkFileSections(ld.next)+1;
+        ELSE
+          RETURN LinkFileSections(ld.next);
+        END;
+      END;
+    END LinkFileSections;
   
   BEGIN
     ASSERT (errList # NIL);
 
+    CASE root.class OF
+    | Sym.mcInterface, Sym.mcForeign:
+      IF (LinkFileSections(root.linkDirectives) # 1) THEN
+        ErrDecl(requireOneLinkFile, root, errList);
+      END;
+    ELSE
+    END;
+    
     (* The declarations of a module are resolved in a multi-pass process.
        Instead of reading the parse tree, creating the symbol tale, and
        checking the rules associated with declarations in a single convoluted
