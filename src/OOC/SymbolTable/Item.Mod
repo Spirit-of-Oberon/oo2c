@@ -264,8 +264,8 @@ TYPE
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace} has been run.  *)
 
     class-: ModuleClass;
-    (**Identifies the class of the module.  It is one of @oconst{mtStandard},
-       @oconst{mtForeign}, or @oconst{mtInterface}.  *)
+    (**Identifies the class of the module.  It is one of @oconst{mcStandard},
+       @oconst{mcForeign}, or @oconst{mcInterface}.  *)
     callConv-: CallConv;
     (**The default calling convention to be used for all procedures in the
        module.  If this is @oconst{callConvDefault}, then the final choice
