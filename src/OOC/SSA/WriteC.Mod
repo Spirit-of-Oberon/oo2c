@@ -3,7 +3,8 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 IMPORT
   IntStr, StdChannels, Strings, TextRider,
   ADT:Object, ADT:String, ADT:Dictionary,
-  Sym := OOC:SymbolTable, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules,
+  OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter;
@@ -786,6 +787,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
   END WriteBlocks;
 
 PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
+                     tr: TypeRules.Rules;
                      procDecl: IR.Procedure);
   
   VAR
@@ -805,7 +807,7 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
 
     (* code transformations *)
     DeadCodeElimination.Transform (pb);
-    Destore.Transform (pb);
+    Destore.Transform (pb, tr);
     DeadCodeElimination.Transform (pb);
 
     (* write SSA code to stdout, both in native and scheduled format *)

@@ -29,6 +29,7 @@ IMPORT
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, OOC:IR:Operator, IRtoXML := OOC:IR:XML,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Predef,
+  OOC:SymbolTable:TypeRules,
   OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:Naming,
   WriteSSA := OOC:SSA:WriteC;
 
@@ -169,7 +170,8 @@ PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
   END WriteDeclFile;
 
 PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
-                         moduleIR: IR.Module; useSSA: BOOLEAN);
+                         moduleIR: IR.Module;
+                         tr: TypeRules.Rules; useSSA: BOOLEAN);
   PROCEDURE ^ Call (statm: IR.Call);
     
   PROCEDURE WriteExpr (w: DeclWriter.Writer;
@@ -306,7 +308,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
         w. WriteDeclaration (d);
         w. WriteString (" {");
         IF useSSA THEN
-          WriteSSA.ProcBody (w, procList[i]);
+          WriteSSA.ProcBody (w, tr, procList[i]);
         ELSE
           WriteStatmSeq (w, procList[i]. statmSeq);
         END;
@@ -360,7 +362,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         | Repository.modDeclFileC:
           WriteDeclFile (w, m, symTab, exports);
         | Repository.modCodeFileC:
-          WriteCodeFile (w, m, module, cmd. useSSA);
+          WriteCodeFile (w, m, module, config. typeRules, cmd. useSSA);
         END;
         w. Close (res);
       END;

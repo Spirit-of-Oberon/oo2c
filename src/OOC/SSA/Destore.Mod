@@ -22,8 +22,8 @@ MODULE OOC:SSA:Destore;
 
 IMPORT
   Dictionary := ADT:Dictionary:IntValue,
-  Sym := OOC:SymbolTable, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result,
-  OOC:SSA:Opnd, OOC:SSA:Aliasing;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules,
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd, OOC:SSA:Aliasing;
   
 (**The initial version of the SSA code, as produced by
    @omodule{*OOC:SSA:IRtoSSA}, converts all accesses to variables into
@@ -120,7 +120,7 @@ PROCEDURE GetVar (instr: SSA.Instr): Sym.VarDecl;
   END GetVar;
 
 
-PROCEDURE Transform* (pb: SSA.ProcBlock);
+PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
   VAR
     varMap: Dictionary.Dictionary;
 
@@ -231,7 +231,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           CASE instr. opcode OF
           | Opcode.get:
             storeOut := instr. GetResultClass (Result.store);
-            alias := Aliasing.DesignatorAlias (originWriteDesign, instr. GetOpndClass (Opnd.readDesign));
+            alias := Aliasing.DesignatorAlias (tr, originWriteDesign, instr. GetOpndClass (Opnd.readDesign));
             IF (storeOut = NIL) OR (alias = Aliasing.completelyCovered) THEN
               (* if the `store' chain ends here, then ignore the "get": we are
                  only interested in writing instructions; if it continues, but
@@ -246,7 +246,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             END;
             
           | Opcode.set:
-            alias := Aliasing.DesignatorAlias (originWriteDesign, instr. GetOpndClass (Opnd.writeDesign));
+            alias := Aliasing.DesignatorAlias (tr, originWriteDesign, instr. GetOpndClass (Opnd.writeDesign));
             IF (alias = Aliasing.completelyCovered) THEN
               (* this "set" instruction defines the variable we are tracing:
                  we are at the end of the visibility of "origin" *)
@@ -521,7 +521,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         instr := storeIn. instr;
         CASE instr. opcode OF
         | Opcode.set:
-          alias := Aliasing.DesignatorAlias (getDesign, instr. GetOpndClass (Opnd.writeDesign));
+          alias := Aliasing.DesignatorAlias (tr, getDesign, instr. GetOpndClass (Opnd.writeDesign));
           IF (alias = Aliasing.completelyCovered) THEN
             (* this "set" instruction defines the variable we are tracing *)
             RETURN instr. GetArgClass (Opnd.sourceValue)
