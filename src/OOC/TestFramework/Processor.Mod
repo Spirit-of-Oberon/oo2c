@@ -53,7 +53,6 @@ TYPE
 PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
   VAR
     sb: StringBuffer.StringBuffer;
-    path: FilePath;
     
   PROCEDURE GetPath (subdir: ARRAY OF CHAR): String.String;
     VAR
@@ -278,6 +277,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
         Out.String ("### compile command:"); Out.Ln
       END;
       Out.String (path); Out.Ln;
+      
+      Out.Flush;
       exit := ProcessManagment.system (path);
       status := ASH (exit, -8) MOD 256;
       signal := exit MOD 256;
