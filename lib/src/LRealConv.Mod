@@ -314,17 +314,17 @@ PROCEDURE ValueReal*(str: ARRAY OF CHAR): LONGREAL;
 
 PROCEDURE LengthFloatReal*(real: LONGREAL; sigFigs: INTEGER): INTEGER;
   BEGIN
-    RETURN -1;
+    ASSERT (FALSE); RETURN -1;  (* FIXME... *)
   END LengthFloatReal;
  
 PROCEDURE LengthEngReal*(real: LONGREAL; sigFigs: INTEGER): INTEGER;
   BEGIN
-    RETURN -1;
+    ASSERT (FALSE); RETURN -1;  (* FIXME... *)
   END LengthEngReal;
  
 PROCEDURE LengthFixedReal*(real: LONGREAL; place: INTEGER): INTEGER;
   BEGIN
-    RETURN -1;
+    ASSERT (FALSE); RETURN -1;  (* FIXME... *)
   END LengthFixedReal;
 
 BEGIN
