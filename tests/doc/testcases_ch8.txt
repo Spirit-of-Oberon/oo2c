@@ -113,7 +113,7 @@ REJECT:
 ERROR:
 
   5) The dynamic type of v is not T, or an extension of T.
-     [OpTypeGuard4]
+     [OpTypeGuard4, OpTypeGuard6]
   6) v IS NIL  [OpTypeGuard5]
 
 

@@ -508,7 +508,21 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     PROCEDURE TypeGuard (guard: IR.TypeGuard): SSA.Result;
       VAR
         design: SSA.Result;
-        instr, tag: SSA.Instr; 
+        tag: SSA.Instr;
+
+      PROCEDURE NewTypeGuard (adr, tag: SSA.Result): SSA.Instr;
+        VAR
+          instr: SSA.Instr;
+        BEGIN
+          instr := AddException (pb, guard. test. origType. sym,
+                                 Opcode.typeGuard, adr. instr. subclass);
+          instr. AddOpnd (adr, Opnd.arg);
+          instr. AddOpnd (tag, Opnd.arg);
+          instr. AddOpnd (pb. GetTypeRef (guard. test. referenceType),
+                          Opnd.type);
+          RETURN instr;
+        END NewTypeGuard;
+      
       BEGIN
         design := Expression (guard. test. expr);
         ASSERT (design. instr. opcode = Opcode.get);
@@ -516,14 +530,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         IF guard. checkType THEN
           tag := TypeTag (guard. test. expr, design,
                           guard. checkPointer, guard. sym);
-          
-          instr := AddException (pb, guard. test. origType. sym,
-                                 Opcode.typeGuard, design. subclass);
-          instr. AddOpnd (design, Opnd.arg);
-          instr. AddOpnd (tag, Opnd.arg);
-          instr. AddOpnd (pb. GetTypeRef (guard. test. referenceType),
-                          Opnd.type);
-          RETURN instr;
+          IF (guard. test. origExpr IS IR.Var) &
+             (guard. test. origExpr. type IS Sym.Record) THEN
+            (* applying type guard to a record VAR parameter: replace the
+               address _input_ of the get with the type guard instruction *)
+            design. instr. opndList. nextOpnd. ReplaceArg
+                (NewTypeGuard (design. instr. opndList. nextOpnd. arg, tag));
+            RETURN design;
+          ELSE
+            RETURN NewTypeGuard (design, tag);
+          END;
         ELSE
           RETURN design;
         END;
