@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic64">-->
+  select ="&SetupTestCasesWithOut; generic1 generic65">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
@@ -1498,10 +1498,11 @@
           file="Generic45.Mod" output="Generic45.Ref">
       Calling constructor with <code>INIT</code> procedure.
     </test>
-    <test id="generic46" type="reject" file="Generic46.Mod">
-      In a type guard, the compiler must be able to derive the type
-      arguments of the reference type from the static type of the
-      variable.
+    <test id="generic46" type="accept" file="Generic46.Mod">
+      In a type guard, the compiler must not be able to derive the
+      type arguments of the reference type from the static type of the
+      variable -- if the run-time type information offers enough
+      detail.
     </test>
     <test id="generic47" type="accept" file="Generic47.Mod">
       Parametric types may appear somewhere in a designator, even if
@@ -1571,6 +1572,10 @@
       reference to a pointer type defined later.
     </test>
     <!-- generic64 is part of the "Warnings" tests -->
+    <test id="generic65" type="run" file="Generic65.Mod"
+          output="Generic65.Ref">
+      Type test where the right hand side is a qualified type.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
