@@ -132,6 +132,8 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
           RETURN w. basicType[DeclWriter.int16]
         | Predef.longint:
           RETURN w. basicType[DeclWriter.int32]
+        | Predef.hugeint:
+          RETURN w. basicType[DeclWriter.int64]
         | Predef.real:
           RETURN w. basicType[DeclWriter.real32]
         | Predef.longreal:

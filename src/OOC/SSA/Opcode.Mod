@@ -847,6 +847,7 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       | Predef.shortint: RETURN scSigned8
       | Predef.integer: RETURN scSigned16
       | Predef.longint: RETURN scSigned32
+      | Predef.hugeint: RETURN scSigned64
       | Predef.real: RETURN scReal32
       | Predef.longreal: RETURN scReal64
       | Predef.set: RETURN scUnsigned32
