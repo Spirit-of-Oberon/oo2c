@@ -2,7 +2,7 @@ MODULE OOC:X86:Translate;
 
 IMPORT
   Object:Boxed, ADT:ArrayList, IO,
-  Rep := OOC:Repository, Sym := OOC:SymbolTable,
+  Rep := OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules, OOC:IR,
   S := OOC:X86:SSA, M := OOC:X86:Machine, B := OOC:X86:Block,
   R := OOC:X86:Register, W := OOC:X86:Write, OOC:X86:Destore,
@@ -12,7 +12,7 @@ IMPORT
   truePath = 0;
   falsePath = 1;*)
   
-PROCEDURE Translate*(m: Rep.Module; moduleIR: IR.Module;
+PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
                      ch: IO.ByteChannel);
   VAR
     w: W.Writer;
@@ -221,6 +221,34 @@ PROCEDURE Translate*(m: Rep.Module; moduleIR: IR.Module;
         SplitValue();
       END SplitPaths;
     
+    PROCEDURE ^ Expression(expr: IR.Expression): S.Result;
+      
+    PROCEDURE Call(call: IR.Call): S.Result;
+      VAR
+        instr: S.Instr;
+        i: LONGINT;
+        args: POINTER TO ARRAY OF S.Result;
+      BEGIN
+        (* evaluate arguments right to left, and procedure designator last *)
+        NEW(args, LEN(call.arguments^));
+        FOR i := LEN(call.arguments^)-1 TO 0 BY -1 DO
+          args[i] := Expression(call.arguments[i]);
+        END;
+        
+        instr := b.AddInstr2(S.call, Expression(call.design), sp);
+        FOR i := 0 TO LEN(call.arguments^)-1 DO
+          instr.AddOpnd(args[i]);
+        END;
+        
+        MemoryCP(instr);
+        ControlCP(instr);
+        IF (call.type = Predef.GetType(Predef.void)) THEN
+          RETURN NIL;
+        ELSE
+          RETURN instr.AddResultExpr(call.type);
+        END;
+      END Call;
+    
     PROCEDURE Expression(expr: IR.Expression): S.Result;
       VAR
         instr: S.Instr;
@@ -401,28 +429,6 @@ PROCEDURE Translate*(m: Rep.Module; moduleIR: IR.Module;
           RETURN instr.resultList;
         END Index;
       
-      PROCEDURE Call(call: IR.Call): S.Result;
-        VAR
-          instr: S.Instr;
-          i: LONGINT;
-          args: POINTER TO ARRAY OF S.Result;
-        BEGIN
-          (* evaluate arguments right to left, and procedure designator last *)
-          NEW(args, LEN(call.arguments^));
-          FOR i := LEN(call.arguments^)-1 TO 0 BY -1 DO
-            args[i] := Expression(call.arguments[i]);
-          END;
-          
-          instr := b.AddInstr2(S.call, Expression(call.design), sp);
-          FOR i := 0 TO LEN(call.arguments^)-1 DO
-            instr.AddOpnd(args[i]);
-          END;
-
-          MemoryCP(instr);
-          ControlCP(instr);
-          RETURN instr.AddResultExpr(call.type);
-        END Call;
-      
       BEGIN
         WITH expr: IR.Const DO
           IF (expr.value IS Boxed.Boolean) THEN
@@ -585,6 +591,9 @@ PROCEDURE Translate*(m: Rep.Module; moduleIR: IR.Module;
           instr := b.AddInstr0(S.loopExit);
           ControlCP(instr); MemoryCP(instr);
           loopExits.Append(instr);
+          
+        | statm: IR.Call DO
+          res := Call(statm);
         END;
       END;
     END StatmSeq;
@@ -606,6 +615,7 @@ PROCEDURE Translate*(m: Rep.Module; moduleIR: IR.Module;
       
       setFp := b.AddInstr1(S.copy, sp);
       fp := setFp.AddResultReg(S.address, S.fp);
+      MemoryCP(setFp); (* transfer must happen before allocateStack *)
       
       localVars := b.AddInstr2(S.allocateStack,
                                sp, b.AddFramePointerOffset(NIL));
@@ -633,7 +643,7 @@ PROCEDURE Translate*(m: Rep.Module; moduleIR: IR.Module;
     returns := NEW(ArrayList.ArrayList(S.Instr), 4);
     loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
     
-    w := NEW(W.Writer, ch);
+    w := NEW(W.Writer, symTab, ch);
     FOR p IN moduleIR.procList^ DO
       b := NEW(S.FunctionBlock, p.decl);
       FctProlog(b);
@@ -648,7 +658,7 @@ PROCEDURE Translate*(m: Rep.Module; moduleIR: IR.Module;
       M.ApplyMachineModel(b);
       
       B.ArrangeInstructions(b);
-      (*D.WriteFunction(b);*)
+      D.WriteFunction(b);
       R.AssignRegisters(b);
       D.ValidateAllocation(b);
 
