@@ -2,8 +2,11 @@ MODULE OOC:SSA:Inspector;
 
 IMPORT
   Ascii, IntStr, Log, Strings, ADT:Object, ADT:String, ADT:Dictionary,
+  Language, Language:Boolean, Language:String8,
+  Language:Integer, Language:Set,
   XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Config:Repositories, OOC:IR, OOC:SSA, OOC:SSA:Schedule,
+  OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd,
   OOC:Auxiliary:HTTPServer, Net:HTTP, Net:HTTP:Server;
 
 TYPE
@@ -34,6 +37,19 @@ PROCEDURE NewServlet (repositories: Repositories.Section;
     RETURN s
   END NewServlet;
 
+PROCEDURE OmitInstr (instr: SSA.Instr): BOOLEAN;
+  BEGIN
+    WITH instr: SSA.DeclRef DO
+      RETURN TRUE;
+    | instr: SSA.Const DO
+      RETURN TRUE;
+    | instr: SSA.Address DO
+      RETURN (instr. opcode # Opcode.copyParameter);
+    ELSE
+      RETURN FALSE;
+    END;
+  END OmitInstr;
+
 PROCEDURE WriteBlocks (s: Servlet; b: Schedule.Block);
   VAR
     w: Writer.Writer;
@@ -41,24 +57,66 @@ PROCEDURE WriteBlocks (s: Servlet; b: Schedule.Block);
     id: Object.Object;
     count: LONGINT;
 
-  PROCEDURE Ref (res: SSA.Result);
+  PROCEDURE Ref (opnd: SSA.Opnd);
     VAR
       id: Object.Object;
       str: ARRAY 128 OF CHAR;
+      arg: SSA.Result;
+      
+    PROCEDURE WriteConst (value: Language.Value);
+      VAR
+        str: String.String;
+      BEGIN
+        WITH value: Boolean.Value DO
+          IF value. value THEN
+            w. WriteLatin1("TRUE")
+          ELSE
+            w. WriteLatin1("FALSE")
+          END
+        | value: String8.Value DO
+          w. Write ('"');
+          w. WriteLatin1 (value. value. array^);
+          w. Write ('"');
+        | value: Integer.Value DO
+          str := value.ToString();
+          w. WriteLatin1(str.array^);
+        | value: Set.Value DO
+          (* FIXME *)
+          w. WriteLatin1("{set const}");
+        END
+      END WriteConst;
+    
     BEGIN
-      id := s. resultNames. Get (res);
-      str := "#res_";
-      Strings.Append (id(String.String). array^, str);
-      w. StartTag ("a", TRUE);
-      w. AttrStringLatin1 ("href", str);
+      w. StartTag ("span", TRUE);
+      Opnd.GetName (opnd. class, str);
+      w. AttrStringLatin1 ("title", str);
       
-      w. AttrStringLatin1 ("onMouseover", 'hlInstr(getAttribute("href"));hlThis(this)'); 
-      w. AttrStringLatin1 ("onMouseout", 'nmInstr(getAttribute("href"));nmThis(this)'); 
-      
-      w. Write ("(");
-      w. WriteLatin1 (id(String.String). array^);
-      w. Write (")");
-      w. EndTag;  (* a *)
+      arg := opnd. arg;
+      WITH arg: SSA.DeclRef DO
+        w. WriteLatin1 (arg. decl. name. str^);
+      | arg: SSA.Const DO
+        WriteConst (arg. value);
+      | arg: SSA.Address DO
+        w. Write ("&");
+        w. WriteLatin1 (arg. decl. name. str^);
+      ELSE
+        w. StartTag ("a", TRUE);
+        w. AttrString ("class", "resRef");
+        id := s. resultNames. Get (arg);
+        str := "#res_";
+        Strings.Append (id(String.String). array^, str);
+        w. AttrStringLatin1 ("href", str);
+        
+        w. AttrStringLatin1 ("onMouseover", 'hlInstr(getAttribute("href"))'); 
+        w. AttrStringLatin1 ("onMouseout", 'nmInstr(getAttribute("href"))'); 
+        
+        w. Write ("(");
+        w. WriteLatin1 (id(String.String). array^);
+        w. Write (")");
+        w. EndTag;  (* a *)
+      END;
+
+      w. EndTag;  (* span *)
     END Ref;
 
   PROCEDURE WriteRowClass (count: LONGINT);
@@ -76,47 +134,66 @@ PROCEDURE WriteBlocks (s: Servlet; b: Schedule.Block);
     VAR
       proxy: Schedule.InstrProxy;
       instr: SSA.Instr;
+      res: SSA.Result;
       str: ARRAY 128 OF CHAR;
       id: Object.Object;
       opnd: SSA.Opnd;
+
     BEGIN
       proxy := b. proxyList;
       WHILE (proxy # NIL) DO
         instr := proxy. instr;
-        w. StartTag ("tr", FALSE);
-        WriteRowClass (count);
-        w. StartTag ("td", TRUE);
-        w. AttrStringLatin1 ("class", "ssaRes");
-        id := s. resultNames. Get (instr);
-        str := "res_";
-        Strings.Append (id(String.String). array^, str);
-        w. StartTag ("a", TRUE);
-        w. AttrStringLatin1 ("id", str);
-        w. Write ("(");
-        w. WriteLatin1 (id(String.String). array^);
-        w. Write (")");
-        w. EndTag;  (* a *)
-        w. EndTag;  (* td *)
-        
-        w. StartTag ("td", TRUE);
-        w. AttrStringLatin1 ("class", "ssaInstr");
-        w. StartTag ("b", TRUE);
-        instr. GetOpcodeName (str);
-        w. WriteLatin1 (str);
-        w. EndTag;  (* b *)
-        w. Write (" ");
-        opnd := instr. opndList;
-        WHILE (opnd # NIL) DO
-          IF (opnd # instr. opndList) THEN
-            w. Write (", ");
+
+        IF ~OmitInstr (instr) THEN
+          w. StartTag ("tr", FALSE);
+          WriteRowClass (count);
+          w. StartTag ("td", TRUE);
+          w. AttrStringLatin1 ("class", "ssaRes");
+
+          res := instr;
+          WHILE (res # NIL) DO
+            IF (res # instr) THEN
+              w. Write (", ");
+            END;
+            w. StartTag ("span", TRUE);
+            Result.GetName (res. class, str);
+            w. AttrStringLatin1 ("title", str);
+            
+            id := s. resultNames. Get (res);
+            str := "res_";
+            Strings.Append (id(String.String). array^, str);
+            w. StartTag ("a", TRUE);
+            w. AttrStringLatin1 ("id", str);
+            w. Write ("(");
+            w. WriteLatin1 (id(String.String). array^);
+            w. Write (")");
+            w. EndTag;  (* a *)
+            
+            w. EndTag;  (* span *)
+            res := res. nextResult;
           END;
-          Ref (opnd. arg);
-          opnd := opnd. nextOpnd
+          w. Write8 (" &larr; ");
+          w. EndTag;  (* td *)
+          
+          w. StartTag ("td", TRUE);
+          w. AttrStringLatin1 ("class", "ssaInstr");
+          w. StartTag ("b", TRUE);
+          instr. GetOpcodeName (str);
+          w. WriteLatin1 (str);
+          w. EndTag;  (* b *)
+          w. Write (" ");
+          opnd := instr. opndList;
+          WHILE (opnd # NIL) DO
+            IF (opnd # instr. opndList) THEN
+              w. Write (", ");
+            END;
+            Ref (opnd);
+            opnd := opnd. nextOpnd
+          END;
+          w. EndTag;  (* td *)
+          w. EndTag;  (* tr *)
+          INC (count);
         END;
-        w. EndTag;  (* td *)
-        w. EndTag;  (* tr *)
-        
-        INC (count);
         proxy := proxy. nextProxy
       END;
     END WriteInstrList;
@@ -124,29 +201,34 @@ PROCEDURE WriteBlocks (s: Servlet; b: Schedule.Block);
   PROCEDURE WriteTarget (dest: Schedule.Jump);
     VAR
       id: Object.Object;
+      str: ARRAY 64 OF CHAR;
     BEGIN
-      w. StartTag ("b", TRUE);
       id := s. resultNames. Get (dest. dest);
+      COPY (id(String.String). array^, str);
+      Strings.Insert ("#", 0, str);
+      w. StartTag ("a", TRUE);
+      w. AttrStringLatin1 ("href", str);
+      w. AttrStringLatin1 ("class", "blockRef");
+      w. StartTag ("b", TRUE);
       w. WriteLatin1 (id(String.String). array^);
       w. EndTag;  (* b *)
+      w. EndTag;  (* a *)
     END WriteTarget;
   
   BEGIN
     w := s. w;
-    IF (b # s. root) THEN
-      w. EndTag;  (* preceding tbody *)
-    END;
-    w. StartTag ("tbody", FALSE);
-    w. AttrString ("class", "ssaBlock");
     w. StartTag ("tr", FALSE);
     w. StartTag ("td", TRUE);
     w. AttrString ("class", "ssaBlockHead");
     w. AttrInt ("colspan", 2);
-    w. StartTag ("b", TRUE);
     id := s. resultNames. Get (b);
+    w. StartTag ("a", TRUE);
+    w. AttrStringLatin1 ("id", id(String.String). array^);
+    w. StartTag ("b", TRUE);
     w. WriteLatin1 (id(String.String). array^);
     w. Write (":");
     w. EndTag;  (* b *)
+    w. EndTag;  (* a *)
     w. EndTag;  (* td *)
     w. EndTag;  (* tr *)
     count := 0;
@@ -167,8 +249,8 @@ PROCEDURE WriteBlocks (s: Servlet; b: Schedule.Block);
     | b: Schedule.BranchBlock DO
       w. AttrString ("class", "ssaBranch");
       w. Write ("if ");
-      Ref (b. predicate. arg);
-      w. Write (" ");
+      Ref (b. predicate);
+      w. Write (" then ");
       IF b. branchOnTrue THEN
         WriteTarget (b. branchTo);
       ELSE
@@ -212,21 +294,24 @@ PROCEDURE AssignNames (dict: Dictionary.Dictionary; b: Schedule.Block;
     
     proxy := b. proxyList;
     WHILE (proxy # NIL) DO
-      subcount := 0;
-      res := proxy. instr;
-      WHILE (res # NIL) DO
-        IntStr.IntToStr (count, str);
-        IF (subcount # 0) THEN
-          IntStr.IntToStr (subcount, substr);
-          Strings.Append (".", str);
-          Strings.Append (substr, str);
+      IF ~OmitInstr (proxy. instr) THEN
+        subcount := 0;
+
+        res := proxy. instr;
+        WHILE (res # NIL) DO
+          IntStr.IntToStr (count, str);
+          IF (subcount # 0) THEN
+            IntStr.IntToStr (subcount, substr);
+            Strings.Append (".", str);
+            Strings.Append (substr, str);
+          END;
+          INC (subcount);
+          dict. Set (res, String.New (str));
+          res := res. nextResult
         END;
-        INC (subcount);
-        dict. Set (res, String.New (str));
-        res := res. nextResult
+        INC (count);
       END;
       
-      INC (count);
       proxy := proxy. nextProxy
     END;
     
@@ -266,27 +351,24 @@ PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
     w. StartTag ("style", TRUE);
     w. AttrString ("type", "text/css");
     w. Write ("body { background-color: white; font-family: sans-serif }");
-    w. Write ("table.ssaCode { border-collapse: collapse; border-width: thin; border-style: solid; border-color: black }");
-    w. Write (".ssaBlock { }");
-    w. Write ("td.ssaBlockHead { border-style: solid; border-top-width: medium; border-bottom-width: medium }");
+    w. Write ("table.ssaCode { border-collapse: collapse; border: thin solid black }");
+    w. Write ("td.ssaBlockHead { border: medium solid }");
     w. Write ("td.ssaRes { text-align: right; }");
     w. Write ("td.ssaInstr { text-align: left; }");
-    w. Write ("td.ssaJump { border-style: dashed; border-width: 0; border-top-width: thin; }");
-    w. Write ("td.ssaBranch { border-style: dashed; border-width: 0; border-top-width: thin; }");
-    w. Write ("tr.normal0 { background-color:#DDDDDD }");
-    w. Write ("tr.normal1 { background-color:#BBBBFF }");
+    w. Write ("td.ssaJump { border: 0 dashed; border-top-width: thin; }");
+    w. Write ("td.ssaBranch { border: 0 dashed; border-top-width: thin; }");
+    w. Write ("tr.normal0 { background-color:#E0FFE0 }");
+    w. Write ("tr.normal1 { background-color:#D0D0FF }");
     w. Write (".highlight { background-color:#FF9999 }");
+    w. Write ("a.resRef:hover { background-color:#FF9999 }");
+    w. Write ("a.blockRef { color: black }");
     w. EndTag;  (* style *)
     w. StartTag ("script", TRUE);
     w. AttrString ("type", "text/javascript");
 
     (* highlight instruction given a "href" to one of its results *)
-    w. Write ('function hlInstr(href) {document.getElementById(href.slice(1).split(".")[0]).parentNode.parentNode.className = "highlight"}');
-    w. Write ('function nmInstr(href) {with(document.getElementById(href.slice(1).split(".")[0]).parentNode.parentNode) {className = getAttribute("myclass")}}');
-    (* highlight the current anchor *)
-    w. Write ('function hlThis(e) {e.className = "highlight"}');
-    w. Write ('function nmThis(e) {e.className = e.parentNode.className}');
-    
+    w. Write ('function hlInstr(href) {document.getElementById(href.slice(1).split(".")[0]).parentNode.parentNode.parentNode.className = "highlight"}');
+    w. Write ('function nmInstr(href) {with(document.getElementById(href.slice(1).split(".")[0]).parentNode.parentNode.parentNode) {className = getAttribute("myclass")}}');
     w. EndTag;  (* script *)
 
     w. StartTag ("title", TRUE);
@@ -316,7 +398,6 @@ PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
       w. StartTag ("table", FALSE);
       w. AttrString ("class", "ssaCode");
       WriteBlocks (s, s. root);
-      w. EndTag;  (* last tbody *)
       w. EndTag;  (* table *)
     END;
     
