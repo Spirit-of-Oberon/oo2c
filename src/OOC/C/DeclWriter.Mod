@@ -73,16 +73,16 @@ CONST
   (**This type is mapped to the name @code{OOC_INT64}, a signed integer type
      holding (at least) 64 bits.  *)
   uint8* = 6;
-  (**This type is mapped to the name @code{OOC_INT8}, a unsigned integer type
+  (**This type is mapped to the name @code{OOC_UINT8}, a unsigned integer type
      holding (at least) 8 bits.  *)
   uint16* = 7;
-  (**This type is mapped to the name @code{OOC_INT16}, a unsigned integer type
+  (**This type is mapped to the name @code{OOC_UINT16}, a unsigned integer type
      holding (at least) 16 bits.  *)
   uint32* = 8;
-  (**This type is mapped to the name @code{OOC_INT32}, a unsigned integer type
+  (**This type is mapped to the name @code{OOC_UINT32}, a unsigned integer type
      holding (at least) 32 bits.  *)
   uint64* = 9;
-  (**This type is mapped to the name @code{OOC_INT64}, a unsigned integer type
+  (**This type is mapped to the name @code{OOC_UINT64}, a unsigned integer type
      holding (at least) 64 bits.  *)
   char8* = 10;
   (**This type is mapped to the name @code{OOC_CHAR8}, the type used to store 8
