@@ -1,0 +1,12 @@
+MODULE NoCopy5;
+
+PROCEDURE F (VAR x: ARRAY OF CHAR);
+  BEGIN
+  END F;
+
+PROCEDURE P(a[NO_COPY]: ARRAY OF CHAR);
+  BEGIN
+    F(a);
+  END P;
+
+END NoCopy5.

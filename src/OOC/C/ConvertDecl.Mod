@@ -266,7 +266,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       name := Naming.NameOfDeclaration (item);
       ctype := ConvertType (w, item. type, item. srcCodeType);
       IF (mode = modeFormalParameter) & item. isParameter THEN
-        IF ~item. isVarParam & item. isPassPerReference THEN
+        IF ~item.isVarParam & item.isPassPerReference & item.hasLocalCopy THEN
           (* for non-scalar values that are passed to a value parameter, the
              name of the address passed from the caller is extended; this way,
              it can be distinguished from the name of the local copy of the

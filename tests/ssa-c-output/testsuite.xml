@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; const8">-->
+  select ="&SetupTestCasesWithOut; noCopy7 noCopy8">-->
   
   &TestSetupWithOut;
     
@@ -205,5 +205,15 @@
       expressions within the guarded commands conflict with no other
       live ranges.
     </test>
+
+    
+    <test id="noCopy7" type="accept" file="NoCopy7.Mod">
+      The callee should not create a local copy of the
+      <code>NO_COPY</code> open array parameter.
+    </test>    
+    <test id="noCopy8" type="accept" file="NoCopy8.Mod">
+      The callee should not create a local copy of the
+      <code>NO_COPY</code> record parameter.
+    </test>    
   </testcases>
 </testsuite-ext>

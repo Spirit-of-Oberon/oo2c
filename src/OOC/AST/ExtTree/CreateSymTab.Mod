@@ -358,6 +358,7 @@ PROCEDURE (v: Visitor) VisitVarDecl* (varDecl: ExtTree.VarDecl);
     type: Sym.Type;
     var: Sym.VarDecl;
     i: LONGINT;
+    flags: AST.Node;
   BEGIN
     type := GetType (v, varDecl. type);
     FOR i := 0 TO varDecl. identList. len-1 BY 3 DO
@@ -366,7 +367,11 @@ PROCEDURE (v: Visitor) VisitVarDecl* (varDecl: ExtTree.VarDecl);
         EndOfType (varDecl. type),
         ExportMark (varDecl. identList. n[i]), 
         varDecl. identList. n[i](ExtTree.IdentDef). docString,
-        FALSE, FALSE, FALSE, type)
+        FALSE, FALSE, FALSE, type);
+      flags := varDecl. identList. n[i+1];
+      IF (flags # NIL) THEN
+        AddFlags(var, flags(ExtTree.Flags));
+      END;
     END
   END VisitVarDecl;
 
@@ -387,6 +392,7 @@ PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
     type: Sym.Type;
     var: Sym.VarDecl;
     i: LONGINT;
+    flags: AST.Node;
   BEGIN
     type := GetType (v, fpSection. type);
     FOR i := 0 TO fpSection. identList. len-1 BY 3 DO
@@ -394,7 +400,11 @@ PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
         GetName (fpSection. identList. n[i]),
         EndOfType (fpSection. type), Sym.nameNotExported,
         fpSection. identList. n[i](ExtTree.IdentDef). docString,
-        TRUE, FALSE, fpSection. var # NIL, type)
+        TRUE, FALSE, fpSection. var # NIL, type);
+      flags := fpSection. identList. n[i+1];
+      IF (flags # NIL) THEN
+        AddFlags(var, flags(ExtTree.Flags));
+      END;
     END
   END VisitFPSection;
 

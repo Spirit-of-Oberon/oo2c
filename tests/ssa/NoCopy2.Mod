@@ -1,0 +1,6 @@
+MODULE NoCopy2;
+
+PROCEDURE P(VAR a[NO_COPY]: ARRAY OF CHAR);
+  END P;
+
+END NoCopy2.

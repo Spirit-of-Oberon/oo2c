@@ -1,0 +1,7 @@
+MODULE NoCopy7;
+
+PROCEDURE P(a[NO_COPY]: ARRAY OF CHAR);
+  BEGIN
+  END P;
+
+END NoCopy7.

@@ -96,6 +96,7 @@ CONST
   flagNoDescriptor* = 3;
   flagNotExtensible* = 4;
   flagCString* = 5;
+  flagNilCompat* = 6;
   
 CONST
   nameNotExported* = 0;
@@ -650,6 +651,17 @@ TYPE
        procedure, instead of the arguments value.  @ofield{isVarParam} implies
        @ofield{isPassPerReference}.  Note: This field may hold the wrong
        value until @ofield{type} has been set to its final value.  *)
+    hasLocalCopy*: BOOLEAN;
+    (**For record and array parameters that are passed by value, this field
+       indicates if a local copy of the argument has to be created.  *)
+    isReadOnly*: BOOLEAN;
+    (**This field determines if a parameter should be considered read-only
+       within a procedure.  It is @code{TRUE} if @samp{NO_COPY} is set for
+       the parameter.  *)
+    permitArgumentNIL*: BOOLEAN;
+    (**If set for a parameter, then the value @code{NIL} may be passed to this
+       parameter.  This is only possible if arguments for this parameter are
+       passed by reference, not by value.  *)
     supplementArgs-: BOOLEAN;
     (**For a parameter, this is @code{FALSE} if a call to the procedure
        should omit any type tag or length information for this formal
@@ -915,6 +927,8 @@ PROCEDURE (item: Item) AddFlag* (name: Name);
       id := flagNotExtensible;
     ELSIF (name.str^ = "CSTRING") THEN
       id := flagCString;
+    ELSIF (name.str^ = "NIL_COMPAT") THEN
+      id := flagNilCompat;
     ELSE
       id := flagUnknownName;
     END;
@@ -1434,6 +1448,14 @@ PROCEDURE (varDecl: VarDecl) SetType* (type: Type);
     varDecl. isPassPerReference :=
         varDecl. isParameter &
         (varDecl. isVarParam OR PassPerReference (type));
+    varDecl. hasLocalCopy :=
+        varDecl. isParameter &
+        ~varDecl. isVarParam &
+        PassPerReference (type);
+    varDecl. isReadOnly :=
+        varDecl. isPassPerReference &
+        ~varDecl. isVarParam &
+        ~varDecl. hasLocalCopy;
   END SetType;
 
 PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
@@ -1447,6 +1469,7 @@ PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
     varDecl. isParameter := isParameter;
     varDecl. isReceiver := isReceiver;
     varDecl. isVarParam := isVarParam;
+    varDecl. permitArgumentNIL := FALSE;
     varDecl. supplementArgs := TRUE;
     IF isReceiver THEN
       parent(FormalPars). receiver := varDecl
@@ -1462,6 +1485,10 @@ PROCEDURE (varDecl: VarDecl) Store* (w: Object.Writer);
     w. WriteBool (varDecl. isParameter);
     w. WriteBool (varDecl. isReceiver);
     w. WriteBool (varDecl. isVarParam);
+    w. WriteBool (varDecl. isPassPerReference);
+    w. WriteBool (varDecl. hasLocalCopy);
+    w. WriteBool (varDecl. isReadOnly);
+    w. WriteBool (varDecl. permitArgumentNIL);
     w. WriteBool (varDecl. supplementArgs);
   END Store;
 
@@ -1476,6 +1503,10 @@ PROCEDURE (varDecl: VarDecl) Load* (r: Object.Reader);
     r. ReadBool (varDecl. isParameter);
     r. ReadBool (varDecl. isReceiver);
     r. ReadBool (varDecl. isVarParam);
+    r. ReadBool (varDecl. isPassPerReference);
+    r. ReadBool (varDecl. hasLocalCopy);
+    r. ReadBool (varDecl. isReadOnly);
+    r. ReadBool (varDecl. permitArgumentNIL);
     r. ReadBool (varDecl. supplementArgs);
     
     IF varDecl. isParameter THEN

@@ -1,0 +1,10 @@
+MODULE NoCopy8;
+
+TYPE
+  R = RECORD a: INTEGER; END;
+  
+PROCEDURE P(a[NO_COPY]: R);
+  BEGIN
+  END P;
+
+END NoCopy8.

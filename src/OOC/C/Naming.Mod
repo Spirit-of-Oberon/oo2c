@@ -11,7 +11,8 @@ CONST
   suffixPassPerRef* = "__ref";
   (**Suffix attached to parameter names if they are value parameters that
      are passed by reference to the callee.  The callee must create and
-     populate its own copy of the parameter.  *)
+     populate its own copy of the parameter if necessary.  For Oberon-2
+     source code, NO_COPY prevents creation of a local copy in the callee.  *)
 
 VAR
   keywords: Dictionary.Dictionary;

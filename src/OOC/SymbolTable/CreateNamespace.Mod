@@ -21,6 +21,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
+  Log,
   ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Predef, OOC:SymbolTable:ImportModules, OOC:Doc:ResolveRef;
@@ -739,7 +740,24 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           WHILE (flag # NIL) DO
             WITH item: Sym.VarDecl DO
               CASE flag.id OF
-                (*| Sym.flagNoCopy:*)
+              | Sym.flagNoCopy:
+                IF ~item.isParameter OR
+                   item.isVarParam OR
+                   ~((item.type IS Sym.Array) OR
+                     (item.type IS Sym.Record)) THEN
+                  (* NO_COPY is only applicable to value parameters of type
+                     record or array *)
+                  InvalidFlag(flag, invalidModifierFlag);
+                ELSE
+                  SetFlag(item.hasLocalCopy, FALSE);
+                  item.isReadOnly := TRUE;
+                END;
+              | Sym.flagNilCompat:
+                IF ~item.isPassPerReference THEN
+                  InvalidFlag(flag, invalidModifierFlag);
+                ELSE
+                  SetFlag(item.permitArgumentNIL, TRUE);
+                END;
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;

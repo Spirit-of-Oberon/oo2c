@@ -1,0 +1,30 @@
+NO_COPY (value parameter)
+-------
+
+REJECT
+
+  1) flag is set for a variable declaration  [NoCopy1]
+  2) flag is set for VAR parameter  [NoCopy2]
+  3) flag is set for a scalar type  [NoCopy3]
+  4) assignment to a NO_COPY parameter   [NoCopy4]
+  5) passing a NO_COPY parameter to a VAR argument in a call  [NoCopy5]
+  6) passing an element of a NO_COPY parameter to a VAR argument
+     in a call  [NoCopy6]
+
+  NOTE: Checks for 4-6 are currently disabled, because the libraries
+  pass NO_COPY data to `VAR x: ARRAY OF BYTE' parameters.  This cannot
+  be easily changed to reflect the value nature of the parameters,
+  because a parameter `x: ARRAY OF BYTE' is not special in O2/oo2c v1.
+
+ACCEPT
+
+  1) flag is set for a value parameter of array type  [ssa-c-output: NoCopy7]
+  2) flag is set for a value parameter of record type  [ssa-c-output: NoCopy8]
+
+
+ABSTRACT (record, tb proc)
+NO_DESCRIPTOR (array, record)
+NO_LENGTH_INFO (array)
+NOT_EXTENSIBLE (record)
+CSTRING (character array)
+

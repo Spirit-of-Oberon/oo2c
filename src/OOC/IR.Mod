@@ -1061,6 +1061,7 @@ CONST
   tooManyArguments = 39;
   notVarParCompatible = 40;
   redirectFailed = 41;
+  readOnlyParameter = 42;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1209,6 +1210,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Actual parameter not compatible with formal VAR parameter"
     | redirectFailed:
       t := "Internal error: Name redirection failed"
+    | readOnlyParameter:
+      t := "This parameter is read-only"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -3018,6 +3021,10 @@ PROCEDURE (b: Builder) AssertVar (expr: Expression);
     WITH expr: Var DO
       IF TR.IsReadOnly (b. module, expr. decl) THEN
         b. ErrSym (importedReadOnly, expr. sym);
+(*  FIXME... disabled, because the writer classes use VAR x:ARRAY OF BYTE
+             as value input parameters
+      ELSIF (expr.decl IS Sym.VarDecl) & expr.decl(Sym.VarDecl).isReadOnly THEN
+        b.ErrSym(readOnlyParameter, expr.sym);*)
       END;
     | expr: Deref DO
       (* a pointer dereference is always a variable *)
@@ -3813,7 +3820,7 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
       fparIndex := 0;
       WHILE (fparIndex # LEN (formalPars^)) DO
         fpar := formalPars[fparIndex];
-        IF fpar. isPassPerReference & ~fpar. isVarParam THEN
+        IF fpar. hasLocalCopy THEN
           AddStatm (b. NewCopyParameter (sym, b. NewVar (NIL, fpar)))
         END;
         INC (fparIndex)

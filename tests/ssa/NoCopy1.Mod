@@ -1,0 +1,6 @@
+MODULE NoCopy1;
+
+VAR
+  a[NO_COPY]: ARRAY 128 OF CHAR;
+  
+END NoCopy1.
