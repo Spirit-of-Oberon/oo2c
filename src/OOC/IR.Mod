@@ -4213,8 +4213,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
             & IsString(left.type) & IsString(right.type) THEN
         result := b.NewCompare(sym, left, right);
 
-      ELSIF (id IN {Id.plus}) & (left IS Const) & (right IS Const) 
-            & (isChar OR TR.IsStringConst(left.type)) THEN
+      ELSIF (id = Id.plus) & 
+            (isChar OR
+             TR.IsStringConst(left.type) OR
+             (left.type = b.stringType)) THEN
         NEW(exprList, 2);
         exprList[0] := left;
         exprList[1] := right;
