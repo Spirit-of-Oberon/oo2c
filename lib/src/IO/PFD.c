@@ -86,10 +86,10 @@ OOC_INT32 IO_PFD__ChannelDesc_FileDescriptor(IO_PFD__Channel ch) {
   return ch->fd;
 }
 
-static IO_PFD__Channel stdchannel(int fd) {
+static IO__ByteChannel stdchannel(int fd) {
   IO_PFD__Channel ch = RT0__NewObject(OOC_TYPE_DESCR(IO_PFD,ChannelDesc));
   IO_PFD__Init(ch, fd);
-  return ch;
+  return (IO__ByteChannel)ch;
 }
 
 void OOC_IO_PFD_init(void) {

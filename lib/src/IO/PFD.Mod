@@ -8,14 +8,12 @@ TYPE
   Channel* = POINTER TO ChannelDesc;
   ChannelList = ARRAY OF Channel;
   ChannelDesc = RECORD
-    (**Note: Unlikes @otype{*Files.File}, this class does not do any buffering
-       by itself.  *)
     (IO.ByteChannelDesc)
     fd: IO.FileDescriptor;
   END;
 
 VAR
-  stdin-, stdout-, stderr-: Channel;
+  stdin-, stdout-, stderr-: IO.ByteChannel;
   
 PROCEDURE Init*(ch: Channel; fd: IO.FileDescriptor);
 
