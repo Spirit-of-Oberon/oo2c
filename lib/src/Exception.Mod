@@ -100,13 +100,6 @@ IMPORT
    should be large enough to amortize the costs of the @code{TRY} for all
    possible targets.  *)
 
-(*
-   Each @code{TRY} block pushes an exception handler on a stack managed as a
-   global variable of module Exception.  If threading is ever supported,
-   then each thread needs its own pointer to the top of this stack, as
-   well as its own `current' exception pointer.
-*)
-
 CONST
   maxBacktraceSize = 20+1;
   
