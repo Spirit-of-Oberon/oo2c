@@ -1011,8 +1011,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   
   PROCEDURE RepeatStatm (repeatStatm: IR.RepeatStatm);
     VAR
-      start, end: SSA.Instr;
-      exit: SSA.Result;
+      start, end, exit, select, selectExit: SSA.Instr;
+      guard: SSA.Result;
     BEGIN
       start := pb. AddInstr (Opcode.loopStart, Opcode.scNone);
       start. AddOpnd (s, Opnd.store);
@@ -1020,24 +1020,40 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       
       (* evaluate loop body, followed by the exit condition *)
       s := StatmSeq (pb, s, repeatStatm. body);
-      exit := Expression (repeatStatm. exitCondition);
+      guard := Expression (repeatStatm. exitCondition);
+
+      (* create "select" with "exit" *)
+      exit := pb. AddInstr (Opcode.exit, Opcode.scNone);
+      exit. AddOpnd (s, Opnd.store);
+      select := pb. AddInstr (Opcode.select, Opcode.scNone);
+      select. AddOpnd (guard, Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
+      select. AddOpnd (exit. AddResult (Result.store), Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      select. AddOpnd (s, Opnd.arg);
+      s := select. AddResult (Result.store);
       
       (* create "loop-end" instruction *)
       end := pb. AddInstr (Opcode. loopEnd, Opcode.scNone);
       end. AddOpnd (start, Opnd.arg);
       end. AddOpnd (s, Opnd.store);
-      end. AddOpnd (exit, Opnd.arg);
+      end. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       end. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
 
       (* add backward feed of `store' to "loop-end" *)
       AddStoreBackwardFeed (pb, end, s);
+
+      (* create "select-exit" *)
+      selectExit := pb. AddInstr (Opcode.selectExit, Opcode.scNone);
+      selectExit. AddOpnd (end, Opnd.arg);
+      selectExit. AddOpnd (exit. nextResult, Opnd.storeExit);
       
-      s := end. AddResult (Result.store)
+      s := selectExit. AddResult (Result.store)
     END RepeatStatm;
   
   PROCEDURE WhileStatm (whileStatm: IR.WhileStatm);
     VAR
-      start, end, select: SSA.Instr;
+      start, end, select, exit, selectExit: SSA.Instr;
       guard1, guard2, storeAfterGuard1: SSA.Result;
     BEGIN
       (* WHILE e DO s END
@@ -1061,30 +1077,46 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := StatmSeq (pb, s, whileStatm. body);
       guard2 := Expression (whileStatm. guard);
       
+      (* create "select" with "exit" *)
+      exit := pb. AddInstr (Opcode.exit, Opcode.scNone);
+      exit. AddOpnd (s, Opnd.store);
+      select := pb. AddInstr (Opcode.select, Opcode.scNone);
+      select. AddOpnd (guard2, Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
+      select. AddOpnd (s, Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      select. AddOpnd (exit. AddResult (Result.store), Opnd.arg);
+      s := select. AddResult (Result.store);
+      
       (* create "loop-end" instruction *)
       end := pb. AddInstr (Opcode. loopEnd, Opcode.scNone);
       end. AddOpnd (start, Opnd.arg);
       end. AddOpnd (s, Opnd.store);
-      end. AddOpnd (guard2, Opnd.arg);
+      end. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
       end. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       
       (* add backward feed of `store' to "loop-end" *)
       AddStoreBackwardFeed (pb, end, s);
       
+      (* create "select-exit" *)
+      selectExit := pb. AddInstr (Opcode.selectExit, Opcode.scNone);
+      selectExit. AddOpnd (end, Opnd.arg);
+      selectExit. AddOpnd (exit. nextResult, Opnd.storeExit);
+      
       (* create the "select" for the IF statement around the loop *)
       select := pb. AddInstr (Opcode.select, Opcode.scNone);
       select. AddOpnd (guard1, Opnd.arg);
       select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
-      select. AddOpnd (end. AddResult (Result.store), Opnd.arg);
+      select. AddOpnd (selectExit. AddResult (Result.store), Opnd.arg);
       select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       select. AddOpnd (storeAfterGuard1, Opnd.arg);
-
+      
       s := select. AddResult (Result.store)
     END WhileStatm;
 
   PROCEDURE ForStatm (forStatm: IR.ForStatm);
     VAR
-      start, end, select, dummy: SSA.Instr;
+      start, end, select, exit, selectExit, dummy: SSA.Instr;
       guard1, guard2, storeAfterGuard1, v, endValue, stepValue: SSA.Result;
 
     PROCEDURE Guard (bound: SSA.Result): SSA.Instr;
@@ -1145,21 +1177,37 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       Chain (pb. AddSetInstr (v(SSA.Instr), dummy));
       guard2 := Guard (endValue);
       
+      (* create "select" with "exit" *)
+      exit := pb. AddInstr (Opcode.exit, Opcode.scNone);
+      exit. AddOpnd (s, Opnd.store);
+      select := pb. AddInstr (Opcode.select, Opcode.scNone);
+      select. AddOpnd (guard2, Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
+      select. AddOpnd (s, Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      select. AddOpnd (exit. AddResult (Result.store), Opnd.arg);
+      s := select. AddResult (Result.store);
+      
       (* create "loop-end" instruction *)
       end := pb. AddInstr (Opcode. loopEnd, Opcode.scNone);
       end. AddOpnd (start, Opnd.arg);
       end. AddOpnd (s, Opnd.store);
-      end. AddOpnd (guard2, Opnd.arg);
+      end. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
       end. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       
       (* add backward feed of `store' to "loop-end" *)
       AddStoreBackwardFeed (pb, end, s);
       
+      (* create "select-exit" *)
+      selectExit := pb. AddInstr (Opcode.selectExit, Opcode.scNone);
+      selectExit. AddOpnd (end, Opnd.arg);
+      selectExit. AddOpnd (exit. nextResult, Opnd.storeExit);
+      
       (* create the "select" for the IF statement around the loop *)
       select := pb. AddInstr (Opcode.select, Opcode.scNone);
       select. AddOpnd (guard1, Opnd.arg);
       select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
-      select. AddOpnd (end. AddResult (Result.store), Opnd.arg);
+      select. AddOpnd (selectExit. AddResult (Result.store), Opnd.arg);
       select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       select. AddOpnd (storeAfterGuard1, Opnd.arg);
 

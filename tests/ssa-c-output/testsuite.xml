@@ -79,21 +79,23 @@
       Incrementing a local variable within a loop.  The variable
       should be kept in a register.
     </test>
-    
     <test id="var7b" type="run" file="Var7b.Mod" output="Var7b.Ref">
       Incrementing a <em>global</em> variable within a loop.  The
       variable should not be read, although its value must be written
       with each iteration.  (Or, if the compiler is clever enough,
       once after the final iteration.)
     </test>
-
     <test id="var7c" type="run" file="Var7c.Mod" output="Var7c.Ref">
       Like <code>var7</code>, with the added complication that the
       life time of a local variable extends across an <code>IF</code>
       statement.  The variable's value should not be passed through
       the loop.
     </test>
-
+    <test id="var7d" type="run" file="Var7d.Mod" output="Var7d.Ref">
+      Equivalent to <code>var7</code>, but the loop uses a
+      <code>LOOP</code> statement.
+    </test>
+    
     <test id="var8" type="run" file="Var8.Mod">
       Zeroing a character array using a <code>FOR</code> loop.  The
       loop variable should be kept in a register from beginning to end.
