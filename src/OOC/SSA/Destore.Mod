@@ -73,12 +73,24 @@ IMPORT
    A ``set'' is made obsolete by replacing all ``get'' instructions reading its
    source value from the variable with the source value itself.  *)
 
-
+CONST
+  unknownValue = NIL;
+  
 TYPE
   OriginMap* = POINTER TO OriginMapDesc;
+  DefArray = POINTER TO ARRAY OF ARRAY OF SSA.Instr;
+  OutArray = POINTER TO ARRAY OF SSA.Result;
   OriginMapDesc = RECORD
     (SSA.NodeDesc)
-    def: POINTER TO ARRAY OF ARRAY OF SSA.Instr; 
+    (* for a select statement and variable `v', the definining instruction
+       for this variable and the `nth' input path is `def[v,n]'; if there
+       is no definining instruction, then this element is `unknownValue' and
+       the variable must be read from memory
+
+       if the select has been processed for a variable, then the end result
+       is stored in `selectOut[v]' *)
+    def: DefArray;
+    selectOut: OutArray;
   END;
   
 PROCEDURE GetVar (instr: SSA.Instr): Item.VarDecl;
@@ -154,11 +166,13 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         BEGIN
           NEW (originMap);
           SSA.InitNode (originMap);
-          NEW (originMap. def, numPaths, numVars);
-          FOR i := 0 TO numPaths-1 DO
-            FOR j := 0 TO numVars-1 DO
-              originMap. def[i, j] := NIL;
+          NEW (originMap. def, numVars, numPaths);
+          NEW (originMap. selectOut, numVars);
+          FOR i := 0 TO numVars-1 DO
+            FOR j := 0 TO numPaths-1 DO
+              originMap. def[i, j] := unknownValue;
             END;
+            originMap. selectOut[i] := NIL;
           END;
           RETURN originMap
         END NewOriginMap;
@@ -168,6 +182,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         BEGIN
           RETURN (var. Procedure() # pb. procDecl)
         END ExternalVisibility;
+
+      PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
+        BEGIN
+          RETURN (select. SizeOpndList() DIV 2)
+        END NumberOfPaths;
       
       BEGIN
         use := storeOut. useList;
@@ -198,7 +217,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
                  select for the first time *)
               Trace (origin, instr, instr. GetResultClass (Result.store));
               
-              originMap := NewOriginMap (instr. SizeOpndList() DIV 2, numVars);
+              originMap := NewOriginMap (NumberOfPaths (instr), numVars);
               instr. info := originMap
             ELSE
               originMap := instr. info(OriginMap)
@@ -206,12 +225,13 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
 
             (* set the instruction defining the store argument `use'
                for the variable identified by `origin. marker' *)
-            originMap. def[use. OpndIndex() DIV 2-1, origin. marker]
+            originMap. def[origin. marker, use. OpndIndex() DIV 2-1]
                 := lastDefinition;
             
           | Opcode.call:
             (* FIXME... detect when a call can modify our variable; for now
-               be pessimistic: assume that this call read and writes the var *)
+               be pessimistic: assume that this call may read and write
+               the var *)
             origin. info := origin;
             
           | Opcode.return:
@@ -252,6 +272,63 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
        of the original "get" instruction.  *)
       VAR
         instr: SSA.Instr;
+
+      PROCEDURE TraceSelect (select: SSA.Instr; var: LONGINT;
+                             subclass: Opcode.Subclass): SSA.Result;
+        VAR
+          origin: OriginMap;
+          i, memoryCount, registerCount: LONGINT;
+          collect: SSA.Instr;
+
+        PROCEDURE GetCollect (select: SSA.Instr; pathNum: LONGINT): SSA.Instr;
+          VAR
+            opnd: SSA.Opnd;
+            collect: SSA.Instr;
+          BEGIN
+            opnd := select. NthOpnd (pathNum*2+2);
+            IF (opnd. arg. instr. opcode = Opcode.collect) THEN
+              RETURN opnd. arg.instr
+            ELSE
+              collect := pb. AddInstr (Opcode.collect, Opcode.scNone);
+              collect. AddOpnd (opnd. arg, Opnd.store);
+              opnd. ReplaceOpnd (collect. AddResult (Result.store));
+              RETURN collect
+            END;
+          END GetCollect;
+
+        PROCEDURE GetValue (source: SSA.Instr): SSA.Result;
+          BEGIN
+            CASE source. opcode OF
+            | Opcode.set:
+              RETURN source. GetArgClass (Opnd.sourceValue)
+            | Opcode.select:
+              RETURN TraceSelect (source, var, subclass)
+            END;
+          END GetValue;
+        
+        BEGIN
+          origin := select. info(OriginMap);
+          IF (origin. selectOut[var] = NIL) THEN
+            memoryCount := 0; registerCount := 0;
+            FOR i := 0 TO LEN (origin. def^, 1)-1 DO
+              IF (origin. def[var, i] = unknownValue) THEN
+                INC (memoryCount)
+              ELSE
+                INC (registerCount)
+              END;
+            END;
+            
+            ASSERT (memoryCount = 0);
+            FOR i := 0 TO LEN (origin. def^, 1)-1 DO
+              collect := GetCollect (select, i);
+              collect. AddOpnd (GetValue (origin. def[var, i]), Opnd.arg);
+            END;
+            origin. selectOut[var] :=
+                select. AddResultSubclass (Result.selectValue, subclass);
+          END;
+          RETURN origin. selectOut[var]
+        END TraceSelect;
+      
       BEGIN
         instr := storeIn. instr;
         CASE instr. opcode OF
@@ -269,10 +346,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           END;
           
         | Opcode.enter:
-          RETURN NIL;  (* ... *)
+          RETURN NIL;  (* undefined value *)
           
         | Opcode.select:
-          RETURN NIL;  (* ... *)
+          RETURN TraceSelect (instr, get. marker, get. subclass);
 
         | Opcode.call:
           (* FIXME... detect when a call can modify our variable; for now
@@ -296,19 +373,21 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
   
   PROCEDURE RemoveUnusedSet;
     VAR
-      instr: SSA.Instr;
+      instr, next: SSA.Instr;
       storeOut: SSA.Result;
     BEGIN
       instr := pb. instrList;
       WHILE (instr # NIL) DO
+        next := instr. nextInstr;
         IF (instr. marker >= 0) &
            (instr. opcode = Opcode.set) &
            (instr. info # instr) THEN
           ASSERT (instr. opcode = Opcode.set);
           storeOut := instr. GetResultClass (Result.store);
           storeOut. ReplaceUses (instr. GetArgClass (Opnd.store));
+          pb. DeleteInstr (instr);
         END;
-        instr := instr. nextInstr
+        instr := next
       END;
     END RemoveUnusedSet;
   

@@ -4,7 +4,7 @@
 
 <testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module var1 var2">
+  select ="prepare_out_module var1 var2 var3 var3b">
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -20,12 +20,21 @@
       memory, the known value should be used, and the local variable
       <code>F.y</code> should not be read.
     </test>
-  </testcases>
-
-  <testcases profile="OOC/SSA: Quality Check C Code" default-lang="O2">
+    
     <test id="var2" type="run" file="Var2.Mod" output="Var2.Ref">
       Assignment masked by subsequent assignment to the same var.
       The first assignment should be discarded, but the second must survive.
+    </test>
+    
+    <test id="var3" type="run" file="Var3.Mod" output="Var3.Ref">
+      Return value is taken from a local variable that is set in an 
+      <code>IF</code> statement.  The assignments should be converted
+      from memory writes to register values.
+    </test>
+    
+    <test id="var3b" type="run" file="Var3b.Mod" output="Var3b.Ref">
+      Similar to the preceding test case, with the added complication
+      of a nested <code>IF</code> statement.
     </test>
   </testcases>
 </testsuite-ext>
