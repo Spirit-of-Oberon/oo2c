@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 
 IMPORT
   OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
-  OOC:SymbolTable:TypeRules, OOC:SymbolTable:ImportModules,
+  TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:ImportModules,
   OOC:Config:Repositories, OOC:Doc:ResolveRef;
 
 
@@ -104,7 +104,6 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 PROCEDURE CreateNamespace* (root: Sym.Module;
                             predefModule, systemModule: Sym.Module;
-                            tr: TypeRules.Rules;
                             repositories: Repositories.Section;
                             errList: Error.List);
 (**Populates the namespaces of the symbol table @oparam{root} and performs
@@ -173,7 +172,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
                  and resolve any reference commands in embedded documentation
                  strings *)
               CreateNamespace (ptr. externalSymTab, predefModule, systemModule,
-                               tr, repositories, errList);
+                               repositories, errList);
 (*              ResolveRef.Resolve (ptr. externalSymTab, repositories, errList)
 ... moved to end of CreateNamespace *)
             END
@@ -375,7 +374,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     END ConnectNamespaces;
   
   PROCEDURE ResolveTypeNames (item: Sym.Item; contextOfUse: Sym.Item;
-                              tr: TypeRules.Rules; errList: Error.List);
+                              errList: Error.List);
   (* Replaces all type names in @oparam{item} with a reference to the 
      indicated type.  Names are resolved in the context of the procedure
      (or module) @oparam{contextOfUse}.  Restrictions placed on the base
@@ -457,7 +456,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           IF (item. baseType # NIL) THEN
             baseType := GetTypeByName (item. baseType, contextOfUse, FALSE, errList);
             IF ~(baseType IS Sym.TypeName) THEN
-              IF tr. IsValidRecordBaseType (baseType) THEN
+              IF TR.IsValidRecordBaseType (baseType) THEN
                 item. ns(Namespace.Extended). 
                   SetBaseNamespace (baseType(Sym.Record). 
                                       ns(Namespace.Namespace));
@@ -480,14 +479,13 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
         (* decend into nested objects *)
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
-          ResolveTypeNames (ptr, contextOfUse, tr, errList);
+          ResolveTypeNames (ptr, contextOfUse, errList);
           ptr := ptr. nextNested
         END
       END
     END ResolveTypeNames;
   
-  PROCEDURE CheckTypeRestrictions (item: Sym.Item; tr: TypeRules.Rules;
-                                   errList: Error.List);
+  PROCEDURE CheckTypeRestrictions (item: Sym.Item; errList: Error.List);
   (* Checks the type restrictions placed by the language on declarations
      and definitions.  *)
     VAR
@@ -496,7 +494,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     
     PROCEDURE CheckOpenArray (type, srcCodeType: Sym.Type);
       BEGIN
-        IF ~(type IS Sym.TypeName) & tr. IsOpenArrayType (type) THEN
+        IF ~(type IS Sym.TypeName) & TR.IsOpenArrayType (type) THEN
           ErrType (invalidOpenArray, srcCodeType)
         END
       END CheckOpenArray;
@@ -506,14 +504,14 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
         WITH item: Sym.VarDecl DO
           type := item. type;
           IF item. isParameter THEN
-            IF ~(type IS Sym.TypeName) & ~tr. IsValidParameterType (type) THEN
+            IF ~(type IS Sym.TypeName) & ~TR.IsValidParameterType (type) THEN
               ErrType (invalidParameterType, item. srcCodeType)
             END
           ELSE
             CheckOpenArray (item. type, item. srcCodeType)
           END;
           IF item. isReceiver & ~(type IS Sym.TypeName) THEN
-            IF ~tr. IsValidReceiverType (type) THEN
+            IF ~TR.IsValidReceiverType (type) THEN
               ErrType (invalidReceiverType, item. srcCodeType)
             ELSIF (type IS Sym.Record) & ~item. isVarParam THEN
               ErrType (invalidReceiverModeRecord, item. srcCodeType)
@@ -527,21 +525,21 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           
         | item: Sym.Pointer DO
           type := item. baseType;
-          IF ~(type IS Sym.TypeName) & ~tr. IsValidPointerBaseType (type) THEN
+          IF ~(type IS Sym.TypeName) & ~TR.IsValidPointerBaseType (type) THEN
             ErrType (invalidPointerBaseType, item. srcCodeBaseType)
           END
           
         | item: Sym.FormalPars DO
           type := item. resultType;
           IF (type # NIL) & ~(type IS Sym.TypeName) &
-             ~tr. IsValidResultType (type) THEN
+             ~TR.IsValidResultType (type) THEN
             ErrType (invalidResultType, item. srcCodeResultType)
           END
           
         | item: Sym.Array DO
           type := item. elementType;
           IF ~(type IS Sym.TypeName) &
-             ~tr. IsValidArrayElementType (type, item. isOpenArray) THEN
+             ~TR.IsValidArrayElementType (type, item. isOpenArray) THEN
             ErrType (invalidArrayElementType, item. srcCodeElementType)
           END
         
@@ -551,7 +549,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
         (* descend into nested objects *)
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
-          CheckTypeRestrictions (ptr, tr, errList);
+          CheckTypeRestrictions (ptr, errList);
           ptr := ptr. nextNested
         END
       END
@@ -581,8 +579,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
       END
     END InsertTypeBoundProcs;
 
-  PROCEDURE ResolveForwardDecl (item: Sym.Item; tr: TypeRules.Rules;
-                                errList: Error.List);
+  PROCEDURE ResolveForwardDecl (item: Sym.Item; errList: Error.List);
   (* Checks the validity of procedure forward declarations, and adjusts the
      range of visibility of the forward declared procedures.  *)
     VAR
@@ -615,7 +612,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
             END
           ELSIF (def. visibleFrom < forward. visibleFrom) THEN
             ErrDecl (forwardAfterDefinition, forward, errList)
-          ELSIF ~tr. IsValidForwardDecl (forward. formalPars,
+          ELSIF ~TR.IsValidForwardDecl (forward. formalPars,
                                          def(Sym.ProcDecl). formalPars) THEN
             ErrDecl (forwardMismatchFPars, forward, errList)
           ELSE
@@ -625,14 +622,13 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
         
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
-          ResolveForwardDecl (ptr, tr, errList);
+          ResolveForwardDecl (ptr, errList);
           ptr := ptr. nextNested
         END
       END
     END ResolveForwardDecl;
   
-  PROCEDURE CheckExtendedRecords (item: Sym.Item; tr: TypeRules.Rules;
-                                  errList: Error.List);
+  PROCEDURE CheckExtendedRecords (item: Sym.Item; errList: Error.List);
   (* Performs semantic checks on the field and type-bound procedure of 
      records.  Also, this procedure sets the fields
      @ofield{Sym := OOC:SymbolTable.ProcDecl.tbProcIndex}, and
@@ -651,7 +647,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
             record. tbProcCount := record. baseType(Sym.Record). tbProcCount
           END;
           record. ns(Namespace.Extended). 
-            CheckRestrictions (record, tr, errList)
+            CheckRestrictions (record, errList)
         END
       END CheckRecord;
     
@@ -665,7 +661,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
         (* decend into nested objects *)
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
-          CheckExtendedRecords (ptr, tr, errList);
+          CheckExtendedRecords (ptr, errList);
           ptr := ptr. nextNested
         END
       END
@@ -710,14 +706,14 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     
     (* fourth pass: resolve type names in declarations, and fix up namespaces
        for record types *)
-    ResolveTypeNames (root, NIL, tr, errList);
+    ResolveTypeNames (root, NIL, errList);
 
     (* CAUTION: Some type names may not have been resolved successfully
        past this point.  Check for instances of Sym.TypeName before assuming
        that the types are valid.  *)
       
     (* fifth pass: check type restrictions of declarations *)
-    CheckTypeRestrictions (root, tr, errList);
+    CheckTypeRestrictions (root, errList);
 
     (* sixth pass: traverse list of type-bound procedures and insert them
        into the corresponding record namespace *)
@@ -729,7 +725,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
       Builder's Finalize method *)
 
     (* eighth pass: resolve forward declarations of procedures *)
-    ResolveForwardDecl (root, tr, errList);
+    ResolveForwardDecl (root, errList);
 
 
     (* here holds: any namespace (module, procedure, or record) can be
@@ -738,7 +734,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
 
     (* nineth pass: check namespace restrictions imposed on extended
        records and assign indexes to type-bound procedures *)
-    CheckExtendedRecords (root, tr, errList);
+    CheckExtendedRecords (root, errList);
     
     
     ResolveRef.Resolve (root, repositories, errList)

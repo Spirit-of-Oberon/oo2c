@@ -70,7 +70,6 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
             CreateNamespace.CreateNamespace (symTab,
                                              config. predefModule,
                                              config. systemModule,
-                                             config. typeRules,
                                              config. repositories, errList)
           END;
           IF (errList. msgCount = 0) & writeSymbolFile THEN

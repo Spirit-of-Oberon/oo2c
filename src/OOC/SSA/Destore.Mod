@@ -21,8 +21,8 @@ MODULE OOC:SSA:Destore;
 *)
 
 IMPORT
-  Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules,
-  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Aliasing;
+  Sym := OOC:SymbolTable, OOC:SSA, OOC:SSA:Opcode,
+  OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Aliasing;
 
   
 (**
@@ -99,7 +99,7 @@ IMPORT
    A ``set'' is made obsolete by replacing all ``get'' instructions reading its
    source value from the variable with the source value itself.  *)
 
-PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
+PROCEDURE Transform* (pb: SSA.ProcBlock);
   CONST
     unknownValue = NIL;
   VAR
@@ -395,8 +395,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       instr := store. instr;
       CASE store. instr. opcode OF
       | Opcode.set:
-        alias := Aliasing.DesignatorAlias (tr,
-                                           get. GetOpndClass (Opnd.readDesign),
+        alias := Aliasing.DesignatorAlias (get. GetOpndClass (Opnd.readDesign),
                                            instr. GetOpndClass (Opnd.writeDesign));
         IF (alias = Aliasing.completelyCovered) THEN
           (* this "set" instruction defines the variable we are tracing *)
@@ -414,8 +413,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         END;
         
       | Opcode.copy, Opcode.copyString:
-        alias := Aliasing.DesignatorAlias (tr,
-                                           get. GetOpndClass (Opnd.readDesign),
+        alias := Aliasing.DesignatorAlias (get. GetOpndClass (Opnd.readDesign),
                                            instr. GetOpndClass (Opnd.writeDesign));
         IF (alias # Aliasing.noAliasing) THEN
           (* this set operation may define the value read by the "get":
@@ -507,8 +505,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           CASE instr. opcode OF
           | Opcode.get:
             storeOut := instr. GetResultStore();
-            alias := Aliasing.DesignatorAlias (tr,
-                                               set. GetOpndClass (Opnd.writeDesign),
+            alias := Aliasing.DesignatorAlias (set. GetOpndClass (Opnd.writeDesign),
                                                instr. GetOpndClass (Opnd.readDesign));
             IF (alias # Aliasing.noAliasing) THEN
               (* the "get" may read from memory changed by the store *)
@@ -520,8 +517,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             END;
             
           | Opcode.set:
-            alias := Aliasing.DesignatorAlias (tr,
-                                               set. GetOpndClass (Opnd.writeDesign),
+            alias := Aliasing.DesignatorAlias (set. GetOpndClass (Opnd.writeDesign),
                                                instr. GetOpndClass (Opnd.writeDesign));
             IF (alias = Aliasing.completelyCovered) THEN
               (* this "set" instruction defines the variable we are tracing:
@@ -541,8 +537,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             END;
             
           | Opcode.copyString:
-            alias := Aliasing.DesignatorAlias (tr,
-                                               set. GetOpndClass (Opnd.writeDesign),
+            alias := Aliasing.DesignatorAlias (set. GetOpndClass (Opnd.writeDesign),
                                                instr. GetOpndClass (Opnd.writeDesign));
             IF (alias >= Aliasing.partiallyCovered) THEN
               (* this string copy does not overwrite completely the original
@@ -555,7 +550,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                 RETURN VisibleEffect (instr. GetResultStore(), set);
               ELSE
                 alias := Aliasing.DesignatorAlias
-                    (tr, set. GetOpndClass (Opnd.writeDesign), readDesign);
+                    (set. GetOpndClass (Opnd.writeDesign), readDesign);
                 IF (alias # Aliasing.noAliasing) THEN
                   (* this string copy may read the value that is being
                      written *)

@@ -23,7 +23,8 @@ MODULE OOC:AST:ExtTree:CreateIR;
 IMPORT
   Log, Language:Integer,
   OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList,
-  OOC:AST:ExtTree, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR;
+  OOC:AST:ExtTree, Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
+  OOC:SymbolTable:Predef, OOC:IR;
 
 
 
@@ -625,7 +626,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
 
       WITH item: Sym.Type DO
         IF ~(item IS Sym.TypeName) THEN
-          b. typeRules. AllocateType (item)
+          TR.AllocateType (item)
         END;
       ELSE  (* ignore *)  
       END;

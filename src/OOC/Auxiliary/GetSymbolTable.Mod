@@ -20,7 +20,6 @@ PROCEDURE GetSymbolTable* (module: Repository.Module; config: Config.Config;
       CreateNamespace.CreateNamespace (symTab,
                                        config. predefModule,
                                        config. systemModule,
-                                       config. typeRules, 
                                        config. repositories, errList);
       ASSERT (errList. msgCount = 0)
     END;

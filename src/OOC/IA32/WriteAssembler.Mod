@@ -264,7 +264,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Write ("initial", "dce-pre");
     DeadCodeElimination.Transform (pb);
     Write ("dce-post", "destore-pre");
-    Destore.Transform (pb, t. config. typeRules);
+    Destore.Transform (pb);
     Write ("destore-post", "dce-pre");
     DeadCodeElimination.Transform (pb);
     Write ("dce-post", "final");

@@ -30,7 +30,7 @@ Log,
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
-  OOC:SymbolTable:TypeRules, OOC:SymbolTable:Namespace;
+  TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Namespace;
 
 (**Some rules regarding the intermediate representation (short ``IR''):
 
@@ -888,8 +888,6 @@ TYPE
     errList: Error.List;
     constFold- : ConstFold;
     
-    typeRules- : TypeRules.Rules;
-    
     errorExpr-: Const;
     (**This value is returned if there is no real value because of an error.
        For example, if an identifier cannot be resolved, or if a designator
@@ -1373,7 +1371,7 @@ PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): L
   BEGIN
     const := b. AssertConst (expr);
     IF (const # b. errorExpr) THEN
-      IF b. typeRules. IsIntegerType (const. type) THEN
+      IF TR.IsIntegerType (const. type) THEN
         v := const. value(Integer.Value). ToInt();
         IF (start <= v) & (v < end) THEN
           RETURN v;
@@ -1544,7 +1542,7 @@ PROCEDURE (b: Builder) NewBinaryArith (sym: Symbol; variant: Variant; left, righ
     op : BinaryArith;
   BEGIN
     NEW (op);
-    ASSERT(b.typeRules.SameType(left.type, right.type));
+    ASSERT(TR.SameType(left.type, right.type));
     InitBinaryArith (op, sym, variant, left, right, left.type);
     RETURN op;
   END NewBinaryArith;
@@ -1750,7 +1748,7 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expres
     IF ~(array. type IS Sym.Array) THEN
       RETURN b. ErrExpr (notArray, array. sym);
     ELSE
-      IF ~b. typeRules. IsIntegerType (index. type) THEN
+      IF ~TR.IsIntegerType (index. type) THEN
         b. ErrSym (notInteger, index. sym);
         index := b. NewConst (index. sym, Predef.GetType (Predef.shortint),
                               Integer.New (0));
@@ -2058,7 +2056,7 @@ PROCEDURE (b: Builder) NewSetOp* (sym: Symbol; variant: Variant; left, right: Ex
     op : SetOp;
   BEGIN
     NEW (op);
-    ASSERT(b.typeRules.SameType(left.type, right.type));
+    ASSERT(TR.SameType(left.type, right.type));
     InitSetOp (op, sym, variant, left, right, left.type);
     RETURN op;
   END NewSetOp;
@@ -2155,7 +2153,7 @@ VAR
   base : Sym.Type;
   l, r : Language.Value;
 BEGIN
-  base := b.typeRules.BaseCharType(left.type);
+  base := TR.BaseCharType(left.type);
   l := left(Const).value; r := right(Const).value;
   WITH base : Sym.PredefType DO
     CASE base.id OF
@@ -2214,7 +2212,7 @@ PROCEDURE (b : Builder) NewTypeConv (type: Sym.Type; expr: Expression): Expressi
     IF (expr. type = type) THEN
       RETURN expr;                       (* no conversion necessary *)
     ELSE
-      IF (expr IS TypeConv) & b.typeRules.IncludesType(type, expr.type) THEN
+      IF (expr IS TypeConv) & TR.IncludesType(type, expr.type) THEN
         (* handle transitivity *)
         expr := expr(TypeConv).expr;
       END;
@@ -2262,15 +2260,11 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
    of assignment compatibility or expression compatibility.  Instead, it
    implements @emph{all} rules where an explicit type conversion must be added,
    and a large part of the common subset of the above notion of compatibility.  *)
-  VAR
-    tr: TypeRules.Rules;
-    
   BEGIN
     ASSERT (expr.type # NIL);
     ASSERT (type # NIL);
-    tr := b.typeRules;
-
-    IF tr.SameType(type, expr. type) THEN (* Case 0a *)
+    
+    IF TR.SameType(type, expr. type) THEN (* Case 0a *)
       (* Case 0a: a < b if a and b are the same type. *)
       RETURN TRUE;
       
@@ -2278,40 +2272,40 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
       (* Case 0b: a < b if a and b are procedures with matching parameter
          lists *)
       RETURN (type IS Sym.FormalPars) &
-          tr. FormalParamsMatch (type(Sym.FormalPars),
+          TR.FormalParamsMatch (type(Sym.FormalPars),
                                  expr. type(Sym.FormalPars), FALSE);
       
-    ELSIF tr.IncludesType(type, expr. type) THEN
+    ELSIF TR.IncludesType(type, expr. type) THEN
       (* Case 1: a < b if the type of 'b' includes the type of 'a'. This
          handles numeric and character inclusion. *)
       expr := b. Fold (b. NewTypeConv (type, expr));
       RETURN TRUE;
       
-    ELSIF tr.IsExtensionOf(expr. type, type) THEN
+    ELSIF TR.IsExtensionOf(expr. type, type) THEN
       (* Case 2: a < b if the type of 'b' is an extension of the type of
          'a' *)
       RETURN TRUE;
       
-    ELSIF IsPredefType (expr. type, Predef.nil) & tr.IsNilCompatible (type) THEN
+    ELSIF IsPredefType (expr. type, Predef.nil) & TR.IsNilCompatible (type) THEN
       (* Case 3: NIL < pointer value *)
       (* Case 4: NIL < procedure value *)
       RETURN TRUE;
       
     ELSIF (expr IS Const) &
-          tr. IsStringConst (type) &
-          (tr. BaseCharType (expr. type) # NIL) &
-          tr. IncludesType(tr. BaseCharType (type),
-                           tr. BaseCharType (expr. type)) THEN
+          TR.IsStringConst (type) &
+          (TR.BaseCharType (expr. type) # NIL) &
+          TR.IncludesType(TR.BaseCharType (type),
+                           TR.BaseCharType (expr. type)) THEN
       (* Case 5: char const and string const < string const *)
       expr := b. Fold (b. NewTypeConv (type, expr));
       RETURN TRUE;
 
     ELSIF (expr IS Const) &
-          (tr. BaseCharType (expr. type) # NIL) &
+          (TR.BaseCharType (expr. type) # NIL) &
           (type IS Sym.Array) &
-          tr. IsCharType (type(Sym.Array). elementType) THEN
+          TR.IsCharType (type(Sym.Array). elementType) THEN
       (* Case 6: string const < ARRAY [n] OF char *)
-      RETURN b. Widen(expr, tr.MatchingStringConst(type(Sym.Array). elementType));
+      RETURN b. Widen(expr, TR.MatchingStringConst(type(Sym.Array). elementType));
 
     ELSE
       RETURN FALSE;
@@ -2333,7 +2327,7 @@ PROCEDURE (b: Builder) WidenForAssign (VAR expr: Expression;
     
   PROCEDURE LengthOk (): BOOLEAN;
     BEGIN
-      IF b. typeRules. IsStringConst (expr. type) THEN
+      IF TR.IsStringConst (expr. type) THEN
         IF type(Sym.Array). isOpenArray THEN
           RETURN FALSE;
         ELSE
@@ -2348,7 +2342,7 @@ PROCEDURE (b: Builder) WidenForAssign (VAR expr: Expression;
   BEGIN
     oldExpr := expr;
     IF IsPredefType (type, Predef.byte) &
-         b. typeRules. IsByteCompatible (expr. type) OR
+         TR.IsByteCompatible (expr. type) OR
        b. Widen (expr, type) & LengthOk () THEN
       RETURN TRUE;
     ELSE
@@ -2378,16 +2372,14 @@ VAR
   *)
   VAR 
     base1, base2 : Sym.Type;
-    tr : TypeRules.Rules;
   BEGIN
-    tr := b.typeRules;
-    base1 := tr.BaseCharType(t1);
-    base2 := tr.BaseCharType(t2);
+    base1 := TR.BaseCharType(t1);
+    base2 := TR.BaseCharType(t2);
     IF (base1 # NIL) & (base2 # NIL) THEN
-      IF tr.IncludesType(base2, base1) THEN
+      IF TR.IncludesType(base2, base1) THEN
         base1 := base2;
       END;
-      RETURN tr.MatchingStringConst(base1);
+      RETURN TR.MatchingStringConst(base1);
     ELSE
       RETURN NIL;
     END;
@@ -2468,7 +2460,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
     refType := b. AssertType (referenceType);
     IF (refType = NIL) THEN
       RETURN b. errorExpr;
-    ELSIF ~b. typeRules. IsExtensionOf (refType, expr. type) THEN
+    ELSIF ~TR.IsExtensionOf (refType, expr. type) THEN
       RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
     ELSE
       origExpr := expr;
@@ -2683,7 +2675,7 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
 PROCEDURE (b: Builder) AssertVar (expr: Expression);
   BEGIN
     WITH expr: Var DO
-      IF b. typeRules. IsReadOnly (b. module, expr. decl) THEN
+      IF TR.IsReadOnly (b. module, expr. decl) THEN
         b. ErrSym (importedReadOnly, expr. sym);
       END;
     | expr: Deref DO
@@ -2692,7 +2684,7 @@ PROCEDURE (b: Builder) AssertVar (expr: Expression);
       b. AssertVar (expr. array);   (* check that value is writable *)
     | expr: SelectField DO
       b. AssertVar (expr. record);  (* check that value is writable *)
-      IF b. typeRules. IsReadOnly (b. module, expr. field) THEN
+      IF TR.IsReadOnly (b. module, expr. field) THEN
         b. ErrSym (importedReadOnly, expr. fieldSym);
       END;
     ELSE
@@ -2707,7 +2699,7 @@ PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
   BEGIN
     b. AssertVar (variable);
     MakeAssignmentCompatible (b, sym, value, variable. type);
-    IF b. typeRules. IsStringConst (value. type) THEN
+    IF TR.IsStringConst (value. type) THEN
       (* assigning a string constant: create CopyString opcode *)
       RETURN b. NewCopyString (sym, value, variable,
                                b. Fold (b. NewLen (sym, variable, 0)));
@@ -2939,7 +2931,7 @@ PROCEDURE (b: Builder) NewForStatm* (sym: Symbol;
 
     IF ~(var IS Var) THEN
       b. ErrSym (notVariable, var. sym);
-    ELSIF ~b. typeRules. IsIntegerType (var. type) THEN
+    ELSIF ~TR.IsIntegerType (var. type) THEN
       b. ErrSym (notInteger, var. sym);
     ELSIF ~b. Widen (step, var. type) THEN
       b. ErrSym (invalidStepType, step. sym);
@@ -2947,7 +2939,7 @@ PROCEDURE (b: Builder) NewForStatm* (sym: Symbol;
       MakeAssignmentCompatible (b, start. sym, start, var. type);
       MakeAssignmentCompatible (b, end. sym, end, var. type);
       step := b. AssertConst (step);
-      IF b. typeRules. IsIntegerType (step. type) &
+      IF TR.IsIntegerType (step. type) &
          (Integer.zero.Compare (step(Const). value) = 0) THEN
         b. ErrSym (stepIsZero, step. sym);
       END;
@@ -3060,10 +3052,10 @@ PROCEDURE (case: Case) CheckLabels (b: Builder; type: Sym.Type;
     deleted := 0;
     FOR i := 0 TO LEN (case. labels^)-1 DO
       range := case. labels[i](SetRange);
-      IF ~b. typeRules. IncludesType (type, range. from. type) THEN
+      IF ~TR.IncludesType (type, range. from. type) THEN
         b. ErrSym (labelNotInSelect, range. from. sym);
         case. labels[i] := NIL; INC (deleted); (* get rid of the problem *)
-      ELSIF ~b. typeRules. IncludesType (type, range. to. type) THEN
+      ELSIF ~TR.IncludesType (type, range. to. type) THEN
         b. ErrSym (labelNotInSelect, range. to. sym);
         case. labels[i] := NIL; INC (deleted); (* get rid of the problem *)
       ELSIF range. IsEmpty() THEN
@@ -3118,7 +3110,7 @@ PROCEDURE (b: Builder) NewCaseStatm* (sym: Symbol; select: Expression;
     i: LONGINT;
   BEGIN
     NEW (caseStatm);
-    IF ~b. typeRules. IsValidCaseSelector (select. type) THEN
+    IF ~TR.IsValidCaseSelector (select. type) THEN
       b. ErrSym (invalidCaseSelector, select. sym);
     ELSE
       FOR i := 0 TO LEN (caseList^)-1 DO
@@ -3520,7 +3512,7 @@ END InitConstFold;
 
 PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
                         pragmaHistory: Pragmas.History; errList: Error.List;
-                        typeRules: TypeRules.Rules; fold : ConstFold);
+                        fold : ConstFold);
   
   PROCEDURE NewTypeType (parent: Sym.Item; position: Sym.Position): TypeType;
     VAR
@@ -3544,7 +3536,6 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
     b. module := module;
     b. pragmaHistory := pragmaHistory;
     b. errList := errList;
-    b. typeRules := typeRules;
     b. errorExpr := NewConst (BasicList.NewSymbol (NIL, -1),
                               Predef.GetType(Predef.void),
                               Boolean.New (FALSE));
@@ -3556,13 +3547,12 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
   END InitBuilder;
 
 PROCEDURE NewBuilder* (module: Sym.Module; pragmaHistory: Pragmas.History;
-                       errList: Error.List; typeRules : TypeRules.Rules;
-                       constFold: ConstFold): Builder;
+                       errList: Error.List; constFold: ConstFold): Builder;
   VAR
     b: Builder;
   BEGIN
     NEW (b);
-    InitBuilder (b, module, pragmaHistory, errList, typeRules, constFold);
+    InitBuilder (b, module, pragmaHistory, errList, constFold);
     RETURN b
   END NewBuilder;
 
@@ -3683,7 +3673,6 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
    *)
 
   VAR
-    tr : TypeRules.Rules;
     id : Id.Id;
 
   PROCEDURE IsPredefClass(type : Sym.Type; classes : SET) : BOOLEAN;
@@ -3701,8 +3690,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     type : Sym.Type;
   BEGIN
     type := right.type;
-    isNumeric := tr.IsNumericType(type);
-    isSet := tr.IsSetType(type);
+    isNumeric := TR.IsNumericType(type);
+    isSet := TR.IsSetType(type);
     isBoolean := IsPredefClass(type, {Predef.boolean});
 
     CASE id OF
@@ -3742,8 +3731,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
   PROCEDURE IsString(type : Sym.Type) : BOOLEAN;
   BEGIN
     RETURN
-      tr.IsStringConst(type) OR 
-        (type IS Sym.Array) & tr.IsCharType (type(Sym.Array). elementType);
+      TR.IsStringConst(type) OR 
+        (type IS Sym.Array) & TR.IsCharType (type(Sym.Array). elementType);
   END IsString;
 
   BEGIN
@@ -3751,19 +3740,19 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     real := Predef.GetType (Predef.real);
     result := NIL;  (* FIXME. keep the compiler happy until ASSERTs are removed *)
     
-    IF (id = Id.in) & tr.IsIntegerType(left.type)
-       & tr.IsSetType(right.type) THEN
+    IF (id = Id.in) & TR.IsIntegerType(left.type)
+       & TR.IsSetType(right.type) THEN
       result := b.NewSetMember(sym, left, right);
     ELSIF (id = Id.is) THEN
       result := b.NewTypeTest(sym, left, right);
     ELSIF b.WidenToCommon(left, right) THEN
       leftType := left.type; rightType := right.type;
       
-      isNumeric := tr.IsNumericType(leftType);
-      isInteger := tr.IsIntegerType(leftType);
-      isSet := tr.IsSetType(leftType);
+      isNumeric := TR.IsNumericType(leftType);
+      isInteger := TR.IsIntegerType(leftType);
+      isSet := TR.IsSetType(leftType);
       isBoolean := IsPredefClass(leftType, {Predef.boolean});
-      isChar := tr.IsCharType(leftType);
+      isChar := TR.IsCharType(leftType);
       
       IF (id IN {Id.plus, Id.minus, Id.times}) & isNumeric THEN
         (* ---- arithmetic operator ---- *)
@@ -3813,7 +3802,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         result := b.NewCompare(sym, left, right);
 
       ELSIF (id IN {Id.plus}) & (left IS Const) & (right IS Const) 
-            & (isChar OR tr.IsStringConst(left.type)) THEN
+            & (isChar OR TR.IsStringConst(left.type)) THEN
 	result := b.NewStringAppend(sym, left, right);
 
       ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
@@ -3842,8 +3831,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 
   BEGIN
     id := sym.id;
-    tr := b.typeRules;
-
+    
     IF left = NIL THEN 
       RETURN UnaryOperator();
     ELSE
@@ -3882,22 +3870,22 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           arg := b. NewDeref (arg. sym, arg);
         END;
         
-        IF b. typeRules. SameType (fpar. type, arg. type) OR
+        IF TR.SameType (fpar. type, arg. type) OR
            IsPredefType (fpar. type, Predef.byte) &
-             b. typeRules. IsByteCompatible (arg. type) OR
-           b. typeRules. IsOpenArrayType (fpar. type) &
+             TR.IsByteCompatible (arg. type) OR
+           TR.IsOpenArrayType (fpar. type) &
              IsPredefType (fpar.type(Sym.Array).elementType, Predef.byte) THEN
           (* same type, or passing a CHAR or SHORTINT to a BYTE, or passing
              anything to an ARRAY OF BYTE: argument is compatible to formal
              parameter *)
         ELSIF (fpar. type IS Sym.Record) THEN
-          IF ~b. typeRules. IsExtensionOf (arg. type, fpar. type) THEN
+          IF ~TR.IsExtensionOf (arg. type, fpar. type) THEN
             (* formal parameter is record, and the argument type is not
                an extension of the record type *)
             b. ErrSym (notVarParCompatible, arg. sym);
           END;
-        ELSIF b. typeRules. IsOpenArrayType (fpar. type) THEN
-          IF ~b. typeRules. IsArrayCompatible (arg. type, fpar. type) THEN
+        ELSIF TR.IsOpenArrayType (fpar. type) THEN
+          IF ~TR.IsArrayCompatible (arg. type, fpar. type) THEN
             (* formal parameter is open array, and the argument type is not
                array compatible to it *)
             b. ErrSym (notVarParCompatible, arg. sym);
@@ -3906,8 +3894,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           b. ErrSym (notVarParCompatible, arg. sym);
         END;
       ELSE                               (* value parameter *)
-        IF b. typeRules. IsOpenArrayType (fpar. type) THEN
-          ok := b. typeRules. IsArrayCompatible (arg. type, fpar. type) OR
+        IF TR.IsOpenArrayType (fpar. type) THEN
+          ok := TR.IsArrayCompatible (arg. type, fpar. type) OR
               b. Widen (arg, fpar. type);  (* do string promotion *)
         ELSE
           ok := b. WidenForAssign (arg, fpar. type);
@@ -3938,7 +3926,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 
     PROCEDURE Dimensions (type: Sym.Type): LONGINT;
       BEGIN
-        IF b. typeRules. IsStringConst (type) THEN
+        IF TR.IsStringConst (type) THEN
           RETURN 1;
         ELSIF (type IS Sym.Array) THEN
           RETURN type(Sym.Array). ArrayDimensions();
@@ -4142,7 +4130,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         IF (value = NIL) THEN
           RETURN b. ErrExpr (noMinMax, arguments[0]. sym);
         ELSE
-          IF b. typeRules. IsSetType (type) THEN (* fix type for SET *)
+          IF TR.IsSetType (type) THEN (* fix type for SET *)
             type := Predef.GetType (Predef.shortint);
           END;
           RETURN b. NewConst (arguments[0]. sym, type, value);

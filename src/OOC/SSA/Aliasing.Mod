@@ -21,7 +21,7 @@ MODULE OOC:SSA:Aliasing;
 *)
 
 IMPORT
-  Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules, OOC:SSA;
+  Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules, OOC:SSA;
   
 (**
 
@@ -96,8 +96,7 @@ CONST
 
 
 
-PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
-                            instr, reference: SSA.Opnd): Id;
+PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
 (**Determines the aliasing status of the designator @oparam{instr} with
    respect to the designator @oparam{reference}.  A designator is described by
    a list of operands of class @oconst{*OOC:SSA:Opnd.readDesign} or
@@ -151,7 +150,7 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
       IF (a = b) THEN
         RETURN TRUE;
       ELSIF (a IS Sym.Pointer) & (b IS Sym.Pointer) THEN
-        RETURN tr. IsExtensionOf (a, b) OR tr. IsExtensionOf (b, a);
+        RETURN TR.IsExtensionOf (a, b) OR TR.IsExtensionOf (b, a);
       ELSE
         RETURN FALSE;
       END;
@@ -291,9 +290,9 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
           ASSERT (FALSE);
         END;
 
-        IF tr. IsComponentOf (typeInstr, typeRef, TRUE) OR
+        IF TR.IsComponentOf (typeInstr, typeRef, TRUE) OR
            (IsVarParam (reference) &
-            tr. IsComponentOf (typeRef, typeInstr, TRUE)) THEN
+            TR.IsComponentOf (typeRef, typeInstr, TRUE)) THEN
           RETURN mayAlias
         ELSE
           RETURN noAliasing
@@ -307,7 +306,7 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
          this means that this function is symmetric in the presence of variable
          parameters, and we can save half the work by normalizing the arguments
          so that `instr' is the variable parameter *)
-      RETURN DesignatorAlias (tr, reference, instr);
+      RETURN DesignatorAlias (reference, instr);
 
     ELSIF IsHeapObject (instr) THEN
       (* ~IsHeapObject (reference) & ~IsVarParam (reference); in other words,

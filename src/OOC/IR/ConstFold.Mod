@@ -22,7 +22,7 @@ MODULE OOC:IR:ConstFold;
 
 IMPORT
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
-  OOC:SymbolTable:TypeRules, Language, 
+  TR := OOC:SymbolTable:TypeRules, Language, 
   Language:Integer, Language:Boolean, LString := Language:String,
   Language:String8, Language:String16, Language:Set, Language:Real,
   ADT:String;
@@ -563,8 +563,7 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
   VAR
     value: Language.Value;
     str: LString.Value;
-    tr: TypeRules.Rules;
-
+    
   PROCEDURE IsPredefType(type: Sym.Type; id: Sym.PredefId): BOOLEAN;
     BEGIN
       RETURN (type IS Sym.PredefType) & (type(Sym.PredefType). id = id);
@@ -587,22 +586,21 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
     (* FIXME... make sure that overflows are handled correctly;
        one way to deal with them is to _not_ convert and make
        it a run-time problems; not nice, but cheap ;- *)
-    tr := c. builder. typeRules;
     IF c.ValidEval(op.expr, value) THEN
-      IF tr. IsIntegerType (op. type) &
-         tr. IsCharType (op. expr. type) THEN
+      IF TR.IsIntegerType (op. type) &
+         TR.IsCharType (op. expr. type) THEN
         (* type conversion from character to integer value (ORD) *)
         value := Integer.New (ORD (value(String8.Value). value. array[0]));
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
-      ELSIF tr. IsCharType (op. type) &
-            tr. IsIntegerType (op. expr. type) THEN
+      ELSIF TR.IsCharType (op. type) &
+            TR.IsIntegerType (op. expr. type) THEN
         (* type conversion from integer to character value (CHR) *)
         value := String8.NewChar (CHR (value(Integer.Value). ToInt()));
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
-      ELSIF tr. IsRealType (op. type) &
-            tr. IsIntegerType (op. expr. type) THEN
+      ELSIF TR.IsRealType (op. type) &
+            TR.IsIntegerType (op. expr. type) THEN
         c.result := NIL;
         
       ELSIF IsPredefType (op. type, Predef.longchar) &
@@ -611,11 +609,11 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         value := String16.NewChar (LONG (value(String8.Value). CharAt (0)));
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
-      ELSIF tr. IsStringConst (op. type) THEN
+      ELSIF TR.IsStringConst (op. type) THEN
         (* handle conversion of character and string constants to string
            constants *)
-        ASSERT (tr. IsStringConst (op. expr. type) OR
-                (op. expr IS IR.Const) & tr. IsCharType (op. expr. type));
+        ASSERT (TR.IsStringConst (op. expr. type) OR
+                (op. expr IS IR.Const) & TR.IsCharType (op. expr. type));
         str := op. expr(IR.Const). value(LString.Value);
         IF (BaseChar (op. expr. type(Sym.PredefType)) <
             BaseChar (op. type(Sym.PredefType))) THEN

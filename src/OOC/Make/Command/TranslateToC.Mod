@@ -347,7 +347,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       END;
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
                                    IR.NewBuilder (symTab, pragmaHistory,
-                                                  errList, config. typeRules,
+                                                  errList, 
                                                   ConstFold.NewConstFold()));
       IF cmd. writeIR THEN
         IRtoXML.Write (StdChannels.stdout. NewWriter(), module);

@@ -20,26 +20,17 @@ MODULE OOC:SymbolTable:TypeRules;
     Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
+(**This module provides various predicate functions.  Every function
+   corresponds to one particular type rule of the language.  The
+   predicates implement the composition restrictions for types (for
+   example, an integer type cannot be a pointer base type), type
+   compatiblity (same type, equal type, and such like), matching of
+   formal parameters, and so on.  *)
+
 IMPORT
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
-TYPE
-  Rules* = POINTER TO RulesDesc;
-  RulesDesc = RECORD
-    (**An instance of this class provides various predicate methods.  Every
-       method corresponds to one particular type rule of the language.  The
-       predicates implement the composition restrictions for types (e.g., an
-       integer type cannot be a pointer base type), type compatiblity
-       (same type, equal type, and such like), matching of formal parameters,
-       and so on.  *)
-  END;
-
-
-PROCEDURE Init* (tr: Rules);
-  BEGIN
-  END Init;
-
-PROCEDURE (tr: Rules) IsNamedType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsNamedType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be accessed through
    a type name.  *)
   BEGIN
@@ -47,7 +38,7 @@ PROCEDURE (tr: Rules) IsNamedType* (type: Sym.Type): BOOLEAN;
     RETURN (type. namingDecl # NIL)
   END IsNamedType;
 
-PROCEDURE (tr: Rules) IsScalarType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsScalarType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is a scalar type, that is,
    if it is a predefined type, a pointer type, or a procedure type.  Result
    is @code{FALSE} for record and array types.  *)
@@ -57,7 +48,7 @@ PROCEDURE (tr: Rules) IsScalarType* (type: Sym.Type): BOOLEAN;
            (type IS Sym.FormalPars)
   END IsScalarType;
 
-PROCEDURE (tr: Rules) IsCharType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsCharType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is a character type.  *)
   BEGIN
     WITH type: Sym.PredefType DO
@@ -67,7 +58,7 @@ PROCEDURE (tr: Rules) IsCharType* (type: Sym.Type): BOOLEAN;
     END;
   END IsCharType;
 
-PROCEDURE (tr: Rules) IsStringConst* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsStringConst* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is a string constant.  *)
   BEGIN
     WITH type: Sym.PredefType DO
@@ -77,7 +68,7 @@ PROCEDURE (tr: Rules) IsStringConst* (type: Sym.Type): BOOLEAN;
     END;
   END IsStringConst;
 
-PROCEDURE (tr: Rules) BaseCharType* (type: Sym.Type): Sym.PredefType;
+PROCEDURE BaseCharType* (type: Sym.Type): Sym.PredefType;
 (**For any of the types that are characters, or are derived from characters,
    return the character type they are based on.
 
@@ -103,7 +94,7 @@ PROCEDURE (tr: Rules) BaseCharType* (type: Sym.Type): Sym.PredefType;
       END;
     | type: Sym.Array DO
       IF (type. elementType IS Sym.PredefType) THEN
-        RETURN tr. BaseCharType (type. elementType);
+        RETURN BaseCharType (type. elementType);
       ELSE
         RETURN NIL;
       END;
@@ -112,7 +103,7 @@ PROCEDURE (tr: Rules) BaseCharType* (type: Sym.Type): Sym.PredefType;
     END;
   END BaseCharType;
 
-PROCEDURE (tr : Rules) StringBase* (type : Sym.Type) : Sym.Type;
+PROCEDURE StringBase* (type : Sym.Type) : Sym.Type;
 (**Return the base type for a string constant *)
 BEGIN
   WITH type : Sym.PredefType DO
@@ -125,7 +116,7 @@ BEGIN
   END;
 END StringBase;
 
-PROCEDURE (tr : Rules) MatchingStringConst* (type: Sym.Type): Sym.Type;
+PROCEDURE MatchingStringConst* (type: Sym.Type): Sym.Type;
 VAR
   id: Sym.PredefId;
 BEGIN
@@ -136,7 +127,7 @@ BEGIN
   RETURN Predef.GetType (id);
 END MatchingStringConst;
 
-PROCEDURE (tr: Rules) IsIntegerType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsIntegerType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is an integer type.  *)
   BEGIN
     WITH type: Sym.PredefType DO
@@ -146,7 +137,7 @@ PROCEDURE (tr: Rules) IsIntegerType* (type: Sym.Type): BOOLEAN;
     END;
   END IsIntegerType;
 
-PROCEDURE (tr: Rules) IsRealType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsRealType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is a floating point type.  *)
   BEGIN
     WITH type: Sym.PredefType DO
@@ -156,13 +147,13 @@ PROCEDURE (tr: Rules) IsRealType* (type: Sym.Type): BOOLEAN;
     END;
   END IsRealType;
 
-PROCEDURE (tr: Rules) IsNumericType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsNumericType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is a numeric type.  *)
   BEGIN
-    RETURN tr. IsIntegerType(type) OR tr. IsRealType(type)
+    RETURN IsIntegerType(type) OR IsRealType(type)
   END IsNumericType;
 
-PROCEDURE (tr: Rules) IsSetType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsSetType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is a set type.  *)
   BEGIN
     WITH type: Sym.PredefType DO
@@ -172,7 +163,7 @@ PROCEDURE (tr: Rules) IsSetType* (type: Sym.Type): BOOLEAN;
     END;
   END IsSetType;
 
-PROCEDURE (tr : Rules) IncludesType* (large, small: Sym.Type): BOOLEAN;
+PROCEDURE IncludesType* (large, small: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE} iff type @oparam{large} includes type @oparam{small}.
    The Oberon-2 report defines inclusion for numeric types: LONGREAL >= REAL >=
    LONGINT >= INTEGER >= SHORTINT. In addition, we have: LONGCHAR >= CHAR and
@@ -183,18 +174,18 @@ PROCEDURE (tr : Rules) IncludesType* (large, small: Sym.Type): BOOLEAN;
     IF (large IS Sym.PredefType) & (small IS Sym.PredefType) THEN
       largeId := large(Sym.PredefType).id;
       smallId := small(Sym.PredefType).id;
-      IF tr. IsNumericType(large) THEN
-        RETURN tr. IsNumericType(small) & (smallId <= largeId);
-      ELSIF tr. IsCharType(large) THEN
-        RETURN tr. IsCharType(small) & (smallId <= largeId);
-      ELSIF tr. IsStringConst(large) THEN
-        RETURN tr. IsStringConst(small) & (smallId <= largeId);
+      IF IsNumericType(large) THEN
+        RETURN IsNumericType(small) & (smallId <= largeId);
+      ELSIF IsCharType(large) THEN
+        RETURN IsCharType(small) & (smallId <= largeId);
+      ELSIF IsStringConst(large) THEN
+        RETURN IsStringConst(small) & (smallId <= largeId);
       END;
     END;
     RETURN FALSE;
   END IncludesType;
 
-PROCEDURE (tr: Rules) IsOpenArrayType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsOpenArrayType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is an array, and its
    length is not known at compile time.  *)
   BEGIN
@@ -202,7 +193,7 @@ PROCEDURE (tr: Rules) IsOpenArrayType* (type: Sym.Type): BOOLEAN;
     RETURN (type IS Sym.Array) & type(Sym.Array). isOpenArray
   END IsOpenArrayType;
 
-PROCEDURE (tr: Rules) IsArrayOfChar* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsArrayOfChar* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is an
    @code{ARRAY OF CHAR} or an @code{ARRAY OF LONGCHAR}.  *)
   BEGIN
@@ -210,29 +201,29 @@ PROCEDURE (tr: Rules) IsArrayOfChar* (type: Sym.Type): BOOLEAN;
     RETURN
         (type IS Sym.Array) &
         type(Sym.Array). isOpenArray &
-        tr. IsCharType (type(Sym.Array). elementType)
+        IsCharType (type(Sym.Array). elementType)
   END IsArrayOfChar;
 
 
 
-PROCEDURE (tr: Rules) IsValidRecordBaseType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsValidRecordBaseType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    base type of a record definition.  *)
   BEGIN
     RETURN (type IS Sym.Record)
   END IsValidRecordBaseType;
 
-PROCEDURE (tr: Rules) IsValidParameterType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsValidParameterType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    type of a formal parameter definition.  *)
   BEGIN
     ASSERT (~(type IS Sym.TypeName));
-    RETURN tr. IsNamedType (type) OR
-           tr. IsOpenArrayType (type) OR
+    RETURN IsNamedType (type) OR
+           IsOpenArrayType (type) OR
            (type IS Sym.FormalPars)
   END IsValidParameterType;
 
-PROCEDURE (tr: Rules) IsValidReceiverType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsValidReceiverType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    type of a receiver declaration.  *)
   BEGIN
@@ -242,22 +233,22 @@ PROCEDURE (tr: Rules) IsValidReceiverType* (type: Sym.Type): BOOLEAN;
       (type IS Sym.Pointer) & (type(Sym.Pointer). baseType IS Sym.Record)
   END IsValidReceiverType;
 
-PROCEDURE (tr: Rules) IsValidResultType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsValidResultType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    result type of a formal parameter definition.  This function also 
    return @code{TRUE}, if @oparam{type} is @code{NIL}.  *)
   BEGIN
-    RETURN (type = NIL) OR tr. IsScalarType (type)
+    RETURN (type = NIL) OR IsScalarType (type)
   END IsValidResultType;
 
-PROCEDURE (tr: Rules) IsValidPointerBaseType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsValidPointerBaseType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
    base type of a pointer type definition.  *)
   BEGIN
     RETURN (type IS Sym.Array) OR (type IS Sym.Record)
   END IsValidPointerBaseType;
 
-PROCEDURE (tr: Rules) IsValidArrayElementType* (type: Sym.Type; isOpenArray: BOOLEAN): BOOLEAN;
+PROCEDURE IsValidArrayElementType* (type: Sym.Type; isOpenArray: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
    element type of a array type definition.  The result may differ for
    open arrays and fixed length arrays.  *)
@@ -269,36 +260,36 @@ PROCEDURE (tr: Rules) IsValidArrayElementType* (type: Sym.Type; isOpenArray: BOO
     END
   END IsValidArrayElementType;
 
-PROCEDURE (tr: Rules) IsValidCaseSelector* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsValidCaseSelector* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
    select expression of a @code{CASE} statement.  *)
   BEGIN
-    RETURN tr. IsIntegerType (type) OR tr. IsCharType (type);
+    RETURN IsIntegerType (type) OR IsCharType (type);
   END IsValidCaseSelector;
 
-PROCEDURE ^ (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
+PROCEDURE ^ FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
 
-PROCEDURE (tr: Rules) SameType* (a, b: Sym.Type): BOOLEAN;
+PROCEDURE SameType* (a, b: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{a} and @oparam{b} are the @dfn{same type},
    as defined in the language report.  *)
   BEGIN
-    RETURN (a = b) & ~tr. IsOpenArrayType (a)
+    RETURN (a = b) & ~IsOpenArrayType (a)
   END SameType;
 
-PROCEDURE (tr: Rules) EqualTypes* (a, b: Sym.Type): BOOLEAN;
+PROCEDURE EqualTypes* (a, b: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{a} and @oparam{b} are of @dfn{equal type},
    as defined in the language report.  *)
   BEGIN
-    RETURN tr. SameType (a, b) OR
-           tr. IsOpenArrayType (a) & tr. IsOpenArrayType (b) &
-             tr. EqualTypes (a(Sym.Array). elementType, 
+    RETURN SameType (a, b) OR
+           IsOpenArrayType (a) & IsOpenArrayType (b) &
+             EqualTypes (a(Sym.Array). elementType, 
                              b(Sym.Array). elementType) OR
            (a IS Sym.FormalPars) & (b IS Sym.FormalPars) &
-             tr. FormalParamsMatch (a(Sym.FormalPars), b(Sym.FormalPars), FALSE)
+             FormalParamsMatch (a(Sym.FormalPars), b(Sym.FormalPars), FALSE)
            
   END EqualTypes;
 
-PROCEDURE (tr: Rules) IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
+PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
 (* Result is TRUE iff the type @oparam{type} is an extension of the type
    @oparam{base}.  See Oberon-2 report, Appendix A.  *)
   BEGIN
@@ -311,7 +302,7 @@ PROCEDURE (tr: Rules) IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
       (* either `type' and `base' where records from the start, or they were
          both record pointers *)
       WHILE (type # NIL) & (type IS Sym.Record) DO 
-        IF tr. SameType (type, base) THEN
+        IF SameType (type, base) THEN
           RETURN TRUE
         ELSE
           type := type(Sym.Record). baseType
@@ -321,7 +312,7 @@ PROCEDURE (tr: Rules) IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
     RETURN FALSE
   END IsExtensionOf;
 
-PROCEDURE (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
+PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE}, iff the formal parameter lists described by 
    @oparam{baseFPars} and @oparam{procFPars} match.  The comparison includes
    the formal parameters, the result type, and any rest parameter.  The
@@ -339,12 +330,12 @@ PROCEDURE (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; 
       RETURN FALSE
     ELSIF (baseFPars. resultType # NIL) & 
           ~allowExtendedResult &   
-          ~tr. SameType (baseFPars. resultType, procFPars. resultType) THEN
+          ~SameType (baseFPars. resultType, procFPars. resultType) THEN
       RETURN FALSE
     ELSIF (baseFPars. resultType # NIL) & 
           allowExtendedResult &
-          ~(tr. SameType (baseFPars. resultType, procFPars. resultType) OR
-            tr. IsExtensionOf (procFPars. resultType, baseFPars. resultType)) THEN
+          ~(SameType (baseFPars. resultType, procFPars. resultType) OR
+            IsExtensionOf (procFPars. resultType, baseFPars. resultType)) THEN
       RETURN FALSE
     ELSIF (baseFPars. anyRestParameters # procFPars. anyRestParameters) THEN
       RETURN FALSE
@@ -352,7 +343,7 @@ PROCEDURE (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; 
       FOR i := 0 TO LEN (baseFPars. params^)-1 DO
         IF (baseFPars. params[i]. isVarParam # 
             procFPars. params[i]. isVarParam) OR
-           ~tr. EqualTypes (baseFPars. params[i]. type, 
+           ~EqualTypes (baseFPars. params[i]. type, 
                             procFPars. params[i]. type) THEN
           RETURN FALSE
         END
@@ -361,36 +352,36 @@ PROCEDURE (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; 
     END
   END FormalParamsMatch;
 
-PROCEDURE (tr: Rules) IsValidRedefinition* (baseFPars, procFPars: Sym.FormalPars): BOOLEAN;
+PROCEDURE IsValidRedefinition* (baseFPars, procFPars: Sym.FormalPars): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{procFPars} is a valid redefinition of
    the type-bound procedure @oparam{baseFPars}.  *)
   BEGIN
     RETURN
       (baseFPars. receiver. isVarParam = procFPars. receiver. isVarParam) &
-      tr. FormalParamsMatch (baseFPars, procFPars, TRUE)
+      FormalParamsMatch (baseFPars, procFPars, TRUE)
   END IsValidRedefinition;
 
-PROCEDURE (tr: Rules) IsValidForwardDecl* (forward, proc: Sym.FormalPars): BOOLEAN;
+PROCEDURE IsValidForwardDecl* (forward, proc: Sym.FormalPars): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{forward} is a valid forward declaration
    of the procedure @oparam{proc}.  *)
   BEGIN
     IF (forward. receiver # NIL) THEN
-      RETURN tr. IsValidRedefinition (proc, forward)
+      RETURN IsValidRedefinition (proc, forward)
     ELSE
-      RETURN tr. FormalParamsMatch (proc, forward, FALSE)
+      RETURN FormalParamsMatch (proc, forward, FALSE)
     END
   END IsValidForwardDecl;
 
 
 
-PROCEDURE (tr: Rules) IsArrayType* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsArrayType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{type} is an array type. *)
   BEGIN
     ASSERT (~(type IS Sym.TypeName));
     RETURN (type IS Sym.Array)
   END IsArrayType;
 
-PROCEDURE (tr: Rules) IsArrayCompatible* (argType, fparType: Sym.Type): BOOLEAN;
+PROCEDURE IsArrayCompatible* (argType, fparType: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type of the actual parameter @oparam{argType}
    is array compatible with that of a formal parameter @oparam{fparType}.
    Note: The case where @oparam{argType} is a string constant
@@ -398,14 +389,14 @@ PROCEDURE (tr: Rules) IsArrayCompatible* (argType, fparType: Sym.Type): BOOLEAN;
    the implementation of this function differs from the @cite{Appendix A}
    of the language report.  *)
   BEGIN
-    WHILE tr. IsOpenArrayType (fparType) & (argType IS Sym.Array) DO
+    WHILE IsOpenArrayType (fparType) & (argType IS Sym.Array) DO
       argType := argType(Sym.Array). elementType;
       fparType := fparType(Sym.Array). elementType
     END;
-    RETURN tr. SameType (argType, fparType)
+    RETURN SameType (argType, fparType)
   END IsArrayCompatible;
 
-PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;
+PROCEDURE IsComponentOf* (subType, superType: Sym.Type;
                                       arrayCompat: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE} iff type @oparam{superType} is equal to or contains a
    subtype of type @oparam{subType}.  If @oparam{arrayCompat} is @code{TRUE}
@@ -414,13 +405,13 @@ PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;
   VAR 
     field: Sym.Item;
   BEGIN
-    IF tr. EqualTypes (superType, subType) OR 
-       tr. IsExtensionOf (superType, subType) THEN
+    IF EqualTypes (superType, subType) OR 
+       IsExtensionOf (superType, subType) THEN
       RETURN TRUE
-    ELSIF arrayCompat & tr. IsArrayCompatible (subType, superType) THEN
+    ELSIF arrayCompat & IsArrayCompatible (subType, superType) THEN
       RETURN TRUE
     ELSIF (superType IS Sym.Array) THEN
-      RETURN tr. IsComponentOf (subType, superType(Sym.Array). elementType,
+      RETURN IsComponentOf (subType, superType(Sym.Array). elementType,
                             arrayCompat)
     ELSIF (superType IS Sym.Record) THEN
       (* inspect types of all fields of all base types *)
@@ -428,7 +419,7 @@ PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;
         field := superType. nestedItems;
         WHILE (field # NIL) DO
           WITH field: Sym.FieldDecl DO
-            IF tr. IsComponentOf (subType, field. type, arrayCompat) THEN
+            IF IsComponentOf (subType, field. type, arrayCompat) THEN
               RETURN TRUE
             END
           ELSE  (* ignore entries for type-bound procedures *)
@@ -443,7 +434,7 @@ PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;
     END
   END IsComponentOf;
 
-PROCEDURE (tr: Rules) IsByteCompatible* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsByteCompatible* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be assigned to
    a @samp{BYTE} variable.  *)
   BEGIN
@@ -454,7 +445,7 @@ PROCEDURE (tr: Rules) IsByteCompatible* (type: Sym.Type): BOOLEAN;
     END;
   END IsByteCompatible;
 
-PROCEDURE (tr: Rules) IsNilCompatible* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsNilCompatible* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the value @code{NIL} can be assigned to
    variables of type @oparam{type}, or if @code{NIL} can be compared to
    such variables.  *)
@@ -470,7 +461,7 @@ PROCEDURE (tr: Rules) IsNilCompatible* (type: Sym.Type): BOOLEAN;
     END;
   END IsNilCompatible;
 
-PROCEDURE (tr: Rules) IsReadOnly* (usingModule: Sym.Module; decl: Sym.Declaration): BOOLEAN;
+PROCEDURE IsReadOnly* (usingModule: Sym.Module; decl: Sym.Declaration): BOOLEAN;
 (**Returns @code{TRUE}, iff the declaration @oparam{decl} is imported read-only
    by module @oparam{usingModule}.  *)
   BEGIN
@@ -479,7 +470,7 @@ PROCEDURE (tr: Rules) IsReadOnly* (usingModule: Sym.Module; decl: Sym.Declaratio
   END IsReadOnly;
 
 
-PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
+PROCEDURE AllocateType* (type: Sym.Type);
 (**This maps a type @oparam{type} onto the size and alignment constrains of the
    destination architecture.  That is, it sets size and aligment of
    @oparam{type}, and calculates offsets of record fields.  The exact mapping
@@ -510,21 +501,21 @@ PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
          module OOC:SymbolTable:Predef *)
       WITH type: Sym.Pointer DO
         type. SetSize (pointerSize, pointerAlign); (* this breaks any cycles *)
-        (* don't call `tr. AllocateType (type. baseType)' here: this may
+        (* don't call `AllocateType (type. baseType)' here: this may
            be a forward reference, and some pieces of information about this
            type may not be computed yet *)
 
       | type: Sym.FormalPars DO
         type. SetSize (pointerSize, pointerAlign); (* this breaks any cycles *)
         IF (type. receiver # NIL) THEN
-          tr. AllocateType (type. receiver. type);
+          AllocateType (type. receiver. type);
         END;
         FOR i := 0 TO LEN (type. params^)-1 DO
-          tr. AllocateType (type. params[i]. type);
+          AllocateType (type. params[i]. type);
         END;
         
       | type: Sym.Array DO
-        tr. AllocateType (type. elementType);
+        AllocateType (type. elementType);
         IF type. isOpenArray THEN
           type. SetSize (Sym.dynamicSize, type. elementType. align);
         ELSE
@@ -538,7 +529,7 @@ PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
           align := 1;  (* this alignment is also used if the record is empty *)
           size := 0
         ELSE
-          tr. AllocateType (type. baseType);
+          AllocateType (type. baseType);
           align := type. baseType. align;
           size := type. baseType. size
         END;
@@ -557,7 +548,7 @@ PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
         nested := type. nestedItems;
         WHILE (nested # NIL) DO
           WITH nested: Sym.FieldDecl DO
-            tr. AllocateType (nested. type);
+            AllocateType (nested. type);
             fieldAlign := nested. type. align;
             IF (fieldAlign > maxAlign) THEN
               fieldAlign := maxAlign

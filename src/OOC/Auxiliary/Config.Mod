@@ -3,7 +3,7 @@ MODULE OOC:Auxiliary:Config;
 IMPORT
   Config:Simple, OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:Config:Repositories, OOC:Config:Repositories:FileSystem(*KEEP THIS!*),
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:SymbolTable:TypeRules,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:SymbolTable:Builder, OOC:SymbolTable:CreateNamespace, OOC:Error;
 
 
@@ -14,7 +14,6 @@ TYPE
     pragmas-: Pragmas.Section;
     repositories-: Repositories.Section;
     
-    typeRules-: TypeRules.Rules;
     predefModule-: Sym.Module;
     systemModule-: Sym.Module;
   END;
@@ -35,20 +34,13 @@ PROCEDURE InitConfig* (config: Config; defaultConfigFile: ARRAY OF CHAR);
     config. repositories := Repositories.New();
     config. sectionList. Add (config. repositories);
     
-    (* create module containing the predefined constants, types, 
-       procedures, and function *)
-    NEW (config. typeRules);
-    TypeRules.Init (config. typeRules);
-    
     stb := Builder.New();
     config. predefModule := Predef.CreatePredef (stb);
     CreateNamespace.CreateNamespace (config. predefModule, NIL, NIL,
-                                     config. typeRules, config. repositories,
-                                     Error.NewList(""));
+                                     config. repositories, Error.NewList(""));
     config. systemModule := Predef.CreateSYSTEM (stb);
     CreateNamespace.CreateNamespace (config. systemModule, NIL, NIL,
-                                     config. typeRules, config. repositories,
-                                     Error.NewList(""))
+                                     config. repositories, Error.NewList(""))
   END InitConfig;
 
 END OOC:Auxiliary:Config.
