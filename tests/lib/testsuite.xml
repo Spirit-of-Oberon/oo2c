@@ -447,5 +447,9 @@
       and message attributes, and write them out.
     </test>
     
+    <test id="lib_Channel" type="run" file="LibChannel.Mod">
+      Imports the module <code>Channel</code>.  No further tests.
+    </test>
+    
   </testcases>
 </testsuite-ext>
