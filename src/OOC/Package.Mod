@@ -1343,7 +1343,7 @@ RAISES IO.Error;
     sb: StringBuffer.StringBuffer;
     str: STRING;
   BEGIN
-    sb := StringBuffer.NewCapacity(256);
+    sb := NEW(StringBuffer.StringBuffer, 256);
     sb.Append(targetDir);
     sb.Append(pkgInfoSubdir);
     sb.Append("/");

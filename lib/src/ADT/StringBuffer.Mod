@@ -41,7 +41,7 @@ TYPE
   END;
 
 
-PROCEDURE Init(b: StringBuffer; initialCapacity: LONGINT);
+PROCEDURE (b: StringBuffer) INIT*(initialCapacity: LONGINT);
   BEGIN
     IF (initialCapacity < 8) THEN
       (* make sure that we have a sane capacity; 0 and 1 break
@@ -52,16 +52,7 @@ PROCEDURE Init(b: StringBuffer; initialCapacity: LONGINT);
     b.length := 0;
     NEW(b.data8, initialCapacity);
     b.data16 := NIL;
-  END Init;
-
-PROCEDURE NewCapacity*(initialCapacity: LONGINT): StringBuffer;
-  VAR
-    b: StringBuffer;
-  BEGIN
-    NEW(b);
-    Init(b, initialCapacity);
-    RETURN b;
-  END NewCapacity;
+  END INIT;
 
 PROCEDURE (b: StringBuffer) ToString*(): STRING;
   BEGIN
@@ -157,6 +148,26 @@ PROCEDURE (b: StringBuffer) ConvertTo16;
     END;
     b.data8 := NIL;
   END ConvertTo16;
+
+PROCEDURE (b: StringBuffer) CharsUTF16*(): CharsUTF16;
+(**Return a reference to the character data of the string buffer.  It holds
+   valid character data in the index range @samp{0} to @samp{b.length-1}.  The
+   element at index @samp{b.length} is @samp{0X}.  Please note that the string
+   buffer may also contain @samp{0X} itself.
+
+   If no wide characters have been added to @oparam{b}, then the internal
+   representation is still @otype{CharsLatin1}, and result is @code{NIL}.
+
+   @emph{Important}: The reference only remains valid until the first operation
+   that modifies the buffer.  After such an operation, it may or may not
+   reflect the current buffer contents.  *)
+  BEGIN
+    IF (b.data16 # NIL) THEN
+      b.EnsureCapacity(b.length+1);
+      b.data16[b.length] := 0X;
+    END;
+    RETURN b.data16;
+  END CharsUTF16;
 
 PROCEDURE (b: StringBuffer) AppendLatin1Region*(data[NO_COPY]: ARRAY OF CHAR;
                                                 start, end: LONGINT);
@@ -285,7 +296,7 @@ PROCEDURE New*(str: STRING): StringBuffer;
   VAR
     b: StringBuffer;
   BEGIN
-    b := NewCapacity(str.length);
+    b := NEW(StringBuffer, str.length+1);
     b.Append(str);
     RETURN b;
   END New;
@@ -294,7 +305,7 @@ PROCEDURE NewLatin1*(str[NO_COPY]: ARRAY OF CHAR): StringBuffer;
   VAR
     b: StringBuffer;
   BEGIN
-    b := NewCapacity(Length(str));
+    b := NEW(StringBuffer, Length(str)+1);
     b.AppendLatin1(str);
     RETURN b;
   END NewLatin1;
@@ -304,7 +315,7 @@ PROCEDURE NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR;
   VAR
     b: StringBuffer;
   BEGIN
-    b := NewCapacity(end-start);
+    b := NEW(StringBuffer, end-start+1);
     b.AppendLatin1Region(str, start, end);
     RETURN b;
   END NewLatin1Region;
