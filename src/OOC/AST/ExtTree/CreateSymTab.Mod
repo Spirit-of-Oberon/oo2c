@@ -23,7 +23,7 @@ MODULE OOC:AST:ExtTree:CreateSymTab;
 IMPORT
   Msg, Object, URI, ParserURI := URI:Parser,
   OOC:Scanner:Symbol, OOC:AST, OOC:Scanner:BasicList, OOC:AST:ExtTree,
-  Sym := OOC:SymbolTable,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   SymTabBuilder := OOC:SymbolTable:Builder;
 
 
@@ -485,6 +485,7 @@ PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
 PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
   VAR
     proc: Sym.ProcDecl;
+    procClass: SHORTINT;
     type: Sym.Type;
     fpar: ExtTree.FormalPars;
     formalPars: Sym.FormalPars;
@@ -516,11 +517,18 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
       endPos := EndOfType (procDecl. identDef. ident)
     END;
 
+    IF (procDecl.receiver = NIL) THEN
+      procClass := Sym.standardProc;
+    ELSIF Predef.IsStaticMethod(procDecl.identDef.ident.sym.str^) THEN
+      procClass := Sym.staticMethod;
+    ELSE
+      procClass := Sym.virtualMethod;
+    END;
     proc := v. stb. NewProcDecl (v. parent, 
       GetName (procDecl. identDef. ident), endPos,
       ExportMark (procDecl. identDef),
       procDecl. identDef. docString,
-      procDecl. receiver # NIL, procDecl. arrow # NIL, procDecl);
+      procClass, procDecl. arrow # NIL, procDecl);
     
     formalPars := v. stb. NewFormalPars (proc,
                                          GetPosition (procDecl. proc));

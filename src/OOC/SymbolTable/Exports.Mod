@@ -158,7 +158,7 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
                 (ptr.name.str[0] = Builder.prefixAutoImport)) OR
              forSymbolFile &
              ((ptr IS Sym.FieldDecl) OR
-              (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isTypeBound) THEN
+              (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl).IsTypeBound()) THEN
             MarkDecl (ptr)
           END
         ELSE                               (* ignore non-declarations *)

@@ -11,10 +11,10 @@
   generic18 generic19 generic20 generic21 generic22 generic23
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
-  generic36 generic37 generic38 generic39 generic40">-->
+  generic36 generic37 generic38 generic39 generic40 generic41">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic40">-->
+  select ="&SetupTestCasesWithOut; generic1 generic41">-->
 
   &TestSetupWithOut;
     
@@ -1450,6 +1450,13 @@
     <test id="generic40" type="accept" file="Generic40.Mod">
       Type guards, type tests, and <code>WITH</code> statements with
       parametric types.
+    </test>
+    <test id="generic41" type="accept" file="Generic41.Mod">
+      Special properties of type-bound procedure `<code>INIT</code>':
+      called procedure is derived from the <em>static</em> type of the
+      receiver value, formal parameters must <em>not</em> match the
+      parameters from the base type, and the procedure must be
+      exported.
     </test>
   </testcases>
 

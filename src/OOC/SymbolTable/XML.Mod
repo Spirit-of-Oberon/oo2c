@@ -254,9 +254,9 @@ RAISES IO.Error;
           | item: Sym.Import DO
             NameAttributes (item. moduleName, "imported_module_")
           | item: Sym.ProcDecl DO
-            AttribBool ("", "is_type_bound", item. isTypeBound);
+            AttribBool ("", "is_type_bound", item.IsTypeBound());
             AttribBool ("", "is_forward_decl", item. isForwardDecl);
-            IF item. isTypeBound THEN
+            IF item.IsTypeBound() THEN
               AttribInt ("", "tb_proc_index", item. tbProcIndex)
             END
           | item: Sym.ConstDecl DO

@@ -278,7 +278,7 @@ RAISES IO.Error;
       PROCEDURE IsDeclaration (item: Sym.Item): BOOLEAN;
         BEGIN
           WITH item: Sym.ProcDecl DO
-            RETURN ~(item. isTypeBound OR item. isForwardDecl)
+            RETURN ~(item.IsTypeBound() OR item. isForwardDecl)
           ELSE
             RETURN (item IS Sym.Declaration)
           END
@@ -792,7 +792,7 @@ RAISES IO.Error;
           CheckInstance(item.type, item.srcCodeType);
 
         | item: Sym.ProcDecl DO
-          IF item.isTypeBound & item.isAbstract THEN
+          IF item.IsTypeBound() & item.isAbstract THEN
             record := item.Class();
             IF (record # NIL) & ~record.isAbstract THEN
               ErrDecl(abstractProcForConcreteRecord, item, errList);
@@ -891,7 +891,7 @@ RAISES IO.Error;
       ptr := root. nestedItems;
       WHILE (ptr # NIL) DO
         WITH ptr: Sym.ProcDecl DO
-          IF ptr. isTypeBound & ~ptr. isForwardDecl THEN
+          IF ptr.IsTypeBound() & ~ptr. isForwardDecl THEN
             record := ptr.Class();
             IF (record # NIL) THEN
               record. ns(Namespace.Extended). InsertTBProc (ptr, errList);
@@ -927,7 +927,7 @@ RAISES IO.Error;
         IF (item IS Sym.ProcDecl) & item(Sym.ProcDecl). isForwardDecl THEN
           forward := item(Sym.ProcDecl);
           
-          IF forward. isTypeBound THEN
+          IF forward.IsTypeBound() THEN
             class := forward. Class();
             ns := class. Namespace();
             def := ns. IdentifyLocal (forward. parent, forward. name, TRUE)
@@ -1370,7 +1370,7 @@ RAISES IO.Error;
       WITH item: Sym.TypeDecl DO
         Propagate(item.type, item.srcCodeType);
       | item: Sym.ProcDecl DO
-        IF item.isTypeBound THEN
+        IF item.IsTypeBound() THEN
           Propagate(item.formalPars, item.formalPars);
         END;
       ELSE

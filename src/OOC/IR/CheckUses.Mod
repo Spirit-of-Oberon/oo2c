@@ -963,7 +963,7 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
 
       IF def.unreachable &                 (* no path to end of proc *)
          ~localProc.formalPars.noReturn &  (* not marked as NO_RETURN *)
-         (~localProc.isTypeBound OR        (* normal procedure *)
+         (~localProc.IsTypeBound() OR      (* normal procedure *)
           localProc.notRedefined) THEN 
         localProc.formalPars.noReturn := TRUE;
         pd.updatedInOut := TRUE;

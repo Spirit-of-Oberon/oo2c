@@ -88,7 +88,7 @@ PROCEDURE GetClass* (item: Sym.Item): Sym.Name;
       RETURN item. parent(Sym.Record). className
       
     | item: Sym.ProcDecl DO
-      IF item. isTypeBound THEN
+      IF item.IsTypeBound() THEN
         RETURN GetClass (item. formalPars. receiver. type)
       ELSIF (item. formalPars. resultType # NIL) &
             SameModule (item, item. formalPars. resultType) THEN

@@ -80,6 +80,7 @@ CONST
   invalidTBProcExport = 5;
   invalidRedefintion = 6;
   redefinitionBeforeBase = 7;
+  staticMethodNotExported = 8;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -110,6 +111,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Formal parameters don't match inherited declaration"
     | redefinitionBeforeBase:
       t := "This procedure redefines a procedure that is declared later"
+    | staticMethodNotExported:
+      t := "This static type-bound procedure must be exported"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -473,13 +476,18 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               baseFormalPars := base.formalPars;
             END;
             
-            IF TR.IsValidRedefinition(baseFormalPars, decl.formalPars) THEN
+            IF (decl.procClass = Sym.staticMethod) OR
+               TR.IsValidRedefinition(baseFormalPars, decl.formalPars) THEN
               IF base.notRedefined THEN
                 base.notRedefined := FALSE;
               END;
               base. CopyTBProcIndex (decl);
               IF (decl. name. pos < base. visibleFrom) THEN
                 ErrDecl (redefinitionBeforeBase, decl, errList)
+              END;
+              IF (decl.procClass = Sym.staticMethod) &
+                 (decl.exportMark = Sym.nameNotExported) THEN
+                ErrDecl (staticMethodNotExported, decl, errList);
               END;
 
               decl.deprecated := decl.deprecated OR base.deprecated;
@@ -533,7 +541,7 @@ PROCEDURE (ns: PType) IdentifyLocal2*(sourceContext: Sym.Item;
         IF (item = typePars) THEN
           (* lookup within type declaration: always visible *)
           RETURN decl;
-        ELSIF (item IS Sym.ProcDecl) & item(Sym.ProcDecl).isTypeBound THEN
+        ELSIF (item IS Sym.ProcDecl) & item(Sym.ProcDecl).IsTypeBound() THEN
           (* only permit lookup in type-bound procedures of the parametric
              type to which this namespace belongs *)
           IF (item(Sym.ProcDecl).formalPars.typePars = typePars) THEN

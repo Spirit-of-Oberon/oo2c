@@ -222,14 +222,15 @@ PROCEDURE (b: Builder) NewProcDecl* (parent: Sym.Item; name: Sym.Name;
                                      visibleFrom: Sym.ModulePos;
                                      exportMark: Sym.ExportMark;
                                      docString: Doc.Document;
-                                     isTypeBound, isForwardDecl: BOOLEAN;
+                                     procClass: SHORTINT;
+                                     isForwardDecl: BOOLEAN;
                                      procAST: AST.Node): Sym.ProcDecl;
   VAR
     procDecl: Sym.ProcDecl;
   BEGIN
     NEW (procDecl);
     Sym.InitProcDecl (procDecl, parent, name, visibleFrom, exportMark, 
-                       docString, isTypeBound, isForwardDecl, procAST);
+                       docString, procClass, isForwardDecl, procAST);
     RETURN procDecl
   END NewProcDecl;
 
@@ -373,7 +374,7 @@ PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
     COPY (Sym.declModuleBody, str^);
     Sym.InitName (bodyName, str, -1, -1, -1);
     bodyDecl := b. NewProcDecl (NIL, bodyName, 0, Sym.nameNotExported,
-                                NIL, FALSE, FALSE, NIL);
+                                NIL, Sym.standardProc, FALSE, NIL);
     bodyDecl. formalPars := b. NewFormalPars(bodyDecl, name);
     NEW (bodyDecl. formalPars. params, 0);
     NEW (bodyDecl. formalPars. raises, 0);
@@ -485,7 +486,7 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
         ptr := scope. nestedItems;
         WHILE (ptr # NIL) DO
           WITH ptr: Sym.ProcDecl DO
-            IF ptr. isTypeBound &
+            IF ptr.IsTypeBound() &
                (SameType (record, ptr.formalPars.receiver.srcCodeType) OR
                 (pointer # NIL) &
                 SameType (pointer, ptr.formalPars.receiver.srcCodeType)) THEN

@@ -129,7 +129,7 @@ RAISES IO.Error;
         DocXML.WriteOberonDoc (w, decl. docString, module,
                                NIL, repositories, moduleDict)
       
-      ELSIF (decl IS Sym.ProcDecl) & decl(Sym.ProcDecl). isTypeBound THEN
+      ELSIF (decl IS Sym.ProcDecl) & decl(Sym.ProcDecl).IsTypeBound() THEN
         (* this is a type-bound procedure without a description; see if it is a
            redefinition of a procedure that does have a description and use
            this one  *)
@@ -381,7 +381,7 @@ RAISES IO.Error;
             StartDecl ("procedure", item);
             DeclDocString (item);
             WriteTypeComponent (item. formalPars, item. formalPars);
-            IF item. isTypeBound THEN
+            IF item.IsTypeBound() THEN
               WriteBaseDefinitions (item. Class(), item. name)
             END;
             w. EndTag

@@ -4800,7 +4800,7 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
            (~(item IS Sym.VarDecl) OR ~item(Sym.VarDecl).isParameter) &
            (~(item IS Sym.ProcDecl) OR
             ~(item(Sym.ProcDecl).isForwardDecl OR
-              item(Sym.ProcDecl).isTypeBound)) THEN
+              item(Sym.ProcDecl).IsTypeBound())) THEN
           b.WarnName(unusedDeclaration, item.name);
         END;
       ELSE  (* ignore *)
@@ -5284,6 +5284,7 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
   VAR
     varRef: Expression;
     decl: Sym.Declaration;
+    procDecl: Sym.ProcDecl;
     n: Sym.Name;
     type: Sym.Type;
   BEGIN
@@ -5306,9 +5307,10 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
       ELSIF (decl IS Sym.FieldDecl) THEN
         RETURN b. NewSelectField (sym, varRef, decl(Sym.FieldDecl), name);
       ELSIF (decl IS Sym.ProcDecl) THEN
-        RETURN b. NewSelectProc (sym, var, varRef.type,
-                                 decl(Sym.ProcDecl), name,
-                                 decl(Sym.ProcDecl).notRedefined);
+        procDecl := decl(Sym.ProcDecl);
+        RETURN b. NewSelectProc (sym, var, varRef.type, procDecl, name,
+                                 (procDecl.procClass = Sym.staticMethod) OR
+                                 procDecl.notRedefined);
       ELSE
         ASSERT (FALSE);
       END;

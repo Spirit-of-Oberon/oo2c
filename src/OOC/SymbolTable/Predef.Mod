@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Predef;
 (*  Defines symbol table of pseudo module with predefined entities.
-    Copyright (C) 2000, 2001, 2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -133,6 +133,7 @@ CONST
   minExitCode* = 0;
   maxExitCode* = 127+1;
   defaultAssertCode* = 127;
+  initMethod* = "INIT";
   
 VAR
   nameStringModule-, nameStringType-: Sym.Name;
@@ -358,6 +359,12 @@ PROCEDURE SmallestIntType* (value: BigInt.BigInt): Sym.Type;
     RETURN NIL;
   END SmallestIntType;
 
+PROCEDURE IsStaticMethod*(name: ARRAY OF CHAR): BOOLEAN;
+(**Return @code{TRUE} if static binding is used for the method @oparam{name}.
+   Such a method must be marked as exported.  *)
+  BEGIN
+    RETURN (name = initMethod);
+  END IsStaticMethod;
 
 PROCEDURE Init;
   VAR

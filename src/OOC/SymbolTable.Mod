@@ -685,13 +685,22 @@ TYPE
 (* Objects
    ------------------------------------------------------------------------ *)
 
+CONST
+  standardProc* = 0;
+  (**Normal procedure without a receiver.  *)
+  virtualMethod* = 1;
+  (**Type-bound procedure using the usual dynamic binding.  *)
+  staticMethod* = 2;
+  (**Type-bound procedure using static binding.  *)
+  
 TYPE
   ProcDeclDesc = RECORD
     (**Procedure declarations and forward declarations of procedures are
        mapped to objects of this class.  *)
     (DeclarationDesc)
-    isTypeBound-: BOOLEAN;
-    (**@code{TRUE}, iff the procedure a type-bound.  *)
+    procClass-: SHORTINT;
+    (**One of @oconst{standardProc}, @oconst{virtualMethod}, or
+       @oconst{staticMethod}.  *)
     isForwardDecl-: BOOLEAN;
     (**@code{TRUE}, iff the procedure declaration is a forward declaration
        of another procedure.  *)
@@ -1975,11 +1984,11 @@ PROCEDURE (proc: PredefProc) Load* (r: Storable.Reader) RAISES IO.Error;
 PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
                          visibleFrom: ModulePos; exportMark: ExportMark;
                          docString: Doc.Document;
-                         isTypeBound, isForwardDecl: BOOLEAN;
+                         procClass: SHORTINT; isForwardDecl: BOOLEAN;
                          procAST: AST.Node);
   BEGIN
     InitDeclaration (procDecl, parent, name, visibleFrom, exportMark, docString);
-    procDecl. isTypeBound := isTypeBound;
+    procDecl. procClass := procClass;
     procDecl. isForwardDecl := isForwardDecl;
     procDecl. isAbstract := FALSE;
     procDecl. notRedefined := FALSE;
@@ -1995,7 +2004,7 @@ PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
 PROCEDURE (procDecl: ProcDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     procDecl. Store^ (w);
-    w. WriteBool (procDecl. isTypeBound);
+    w. WriteSInt (procDecl. procClass);
     w. WriteBool (procDecl. isForwardDecl);
     w. WriteBool (procDecl. isAbstract);
     w. WriteBool (procDecl. notRedefined);
@@ -2011,7 +2020,7 @@ PROCEDURE (procDecl: ProcDecl) Load* (r: Storable.Reader) RAISES IO.Error;
     obj: Storable.Object;
   BEGIN
     procDecl. Load^ (r);
-    r. ReadBool (procDecl. isTypeBound);
+    r. ReadSInt (procDecl. procClass);
     r. ReadBool (procDecl. isForwardDecl);
     r. ReadBool (procDecl. isAbstract);
     r. ReadBool (procDecl. notRedefined);
@@ -2048,6 +2057,11 @@ PROCEDURE (procDecl: ProcDecl) CopyTBProcIndex* (redefinition: ProcDecl);
     redefinition. tbProcIndex := procDecl. tbProcIndex
   END CopyTBProcIndex;
 
+PROCEDURE (procDecl: ProcDecl) IsTypeBound*(): BOOLEAN;
+  BEGIN
+    RETURN (procDecl.procClass # standardProc);
+  END IsTypeBound;
+
 PROCEDURE (procDecl: ProcDecl) Class* (): Record;
 (**For a type-bound procedure @oparam{procDecl}, this function returns the
    record type for which the procedure is defined.  For a normal procedure,
@@ -2055,7 +2069,7 @@ PROCEDURE (procDecl: ProcDecl) Class* (): Record;
   VAR
     class: Item;
   BEGIN
-    IF procDecl. isTypeBound THEN
+    IF procDecl.IsTypeBound() THEN
       class := procDecl.formalPars.receiver.type.Deparam();
       IF (class IS Pointer) THEN
         class := class(Pointer).baseType.Deparam();
@@ -2765,7 +2779,7 @@ PROCEDURE (decl: Declaration) GetId*(): NameString;
       IF (decl IS Module) THEN           (* module id is the empty string *)
         NEW (id, 1);
         id[0] := 0X
-      ELSIF (decl IS ProcDecl) & decl(ProcDecl). isTypeBound THEN
+      ELSIF (decl IS ProcDecl) & decl(ProcDecl).IsTypeBound() THEN
         (* for a type-bound procedure, the id the that of the record 
            type concatenated with the procedure name *)
         declWithType := GetContainer (decl(ProcDecl). Class());

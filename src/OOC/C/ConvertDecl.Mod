@@ -244,7 +244,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       | modeWriteFctDef:
         IF (item. parent IS Sym.ProcDecl) THEN
           sc := DeclWriter.scAuto; (* definition of nested function *)
-        ELSIF (item. exportMark = Sym.nameNotExported) & ~item.isTypeBound THEN
+        ELSIF (item.exportMark=Sym.nameNotExported) & ~item.IsTypeBound() THEN
           sc := DeclWriter.scStatic
         ELSE
           sc := DeclWriter.scAuto
@@ -399,7 +399,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
                      RealMath.Mod.  *)
                   w. AddDeclaration (decl);
                   IF (ptr IS Sym.ProcDecl) &
-                     ptr(Sym.ProcDecl). isTypeBound THEN
+                     ptr(Sym.ProcDecl).IsTypeBound() THEN
                     AddTypeBoundHelpers (w, ptr(Sym.ProcDecl));
                   END;
                 END;
