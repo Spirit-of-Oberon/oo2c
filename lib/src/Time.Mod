@@ -1,8 +1,6 @@
 (*	$Id$	*)
 MODULE Time;
-
-(*
-    Time - time and time interval manipulation.       
+(*  Time - time and time interval manipulation.       
     Copyright (C) 1996 Michael Griebling
  
     This module is free software; you can redistribute it and/or modify
@@ -25,62 +23,64 @@ IMPORT SysClock;
 
 CONST
   msecPerSec*  = 1000;
+  (**Number of millseconds in a second.  *)
   msecPerMin*  = msecPerSec*60;
+  (**Number of millseconds in a minute.  *)
   msecPerHour* = msecPerMin*60;
+  (**Number of millseconds in an hour.  *)
   msecPerDay * = msecPerHour*24;
+  (**Number of millseconds in a day.  *)
        
 TYPE    
-  (* The TimeStamp is a compressed date/time format with the
-     advantage over the Unix time stamp of being able to 
-     represent any date/time in the DateTime type.  The 
-     fields are defined as follows:
-     
-        days  = Modified Julian days since 17 Nov 1858. 
-				This quantity can be negative to represent
-				dates occuring before day zero. 
-        msecs = Milliseconds since 00:00.
-        
-     NOTE: TimeStamp is in UTC or local time when time zones
-     are not supported by the local operating system.
-  *)
-  TimeStamp * =
+  TimeStamp* =
     RECORD
+      (**The TimeStamp is a compressed date/time format with the advantage over
+         the Unix time stamp of being able to represent any date/time in the
+         @otype{SysClock.DateTime} type.  @emph{Note}: @otype{TimeStamp} is in
+         UTC or local time when time zones are not supported by the local
+         operating system.  *)
+      
       days-:  LONGINT;
-      msecs-: LONGINT
+      (**Modified Julian days since @samp{17 Nov 1858}.  This quantity can be
+         negative to represent dates occuring before day zero.  *)
+      msecs-: LONGINT;
+      (**Milliseconds since @samp{00:00}.  *)
     END;
   
-  (* The Interval is a delta time measure which can be used
-     to increment a Time or find the time difference between
-     two Times.  The fields are defined as follows:
-		
-		dayInt  = numbers of days in this interval
-		msecInt = the number of milliseconds in this interval
-		
-	  The maximum number of milliseconds in an interval will
-	  be the value `msecPerDay' *)
-  Interval * =
-	RECORD
-	  dayInt-:  LONGINT;
-	  msecInt-: LONGINT
-	END; 
+  Interval* =
+    RECORD
+      (**The Interval is a delta time measure which can be used to increment
+         a @otype{TimeStamp} or find the time difference between two
+         @otype{TimeStamp}s.  The maximum number of milliseconds in an interval
+         will be the value @oconst{msecPerDay}.  *)
+      dayInt-:  LONGINT;
+      (**Number of days in this interval.  *)
+      msecInt-: LONGINT
+      (**The number of milliseconds in this interval.  This number
+         is from [0, @oconst{msecPerDay}[.  *)
+    END; 
      
 
 (* ------------------------------------------------------------- *)
 (* TimeStamp functions *)
 
 PROCEDURE InitTimeStamp* (VAR t: TimeStamp; days, msecs: LONGINT);
-(* Initialize the TimeStamp `t' with `days' days and `msecs' mS. 
-   Pre: msecs>=0 *)
+(**Initialize the TimeStamp @oparam{t} with @oparam{days} days and
+   @oparam{msecs} mS.
+
+   @precond
+   msecs>=0
+   @end precond *)
 BEGIN
   t.msecs:=msecs MOD msecPerDay;
   t.days:=days + msecs DIV msecPerDay
 END InitTimeStamp;
 
 PROCEDURE GetTime* (VAR t: TimeStamp);
-(* Set `t' to the current time of day.  In case of failure (i.e. if 
-   SysClock.CanGetClock() is FALSE) the time 00:00 UTC on Jan 1 1970 is 
-   returned.  This procedure is typically much faster than doing 
-   SysClock.GetClock followed by Calendar.SetTimeStamp.  *)
+(**Set @oparam{t} to the current time of day.  In case of failure (that is, if
+   SysClock.CanGetClock() is @code{FALSE}) the time @samp{00:00 UTC} on
+   @samp{Jan 1 1970} is returned.  This procedure is typically much faster than
+   doing @oproc{SysClock.GetClock} followed by @oproc{*Calendar.SetTimeStamp}.  *)
   VAR
     res, sec, usec: LONGINT;
   BEGIN
@@ -91,7 +91,7 @@ PROCEDURE GetTime* (VAR t: TimeStamp);
 
 
 PROCEDURE (VAR a: TimeStamp) Add* (b: Interval);
-(* Adds the interval `b' to the time stamp `a'. *) 
+(**Adds the interval @oparam{b} to the time stamp @oparam{a}. *) 
 BEGIN
   INC(a.msecs, b.msecInt);
   INC(a.days, b.dayInt);
@@ -101,7 +101,7 @@ BEGIN
 END Add;
 
 PROCEDURE (VAR a: TimeStamp) Sub* (b: Interval);
-(* Subtracts the interval `b' from the time stamp `a'. *) 
+(**Subtracts the interval @oparam{b} from the time stamp @oparam{a}. *) 
 BEGIN
   DEC(a.msecs, b.msecInt);
   DEC(a.days, b.dayInt);
@@ -109,7 +109,9 @@ BEGIN
 END Sub;
 
 PROCEDURE (VAR a: TimeStamp) Delta* (b: TimeStamp; VAR c: Interval);
-(* Post: c = a - b *) 
+(**@postcond
+   c = a - b
+   @end postcond *) 
 BEGIN
   c.msecInt:=a.msecs-b.msecs;
   c.dayInt:=a.days-b.days;
@@ -119,16 +121,26 @@ BEGIN
 END Delta;
 
 PROCEDURE (VAR a: TimeStamp) Cmp* (b: TimeStamp) : SHORTINT;
-(* Compares 'a' to 'b'.  Result: -1: a<b;  0: a=b;  1: a>b 
-   This means the comparison 
-   can be directly extrapolated to a comparison between the 
-   two numbers e.g.,
-   
-        Cmp(a,b)<0  then a<b
-        Cmp(a,b)=0  then a=b
-        Cmp(a,b)>0  then a>b
-        Cmp(a,b)>=0 then a>=b
-*)
+(**Compares @oparam{a} to @oparam{b}.  Result:
+
+   @table @code
+   @item -1
+   a<b
+   @item 0
+   a=b
+   @item 1
+   a>b
+   @end table
+
+   This means the comparison can be directly extrapolated to a comparison
+   between the two numbers, for example,
+
+   @example
+   Cmp(a,b)<0  then a<b
+   Cmp(a,b)=0  then a=b
+   Cmp(a,b)>0  then a>b
+   Cmp(a,b)>=0 then a>=b
+   @end example  *)
 BEGIN
   IF (a.days>b.days) OR (a.days=b.days) & (a.msecs>b.msecs) THEN RETURN 1
   ELSIF (a.days=b.days) & (a.msecs=b.msecs) THEN RETURN 0
@@ -141,15 +153,21 @@ END Cmp;
 (* Interval functions *)
 
 PROCEDURE InitInterval* (VAR int: Interval; days, msecs: LONGINT);
-(* Initialize the Interval `int' with `days' days and `msecs' mS. 
-   Pre: msecs>=0 *)
+(**Initialize the Interval @oparam{int} with @oparam{days} days and
+   @oparam{msecs} mS.
+
+   @precond
+   msecs>=0
+   @end precond  *)
 BEGIN
   int.dayInt:=days + msecs DIV msecPerDay;
   int.msecInt:=msecs MOD msecPerDay
 END InitInterval;
 
 PROCEDURE (VAR a: Interval) Add* (b: Interval);
-(* Post: a = a + b *) 
+(**@postcond
+   a = a + b
+   @end postcond *) 
 BEGIN
   INC(a.msecInt, b.msecInt);
   INC(a.dayInt, b.dayInt);
@@ -159,7 +177,9 @@ BEGIN
 END Add;
 
 PROCEDURE (VAR a: Interval) Sub* (b: Interval);
-(* Post: a = a - b *) 
+(**@postcond
+   a = a - b
+   @end postcond *) 
 BEGIN
   DEC(a.msecInt, b.msecInt);
   DEC(a.dayInt, b.dayInt);
@@ -169,16 +189,26 @@ BEGIN
 END Sub;
 
 PROCEDURE (VAR a: Interval) Cmp* (b: Interval) : SHORTINT;
-(* Compares 'a' to 'b'.  Result: -1: a<b;  0: a=b;  1: a>b 
-   Above convention makes more sense since the comparison 
-   can be directly extrapolated to a comparison between the 
-   two numbers e.g.,
-   
-        Cmp(a,b)<0  then a<b
-        Cmp(a,b)=0  then a=b
-        Cmp(a,b)>0  then a>b
-        Cmp(a,b)>=0 then a>=b
-*)
+(**Compares @oparam{a} to @oparam{b}.  Result:
+
+   @table @code
+   @item -1
+   a<b
+   @item 0
+   a=b
+   @item 1
+   a>b
+   @end table
+
+   This means the comparison can be directly extrapolated to a comparison
+   between the two numbers, for example,
+
+   @example
+   Cmp(a,b)<0  then a<b
+   Cmp(a,b)=0  then a=b
+   Cmp(a,b)>0  then a>b
+   Cmp(a,b)>=0 then a>=b
+   @end example  *)
 BEGIN
   IF (a.dayInt>b.dayInt) OR (a.dayInt=b.dayInt)&(a.msecInt>b.msecInt) THEN RETURN 1
   ELSIF (a.dayInt=b.dayInt) & (a.msecInt=b.msecInt) THEN RETURN 0
@@ -187,7 +217,13 @@ BEGIN
 END Cmp;
 
 PROCEDURE (VAR a: Interval) Scale* (b: LONGREAL);
-(* Pre: b>=0; Post: a := a*b *)
+(**@precond
+   b>=0;
+   @end precond
+   
+   @postcond
+   a := a*b
+   @end postcond *) 
 VAR
   si: LONGREAL;
 BEGIN
@@ -197,7 +233,13 @@ BEGIN
 END Scale;
 
 PROCEDURE (VAR a: Interval) Fraction* (b: Interval) : LONGREAL;
-(* Pre: b<>0; Post: RETURN a/b *)
+(**@precond
+   b<>0
+   @end precond
+   
+   @postcond
+   RETURN a/b
+   @end postcond *) 
 BEGIN
   RETURN (a.dayInt+a.msecInt/msecPerDay)/(b.dayInt+b.msecInt/msecPerDay)
 END Fraction;
