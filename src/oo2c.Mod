@@ -21,7 +21,7 @@ MODULE oo2c;
 *)
 
 IMPORT
-  Msg, StdChannels, Strings, Out, Err, Object, URI, URI:Scheme:File,
+  StdChannels, Strings, Out, Err, Object, URI, URI:Scheme:File,
   ADT:StringBuffer, IO,
   OS:ProcessManagement, Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
@@ -127,8 +127,6 @@ RAISES IO.Error;
     exec: Package.Executable;
     normSet: Package.FileSet;
     module: Rep.Module;
-    res: Msg.Msg;
-    str: ARRAY 256 OF CHAR;
     installObjects: BOOLEAN;
 
   PROCEDURE InstallDirectory(prefix, path: ARRAY OF CHAR): BOOLEAN;
@@ -382,11 +380,6 @@ RAISES IO.Error;
     IF ok & install THEN
       Package.WritePackage(pkg,
                            CCompiler.oocdir.value(StringValue.Value).string^);
-      IF (res # NIL) THEN
-        res.GetText(str);
-        Out.String(str); Out.Ln;
-        ok := FALSE;
-      END;
     END;
     
     RETURN ok;
