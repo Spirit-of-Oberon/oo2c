@@ -4,29 +4,32 @@ Using OOC under Win32
 
 This document describes options for using OOC on Windows systems.
 
-Currently, OOC requires the GNU C compler (gcc). There are a couple of
+Currently, OOC requires the GNU C compiler (gcc). There are a couple of
 implementations of gcc under Windows:
 
 1) Mingw32  (www.mingw.org)
 2) Cygwin   (www.cygwin.com)
 
-Mingw32 is a "minimalist" implementation of gcc. Mingw32 applications link
-to Microsoft's own C run-time library (MSVCRTL.DLL), which is installed as
-part of every Windows system. Some features of mingw32:
+Mingw32 is a "minimalist" implementation of gcc for Win32 systems. Mingw32
+applications link to Microsoft's own C run-time library (MSVCRTL.DLL),
+which is installed as part of every Windows system. Some features of
+Mingw32:
 - Mingw32 environment is compact.
 - Mingw32 applications are compact.
 - Run-time library functions have "Windows" semantics.
-- Some "unix" functionality is not available.
+- Some "Unix" functionality is not available.
 
 Cygwin is an implementation of the Unix API for Windows. Cygwin
 applications use GCC's run-time library as well as additional "emulation"
-functions in a separate library (CYGWIN.DLL). Some features of cygwin:
+functions in a separate library (CYGWIN.DLL). Some features of Cygwin:
 - Cygwin environment is very large.
 - Cygwin applications require an additional large DLL.
 - Run-time library functions have "Unix" semantics.
+- Cygwin is only free for GPL code. Use with non-GPL code requires a
+  special contract with the vendors.
 
-In many cases, unix source code can run unmodified under Cygwin. Cygwin is
-typically distributed with a large collection of unix utilities, including:
+In many cases, Unix source code can run unmodified under Cygwin. Cygwin is
+typically distributed with a large collection of Unix utilities, including:
 - C compiler
 - Bash shell
 - ssh and cvs
@@ -34,14 +37,14 @@ typically distributed with a large collection of unix utilities, including:
 - XWindows server
 - inetd and friends (supporting ftp and telnet into Windows systems).
 
-In addition, Cygwin supports the generation of mingw applications via the
+In addition, Cygwin supports the generation of Mingw applications via the
 "-mno-cygwin" option. 
 
 OOC supports the following options:
 
 - Cygwin
-- Mingw stand-alone
-- Mingw under cygwin
+- Mingw stand-alone  (with MSYS)
+- Mingw under Cygwin
 
 Note: Some of these configurations have not been extensively tested. Please
 report any problems.
@@ -52,15 +55,15 @@ Path virtualisation
 The C compiler and associated utilities are Unix applications that have
 been ported to run under Windows. Unix applications cannot be allowed to
 see DOS file names, or they would fail to handle files properly. Each
-application has its own file management procedures that assume unix syntax.
+application has its own file management procedures that assume Unix syntax.
 To port such applications to Windows, the run-time environment MUST map all
-DOS file paths to unix syntax.
+DOS file paths to Unix syntax.
 
-Applications compiled with cygwin will see Unix-style paths. Applications
-compiled with mingw (or -mno-cygwin under cygwin) will see Windows paths.
+Applications compiled with Cygwin will see Unix-style paths. Applications
+compiled with Mingw (or -mno-cygwin under Cygwin) will see Windows paths.
 
 OOC will see different styles of paths according to which environment is
-has been compiled under. However, the C compiler always sees virtual unix
+has been compiled under. However, the C compiler always sees virtual Unix
 paths. For OOC and gcc to play nicely together:
 
   It is ESSENTIAL that OOC and gcc SEE THE SAME PATHS TO SOURCE FILES.
@@ -72,7 +75,7 @@ Installation
 
 1) Make a directory `c:\usr\local\src', and extract the oo2c files here.
 
-2) Under MSYS or cygwin, ensure that `c:\usr\local' is mapped to the
+2) Under MSYS or Cygwin, ensure that `c:\usr\local' is mapped to the
    logical path `/usr/local'. Normally, one would do:
 
      mount c:/usr/local /usr/local
@@ -83,20 +86,21 @@ Installation
 3) `cd' to the directory containing the compiler source code.
 
 4) To bootstrap the compiler, OOC normally creates symbolic links to its
-   source code from its build directories. 
+   source code from its build directories. Symlinks are emulated under
+   Cygwin, but are not available under MSYS.
    
-   FOR MINGW32 SYSTEMS:
-
+   FOR MINGW32/MSYS SYSTEMS:
      cp -Rv lib/src stage0/lib
 	 cp -Rv src stage0
+   This step is not required for Cygwin systems.
 
 5) Configure the package.
 
-    For cygwin or stand-alone mingw32:
+    For Cygwin or stand-alone Mingw32:
 
 	  env CFLAGS=-O2 ./configure --disable-libs
 
-    For mingw32 under cygwin:
+    For Mingw32 under Cygwin:
 
 	  env CPPFLAGS=-mno-cygwin CFLAGS=-O2 LDFLAGS=-mno-cygwin \
 	    ./configure --disable-libs
@@ -117,7 +121,7 @@ Problems?
 
 1) In at least one version of MSYS it looks like the "mount" tool is
    broken.  If you keep getting "Function not implemented", you may need to
-   manually edit the msys fstab file (eg. C:\MSYS\1.0\etc\fstab). It should
+   manually edit the MSYS fstab file (eg. C:\MSYS\1.0\etc\fstab). It should
    look something like this:
 
      c:/MinGW /mingw
@@ -141,7 +145,7 @@ Win9X platforms.
 2) ftruncate()
 
 The ftruncate function is unavailable under Windows. This means that
-PosixFileDesrc.Truncate will always return an error.
+PosixFileDescr.Truncate will always return an error.
 
 3) Windows networking.
 
@@ -154,8 +158,8 @@ used for sockets.
 
 4) system()
 
-There are many issues associtated with the system() run-time function.
-Under unix, system() calls the unix shell as its command interpreter.
+There are many issues associated with the system() run-time function.
+Under Unix, system() calls the Unix shell as its command interpreter.
 Under windows, system() calls the Windows command interpreter. These
 interpreters differ in their syntax and semantics. In addition, the
 Microsoft C start-up code has its own rules for interpreting the command
@@ -166,11 +170,15 @@ prevent OOC passing long command lines to the C compiler (eg. as are
 required for static linking). Therefore, OS:ProcessManagement.system does
 not use the run-time library system() command. Instead, the command-line is
 passed directly to the command using the Win32 kernel CreateProcess
-function.
+function. This means that it is not possible to:
+- use piping redirection with a system command
+- specify substitutions using environment variables
 
 An option exists to use an external shell `/bin/sh' for the system command.
-This can be enabled by defining USE_SHELL in lib/src/OS/ProcessManagement.c
-but is not currently supported.
+This can be enabled by defining USE_SHELL in lib/src/OS/ProcessManagement.c. 
+With an external shell, such as `bash' installed in `C:\bin', system()
+behaves the same as the Unix system() call. This configuration is necessary
+to use the test framework from the OOC CVS repository. 
 
 -- Stewart Greenhill <sgreenhill@users.sf.net>
 
