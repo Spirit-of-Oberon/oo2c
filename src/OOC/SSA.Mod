@@ -360,9 +360,9 @@ PROCEDURE (opnd: Opnd) IsValueOpnd*(): BOOLEAN;
   BEGIN
     CASE opnd. class OF
     | OpndClass.antiDependency,
-      OpndClass.regionDependency(*,  FIXME... this breaks bootstrap test with rtc disabled ...
+      OpndClass.regionDependency,
       OpndClass.readDesign,
-      OpndClass.writeDesign*):
+      OpndClass.writeDesign:
       RETURN FALSE;
     ELSE
       RETURN TRUE;
