@@ -190,10 +190,10 @@ PROCEDURE (enc: Encoder) Start*;
    several MBytes of memory.  *)
   END Start;
 
-PROCEDURE (enc: Encoder) [ABSTRACT] Encode*(s: STRING;
-                                            start, end: LONGINT;
-                                            b: StringBuffer.StringBuffer);
-(**Encode the 8-bit character sequence in @samp{s[start, end-1]} starting with
+PROCEDURE (enc: Encoder) [ABSTRACT] EncodeLatin1*(s[NO_COPY]: ARRAY OF CHAR;
+                                                  start, end: LONGINT;
+                                                  b: StringBuffer.StringBuffer);
+(**Encode the Latin1 character sequence in @samp{s[start, end-1]} starting with
    the encoder state @oparam{enc}.  The result is a string holding only code
    points in the range @samp{[U+0000, U+00FF]}, which is appended to the string
    buffer @oparam{b}.  On completion, @oparam{enc} is updated to reflect the
@@ -205,6 +205,51 @@ PROCEDURE (enc: Encoder) [ABSTRACT] Encode*(s: STRING;
    end-1]} are valid.  That is, neither is out of range nor from the surrogate
    areas.
    @end precond  *)
+  END EncodeLatin1;
+
+PROCEDURE (enc: Encoder) [ABSTRACT] EncodeUTF16*(s[NO_COPY]: ARRAY OF LONGCHAR;
+                                                 start, end: LONGINT;
+                                                 b: StringBuffer.StringBuffer);
+(**Encode the UTF-16 character sequence in @samp{s[start, end-1]} starting with
+   the encoder state @oparam{enc}.  The result is a string holding only code
+   points in the range @samp{[U+0000, U+00FF]}, which is appended to the string
+   buffer @oparam{b}.  On completion, @oparam{enc} is updated to reflect the
+   encoder's state after the last byte of the sequence has been processed.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= @oparam{s}.length}.
+   @oproc{enc.Start} has been called.  All code points in @samp{data[start,
+   end-1]} are valid.  That is, neither is out of range nor from the surrogate
+   areas.
+   @end precond  *)
+  END EncodeUTF16;
+
+PROCEDURE (enc: Encoder) Encode*(s: STRING;
+                                 start, end: LONGINT;
+                                 b: StringBuffer.StringBuffer);
+(**Encode the UTF-16 character sequence in @samp{s[start, end-1]} starting with
+   the encoder state @oparam{enc}.  The result is a string holding only code
+   points in the range @samp{[U+0000, U+00FF]}, which is appended to the string
+   buffer @oparam{b}.  On completion, @oparam{enc} is updated to reflect the
+   encoder's state after the last byte of the sequence has been processed.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= @oparam{s}.length}.
+   @oproc{enc.Start} has been called.  All code points in @samp{data[start,
+   end-1]} are valid.  That is, neither is out of range nor from the surrogate
+   areas.
+   @end precond  *)
+  VAR
+    chars8: Object.CharsLatin1;
+    chars16: Object.CharsUTF16;
+  BEGIN
+    WITH s: Object.String8 DO
+      chars8 := s.CharsLatin1();
+      enc.EncodeLatin1(chars8^, start, end, b);
+    | s: Object.String16 DO
+      chars16 := s.CharsUTF16();
+      enc.EncodeUTF16(chars16^, start, end, b);
+    END;
   END Encode;
 
 PROCEDURE (enc: Encoder) [ABSTRACT] Closure*(b: StringBuffer.StringBuffer);
@@ -251,7 +296,7 @@ PROCEDURE (codec: Codec) [ABSTRACT] NewEncoder*(): Encoder;
 PROCEDURE (codec: Codec) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
                                        start, end: LONGINT): STRING;
 (**Decode the 8-bit character sequence in @samp{data[start, end-1]}.  For
-   succesul completion, the byte sequence @samp{data[start, end-1]} must be
+   succesful completion, the byte sequence @samp{data[start, end-1]} must be
    well formed with respect to the decoder, and the resulting Unicode code
    points must all be valid.
 
@@ -263,7 +308,7 @@ PROCEDURE (codec: Codec) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
     b: StringBuffer.StringBuffer;
   BEGIN
     dec := codec. NewDecoder();
-    b := StringBuffer.NewCapacity(end-start);
+    b := NEW(StringBuffer.StringBuffer, end-start+1);
     dec. Start;
     dec. Decode (data, start, end, b);
     dec. End;
@@ -299,7 +344,7 @@ PROCEDURE (codec: Codec) EncodeRegion*(s: STRING;
     s8: STRING;
   BEGIN
     enc := codec. NewEncoder();
-    b := StringBuffer.NewCapacity(end-start);
+    b := NEW(StringBuffer.StringBuffer, end-start+1);
     enc. Start;
     enc. Encode (s, start, end, b);
     enc. End;
