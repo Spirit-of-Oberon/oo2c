@@ -243,10 +243,15 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
         END
       END;
       fpars := ConvertType (w, item. formalPars, item. formalPars);
+      fpars := fpars(DeclWriter.Pointer). base;
+      
+      IF item.hasTryStatm THEN
+        fpars(DeclWriter.Function).MakeParametersVolatile;
+      END;
+      
       RETURN w. NewDeclaration
-        (Naming.NameOfDeclaration (item), DeclWriter.tqNone, sc,
-         fpars(DeclWriter.Pointer). base);
-
+        (Naming.NameOfDeclaration (item), DeclWriter.tqNone, sc, fpars);
+      
     | item: Sym.ConstDecl DO
       RETURN w. NewDefine (Naming.NameOfDeclaration (item),
                            item. value);
