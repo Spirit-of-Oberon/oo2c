@@ -32,6 +32,7 @@ VAR
 
 CONST
   writeAllInstructions = FALSE;
+  writeDesignator = TRUE;
   resultPrefix = "(";
   resultSuffix = ")";
   instrPrefix = "{";
@@ -285,7 +286,7 @@ PROCEDURE (out: Output) WriteFunction*();
       jump: S.Instr;
     BEGIN
       w.WriteString("(");
-      IF FALSE & (instr.designator # NIL) THEN
+      IF writeDesignator & (instr.designator # NIL) THEN
         w.WriteString("<");
         FOR s IN instr.designator^ DO
           WITH s: S.Var DO
@@ -473,6 +474,7 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
     waiting: Dictionary.Dictionary(S.Instr, State);
     keys: Object.ObjectArrayPtr(S.Instr);
     instr: S.Instr;
+    loopStart: S.LoopStartInstr;
   
   PROCEDURE ValidateBlock(s: State);
    (**Track changes to the state @oparam{s} performed by the sequence of
@@ -593,23 +595,26 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
       RETURN s;
     END PopState;
 
+  PROCEDURE MergedBlocks(merge: S.Instr): LONGINT;
+    VAR
+      c: LONGINT;
+      dep: S.Dep;
+    BEGIN
+      c := 0;
+      FOR dep IN merge.BeforeList(S.depControl) DO
+        INC(c);
+      END;
+      IF (merge.opcode = S.loopEnd) THEN
+        (* uncount dep loopEnd -> loopStart *)
+        DEC(c);
+      END;
+      RETURN c;
+    END MergedBlocks;
+  
   PROCEDURE MergeState(merge: S.MergeInstr; s: State);
     VAR
       i: LONGINT;
       t: State;
-
-    PROCEDURE MergedBlocks(merge: S.Instr): LONGINT;
-      VAR
-        c: LONGINT;
-        dep: S.Dep;
-      BEGIN
-        c := 0;
-        FOR dep IN merge.BeforeList(S.depControl) DO
-          INC(c);
-        END;
-        RETURN c;
-      END MergedBlocks;
-    
     BEGIN
       IF waiting.HasKey(merge) THEN
         t := waiting.Get(merge);
@@ -655,7 +660,13 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
             MergeState(block(S.MergeInstr), s);
           END;
         | S.loopStart:
-          PushBlock(s, s.instr(S.Block));
+          loopStart := s.instr(S.LoopStartInstr);
+          PushBlock(s, loopStart);
+          IF (MergedBlocks(loopStart.end) = 0) THEN
+            (* special case: if the loop has no exit, then the end of the
+               loop is never reached by normal means *)
+            PushBlock(s, loopStart.end);
+          END;
         | S.loopExit:
           (* add state to loopEnd *)
           block := s.instr.MergingTarget();
@@ -680,7 +691,7 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
         PushState(s);
       ELSE
         FOR dep IN s.controlCP.AfterList(S.depControl) DO
-          IF (dep.instr IS S.MergeInstr) THEN
+          IF (dep.instr IS S.MergeInstr) & (dep.instr.opcode # S.loopEnd) THEN
             MergeState(dep.instr(S.MergeInstr), s);
           END;
         END;
