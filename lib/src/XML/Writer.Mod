@@ -400,7 +400,7 @@ PROCEDURE (w: Writer) AttrObject* (name[NO_COPY]: ARRAY OF Char;
     chars: Object.CharsLatin1;
     s: Object.String;
   BEGIN  (* FIXME... handle wide chars *)
-    s := value.ToString();
+    s := value.ToString8("?");
     chars := s(Object.String8).CharsLatin1();
     w.AttrStringLatin1(name, chars^);
   END AttrObject;
