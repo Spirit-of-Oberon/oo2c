@@ -23,7 +23,7 @@ MODULE OOC:SSA:Blocker;
 IMPORT
   Log,
   Channel, TextRider, ADT:String, Dictionary := ADT:Dictionary:IntValue,
-  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination;
   
 (**
 
@@ -677,7 +677,12 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
           region := root;
         END;
       END;
-      RETURN MoveLoopInvariants (CorrectForLoop (region));
+
+      IF (p. instr. opcode = Opcode.labels) THEN
+        RETURN region;
+      ELSE
+        RETURN MoveLoopInvariants (CorrectForLoop (region));
+      END;
     END GetRegion;
 
   (*PROCEDURE WriteLoops (l: Loop; indent: INTEGER);
@@ -699,6 +704,11 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     END WriteLoops;*)
   
   BEGIN
+    (* get rid of dead instructions.  they cannot be put at their
+       "right" place, because this would require using instructions ---
+       and by definition dead code has no using instructions *)
+    DeadCodeElimination.Transform (pb);
+    
     pb. SetMarkers (NIL, 0);
     enter := pb. GetEnter();
     mainLoop := NewLoop (NIL);
@@ -708,7 +718,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     (*WriteLoops (mainLoop, 0);*)
     AttachToLoop (mainLoop);
 
-    (* add pseudo operands to `set' instructions that make ant-dependencies
+    (* add pseudo operands to `set' instructions that make anti-dependencies
        between these and any `get's working on the same store explicit *)
     instr := pb. instrList;
     WHILE (instr # NIL) DO
@@ -831,6 +841,7 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
         id, count: LONGINT;
         ptr: SSA.Result;
         value: String.String;
+        instr: SSA.Instr;
       BEGIN
         instr := res. instr;
         IF instr. IsConst() THEN
