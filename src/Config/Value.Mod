@@ -33,9 +33,6 @@ PROCEDURE (v: Value) [ABSTRACT] ValueToString* (VAR str: String);
 PROCEDURE (v: Value) [ABSTRACT] Clone* (): Value;
   END Clone;
 
-PROCEDURE (v: Value) [ABSTRACT] DefiningModule* (VAR str: String);
-  END DefiningModule;
-
 
 PROCEDURE SetPrototype*(map: PrototypeMap; name: STRING; prototype: Value);
   BEGIN

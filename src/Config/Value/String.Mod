@@ -43,9 +43,4 @@ PROCEDURE (v: Value) Clone* (): Value;
     RETURN clone
   END Clone;
 
-PROCEDURE (v: Value) DefiningModule* (VAR str: ConfigValue.String);
-  BEGIN
-    COPY ("Config:Value:String", str)
-  END DefiningModule;
-
 END Config:Value:String.

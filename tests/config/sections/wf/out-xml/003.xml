@@ -1,5 +1,5 @@
 <arguments>
 </arguments>
 <options>
-  <value name='x' defining_module='Config:Value:String'>foobar</value>
+  <value name='x'>foobar</value>
 </options>

@@ -1,24 +1,24 @@
 <arguments>
 </arguments>
 <options>
-  <value name='max-0' defining_module='Config:Value:Integer'>2147483647</value>
-  <value name='max-1' defining_module='Config:Value:Integer'>2147483646</value>
-  <value name='max-10' defining_module='Config:Value:Integer'>2147483637</value>
-  <value name='max-11' defining_module='Config:Value:Integer'>2147483636</value>
-  <value name='max-12' defining_module='Config:Value:Integer'>2147483635</value>
-  <value name='max-13' defining_module='Config:Value:Integer'>2147483634</value>
-  <value name='max-14' defining_module='Config:Value:Integer'>2147483633</value>
-  <value name='max-15' defining_module='Config:Value:Integer'>2147483632</value>
-  <value name='max-16' defining_module='Config:Value:Integer'>2147483631</value>
-  <value name='max-17' defining_module='Config:Value:Integer'>2147483630</value>
-  <value name='max-18' defining_module='Config:Value:Integer'>2147483629</value>
-  <value name='max-19' defining_module='Config:Value:Integer'>2147483628</value>
-  <value name='max-2' defining_module='Config:Value:Integer'>2147483645</value>
-  <value name='max-3' defining_module='Config:Value:Integer'>2147483644</value>
-  <value name='max-4' defining_module='Config:Value:Integer'>2147483643</value>
-  <value name='max-5' defining_module='Config:Value:Integer'>2147483642</value>
-  <value name='max-6' defining_module='Config:Value:Integer'>2147483641</value>
-  <value name='max-7' defining_module='Config:Value:Integer'>2147483640</value>
-  <value name='max-8' defining_module='Config:Value:Integer'>2147483639</value>
-  <value name='max-9' defining_module='Config:Value:Integer'>2147483638</value>
+  <value name='max-0'>2147483647</value>
+  <value name='max-1'>2147483646</value>
+  <value name='max-10'>2147483637</value>
+  <value name='max-11'>2147483636</value>
+  <value name='max-12'>2147483635</value>
+  <value name='max-13'>2147483634</value>
+  <value name='max-14'>2147483633</value>
+  <value name='max-15'>2147483632</value>
+  <value name='max-16'>2147483631</value>
+  <value name='max-17'>2147483630</value>
+  <value name='max-18'>2147483629</value>
+  <value name='max-19'>2147483628</value>
+  <value name='max-2'>2147483645</value>
+  <value name='max-3'>2147483644</value>
+  <value name='max-4'>2147483643</value>
+  <value name='max-5'>2147483642</value>
+  <value name='max-6'>2147483641</value>
+  <value name='max-7'>2147483640</value>
+  <value name='max-8'>2147483639</value>
+  <value name='max-9'>2147483638</value>
 </options>

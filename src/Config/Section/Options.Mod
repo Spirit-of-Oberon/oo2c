@@ -327,9 +327,6 @@ PROCEDURE (s: Section) DumpContent* (ch: Channel.Channel);
     WHILE (opt # NIL) DO
       w. WriteString ("  <value name='");
       w. WriteObject (opt. name);
-      w. WriteString ("' defining_module='");
-      opt. value. DefiningModule (str8);
-      w. WriteString (str8);
       w. WriteString ("'>");
       
       opt. value. ValueToString (str8);

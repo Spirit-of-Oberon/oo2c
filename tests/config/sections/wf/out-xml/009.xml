@@ -1,8 +1,8 @@
 <arguments>
 </arguments>
 <options>
-  <value name='false' defining_module='Config:Value:Boolean'>FALSE</value>
-  <value name='false-ws' defining_module='Config:Value:Boolean'>FALSE</value>
-  <value name='true' defining_module='Config:Value:Boolean'>TRUE</value>
-  <value name='true-ws' defining_module='Config:Value:Boolean'>TRUE</value>
+  <value name='false'>FALSE</value>
+  <value name='false-ws'>FALSE</value>
+  <value name='true'>TRUE</value>
+  <value name='true-ws'>TRUE</value>
 </options>
