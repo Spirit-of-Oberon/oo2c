@@ -270,3 +270,9 @@ void OOC_IO_Socket_init(void) {
   StartNet();
 #endif
 }
+
+void OOC_IO_Socket_destroy(void) {
+#ifdef __MINGW32__
+  /* FIXME... if we ever to module unloading  */
+#endif
+}

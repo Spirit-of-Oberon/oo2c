@@ -44,4 +44,7 @@ void OOC_Var4_init(void) {
   ;
 }
 
+void OOC_Var4_destroy(void) {
+}
+
 /* --- */

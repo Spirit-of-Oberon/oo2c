@@ -114,3 +114,6 @@ void OOC_IO_StdChannels_init(void) {
   setmode(fileno(stderr), O_BINARY);
 #endif 
 }
+
+void OOC_IO_StdChannels_destroy(void) {
+}

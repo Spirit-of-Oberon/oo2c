@@ -1873,7 +1873,7 @@ PROCEDURE (mod: Module) NoObjectFile*(): BOOLEAN;
       END;
       RETURN (l = NIL);
     ELSE
-      RETURN FALSE;
+      RETURN (mod.class = mcInternal);
     END;
   END NoObjectFile;
 

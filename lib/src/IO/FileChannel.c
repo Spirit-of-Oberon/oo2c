@@ -262,3 +262,7 @@ OOC_INT32 IO_FileChannel__ChannelDesc_FileDescriptor(IO_FileChannel__Channel ch)
 void OOC_IO_FileChannel_init(void) {
   Termination__RegisterProc(cleanup_tmp_files);
 }
+
+void OOC_IO_FileChannel_destroy(void) {
+  /* FIXME... if we ever to module unloading  */
+}

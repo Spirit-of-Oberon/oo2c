@@ -26,4 +26,7 @@ void OOC_VarPar1c_init(void) {
   ;
 }
 
+void OOC_VarPar1c_destroy(void) {
+}
+
 /* --- */

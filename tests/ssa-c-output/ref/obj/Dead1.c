@@ -21,4 +21,7 @@ void OOC_Dead1_init(void) {
   ;
 }
 
+void OOC_Dead1_destroy(void) {
+}
+
 /* --- */

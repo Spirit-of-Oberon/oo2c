@@ -982,3 +982,7 @@ void OOC_PosixFileDescr_init(void) {
   setmode(fileno(stderr), O_BINARY);
 #endif 
 }
+
+void OOC_PosixFileDescr_destroy(void) {
+  /* FIXME... if we ever to module unloading  */
+}

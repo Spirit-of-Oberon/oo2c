@@ -62,4 +62,7 @@ void OOC_Var4b_init(void) {
   ;
 }
 
+void OOC_Var4b_destroy(void) {
+}
+
 /* --- */

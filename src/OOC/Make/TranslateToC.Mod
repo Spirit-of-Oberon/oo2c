@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:TranslateToC [OOC_EXTENSIONS];
 (*  Translates a module file into a bunch of C code files.
-    Copyright (C) 2001, 2002, 2003  Michael van Acken
+    Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -207,9 +207,17 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
         translator. WriteProcedure (i);
       END;
     END;
+    
     w. WriteLn;
     WriteModuleName (w, "void OOC_", m, "_init(void) {", FALSE);
     translator. WriteProcBody (moduleIR. moduleBody);
+    w. WriteLn;
+    w. WriteString ("}");
+    w. WriteLn;
+
+    w. WriteLn;
+    WriteModuleName (w, "void OOC_", m, "_destroy(void) {", FALSE);
+    (*translator. WriteProcBody (moduleIR. moduleBody);*)
     w. WriteLn;
     w. WriteString ("}");
     w. WriteLn;

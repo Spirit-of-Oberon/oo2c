@@ -26,4 +26,7 @@ void OOC_PRE1_init(void) {
   ;
 }
 
+void OOC_PRE1_destroy(void) {
+}
+
 /* --- */

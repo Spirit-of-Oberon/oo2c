@@ -969,7 +969,7 @@ RAISES IO.Error;
       END;
       
       IF ~isUpToDate THEN
-        WriteMainFileC.WriteFile(module, r.imports^);
+        WriteMainFileC.WriteFile(module);
         success := TRUE;
       END;
     END;

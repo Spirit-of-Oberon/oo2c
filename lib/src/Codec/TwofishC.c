@@ -12,6 +12,8 @@
 
 void OOC_Codec_TwofishC_init0() {
 }
+void OOC_Codec_TwofishC_destroy0() {
+}
 
 /*
  * PLATFORM FIXES

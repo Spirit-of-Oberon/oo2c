@@ -11,4 +11,7 @@ void OOC_NoLengthInfo1_init(void) {
   ;
 }
 
+void OOC_NoLengthInfo1_destroy(void) {
+}
+
 /* --- */

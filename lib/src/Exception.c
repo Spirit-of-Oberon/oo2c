@@ -174,3 +174,7 @@ void OOC_Exception_init(void) {
   Exception__InitThreadState(&local_state);
   Exception__GetThreadState = local_GetThreadState;
 }
+
+void OOC_Exception_destroy(void) {
+  /* FIXME... if we ever to module unloading  */
+}

@@ -30,3 +30,6 @@ void Logger_TimeStamp__LocalNow(OOC_CHAR8 *str, OOC_LEN str_len,
 
 void OOC_Logger_TimeStamp_init() {
 }
+
+void OOC_Logger_TimeStamp_destroy() {
+}

@@ -38,3 +38,6 @@ Object__String OS_ProcessParameters__GetEnv(Object__String name) {
 
 void OOC_OS_ProcessParameters_init(void) {
 }
+
+void OOC_OS_ProcessParameters_destroy(void) {
+}

@@ -177,3 +177,6 @@ int OS_ProcessManagement__TermSignal(int status) {
 
 void OOC_OS_ProcessManagement_init(void) {
 }
+
+void OOC_OS_ProcessManagement_destroy(void) {
+}

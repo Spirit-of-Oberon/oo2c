@@ -16,4 +16,7 @@ void OOC_Const2_init(void) {
   ;
 }
 
+void OOC_Const2_destroy(void) {
+}
+
 /* --- */

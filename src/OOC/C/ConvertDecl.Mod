@@ -378,6 +378,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
    written.  Otherwise, all items @emph{not} in @oparam{exports} are emitted.  *)
   VAR
     mode: SHORTINT;
+    fctType: DeclWriter.Function;
       
   PROCEDURE ConvertTopLevel (root: Sym.Item; m: Repository.Module;
                              mode: SHORTINT);
@@ -483,18 +484,36 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
     ConvertTopLevel (symTab, m, mode);
 
     IF writeExported THEN
+      fctType := w.NewFunction(w.basicType[DeclWriter.void], FALSE);
+      fctType.AddParameter(w.NewDeclaration("client", DeclWriter.tqNone,
+                                            DeclWriter.scAuto,
+                                            w.NewTypeRef(DeclWriter.refTypedef,
+                                                         "RT0__Module")));
+      
       w. AddDeclaration
           (w. NewDeclaration
-           (Naming.NameOfModuleInit (symTab, FALSE),
+           (Naming.NameOfModuleInit (symTab, TRUE, FALSE),
             DeclWriter.tqNone,
             DeclWriter.scExtern, 
             w. NewFunction (w. basicType[DeclWriter.void], FALSE)));
       w. AddDeclaration
           (w. NewDeclaration
-           (Naming.NameOfModuleInit (symTab, TRUE),
+           (Naming.NameOfModuleInit (symTab, TRUE, TRUE),
+            DeclWriter.tqNone,
+            DeclWriter.scExtern, 
+            fctType));
+      w. AddDeclaration
+          (w. NewDeclaration
+           (Naming.NameOfModuleInit (symTab, FALSE, FALSE),
             DeclWriter.tqNone,
             DeclWriter.scExtern, 
             w. NewFunction (w. basicType[DeclWriter.void], FALSE)));
+      w. AddDeclaration
+          (w. NewDeclaration
+           (Naming.NameOfModuleInit (symTab, FALSE, TRUE),
+            DeclWriter.tqNone,
+            DeclWriter.scExtern, 
+            fctType));
     ELSE
       ConvertNestedTypes (symTab, symTab);
     END;

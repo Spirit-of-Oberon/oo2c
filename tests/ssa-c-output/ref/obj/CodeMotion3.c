@@ -35,4 +35,7 @@ void OOC_CodeMotion3_init(void) {
   ;
 }
 
+void OOC_CodeMotion3_destroy(void) {
+}
+
 /* --- */

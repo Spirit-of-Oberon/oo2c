@@ -68,4 +68,7 @@ void OOC_Const8_init(void) {
   ;
 }
 
+void OOC_Const8_destroy(void) {
+}
+
 /* --- */

@@ -14,4 +14,7 @@ void OOC_NoCopy7_init(void) {
   ;
 }
 
+void OOC_NoCopy7_destroy(void) {
+}
+
 /* --- */

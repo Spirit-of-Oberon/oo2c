@@ -48,4 +48,7 @@ void OOC_LoopRewrite8_init(void) {
   ;
 }
 
+void OOC_LoopRewrite8_destroy(void) {
+}
+
 /* --- */

@@ -173,3 +173,6 @@ OS_Files__Time OS_Files__MTime(Object__String path) {
 
 void OOC_OS_Files_init(void) {
 }
+
+void OOC_OS_Files_destroy(void) {
+}

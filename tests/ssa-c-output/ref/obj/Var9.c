@@ -32,4 +32,7 @@ void OOC_Var9_init(void) {
   ;
 }
 
+void OOC_Var9_destroy(void) {
+}
+
 /* --- */

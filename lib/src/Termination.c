@@ -156,3 +156,7 @@ void OOC_Termination_init(void) {
   (void)on_exit(&run_term_procs,NULL);
 #endif
 }
+
+void OOC_Termination_destroy(void) {
+  /* FIXME... if we ever to module unloading  */
+}

@@ -42,4 +42,7 @@ void OOC_LoopRewrite2_init(void) {
   ;
 }
 
+void OOC_LoopRewrite2_destroy(void) {
+}
+
 /* --- */

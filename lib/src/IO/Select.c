@@ -137,3 +137,6 @@ IO_Select__SelectionKey IO_Select__SelectorDesc_NextKey(IO_Select__Selector s) {
 
 void OOC_IO_Select_init(void) {
 }
+
+void OOC_IO_Select_destroy(void) {
+}

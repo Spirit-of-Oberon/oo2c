@@ -35,4 +35,7 @@ void OOC_Var3c_init(void) {
   ;
 }
 
+void OOC_Var3c_destroy(void) {
+}
+
 /* --- */

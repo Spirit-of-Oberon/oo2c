@@ -634,3 +634,7 @@ void OOC_Files_init(void) {
   /* make sure that all files are closed upon program termination */
   Termination__RegisterProc (&close_all_files);
 }
+
+void OOC_Files_destroy(void) {
+  /* FIXME... if we ever to module unloading  */
+}

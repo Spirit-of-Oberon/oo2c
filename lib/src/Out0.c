@@ -91,3 +91,6 @@ void Out0__Ln() {
 
 void OOC_Out0_init() {
 }
+
+void OOC_Out0_destroy() {
+}

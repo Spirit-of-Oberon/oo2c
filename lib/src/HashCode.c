@@ -125,3 +125,6 @@ void HashCode__Append(HashCode__Hash x, HashCode__Hash *hash) {
 
 void OOC_HashCode_init() {
 }
+
+void OOC_HashCode_destroy(void) {
+}

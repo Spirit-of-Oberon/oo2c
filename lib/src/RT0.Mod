@@ -249,6 +249,11 @@ TYPE
     (**All type descriptors of this module that correspond to named types
        defined on the top level.  Descriptors are listed in no particular
        order.  The last element of the array has the value @code{NIL}.  *)
+
+    registered-: BOOLEAN;
+    (**Set to @code{TRUE} by the module's initialization procedure.  This
+       happens before any of the imported modules are intialized, and acts as a
+       guard against double initialization.  *)
   END;
 
 TYPE
@@ -360,6 +365,10 @@ PROCEDURE Halt* [NO_RETURN](code: LONGINT);
 
 PROCEDURE RegisterModule* (mid: Module);
 (**Registers the module descriptor with the run-time system.  *)
+
+PROCEDURE UnregisterModule* (mid: Module);
+(**Unregisters the module descriptor from the run-time system.  Currently,
+   this procedure is a noop.  *)
 
 PROCEDURE ThisModule* (name: ARRAY OF CHAR): Module;
 (**Returns the module descriptor for the module @oparam{name}.  Result is

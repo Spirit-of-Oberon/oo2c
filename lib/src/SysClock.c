@@ -200,3 +200,6 @@ void SysClock__SetClock(const SysClock__DateTime *userData) {
 
 void OOC_SysClock_init(void) {
 }
+
+void OOC_SysClock_destroy(void) {
+}

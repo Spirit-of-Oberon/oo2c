@@ -31,4 +31,7 @@ void OOC_LoopRewrite7_init(void) {
   ;
 }
 
+void OOC_LoopRewrite7_destroy(void) {
+}
+
 /* --- */

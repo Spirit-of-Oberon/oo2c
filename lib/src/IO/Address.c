@@ -138,3 +138,6 @@ void OOC_IO_Address_init(void) {
   IO_Address__inet4Any = new_inet4(INADDR_ANY);
   IO_Address__inet4Broadcast = new_inet4(INADDR_BROADCAST);
 }
+
+void OOC_IO_Address_destroy(void) {
+}
