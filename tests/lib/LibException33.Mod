@@ -24,11 +24,11 @@ PROCEDURE Test*();
   BEGIN
     Out.String(">>> start"); Out.Ln;
     TRY
-      RAISE(NEW(Exception.Exception, one));
+      RAISE(NEW(Exception.Checked, one));
     CATCH Exception.Exception(e):
       Write(e.GetMessage());
       TRY
-        RAISE(NEW(Exception.Exception, two));
+        RAISE(NEW(Exception.Checked, two));
       CATCH Exception.Exception:
         Write(e.GetMessage());
       END;

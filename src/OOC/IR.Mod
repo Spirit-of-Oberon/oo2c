@@ -6062,6 +6062,11 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
       | Predef.new:
         type := arguments[0].type.Deparam();
         IF (type = b.typeType) THEN
+          type := arguments[0](TypeRef).qualType;
+          IF TR.IsPointer(type) &
+             ~TR.VariableInstance(TR.PointerBaseType(type)) THEN
+            b.ErrSym(cannotCreateInstance, arguments[0].sym);
+          END;
           RETURN b.NewConstructor(design.sym, arguments[0],
                                   StripFirst(arguments),
                                   context, endOfArgsSym);

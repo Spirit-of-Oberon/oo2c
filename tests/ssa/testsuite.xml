@@ -1334,6 +1334,10 @@
       A concrete extension of an <code>ABSTRACT</code> record does not
       define an inherited abstract type-bound procedure.
     </test>
+    <test id="abstract10" type="reject" file="Abstract10.Mod">
+      Trying to call the function variant of <code>NEW</code> with an
+      <code>ABSTRACT</code> record base type.
+    </test>
   </testcases>
   
   <testcases profile="OOC2 Development: Generics Extension"
@@ -2194,6 +2198,8 @@
         msg="Abstract procedure must be exported"/>
     <reject-info id="abstract9" pos="R1 = %RECORD"
         msg="Inherited procedure `Proc' is still abstract"/>
+    <reject-info id="abstract10" pos="NEW(%P)"
+        msg="Cannot create an instance an abstract type"/>
 
     <reject-info id="generic5" pos="A: %Array"
         msg="Invalid type bound"/>
