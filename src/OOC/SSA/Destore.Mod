@@ -233,11 +233,26 @@ PROCEDURE AccessedByCall (s: State;
         RETURN FALSE;
       END;
     END NestedProc;
+
+  PROCEDURE NonlocalWrites(calledAdr: SSA.Result): BOOLEAN;
+    VAR
+      proc: Sym.ProcDecl;
+    BEGIN
+      proc := calledAdr.CalledProc();
+      IF (proc # NIL) THEN
+        RETURN proc.nonlocalWrites;
+      ELSE
+        RETURN TRUE;  (* be pessimistic *)
+      END;
+    END NonlocalWrites;
   
   BEGIN
-    RETURN
-        NestedProc (calledAdr, s. pb. procDecl) OR
-        ~LocalVarWithoutAdr (design);
+    IF (mode = write) & ~NonlocalWrites(calledAdr) THEN
+      RETURN FALSE;
+    ELSE
+      RETURN NestedProc (calledAdr, s. pb. procDecl) OR
+          ~LocalVarWithoutAdr (design);
+    END;
   END AccessedByCall;
 
 PROCEDURE (s: State) ClobberedBy* (readDesign: SSA.Opnd; instr: SSA.Instr): BOOLEAN;
