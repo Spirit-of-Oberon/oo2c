@@ -2109,9 +2109,9 @@ PROCEDURE (b: Block) AddConstDim*(dim: LONGINT): Result;
                       Predef.GetType(Predef.longint));
   END AddConstDim;
 
-PROCEDURE (b: Block) AddConstLength*(dim: LONGINT): Result;
+PROCEDURE (b: Block) AddConstLength*(length: LONGINT): Result;
   BEGIN
-    RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim), -1),
+    RETURN b.AddConst(NEW(Const, BigInt.NewInt(length), -1),
                       Predef.GetType(Predef.address));
   END AddConstLength;
 
