@@ -432,7 +432,7 @@ TYPE
   ReturnStatm* = POINTER TO ReturnStatmDesc;
   ReturnStatmDesc = RECORD
     (NodeDesc)
-    return-: AST.Node;
+    return-: Terminal;
     expr-: AST.Node;
   END;
 
@@ -1417,7 +1417,7 @@ PROCEDURE (b: Builder) ReturnStatm* (return, expr: AST.Node): Node;
     r: ReturnStatm;
   BEGIN
     NEW (r);
-    r. return := return;
+    r. return := return(Terminal);
     r. expr := expr;
     RETURN r
   END ReturnStatm;

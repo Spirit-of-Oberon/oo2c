@@ -21,6 +21,7 @@ MODULE OOC:Make:Command:TranslateToC;
 *)
 
 IMPORT
+  Log,
   Channel, Files, Make, StdChannels, TextRider, ADT:String, ADT:Dictionary,
   URI, OOC:Make:Entity:ModuleFile,
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
@@ -170,6 +171,8 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       b. Write (w)
     END WriteDeclarations;
   
+  PROCEDURE ^ Call (statm: IR.Call);
+    
   PROCEDURE WriteExpr (w: TextRider.Writer;
                        converter: ConvertDecl.Converter;
                        expr: IR.Expression);
@@ -186,9 +189,39 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       | expr: Operator.Negate DO
         w. WriteChar ("-");
         WriteExpr (w, converter, expr. opnd1);
+
+      | expr: IR.Call DO
+        Call (expr)
+      ELSE
+        Log.Type("++ Unknown operator class in WriteExpr", expr);
+        ASSERT (FALSE)
       END
     END WriteExpr;
     
+  PROCEDURE Call (statm: IR.Call);
+    VAR
+      i: LONGINT;
+      design: IR.Expression;
+      name: String.String;
+    BEGIN
+      design := statm. design;
+      WITH design: IR.ProcedureRef DO
+        name := Naming.NameOfDeclaration (design. decl);
+        w. WriteString (name. array^)
+      END;
+      w. WriteString ("(");
+      FOR i := 0 TO LEN (statm. arguments^)-1 DO
+        (* FIXME... this may be incorrect if the argument list includes
+           multiple occurences of expressions that should only be 
+           evaluated once *)
+        IF (i # 0) THEN
+          w. WriteString (", ")
+        END;
+        WriteExpr (w, converter, statm. arguments[i])
+      END;
+      w. WriteString (")");
+    END Call;
+  
   PROCEDURE WriteStatmSeq (w: TextRider.Writer;
                            converter: ConvertDecl.Converter;
                            statmSeq: IR.StatementSeq);
@@ -210,30 +243,17 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         END
       END Assert;
     
-    PROCEDURE Call (statm: IR.Call);
-      VAR
-        i: LONGINT;
-        design: IR.Expression;
-        name: String.String;
+    PROCEDURE Return (return: IR.Return);
       BEGIN
         w. WriteLn;
-        design := statm. design;
-        WITH design: IR.ProcedureRef DO
-          name := Naming.NameOfDeclaration (design. decl);
-          w. WriteString (name. array^)
+        IF (return. result = NIL) THEN
+          w. WriteString ("return;")
+        ELSE
+          w. WriteString ("return ");
+          WriteExpr (w, converter, return. result);
+          w. WriteString (";")
         END;
-        w. WriteString ("(");
-        FOR i := 0 TO LEN (statm. arguments^)-1 DO
-          (* FIXME... this may be incorrect if the argument list includes
-             multiple occurences of expressions that should only be 
-             evaluated once *)
-          IF (i # 0) THEN
-            w. WriteString (", ")
-          END;
-          WriteExpr (w, converter, statm. arguments[i])
-        END;
-        w. WriteString (");");
-      END Call;
+      END Return;
     
     BEGIN
       (* quick and dirty translation with limited scope; should be placed
@@ -243,7 +263,14 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         WITH statm: IR.Assert DO
           Assert (statm)
         | statm: IR.Call DO
-          Call (statm)
+          w. WriteLn;
+          Call (statm);
+          w. WriteChar (";");
+        | statm: IR.Return DO
+          Return (statm)
+        ELSE
+          Log.Type("++ Unknown statement class in WriteStatmSeq", statm);
+          ASSERT (FALSE)
         END
       END
     END WriteStatmSeq;

@@ -107,8 +107,17 @@ PROCEDURE (v: Visitor) VisitAssert* (assert: IR.Assert);
     v. w. AttrBool ("disabled", assert. disabled);
     v. w. AttrInt ("code", assert. code);
     assert. predicate. Accept (v);
-    v. w. EndTag;  (* call *)
+    v. w. EndTag;  (* assert *)
   END VisitAssert;
+
+PROCEDURE (v: Visitor) VisitReturn* (return: IR.Return);
+  BEGIN
+    v. w. StartTag ("return", FALSE);
+    IF (return. result # NIL) THEN
+      return. result. Accept (v);
+    END;
+    v. w. EndTag;  (* return *)
+  END VisitReturn;
 
 
 PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);

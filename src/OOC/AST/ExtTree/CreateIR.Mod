@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree:CreateIR;
 *)
 
 IMPORT
-OOC:AST:ExtTree:XML, StdChannels,
+Log, OOC:AST:ExtTree:XML, StdChannels,
   OOC:Scanner:Symbol, OOC:AST:ExtTree, OOC:SymbolTable:Item, OOC:IR;
 
 
@@ -40,6 +40,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       WITH design: ExtTree.Terminal DO
         RETURN b. NewIdentRef (currentNamespace, currentSourceContext,
                                design. sym)
+            
       | design: ExtTree.Operator DO
         (* we only do qualified identifiers for now: "module.ident" *)
         ASSERT (design. op. sym. id = Symbol.period);
@@ -47,10 +48,24 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         WITH left: IR.ModuleRef DO
           RETURN b. NewQualident (left, currentSourceContext, 
                                   design. right(ExtTree.Terminal). sym)
+        | left: IR.Const DO
+          ASSERT (left = IR.errorExpr);
+          RETURN IR.errorExpr
+              
+        ELSE
+          Log.Type("++ Unknown type in left operand of Designator/Operator", left);
+          ASSERT (FALSE)
         END
+            
+      ELSE
+        Log.Type("++ Unknown type in Designator", design);
+        ASSERT (FALSE)
       END
     END Designator;
   
+  PROCEDURE ^ FunctionCall (call: ExtTree.FunctionCall;
+                            isProcCall: BOOLEAN): IR.Expression;
+    
   PROCEDURE Expr (expr: ExtTree.Node): IR.Expression;
     VAR
       left, right: IR.Expression;
@@ -77,9 +92,15 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           right := NIL
         END;
         RETURN b. NewOperator (expr. op. sym, left, right)
+
+      | expr: ExtTree.FunctionCall DO
+        RETURN FunctionCall (expr, FALSE)
+            
+      ELSE
+        Log.Type("++ Unknown expression class in Expr", expr);
+        ASSERT (FALSE)
       END
     END Expr;
-  
   
   PROCEDURE FunctionCall (call: ExtTree.FunctionCall;
                           isProcCall: BOOLEAN): IR.Expression;
@@ -95,7 +116,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       END;
       RETURN b. NewCall (design, arguments)
     END FunctionCall;
-
+  
   PROCEDURE ProcedureCall (call: ExtTree.ProcedureCall): IR.Statement;
     VAR
       expr: IR.Expression;
@@ -111,11 +132,22 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN expr(IR.Statement)
     END ProcedureCall;
   
+  PROCEDURE Return (return: ExtTree.ReturnStatm): IR.Statement;
+    BEGIN
+      IF (return. expr = NIL) THEN
+        RETURN b. NewReturn (return. return. sym, NIL)
+      ELSE
+        RETURN b. NewReturn (return. return. sym,
+                             Expr (return. expr(ExtTree.Node)))
+      END;
+    END Return;
+  
   PROCEDURE StatementSeq (statmSeq: ExtTree.NodeList): IR.StatementSeq;
     VAR
       i, count: LONGINT;
       n: ExtTree.Node;
       statmSeqIR: IR.StatementSeq;
+      statm: IR.Statement;
     BEGIN
       (* count number of statements, allocate array to hold IR of sequence *)
       count := 0;
@@ -130,8 +162,15 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         IF (statmSeq. n[i] # NIL) THEN
           n := statmSeq. n[i](ExtTree.Node);
           WITH n: ExtTree.ProcedureCall DO
-            statmSeqIR[count] := ProcedureCall (n);
+            statm := ProcedureCall (n);
+            
+          | n: ExtTree.ReturnStatm DO
+            statm := Return (n);
+          ELSE
+            Log.Type("++ Unknown type in StatementSeq", n);
+            ASSERT (FALSE)
           END;
+          statmSeqIR[count] := statm;
           INC (count)
         END
       END;
@@ -210,7 +249,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     END Module;
   
   BEGIN
-(*    XML.Write (StdChannels.stdout.NewWriter(), module);*)
+    XML.Write (StdChannels.stdout.NewWriter(), module);
     
     currentSourceContext := symTab;
     currentNamespace := symTab. ns;

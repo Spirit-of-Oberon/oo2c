@@ -172,12 +172,12 @@ TYPE
   Call* = POINTER TO CallDesc;
   CallDesc = RECORD
     (**Calls to normal functions and procedures are mapped to this class.  It
-       is not use to represent calls to type-bound procedures, nor to
+       is not used to represent calls to type-bound procedures, nor to
        predefined procedures.
 
        Predefined functions are represented as operators of expressions.
-       Predefined procedures are mapped to dedicated classes.  The reason to
-       distinguish them from normal procedures is that code generators
+       Predefined procedures are mapped to dedicated classes.  The reason for
+       distinguishing them from normal procedures is that code generators
        typically emit very specialized code patterns for them.  *)
     (StatementDesc)
     design-: Expression;
@@ -194,6 +194,19 @@ TYPE
     disabled-: BOOLEAN;
   END;
 
+TYPE
+  Return* = POINTER TO ReturnDesc;
+  ReturnDesc = RECORD
+    (**A procedure's @code{RETURN} statement.  *)
+    (StatementDesc)
+    result-: Expression;
+    (**The result expression.  @code{NIL} if this is a return from
+       a procedure.  *)
+  END;
+
+
+(* Modules and Procedures
+   ------------------------------------------------------------------------ *)
 
 TYPE
   Procedure* = POINTER TO ProcedureDesc;
@@ -494,7 +507,8 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
         | decl: Item.Import DO
           RETURN NewModuleRef (name, decl. externalSymTab)
         ELSE
-          Log.Type ("decl", decl); ASSERT (FALSE);
+          Log.Type ("Unknown decl in NewIdentRef", decl);
+          ASSERT (FALSE);
         END
       END
     ELSE
@@ -568,6 +582,31 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitAssert* (assert: Assert);
 PROCEDURE (assert: Assert) Accept* (v: Visitor);
   BEGIN
     v. VisitAssert (assert)
+  END Accept;
+
+(* -------- *)
+
+PROCEDURE InitReturn (return: Return; sym: Symbol; result: Expression);
+  BEGIN
+    InitStatement (return, sym);
+    return. result := result;
+  END InitReturn;
+
+PROCEDURE (b: Builder) NewReturn* (sym: Symbol; result: Expression): Return;
+  VAR
+    return: Return;
+  BEGIN
+    NEW (return);
+    InitReturn (return, sym, result);
+    RETURN return
+  END NewReturn;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitReturn* (return: Return);
+  END VisitReturn;
+
+PROCEDURE (return: Return) Accept* (v: Visitor);
+  BEGIN
+    v. VisitReturn (return)
   END Accept;
 
 (* -------- *)
