@@ -23,11 +23,11 @@ MODULE OOC:Make:Command:TranslateToC;
 IMPORT
   Channel, Files, Make, StdChannels, TextRider, ADT:String, ADT:Dictionary,
   URI, OOC:Make:Entity:ModuleFile,
-  OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
+  OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, OOC:IR, OOC:IR:XML,
   OOC:SymbolTable:Item, OOC:SymbolTable:Exports,
-  OOC:C:WriteDecl, OOC:C:ConvertDecl;
+  OOC:C:WriteConst, OOC:C:WriteDecl, OOC:C:ConvertDecl;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -102,9 +102,9 @@ PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
   END Discover;
 
 PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
-                     ast: AST.Node; symTab: Item.Module;
-                     exports: Dictionary.Dictionary;
-                     errList: Error.List);
+                     errList: Error.List;
+                     converter: ConvertDecl.Converter;
+                     procList: IR.ProcedureList);
   VAR
     ch: Channel.Channel;
     baseURI: URI.HierarchicalURI;
@@ -148,14 +148,72 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       w. WriteLn;
     END WriteModuleName;
   
-  PROCEDURE WriteDeclarations (w: TextRider.Writer; writeExported: BOOLEAN);
+  PROCEDURE WriteDeclarations (w: TextRider.Writer;
+                               converter: ConvertDecl.Converter;
+                               writeExported: BOOLEAN);
     VAR
-      f: WriteDecl.Block;
+      b: WriteDecl.Block;
     BEGIN
-      f := WriteDecl.NewBlock();
-      ConvertDecl.Convert (m, symTab, f, exports, writeExported);
-      f. Write (w)
+      b := WriteDecl.NewBlock();
+      converter. ConvertSymTab (b, writeExported);
+      b. Write (w)
     END WriteDeclarations;
+  
+  PROCEDURE WriteExpr (w: TextRider.Writer;
+                       converter: ConvertDecl.Converter;
+                       expr: IR.Expression);
+    BEGIN
+      WITH expr: IR.Const DO
+        WriteConst.Write (w, expr. value)
+      END
+    END WriteExpr;
+    
+  PROCEDURE WriteStatmSeq (w: TextRider.Writer;
+                           converter: ConvertDecl.Converter;
+                           statmSeq: IR.StatementSeq);
+    VAR
+      i: LONGINT;
+      statm: IR.Statement;
+    BEGIN
+      (* quick and dirty translation with limited scope; should be placed
+         in a separate module ... *)
+      FOR i := 0 TO LEN (statmSeq^)-1 DO
+        statm := statmSeq[i];
+        WITH statm: IR.Assert DO
+          IF ~statm. disabled THEN
+            w. WriteLn;
+            w. WriteString ("_assert(");
+            WriteExpr (w, converter, statm. predicate);
+            w. WriteString (", ");
+            w. WriteLInt (statm. code, 0);
+            w. WriteString (", ");
+            w. WriteString ("0");  (* ... file position missing *)
+            w. WriteString (");")
+          END
+        END
+      END
+    END WriteStatmSeq;
+  
+  PROCEDURE WriteProcedures (w: TextRider.Writer;
+                             converter: ConvertDecl.Converter;
+                             procList: IR.ProcedureList);
+    VAR
+      b: WriteDecl.Block;
+      d: WriteDecl.Declaration;
+      i: LONGINT;
+    BEGIN
+      b := WriteDecl.NewBlock();
+      FOR i := 0 TO LEN (procList^)-1 DO
+        d := converter. ConvertProc (b, procList[i]. decl);
+        w. WriteLn;
+        d. Write (w);
+        w. WriteString (" {");
+        WriteStatmSeq (w, converter, procList[i]. statmSeq);
+        w. WriteLn;
+        w. WriteString ("}");
+        w. WriteLn
+      END
+    END WriteProcedures;
   
   BEGIN
     ch := m. GetOutputChannel (fileId, TRUE, res);
@@ -177,18 +235,19 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
           import := import. nextImport
         END;*)
         
-        WriteDeclarations (w, TRUE);
+        WriteDeclarations (w, converter, TRUE);
         w. WriteLn;
         
-        WriteModuleName (w, "#endif /* ", m, " */");
+        WriteModuleName (w, "#endif /* _MODULE_", m, "_ */");
         
         
       | Repository.modDeclFileC:
         WriteInclude (w, m. GetURI (Repository.modHeaderFileC));
-        WriteDeclarations (w, FALSE);
+        WriteDeclarations (w, converter, FALSE);
           
       | Repository.modCodeFileC:
          WriteInclude (w, m. GetURI (Repository.modDeclFileC));
+         WriteProcedures (w, converter, procList);
          w. WriteLn;
          WriteModuleName (w, "void ", m, "_init(void) {");
          w. WriteString ("}");
@@ -218,21 +277,30 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     config: Config.Config;
     exports: Dictionary.Dictionary;
     module: IR.Module;
+    converter: ConvertDecl.Converter;
+    pragmaHistory: Pragmas.History;
   BEGIN
     m := cmd. module;
     config := cmd. context. config(Config.Config);
-    ParseModule.ParseModule (m, config, TRUE, TRUE, ast, symTab, errList);
+    ParseModule.ParseModule (m, config, TRUE, TRUE,
+                             ast, symTab, pragmaHistory, errList);
     (* symbol file is written by the `ParseModule' function *)
     
     IF (errList. msgCount = 0) THEN
-      module := CreateIR.CreateIR (ast(ExtTree.Module), IR.NewBuilder());
+      module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
+                                   IR.NewBuilder (pragmaHistory, errList));
       XML.Write (StdChannels.stdout. NewWriter(), module);
       
       exports := Exports.GetExports (symTab);
-      WriteFile (m, Repository.modHeaderFileC, ast, symTab, exports, errList);
-      WriteFile (m, Repository.modDeclFileC, ast, symTab, exports, errList);
+      converter := ConvertDecl.NewConverter (m, symTab, exports);
+      
+      WriteFile (m, Repository.modHeaderFileC, errList,
+                 converter, NIL);
+      WriteFile (m, Repository.modDeclFileC, errList,
+                 converter, NIL);
       IF (symTab. class = Item.mcStandard) THEN
-        WriteFile (m, Repository.modCodeFileC, ast, symTab, exports, errList)
+        WriteFile (m, Repository.modCodeFileC, errList,
+                   converter, module. procList)
       END
     END;
     
