@@ -45,6 +45,7 @@ VAR
   reportWriter: XMLWriter.Writer;
   results: Results;
   str: ARRAY 256 OF CHAR;
+  exitError: BOOLEAN;
 
 PROCEDURE CheckErrorFile (msg: Msg.Msg; file: ARRAY OF CHAR);
   VAR
@@ -324,8 +325,10 @@ BEGIN
   Out.String (", failed: "); Out.LongInt (results[failed], 0);
   Out.String (", tolerated: "); Out.LongInt (results[tolerated], 0); Out.Ln;
   Out.String ("--> ");
+  exitError := FALSE;
   IF (results[failed] # 0) THEN
-    Out.String ("Processor incompatible to ")
+    Out.String ("Processor incompatible to ");
+    exitError := TRUE;
   ELSIF (results[tolerated] # 0) THEN
     Out.String ("Processor accepts ")
   ELSE
@@ -343,4 +346,10 @@ BEGIN
                         Latin1.factory, TRUE, 4);
   testSuite. Write (writer);
   writer. EndOfText*)
+
+  IF exitError THEN
+    HALT (1)
+  ELSE
+    HALT (0)
+  END
 END RunTests.
