@@ -28,7 +28,12 @@ IMPORT
 CONST
   dangerous = TRUE;
   (* Enable dangerous transformations that may change program behaviour.  *)
-     
+
+(* Possible extension: Instead of Sum being a function of one
+   induction variable, it could be extended to cover an arbitrary
+   number of variables.  For this, (head,headFactor) needs to be
+   replaced with a list of such tuples.  *)
+
 CONST
   notVisited = 0;
   visited = 1;
@@ -48,8 +53,9 @@ TYPE
 TYPE
   Sum = POINTER TO SumDesc;
   Factors = POINTER TO ARRAY OF Sum;
-  (* List of loop-invariant or constant values.  Sorted by ascending
-     @ofield{Sum.id}.  *)
+  (* List of loop-invariant, constant, or ``other'' values.  Sorted by
+     ascending @ofield{Sum.id}.  For every element of this array,
+     @ofield{Sum.atom} is not @code{NIL}.  *)
   Product = POINTER TO ProductDesc;
   ProductDesc = RECORD
     magnitude: LONGINT;
@@ -71,7 +77,7 @@ TYPE
     subclass: Opcode.Subclass;
     (* Subclass of the result produced by this sum.  Any summation operand
        that is not of this type needs to be converted to it.  *)
-    instr: SSA.Instr;
+    atom: SSA.Result;
     (* For atomic values (constant, loop-invariant, or ``others'') this refers
        to the instruction that represents this value in the SSA form.  For all
        other values, this field is NIL.  *)
@@ -101,8 +107,8 @@ TYPE
   RewrittenCycleDesc = RECORD
     next: RewrittenCycle;
     origin: Sum;
-    a: SSA.Instr;   (* factor applied to the induction head, or NIL *)
-    b: SSA.Instr;   (* loop-invariant but not constant offset, or NIL *)
+    a: SSA.Result;   (* factor applied to the induction head, or NIL *)
+    b: SSA.Result;   (* loop-invariant but not constant offset, or NIL *)
     newHead: SSA.Result;  (* induction head of the rewritten cycle *)
     replacements: POINTER TO ARRAY OF SSA.Result;
     (* Element at index @ofield{CycleElement.id} holds the replementent
@@ -127,13 +133,17 @@ VAR
   one: PList;
   idCount: LONGINT;
   
-PROCEDURE InitSum(sum: Sum; subclass: Opcode.Subclass;
-                  instr: SSA.Instr; id: LONGINT);
+PROCEDURE InitSum(sum: Sum; subclass: Opcode.Subclass; atom: SSA.Result);
   BEGIN
     SSA.InitNode(sum);
     sum.subclass := subclass;
-    sum.instr := instr;
-    sum.id := id;
+    sum.atom := atom;
+    IF (atom # NIL) THEN
+      sum.id := idCount;
+      INC(idCount);
+    ELSE
+      sum.id := 0;
+    END;
     
     sum.head := NIL;
     sum.headFactor := zero;
@@ -279,7 +289,7 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
       ic: InductionCycle;
     BEGIN
       NEW(ic);
-      InitSum(ic, head.subclass, NIL, 0);
+      InitSum(ic, head.subclass, head);
       ic.head := head;
       ic.headFactor := one;
       ic.cycleElements := NIL;
@@ -363,17 +373,12 @@ PROCEDURE Cmp(a, b: Product): LONGINT;
     END;
   END Cmp;
 
-PROCEDURE NewSum(subclass: Opcode.Subclass; instr: SSA.Instr): Sum;
+PROCEDURE NewSum(subclass: Opcode.Subclass; atom: SSA.Result): Sum;
   VAR
     sum: Sum;
   BEGIN
     NEW(sum);
-    IF (instr # NIL) THEN
-      InitSum(sum, subclass, instr, idCount);
-      INC(idCount);
-    ELSE
-      InitSum(sum, subclass, NIL, 0);
-    END;
+    InitSum(sum, subclass, atom);
     RETURN sum;
   END NewSum;
 
@@ -429,7 +434,7 @@ PROCEDURE Flatten*(res: SSA.Result);
       END;
       
       NEW(sum);
-      InitSum(sum, subclass, NIL, 0);
+      InitSum(sum, subclass, NIL);
       IF (a.headFactor = zero) THEN
         sum.head := b.head;
         sum.headFactor := b.headFactor;
@@ -502,7 +507,7 @@ PROCEDURE Flatten*(res: SSA.Result);
       
       BEGIN
         NEW(sum);
-        InitSum(sum, subclass, NIL, 0);
+        InitSum(sum, subclass, NIL);
         
         IF (a = zero) THEN
           RETURN sum;
@@ -563,7 +568,7 @@ PROCEDURE Flatten*(res: SSA.Result);
       (* been here, done it *)
     ELSIF ~(res IS SSA.Instr) THEN
       (* we are only interested in the instruction itself *)
-      sum := NewSum(res.subclass, NIL);
+      sum := NewSum(res.subclass, res);
       sum.others := NewPList(sum);
       res.info := sum;
       Flatten(res.instr);
@@ -648,21 +653,23 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
     replacement: Dictionary.Dictionary;
     i: LONGINT;
 
-  PROCEDURE Expr(plist: PList; subclass: Opcode.Subclass): SSA.Instr;
+  PROCEDURE Expr(plist: PList; subclass: Opcode.Subclass): SSA.Result;
     VAR
       i: LONGINT;
-      res, instr, add: SSA.Instr;
-
-    PROCEDURE Multiply(m: LONGINT; f: Factors): SSA.Instr;
+      add: SSA.Instr;
+      res, instr: SSA.Result;
+      
+    PROCEDURE Multiply(m: LONGINT; f: Factors): SSA.Result;
       VAR
         i: LONGINT;
-        res, mult: SSA.Instr;
+        mult: SSA.Instr;
+        res: SSA.Result;
       BEGIN
-        res := pb.FixSubclassInstr(f[0].instr, subclass);
+        res := pb.FixSubclass(f[0].atom, subclass);
         FOR i := 1 TO LEN(f^)-1 DO
           mult := pb.AddInstr(Opcode.multiply, subclass);
           mult.AddOpnd(res, Opnd.arg);
-          mult.AddOpnd(pb.FixSubclass(f[i].instr, subclass), Opnd.arg);
+          mult.AddOpnd(pb.FixSubclass(f[i].atom, subclass), Opnd.arg);
           res := mult;
         END;
         IF (m # 1) THEN
@@ -766,7 +773,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
             RETURN FALSE;
           ELSE
             FOR i := 0 TO LEN(f1^)-1 DO
-              IF (f1[i].instr # f2[i].instr) THEN
+              IF (f1[i].atom # f2[i].atom) THEN
                 RETURN FALSE;
               END;
             END;
@@ -940,7 +947,7 @@ PROCEDURE DumpSums(pb: SSA.ProcBlock);
   PROCEDURE E(plist: PList);
     VAR
       i, j, m: LONGINT;
-      instr: SSA.Instr;
+      instr: SSA.Result;
     BEGIN
       IF (plist = zero) THEN
         Err.Char("0");
@@ -957,7 +964,7 @@ PROCEDURE DumpSums(pb: SSA.ProcBlock);
             Err.Char("*");
           END;
           FOR j := 0 TO LEN(plist.prod[i].factors^)-1 DO
-            instr := plist.prod[i].factors[j].instr;
+            instr := plist.prod[i].factors[j].atom;
             IF (j # 0) THEN Err.Char("*") END;
             IF (instr = NIL) THEN
               Err.String("<NIL>");
