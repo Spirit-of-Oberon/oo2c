@@ -282,7 +282,7 @@ PROCEDURE GetPointerDecl* (w: DeclWriter.Writer;
    @oparam{paramDecl}.
 
    @precond
-   @oparam{varDecl} is a parameter declaration of array type
+   @oparam{paramDecl} is a parameter declaration of array type
    @end precond  *)
   VAR
     elemType: Sym.Type;

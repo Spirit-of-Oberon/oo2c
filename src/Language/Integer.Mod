@@ -18,7 +18,7 @@ VAR
   typeName : String.String;
 
 PROCEDURE New* (val : Integers.Integer) : Value;
-(** Return a @otype{Value} for integer @oparam{val} with type @oparam{t}. *)
+(** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
 VAR 
   v : Value;
 BEGIN
