@@ -7,10 +7,10 @@ CCFLAGS = #-traditional-cpp
 LIB = $(OOC_DEV_ROOT)/lib
 
 # binary that produces the tested excutables
-TEST_DRIVER = TestCompile
+TEST_DRIVER = oo2c
 
 # command to compile benchmarks
-COMPILE = $(OOC_DEV_ROOT)/$(TEST_DRIVER) -r $(OOC_DEV_ROOT)/lib -r wd --use-ssa
+COMPILE = $(OOC_DEV_ROOT)/$(TEST_DRIVER) -r $(OOC_DEV_ROOT)/lib -r wd
 
 # command to generate assembley output from C
 CCC = gcc $(CCFLAGS) -O2 -S -I$(LIB)/src -I$(LIB)/obj -Iwd/obj
