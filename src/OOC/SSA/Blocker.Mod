@@ -511,6 +511,7 @@ PROCEDURE WriteBlocks (c: IO.ByteChannel; pb: SSA.ProcBlock; root: Region;
         w. WriteChar ("]");
       END;
       
+      (*w.WriteHex(SYSTEM.VAL(LONGINT,res),8);*)
       instr := res. instr;
       IF instr. IsConst() THEN
         WITH instr: SSA.Const DO
@@ -1163,15 +1164,18 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
     END AddRegionDeps;
   
   PROCEDURE IgnoredUse (use: SSA.Opnd): BOOLEAN;
+    VAR
+      opcode: Opcode.Class;
     BEGIN
       (* skip all but the first operand of "select-exit", and all of
          "select-return" (the latter is automatically added as first
          instruction to the procedure block, its parents become live
          after that) *)
+      opcode := use.instr.opcode;
       RETURN
-          (use. instr. opcode = Opcode.selectReturn) OR
-          (use. instr. opcode = Opcode.loopEnd) &
-            (use. class = Opnd.storeExit)
+          (opcode = Opcode.selectReturn) OR
+          (opcode = Opcode.loopEnd) & (use.class = Opnd.storeExit) OR
+          (opcode = Opcode.equiv);
     END IgnoredUse;
 
   PROCEDURE UpdateDefs (p: Proxy);
@@ -1814,6 +1818,20 @@ PROCEDURE GetDependenceData* (pb: SSA.ProcBlock): DependenceData;
     RETURN dd;
   END GetDependenceData;
 
+PROCEDURE (dd: DependenceData) SameRegion* (x, y: SSA.Instr): BOOLEAN;
+(**Return @code{TRUE} if the region of @oparam{x} is that of
+   @oparam{y}.  *)
+  BEGIN
+    RETURN (x.info(Proxy).region = y.info(Proxy).region);
+  END SameRegion;
+
+PROCEDURE (dd: DependenceData) Dominates* (x, y: SSA.Instr): BOOLEAN;
+(**Return @code{TRUE} if the region of @oparam{x} dominates that of
+   @oparam{y}.  *)
+  BEGIN
+    RETURN Dominates(x.info(Proxy).region, y.info(Proxy).region);
+  END Dominates;
+
 PROCEDURE (dd: DependenceData) Conflict* (x, y: SSA.Instr): BOOLEAN;
   VAR
     p: Object.Object;
@@ -1904,6 +1922,42 @@ PROCEDURE (dd: DependenceData) AvailableTo* (x, y: SSA.Instr): BOOLEAN;
         ~dd. DependsOn (xValue, y);
   END AvailableTo;
 
+PROCEDURE (dd: DependenceData) GetSameInstr*(regionInstr, instr: SSA.Instr): SSA.Instr;
+  VAR
+    region: Region;
+    p: Proxy;
+    opnd1, opnd2: SSA.Opnd;
+    instr2: SSA.Instr;
+  BEGIN
+    region := regionInstr.info(Proxy).region;
+    p := region.first;
+    WHILE (p # NIL) DO
+      instr2 := p.instr;
+      IF (instr.opcode = instr2.opcode) &
+         (instr.subclass = instr2.subclass) THEN
+        opnd1 := instr.opndList;
+        opnd2 := instr2.opndList;
+        WHILE (opnd1 # NIL) & (opnd2 # NIL) & (opnd1.arg = opnd2.arg) DO
+          opnd1 := opnd1.nextOpnd;
+          opnd2 := opnd2.nextOpnd;
+        END;
+        IF (opnd1 = NIL) & (opnd2 = NIL) THEN  (* got a complete match *)
+          RETURN instr2;
+        END;
+      END;
+      p := p.nextProxy;
+    END;
+    RETURN NIL;
+  END GetSameInstr;
+
+PROCEDURE (dd: DependenceData) SetRegion*(regionInstr, instr: SSA.Instr);
+  VAR
+    p: Proxy;
+  BEGIN
+    p := NewProxy(instr);
+    regionInstr.info(Proxy).region.Append(p);
+    instr.info := p;
+  END SetRegion;
 
 PROCEDURE Write* (c: IO.ByteChannel; pb: SSA.ProcBlock);
   VAR
