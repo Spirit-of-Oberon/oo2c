@@ -117,6 +117,12 @@ BEGIN
   p.expanded.Prepend(Scanner.NewIdentToken(m.name));
 END PushMacro;
 
+PROCEDURE (p : Process) Undefine(name : STRING);
+BEGIN
+  p.macroDecl.Remove(p.macroDecl.IndexOf(p.macro.Get(name)));
+  p.macro.Delete(name);
+END Undefine;
+
 PROCEDURE (p : Process) GetToken* (token : Scanner.Token; options : SET);
 VAR
   m : Macro;
@@ -356,6 +362,7 @@ VAR
 
       IF p.macro.HasKey(name) THEN
         p.err.MsgParam("Macro '$0' redefined", name, NIL, NIL, strictRedefine IN moduleOptions);
+        p.Undefine(name);
       END;
 
       defFunc := p.scanner.ch = '(';  (* bracket must immediately follow ident *)
@@ -430,8 +437,7 @@ VAR
       ELSIF ~p.macro.HasKey(token.name) THEN 
         p.err.MsgParam("#undef macro '$0' not defined", token.name, NIL, NIL, strictUndefine IN moduleOptions);
       ELSE
-        p.macroDecl.Remove(p.macroDecl.IndexOf(p.macro.Get(token.name)));
-        p.macro.Delete(token.name);
+	    p.Undefine(token.name);
       END;
       GetSymP;
       End();
