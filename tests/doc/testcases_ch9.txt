@@ -69,7 +69,7 @@ ACCEPT:
   1) accept "proc" and "proc()" if the formal parameter list
      is empty
   2) argument of basic type (value and VAR); assignment 
-     to value parameter are unvisible outside proc, while
+     to value parameter are invisible outside proc, while
      assigning to VAR parameter is visible
   3) argument of record type (value and VAR); dito
   4) argument of array type (value and VAR); dito
@@ -172,9 +172,9 @@ ACCEPT:
 
 REJECT:
 
-  1) var is not a variable
-  2) var is a composite designator (i.e., not a single ident)
-  3) var is not integer
+  1) var is not a variable  [For2]
+  2) var is a composite designator (i.e., not a single ident)  [For1]
+  3) var is not integer  [For3]
   4) begin is not assignment compatible to var
   5) end is not assignment compatible to var
   6) var does not include step
@@ -183,7 +183,7 @@ REJECT:
 
 ACCEPT:
 
-  1) begin < end, no step: iterate end-begin+1 times
+  1) begin < end, no step: iterate end-begin+1 times  [Div1.Mod]
   2) begin < end, positive step
   3) begin > end, negative step
 

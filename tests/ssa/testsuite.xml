@@ -10,8 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; case3 case4 case5 case6 case7 case8
-  case9 case10 case11" >-->
+  select ="&SetupTestCasesWithOut; for1 for2 for3" >-->
 
   &TestSetupWithOut;
     
@@ -148,7 +147,18 @@
     <test id="loop9" type="reject" file="HOTLoop9.Mod">
       <code>EXIT</code> outside of of a <code>LOOP</code>.
     </test>
+ 
     
+    <test id="for1" type="reject" file="For1.Mod">
+      Loop variable is an array element.
+    </test>
+    <test id="for2" type="reject" file="For2.Mod">
+      Loop variable is a type name.
+    </test>
+    <test id="for3" type="reject" file="For3.Mod">
+      Loop variable is of character type.
+    </test>
+       
     <test id="case1" type="run" file="Case1.Mod" output="Case1.Ref">
       <code>CASE</code> statement using branches with one label, two
       labels, a range as a label, and an <code>ELSE</code> part.
@@ -675,6 +685,11 @@
     <reject-info id="loop7" pos="WHILE str%[i] DO" msg="Expression must be of type BOOLEAN"/>
     <reject-info id="loop8" pos="UNTIL str%[i];" msg="Expression must be of type BOOLEAN"/>
     <reject-info id="loop9" pos="%EXIT" msg="EXIT outside of LOOP"/>
+
+    <reject-info id="for1" pos="a%[0]" msg="Expected symbol `:='"/>
+    <reject-info id="for2" pos="FOR %T :=" msg="This must be a variable"/>
+    <reject-info id="for3" pos="FOR %x :=" msg="Expression must be of integer type"/>
+        
     <reject-info id="case3" pos="CASE %i " msg="Select expression must be integer or character"/>
     <reject-info id="case4" pos="1..%j" msg="Expression is not constant"/>
     <reject-info id="case5" pos="| %128:" msg="Label not in type of select expression"/>
