@@ -211,6 +211,25 @@
           file="LibIntStrIntToStr1.Mod" output="LibIntStrIntToStr1.Ref">
       Use <code>IntToStr</code> to convert integers to strings.
     </test>
- 
+
+    <test id="lib_LRealConv_ScanReal1" type="run"
+          file="LibLRealConvScanReal1.Mod" output="LibLRealConvScanReal1.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers without 
+      fractional part or exponent.
+    </test>
+     
+    <test id="lib_LRealConv_ScanReal2" type="run"
+          file="LibLRealConvScanReal2.Mod" output="LibLRealConvScanReal2.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers with
+      fractional parts.
+    </test>
+     
+    <test id="lib_LRealConv_ScanReal3" type="run"
+          file="LibLRealConvScanReal3.Mod" output="LibLRealConvScanReal3.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers with exponents.
+    </test>
   </testcases>
 </testsuite-ext>
