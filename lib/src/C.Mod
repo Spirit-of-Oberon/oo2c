@@ -67,5 +67,7 @@ TYPE  (* C string type, assignment compatible with character arrays and
   
 TYPE
   Proc* = PROCEDURE;
-  
+
+PROCEDURE strtod* (string: address; VAR tailptr: address): double;
+
 END C.

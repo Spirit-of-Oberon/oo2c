@@ -245,5 +245,13 @@
       Use <code>FormatReal</code> to classify a number of strings.
       The tests check that out of range numbers are classified correctly.
     </test>    
+    
+    <test id="lib_LRealConv_ValueReal1" type="run"
+          file="LibLRealConvValueReal1.Mod"
+	  output="LibLRealConvValueReal1.Ref">
+      Use <code>ValueReal</code> to convert strings to
+      <code>LONGREAL</code>. 
+    </test>
+    
   </testcases>
 </testsuite-ext>

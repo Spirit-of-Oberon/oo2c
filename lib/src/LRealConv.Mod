@@ -1,7 +1,7 @@
 MODULE LRealConv;
 
 IMPORT
-  CharClass, ConvTypes;
+  SYSTEM, C, CharClass, ConvTypes;
 
 (**
 
@@ -293,8 +293,24 @@ PROCEDURE FormatReal* (str: ARRAY OF CHAR): ConvResults;
   END FormatReal;
  
 PROCEDURE ValueReal*(str: ARRAY OF CHAR): LONGREAL;
+  VAR
+    adr, tail: SYSTEM.ADDRESS;
+    i: LONGINT;
+    value: LONGREAL;
   BEGIN
-    RETURN -1.0;
+    IF (FormatReal (str) = strAllRight) THEN
+      adr := SYSTEM.ADR (str);
+      i := 0;
+      WHILE CharClass.IsWhiteSpace(str[i]) DO
+        (* skip our definition of whitespace *)
+        INC (adr); INC (i);
+      END;
+      value := C.strtod (adr, tail);
+      IF (tail+1 = SYSTEM.ADR(str)+LEN(str)) THEN (* tail points to 0X *)
+        RETURN value
+      END;
+    END;
+    RETURN 0;                            (* error *)
   END ValueReal;
 
 PROCEDURE LengthFloatReal*(real: LONGREAL; sigFigs: INTEGER): INTEGER;
