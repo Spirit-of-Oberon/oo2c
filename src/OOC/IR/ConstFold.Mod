@@ -255,8 +255,6 @@ BEGIN
   IF c.ValidEval(op.operand, value) THEN
     id := op.operand.type(Sym.PredefType).id;
     CASE id OF
-    | Predef.boolean:
-      c.result := c.BooleanConst(~value(Boolean.Value).value, op);
     | Predef.integer:
       c.result := c.ValueConst(value(Integer.Value).Negate(), op);
     | Predef.set:
@@ -279,6 +277,17 @@ END VisitNegate;
 PROCEDURE (c: ConstFold) VisitNewObject* (new: IR.NewObject);
   BEGIN
   END VisitNewObject;
+
+PROCEDURE (c: ConstFold) VisitNot* (op: IR.Not);
+VAR 
+  value : Language.Value;
+BEGIN
+  IF c.ValidEval(op.operand, value) THEN
+    c.result := c.BooleanConst(~value(Boolean.Value).value, op);
+  ELSE
+    c.result := NIL;
+  END;
+END VisitNot;
 
 PROCEDURE (c: ConstFold) VisitCap* (op: IR.Cap);
 VAR 

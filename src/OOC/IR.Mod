@@ -379,6 +379,13 @@ TYPE
   END;
 
 TYPE
+  Not* = POINTER TO NotDesc;
+  NotDesc = RECORD
+    (OperatorDesc)
+    operand- : Expression;
+  END;
+
+TYPE
   SelectField* = POINTER TO SelectFieldDesc;
   SelectFieldDesc = RECORD
     (OperatorDesc)
@@ -1482,6 +1489,32 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitNewObject* (new: NewObject);
 PROCEDURE (new: NewObject) Accept* (v: Visitor);
   BEGIN
     v. VisitNewObject (new)
+  END Accept;
+
+(* Operator Class: Not
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitNot (neg: Not; sym: Symbol; expr: Expression);
+  BEGIN
+    InitOperator (neg, sym, expr. type);
+    neg.operand := expr;
+  END InitNot;
+
+PROCEDURE (b: Builder) NewNot (sym: Symbol; expr: Expression): Expression;
+  VAR
+    neg: Not;
+  BEGIN
+    NEW (neg);
+    InitNot (neg, sym, expr);
+    RETURN neg;
+  END NewNot;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitNot* (neg: Not);
+  END VisitNot;
+
+PROCEDURE (neg: Not) Accept* (v: Visitor);
+  BEGIN
+    v. VisitNot (neg)
   END Accept;
 
 (* Operator Class: SelectField
@@ -2646,9 +2679,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         RETURN b.ErrExpr(invalidOpType, sym);
       END
     | Id.not:
-      (* for now, map logical negation onto Negate operator *)
       IF isBoolean THEN
-        RETURN b.NewNegate(sym, right);
+        RETURN b.NewNot(sym, right);
       ELSE
         RETURN b.ErrExpr(invalidOpType, sym);
       END

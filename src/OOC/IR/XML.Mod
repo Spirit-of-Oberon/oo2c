@@ -219,6 +219,13 @@ PROCEDURE (v: Visitor) VisitNewObject* (new: IR.NewObject);
     v. w. EndTag;  (* new-object *)
   END VisitNewObject;
 
+PROCEDURE (v: Visitor) VisitNot* (neg: IR.Not);
+  BEGIN
+    v. w. StartTag ("not", FALSE);
+    neg. operand. Accept (v);
+    v. w. EndTag;  (* not *)
+  END VisitNot;
+
 PROCEDURE (v: Visitor) VisitCap* (neg: IR.Cap);
   BEGIN
     v. w. StartTag ("cap", FALSE);
