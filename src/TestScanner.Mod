@@ -44,7 +44,7 @@ BEGIN
       ELSE
         file := FileChannel.Open(Object.NewLatin1(arg), {FileChannel.read});
         
-        errList := Error.NewList (arg);
+        errList := Error.NewList(Object.NewLatin1(arg));
         inputBuffer := InputBuffer.New (file, errList);
         pragmaSection := Pragmas.New();
         pv := pragmaSection. Set ("predef_true", Config.NewBooleanVar(TRUE));

@@ -24,7 +24,7 @@ PROCEDURE WriteOption (opt: Options.Option);
     Out.String ("option:");
     Out.Object (opt. name);
     Out.String (" --> ");
-    Out.Object (opt.value.ValueToString());
+    Out.Object (opt.value);
     Out.Ln;
   END WriteOption;
 

@@ -21,8 +21,8 @@ MODULE oob;
 *)
 
 IMPORT
-  Ascii, Err, Out, StdChannels, Strings, IO, OOC:Config:CCompiler,
-  Config:Section:Options, Config:Section:Arguments, Config:Value:Boolean,
+  Ascii, Err, Out, StdChannels, Strings, Object, IO, OOC:Config:CCompiler,
+  CfgData := Config, Config:Section:Options,
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,
   OOC:SymbolTable:Namespace, OOC:SymbolTable:CreateNamespace,
@@ -33,7 +33,7 @@ IMPORT
 VAR
   cfgErrList, errList: E.List;
   help, extendRecords: Options.Option;
-  arg: Arguments.Argument;
+  arg: STRING;
   symTab: Sym.Module;
   
 CONST
@@ -41,14 +41,18 @@ CONST
   indentWidth = 2;
   screenWidth = 76;
   
-PROCEDURE GetModule (moduleName: ARRAY OF CHAR): Rep.Module;
+PROCEDURE GetModule (moduleName: STRING): Rep.Module;
   VAR
     m: Rep.Module;
+    chars: Object.CharsLatin1;
+    str: Object.String8;
   BEGIN
-    m := Config.repositories.GetModule(moduleName);
+    str := moduleName.ToString8("?");
+    chars := str.CharsLatin1();
+    m := Config.repositories.GetModule(chars^);
     IF (m = NIL) THEN
       Err.String ("Error: Cannot locate module ");
-      Err.String (moduleName);
+      Err.Object (moduleName);
       Err.Ln;
       HALT (1)
     END;
@@ -175,7 +179,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
       VAR
         item: Sym.Item;
       BEGIN
-        IF extendRecords.value(Boolean.Value).boolean &
+        IF extendRecords.value(CfgData.BooleanVar).boolean &
            (record.baseType # NIL) THEN
           RecFields(record.baseType(Sym.Record));
         END;
@@ -275,7 +279,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         RecFields(type);
 
         i := 0;
-        IF ~extendRecords.value(Boolean.Value).boolean &
+        IF ~extendRecords.value(CfgData.BooleanVar).boolean &
            (type.baseType # NIL) THEN
           i := type.baseType(Sym.Record).tbProcCount;
         END;
@@ -475,11 +479,11 @@ PROCEDURE NewConfig;
     Config.AddCmdLine("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     
-    help := Config.AddOption("help", Boolean.New(FALSE));
+    help := Config.AddOption("help", CfgData.NewBooleanVar(FALSE));
     Config.AddCmdLine("-h,--help",
                       "<options><set name='help'>TRUE</set></options>");
 
-    extendRecords := Config.AddOption("extendRecords", Boolean.New(FALSE));
+    extendRecords := Config.AddOption("extendRecords", CfgData.NewBooleanVar(FALSE));
     Config.AddCmdLine("-x,--extended",
                       "<options><set name='extendRecords'>TRUE</set></options>");
 
@@ -500,11 +504,11 @@ BEGIN
   ELSIF (Config.arguments.ArgNumber() # 1) THEN
     WriteHelp;
     HALT(1);
-  ELSIF help.value(Boolean.Value).boolean THEN
+  ELSIF help.value(CfgData.BooleanVar).boolean THEN
     WriteHelp
   ELSE
     arg := Config.arguments.Get(0);
-    symTab := GetSymTab(GetModule(arg^));
+    symTab := GetSymTab(GetModule(arg));
     errList := E.NewList("");
     ImportModules.ImportModules(CreateNamespace.systemModule, symTab, errList);
     IF errList.NoErrors() THEN

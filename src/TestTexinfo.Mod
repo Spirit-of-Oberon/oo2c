@@ -2,7 +2,7 @@ MODULE TestTexinfo;
 
 IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Files, Msg, Std:=IO:StdChannels,
-  OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:BasicList,
+  Object, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:BasicList,
   OOC:Doc, OOC:Doc:Input:Texinfo, OOC:Doc:Output:XML, OOC:Doc:Output:Text;
 
 CONST
@@ -65,7 +65,7 @@ BEGIN
           Out.String (msgText); Out.Ln;
           HALT (1)
         ELSE
-          errList := Error.NewList (arg);
+          errList := Error.NewList(Object.NewLatin1(arg));
           document := Texinfo.Parse (GetFile (file), processComment, errList);
           IF (errList. msgCount # 0) THEN
             errList. Write (StdChannels.stderr);

@@ -22,9 +22,8 @@ MODULE ooef;
 
 IMPORT
   In, Out, StdChannels, Str := Strings, IntConv, Channel, Files, Ascii,
-  CharClass, IntStr,
-  Config:Section:Arguments, Config:Section:Options,
-  Config:Value:Boolean, Config:Value:Integer,
+  CharClass, IntStr, Object, 
+  CfgData := Config, Config:Section:Options,
   OOC:Config, OOC:Config:CCompiler, E := OOC:Error, OOC:Repository;
 
 CONST
@@ -385,7 +384,7 @@ PROCEDURE PrintErrors;
     f := files;
     WHILE (f # NIL) DO
       (* write header for context output *)
-      IF (mode.value(Integer.Value).integer = context) THEN
+      IF (mode.value(CfgData.IntegerVar).integer = context) THEN
         IF (f # files) THEN
           Out.String ("###############################################################################"); Out.Ln
         END;
@@ -434,7 +433,7 @@ PROCEDURE PrintErrors;
             END;
             INC (scanPos)
           END;
-          IF (mode.value(Integer.Value).integer = context) THEN  
+          IF (mode.value(CfgData.IntegerVar).integer = context) THEN  
             (* display lines of source code around error *)
             IF (lastPos >= 0) & (CountLines (lastPos, scanPos)-1 <= 
                                    leadContext+trailContext+connContext) THEN
@@ -475,11 +474,11 @@ PROCEDURE PrintErrors;
             Out.String (e. text);
             Out.Ln;
             lastPos := scanPos
-          ELSIF (mode.value(Integer.Value).integer >= lineOnly) THEN
+          ELSIF (mode.value(CfgData.IntegerVar).integer >= lineOnly) THEN
             Out.String (f. name);
             Out.Char (":");
             Out.LongInt (scanLine, 0);
-            IF (mode.value(Integer.Value).integer = lineColumn) THEN
+            IF (mode.value(CfgData.IntegerVar).integer = lineColumn) THEN
               Out.Char (",");
               Out.LongInt (Column (e. pos), 0)
             END;
@@ -489,7 +488,7 @@ PROCEDURE PrintErrors;
           END;
           e := e. next
         END;
-        IF (mode.value(Integer.Value).integer = context) THEN
+        IF (mode.value(CfgData.IntegerVar).integer = context) THEN
           (* add trailing context lines of last error message *)
           PrintText (SkipLines (lastPos, 1), 
                      SkipLines (lastPos, 1+trailContext))
@@ -501,19 +500,25 @@ PROCEDURE PrintErrors;
 
 PROCEDURE TranslateArgs (VAR file: ARRAY OF CHAR; VAR pos: LONGINT): BOOLEAN;
   VAR
-    arg: Arguments.Argument;
+    arg: STRING;
+    str8: Object.String8;
+    chars: Object.CharsLatin1;
     res: IntStr.ConvResults;
   BEGIN
     arg := Config.arguments.Get(0);
-    IF ~Files.Exists(arg^) THEN
+    str8 := arg.ToString8("?");
+    chars := str8.CharsLatin1();
+    IF ~Files.Exists(chars^) THEN
       Out.String ("Error: Cannot find file ");
-      Out.String (arg^);
+      Out.Object (arg);
       Out.Ln;
       RETURN FALSE
     ELSE
-      COPY(arg^, file);
+      COPY(chars^, file);
       arg := Config.arguments.Get(1);
-      IntStr.StrToInt (arg^, pos, res);
+      str8 := arg.ToString8("?");
+      chars := str8.CharsLatin1();
+      IntStr.StrToInt (chars^, pos, res);
       IF (res # IntStr.strAllRight) OR (pos < 0) THEN
         Out.String ("Error: Invalid file position ");
         Out.LongInt (pos, 0);
@@ -538,7 +543,7 @@ PROCEDURE WriteHelp;
 
 PROCEDURE NewConfig;
   BEGIN
-    mode := Config.AddOption("errorFormat", Integer.New(context));
+    mode := Config.AddOption("errorFormat", CfgData.NewIntegerVar(context));
     Config.AddCmdLine("--context,-c",
                       "<options><set name='errorFormat'>0</set></options>");
     Config.AddCmdLine("--line,-l",
@@ -549,7 +554,7 @@ PROCEDURE NewConfig;
     Config.AddCmdLine("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     
-    help := Config.AddOption("help", Boolean.New(FALSE));
+    help := Config.AddOption("help", CfgData.NewBooleanVar(FALSE));
     Config.AddCmdLine("-h,--help",
                       "<options><set name='help'>TRUE</set></options>");
     
@@ -576,7 +581,7 @@ BEGIN
   END;
   IF ~cfgErrList.NoErrors() THEN
     HALT (1)
-  ELSIF help.value(Boolean.Value).boolean OR
+  ELSIF help.value(CfgData.BooleanVar).boolean OR
         ((Config.arguments.ArgNumber() # 0) &
          (Config.arguments.ArgNumber() # 2)) THEN
     WriteHelp

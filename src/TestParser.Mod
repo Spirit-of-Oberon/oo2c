@@ -49,7 +49,7 @@ BEGIN
           Out.String (msgText); Out.Ln;
           HALT (1)
         ELSE
-          errList := Error.NewList (arg);
+          errList := Error.NewList(Object.NewLatin1(arg));
           inputBuffer := InputBuffer.New (file, errList);
           pragmaSection := Pragmas.New();
           scannerBuilder := BasicList.New (inputBuffer, TRUE);

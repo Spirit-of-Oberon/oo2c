@@ -20,8 +20,8 @@ MODULE oowhereis;
 *)
 
 IMPORT
-  Out, StdChannels, Strings, URI, URI:Scheme:File,
-  Config:Section:Arguments, Config:Section:Options, Config:Value:Boolean,
+  Out, StdChannels, Object, ADT:StringBuffer, URI, URI:Scheme:File,
+  CfgData := Config, Config:Section:Options,
   OOC:Config, OOC:Config:CCompiler, E := OOC:Error, OOC:Repository;
 
 
@@ -46,17 +46,19 @@ PROCEDURE WriteHelp;
   END WriteHelp;
 
 
-PROCEDURE GetExt(path: ARRAY OF CHAR): INTEGER;
+PROCEDURE GetExt(path: STRING): LONGINT;
   VAR
-    i: INTEGER;
+    i: LONGINT;
   BEGIN
-    i := Strings.Length(path);
-    WHILE (i # 0) & (path[i-1] # ".") & (path[i-1] # dirSeparator) DO
+    i := path.length;
+    WHILE (i # 0) &
+          (path.CharAt(i-1) # ".") &
+          (path.CharAt(i-1) # dirSeparator) DO
       DEC(i);
     END;
     IF (i = 0) THEN
       RETURN -1;
-    ELSIF (path[i-1] = ".") THEN
+    ELSIF (path.CharAt(i-1) = ".") THEN
       RETURN i-1;
     ELSE
       RETURN -1;
@@ -65,20 +67,23 @@ PROCEDURE GetExt(path: ARRAY OF CHAR): INTEGER;
 
 PROCEDURE Query(): BOOLEAN;
   VAR
-    arg: Arguments.Argument;
-    file, ext: Repository.URIBuffer;
-    pos, extPos: INTEGER;
+    arg, ext: STRING;
+    module: StringBuffer.StringBuffer;
+    file: Repository.URIBuffer;
+    pos, extPos: LONGINT;
     fileId: Repository.FileId;
     m: Repository.Module;
     uri: URI.URI;
+    chars: Object.CharsLatin1;
+    str: Object.String8;
   BEGIN
     arg := Config.arguments.Get(0);
 
-    extPos := GetExt(arg^);
+    extPos := GetExt(arg);
     IF (extPos >= 0) THEN
-      Strings.Extract(arg^, extPos, MAX(INTEGER), ext);
+      ext := arg.Substring(extPos, arg.length);
     ELSE
-      extPos := Strings.Length(arg^);
+      extPos := arg.length;
       ext := moduleExtension;
     END;
 
@@ -88,16 +93,22 @@ PROCEDURE Query(): BOOLEAN;
       fileId := Repository.modModuleSource;
     END;
 
-    arg[extPos] := 0X;
+    arg := arg.Substring(0, extPos);
+    module := StringBuffer.New("");
     pos := 0;
-    WHILE (arg[pos] # 0X) DO
-      IF (arg[pos] = dirSeparator) THEN
-        arg[pos] := moduleSeparator;
+    WHILE (pos # arg.length) DO
+      IF (arg.CharAt(pos) = dirSeparator) THEN
+        module.Append(moduleSeparator);
+      ELSE
+        module.AppendChar(arg.CharAt(pos));
       END;
       INC (pos);
     END;
+    arg := module.ToString();
     
-    m := Config.repositories.GetModule(arg^);
+    str := arg.ToString8("?");
+    chars := str.CharsLatin1();
+    m := Config.repositories.GetModule(chars^);
     IF (m # NIL) THEN
       uri := m.GetURI(fileId, TRUE);
       uri(File.URI).GetPath(file);
@@ -106,7 +117,7 @@ PROCEDURE Query(): BOOLEAN;
       RETURN TRUE
     ELSE
       Out.String ("Error: Can't find module ");
-      Out.String (arg^);
+      Out.Object (arg);
       Out.Ln;
       RETURN FALSE
     END;
@@ -117,7 +128,7 @@ PROCEDURE NewConfig;
     Config.AddCmdLine("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     
-    help := Config.AddOption("help", Boolean.New(FALSE));
+    help := Config.AddOption("help", CfgData.NewBooleanVar(FALSE));
     Config.AddCmdLine("-h,--help",
                       "<options><set name='help'>TRUE</set></options>");
     
@@ -135,7 +146,7 @@ BEGIN
   IF ~cfgErrList.NoErrors() THEN
     HALT (1)
   ELSIF (Config.arguments.ArgNumber() # 1) OR
-        help.value(Boolean.Value).boolean THEN
+        help.value(CfgData.BooleanVar).boolean THEN
     WriteHelp
   ELSE
     IF Query() THEN
