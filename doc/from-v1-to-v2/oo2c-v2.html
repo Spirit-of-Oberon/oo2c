@@ -1,0 +1,1266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<!-- Created on September, 3  2003 by texi2html 1.65 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HEAD>
+<TITLE>New Features of oo2c v2: </TITLE>
+
+<META NAME="description" CONTENT="New Features of oo2c v2: ">
+<META NAME="keywords" CONTENT="New Features of oo2c v2: ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.65">
+
+</HEAD>
+
+<BODY LANG="en" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC_Top"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>New Features of oo2c v2</H1></P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC1">1. Introduction</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC2">2. Programs</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC3">3. Library Modules</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC4">4. Doc Comments</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC14">5. Built-in Type STRING</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC15">6. Exceptions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC16">7. Parametric Types</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC17">8. Initialization Functions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC18">A. Example Module</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<HR SIZE=1>
+<A NAME="SEC1"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC2"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC2"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<A NAME="Introduction"></A>
+<H1> 1. Introduction </H1>
+<!--docid::SEC1::-->
+<P>
+
+<CODE>oo2c</CODE> v2 is a complete rewrite of the compiler and associated
+tools.  Some highlights are
+</P><P>
+
+<UL>
+<LI>
+Reduced internal complexity, at the expense of more computational
+overhead.  This goes hand in hand with the ability to add experimental
+language features to the compiler.
+<LI>
+A simplified internal SSA code representation that eliminates the need
+to keep track the block structure of nested statements.  This reduces
+the complexity of most code transformations.  On the other hand,
+producing the target code becomes more difficult.
+<LI>
+A broader range of code transformations, including loop rewriting and
+partial redundancy elimination on top of the existing ones (common
+subexpression elimination, loop invariant code motion, constant
+propagation, algebraic transformations, and dead code elimination).
+<LI>
+A large set of regression tests, increasing the reliability and
+stability of compiler releases.
+<LI>
+More built-in support for building and installing third party
+packages.
+<LI>
+Writing <CODE>FOREIGN</CODE> modules to interface with external libraries
+has become easier.  A simple <CODE>#include</CODE> pulls in all the run-time
+type and module meta data a module needs to provide to the run-time
+system.
+</UL>
+<P>
+
+The v2 compiler implements most, but not all, of the features of its
+predecessor.  Most programs should compile without changes, although
+some of the more esoteric features and library modules have been
+dropped.  The following sections summarize the omissions and
+additions.  For the most part, the language extensions are
+experimental in nature and should not be considered final.
+</P><P>
+
+<A NAME="Programs"></A>
+<HR SIZE="6">
+<A NAME="SEC2"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC1"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC3"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC1"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC3"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 2. Programs </H1>
+<!--docid::SEC2::-->
+<P>
+
+The biggest change to the behavior of the programs <CODE>oo2c</CODE>,
+<CODE>oob</CODE>, <CODE>ooef</CODE>, and <CODE>oowhereis</CODE> is the introduction of
+so called repositories to structure source code, intermediate, and
+executable files.  A <EM>repository</EM> is a path to a directory
+<VAR>r</VAR> with `<TT><VAR>r</VAR>/src/</TT>' holding the source code,
+`<TT><VAR>r</VAR>/pkginfo.xml</TT>' any repository meta data,
+`<TT><VAR>r</VAR>/sym/</TT>' the symbol files, and so on.  When looking for a
+particular module, all configured repositories are searched.  Output
+files for a particular module (symbol file, C files, objects files,
+and so on) are placed into the repository that holds the module's
+source code.
+</P><P>
+
+The tool <CODE>oocn</CODE> is gone.  Part of its functionality have been
+moved into the compiler <CODE>oo2c</CODE>: converting a module's public
+interface and its documentation strings to HTML and listing all uses
+of a particular object.  Some of the command line options of
+<CODE>oo2c</CODE> have been replaced, and it has a whole new set of commands
+dealing with packages: build, install, uninstall, etc.  Packages allow
+to install a set of library modules, module documentation,
+executables, and auxiliary files from the meta data of a
+`<TT>pkginfo.xml</TT>' file.
+</P><P>
+
+Please refer to the man page of <CODE>oo2c</CODE> for the details.
+</P><P>
+
+<A NAME="Library Modules"></A>
+<HR SIZE="6">
+<A NAME="SEC3"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC2"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC2"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 3. Library Modules </H1>
+<!--docid::SEC3::-->
+<P>
+
+With the switch from oo2c v1 to v2 a number of highly specialized and
+rarely used library modules were dropped, while at the same time whole
+families of modules were included that were distributed separately in
+the past.
+</P><P>
+
+Replaced by other modules: <CODE>Filenames</CODE> (use <CODE>OS:Path</CODE>
+instead), <CODE>Integers</CODE> (use <CODE>Object:BigInt</CODE>), <CODE>Kernel</CODE>
+and <CODE>Types</CODE> (functionality covered by <CODE>RT0</CODE>), and <CODE>Rts</CODE>
+(see <CODE>OS:ProcessManagement</CODE>).
+</P><P>
+
+Removed without replacement: <CODE>ComplexMath</CODE>, <CODE>JulianDay</CODE>,
+<CODE>LComplexMath</CODE>, <CODE>LocNumConv</CODE>, <CODE>LocNumStr</CODE>,
+<CODE>LocStrings</CODE>, <CODE>LocText</CODE>, <CODE>LocTextRider</CODE>,
+<CODE>Locales</CODE>, <CODE>LongInts</CODE>, <CODE>LowLReal</CODE>, <CODE>LowReal</CODE>,
+<CODE>OakFiles</CODE>, <CODE>OakIn</CODE>, <CODE>OakMath</CODE>, <CODE>OakMathL</CODE>,
+<CODE>OakStrings</CODE>, <CODE>Reals</CODE>, <CODE>Signal</CODE>, and <CODE>Strings2</CODE>.
+</P><P>
+
+New modules:
+<DL COMPACT>
+<DT><CODE>ADT:*</CODE>
+<DD>A set of abstract data types, most importantly <CODE>ArrayList</CODE> and
+<CODE>Dictionary</CODE>.  Also provides a framework for serializing
+arbitrary graphs of objects.
+<P>
+
+<DT><CODE>IO:*</CODE>
+<DD>IO modules for files and sockets, providing an interface that is
+closer to the I/O capabilities provided by <CODE>libc</CODE>.  Also mappers
+based on the new classes, and an abstraction for the `<SAMP>select()</SAMP>'
+function.
+<P>
+
+<DT><CODE>OS:*</CODE>
+<DD>Various low-level modules dealing with file systems, file names, and
+processes.
+</DL>
+<P>
+
+Preliminary modules (their interface might change significantly in the
+future, although their general functionality will continue to be part
+of the core distribution):
+<DL COMPACT>
+<DT><CODE>URI:*</CODE>
+<DD>Data types representing Uniform Resource Identifiers (both
+hierarchical and opaque), plus an URI parser.
+<P>
+
+<DT><CODE>XML:*</CODE>
+<DD>A call-back based XML 1.0 parser.  Also includes support for XML
+namespaces and validation.
+</DL>
+<P>
+
+<A NAME="Doc Comments"></A>
+<HR SIZE="6">
+<A NAME="SEC4"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC3"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC5"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC3"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 4. Doc Comments </H1>
+<!--docid::SEC4::-->
+<P>
+
+Documentation describing the public interface of a module can embedded
+into the source code using <EM>doc comments</EM>.  Such comments start
+with a special delimiter `<SAMP>(**</SAMP>', like `<SAMP>(**Some
+explanation. *)</SAMP>', and refer to the declaration preceding them.
+Within doc comments, a subset of the GNU Texinfo command set can be
+used to mark up the text.
+</P><P>
+
+The following sections summarise the commands implemented by the OOC
+parser.  Please refer to the Texinfo manual for a more thorough
+description of the their syntax and intended use.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC5">4.1 Inline Commands</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC9">4.2 Block Commands</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC13">4.3 Glyphs</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="Inline Commands"></A>
+<HR SIZE="6">
+<A NAME="SEC5"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC9"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 4.1 Inline Commands </H2>
+<!--docid::SEC5::-->
+<P>
+
+Inline commands take a single argument in curly braces like
+`<SAMP>@code{ABS()}</SAMP>'.
+</P><P>
+
+<A NAME="SEC6"></A>
+<H4> Font and style commands: </H4>
+<!--docid::SEC6::-->
+<P>
+
+<DL COMPACT>
+<DT><CODE>@asis</CODE>
+<DD>used with <CODE>@table</CODE> for entries without added highlighting
+<DT><CODE>@cite</CODE>
+<DD>name of a book (with no cross reference link available)
+<DT><CODE>@code</CODE>
+<DD>syntactic tokens
+<DT><CODE>@command</CODE>
+<DD>command names
+<DT><CODE>@dfn</CODE>
+<DD>introductory or defining use of a technical term
+<DT><CODE>@emph</CODE>
+<DD>emphasis; produces <EM>italics</EM> in printout
+<DT><CODE>@file</CODE>
+<DD>file name
+<DT><CODE>@kbd</CODE>
+<DD>input to be typed by users
+<DT><CODE>@samp</CODE>
+<DD>literal example or sequence of characters
+<DT><CODE>@strong</CODE>
+<DD>stronger emphasis than <CODE>@emph</CODE>; produces <STRONG>bold</STRONG> in printout
+<DT><CODE>@var</CODE>
+<DD>meta-syntactic variables (for example, formal procedure parameters)
+</DL>
+<P>
+
+<A NAME="SEC7"></A>
+<H4> References: </H4>
+<!--docid::SEC7::-->
+<P>
+
+<DL COMPACT>
+<DT><CODE>@email</CODE>
+<DD>an email address
+<DT><CODE>@url</CODE>
+<DD>indicate a uniform resource locator (URL)
+<DT><CODE>@uref</CODE>
+<DD>reference to a uniform resource locator (URL)
+</DL>
+<P>
+
+<A NAME="SEC8"></A>
+<H4> Referencing Oberon declarations: </H4>
+<!--docid::SEC8::-->
+<P>
+
+<DL COMPACT>
+<DT><CODE>@omodule</CODE>
+<DD>module name
+<DT><CODE>@oconst</CODE>
+<DD>name of a constant
+<DT><CODE>@ofield</CODE>
+<DD>designator referring to a record field
+<DT><CODE>@oparam</CODE>
+<DD>parameter name
+<DT><CODE>@oproc</CODE>
+<DD>designator referring to a procedure (normal or type-bound)
+<DT><CODE>@otype</CODE>
+<DD>type name
+<DT><CODE>@ovar</CODE>
+<DD>variable name
+</DL>
+<P>
+
+Designators can contain arbitrary `<SAMP>.member</SAMP>' parts, referring to
+members of modules, procedures, or records.  For example,
+`<SAMP>@oparam{MyModule.MyPointer.MyProc.param}</SAMP>' would refer to the
+parameter `<SAMP>param</SAMP>' of the type-bound procedure `<SAMP>MyProc</SAMP>' from
+module `<SAMP>MyModule</SAMP>' that has `<SAMP>MyPointer</SAMP>' as its receiver type.
+Unless prefixed by a `<SAMP>*</SAMP>', names and designators must refer to
+existing declarations and the class of the indicated object must match
+the command name.  If the designator is prefixed with a `<SAMP>*</SAMP>', then
+the designator is not checked by the compiler.  In this case, it must
+begin with a fully qualified module name and use the canonical
+designator for the indicated object.  This variant should only be used
+to refer to an object from another module if the module is not part of
+the <CODE>IMPORT</CODE> list.
+</P><P>
+
+<A NAME="Block Commands"></A>
+<HR SIZE="6">
+<A NAME="SEC9"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC5"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC13"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 4.2 Block Commands </H2>
+<!--docid::SEC9::-->
+<P>
+
+Block commands start with the command `<SAMP>@cmd</SAMP>' on a line of its
+own, often followed by one or more arguments, and end with `<SAMP>@end
+cmd</SAMP>', also on a line of its own.
+</P><P>
+
+<A NAME="SEC10"></A>
+<H4> Lists and tables: </H4>
+<!--docid::SEC10::-->
+<P>
+
+<DL COMPACT>
+<DT><CODE>@enumerate</CODE>
+<DD>enumerated lists, using numbers or letters
+<DT><CODE>@itemize</CODE>
+<DD>itemised lists with and without bullets
+<DT><CODE>@table</CODE>
+<DD>two-column tables with highlighting
+<DT><CODE>@item, @itemx</CODE>
+<DD>used with the above lists and tables for each entry
+</DL>
+<P>
+
+<A NAME="SEC11"></A>
+<H4> Paragraph formatting: </H4>
+<!--docid::SEC11::-->
+<P>
+
+<DL COMPACT>
+<DT><CODE>@example</CODE>
+<DD>example that is not part of the running text (fixed font)
+<DT><CODE>@noindent</CODE>
+<DD>prevents paragraph indentation
+</DL>
+<P>
+
+<A NAME="SEC12"></A>
+<H4> Pre- and post-conditions: </H4>
+<!--docid::SEC12::-->
+<P>
+
+<DL COMPACT>
+<DT><CODE>@precond</CODE>
+<DD>pre-conditions of a procedure
+<DT><CODE>@postcond</CODE>
+<DD>post-conditions of a procedure
+</DL>
+<P>
+
+<A NAME="Glyphs"></A>
+<HR SIZE="6">
+<A NAME="SEC13"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC9"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC14"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 4.3 Glyphs </H2>
+<!--docid::SEC13::-->
+<P>
+
+<DL COMPACT>
+<DT><CODE>@@</CODE>
+<DD>the character `<SAMP>@</SAMP>'
+<DT><CODE>@{</CODE>
+<DD>the character `<SAMP>{</SAMP>'
+<DT><CODE>@}</CODE>
+<DD>the character `<SAMP>}</SAMP>'
+<DT><CODE>@dots{}</CODE>
+<DD>ellipsis `<SAMP><small>...</small></SAMP>'
+<DT><CODE>@bullet{}</CODE>
+<DD>a `<SAMP>*</SAMP>', typically used with <CODE>@itemize</CODE>
+<DT><CODE>@minus{}</CODE>
+<DD>a minus sign, `<SAMP>-</SAMP>'
+<DT><CODE>@result{}</CODE>
+<DD>result of evaluating an expression, `<SAMP>=></SAMP>'
+<DT><CODE>-<CODE>-</CODE>-</CODE>
+<DD>an em-dash for text `---'
+</DL>
+<P>
+
+<A NAME="Built-in Type STRING"></A>
+<HR SIZE="6">
+<A NAME="SEC14"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC13"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC4"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 5. Built-in Type STRING </H1>
+<!--docid::SEC14::-->
+<P>
+
+The predefined identifier <CODE>STRING</CODE> is an alias for the type
+`<SAMP>Object.String</SAMP>', which implements Unicode strings.  The semantics
+of this type are defined for the most part by the regular module
+`<SAMP>Object</SAMP>'<A NAME="DOCF1" HREF="oo2c-v2.html#FOOT1">(1)</A>, with two exceptions: the
+compiler converts string constants to instances of <CODE>STRING</CODE>
+automatically, and the operator `<SAMP>+</SAMP>' performs string
+concatenation.
+</P><P>
+
+String constants are assignment compatible with variables of type
+`<SAMP>Object.Object</SAMP>'.  Such an assignment automatically converts the
+constant into an instance of <CODE>STRING</CODE>.  That is, a string
+constant can be used instead of a <CODE>STRING</CODE> in an assignment, for
+a procedure argument passed to a value parameter, and as a function
+result.  The string object is created once, as part of the module's
+initialization code, <EM>not</EM> each time its surrounding code is
+evaluated.
+</P><P>
+
+The operator `<SAMP>+</SAMP>' is defined for string operands and returns the
+concatenation of its operands.  The result is of type <CODE>STRING</CODE>.
+</P><P>
+
+Please note that comparison of string values is done by means of the
+type-bound procedure `<SAMP>String.Equals</SAMP>'.  The definition of the
+operators `<SAMP>=</SAMP>' and `<SAMP>#</SAMP>' has <EM>not</EM> been changed.  That is,
+they test for object identity by comparing the strings' pointer
+values.
+</P><P>
+
+<A NAME="Exceptions"></A>
+<HR SIZE="6">
+<A NAME="SEC15"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC14"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC14"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 6. Exceptions </H1>
+<!--docid::SEC15::-->
+<P>
+
+There are four user visible parts to exceptions:
+</P><P>
+
+<UL>
+<LI>
+The module `<SAMP>Exception</SAMP>', defining the type `<SAMP>Exception</SAMP>' and
+implementing the required run-time support.
+<LI>
+A new statement, <CODE>TRY</CODE>, to transfer control to exception handlers
+if a statement sequence raises an exception.
+<LI>
+A new predefined procedure, <CODE>RAISE</CODE>, to raise an exception.
+<LI>
+An extended syntax for procedures and procedure types, to declare
+which checked exception can be raised by a procedure.
+</UL>
+<P>
+
+Exceptions behave pretty much like their counterparts in Python or
+Java.  The statement
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>TRY
+  S
+CATCH T1(t1):
+  C1
+CATCH T2(t2):
+  C2
+END;
+</pre></td></tr></table></P><P>
+
+is roughly equivalent to
+</P><P>
+
+<OL>
+<LI>
+Push exception handler for this <CODE>TRY</CODE> block
+(`<SAMP>Exception.PushContext</SAMP>').
+<P>
+
+<LI>
+Evaluate <VAR>S</VAR>, followed by `<SAMP>Exception.PopContext</SAMP>'.  If there
+are any <CODE>RETURN</CODE> or <CODE>EXIT</CODE> statements within <VAR>S</VAR> that
+would cause control flow to leave the <CODE>TRY</CODE> statement, then they
+also do an implicit `<SAMP>PopContext</SAMP>' as part of the non-local exit.
+<P>
+
+<LI>
+If an exception is raised during <VAR>S</VAR>, then do
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>Exception.PopContext;
+temp := Exception.Current();
+WITH temp: T1 DO
+  t1 := temp;
+  C1;
+| temp: T2 DO
+  t2 := temp;
+  C2;
+ELSE
+  Exception.ActivateContext;
+END;
+Exception.Clear;
+</pre></td></tr></table></OL>
+<P>
+
+An exception is raised by calling the predefined procedure <CODE>RAISE</CODE> with
+an instance of `<SAMP>Exception</SAMP>'.  This passes control to the nearest
+<CODE>CATCH</CODE> clause whose type is an extension of the raised exception, if
+such a clause exist.  Otherwise, the exception is written to <VAR>stderr</VAR>
+and the program is aborted.
+</P><P>
+
+Within a <CODE>CATCH</CODE>, the optional name given in parenthesis refers to the
+current exception that triggered the <CODE>CATCH</CODE>.  Its type is the one
+from the <CODE>CATCH</CODE> clause.  The variable is read-only.
+</P><P>
+
+An exception <VAR>E</VAR> must either be caught within a procedure, or the
+procedure must declare that it may pass an exception of type <VAR>E</VAR> up to
+its caller.  For example,
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>PROCEDURE P() RAISES E;
+</pre></td></tr></table></P><P>
+
+declares that evaluation of `<SAMP>P</SAMP>' may raise an exception of type <VAR>E</VAR>,
+or an extension thereof.
+</P><P>
+
+Within the module body no exceptions can be passed up, because there is no
+caller.  As a consequence, any exception that is not caught explicitly is
+written to <VAR>stderr</VAR> and aborts the program.
+</P><P>
+
+<EM>Implementation note</EM>: A <CODE>TRY</CODE> block is mapped to C's
+`<SAMP>setjmp()</SAMP>' function by <CODE>oo2c</CODE>.  The amount of data stored by
+this function depends on the target architecture and may differ by a
+factor of ten or more.  For example, on a `<SAMP>ix86</SAMP>' processor, only
+72 bytes are stored, while on a `<SAMP>PPC</SAMP>' this is 768 bytes.  As a
+consequence, the work done within a <CODE>TRY</CODE> should be large enough
+to amortize the costs of the <CODE>TRY</CODE> for all possible targets.
+</P><P>
+
+On some systems<A NAME="DOCF2" HREF="oo2c-v2.html#FOOT2">(2)</A>, raising an exception also stores
+information about the top 20 activation frames on the call stack.
+This means that raising an exception can be moderately expensive as
+well.  Therefore they should only be used to report exceptional
+conditions that are rarely triggered.
+</P><P>
+
+<EM>Possible changes</EM>: At the time of writing, only checked
+exceptions are supported.  That is, exceptions must be explicitly
+declared or caught.  It is expected that unchecked exceptions are
+added in the future, where a procedure may raise any exception without
+announcing it to its callers.  Which of the two modes, checked or
+unchecked, becomes then the default behavior is open to discussions.
+</P><P>
+
+<A NAME="Parametric Types"></A>
+<HR SIZE="6">
+<A NAME="SEC16"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC15"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 7. Parametric Types </H1>
+<!--docid::SEC16::-->
+<P>
+
+A parametric type can be seen as a type definition with a certain
+degree of freedom.  The freedom comes in form of type parameters
+acting as placeholders for type arguments that are provided when the
+parametric type is used in a particular context.  There are two
+restrictions on type parameters and type arguments: the parameter must
+be based on a record pointer, and the argument must be an extension of
+the parameter's base type.
+</P><P>
+
+Take for example the type `<SAMP>ArrayList</SAMP>'.  The element type of the
+list can be any type derived from `<SAMP>Object</SAMP>', like
+`<SAMP>MyElementType</SAMP>', which is provided when creating an
+`<SAMP>ArrayList</SAMP>' variable:
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>TYPE
+  ArrayList*(E: Object.Object) = POINTER TO ArrayListDesc(E);
+  ArrayListDesc*(E: Object.Object) = RECORD
+    <small>...</small>
+  END;
+<small>...</small>
+VAR myList: ArrayList(MyElementType);
+</pre></td></tr></table></P><P>
+
+The compiler statically detects any uses of `<SAMP>myList</SAMP>' or of its
+methods that are incompatible with the declared element type
+`<SAMP>MyElementType</SAMP>'.
+</P><P>
+
+The implementation of parametric types extends the syntax in three
+places:
+</P><P>
+
+<UL>
+<LI>
+A type declaration can have a list of type parameters.
+<LI>
+Usage of a parametric type can provide a list of type arguments.
+<LI>
+For a type-bound procedure of a parametric type, the receiver
+declaration must provide the names of local aliases for the type
+parameters of the base type.  These names act as type variables within
+the procedure.
+</UL>
+(For the details, please refer to the EBNF grammar at the end of this
+section.)
+<P>
+
+A type declared with a type parameter list like
+`<SAMP>T(t1:B1,t2:B2,<small>...</small>,tn:Bn)</SAMP>' is called a <EM>parametric type</EM>.
+The formal type <VAR>Bi</VAR> of a type parameter declaration is called
+its type bound.  The type bound must be a record pointer.  A type name
+<VAR>ti</VAR> is visible to the end of the type declaration.
+</P><P>
+
+For a qualified type expression of the form
+`<SAMP>T(A1,A2,<small>...</small>,An)</SAMP>',
+</P><P>
+
+<OL>
+<LI>
+the type <VAR>T</VAR> must be a parametric type,
+<P>
+
+<LI>
+it must have the same number of type arguments as there are type
+parameters, and
+<P>
+
+<LI>
+each actual type parameter <VAR>Ai</VAR> is either an extension of the
+corresponding type bound <VAR>Bi</VAR>, or <VAR>Ai</VAR> is a type variable
+whose bound is an extension of <VAR>Bi</VAR>.
+</OL>
+<P>
+
+If <VAR>T</VAR> is a parametric type as defined above, then the type
+expression `<SAMP>T</SAMP>' (without any type arguments) is equivalent to the
+qualified type ``<SAMP>T(B1,B2,<small>...</small>,Bn)</SAMP>', where each type argument
+equals the corresponding type bound.  <VAR>Bi</VAR> and `<SAMP>Ai</SAMP>' can be
+forward references to types that are defined later.
+</P><P>
+
+A type-bound procedure of a parametric type must define a list of type
+names after its receiver type, for example
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>PROCEDURE (r: P(T1,T2,<small>...</small>)) TBProc(<small>...</small>);
+</pre></td></tr></table></P><P>
+
+Each name is a type alias for the corresponding type parameter of the
+procedure's <EM>base record</EM> type.  Within a type-bound procedure, a
+variable `<SAMP>v: Ti</SAMP>', with <VAR>Ti</VAR> declared with a type bound
+`<SAMP>Ti: Bi</SAMP>', can for the most part be used like it had been declared
+as `<SAMP>v: Bi</SAMP>'.  The exceptions are that it can only be assigned
+values of type <VAR>Ti</VAR> (or <CODE>NIL</CODE>), and that <CODE>NEW</CODE> is not
+applicable to such a variable.
+</P><P>
+
+A type variable cannot be used on the right hand side of a type test
+or type guard.
+</P><P>
+
+Two qualified types are considered to be the same type, if they have
+the same base type and if their corresponding type arguments are of
+the same type.
+</P><P>
+
+<CODE>NIL</CODE> is assignment compatible with a parametric type if it is
+assignment compatible with the type's base type.
+</P><P>
+
+`<SAMP>NEW()</SAMP>' is applicable to a variable of parametric type if its
+base type is a pointer.
+</P><P>
+
+Syntax:
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>TPSection  = ident {"," ident} ":" Qualident.
+TypePars   = "(" [TPSection {";" TPSection}] ")".
+TypeDecl   = IdentDef [TypePars] "=" Type ";".
+
+QualType   = Qualident ["(" [QualType {"," QualType}] ")"].
+Type       = QualType|ArrayType|RecordType|PointerType|ProcType.
+RecordType = "RECORD" ["("QualType")"] <small>...</small> "END".  
+FormalPars = ["(" [FPSection {";" FPSection}] ")" [":" QualType]].
+
+AliasList = "(" [ident {"," ident}] ")".
+Receiver = "(" ["VAR"] ident ":" ident  [AliasList] ")".
+</pre></td></tr></table>         
+<EM>Note</EM>: Polymorphic procedures, where free type parameters are
+added to a formal parameter list to place an additional restriction on
+the acceptable argument lists of calls, are currently not supported.
+</P><P>
+
+<A NAME="Initialization Functions"></A>
+<HR SIZE="6">
+<A NAME="SEC17"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC18"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC16"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC18"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 8. Initialization Functions </H1>
+<!--docid::SEC17::-->
+<P>
+
+The compiler provides a common notation to define an initialization
+procedure for an object, to redefine the initialization procedure
+within an extended type, and to call this procedure automatically when
+creating an object.  For this, a class may provide a type-bound
+procedure <CODE>INIT</CODE>, like
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>PROCEDURE (l: List) INIT*(initialSize: LONGINT);
+</pre></td></tr></table></P><P>
+
+Such a procedure has the special property that a call to it always
+binds to the procedure bound to the <EM>static</EM> type of the
+receiver, <EM>not</EM> the dynamic one.  In this it behaves like a call
+to a normal procedure, where the actual code to be evaluated is known
+at compile time.
+</P><P>
+
+<CODE>INIT</CODE> must not return a result, and it must be exported.  Its
+formal parameters do not need to match the parameter list inherited
+from the base type, if one exists.  If the base type provides an
+`<SAMP>INIT</SAMP>' procedure, but there is no super call like
+`<SAMP>l.INIT^(<small>...</small>)</SAMP>', then the compiler produces a warning.
+</P><P>
+
+As a shortcut to create an object is to use `<SAMP>NEW()</SAMP>' as a
+function, passing the type of the the new object as its first
+argument.  `<SAMP>v := NEW(T,a1,a2,<small>...</small>)</SAMP>' is equivalent to
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>VAR temp: T;
+<small>...</small>
+NEW(temp);
+temp.INIT(a1,a2,<small>...</small>);
+v := temp;
+</pre></td></tr></table></P><P>
+
+The initialization call is omitted if `<SAMP>T</SAMP>' does not define an
+`<SAMP>INIT</SAMP>' procedure.
+</P><P>
+
+<EM>Note</EM>: The definition of `<SAMP>NEW(v)</SAMP>' when called as a
+procedure has not changed.  That is, with this use of `<SAMP>NEW</SAMP>' the
+`<SAMP>INIT()</SAMP>' procedure is <EM>not</EM> called implicitly for the new
+object.
+</P><P>
+
+<EM>Possible changes</EM>: Right now, the type argument of `<SAMP>NEW()</SAMP>'
+must be a record pointer.  This might be relaxed to any pointer type
+in the future.
+</P><P>
+
+<A NAME="Example Module"></A>
+<HR SIZE="6">
+<A NAME="SEC18"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC17"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> A. Example Module </H1>
+<!--docid::SEC18::-->
+<P>
+
+The modules below exercise most of the features described above:
+strings, parametric types, exceptions, and initialization functions.
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=smallexample><FONT SIZE=-1><pre>MODULE Example:Map;
+(**A simple parametric map type using linked lists. *)
+
+IMPORT Object, E := Exception;
+
+TYPE
+  Key* = Object.Object;
+  Value* = Object.Object;
+
+TYPE
+  Entry(K: Key; V: Value) = POINTER TO EntryDesc(K, V);
+  EntryDesc(K: Key; V: Value) = RECORD
+    key: K;
+    value: V;
+    next: Entry(K, V);
+  END;
+
+TYPE
+  Map*(K: Key; V: Value) = POINTER TO MapDesc(K, V);
+  MapDesc(K: Key; V: Value) = RECORD
+    name: STRING;
+    entries: Entry(K, V);
+  END;
+
+PROCEDURE (map: Map(K,V)) Put*(key: K; value: V);
+VAR
+  entry: Entry(K, V);
+BEGIN
+  NEW(entry);
+  entry.key := key;
+  entry.value := value;
+  entry.next := map.entries;
+  map.entries := entry;
+END Put;
+
+PROCEDURE (map: Map(K, V)) Get*(key: K): V
+RAISES E.Exception;
+VAR
+  entry: Entry(K, V);
+BEGIN
+  entry := map.entries;
+  WHILE entry # NIL DO
+    IF key.Equals(entry.key) THEN
+      RETURN entry.value;
+    END;
+    entry := entry.next;
+  END;
+  RAISE(NEW(E.Exception, 
+            "Map '"+map.name +"' undefined for '"+key.ToString()+"'"));
+END Get;
+
+PROCEDURE (map: Map(K, V)) INIT*(name: STRING);
+BEGIN
+  map.name := name;
+  map.entries := NIL;
+END INIT;
+
+END Example:Map.
+</FONT></pre></td></tr></table></P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=smallexample><FONT SIZE=-1><pre>MODULE TestMap;
+
+IMPORT 
+  Example:Map, Object, Object:Boxed, E := Exception, Out;
+
+TYPE
+  Key = STRING;
+  Value = Object.Object;
+
+PROCEDURE ShowEntry(map: Map.Map(Key, Value); key: Key);
+VAR
+  value: Value;
+BEGIN
+  TRY
+    value := map.Get(key);
+    Out.Object("The value for "+key+" is "+value.ToString()); 
+  CATCH E.Exception(e):
+    Out.Object("Exception: "+e.GetMessage());
+  END;
+  Out.Ln
+END ShowEntry;
+
+PROCEDURE Test;
+VAR
+  map: Map.Map(Key, Value);
+BEGIN
+  map := NEW(Map.Map(Key,Value), "my map");
+
+  map.Put("one",  Boxed.NewLongReal(1.0));
+  map.Put("pi",   Boxed.NewLongReal(3.14159265358979));
+  map.Put("true", Boxed.NewBoolean(TRUE));
+  map.Put("a rose", "a rose");
+
+  ShowEntry(map, "a rose");
+  ShowEntry(map, "one");
+  ShowEntry(map, "two");
+END Test;
+
+BEGIN
+  Test;
+END TestMap.
+</FONT></pre></td></tr></table></P><P>
+
+<HR SIZE="6">
+<A NAME="oo2c-v2.html"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>Footnotes</H1>
+<H3><A NAME="FOOT1" HREF="oo2c-v2.html#DOCF1">(1)</A></H3>
+<P>The module `<SAMP>Object</SAMP>' does not need to be
+imported to use <CODE>STRING</CODE>.  It is part of the run-time system and
+as such included into every program.
+<H3><A NAME="FOOT2" HREF="oo2c-v2.html#DOCF2">(2)</A></H3>
+<P>At the time of writing, this means all
+systems running with GNU <CODE>libc</CODE> and implementing the
+`<SAMP>backtrace()</SAMP>' function.
+<HR SIZE=1>
+<A NAME="SEC_Contents"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>Table of Contents</H1>
+<BLOCKQUOTE>
+<A NAME="TOC1" HREF="oo2c-v2.html#SEC1">1. Introduction</A>
+<BR>
+<A NAME="TOC2" HREF="oo2c-v2.html#SEC2">2. Programs</A>
+<BR>
+<A NAME="TOC3" HREF="oo2c-v2.html#SEC3">3. Library Modules</A>
+<BR>
+<A NAME="TOC4" HREF="oo2c-v2.html#SEC4">4. Doc Comments</A>
+<BR>
+<BLOCKQUOTE>
+<A NAME="TOC5" HREF="oo2c-v2.html#SEC5">4.1 Inline Commands</A>
+<BR>
+<A NAME="TOC9" HREF="oo2c-v2.html#SEC9">4.2 Block Commands</A>
+<BR>
+<A NAME="TOC13" HREF="oo2c-v2.html#SEC13">4.3 Glyphs</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC14" HREF="oo2c-v2.html#SEC14">5. Built-in Type STRING</A>
+<BR>
+<A NAME="TOC15" HREF="oo2c-v2.html#SEC15">6. Exceptions</A>
+<BR>
+<A NAME="TOC16" HREF="oo2c-v2.html#SEC16">7. Parametric Types</A>
+<BR>
+<A NAME="TOC17" HREF="oo2c-v2.html#SEC17">8. Initialization Functions</A>
+<BR>
+<A NAME="TOC18" HREF="oo2c-v2.html#SEC18">A. Example Module</A>
+<BR>
+</BLOCKQUOTE>
+<HR SIZE=1>
+<A NAME="SEC_OVERVIEW"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>Short Table of Contents</H1>
+<BLOCKQUOTE>
+<A NAME="TOC1" HREF="oo2c-v2.html#SEC1">1. Introduction</A>
+<BR>
+<A NAME="TOC2" HREF="oo2c-v2.html#SEC2">2. Programs</A>
+<BR>
+<A NAME="TOC3" HREF="oo2c-v2.html#SEC3">3. Library Modules</A>
+<BR>
+<A NAME="TOC4" HREF="oo2c-v2.html#SEC4">4. Doc Comments</A>
+<BR>
+<A NAME="TOC14" HREF="oo2c-v2.html#SEC14">5. Built-in Type STRING</A>
+<BR>
+<A NAME="TOC15" HREF="oo2c-v2.html#SEC15">6. Exceptions</A>
+<BR>
+<A NAME="TOC16" HREF="oo2c-v2.html#SEC16">7. Parametric Types</A>
+<BR>
+<A NAME="TOC17" HREF="oo2c-v2.html#SEC17">8. Initialization Functions</A>
+<BR>
+<A NAME="TOC18" HREF="oo2c-v2.html#SEC18">A. Example Module</A>
+<BR>
+
+</BLOCKQUOTE>
+<HR SIZE=1>
+<A NAME="SEC_About"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>About this document</H1>
+This document was generated 
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+<P></P>  
+The buttons in the navigation panels have the following meaning:
+<P></P>
+<table border = "1">
+<TR>
+<TH> Button </TH>
+<TH> Name </TH>
+<TH> Go to </TH>
+<TH> From 1.2.3 go to</TH>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ &lt; ] </TD>
+<TD ALIGN="CENTER">
+Back
+</TD>
+<TD>
+previous section in reading order
+</TD>
+<TD>
+1.2.2
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ &gt; ] </TD>
+<TD ALIGN="CENTER">
+Forward
+</TD>
+<TD>
+next section in reading order
+</TD>
+<TD>
+1.2.4
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ &lt;&lt; ] </TD>
+<TD ALIGN="CENTER">
+FastBack
+</TD>
+<TD>
+previous or up-and-previous section 
+</TD>
+<TD>
+1.1
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ Up ] </TD>
+<TD ALIGN="CENTER">
+Up
+</TD>
+<TD>
+up section
+</TD>
+<TD>
+1.2
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ &gt;&gt; ] </TD>
+<TD ALIGN="CENTER">
+FastForward
+</TD>
+<TD>
+next or up-and-next section
+</TD>
+<TD>
+1.3
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [Top] </TD>
+<TD ALIGN="CENTER">
+Top
+</TD>
+<TD>
+cover (top) of document
+</TD>
+<TD>
+ &nbsp; 
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [Contents] </TD>
+<TD ALIGN="CENTER">
+Contents
+</TD>
+<TD>
+table of contents
+</TD>
+<TD>
+ &nbsp; 
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [Index] </TD>
+<TD ALIGN="CENTER">
+Index
+</TD>
+<TD>
+concept index
+</TD>
+<TD>
+ &nbsp; 
+</TD>
+</TR>
+<TR>
+<TD ALIGN="CENTER">
+ [ ? ] </TD>
+<TD ALIGN="CENTER">
+About
+</TD>
+<TD>
+this page
+</TD>
+<TD>
+ &nbsp; 
+</TD>
+</TR>
+</TABLE>
+<P></P>
+where the <STRONG> Example </STRONG> assumes that the current position 
+is at <STRONG> Subsubsection One-Two-Three </STRONG> of a document of 
+the following structure:
+<UL>
+<LI> 1. Section One  </LI>
+<UL>
+<LI>1.1 Subsection One-One</LI>
+<UL>
+<LI> ... </LI>
+</UL>
+<LI>1.2 Subsection One-Two</LI>
+<UL>
+<LI>1.2.1 Subsubsection One-Two-One
+</LI><LI>1.2.2 Subsubsection One-Two-Two
+</LI><LI>1.2.3 Subsubsection One-Two-Three &nbsp; &nbsp; <STRONG>
+&lt;== Current Position </STRONG>
+</LI><LI>1.2.4 Subsubsection One-Two-Four
+</LI></UL>
+<LI>1.3 Subsection One-Three</LI>
+<UL>
+<LI> ... </LI>
+</UL>
+<LI>1.4 Subsection One-Four</LI>
+</UL>
+</UL>
+
+<HR SIZE=1>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+on <I>September, 3  2003</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+</FONT>
+
+</BODY>
+</HTML>
