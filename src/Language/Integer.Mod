@@ -1,7 +1,7 @@
 MODULE Language:Integer [OOC_EXTENSIONS];
 
-IMPORT 
-  Integers, ADT:Object, ADT:String, ADT:StringBuffer, L := Language;
+IMPORT
+  Integers, ADT:Object, ADT:String, L := Language;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -44,8 +44,16 @@ PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   END Equals;
   
 PROCEDURE (v: Value) HashCode* (): LONGINT;
+  VAR
+    h, i: LONGINT;
   BEGIN
-    RETURN Integers.Digits10Of(v.value);
+(*    RETURN Integers.Digits10Of(v.value);*)
+    (* FIXME... Digits10Of seems to be broken; as a workaround,
+       I'm simply adding the digits to get the hash *)
+    FOR i := 0 TO LEN (v.value^)-1 DO
+      INC (h, v. value[i]);
+    END;
+    RETURN h
   END HashCode;
   
 PROCEDURE (v : Value) ToString* () : String.String;
