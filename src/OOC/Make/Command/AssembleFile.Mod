@@ -60,7 +60,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
     (* first, assume that this is a normal module *)
     cmd. externalSource := FALSE;
     CASE cmd. fileId OF
-(*    | Repository.modObjectFile    : src := Repository.modCodeFileC*)
+    | Repository.modObjectFile    : src := Repository.modAssemblerFile
     | Repository.modMainObjectFile: src := Repository.modMainFileAssembler
     END;
     cmd. sourceURI := cmd. module. GetURI (src);
@@ -69,7 +69,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
     (* revise data if the module is FOREIGN or INTERFACE: use externally
        provided file; as a rule, these file must provide exactly one assembler
        file  *)
-(*    IF (fileId = Repository.modObjectFile) THEN
+    IF (fileId = Repository.modObjectFile) THEN
       symTab := module. GetSymbolTable (res);
       IF (res = NIL) &
          ((symTab. class = Sym.mcForeign) OR
@@ -77,7 +77,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
         cmd. externalSource := TRUE;
         cmd. sourceURI := symTab. GetExternalSource()
       END
-    END;*)
+    END;
     
     RETURN cmd
   END New;

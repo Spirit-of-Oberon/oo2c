@@ -1,16 +1,19 @@
 MODULE TestCompile;
 
 IMPORT
+  Log,
   StdChannels, Out, Err, Make, Make:Command:Target,
   StringSearch, StringSearch:RegexpDFA, 
   Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
-  StringValue := Config:Value:String, ADT:String,
-  OOC:Repository, OOC:Make:Entity:ModuleFile, OOC:Make:Command:TranslateToC,
+  StringValue := Config:Value:String, ADT:String, Sym := OOC:SymbolTable,
+  OOC:Config:Assembler,
+  OOC:Repository, OOC:Repository:GetModuleClass, OOC:Make:Entity:ModuleFile,
+  OOC:Make:Command:TranslateToC, OOC:Make:Command:TranslateToIA32,
   OOC:Make:Command:WriteMainFileC, OOC:Make:Command:CompileFileC,
   OOC:Make:Command:WriteMainFileAssembler, OOC:Make:Command:AssembleFile,
   OOC:Make:Command:LinkProgramC, OOC:Error, Rep := OOC:Repository,
-  OOC:C:IRtoC, SSAtoC := OOC:SSA:WriteC;
+  OOC:C:IRtoC, SSAtoC := OOC:SSA:WriteC, SSAtoIA32 := OOC:IA32:WriteAssembler;
   
 
 
@@ -37,6 +40,7 @@ VAR
   writeAST: Options.Option;
   writeIR: Options.Option;
   useSSA: Options.Option;
+  translateIA32: Options.Option;
   inspectProc: Options.Option;
   inspectStage: Options.Option;
   
@@ -57,9 +61,6 @@ PROCEDURE NewContext (config: Config.Config): Context;
   END NewContext;
 
 PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
-  VAR
-    t: TranslateToC.Translator;
-
   PROCEDURE OptionToMatcher (option: Options.Option; cmdLineName: ARRAY OF CHAR): StringSearch.Matcher;
     VAR
       matcher: StringSearch.Matcher;
@@ -77,13 +78,48 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
       RETURN matcher
     END OptionToMatcher;
 
+  PROCEDURE CompileToC (entity: ModuleFile.Entity): Make.Command;
+    VAR
+      t: TranslateToC.Translator;
+    BEGIN
+      IF useSSA. value(BooleanValue.Value). boolean THEN
+        t := SSAtoC.NewTranslator
+            (context. config(Config.Config),
+             OptionToMatcher (inspectProc, "--inspect.1"),
+             OptionToMatcher (inspectStage, "--inspect.2"));
+      ELSE
+        t := IRtoC.NewTranslator();
+      END;
+      
+      RETURN TranslateToC.New (context, entity. module,
+                               writeAST.value(BooleanValue.Value). boolean,
+                               writeIR. value(BooleanValue.Value). boolean,
+                               t);
+    END CompileToC;
+  
+  PROCEDURE CompileToAssembler (entity: ModuleFile.Entity): Make.Command;
+    VAR
+      tIA32: TranslateToIA32.Translator;
+    BEGIN
+      tIA32 := SSAtoIA32.NewTranslator
+          (entity. module, context. config(Config.Config),
+           OptionToMatcher (inspectProc, "--inspect.1"),
+           OptionToMatcher (inspectStage, "--inspect.2"));
+      RETURN TranslateToIA32.New
+          (context, entity. module,
+           writeAST.value(BooleanValue.Value). boolean,
+           writeIR. value(BooleanValue.Value). boolean,
+           tIA32);
+    END CompileToAssembler;
+  
   PROCEDURE AssemblerInput (aEdge: Make.Edge): BOOLEAN;
     VAR
       ancestor: ModuleFile.Entity;
     BEGIN
       WHILE (aEdge # NIL) DO
         ancestor := aEdge. ancestor(ModuleFile.Entity);
-        IF (ancestor. fileId = Repository.modMainFileAssembler) THEN
+        IF (ancestor. fileId = Repository.modMainFileAssembler) OR
+           (ancestor. fileId = Repository.modAssemblerFile) THEN
           RETURN TRUE;
         END;
         aEdge := aEdge. nextAncestor;
@@ -94,31 +130,34 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
   BEGIN
     WITH entity: ModuleFile.Entity DO
       CASE entity. fileId OF
-      | Rep.modSymbolFile, Rep.modHeaderFileC,
-        Rep.modDeclFileC, Rep.modCodeFileC:
-        IF useSSA. value(BooleanValue.Value). boolean THEN
-          t := SSAtoC.NewTranslator
-              (context. config(Config.Config),
-               OptionToMatcher (inspectProc, "--inspect.1"),
-               OptionToMatcher (inspectStage, "--inspect.2"));
-        ELSE
-          t := IRtoC.NewTranslator();
-        END;
+      | Rep.modHeaderFileC, Rep.modDeclFileC, Rep.modCodeFileC:
+        RETURN CompileToC (entity);
         
-        RETURN TranslateToC.New (context, entity. module,
-                                 writeAST. value(BooleanValue.Value). boolean,
-                                 writeIR. value(BooleanValue.Value). boolean,
-                                 t);
+      | Rep.modAssemblerFile:
+        RETURN CompileToAssembler (entity);
+
+      | Rep.modSymbolFile:
+        IF translateIA32. value(BooleanValue.Value). boolean &
+           (GetModuleClass.GetModuleClass (entity. module,
+                                           config. pragmas) = Sym.mcStandard) THEN
+          RETURN CompileToAssembler (entity);
+        ELSE
+          RETURN CompileToC (entity);
+        END;
+             
       | Rep.modMainFileC:
-        RETURN WriteMainFileC.New (context, entity. module)
+        RETURN WriteMainFileC.New (context, entity. module);
+        
       | Rep.modMainFileAssembler:
-        RETURN WriteMainFileAssembler.New (context, entity. module)
+        RETURN WriteMainFileAssembler.New (context, entity. module);
+        
       | Rep.modObjectFile, Rep.modMainObjectFile:
         IF AssemblerInput (entity. ancestorList) THEN
           RETURN AssembleFile.New (context, entity. module, entity. fileId);
         ELSE
           RETURN CompileFileC.New (context, entity. module, entity. fileId);
         END;
+        
       | Rep.modExecutable:
         RETURN LinkProgramC.New (context, entity. module)
       END
@@ -136,6 +175,8 @@ PROCEDURE RegisterCmdLineOptions (config: Config.Config);
                  "<options><set name='make'>TRUE</set></options>");
     ot := config. cmdLine. AddOptionTemplate ("--use-ssa",
                  "<options><set name='use-ssa'>TRUE</set></options>");
+    ot := config. cmdLine. AddOptionTemplate ("--ia32",
+                 "<options><set name='translate-ia32'>TRUE</set><set name='use-ssa'>TRUE</set></options>");
     ot := config. cmdLine. AddOptionTemplate ("--write-ast",
                  "<options><set name='write-ast'>TRUE</set></options>");
     ot := config. cmdLine. AddOptionTemplate ("--write-ir",
@@ -155,6 +196,7 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
     writeAST := config. options. Set ("write-ast", BooleanValue.New (FALSE));
     writeIR := config. options. Set ("write-ir", BooleanValue.New (FALSE));
     useSSA := config. options. Set ("use-ssa", BooleanValue.New (FALSE));
+    translateIA32 := config. options. Set ("translate-ia32", BooleanValue.New (FALSE));
     inspectProc := config. options. Set ("inspect-proc", StringValue.New ("$"));
     inspectStage := config. options. Set ("inspect-stage", StringValue.New ("$"));
     
@@ -170,15 +212,18 @@ BEGIN
   
   IF make. value(BooleanValue.Value). boolean THEN
     mode := Rep.modExecutable
+  ELSIF translateIA32. value(BooleanValue.Value). boolean THEN
+    mode := Rep.modObjectFile;
   ELSE
     mode := Rep.modCodeFileC
   END;
+  Assembler.useAssembler := translateIA32. value(BooleanValue.Value). boolean;
   
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
   ELSIF (config. arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: TestCompile {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
+    Out.String ("Usage: TestCompile {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa|--ia32][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
     HALT (1)
   ELSE
     context := NewContext (config);

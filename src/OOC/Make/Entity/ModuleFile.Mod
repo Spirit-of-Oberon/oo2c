@@ -26,7 +26,8 @@ IMPORT
   URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
   ConfigOOC := OOC:Auxiliary:Config, OOC:Config:Assembler, OOC:Error,
-  OOC:Repository, OOC:Repository:GetImports, Sym := OOC:SymbolTable;
+  OOC:Repository, OOC:Repository:GetImports, OOC:Repository:GetModuleClass,
+  Sym := OOC:SymbolTable;
 
 
 
@@ -199,6 +200,8 @@ PROCEDURE (entity: Entity) Id* (): String.String;
       str. AppendString ("modDeclFileC")
     | Repository.modCodeFileC:
       str. AppendString ("modCodeFileC")
+    | Repository.modAssemblerFile:
+      str. AppendString ("modAssemblerFile")
     | Repository.modMainFileC:
       str. AppendString ("modMainFileC")
     | Repository.modMainFileAssembler:
@@ -280,6 +283,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
     nextState: Make.EntityState;
     dummy: Sym.Module;
     res: Msg.Msg;
+    config: ConfigOOC.Config;
   
   PROCEDURE AddImportDeps (entity: Entity; fileId: Repository.FileId;
                            timeDep: BOOLEAN);
@@ -541,11 +545,43 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
         RETURN nextState;
       END
       
-    | Repository.modMainFileC, Repository.modMainFileAssembler:
+    | Repository.modAssemblerFile:
+      (* The assembler code of a module must be more recent than the symbol
+         file, which in turn must be more recent than the source code.  *)
+      IF (entity. state = Make.entityUndiscovered) THEN
+        srcEntity := GetEntity (entity. context, entity. module,
+                                Repository.modSymbolFile);
+        AddTimeDep (entity. context, entity, srcEntity);
+        RETURN entity. state+1
+      ELSE
+        nextState := AncestorState (entity, -1);
+        IF (nextState = Make.entityBuild) &
+           (entity. module. symbolTable. class # Sym.mcStandard) THEN
+          (* we cannot build the code of an INTERFACE or FOREIGN module *)
+          nextState := Make.entityValid;
+        END;
+        RETURN nextState;
+      END
+      
+    | Repository.modMainFileC:
       (* This file depends on the existence of all included header files.  *)
       IF (entity. state = Make.entityUndiscovered) THEN
         entity. AddAncestor (GetEntity (entity. context, entity. module,
                                         Repository.modSymbolFile));
+        RETURN entity. state+1
+      ELSE
+        IF entity. HasInvalidAncestor() THEN
+          RETURN Make.entityInvalid
+        ELSE
+          RETURN Make.entityBuild
+        END
+      END
+      
+    | Repository.modMainFileAssembler:
+      (* This file depends on the existence of all object files.  *)
+      IF (entity. state = Make.entityUndiscovered) THEN
+        entity. AddAncestor (GetEntity (entity. context, entity. module,
+                                        Repository.modObjectFile));
         RETURN entity. state+1
       ELSE
         IF entity. HasInvalidAncestor() THEN
@@ -569,10 +605,25 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
           RETURN Make.entityValid
         ELSE
           srcEntity := GetEntity (entity. context, entity. module,
-                                  Repository.modCodeFileC);
+                                  Repository.modSymbolFile);
           AddTimeDep (entity. context, entity, srcEntity);
           RETURN entity. state+1
         END
+      ELSIF (entity. state = Make.entityUndiscovered+1) THEN
+        config := entity. context. config(ConfigOOC.Config);
+        IF Assembler.useAssembler &
+           ((entity. module. symbolTable # NIL) &
+            (entity. module. symbolTable. class = Sym.mcStandard) OR
+            (GetModuleClass.GetModuleClass (entity. module,
+                                            config. pragmas) = Sym.mcStandard)) THEN
+          srcEntity := GetEntity (entity. context, entity. module,
+                                  Repository.modAssemblerFile);
+        ELSE
+          srcEntity := GetEntity (entity. context, entity. module,
+                                  Repository.modCodeFileC);
+        END;
+        AddTimeDep (entity. context, entity, srcEntity);
+        RETURN entity. state+1
       ELSE
         RETURN AncestorState (entity, -1)
       END

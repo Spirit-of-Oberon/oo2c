@@ -24,8 +24,9 @@ IMPORT
   Strings, ADT:String, URI, URI:Scheme:File,
   Config:Section:Options, OOC:Repository, OOC:Auxiliary:Config;
 
-CONST
-  useAssembler* = TRUE;
+VAR
+  (* FIXME... move this into a config module: *)
+  useAssembler*: BOOLEAN;
   (**If @code{FALSE}, then the C code is emitted instead of assembler code.  *)
   
      
@@ -62,4 +63,6 @@ PROCEDURE AssembleFileCmd* (config: Config.Config; in, out: URI.URI;
     Strings.Append (str, cmd);
   END AssembleFileCmd;
 
+BEGIN
+  useAssembler := TRUE;
 END OOC:Config:Assembler.

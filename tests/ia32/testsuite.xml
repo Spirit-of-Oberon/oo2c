@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite-ext
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
+
+<!ENTITY baseline-testcases
+         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases.xml">
+
+]>
+
+<testsuite-ext profile="Test Suite for Framework Testing">
+  &TestSetupWithOut;
+
+  <testcases profile="Baseline Testcases for Test Framework"
+             default-lang="O1 O2 AO">
+    <test id="baseline3" type="error" file="HOTBaselineError1.Mod">
+      Module body has a single statement: <code>ASSERT(FALSE)</code>.
+      The module should compile, and it should be possible to execute
+      the exported procedure, but evaluation should raise an exception.
+    </test>
+  
+    <test id="baseline4" type="run" file="HOTBaselineRun1.Mod">
+      Module with a single, empty, procedure <code>Test</code>.  The
+      module should compile and evaluate fine, but does not do anything
+      at all.
+    </test>
+  
+    <test id="baseline5" type="run" file="HOTBaselineOutput0.Mod"
+      output="HOTBaselineOutput0.Ref">
+      Module produces no output, and <code>HOTBaselineOutput0.Ref</code>
+      is empty.
+    </test>
+    
+    <test id="baseline6" type="run" file="HOTBaselineOutput1.Mod"
+      output="HOTBaselineOutput1.Ref">
+      Evaluation of the procedure <code>Test</code> prints the famous
+      <code>Hello World!</code>, followed by a single newline character.
+      Command execution should succeed, and the command's output should
+      match the content of file <code>HOTBaselineOutput1.Ref</code>
+      (with the exception of a possibly different newline character).
+    </test>
+    
+    <test id="baseline8" type="run" file="HOTBaselineOutput3.Mod"
+      output="HOTBaselineOutput3.Ref">
+      Tests integer output for <code>LONGINT</code>:
+      padding, sign, alignment.
+    </test>
+    
+    <test id="baseline10" type="run" file="HOTBaselineOutput5.Mod"
+      output="HOTBaselineOutput5.Ref">
+      Tests character output.  Not much to test, though.
+    </test>
+    
+    <test id="baseline11" type="run" file="HOTBaselineOutput6.Mod"
+      output="HOTBaselineOutput6.Ref">
+      Produces a single character as output.  No end-of-line character
+      follows it.
+    </test>
+  </testcases>
+</testsuite-ext>

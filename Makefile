@@ -26,6 +26,7 @@ TEST_SUBDIRS=\
   tests/compile \
   tests/ssa \
   tests/lib \
+  tests/ia32 \
   tests/ssa-c-output \
 
 DOC_DIR=$(OOC_DEV_ROOT)/oocdoc

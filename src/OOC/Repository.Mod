@@ -155,21 +155,24 @@ CONST
   modHeaderFileC* = 13;
   (**For the C translator, this designates the C header file that is used by
      the C code of the module, and is included into all client's C code.  *)
-  modMainFileC* = 14;
+  modAssemblerFile* = 14;
+  (**For the assembler file generated for a module.  This is equivalent to
+     @oconst{modCodeFileC}.  *)
+  modMainFileC* = 15;
   (**This file contains the main function of a program.  It is a variant of
      @oconst{modCodeFileC} in that it contains C code and is compiled to an
      object file.  *)
-  modMainFileAssembler* = 15;
+  modMainFileAssembler* = 16;
   (**This file contains the main function of a program as assembler code.  It
      is equivalent to @oconst{modMainFileC}, and is translated to
      @oconst{modMainObjectFile}.  *)
-  modMainObjectFile* = 16;
+  modMainObjectFile* = 17;
   (**Compiled version of @oconst{modMainFileC} or
      @oconst{modMainFileAssembler}.  *)
-  modExecutable* = 17;
+  modExecutable* = 18;
   (**Represents the executable one gets when using this module as a program's
      main module.  *)
-  resourceFile* = 18;
+  resourceFile* = 19;
   (**A resource file is a non-Oberon file that accompanies a package.
      Resources are typically located in the @file{rsrc} subdirectory of a
      package or repository.  For example, XML DTD files and XSL stylesheets
@@ -329,7 +332,7 @@ PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF 
     | modInterfaceHTML:
       COPY ("doc/html", subdir)
     | modObjectFile, modCodeFileC, modDeclFileC, modHeaderFileC,
-      modObjectFileDynamicLoad,
+      modAssemblerFile, modObjectFileDynamicLoad,
       modMainFileC, modMainFileAssembler, modMainObjectFile:
       COPY ("obj", subdir)
     | modObjectFileSharedLib, modObjectFileStaticLib:
@@ -366,6 +369,8 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
       COPY (".d", suffix)
     | modHeaderFileC:
       COPY (".h", suffix)
+    | modAssemblerFile:
+      COPY (".s", suffix)
     | modObjectFileSharedLib:
       COPY (".lo", suffix)
     | modMainFileC:
