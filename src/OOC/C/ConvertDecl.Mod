@@ -136,8 +136,6 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
         | Predef.set:
           RETURN w. basicType[DeclWriter.uint32]
 
-        | Predef.address:
-          RETURN w. basicType[DeclWriter.int32]
         | Predef.byte:
           RETURN w. basicType[DeclWriter.char8]
         | Predef.ptr:
