@@ -503,7 +503,10 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
     WHILE (worklist # NIL) DO
       instr := worklist.instr;
       worklist := worklist.next;
-      PromoteDesignatorGate(instr(S.GateInstr));
+      IF (instr.opndList # NIL) THEN
+        (* skip if this instruction has already been nuked *)
+        PromoteDesignatorGate(instr(S.GateInstr));
+      END;
     END;
     ASSERT(undefValue.useList = NIL);
     undefValue.DeleteResult();
