@@ -3,6 +3,7 @@ GET *.Mod [RCS] FROM
   src;
   ../libxml/src;
   ../libadt/src;
+  ../gaf2/src;
 GET *.Sym, *.Lib FROM
   sym; 
 GET *.h, *.d, *.c, *.o FROM

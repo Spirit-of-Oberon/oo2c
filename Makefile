@@ -24,7 +24,7 @@ DOC_DIR=$(OOC_DEV_ROOT)/oocdoc
 
 top_builddir=$(OOC_DEV_ROOT)
 
-test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile AllModules RunTests
+test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile TestWebServer AllModules RunTests
 
 all:
 

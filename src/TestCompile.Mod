@@ -7,7 +7,7 @@ IMPORT
   OOC:Make:Entity:ModuleFile, OOC:Make:Command:TranslateToC,
   OOC:Make:Command:WriteMainFileC, OOC:Make:Command:CompileFileC,
   OOC:Make:Command:LinkProgramC,
-  OOC:Error, Rep := OOC:Repository;
+  OOC:Error, Rep := OOC:Repository, OOC:SSA:Inspector;
   
 
 
@@ -122,6 +122,7 @@ BEGIN
     HALT (1)
   ELSE
     context := NewContext (config);
+    Inspector.repositories := config. repositories;
     
     FOR i := 0 TO config. arguments. ArgNumber()-1 DO
       arg := config. arguments. Get (i);

@@ -5,7 +5,7 @@ IMPORT
   ADT:Object, ADT:String, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules,
   OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
-  OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
+  OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -851,6 +851,11 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
     domRoot := Schedule.Schedule (pb);
     XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
+
+(*    (* create a temporary web server displaying the SSA code *)
+    IF (procDecl. decl. name. str^ = "Length") THEN
+      Inspector.Show (procDecl, domRoot);
+    END;*)
     
     Fixup (pb);
     registerMap := Allocator.AssignRegisters (pb, domRoot, cWriter);
