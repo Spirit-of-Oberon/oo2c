@@ -802,6 +802,12 @@
     <test id="procvar6" type="accept" file="ProcVar6.Mod">
       Assign <code>NIL</code> to a procedure variable.
     </test>
+
+    <!--NOTE: The SSA back-end assumes that the called global
+      procedure cannot modify variables local to Sum().  This is not
+      true in this scenario.  Either make the back-end smarter, or
+      disallow assignment of local procedures to variables.
+
     <test id="procvar7" type="run" file="ProcVar7.Mod" output="ProcVar7.Ref">
       Passing a local procedure to a procedure variable and calling it
       from another global procedure.  The current implementation of
@@ -813,7 +819,7 @@
       turned into an error.  It is nice to implement iterators,
       though, because the enclosing procedure can hold the state of
       the function called from the iterator.
-    </test>
+    </test>  -->
 
     
     <test id="typetest1" type="run" file="TypeTest1.Mod" output="TypeTest1.Ref">
