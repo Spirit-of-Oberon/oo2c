@@ -465,13 +465,19 @@ PROCEDURE (v: Visitor) VisitArrayType* (arrayType: ExtTree.ArrayType);
     array: Sym.Array;
     baseType: Sym.Type;
     i: LONGINT;
+    pos: Sym.Position;
   BEGIN
     IF (arrayType. exprList. len > 0) THEN
       baseType := GetType (v, arrayType. type);
       FOR i := arrayType. exprList. len-1 TO 0 BY -2 DO
+        IF (i = 0) THEN
+          pos := GetPosition (arrayType. array);
+        ELSE
+          pos := GetPosition (arrayType. exprList. n[i-1]);
+        END;
         baseType := v. stb. NewArray
             (v. parent,
-             GetPosition (arrayType. array),
+             pos,
              FALSE,
              arrayType. exprList. n[i],
              baseType)
