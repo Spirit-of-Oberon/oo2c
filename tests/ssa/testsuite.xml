@@ -19,11 +19,11 @@
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
   designator1 function6 loop1 loop2 varpar1
-  ooc_record1 ooc_record2 ooc_record3">
+  ooc_record1 ooc_record2 ooc_record3 inc1 dec1">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module ooc_record3">-->
+  select ="prepare_out_module inc1 dec1">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -126,6 +126,14 @@
     
     <test id="ooc_record3" type="run" file="Record3.Mod" output="Record3.Ref">
       Assignments to the fields of a value parameter of record type.
+    </test>
+
+    <test id="inc1" type="run" file="Inc1.Mod" output="Inc1.Ref">
+      Performing <code>INC</code> with default delta on global variable.
+    </test>
+    
+    <test id="dec1" type="run" file="Dec1.Mod" output="Dec1.Ref">
+      Performing <code>DEC</code> with default delta on global variable.
     </test>
   </testcases>
   

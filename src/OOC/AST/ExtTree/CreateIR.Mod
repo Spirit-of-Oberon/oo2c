@@ -171,7 +171,11 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           NEW (arguments, 0);
           expr := b. NewCall (Designator (call. call), arguments)
         END;
-        RETURN expr(IR.Statement)
+        WITH expr: IR.Statement DO
+          RETURN expr;
+        ELSE
+          RETURN NIL;  (* return NIL in case of error; skipped in StatmSeq *)
+        END;
       END ProcedureCall;
   
     PROCEDURE Return (return: ExtTree.ReturnStatm): IR.Statement;
@@ -269,8 +273,11 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
             Log.Type("++ Unknown type in StatementSeq", n);
             ASSERT (FALSE)
           END;
-          statmSeqIR[count] := statm;
-          INC (count)
+
+          IF (statm # NIL) THEN          (* ignore faulty statements *)
+            statmSeqIR[count] := statm;
+            INC (count)
+          END;
         END
       END;
 

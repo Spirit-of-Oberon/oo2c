@@ -251,6 +251,10 @@ PROCEDURE (c: ConstFold) VisitAssignment* (assignment: IR.Assignment);
   BEGIN
   END VisitAssignment;
 
+PROCEDURE (c: ConstFold) VisitAssignOp* (assignOp: Operator.AssignOp);
+  BEGIN
+  END VisitAssignOp;
+
 PROCEDURE VisitStatementSeq (c: ConstFold; statmSeq: IR.StatementSeq);
   BEGIN
   END VisitStatementSeq;

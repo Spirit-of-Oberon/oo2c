@@ -237,6 +237,14 @@ PROCEDURE (v: Visitor) VisitAssignment* (assignment: IR.Assignment);
     v. w. EndTag;  (* assignment *)
   END VisitAssignment;
 
+PROCEDURE (v: Visitor) VisitAssignOp* (assignOp: Operator.AssignOp);
+  BEGIN
+    v. w. StartTag ("assign-operation", FALSE);
+    assignOp. variable. Accept (v);
+    assignOp. value. Accept (v);
+    v. w. EndTag;  (* assign-operation *)
+  END VisitAssignOp;
+
 PROCEDURE VisitStatementSeq (v: Visitor; statmSeq: IR.StatementSeq);
   VAR
     i: LONGINT;

@@ -58,8 +58,10 @@ CONST
   assert* = 0;                           (* ASSERT *)
   len* = 1;                              (* LEN *)
   size* = 2;                             (* SIZE *)
-
-
+  inc* = 3;                              (* INC *)
+  dec* = 4;                              (* DEC *)
+  
+  
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
   VAR
     n: Sym.Name;
@@ -141,6 +143,8 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (assert, "ASSERT");
     PredefProc (len, "LEN");
     PredefProc (size, "SIZE");
+    PredefProc (inc, "INC");
+    PredefProc (dec, "DEC");
     
     stb. Finalize (module);
     RETURN module

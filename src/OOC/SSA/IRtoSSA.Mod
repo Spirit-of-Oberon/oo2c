@@ -152,7 +152,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         CASE expr.variant OF
         | Operator.arithAdd:
           instr := pb. AddInstr (Opcode.add,
-                               Opcode.TypeToSubclass (expr. left. type));
+                                 Opcode.TypeToSubclass (expr. left. type));
+
+        | Operator.arithSub:
+          instr := pb. AddInstr (Opcode.subtract,
+                                 Opcode.TypeToSubclass (expr. left. type));
+          
         ELSE
           Log.Type("++ Unknown variant of BinaryArith in Expression", expr);
           ASSERT (FALSE);
@@ -202,6 +207,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       get: SSA.Result;
     BEGIN
       (* ... shortcut: ignore non-scalar assignments *)
+
+      (* FIXME... If this is an AssignOp, then we must evaluate the
+         variable just once for both the operator and the actual assignment *)
       get := Expression (assignment. variable);
       RETURN pb. AddSetInstr (get(SSA.Instr), Expression (assignment. value));
     END Assignment;

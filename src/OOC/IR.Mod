@@ -222,7 +222,7 @@ TYPE
 
 TYPE
   Assignment* = POINTER TO AssignmentDesc;
-  AssignmentDesc = RECORD
+  AssignmentDesc* = RECORD
     (**Assignment statement.  *)
     (StatementDesc)
     variable-: Expression;
@@ -799,8 +799,8 @@ END AssignType;
 
 (* -------- *)
 
-PROCEDURE InitAssignment (assignment: Assignment; sym: Symbol;
-                          variable, value: Expression);
+PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
+                           variable, value: Expression);
   BEGIN
     InitStatement (assignment, sym);
     assignment. variable := variable;

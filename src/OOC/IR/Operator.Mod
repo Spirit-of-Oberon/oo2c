@@ -136,6 +136,18 @@ TYPE
     operand- : IR.Expression;
   END;
 
+TYPE
+  AssignOp* = POINTER TO AssignOpDesc;
+  AssignOpDesc = RECORD
+    (IR.AssignmentDesc)
+    (**This operation is used to model calls to @code{INC}, @code{DEC},
+       @code{INCL}, and @code{EXCL}.  The field @ofield{variable} equals the
+       left operand of the @otype{BinaryArith} instance in @ofield{value}.
+       Translation of this special assignment must take care to evaluate the
+       variable designator only once!  *)
+  END;
+  
+  
 VAR
   real : Sym.Type;
 
@@ -227,16 +239,16 @@ PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; variant: Variant; left, r
   BEGIN
     tr := b.typeRules;
 
-    CASE sym.id OF
-    | Symbol.plus, Symbol.minus, Symbol.times:
+    CASE variant OF
+    | arithAdd, arithSub, arithMul:
       (* require two eqivalent numeric types *)
       ok := (b.AdjustTypes(left, right, type) &
              b. typeRules. IsNumericType(type));
-    | Symbol.div, Symbol.mod:
+    | arithDivI, arithMod:
       (* require two equivalent integer types *)
       ok := (b.AdjustTypes(left, right, type) &
              b. typeRules. IsIntegerType(type));
-    | Symbol.slash:
+    | arithDivR:
       (* require two real operands *)
       IF b. typeRules. IsRealType(left. type) OR
          b. typeRules. IsRealType(right. type) THEN
@@ -473,6 +485,34 @@ PROCEDURE (b: Builder) NewSize* (sym: IR.Symbol; type: IR.Expression): IR.Expres
 
 (* -------- *)
 
+PROCEDURE InitAssignOp (ao: AssignOp; sym: IR.Symbol; op: BinaryArith);
+  BEGIN
+    IR.InitAssignment (ao, sym, op. left, op);
+  END InitAssignOp;
+
+PROCEDURE (b: Builder) NewAssignOp (sym: IR.Symbol; op: IR.Expression): IR.Expression;
+  VAR
+    i: AssignOp;
+  BEGIN
+    WITH op: IR.Const DO
+      RETURN b. errorExpr;               (* bail out, op is errorExpr *)
+    ELSE
+      NEW (i);
+      InitAssignOp (i, sym, op(BinaryArith));
+      RETURN i;
+    END;
+  END NewAssignOp;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitAssignOp* (ao: AssignOp);
+  END VisitAssignOp;
+
+PROCEDURE (ao: AssignOp) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitAssignOp (ao)
+  END Accept;
+
+(* -------- *)
+
 PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
 (**Return an IR expression for the given symbol and left/right expressions.
    This procedure handles operator polymorphism, mapping an operator symbol to
@@ -558,6 +598,11 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
   END NewOperator;
 
 PROCEDURE (b: Builder) NewCall* (design: IR.Expression; arguments: IR.ExpressionList): IR.Expression;
+  PROCEDURE GetOne (type: Sym.Type): IR.Const;
+    BEGIN
+      RETURN b. NewConst (design. sym, type, Integer.NewLInt (1));
+    END GetOne;
+  
   BEGIN
     WITH design: IR.PredefProc DO
       (* note: predefined functions are handled by a specialization of thie
@@ -570,6 +615,21 @@ PROCEDURE (b: Builder) NewCall* (design: IR.Expression; arguments: IR.Expression
       | Predef.size:
         ASSERT (LEN (arguments^) = 1);   (* FIXME... needs error msg *)
         RETURN b. NewSize (design. sym, arguments[0])
+
+      | Predef.inc:
+        ASSERT (LEN (arguments^) = 1);
+        RETURN b. NewAssignOp (design. sym,
+                               b. NewBinaryArith (design. sym, arithAdd,
+                                                  arguments[0],
+                                                  GetOne (arguments[0].type)));
+        
+      | Predef.dec:
+        ASSERT (LEN (arguments^) = 1);
+        RETURN b. NewAssignOp (design. sym,
+                               b. NewBinaryArith (design. sym, arithSub,
+                                                  arguments[0],
+                                                  GetOne (arguments[0].type)));
+        
       ELSE
         RETURN b. NewCall^ (design, arguments);
       END

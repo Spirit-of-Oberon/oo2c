@@ -638,6 +638,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.add:
         WriteDyadicOp (instr, "+");
         
+      | Opcode.subtract:
+        WriteDyadicOp (instr, "-");
+        
       | Opcode.negate:
         w. WriteChar ("-");
         w. Ref (instr. opndList);
