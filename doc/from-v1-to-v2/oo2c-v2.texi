@@ -42,6 +42,7 @@ END-INFO-DIR-ENTRY
 * Exceptions::                  
 * Parametric Types::            
 * Initialization Functions::    
+* Example Module::              
 @end menu
 
 @node Introduction, Programs, Top, Top
@@ -597,7 +598,7 @@ the acceptable argument lists of calls, are currently not supported.
 
 
 
-@node Initialization Functions,  , Parametric Types, Top
+@node Initialization Functions, Example Module, Parametric Types, Top
 @chapter Initialization Functions
 
 The compiler provides a common notation to define an initialization
@@ -645,5 +646,118 @@ object.
 @emph{Possible changes}: Right now, the type argument of @samp{NEW()}
 must be a record pointer.  This might be relaxed to any pointer type
 in the future.
+
+
+
+@node Example Module,  , Initialization Functions, Top
+@appendix Example Module
+
+The modules below exercise most of the features described above:
+strings, parametric types, exceptions, and initialization functions.
+
+@smallexample
+MODULE Example:Map;
+(**A simple parametric map type using linked lists. *)
+
+IMPORT Object, E := Exception;
+
+TYPE
+  Key* = Object.Object;
+  Value* = Object.Object;
+
+TYPE
+  Entry(K: Key; V: Value) = POINTER TO EntryDesc(K, V);
+  EntryDesc(K: Key; V: Value) = RECORD
+    key: K;
+    value: V;
+    next: Entry(K, V);
+  END;
+
+TYPE
+  Map*(K: Key; V: Value) = POINTER TO MapDesc(K, V);
+  MapDesc(K: Key; V: Value) = RECORD
+    name: STRING;
+    entries: Entry(K, V);
+  END;
+
+PROCEDURE (map: Map(K,V)) Put*(key: K; value: V);
+VAR
+  entry: Entry(K, V);
+BEGIN
+  NEW(entry);
+  entry.key := key;
+  entry.value := value;
+  entry.next := map.entries;
+  map.entries := entry;
+END Put;
+
+PROCEDURE (map: Map(K, V)) Get*(key: K): V
+RAISES E.Exception;
+VAR
+  entry: Entry(K, V);
+BEGIN
+  entry := map.entries;
+  WHILE entry # NIL DO
+    IF key.Equals(entry.key) THEN
+      RETURN entry.value;
+    END;
+    entry := entry.next;
+  END;
+  RAISE(NEW(E.Exception, 
+            "Map '"+map.name +"' undefined for '"+key.ToString()+"'"));
+END Get;
+
+PROCEDURE (map: Map(K, V)) INIT*(name: STRING);
+BEGIN
+  map.name := name;
+  map.entries := NIL;
+END INIT;
+
+END Example:Map.
+@end smallexample
+
+@smallexample
+MODULE TestMap;
+
+IMPORT 
+  Example:Map, Object, Object:Boxed, E := Exception, Out;
+
+TYPE
+  Key = STRING;
+  Value = Object.Object;
+
+PROCEDURE ShowEntry(map: Map.Map(Key, Value); key: Key);
+VAR
+  value: Value;
+BEGIN
+  TRY
+    value := map.Get(key);
+    Out.Object("The value for "+key+" is "+value.ToString()); 
+  CATCH E.Exception(e):
+    Out.Object("Exception: "+e.GetMessage());
+  END;
+  Out.Ln
+END ShowEntry;
+
+PROCEDURE Test;
+VAR
+  map: Map.Map(Key, Value);
+BEGIN
+  map := NEW(Map.Map(Key,Value), "my map");
+
+  map.Put("one",  Boxed.NewLongReal(1.0));
+  map.Put("pi",   Boxed.NewLongReal(3.14159265358979));
+  map.Put("true", Boxed.NewBoolean(TRUE));
+  map.Put("a rose", "a rose");
+
+  ShowEntry(map, "a rose");
+  ShowEntry(map, "one");
+  ShowEntry(map, "two");
+END Test;
+
+BEGIN
+  Test;
+END TestMap.
+@end smallexample
 
 @bye
