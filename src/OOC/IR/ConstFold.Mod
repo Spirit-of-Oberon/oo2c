@@ -23,7 +23,7 @@ MODULE OOC:IR:ConstFold;
 IMPORT 
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
   Language, 
-  Language:Integer, Language:Boolean, Language:String8, Language:Char8,
+  Language:Integer, Language:Boolean, Language:String8, 
   Language:Set,
   ADT:String, Integers;
 
@@ -181,7 +181,7 @@ PROCEDURE (c: ConstFold) VisitIndex* (index: IR.Index);
 
 PROCEDURE (c: ConstFold) VisitSetMember* (op: IR.SetMember);
   VAR 
-    i, element : LONGINT; set : SET;
+    element : LONGINT; set : SET;
     e, s : Language.Value;
   BEGIN
     IF c.ValidEval(op.element, e) & c.ValidEval(op.set, s) THEN
@@ -195,7 +195,7 @@ PROCEDURE (c: ConstFold) VisitSetMember* (op: IR.SetMember);
 
 PROCEDURE (c: ConstFold) VisitSetRange* (op: IR.SetRange);
   VAR 
-    i, left, right : LONGINT;
+    left, right : LONGINT;
     l, r : Language.Value;
   BEGIN
     IF c.ValidEval(op.from, l) & c.ValidEval(op.to, r) THEN
@@ -456,6 +456,12 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
     value : Language.Value;
   BEGIN
     IF c.ValidEval(op.expr, value) THEN
+      IF c. builder. typeRules. IsIntegerType (op. type) &
+         c. builder. typeRules. IsCharType (op. expr. type) THEN
+        (* type conversion from character to integer value (ORD) *)
+        value := Integer.NewLInt (ORD (value(String8.Value). value. array[0]));
+        c.result := c. builder. NewConst (op. sym, op. type, value);
+      END;
       c.result := c.builder.NewConst(op.sym, op.type, value)
     ELSE
       c.result := NIL;
@@ -489,10 +495,6 @@ PROCEDURE (c: ConstFold) VisitAssignment* (assignment: IR.Assignment);
 PROCEDURE (c: ConstFold) VisitAssignOp* (assignOp: IR.AssignOp);
   BEGIN
   END VisitAssignOp;
-
-PROCEDURE VisitStatementSeq (c: ConstFold; statmSeq: IR.StatementSeq);
-  BEGIN
-  END VisitStatementSeq;
 
 PROCEDURE (c: ConstFold) VisitExit* (exit: IR.Exit);
   BEGIN
@@ -530,10 +532,6 @@ PROCEDURE (c: ConstFold) VisitCopyParameter* (cp: IR.CopyParameter);
   BEGIN
   END VisitCopyParameter;
 
-
-PROCEDURE VisitProcedureList (c: ConstFold; procList: IR.ProcedureList);
-  BEGIN
-  END VisitProcedureList;
 
 PROCEDURE (c: ConstFold) VisitProcedure* (procedure: IR.Procedure);
   BEGIN
