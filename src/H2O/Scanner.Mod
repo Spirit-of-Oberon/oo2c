@@ -205,7 +205,7 @@ VAR
 
   PROCEDURE AcceptChar;
   BEGIN
-    s.buffer.AppendChar(ch);
+    s.buffer.AppendLatin1Char(ch);
     NextChar;
   END AcceptChar;
  
@@ -227,7 +227,7 @@ VAR
           NextChar; 
           RETURN
         ELSE
-          s.buffer.AppendChar("*");
+          s.buffer.AppendLatin1Char("*");
         END
       END;
       AcceptChar;
@@ -470,17 +470,17 @@ VAR b : StringBuffer.StringBuffer;
   str: Object.String;
 BEGIN
   b := StringBuffer.New("TOKEN(");
-  b.AppendLongInt(t.sym);
+  b.AppendInt(t.sym);
   IF t.name # NIL THEN
-    b.AppendString(",text='");
+    b.Append(",text='");
     b.Append(t.name);
-    b.AppendString("'");
+    b.Append("'");
   END;
   IF (t.sym=number) OR (t.sym=parameter) THEN
-    b.AppendString(",value=");
-    b.AppendLongInt(t.value);
+    b.Append(",value=");
+    b.AppendInt(t.value);
   END;
-  b.AppendString(")");
+  b.Append(")");
   str := b.ToString();
   RETURN str(Object.String8);
 END ToString;

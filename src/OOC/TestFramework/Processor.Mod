@@ -59,6 +59,7 @@ VAR
 PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
   VAR
     sb: StringBuffer.StringBuffer;
+    str: Object.String;
     
   PROCEDURE GetPath (subdir: ARRAY OF CHAR): Object.String8;
     VAR
@@ -82,15 +83,17 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     proc. txtDir := GetPath ("txt");
     
     (* put together command string for compile/make *)
-    sb := StringBuffer.New (setup. processor. command);
-    (*sb. AppendString (" --config '");
+    sb := StringBuffer.New("");
+    sb.AppendLatin1(setup. processor. command);
+    (*sb.AppendLatin1 (" --config '");
     setup. processor. configFile(File.URI). GetPath (path);
-    sb. AppendString (path);
-    sb. AppendString ("' ");*)
-    sb. AppendString (" ");
-    sb. AppendString (setup. processor. flags);
-    sb. AppendString (" ");
-    proc. processCmd := sb. ToString8();
+    sb.AppendLatin1(path);
+    sb.AppendLatin1("' ");*)
+    sb.AppendLatin1(" ");
+    sb.AppendLatin1(setup. processor. flags);
+    sb.AppendLatin1(" ");
+    str := sb.ToString();
+    proc. processCmd := str(Object.String8);
     
     proc. filterCmd := NIL;
     IF (setup. processor. filterCommand # "") THEN

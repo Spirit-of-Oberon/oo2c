@@ -1114,8 +1114,8 @@ PROCEDURE AppendContext(buffer : StringBuffer.StringBuffer; item : Sym.Item);
       IF item.parent # NIL THEN
         AppendContext(buffer, item.parent);
       END;
-      buffer.AppendString(item.name.str^);
-      buffer.AppendChar(".");
+      buffer.AppendLatin1(item.name.str^);
+      buffer.AppendLatin1Char(".");
      END;
   END AppendContext;
 
@@ -1132,22 +1132,22 @@ BEGIN
     AppendContext(name, type.parent);
   END;
   IF type.namingDecl # NIL THEN
-    name.AppendString(type.namingDecl.name.str^);
+    name.AppendLatin1(type.namingDecl.name.str^);
   ELSE
     WITH 
       type : Sym.PredefType DO
       (* probably doesn't happen since these should be named *)
-      name.AppendString("PredefType(");
-      name.AppendLongInt(type.id);
-      name.AppendString(")")
+      name.AppendLatin1("PredefType(");
+      name.AppendInt(type.id);
+      name.AppendLatin1(")")
     | type : Sym.Pointer DO
-      name.AppendString("POINTER")
+      name.AppendLatin1("POINTER")
     | type : Sym.FormalPars DO
-      name.AppendString("PROCEDURE")
+      name.AppendLatin1("PROCEDURE")
     | type : Sym.Array DO
-      name.AppendString("ARRAY")
+      name.AppendLatin1("ARRAY")
     | type : Sym.Record DO
-      name.AppendString("RECORD")
+      name.AppendLatin1("RECORD")
     END
   END;
   str := name.ToString();

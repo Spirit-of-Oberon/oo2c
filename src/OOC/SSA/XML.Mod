@@ -77,11 +77,11 @@ PROCEDURE (w: Writer) AttrId* (name: ARRAY OF LONGCHAR; result: SSA.Result);
     countSameId, posSameId: LONGINT;
   BEGIN
     w. sb. Delete (0, w. sb. length);
-    w. sb. AppendLongInt (ABS (w. GetId (result. instr)));
+    w. sb. AppendInt (ABS (w. GetId (result. instr)));
     IF (result # result. instr) THEN
-      w. sb. AppendChar (".");
+      w. sb. AppendLatin1Char (".");
       Result.GetName (result. class, str);
-      w. sb. AppendString (str);
+      w. sb. AppendLatin1 (str);
       
       countSameId := 0; posSameId := 0;
       res := result. instr. nextResult;
@@ -95,11 +95,11 @@ PROCEDURE (w: Writer) AttrId* (name: ARRAY OF LONGCHAR; result: SSA.Result);
         res := res. nextResult
       UNTIL (res = NIL);
       IF (countSameId # 1) THEN
-        w. sb. AppendChar (".");
-        w. sb. AppendLongInt (posSameId);
+        w. sb. AppendLatin1Char (".");
+        w. sb. AppendInt (posSameId);
       END;
     END;
-    w. AttrStringLatin1 (name, w. sb. array^);
+    w. AttrStr(name, w. sb.ToString());
   END AttrId;
 
 PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);

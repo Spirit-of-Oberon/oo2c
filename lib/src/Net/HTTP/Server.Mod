@@ -139,14 +139,14 @@ PROCEDURE GetHeader (VAR hl: HeaderList; name: Object.String8): Object.String8;
     RETURN NIL
   END GetHeader;
 
-PROCEDURE SetHeader (VAR hl: HeaderList; name, value: Object.String8);
+PROCEDURE SetHeader (VAR hl: HeaderList; name, value: Object.String);
   VAR
     n: ArrayList.ArrayList;
     i: LONGINT;
   BEGIN
     n := hl. names;
     FOR i := 0 TO hl. names. size-1 DO
-      IF IsEqual (n. array[i](Object.String8), name) THEN
+      IF IsEqual (n. array[i](Object.String8), name(Object.String8)) THEN
         hl. values. Set (i, value)
       END
     END;
@@ -215,17 +215,18 @@ PROCEDURE (s: Server) PortStatusChange* (newStatus: SHORTINT; reason: Msg.Msg);
 PROCEDURE WriteData (resp: Response; port: Streaming.Port; capacity: LONGINT);
   VAR
     len: LONGINT;
+    chars: StringBuffer.CharsLatin1;
   BEGIN
     IF (resp. headerText # NIL) THEN
       len := resp. headerText. length - resp. sent;
+      chars := resp.headerText.CharsLatin1();
       IF (capacity >= len) THEN
-        port. OutputData (resp. headerText. array^,
-                          resp. sent, resp. headerText. length);
+        port. OutputData (chars^, resp. sent, resp. headerText. length);
         DEC (capacity, len);
         resp. headerText := NIL;
         resp. sent := 0
       ELSE
-        port. OutputData (resp. headerText. array^, resp. sent, resp. sent+capacity);
+        port. OutputData (chars^, resp. sent, resp. sent+capacity);
         INC (resp. sent, capacity);
         RETURN
       END
@@ -352,14 +353,14 @@ PROCEDURE SendResponse (resp: Response; port: Streaming.Port);
   BEGIN
     b := resp. headerText;
     IF (resp. status = HTTP.scOk) THEN
-      b. AppendString ("HTTP/1.0 200 Ok"+crlf)
+      b. Append ("HTTP/1.0 200 Ok"+crlf)
     ELSE
-      b. AppendString ("HTTP/1.0 ");
-      b. AppendLongInt (resp. status);
-      b. AppendChar (" ");
+      b. Append ("HTTP/1.0 ");
+      b. AppendInt (resp. status);
+      b. AppendLatin1Char (" ");
       HTTP.GetMessage (resp. status, short, explain);
-      b. AppendString (short);
-      b. AppendString (crlf)
+      b. AppendLatin1 (short);
+      b. Append (crlf)
     END;
     
     (* ok, omitting the date header is _very_ wrong... FIXME
@@ -367,17 +368,17 @@ PROCEDURE SendResponse (resp: Response; port: Streaming.Port);
        Calendar.TimeToStr (time, "Date: %a, %d %b %Y %H:%M:%S"+crlf, str);
        (* note: the above time must be GMT, _not_ local time, and the time
           string should end with " GMT *)
-       b. AppendString (str);
+       b. Append (str);
     *)
     
     names := resp. headers. names;
     FOR i := 0 TO names. size-1 DO
       b. Append (names. array[i](Object.String8));
-      b. AppendString (": ");
+      b. Append (": ");
       b. Append (resp. headers. values. array[i](Object.String8));
-      b. AppendString (crlf);
+      b. Append (crlf);
     END;
-    b. AppendString (crlf);
+    b. Append (crlf);
     
     WriteData (resp, port, port. OutputCapacityLeft())
   END SendResponse;
@@ -388,6 +389,7 @@ PROCEDURE (resp: Response) SendError* (code: HTTP.ResponseCode;
   VAR
     str, explain: ARRAY 512 OF CHAR;
     chars: Object.CharsLatin1;
+    bchars: StringBuffer.CharsLatin1;
     i: INTEGER;
     b: StringBuffer.StringBuffer;
     w: Channel.Writer;
@@ -413,14 +415,15 @@ PROCEDURE (resp: Response) SendError* (code: HTTP.ResponseCode;
     b := StringBuffer.New ("<html><head><title>Error response</title></head>"+
                            "<body>"+crlf+"<h1>Error response</h1>"+crlf+
                            "<p>Error Code ");
-    b. AppendLongInt (code);
-    b. AppendString ("</p>"+crlf+"<p>Message: ");
-    b. AppendString (str);
-    b. AppendString ("</p>"+crlf+"<p>Error code explanation: ");
-    b. AppendString (explain);
-    b. AppendString ("</p>"+crlf+"</body></html>"+crlf);
+    b. AppendInt (code);
+    b. Append ("</p>"+crlf+"<p>Message: ");
+    b. AppendLatin1 (str);
+    b. Append ("</p>"+crlf+"<p>Error code explanation: ");
+    b. AppendLatin1 (explain);
+    b. Append ("</p>"+crlf+"</body></html>"+crlf);
     w := resp. GetWriter();
-    w. WriteBytes (b. array^, 0, b. length)
+    bchars := b.CharsLatin1();
+    w. WriteBytes (bchars^, 0, b. length)
   END SendError;
 
 
@@ -602,18 +605,18 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
               REPEAT
                 INC (pos)
               UNTIL (pos = i) OR (b[pos] <= " ");
-              req. buffer. AppendRegion (b^, j, pos);
-              req. buffer. AppendChar (" ");
+              req. buffer. AppendLatin1Region (b^, j, pos);
+              req. buffer. AppendLatin1Char (" ");
               WHILE (pos # i) & (b[pos] <= " ") DO
                 INC (pos)
               END
             END;
             IF (req. buffer. length # 0) &
-               (req. buffer. array[req. buffer. length-1] = " ") THEN
+               (req. buffer. CharAt(req. buffer. length-1) = " ") THEN
               req. buffer. Delete (req. buffer. length-1, 1)
             END;
             INC (pos);
-            SetHeader (req. headers, name, req. buffer. ToString8())
+            SetHeader (req. headers, name, req. buffer. ToString())
           END
         END
       

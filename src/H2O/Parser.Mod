@@ -82,14 +82,14 @@ PROCEDURE ShowDepend(name : Object.String8; depend : ArrayList.ArrayList);
 VAR b : StringBuffer.StringBuffer; i : LONGINT;
 BEGIN
   b := StringBuffer.New("");
-  b.AppendObject(name);
-  b.AppendString(" depends on [");
+  b.Append(name);
+  b.Append(" depends on [");
   FOR i := 0 TO depend.size-1 DO
-    IF i # 0 THEN b.AppendChar(",") END;
+    IF i # 0 THEN b.AppendLatin1Char(",") END;
     b.Append(depend.array[i](Module.Module).name);
   END;
-  b.AppendString("]");
-  Out.String(b.array^); Out.Ln;
+  b.Append("]");
+  Out.Str(b.ToString()); Out.Ln;
 END ShowDepend;
 
 PROCEDURE Install* (VAR scope : T.Object; tag [NO_COPY] : ARRAY OF CHAR; name : Object.String8; new : T.Type);
@@ -860,10 +860,10 @@ VAR
      b : StringBuffer.StringBuffer;
   BEGIN
     b := StringBuffer.New("Name: `");
-    b.AppendObject(name);
-    b.AppendString("', Type: ");
-    b.AppendObject(type);
-    Out.String(b.array^); Out.Ln;
+    b.Append(name);
+    b.Append("', Type: ");
+    b.Append(type);
+    Out.Str(b.ToString()); Out.Ln;
   END ShowBinding;
   
   PROCEDURE SkipBody;

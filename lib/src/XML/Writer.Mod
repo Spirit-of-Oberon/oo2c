@@ -386,11 +386,11 @@ PROCEDURE (w: Writer) AttrStringLatin1* (name[NO_COPY]: ARRAY OF Char;
   END AttrStringLatin1;
 
 PROCEDURE (w: Writer) AttrStr* (name[NO_COPY]: ARRAY OF Char;
-                                value: Object.String8);
+                                value: Object.String);
   VAR
     chars: Object.CharsLatin1;
   BEGIN  (* FIXME... handle wide chars; and rename method! *)
-    chars := value.CharsLatin1();
+    chars := value(Object.String8).CharsLatin1();
     w.AttrStringLatin1(name, chars^);
   END AttrStr;
 

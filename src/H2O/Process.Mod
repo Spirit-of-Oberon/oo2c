@@ -272,7 +272,7 @@ VAR
       ELSIF token.sym = Scanner.lt THEN
         buffer := StringBuffer.New("");
         WHILE p.scanner.ch # ">" DO
-          buffer.AppendChar(p.scanner.ch);
+          buffer.AppendLatin1Char(p.scanner.ch);
           p.scanner.GetChar();
         END;
         GetSymP;

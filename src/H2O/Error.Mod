@@ -24,12 +24,12 @@ BEGIN
       INC(i);
       ch := SHORT(SHORT(format.CharAt(i)));
       CASE ORD(ch) - ORD('0') OF
-      | 0: b.AppendObject(p1);
-      | 1: b.AppendObject(p2);
-      | 2: b.AppendObject(p3);
+      | 0: b.Append(p1);
+      | 1: b.Append(p2);
+      | 2: b.Append(p3);
       END;
     ELSE
-      b.AppendChar(ch);
+      b.AppendLatin1Char(ch);
     END;
     INC(i);
   END;

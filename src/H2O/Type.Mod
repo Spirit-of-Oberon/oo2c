@@ -127,42 +127,42 @@ BEGIN
   b := StringBuffer.New("");
   CASE t.class OF
   | tArray:
-    b.AppendObject(t.base); b.AppendChar("[");
-    IF t.size >= 0 THEN b.AppendLongInt(t.size) END;
-    b.AppendChar("]");
+    b.Append(t.base); b.AppendLatin1Char("[");
+    IF t.size >= 0 THEN b.AppendInt(t.size) END;
+    b.AppendLatin1Char("]");
   | tPointer:
-    b.AppendObject(t.base); b.AppendChar("*");
+    b.Append(t.base); b.AppendLatin1Char("*");
   | tFunction:
-    b.AppendObject(t.base);
-    b.AppendChar("(");
+    b.Append(t.base);
+    b.AppendLatin1Char("(");
     o := t.link;
     WHILE o # NIL DO
-      b.AppendObject(o.type);
+      b.Append(o.type);
       o := o.next;
-      IF o # NIL THEN b.AppendChar(",") END;
+      IF o # NIL THEN b.AppendLatin1Char(",") END;
     END;
-    b.AppendChar(")");
+    b.AppendLatin1Char(")");
   | tStruct:
-    b.AppendString("struct ");
+    b.Append("struct ");
     IF t.name # NIL THEN b.Append(t.name) END;
   | tUnion:
-    b.AppendString("union ");
+    b.Append("union ");
     IF t.name # NIL THEN b.Append(t.name) END;
   | tEnum:
-    b.AppendString("enum ");
+    b.Append("enum ");
     IF t.name # NIL THEN b.Append(t.name) END;
   | tQualifier:
     IF tqVolatile IN t.qualifiers THEN
-      b.AppendString("volatile ");
+      b.Append("volatile ");
     END;
     IF tqConst IN t.qualifiers THEN
-      b.AppendString("const ");
+      b.Append("const ");
     END;
-    b.AppendObject(t.base);
+    b.Append(t.base);
   | tName:
     b.Append(t.name);
   ELSE
-    IF t.name # NIL THEN b.Append(t.name) ELSE b.AppendString("?TYPE?") END;
+    IF t.name # NIL THEN b.Append(t.name) ELSE b.Append("?TYPE?") END;
   END;
   str := b.ToString();
   RETURN str(Obj.String8);

@@ -402,7 +402,6 @@ PROCEDURE (v: String) ToString*(): Obj.String;
     i: LONGINT;
     delim: ARRAY 2 OF CHAR;
     sb: StringBuffer.StringBuffer;
-    chars: Obj.CharsLatin1;
   BEGIN
     i := v. value. IndexOf ('"', 0);
     IF (i < 0) THEN
@@ -410,10 +409,9 @@ PROCEDURE (v: String) ToString*(): Obj.String;
     ELSE
       delim := "'"
     END;
-    sb := StringBuffer.New (delim);
-    chars := v.value(Obj.String8).CharsLatin1();  (* FIXME... *)
-    sb. AppendString (chars^);
-    sb. AppendString (delim);
+    sb := StringBuffer.New(Obj.NewLatin1(delim));
+    sb.Append(v.value);
+    sb.AppendLatin1(delim);
     RETURN sb. ToString()
   END ToString;
 

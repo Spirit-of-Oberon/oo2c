@@ -605,7 +605,10 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
         errList := CreateErrList(module);
         CreateNamespace.CreateNamespace(module.ifData, errList);
         r.WriteErrList(errList);
-        ASSERT(errList.NoErrors());
+        IF ~errList.NoErrors() THEN
+          r.WriteErrList(errList);
+          isUpToDate := FALSE;
+        END;
       END;
       
       RETURN isUpToDate;

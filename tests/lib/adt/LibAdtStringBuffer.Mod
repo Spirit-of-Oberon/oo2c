@@ -29,26 +29,26 @@ PROCEDURE Test* ();
     a := Object.NewLatin1("");
     b := B.New("");
     Out.Bool(a.Equals(b)); Out.Ln;
-    b.AppendString("Text String,");
+    b.Append("Text String,");
     b.Append(Object.NewLatin1("String Object,"));
     b.AppendSet({1, 3, 5, 7});
-    b.AppendLongInt(1234567);
+    b.AppendInt(1234567);
     b.AppendBool(TRUE);
-    b.AppendObject(b.ToString());
-    b.AppendLongInt(b.Size());
+    b.Append(b.ToString());
+    b.AppendInt(b.length);
     OutString(b.ToString()); Out.Ln;
     
     (* Delete *)
-    b.Delete(1, 5);
+    b.Delete(1, 1+5);
     OutString(b.ToString()); Out.Ln;
     
     (* AppendObject *)
     NEW(m);
     b := B.New("");
-    b.AppendObject(NIL);
-    b.AppendString(",");
-    b.AppendObject(b);
-    b.AppendString(",");
+    b.Append(NIL);
+    b.Append(",");
+    b.Append(b);
+    b.Append(",");
     (*b.AppendObject(m); omitted, because the memory address is not constant *)
     OutString(b.ToString()); Out.Ln;
   END Test;
