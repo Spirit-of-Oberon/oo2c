@@ -188,8 +188,8 @@ reporting this.
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc* = RECORD
-     (**This record is exported, so that extensions of Channel can access the
-        error descriptions by extending @otype{ErrorContextDesc}.  *)
+    (**This record is exported, so that extensions of Channel can access the
+       error descriptions by extending @otype{ErrorContextDesc}.  *)
     (Msg.ContextDesc)
   END;
 

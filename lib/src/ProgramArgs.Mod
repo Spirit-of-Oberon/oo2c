@@ -18,25 +18,24 @@ MODULE ProgramArgs;
     59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
-(* 
-This module provides access to the command line arguments passed to the 
-program's invokation.  They are mapped onto a standard channel, with each
-argument transformed to a single line of text.  Newline characters embedded
-in arguments are converted to spaces.  Interpreting the arguments is usually
-done by applying TextRider.Reader of TextRider.Scanner to the argument channel.
+(**This module provides access to the command line arguments passed to the
+   program's invocation.  They are mapped onto a standard channel, with each
+   argument transformed to a single line of text.  Newline characters embedded
+   in arguments are converted to spaces.  Interpreting the arguments is usually
+   done by applying @oproc{*TextRider.Reader} or @oproc{*TextRider.Scanner} to
+   the argument channel.
 
-The number of arguments can be determined by calling `args. ArgNumber()'.  If
-the invokation was something like `foo bar 42', where `foo' is the command's
-name, then the channel's contents would look like this:
+   The number of arguments can be determined by calling @oproc{args.ArgNumber}.
+   If the invokation was something like @samp{foo bar 42}, where @samp{foo} is
+   the command's name, then the channel's contents would look like this:
 
----example start---
-foo
-bar
-42
----example end---
+   @example
+   foo
+   bar
+   42
+   @end example
 
-For the given example ArgNumber() would return 2.
-*)
+   For the given example @oproc{args.ArgNumber} would return @samp{2}.  *)
 <* ConformantMode := FALSE *>  (* for NewReader/NewWriter *)
 
 IMPORT
@@ -90,11 +89,6 @@ PROCEDURE GetError (code: Msg.Code): Msg.Msg;
 
 
 PROCEDURE (r: Reader) Pos*(): LONGINT;
-(* Returns the current reading position associated with the reader `r' in
-   channel `r.base', i.e. the index of the first byte that is read by the
-   next call to ReadByte resp. ReadBytes.  This procedure will return 
-   `noPosition' if the reader has no concept of a reading position (e.g. if it
-   corresponds to input from keyboard), otherwise the result is not negative.*)
   VAR
     i, j, count: LONGINT;
   BEGIN
@@ -116,16 +110,6 @@ PROCEDURE (r: Reader) Pos*(): LONGINT;
   END Pos;
 
 PROCEDURE (r: Reader) Available*(): LONGINT;
-(* Returns the number of bytes available for the next reading operation.  For
-   a file this is the length of the channel `r.base' minus the current reading
-   position, for an interactive channel (or a channel designed to handle slow
-   transfer rates) this is the number of bytes that can be accessed without
-   additional waiting.  The result is -1 if Close() was called for the channel,
-   or no more byte are available and the remote end of the channel has been
-   closed.
-   Note that the number of bytes returned is always a lower approximation of
-   the number that could be read at once; for some channels or systems it might
-   be as low as 1 even if tons of bytes are waiting to be processed.  *)
   VAR
     i: LONGINT;
   BEGIN
@@ -142,14 +126,6 @@ PROCEDURE (r: Reader) Available*(): LONGINT;
   END Available;
   
 PROCEDURE (r: Reader) SetPos* (newPos: LONGINT);
-(* Sets the reading position to `newPos'.  A negative value of `newPos' or 
-   calling this procedure for a reader that doesn't allow positioning will set
-   `r.res' to `outOfRange'.  A value larger than the channel's length is legal,
-   but the following read operation will most likely fail with an 
-   `readAfterEnd' error unless the channel has grown beyond this position in 
-   the meantime).
-   Calls to this procedure while `r.res # done' will be ignored, in particular
-   a call with `r.res = readAfterEnd' error will not reset `res' to `done'. *)
   VAR
     i, j, count: LONGINT;
   BEGIN
@@ -180,13 +156,6 @@ PROCEDURE (r: Reader) SetPos* (newPos: LONGINT);
   END SetPos;
   
 PROCEDURE (r: Reader) ReadByte* (VAR x: SYSTEM.BYTE);
-(* Reads a single byte from the channel `r.base' at the reading position 
-   associated with `r' and places it in `x'.  The reading position is moved 
-   forward by one byte on success, otherwise `r.res' is changed to indicate 
-   the error cause.  Calling this procedure with the reader `r' placed at the 
-   end (or beyond the end) of the channel will set `r.res' to `readAfterEnd'.
-   `r.bytesRead' will be 1 on success and 0 on failure.
-   Calls to this procedure while `r.res # done' will be ignored.  *)
   BEGIN
     IF (r. res = done) THEN
       IF r. base. open THEN
@@ -220,15 +189,6 @@ PROCEDURE (r: Reader) ReadByte* (VAR x: SYSTEM.BYTE);
   
 PROCEDURE (r: Reader) ReadBytes* (VAR x: ARRAY OF SYSTEM.BYTE; 
                                   start, n: LONGINT);
-(* Reads `n' bytes from the channel `r.base' at the reading position associated
-   with `r' and places them in `x', starting at index `start'.  The 
-   reading position is moved forward by `n' bytes on success, otherwise 
-   `r.res' is changed to indicate the error cause.  Calling this procedure with
-   the reader `r' placed less than `n' bytes before the end of the channel will
-   will set `r.res' to `readAfterEnd'.  `r.bytesRead' will hold the number of
-   bytes that were actually read (being equal to `n' on success).
-   Calls to this procedure while `r.res # done' will be ignored.
-   pre: (n >= 0) & (0 <= start) & (start+n <= LEN (x)) *)
   VAR
     i: LONGINT;
   BEGIN
@@ -250,9 +210,6 @@ PROCEDURE (r: Reader) ReadBytes* (VAR x: ARRAY OF SYSTEM.BYTE;
    ------------------------------------------------------------------------ *)
    
 PROCEDURE (ch: Channel) Length*(): LONGINT;
-(* Result is the number of bytes of data that this channel refers to.  If `ch'
-   represents a file, then this value is the file's size.  If `ch' has no fixed
-   length (e.g. because it's interactive), the result is `noLength'.  *)
   VAR
     i, j, len: LONGINT;
   BEGIN
@@ -269,26 +226,20 @@ PROCEDURE (ch: Channel) Length*(): LONGINT;
   END Length;
   
 PROCEDURE (ch: Channel) ArgNumber* (): LONGINT;
-(* Returns the number of command line arguments (excluding the program name
+(**Returns the number of command line arguments (excluding the program name
    itself) passed to the program.  *)
   BEGIN
     RETURN PosixFileDescr.argc-1
   END ArgNumber;
 
 PROCEDURE (ch: Channel) GetModTime* (VAR mtime: Time.TimeStamp);
-(* Since the argument channel has no modification time, this procedure will
+(**Since the argument channel has no modification time, this procedure will
    always signal a `noModTime' error.  *)
   BEGIN
     ch. res := GetError (Ch.noModTime)
   END GetModTime;
 
 PROCEDURE (ch: Channel) NewReader*(): Reader;
-(* Attaches a new reader to the channel `ch'.  It is placed at the very start 
-   of the channel, and its `res' field is initialized to `done'.  `ch.res' is
-   set to `done' on success and the new reader is returned.  Otherwise result 
-   is NIL and `ch.res' is changed to indicate the error cause.  
-   Note that always the same reader is returned if the channel does not support
-   multiple reading positions.  *)
   VAR
     r: Reader;
   BEGIN
@@ -316,8 +267,6 @@ PROCEDURE (ch: Channel) Flush*;
   END Flush;
 
 PROCEDURE (ch: Channel) Close*;
-(* Closes the program arguments channel.  No further reading from it will be
-   possible.  *)
   BEGIN
     ch. open := FALSE
   END Close;

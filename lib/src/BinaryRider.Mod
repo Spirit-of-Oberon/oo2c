@@ -32,25 +32,33 @@ CONST
   readAfterEnd* = Channel.readAfterEnd;
   
   (* possible endian settings *)
-  nativeEndian* = 0;    (* do whatever the host machine uses *)
-  littleEndian* = 1;    (* read/write least significant byte first *)
-  bigEndian*    = 2;    (* read/write most significant byte first *)
+  nativeEndian* = 0;    (**Do whatever the host machine uses.  *)
+  littleEndian* = 1;    (**Read/write least significant byte first.  *)
+  bigEndian*    = 2;    (**Read/write most significant byte first.  *)
 
 TYPE
   Reader* = POINTER TO ReaderDesc;
   ReaderDesc* = RECORD
     res*: Msg.Msg;       (* READ-ONLY *)
-    byteOrder-: SHORTINT;         (* endian settings for the reader *)
+    byteOrder-: SHORTINT;
+    (**Endian settings for the reader.  *)
     byteReader-: Channel.Reader;  (* only to be used by extensions of Reader *)
+    (**Binary reader underneath this text reader.  This field should only
+       be used by extensions of this type.  *)
     base-: Channel.Channel;
+    (**The channel on which this reader is operating.  *)
   END;
 
   Writer* = POINTER TO WriterDesc;
   WriterDesc* = RECORD
     res*: Msg.Msg;       (* READ-ONLY *)
-    byteOrder-: SHORTINT;         (* endian settings for the writer *)
-    byteWriter-: Channel.Writer;  (* only to be used by extensions of Writer *)
+    byteOrder-: SHORTINT;
+    (**Endian settings for the writer.  *)
+    byteWriter-: Channel.Writer;
+    (**Binary writer underneath this text writer.  This field should only
+       be used by extensions of this type.  *)
     base-: Channel.Channel;
+    (**The channel on which this writer is operating.  *)
   END;
  
 VAR
@@ -60,8 +68,8 @@ VAR
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc* = RECORD
-     (* this record is exported, so that extensions of Channel can access the
-        error descriptions by extending `ErrorContextDesc' *)
+    (**This record is exported, so that extensions of Channel can access the
+       error descriptions by extending @otype{ErrorContextDesc}.  *)
     (Channel.ErrorContextDesc)
   END;
 
@@ -111,7 +119,7 @@ PROCEDURE (r: Reader) Available * () : LONGINT;
 
 PROCEDURE (r: Reader) ReadBytes * (VAR x: ARRAY OF SYSTEM.BYTE;
                                    start, n: LONGINT);
-(* Read the bytes according to the native machine byte order. *)
+(**Read the bytes according to the native machine byte order.  *)
   BEGIN
     IF (r.res = done) THEN
       r.byteReader.ReadBytes(x, start, n);
@@ -161,9 +169,9 @@ PROCEDURE (r: Reader) ReadLChar*(VAR ch: LONGCHAR);
   END ReadLChar;
 
 PROCEDURE (r: Reader) ReadString* (VAR s: ARRAY OF CHAR);
-(* A string is filled until 0X is encountered, there are no more characters
-   in the channel or the string is filled. It is always terminated with 0X. 
- *)
+(**The string @oparam{s} is filled until @samp{0X} is encountered, there are no
+   more characters in the channel, or the string is filled. @oparam{s} is
+   always terminated with @samp{0X}.  *)
   VAR
     cnt, len: INTEGER;
   BEGIN
@@ -182,9 +190,9 @@ PROCEDURE (r: Reader) ReadString* (VAR s: ARRAY OF CHAR);
   END ReadString;  
 
 PROCEDURE (r: Reader) ReadLString* (VAR s: ARRAY OF LONGCHAR);
-(* A string is filled until 0X is encountered, there are no more characters
-   in the channel or the string is filled. It is always terminated with 0X. 
- *)
+(**The string @oparam{s} is filled until @samp{0X} is encountered, there are no
+   more characters in the channel, or the string is filled. @oparam{s} is
+   always terminated with @samp{0X}.  *)
   VAR
     cnt, len: INTEGER;
   BEGIN
@@ -355,7 +363,7 @@ PROCEDURE (w: Writer) WriteLChar*(ch: LONGCHAR);
   END WriteLChar;
 
 PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
-(* The terminating 0X is also written *)
+(**Note: The terminating @samp{0X} is also written.  *)
   BEGIN
     IF (w.res = done) THEN
       w.byteWriter.WriteBytes (s, 0, Strings.Length (s)+1);
@@ -364,7 +372,7 @@ PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
   END WriteString;
 
 PROCEDURE (w: Writer) WriteLString*(s[NO_COPY]: ARRAY OF CHAR);
-(* The terminating 0X is also written *)
+(**The terminating @samp{0X} is also written.  *)
   VAR
     i: LONGINT;
   BEGIN
@@ -404,7 +412,7 @@ PROCEDURE (w: Writer) WriteLInt*(lint: LONGINT);
   END WriteLInt;
 
 PROCEDURE (w: Writer) WriteNum*(lint: LONGINT);
-(* Write integers in a compressed and portable format. *)
+(**Write integers in a compressed and portable format.  *)
   BEGIN
     IF (w.res = done) THEN
       WHILE (lint<-64) OR (lint>63) DO
