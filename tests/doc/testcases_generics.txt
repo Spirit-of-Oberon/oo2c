@@ -11,10 +11,10 @@ Syntax:
          
 A type declared with a type parameter list like
 `T<t1:B1,t2:B2,...,tn:Bn>' is called a `parametric type'.  The formal
-type Bi of a type parameter declaration is called a type bound.  It
-must be a record pointer.  A type name ti is visible to the end of the
-type declaration, and, if T is a record type, within all type-bound
-procedures of T.
+type Bi of a type parameter declaration is called a type bound.  The
+type bound must be a record pointer.  A type name ti is visible to the
+end of the type declaration, and, if T is a record type, within all
+type-bound procedures of T.
 
 For a qualified type expression of the form `T<A1,A2,...,An>',
 
@@ -95,6 +95,7 @@ ACCEPT
      base record.  [Generic24]
   7) NIL is assignment compatbile with `x', if it is compatible with 
      (unqualified) T.  [Generic24]
+  8) T without <...> implies bounds as default arguments.  [Generic36]
 
 REJECT
 

@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Msg, IO, ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable,
+  Msg, IO, ADT:ArrayList, ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:SymbolTable:Uses,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Predef, OOC:SymbolTable:ImportModules, OOC:Doc:ResolveRef;
@@ -181,6 +181,8 @@ RAISES IO.Error;
   VAR
     lastError: Error.Msg;
     visited, privateRecords: Dictionary.Dictionary;
+    unpatchedQualTypes: ArrayList.ArrayList;
+    i: LONGINT;
     
   PROCEDURE SetErrPos(err: Error.Msg; pos: Sym.Position);
     VAR
@@ -458,11 +460,16 @@ RAISES IO.Error;
     END ConnectNamespaces;
   
   PROCEDURE ResolveTypeNames (item: Sym.Item; contextOfUse: Sym.Item;
+                              unpatchedQualTypes: ArrayList.ArrayList;
                               errList: Error.List);
   (* Replaces all type names in @oparam{item} with a reference to the 
      indicated type.  Names are resolved in the context of the procedure
      (or module) @oparam{contextOfUse}.  Restrictions placed on the base
-     type of a record are checked.  *)
+     type of a record are checked.
+
+     Any qualified type instance @otype{Sym.QualType} added for a reference to
+     a parametric type without a argument list @samp{<@dots{}>} is put into
+     @oparam{unpatchedQualTypes} for later fixup.  *)
     VAR
       ptr: Sym.Item;
       i, typeDeclCount: LONGINT;
@@ -471,16 +478,23 @@ RAISES IO.Error;
       class: Sym.Record;
       
     PROCEDURE GetTypeByName (typeName: Sym.Type; contextOfUse: Sym.Item; 
-                      extendedSearch: BOOLEAN; errList: Error.List): Sym.Type;
+                             extendedSearch: BOOLEAN;
+                             addQualTypeDefaults: BOOLEAN;
+                             errList: Error.List): Sym.Type;
     (**Resolves type name @oparam{typeName}, within the context of procedure
        (or module) @oparam{contextOfUse}.  With @oparam{extendedSearch} set to
        @code{TRUE} and the standard search failing, perform an extended search
        in the local namespace that ignores the range visibility of
-       declarations.  This is used to resolve names used as pointer base
-       types.  *)
+       declarations.  This is used to resolve names used as pointer base types.
+
+       With @oparam{addQualTypeDefaults}, a reference to a parametric type is
+       converted into an instance of @otype{Sym.QualType}, using the parameter
+       bounds as arguments.  *)
       VAR
         item, itemRedir: Sym.Declaration;
         ns: Sym.Namespace;
+        type: Sym.Type;
+        qt: Sym.QualType;
       BEGIN
         WITH typeName: Sym.TypeName DO
           ns := contextOfUse. Namespace();
@@ -537,13 +551,22 @@ RAISES IO.Error;
               Err (notTypeName, typeName);
               RETURN typeName
             ELSE
-              RETURN item(Sym.TypeDecl). type
+              type := item(Sym.TypeDecl).type;
+              IF addQualTypeDefaults & (type.typePars # NIL) &
+                 ~(type IS Sym.TypeVar) THEN
+                NEW(qt);
+                Sym.InitQualType(qt, NIL, type.position, type, NIL);
+                unpatchedQualTypes.Append(qt);
+                RETURN qt;
+              ELSE
+                RETURN type;
+              END;
             END
           END;
           
         | typeName: Sym.QualType DO
           typeName.baseType := GetTypeByName(typeName.baseType, contextOfUse,
-                                             extendedSearch, errList);
+                                             extendedSearch, FALSE, errList);
           RETURN typeName;
           
         ELSE
@@ -590,44 +613,47 @@ RAISES IO.Error;
           IF (item.type.typePars # NIL) & (item.type.typePars.ns # NIL) THEN
             typePars := item.type.typePars;
             item.type := GetTypeByName(item.type, item.type.typePars,
-                                       FALSE, errList);
+                                       FALSE, TRUE, errList);
             item.type.SetTypePars(typePars);  (* transfer parameter list *)
           ELSE
             item.type := GetTypeByName(item.type, contextOfUse,
-                                       FALSE, errList);
+                                       FALSE, TRUE, errList);
           END;
           
         | item: Sym.VarDecl DO
           IF ~item.isReceiver THEN
             item.SetType(GetTypeByName(item.type, contextOfUse,
-                                       FALSE, errList));
+                                       FALSE, TRUE, errList));
           END;
           
         | item: Sym.FieldDecl DO
-          item. type := GetTypeByName (item. type, contextOfUse, FALSE, errList)
+          item. type := GetTypeByName (item. type, contextOfUse,
+                                       FALSE, TRUE, errList);
           
         | item: Sym.Pointer DO
-          item. baseType := GetTypeByName (item. baseType,
-                                           contextOfUse, TRUE, errList)
+          item. baseType := GetTypeByName (item. baseType, contextOfUse,
+                                           TRUE, TRUE, errList);
+              
         | item: Sym.FormalPars DO
           IF (item. resultType # NIL) THEN
-            item. resultType := GetTypeByName (item. resultType,
-                                               contextOfUse, FALSE, errList)
+            item. resultType := GetTypeByName (item. resultType, contextOfUse,
+                                               FALSE, TRUE, errList)
           END;
           IF (item.raises # NIL) THEN
             FOR i := 0 TO LEN(item.raises^)-1 DO
               item.raises[i].type := GetTypeByName
-                  (item.raises[i].type, contextOfUse, FALSE, errList);
+                  (item.raises[i].type, contextOfUse, FALSE, FALSE, errList);
             END;
           END;
           
         | item: Sym.Array DO
-          item. elementType := GetTypeByName (item. elementType,
-                                              contextOfUse, FALSE, errList)
+          item. elementType := GetTypeByName (item. elementType, contextOfUse,
+                                              FALSE, TRUE, errList);
+          
         | item: Sym.Record DO
           IF (item. baseType # NIL) THEN
             item.baseType := GetTypeByName (item.baseType, contextOfUse,
-                                            FALSE, errList);
+                                            FALSE, TRUE, errList);
           END
         
         | item: Sym.QualType DO
@@ -636,12 +662,12 @@ RAISES IO.Error;
           FOR i := 0 TO LEN(item.arguments^)-1 DO
             item.arguments[i].type :=
                 GetTypeByName(item.arguments[i].srcCodeType, contextOfUse,
-                              FALSE, errList);
+                              FALSE, TRUE, errList);
           END;
 
         | item: Sym.TypeVar DO
           item.bound := GetTypeByName(item.bound, contextOfUse,
-                                      FALSE, errList);
+                                      FALSE, TRUE, errList);
           
           
         (* scope objects: fix context of use for using 
@@ -651,8 +677,8 @@ RAISES IO.Error;
         | item: Sym.ProcDecl DO
           IF (item.formalPars # NIL) & (item.formalPars.receiver # NIL) THEN
             receiver := item.formalPars.receiver;
-            receiver.SetType(GetTypeByName(receiver.type,
-                                           contextOfUse, FALSE, errList));
+            receiver.SetType(GetTypeByName(receiver.type, contextOfUse, FALSE,
+                                           FALSE, errList));
             class := item.Class();
             item.formalPars.SetTypePars(class.typePars);
             (*item.formalPars.SetTypePars(receiver.type.typePars);*)
@@ -668,7 +694,7 @@ RAISES IO.Error;
         typeDeclCount := 0;
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
-          ResolveTypeNames (ptr, contextOfUse, errList);
+          ResolveTypeNames (ptr, contextOfUse, unpatchedQualTypes, errList);
           IF (ptr IS Sym.TypeDecl) THEN
             INC(typeDeclCount);
           END;
@@ -1320,6 +1346,19 @@ RAISES IO.Error;
         ptr := ptr.nextNested;
       END;
     END PropagateTypeVars;
+
+  PROCEDURE PatchQualType(qualType: Sym.QualType);
+    VAR
+      params: Sym.TypeVarArray;
+      i: LONGINT;
+    BEGIN
+      params := qualType.baseType.typePars.params;
+      
+      NEW(qualType.arguments, LEN(params^));
+      FOR i := 0 TO LEN(params^)-1 DO
+        Sym.InitTypeRef(qualType.arguments[i], params[i].bound);
+      END;
+    END PatchQualType;
   
   BEGIN
     ASSERT (errList # NIL);
@@ -1373,8 +1412,12 @@ RAISES IO.Error;
     
     (* fourth pass: resolve type names in declarations, and fix up namespaces
        for record types *)
-    ResolveTypeNames (root, NIL, errList);
-
+    unpatchedQualTypes := ArrayList.New(4);
+    ResolveTypeNames (root, NIL, unpatchedQualTypes, errList);
+    FOR i := 0 TO unpatchedQualTypes.size-1 DO
+      PatchQualType(unpatchedQualTypes.array[i](Sym.QualType));
+    END;
+    
     (* CAUTION: Some type names may not have been resolved successfully
        past this point.  Check for instances of Sym.TypeName before assuming
        that the types are valid.  *)

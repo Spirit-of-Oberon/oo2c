@@ -165,6 +165,10 @@ PROCEDURE NameOfType* (type: Sym.Type): STRING;
     WITH type: Sym.TypeVar DO
       RETURN NameOfType(type.bound);
     ELSE
+      WHILE (type.namingDecl = NIL) & (type IS Sym.QualType) DO
+        (* skip over implicit type argument list *)
+        type := type(Sym.QualType).baseType;
+      END;
       ASSERT (type. namingDecl # NIL);
       RETURN NameOfDeclaration (type. namingDecl);
     END;

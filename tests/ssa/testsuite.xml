@@ -10,10 +10,11 @@
   generic12 generic13 generic14 generic15 generic16 generic17
   generic18 generic19 generic20 generic21 generic22 generic23
   generic24 generic25 generic26 generic27 generic28 generic29
-  generic30 generic31 generic32 generic33 generic34 generic35">-->
+  generic30 generic31 generic32 generic33 generic34 generic35
+  generic36">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic35">-->
+  select ="&SetupTestCasesWithOut; generic1 generic35 generic36">-->
 
   &TestSetupWithOut;
     
@@ -1430,6 +1431,10 @@
     </test>
     <test id="generic35" type="accept" file="Generic35.Mod">
       Redefining a type-bound procedure on a parametric type.
+    </test>
+    <test id="generic36" type="accept" file="Generic36.Mod">
+      Arguments of a parametric type without parameter list default to
+      the bounds of the type parameters.
     </test>
   </testcases>
 

@@ -527,26 +527,28 @@ PROCEDURE (b: Builder) [ABSTRACT] QualType* (qualident: Node;
                                              lParen: Node;
                                              arguments: NodeList;
                                              rParen: Node): Node;
-(**A qualified type reference.
+(**A qualified type reference.  This method is @emph{only} used if a parameter
+   list is given.  That is, @oparam{lParen}, @oparam{arguments}, and
+   @oparam{rParen} are never @code{NIL}.
 
    @table @oparam
    @item qualident
-   The type name,  @oproc{Builder.Terminal} or @oproc{Builder.Operator}.
-   
+   The type name, @oproc{Builder.Terminal} or @oproc{Builder.Operator}.
+
    @item lParen
    The symbol @samp{<}, result of @oproc{Builder.Terminal}.
-   
+
    @item arguments
    A list of type parameter sections.  This list may have a length of zero.
-   
+
    @table @samp
    @item tpSections MOD 2 == 0
-   A qualified type,  @oproc{Builder.Terminal}, @oproc{Builder.Operator}, or
+   A qualified type, @oproc{Builder.Terminal}, @oproc{Builder.Operator}, or
    @oproc{Builder.QualType}.
    @item fpSections MOD 2 == 1
    The symbol @samp{,}, result of @oproc{Builder.Terminal}.
    @end table
-   
+
    @item rParen
    The symbol @samp{>}, result of @oproc{Builder.Terminal}.
    @end table  *)
