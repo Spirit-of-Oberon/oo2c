@@ -72,4 +72,4 @@ For input modules that hang or crash the compiler, please send me the
 module or modules that trigger the problem.  This does not need to be
 small.  Don't send me module fragments!
 
--- Michael van Acken <mia@de.uu.net>
+-- Michael van Acken <mva@users.sf.net>
