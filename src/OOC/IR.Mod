@@ -1119,13 +1119,12 @@ PROCEDURE AppendContext(buffer : StringBuffer.StringBuffer; item : Sym.Item);
      END;
   END AppendContext;
 
-PROCEDURE TypeName* (type : Sym.Type) : Object.String8;
+PROCEDURE TypeName* (type : Sym.Type) : STRING;
 (**Return a string describing type @oparam{type}. For named types, this will
    be of the form "module.@{proc.@}type". If there is no name the name of the
    type constructor is used (eg. RECORD, ARRAY). *)
 VAR
   name: StringBuffer.StringBuffer;
-  str: Object.String;
 BEGIN
   name := StringBuffer.New("");
   IF type.parent # NIL THEN
@@ -1150,13 +1149,12 @@ BEGIN
       name.AppendLatin1("RECORD")
     END
   END;
-  str := name.ToString();
-  RETURN str(Object.String8);
+  RETURN name.ToString();
 END TypeName;
 
 <*PUSH; Warnings:=FALSE*>
 PROCEDURE LogTypeName(message : ARRAY OF CHAR; type : Sym.Type);
-VAR name : Object.String;
+VAR name : STRING;
 BEGIN
   name := TypeName(type);
   Log.Str(message, name);
@@ -1508,7 +1506,7 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
     v. VisitConst (const)
   END Accept;
 
-PROCEDURE (const: Const) ToString*(): Object.String;
+PROCEDURE (const: Const) ToString*(): STRING;
   BEGIN
     IF (const. value = NIL) THEN
       RETURN Object.NewLatin1("NIL");
@@ -2137,7 +2135,7 @@ PROCEDURE (b: Builder) NewConcat (sym: Symbol; strings: ExpressionList): Concat;
         ELSE
           b.ErrSym(incompatibleTypes, sym);
         END;
-      ELSIF (type # b.stringType) THEN   (* not STRING value?  error! *)
+      ELSIF ~TR.IsSTRING(type) THEN   (* not STRING value?  error! *)
         b.ErrSym(incompatibleTypes, sym);
       END;
       IF (tid > id) THEN
