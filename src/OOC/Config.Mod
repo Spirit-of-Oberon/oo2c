@@ -19,7 +19,7 @@ CONST
   runtimeModule* = "RT0";
   (**Name of the pseudo module that pulls in the run-time system.  *)
   configEnvVar = "OO2CRC";
-  repositoryListEnvVar = "OO2CREPS";
+  repositoryListEnvVar = "OOC_REPS";
   
 VAR
   config: Simple.Config;
