@@ -3,7 +3,7 @@ MODULE H2O:Process;
 IMPORT
   Err, Object,
   ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList, ADT:ArrayList,
-  H2O:Source, H2O:Error, H2O:Scanner, H2O:Module;
+  H2O:Source, H2O:Error, H2O:Scanner, H2O:Type;
 
 CONST
   (* Pre-Processor symbols *)
@@ -39,7 +39,7 @@ TYPE
 
   Macro* = POINTER TO MacroDesc;
   MacroDesc* = RECORD (Object.ObjectDesc)
-    module- : Module.Module;	(* module for macro definition *)
+    module- : Type.Module;	(* module for macro definition *)
     name- : STRING;				(* name of macro *)
     nParams : INTEGER;			(* number of formal parameters *)
     params : Param;				(* list of parameter names *)

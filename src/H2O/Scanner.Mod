@@ -363,7 +363,7 @@ VAR
     END;
     AcceptChar;
   END GetString;
-  
+
   PROCEDURE AssignOp(noAssignOp, assignOp : INTEGER);
   BEGIN
     AcceptChar;
@@ -606,5 +606,12 @@ BEGIN
   s.in.ReadChar(s.ch);
   RETURN s;
 END New;
+
+(* Obtain the text of a string by removing quotes. *)
+
+PROCEDURE Unquote* (name : STRING) : STRING;
+BEGIN
+  RETURN name.Substring(1, name.length-1);
+END Unquote;
 
 END H2O:Scanner.

@@ -1,10 +1,11 @@
 MODULE H2O:Parser [OOC_EXTENSIONS];
 
 IMPORT
-  SYSTEM, Out, Log,
+  SYSTEM, Err, Log,
   Object, ADT:StringBuffer, ADT:ArrayList, ADT:Dictionary,
   H2O:Emitter, H2O:Option,
-  H2O:Error, H2O:Scanner, H2O:Process, H2O:Module, H2O:Value, T := H2O:Type;
+  H2O:Error, H2O:Scanner, H2O:Process, H2O:Value, 
+  T := H2O:Type, H2O:Variant, StringSearch, StringSearch:RegexpDFA;
 
 CONST
   (* 800: C keywords *)
@@ -42,6 +43,12 @@ CONST
   configH2O = 10000;
   configModule = 10001;
   configOption = 10002;
+  configVariant = 10003;
+  configSet = 10004;
+  configVar = 10005;
+  configArray = 10006;
+  configPointer = 10007;
+  configDefault = 10008;
 
 CONST
   varargs = 0;
@@ -83,21 +90,25 @@ VAR
   token : Scanner.Token;
   options : SET;
   parser : Parser;
-  depend : ArrayList.ArrayList(Module.Module);
-  configOptions : Option.Options;
+  depend : ArrayList.ArrayList(T.Module);
 
-PROCEDURE FindType(types : T.Object; name : STRING) : T.Type;
+  configOptions : Option.Options;
+  parserOptions- : Option.Options;
+
+  parserOutputDeclarations : Option.Boolean;
+
+PROCEDURE FindType(types : INTEGER; name : STRING) : T.Type;
 VAR obj : T.Object;
 BEGIN
-  IF T.FindObject(types, name, obj) THEN
+  IF T.FindObject({types}, name, obj) THEN
     RETURN obj.type;
   ELSE
     RETURN NIL;
   END;
 END FindType;
 
-PROCEDURE ShowDepend(name : STRING; depend : ArrayList.ArrayList(Module.Module));
-VAR b : StringBuffer.StringBuffer; i : LONGINT; module : Module.Module;
+PROCEDURE ShowDepend* (name : STRING; depend : ArrayList.ArrayList(T.Module));
+VAR b : StringBuffer.StringBuffer; i : LONGINT; module : T.Module;
 BEGIN
   b := StringBuffer.New("");
   b.Append(name);
@@ -108,21 +119,23 @@ BEGIN
     b.Append(module.name);
   END;
   b.Append("]");
-  Out.Object(b); Out.Ln;
+  Err.Object(b); Err.Ln;
 END ShowDepend;
 
-PROCEDURE Install* (VAR scope : T.Object; tag : STRING; name : STRING; new : T.Type; mod : Module.Module);
+PROCEDURE Install* (scope : INTEGER; mod : T.Module; tag : STRING; name : STRING; new : T.Type; tail : BOOLEAN);
 VAR 
   obj : T.Object;
 BEGIN
-  IF T.FindObject(scope, name, obj) THEN
+  Log.Object("Install", name);
+  Log.Object("InModule", mod.name);
+  IF T.FindObjectModule(mod, {scope}, name, obj) THEN
     IF T.AllowedRedefinition(new, obj.type) THEN
       obj.type := new;
     ELSE
-      err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type);
+      err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type.Base());
     END
   ELSE
-    T.Bind(scope, name, 0, new, mod);
+    T.Bind(scope, name, 0, new, mod, tail);
   END;
   new.Depend(depend);
   IF depend.size > 0 THEN ShowDepend(name, depend) END;
@@ -130,21 +143,28 @@ BEGIN
   mod.AddDefinition();
 END Install;
 
-PROCEDURE InstallType(VAR types : T.Object; name : STRING; new : T.Type; mod : Module.Module);
+PROCEDURE InstallType* (scope : INTEGER; mod : T.Module; name : STRING; new : T.Type);
 BEGIN
-  Install(types, "Type", name, new, mod);
-  new.module := process.in.GetModule();
+  Install(scope, mod, "Type", name, new, TRUE);
 END InstallType;
+
+PROCEDURE GetModule() : T.Module;
+BEGIN
+  RETURN process.in.GetModule();
+END GetModule;
 
 PROCEDURE NewNamedType* (class : SHORTINT; name : STRING) : T.Type;
 VAR 
   new : T.Type;
+  mod : T.Module;
 BEGIN
+  mod := GetModule();
   new := T.NewType(class, NIL, 0, {});
   new.name := name;
+  new.module := mod;
 
   IF name # NIL THEN
-    InstallType(T.types, name, new, process.in.GetModule());
+    InstallType(T.types, mod, name, new);
   END;
   RETURN new;
 END NewNamedType;
@@ -184,6 +204,15 @@ END StartsTypeSpecifier;
 PROCEDURE ^Declarator(VAR name : STRING; base : T.Type) : T.Type;
 PROCEDURE ^EvalExpr (VAR result : Value.Object);
 PROCEDURE ^EvalIntExpr (VAR result : LONGINT);
+
+PROCEDURE EvalPositiveIntExpr(VAR result : LONGINT);
+BEGIN
+  EvalIntExpr(result);
+  IF result < 0 THEN
+    err.Error("Expression must be positive");
+  END;
+END EvalPositiveIntExpr;
+
 
 PROCEDURE StorageClass (VAR class : INTEGER);
 (* 
@@ -259,7 +288,7 @@ VAR
       ELSE
         INC(id);
       END;
-      T.Bind(t.link, name, id, NIL, NIL);
+      T.BindLocal(t.link, name, id, NIL, NIL, TRUE);
      END Element;
 
   BEGIN
@@ -324,10 +353,10 @@ VAR
         LOOP
           name := NIL;
           t2 := Declarator(name, t1);
-          T.Bind(t.link, name, id, t2, NIL);
+          T.BindLocal(t.link, name, id, t2, NIL, TRUE);
           IF token.sym = Scanner.colon THEN
             GetSym;
-            EvalIntExpr(width);
+            EvalPositiveIntExpr(width);
           END;
           IF token.sym = Scanner.comma THEN
             GetSym
@@ -502,7 +531,7 @@ VAR
             END;
             void := TRUE;
           ELSE
-            T.Bind(func.link, name, id, t, NIL);
+            T.BindLocal(func.link, name, id, t, NIL, TRUE);
             INC(id);
           END;
           IF token.sym = Scanner.comma THEN 
@@ -553,11 +582,7 @@ VAR
         IF token.sym = Scanner.rsqbracket THEN
           size := -1;
         ELSE
-          EvalIntExpr(size);
-          IF size < 0 THEN
-            err.Error("Array size may not be negative");
-            size := 0;
-          END;
+          EvalPositiveIntExpr(size);
         END;
         t := T.NewType(T.tArray, t, size, {});
         Expect(Scanner.rsqbracket);
@@ -891,7 +916,7 @@ VAR
           result := Value.NewLongInt(ORD(token.name.CharAt(1)));
         ELSE
           (* string *)
-          result := Value.NewString(token.name.Substring(1, token.name.length-1)); 
+          result := Value.NewString(Scanner.Unquote(token.name));
         END;
         GetSym;
 
@@ -1097,7 +1122,7 @@ VAR
   name : STRING;
   class : INTEGER;
   spec, type, t : T.Type;
-  mod : Module.Module;
+  mod : T.Module;
 
   PROCEDURE ShowBinding(name : STRING; type : T.Type);
   VAR
@@ -1107,7 +1132,7 @@ VAR
     b.Append(name);
     b.Append("', Type: ");
     b.Append(type);
-    Out.Object(b); Out.Ln;
+    Err.Object(b); Err.Ln;
   END ShowBinding;
   
   PROCEDURE SkipBody;
@@ -1132,7 +1157,7 @@ BEGIN
 
   LOOP
     name := NIL;
-    mod := process.in.GetModule();
+    mod := GetModule();
     type := Declarator(name, spec);
     IF name = NIL THEN
       IF T.TypeNeedsName(type) THEN
@@ -1140,12 +1165,21 @@ BEGIN
       END
     ELSE
       IF class = T.scTypedef THEN
-        t := T.NewType(T.tName, type, type.size, {}); t.name := name;
-        InstallType(T.typedefs, name, t, mod);
+        t := T.NewType(T.tName, type, type.size, {}); 
+		t.name := name;
+        t.module := GetModule();
+        InstallType(T.typedefs, mod, name, t);
       ELSE
-        Install(T.vars, "Object", name, type, mod);
+        Install(T.vars, mod, "Object", name, type, TRUE);
       END;
-      ShowBinding(name, type)
+      IF parserOutputDeclarations.value THEN
+        IF class = T.scTypedef THEN
+          Err.String("TYPE ")
+        ELSE
+          Err.String("VAR ")
+        END;
+        ShowBinding(name, type)
+      END;
     END;
     IF type.class = T.tFunction THEN
       IF token.sym = Scanner.lbrace THEN
@@ -1163,6 +1197,11 @@ END Declaration;
 
 (*
 > H2OConfig ::= "H2O" "{" { Config } "}".
+> Config ::= ModuleConfig | OptionsConfig | VariantConfig.
+> OptionsConfig ::= "OPTIONS" Options.
+> Options ::= "{" { Option } "}".
+> Option ::= ident "=" OptionValue { "," OptionValue } ";".
+> OptionValue ::= Expr.
 *)
 
 PROCEDURE OptionValue(opt : Option.Option);
@@ -1206,33 +1245,172 @@ BEGIN
     OptionClause(set);
   END;
   Expect(Scanner.rbrace);
-  set.Write(Out.writer);
+  set.Write(Err.writer);
 END Options;
 
-PROCEDURE ModuleClause;
+PROCEDURE OptionsConfig;
+BEGIN
+  GetSym; Options(configOptions);
+END OptionsConfig;
+
+(*
+> ModuleConfig ::= "MODULE" ident Options.
+*)
+
+PROCEDURE ModuleConfig;
 VAR 
   name : STRING;
-  module : Module.Module;
+  module : T.Module;
 BEGIN
   GetSym;
   name := token.name;
   Expect(Scanner.string);
-  name := name.Substring(1, name.length-1); 
-  module := Module.FindModule(name);
+  name := Scanner.Unquote(name);
+  module := T.FindModule(name);
   IF module = NIL THEN
-    module := Module.NewModule(name);
+    module := T.NewModule(name);
   END;
 
   Options(module.options);
-END ModuleClause;
+END ModuleConfig;
+
+(*
+> VariantConfig ::= "VARIANT" "{" Variant "}".
+> Variant ::= VariantDesignator ":" VariantType.
+> VariantType ::= "SET" | "VAR" | "ARRAY" | "VAR" "ARRAY".
+> VariantDesignator ::= VariantPattern { VariantOperator }.
+> VariantPattern ::= ident.
+> VariantOperator ::=
+>   "." VariantPattern
+> | "[" [ Expr ] "]"
+> | "^".
+*)
+
+PROCEDURE VariantPattern(VAR result : STRING; VAR matcher : StringSearch.Matcher);
+BEGIN
+  CASE token.sym OF
+  | Scanner.ident:  
+    result := token.name;
+    matcher := NIL;
+  | Scanner.string: 
+    result := Scanner.Unquote(token.name);
+    matcher := RegexpDFA.factory.Compile(result(Object.String8), {});
+    IF matcher = NIL THEN
+      err.ErrorParam("Illegal pattern '$0'", result, NIL, NIL)
+    END;
+  ELSE
+    err.ExpectedIdentifier(token);
+  END;
+  GetSym;
+END VariantPattern;
+
+PROCEDURE VariantConfig;
+
+  PROCEDURE ParseVariant() : Variant.Op;
+  VAR
+    pattern : STRING; 
+    matcher : StringSearch.Matcher;
+    head : Variant.Op;
+    tail : Variant.Op;
+    next : Variant.Op;
+    variant : SET;
+    element : INTEGER;
+  
+    PROCEDURE FieldOperator() : Variant.FieldOp;
+    VAR pattern : STRING; matcher : StringSearch.Matcher;
+    BEGIN
+      Expect(Scanner.period);
+      VariantPattern(pattern, matcher);
+      RETURN NEW(Variant.FieldOp,pattern, matcher);
+    END FieldOperator;
+  
+    PROCEDURE IndexOperator() : Variant.IndexOp;
+    VAR index : LONGINT;
+    BEGIN
+      index := -1;
+      Expect(Scanner.lsqbracket);
+      IF token.sym # Scanner.rsqbracket THEN
+        EvalPositiveIntExpr(index);
+      END;
+      Expect(Scanner.rsqbracket);
+      RETURN NEW(Variant.IndexOp,index);
+    END IndexOperator;
+  
+    PROCEDURE RefOperator() : Variant.RefOp;
+    BEGIN
+      Expect(Scanner.xor);
+      RETURN NEW(Variant.RefOp);
+    END RefOperator;
+  
+    PROCEDURE VariantType() : INTEGER;
+    BEGIN
+      IF token.sym = Scanner.ident THEN
+        Scanner.CheckKeyWord(configKeyWords, token);
+        CASE token.sym OF
+        | configArray:    GetSym; RETURN Variant.array;
+        | configPointer:    GetSym; RETURN Variant.pointer;
+        | configDefault:    GetSym; RETURN Variant.default;
+        | configVar:      GetSym; RETURN Variant.var;
+        | configSet:      GetSym; RETURN Variant.set;
+        ELSE
+        END;
+      END;
+      RETURN -1;
+    END VariantType;
+  
+  BEGIN
+    VariantPattern(pattern, matcher);
+    head := NEW(Variant.FieldOp,pattern, matcher);
+    tail := head;
+  
+    (* consume optional list of operators *)
+    LOOP
+      CASE token.sym OF
+      | Scanner.period:      next := FieldOperator();
+      | Scanner.lsqbracket:  next := IndexOperator();
+      | Scanner.xor:         next := RefOperator();
+      ELSE
+        EXIT
+      END;
+      tail.next := next;
+      tail := next;
+    END;
+ 
+    Expect(Scanner.colon); 
+    variant := {};
+    element := VariantType();
+    WHILE element >= 0 DO
+      INCL(variant, element);
+      element := VariantType();
+    END;
+  
+    IF variant = {} THEN
+      err.Error("Variant type expected");
+    ELSE
+      tail.variant := variant;
+    END;
+  
+    RETURN head;
+  END ParseVariant;
+ 
+
+BEGIN
+  GetSym;
+  Expect(Scanner.lbrace);
+  WHILE token.sym # Scanner.rbrace DO
+    Variant.AddRule(ParseVariant());
+    Expect(Scanner.semicolon);
+  END;
+  Expect(Scanner.rbrace);
+END VariantConfig;
 
 PROCEDURE ConfigClause;
 BEGIN
   Scanner.CheckKeyWord(configKeyWords, token);
   CASE token.sym OF
-  | configModule: ModuleClause;
-  | configOption: 
-    GetSym; Options(configOptions);
+  | configModule: ModuleConfig;
+  | configOption: OptionsConfig;
+  | configVariant: VariantConfig
   ELSE
     err.ErrorParam("Unexpected symbol $0", token, NIL, NIL);
   END;
@@ -1306,7 +1484,7 @@ BEGIN
   err.options := options;
 END ParseMacro;
 
-PROCEDURE ParseMacros* (e : Emitter.Emitter; mod : Module.Module);
+PROCEDURE ParseMacros* (e : Emitter.Emitter; mod : T.Module);
 VAR 
   items : ArrayList.ArrayList(Process.Macro);
   i : LONGINT;
@@ -1342,6 +1520,12 @@ BEGIN
   Scanner.AddKeyWord(configKeyWords, "H2O", configH2O);
   Scanner.AddKeyWord(configKeyWords, "MODULE", configModule);
   Scanner.AddKeyWord(configKeyWords, "OPTIONS", configOption);
+  Scanner.AddKeyWord(configKeyWords, "VARIANT", configVariant);
+  Scanner.AddKeyWord(configKeyWords, "SET", configSet);
+  Scanner.AddKeyWord(configKeyWords, "VAR", configVar);
+  Scanner.AddKeyWord(configKeyWords, "ARRAY", configArray);
+  Scanner.AddKeyWord(configKeyWords, "POINTER", configPointer);
+  Scanner.AddKeyWord(configKeyWords, "DEFAULT", configDefault);
 END AddConfigKeyWords;
 
 PROCEDURE AddKeyWords;
@@ -1420,13 +1604,20 @@ BEGIN
   AddOp3(Scanner.condIf, Scanner.colon, 1, R, 3);
 END AddOperators;
 
+PROCEDURE InitOptions;
+BEGIN
+  parserOptions := NEW(Option.Options);
+  parserOutputDeclarations := parserOptions.Boolean("ParserOutputDeclarations", FALSE);
+END InitOptions;
+
 BEGIN 
+  InitOptions;
   NEW(parser);
   keyWords := NIL;
   AddKeyWords;
   AddConfigKeyWords;
   AddOperators;
   options := {}; token := Scanner.NewToken(Scanner.endFile);
-  depend := NEW(ArrayList.ArrayList(Module.Module), 10);
+  depend := NEW(ArrayList.ArrayList(T.Module), 10);
 END H2O:Parser.
 

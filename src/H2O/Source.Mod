@@ -1,9 +1,9 @@
 MODULE H2O:Source [OOC_EXTENSIONS];
 
 IMPORT
-  H2O:Module, H2O:Option,
+  H2O:Type, H2O:Option,
   Object, Err, Log, ADT:Dictionary,
-  IO, IO:FileChannel, OS:Files, OS:Path, Exception;
+  IO, IO:FileChannel, IO:Memory, OS:Files, OS:Path, Exception;
 
 CONST
   cr = 0DX;
@@ -17,7 +17,7 @@ TYPE
     pos, line, col : LONGINT;
 	channel : IO.ByteChannel;
     next : Source;
-    module : Module.Module;
+    module : Type.Module;
   END;
 
   Input* = POINTER TO InputDesc;
@@ -39,6 +39,12 @@ TYPE
    required and unprocessed options elements exist. *)
     frameworkLength : LONGINT;
   END;
+
+VAR
+  options- : Option.Options;
+
+  outputSearchFile : Option.Boolean;
+  outputFrameworkPath : Option.Boolean;
 
 PROCEDURE (i : Input) AppendPath* (path : STRING);
 BEGIN
@@ -126,7 +132,9 @@ END ReadChar;
 
 PROCEDURE (i : Input) SearchFile(path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
 BEGIN
-  Log.Object("SearchFile", path);
+  IF outputSearchFile.value THEN
+    Log.Object("SearchFile", path);
+  END;
   TRY
     channel := FileChannel.Open(path, {FileChannel.read});
     RETURN TRUE;
@@ -153,7 +161,9 @@ BEGIN
           IF ext.Equals(".framework") THEN
             includeDir := element + "/Headers/";
             i.frameworkMap.Set(root, includeDir);
-            Log.Object("Framework", root + " at " + includeDir);
+            IF outputFrameworkPath.value THEN
+              Log.Object("Framework", root + " at " + includeDir);
+            END;
             i.FindFramework(element);
           END
         END
@@ -220,14 +230,52 @@ BEGIN
   RETURN FALSE;
 END SearchPath;
 
+PROCEDURE (i : Input) PushSource(channel : IO.ByteChannel; name : STRING; module : Type.Module);
+VAR
+  s : Source;
+BEGIN
+  NEW(s);
+  s.channel := channel;
+  s.pos := 0;
+  s.line := 0;
+  s.col := 0;
+  s.next := i.src;
+  s.name := name;
+  s.module := module;
+  i.src := s;
+  Err.String("<Processing "); Err.Object(s.name); Err.Char(">"); Err.Ln;
+END PushSource;
+
+PROCEDURE (i : Input) PushProlog(prolog : STRING; module : Type.Module);
+VAR
+  channel : IO.ByteChannel;
+  string8 : Object.String8;
+  chars8 : Object.CharsLatin1;
+  length : LONGINT;
+  ch : CHAR;
+BEGIN
+  string8 := prolog.ToString8(" ");
+  chars8 := string8.CharsLatin1();
+  Log.String("Prolog", chars8^);
+  TRY 
+    channel := Memory.Open();
+    length := channel.Write(chars8^, 0, LEN(chars8^)-1);
+    Log.Int("wrote", length);
+    channel.SetPos(0);
+    i.PushSource(channel, module.name + ":Prolog", module);
+  CATCH IO.Error:
+    i.Exception(Exception.Current())
+  END;
+END PushProlog;
+
 PROCEDURE (i : Input) Include* (fileName : STRING; search : BOOLEAN);
 VAR
   found : BOOLEAN;
   realFileName : STRING;
   moduleName : STRING;
-  module : Module.Module;
-  s : Source;
+  module : Type.Module;
   channel : IO.ByteChannel;
+  prolog : STRING;
 BEGIN
   IF i.exclude.Contains(fileName) THEN 
     RETURN;
@@ -254,29 +302,24 @@ BEGIN
 	i.Exception(Exception.Current());
   END;
 
-  NEW(s);
-  s.channel := channel;
-  s.pos := 0;
-  s.line := 0;
-  s.col := 0;
-  s.next := i.src;
-  s.name := realFileName;
-  i.src := s;
-  Err.String("<Processing "); Err.Object(s.name); Err.Char(">"); Err.Ln;
 
-  moduleName := Module.ModuleName(realFileName);
-  module := Module.FindModule(moduleName);
+  moduleName := Type.ModuleName(realFileName);
+  module := Type.FindModule(moduleName);
   IF module = NIL THEN
     Err.String("NEW ");
-    module := Module.NewModule(moduleName);
+    module := Type.NewModule(moduleName);
   END;
   Err.String("MODULE "); Err.Object(moduleName); 
   Err.String(" for "); Err.Object(realFileName);
   Err.Ln;
-  s.module := module;
+  i.PushSource(channel, realFileName, module);
+  prolog := module.prolog.value;
+  IF prolog.length > 0 THEN
+    i.PushProlog(prolog, module);
+  END;
 END Include;
 
-PROCEDURE (i : Input) GetModule*() : Module.Module;
+PROCEDURE (i : Input) GetModule*() : Type.Module;
 BEGIN
   RETURN i.src.module;
 END GetModule;
@@ -304,4 +347,13 @@ BEGIN
   RETURN i;
 END New;
 
+PROCEDURE InitOptions;
+BEGIN
+  options := NEW(Option.Options);
+  outputSearchFile := options.Boolean("OutputSearchFile", FALSE);
+  outputFrameworkPath := options.Boolean("OutputFrameworkPath", FALSE);
+END InitOptions;
+
+BEGIN
+  InitOptions;
 END H2O:Source.
