@@ -215,7 +215,10 @@ PROCEDURE (e: Exception) WriteBacktrace*;
    its output.  Please see the documentation of GNU libc for more information
    on how to make function names available to the program.  The tool
    @samp{oobacktrace} may also be able to add function names to the output.  *)
-
+PROCEDURE (e: Exception) Name*(): Object.String8;
+(**Return the name of the execption's type as
+   @samp{@var{module}.@var{typename}}.  *)
+   
 PROCEDURE (e: ParseError) INIT*(msg: STRING; offset: LONGINT);
   
 PROCEDURE Abort*[NO_RETURN](e: Exception);

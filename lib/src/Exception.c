@@ -132,6 +132,24 @@ Object__String Exception__ExceptionDesc_GetMessage(Exception__Exception e) {
   return e->msg;
 }
 
+#define B 256
+Object__String8 Exception__ExceptionDesc_Name(Exception__Exception e) {
+  RT0__Struct td = OOC_TYPE_TAG(e);
+  Object__String msg =
+    OOC_TBCALL(OOC_TBPROC_ADR(td,Exception__ExceptionDesc_GetMessage),
+	       Exception__ExceptionDesc_GetMessage)(e);
+  char b[B];
+  
+  /* if the type name ends with "Desc", then drop the last 4 characters */
+  int len = strlen(td->name);
+  if ((len >= 4) && (strcmp(td->name + (len-4), "Desc") == 0)) {
+    len -= 4;
+  }
+  /* this may cause a buffer overflow for _very_ long module/type names */
+  sprintf(b, "%s.%.*s", td->module->name, len, td->name);
+  return Object__NewLatin1Region(b, B, 0, strlen(b));
+}
+
 
 void Exception__ParseErrorDesc_INIT(Exception__ParseError e,
 				    Object__String msg, OOC_INT32 offset) {
