@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, Object, Object:Boxed, Msg, Strings, 
+  SYSTEM, Object, Object:Boxed, Msg, Strings,
   ADT:Storable, ADT:Dictionary, ADT:ArrayList, IO,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
@@ -1084,13 +1084,21 @@ PROCEDURE (item: Item) Load* (r: Storable.Reader) RAISES IO.Error;
     item. flagList := NIL;
   END Load;
 
+PROCEDURE ^ (type: Type) Deparam*(): Type;
+
 PROCEDURE (item: Item) Module*(): Module;
 (**Returns the item, that is the root of the hierarchy that includes
    @oparam{item}.  The returned item is never @code{NIL}, because even
    predefined items are nested in pseudo modules.  *)
   BEGIN
-    WHILE (item. parent # NIL) DO
-      item := item. parent
+    IF (item.parent = NIL) & (item IS Type) THEN
+      item := item(Type).Deparam();  (* fix up "orphaned" type closure *)
+    END;
+    WHILE (item.parent # NIL) DO
+      item := item.parent;
+      IF (item.parent = NIL) & (item IS Type) THEN
+        item := item(Type).Deparam();  (* fix up  "orphaned" type closure *)
+      END;
     END;
     RETURN item(Module)
   END Module;
