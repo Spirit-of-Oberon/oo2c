@@ -1575,12 +1575,12 @@ PROCEDURE (b: Builder) AssertInteger(expr: Expression): Expression;
   VAR
     v: Integer.Value;
   BEGIN
-    IF (expr # b.errorExpr) THEN
-      IF ~TR.IsIntegerType(expr.type) THEN
+    IF ~TR.IsIntegerType(expr.type) THEN
+      IF (expr # b.errorExpr) THEN
         b.ErrSym(notInteger, expr.sym);
-        v := Integer.New(1);
-        RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
       END;
+      v := Integer.New(1);
+      RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
     END;
     RETURN expr;
   END AssertInteger;
@@ -1591,12 +1591,12 @@ PROCEDURE (b: Builder) AssertReal(expr: Expression): Expression;
   VAR
     v: Real.Value;
   BEGIN
-    IF (expr # b.errorExpr) THEN
-      IF ~TR.IsRealType(expr.type) THEN
+    IF ~TR.IsRealType(expr.type) THEN
+      IF (expr # b.errorExpr) THEN
         b.ErrSym(notReal, expr.sym);
-        v := Real.New(1);
-        RETURN NewConst(expr.sym, Predef.GetType(Predef.real), v);
       END;
+      v := Real.New(1);
+      RETURN NewConst(expr.sym, Predef.GetType(Predef.real), v);
     END;
     RETURN expr;
   END AssertReal;
@@ -1607,12 +1607,12 @@ PROCEDURE (b: Builder) AssertNumeric (expr: Expression): Expression;
   VAR
     v: Integer.Value;
   BEGIN
-    IF (expr # b.errorExpr) THEN
-      IF ~TR.IsNumericType(expr.type) THEN
+    IF ~TR.IsNumericType(expr.type) THEN
+      IF (expr # b.errorExpr) THEN
         b.ErrSym(notNumeric, expr.sym);
-        v := Integer.New(1);
-        RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
       END;
+      v := Integer.New(1);
+      RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
     END;
     RETURN expr;
   END AssertNumeric;
@@ -1624,12 +1624,12 @@ PROCEDURE (b: Builder) AssertChar(expr: Expression): Expression;
   VAR
     v: String8.Value;
   BEGIN
-    IF (expr # b.errorExpr) THEN
-      IF ~TR.IsCharType(expr.type) THEN
+    IF ~TR.IsCharType(expr.type) THEN
+      IF (expr # b.errorExpr) THEN
         b.ErrSym(notCharacter, expr.sym);
-        v := String8.NewString("a");
-        RETURN NewConst(expr.sym, Predef.GetType(Predef.char), v);
       END;
+      v := String8.NewString("a");
+      RETURN NewConst(expr.sym, Predef.GetType(Predef.char), v);
     END;
     RETURN expr;
   END AssertChar;
@@ -1640,12 +1640,12 @@ PROCEDURE (b: Builder) AssertSet(expr: Expression): Expression;
   VAR
     v: Set.Value;
   BEGIN
-    IF (expr # b.errorExpr) THEN
-      IF ~TR.IsSetType(expr.type) THEN
+    IF ~TR.IsSetType(expr.type) THEN
+      IF (expr # b.errorExpr) THEN
         b.ErrSym(notSet, expr.sym);
-        v := Set.New({});
-        RETURN NewConst(expr.sym, Predef.GetType(Predef.set), v);
       END;
+      v := Set.New({});
+      RETURN NewConst(expr.sym, Predef.GetType(Predef.set), v);
     END;
     RETURN expr;
   END AssertSet;
