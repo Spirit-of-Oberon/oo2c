@@ -670,6 +670,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     VAR
       destType, sourceType: Opcode.Subclass;
     BEGIN
+      CastFromPtr (instr);
       destType := Allocator.SubclassToBasicType (instr. subclass);
       sourceType := Allocator.SubclassToBasicType (instr. opndList. arg. subclass);
       IF Opcode.ConvDiffersFromCast (sourceType, destType) THEN
