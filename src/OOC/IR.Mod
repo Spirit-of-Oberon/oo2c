@@ -3160,79 +3160,79 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     nil := Predef.GetType (Predef.nil);
     real := Predef.GetType (Predef.real);
     result := NIL;  (* FIXME. keep the compiler happy until ASSERTs are removed *)
-
+    
     IF (id = Id.in) & tr.IsIntegerType(left.type)
-      & tr.IsSetType(right.type) THEN
+       & tr.IsSetType(right.type) THEN
       result := b.NewSetMember(sym, left, right);
     ELSIF (id = Id.is) THEN
       result := b.NewTypeTest(sym, left, right);
     ELSIF b.Widen(left, right) OR b.Widen(right, left) THEN
       leftType := left.type; rightType := right.type;
-
+      
       isNumeric := tr.IsNumericType(leftType);
       isInteger := tr.IsIntegerType(leftType);
       isSet := tr.IsSetType(leftType);
       isBoolean := IsPredefClass(leftType, {Predef.boolean});
       isChar := tr.IsCharType(leftType);
-    
-    IF (id IN {Id.plus, Id.minus, Id.times}) & isNumeric THEN
-      (* ---- arithmetic operator ---- *)
-      CASE id OF
-      | Id.plus: variant := arithAdd;
-      | Id.minus: variant := arithSub;
-      | Id.times: variant := arithMul;
-      END;
-      result := b.NewBinaryArith(sym, variant, left, right);
-
-    ELSIF (id IN {Id.slash }) & isNumeric THEN
-      (* ---- arithmetic real division ---- *)
-      IF isInteger THEN
-        ASSERT(b.WidenType(left, real) & b.WidenType(right, real));
-      END;
-      result := b.NewBinaryArith(sym, arithDivR, left, right);
-
-
-    ELSIF (id IN {Id.div, Id.mod}) & isInteger THEN
-      (* ---- arithmetic integer division/modulus ---- *)
-      CASE id OF
-      | Id.div: variant := arithDivI;
-      | Id.mod: variant := arithMod;
-      END;
-      result := b.NewBinaryArith(sym, variant, left, right)
-
-    ELSIF (id IN {Id.plus, Id.minus, Id.times, Id.slash}) & isSet THEN
-      (* ---- set operator ---- *)
-      CASE id OF
-      | Id.plus: variant := setUnion;
-      | Id.minus: variant := setDiff;
-      | Id.times: variant := setIntersect;
-      | Id.slash: variant := setSymDiff
-      END;
-      RETURN b.NewSetOp(sym, variant, left, right);
-
-    ELSIF (id IN {Id.and, Id.or}) & isBoolean THEN
-      CASE id OF
-      | Id.and: variant := and;
-      | Id.or: variant := or;
-      END;
-      result := b.NewBooleanOp(sym, variant, left, right);
-
-    ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq}) 
-      & IsString(left.type) & IsString(right.type) THEN
+      
+      IF (id IN {Id.plus, Id.minus, Id.times}) & isNumeric THEN
+        (* ---- arithmetic operator ---- *)
+        CASE id OF
+        | Id.plus: variant := arithAdd;
+        | Id.minus: variant := arithSub;
+        | Id.times: variant := arithMul;
+        END;
+        result := b.NewBinaryArith(sym, variant, left, right);
+        
+      ELSIF (id IN {Id.slash }) & isNumeric THEN
+        (* ---- arithmetic real division ---- *)
+        IF isInteger THEN
+          ASSERT(b.WidenType(left, real) & b.WidenType(right, real));
+        END;
+        result := b.NewBinaryArith(sym, arithDivR, left, right);
+        
+        
+      ELSIF (id IN {Id.div, Id.mod}) & isInteger THEN
+        (* ---- arithmetic integer division/modulus ---- *)
+        CASE id OF
+        | Id.div: variant := arithDivI;
+        | Id.mod: variant := arithMod;
+        END;
+        result := b.NewBinaryArith(sym, variant, left, right)
+            
+      ELSIF (id IN {Id.plus, Id.minus, Id.times, Id.slash}) & isSet THEN
+        (* ---- set operator ---- *)
+        CASE id OF
+        | Id.plus: variant := setUnion;
+        | Id.minus: variant := setDiff;
+        | Id.times: variant := setIntersect;
+        | Id.slash: variant := setSymDiff
+        END;
+        RETURN b.NewSetOp(sym, variant, left, right);
+        
+      ELSIF (id IN {Id.and, Id.or}) & isBoolean THEN
+        CASE id OF
+        | Id.and: variant := and;
+        | Id.or: variant := or;
+        END;
+        result := b.NewBooleanOp(sym, variant, left, right);
+        
+      ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq}) 
+            & IsString(left.type) & IsString(right.type) THEN
         result := b.NewCompare(sym, left, right);
-
-    ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
-      & (isNumeric OR isChar) THEN
-      result := b.NewCompare(sym, left, right);
-
-    ELSIF (id IN {Id.eql, Id.neq})
-      & (isBoolean OR isSet OR (leftType = nil) OR (right.type = nil)
-        OR (leftType IS Sym.Pointer) OR (leftType IS Sym.FormalPars)) THEN
-      result := b.NewCompare(sym, left, right);
-    ELSE
-      result := b.ErrExpr(invalidOpType, sym);
-    END;
-
+        
+      ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
+            & (isNumeric OR isChar) THEN
+        result := b.NewCompare(sym, left, right);
+        
+      ELSIF (id IN {Id.eql, Id.neq})
+            & (isBoolean OR isSet OR (leftType = nil) OR (right.type = nil)
+               OR (leftType IS Sym.Pointer) OR (leftType IS Sym.FormalPars)) THEN
+        result := b.NewCompare(sym, left, right);
+      ELSE
+        result := b.ErrExpr(invalidOpType, sym);
+      END;
+      
     ELSIF IsString(left.type) & IsString(right.type) THEN 
       IF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq}) THEN
         result := b.NewCompare(sym, left, right);
