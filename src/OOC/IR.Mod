@@ -3115,8 +3115,11 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         | Predef.char: targetType := Predef.integer;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        
+      | Predef.adr:
+        (* FIXME... check that argument has an address *)
+        RETURN b. NewAdr (design. sym, arguments[0]);
       END;
-
     ELSE
       IF (design = b. errorExpr) THEN
         RETURN b. errorExpr;        (* fall through for errors in designator *)
