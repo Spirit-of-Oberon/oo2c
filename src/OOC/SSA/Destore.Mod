@@ -357,6 +357,7 @@ PROCEDURE (s: State) Transform*;
             ptr := ptr. next
           END;
         END;
+        value := NIL;  (* prevent warning *)
         RETURN FALSE;
       END InCache;
     
