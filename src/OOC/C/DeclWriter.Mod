@@ -505,7 +505,7 @@ PROCEDURE (w: Writer) AddDeclaration* (d: Declaration);
 PROCEDURE (w: Writer) WriteDeclarationList*;
 (**Writes out all declarations that have been registered with
    @oproc{w.AddDeclaration}.  All include statements are written first
-   (omittend duplicates), followed by the other declarations in the order in
+   (omitting duplicates), followed by the other declarations in the order in
    which they were added.  *)
   
   PROCEDURE WriteIncludes;
