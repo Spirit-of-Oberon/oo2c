@@ -1023,7 +1023,13 @@ PROCEDURE (constDecl: ConstDecl) Store* (w: Object.Writer);
   BEGIN
     constDecl. Store^ (w);
     w. WriteObject (constDecl. value);
-    w. WriteNum (constDecl. type. id);
+    IF (constDecl. type = NIL) THEN
+      (* the symbol table is incomplete: constants have not been evaluated
+         and therefore their type information and their values are missing *)
+      w. WriteNum (-1)
+    ELSE
+      w. WriteNum (constDecl. type. id)
+    END
   END Store;
 
 PROCEDURE (constDecl: ConstDecl) Load* (r: Object.Reader);
@@ -1039,8 +1045,12 @@ PROCEDURE (constDecl: ConstDecl) Load* (r: Object.Reader);
       constDecl. value := obj(Language.Value)
     END;
     r. ReadNum (id);
-    constDecl. type := predefIdToType[id];
-    ASSERT (constDecl. type # NIL)
+    IF (id = -1) THEN                    (* see comment in `Store' above *)
+      constDecl. type := NIL;
+    ELSE
+      constDecl. type := predefIdToType[id];
+      ASSERT (constDecl. type # NIL)
+    END;
   END Load;
 
 
