@@ -523,6 +523,9 @@ TYPE
 PROCEDURE (node: Node) [ABSTRACT] Accept* (v: Visitor);
   END Accept;
 
+PROCEDURE InitVisitor* (v: Visitor);
+  END InitVisitor;
+
 PROCEDURE (v: Visitor) VisitNodeList* (nl: NodeList);
   VAR
     i: LONGINT;
