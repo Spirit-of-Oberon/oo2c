@@ -54,7 +54,11 @@ TYPE
     line-: ModuleLine;
     column-: ModuleColumn;
   END;
-
+  
+VAR
+  importPosition: Position;
+  (* used as position attribute of imported types *)
+  
 TYPE
   Name* = POINTER TO NameDesc;
   NameDesc = RECORD
@@ -679,19 +683,20 @@ PROCEDURE InitPosition* (position: Position; pos: ModulePos;
 
 PROCEDURE (position: Position) Store* (w: Object.Writer);
   BEGIN
+    (* note: extension Name does not call this Store *)
     position. Store^ (w);
-    (* don't write position information to the symbol file; for an importing
-       module, the position of names in the original source file should be of
-       no importance; there is some trickery involved to get the names within
-       symbol files properly resolved; see @oparam{posImportedName}  *)
+    w. WriteNum (position. pos);
+    w. WriteNum (position. line);
+    w. WriteNum (position. column);
   END Store;
 
 PROCEDURE (position: Position) Load* (r: Object.Reader);
   BEGIN
+    (* note: extension Name does not call this Load *)
     position. Load^ (r);
-    position. pos := posImportedName;
-    position. line := -1;
-    position. column := -1
+    r. ReadNum (position. pos);
+    r. ReadNum (position. line);
+    r. ReadNum (position. column);
   END Load;
 
 
@@ -706,7 +711,7 @@ PROCEDURE (name: Name) Store* (w: Object.Writer);
   VAR
     len: LONGINT;
   BEGIN
-    name. Store^ (w);
+    (*name. Store^ (w);   don't store position part of name *)
     len := Strings.Length (name. str^);
     w. WriteNum (len);
     w. WriteBytes (name. str^, 0, len)
@@ -717,7 +722,8 @@ PROCEDURE (name: Name) Load* (r: Object.Reader);
     str: NameString;
     len: LONGINT;
   BEGIN
-    name. Load^ (r);
+    (* instead of a Load^, initialize the position part by hand: *)
+    InitPosition (name, posImportedName, -1, -1);
     r. ReadNum (len);
     NEW (str, len+1);
     str[len] := 0X;
@@ -861,6 +867,15 @@ PROCEDURE (decl: Declaration) Load* (r: Object.Reader);
   END Load;
 
 
+PROCEDURE ExportTypePosition (type: Type): BOOLEAN;
+(* The current C back-end uses the position of a unnamed type constructor to
+   create a unqiue name for its type descriptor.  This means, that the position
+   must be exported for variables like @samp{VAR x*: POINTER TO ARRAY OF CHAR},
+   or an importing module cannot call @code{NEW} on @samp[x}.  *)
+  BEGIN
+    RETURN (type IS Pointer) & (type. namingDecl = NIL);
+  END ExportTypePosition;
+
 PROCEDURE InitType* (type: Type; parent: Item; position: Position);
   BEGIN
     InitItem (type, parent);
@@ -873,8 +888,10 @@ PROCEDURE InitType* (type: Type; parent: Item; position: Position);
 PROCEDURE (type: Type) Store* (w: Object.Writer);
   BEGIN
     type. Store^ (w);
-    w. WriteObject (type. position);
     w. WriteObject (type. namingDecl);
+    IF ExportTypePosition (type) THEN
+      w. WriteObject (type. position);
+    END;
     w. WriteNum (type. size);
     w. WriteNum (type. align);
   END Store;
@@ -886,12 +903,16 @@ PROCEDURE (type: Type) Load* (r: Object.Reader);
   BEGIN
     type. Load^ (r);
     r. ReadObject (obj);
-    type. position := obj(Position);
-    r. ReadObject (obj);
     IF (obj = NIL) THEN
       type. namingDecl := NIL
     ELSE
       type. namingDecl := obj(TypeDecl)
+    END;
+    IF ExportTypePosition (type) THEN
+      r. ReadObject (obj);
+      type. position := obj(Position);
+    ELSE
+      type. position := importPosition;
     END;
     r. ReadNum (type. size);
     r. ReadNum (i);
@@ -2032,4 +2053,6 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
 
 BEGIN
   predefIdToType := NIL;
+  NEW (importPosition);
+  InitPosition (importPosition, posImportedName, -1, -1);
 END OOC:SymbolTable.
