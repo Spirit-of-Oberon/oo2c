@@ -53,7 +53,7 @@ HashCode__Hash HashCode__Set(OOC_UINT32 x) {
 
 HashCode__Hash HashCode__Ptr(void* x) {
   if (SIZE_OF_HASH(x)) {
-    return AS_HASH(x);
+    return AS_HASH(x);  /* this causes a warning on 64 bit systems */
   } else {
     union {
       void* ptr;

@@ -48,6 +48,8 @@ TYPE
        we must make sure a reference to the current exception is always life
        in an area it @emph{can} see.  *)
     thread: SYSTEM.PTR;
+    (* FIXME... under Linux and Solaris pthread_t is actually an integer type
+       (long or unsigned), which triggers a warning under 64 bit Solaris *)
   END;
 
 TYPE
