@@ -299,6 +299,7 @@ VAR
 
   BEGIN
     token.value := 0;
+    token.len := 0;
     IF (ch = '0') & ~isReal THEN
       AcceptChar;
       IF (ch = 'x') OR (ch = 'X') THEN
@@ -306,12 +307,14 @@ VAR
         AcceptChar;
       ELSE
         token.base := 8;
+        INC(token.len);
       END;
     ELSE
       token.base := 10;
     END;
     WHILE Digit() DO
       token.value := token.base * token.value + digit;
+      INC(token.len);
       AcceptChar
     END;
     IF (ch = '.') & ~isReal THEN
