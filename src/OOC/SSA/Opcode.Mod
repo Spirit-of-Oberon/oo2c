@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Opcode;
 (*  This modules defines opcodes for SSA instructions.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -203,8 +203,7 @@ CONST
      There is one result, the value of @var{store} as seen by the loop body
      when an iteration begins.  *)
   loopEnd* = 11;
-  (**Marks the end of a loop construct.  The instruction has n+2
-     arguments:
+  (**Marks the end of a loop construct.  The instruction has n+2 arguments:
 
      @table @oconst
      @item *OOC:SSA:Opnd.arg
@@ -215,8 +214,7 @@ CONST
      of the loop.  This is actually a virtual argument to the corresponding
      @oconst{loopStart} instruction.  It is placed with the end of the loop to
      avoid cycles in the instruction graph.  Some algorithms need to treat this
-     argument specially, treat it is if it is any argument of the
-     @oconst{loopStart}.
+     argument specially, as if it is an argument of the @oconst{loopStart}.
 
      @item *OOC:SSA:Opnd.storeExit
      Subsequent arguments are the @code{store} results of the loop's
