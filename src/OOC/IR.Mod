@@ -2,7 +2,8 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Config:Value, BooleanValue := Config:Value:Boolean, 
+  Language, Language:Boolean, Language:String8,
+  Config:Value, BooleanValue := Config:Value:Boolean, 
   OOC:Error, OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:AST, OOC:SymbolTable:Item, OOC:SymbolTable:Predef;
 
@@ -177,8 +178,15 @@ TYPE
   END;
 
 
+VAR
+  errorExpr-: Expression;
+  (**This value is returned if there is no real value because of an error.
+     For example, if an identifier cannot be resolved, or if a designator
+     does not begin with an identifier.  *)
+  
 CONST
   undeclaredIdent = 1;
+  expectedIdent* = 2;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -196,6 +204,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     CASE msg. code OF
     | undeclaredIdent:
       t := "Undeclared identifier"
+    | expectedIdent:
+      t := "Expected identifier"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -221,7 +231,7 @@ PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List): Bui
     RETURN b
   END NewBuilder;
 
-PROCEDURE (b: Builder) ErrName (code: Error.Code; name: Item.Name);
+PROCEDURE (b: Builder) ErrName* (code: Error.Code; name: Item.Name);
   VAR
     lastError: Error.Msg;
   BEGIN
@@ -273,6 +283,12 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
   BEGIN
     v. VisitConst (const)
   END Accept;
+
+PROCEDURE (b: Builder) NewStringConst* (VAR delimitedString: ARRAY OF CHAR): Const;
+  BEGIN
+    RETURN NewConst (String8.NewString (delimitedString), NIL);
+  END NewStringConst;
+
 
 (* -------- *)
 
@@ -376,7 +392,10 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
       END
     END;
     
-    RETURN NIL
+    (* in the case of an error, return the value "FALSE"; returning NIL
+       would require more effort in the callers to distinguish between
+       correct and faulty expressions *)
+    RETURN errorExpr 
   END NewIdentRef;
 
 PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Item.Item; 
@@ -521,5 +540,6 @@ PROCEDURE (m: Module) Accept* (v: Visitor);
 
 BEGIN
   NEW (irContext);
-  Error.InitContext (irContext, "OOC:IR")
+  Error.InitContext (irContext, "OOC:IR");
+  errorExpr := NewConst (Boolean.New (FALSE), NIL);
 END OOC:IR.
