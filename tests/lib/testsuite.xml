@@ -3,8 +3,11 @@
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" >
 
 <testsuite-ext
-  profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_Strings_Length1" >
+  profile="Test Suite for OOC Core Library">
+
+<!--<testsuite-ext
+  profile="Test Suite for OOC Core Library">
+  select ="prepare_out_module lib_Strings_Length1">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -15,8 +18,10 @@
   </testcases>
   
   <testcases profile="OOC Core Library" default-lang="O1 O2 AO">
-    <test id="lib_Strings_Length1" type="accept"
+    <test id="lib_Strings_Length1" type="run"
       file="LibStringsLength1.Mod" output="LibStringsLength1.Ref">
+      Tests the <code>Length</code> function with <code>0X</code>
+      terminated character arrays.
     </test>
   </testcases>
 </testsuite-ext>
