@@ -63,8 +63,9 @@ CONST
   classSet* = {set};
 
 CONST
-  (* predefine procedures and functions *)
-  assert* = 0;
+  (* predefined procedures and functions *)
+  assert* = 0;                           (* ASSERT *)
+  len* = 1;                              (* LEN *)
 
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
   VAR
@@ -142,6 +143,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, void, "");
     
     PredefProc (assert, "ASSERT");
+    PredefProc (len, "LEN");
     
     stb. Finalize (module);
     RETURN module
