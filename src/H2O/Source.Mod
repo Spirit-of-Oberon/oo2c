@@ -116,7 +116,7 @@ BEGIN
     obj := i.path.Get(pos);
     path := obj(STRING) + "/" + fileName;
     TRY
-      channel := FileChannel.Open(path(Object.String8), {FileChannel.read});
+      channel := FileChannel.Open(path, {FileChannel.read});
       RETURN TRUE;
     CATCH IO.Error:
     END;
@@ -142,7 +142,7 @@ BEGIN
       END;    
     ELSE
       realFileName := fileName;
-      channel := FileChannel.Open(fileName.ToString8("?"), {FileChannel.read});
+      channel := FileChannel.Open(fileName, {FileChannel.read});
     END;
   CATCH IO.Error:
 	i.Exception(Exception.Current());
