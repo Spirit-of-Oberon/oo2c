@@ -383,8 +383,18 @@ PROCEDURE EqualTypes* (a, b: Sym.Type): BOOLEAN;
 
 PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
 (* Result is TRUE iff the type @oparam{type} is an extension of the type
-   @oparam{base}.  See Oberon-2 report, Appendix A.  *)
+   @oparam{base}.  See Oberon-2 report, Appendix A.
+
+   For type variables, the test is based on the type bounds of the
+   arguments.  *)
   BEGIN
+    (* for a type variable, use the type bound *)
+    IF (type IS Sym.TypeVar) THEN
+      type := type(Sym.TypeVar).bound;
+    END;
+    IF (base IS Sym.TypeVar) THEN
+      base := base(Sym.TypeVar).bound;
+    END;
     (* if `type' and `base' are pointers: reduce them to their base types *)
     IF (type IS Sym.Pointer) & (base IS Sym.Pointer) THEN
       type := type(Sym.Pointer). baseType;
@@ -606,6 +616,8 @@ PROCEDURE IsNilCompatible* (type: Sym.Type): BOOLEAN;
     | type: Sym.Pointer DO
       RETURN TRUE;
     | type: Sym.FormalPars DO
+      RETURN TRUE;
+    | type: Sym.TypeVar DO
       RETURN TRUE;
     ELSE
       RETURN FALSE;

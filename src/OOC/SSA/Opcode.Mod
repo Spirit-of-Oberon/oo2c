@@ -1004,6 +1004,10 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
 
     | type: Sym.FormalPars DO
       RETURN scAddress;
+
+    | type: Sym.TypeVar DO
+      RETURN TypeToSubclass(type.bound);
+      
     ELSE
       Log.Type ("++ Unknown type in TypeToSubclass", type);
       ASSERT (FALSE);

@@ -31,6 +31,16 @@ If T is a parametric type as defined above, then the type expression
 type argument equals the corresponding type bound.
 
 
+Within a type-bound procedure, a variable `v:Ti', with ti declarared
+with a type bound `ti:Bi', can for the most part be used like it had
+been declared as `v:Bi'.  The one exception is it can only be assigned
+values of type `Ti', or NIL.
+
+A type variable cannot be used on the right hand side of a type test
+or type guard.
+
+
+
 Type Declarations
 =================
 
@@ -70,3 +80,25 @@ REJECT
   2) Too few or too many type arguments.  [Generic9 Generic10]
   3) Type argument is not an extension of the type bound.  [Generic11]
   4) Type argument's bound is not extension of parameter bound.  [Generic12]
+
+Type Variables
+==============
+
+VAR v, w: T.ti;
+
+ACCEPT
+
+  1) v := NIL  [Generic16]
+  2) v := w  [Generic16]
+  3) P(v,w)  [Generic16]
+  4) w := F(v) & RETURN v  [Generic16]
+  5) x := v if bound of `v' is extension of type of `x'
+  6) y := v(S) where S is an extension of the bound of `v'
+  7) v.TBProc()
+  8) v.f
+  9) v=w, x=v, v=NIL
+
+REJECT
+
+  1) Assigning v a value of its type bound.  [Generic17]
+  2) Type test or guard using a type variable.  [Generic18 Generic19]

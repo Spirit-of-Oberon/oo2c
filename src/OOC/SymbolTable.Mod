@@ -1309,6 +1309,14 @@ PROCEDURE (type: Type) Deparam*(): Type;
     RETURN type;
   END Deparam;
 
+PROCEDURE (type: Type) Bound*(): Type;
+(**Returns the lower bound of the type.  In particular, it
+   returns @samp{TypeVar.bound} for a type variable, and @oparam{type} for
+   everything else.  *)
+  BEGIN
+    RETURN type;
+  END Bound;
+
 
 PROCEDURE InitLinkDirective (l: LinkDirective);
   BEGIN
@@ -2204,6 +2212,12 @@ PROCEDURE (typeVar: TypeVar) Load* (r: Storable.Reader) RAISES IO.Error;
       typeVar.bound := obj(Type);
     END;
   END Load;
+
+PROCEDURE (typeVar: TypeVar) Bound*(): Type;
+  BEGIN
+    RETURN typeVar.bound;
+  END Bound;
+
 
 
 PROCEDURE InitTypePars* (typePars: TypePars; parent: Item);

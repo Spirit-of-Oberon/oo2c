@@ -3,6 +3,7 @@ MODULE Generic1;
 TYPE
   Object* = POINTER TO ObjectDesc;
   ObjectDesc* = RECORD
+    f*: LONGINT;
   END;
   
 TYPE
@@ -27,6 +28,11 @@ VAR
   b0-: B;
   b1-: B<A1>;
   b2-: B<A2>;
+
+PROCEDURE (obj: Object) Id*(): LONGINT;
+  BEGIN
+    RETURN 123;
+  END Id;
 
 PROCEDURE (b: B) Set*(obj: B.Base);
   VAR

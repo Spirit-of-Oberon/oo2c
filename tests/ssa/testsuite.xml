@@ -7,7 +7,8 @@
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; generic1 generic2 generic3 generic4
   generic5 generic6 generic7 generic8 generic9 generic10 generic11
-  generic12 generic13 generic14 generic15">-->
+  generic12 generic13 generic14 generic15 generic16 generic17
+  generic18 generic19">-->
 
   &TestSetupWithOut;
     
@@ -1349,6 +1350,20 @@
       Type-bound procedure refers to a type variable of the record's
       base type.
     </test>
+    <test id="generic16" type="accept" file="Generic16.Mod">
+      Checks the things one can do with variables whose type is a type
+      variable.
+    </test>
+    <test id="generic17" type="reject" file="Generic17.Mod">
+      If the left hand side of an assignment is a variable type, the
+      right hand side must be of the same type.
+    </test>
+    <test id="generic18" type="reject" file="Generic18.Mod">
+      Cannot use a type variable in a type guard.
+    </test>
+    <test id="generic19" type="reject" file="Generic19.Mod">
+      Cannot use a type variable in a type test.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -1882,6 +1897,12 @@
         msg="Undeclared identifier"/>
     <reject-info id="generic15" pos="R1.%B"
         msg="Undeclared identifier"/>
+    <reject-info id="generic17" pos="v %:= a;"
+        msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="generic18" pos="a(P.%Base)"
+        msg="Type test requires static type instance"/>
+    <reject-info id="generic19" pos="v IS P.%Base"
+        msg="Type test requires static type instance"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>
