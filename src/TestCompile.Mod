@@ -43,7 +43,7 @@ PROCEDURE OptionToMatcher (option: Options.Option; cmdLineName: ARRAY OF CHAR): 
 
 PROCEDURE NewConfig;
   VAR
-    haveLibM: Pragmas.Pragma;
+    haveLibM, haveLibGC: Pragmas.Pragma;
   BEGIN
     errorStyle := Config.AddOption("errorStyle",
                                 CfgData.NewStringVar("file:line:column"));
@@ -75,6 +75,8 @@ PROCEDURE NewConfig;
 
     haveLibM := Config.pragmas.Set("HAVE_LIB_M", (* added for module RT0 *)
                                   CfgData.NewBooleanVar(Autoconf.haveLibM));
+    haveLibGC := Config.pragmas.Set("HAVE_LIB_GC", (* added for module RT0 *)
+                                    CfgData.NewBooleanVar(Autoconf.haveLibGC));
     
     CCompiler.RegisterConfig;
   END NewConfig;

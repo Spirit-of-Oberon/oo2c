@@ -92,7 +92,7 @@ setup-src:
 	test -h src || (rm -Rf src lib/src; cp -R ../src .; cp -R ../lib/src lib)
 
 $exec: \$(OBJ)
-	\$(CC) \$(LDFLAGS) -o $exec \$(OBJ) -lm \$(LIBS)
+	\$(CC) \$(LDFLAGS) -o $exec \$(OBJ) \$(LIBS)
 
 clean:
 	rm -f \$(OBJ) $exec $exec.exe

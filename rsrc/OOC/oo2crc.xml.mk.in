@@ -5,7 +5,7 @@
     <set name='cppflags'>@CPPFLAGS@</set>
     <set name='cflags'>@CFLAGS@</set>
     <set name='ldflags'>@LDFLAGS@</set>
-    <set name='libs'>@LIBS@ -L%libdir%</set>
+    <set name='libs'>-L%libdir%</set>
 
     <set name='libtool'>@LIBTOOL@</set>
     <set name='libdir'>%libdir%</set>

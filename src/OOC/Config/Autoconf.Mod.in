@@ -26,5 +26,6 @@ CONST
   address* = @ooc_target_address_type@;
 
   haveLibM* = @ooc_have_lib_m@;  (* used by TestCompile *)
+  haveLibGC* = @ooc_have_lib_gc@;  (* used by TestCompile *)
 
 END OOC:Config:Autoconf.
