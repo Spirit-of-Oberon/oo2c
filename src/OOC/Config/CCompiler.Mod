@@ -34,6 +34,13 @@ PROCEDURE HaveLibtool*(): BOOLEAN;
     RETURN ~libtool.value(CfgData.StringVar).string.Equals("no");
   END HaveLibtool;
 
+PROCEDURE SkipCallCC*(): BOOLEAN;
+(**Return @code{TRUE} if this ``make'' run should skip all calls to the
+   external C compiler.  *)
+  BEGIN
+    RETURN (cc.value(CfgData.StringVar).string.length = 0);
+  END SkipCallCC;
+
 PROCEDURE SetCommand(mode: STRING): StringBuffer.StringBuffer;
   VAR
     sb: StringBuffer.StringBuffer;

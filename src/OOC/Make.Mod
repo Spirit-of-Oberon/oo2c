@@ -918,7 +918,7 @@ RAISES IO.Error;
       
     ELSE
       success := r.Update(module, Rep.modCodeFileC);
-      IF success &
+      IF success & ~CCompiler.SkipCallCC() &
          DerivedIsOlder(module, Rep.modObjectFile, Rep.modCodeFileC) THEN
         module.CreateOutputDir (Rep.modObjectFile);
         cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
@@ -933,7 +933,7 @@ RAISES IO.Error;
 
 PROCEDURE (r: Rules) UpdateObjectFileLib(module: Rep.Module): BOOLEAN
 RAISES IO.Error;
-(* Like UpdateObjectFileLib(), but produce an object file suitable for
+(* Like UpdateObjectFile(), but produce an object file suitable for
    a libtool-style library.
 
    @precond
@@ -945,7 +945,8 @@ RAISES IO.Error;
     outputFile: URI.URI;
   BEGIN
     success := r.Update(module, Rep.modCodeFileC);
-    IF DerivedIsOlder(module, Rep.modObjectFileLib, Rep.modCodeFileC) THEN
+    IF ~CCompiler.SkipCallCC() &
+       DerivedIsOlder(module, Rep.modObjectFileLib, Rep.modCodeFileC) THEN
       module.CreateOutputDir (Rep.modObjectFile);
       outputFile := module.GetURI(Rep.modObjectFileLib, TRUE);
       cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
@@ -1040,7 +1041,8 @@ RAISES IO.Error;
       
     ELSE
       success := r.Update(module, Rep.modMainFileC);
-      IF DerivedIsOlder(module, Rep.modMainObjectFile, Rep.modMainFileC) THEN
+      IF ~CCompiler.SkipCallCC() &
+         DerivedIsOlder(module, Rep.modMainObjectFile, Rep.modMainFileC) THEN
         module.CreateOutputDir (Rep.modMainObjectFile);
         cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC, TRUE),
                                         module.GetURI(Rep.modMainObjectFile, TRUE),
@@ -1152,7 +1154,8 @@ RAISES IO.Error;
       isUpToDate := isUpToDate &
           ~DerivedIsOlder(module, Rep.modExecutable, Rep.modMainObjectFile);
       
-      success := isUpToDate OR LinkProgramC.Run(module, r.imports^, NIL);
+      success := isUpToDate OR CCompiler.SkipCallCC() OR
+          LinkProgramC.Run(module, r.imports^, NIL);
     END;
     RETURN success;
   END UpdateExecutable;
