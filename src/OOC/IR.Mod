@@ -3476,6 +3476,8 @@ BEGIN
     result := expr
   ELSIF IsPredefType (type, Predef.byte) & tr.IsByteCompatible (exprType) THEN
     result := expr;
+  ELSIF IsPredefType (exprType, Predef.nil) & tr.IsNilCompatible (type) THEN
+    result := expr;
   ELSIF tr.IncludesType(type, exprType) THEN
     result := NewTypeConv(type, expr)
   ELSIF IsPredefType(exprType, Predef.charString) THEN
