@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree:CreateSymTab;
 (*  Creates symbol table from abstract syntax tree of module `ExtTree'.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,6 +21,7 @@ MODULE OOC:AST:ExtTree:CreateSymTab;
 *)
 
 IMPORT
+  Msg, ADT:String, URI, ParserURI := URI:Parser,
   OOC:AST, OOC:Scanner:Builder:BasicList, OOC:AST:ExtTree,
   OOC:SymbolTable:Item,
   SymTabBuilder := OOC:SymbolTable:Builder;
@@ -41,6 +42,10 @@ TYPE
     root: Item.Module;
     (* the root of the newly created symbol table; this is the result of
        @oproc{CreateSymTab} *)
+    baseURI: URI.HierarchicalURI;
+    (* any relative file names in the module are resolved relative to this
+       base URI; currently, the only file names in question are the ones
+       given in a module's LINK section *)
   END;
 
 
@@ -172,13 +177,61 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
   VAR
     moduleDecl: Item.Module;
     moduleName: Item.Name;
+    class: Item.ModuleClass;
+    callConv: Item.CallConv;
+    mf: ExtTree.ModuleFlags;
+    uri: URI.URI;
+    str, prefixOption, suffixOption: String.String;
+    res: Msg.Msg;
+    i: LONGINT;
+    n: AST.Node;
   BEGIN
     moduleName := GetName (module. name. nameList. n[0]);
     Item.InitName (moduleName, module. moduleName, moduleName. pos, 
                    moduleName. line, moduleName. column);
-    moduleDecl := v. stb. NewModule (moduleName, module. name. docString);
-    v. root := moduleDecl;
     
+    mf := NIL;
+    class := Item.mcStandard;
+    callConv := Item.callConvDefault;
+    IF (module. flags # NIL) & 
+       (module. flags. flagList. n[0] IS ExtTree.ModuleFlags) THEN
+      mf := module. flags. flagList. n[0](ExtTree.ModuleFlags);
+      IF (mf. external. sym. str^ = "FOREIGN") THEN
+        class := Item.mcForeign
+      ELSIF (mf. external. sym. str^ = "INTERFACE") THEN
+        class := Item.mcInterface
+      END;
+      str := mf. callConv. GetString (TRUE);
+      callConv := Item.StringToCallConv (str. array^);
+    END;
+    
+    moduleDecl := v. stb. NewModule (moduleName, module. name. docString,
+                                     class, callConv);
+    IF (mf # NIL) THEN
+      FOR i := 0 TO mf. linkSections. len-1 DO
+        n := mf. linkSections. n[i];
+        WITH n: ExtTree.LinkFileFlag DO
+          str := n. fileName. GetString (TRUE);
+          uri := ParserURI.NewURI (str. array^, v. baseURI, res);
+          ASSERT (res = NIL);
+          ASSERT (uri # NIL);
+          IF (n. prefixOpt # NIL) THEN
+            prefixOption := n. prefixOpt. GetString (FALSE)
+          ELSE
+            prefixOption := NIL
+          END;
+          IF (n. suffixOpt # NIL) THEN
+            suffixOption := n. suffixOpt. GetString (FALSE)
+          ELSE
+            suffixOption := NIL
+          END;
+          moduleDecl. AddLinkFile (uri(URI.HierarchicalURI),
+                                   prefixOption, suffixOption)
+        END
+      END
+    END;
+    
+    v. root := moduleDecl;
     IF (module. importList # NIL) THEN
       AcceptParent (v, module. importList, moduleDecl)
     END;
@@ -450,7 +503,7 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
   END VisitProcType;
 
 
-PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder): Item.Module;
+PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder; baseURI: URI.HierarchicalURI): Item.Module;
 (**Creates a symbol table from the abstract syntax tree in @oparam{module}.
    The elements of the symbol table are created by calling appropriate 
    factory methods of @oparam{stb}.  Result is the root object of the newly
@@ -463,6 +516,7 @@ PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder): Item.Mod
     v. parent := NIL;
     v. type := NIL;
     v. root := NIL;
+    v. baseURI := baseURI;
     Accept (v, module);
     stb. Finalize (v. root);
     RETURN v. root
