@@ -239,7 +239,8 @@ PROCEDURE (s: Section) GetModule* (moduleRef: ARRAY OF CHAR): Repository.Module;
     END AddToCache;
   
   BEGIN
-    IF Repository.ValidModuleName (moduleRef) THEN
+    IF Repository.ValidModuleName (moduleRef) OR (moduleRef[0] = "#") THEN
+      (* note: moduleRef[0]="#" selects predefined modules *)
       (* scan the cache for this module name; linear search isn't exactly fast
          for huge module sets, so maybe we should improve this later... *)
       i := 0;
