@@ -97,7 +97,7 @@ TYPE
        visibility is stored in `visible[v]'; if TRUE, then the effects of
        the instruction setting this variable may be visible by others *)
   END;
-  
+
 PROCEDURE GetVar (instr: SSA.Instr): Sym.VarDecl;
   VAR
     opnd: SSA.Opnd;
@@ -174,7 +174,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       origin: SSA.Instr;
       originWriteDesign: SSA.Opnd;
       
-    PROCEDURE Trace (lastDefinition: SSA.Instr;
+    PROCEDURE TraceF (lastDefinition: SSA.Instr;
                      storeOut: SSA.Result): BOOLEAN;
     (**Result is @code{TRUE} if the effects of @ovar{origin} are visible
        after completion of this procedure, or by procedures called by this
@@ -242,7 +242,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
               (* the "get" instruction accesses a volatile variable, but it
                  does not alias completely with the original "set": continue
                  trace  *)
-              RETURN Trace (lastDefinition, storeOut);
+              RETURN TraceF (lastDefinition, storeOut);
             END;
             
           | Opcode.set:
@@ -261,7 +261,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
               (* this "set" and "origin" work on different variables, and
                  cannot interfere with each other: continue trace through
                  `instr' *)
-              RETURN Trace (lastDefinition,
+              RETURN TraceF (lastDefinition,
                             instr. GetResultClass (Result.store))
             END;
             
@@ -270,7 +270,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
               (* continue tracing the uses of this select; note: this is
                  only done once for each variable, when we encounter the
                  select for the first time *)
-              visible := Trace (instr, instr. GetResultClass (Result.store));
+              visible := TraceF (instr, instr. GetResultClass (Result.store));
               
               originMap := NewOriginMap (NumberOfPaths (instr), numVars);
               originMap. visible[origin. marker] := visible;
@@ -294,7 +294,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                  only done once for each variable, when we encounter the
                  loop-start for the first time *)
               (* note: originMap. visible[origin. marker] defaults to FALSE *)
-              visible := Trace (instr, instr. GetResultClass (Result.store));
+              visible := TraceF (instr, instr. GetResultClass (Result.store));
               originMap. visible[origin. marker] := visible;
             ELSE
               originMap := instr. info(OriginMap);
@@ -307,10 +307,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             RETURN originMap. visible[origin. marker];
 
           | Opcode.loopEnd:
-            RETURN Trace (lastDefinition, instr. GetResultClass (Result.store))
+            RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
 
           | Opcode.collect: 
-            RETURN Trace (lastDefinition, instr. GetResultClass (Result.store))
+            RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
             
           | Opcode.call:
             (* FIXME... detect when a call can modify our variable; for now
@@ -338,7 +338,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           use := use. nextUse
         END;
         RETURN visible
-      END Trace;
+      END TraceF;
     
     BEGIN
       instr := pb. instrList;
@@ -346,7 +346,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         IF (instr. marker >= 0) & (instr. opcode = Opcode.set) THEN
           origin := instr;
           originWriteDesign := instr. GetOpndClass (Opnd.writeDesign);
-          IF Trace (instr, instr. GetResultClass (Result.store)) THEN
+          IF TraceF (instr, instr. GetResultClass (Result.store)) THEN
             instr. info := instr  (* mark instruction as live *)
           END
         END;
@@ -361,7 +361,21 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       get: SSA.Instr;
       getDesign: SSA.Opnd;
       
-    PROCEDURE Trace (storeIn: SSA.Result): SSA.Result;
+    PROCEDURE GetStoreOpnd (select: SSA.Instr; pathNum: LONGINT): SSA.Result;
+      VAR
+        storeIn: SSA.Result;
+      BEGIN
+        CASE select. opcode OF
+        | Opcode.select: storeIn := select. NthArg (pathNum*2+2);
+        | Opcode.loopStart: storeIn := select. NthArg (pathNum);
+        END;
+        IF (storeIn. instr. opcode = Opcode.collect) THEN
+          storeIn := storeIn. instr. GetArgClass (Opnd.store)
+        END;
+        RETURN storeIn
+      END GetStoreOpnd;
+
+    PROCEDURE TraceB (storeIn: SSA.Result): SSA.Result;
     (* Traces @oparam{storeIn} back to definition that defines or may
        define the variable read by the @oparam{get}.  If it finds a 100%
        percent match, it returns the value that should be used in place
@@ -412,8 +426,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           END GetValue;
 
         PROCEDURE DuplicateGet (storeIn: SSA.Result): SSA.Instr;
-        (* takes the "get" instruction passed to `Trace()' and creates a
-           duplicate whose "store" input parameter is `storeIn' *)
+        (* takes the "get" instruction passed to `TraceGetBackward()' and
+           creates a duplicate whose "store" input parameter is `storeIn' *)
           VAR
             new: SSA.Instr;
             opnd: SSA.Opnd;
@@ -431,20 +445,6 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             RETURN new
           END DuplicateGet;
 
-        PROCEDURE GetStoreOpnd (select: SSA.Instr; pathNum: LONGINT): SSA.Result;
-          VAR
-            storeIn: SSA.Result;
-          BEGIN
-            CASE select. opcode OF
-            | Opcode.select: storeIn := select. NthArg (pathNum*2+2);
-            | Opcode.loopStart: storeIn := select. NthArg (pathNum);
-            END;
-            IF (storeIn. instr. opcode = Opcode.collect) THEN
-              storeIn := storeIn. instr. GetArgClass (Opnd.store)
-            END;
-            RETURN storeIn
-          END GetStoreOpnd;
-        
         BEGIN
           IF (select. info = NIL) THEN
             (* there is no information available which value may reach this
@@ -546,7 +546,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             (* this "set" and "origin" work on different variables, and
                cannot interfere with each other: continue trace through
                `instr' *)
-            RETURN Trace (instr. GetArgClass (Opnd.store))
+            RETURN TraceB (instr. GetArgClass (Opnd.store))
           END;
           
         | Opcode.enter:
@@ -556,23 +556,86 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           RETURN TraceSelect (instr, get. marker, get. subclass);
 
         | Opcode.collect:
-          RETURN Trace (instr. GetArgClass (Opnd.store));
+          RETURN TraceB (instr. GetArgClass (Opnd.store));
               
         | Opcode.copyParameter:
-          RETURN Trace (instr. GetArgClass (Opnd.store));
+          RETURN TraceB (instr. GetArgClass (Opnd.store));
               
         | Opcode.loopStart:
           RETURN TraceSelect (instr, get. marker, get. subclass);
 
         | Opcode.loopEnd:
-          RETURN Trace (instr. GetArgClass (Opnd.store));
+          RETURN TraceB (instr. GetArgClass (Opnd.store));
               
         | Opcode.call:
           (* FIXME... detect when a call can modify our variable; for now
              be pessimistic: the call rewrites our variable *)
           RETURN NIL;
         END;
-      END Trace;
+      END TraceB;
+    
+    PROCEDURE KeepSetInstr (storeIn: SSA.Result);
+    (* Make sure that none of the set operations that feed data to
+       `storeIn' and that alias with `get'/`getDesign' are removed.  *)
+      VAR
+        instr: SSA.Instr;
+        alias: Aliasing.Id;
+        oldMarker: LONGINT;
+      CONST
+        markerVisited = MIN (LONGINT);
+        
+      PROCEDURE TraceSelect (select: SSA.Instr);
+      (* pre: `select' has opcode "select" or "loopStart" *)
+        VAR
+          i: LONGINT;
+        BEGIN
+          FOR i := 0 TO 1 DO
+            KeepSetInstr (GetStoreOpnd (select, i));
+          END;
+        END TraceSelect;
+      
+      BEGIN
+        instr := storeIn. instr;
+        IF (instr. marker # markerVisited) THEN
+          oldMarker := instr. marker;
+          instr. marker := markerVisited;
+          CASE instr. opcode OF
+          | Opcode.set:
+            alias := Aliasing.DesignatorAlias (tr, getDesign, instr. GetOpndClass (Opnd.writeDesign));
+            IF (alias = Aliasing.completelyCovered) OR
+               (alias # Aliasing.noAliasing) THEN
+              instr. info := instr  (* mark instruction as live *)
+            ELSE
+              KeepSetInstr (instr. GetArgClass (Opnd.store))
+            END;
+            
+          | Opcode.enter:
+            (* undefined value, nothing to do *)
+            
+          | Opcode.select:
+            TraceSelect (instr);
+            
+          | Opcode.collect:
+            KeepSetInstr (instr. GetArgClass (Opnd.store));
+            
+          | Opcode.copyParameter:
+            KeepSetInstr (instr. GetArgClass (Opnd.store));
+            
+          | Opcode.loopStart:
+            TraceSelect (instr);
+            
+          | Opcode.loopEnd:
+            KeepSetInstr (instr. GetArgClass (Opnd.store));
+            
+          | Opcode.call:
+            (* FIXME... detect when a call does alias with our variable; for
+               now be pessimistic: the call does not touch it, we must keep the
+               `set' instructions before the call *)
+            KeepSetInstr (instr. GetArgClass (Opnd.store));
+          END;
+          instr. marker := oldMarker;
+        END;
+      END KeepSetInstr;
     
     BEGIN
       instr := pb. instrList;
@@ -584,9 +647,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
              behind our back *)
           get := instr;
           getDesign := instr. GetOpndClass (Opnd.readDesign);
-          value := Trace (instr. opndList. arg);
+          value := TraceB (instr. opndList. arg);
           IF (value # NIL) THEN
             instr. ReplaceUses (value)
+          ELSE
+            KeepSetInstr (instr. opndList. arg);
           END;
         END;
         instr := instr. nextInstr
