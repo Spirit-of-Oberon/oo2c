@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<testcases profile="OOC Core Library" default-lang="O2">
+  <test id="libio_Memory" type="run" file="LibIoMemory.Mod">
+    Imports module <code>IO:Memory</code>.
+  </test>
+  <test id="libio_Select" type="run" file="LibIoSelect.Mod">
+    Imports module <code>IO:Select</code>.
+  </test>
+  <test id="libio_PFD" type="run" file="LibIoPFD.Mod">
+    Imports module <code>IO:PFD</code>.
+  </test>
+  <test id="libio_Socket" type="run" file="LibIoSocket.Mod">
+    Imports module <code>IO:Socket</code>.
+  </test>
+</testcases>

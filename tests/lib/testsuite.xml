@@ -3,6 +3,7 @@
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
 <!ENTITY libadt-testcases SYSTEM "adt/testcases.xml">
 <!ENTITY libos-testcases SYSTEM "os/testcases.xml">
+<!ENTITY libio-testcases SYSTEM "io/testcases.xml">
 ]>
 
 <testsuite-ext
@@ -512,4 +513,5 @@
 
   &libadt-testcases;
   &libos-testcases;
+  &libio-testcases;
 </testsuite-ext>
