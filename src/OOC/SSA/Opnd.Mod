@@ -87,9 +87,9 @@ CONST
      @var{store} within the procedure at the place of a @code{RETURN}, or
      @oconst{*OOC:SSA:Opcode.selectExit} taking the final value of @var{store}
      within a loop at the place of an @code{EXIT}.  *)
-  storeReturn* = 12;
+(*  storeReturn* = 12;  ... currently unused
   (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the value
-     of @var{store} after a @code{RETURN} statement.  *)
+     of @var{store} after a @code{RETURN} statement.  *)*)
 
   backwardFeed* = 13;
   (**Operand holds the value of @var{store} that is fed back to the beginning
@@ -105,7 +105,9 @@ CONST
   argPointer* = 16;
   (**For @oconst{*OOC:SSA:Opcode.call}: Used instead of @oconst{arg} to
      indicate that this operand is passed to a pointer variable, and must
-     therefore cast to void* by the C back-end.  *)
+     therefore cast to void* by the C back-end.  This is a shortcut to
+     keep complexity out of the C back-end, I'm not sure if this makes it
+     a feature ;-)  *)
   
   loopExternalDef* = 17;
   (**An argument added to the back-edge collect instruction of a loop refering

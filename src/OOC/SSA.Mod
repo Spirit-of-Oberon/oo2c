@@ -630,12 +630,34 @@ PROCEDURE (instr: Instr) GetBackwardFeed*(): Result;
   END GetBackwardFeed;
 
 PROCEDURE (instr: Instr) GetLoopStart* (): Instr;
+(**Given a @oconst{Opcode.loopEnd} or @oconst{Opcode.selectExit} instruction,
+   returns the corresponding @oconst{Opcode.loopdStart}.  *)
+  BEGIN
+    IF (instr. opcode = Opcode.selectExit) THEN
+      RETURN instr. opndList. arg(Instr). GetLoopStart();
+    ELSE
+      ASSERT (instr. opcode = Opcode.loopEnd);
+      RETURN instr. opndList. arg(Instr);
+    END;
+  END GetLoopStart;
+
+PROCEDURE (instr: Instr) GetSelectExit* (): Instr;
 (**Given a @oconst{Opcode.loopEnd} instruction, returns the corresponding
-   @oconst{Opcode.loopStart}.  *)
+   @oconst{Opcode.selectExit}, or @code{NIL} if no such thing exists.  *)
+  VAR
+    use: Opnd;
   BEGIN
     ASSERT (instr. opcode = Opcode.loopEnd);
-    RETURN instr. opndList. arg(Instr);
-  END GetLoopStart;
+    use := instr. useList;
+    WHILE (use # NIL) & (use. instr. opcode # Opcode.selectExit) DO
+      use := use. nextUse;
+    END;
+    IF (use = NIL) THEN
+      RETURN NIL;
+    ELSE
+      RETURN use. instr;
+    END;
+  END GetSelectExit;
 
 PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
 (**For a collect instruction, return the target instruction into which it

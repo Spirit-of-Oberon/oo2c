@@ -156,15 +156,13 @@ CONST
   
   selectExit* = 9;
   (**Chooses the @code{EXIT} statement that leaves a @code{LOOP}.  The
-     statement takes @var{n}+2 arguments, all defining values of @var{store} at
-     the end of their corresponding branch of control flow.  Its structure
-     resembles that of @oconst{selectReturn}.
+     statement takes @var{n}+1 arguments.  All but the first one define values
+     of @var{store} at the end of their corresponding branch of control flow,
+     that is at the place of the @code{EXIT} instructions.
 
      @table @oconst
-     @item *OOC:SSA:Opnd.storeEnter
-     The first argument is the initial value of @var{store} that enters the
-     loop, represented by the @oconst{*OOC:SSA:Result.store} result of the
-     @code{loopStart} instruction.
+     @item *OOC:SSA:Opnd.arg
+     The first argument refers to the loop's @oconst{loopEnd} instruction.
 
      @item *OOC:SSA:Opnd.storeExit
      Subsequent arguments are the @code{store} results of the loop's
@@ -199,10 +197,9 @@ CONST
      Reference to the corresponding @oconst{loopStart} instruction.
 
      @item *OOC:SSA:Opnd.store
-     Value of @var{store} once evaluation of the loop is done.  This is the
-     same value as the second operand of @oconst{loopStart} for @code{WHILE},
-     @code{REPEAT}, and @code{FOR} loops.  For a @code{LOOP}, this is the
-     @var{store} result of the @oconst{selectExit} instruction.
+     Value of @var{store} once evaluation of the loop is done.  If the
+     loop has been completed, the instructions after the loop see the
+     global state represented by this value.
 
      @item *OOC:SSA:Opnd.arg
      The exit predicate of the loop.  A boolean value.

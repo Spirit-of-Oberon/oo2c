@@ -509,7 +509,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := start. AddResult (Result.store);
 
       select := pb. AddInstr (Opcode.selectExit, Opcode.scNone);
-      select. AddOpnd (start, Opnd.storeEnter);
+      select. AddOpnd (start, Opnd.arg);
       oldSelect := pb. SetSelectExit (select);
       
       (* evaluate loop body *)
@@ -518,14 +518,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       (* create "loop-end" instruction *)
       end := pb. AddInstr (Opcode. loopEnd, Opcode.scNone);
       end. AddOpnd (start, Opnd.arg);
-      end. AddOpnd (select. AddResult (Result.store), Opnd.store);
-      end. AddOpnd (select, Opnd.arg);
+      end. AddOpnd (s, Opnd.store);
+      end. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       end. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
       
       (* add backward feed of `store' to "loop-end" *)
       AddStoreBackwardFeed (pb, end, s);
 
-      s := end. AddResult (Result.store);
+      select. opndList. ReplaceArg (end);
+      s := select. AddResult (Result.store);
       select := pb. SetSelectExit (oldSelect);
     END LoopStatm;
 

@@ -64,10 +64,16 @@ is realized by jump and branch instructions.
    A block containing an EXIT or RETURN instruction effectively ends
    with this instruction.
 
-4. Non-local merges of control flow: select-exit & select-return
+4. Non-local exit from a loop: select-exit
 
-   For a select-exit, the corresponding block is that of the loop.
-   For a select-return, it is the whole procedure body.
+   The select-exit defines a region which contains a single
+   instruction, its corresponding loop-end.  Note that loop-end
+   is itself a region.
+      
+5. Non-local merge of control flow: select-return
+
+   For a select-return, the corresponding block is the whole procedure
+   body.
 *)
 
 
@@ -280,6 +286,8 @@ PROCEDURE GetProxy (instr: SSA.Instr): Proxy;
         p := NewSelect (instr);
       | Opcode.loopEnd:
         p := NewLoop (instr);
+      | Opcode.selectExit:
+        p := NewRegion (instr);
       ELSE
         p := NewProxy (instr);
       END;
@@ -398,7 +406,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       loopStart: SSA.Instr;
       p: Proxy;
       
-    PROCEDURE MarkUses (instr: SSA.Instr);
+    PROCEDURE MarkUses (loopStart, instr: SSA.Instr);
       VAR
         res: SSA.Result;
         use: SSA.Opnd;
@@ -409,9 +417,14 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
           use := res. useList;
           WHILE (use # NIL) DO
             p := GetProxy(use. instr);
-            IF (p. loopAssoc = NIL) THEN
+            IF (p. loopAssoc = NIL) &
+               ((p. instr. opcode # Opcode.selectExit) OR
+                (p. instr. GetLoopStart() # loopStart)) THEN
+              (* stop when we reach an instruction that has already been
+                 attached to another loop, and also when we reach a
+                 select-exit that belongs to the current loop *)
               p. loopAssoc := loop;
-              MarkUses (use. instr);
+              MarkUses (loopStart, use. instr);
             END;
             use := use. nextUse;
           END;
@@ -427,16 +440,21 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
           loopStart := loop. instr. GetLoopStart();
           p := GetProxy (loopStart);
           p. loopAssoc := loop;
-          MarkUses (loopStart);
+          MarkUses (loopStart, loopStart);
         END;
       END;
     END AttachToLoop;
   
   PROCEDURE IgnoredUse (use: SSA.Opnd): BOOLEAN;
     BEGIN
+      (* skip all but the first operand of "select-exit", and all of
+         "select-return" (the latter is automatically added as first
+         instruction to the procedure block, its parents become live
+         after that) *)
       RETURN
           (use. instr. opcode = Opcode.selectReturn) OR
-          (use. instr. opcode = Opcode.selectExit)
+          (use. instr. opcode = Opcode.selectExit) &
+            (use. instr. opndList # use)
     END IgnoredUse;
 
   PROCEDURE UpdateDefs (p: Proxy);
@@ -465,6 +483,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       region, useRegion: Region;
       res: SSA.Result;
       use: SSA.Opnd;
+      loopEnd: SSA.Instr;
 
     PROCEDURE Merge (a, b: Region): Region;
       BEGIN
@@ -516,6 +535,10 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
           END;
         ELSIF (instr. opcode = Opcode.loopEnd) THEN
           RETURN instr. info(Loop);
+        ELSIF (instr. opcode = Opcode.selectExit) &
+              (opnd = instr. opndList) THEN
+          (* place loop-end inside a loop-exit, if the latter exists *)
+          RETURN instr. info(Region);
         ELSE
           RETURN instr. info(Proxy). region;
         END;
@@ -571,32 +594,43 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
           (* move instruction just below the most global loop for which
              it is an invariant *)
           region := lastLoop. region;
+          IF (region. instr # NIL) &
+             (region. instr. opcode = Opcode.selectExit) THEN
+            (* also skip the select-exit around the loop on the way up *)
+            region := region. region;
+          END;
         END;
         RETURN region;
       END MoveLoopInvariants;
     
     BEGIN
-      region := NIL;
-      res := p. instr;
-      WHILE (res # NIL) DO
-        use := res. useList;
-        WHILE (use # NIL) DO
-          IF ~IgnoredUse (use) THEN
-            useRegion := RegionOfUse (use);
-            IF (region = NIL) THEN
-              region := useRegion;
-            ELSE
-              region := Merge (region, useRegion);
+      IF (p. instr. opcode = Opcode.loopStart) THEN
+        (* a "loop-start" is always placed in the region defined by the
+           associated "loop-end" *)
+        loopEnd := p. instr. GetLoopEnd();
+        RETURN loopEnd. info(Region);
+      ELSE
+        region := NIL;
+        res := p. instr;
+        WHILE (res # NIL) DO
+          use := res. useList;
+          WHILE (use # NIL) DO
+            IF ~IgnoredUse (use) THEN
+              useRegion := RegionOfUse (use);
+              IF (region = NIL) THEN
+                region := useRegion;
+              ELSE
+                region := Merge (region, useRegion);
+              END;
             END;
+            use := use. nextUse;
           END;
-          use := use. nextUse;
+          res := res. nextResult;        
         END;
-        res := res. nextResult;        
-      END;
-
-      
-      IF (region = NIL) THEN
-        region := root;
+        
+        IF (region = NIL) THEN
+          region := root;
+        END;
       END;
       RETURN MoveLoopInvariants (CorrectForLoop (region));
     END GetRegion;
@@ -715,7 +749,7 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
       res: SSA.Result;
       opnd: SSA.Opnd;
       str: ARRAY 64 OF CHAR;
-      i: LONGINT;
+      i, resCount: LONGINT;
       
     PROCEDURE WriteResultId (res: SSA.Result);
       VAR
@@ -739,9 +773,7 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
       END WriteResultId;
     
     BEGIN
-      (*w. WriteHex (SYSTEM.VAL(LONGINT, p), 8);
-      w. WriteString (" ");
-      w. WriteString ("L:");
+      (*w. WriteString ("L:");
       IF (p. loopAssoc # NIL) THEN
         WriteResultId (p. loopAssoc. instr);
       ELSE
@@ -759,13 +791,20 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
       IF (instr = NIL) THEN
         w. WriteString ("----");
       ELSE
+        resCount := 0;
         res := instr;
         WHILE (res # NIL) DO
-          IF (res # instr) THEN
-            w. WriteChar (",");
+          IF (res. useList # NIL) OR (instr. opcode = Opcode.selectReturn) THEN
+            IF (resCount # 0) THEN
+              w. WriteChar (",");
+            END;
+            WriteResultId (res);
+            INC (resCount);
           END;
-          WriteResultId (res);
           res := res. nextResult;
+        END;
+        IF (resCount = 0) THEN
+          w. WriteString ("(--)");
         END;
         
         w. WriteString (" := ");
