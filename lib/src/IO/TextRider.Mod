@@ -926,6 +926,10 @@ PROCEDURE (r: Reader) ReadLn*() RAISES IO.Error;
 (**This method reads and discards all characters up to and including the next
    end-of-line character.  *)
   BEGIN
+    IF (r.pos=r.lineLength) & ~r.consumeEOL THEN
+      r.ReadLineBuffer;
+    END;
+    r.consumeEOL:=FALSE;
     r.pos:=r.lineLength;
   END ReadLn;
 
