@@ -27,7 +27,7 @@ compile: setup
 
 setup:
 	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
-	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) $(TEST_DRIVER)
+	cd $(OOC_DEV_ROOT) && $(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml -M $(OFLAGS) $(TEST_DRIVER)
 	rm -rf wd
 	mkdir wd wd/obj wd/sym wd/asm
 	ln -s ../src wd/src
