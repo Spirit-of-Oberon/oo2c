@@ -339,6 +339,37 @@ PROCEDURE (dict: Dictionary) Set* (key: Key; value: Value);
     Insert (dict, key, key. HashCode(), value)
   END Set;
 
+(*PROCEDURE (dict: Dictionary) SetDefault* (key: Key; default: Value): Value;
+(**Set the value associated with @oparam{key} in the dictionary @oparam{dict}
+   to @oparam{default} if @oparam{key} does not exist.  In this case,
+   @oparam{default} is also the method's return value.  If @oparam{key} does
+   exist, then return the current value without changing anything.  *)
+  VAR
+    i: LONGINT;
+    hash: Hash;
+  BEGIN
+    ASSERT(key # NIL);
+    IF (dict. fill*3 >= dict. size*2) THEN
+      Resize (dict, dict. used*2)
+    END;
+
+    hash := key.HashCode();
+    i := Lookup(dict, key, hash);
+    IF IsSet(dict.table[i].key) THEN
+      RETURN dict.table[i].value;
+    ELSE
+      IF (dict.table[i].key = NIL) THEN
+        INC(dict.fill);
+      END;
+      
+      dict.table[i].key := key;
+      dict.table[i].hash := hash;
+      dict.table[i].value := default;
+      INC(dict.used);
+      RETURN default;
+    END;
+  END SetDefault;*)
+
 PROCEDURE (dict: Dictionary) Copy* (): Dictionary;
 (**Creates a copy of the dictionary @oparam{dict}.  *)
   VAR
