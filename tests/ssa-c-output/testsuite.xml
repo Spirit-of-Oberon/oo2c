@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; generic51">-->
+  select ="&SetupTestCasesWithOut; codeMotion1 codeMotion2 codeMotion3">-->
   
   &TestSetupWithOut;
     
@@ -296,6 +296,24 @@
 
     <test id="generic51" type="run" file="Generic51.Mod">
       Qualified pointer types may alias as well.
+    </test>
+
+<!-- this test fails with the current code scheduler:
+    <test id="codeMotion1" type="accept" file="CodeMotion1.Mod">
+      The value <code>x^.value</code> must not be moved outside the
+      <code>IF</code> statement, because otherwise its evaluation may
+      terminate the program with a segmentation violation.
+    </test>
+-->
+    <test id="codeMotion2" type="accept" file="CodeMotion2.Mod">
+      The value <code>x^.value</code> is computed at the top-most
+      level of the loop and is at the same time loop-invariant.  It
+      should be moved outside the loop.
+    </test>
+    <test id="codeMotion3" type="accept" file="CodeMotion3.Mod">
+      The value <code>x^.value</code> is computed outside the loop,
+      and for performance reasons its computation should stay outside
+      the loop.
     </test>
   </testcases>
 </testsuite-ext>
