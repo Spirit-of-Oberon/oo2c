@@ -14,6 +14,7 @@ COMPILE = $(OOC_DEV_ROOT)/$(TEST_DRIVER) -r $(OOC_DEV_ROOT)/lib -r wd --use-ssa
 
 # command to generate assembley output from C
 CCC = gcc $(CCFLAGS) -O2 -S -I$(LIB)/src -I$(LIB)/obj -Iwd/obj
+CCC1 = gcc $(CCFLAGS) -O2 -S -I/usr/local/lib/oo2c/lib -I/usr/local/lib/oo2c/obj -Iwd1/obj
 
 # benchmarks to test for ASM output
 BENCHMARKS = FFT Sort
@@ -33,7 +34,7 @@ setup:
 
 setup-ooc1:
 	rm -rf wd1
-	mkdir wd1 wd1/obj wd1/sym wd1/exe
+	mkdir wd1 wd1/obj wd1/sym wd1/asm wd1/exe
 
 compile-ooc1: setup-ooc1
 	$(COMPILE) --make Benchmark
@@ -50,6 +51,20 @@ asm: compile
 	  $(CCC) wd/obj/$$i.c -o wd/asm/$$i.s; \
 	  $(CCC) wd/src/$${i}C.c -o wd/asm/$${i}C.s; \
           diff -yd wd/asm/$$i.s wd/asm/$${i}C.s > wd/asm/$$i.diff; \
+          true; \
+	done
+
+asm-ooc1: compile-ooc1
+	for i in $(BENCHMARKS); do \
+	  $(CCC1) wd1/obj/$$i.c -o wd1/asm/$$i.s; \
+	  $(CCC1) src/$${i}C.c -o wd1/asm/$${i}C.s; \
+          diff -yd wd1/asm/$$i.s wd1/asm/$${i}C.s > wd/asm/$$i.diff; \
+          true; \
+	done
+
+asm-diff: asm asm-ooc1
+	for i in $(BENCHMARKS); do \
+          diff -yd wd/asm/$$i.s wd1/asm/$$i.s > wd/asm/$$i.v2.diff; \
           true; \
 	done
 
