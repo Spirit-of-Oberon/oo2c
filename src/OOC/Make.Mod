@@ -200,7 +200,7 @@ PROCEDURE (r: Rules) SetForceUpdate*(forceUpdate: BOOLEAN);
     r.forceUpdate := forceUpdate;
   END SetForceUpdate;
 
-PROCEDURE (r: Rules) UsageTracking*(extIdent: Object.String8): BOOLEAN;
+PROCEDURE (r: Rules) UsageTracking*(extIdent: STRING): BOOLEAN;
   VAR
     syntaxError: BOOLEAN;
   BEGIN
@@ -787,7 +787,7 @@ RAISES IO.Error;
         OSFiles.makedirs (path, OSFiles.defaultMode, res);
         
         (* prefix option and style sheet argument with command name *)
-        chars := Config.xsltproc.value(StringValue.Value).string.CharsLatin1();
+        chars := Config.xsltproc.value(StringValue.Value).string(Object.String8).CharsLatin1();
         Strings.Insert(chars^, 0, str);
 
         (* append name of XML file *)

@@ -646,9 +646,8 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
           Err(unknownType, elem);
           lastError.SetStringAttrib("type", Msg.GetStringPtr(chars^))
         ELSE
-          chars := stringBuffer(Object.String8).CharsLatin1();
           TRY
-            value.StringToValue(chars^);
+            value.StringToValue(stringBuffer);
           CATCH Exception.ParseError:
             Err(invalidValue, elem);
             SetReason(Exception.Current());
@@ -1080,7 +1079,7 @@ PROCEDURE ProcessRepository (root: Parser.Element;
     RETURN rep;
   END ProcessRepository;
 
-PROCEDURE ParseFile(fileName: Object.String8; requirePackage: BOOLEAN;
+PROCEDURE ParseFile(fileName: STRING; requirePackage: BOOLEAN;
                     VAR errList: Error.List): Rep.PkgInfo
 RAISES IO.Error;
   VAR
@@ -1187,7 +1186,7 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
     w.EndTag();
   END WriteKeyValue;
 
-PROCEDURE WritePackage*(pkg: Package; targetDir: Object.String8)
+PROCEDURE WritePackage*(pkg: Package; targetDir: STRING)
 RAISES IO.Error;
   VAR
     b: StringBuffer.StringBuffer;
@@ -1291,13 +1290,12 @@ RAISES IO.Error;
     i := ProcessManagement.system(str^);
   END WritePackage;
 
-PROCEDURE WriteRepository*(rep: Repository; targetDir: Object.String8)
+PROCEDURE WriteRepository*(rep: Repository; targetDir: STRING)
 RAISES IO.Error;
   VAR
     str: URIBuffer;
-    fileName: Object.String8;
+    fileName: STRING;
     chars: Object.CharsLatin1;
-    s: STRING;
     f: IO.ByteChannel;
     w: Writer.Writer;
     i: LONGINT;
@@ -1310,11 +1308,10 @@ RAISES IO.Error;
     END WriteInstalledPkg;
 
   BEGIN
-    s := targetDir+pkgInfoFile;
-    fileName := s(Object.String8);
+    fileName := targetDir+pkgInfoFile;
     
     Logger.WriteFileName(fileName);
-    f := FileChannel.Open(fileName,
+    f := FileChannel.Open(fileName(Object.String8),
                           {FileChannel.write, FileChannel.create,
                            FileChannel.truncate});
     w := Writer.New(f, Latin1.factory, TRUE, 2);
@@ -1329,14 +1326,14 @@ RAISES IO.Error;
     w.EndOfText();
     f.Close();
 
-    chars := fileName.CharsLatin1();
+    chars := fileName(Object.String8).CharsLatin1();
     COPY(chars^, str);
     Strings.Insert("chmod 644 ", 0, str);
     Logger.ShellCommand(str);
     i := ProcessManagement.system(str);
   END WriteRepository;
 
-PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: Object.String8;
+PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: STRING;
                             VAR cmd: ARRAY OF CHAR);
   VAR
     b: StringBuffer.StringBuffer;
@@ -1353,7 +1350,7 @@ PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: Object.String8;
     COPY(chars^, cmd);
   END RemovePkgInfoCmd;
 
-PROCEDURE GetPkgInfo*(targetDir: Object.String8; pkgName: STRING;
+PROCEDURE GetPkgInfo*(targetDir: STRING; pkgName: STRING;
                       VAR errList: Error.List): Package
 RAISES IO.Error;
   VAR
@@ -1372,7 +1369,7 @@ RAISES IO.Error;
     str := sb.ToString();
     chars := sb.CharsLatin1();
     errList := Error.NewList(chars^);
-    pkgInfo := ParseFile(str(Object.String8), TRUE, errList);
+    pkgInfo := ParseFile(str, TRUE, errList);
     IF (pkgInfo # NIL) THEN
       RETURN pkgInfo(Package);
     ELSE
@@ -1380,19 +1377,17 @@ RAISES IO.Error;
     END;
   END GetPkgInfo;
 
-PROCEDURE GetRepository*(targetDir: Object.String8;
+PROCEDURE GetRepository*(targetDir: STRING;
                          VAR errList: Error.List): Repository
 RAISES IO.Error;
   VAR
-    fileName: Object.String8;
-    s: STRING;
+    fileName: STRING;
     pkgInfo: Rep.PkgInfo;
     chars: Object.CharsLatin1;
   BEGIN
-    s := targetDir+pkgInfoFile;
-    fileName := s(Object.String8);
+    fileName := targetDir+pkgInfoFile;
     
-    chars := fileName.CharsLatin1();
+    chars := fileName(Object.String8).CharsLatin1();
     errList := Error.NewList(chars^);
     pkgInfo := ParseFile(fileName, FALSE, errList);
     IF (pkgInfo # NIL) THEN
@@ -1402,11 +1397,10 @@ RAISES IO.Error;
     END;
   END GetRepository;
 
-PROCEDURE UpdateRepository*(targetDir: Object.String8): BOOLEAN
+PROCEDURE UpdateRepository*(targetDir: STRING): BOOLEAN
 RAISES IO.Error;
   VAR
-    dirName, fileName: Object.String8;
-    s: STRING;
+    dirName, fileName: STRING;
     chars: Object.CharsLatin1;
     files: OSFiles.NameArray;
     res: Msg.Msg;
@@ -1415,24 +1409,22 @@ RAISES IO.Error;
     pkg: Rep.PkgInfo;
     repository: Repository;
     
-  PROCEDURE IsPkgInfo(name: Object.String8): BOOLEAN;
+  PROCEDURE IsPkgInfo(name: STRING): BOOLEAN;
     BEGIN
       RETURN name.EndsWith(".xml");
     END IsPkgInfo;
   
   BEGIN
-    s := targetDir+pkgInfoSubdir;
-    dirName := s(Object.String8);
-    chars := dirName.CharsLatin1();
+    dirName := targetDir+pkgInfoSubdir;
+    chars := dirName(Object.String8).CharsLatin1();
     
     files := OSFiles.listdir(chars^, res);
     IF (res = NIL) THEN
       repository := NewRepository();
       FOR i := 0 TO LEN(files^)-1 DO
         IF IsPkgInfo(files[i]) THEN
-          s := dirName+"/"+files[i];
-          fileName := s(Object.String8);
-          chars := fileName.CharsLatin1();
+          fileName := dirName+"/"+files[i];
+          chars := fileName(Object.String8).CharsLatin1();
           
           errList := Error.NewList(chars^);
           pkg := ParseFile(fileName, TRUE, errList);

@@ -1,7 +1,7 @@
 MODULE Config:Value:Boolean;
 
 IMPORT
-  Exception, Strings, ConfigValue := Config:Value;
+  Exception, ConfigValue := Config:Value;
 
 
 TYPE
@@ -22,31 +22,30 @@ PROCEDURE New* (boolean: Type): Value;
     RETURN s
   END New;
 
-PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String)
+PROCEDURE (v: Value) StringToValue* (str: STRING)
 RAISES Exception.ParseError;
   VAR
-    i, len, start: INTEGER;
+    i, start: LONGINT;
+    strip: STRING;
   BEGIN
     (* strip leading whitespace from `str' *)
     i := 0;
-    WHILE (str[i] # 0X) & (str[i] <= " ") DO
+    WHILE (i # str.length) & (str.CharAt(i) <= " ") DO
       INC (i)
     END;
     start := i;
-    Strings.Delete (str, 0, i);
     
     (* strip trailing whitespace from `str' *)
-    len := Strings.Length (str);
-    i := len;
-    WHILE (i > 0) & (str[i-1] <= " ") DO
+    i := str.length;
+    WHILE (i > 0) & (str.CharAt(i-1) <= " ") DO
       DEC (i)
     END;
-    Strings.Delete (str, i, len-i);
     
-    IF (str = "TRUE") THEN
-      v. boolean := TRUE;
-    ELSIF (str = "FALSE") THEN
-      v. boolean := FALSE;
+    strip := str.Substring(start, i);
+    IF strip.Equals("TRUE") THEN
+      v.boolean := TRUE;
+    ELSIF strip.Equals("FALSE") THEN
+      v.boolean := FALSE;
     ELSE
       RAISE(NEW(Exception.ParseError, ConfigValue.wrongFormat, start));
     END

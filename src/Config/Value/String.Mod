@@ -5,7 +5,7 @@ IMPORT
 
 
 TYPE
-  Type* = Object.String8;
+  Type* = STRING;
   Value* = POINTER TO ValueDesc;
   ValueDesc = RECORD
     (ConfigValue.ValueDesc)
@@ -21,9 +21,9 @@ PROCEDURE New* (str: Object.String8): Value;
     RETURN s
   END New;
 
-PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String);
+PROCEDURE (v: Value) StringToValue* (str: STRING);
   BEGIN
-    v. string := Object.NewLatin1(str);
+    v.string := str;
   END StringToValue;
 
 PROCEDURE (v: Value) ValueToString*(): STRING;

@@ -193,7 +193,6 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     name, type: DTD.String;
     lastError: Msg.Msg;
     name8: STRING;
-    valueString: ARRAY 1024 OF CHAR;
     newValue: Value.Value;
     option: Option;
     i: LONGINT;
@@ -240,11 +239,8 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
               lastError. SetLStringAttrib ("name", Msg.GetLStringPtr (name^))
             ELSE
               parserString := node. GetCharDataContent();
-              (* ... get rid of this Short() once Value.String and
-                 XML.String are the same *)
-              LongStrings.Short (parserString^, "?", valueString);
               TRY
-                option. value. StringToValue (valueString);
+                option.value.StringToValue(Object.NewUCS2(parserString^));
               CATCH Exception.ParseError:
                 Err (invalidValue, node);
                 SetReason(Exception.Current());
@@ -284,11 +280,8 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
                 lastError. SetLStringAttrib ("type", Msg.GetLStringPtr (type^))
               ELSE
                 parserString := node. GetCharDataContent();
-                (* ... get rid of this Short() once Value.String and
-                   XML.String are the same *)
-                LongStrings.Short (parserString^, "?", valueString);
                 TRY
-                  newValue. StringToValue (valueString);
+                  newValue.StringToValue(Object.NewUCS2(parserString^));
                   option := s. Set (name8, newValue);
                 CATCH Exception.ParseError:
                   Err (invalidValue, node);

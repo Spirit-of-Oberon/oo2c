@@ -31,7 +31,7 @@ PROCEDURE OptionToMatcher (option: Options.Option; cmdLineName: ARRAY OF CHAR): 
   VAR
     matcher: StringSearch.Matcher;
   BEGIN
-    matcher := RegexpDFA.factory.Compile(option.value(StringValue.Value).string, {});
+    matcher := RegexpDFA.factory.Compile(option.value(StringValue.Value).string(Object.String8), {});
     IF (matcher = NIL) THEN
       Err.String ("Warning: Cannot parse regular expression in ");
       Err.String (cmdLineName);

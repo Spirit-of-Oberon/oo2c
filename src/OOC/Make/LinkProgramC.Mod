@@ -175,6 +175,7 @@ RAISES IO.Error;
     importedLibsList: ArrayList.ArrayList;
     objectFile, outputFile: Repository.FileId;
     libraryName: STRING;
+    str8: Object.String8;
     import: Repository.Module;
     extLibs: Object.StringArrayPtr;
     chars: Object.CharsLatin1;
@@ -245,7 +246,8 @@ RAISES IO.Error;
       Strings.Append (chars^, str);
     END;
     Strings.Append (" ", str);
-    chars := CCompiler.libs.value(StringValue.Value).string.CharsLatin1();
+    str8 := CCompiler.libs.value(StringValue.Value).string.ToString8("_");
+    chars := str8.CharsLatin1();
     Strings.Append (chars^, str);
     
     Out.String (str);

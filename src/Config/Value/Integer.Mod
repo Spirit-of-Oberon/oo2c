@@ -1,7 +1,7 @@
 MODULE Config:Value:Integer;
 
 IMPORT
-  Object, Exception, Strings, IntStr, ConfigValue := Config:Value;
+  Object, Exception, IntStr, ConfigValue := Config:Value;
 
 
 TYPE
@@ -22,30 +22,33 @@ PROCEDURE New* (int: Type): Value;
     RETURN s
   END New;
 
-PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String)
+PROCEDURE (v: Value) StringToValue* (str: STRING)
 RAISES Exception.ParseError;
   VAR
+    strip: STRING;
+    str8: Object.String8;
+    chars: Object.CharsLatin1;
     int: Type;
     res: IntStr.ConvResults;
-    i, len, start: INTEGER;
+    i, start: LONGINT;
   BEGIN
     (* strip leading whitespace from `str' *)
     i := 0;
-    WHILE (str[i] # 0X) & (str[i] <= " ") DO
+    WHILE (i # str.length) & (str.CharAt(i) <= " ") DO
       INC (i)
     END;
     start := i;
-    Strings.Delete (str, 0, i);
     
     (* strip trailing whitespace from `str' *)
-    len := Strings.Length (str);
-    i := len;
-    WHILE (i > 0) & (str[i-1] <= " ") DO
+    i := str.length;
+    WHILE (i > 0) & (str.CharAt(i-1) <= " ") DO
       DEC (i)
     END;
-    Strings.Delete (str, i, len-i);
+    strip := str.Substring(start, i);
+    str8 := strip.ToString8("?");
+    chars := str8.CharsLatin1();
     
-    IntStr.StrToInt (str, int, res);
+    IntStr.StrToInt (chars^, int, res);
     CASE res OF
     | IntStr.strAllRight:
       v. integer := int;

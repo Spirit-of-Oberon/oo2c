@@ -23,7 +23,7 @@ CONST
   empty* = "Value is empty";
 
 
-PROCEDURE (v: Value) [ABSTRACT] StringToValue*(str: String)
+PROCEDURE (v: Value) [ABSTRACT] StringToValue*(str: STRING)
 RAISES Exception.ParseError;
   END StringToValue;
 

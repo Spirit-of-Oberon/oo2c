@@ -35,11 +35,12 @@ PROCEDURE HaveLibtool*(): BOOLEAN;
     RETURN ~libtool.value(StringValue.Value).string.Equals("no");
   END HaveLibtool;
 
-PROCEDURE Append(str: Object.String8; VAR cmd: ARRAY OF CHAR);
+PROCEDURE Append(str: STRING; VAR cmd: ARRAY OF CHAR);
   VAR
     chars: Object.CharsLatin1;
   BEGIN
-    chars := str.CharsLatin1();
+    str := str.ToString8("?");
+    chars := str(Object.String8).CharsLatin1();
     Strings.Append(chars^, cmd);
   END Append;
 

@@ -150,17 +150,15 @@ RAISES IO.Error;
     module: Rep.Module;
     installObjects: BOOLEAN;
 
-  PROCEDURE InstallDirectory(prefix, path: Object.String8): BOOLEAN;
+  PROCEDURE InstallDirectory(prefix, path: STRING): BOOLEAN;
     VAR
       cmd: Make.ShellCommand;
-      str: STRING;
       chars: Object.CharsLatin1;
     BEGIN
       IF (prefix.length # 0) THEN
-        str := prefix+"/"+path;
-        path := str(Object.String8);
+        path := prefix+"/"+path;
       END;
-      chars := path.CharsLatin1();
+      chars := path(Object.String8).CharsLatin1();
       
       CCompiler.InstallDirectoryCmd(chars^, cmd);
       Logger.ShellCommand(cmd);

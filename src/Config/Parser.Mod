@@ -231,7 +231,7 @@ PROCEDURE (b: Builder) Characters* (VAR chars: DTD.StringVar;
 
 
 
-PROCEDURE NewFile* (filePath: Object.String8): Parser
+PROCEDURE NewFile* (filePath: STRING): Parser
 RAISES IO.Error;
   VAR
     p: Parser;
@@ -239,7 +239,7 @@ RAISES IO.Error;
   BEGIN
     NEW (p);
     p. builder := NewBuilder();
-    chars := filePath.CharsLatin1();
+    chars := filePath(Object.String8).CharsLatin1();
     p. xmlParser := XMLParser.NewFile (chars^, NIL, NIL, NIL,
                                        p. builder);
     RETURN p
