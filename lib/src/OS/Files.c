@@ -8,6 +8,10 @@
 #include <dirent.h>
 #include <limits.h>
 
+#ifndef NAME_MAX
+#define NAME_MAX PATH_MAX
+#endif
+
 #include "__oo2c.h"
 #include "__config.h"
 #include "OS/Files.d"
