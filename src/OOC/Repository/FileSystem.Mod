@@ -89,32 +89,53 @@ PROCEDURE (rep: Repository) GetModule* (moduleName: ARRAY OF CHAR;
                                  srcFileOverride: URI.HierarchicalURI): Module;
 (* result is NIL in case of error *)
   VAR
-    path, str: Rep.URIBuffer;
+    str: Rep.URIBuffer;
     res: URIError.Msg;
     uri: URI.URI;
+  
+  PROCEDURE GetURI (fileId: Rep.FileId; VAR res: URIError.Msg): URI.URI;
+    VAR
+      path, str: Rep.URIBuffer;
+    BEGIN
+      (* assemble file name from base URI, module name, and module suffix *)
+      rep. GetDefaultSubdir (fileId, path);
+      IF (path # "") & (path[Strings.Length (path)-1] # "/") THEN
+        Strings.Append ("/", path)
+      END;
+      COPY (moduleName, str);
+      ModuleToFileName (str);
+      Strings.Append (str, path);
+      rep. GetDefaultSuffix (fileId, str);
+      Strings.Append (str, path);
+      RETURN URIParser.NewURI (path, rep. baseURI, res);
+    END GetURI;
+  
   BEGIN
-    (* assemble file name from base URI, module name, and module suffix *)
-    rep. GetDefaultSubdir (Rep.modModuleSource, path);
-    IF (path # "") & (path[Strings.Length (path)-1] # "/") THEN
-      Strings.Append ("/", path)
-    END;
-    COPY (moduleName, str);
-    ModuleToFileName (str);
-    Strings.Append (str, path);
-    rep. GetDefaultSuffix (Rep.modModuleSource, str);
-    Strings.Append (str, path);
-    uri := URIParser.NewURI (path, rep. baseURI, res);
+    uri := GetURI (Rep.modModuleSource, res);
     
     IF (res # NIL) THEN
       RETURN NIL
     ELSIF (srcFileOverride # NIL) THEN
       RETURN NewModule (rep, moduleName, srcFileOverride)
     ELSE
+      (* check if the module's source code is located in this repository *)
       uri(FileURI.URI). GetPath (str);
       IF Files.Exists (str) THEN
         RETURN NewModule (rep, moduleName, srcFileOverride)
       ELSE
-        RETURN NIL
+        (* cannot find source code, try to find symbol file *)
+        uri := GetURI (Rep.modSymbolFile, res);
+        IF (res # NIL) THEN
+          RETURN NIL
+        ELSE
+          uri(FileURI.URI). GetPath (str);
+          IF Files.Exists (str) THEN
+            RETURN NewModule (rep, moduleName, srcFileOverride)
+          ELSE
+            (* cannot find source code OR symbol file *)
+            RETURN NIL
+          END
+        END
       END
     END
   END GetModule;

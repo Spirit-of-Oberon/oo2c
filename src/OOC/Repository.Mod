@@ -189,8 +189,10 @@ PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName;
 PROCEDURE (rep: Repository) [ABSTRACT] GetModule* (moduleName: ARRAY OF CHAR; 
                                  srcFileOverride: URI.HierarchicalURI): Module;
 (**Tries to locate a module with the name @oparam{moduleName} in the repository
-   @oparam{rep}.  On success, the function returns the module object, and
-   result is @code{NIL} if the repository does not include this module.
+   @oparam{rep}.  For this it checks if the module's source file or symbol file
+   exists in the repository.  On success, the function returns the module
+   object, and result is @code{NIL} if the repository does not include this
+   module.
 
    If @oparam{srcFileOverride} is not @code{NIL}, then no check is performed if
    the module's sources actually exists.  Instead, the value of
