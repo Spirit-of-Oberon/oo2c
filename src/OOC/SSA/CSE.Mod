@@ -138,10 +138,11 @@ PROCEDURE (p: Partition) Add (instr: SSA.Instr);
 PROCEDURE Transform* (pb: SSA.ProcBlock);
   CONST
     numOpcodes = Opcode.labels+1;
+    numSubclasses = Opcode.scReal64+1;
   VAR
     pList, worklist: Partition;
-    opcodes: ARRAY numOpcodes OF Partition;
-    i: LONGINT;
+    opcodes: ARRAY numOpcodes, numSubclasses OF Partition;
+    i, j: LONGINT;
     instr: SSA.Instr;
     p: Partition;
     
@@ -226,6 +227,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       END MarkUnchanged;
     
     BEGIN
+      (* Iterate over the results in iList.  First over all results at position
+         0, then over all existing results at position 1, and so on.  With each
+         iteration, iList[0..size-1] holds the remaining results, with size
+         shrinking to 0 in the last iteration.  *)
       WHILE (size # 0) DO
         nextResultCount := 0;
         FOR i := 0 TO size-1 DO
@@ -240,6 +245,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           END;
           
           IF (res. nextResult # NIL) THEN
+            (* if there is a result after `res', then add it back into iList,
+               to be tackled in the next iteration *)
             iList[nextResultCount] := res. nextResult;
             INC (nextResultCount);
           END;
@@ -316,7 +323,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
   BEGIN
     pb. SetMarkers (NIL, 0);
     FOR i := 0 TO numOpcodes-1 DO
-      opcodes[i] := NIL;
+      FOR j := 0 TO numSubclasses-1 DO
+        opcodes[i,j] := NIL;
+      END;
     END;
     worklist := NIL;
     pList := NIL;
@@ -330,10 +339,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
            instruction is therefore only equivalent to itself  *)
         p := AddPartition();
       ELSE
-        p := opcodes[instr. opcode];
+        p := opcodes[instr.opcode, instr.subclass];
         IF (p = NIL) THEN
           p := AddPartition();
-          opcodes[instr. opcode] := p;
+          opcodes[instr. opcode, instr.subclass] := p;
         END;
       END;
       p. Add(instr);
