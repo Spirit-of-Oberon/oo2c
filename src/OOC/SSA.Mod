@@ -801,6 +801,19 @@ PROCEDURE (instr: Instr) IsConst*(): BOOLEAN;
     END;
   END IsConst;
 
+PROCEDURE (instr: Instr) UniqueResult*(): BOOLEAN;
+(**Return @code{TRUE} if @oparam{instr} produces a unique result, and cannot
+   be merged with another instruction.  An example for this is a read access
+   of a volatile variable, or a call to the predefined procedure @code{NEW}. *)
+  BEGIN
+    CASE instr. opcode OF
+    | Opcode.newObject, Opcode.exit, Opcode.return:
+      RETURN TRUE;
+    ELSE
+      RETURN FALSE;
+    END;
+  END UniqueResult;
+
 PROCEDURE (instr: Instr) IsSync*(): BOOLEAN;
 (**Returns @code{TRUE} if @oparam{instr} is a synchronization point for the
    global program state @var{store}, but does not change it itself.  That is,
