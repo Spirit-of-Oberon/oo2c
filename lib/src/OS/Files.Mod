@@ -32,6 +32,10 @@ TYPE
   Mode* = LONGINT;
   (**File creation mask.  *)
   NameArray* = POINTER TO ARRAY OF STRING;
+  Time* = LONGREAL;
+  (**Number of seconds elapsed since 00:00:00 on January 1, 1970, Coordinated
+     Universal Time.  Subsecond resolution depends on the function used to
+     retrieve the time value, and the operating system in use.  *)
   
 CONST
   defaultMode* = 0*512 + 7*64 + 7*8 + 7*1;
@@ -67,4 +71,8 @@ RAISES IO.Error;
 PROCEDURE Exists*(path: STRING): BOOLEAN;
 (**Return @code{TRUE} if an entity @oparam{path} exists.  *)
 
+PROCEDURE MTime*(path: STRING): Time
+RAISES IO.Error;
+(**Return modification time of the indicated file.  *)
+  
 END OS:Files.

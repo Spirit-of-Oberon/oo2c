@@ -151,5 +151,21 @@ OOC_BOOLEAN OS_Files__Exists(Object__String path) {
   return (stat(OS_Path__Encode(path), &buf) == 0);
 }
 
+OS_Files__Time OS_Files__MTime(Object__String path) {
+  struct stat buf;
+  int rc;
+  
+  rc = stat(OS_Path__Encode(path), &buf);
+  if (rc) {
+    IO_StdChannels__IOError(path);
+  } else {
+#if HAVE_STRUCT_STAT_USEC
+    return (OS_Files__Time)buf.st_mtime + buf.st_mtime_usec/1.0E6;
+#else
+    return (OS_Files__Time)buf.st_mtime;
+#endif
+  }
+}
+
 void OOC_OS_Files_init(void) {
 }
