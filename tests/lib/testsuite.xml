@@ -253,7 +253,6 @@
       <code>LONGREAL</code>.  Only values that can be represented as
       normalized numbers.
     </test>
-
     <test id="lib_LRealConv_ValueReal2" type="run"
           file="LibLRealConvValueReal2.Mod"
 	  output="LibLRealConvValueReal2.Ref">
@@ -261,6 +260,15 @@
       <code>LONGREAL</code>.  Only values that can be represented as
       denormalized numbers.
     </test>
+    <test id="lib_LRealConv_ValueReal3" type="run" relevance="informal"
+          file="LibLRealConvValueReal3.Mod"
+          output="LibLRealConvValueReal3.Ref">
+      A special case of <code>lib_LRealConv_ValueReal1</code>: Test if
+      the value <code>-0.0</code> is indeed written with a minus
+      sign.  Because some C libraries omit the sign, this test is 
+      informal.
+    </test>
+
 
     <test id="lib_LRealStr_StrToReal1" type="run"
           file="LibLRealStrStrToReal1.Mod"
@@ -354,7 +362,6 @@
       <code>REAL</code>.  Only values that can be represented as
       normalized numbers.
     </test>
-
     <test id="lib_RealConv_ValueReal2" type="run"
           file="LibRealConvValueReal2.Mod"
 	  output="LibRealConvValueReal2.Ref">
@@ -362,6 +369,15 @@
       <code>REAL</code>.  Only values that can be represented as
       denormalized numbers.
     </test>
+    <test id="lib_RealConv_ValueReal3" type="run" relevance="informal"
+          file="LibRealConvValueReal3.Mod"
+          output="LibRealConvValueReal3.Ref">
+      A special case of <code>lib_RealConv_ValueReal1</code>: Test if
+      the value <code>-0.0</code> is indeed written with a minus
+      sign.  Because some C libraries omit the sign, this test is 
+      informal.
+    </test>
+    
 
     <test id="lib_RealStr_StrToReal1" type="run"
           file="LibRealStrStrToReal1.Mod"

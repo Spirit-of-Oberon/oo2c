@@ -13,7 +13,6 @@ PROCEDURE Value (str: ARRAY OF CHAR);
 
 PROCEDURE Test* ();
   BEGIN
-    Value (" -0.0");
     Value (" +0.0");
     Value ("-1.0");
     Value ("+1.0");
