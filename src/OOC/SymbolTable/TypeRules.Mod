@@ -38,6 +38,13 @@ PROCEDURE IsNamedType* (type: Sym.Type): BOOLEAN;
     RETURN (type. namingDecl # NIL)
   END IsNamedType;
 
+PROCEDURE IsPredefType* (type: Sym.Type; id: Sym.PredefId): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} is the predefined type
+   @oparam{id}.  *)
+  BEGIN
+    RETURN (type IS Sym.PredefType) & (type(Sym.PredefType). id = id);
+  END IsPredefType;
+
 PROCEDURE IsScalarType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is a scalar type, that is,
    if it is a predefined type, a pointer type, or a procedure type.  Result
