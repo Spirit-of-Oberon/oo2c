@@ -10,12 +10,25 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; for1 for2 for3 for4 for5 for6 for7
-  for8 for9 for10" >-->
+  select ="&SetupTestCasesWithOut; return1 return2 return3 return4">-->
 
   &TestSetupWithOut;
     
   <testcases profile="OOC2 Development" default-lang="O2">
+    <test id="return1" type="reject" file="Return1.Mod">
+      <code>RETURN</code> of a procedure has an expression.
+    </test>
+    <test id="return2" type="reject" file="Return2.Mod">
+      <code>RETURN</code> of a function procedure no expression.
+    </test>
+    <test id="return3" type="reject" file="Return3.Mod">
+      Value of the <code>RETURN</code> is not assignment compatible to
+      the function's result type.
+    </test>
+    <test id="return4" type="reject" file="Return4.Mod">
+      <code>RETURN</code> in the module body has an expression.
+    </test>
+    
     <test id="function1" type="run"
       file="../compile/HOTFunction1.Mod" output="../compile/HOTFunction1.Ref">
       A very simple function: No input arguments, and a return
@@ -703,6 +716,11 @@
   <processor-info processor-name="TestCompile">
     <!--<reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>-->
     
+    <reject-info id="return1" pos="RETURN %123" msg="RETURN must not provide a result value"/>
+    <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>
+    <reject-info id="return3" pos="RETURN %128;" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="return4" pos="RETURN %123" msg="RETURN must not provide a result value"/>
+
     <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>
     <reject-info id="loop7" pos="WHILE str%[i] DO" msg="Expression must be of type BOOLEAN"/>
     <reject-info id="loop8" pos="UNTIL str%[i];" msg="Expression must be of type BOOLEAN"/>

@@ -219,9 +219,9 @@ WARN:
 
 REJECT:
 
-  1) RETURN of a non-function procedure has an expr
-  2) RETURN of a function procedure has no expr
-  3) expr is not assignment compatible to function result
+  1) RETURN of a non-function procedure has an expr  [Return1, Return4]
+  2) RETURN of a function procedure has no expr  [Return2]
+  3) expr is not assignment compatible to function result  [Return3]
 
 ERROR:
 

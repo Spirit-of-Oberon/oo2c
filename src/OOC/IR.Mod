@@ -930,6 +930,8 @@ CONST
   notVariable = 29;
   invalidStepType = 30;
   stepIsZero = 31;
+  returnWithResult = 32;
+  returnWithoutResult = 33;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1008,6 +1010,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Step value not in type of loop variable"
     | stepIsZero:
       t := "Step value must not be zero"
+    | returnWithResult:
+      t := "RETURN must not provide a result value"
+    | returnWithoutResult:
+      t := "RETURN must provide a result value"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1110,66 +1116,6 @@ PROCEDURE IsPredefType(type : Sym.Type; id : Sym.PredefId) : BOOLEAN;
 BEGIN
   RETURN (type IS Sym.PredefType) & (type(Sym.PredefType).id = id);
 END IsPredefType;
-
-PROCEDURE (b: Builder) CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
-  VAR
-    i: LONGINT;
-
-  PROCEDURE CheckStatm (statm: Statement);
-    VAR
-      i: LONGINT;
-    BEGIN
-      WITH statm: Assert DO
-        (* nothing *)
-      | statm: Assignment DO             (* this includes AssignOp *)
-        (* nothing *)
-      | statm: Call DO
-        (* nothing *)
-      | statm: Copy DO
-        (* nothing *)
-      | statm: CopyParameter DO
-        (* nothing *)
-      | statm: CopyString DO
-        (* nothing *)
-      | statm: Exit DO
-        IF (currentLoop = NIL) THEN
-          b. ErrSym (exitOutsideLoop, statm. sym);
-        ELSE
-          statm. loop := currentLoop;
-        END;
-      | statm: ForStatm DO
-        b. CheckExit (statm. body, currentLoop);
-      | statm: IfStatm DO
-        b. CheckExit (statm. pathTrue, currentLoop);
-        b. CheckExit (statm. pathFalse, currentLoop);
-      | statm: Case DO
-        b. CheckExit (statm. statmSeq, currentLoop);
-      | statm: CaseStatm DO
-        FOR i := 0 TO LEN (statm. caseList^)-1 DO
-          b. CheckExit (statm. caseList[i]. statmSeq, currentLoop);
-        END;
-        b. CheckExit (statm. default, currentLoop);
-      | statm: LoopStatm DO
-        b. CheckExit (statm. body, statm);
-      | statm: RepeatStatm DO
-        b. CheckExit (statm. body, currentLoop);
-      | statm: Return DO
-        (* nothing *)
-      | statm: WhileStatm DO
-        b. CheckExit (statm. body, currentLoop);
-      | statm: WithStatm DO
-        b. CheckExit (statm. pathTrue, currentLoop);
-        b. CheckExit (statm. pathFalse, currentLoop);
-      END;
-    END CheckStatm;
-  
-  BEGIN
-    IF (statmSeq # NIL) THEN
-      FOR i := 0 TO LEN (statmSeq^)-1 DO
-        CheckStatm (statmSeq[i])
-      END;
-    END;
-  END CheckExit;
 
 PROCEDURE ^ (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
 PROCEDURE ^ (b: Builder) NewCopyString* (sym: Symbol; source, dest, maxLength: Expression): CopyString;
@@ -2378,6 +2324,18 @@ BEGIN
   RETURN FALSE
 END WidenToCommon;
 
+PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
+                                    VAR expr: Expression;
+                                    type: Sym.Type);
+(**Takes an expression and a type, and tries to make the expression's value
+   assignment compatible to the type.  If this is not possible, an error
+   is reported.  *)
+  BEGIN
+    IF ~b. WidenForAssign (expr, type) THEN
+      b.ErrSym(incompatibleAssignment, sym);
+    END;
+  END MakeAssignmentCompatible;
+
 (* Operator Class: TypeTag
    ------------------------------------------------------------------------ *)
 
@@ -2637,18 +2595,6 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
     assignment. variable := variable;
     assignment. value := value;
   END InitAssignment;
-
-PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
-                                    VAR expr: Expression;
-                                    type: Sym.Type);
-(**Takes an expression and a type, and tries to make the expression's value
-   assignment compatible to the type.  If this is not possible, an error
-   is reported.  *)
-  BEGIN
-    IF ~b. WidenForAssign (expr, type) THEN
-      b.ErrSym(incompatibleAssignment, sym);
-    END;
-  END MakeAssignmentCompatible;
 
 PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
                                        variable, value: Expression): Statement;
@@ -3239,6 +3185,91 @@ PROCEDURE (withStatm: WithStatm) Accept* (v: Visitor);
 (* Class: Procedure
    ------------------------------------------------------------------------ *)
 
+PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
+                                  statmSeq: StatementSeq;
+                                  currentLoop: LoopStatm);
+(* Check that an @code{EXIT} appears within a @code{LOOP}, and that the
+   result value of a @code{RETURN} statement is valid.  *)
+  
+  PROCEDURE CheckStatmSeq (statmSeq: StatementSeq);
+    VAR
+      i: LONGINT;
+      
+    PROCEDURE CheckStatm (statm: Statement);
+      VAR
+        i: LONGINT;
+      BEGIN
+        WITH statm: Assert DO
+          (* nothing *)
+        | statm: Assignment DO             (* this includes AssignOp *)
+          (* nothing *)
+        | statm: Call DO
+          (* nothing *)
+        | statm: Copy DO
+          (* nothing *)
+        | statm: CopyParameter DO
+          (* nothing *)
+        | statm: CopyString DO
+          (* nothing *)
+        | statm: Exit DO
+          IF (currentLoop = NIL) THEN
+            b. ErrSym (exitOutsideLoop, statm. sym);
+          ELSE
+            statm. loop := currentLoop;
+          END;
+        | statm: ForStatm DO
+          CheckStatmSeq (statm. body);
+        | statm: IfStatm DO
+          CheckStatmSeq (statm. pathTrue);
+          CheckStatmSeq (statm. pathFalse);
+        | statm: Case DO
+          CheckStatmSeq (statm. statmSeq);
+        | statm: CaseStatm DO
+          FOR i := 0 TO LEN (statm. caseList^)-1 DO
+            CheckStatmSeq (statm. caseList[i]. statmSeq);
+          END;
+          CheckStatmSeq (statm. default);
+        | statm: LoopStatm DO
+          b. CheckExit (procDecl, statm. body, statm);
+        | statm: RepeatStatm DO
+          CheckStatmSeq (statm. body);
+        | statm: Return DO
+          IF (procDecl = NIL) OR
+             (procDecl. formalPars. resultType = NIL) THEN
+            (* module body or non-function procedure *)
+            IF (statm. result # NIL) THEN
+              b. ErrSym (returnWithResult, statm. result. sym);
+            END;
+          ELSE
+            (* function procedure *)
+            IF (statm. result = NIL) THEN
+              b. ErrSym (returnWithoutResult, statm. sym);
+            ELSE
+              MakeAssignmentCompatible (b, statm. result. sym, statm. result,
+                                        procDecl. formalPars. resultType);
+            END;
+          END;
+          (* nothing *)
+        | statm: WhileStatm DO
+          CheckStatmSeq (statm. body);
+        | statm: WithStatm DO
+          CheckStatmSeq (statm. pathTrue);
+          CheckStatmSeq (statm. pathFalse);
+        END;
+      END CheckStatm;
+    
+    BEGIN
+      IF (statmSeq # NIL) THEN
+        FOR i := 0 TO LEN (statmSeq^)-1 DO
+          CheckStatm (statmSeq[i])
+        END;
+      END;
+    END CheckStatmSeq;
+
+  BEGIN
+    CheckStatmSeq (statmSeq);
+  END CheckExit;
+
 PROCEDURE InitProcedure* (p: Procedure; sym: Symbol; 
                           decl: Sym.ProcDecl; statmSeq: StatementSeq;
                           checkFunctionResult: BOOLEAN);
@@ -3311,7 +3342,7 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     END AddSetupCode;
   
   BEGIN
-    b. CheckExit (statmSeq, NIL);
+    b. CheckExit (decl, statmSeq, NIL);
     
     NEW (p);
     statmSeq := AddSetupCode (sym, decl, statmSeq);
@@ -3347,7 +3378,7 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
   VAR
     m: Module;
   BEGIN
-    b. CheckExit (statmSeq, NIL);
+    b. CheckExit (NIL, statmSeq, NIL);
     
     NEW (m);
     InitModule (m, sym, name, procList,
