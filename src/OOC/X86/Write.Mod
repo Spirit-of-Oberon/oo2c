@@ -416,6 +416,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           type := instr.resultList.type;
           IF (s.type >= 0) THEN          (* string constant *)
             sb.Append(w.StringSymbol(value(Boxed.String).value, s.type));
+          ELSIF (value = NIL) THEN
+            sb.Append("0");
           ELSE
             WITH value: Boxed.String DO
               sb.AppendInt(ORD(value.value.CharAt(0)));
