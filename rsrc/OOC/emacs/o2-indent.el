@@ -337,8 +337,8 @@ increments the indentation of the following lines.")
 Non-nil is returned if point is on row n (n > 1) of an expression that
 spans several lines.  Else nil is returned."
   (save-excursion
-    (back-to-indentation)
-    (or (looking-at ob2-operator-re)
+    (beginning-of-line)
+    (or (looking-at (concat "[ \t]*" ob2-operator-re))
 	(and (not (bobp))
 	     (not (looking-at ob2-indent-begin-inside-body-re))
 	     (save-excursion
