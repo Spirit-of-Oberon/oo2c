@@ -1,7 +1,7 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
-  ADT:Dictionary, 
+  ADT:String, ADT:Dictionary, 
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -10,129 +10,135 @@ CONST
   modeWriteExported = 0;
   modeWritePrivate = 1;
   modeWriteFctDef = 2;
+  modeFormalParameter = 3;
 
+
+PROCEDURE ^ ConvertDecl (w: DeclWriter.Writer;
+                         item: Sym.Declaration;
+                         mode: SHORTINT): DeclWriter.Declaration;
+
+PROCEDURE ConvertType (w: DeclWriter.Writer;
+                       resolvedType, type: Sym.Type): DeclWriter.Type;
+  VAR
+    ptr: Sym.Item;
+    fct: DeclWriter.Function;
+(*          decl: Sym.Declaration;*)
+
+  PROCEDURE ConvertParam (fct: DeclWriter.Function; param: Sym.VarDecl);
+    VAR
+      decl: DeclWriter.Declaration;
+
+    PROCEDURE AddArrayLength (type: Sym.Type; dim: LONGINT);
+      VAR
+        length: DeclWriter.Declaration;
+      BEGIN
+        IF (type IS Sym.Array) & type(Sym.Array). isOpenArray THEN
+          length := w. NewDeclaration (Naming.NameOfLengthParam (param, dim),
+                                       DeclWriter.tqNone,
+                                       DeclWriter.scAuto,
+                                       w. basicType[DeclWriter.lengthType]);
+          fct. AddParameter (length);
+
+          AddArrayLength (type(Sym.Array). elementType, dim+1)
+        END;
+      END AddArrayLength;
+
+    BEGIN
+      decl := ConvertDecl (w, param, modeFormalParameter);
+      fct. AddParameter (decl);
+      AddArrayLength (param. type, 0);
+    END ConvertParam;
+
+  BEGIN
+    IF (type = NIL) THEN
+      RETURN w. basicType[DeclWriter.void]
+    ELSE
+      WITH type: Sym.PredefType DO
+        CASE type. id OF
+        | Predef.boolean:
+          RETURN w. basicType[DeclWriter.char8]
+        | Predef.char:
+          RETURN w. basicType[DeclWriter.char8]
+        | Predef.longchar:
+          RETURN w. basicType[DeclWriter.char16]
+        | Predef.shortint:
+          RETURN w. basicType[DeclWriter.int8]
+        | Predef.integer:
+          RETURN w. basicType[DeclWriter.int16]
+        | Predef.longint:
+          RETURN w. basicType[DeclWriter.int32]
+        | Predef.real:
+          RETURN w. basicType[DeclWriter.real32]
+        | Predef.longreal:
+          RETURN w. basicType[DeclWriter.real64]
+        | Predef.set:
+          RETURN w. basicType[DeclWriter.uint32]
+
+        | Predef.address:
+          RETURN w. basicType[DeclWriter.int32]
+        | Predef.byte:
+          RETURN w. basicType[DeclWriter.char8]
+        | Predef.ptr:
+          RETURN w. basicType[DeclWriter.ptr]
+        END
+
+        (* nothing *)
+      | type: Sym.TypeName DO
+        IF (type. module = NIL) THEN
+          RETURN ConvertType (w, resolvedType, resolvedType)
+        ELSE
+          ASSERT (FALSE);
+        END;
+(*              IF (type. module = NIL) THEN
+          decl := module. ns. IdentifyLocal (root, type. ident, TRUE)
+          (* this may be NIL if we are looking at the name of a
+             predefined type; in this case, we are done *)
+        ELSE
+          decl := module. ns. IdentifyLocal (root, type. module, TRUE);
+          ASSERT (decl # NIL)
+        END;
+        IF (decl # NIL) THEN
+          ConvertDecl (decl)
+        END*)
+
+      | type: Sym.Pointer DO
+        ASSERT (FALSE)
+(*              ConvertType (type. srcCodeBaseType)*)
+      | type: Sym.FormalPars DO
+        fct := w. NewFunction (ConvertType (w, type. resultType, type. srcCodeResultType));
+        IF (type. receiver # NIL) THEN
+          ConvertParam (fct, type. receiver)
+        END;
+        ptr := type. nestedItems;
+        WHILE (ptr # NIL) DO
+          WITH ptr: Sym.Declaration DO
+            ConvertParam (fct, ptr(Sym.VarDecl))
+          ELSE                     (* ignore non-declarations *)
+          END;
+          ptr := ptr. nextNested
+        END;
+        RETURN fct
+
+      | type: Sym.Array DO
+        ASSERT (type. isOpenArray);
+        RETURN w. NewArray (ConvertType (w, type. elementType, type. srcCodeElementType), -1)
+(*              ConvertType (type. srcCodeElementType)*)
+      | type: Sym.Record DO
+        ASSERT (FALSE)
+(*              IF (type. srcCodeBaseType # NIL) THEN
+          ConvertType (type. srcCodeBaseType)
+        END;
+        ConvertList (type)*)
+      END
+    END
+  END ConvertType;
 
 PROCEDURE ConvertDecl (w: DeclWriter.Writer;
                        item: Sym.Declaration;
                        mode: SHORTINT): DeclWriter.Declaration;
   VAR
     sc: DeclWriter.StorageClass;
-
- PROCEDURE ConvertType (resolvedType, type: Sym.Type): DeclWriter.Type;
-    VAR
-      ptr: Sym.Item;
-      fct: DeclWriter.Function;
-(*          decl: Sym.Declaration;*)
-
-    PROCEDURE ConvertParam (fct: DeclWriter.Function; param: Sym.VarDecl);
-      VAR
-        decl: DeclWriter.Declaration;
-
-      PROCEDURE AddArrayLength (type: Sym.Type; dim: LONGINT);
-        VAR
-          length: DeclWriter.Declaration;
-        BEGIN
-          IF (type IS Sym.Array) & type(Sym.Array). isOpenArray THEN
-            length := w. NewDeclaration (Naming.NameOfLengthParam (param, dim),
-                                         DeclWriter.tqNone,
-                                         DeclWriter.scAuto,
-                                         w. basicType[DeclWriter.lengthType]);
-            fct. AddParameter (length);
-            
-            AddArrayLength (type(Sym.Array). elementType, dim+1)
-          END;
-        END AddArrayLength;
-      
-      BEGIN
-        decl := ConvertDecl (w, param, modeWritePrivate);
-        fct. AddParameter (decl);
-        AddArrayLength (param. type, 0);
-      END ConvertParam;
-    
-    BEGIN
-      IF (type = NIL) THEN
-        RETURN w. basicType[DeclWriter.void]
-      ELSE
-        WITH type: Sym.PredefType DO
-          CASE type. id OF
-          | Predef.boolean:
-            RETURN w. basicType[DeclWriter.char8]
-          | Predef.char:
-            RETURN w. basicType[DeclWriter.char8]
-          | Predef.longchar:
-            RETURN w. basicType[DeclWriter.char16]
-          | Predef.shortint:
-            RETURN w. basicType[DeclWriter.int8]
-          | Predef.integer:
-            RETURN w. basicType[DeclWriter.int16]
-          | Predef.longint:
-            RETURN w. basicType[DeclWriter.int32]
-          | Predef.real:
-            RETURN w. basicType[DeclWriter.real32]
-          | Predef.longreal:
-            RETURN w. basicType[DeclWriter.real64]
-          | Predef.set:
-            RETURN w. basicType[DeclWriter.uint32]
-
-          | Predef.address:
-            RETURN w. basicType[DeclWriter.int32]
-          | Predef.byte:
-            RETURN w. basicType[DeclWriter.char8]
-          | Predef.ptr:
-            RETURN w. basicType[DeclWriter.ptr]
-          END
-
-          (* nothing *)
-        | type: Sym.TypeName DO
-          IF (type. module = NIL) THEN
-            RETURN ConvertType (resolvedType, resolvedType)
-          ELSE
-            ASSERT (FALSE);
-          END;
-(*              IF (type. module = NIL) THEN
-            decl := module. ns. IdentifyLocal (root, type. ident, TRUE)
-            (* this may be NIL if we are looking at the name of a
-               predefined type; in this case, we are done *)
-          ELSE
-            decl := module. ns. IdentifyLocal (root, type. module, TRUE);
-            ASSERT (decl # NIL)
-          END;
-          IF (decl # NIL) THEN
-            ConvertDecl (decl)
-          END*)
-
-        | type: Sym.Pointer DO
-          ASSERT (FALSE)
-(*              ConvertType (type. srcCodeBaseType)*)
-        | type: Sym.FormalPars DO
-          fct := w. NewFunction (ConvertType (type. resultType, type. srcCodeResultType));
-          IF (type. receiver # NIL) THEN
-            ConvertParam (fct, type. receiver)
-          END;
-          ptr := type. nestedItems;
-          WHILE (ptr # NIL) DO
-            WITH ptr: Sym.Declaration DO
-              ConvertParam (fct, ptr(Sym.VarDecl))
-            ELSE                     (* ignore non-declarations *)
-            END;
-            ptr := ptr. nextNested
-          END;
-          RETURN fct
-
-        | type: Sym.Array DO
-          ASSERT (type. isOpenArray);
-          RETURN w. NewArray (ConvertType (type. elementType, type. srcCodeElementType), -1)
-(*              ConvertType (type. srcCodeElementType)*)
-        | type: Sym.Record DO
-          ASSERT (FALSE)
-(*              IF (type. srcCodeBaseType # NIL) THEN
-            ConvertType (type. srcCodeBaseType)
-          END;
-          ConvertList (type)*)
-        END
-      END
-    END ConvertType;
-
+    name: String.String;
   BEGIN
     WITH item: Sym.ProcDecl DO
       CASE mode OF
@@ -149,7 +155,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       END;
       RETURN w. NewDeclaration
         (Naming.NameOfDeclaration (item), DeclWriter.tqNone, sc,
-         ConvertType (item. formalPars, item. formalPars));
+         ConvertType (w, item. formalPars, item. formalPars));
 
     | item: Sym.ConstDecl DO
       ASSERT (FALSE);
@@ -168,9 +174,17 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
         END
       END;
 
+      name := Naming.NameOfDeclaration (item);
+      IF (mode = modeFormalParameter) &
+         item. isParameter &
+         ~item. isVarParam &
+         item. isPassPerReference THEN
+        name := name. Concat (String.New (Naming.suffixPassPerRef))
+      END;
+      
       RETURN w. NewDeclaration
-        (Naming.NameOfDeclaration (item), DeclWriter.tqNone, sc,
-         ConvertType (item. type, item. srcCodeType))
+        (name, DeclWriter.tqNone, sc,
+         ConvertType (w, item. type, item. srcCodeType))
 
     | item: Sym.FieldDecl DO
       ASSERT (FALSE);
@@ -254,5 +268,33 @@ PROCEDURE GetDecl* (w: DeclWriter.Writer;
   BEGIN
     RETURN ConvertDecl (w, decl, modeWriteFctDef)
   END GetDecl;
+
+PROCEDURE GetTypeRef* (w: DeclWriter.Writer;
+                       type: Sym.Type): DeclWriter.Type;
+(**Creates a C type expression for the object @oparam{type}.  *)
+  BEGIN
+    RETURN ConvertType (w, type, type)
+  END GetTypeRef;
+
+PROCEDURE GetPointerDecl* (w: DeclWriter.Writer;
+                           paramDecl: Sym.VarDecl): DeclWriter.Declaration;
+(**Produces a declaration that defines a pointer to the element type of
+   @oparam{paramDecl}.
+
+   @precond
+   @oparam{varDecl} is a parameter declaration of array type
+   @end precond  *)
+  VAR
+    elemType: Sym.Type;
+  BEGIN
+    elemType := paramDecl. type(Sym.Array). GetNonOpenElementType();
+    
+    RETURN w. NewDeclaration
+        (Naming.NameOfDeclaration (paramDecl),
+         DeclWriter.tqNone,
+         DeclWriter.scAuto,
+         w. NewPointer (DeclWriter.tqNone,
+                        ConvertType (w, elemType, elemType)))
+  END GetPointerDecl;
 
 END OOC:C:ConvertDecl.

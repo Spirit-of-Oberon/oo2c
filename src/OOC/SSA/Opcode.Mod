@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Opcode;
 (*  This modules defines opcodes for SSA instructions.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -195,7 +195,50 @@ CONST
   
   assert* = 24;
   call* = 25;
+  
+  getLength* = 26;
+  (**Retrieves the length of an open array variable for a given dimension.
+     Result is the signed integer of the type corresponding to
+     @oconst{Predef.lengthType}.  The operands of the instruction resemble that
+     of @oconst{get}, with the @var{store} operand replaced with the dimension:
 
+     @table @oconst
+     @item *OOC:SSA:Opnd.dimension
+     Dimension for which the length should be retrieved.
+
+     @item *OOC:SSA:Opnd.readAdr
+     The address from which the value is read.
+
+     @item *OOC:SSA:Opnd.readDesign
+     The symbolic representation of the variable's designator.  Depending on
+     the designator, several successive operands can share this class.  For
+     non-heap variables, the first entry in the designator is a reference to
+     the declaration of the accessed variable.
+     @end table
+
+     The instruction itself represents the result of the operation.  *)
+  
+  copyParameter* = 27;
+  (**Allocates space for a local copy of a value parameter that was passed to
+     the procedure as a reference, and initialiazes the local copy using the
+     data of the caller's argument.  Instructions of this type are a
+     specialization of @oconst{address}, and the instruction objects are
+     instances of @otype{*OOC:SSA.Address}.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA.Opnd.arg
+     If the parameter is an open array, then this argument holds the total
+     number of elements of the array.  This is the product of the length of all
+     open array dimensions.  For all other parameter type, this operand is
+     omitted.
+     @end table
+
+     The result of the instruction is the address of the new copy.  An
+     additional result is the new value of @var{store}.  *)
+  
 CONST
   scNone* = 0;
   (**The operation has no variants.  *)
@@ -219,6 +262,8 @@ CONST
   (**Designates an address or pointer result or operands.  *)
   scBoolean* = scUnsigned8;
   (**Maps to the integer type that is used to store boolean values.  *)
+  scLength* = scSigned32;
+  (**Maps to the integer type that is used to store length of arrays.  *)
 
   scMerge* = 10;
   (**Subclass of a @oconst{select} instruction.  *)
@@ -280,6 +325,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | get: cstr := "get";
     | set: cstr := "set";
     | copy: cstr := "copy";
+    | getLength: cstr := "get-length";
+    | copyParameter: cstr := "copy-parameter";
 
     | add: cstr := "add";
     | subtract: cstr := "subtract";

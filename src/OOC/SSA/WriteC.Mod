@@ -159,6 +159,12 @@ PROCEDURE (w: Writer) FixupHelperVars;
     END;
   END FixupHelperVars;
 
+PROCEDURE (w: Writer) Newline;
+  BEGIN
+    w. WriteLn;
+    w. WriteString ("  ");
+  END Newline;
+
 PROCEDURE Fixup (pb: SSA.ProcBlock);
   VAR
     instr: SSA.Instr;
@@ -194,8 +200,11 @@ PROCEDURE WriteTypeCast (w: DeclWriter.Writer; ctype: DeclWriter.BasicTypeId);
     END;
   END WriteTypeCast;
 
-PROCEDURE WriteLocalDecl (w: DeclWriter.Writer;
-                          pb: SSA.ProcBlock);
+
+
+PROCEDURE WriteLocalDecl (w: Writer;
+                          pb: SSA.ProcBlock;
+                          VAR haveCopyParameter: BOOLEAN);
 (**Writes local declarations of the procedure, most of all local variables.  *)
   VAR
     declMap: Dictionary.Dictionary;
@@ -208,47 +217,61 @@ PROCEDURE WriteLocalDecl (w: DeclWriter.Writer;
       opnd: SSA.Opnd;
       varDecl: Sym.VarDecl;
     BEGIN
-      opnd := instr. opndList;
-      WHILE (opnd # NIL) &
-            ((opnd. class # Opnd.readDesign) &
-             (opnd. class # Opnd.writeDesign)) DO
-        opnd := opnd. nextOpnd;
-      END;
-      IF (opnd. arg IS SSA.DeclRef) THEN
-        varDecl := opnd. arg(SSA.DeclRef). decl(Sym.VarDecl);
-        IF (varDecl. Procedure() = pb. procDecl) THEN
-          RETURN varDecl
+      WITH instr: SSA.Address DO   (* copy-parameter is instance of Address *)
+        RETURN instr. decl(Sym.VarDecl)
+      ELSE
+        opnd := instr. opndList;
+        WHILE (opnd # NIL) &
+              ((opnd. class # Opnd.readDesign) &
+               (opnd. class # Opnd.writeDesign)) DO
+          opnd := opnd. nextOpnd;
         END;
+        IF (opnd. arg IS SSA.DeclRef) THEN
+          varDecl := opnd. arg(SSA.DeclRef). decl(Sym.VarDecl);
+          IF (varDecl. Procedure() = pb. procDecl) THEN
+            RETURN varDecl
+          END;
+        END;
+        RETURN NIL
       END;
-      RETURN NIL
     END GetLocalDecl;
   
   BEGIN
+    haveCopyParameter := FALSE;
     declMap := Dictionary.New();
     instr := pb. instrList;
     WHILE (instr # NIL) DO
-      IF (instr. opcode = Opcode.get) OR (instr. opcode = Opcode.set) THEN
+      IF (instr. opcode = Opcode.get) OR
+         (instr. opcode = Opcode.set) OR
+         (instr. opcode = Opcode.copyParameter) THEN
         decl := GetLocalDecl (instr);
-        IF (decl # NIL) & ~declMap. HasKey (decl) &
-           ~decl. isParameter THEN
-          cDecl := ConvertDecl.GetDecl (w, decl);
-          w. WriteLn;
-          w. WriteString ("  ");
-          w. WriteDeclaration (cDecl);
-          w. WriteChar (";");
-          declMap. Set (decl, NIL)
+        IF (decl # NIL) & ~declMap. HasKey (decl) THEN
+          IF (instr. opcode = Opcode.copyParameter) THEN
+            cDecl := ConvertDecl.GetPointerDecl (w, decl);
+            haveCopyParameter := TRUE
+          ELSIF ~decl. isParameter THEN
+            cDecl := ConvertDecl.GetDecl (w, decl);
+          ELSE
+            cDecl := NIL;
+          END;
+
+          IF (cDecl # NIL) THEN
+            w. Newline;
+            w. WriteDeclaration (cDecl);
+            w. WriteChar (";");
+            declMap. Set (decl, NIL)
+          END;
         END;
       END;
       instr := instr. nextInstr
     END;
+
+    IF haveCopyParameter THEN
+      w. Newline;
+      w. WriteString ("OOC_PUSH_VPAR_STACK");
+    END;
   END WriteLocalDecl;
 
-
-PROCEDURE (w: Writer) Newline;
-  BEGIN
-    w. WriteLn;
-    w. WriteString ("  ");
-  END Newline;
 
 PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
   VAR
@@ -279,7 +302,7 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
         w. WriteChar ("&");
       END;
       w. WriteString (name. array^);
-
+      
     ELSE
       IF w. registerMap. HasKey (opnd. arg) THEN
         obj := w. registerMap. Get (opnd. arg);
@@ -290,12 +313,23 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
     END
   END Ref;
 
-PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
+PROCEDURE (w: Writer) TypeRef (type: Sym.Type);
+  VAR
+    cType: DeclWriter.Type;
+  BEGIN
+    cType := ConvertDecl.GetTypeRef (w, type);
+    w. WriteType (cType);
+  END TypeRef;
+
+
+PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
+                                      haveCopyParameter: BOOLEAN);
   VAR
     proxy: Schedule.InstrProxy;
     instr: SSA.Instr;
     opnd: SSA.Opnd;
     target: Object.Object;
+    str: ARRAY 32 OF CHAR;
 
   PROCEDURE ^ Call (call: SSA.Instr);
     
@@ -344,6 +378,56 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       w. WriteChar (";");
     END WriteDyadicOp;
   
+  PROCEDURE GetLength (instr: SSA.Instr);
+    VAR
+      varDecl: SSA.Result;
+      name: String.String;
+    BEGIN
+      (* FIXME... handle length of arrays on heap *)
+      varDecl := instr. GetArgClass (Opnd.readDesign);
+      name := Naming.NameOfLengthParam
+          (varDecl(SSA.DeclRef). decl(Sym.VarDecl),
+           instr. opndList. GetIntConst());
+      w. WriteString (name. array^);
+      w. WriteChar (";");
+    END GetLength;
+
+  PROCEDURE CopyParameter (instr: SSA.Address);
+    VAR
+      varDecl: Sym.VarDecl;
+      size: SSA.Opnd;
+      name: String.String;
+
+    PROCEDURE WriteTypeAndSize ();
+      BEGIN
+        w. WriteString (",");
+        w. TypeRef (varDecl. type(Sym.Array). GetNonOpenElementType());
+        w. WriteString (",");
+        IF (size = NIL) THEN
+          w. WriteString ("1")
+        ELSE
+          w. Ref (size)
+        END;
+        w. WriteString (")");
+      END WriteTypeAndSize;
+    
+    BEGIN
+      varDecl := instr. decl(Sym.VarDecl);
+      size := instr. GetOpndClass (Opnd.arg);
+      name := Naming.NameOfDeclaration (varDecl);
+      
+      w. Newline;
+      w. WriteString ("OOC_ALLOCATE_VPAR(");
+      w. WriteString (name. array^);
+      WriteTypeAndSize;
+      
+      w. Newline;
+      w. WriteString ("OOC_INITIALIZE_VPAR(");
+      w. WriteString (name. array^);
+      w. WriteString (Naming.suffixPassPerRef+",");
+      w. WriteString (name. array^);
+      WriteTypeAndSize
+    END CopyParameter;
   
   PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
   (* Returns TRUE if all paths into the "select-return" end with a
@@ -448,11 +532,27 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         RETURN FALSE
       END;
     END SimpleVarAccess;
+
+  PROCEDURE PrefixReturn ();
+  (**Called before every "return" instruction.  *)
+    BEGIN
+      w. Newline;
+      IF haveCopyParameter THEN
+        w. WriteString ("OOC_POP_VPAR_STACK");
+        w. Newline
+      END;
+    END PrefixReturn;
   
   BEGIN
     proxy := b. proxyList;
     WHILE (proxy # NIL) DO
       instr := proxy. instr;
+
+(*      w. Newline;
+      instr. GetOpcodeName (str);
+      w. WriteString ("/* ");
+      w. WriteString (str);
+      w. WriteString (": */ ");*)
       
       IF w. registerMap. HasKey (instr) THEN
         w. Newline;
@@ -513,6 +613,12 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
         w. WriteChar (";");
 
+      | Opcode.getLength:
+        GetLength (instr);
+        
+      | Opcode.copyParameter:
+        CopyParameter (instr(SSA.Address));
+        
       | Opcode.add:
         WriteDyadicOp (instr, "+");
         
@@ -537,7 +643,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         w. WriteChar (";");
             
       | Opcode.return:
-        w. Newline;
+        PrefixReturn;
         opnd := instr. GetOpndClass (Opnd.functionResult);
         IF (opnd # NIL) THEN
           w. WriteString ("return ");
@@ -549,7 +655,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         
       | Opcode.selectReturn:
         IF ~AllPathsClosed (instr) THEN
-          w. Newline;
+          PrefixReturn;
           w. WriteString ("return;")
         END;
       END;
@@ -558,7 +664,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
     END;
   END WriteInstrList;
 
-PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
+PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
+                                   haveCopyParameter: BOOLEAN);
   VAR
     lastBlock: Schedule.Block;
     blockCount: LONGINT;
@@ -633,7 +740,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
       
     BEGIN
       FixLastJump (b);
-      w. WriteInstrList (b);
+      w. WriteInstrList (b, haveCopyParameter);
       WITH b: Schedule.BranchBlock DO
         w. Newline;
         w. WriteString ("if (");
@@ -674,6 +781,7 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     domRoot: Schedule.Block;
     registerMap: Dictionary.Dictionary;
     w: Writer;
+    haveCopyParameter: BOOLEAN;
   BEGIN
     pb := SSA.NewProcBlock (procDecl. decl);
     enter := pb. selectReturn. opndList. arg. instr;
@@ -692,11 +800,11 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
     
     Fixup (pb);
-    WriteLocalDecl (cWriter, pb);
     registerMap := Allocator.AssignRegisters (pb, domRoot, cWriter);
-    cWriter. WriteLn;
     w := NewWriter (cWriter, registerMap);
-    w. WriteBlocks (domRoot);
+    WriteLocalDecl (w, pb, haveCopyParameter);
+    w. WriteLn;
+    w. WriteBlocks (domRoot, haveCopyParameter);
   END ProcBody;
 
 PROCEDURE ModuleBody* (w: TextRider.Writer; procDecl: IR.Procedure);

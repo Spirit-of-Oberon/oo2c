@@ -657,6 +657,14 @@ PROCEDURE (fct: Function) WriteRight (w: Writer);
   END WriteRight;
 
 
+PROCEDURE (w: Writer) WriteType* (t: Type);
+  BEGIN
+    t. WriteLeft (w);
+    t. WriteRight (w)
+  END WriteType;
+
+
+
 
 (* Declarations
    ------------------------------------------------------------------------ *)

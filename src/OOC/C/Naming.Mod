@@ -5,6 +5,13 @@ IMPORT
 
 TYPE
   Buffer = ARRAY 2*1024 OF CHAR;
+
+CONST
+  suffixPassPerRef* = "__ref";
+  (**Suffix attached to parameter names if they are value parameters that
+     are passed by reference to the callee.  The callee must create and
+     populate its own copy of the parameter.  *)
+
   
 PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
   VAR
@@ -51,7 +58,7 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
         INC (i)
       END
     END;
-
+    
     RETURN String.New (str)
   END NameOfDeclaration;
 

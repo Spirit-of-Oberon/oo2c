@@ -32,6 +32,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE Expression (expr: IR.Expression): SSA.Result;
     VAR
       instr: SSA.Instr;
+      res: SSA.Result;
 
     PROCEDURE Index (indexOp: Operator.Index): SSA.Result;
       VAR
@@ -85,8 +86,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
 
       | expr: Operator.Len DO
-        ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
-        RETURN pb. GetConstInt (expr. array(IR.Const). value(String8.Value). value. length+1);
+        CASE expr. variant OF
+        | Operator.lenStringConst:
+          ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
+          RETURN pb. GetConstInt (expr. array(IR.Const). value(String8.Value). value. length+1);
+
+        | Operator.lenOpenArrayParam:
+          res := Expression (expr. array);
+          RETURN pb. AddGetLengthInstr (res(SSA.Instr),
+                                        pb. GetConstInt (expr. dim));
+        END;
         
       | expr: Operator.Index DO
         RETURN Index (expr)
@@ -280,6 +289,20 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       s := select. AddResult (Result.store)
     END WhileStatm;
+
+  PROCEDURE CopyParameter (cp: IR.CopyParameter);
+    VAR
+      instr: SSA.Instr;
+      size: SSA.Result;
+    BEGIN
+      IF (cp. openArraySize # NIL) THEN
+        size := Expression (cp. openArraySize)
+      ELSE
+        size := NIL
+      END;
+      instr := pb. AddCopyParameter (cp. param, s, size);
+      s := instr. AddResult (Result.store);
+    END CopyParameter;
   
   BEGIN
     FOR i := 0 TO LEN (statmSeq^)-1 DO
@@ -306,7 +329,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
             
       | statm: IR.WhileStatm DO
         WhileStatm (statm)
-            
+
+      | statm: IR.CopyParameter DO
+        CopyParameter (statm)
       ELSE
         Log.Type("++ Unknown statement class in StatmSeq", statm);
         ASSERT (FALSE)

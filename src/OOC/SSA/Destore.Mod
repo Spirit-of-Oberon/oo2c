@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Destore;
 (*  Converts reads from/writes to memory into local values.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -532,6 +532,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           RETURN TraceSelect (instr, get. marker, get. subclass);
 
         | Opcode.collect:
+          RETURN Trace (get, instr. GetArgClass (Opnd.store));
+              
+        | Opcode.copyParameter:
           RETURN Trace (get, instr. GetArgClass (Opnd.store));
               
         | Opcode.loopStart:

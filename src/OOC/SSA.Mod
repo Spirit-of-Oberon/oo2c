@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA;
 (*  Data structures for SSA code representation.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -138,6 +138,9 @@ TYPE
   
 TYPE
   AddressDesc = RECORD
+    (**Designates the address of a declared variable.  Instances of this
+       class use the opcode @oconst{Opcode.address} or
+       @oconst{Opcode.copyParameter}.  *)
     (InstrDesc)
     decl-: Sym.Declaration;
   END;
@@ -275,6 +278,14 @@ PROCEDURE (opnd: Opnd) OpndIndex*(): LONGINT;
     END;
     RETURN i
   END OpndIndex;
+
+PROCEDURE (opnd: Opnd) GetIntConst*(): LONGINT;
+(**@precond
+   @ofield{opnd.arg} is an integer constant.
+   @end precond*)
+  BEGIN
+    RETURN opnd. arg(Const). value(Integer.Value). ToLInt();
+  END GetIntConst;
 
   (* ---------------------------------------------------------------------- *)
   
@@ -517,8 +528,8 @@ PROCEDURE (instr: Instr) GetOpndClass* (class: OpndClass.Class): Opnd;
 
 PROCEDURE (instr: Instr) GetArgClass* (class: OpndClass.Class): Result;
 (**Returns the first argument of @oparam{instr} whose operand's
-   @ofield{Opnd.class} matches @oparam{class}.  If no such operand exists, result is
-   @code{NIL}.  *)
+   @ofield{Opnd.class} matches @oparam{class}.  If no such operand exists,
+   result is @code{NIL}.  *)
   VAR
     opnd: Opnd;
   BEGIN
@@ -622,11 +633,21 @@ PROCEDURE InitDeclRef (declRef: DeclRef; decl: Sym.Declaration);
     declRef. decl := decl;
   END InitDeclRef;
 
-PROCEDURE InitAddress (address: Address; decl: Sym.Declaration);
+PROCEDURE InitAddress (address: Address; opcode: Opcode.Class;
+                       decl: Sym.Declaration);
   BEGIN
-    InitInstr (address, Opcode.address, Opcode.scAddress);
+    InitInstr (address, opcode, Opcode.scAddress);
     address. decl := decl;
   END InitAddress;
+
+PROCEDURE NewAddress (opcode: Opcode.Class; decl: Sym.Declaration): Address;
+  VAR
+    address: Address;
+  BEGIN
+    NEW (address);
+    InitAddress (address, opcode, decl);
+    RETURN address
+  END NewAddress;
 
   (* ---------------------------------------------------------------------- *)
 
@@ -766,6 +787,12 @@ PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Sym.Declaration): DeclRef;
     END;
   END GetDeclRef;
 
+PROCEDURE (pb: ProcBlock) SetAddress (decl: Sym.Declaration;
+                                      address: Address);
+  BEGIN
+    pb. adrMap. Set (decl, address);
+  END SetAddress;
+
 PROCEDURE (pb: ProcBlock) GetAddress* (decl: Sym.Declaration): Address;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
@@ -777,13 +804,30 @@ PROCEDURE (pb: ProcBlock) GetAddress* (decl: Sym.Declaration): Address;
       obj := pb. adrMap. Get (decl);
       RETURN obj(Address);
     ELSE
-      NEW (address);
-      InitAddress (address, decl);
+      address := NewAddress (Opcode.address, decl);
       AppendInstr (pb, address);
-      pb. adrMap. Set (decl, address);
+      pb. SetAddress (decl, address);
       RETURN address
     END;
   END GetAddress;
+
+PROCEDURE (pb: ProcBlock) AddCopyParameter*
+  (param: Sym.VarDecl; storeIn: Result; size: Result): Address;
+(**Creates a @oconst{Opcode.copyParameter} instruction for the parameter
+   @oparam{param}.  Subsequent calls to @oproc{pb.GetAddress} will return
+   the @code{copy-parameter} instruction as the address of @oparam{param}.  *)
+  VAR
+    address: Address;
+  BEGIN
+    address := NewAddress (Opcode.copyParameter, param);
+    address. AddOpnd (storeIn, OpndClass.store);
+    IF (size # NIL) THEN
+      address. AddOpnd (size, OpndClass.arg);
+    END;
+    AppendInstr (pb, address);
+    pb. SetAddress (param, address);
+    RETURN address
+  END AddCopyParameter;
 
 PROCEDURE (pb: ProcBlock) SetMarkers* (newInfo: Node; newMarker: LONGINT);
 (**Set the fields @ofield{Result.info} and @ofield{Result.marker} of all
@@ -833,6 +877,27 @@ PROCEDURE (pb: ProcBlock) AddSetInstr* (get: Instr; sourceValue: Result): Instr;
     set. AddOpnd (sourceValue, OpndClass.sourceValue);
     RETURN set
   END AddSetInstr;
+
+PROCEDURE (pb: ProcBlock) AddGetLengthInstr* (get: Instr; dimension: Result): Instr;
+(**Given a @code{get} instruction, this method produces a @code{get-length}
+   instruction that returns the length of the variable for @oparam{dimension}.  *)
+  VAR
+    getLength: Instr;
+    opnd: Opnd;
+  BEGIN
+    ASSERT (get. instr. opcode = Opcode.get);
+    getLength := pb. AddInstr (Opcode.getLength, Opcode.scLength);
+    opnd := get. opndList;
+    WHILE (opnd # NIL) DO
+      IF (opnd. class = OpndClass.store) THEN
+        getLength. AddOpnd (dimension, OpndClass.dimension)
+      ELSE
+        getLength. AddOpnd (opnd. arg, opnd. class);
+      END;
+      opnd := opnd. nextOpnd
+    END;
+    RETURN getLength
+  END AddGetLengthInstr;
 
 PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
 (**Topological sort on instructions in @oparam{pb}.  If there are no cyclic

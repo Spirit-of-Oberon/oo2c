@@ -33,6 +33,18 @@ CONST
   greater* = 14;
   greaterEqual* = 15;
 
+  (* variants of LEN() *)
+  lenStringConst* = 16;
+  (**@code{LEN()} applied to a string constant.  Nodes of this type are
+     implicitly created when passing a string constant to an open array
+     parameter of character type.  *)
+  lenFixedArray* = 17;
+  (**@code{LEN()} on a fixed length array variable.  *)
+  lenOpenArrayParam* = 18;
+  (**@code{LEN()} on a variable length array parameter.  *)
+  lenOpenArrayHeap* = 19;
+  (**@code{LEN()} on a variable length array on the heap.  *)
+  
 TYPE
   Builder* = POINTER TO BuilderDesc;
   BuilderDesc = RECORD
@@ -85,6 +97,7 @@ TYPE
        parameter, this operator is used to calculate the length of the array
        parameter.  *)
     (IR.OperatorDesc)
+    variant-: Variant;
     array-: IR.Expression;
     dim-: LONGINT;
   END;
@@ -445,21 +458,35 @@ PROCEDURE (op: Compare) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
-PROCEDURE InitLen (len: Len; sym: IR.Symbol;
+PROCEDURE InitLen (len: Len; sym: IR.Symbol; variant: Variant;
                    array: IR.Expression; dim: LONGINT);
   BEGIN
     IR.InitOperator (len, sym, Predef.GetType (Predef.lengthType));
-    len.array := array;
-    len.dim := dim;
+    len. variant := variant;
+    len. array := array;
+    len. dim := dim;
   END InitLen;
 
 PROCEDURE (b: Builder) NewLen* (sym: IR.Symbol;
                                 array: IR.Expression; dim: LONGINT): Len;
   VAR
     len: Len;
+    variant: Variant;
   BEGIN
     NEW (len);
-    InitLen (len, sym, array, dim);
+
+    IF (array. type IS Sym.PredefType) THEN
+      variant := lenStringConst
+    ELSIF (array. type IS Sym.Array) &
+          ~array. type(Sym.Array). isOpenArray THEN
+      variant := lenFixedArray
+    ELSIF (array IS IR.Var) THEN
+      variant := lenOpenArrayParam
+    ELSE
+      variant := lenOpenArrayHeap
+    END;
+    
+    InitLen (len, sym, variant, array, dim);
     RETURN len
   END NewLen;
 
@@ -666,6 +693,79 @@ PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;
     END;
     RETURN exprList
   END TransformArgs;
+
+PROCEDURE (b: Builder) AddSetupCode* (sym: IR.Symbol; decl: Sym.ProcDecl;
+                                      statmSeq: IR.StatementSeq): IR.StatementSeq;
+(**See @oproc{IR.Builder.AddSetupCode}.  *)
+  VAR
+    newStatm: ArrayList.ArrayList;
+    formalPars: Sym.VarDeclArray;
+    fparIndex, dim: LONGINT;
+    fpar: Sym.VarDecl;
+    size, arrayExpr: IR.Expression;
+
+  PROCEDURE MyNewBinaryArith (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
+    VAR
+      op: BinaryArith;
+    BEGIN
+      NEW (op);
+      InitBinaryArith (op, sym, arithMul, left, right, left. type);
+      RETURN op
+    END MyNewBinaryArith;
+
+  PROCEDURE AddStatm (statm: IR.Statement);
+    BEGIN
+      IF (newStatm = NIL) THEN
+        newStatm := ArrayList.New(4)
+      END;
+      newStatm. Append (statm)
+    END AddStatm;
+
+  PROCEDURE Prepend (prefix: ArrayList.ArrayList; statmSeq: IR.StatementSeq): IR.StatementSeq;
+    VAR
+      new: IR.StatementSeq;
+      i: LONGINT;
+    BEGIN
+      NEW (new, prefix. size+LEN (statmSeq^));
+      FOR i := 0 TO prefix. size-1 DO
+        new[i] := prefix. array[i](IR.Statement)
+      END;
+      FOR i := 0 TO LEN (statmSeq^)-1 DO
+        new[i+prefix. size] := statmSeq[i]
+      END;
+      RETURN new
+    END Prepend;
+  
+  BEGIN
+    newStatm := NIL;
+    formalPars := decl. formalPars. params;
+    fparIndex := 0;
+    
+    fparIndex := 0;
+    WHILE (fparIndex # LEN (formalPars^)) DO
+      fpar := formalPars[fparIndex];
+      IF fpar. isPassPerReference & ~fpar. isVarParam THEN
+        IF b. typeRules. IsOpenArrayType (fpar. type) THEN
+          arrayExpr := b. NewVar (sym, fpar);
+          size := b. NewLen (sym, arrayExpr, 0);
+          FOR dim := 1 TO fpar. type(Sym.Array). GetOpenDimensions()-1 DO
+            size := MyNewBinaryArith (sym, size, b. NewLen (sym, arrayExpr, dim))
+          END;
+        ELSE
+          size := NIL;
+        END;
+        
+        AddStatm (b. NewCopyParameter (sym, fpar, size))
+      END;
+      INC (fparIndex)
+    END;
+
+    IF (newStatm = NIL) THEN
+      RETURN statmSeq
+    ELSE
+      RETURN Prepend (newStatm, statmSeq)
+    END;
+  END AddSetupCode;
 
 BEGIN
   real := Predef.GetType(Predef.real);

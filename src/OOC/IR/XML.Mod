@@ -78,9 +78,18 @@ PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
   END VisitModuleRef;
 
 PROCEDURE (v: Visitor) VisitLen* (len: Operator.Len);
+  VAR
+    str: ARRAY 32 OF CHAR;
   BEGIN
     v. w. StartTag ("len", FALSE);
     v. w. AttrInt ("dim", len. dim);
+    CASE len. variant OF
+    | Operator.lenStringConst: str := "string-const"
+    | Operator.lenFixedArray: str := "fixed-array"
+    | Operator.lenOpenArrayParam: str := "open-array-param"
+    | Operator.lenOpenArrayHeap: str := "open-array-heap"
+    END;
+    v. w. AttrStringLatin1 ("variant", str);
     len. array. Accept (v);
     v. w. EndTag;  (* len *)
   END VisitLen;
@@ -220,6 +229,16 @@ PROCEDURE (v: Visitor) VisitWhileStatm* (whileStatm: IR.WhileStatm);
     v. w. EndTag;  (* body *)
     v. w. EndTag;  (* while-statm *)
   END VisitWhileStatm;
+
+PROCEDURE (v: Visitor) VisitCopyParameter* (cp: IR.CopyParameter);
+  BEGIN
+    v. w. StartTag ("copy-parameter", TRUE);
+    v. w. AttrStringLatin1 ("parameter", cp. param. name. str^);
+    IF (cp. openArraySize # NIL) THEN
+      cp. openArraySize. Accept (v)
+    END;
+    v. w. EndTag;  (* copy-parameter *)
+  END VisitCopyParameter;
 
 
 PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);
