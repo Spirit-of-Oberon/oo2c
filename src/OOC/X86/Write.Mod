@@ -556,7 +556,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
           IF s.IsGlobalVar() THEN
             sb.Append(Naming.NameOfDeclaration(s.decl));
           ELSE
-            sb.AppendInt(w.fctBlock.Offset(s.decl));
+            sb.AppendInt(w.fctBlock.Offset(s.decl, s.dim));
           END;
         | s: S.Proc DO
           sb.Append(Naming.NameOfDeclaration(s.decl));

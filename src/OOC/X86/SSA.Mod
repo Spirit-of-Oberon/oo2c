@@ -151,9 +151,8 @@ CONST  (* Instruction Opcodes: *)
   push* = opcodeMemory+5;
   pop* = opcodeMemory+6;
   leave* = opcodeMemory+7;
-  getLengthParam* = opcodeMemory+8;
-  getLengthHeap* = opcodeMemory+9;
-  setStack* = opcodeMemory+10;
+  getLengthHeap* = opcodeMemory+8;
+  setStack* = opcodeMemory+9;
   (**Set stack element to the given value.  First argument is the current stack
      pinter, second the offset relative to the top of the stack, and the third
      the value.
@@ -165,7 +164,7 @@ CONST  (* Instruction Opcodes: *)
      This instruction duplicates the memory dependencies of its call
      instruction, and the call in turn has memory dependencies on all its
      @oconst{setStack} instructions.  *)
-  typeTag* = opcodeMemory+11;
+  typeTag* = opcodeMemory+10;
   
   opcodeControlFlow = opcodeMemory+12;
   branch* = opcodeControlFlow+0;
@@ -275,13 +274,16 @@ TYPE
        from an enclosing procedure.
 
        When used as part of @oconst{const} instruction, then it refers to the
-       address of a variable.  There are three slightly different
+       address of a variable.  There are four slightly different
        interpretations, depending on the sort of variable in the designator:
 
        @table @asis
        @item Local variable of a function
        The result of the @oconst{const} is the offset of the local variable or
        parameter relative to the function's frame pointer.
+       @item Length of an array parameter
+       The result of the @oconst{const} is the offset of the length parameter
+       relative to the function's frame pointer.
        @item Designator is @code{NIL}
        This means the size of local variable area of the current function.
        @item Global variable of a module
@@ -289,6 +291,7 @@ TYPE
        @end table  *)
     (GlobalDesc)
     decl-: Sym.VarDecl;
+    dim-: LONGINT;
   END;
   Proc* = POINTER TO ProcDesc;
   ProcDesc = RECORD
@@ -694,6 +697,7 @@ PROCEDURE (s: Var) INIT*(var: Sym.VarDecl);
   BEGIN
     s.INIT^();
     s.decl := var;
+    s.dim := -1;
   END INIT;
 
 PROCEDURE (s: Var) SameSelector*(sel: Selector): BOOLEAN;
@@ -1179,7 +1183,7 @@ PROCEDURE (instr: Instr) NonImmediateUses*(): BOOLEAN;
 PROCEDURE (instr: Instr) IsLive*(): BOOLEAN;
   BEGIN
     CASE instr.opcode OF
-    | enter, exit, return, branch, jump, set, setStack,
+    | enter, exit, return, branch, jump, get, set, setStack,
       designatorGate, loopStart, loopExit, loopEnd, loopBackedge, call:
       RETURN TRUE;
     ELSE
@@ -2486,11 +2490,17 @@ PROCEDURE (b: FunctionBlock) SetMaxSizeCallStack*(size: LONGINT);
     b.maxSizeCallStack := size;
   END SetMaxSizeCallStack;
 
-PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
+PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl;
+                                     dim: LONGINT): LONGINT;
 (**Returns the offset of the given parameter relative to the frame pointer of
    the function.  If @oparam{varDecl} is @code{NIL}, result is the size of the
    local variable area, aligned to the nearest multiple of
-   @oconst{alignStackTo}.  *)
+   @oconst{alignStackTo}.
+
+   @oparam{dim} is used to refer to implicit information associated with
+   procedure parameters.  A value of @code{-1} refers to the address of the
+   variable itself.  For open array parameters, a non-negative value denotes
+   the length of the array for the given dimension.  *)
   CONST
     sizeAddress = 4;
     sizeLength = 4;
@@ -2519,10 +2529,14 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
     ELSE
       offset := sizeAddress*2;  (* return address plus old frame pointer *)
       FOR p IN b.procDecl.formalPars.params^ DO
+        type := p.type;
         IF (p = varDecl) THEN
-          RETURN offset;
+          IF (dim >= 0) THEN
+            RETURN offset+ArgumentSize(type)+dim*sizeLength;
+          ELSE
+            RETURN offset;
+          END;
         ELSE
-          type := p.type;
           INC(offset, ArgumentSize(type));
           WITH type: Sym.Record DO
             IF p.isVarParam & type.isExtensible THEN (* type tag *)
@@ -2540,15 +2554,15 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
   END Offset;
 
 PROCEDURE (b: FunctionBlock) AddGetLengthInstr* (getInstr: Instr; dim: LONGINT;
-                                                 dimType: Sym.Array): Result;
+                                                 dimType: Sym.Array;
+                                                 fp: Result): Result;
 (**Given a @code{getInstr} instruction, this method produces a @code{get-length}
    instruction that returns the length of the variable for @oparam{dim}.
    @oparam{dimType} is the array type of dimension @oparam{dim}.  *)
   VAR
-    getLength: Instr;
-    dimension: Result;
+    getLength, paramAdr: Instr;
+    dimension, offset: Result;
     paramRef: Sym.VarDecl;
-    opcode: Opcode;
     
   PROCEDURE VarParamArray (get: Instr): Sym.VarDecl;
   (* If the get accesses a parameter without any further selectors, then
@@ -2569,11 +2583,13 @@ PROCEDURE (b: FunctionBlock) AddGetLengthInstr* (getInstr: Instr; dim: LONGINT;
       dimension := b.AddConstDim(dim);
       paramRef := VarParamArray(getInstr);
       IF (paramRef # NIL) THEN
-        opcode := getLengthParam;
+        offset := b.AddFramePointerOffset(paramRef);
+        offset.instr.designator[0](Var).dim := dim;
+        paramAdr := b.AddInstr2(add, fp, offset);
+        getLength := b.AddInstr1(get, paramAdr.AddResult(address));
       ELSE
-        opcode := getLengthHeap;
+        getLength := b.AddInstr0(getLengthHeap);
       END;
-      getLength := b.AddInstr0(opcode);
       RETURN getLength.AddResult(length);
     ELSE
       RETURN b.AddConstInt(BigInt.NewInt(dimType.length),

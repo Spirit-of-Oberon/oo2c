@@ -136,7 +136,6 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.push: str := "push";
     | S.pop: str := "pop";
     | S.leave: str := "leave";
-    | S.getLengthParam: str := "getLengthParam";
     | S.getLengthHeap: str := "getLengthHeap";
     | S.setStack: str := "setStack";
     | S.typeTag: str := "typeTag";
@@ -287,7 +286,12 @@ PROCEDURE (out: Output) WriteFunction*();
         ELSIF selector.IsGlobalVar() THEN
           w.WriteObject("adr("+Naming.NameOfDeclaration(selector.decl)+")");
         ELSE
-          w.WriteObject("offset("+selector.decl.Name()+")");
+          w.WriteObject("offset("+selector.decl.Name());
+          IF (selector.dim >= 0) THEN
+            w.WriteChar(".");
+            w.WriteLInt(selector.dim, 0);
+          END;
+          w.WriteObject(")");
         END;
       | selector: S.Proc DO
         w.WriteObject("adr("+selector.decl.Name()+")");
