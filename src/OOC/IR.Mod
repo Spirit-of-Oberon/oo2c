@@ -4911,6 +4911,7 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
         IF (item.usageCount = 0) &
            (item.exportMark = Sym.nameNotExported) &
            (~(item IS Sym.VarDecl) OR ~item(Sym.VarDecl).isParameter) &
+           (~(item IS Sym.TypeDecl) OR ~(item.parent IS Sym.FormalPars)) &
            (~(item IS Sym.ProcDecl) OR
             ~(item(Sym.ProcDecl).isForwardDecl OR
               item(Sym.ProcDecl).IsTypeBound())) THEN
