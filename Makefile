@@ -50,7 +50,7 @@ all: lib/obj/liboo2c.la bin/oo2c
 ###      by building, but normally aren't because the distribution comes
 ###      with them.
 main-clean: test-cleanall
-	for i in sym obj bin oocdoc sym-v1 obj-v1; do rm -Rf ${top_builddir}/$$i; done
+	for i in sym obj bin oocdoc; do rm -Rf ${top_builddir}/$$i; done
 	for i in lib/sym lib/obj lib/bin lib/oocdoc; do rm -Rf ${top_builddir}/$$i; done
 	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done
@@ -118,7 +118,7 @@ config.status: configure
 	@/bin/false
 
 dist: $(OOC_DEV_ROOT)/oo2crc-install.xml configure config.status
-	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1 2>/dev/null
+	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin 2>/dev/null
 	$(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml --make $(OFLAGS) oo2c
 	rm -Rf stage0
 	mkdir stage0 stage0/lib

@@ -19,7 +19,7 @@ export DIFF
 .PHONY: test1-setup test1-process test1-report test1-clean
 
 test2-setup: $(OOC_DEV_ROOT)/oo2crc-install.xml
-	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin
 	cd $(OOC_DEV_ROOT) && $(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml -M $(OFLAGS) $(TEST_PROCESSOR)
 	-cd $(TEST_WORKING_DIR) && $(RM_R) $(TEST_OUTPUT_DIRS)
 	$(RM_R) $(TEST_TEMP_DIR)

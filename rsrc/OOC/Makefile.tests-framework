@@ -47,7 +47,7 @@ $(OOC_DEV_ROOT)/tests/lib-oo2c/src/RT0.Mod:
 	ln -s $(OOC_DEV_ROOT)/lib/src $(OOC_DEV_ROOT)/tests/lib-oo2c/src
 
 test1-setup: $(OOC_DEV_ROOT)/oo2crc-install.xml $(OOC_DEV_ROOT)/tests/lib-TestCompile/src/RT0.Mod $(OOC_DEV_ROOT)/tests/lib-oo2c/src/RT0.Mod
-	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin
 	cd $(OOC_DEV_ROOT) && $(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml -M $(OFLAGS) $(TEST_DRIVER)
 ifdef TEST_PROCESSOR
 	cd $(OOC_DEV_ROOT) && $(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml -M $(OFLAGS) $(TEST_PROCESSOR)
