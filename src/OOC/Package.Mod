@@ -1175,7 +1175,7 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
         type := "integer";
       END;
       w.AttrStringLatin1("type", type);
-      w.WriteObject(kv.value.ValueToString());
+      w.WriteObject(kv.value);
       w.EndTag();  (* set *)
     END;
     w.EndTag();

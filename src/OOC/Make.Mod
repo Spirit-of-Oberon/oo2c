@@ -900,6 +900,7 @@ RAISES IO.Error;
    update if the interface of an included header file may have changed in a
    significant way.  *)
   VAR
+    cmd: STRING;
     str: ShellCommand;
     success: BOOLEAN;
   BEGIN
@@ -930,11 +931,11 @@ RAISES IO.Error;
       IF success &
          DerivedIsOlder(module, Rep.modObjectFile, Rep.modCodeFileC) THEN
         module.CreateOutputDir (Rep.modObjectFile);
-        CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
-                                 module.GetURI(Rep.modObjectFile, TRUE),
-                                 FALSE, str);
-        Logger.ShellCommand(Object.NewLatin1(str));
-        success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
+        cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
+                                        module.GetURI(Rep.modObjectFile, TRUE),
+                                        FALSE);
+        Logger.ShellCommand(cmd);
+        success := (ProcessManagement.system(cmd) = 0);
       END;
     END;
     RETURN success;
@@ -949,7 +950,7 @@ RAISES IO.Error;
    This method is called from @oproc{Rules.UpdateLibrary}.  
    @end precond *)
   VAR
-    str: ShellCommand;
+    cmd: STRING;
     success: BOOLEAN;
     outputFile: URI.URI;
   BEGIN
@@ -957,11 +958,11 @@ RAISES IO.Error;
     IF DerivedIsOlder(module, Rep.modObjectFileLib, Rep.modCodeFileC) THEN
       module.CreateOutputDir (Rep.modObjectFile);
       outputFile := module.GetURI(Rep.modObjectFileLib, TRUE);
-      CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
-                               module.GetURI(Rep.modObjectFileLib, TRUE),
-                               TRUE, str);
-      Logger.ShellCommand(Object.NewLatin1(str));
-      success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
+      cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
+                                      module.GetURI(Rep.modObjectFileLib, TRUE),
+                                      TRUE);
+      Logger.ShellCommand(cmd);
+      success := (ProcessManagement.system(cmd) = 0);
     END;
     RETURN success;
   END UpdateObjectFileLib;
@@ -1033,6 +1034,7 @@ RAISES IO.Error;
    This method is called within @oproc{Rules.UpdateExecutable}.
    @endprecond *)
   VAR
+    cmd: STRING;
     str: ShellCommand;
     success: BOOLEAN;
   BEGIN
@@ -1051,11 +1053,11 @@ RAISES IO.Error;
       success := r.Update(module, Rep.modMainFileC);
       IF DerivedIsOlder(module, Rep.modMainObjectFile, Rep.modMainFileC) THEN
         module.CreateOutputDir (Rep.modMainObjectFile);
-        CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC, TRUE),
-                                 module.GetURI(Rep.modMainObjectFile, TRUE),
-                                 FALSE, str);
-        Logger.ShellCommand(Object.NewLatin1(str));
-        success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
+        cmd := CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC, TRUE),
+                                        module.GetURI(Rep.modMainObjectFile, TRUE),
+                                        FALSE);
+        Logger.ShellCommand(cmd);
+        success := (ProcessManagement.system(cmd) = 0);
       END;
     END;
     RETURN success;

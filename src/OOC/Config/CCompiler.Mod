@@ -21,7 +21,7 @@ MODULE OOC:Config:CCompiler;
 *)
 
 IMPORT
-  Strings, Object, URI, URI:Scheme:File,
+  Strings, Object, ADT:StringBuffer, URI, URI:Scheme:File,
   CfgData := Config, Config:Section:Options, OOC:Config, OOC:Repository;
 
 VAR
@@ -43,29 +43,29 @@ PROCEDURE Append(str: STRING; VAR cmd: ARRAY OF CHAR);
     Strings.Append(chars^, cmd);
   END Append;
 
-PROCEDURE SetCommand(mode: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);
+PROCEDURE SetCommand(mode: STRING): StringBuffer.StringBuffer;
+  VAR
+    sb: StringBuffer.StringBuffer;
   BEGIN
-    IF (mode # "") & HaveLibtool() THEN
-      COPY("", cmd);
-      Append(libtool. value(CfgData.StringVar). string, cmd);
-      Strings.Append (" --mode=", cmd);
-      Strings.Append (mode, cmd);
-      Strings.Append (" ", cmd);
-    ELSE
-      COPY("", cmd);
+    sb := StringBuffer.New("");
+    IF (mode.length # 0) & HaveLibtool() THEN
+      sb.Append(libtool.value);
+      sb.Append(" --mode=");
+      sb.Append(mode);
+      sb.Append(" ");
     END;
-    Append (cc. value(CfgData.StringVar). string, cmd);
-    Strings.Append (" ", cmd);
+    sb.Append(cc.value(CfgData.StringVar).string);
+    sb.Append(" ");
+    RETURN sb;
   END SetCommand;
 
-PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
-                           VAR cmd: ARRAY OF CHAR);
+PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN): STRING;
   VAR
+    sb: StringBuffer.StringBuffer;
     str: ARRAY 2*1024 OF CHAR;
     include: Object.StringArrayPtr;
     i: LONGINT;
     f: File.URI;
-    chars: Object.CharsLatin1;
     
   PROCEDURE GetURIofRT(): File.URI;
     VAR
@@ -83,13 +83,13 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
   
   BEGIN
     IF forLibrary THEN
-      SetCommand("compile", cmd);
+      sb := SetCommand("compile");
     ELSE
-      SetCommand("", cmd);
+      sb := SetCommand("");
     END;
-    Append (cflags. value(CfgData.StringVar). string, cmd);
-    Strings.Append (" ", cmd);
-    Append (cppflags. value(CfgData.StringVar). string, cmd);
+    sb.Append(cflags. value(CfgData.StringVar). string);
+    sb.Append(" ");
+    sb.Append(cppflags. value(CfgData.StringVar). string);
     
     (* Add include path for the run-time header files.  In theory, this include
        directory should have the highest priority, but _only_ for run-time
@@ -98,39 +98,40 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
        src/ directory, putting this first should be safe.   *)
     f := GetURIofRT();
     f. GetPath (str);
-    Strings.Append (" -I", cmd);
-    Strings.Append (str, cmd);
+    sb.Append(" -I");
+    sb.AppendLatin1(str);
     
     include := Config.repositories. GetIncludePaths();
     FOR i := 0 TO LEN (include^)-1 DO
-      Strings.Append (" -I", cmd);
-      chars := include[i](Object.String8).CharsLatin1();
-      Strings.Append (chars^, cmd)
+      sb.Append(" -I");
+      sb.Append(include[i]);
     END;
     
-    Strings.Append (" -c ", cmd);
+    sb.Append(" -c ");
     in(File.URI). GetPath (str);
-    Strings.Append (str, cmd);
-    Strings.Append (" -o ", cmd);
+    sb.AppendLatin1(str);
+    sb.Append(" -o ");
     out(File.URI). GetPath (str);
-    Strings.Append (str, cmd);
+    sb.AppendLatin1(str);
+    RETURN sb.ToString();
   END CompileFileCmd;
 
-PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
-                           VAR cmd: ARRAY OF CHAR);
+PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN): STRING;
   VAR
+    sb: StringBuffer.StringBuffer;
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    SetCommand("link", cmd);
-    Strings.Append ("-o ", cmd);
+    sb := SetCommand("link");
+    sb.Append("-o ");
     execFile(File.URI). GetPath (str);
-    Strings.Append (str, cmd);
+    sb.AppendLatin1(str);
     IF forLibrary & HaveLibtool() THEN
-      Strings.Append (" -rpath ", cmd);
-      Append (libdir. value(CfgData.StringVar). string, cmd);
+      sb.Append(" -rpath ");
+      sb.Append(libdir.value);
     END;
-    Strings.Append (" ", cmd);
-    Append (ldflags. value(CfgData.StringVar). string, cmd);
+    sb.Append(" ");
+    sb.Append(ldflags.value);
+    RETURN sb.ToString();
   END LinkProgramCmd;
 
 PROCEDURE InstallDirectoryCmd*(path: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);

@@ -21,8 +21,8 @@ MODULE OOC:Make:LinkProgramC;
 *)
 
 IMPORT
-  Out, Strings, IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
-  ADT:ArrayList, CfgData := Config,
+  Out, IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
+  ADT:ArrayList, ADT:StringBuffer, CfgData := Config,
   OS:ProcessManagement, OOC:Repository, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
@@ -167,7 +167,8 @@ PROCEDURE Run*(module: Repository.Module;
                forLibrary: STRING): BOOLEAN
 RAISES IO.Error;
   VAR
-    str: ARRAY 16*1024 OF CHAR;        (* link commands can get _very_ long *)
+    sb: StringBuffer.StringBuffer;
+    cmd: STRING;
     path: Repository.URIBuffer;
     uri: URI.URI;
     exit, i: LONGINT;
@@ -175,10 +176,8 @@ RAISES IO.Error;
     importedLibsList: ArrayList.ArrayList;
     objectFile, outputFile: Repository.FileId;
     libraryName: STRING;
-    str8: Object.String8;
     import: Repository.Module;
     extLibs: Object.StringArrayPtr;
-    chars: Object.CharsLatin1;
   BEGIN
     exit := 0;
     IF (forLibrary # NIL) THEN
@@ -190,8 +189,9 @@ RAISES IO.Error;
     END;
     
     module. CreateOutputDir (outputFile);
-    CCompiler.LinkProgramCmd
-        (module. GetURI (outputFile, TRUE), (forLibrary # NIL), str);
+    sb := StringBuffer.New(CCompiler.LinkProgramCmd
+                           (module. GetURI (outputFile, TRUE),
+                            (forLibrary # NIL)));
 
     importedLibs := Dictionary.New();
     importedLibsList := ArrayList.New(4);
@@ -208,8 +208,8 @@ RAISES IO.Error;
       ELSIF ~imports[i].ifData.NoObjectFile() THEN
         uri := imports[i]. GetURI (objectFile, TRUE);
         uri(File.URI). GetPath (path);
-        Strings.Append (" ", str);
-        Strings.Append (path, str);
+        sb.Append(" ");
+        sb.AppendLatin1(path);
       END;
     END;
 
@@ -217,8 +217,8 @@ RAISES IO.Error;
       (* add file with function main() *)
       uri := module. GetURI (Repository.modMainObjectFile, TRUE);
       uri(File.URI). GetPath (path);
-      Strings.Append (" ", str);
-      Strings.Append (path, str);
+      sb.Append(" ");
+      sb.AppendLatin1(path);
     END;
 
     FOR i := 0 TO importedLibsList.size-1 DO
@@ -227,14 +227,13 @@ RAISES IO.Error;
         (* looks like an uninstalled library *)
         uri := import.GetURI(Repository.modLibrary, TRUE);
         uri(File.URI). GetPath (path);
-        Strings.Append (" ", str);
-        Strings.Append (path, str);
+        sb.Append(" ");
+        sb.AppendLatin1(path);
       ELSE
         (* we don't have a .la file, so assume that it's a regularly
            installed libtool library  *)
-        Strings.Append(" -l", str);
-        chars := import.ifData.libraryName(Object.String8).CharsLatin1();
-        Strings.Append(chars^, str);
+        sb.Append(" -l");
+        sb.Append(import.ifData.libraryName);
       END;
     END;
     
@@ -242,17 +241,15 @@ RAISES IO.Error;
        first *)
     extLibs := GetExternalLibs(imports, forLibrary);
     FOR i := LEN (extLibs^)-1 TO 0 BY -1 DO
-      chars := extLibs[i](Object.String8).CharsLatin1();
-      Strings.Append (chars^, str);
+      sb.Append(extLibs[i]);
     END;
-    Strings.Append (" ", str);
-    str8 := CCompiler.libs.value(CfgData.StringVar).string.ToString8("_");
-    chars := str8.CharsLatin1();
-    Strings.Append (chars^, str);
-    
-    Out.String (str);
+    sb.Append(" ");
+    sb.Append(CCompiler.libs.value);
+
+    cmd := sb.ToString();
+    Out.Object(cmd);
     Out.Ln;
-    exit := ProcessManagement.system(Object.NewLatin1(str));
+    exit := ProcessManagement.system(cmd);
     RETURN (exit = 0)
   END Run;
 
