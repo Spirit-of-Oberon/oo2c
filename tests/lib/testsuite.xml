@@ -7,8 +7,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_LRealStr_RealToFixed1 lib_LRealStr_RealToFixed2">-->
-
+  select ="prepare_out_module lib_LRealStr_RealToFixed1 lib_LRealStr_RealToStr1">
+-->
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
       This is not a test case.  Rather, it prepares an Oakwood
@@ -297,6 +297,13 @@
       Use <code>RealToFixed</code> to convert <code>LONGREAL</code>
       values to strings.  <code>place</code> is a negative number.
       Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_LRealStr_RealToStr1" type="run"
+          file="LibLRealStrRealToStr1.Mod"
+	  output="LibLRealStrRealToStr1.Ref">
+      Use <code>RealToStr</code> to convert <code>LONGREAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
     </test>
 
   </testcases>

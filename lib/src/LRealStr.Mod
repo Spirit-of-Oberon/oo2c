@@ -254,8 +254,36 @@ PROCEDURE RealToFixed* (real: LONGREAL; place: INTEGER;
 
 PROCEDURE RealToStr* (real: LONGREAL;
                       VAR str: ARRAY OF CHAR);
+(**If the sign and magnitude of @oparam{real} can be shown within the capacity
+   of @oparam{str}, the call @samp{RealToStr(real,str)} behaves as the call
+   @samp{RealToFixed(real,place,str)}, with a value of @samp{place} chosen to
+   fill exactly the remainder of @oparam{str}.  Otherwise, the call behaves as
+   the call @samp{RealToFloat(real,sigFigs,str)}, with a value of
+   @samp{sigFigs} of at least one, but otherwise limited to the number of
+   significant digits that can be included together with the sign and exponent
+   part in @oparam{str}.  *)
+  VAR
+    s: ARRAY 308+32 OF CHAR;
+    d, sigFigs: LONGINT;
   BEGIN
-    ASSERT(FALSE);
+    (* use a trial and error approach; this may not be fast, nor unambiguous,
+       but it should be correct *)
+    RealToFixed(real, -1, s);
+    d := LEN (str)-Strings.Length (s)-1;
+    IF (d > 0) THEN
+      RealToFixed(real, SHORT (d)-1, s);
+    ELSIF (d < 0) THEN
+      RealToFloat(real, 1, s);
+      d := LEN (str)-Strings.Length (s)-1;
+      IF (d > 1) THEN          (* room for "." and additional digit *)
+        RealToFloat(real, SHORT (d), s);
+        IF (Strings.Length(s) < LEN(str)-1) THEN
+          (* exponent smaller than expected due to rounding *)
+          RealToFloat(real, SHORT (d)+1, s);
+        END;
+      END;
+    END;
+    COPY (s, str);
   END RealToStr;
 
 END LRealStr.
