@@ -148,15 +148,29 @@ PROCEDURE (c: ConstFold) VisitIndex* (index: IR.Index);
     index. index. Accept (c); *)
   END VisitIndex;
 
-PROCEDURE (c: ConstFold) VisitSetRange* (sr: IR.SetRange);
+PROCEDURE (c: ConstFold) VisitSetMember* (op: IR.SetMember);
+  VAR 
+    i, element : LONGINT; set : SET;
+    e, s : Language.Value;
+  BEGIN
+    IF c.ValidEval(op.element, e) & c.ValidEval(op.set, s) THEN
+      element := e(Integer.Value).ToLInt();
+      set := s(Set.Value).value;
+      c.result := c.BooleanConst(element IN set, op);
+    ELSE
+      c.result := NIL;
+    END;
+  END VisitSetMember;
+
+PROCEDURE (c: ConstFold) VisitSetRange* (op: IR.SetRange);
   VAR 
     i, left, right : LONGINT;
     l, r : Language.Value;
   BEGIN
-    IF c.ValidEval(sr.from, l) & c.ValidEval(sr.to, r) THEN
+    IF c.ValidEval(op.from, l) & c.ValidEval(op.to, r) THEN
       left := l(Integer.Value).ToLInt();
       right := r(Integer.Value).ToLInt();
-      c.result := c.ValueConst(Set.New({left..right}), sr);
+      c.result := c.ValueConst(Set.New({left..right}), op);
     ELSE
       c.result := NIL;
     END;

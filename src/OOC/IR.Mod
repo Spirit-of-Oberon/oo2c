@@ -335,7 +335,15 @@ TYPE
     record- : Expression;
     field- : Sym.FieldDecl;
   END;
-  
+
+TYPE 
+  SetMember* = POINTER TO SetMemberDesc;
+  SetMemberDesc = RECORD
+    (**This operator represents operations on SET values. *)
+    (OperatorDesc)
+    element-, set- : Expression;
+  END;
+
 TYPE
   SetOp* = POINTER TO SetOpDesc;
   SetOpDesc = RECORD
@@ -343,6 +351,18 @@ TYPE
     (OperatorDesc)
     variant- : Variant;
     left-, right- : Expression;
+  END;
+
+TYPE
+  SetRange* = POINTER TO SetRangeDesc;
+  SetRangeDesc = RECORD 
+  (**A SetRange represents a sub-range SET constructor.  A range consists of a
+     @ofield{from} and @ofield{to} expression which must have the same type. If
+     both values are constant, then @ofield{from} must not be greater than
+     @ofield{to}. *)
+
+    (OperatorDesc)
+    from-, to- : Expression;
   END;
 
 TYPE
@@ -364,18 +384,6 @@ TYPE
        @end itemize  *)
     (OperatorDesc)
     expr- : Expression;
-  END;
-
-TYPE
-  SetRange* = POINTER TO SetRangeDesc;
-  SetRangeDesc = RECORD 
-  (**A SetRange represents a sub-range SET constructor.  A range consists of a
-     @ofield{from} and @ofield{to} expression which must have the same type. If
-     both values are constant, then @ofield{from} must not be greater than
-     @ofield{to}. *)
-
-    (OperatorDesc)
-    from-, to- : Expression;
   END;
 
 TYPE
@@ -1132,6 +1140,33 @@ PROCEDURE (sf: SelectField) Accept* (v: Visitor);
     v. VisitSelectField (sf)
   END Accept;
 
+(* Operator Class: SetMember
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitSetMember (op: SetMember; sym: Symbol; element, set : Expression);
+  BEGIN
+    InitOperator (op, sym, Predef.GetType(Predef.boolean));
+    op.element := element;
+    op.set := set;
+  END InitSetMember;
+
+PROCEDURE (b: Builder) NewSetMember* (sym: Symbol; element, set : Expression): Expression;
+  VAR
+    op : SetMember;
+  BEGIN
+    NEW (op);
+    InitSetMember (op, sym, element, set);
+    RETURN op;
+  END NewSetMember;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitSetMember* (op: SetMember);
+  END VisitSetMember;
+
+PROCEDURE (op: SetMember) Accept* (v: Visitor);
+  BEGIN
+    v. VisitSetMember (op)
+  END Accept;
+
 (* Operator Class: SetOp
    ------------------------------------------------------------------------ *)
 
@@ -1159,6 +1194,34 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitSetOp* (op: SetOp);
 PROCEDURE (op: SetOp) Accept* (v: Visitor);
   BEGIN
     v. VisitSetOp (op)
+  END Accept;
+
+(* Statement Class: SetRange
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitSetRange (range: SetRange; sym: Symbol;
+                           from, to : Expression);
+  BEGIN
+    InitOperator (range, sym, from.type);
+    range.from := from;
+    range.to := to;
+  END InitSetRange;
+
+PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to : Expression) : SetRange;
+  VAR
+    range: SetRange;
+  BEGIN
+    NEW (range);
+    InitSetRange (range, sym, from, to);
+    RETURN range
+  END NewSetRange;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitSetRange* (range: SetRange);
+  END VisitSetRange;
+
+PROCEDURE (range: SetRange) Accept* (v: Visitor);
+  BEGIN
+    v. VisitSetRange (range)
   END Accept;
 
 (* Operator Class: TypeConv
@@ -1575,34 +1638,6 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitLoopStatm* (loopStatm: LoopStatm);
 PROCEDURE (loopStatm: LoopStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitLoopStatm (loopStatm)
-  END Accept;
-
-(* Statement Class: SetRange
-   ------------------------------------------------------------------------ *)
-
-PROCEDURE InitSetRange (range: SetRange; sym: Symbol;
-                           from, to : Expression);
-  BEGIN
-    InitOperator (range, sym, from.type);
-    range.from := from;
-    range.to := to;
-  END InitSetRange;
-
-PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to : Expression) : SetRange;
-  VAR
-    range: SetRange;
-  BEGIN
-    NEW (range);
-    InitSetRange (range, sym, from, to);
-    RETURN range
-  END NewSetRange;
-
-PROCEDURE (v: Visitor) [ABSTRACT] VisitSetRange* (range: SetRange);
-  END VisitSetRange;
-
-PROCEDURE (range: SetRange) Accept* (v: Visitor);
-  BEGIN
-    v. VisitSetRange (range)
   END Accept;
 
 (* Statement Class: RepeatStatm
@@ -2087,8 +2122,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       & ((leftIsBoolean & rightIsBoolean) OR (leftIsSet & rightIsSet)) THEN
       (* FIXME... handle pointer types, procedure types *)
       result := b.NewCompare(sym, left, right);
+    ELSIF (id = Id.in) & leftIsInteger & rightIsSet THEN
+      result := b.NewSetMember(sym, left, right);
     ELSE
-      (* FIXME... handle IN and IS *)
+      (* FIXME... handle IS *)
       result := b.ErrExpr(invalidOpType, sym);
     END;
     RETURN result;

@@ -255,6 +255,14 @@ PROCEDURE (v: Visitor) VisitSetRange* (range: IR.SetRange);
     v. w. EndTag;  (* range *)
   END VisitSetRange;
 
+PROCEDURE (v: Visitor) VisitSetMember* (range: IR.SetMember);
+  BEGIN
+    v. w. StartTag ("setmember", FALSE);
+    range.element.Accept(v);
+    range.set.Accept(v);
+    v. w. EndTag; 
+  END VisitSetMember;
+
 PROCEDURE (v: Visitor) VisitReturn* (return: IR.Return);
   BEGIN
     v. w. StartTag ("return", FALSE);
