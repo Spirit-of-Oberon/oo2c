@@ -98,6 +98,8 @@ CONST
   min* = 11;                             (* MIN *)
   new* = 12;                             (* NEW *)
   copy* = 13;                            (* COPY *)
+
+  adr* = 14;                             (* SYSTEM.ADR *)
   
 VAR
   i: LONGINT;
@@ -137,6 +139,15 @@ PROCEDURE PredefType (stb: Builder.Builder;
     RETURN ptype
   END PredefType;
 
+PROCEDURE PredefProc (stb: Builder.Builder; module: Sym.Module;
+                      id: Sym.PredefId; name: ARRAY OF CHAR;
+                      minArgs, maxArgs: INTEGER);
+  VAR
+    pproc: Sym.PredefProc;
+  BEGIN
+    pproc := stb. NewPredefProc (module, GetName (name), id, minArgs, maxArgs);
+  END PredefProc;
+
 PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
 (**Creates the symbol table of the pseudo module that contains the predefined
    entities of the language, that can be used directly in a module without
@@ -147,14 +158,6 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     module: Sym.Module;
     ptype: Sym.PredefType;
     
-  PROCEDURE PredefProc (id: Sym.PredefId; name: ARRAY OF CHAR;
-                        minArgs, maxArgs: INTEGER);
-    VAR
-      pproc: Sym.PredefProc;
-    BEGIN
-      pproc := stb. NewPredefProc (module, GetName (name), id, minArgs, maxArgs);
-    END PredefProc;
-  
   PROCEDURE PredefConst (name: ARRAY OF CHAR; value: Language.Value;
                          type: Sym.PredefType);
     VAR
@@ -203,20 +206,20 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, void, "", 0, 1,
                          NIL, NIL);
     
-    PredefProc (assert, "ASSERT", 1, 2);
-    PredefProc (len, "LEN", 1, 2);
-    PredefProc (size, "SIZE", 1, 1);
-    PredefProc (inc, "INC", 1, 2);
-    PredefProc (dec, "DEC", 1, 2);
-    PredefProc (cap, "CAP", 1, 1);
-    PredefProc (long, "LONG", 1, 1);
-    PredefProc (short, "SHORT", 1, 1);
-    PredefProc (chr, "CHR", 1, 1);
-    PredefProc (ord, "ORD", 1, 1);
-    PredefProc (max, "MAX", 1, 1);
-    PredefProc (min, "MIN", 1, 1);
-    PredefProc (new, "NEW", 1, Sym.unlimitedArgs);
-    PredefProc (copy, "COPY", 2, 2);
+    PredefProc (stb, module, assert, "ASSERT", 1, 2);
+    PredefProc (stb, module, len, "LEN", 1, 2);
+    PredefProc (stb, module, size, "SIZE", 1, 1);
+    PredefProc (stb, module, inc, "INC", 1, 2);
+    PredefProc (stb, module, dec, "DEC", 1, 2);
+    PredefProc (stb, module, cap, "CAP", 1, 1);
+    PredefProc (stb, module, long, "LONG", 1, 1);
+    PredefProc (stb, module, short, "SHORT", 1, 1);
+    PredefProc (stb, module, chr, "CHR", 1, 1);
+    PredefProc (stb, module, ord, "ORD", 1, 1);
+    PredefProc (stb, module, max, "MAX", 1, 1);
+    PredefProc (stb, module, min, "MIN", 1, 1);
+    PredefProc (stb, module, new, "NEW", 1, Sym.unlimitedArgs);
+    PredefProc (stb, module, copy, "COPY", 2, 2);
     
     stb. Finalize (module);
     RETURN module
@@ -234,6 +237,8 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, address, "ADDRESS", 4, 4, NIL, NIL);
     ptype := PredefType (stb, module, byte, "BYTE", 1, 1, NIL, NIL);
     ptype := PredefType (stb, module, ptr, "PTR", 4, 4, NIL, NIL);
+
+    PredefProc (stb, module, adr, "ADR", 1, 1);
     
     stb. Finalize (module);
     RETURN module
