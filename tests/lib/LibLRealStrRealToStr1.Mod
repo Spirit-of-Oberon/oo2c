@@ -32,10 +32,10 @@ PROCEDURE Test* ();
     Value (   -99999);
 
     Out.Ln;
-    Value (9999999999);
-    Value (9999500000);                  (* this is 1.000E+10 or 9.9995E+9 *)
-    Value (9999499999);
-    Value (1000000000);
+    Value (9999999999.D0);
+    Value (9999500000.D0);        (* this is 1.000E+10 or 9.9995E+9 *)
+    Value (9999499999.D0);
+    Value (1000000000.D0);
 
     Out.Ln;
     Value (-999999999);
