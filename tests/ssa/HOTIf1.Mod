@@ -16,7 +16,7 @@ PROCEDURE If (b: BOOLEAN);
 
 PROCEDURE Test* ();
   BEGIN
-    If (TRUE);
+    ;If (TRUE);;
     If (FALSE);
   END Test;
 
