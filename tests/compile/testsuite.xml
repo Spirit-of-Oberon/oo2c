@@ -143,6 +143,6 @@
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
     <reject-info id="constfold3" pos="c=1%+" msg="Invalid type for operator"/>
     <reject-info id="constfold4" pos="c=%a" msg="Expression is not constant"/>
-    <reject-info id="constfold6" pos="maxLongInt%+offset" msg="Value out of range"/>
+    <reject-info id="constfold6" pos="minLongInt%-offset" msg="Type of actual parameter is not compatible with formal type"/>
   </processor-info>
 </testsuite-ext>
