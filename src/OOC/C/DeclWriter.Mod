@@ -59,7 +59,7 @@ CONST
      that do no return a result value.  *)
   ptr* = 1;
   (**This type is mapped to the type name @code{OOC_PTR}, which in turn is an
-     alias for @oconst{void*}.  *)
+     alias for @samp{void*}.  *)
   int8* = 2;
   (**This type is mapped to the name @code{OOC_INT8}, a signed integer type
      holding (at least) 8 bits.  *)
@@ -89,7 +89,7 @@ CONST
      bit character values.  This in turn is an alias for @code{unsigned char}.  *)
   char16* = 11;
   (**This type is mapped to the name @code{OOC_CHAR16}, the type used to store
-     16 bit character values.  Usually, this is equvalient to @oconst{unit16}.  *)
+     16 bit character values.  Usually, this is equvalient to @oconst{uint16}.  *)
   real32* = 12;
   (**This is mapped to the IEEE 754 single precision floating point type,
      usually @code{float}.  *)
@@ -102,7 +102,7 @@ TYPE
   BasicType* = POINTER TO BasicTypeDesc;
   BasicTypeDesc = RECORD
     (**Represents basic, predefined types.  For each @otype{BasicTypeId} exists
-       an instance of this class.  The variable @ovar{basicType} maps ids to
+       an instance of this class.  The field @ofield{Writer.basicType} maps ids to
        their corresponding instances.  *)
     (TypeDesc)
     id: BasicTypeId;
@@ -185,7 +185,7 @@ TYPE
 TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc* = RECORD
-    (**This writer is wrapper around of @omodule{TextRider.Writer} with
+    (**This writer is wrapper around of @otype{TextRider.Writer} with
        additional knowledge about C declarations, definitions, and literals.
        Its main purpose is to act as an abstraction layer for the not so easy
        task of writing C type expressions.  *)
@@ -413,7 +413,7 @@ PROCEDURE (w: Writer) WriteDeclaration* (d: Declaration);
 PROCEDURE (w: Writer) AddDeclaration* (d: Declaration);
 (**Adds the declaration @oparam{d} to the list of scheduled declarations of
    @oparam{w}.  All declarations registered this way are written to the file
-   when @oproc{Writeer.WriteDeclarationList} is called.  *)
+   when @oproc{Writer.WriteDeclarationList} is called.  *)
   BEGIN
     WITH d: IncludeModule DO
       w. includes. Append (d)

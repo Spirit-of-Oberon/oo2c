@@ -221,11 +221,11 @@ CONST
   (**Maps to the integer type that is used to store boolean values.  *)
 
   scMerge* = 10;
-  (**Subclass of a @const{select} instruction.  *)
+  (**Subclass of a @oconst{select} instruction.  *)
   scExit* = 11;
-  (**Subclass of a @const{select} instruction.  *)
+  (**Subclass of a @oconst{select} instruction.  *)
   scReturn* = 12;
-  (**Subclass of a @const{select} instruction.  *)
+  (**Subclass of a @oconst{select} instruction.  *)
   
 
 PROCEDURE IsSigned* (subclass: Subclass): BOOLEAN;

@@ -96,7 +96,7 @@ CONST
      importing modules.  *)
   modSymbolTableXML* = 2;
   (**This is an XML representation of the internal symbol table built of the
-     datatypes defined in @omodule{*Sym := OOC:SymbolTable}.  It is used for
+     datatypes defined in @omodule{*OOC:SymbolTable}.  It is used for
      debugging.  *)
   modInterfaceXML* = 3;
   (**An XML representation of the public interface of a module.  Files of this

@@ -31,7 +31,7 @@ TYPE
     (**The builder defines a factory method for every item that can appear
        in a module's symbol table.  The arguments of the factory methods
        are passed directly to the initialization procedures of the
-       corresponding classes from @omodule{Item}.
+       corresponding classes from @omodule{Sym}.
        The arguments correspond directly to the record fields defined for
        the specializations of @otype{Sym.Item}.  *)
   END;

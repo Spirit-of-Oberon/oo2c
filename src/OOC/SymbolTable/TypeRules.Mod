@@ -55,8 +55,8 @@ PROCEDURE (tr: Rules) IsScalarType* (type: Sym.Type): BOOLEAN;
 
 PROCEDURE (tr : Rules) IsPredefClass* (type : Sym.Type; class : SET) : BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is a a member of a class of
-   types. A class is represented by a SET of @oparam{Sym.PredefId} values.
-   These are defined by classXXX constants in @omodule{OOC:SymbolTable:Predef}.
+   types. A class is represented by a SET of @otype{Sym.PredefId} values.
+   These are defined by classXXX constants in @omodule{*OOC:SymbolTable:Predef}.
    *)
   BEGIN
     WITH type : Sym.PredefType DO

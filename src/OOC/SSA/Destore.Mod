@@ -47,7 +47,7 @@ IMPORT
    the variable, be it in part or as a whole.  Such a call erases all local
    knowledge of the variable's content, which must be regained by doing an
    explicit memory read.
-   @end table
+   @end itemize
 
    If it can be removed, a ``get'' is replaced with the value that it produces.
    In the simplest case, this is the value written by a directly preceding
@@ -68,7 +68,7 @@ IMPORT
    written value from the variable.  Here, the ``set'' instruction creates an
    input value to the called procedure that is passed indirectly through
    memory.
-   @end table
+   @end itemize
 
    A ``set'' is made obsolete by replacing all ``get'' instructions reading its
    source value from the variable with the source value itself.  *)

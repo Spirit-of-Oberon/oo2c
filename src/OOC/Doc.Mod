@@ -68,7 +68,7 @@ TYPE
        @oproc{*OOC:Doc:ResolveRef.Resolve} to resolve module names in reference
        commands.  If no such references were found, this field stays
        @code{NIL}.  The list contains instances of
-       @otype{*Sym := OOC:SymbolTable.Import}.  *)
+       @otype{*OOC:SymbolTable.Import}.  *)
   END;
 
 
