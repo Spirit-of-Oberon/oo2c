@@ -302,10 +302,30 @@ RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN 
   RT0__Struct* td;
   
   td = mid->typeDescriptors;
-  while (*td && strcmp(name__ref, (*td)->name)) {
-    td++;
+  while (*td) {
+    if (!strcmp(name__ref, (*td)->name)) {
+      return *td;
+    } else {
+      td++;
+    }
   }
-  return *td;
+  
+  if (strchr(name__ref, '(')) {
+    /* name of qualified type: search _all_ modules for a match */
+    int i=0;
+    while (i != moduleCount) {
+      td = modules[i]->typeDescriptors;
+      while (*td) {
+	if (!strcmp(name__ref, (*td)->name)) {
+	  return *td;
+	} else {
+	  td++;
+	}
+      }
+      i++;
+    }
+  }
+  return NULL;
 }
 
 

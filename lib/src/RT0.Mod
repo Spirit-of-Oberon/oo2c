@@ -141,7 +141,9 @@ TYPE
        @itemize @bullet
        @item @ofield{form} equals @oconst{strQualType}.
 
-       @item @ofield{name} is @code{NIL}.
+       @item @ofield{name} is a fully expanded qualified type constructor
+       of the form @samp{T(A1,A2,...)}, where @samp{T}, @samp{A1}, @samp{A2},
+       and so on, are qualified type names.
        
        @item @samp{@ofield{typeArgs}[0]} is the base type of the qualified
        type (the @var{T} in the example above).
@@ -174,8 +176,9 @@ TYPE
        this is a reference to module @samp{RT0}.  *)
 
     name-: Name;
-    (**Type name.  @code{NIL} for anonymous types and instances of
-       @oconst{strQualType}.  *)
+    (**Type name.  @code{NIL} for anonymous types.  For instances of
+       @oconst{strQualType}, this is a fully expanded qualified type
+       constructor of the form @samp{T(A1,A2,...)}.  *)
 
     size-: LONGINT;
     (**Size of the data type in bytes.  For an open array type, which has
@@ -244,7 +247,12 @@ PROCEDURE TypeOf* (ptr: SYSTEM.PTR): Struct;
 
 PROCEDURE TypeTest* (tag, td: Struct): BOOLEAN;
 (**Return @code{TRUE} if the type tag @oparam{tag} belongs to an object that is
-   an instance of the type @oparam{td}.
+   an instance of the type @oparam{td}.  For normal (that is, non-qualified)
+   types, this is a constant type operation that is basically a pointer
+   comparison.  For qualified types, it compares the structure of both types.
+   In this case, the function returns @code{TRUE} if the relevant base type of
+   @oparam{tag} and @oparam{td} have the same base type, and if the
+   corresponding type arguments are of the same type.
 
    @precond
    @oparam{tag} and @oparam{td} is the type descriptor of a @samp{RECORD} type.
@@ -283,7 +291,9 @@ PROCEDURE ThisModule* (name: ARRAY OF CHAR): Module;
   
 PROCEDURE ThisType* (mid: Module; name: ARRAY OF CHAR): Struct;
 (**Returns the type descriptor for the type @oparam{name} of module
-   @oparam{mid}.  Result is @code{NIL} if there is not such type descriptor.  *)
+   @oparam{mid}.  If @oparam{name} defines a qualified type and there is not
+   match in @oparam{mid}, then @emph{all} modules of the program are searched.
+   Result is @code{NIL} if there is no such type descriptor.  *)
 
 PROCEDURE GetEnv* (name: ARRAY OF CHAR; VAR value: ARRAY OF CHAR): BOOLEAN;
 (**If an environment variable @oparam{name} exists, copy its value into
