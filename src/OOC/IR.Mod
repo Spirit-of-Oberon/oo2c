@@ -429,10 +429,13 @@ TYPE
 
 TYPE
   CurrentException* = POINTER TO CurrentExceptionDesc;
+  TryStatm* = POINTER TO TryStatmDesc;
   CurrentExceptionDesc = RECORD
     (**Access to the current exception is modeled as an operator without
        any operands.  *)
-    (OperatorDesc) 
+    (OperatorDesc)
+    try-: TryStatm;
+    (**The @code{TRY} statement this operator belongs to.  *)
   END;
   
 TYPE
@@ -975,7 +978,6 @@ TYPE
   END;
   
 TYPE
-  TryStatm* = POINTER TO TryStatmDesc;
   TryStatmDesc = RECORD
     (StatementDesc)
     statmSeq-: StatementSeq;
@@ -2430,6 +2432,7 @@ PROCEDURE InitCurrentException(ce: CurrentException;
                                sym: Symbol; type: Sym.Type);
   BEGIN
     InitOperator(ce, sym, type);
+    ce.try := NIL;
   END InitCurrentException;
 
 PROCEDURE (b: Builder) NewCurrentException*(sym: Symbol;
@@ -4641,7 +4644,7 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           CheckExpr(expr.alloc);
           CheckExpr(expr.init);
         | expr: CurrentException DO
-          (* nothing *)
+          expr.try := currentTry;
         | expr: ChangeElement DO
           CheckExpr(expr.set);
           CheckExpr(expr.element);

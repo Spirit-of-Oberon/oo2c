@@ -123,7 +123,9 @@ TYPE
   Context* = RECORD [NO_DESCRIPTOR]
   (**Use by the run-time system to store an execution context for later
      (re)use.  *)
-    savedException: Exception;
+    localException: Exception;
+    (* Local copy of the current exception.  This variable is accessed when
+       using pseudo-variable @samp{EXCEPTION}.  *)
     next: ContextPtr;
     jmpbuf: SYSTEM.PTR;
   END;
@@ -185,11 +187,16 @@ PROCEDURE Current*(): Exception;
    @code{CATCH} block.  *)
   
 PROCEDURE Clear*;
-(**FIXME... Replace this procedure with @oproc{ClearFixed} with the next
-   release.  *)
+(**Set the current exception marker to @code{NIL}.  This procedure is called at
+   the very end of a @code{CATCH} block.  It should never be called directly.
+
+   Note: This procedure does @emph{not} restore the value of @oproc{Current} to
+   that of the beginning of a @code{TRY} statement.  That is, after a
+   @code{TRY} @oproc{Current} is @code{NIL} if an exception was raised.  *)
 PROCEDURE ClearFixed*(VAR context: Context);
-(**Set the current exception marker to value it had before the @code{TRY}
-   statement.  This procedure should never be called directly.  *)
+(**FIXME... Eliminate this procedure again.  *)
+PROCEDURE StoreCurrentException*(VAR context: Context): Exception;
+(**Store the current exception in @oparam{context} and also return it.  *)
 PROCEDURE PushContext*(VAR context: Context; jmpbuf: SYSTEM.PTR);
 (**Push @oparam{context} on the stack of exception handlers, and make it point
    to the execution context @oparam{jmpbuf}.  This procedure should never be
