@@ -28,7 +28,8 @@ IMPORT
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR,
   OOC:IR, OOC:IR:Operator, OOC:IR:XML,
   OOC:SymbolTable:Item, OOC:SymbolTable:Exports,
-  OOC:C:WriteConst, OOC:C:WriteDecl, OOC:C:ConvertDecl, OOC:C:Naming;
+  OOC:C:WriteConst, OOC:C:WriteDecl, OOC:C:ConvertDecl, OOC:C:Naming,
+  WriteSSA := OOC:SSA:WriteC;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -36,9 +37,12 @@ TYPE
     (Make.CommandDesc)
     module: Repository.Module;
     errList: Error.List;
+    useSSA: BOOLEAN;
+    writeIR: BOOLEAN;
   END;
 
-PROCEDURE New* (context: Make.Context; module: Repository.Module): Command;
+PROCEDURE New* (context: Make.Context; module: Repository.Module;
+                useSSA, writeIR: BOOLEAN): Command;
   VAR
     cmd: Command;
   BEGIN
@@ -46,6 +50,8 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module): Command;
     Make.InitCommand (cmd, context);
     cmd. module := module;
     cmd. errList := NIL;
+    cmd. useSSA := useSSA;
+    cmd. writeIR := writeIR;
     RETURN cmd
   END New;
 
@@ -105,7 +111,7 @@ PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
 PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
                      errList: Error.List;
                      converter: ConvertDecl.Converter;
-                     moduleIR: IR.Module);
+                     moduleIR: IR.Module; useSSA: BOOLEAN);
   VAR
     ch: Channel.Channel;
     baseURI: URI.HierarchicalURI;
@@ -256,7 +262,11 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         w. WriteLn;
         d. Write (w);
         w. WriteString (" {");
-        WriteStatmSeq (w, converter, procList[i]. statmSeq);
+        IF useSSA THEN
+          WriteSSA.ProcBody (w, converter, procList[i]);
+        ELSE
+          WriteStatmSeq (w, converter, procList[i]. statmSeq);
+        END;
         w. WriteLn;
         w. WriteString ("}");
         w. WriteLn
@@ -349,15 +359,21 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     IF (errList. msgCount = 0) THEN
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
                                  Operator.NewBuilder (pragmaHistory, errList));
-(*      XML.Write (StdChannels.stdout. NewWriter(), module);*)
+      IF cmd. writeIR THEN
+        XML.Write (StdChannels.stdout. NewWriter(), module);
+        
+      END;
       
       exports := Exports.GetExports (symTab);
       converter := ConvertDecl.NewConverter (m, symTab, exports);
       
-      WriteFile (m, Repository.modHeaderFileC, errList, converter, NIL);
-      WriteFile (m, Repository.modDeclFileC, errList, converter, NIL);
+      WriteFile (m, Repository.modHeaderFileC, errList, converter,
+                 NIL, cmd. useSSA);
+      WriteFile (m, Repository.modDeclFileC, errList, converter,
+                 NIL, cmd. useSSA);
       IF (symTab. class = Item.mcStandard) THEN
-        WriteFile (m, Repository.modCodeFileC, errList, converter, module)
+        WriteFile (m, Repository.modCodeFileC, errList, converter,
+                   module, cmd. useSSA)
       END
     END;
     

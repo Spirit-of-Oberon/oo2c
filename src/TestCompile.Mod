@@ -31,8 +31,10 @@ VAR
   mode: SHORTINT;
   
   make: Options.Option;
+  useSSA: Options.Option;
+  writeIR: Options.Option;
 
-
+  
 PROCEDURE InitContext (context: Context; config: Config.Config;
                        target: Make.Command);
   BEGIN
@@ -54,7 +56,9 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
       CASE entity. fileId OF
       | Rep.modSymbolFile, Rep.modHeaderFileC,
         Rep.modDeclFileC, Rep.modCodeFileC:
-        RETURN TranslateToC.New (context, entity. module)
+        RETURN TranslateToC.New (context, entity. module,
+                                 useSSA. value(BooleanValue.Value). boolean,
+                                 writeIR. value(BooleanValue.Value). boolean)
       | Rep.modMainFileC:
         RETURN WriteMainFileC.New (context, entity. module)
       | Rep.modObjectFile, Rep.modMainObjectFile:
@@ -74,6 +78,10 @@ PROCEDURE RegisterCmdLineOptions (config: Config.Config);
                  "<repositories><file-system>$1</file-system></repositories>");
     ot := config. cmdLine. AddOptionTemplate ("--make",
                  "<options><set name='make'>TRUE</set></options>");
+    ot := config. cmdLine. AddOptionTemplate ("--use-ssa",
+                 "<options><set name='use-ssa'>TRUE</set></options>");
+    ot := config. cmdLine. AddOptionTemplate ("--write-ir",
+                 "<options><set name='write-ir'>TRUE</set></options>");
   END RegisterCmdLineOptions;
 
 PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
@@ -84,6 +92,8 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
     Config.InitConfig (config, defaultConfigFile);
 
     make := config. options. Set ("make", BooleanValue.New (FALSE));
+    useSSA := config. options. Set ("use-ssa", BooleanValue.New (FALSE));
+    writeIR := config. options. Set ("write-ir", BooleanValue.New (FALSE));
     
     RegisterCmdLineOptions (config);
     RETURN config
@@ -105,7 +115,7 @@ BEGIN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
   ELSIF (config. arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: TestCompile {-r <base-dir>} [--make] <file>"); Out.Ln;
+    Out.String ("Usage: TestCompile {-r <base-dir>} [--make][--use-ssa][--write-ir] <file>"); Out.Ln;
     HALT (1)
   ELSE
     context := NewContext (config);
