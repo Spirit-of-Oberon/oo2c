@@ -37,3 +37,24 @@ C1__f:
 	leave 
 	ret 
 	.size C1__f, .-C1__f
+	.p2align 4,,15
+	.type OOC_C1_init, @function
+OOC_C1_init:
+	pushl %ebp
+	movl %esp, %ebp
+	subl $0, %esp
+	pushl %edi
+	pushl %esi
+	pushl %ebx
+	popl %ebx
+	popl %esi
+	popl %edi
+	leave 
+	ret 
+	.size OOC_C1_init, .-OOC_C1_init
+.global OOC_C1_init0
+	.type OOC_C1_init0, @function
+OOC_C1_init0:
+	call OOC_C1_init
+	ret
+	.size OOC_C1_init0, .-OOC_C1_init0

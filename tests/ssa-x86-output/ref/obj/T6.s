@@ -26,3 +26,24 @@ T6__f:
 	leave 
 	ret 
 	.size T6__f, .-T6__f
+	.p2align 4,,15
+	.type OOC_T6_init, @function
+OOC_T6_init:
+	pushl %ebp
+	movl %esp, %ebp
+	subl $0, %esp
+	pushl %edi
+	pushl %esi
+	pushl %ebx
+	popl %ebx
+	popl %esi
+	popl %edi
+	leave 
+	ret 
+	.size OOC_T6_init, .-OOC_T6_init
+.global OOC_T6_init0
+	.type OOC_T6_init0, @function
+OOC_T6_init0:
+	call OOC_T6_init
+	ret
+	.size OOC_T6_init0, .-OOC_T6_init0
