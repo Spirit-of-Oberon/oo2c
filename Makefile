@@ -57,7 +57,7 @@ main-clean: doc-clean test-cleanall
 	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done
 	-cd stage0 && rm -f *.o */*.o */*/*.o */*/*/*.o
-	rm -Rf "$(DOC_DIR)" stage1 stage2 gmon.out
+	rm -Rf "$(DOC_DIR)" stage1 stage2 tests/lib-TestCompile gmon.out
 	${MAKE} -C tests/hostess-ooc1 test-clean
 	${MAKE} -C tests/benchmark clean
 
@@ -70,7 +70,7 @@ main-clean: doc-clean test-cleanall
 distclean: main-clean
 	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
 	rm -f lib/src/__config.h config.log config.status
-	rm -Rf autom4te.cache stage0/exe
+	rm -Rf autom4te.cache stage0/exe exe
 
 ### `cvs-clean'
 ###      Delete everything that should not appear in the CVS.
@@ -129,10 +129,10 @@ $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml.mk $(OO
 ### This configuration file is used to build and install the compiler and
 ### library from scratch.  It must not refer to any stale data that may
 ### be present on the target system.
-oo2crc-install.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
-	sed -e 's:<file-system>:<!--:g' -e 's:</file-system>:-->:g' $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml >oo2crc-install.xml
+$(OOC_DEV_ROOT)/oo2crc-install.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
+	sed -e 's:<file-system>:<!--:g' -e 's:</file-system>:-->:g' $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml >$(OOC_DEV_ROOT)/oo2crc-install.xml
 
-dist: oo2crc-install.xml
+dist: $(OOC_DEV_ROOT)/oo2crc-install.xml
 	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1 2>/dev/null
 	$(OOC) --make -O $(OFLAGS) oo2c
 	rm -Rf stage0
@@ -150,12 +150,12 @@ stage0/oo2c:
 	${MAKE} -C stage0 -f Makefile.ext oo2c
 
 ### Build library from core modules using the initial compiler executable.
-lib/obj/liboo2c.la: $(BOOTSTRAP_COMPILER) oo2crc-install.xml
+lib/obj/liboo2c.la: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib $(OFLAGS) --build-package liboo2c
 
 ### Build second compiler using the initial compiler executable and the
 ### library lib/obj/liboo2c.la.
-exe/oo2c: $(BOOTSTRAP_COMPILER) oo2crc-install.xml lib/obj/liboo2c.la
+exe/oo2c: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml lib/obj/liboo2c.la
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package oo2c
 
 install: lib/obj/liboo2c.la exe/oo2c

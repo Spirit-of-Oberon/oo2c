@@ -9,7 +9,7 @@
 	     command="../../TestCompile"
 	     config-file=""
 	     working-dir="wd" 
-	     flags="-r ../../lib -r wd --write-ir"
+	     flags="-r ../lib-TestCompile -r wd --write-ir"
 	     filter-command="&OOEF;" 
 	     diff-command="&DIFF;" 
 	     check-reject-command="&PERL; ../../rsrc/OOC/TestFramework/error-match.pl"

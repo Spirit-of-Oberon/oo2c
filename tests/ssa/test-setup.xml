@@ -9,7 +9,7 @@
 	     command="../../TestCompile"
 	     config-file=""
 	     working-dir="wd" 
-	     flags="-r ../resources -r ../../lib -r wd --use-ssa"
+	     flags="-r ../resources -r ../lib-TestCompile -r wd --use-ssa"
 	     filter-command="&OOEF;" 
 	     diff-command="&DIFF;" 
 	     check-reject-command="&PERL; ../../rsrc/OOC/TestFramework/error-match.pl"
