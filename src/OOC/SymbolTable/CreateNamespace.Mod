@@ -1133,9 +1133,10 @@ RAISES IO.Error;
             baseRecord := type(Sym.Record);
             CheckRecord (baseRecord);
             record. tbProcCount := baseRecord. tbProcCount;
-            IF record. isVtable # baseRecord. isVtable THEN
+            IF record. isVtable & ~baseRecord. isVtable THEN
               ErrType(inconsistentVtable, record);
-            END
+            END;
+            record. isVtable := baseRecord. isVtable;
           END;
           record.ns(Namespace.Extended).CheckRestrictions (record, uses,
                                                            errList);
@@ -1304,6 +1305,8 @@ RAISES IO.Error;
                 SetFlag(item.isUncheckedException, TRUE);
               | Sym.flagVtable:
                 SetFlag(item.isVtable, TRUE);
+              | Sym.flagAtomic:
+                SetFlag(item.isAtomic, TRUE);
               | Sym.flagUnion:
                 SetFlag(item.isUnion, TRUE);
               | Sym.flagAlign1:
