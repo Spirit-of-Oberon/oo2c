@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:InterfaceXML;
 (*  Writes the exported interface of a module into an XML document.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -182,6 +182,13 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
           IF (type. srcCodeResultType # NIL) THEN
             WriteType ("result-type", type. srcCodeResultType, type. resultType)
           END;
+          IF (LEN(type.raises^) # 0) THEN
+            w.StartTag("raises", FALSE);
+            FOR j := 0 TO LEN(type.raises^)-1 DO
+              WriteItem(type.raises[j]);
+            END;
+            w.EndTag;
+          END;
           w. EndTag
         END
       END WriteTypeComponent;
@@ -263,7 +270,10 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
             DeclDocString (item);
             WriteTypeComponent (item. formalPars, item. formalPars);
             w. EndTag
-          END
+          END;
+
+        | item: Sym.ExceptionName DO
+          WriteType("exception", item.srcCodeType, item.type);
         ELSE
         END
       END      

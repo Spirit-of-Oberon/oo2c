@@ -56,6 +56,7 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
       PROCEDURE MarkType (type: Sym.Type);
         VAR
           decl: Sym.Declaration;
+          i: LONGINT;
         BEGIN
           IF ~dict. HasKey (type) THEN
             dict. Set (type, NIL);
@@ -87,6 +88,9 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
               END;
               IF (type. receiver # NIL) THEN
                 MarkDecl (type. receiver)
+              END;
+              FOR i := 0 TO LEN(type.raises^)-1 DO
+                MarkType(type.raises[i].srcCodeType);
               END;
               MarkList (type)
             | type: Sym.Array DO

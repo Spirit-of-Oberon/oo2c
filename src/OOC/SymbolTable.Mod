@@ -472,6 +472,22 @@ TYPE
   END;
 
 TYPE
+  ExceptionName* = POINTER TO ExceptionNameDesc;
+  ExceptionNameArray* = POINTER TO ARRAY OF ExceptionName;
+  ExceptionNameDesc = RECORD
+    (**Entry in a formal parameter's @samp{RAISES} part.  *)
+    (ItemDesc)
+    type*: Type;
+    (**The type of the exception.  If this is initially a type name,
+       it is replaced with a reference to the true type after
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
+    srcCodeType-: Type;
+    (**Similar to @ofield{type}, but it is not changed to a reference to
+       the true type after
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
+  END;
+
+TYPE
   VarDecl* = POINTER TO VarDeclDesc;
   VarDeclArray* = POINTER TO ARRAY OF VarDecl;
   FormalPars* = POINTER TO FormalParsDesc;
@@ -501,6 +517,10 @@ TYPE
     anyRestParameters-: BOOLEAN;
     (**If the last formal parameter is the special rest parameter @samp{...},
        then this field is set to @code{TRUE}.  Otherwise it is @code{FALSE}. *)
+    raises*: ExceptionNameArray;
+    (**List of exceptions that may be raised by this procedure.
+       @samp{LEN(raises^)} is the number of registered types.  If there are
+       none, @ofield{raises} is a reference to an array of length zero.  *)
   END;
 
 TYPE
@@ -626,6 +646,11 @@ TYPE
        instance of @otype{*OOC:AST:ExtTree.ProcDecl}.  For the pseudo procedure
        representing the module body, this field is @code{NIL}.  In this case,
        the field @ofield{parent} is also @code{NIL}.  *)
+    hasTryStatm*: BOOLEAN;
+    (**If a @samp{TRY} statement is part of the intermediate representation
+       of the procedure, then this field is changed to @code{TRUE}.  This
+       allows the C back-end to insert some ``volatile'' qualifiers to the
+       procedures parameter list, for the sake of the @samp{setjmp} magic.  *)
   END;
 
 CONST
@@ -1569,6 +1594,32 @@ PROCEDURE (constDecl: ConstDecl) Load* (r: Storable.Reader);
   END Load;
 
 
+PROCEDURE InitExceptionName* (exceptionName: ExceptionName; parent: Item;
+                              type: Type);
+  BEGIN
+    InitItem(exceptionName, parent);
+    exceptionName. srcCodeType := type;
+    exceptionName. type := type;
+  END InitExceptionName;
+
+PROCEDURE (exceptionName: ExceptionName) Store* (w: Storable.Writer);
+  BEGIN
+    exceptionName. Store^ (w);
+    (*w. WriteObject (exceptionName. type);*)
+    w. WriteObject (exceptionName. srcCodeType);
+  END Store;
+
+PROCEDURE (exceptionName: ExceptionName) Load* (r: Storable.Reader);
+  VAR
+    obj: Storable.Object;
+  BEGIN
+    exceptionName. Load^ (r);
+    r. ReadObject (obj);
+    exceptionName. srcCodeType := obj(Type);
+    exceptionName. type := exceptionName. srcCodeType;
+  END Load;
+
+
 PROCEDURE (varDecl: VarDecl) SetType* (type: Type);
   PROCEDURE PassPerReference (type: Type): BOOLEAN;
     BEGIN
@@ -1775,6 +1826,7 @@ PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
     procDecl. formalPars := NIL;
     procDecl. linkName := NIL;
     procDecl. procAST := procAST;
+    procDecl. hasTryStatm := FALSE;
   END InitProcDecl;
 
 PROCEDURE (procDecl: ProcDecl) Store* (w: Storable.Writer);
@@ -1807,6 +1859,7 @@ PROCEDURE (procDecl: ProcDecl) Load* (r: Storable.Reader);
     END;
     procDecl.linkName := ReadString8(r);
     procDecl. procAST := NIL;
+    procDecl. hasTryStatm := FALSE;
   END Load;
 
 PROCEDURE (procDecl: ProcDecl) SetNamespace* (ns: Namespace);
@@ -2130,7 +2183,8 @@ PROCEDURE InitFormalPars* (formalPars: FormalPars; parent: Item;
     formalPars. resultType := resultType;
     formalPars. srcCodeResultType := resultType;
     formalPars. params := NIL;
-    formalPars. anyRestParameters := FALSE
+    formalPars. anyRestParameters := FALSE;
+    formalPars. raises := NIL;
   END InitFormalPars;
 
 PROCEDURE (formalPars: FormalPars) EnableRestParameters*;
@@ -2157,6 +2211,14 @@ PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer);
       END
     END;
     w. WriteBool (formalPars. anyRestParameters);
+    IF (formalPars. raises = NIL) THEN
+      w. WriteNum (-1)
+    ELSE
+      w. WriteNum (LEN (formalPars. raises^));
+      FOR i := 0 TO LEN (formalPars. raises^)-1 DO
+        w. WriteObject (formalPars. raises[i])
+      END
+    END;
   END Store;
 
 PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader);
@@ -2188,7 +2250,18 @@ PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader);
         formalPars. params[i] := obj(VarDecl)
       END
     END;
-    r. ReadBool (formalPars. anyRestParameters)
+    r. ReadBool (formalPars. anyRestParameters);
+    
+    r. ReadNum (len);
+    IF (len < 0) THEN
+      formalPars. raises := NIL
+    ELSE
+      NEW (formalPars. raises, len);
+      FOR i := 0 TO len-1 DO
+        r. ReadObject (obj);
+        formalPars. raises[i] := obj(ExceptionName)
+      END
+    END;
   END Load;
 
 

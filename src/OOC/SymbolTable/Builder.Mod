@@ -296,6 +296,16 @@ PROCEDURE (b: Builder) NewPointer* (parent: Sym.Item;
     RETURN ptr
   END NewPointer;
 
+PROCEDURE (b: Builder) NewExceptionName*(parent: Sym.Item;
+                                         type: Sym.Type): Sym.ExceptionName;
+  VAR
+    eName: Sym.ExceptionName;
+  BEGIN
+    NEW(eName);
+    Sym.InitExceptionName(eName, parent, type);
+    RETURN eName;
+  END NewExceptionName;
+
 PROCEDURE (b: Builder) NewFormalPars* (parent: Sym.Item;
                                        position: Sym.Position;
                                        resultType: Sym.Type): Sym.FormalPars;
@@ -329,6 +339,7 @@ PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
                                 NIL, FALSE, FALSE, NIL);
     bodyDecl. formalPars := b. NewFormalPars(bodyDecl, name, NIL);
     NEW (bodyDecl. formalPars. params, 0);
+    NEW (bodyDecl. formalPars. raises, 0);
     
     NEW (mod);
     Sym.InitModule (mod, name, docString, class, callConv, moduleAST,

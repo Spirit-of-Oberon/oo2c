@@ -113,9 +113,12 @@ first declaration is assigned an id.  -->
 
 <!ELEMENT record (field-decl*)>
 
-<!ELEMENT formal-parameters (receiver-decl?, parameter-decl*, result-type?)>
+<!ELEMENT formal-parameters (receiver-decl?, parameter-decl*,
+                             result-type?, exceptions?)>
 
 <!ELEMENT result-type (type-name)>
+
+<!ELEMENT exceptions (type-name)*>
 
 <!ELEMENT type (type-name|pointer|array|record|formal-parameters)>
 
