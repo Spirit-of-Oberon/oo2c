@@ -176,7 +176,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       
     PROCEDURE Trace (lastDefinition: SSA.Instr;
                      storeOut: SSA.Result): BOOLEAN;
-    (**Result is @code{TRUE} if the effects of @oparam{origin} are visible
+    (**Result is @code{TRUE} if the effects of @ovar{origin} are visible
        after completion of this procedure, or by procedures called by this
        procedure, or the memory write must go through because of aliasing
        effects.  *)

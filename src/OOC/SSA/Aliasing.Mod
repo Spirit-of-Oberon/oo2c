@@ -73,8 +73,8 @@ IMPORT
 
 TYPE
   Id* = SHORTINT;
-  (**One of @oconst{noAliasing}, @oconst{sameVariable},
-     @oconst{partialAliasing}, or @oconst{mayAlias}.  *)
+  (**One of @oconst{noAliasing}, @oconst{completelyCovered},
+     @oconst{partiallyCovered}, or @oconst{mayAlias}.  *)
 
 CONST
   noAliasing* = 0;
@@ -98,11 +98,11 @@ CONST
 
 PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
                             instr, reference: SSA.Opnd): Id;
-(**Determines the aliasing status of the designator @oparam{design} with
+(**Determines the aliasing status of the designator @oparam{instr} with
    respect to the designator @oparam{reference}.  A designator is described by
-   a list of operands of class @oconst{Opnd.readDesign} or
-   @oconst{Opnd.writeDesign}, as they appear within instructions like
-   @oconst{Opcode.get} or @oconst{Opcode.set}.
+   a list of operands of class @oconst{*OOC:SSA:Opnd.readDesign} or
+   @oconst{*OOC:SSA:Opnd.writeDesign}, as they appear within instructions like
+   @oconst{*OOC:SSA:Opcode.get} or @oconst{*OOC:SSA:Opcode.set}.
 
    Note: The current state of this procedure reflects the progress of the
    SSA back-end, an only deals with a subset of all possible designators.

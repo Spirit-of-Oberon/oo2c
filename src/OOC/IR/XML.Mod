@@ -38,8 +38,8 @@ PROCEDURE AppendContext(buffer : StringBuffer.StringBuffer; item : Sym.Item);
   END AppendContext;
 
 PROCEDURE TypeName(type : Sym.Type) : String.String;
-(**Return a string describing type @oparam{otype}. For named types, this will
-   be of the form "module.{proc.}type". If there is no name the name of the
+(**Return a string describing type @oparam{type}. For named types, this will
+   be of the form "module.@{proc.@}type". If there is no name the name of the
    type constructor is used (eg. RECORD, ARRAY). *)
 VAR
   name : StringBuffer.StringBuffer;

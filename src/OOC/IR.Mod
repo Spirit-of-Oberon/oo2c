@@ -71,8 +71,8 @@ TYPE
        the construct.
 
        The field is @code{NIL} if, and only if, the node is equal to
-       @ovar{errorExpr}.  In this case, no error or warning should be written,
-       because the node already triggered an error message.  *)
+       @ofield{Builder.errorExpr}.  In this case, no error or warning should be
+       written, because the node already triggered an error message.  *)
   END;
 
 
@@ -107,8 +107,22 @@ TYPE
 TYPE
   Const* = POINTER TO ConstDesc;
   ConstDesc = RECORD
-  (**A constant value, derived from a literal or from a reference to a
-     named constant.  *)
+  (**A constant value, derived from a literal, a reference to a named constant,
+     or created as the result of constant folding.  Mapping from Oberon-2 types
+     to instances of @otype{Language.Value}:
+
+     @table @code
+     @item BOOLEAN
+     @otype{*Language:Boolean.Value}
+
+     @item CHAR string8
+     @otype{*Language:String8.Value}.  Note: String constants can contain any
+     character, including @code{0X}.  Character constants are mapped onto
+     string values of length 1.
+
+     @item SHORTINT INTEGER LONGINT HUGEINT
+     @otype{*Language:Integer.Value}
+     @end table  *)
     (ExpressionDesc)
     value-: Language.Value;
   END;
