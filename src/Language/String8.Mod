@@ -54,6 +54,14 @@ PROCEDURE NewString* (source[NO_COPY]: ARRAY OF CHAR): Value;
     RETURN NewRegion (source, 0, i)
   END NewString;
 
+PROCEDURE NewChar* (source: CHAR): Value;
+  VAR
+    str: ARRAY 1 OF CHAR;
+  BEGIN
+    str[0] := source;
+    RETURN NewRegion (str, 0, 1)
+  END NewChar;
+
 PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Value) & v. value. Equals(y(Value). value)
