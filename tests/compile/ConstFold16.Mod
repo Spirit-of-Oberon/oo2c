@@ -14,6 +14,9 @@ CONST
   diff = a - b;
   intersect = a * b;
   xor = a / b;
+  not = -a;
+  ina = 1 IN a;
+  inb = 1 IN b;
 
 PROCEDURE Test*;
 BEGIN
@@ -24,7 +27,9 @@ BEGIN
   Out.Set(intersect); Out.Ln;
   Out.Set(xor); Out.Ln;
   Out.Set({MINSET..MAXSET}); Out.Ln;
-  Out.Set(-a); Out.Ln;
+  Out.Set(not); Out.Ln;
+  Out.Bool(ina); Out.Ln;
+  Out.Bool(inb); Out.Ln;
 END Test;
 
 END ConstFold16.
