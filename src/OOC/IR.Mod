@@ -22,7 +22,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Language:Boolean, Language:Char, LString := Language:String,
+  Language, Language:Boolean, Language:Char, 
   Language:String8, Language:String16, Language:Integer, Language:Real,
   ADT:Object, ADT:ArrayList, ADT:String,
   Config:Value, BooleanValue := Config:Value:Boolean, 
@@ -1124,14 +1124,15 @@ PROCEDURE (b: Builder) NewStringConst* (sym: Symbol): Expression;
 
 PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
   VAR
-    v: Language.Value;
+    v: Integer.Value;
   BEGIN
     v := Integer.type. ValueOf (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (numberOutOfRange, sym);
       RETURN b. errorExpr
     ELSE
-      RETURN NewConst (sym, Predef.GetType (Predef.integer), v)
+(*      RETURN NewConst (sym, Predef.GetType (Predef.integer), v)*)
+      RETURN NewConst (sym, Predef.SmallestIntType (v), v)
     END
   END NewIntConst10;
 
