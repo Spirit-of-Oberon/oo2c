@@ -6,7 +6,7 @@ VAR
   a: INTEGER;
   x: LONGINT;
 
-PROCEDURE F(VAR p: INTEGER): INTEGER;
+PROCEDURE F(VAR p: INTEGER): LONGINT;
   BEGIN
     x := 1;
     p := 2;
@@ -15,7 +15,7 @@ PROCEDURE F(VAR p: INTEGER): INTEGER;
 
 PROCEDURE Test*;
   BEGIN
-    Out.Int (F(a), 0); Out.Ln;
+    Out.Int (SHORT (F(a)), 0); Out.Ln;
   END Test;
 
 END VarPar1c.

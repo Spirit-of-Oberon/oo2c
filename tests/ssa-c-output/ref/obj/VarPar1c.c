@@ -1,7 +1,7 @@
 #include "./VarPar1c.d"
 #include "__oo2c.h"
 
-static OOC_INT16 VarPar1c__F(OOC_INT16 *p) {
+static OOC_INT32 VarPar1c__F(OOC_INT16 *p) {
   register OOC_INT32 i0;
 
   VarPar1c__x = 1;
