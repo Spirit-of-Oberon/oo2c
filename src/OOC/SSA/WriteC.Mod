@@ -12,7 +12,8 @@ IMPORT
 TYPE
   RegisterSwap = RECORD
     source, dest: String.String;
-    readCount: LONGINT;  (* number of reads of `dest' *)
+    readCount: LONGINT;                (* number of reads of `dest' *)
+    ctype: DeclWriter.BasicTypeId;     (* type of transfered value *)
   END;
   SwapArray = POINTER TO ARRAY OF RegisterSwap;
   
@@ -26,6 +27,30 @@ TYPE
     lengthSwapArray: LONGINT;            (* used by WriteCollect *)
     swapHelperVars: LONGINT;
   END;
+
+
+
+PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): DeclWriter.BasicTypeId;
+  BEGIN
+    CASE subclass OF
+    | Opcode.scNone: RETURN DeclWriter.void
+    | Opcode.scAddress: RETURN DeclWriter.ptr
+    | Opcode.scUnsigned8: RETURN DeclWriter.uint8
+    | Opcode.scUnsigned16: RETURN DeclWriter.uint16
+    | Opcode.scUnsigned32: RETURN DeclWriter.uint32
+    | Opcode.scUnsigned64: RETURN DeclWriter.uint64
+    | Opcode.scSigned8: RETURN DeclWriter.int8
+    | Opcode.scSigned16: RETURN DeclWriter.int16
+    | Opcode.scSigned32: RETURN DeclWriter.int32
+    | Opcode.scSigned64: RETURN DeclWriter.int64
+    END;
+  END SubclassToBasicType;
+
+PROCEDURE RegisterType (ctype: DeclWriter.BasicTypeId): DeclWriter.BasicTypeId;
+  BEGIN
+    RETURN DeclWriter.int32
+  END RegisterType;
+
 
 PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
                      registerMap: Dictionary.Dictionary): Writer;
@@ -47,7 +72,8 @@ PROCEDURE (w: Writer) ClearSwapData;
     w. swapHelperVars := 0;
   END ClearSwapData;
 
-PROCEDURE (w: Writer) AddSwapData (source, dest: String.String);
+PROCEDURE (w: Writer) AddSwapData (source, dest: String.String;
+                                   ctype: DeclWriter.BasicTypeId);
   VAR
     new: SwapArray;
     i: LONGINT;
@@ -62,6 +88,7 @@ PROCEDURE (w: Writer) AddSwapData (source, dest: String.String);
       END;
       w. swapArray[w. lengthSwapArray]. source := source;
       w. swapArray[w. lengthSwapArray]. dest := dest;
+      w. swapArray[w. lengthSwapArray]. ctype := ctype;
       w. swapArray[w. lengthSwapArray]. readCount := 0;
       INC (w. lengthSwapArray)
     END;
@@ -115,9 +142,9 @@ PROCEDURE (w: Writer) IntroduceHelperVar (i: LONGINT);
     END;
     w. swapArray[i]. readCount := 0;
 
-    w. WriteString("{register typeof(");  (* FIXME...typeof() is a gcc-ism *)
-    w. WriteString (w. swapArray[i]. dest. array^);
-    w. WriteString (") ");
+    w. WriteString ("{register ");
+    w. WriteString (w. basicType[RegisterType (w. swapArray[i]. ctype)]. repr);
+    w. WriteString (" ");
     w. WriteString (h. array^);
     w. WriteChar ("=");
     w. WriteString (w. swapArray[i]. dest. array^);
@@ -131,22 +158,6 @@ PROCEDURE (w: Writer) FixupHelperVars;
       DEC (w. swapHelperVars)
     END;
   END FixupHelperVars;
-
-PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): DeclWriter.BasicTypeId;
-  BEGIN
-    CASE subclass OF
-    | Opcode.scNone: RETURN DeclWriter.void
-    | Opcode.scAddress: RETURN DeclWriter.ptr
-    | Opcode.scUnsigned8: RETURN DeclWriter.uint8
-    | Opcode.scUnsigned16: RETURN DeclWriter.uint16
-    | Opcode.scUnsigned32: RETURN DeclWriter.uint32
-    | Opcode.scUnsigned64: RETURN DeclWriter.uint64
-    | Opcode.scSigned8: RETURN DeclWriter.int8
-    | Opcode.scSigned16: RETURN DeclWriter.int16
-    | Opcode.scSigned32: RETURN DeclWriter.int32
-    | Opcode.scSigned64: RETURN DeclWriter.int64
-    END;
-  END SubclassToBasicType;
 
 PROCEDURE Fixup (pb: SSA.ProcBlock);
   VAR
@@ -170,11 +181,6 @@ PROCEDURE Fixup (pb: SSA.ProcBlock);
     END;
   END Fixup;
 
-
-PROCEDURE RegisterType (ctype: DeclWriter.BasicTypeId): DeclWriter.BasicTypeId;
-  BEGIN
-    RETURN DeclWriter.int32
-  END RegisterType;
 
 PROCEDURE WriteTypeCast (w: DeclWriter.Writer; ctype: DeclWriter.BasicTypeId);
   VAR
@@ -378,7 +384,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
           targetVar := w. registerMap. Get (res);
           IF w. registerMap. HasKey (opnd. arg) THEN
             sourceVar := w. registerMap. Get (opnd. arg);
-            w. AddSwapData (sourceVar(String.String), targetVar(String.String))
+            w. AddSwapData (sourceVar(String.String),
+                            targetVar(String.String),
+                            SubclassToBasicType (res. subclass))
           END;
         END;
         opnd := opnd. nextOpnd; res := res. nextResult
