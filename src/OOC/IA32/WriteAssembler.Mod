@@ -78,7 +78,7 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
             END
           | value: Boxed.String DO
             IF (type(Sym.PredefType). id = Predef.char) THEN
-              IntStr.IntToStr (value. value. CharAt(0), str);
+              IntStr.IntToStr(ORD(value.value.CharAt(0)), str);
             ELSE
               s := w. GetStringLabel (value);
               chars := s.CharsLatin1();

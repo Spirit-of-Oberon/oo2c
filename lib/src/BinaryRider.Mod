@@ -286,11 +286,11 @@ PROCEDURE (r: Reader) ReadStr* (VAR s: Object.String);
     sizeBuffer8 = 1024;
     sizeBuffer32 = 512;
   VAR
-    len: LONGINT;
+    len, x: LONGINT;
     buffer8: ARRAY sizeBuffer8 OF CHAR;
     dynBuffer8: POINTER TO ARRAY OF CHAR;
-    buffer32: ARRAY sizeBuffer32 OF Object.Char;
-    dynBuffer32: POINTER TO ARRAY OF Object.Char;
+    buffer32: ARRAY sizeBuffer32 OF UCS4CHAR;
+    dynBuffer32: POINTER TO ARRAY OF UCS4CHAR;
     i: LONGINT;
   BEGIN
     IF (r.res = done) THEN
@@ -313,13 +313,15 @@ PROCEDURE (r: Reader) ReadStr* (VAR s: Object.String);
         len := -len-1;
         IF (len < sizeBuffer32) THEN
           FOR i := 0 TO len-1 DO
-            r.ReadNum(buffer32[i]);
+            r.ReadNum(x);
+            buffer32[i] := UCS4CHR(x);
           END;
           s := Object.NewUCS4Region(buffer32, 0, len);
         ELSE
           NEW(dynBuffer32, len);
           FOR i := 0 TO len-1 DO
-            r.ReadNum(buffer32[i]);
+            r.ReadNum(x);
+            buffer32[i] := UCS4CHR(x);
           END;
           s := Object.NewUCS4Region(dynBuffer32^, 0, len);
         END;
@@ -514,7 +516,7 @@ PROCEDURE (w: Writer) WriteStr*(s: Object.String);
         w.WriteNum(-s.length-1);
         chars32 := s.CharsUCS4();
         FOR i := 0 TO s.length-1 DO
-          w.WriteNum(chars32[i]);
+          w.WriteNum(ORD(chars32[i]));
         END;
       END;
     END;

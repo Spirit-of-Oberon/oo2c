@@ -298,7 +298,7 @@ VAR
   str: ARRAY 2 OF CHAR;
 BEGIN
   IF c.ValidEval(op.operand, value) THEN
-    str[0] := CAP(CHR(value(Boxed.String).value.CharAt(0)));
+    str[0] := CAP(SHORT(SHORT(value(Boxed.String).value.CharAt(0))));
     str[1] := 0X;
     c.result := c.builder.NewConst(op.sym, Predef.GetType(Predef.char), 
                                    Boxed.NewString(Object.NewLatin1(str)));
@@ -500,7 +500,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
 
   PROCEDURE CharOp () : Boxed.Boolean;
   VAR
-    left, right : Object.Char; result : BOOLEAN;
+    left, right : UCS4CHAR; result : BOOLEAN;
   BEGIN
     left := l(Boxed.String).value.CharAt(0);
     right := r(Boxed.String).value.CharAt(0);
@@ -571,12 +571,6 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
   VAR
     value: Boxed.Object;
     str: Boxed.String;
-    
-  PROCEDURE IsPredefType(type: Sym.Type; id: Sym.PredefId): BOOLEAN;
-    BEGIN
-      RETURN (type IS Sym.PredefType) & (type(Sym.PredefType). id = id);
-    END IsPredefType;
-
   BEGIN
     (* FIXME... this needs to be made "safe": if there is no code
        that performs the required type conversion, then "op"
@@ -588,7 +582,7 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
       IF TR.IsIntegerType (op. type) &
          TR.IsCharType (op. expr. type) THEN
         (* type conversion from character to integer value (ORD) *)
-        value := BigInt.NewInt(value(Boxed.String).value.CharAt(0));
+        value := BigInt.NewInt(ORD(value(Boxed.String).value.CharAt(0)));
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
       ELSIF TR.IsCharType (op. type) &

@@ -90,8 +90,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       BEGIN
         WITH type: Sym.Array DO
           IF type.isOpenArray THEN
-            len := pb.AddGetLengthInstr (baseArray(SSA.Instr),
-                                         dim+1, type(Sym.Array));
+            len := pb.AddGetLengthInstr (baseArray(SSA.Instr), dim+1, type);
           ELSE
             len := pb.GetConstInt(type.length);
           END;

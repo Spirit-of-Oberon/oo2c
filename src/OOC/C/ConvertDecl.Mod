@@ -373,7 +373,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
                 (* ignore forward declaration, or we get duplicates *)
               ELSE
                 decl := ConvertDecl (w, ptr, mode);
-                IF (decl. name. CharAt(0) # ORD("(")) THEN
+                IF (decl. name. CharAt(0) # "(") THEN
                   (* Gross hack: If the declarations name doesn't look like a
                      name, then omit it from the output.  This can (but
                      probably shouldn't ;-) be used to define functions and

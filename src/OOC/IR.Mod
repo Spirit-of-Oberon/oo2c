@@ -1746,8 +1746,8 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
       ELSIF (i >= 2) & (str[i-1] = "X") & (hexCount+1 = i) THEN
         (* character written has hexadecimal constant nnX *)
         IF HexToInt (str, "X", ord) &
-           ((Predef.minUCS4Char) <= ord) &
-           (ord <= (Predef.maxUCS4Char)) THEN
+           (ORD(Predef.minUCS4Char) <= ord) &
+           (ord <= ORD(Predef.maxUCS4Char)) THEN
           RETURN ord;
         ELSE  (* overflow *)
           RETURN -1;
@@ -1771,7 +1771,7 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
         type := Predef.ucs4char;
       END;
       RETURN NewConst(sym, Predef.GetType(type),
-                      Boxed.NewString(Object.NewUCS4Char(v)));
+                      Boxed.NewString(Object.NewUCS4Char(UCS4CHR(v))));
     END
   END NewCharConst16;
 
@@ -5300,8 +5300,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           (* FIXME... this kind of overflow checking should be done in
              ConstFold, for the argument and the result of each computation *)
           dummy := b.AssertIntConst(arguments[0],
-                                    (Predef.minUCS4Char),
-                                    (Predef.maxUCS4Char));
+                                    ORD(Predef.minUCS4Char),
+                                    ORD(Predef.maxUCS4Char));
           (* FIXME... the last should be +1 *)
         END;
         RETURN b.NewTypeConv (Predef.GetType (Predef.ucs4char), arguments[0]);

@@ -87,7 +87,7 @@ CONST
 CONST
   minChar* = MIN(CHAR);         maxChar* = MAX(CHAR);
   minLongChar* = MIN(LONGCHAR); maxLongChar* = MAX(LONGCHAR);
-  minUCS4Char* = 0;             maxUCS4Char* = 7FFFFFFFH;
+  minUCS4Char* = MIN(UCS4CHAR); maxUCS4Char* = MAX(UCS4CHAR);
   
 VAR
   minConst, maxConst: ARRAY lastId+1 OF Boxed.Object;

@@ -26,24 +26,20 @@ TYPE
   END;
 
 TYPE
-  Char* = LONGINT;
-  (**Type of a single character within a string.  A value of this type holds a
-     Unicode code point in the range @samp{[U+0000, U+10FFFF}.  Values from
-     the surrogate code ranges @samp{[U+DC00, U+DFFF} are not allowed.
-     
-     [Note: If we introduce a 32-bit character type, then it may make sense to
-     change the base type.]  *)
   String* = POINTER TO StringDesc;
   StringArray* = ARRAY OF String;
   StringArrayPtr* = POINTER TO StringArray;
   StringDesc = RECORD [ABSTRACT]
-  (**A string holds a sequence of @otype{Char}.  A @otype{String} can hold any
-     Oberon-2 string, but the reverse is not true, even if the character range
-     is restricted: @samp{U+0000} can appear in a @otype{String}, but not in an
-     Oberon-2 string.
+  (**A string is a sequence of Unicode characters.  Each character holds a
+     Unicode code point in the range @samp{[U+0000, U+10FFFF}.  Values from the
+     surrogate code ranges @samp{[U+DC00, U+DFFF} are not allowed.
 
      Strings are immutable.  That is, over the whole lifetime of a string, its
-     address, type, length, and content stays the same.  *)
+     address, type, length, and content stays the same.
+
+     A @otype{String} can hold any Oberon-2 string, but the reverse is not
+     true, even if the character range is restricted: @samp{U+0000} can appear
+     in a @otype{String}, but not in an Oberon-2 string.  *)
     (ObjectDesc)
     length-: LONGINT;
     (**Number of code points in the sequence.  Because surrogate pairs
@@ -55,7 +51,7 @@ TYPE
   (**Note: The elements of this type should be considered read-only in
      importing modules, similar to read-only exported record fields.  This
      restriction may be enforced by the OOC2 compiler at a later stage.  *)
-  CharsUCS4* = POINTER TO ARRAY OF Char;
+  CharsUCS4* = POINTER TO ARRAY OF UCS4CHAR;
   (**Note: The elements of this type should be considered read-only in
      importing modules, similar to read-only exported record fields.  This
      restriction may be enforced by the OOC2 compiler at a later stage.  *)
@@ -210,8 +206,8 @@ PROCEDURE NewString32(source: S.ADDRESS; length: LONGINT): String32;
     NEW(d, length+1);
     s. length := length;
     s. data := d;
-    S.MOVE(source, S.ADR(d^), length*SIZE(Char));
-    d[length] := 0;
+    S.MOVE(source, S.ADR(d^), length*SIZE(UCS4CHAR));
+    d[length] := 0X;
     RETURN s;
   END NewString32;
 
@@ -275,7 +271,7 @@ PROCEDURE NewUCS2*(str[NO_COPY]: ARRAY OF LONGCHAR): String;
     s. length := i;
     s. data := d;
     FOR j := 0 TO i DO
-      d[j] := ORD(str[j]);
+      d[j] := str[j];
     END;
     RETURN s;
   END NewUCS2;
@@ -300,9 +296,9 @@ PROCEDURE NewUCS2Region*(str[NO_COPY]: ARRAY OF LONGCHAR; start, end: LONGINT): 
     s. length := i;
     s. data := d;
     FOR j := start TO end-1 DO
-      d[j-start] := ORD(str[j]);
+      d[j-start] := str[j];
     END;
-    d[i] := 0;
+    d[i] := 0X;
     RETURN s;
   END NewUCS2Region;
 
@@ -321,12 +317,12 @@ PROCEDURE NewUCS2Char*(ch: LONGCHAR): String;
     NEW(d, 2);
     s. length := 1;
     s. data := d;
-    d[0] := ORD(ch);
-    d[1] := 0;
+    d[0] := ch;
+    d[1] := 0X;
     RETURN s;
   END NewUCS2Char;
 
-PROCEDURE NewUCS4Region*(str[NO_COPY]: ARRAY OF Char;
+PROCEDURE NewUCS4Region*(str[NO_COPY]: ARRAY OF UCS4CHAR;
                           start, end: LONGINT): String;
 (**Create a string value from @samp{str[start, end]} without any translation.
 
@@ -338,7 +334,7 @@ PROCEDURE NewUCS4Region*(str[NO_COPY]: ARRAY OF Char;
     RETURN NewString32 (S.ADR(str[start]), end-start);
   END NewUCS4Region;
 
-PROCEDURE NewUCS4Char*(ch: Char): String;
+PROCEDURE NewUCS4Char*(ch: UCS4CHAR): String;
 (**Create a string value of length 1 from @samp{ch} without any translation.
 
    @precond
@@ -348,7 +344,7 @@ PROCEDURE NewUCS4Char*(ch: Char): String;
     RETURN NewString32(S.ADR(ch), 1);
   END NewUCS4Char;
 
-PROCEDURE NewUCS4*(str[NO_COPY]: ARRAY OF Char): String;
+PROCEDURE NewUCS4*(str[NO_COPY]: ARRAY OF UCS4CHAR): String;
 (**Create a string value from @oparam{str} without any translation.
 
    @precond
@@ -359,7 +355,7 @@ PROCEDURE NewUCS4*(str[NO_COPY]: ARRAY OF Char): String;
     i: LONGINT;
   BEGIN
     i := 0;
-    WHILE(str[i] # 0) DO
+    WHILE(str[i] # 0X) DO
       INC(i);
     END;
     RETURN NewString32 (S.ADR(str), i);
@@ -389,11 +385,11 @@ PROCEDURE Concat2* (s1, s2: String): String;
         c32.length := s1.length+s2.length;
         NEW(c32.data, s1.length+s2.length+1);
         FOR i := 0 TO s1.length-1 DO
-          c32.data[i] := ORD(s1.data[i]);
+          c32.data[i] := s1.data[i];
         END;
         S.MOVE(S.ADR(s2.data^),
                     S.ADR(c32.data[s1.length]),
-                    s2.length*SIZE(Char)+SIZE(Char));
+                    s2.length*SIZE(UCS4CHAR)+SIZE(UCS4CHAR));
         RETURN c32;
       END;
       
@@ -404,9 +400,9 @@ PROCEDURE Concat2* (s1, s2: String): String;
         NEW(c32.data, s1.length+s2.length+1);
         S.MOVE(S.ADR(s1.data^),
                     S.ADR(c32.data^),
-                    s1.length*SIZE(Char));
+                    s1.length*SIZE(UCS4CHAR));
         FOR i := 0 TO s2.length DO
-          c32.data[s1.length+i] := ORD(s2.data[i]);
+          c32.data[s1.length+i] := s2.data[i];
         END;
         RETURN c32;
         
@@ -416,10 +412,10 @@ PROCEDURE Concat2* (s1, s2: String): String;
         NEW(c32.data, s1.length+s2.length+1);
         S.MOVE(S.ADR(s1.data^),
                     S.ADR(c32.data^),
-                    s1.length*SIZE(Char));
+                    s1.length*SIZE(UCS4CHAR));
         S.MOVE(S.ADR(s2.data^),
                     S.ADR(c32.data[s1.length]),
-                    s2.length*SIZE(Char)+SIZE(Char));
+                    s2.length*SIZE(UCS4CHAR)+SIZE(UCS4CHAR));
         RETURN c32;
       END;
     END;
@@ -463,7 +459,7 @@ PROCEDURE (s: String8) Equals*(y: Object): BOOLEAN;
         RETURN (i = s.length);
       | y: String32 DO
         i := 0;
-        WHILE (i # s.length) & (ORD(s.data[i]) = y.data[i]) DO
+        WHILE (i # s.length) & (s.data[i] = y.data[i]) DO
           INC(i);
         END;
         RETURN (i = s.length);
@@ -480,7 +476,7 @@ PROCEDURE (s: String32) Equals*(y: Object): BOOLEAN;
     ELSE
       WITH y: String8 DO
         i := 0;
-        WHILE (i # s.length) & (s.data[i] = ORD(y.data[i])) DO
+        WHILE (i # s.length) & (s.data[i] = y.data[i]) DO
           INC(i);
         END;
         RETURN (i = s.length);
@@ -516,13 +512,13 @@ PROCEDURE (s: String8) Compare*(y: Object): LONGINT;
     | y: String32 DO
       IF (y.length < min) THEN min := y.length; END;
       i := 0;
-      WHILE (i # min) & (ORD(s.data[i]) = y.data[i]) DO
+      WHILE (i # min) & (s.data[i] = y.data[i]) DO
         INC(i);
       END;
       IF (i = min) THEN
         RETURN (s.length - y.length);
       ELSE
-        RETURN (ORD(s.data[i]) - y.data[i]);
+        RETURN (ORD(s.data[i]) - ORD(y.data[i]));
       END;
     END;
   END Compare;
@@ -535,13 +531,13 @@ PROCEDURE (s: String32) Compare*(y: Object): LONGINT;
     WITH y: String8 DO
       IF (y.length < min) THEN min := y.length; END;
       i := 0;
-      WHILE (i # min) & (s.data[i] = ORD(y.data[i])) DO
+      WHILE (i # min) & (s.data[i] = y.data[i]) DO
         INC(i);
       END;
       IF (i = min) THEN
         RETURN (s.length - y.length);
       ELSE
-        RETURN (s.data[i] - ORD(y.data[i]));
+        RETURN (ORD(s.data[i]) - ORD(y.data[i]));
       END;
     | y: String32 DO
       IF (y.length < min) THEN min := y.length; END;
@@ -552,7 +548,7 @@ PROCEDURE (s: String32) Compare*(y: Object): LONGINT;
       IF (i = min) THEN
         RETURN (s.length - y.length);
       ELSE
-        RETURN (s.data[i] - y.data[i]);
+        RETURN (ORD(s.data[i]) - ORD(y.data[i]));
       END;
     END;
   END Compare;
@@ -589,7 +585,7 @@ PROCEDURE (s: String32) HashCode*(): Hash;
     (* this is intended as a reimplementation of the Python hash code on
        strings; any errors are mine, of course *)
     len := s.length;
-    x := ASH(s.data[0], 7);
+    x := ASH(ORD(s.data[0]), 7);
     p := 0;
     WHILE (p # len) DO
       <* PUSH; OverflowCheck := FALSE *>
@@ -602,15 +598,15 @@ PROCEDURE (s: String32) HashCode*(): Hash;
     RETURN x
   END HashCode;
 
-PROCEDURE (s: String) [ABSTRACT] CharAt* (index: LONGINT): Char;
+PROCEDURE (s: String) [ABSTRACT] CharAt* (index: LONGINT): UCS4CHAR;
   END CharAt;
 
-PROCEDURE (s: String8) CharAt* (index: LONGINT): Char;
+PROCEDURE (s: String8) CharAt* (index: LONGINT): UCS4CHAR;
   BEGIN
-    RETURN ORD(s. data[index]);
+    RETURN s. data[index];
   END CharAt;
 
-PROCEDURE (s: String32) CharAt* (index: LONGINT): Char;
+PROCEDURE (s: String32) CharAt* (index: LONGINT): UCS4CHAR;
   BEGIN
     RETURN s. data[index];
   END CharAt;
@@ -629,17 +625,17 @@ PROCEDURE (s: String32) Substring* (start, end: LONGINT): String;
   END Substring;
 
 
-PROCEDURE (s: String) [ABSTRACT] IndexOf*(char: Char; pos: LONGINT): LONGINT;
+PROCEDURE (s: String) [ABSTRACT] IndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT;
   END IndexOf;
 
-PROCEDURE (s: String8) IndexOf* (char: Char; pos: LONGINT): LONGINT;
+PROCEDURE (s: String8) IndexOf* (char: UCS4CHAR; pos: LONGINT): LONGINT;
   VAR
     endpos: LONGINT;
   BEGIN
-    IF (char <= ORD(MAX(CHAR))) THEN
+    IF (char <= MAX(CHAR)) THEN
       endpos := s.length;
       WHILE (pos # endpos) DO
-        IF (s.data[pos] = CHR(char)) THEN
+        IF (s.data[pos] = char) THEN
           RETURN pos;
         END;
         INC (pos)
@@ -648,7 +644,7 @@ PROCEDURE (s: String8) IndexOf* (char: Char; pos: LONGINT): LONGINT;
     RETURN -1
   END IndexOf;
 
-PROCEDURE (s: String32) IndexOf* (char: Char; pos: LONGINT): LONGINT;
+PROCEDURE (s: String32) IndexOf* (char: UCS4CHAR; pos: LONGINT): LONGINT;
   VAR
     endpos: LONGINT;
   BEGIN

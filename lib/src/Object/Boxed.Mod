@@ -404,7 +404,7 @@ PROCEDURE (v: String) ToString*(): Obj.String;
     sb: StringBuffer.StringBuffer;
     chars: Obj.CharsLatin1;
   BEGIN
-    i := v. value. IndexOf (ORD('"'), 0);
+    i := v. value. IndexOf ('"', 0);
     IF (i < 0) THEN
       delim := '"'
     ELSE

@@ -475,7 +475,7 @@ BEGIN
   ELSE
     res := object.ToString();
     IF (res # NIL) THEN
-      str.Append(res(Object.String));
+      str.Append(res);
     ELSE
       type := RT0.TypeOf(object);
       str.AppendChar("[");

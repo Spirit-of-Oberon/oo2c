@@ -585,7 +585,7 @@ CONST
                result := token.value; GetSym
              ELSIF (token.sym = Scanner.string) & (token.name.length = 3) THEN
                (* allow character constants in expressions *)
-               result := token.name.CharAt(1); GetSym;
+               result := ORD(token.name.CharAt(1)); GetSym;
              ELSIF token.sym = Scanner.lbracket THEN
                (* bracket indicates either a nested expression OR a type cast *)
                GetSym;

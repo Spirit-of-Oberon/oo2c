@@ -218,22 +218,22 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
               (sa.CharAt(i) = sb.CharAt(i)) DO
           INC(i);
         END;
-        WHILE (i # 0) & (sa.CharAt(i-1) # ORD("/")) DO
+        WHILE (i # 0) & (sa.CharAt(i-1) # "/") DO
           DEC(i);
         END;
         
         IF (i = 0) OR
-           ((sa.CharAt(i-1) = ORD("/")) &
-            (sb.CharAt(i-1) = ORD("/"))) THEN
+           ((sa.CharAt(i-1) = "/") &
+            (sb.CharAt(i-1) = "/")) THEN
           (* sa and sb have the same prefix ending with a "/"; check that both
              have no "/" in the rest of their path *)
           j := i;
-          WHILE (j # sa.length) & (sa.CharAt(j) # ORD("/")) DO
+          WHILE (j # sa.length) & (sa.CharAt(j) # "/") DO
             INC (j);
           END;
           IF (j = sa.length) THEN
             j := i;
-            WHILE (j # sb.length) & (sb.CharAt(j) # ORD("/")) DO
+            WHILE (j # sb.length) & (sb.CharAt(j) # "/") DO
               INC (j);
             END;
             RETURN (j = sb.length)
@@ -256,7 +256,7 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
         (* extract name of target directory *)
         dir := list(Package.File).destName;
         i := dir.length;
-        WHILE (i # 0) & (dir.CharAt(i-1) # ORD("/")) DO
+        WHILE (i # 0) & (dir.CharAt(i-1) # "/") DO
           DEC(i);
         END;
         string := dir.Substring(0, i);

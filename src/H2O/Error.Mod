@@ -19,10 +19,10 @@ BEGIN
   b := StringBuffer.New("");
   i := 0;
   WHILE i < format.length DO
-    ch := CHR(format.CharAt(i));
+    ch := SHORT(SHORT(format.CharAt(i)));
     IF ch = "$" THEN
       INC(i);
-      ch := CHR(format.CharAt(i));
+      ch := SHORT(SHORT(format.CharAt(i)));
       CASE ORD(ch) - ORD('0') OF
       | 0: b.AppendObject(p1);
       | 1: b.AppendObject(p2);

@@ -451,7 +451,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
             (* note: the character value is cast to OOC_CHAR8 to avoid
                any problems if characters are interpreted as signed values
                by default; that is, '\377' is _not_ -1 *)
-            charValue := s. CharAt(0);
+            charValue := ORD(s.CharAt(0));
             w. WriteString ("(OOC_CHAR8)'");
             WriteChar(charValue);
             w. WriteChar ("'");
@@ -459,10 +459,10 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
             w. WriteChar (delim);
             i := 0; len := s. length;
             WHILE (i # len) DO
-              IF (s.CharAt(i) = ORD(delim)) THEN
+              IF (s.CharAt(i) = delim) THEN
                 w. WriteString (quotedDelim)
               ELSE  (* note: this is a tidbit slow for large strings *)
-                WriteChar(s.CharAt(i))
+                WriteChar(ORD(s.CharAt(i)))
               END;
               INC (i)
             END;
@@ -477,7 +477,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
             | Predef.ucs4char:
               w. WriteString ("(OOC_CHAR32)");
             END;
-            charValue := s.CharAt(0);
+            charValue := ORD(s.CharAt(0));
             IF (charValue < ORD (" ")) OR (charValue >= 127) OR
                (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
               w. textWriter. WriteLInt (charValue, 0);
@@ -502,7 +502,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
               IF (i # 0) THEN
                 w. WriteChar (",");
               END;
-              w. textWriter. WriteLInt (s.CharAt(i), 0);
+              w. textWriter. WriteLInt (ORD(s.CharAt(i)), 0);
               INC (i)
             END;
             IF (i # 0) THEN
