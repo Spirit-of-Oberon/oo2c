@@ -169,7 +169,10 @@ PROCEDURE (rep: Repository) GetResource* (package, path: ARRAY OF CHAR): URI.URI
       Strings.Append ("/", p);
       Strings.Append (path, p);
     END;
-    uri := URIParser.NewURI (p, rep. relativeBaseURI, res);
+
+    (* can't use relative URI here, or the installation tarball of oo2c breaks
+       when it tries to create a relative URI for it  *)
+    uri := URIParser.NewURI (p, rep. baseURI, res);
     
     IF (res # NIL) THEN
       RETURN NIL
