@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic73 generic74">-->
+  select ="&SetupTestCasesWithOut; assign18 opExprCompat15 opExprCompat16">-->
 
   &TestSetupWithOut;
     
@@ -65,6 +65,9 @@
     <test id="assign17" type="run" file="Assign17.Mod" output="Assign17.Ref">
       Right hand of assignment is a type guard applied to a
       dereferenced record pointer.
+    </test>
+    <test id="assign18" type="reject" file="Assign18.Mod">
+      Right hand side is too large to fit into a <code>HUGEINT</code>.
     </test>
     
     <test id="return1" type="reject" file="Return1.Mod">
@@ -1054,61 +1057,55 @@
     <test id="opTypeGuard10" type="reject" file="OpTypeGuard10.Mod">
       Applying a type guard type to a value parameter.
     </test>
+
     <test id="opExprCompat1" type="run" file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
       Excercise combinations of different operand types.
     </test>
-    
     <test id="opExprCompat2" type="reject" file="OpExprCompat2.Mod">
       Types are allowed for operator, but not expression-compatible.
     </test>
-
     <test id="opExprCompat3" type="reject" file="OpExprCompat3.Mod">
       Types are allowed for operator, but not expression-compatible.
     </test>
-
     <test id="opExprCompat4" type="reject" file="OpExprCompat4.Mod">
       Types are allowed for operator, but not expression-compatible.
     </test>
-
     <test id="opExprCompat5" type="reject" file="OpExprCompat5.Mod">
       Types are allowed for operator, but not expression-compatible.
     </test>
-
     <test id="opExprCompat6" type="reject" file="OpExprCompat6.Mod">
       Types are allowed for operator, but not expression-compatible.
     </test>
-
     <test id="opExprCompat7" type="reject" file="OpExprCompat7.Mod">
       Types are allowed for operator, but not expression-compatible.
     </test>
-
     <test id="opExprCompat8" type="reject" file="OpExprCompat8.Mod">
       Types are allowed for operator, but not expression-compatible.
     </test>
-
     <test id="opExprCompat9" type="reject" file="OpExprCompat9.Mod">
       Result of numeric operator is "widened" to largest operand.
     </test>
-
     <test id="opExprCompat10" type="reject" file="OpExprCompat10.Mod">
       Result of numeric operator is "widened" to largest operand.
     </test>
-
     <test id="opExprCompat11" type="reject" file="OpExprCompat11.Mod">
       Result of numeric operator is "widened" to largest operand.
     </test>
-
     <test id="opExprCompat12" type="reject" file="OpExprCompat12.Mod">
       Result of numeric operator is "widened" to largest operand.
     </test>
-
     <test id="opExprCompat13" type="reject" file="OpExprCompat13.Mod">
       Result of numeric operator is "widened" to largest operand.
     </test>
-
     <test id="opExprCompat14" type="reject" file="OpExprCompat14.Mod">
       Result of numeric operator is "widened" to largest operand.
+    </test>
+    <test id="opExprCompat15" type="reject" file="OpExprCompat15.Mod">
+      Result of numeric operator does not fit into largest integer type.
+    </test>
+    <test id="opExprCompat16" type="reject" file="OpExprCompat16.Mod">
+      Left side of numeric operator does not fit into largest integer type.
     </test>
     
     
@@ -1895,6 +1892,8 @@
     <reject-info id="assign14" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
     <reject-info id="assign15" pos='%Out :=' msg="This must be a variable"/>
     <reject-info id="assign16" pos='%Alp :=' msg="This must be a variable"/>
+    <reject-info id="assign18" pos='i %:= 92233'
+                 msg="Expression not compatible with variable type `HUGEINT'"/>
         
     <reject-info id="return1" pos="RETURN %123" msg="RETURN must not provide a result value"/>
     <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>
@@ -2158,6 +2157,11 @@
         msg="Expression not compatible with variable type `INTEGER'"/>
     <reject-info id="opExprCompat14" pos=" %:="
         msg="Expression not compatible with variable type `REAL'"/>
+    <reject-info id="opExprCompat15" pos='i %:= 92233'
+                 msg="Expression not compatible with variable type `HUGEINT'"/>
+    <reject-info id="opExprCompat16" pos='i %:= 92233'
+                 msg="Expression not compatible with variable type `HUGEINT'"/>
+
     <reject-info id="opString4" pos=" c %:="
         msg="Expression not compatible with variable type `CHAR'"/>
     <reject-info id="opTypeGuard2" pos=" a(%INTEGER)"

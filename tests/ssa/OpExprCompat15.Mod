@@ -1,0 +1,7 @@
+MODULE OpExprCompat15;
+
+VAR
+i: HUGEINT;
+BEGIN
+i := 9223372036854775807+1;
+END OpExprCompat15.

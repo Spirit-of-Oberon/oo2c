@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:TypeRules;
 (*  Defines the type rules of the language.
-    Copyright (C) 2000-2003  Michael van Acken
+    Copyright (C) 2000-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -194,7 +194,8 @@ PROCEDURE IsIntegerType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is an integer type.  *)
   BEGIN
     WITH type: Sym.PredefType DO
-      RETURN (type. id IN {Predef.shortint .. Predef.real-1})
+      RETURN (type. id IN {Predef.shortint .. Predef.real-1,
+                           Predef.outOfRangeInt})
     ELSE
       RETURN FALSE
     END;
