@@ -385,15 +385,15 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       res: Msg.Msg;
       remoteURI, relativeURI: URI.URI;
       baseURI: URI.HierarchicalURI;
-      keys: ArrayList.ArrayList;
+      keys: Object.ObjectArrayPtr;
     BEGIN
       thisModule := repositories. GetModule (module. name. str^);
       baseURI := thisModule. GetURI (Repository.modInterfaceHTML, res);
       ASSERT (res = NIL);
       
       keys := modList. Keys();
-      FOR i := 0 TO keys. size-1 DO
-        remoteMod := keys. array[i](Repository.Module);
+      FOR i := 0 TO LEN (keys^)-1 DO
+        remoteMod := keys[i](Repository.Module);
 
         w. StartTag ("module-ref", FALSE);
         w. AttrStringLatin1 ("name", remoteMod. name^);
