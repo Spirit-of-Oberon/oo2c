@@ -62,6 +62,7 @@ CONST
   tooFewTypeAliases = 32;
   cannotDefineTypeAliases = 33;
   inconsistentVtable = 34;
+  tbProcForImportedRecord = 35;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -150,6 +151,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "The base record type has no type parameters"
     | inconsistentVtable:
       t := "VTABLE flag is inconsistent with base type"
+    | tbProcForImportedRecord:
+      t := "Receiver's base record is imported";
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -896,13 +899,17 @@ RAISES IO.Error;
           CheckInstance(item.type, item.srcCodeType);
 
         | item: Sym.ProcDecl DO
-          IF item.IsTypeBound() & item.isAbstract THEN
+          IF item.IsTypeBound() THEN
             record := item.Class();
-            IF (record # NIL) & ~record.isAbstract THEN
-              ErrDecl(abstractProcForConcreteRecord, item, errList);
-            END;
-            IF (item.exportMark = Sym.nameNotExported) THEN
-              ErrDecl(abstractProcNotExported, item, errList);
+            IF (record # NIL) & (record.Module() # item.Module()) THEN
+              ErrDecl(tbProcForImportedRecord, item, errList);
+            ELSIF item.isAbstract THEN
+              IF (record # NIL) & ~record.isAbstract THEN
+                ErrDecl(abstractProcForConcreteRecord, item, errList);
+              END;
+              IF (item.exportMark = Sym.nameNotExported) THEN
+                ErrDecl(abstractProcNotExported, item, errList);
+              END;
             END;
           END;
           
@@ -997,7 +1004,7 @@ RAISES IO.Error;
         WITH ptr: Sym.ProcDecl DO
           IF ptr.IsTypeBound() & ~ptr. isForwardDecl THEN
             record := ptr.Class();
-            IF (record # NIL) THEN
+            IF (record # NIL) & (record.Module() = ptr.Module()) THEN
               record. ns(Namespace.Extended). InsertTBProc (ptr, errList);
               IF (ptr.name.pos >= 0) &  (* don't overwrite imported flag *)
                  ((ptr.exportMark = Sym.nameNotExported) OR

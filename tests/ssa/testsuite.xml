@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; assign15 assign16">-->
+  select ="&SetupTestCasesWithOut; tbproc1 tbproc13">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5 generic1 generic41 generic45">-->
@@ -928,6 +928,10 @@
     <test id="tbproc12" type="run" file="TBProc12.Mod" output="TBProc12.Ref">
       Super call to a different procedure, with the called procedure
       and the redefinition placed after the call.
+    </test>
+    <test id="tbproc13" type="reject" file="TBProc13.Mod">
+      The record type to which a type-bound procedure is attached must
+      be from the current module.
     </test>
 
     
@@ -1943,6 +1947,8 @@
       msg="This variable has no dynamic type"/>
     
     <reject-info id="tbproc8" pos="p. %Proc" msg="Undeclared identifier"/>
+    <reject-info id="tbproc13" pos="%Proc()"
+                 msg="Receiver's base record is imported"/>
 
     <reject-info id="inc2" pos="INC(%x,1)"
       msg="Expression must be of integer type"/>
