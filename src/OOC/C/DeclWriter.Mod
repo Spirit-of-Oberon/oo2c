@@ -917,7 +917,7 @@ PROCEDURE InitFunction (fct: Function; resultType: Type; restParameters: BOOLEAN
     fct. parameters := ArrayList.New (4);
     fct. restParameters := restParameters;
     fct. noReturn := FALSE;
-	fct. callConv := Sym.callConvDefault;
+    fct. callConv := Sym.callConvDefault;
   END InitFunction;
 
 PROCEDURE (w: Writer) NewFunction* (resultType: Type; restParameters: BOOLEAN): Function;
@@ -969,13 +969,13 @@ PROCEDURE (fct: Function) WriteLeft (w: Writer);
     IF fct.noReturn THEN
       w.WriteString("NORETURN ");
     END;
-	CASE fct.callConv OF
-	| Sym.callConvC:
-	  (* w.WriteString("__attribute__ ((cdecl)) "); *)
+    CASE fct.callConv OF
+    | Sym.callConvC:
+      (* w.WriteString("__attribute__ ((cdecl)) "); *)
     | Sym.callConvPascal:
-	  w.WriteString("__attribute__ ((stdcall)) ");
-	ELSE
-	END;
+      w.WriteString("__attribute__ ((stdcall)) ");
+    ELSE
+    END;
   END WriteLeft;
 
 PROCEDURE (fct: Function) WriteRight (w: Writer);

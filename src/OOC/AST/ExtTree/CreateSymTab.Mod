@@ -515,7 +515,7 @@ PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
         WITH n: ExtTree.Terminal DO
           CASE n.sym.id OF
           | Symbol.stringSingle, Symbol.stringDouble:
-		    fpars. callConv := Sym.StringToCallConv(n. GetString (TRUE));
+            fpars. callConv := Sym.StringToCallConv(n. GetString (TRUE));
           ELSE
             fpars. AddFlag(GetName(n));
           END;
@@ -587,8 +587,8 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
     IF (procDecl. formalPars # NIL) THEN
       fpar := procDecl. formalPars(ExtTree.FormalPars);
       IF fpar.flags # NIL THEN
-	    ParseFormalParsFlags(formalPars, fpar.flags.flagList(ExtTree.NodeList));
-	  END;
+        ParseFormalParsFlags(formalPars, fpar.flags.flagList(ExtTree.NodeList));
+      END;
       IF (fpar. fpSections # NIL) THEN
         FOR i := 0 TO fpar. fpSections. len-1 BY 2 DO
           nodePtr := fpar. fpSections. n[i];

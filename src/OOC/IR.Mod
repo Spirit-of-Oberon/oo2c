@@ -1998,7 +1998,7 @@ PROCEDURE (b : Builder) ValidSetElement(expr : Expression; set : Sym.Type) : Exp
         b. ErrSym (invalidIntegerConst, expr. sym);
         b. lastError. SetIntAttrib ("start", min.ToLongInt());
         b. lastError. SetIntAttrib ("end", max.ToLongInt()+1);
-	RETURN MinElement()
+        RETURN MinElement()
       END
     ELSE
     END;
@@ -2541,9 +2541,9 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expres
       index := b.AssertInteger(index);
       IF index IS Const THEN
         IF a.isOpenArray THEN
-	  (* FIXME: For open arrays, we simply need to verify that the
-	     constant index is not negative. MAX(LONGINT) should be a legal
-	     index. *)
+        (* FIXME: For open arrays, we simply need to verify that the
+        constant index is not negative. MAX(LONGINT) should be a legal
+        index. *)
           idx := b.AssertIntConst(index, 0, MAX(LONGINT));
         ELSE
           idx := b.AssertIntConst(index, 0, a.length);
@@ -4533,7 +4533,7 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
             try.catchList[i].triggered := TRUE;
             RETURN;
           END;
-	END;
+        END;
         try := try.enclosingTry;
       END;
       
@@ -5615,7 +5615,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         NEW(exprList, 2);
         exprList[0] := left;
         exprList[1] := right;
-	result := b.NewConcat(sym, exprList);
+        result := b.NewConcat(sym, exprList);
 
       ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
             & (isNumeric OR isChar) THEN

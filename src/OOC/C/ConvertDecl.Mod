@@ -181,7 +181,7 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
             (ConvertType (w, type. resultType, type. srcCodeResultType),
              type. anyRestParameters);
         fct.SetNoReturn(type.noReturn);
-		fct.SetCallConv(type.callConv);
+        fct.SetCallConv(type.callConv);
         ptr := type. nestedItems;
         WHILE (ptr # NIL) DO
           WITH ptr: Sym.VarDecl DO   (* this pics up receiver and params *)

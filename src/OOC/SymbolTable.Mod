@@ -579,8 +579,8 @@ TYPE
     (**If set, then it is guaranteed that this procedure never returns.
        Default is @code{FALSE}.  *)
     callConv*: CallConv;
-	(**The calling convention to be used for this procedure. This value
-	   overrides any values specified by @ofield{Module.callConv}. *)
+    (**The calling convention to be used for this procedure. This value
+       overrides any values specified by @ofield{Module.callConv}. *)
     raises*: ExceptionNameArray;
     (**List of exceptions that may be raised by this procedure.
        @samp{LEN(raises^)} is the number of registered types.  If there are
@@ -667,18 +667,18 @@ TYPE
        records.  Default is @code{TRUE} for non-
        @code{INTERFACE} modules.  *)
     fieldAlign* : INTEGER;
-	(**Alignment constraint on fields of this record. Normally, a field is
-	   placed at an address that is a multiple of its size.  For example, a
-	   4-byte field is aligned at an address that is a multiple of 4. This is
-	   necessary on some architectures to avoid bus faults, but also improves
-	   performance by reducing the number of memory fetches required to
-	   retrieve field values. However, it is sometimes necessary to define
-	   fields with particular layouts in order to use existing application
-	   binary interfaces. This field defines the maximum value of alignment
-	   that will be used for any record field. For example, if
-	   @ofield{fieldAlign} has the value 2, a field with size greater than 2
-	   will be aligned at a multiple of 2, rather than a multiple of its size.
-	   *)
+    (**Alignment constraint on fields of this record. Normally, a field is
+       placed at an address that is a multiple of its size.  For example, a
+       4-byte field is aligned at an address that is a multiple of 4. This is
+       necessary on some architectures to avoid bus faults, but also improves
+       performance by reducing the number of memory fetches required to
+       retrieve field values. However, it is sometimes necessary to define
+       fields with particular layouts in order to use existing application
+       binary interfaces. This field defines the maximum value of alignment
+       that will be used for any record field. For example, if
+       @ofield{fieldAlign} has the value 2, a field with size greater than 2
+       will be aligned at a multiple of 2, rather than a multiple of its size.
+       *)
 
     className*: Name;                    (* ... make this read-only? *)
     (**If the record has been classified as being part of a @emph{class}
@@ -2335,7 +2335,7 @@ PROCEDURE (record: Record) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteBool (record. isUnion);
     w. WriteBool (record. isAbstract);
     w. WriteBool (record. isExtensible);
-	w. WriteInt (record. fieldAlign);
+    w. WriteInt (record. fieldAlign);
     w. WriteObject (record. className);
     (* ignore field `ns' *)
   END Store;
@@ -2357,7 +2357,7 @@ PROCEDURE (record: Record) Load* (r: Storable.Reader) RAISES IO.Error;
     r. ReadBool (record. isUnion);
     r. ReadBool (record. isAbstract);
     r. ReadBool (record. isExtensible);
-	r. ReadInt (record. fieldAlign);
+    r. ReadInt (record. fieldAlign);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
       record. className := NIL
@@ -2661,7 +2661,7 @@ PROCEDURE InitFormalPars* (formalPars: FormalPars; parent: Item;
     formalPars. params := NIL;
     formalPars. anyRestParameters := FALSE;
     formalPars. noReturn := FALSE;
-	formalPars. callConv := callConvDefault;
+    formalPars. callConv := callConvDefault;
     formalPars. raises := NIL;
     formalPars. ns := NIL;
   END InitFormalPars;
@@ -2696,7 +2696,7 @@ PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteObject (formalPars. srcCodeResultType);
     w. WriteBool (formalPars. anyRestParameters);
     w. WriteBool (formalPars. noReturn);
-	w. WriteSInt (formalPars. callConv);
+    w. WriteSInt (formalPars. callConv);
     IF (formalPars. raises = NIL) THEN
       w. WriteNum (-1)
     ELSE
@@ -2730,7 +2730,7 @@ PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader) RAISES IO.Error;
     formalPars. params := NIL;
     r. ReadBool (formalPars. anyRestParameters);
     r. ReadBool (formalPars. noReturn);
-	r. ReadSInt (formalPars. callConv);
+    r. ReadSInt (formalPars. callConv);
     
     r. ReadNum (len);
     IF (len < 0) THEN

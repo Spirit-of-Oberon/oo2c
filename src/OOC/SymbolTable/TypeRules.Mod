@@ -588,7 +588,7 @@ BEGIN
   ELSIF a IN DefaultConvention THEN
     RETURN b IN DefaultConvention
   ELSE
-	RETURN a = b;
+    RETURN a = b;
   END;
 END CallingConventionsMatch;
 
