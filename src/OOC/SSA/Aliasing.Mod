@@ -231,7 +231,7 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
     IF IsVariable (instr) & IsVariable (reference) THEN
       (* both designators begin with a variable name (this excludes variable
          parameters, but includes value parameters); this is probably one
-         of the most common cases, and a very simply one *)
+         of the most common cases, and a very simple one *)
       IF (instr. arg(SSA.DeclRef). decl =
           reference. arg(SSA.DeclRef). decl) THEN
         (* both designators begin with the same variable: inspect selectors *)
