@@ -21,9 +21,10 @@ MODULE OOC:SSA:Destore;
 *)
 
 IMPORT
-  Dictionary := ADT:Dictionary:IntValue,
+  Channel, StdChannels, Dictionary := ADT:Dictionary:IntValue, ADT:ArrayList,
   Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules,
-  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd, OOC:SSA:Aliasing;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd, OOC:SSA:Aliasing,
+  OOC:SSA:XML;
   
 (**The initial version of the SSA code, as produced by
    @omodule{*OOC:SSA:IRtoSSA}, converts all accesses to variables into
@@ -92,11 +93,64 @@ TYPE
     selectOut: OutArray;
     (* if the select has been processed for a variable, then the end result
        is stored in `selectOut[v]' *)
+    varIsTraced: BooleanArray;
+    (* if `varIsTraced[v]' is TRUE, then the visibility of the select statement
+       has been traced for this variable  *)
     visible: BooleanArray;
     (* if the select statement has been traced for a variable, then outside
        visibility is stored in `visible[v]'; if TRUE, then the effects of
        the instruction setting this variable may be visible by others *)
   END;
+
+TYPE
+  Writer* = POINTER TO WriterDesc;
+  WriterDesc = RECORD
+    (XML.WriterDesc)
+    varArray: ArrayList.ArrayList;
+  END;
+
+
+PROCEDURE InitWriter* (w: Writer; cw: Channel.Writer; varArray: ArrayList.ArrayList);
+  BEGIN
+    XML.InitWriter (w, cw);
+    w. varArray := varArray;
+  END InitWriter;
+
+PROCEDURE NewWriter* (cw: Channel.Writer; varArray: ArrayList.ArrayList): Writer;
+  VAR
+    w: Writer;
+  BEGIN
+    NEW (w);
+    InitWriter (w, cw, varArray);
+    RETURN w
+  END NewWriter;
+
+PROCEDURE (w: Writer) WriteInstrAttr* (instr: SSA.Instr);
+  BEGIN
+    IF (instr. info # NIL) & (instr. info IS OriginMap) THEN
+      w. AttrString ("info-type", "OriginMap");
+    END;
+  END WriteInstrAttr;
+
+PROCEDURE (w: Writer) WriteInstrChildren* (instr: SSA.Instr);
+  VAR
+    i, j: LONGINT;
+  BEGIN
+    IF (instr. info # NIL) & (instr. info IS OriginMap) THEN
+      FOR i := 0 TO w. varArray. size-1 DO
+        w. StartTag ("def-var", FALSE);
+        w. AttrStringLatin1 ("var-name", w. varArray. array[i](Sym.VarDecl). name. str^);
+        FOR j := 0 TO LEN (instr. info(OriginMap). def^, 1)-1 DO
+          w. StartTag ("path", FALSE);
+          w. AttrInt ("n", j);
+          w. AttrRef (instr. info(OriginMap). def[i, j]);
+          w. EndTag;  (* path *)
+        END;
+        w. EndTag;  (* def-var *)
+      END;
+    END;
+  END WriteInstrChildren;
+
 
 PROCEDURE GetVar (instr: SSA.Instr): Sym.VarDecl;
   VAR
@@ -123,6 +177,8 @@ PROCEDURE GetVar (instr: SSA.Instr): Sym.VarDecl;
 PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
   VAR
     varMap: Dictionary.Dictionary;
+    varArray: ArrayList.ArrayList;
+    w: Writer;
 
     (* usage of Result.info:
 
@@ -139,7 +195,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
        
        *)
 
-  PROCEDURE IdentifyVars(): Dictionary.Dictionary;
+  PROCEDURE IdentifyVars (varArray: ArrayList.ArrayList): Dictionary.Dictionary;
     VAR
       varMap: Dictionary.Dictionary;
       instr: SSA.Instr;
@@ -158,6 +214,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             ELSE
               varMap. Set (var, count);
               id := count;
+              ASSERT (count = varArray. size);
+              varArray. Append (var);
               INC (count)
             END;
             instr. marker := id
@@ -194,6 +252,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           SSA.InitNode (originMap);
           NEW (originMap. def, numVars, numPaths);
           NEW (originMap. selectOut, numVars);
+          NEW (originMap. varIsTraced, numVars);
           NEW (originMap. visible, numVars);
           FOR i := 0 TO numVars-1 DO
             FOR j := 0 TO numPaths-1 DO
@@ -201,6 +260,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             END;
             originMap. selectOut[i] := NIL;
             originMap. visible[i] := FALSE;
+            originMap. varIsTraced[i] := FALSE;
           END;
           RETURN originMap
         END NewOriginMap;
@@ -225,7 +285,6 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           visible: BOOLEAN;
           storeOut: SSA.Result;
           alias: Aliasing.Id;
-
         BEGIN
           instr := use. instr;
           CASE instr. opcode OF
@@ -267,16 +326,19 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             
           | Opcode.select:
             IF (instr. info = NIL) THEN
-              (* continue tracing the uses of this select; note: this is
-                 only done once for each variable, when we encounter the
-                 select for the first time *)
-              visible := TraceF (instr, instr. GetResultClass (Result.store));
-              
               originMap := NewOriginMap (NumberOfPaths (instr), numVars);
-              originMap. visible[origin. marker] := visible;
               instr. info := originMap
             ELSE
               originMap := instr. info(OriginMap);
+            END;
+            
+            IF ~originMap. varIsTraced[origin. marker] THEN
+              (* continue tracing the uses of this select; note: this is
+                 only done once for each variable, when we encounter the
+                 select for the first time *)
+              originMap. visible[origin. marker] :=
+                  TraceF (instr, instr. GetResultClass (Result.store));
+              originMap. varIsTraced[origin. marker] := TRUE;
             END;
             
             (* set the instruction defining the store argument `use'
@@ -684,13 +746,16 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
 
     (* first: identify all scalar variables that appear in "get" or "set"
        instructions *)
-    varMap := IdentifyVars();
-
+    varArray := ArrayList.New(4);
+    varMap := IdentifyVars (varArray);
+    w := NewWriter (StdChannels.stdout. NewWriter(), varArray);
+                    
     (* second: for every "set" instruction, establish the visibility of the
        written value in memory *)
     TraceSetForward (varMap. Size());
-
-    (* third: for every "get" instruction, try trace the store value back
+    (*w. Write (pb, FALSE);*)
+    
+    (* third: for every "get" instruction, try to trace the store value back
        to the definition from which the "get" reads its result *)
     TraceGetBackward;
 
