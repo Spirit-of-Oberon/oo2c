@@ -18,4 +18,5 @@ void VarPar1__Test() {
 }
 
 void VarPar1_init(void) {
+
 }

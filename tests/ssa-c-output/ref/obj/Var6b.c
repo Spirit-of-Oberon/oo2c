@@ -43,4 +43,5 @@ void Var6b__Test() {
 }
 
 void Var6b_init(void) {
+
 }

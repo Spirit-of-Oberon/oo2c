@@ -30,4 +30,5 @@ void Var8__Test() {
 }
 
 void Var8_init(void) {
+
 }

@@ -27,4 +27,5 @@ void Var3c__Test() {
 }
 
 void Var3c_init(void) {
+
 }

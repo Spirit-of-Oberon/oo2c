@@ -35,4 +35,5 @@ void Var4__Test() {
 }
 
 void Var4_init(void) {
+
 }

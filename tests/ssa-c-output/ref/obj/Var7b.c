@@ -36,4 +36,5 @@ void Var7b__Test() {
 }
 
 void Var7b_init(void) {
+
 }

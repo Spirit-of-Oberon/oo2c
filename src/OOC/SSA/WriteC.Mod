@@ -951,11 +951,9 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     w. Indent (-1);
   END WriteProcBody;
 
-PROCEDURE (t: Translator) WriteModuleBody* (statmSeq: IR.StatementSeq);
+PROCEDURE (t: Translator) WriteModuleBody* (body: IR.Procedure);
   BEGIN
-    IRtoC.WriteStatmSeq (t. w, statmSeq);
-    (* ... for now, we cheat by letting the other back-end do this
-       job for us FIXME *)
+    t. WriteProcBody (body);
   END WriteModuleBody;
 
 PROCEDURE InitTranslator* (t: Translator; 
