@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; loop10">-->
+  select ="&SetupTestCasesWithOut; loop11">-->
 
   &TestSetupWithOut;
     
@@ -250,6 +250,10 @@
     </test>
     <test id="loop10" type="run" file="HOTLoop10.Mod" output="HOTLoop10.Ref">
       Quicksort on <code>INTEGER</code> array.
+    </test>
+    <test id="loop11" type="run" file="HOTLoop11.Mod" output="HOTLoop11.Ref">
+      A <code>CASE</code> within a <code>LOOP</code>.  This situation 
+      must be handled carefully by the SSA back-end ;-)
     </test>
  
     
