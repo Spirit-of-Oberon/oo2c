@@ -94,7 +94,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     ResolveRef.Resolve (symTab, config. repositories, errList);
     ASSERT (errList. msgCount = 0);
     
-    outputURI := m. GetURI (Repository.modInterfaceDescr, res);
+    outputURI := m. GetURI (Repository.modInterfaceDescr);
     outputChannel := m. GetOutputChannel (Repository.modInterfaceDescr, TRUE, res);
     IF (outputChannel = NIL) THEN
       errList. Append (res)

@@ -79,8 +79,8 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     
     cmd. module. CreateOutputDir (Repository.modExecutable, res);
     IF (res = NIL) THEN
-      CCompiler.LinkProgramCmd (config. options, 
-                     cmd. module. GetURI (Repository.modExecutable), str);
+      CCompiler.LinkProgramCmd (config, 
+                          cmd. module. GetURI (Repository.modExecutable), str);
       aEdge := cmd. ancestorList;
       WHILE (aEdge # NIL) DO
         fileId := aEdge. ancestor(ModuleFile.Entity). fileId;
