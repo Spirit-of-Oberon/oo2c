@@ -656,9 +656,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           | Predef.stringChar:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewLatin1Region");
           | Predef.longchar:
-            fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS2Char");
+            fct := Object.NewLatin1(Builder.stringModuleC+"__NewUTF16Char");
           | Predef.stringLongChar:
-            fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS2Region");
+            fct := Object.NewLatin1(Builder.stringModuleC+"__NewUTF16Region");
           | Predef.ucs4char:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS4Char");
           | Predef.stringUCS4Char:

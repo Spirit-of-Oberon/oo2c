@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE ADT:StringBuffer [OOC_EXTENSIONS];
 (*  String data type of dynamic length.
-    Copyright (C) 1998-2002  Michael van Acken
+    Copyright (C) 1998-2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -23,7 +23,7 @@ IMPORT
 
 TYPE
   CharsLatin1* = POINTER TO ARRAY[READ_ONLY] OF CHAR;
-  CharsUCS4* = POINTER TO ARRAY[READ_ONLY] OF UCS4CHAR;
+  CharsUTF16* = POINTER TO ARRAY[READ_ONLY] OF LONGCHAR;
   StringBuffer* = POINTER TO StringBufferDesc;
   StringBufferDesc* = RECORD
   (**Assembles string values.  This class is mutable in the sense that it can
@@ -35,9 +35,9 @@ TYPE
     (**The length of the current string.  *)
     data8: CharsLatin1;
     (* As long as 8-bit characters are added to a buffer, its internal storage
-       is based on CHAR.  The first @otype{Char} value switches it to 32-bit
+       is based on CHAR.  The first @code{LONGCHAR} value switches it to 16-bit
        storage.  *)
-    data32: CharsUCS4;
+    data16: CharsUTF16;
   END;
 
 
@@ -51,7 +51,7 @@ PROCEDURE Init(b: StringBuffer; initialCapacity: LONGINT);
     b.capacity := initialCapacity;
     b.length := 0;
     NEW(b.data8, initialCapacity);
-    b.data32 := NIL;
+    b.data16 := NIL;
   END Init;
 
 PROCEDURE NewCapacity*(initialCapacity: LONGINT): StringBuffer;
@@ -68,16 +68,32 @@ PROCEDURE (b: StringBuffer) ToString*(): STRING;
     IF(b.data8 # NIL) THEN
       RETURN Object.NewLatin1Region(b.data8^, 0, b.length);
     ELSE
-      RETURN Object.NewUCS4Region(b.data32^, 0, b.length);
+      RETURN Object.NewUTF16Region(b.data16^, 0, b.length);
     END;
   END ToString;
 
 PROCEDURE (b: StringBuffer) CharAt*(index: LONGINT): UCS4CHAR;
+  VAR
+    w1, w2: LONGCHAR;
   BEGIN
     IF (b.data8 # NIL) THEN
       RETURN b.data8[index];
     ELSE
-      RETURN b.data32[index];
+      w1 := b.data16[index];
+      IF (w1 < Object.surrogateLow) OR
+         (w1 >= Object.surrogateEnd) OR
+         (index+1 = b.length) THEN
+        (* non-surrgate character, or at the end of the string *)
+        RETURN w1;
+      ELSE
+        w2 := b.data16[index+1];
+        IF (w1 < Object.surrogateHigh) &
+           (Object.surrogateHigh <= w2) & (w2 < Object.surrogateEnd) THEN
+          RETURN UCS4CHR((ORD(w1) MOD 1024)*1024 + ORD(w2) MOD 1024);
+        ELSE  (* invalid surrogate pair *)
+          RETURN w1;
+        END;
+      END;
     END;
   END CharAt;
 
@@ -90,7 +106,7 @@ PROCEDURE (b: StringBuffer) EnsureCapacity (cap: LONGINT);
   VAR
     newCap: LONGINT;
     new8: CharsLatin1;
-    new32: CharsUCS4;
+    new16: CharsUTF16;
   BEGIN
     IF (b.capacity < cap) THEN
       newCap := b.capacity;
@@ -104,9 +120,9 @@ PROCEDURE (b: StringBuffer) EnsureCapacity (cap: LONGINT);
         S.MOVE(S.ADR(b.data8^), S.ADR(new8^), b.length*SIZE(CHAR));
         b.data8 := new8;
       ELSE
-        NEW(new32, newCap);
-        S.MOVE(S.ADR(b.data32^), S.ADR(new32^), b.length*SIZE(UCS4CHAR));
-        b.data32 := new32;
+        NEW(new16, newCap);
+        S.MOVE(S.ADR(b.data16^), S.ADR(new16^), b.length*SIZE(LONGCHAR));
+        b.data16 := new16;
       END;
     END;
   END EnsureCapacity;
@@ -131,16 +147,16 @@ PROCEDURE (b: StringBuffer) CharsLatin1*(): CharsLatin1;
     RETURN b.data8;
   END CharsLatin1;
 
-PROCEDURE (b: StringBuffer) ConvertTo32;
+PROCEDURE (b: StringBuffer) ConvertTo16;
   VAR
     i: LONGINT;
   BEGIN
-    NEW(b.data32, LEN(b.data8^));
+    NEW(b.data16, LEN(b.data8^));
     FOR i := 0 TO b.length-1 DO;
-      b.data32[i] := b.data8[i];
+      b.data16[i] := b.data8[i];
     END;
     b.data8 := NIL;
-  END ConvertTo32;
+  END ConvertTo16;
 
 PROCEDURE (b: StringBuffer) AppendLatin1Region*(data[NO_COPY]: ARRAY OF CHAR;
                                                 start, end: LONGINT);
@@ -160,7 +176,7 @@ PROCEDURE (b: StringBuffer) AppendLatin1Region*(data[NO_COPY]: ARRAY OF CHAR;
     ELSE
       i := b.length;
       WHILE (start # end) DO
-        b.data32[i] := data[start];
+        b.data16[i] := data[start];
         INC(start); INC(i);
       END;
     END;
@@ -189,12 +205,12 @@ PROCEDURE (b: StringBuffer) AppendLatin1Char*(ch: CHAR);
     IF (b.data8 # NIL) THEN
       b.data8[b.length] := ch;
     ELSE
-      b.data32[b.length] := ch;
+      b.data16[b.length] := ch;
     END;
     INC(b.length);
   END AppendLatin1Char;
 
-PROCEDURE (b: StringBuffer) AppendUCS4Region*(data[NO_COPY]: ARRAY OF UCS4CHAR;
+PROCEDURE (b: StringBuffer) AppendUTF16Region*(data[NO_COPY]: ARRAY OF LONGCHAR;
                                               start, end: LONGINT);
   VAR
     len: LONGINT;
@@ -205,22 +221,22 @@ PROCEDURE (b: StringBuffer) AppendUCS4Region*(data[NO_COPY]: ARRAY OF UCS4CHAR;
     
     len := end-start;
     b.EnsureCapacity(b.length+len);
-    IF (b.data32 = NIL) THEN
-      b.ConvertTo32;
+    IF (b.data16 = NIL) THEN
+      b.ConvertTo16;
     END;
 <*PUSH; IndexCheck:=FALSE*>
-    S.MOVE(S.ADR(data[start]), S.ADR(b.data32[b.length]), len*SIZE(UCS4CHAR));
+    S.MOVE(S.ADR(data[start]), S.ADR(b.data16[b.length]), len*SIZE(LONGCHAR));
 <*POP*>
     INC(b.length, len);
-  END AppendUCS4Region;
+  END AppendUTF16Region;
 
-PROCEDURE (b: StringBuffer) AppendChar*(ch: UCS4CHAR);
+PROCEDURE (b: StringBuffer) AppendChar*(ch: LONGCHAR);
   BEGIN
     b.EnsureCapacity(b.length+1);
-    IF (b.data32 = NIL) THEN
-      b.ConvertTo32;
+    IF (b.data16 = NIL) THEN
+      b.ConvertTo16;
     END;
-    b.data32[b.length] := ch;
+    b.data16[b.length] := ch;
     INC(b.length);
   END AppendChar;
 
@@ -228,7 +244,7 @@ PROCEDURE (b: StringBuffer) Append*(obj: Object.Object);
   VAR
     s: STRING;
     c8: Object.CharsLatin1;
-    c32: Object.CharsUCS4;
+    c16: Object.CharsUTF16;
   BEGIN
     IF (obj = NIL) THEN
       b.Append("NIL");
@@ -242,9 +258,9 @@ PROCEDURE (b: StringBuffer) Append*(obj: Object.Object);
       WITH s: Object.String8 DO
         c8 := s.CharsLatin1();
         b.AppendLatin1Region(c8^, 0, s.length);
-      | s: Object.String32 DO
-        c32 := s.CharsUCS4();
-        b.AppendUCS4Region(c32^, 0, s.length);
+      | s: Object.String16 DO
+        c16 := s.CharsUTF16();
+        b.AppendUTF16Region(c16^, 0, s.length);
       END;
     END;
   END Append;
@@ -332,7 +348,7 @@ PROCEDURE (b: StringBuffer) Insert*(obj: Object.Object; at: LONGINT);
   VAR
     s: STRING;
     c8: Object.CharsLatin1;
-    c32: Object.CharsUCS4;
+    c16: Object.CharsUTF16;
     i: LONGINT;
   BEGIN
     IF (obj = NIL) THEN
@@ -356,23 +372,23 @@ PROCEDURE (b: StringBuffer) Insert*(obj: Object.Object; at: LONGINT);
           END;
         ELSE
           FOR i := b.length-1 TO at BY -1 DO
-            b.data32[i+s.length] := b.data32[i];
+            b.data16[i+s.length] := b.data16[i];
           END;
           FOR i := 0 TO s.length-1 DO
-            b.data32[at+i] := c8[i];
+            b.data16[at+i] := c8[i];
           END;
         END;
         
-      | s: Object.String32 DO
-        c32 := s.CharsUCS4();
-        IF (b.data32 = NIL) THEN
-          b.ConvertTo32;
+      | s: Object.String16 DO
+        c16 := s.CharsUTF16();
+        IF (b.data16 = NIL) THEN
+          b.ConvertTo16;
         END;
         FOR i := b.length-1 TO at BY -1 DO
-          b.data32[i+s.length] := b.data32[i];
+          b.data16[i+s.length] := b.data16[i];
         END;
         FOR i := 0 TO s.length-1 DO
-          b.data32[at+i] := c32[i];
+          b.data16[at+i] := c16[i];
         END;
       END;
       INC(b.length, s.length);
@@ -395,10 +411,10 @@ PROCEDURE (b: StringBuffer) Delete*(start, end: LONGINT);
         b.data8[i] := b.data8[i+d]
       END;
       DEC (b.length, d);
-    ELSIF (b.data32 # NIL) THEN
+    ELSIF (b.data16 # NIL) THEN
       d := end-start;
       FOR i := start TO b.length-d-1 DO
-        b.data32[i] := b.data32[i+d]
+        b.data16[i] := b.data16[i+d]
       END;
       DEC (b.length, d);
     END;

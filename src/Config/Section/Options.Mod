@@ -233,14 +233,14 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
           ELSIF ~node. HasNoElementContent() THEN
             Err (requireCharDataContent, node)
           ELSE
-            option := s. Get (Object.NewUCS2(name^));
+            option := s. Get (Object.NewUTF16(name^));
             IF (option = NIL) THEN
               Err (optionNotDefined, node);
               lastError. SetLStringAttrib ("name", Msg.GetLStringPtr (name^))
             ELSE
               parserString := node. GetCharDataContent();
               TRY
-                option.value.StringToValue(Object.NewUCS2(parserString^));
+                option.value.StringToValue(Object.NewUTF16(parserString^));
               CATCH Exception.ParseError:
                 Err (invalidValue, node);
                 SetReason(Exception.Current());
@@ -269,19 +269,19 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
           ELSIF ~node. HasNoElementContent() THEN
             Err (requireCharDataContent, node)
           ELSE
-            name8 := Object.NewUCS2(name^);
+            name8 := Object.NewUTF16(name^);
             IF (s. Get (name8) # NIL) THEN
               Err (optionAlreadyDefined, node);
               lastError. SetLStringAttrib ("name", Msg.GetLStringPtr (name^))
             ELSE
-              newValue := Config.GetClone(s.typeMap, Object.NewUCS2(type^));
+              newValue := Config.GetClone(s.typeMap, Object.NewUTF16(type^));
               IF (newValue = NIL) THEN
                 Err (unknownType, node);
                 lastError. SetLStringAttrib ("type", Msg.GetLStringPtr (type^))
               ELSE
                 parserString := node. GetCharDataContent();
                 TRY
-                  newValue.StringToValue(Object.NewUCS2(parserString^));
+                  newValue.StringToValue(Object.NewUTF16(parserString^));
                   option := s. Set (name8, newValue);
                 CATCH Exception.ParseError:
                   Err (invalidValue, node);

@@ -20,7 +20,7 @@ PROCEDURE Test*;
   VAR
     s, s2: STRING;  (* STRING in declaration: resolved in CreateNamespace *)
   BEGIN
-    s := String.NewUCS2("abc");
+    s := String.NewUTF16("abc");
     Write (s);
 
     (* assignment of string constant to STRING variable *)

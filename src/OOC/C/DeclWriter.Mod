@@ -496,8 +496,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
               IF (i # 0) THEN
                 w. WriteChar (",");
               END;
-              w. textWriter. WriteLInt (ORD(s.CharAt(i)), 0);
-              INC (i)
+              w. textWriter. WriteLInt (ORD(s.NextChar(i)), 0);
             END;
             IF (i # 0) THEN
               w. WriteChar (",");
@@ -701,8 +700,7 @@ PROCEDURE (w: Writer) WriteStringConst* (value: Boxed.Object; type: Sym.Type);
         IF (i # 0) THEN
           w. WriteChar (",");
         END;
-        w. textWriter. WriteLInt (ORD(s.CharAt(i)), 0);
-        INC (i)
+        w. textWriter. WriteLInt (ORD(s.NextChar(i)), 0);
       END;
       IF (i # 0) THEN
         w. WriteChar (",");

@@ -218,13 +218,13 @@ PROCEDURE (r: Reader) ReadStr* (VAR s: Object.String)
 RAISES IO.Error;
   CONST
     sizeBuffer8 = 1024;
-    sizeBuffer32 = 512;
+    sizeBuffer16 = 512;
   VAR
     len, x: LONGINT;
     buffer8: ARRAY sizeBuffer8 OF CHAR;
     dynBuffer8: POINTER TO ARRAY OF CHAR;
-    buffer32: ARRAY sizeBuffer32 OF UCS4CHAR;
-    dynBuffer32: POINTER TO ARRAY OF UCS4CHAR;
+    buffer16: ARRAY sizeBuffer16 OF LONGCHAR;
+    dynBuffer16: POINTER TO ARRAY OF LONGCHAR;
     i: LONGINT;
   BEGIN
     r.ReadNum(len);
@@ -244,19 +244,19 @@ RAISES IO.Error;
       
     ELSE  (* this is quite slow; FIXME... use the UTF8 codec instead *)
       len := -len-1;
-      IF (len < sizeBuffer32) THEN
+      IF (len < sizeBuffer16) THEN
         FOR i := 0 TO len-1 DO
           r.ReadNum(x);
-          buffer32[i] := UCS4CHR(x);
+          buffer16[i] := LONGCHR(x);
         END;
-        s := Object.NewUCS4Region(buffer32, 0, len);
+        s := Object.NewUTF16Region(buffer16, 0, len);
       ELSE
-        NEW(dynBuffer32, len);
+        NEW(dynBuffer16, len);
         FOR i := 0 TO len-1 DO
           r.ReadNum(x);
-          buffer32[i] := UCS4CHR(x);
+          buffer16[i] := LONGCHR(x);
         END;
-        s := Object.NewUCS4Region(dynBuffer32^, 0, len);
+        s := Object.NewUTF16Region(dynBuffer16^, 0, len);
       END;
     END;
   END ReadStr;
@@ -409,7 +409,7 @@ PROCEDURE (w: Writer) WriteStr*(s: Object.String)
 RAISES IO.Error;
   VAR
     chars8: Object.CharsLatin1;
-    chars32: Object.CharsUCS4;
+    chars16: Object.CharsUTF16;
     i, d: LONGINT;
   BEGIN
     IF (s = NIL) THEN
@@ -420,11 +420,11 @@ RAISES IO.Error;
         chars8 := s.CharsLatin1();
         d := w.channel.Write(chars8^, 0, s.length);
         
-      | s: Object.String32 DO            (* FIXME... use UTF8 codec *)
+      | s: Object.String16 DO            (* FIXME... use UTF8 codec *)
         w.WriteNum(-s.length-1);
-        chars32 := s.CharsUCS4();
+        chars16 := s.CharsUTF16();
         FOR i := 0 TO s.length-1 DO
-          w.WriteNum(ORD(chars32[i]));
+          w.WriteNum(ORD(chars16[i]));
         END;
       END;
     END;

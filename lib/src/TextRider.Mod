@@ -1342,7 +1342,7 @@ PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
 PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
   VAR
     chars: Object.CharsLatin1;
-    chars32: Object.CharsUCS4;
+    chars16: Object.CharsUTF16;
     s: Object.String;
     i: LONGINT;
   BEGIN
@@ -1353,16 +1353,16 @@ PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
       WITH s: Object.String8 DO
         chars := s.CharsLatin1();
         w. byteWriter. WriteBytes (chars^, 0, s.length);
-      | s: Object.String32 DO
-        chars32 := s.CharsUCS4();
+      | s: Object.String16 DO
+        chars16 := s.CharsUTF16();
         FOR i := 0 TO s.length-1 DO
-          IF (chars32[i] >= 100X) THEN
-            w.WriteString("[TextRider.WriteObject: String32 not implemented]");
+          IF (chars16[i] >= 100X) THEN
+            w.WriteString("[TextRider.WriteObject: String16 not implemented]");
             RETURN;
           END;
         END;
         FOR i := 0 TO s.length-1 DO
-          w.byteWriter.WriteByte(SHORT(SHORT(chars32[i])));
+          w.byteWriter.WriteByte(SHORT(chars16[i]));
         END;
       END;
       w. res := w. byteWriter. res;

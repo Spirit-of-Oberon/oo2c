@@ -155,8 +155,8 @@ PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
         WITH s: Object.String8 DO
           chars := s.CharsLatin1();
           i := w.channel.Write(chars^, 0, s.length);
-        | s: Object.String32 DO
-          w.WriteString("[TextRider.WriteObject: String32 not implemented]");
+        | s: Object.String16 DO
+          w.WriteString("[IO:TextRider.WriteObject: String16 not implemented]");
         END;
       CATCH IO.Error:
         SetError(w);

@@ -118,7 +118,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
               s. args := newArgs
             END;
             parserString := node. GetCharDataContent();
-            s.args[s.argNumber] := Object.NewUCS2(parserString^);
+            s.args[s.argNumber] := Object.NewUTF16(parserString^);
             INC (s.argNumber)
           END
           

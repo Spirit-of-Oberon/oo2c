@@ -115,8 +115,8 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
         ELSE
           value := res. value. ToString();
         END;
-        IF (value IS Object.String32) THEN
-          w. AttrObject ("const-value", "[Object.String32]");
+        IF (value IS Object.String16) THEN
+          w. AttrObject ("const-value", "[Object.String16]");
         ELSE
           w. AttrObject ("const-value", value(Object.String8));
         END;

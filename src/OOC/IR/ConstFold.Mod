@@ -597,7 +597,7 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         | Predef.char:
           value := Boxed.NewString(Object.NewLatin1Char(CHR (value(BigInt.BigInt). ToLongInt())));
         | Predef.longchar:
-          value := Boxed.NewString(Object.NewUCS2Char(LONGCHR (value(BigInt.BigInt). ToLongInt())));
+          value := Boxed.NewString(Object.NewUTF16Char(LONGCHR (value(BigInt.BigInt). ToLongInt())));
         | Predef.ucs4char:
           value := Boxed.NewString(Object.NewUCS4Char(UCS4CHR (value(BigInt.BigInt). ToLongInt())));
         END;
