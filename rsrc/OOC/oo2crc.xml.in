@@ -12,7 +12,7 @@
   </options>
 
   <pragmas>
-    <set name='Warnings'>TRUE</set>  <!-- not supported -->
+    <set name='Warnings'>TRUE</set>
     <set name='Assertions'>TRUE</set>
     
     <set name='IndexCheck'>TRUE</set>
