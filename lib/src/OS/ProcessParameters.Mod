@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OS:ProcessParameters [FOREIGN "C"; LINK FILE "ProcessParameters.c" END];
 (*  Handles information of the current process and user.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -29,5 +29,9 @@ IMPORT
 PROCEDURE GetCwd*(): STRING
 RAISES IO.Error;
 (**Returns a string representing the current working directory.  *)
+
+PROCEDURE GetEnv*(name: STRING): STRING;
+(**If an environment variable @oparam{name} exists, then return its value.
+   Otherwise, return @code{NIL}.  *)
 
 END OS:ProcessParameters.

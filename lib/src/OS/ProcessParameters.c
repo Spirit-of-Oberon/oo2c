@@ -25,5 +25,16 @@ Object__String OS_ProcessParameters__GetCwd() {
   }
 }
 
+Object__String OS_ProcessParameters__GetEnv(Object__String name) {
+  char *ptr = getenv(OS_Path__Encode(name));
+  if (ptr) {
+    return OS_Path__Decode(ptr, strlen(ptr)+1);
+  } else {
+    return NULL;
+    return 0;
+  }
+}
+
+
 void OOC_OS_ProcessParameters_init(void) {
 }
