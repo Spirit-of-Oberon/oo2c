@@ -632,6 +632,8 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
       builder. AddSymbol (Symbol.endOfFile, cpos, cpos,
                           currLine, cpos-currLinePos+currLineTab)
     END;
+    builder. SetPragmaHistory (pragma. variableHistory);
+    
     IF (enableCharPosAdjust IN scanOptions) & eolIsCRLF THEN
       b. errList. SetAdjustCharPos (TRUE)
     END
