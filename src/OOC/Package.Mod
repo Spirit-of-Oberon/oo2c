@@ -1165,7 +1165,6 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
     i: LONGINT;
     kv: KeyValue;
     v: Value.Value;
-    str: ARRAY 1024 OF CHAR;
     type: ARRAY 32 OF CHAR;
   BEGIN
     w.StartTagLatin1(tag, FALSE);
@@ -1182,8 +1181,7 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
         type := "integer";
       END;
       w.AttrStringLatin1("type", type);
-      kv.value.ValueToString(str);
-      w.WriteLatin1(str);
+      w.WriteObject(kv.value.ValueToString());
       w.EndTag();  (* set *)
     END;
     w.EndTag();

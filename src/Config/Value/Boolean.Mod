@@ -52,12 +52,12 @@ RAISES Exception.ParseError;
     END
   END StringToValue;
 
-PROCEDURE (v: Value) ValueToString* (VAR str: ConfigValue.String);
+PROCEDURE (v: Value) ValueToString*(): STRING;
   BEGIN
-    IF v. boolean THEN
-      COPY ("TRUE", str)
+    IF v.boolean THEN
+      RETURN "TRUE";
     ELSE
-      COPY ("FALSE", str)
+      RETURN "FALSE";
     END
   END ValueToString;
 

@@ -26,12 +26,9 @@ PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String);
     v. string := Object.NewLatin1(str);
   END StringToValue;
 
-PROCEDURE (v: Value) ValueToString* (VAR str: ConfigValue.String);
-  VAR
-    chars: Object.CharsLatin1;
+PROCEDURE (v: Value) ValueToString*(): STRING;
   BEGIN
-    chars := v.string.CharsLatin1();
-    COPY (chars^, str)
+    RETURN v.string;
   END ValueToString;
 
 PROCEDURE (v: Value) Clone* (): Value;

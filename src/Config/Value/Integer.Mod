@@ -1,7 +1,7 @@
 MODULE Config:Value:Integer;
 
 IMPORT
-  Exception, Strings, IntStr, ConfigValue := Config:Value;
+  Object, Exception, Strings, IntStr, ConfigValue := Config:Value;
 
 
 TYPE
@@ -58,9 +58,12 @@ RAISES Exception.ParseError;
     END;
   END StringToValue;
 
-PROCEDURE (v: Value) ValueToString* (VAR str: ConfigValue.String);
+PROCEDURE (v: Value) ValueToString*(): STRING;
+  VAR
+    str: ARRAY 16 OF CHAR;
   BEGIN
-    IntStr.IntToStr (v. integer, str)
+    IntStr.IntToStr(v.integer, str);
+    RETURN Object.NewLatin1(str);
   END ValueToString;
 
 PROCEDURE (v: Value) Clone* (): Value;

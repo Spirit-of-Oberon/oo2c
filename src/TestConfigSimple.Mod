@@ -20,14 +20,11 @@ VAR
   dummy: BOOLEAN;
   
 PROCEDURE WriteOption (opt: Options.Option);
-  VAR
-    str: ARRAY 1024 OF CHAR;
   BEGIN
     Out.String ("option:");
     Out.Object (opt. name);
     Out.String (" --> ");
-    opt. value. ValueToString (str);
-    Out.String (str);
+    Out.Object (opt.value.ValueToString());
     Out.Ln;
   END WriteOption;
 

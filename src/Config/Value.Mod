@@ -23,14 +23,14 @@ CONST
   empty* = "Value is empty";
 
 
-PROCEDURE (v: Value) [ABSTRACT] StringToValue* (str: String)
+PROCEDURE (v: Value) [ABSTRACT] StringToValue*(str: String)
 RAISES Exception.ParseError;
   END StringToValue;
 
-PROCEDURE (v: Value) [ABSTRACT] ValueToString* (VAR str: String);
+PROCEDURE (v: Value) [ABSTRACT] ValueToString*(): STRING;
   END ValueToString;
 
-PROCEDURE (v: Value) [ABSTRACT] Clone* (): Value;
+PROCEDURE (v: Value) [ABSTRACT] Clone*(): Value;
   END Clone;
 
 
