@@ -3023,7 +3023,7 @@ PROCEDURE (shift: Shift) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitTypeCast (cast: TypeCast; sym: Symbol; type: Sym.Type;
-                     expr: Expression);
+                        expr: Expression);
   BEGIN
     InitOperator (cast, sym, type);
     cast. expr := expr;
@@ -3035,7 +3035,7 @@ PROCEDURE (b: Builder) NewTypeCast (sym: Symbol;
     cast: TypeCast;
     type: Sym.Type;
   BEGIN
-    type := b.AssertType(typeExpr);
+    type := Sym.Expand(b.AssertType(typeExpr));
     IF (type.size < 0) OR (expr.type.size < 0) OR
        (type.size # expr.type.size) THEN
       b.ErrSym(objectSizeMismatch, expr.sym);
