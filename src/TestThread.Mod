@@ -138,7 +138,7 @@ BEGIN
     b.Start;
     a.Join;
     b.Join;
-  CATCH PThread.Error:
-    Exception.FatalError();
+  CATCH PThread.Error(e):
+    Exception.Abort(e);
   END;
 END TestThread.

@@ -227,10 +227,8 @@ PROCEDURE (e: ParseError) INIT*(msg: STRING; offset: LONGINT);
   
 PROCEDURE Abort*[NO_RETURN](e: Exception);
 (**Write data of exception @oparam{e} to @var{stderr} and abort program.  *)
-PROCEDURE FatalError*[NO_RETURN]();
-(**Write data of current exception to @var{stderr} and abort program.  It is
-   an error to call this procedure outside a @code{CATCH} block of a @code{TRY}
-   statement.  *)
+PROCEDURE FatalError*[NO_RETURN](msg: STRING);
+(**Raise an exception with message @oparam{msg} and abort program.  *)
 
 PROCEDURE InitThreadState*(VAR ts: ThreadState);
   

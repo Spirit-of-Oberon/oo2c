@@ -59,17 +59,13 @@ void Exception__Abort(Exception__Exception e) {
   exit(EXCEPTION_EXIT_CODE);
 }
 
-void Exception__FatalError() {
-  Exception__Abort(Exception__Current());
-}
-
 void Exception__ActivateContext() {
   Exception__ContextPtr cs = Exception__GetThreadState()->contextStack;
   
   if (cs) {
     longjmp(*(jmp_buf*)cs->jmpbuf, 1);
   } else {
-    Exception__FatalError();
+    Exception__Abort(Exception__Current());
   }
 }
 
@@ -84,6 +80,19 @@ void Exception__Raise(Exception__Exception e) {
   
   Exception__GetThreadState()->currentException = e;
   Exception__ActivateContext();
+}
+
+void Exception__FatalError(Object__String msg) {
+  Exception__Exception e =
+    RT0__NewObject(OOC_TYPE_DESCR(Exception,ExceptionDesc));
+  
+  Exception__ExceptionDesc_INIT(e, msg);
+#if HAVE_BACKTRACE_SYMBOLS
+  e->backtraceSize = backtrace(e->backtrace, Exception__maxBacktraceSize);
+#else
+  e->backtraceSize = 0;
+#endif
+  Exception__Abort(e);
 }
 
 void Exception__Clear() {
