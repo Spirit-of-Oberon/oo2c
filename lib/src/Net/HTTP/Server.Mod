@@ -19,7 +19,7 @@ MODULE Net:HTTP:Server [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, Channel, IntStr, Msg, Strings, SysClock,
-  ADT:Object, ADT:String, ADT:StringBuffer, ADT:ArrayList, 
+  ADT:Storable, ADT:String, ADT:StringBuffer, ADT:ArrayList, 
   URI, URIParser := URI:Parser, HttpURI := URI:Scheme:HTTP, 
   StringURI := URI:String, URI:Query:Unparsed, URI:Query:WWWForm,
   IO:Port, IO:Port:Streaming, IO:Memory, Net:HTTP;
@@ -283,7 +283,7 @@ PROCEDURE (req: Request) GetIntHeader* (name: String.String): LONGINT;
 
 PROCEDURE (req: Request) GetParameter* (name: String.String): String.String;
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     IF req. params. dict. HasKey (name) THEN
       obj := req. params. dict. Get (name);
@@ -295,7 +295,7 @@ PROCEDURE (req: Request) GetParameter* (name: String.String): String.String;
 
 PROCEDURE (req: Request) GetParameterValues* (name: String.String): StringArrayPtr;
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
     s: StringArrayPtr;
     i: LONGINT;
   BEGIN

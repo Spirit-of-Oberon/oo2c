@@ -19,15 +19,15 @@ MODULE ADT:ArrayList;
 *)
 
 IMPORT
-  ADT:Object, Language:=LanguageNew;
+  ADT:Storable, Language:=LanguageNew;
 
 
 TYPE
-  Array = POINTER TO ARRAY OF Object.Object;
+  Array = POINTER TO ARRAY OF Storable.Object;
   ArrayList* = POINTER TO ArrayListDesc;
   ArrayListDesc* = RECORD
   (**Resizable-array implementation of a list.  *)
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     array-: Array;
     (**Holds the elements of the list.  The index values in
        @samp{[0..@ofield{size}-1]} refer to valid entries.  *)
@@ -61,7 +61,7 @@ PROCEDURE CreateArray (size: LONGINT; old: ArrayList): Array;
 PROCEDURE Init* (l: ArrayList; initialSize: LONGINT);
 (**Initializes a list with the stated initial size.  *)
   BEGIN
-    Object.Init (l);
+    Storable.Init (l);
     l. array := CreateArray (initialSize, NIL);
     l. size := 0
   END Init;
@@ -133,7 +133,7 @@ PROCEDURE (l: ArrayList) Clear*;
     l. size := 0
   END Clear;
 
-PROCEDURE (l: ArrayList) Append* (obj: Object.Object);
+PROCEDURE (l: ArrayList) Append* (obj: Storable.Object);
 (**Appends the specified element @oparam{obj} to the end of this list.  *)
   BEGIN
     IF (l. size = LEN (l. array^)) THEN
@@ -143,7 +143,7 @@ PROCEDURE (l: ArrayList) Append* (obj: Object.Object);
     INC (l. size)
   END Append;
 
-PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Object.Object);
+PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Storable.Object);
 (**Inserts the specified element @oparam{obj} at the specified position
    @oparam{index} in this list.  Shifts the element currently at that position
    (if any) and any subsequent elements to the right (adds one to their
@@ -166,7 +166,7 @@ PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Object.Object);
     INC (l. size)
   END Insert;
 
-PROCEDURE (l: ArrayList) Get* (index: LONGINT): Object.Object;
+PROCEDURE (l: ArrayList) Get* (index: LONGINT): Storable.Object;
 (**Returns the element at the specified position @oparam{index} in this list.
 
    @precond
@@ -177,7 +177,7 @@ PROCEDURE (l: ArrayList) Get* (index: LONGINT): Object.Object;
     RETURN l. array[index]
   END Get;
 
-PROCEDURE (l: ArrayList) Set* (index: LONGINT; obj: Object.Object);
+PROCEDURE (l: ArrayList) Set* (index: LONGINT; obj: Storable.Object);
 (**Replaces the element at the specified position @oparam{index} in this list
    with the specified element @oparam{obj}.
 
@@ -246,7 +246,7 @@ PROCEDURE (l: ArrayList) Size* (): LONGINT;
     RETURN l. size
   END Size;
 
-PROCEDURE (l: ArrayList) Contains* (obj: Object.Object): BOOLEAN;
+PROCEDURE (l: ArrayList) Contains* (obj: Storable.Object): BOOLEAN;
 (**Returns @code{TRUE} if this list contains the specified element.  *)
   VAR
     i: LONGINT;
@@ -259,9 +259,9 @@ PROCEDURE (l: ArrayList) Contains* (obj: Object.Object): BOOLEAN;
     RETURN FALSE
   END Contains;
 
-PROCEDURE (l: ArrayList) IndexOf* (obj: Object.Object): LONGINT;
+PROCEDURE (l: ArrayList) IndexOf* (obj: Storable.Object): LONGINT;
 (**Searches for the first occurence of the given argument, testing for equality
-   using the @oproc{Object.Object.Equals} method.  Returns @code{-1} if the
+   using the @oproc{Storable.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
   VAR
     i: LONGINT;
@@ -274,9 +274,9 @@ PROCEDURE (l: ArrayList) IndexOf* (obj: Object.Object): LONGINT;
     RETURN -1
   END IndexOf;
 
-PROCEDURE (l: ArrayList) LastIndexOf* (obj: Object.Object): LONGINT;
+PROCEDURE (l: ArrayList) LastIndexOf* (obj: Storable.Object): LONGINT;
 (**Searches for the last occurence of the given argument, testing for equality
-   using the @oproc{Object.Object.Equals} method.  Returns @code{-1} if the
+   using the @oproc{Storable.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
   VAR
     i: LONGINT;
@@ -307,7 +307,7 @@ PROCEDURE (l: ArrayList) HashCode* (): LONGINT;
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END HashCode;
 
-PROCEDURE (l: ArrayList) Store* (w: Object.Writer);
+PROCEDURE (l: ArrayList) Store* (w: Storable.Writer);
   VAR
     i: LONGINT;
   BEGIN
@@ -317,7 +317,7 @@ PROCEDURE (l: ArrayList) Store* (w: Object.Writer);
     END
   END Store;
 
-PROCEDURE (l: ArrayList) Load* (r: Object.Reader);
+PROCEDURE (l: ArrayList) Load* (r: Storable.Reader);
   VAR
     i, size: LONGINT;
   BEGIN

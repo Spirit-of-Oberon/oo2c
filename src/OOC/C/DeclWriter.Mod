@@ -22,7 +22,7 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 
 IMPORT
   Channel, Err, Files, IntStr, Msg, Strings, TextRider,
-  ADT:Object, ADT:String, ADT:ArrayList,
+  ADT:Storable, ADT:String, ADT:ArrayList,
   URI, IO:Memory, 
   Language, Language:Boolean, Language:String8, Language:String16,
   Language:Integer, Language:Set, Language:Real,
@@ -209,7 +209,7 @@ TYPE
        class, its type, and the declared name.  New declaration objects are
        created with @oproc{Writer.NewDeclaration} and are serialized into an
        output file with @oproc{Writer.WriteDeclaration}.  *)
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     typeQualifier: TypeQualifier;
     storageClass: StorageClass;
     type: Type;
@@ -898,7 +898,7 @@ PROCEDURE InitDeclaration (d: Declaration; name: String.String;
                            typeQualifier: TypeQualifier;
                            storageClass: StorageClass; type: Type);
   BEGIN
-    Object.Init (d);
+    Storable.Init (d);
     d. name := name;
     d. typeQualifier := typeQualifier;
     d. storageClass := storageClass;

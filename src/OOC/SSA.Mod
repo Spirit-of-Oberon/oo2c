@@ -23,7 +23,7 @@ MODULE OOC:SSA;
 
 IMPORT
   SYSTEM, Log, 
-  Language, Language:Integer, Language:Boolean, ADT:Object, ADT:Dictionary,
+  Language, Language:Integer, Language:Boolean, ADT:Storable, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
@@ -40,7 +40,7 @@ TYPE
 
 TYPE
   NodeDesc* = RECORD
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
   END;
   
 TYPE
@@ -220,7 +220,7 @@ VAR
   
 PROCEDURE InitNode* (n: Node);
   BEGIN
-    Object.Init (n);
+    Storable.Init (n);
   END InitNode;
 
   (* ---------------------------------------------------------------------- *)
@@ -1129,7 +1129,7 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
 (**Returns the @code{const} instruction for the value @oparam{value}.  Equal
    values are mapped to the same unique instruction.  *)
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
     const: Const;
     bucket: LONGINT;
   BEGIN
@@ -1172,7 +1172,7 @@ PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Sym.Declaration): DeclRef;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
     declRef: DeclRef;
   BEGIN
     IF pb. objMap. HasKey (decl) THEN
@@ -1191,7 +1191,7 @@ PROCEDURE (pb: ProcBlock) GetTypeRef* (type: Sym.Type): TypeRef;
 (**Returns the @code{typeref} instruction for the type @oparam{type}.
    Equal types are mapped to the same unique instruction.  *)
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
     typeRef: TypeRef;
   BEGIN
     IF pb. objMap. HasKey (type) THEN
@@ -1216,7 +1216,7 @@ PROCEDURE (pb: ProcBlock) GetAddress* (decl: Sym.Declaration): Address;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
     address: Address;
   BEGIN
     IF pb. adrMap. HasKey (decl) THEN

@@ -1,7 +1,7 @@
 MODULE Language:Real [OOC_EXTENSIONS];
 
 IMPORT
-  ADT:Object, ADT:String, L := Language, RealStr, LRealStr, SYSTEM,
+  ADT:Storable, ADT:String, L := Language, RealStr, LRealStr, SYSTEM,
   LanguageNew;
 
 TYPE
@@ -31,13 +31,13 @@ BEGIN
   RETURN v;
 END New;
 
-PROCEDURE (v: Value) Store* (w: Object.Writer);
+PROCEDURE (v: Value) Store* (w: Storable.Writer);
   BEGIN
     v. Store^ (w);
     w. WriteLReal(v.value);
   END Store;
 
-PROCEDURE (v: Value) Load* (r: Object.Reader);
+PROCEDURE (v: Value) Load* (r: Storable.Reader);
   BEGIN
     v. Load^ (r);
     r. ReadLReal(v.value);
@@ -97,7 +97,7 @@ BEGIN
   RETURN New(v.value / right.value);
 END Quotient;
 
-PROCEDURE (v : Value) Compare* (right : Object.Object) : LONGINT;
+PROCEDURE (v : Value) Compare* (right : Storable.Object) : LONGINT;
 BEGIN
   IF v.value = right(Value).value THEN
     RETURN 0;

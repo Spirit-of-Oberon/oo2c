@@ -21,7 +21,7 @@ MODULE OOC:Repository [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Msg, Channel, TextRider, Strings, Time, ADT:Object, ADT:ArrayList,
+  Msg, Channel, TextRider, Strings, Time, ADT:Storable, ADT:ArrayList,
   URI, OS:Path, OOC:Logger,
   OOC:Scanner:InputBuffer, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
@@ -63,7 +63,7 @@ TYPE
     fingerprint-: LONGINT;
   END;
   ModuleDesc* = RECORD [ABSTRACT]
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     (**Note: The function @oproc{*OOC:Config:Repositories.Section.GetModule} is
        used to retrieve module instances from repositories.  It ensures that
        for a given module name only one instance of @otype{Module} is created
@@ -245,7 +245,7 @@ PROCEDURE Init* (rep: Repository; baseRep: Repository; baseURI: URI.Hierarchical
 PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName;
                        srcFileOverride: URI.HierarchicalURI);
   BEGIN
-    Object.Init (m);
+    Storable.Init (m);
     m. origin := origin;
     m. name := Msg.GetStringPtr (name);
     m. srcFileOverride := srcFileOverride;

@@ -1,7 +1,7 @@
 MODULE Language:Set;
 
 IMPORT 
-  ADT:Object, ADT:String, ADT:StringBuffer,
+  ADT:Storable, ADT:String, ADT:StringBuffer,
   L := Language, SYSTEM, LanguageNew;
 
 TYPE
@@ -36,7 +36,7 @@ BEGIN
   END;
 END Equals;
 
-PROCEDURE (v: Value) Compare* (y: Object.Object): LONGINT;
+PROCEDURE (v: Value) Compare* (y: Storable.Object): LONGINT;
   BEGIN
     ASSERT (FALSE); RETURN -1;
   END Compare;
@@ -114,12 +114,12 @@ BEGIN
   RETURN SYSTEM.VAL(LONGINT, v.value);
 END ToLInt;
 
-PROCEDURE (v : Value) Store* (w : Object.Writer);
+PROCEDURE (v : Value) Store* (w : Storable.Writer);
 BEGIN
   w.WriteSet(v.value);
 END Store;
 
-PROCEDURE (v : Value) Load* (r : Object.Reader);
+PROCEDURE (v : Value) Load* (r : Storable.Reader);
 BEGIN
   r.ReadSet(v.value);
 END Load;

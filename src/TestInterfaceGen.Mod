@@ -1,7 +1,7 @@
 MODULE TestInterfaceGen;
 
 IMPORT
-  StdChannels, Out, Err, ADT:Object, ADT:Dictionary, ADT:ArrayList,
+  StdChannels, Out, Err, ADT:Storable, ADT:Dictionary, ADT:ArrayList,
   Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String,
@@ -49,7 +49,7 @@ PROCEDURE CollectExtensions (moduleList: ARRAY OF Rep.Module): Dictionary.Dictio
     VAR
       ptr: Sym.Item;
       base: Sym.Type;
-      obj: Object.Object;
+      obj: Storable.Object;
       list: ArrayList.ArrayList;
       i: LONGINT;
     BEGIN

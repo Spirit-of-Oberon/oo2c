@@ -21,7 +21,7 @@ MODULE OOC:Doc [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  CharClass, Strings, ADT:Object, ADT:ArrayList,
+  CharClass, Strings, ADT:Storable, ADT:ArrayList,
   OOC:Doc:Decoration, OOC:Scanner:InputBuffer;
 
 
@@ -53,7 +53,7 @@ TYPE
 TYPE
   Element* = POINTER TO ElementDesc;
   ElementDesc = RECORD [ABSTRACT]
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     pos*: Position;
     (**Currently, this field is only valid for @otype{Text} and
        @otype{OberonRef} elements, and is only used for direct children of an
@@ -78,7 +78,7 @@ TYPE
 TYPE
   Document* = POINTER TO DocumentDesc;
   DocumentDesc = RECORD
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     blockList-: BlockElement;
     summary-: InlineElement;
     decoration-: Decoration.Decoration;
@@ -164,7 +164,7 @@ TYPE
   OberonRef* = POINTER TO OberonRefDesc;
   OberonRefDesc = RECORD
     (MarkedInlineDesc)
-    target-: Object.Object;    (* is Sym.Declaration *)
+    target-: Storable.Object;    (* is Sym.Declaration *)
     externalModule-,
     externalId-: InputBuffer.CharArray;
     (* either target or (externalModule, externalId) are NIL; these fields
@@ -271,7 +271,7 @@ PROCEDURE SetPosition* (VAR pos: Position; char: InputBuffer.CharPos;
 
 PROCEDURE InitElement (e: Element);
   BEGIN
-    Object.Init (e);
+    Storable.Init (e);
     e. pos. char := -1;
     e. pos. line := -1;
     e. pos. column := -1;
@@ -283,13 +283,13 @@ PROCEDURE (e: Element) [ABSTRACT] NodeName* (VAR name: ARRAY OF CHAR);
 PROCEDURE (e: Element) [ABSTRACT] Normalize*;
   END Normalize;
 
-PROCEDURE (e: Element) Store* (w: Object.Writer);
+PROCEDURE (e: Element) Store* (w: Storable.Writer);
   BEGIN
     e. Store^ (w);
     (* field `pos' is not stored, and set to the default value on import *)
   END Store;
 
-PROCEDURE (e: Element) Load* (r: Object.Reader);
+PROCEDURE (e: Element) Load* (r: Storable.Reader);
   BEGIN
     InitElement (e);                     (* set `pos' to default value *)
     e. Load^ (r)
@@ -324,15 +324,15 @@ PROCEDURE (e: InlineElement) StripHeadWS;
 PROCEDURE (e: InlineElement) StripTailWS;
   END StripTailWS;
 
-PROCEDURE (e: InlineElement) Store* (w: Object.Writer);
+PROCEDURE (e: InlineElement) Store* (w: Storable.Writer);
   BEGIN
     e. Store^ (w);
     w. WriteObject (e. nextInline)
   END Store;
 
-PROCEDURE (e: InlineElement) Load* (r: Object.Reader);
+PROCEDURE (e: InlineElement) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     e. Load^ (r);
     r. ReadObject (obj);
@@ -352,16 +352,16 @@ PROCEDURE InitBlockElement (e: BlockElement; padAfter: BOOLEAN);
     e. padAfter := padAfter
   END InitBlockElement;
 
-PROCEDURE (e: BlockElement) Store* (w: Object.Writer);
+PROCEDURE (e: BlockElement) Store* (w: Storable.Writer);
   BEGIN
     e. Store^ (w);
     w. WriteObject (e. nextBlock);
     w. WriteBool (e. padAfter)
   END Store;
 
-PROCEDURE (e: BlockElement) Load* (r: Object.Reader);
+PROCEDURE (e: BlockElement) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     e. Load^ (r);
     r. ReadObject (obj);
@@ -547,13 +547,13 @@ PROCEDURE (glyph: Glyph) NodeName* (VAR name: ARRAY OF CHAR);
 PROCEDURE (glyph: Glyph) Normalize*;
   END Normalize;
 
-PROCEDURE (glyph: Glyph) Store* (w: Object.Writer);
+PROCEDURE (glyph: Glyph) Store* (w: Storable.Writer);
   BEGIN
     glyph. Store^ (w);
     w. WriteNum (glyph. code)
   END Store;
 
-PROCEDURE (glyph: Glyph) Load* (r: Object.Reader);
+PROCEDURE (glyph: Glyph) Load* (r: Storable.Reader);
   BEGIN
     glyph. Load^ (r);
     r. ReadNum (glyph. code)
@@ -656,7 +656,7 @@ PROCEDURE (text: Text) StripTailWS;
     text. string[i] := 0X
   END StripTailWS;
 
-PROCEDURE (text: Text) Store* (w: Object.Writer);
+PROCEDURE (text: Text) Store* (w: Storable.Writer);
   VAR
     i: LONGINT;
   BEGIN
@@ -669,7 +669,7 @@ PROCEDURE (text: Text) Store* (w: Object.Writer);
     w. WriteString (text. string^)
   END Store;
 
-PROCEDURE (text: Text) Load* (r: Object.Reader);
+PROCEDURE (text: Text) Load* (r: Storable.Reader);
   VAR
     len: LONGINT;
   BEGIN
@@ -739,16 +739,16 @@ PROCEDURE (mi: MarkedInline) StripTailWS;
     last. StripTailWS
   END StripTailWS;
 
-PROCEDURE (mi: MarkedInline) Store* (w: Object.Writer);
+PROCEDURE (mi: MarkedInline) Store* (w: Storable.Writer);
   BEGIN
     mi. Store^ (w);
     w. WriteNum (mi. mark);
     w. WriteObject (mi. inlineText)
   END Store;
 
-PROCEDURE (mi: MarkedInline) Load* (r: Object.Reader);
+PROCEDURE (mi: MarkedInline) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     mi. Load^ (r);
     r. ReadNum (mi. mark);
@@ -763,7 +763,7 @@ PROCEDURE (mi: MarkedInline) Load* (r: Object.Reader);
 
 PROCEDURE InitOberonRef (or: OberonRef;
                          mark: LONGINT; inlineText: InlineElement;
-                         target: Object.Object);
+                         target: Storable.Object);
   BEGIN
     InitMarkedInline (or, mark, inlineText);
     or. target := target;
@@ -772,7 +772,7 @@ PROCEDURE InitOberonRef (or: OberonRef;
   END InitOberonRef;
 
 PROCEDURE NewOberonRef* (mark: LONGINT; inlineText: InlineElement;
-                         target: Object.Object): MarkedInline;
+                         target: Storable.Object): MarkedInline;
   VAR
     or: OberonRef;
   BEGIN
@@ -781,7 +781,7 @@ PROCEDURE NewOberonRef* (mark: LONGINT; inlineText: InlineElement;
     RETURN or
   END NewOberonRef;
 
-PROCEDURE (or: OberonRef) SetTarget* (targetDecl: Object.Object);
+PROCEDURE (or: OberonRef) SetTarget* (targetDecl: Storable.Object);
   BEGIN
     or. target := targetDecl
   END SetTarget;
@@ -792,13 +792,13 @@ PROCEDURE (or: OberonRef) SetExternalTarget* (module, id: InputBuffer.CharArray)
     or. externalId := id
   END SetExternalTarget;
 
-PROCEDURE (or: OberonRef) Store* (w: Object.Writer);
+PROCEDURE (or: OberonRef) Store* (w: Storable.Writer);
   BEGIN
     or. Store^ (w);
     (* don't store target, externalModule, or externalId *)
   END Store;
 
-PROCEDURE (or: OberonRef) Load* (r: Object.Reader);
+PROCEDURE (or: OberonRef) Load* (r: Storable.Reader);
   BEGIN
     or. Load^ (r);
     or. target := NIL;
@@ -834,16 +834,16 @@ PROCEDURE (email: Email) Normalize*;
     NormalizeArg (email. displayed)
   END Normalize;
 
-PROCEDURE (email: Email) Store* (w: Object.Writer);
+PROCEDURE (email: Email) Store* (w: Storable.Writer);
   BEGIN
     email. Store^ (w);
     w. WriteObject (email. address);
     w. WriteObject (email. displayed)
   END Store;
 
-PROCEDURE (email: Email) Load* (r: Object.Reader);
+PROCEDURE (email: Email) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     email. Load^ (r);
     r. ReadObject (obj);
@@ -890,7 +890,7 @@ PROCEDURE (uref: Uref) Normalize*;
     NormalizeArg (uref. replacement)
   END Normalize;
 
-PROCEDURE (uref: Uref) Store* (w: Object.Writer);
+PROCEDURE (uref: Uref) Store* (w: Storable.Writer);
   BEGIN
     uref. Store^ (w);
     w. WriteObject (uref. url);
@@ -898,9 +898,9 @@ PROCEDURE (uref: Uref) Store* (w: Object.Writer);
     w. WriteObject (uref. replacement);
   END Store;
 
-PROCEDURE (uref: Uref) Load* (r: Object.Reader);
+PROCEDURE (uref: Uref) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     uref. Load^ (r);
     r. ReadObject (obj);
@@ -951,16 +951,16 @@ PROCEDURE (p: Paragraph) Normalize*;
     NormalizeInlineList (p. inlineText)
   END Normalize;
 
-PROCEDURE (p: Paragraph) Store* (w: Object.Writer);
+PROCEDURE (p: Paragraph) Store* (w: Storable.Writer);
   BEGIN
     p. Store^ (w);
     w. WriteObject (p. inlineText);
     w. WriteBool (p. noIndent)
   END Store;
 
-PROCEDURE (p: Paragraph) Load* (r: Object.Reader);
+PROCEDURE (p: Paragraph) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     p. Load^ (r);
     r. ReadObject (obj);
@@ -996,15 +996,15 @@ PROCEDURE (ex: Example) NodeName* (VAR name: ARRAY OF CHAR);
 PROCEDURE (ex: Example) Normalize*;
   END Normalize;
 
-PROCEDURE (ex: Example) Store* (w: Object.Writer);
+PROCEDURE (ex: Example) Store* (w: Storable.Writer);
   BEGIN
     ex. Store^ (w);
     w. WriteObject (ex. inlineText)
   END Store;
 
-PROCEDURE (ex: Example) Load* (r: Object.Reader);
+PROCEDURE (ex: Example) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     ex. Load^ (r);
     r. ReadObject (obj);
@@ -1041,15 +1041,15 @@ PROCEDURE (pc: PreCond) Normalize*;
     NormalizeBlockList (pc. blockList)
   END Normalize;
 
-PROCEDURE (pc: PreCond) Store* (w: Object.Writer);
+PROCEDURE (pc: PreCond) Store* (w: Storable.Writer);
   BEGIN
     pc. Store^ (w);
     w. WriteObject (pc. blockList)
   END Store;
 
-PROCEDURE (pc: PreCond) Load* (r: Object.Reader);
+PROCEDURE (pc: PreCond) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     pc. Load^ (r);
     r. ReadObject (obj);
@@ -1086,15 +1086,15 @@ PROCEDURE (pc: PostCond) Normalize*;
     NormalizeBlockList (pc. blockList)
   END Normalize;
 
-PROCEDURE (pc: PostCond) Store* (w: Object.Writer);
+PROCEDURE (pc: PostCond) Store* (w: Storable.Writer);
   BEGIN
     pc. Store^ (w);
     w. WriteObject (pc. blockList)
   END Store;
 
-PROCEDURE (pc: PostCond) Load* (r: Object.Reader);
+PROCEDURE (pc: PostCond) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     pc. Load^ (r);
     r. ReadObject (obj);
@@ -1133,15 +1133,15 @@ PROCEDURE (item: Item) Normalize*;
     item. padAfter := TRUE
   END Normalize;
 
-PROCEDURE (item: Item) Store* (w: Object.Writer);
+PROCEDURE (item: Item) Store* (w: Storable.Writer);
   BEGIN
     item. Store^ (w);
     w. WriteObject (item. blockList)
   END Store;
 
-PROCEDURE (item: Item) Load* (r: Object.Reader);
+PROCEDURE (item: Item) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     item. Load^ (r);
     r. ReadObject (obj);
@@ -1188,7 +1188,7 @@ PROCEDURE (i: Itemize) Normalize*;
     NoPadLastElement (i. itemList)
   END Normalize;
 
-PROCEDURE (i: Itemize) Store* (w: Object.Writer);
+PROCEDURE (i: Itemize) Store* (w: Storable.Writer);
   BEGIN
     i. Store^ (w);
     w. WriteObject (i. mark);
@@ -1196,9 +1196,9 @@ PROCEDURE (i: Itemize) Store* (w: Object.Writer);
     w. WriteObject (i. itemList)
   END Store;
 
-PROCEDURE (i: Itemize) Load* (r: Object.Reader);
+PROCEDURE (i: Itemize) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     i. Load^ (r);
     r. ReadObject (obj);
@@ -1249,15 +1249,15 @@ PROCEDURE (fc: FirstColumn) Normalize*;
     fc. padAfter := FALSE
   END Normalize;
 
-PROCEDURE (fc: FirstColumn) Store* (w: Object.Writer);
+PROCEDURE (fc: FirstColumn) Store* (w: Storable.Writer);
   BEGIN
     fc. Store^ (w);
     w. WriteObject (fc. inlineText)
   END Store;
 
-PROCEDURE (fc: FirstColumn) Load* (r: Object.Reader);
+PROCEDURE (fc: FirstColumn) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     fc. Load^ (r);
     r. ReadObject (obj);
@@ -1300,16 +1300,16 @@ PROCEDURE (tr: TableRow) Normalize*;
     tr. padAfter := TRUE
   END Normalize;
 
-PROCEDURE (tr: TableRow) Store* (w: Object.Writer);
+PROCEDURE (tr: TableRow) Store* (w: Storable.Writer);
   BEGIN
     tr. Store^ (w);
     w. WriteObject (tr. firstColumnList);
     w. WriteObject (tr. item);
   END Store;
 
-PROCEDURE (tr: TableRow) Load* (r: Object.Reader);
+PROCEDURE (tr: TableRow) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     tr. Load^ (r);
     r. ReadObject (obj);
@@ -1353,15 +1353,15 @@ PROCEDURE (t: Table) Normalize*;
     NoPadLastElement (t. rowList)
   END Normalize;
 
-PROCEDURE (t: Table) Store* (w: Object.Writer);
+PROCEDURE (t: Table) Store* (w: Storable.Writer);
   BEGIN
     t. Store^ (w);
     w. WriteObject (t. rowList)
   END Store;
 
-PROCEDURE (t: Table) Load* (r: Object.Reader);
+PROCEDURE (t: Table) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     t. Load^ (r);
     r. ReadObject (obj);
@@ -1446,7 +1446,7 @@ PROCEDURE NewDocument* (blockList: BlockElement;
     d: Document;
   BEGIN
     NEW (d);
-    Object.Init (d);
+    Storable.Init (d);
     d. blockList := blockList;
     d. summary := NIL;
     d. decoration := decoration;
@@ -1455,7 +1455,7 @@ PROCEDURE NewDocument* (blockList: BlockElement;
     RETURN d
   END NewDocument;
 
-PROCEDURE (d: Document) AddUsedImport* (importDecl: Object.Object);
+PROCEDURE (d: Document) AddUsedImport* (importDecl: Storable.Object);
   VAR
     i: LONGINT;
   BEGIN
@@ -1470,7 +1470,7 @@ PROCEDURE (d: Document) AddUsedImport* (importDecl: Object.Object);
     d. usedImportsList. Append (importDecl)
   END AddUsedImport;
 
-PROCEDURE (d: Document) Store* (w: Object.Writer);
+PROCEDURE (d: Document) Store* (w: Storable.Writer);
   BEGIN
     d. Store^ (w);
     w. WriteObject (d. blockList);
@@ -1478,9 +1478,9 @@ PROCEDURE (d: Document) Store* (w: Object.Writer);
     (* don't store decoration, firstColumn, or usedImportsList *)
   END Store;
 
-PROCEDURE (d: Document) Load* (r: Object.Reader);
+PROCEDURE (d: Document) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     d. Load^ (r);
     r. ReadObject (obj);

@@ -21,7 +21,7 @@ MODULE OOC:Make:LinkProgramC;
 *)
 
 IMPORT
-  Out, Strings, URI, URI:Scheme:File, ADT:Object, ADT:String, ADT:Dictionary,
+  Out, Strings, URI, URI:Scheme:File, ADT:Storable, ADT:String, ADT:Dictionary,
   ADT:ArrayList, Config:Value, StringValue := Config:Value:String,
   OS:ProcessManagement, OOC:Error, OOC:Repository, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
@@ -42,7 +42,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
 
   PROCEDURE GetDepArray (libName: String.String): ArrayList.ArrayList;
     VAR
-      obj: Object.Object;
+      obj: Storable.Object;
       list: ArrayList.ArrayList;
     BEGIN
       IF libDeps.HasKey(libName) THEN
@@ -59,7 +59,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
     VAR
       depArray: ArrayList.ArrayList;
       i: LONGINT;
-      obj: Object.Object;
+      obj: Storable.Object;
     BEGIN
       IF ~visited.HasKey(libName) & libDeps.HasKey(libName) THEN
         visited.Set(libName, NIL);
@@ -81,7 +81,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
 
   PROCEDURE Option(libraryName: String.String): String.String;
     VAR
-      obj: Object.Object;
+      obj: Storable.Object;
       str: String.String;
     BEGIN
       IF option.HasKey(libraryName) THEN

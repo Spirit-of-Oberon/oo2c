@@ -20,7 +20,7 @@ MODULE ADT:Comparator [OOC_EXTENSIONS];
 
 
 IMPORT
-  ADT:Object;
+  ADT:Storable;
 
 (**Note: The class @otype{Comparator} is modeled after from Java class
    @samp{java.util.Comparator}, from which the documentation is also derived.  *)
@@ -28,15 +28,15 @@ IMPORT
 TYPE
   Comparator* = POINTER TO ComparatorDesc;
   ComparatorDesc* = RECORD [ABSTRACT]
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
   END;
 
 PROCEDURE Init* (cmp: Comparator);
   BEGIN
-    Object.Init (cmp)
+    Storable.Init (cmp)
   END Init;
 
-PROCEDURE (cmpd: Comparator) [ABSTRACT] Compare* (o1, o2: Object.Object): LONGINT;
+PROCEDURE (cmpd: Comparator) [ABSTRACT] Compare* (o1, o2: Storable.Object): LONGINT;
 (**Compares its two arguments for order.  Returns a negative integer, zero, or
    a positive integer as the first argument is less than, equal to, or greater
    than the second.

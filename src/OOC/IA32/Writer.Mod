@@ -22,7 +22,7 @@ MODULE OOC:IA32:Writer [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, Channel, Files, IntStr, Msg, Strings, TextRider,
-  ADT:Object, ADT:String, ADT:Dictionary,
+  ADT:Storable, ADT:String, ADT:Dictionary,
   LString := Language:String, Language:String8;
 
 TYPE
@@ -104,7 +104,7 @@ PROCEDURE (w: Writer) StringLiteral* (str: ARRAY OF CHAR);
 
 PROCEDURE (w: Writer) GetStringLabel* (value: LString.Value): String.String;
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
     s: String.String;
     label: ARRAY 32 OF CHAR;
   BEGIN
@@ -145,8 +145,8 @@ PROCEDURE (w: Writer) PopBytes* (bytes: LONGINT);
 
 PROCEDURE (w: Writer) WriteStringData* ();
   VAR
-    strings: Object.ObjectArrayPtr;
-    label: Object.Object;
+    strings: Storable.ObjectArrayPtr;
+    label: Storable.Object;
     i: LONGINT;
   BEGIN
     w. Section (".data");

@@ -1,7 +1,7 @@
 MODULE LibAdtDictionary;
 
 IMPORT
-  Out := Out0, ADT:Object, Dict := ADT:Dictionary, RND := RandomNumbers,
+  Out := Out0, ADT:Storable, Dict := ADT:Dictionary, RND := RandomNumbers,
   (* the rest is only imported to see if it compiles: *)
   ADT:Dictionary:AddressKey, ADT:Dictionary:IntValue,
   AddressToInt := ADT:Dictionary:AddressKey:IntValue;
@@ -9,7 +9,7 @@ IMPORT
 TYPE
   Obj* = POINTER TO ObjDesc;
   ObjDesc = RECORD
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
   END;
 
 

@@ -5,18 +5,18 @@ MODULE Language [OOC_EXTENSIONS];
  * compilers as part of the intermediate representation of a program *)
 
 IMPORT
-  ADT:Object, ADT:String, LanguageNew;
+  ADT:Storable, ADT:String, LanguageNew;
 
 TYPE
   Type* = POINTER TO TypeDesc;
-  TypeDesc* = RECORD [ABSTRACT] (Object.ObjectDesc)
+  TypeDesc* = RECORD [ABSTRACT] (Storable.ObjectDesc)
     (** This is the base type for all Oberon-2 types. Sub-types of @otype{Type}
      * generally provide a function @otype{Value}, which converts a primitive
      * type to a @otype{Value}.  *) 
   END;
 
   Value* = POINTER TO ValueDesc;
-  ValueDesc* = RECORD [ABSTRACT] (Object.ObjectDesc)
+  ValueDesc* = RECORD [ABSTRACT] (Storable.ObjectDesc)
     (**This is the base type for all Oberon-2 values. Each value has an *
        associtated type (the @ofield{type} field). A @otype{Value} may be *
        converted to a @otype{String.String}, but otherwise its main function is
@@ -31,14 +31,14 @@ TYPE
 
 PROCEDURE InitValue* (v: Value; type: Type);
   BEGIN
-    Object.Init (v);
+    Storable.Init (v);
     v. type := type
   END InitValue;
 
 PROCEDURE (v: Value) [ABSTRACT] Equals* (y: LanguageNew.Object): BOOLEAN;
   END Equals;
   
-PROCEDURE (v : Value) [ABSTRACT] Compare* (y: Object.Object): LONGINT;
+PROCEDURE (v : Value) [ABSTRACT] Compare* (y: Storable.Object): LONGINT;
   END Compare;
 
 PROCEDURE (v: Value) [ABSTRACT] HashCode* (): LONGINT;
@@ -47,14 +47,14 @@ PROCEDURE (v: Value) [ABSTRACT] HashCode* (): LONGINT;
 PROCEDURE (v: Value) [ABSTRACT] ToString*() : String.String;
   END ToString;
 
-PROCEDURE (v: Value) Store* (w: Object.Writer);
+PROCEDURE (v: Value) Store* (w: Storable.Writer);
   BEGIN
     w. WriteObject (v. type)
   END Store;
 
-PROCEDURE (v: Value) Load* (r: Object.Reader);
+PROCEDURE (v: Value) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     r. ReadObject (obj);
     v. type := obj(Type)
@@ -63,7 +63,7 @@ PROCEDURE (v: Value) Load* (r: Object.Reader);
 
 PROCEDURE InitType* (t: Type);
   BEGIN
-    Object.Init (t)
+    Storable.Init (t)
   END InitType;
 
 PROCEDURE (t: Type) [ABSTRACT] ToString*() : String.String;

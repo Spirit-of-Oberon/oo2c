@@ -21,7 +21,7 @@ MODULE OOC:SSA:Schedule [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Blocker;
+  ADT:Storable, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Blocker;
 
 TYPE
   Block* = POINTER TO BlockDesc;
@@ -64,7 +64,7 @@ TYPE
   
 TYPE
   BlockDesc = RECORD [ABSTRACT]
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     (**A basic block contains a sequence of instructions, with control flow
        entering at the beginning of the block, and leaving at the end of the
        block.  There are no jumps into the block, nor are there any jump or
@@ -169,7 +169,7 @@ PROCEDURE InitInfo* (info: Info);
 
 PROCEDURE InitBlock (b: Block; dominator: Block);
   BEGIN
-    Object.Init (b);
+    Storable.Init (b);
     b. proxyList := NIL;
     b. proxyTail := NIL;
     b. parent := dominator;

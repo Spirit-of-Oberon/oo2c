@@ -6,9 +6,9 @@ MODULE LanguageNew;
 
    Note: This module is a construction site.  New type definitions and features
    are added on demand.  If it is not used, it has no place here.  This module
-   will be renamed to ``Language'' eventually, if it has been fleshed out
-   enough to replace both @omodule{*ADT:Object}, @omodule{*Language} and
-   friends (including @omodule{*Language:String0}), and the value objects of
+   will be renamed eventually (maybe to ``Language''?), if it has been fleshed
+   out enough to replace both ``ADT:Object'', @omodule{*Language} and friends
+   (including @omodule{*Language:String0}), and the value objects of
    @omodule{*Config}.  *)
 
 IMPORT

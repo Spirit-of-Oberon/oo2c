@@ -22,7 +22,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 
 IMPORT
   IntStr, Out, StdChannels, Strings, StringSearch,
-  ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
+  ADT:Storable, ADT:String, ADT:Dictionary, ADT:ArrayList,
   LString := Language:String, Language:String8, Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
@@ -432,7 +432,7 @@ PROCEDURE ^ WriteExpr (w: Writer; instr: SSA.Instr);
 PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
   VAR
     arg: SSA.Result;
-    obj: Object.Object;
+    obj: Storable.Object;
     name: String.String;
     instr: SSA.Instr;
     bt: DeclWriter.BasicTypeId;
@@ -518,7 +518,7 @@ PROCEDURE (w: Writer) Noop (instr: SSA.Instr): BOOLEAN;
     targetInstr: SSA.Instr;
     opnd: SSA.Opnd;
     res: SSA.Result;
-    targetVar, sourceVar: Object.Object;
+    targetVar, sourceVar: Storable.Object;
   BEGIN
     CASE instr. opcode OF
     | Opcode.const,
@@ -1222,7 +1222,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
   VAR
     proxy: Schedule.InstrProxy;
     instr: SSA.Instr;
-    target: Object.Object;
+    target: Storable.Object;
     str: ARRAY 32 OF CHAR;
     opnd: SSA.Opnd;
     
@@ -1230,7 +1230,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
     VAR
       opnd: SSA.Opnd;
       res: SSA.Result;
-      targetVar, sourceVar: Object.Object;
+      targetVar, sourceVar: Storable.Object;
       i: LONGINT;
     BEGIN
       w. Newline;

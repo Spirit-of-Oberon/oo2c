@@ -22,7 +22,7 @@ MODULE StringSearch:RegexpDFA [OOC_EXTENSIONS];
 
 IMPORT
   <*IF DEBUG THEN*>
-  Out, ADT:Object, ADT:Dictionary:IntValue,
+  Out, ADT:Storable, ADT:Dictionary:IntValue,
   <*END*>
   Ascii, StringSearch, StringSearch:SubstringBM,
   Regexp := StringSearch:RegexpParser, ADT:String;
@@ -191,7 +191,7 @@ TYPE
   GroupId = SHORTINT;
   Node = POINTER TO NodeDesc;
   NodeDesc = RECORD
-    <*IF DEBUG THEN*>(Object.ObjectDesc)<*END*>
+    <*IF DEBUG THEN*>(Storable.ObjectDesc)<*END*>
     suc, alt: Node;
     type: SHORTINT;
     ch: CHAR;

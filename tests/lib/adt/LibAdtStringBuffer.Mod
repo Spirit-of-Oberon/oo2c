@@ -1,7 +1,7 @@
 MODULE LibAdtStringBuffer;
 
 IMPORT 
-  O := ADT:Object,
+  O := ADT:Storable,
   S := ADT:String,
   B := ADT:StringBuffer,
   Out := Out0;

@@ -20,17 +20,17 @@ MODULE ADT:LinkedList;
 *)
 
 IMPORT
-  ADT:Object, Language:=LanguageNew;
+  ADT:Storable, Language:=LanguageNew;
 
 TYPE
   Entry = POINTER TO EntryDesc;
-  EntryDesc = RECORD (Object.ObjectDesc)
+  EntryDesc = RECORD (Storable.ObjectDesc)
     next, previous : Entry;
-    element : Object.Object;
+    element : Storable.Object;
   END;
 
   LinkedList* = POINTER TO LinkedListDesc;
-  LinkedListDesc* = RECORD (Object.ObjectDesc)
+  LinkedListDesc* = RECORD (Storable.ObjectDesc)
   (**Linked-list implementation of a list. Objects may be efficiently added to
      or removed from the start or end of the list, making it useful for
      implementing queues. *)
@@ -50,7 +50,7 @@ TYPE
     nextIndex : LONGINT;
   END;
 
-PROCEDURE NewEntry (element : Object.Object; next, previous : Entry) : Entry;
+PROCEDURE NewEntry (element : Storable.Object; next, previous : Entry) : Entry;
 VAR e : Entry;
 BEGIN
   NEW(e);
@@ -65,7 +65,7 @@ PROCEDURE Init* (l: LinkedList);
 VAR
   e : Entry;
 BEGIN
-  Object.Init (l);
+  Storable.Init (l);
   e := NewEntry(NIL, NIL, NIL); e.next := e; e.previous := e; 
   l.elements := e;
   l.size := 0
@@ -86,14 +86,14 @@ BEGIN
   l.elements := NIL;
 END Destroy;
 
-PROCEDURE (l : LinkedList) GetFirst* () : Object.Object;
+PROCEDURE (l : LinkedList) GetFirst* () : Storable.Object;
 (**Returns the first element in this list *)
 BEGIN
   ASSERT(l.size # 0);
   RETURN l.elements.next.element;
 END GetFirst;
 
-PROCEDURE (l : LinkedList) GetLast* () : Object.Object;
+PROCEDURE (l : LinkedList) GetLast* () : Storable.Object;
 (**Returns the last element in this list *)
 BEGIN
   ASSERT(l.size # 0);
@@ -125,27 +125,27 @@ BEGIN
   RETURN e;
 END FindEntry;
 
-PROCEDURE (l : LinkedList) RemoveFirst* () : Object.Object;
+PROCEDURE (l : LinkedList) RemoveFirst* () : Storable.Object;
 (**Removes the first element in this list. 
    Shifts any subsequent elements to the left (subtracts one from their
    indices). *)
-VAR result : Object.Object;
+VAR result : Storable.Object;
 BEGIN
   result := l.elements.next.element;
   l.RemoveEntry(l.elements.next);
   RETURN result;
 END RemoveFirst;
 
-PROCEDURE (l : LinkedList) RemoveLast* () : Object.Object;
+PROCEDURE (l : LinkedList) RemoveLast* () : Storable.Object;
 (**Removes the last element in this list. *)
-VAR result : Object.Object;
+VAR result : Storable.Object;
 BEGIN
   result := l.elements.previous.element;
   l.RemoveEntry(l.elements.previous);
   RETURN result;
 END RemoveLast;
 
-PROCEDURE (l: LinkedList) Remove* (index: LONGINT) : Object.Object;
+PROCEDURE (l: LinkedList) Remove* (index: LONGINT) : Storable.Object;
 (**Removes the element at the specified position @oparam{index} in this list.
    Shifts any subsequent elements to the left (subtracts one from their
    indices).
@@ -195,7 +195,7 @@ BEGIN
   DEC(l.size, delta);
 END RemoveRange;
 
-PROCEDURE (l : LinkedList) AddBefore (element : Object.Object; e : Entry);
+PROCEDURE (l : LinkedList) AddBefore (element : Storable.Object; e : Entry);
 VAR new : Entry;
 BEGIN
   new := NewEntry(element, e, e.previous);
@@ -204,13 +204,13 @@ BEGIN
   INC(l.size);
 END AddBefore;
 
-PROCEDURE (l : LinkedList) Prepend* (obj : Object.Object);
+PROCEDURE (l : LinkedList) Prepend* (obj : Storable.Object);
 (**Appends the specified element @oparam{obj} to the beginning of this list.  *)
 BEGIN
   l.AddBefore(obj, l.elements.next);
 END Prepend;
 
-PROCEDURE (l: LinkedList) Append* (obj: Object.Object);
+PROCEDURE (l: LinkedList) Append* (obj: Storable.Object);
 (**Appends the specified element @oparam{obj} to the end of this list.  *)
 BEGIN
   l.AddBefore(obj, l.elements);
@@ -239,7 +239,7 @@ BEGIN
   Init(l);
 END Clear;
 
-PROCEDURE (l: LinkedList) Insert* (index: LONGINT; obj: Object.Object);
+PROCEDURE (l: LinkedList) Insert* (index: LONGINT; obj: Storable.Object);
 (**Inserts the specified element @oparam{obj} at the specified position
    @oparam{index} in this list.  Shifts the element currently at that position
    (if any) and any subsequent elements to the right (adds one to their
@@ -257,7 +257,7 @@ BEGIN
   END;
 END Insert;
 
-PROCEDURE (l: LinkedList) Get* (index: LONGINT): Object.Object;
+PROCEDURE (l: LinkedList) Get* (index: LONGINT): Storable.Object;
 (**Returns the element at the specified position @oparam{index} in this list.
 
    @precond
@@ -270,7 +270,7 @@ BEGIN
   RETURN e.element;
 END Get;
 
-PROCEDURE (l: LinkedList) Set* (index: LONGINT; obj: Object.Object);
+PROCEDURE (l: LinkedList) Set* (index: LONGINT; obj: Storable.Object);
 (**Replaces the element at the specified position @oparam{index} in this list
    with the specified element @oparam{obj}.
 
@@ -290,7 +290,7 @@ BEGIN
   RETURN l. size
 END Size;
 
-PROCEDURE (l: LinkedList) Contains* (obj: Object.Object): BOOLEAN;
+PROCEDURE (l: LinkedList) Contains* (obj: Storable.Object): BOOLEAN;
 (**Returns @code{TRUE} if this list contains the specified element.  *)
 VAR
   e : Entry;
@@ -305,9 +305,9 @@ BEGIN
   RETURN FALSE
 END Contains;
 
-PROCEDURE (l: LinkedList) IndexOf* (obj: Object.Object): LONGINT;
+PROCEDURE (l: LinkedList) IndexOf* (obj: Storable.Object): LONGINT;
 (**Searches for the first occurence of the given argument, testing for equality
-   using the @oproc{Object.Object.Equals} method.  Returns @code{-1} if the
+   using the @oproc{Storable.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
 VAR
   e : Entry;
@@ -323,9 +323,9 @@ BEGIN
   RETURN -1
 END IndexOf;
 
-PROCEDURE (l: LinkedList) LastIndexOf* (obj: Object.Object): LONGINT;
+PROCEDURE (l: LinkedList) LastIndexOf* (obj: Storable.Object): LONGINT;
 (**Searches for the last occurence of the given argument, testing for equality
-   using the @oproc{Object.Object.Equals} method.  Returns @code{-1} if the
+   using the @oproc{Storable.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
 VAR
   e : Entry;
@@ -381,7 +381,7 @@ PROCEDURE (l: LinkedList) HashCode* (): LONGINT;
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END HashCode;
 
-PROCEDURE (l: LinkedList) Store* (w: Object.Writer);
+PROCEDURE (l: LinkedList) Store* (w: Storable.Writer);
 VAR
   e : Entry;
 BEGIN
@@ -393,9 +393,9 @@ BEGIN
   END;
 END Store;
 
-PROCEDURE (l: LinkedList) Load* (r: Object.Reader);
+PROCEDURE (l: LinkedList) Load* (r: Storable.Reader);
   VAR
-    o : Object.Object;
+    o : Storable.Object;
     i, size: LONGINT;
   BEGIN
     r. ReadNum (size);
@@ -431,7 +431,7 @@ BEGIN
   RETURN i.nextIndex # i.list.size;
 END HasNext;
 
-PROCEDURE (i : Iterator) Next* () : Object.Object;
+PROCEDURE (i : Iterator) Next* () : Storable.Object;
 BEGIN
   ASSERT(i.nextIndex # i.list.size);
   i.lastReturned := i.next;
@@ -456,13 +456,13 @@ BEGIN
   END;
 END Remove;
 
-PROCEDURE (i : Iterator) Set* (obj : Object.Object);
+PROCEDURE (i : Iterator) Set* (obj : Storable.Object);
 BEGIN
   ASSERT(i.lastReturned # NIL);
   i.lastReturned.element := obj;
 END Set;
 
-PROCEDURE (i : Iterator) Insert* (obj : Object.Object);
+PROCEDURE (i : Iterator) Insert* (obj : Storable.Object);
 BEGIN
   i.lastReturned := NIL;
   i.list.AddBefore(obj, i.next);

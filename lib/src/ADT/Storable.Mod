@@ -1,5 +1,5 @@
 (*      $Id$       *)
-MODULE ADT:Object [OOC_EXTENSIONS];
+MODULE ADT:Storable [OOC_EXTENSIONS];
 (*  Base definitions for a persistent object implementation.
     Copyright (C) 1999-2002  Michael van Acken
 
@@ -22,42 +22,29 @@ IMPORT
   Channel, BinaryRider, Msg, Language:=LanguageNew;
 
 
-(**This module consists of two parts.
-
-   @itemize
-   @item
-   It introduces the base type @otype{Object}, the root type of any classes in
-   the compiler's data structure that can be externalized.  Every object has an
-   initialization function @oproc{Init}, and (optionally) a cleanup function
+(**This module defines the abstract type @otype{Object}, the root type of all
+   classes that can be externalized.  Every object has an initialization
+   function @oproc{Init}, and (optionally) a cleanup function
    @oproc{Object.Destroy}.  For persistence, it supports the type-bound
-   procedures @oproc{Object.Store} and @oproc{Object.Load}.  Dictionaries and
-   other higher-level datatypes are supported through the methods
-   @oproc{Object.HashCode} and @oproc{Object.Equals}.
+   procedures @oproc{Object.Store} and @oproc{Object.Load}.
 
-   @item
-   It defines new binary rider classes, which are extensions of the ones
-   defined in module @omodule{BinaryRider}.  Concrete implementations of these
-   abstract classes (like module @omodule{*ADT:Object:Storage}) provide the
-   mechanisms necessary to externalize and internalize arbitrary data
-   structures.  The riders add some type-bound procedures to the interfaces
-   inherited from @omodule{BinaryRider}, and rely on the type-bound procedures
-   @oproc{Object.Store} and @oproc{Object.Load} to store and load an object's
-   private data.
-   @end itemize  *)
+   The module also defines new binary rider classes, which are extensions of
+   the ones defined in module @omodule{BinaryRider}.  Concrete implementations
+   of these abstract classes (like module @omodule{*ADT:Object:Storage})
+   provide the mechanisms necessary to externalize and internalize arbitrary
+   data structures.  The riders add some type-bound procedures to the
+   interfaces inherited from @omodule{BinaryRider}, and rely on the type-bound
+   procedures @oproc{Object.Store} and @oproc{Object.Load} to store and
+   load an object's private data.  *)
 
 
 TYPE
   Object* = POINTER TO ObjectDesc;
-  ObjectArray* = ARRAY OF Object;
-  ObjectArrayPtr* = POINTER TO ObjectArray;
+  ObjectArray* = ARRAY OF Object;  (* FIXME... eliminate type *)
+  ObjectArrayPtr* = POINTER TO ObjectArray;  (* FIXME... eliminate type *)
   ObjectDesc* = RECORD [ABSTRACT]
-  (**This class is the common base type of (almost) all classes defined in this
-     library.  It provides a common constructor (@oproc{Init}) and
-     deconstructor (@oproc{Object.Destroy}) notation, defines the protocol for
-     object persistence (with @oproc{Object.Store} and @oproc{Object.Load}),
-     and provides functions @oproc{Object.Equals} and @oproc{Object.HashCode}.
-
-     It is an abstract class without any state of its own.  *)
+  (**This class defines a protocol for object persistence using with
+     @oproc{Object.Store} and @oproc{Object.Load}).  *)
     (Language.ObjectDesc)
   END;
 
@@ -84,13 +71,12 @@ TYPE  (* abstract types, used for persistence mechanism
      @otype{*ADT:Object:Storage.Writer}.  *)
     (BinaryRider.WriterDesc)
   END;
-
   String* = POINTER TO StringDesc;
   StringDesc* = RECORD [ABSTRACT] 
-  (**@otype{String} defines an empty type, which other string types may extend.
-     Its main purpose here is to allow @oproc{Object.ToString} to return a
-     value that is compatible with the string type defined in
-     @omodule{*ADT:String}. *)
+    (**FIXME... get rid of this type.  @otype{String} defines an empty type,
+       which other string types may extend.  Its main purpose here is to allow
+       @oproc{Object.ToString} to return a value that is compatible with the
+       string type defined in @omodule{*ADT:String}.  *)
     (ObjectDesc)
   END;
 
@@ -148,6 +134,15 @@ PROCEDURE Init* (obj: Object);
    @oproc{Init}, which calls its direct baseclass' @oproc{Init} in turn.  *)
   END Init;
 
+PROCEDURE (obj: Object) ToString * () : String;
+(**FIXME... get rid of this method.  Returns a string representation of the
+   object. This is mainly for debugging purposes. The returned string should
+   describe the type and essential attributes of the object. This procedure
+   returns NIL because we have no implementation of string available here.  *)
+BEGIN
+  RETURN NIL;
+END ToString;
+
 PROCEDURE (obj: Object) Destroy* ;
 (**Returns @oparam{obj} to an undefined state.  No operations on @oparam{obj}
    are allowed until @oparam{obj} is initialized again.  This procedure is only
@@ -160,15 +155,6 @@ PROCEDURE (obj: Object) Destroy* ;
    memory by itself, even if memory is known to be private to @oparam{obj},
    because OOC has no facility to free memory blocks.  *)
   END Destroy;
-
-PROCEDURE (obj: Object) ToString * () : String;
-(**Returns a string representation of the object. This is mainly for debugging
-   purposes. The returned string should describe the type and essential
-   attributes of the object. This procedure returns NIL because we have no
-   implementation of string available here. *)
-BEGIN
-  RETURN NIL;
-END ToString;
 
 
 (* Externalize/Internalize Methods
@@ -286,5 +272,5 @@ PROCEDURE (r: Reader) [ABSTRACT] Disconnect*;
 
 BEGIN
   NEW (errorContext);
-  Msg.InitContext (errorContext, "ADT:Object");
-END ADT:Object.
+  Msg.InitContext (errorContext, "ADT:Storable");
+END ADT:Storable.

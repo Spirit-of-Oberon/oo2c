@@ -46,14 +46,14 @@ MODULE libadt;
    new data type themselves, use the name of the base module as prefix.  For
    example, a serialization implementation is in module
    @omodule{*ADT:Object:Storage}, because it implements the abstract rider
-   interface defined in @omodule{*ADT:Object}.
+   interface defined in @omodule{*ADT:Storable}.
    @end itemize
 
    It is expected that the @samp{ADT:*} namespace will be quite flat and broad.  *)
 
 
 IMPORT
-  ADT:Object,
+  ADT:Storable,
   ADT:String,
   ADT:StringBuffer,
   ADT:ArrayList,

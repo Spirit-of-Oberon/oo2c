@@ -1,7 +1,7 @@
 MODULE Language:Integer [OOC_EXTENSIONS];
 
 IMPORT
-  Integers, ADT:Object, ADT:String, L := Language, LanguageNew;
+  Integers, ADT:Storable, ADT:String, L := Language, LanguageNew;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -57,7 +57,7 @@ PROCEDURE NewString* (str: ARRAY OF CHAR): Value;
     RETURN NewInt(i);
   END NewString;
 
-PROCEDURE (v: Value) Store* (w: Object.Writer);
+PROCEDURE (v: Value) Store* (w: Storable.Writer);
   VAR
     i: LONGINT;
   BEGIN
@@ -68,7 +68,7 @@ PROCEDURE (v: Value) Store* (w: Object.Writer);
     END;
   END Store;
 
-PROCEDURE (v: Value) Load* (r: Object.Reader);
+PROCEDURE (v: Value) Load* (r: Storable.Reader);
   VAR
     len, i: LONGINT;
   BEGIN
@@ -141,7 +141,7 @@ BEGIN
   RETURN New(ASH (Integers.Short(v.value), Integers.Short(exp.value)));
 END Ash;
 
-PROCEDURE (v : Value) Compare* (right : Object.Object) : LONGINT;
+PROCEDURE (v : Value) Compare* (right : Storable.Object) : LONGINT;
 BEGIN
   RETURN Integers.Compare(v.value, right(Value).value);
 END Compare;

@@ -20,7 +20,7 @@ MODULE oob;
 *)
 
 IMPORT
-  Err, Msg, Out, StdChannels, Strings, ADT:Object, ADT:String, ADT:Dictionary,
+  Err, Msg, Out, StdChannels, Strings, ADT:Storable, ADT:String, ADT:Dictionary,
   Config:Section:Options, Config:Section:Arguments, Config:Value:Boolean,
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,
@@ -169,7 +169,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
   PROCEDURE Type(type, srcCodeType: Sym.Type);
     VAR
       i: LONGINT;
-      name: Object.Object;
+      name: Storable.Object;
       procDecl: Sym.ProcDecl;
       
     PROCEDURE FieldDecl(fieldDecl: Sym.FieldDecl);

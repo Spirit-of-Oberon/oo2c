@@ -26,7 +26,7 @@ part, nor are invalid escape sequences detected.  I don't know if this
 query class should be applied to all HTTP URIs.  *)
 
 IMPORT
-  ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
+  ADT:Storable, ADT:String, ADT:Dictionary, ADT:ArrayList,
   Strings, TextRider, CC := CharClass, 
   URI, URI:Error, StringURI := URI:String, URI:CharClass;
 
@@ -88,7 +88,7 @@ PROCEDURE (query: Query) Copy* (dest: URI.Query);
 PROCEDURE (query: Query) Add* (name, value: String.String);
   VAR
     al: ArrayList.ArrayList;
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     query. names. Append (name);
     query. values. Append (value);

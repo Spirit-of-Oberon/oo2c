@@ -1,28 +1,28 @@
 MODULE LibAdtObjectStorage;
 
 IMPORT
-  Files, Msg, Out, ADT:Object, ADT:Object:Storage;
+  Files, Msg, Out, ADT:Storable, ADT:Object:Storage;
 
 TYPE
   Data = POINTER TO DataDesc;
   DataDesc = RECORD
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     next: Data;
     name: ARRAY 32 OF CHAR;
     num: LONGINT;
     written: BOOLEAN;
   END;
 
-PROCEDURE (d: Data) Store* (w: Object.Writer);
+PROCEDURE (d: Data) Store* (w: Storable.Writer);
   BEGIN
     w.WriteObject(d.next);
     w.WriteString(d.name);
     w.WriteNum(d.num);
   END Store;
 
-PROCEDURE (d: Data) Load* (r: Object.Reader);
+PROCEDURE (d: Data) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     r.ReadObject(obj);
     IF (obj = NIL) THEN
@@ -58,7 +58,7 @@ PROCEDURE GenData(): Data;
       d: Data;
     BEGIN
       NEW (d);
-      Object.Init(d);
+      Storable.Init(d);
       d.next := NIL;
       COPY(name, d.name);
       d.num := num;
@@ -83,7 +83,7 @@ PROCEDURE Test* ();
     w: Storage.Writer;
     r: Storage.Reader;
     data1, data2: Data;
-    obj: Object.Object;
+    obj: Storable.Object;
   CONST
     dumpFile = "wd/storage.data";
   BEGIN

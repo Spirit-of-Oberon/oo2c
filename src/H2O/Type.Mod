@@ -1,7 +1,7 @@
 MODULE H2O:Type;
 
 IMPORT
-  O := ADT:Object, ADT:String, ADT:StringBuffer, ADT:ArrayList,
+  O := ADT:Storable, ADT:String, ADT:StringBuffer, ADT:ArrayList,
   H2O:Module;
 
 CONST 

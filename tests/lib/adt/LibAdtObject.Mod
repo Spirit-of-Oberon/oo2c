@@ -1,6 +1,6 @@
 MODULE LibAdtObject;
 
-IMPORT ADT:Object;
+IMPORT ADT:Storable;
 
 PROCEDURE Test* ();
   BEGIN

@@ -1,11 +1,11 @@
 MODULE H2O:Module;
 
 IMPORT
-  ADT:String, ADT:Object, ADT:ArrayList, Err;
+  ADT:String, ADT:Storable, ADT:ArrayList, Err;
 
 TYPE
   Module* = POINTER TO ModuleDesc;
-  ModuleDesc* = RECORD (Object.ObjectDesc)
+  ModuleDesc* = RECORD (Storable.ObjectDesc)
     imports- : ArrayList.ArrayList;
     name- : String.String;
     next- : Module;

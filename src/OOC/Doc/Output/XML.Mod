@@ -1,7 +1,7 @@
 MODULE OOC:Doc:Output:XML;
 
 IMPORT
-  Channel, Strings, ADT:Object, ADT:Dictionary,
+  Channel, Strings, ADT:Storable, ADT:Dictionary,
   XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Config:Repositories, OOC:Repository, OOC:Doc, Sym := OOC:SymbolTable;
   
@@ -62,7 +62,7 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
   PROCEDURE InlineList (inlineList: Doc.InlineElement);
     VAR
       inline: Doc.InlineElement;
-      rewrittenTo: Object.Object;
+      rewrittenTo: Storable.Object;
       name: ARRAY 32 OF CHAR;
     
     PROCEDURE AsteriskPrefix (VAR str: ARRAY OF CHAR): LONGINT;

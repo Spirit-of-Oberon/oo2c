@@ -2,7 +2,7 @@ MODULE OOC:Package;
 
 IMPORT
   Files, IntStr, LongStrings, Msg, Out, StdChannels, Strings,
-  ADT:Object, ADT:String, ADT:ArrayList, OSFiles := OS:Files,
+  ADT:Storable, ADT:String, ADT:ArrayList, OSFiles := OS:Files,
   OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
   Config:Parser, Config:Value, StringValue := Config:Value:String,
@@ -29,14 +29,14 @@ TYPE
 TYPE
   Executable* = POINTER TO ExecutableDesc;
   ExecutableDesc = RECORD
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     mainModule-: String.String; 
   END;
   
 TYPE
   Library* = POINTER TO LibraryDesc;
   LibraryDesc = RECORD
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     name-: String.String;
     mainModule-: String.String;
     version-: Version;
@@ -68,7 +68,7 @@ TYPE
 TYPE
   KeyValue* = POINTER TO KeyValueDesc;
   KeyValueDesc = RECORD
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     key-: String.String;
     value-: Value.Value;
   END;
@@ -192,7 +192,7 @@ PROCEDURE NewExecutable(): Executable;
     executable: Executable;
   BEGIN
     NEW(executable);
-    Object.Init(executable);
+    Storable.Init(executable);
     executable.mainModule := NIL;
     RETURN executable;
   END NewExecutable;
@@ -202,7 +202,7 @@ PROCEDURE NewLibrary(): Library;
     library: Library;
   BEGIN
     NEW(library);
-    Object.Init(library);
+    Storable.Init(library);
     library.mainModule := NIL;
     library.version := NIL;
     RETURN library;
@@ -252,7 +252,7 @@ PROCEDURE NewKeyValue*(key: String.String; value: Value.Value): KeyValue;
     kv: KeyValue;
   BEGIN
     NEW(kv);
-    Object.Init(kv);
+    Storable.Init(kv);
     kv.key := key;
     kv.value := value;
     RETURN kv;

@@ -19,7 +19,7 @@ MODULE ADT:StringBuffer [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  S := SYSTEM, RT0, ADT:Object, ADT:String, IntStr, RealStr,
+  S := SYSTEM, RT0, ADT:Storable, ADT:String, IntStr, RealStr,
   Language:=LanguageNew;
 
 TYPE
@@ -43,7 +43,7 @@ TYPE
      @otype{StringBuffer}.  The user should be aware that in this case any
      operations that require @code{0X} as the termination character cannot be
      applied to the string instance.  *)
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     length-: LONGINT;
     (**The length of the string.  *)
     array-: String.CharArrayPtr;
@@ -104,7 +104,7 @@ PROCEDURE NewLength (len: LONGINT): StringBuffer;
     str: StringBuffer;
   BEGIN
     NEW (str);
-    Object.Init (str);
+    Storable.Init (str);
     NEW (str. array, ArraySize (len));
     str. array[0] := 0X;
     str. length := 0;
@@ -118,7 +118,7 @@ PROCEDURE Init* (str: StringBuffer; value[NO_COPY]: ARRAY OF CHAR);
   VAR
     len: LONGINT;
   BEGIN
-    Object.Init (str);
+    Storable.Init (str);
     len := 0;
     WHILE value[len] # 0X DO INC(len) END;
     NEW (str. array, ArraySize (len));
@@ -454,15 +454,15 @@ BEGIN
   END
 END AppendBool;
 
-PROCEDURE (str : StringBuffer) AppendObject* (object : Object.Object);
-(**Append the string representation of an @otype{Object.Object} to the current
-   string. This procedure uses @oproc{Object.Object.ToString} to obtain a
-   textual description of the object. If @oproc{Object.Object.ToString} does
+PROCEDURE (str : StringBuffer) AppendObject* (object : Storable.Object);
+(**Append the string representation of an @otype{Storable.Object} to the current
+   string. This procedure uses @oproc{Storable.Object.ToString} to obtain a
+   textual description of the object. If @oproc{Storable.Object.ToString} does
    not return a @otype{String.String} (eg. the base method has not been
    overridden), a canonical description will be generated using the type name
    and address.  *)
 VAR 
-  res : Object.String;
+  res : Storable.String;
   type : RT0.Struct;
   name: ARRAY 256 OF CHAR;
 BEGIN
@@ -497,7 +497,7 @@ BEGIN
   RETURN String.NewRegion(str.array^, 0, str.length);
 END ToString;
 
-PROCEDURE (str: StringBuffer) Load* (r: Object.Reader);
+PROCEDURE (str: StringBuffer) Load* (r: Storable.Reader);
   BEGIN
     str. Load^ (r);
     r. ReadNum (str. length);
@@ -506,7 +506,7 @@ PROCEDURE (str: StringBuffer) Load* (r: Object.Reader);
     str. array[str. length] := 0X;
   END Load;
 
-PROCEDURE (str: StringBuffer) Store* (w: Object.Writer);
+PROCEDURE (str: StringBuffer) Store* (w: Storable.Writer);
   BEGIN
     str. Store^ (w);
     w. WriteNum (str. length);

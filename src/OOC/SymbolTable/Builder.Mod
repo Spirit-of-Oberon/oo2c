@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Out, Strings, Channel, Language, ADT:Object, ADT:Object:Storage,
+  Out, Strings, Channel, Language, ADT:Storable, ADT:Object:Storage,
   OOC:Doc, OOC:AST, Sym := OOC:SymbolTable;
 
 
@@ -546,7 +546,7 @@ PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Sym.Modul
 PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel;
                                          VAR res: Channel.Result): Sym.Module;
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
     reader: Storage.Reader;
     fp, i, fpi, len: LONGINT;
     mn: ARRAY magicNumberSize+1 OF CHAR;

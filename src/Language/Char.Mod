@@ -1,7 +1,7 @@
 MODULE Language:Char [OOC_EXTENSIONS];
 
 IMPORT
-  Ascii, ADT:Object, ADT:String, L := Language, LanguageNew;
+  Ascii, ADT:Storable, ADT:String, L := Language, LanguageNew;
 
 TYPE
   Type* = POINTER TO TypeDesc;
@@ -48,7 +48,7 @@ PROCEDURE (v: Value) Equals* (y: LanguageNew.Object): BOOLEAN;
     RETURN (y IS Value) & (v. value = y(Value). value)
   END Equals;
   
-PROCEDURE (v: Value) Compare* (y: Object.Object): LONGINT;
+PROCEDURE (v: Value) Compare* (y: Storable.Object): LONGINT;
   BEGIN
     RETURN v. value - y(Value). value;
   END Compare;
@@ -106,13 +106,13 @@ PROCEDURE (v: Value) ToString* (): String.String;
     RETURN String.New (str)
   END ToString;
 
-PROCEDURE (v: Value) Store* (w: Object.Writer);
+PROCEDURE (v: Value) Store* (w: Storable.Writer);
   BEGIN
     v. Store^ (w);
     w. WriteNum (v. value);
   END Store;
 
-PROCEDURE (v: Value) Load* (r: Object.Reader);
+PROCEDURE (v: Value) Load* (r: Storable.Reader);
   BEGIN
     v. Load^ (r);
     r. ReadNum (v. value);

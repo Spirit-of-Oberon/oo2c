@@ -19,14 +19,14 @@ MODULE ADT:String [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:Object, Language:=LanguageNew, S := SYSTEM;
+  ADT:Storable, Language:=LanguageNew, S := SYSTEM;
 
 TYPE
   CharArray* = ARRAY OF CHAR;
   CharArrayPtr* = POINTER TO CharArray;
 
   String* = POINTER TO StringDesc;
-  StringDesc* = RECORD (Object.StringDesc)
+  StringDesc* = RECORD (Storable.StringDesc)
     (** A string value. Oberon-2 definition includes strings, but not as first
      * order types. String values are immutable and so may always be safely
      * passed by reference.  Functions are provided to retrieve copies of the
@@ -99,7 +99,7 @@ PROCEDURE InitString (str : String; length : LONGINT);
  * to hold the string plus a terminating null *)
 
 BEGIN
-  Object.Init(str);
+  Storable.Init(str);
   NEW(str.array, ArraySize(length));
   str.length := length;
 END InitString;
@@ -473,7 +473,7 @@ PROCEDURE (str : String) Equals* (y: Language.Object): BOOLEAN;
     END
   END Equals;
 
-PROCEDURE (str: String) Load* (r: Object.Reader);
+PROCEDURE (str: String) Load* (r: Storable.Reader);
   VAR length : LONGINT;
   BEGIN
     str. Load^ (r);
@@ -483,7 +483,7 @@ PROCEDURE (str: String) Load* (r: Object.Reader);
     str. array[str. length] := 0X;
   END Load;
 
-PROCEDURE (str: String) Store* (w: Object.Writer);
+PROCEDURE (str: String) Store* (w: Storable.Writer);
   BEGIN
     str. Store^ (w);
     w. WriteNum (str. length);

@@ -1,7 +1,7 @@
 MODULE Language:String16 [OOC_EXTENSIONS];
 
 IMPORT 
-  S := SYSTEM, ADT:Object, ADT:String, LongStrings,
+  S := SYSTEM, ADT:Storable, ADT:String, LongStrings,
   L := Language, LString := Language:String, LanguageNew;
 
 TYPE
@@ -100,7 +100,7 @@ PROCEDURE (v: Value) CharAt*(i: LONGINT): LONGCHAR;
     RETURN v. array[i];
   END CharAt;
 
-PROCEDURE (v : Value) Compare* (str : Object.Object) : LONGINT;
+PROCEDURE (v : Value) Compare* (str : Storable.Object) : LONGINT;
 BEGIN
   RETURN LongStrings.Compare(v.array^, str(Value).array^);
 END Compare;
@@ -158,7 +158,7 @@ PROCEDURE (v: Value) ToString* (): String.String;
     RETURN String.New ("[instance of Language:String16]");
   END ToString;
 
-PROCEDURE (v: Value) Store* (w: Object.Writer);
+PROCEDURE (v: Value) Store* (w: Storable.Writer);
   VAR
     i: LONGINT;
   BEGIN
@@ -169,7 +169,7 @@ PROCEDURE (v: Value) Store* (w: Object.Writer);
     END;
   END Store;
 
-PROCEDURE (v: Value) Load* (r: Object.Reader);
+PROCEDURE (v: Value) Load* (r: Storable.Reader);
   VAR
     array: CharArray;
     len, i, j: LONGINT;

@@ -39,12 +39,12 @@ MODULE ADT:Object:Storage;
    reference number; it is allocated in a similar way.
 
    @samp{data} is a sequence of bytes (possibly empty), produced by calling
-   @oproc{Object.Object.Store} on a object.  The sequence does not contain any
+   @oproc{Storable.Object.Store} on a object.  The sequence does not contain any
    embedded objects, but it does contain @code{NIL} pointers.  *)
 
 IMPORT
   SYSTEM, RT0, Strings, Channel, BinaryRider, Msg,
-  ADT:Object, Dictionary := ADT:Dictionary:AddressKey:IntValue;
+  ADT:Storable, Dictionary := ADT:Dictionary:AddressKey:IntValue;
 
 CONST
   done* = BinaryRider.done;
@@ -55,7 +55,7 @@ TYPE
     type: RT0.Name;
     ref: LONGINT;
   END;
-  ObjectArray = POINTER TO ARRAY OF Object.Object;
+  ObjectArray = POINTER TO ARRAY OF Storable.Object;
   TypeArray = POINTER TO ARRAY OF RECORD
     type: RT0.Struct;
     moduleName: RT0.Name;
@@ -66,7 +66,7 @@ TYPE
   Reader* = POINTER TO ReaderDesc;
   ReaderDesc* = RECORD
   (**A reader for serialized object data.  *)
-    (Object.ReaderDesc)
+    (Storable.ReaderDesc)
     objCounter: LONGINT;
     objTab: ObjectArray;
     typeCounter: LONGINT;
@@ -78,7 +78,7 @@ TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc* = RECORD
   (**A writer of serialized object data.  *)
-    (Object.WriterDesc)
+    (Storable.WriterDesc)
     objCounter: LONGINT;
     
     typeRefMap: TypeRefMap;
@@ -100,7 +100,7 @@ TYPE
   ErrorContextDesc* = RECORD
      (* this record is exported, so that extensions of Channel can access the
         error descriptions by extending `ErrorContextDesc' *)
-    (Object.ErrorContextDesc)
+    (Storable.ErrorContextDesc)
   END;
 
 VAR
@@ -115,7 +115,7 @@ PROCEDURE GetError (code: Msg.Code): Msg.Msg;
 
 PROCEDURE InitReader (r: Reader; ch: Channel.Channel);
   BEGIN
-    Object.InitReader (r, ch);
+    Storable.InitReader (r, ch);
     NEW (r. objTab, 128-pointerGap);
     r. objTab[0] := NIL;
     r. objCounter := 1;
@@ -128,7 +128,7 @@ PROCEDURE InitReader (r: Reader; ch: Channel.Channel);
 
 PROCEDURE InitWriter (w: Writer; ch: Channel.Channel);
   BEGIN
-    Object.InitWriter (w, ch);
+    Storable.InitWriter (w, ch);
     w. objCounter := 0;
     NEW (w. typeRefMap, 16-pointerGap);
     w. typeRefSize := 0;
@@ -166,7 +166,7 @@ PROCEDURE ConnectWriter* (ch: Channel.Channel): Writer;
 
 
 
-PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object);
+PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object);
   VAR
     ref, tref: LONGINT;
     module: RT0.Module;
@@ -269,9 +269,9 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object);
         END;
         tref := ReadType();
         IF (r. typeTab[tref]. type = NIL) THEN
-          r. res := GetError (Object.unknownType)
+          r. res := GetError (Storable.unknownType)
         ELSE  (* create new object of the requested type and load it *)
-          obj := SYSTEM.VAL (Object.Object,
+          obj := SYSTEM.VAL (Storable.Object,
                              RT0.NewObject (r. typeTab[tref]. type));
           IF (ref = LEN (r. objTab^)) THEN
             ExtendObjTab (r. objTab)
@@ -303,7 +303,7 @@ PROCEDURE (r: Reader) Disconnect*;
 
 
 
-PROCEDURE (w: Writer) WriteObject* (obj: Object.Object);
+PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object);
   VAR
     tref: LONGINT;
     type: RT0.Struct;

@@ -39,16 +39,16 @@ MODULE ADT:Dictionary:AddressKey;
    @end itemize  *)
 
 IMPORT
-  S := SYSTEM, ADT:Object, Language:=LanguageNew;
+  S := SYSTEM, ADT:Storable, Language:=LanguageNew;
 
 
 TYPE
   Hash = LONGINT;
   HSet = SET;
   Index = LONGINT;
-  Key* = Object.Object;
+  Key* = Storable.Object;
   (**Type of key entries in the dictionary.  *)
-  Value* = Object.Object;
+  Value* = Storable.Object;
   (**Type of value entries in the dictionary.  *)
   
 TYPE
@@ -81,7 +81,7 @@ TYPE
 
      A dictionary implementation with a value type of @code{LONGINT} is
      implemented by @otype{*ADT:Dictionary:IntValue.Dictionary}.  *)
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     fill: LONGINT;
     (**The number of non-@code{NIL} keys.  *)
     used: LONGINT;
@@ -98,7 +98,7 @@ TYPE
 
 TYPE
   Dummy = POINTER TO DummyDesc;
-  DummyDesc = RECORD (Object.ObjectDesc) END;
+  DummyDesc = RECORD (Storable.ObjectDesc) END;
 
 VAR
   dummy: Dummy;
@@ -120,7 +120,7 @@ VAR
 PROCEDURE Init* (dict: Dictionary);
 (**Initializes @oparam{dict} to an empty dictionary.  *)
   BEGIN
-    Object.Init (dict);
+    Storable.Init (dict);
     dict. size := 0;
     dict. poly := 0;
     dict. table := NIL;
@@ -414,11 +414,11 @@ PROCEDURE (dict: Dictionary) Clear*;
   END Clear;
 
 
-PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary) Keys* (): Storable.ObjectArrayPtr;
 (**Returns the list of keys of the dictionary @oparam{dict}.  The keys are
    listed in no particular order.  *)
   VAR
-    list: Object.ObjectArrayPtr;
+    list: Storable.ObjectArrayPtr;
     i, j: LONGINT;
   BEGIN
     NEW (list, dict. used);
@@ -433,11 +433,11 @@ PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
     RETURN list
   END Keys;
 
-PROCEDURE (dict: Dictionary) Values* (): Object.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary) Values* (): Storable.ObjectArrayPtr;
 (**Returns the list of values of the dictionary @oparam{dict}.  The values are
    listed in no particular order.  *)
   VAR
-    list: Object.ObjectArrayPtr;
+    list: Storable.ObjectArrayPtr;
     i, j: LONGINT;
   BEGIN
     NEW (list, dict. used);
@@ -463,7 +463,7 @@ PROCEDURE (dict: Dictionary) HashCode* (): LONGINT;
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END HashCode;
 
-PROCEDURE (dict: Dictionary) Store* (w: Object.Writer);
+PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer);
   VAR
     i: LONGINT;
   BEGIN
@@ -478,7 +478,7 @@ PROCEDURE (dict: Dictionary) Store* (w: Object.Writer);
     END
   END Store;
 
-PROCEDURE (dict: Dictionary) Load* (r: Object.Reader);
+PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader);
   VAR
     i: LONGINT;
   BEGIN
@@ -503,7 +503,7 @@ PROCEDURE (dummy: Dummy) Destroy*;
 
 BEGIN
   NEW (dummy);
-  Object.Init (dummy);
+  Storable.Init (dummy);
 
   polys[0] := 4 + 3;
   polys[1] := 8 + 3;

@@ -39,14 +39,14 @@ MODULE ADT:Dictionary:IntValue;
    @end itemize  *)
 
 IMPORT
-  S := SYSTEM, ADT:Object;
+  S := SYSTEM, ADT:Storable;
 
 
 TYPE
   Hash = LONGINT;
   HSet = SET;
   Index = LONGINT;
-  Key* = Object.Object;
+  Key* = Storable.Object;
   Value* = LONGINT;
   
 TYPE
@@ -75,7 +75,7 @@ TYPE
 
      At this moment, no iterator is defined for this class.  To get the list of
      all keys or values, use @oproc{Dictionary.Keys}.  *)
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     fill: LONGINT;
     (**The number of non-@code{NIL} keys.  *)
     used: LONGINT;
@@ -92,7 +92,7 @@ TYPE
 
 TYPE
   Dummy = POINTER TO DummyDesc;
-  DummyDesc = RECORD (Object.ObjectDesc) END;
+  DummyDesc = RECORD (Storable.ObjectDesc) END;
 
 VAR
   dummy: Dummy;
@@ -114,7 +114,7 @@ VAR
 PROCEDURE Init* (dict: Dictionary);
 (**Initializes @oparam{dict} to an empty dictionary.  *)
   BEGIN
-    Object.Init (dict);
+    Storable.Init (dict);
     dict. size := 0;
     dict. poly := 0;
     dict. table := NIL;
@@ -396,11 +396,11 @@ PROCEDURE (dict: Dictionary) Clear*;
   END Clear;
 
 
-PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary) Keys* (): Storable.ObjectArrayPtr;
 (**Returns the list of keys of the dictionary @oparam{dict}.  The keys are
    listed in no particular order.  *)
   VAR
-    list: Object.ObjectArrayPtr;
+    list: Storable.ObjectArrayPtr;
     i, j: LONGINT;
   BEGIN
     NEW (list, dict. used);
@@ -435,7 +435,7 @@ PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
   END Values;*)
 
 
-PROCEDURE (dict: Dictionary) Store* (w: Object.Writer);
+PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer);
   VAR
     i: LONGINT;
   BEGIN
@@ -450,7 +450,7 @@ PROCEDURE (dict: Dictionary) Store* (w: Object.Writer);
     END
   END Store;
 
-PROCEDURE (dict: Dictionary) Load* (r: Object.Reader);
+PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader);
   VAR
     i: LONGINT;
   BEGIN
@@ -471,7 +471,7 @@ PROCEDURE (dict: Dictionary) Load* (r: Object.Reader);
 
 BEGIN
   NEW (dummy);
-  Object.Init (dummy);
+  Storable.Init (dummy);
 
   polys[0] := 4 + 3;
   polys[1] := 8 + 3;

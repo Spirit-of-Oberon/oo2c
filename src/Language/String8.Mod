@@ -1,7 +1,7 @@
 MODULE Language:String8 [OOC_EXTENSIONS];
 
 IMPORT 
-  ADT:Object, ADT:String, ADT:StringBuffer,
+  ADT:Storable, ADT:String, ADT:StringBuffer,
   L := Language, LString := Language:String, LanguageNew;
 
 TYPE
@@ -75,7 +75,7 @@ PROCEDURE (v: Value) CharAt*(i: LONGINT): CHAR;
     RETURN v. value. array[i];
   END CharAt;
 
-PROCEDURE (v : Value) Compare* (str : Object.Object) : LONGINT;
+PROCEDURE (v : Value) Compare* (str : Storable.Object) : LONGINT;
 BEGIN
   RETURN v.value.Compare(str(Value).value);
 END Compare;
@@ -113,15 +113,15 @@ PROCEDURE (v: Value) ToString* (): String.String;
     RETURN sb. ToString()
   END ToString;
 
-PROCEDURE (v: Value) Store* (w: Object.Writer);
+PROCEDURE (v: Value) Store* (w: Storable.Writer);
   BEGIN
     v. Store^ (w);
     w. WriteObject (v. value);
   END Store;
 
-PROCEDURE (v: Value) Load* (r: Object.Reader);
+PROCEDURE (v: Value) Load* (r: Storable.Reader);
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
   BEGIN
     v. Load^ (r);
     r. ReadObject (obj);

@@ -21,7 +21,7 @@ MODULE Codec [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Strings, ADT:Object, ADT:String, ADT:Dictionary, Language:String0;
+  Strings, ADT:Storable, ADT:String, ADT:Dictionary, Language:String0;
 
 (**This module provides a registry for Unicode, transport, and encryption
    codecs.  A codec can be registered under several names.  Case is ignored
@@ -66,7 +66,7 @@ TYPE
        keeps track of any errors (for example, by counting the number of
        discarded characters).
        @end itemize  *)
-    (Object.ObjectDesc)
+    (Storable.ObjectDesc)
     
     class-: CodecClass;
     (**The type of the code.  One of @oconst{*Codec.unicode},
@@ -219,7 +219,7 @@ PROCEDURE (enc: Encoder) End*;
 PROCEDURE InitCodec* (codec: Codec; class: CodecClass;
                       preferredName: ARRAY OF CHAR);
   BEGIN
-    Object.Init (codec);
+    Storable.Init (codec);
     codec. class := class;
     codec. preferredName := String0.NewLatin1(preferredName);
   END InitCodec;
@@ -320,7 +320,7 @@ PROCEDURE (enc: CryptoEncoder) [ABSTRACT] SetKey* (key: String0.String8);
 
 PROCEDURE Get* (name: ARRAY OF CHAR): Codec;
   VAR
-    obj: Object.Object;
+    obj: Storable.Object;
     norm: String.String;
   BEGIN
     Strings.Capitalize (name);
