@@ -32,9 +32,10 @@ IMPORT
 TYPE
   TypeQualifier* = SHORTINT;
   (**Type qualifier of a definition.  One of @oconst{tqNone}, @oconst{tqConst},
-     or @oconst{tqVolatile}.  Qualifiers are mutually exclusive, that is, only
-     one of them applies.  They can be used connection with pointers
-     (@oproc{Writer.NewPointer}) or declarations (@oproc{Writer.NewDeclaration}).  *)
+     or @oconst{tqVolatile}.  Qualifiers are mutually exclusive.  That is, only
+     one of them applies.  They can be used in connection with pointers
+     (@oproc{Writer.NewPointer}) or declarations
+     (@oproc{Writer.NewDeclaration}).  *)
 
 CONST
   tqNone* = 0;
@@ -480,7 +481,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
       ELSE
         w. WriteLInt(value.ToLInt(), 0);
       END;
-     END
+    END
   END WriteConst;
 
 PROCEDURE (w: Writer) WriteDeclaration* (d: Declaration);
