@@ -619,8 +619,8 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
       i: LONGINT;
     BEGIN
       IF (LEN (names^) # 0) THEN
-        w. WriteLn;
-        w. WriteString ("  register ");
+        w. Newline;
+        w. WriteString ("register ");
         w. WriteString (w. basicType[registerType]. repr);
         w. WriteChar (" ");
 
