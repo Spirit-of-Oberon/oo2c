@@ -1,9 +1,9 @@
 MODULE OOC:Scanner:Pragma;
 
 IMPORT
-  Object, Msg, Strings, RT0, Config,
+  Object, Object:BigInt, Msg, Strings, RT0, Config,
   OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol, OOC:Scanner:Builder,
-  OOC:Scanner:BasicList, OOC:Config:Pragmas, OOC:Scanner:Integer;
+  OOC:Scanner:BasicList, OOC:Config:Pragmas;
 
 (* Added in oo2c-2.0.7:
 
@@ -98,7 +98,11 @@ CONST
   notAssignmentCompatible = 15;
   unbalancedPop = 16;
   withWithoutEnd = 17;
+  outOfRange = 18;
 
+VAR
+  intMin, intMax: BigInt.BigInt;
+  
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -146,6 +150,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "No values stored on pragma stack"
     | withWithoutEnd:
       t := "`WITH' statement lacks `END'"
+    | outOfRange:
+      t := "Integer value out of range"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -283,7 +289,23 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
         PROCEDURE Factor (eval: BOOLEAN; VAR value: Value);
           VAR
             varValue: Config.Variable;
-            int: Integer.Integer;
+            int: LONGINT;
+
+          PROCEDURE ConvertInt(str: InputBuffer.CharArray; base: LONGINT;
+                               VAR int: LONGINT): Msg.Msg;
+            VAR
+              big: BigInt.BigInt;
+            BEGIN
+              big := BigInt.New(Object.NewLatin1(str^), base);
+              IF (big.Cmp(intMin) < 0) OR (big.Cmp(intMax) > 0) THEN
+                int := 1;
+                RETURN Error.New(pragmaContext, outOfRange);
+              ELSE
+                int := big.ToLongInt();
+                RETURN NIL;
+              END;
+            END ConvertInt;
+          
           BEGIN
             value. value := NIL;
             value. sym := sym;
@@ -305,7 +327,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               NextSym
               
             | Symbol.number10:           (* decimal integer const *)
-              lastError := Integer.Convert10 (sym. str, int);
+              lastError := ConvertInt(sym.str, 10, int);
               IF (lastError # NIL) THEN
                 AppendErr (sym)
               END;
@@ -313,7 +335,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               NextSym
               
             | Symbol.number16:           (* hexadecimal integer const *)
-              lastError := Integer.Convert16 (sym. str, int);
+              lastError := ConvertInt(sym.str, 16, int);
               IF (lastError # NIL) THEN
                 AppendErr (sym)
               END;
@@ -720,4 +742,6 @@ PROCEDURE AddSymbol* (VAR state: State; VAR inputMode: InputMode;
 BEGIN
   NEW (pragmaContext);
   Error.InitContext (pragmaContext, "OOC:Scanner:Pragma");
+  intMin := BigInt.NewInt(MIN(LONGINT));
+  intMax := BigInt.NewInt(MAX(LONGINT));
 END OOC:Scanner:Pragma.
