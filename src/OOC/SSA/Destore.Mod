@@ -182,6 +182,20 @@ PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
     END;
   END NumberOfPaths;
 
+PROCEDURE IndexOfPath (use: SSA.Opnd): LONGINT;
+  BEGIN
+    CASE use. instr. opcode OF
+    | Opcode.select:
+      RETURN use. OpndIndex() DIV 2-1
+    | Opcode.loopStart:
+      RETURN 0;
+    | Opcode.loopEnd:                    (* back-edge value of loop-start *)
+      RETURN 1;
+    | Opcode.selectExit:
+      RETURN use. OpndIndex()-1
+    END;
+  END IndexOfPath;
+
 
 PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
   VAR
@@ -242,15 +256,15 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       originWriteDesign: SSA.Opnd;
       
     PROCEDURE TraceF (lastDefinition: SSA.Instr;
-                     storeOut: SSA.Result): BOOLEAN;
+                      storeOut: SSA.Result): BOOLEAN;
     (**Result is @code{TRUE} if the effects of @ovar{origin} are visible
        after completion of this procedure, or by procedures called by this
        procedure, or the memory write must go through because of aliasing
        effects.  *)
       VAR
         use: SSA.Opnd;
-        instr: SSA.Instr;
-        visible: BOOLEAN;
+        instr, oldLastDefinition: SSA.Instr;
+        visible, dummy: BOOLEAN;
 
       PROCEDURE NewOriginMap (numPaths, numVars: LONGINT): OriginMap;
         VAR
@@ -283,22 +297,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       PROCEDURE TraceUse (use: SSA.Opnd): BOOLEAN;
         VAR
           originMap: OriginMap;
-          visible: BOOLEAN;
           storeOut: SSA.Result;
           alias: Aliasing.Id;
-
-        PROCEDURE GetSelectExit (exit: SSA.Instr): SSA.Instr;
-          VAR
-            res: SSA.Result;
-            opnd: SSA.Opnd;
-          BEGIN
-            res := instr. GetResultClass (Result.store);
-            opnd := res. useList;
-            WHILE (opnd. instr. opcode # Opcode.selectExit) DO
-              opnd := opnd. nextUse
-            END;
-            RETURN opnd. instr
-          END GetSelectExit;
 
         PROCEDURE TraceLoopStart (instr: SSA.Instr;
                                   opndIndex: LONGINT): OriginMap;
@@ -367,7 +367,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                             instr. GetResultClass (Result.store))
             END;
             
-          | Opcode.select:
+          | Opcode.select, Opcode.selectExit:
             IF (instr. info = NIL) THEN
               originMap := NewOriginMap (NumberOfPaths (instr), numVars);
               instr. info := originMap
@@ -386,37 +386,13 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             
             (* set the instruction defining the store argument `use'
                for the variable identified by `origin. marker' *)
-            originMap. def[origin. marker, use. OpndIndex() DIV 2-1]
-                := lastDefinition;
+            originMap. def[origin. marker, IndexOfPath(use)] := lastDefinition;
             RETURN originMap. visible[origin. marker];
 
           | Opcode.loopStart:
             originMap := TraceLoopStart (instr, use. OpndIndex());
             RETURN originMap. visible[origin. marker];
 
-          | Opcode.selectExit:
-            IF (instr. info = NIL) THEN
-              originMap := NewOriginMap (NumberOfPaths (instr), numVars);
-              instr. info := originMap
-            ELSE
-              originMap := instr. info(OriginMap);
-            END;
-            
-            IF ~originMap. varIsTraced[origin. marker] THEN
-              (* continue tracing the uses of this select; note: this is
-                 only done once for each variable, when we encounter the
-                 select for the first time *)
-              originMap. visible[origin. marker] :=
-                  TraceF (instr, instr. GetResultClass (Result.store));
-              originMap. varIsTraced[origin. marker] := TRUE;
-            END;
-            
-            (* set the instruction defining the store argument `use'
-               for the variable identified by `origin. marker' *)
-            originMap. def[origin. marker, use. OpndIndex()-1]
-                := lastDefinition;
-            RETURN originMap. visible[origin. marker];
-            
           | Opcode.loopEnd:
             IF (use. class = Opnd.backwardFeed) THEN
               (* the backward feed is a honorary member of the loop-start
@@ -445,9 +421,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             RETURN TRUE;
             
           | Opcode.exit:
-            (* the current definitions continues through the select-exit
-               to which this EXIT passes the flow of control *)
-            RETURN TraceF (lastDefinition, GetSelectExit (instr))
+            (* the current definitions continues to the select-exit to which
+               this EXIT passes the flow of control, but it ends at the place
+               of every other use; TraceF() distinguishes between the two
+               different kinds of uses and selects the appropriate value
+               to pass forward *)
+            RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
 
           | Opcode.return:
             (* we've reached the end of the procedure: we are done *)
@@ -463,8 +442,21 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         visible := FALSE;
         use := storeOut. useList;
         WHILE (use # NIL) DO
-          IF TraceUse (use) THEN
-            visible := TRUE
+          IF (storeOut. instr. opcode # Opcode.exit) OR
+             (use. instr. opcode = Opcode.selectExit) THEN
+            (* normal use *)
+            IF TraceUse (use) THEN
+              visible := TRUE
+            END;
+          ELSE
+            (* the result is produced by an "exit" instruction, and we are
+               not in the corresponding "select-exit": this path of control
+               is unreachable, and the special value "pb.selectReturn" is
+               used to mark this *)
+            oldLastDefinition := lastDefinition;
+            lastDefinition := pb. selectReturn;
+            dummy := TraceUse (use);
+            lastDefinition := oldLastDefinition;
           END;
           use := use. nextUse
         END;
@@ -526,7 +518,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       (* pre: `select' has opcode "select" or "loopStart" *)
         VAR
           origin: OriginMap;
-          i, memoryCount, registerCount: LONGINT;
+          i, memoryCount, registerCount, unreachableCount: LONGINT;
           collect, allTheSame: SSA.Instr;
 
         PROCEDURE GetCollect (select: SSA.Instr; pathNum: LONGINT): SSA.Instr;
@@ -561,6 +553,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         PROCEDURE GetValue (source: SSA.Instr): SSA.Result;
           BEGIN
             CASE source. opcode OF
+            | Opcode.selectReturn:       (* marks unreachable code *)
+              RETURN source
             | Opcode.set:
               RETURN source. GetArgClass (Opnd.sourceValue)
             | Opcode.select:
@@ -590,6 +584,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             RETURN new
           END DuplicateGet;
 
+        PROCEDURE IsUnreachable (value: SSA.Instr): BOOLEAN;
+          BEGIN
+            RETURN (value # NIL) & (value. opcode = Opcode.selectReturn);
+          END IsUnreachable;
+        
         BEGIN
           IF (select. info = NIL) THEN
             (* there is no information available which value may reach this
@@ -619,15 +618,25 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
               END;
               
               allTheSame := origin. def[var, 0];
-              memoryCount := 0; registerCount := 0;
+              memoryCount := 0; registerCount := 0; unreachableCount := 0;
               FOR i := 0 TO LEN (origin. def^, 1)-1 DO
                 IF (origin. def[var, i] = unknownValue) THEN
                   INC (memoryCount)
+                ELSIF IsUnreachable (origin. def[var, i]) THEN
+                  INC (unreachableCount)
                 ELSE
                   INC (registerCount)
                 END;
                 IF (origin. def[var, i] # allTheSame) THEN
-                  allTheSame := NIL
+                  IF IsUnreachable (allTheSame) THEN
+                    (* the previous paths are all unreachable, to the current
+                       one is the best guess what appears further down *)
+                    allTheSame := origin. def[var, i];
+                  ELSIF ~IsUnreachable (origin. def[var, i]) THEN
+                    (* we got at least two different but not unreachable
+                       values: erase `allTheSame' *)
+                    allTheSame := NIL
+                  END;
                 END;
               END;
               
@@ -654,19 +663,21 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
               ELSE
                 ASSERT (registerCount+memoryCount = 2);
                 (* we have the value we need partially in memory, partially as
-                   value; convert this situation into an "all memroy" or "all
+                   value; convert this situation into an "all memory" or "all
                    value" scenario; on the assumption that a reads are cheaper
                    than writes, add a "get" for the current value to the
                    branches we know nothing about *)
                 FOR i := 0 TO LEN (origin. def^, 1)-1 DO
-                  IF (origin. def[var, i] = unknownValue) THEN
-                    value := DuplicateGet (GetStoreOpnd (select, i))
-                  ELSE
-                    value := GetValue (origin. def[var, i]);
+                  IF ~IsUnreachable (origin. def[var, i]) THEN
+                    IF (origin. def[var, i] = unknownValue) THEN
+                      value := DuplicateGet (GetStoreOpnd (select, i))
+                    ELSE
+                      value := GetValue (origin. def[var, i]);
+                    END;
+                    collect := GetCollect (select, i);
+                    ASSERT (value # NIL);
+                    collect. AddOpnd (value, Opnd.arg);
                   END;
-                  collect := GetCollect (select, i);
-                  ASSERT (value # NIL);
-                  collect. AddOpnd (value, Opnd.arg);
                 END;
                 origin. selectOut[var] :=
                     select. AddResultSubclass (Result.selectValue, subclass);
@@ -847,7 +858,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
     (* second: for every "set" instruction, establish the visibility of the
        written value in memory *)
     TraceSetForward (varMap. Size());
-(*    w. WriteProcBody (pb, FALSE);*)
+    w. WriteProcBody (pb, FALSE);
     
     (* third: for every "get" instruction, try to trace the store value back
        to the definition from which the "get" reads its result *)
