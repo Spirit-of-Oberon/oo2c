@@ -1,11 +1,15 @@
-# NOTE: This makefile is slowly migrating towards a more centralized structure.
-# To use it, the environment variable OOC_DEV_ROOT and MAIN_MAKEFILE must be
-# set.  This is easiest done by cd-ing to the top-level directory of the
-# project and sourcing the file ENV there: `. ENV' (this assumes a Bourne
-# compatible shell)
+# NOTE: To use this makefile in a development setup, the environment
+# variables OOC_DEV_ROOT and MAIN_MAKEFILE must be set.  This is
+# easiest done by cd-ing to the top-level directory of the project and
+# sourcing the file ENV there: `. ENV' (this assumes a Bourne
+# compatible shell).
+# 
+# In an installation setup, simply run "./configure" and do "make
+# install".  In this case, OOC_DEV_ROOT must not be set.
 
 ifndef OOC_DEV_ROOT
 export OOC_DEV_ROOT=$(shell pwd)
+export MAIN_MAKEFILE=$(OOC_DEV_ROOT)/rsrc/OOC/Makefile.ooc-main
 endif
 
 include $(OOC_DEV_ROOT)/Makefile.config
@@ -143,13 +147,13 @@ stage1/exe/oo2c: stage0/exe/oo2c stage1/lib/src/RT0.Mod stage1/src/oo2c.Mod
 
 stage1/lib/obj/liboo2c.o: stage1/exe/oo2c
 	stage1/exe/oo2c --config rsrc/OOC/oo2crc.xml -r stage1/lib --make liboo2c
-	chmod -R a+rX,go-w stage1/lib lib/src
+	chmod -R a+rX,go-w stage1/lib
 
 install: stage1/lib/obj/liboo2c.o mkdir
 	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(libdir)/lib)
 	cd $(libdir)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
-	(umask 022; cp stage1/lib/src/*.h $(libdir)/lib/src)
-	${INSTALL} -m 644 rsrc/OOC/oo2crc.xml $(libdir)
+	${INSTALL_DATA} stage1/lib/src/*.h $(libdir)/lib/src
+	${INSTALL_DATA} rsrc/OOC/oo2crc.xml $(libdir)
 	${INSTALL_PROGRAM} stage1/exe/oo2c $(bindir)
 
 install-strip:
