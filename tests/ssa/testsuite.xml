@@ -5,25 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic2 generic3 generic4
-  generic5 generic6 generic7 generic8 generic9 generic10 generic11
-  generic12 generic13 generic14 generic15 generic16 generic17
-  generic18 generic19 generic20 generic21 generic22 generic23
-  generic24 generic25 generic26 generic27 generic28 generic29
-  generic30 generic31 generic32 generic33 generic34 generic35
-  generic36 generic37 generic38 generic39 generic40 generic41
-  generic42 generic43 generic44 generic45 generic46 generic47
-  generic48 generic48 generic49 generic50 generic52
-  generic53 generic54 generic55 generic56 generic57 generic58">-->
-
-<!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; abstract11 abstract12">-->
-
-<!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic72">-->
-
-<!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; atomic1">-->
+  select ="&SetupTestCasesWithOut; generic73 generic74">-->
 
   &TestSetupWithOut;
     
@@ -1646,6 +1628,18 @@
       Regression test: Handle assignment of non-scalar type correctly,
       even if the right hand side of the assignment is a parametric
       record.
+    </test>
+    <test id="generic73" type="run" file="Generic73.Mod">
+      Regression test: Parametric value parameters of array type are
+      passed just like their non-parametric counterparts.  For
+      <code>oo2c</code> this means that the array is passed by
+      reference, the length is passed as an implicit second parameter,
+      and the callee allocates space on the stack for a local copy of
+      the array.
+    </test>
+    <test id="generic74" type="run" file="Generic74.Mod">
+      Regression test: Like <code>generic73</code>, but for a record
+      parameter.
     </test>
   </testcases>
 

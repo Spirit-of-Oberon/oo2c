@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
-    Copyright (C) 2000-2003  Michael van Acken
+    Copyright (C) 2000-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -2016,6 +2016,7 @@ PROCEDURE (exceptionName: ExceptionName) Load* (r: Storable.Reader) RAISES IO.Er
 PROCEDURE (varDecl: VarDecl) SetType* (type: Type);
   PROCEDURE PassPerReference (type: Type): BOOLEAN;
     BEGIN
+      type := type.Deparam();
       RETURN (type IS Array) OR (type IS Record)
     END PassPerReference;
   

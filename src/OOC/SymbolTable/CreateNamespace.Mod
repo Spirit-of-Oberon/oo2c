@@ -1406,7 +1406,7 @@ RAISES IO.Error;
           
         | item: Sym.VarDecl DO
           IF item.isParameter THEN
-            type := item.type;
+            type := item.type.Deparam();
             ResolveFlagsDirect(item, type);
             IF (type IS Sym.Record) & ~type(Sym.Record).hasDescriptor OR
                (type IS Sym.Array) & ~type(Sym.Array).hasLengthInfo THEN

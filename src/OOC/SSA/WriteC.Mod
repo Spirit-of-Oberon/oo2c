@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 (*  Translates a set of scheduled SSA instructions to plain C.
-    Copyright (C) 2001, 2002, 2003  Michael van Acken
+    Copyright (C) 2001-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -296,12 +296,15 @@ PROCEDURE ^ (w: Writer) Ref (opnd: SSA.Opnd);
 
 PROCEDURE WriteTypeAndLength (w: Writer; instr: SSA.Instr;
                               varDecl: Sym.VarDecl; inBytes: BOOLEAN);
+  VAR
+    type: Sym.Type;
   BEGIN
     w. WriteString (",");
-    IF (varDecl. type IS Sym.Array) THEN
-      w.TypeRef(varDecl.type(Sym.Array).GetInnermostElementType());
+    type := varDecl.type.Deparam(); 
+    IF (type IS Sym.Array) THEN
+      w.TypeRef(type(Sym.Array).GetInnermostElementType());
     ELSE
-      w.TypeRef(varDecl.type);
+      w.TypeRef(type);
     END;
     w. WriteString (",");
     IF inBytes THEN
