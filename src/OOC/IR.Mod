@@ -176,7 +176,7 @@ TYPE
 
 TYPE
   (* Variants for 'classed' binary operators. *)
-  Variant = SHORTINT;
+  Variant* = SHORTINT;
   
 CONST
   (* arithmetic *)
@@ -523,14 +523,8 @@ TYPE
        value of the argument.  *)
     (StatementDesc)
     
-    param-: Sym.VarDecl;
+    param-: Var;
     (**The value parameter that must be copied.  *)
-
-    openArraySize-: Expression;
-    (**If the parameter is an open array, then this field holds the total
-       number of elements of the array.  The number is the product of the
-       array length for all open dimensions.  If the parameter is not an
-       open array, then this field is @code{NIL}.  *)
   END;
   
 TYPE
@@ -1612,22 +1606,18 @@ PROCEDURE (call: Call) Accept* (v: Visitor);
 (* Statement Class: CopyParameter
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitCopyParameter (cp: CopyParameter; sym: Symbol;
-                             param: Sym.VarDecl; openArraySize: Expression);
+PROCEDURE InitCopyParameter (cp: CopyParameter; sym: Symbol; param: Var);
   BEGIN
     InitStatement (cp, sym);
     cp. param := param;
-    cp. openArraySize := openArraySize;
   END InitCopyParameter;
 
-PROCEDURE (b: Builder) NewCopyParameter* (sym: Symbol; param: Sym.VarDecl;
-                                          openArraySize: Expression): CopyParameter;
+PROCEDURE (b: Builder) NewCopyParameter* (sym: Symbol; param: Var): CopyParameter;
   VAR
     cp: CopyParameter;
   BEGIN
-    ASSERT (b.typeRules.IsOpenArrayType (param.type) = (openArraySize#NIL));
     NEW (cp);
-    InitCopyParameter (cp, sym, param, openArraySize);
+    InitCopyParameter (cp, sym, param);
     RETURN cp
   END NewCopyParameter;
 
@@ -1872,9 +1862,8 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     VAR
       newStatm: ArrayList.ArrayList;
       formalPars: Sym.VarDeclArray;
-      fparIndex, dim: LONGINT;
+      fparIndex: LONGINT;
       fpar: Sym.VarDecl;
-      size, arrayExpr: Expression;
       
     PROCEDURE AddStatm (statm: Statement);
       BEGIN
@@ -1908,17 +1897,7 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
       WHILE (fparIndex # LEN (formalPars^)) DO
         fpar := formalPars[fparIndex];
         IF fpar. isPassPerReference & ~fpar. isVarParam THEN
-          IF b. typeRules. IsOpenArrayType (fpar. type) THEN
-            arrayExpr := b. NewVar (sym, fpar);
-            size := b. NewLen (sym, arrayExpr, 0);
-            FOR dim := 1 TO fpar. type(Sym.Array). GetOpenDimensions()-1 DO
-              size := b. NewBinaryArith (sym, arithMul, size, b. NewLen (sym, arrayExpr, dim))
-            END;
-          ELSE
-            size := NIL;
-          END;
-          
-          AddStatm (b. NewCopyParameter (sym, fpar, size))
+          AddStatm (b. NewCopyParameter (sym, b. NewVar (NIL, fpar)))
         END;
         INC (fparIndex)
       END;

@@ -391,10 +391,7 @@ PROCEDURE (v: Visitor) VisitWhileStatm* (whileStatm: IR.WhileStatm);
 PROCEDURE (v: Visitor) VisitCopyParameter* (cp: IR.CopyParameter);
   BEGIN
     v. w. StartTag ("copy-parameter", FALSE);
-    v. w. AttrStringLatin1 ("parameter", cp. param. name. str^);
-    IF (cp. openArraySize # NIL) THEN
-      cp. openArraySize. Accept (v)
-    END;
+    v. w. AttrStringLatin1 ("parameter", cp. param. decl. name. str^);
     v. w. EndTag;  (* copy-parameter *)
   END VisitCopyParameter;
 
