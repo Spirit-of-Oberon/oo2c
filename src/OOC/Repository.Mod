@@ -101,11 +101,27 @@ CONST
      such files may be delegated to external tools like @code{libtool}.  *)
   modCodeFileC* = 11;
   (**For the C translator, this designates the C code file generated for a
-     module.  *)
-  modHeaderFileC* = 12;
+     module.  This file contains an include for the file @oconst{modDeclFileC}
+     and the function definitions.  *)
+  modDeclFileC* = 12;
+  (**For the C translator, this designates the C code file holding all global
+     declarations of a module.  It includes the run-time data structure like
+     module and file descriptors, global variable definitions, and all other
+     global declarations that are not part of the header file
+     @oconst{modHeaderFileC}.  *)
+  modHeaderFileC* = 13;
   (**For the C translator, this designates the C header file that is used by
      the C code of the module, and is included into all client's C code.  *)
-  resourceFile* = 13;
+  modMainFileC* = 14;
+  (**This file contains the main function of a program.  It is a variant of
+     @oconst{modCodeFileC} in that it contains C code and is compiled to an
+     object file.  *)
+  modMainObjectFile* = 15;
+  (**Compiled version of @oconst{modMainFileC}.  *)
+  modExecutable* = 16;
+  (**Represents the executable one gets when using this module as a program's
+     main module.  *)
+  resourceFile* = 17;
   (**A resource file is a non-Oberon file that accompanies a package.
      Resources are typically located in the @file{rsrc} subdirectory of a
      package or repository.  For example, XML DTD files and XSL stylesheets
@@ -200,6 +216,9 @@ PROCEDURE (m: Module) [ABSTRACT] GetURI* (fileId: FileId; VAR res: Msg.Msg): URI
 PROCEDURE (m: Module) [ABSTRACT] GetTimeStamp* (fileId: FileId; VAR ts: Time.TimeStamp);
   END GetTimeStamp;
 
+PROCEDURE (m: Module) [ABSTRACT] CreateOutputDir* (fileId: FileId; VAR res: Msg.Msg);
+  END CreateOutputDir;
+
 PROCEDURE (m: Module) [ABSTRACT] GetOutputChannel* (fileId: FileId; makeTmp: BOOLEAN; VAR res: Msg.Msg): Channel.Channel;
   END GetOutputChannel;
 
@@ -214,10 +233,13 @@ PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF 
       COPY ("doc/xml", subdir)
     | modInterfaceHTML:
       COPY ("doc/html", subdir)
-    | modObjectFile, modCodeFileC, modHeaderFileC, modObjectFileDynamicLoad:
+    | modObjectFile, modCodeFileC, modDeclFileC, modHeaderFileC,
+      modObjectFileDynamicLoad, modMainFileC, modMainObjectFile:
       COPY ("obj", subdir)
     | modObjectFileSharedLib, modObjectFileStaticLib:
       COPY ("lib/obj", subdir)
+    | modExecutable:
+      COPY ("exe", subdir)
     | resourceFile:
       COPY ("rsrc", subdir)
     END
@@ -244,10 +266,18 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
       COPY (".o", suffix)
     | modCodeFileC:
       COPY (".c", suffix)
+    | modDeclFileC:
+      COPY (".d", suffix)
     | modHeaderFileC:
       COPY (".h", suffix)
     | modObjectFileSharedLib:
       COPY (".lo", suffix)
+    | modMainFileC:
+      COPY ("_.c", suffix)
+    | modMainObjectFile:
+      COPY ("_.o", suffix)
+    | modExecutable:
+      COPY ("", suffix)
     | resourceFile:
       ASSERT (FALSE)
     END

@@ -35,6 +35,8 @@ TYPE
     (Resource.EntityDesc)
     module-: Repository.Module;
     fileId-: Repository.FileId;
+    maxTimeStampKnown: BOOLEAN;
+    maxTimeStamp: Time.TimeStamp;
   END;
 
 
@@ -43,7 +45,9 @@ PROCEDURE InitEntity (entity: Entity; context: Make.Context;
   BEGIN
     Resource.Init (entity, context);
     entity. module := module;
-    entity. fileId := fileId
+    entity. fileId := fileId;
+    entity. maxTimeStampKnown := FALSE;
+    Time.InitTimeStamp (entity. maxTimeStamp, 0, 0);
   END InitEntity;
 
 PROCEDURE NewEntity (context: Make.Context; module: Repository.Module;
@@ -127,8 +131,36 @@ PROCEDURE (entity: Entity) Exists* (): BOOLEAN;
   END Exists;
 
 PROCEDURE (entity: Entity) GetTimeStamp* (VAR ts: Time.TimeStamp);
+  VAR
+    aEdge: Make.Edge;
+    ts2: Time.TimeStamp;
   BEGIN
-    entity. module. GetTimeStamp (entity. fileId, ts)
+    entity. module. GetTimeStamp (entity. fileId, ts);
+    
+    IF (entity. fileId = Repository.modHeaderFileC) OR
+       (entity. fileId = Repository.modDeclFileC) OR
+       (entity. fileId = Repository.modCodeFileC) THEN
+      (* the time stamp of the entity is the maximum over the time stamp of
+         the entity itself and the time stamps of all files included by it *)
+      IF ~entity. maxTimeStampKnown THEN
+        aEdge := entity. ancestorList;
+        WHILE (aEdge # NIL) DO
+          IF (aEdge. ancestor IS Entity) &
+             ((aEdge. ancestor(Entity). fileId = Repository.modHeaderFileC) OR
+              (aEdge. ancestor(Entity). fileId = Repository.modHeaderFileC)) THEN
+            aEdge. ancestor(Entity). GetTimeStamp (ts2);
+            IF (ts2. Cmp (ts) > 0) THEN
+              ts := ts2
+            END
+          END;
+          aEdge := aEdge. nextAncestor
+        END;
+        
+        entity. maxTimeStamp := ts;
+        entity. maxTimeStampKnown := TRUE
+      END;
+      ts := entity. maxTimeStamp
+    END
   END GetTimeStamp;
 
 PROCEDURE (entity: Entity) Id* (): String.String;
@@ -151,6 +183,20 @@ PROCEDURE (entity: Entity) Id* (): String.String;
       str. AppendString ("modInterfaceXML")
     | Repository.modInterfaceHTML:
       str. AppendString ("modInterfaceHTML")
+    | Repository.modObjectFile:
+      str. AppendString ("modObjectFile")
+    | Repository.modHeaderFileC:
+      str. AppendString ("modHeaderFileC")
+    | Repository.modDeclFileC:
+      str. AppendString ("modDeclFileC")
+    | Repository.modCodeFileC:
+      str. AppendString ("modCodeFileC")
+    | Repository.modMainFileC:
+      str. AppendString ("modMainFileC")
+    | Repository.modMainObjectFile:
+      str. AppendString ("modMainObjectFile")
+    | Repository.modExecutable:
+      str. AppendString ("modExecutable")
     END;
     str. AppendString (")] ");
     uri := entity. GetURI();
@@ -160,13 +206,40 @@ PROCEDURE (entity: Entity) Id* (): String.String;
   END Id;
 
 
-PROCEDURE AddTimeDep (context: Make.Context; descendent, ancestor: Entity);
+PROCEDURE AddTimeDep (context: Make.Context; descendant, ancestor: Entity);
   VAR
     dep: TimeDep.Edge;
   BEGIN
-    dep := TimeDep.New (descendent, ancestor);
+    dep := TimeDep.New (descendant, ancestor);
     context. AddDependence (dep)
   END AddTimeDep;
+
+PROCEDURE AncestorClosure* (descendant: Entity; entity: Entity;
+                            fileId: Repository.FileId);
+  VAR
+    importedEntity: Entity;
+    dummyErrList: Error.List;
+    import: Repository.Import;
+    config: ConfigOOC.Config;
+  BEGIN
+    IF ~descendant. IsDescendantOf (entity) THEN
+      descendant. AddAncestor (entity);
+
+      config := entity. context. config(ConfigOOC.Config);
+      GetImports.GetImports (entity. module,
+                             config. pragmas,
+                             config. repositories,
+                             dummyErrList);
+      (* ignore any errors when scanning the imports; for dependency scanning,
+         malformed modules are of no importance *)
+      import := entity. module. importList;
+      WHILE (import # NIL) DO
+        importedEntity := GetEntity(entity. context, import. imported, fileId);
+        AncestorClosure (descendant, importedEntity, fileId);
+        import := import. nextImport
+      END
+    END
+  END AncestorClosure;
 
 PROCEDURE DiscoverCompile* (command: Make.Command; module: Repository.Module);
   VAR
@@ -195,7 +268,8 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
     srcEntity: Entity;
     usageData: Make.Entity;
   
-  PROCEDURE AddImportDeps (entity: Entity; fileId: Repository.FileId);
+  PROCEDURE AddImportDeps (entity: Entity; fileId: Repository.FileId;
+                           timeDep: BOOLEAN);
     VAR
       ancestorEntity: Entity;
       dummyErrList: Error.List;
@@ -210,7 +284,11 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       import := entity. module. importList;
       WHILE (import # NIL) DO
         ancestorEntity := GetEntity (entity. context, import. imported, fileId);
-        AddTimeDep (entity. context, entity, ancestorEntity);
+        IF timeDep THEN
+          AddTimeDep (entity. context, entity, ancestorEntity)
+        ELSE
+          entity. AddAncestor (ancestorEntity)
+        END;
         import := import. nextImport
       END
     END AddImportDeps;
@@ -221,12 +299,12 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       ancestor: Make.Node;
       build: BOOLEAN;
     BEGIN
-      build := FALSE;
+      build := ~entity. Exists();
       aEdge := entity. ancestorList;
       WHILE (aEdge # NIL) DO
         ancestor := aEdge. ancestor;
         WITH ancestor: Entity DO
-          IF (ancestor. fileId = ancestorType) THEN
+          IF (ancestorType < 0) OR (ancestor. fileId = ancestorType) THEN
             IF (ancestor. state = Make.entityInvalid) THEN
               RETURN Make.entityInvalid
             ELSIF aEdge. IsInvalid() THEN
@@ -282,7 +360,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
           (* the symbol file exists, and it is more recent than the
              corresponding source file (if one exists); add dependencies for
              all symbol files the current entity is relying on *)
-          AddImportDeps (entity, Repository.modSymbolFile);
+          AddImportDeps (entity, Repository.modSymbolFile, TRUE);
           RETURN entity. state+1
         END
       ELSE  (* (entity. state = Make.entityUndiscovered+1) *)
@@ -302,7 +380,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       IF (entity. state = Make.entityUndiscovered) THEN
         srcEntity := GetEntity (entity. context, entity. module, Repository.modSymbolFile);
         AddTimeDep (entity. context, entity, srcEntity);
-        AddImportDeps (entity, Repository.modSymbolFile);
+        AddImportDeps (entity, Repository.modSymbolFile, TRUE);
         (* fixme: add_import should be transitive in this case! ... *)
         
         usageData := entity. context. GetNamedEntity ("UsageData");
@@ -350,6 +428,127 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       ELSE
         RETURN AncestorState (entity, Repository.modInterfaceDescr)
       END
+      
+    | Repository.modHeaderFileC:
+      (* The contents of the C header file are a subset of the contents of the
+         module's symbol file.   For this reason, the best check if the header
+         file is up to date is to compare the fingerprint of the symbol file
+         from which the header file was derived with the current fingerprint
+         of the symbol file.  If they differ, then the header file is invalid
+         and a new one must be generated.  For this to work, the header file
+         must contain a copy of the symbol file fingerprint, say in base64
+         encoded form in the very first line of the file.
+         
+         ... FIXME: The above is the most efficient solution.  For the moment,
+         the header file is required to be more recent than the symbol file.
+         
+         The header is also dependent on all files that are included by it,
+         because these files must exist before it can be used.  *)
+      IF (entity. state = Make.entityUndiscovered) THEN
+        srcEntity := GetEntity (entity. context, entity. module,
+                                Repository.modSymbolFile);
+        AddTimeDep (entity. context, entity, srcEntity);
+        AddImportDeps (entity, Repository.modHeaderFileC, FALSE);
+        (* ... note: AddImportDeps may create too many deps *)
+        RETURN entity. state+1
+      ELSE
+        RETURN AncestorState (entity, Repository.modHeaderFileC)
+      END
+      
+    | Repository.modDeclFileC:
+      (* For the declaration file to be up to date, it must be more recent than
+         the source code file.  The file is also dependent on all files that
+         are included by it, because these files must exist before it can be
+         used.  *)
+      IF (entity. state = Make.entityUndiscovered) THEN
+        srcEntity := GetEntity (entity. context, entity. module,
+                                Repository.modModuleSource);
+        AddTimeDep (entity. context, entity, srcEntity);
+        
+        entity. AddAncestor (GetEntity (entity. context, entity. module,
+                                        Repository.modHeaderFileC));
+        AddImportDeps (entity, Repository.modHeaderFileC, FALSE);
+        (* ... note: AddImportDeps may create too many deps *)
+        RETURN entity. state+1
+      ELSE
+        RETURN AncestorState (entity, -1)
+      END
+      
+    | Repository.modCodeFileC:
+      (* The C code of a module must be more recent than the source code.  
+         It also depends on the existence of the declaration file.  *)
+      IF (entity. state = Make.entityUndiscovered) THEN
+        srcEntity := GetEntity (entity. context, entity. module,
+                                Repository.modModuleSource);
+        AddTimeDep (entity. context, entity, srcEntity);
+        srcEntity := GetEntity (entity. context, entity. module,
+                                Repository.modDeclFileC);
+        entity. AddAncestor (srcEntity);
+        RETURN entity. state+1
+      ELSE
+        RETURN AncestorState (entity, -1)
+      END
+      
+    | Repository.modMainFileC:
+      (* This file depends on the existence of all included header files.  *)
+      IF (entity. state = Make.entityUndiscovered) THEN
+        entity. AddAncestor (GetEntity (entity. context, entity. module,
+                                        Repository.modSymbolFile));
+        RETURN entity. state+1
+      ELSE
+        IF entity. HasInvalidAncestor() THEN
+          RETURN Make.entityInvalid
+        ELSE
+          RETURN Make.entityBuild
+        END
+      END
+      
+    | Repository.modObjectFile:
+      (* For the C back-end, the object file is derived from the C code file.
+         If the code file is more recent than the object file, then the C
+         compiler must create a new one.  Note: This time stamp based approach
+         fails if the C compiler leaves incomplete files behind if
+         interruped.  *)
+      IF (entity. state = Make.entityUndiscovered) THEN
+        srcEntity := GetEntity (entity. context, entity. module,
+                                Repository.modCodeFileC);
+        AddTimeDep (entity. context, entity, srcEntity);
+        RETURN entity. state+1
+      ELSE
+        RETURN AncestorState (entity, -1)
+      END
+    
+    | Repository.modMainObjectFile:
+      IF (entity. state = Make.entityUndiscovered) THEN
+        srcEntity := GetEntity (entity. context, entity. module,
+                                Repository.modMainFileC);
+        AddTimeDep (entity. context, entity, srcEntity);
+        RETURN entity. state+1
+      ELSE
+        RETURN AncestorState (entity, -1)
+      END
+    
+    | Repository.modExecutable:
+      IF (entity. state = Make.entityUndiscovered) THEN
+        srcEntity := GetEntity (entity. context, entity. module,
+                                Repository.modSymbolFile);
+        AddTimeDep (entity. context, entity, srcEntity);
+        RETURN entity. state+1
+      ELSIF (entity. state = Make.entityUndiscovered+1) THEN
+        IF entity. HasInvalidAncestor() THEN
+          RETURN Make.entityInvalid
+        ELSE
+          srcEntity := GetEntity (entity. context, entity. module,
+                                  Repository.modMainObjectFile);
+          AddTimeDep (entity. context, entity, srcEntity);
+          
+          AncestorClosure (entity, GetEntity (entity. context, entity. module,
+                          Repository.modObjectFile), Repository.modObjectFile);
+          RETURN entity. state+1
+        END
+      ELSE
+        RETURN AncestorState (entity, -1)  (* exlcude symbol file... *)
+      END
     END
   END Discover;
 
@@ -359,7 +558,7 @@ PROCEDURE CreateClosure* (closureGroup: Make.Entity; entity: Entity);
    indirectly imported by @oparam{entity} to the group @oparam{closureGroup}.
    The newly created entities inherit the file id from @oparam{entity}.  For
    example, if @oparam{entity} has an id @oconst{Repository.modModuleSource},
-   then, after completion, the list of descendents of @oparam{closureGroup}
+   then, after completion, the list of descendants of @oparam{closureGroup}
    contains @oparam{entity} and entities with the file id
    @oconst{Repository.modModuleSource} for all modules imported into
    @oparam{entity}.  *)
@@ -369,7 +568,7 @@ PROCEDURE CreateClosure* (closureGroup: Make.Entity; entity: Entity);
     import: Repository.Import;
     config: ConfigOOC.Config;
   BEGIN
-    IF ~closureGroup. IsDescendentOf (entity) THEN
+    IF ~closureGroup. IsDescendantOf (entity) THEN
       (* add `entity' to the group *)
       closureGroup. AddAncestor (entity);
       
