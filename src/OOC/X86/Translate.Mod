@@ -302,6 +302,24 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         ControlCP(instr);
       END Copy;
 
+    PROCEDURE MoveBlock(move: IR.MoveBlock);
+      VAR
+        size, from, to: S.Result;
+        instr: S.Instr;
+      BEGIN
+        size := Expression(move.size);
+        from := Expression(move.source);
+        to := Expression(move.dest);
+        
+        instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
+        instr.AddOpnd(to);
+        instr.AddOpnd(from);
+        instr.AddOpnd(size);
+        
+        MemoryCP(instr);
+        ControlCP(instr);
+      END MoveBlock;
+
     PROCEDURE TypeTag (design: IR.Expression; value: S.Result;
                        checkDerefOfNil: BOOLEAN;
                        derefSym: IR.Symbol): S.Result;
@@ -345,7 +363,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         merge: S.MergeInstr;
         controlTrue, memoryTrue, controlFalse, memoryFalse: S.Instr;
         dim: LONGINT;
-        type: Sym.PredefId;
+        typeId: Sym.PredefId;
+        type: Sym.Type;
 
       PROCEDURE GetIndexBaseArray(indexOp: IR.Expression;
                                   VAR dim: LONGINT): S.Result;
@@ -620,12 +639,12 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       
       BEGIN
         WITH expr: IR.Const DO
-          type := expr.type(Sym.PredefType).id;
-          CASE type OF
+          typeId := expr.type(Sym.PredefType).id;
+          CASE typeId OF
           | Predef.boolean:
             RETURN b.AddConstBool(expr.value(Boxed.Boolean).value);
           | Predef.stringChar..Predef.stringUCS4Char:
-            RETURN b.AddConst(NEW(S.Const, expr.value, type), expr.type);
+            RETURN b.AddConst(NEW(S.Const, expr.value, typeId), expr.type);
           ELSE
             RETURN b.AddConst(NEW(S.Const, expr.value, -1), expr.type);
           END;
@@ -698,6 +717,18 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             RETURN res;
           END;
           
+        | expr: IR.Len DO
+          IF (expr.variant = IR.lenStringConst) THEN
+            RETURN b.AddConstLength(expr.arrayVariable(IR.Const).
+                                    value(Boxed.String).value.length+1);
+          ELSE
+            baseArray := Expression(expr.arrayVariable);
+            type := expr.arrayVariable.type.Deparam();
+            type := type(Sym.Array).GetNthElementType(expr.dim);
+            RETURN b.AddGetLengthInstr(baseArray.instr, expr.dim,
+                                       type(Sym.Array));
+          END;
+              
         | expr: IR.TypeTag DO
           RETURN TypeTag(expr.design, Expression(expr.design),
                          FALSE, expr.sym);
@@ -797,6 +828,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           var.instr.AddOpnd(res);
         | statm: IR.Copy DO
           Copy(statm);
+        | statm: IR.MoveBlock DO
+          MoveBlock(statm);
           
         | statm: IR.IfStatm DO
           res := Expression(statm.guard);
