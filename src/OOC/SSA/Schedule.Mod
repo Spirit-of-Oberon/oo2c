@@ -772,6 +772,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
   PROCEDURE RemoveUnreachable (VAR b: Block);
     VAR
       d, i: LONGINT;
+      j: Jump;
 
     PROCEDURE ContainsEndOfBlock (b: Block): BOOLEAN;
       VAR
@@ -792,6 +793,16 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     BEGIN
       IF (b # NIL) THEN
         d := b. degreeIn;
+        IF b. isLoopHead THEN
+          (* don't count jumps originating in the loop itself here *)
+          j := b. targetUseList;
+          WHILE (j # NIL) DO
+            IF j. isLoopBackedge THEN
+              DEC (d);
+            END;
+            j := j. nextTargetUse;
+          END;
+        END;
         IF (d = 0) & ContainsEndOfBlock (b) THEN
           (* the block may be unreachable, but the current C back-end needs
              it (or rather, the "select-return" and "loop-end") to get its
