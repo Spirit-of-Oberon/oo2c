@@ -14,13 +14,13 @@
   function1 function2 function3 if1 if2 if3 function4 function5
   designator1 function6 loop1 loop2 loop3 loop4 varpar1
   ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1
-  len1 len2 len3 len4 len5 len6 len7 array1 array2">
+  len1 len2 len3 len4 len5 len6 len7 array1 array2 array3 array4 array5">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
   select ="prepare_out_module loop4">-->
   
-  <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
+  <testcases profile="Test Suite Setup" default-lang="O2">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
       This is not a test case.  Rather, it prepares an Oakwood
       compliant module <code>Out</code> to supersede OOC's differing
@@ -32,7 +32,7 @@
   <!--&candidate-testcases;
   &hostess-testcases;-->
   
-  <testcases profile="OOC2 Development" default-lang="O1 O2 AO">
+  <testcases profile="OOC2 Development" default-lang="O2">
     <test id="function1" type="run"
       file="../compile/HOTFunction1.Mod" output="../compile/HOTFunction1.Ref">
       A very simple function: No input arguments, and a return
@@ -189,6 +189,21 @@
     <test id="array2" type="run" file="Array2.Mod" output="Array2.Ref">
       As <code>array1</code>, but with <code>INTEGER</code> as element
       type.
+    </test>
+    
+    <test id="array3" type="run" file="Array3.Mod" output="Array3.Ref">
+      Fill an 2-dimensional array of <code>INTEGER</code> and write
+      the array lines.  The array is a global variable.
+    </test>
+    
+    <test id="array4" type="run" file="Array4.Mod" output="Array4.Ref">
+      Like <code>array3</code>, but the array is a parameter with 2
+      open dimensions.
+    </test>
+    
+    <test id="array5" type="run" file="Array5.Mod" output="Array5.Ref">
+      Like <code>array4</code>, but the array elements are of type
+      <code>SHORTINT</code>.
     </test>
   </testcases>
   

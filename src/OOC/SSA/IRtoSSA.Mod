@@ -61,7 +61,74 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     END Chain;
 
   PROCEDURE ^ Call (call: IR.Call): SSA.Instr;
+  PROCEDURE ^ Expression (expr: IR.Expression): SSA.Result;
     
+  PROCEDURE RetrieveLength (pb: SSA.ProcBlock; variant: IR.Variant;
+                            arrayVariable: IR.Expression; dim: LONGINT): SSA.Instr;
+    VAR
+      res: SSA.Result;
+    BEGIN
+      IF (variant = -1) THEN
+        IF (arrayVariable IS IR.Var) THEN
+          variant := IR.lenOpenArrayParam;
+        ELSE
+          variant := IR.lenOpenArrayHeap;
+        END;
+      END;
+      
+      CASE variant OF
+      | IR.lenStringConst:
+        ASSERT (arrayVariable. type(Sym.PredefType). id = Predef.charString);
+        RETURN pb. GetConstInt (arrayVariable(IR.Const). value(String8.Value). value. length+1);
+        
+      | IR.lenOpenArrayParam:
+        res := Expression (arrayVariable);
+        RETURN pb. AddGetLengthInstr (res(SSA.Instr), pb. GetConstInt (dim));
+      END;
+    END RetrieveLength;
+  
+  PROCEDURE CalculateSize (pb: SSA.ProcBlock; value: IR.Expression;
+                           dim: LONGINT): SSA.Instr;
+  (* Calculate the size of the variable @oparam{value} or of one of its
+     elements.  With @oparam{dim=-1}, return the size of the whole variable.
+     With @oparam{dim>=0}, return the size of an array element of dimension
+     @oparam{dim}.  *)
+    VAR
+      type: Sym.Type;
+      i: LONGINT;
+      
+    PROCEDURE RecursiveGetSize (type: Sym.Type; dim: LONGINT): SSA.Instr;
+      VAR
+        size: SSA.Instr;
+      BEGIN
+        IF (type IS Sym.Array) & type(Sym.Array). isOpenArray THEN
+          size := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
+          size. AddOpnd (RetrieveLength (pb, -1, value, dim+1), Opnd.arg);
+          size. AddOpnd (RecursiveGetSize (type(Sym.Array). elementType,
+                                           dim+1), Opnd.arg);
+          RETURN size;
+        ELSE
+          RETURN pb. GetConstInt (type. size);
+        END;
+      END RecursiveGetSize;
+    
+    BEGIN
+      (* if `value' is an index expression, normalize it to the array
+         variable  *)
+      WHILE (value IS IR.Index) DO
+        value := value(IR.Index). array;
+        INC (dim);
+      END;
+      
+      (* get type of the value we are interested in *)
+      type := value. type;
+      FOR i := 0 TO dim DO
+        type := type(Sym.Array). elementType;
+      END;
+      
+      RETURN RecursiveGetSize (type, dim);
+    END CalculateSize;
+  
   PROCEDURE Expression (expr: IR.Expression): SSA.Result;
     VAR
       instr: SSA.Instr;
@@ -84,7 +151,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         elementType := indexOp. type;
         scaledIndex := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
         scaledIndex. AddOpnd (index, Opnd.arg);
-        scaledIndex. AddOpnd (pb. GetConstInt (elementType. size), Opnd.arg);
+        scaledIndex. AddOpnd (CalculateSize (pb, indexOp, -1), Opnd.arg);
         
         adrOpnd := instr. opndList. nextOpnd;
         elementAdr := pb. AddInstr (Opcode.add, Opcode.scAddress);
@@ -156,16 +223,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
         
       | expr: IR.Len DO
-        CASE expr. variant OF
-        | IR.lenStringConst:
-          ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
-          RETURN pb. GetConstInt (expr. array(IR.Const). value(String8.Value). value. length+1);
-
-        | IR.lenOpenArrayParam:
-          res := Expression (expr. arrayVariable);
-          RETURN pb. AddGetLengthInstr (res(SSA.Instr),
-                                        pb. GetConstInt (expr. dim));
-        END;
+        RETURN RetrieveLength (pb, expr. variant,
+                               expr. arrayVariable, expr. dim);
         
       | expr: IR.Index DO
         RETURN Index (expr);
@@ -554,14 +613,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE CopyParameter (cp: IR.CopyParameter);
     VAR
       instr: SSA.Instr;
-      size: SSA.Result;
     BEGIN
-      IF (cp. openArraySize # NIL) THEN
-        size := Expression (cp. openArraySize)
-      ELSE
-        size := NIL
-      END;
-      instr := pb. AddCopyParameter (cp. param, s, size);
+      instr := pb. AddCopyParameter
+          (cp. param. decl(Sym.VarDecl), s, CalculateSize (pb, cp. param, -1));
       s := instr. AddResult (Result.store);
     END CopyParameter;
   
