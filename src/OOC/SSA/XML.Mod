@@ -22,7 +22,7 @@ MODULE OOC:SSA:XML;
 
 
 IMPORT
-  Object, IO, Dictionary := ADT:Dictionary:IntValue, 
+  Object, IO, IO:StdChannels, Dictionary := ADT:Dictionary:IntValue, 
   ADT:StringBuffer, WriterXML := XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd, OOC:SSA, OOC:SSA:Schedule;
 
@@ -328,6 +328,14 @@ RAISES IO.Error;
     w := NewWriter (cw);
     w. WriteProcBody (pb, includeDeadCode);
   END Write;
+
+PROCEDURE ToStderr*(pb: SSA.ProcBlock);
+  BEGIN
+    TRY
+      Write(StdChannels.stderr, pb, TRUE);
+    CATCH IO.Error:
+    END;
+  END ToStderr;
 
 PROCEDURE (w: Writer) WriteSchedule* (domRoot: Schedule.Block)
 RAISES IO.Error;

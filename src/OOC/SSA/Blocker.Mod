@@ -23,10 +23,10 @@ MODULE OOC:SSA:Blocker;
 <*DEFINE DEBUG_BLOCKER:=FALSE*>
 
 IMPORT
-  <*IF DEBUG_BLOCKER THEN*>Log,OOC:SSA:Check,StdChannels,<*END*>
+  <*IF DEBUG_BLOCKER THEN*>Log,OOC:SSA:Check,<*END*>
   SYSTEM, Object, Object:BigInt, ADT:Dictionary,
   IntDictionary := ADT:Dictionary:IntValue,
-  IO, IO:TextRider,
+  IO, IO:TextRider, IO:StdChannels,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination,
   OOC:SSA:Destore;
   
@@ -1175,7 +1175,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
       RETURN
           (opcode = Opcode.selectReturn) OR
           (opcode = Opcode.loopEnd) & (use.class = Opnd.storeExit) OR
-          (opcode = Opcode.equiv);
+          (opcode = Opcode.equivPRE) & (use.OpndIndex() = 2);
     END IgnoredUse;
 
   PROCEDURE UpdateDefs (p: Proxy);
@@ -1977,5 +1977,10 @@ PROCEDURE WriteMarker* (c: IO.ByteChannel; pb: SSA.ProcBlock;
     WriteBlocks (c, pb, root, marker);
     RemoveAntiDeps (pb);
   END WriteMarker;
+
+PROCEDURE ToStderr*(pb: SSA.ProcBlock);
+  BEGIN
+    Write(StdChannels.stderr, pb);
+  END ToStderr;
 
 END OOC:SSA:Blocker.
