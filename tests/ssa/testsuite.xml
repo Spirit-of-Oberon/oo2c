@@ -2049,6 +2049,8 @@
         msg="Argument not compatible with formal type `Generic1.A1'"/>
     <reject-info id="generic34" pos="(%o1)"
         msg="Argument not compatible with formal type `Generic1.A1'"/>
+    <warning-info id="generic40" pos="l3(%List"
+        msg="Warning: Redundant type test"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>

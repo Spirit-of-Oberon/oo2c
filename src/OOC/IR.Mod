@@ -3264,7 +3264,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
          a dynamic type that can differ from its static one.  *)
       RETURN b. ErrExpr (noDynamicType, expr.sym);
     ELSE
-      IF TR.SameType(refType, expr.type) THEN
+      IF TR.SameType(TR.Expand(refType), expr.type) THEN
         b.WarnSym(redundantTypeTest, referenceType.sym);
       END;
       
