@@ -1159,9 +1159,47 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
+# Extract the first word of "xsltproc", so it can be a program name with args.
+set dummy xsltproc; ac_word=$2
+echo "$as_me:1164: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_XSLTPROC+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $XSLTPROC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_XSLTPROC="$XSLTPROC" # Let the user override the test with a path.
+  ;;
+  *)
+  ac_save_IFS=$IFS; IFS=$ac_path_separator
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  IFS=$ac_save_IFS
+  test -z "$ac_dir" && ac_dir=.
+  if $as_executable_p "$ac_dir/$ac_word"; then
+   ac_cv_path_XSLTPROC="$ac_dir/$ac_word"
+   echo "$as_me:1181: found $ac_dir/$ac_word" >&5
+   break
+fi
+done
+
+  test -z "$ac_cv_path_XSLTPROC" && ac_cv_path_XSLTPROC="xsltproc"
+  ;;
+esac
+fi
+XSLTPROC=$ac_cv_path_XSLTPROC
+
+if test -n "$XSLTPROC"; then
+  echo "$as_me:1193: result: $XSLTPROC" >&5
+echo "${ECHO_T}$XSLTPROC" >&6
+else
+  echo "$as_me:1196: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
 # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
-echo "$as_me:1164: checking for $ac_word" >&5
+echo "$as_me:1202: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
 if test "${ac_cv_path_PERL+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -1178,7 +1216,7 @@ for ac_dir in $ac_dummy; do
   test -z "$ac_dir" && ac_dir=.
   if $as_executable_p "$ac_dir/$ac_word"; then
    ac_cv_path_PERL="$ac_dir/$ac_word"
-   echo "$as_me:1181: found $ac_dir/$ac_word" >&5
+   echo "$as_me:1219: found $ac_dir/$ac_word" >&5
    break
 fi
 done
@@ -1190,14 +1228,14 @@ fi
 PERL=$ac_cv_path_PERL
 
 if test -n "$PERL"; then
-  echo "$as_me:1193: result: $PERL" >&5
+  echo "$as_me:1231: result: $PERL" >&5
 echo "${ECHO_T}$PERL" >&6
 else
-  echo "$as_me:1196: result: no" >&5
+  echo "$as_me:1234: result: no" >&5
 echo "${ECHO_T}no" >&6
 fi
 
-ac_config_files="$ac_config_files ENV rsrc/OOC/Makefile.config rsrc/OOC/TestFramework/config.xml"
+ac_config_files="$ac_config_files ENV rsrc/OOC/Makefile.config rsrc/OOC/TestFramework/config.xml rsrc/OOC/xml/config.sh"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -1308,7 +1346,7 @@ rm -f confdef2opt.sed
 : ${CONFIG_STATUS=./config.status}
 ac_clean_files_save=$ac_clean_files
 ac_clean_files="$ac_clean_files $CONFIG_STATUS"
-{ echo "$as_me:1311: creating $CONFIG_STATUS" >&5
+{ echo "$as_me:1349: creating $CONFIG_STATUS" >&5
 echo "$as_me: creating $CONFIG_STATUS" >&6;}
 cat >$CONFIG_STATUS <<_ACEOF
 #! $SHELL
@@ -1476,7 +1514,7 @@ cat >>$CONFIG_STATUS <<\EOF
     echo "$ac_cs_version"; exit 0 ;;
   --he | --h)
     # Conflict between --help and --header
-    { { echo "$as_me:1479: error: ambiguous option: $1
+    { { echo "$as_me:1517: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -1495,7 +1533,7 @@ Try \`$0 --help' for more information." >&2;}
     ac_need_defaults=false;;
 
   # This is an error.
-  -*) { { echo "$as_me:1498: error: unrecognized option: $1
+  -*) { { echo "$as_me:1536: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -1533,7 +1571,8 @@ do
   "ENV" ) CONFIG_FILES="$CONFIG_FILES ENV" ;;
   "rsrc/OOC/Makefile.config" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/Makefile.config" ;;
   "rsrc/OOC/TestFramework/config.xml" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/TestFramework/config.xml" ;;
-  *) { { echo "$as_me:1536: error: invalid argument: $ac_config_target" >&5
+  "rsrc/OOC/xml/config.sh" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/xml/config.sh" ;;
+  *) { { echo "$as_me:1575: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -1621,6 +1660,7 @@ s,@OOC@,$OOC,;t t
 s,@OOEF@,$OOEF,;t t
 s,@OOCN@,$OOCN,;t t
 s,@DIFF@,$DIFF,;t t
+s,@XSLTPROC@,$XSLTPROC,;t t
 s,@PERL@,$PERL,;t t
 CEOF
 
@@ -1736,7 +1776,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:1739: creating $ac_file" >&5
+    { echo "$as_me:1779: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -1754,7 +1794,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:1757: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:1797: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -1767,7 +1807,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:1770: error: cannot find input file: $f" >&5
+           { { echo "$as_me:1810: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;

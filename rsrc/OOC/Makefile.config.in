@@ -2,4 +2,4 @@ export OOC=@OOC@
 export OOCN=@OOCN@
 export OOEF=@OOEF@
 export DIFF=@DIFF@
-
+export XSLTPROC=@XSLTPROC@
