@@ -252,8 +252,11 @@
       Quicksort on <code>INTEGER</code> array.
     </test>
     <test id="loop11" type="run" file="HOTLoop11.Mod" output="HOTLoop11.Ref">
-      A <code>CASE</code> within a <code>LOOP</code>.  This situation 
-      must be handled carefully by the SSA back-end ;-)
+      A <code>IF</code> within a <code>LOOP</code>, where part of the 
+      loop body is located after the last exit point.  This triggered
+      a bug in the SSA back-end, where values which needed to be live
+      across the whole loop body were clobbered in the last part of
+      the body.
     </test>
  
     
