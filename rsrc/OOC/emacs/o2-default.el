@@ -66,5 +66,6 @@
  'oberon-2-mode-hook 
  (lambda ()
    (local-set-key [f8] 'next-error)
+   (local-set-key [S-f8] 'previous-error)
    (local-set-key [f9] 'o2-find-def-under-cursor)
    (local-set-key [f12] (lambda () (interactive) (o2-make o2-make-command)))))
