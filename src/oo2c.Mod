@@ -177,7 +177,6 @@ RAISES IO.Error;
       uri: URI.URI;
       cmd: STRING;
       m: Rep.Module;
-      path: Rep.URIBuffer;
       i: LONGINT;
       installObjects: BOOLEAN;
     BEGIN
@@ -193,14 +192,11 @@ RAISES IO.Error;
 
         IF (m.origin = module.origin) THEN
           IF installObjects & ~m.ifData.NoObjectFile() THEN
-            m.origin.GetLocalPath(m, Rep.modObjectFile, path);
-            pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
+            pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modObjectFile), NIL));
           END;
           
-          m.origin.GetLocalPath(m, Rep.modSymbolFile, path);
-          pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
-          m.origin.GetLocalPath(m, Rep.modHeaderFileC, path);
-          pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
+          pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modSymbolFile), NIL));
+          pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modHeaderFileC), NIL));
         END;
       END;
 
@@ -330,7 +326,6 @@ RAISES IO.Error;
       m: Rep.Module;
       ok: BOOLEAN;
       i: LONGINT;
-      path: Rep.URIBuffer;
     BEGIN
       ok := TRUE;
       IF Config.HaveXsltProc() THEN
@@ -339,10 +334,8 @@ RAISES IO.Error;
           m := makeRules.imports[i];
           IF install THEN
             IF (m.origin = module.origin) THEN
-              m.origin.GetLocalPath(m, Rep.modInterfaceDescr, path);
-              pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
-              m.origin.GetLocalPath(m, Rep.modInterfaceHTML, path);
-              pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
+              pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modInterfaceDescr), NIL));
+              pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modInterfaceHTML), NIL));
             END;
           ELSE
             ok := makeRules.Update(m, Rep.modInterfaceHTML);

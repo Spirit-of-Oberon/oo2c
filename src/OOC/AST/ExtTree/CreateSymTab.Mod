@@ -221,7 +221,6 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     i, j: LONGINT;
     n: AST.Node;
     depList: Object.StringArrayPtr;
-    chars: Object.CharsLatin1;
   BEGIN
     moduleName := GetName (module. name. nameList. n[0]);
     Sym.InitName (moduleName, module. moduleName, moduleName. pos, 
@@ -273,9 +272,8 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
         IF (n # NIL) THEN  (* skip empty section *)
           WITH n: ExtTree.LinkFileFlag DO
             str := n. fileName. GetString (TRUE);
-            chars := str(Object.String8).CharsLatin1();
             TRY
-              uri := ParserURI.NewURI (chars^, v. baseURI);
+              uri := ParserURI.NewURI(str(Object.String8), v.baseURI);
             CATCH Exception.ParseError:
               ASSERT(FALSE);
             END;

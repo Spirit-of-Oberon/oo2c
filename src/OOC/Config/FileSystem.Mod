@@ -108,7 +108,7 @@ PROCEDURE (re: RepositoryEntry) ProcessElement* (
         Strings.Append ("/", str8)
       END;
       TRY
-        uri := URIParser.NewURI(str8, FileSystemRepository.baseURI);
+        uri := URIParser.NewURILatin1(str8, FileSystemRepository.baseURI);
         RETURN FileSystemRepository.New (baseRep, uri(URI.HierarchicalURI));
       CATCH Exception.ParseError:
         Err (invalidURI, node);

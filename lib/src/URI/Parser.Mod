@@ -29,7 +29,8 @@ VAR
   defaultOpaque: URI.OpaqueURI;
 
 
-PROCEDURE NewURI* (str: ARRAY OF CHAR; baseURI: URI.HierarchicalURI): URI.URI
+PROCEDURE NewURILatin1*(str: ARRAY OF CHAR;
+                        baseURI: URI.HierarchicalURI): URI.URI
 RAISES Exception.ParseError;
 (**Parses the string in @oparam{str} and creates a new URI object.  If the
    string is a relative URI, the URI is made absolute in relation to
@@ -205,10 +206,21 @@ RAISES Exception.ParseError;
       RAISE(NEW(Exception.ParseError, "Junk after URI", i));
     END;
     RETURN uri;
+  END NewURILatin1;
+
+PROCEDURE NewURI*(str: Object.String8;
+                  baseURI: URI.HierarchicalURI): URI.URI
+RAISES Exception.ParseError;
+  VAR
+    chars: Object.CharsLatin1;
+  BEGIN
+    chars := str.CharsLatin1();
+    RETURN NewURILatin1(chars^, baseURI);
   END NewURI;
 
-PROCEDURE NewReference* (str: ARRAY OF CHAR; baseURI: URI.HierarchicalURI;
-                         fragmentPrototype: URI.Fragment): URI.Reference
+PROCEDURE NewReferenceLatin1*(str: ARRAY OF CHAR;
+                              baseURI: URI.HierarchicalURI;
+                              fragmentPrototype: URI.Fragment): URI.Reference
 RAISES Exception.ParseError;
 (**Like @oproc{NewURI}, but parses a URI reference in @oparam{str}.  The
    instance @oparam{fragmentPrototype} is used to parse the fragment identifier
@@ -230,7 +242,7 @@ RAISES Exception.ParseError;
     
     ch := str[i];
     str[i] := 0X;
-    uri := NewURI (str, baseURI);
+    uri := NewURILatin1(str, baseURI);
     str[i] := ch;
     
     IF (ch = 0X) THEN                  (* no fragment identifier *)
@@ -241,8 +253,18 @@ RAISES Exception.ParseError;
       fragment.ParseFragment(substr.CharsLatin1(), i+1);
       RETURN URI.NewReference (uri, fragment);
     END
-  END NewReference;
+  END NewReferenceLatin1;
 
+PROCEDURE NewReference*(str: Object.String8;
+                        baseURI: URI.HierarchicalURI;
+                        fragmentPrototype: URI.Fragment): URI.Reference
+RAISES Exception.ParseError;
+  VAR
+    chars: Object.CharsLatin1;
+  BEGIN
+    chars := str.CharsLatin1();
+    RETURN NewReferenceLatin1(chars^, baseURI, fragmentPrototype);
+  END NewReference;
 
 BEGIN
   defaultHierarchical := Hierarchical.New (NIL, NIL, NIL);

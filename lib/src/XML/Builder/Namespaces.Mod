@@ -193,9 +193,11 @@ PROCEDURE (b: Builder) Attribute* (namespaceDecl: DTD.NamespaceDeclaration;
       res := NIL;
       TRY
         IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
-          uriRef := URIParser.NewReference(str8^, baseURI(URI.HierarchicalURI), fragm)
+          uriRef := URIParser.NewReferenceLatin1
+              (str8^, baseURI(URI.HierarchicalURI), fragm)
         ELSE
-          uriRef := URIParser.NewReference(str8^, NIL, fragm)
+          uriRef := URIParser.NewReferenceLatin1
+              (str8^, NIL, fragm)
         END;
       CATCH Exception.ParseError:
         res := Error.New(namespacesContext, malformedURIRef);

@@ -66,7 +66,7 @@ PROCEDURE Write* (str: ARRAY OF CHAR);
     e: Exception.Exception;
   BEGIN
     TRY
-      uri := Parser.NewURI (str, NIL);
+      uri := Parser.NewURILatin1 (str, NIL);
       
       w := TextRider.ConnectWriter (StdChannels.stdout);
       w. WriteString ("<test-parse-uri>");

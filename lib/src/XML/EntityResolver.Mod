@@ -126,9 +126,9 @@ PROCEDURE (r: Resolver) GetURI* (public, system: DTD.String; baseURI: URI.URI;
     str8 := NormalizeURI (system);
     TRY
       IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
-        uri := Parser.NewURI(str8^, baseURI(URI.HierarchicalURI));
+        uri := Parser.NewURILatin1(str8^, baseURI(URI.HierarchicalURI));
       ELSE
-        uri := Parser.NewURI(str8^, NIL);
+        uri := Parser.NewURILatin1(str8^, NIL);
       END;
       res := NIL;
     CATCH Exception.ParseError:

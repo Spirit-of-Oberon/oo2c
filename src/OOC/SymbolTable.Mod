@@ -1532,7 +1532,7 @@ PROCEDURE (l: LinkFile) Load* (r: Storable.Reader) RAISES IO.Error;
       (* use emptyBaseURI so that the URI parser doesn't report an error for
          the relative URI: *)
       TRY
-        u := ParserURI.NewURI(b, emptyBaseURI);
+        u := ParserURI.NewURILatin1(b, emptyBaseURI);
       CATCH Exception.ParseError:
         ASSERT (FALSE);
       END;

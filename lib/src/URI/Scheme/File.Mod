@@ -129,7 +129,6 @@ PROCEDURE GetCwd*(): URI;
   VAR
     uri: URI0.URI;
     uriString: StringBuffer.StringBuffer;
-    chars: Object.CharsLatin1;
     cwd, str: STRING;
   BEGIN
     TRY
@@ -141,8 +140,7 @@ PROCEDURE GetCwd*(): URI;
       END;
       str := uriString.ToString();
       TRY
-        chars := str(Object.String8).CharsLatin1();
-        uri := Parser.NewURI(chars^, NIL);
+        uri := Parser.NewURI(str(Object.String8), NIL);
         RETURN uri(URI);
       CATCH Exception.ParseError:
         ASSERT(FALSE);
@@ -160,7 +158,6 @@ PROCEDURE ToURI* (filePath: ARRAY OF CHAR): URI;
     uriString: StringBuffer.StringBuffer;
     normPath: STRING;
     str: STRING;
-    chars: Object.CharsLatin1;
   BEGIN
     TRY
       normPath := HostPath.Normalize(Object.NewLatin1(filePath));
@@ -169,14 +166,12 @@ PROCEDURE ToURI* (filePath: ARRAY OF CHAR): URI;
         uriString := StringBuffer.New("file://");
         String.AppendEscaped (normPath, CharClass.unreservedPChar+"/", uriString);
         str := uriString.ToString();
-        chars := str(Object.String8).CharsLatin1();
-        uri := Parser.NewURI (chars^, NIL)
+        uri := Parser.NewURI (str(Object.String8), NIL)
       ELSE
         uriString := StringBuffer.New("");
         String.AppendEscaped (normPath, CharClass.unreservedChar+"/", uriString);
         str := uriString.ToString();
-        chars := str(Object.String8).CharsLatin1();
-        uri := Parser.NewURI (chars^, GetCwd())
+        uri := Parser.NewURI (str(Object.String8), GetCwd())
       END;
       RETURN uri(URI);
     CATCH IO.Error:

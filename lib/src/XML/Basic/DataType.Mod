@@ -49,9 +49,9 @@ PROCEDURE GetURIAttr* (value: Element.AttValue; baseURI: URI.URI;
     str8 := EntityResolver.NormalizeURI (v);
     TRY
       IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
-        uri := Parser.NewURI (str8^, baseURI(URI.HierarchicalURI))
+        uri := Parser.NewURILatin1(str8^, baseURI(URI.HierarchicalURI))
       ELSE
-        uri := Parser.NewURI (str8^, NIL)
+        uri := Parser.NewURILatin1(str8^, NIL)
       END;
       RETURN TRUE;
     CATCH Exception.ParseError:

@@ -382,8 +382,7 @@ PROCEDURE (m: Module) GetImportedModule*(name: ARRAY OF CHAR): Module;
     END;
   END GetImportedModule;
 
-PROCEDURE (rep: Repository) [ABSTRACT] GetLocalPath*(m: Module; fileId: FileId;
-                                                     VAR path: ARRAY OF CHAR);
+PROCEDURE (rep: Repository) [ABSTRACT] GetLocalPath*(m: Module; fileId: FileId): Object.String8;
 (**Return the path to the indicated module file, relative to the
    repositories base URI.  *)
   END GetLocalPath;
@@ -439,71 +438,71 @@ PROCEDURE (m: Module) [ABSTRACT] GetOutputChannel* (fileId: FileId;
 RAISES IO.Error;
   END GetOutputChannel;
 
-PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF CHAR);
+PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId): Object.String8;
   BEGIN
     CASE id OF
     | modModuleSource:
-      COPY ("src", subdir)
+      RETURN "src";
     | modSymbolFile:
-      COPY ("sym", subdir)
+      RETURN "sym";
     | modSymbolTableXML, modInterfaceXML, modInterfaceDescr, modOpTreeXML:
-      COPY ("oocdoc/xml", subdir)
+      RETURN "oocdoc/xml";
     | modInterfaceHTML:
-      COPY ("oocdoc/html", subdir)
+      RETURN "oocdoc/html";
     | modObjectFile, modCodeFileC, modDeclFileC, modHeaderFileC,
       modAssemblerFile, modObjectFileDynamicLoad,
       modMainFileC, modMainFileAssembler, modMainObjectFile:
-      COPY ("obj", subdir)
+      RETURN "obj";
     | modObjectFileLib:
-      COPY ("obj", subdir)
+      RETURN "obj";
     | modExecutable:
-      COPY ("bin", subdir)
+      RETURN "bin";
     | modLibrary:
-      COPY ("obj", subdir)
+      RETURN "obj";
     | resourceFile:
-      COPY ("rsrc", subdir)
+      RETURN "rsrc";
     END
   END GetDefaultSubdir;
 
-PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF CHAR);
+PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId): Object.String8;
   BEGIN
     CASE id OF
     | modModuleSource:
-      COPY (".Mod", suffix)
+      RETURN ".Mod";
     | modSymbolFile:
-      COPY (".Sym", suffix)
+      RETURN ".Sym";
     | modSymbolTableXML:
-      COPY ("_symtab.xml", suffix)
+      RETURN "_symtab.xml";
     | modInterfaceXML:
-      COPY ("_sym.xml", suffix)
+      RETURN "_sym.xml";
     | modInterfaceDescr:
-      COPY (".xml", suffix)
+      RETURN ".xml";
     | modInterfaceHTML:
-      COPY (".html", suffix)
+      RETURN ".html";
     | modOpTreeXML:
-      COPY ("_op.xml", suffix)
+      RETURN "_op.xml";
     | modObjectFile, modObjectFileDynamicLoad:
-      COPY (".o", suffix)
+      RETURN ".o";
     | modObjectFileLib:
-      COPY (".lo", suffix)
+      RETURN ".lo";
     | modCodeFileC:
-      COPY (".c", suffix)
+      RETURN ".c";
     | modDeclFileC:
-      COPY (".d", suffix)
+      RETURN ".d";
     | modHeaderFileC:
-      COPY (headerSuffix, suffix);
+      RETURN headerSuffix;
     | modAssemblerFile:
-      COPY (".s", suffix)
+      RETURN ".s";
     | modMainFileC:
-      COPY ("_.c", suffix)
+      RETURN "_.c";
     | modMainFileAssembler:
-      COPY ("_.s", suffix)
+      RETURN "_.s";
     | modMainObjectFile:
-      COPY ("_.o", suffix)
+      RETURN "_.o";
     | modExecutable:
-      COPY ("", suffix)
+      RETURN "";
     | modLibrary:
-      COPY (".la", suffix)
+      RETURN ".la";
     | resourceFile:
       ASSERT (FALSE)
     END
@@ -539,11 +538,11 @@ PROCEDURE ValidModuleName* (moduleName: ARRAY OF CHAR): BOOLEAN;
 PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BOOLEAN): Module;
   VAR
     relURI: URI.URI;
-    str, subdir: URIBuffer;
+    str: URIBuffer;
     s, ext: STRING;
-    s8: Object.String8;
+    subdir, s8: Object.String8;
     chars: Object.CharsLatin1;
-    i: INTEGER;
+    i: LONGINT;
     m: Module;
   BEGIN
     m := NIL;
@@ -561,23 +560,21 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
       relURI := uri. MakeRelative (rep. baseURI);
       IF (relURI. schemeId = NIL) THEN  (* uri is relative to baseURI *)
         s := relURI.ToString();
-        s8 := s.ToString8("?");
-        chars := s8.CharsLatin1();
-        COPY(chars^, str);
-        rep. GetDefaultSubdir (modModuleSource, subdir);
+        subdir := rep.GetDefaultSubdir (modModuleSource);
 
         (* the string representation of the relative URI must begin with the
            default subdirectory for sources, followed by a slash; note: this
            only works if `subdir' is not empty *)
-        ASSERT (subdir # "");
-        i := 0;
-        WHILE (str[i] # 0X) & (subdir[i] # 0X) & (str[i] = subdir[i]) DO
-          INC (i)
-        END;
-        IF (str[i] = "/") & (subdir[i] = 0X) THEN
+        ASSERT (subdir.length # 0);
+        i := subdir.length;
+        IF s.StartsWith(subdir) & (s.CharAt(i) = "/") THEN
           (* approximate module name by stripping subdir prefix and replacing
              "/" with ":"; everything after the first "." is discarded *)
-          Strings.Delete (str, 0, i+1);
+          s8 := s.ToString8("?");
+          chars := s8.CharsLatin1();
+          COPY(chars^, str);
+          
+          Strings.Delete (str, 0, SHORT(i)+1);
           i := 0;
           WHILE (str[i] # 0X) & (str[i] # ".") DO
             IF (str[i] = "/") THEN
