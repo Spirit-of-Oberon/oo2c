@@ -411,7 +411,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         ELSE
           cmpClass := Opcode.geq;
         END;
-        instr := pb. AddInstr (Opcode.leq, Opcode.scBoolean);
+        instr := pb. AddInstr (cmpClass, Opcode.scBoolean);
         instr. AddOpnd (Expression (forStatm. var), Opnd.arg);
         instr. AddOpnd (bound, Opnd.arg);
         RETURN instr
