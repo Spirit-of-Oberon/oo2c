@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
+<!-- include data provided by configure: -->
+<!ENTITY % config SYSTEM "config.xml">
+%config;
+
+<!-- define entity that describes the test environment: -->
+<!ENTITY test-env SYSTEM "test-env.xml">
+
+
+
 <!ENTITY % URI "CDATA" >
 
 <!ELEMENT test-setup

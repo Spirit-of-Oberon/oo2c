@@ -2,25 +2,16 @@
 <!DOCTYPE test-setup SYSTEM "../../rsrc/OOC/TestFramework/test-setup.dtd">
 
 <test-setup lang="O2">
-  <machine model="IBM ThinkPad 600E"
-	   cpu="Mobile Pentium II, stepping 10"
-	   ram="288 MB" />
+  &test-env;
   
-  <operating-system name="Linux"
-		    version="2.4.10 i686 unknown">
-    <os-component name="libc">/lib/libc-2.2.4.so</os-component>
-    <os-component name="libgc">unknown</os-component>
-    <os-component name="cc">gcc 2.95.2</os-component>
-  </operating-system>
-    
   <processor name="oo2c"
-	     version="1.5.6"
-	     command="/usr/bin/Oo2c"
+	     version="&OOC_VERSION;"
+	     command="&OOC;"
 	     config-file="./sample-oo2crc"
 	     flags="--config ../sample-oo2crc -Ow"
 	     working-dir="./wd" 
-	     filter-command="/usr/bin/Ooef" 
-	     diff-command="diff -u" />
+	     filter-command="&OOEF;" 
+	     diff-command="&DIFF;"/>
 
   <test-suite uri="testsuite.xml" />
 </test-setup>
