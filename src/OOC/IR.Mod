@@ -2248,7 +2248,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       (* predefined procedures *)
       | Predef.assert:
         RETURN b. NewAssert (design. sym, arguments,
-                   GetPragmaValue(b, StdPragmas.assertions, design. sym. pos));
+                  ~GetPragmaValue(b, StdPragmas.assertions, design. sym. pos));
 
       (* predefined functions *)
       | Predef.len:
