@@ -790,6 +790,15 @@ TYPE
   END;
 
 TYPE
+  MoveBlock* = POINTER TO MoveBlockDesc;
+  MoveBlockDesc = RECORD
+    (StatementDesc)
+    source-: Expression;
+    dest-: Expression;
+    size-: Expression;
+  END;
+  
+TYPE
   RepeatStatm* = POINTER TO RepeatStatmDesc;
   RepeatStatmDesc = RECORD
     (**Holds an @code{REPEAT-UNTIL} statement.  *)
@@ -2297,12 +2306,17 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
       (* Case 4: NIL < procedure value *)
       RETURN TRUE;
       
+    ELSIF (expr. type IS Sym.Pointer) &
+          TR.IsPredefType (type, Predef.ptr) THEN
+      (* Case 5: pointer value < SYSTEM.PTR *)
+      RETURN TRUE;
+      
     ELSIF (expr IS Const) &
           TR.IsStringConst (type) &
           (TR.BaseCharType (expr. type) # NIL) &
           TR.IncludesType(TR.BaseCharType (type),
                            TR.BaseCharType (expr. type)) THEN
-      (* Case 5: char const and string const < string const *)
+      (* Case 6: char const and string const < string const *)
       expr := b. Fold (b. NewTypeConv (type, expr));
       RETURN TRUE;
 
@@ -2310,7 +2324,7 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
           (TR.BaseCharType (expr. type) # NIL) &
           (type IS Sym.Array) &
           TR.IsCharType (type(Sym.Array). elementType) THEN
-      (* Case 6: string const < ARRAY [n] OF char *)
+      (* Case 7: string const < ARRAY [n] OF char *)
       RETURN b. Widen(expr, TR.MatchingStringConst(type(Sym.Array). elementType));
 
     ELSE
@@ -3164,6 +3178,36 @@ PROCEDURE (loopStatm: LoopStatm) Accept* (v: Visitor);
     v. VisitLoopStatm (loopStatm)
   END Accept;
 
+(* Statement Class: MoveBlock
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitMoveBlock (move: MoveBlock; sym: Symbol;
+                         source, dest, size: Expression);
+  BEGIN
+    InitStatement (move, sym);
+    move. source := source;
+    move. dest := dest;
+    move. size := size;
+  END InitMoveBlock;
+
+PROCEDURE (b: Builder) NewMoveBlock* (sym: Symbol; source, dest: Expression;
+                                      size: Expression): MoveBlock;
+  VAR
+    move: MoveBlock;
+  BEGIN
+    NEW (move);
+    InitMoveBlock (move, sym, source, dest, size);
+    RETURN move
+  END NewMoveBlock;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitMoveBlock* (move: MoveBlock);
+  END VisitMoveBlock;
+
+PROCEDURE (move: MoveBlock) Accept* (v: Visitor);
+  BEGIN
+    v. VisitMoveBlock (move)
+  END Accept;
+
 (* Statement Class: RepeatStatm
    ------------------------------------------------------------------------ *)
 
@@ -3334,6 +3378,8 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           CheckStatmSeq (statm. default);
         | statm: LoopStatm DO
           b. CheckExit (procDecl, statm. body, statm);
+        | statm: MoveBlock DO
+          (* nothing *)
         | statm: RepeatStatm DO
           CheckStatmSeq (statm. body);
         | statm: Return DO
@@ -3851,6 +3897,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
    guardType := ref. decl(Sym.TypeDecl). type;
    IF TR.IsValidReceiverType(guardType) THEN
      IF TR.IsExtensionOf(guardType, design.type) THEN
+       design. type := guardType; (* ... quick fix to get the type right *)
        RETURN design;
        (* RETURN b.NewTypeTest(design.sym, design, ref, TRUE); *)
      ELSE
@@ -4207,6 +4254,11 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         | Predef.longchar: targetType := Predef.longint;
         END;
         RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        
+      (* SYSTEM procedures: *)
+      | Predef.move:
+        RETURN b. NewMoveBlock (design. sym,
+                                arguments[0], arguments[1], arguments[2]);
         
       (* SYSTEM functions: *)
       | Predef.adr:
