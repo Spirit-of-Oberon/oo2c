@@ -3,12 +3,14 @@
 #include <IO/Address.d>
 
 #include <sys/types.h>
-#include <stdint.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
+#ifdef HAVE_STDINT_H
+#  include <stdint.h>
+#endif
 
 static IO_Address__Inet4 new_inet4(uint32_t addr) {
   IO_Address__Inet4 in =
