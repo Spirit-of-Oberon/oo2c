@@ -21,7 +21,7 @@ MODULE oo2c;
 *)
 
 IMPORT
-  StdChannels, Out, Err, Object, URI, URI:Scheme:File, CfgData := Config,
+  IO:StdChannels, Out, Err, Object, URI, URI:Scheme:File, CfgData := Config,
   ADT:StringBuffer, IO, OS:ProcessManagement, OS:Path, OS:Files,
   Config:Section:Options,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,

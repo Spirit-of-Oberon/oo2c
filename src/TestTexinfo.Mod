@@ -1,7 +1,7 @@
 MODULE TestTexinfo;
 
 IMPORT
-  StdChannels, ProgramArgs, TextRider, Out, Files, Msg, Std:=IO:StdChannels,
+  ProgramArgs, TextRider, Out, Files, Msg, IO:StdChannels,
   Object, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:SymList,
   OOC:Doc, OOC:Doc:Input:Texinfo, OOC:Doc:Output:XML, OOC:Doc:Output:Text;
 
@@ -73,7 +73,7 @@ BEGIN
           ELSE
             CASE mode OF
             | modeXML:
-              XML.Write (Std.stdout, document, NIL, NIL, NIL, NIL);
+              XML.Write (StdChannels.stdout, document, NIL, NIL, NIL, NIL);
             | modeText:
               s := Text.Convert (document, 0, 71, 3);
               Out.String (s^)

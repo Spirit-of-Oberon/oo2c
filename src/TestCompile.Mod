@@ -1,7 +1,7 @@
 MODULE TestCompile;
 
 IMPORT
-  StdChannels, Out, Err, Object, StringSearch, StringSearch:RegexpDFA,
+  IO:StdChannels, Out, Err, Object, StringSearch, StringSearch:RegexpDFA,
   CfgData := Config, Config:Section:Options, OOC:Config,
   OOC:Config:Pragmas, OOC:Config:CCompiler, OOC:Config:Autoconf,
   OOC:SymbolTable:Builder, OOC:Error, Rep := OOC:Repository, OOC:Make;

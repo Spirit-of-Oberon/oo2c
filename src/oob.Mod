@@ -21,7 +21,7 @@ MODULE oob;
 *)
 
 IMPORT
-  Ascii, Err, Out, StdChannels, Strings, Object, IO, OOC:Config:CCompiler,
+  Ascii, Err, Out, Strings, Object, IO, IO:StdChannels, OOC:Config:CCompiler,
   CfgData := Config, Config:Section:Options,
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,

@@ -21,8 +21,8 @@ MODULE ooef;
 *)
 
 IMPORT
-  In, Out, StdChannels, Str := Strings, IntConv, Channel, Files, Ascii,
-  CharClass, IntStr, Object, 
+  In, Out, Str := Strings, IntConv, Channel, Files, Ascii,
+  CharClass, IntStr, Object, IO:StdChannels, 
   CfgData := Config, Config:Section:Options,
   OOC:Config, OOC:Config:CCompiler, E := OOC:Error, OOC:Repository;
 

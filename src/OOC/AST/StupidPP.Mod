@@ -22,7 +22,7 @@ MODULE OOC:AST:StupidPP;
 
 
 IMPORT
-  Log, TextRider, OOC:Scanner:Symbol, OOC:AST;
+  Log, Exception, IO, IO:TextRider, OOC:Scanner:Symbol, OOC:AST;
   
 PROCEDURE Write* (w: TextRider.Writer; m: AST.Module);
 (**Writes the abstract syntax tree @oparam{m} to the output writer
@@ -43,8 +43,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: AST.Module);
 
   PROCEDURE Node (n: AST.Node);
     VAR
-      i, j: LONGINT;
-
+      i, j, d: LONGINT;
     BEGIN
       IF (n # NIL) THEN
         WITH n: AST.NodeList DO
@@ -53,7 +52,11 @@ PROCEDURE Write* (w: TextRider.Writer; m: AST.Module);
           END
          
         | n: AST.Terminal DO
-          w. byteWriter. WriteBytes (n. sym. str^, 0, n. sym. len)
+          TRY
+            d := w. channel. Write (n. sym. str^, 0, n. sym. len);
+          CATCH IO.Error(e):
+            Exception.Abort(e);
+          END;
         
         | n: AST.IdentDef DO
           Node (n. ident);

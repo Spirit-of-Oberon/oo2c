@@ -1,7 +1,7 @@
 MODULE TestScanner;
 
 IMPORT
-  StdChannels, ProgramArgs, TextRider, Out, Object, IO, IO:FileChannel, Config,
+  ProgramArgs, TextRider, Out, Object, IO, IO:FileChannel, IO:StdChannels, Config,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:SymList,
   OOC:Scanner, OOC:Scanner:XML, OOC:Scanner:Identity, 
   OOC:Scanner:Statistics;
