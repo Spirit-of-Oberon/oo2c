@@ -115,7 +115,11 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
         ELSE
           value := res. value. ToString();
         END;
-        w. AttrStr ("const-value", value(Object.String8));
+        IF (value IS Object.String32) THEN
+          w. AttrStr ("const-value", "[Object.String32]");
+        ELSE
+          w. AttrStr ("const-value", value(Object.String8));
+        END;
       | res: SSA.DeclRef DO
         w. AttrStringLatin1 ("declref", res. decl. name. str^);
       | res: SSA.Address DO
