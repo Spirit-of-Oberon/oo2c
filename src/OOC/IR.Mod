@@ -23,7 +23,8 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 IMPORT
 Log,
   Language, Language:Boolean, Language:Char8, Language:String8,
-  Language:Integer, ADT:Object, ADT:ArrayList, ADT:String,
+  Language:Integer, Language:Real,
+  ADT:Object, ADT:ArrayList, ADT:String,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
@@ -1073,6 +1074,19 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
       RETURN NewConst (sym, Predef.GetType (Predef.integer), v)
     END
   END NewIntConst10;
+
+PROCEDURE (b: Builder) NewRealConst* (sym: Symbol): Expression;
+  VAR
+    v: Language.Value;
+  BEGIN
+    v := Real.type. ValueOf (sym. str^);
+    IF (v = NIL) THEN
+      b. ErrSym (numberOutOfRange, sym);
+      RETURN b. errorExpr
+    ELSE
+      RETURN NewConst (sym, Predef.GetType (Predef.real), v)
+    END
+  END NewRealConst;
 
 PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
   VAR

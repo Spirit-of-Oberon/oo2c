@@ -25,7 +25,7 @@ IMPORT
   ADT:Object, ADT:String, ADT:ArrayList,
   URI, FileURI := URI:Scheme:File, IO:Memory, 
   Language, Language:Boolean, Language:String8,
-  Language:Integer, Language:Set,
+  Language:Integer, Language:Set, Language:Real,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
   
 
@@ -468,6 +468,9 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
           END;
           w. WriteChar (delim);
         END;
+      | value: Real.Value DO
+        str := value.ToString();
+        w. WriteString(str.array^);
       | value: Integer.Value DO
         IF (value. ToLInt() = MIN (LONGINT)) THEN
           (* this assumes that MIN(LONGINT) is also the smallest value of
