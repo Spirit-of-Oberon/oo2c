@@ -1,7 +1,7 @@
 MODULE OOC:Repository [OOC_EXTENSIONS];
 
 IMPORT
-  Msg, Channel, TextRider, Strings, Time, ADT:Object, URI,
+  Msg, Channel, TextRider, Strings, Time, ADT:Object, URI, OS:Path,
   OOC:Scanner:InputBuffer, OOC:SymbolTable:Item, OOC:SymbolTable:Builder;
 
 
@@ -35,6 +35,15 @@ TYPE
     origin-: Repository;
     (**Identifies the repository from which this module was taken.  *)
     name-: ModuleNamePtr;
+    
+    srcFileOverride-: URI.HierarchicalURI;
+    (**If not @code{NIL}, then the source code is read from this file, instead
+       from the normal file path constructed from the repository base and the
+       module name.  This kind of file access is deprecated, because it can
+       produce an inconsistent state in a repository.  It is included primarily
+       to support test setups where the source code is not organized in
+       repositories.  *)
+       
     importListScanned-: BOOLEAN;
     (**If @code{TRUE}, then the module's import list has been scanned and can
        be accessed through the field @ofield{Module.importList}.  Imported
@@ -143,7 +152,8 @@ PROCEDURE Init* (rep: Repository; baseRep: Repository; baseURI: URI.Hierarchical
     rep. baseURI := baseURI;
   END Init;
 
-PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName);
+PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName;
+                       srcFileOverride: URI.HierarchicalURI);
   BEGIN
     Object.Init (m);
     m. origin := origin;
@@ -151,14 +161,20 @@ PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName);
     m. importListScanned := FALSE;
     m. importList := NIL;
     m. symbolTable := NIL;
+    m. srcFileOverride := srcFileOverride;
   END InitModule;
 
 
 
-PROCEDURE (rep: Repository) [ABSTRACT] GetModule* (moduleName: ARRAY OF CHAR): Module;
+PROCEDURE (rep: Repository) [ABSTRACT] GetModule* (moduleName: ARRAY OF CHAR; 
+                                 srcFileOverride: URI.HierarchicalURI): Module;
 (**Tries to locate a module with the name @oparam{moduleName} in the repository
    @oparam{rep}.  On success, the function returns the module object, and
    result is @code{NIL} if the repository does not include this module.
+
+   If @oparam{srcFileOverride} is not @code{NIL}, then no check is performed if
+   the module's sources actually exists.  Instead, the value of
+   @oparam{srcFileOverride} is taken as the location of the source file.
 
    This function should only be called from
    @oproc{*OOC:Config:Repositories.Section.GetModule}.  It does not do any
@@ -212,6 +228,24 @@ PROCEDURE (m: Module) [ABSTRACT] GetInputBuffer* (VAR msg: Msg.Msg): InputBuffer
 
 PROCEDURE (m: Module) [ABSTRACT] GetURI* (fileId: FileId; VAR res: Msg.Msg): URI.HierarchicalURI;
   END GetURI;
+
+PROCEDURE (m: Module) MatchesURI* (fileId: FileId; uri: URI.URI): BOOLEAN;
+(**Returns @code{TRUE} if the given @oparam{uri} matches the URI of the
+   module's file.  *)
+  VAR
+    a, b: URIBuffer;
+    muri: URI.HierarchicalURI;
+    res: Msg.Msg;
+  BEGIN
+    muri := m. GetURI (fileId, res);
+    IF (res = NIL) THEN
+      muri. GetString (a);
+      uri. GetString (b);
+      RETURN (a = b)
+    ELSE
+      RETURN FALSE
+    END
+  END MatchesURI;
 
 PROCEDURE (m: Module) [ABSTRACT] GetTimeStamp* (fileId: FileId; VAR ts: Time.TimeStamp);
   END GetTimeStamp;
@@ -283,6 +317,91 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
     END
   END GetDefaultSuffix;
 
+PROCEDURE ValidModuleName* (moduleName: ARRAY OF CHAR): BOOLEAN;
+(* Returns TRUE iff moduleName is matches `ident {":" ident}'.  *)
+  VAR
+    i: LONGINT;
+  BEGIN
+    i := 0;
+    WHILE (moduleName[i] # 0X) DO
+      IF (("A" <= CAP (moduleName[i])) & (CAP (moduleName[i]) <= "Z")) THEN
+        REPEAT
+          INC (i)
+        UNTIL ~(("A" <= CAP (moduleName[i])) & (CAP (moduleName[i]) <= "Z") OR
+                ("0" <= moduleName[i]) & (moduleName[i] <= "9"));
+        IF (moduleName[i] = ":") THEN
+          INC (i);
+          IF (moduleName[i] = 0X) THEN   (* ":" at end of name *)
+            RETURN FALSE
+          END
+        ELSIF (moduleName[i] # 0X) THEN  (* invalid character *)
+          RETURN FALSE
+        END
+      ELSE  (* identifier doesn't start with letter *)
+        RETURN FALSE
+      END
+    END;
+    RETURN TRUE
+  END ValidModuleName;
+
+PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BOOLEAN): Module;
+  VAR
+    relURI: URI.URI;
+    str, subdir, ext: URIBuffer;
+    i: INTEGER;
+    m: Module;
+  BEGIN
+    m := NIL;
+    
+    IF force THEN
+      (* force: take basename of uri minus extension as module name *)
+      uri. GetString (str);
+      Path.basename(str, str);
+      Path.splitext(str, str, ext);
+      IF ValidModuleName (str) THEN
+        m := rep. GetModule (str, uri)
+      END
+    ELSE
+
+      relURI := uri. MakeRelative (rep. baseURI);
+      IF (relURI. schemeId = NIL) THEN  (* uri is relative to baseURI *)
+        relURI. GetString (str);
+        rep. GetDefaultSubdir (modModuleSource, subdir);
+
+        (* the string representation of the relative URI must begin with the
+           default subdirectory for sources, followed by a slash; note: this
+           only works if `subdir' is not empty *)
+        ASSERT (subdir # "");
+        i := 0;
+        WHILE (str[i] # 0X) & (subdir[i] # 0X) & (str[i] = subdir[i]) DO
+          INC (i)
+        END;
+        IF (str[i] = "/") & (subdir[i] = 0X) THEN
+          (* approximate module name by stripping subdir prefix and replacing
+             "/" with ":"; everything after the first "." is discarded *)
+          Strings.Delete (str, 0, i+1);
+          i := 0;
+          WHILE (str[i] # 0X) & (str[i] # ".") DO
+            IF (str[i] = "/") THEN
+              str[i] := ":"
+            END;
+            INC (i)
+          END;
+          str[i] := 0X;
+
+          m := rep. GetModule (str, NIL);
+          IF (m # NIL) & ~m. MatchesURI (modModuleSource, uri) THEN
+            (* final check: the URI for the source of the module must match
+               exactly the URI given as argument *)
+            m :=  NIL
+          END
+        END
+      END
+    END;
+    RETURN m
+  END GetModuleByURI;
+
+
 PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Item.Module;
 (**Locates and reads the symbol table of module @oparam{m}.  In general, any
    type references in the returned symbol table are @emph{not} resolved.  Use
@@ -315,32 +434,5 @@ PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Item.Module;
     END
   END GetSymbolTable;
 
-
-PROCEDURE ValidModuleName* (moduleName: ARRAY OF CHAR): BOOLEAN;
-(* Returns TRUE iff moduleName is matches `ident {":" ident}'.  *)
-  VAR
-    i: LONGINT;
-  BEGIN
-    i := 0;
-    WHILE (moduleName[i] # 0X) DO
-      IF (("A" <= CAP (moduleName[i])) & (CAP (moduleName[i]) <= "Z")) THEN
-        REPEAT
-          INC (i)
-        UNTIL ~(("A" <= CAP (moduleName[i])) & (CAP (moduleName[i]) <= "Z") OR
-                ("0" <= moduleName[i]) & (moduleName[i] <= "9"));
-        IF (moduleName[i] = ":") THEN
-          INC (i);
-          IF (moduleName[i] = 0X) THEN   (* ":" at end of name *)
-            RETURN FALSE
-          END
-        ELSIF (moduleName[i] # 0X) THEN  (* invalid character *)
-          RETURN FALSE
-        END
-      ELSE  (* identifier doesn't start with letter *)
-        RETURN FALSE
-      END
-    END;
-    RETURN TRUE
-  END ValidModuleName;
 
 END OOC:Repository.

@@ -1,7 +1,8 @@
 MODULE OOC:Config:Repositories [OOC_EXTENSIONS];
 
 IMPORT
-  Msg, Channel, TextRider, LongStrings, URI, XML:DTD, XML:Locator,
+  Msg, Channel, TextRider, LongStrings, URI, URI:Scheme:File, 
+  XML:DTD, XML:Locator,
   Config:Parser, CS := Config:Section, OOC:Repository;
 
 
@@ -162,52 +163,110 @@ PROCEDURE (s: Section) DumpContent* (ch: Channel.Channel);
     w. WriteString (">"); w. WriteLn
   END DumpContent;
 
-PROCEDURE (s: Section) GetModule* (moduleName: ARRAY OF CHAR): Repository.Module;
-(**Tries to locate module @oparam{moduleName} in the configured repositories.
-   On success, result is a reference to the module; on failure, result is
-   @code{NIL}.
-   
-   Multiple calls to this function using the same module name are guaranteed
-   to return the same object.  That is, this function caches all retrieved
-   modules and produces module references from the cache for subsequent
-   queries.  *)
+PROCEDURE (s: Section) GetModule* (moduleRef: ARRAY OF CHAR): Repository.Module;
+(**Tries to locate the module corresponding to @oparam{moduleRef} in the
+   configured repositories.  On success, result is a reference to the module;
+   on failure, result is @code{NIL}.
+
+   Depending on the module reference, the module is located by different means.
+   The reference can be one of the following:
+
+   @table @asis
+   @item A Module Name
+   In this case, the top-most repository that contains the sources for this
+   module is used.  This is the preferred way to identify modules.
+
+   @item A File Name in a Repository
+   The referred to repository is used.  Note that this may cause problems, if a
+   repository with a higher priority also defines a module of the same name.
+
+   @item An Arbitrary File Name
+   The module is presumed to belong to the repository with the highest
+   priority.  The module's source code is taken from the file name, but all
+   output files are written into the repository.  This mechanism should only be
+   used in test setups where the input files are not organized into
+   repositories, for example with the Hostess test suite.
+   @end table
+
+   Multiple calls to this function using the same module reference are
+   guaranteed to return the same object.  That is, this function caches all
+   retrieved modules and produces module references from the cache for
+   subsequent queries.  *)
   VAR
     m: Repository.Module;
     topLevelRep: Repository.Repository;
-    new: ModuleList;
     i: LONGINT;
-  BEGIN
-    (* scan the cache for this module name; linear search isn't exactly fast
-       for huge module sets, so maybe we should improve this later... *)
-    i := 0;
-    WHILE (i # s. lenCache) & (s. cache[i]. name^ # moduleName) DO
-      INC (i)
-    END;
-    IF (i # s. lenCache) THEN            (* gotcha *)
-      RETURN s. cache[i]
-    END;
-    
-    (* module not found in cache: traverse repositories *)
-    topLevelRep := s. topLevelRep;
-    REPEAT
-      m := topLevelRep. GetModule (moduleName);
-      topLevelRep := topLevelRep. baseRep
-    UNTIL (m # NIL) OR (topLevelRep = NIL);
-    
-    (* if we found a module, then add it to the cache *)
-    IF (m # NIL) THEN
-      IF (s. lenCache = LEN (s. cache^)) THEN
-        NEW (new, LEN (s. cache^)*2);
-        FOR i := 0 TO LEN (s. cache^)-1 DO
-          new[i] := s. cache[i]
+    file: File.URI;
+  
+  PROCEDURE AddToCache (m: Repository.Module);
+    VAR
+      new: ModuleList;
+      i: LONGINT;
+    BEGIN
+      (* if we found a module, then add it to the cache *)
+      IF (m # NIL) THEN
+        IF (s. lenCache = LEN (s. cache^)) THEN
+          NEW (new, LEN (s. cache^)*2);
+          FOR i := 0 TO LEN (s. cache^)-1 DO
+            new[i] := s. cache[i]
+          END;
+          s. cache := new
         END;
-        s. cache := new
+        s. cache[s. lenCache] := m;
+        INC (s. lenCache)
       END;
-      s. cache[s. lenCache] := m;
-      INC (s. lenCache)
-    END;
-    
-    RETURN m
+    END AddToCache;
+  
+  BEGIN
+    IF Repository.ValidModuleName (moduleRef) THEN
+      (* scan the cache for this module name; linear search isn't exactly fast
+         for huge module sets, so maybe we should improve this later... *)
+      i := 0;
+      WHILE (i # s. lenCache) & (s. cache[i]. name^ # moduleRef) DO
+        INC (i)
+      END;
+      IF (i # s. lenCache) THEN            (* gotcha *)
+        RETURN s. cache[i]
+      END;
+
+      (* module not found in cache: traverse repositories *)
+      topLevelRep := s. topLevelRep;
+      REPEAT
+        m := topLevelRep. GetModule (moduleRef, NIL);
+        topLevelRep := topLevelRep. baseRep
+      UNTIL (m # NIL) OR (topLevelRep = NIL);
+
+      (* if we found a module, then add it to the cache *)
+      AddToCache (m);
+      RETURN m
+      
+    ELSE
+      (* scan the cache for this file name; linear search isn't exactly fast
+         for huge module sets, so maybe we should improve this later... *)
+      file := File.ToURI (moduleRef);
+      
+      i := 0;
+      WHILE (i # s. lenCache) & (s. cache[i]. MatchesURI (Repository.modModuleSource, file)) DO
+        INC (i)
+      END;
+      IF (i # s. lenCache) THEN            (* gotcha *)
+        RETURN s. cache[i]
+      END;
+
+      (* file name not found in cache: traverse repositories *)
+      topLevelRep := s. topLevelRep;
+      REPEAT
+        m := topLevelRep. GetModuleByURI (file, FALSE);
+        topLevelRep := topLevelRep. baseRep
+      UNTIL (m # NIL) OR (topLevelRep = NIL);
+      
+      IF (m = NIL) THEN
+        m := s. topLevelRep. GetModuleByURI (file, TRUE)
+      END;
+      
+      AddToCache (m);
+      RETURN m
+    END
   END GetModule;
 
 PROCEDURE (s: Section) GetResource* (package, path: ARRAY OF CHAR): URI.URI;

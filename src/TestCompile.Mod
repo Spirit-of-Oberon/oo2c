@@ -111,22 +111,15 @@ BEGIN
     
     FOR i := 0 TO config. arguments. ArgNumber()-1 DO
       arg := config. arguments. Get (i);
-      IF Rep.ValidModuleName (arg^) THEN
-        m := config. repositories. GetModule (arg^);
-        IF (m = NIL) THEN
-          Err.String ("Error: Cannot locate module ");
-          Err.String (arg^);
-          Err.Ln;
-          HALT (1)
-        ELSE
-          node := ModuleFile.GetEntity (context, m, mode);
-          context. target. AddAncestor (node)
-        END
-      ELSE
-        Err.String ("Error: Invalid module name ");
+      m := config. repositories. GetModule (arg^);
+      IF (m = NIL) THEN
+        Err.String ("Error: Cannot locate module ");
         Err.String (arg^);
         Err.Ln;
         HALT (1)
+      ELSE
+        node := ModuleFile.GetEntity (context, m, mode);
+        context. target. AddAncestor (node)
       END
     END;
     

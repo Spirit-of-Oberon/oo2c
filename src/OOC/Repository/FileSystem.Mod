@@ -35,17 +35,19 @@ PROCEDURE New* (baseRep: Rep.Repository; baseDir: URI.HierarchicalURI): Reposito
   END New;
 
 PROCEDURE InitModule (m: Module; origin: Repository;
-                      name: Rep.ModuleName);
+                      name: Rep.ModuleName;
+                      srcFileOverride: URI.HierarchicalURI);
   BEGIN
-    Rep.InitModule (m, origin, name)
+    Rep.InitModule (m, origin, name, srcFileOverride)
   END InitModule;
 
-PROCEDURE NewModule (origin: Repository; name: Rep.ModuleName): Module;
+PROCEDURE NewModule (origin: Repository; name: Rep.ModuleName;
+                     srcFileOverride: URI.HierarchicalURI): Module;
   VAR
     m: Module;
   BEGIN
     NEW (m);
-    InitModule (m, origin, name);
+    InitModule (m, origin, name, srcFileOverride);
     RETURN m
   END NewModule;
 
@@ -63,7 +65,8 @@ PROCEDURE ModuleToFileName (VAR name: ARRAY OF CHAR);
     END
   END ModuleToFileName;
 
-PROCEDURE (rep: Repository) GetModule* (moduleName: ARRAY OF CHAR): Module;
+PROCEDURE (rep: Repository) GetModule* (moduleName: ARRAY OF CHAR; 
+                                 srcFileOverride: URI.HierarchicalURI): Module;
 (* result is NIL in case of error *)
   VAR
     path, str: Rep.URIBuffer;
@@ -84,10 +87,12 @@ PROCEDURE (rep: Repository) GetModule* (moduleName: ARRAY OF CHAR): Module;
     
     IF (res # NIL) THEN
       RETURN NIL
+    ELSIF (srcFileOverride # NIL) THEN
+      RETURN NewModule (rep, moduleName, srcFileOverride)
     ELSE
       uri(FileURI.URI). GetPath (str);
       IF Files.Exists (str) THEN
-        RETURN NewModule (rep, moduleName)
+        RETURN NewModule (rep, moduleName, srcFileOverride)
       ELSE
         RETURN NIL
       END
@@ -138,22 +143,27 @@ PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId; VAR res: Msg.Msg): URI.Hierar
     subdir, suffix, path, str: Rep.URIBuffer;
     uri: URI.URI;
   BEGIN
-    m. origin. GetDefaultSubdir (fileId, subdir);
-    m. origin. GetDefaultSuffix (fileId, suffix);
-    
-    COPY (subdir, path);
-    IF (path # "") & (path[Strings.Length (path)-1] # "/") THEN
-      Strings.Append ("/", path)
-    END;
-    COPY (m. name^, str);
-    ModuleToFileName (str);
-    Strings.Append (str, path);
-    Strings.Append (suffix, path);
-    uri := URIParser.NewURI (path, m. origin. baseURI, res);
-    IF (res # NIL) THEN
-      RETURN NIL
+    IF (fileId = Rep.modModuleSource) & (m. srcFileOverride # NIL) THEN
+      res := NIL;
+      RETURN m. srcFileOverride
     ELSE
-      RETURN uri(URI.HierarchicalURI)
+      m. origin. GetDefaultSubdir (fileId, subdir);
+      m. origin. GetDefaultSuffix (fileId, suffix);
+
+      COPY (subdir, path);
+      IF (path # "") & (path[Strings.Length (path)-1] # "/") THEN
+        Strings.Append ("/", path)
+      END;
+      COPY (m. name^, str);
+      ModuleToFileName (str);
+      Strings.Append (str, path);
+      Strings.Append (suffix, path);
+      uri := URIParser.NewURI (path, m. origin. baseURI, res);
+      IF (res # NIL) THEN
+        RETURN NIL
+      ELSE
+        RETURN uri(URI.HierarchicalURI)
+      END
     END
   END GetURI;
 
