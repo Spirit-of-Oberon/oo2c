@@ -244,9 +244,14 @@ TYPE
 
      @item SHORTINT INTEGER LONGINT HUGEINT
      @otype{*Language:Integer.Value}
+
+     @item NIL
+     @ofield{value} is @code{NIL}.
      @end table  *)
     (ExpressionDesc)
     value-: Language.Value;
+    (**The value of the constant expression, or @code{NIL} if the constant
+       represents the literal @code{NIL}.  *)
   END;
 
 TYPE
@@ -803,6 +808,7 @@ CONST
   notArray = 15;
   notTypeExpression = 16;
   notExtensionOfLHS = 17;
+  noMinMax = 18;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -853,6 +859,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Type name expected"
     | notExtensionOfLHS:
       t := "Type must be an extension of the left operand's type"
+    | noMinMax:
+      t := "MIN/MAX is not applicable to this type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -913,6 +921,19 @@ PROCEDURE (b: Builder) GetName* (sym: Symbol): Sym.Name;
     Sym.InitName (name, sym. str, sym. pos, sym. line, sym. column);
     RETURN name
   END GetName;
+
+PROCEDURE (b: Builder) AssertType* (expr: Expression): Sym.Type;
+(**Generates an error if @oparam{expr} is not a type name.  In this case,
+   result is @code{NIL}.  Otherwise, the type to which the expression refers is
+   returned.  *)
+  BEGIN
+    WITH expr: TypeRef DO
+      RETURN expr. decl(Sym.TypeDecl). type;
+    ELSE  (* not a type: report error *)
+      b. ErrSym (notTypeExpression, expr. sym);
+      RETURN expr. type;
+    END;
+  END AssertType;
 
 PROCEDURE (b : Builder) Fold* (expr : Expression) : Expression;
 BEGIN
@@ -1067,6 +1088,11 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
     END
   END NewCharConst16;
 
+PROCEDURE (b: Builder) NewNil* (sym: Symbol): Expression;
+  BEGIN
+    RETURN NewConst (sym, Predef.GetType (Predef.char), NIL);
+  END NewNil;
+
 PROCEDURE (b: Builder) NewSize* (sym: Symbol; type: Expression): Expression;
   BEGIN
     ASSERT (type IS TypeRef);
@@ -1079,7 +1105,7 @@ PROCEDURE (b: Builder) GetOne (sym: Symbol; type: Sym.Type): Const;
   BEGIN
     RETURN b. NewConst (sym, type, Integer.NewLInt (1));
   END GetOne;
-  
+
 (* Expression Class: Operator
    ------------------------------------------------------------------------ *)
 
@@ -1640,24 +1666,22 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
     refType: Sym.Type;
     origExpr: Expression;
   BEGIN
-    IF (referenceType. type # b. typeType) THEN
-      RETURN b. ErrExpr (notTypeExpression, referenceType. sym);
+    refType := b. AssertType (referenceType);
+    IF (refType = NIL) THEN
+      RETURN b. errorExpr;
+    ELSIF ~b. typeRules. IsExtensionOf (refType, expr. type) THEN
+      RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
     ELSE
-      refType := referenceType(TypeRef). decl(Sym.TypeDecl). type;
-      IF ~b. typeRules. IsExtensionOf (refType, expr. type) THEN
-        RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
-      ELSE
-        origExpr := expr;
-        IF (expr IS Deref) THEN
-          expr := expr(Deref). pointer;
-        ELSIF (expr. type IS Sym.Pointer) THEN
-          refType := refType(Sym.Pointer). baseType;
-        END;
-        NEW (test);
-        InitTypeTest (test, sym, expr, refType(Sym.Record),
-                      origExpr, referenceType(TypeRef));
-        RETURN test;
+      origExpr := expr;
+      IF (expr IS Deref) THEN
+        expr := expr(Deref). pointer;
+      ELSIF (expr. type IS Sym.Pointer) THEN
+        refType := refType(Sym.Pointer). baseType;
       END;
+      NEW (test);
+      InitTypeTest (test, sym, expr, refType(Sym.Record),
+                    origExpr, referenceType(TypeRef));
+      RETURN test;
     END;
   END NewTypeTest;
 
@@ -2740,6 +2764,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
     receiver: Expression;
+    value: Language.Value;
     
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
                                       expr: Expression;
@@ -2918,6 +2943,23 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         ELSE
           RETURN b. errorExpr;
         END;
+
+      | Predef.min, Predef.max:
+        IF CheckNumberOfArguments (1, 1) THEN
+          type := b. AssertType (arguments[0]);
+          IF (design. decl(Sym.PredefProc). id = Predef.min) THEN
+            value := Predef.GetMin (type);
+          ELSE
+            value := Predef.GetMax (type);
+          END;
+          IF (value = NIL) THEN
+            RETURN b. ErrExpr (noMinMax, arguments[0]. sym);
+          ELSE
+            RETURN b. NewConst (arguments[0]. sym, type, value);
+          END;
+        ELSE
+          RETURN b. errorExpr;
+        END;
         
       | Predef.size:
         ASSERT (LEN (arguments^) = 1);   (* FIXME... needs error msg *)
@@ -2953,6 +2995,13 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.integer: targetType := Predef.shortint;
         | Predef.longint: targetType := Predef.integer;
+        END;
+        RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        
+      | Predef.ord:
+        ASSERT (LEN (arguments^) = 1);
+        CASE arguments[0]. type(Sym.PredefType). id OF
+        | Predef.char: targetType := Predef.integer;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
       END;
