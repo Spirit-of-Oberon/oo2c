@@ -162,12 +162,6 @@ PROCEDURE (w: Writer) FixupHelperVars;
     END;
   END FixupHelperVars;
 
-PROCEDURE (w: Writer) Newline;
-  BEGIN
-    w. WriteLn;
-    w. WriteString ("  ");
-  END Newline;
-
 PROCEDURE Fixup (pb: SSA.ProcBlock);
   VAR
     instr: SSA.Instr;
@@ -818,9 +812,11 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     Fixup (pb);
     registerMap := Allocator.AssignRegisters (pb, domRoot, cWriter);
     w := NewWriter (cWriter, registerMap);
+    w. Indent (1);
     WriteLocalDecl (w, pb, haveCopyParameter);
     w. WriteLn;
     w. WriteBlocks (domRoot, haveCopyParameter);
+    w. Indent (-1);
   END ProcBody;
 
 PROCEDURE ModuleBody* (w: TextRider.Writer; procDecl: IR.Procedure);

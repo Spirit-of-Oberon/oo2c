@@ -67,14 +67,15 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         left := Designator (design. left);
         WITH left: IR.ModuleRef DO
           RETURN b. NewQualident (left, currentSourceContext, 
-                                  design. right(ExtTree.Terminal). sym)
+                                  design. right(ExtTree.Terminal). sym);
+          
         | left: IR.Const DO
           ASSERT (left = IR.errorExpr);
-          RETURN IR.errorExpr
-              
-        ELSE
-          Log.Type("++ Unknown type in left operand of Designator/Operator", left);
-          ASSERT (FALSE)
+          RETURN IR.errorExpr;           (* left side has errors *)
+
+        ELSE                             (* field or tb procedure selector *)
+          RETURN b. NewSelect (design. op. sym, left, currentSourceContext,
+                               design. right(ExtTree.Terminal). sym);
         END
             
       ELSE
@@ -109,17 +110,22 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         res := Designator (expr)
         
       | expr: ExtTree.Operator DO
-        IF (expr. left # NIL) THEN
-          left := Expr (expr. left)
+        IF (expr. op. sym. id = Symbol.period) THEN
+          (* handled as part of designator *)
+          res := Designator (expr);
         ELSE
-          left := NIL
+          IF (expr. left # NIL) THEN
+            left := Expr (expr. left)
+          ELSE
+            left := NIL
+          END;
+          IF (expr. right # NIL) THEN
+            right := Expr (expr. right)
+          ELSE
+            right := NIL
+          END;
+          res := b. NewOperator (expr. op. sym, left, right);
         END;
-        IF (expr. right # NIL) THEN
-          right := Expr (expr. right)
-        ELSE
-          right := NIL
-        END;
-        res := b. NewOperator (expr. op. sym, left, right)
 
       | expr: ExtTree.FunctionCall DO
         res := FunctionCall (expr, FALSE)

@@ -61,6 +61,30 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END Index;
     
+    PROCEDURE SelectField (selectOp: Operator.SelectField): SSA.Result;
+      VAR
+        instr, fieldAdr: SSA.Instr;
+        baseResult: SSA.Result;
+        adrOpnd: SSA.Opnd;
+      BEGIN
+        (* take the "get" instruction of the record's designator and
+           change it into a "get" for the record field *)
+        baseResult := Expression (selectOp. record);
+        ASSERT (baseResult. instr. opcode = Opcode.get);
+        instr := baseResult. instr;
+        
+        adrOpnd := instr. opndList. nextOpnd;
+        fieldAdr := pb. AddInstr (Opcode.add, Opcode.scAddress);
+        fieldAdr. AddOpnd (adrOpnd. arg, Opnd.arg);
+        fieldAdr. AddOpnd (pb. GetConstInt (selectOp. field. offset),
+                             Opnd. arg);
+        adrOpnd. ReplaceArg (fieldAdr);
+        instr. AddOpnd (pb. GetDeclRef (selectOp. field), Opnd.readDesign);
+        instr. SetSubclass (Opcode.TypeToSubclass (selectOp. field. type));
+        
+        RETURN instr
+      END SelectField;
+    
     PROCEDURE AddCompareOp (op: Operator.Compare; class: Opcode.Class): SSA.Instr;
       VAR
         instr: SSA.Instr;
@@ -110,6 +134,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: Operator.Index DO
         RETURN Index (expr);
 
+      | expr: Operator.SelectField DO
+        RETURN SelectField (expr);
+        
       | expr: IR.TypeConv DO
         (* FIXME... right now, we are simply passing through type converted
            values *)

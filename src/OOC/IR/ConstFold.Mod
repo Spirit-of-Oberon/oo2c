@@ -143,6 +143,10 @@ PROCEDURE (c: ConstFold) VisitIndex* (index: Operator.Index);
     index. index. Accept (c); *)
   END VisitIndex;
 
+PROCEDURE (c: ConstFold) VisitSelectField* (sf: Operator.SelectField);
+  BEGIN
+  END VisitSelectField;
+
 PROCEDURE (c: ConstFold) VisitNegate* (op: Operator.Negate);
 VAR 
   id : Sym.PredefId;

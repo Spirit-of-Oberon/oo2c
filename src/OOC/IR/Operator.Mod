@@ -120,6 +120,16 @@ TYPE
   END;
   
 TYPE
+  SelectField* = POINTER TO SelectFieldDesc;
+  SelectFieldDesc = RECORD
+    (IR.OperatorDesc)
+    (**This operator selects the field @ofield{field} from the record variable
+       @ofield{record}.  *)
+    record- : IR.Expression;
+    field- : Sym.FieldDecl;
+  END;
+  
+TYPE
   Negate* = POINTER TO NegateDesc;
   NegateDesc = RECORD
     (IR.OperatorDesc)
@@ -391,6 +401,40 @@ PROCEDURE (index: Index) Accept* (v: IR.Visitor);
   BEGIN
     v(Visitor). VisitIndex (index)
   END Accept;
+
+(* -------- *)
+
+PROCEDURE InitSelectField (sf: SelectField; sym: IR.Symbol; record: IR.Expression; field: Sym.Declaration);
+  BEGIN
+    IR.InitOperator (sf, sym, field(Sym.FieldDecl). type);
+    sf.record := record;
+    sf.field := field(Sym.FieldDecl);
+  END InitSelectField;
+
+PROCEDURE (b: Builder) NewSelectField (sym: IR.Symbol; record: IR.Expression; field: Sym.Declaration): SelectField;
+  VAR
+    i: SelectField;
+  BEGIN
+    NEW (i);
+    InitSelectField (i, sym, record, field);
+    RETURN i
+  END NewSelectField;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitSelectField* (sf: SelectField);
+  END VisitSelectField;
+
+PROCEDURE (sf: SelectField) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitSelectField (sf)
+  END Accept;
+
+PROCEDURE (b: Builder) NewSelect* (sym: IR.Symbol; var: IR.Expression;
+                                   context: Sym.Item; name: IR.Symbol): IR.Expression;
+  BEGIN
+    ASSERT (var. type IS Sym.Record);
+    RETURN b. NewSelectField (sym, var, var. type(Sym.Record). ns.
+                              Identify (context, b. GetName (name), FALSE));
+  END NewSelect;
 
 (* -------- *)
 

@@ -153,6 +153,14 @@ PROCEDURE (v: Visitor) VisitIndex* (index: Operator.Index);
     v. w. EndTag;  (* index *)
   END VisitIndex;
 
+PROCEDURE (v: Visitor) VisitSelectField* (sf: Operator.SelectField);
+  BEGIN
+    v. w. StartTag ("select-field", FALSE);
+    v. w. AttrStringLatin1 ("field", sf. field. name. str^);
+    sf. record. Accept (v);
+    v. w. EndTag;  (* select-field *)
+  END VisitSelectField;
+
 PROCEDURE (v: Visitor) VisitNegate* (neg: Operator.Negate);
   BEGIN
     v. w. StartTag ("negate", FALSE);

@@ -368,7 +368,10 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       END;
       
     | type: Sym.Array DO
-      RETURN scNone
+      RETURN scNone;
+
+    | type: Sym.Record DO
+      RETURN scNone;
     END;
   END TypeToSubclass;
 

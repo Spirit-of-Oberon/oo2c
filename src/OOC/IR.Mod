@@ -641,23 +641,22 @@ PROCEDURE (typeRef: TypeRef) Accept* (v: Visitor);
 
 (* -------- *)
 
+PROCEDURE (b: Builder) GetName* (sym: Symbol): Sym.Name;
+  VAR
+    name: Sym.Name;
+  BEGIN
+    NEW (name);
+    Sym.InitName (name, sym. str, sym. pos, sym. line, sym. column);
+    RETURN name
+  END GetName;
+
 PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item; 
                                      name: Symbol): Expression;
   VAR
     decl: Sym.Declaration;
-  
-  PROCEDURE GetName (sym: Symbol): Sym.Name;
-    VAR
-      name: Sym.Name;
-    BEGIN
-      NEW (name);
-      Sym.InitName (name, sym. str, sym. pos, sym. line, sym. column);
-      RETURN name
-    END GetName;
-  
   BEGIN
     IF (name. id = SymbolId.ident) THEN
-      decl := ns. Identify (context, GetName (name), FALSE);
+      decl := ns. Identify (context, b. GetName (name), FALSE);
       IF (decl = NIL) THEN
         b. ErrSym (undeclaredIdent, name)
       ELSE
