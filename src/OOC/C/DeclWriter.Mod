@@ -540,6 +540,7 @@ PROCEDURE (w: Writer) WriteBasicConst* (value: Boxed.Object;
   VAR
     charValue: LONGINT;
     s: STRING;
+    signed: BOOLEAN;
     
   PROCEDURE WriteOct (ch: LONGINT);
     BEGIN
@@ -605,7 +606,8 @@ PROCEDURE (w: Writer) WriteBasicConst* (value: Boxed.Object;
         END;
         
       | value: BigInt.BigInt DO
-        IF (value. ToLongInt() = MIN (LONGINT)) THEN
+        signed := (type < uint8);
+        IF signed & (value. ToLongInt() = MIN (LONGINT)) THEN
           (* this assumes that MIN(LONGINT) is also the smallest value of
              the C type "int"; to avoid overflow errors, we must rewrite
              the value slightly *)
@@ -614,6 +616,9 @@ PROCEDURE (w: Writer) WriteBasicConst* (value: Boxed.Object;
           w. WriteString ("-1)");
         ELSE
           w. WriteObject(value.ToString());
+          IF ~signed THEN
+            w.WriteString("u");
+          END;
         END;
         
       | value: Boxed.Set DO
