@@ -22,7 +22,7 @@ MODULE OOC:Make:Entity:ModuleFile;
 
 
 IMPORT
-  Out, Strings, Files, Time, ADT:String, ADT:StringBuffer, 
+  Msg, Out, Strings, Files, Time, ADT:String, ADT:StringBuffer, 
   URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
   ConfigOOC := OOC:Auxiliary:Config, OOC:Error,
@@ -275,6 +275,9 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
   VAR
     srcEntity: Entity;
     usageData: Make.Entity;
+    nextState: Make.EntityState;
+    dummy: Sym.Module;
+    res: Msg.Msg;
   
   PROCEDURE AddImportDeps (entity: Entity; fileId: Repository.FileId;
                            timeDep: BOOLEAN);
@@ -399,7 +402,16 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
            is invalid, the current node cannot be rebuild is is therefore
            invalid, too; if the node if invalid with respect to an ancestor
            symbol file, it has to be rebuild *)
-        RETURN AncestorState (entity, Repository.modSymbolFile)
+        nextState := AncestorState (entity, Repository.modSymbolFile);
+        IF (nextState = Make.entityValid) &
+           (entity. module. symbolTable = NIL) THEN
+          (* the analysis says that the symbol file is valid: read in its
+             data, because it may hold information like the name of an
+             external .c file, which are required to compile the current
+             module *)
+          dummy := entity. module. GetSymbolTable(res);
+        END;
+        RETURN nextState;
       END
       
     | Repository.modInterfaceDescr:
@@ -518,7 +530,13 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
         entity. AddAncestor (srcEntity);
         RETURN entity. state+1
       ELSE
-        RETURN AncestorState (entity, -1)
+        nextState := AncestorState (entity, -1);
+        IF (nextState = Make.entityBuild) &
+           (entity. module. symbolTable. class # Sym.mcStandard) THEN
+          (* we cannot build the .c file of an INTERFACE or FOREIGN module *)
+          nextState := Make.entityValid;
+        END;
+        RETURN nextState;
       END
       
     | Repository.modMainFileC:
