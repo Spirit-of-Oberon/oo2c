@@ -516,8 +516,10 @@ PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
     | passCollectWrites:
       FOR i := 0 TO LEN(call.arguments^)-1 DO
         IF (call.formalPars[i] # NIL) & call.formalPars[i].isVarParam THEN
-          v.mode := write;
-          call.arguments[i](IR.Adr).design.Accept(v);
+          IF ~(call.arguments[i] IS IR.Const) THEN (* avoid NIL to VAR param *)
+            v.mode := write;
+            call.arguments[i](IR.Adr).design.Accept(v);
+          END;
         ELSE
           v.mode := read;
           call.arguments[i].Accept(v);
@@ -542,26 +544,28 @@ PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
         IF (call.formalPars[i] = NIL) THEN
           (* ignore *)
         ELSIF call.formalPars[i].isVarParam THEN
-          design := call.arguments[i](IR.Adr).design;
-          IF (inout = NIL) THEN  (* no info on caller, assume write *)
-            writeList.Append(design);
-          ELSIF inout.HasKey(call.formalPars[i]) THEN
-            class := inout.Get(call.formalPars[i]);
-            CASE class DIV scaleR OF
-            | doesRead:
-              readList.Append(design);
-            | doesNotRead:
-              (* ignore *)
-            END;
-            
-            CASE class MOD scaleR OF
-            | doesWrite:
+          IF ~(call.arguments[i] IS IR.Const) THEN (* avoid NIL to VAR param *)
+            design := call.arguments[i](IR.Adr).design;
+            IF (inout = NIL) THEN  (* no info on caller, assume write *)
               writeList.Append(design);
-            | mayWrite:
-              writeMaybeDict.Set(design, 0);
-              writeList.Append(design);
-            | doesNotWrite:
-              (* ignore *)
+            ELSIF inout.HasKey(call.formalPars[i]) THEN
+              class := inout.Get(call.formalPars[i]);
+              CASE class DIV scaleR OF
+              | doesRead:
+                readList.Append(design);
+              | doesNotRead:
+                (* ignore *)
+              END;
+              
+              CASE class MOD scaleR OF
+              | doesWrite:
+                writeList.Append(design);
+              | mayWrite:
+                writeMaybeDict.Set(design, 0);
+                writeList.Append(design);
+              | doesNotWrite:
+                (* ignore *)
+              END;
             END;
           END;
         ELSE
