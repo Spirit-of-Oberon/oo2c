@@ -2271,7 +2271,7 @@ PROCEDURE (b : Builder) WidenToCommon(VAR left, right : Expression) : BOOLEAN;
 (**Returns true if expressions @oparam{left} and @oparam{right} can be made
    compatible.  If one operand has ``wider'' type than the other, the smaller
    operand is adjusted to have the type of the larger operand and the function
-   will return @ocode{TRUE}. 
+   will return @code{TRUE}. 
    
    A special rule applies to constants of character or string type. If there is
    a common type that is ``wider'' than each of the operands, both operands
