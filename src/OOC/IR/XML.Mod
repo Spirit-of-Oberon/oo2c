@@ -192,6 +192,7 @@ PROCEDURE (v: Visitor) VisitSelectField* (sf: IR.SelectField);
 PROCEDURE (v: Visitor) VisitSelectProc* (sp: IR.SelectProc);
   BEGIN
     v. w. StartTag ("select-tb-proc", FALSE);
+    v. w. AttrBool ("static-call", sp. isStaticCall);
     v. w. AttrStringLatin1 ("tb-proc", sp. tbProc. name. str^);
     sp. receiver. Accept (v);
     v. w. EndTag;  (* select-tb-proc *)

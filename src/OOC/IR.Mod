@@ -27,7 +27,8 @@ Log,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
-  OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:SymbolTable:TypeRules;
+  OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  OOC:SymbolTable:TypeRules, OOC:SymbolTable:Namespace;
 
 (**Some rules regarding the intermediate representation (short ``IR''):
 
@@ -388,7 +389,21 @@ TYPE
     (**This operator selects the type-bound procedure @ofield{tbProc} belonging
        to the @ofield{receiver} designator.  *)
     receiver-: Expression;
+    (**The receiver designator of the call.  *)
+    
+    recordType-: Sym.Record;
+    (**The record type of which the type-bound procedure is called.  *)
+    
     tbProc-: Sym.ProcDecl;
+    (**The static procedure that is referenced by the call's designator
+       in the source code.  The actual procedure being called may be this
+       procedure, a redefinition of it, or (if this is a super call) its
+       definition in one of the base types.  *)
+    
+    isStaticCall-: BOOLEAN;
+    (**If @code{TRUE}, then this is a static call to the procedure indicated
+       by @ofield{tbProc}.  No table lookup must be done, instead its
+       address must be used directly.  *)
   END;
 
 TYPE 
@@ -1196,13 +1211,23 @@ PROCEDURE InitDeref (d: Deref; sym: Symbol; pointer: Expression);
     ASSERT ((d. derefType IS Sym.Record) OR (d. derefType IS Sym.Array));
   END InitDeref;
 
-PROCEDURE (b: Builder) NewDeref* (sym: Symbol; pointer: Expression): Deref;
+PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
   VAR
     i: Deref;
   BEGIN
-    NEW (i);
-    InitDeref (i, sym, pointer);
-    RETURN i
+    WITH design: SelectProc DO (* super call of type-bound procedure *)
+      (* FIXME... check that we are in a redefinition; make sure that "^"
+         cannot be stacked ;-) *)
+      design. tbProc := design. recordType. ns(Namespace.Extended).
+          GetSuperProcByIndex (design. tbProc. tbProcIndex);
+      design. type := design. tbProc. formalPars;
+      design. isStaticCall := TRUE;
+      RETURN design;
+    ELSE
+      NEW (i);
+      InitDeref (i, sym, design);
+      RETURN i
+    END;
   END NewDeref;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitDeref* (index: Deref);
@@ -1390,19 +1415,26 @@ PROCEDURE (sf: SelectField) Accept* (v: Visitor);
 (* Operator Class: SelectProc
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitSelectProc (sp: SelectProc; sym: Symbol; receiver: Expression; tbProc: Sym.ProcDecl);
+PROCEDURE InitSelectProc (sp: SelectProc; sym: Symbol; receiver: Expression;
+                          recordType: Sym.Record;
+                          tbProc: Sym.ProcDecl; isStaticCall: BOOLEAN);
   BEGIN
     InitOperator (sp, sym, tbProc. formalPars);
     sp. receiver := receiver;
+    sp. recordType := recordType;
     sp. tbProc := tbProc;
+    sp. isStaticCall := isStaticCall;
   END InitSelectProc;
 
-PROCEDURE (b: Builder) NewSelectProc (sym: Symbol; receiver: Expression; tbProc: Sym.ProcDecl): SelectProc;
+PROCEDURE (b: Builder) NewSelectProc (sym: Symbol; receiver: Expression;
+                                      recordType: Sym.Record;
+                                      tbProc: Sym.ProcDecl;
+                                      isStaticCall: BOOLEAN): SelectProc;
   VAR
     i: SelectProc;
   BEGIN
     NEW (i);
-    InitSelectProc (i, sym, receiver, tbProc);
+    InitSelectProc (i, sym, receiver, recordType, tbProc, isStaticCall);
     RETURN i
   END NewSelectProc;
 
@@ -2332,7 +2364,8 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
     IF (decl IS Sym.FieldDecl) THEN
       RETURN b. NewSelectField (sym, varRef, decl(Sym.FieldDecl));
     ELSIF (decl IS Sym.ProcDecl) THEN
-      RETURN b. NewSelectProc (sym, var, decl(Sym.ProcDecl));
+      RETURN b. NewSelectProc (sym, var, varRef. type(Sym.Record),
+                               decl(Sym.ProcDecl), FALSE);
     ELSE
       ASSERT (FALSE);
     END;

@@ -370,6 +370,16 @@ PROCEDURE (ns: Extended) GetTBProcByIndex* (index: LONGINT): Sym.ProcDecl;
     END;
   END GetTBProcByIndex;
 
+PROCEDURE (ns: Extended) GetSuperProcByIndex* (index: LONGINT): Sym.ProcDecl;
+(**Like @oproc{Extended.GetTBProcByIndex}, but return the procedure for
+   @oparam{index} from the base type of @oparam{ns}.  *)
+  BEGIN
+    IF (ns. extends = NIL) THEN
+      RETURN NIL;
+    ELSE
+      RETURN ns. extends(Extended). GetTBProcByIndex (index);
+    END;
+  END GetSuperProcByIndex;
 
 PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
                                              tr: TypeRules.Rules;

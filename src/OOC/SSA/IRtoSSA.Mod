@@ -315,9 +315,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     
     PROCEDURE SelectProc (selectOp: IR.SelectProc): SSA.Result;
       BEGIN
-        IF FALSE THEN                    (* static address *)
+        IF selectOp. isStaticCall THEN   (* use static address *)
           RETURN pb. GetAddress (selectOp. tbProc);
-        ELSE
+        ELSE                             (* use dynamic address *)
           instr := pb. AddInstr (Opcode.tbProcAddress, Opcode.scAddress);
           instr. AddOpnd (TypeTag (selectOp. receiver), Opnd.arg);
           instr. AddOpnd (pb. GetDeclRef (selectOp. tbProc), Opnd.arg);
