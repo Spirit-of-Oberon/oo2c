@@ -26,6 +26,11 @@ oo2c \- Oberon-2 compiler
 .I --uninstall-package
 .RI [ options ]
 .I <package>
+.br
+.B oo2c
+.I --build-pkg-doc
+.RI [ options ]
+.I <package>
 .SH NOTE
 This document is a subset of corresponding chapter of the 
 .B OOC2 Reference 
@@ -74,6 +79,13 @@ of libraries, executables, resource files, option definitions, and
 pragma definitions.  It is described in it repository's
 .I pkginfo.xml
 file.
+
+The option
+.I --build-pkg-doc
+creates HTML documentation for all modules used by the libraries and
+executables of the given package.  After successful completion, the
+files can be found under
+.IR <repository>/oocdoc/html .
 .SH OPTIONS
 .TP
 .B --repository <directory>, -r <directory>

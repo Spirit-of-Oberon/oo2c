@@ -15,6 +15,7 @@ CONST
   uninstallPackage = -3;
   updateRepository = -4;
   getOption = -5;
+  buildPackageDoc = -6;
   
 VAR
   cfgErrList, errList: Error.List;
@@ -48,6 +49,8 @@ PROCEDURE NewConfig;
                        "<options><set name='command'>5</set></options>");
     Config.AddCmdLine ("--get-option",
                        "<options><set name='command'>6</set></options>");
+    Config.AddCmdLine ("--build-pkg-doc",
+                       "<options><set name='command'>7</set></options>");
     Config.AddCmdLine ("--use-stderr",
                  "<options><set name='useStderr'>TRUE</set></options>");
     Config.AddCmdLine ("--no-rtc",
@@ -432,6 +435,52 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
     UninstallPkgInfo(pkg);
   END UninstallPackage;
 
+PROCEDURE BuildPackageDoc(pkg: Package.Package): BOOLEAN;
+  VAR
+    ok: BOOLEAN;
+    i: LONGINT;
+    lib: Package.Library;
+    exec: Package.Executable;
+
+  PROCEDURE BuildDocs(module: Rep.Module): BOOLEAN;
+    VAR
+      ok: BOOLEAN;
+      i: LONGINT;
+      list: Make.ModuleList;
+    BEGIN
+      ok := makeRules.Update(module, Rep.modSymbolFile);
+      
+      list := Make.ModuleClosure(module, NIL);
+      i := 0;
+      WHILE ok & (i #  LEN(list^)) DO
+        IF (list[i].origin = module.origin) THEN
+          ok := makeRules.Update(list[i], Rep.modInterfaceHTML);
+        END;
+        INC(i);
+      END;
+      RETURN ok;
+    END BuildDocs;
+  
+  BEGIN
+    ok := TRUE;
+
+    i := 0;
+    WHILE ok & (i # pkg.library.size) DO
+      lib := pkg.library.array[i](Package.Library);
+      ok := BuildDocs(GetModule(lib.mainModule.array^));
+      INC(i);
+    END;
+
+    i := 0;
+    WHILE ok & (i # pkg.executable.size) DO
+      exec := pkg.executable.array[i](Package.Executable);
+      ok := BuildDocs(GetModule(exec.mainModule.array^));
+      INC(i);
+    END;
+    
+    RETURN ok;
+  END BuildPackageDoc;
+
 BEGIN
   Error.oo2cStyleErrors := TRUE;
   Error.minErrorDistance := 16;
@@ -460,6 +509,8 @@ BEGIN
     mode := updateRepository;
   | 6:
     mode := getOption; Logger.silence := TRUE;
+  | 7:
+    mode := buildPackageDoc;
   END;
   
   IF (cfgErrList. msgCount # 0) THEN
@@ -528,6 +579,17 @@ BEGIN
             Out.String(option.value(StringValue.Value).string^);
           END;
           Out.Ln;
+          
+        | buildPackageDoc:
+          pkg := Package.GetPackage(arg^, rep);
+          IF (pkg = NIL) THEN
+            Err.String ("Error: Cannot locate package ");
+            Err.String (arg^);
+            Err.Ln;
+            HALT (1)
+          ELSE
+            ok := BuildPackageDoc(pkg);
+          END;
           
         ELSE
           module := GetModule(arg^);

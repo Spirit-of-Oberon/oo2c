@@ -53,7 +53,7 @@ TYPE
   END;
   
 TYPE
-  ModuleList = POINTER TO ARRAY OF Rep.Module;
+  ModuleList* = POINTER TO ARRAY OF Rep.Module;
   Rules* = POINTER TO RulesDesc;
   RulesDesc* = RECORD
     backend: LONGINT;
@@ -1052,7 +1052,7 @@ PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
     RETURN success;
   END UpdateMainObjectFile;
 
-PROCEDURE ModuleClosure (module: Rep.Module; restrictToLibrary: String.String): ModuleList;
+PROCEDURE ModuleClosure*(module: Rep.Module; restrictToLibrary: String.String): ModuleList;
   VAR
     i: LONGINT;
     dict: Dictionary.Dictionary;
