@@ -44,11 +44,6 @@ IMPORT
   
   BasicElement := XML:Basic:Element,
   BasicParser := XML:Basic:Parser,
-  BasicDataType := XML:Basic:DataType,
-  
-  ChannelMemory := IO:Memory,
-  IO:PFD,
-  IO:Socket,
-  IO:Select;
+  BasicDataType := XML:Basic:DataType;
   
 END libxml.
