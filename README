@@ -1,15 +1,27 @@
-Requirements:
-  oo2c 1.5.3.2
+1. Prerequisites
+
+
+  oo2c 1.5.6
   libadt (from the CVS repository)
   libxml (from the CVS repository)
   GNU make
 
-Make sure that libxml/src/ and libadt/src/ is in the search path for
-*.Mod and *.c (e.g., by editing and including .oo2crc_local).  Set the
-environment variable OOC to point to your oo2c compiler.  Then, do
-"make test" in the root directory.  If this produces an error, mail
-me.
+2. Setting up the Development Environment
 
+Make sure that libxml/src/ and libadt/src/ is in the search path for
+*.Mod and *.c (for example, by editing and including .oo2crc_local).
+Then, do
+
+  ./configure
+  . ENV
+  make test
+
+If this produces an error, mail me.  (Note: The ". ENV" assumes a
+Bourne compabtible shell.  This command sets the environment variables
+OOC_DEV_ROOT and MAIN_MAKEFILE.  If you are running a different shell,
+you need to do something equivalent.)
+
+--------
 
 An overview over the modules is in src/AllModules.Mod.  Another point
 of entry are the test programs.  Currently, the most "evolved" test

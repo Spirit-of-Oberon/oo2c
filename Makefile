@@ -4,8 +4,10 @@
 # project and sourcing the file ENV there: `. ENV' (this assumes a Bourne
 # compatible shell)
 
+include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
+
 # TEST_SUBDIRS: List of subdirectories with testcases.
-#TEST_SUBDIRS=tests/compile
+TEST_SUBDIRS=tests/compile
 
 
 top_builddir=$(OOC_DEV_ROOT)
@@ -49,6 +51,8 @@ clean: doc-clean test-clean
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
 distclean: clean
+	rm -f ENV rsrc/OOC/Makefile.config rsrc/OOC/TestFramework/config.xml
+	rm -f config.log config.status
 
 FRC:
 
