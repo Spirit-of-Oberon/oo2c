@@ -2,21 +2,21 @@ MODULE OOC:IR:XML;
 
 IMPORT
   Channel, ADT:String, XML:Writer, XML:UnicodeCodec:Latin1,
-  OOC:SymbolTable:Item, OOC:IR;
+  OOC:SymbolTable:Item, OOC:IR, OOC:IR:Operator;
 
 
 
 TYPE
   Visitor = POINTER TO VisitorDesc;
   VisitorDesc = RECORD
-    (IR.VisitorDesc)
+    (Operator.VisitorDesc)
     w: Writer.Writer;
   END;
 
 
 PROCEDURE InitVisitor (v: Visitor; w: Writer.Writer);
   BEGIN
-    IR.InitVisitor (v);
+    Operator.InitVisitor (v);
     v. w := w;
   END InitVisitor;
 
@@ -45,6 +45,13 @@ PROCEDURE (v: Visitor) VisitConst* (const: IR.Const);
     v. w. EndTag;  (* const *)
   END VisitConst;
 
+PROCEDURE (v: Visitor) VisitVar* (var: IR.Var);
+  BEGIN
+    v. w. StartTag ("var", TRUE);
+    v. w. WriteLatin1 (var. decl. name. str^);
+    v. w. EndTag;  (* var *)
+  END VisitVar;
+
 PROCEDURE (v: Visitor) VisitPredefProc* (pproc: IR.PredefProc);
   BEGIN
     v. w. StartTag ("predef-proc", FALSE);
@@ -70,6 +77,13 @@ PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
     v. w. EndTag;  (* module-reference *)
   END VisitModuleRef;
 
+PROCEDURE (v: Visitor) VisitNegate* (neg: Operator.Negate);
+  BEGIN
+    v. w. StartTag ("negate", FALSE);
+    neg. opnd1. Accept (v);
+    v. w. EndTag;  (* module-reference *)
+  END VisitNegate;
+
 
 PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
   VAR
@@ -82,7 +96,7 @@ PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
     FOR i := 0 TO LEN (call. arguments^)-1 DO
       v. w. StartTag ("argument", FALSE);
       call. arguments[i]. Accept (v);
-    v. w. EndTag;  (* argument *)
+      v. w. EndTag;  (* argument *)
     END;
     v. w. EndTag;  (* call *)
   END VisitCall;
