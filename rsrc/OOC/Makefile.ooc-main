@@ -9,26 +9,6 @@ include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
 DOC_TARGETS=doc-txt doc-html doc-xref
 DOC_SUBDIRS=$(subst -,/,$(DOC_TARGETS))
 
-# TEST_SETUP: XML document listing all test cases.  TEST_REPORT: Output file
-# produced when running the test cases.  TEST_SUMMARY: Created from XML report
-# by means of an XSLT processor.
-TEST_SETUP=$(OOC_DEV_ROOT)/$(TEST_BASE)/test-setup.xml
-TEST_REPORT=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.xml
-TEST_SUMMARY=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.html
-TEST_WORKING_DIR=$(OOC_DEV_ROOT)/$(TEST_BASE)
-TEST_TEMP_DIR=$(TEST_WORKING_DIR)/wd
-
-# TEST_CREATE_SUMMARY: This command creates a HTML summary of a from an
-# XML report document.
-#TEST_CREATE_SUMMARY=java org.apache.xalan.xslt.Process -in $(TEST_REPORT) -xsl $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl -out $(TEST_SUMMARY)
-TEST_CREATE_SUMMARY=$(XSLTPROC) -o $(TEST_SUMMARY) $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl $(TEST_REPORT)
-
-# Commands
-PRINT=echo
-MKDIR=mkdir -p -m 755
-RM=rm -f
-RM_R=rm -Rf
-
 
 # ------------------------------------------------------------------------
 # Auxiliary Variables
@@ -37,12 +17,16 @@ RM_R=rm -Rf
 # Create list of all test directories.
 ifdef TEST_BASE
 TEST_LIST=$(TEST_BASE)
+CLEAN_LIST=test-cleanall
 else
 TEST_LIST=$(TEST_SUBDIRS)
+CLEAN_LIST=main-clean
 endif
 
 TEST_LIST_CLEAN=$(patsubst %,$(OOC_DEV_ROOT)/%/.test-clean,$(TEST_LIST))
 TEST_LIST_TEST=$(patsubst %,$(OOC_DEV_ROOT)/%/.test,$(TEST_LIST))
+
+
 
 
 # ------------------------------------------------------------------------
@@ -72,50 +56,25 @@ doc-buildall: $(DOC_TARGETS)
 doc:
 	$(MAKE) -f $(OOC_DEV_ROOT)/doc/Makefile doc-buildall
 
+
 # ------------------------------------------------------------------------
 # Test targets
 # ------------------------------------------------------------------------
 
-.PHONY: test1-setup test1-process test1-report test1-clean test-clean test-runall
-
-test1-setup:
-	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
-	cd $(OOC_DEV_ROOT) && $(OOC) -MOv $(TEST_DRIVER)
-ifdef TEST_PROCESSOR
-	cd $(OOC_DEV_ROOT) && $(OOC) -MOv $(TEST_PROCESSOR)
-endif
-	$(RM_R) $(TEST_TEMP_DIR)
-	$(MKDIR) $(TEST_TEMP_DIR)
-
-test1-process: test1-setup
-	cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT)
-
-test1-report: test1-setup
-	if cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT); then \
-	  $(TEST_CREATE_SUMMARY); \
-	else \
-	  $(TEST_CREATE_SUMMARY); exit 1; \
-	fi
-
-test1-clean:
-ifdef TEST_PROCESSOR
-	$(RM) $(OOC_DEV_ROOT)/$(TEST_PROCESSOR)
-endif
-	$(RM) $(TEST_REPORT) $(TEST_SUMMARY)
-	$(RM_R) $(TEST_TEMP_DIR)
-
 # Change ".test-clean" tag to "Makefile", thus call the test makefile which
 # in turn recalls this makefile with target test1-clean.
 %.test-clean:
-	$(MAKE) -f $(subst .test-clean,Makefile,$@) test1-clean
+	$(MAKE) -f $(subst .test-clean,Makefile,$@) test-clean
 
-test-clean: $(TEST_LIST_CLEAN)
+test-cleanall: $(TEST_LIST_CLEAN)
 	$(PRINT) Done clean.
 
 # Change ".test" tag to "Makefile", thus call the package makefile which
 # in turn recalls this makefile with target test1-report.
 %.test:
-	$(MAKE) -k -f $(subst .test,Makefile,$@) test1-report
+	$(MAKE) -k -f $(subst .test,Makefile,$@) test-runall
 
-test-runall: $(TEST_LIST_TEST)
+test: $(TEST_LIST_TEST)
 	$(PRINT) Done test.
+
+clean: $(CLEAN_LIST)

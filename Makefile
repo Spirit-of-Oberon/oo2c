@@ -7,18 +7,25 @@
 include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
 
 # TEST_SUBDIRS: List of subdirectories with testcases.
-TEST_SUBDIRS=tests/compile tests/ssa
-
+TEST_SUBDIRS=\
+  $(addprefix tests/config/,sections cmdline environment simple) \
+  tests/make \
+  tests/scanner \
+  tests/parser \
+  tests/symtab \
+  tests/interface \
+  tests/oberon-doc \
+  tests/compile \
+  tests/ssa \
 
 top_builddir=$(OOC_DEV_ROOT)
-subdirs=tests
 
 test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile AllModules RunTests
 
 all:
 
 
-.PHONY: mkdir clean distclean test
+.PHONY: mkdir clean distclean test main-clean
 
 ### `mkdir'
 ###      Build all the directories we're going to install oo2c in.   Since
@@ -35,12 +42,11 @@ mkdir: FRC
 ###      record the configuration.  Also preserve files that could be made
 ###      by building, but normally aren't because the distribution comes
 ###      with them.
-clean: doc-clean test-clean
+main-clean: doc-clean test-cleanall
 	for i in sym obj; do rm -Rf ${top_builddir}/$$i/*; done
 	for i in lib/sym lib/obj; do rm -Rf ${top_builddir}/$$i; done
 	rm -f src/XML
 	for i in ${test_programs}; do rm -f $$i; done
-	for i in ${subdirs}; do cd $$i && ${MAKE} clean; done
 	-rmdir ${top_builddir}/sym ${top_builddir}/obj
 	${MAKE} -C tests/hostess-ooc1 test-clean
 
@@ -50,7 +56,7 @@ clean: doc-clean test-clean
 ###      source and built the program without creating any other files,
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
-distclean: clean
+distclean: main-clean
 	rm -f ENV rsrc/OOC/Makefile.config rsrc/OOC/TestFramework/config.xml
 	rm -f config.log config.status
 
@@ -58,8 +64,8 @@ FRC:
 
 ### `test'
 ###      Perform all available regression tests.
-test: mkdir test-runall
-	cd tests && ${MAKE} test
+#test: mkdir test-runall
+#	cd tests && ${MAKE} test
 
 test-hostess-ooc1:
 	${MAKE} -C tests/hostess-ooc1 test-runall

@@ -1,0 +1,59 @@
+# -*-mode: makefile-*-
+
+# TEST_SETUP: XML document listing all test cases.
+TEST_SETUP=$(OOC_DEV_ROOT)/$(TEST_BASE)/test-setup.xml
+
+# TEST_REPORT: Output file produced when running the test cases.
+TEST_REPORT=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.xml
+
+# TEST_SUMMARY: Created from XML report by means of an XSLT processor.
+TEST_SUMMARY=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.html
+
+# TEST_WORKING_DIR: The test program is started in this directory.
+TEST_WORKING_DIR=$(OOC_DEV_ROOT)/$(TEST_BASE)
+
+# TEST_TEMP_DIR: All files created by the testcases are placed here.
+TEST_TEMP_DIR=$(TEST_WORKING_DIR)/wd
+
+
+# TEST_CREATE_SUMMARY: This command creates a HTML summary of a from an
+# XML report document.
+#TEST_CREATE_SUMMARY=java org.apache.xalan.xslt.Process -in $(TEST_REPORT) -xsl $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl -out $(TEST_SUMMARY)
+TEST_CREATE_SUMMARY=$(XSLTPROC) -o $(TEST_SUMMARY) $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl $(TEST_REPORT)
+
+
+
+# ------------------------------------------------------------------------
+# Test targets
+# ------------------------------------------------------------------------
+
+.PHONY: test1-setup test1-process test1-report test1-clean
+
+test1-setup:
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
+	cd $(OOC_DEV_ROOT) && $(OOC) -MOv $(TEST_DRIVER)
+ifdef TEST_PROCESSOR
+	cd $(OOC_DEV_ROOT) && $(OOC) -MOv $(TEST_PROCESSOR)
+endif
+	$(RM_R) $(TEST_TEMP_DIR)
+	$(MKDIR) $(TEST_TEMP_DIR)
+
+test1-process: test1-setup
+	cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT)
+
+test-runall: test1-setup
+	if cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT); then \
+	  $(TEST_CREATE_SUMMARY); \
+	else \
+	  $(TEST_CREATE_SUMMARY); exit 1; \
+	fi
+
+test-clean:
+ifdef TEST_PROCESSOR
+	$(RM) $(OOC_DEV_ROOT)/$(TEST_PROCESSOR)
+endif
+	$(RM) $(TEST_REPORT) $(TEST_SUMMARY)
+	$(RM_R) $(TEST_TEMP_DIR)
+
+# include main makefile
+include $(OOC_DEV_ROOT)/Makefile

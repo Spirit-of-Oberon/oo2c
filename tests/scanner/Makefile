@@ -1,19 +1,6 @@
-TEST_PROG=../../TestScanner
+TEST_PROCESSOR=TestScanner
+TEST_SCRIPTS=wf.sh not-wf.sh identity.sh
+TEST_OUTPUT_DIRS=test-output/wf test-output/not-wf
+TEST_BASE=tests/scanner
 
-.PHONY: all clean test ${TEST_PROG} 
-
-all: test
-
-${TEST_PROG} :
-	cd `dirname ${TEST_PROG}` && ${OOC} -MOv `basename ${TEST_PROG}`
-
-test-output:
-	mkdir test-output test-output/wf test-output/not-wf
-
-test: test-output ${TEST_PROG} 
-	env TEST_PROG="${TEST_PROG}" DIFF="${DIFF}" ./wf.sh
-	env TEST_PROG="${TEST_PROG}" DIFF="${DIFF}" ./not-wf.sh
-	env TEST_PROG="${TEST_PROG}" DIFF="${DIFF}" ./identity.sh
-
-clean:
-	rm -Rf test-output
+include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.tests-scripts

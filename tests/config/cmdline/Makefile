@@ -1,18 +1,6 @@
-TEST_PROG=../../../TestConfigCmdLine
+TEST_PROCESSOR=TestConfigCmdLine
+TEST_SCRIPTS=wf.sh not-wf.sh
+TEST_OUTPUT_DIRS=test-output/wf test-output/not-wf
+TEST_BASE=tests/config/cmdline
 
-.PHONY: all clean test ${TEST_PROG}
-
-all: test
-
-${TEST_PROG}:
-	cd `dirname ${TEST_PROG}` && ${OOC} -MOv `basename ${TEST_PROG}`
-
-test-output:
-	mkdir test-output test-output/wf test-output/not-wf
-
-test: test-output ${TEST_PROG}
-	env TEST_PROG="${TEST_PROG}" DIFF="${DIFF}" ./wf.sh
-	env TEST_PROG="${TEST_PROG}" DIFF="${DIFF}" ./not-wf.sh
-
-clean:
-	rm -Rf test-output
+include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.tests-scripts

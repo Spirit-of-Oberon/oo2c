@@ -3,3 +3,8 @@ export OOCN=@OOCN@
 export OOEF=@OOEF@
 export DIFF=@DIFF@
 export XSLTPROC=@XSLTPROC@
+
+PRINT=@echo
+MKDIR=mkdir -p -m 755
+RM=rm -f
+RM_R=rm -Rf
