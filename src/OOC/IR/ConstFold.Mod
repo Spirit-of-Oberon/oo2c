@@ -306,6 +306,10 @@ VAR
       ELSE
         result := Integers.Quotient(left, right);
       END;
+    | IR.arithDivR:
+      (* FIXME... added this as a stop gap measure to get
+         RandomNumbers to compile (minus Random()) --mva *)
+      result := Integers.Long (1);
     | IR.arithMod:
       IF Integers.Compare(right, zero) = 0 THEN
         c.builder.ErrSym(IR.divideByZero, op.sym); RETURN NIL;
