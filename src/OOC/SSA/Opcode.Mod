@@ -631,8 +631,16 @@ CONST
   selectException* = 71;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
-  
-  labels* = 72;
+
+  preloadedVar* = 72;
+  (**Value of a variable that is defined as part of the module's
+     initialization.  The instruction is both a placeholder for the value,
+     and a description how the actual value is computed during run-time.
+     The first argument is the name of a C function, optionally with a
+     type cast prefix, followed by the arguments that should be passed to
+     the function.  All arguments are constants.  *)
+     
+  labels* = 73;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  Every
      range and every single value is represented by two consecutive operands,
      the lower and the upper bound.  All operands are of class
@@ -798,6 +806,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | failedWith: cstr := "failed-with";
     | failedTypeAssert: cstr := "failed-type-assert";
     | selectException: cstr := "select-exception";
+    | preloadedVar: cstr := "preloaded-var";
     END;
     
     COPY (cstr, name);

@@ -47,7 +47,8 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
     v: Language.Value;
     i1, i2: Integer.Value;
   BEGIN
-    IF (instr. SizeOpndList() >= 2) THEN
+    IF (instr. SizeOpndList() >= 2) &
+       (instr. opcode # Opcode.preloadedVar) THEN
       arg1 := instr. opndList. arg. info(SSA.Const);
       arg2 := instr. opndList. nextOpnd. arg. info(SSA.Const);
       v := NIL;

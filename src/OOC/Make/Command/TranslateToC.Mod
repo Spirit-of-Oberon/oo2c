@@ -35,6 +35,12 @@ TYPE
   Translator* = POINTER TO TranslatorDesc;
   TranslatorDesc* = RECORD [ABSTRACT]
     w-: DeclWriter.Writer;
+
+    wd-: DeclWriter.Writer;
+    (**Reference to the writer for the @file{.d} file.  It can be used to
+       add declarations to the end of the file.  Because this file is
+       included at the very beginning of the @file{.c} file, these declarations
+       have global visibility.  *)
     
     procList: IR.ProcedureList;
     (* List of all procedures in this module.  *)
@@ -60,6 +66,7 @@ TYPE
 PROCEDURE InitTranslator* (t: Translator);
   BEGIN
     t. w := NIL;
+    t. wd := NIL;
     t. procList := NIL;
     t. currentProc := -1;
   END InitTranslator;
@@ -73,6 +80,11 @@ PROCEDURE (t: Translator) SetProcedureList* (procList: IR.ProcedureList);
   BEGIN
     t. procList := procList;
   END SetProcedureList;
+
+PROCEDURE (t: Translator) SetDataWriter* (wd: DeclWriter.Writer);
+  BEGIN
+    t. wd := wd;
+  END SetDataWriter;
 
 PROCEDURE (t: Translator) [ABSTRACT] WriteProcBody* (proc: IR.Procedure);
   END WriteProcBody;
@@ -250,7 +262,7 @@ PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
     RuntimeData.Write (w, symTab, FALSE);
   END WriteDeclFile;
 
-PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
+PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
                          moduleIR: IR.Module; translator: Translator);
   VAR
     i: LONGINT;
@@ -263,6 +275,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
        declarations of the run-time header file *)
     w. WriteString ('#include "__oo2c.h"');
     w. WriteLn;
+    translator. SetDataWriter (wd);
     translator. SetProcedureList (moduleIR. procList);
     FOR i := 0 TO LEN (moduleIR. procList^)-1 DO
       IF (moduleIR. procList[i]. decl. parent IS Sym.Module) THEN
@@ -306,7 +319,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         | Repository.modDeclFileC:
           WriteDeclFile (w, m, symTab, exports);
         | Repository.modCodeFileC:
-          WriteCodeFile (w, m, module, cmd. translator);
+          WriteCodeFile (w, wd, m, module, cmd. translator);
         END;
         RETURN w
       ELSE

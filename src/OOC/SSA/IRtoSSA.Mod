@@ -21,8 +21,9 @@ MODULE OOC:SSA:IRtoSSA;
 *)
 
 IMPORT
-  Log, Language:String8, Language:Integer,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, 
+  Log, Language:String, Language:String8, Language:Integer,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  TR := OOC:SymbolTable:TypeRules, OOC:IR, 
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Allocator;
 
 
@@ -573,21 +574,52 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     PROCEDURE TypeConv (conv: IR.TypeConv): SSA.Result;
       VAR
         instr: SSA.Instr;
+        const: SSA.Result;
         scSource, scDest: Opcode.Subclass;
+        len: LONGINT;
+        fct: String8.Value;
       BEGIN
-        scDest := Opcode.TypeToSubclass (conv. type);
-        scSource := Opcode.TypeToSubclass (conv. expr. type);
-        IF (Allocator.RegisterType (Allocator.SubclassToBasicType (scDest)) #
-            Allocator.RegisterType (Allocator.SubclassToBasicType (scSource))) THEN
-          (* only insert explicit type-conv instruction if the source and
-             the destination value are stored in different register sets;
-             not sure if this optimization should be done here, though, because
-             it makes type information in SSA less strict *)
-          instr := pb. AddInstr (Opcode.typeConv, scDest);
-          instr. AddOpnd (Expression (conv. expr), Opnd.arg);
+        IF TR.IsSTRING(conv.type) THEN
+          (* converting a character or string constant to STRING *)
+          const := Expression(conv.expr);
+          
+          instr := pb.AddInstr(Opcode.preloadedVar, Opcode.scAddress);
+          CASE conv.expr.type(Sym.PredefType).id OF
+          | Predef.char:
+            fct := String8.NewString("Language_String0__NewLatin1Char");
+          | Predef.charString:
+            fct := String8.NewString("Language_String0__NewLatin1Region");
+          | Predef.longchar:
+            fct := String8.NewString("Language_String0__NewUCS2Char");
+          | Predef.longcharString:
+            fct := String8.NewString("Language_String0__NewUCS2Region");
+          END;
+          instr.AddOpnd(pb.GetConst(fct, Predef.GetType(Predef.charString)),
+                        Opnd.arg);
+          instr.AddOpnd(const, Opnd.arg);
+          IF TR.IsStringConst(conv.expr.type) THEN
+            len := conv.expr(IR.Const).value(String.Value).Length();
+            instr.AddOpnd(pb.GetConstInt(len+1), Opnd.arg); (* array len *)
+            
+            instr.AddOpnd(pb.GetConstInt(0), Opnd.arg); (* start *)
+            instr.AddOpnd(pb.GetConstInt(len), Opnd.arg); (* end *)
+          END;
           RETURN instr;
         ELSE
-          RETURN Expression (conv. expr);
+          scDest := Opcode.TypeToSubclass (conv. type);
+          scSource := Opcode.TypeToSubclass (conv. expr. type);
+          IF (Allocator.RegisterType (Allocator.SubclassToBasicType (scDest)) #
+              Allocator.RegisterType (Allocator.SubclassToBasicType (scSource))) THEN
+            (* only insert explicit type-conv instruction if the source and the
+               destination value are stored in different register sets; not
+               sure if this optimization should be done here, though, because
+               it makes type information in SSA less strict  *)
+            instr := pb. AddInstr (Opcode.typeConv, scDest);
+            instr. AddOpnd (Expression (conv. expr), Opnd.arg);
+            RETURN instr;
+          ELSE
+            RETURN Expression (conv. expr);
+          END;
         END;
       END TypeConv;
     

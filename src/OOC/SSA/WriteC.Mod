@@ -21,9 +21,10 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 *)
 
 IMPORT
+  Log,
   IntStr, Out, StdChannels, Strings, StringSearch,
-  ADT:Object, ADT:String, ADT:Dictionary, 
-  LString := Language:String, Sym := OOC:SymbolTable,
+  ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
+  LString := Language:String, Language:String8, Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
@@ -50,15 +51,18 @@ TYPE
     nonLocalAccess: Dictionary.Dictionary; (* of Sym.VarDecl *)
     (* The keys of this dictionary are variables that are accessed from
        a nested procedure within the procedure in which they are declared.  *)
+    
+    preloadedVars: ArrayList.ArrayList;
   END;
 
 TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc = RECORD
     (DeclWriter.WriterDesc)
+    translator: Translator;
     registerMap: Dictionary.Dictionary;
     procBlock: SSA.ProcBlock;
-    
+
     swapArray: SwapArray;                (* used by WriteCollect *)
     lengthSwapArray: LONGINT;            (* used by WriteCollect *)
     swapHelperVars: LONGINT;
@@ -74,7 +78,7 @@ TYPE
   
 CONST
   enableDebugOutput = FALSE;
-  
+  prefixPreloadVar = "_c";
 
 PROCEDURE NewVisitor (): Visitor;
   VAR
@@ -126,7 +130,8 @@ PROCEDURE SubclassToBasicType (res: SSA.Result): DeclWriter.BasicTypeId;
   END SubclassToBasicType;
 
 
-PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
+PROCEDURE NewWriter (translator: Translator;
+                     cWriter: DeclWriter.Writer;
                      procBlock: SSA.ProcBlock;
                      registerMap: Dictionary.Dictionary): Writer;
   VAR
@@ -139,6 +144,7 @@ PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
     NEW (w. swapArray, 8);
     w. lengthSwapArray := 0;
     w. swapHelperVars := 0;
+    w. translator := translator;
     RETURN w
   END NewWriter;
 
@@ -986,6 +992,22 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       END;
     END SimpleVarAccess;
 
+  PROCEDURE PreloadedVar (instr: SSA.Instr);
+    VAR
+      wd: DeclWriter.Writer;
+    BEGIN
+      w.WriteString(prefixPreloadVar);
+      w.textWriter.WriteLInt(w.translator.preloadedVars.size, 0);
+
+      wd := w.translator.wd;
+      wd.Newline;
+      wd.WriteString("static void* "+prefixPreloadVar);
+      wd.textWriter.WriteLInt(w.translator.preloadedVars.size, 0);
+      wd.WriteString(";");
+      
+      w.translator.preloadedVars.Append(instr);
+    END PreloadedVar;
+  
   BEGIN
     CASE instr. opcode OF
     | Opcode.get:
@@ -1151,7 +1173,9 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
         CastFromPtr (instr);
       END;
       Call (instr);
-      
+
+    | Opcode.preloadedVar:
+      PreloadedVar(instr);
     END;
   END WriteExpr;
 
@@ -1612,6 +1636,34 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         nested := nested. nextDom
       END;
     END FixCrossJumps;
+
+  PROCEDURE InitPreloadedVars (vars: ArrayList.ArrayList);
+    VAR
+      i, count: LONGINT;
+      opnd: SSA.Opnd;
+    BEGIN
+      FOR i := 0 TO vars.size-1 DO
+        w.Newline;
+        w.WriteString(prefixPreloadVar);
+        w.textWriter.WriteLInt(i, 0);
+        w.WriteString(" = ");
+
+        opnd := vars.array[i](SSA.Instr). opndList;
+        w.WriteString(opnd.arg(SSA.Const).value(String8.Value).value.array^);
+        w.WriteString("(");
+        count := 0;
+        opnd := opnd. nextOpnd;
+        WHILE (opnd # NIL) DO
+          IF (count # 0) THEN
+            w.WriteString(", ");
+          END;
+          w.Ref(opnd);
+          opnd := opnd. nextOpnd;
+          INC (count);
+        END;
+        w.WriteString(");");
+      END;
+    END InitPreloadedVars;
   
   BEGIN
     (*Log.String ("procedure",proc. decl. name. str^);*)
@@ -1658,8 +1710,11 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Fixup (pb);
     t. w. Indent (1);
     registerMap := Allocator.AssignRegisters (pb, domRoot, t. w);
-    w := NewWriter (t. w, pb, registerMap);
+    w := NewWriter (t, t. w, pb, registerMap);
     WriteLocalDecl (t, w, pb, haveCopyParameter);
+    IF proc.decl.IsModuleBody() THEN
+      InitPreloadedVars(t.preloadedVars);
+    END;
     t. WriteNestedProcedures();          (* up call *)
     
     JumpChaining (domRoot);
@@ -1675,13 +1730,14 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
 
 
 
-PROCEDURE InitTranslator* (t: Translator; 
+PROCEDURE InitTranslator* (t: Translator;
                            inspectProc, inspectStage: StringSearch.Matcher);
   BEGIN
     TranslateToC.InitTranslator (t);
     t. inspectProc := inspectProc;
     t. inspectStage := inspectStage;
     t. nonLocalAccess := NIL;
+    t. preloadedVars := ArrayList.New(16);
   END InitTranslator;
 
 PROCEDURE NewTranslator* (inspectProc, inspectStage: StringSearch.Matcher): Translator;
