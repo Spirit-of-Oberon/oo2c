@@ -2,12 +2,12 @@
 <!DOCTYPE testsuite-ext
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" >
 
-<!--<testsuite-ext
+<testsuite-ext
   profile="Test Suite for OOC Core Library">-->
 
-<testsuite-ext
+<!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_LRealStr_RealToEng1">
+  select ="prepare_out_module lib_LRealStr_RealToEng1">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
