@@ -1,8 +1,8 @@
 MODULE LibNet;
 
 IMPORT
-  Net:HTTP,
-  Net:HTTP:Server;
+  Net:HTTP(*,
+  Net:HTTP:Server*);
 
 PROCEDURE Test* ();
   BEGIN
