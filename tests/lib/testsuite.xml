@@ -116,5 +116,37 @@
       file="LibStringsEqual1.Mod" output="LibStringsEqual1.Ref">
       Some calls to <code>Equal</code>.
     </test>
+    
+    <test id="lib_Strings_FindNext1" type="run"
+      file="LibStringsFindNext1.Mod" output="LibStringsFindNext1.Ref">
+      Some calls to <code>FindNext</code>.
+    </test>
+    
+    <test id="lib_Strings_FindNext2" type="run"
+      file="LibStringsFindNext2.Mod" output="LibStringsFindNext2.Ref">
+      Some calls to <code>FindNext</code>, with mismatch, pattern
+      longer than string, and partial match before full match.
+    </test>
+
+    <test id="lib_Strings_FindPrev1" type="run"
+      file="LibStringsFindPrev1.Mod" output="LibStringsFindPrev1.Ref">
+      Some calls to <code>FindPrev</code>.
+    </test>
+    
+    <test id="lib_Strings_FindPrev2" type="run"
+      file="LibStringsFindPrev2.Mod" output="LibStringsFindPrev2.Ref">
+      Some calls to <code>FindPrev</code>, with mismatch, pattern
+      longer than string, and partial match before full match.
+    </test>
+
+    <test id="lib_Strings_FindDiff1" type="run"
+      file="LibStringsFindDiff1.Mod" output="LibStringsFindDiff1.Ref">
+      Some calls to <code>FindDiff</code>.
+    </test>
+    
+    <test id="lib_Strings_Capitalize1" type="run"
+      file="LibStringsCapitalize1.Mod" output="LibStringsCapitalize1.Ref">
+      Some calls to <code>Capitalize</code>.
+    </test>
   </testcases>
 </testsuite-ext>

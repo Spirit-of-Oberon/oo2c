@@ -1,0 +1,6 @@
+Find("", ""): no difference found
+Find("a", "a"): no difference found
+Find("a", "b"): difference found at 0
+Find("ab", "abc"): difference found at 2
+Find("abc", "ab"): difference found at 2
+Find("abc", "abc"): no difference found

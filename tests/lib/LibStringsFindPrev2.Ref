@@ -1,0 +1,4 @@
+Find("abc", "xbc", 3): not found
+Find("xabc", "abc", 3): not found
+Find("abc", "abc", 4): found at 0
+Find("abc", "abcxbc", 1000): found at 0

@@ -1,0 +1,7 @@
+Find("", "", 0): found at 0
+Find("", "a", 0): found at 0
+Find("", "a", 1): found at 1
+Find("a", "ab", 1): found at 0
+Find("b", "ab", 1): found at 1
+Find("ab", "ab", 2): found at 0
+Find("ba", "ab", 2): not found
