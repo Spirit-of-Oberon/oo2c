@@ -75,6 +75,16 @@ PROCEDURE (v: Value) CharAt*(i: LONGINT): CHAR;
     RETURN v. value. array[i];
   END CharAt;
 
+PROCEDURE (v : Value) Compare* (str : Value) : LONGINT;
+BEGIN
+  RETURN v.value.Compare(str.value);
+END Compare;
+
+PROCEDURE (v : Value) Concat* (str : Value) : Value;
+BEGIN
+  RETURN New(v.value.Concat(str.value));
+END Concat;
+
 PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Value) & v. value. Equals(y(Value). value)

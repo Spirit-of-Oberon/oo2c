@@ -1,7 +1,7 @@
 MODULE Language:String16 [OOC_EXTENSIONS];
 
 IMPORT 
-  S := SYSTEM, ADT:Object, ADT:String,
+  S := SYSTEM, ADT:Object, ADT:String, LongStrings,
   L := Language, LString := Language:String;
 
 TYPE
@@ -98,6 +98,20 @@ PROCEDURE (v: Value) CharAt*(i: LONGINT): LONGCHAR;
     ASSERT ((0 <= i) & (i < LEN (v. array^)-1));
     RETURN v. array[i];
   END CharAt;
+
+PROCEDURE (v : Value) Compare* (str : Value) : LONGINT;
+BEGIN
+  RETURN LongStrings.Compare(v.array^, str.array^);
+END Compare;
+
+PROCEDURE (v : Value) Concat* (str : Value) : Value;
+VAR
+  res : CharArray;
+BEGIN
+  NEW(res, v.Length() + str.Length() + 1);
+  LongStrings.Concat(v.array^, str.array^, res^);
+  RETURN New(res);
+END Concat;
 
 PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   VAR
