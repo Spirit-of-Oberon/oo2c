@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; assign17">-->
+  select ="&SetupTestCasesWithOut; val7">-->
 
   &TestSetupWithOut;
     
@@ -1322,6 +1322,10 @@
     </test>
     <test id="val6" type="reject" file="Val6.Mod">
       Arguments of <code>SYSTEM.VAL</code> have different size.
+    </test>
+    <test id="val7" type="run" file="Val7.Mod">
+      Using <code>SYSTEM.VAL</code> one the right hand side of an
+      array assignment.
     </test>
 
     <test id="lsh1" type="run" file="Lsh1.Mod" output="Lsh1.Ref">
