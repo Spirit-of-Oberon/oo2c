@@ -380,6 +380,29 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
       END
     END ConvertTopLevel;
   
+  PROCEDURE ConvertNestedTypes (topLevel, root: Sym.Item);
+  (* Add C definitions for type declarations placed within procedures.
+     They need to be placed on the top level, because type declarations
+     are ignored when translating procedures.  *)
+    VAR
+      ptr: Sym.Item;
+      decl: DeclWriter.Declaration;
+    BEGIN
+      ptr := root. nestedItems;
+      WHILE (ptr # NIL) DO
+        WITH ptr: Sym.ProcDecl DO
+          ConvertNestedTypes (topLevel, ptr);
+        | ptr: Sym.TypeDecl DO
+          IF (root # topLevel) THEN
+            decl := ConvertDecl (w, ptr, mode);
+            w. AddDeclaration (decl);
+          END;
+        ELSE                             (* ignore everything else *)
+        END;
+        ptr := ptr. nextNested
+      END
+    END ConvertNestedTypes;
+  
   BEGIN
     IF writeExported THEN
       mode := modeWriteExported
@@ -394,7 +417,9 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
            (Naming.NameOfModuleInit (m),
             DeclWriter.tqNone,
             DeclWriter.scExtern, 
-            w. NewFunction (w. basicType[DeclWriter.void], FALSE)))
+            w. NewFunction (w. basicType[DeclWriter.void], FALSE)));
+    ELSE
+      ConvertNestedTypes (symTab, symTab);
     END;
   END ConvertSymTab;
 
