@@ -2,15 +2,15 @@
 <!DOCTYPE testsuite-ext
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd">
 
-<testsuite-ext profile="Test Suite for Framework Testing">
+<testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext
-  profile="Test Suite for Framework Testing"
+  profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; opSet1 opSet2 opSet3 opSet4 opSet5 opSet6 opSet7">-->
 
 <!--<testsuite-ext
-  profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; div3">-->
+  profile="Test Suite for Translation Patterns"
+  select ="&SetupTestCasesWithOut; opString1">-->
 
   &TestSetupWithOut;
     
