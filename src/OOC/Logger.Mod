@@ -35,6 +35,7 @@ PROCEDURE ReadFile* (uri: URI.URI);
       Out.String("- ");
       WriteURI(uri);
       Out.Ln;
+      Out.Flush;
     END;
   END ReadFile;
 
@@ -44,6 +45,7 @@ PROCEDURE ReadFileName* (fileName: ARRAY OF CHAR);
       Out.String("- ");
       Out.String(fileName);
       Out.Ln;
+      Out.Flush;
     END;
   END ReadFileName;
 
@@ -53,6 +55,7 @@ PROCEDURE WriteFile* (uri: URI.URI);
       Out.String("+ ");
       WriteURI(uri);
       Out.Ln;
+      Out.Flush;
     END;
   END WriteFile;
 
@@ -62,6 +65,7 @@ PROCEDURE WriteFileName* (fileName: ARRAY OF CHAR);
       Out.String("+ ");
       Out.String(fileName);
       Out.Ln;
+      Out.Flush;
     END;
   END WriteFileName;
 
