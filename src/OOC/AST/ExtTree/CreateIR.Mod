@@ -136,6 +136,26 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     END;
   END SetConstruct;
 
+  PROCEDURE QualType(qualType: ExtTree.QualType): IR.Expression;
+    VAR
+      type: IR.Expression;
+      arguments: IR.ExpressionList;
+      i: LONGINT;
+      n: ExtTree.Node;
+    BEGIN
+      type := Designator(qualType.qualident);
+      NEW(arguments, (qualType.arguments.len+1) DIV 2);
+      FOR i := 0 TO LEN(arguments^)-1 DO
+        n := qualType.arguments.n[i*2](ExtTree.Node);
+        WITH n: ExtTree.QualType DO
+          arguments[i] := QualType(n);
+        ELSE
+          arguments[i] := Designator(n);  (* actually Qualident *)
+        END;
+      END;
+      RETURN b.NewQualType(type, arguments, qualType.rParen.sym);
+    END QualType;
+  
   PROCEDURE Expr (expr: ExtTree.Node): IR.Expression;
     VAR
       left, right, res: IR.Expression;
@@ -190,8 +210,11 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         res := SetConstruct(expr);
 
       | expr: ExtTree.FunctionCall DO
-        res := FunctionCall (expr, FALSE)
-            
+        res := FunctionCall (expr, FALSE);
+
+      | expr: ExtTree.QualType DO
+        res := QualType(expr);
+        
       ELSE
         Log.Type("++ Unknown expression class in Expr", expr);
         ASSERT (FALSE)

@@ -712,6 +712,14 @@ TYPE
 TYPE
   TypeRefDesc = RECORD
     (ReferenceDesc)
+    qualType-: Sym.Type;
+    (**For non-parametric types, this field is a reference to the type of the
+       referenced type declaration.  In this case it is a shortcut for
+       @samp{decl(Sym.TypeDecl).type}.  For parametric types, it is a reference
+       to an instance of @otype{Sym.QualType} whose base type is
+       @samp{decl(Sym.TypeDecl).type}.  The instance is private to to IR; that
+       is, it is not part of the symbol table and its @ofield{Sym.Type.parent}
+       is @code{NIL}.  *)
   END;
 
 TYPE
@@ -1146,6 +1154,10 @@ CONST
   untriggeredCatch = 66;
   notTypeInstance = 67;
   crossProcSuperCall = 68;
+  notParametricType = 69;           (* used as in CreateNamespace *)
+  tooFewTypeArgs = 70;              (* used as in CreateNamespace *)
+  tooManyTypeArgs = 71;             (* used as in CreateNamespace *)
+  notExtensionOfBound = 72;         (* used as in CreateNamespace *)
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1348,6 +1360,14 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Type test requires static type instance"
     | crossProcSuperCall:
       t := "Cross procedure super call"
+    | notParametricType:
+      t := "This is not a parametric type"
+    | tooFewTypeArgs:
+      t := "Too few type arguments"
+    | tooManyTypeArgs:
+      t := "Too many type arguments"
+    | notExtensionOfBound:
+      t := "This is not an extension of the type bound"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1523,10 +1543,10 @@ PROCEDURE (b: Builder) AssertType* (expr: Expression): Sym.Type;
    returned.  *)
   BEGIN
     WITH expr: TypeRef DO
-      RETURN expr. decl(Sym.TypeDecl). type;
+      RETURN expr.qualType;
     ELSE  (* not a type: report error *)
-      b. ErrSym (notTypeExpression, expr. sym);
-      RETURN expr. type;
+      b.ErrSym(notTypeExpression, expr.sym);
+      RETURN expr.type;
     END;
   END AssertType;
 
@@ -3409,17 +3429,32 @@ PROCEDURE (procRef: ProcedureRef) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitTypeRef (typeRef: TypeRef; name: Symbol; type: Sym.Type;
-                       decl: Sym.TypeDecl);
+                       decl: Sym.TypeDecl; qualType: Sym.Type);
   BEGIN
-    InitReference (typeRef, name, type, decl);
+    InitReference(typeRef, name, type, decl);
+    typeRef.qualType := qualType;
   END InitTypeRef;
 
 PROCEDURE (b: Builder) NewTypeRef (name: Symbol; decl: Sym.TypeDecl): TypeRef;
   VAR
     typeRef: TypeRef;
+    qualType: Sym.Type;
+    arguments: Sym.TypeRefArray;
+    i: LONGINT;
   BEGIN
-    NEW (typeRef);
-    InitTypeRef (typeRef, name, b. typeType, decl);
+    qualType := decl.type;
+    IF (qualType.typePars # NIL) & ~(qualType IS Sym.TypeVar) THEN
+      (* add argument list default to the bounds of the parameters *)
+      NEW(arguments, LEN(qualType.typePars.params^));
+      FOR i := 0 TO LEN(arguments^)-1 DO
+        Sym.InitTypeRef(arguments[i], qualType.typePars.params[i]);
+      END;
+      qualType := Sym.NewQualType(NIL, qualType.position, qualType,
+                                  arguments);
+    END;
+    
+    NEW(typeRef);
+    InitTypeRef(typeRef, name, b.typeType, decl, qualType);
     RETURN typeRef
   END NewTypeRef;
 
@@ -5212,6 +5247,37 @@ PROCEDURE (b: Builder) NewTypeVar* (baseNS: Sym.Namespace;
       RETURN b.NewIdentRef(baseNS, type.typePars.ns, context, name);
     END;
   END NewTypeVar;
+
+PROCEDURE (b: Builder) NewQualType*(type: Expression;
+                                    arguments: ExpressionList;
+                                    rParen: Symbol): Expression;
+  VAR
+    qualType, t: Sym.Type;
+    params: Sym.TypeVarArray;
+    i: LONGINT;
+  BEGIN
+    qualType := b.AssertType(type);
+    IF (qualType.parent = NIL) THEN
+      params := qualType(Sym.QualType).baseType.typePars.params;
+      IF (LEN(params^) < LEN(arguments^)) THEN
+        b.ErrSym(tooManyTypeArgs, arguments[LEN(params^)].sym);
+      ELSIF (LEN(params^) > LEN(arguments^)) THEN
+        b.ErrSym(tooFewTypeArgs, rParen);
+      ELSE
+        FOR i := 0 TO LEN(params^)-1 DO
+          t := arguments[i](TypeRef).qualType;
+          IF TR.IsExtensionOf(t, params[i].bound) THEN
+            arguments[i](TypeRef).qualType := t;
+          ELSE
+            b.ErrSym(notExtensionOfBound, arguments[i].sym);
+          END;
+        END;
+      END;
+    ELSE
+      b.ErrSym(notParametricType, type.sym);
+    END;
+    RETURN type;
+  END NewQualType;
 
 PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
                                    context: Sym.Item; name: Symbol): Expression;

@@ -2303,6 +2303,16 @@ PROCEDURE InitQualType* (qualType: QualType; parent: Item;
     qualType.arguments := arguments;
   END InitQualType;
 
+PROCEDURE NewQualType*(parent: Item; position: Position; baseType: Type;
+                       arguments: TypeRefArray): QualType;
+  VAR
+    qualType: QualType;
+  BEGIN
+    NEW(qualType);
+    InitQualType(qualType, parent, position, baseType, arguments);
+    RETURN qualType;
+  END NewQualType;
+
 PROCEDURE (qualType: QualType) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
