@@ -343,28 +343,91 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
               RETURN TraceSelect (source, var, subclass)
             END;
           END GetValue;
+
+        PROCEDURE DuplicateGet (storeIn: SSA.Result): SSA.Instr;
+        (* takes the "get" instruction passed to `Trace()' and creates a
+           duplicate whose "store" input parameter is `storeIn' *)
+          VAR
+            new: SSA.Instr;
+            opnd: SSA.Opnd;
+          BEGIN
+            new := pb. AddInstr (Opcode.get, get. subclass);
+            opnd := get. opndList;
+            WHILE (opnd # NIL) DO
+              IF (opnd. class = Opnd.store) THEN
+                new. AddOpnd (storeIn, Opnd.store)
+              ELSE
+                new. AddOpnd (opnd. arg, opnd. class)
+              END;
+              opnd := opnd. nextOpnd
+            END;
+            RETURN new
+          END DuplicateGet;
+
+        PROCEDURE GetStoreOpnd (select: SSA.Instr; pathNum: LONGINT): SSA.Result;
+          VAR
+            storeIn: SSA.Result;
+          BEGIN
+            storeIn := select. NthArg (pathNum*2+2);
+            IF (storeIn. instr. opcode = Opcode.collect) THEN
+              storeIn := storeIn. instr. GetArgClass (Opnd.store)
+            END;
+            RETURN storeIn
+          END GetStoreOpnd;
         
         BEGIN
-          origin := select. info(OriginMap);
-          IF (origin. selectOut[var] = NIL) THEN
-            memoryCount := 0; registerCount := 0;
-            FOR i := 0 TO LEN (origin. def^, 1)-1 DO
-              IF (origin. def[var, i] = unknownValue) THEN
-                INC (memoryCount)
+          IF (select. info = NIL) THEN
+            (* there is no information available which value may reach this
+               select statement on either path: value must be taken from
+               memory *)
+            RETURN NIL;
+          ELSE
+            origin := select. info(OriginMap);
+            IF (origin. selectOut[var] = NIL) THEN
+              memoryCount := 0; registerCount := 0;
+              FOR i := 0 TO LEN (origin. def^, 1)-1 DO
+                IF (origin. def[var, i] = unknownValue) THEN
+                  INC (memoryCount)
+                ELSE
+                  INC (registerCount)
+                END;
+              END;
+              
+              IF (memoryCount = 0) THEN
+                FOR i := 0 TO LEN (origin. def^, 1)-1 DO
+                  collect := GetCollect (select, i);
+                  collect. AddOpnd (GetValue (origin. def[var, i]), Opnd.arg);
+                END;
+                origin. selectOut[var] :=
+                    select. AddResultSubclass (Result.selectValue, subclass);
+                
+              ELSIF (registerCount = 0) THEN
+                (* we have no information on a single branch: must read
+                   from memory *)
+                origin. selectOut[var] := NIL;
+                
               ELSE
-                INC (registerCount)
+                ASSERT (registerCount+memoryCount = 2);
+                (* we have the value we need partially in memory, partially as
+                   value; convert this situation into an "all memroy" or "all
+                   value" scenario; on the assumption that a reads are cheaper
+                   than writes, add a "get" for the current value to the
+                   branches we know nothing about *)
+                FOR i := 0 TO LEN (origin. def^, 1)-1 DO
+                  IF (origin. def[var, i] = unknownValue) THEN
+                    value := DuplicateGet (GetStoreOpnd (select, i))
+                  ELSE
+                    value := GetValue (origin. def[var, i]);
+                  END;
+                  collect := GetCollect (select, i);
+                  collect. AddOpnd (value, Opnd.arg);
+                END;
+                origin. selectOut[var] :=
+                    select. AddResultSubclass (Result.selectValue, subclass);
               END;
             END;
-            
-            ASSERT (memoryCount = 0);
-            FOR i := 0 TO LEN (origin. def^, 1)-1 DO
-              collect := GetCollect (select, i);
-              collect. AddOpnd (GetValue (origin. def[var, i]), Opnd.arg);
-            END;
-            origin. selectOut[var] :=
-                select. AddResultSubclass (Result.selectValue, subclass);
+            RETURN origin. selectOut[var]
           END;
-          RETURN origin. selectOut[var]
         END TraceSelect;
       
       BEGIN

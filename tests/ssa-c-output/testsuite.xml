@@ -4,8 +4,9 @@
 
 <testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module var1 var2 var3 var3b var4 var4b">
-
+  select ="prepare_out_module var1 var2 var3 var3b var4 var4b 
+  var5 var5b var6 var6b">
+  
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
       This is not a test case.  Rather, it prepares an Oakwood
@@ -48,5 +49,29 @@
       of a nested <code>IF</code> statement.
     </test>
     
+    <test id="var5" type="run" file="Var5.Mod" output="Var5.Ref">
+      Like test case <code>var4</code>, but the global variable is
+      set as a side-effect of a procedure call.  Here, the return
+      value must be read from memory.
+    </test>
+
+    <test id="var5b" type="run" file="Var5b.Mod" output="Var5b.Ref">
+      Like test case <code>var5</code>, but with a twist that should
+      trigger a different code path in <code>OOC:SSA:Destore</code>.
+    </test>
+
+    <test id="var6" type="run" file="Var6.Mod" output="Var6.Ref">
+      A combination of test cases <code>var4</code> and
+      <code>var5</code>: one branche of the <code>IF</code> sets the
+      global variable through an assignment, the other by means of a
+      side-effect of a procedure call.  There should be one read of
+      the global variable <code>x</code>, right after the procedure
+      call with the side-effect.
+    </test>
+
+    <test id="var6b" type="run" file="Var6b.Mod" output="Var6b.Ref">
+      Like <code>var6</code>, except that the branches of the
+      <code>IF</code> statement have been swapped.
+    </test>
   </testcases>
 </testsuite-ext>
