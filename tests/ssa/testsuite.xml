@@ -1201,7 +1201,6 @@
       <code>NO_COPY</code> is used for a value parameter of type
       <code>LONGINT</code>.
     </test>
-    <!-- read-only restrictions currently disabled
     <test id="noCopy4" type="reject" file="NoCopy4.Mod">
       Trying to asssign to an element of a <code>NO_COPY</code> array
       parameter.
@@ -1214,7 +1213,6 @@
       Trying pass an element of an <code>NO_COPY</code> array to a
       <code>VAR</code> parameter.
     </test>
-    -->
 
     <test id="nilCompat1" type="reject" file="NilCompat1.Mod">
       <code>NIL_COMPAT</code> is used for a variable.
@@ -1799,14 +1797,12 @@
         msg="Invalid modifier flag"/>
     <reject-info id="noCopy3" pos="a[%NO_COPY]"
         msg="Invalid modifier flag"/>
-    <!-- disabled for now 
     <reject-info id="noCopy4" pos="  %a[0]"
         msg="This parameter is read-only"/>
     <reject-info id="noCopy5" pos="F(%a)"
         msg="This parameter is read-only"/>
     <reject-info id="noCopy6" pos="F(%a[0])"
         msg="This parameter is read-only"/>
-    -->
 
     <reject-info id="nilCompat1" pos="a[%NIL_COMPAT]"
         msg="Invalid modifier flag"/>
