@@ -1,7 +1,7 @@
 MODULE Config:Value [OOC_EXTENSIONS];
 
 IMPORT
-  Strings, Msg;
+  Object, Strings, Msg, ADT:Dictionary;
 
 
 TYPE
@@ -12,22 +12,11 @@ TYPE
 TYPE
   Value* = POINTER TO ValueDesc;
   ValueDesc* = RECORD [ABSTRACT]
+    (Object.ObjectDesc)
   END;
 
 TYPE
-  PrototypeName* = POINTER TO ARRAY OF CHAR;
-  Prototype* = POINTER TO PrototypeDesc;
-  PrototypeDesc = RECORD
-    next: Prototype;
-    name-: PrototypeName;
-    prototype-: Value;
-  END;
-
-TYPE
-  PrototypeList* = POINTER TO PrototypeListDesc;
-  PrototypeListDesc = RECORD
-    head: Prototype;
-  END;
+  PrototypeMap* = Dictionary.Dictionary(STRING, Value);
 
 TYPE
   ErrorContext* = POINTER TO ErrorContextDesc;
@@ -63,51 +52,20 @@ PROCEDURE GetStringPtr* (VAR str: String): StringPtr;
   END GetStringPtr;
 
 
-PROCEDURE NewPrototypeList* (): PrototypeList;
-  VAR
-    tl: PrototypeList;
+PROCEDURE SetPrototype*(map: PrototypeMap; name: STRING; prototype: Value);
   BEGIN
-    NEW (tl);
-    tl. head := NIL;
-    RETURN tl
-  END NewPrototypeList;
+    map.Set(name, prototype);
+  END SetPrototype;
 
-
-PROCEDURE (tl: PrototypeList) RegisterPrototype* (name: ARRAY OF CHAR; prototype: Value);
+PROCEDURE GetClone*(map: PrototypeMap; prototypeName: STRING): Value;
   VAR
-    ptr, prev, newPrototype: Prototype;
+    ptr: Value;
   BEGIN
-    prev := NIL; ptr := tl. head;
-    WHILE (ptr # NIL) & (ptr. name^ # name) DO
-      prev := ptr; ptr := ptr. next
-    END;
-    ASSERT (ptr = NIL);
-    
-    NEW (newPrototype);
-    newPrototype. next := NIL;
-    NEW (newPrototype. name, Strings.Length (name)+1);
-    COPY (name, newPrototype. name^);
-    newPrototype. prototype := prototype;
-    
-    IF (prev = NIL) THEN
-      tl. head := newPrototype
-    ELSE
-      prev. next := newPrototype
-    END
-  END RegisterPrototype;
-
-PROCEDURE (tl: PrototypeList) GetClone* (prototypeName: ARRAY OF CHAR): Value;
-  VAR
-    ptr: Prototype;
-  BEGIN
-    ptr := tl. head;
-    WHILE (ptr # NIL) & (ptr. name^ # prototypeName) DO
-      ptr := ptr. next
-    END;
+    ptr := map.Get(prototypeName);
     IF (ptr = NIL) THEN
       RETURN NIL
     ELSE
-      RETURN ptr. prototype. Clone()
+      RETURN ptr.Clone();
     END
   END GetClone;
 

@@ -1,7 +1,7 @@
 MODULE Config:Section:Options;
 
 IMPORT
-  Msg, Channel, TextRider, LongStrings,
+  Object, Msg, Channel, TextRider, LongStrings,
   XMLBuilder := XML:Builder, XML:DTD, XML:Locator,
   Config:Value, Config:Parser, CS := Config:Section;
 
@@ -14,7 +14,7 @@ TYPE
   SectionDesc* = RECORD
     (CS.SectionDesc)
     optionList: Option;
-    typeList-: Value.PrototypeList;
+    typeMap-: Value.PrototypeMap;
   END;
   
   OptionDesc = RECORD
@@ -73,19 +73,19 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Msg.Msg; VAR templ: Msg.LSt
   END GetTemplate;
 
 
-PROCEDURE Init* (s: Section; id: Parser.String; typeList: Value.PrototypeList);
+PROCEDURE Init* (s: Section; id: Parser.String; typeMap: Value.PrototypeMap);
   BEGIN
     CS.Init (s, id);
     s. optionList := NIL;
-    s. typeList := typeList
+    s. typeMap := typeMap
   END Init;
 
-PROCEDURE New* (sectionName: Parser.String; typeList: Value.PrototypeList): Section;
+PROCEDURE New* (sectionName: Parser.String; typeMap: Value.PrototypeMap): Section;
   VAR
     s: Section;
   BEGIN
     NEW (s);
-    Init (s, sectionName, typeList);
+    Init (s, sectionName, typeMap);
     RETURN s
   END New;
 
@@ -166,7 +166,7 @@ PROCEDURE (s: Section) Copy* (dest: Section);
   VAR
     opt, newOpt: Option;
   BEGIN
-    Init (dest, s. name^, s. typeList);
+    Init (dest, s. name^, s. typeMap);
     opt := s. optionList;
     WHILE (opt # NIL) DO
       newOpt := dest. Set (opt. name^, opt. value. Clone());
@@ -192,7 +192,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     att: XMLBuilder.Attribute;
     name, type: DTD.String;
     lastError, errMsg: Msg.Msg;
-    name8, type8, valueString: ARRAY 1024 OF CHAR;
+    name8, valueString: ARRAY 1024 OF CHAR;
     newValue: Value.Value;
     option: Option;
     i: LONGINT;
@@ -269,8 +269,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
               Err (optionAlreadyDefined, node);
               lastError. SetLStringAttrib ("name", Msg.GetLStringPtr (name^))
             ELSE
-              LongStrings.Short (type^, "?", type8);
-              newValue := s. typeList. GetClone (type8);
+              newValue := Value.GetClone(s.typeMap, Object.NewUCS2(type^));
               IF (newValue = NIL) THEN
                 Err (unknownType, node);
                 lastError. SetLStringAttrib ("type", Msg.GetLStringPtr (type^))

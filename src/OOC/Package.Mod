@@ -635,7 +635,7 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
         END;
 
         chars := type(Object.String8).CharsLatin1();
-        value := options.typeList.GetClone(chars^);
+        value := Value.GetClone(options.typeMap, type);
         IF (value = NIL) THEN
           Err(unknownType, elem);
           lastError.SetStringAttrib("type", Msg.GetStringPtr(chars^))

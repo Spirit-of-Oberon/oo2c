@@ -33,7 +33,7 @@ TYPE
     envVars-: Environment.Environment;
     cmdLine-: CmdLine.CmdLine;
     
-    typeList-: Value.PrototypeList;
+    typeMap-: Value.PrototypeMap;
     
     options-: Options.Section;
     arguments-: Arguments.Section;
@@ -58,12 +58,12 @@ PROCEDURE Init* (config: Config; defaultConfigFile: ARRAY OF CHAR);
     config. envVars := Environment.New();
     config. cmdLine := CmdLine.New();
     
-    config. typeList := Value.NewPrototypeList();
-    config. typeList. RegisterPrototype ("string", StringValue.New (""));
-    config. typeList. RegisterPrototype ("integer", IntegerValue.New (0));
-    config. typeList. RegisterPrototype ("boolean", BooleanValue.New (FALSE));
+    config. typeMap := NEW(Value.PrototypeMap);
+    Value.SetPrototype(config.typeMap, "string", StringValue.New(""));
+    Value.SetPrototype(config.typeMap, "integer", IntegerValue.New(0));
+    Value.SetPrototype(config.typeMap, "boolean", BooleanValue.New(FALSE));
     
-    config. options := Options.New ("options", config. typeList);
+    config. options := Options.New("options", config.typeMap);
     config. arguments := Arguments.New ("arguments");
     config. sectionList := Section.NewSectionList();
     config. sectionList. Add (config. options);
