@@ -70,7 +70,7 @@ With
 and
 .I --uninstall-package
 packages are compiled, installed, and uninstalled.  A package is a set
-of libraries, exectuables, resource files, option definitions, and
+of libraries, executables, resource files, option definitions, and
 pragma definitions.  It is described in it repository's
 .I pkginfo.xml
 file.
@@ -147,7 +147,9 @@ Binaries are installed into this directory by
 All module data produced by the compiler, like symbol files, header
 files, or package meta data, are copied by
 .I --install-package 
-into this directory.
+into this directory.  By default, this is the directory used when
+installing the compiler, typically
+.IR <prefix>/lib/oo2c .
 .TP
 .B --install <string>
 .TP
@@ -168,136 +170,43 @@ disables HTML documentation.
 .TP
 .B --config <file>
 Use given file name for the configuration file.
-.SH INITIALIZATION FILES
-An initialization file is composed of sections; each section is
-introduced by its keyword, followed by data in a section-dependent
-formant, and terminated by the keyword
-.IR END .
-Only the sections 
-.I PATHS
+.SH CONFIGURATION FILES
+The compilers configuration is determined by the file
+.I <prefix>/lib/oo2c/oo2crc.xml
+and by the
+.I pkginfo.xml
+files of any repositories listed there.
+
+.I oo2crc.xml
+provides default value for options and pragma variables, and also
+defines a default list of repositories: the compiler's installation
+directory and the current working directory.  The name of the
+configuration file can be overridden by setting the environment
+variable
+.BR OO2CRC .
+
+Within a
+.I pkginfo.xml
+file, the root element
+.B package
+and its child elements describe the meta data of a package.  Among
+other things, the provide a package name, a version, and optional
+lists of executables, libraries, and resource files.  The compiler
+uses this information to take appropriate action when executing a
+.I --build-package
+or
+.I --install-package
+command.  The file may also include package specific definitions of
+options and pragma variables.  This information is incorporated
+automatically by the compiler and extends the settings from
+.IR oo2crc.xml .
+For examples of 
+.IR pkginfo.xml ,
+please refer to
+.I ./pkginfo.xml
 and
-.I INCLUDE
-are explained in this man page.  For information about the other
-sections refer to the OOC Reference Manual.
-
-When looking for a particular file, 
-.B oo2c
-searches the directories defined in the 
-.I PATHS
-section of the initialization file.  The
-.I PATHS
-section lists a number of wildcard strings, which are used to
-determine which directories should be scanned for matching file names.
-
-The syntax of the 
-.I PATHS
-section is defined like this:
-
-  paths_section  = "PATHS" {source_pattern} "END".
-  source_pattern = "GET" wildcard_list "FROM" path {path}.
-  wildcard_list  = wildcard {[","] wildcard}.
-  wildcard       = name | string.
-  path           = ( name | string ) [";"].
-
-A wildcard may contain the special characters `*' and `?'.  A `*'
-matches an arbitrary number of characters (including none at all),
-whereas `?' matches exactly one character.  Writing `[RCS]' after a
-wildcard signals that a file matching the pattern might be under
-control of the Revision Control System (RCS), and should be checked
-out if no working file exists.
-
-Any non-absolute path (i.e., all path strings not starting with a `/'
-or a `~') is interpreted relative to the directory the compiler, or
-tool, was started from.  Whenever a program is invoked from a
-different directory, these relative path names will then resolve
-differently.  If the intention is to always use the exact same
-directories for all invocations, all paths in the initialization file
-must be absolute.
-
-When looking for a particular file, say 
-.IR foo ,
-the list of patterns is scanned from top to bottom.  For every match,
-the list of directories is tested from left to right.  The first
-directory that contains a file with the requested name is used.  If
-the file cannot be found in any of these directories, the simple file
-name is used.  If RCS support is enabled for 
-.IR foo ,
-then the files 
-.I <dir>/RCS/foo,v
-and 
-.I <dir>/foo,v
-are also searched for in these directories.
-
-Note that, if a module name is passed as argument from the command
-line, the standard suffix 
-.I .Mod
-is appended, and the resulting file name is searched for using the
-above mechanism.  Also, if a file name that contains a directory part
-is used, no searching is done at all; the file name is used exactly as
-specified.
-
-When trying to decide where to place a generated file (e.g., one of
-the numerous intermediate files with C code), 
-.B oo2c
-uses a simplified version of the mechanism described above.  It looks
-for the first matching wildcard, and uses the first directory in that
-list; the newly created file is written to this directory.  It does
-not matter if the file exists beforehand or not, or if a file of the
-same name exists in any of the other listed directories.
-
-The default setting is to have the compiler place generated files in
-the current directory.  To have these files put away in other
-directories the user should put something like the following lines
-into his personal initialization file 
-.IR ~/.oo2crc:
-
-  PATHS
-  GET *.Sym, *.Lib FROM sym
-  GET *.c, *.d, *.h, *.o FROM obj 
-  END
-
-This places all symbol files in directory 
-.IR sym ,
-all generated C code in directory
-.IR obj , 
-and executables in the current directory.  The subdirectories 
-.I sym
-and 
-.I obj
-have to exist in the current directory, otherwise the compiler will
-abort with an error message.  Note that with the default setup
-.I ~/.oo2crc
-merely extends the system wide path configuration, it does 
-.I not
-replace it.
-
-Additional control over the configuration data is allowed by the
-special initialization file section
-.IR INCLUDE .
-It is a simple, but efficient, way to add personalized or project
-specific configuration details to the global default settings.  The
-format of an 
-.I INCLUDE
-section is simply 
-.I INCLUDE <file> 
-.IR END ,
-which causes the entire contents of 
-.I <file>
-to be processed as if those contents had appeared in place of the
-.I INCLUDE
-statement.
-
-For example, the default initialization file contains the following
-statement to include a user's personalized settings:
-
-  INCLUDE ~/.oo2crc END
-
-The file 
-.I .oo2crc
-from the user's home directory is then parsed just as though it were
-part of the initialization file at the place of the 
-.I INCLUDE
-statement.
+.I ./lib/pkginfo.xml.in
+in oo2c's distribution tar ball.
 .SH ERROR MESSAGES
 Any errors encountered while parsing a source file 
 .I foo.Mod
