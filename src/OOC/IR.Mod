@@ -3011,12 +3011,13 @@ PROCEDURE (case: Case) CheckLabels (b: Builder; type: Sym.Type;
       range := case. labels[i](SetRange);
       IF ~b. typeRules. IncludesType (type, range. from. type) THEN
         b. ErrSym (labelNotInSelect, range. from. sym);
+        case. labels[i] := NIL; INC (deleted); (* get rid of the problem *)
       ELSIF ~b. typeRules. IncludesType (type, range. to. type) THEN
         b. ErrSym (labelNotInSelect, range. to. sym);
+        case. labels[i] := NIL; INC (deleted); (* get rid of the problem *)
       ELSIF range. IsEmpty() THEN
         (* `from' is larger than `to': eliminate entry *)
-        case. labels[i] := NIL;
-        INC (deleted);
+        case. labels[i] := NIL; INC (deleted);
       ELSE
         inUse := FALSE;
         j := 0;
