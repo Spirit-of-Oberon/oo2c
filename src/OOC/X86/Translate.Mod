@@ -509,7 +509,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       
       PROCEDURE TypeGuard(guard: IR.TypeGuard): S.Result;
         BEGIN  (* FIXME... *)
-          RETURN Expression(guard.test.expr);
+          RETURN Expression(guard.test.origExpr);
         END TypeGuard;
 
       PROCEDURE TypeConv(conv: IR.TypeConv): S.Result;
