@@ -550,7 +550,7 @@ PROCEDURE WriteHelp();
     Out.String("  oo2c --install-package [options] <package>"); Out.Ln;
     Out.String("  oo2c --uninstall-package [options] <package>"); Out.Ln;
     Out.String("  oo2c --build-pkg-doc [options] <package>"); Out.Ln;
-    Out.String("  oo2c --installed-package [options] <package>"); Out.Ln;
+    Out.String("  oo2c --package-installed [options] <package>"); Out.Ln;
     Out.String("  oo2c --list-packages [options]"); Out.Ln;
     Out.String("Options:"); Out.Ln;
     Out.String("  --config <file>"); Out.Ln;
