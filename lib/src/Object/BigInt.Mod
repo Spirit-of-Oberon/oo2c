@@ -790,8 +790,8 @@ PROCEDURE (a: BigInt) ToString*(): Object.String8;
     RETURN a.Format(10);
   END ToString;
 
-PROCEDURE NewRegion* (str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
-                      inputBase: LONGINT): BigInt;
+PROCEDURE NewLatin1Region* (str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
+                            inputBase: LONGINT): BigInt;
 (* @precond
    @samp{@oparam{start} <= @oparam{end}}
    @end precond *)
@@ -835,20 +835,22 @@ PROCEDURE NewRegion* (str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
     z.size := sign*z.size;
     ASSERT(start # firstDigit);
     RETURN z;
-  END NewRegion;
+  END NewLatin1Region;
 
-PROCEDURE NewString* (str[NO_COPY]: ARRAY OF CHAR; inputBase: LONGINT): BigInt;
+PROCEDURE NewLatin1* (str[NO_COPY]: ARRAY OF CHAR; inputBase: LONGINT): BigInt;
   BEGIN
-    RETURN NewRegion(str, 0, Strings.Length(str), inputBase);
-  END NewString;
+    RETURN NewLatin1Region(str, 0, Strings.Length(str), inputBase);
+  END NewLatin1;
 
-PROCEDURE NewStr* (str: Object.String8; inputBase: LONGINT): BigInt;
+PROCEDURE New* (str: STRING; inputBase: LONGINT): BigInt;
   VAR
+    str8: Object.String8;
     chars: Object.CharsLatin1;
   BEGIN
-    chars := str.CharsLatin1();
-    RETURN NewRegion(chars^, 0, str.length, inputBase);
-  END NewStr;
+    str8 := str.ToString8("?");
+    chars := str8.CharsLatin1();
+    RETURN NewLatin1Region(chars^, 0, str.length, inputBase);
+  END New;
 
 PROCEDURE (a: BigInt) Invert*(): BigInt;
 (**Bitwise complement.  The result equals @samp{-(a+1)}.  *)
