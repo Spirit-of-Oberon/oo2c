@@ -2502,6 +2502,20 @@ PROCEDURE (record: Record) AssignTBProcIndex* (procDecl: ProcDecl);
     INC (record. tbProcCount)
   END AssignTBProcIndex;
 
+PROCEDURE (record: Record) ExtensionLevel*(): LONGINT;
+(**A record without a base type has a level of @samp{0}.  Every extension level
+   increments this level by one.  *)
+  VAR
+    level: LONGINT;
+  BEGIN
+    level := 0;
+    WHILE (record.baseType # NIL) DO
+      record := record.baseType(Record);
+      INC(level);
+    END;
+    RETURN level;
+  END ExtensionLevel;
+
 
 PROCEDURE InitTypeVar* (typeVar: TypeVar; parent: Item;
                         position: Position; bound: Type);
