@@ -35,6 +35,7 @@ PROCEDURE strtod* (string: C.address;
                    VAR tailptr: C.charPtr1d): C.double;
 PROCEDURE strtof* (string: C.address;
                    VAR tailptr: C.charPtr1d): C.float;
+PROCEDURE sscanf* (s: C.address; template: ARRAY OF CHAR; ...) : C.int;
 PROCEDURE sprintf* (VAR s: ARRAY OF CHAR; template: ARRAY OF CHAR; ...);
                         
 END libc.

@@ -74,8 +74,7 @@ PROCEDURE ValueReal*(str: ARRAY OF CHAR): REAL;
       (* skip our definition of whitespace *)
       INC (i);
     END;
-    value := libc.strtof (SYSTEM.ADR (str[i]), tail);
-    IF (tail[0] = 0X) THEN
+    IF libc.sscanf(SYSTEM.ADR(str[i]), "%f", SYSTEM.ADR(value)) = 1 THEN
       RETURN value                       (* syntax is ok *)
     ELSE
       RETURN 0;                          (* error *)
