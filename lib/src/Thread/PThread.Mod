@@ -1,5 +1,10 @@
 (* 	$Id$	 *)
-MODULE Thread:PThread [FOREIGN "C"; LINK LIB "pthread"; FILE "PThread.c" END];
+MODULE Thread:PThread [FOREIGN "C";
+  LINK
+    LIB "pthread";
+<*IF HAVE_LIB_RT THEN*>LIB "rt";<*END*>  (* for semaphores under Solaris 8 *)
+    FILE "PThread.c";
+  END ];
 (*  Interface for ths POSIX threads library.
     Copyright (C) 2003  Michael van Acken
 
@@ -62,6 +67,12 @@ TYPE
     cond: SYSTEM.PTR; 
   END;
 
+TYPE
+  Semaphore* = POINTER TO SemaphoreDesc;
+  SemaphoreDesc = RECORD
+    sem: SYSTEM.PTR; 
+  END;
+
 
 PROCEDURE (e: Error) INIT*(msg: STRING; errno: LONGINT);
 
@@ -115,5 +126,19 @@ PROCEDURE (c: Condition) TimedWait*(m: Mutex; absTime: LONGREAL): BOOLEAN;
    since Jan 01 1970 00:00 GMT.  *)
 
 PROCEDURE (c: Condition) Destroy*();
+
+(* ------------------------------------------------------------------------ *)
+
+PROCEDURE (s: Semaphore) INIT*(value: LONGINT);
+
+PROCEDURE (s: Semaphore) Post*;
+
+PROCEDURE (s: Semaphore) Wait*;
+
+PROCEDURE (s: Semaphore) TryWait*(): BOOLEAN;
+
+PROCEDURE (s: Semaphore) GetValue*(): LONGINT;
+
+PROCEDURE (s: Semaphore) Destroy*;
 
 END Thread:PThread.

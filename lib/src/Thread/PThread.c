@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <signal.h>
 #include <math.h>
 
@@ -38,6 +39,8 @@ static void check_error(int errorCode, int fatal) {
       str = "Deadlock (EDEADLK)";
     case EBUSY:
       str = "Resource in use (EBUSY)";
+    case ENOSYS:
+      str = "Not supported (ENOSYS)";
     default:
       sprintf(buffer, "Unknown error code (%i)", errorCode);
       str = buffer;
@@ -183,6 +186,37 @@ OOC_BOOLEAN Thread_PThread__ConditionDesc_TimedWait(Thread_PThread__Condition c,
 void Thread_PThread__ConditionDesc_Destroy(Thread_PThread__Condition c) {
   check_error(pthread_cond_destroy((pthread_cond_t*)c->cond), OOC_TRUE);
   c->cond = NULL;
+}
+
+
+
+void Thread_PThread__SemaphoreDesc_INIT(Thread_PThread__Semaphore s,
+					OOC_INT32 value) {
+  s->sem = RT0__NewBlock(sizeof(sem_t));
+  check_error(sem_init((sem_t*)s->sem, 0, value), OOC_TRUE);
+}
+
+void Thread_PThread__SemaphoreDesc_Post(Thread_PThread__Semaphore s) {
+  check_error(sem_post((sem_t*)s->sem), OOC_TRUE);
+}
+
+void Thread_PThread__SemaphoreDesc_Wait(Thread_PThread__Semaphore s) {
+  sem_wait((sem_t*)s->sem);  /* always returns 0 */
+}
+
+OOC_BOOLEAN Thread_PThread__SemaphoreDesc_TryWait(Thread_PThread__Semaphore s) {
+  return (sem_trywait((sem_t*)s->sem) == 0);
+}
+
+OOC_INT32 Thread_PThread__SemaphoreDesc_GetValue(Thread_PThread__Semaphore s) {
+  int sval;
+  sem_getvalue((sem_t*)s->sem, &sval);  /* always returns 0 */
+  return sval;
+}
+
+void Thread_PThread__SemaphoreDesc_Destroy(Thread_PThread__Semaphore s) {
+  check_error(sem_destroy((sem_t*)s->sem), OOC_TRUE);
+  s->sem = NULL;
 }
 
 
