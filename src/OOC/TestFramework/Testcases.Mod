@@ -315,12 +315,12 @@ PROCEDURE (test: Test) Write* (writer: Writer.Writer);
     | relevanceInformal: value := "informal"
     END;
     writer. AttrStringLatin1 ("relevance", value);
-    writer. AttrURI ("file", test. file, FALSE);
+    writer. AttrURI ("file", test. file, TRUE);
     IF (test. lang # NIL) THEN
       writer. AttrString ("lang", test. lang^)
     END;
     IF (test. output # NIL) THEN
-      writer. AttrURI ("output", test. output, FALSE)
+      writer. AttrURI ("output", test. output, TRUE)
     END;
     test. textList. Write (writer);
     writer. EndTag

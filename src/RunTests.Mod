@@ -1,9 +1,11 @@
 MODULE RunTests;
 
 IMPORT
-  Channel, Err, Msg, Out, ProgramArgs, LongStrings, TextRider, URI,
+  Channel, Err, Files, Msg, Out, ProgramArgs, LongStrings, TextRider, 
+  SysClock, Calendar,
+  URI,
   StdChannels, XMLError := XML:Error, XML:UnicodeCodec:Latin1,
-  XML:Basic:Element, URI:Scheme:File,
+  XML:Basic:Element, XMLWriter := XML:Writer, URI:Scheme:File,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases,
   OOC:TestFramework:Processor;
 
@@ -12,9 +14,6 @@ CONST  (* classifications of test results *)
   failed = 1;
   tolerated = 2;
 
-CONST
-  testedLanguage = "O2";
-  
 TYPE
   Results = ARRAY tolerated+1 OF LONGINT;
   
@@ -22,7 +21,9 @@ VAR
   testSetup: TestSetup.TestSetup;
   testSuite: Testcases.TestSuite;
   proc: Processor.Processor;
+  reportWriter: XMLWriter.Writer;
   results: Results;
+  str: ARRAY 256 OF CHAR;
 
 PROCEDURE CheckErrorFile (msg: Msg.Msg; file: ARRAY OF CHAR);
   VAR
@@ -53,11 +54,12 @@ PROCEDURE ReadConfig (VAR setup: TestSetup.TestSetup;
   CONST
     testSetup = 0;
     testCases = 1;
-    
   VAR
     r: TextRider.Reader;
     arg: ARRAY 1024 OF CHAR;
     elem: Element.Element;
+    res: Msg.Msg;
+    reportFile: Files.File;
     
   PROCEDURE ReadURI (uri: URI.URI; parser: SHORTINT): Element.Element;
     VAR
@@ -106,7 +108,13 @@ PROCEDURE ReadConfig (VAR setup: TestSetup.TestSetup;
       elem := ReadURI (File.ToURI (arg), testSetup);
       setup := elem(TestSetup.TestSetup);
       elem := ReadURI (setup. testSuite. uri, testCases);
-      suite := elem(Testcases.TestSuite)
+      suite := elem(Testcases.TestSuite);
+      
+      r. ReadLine (arg);
+      reportFile := Files.New (arg, {Files.write}, res);
+      CheckError (res);
+      reportWriter := XMLWriter.New (reportFile. NewWriter(),
+                                     Latin1.factory, TRUE, 4)
     END
   END ReadConfig;
 
@@ -114,12 +122,14 @@ PROCEDURE ReadConfig (VAR setup: TestSetup.TestSetup;
 PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
                     testSuite: Testcases.TestSuite;
                     proc: Processor.Processor;
-                    currLanguage: ARRAY OF LONGCHAR;
+                    reportWriter: XMLWriter.Writer;
                     VAR results: Results);
   VAR
     testCases: Testcases.Testcases;
     test: Testcases.Test;
     result, class: SHORTINT;
+    timeStr, str: ARRAY 128 OF CHAR;
+    time: SysClock.DateTime;
   
   PROCEDURE In (pattern, string: ARRAY OF LONGCHAR): BOOLEAN;
     VAR
@@ -157,24 +167,34 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     END ResultMatches;
   
   BEGIN
+    reportWriter. StartTag ("test-report", FALSE);
+    SysClock.GetClock (time);
+    Calendar.TimeToStr (time, "%c", timeStr);
+    reportWriter. AttrStringLatin1 ("time", timeStr);
+    testSetup. Write (reportWriter);
+    
+    reportWriter. StartTag ("test-results", FALSE);
     testCases := testSuite. testcasesList. head(Testcases.Testcases);
     WHILE (testCases # NIL) DO
       IF (testCases. tests. head # NIL) THEN
         test := testCases. tests. head(Testcases.Test);
         WHILE (test # NIL) DO
-          proc. Process (test, result);
+          reportWriter. StartTag ("test-result", FALSE);
+          test. Write (reportWriter);
+          
+          proc. Process (test, reportWriter, result);
           
           IF (result = Processor.processCrash) THEN
             (* processor crashed *)
             class := failed
           ELSIF (result = Processor.processMainModuleError) OR
-                (result = Processor.processInvalidTestModule) OR
+                (result = Processor.processBuildError) OR
                 (result = Processor.processCompareFailed) THEN
             (* some error while processing the test that cannot be
                attributed to the processor *)
             class := failed
           ELSE
-            IF In (currLanguage, test. lang^) THEN
+            IF In (testSetup. lang^, test. lang^) THEN
               IF ResultMatches (test. type, result) THEN
                 class := passed
               ELSE
@@ -190,6 +210,37 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
               END
             END
           END;
+          
+          reportWriter. StartTag ("outcome", FALSE);
+          CASE result OF
+          | Processor.processCrash:
+            str := "compiler crashed"
+          | Processor.processReject:
+            str := "rejected by compiler"
+          | Processor.processAccept:
+            str := "accepted by compiler"
+          | Processor.processMainModuleError:
+            str := "failed to write main module"
+          | Processor.processBuildError:
+            str := "failed to build executable (no `Test' procedure?)"
+          | Processor.processError:
+            str := "program exited with error"
+          | Processor.processSuccess:
+            str := "program completed successfully"
+          | Processor.processOutputDifference:
+            str := "program ran, but output does not match reference"
+          | Processor.processCompareFailed:
+            str := "program ran, but failed to compare output with reference"
+          END;
+          reportWriter. AttrStringLatin1 ("result", str);
+          CASE class OF
+          | passed: str := "passed"
+          | failed: str := "failed"
+          | tolerated: str := "tolerated"
+          END;
+          reportWriter. AttrStringLatin1 ("class", str);
+          reportWriter. EndTag;          (* outcome *)
+          reportWriter. EndTag;          (* test-result *)
           
           Out.String ("--> TEST RESULT: ");
           CASE class OF
@@ -221,12 +272,15 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
       ELSE
         testCases := NIL
       END
-    END
+    END;
+    reportWriter. EndTag;  (* test-results *)
+    reportWriter. EndTag;  (* test-report *)
+    reportWriter. EndOfText
   END RunTests;
 
 BEGIN
-  IF (ProgramArgs.args. ArgNumber() # 1) THEN
-    Err.String ("Usage: RunTests <test-setup>"); Err.Ln; HALT (1)
+  IF (ProgramArgs.args. ArgNumber() # 2) THEN
+    Err.String ("Usage: RunTests <test-setup> <report-file>"); Err.Ln; HALT (1)
   ELSE
     (* make error message values "line" and "character position" Emacs
        compatible be having them start at line 1, point 1 for the XML
@@ -240,7 +294,7 @@ BEGIN
   proc := Processor.New (testSetup);
   proc. Setup;
   results[passed] := 0; results[failed] := 0; results[tolerated] := 0;
-  RunTests (testSetup, testSuite, proc, testedLanguage, results);
+  RunTests (testSetup, testSuite, proc, reportWriter, results);
   proc. Cleanup;
   
   Out.Ln; Out.Ln;
@@ -256,7 +310,8 @@ BEGIN
   ELSE
     Out.String ("Processor is compliant to ")
   END;
-  Out.String (testedLanguage); Out.Ln;
+  LongStrings.Short (testSetup. lang^, "?", str);
+  Out.String (str); Out.Ln;
   
 (*  writer := Writer.New (StdChannels.stdout. NewWriter(),
                         Latin1.factory, TRUE, 4);

@@ -1,8 +1,8 @@
 MODULE OOC:TestFramework:Processor;
 
 IMPORT
-  C, Files, Msg, Out, Strings, TextRider,
-  ADT:String, OSFiles := OS:Files, OS:ProcessManagment, URI:Scheme:File,
+  C, Files, Msg, Out, Strings, TextRider, ADT:String, OSFiles := OS:Files,
+  OS:ProcessManagment, URI:Scheme:File, XMLWriter := XML:Writer,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases;
 
 
@@ -11,7 +11,7 @@ CONST
   processReject* = 1;
   processAccept* = 2;
   processMainModuleError* = 3;     (* could not generate main module *)
-  processInvalidTestModule* = 4;   (* could not compile main for test *)
+  processBuildError* = 4;          (* could not compile main for test *)
   processError* = 5;               (* executable aborted with error *)
   processSuccess* = 7;             (* executable ran successfully *)
   processOutputDifference* = 8;    (* executable ran, but output differs *)
@@ -20,9 +20,8 @@ CONST
 TYPE
   Processor* = POINTER TO ProcessorDesc;
   ProcessorDesc = RECORD
-    baseDir, modDir, symDir, objDir, binDir: String.String;
-    stdout, stderr: String.String;
-    processCmd: String.String;
+    baseDir, modDir, symDir, objDir, binDir, txtDir: String.String;
+    processCmd, filterCmd: String.String;
   END;
 
 TYPE
@@ -53,8 +52,7 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     proc. symDir := GetPath ("sym");
     proc. objDir := GetPath ("obj");
     proc. binDir := GetPath ("bin");
-    proc. stdout := GetPath ("stdout.txt");
-    proc. stderr := GetPath ("stderr.txt");
+    proc. txtDir := GetPath ("txt");
     
     (* put together command string for compile/make *)
     s := String.New (setup. processor. command);
@@ -66,6 +64,10 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     s. AppendString (" ");
     proc. processCmd := s;
     
+    proc. filterCmd := NIL;
+    IF (setup. processor. filterCommand # "") THEN
+      proc. filterCmd := String.New (setup. processor. filterCommand)
+    END
   END Init;
 
 PROCEDURE New* (setup: TestSetup.TestSetup): Processor;
@@ -92,6 +94,7 @@ PROCEDURE (proc: Processor) Setup*;
     MakeDir (proc. symDir);
     MakeDir (proc. objDir);
     MakeDir (proc. binDir);
+    MakeDir (proc. txtDir);
   END Setup;
 
 PROCEDURE (proc: Processor) Cleanup*;
@@ -146,16 +149,50 @@ PROCEDURE (proc: Processor) CompareOutput (referenceFile, outputFile: ARRAY OF C
   END CompareOutput;
 
 PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
+                                      reportWriter: XMLWriter.Writer;
                                       VAR result: SHORTINT);
   VAR
     path: ARRAY 4*1024 OF CHAR;
     exit, status, signal: C.int;
     moduleName, modPath: String.String;
+    runOutFile, runErrFile: FilePath;
   
-  PROCEDURE CompileModule (path: ARRAY OF CHAR; build: BOOLEAN;
+  PROCEDURE GetFileName (moduleName: String.String; suffix: ARRAY OF CHAR;
+                         VAR path: ARRAY OF CHAR);
+    BEGIN
+      COPY (proc. txtDir. array^, path);
+      Strings.Append ("/", path);
+      Strings.Append (moduleName. array^, path);
+      Strings.Append (suffix, path)
+    END GetFileName;
+  
+  PROCEDURE AttrFileRef (attrName: ARRAY OF LONGCHAR;
+                         fileName: ARRAY OF CHAR);
+    VAR
+      f: Files.File;
+      res: Msg.Msg;
+      len: LONGINT;
+    BEGIN
+      IF (fileName # "") THEN
+        f := Files.Old (fileName, {Files.read}, res);
+        IF (res = NIL) THEN
+          len := f. Length();
+          f. Close
+        ELSE
+          len := -1
+        END;
+        IF (len > 0) THEN
+          reportWriter. AttrStringLatin1 (attrName, fileName)
+        END
+      END
+    END AttrFileRef;
+
+  PROCEDURE CompileModule (moduleName: String.String;
+                           path: ARRAY OF CHAR; build: BOOLEAN;
                            VAR status, signal: C.int);
     VAR
       exit: C.int;
+      outFile, errFile, filterFile: FilePath;
     
     PROCEDURE Copy (file: ARRAY OF CHAR);
       VAR
@@ -180,6 +217,17 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       END Copy;
     
     BEGIN
+      (* determine path for stdout and stderr output *)
+      IF build THEN
+        GetFileName (moduleName, ".build.out", outFile);
+        GetFileName (moduleName, ".build.err", errFile);
+        GetFileName (moduleName, ".build.filter", filterFile);
+      ELSE
+        GetFileName (moduleName, ".compile.out", outFile);
+        GetFileName (moduleName, ".compile.err", errFile);
+        GetFileName (moduleName, ".compile.filter", filterFile);
+      END;
+      
       (* compile test module *)
       Strings.Insert ("'", 0, path);
       Strings.Append ("'", path);
@@ -188,9 +236,9 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       END;
       Strings.Insert (proc. processCmd. array^, 0, path);
       Strings.Append (" >'", path);
-      Strings.Append (proc. stdout. array^, path);
+      Strings.Append (outFile, path);
       Strings.Append ("' 2>'", path);
-      Strings.Append (proc. stderr. array^, path);
+      Strings.Append (errFile, path);
       Strings.Append ("'", path);
       IF build THEN
         Out.String ("### build command:"); Out.Ln
@@ -202,8 +250,39 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       status := ASH (exit, -8) MOD 256;
       signal := exit MOD 256;
       
-      Copy (proc. stdout. array^);
-      Copy (proc. stderr. array^);
+      IF (proc. filterCmd # NIL) & (status # 0) THEN
+        (* if exit status is non-zero, then filter the stdout output through
+           filter *)
+        COPY (proc. filterCmd. array^, path);
+        Strings.Insert ("'", 0, path);
+        Strings.Append ("' <'", path);
+        Strings.Append (outFile, path);
+        Strings.Append ("' >'", path);
+        Strings.Append (filterFile, path);
+        Strings.Append ("'", path);
+        exit := ProcessManagment.system (path)
+      ELSE
+        COPY ("", filterFile)
+      END;
+      
+      Copy (outFile);
+      Copy (errFile);
+      
+      IF build THEN
+        reportWriter. StartTag ("build-status", FALSE)
+      ELSE
+        reportWriter. StartTag ("compile-status", FALSE)
+      END;
+      AttrFileRef ("stdout", outFile);
+      AttrFileRef ("stderr", errFile);
+      AttrFileRef ("filtered", filterFile);
+      IF (status # 0) THEN
+        reportWriter. AttrInt ("status", status)
+      END;
+      IF (signal # 0) THEN
+        reportWriter. AttrInt ("signal", signal)
+      END;
+      reportWriter. EndTag
     END CompileModule;
   
   PROCEDURE WriteMainModule (name: String.String): String.String;
@@ -254,8 +333,9 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
   BEGIN
     Out.Ln;
     
+    moduleName := test. ModuleName();
     test. file(File.URI). GetPath (path);
-    CompileModule (path, FALSE, status, signal);
+    CompileModule (moduleName, path, FALSE, status, signal);
     
     (* determine status of compilation *)
     result := processCrash;
@@ -279,30 +359,31 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
     IF (result = processAccept) & (test. type >= Testcases.testError) THEN
       (* if the module must be evaluated, create a wrapper that calls the
          exported procedure and build an executable *)
-      moduleName := test. ModuleName();
       modPath := WriteMainModule (moduleName);
       IF (modPath = NIL) THEN
         result := processMainModuleError;
         Out.String ("--> failed to write main module"); Out.Ln
       ELSE
         COPY (modPath. array^, path);
-        CompileModule (path, TRUE, status, signal);
+        CompileModule (moduleName, path, TRUE, status, signal);
         Out.String ("--> build result: ");
         IF (status # 0) OR (signal # 0) THEN
           Out.String ("error"); Out.Ln;
-          result := processInvalidTestModule
+          result := processBuildError
         ELSE
           Out.String ("ok"); Out.Ln;
           
           (* run the freshly generated program and see if it aborts *)
+          GetFileName (moduleName, ".run.out", runOutFile);
+          GetFileName (moduleName, ".run.err", runErrFile);
           COPY (moduleName. array^, path);
           Strings.Insert ("/x", 0, path);
           Strings.Insert (proc. binDir. array^, 0, path);
           Strings.Insert ("'", 0, path);
           Strings.Append ("' >'", path);
-          Strings.Append (proc. stdout. array^, path);
+          Strings.Append (runOutFile, path);
           Strings.Append ("' 2>'", path);
-          Strings.Append (proc. stderr. array^, path);
+          Strings.Append (runErrFile, path);
           Strings.Append ("'", path);
           Out.String ("### executing:"); Out.Ln;
           Out.String (path); Out.Ln;
@@ -313,11 +394,22 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
             result := processSuccess;
             IF (test. type = Testcases.testOutput) THEN
               test. output(File.URI). GetPath (path);
-              result := proc. CompareOutput (path, proc. stdout. array^)
+              result := proc. CompareOutput (path, runOutFile)
             END
           ELSE
             result := processError
           END;
+          
+          reportWriter. StartTag ("run-status", FALSE);
+          AttrFileRef ("stdout", runOutFile);
+          AttrFileRef ("stderr", runErrFile);
+          IF (status # 0) THEN
+            reportWriter. AttrInt ("status", status)
+          END;
+          IF (signal # 0) THEN
+            reportWriter. AttrInt ("signal", signal)
+          END;
+          reportWriter. EndTag;
           
           Out.String ("--> execution result: ");
           CASE result OF

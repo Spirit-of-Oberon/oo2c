@@ -48,6 +48,7 @@ TYPE
     configFile-: URI.URI;
     flags-: String8;
     workingDir-: URI.URI;
+    filterCommand-: String8;
   END;
 
 TYPE
@@ -62,6 +63,7 @@ TYPE
   TestSetup* = POINTER TO TestSetupDesc;
   TestSetupDesc = RECORD
     (Element.ElementDesc)
+    lang-: Element.String;
     machine-: Machine;
     operatingSystem-: OperatingSystem;
     processor-: Processor;
@@ -246,6 +248,7 @@ PROCEDURE InitProcessor (processor: Processor);
     processor. configFile := NIL;
     processor. flags := unknownString8;
     processor. workingDir := NIL;
+    processor. filterCommand := "";
   END InitProcessor;
 
 PROCEDURE NewProcessor(): Element.Element;
@@ -269,7 +272,8 @@ PROCEDURE (processor: Processor) IsAttributeName* (localName: Element.String): B
            (localName^ = "command") OR
            (localName^ = "config-file") OR
            (localName^ = "flags") OR
-           (localName^ = "working-dir")
+           (localName^ = "working-dir") OR
+           (localName^ = "filter-command")
   END IsAttributeName;
 
 PROCEDURE (processor: Processor) AddAttribute* (localName: Element.String;
@@ -287,6 +291,8 @@ PROCEDURE (processor: Processor) AddAttribute* (localName: Element.String;
       RETURN DataType.GetStringLatin1Attr (value, processor. flags)
     ELSIF (localName^ = "working-dir") THEN
       RETURN DataType.GetURIAttr (value, processor. baseURI, processor. workingDir)
+    ELSIF (localName^ = "filter-command") THEN
+      RETURN DataType.GetStringLatin1Attr (value, processor. filterCommand)
     ELSE
       RETURN FALSE
     END
@@ -303,6 +309,9 @@ PROCEDURE (processor: Processor) Write* (writer: Writer.Writer);
     END;
     writer. AttrStringLatin1 ("flags", processor. flags);
     writer. AttrURI ("working-dir", processor. workingDir, FALSE);
+    IF (processor. filterCommand # "") THEN
+      writer. AttrStringLatin1 ("filter-command", processor. filterCommand)
+    END;
     writer. EndTag
   END Write;
 
@@ -354,6 +363,7 @@ PROCEDURE (testSuite: TestSuite) Write* (writer: Writer.Writer);
 PROCEDURE InitTestSetup (testSetup: TestSetup);
   BEGIN
     Element.InitElement (testSetup);
+    testSetup. lang := NIL;
     testSetup. machine := NIL;
     testSetup. operatingSystem := NIL;
     testSetup. processor := NIL;
@@ -369,6 +379,22 @@ PROCEDURE NewTestSetup(): Element.Element;
     RETURN testSetup
   END NewTestSetup;
 
+PROCEDURE (testSetup: TestSetup) IsAttributeName* (localName: Element.String): BOOLEAN;
+  BEGIN
+    RETURN (localName^ = "lang")
+  END IsAttributeName;
+
+PROCEDURE (testSetup: TestSetup) AddAttribute* (localName: Element.String;
+                                            value: Element.AttValue): BOOLEAN;
+  BEGIN
+    IF (localName^ = "lang") THEN
+      testSetup. lang := value. Flatten (NIL);
+      RETURN TRUE
+    ELSE
+      RETURN FALSE
+    END
+  END AddAttribute;
+  
 PROCEDURE (testSetup: TestSetup) IsChildName* (localName: Element.String): BOOLEAN;
   BEGIN
     RETURN (localName^ = "machine") OR
@@ -429,6 +455,7 @@ PROCEDURE (testSetup: TestSetup) MissingChild* (): Element.String;
 PROCEDURE (testSetup: TestSetup) Write* (writer: Writer.Writer);
   BEGIN
     writer. StartTag ("test-setup", FALSE);
+    writer. AttrString ("lang", testSetup. lang^);
     testSetup. machine. Write (writer);
     testSetup. operatingSystem. Write (writer);
     testSetup. processor. Write (writer);
