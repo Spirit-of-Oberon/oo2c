@@ -19,6 +19,9 @@
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; bugDeclC1">-->
 
+<!--<testsuite-ext profile="Test Suite for Translation Patterns"
+  select ="&SetupTestCasesWithOut; align1 align2">-->
+
   &TestSetupWithOut;
     
   <testcases profile="OOC2 Development" default-lang="O2">
@@ -1700,6 +1703,15 @@
     </test>
   </testcases>
   
+  <testcases profile="C language Interface" default-lang="O2">
+    <test id="align1" type="run" file="Align1.Mod">
+      Check that alignment produces correct field offsets for a number of 
+      alignment options.
+    </test>
+    <test id="align2" type="reject" file="Align2.Mod">
+    </test>
+  </testcases>
+
   <processor-info processor-name="TestCompile">
     <reject-info id="assign1" pos="%c :=" msg="This must be a variable"/>
     <reject-info id="assign2" pos="r%. TBProc :=" msg="This must be a variable"/>
@@ -2137,6 +2149,9 @@
         msg="The base record type has 2 type parameter(s)"/>
     <reject-info id="generic55" pos="(a: %A())"
         msg="The base record type has no type parameters"/>
+
+    <reject-info id="align2" pos=", %ALIGN2"
+        msg="This modifier flag has no effect here"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>
