@@ -68,6 +68,7 @@ PROCEDURE MemOpnd(instr: S.Instr): S.Opnd;
    Otherwise, result is @code{NIL}.  *)
   VAR
     inout, opnd: S.Opnd;
+    opcode: S.Opcode;
     
   PROCEDURE IsOffset(instr: S.Instr): BOOLEAN;
     BEGIN
@@ -75,6 +76,7 @@ PROCEDURE MemOpnd(instr: S.Instr): S.Opnd;
     END IsOffset;
 
   BEGIN
+    opcode := instr.opcode;
     CASE instr.opcode OF
     | S.set, S.get:
       IF instr.opndList.IsConst() OR IsOffset(instr.opndList.arg.instr) THEN
@@ -82,16 +84,13 @@ PROCEDURE MemOpnd(instr: S.Instr): S.Opnd;
       END;
     | S.setStack, S.typeTag:
       RETURN NIL;
-    | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq:
-      opnd := instr.opndList.nextOpnd;
-      IF (opnd.arg.instr.opcode = S.get) THEN
-        RETURN opnd;
-      ELSE
-        RETURN NIL;
-      END;
     ELSE
       inout := InOutOpnd(instr);
       opnd := instr.opndList;
+      IF (S.eql <= opcode) & (opcode <= S.geq) & S.IsFloat(opnd.arg.type) THEN
+        (* ucomis has different rules than cmp *)
+        opnd := opnd.nextOpnd;
+      END;
       WHILE (opnd # NIL) DO
         IF (opnd # inout) & (opnd.arg.instr.opcode = S.get) THEN
           RETURN opnd;
