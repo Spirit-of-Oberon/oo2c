@@ -58,7 +58,7 @@ main-clean: doc-clean test-cleanall
 	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done
 	-cd stage0 && rm -f *.o */*.o */*/*.o */*/*/*.o
-	rm -Rf "$(DOC_DIR)" stage1 stage2 tests/lib-TestCompile gmon.out
+	rm -Rf "$(DOC_DIR)" stage1 stage2 tests/lib-TestCompile tests/lib-oo2c gmon.out
 	${MAKE} -C tests/hostess-ooc1 test-clean
 	${MAKE} -C tests/benchmark clean
 
