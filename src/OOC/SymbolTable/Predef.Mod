@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:Predef;
 
 
 IMPORT
-  Strings, Language, Language:Boolean,
+  Strings, Language, Language:Boolean, Language:Integer, Language:String8,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
@@ -61,7 +61,9 @@ CONST
      may contain the character code @code{0X}.  *)
   longcharString* = 13;
   (**Like @oconst{charString}, but based on the type @code{LONGCHAR}.  *)
-  void* = 14;
+  nil* = 14;
+  (**The type of the constant @code{NIL}.  *)
+  void* = 15;
   (**The return type of procedures, indicating that no result is produced.  *)
   
   lastId* = void;
@@ -73,7 +75,13 @@ CONST
      This is also the result type of the predefined function @code{LEN}.
      Normally, this is the same as @oconst{longint}.  Use this symbolic
      name when producing values the are array indices or lengths.  *)
-  
+
+VAR
+  minConst, maxConst: ARRAY lastId+1 OF Language.Value;
+  (**Array with the @code{MIN} and @code{MAX} values of the predefined
+     types.  An entry @code{NIL} means that the operation is not
+     applicable to the type.  *)
+
 CONST
   (* predefined procedures and functions *)
   assert* = 0;                           (* ASSERT *)
@@ -84,8 +92,14 @@ CONST
   cap* = 5;                              (* CAP *)
   long* = 6;                             (* LONG *)
   short* = 7;                            (* SHORT *)
-  new* = 8;                              (* NEW *)
+  ord* = 8;                              (* ORD *)
+  max* = 9;                              (* MAX *)
+  min* = 10;                             (* MIN *)
+  new* = 11;                             (* NEW *)
   
+VAR
+  i: LONGINT;
+
   
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
   VAR
@@ -103,7 +117,8 @@ PROCEDURE PredefType (stb: Builder.Builder;
                       module: Sym.Module;
                       id: Sym.PredefId;
                       name: ARRAY OF CHAR;
-                      size: LONGINT; align: INTEGER): Sym.PredefType;
+                      size: LONGINT; align: INTEGER;
+                      minValue, maxValue: Language.Value): Sym.PredefType;
   VAR
     ptype: Sym.PredefType;
     tdecl: Sym.TypeDecl;
@@ -111,6 +126,8 @@ PROCEDURE PredefType (stb: Builder.Builder;
     ptype := stb. NewPredefType (module, id);
     ptype. SetSize (size, SHORT (size));
     Sym.predefIdToType[id] := ptype;
+    minConst[id] := minValue;
+    maxConst[id] := maxValue;
     IF (name # "") THEN
       tdecl := stb. NewTypeDecl (module, GetName (name), 0,
                                  Sym.nameExported, NIL, ptype)
@@ -148,22 +165,40 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     module := stb. NewModule (GetName ("#predef"), NIL, Sym.mcInternal,
                               Sym.callConvInternal, NIL);
     
-    ptype := PredefType (stb, module, boolean, "BOOLEAN", 1, 1);
+    ptype := PredefType (stb, module, boolean, "BOOLEAN", 1, 1, NIL, NIL);
     PredefConst ("FALSE", Boolean.New (FALSE), ptype);
     PredefConst ("TRUE", Boolean.New (TRUE), ptype);
     
-    ptype := PredefType (stb, module, char, "CHAR", 1, 1);
-    ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2);
-    ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1);
-    ptype := PredefType (stb, module, integer, "INTEGER", 2, 2);
-    ptype := PredefType (stb, module, longint, "LONGINT", 4, 4);
-    ptype := PredefType (stb, module, real, "REAL", 4, 4);
-    ptype := PredefType (stb, module, longreal, "LONGREAL", 8, 8);
-    ptype := PredefType (stb, module, set, "SET", 4, 4);
+    ptype := PredefType (stb, module, char, "CHAR", 1, 1,
+                         String8.NewChar (MIN (CHAR)),
+                         String8.NewChar (MAX (CHAR)));
+    ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2,
+                         NIL, NIL);      (* FIXME... add MIN/MAX *)
+    ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1,
+                         Integer.NewLInt (MIN (SHORTINT)),
+                         Integer.NewLInt (MAX (SHORTINT)));
+    ptype := PredefType (stb, module, integer, "INTEGER", 2, 2,
+                         Integer.NewLInt (MIN (INTEGER)),
+                         Integer.NewLInt (MAX (INTEGER)));
+    ptype := PredefType (stb, module, longint, "LONGINT", 4, 4,
+                         Integer.NewLInt (MIN (LONGINT)),
+                         Integer.NewLInt (MAX (LONGINT)));
+    ptype := PredefType (stb, module, real, "REAL", 4, 4,
+                         NIL, NIL);      (* FIXME... add MIN/MAX *)
+    ptype := PredefType (stb, module, longreal, "LONGREAL", 8, 8,
+                         NIL, NIL);      (* FIXME... add MIN/MAX *)
+    ptype := PredefType (stb, module, set, "SET", 4, 4,
+                         Integer.NewLInt (MIN (SET)),
+                         Integer.NewLInt (MAX (SET)));
     
-    ptype := PredefType (stb, module, charString, "", Sym.dynamicSize, 1);
-    ptype := PredefType (stb, module, longcharString, "", Sym.dynamicSize, 2);
-    ptype := PredefType (stb, module, void, "", 0, 1);
+    ptype := PredefType (stb, module, charString, "", Sym.dynamicSize, 1,
+                         NIL, NIL);
+    ptype := PredefType (stb, module, longcharString, "", Sym.dynamicSize, 2,
+                         NIL, NIL);
+    ptype := PredefType (stb, module, nil, "", 4, 4,
+                         NIL, NIL);
+    ptype := PredefType (stb, module, void, "", 0, 1,
+                         NIL, NIL);
     
     PredefProc (assert, "ASSERT");
     PredefProc (len, "LEN");
@@ -173,6 +208,9 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (cap, "CAP");
     PredefProc (long, "LONG");
     PredefProc (short, "SHORT");
+    PredefProc (ord, "ORD");
+    PredefProc (max, "MAX");
+    PredefProc (min, "MIN");
     PredefProc (new, "NEW");
     
     stb. Finalize (module);
@@ -188,9 +226,9 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
     module := stb. NewModule (GetName ("SYSTEM"), NIL, Sym.mcInternal,
                               Sym.callConvInternal, NIL);
     
-    ptype := PredefType (stb, module, address, "ADDRESS", 4, 4);
-    ptype := PredefType (stb, module, byte, "BYTE", 1, 1);
-    ptype := PredefType (stb, module, ptr, "PTR", 4, 4);
+    ptype := PredefType (stb, module, address, "ADDRESS", 4, 4, NIL, NIL);
+    ptype := PredefType (stb, module, byte, "BYTE", 1, 1, NIL, NIL);
+    ptype := PredefType (stb, module, ptr, "PTR", 4, 4, NIL, NIL);
     
     stb. Finalize (module);
     RETURN module
@@ -201,6 +239,27 @@ PROCEDURE GetType* (id: Sym.PredefId): Sym.PredefType;
     RETURN Sym.predefIdToType[id]
   END GetType;
 
+PROCEDURE GetMin* (type: Sym.Type): Language.Value;
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN minConst[type. id];
+    ELSE
+      RETURN NIL;
+    END;
+  END GetMin;
+
+PROCEDURE GetMax* (type: Sym.Type): Language.Value;
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN minConst[type. id];
+    ELSE
+      RETURN NIL;
+    END;
+  END GetMax;
+
 BEGIN
-  NEW (Sym.predefIdToType, lastId+1)
+  NEW (Sym.predefIdToType, lastId+1);
+  FOR i := 0 TO lastId DO
+    minConst[i] := NIL; maxConst[i] := NIL;
+  END;
 END OOC:SymbolTable:Predef.
