@@ -61,7 +61,7 @@ PROCEDURE ["(float)pow"] power*(base, exponent: REAL): REAL;
 (**Returns the value of the number base raised to the power exponent 
      for base > 0.  *)
 
-PROCEDURE ["lrint"] round*(x: REAL): LONGINT;
+PROCEDURE ["(int)lrint"] round*(x: REAL): LONGINT;
 (**Returns the value of x rounded to the nearest integer.  *)
 
 PROCEDURE ["(float)sincos"] sincos* (x: REAL; VAR sin, cos: REAL);
