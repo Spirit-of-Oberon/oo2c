@@ -1054,7 +1054,7 @@ RAISES IO.Error;
     RETURN success;
   END UpdateMainObjectFile;
 
-PROCEDURE ModuleClosure*(module: Rep.Module; restrictToLibrary: STRING): ModuleList;
+PROCEDURE ModuleClosure*(module: Rep.Module): ModuleList;
   VAR
     i: LONGINT;
     dict: Dictionary.Dictionary;
@@ -1065,9 +1065,7 @@ PROCEDURE ModuleClosure*(module: Rep.Module; restrictToLibrary: STRING): ModuleL
     VAR
       i: LONGINT;
     BEGIN
-      IF ((restrictToLibrary = NIL) OR
-          (restrictToLibrary.Equals(module.ifData.libraryName))) &
-         ~dict.HasKey(module) THEN
+      IF ~dict.HasKey(module) THEN
         dict.Set(module, NIL);
         
         FOR i := 0 TO LEN(module.ifImportList^)-1 DO
@@ -1128,7 +1126,7 @@ RAISES IO.Error;
       (* the link command depends on the object file containing the main()
          function, and on the object files of all modules that are imported
          directly or indirectly by the main module  *)
-      r.imports := ModuleClosure(module, NIL);
+      r.imports := ModuleClosure(module);
       
       isUpToDate := TRUE;
       FOR i := 0 TO LEN(r.imports^)-1 DO
@@ -1176,6 +1174,7 @@ RAISES IO.Error;
     success, isUpToDate: BOOLEAN;
     closure: ModuleList;
     i: LONGINT;
+    importLibrary: STRING;
   BEGIN
     r.localRepository := module.origin;
     
@@ -1184,13 +1183,16 @@ RAISES IO.Error;
        indicated library.  *)
     success := r.Update(module, Rep.modSymbolFile);
     IF success THEN
-      closure := ModuleClosure(module, r.libraryName);
+      closure := ModuleClosure(module);
       r.imports := closure;
       
       (* Create library files (static and shared).  *)
       isUpToDate := Exists(module, Rep.modLibrary);
       FOR i := 0 TO LEN(closure^)-1 DO
-        IF closure[i].ifData.NoObjectFile() THEN
+        importLibrary := closure[i].ifData.libraryName;
+        IF (importLibrary # NIL) & ~r.libraryName.Equals(importLibrary) THEN
+          (* skip, it is from another library *)
+        ELSIF closure[i].ifData.NoObjectFile() THEN
           (* skip *)
         ELSIF ~r.Update(closure[i], Rep.modObjectFileLib) THEN
           RETURN FALSE;
