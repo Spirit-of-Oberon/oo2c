@@ -86,7 +86,7 @@ PROCEDURE (c: ConstFold) VisitLen* (len: Operator.Len);
     (* FIXME! Implement lenFixedArray, but how do we get its length? . *)
     CASE len. variant OF
     | Operator.lenStringConst:
-      length := len.array(IR.Const).value(String8.Value).value.length;
+      length := len.array(IR.Const).value(String8.Value).value.length+1;
     | Operator.lenFixedArray:
       c.result := NIL; RETURN;
     | Operator.lenOpenArrayParam, Operator.lenOpenArrayHeap:
