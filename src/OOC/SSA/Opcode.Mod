@@ -461,9 +461,9 @@ CONST
      address of the procedure to be called, followed by the call's arguments.
      This opcode is used both for normal and type-bound procedures.  *)
   
-  getLength* = 56;
-  (**Retrieves the length of an open array variable for a given dimension.
-     Result is the signed integer of the type corresponding to
+  getLengthHeap* = 56;
+  (**Retrieves the length of an open array variable on the heap for a given
+     dimension.  Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
      of @oconst{get}, with the @var{store} operand replaced with the dimension:
 
@@ -480,7 +480,11 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 57;
+  getLengthParam* = 57;
+  (**Retrieves the length of an open array variable parameter for a given
+     dimension.  Operands are semantics are like @oconst{getLengthHeap}.  *)
+  
+  copyParameter* = 58;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -498,7 +502,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 58;
+  newObject* = 59;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -518,7 +522,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 59;
+  typeTag* = 60;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -529,7 +533,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 60;
+  typeTest* = 61;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -545,7 +549,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 61;
+  tbProcAddress* = 62;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -560,10 +564,10 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  assert* = 62;
-  halt* = 63;
+  assert* = 63;
+  halt* = 64;
   
-  checkIndex* = 64;
+  checkIndex* = 65;
   (**Ensures that an index is value with respect to a given array length.  An
      exception is raised if the index is negative, or less or equal to the
      array's length.
@@ -582,7 +586,7 @@ CONST
      The result of the instruction is the checked index.  One additional result
      is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  checkPointer* = 65;
+  checkPointer* = 66;
   (**Raise an exception if the pointer value is @code{NIL}.
 
      @table @oconst
@@ -596,7 +600,7 @@ CONST
      The result of the instruction is the checked pointer.  One additional
      result is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  typeGuard* = 66;
+  typeGuard* = 67;
   (**Raise an exception if the given type is not an extension of the type tag.
 
      @table @oconst
@@ -620,15 +624,15 @@ CONST
      of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
 
-  failedCase* = 67;
-  failedWith* = 68;
-  failedTypeAssert* = 69;
+  failedCase* = 68;
+  failedWith* = 69;
+  failedTypeAssert* = 70;
   
-  selectException* = 70;
+  selectException* = 71;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
   
-  labels* = 71;
+  labels* = 72;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  Every
      range and every single value is represented by two consecutive operands,
      the lower and the upper bound.  All operands are of class
@@ -735,7 +739,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | cmpString: cstr := "cmp-string";
     | moveBlock: cstr := "move-block";
       
-    | getLength: cstr := "get-length";
+    | getLengthHeap: cstr := "get-length-heap";
+    | getLengthParam: cstr := "get-length-param";
     | copyParameter: cstr := "copy-parameter";
     | newObject: cstr := "new-object";
     | typeTag: cstr := "type-tag";

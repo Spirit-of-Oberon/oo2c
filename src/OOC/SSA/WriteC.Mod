@@ -386,25 +386,25 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
 
 PROCEDURE ^ (w: Writer) Ref (opnd: SSA.Opnd);
 
-PROCEDURE (w: Writer) LengthExpr (instr: SSA.Instr);
+PROCEDURE (w: Writer) LengthExprHeap (instr: SSA.Instr);
+  BEGIN
+    w. WriteString ("OOC_ARRAY_LENGTH(");
+    w. Ref (instr. opndList. nextOpnd);
+    w. WriteString (", ");
+    w. Ref (instr. opndList);
+    w. WriteString (")");
+  END LengthExprHeap;
+
+PROCEDURE (w: Writer) LengthExprParam (instr: SSA.Instr);
   VAR
     design: SSA.Result;
     name: String.String;
   BEGIN
     design := instr. GetArgClass (Opnd.readDesign);
-    WITH design: SSA.DeclRef DO        (* length parameter *)
-      name := Naming.NameOfLengthParam
-          (design. decl(Sym.VarDecl), instr. opndList. GetIntConst());
-      w. WriteString (name. array^);
-      
-    ELSE                               (* length from type tag *)
-      w. WriteString ("OOC_ARRAY_LENGTH(");
-      w. Ref (instr. opndList. nextOpnd);
-      w. WriteString (", ");
-      w. Ref (instr. opndList);
-      w. WriteString (")");
-    END;
-  END LengthExpr;
+    name := Naming.NameOfLengthParam
+        (design(SSA.DeclRef). decl(Sym.VarDecl), instr. opndList. GetIntConst());
+    w. WriteString (name. array^);
+  END LengthExprParam;
 
 PROCEDURE ^ WriteExpr (w: Writer; instr: SSA.Instr);
 
@@ -461,8 +461,8 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
           w. WriteString (obj(String.String). array^);
         END;
 
-      ELSIF (instr. opcode = Opcode.getLength) THEN
-        w. LengthExpr (instr);
+      ELSIF (instr. opcode = Opcode.getLengthParam) THEN
+        w. LengthExprParam (instr);
         
       ELSE
         (* provoke an C error if this value is used: *)
@@ -1026,11 +1026,10 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
     | Opcode.moveBlock:
       MoveBlock (instr);
       
-    | Opcode.getLength:
-      IF ~instr. IsConst() THEN
-        (* don't write statement for length of open array parameter *)
-        w. LengthExpr (instr);
-      END;
+    | Opcode.getLengthHeap:
+      w. LengthExprHeap (instr);
+    | Opcode.getLengthParam:
+      (* don't write statement for length of open array parameter *)
       
     | Opcode.copyParameter:
       CopyParameter (instr(SSA.Address));

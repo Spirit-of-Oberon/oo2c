@@ -525,7 +525,7 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
           w. WriteString (instr. decl. name. str^);
         ELSE
           CASE instr. opcode OF
-          | Opcode.getLength:
+          | Opcode.getLengthHeap, Opcode.getLengthParam:
             w. WriteString (instr. opndList. nextOpnd. nextOpnd.
                             arg(SSA.DeclRef). decl. name. str^);
             w. WriteString ("/dim");

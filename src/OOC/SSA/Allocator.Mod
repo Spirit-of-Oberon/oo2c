@@ -1105,7 +1105,8 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
       BEGIN
        CASE opcode OF
         | Opcode.call, Opcode.get, Opcode.copyParameter,
-          Opcode.const, Opcode.address, Opcode.getLength:
+          Opcode.const, Opcode.address,
+          Opcode.getLengthHeap, Opcode.getLengthParam:
           RETURN FALSE;
         ELSE
           RETURN TRUE;

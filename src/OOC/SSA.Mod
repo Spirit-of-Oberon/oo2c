@@ -910,13 +910,9 @@ PROCEDURE (instr: Instr) IsConst*(): BOOLEAN;
    value, and within a given procedure block two instructions represent the
    same value iff they are identical.  *)
   BEGIN
-    IF (instr. opcode = Opcode.getLength) THEN
-      (* length of an open array parameter *)
-      RETURN (instr. GetArgClass (OpndClass.readDesign) IS DeclRef);
-    ELSE
-      RETURN (instr IS Const) OR (instr IS DeclRef) OR
-          (instr IS TypeRef) OR (instr IS Address);
-    END;
+    RETURN (instr. opcode = Opcode.getLengthParam) OR
+        (instr IS Const) OR (instr IS DeclRef) OR
+        (instr IS TypeRef) OR (instr IS Address);
   END IsConst;
 
 PROCEDURE (instr: Instr) UniqueResult*(): BOOLEAN;
@@ -1300,6 +1296,8 @@ PROCEDURE (pb: ProcBlock) AddGetLengthInstr* (get: Instr; dim: LONGINT;
   VAR
     getLength, dimension: Instr;
     opnd: Opnd;
+    paramRef: DeclRef;
+    opcode: Opcode.Class;
     
   PROCEDURE VarParamArray (get: Instr): DeclRef;
   (* If the get accesses a parameter without any further selectors, then
@@ -1327,8 +1325,7 @@ PROCEDURE (pb: ProcBlock) AddGetLengthInstr* (get: Instr; dim: LONGINT;
       IF (varParam # NIL) THEN
         use := varParam. useList;
         WHILE (use # NIL) DO
-          IF (use. instr. opcode = Opcode.getLength) &
-             (use. class = OpndClass.readDesign) &
+          IF (use. instr. opcode = Opcode.getLengthParam) &
              (use. instr. opndList. arg = dimension) THEN
             RETURN use. instr;
           END;
@@ -1342,9 +1339,15 @@ PROCEDURE (pb: ProcBlock) AddGetLengthInstr* (get: Instr; dim: LONGINT;
     ASSERT (get. instr. opcode = Opcode.get);
     IF dimType. isOpenArray THEN
       dimension := pb. GetConstInt (dim);
-      getLength := ExistingGetLength (VarParamArray (get), dimension);
+      paramRef := VarParamArray (get);
+      getLength := ExistingGetLength (paramRef, dimension);
       IF (getLength = NIL) THEN
-        getLength := pb. AddInstr (Opcode.getLength, Opcode.scLength);
+        IF (paramRef # NIL) THEN
+          opcode := Opcode.getLengthParam;
+        ELSE
+          opcode := Opcode.getLengthHeap;
+        END;
+        getLength := pb. AddInstr (opcode, Opcode.scLength);
         opnd := get. opndList;
         WHILE (opnd # NIL) DO
           IF (opnd. class = OpndClass.store) THEN
