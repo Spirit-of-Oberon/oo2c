@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 (*  Creates extended abstract syntax tree from the parser output.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc;
+  ADT:String, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc;
 
 
 
@@ -62,6 +62,7 @@ TYPE
 
 
 TYPE
+  Flags* = POINTER TO FlagsDesc;
   Terminal* = POINTER TO TerminalDesc;
   TerminalDesc = RECORD
     (NodeDesc)
@@ -259,7 +260,7 @@ TYPE
     (NodeDesc)
     module-: AST.Node;
     name-: ModuleIdent;
-    flags-: AST.Node;
+    flags-: Flags;
     semicolon-: AST.Node;
     importList-: AST.Node;
     body-: Body;
@@ -435,7 +436,6 @@ TYPE
 
 
 TYPE
-  Flags* = POINTER TO FlagsDesc;
   FlagsDesc = RECORD
     (NodeDesc)
     context-: SHORTINT;
@@ -468,8 +468,8 @@ TYPE
   ModuleFlagsDesc = RECORD
     (NodeDesc)
     library-: AST.Node;
-    external-: AST.Node;
-    callConv-: AST.Node;
+    external-: Terminal;
+    callConv-: Terminal;
     moduleFlags-: AST.NodeList;
     semicolon-: AST.Node;
     link-: AST.Node;
@@ -482,11 +482,11 @@ TYPE
   LinkFileFlagDesc = RECORD
     (NodeDesc)
     file-: AST.Node;
-    fileName-: AST.Node;
+    fileName-: Terminal;
     addOption-: AST.Node;
-    prefixOpt-: AST.Node;
+    prefixOpt-: Terminal;
     comma-: AST.Node;
-    suffixOpt-: AST.Node;
+    suffixOpt-: Terminal;
   END;
 
 TYPE
@@ -710,6 +710,16 @@ PROCEDURE (terminal: Terminal) Accept* (v: Visitor);
   BEGIN
     v. VisitTerminal (terminal)
   END Accept;
+
+PROCEDURE (terminal: Terminal) GetString* (stripQuotes: BOOLEAN): String.String;
+  BEGIN
+    IF stripQuotes THEN
+      RETURN String.NewRegion (terminal. sym. str^,
+                               1, terminal. sym. len-1)
+    ELSE
+      RETURN String.New (terminal. sym. str^)
+    END
+  END GetString;
 
 
 PROCEDURE (b: Builder) IdentDef* (ident, mark: AST.Node): Node;
@@ -1075,7 +1085,11 @@ PROCEDURE (b: Builder) Module* (module, name: AST.Node;
     NEW (m);
     m. module := module;
     m. name := name(ModuleIdent);
-    m. flags := flags;
+    IF (flags # NIL) THEN
+      m. flags := flags(Flags)
+    ELSE
+      m. flags := NIL
+    END;
     m. semicolon := semicolon;
     m. importList := importList;
     IF (body # NIL) THEN
@@ -1462,16 +1476,17 @@ PROCEDURE (libraryFlag: LibraryFlag) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) ModuleFlags* (library, external, 
-                  callConv: AST.Node; moduleFlags: AST.NodeList; semicolon, link: AST.Node;
-                  linkSections: AST.NodeList; end: AST.Node): AST.Node;
+PROCEDURE (b: Builder) ModuleFlags* (
+             library, external,  callConv: AST.Node; moduleFlags: AST.NodeList;
+             semicolon, link: AST.Node;
+             linkSections: AST.NodeList; end: AST.Node): AST.Node;
   VAR
     mf: ModuleFlags;
   BEGIN
     NEW (mf);
+    mf. external := external(Terminal);
+    mf. callConv := callConv(Terminal);
     mf. library := library;
-    mf. external := external;
-    mf. callConv := callConv;
     mf. moduleFlags := moduleFlags;
     mf. semicolon := semicolon;
     mf. link := link;
@@ -1492,11 +1507,19 @@ PROCEDURE (b: Builder) LinkFileFlag* (file, fileName, addOption, prefixOpt, comm
   BEGIN
     NEW (lff);
     lff. file := file;
-    lff. fileName := fileName;
+    lff. fileName := fileName(Terminal);
     lff. addOption := addOption;
-    lff. prefixOpt := prefixOpt;
+    IF (prefixOpt = NIL) THEN
+      lff. prefixOpt := NIL
+    ELSE
+      lff. prefixOpt := prefixOpt(Terminal)
+    END;
     lff. comma := comma;
-    lff. suffixOpt := suffixOpt;
+    IF (suffixOpt = NIL) THEN
+      lff. suffixOpt := NIL
+    ELSE
+      lff. suffixOpt := suffixOpt(Terminal)
+    END;
     RETURN lff
   END LinkFileFlag;
 
