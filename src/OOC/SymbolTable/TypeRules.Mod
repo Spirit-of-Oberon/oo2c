@@ -641,12 +641,12 @@ PROCEDURE FormalParamsMatch* (baseFParsClosure: Sym.Type;
       RETURN FALSE
     ELSIF (baseResult # NIL) & 
           ~allowSpecialization &   
-          ~SameType(baseResult, procFPars.resultType) THEN
+          ~SameType(baseResult, Sym.Expand(procFPars.resultType)) THEN
       RETURN FALSE
     ELSIF (baseResult # NIL) & 
           allowSpecialization &
-          ~(SameType(baseResult, procFPars.resultType) OR
-            IsExtensionOf(procFPars.resultType, baseResult)) THEN
+          ~(SameType(baseResult, Sym.Expand(procFPars.resultType)) OR
+            IsExtensionOf(Sym.Expand(procFPars.resultType), baseResult)) THEN
       RETURN FALSE
     ELSIF (baseFPars. anyRestParameters # procFPars. anyRestParameters) THEN
       RETURN FALSE
@@ -655,7 +655,7 @@ PROCEDURE FormalParamsMatch* (baseFParsClosure: Sym.Type;
         IF (baseFPars. params[i]. isVarParam # 
             procFPars. params[i]. isVarParam) OR
            ~EqualTypes (baseFParsClosure.Closure(baseFPars.params[i].type), 
-                        procFPars.params[i].type) THEN
+                        Sym.Expand(procFPars.params[i].type)) THEN
           RETURN FALSE
         END
       END;
