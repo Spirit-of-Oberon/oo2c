@@ -1,7 +1,8 @@
 MODULE OOC:C:Naming;
 
 IMPORT
-  IntStr, Strings, ADT:String, OOC:Repository, Sym := OOC:SymbolTable,
+  IntStr, Strings, ADT:Object, ADT:String, ADT:Dictionary,
+  OOC:Repository, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Predef, OOC:Auxiliary:Config;
 
 TYPE
@@ -13,6 +14,9 @@ CONST
      are passed by reference to the callee.  The callee must create and
      populate its own copy of the parameter.  *)
 
+VAR
+  keywords: Dictionary.Dictionary;
+  (* maps C/C++ keywords to a safer counterpart *)
   
 PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
   VAR
@@ -21,6 +25,8 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
     i: LONGINT;
     m: Sym.Item;
     relativeName: BOOLEAN;
+    name: String.String;
+    obj: Object.Object;
   BEGIN
     relativeName := FALSE;
     
@@ -65,8 +71,14 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
         INC (i)
       END
     END;
-    
-    RETURN String.New (str)
+
+    name := String.New (str);
+    IF keywords. HasKey (name) THEN
+      obj := keywords. Get (name);
+      RETURN obj(String.String);
+    ELSE
+      RETURN name;
+    END;
   END NameOfDeclaration;
 
 PROCEDURE NameOfModuleInit* (m: Repository.Module): String.String;
@@ -163,4 +175,39 @@ PROCEDURE NameOfTypeBoundSignature* (proc: Sym.ProcDecl): String.String;
     RETURN name. Concat (NameOfDeclaration (proc));
   END NameOfTypeBoundSignature;
 
+PROCEDURE Init ();
+  VAR
+    prefix: String.String;
+    
+  PROCEDURE RW (str: ARRAY OF CHAR);
+    VAR
+      name: String.String;
+    BEGIN
+      name := String.New (str);
+      keywords. Set (name, prefix. Concat (name));
+    END RW;
+  
+  BEGIN
+    keywords := Dictionary.New();
+    prefix := String.New ("_");
+    
+    (* reserved words of ANSI-C *)
+    RW ("auto"); RW ("break"); RW ("case"); RW ("char"); RW ("const"); 
+    RW ("continue"); RW ("default"); RW ("do"); RW ("double"); RW ("else"); 
+    RW ("enum"); RW ("extern"); RW ("float"); RW ("for"); RW ("goto"); 
+    RW ("if"); RW ("int"); RW ("long"); RW ("register"); RW ("return"); 
+    RW ("short"); RW ("signed"); RW ("sizeof"); RW ("static"); RW ("struct"); 
+    RW ("switch"); RW ("typedef"); RW ("union"); RW ("unsigned"); RW ("void"); 
+    RW ("volatile"); RW ("while"); RW ("fortran"); RW ("asm"); 
+    (* C++ reserved words *)
+    RW ("bool"); RW ("catch"); RW ("class"); RW ("delete"); RW ("false"); 
+    RW ("friend"); RW ("inline"); RW ("new"); RW ("operator"); RW ("private"); 
+    RW ("protected"); RW ("public"); RW ("template"); RW ("true"); RW ("try");
+    RW ("this"); RW ("virtual"); RW ("throw");
+    (* standard C entities used by the compiler *)
+    RW ("NULL")
+  END Init;
+
+BEGIN
+  Init
 END OOC:C:Naming.
