@@ -5912,7 +5912,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     ELSIF (id = Id.is) THEN
       result := b.NewTypeTest(sym, left, right);
     ELSIF b.WidenToCommon(left, right) THEN
-      leftType := left.type; rightType := right.type;
+      leftType := left.type.Deparam(); rightType := right.type.Deparam();
       
       isNumeric := TR.IsNumericType(leftType);
       isInteger := TR.IsIntegerType(leftType);
