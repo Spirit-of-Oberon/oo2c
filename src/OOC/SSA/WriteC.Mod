@@ -334,7 +334,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
           targetVar := w. registerMap. Get (res);
           w. WriteString (targetVar(String.String). array^);
           w. WriteString ("=");
-          w. Ref (opnd)
+          w. Ref (opnd);
+          w. WriteChar (";");
         END;
         opnd := opnd. nextOpnd; res := res. nextResult
       END;
