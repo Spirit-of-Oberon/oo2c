@@ -49,7 +49,6 @@ BEGIN
   NewConfig;
   Config.Read (cfgErrList);
   
-  Assembler.useAssembler := FALSE;
   makeRules := Make.NewRules();
   IF useStderr.value(Boolean.Value).boolean THEN
     makeRules.SetErrOut(StdChannels.stderr);

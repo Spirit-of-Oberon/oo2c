@@ -84,8 +84,7 @@ BEGIN
   ELSE
     mode := Rep.modCodeFileC
   END;
-  Assembler.useAssembler := translateIA32. value(BooleanValue.Value). boolean;
-
+  
   Make.writeAST := writeAST.value(BooleanValue.Value).boolean;
   Make.writeIR := writeIR.value(BooleanValue.Value).boolean;
   Make.inspectProc := OptionToMatcher(inspectProc, "--inspect.1");
