@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:IGraph;
 (*  Manipulation of interference graph of values' life ranges.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -126,6 +126,25 @@ PROCEDURE (g: Graph) Interfere* (res: LONGINT; live: Vector);
       m[res, i] := m[res, i]+live[i]
     END;
   END Interfere;
+
+PROCEDURE (g: Graph) MergeRowColumn*(source, target: LONGINT);
+  VAR
+    m: BitMatrix;
+    i: LONGINT;
+  BEGIN
+    m := g. m;
+    EXCL (m[source, source DIV bitsPerSet], source MOD bitsPerSet);
+    FOR i := 0 TO LEN(m^, 1)-1 DO
+      m[target, i] := m[target, i]+m[source, i];
+      m[source, i] := emptySet;
+    END;
+    FOR i := 0 TO LEN(m^, 0)-1 DO
+      IF (source MOD bitsPerSet) IN m[i, source DIV bitsPerSet] THEN
+        INCL(m[i, target DIV bitsPerSet], target MOD bitsPerSet);
+      END;
+      EXCL(m[i, source DIV bitsPerSet], source MOD bitsPerSet);
+    END;
+  END MergeRowColumn;
 
 PROCEDURE (g: Graph) AddToLive* (res: LONGINT; live: Vector);
 (**Adds @oparam{res} to the current live vector of graph @oparam{g}.  Also
