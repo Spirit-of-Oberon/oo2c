@@ -23,5 +23,12 @@
       Tests the <code>Length</code> function with <code>0X</code>
       terminated character arrays.
     </test>
+    
+    <test id="lib_Strings_Assign1" type="run"
+      file="LibStringsAssign1.Mod" output="LibStringsAssign1.Ref">
+      Tests the <code>Assign</code> function with <code>0X</code>
+      terminated source character arrays.  Truncation happens if the
+      destination array is not large enough.
+    </test>
   </testcases>
 </testsuite-ext>
