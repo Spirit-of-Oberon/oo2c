@@ -155,7 +155,8 @@ TYPE
     
     adrMap: Dictionary.Dictionary;
     (**Maps items of the symbol table to their @code{adr} instructions.  See
-       @oproc{ProcBlock.GetAdr}.  *)
+       @opr
+     | oc{ProcBlock.GetAdr}.  *)
   END;
   
 
@@ -515,7 +516,15 @@ PROCEDURE (instr: Instr) GetOpcodeName* (VAR name: ARRAY OF CHAR);
 
 PROCEDURE (instr: Instr) GetResultType* (): Opcode.Subclass;
   BEGIN
-    RETURN instr. subclass
+    CASE instr. opcode OF
+    | Opcode.set:
+      (* a `set' instruction's subclass identifies the type of the data
+         item being written, but the instruction itself does not produce
+         a value *)
+      RETURN Opcode.scNone
+    ELSE
+      RETURN instr. subclass
+    END;
   END GetResultType;
 
   (* ---------------------------------------------------------------------- *)
@@ -698,6 +707,35 @@ PROCEDURE (pb: ProcBlock) SetMarkers* (newMarker: LONGINT);
       instr := instr. nextInstr
     END;
   END SetMarkers;
+
+PROCEDURE (pb: ProcBlock) AddSetInstr* (get: Instr; sourceValue: Result): Instr;
+(**Given a @code{get} instruction, this method produces an mirroring @code{set}
+   instruction, transferring the scalar value @oparam{sourceValue} into the
+   variable.  *)
+  VAR
+    set: Instr;
+    opnd: Opnd;
+    
+  PROCEDURE MapOpndClass (class: OpndClass.Class): OpndClass.Class;
+    BEGIN
+      CASE class OF
+      | OpndClass.readAdr: RETURN OpndClass.writeAdr
+      | OpndClass.readDesign: RETURN OpndClass.writeDesign
+      ELSE
+        RETURN class
+      END;
+    END MapOpndClass;
+  
+  BEGIN
+    set := pb. AddInstr (Opcode.set, get. subclass);
+    opnd := get. opndList;
+    WHILE (opnd # NIL) DO
+      set. AddOpnd (opnd. arg, MapOpndClass (opnd. class));
+      opnd := opnd. nextOpnd
+    END;
+    set. AddOpnd (sourceValue, OpndClass.sourceValue);
+    RETURN set
+  END AddSetInstr;
 
 PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
 (**Topological sort on instructions in @oparam{pb}.  If there are no cyclic

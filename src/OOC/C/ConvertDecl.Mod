@@ -172,7 +172,8 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
       ELSE
         IF (c. mode = modeWriteExported) THEN
           sc := WriteDecl.scExtern
-        ELSIF (item. exportMark = Item.nameNotExported) THEN
+        ELSIF (item. exportMark = Item.nameNotExported) &
+              (item. parent IS Item.Module) THEN
           sc := WriteDecl.scStatic
         ELSE
           sc := WriteDecl.scAuto
@@ -245,5 +246,13 @@ PROCEDURE (c: Converter) ConvertProc* (b: WriteDecl.Block; procDecl: Item.ProcDe
     c. mode := modeWriteFctDef;
     RETURN ConvertDecl (c, procDecl)
   END ConvertProc;
+
+PROCEDURE (c: Converter) ConvertDecl* (b: WriteDecl.Block; decl: Item.Declaration): WriteDecl.Declaration;
+(**Creates a C declaration for the object @oparam{decl}.  *)
+  BEGIN
+    c. b := b;
+    c. mode := modeWriteFctDef;
+    RETURN ConvertDecl (c, decl)
+  END ConvertDecl;
 
 END OOC:C:ConvertDecl.
