@@ -1,6 +1,6 @@
 subdirs=make scanner parser symtab config oberon-doc interface
 
-export DIFF=diff -u
+include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
 
 .PHONY: clean test
 

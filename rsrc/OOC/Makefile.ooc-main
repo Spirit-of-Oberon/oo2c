@@ -1,8 +1,6 @@
 # -*-mode: makefile-*-
-OOC_HOME=/usr
-OOC_BIN_DIR=/usr/bin
-OOC=cd $(OOC_DEV_ROOT) && $(OOC_BIN_DIR)/Oo2c
-OOCN=cd $(OOC_DEV_ROOT) && $(OOC_BIN_DIR)/Oocn
+
+include $(OOC_DEV_ROOT)
 
 # DOC_TARGETS: Lists the target names of all suported documentation formats.
 # For every name listed here, the corresponding output format is generated
