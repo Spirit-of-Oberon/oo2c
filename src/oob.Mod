@@ -1,6 +1,6 @@
 MODULE oob;
 (*  Symbol file browser.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -20,7 +20,7 @@ MODULE oob;
 *)
 
 IMPORT
-  Err, Msg, Out, StdChannels, Strings, 
+  Ascii, Err, Msg, Out, StdChannels, Strings, 
   Config:Section:Options, Config:Section:Arguments, Config:Value:Boolean,
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,
@@ -306,11 +306,34 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
     END Import;
   
   PROCEDURE ConstDecl(constDecl: Sym.ConstDecl);
+    PROCEDURE Unprintable(str: STRING): BOOLEAN;
+      VAR
+        ch: UCS4CHAR;
+      BEGIN
+        IF (str.length = 1) THEN
+          ch := str.CharAt(0);
+          RETURN (ch < " ") OR (ch = Ascii.del) OR (ch > MAX(CHAR));
+        ELSE
+          RETURN FALSE;
+        END;
+      END Unprintable;
+    
+    PROCEDURE EscapeChar(ch: UCS4CHAR): STRING;
+      VAR
+        i: BigInt.BigInt;
+      BEGIN
+        i := BigInt.NewInt(ORD(ch));
+        RETURN "0"+i.Format(16)+"X";
+      END EscapeChar;
+    
     BEGIN
       IdentDef(constDecl);
       Out.String (" = ");
       IF (constDecl.value = NIL) THEN
         Out.String("NIL");
+      ELSIF (constDecl.value IS Boxed.String) &
+            Unprintable(constDecl.value(Boxed.String).value) THEN
+        Out.Object(EscapeChar(constDecl.value(Boxed.String).value.CharAt(0)));
       ELSE
         Out.Object(constDecl.value);
       END;
@@ -388,7 +411,10 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
       END;
       item := item.nextNested;
     END;
-    
+
+    IF (currentSection # noSection) & (currentSection # procDecl) THEN
+      DEC(indent);
+    END;
     Newline;
     Newline;
     Out.String("END "); Out.String(symTab.name.str^); Out.String(".");
