@@ -84,6 +84,31 @@ void RT0__InitVParStack(OOC_INT32 bytes) {
   _ooc_end_vs = (char*)_ooc_top_vs+(bytes);
 }
 
+
+#define PREFIX "## "
+void NORETURN _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) {
+  (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
+		" Runtime error in module %s at pos " OOC_INT32_FORMAT
+		"\n" PREFIX " %s\n" PREFIX "\n",
+		mid->name, pos, msg);
+  exit(127);
+}
+
+void RT0__ErrorIndexOutOfRange (RT0__Module mid, OOC_CHARPOS pos,
+				OOC_LEN index, OOC_LEN length) {
+  char s[128];
+  (void)sprintf(s, "Array index out of range, " OOC_LEN_FORMAT
+		" not in 0 <= x < " OOC_LEN_FORMAT, index, length);
+  _runtime_error(s, mid, pos);
+}
+
+void RT0__ErrorAssertionFailed (RT0__Module mid, OOC_CHARPOS pos,
+				OOC_INT32 code) {
+  char s[128];
+  (void)sprintf(s, "Assertion failed, code " OOC_INT32_FORMAT, code);
+  _runtime_error(s, mid, pos);
+}
+
 void RT0_init() {
   PS(RT0__boolean , RT0__strBoolean , sizeof(OOC_BOOLEAN));
   PS(RT0__char    , RT0__strChar    , sizeof(OOC_CHAR8));

@@ -222,12 +222,26 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         nested := nested. nextNested;
       END;
     END Traverse;
+
+  PROCEDURE ModuleDescr (module: Sym.Module);
+    BEGIN
+      w. WriteLn;
+      w. WriteString ("static RT0__ModuleDesc _mid = {");
+      Nli;
+      w. WriteString ('(OOC_CHAR8*)"');
+      w. WriteString (module. name. str^);
+      w. WriteString ('" };');
+      w. WriteLn;
+    END ModuleDescr;
   
   BEGIN
     w := declWriter. textWriter;
     w. WriteLn;
     w. WriteString ("/* run-time meta data */");
     Traverse (symTab, NIL);
+    IF ~writeHeader THEN
+      ModuleDescr (symTab);
+    END;
     w. WriteLn;
   END Write;
 

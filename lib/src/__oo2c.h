@@ -38,17 +38,15 @@
 
 
 
-extern void NORETURN _index_out_of_range(OOC_LEN index, OOC_LEN length) NORETURN2;
-#define _check_index(index,length,utype)   \
-  ({ if ((utype)index >= (OOC_ULEN)length) {  \
-       _index_out_of_range(index,length);  \
-     }                                     \
+#define _check_index(index,length,utype,pos)              \
+  ({ if ((utype)index >= (OOC_ULEN)length) {              \
+       RT0__ErrorIndexOutOfRange(&_mid,pos,index,length);  \
+     }                                                    \
      index; })
 
 /* ASSERT(p) and ASSERT(p,code) */
-extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN2;
 #define _assert(p,code,pos) \
-  if (!(p)) { _assertion_failed(code, pos); }
+  if (!(p)) { RT0__ErrorAssertionFailed(&_mid,pos,code); }
 
 /* COPY(s,d) */
 #define _copy_8(_src,_dest,_max_len) {          \

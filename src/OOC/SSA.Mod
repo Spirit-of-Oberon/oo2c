@@ -24,7 +24,7 @@ MODULE OOC:SSA;
 IMPORT
   Log, Out,
   Language, Language:Integer, Language:Boolean, ADT:Object, ADT:Dictionary,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
   
@@ -130,6 +130,11 @@ TYPE
     opcode*: Opcode.Class;
     (**Instruction opcode.  Symbolic names are defined in module
        @omodule{Opcode}.  *)
+
+    pos-: Sym.ModulePos;
+    (**Character position corresponding to this instruction in the source
+       code.  Currently, this field is only set for instructions that implement
+       run-time exceptions, and is @samp{-1} for all other.  *)
   END;
 
 TYPE
@@ -431,6 +436,7 @@ PROCEDURE InitInstr (instr: Instr; opcode: Opcode.Class; subclass: Opcode.Subcla
     instr. prevInstr := NIL;
     instr. opcode := opcode;
     instr. subclass := subclass;
+    instr. pos := -1;
   END InitInstr;
 
 PROCEDURE (instr: Instr) SetSubclass* (subclass: Opcode.Subclass);
@@ -438,6 +444,11 @@ PROCEDURE (instr: Instr) SetSubclass* (subclass: Opcode.Subclass);
   BEGIN
     instr. subclass := subclass;
   END SetSubclass;
+
+PROCEDURE (instr: Instr) SetPos* (sym: IR.Symbol);
+  BEGIN
+    instr. pos := sym. pos;
+  END SetPos;
 
 PROCEDURE AddOpnd (instr: Instr; opnd: Opnd);
 (**Adds @oparam{opnd} to the end of the operand list of instruction

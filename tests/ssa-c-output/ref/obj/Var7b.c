@@ -15,7 +15,7 @@ static OOC_INT16 Var7b__Len(const OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
 l1_loop:
   i1 = i1+1;
   Var7b__i = i1;
-  i2 = _check_index(i1, i0, OOC_UINT16);
+  i2 = _check_index(i1, i0, OOC_UINT16, 165);
   i3 = i2*1;
   i3 = (OOC_INT32)str+i3;
   i2 = *(OOC_UINT8*)i3;

@@ -13,7 +13,7 @@ l3:
   i2 = str_0d;
   i3=0;
 l4_loop:
-  i4 = _check_index(i3, i2, OOC_UINT16);
+  i4 = _check_index(i3, i2, OOC_UINT16, 126);
   i5 = i4*1;
   i5 = (OOC_INT32)str+i5;
   *(OOC_UINT8*)i5 = (OOC_CHAR8)'\000';

@@ -149,6 +149,12 @@ TYPE
     (**A named object defined in a declaration.  *)
   END;
 
+TYPE
+  Module* = POINTER TO ModuleDesc;
+  ModuleDesc = RECORD
+    name-: Name;
+  END;
+  
 VAR
   boolean-: StructDesc;
   char-: StructDesc;
@@ -179,5 +185,10 @@ PROCEDURE InitVParStack* (bytes: LONGINT);
    open array type.  It is used as a fallback if no mechanism is available
    to store the data on the normal C stack.  This procedure is called once,
    from the program's setup code.  *)
-  
+
+
+PROCEDURE ErrorIndexOutOfRange* (mid: Module; pos: LONGINT;
+                                 index, length: LONGINT);
+PROCEDURE ErrorAssertionFailed* (mid: Module; pos: LONGINT; code: LONGINT);
+
 END RT0.

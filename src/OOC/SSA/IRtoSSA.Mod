@@ -244,12 +244,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
       END GetIndexBaseArray;
 
-    PROCEDURE AddException (pb: SSA.ProcBlock; opcode: Opcode.Class;
-                            subclass: Opcode.Subclass): SSA.Instr;
+    PROCEDURE AddException (pb: SSA.ProcBlock; sym: IR.Symbol;
+                            opcode: Opcode.Class; subclass: Opcode.Subclass): SSA.Instr;
       VAR
         instr: SSA.Instr;
       BEGIN
         instr := pb. AddInstr (opcode, subclass);
+        instr. SetPos (sym);
         Chain (instr);
         RETURN instr;
       END AddException;
@@ -291,7 +292,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr := baseResult. instr;
         index := Expression (indexOp. index);
         IF indexOp. checkIndex THEN
-          check := AddException (pb, Opcode.checkIndex, index. subclass);
+          check := AddException (pb, indexOp. sym,
+                                 Opcode.checkIndex, index. subclass);
           check. AddOpnd (index, Opnd.arg);
           check. AddOpnd (length, Opnd. arg);
           index := check;
@@ -706,6 +708,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       instr: SSA.Instr;
     BEGIN
       instr := pb. AddInstr (Opcode.assert, Opcode.scNone);
+      instr. SetPos (assert. sym);
       instr. AddOpnd (Expression (assert. predicate), Opnd.arg);
       instr. AddOpnd (pb. GetConstInt (assert. code), Opnd.arg);
       RETURN instr

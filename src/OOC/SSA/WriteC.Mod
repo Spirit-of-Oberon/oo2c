@@ -504,7 +504,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString ("_assert(");
       RefList (assert. opndList, Opnd.arg);
       w. WriteString (", ");
-      w. WriteString ("0");  (* ... file position missing *)
+      w. WriteLInt (assert. pos, 0);
       w. WriteString (");")
     END Assert;
   
@@ -517,6 +517,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (", ");
       bt := SubclassToBasicType (instr)+(DeclWriter.uint8-DeclWriter.int8);
       w. WriteString (w. basicType[bt]. repr);
+      w. WriteString (", ");
+      w. WriteLInt (checkIndex. pos, 0);
       w. WriteString (");")
     END CheckIndex;
   
