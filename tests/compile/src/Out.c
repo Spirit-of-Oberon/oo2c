@@ -13,6 +13,14 @@ void Out__String(const OOC_CHAR8 s[], OOC_LEN s_0d) {
   fputs((const char*)s, stdout);
 }
 
+void Out__LString(const OOC_CHAR16 s[], OOC_LEN s_0d) {
+  const OOC_CHAR16* c = s;
+  while (*c) {
+    putc((*c < 256) ? (OOC_CHAR8)*c : '?', stdout);
+    c++;
+  }
+}
+
 void Out__Int(OOC_INT32 i, OOC_INT32 n) {
   fprintf(stdout, "%*i", n, i);
 }
