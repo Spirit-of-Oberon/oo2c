@@ -387,6 +387,21 @@ PROCEDURE (tr: Rules) IsByteCompatible* (type: Sym.Type): BOOLEAN;
     END;
   END IsByteCompatible;
 
+PROCEDURE (tr: Rules) IsNilCompatible* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the value @code{NIL} can be assigned to
+   variables of type @oparam{type}.  *)
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN (type. id = Predef.ptr)
+    | type: Sym.Pointer DO
+      RETURN TRUE;
+    | type: Sym.FormalPars DO
+      RETURN TRUE;
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsNilCompatible;
+
 
 PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
 (**This maps a type @oparam{type} onto the size and alignment constrains of the
@@ -419,7 +434,9 @@ PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
          module OOC:SymbolTable:Predef *)
       WITH type: Sym.Pointer DO
         type. SetSize (pointerSize, pointerAlign); (* this breaks any cycles *)
-        tr. AllocateType (type. baseType);
+        (* don't call `tr. AllocateType (type. baseType)' here: this may
+           be a forward reference, and some pieces of information about this
+           type may not be computed yet *)
 
       | type: Sym.FormalPars DO
         type. SetSize (pointerSize, pointerAlign); (* this breaks any cycles *)
