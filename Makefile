@@ -4,7 +4,7 @@ OOCN=Oocn
 #OOCN=/home/ooc-devel/ooc/oocn --config /usr/lib/Oo2c/oo2crc
 
 
-test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestOpTree TestTexinfo TestURI AllModules
+test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestOpTree TestTexinfo TestURI AllModules RunTests
 
 all:
 
@@ -31,7 +31,7 @@ clean:
 	rm -f src/XML
 	for i in ${test_programs}; do rm -f $$i; done
 	for i in ${subdirs}; do cd $$i && ${MAKE} clean; done
-	rmdir ${top_builddir}/sym ${top_builddir}/obj ${top_builddir}/doc
+	-rmdir ${top_builddir}/sym ${top_builddir}/obj ${top_builddir}/doc
 
 ### `distclean'
 ###      Delete all files from the current directory that are created by
