@@ -1,4 +1,5 @@
 MODULE New7;
+<*Assertions:=TRUE*>
 
 TYPE
   P = POINTER TO ARRAY OF CHAR;
