@@ -219,6 +219,7 @@ RAISES IO.Error;
             element := "field_decl"
           | item: Sym.PredefProc DO
             element := "predef_proc"
+          | item: Sym.Redirect DO
           END;
           
           StartTag (element, Id (item));
@@ -273,6 +274,9 @@ RAISES IO.Error;
             AttribTypeId ("", "type_id", item. type)
           | item: Sym.PredefProc DO
             (* FIXME... what to write here? *)
+          | item: Sym.Redirect DO
+            AttribString ("", "module", item.module.str^);
+            AttribString ("", "name", item.name.str^);
           END;
           
           IF (item. docString # NIL) THEN
