@@ -156,6 +156,29 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
                            VAR status, signal: C.int);
     VAR
       exit: C.int;
+    
+    PROCEDURE Copy (file: ARRAY OF CHAR);
+      VAR
+        f: Files.File;
+        r: TextRider.Reader;
+        res: Msg.Msg;
+        line: ARRAY 4*1024 OF CHAR;
+      BEGIN
+        f := Files.Old (file, {Files.read}, res);
+        IF (res = Files.done) THEN
+          r := TextRider.ConnectReader (f);
+          LOOP
+            r. ReadLine (line);
+            IF (r. res = TextRider.done) THEN
+              Out.String (line); Out.Ln
+            ELSE
+              EXIT
+            END
+          END;
+          f. Close
+        END
+      END Copy;
+    
     BEGIN
       (* compile test module *)
       Strings.Insert ("'", 0, path);
@@ -177,7 +200,10 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       Out.String (path); Out.Ln;
       exit := ProcessManagment.system (path);
       status := ASH (exit, -8) MOD 256;
-      signal := exit MOD 256
+      signal := exit MOD 256;
+      
+      Copy (proc. stdout. array^);
+      Copy (proc. stderr. array^);
     END CompileModule;
   
   PROCEDURE WriteMainModule (name: String.String): String.String;
