@@ -138,13 +138,13 @@ $(OOC_DEV_ROOT)/oo2crc-install.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
 		 $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml >$(OOC_DEV_ROOT)/oo2crc-install.xml
 
 dist: $(OOC_DEV_ROOT)/oo2crc-install.xml
-	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1 2>/dev/null
+	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1 2>/dev/null
 	$(OOC) --make -O $(OFLAGS) oo2c
 	rm -Rf stage0
 	mkdir stage0 stage0/lib
 	ln -s ../src stage0/src
 	ln -s ../../lib/src stage0/lib/src
-	./oo2c --config oo2crc-install.xml --make -r stage0/lib -r stage0 --cc true $(OFLAGS) stage0/src/oo2c.Mod
+	bin/oo2c --config oo2crc-install.xml --make -r stage0/lib -r stage0 --cc true $(OFLAGS) stage0/src/oo2c.Mod
 	rm -Rf stage0/sym/* stage0/lib/sym/*
 	cd stage0 && $(PERL) $(OOC_DEV_ROOT)/rsrc/OOC/makefilegen.pl >Makefile.ext
 	${MAKE} distclean
