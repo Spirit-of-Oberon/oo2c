@@ -22,6 +22,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := instr. AddResult (Result.store)
     END Chain;
 
+  PROCEDURE ^ Call (call: IR.Call): SSA.Instr;
+    
   PROCEDURE Expression (expr: IR.Expression): SSA.Result;
     VAR
       instr: SSA.Instr;
@@ -43,6 +45,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
            for something as trifling as `-123' right now, so I'm doing some
            trivial constant folding here... *)
         RETURN pb. GetConst(Integer.New (-SHORT(expr.opnd1(IR.Const).value(Integer.Value).value)))
+
+      | expr: IR.Call DO
+        RETURN Call (expr)
       ELSE
         Log.Type("++ Unknown type in Expression", expr);
         ASSERT (FALSE)
@@ -79,6 +84,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         Chain (Assert (statm));
       | statm: IR.Call DO
         Chain (Call (statm));
+      | statm: IR.Return DO
+        (* lets pretend for a moment that a RETURN is not a control flow
+           construct... FIXME *)
+        IF (statm. result # NIL) THEN
+          pb. exit. AddOpnd (Expression (statm. result), Opnd.functionResult)
+              
+        END;
+      ELSE
+        Log.Type("++ Unknown statement class in StatmSeq", statm);
+        ASSERT (FALSE)
       END;
     END;
     RETURN s

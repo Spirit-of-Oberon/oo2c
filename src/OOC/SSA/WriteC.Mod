@@ -7,6 +7,8 @@ IMPORT
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:WriteConst;
 
 
+PROCEDURE ^ Call (w: TextRider.Writer; call: SSA.Instr);
+
 PROCEDURE Ref (w: TextRider.Writer; opnd: SSA.Opnd);
   VAR
     arg: SSA.Result;
@@ -25,9 +27,12 @@ PROCEDURE Ref (w: TextRider.Writer; opnd: SSA.Opnd);
       w. WriteString (name. array^)
 
     | arg: SSA.Instr DO
-      ASSERT (arg. opcode = Opcode.get); (* another drastic shortcut... *)
-      Ref (w, arg. opndList. nextOpnd. nextOpnd);
-      
+      (* another *very* drastic shortcut... *)
+      IF (arg. opcode = Opcode.get) THEN
+        Ref (w, arg. opndList. nextOpnd. nextOpnd);
+      ELSE
+        Call (w, arg)
+      END;      
     ELSE
       Log.Type("++ Unknown argument type in Ref", arg);
       ASSERT (FALSE)
@@ -67,12 +72,13 @@ PROCEDURE Call (w: TextRider.Writer; call: SSA.Instr);
     Ref (w, call. opndList);
     w. WriteString ("(");
     RefList (w, call. opndList, Opnd.arg);
-    w. WriteString (");")
+    w. WriteString (")")
   END Call;
 
 PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock);
   VAR
     instr: SSA.Instr;
+    opnd: SSA.Opnd;
     str: ARRAY 32 OF CHAR;
 
   PROCEDURE Newline;
@@ -89,7 +95,17 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock);
       | Opcode.assert:
         Assert (w, instr)
       | Opcode.call:
-        Call (w, instr)
+        Call (w, instr);
+        w. WriteChar (";")
+      | Opcode.exit:
+        opnd := instr. GetOpndClass (Opnd.functionResult);
+        IF (opnd # NIL) THEN
+          w. WriteString ("return ");
+          Ref (w, opnd);
+          w. WriteChar (";");
+        ELSE
+          w. WriteString ("return;")
+        END;
       ELSE
         w. WriteString ("/*");
         instr. GetOpcodeName (str);

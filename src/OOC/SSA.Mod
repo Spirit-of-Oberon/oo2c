@@ -511,7 +511,12 @@ PROCEDURE (instr: Instr) GetOpcodeName* (VAR name: ARRAY OF CHAR);
   BEGIN
     Opcode.GetName (instr. opcode, instr. subclass, name);
   END GetOpcodeName;
-  
+
+PROCEDURE (instr: Instr) GetResultType* (): Opcode.Subclass;
+  BEGIN
+    RETURN instr. subclass
+  END GetResultType;
+
   (* ---------------------------------------------------------------------- *)
 
 PROCEDURE InitConst (const: Const; value: Language.Value);
