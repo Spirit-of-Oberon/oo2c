@@ -507,8 +507,10 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
     NormalizeFileSet(fileSet, String.New(""), String.New(""));
     norm.head := MergeSort(norm.head);
     norm.tail := norm.head;
-    WHILE (norm.tail.nextFileData # NIL) DO
-      norm.tail := norm.tail.nextFileData;
+    IF (norm.tail # NIL) THEN
+      WHILE (norm.tail.nextFileData # NIL) DO
+        norm.tail := norm.tail.nextFileData;
+      END;
     END;
     
     (*ptr := norm.head;
