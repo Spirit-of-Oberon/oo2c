@@ -138,7 +138,7 @@ TYPE
        instruction can be scheduled at the very end of the region.  *)
 
     degreeDiff: LONGINT;
-    (**Number of produced register values minues the number of register values
+    (**Number of produced register values minus the number of register values
        taken as operands.  *)
   END;
   RegionDesc = RECORD
@@ -460,19 +460,19 @@ PROCEDURE WriteBlocks (c: IO.ByteChannel; pb: SSA.ProcBlock; root: Region;
 <*END*>
       w. WriteString ("  ");
       (*IF (instr = NIL) THEN
-          d := 0;
-        ELSE
-          d := instr. info(Proxy). distance;
-        END;
-         w. WriteLInt (d, 3);
-         w. WriteString ("  ");*)
+        d := 0;
+      ELSE
+        d := instr. info(Proxy). distance;
+      END;
+      w. WriteLInt (d, 3);
+      w. WriteString ("  ");*)
       (*IF (instr = NIL) THEN
-          d := 0;
-        ELSE
-          d := instr. info(Proxy). degreeDiff;
-        END;
-         w. WriteLInt (d, 3);
-         w. WriteString ("  ");*)
+        d := 0;
+      ELSE
+        d := instr. info(Proxy). degreeDiff;
+      END;
+      w. WriteLInt (d, 3);
+      w. WriteString ("  ");*)
       (*w. WriteString ("L:");
          IF (p. loopAssoc # NIL) THEN
            WriteResultId (p. loopAssoc. instr);
@@ -1406,7 +1406,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
             END;
           ELSE
             CASE proxy. instr. opcode OF
-            | Opcode.collect: l := 0;
+            | Opcode.collect: l := -1;
             | Opcode.call   : l := 20;
             ELSE
               l := 1;
@@ -1423,10 +1423,14 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
         res: SSA.Result;
         use, opnd: SSA.Opnd;
         max, degreeDiff: LONGINT;
+        selectingValue: BOOLEAN;
 
       PROCEDURE CountAsRegister (arg: SSA.Result): BOOLEAN;
         BEGIN
-          IF (arg. subclass = Opcode.scNone) THEN
+          IF (arg.subclass = Opcode.scNone) OR
+             (arg.instr.opcode = Opcode.set) THEN
+            (* the "set" instruction's subclass is that of the memory location
+               it writes to, but it does not produce a value in a register *)
             RETURN FALSE;
           ELSE
             RETURN ~(arg IS SSA.Instr) OR ~arg(SSA.Instr). IsConst();
@@ -1487,6 +1491,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
           proxy := ready;
           Remove (ready, proxy);
 
+          selectingValue := FALSE;
           max := 0;
           IF (proxy. instr # NIL) THEN
             res := proxy. instr;
@@ -1496,6 +1501,10 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
                 useProxy := use. instr. info(Proxy);
                 IF (useProxy. region = r) & (useProxy. distance > max) THEN
                   max := useProxy. distance;
+                END;
+                IF (use.instr.opcode = Opcode.select) &
+                   (use.instr.opndList = use) THEN
+                  selectingValue := TRUE;
                 END;
                 use := use. nextUse;
               END;
@@ -1515,8 +1524,14 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
               opnd := opnd. nextOpnd;
             END;
           END;
-          proxy. distance := max+GetLength (proxy);
-
+          IF ~selectingValue THEN
+            (* only increase distance for non-selection operands, so that
+               predicates are scheduled immediately in front of their
+               "select" *)
+            INC(max, GetLength(proxy));
+          END;
+          proxy. distance := max;
+          
           proxy. nextProxy := list;
           list := proxy;
         END;
