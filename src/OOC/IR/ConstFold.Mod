@@ -3,7 +3,6 @@ MODULE OOC:IR:ConstFold;
 IMPORT 
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
   Language, 
-  Out,
   Language:Integer, Language:Boolean, Language:String8, Language:Char8,
   ADT:String, Integers;
 
@@ -264,7 +263,6 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
   BEGIN
     left := l(String8.Value).value; 
     right := r(String8.Value).value;
-    Out.String("StringOp("); Out.ShortInt(op.variant, 0); Out.Char(","); Out.String(left.array^); Out.Char(","); Out.String(right.array^); Out.Char(")"); Out.Ln;
     CASE op.variant OF
     | IR.equal:        result := left.Compare(right) = 0;
     | IR.notEqual:     result := left.Compare(right) # 0;
@@ -335,7 +333,6 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
   END BooleanOp;
 
   BEGIN
-    Out.String("VisitCompare("); Out.ShortInt(op.variant,0); Out.String(")"); Out.Ln; Out.Flush;
     IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
       CASE op.left.type(Sym.PredefType).id OF
       | Predef.shortint, Predef.integer, Predef.longint:

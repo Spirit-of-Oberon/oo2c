@@ -1,7 +1,7 @@
 MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
-Log, Out,
+Log,
   Language, Language:Boolean, Language:Char8, Language:String8,
   Language:Integer, ADT:Object, ADT:ArrayList,
   Config:Value, BooleanValue := Config:Value:Boolean, 
