@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; noDescriptor1">-->
+  select ="&SetupTestCasesWithOut; dead1">-->
   
   &TestSetupWithOut;
     
@@ -204,6 +204,12 @@
       the <code>IF</code> statement's guard.  In particular, the
       expressions within the guarded commands conflict with no other
       live ranges.
+    </test>
+    
+    <test id="dead1" type="accept" file="Dead1.Mod">
+      An otherwise unused variable is incremented within a
+      <code>LOOP</code>.  Dead code elimination should get rid of the
+      initialization and the increment of the variable.
     </test>
 
     
