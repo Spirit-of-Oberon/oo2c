@@ -108,13 +108,11 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
                             errList: Error.List);
 (**Populates the namespaces of the symbol table @oparam{root} and performs
    semantic checks on the declarations.  It is assumed, that the namespace
-   of module @oparam{root} is nested into the namespace of module
-   @oparam{predefModule}.  Typically, @oparam{predefModule} defines the 
-   predefined entities of the language, and is defined by module
-   @omodule{*OOC:SymbolTable:Predef}.
+   of module @oparam{root} is nested into the namespace of the pseudo module
+   holding the predefined objects.
    
    The type rules used to check the declarations are taken from object
-   @oparam{tr}.  Any errors are reported to the error list @oparam{errList}.
+   @omodule{TR}.  Any errors are reported to the error list @oparam{errList}.
    After successful completion of this procedure, the symbol table
    @oparam{root} can be used to resolve any using occurences of names within
    the module's source code.  *)
