@@ -199,6 +199,14 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
         
         idMap. Set (instr, -instrCount);
         INC (instrCount);
+
+        opnd := instr. opndList;
+        WHILE (opnd # NIL) DO
+          IF (opnd. class = Opnd.forwardRef) THEN
+            AssignId (opnd. arg. instr);
+          END;
+          opnd := opnd. nextOpnd
+        END;
       END;
     END AssignId;
     
