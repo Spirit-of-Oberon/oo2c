@@ -4,7 +4,7 @@ IMPORT
   StdChannels, Out, Err, Msg, Channel, URI, ADT:String,
   Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
-  BooleanValue := Config:Value:Boolean,
+  BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,
   OOC:Error, OOC:AST, OOC:SymbolTable:Item, Rep := OOC:Repository,
   Make, Make:Command:Target, OOC:Make:Entity:ModuleFile,
   XML := OOC:SymbolTable:Item:XML, OOC:Auxiliary:ParseModule,
@@ -85,12 +85,14 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     m: Rep.Module;
     resolve: BOOLEAN;
     config: Config.Config;
+    pragmaHistory: Pragmas.History;
   BEGIN
     m := cmd. module;
     config := cmd. context. config(Config.Config);
     resolve := mode. value(IntegerValue.Value). integer = modeResolveNamesXML;
 
-    ParseModule.ParseModule (m, config, resolve, FALSE, ast, symTab, errList);
+    ParseModule.ParseModule (m, config, resolve, FALSE,
+                             ast, symTab, pragmaHistory, errList);
     IF (errList. msgCount = 0) THEN
       outputURI := m. GetURI (Rep.modSymbolTableXML);
       outputChannel := m. GetOutputChannel (Rep.modSymbolTableXML, FALSE, res);
