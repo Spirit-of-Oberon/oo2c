@@ -314,7 +314,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                  only done once for each variable, when we encounter the
                  loop-start for the first time *)
               (* note: originMap. visible[origin. marker] defaults to FALSE *)
-              visible := TraceF (instr, instr. GetResultClass (Result.store));
+              visible := TraceF (instr, instr. GetResultStore());
               originMap. visible[origin. marker] := visible;
             ELSE
               originMap := instr. info(OriginMap);
@@ -332,7 +332,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           instr := use. instr;
           CASE instr. opcode OF
           | Opcode.get:
-            storeOut := instr. GetResultClass (Result.store);
+            storeOut := instr. GetResultStore();
             alias := Aliasing.DesignatorAlias (tr, originWriteDesign, instr. GetOpndClass (Opnd.readDesign));
             IF (storeOut = NIL) OR (alias = Aliasing.completelyCovered) THEN
               (* if the `store' chain ends here, then ignore the "get": we are
@@ -364,7 +364,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                  cannot interfere with each other: continue trace through
                  `instr' *)
               RETURN TraceF (lastDefinition,
-                            instr. GetResultClass (Result.store))
+                            instr. GetResultStore())
             END;
             
           | Opcode.select, Opcode.selectExit:
@@ -380,7 +380,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                  only done once for each variable, when we encounter the
                  select for the first time *)
               originMap. visible[origin. marker] :=
-                  TraceF (instr, instr. GetResultClass (Result.store));
+                  TraceF (instr, instr. GetResultStore());
               originMap. varIsTraced[origin. marker] := TRUE;
             END;
             
@@ -407,12 +407,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                 RETURN FALSE;
               ELSE
                 RETURN TraceF (lastDefinition,
-                               instr. GetResultClass (Result.store));
+                               instr. GetResultStore());
               END;
             END;
             
           | Opcode.collect:
-              RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
+              RETURN TraceF (lastDefinition, instr. GetResultStore())
 
           | Opcode.call:
             (* FIXME... detect when a call can modify our variable; for now
@@ -426,7 +426,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                of every other use; TraceF() distinguishes between the two
                different kinds of uses and selects the appropriate value
                to pass forward *)
-            RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
+            RETURN TraceF (lastDefinition, instr. GetResultStore())
 
           | Opcode.return:
             (* we've reached the end of the procedure: we are done *)
@@ -489,7 +489,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         IF (instr. marker >= 0) & (instr. opcode = Opcode.set) THEN
           origin := instr;
           originWriteDesign := instr. GetOpndClass (Opnd.writeDesign);
-          IF TraceF (instr, instr. GetResultClass (Result.store)) THEN
+          IF TraceF (instr, instr. GetResultStore()) THEN
             instr. info := instr  (* mark instruction as live *)
           END
         END;
@@ -834,7 +834,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       instr := pb. instrList;
       WHILE (instr # NIL) DO
         IF (instr. marker >= 0) & (instr. opcode = Opcode.get) &
-           (instr. GetResultClass (Result.store) = NIL) THEN
+           (instr. GetResultStore() = NIL) THEN
           (* don't try to get rid of "get" instructions on volatile variables:
              we must read from memory, because the value might have changed
              behind our back *)
@@ -864,7 +864,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
            (instr. info # instr) THEN
           (* FIXME: don't remove "set" for volatile variable... *)
           ASSERT (instr. opcode = Opcode.set);
-          storeOut := instr. GetResultClass (Result.store);
+          storeOut := instr. GetResultStore();
           storeOut. ReplaceUses (instr. GetArgClass (Opnd.store));
           pb. DeleteInstr (instr);
         END;

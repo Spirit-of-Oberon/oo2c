@@ -582,6 +582,18 @@ PROCEDURE (instr: Instr) GetResultClass* (class: ResultClass.Class): Result;
     RETURN result
   END GetResultClass;
 
+PROCEDURE (instr: Instr) GetResultStore*(): Result;
+(**Short for @code{GetResultClass(store)}.  *)
+  VAR
+    result: Result;
+  BEGIN
+    result := instr;
+    WHILE (result # NIL) & (result. class # ResultClass.store) DO
+      result := result. nextResult;
+    END;
+    RETURN result
+  END GetResultStore;
+
 PROCEDURE (instr: Instr) GetOpcodeName* (VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of the instruction's opcode.  The name includes
    both the opcode and the subclass, and it uniquely identifies the
@@ -667,7 +679,7 @@ PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
     use: Opnd;
   BEGIN
     ASSERT (instr. opcode = Opcode.collect);
-    storeOut := instr. GetResultClass (ResultClass.store);
+    storeOut := instr. GetResultStore();
     ASSERT (storeOut # NIL);
     ASSERT (storeOut. useList # NIL);
     ASSERT (storeOut. useList. nextUse = NIL);
@@ -678,7 +690,7 @@ PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
     ELSIF (storeOut. useList. instr. opcode = Opcode.exit) THEN
       (* logically, a collect feeding into an "exit" instruction
          passes its data to the "select-exit" instruction *)
-      storeOut := storeOut. useList. instr. GetResultClass (ResultClass.store);
+      storeOut := storeOut. useList. instr. GetResultStore();
       use := storeOut. useList;
       WHILE (use. instr. opcode # Opcode.selectExit) DO
         use := use. nextUse;
