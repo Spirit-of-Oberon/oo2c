@@ -17,7 +17,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_STRING">-->
+  select ="prepare_out_module lib_rt1 lib_STRING lib_STRING2">-->
 
   &TestSetupWithOut;
   
@@ -522,6 +522,11 @@
       Tests integration of the string module with the predefined
       type <code>STRING</code>.
     </test>
+    
+    <test id="lib_STRING2" type="reject" file="LibSTRING2.Mod">
+      Cannot pass a constant to a <code>VAR</code> parameter of type
+      <code>STRING</code>.
+    </test>
   </testcases>
 
   &libadt-testcases;
@@ -529,4 +534,9 @@
   &libio-testcases;
   &liburi-testcases;
   &libxml-testcases;
+
+  <processor-info processor-name="oo2c">
+    <reject-info id="lib_STRING2" pos="Write(%&quot;abc"
+      msg="This must be a variable"/>
+  </processor-info>
 </testsuite-ext>
