@@ -850,7 +850,11 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteDyadicOp (instr, "||");
       | Opcode.not:
         WriteMonadicOp (instr, "!", "");
-        
+
+      | Opcode.setMember:
+        w. WriteString ("_in(");
+        RefList (instr. opndList, Opnd.arg);
+        w. WriteString (");");
       | Opcode.cap:
         WriteMonadicOp (instr, "_cap(", ");");
         
