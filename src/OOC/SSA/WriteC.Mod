@@ -1139,8 +1139,10 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteDyadicOp (instr, "|");
       | Opcode.logicalXor:
         WriteDyadicOp (instr, "^");
+      | Opcode.logicalSubtr:
+        WriteDyadicFct (instr, "_logical_subtr");
       | Opcode.logicalComplement:
-        WriteMonadicOp (instr, "!", ";");
+        WriteMonadicOp (instr, "~", ";");
       | Opcode.setBit:
         WriteDyadicFct (instr, "_set_bit");
       | Opcode.clearBit:

@@ -168,6 +168,9 @@ extern OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r);
 /* i IN s */
 #define _in(_i,_s) (((_s)>>(_i))&1)
 
+/* set different */
+#define _logical_subtr(_a,_b) (_a & ~(_b))
+
 /* INCL, EXCL */
 #define _set_bit(_s,_i) ((_s) | (((typeof(_s))1) << (_i)))
 #define _clear_bit(_s,_i) ((_s) & ~(((typeof(_s))1) << (_i)))

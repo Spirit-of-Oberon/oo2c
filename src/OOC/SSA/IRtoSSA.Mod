@@ -742,7 +742,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: IR.SetOp DO
         CASE expr.variant OF
         | IR.setUnion : opcode := Opcode.logicalOr;
-(*        | IR.setDiff  : opcode := Opcode.subtract;*)
+        | IR.setDiff  : opcode := Opcode.logicalSubtr;
         | IR.setIntersect : opcode := Opcode.logicalAnd;
         | IR.setSymDiff : opcode := Opcode.logicalXor;
         ELSE
