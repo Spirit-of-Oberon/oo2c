@@ -431,65 +431,69 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
     END WriteOct;
   
   BEGIN
-    WITH value: Boolean.Value DO
-      IF value. value THEN
-        w. WriteString("OOC_TRUE")
-      ELSE
-        w. WriteString("OOC_FALSE")
-      END
-      
-    | value: String8.Value DO
-      IF (type(Sym.PredefType). id = Predef.char) THEN
-        charValue := ORD (value. value. array[0]);
-        w. WriteChar ("'");
-        IF (charValue < ORD (" ")) OR (charValue >= 127) OR
-           (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
-          w. WriteChar ("\")(*"*); 
-          WriteOct (charValue DIV 64);
-          WriteOct (charValue DIV 8 MOD 8);
-          WriteOct (charValue MOD 8);
+    IF (value = NIL) THEN
+      w. WriteString ("NULL");
+    ELSE
+      WITH value: Boolean.Value DO
+        IF value. value THEN
+          w. WriteString("OOC_TRUE")
         ELSE
-          w. WriteChar (CHR (charValue));
-        END;
-        w. WriteChar ("'");
-      ELSE
-        w. WriteChar (delim);
-        i := 0; len := value. value. length;
-        WHILE (i # len) DO
-          IF (value. value. array[i] = delim) THEN
-            w. WriteString (quotedDelim)
-          ELSE  (* note: this is a tidbit slow for large strings *)
-            w. WriteChar (value. value. array[i])
+          w. WriteString("OOC_FALSE")
+        END
+            
+      | value: String8.Value DO
+        IF (type(Sym.PredefType). id = Predef.char) THEN
+          charValue := ORD (value. value. array[0]);
+          w. WriteChar ("'");
+          IF (charValue < ORD (" ")) OR (charValue >= 127) OR
+             (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
+            w. WriteChar ("\")(*"*); 
+            WriteOct (charValue DIV 64);
+            WriteOct (charValue DIV 8 MOD 8);
+            WriteOct (charValue MOD 8);
+          ELSE
+            w. WriteChar (CHR (charValue));
           END;
-          INC (i)
+          w. WriteChar ("'");
+        ELSE
+          w. WriteChar (delim);
+          i := 0; len := value. value. length;
+          WHILE (i # len) DO
+            IF (value. value. array[i] = delim) THEN
+              w. WriteString (quotedDelim)
+            ELSE  (* note: this is a tidbit slow for large strings *)
+              w. WriteChar (value. value. array[i])
+            END;
+            INC (i)
+          END;
+          w. WriteChar (delim);
         END;
-        w. WriteChar (delim);
+      | value: Integer.Value DO
+        IF (value. ToLInt() = MIN (LONGINT)) THEN
+          (* this assumes that MIN(LONGINT) is also the smallest value of
+             the C type "int"; to avoid overflow errors, we must rewrite
+             the value slightly *)
+          w. WriteString ("(-");
+          w. WriteLInt (MAX (LONGINT), 0);
+          w. WriteString ("-1)");
+        ELSE
+          str := value.ToString();
+          w. WriteString(str.array^);
+        END;
+      | value: Set.Value DO
+        (* FIXME *)
+        IF (value. ToLInt() = MIN (LONGINT)) THEN
+          (* this assumes that MIN(LONGINT) is also the smallest value of
+             the C type "int"; to avoid overflow errors, we must rewrite
+             the value slightly *)
+          w. WriteString ("(-");
+          w. WriteLInt (MAX (LONGINT), 0);
+          w. WriteString ("-1)");
+        ELSE
+          w. WriteLInt(value.ToLInt(), 0);
+        END;
       END;
-    | value: Integer.Value DO
-      IF (value. ToLInt() = MIN (LONGINT)) THEN
-        (* this assumes that MIN(LONGINT) is also the smallest value of
-           the C type "int"; to avoid overflow errors, we must rewrite
-           the value slightly *)
-        w. WriteString ("(-");
-        w. WriteLInt (MAX (LONGINT), 0);
-        w. WriteString ("-1)");
-      ELSE
-        str := value.ToString();
-        w. WriteString(str.array^);
-      END;
-    | value: Set.Value DO
-      (* FIXME *)
-      IF (value. ToLInt() = MIN (LONGINT)) THEN
-        (* this assumes that MIN(LONGINT) is also the smallest value of
-           the C type "int"; to avoid overflow errors, we must rewrite
-           the value slightly *)
-        w. WriteString ("(-");
-        w. WriteLInt (MAX (LONGINT), 0);
-        w. WriteString ("-1)");
-      ELSE
-        w. WriteLInt(value.ToLInt(), 0);
-      END;
-    END
+    END;
   END WriteConst;
 
 PROCEDURE (w: Writer) WriteDeclaration* (d: Declaration);

@@ -23,7 +23,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 IMPORT
 Log,
   Language, Language:Boolean, Language:Char8, Language:String8,
-  Language:Integer, ADT:Object, ADT:ArrayList,
+  Language:Integer, ADT:Object, ADT:ArrayList, ADT:String,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
@@ -1034,6 +1034,15 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
   BEGIN
     v. VisitConst (const)
   END Accept;
+
+PROCEDURE (const: Const) ToString*(): String.String;
+  BEGIN
+    IF (const. value = NIL) THEN
+      RETURN String.New ("NIL");
+    ELSE
+      RETURN const. value. ToString();
+    END;
+  END ToString;
 
 PROCEDURE (b : Builder) NewConst* (sym: Symbol; type: Sym.Type;
                     value: Language.Value): Const;

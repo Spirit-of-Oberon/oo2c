@@ -98,7 +98,7 @@ PROCEDURE (v: Visitor) VisitConst* (const: IR.Const);
     v. w. StartTag ("const", TRUE);
     type := TypeName(const. type);
     v. w. AttrStringLatin1 ("type", type. array^);
-    value := const. value. ToString();
+    value := const. ToString();
     v. w. WriteLatin1 (value. array^);
     v. w. EndTag;  (* const *)
   END VisitConst;
@@ -315,18 +315,18 @@ PROCEDURE (v: Visitor) VisitAssert* (assert: IR.Assert);
 
 PROCEDURE (v: Visitor) VisitSetRange* (range: IR.SetRange);
   BEGIN
-    v. w. StartTag ("setrange", FALSE);
+    v. w. StartTag ("set-range", FALSE);
     range.from.Accept(v);
     range.to.Accept(v);
-    v. w. EndTag;  (* range *)
+    v. w. EndTag;  (* set-range *)
   END VisitSetRange;
 
 PROCEDURE (v: Visitor) VisitSetMember* (range: IR.SetMember);
   BEGIN
-    v. w. StartTag ("setmember", FALSE);
+    v. w. StartTag ("set-member", FALSE);
     range.element.Accept(v);
     range.set.Accept(v);
-    v. w. EndTag; 
+    v. w. EndTag;   (* set-member *)
   END VisitSetMember;
 
 PROCEDURE (v: Visitor) VisitReturn* (return: IR.Return);
