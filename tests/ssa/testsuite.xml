@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; real1 real2 real3 real4">-->
+  select ="&SetupTestCasesWithOut; real1 real2 real3 real4 real5">-->
 
   &TestSetupWithOut;
     
@@ -276,6 +276,10 @@
     <test id="real4" type="run" file="Real4.Mod" output="Real4.Ref">
       Add and subtract two <code>REAL</code> values taken from global
       variables.
+    </test>
+    <test id="real5" type="run" file="Real5.Mod" output="Real5.Ref">
+      Add and subtract two <code>REAL</code> values taken from
+      parameters and return the result.
     </test>
       
     <test id="if1" type="run"

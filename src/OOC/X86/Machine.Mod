@@ -97,11 +97,14 @@ PROCEDURE MemOpnd(instr: S.Instr): S.Opnd;
 
 PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
 (**Expand call instructions and enable the target architecture's addressing
-   modes by setting ``immediate'' flags for operands.  *)
+   modes by setting ``immediate'' flags for operands.  Also compute the
+   stack area reserved for the arguments of function calls and to bounce
+   floating point values between the xmm registers and st0.  *)
   VAR
     instr: S.Instr;
     opnd, imm, mem: S.Opnd;
     maxSizeCallStack: LONGINT;
+    type: S.Type;
     
   PROCEDURE IsConst(opnd: S.Opnd): BOOLEAN;
     BEGIN
@@ -151,6 +154,14 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
       IF (offset > maxSizeCallStack) THEN
         maxSizeCallStack := offset;
       END;
+      IF (call.resultList # NIL) THEN
+        (* leave enough room on stack to bounce the result of the called
+           procedure via the stack into a xmm register  *)
+        type := call.resultList.type;
+        IF S.IsFloat(type) & (S.TypeSize(type) > maxSizeCallStack) THEN
+          maxSizeCallStack := S.TypeSize(type);
+        END;
+      END;
 
       (* mark the registers that are potentially clobbered by the call *)
       clobbered := S.callerSaved;
@@ -178,6 +189,14 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
   
   BEGIN
     maxSizeCallStack := 0;
+    IF (b.procDecl.formalPars.resultType # NIL) THEN
+      type := S.MapType(b.procDecl.formalPars.resultType);
+      IF S.IsFloat(type) THEN
+        (* leave enough room on stack to bounce the result of the function
+           procedure via the stack into the st0 register  *)
+        maxSizeCallStack := S.TypeSize(type);
+      END;
+    END;
     FOR instr IN b.AllInstructions(S.call) DO
       ExpandCall(instr);
     END;

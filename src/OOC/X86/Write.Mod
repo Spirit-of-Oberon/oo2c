@@ -734,6 +734,15 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         RegT(toReg.register, toType);
       END;
     END MovMemReg;
+
+  PROCEDURE Bounce(from, to: S.Result);
+    BEGIN
+      Opc("movs");
+      Result(from);
+      sb.AppendLatin1(", (%esp)");
+      Opc("fld");
+      sb.AppendLatin1("(%esp)");
+    END Bounce;
   
   BEGIN
     qtdData := NIL;
@@ -877,8 +886,14 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           END;
           MovMemReg(instr.opndList, type, TRUE, instr.resultList);
         | S.return:
-          MovMemReg(instr.opndList, instr.opndList.arg.type, TRUE,
-                    instr.resultList);
+          IF (instr.resultList.register = S.st0) &
+             ~instr.opndList.immediate &
+             (instr.opndList.arg.type # S.st0) THEN
+            Bounce(instr.opndList.arg, instr.resultList);
+          ELSE
+            MovMemReg(instr.opndList, instr.opndList.arg.type, TRUE,
+                      instr.resultList);
+          END;
           Opc0("jmp");
           sb.Append(w.labelExit);
         | S.get:
