@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI [OOC_EXTENSIONS];
 (*  Implements RFC2396 "Uniform Resource Identifiers: Generic Syntax"
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -38,7 +38,7 @@ MODULE URI [OOC_EXTENSIONS];
    implement concrete authority, query, and fragment instances.  *)
 
 IMPORT
-  Strings, Msg, Channel, CharClass, TextRider, Str := URI:String, URI:Error;
+  Strings, Msg, CharClass, TextRider, IO, Str := URI:String, URI:Error;
 
 TYPE
   String* = Str.String;
@@ -259,7 +259,8 @@ PROCEDURE (uri: URI) MakeRelative* (baseURI: HierarchicalURI): URI;
     RETURN uri
   END MakeRelative;
 
-PROCEDURE (uri: URI) GetChannel* (mode: ChannelMode; VAR res: Msg.Msg): Channel.Channel;
+PROCEDURE (uri: URI) GetChannel* (mode: ChannelMode): IO.ByteChannel
+RAISES IO.Error;
 (**Opens a channel to the resource indicated by URI @oparam{uri}.  Depending on
    @oparam{mode}, one of these operations is performed:
 
@@ -267,33 +268,29 @@ PROCEDURE (uri: URI) GetChannel* (mode: ChannelMode; VAR res: Msg.Msg): Channel.
    @item channelNew
    Opens a channel to a new instance of the resource.  If the resource exists,
    it is truncated.  The channel is opened for both read and write access.
-   Example: @oproc{*Files.New}.
 
    @item channelTmp
    Opens a channel to a new instance of the resource, but does not register the
    resource within its naming service.  The channel is opened for both read and
-   write access.  Example: @oproc{*Files.Tmp}.  Please note that some channel
-   operations do not support this operation.  For those that do, registration
-   of the resource in the naming service depends on the channel implementation.
+   write access.  Please note that some channel operations do not support this
+   operation.  For those that do, registration of the resource in the naming
+   service depends on the channel implementation.
 
    @item channelOld
    Opens a channel to an existing resource.  Only read access is enabled.
-   Example: @oproc{*Files.Old}.
    @end table
 
-   On success, a channel instance is returned and @oparam{res} is set to
-   @code{NIL}.  On failure, result is @code{NIL} and @oparam{res} indicates the
-   error.
+   On success, a channel instance is returned.  On failure, an exception of
+   type @otype{IO.Error} is raised.
 
-   Note: Currently, only the @samp{file} URI (@omodule{*URI:Scheme:File})
-   and the @samp{http} URI (@omodule{*URI:Scheme:HTTP}) support this method. *)
+   Note: Currently, only the @samp{file} URI (@omodule{*URI:Scheme:File}) and
+   the @samp{http} URI (@omodule{*URI:Scheme:HTTP}) support this method.  *)
   VAR
-    uriStr: ARRAY 1024 OF CHAR;
+    e: IO.NotImplemented;
   BEGIN
-    res := Msg.New (uriContext, noChannelAvailable);
-    uri. GetString (uriStr);
-    res. SetStringAttrib ("uri", Msg.GetStringPtr (uriStr));
-    RETURN NIL
+    NEW(e);
+    IO.InitError(e, NIL);
+    RAISE(e);
   END GetChannel;
 
 
