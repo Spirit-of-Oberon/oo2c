@@ -500,6 +500,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := select. AddResult (Result.store);
     END ForStatm;
   
+  PROCEDURE LoopStatm (loopStatm: IR.LoopStatm);
+    BEGIN
+      (* ... *)
+    END LoopStatm;
+
+  PROCEDURE Exit (exit: IR.Exit);
+    BEGIN
+      (* ... *)
+    END Exit;
+  
   PROCEDURE CopyParameter (cp: IR.CopyParameter);
     VAR
       instr: SSA.Instr;
@@ -542,6 +552,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | statm: IR.ForStatm DO
         ForStatm (statm);
+
+      | statm: IR.LoopStatm DO
+        LoopStatm (statm);
+
+      | statm: IR.Exit DO
+        Exit (statm);
         
       | statm: IR.CopyParameter DO
         CopyParameter (statm)

@@ -457,6 +457,7 @@ TYPE
 
 TYPE
   Statement* = POINTER TO StatementDesc;
+  LoopStatm* = POINTER TO LoopStatmDesc;
   StatementSeq* = POINTER TO ARRAY OF Statement;
   StatementDesc = RECORD [ABSTRACT]
     (ExpressionDesc)
@@ -530,6 +531,14 @@ TYPE
   END;
   
 TYPE
+  Exit* = POINTER TO ExitDesc;
+  ExitDesc* = RECORD
+    (**Exit statement.  *)
+    (StatementDesc)
+    loop-: LoopStatm;
+  END;
+  
+TYPE
   ForStatm* = POINTER TO ForStatmDesc;
   ForStatmDesc = RECORD
     (**Holds an @code{FOR-BY} statement.  *)
@@ -553,7 +562,6 @@ TYPE
   END;
   
 TYPE
-  LoopStatm* = POINTER TO LoopStatmDesc;
   LoopStatmDesc = RECORD
     (**Holds an @code{LOOP-END} statement.  *)
     (StatementDesc)
@@ -773,6 +781,47 @@ PROCEDURE IsPredefType(type : Sym.Type; id : Sym.PredefId) : BOOLEAN;
 BEGIN
   RETURN (type IS Sym.PredefType) & (type(Sym.PredefType).id = id);
 END IsPredefType;
+
+PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
+  VAR
+    i: LONGINT;
+
+  PROCEDURE CheckStatm (statm: Statement);
+    BEGIN
+      WITH statm: Assert DO
+        (* nothing *)
+      | statm: Assignment DO             (* this includes AssignOp *)
+        (* nothing *)
+      | statm: Call DO
+        (* nothing *)
+      | statm: CopyParameter DO
+        (* nothing *)
+      | statm: Exit DO
+        ASSERT (currentLoop # NIL);      (* FIXME... report error *)
+        statm. loop := currentLoop;
+      | statm: ForStatm DO
+        CheckExit (statm. body, currentLoop);
+      | statm: IfStatm DO
+        CheckExit (statm. pathTrue, currentLoop);
+        CheckExit (statm. pathFalse, currentLoop);
+      | statm: LoopStatm DO
+        CheckExit (statm. body, statm);
+      | statm: RepeatStatm DO
+        CheckExit (statm. body, currentLoop);
+      | statm: Return DO
+        (* nothing *)
+      | statm: WhileStatm DO
+        CheckExit (statm. body, currentLoop);
+      END;
+    END CheckStatm;
+  
+  BEGIN
+    IF (statmSeq # NIL) THEN
+      FOR i := 0 TO LEN (statmSeq^)-1 DO
+        CheckStatm (statmSeq[i])
+      END;
+    END;
+  END CheckExit;
 
 PROCEDURE ^ (b : Builder) AssignType (type : Sym.Type; expr : Expression) : Expression;
 
@@ -1562,6 +1611,32 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitCopyParameter* (cp: CopyParameter);
 PROCEDURE (cp: CopyParameter) Accept* (v: Visitor);
   BEGIN
     v. VisitCopyParameter (cp)
+  END Accept;
+
+(* Statement Class: Exit
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitExit* (exit: Exit; sym: Symbol);
+  BEGIN
+    InitStatement (exit, sym);
+    exit. loop := NIL;
+  END InitExit;
+
+PROCEDURE (b: Builder) NewExit* (sym: Symbol): Exit;
+  VAR
+    exit: Exit;
+  BEGIN
+    NEW (exit);
+    InitExit (exit, sym);
+    RETURN exit
+  END NewExit;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitExit* (exit: Exit);
+  END VisitExit;
+
+PROCEDURE (exit: Exit) Accept* (v: Visitor);
+  BEGIN
+    v. VisitExit (exit)
   END Accept;
 
 (* Statement Class: ForStatm

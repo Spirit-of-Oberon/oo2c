@@ -288,7 +288,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
   
     PROCEDURE LoopStatm (loopStatm: ExtTree.LoopStatm): IR.Statement;
       BEGIN
-        RETURN NIL;  (* FIXME... *)
+        RETURN b. NewLoopStatm (loopStatm. loop. sym,
+                                StatementSeq (loopStatm. statmSeq));
       END LoopStatm;
   
     BEGIN
@@ -329,7 +330,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
 
           | n: ExtTree.LoopStatm DO
             statm := LoopStatm (n);
-            
+
+          | n: ExtTree.ExitStatm DO
+            statm := b. NewExit (n. exit. sym);
           ELSE
             Log.Type("++ Unknown type in StatementSeq", n);
             ASSERT (FALSE)

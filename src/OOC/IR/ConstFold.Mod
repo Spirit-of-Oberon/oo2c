@@ -463,6 +463,10 @@ PROCEDURE VisitStatementSeq (c: ConstFold; statmSeq: IR.StatementSeq);
   BEGIN
   END VisitStatementSeq;
 
+PROCEDURE (c: ConstFold) VisitExit* (exit: IR.Exit);
+  BEGIN
+  END VisitExit;
+
 PROCEDURE (c: ConstFold) VisitForStatm* (forStatm: IR.ForStatm);
   BEGIN
   END VisitForStatm;

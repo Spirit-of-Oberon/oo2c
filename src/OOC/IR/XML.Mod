@@ -309,6 +309,12 @@ PROCEDURE (v: Visitor) VisitAssignOp* (assignOp: IR.AssignOp);
     v. w. EndTag;  (* assign-operation *)
   END VisitAssignOp;
 
+PROCEDURE (v: Visitor) VisitExit* (exit: IR.Exit);
+  BEGIN
+    v. w. StartTag ("exit", FALSE);
+    v. w. EndTag;  (* exit *)
+  END VisitExit;
+
 PROCEDURE (v: Visitor) VisitForStatm* (whileStatm: IR.ForStatm);
   BEGIN
     v. w. StartTag ("while-statm", FALSE);
