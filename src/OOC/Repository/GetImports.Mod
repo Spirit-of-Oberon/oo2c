@@ -154,7 +154,8 @@ PROCEDURE GetImports* (m: Rep.Module; VAR errList: Error.List);
       ELSE
         errList := inputBuffer. errList;
         scannerBuilder := BasicList.New (inputBuffer, TRUE);
-        Scanner.ScanInput (scannerBuilder, Config.pragmas, Scanner.enableAll);
+        Scanner.ScanInput (scannerBuilder, Config.pragmas,
+                           Scanner.enableAll+{Scanner.abortAtDeclarations});
         inputBuffer. Close;
         
         ast := NIL;

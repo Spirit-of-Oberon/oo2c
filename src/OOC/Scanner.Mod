@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Scanner;
 (*  Convert a character sequence into a stream of Oberon-2 symbols.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -52,9 +52,11 @@ CONST
      reports a character position that is decremented by the line number of
      the error.  This fixes CR/LF reporting for editors that count this as a
      single end of line character.  *)
+  abortAtDeclarations* = 5;
+  (**Stop reading in data when reaching one of the declaration blocks,
+     like @code{CONST}, @code{TYPE}, or @code{VAR}.  *)
   
-  
-  enableAll* = {MIN(SET)..MAX(SET)};
+  enableAll* = {enableIdentUnderscore..enableCharPosAdjust};
   (**Enables all available add-on symbols.  *)
   
 CONST
@@ -359,7 +361,12 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
             sym := kwSym[i, 0]
           ELSIF (kwSym[i, 1] >= 0) & CompareIdent (cstart, kwStr[i, 1]^) THEN
             sym := kwSym[i, 1]
-          END
+          END;
+
+          IF (sym >= Symbol.const) & (sym < Symbol.import) &
+             (abortAtDeclarations IN scanOptions) THEN
+            EXIT;                        (* abort scanning early *)
+          END;
         END
       | "0".."9":                        (* number or character constant *)
         REPEAT
