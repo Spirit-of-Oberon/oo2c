@@ -118,6 +118,8 @@ extern OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r);
 /* run-time meta data: type tags, dynamic array length, type test */
 #define OOC_ARRAY_LENGTH(_adr,_dim) (((OOC_LEN*)(_adr))[-(_dim)-1])
 
+#define OOC_TYPE_DESCR(_module,_type_name) &_td_##_module##__##_type_name
+
 #define OOC_TYPE_TAG(_adr) (((RT0__Struct*)(_adr))[-1])
 
 #define OOC_TYPE_TEST(_tag,_td) \
@@ -127,5 +129,12 @@ extern OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r);
 #define OOC_TBPROC_ADR(_tag,_name) (((RT0__Struct)(_tag))->tbProcs[_TBN_##_name])
 
 #define OOC_TBCALL(_adr,_name) ((_TBP_##_name)(_adr))
+
+
+#define STATIC_TBCALL(_module,_type_name,_tb_proc_name,_receiver,_param_list) \
+  _module##__##_type_name##_##_tb_proc_name _param_list
+#define DYN_TBCALL(_module,_type_name,_tb_proc_name,_receiver,_param_list) \
+  ((_TBP_##_module##__##_type_name##_##_tb_proc_name)((*((RT0__Struct*)(_receiver)-1))->tbProcs[_TBN_##_module##__##_type_name##_##_tb_proc_name]))_param_list
+
 
 #endif /* __oo2c__ */
