@@ -6,5 +6,6 @@ if test $# != 2; then
 fi
 
 xsl="`dirname $0`/interface-description.xsl"
-java org.apache.xalan.xslt.Process -IN "$1" -XSL "$xsl" -OUT "$2"
+#java org.apache.xalan.xslt.Process -IN "$1" -XSL "$xsl" -OUT "$2"
+xsltproc "$xsl" "$1" >"$2"
 exit $?
