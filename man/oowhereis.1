@@ -1,0 +1,34 @@
+.TH oowhereis 1
+.UC 5
+.SH NAME
+oowhereis \- OOC file finder
+.SH SYNOPSIS
+.B oowhereis
+.RI [ options ]
+.I <file-name>
+.br
+.B oowhereis
+.RI [ options ]
+.I <module-name>
+.SH DESCRIPTION
+.B oowhereis
+searches the configured repositories for a matching file name.  The
+full path (including the directory part) of the first file found is
+written to
+.IR stdout .
+.SH OPTIONS
+.TP
+.B --config <file>
+Use given file as configuration file.
+.TP
+.B --help, -h
+Write short usage summary and exit.
+.SH ENVIRONMENT
+.I OO2CRC
+holds the name of the configuration file.
+.SH DIAGNOSTICS
+Exit status is 0 if a matching file is found, and 1 otherwise.
+.SH SEE ALSO
+oo2c(1), OOC2 Reference Manual
+.SH AUTHOR
+Michael van Acken <mia@de.uu.net>
