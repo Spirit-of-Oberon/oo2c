@@ -77,6 +77,9 @@ PROCEDURE GetPosition (node: AST.Node): Sym.Position;
       sym := node. sym
     | node: ExtTree.IdentDef DO
       sym := node. ident. sym
+    | node: ExtTree.Operator DO
+      ASSERT(node.op.sym.id = Symbol.period);
+      sym := node.right(ExtTree.Terminal).sym;
     END;
     NEW (position);
     Sym.InitPosition (position, sym. pos, sym. line, sym. column);
