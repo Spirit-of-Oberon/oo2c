@@ -481,5 +481,9 @@
       Imports the module <code>ProgramArgs</code>.  No further tests.
     </test>
     
+    <test id="lib_BinaryRider" type="run" file="LibBinaryRider.Mod">
+      Imports the module <code>BinaryRider</code>.  No further tests.
+    </test>
+    
   </testcases>
 </testsuite-ext>
