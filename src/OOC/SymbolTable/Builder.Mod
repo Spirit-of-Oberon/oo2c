@@ -60,8 +60,8 @@ VAR
   doAutoImport*: BOOLEAN;
   (**If @code{FALSE} (the default), don't do any automatical import in the
      symbol table or the the repository's
-     @oproc{OOC:Repository:GetImports.GetImports}.  Right now, only the program
-     @code{oo2c} sets this to @code{TRUE}.  *)
+     @oproc{*OOC:Repository:GetImports.GetImports}.  Right now, only the
+     program @code{oo2c} sets this to @code{TRUE}.  *)
   
   
 PROCEDURE Init* (b: Builder);
