@@ -34,25 +34,15 @@ else
 fi
 
 dnl checks for libraries
-if test $TARGET_OS = Unix; then
-  AC_CHECK_LIB(m,sin)
-fi
-if test "$ac_cv_lib_m_sin" = yes; then
-   have_libm=TRUE
-else
-   have_libm=FALSE
-fi
-AC_SUBST(have_libm)
-
 AC_CHECK_LIB(gc,GC_malloc)
-
-AC_CHECK_LIB(xnet,socket)
-if test $ac_cv_lib_xnet_socket = yes; then
-   have_libxnet=TRUE
+OOC_CHECK_LIB(xnet,socket)
+if test $TARGET_OS = Win32; then
+  ooc_have_lib_m=FALSE
 else
-   have_libxnet=FALSE
+  OOC_CHECK_LIB(m,sin)
 fi
-AC_SUBST(have_libxnet)
+OOC_CHECK_LIB(mingwex,main)
+OOC_CHECK_LIB(wsock32,main)
 
 dnl checks for header files
 AC_HEADER_STDC

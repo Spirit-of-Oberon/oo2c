@@ -2545,80 +2545,6 @@ echo $ECHO_N "checking for libtool... $ECHO_C" >&6
 echo "${ECHO_T}disabled" >&6
 fi
 
-if test $TARGET_OS = Unix; then
-
-echo "$as_me:$LINENO: checking for sin in -lm" >&5
-echo $ECHO_N "checking for sin in -lm... $ECHO_C" >&6
-if test "${ac_cv_lib_m_sin+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char sin ();
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-sin ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_m_sin=yes
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-ac_cv_lib_m_sin=no
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_m_sin" >&5
-echo "${ECHO_T}$ac_cv_lib_m_sin" >&6
-if test $ac_cv_lib_m_sin = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBM 1
-_ACEOF
-
-  LIBS="-lm $LIBS"
-
-fi
-
-fi
-if test "$ac_cv_lib_m_sin" = yes; then
-   have_libm=TRUE
-else
-   have_libm=FALSE
-fi
-
-
 
 echo "$as_me:$LINENO: checking for GC_malloc in -lgc" >&5
 echo $ECHO_N "checking for GC_malloc in -lgc... $ECHO_C" >&6
@@ -2685,7 +2611,6 @@ _ACEOF
 fi
 
 
-
 echo "$as_me:$LINENO: checking for socket in -lxnet" >&5
 echo $ECHO_N "checking for socket in -lxnet... $ECHO_C" >&6
 if test "${ac_cv_lib_xnet_socket+set}" = set; then
@@ -2750,10 +2675,215 @@ _ACEOF
 
 fi
 
-if test $ac_cv_lib_xnet_socket = yes; then
-   have_libxnet=TRUE
+if test "$ac_cv_lib_xnet_socket" = yes; then
+   ooc_have_lib_xnet=TRUE
 else
-   have_libxnet=FALSE
+   ooc_have_lib_xnet=FALSE
+fi
+
+if test $TARGET_OS = Win32; then
+  ooc_have_lib_m=FALSE
+else
+
+echo "$as_me:$LINENO: checking for sin in -lm" >&5
+echo $ECHO_N "checking for sin in -lm... $ECHO_C" >&6
+if test "${ac_cv_lib_m_sin+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lm  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char sin ();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+sin ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_m_sin=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_m_sin=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_m_sin" >&5
+echo "${ECHO_T}$ac_cv_lib_m_sin" >&6
+if test $ac_cv_lib_m_sin = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBM 1
+_ACEOF
+
+  LIBS="-lm $LIBS"
+
+fi
+
+if test "$ac_cv_lib_m_sin" = yes; then
+   ooc_have_lib_m=TRUE
+else
+   ooc_have_lib_m=FALSE
+fi
+
+fi
+
+echo "$as_me:$LINENO: checking for main in -lmingwex" >&5
+echo $ECHO_N "checking for main in -lmingwex... $ECHO_C" >&6
+if test "${ac_cv_lib_mingwex_main+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lmingwex  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+main ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_mingwex_main=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_mingwex_main=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_mingwex_main" >&5
+echo "${ECHO_T}$ac_cv_lib_mingwex_main" >&6
+if test $ac_cv_lib_mingwex_main = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBMINGWEX 1
+_ACEOF
+
+  LIBS="-lmingwex $LIBS"
+
+fi
+
+if test "$ac_cv_lib_mingwex_main" = yes; then
+   ooc_have_lib_mingwex=TRUE
+else
+   ooc_have_lib_mingwex=FALSE
+fi
+
+
+echo "$as_me:$LINENO: checking for main in -lwsock32" >&5
+echo $ECHO_N "checking for main in -lwsock32... $ECHO_C" >&6
+if test "${ac_cv_lib_wsock32_main+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwsock32  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+main ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_wsock32_main=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_wsock32_main=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_wsock32_main" >&5
+echo "${ECHO_T}$ac_cv_lib_wsock32_main" >&6
+if test $ac_cv_lib_wsock32_main = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBWSOCK32 1
+_ACEOF
+
+  LIBS="-lwsock32 $LIBS"
+
+fi
+
+if test "$ac_cv_lib_wsock32_main" = yes; then
+   ooc_have_lib_wsock32=TRUE
+else
+   ooc_have_lib_wsock32=FALSE
 fi
 
 
@@ -5292,8 +5422,10 @@ s,@DIFF@,$DIFF,;t t
 s,@XSLTPROC@,$XSLTPROC,;t t
 s,@PERL@,$PERL,;t t
 s,@LIBTOOL@,$LIBTOOL,;t t
-s,@have_libm@,$have_libm,;t t
-s,@have_libxnet@,$have_libxnet,;t t
+s,@ooc_have_lib_xnet@,$ooc_have_lib_xnet,;t t
+s,@ooc_have_lib_m@,$ooc_have_lib_m,;t t
+s,@ooc_have_lib_mingwex@,$ooc_have_lib_mingwex,;t t
+s,@ooc_have_lib_wsock32@,$ooc_have_lib_wsock32,;t t
 s,@ooc_target_integer@,$ooc_target_integer,;t t
 s,@ooc_target_long_int@,$ooc_target_long_int,;t t
 s,@ooc_target_long_set@,$ooc_target_long_set,;t t
