@@ -3047,7 +3047,8 @@ PROCEDURE (b: Builder) NewShift (sym: Symbol; value, by: Expression;
       IF (expr # b.errorExpr) THEN
         IF ~(TR.IsIntegerType(expr.type) OR
              TR.IsCharType(expr.type) OR
-             TR.IsPredefType(expr.type, Predef.byte)) THEN
+             TR.IsPredefType(expr.type, Predef.byte) OR
+             TR.IsSetType(expr.type)) THEN
           b.ErrSym(invalidOpType, expr.sym);
           v := BigInt.NewInt(1);
           RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
