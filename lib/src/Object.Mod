@@ -7,7 +7,6 @@ MODULE Object;
    are added on demand.  If it is not used, it has no place here.  *)
 
 IMPORT
-  Out0,
   S := SYSTEM;
   
 TYPE
@@ -495,21 +494,16 @@ PROCEDURE (s: String8) Compare*(y: Object): LONGINT;
   VAR
     min, i: LONGINT;
   BEGIN
-      Out0.String("  0");Out0.Ln;
     min := s.length;
     WITH y: String8 DO
-      Out0.String("  a");Out0.Ln;
       IF (y.length < min) THEN min := y.length; END;
       i := 0;
       WHILE (i # min) & (s.data[i] = y.data[i]) DO
-      Out0.String("  b");Out0.Ln;
         INC(i);
       END;
       IF (i = min) THEN
-      Out0.String("  c");Out0.Ln;
         RETURN (s.length - y.length);
       ELSE
-      Out0.String("  d");Out0.Ln;
         RETURN (ORD(s.data[i]) - ORD(y.data[i]));
       END;
     | y: String32 DO
@@ -530,7 +524,6 @@ PROCEDURE (s: String32) Compare*(y: Object): LONGINT;
   VAR
     min, i: LONGINT;
   BEGIN
-      Out0.String("  1");Out0.Ln;
     min := s.length;
     WITH y: String8 DO
       IF (y.length < min) THEN min := y.length; END;
