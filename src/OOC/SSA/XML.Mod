@@ -24,7 +24,7 @@ MODULE OOC:SSA:XML;
 IMPORT
   Channel, Dictionary := ADT:Dictionary:IntValue, ADT:String, ADT:StringBuffer,
   XML:Writer, XML:UnicodeCodec:Latin1,
-  OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA;
+  OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd, OOC:SSA;
 
 
 
@@ -79,7 +79,7 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
         sb. AppendLongInt (ABS (idMap. Get (result. instr)));
         IF (result # result. instr) THEN
           sb. AppendChar (".");
-          Result.GetName (result. id, str);
+          Result.GetName (result. class, str);
           sb. AppendString (str);
 
           countSameId := 0; posSameId := 0;
@@ -88,7 +88,7 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
             IF (res = result) THEN
               posSameId := countSameId;
             END;
-            IF (res. id = result. id) THEN
+            IF (res. class = result. class) THEN
               INC (countSameId)
             END;
             res := res. nextResult
@@ -102,20 +102,53 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
       END AttrId;
 
     PROCEDURE WriteResult (res: SSA.Result);
+      VAR
+        str: ARRAY 64 OF CHAR;
       BEGIN
         w. StartTag ("res", FALSE);
+        
         AttrId ("id", res);
+        
+        Result.GetName (res. class, str);
+        w. AttrStringLatin1 ("class", str);
+        
         w. EndTag;  (* res *)
       END WriteResult;
     
     PROCEDURE WriteOpnd (opnd: SSA.Opnd);
+      VAR
+        arg: SSA.Result;
+        str: ARRAY 64 OF CHAR;
       BEGIN
         w. StartTag ("opnd", FALSE);
-        AttrId ("arg", opnd. arg);
+
+        Opnd.GetName (opnd. class, str);
+        w. AttrStringLatin1 ("class", str);
+        
+        arg := opnd. arg;
+        WITH arg: SSA.Const DO
+          value := arg. value. ToString();
+          w. AttrStringLatin1 ("const-value", value. array^);
+        | arg: SSA.DeclRef DO
+          w. AttrStringLatin1 ("declref", arg. decl. name. str^);
+        | arg: SSA.Address DO
+          w. AttrStringLatin1 ("address-of", arg. decl. name. str^);
+        ELSE
+          AttrId ("arg", opnd. arg);
+        END;
         w. EndTag;  (* opnd *)
       END WriteOpnd;
     
     BEGIN
+      IF (instr IS SSA.Const) OR
+         (instr IS SSA.DeclRef) OR
+         (instr IS SSA.Address) THEN
+        (* these kinds of instructions are written in a shorthand form:
+           their actual value is indicated in the "opnd" tag, and the
+           instructions themselves are omitted *)
+        RETURN
+      END;
+      
       Opcode.GetName (instr. opcode, instr. subclass, str);
       w. StartTagLatin1 (str, FALSE);
       w. AttrInt ("id", id);
