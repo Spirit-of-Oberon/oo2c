@@ -20,16 +20,19 @@ l6:
   
   goto l1_loop;
 l7:
+  return;
 }
 
 void Var9__Test() {
   OOC_CHAR8 Var9__Test_s4[4];
 
   Var9__Zero((void*)(OOC_INT32)Var9__Test_s4, 4);
+  return;
 }
 
 void Var9_init(void) {
 
+  return;
 }
 
 /* --- */

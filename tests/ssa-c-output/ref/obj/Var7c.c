@@ -35,10 +35,12 @@ void Var7c__Test() {
   i0 = Var7c__Len((void*)"abc", 4);
   Out__Int(i0, 0);
   Out__Ln();
+  return;
 }
 
 void Var7c_init(void) {
 
+  return;
 }
 
 /* --- */

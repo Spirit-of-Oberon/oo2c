@@ -20,10 +20,12 @@ void VarPar1b__Test() {
   i0 = VarPar1b__F((void*)(OOC_INT32)&VarPar1b__x);
   Out__Int(i0, 0);
   Out__Ln();
+  return;
 }
 
 void VarPar1b_init(void) {
 
+  return;
 }
 
 /* --- */

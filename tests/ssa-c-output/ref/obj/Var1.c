@@ -17,10 +17,12 @@ void Var1__Test() {
   i0 = Var1__F(1);
   Out__Int(i0, 0);
   Out__Ln();
+  return;
 }
 
 void Var1_init(void) {
 
+  return;
 }
 
 /* --- */

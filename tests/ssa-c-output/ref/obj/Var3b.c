@@ -36,10 +36,12 @@ void Var3b__Test() {
   i0 = Var3b__F(OOC_TRUE, OOC_TRUE);
   Out__Int(i0, 0);
   Out__Ln();
+  return;
 }
 
 void Var3b_init(void) {
 
+  return;
 }
 
 /* --- */

@@ -876,6 +876,15 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         nested := nested. nextDom
       END;
     END CheckCollects;
+
+  PROCEDURE MoveSelectReturn (root: Blocker.Region; block: Block);
+    VAR
+      proxy: InstrProxy;
+    BEGIN
+      proxy := NewInstrProxy (root. instr);
+      root. instr. info := proxy;
+      AppendProxy (block, proxy);
+    END MoveSelectReturn;
   
   BEGIN
     (*Blocker.Write (StdChannels.stdout, pb);*)
@@ -885,6 +894,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     root. instr. info := proxy;
     b := NewJumpBlock (NIL);
     lastBlock := TransferInstructions (root, b);
+    MoveSelectReturn (root, lastBlock);
     SetJump (lastBlock. jump, lastBlock, NewDeadEndBlock (lastBlock));
     
     (* mark jump instructions that are loop backedges *)

@@ -6,6 +6,7 @@ static void Var6b__Set(OOC_INT16 y) {
 
   i0 = y;
   Var6b__x = i0;
+  return;
 }
 
 static OOC_INT16 Var6b__F(OOC_CHAR8 b) {
@@ -38,10 +39,12 @@ void Var6b__Test() {
   i0 = Var6b__x;
   Out__Int(i0, 0);
   Out__Ln();
+  return;
 }
 
 void Var6b_init(void) {
 
+  return;
 }
 
 /* --- */

@@ -52,10 +52,12 @@ void Var4b__Test() {
   i0 = Var4b__x;
   Out__Int(i0, 0);
   Out__Ln();
+  return;
 }
 
 void Var4b_init(void) {
 
+  return;
 }
 
 /* --- */

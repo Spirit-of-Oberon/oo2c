@@ -23,10 +23,12 @@ void Var3__Test() {
   i0 = Var3__F(OOC_TRUE);
   Out__Int(i0, 0);
   Out__Ln();
+  return;
 }
 
 void Var3_init(void) {
 
+  return;
 }
 
 /* --- */

@@ -22,16 +22,19 @@ l4_loop:
   goto l4_loop;
 l7:
 l8:
+  return;
 }
 
 void Var8__Test() {
   OOC_CHAR8 Var8__Test_s4[4];
 
   Var8__Zero((void*)(OOC_INT32)Var8__Test_s4, 4);
+  return;
 }
 
 void Var8_init(void) {
 
+  return;
 }
 
 /* --- */
