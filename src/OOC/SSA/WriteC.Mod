@@ -386,9 +386,11 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     VAR
       name: String.String;
     BEGIN
-      IF (type IS Sym.Pointer) OR
-         (type IS Sym.FormalPars) OR
-         passByReference THEN
+      IF (var. instr. opcode = Opcode.typeTag) THEN
+        w. WriteString ("(RT0__Struct)");
+      ELSIF (type IS Sym.Pointer) OR
+            (type IS Sym.FormalPars) OR
+            passByReference THEN
         IF passByReference OR (type. namingDecl = NIL) THEN
           w. WriteString ("(void*)");
         ELSE
@@ -517,12 +519,24 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     END NewObject;
   
   PROCEDURE TypeTag (instr: SSA.Instr);
+    VAR
+      name: String.String;
     BEGIN
-      (* FIXME... handle tags of VAR parameters *)
       CastFromPtr (instr);
-      w. WriteString ("OOC_TYPE_TAG(");
-      w. Ref (instr. opndList);
-      w. WriteString (");");
+      IF (instr. opndList. arg IS SSA.DeclRef) THEN
+        name := Naming.NameOfTypeTagParam (instr. opndList. arg(SSA.DeclRef). decl(Sym.VarDecl));
+        w. WriteString (name. array^);
+      ELSIF (instr. opndList. arg IS SSA.TypeRef) THEN
+        w. WriteChar ("&");
+        name := Naming.NameOfTypeDescriptor (instr. opndList. arg(SSA.TypeRef). type);
+        w. WriteString (name. array^);
+      ELSE
+        CastFromPtr (instr);
+        w. WriteString ("OOC_TYPE_TAG(");
+        w. Ref (instr. opndList);
+        w. WriteChar (")");
+      END;
+      w. WriteChar (";");
     END TypeTag;
   
   PROCEDURE TypeTest (instr: SSA.Instr);

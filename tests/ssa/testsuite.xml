@@ -15,12 +15,13 @@
   designator1 function6 loop1 loop2 loop3 loop4 and1 or1 varpar1
   record1 record2 record3 record4 record5 record6 record7 record8
   record9 procvar1 procvar2 procvar3 procvar4 procvar5
-  inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7 typetest1
+  inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7
+  typetest1 typetest2 typetest3 typetest4
   array1 array2 array3 array4 array5 array6 array7 array8">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; typetest1">-->
+  select ="&SetupTestCasesWithOut; typetest2 typetest3 typetest4">-->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -287,7 +288,19 @@
       Type tests on pointer variables.
     </test>
 
+    <test id="typetest2" type="run" file="TypeTest2.Mod" output="TypeTest2.Ref">
+      This is like <code>typetest1</code>, only that the pointer are
+      dereferenced and tested against the corresponding record type.
+    </test>
     
+    <test id="typetest3" type="run" file="TypeTest3.Mod" output="TypeTest3.Ref">
+      Type tests on <code>VAR</code> parameters of record type.  The
+      record variables are deferenced pointers.
+    </test>
+    
+    <test id="typetest4" type="run" file="TypeTest4.Mod" output="TypeTest4.Ref">
+      Like <code>typetest3</code>, but using record variables.
+    </test>
   </testcases>
   
   <processor-info processor-name="TestCompile">

@@ -254,6 +254,13 @@ PROCEDURE (v : Visitor) VisitTypeConv* (op : IR.TypeConv);
     v. w. EndTag;
   END VisitTypeConv;
 
+PROCEDURE (v : Visitor) VisitTypeTag* (op : IR.TypeTag);
+  BEGIN
+    v. w. StartTag("type-tag", FALSE);
+    op. design. Accept(v);
+    v. w. EndTag;
+  END VisitTypeTag;
+
 PROCEDURE (v : Visitor) VisitTypeTest* (op : IR.TypeTest);
   BEGIN
     v. w. StartTag("type-test", FALSE);

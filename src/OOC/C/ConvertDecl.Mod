@@ -58,10 +58,24 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
         END;
       END AddArrayLength;
 
+    PROCEDURE AddTypeTag (param: Sym.VarDecl);
+      VAR
+        tag: DeclWriter.Declaration;
+      BEGIN
+        IF param. isVarParam & (param. type IS Sym.Record) THEN
+          tag := w. NewDeclaration (Naming.NameOfTypeTagParam (param),
+                                    DeclWriter.tqNone,
+                                    DeclWriter.scAuto,
+                                    w. basicType[DeclWriter.typeTagType]);
+          fct. AddParameter (tag);
+        END;
+      END AddTypeTag;
+    
     BEGIN
       decl := ConvertDecl (w, param, modeFormalParameter);
       fct. AddParameter (decl);
       AddArrayLength (param. type, 0);
+      AddTypeTag (param);
     END ConvertParam;
 
   PROCEDURE AddFields (struct: DeclWriter.Struct; type: Sym.Type): LONGINT;

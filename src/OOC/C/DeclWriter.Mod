@@ -105,8 +105,11 @@ CONST
      and @oconst{lengthType} are mapped to the same C type.  When working on
      the level of the @emph{input} language, the symbol type
      @oconst{*OOC:SymbolTable:Predef.lengthType} should be used.  *)
+  typeTagType* = 15;
+  (**This type is used to store type tag values.  This is a pointer with a
+     defined meaning within the run-time system.  *)
   
-  lastBasicType = lengthType;
+  lastBasicType = typeTagType;
 
   
 TYPE
@@ -301,6 +304,7 @@ PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
     CreateBasicType (real32, "OOC_REAL32");
     CreateBasicType (real64, "OOC_REAL64");
     CreateBasicType (lengthType, "OOC_LEN");
+    CreateBasicType (typeTagType, "RT0__Struct");
   END InitWriter;
 
 PROCEDURE NewWriter* (ch: Channel.Channel;

@@ -353,7 +353,8 @@ CONST
 
      @table @oconst
      @item *OOC:SSA.Opnd.arg
-     This is either a pointer value, or a @oconst{declRef}.
+     This is either a @oconst{declRef} refering to a @code{VAR} record
+     parameter, a @oconst{typeRef} denoting a record type, or a pointer value.
      @end table
 
      The result of the instruction is the address of the type descriptor.  *)

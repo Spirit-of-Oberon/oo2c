@@ -432,6 +432,16 @@ TYPE
   END;
 
 TYPE
+  TypeTag* = POINTER TO TypeTagDesc;
+  TypeTagDesc = RECORD
+    (**Computes the type tag of a record variable.  *)
+    (OperatorDesc)
+    design-: Expression;
+    (**The variable designator.  This is either a record variable, a
+       dereferenced pointer variable, or a @code{VAR} parameter of record type.  *)
+  END;
+  
+TYPE
   TypeTest* = POINTER TO TypeTestDesc;
   TypeTestDesc = RECORD
     (**The type test operator @samp{IS}.  The operator is normalized in the
@@ -445,7 +455,7 @@ TYPE
 TYPE
   Reference* = POINTER TO ReferenceDesc;
   ReferenceDesc = RECORD [ABSTRACT]
-  (**Represents a using occurence of a name.  A reference is associatd with
+  (**Represents a using occurence of a name.  A reference is associated with
      exactly one defining declaration.  In the case of predefined procedures
      and operators, this declaration may be overloaded, but in all other cases
      the declaration uniquely identifies the referenced entity.  *)
@@ -1476,6 +1486,32 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeConv* (conv: TypeConv);
 PROCEDURE (conv: TypeConv) Accept* (v: Visitor);
   BEGIN
     v. VisitTypeConv (conv)
+  END Accept;
+
+(* Operator Class: TypeTag
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitTypeTag (tag: TypeTag; sym: Symbol; design: Expression);
+  BEGIN
+    InitOperator (tag, sym, Predef.GetType(Predef.address));
+    tag. design := design;
+  END InitTypeTag;
+
+PROCEDURE (b: Builder) NewTypeTag (sym: Symbol; design: Expression): Expression;
+  VAR
+    tag: TypeTag;
+  BEGIN
+    NEW (tag);
+    InitTypeTag (tag, sym, design);
+    RETURN tag;
+  END NewTypeTag;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeTag* (tag: TypeTag);
+  END VisitTypeTag;
+
+PROCEDURE (tag: TypeTag) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTypeTag (tag)
   END Accept;
 
 (* Operator Class: TypeTest
@@ -2547,22 +2583,6 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       fparType: Sym.Type;
       fpar: Sym.VarDecl;
       arg: Expression;
-      pbr: ARRAY 32 OF SET;  (* max of 1024 arguments *)
-    CONST
-      sizeSet = MAX (SET)+1;
-      
-    PROCEDURE PassByReference (ref: BOOLEAN);
-      VAR
-        i: LONGINT;
-      BEGIN
-        i := newArgs. size;
-        IF ref THEN
-          INCL (pbr[i DIV sizeSet], i MOD sizeSet);
-        ELSE
-          EXCL (pbr[i DIV sizeSet], i MOD sizeSet);
-        END;
-      END PassByReference;
-    
     BEGIN
       newArgs := ArrayList.New (LEN (arguments^));
       newFPars := ArrayList.New (LEN (arguments^));
@@ -2587,8 +2607,13 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         fparType := formalPars[fparIndex]. type;
         WITH fparType: Sym.Array DO
           FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
-            PassByReference (FALSE);
-            newArgs. Append (b. Fold (b. NewLen (sym, arg, i)));
+            newArgs. Append (b. Fold (b. NewLen (arg. sym, arg, i)));
+            newFPars. Append (NIL);
+          END;
+
+        | fparType: Sym.Record DO
+          IF fpar. isVarParam THEN
+            newArgs. Append (b. NewTypeTag (arg. sym, arg));
             newFPars. Append (NIL);
           END;
         ELSE  (* nothing to do *)

@@ -91,6 +91,17 @@ PROCEDURE NameOfLengthParam* (param: Sym.VarDecl; dim: LONGINT): String.String;
     RETURN String.New (str)
   END NameOfLengthParam;
 
+PROCEDURE NameOfTypeTagParam* (param: Sym.VarDecl): String.String;
+  VAR
+    str: Buffer;
+    name: String.String;
+  BEGIN
+    name := NameOfDeclaration (param);
+    COPY (name. array^, str);
+    Strings.Append ("__tag", str);
+    RETURN String.New (str)
+  END NameOfTypeTagParam;
+
 PROCEDURE NameOfType* (type: Sym.Type): String.String;
 (**@precond
    @samp{type. namingDecl # NIL}
