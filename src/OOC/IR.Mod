@@ -195,6 +195,15 @@ TYPE
   END;
 
 TYPE
+  Assignment* = POINTER TO AssignmentDesc;
+  AssignmentDesc = RECORD
+    (**Assignment statement.  *)
+    (StatementDesc)
+    variable-: Expression;
+    value-: Expression;
+  END;
+  
+TYPE
   Return* = POINTER TO ReturnDesc;
   ReturnDesc = RECORD
     (**A procedure's @code{RETURN} statement.  *)
@@ -591,6 +600,34 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitAssert* (assert: Assert);
 PROCEDURE (assert: Assert) Accept* (v: Visitor);
   BEGIN
     v. VisitAssert (assert)
+  END Accept;
+
+(* -------- *)
+
+PROCEDURE InitAssignment (assignment: Assignment; sym: Symbol;
+                          variable, value: Expression);
+  BEGIN
+    InitStatement (assignment, sym);
+    assignment. variable := variable;
+    assignment. value := value;
+  END InitAssignment;
+
+PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
+                                       variable, value: Expression): Assignment;
+  VAR
+    assignment: Assignment;
+  BEGIN
+    NEW (assignment);
+    InitAssignment (assignment, sym, variable, value);
+    RETURN assignment
+  END NewAssignment;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitAssignment* (assignment: Assignment);
+  END VisitAssignment;
+
+PROCEDURE (assignment: Assignment) Accept* (v: Visitor);
+  BEGIN
+    v. VisitAssignment (assignment)
   END Accept;
 
 (* -------- *)

@@ -141,6 +141,15 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
                              Expr (return. expr(ExtTree.Node)))
       END;
     END Return;
+
+  PROCEDURE Assignment (design, op, value: ExtTree.Node): IR.Statement;
+    VAR
+      variable, valueExpr: IR.Expression;
+    BEGIN
+      variable := Designator (design);
+      valueExpr := Expr (value);
+      RETURN b. NewAssignment (op(ExtTree.Terminal). sym, variable, valueExpr)
+    END Assignment;
   
   PROCEDURE StatementSeq (statmSeq: ExtTree.NodeList): IR.StatementSeq;
     VAR
@@ -166,6 +175,11 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
             
           | n: ExtTree.ReturnStatm DO
             statm := Return (n);
+
+          | n: ExtTree.Assignment DO
+            statm := Assignment (n. assignment. left,
+                                 n. assignment. op,
+                                 n. assignment. right)
           ELSE
             Log.Type("++ Unknown type in StatementSeq", n);
             ASSERT (FALSE)

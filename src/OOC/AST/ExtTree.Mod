@@ -331,7 +331,7 @@ TYPE
   Assignment* = POINTER TO AssignmentDesc;
   AssignmentDesc = RECORD
     (NodeDesc)
-    assignment-: AST.Node;
+    assignment-: Operator;
   END;
 
 TYPE
@@ -1236,7 +1236,7 @@ PROCEDURE (b: Builder) Assignment* (assignment: AST.Node): Node;
     a: Assignment;
   BEGIN
     NEW (a);
-    a. assignment := assignment;
+    a. assignment := assignment(Operator);
     RETURN a
   END Assignment;
 

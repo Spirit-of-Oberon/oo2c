@@ -119,6 +119,14 @@ PROCEDURE (v: Visitor) VisitReturn* (return: IR.Return);
     v. w. EndTag;  (* return *)
   END VisitReturn;
 
+PROCEDURE (v: Visitor) VisitAssignment* (assignment: IR.Assignment);
+  BEGIN
+    v. w. StartTag ("assignment", FALSE);
+    assignment. variable. Accept (v);
+    assignment. value. Accept (v);
+    v. w. EndTag;  (* assignment *)
+  END VisitAssignment;
+
 
 PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);
   VAR
