@@ -479,13 +479,13 @@
     <test id="opTypeGuard1" type="run" relevance="informal" file="OpTypeGuard1.Mod"
       output="OpTypeGuard1.Ref">
       Excercise type guards.
-    </test>
+    </test> -->
 
     <test id="opExprCompat1" type="run" relevance="informal" file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
       Excercise combinations of different operand types.
     </test>
--->
+    
     <test id="opExprCompat2" type="reject" file="OpExprCompat2.Mod">
       Types are allowed for operator, but not expression-compatible.
     </test>

@@ -413,7 +413,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace)
         END;
         
-      | Opcode.copyString:
+      | Opcode.copy, Opcode.copyString:
         alias := Aliasing.DesignatorAlias (tr,
                                            get. GetOpndClass (Opnd.readDesign),
                                            instr. GetOpndClass (Opnd.writeDesign));
@@ -423,9 +423,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
              would not pay off *)
           RETURN unknownValue;
         ELSE
-          (* this "copy-string" and "get" work on different variables, and
-             cannot interfere with each other: continue trace through
-             `instr' *)
+          (* this "copy" (or "copy-string") and the "get" work on different
+             variables, and cannot interfere with each other: continue trace
+             through `instr' *)
           RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace)
         END;
         
