@@ -360,16 +360,22 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
                                    (m. GetImport (ptr. moduleName. str^)));
               END;
             ELSE
-              decl := ConvertDecl (w, ptr, mode);
-              IF (decl. name. array[0] # "(") THEN
-                (* Gross hack: If the declarations name doesn't look like a
-                   name, then omit it from the output.  This can (but probably
-                   shouldn't ;-) be used to define functions and variables
-                   that actually expand to expressions or macros.  Introduced
-                   to allow "(float)sin" as function name in RealMath.Mod.  *)
-                w. AddDeclaration (decl);
-                IF (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isTypeBound THEN
-                  AddTypeBoundHelpers (w, ptr(Sym.ProcDecl));
+              IF (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isForwardDecl THEN
+                (* ignore forward declaration, or we get duplicates *)
+              ELSE
+                decl := ConvertDecl (w, ptr, mode);
+                IF (decl. name. array[0] # "(") THEN
+                  (* Gross hack: If the declarations name doesn't look like a
+                     name, then omit it from the output.  This can (but
+                     probably shouldn't ;-) be used to define functions and
+                     variables that actually expand to expressions or macros.
+                     Introduced to allow "(float)sin" as function name in
+                     RealMath.Mod.  *)
+                  w. AddDeclaration (decl);
+                  IF (ptr IS Sym.ProcDecl) &
+                     ptr(Sym.ProcDecl). isTypeBound THEN
+                    AddTypeBoundHelpers (w, ptr(Sym.ProcDecl));
+                  END;
                 END;
               END;
             END;
