@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; var11">-->
+  select ="&SetupTestCasesWithOut; pre1 pre2">-->
   
   &TestSetupWithOut;
     
@@ -250,6 +250,18 @@
     <test id="rewrite7" type="accept" file="LoopRewrite7.Mod">
       The scheduler should be smart enough to have just one jump
       within the loop, the one going backwards to its beginning.
+    </test>
+    
+    <test id="pre1" type="accept" file="PRE1.Mod">
+      The array index computed in the <code>RETURN</code> is partially
+      redundant with regard to the <code>FALSE</code> path of the
+      <code>IF</code> statement.  Its computation should be pulled
+      into the <code>IF</code>, leaving only the memory access between
+      the <code>IF</code> and the return from the function.
+    </test>
+    <test id="pre2" type="accept" file="PRE2.Mod">
+      The array index is computed in both branches of the
+      <code>IF</code>.  It can be reused after the <code>IF</code>.
     </test>
     
     <test id="noCopy7" type="accept" file="NoCopy7.Mod">
