@@ -13,7 +13,8 @@
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
   designator1 function6 loop1 loop2 loop3 loop4 varpar1
-  ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1 len1 array1 array2">
+  ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1
+  len1 len2 len3 len4 len5 len6 len7 array1 array2">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -140,6 +141,30 @@
       kinds of array variables are used: global array variable, open
       array parameter, and partially open array parameter.
     </test>
+    
+    <test id="len2" type="reject" file="Len2.Mod">
+      Calling <code>LEN</code> without arguments.
+    </test>
+    
+    <test id="len3" type="reject" file="Len3.Mod">
+      Calling <code>LEN</code> with too many arguments.
+    </test>
+    
+    <test id="len4" type="reject" file="Len4.Mod">
+      Calling <code>LEN</code> with non-array argument.
+    </test>
+    
+    <test id="len5" type="reject" file="Len5.Mod">
+      Calling <code>LEN</code> with an out of range dimension number.
+    </test>
+    
+    <test id="len6" type="reject" file="Len6.Mod">
+      Calling <code>LEN</code> with a non-integer dimension number.
+    </test>
+    
+    <test id="len7" type="reject" file="Len7.Mod">
+      Calling <code>LEN</code> with an integer variable as dimension number.
+    </test>
   </testcases>
   
   <testcases profile="OOC2 Development: Data Types" default-lang="O1 O2 AO">
@@ -169,5 +194,16 @@
   
   <processor-info processor-name="TestCompile">
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
+    
+    <reject-info id="len2" pos="Int (%LEN " msg="Wrong number of arguments"/>
+    <reject-info id="len3" pos="Int (%LEN " msg="Wrong number of arguments"/>
+    <reject-info id="len4" pos="LEN (%&quot;abc&quot;"
+        msg="First argument of LEN must be an array designator"/>
+    <reject-info id="len5" pos="a, %2),"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+    <reject-info id="len6" pos="a, %0X),"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+    <reject-info id="len7" pos="a, %d),"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
   </processor-info>
 </testsuite-ext>

@@ -682,6 +682,7 @@ CONST
   incompatibleActualParam* = 12;
   wrongNumberOfArguments = 13;
   invalidIntegerConst = 14;
+  notArray = 15;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -725,7 +726,9 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     | wrongNumberOfArguments:
       t := "Wrong number of arguments"
     | invalidIntegerConst:
-      t := "This must be an integer constant in the range `${start} <= x < ${end}'"
+      t := "Integer constant in the range `${start} <= x < ${end}' required"
+    | notArray:
+      t := "First argument of LEN must be an array designator"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -763,10 +766,12 @@ PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
     e: Error.Msg;
   BEGIN
     e := Error.New (irContext, code);
-    e. SetIntAttrib ("pos", sym. pos);
-    e. SetIntAttrib ("line", sym. line);
-    e. SetIntAttrib ("column", sym. column);
-    b. errList. Append (e);
+    IF (sym # b. errorExpr. sym) THEN    (* discard stacked followup errors *)
+      e. SetIntAttrib ("pos", sym. pos);
+      e. SetIntAttrib ("line", sym. line);
+      e. SetIntAttrib ("column", sym. column);
+      b. errList. Append (e);
+    END;
     b. lastError := e;
   END ErrSym;
 
@@ -2000,7 +2005,9 @@ PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Err
     b. pragmaHistory := pragmaHistory;
     b. errList := errList;
     b. typeRules := typeRules;
-    b. errorExpr := NewConst (NIL, Predef.GetType(Predef.void), Boolean.New (FALSE));
+    b. errorExpr := NewConst (BasicList.NewSymbol (NIL, -1),
+                              Predef.GetType(Predef.void),
+                              Boolean.New (FALSE));
     b. lastError := NIL;
     b. constFold := fold;
     fold. builder := b;
@@ -2281,6 +2288,7 @@ PROCEDURE (b: Builder) CheckIntConst (expr: Expression; start, end: LONGINT): LO
           RETURN v;
         END;
       END;
+    ELSE  (* not a constant: report error *)
     END;
 
     IF (start < end) THEN  (* only write error if it makes sense ;-) *)
@@ -2393,10 +2401,13 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       RETURN exprList
     END TransformArgs;
 
-  PROCEDURE CheckNumberOfArguments (min, max: LONGINT);
+  PROCEDURE CheckNumberOfArguments (min, max: LONGINT): BOOLEAN;
     BEGIN
       IF (LEN (arguments^) < min) OR (LEN (arguments^) > max) THEN
         b. ErrSym (wrongNumberOfArguments, design. sym);
+        RETURN FALSE;
+      ELSE
+        RETURN TRUE;
       END;
     END CheckNumberOfArguments;
   
@@ -2410,14 +2421,22 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
 
       (* predefined functions *)
       | Predef.len:
-        CheckNumberOfArguments (1, 2);
-        IF (LEN (arguments^) # 2) THEN
-          dim := 0;
-        ELSE  (* LEN (arguments^) = 2 *)
-          dim := b. CheckIntConst (arguments[1], 0,
-                                   arguments[0]. type. ArrayDimensions());
+        IF CheckNumberOfArguments (1, 2) THEN
+          IF (LEN (arguments^) # 2) THEN
+            dim := 0;
+          ELSE  (* LEN (arguments^) = 2 *)
+            dim := b. CheckIntConst (arguments[1], 0,
+                                     arguments[0]. type. ArrayDimensions());
+          END;
+
+          IF ~(arguments[0]. type IS Sym.Array) THEN
+            b. ErrSym (notArray, arguments[0]. sym);
+          END;
+          
+          RETURN b. NewLen (design. sym, arguments[0], dim);
+        ELSE
+          RETURN b. errorExpr;
         END;
-        RETURN b. NewLen (design. sym, arguments[0], dim);
         
       | Predef.size:
         ASSERT (LEN (arguments^) = 1);   (* FIXME... needs error msg *)
