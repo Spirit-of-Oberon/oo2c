@@ -443,8 +443,11 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
             
       | value: String8.Value DO
         IF (type(Sym.PredefType). id = Predef.char) THEN
+           (* note: the character value is casted to OOC_CHAR8 to avoid
+              any problems if characters are interpreted as signed values
+              by default; that is, '\377' is _not_ -1 *)
           charValue := ORD (value. value. array[0]);
-          w. WriteChar ("'");
+          w. WriteString ("(OOC_CHAR8)'");
           IF (charValue < ORD (" ")) OR (charValue >= 127) OR
              (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
             w. WriteChar ("\")(*"*); 

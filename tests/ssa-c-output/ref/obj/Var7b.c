@@ -17,7 +17,7 @@ l1_loop:
   i1 = i0*1;
   i1 = (OOC_INT32)str+i1;
   i1 = *(OOC_UINT8*)i1;
-  i1 = i1=='\000';
+  i1 = i1==(OOC_CHAR8)'\000';
   if (i1) goto l4;
   
   goto l1_loop;

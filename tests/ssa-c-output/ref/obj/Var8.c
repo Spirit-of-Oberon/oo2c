@@ -14,7 +14,7 @@ l3:
 l4_loop:
   i3 = i2*1;
   i3 = (OOC_INT32)str+i3;
-  *(OOC_UINT8*)i3 = '\000';
+  *(OOC_UINT8*)i3 = (OOC_CHAR8)'\000';
   i2 = i2+1;
   i3 = i2<=i0;
   if (!i3) goto l7;

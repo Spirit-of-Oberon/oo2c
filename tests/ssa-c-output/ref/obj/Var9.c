@@ -14,7 +14,7 @@ l5:
   i3 = i1+1;
   i4 = i1*1;
   i4 = (OOC_INT32)str+i4;
-  *(OOC_UINT8*)i4 = '\000';
+  *(OOC_UINT8*)i4 = (OOC_CHAR8)'\000';
   i1=i3;
 l6:
   
