@@ -23,7 +23,7 @@ For a qualified type expression of the form `T(A1,A2,...,An)',
   a) the type T must be a parametric type,
 
   b) it must have the same number of type arguments as there are type
-      parameters, and
+     parameters, and
 
   c) each actual type parameter Ai is either an extension of the
      corresponding type bound Bi, or Ai is a type variable whose bound
@@ -31,7 +31,8 @@ For a qualified type expression of the form `T(A1,A2,...,An)',
 
 If T is a parametric type as defined above, then the type expression
 `T' is equivalent to the qualified type `T(B1,B2,...,Bn)', where each
-type argument equals the corresponding type bound.
+type argument equals the corresponding type bound.  Bi and Ai can be
+forward references to types that are defined later.
 
 
 A type-bound procedure of a parametric type must define a list of type

@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic60 generic61">-->
+  select ="&SetupTestCasesWithOut; generic1 generic62 generic63">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
@@ -1549,6 +1549,14 @@
     <test id="generic61" type="accept" file="Generic61.Mod">
       Regression test: Using a variable of procedure type whose
       result is a parametric type.
+    </test>
+    <test id="generic62" type="accept" file="Generic62.Mod">
+      The type argument of a qualified type can be a forward reference
+      to a pointer type defined later.
+    </test>
+    <test id="generic63" type="accept" file="Generic63.Mod">
+      The type parameter of a parametric type can be a forward
+      reference to a pointer type defined later.
     </test>
   </testcases>
 

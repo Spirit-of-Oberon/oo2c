@@ -759,12 +759,12 @@ RAISES IO.Error;
           FOR i := 0 TO LEN(item.arguments^)-1 DO
             item.arguments[i].type :=
                 GetTypeByName(item.arguments[i].srcCodeType, contextOfUse,
-                              FALSE, TRUE, errList);
+                              TRUE, TRUE, errList);
           END;
 
         | item: Sym.TypeVar DO
           item.bound := GetTypeByName(item.bound, contextOfUse,
-                                      FALSE, TRUE, errList);
+                                      TRUE, TRUE, errList);
           
           
         (* scope objects: fix context of use for using 
