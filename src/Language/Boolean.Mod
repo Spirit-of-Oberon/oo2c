@@ -16,8 +16,7 @@ TYPE
 VAR
   type-: Type;
   typeName: String.String;
-  true, false: Value;
-
+  true-, false-: Value;
 
 PROCEDURE New* (value : BOOLEAN) : Value;
 VAR v : Value;
