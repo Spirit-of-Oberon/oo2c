@@ -40,6 +40,9 @@ partition instead.
 If the tests in tests/compile/ produce an "100 Value out of range" for
 the test case `baseline8', make sure you have oo2c-1.5.7 installed.
 
+When installing from a distribution tar ball, MacOS X users need to
+add "-traditional-cpp" to the gcc options, like
+  CPPFLAGS="-traditional-cpp" ./configure
 
 --------
 
