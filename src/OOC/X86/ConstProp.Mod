@@ -29,7 +29,7 @@ PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
       v := instr.opndList.arg.instr.designator[0](S.Const).value;
       IF (v IS BigInt.BigInt) & (instr.resultList.type < S.real32) THEN
         (* FIXME... check for overflow *)
-        RETURN pb.AddConstType(NEW(S.Const, v), instr.resultList.type);
+        RETURN pb.AddConstType(NEW(S.Const, v, -1), instr.resultList.type);
       END;
     ELSIF (instr. SizeOpndList() >= 2) THEN
       arg1 := instr.opndList.arg.info(S.Result);
@@ -69,7 +69,7 @@ PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
         IF (v IS Boxed.Boolean) THEN
           RETURN pb.AddConstBool(v(Boxed.Boolean).value);
         ELSE
-          RETURN pb.AddConstType(NEW(S.Const, v), instr.resultList.type);
+          RETURN pb.AddConstType(NEW(S.Const, v, -1), instr.resultList.type);
         END;
       END;
     END;

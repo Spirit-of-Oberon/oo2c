@@ -3,7 +3,7 @@ MODULE OOC:X86:Algebraic;
 (* FIXME... add more transformations *)
 
 IMPORT
-  Object:Boxed, Object:BigInt, S := OOC:X86:SSA, D := OOC:X86:Debug;
+  Object:Boxed, Object:BigInt, S := OOC:X86:SSA;
 
 TYPE
   Worklist = POINTER TO WorklistDesc;

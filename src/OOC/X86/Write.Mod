@@ -3,7 +3,8 @@ MODULE OOC:X86:Write;
 IMPORT
   SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
-  Sym := OOC:SymbolTable, OOC:C:Naming, S := OOC:X86:SSA, OOC:X86:RuntimeData;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  OOC:C:Naming, S := OOC:X86:SSA, OOC:X86:RuntimeData;
 
 TYPE
   Arc = POINTER TO ArcDesc;
@@ -25,12 +26,16 @@ TYPE
   
 TYPE
   Writer* = POINTER TO WriterDesc;
+  StringToLabel = Dictionary.Dictionary(STRING, STRING);
   WriterDesc = RECORD
     module: Sym.Module;
     w: TextRider.Writer;
     blocks: ArrayList.ArrayList(Block);
     blockMap: Dictionary.Dictionary(S.Block, Block);
     blockCount: LONGINT;
+
+    strings: ARRAY 3 OF StringToLabel;
+    stringList: ARRAY 3 OF ArrayList.ArrayList(STRING);
     
     (* current function: *)
     fctBlock: S.FunctionBlock;
@@ -159,11 +164,18 @@ PROCEDURE WriteArc(w: TextRider.Writer; arc: Arc);
   END WriteArc;
 
 PROCEDURE (w: Writer) INIT*(module: Sym.Module; ch: IO.ByteChannel);
+  VAR
+    i: LONGINT;
   BEGIN
     w.module := module;
     w.w := TextRider.ConnectWriter(ch);
     w.w.WriteString(tab+".arch athlon");
     w.blockCount := 0;
+
+    FOR i := 0 TO 2 DO
+      w.strings[i] := NEW(StringToLabel);
+      w.stringList[i] := NEW(ArrayList.ArrayList(STRING), 8);
+    END;
   END INIT;
 
 PROCEDURE (w: Writer) GetBlock(b: S.Block): Block;
@@ -209,6 +221,37 @@ PROCEDURE (w: Writer) ModuleVariables();
     END;
   END ModuleVariables;
 
+PROCEDURE (w: Writer) StringSymbol(value: STRING; type: Sym.PredefId): STRING;
+  VAR
+    dict: StringToLabel;
+    array: ArrayList.ArrayList(STRING);
+  BEGIN
+    ASSERT(type = Predef.stringChar);
+    dict := w.strings[type-Predef.stringChar];
+    array := w.stringList[type-Predef.stringChar];
+    IF ~dict.HasKey(value) THEN
+      dict.Set(value, ".LS"+Boxed.IntToString(array.size));
+      array.Append(value);
+    END;
+    RETURN dict.Get(value);
+  END StringSymbol;
+
+PROCEDURE (w: Writer) StringConstants();
+  VAR
+    s, i: LONGINT;
+    value, label: STRING;
+  BEGIN
+    FOR s := 0 TO 2 DO
+      FOR i := 0 TO w.stringList[s].size-1 DO
+        ASSERT(s = 0);
+        value := w.stringList[s].array[i];
+        label := w.strings[s].Get(value);
+        w.w.WriteObject(nl+label+":");
+        w.w.WriteObject(nlTab+'.string "'+value+'"'); (* FIXME... needs to be quoted *)
+      END;
+    END;
+  END StringConstants;
+
 PROCEDURE (w: Writer) EndFile*();
   VAR
     name0, name: STRING;
@@ -225,6 +268,7 @@ PROCEDURE (w: Writer) EndFile*();
 
     w.RuntimeData();
     w.ModuleVariables();
+    w.StringConstants();
     
     w.w.WriteString(nl);
   END EndFile;
@@ -359,15 +403,20 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         s := instr.designator[i];
         WITH s: S.Const DO
           value := s.value;
-          WITH value: Boxed.String DO
-            sb.AppendInt(ORD(value.value.CharAt(0)));
-          | value: Boxed.Set DO
-            sb.AppendInt(value.ToLongInt());
-          | value: Boxed.LongReal DO
-            sb.Append("0x");
-            sb.Append(ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+          type := instr.resultList.type;
+          IF (s.type >= 0) THEN          (* string constant *)
+            sb.Append(w.StringSymbol(value(Boxed.String).value, s.type));
           ELSE
-            sb.Append(s.value);
+            WITH value: Boxed.String DO
+              sb.AppendInt(ORD(value.value.CharAt(0)));
+            | value: Boxed.Set DO
+              sb.AppendInt(value.ToLongInt());
+            | value: Boxed.LongReal DO
+              sb.Append("0x");
+              sb.Append(ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+            ELSE
+              sb.Append(s.value);
+            END;
           END;
         | s: S.Var DO
           IF s.IsGlobalVar() THEN

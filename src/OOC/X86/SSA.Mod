@@ -165,7 +165,9 @@ CONST  (* Operand and Result Types: *)
   unsigned64* = 8;
   (**Designates an unsigned 64 bit result or operand.  *)
   address* = 9;
-  (**Designates an address or pointer result or operand.  *)
+  (**Designates an address or pointer result or operand.  Please note that
+     the intermediate code treats this as a separate type, even if it is
+     mapped to a 32 or 64 bit integer type in the end.  *)
   boolean* = unsigned8;
   (**Maps to the integer type that is used to store boolean values.  *)
   length* = signed32;
@@ -245,6 +247,13 @@ TYPE
   ConstDesc = RECORD
     (SelectorDesc)
     value-: Boxed.Object;
+    type-: Sym.PredefId;
+    (**This field holds a type id from module @omodule{Predef} or @samp{-1}.
+       It is used to distinguish the type of string constants.  A string
+       constant is identified by its address in the program, but the code
+       generator needs to now if the address points to a sequence of 1, 2, or 4
+       byte values.  For non-string constants, the value of this field is set
+       to @samp{-1}.  *)
   END;
   HeapObj* = POINTER TO HeapObjDesc;
   HeapObjDesc = RECORD
@@ -627,10 +636,11 @@ PROCEDURE (s: TypeDescr) SameSelector*(sel: Selector): BOOLEAN;
     RETURN (sel IS TypeDescr) & (s.type = sel(TypeDescr).type);
   END SameSelector;
 
-PROCEDURE (s: Const) INIT*(value: Boxed.Object);
+PROCEDURE (s: Const) INIT*(value: Boxed.Object; type: Sym.PredefId);
   BEGIN
     s.INIT^();
     s.value := value;
+    s.type := type;
   END INIT;
 
 PROCEDURE (s: Const) SameSelector*(sel: Selector): BOOLEAN;
@@ -1836,25 +1846,25 @@ PROCEDURE (b: Block) AddConstBool*(value: BOOLEAN): Result;
     ELSE
       valueInt := 0;
     END;
-    RETURN b.AddConst(NEW(Const, BigInt.NewInt(valueInt)),
+    RETURN b.AddConst(NEW(Const, BigInt.NewInt(valueInt), -1),
                       Predef.GetType(Predef.boolean));
   END AddConstBool;
 
 PROCEDURE (b: Block) AddConstInt*(value: BigInt.BigInt;
                                   type: Sym.Type): Result;
   BEGIN
-    RETURN b.AddConst(NEW(Const, value), type);
+    RETURN b.AddConst(NEW(Const, value, -1), type);
   END AddConstInt;
 
 PROCEDURE (b: Block) AddConstDim*(dim: LONGINT): Result;
   BEGIN
-    RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim)),
+    RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim), -1),
                       Predef.GetType(Predef.longint));
   END AddConstDim;
 
 PROCEDURE (b: Block) AddConstLength*(dim: LONGINT): Result;
   BEGIN
-    RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim)),
+    RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim), -1),
                       Predef.GetType(Predef.address));
   END AddConstLength;
 

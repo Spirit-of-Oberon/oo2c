@@ -285,6 +285,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         merge: S.MergeInstr;
         controlTrue, memoryTrue, controlFalse, memoryFalse: S.Instr;
         dim: LONGINT;
+        type: Sym.PredefId;
 
       PROCEDURE GetIndexBaseArray(indexOp: IR.Expression;
                                   VAR dim: LONGINT): S.Result;
@@ -590,10 +591,14 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       
       BEGIN
         WITH expr: IR.Const DO
-          IF (expr.value IS Boxed.Boolean) THEN
+          type := expr.type(Sym.PredefType).id;
+          CASE type OF
+          | Predef.boolean:
             RETURN b.AddConstBool(expr.value(Boxed.Boolean).value);
+          | Predef.stringChar..Predef.stringUCS4Char:
+            RETURN b.AddConst(NEW(S.Const, expr.value, type), expr.type);
           ELSE
-            RETURN b.AddConst(NEW(S.Const, expr.value), expr.type);
+            RETURN b.AddConst(NEW(S.Const, expr.value, -1), expr.type);
           END;
           
         | expr: IR.ProcedureRef DO

@@ -2,7 +2,7 @@ MODULE OOC:X86:Register;
 
 IMPORT
   Object, ADT:ArrayList, ADT:Dictionary, S := OOC:X86:SSA,
-  M := OOC:X86:Machine, OOC:SSA:IGraph, D := OOC:X86:Debug, Log;
+  M := OOC:X86:Machine, OOC:SSA:IGraph;
   
 CONST
   gpRegisters = 0;
