@@ -455,9 +455,15 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                 (* place marker that enables us to detect loops when trying
                    to retrieve the variable's variable for an input path *)
                 origin. selectOut[var] := select;
-                value := GetValue (origin. def[var, 1]);
-                IF (value = select) THEN
-                  origin. def[var, 1] := origin. def[var, 0]
+                IF (origin. def[var, 1] = NIL) THEN
+                  (* the back-edge of the loop does not provide a valid
+                     value for the variable: take value from memory *)
+                  RETURN NIL;
+                ELSE
+                  value := GetValue (origin. def[var, 1]);
+                  IF (value = select) THEN
+                    origin. def[var, 1] := origin. def[var, 0]
+                  END;
                 END;
               END;
               
