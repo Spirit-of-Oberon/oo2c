@@ -234,12 +234,6 @@ PROCEDURE SetJump* (VAR reference: Jump; src, dest: Block);
     dest. targetUseList := reference
   END SetJump;
 
-PROCEDURE ClearProxyList (b: Block);
-  BEGIN
-    b. proxyList := NIL;
-    b. proxyTail := NIL;
-  END ClearProxyList;
-
 PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
   BEGIN
     WHILE (child # NIL) & (child # dominator) DO
@@ -499,131 +493,6 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
     END;
     RETURN block;
   END TransferInstructions;
-
-PROCEDURE TopSort (b: Block): BOOLEAN;
-(**Topological sort on instructions in @oparam{b}.  If there are no cyclic
-   dependencies between the instructions, the result is @code{TRUE}.  *)
-  VAR
-    proxy, next: InstrProxy;
-    ready, waiting: InstrProxy;
-    res: SSA.Result;
-    use, opnd: SSA.Opnd;
-    opndCount: LONGINT;
-
-  PROCEDURE Add (VAR list: InstrProxy; instr: InstrProxy);
-    BEGIN
-      instr. prevProxy := NIL;
-      instr. nextProxy := list;
-      IF (list # NIL) THEN
-        list. prevProxy := instr
-      END;
-      list := instr
-    END Add;
-  
-  PROCEDURE Remove (VAR list: InstrProxy; instr: InstrProxy);
-    BEGIN
-      IF (instr. prevProxy = NIL) THEN
-        list := instr. nextProxy
-      ELSE
-        instr. prevProxy. nextProxy := instr. nextProxy
-      END;
-      IF (instr. nextProxy # NIL) THEN
-        instr. nextProxy. prevProxy := instr. prevProxy
-      END
-    END Remove;
-
-  PROCEDURE NextInstr (ready: InstrProxy): InstrProxy;
-    VAR
-      best: InstrProxy;
-    BEGIN
-      best := ready;
-      WHILE (ready # NIL) DO
-        IF (ready. instr. opcode = Opcode.select) THEN
-          (* "select" instructions must be placed at the very beginning
-             of there block, because their effects in conjunction with
-             "collect" take effect at the beginning *)
-          RETURN ready;
-        ELSIF (best. instr. opcode = Opcode.collect) THEN
-          (* "collect" instructions must be placed at the end of the block;
-             conceptually, they are tight to their directly following
-             "select" in another block *)
-          best := ready;
-        END;
-        ready := ready. nextProxy;
-      END;
-      RETURN best;
-    END NextInstr;
-  
-  BEGIN
-    ready := NIL;
-    waiting := NIL;
-    
-    proxy := b. proxyList;
-    WHILE (proxy # NIL) DO
-      next := proxy. nextProxy;
-
-      (* count number of operands with arguments originating in this block *)
-      opndCount := 0;
-      opnd := proxy. instr. opndList;
-      WHILE (opnd # NIL) DO
-        IF (opnd. arg. instr. info(InstrProxy). block = b) THEN
-          INC (opndCount)
-        END;
-        opnd := opnd. nextOpnd;
-      END;
-      
-      proxy. instr. marker := opndCount;
-      IF (opndCount = 0) THEN
-        Add (ready, proxy)
-      ELSE
-        Add (waiting, proxy)
-      END;
-      proxy := next
-    END;
-
-    ClearProxyList (b);
-    WHILE (ready # NIL) DO
-      proxy := NextInstr (ready);
-      Remove (ready, proxy);
-      
-      (* append `proxy' to list of instructions in `b' *)
-      AppendProxy (b, proxy);
-
-      (* decrement marker (=count of blocking results) for all uses of all
-         results of `proxy' *)
-      res := proxy. instr;
-      WHILE (res # NIL) DO
-        use := res. useList;
-        WHILE (use # NIL) DO
-          IF (use. instr. info(InstrProxy). block = b) THEN
-            DEC (use. instr. marker);
-            IF (use. instr. marker = 0) THEN
-              Remove (waiting, use. instr. info(InstrProxy));
-              Add (ready, use. instr. info(InstrProxy))
-            END;
-          END;
-          use := use. nextUse
-        END;
-        res := res. nextResult
-      END;
-    END;
-    RETURN (waiting = NIL)
-  END TopSort;
-
-PROCEDURE SortBlocks (b: Block);
-  VAR
-    ok: BOOLEAN;
-    nested: Block;
-  BEGIN
-    ok := TopSort (b);
-    ASSERT (ok);
-
-    nested := b. domList;
-    WHILE (nested # NIL) DO
-      SortBlocks (nested);
-      nested := nested. nextDom
-    END;
-  END SortBlocks;
 
 
 PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
@@ -890,9 +759,9 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     (* mark jump instructions that are loop backedges *)
     MarkBackedges (b);
     
-    (* schedule instructions within each basic block *)
-    SortBlocks (b);
-
+    (* note: if ArrangeInstructions does not return a valid schedule, then
+       the instructions within each basic block must be reordered here *)
+    
     (* arrange dominated blocks within each block in such way that
        loop branches have a target earlier in the chain of blocks, and all
        other jumps and branches a target later in the chain *)
