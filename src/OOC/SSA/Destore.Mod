@@ -287,10 +287,14 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             RETURN unknownValue;
           ELSIF allTheSame THEN
             (* for all input paths the same value is passed to "get" *)
-            IF (loopTrace = NIL) THEN
-              dummy := AddToCache (select, values[0]);
+            IF (LEN (values^) = 0) THEN
+              RETURN select;
+            ELSE
+              IF (loopTrace = NIL) THEN
+                dummy := AddToCache (select, values[0]);
+              END;
+              RETURN values[0];
             END;
-            RETURN values[0];
           ELSIF (loopTrace # NIL) THEN
             (* we are tracing the use of the designator in the loop body, and
                at this place the value is not invariant, and not in memory:
