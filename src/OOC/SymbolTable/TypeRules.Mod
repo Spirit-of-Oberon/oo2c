@@ -602,6 +602,26 @@ PROCEDURE IsRecordPointer*(type: Sym.Type): BOOLEAN;
     RETURN IsPointer(type) & IsRecord(PointerBaseType(type));
   END IsRecordPointer;
 
+PROCEDURE IsArray*(type: Sym.Type): BOOLEAN;
+(**Result is @code{TRUE} if @oparam{type} is an array type, or if it is a
+   parametric type derived from an array.  *)
+  BEGIN
+    RETURN (type.Deparam() IS Sym.Array);
+  END IsArray;
+
+PROCEDURE ArrayElementType*(array: Sym.Type): Sym.Type;
+(**Return closure of the base type of @oparam{array}.  *)
+  VAR
+    ptr: Sym.Type;
+  BEGIN
+    WITH array: Sym.Array DO
+      RETURN array.elementType;
+    ELSE
+      ptr := array.Deparam();
+      RETURN array.Closure(ptr(Sym.Array).elementType);
+    END;
+  END ArrayElementType;
+
 PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
 (* Result is TRUE iff the type @oparam{type} is an extension of the type
    @oparam{base}.  See Oberon-2 report, Appendix A.
