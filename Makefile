@@ -156,7 +156,7 @@ stage0/oo2c:
 
 ### Build library from core modules using the initial compiler executable.
 lib/obj/liboo2c.la: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib $(OFLAGS) --build-package liboo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package liboo2c
 
 ### Build second compiler using the initial compiler executable and the
 ### library lib/obj/liboo2c.la.
@@ -165,7 +165,7 @@ bin/oo2c: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml lib/obj/liboo
 
 install: lib/obj/liboo2c.la bin/oo2c
 	$(INSTALL) -d $(oocdir)/pkginfo
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
 	chmod a+x $(oocdir)/install-sh
 
