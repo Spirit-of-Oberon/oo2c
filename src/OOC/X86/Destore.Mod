@@ -81,12 +81,18 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
           WHILE (merge.jumps[i] # jump) DO
             opnd := opnd.nextOpnd; INC(i);
           END;
-          opnd.ReplaceArg(value);
-
-          INC(gate.marker);
-          IF (gate.marker = LEN(merge.jumps^)) THEN
-            res := gate.AddResult(gate.opndList.arg.type);
-            AddToWorklist(gate);
+          IF (opnd.arg = undefValue) THEN
+            (* Setting argument value for first time: propagate instruction
+               result if all argument slots are filled.  *)
+            opnd.ReplaceArg(value);
+            
+            INC(gate.marker);
+            IF (gate.marker = LEN(merge.jumps^)) THEN
+              res := gate.AddResult(gate.opndList.arg.type);
+              AddToWorklist(gate);
+            END;
+          ELSE
+            opnd.ReplaceArg(value);
           END;
         END MergeValue;
       
@@ -102,12 +108,18 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
           WHILE (pathIndex # 0) DO
             opnd := opnd.nextOpnd; DEC(pathIndex);
           END;
-          opnd.ReplaceArg(value);
-
-          INC(gate.marker);
-          IF (gate.marker = 1) THEN  (* first one wins *)
-            res := gate.AddResult(gate.opndList.arg.type);
-            AddToWorklist(gate);
+          IF (opnd.arg = undefValue) THEN
+            (* Setting argument value for first time: propagate instruction
+               result if this is the first argument.  *)
+            opnd.ReplaceArg(value);
+            
+            INC(gate.marker);
+            IF (gate.marker = 1) THEN  (* first one wins *)
+              res := gate.AddResult(gate.opndList.arg.type);
+              AddToWorklist(gate);
+            END;
+          ELSE
+            opnd.ReplaceArg(value);
           END;
         END MergeLoopValue;
       

@@ -14,12 +14,14 @@ L1__f:
 	movl %edx, %eax
 	movl 8(%ebp), %ecx
 	cmpb $0, (%ecx,%eax)
-	je .L3
+	jne .L3
 .L2:
+	mov %edx, %eax
+	jmp .L4
+.L3:
 	incl %edx
 	jmp .L1
-.L3:
-	movl %edx, %eax
+.L4:
 	jmp .LE_L1__f
 	movl $_mid, 0(%esp)
 	movl $22, 4(%esp)
