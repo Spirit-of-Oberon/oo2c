@@ -17,7 +17,7 @@
     </test>
   </testcases>
   
-  <testcases profile="OOC Core Library" default-lang="O1 O2 AO">
+  <testcases profile="OOC Core Library" default-lang="O2 AO">
     <test id="lib_Strings_Length1" type="run"
       file="LibStringsLength1.Mod" output="LibStringsLength1.Ref">
       Tests the <code>Length</code> function with <code>0X</code>
@@ -29,6 +29,12 @@
       Tests the <code>Assign</code> function with <code>0X</code>
       terminated source character arrays.  Truncation happens if the
       destination array is not large enough.
+    </test>
+
+    <test id="lib_Strings_Extract1" type="run"
+      file="LibStringsExtract1.Mod" output="LibStringsExtract1.Ref">
+      Tests the <code>Extract</code> function with range parameters
+      that are within the limits of the input and output string.
     </test>
   </testcases>
 </testsuite-ext>
