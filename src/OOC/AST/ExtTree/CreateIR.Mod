@@ -364,18 +364,21 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         ELSE
           elseSeq := NIL
         END;
+        else := NIL;
         i := withStatm. guardList. len-4;
         REPEAT
           guard := TypeTestExpr(withStatm.guardList.n[i+1](ExtTree.Operator));
-          b. StartTypeGuard (guard(IR.TypeTest), currentNamespace);
-          region := StatementSeq(withStatm.guardList.n[i+3](ExtTree.NodeList));
-          b. EndTypeGuard (currentNamespace);
-          
-          else := b. NewWithStatm
-              (withStatm. guardList. n[i](ExtTree.Terminal). sym,
-               guard, region, elseSeq);
-          NEW (elseSeq, 1);
-          elseSeq[0] := else;
+          IF (guard IS IR.TypeTest) THEN   (* otherwise we have an error *)
+            b. StartTypeGuard (guard(IR.TypeTest), currentNamespace);
+            region := StatementSeq(withStatm.guardList.n[i+3](ExtTree.NodeList));
+            b. EndTypeGuard (currentNamespace);
+            
+            else := b. NewWithStatm
+                (withStatm. guardList. n[i](ExtTree.Terminal). sym,
+                 guard, region, elseSeq);
+            NEW (elseSeq, 1);
+            elseSeq[0] := else;
+          END;
           DEC (i, 4)
         UNTIL (i < 0);
         RETURN else
