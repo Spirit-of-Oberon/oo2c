@@ -484,6 +484,11 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         (* type conversion from character to integer value (ORD) *)
         value := Integer.NewLInt (ORD (value(String8.Value). value. array[0]));
         c.result := c. builder. NewConst (op. sym, op. type, value);
+      ELSIF c. builder. typeRules. IsCharType (op. type) &
+            c. builder. typeRules. IsIntegerType (op. expr. type) THEN
+        (* type conversion from integer to character value (CHR) *)
+        value := String8.NewChar (CHR (value(Integer.Value). ToLInt()));
+        c.result := c. builder. NewConst (op. sym, op. type, value);
       ELSIF c. builder. typeRules. IsRealType (op. type) &
             c. builder. typeRules. IsIntegerType (op. expr. type) THEN
         c.result := NIL;

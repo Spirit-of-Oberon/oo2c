@@ -2920,6 +2920,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         RETURN b. NewAssert (design. sym, arguments,
                   ~GetPragmaValue(b, StdPragmas.assertions, design. sym. pos));
 
+      | Predef.copy:
+        ASSERT (FALSE);
+        
       | Predef.new:
         ASSERT (arguments[0]. type IS Sym.Pointer);
         type := arguments[0]. type(Sym.Pointer). baseType;
@@ -2999,6 +3002,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         | Predef.longint: targetType := Predef.integer;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        
+      | Predef.chr:
+        RETURN NewTypeConv (Predef.GetType (Predef.char), arguments[0]);
         
       | Predef.ord:
         CASE arguments[0]. type(Sym.PredefType). id OF
