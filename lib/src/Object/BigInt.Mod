@@ -196,6 +196,29 @@ PROCEDURE (a: BigInt) Copy*(): BigInt;
     RETURN z;
   END Copy;
 
+PROCEDURE (a: BigInt) HashCode*(): Object.Hash;
+  VAR
+    len, p: LONGINT;
+    x: Object.Hash;
+  BEGIN
+    len := ABS(a.size);
+    IF (len = 0) THEN
+      RETURN 0;
+    ELSE
+      x := ASH(a.digit[0], 7);
+      p := 0;
+      WHILE (p # len) DO
+<* PUSH; OverflowCheck := FALSE *>
+        x := S.VAL(Object.Hash, S.VAL(SET, 1000003*x) /
+                   S.VAL(SET, LONG(a.digit[p])));
+<* POP *>
+        INC(p);
+      END;
+      x := S.VAL(Object.Hash, S.VAL(SET,x) / S.VAL(SET,len));
+      RETURN x
+    END;
+  END HashCode;
+
 PROCEDURE (a: BigInt) Equals* (b: Object.Object): BOOLEAN;
   VAR
     i: LONGINT;
