@@ -629,6 +629,12 @@ TYPE
     notRedefined*: BOOLEAN;
     (**If @code{TRUE}, then this type-bound procedure is not redefined in the
        local module and cannot be redefined in any client module.  *)
+    nonlocalWrites*: BOOLEAN;
+    (**If this field is @code{FALSE}, then a call to this function does not
+       change any values in nonlocal variables or on the heap.  That is, 
+       values taken from memory before a call to the function remain valid
+       after the call.  Unless proven otherwise, this field remains
+       @code{TRUE}.  *)
     tbProcIndex-: LONGINT;
     (**For type-bound procedures, this is the index of the procedure in the
        method table of its base record.  The first type-bound procedure has the
@@ -1834,6 +1840,7 @@ PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
     procDecl. isForwardDecl := isForwardDecl;
     procDecl. isAbstract := FALSE;
     procDecl. notRedefined := FALSE;
+    procDecl. nonlocalWrites := TRUE;
     procDecl. tbProcIndex := -1;
     procDecl. ns := NIL;
     procDecl. formalPars := NIL;
@@ -1849,6 +1856,7 @@ PROCEDURE (procDecl: ProcDecl) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteBool (procDecl. isForwardDecl);
     w. WriteBool (procDecl. isAbstract);
     w. WriteBool (procDecl. notRedefined);
+    w. WriteBool (procDecl. nonlocalWrites);
     w. WriteNum (procDecl. tbProcIndex);
     w. WriteObject (procDecl. formalPars);
     w. WriteStr (procDecl. linkName);
@@ -1864,6 +1872,7 @@ PROCEDURE (procDecl: ProcDecl) Load* (r: Storable.Reader) RAISES IO.Error;
     r. ReadBool (procDecl. isForwardDecl);
     r. ReadBool (procDecl. isAbstract);
     r. ReadBool (procDecl. notRedefined);
+    r. ReadBool (procDecl. nonlocalWrites);
     r. ReadNum (procDecl. tbProcIndex);
     procDecl. ns := NIL;
     r. ReadObject (obj);
