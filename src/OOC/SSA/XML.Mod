@@ -134,7 +134,7 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
         | arg: SSA.Address DO
           w. AttrStringLatin1 ("address-of", arg. decl. name. str^);
         ELSE
-          AttrId ("arg-id", opnd. arg);
+          AttrId ("argref", opnd. arg);
         END;
         w. EndTag;  (* opnd *)
       END WriteOpnd;
@@ -202,10 +202,10 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
        exit instruction; this step skips dead code *)
     idMap := Dictionary.New();
     instrCount := 1;
-    AssignId (pb. exit);
+    AssignId (pb. selectReturn);
     
     w. StartTag ("procedure-body", FALSE);
-    TraverseInstr (pb. exit);
+    TraverseInstr (pb. selectReturn);
 
     IF includeDeadCode THEN
       (* finally pick up dead code; in the output, these instructions appear

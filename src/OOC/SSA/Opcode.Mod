@@ -51,9 +51,57 @@ CONST
      instruction produces a value of type address.  *)
   
   enter* = 3;
-  exit* = 4;
   
-  get* = 5;
+  return* = 5;
+  (**This instruction serves two purposes: it marks the place where control
+     flow exists the procedure, and, for function procedures, it defines the
+     scalar value that should be produced as the function's result. The
+     operands of the instruction and their class ids are in this order:
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.functionResult
+     The result that the function procedure should return when reaching this
+     return statement.  This operand is only present within functions.
+     @end table
+
+     The instruction has one result of class @oconst{*OOC:SSA:Result.store}.
+     There is at least one use of this result, as operand of the procedure's
+     @oconst{selectReturn} instruction.  [Note: Don't know if there will be
+     more uses.  FIXME...]  *)
+  
+  selectReturn* = 6;
+  (**Chooses the return statement that leaves the procedure or function.  The
+     statement takes @var{n}+2 arguments, all defining values of @var{store} at
+     the end of their corresponding branch of control flow.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.storeEnter
+     The first argument is the initial value of @var{store} that enters the
+     procedure, represented by the @oconst{*OOC:SSA:Result.store} result of the
+     @code{enter} instruction.  Implicitly, this argument determines which one
+     of the possible @code{return} statements is selected.  It serves as a
+     proxy for the selecting expression found in @code{select} statements.
+     Assuming a fully deterministic program and no concurrency, the input data
+     in the initial @var{store} determines excactly which one of the
+     @code{return} statements is taken.
+
+     @item *OOC:SSA:Opnd.storeReturn
+     Subsequent arguments are the @code{store} results of the procedure's
+     @code{return} statements.  Each of them corresponds to a @code{RETURN}
+     statement in the source code.  There are no other instructions between a
+     @code{return} and its @code{select-return} instruction.  That is, control
+     passes directly to @code{select-return}, and the @code{return} defines the
+     output state of the procedure, as represented by its @code{store} result.
+
+     @item *OOC:SSA:Opnd.storeExit
+     The last argument is the value of @var{store} at the end of the function
+     or procedure.
+     @end table  *)
+     
+  get* = 7;
   (**Retrieves the value of a variable.  The operands of the instruction and
      their class ids are in this order:
 
@@ -70,11 +118,11 @@ CONST
      non-heap variables, the first entry in the designator is a reference to
      the declaration of the accessed variable.
      @end table  *)
-  set* = 6;
-  copy* = 7;
+  set* = 8;
+  copy* = 9;
   
-  assert* = 8;
-  call* = 9;
+  assert* = 10;
+  call* = 11;
 
 CONST
   scNone* = 0;
@@ -97,6 +145,13 @@ CONST
   (**Designates an unsigned 64 bit result or operands.  *)
   scAddress* = 9;
   (**Designates an address or pointer result or operands.  *)
+
+  scMerge* = 10;
+  (**Subclass of a @const{select} instruction.  *)
+  scExit* = 11;
+  (**Subclass of a @const{select} instruction.  *)
+  scReturn* = 12;
+  (**Subclass of a @const{select} instruction.  *)
   
 
 PROCEDURE IsSigned* (subclass: Subclass): BOOLEAN;
@@ -124,7 +179,9 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | copy: cstr := "copy";
           
     | enter: cstr := "enter";
-    | exit: cstr := "exit";
+    | return: cstr := "return";
+    | selectReturn: cstr := "select-return";
+      
     | assert: cstr := "assert";
     | call: cstr := "call";
     END;

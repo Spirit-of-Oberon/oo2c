@@ -79,6 +79,16 @@ CONST
      defined either directly or indirectly by the expression of a @code{RETURN}
      statement.  *)
 
+  storeEnter* = 10;
+  (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the initial value
+     of @var{store} within the procedure.  *)
+  storeExit* = 11;
+  (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the final value
+     of @var{store} within the procedure.  *)
+  storeReturn* = 12;
+  (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the value
+     of @var{store} after a @code{RETURN} statement.  *)
+     
   
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)

@@ -139,10 +139,10 @@ TYPE
        operand list of a single instruction, @ofield{exit}.  *)
     (NodeDesc)
     
-    exit-: Instr;
-    (**Represents the procedure block's statements.  All results of evaluating
-       the block's instructions are summarized---directly or indirectly---in
-       this instruction's operand list.  *)
+    selectReturn-: Instr;
+    (**Represents the whole procedure block.  All results of evaluating the
+       block's instructions are summarized---directly or indirectly---in this
+       instruction's operand list.  See @oconst{OpndClass.selectReturn}.  *)
     
     instrList-, instrTail: Instr;
     (**Set of instructions that make up the procedure block.  The instructions
@@ -554,12 +554,19 @@ PROCEDURE ^ (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
                                        subclass: Opcode.Subclass): Instr;
   
 PROCEDURE InitProcBlock (pb: ProcBlock);
+  VAR
+    enter: Instr;
+    initialStore: Result;
   BEGIN
     InitNode (pb);
-    pb. exit := NIL;
     pb. instrList := NIL;
     pb. instrTail := NIL;
-    pb. exit := pb. AddInstr (Opcode.exit, Opcode.scNone);
+    
+    pb. selectReturn := pb. AddInstr (Opcode.selectReturn, Opcode.scNone);
+    enter := pb. AddInstr (Opcode.enter, Opcode.scNone);
+    initialStore := enter. AddResult (ResultClass.store);
+    pb. selectReturn. AddOpnd (initialStore, OpndClass.store);
+    
     pb. objMap := Dictionary.New();
     pb. adrMap := Dictionary.New();
   END InitProcBlock;

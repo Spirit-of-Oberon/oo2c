@@ -278,7 +278,7 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
         Call (instr);
         w. WriteChar (";")
             
-      | Opcode.exit:
+      | Opcode.return:
         opnd := instr. GetOpndClass (Opnd.functionResult);
         IF (opnd # NIL) THEN
           w. WriteString ("return ");
@@ -305,10 +305,10 @@ PROCEDURE ProcBody* (w: TextRider.Writer; converter: ConvertDecl.Converter;
     registerMap: Dictionary.Dictionary;
   BEGIN
     pb := SSA.NewProcBlock();
-    enter := pb. AddInstr (Opcode.enter, Opcode.scNone);
-    s := IRtoSSA.StatmSeq (pb, enter. AddResult (Result.store),
+    enter := pb. selectReturn. opndList. arg. instr;
+    s := IRtoSSA.StatmSeq (pb, enter. nextResult,
                            procDecl. statmSeq);
-    pb. exit. AddOpnd (s, Opnd.store);
+    pb. selectReturn. AddOpnd (s, Opnd.store);
 
     XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
 
