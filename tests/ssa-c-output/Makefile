@@ -19,13 +19,14 @@ TEST_DRIVER=RunTests
 TEST_PROCESSOR=TestCompile
 TEST_BASE=tests/ssa-c-output
 
+OUT_FILES=$(wildcard $(OOC_DEV_ROOT)/$(TEST_BASE)/wd/obj/[^x]*[^_].c)
+
 include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.tests-framework
 
-
 %.diff:
-	$(DIFF) ref/$* wd/$*
+	$(DIFF) $(dir $*)../../ref/obj/$(notdir $*) $*
 
-test-diff-all: test1-runall $(addsuffix .diff,$(patsubst wd/%,%,$(wildcard wd/obj/[^x]*[^_].c)))
+test-diff-all: test1-runall $(addsuffix .diff,$(OUT_FILES))
 	$(PRINT) Done checking C output.
 
 test-runall: test-diff-all
