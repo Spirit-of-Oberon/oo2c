@@ -7,7 +7,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_RandomNumbers">-->
+  select ="prepare_out_module ">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -172,6 +172,34 @@
     <test id="lib_Strings_Capitalize1" type="run"
       file="LibStringsCapitalize1.Mod" output="LibStringsCapitalize1.Ref">
       Some calls to <code>Capitalize</code>.
+    </test>
+
+    <test id="lib_ConvTypes" type="run" file="LibConvTypes.Mod">
+      Imports the module <code>ConvTypes</code>.  Lacking functionality of 
+      even moderate complexity, compilation is the only test applied
+      to the module.
+    </test>
+    
+    <test id="lib_IntConv_ScanInt1" type="run"
+          file="LibIntConvScanInt1.Mod" output="LibIntConvScanInt1.Ref">
+      List the character classes of a few traces through the
+      <code>ScanInt</code> state machine.
+    </test>
+    
+    <test id="lib_IntConv_FormatInt1" type="run"
+          file="LibIntConvFormatInt1.Mod" output="LibIntConvFormatInt1.Ref">
+      Use <code>FormatInt</code> to classify a number of strings.
+    </test>
+    
+    <test id="lib_IntConv_ValueInt1" type="run"
+          file="LibIntConvValueInt1.Mod" output="LibIntConvValueInt1.Ref">
+      Use <code>ValueInt</code> to convert strings to integers.
+    </test>
+ 
+   <test id="lib_IntConv_LengthInt1" type="run"
+          file="LibIntConvLengthInt1.Mod" output="LibIntConvLengthInt1.Ref">
+      Use <code>LengthInt</code> to get the length of the decimal
+      representation of integers.
     </test>
   </testcases>
 </testsuite-ext>

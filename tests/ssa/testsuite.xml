@@ -188,6 +188,10 @@
     <test id="len7" type="reject" file="Len7.Mod">
       Calling <code>LEN</code> with an integer variable as dimension number.
     </test>
+
+    <test id="minmax1" type="run" file="MinMax1.Mod" output="MinMax1.Ref">
+      <code>MIN</code> and <code>MAX</code> of the integer types.
+    </test>
   </testcases>
   
     
