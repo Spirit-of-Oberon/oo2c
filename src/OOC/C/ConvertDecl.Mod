@@ -17,8 +17,8 @@ PROCEDURE ^ ConvertDecl (w: DeclWriter.Writer;
                          item: Sym.Declaration;
                          mode: SHORTINT): DeclWriter.Declaration;
 
-PROCEDURE ConvertType (w: DeclWriter.Writer;
-                       resolvedType, type: Sym.Type): DeclWriter.Type;
+PROCEDURE ConvertType* (w: DeclWriter.Writer;
+                        resolvedType, type: Sym.Type): DeclWriter.Type;
 (**Produces a C type declaration from an Oberon-2 type constructor.
    @oparam{resolvedType} refers to the concrete type that is to be translated,
    that is, the bare bones constructor that remains after all naming and
