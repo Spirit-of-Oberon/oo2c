@@ -100,6 +100,8 @@ BEGIN
     configOptions := NEW(Option.Options);
     configOptions.Merge(Translate.options);
     configOptions.Merge(source.options);
+    configOptions.Merge(Parser.parserOptions);
+    configOptions.Merge(Source.options);
     Parser.Init(process, configOptions);
 
     tokenSource := process;
