@@ -729,13 +729,19 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
     VAR
       name: STRING;
       opnd: SSA.Opnd;
+      type: Sym.Type;
     BEGIN
-      w. WriteString ("_type_guard(");
+      opnd := typeGuard. GetOpndClass (Opnd.type);
+      type := opnd. arg(SSA.TypeRef). type;
+      
+      IF (type IS Sym.TypeClosure) THEN  (* slower but more powerful *)
+        w. WriteString ("_type_guard_q(");
+      ELSE
+        w. WriteString ("_type_guard(");
+      END;
       RefList (typeGuard. opndList. nextOpnd, Opnd.arg);
       w. WriteString (", &");
-      opnd := typeGuard. GetOpndClass (Opnd.type);
-      name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type,
-                                           w.translator.qtdData);
+      name := Naming.NameOfTypeDescriptor (type, w.translator.qtdData);
       w. WriteObject (name);
       w. WriteString (", ");
       w. WriteLInt (typeGuard. pos, 0);
