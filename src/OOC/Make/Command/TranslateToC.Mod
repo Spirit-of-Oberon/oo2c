@@ -186,7 +186,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
         
       | expr: Operator.Negate DO
         w. WriteChar ("-");
-        WriteExpr (w, expr. opnd1);
+        WriteExpr (w, expr. operand);
 
       | expr: IR.Call DO
         Call (expr)
@@ -361,7 +361,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         ASTtoXML.Write (StdChannels.stdout.NewWriter(), ast(ExtTree.Module));
       END;
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
-                                 Operator.NewBuilder (pragmaHistory, errList));
+                                 Operator.NewBuilder (pragmaHistory, errList, config.typeRules));
       IF cmd. writeIR THEN
         IRtoXML.Write (StdChannels.stdout. NewWriter(), module);
       END;

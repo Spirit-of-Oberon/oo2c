@@ -80,46 +80,44 @@ PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
 PROCEDURE (v: Visitor) VisitIndex* (index: Operator.Index);
   BEGIN
     v. w. StartTag ("index", FALSE);
-    index. opnd1. Accept (v);
-    index. opnd2. Accept (v);
+    index. array. Accept (v);
+    index. index. Accept (v);
     v. w. EndTag;  (* index *)
   END VisitIndex;
 
 PROCEDURE (v: Visitor) VisitNegate* (neg: Operator.Negate);
   BEGIN
     v. w. StartTag ("negate", FALSE);
-    neg. opnd1. Accept (v);
+    neg. operand. Accept (v);
     v. w. EndTag;  (* negate *)
   END VisitNegate;
 
-PROCEDURE VisitDyadicOp (v: Visitor; op: IR.Operator; name: ARRAY OF CHAR);
+PROCEDURE VisitDyadicOp (v: Visitor; op: IR.Operator; variant : SHORTINT; left, right : IR.Expression; name: ARRAY OF CHAR);
   BEGIN
     v. w. StartTagLatin1 (name, FALSE);
-    op. opnd1. Accept (v);
-    op. opnd2. Accept (v);
+    v. w. AttrInt ("variant", variant);
+    left. Accept (v);
+    right. Accept (v);
     v. w. EndTag;  (* name *)
   END VisitDyadicOp;
 
-PROCEDURE (v: Visitor) VisitArithOp2* (op: Operator.ArithOp2);
+PROCEDURE (v: Visitor) VisitBinaryArith* (op: Operator.BinaryArith);
   BEGIN
-    VisitDyadicOp (v, op, "arithop2");
-  END VisitArithOp2;
+    VisitDyadicOp (v, op, op.variant, op.left, op.right, "binaryArith");
+  END VisitBinaryArith;
 
-PROCEDURE (v: Visitor) VisitAdd* (add: Operator.Add);
+PROCEDURE (v : Visitor) VisitCompare* (op : Operator.Compare);
   BEGIN
-    VisitDyadicOp (v, add, "add");
-  END VisitAdd;
+    VisitDyadicOp (v, op, op.variant, op.left, op.right, "compare");
+  END VisitCompare;
 
-PROCEDURE (v: Visitor) VisitEql* (eql: Operator.Eql);
+PROCEDURE (v : Visitor) VisitTypeConv* (op : Operator.TypeConv);
   BEGIN
-    VisitDyadicOp (v, eql, "eql");
-  END VisitEql;
-
-PROCEDURE (v: Visitor) VisitNeq* (neq: Operator.Neq);
-  BEGIN
-    VisitDyadicOp (v, neq, "neq");
-  END VisitNeq;
-
+    v. w. StartTag("typeConv", FALSE);
+    (* FIXME! Write type. How? *)
+    op. expr. Accept(v);
+    v. w. EndTag;
+  END VisitTypeConv;
 
 PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
   VAR

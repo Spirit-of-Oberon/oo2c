@@ -43,10 +43,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
         (* take the "get" instruction of the array's designator and
            change it into a "get" for the array element *)
-        baseResult := Expression (indexOp. opnd1);
+        baseResult := Expression (indexOp. array);
         ASSERT (baseResult. instr. opcode = Opcode.get);
         instr := baseResult. instr;
-        index := Expression (indexOp. opnd2);
+        index := Expression (indexOp. index);
 
         adrOpnd := instr. opndList. nextOpnd;
         elementAdr := pb. AddInstr (Opcode.add, Opcode.scAddress);
@@ -59,13 +59,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END Index;
     
-    PROCEDURE AddCompareOp (op: IR.Operator; class: Opcode.Class): SSA.Instr;
+    PROCEDURE AddCompareOp (op: Operator.Compare; class: Opcode.Class): SSA.Instr;
       VAR
         instr: SSA.Instr;
       BEGIN
         instr := pb. AddInstr (class, Opcode.scBoolean);
-        instr. AddOpnd (Expression (op. opnd1), Opnd.arg);
-        instr. AddOpnd (Expression (op. opnd2), Opnd.arg);
+        instr. AddOpnd (Expression (op. left), Opnd.arg);
+        instr. AddOpnd (Expression (op. right), Opnd.arg);
         RETURN instr
       END AddCompareOp;
     
@@ -88,22 +88,33 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         
       | expr: Operator.Negate DO
         instr := pb. AddInstr (Opcode.negate,
-                               Opcode.TypeToSubclass (expr. opnd1. type));
-        instr. AddOpnd (Expression (expr. opnd1), Opnd.arg);
+                               Opcode.TypeToSubclass (expr. operand. type));
+        instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr
             
-      | expr: Operator.Add DO
-        instr := pb. AddInstr (Opcode.add,
-                               Opcode.TypeToSubclass (expr. opnd1. type));
-        instr. AddOpnd (Expression (expr. opnd1), Opnd.arg);
-        instr. AddOpnd (Expression (expr. opnd2), Opnd.arg);
+      | expr: Operator.BinaryArith DO
+        CASE expr.variant OF
+        | Operator.arithAdd:
+          instr := pb. AddInstr (Opcode.add,
+                               Opcode.TypeToSubclass (expr. left. type));
+        ELSE
+          Log.Type("++ Unknown variant of BinaryArith in Expression", expr);
+          ASSERT (FALSE);
+        END;
+        instr. AddOpnd (Expression (expr. left), Opnd.arg);
+        instr. AddOpnd (Expression (expr. right), Opnd.arg);
         RETURN instr
 
-      | expr: Operator.Eql DO
-        RETURN AddCompareOp (expr, Opcode.eql);
-      | expr: Operator.Neq DO
-        RETURN AddCompareOp (expr, Opcode.neq);
-            
+      | expr: Operator.Compare DO
+        CASE expr.variant OF
+        | Operator.equal:
+          RETURN AddCompareOp (expr, Opcode.eql);
+        | Operator.notEqual:
+          RETURN AddCompareOp (expr, Opcode.neq);
+        ELSE
+          Log.Type("++ Unknown variant of Compare in Expression", expr);
+          ASSERT (FALSE);
+        END;
       | expr: IR.Call DO
         instr := Call (expr);
         (* the pessimistic assumption is that a function call can have

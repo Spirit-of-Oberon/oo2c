@@ -7,7 +7,7 @@ Log,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   SymbolId := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
-  OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+  OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:SymbolTable:TypeRules;
 
 (**Some rules regarding the intermediate representation (short ``IR''):
 
@@ -56,7 +56,7 @@ TYPE
 TYPE
   Node* = POINTER TO NodeDesc;
   NodeDesc = RECORD [ABSTRACT]
-    sym: Symbol;
+    sym-: Symbol;
     (**This symbol's location is used to refer to the node when writing an
        error or warning message.  For constants or name, this symbol is the
        node's original representation.  For expressions or statements it refers
@@ -156,9 +156,6 @@ TYPE
      addition, or a set union.  Also some predefined functions, like
      @samp{LEN}, are also mapped on operators.  *)
     (ExpressionDesc)
-    opnd1-, opnd2-: Expression;
-    (**The operands of the operator.  For dyadic operations, both are
-       non-@code{NIL}.  With monadic operators, @ofield{opnd2} is @code{NIL}.  *)
   END;
 
 (* Statements
@@ -245,7 +242,44 @@ TYPE
     guard-: Expression;
     body-: StatementSeq;
   END;
+
+TYPE
+  Status* = SHORTINT;
+  (** Description of exceptions that may occur during evaluation. *)
   
+CONST
+  statusOk* = 0;
+  statusUnderflow* = 1;
+  statusOverflow* = 2;
+  statusDivByZero* = 3;
+  statusFormatError* = 4;
+  statusIncompatibleTypes* = 5;
+  statusInvalidOp* = 6;
+
+TYPE  
+  Exception* = POINTER TO ExceptionDesc;
+  ExceptionDesc* = RECORD
+  (* This type describes conditions that may occur during evaluation of
+     expressions. A list of Exceptions is maintained within the evaluation
+     environment (see @otype{Environment}). *)
+
+    code- : Status;                (** Exception code (see @otype{Status}) *)
+    expr- : Expression;            (** Expression in which exception occurred *)
+    val1-, val2- : Language.Value; (** Arguments to expression that caused exception *)
+    next- : Exception;      (** Next exception in list *)
+  END;
+ 
+TYPE
+  Environment* = RECORD 
+  (* This type provides a context in which evaluations occur, keeping track
+     of exceptions and controlling any parameters of evaluation (eg. which
+     exceptions are enabled, and the state of variables if used as part of an
+     interpreter) *)
+
+    status- : Status;       (** Current exception status *)
+    exception- : Exception; (** List of exceptions that have not been handled *)
+  END;
+
 (* Modules and Procedures
    ------------------------------------------------------------------------ *)
 
@@ -273,6 +307,7 @@ TYPE
   BuilderDesc* = RECORD [ABSTRACT]
     pragmaHistory: Pragmas.History;
     errList: Error.List;
+    typeRules- : TypeRules.Rules;
   END;
 
 TYPE
@@ -295,10 +330,12 @@ VAR
      it also emits an error message.  *)
   
 CONST
-  undeclaredIdent = 1;
-  expectedIdent = 2;
-  numberOutOfRange = 3;
-  characterOutOfRange = 4;
+  undeclaredIdent* = 1;
+  expectedIdent* = 2;
+  numberOutOfRange* = 3;
+  characterOutOfRange* = 4;
+  invalidOpType* = 5;
+  unknownOp* = 6;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -322,6 +359,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Number out of range"
     | characterOutOfRange:
       t := "Character value out of range"
+    | invalidOpType:
+      t := "Invalid type for operator"
+    | unknownOp:
+      t := "Unknown operator"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -332,10 +373,11 @@ PROCEDURE InitVisitor* (v: Visitor);
   BEGIN
   END InitVisitor;
 
-PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Error.List);
+PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Error.List; typeRules : TypeRules.Rules);
   BEGIN
     b. pragmaHistory := pragmaHistory;
     b. errList := errList;
+    b. typeRules := typeRules;
   END InitBuilder;
 
 PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
@@ -349,7 +391,11 @@ PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
     b. errList. Append (lastError)
   END ErrSym;
 
-
+PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Expression;
+  BEGIN
+    b.ErrSym(code, sym);
+    RETURN errorExpr;
+  END ErrExpr;
 
 PROCEDURE InitNode* (n: Node; sym: Symbol);
   BEGIN
@@ -359,7 +405,7 @@ PROCEDURE InitNode* (n: Node; sym: Symbol);
 PROCEDURE (node: Node) [ABSTRACT] Accept* (v: Visitor);
   END Accept;
 
-(* -------- *)
+(* -------- Evaluation of expressions *)
 
 PROCEDURE InitExpression* (expr: Expression; sym: Symbol; type: Sym.Type);
   BEGIN
@@ -374,8 +420,64 @@ PROCEDURE InitReference (ref: Reference; name: Symbol; type: Sym.Type;
     ref. decl := decl;
   END InitReference;
 
+PROCEDURE (e : Expression) [ABSTRACT] Evaluate* (VAR env : Environment) : Language.Value;
+(**Return the result of evaluating this expression. @oparam{env} defines the
+   context of evaluation, and the result of the operation. If 
+   @code{env.status # statusOk}, an exception has occured and the returned
+   value may be NIL. Otherwise, a valid value will be returned. *)
+  END Evaluate;
+
+PROCEDURE (s : Statement) Evaluate* (VAR env : Environment) : Language.Value;
+(**Statements are treated as expressions with 'void' result type. They are
+   normally not evaluated by the compiler. If the entire IR is to be
+   interpretable, sub-types of Statement must implement Evaluate. For the
+   moment, it is sufficient that all statements to simply return NIL. *)
+  BEGIN
+    RETURN NIL;
+  END Evaluate;
+
+PROCEDURE (r : Reference) Evaluate* (VAR env : Environment) : Language.Value;
+(**References are not evaluated. *)
+  BEGIN
+    ASSERT(FALSE);
+  END Evaluate;
+
+PROCEDURE (VAR e : Environment) Init* ();
+(** Initialise environment to a clear state (ie. no exception). *)
+  BEGIN
+    e.status := statusOk;
+    e.exception := NIL;
+  END Init;
+  
+PROCEDURE (VAR e : Environment) Exception* (code : Status; expr : Expression; val1, val2 : Language.Value);
+(**Signal an exception with status @oparam{code}. @oparam{expr} indicates the
+   expression in which the exception occurred. @oparam{val1} and @oparam{val2}
+   may optionally define the values of arguments to the expression that caused
+   the error. *)
+  VAR x : Exception;
+  BEGIN
+    NEW(x);
+    x.code := code;
+    x.expr := expr;
+    x.val1 := val1;
+    x.val2 := val2;
+    x.next := e.exception;
+    e.exception := x;
+    e.status := code;
+  END Exception;
+
+PROCEDURE (VAR e : Environment) Err* () : BOOLEAN;
+(**Return true IFF the environment @oparam{e} indicates an exception. *)
+  BEGIN
+    RETURN e.status # statusOk;
+  END Err;
 
 (* -------- *)
+
+PROCEDURE (c : Const) Evaluate* (VAR env : Environment) : Language.Value;
+  BEGIN
+    RETURN c.value;
+  END Evaluate;
 
 PROCEDURE InitConst (const: Const; sym: Symbol; type: Sym.Type;
                      value: Language.Value);
@@ -595,18 +697,13 @@ PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Sym.Item;
 
 (* -------- *)
 
-PROCEDURE InitOperator* (op: Operator; sym: Symbol; type: Sym.Type;
-                         opnd1, opnd2: Expression);
+PROCEDURE InitOperator* (op: Operator; sym: Symbol; type: Sym.Type);
   BEGIN
     InitExpression (op, sym, type);
-    op. opnd1 := opnd1;
-    op. opnd2 := opnd2;
   END InitOperator;
 
 PROCEDURE (b: Builder) [ABSTRACT] NewOperator* (op: Symbol; left, right: Expression): Expression;
   END NewOperator;
-
-(* -------- *)
 
 (* -------- *)
 
