@@ -1051,12 +1051,7 @@ PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
          directly or indirectly by the main module  *)
       r.imports := ModuleClosure(module, NIL);
       
-      IF ~r.Update(module, Rep.modMainObjectFile) THEN
-        RETURN FALSE;
-      END;
-      
-      isUpToDate :=
-          ~DerivedIsOlder(module, Rep.modExecutable, Rep.modMainObjectFile);
+      isUpToDate := TRUE;
       FOR i := 0 TO LEN(r.imports^)-1 DO
         IF ~r.Update(r.imports[i], Rep.modObjectFile) THEN
           RETURN FALSE;
@@ -1066,7 +1061,15 @@ PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
         END;
       END;
       
-      success := isUpToDate OR LinkProgramC.Run(module, r.imports^, FALSE);
+      IF ~r.Update(module, Rep.modMainObjectFile) THEN
+        (* doing this after the normal modules should ensure that RT0.h
+           exists *)
+        RETURN FALSE;
+      END;
+      isUpToDate := isUpToDate &
+          ~DerivedIsOlder(module, Rep.modExecutable, Rep.modMainObjectFile);
+      
+      success := isUpToDate OR LinkProgramC.Run(module, r.imports^, NIL);
     END;
     RETURN success;
   END UpdateExecutable;
@@ -1112,7 +1115,8 @@ PROCEDURE (r: Rules) UpdateLibrary(module: Rep.Module): BOOLEAN;
         (* ... *)
         
         (* Link library *)
-        success := isUpToDate OR LinkProgramC.Run(module, closure^, TRUE);
+        success := isUpToDate OR
+            LinkProgramC.Run(module, closure^, r.libraryName);
         
         (* Write library meta file containing OOC's information about the new
            library.  *)
