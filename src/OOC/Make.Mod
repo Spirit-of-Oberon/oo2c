@@ -537,7 +537,9 @@ PROCEDURE (n: Node) BuildFinished* (res: BuildResult);
         SetEvalStatus (n, nodeDone)
       END
     ELSE
-      res. errList. Write (StdChannels.stderr);
+      IF (res. errList # NIL) THEN
+        res. errList. Write (StdChannels.stderr)
+      END;
       SetEvalStatus (n, nodeFailed)
     END
   END BuildFinished;
