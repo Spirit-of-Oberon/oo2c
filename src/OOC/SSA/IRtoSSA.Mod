@@ -29,7 +29,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       WITH expr: IR.Const DO
         RETURN pb. GetConst (expr. value)
       | expr: IR.ProcedureRef DO
-        RETURN pb. GetDeclRef (expr. decl)
+        RETURN pb. GetAddress (expr. decl)
 
       | expr: IR.Var DO
         instr := pb. AddInstr (Opcode.get, Opcode.scNone);
