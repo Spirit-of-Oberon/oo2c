@@ -1,5 +1,21 @@
 8. Expressions
 
+Literals
+--------
+
+REJECT
+
+  1) value of an integer constant cannot be stored in the largest
+     integer type
+  2) value of a floating point constant without exponent, or with
+     an "E" exponent, is out of the range of REAL
+  3) value of a floating point constant with a "D" exponent is out
+     of the range of LONGREAL
+  4) value of a character constant cannot be stored in the largest
+     character type
+
+
+
 8.1 Operands
 ------------
 
