@@ -115,6 +115,14 @@ PROCEDURE (ch: Channel) Write*(buffer[NO_COPY]: ARRAY OF SYSTEM.BYTE;
     RETURN length;
   END Write;
 
+PROCEDURE (ch: Channel) Truncate*(newLength: LONGINT);
+(**@precond
+   @samp{0 <= newLength <= ch.length}
+   @end precond *)
+  BEGIN
+    ch.length := newLength;
+  END Truncate;
+
 PROCEDURE (ch: Channel) Fingerprint* (VAR key: ARRAY OF SYSTEM.BYTE;
                                       start, end: LONGINT);
 (**Generates fingerprint value over the data of @oparam{ch}, over the byte
