@@ -1,13 +1,14 @@
 Requirements:
   oo2c 1.5.3.2
-  libxml (the CVS tree dated 20000731)
+  libadt (from the CVS repository)
+  libxml (from the CVS repository)
   GNU make
-  GNU diff (or remove "-u" from tests/Makefile)
 
-Make sure that libxml/src/ is in the search path for *.Mod and *.c
-(e.g., by editing and including .oo2crc_local).  Set the environment
-variable OOC to point to your oo2c compiler.  Then, do "make test" in
-the root directory.  If this produces an error, mail me.
+Make sure that libxml/src/ and libadt/src/ is in the search path for
+*.Mod and *.c (e.g., by editing and including .oo2crc_local).  Set the
+environment variable OOC to point to your oo2c compiler.  Then, do
+"make test" in the root directory.  If this produces an error, mail
+me.
 
 
 An overview over the modules is in src/AllModules.Mod.  Another point
@@ -35,13 +36,7 @@ tests/.  To run tests selectively "cd" into the subdirectory and do
 comparing files.
 
 For "make doc" to work, set the name for the oocn tool at the
-beginning of the Makefile.  You will also need oo2c-1.5.3.1 (because
-of a bug in oocn exposed by the XML sources) and XML sources more
-recent than v2.1 (because of some documentation syntax errors in the
-libxml sources).  The oo2c patch is at
-http://pweb.de.uu.net/vanacken.do/ooc/oo2c-patches/, and the up to
-date XML sources are available via CVS.
-
+beginning of the Makefile.
 
 "make clean" returns the file tree to a pristine state, removing all
 the files that were produced during compilation and testing.
