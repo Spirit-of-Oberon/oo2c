@@ -341,6 +341,11 @@ PROCEDURE (opnd: Opnd) GetIntConst*(): LONGINT;
     RETURN opnd. arg(Const). value(Integer.Value). ToInt();
   END GetIntConst;
 
+PROCEDURE (opnd: Opnd) IsScheduleOpnd*(): BOOLEAN;
+  BEGIN
+    RETURN (opnd. class = OpndClass.loopExternalDef);
+  END IsScheduleOpnd;
+
   (* ---------------------------------------------------------------------- *)
   
 PROCEDURE InitResult (res: Result; instr: Instr; class: ResultClass.Class;

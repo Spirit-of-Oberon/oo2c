@@ -495,7 +495,7 @@ PROCEDURE (w: Writer) Noop (instr: SSA.Instr): BOOLEAN;
       targetInstr := instr. GetCollectTarget();
       opnd := instr. opndList;
       res := targetInstr. nextResult;
-      WHILE (opnd # NIL) & (opnd. class # Opnd.loopExternalDef) DO
+      WHILE (opnd # NIL) & ~opnd. IsScheduleOpnd() DO
         IF (opnd. class # Opnd.store) THEN
           targetVar := w. registerMap. Get (res);
           IF w. registerMap. HasKey (opnd. arg) THEN
@@ -976,7 +976,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. ClearSwapData;
       opnd := collect. opndList;
       res := targetInstr. nextResult;
-      WHILE (opnd # NIL) & (opnd. class # Opnd.loopExternalDef) DO
+      WHILE (opnd # NIL) & ~opnd. IsScheduleOpnd() DO
         IF (opnd. class # Opnd.store) THEN
           targetVar := w. registerMap. Get (res);
           IF w. registerMap. HasKey (opnd. arg) THEN
@@ -1013,7 +1013,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       (* final pass: write out anything that does not read from a register *)
       opnd := collect. opndList;
       res := targetInstr. nextResult;
-      WHILE (opnd # NIL) & (opnd. class # Opnd.loopExternalDef) DO
+      WHILE (opnd # NIL) & ~opnd. IsScheduleOpnd() DO
         IF (opnd. class # Opnd.store) THEN
           targetVar := w. registerMap. Get (res);
           IF ~w. registerMap. HasKey (opnd. arg) THEN

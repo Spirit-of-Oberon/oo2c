@@ -176,19 +176,6 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           ~LocalVarWithoutAdr (design);
     END AccessedByCall;
   
-  PROCEDURE SimpleDesignator (opnd: SSA.Opnd): BOOLEAN;
-  (* A simple designator is a designator that is entirely composed
-     of constant selectors, like variables or record fields.  *)
-    BEGIN
-      WHILE (opnd # NIL) & (opnd. class = Opnd.readDesign) DO
-        IF ~(opnd. arg IS SSA.DeclRef) THEN
-          RETURN FALSE;
-        END;
-        opnd := opnd. nextOpnd;
-      END;
-      RETURN TRUE;
-    END SimpleDesignator;
-  
   PROCEDURE GetValue (store: SSA.Result; get: SSA.Instr;
                       loopTrace: SSA.Instr): SSA.Result;
   (* Return the value from the @oparam{store} for the memory location (and
@@ -354,7 +341,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           | Opcode.select    : opnd := select. NthOpnd (2)
           | Opcode.loopEnd   : opnd := select. NthOpnd (2)
           END;
-          WHILE (opnd # NIL) & noUnknownValue DO
+          WHILE (opnd # NIL) & ~opnd. IsScheduleOpnd() DO
             values[i] := GetValue (opnd. arg, get, loopTrace);
             IF UnknownValue (values[i]) THEN
               noUnknownValue := FALSE;
@@ -465,7 +452,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             entry. value := GetValue (loopStart. opndList. arg, get, loopTrace)
                 
           ELSIF UnknownValue (invariant) THEN (* in memory at end of loop *)
-            entry := AddToCache (loopStart, invariant)
+            (* "store" of designator is not loop invariant *)
+            entry := AddToCache (loopStart, loopStart. GetResultStore());
             
           ELSE   (* not invariant, and not in memory at end of loop *)
             (* value is passed through "collect" operands to "select" result *)
@@ -629,7 +617,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
               (* the "get" may read from memory changed by the store *)
               RETURN TRUE;
             ELSE
-              RETURN VisibleEffect (storeOut, set);
+              RETURN (storeOut # NIL) & VisibleEffect (storeOut, set);
             END;
             
           | Opcode.set:
@@ -736,6 +724,13 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       RETURN TRUE;
     END UsesAreVarAccess;
   
+  PROCEDURE ReplaceStoreUses (baseResult: SSA.Result;
+                              storeOut, storeIn: SSA.Result);
+    BEGIN
+      storeOut. ReplaceUses (storeIn);
+      storeOut. DeleteResult;
+    END ReplaceStoreUses;
+
   BEGIN
     (* create a dictionary of all local variables whose address is taken
        somewhere in this procedure, and used within an instruction other than
@@ -758,7 +753,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     WHILE (instr # NIL) DO
       IF (instr. opcode = Opcode.get) THEN
         value := GetValue (instr. GetArgStore(), instr, NIL);
-        IF ~UnknownValue (value) THEN
+        IF UnknownValue (value) THEN
+          (* ... disabled, leads to problems with anti-dependencies ...
+             ReplaceStoreUses (instr. AddResult (Result.scheduleDependency),
+                            instr. GetResultStore(), instr. opndList. arg);
+          instr. opndList. ReplaceArg (value);*)
+        ELSE
           instr. ReplaceUses (value);
         END;
       END;

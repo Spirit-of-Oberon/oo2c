@@ -1160,8 +1160,13 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
             IF (opnd # instr. opndList) THEN
               w. WriteChar (",");
             END;
-            IF (opnd. class = Opnd.antiDependency) THEN
-              w. WriteString ("ad");
+            CASE opnd. class OF
+            | Opnd.antiDependency:
+              w. WriteString ("*ad*");
+            | Opnd.loopExternalDef:
+              w. WriteString ("*led*");
+            ELSE
+              (* omit class *)
             END;
             WriteResultId (opnd. arg);
             opnd := opnd. nextOpnd
