@@ -80,11 +80,20 @@ for my $m (@modules) {
   print "\t\$(CC) \$(CFLAGS) \$(CPPFLAGS) $flags -c $header{$m}{cfile} -o $header{$m}{objfile}\n\n";
 }
 
-print "$main.o:\n";
-print "\t\$(CC) \$(CFLAGS) $flags -c $main.c -o $main.o\n\n";
+print <<"EOS";
+$main.o:
+	\$(CC) \$(CFLAGS) $flags -c $main.c -o $main.o
 
-print "$exec: \$(OBJ)\n";
-print "\t\$(CC) \$(LDFLAGS) -o $exec \$(OBJ) -lm \$(LIBS)\n\n";
+.PHONY: setup-src
 
-print "clean:\n";
-print "\trm -f \$(OBJ) $exec $exec.exe\n\n";
+# With MinGW, the symbolic links from the tar ball does not make it into the
+# file system.  Compensate by doing a rm&cp for the directories in question.
+setup-src:
+	test -h src || (rm -Rf src lib/src; cp -R ../src .; cp -R ../lib/src lib)
+
+$exec: \$(OBJ)
+	\$(CC) \$(LDFLAGS) -o $exec \$(OBJ) -lm \$(LIBS)
+
+clean:
+	rm -f \$(OBJ) $exec $exec.exe
+EOS

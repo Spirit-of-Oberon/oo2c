@@ -140,7 +140,7 @@ dist64:
 
 ### Create initial compiler executable from distributed C sources.
 stage0/oo2c:
-	${MAKE} -C stage0 -f Makefile.ext oo2c
+	${MAKE} -C stage0 -f Makefile.ext setup-src oo2c
 
 ### Build library from core modules using the initial compiler executable.
 lib/obj/liboo2c.la: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml
