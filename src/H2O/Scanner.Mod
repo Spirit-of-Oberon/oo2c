@@ -522,6 +522,14 @@ BEGIN
   RETURN t;
 END NewToken;
 
+PROCEDURE NewIdentToken* (name : STRING) : Token;
+VAR t : Token;
+BEGIN
+  t := NewToken(ident);
+  t.name := name;
+  RETURN t;
+END NewIdentToken;
+  
 PROCEDURE NewTokenParameter* (value : LONGINT) : Token;
 VAR t : Token;
 BEGIN
