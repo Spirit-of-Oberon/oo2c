@@ -18,7 +18,7 @@
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
   function1 function2
-  constfold1 constfold2 constfold3 constfold4">
+  constfold1 constfold2 constfold3 constfold4 constfold5 constfold6">
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="src/Out.Mod">
@@ -63,11 +63,28 @@
       CONST expression is not constant.
     </test>
 
+    <test id="constfold5" type="run" 
+      file="ConstFold5.Mod" output="ConstFold5.Ref">
+      ConstFold5 and 6 check that the evaluation of a constant expression
+      assigns the correct type based on the value of the result. In both
+      cases, the most meaningful output is the IR which indicates assigned
+      types. In this example arithmetic operators return MIN/MAX SHORTINT,
+      INTEGER, LONGINT.  
+    </test>
+
+    <test id="constfold6" type="reject" file="ConstFold6.Mod">
+      In this example arithmetic operators return values just outside MIN/MAX
+      SHORTINT,INTEGER,LONGINT. The result type should be larger than the
+      operand types. In the case of LONGINT, the result is a "value out of
+      range error"
+    </test>
+
   </testcases>
   
   <processor-info processor-name="TestCompile">
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
     <reject-info id="constfold3" pos="c=1%+" msg="Invalid type for operator"/>
     <reject-info id="constfold4" pos="c=%a" msg="Expression is not constant"/>
+    <reject-info id="constfold6" pos="maxLongInt%+offset" msg="Value out of range"/>
   </processor-info>
 </testsuite-ext>
