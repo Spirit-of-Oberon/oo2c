@@ -144,5 +144,11 @@
           file="Quicksort1.Mod" output="Quicksort1.Ref">
       A compact quicksort implementation.
     </test>
+
+
+    <test id="cse1" type="run" file="Cse1.Mod">
+      Common subexpression elimination must not merge the two calls to
+      <code>NEW</code>.
+    </test>
   </testcases>
 </testsuite-ext>

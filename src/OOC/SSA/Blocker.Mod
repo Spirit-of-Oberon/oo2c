@@ -21,8 +21,9 @@ MODULE OOC:SSA:Blocker;
 *)
 
 IMPORT
-  Channel, TextRider, ADT:String, Dictionary := ADT:Dictionary:IntValue,
-  Language:Integer,
+  SYSTEM,
+  Channel, TextRider, ADT:Object, ADT:String, ADT:Dictionary,
+  IntDictionary := ADT:Dictionary:IntValue, Language:Integer,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination;
   
 (**
@@ -170,6 +171,13 @@ TYPE
        have been sorted already.  *)
   END;
 
+TYPE
+  DependenceData* = POINTER TO DependenceDataDesc;
+  DependenceDataDesc = RECORD
+    root: Region;
+    proxyMap: Dictionary.Dictionary;  (* maps SSA.Instr onto Proxy *)
+  END;
+  
   
 (* Proxy
    ------------------------------------------------------------------------ *)
@@ -927,11 +935,96 @@ PROCEDURE RemoveAntiDeps* (pb: SSA.ProcBlock);
       instr := instr. nextInstr;
     END;
   END RemoveAntiDeps;
+
+
+
+PROCEDURE GetDependenceData* (pb: SSA.ProcBlock): DependenceData;
+  VAR
+    dd: DependenceData;
+    proxyMap: Dictionary.Dictionary;
+    instr: SSA.Instr;
+  BEGIN
+    NEW (dd);
+    dd. root := ArrangeInstructions (pb);
     
+    proxyMap := Dictionary.New();
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      proxyMap. Set (instr, instr. info(Proxy));
+      instr := instr. nextInstr;
+    END;
+    dd. proxyMap := proxyMap;
+    
+    RETURN dd;
+  END GetDependenceData;
+
+PROCEDURE (dd: DependenceData) Conflict* (x, y: SSA.Instr): BOOLEAN;
+  VAR
+    p: Object.Object;
+    a, b: Region;
+  BEGIN
+    p := dd. proxyMap. Get (x);
+    a := p(Proxy). region;
+    p := dd. proxyMap. Get (y);
+    b := p(Proxy). region;
+    
+    WHILE (a. nestingDepth > b. nestingDepth) DO
+      a := a. region;
+    END;
+    WHILE (b. nestingDepth > a. nestingDepth) DO
+      b := b. region;
+    END;
+    WHILE (a. region # b. region) DO
+      a := a. region;
+      b := b. region;
+    END;
+    RETURN (a. region # NIL) & (a. region IS Select) & (a # b);
+  END Conflict;
+
+PROCEDURE (dd: DependenceData) DependsOn* (x, y: SSA.Instr): BOOLEAN;
+(**Return @code{TRUE} if instruction @oparam{x} depends on instruction
+   @oparam{y}.  That is, result is @code{TRUE} if there is a sequence of
+   result & use links leading from instruction @oparam{y} to @oparam{x}.  *)
+  VAR
+    visited: Dictionary.Dictionary;
+
+  PROCEDURE PassesResult (res: SSA.Result): BOOLEAN;
+    VAR
+      use: SSA.Opnd;
+    BEGIN
+      WHILE (res # NIL) DO
+        use := res. useList;
+        WHILE (use # NIL) DO
+          IF ~visited. HasKey (use. instr) THEN
+            visited. Set (use. instr, NIL);
+            IF (use. instr = x) OR PassesResult (use. instr) THEN
+              RETURN TRUE;
+            END;
+          END;
+          use := use. nextUse;
+        END;
+        res := res. nextResult;
+      END;
+      RETURN FALSE;
+    END PassesResult;
+  
+  BEGIN
+    visited := Dictionary.New();
+    RETURN (x # y) & PassesResult (y);
+  END DependsOn;
+
+PROCEDURE (dd: DependenceData) AvailableTo* (x, y: SSA.Instr): BOOLEAN;
+(**Return @code{TRUE} if the results of instruction @oparam{x} are available
+   at the place of instruction @oparam{y}.  *)
+  BEGIN
+    RETURN ~dd. Conflict (x, y) & ~dd. DependsOn (x, y);
+  END AvailableTo;
+
+
 PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
   VAR
     w: TextRider.Writer;
-    idMap: Dictionary.Dictionary;
+    idMap: IntDictionary.Dictionary;
     instrCount: LONGINT;
     root: Region;
     
@@ -1018,8 +1111,8 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
     BEGIN
       instr := p. instr;
       IF (instr = NIL) OR ~instr. IsConst() THEN
-        (*w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
-        w. WriteString ("  ");*)
+        w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
+        w. WriteString ("  ");
         (*w. WriteString ("L:");
         IF (p. loopAssoc # NIL) THEN
           WriteResultId (p. loopAssoc. instr);
@@ -1101,7 +1194,7 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
   
   BEGIN
     root := ArrangeInstructions (pb);
-    idMap := Dictionary.New();
+    idMap := IntDictionary.New();
     instrCount := 1;
     AssignId (root);
 

@@ -27,7 +27,7 @@ IMPORT
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
-  OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
+  OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:CSE, OOC:SSA:Allocator,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
   OOC:Make:Command:TranslateToC;
 
@@ -1577,7 +1577,9 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Destore.Transform (pb);
     Write ("destore-post", "dce-pre");
     DeadCodeElimination.Transform (pb);
-    Write ("dce-post", "final");
+    Write ("destore-post", "cse-pre");
+    CSE.Transform (pb);
+    Write ("cse-post", "final");
 
     (*Blocker.Write (StdChannels.stdout, pb);*)
     

@@ -1,0 +1,369 @@
+(* 	$Id$	 *)
+MODULE OOC:SSA:CSE;
+(*  Common subexpression elimination using value numbering.
+    Copyright (C) 2002  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
+
+IMPORT
+  OOC:SSA:Blocker, Log, StdChannels,
+  OOC:SSA, OOC:SSA:Opcode;
+  
+TYPE
+  ResultList = POINTER TO ARRAY OF SSA.Result;
+  Partition = POINTER TO PartitionDesc;
+  ChildrenList = POINTER TO ARRAY OF Partition;
+  PartitionDesc = RECORD
+    (SSA.NodeDesc)
+    nextPartition: Partition;
+    nextWorklist: Partition;
+    size: LONGINT;
+    iList: ResultList;
+
+    splitted: BOOLEAN;
+    (* If @code{TRUE}, then @oproc{Transform.Split} has been called for this
+       partition, or is currently executed.  *)
+    
+    ancestor: Partition;
+    (* During a run of @oproc{Transform.Split}, newly created partitions store
+       here the partition from which they where split off.  For the original
+       partition, this field is @code{NIL}.  *)
+    ancestorOpnd: LONGINT;
+    (* If @samp{ancestor # NIL}, then this field is the index of the operand
+       on which the split operation was based.  Otherwise, it is @samp{-1}.  *)
+    splitChildren: ChildrenList;
+    (* List of partitions that have been split off from this one.  For every
+       child, @ofield{ancestor} refers to this partition.  The value of
+       @ofield{ancestorOpnd} of every child is greater than the
+       @ofield{ancestorOpnd} of this instance.  The end of the list is marked
+       by an entry @code{NIL}.  *)
+  END;
+
+
+  (*
+     FIXME... get rid of empty partitions as soon as possible; don't try
+     to split partitions of size 1; see how the O(n log n) improvement can
+     be incorporated; speed up the DependenceData predicates
+     *)
+  
+PROCEDURE InitPartition (p: Partition);
+  CONST
+    initialSize = 4;
+  VAR
+    i: LONGINT;
+  BEGIN
+    SSA.InitNode (p);
+    p. nextPartition := NIL;
+    p. nextWorklist := NIL;
+    p. size := 0;
+    NEW (p. iList, initialSize);
+    FOR i := 0 TO initialSize-1 DO
+      p. iList[i] := NIL;
+    END;
+
+    p. splitted := FALSE;
+    
+    p. ancestor := NIL;
+    p. ancestorOpnd := -1;
+    NEW (p. splitChildren, initialSize);
+    p. splitChildren[0] := NIL;
+  END InitPartition;
+
+PROCEDURE NewPartition(): Partition;
+  VAR
+    p: Partition;
+  BEGIN
+    NEW (p);
+    InitPartition (p);
+    RETURN p;
+  END NewPartition;
+
+PROCEDURE (p: Partition) Add (instr: SSA.Instr);
+  VAR
+    old: Partition;
+    i: LONGINT;
+    new: ResultList;
+    
+  PROCEDURE Swap (VAR i1, i2: SSA.Result);
+    VAR
+      j: SSA.Result;
+    BEGIN
+      j := i1; i1 := i2; i2 := j;
+    END Swap;
+  
+  BEGIN
+    IF (instr. info # NIL) THEN
+      (* remove instruction from old partition *)
+      old := instr. info(Partition);
+      IF (old. size > 0) THEN
+        i := 0;
+        WHILE (old. iList[i] # instr) DO
+          INC (i);
+        END;
+        Swap (old. iList[i], old. iList[old. size-1]);
+      END;
+      DEC (old. size);
+    END;
+
+    IF (p. size = LEN (p. iList^)) THEN  (* instr list is full, extend it *)
+      NEW (new, p. size*2);
+      FOR i := 0 TO p. size-1 DO
+        new[i] := p. iList[i];
+      END;
+      FOR i := p. size TO LEN (new^)-1 DO
+        new[i] := NIL;
+      END;
+      p. iList := new;
+    END;
+    
+    p. iList[p. size] := instr;
+    INC (p. size);
+    instr. info := p;
+  END Add;
+
+PROCEDURE Transform* (pb: SSA.ProcBlock);
+  CONST
+    numOpcodes = Opcode.labels+1;
+  VAR
+    pList, worklist: Partition;
+    opcodes: ARRAY numOpcodes OF Partition;
+    i: LONGINT;
+    instr: SSA.Instr;
+    p: Partition;
+    
+  PROCEDURE AddPartition(): Partition;
+    VAR
+      p: Partition;
+    BEGIN
+      p := NewPartition();
+      p. nextWorklist := worklist;
+      worklist := p;
+      p. nextPartition := pList;
+      pList := p;
+      RETURN p;
+    END AddPartition;
+
+  PROCEDURE SplittedPartition (p: Partition; opndIndex: LONGINT): Partition;
+    VAR
+      newList: ChildrenList;
+      i, j: LONGINT;
+      new: Partition;
+    BEGIN
+      ASSERT (opndIndex # p. ancestorOpnd);
+      
+      IF (opndIndex > p. ancestorOpnd) THEN
+        (* locate the child for this operand; if there isn't one, create a
+           new partition for this operand index *)
+        i := 0;
+        WHILE (p. splitChildren[i] # NIL) &
+              (p. splitChildren[i]. ancestorOpnd # opndIndex) DO
+          INC (i);
+        END;
+        
+        IF (p. splitChildren[i] = NIL) THEN
+          IF (i+1 = LEN (p. splitChildren^)) THEN
+            NEW (newList, (i+1)*2);
+            FOR j := 0 TO i DO
+              newList[j] := p. splitChildren[j];
+            END;
+            p. splitChildren := newList;
+          END;
+          new := AddPartition();
+          new. ancestor := p;
+          new. ancestorOpnd := opndIndex;
+          p. splitChildren[i] := new;
+          p. splitChildren[i+1] := NIL;
+          RETURN new;
+        ELSE
+          RETURN p. splitChildren[i];
+        END;
+        
+      ELSE
+        (* this operand index is not stored as a child of `p', because it
+           would violate the invariant on the childrens' `ancestorIndex';
+           delegate locating a partition for `opndIndex' to the ancestor,
+           and then get the child for `p.ancestorOpnd' *) 
+        new := SplittedPartition (p. ancestor, opndIndex);
+        RETURN SplittedPartition (new, p. ancestorOpnd);
+      END;
+    END SplittedPartition;
+  
+  PROCEDURE Split (iList: ARRAY OF SSA.Result; size: LONGINT);
+  (* Note: @oparam{iList} is an value parameter, so that the list of
+     instructions does not change while we modify the partitions.  *)
+    VAR
+      i, nextResultCount: LONGINT;
+      res: SSA.Result;
+      use: SSA.Opnd;
+      p: Partition;
+
+    PROCEDURE MarkUnchanged (worklist: Partition);
+      BEGIN
+        WHILE (worklist # NIL) & (worklist. ancestor # NIL) DO
+          IF (worklist. ancestor. size = 0) &
+             worklist. ancestor. splitted &
+             (worklist. ancestor. splitChildren[1] = NIL) THEN
+            (* this partition is a copy of the original ancestor, and Split()
+               has been done on the ancestor: mark this one as done *)
+            worklist. splitted := TRUE;
+          END;
+          worklist := worklist. nextWorklist;
+        END;
+      END MarkUnchanged;
+    
+    BEGIN
+      WHILE (size # 0) DO
+        nextResultCount := 0;
+        FOR i := 0 TO size-1 DO
+          res := iList[i];
+
+          use := res. useList;
+          WHILE (use # NIL) DO
+            p := SplittedPartition (use. instr. info(Partition),
+                                    use. OpndIndex());
+            p. Add (use. instr);
+            use := use. nextUse;
+          END;
+          
+          IF (res. nextResult # NIL) THEN
+            iList[nextResultCount] := res. nextResult;
+            INC (nextResultCount);
+          END;
+        END;
+
+        MarkUnchanged (worklist);
+        
+        (* reset data of touched partitions *)
+        p := pList;
+        WHILE (p # NIL) DO
+          p. ancestor := NIL;
+          p. ancestorOpnd := -1;
+          p. splitChildren[0] := NIL;
+          p := p. nextPartition;
+        END;
+        
+        size := nextResultCount;
+      END;
+    END Split;
+
+  PROCEDURE Replace (p: Partition);
+    VAR
+      dd: Blocker.DependenceData;
+      i, j: LONGINT;
+      iInstr, jInstr: SSA.Instr;
+
+    PROCEDURE ReplaceInstrWith (x, y: SSA.Instr);
+      VAR
+        rx, ry: SSA.Result;
+      BEGIN
+        (*Log.Ptr ("  replacing instr", x);
+        Log.Ptr ("  with instr", y);*)
+        rx := x; ry := y;
+        WHILE (rx # NIL) & (ry # NIL) DO
+          rx. ReplaceUses (ry);
+          rx := rx. nextResult; ry := ry. nextResult;
+        END;
+        (* the result lists must have the same length *)
+        ASSERT (rx = NIL);
+        ASSERT (ry = NIL);
+      END ReplaceInstrWith;
+    
+    BEGIN
+      dd := Blocker.GetDependenceData (pb);
+      WHILE (p # NIL) DO
+        IF (p. size > 1) THEN
+          i := 0;
+          WHILE (i # p. size) DO
+            IF (p. iList[i] # NIL) THEN
+              j := i+1;
+              WHILE (j # p. size) DO
+                IF (p. iList[j] # NIL) THEN
+                  iInstr := p. iList[i](SSA.Instr);
+                  jInstr := p. iList[j](SSA.Instr);
+                  IF dd. AvailableTo (iInstr, jInstr) THEN
+                    ReplaceInstrWith (jInstr, iInstr);
+                    p. iList[j] := NIL;
+                  ELSIF dd. AvailableTo (jInstr, iInstr) THEN
+                    ReplaceInstrWith (iInstr, jInstr);
+                    p. iList[i] := NIL;
+                    j := p. size-1;      (* leave inner loop *)
+                  END;
+                END;
+                INC (j);
+              END;
+            END;
+            INC (i);
+          END;
+        END;
+        p := p. nextPartition;
+      END;
+    END Replace;
+  
+  BEGIN
+    pb. SetMarkers (NIL, 0);
+    FOR i := 0 TO numOpcodes-1 DO
+      opcodes[i] := NIL;
+    END;
+    worklist := NIL;
+    pList := NIL;
+
+    (* create initial partitions for opcodes and constant instructions;
+       add partitions to worklist *)
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      IF instr. IsConst() OR instr. UniqueResult() THEN
+        (* the instruction is a constant value or a unique result, and the
+           instruction is therefore only equivalent to itself  *)
+        p := AddPartition();
+      ELSE
+        p := opcodes[instr. opcode];
+        IF (p = NIL) THEN
+          p := AddPartition();
+          opcodes[instr. opcode] := p;
+        END;
+      END;
+      p. Add(instr);
+      instr := instr. nextInstr;
+    END;
+
+    WHILE (worklist # NIL) DO
+      p := worklist;
+      worklist := worklist. nextWorklist;
+      IF ~p. splitted THEN
+        p. splitted := TRUE;
+        Split (p. iList^, p. size);
+      END;
+    END;
+
+(*    Blocker.Write (StdChannels.stdout, pb);
+    p := pList;
+    WHILE (p # NIL) DO
+      IF (p. size > 1) THEN
+        Log.LongInt ("p.size", p. size);
+        p. iList[0](SSA.Instr). LogOpcode ("  instr1");
+        FOR i := 0 TO p. size-1 DO
+          Log.Ptr ("  adr", p. iList[i]);
+        END;
+      END;
+      p := p. nextPartition;
+    END;*)
+
+    Replace (pList);
+  END Transform;
+  
+END OOC:SSA:CSE.

@@ -20,45 +20,33 @@ l5_loop:
   i1 = i1+1;
   i4 = i1*4;
   i4 = (OOC_INT32)a+i4;
-  i4 = *(OOC_INT32*)i4;
-  i4 = i4>=i3;
-  if (!i4) goto l5_loop;
+  i5 = *(OOC_INT32*)i4;
+  i5 = i5>=i3;
+  if (!i5) goto l5_loop;
 l12_loop:
   i2 = i2-1;
-  i4 = i2*4;
-  i4 = (OOC_INT32)a+i4;
-  i4 = *(OOC_INT32*)i4;
-  i4 = i4<=i3;
-  if (!i4) goto l12_loop;
-l18:
-  i4 = i1*4;
-  i4 = (OOC_INT32)a+i4;
-  i5 = i1>=i2;
-  i6 = i2*4;
-  if (i5) goto l24;
-l23:
-  i4 = *(OOC_INT32*)i4;
   i5 = i2*4;
   i5 = (OOC_INT32)a+i5;
-  i7 = i1*4;
-  i7 = (OOC_INT32)a+i7;
-  i6 = (OOC_INT32)a+i6;
-  i6 = *(OOC_INT32*)i6;
-  *(OOC_INT32*)i7 = i6;
-  *(OOC_INT32*)i5 = i4;
+  i6 = *(OOC_INT32*)i5;
+  i6 = i6<=i3;
+  if (!i6) goto l12_loop;
+l18:
+  i6 = i1>=i2;
+  if (i6) goto l24;
+l23:
+  i6 = *(OOC_INT32*)i4;
+  i7 = *(OOC_INT32*)i5;
+  *(OOC_INT32*)i4 = i7;
+  *(OOC_INT32*)i5 = i6;
   
   goto l5_loop;
 l24:
-  i3 = i1*4;
-  i3 = (OOC_INT32)a+i3;
-  i3 = *(OOC_INT32*)i3;
-  i4 = n;
-  i5 = i4*4;
-  i5 = (OOC_INT32)a+i5;
-  i4 = *(OOC_INT32*)i5;
-  i5 = i1*4;
-  i5 = (OOC_INT32)a+i5;
-  *(OOC_INT32*)i5 = i4;
+  i3 = *(OOC_INT32*)i4;
+  i5 = n;
+  i6 = i5*4;
+  i6 = (OOC_INT32)a+i6;
+  i5 = *(OOC_INT32*)i6;
+  *(OOC_INT32*)i4 = i5;
   i4 = n;
   i5 = i4*4;
   i5 = (OOC_INT32)a+i5;
@@ -91,7 +79,6 @@ l9:
   i1=i3;
   goto l4_loop;
 l11:
-  i0 = 0<=63;
   Quicksort1__Sort((void*)(OOC_INT32)a, 64, 0, 63);
   if (!i0) goto l22;
   i1=0;
