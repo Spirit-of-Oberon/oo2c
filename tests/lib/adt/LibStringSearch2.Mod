@@ -300,7 +300,20 @@ PROCEDURE RegexpSearches (f: StringSearch.Factory);
     SearchOk(f, "[^abc]?", {}, "abc", 0, 0);
     SearchOk(f, "[^abc]?", {}, "xabc", 0, 1);
     SearchOk(f, "[^abc]*", {}, "abc", 0, 0);
-    
+
+    (* test behavior of ^ at beginning of string *)
+    SearchOk(f, "^a", {}, "abcd", 0, 1);
+    SearchNotOk(f, "^a", {}, "Xabcd");
+    SearchOk(f, "(^)a", {}, "abcd", 0, 1);
+    SearchNotOk(f, "(^)a", {}, "Xabcd");
+    SearchOk(f, "(^|Z)a", {}, "abcd", 0, 1);
+    SearchOk(f, "(^|Z)a", {}, "XYZabcd", 2, 4);
+    SearchNotOk(f, "(^|Z)a", {}, "XaZbcd");
+    SearchOk(f, "(^|[ABC])a", {}, "abcd", 0, 1);
+    SearchOk(f, "(^|[ABC])a", {}, "XYZAabcd", 3, 5);
+    SearchOk(f, "(^|[ABC])a", {}, "XYZCabcd", 3, 5);
+    SearchNotOk(f, "(^|[ABC])a", {}, "XaCbcd");
+
     (* test behavior of ^ and $ with region *)
     SearchOkRegion(f, "a", {}, "xax", 0, 3, 1, 2);
     SearchNotOkRegion(f, "^a", {}, "xax", 0, 3);

@@ -631,6 +631,39 @@ searching in `xabc'
 [StringSearch:RegexpDFA.FactoryDesc] pattern=`[^abc]*'
 searching in `abc'
 --> start=0, end=0
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`^a'
+searching in `abcd'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`^a'
+searching in `Xabcd'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^)a'
+searching in `abcd'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^)a'
+searching in `Xabcd'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^|Z)a'
+searching in `abcd'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^|Z)a'
+searching in `XYZabcd'
+--> start=2, end=4
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^|Z)a'
+searching in `XaZbcd'
+--> no match
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^|[ABC])a'
+searching in `abcd'
+--> start=0, end=1
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^|[ABC])a'
+searching in `XYZAabcd'
+--> start=3, end=5
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^|[ABC])a'
+searching in `XYZCabcd'
+--> start=3, end=5
+[StringSearch:RegexpDFA.FactoryDesc] pattern=`(^|[ABC])a'
+searching in `XaCbcd'
+--> no match
 [StringSearch:RegexpDFA.FactoryDesc] pattern=`a'
 searching in `xax'
 --> start=1, end=2
