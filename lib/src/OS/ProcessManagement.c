@@ -60,7 +60,7 @@ trial and error to sort out the inconsistencies above.
  * This replacement system() uses Kernel functions to manage the process.
  */
 
-static int new_system(char * args) {
+static int new_system(const char * args) {
   PROCESS_INFORMATION info;
   STARTUPINFO si;
   HANDLE handles[1];
