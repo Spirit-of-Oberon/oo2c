@@ -991,6 +991,20 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       RETURN instr
     END Call;
 
+  PROCEDURE PopExceptionContext(storeIn: SSA.Result; n: LONGINT): SSA.Result;
+    VAR
+      instr: SSA.Instr;
+    BEGIN
+      IF (n # 0) THEN
+        instr := pb.AddInstr(Opcode.popExceptionContext, Opcode.scNone);
+        instr.AddOpnd(storeIn, Opnd.store);
+        instr.AddOpnd(pb.GetConstInt(n), Opnd.arg);
+        RETURN instr.AddResult(Result.store);
+      ELSE
+        RETURN storeIn;
+      END;
+    END PopExceptionContext;
+  
   PROCEDURE Return (return: IR.Return);
     VAR
       instr: SSA.Instr;
@@ -1000,11 +1014,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         expr := Expression (return. result);
         
         instr := pb. AddInstr (Opcode.return, Opcode.scNone);
-        instr. AddOpnd (s, Opnd.store);
+        instr. AddOpnd (PopExceptionContext(s, return.popExceptionContext),
+                        Opnd.store);
         instr. AddOpnd (expr, Opnd.functionResult);
       ELSE
         instr := pb. AddInstr (Opcode.return, Opcode.scNone);
-        instr. AddOpnd (s, Opnd.store);
+        instr. AddOpnd (PopExceptionContext(s, return.popExceptionContext),
+                        Opnd.store);
       END;
       
       store := instr. AddResult (Result.store);
@@ -1349,6 +1365,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       instr: SSA.Instr;
       store: SSA.Result;
     BEGIN
+      s := PopExceptionContext(s, exit.popExceptionContext);
       instr := pb. AddInstr (Opcode.exit, Opcode.scNone);
       instr. AddOpnd (s, Opnd.store);
       
@@ -1356,6 +1373,69 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       pb. loopContext. AddOpnd (store, Opnd.storeExit);
       s := store
     END Exit;
+
+  PROCEDURE TryStatm(try: IR.TryStatm);
+    VAR
+      start, instr, e, end, typeTag, typeTest: SSA.Instr;
+      sDefault, sCatch, catchClause: SSA.Result;
+      i: LONGINT;
+    BEGIN
+      start := pb.AddInstr(Opcode.tryStart, Opcode.scBoolean);
+      start.AddOpnd(s, Opnd.store);
+      s := start.AddResult(Result.store);
+      
+      (* evaluate TRY body *)
+      instr := pb.AddInstr(Opcode.pushExceptionContext, Opcode.scNone);
+      instr.AddOpnd(s, Opnd.store);
+      s := StatmSeq(pb, instr.AddResult(Result.store), try.statmSeq);
+      sDefault := PopExceptionContext(s, 1);
+      
+      (* prepare CATCH block *)
+      s := PopExceptionContext(start.AddResult(Result.store), 1);
+      
+      (* get type tag of current exception *)
+      e := pb.AddInstr(Opcode.currentException, Opcode.scAddress);
+      e.AddOpnd(s, Opnd.store);
+      typeTag := pb.AddInstr(Opcode.typeTag, Opcode.scAddress);
+      typeTag.AddOpnd(e, Opnd.arg);
+      sCatch := s;
+      
+      (* prepare fall through path *)
+      instr := pb.AddInstr(Opcode.activateContext, Opcode.scNone);
+      instr.AddOpnd(s, Opnd.store);
+      s := instr.AddResult(Result.store);
+      
+      FOR i := LEN(try.catchList^)-1 TO 0 BY -1 DO
+        typeTest := pb.AddInstr(Opcode.typeTest, Opcode.scBoolean);
+        typeTest.AddOpnd(typeTag, Opnd.arg);
+        typeTest.AddOpnd(pb.GetTypeRef(try.catchList[i].exceptionType(Sym.Pointer).baseType), Opnd.type);
+
+        catchClause := StatmSeq(pb, sCatch, try.catchList[i].statmSeq);
+        instr := pb.AddInstr(Opcode.select, Opcode.scNone);
+        instr.AddOpnd(typeTest, Opnd.arg);
+        instr.AddOpnd(pb.GetConstBool(TRUE), Opnd.arg);
+        instr.AddOpnd(catchClause, Opnd.arg);
+        instr.AddOpnd(pb.GetConstBool(FALSE), Opnd.arg);
+        instr.AddOpnd(s, Opnd.arg);
+        s := instr.AddResult(Result.store);
+      END;
+      instr := pb.AddInstr(Opcode.clearException, Opcode.scNone);
+      instr.AddOpnd(s, Opnd.store);
+      s := instr.AddResult(Result.store);
+      
+      (* merge paths through body and CATCH block *)
+      instr := pb.AddInstr(Opcode.select, Opcode.scNone);
+      instr.AddOpnd(start, Opnd.arg);
+      instr.AddOpnd(pb.GetConstBool(FALSE), Opnd.arg);
+      instr.AddOpnd(sDefault, Opnd.arg);
+      instr.AddOpnd(pb.GetConstBool(TRUE), Opnd.arg);
+      instr.AddOpnd(s, Opnd.arg);
+      
+      (* create instruction marking the end of the block *)
+      end := pb.AddInstr(Opcode.tryEnd, Opcode.scNone);
+      end.AddOpnd(instr.AddResult(Result.store), Opnd.store);
+      s := end.AddResult(Result.store);
+    END TryStatm;
   
   PROCEDURE CopyParameter (cp: IR.CopyParameter);
     VAR
@@ -1384,6 +1464,18 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       
       RETURN instr;
     END MoveBlock;
+  
+  PROCEDURE Raise (raise: IR.Raise): SSA.Instr;
+    VAR
+      instr: SSA.Instr;
+      exception: SSA.Result;
+    BEGIN
+      exception := Expression (raise. exception);
+      instr := pb. AddInstr (Opcode.raiseException, Opcode.scNone);
+      instr. AddOpnd (s, Opnd.store);
+      instr. AddOpnd (exception, Opnd.arg);
+      RETURN instr;
+    END Raise;
   
   BEGIN
     FOR i := 0 TO LEN (statmSeq^)-1 DO
@@ -1423,6 +1515,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | statm: IR.Exit DO
         Exit (statm);
+
+      | statm: IR.TryStatm DO
+        TryStatm (statm);
         
       | statm: IR.Copy DO
         Chain (Copy (statm));
@@ -1435,6 +1530,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | statm: IR.MoveBlock DO
         Chain (MoveBlock (statm));
+
+      | statm: IR.Raise DO
+        Chain (Raise (statm));
       ELSE
         Log.Type("++ Unknown statement class in StatmSeq", statm);
         ASSERT (FALSE)

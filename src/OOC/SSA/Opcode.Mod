@@ -647,25 +647,64 @@ CONST
   failedWith* = 70;
   failedTypeAssert* = 71;
   
-  selectException* = 72;
-  (**Joins all possible exception paths within the procedure body.  Note:
-     This instruction is not implemented yet.  *)
+  tryStart* = 72;
+  (**Marks the beginning of a @code{TRY} block.
 
-  preloadedVar* = 73;
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+     @end table
+
+     The result of the instruction is an indicator which path through the
+     @code{TRY} statement should be taken.  @samp{FALSE} means the body,
+     @code{TRUE} the alternative path through the @code{CATCH} clauses.  The
+     value of the second argument.  This instruction has @emph{two} results for
+     @var{store}, the first (result index @samp{1}) for the body and the second
+     (result index @samp{2}) is used for the @code{CATCH} clauses.  *)
+  tryEnd* = 73;
+  (**Marks the end of a @code{TRY} block.  This instruction 2 operands
+     representing values of @var{store}.  The first operand is the @var{store}
+     at the end of the @code{TRY}'s body.  The second one holds the @var{store}
+     after processing the @code{CATCH} clauses.  *)
+  raiseException* = 74;
+  (**Raise an exception.  Takes @var{store} and the exception as
+     arguments and produces a new @var{store}.  *)
+  currentException* = 75;
+  (**Produces a pointer to the current exception.  Result is @code{NIL} if
+     there is no active exception.  Takes @var{store} as argument.  *)
+  clearException* = 76;
+  (**Clears the variable with the current exception.  Takes @var{store} as
+     argument and produces a new @var{store}.  *)
+  pushExceptionContext* = 77;
+  (**Puts the current exception handler context on the top of the stack.
+     This instruction takes a single argument, the @var{store} result of its
+     associated @oconst{tryStart} instruction.  It has one additional result:
+     the new @var{store}.  *)
+  popExceptionContext* = 78;
+  (**Removes one or more top entries from the stack of exception handlers.
+     Takes @var{store} as argument and produces a new @var{store}.  The second
+     argument is a positive integer constant with the number of contexts that
+     should be removed.  *)
+  activateContext* = 79;
+  (**Passes control to the top-level entry in the stack of exception handlers.
+     Takes @var{store} as argument and produces a new @var{store}.  This
+     operation never returns.  *)
+  
+  preloadedVar* = 80;
   (**Value of a variable that is defined as part of the module's
      initialization.  The instruction is both a placeholder for the value,
      and a description how the actual value is computed during run-time.
      The first argument is the name of a C function, optionally with a
      type cast prefix, followed by the arguments that should be passed to
      the function.  All arguments are constants.  *)
-     
-  labels* = 74;
+  
+  labels* = 81;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  Every
      range and every single value is represented by two consecutive operands,
      the lower and the upper bound.  All operands are of class
      @oconst{*OOC:SSA:Opnd.arg}  *)
   
-  dgate* = 75;
+  dgate* = 82;
   (**Represents a value of a designator at the position of an instruction that
      selects from different flows of control.  This opcode is used internally
      by @omodule{*OOC:SSA:Destore}, and should not appear outside this module.
@@ -848,9 +887,17 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | failedCase: cstr := "failed-case";
     | failedWith: cstr := "failed-with";
     | failedTypeAssert: cstr := "failed-type-assert";
-    | selectException: cstr := "select-exception";
     | preloadedVar: cstr := "preloaded-var";
 
+    | tryStart: cstr := "try-start";
+    | tryEnd: cstr := "try-end";
+    | raiseException: cstr := "raise-exception";
+    | currentException: cstr := "current-exception";
+    | clearException: cstr := "clear-exception";
+    | pushExceptionContext: cstr := "push-exception-context";
+    | popExceptionContext: cstr := "pop-exception-context";
+    | activateContext: cstr := "activate-context";
+      
     | dgate: cstr := "dgate";
     END;
     

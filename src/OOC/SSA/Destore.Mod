@@ -245,6 +245,19 @@ PROCEDURE (s: State) ClobberedBy* (readDesign: SSA.Opnd; instr: SSA.Instr): BOOL
    @oparam{instr}.  *)
   VAR
     alias: Aliasing.Id;
+
+  PROCEDURE ModuleVariable(adr: SSA.Result; moduleName: ARRAY OF CHAR): BOOLEAN;
+    VAR
+      module: Sym.Module;
+    BEGIN
+      WITH adr: SSA.Address DO
+        module := adr.decl.Module();
+        RETURN (adr.decl IS Sym.VarDecl) & (module.name.str^ = moduleName);
+      ELSE
+        RETURN FALSE;
+      END;
+    END ModuleVariable;
+  
   BEGIN
     (* Note: This predicate must mirror the rules of Transform.GetValue *)
 
@@ -260,11 +273,16 @@ PROCEDURE (s: State) ClobberedBy* (readDesign: SSA.Opnd; instr: SSA.Instr): BOOL
       Opcode.copyParameter, Opcode.exit, Opcode.return,
       Opcode.halt, Opcode.assert, Opcode.checkIndex, Opcode.checkPointer,
       Opcode.typeGuard, Opcode.failedTypeAssert,
-      Opcode.failedWith, Opcode.failedCase:
+      Opcode.failedWith, Opcode.failedCase,
+      Opcode.tryStart, Opcode.tryEnd, Opcode.activateContext,
+      Opcode.pushExceptionContext, Opcode.popExceptionContext:
       RETURN FALSE;
       
     | Opcode.call:
       RETURN AccessedByCall (s, instr. opndList. arg, readDesign, write);
+
+    | Opcode.clearException:
+      RETURN ModuleVariable(instr.opndList.arg, "Exception");
       
     | Opcode.moveBlock:
       RETURN TRUE;
@@ -473,9 +491,23 @@ PROCEDURE (s: State) Transform*;
         Opcode.copyParameter, Opcode.exit, Opcode.return,
         Opcode.halt, Opcode.assert, Opcode.checkIndex, Opcode.checkPointer,
         Opcode.typeGuard, Opcode.failedTypeAssert,
-        Opcode.failedWith, Opcode.failedCase:
+        Opcode.failedWith, Opcode.failedCase,
+        Opcode.clearException, Opcode.activateContext,
+        Opcode.pushExceptionContext, Opcode.popExceptionContext:
         RETURN GetValue (instr. GetArgClass (Opnd.store), get);
 
+      | Opcode.tryStart:
+        IF (store.ResultIndex() = 2) THEN  (* in CATCH part *)
+          RETURN instr. GetResultStore();
+        ELSE  (* in TRY body *)
+          RETURN GetValue (instr. GetArgClass (Opnd.store), get);
+        END;
+        
+      | Opcode.tryEnd:
+        (* We don't know which path through the TRY statement was taken,
+           which means we cannot know in general which values were set.  *)
+        RETURN instr. GetResultStore();
+        
       | Opcode.loopStart:
         RETURN GetLoopValue (instr);
         

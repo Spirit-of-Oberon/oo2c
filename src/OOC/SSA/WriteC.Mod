@@ -60,7 +60,7 @@ TYPE
   WriterDesc = RECORD
     (DeclWriter.WriterDesc)
     translator: Translator;
-    registerMap: Dictionary.Dictionary;
+    registerMap, jmpbufMap: Dictionary.Dictionary;
     procBlock: SSA.ProcBlock;
 
     swapArray: SwapArray;                (* used by WriteCollect *)
@@ -137,7 +137,7 @@ PROCEDURE SubclassToBasicType (res: SSA.Result): DeclWriter.BasicTypeId;
 PROCEDURE NewWriter (translator: Translator;
                      cWriter: DeclWriter.Writer;
                      procBlock: SSA.ProcBlock;
-                     registerMap: Dictionary.Dictionary): Writer;
+                     registerMap, jmpbufMap: Dictionary.Dictionary): Writer;
   VAR
     w: Writer;
   BEGIN
@@ -145,6 +145,7 @@ PROCEDURE NewWriter (translator: Translator;
     cWriter. CopyTo (w);
     w. procBlock := procBlock;
     w. registerMap := registerMap;
+    w. jmpbufMap := jmpbufMap;
     NEW (w. swapArray, 8);
     w. lengthSwapArray := 0;
     w. swapHelperVars := 0;
@@ -245,10 +246,12 @@ PROCEDURE (w: Writer) FixupHelperVars;
     END;
   END FixupHelperVars;
 
-PROCEDURE Fixup (pb: SSA.ProcBlock);
+PROCEDURE Fixup (pb: SSA.ProcBlock; VAR jmpbufMap: Dictionary.Dictionary);
   VAR
     instr: SSA.Instr;
+    num: ARRAY 16 OF CHAR;
   BEGIN
+    jmpbufMap := NIL;
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       CASE instr. opcode OF
@@ -261,6 +264,13 @@ PROCEDURE Fixup (pb: SSA.ProcBlock);
           instr. opndList. ReplaceArg
               (pb. GetDeclRef (instr. opndList. arg(SSA.Address). decl));
         END;
+
+      | Opcode.tryStart:
+        IF (jmpbufMap = NIL) THEN
+          jmpbufMap := Dictionary.New();
+        END;
+        IntStr.IntToStr(jmpbufMap.Size(), num);
+        jmpbufMap.Set(instr, Object.NewLatin1(num));
       ELSE (* nothing to do *)
       END;
       instr := instr. nextInstr
@@ -304,7 +314,7 @@ PROCEDURE WriteTypeAndLength (w: Writer; instr: SSA.Instr;
 
 
 PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
-                          pb: SSA.ProcBlock);
+                          pb: SSA.ProcBlock; volatile: BOOLEAN);
 (**Writes local declarations of the procedure, most of all local variables.  *)
   VAR
     declMap: Dictionary.Dictionary;
@@ -361,6 +371,9 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
             WriteTypeAndLength(w, instr, decl, FALSE);
           ELSIF ~decl. isParameter THEN
             cDecl := ConvertDecl.GetDecl (w, decl);
+            IF volatile THEN
+              cDecl.SetTypeQualifier(DeclWriter.tqVolatile);
+            END;
             w. Newline;
             w. WriteDeclaration (cDecl);
             w. WriteChar (";");
@@ -497,6 +510,12 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
 
       ELSIF (instr. opcode = Opcode.getLengthParam) THEN
         w. LengthExprParam (instr);
+        
+      ELSIF (instr.opcode = Opcode.tryStart) THEN
+        w.WriteString("setjmp(_target");
+        obj := w.jmpbufMap.Get(instr);
+        w.WriteStr(obj(STRING));
+        w.WriteString(")");
         
       ELSE
         (* provoke an C error if this value is used: *)
@@ -1218,6 +1237,9 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       END;
       Call (instr);
 
+    | Opcode.currentException:
+      w.WriteString("Exception__Current()");
+      
     | Opcode.preloadedVar:
       PreloadedVar(instr);
     END;
@@ -1230,6 +1252,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
     target: Object.Object;
     str: ARRAY 32 OF CHAR;
     opnd: SSA.Opnd;
+    obj: Object.Object;
     
   PROCEDURE WriteCollect (collect, targetInstr: SSA.Instr);
     VAR
@@ -1409,6 +1432,40 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
             END;
           END;
           
+        | Opcode.tryStart:
+          w.Newline;
+          w.WriteString("{");
+          w.Indent(1);
+        | Opcode.tryEnd:
+          w.WriteString(";");
+          w.Indent(-1);
+          w.Newline;
+          w.WriteString("}");
+        | Opcode.raiseException:
+          w.Newline;
+          w.WriteString("Exception__Raise((void*)");
+          w.Ref(instr.NthOpnd(1));
+          w.WriteString(");");
+        | Opcode.pushExceptionContext:
+          w.Newline;
+          w.WriteString("Exception__PushContext(&_context");
+          obj := w.jmpbufMap.Get(instr.opndList.arg.instr);
+          w.WriteStr(obj(STRING));
+          w.WriteString(", &_target");
+          w.WriteStr(obj(STRING));
+          w.WriteString(");");
+        | Opcode.popExceptionContext:
+          w.Newline;
+          w.WriteString("Exception__PopContext(");
+          w.WriteConst(instr.opndList.nextOpnd.arg(SSA.Const).value,
+                       Predef.GetType(Predef.longint));
+          w.WriteString(");");
+        | Opcode.clearException:
+          w.Newline;
+          w.WriteString("Exception__Clear();");
+        | Opcode.activateContext:
+          w.Newline;
+          w.WriteString("Exception__ActivateContext();");
         ELSE
           WriteExpr (w, instr);
           IF ~instr. IsConst() THEN  (* FIXME... omit ; for some getLength *)
@@ -1581,12 +1638,35 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     enter, instr: SSA.Instr;
     s: SSA.Result;
     domRoot: Schedule.Block;
-    registerMap: Dictionary.Dictionary;
+    registerMap, jmpbufMap: Dictionary.Dictionary;
     w: Writer;
     writeProc: BOOLEAN;
     destore: Destore.State;
     oldSize: LONGINT;
 
+  PROCEDURE WriteJmpBufDecl(jmpbufMap: Dictionary.Dictionary);
+    VAR
+      i: LONGINT;
+    BEGIN
+      IF (jmpbufMap # NIL) THEN
+        w.Newline;
+        w.WriteString("jmp_buf ");
+        FOR i := 0 TO jmpbufMap.Size()-1 DO
+          IF (i # 0) THEN w.WriteString(", ") END;
+          w.WriteString("_target"); w.WriteLInt(i, 0);
+        END;
+        w.WriteString(";");
+
+        w.Newline;
+        w.WriteString("Exception__Context ");
+        FOR i := 0 TO jmpbufMap.Size()-1 DO
+          IF (i # 0) THEN w.WriteString(", ") END;
+          w.WriteString("_context"); w.WriteLInt(i, 0);
+        END;
+        w.WriteString(";");
+      END;
+    END WriteJmpBufDecl;
+  
   PROCEDURE Write (pre, post: ARRAY OF CHAR);
     BEGIN
       IF writeProc &
@@ -1744,11 +1824,12 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       END;
     END;
     
-    Fixup (pb);
+    Fixup (pb, jmpbufMap);
     t. w. Indent (1);
     registerMap := Allocator.AssignRegisters (pb, domRoot, t. w);
-    w := NewWriter (t, t. w, pb, registerMap);
-    WriteLocalDecl (t, w, pb);
+    w := NewWriter (t, t. w, pb, registerMap, jmpbufMap);
+    WriteLocalDecl (t, w, pb, jmpbufMap # NIL);
+    WriteJmpBufDecl(jmpbufMap);
     IF proc.decl.IsModuleBody() THEN
       (* pick up any preloaded-var instructions in the module body, so that
          we can write them out at the beginning of the init function *)

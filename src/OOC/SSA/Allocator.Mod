@@ -275,7 +275,7 @@ PROCEDURE IdentifyResults (blockList: BlockList;
        a register to all uses of this value.  Note: Non-instruction results
        that produce tangible values are _always_ passed through registers.  *)
       BEGIN
-        RETURN ~instr. IsConst();
+        RETURN ~instr. IsConst() & (instr.opcode # Opcode.tryStart);
       END PassedThroughRegister;
 
     PROCEDURE RegisterResult (result: SSA.Result;
