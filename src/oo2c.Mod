@@ -60,6 +60,7 @@ PROCEDURE NewConfig;
                        "  <set name='TypeGuard'>FALSE</set>"+
                        "</pragmas>");
     Config.AddCmdLine ("--verbose,-v", "");  (* ignored for now *)
+    Config.AddCmdLine ("--warnings,-w", ""); (* ignored for now *)
     
     CCompiler.RegisterConfig;
   END NewConfig;
