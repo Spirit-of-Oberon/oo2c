@@ -1,7 +1,8 @@
 MODULE TestConfigSimple;
 
 IMPORT
-  Out, Err, Msg, Rts,
+  <*IF COMPILER_MAJOR=1 THEN*>Rts,<*ELSE*>RT0,<*END*>
+  Out, Err, Msg,
   Config:Simple, Config:Source:Environment, Config:Source:CmdLine,
   StringValue := Config:Value:String, Config:Section:Options,
   Config:Section:Arguments;
@@ -44,7 +45,11 @@ PROCEDURE WriteArgument (i: LONGINT);
   END WriteArgument;
 
 BEGIN
+<*IF COMPILER_MAJOR=1 THEN*>
   ASSERT (Rts.GetEnv (fileName, "DEFAULT_CFG_FILE"));
+<*ELSE*>
+  ASSERT (RT0.GetEnv ("DEFAULT_CFG_FILE", fileName));
+<*END*>
   config := Simple.New (fileName);
   
   optionA := config. options. Set ("a", StringValue.New ("default"));
