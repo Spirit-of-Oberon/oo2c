@@ -60,6 +60,19 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       ControlCP(instr);
     END FailedCheck;
   
+  PROCEDURE Memcpy(from, to, size: S.Result);
+    VAR
+      instr: S.Instr;
+    BEGIN
+      instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
+      instr.AddOpnd(to);
+      instr.AddOpnd(from);
+      instr.AddOpnd(size);
+      
+      MemoryCP(instr);
+      ControlCP(instr);
+    END Memcpy;
+  
   PROCEDURE StatmSeq(statmSeq: IR.StatementSeq);
   (**Translates the statement sequence @oparam{statmSeq} into a straightforward
      SSA representation.  Instructions are added to the block @ovar{b}.  *)
@@ -305,7 +318,6 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
     PROCEDURE Copy(copy: IR.Copy);
       VAR
         size, from, to: S.Result;
-        instr: S.Instr;
       BEGIN
         size := b.AddConstLength(copy.dest.type.size);
         from := Designator2Address(Expression(copy.source));
@@ -314,14 +326,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         IF copy.checkDynamicType THEN
           (* FIXME... *)
         END;
-        
-        instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
-        instr.AddOpnd(to);
-        instr.AddOpnd(from);
-        instr.AddOpnd(size);
-        
-        MemoryCP(instr);
-        ControlCP(instr);
+        Memcpy(from, to, size);
       END Copy;
 
     PROCEDURE MoveBlock(move: IR.MoveBlock);
@@ -759,7 +764,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             instr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(varDecl));
             adr := instr.AddResult(S.address);
             
-            IF varDecl.isPassPerReference THEN  (* indirect *)
+            IF varDecl.isPassPerReference &
+               ((*FIXME... need copy fir array*)(varDecl.type IS Sym.Array) OR
+                ~varDecl.hasLocalCopy) THEN  (* indirect *)
               instr := b.AddInstr1(S.get, adr);
               (*MemoryCP(instr);*)
               adr := instr.AddResult(S.address);
@@ -1269,9 +1276,37 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       END;
     END StatmSeq;
   
-  PROCEDURE FctProlog(b: S.FunctionBlock);
+  PROCEDURE FctProlog(b: S.FunctionBlock; statmSeq: IR.StatementSeq);
     VAR
       enter, pushFp, setFp, localVars: S.Instr;
+      i: LONGINT;
+      
+    PROCEDURE CopyParameter(cp: IR.CopyParameter);
+      VAR
+        var: Sym.VarDecl;
+        type: Sym.Type;
+        paramAdr, getAdr, varAdr: S.Instr;
+        from, to, size: S.Result;
+      BEGIN
+        var := cp.param.decl(Sym.VarDecl);
+        type := cp.param.type;
+        WITH type: Sym.Record DO
+          paramAdr := b.AddInstr2(S.add, fp,
+                                  b.AddConstLength(b.Offset(var, -1)));
+          getAdr := b.AddInstr1(S.get, paramAdr.AddResult(S.address));
+          from := getAdr.AddResult(S.address);
+
+          b.AllocateLocalVar(var);  (* overwrite old offset *)
+          varAdr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(var));
+          to := varAdr.AddResult(S.address);
+          
+          size := b.AddConstLength(type.size);
+          Memcpy(from, to, size);
+        | type: Sym.Array DO
+          (* FIXME *)
+        END;
+      END CopyParameter;
+    
     BEGIN
       enter := b.AddInstr0(S.enter);
       sp := enter.AddResultReg(S.address, S.sp);
@@ -1295,7 +1330,12 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       sp := localVars.AddResultReg(S.address, S.sp);
       ASSERT(sp.register = S.sp);
 
-      (* FIXME... deal with CopyParameter *)
+      (* deal with CopyParameter instructions *)
+      i := 0;
+      WHILE (i # LEN(statmSeq^)) & (statmSeq[i] IS IR.CopyParameter) DO
+        CopyParameter(statmSeq[i](IR.CopyParameter));
+        INC(i);
+      END;
     END FctProlog;
   
   PROCEDURE FctEpilog(b: S.FunctionBlock);
@@ -1320,7 +1360,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
   PROCEDURE Procedure(p: IR.Procedure);
     BEGIN
       b := NEW(S.FunctionBlock, p.decl, p.checkFunctionResult);
-      FctProlog(b);
+      FctProlog(b, p.statmSeq);
       StatmSeq(p.statmSeq);
       FctEpilog(b);
 
