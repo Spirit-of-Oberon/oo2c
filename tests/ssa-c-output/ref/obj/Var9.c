@@ -8,15 +8,16 @@ static void Var9__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
   i1=0;
 l1_loop:
   i2 = i1!=i0;
-  i3 = i1+1;
   if (i2) goto l5;
   goto l7;
 l5:
+  i3 = i1+1;
   i4 = i1*1;
   i4 = (OOC_INT32)str+i4;
   *(OOC_UINT8*)i4 = '\000';
-l6:
   i1=i3;
+l6:
+  
   goto l1_loop;
 l7:
 }

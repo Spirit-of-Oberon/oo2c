@@ -63,11 +63,11 @@
 
     <test id="var6" type="run" file="Var6.Mod" output="Var6.Ref">
       A combination of test cases <code>var4</code> and
-      <code>var5</code>: one branche of the <code>IF</code> sets the
+      <code>var5</code>: one branch of the <code>IF</code> sets the
       global variable through an assignment, the other by means of a
       side-effect of a procedure call.  There should be one read of
-      the global variable <code>x</code>, right after the procedure
-      call with the side-effect.
+      the global variable <code>x</code>, right after the
+      <code>IF</code> statement.
     </test>
 
     <test id="var6b" type="run" file="Var6b.Mod" output="Var6b.Ref">
