@@ -30,7 +30,7 @@ OOC_INT32 _cmp8(const OOC_CHAR8* l, const OOC_CHAR8* r) {
   return ((OOC_INT32)*l-(OOC_INT32)*r);
 }
 
-OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r) {
+OOC_INT32 _cmp16(const OOC_CHAR16* l, const OOC_CHAR16* r) {
   while ((*l == *r) && *l) { l++; r++; }
   return ((OOC_INT32)*l-(OOC_INT32)*r);
 }
