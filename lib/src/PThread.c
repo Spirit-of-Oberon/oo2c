@@ -7,6 +7,10 @@
 #include <pthread.h>
 #include <signal.h>
 
+#if defined(HAVE_LIBGC) && defined(HAVE_GC_GC_H)
+#  include <gc/gc.h>
+#endif
+
 
 void PThread__ErrorDesc_INIT(PThread__Error e, Object__String msg,
 			     OOC_INT32 errorCode) {

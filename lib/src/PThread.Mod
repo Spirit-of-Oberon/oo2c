@@ -7,9 +7,7 @@ IMPORT
 (**This is an experimental and preliminary interface to the pthread library.
    Threads and exceptions are not integrated yet.  The garbage collector must
    have been compiled with pthread support as well, or the heap may go down in
-   flames.  But I was not able to get this to work with a thread-safe gc at all
-   on my Linux box.  And the heap went down in flames.  Which makes this module
-   pretty useless for the moment.  *)
+   flames.  *)
    
 TYPE
   Error* = POINTER TO ErrorDesc;
