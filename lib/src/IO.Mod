@@ -163,6 +163,12 @@ TYPE
   (**This exception is raised if a C function returns a @samp{ERANGE} error. *)
     (ErrorDesc)
   END;
+  NegativeReply* = POINTER TO NegativeReplyDesc;
+  NegativeReplyDesc = RECORD
+  (**Raised if the remote side of a conversation sends a reply with an error
+     status code.  *)
+    (ErrorDesc)
+  END;
 
 TYPE
   NotImplemented* = POINTER TO NotImplementedDesc;
