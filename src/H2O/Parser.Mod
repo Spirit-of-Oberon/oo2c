@@ -2,7 +2,7 @@ MODULE H2O:Parser [OOC_EXTENSIONS];
 
 IMPORT
   SYSTEM, Out, Log,
-  Object, Object:Boxed, ADT:StringBuffer, ADT:ArrayList,
+  Object, Object:Boxed, ADT:StringBuffer, ADT:ArrayList, ADT:Dictionary,
   H2O:Error, H2O:Scanner, H2O:Process, H2O:Module, T := H2O:Type;
 
 CONST
@@ -857,9 +857,15 @@ VAR
         (* constant real *)
         result := NEW(Boxed.LongReal, token.rvalue); GetSym;
 
-      ELSIF (token.sym = Scanner.string) & (token.name.length = 3) THEN
-        (* constant character *)
-        result := NEW(Boxed.LongInt, ORD(token.name.CharAt(1))); GetSym;
+      ELSIF (token.sym = Scanner.string) THEN
+        IF (token.name.length = 3) THEN
+          (* constant character *)
+          result := NEW(Boxed.LongInt, ORD(token.name.CharAt(1)));
+        ELSE
+          (* string *)
+          result := NEW(Boxed.String, token.name); 
+        END;
+        GetSym;
 
       ELSIF token.sym = Scanner.lbracket THEN
         (* bracket indicates either a nested expression OR a type cast *)
@@ -1123,6 +1129,45 @@ BEGIN
   END;
 END Declaration;
 
+PROCEDURE ParseMacro(m : Process.Macro);
+VAR 
+  result : Boxed.Object;
+  options : SET;
+BEGIN
+  ASSERT(token.sym = Scanner.endFile);
+  IF m.function THEN RETURN END;
+
+  options := err.options;
+  err.options := {};
+  err.count := 0;
+
+  process.PushMacro(m); GetSym;
+  EvalExpr(result);
+
+  IF err.count = 0 THEN
+    Out.Object(m.name);
+    Out.String(" = ");
+    Out.Object(result);
+    Out.Ln;
+  END;
+  WHILE token.sym # Scanner.endFile DO
+    GetSym;
+  END;
+  err.options := options;
+END ParseMacro;
+
+PROCEDURE ParseMacros;
+VAR 
+  items : Dictionary.ItemArrayPtr(STRING,Process.Macro);
+  i : LONGINT;
+BEGIN
+  Log.Msg("Parsing macros");
+  items := process.macro.Items();
+  FOR i := 0 TO LEN(items^)-1 DO
+    ParseMacro(items[i].value);
+  END;
+END ParseMacros;
+
 (*
 > Body ::= { Declaration ";" }.
 *)
@@ -1134,6 +1179,7 @@ BEGIN
     Declaration();
     Expect(Scanner.semicolon);
   END;
+  ParseMacros;
 END Body;
 
 PROCEDURE Evaluate*;
