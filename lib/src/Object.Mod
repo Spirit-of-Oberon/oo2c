@@ -235,7 +235,7 @@ PROCEDURE (x: Object) Equals*(y: Object): BOOLEAN;
 PROCEDURE (x: Object) HashCode*(): Hash;
 (**Returns a hash code value for the object.  This method is supported for the
    benefit of dictionaries such as those provided by
-   @omodule{*ADT:Dictionary}..
+   @omodule{*ADT:Dictionary}.
 
    The general contract of @oproc{Object.HashCode} is:
 
