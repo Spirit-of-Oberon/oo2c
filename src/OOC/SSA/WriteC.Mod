@@ -1175,7 +1175,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
                            proc. statmSeq);
     pb. selectReturn. AddOpnd (s, Opnd.store);
 
-    Blocker.Write (StdChannels.stdout, pb);
+    (*Blocker.Write (StdChannels.stdout, pb);*)
     
     (* code transformations *)
     Write ("initial", "dce-pre");
