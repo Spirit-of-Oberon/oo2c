@@ -951,6 +951,19 @@ PROCEDURE (instr: Instr) IsSync*(): BOOLEAN;
     END;
   END IsSync;
 
+PROCEDURE (instr: Instr) IsSwitchStatm*(): BOOLEAN;
+(**Return @code{TRUE} if the instruction is a select with arbitrary many
+   paths originating in a @code{CASE} statement.  Otherwise, the select is of
+   type boolean with exactly two paths.  *)
+  BEGIN
+    ASSERT (instr. opcode = Opcode.select);
+    (* a "switch" select either has only a single branch (the default) or
+       it has an operand refering to a "label" statement *)
+    RETURN
+        (instr. GetOpndClass (OpndClass.labels) # NIL) OR
+        (instr. CountOpndClass (OpndClass.arg) < 4);
+  END IsSwitchStatm;
+
 (* ---------------------------------------------------------------------- *)
 
 PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
