@@ -74,15 +74,39 @@ void IO_Socket__SocketDesc_Bind(IO_Socket__Socket s,
   }
 }
 
-void IO_Socket__SocketDesc_Connect(IO_Socket__Socket s,
-				    IO_Address__Socket endPoint) {
+OOC_BOOLEAN IO_Socket__SocketDesc_Connect(IO_Socket__Socket s,
+					  IO_Address__Socket endPoint) {
   struct sockaddr *addr;
   
   addr = (struct sockaddr *)
     OOC_METHOD(endPoint,IO_Address__SocketDesc_GetSockAddr)(endPoint);
   if (connect(s->fd, addr, OOC_ARRAY_LENGTH(addr,0)) < 0) {
-    IO_StdChannels__IOError(NULL);
+    if (errno == EINPROGRESS) {
+      return OOC_FALSE;
+    } else {
+      IO_StdChannels__IOError(NULL);
+    }
+  } else {
+    return OOC_TRUE;
   }
+}
+
+OOC_BOOLEAN IO_Socket__SocketDesc_FinishConnect(IO_Socket__Socket s) {
+  int error, len, rc;
+  
+  len = sizeof(error);
+  rc = getsockopt(s->fd, SOL_SOCKET, SO_ERROR, (void*)&error, &len);
+  if (rc < 0) {
+    IO_StdChannels__IOError(NULL);	/* Solaris pending error */
+  } else {
+    /* Berkeley-derived implementations return an rc of 0, with the
+       pending error returned in error */
+    if (error) {
+      errno = error;
+      IO_StdChannels__IOError(NULL);
+    }
+  }
+  return OOC_TRUE;
 }
 
 IO_Address__Socket IO_Socket__SocketDesc_RemoteAddress(IO_Socket__Socket s) {

@@ -53,10 +53,18 @@ RAISES IO.Error;
    If the address is @code{NIL}, then the system will pick up an ephemeral port
    and a valid local address to bind the socket.  *)
   
-PROCEDURE (s: Socket) Connect*(endPoint: Address.Socket)
+PROCEDURE (s: Socket) Connect*(endPoint: Address.Socket): BOOLEAN
 RAISES IO.Error;
-(**Connect this socket to the remote end point.  *)
+(**Connect this socket to the remote end point.  Result is @code{TRUE} if
+   the connection has been established, and @code{FALSE} if the process is
+   still in progress when this method returns.  *)
   
+PROCEDURE (s: Socket) FinishConnect*(): BOOLEAN
+RAISES IO.Error;
+(**Try to complete socket connect after @oproc{Socket.Connect} has been called
+   on a non-blocking socket.  Result is @code{TRUE} on success, and
+   @code{FALSE} if the connection process cannot be completed at this time.  *)
+
 PROCEDURE (s: Socket) RemoteAddress*(): Address.Socket
 RAISES IO.Error;
 (**Returns the address of the remove end of a connection.  *)
