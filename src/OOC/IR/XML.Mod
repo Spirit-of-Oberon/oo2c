@@ -170,10 +170,14 @@ PROCEDURE VisitStatementSeq (v: Visitor; statmSeq: IR.StatementSeq);
 PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
     v. w. StartTag ("if-statm", FALSE);
+    v. w. StartTag ("guard", FALSE);
     ifStatm. guard. Accept (v);
+    v. w. EndTag;  (* guard *)
+    
     v. w. StartTag ("path-true", FALSE);
     VisitStatementSeq (v, ifStatm. pathTrue);
     v. w. EndTag;  (* path-true *)
+    
     IF (ifStatm. pathFalse # NIL) THEN
       v. w. StartTag ("path-false", FALSE);
       VisitStatementSeq (v, ifStatm. pathFalse);
@@ -181,6 +185,18 @@ PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
     END;
     v. w. EndTag;  (* if-statm *)
   END VisitIfStatm;
+
+PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
+  BEGIN
+    v. w. StartTag ("repeat-statm", FALSE);
+    v. w. StartTag ("body", FALSE);
+    VisitStatementSeq (v, repeatStatm. body);
+    v. w. EndTag;  (* body *)
+    v. w. StartTag ("exit-condition", FALSE);
+    repeatStatm. exitCondition. Accept (v);
+    v. w. EndTag;  (* exit-condition *)
+    v. w. EndTag;  (* repeat-statm *)
+  END VisitRepeatStatm;
 
 
 PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);

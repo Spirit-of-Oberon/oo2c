@@ -1,6 +1,7 @@
 MODULE OOC:IR:Operator [OOC_EXTENSIONS];
 
 IMPORT
+  Log,
   OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, OOC:SymbolTable:Item,
   OOC:IR;
 

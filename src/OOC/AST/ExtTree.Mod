@@ -379,10 +379,10 @@ TYPE
   RepeatStatm* = POINTER TO RepeatStatmDesc;
   RepeatStatmDesc = RECORD
     (NodeDesc)
-    repeat-: AST.Node;
-    statmSeq-: AST.NodeList;
-    until-: AST.Node;
-    expr-: AST.Node;
+    repeat-: Terminal;
+    statmSeq-: NodeList;
+    until-: Terminal;
+    expr-: Node;
   END;
 
 TYPE
@@ -1328,10 +1328,10 @@ PROCEDURE (b: Builder) RepeatStatm* (repeat: AST.Node; statmSeq: AST.NodeList; u
     r: RepeatStatm;
   BEGIN
     NEW (r);
-    r. repeat := repeat;
-    r. statmSeq := statmSeq;
-    r. until := until;
-    r. expr := expr;
+    r. repeat := repeat(Terminal);
+    r. statmSeq := statmSeq(NodeList);
+    r. until := until(Terminal);
+    r. expr := expr(Node);
     RETURN r
   END RepeatStatm;
 

@@ -88,7 +88,13 @@ CONST
   storeReturn* = 12;
   (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the value
      of @var{store} after a @code{RETURN} statement.  *)
-     
+
+  forwardRef* = 13;
+  (**Operand is a forward reference to a value that depends on the current
+     instruction.  That is, this operand introduces a cycle in the graph
+     representing the data flow, and must be treated specially in some
+     algorithms.  Forward references are used to model loops.  See
+     @oconst{*OOC:SSA:Opcode.loopStart}.  *)
   
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)
@@ -103,6 +109,7 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | writeDesign: COPY ("write-design", name)
     | sourceValue: COPY ("source-value", name)
     | functionResult: COPY ("function-result", name)
+    | forwardRef: COPY ("forward-ref", name)
     END;
   END GetName;
   

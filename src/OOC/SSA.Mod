@@ -785,7 +785,8 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
     instr, next: Instr;
     ready, waiting: Instr;
     res: Result;
-    use: Opnd;
+    use, opnd: Opnd;
+    opndCount: LONGINT;
 
   PROCEDURE Add (VAR list: Instr; instr: Instr);
     BEGIN
@@ -816,8 +817,18 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       next := instr. nextInstr;
-      instr. marker := instr. SizeOpndList();
-      IF (instr. marker = 0) THEN
+
+      opndCount := 0;
+      opnd := instr. opndList;
+      WHILE (opnd # NIL) DO
+        IF (opnd. class # OpndClass.forwardRef) THEN
+          INC (opndCount)
+        END;
+        opnd := opnd. nextOpnd;
+      END;
+      
+      instr. marker := opndCount;
+      IF (opndCount = 0) THEN
         Add (ready, instr)
       ELSE
         Add (waiting, instr)
@@ -838,10 +849,12 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
       WHILE (res # NIL) DO
         use := res. useList;
         WHILE (use # NIL) DO
-          DEC (use. instr. marker);
-          IF (use. instr. marker = 0) THEN
-            Remove (waiting, use. instr);
-            Add (ready, use. instr)
+          IF (use. class # OpndClass.forwardRef) THEN
+            DEC (use. instr. marker);
+            IF (use. instr. marker = 0) THEN
+              Remove (waiting, use. instr);
+              Add (ready, use. instr)
+            END;
           END;
           use := use. nextUse
         END;

@@ -2,7 +2,8 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Language:Boolean, Language:String8, Language:Integer,
+  Language, Language:Boolean, Language:Char8, Language:String8,
+  Language:Integer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   SymbolId := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
@@ -227,6 +228,15 @@ TYPE
     pathFalse-: StatementSeq;  (* NIL if the IF statement has no ELSE *)
   END;
   
+ TYPE
+  RepeatStatm* = POINTER TO RepeatStatmDesc;
+  RepeatStatmDesc = RECORD
+    (**Holds an @code{REPEAT-UNTIL} statement.  *)
+    (StatementDesc)
+    body-: StatementSeq;
+    exitCondition-: Expression;
+  END;
+  
 (* Modules and Procedures
    ------------------------------------------------------------------------ *)
 
@@ -279,6 +289,7 @@ CONST
   undeclaredIdent = 1;
   expectedIdent = 2;
   numberOutOfRange = 3;
+  characterOutOfRange = 4;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -300,6 +311,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expected identifier"
     | numberOutOfRange:
       t := "Number out of range"
+    | characterOutOfRange:
+      t := "Character value out of range"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -406,6 +419,19 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
       RETURN NewConst (sym, Predef.GetType (Predef.integer), v)
     END
   END NewIntConst10;
+
+PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
+  VAR
+    v: Language.Value;
+  BEGIN
+    v := Char8.type. ValueOf (sym. str^);
+    IF (v = NIL) THEN
+      b. ErrSym (characterOutOfRange, sym);
+      RETURN errorExpr
+    ELSE
+      RETURN NewConst (sym, Predef.GetType (Predef.char), v)
+    END
+  END NewCharConst16;
 
 (* -------- *)
 
@@ -695,6 +721,34 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitIfStatm* (ifStatm: IfStatm);
 PROCEDURE (ifStatm: IfStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitIfStatm (ifStatm)
+  END Accept;
+
+(* -------- *)
+
+PROCEDURE InitRepeatStatm (repeatStatm: RepeatStatm; sym: Symbol;
+                           body: StatementSeq; exitCondition: Expression);
+  BEGIN
+    InitStatement (repeatStatm, sym);
+    repeatStatm. body := body;
+    repeatStatm. exitCondition := exitCondition;
+  END InitRepeatStatm;
+
+PROCEDURE (b: Builder) NewRepeatStatm* (sym: Symbol; body: StatementSeq;
+                                        exitCondition: Expression):RepeatStatm;
+  VAR
+    repeatStatm: RepeatStatm;
+  BEGIN
+    NEW (repeatStatm);
+    InitRepeatStatm (repeatStatm, sym, body, exitCondition);
+    RETURN repeatStatm
+  END NewRepeatStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitRepeatStatm* (repeatStatm: RepeatStatm);
+  END VisitRepeatStatm;
+
+PROCEDURE (repeatStatm: RepeatStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitRepeatStatm (repeatStatm)
   END Accept;
 
 (* -------- *)

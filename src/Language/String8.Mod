@@ -19,6 +19,12 @@ VAR
   typeName: String.String;
   empty: Value;
 
+PROCEDURE Init (v: Value; value: String.String);
+  BEGIN
+    L.InitValue (v, type);
+    v.value := value;
+  END Init;
+
 PROCEDURE New* (value: String.String): Value;
   VAR
     v: Value;
@@ -27,8 +33,7 @@ PROCEDURE New* (value: String.String): Value;
       RETURN empty
     ELSE
       NEW(v);
-      L.InitValue (v, type);
-      v.value := value;
+      Init (v, value);
       RETURN v
     END
   END New;
@@ -108,5 +113,7 @@ BEGIN
   NEW(type);
   L.InitType (type);
   typeName := String.New ("String8");
-  empty := New (String.New (""));
+
+  NEW (empty);
+  Init (empty, String.New (""));
 END Language:String8.

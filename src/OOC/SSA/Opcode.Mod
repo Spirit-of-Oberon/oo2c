@@ -102,7 +102,45 @@ CONST
      or procedure.
      @end table  *)
 
-  get* = 7;
+  loopStart* = 7;
+  (**Marks the beginning of a loop construct.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The value of @var{store} before the loop.  This is the input value for the
+     first iteration of the loop.
+
+     @item *OOC:SSA:Opnd.forwardRef
+     The value of store at the end of the loop.  If the loop is evaluted again,
+     then it serves as the input value for the next iteration.
+     @end table
+
+     There is one result, the value of @var{store} as seen by the loop
+     body when an iteration begins.  *)
+  loopEnd* = 8;
+  (**Marks the end of a loop construct.  It has
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.arg
+     Reference to the corresponding @oconst{loopStart} instruction.
+
+     @item *OOC:SSA:Opnd.store
+     Value of @var{store} once evaluation of the loop is done.
+
+     @item *OOC:SSA:Opnd.arg
+     The exit predicate of the loop.  A boolean value.
+
+     @item *OOC:SSA:Opnd.arg
+     The exit conditional of the loop, a boolean constant.  If the value of the
+     preceding argument equals this value, then the loop is exited.  Otherwise,
+     its body is evaluted again, using the second argument of
+     @oconst{loopEnd} as its current @var{store}.
+     @end table
+
+     There is one result, the value of @var{store} as seen by the first
+     instruction after the loop.  *)
+  
+  get* = 9;
   (**Retrieves the value of a variable.  The operands of the instruction and
      their class ids are in this order:
 
@@ -119,28 +157,29 @@ CONST
      non-heap variables, the first entry in the designator is a reference to
      the declaration of the accessed variable.
      @end table  *)
-  set* = 8;
-  copy* = 9;
+  set* = 10;
+  copy* = 11;
 
-  add* = 10;
-  (**Addition operator.  The two operands must be of the same type, which
-     is at the same time the result of the operation.  (Question: What types
-     are used in address arithmetic?  Should address be treated as unsigned
-     or signed? FIXME...) *)
-  subtract* = 11;
-  negate* = 12;
-  multiply* = 13;
-  divide* = 14;
+  add* = 12;
+  (**Addition operator.  The two operands must be of the same type, which is at
+     the same time the result of the operation.  There is one exception to this
+     rule: if one of the operands is of type @oconst{scAddress}, then the other
+     operand can be any integer type, signed or unsigned, and the result type
+     is @oconst{scAddress}.  *)
+  subtract* = 13;
+  negate* = 14;
+  multiply* = 15;
+  divide* = 16;
 
-  eql* = 15;
-  neq* = 16;
-  lss* = 17;
-  leq* = 18;
-  gtr* = 19;
-  geq* = 20;
+  eql* = 17;
+  neq* = 18;
+  lss* = 19;
+  leq* = 20;
+  gtr* = 21;
+  geq* = 22;
   
-  assert* = 21;
-  call* = 22;
+  assert* = 23;
+  call* = 24;
 
 CONST
   scNone* = 0;
@@ -194,6 +233,14 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | declRef: cstr := "declref";
     | address: cstr := "address";
 
+    | enter: cstr := "enter";
+    | select: cstr := "select";
+    | return: cstr := "return";
+    | selectReturn: cstr := "select-return";
+    | loopStart: cstr := "loop-start";
+    | loopEnd: cstr := "loop-end";
+      
+      
     | get: cstr := "get";
     | set: cstr := "set";
     | copy: cstr := "copy";
@@ -210,11 +257,6 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | leq: cstr := "leq";
     | gtr: cstr := "gtr";
     | geq: cstr := "geq";
-      
-    | enter: cstr := "enter";
-    | select: cstr := "select";
-    | return: cstr := "return";
-    | selectReturn: cstr := "select-return";
       
     | assert: cstr := "assert";
     | call: cstr := "call";

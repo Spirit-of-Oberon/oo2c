@@ -183,7 +183,9 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
            operand list *)
         opnd := instr. opndList;
         WHILE (opnd # NIL) DO
-          AssignId (opnd. arg. instr);
+          IF (opnd. class # Opnd.forwardRef) THEN
+            AssignId (opnd. arg. instr);
+          END;
           opnd := opnd. nextOpnd
         END;
         

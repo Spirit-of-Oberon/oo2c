@@ -326,6 +326,12 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         
       | Opcode.select:
         (* nothing *)
+
+      | Opcode.loopStart:
+        (* nothing *)
+        
+      | Opcode.loopEnd:
+        (* nothing *)
         
       | Opcode.get:
         w. WriteString ("*(");
@@ -449,7 +455,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
           IF ~b. branchOnTrue THEN
             w. WriteChar("!");
           END;
-          w. Ref (b. select. opndList);
+          w. Ref (b. predicate);
           w. WriteString (") ");
           WriteGoto (b. branchTo);
           WriteBlock (b. jump);

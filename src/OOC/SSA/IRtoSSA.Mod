@@ -179,6 +179,32 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       s := select. AddResult (Result.store)
     END IfStatm;
+
+  PROCEDURE RepeatStatm (repeatStatm: IR.RepeatStatm);
+    VAR
+      start, end: SSA.Instr;
+      exit: SSA.Result;
+    BEGIN
+      start := pb. AddInstr (Opcode.loopStart, Opcode.scNone);
+      start. AddOpnd (s, Opnd.store);
+      s := start. AddResult (Result.store);
+      
+      (* evaluate loop body, followed by the exit condition *)
+      s := StatmSeq (pb, s, repeatStatm. body);
+      exit := Expression (repeatStatm. exitCondition);
+      
+      (* create "loop-end" instruction *)
+      end := pb. AddInstr (Opcode. loopEnd, Opcode.scNone);
+      end. AddOpnd (start, Opnd.arg);
+      end. AddOpnd (s, Opnd.store);
+      end. AddOpnd (exit, Opnd.arg);
+      end. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
+
+      (* add forward reference from "loop-start" to `store' at end of loop *)
+      start. AddOpnd (s, Opnd.forwardRef);
+      
+      s := end. AddResult (Result.store)
+    END RepeatStatm;
   
   BEGIN
     FOR i := 0 TO LEN (statmSeq^)-1 DO
@@ -199,6 +225,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | statm: IR.IfStatm DO
         IfStatm (statm)
+
+      | statm: IR.RepeatStatm DO
+        RepeatStatm (statm)
+            
       ELSE
         Log.Type("++ Unknown statement class in StatmSeq", statm);
         ASSERT (FALSE)

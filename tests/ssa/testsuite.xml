@@ -18,11 +18,11 @@
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
-  designator1 function6">
+  designator1 function6 loop1">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module function6">-->
+  select ="prepare_out_module loop1">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -98,6 +98,11 @@
       file="HOTFunction6.Mod" output="HOTFunction6.Ref">
       Simple functions: Compare character parameter with constant
       character and return different integer values depending on the result.
+    </test>
+
+    <test id="loop1" type="run"
+      file="HOTLoop1.Mod" output="HOTLoop1.Ref">
+      Loop variant <code>REPEAT-UNTIL</code>: Calculate string length.
     </test>
   </testcases>
   
