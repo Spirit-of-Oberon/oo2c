@@ -92,6 +92,8 @@ RAISES IO.Error;
 PROCEDURE (ch: Channel) Close*() RAISES IO.Error;
   BEGIN
     ch.Close^();
+    ch.connected := FALSE;
+    ch.connectionPending := FALSE;
     ch.socket.Close();
   END Close;
 
