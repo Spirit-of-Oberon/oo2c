@@ -85,14 +85,14 @@ TYPE
     (IO.ErrorDesc) 
   END;
 
-PROCEDURE NewTypeError*(msg: STRING): TypeError;
+PROCEDURE RaiseTypeError*(msg: STRING) RAISES TypeError;
   VAR
     e: TypeError;
   BEGIN
     NEW(e);
     IO.InitError(e, "Unknown type");
-    RETURN e;
-  END NewTypeError;
+    RAISE(e);
+  END RaiseTypeError;
 
 
 PROCEDURE Init* (obj: Object);
@@ -118,7 +118,7 @@ PROCEDURE (obj: Object) Destroy* ;
 (* Externalize/Internalize Methods
    ======================================================================== *)
    
-PROCEDURE (obj: Object) [ABSTRACT] Store* (w: Writer);
+PROCEDURE (obj: Object) [ABSTRACT] Store* (w: Writer) RAISES IO.Error;
 (**Stores data of @oparam{obj} to @oparam{w}.  Nested record pointers are
    stored by calling the type-bound procedure @oproc{Writer.WriteObject}.  The
    procedure is not allowed to make any changes to the global state of the
@@ -132,7 +132,7 @@ PROCEDURE (obj: Object) [ABSTRACT] Store* (w: Writer);
    @end precond  *)
   END Store;
 
-PROCEDURE (obj: Object) [ABSTRACT] Load* (r: Reader);
+PROCEDURE (obj: Object) [ABSTRACT] Load* (r: Reader) RAISES IO.Error;
 (**Loads data of @oparam{obj} from @oparam{r}.  Nested record pointers are
    loaded by calling the type-bound procecdure @oproc{Reader.ReadObject}.  This
    procedure must be symmetric to @oproc{Object.Store}, or data internalization
@@ -167,7 +167,7 @@ PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel);
     BinaryRider.InitReader (r, ch, BinaryRider.littleEndian)
   END InitReader;
 
-PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Object);
+PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Object) RAISES IO.Error;
 (**Writes object to the channel underlying the writer @oparam{w}.  The
    externalization framework is provided by the concrete instance of writer
    @oparam{w}.  The object itself is required to provide the necessary
@@ -187,7 +187,7 @@ PROCEDURE (w: Writer) [ABSTRACT] Disconnect*;
    all operations on @oparam{w} are undefined.  *)
   END Disconnect;
 
-PROCEDURE (r: Reader) [ABSTRACT] ReadObject* (VAR obj: Object);
+PROCEDURE (r: Reader) [ABSTRACT] ReadObject* (VAR obj: Object) RAISES IO.Error;
 (**Reads an object reference from the channel underlying the reader @oparam{r}.
    The object @oparam{obj} itself is required to provide the necessary
    type-bound procedure @oproc{Object.Load} to restore its own data from

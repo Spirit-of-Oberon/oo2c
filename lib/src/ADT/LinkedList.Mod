@@ -20,7 +20,7 @@ MODULE ADT:LinkedList;
 *)
 
 IMPORT
-  ADT:Storable, Object;
+  ADT:Storable, Object, IO;
 
 TYPE
   Entry = POINTER TO EntryDesc;
@@ -381,7 +381,7 @@ PROCEDURE (l: LinkedList) HashCode* (): LONGINT;
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END HashCode;
 
-PROCEDURE (l: LinkedList) Store* (w: Storable.Writer);
+PROCEDURE (l: LinkedList) Store* (w: Storable.Writer) RAISES IO.Error;
 VAR
   e : Entry;
   obj: Object.Object;
@@ -399,7 +399,7 @@ BEGIN
   END;
 END Store;
 
-PROCEDURE (l: LinkedList) Load* (r: Storable.Reader);
+PROCEDURE (l: LinkedList) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     o : Storable.Object;
     i, size: LONGINT;

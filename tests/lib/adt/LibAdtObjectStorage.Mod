@@ -13,14 +13,14 @@ TYPE
     written: BOOLEAN;
   END;
 
-PROCEDURE (d: Data) Store* (w: Storable.Writer);
+PROCEDURE (d: Data) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     w.WriteObject(d.next);
     w.WriteString(d.name);
     w.WriteNum(d.num);
   END Store;
 
-PROCEDURE (d: Data) Load* (r: Storable.Reader);
+PROCEDURE (d: Data) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN

@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE ADT:Dictionary:AddressKey;
 (*  A dictionary implementation using objects' addresses as keys.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -39,7 +39,7 @@ MODULE ADT:Dictionary:AddressKey;
    @end itemize  *)
 
 IMPORT
-  S := SYSTEM, ADT:Storable, Object;
+  S := SYSTEM, ADT:Storable, Object, IO;
 
 
 TYPE
@@ -463,7 +463,7 @@ PROCEDURE (dict: Dictionary) HashCode* (): LONGINT;
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END HashCode;
 
-PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer);
+PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Object.Object;
@@ -489,7 +489,7 @@ PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer);
     END
   END Store;
 
-PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader);
+PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Storable.Object;

@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE Object:Boxed;
 (*  Implements object representations for predefined types.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -29,7 +29,7 @@ MODULE Object:Boxed;
 
 IMPORT
   SYSTEM, IntStr, RealStr, LRealStr, Strings,
-  Obj := Object, ADT:Storable, ADT:StringBuffer;
+  Obj := Object, IO, ADT:Storable, ADT:StringBuffer;
 
 TYPE
   Object* = POINTER TO ObjectDesc;
@@ -139,7 +139,7 @@ PROCEDURE (v: Boolean) ToString*(): Obj.String;
     END;
   END ToString;
 
-PROCEDURE (v: Boolean) Store*(w: Storable.Writer);
+PROCEDURE (v: Boolean) Store*(w: Storable.Writer) RAISES IO.Error;
   BEGIN
     IF v.value THEN
       w.WriteSInt(1);
@@ -148,7 +148,7 @@ PROCEDURE (v: Boolean) Store*(w: Storable.Writer);
     END;
   END Store;
 
-PROCEDURE (v: Boolean) Load*(r: Storable.Reader);
+PROCEDURE (v: Boolean) Load*(r: Storable.Reader) RAISES IO.Error;
   VAR
     si: SHORTINT;
   BEGIN
@@ -216,12 +216,12 @@ PROCEDURE ParseLongRealLiteral*(s: ARRAY OF CHAR): LongReal;
     RETURN v;
   END ParseLongRealLiteral;
 
-PROCEDURE (v: LongReal) Store*(w: Storable.Writer);
+PROCEDURE (v: LongReal) Store*(w: Storable.Writer) RAISES IO.Error;
   BEGIN
     w. WriteLReal(v.value);
   END Store;
 
-PROCEDURE (v: LongReal) Load*(r: Storable.Reader);
+PROCEDURE (v: LongReal) Load*(r: Storable.Reader) RAISES IO.Error;
   BEGIN
     r. ReadLReal(v.value);
   END Load;
@@ -374,12 +374,12 @@ PROCEDURE (v: Set) ToString*(): Obj.String;
     RETURN Obj.NewLatin1(str);
   END ToString;
 
-PROCEDURE (v: Set) Store*(w: Storable.Writer);
+PROCEDURE (v: Set) Store*(w: Storable.Writer) RAISES IO.Error;
   BEGIN
     w.WriteSet(v.value);
   END Store;
 
-PROCEDURE (v: Set) Load*(r: Storable.Reader);
+PROCEDURE (v: Set) Load*(r: Storable.Reader) RAISES IO.Error;
   BEGIN
     r.ReadSet(v.value);
   END Load;
@@ -433,12 +433,12 @@ PROCEDURE (v: String) ToString*(): Obj.String;
     RETURN sb. ToString()
   END ToString;
 
-PROCEDURE (v: String) Store*(w: Storable.Writer);
+PROCEDURE (v: String) Store*(w: Storable.Writer) RAISES IO.Error;
   BEGIN
     w.WriteStr(v.value);
   END Store;
 
-PROCEDURE (v: String) Load*(r: Storable.Reader);
+PROCEDURE (v: String) Load*(r: Storable.Reader) RAISES IO.Error;
   BEGIN
     r.ReadStr(v.value);
   END Load;

@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE ADT:ArrayList;
 (*  Implements a resizable list of objects.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -19,7 +19,7 @@ MODULE ADT:ArrayList;
 *)
 
 IMPORT
-  ADT:Storable, Object;
+  ADT:Storable, Object, IO;
 
 
 TYPE
@@ -307,7 +307,7 @@ PROCEDURE (l: ArrayList) HashCode* (): LONGINT;
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END HashCode;
 
-PROCEDURE (l: ArrayList) Store* (w: Storable.Writer);
+PROCEDURE (l: ArrayList) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Object.Object;
@@ -323,7 +323,7 @@ PROCEDURE (l: ArrayList) Store* (w: Storable.Writer);
     END
   END Store;
 
-PROCEDURE (l: ArrayList) Load* (r: Storable.Reader);
+PROCEDURE (l: ArrayList) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i, size: LONGINT;
     obj: Storable.Object;

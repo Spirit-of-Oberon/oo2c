@@ -144,12 +144,12 @@ PROCEDURE ConnectWriter* (ch: IO.ByteChannel): Writer;
 
 
 
-PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object);
+PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object) RAISES IO.Error;
   VAR
     ref, tref: LONGINT;
     module: RT0.Module;
   
-  PROCEDURE ReadType(): LONGINT ;
+  PROCEDURE ReadType(): LONGINT RAISES IO.Error;
     VAR
       tref, len, i: LONGINT;
       tp: RT0.Struct;
@@ -171,7 +171,7 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object);
       
       IF (tref < 0) THEN  (* back reference; return old index *)
         IF (-tref >= r. typeCounter) THEN
-          r.SetError(IO.NewFormatError("Invalid type reference"));
+          IO.RaiseFormatError("Invalid type reference");
           RETURN 0
         ELSE
           RETURN -tref
@@ -179,7 +179,7 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object);
       
       ELSE  (* first occurence of this type *)
         IF (tref # r. typeCounter) THEN
-          r.SetError(IO.NewFormatError("Type count mismatch"));
+          IO.RaiseFormatError("Type count mismatch");
           RETURN 0;
         END;
         IF (tref = LEN (r. typeTab^)) THEN
@@ -238,18 +238,18 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object);
     ELSE  (* reading object using "compact" format *)
       IF (ref < 0) THEN
         IF (-ref >= r. objCounter) THEN  (* invalid object index *)
-          r.SetError(IO.NewFormatError("Invalid object reference"));
+          IO.RaiseFormatError("Invalid object reference");
           obj := NIL;
         ELSE
           obj := r. objTab[-ref]
         END
       ELSE  (* first occurence of this object *)
         IF (ref # r. objCounter) THEN  (* invalid object index *)
-          r.SetError(IO.NewFormatError("Object count mismatch"));
+          IO.RaiseFormatError("Object count mismatch");
         END;
         tref := ReadType();
         IF (r. typeTab[tref]. type = NIL) THEN
-          r.SetError(Storable.NewTypeError("Failed to resolve type name"));
+          Storable.RaiseTypeError("Failed to resolve type name");
         ELSE  (* create new object of the requested type and load it *)
           obj := SYSTEM.VAL (Storable.Object,
                              RT0.NewObject (r. typeTab[tref]. type));
@@ -283,7 +283,7 @@ PROCEDURE (r: Reader) Disconnect*;
 
 
 
-PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object);
+PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object) RAISES IO.Error;
   VAR
     tref: LONGINT;
     type: RT0.Struct;

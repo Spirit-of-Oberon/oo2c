@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE Object:BigInt [OOC_EXTENSIONS];
 (*  Implements integer values of arbitrary magnitude.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002,2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -25,7 +25,7 @@ MODULE Object:BigInt [OOC_EXTENSIONS];
    of course.  *)
    
 IMPORT
-  S := SYSTEM, CharClass, Strings, Object, Object:Boxed, ADT:Storable;
+  S := SYSTEM, CharClass, Strings, Object, Object:Boxed, IO, ADT:Storable;
   
 TYPE
   Digit = INTEGER;
@@ -938,7 +938,7 @@ PROCEDURE (a: BigInt) RShift* (n: LONGINT): BigInt;
     END;
   END RShift;
 
-PROCEDURE (a: BigInt) Store*(w: Storable.Writer);
+PROCEDURE (a: BigInt) Store*(w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
   BEGIN
@@ -948,7 +948,7 @@ PROCEDURE (a: BigInt) Store*(w: Storable.Writer);
     END;
   END Store;
 
-PROCEDURE (a: BigInt) Load*(r: Storable.Reader);
+PROCEDURE (a: BigInt) Load*(r: Storable.Reader) RAISES IO.Error;
   VAR
     i: LONGINT;
   BEGIN

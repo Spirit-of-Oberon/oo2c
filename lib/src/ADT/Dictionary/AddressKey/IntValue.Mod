@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE ADT:Dictionary:AddressKey:IntValue;
 (*  A dictionary implementation using objects' addresses as keys.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -39,7 +39,7 @@ MODULE ADT:Dictionary:AddressKey:IntValue;
    @end itemize  *)
 
 IMPORT
-  S := SYSTEM, Object, ADT:Storable;
+  S := SYSTEM, Object, IO, ADT:Storable;
 
 
 TYPE
@@ -446,7 +446,7 @@ PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
   END Values;*)
 
 
-PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer);
+PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Object.Object;
@@ -467,7 +467,7 @@ PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer);
     END
   END Store;
 
-PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader);
+PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Storable.Object;

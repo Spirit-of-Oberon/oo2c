@@ -545,7 +545,8 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
   END Finalize;
 
 PROCEDURE (b: Builder) WriteSymbolTable* (ch: IO.ByteChannel;
-                                          symTab: Sym.Module);
+                                          symTab: Sym.Module)
+RAISES IO.Error;
   VAR
     writer: Storage.Writer;
   BEGIN
@@ -556,7 +557,8 @@ PROCEDURE (b: Builder) WriteSymbolTable* (ch: IO.ByteChannel;
     writer. WriteObject (symTab);
   END WriteSymbolTable;
 
-PROCEDURE (b: Builder) ReadSymbolTable* (ch: IO.ByteChannel): Sym.Module;
+PROCEDURE (b: Builder) ReadSymbolTable* (ch: IO.ByteChannel): Sym.Module
+RAISES IO.Error;
   VAR
     obj: Storable.Object;
     reader: Storage.Reader;

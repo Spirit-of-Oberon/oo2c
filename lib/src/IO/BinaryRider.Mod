@@ -23,7 +23,7 @@ MODULE IO:BinaryRider;
 *)
 
 IMPORT
-  SYSTEM, Exception, Strings, Object, IO;
+  SYSTEM, Strings, Object, IO;
 
 CONST
   (* possible endian settings *)
@@ -38,11 +38,6 @@ TYPE
     (**Endian settings for the reader.  *)
     channel-: IO.ByteChannel;
     (**The channel on which this reader is operating.  *)
-    error-: IO.Error;
-    (**If any of the write methods encounters an error, then the corresponding
-       exception is stored here.  This field is sticky.  That is, is stays
-       @code{NIL} until the first error, and it keeps the first error's
-       exception.  *)
   END;
 
   Writer* = POINTER TO WriterDesc;
@@ -51,11 +46,6 @@ TYPE
     (**Endian settings for the writer.  *)
     channel-: IO.ByteChannel;
     (**The channel on which this writer is operating.  *)
-    error-: IO.Error;
-    (**If any of the write methods encounters an error, then the corresponding
-       exception is stored here.  This field is sticky.  That is, is stays
-       @code{NIL} until the first error, and it keeps the first error's
-       exception.  *)
   END;
  
 VAR
@@ -64,23 +54,6 @@ VAR
 
 (* Reader methods 
    ------------------------------------------------------------------------ *)
-
-PROCEDURE (r: Reader) SetError*(e: IO.Error);
-  BEGIN
-    IF (r.error = NIL) THEN
-      r.error := e;
-    END;
-  END SetError;
-
-PROCEDURE SetRError(r: Reader);
-  VAR
-    e: Exception.Exception;
-  BEGIN
-    IF (r.error = NIL) THEN
-      e := Exception.Current();
-      r.error := e(IO.Error);
-    END;
-  END SetRError;
 
 (*PROCEDURE (r: Reader) Pos* () : LONGINT;
   BEGIN
@@ -101,78 +74,64 @@ PROCEDURE (r: Reader) SetPos* (newPos: LONGINT);
   END Available;  *)
 
 PROCEDURE (r: Reader) ReadBytes * (VAR x: ARRAY OF SYSTEM.BYTE;
-                                   start, n: LONGINT);
+                                   start, n: LONGINT)
+RAISES IO.Error;
 (**Read the bytes according to the native machine byte order.  *)
   BEGIN
-    TRY
-      IF (r.channel.Read(x, start, n) # n) THEN
-        IO.RaiseFormatError("Short file");
-      END;
-    CATCH IO.Error:
-      SetRError(r);
+    IF (r.channel.Read(x, start, n) # n) THEN
+      IO.RaiseFormatError("Short file");
     END;
   END ReadBytes;
 
-PROCEDURE (r: Reader) ReadBytesOrdered (VAR x: ARRAY OF SYSTEM.BYTE);
+PROCEDURE (r: Reader) ReadBytesOrdered (VAR x: ARRAY OF SYSTEM.BYTE)
+RAISES IO.Error;
 (* Read the bytes according to the Reader byte order setting. *)
   VAR
     i, d: LONGINT;
   BEGIN
     IF (r.byteOrder=nativeEndian) OR (r.byteOrder=systemByteOrder) THEN
-      TRY
-        d := r.channel.Read(x, 0, LEN(x));
-        IF (d # LEN(x)) THEN
-          IO.RaiseFormatError("Short file");
-        END;
-      CATCH IO.Error:
-        SetRError(r);
+      d := r.channel.Read(x, 0, LEN(x));
+      IF (d # LEN(x)) THEN
+        IO.RaiseFormatError("Short file");
       END;
     ELSE  (* swap bytes of value *)
-      TRY
-        FOR i:=LEN(x)-1 TO 0 BY -1 DO
-          IF (r.channel.Read(x[i], 0, 1) # 1) THEN
-            IO.RaiseFormatError("Short file");
-          END;
+      FOR i:=LEN(x)-1 TO 0 BY -1 DO
+        IF (r.channel.Read(x[i], 0, 1) # 1) THEN
+          IO.RaiseFormatError("Short file");
         END;
-      CATCH IO.Error:
-        SetRError(r);
-      END
+      END;
     END
   END ReadBytesOrdered;
 
-PROCEDURE (r: Reader) ReadBool*(VAR bool: BOOLEAN);
+PROCEDURE (r: Reader) ReadBool*(VAR bool: BOOLEAN)
+RAISES IO.Error;
   VAR
     byte: SHORTINT;
   BEGIN
-    TRY
-      IF (r.channel.Read(byte, 0, 1) # 1) THEN
-        IO.RaiseFormatError("Short file");
-      ELSIF (byte # 0) & (byte # 1) THEN
-        IO.RaiseFormatError("Value out of range");
-      END;
-      bool := (byte # 0);
-    CATCH IO.Error:
-      SetRError(r);
+    IF (r.channel.Read(byte, 0, 1) # 1) THEN
+      IO.RaiseFormatError("Short file");
+    ELSIF (byte # 0) & (byte # 1) THEN
+      IO.RaiseFormatError("Value out of range");
     END;
+    bool := (byte # 0);
   END ReadBool;
   
-PROCEDURE (r: Reader) ReadChar* (VAR ch: CHAR);
+PROCEDURE (r: Reader) ReadChar* (VAR ch: CHAR)
+RAISES IO.Error;
   BEGIN
-    TRY
-      IF (r.channel.Read(ch, 0, 1) # 1) THEN
-        IO.RaiseFormatError("Short file");
-      END;
-    CATCH IO.Error:
-      SetRError(r);
+    IF (r.channel.Read(ch, 0, 1) # 1) THEN
+      IO.RaiseFormatError("Short file");
     END;
   END ReadChar;
 
-PROCEDURE (r: Reader) ReadLChar*(VAR ch: LONGCHAR);
+PROCEDURE (r: Reader) ReadLChar*(VAR ch: LONGCHAR)
+RAISES IO.Error;
   BEGIN
     r. ReadBytesOrdered (ch);
   END ReadLChar;
 
-PROCEDURE (r: Reader) ReadString* (VAR s: ARRAY OF CHAR);
+PROCEDURE (r: Reader) ReadString* (VAR s: ARRAY OF CHAR)
+RAISES IO.Error;
 (**The string @oparam{s} is filled until @samp{0X} is encountered, there are no
    more characters in the channel, or the string is filled. @oparam{s} is
    always terminated with @samp{0X}.  *)
@@ -184,15 +143,12 @@ PROCEDURE (r: Reader) ReadString* (VAR s: ARRAY OF CHAR);
       INC(cnt); r.ReadChar(s[cnt])
     UNTIL (s[cnt]=0X) OR (cnt=len);
     IF (s[cnt] # 0X) THEN
-      TRY
-        IO.RaiseFormatError("String not terminated");
-      CATCH IO.Error:
-        SetRError(r);
-      END;
+      IO.RaiseFormatError("String not terminated");
     END;
   END ReadString;  
 
-PROCEDURE (r: Reader) ReadLString* (VAR s: ARRAY OF LONGCHAR);
+PROCEDURE (r: Reader) ReadLString* (VAR s: ARRAY OF LONGCHAR)
+RAISES IO.Error;
 (**The string @oparam{s} is filled until @samp{0X} is encountered, there are no
    more characters in the channel, or the string is filled. @oparam{s} is
    always terminated with @samp{0X}.  *)
@@ -204,31 +160,31 @@ PROCEDURE (r: Reader) ReadLString* (VAR s: ARRAY OF LONGCHAR);
       INC(cnt); r.ReadLChar(s[cnt])
     UNTIL (s[cnt]=0X) OR (cnt=len);
     IF (s[cnt] # 0X) THEN
-      TRY
-        IO.RaiseFormatError("String not terminated");
-      CATCH IO.Error:
-        SetRError(r);
-      END;
+      IO.RaiseFormatError("String not terminated");
     END;
   END ReadLString;  
 
-PROCEDURE (r: Reader) ReadSInt*(VAR sint: SHORTINT);
+PROCEDURE (r: Reader) ReadSInt*(VAR sint: SHORTINT)
+RAISES IO.Error;
   BEGIN
     r.ReadBytesOrdered(sint);
   END ReadSInt;
 
-PROCEDURE (r: Reader) ReadInt*(VAR int: INTEGER);
+PROCEDURE (r: Reader) ReadInt*(VAR int: INTEGER)
+RAISES IO.Error;
   BEGIN
     r.ReadBytesOrdered(int);
   END ReadInt;
 
-PROCEDURE (r: Reader) ReadLInt*(VAR lint: LONGINT);
+PROCEDURE (r: Reader) ReadLInt*(VAR lint: LONGINT)
+RAISES IO.Error;
 (* see ReadInt *)
   BEGIN
     r.ReadBytesOrdered(lint);
   END ReadLInt;
 
-PROCEDURE (r: Reader) ReadNum*(VAR num: LONGINT);
+PROCEDURE (r: Reader) ReadNum*(VAR num: LONGINT)
+RAISES IO.Error;
 (* Read integers in a compressed and portable format. *)
   VAR s: SHORTINT; x: CHAR; y: LONGINT;
   BEGIN
@@ -240,34 +196,34 @@ PROCEDURE (r: Reader) ReadNum*(VAR num: LONGINT);
     (* Q: (s = 28) OR (x < 80X) *)
     IF (x >= 80X) OR  (* with s=28 this means we have more than 5 digits *)
        (s = 28) & (8X <= x) & (x < 78X) THEN   (* overflow in most sig byte *)
-      TRY
-        IO.RaiseFormatError("Overflow");
-      CATCH IO.Error:
-        SetRError(r);
-      END;
+      IO.RaiseFormatError("Overflow");
     ELSE
       num:=ASH(SYSTEM.LSH(LONG(ORD(x)), 25), s-25)+y;
     END
   END ReadNum;
 
-PROCEDURE (r: Reader) ReadReal*(VAR real: REAL);
+PROCEDURE (r: Reader) ReadReal*(VAR real: REAL)
+RAISES IO.Error;
 (* see ReadInt *)
   BEGIN    
     r.ReadBytesOrdered(real);
   END ReadReal;
 
-PROCEDURE (r: Reader) ReadLReal*(VAR lreal: LONGREAL);
+PROCEDURE (r: Reader) ReadLReal*(VAR lreal: LONGREAL)
+RAISES IO.Error;
 (* see ReadInt *)
   BEGIN
     r.ReadBytesOrdered(lreal);
   END ReadLReal;
  
-PROCEDURE (r: Reader) ReadSet*(VAR s: SET);
+PROCEDURE (r: Reader) ReadSet*(VAR s: SET)
+RAISES IO.Error;
   BEGIN
     r.ReadBytesOrdered(s);
   END ReadSet;
 
-PROCEDURE (r: Reader) ReadStr* (VAR s: Object.String);
+PROCEDURE (r: Reader) ReadStr* (VAR s: Object.String)
+RAISES IO.Error;
   CONST
     sizeBuffer8 = 1024;
     sizeBuffer32 = 512;
@@ -322,16 +278,6 @@ PROCEDURE (r: Reader) SetByteOrder* (order: SHORTINT);
 (* Writer methods 
    ------------------------------------------------------------------------ *)
 
-PROCEDURE SetWError(w: Writer);
-  VAR
-    e: Exception.Exception;
-  BEGIN
-    IF (w.error = NIL) THEN
-      e := Exception.Current();
-      w.error := e(IO.Error);
-    END;
-  END SetWError;
-
 (* The Write-methods write the value to the underlying channel. It is 
    possible that only part of the value is written
  *)
@@ -350,46 +296,38 @@ PROCEDURE (w: Writer) SetPos* (newPos: LONGINT);
   END SetPos;*)
 
 PROCEDURE (w: Writer) WriteBytes * (x[NO_COPY]: ARRAY OF SYSTEM.BYTE;
-                                    start, n: LONGINT);
+                                    start, n: LONGINT)
+RAISES IO.Error;
 (* Write the bytes according to the native machine byte order. *)
   VAR
     d: LONGINT;
   BEGIN
-    TRY
-      d := w.channel.Write(x, start, n);
-    CATCH IO.Error:
-      SetWError(w);
-    END;
+    d := w.channel.Write(x, start, n);
   END WriteBytes;
 
-PROCEDURE (w: Writer) WriteOrdered (VAR x: ARRAY OF SYSTEM.BYTE);
+PROCEDURE (w: Writer) WriteOrdered (VAR x: ARRAY OF SYSTEM.BYTE)
+RAISES IO.Error;
 (* Write the bytes according to the Writer byte order setting. *)
   VAR
     i, d: LONGINT;
   BEGIN
-    TRY
-      IF (w.byteOrder=nativeEndian) OR (w.byteOrder=systemByteOrder) THEN
-        d := w.channel.Write(x, 0, LEN(x)) 
-      ELSE
-        FOR i:=LEN(x)-1 TO 0 BY -1 DO d := w.channel.Write(x[i], 0, 1) END  
-      END
-    CATCH IO.Error:
-      SetWError(w);
+    IF (w.byteOrder=nativeEndian) OR (w.byteOrder=systemByteOrder) THEN
+      d := w.channel.Write(x, 0, LEN(x)) 
+    ELSE
+      FOR i:=LEN(x)-1 TO 0 BY -1 DO d := w.channel.Write(x[i], 0, 1) END  
     END;
   END WriteOrdered;
 
-PROCEDURE (w: Writer) WriteChar*(ch: CHAR);
+PROCEDURE (w: Writer) WriteChar*(ch: CHAR)
+RAISES IO.Error;
   VAR
     d: LONGINT;
   BEGIN
-    TRY
-      d := w. channel. Write(ch, 0, 1);
-    CATCH IO.Error:
-      SetWError(w);
-    END;
+    d := w. channel. Write(ch, 0, 1);
   END WriteChar;
   
-PROCEDURE (w: Writer) WriteBool*(bool: BOOLEAN);
+PROCEDURE (w: Writer) WriteBool*(bool: BOOLEAN)
+RAISES IO.Error;
   BEGIN
     IF bool THEN
       w. WriteChar (1X)
@@ -398,24 +336,23 @@ PROCEDURE (w: Writer) WriteBool*(bool: BOOLEAN);
     END;
   END WriteBool;
   
-PROCEDURE (w: Writer) WriteLChar*(ch: LONGCHAR);
+PROCEDURE (w: Writer) WriteLChar*(ch: LONGCHAR)
+RAISES IO.Error;
   BEGIN
     w. WriteOrdered (ch);
   END WriteLChar;
 
-PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
+PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR)
+RAISES IO.Error;
 (**Note: The terminating @samp{0X} is also written.  *)
   VAR
     d: LONGINT;
   BEGIN
-    TRY
-      d := w.channel.Write (s, 0, Strings.Length (s)+1);
-    CATCH IO.Error:
-      SetWError(w);
-    END;
+    d := w.channel.Write (s, 0, Strings.Length (s)+1);
   END WriteString;
 
-PROCEDURE (w: Writer) WriteLString*(s[NO_COPY]: ARRAY OF CHAR);
+PROCEDURE (w: Writer) WriteLString*(s[NO_COPY]: ARRAY OF LONGCHAR)
+RAISES IO.Error;
 (**The terminating @samp{0X} is also written.  *)
   VAR
     i: LONGINT;
@@ -427,29 +364,29 @@ PROCEDURE (w: Writer) WriteLString*(s[NO_COPY]: ARRAY OF CHAR);
     UNTIL (s[i] = 0X);
   END WriteLString;
 
-PROCEDURE (w: Writer) WriteSInt*(sint: SHORTINT);
+PROCEDURE (w: Writer) WriteSInt*(sint: SHORTINT)
+RAISES IO.Error;
   VAR
     d: LONGINT;
   BEGIN
-    TRY
-      d := w.channel.Write(sint, 0, 1);
-    CATCH IO.Error:
-      SetWError(w);
-    END;
+    d := w.channel.Write(sint, 0, 1);
   END WriteSInt;
 
-PROCEDURE (w: Writer) WriteInt*(int: INTEGER);
+PROCEDURE (w: Writer) WriteInt*(int: INTEGER)
+RAISES IO.Error;
   BEGIN
     w.WriteOrdered(int);
   END WriteInt;
 
-PROCEDURE (w: Writer) WriteLInt*(lint: LONGINT);
+PROCEDURE (w: Writer) WriteLInt*(lint: LONGINT)
+RAISES IO.Error;
 (* see WriteInt *)
   BEGIN
     w.WriteOrdered(lint);
   END WriteLInt;
 
-PROCEDURE (w: Writer) WriteNum*(lint: LONGINT);
+PROCEDURE (w: Writer) WriteNum*(lint: LONGINT)
+RAISES IO.Error;
 (**Write integers in a compressed and portable format.  *)
   BEGIN
     WHILE (lint<-64) OR (lint>63) DO
@@ -460,23 +397,27 @@ PROCEDURE (w: Writer) WriteNum*(lint: LONGINT);
   END WriteNum;
 
 (* see WriteInt *)
-PROCEDURE (w: Writer) WriteReal*(real: REAL);
+PROCEDURE (w: Writer) WriteReal*(real: REAL)
+RAISES IO.Error;
   BEGIN
     w.WriteOrdered(real);
   END WriteReal;
 
-PROCEDURE (w: Writer) WriteLReal*(lreal: LONGREAL);
+PROCEDURE (w: Writer) WriteLReal*(lreal: LONGREAL)
+RAISES IO.Error;
 (* see WriteInt *)
   BEGIN
     w.WriteOrdered(lreal);
   END WriteLReal;
 
-PROCEDURE (w: Writer) WriteSet*(s: SET);
+PROCEDURE (w: Writer) WriteSet*(s: SET)
+RAISES IO.Error;
   BEGIN
     w.WriteOrdered(s);
   END WriteSet;
 
-PROCEDURE (w: Writer) WriteStr*(s: Object.String);
+PROCEDURE (w: Writer) WriteStr*(s: Object.String)
+RAISES IO.Error;
   VAR
     chars8: Object.CharsLatin1;
     chars32: Object.CharsUCS4;
@@ -488,11 +429,7 @@ PROCEDURE (w: Writer) WriteStr*(s: Object.String);
       WITH s: Object.String8 DO
         w.WriteNum(s.length+1);
         chars8 := s.CharsLatin1();
-        TRY
-          d := w.channel.Write(chars8^, 0, s.length);
-        CATCH IO.Error:
-          SetWError(w);
-        END;
+        d := w.channel.Write(chars8^, 0, s.length);
         
       | s: Object.String32 DO            (* FIXME... use UTF8 codec *)
         w.WriteNum(-s.length-1);
@@ -523,7 +460,6 @@ PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel; byteOrder: SHORTINT);
   BEGIN
     r. byteOrder := byteOrder;
     r. channel := ch;
-    r. error := NIL;
   END InitReader;
 
 PROCEDURE ConnectReader*(ch: IO.ByteChannel): Reader;
@@ -547,7 +483,6 @@ PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel; byteOrder: SHORTINT);
   BEGIN
     w.byteOrder := byteOrder;
     w.channel := ch;
-    w.error := NIL;
   END InitWriter;
 
 PROCEDURE ConnectWriter*(ch: IO.ByteChannel): Writer;

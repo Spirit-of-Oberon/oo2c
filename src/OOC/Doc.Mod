@@ -21,7 +21,7 @@ MODULE OOC:Doc [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  CharClass, Strings, ADT:Storable, ADT:ArrayList,
+  CharClass, Strings, ADT:Storable, ADT:ArrayList, IO,
   OOC:Doc:Decoration, OOC:Scanner:InputBuffer;
 
 
@@ -299,12 +299,12 @@ PROCEDURE (e: Element) [ABSTRACT] NodeName* (VAR name: ARRAY OF CHAR);
 PROCEDURE (e: Element) [ABSTRACT] Normalize*;
   END Normalize;
 
-PROCEDURE (e: Element) Store* (w: Storable.Writer);
+PROCEDURE (e: Element) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     (* field `pos' is not stored, and set to the default value on import *)
   END Store;
 
-PROCEDURE (e: Element) Load* (r: Storable.Reader);
+PROCEDURE (e: Element) Load* (r: Storable.Reader) RAISES IO.Error;
   BEGIN
     InitElement (e);                     (* set `pos' to default value *)
   END Load;
@@ -338,13 +338,13 @@ PROCEDURE (e: InlineElement) StripHeadWS;
 PROCEDURE (e: InlineElement) StripTailWS;
   END StripTailWS;
 
-PROCEDURE (e: InlineElement) Store* (w: Storable.Writer);
+PROCEDURE (e: InlineElement) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     e. Store^ (w);
     w. WriteObject (e. nextInline)
   END Store;
 
-PROCEDURE (e: InlineElement) Load* (r: Storable.Reader);
+PROCEDURE (e: InlineElement) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -366,14 +366,14 @@ PROCEDURE InitBlockElement (e: BlockElement; padAfter: BOOLEAN);
     e. padAfter := padAfter
   END InitBlockElement;
 
-PROCEDURE (e: BlockElement) Store* (w: Storable.Writer);
+PROCEDURE (e: BlockElement) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     e. Store^ (w);
     w. WriteObject (e. nextBlock);
     w. WriteBool (e. padAfter)
   END Store;
 
-PROCEDURE (e: BlockElement) Load* (r: Storable.Reader);
+PROCEDURE (e: BlockElement) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -561,13 +561,13 @@ PROCEDURE (glyph: Glyph) NodeName* (VAR name: ARRAY OF CHAR);
 PROCEDURE (glyph: Glyph) Normalize*;
   END Normalize;
 
-PROCEDURE (glyph: Glyph) Store* (w: Storable.Writer);
+PROCEDURE (glyph: Glyph) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     glyph. Store^ (w);
     w. WriteNum (glyph. code)
   END Store;
 
-PROCEDURE (glyph: Glyph) Load* (r: Storable.Reader);
+PROCEDURE (glyph: Glyph) Load* (r: Storable.Reader) RAISES IO.Error;
   BEGIN
     glyph. Load^ (r);
     r. ReadNum (glyph. code)
@@ -670,7 +670,7 @@ PROCEDURE (text: Text) StripTailWS;
     text. string[i] := 0X
   END StripTailWS;
 
-PROCEDURE (text: Text) Store* (w: Storable.Writer);
+PROCEDURE (text: Text) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
   BEGIN
@@ -683,7 +683,7 @@ PROCEDURE (text: Text) Store* (w: Storable.Writer);
     w. WriteString (text. string^)
   END Store;
 
-PROCEDURE (text: Text) Load* (r: Storable.Reader);
+PROCEDURE (text: Text) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     len: LONGINT;
   BEGIN
@@ -754,14 +754,14 @@ PROCEDURE (mi: MarkedInline) StripTailWS;
     last. StripTailWS
   END StripTailWS;
 
-PROCEDURE (mi: MarkedInline) Store* (w: Storable.Writer);
+PROCEDURE (mi: MarkedInline) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     mi. Store^ (w);
     w. WriteNum (mi. mark);
     w. WriteObject (mi. inlineText)
   END Store;
 
-PROCEDURE (mi: MarkedInline) Load* (r: Storable.Reader);
+PROCEDURE (mi: MarkedInline) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -807,13 +807,13 @@ PROCEDURE (or: OberonRef) SetExternalTarget* (module, id: InputBuffer.CharArray)
     or. externalId := id
   END SetExternalTarget;
 
-PROCEDURE (or: OberonRef) Store* (w: Storable.Writer);
+PROCEDURE (or: OberonRef) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     or. Store^ (w);
     (* don't store target, externalModule, or externalId *)
   END Store;
 
-PROCEDURE (or: OberonRef) Load* (r: Storable.Reader);
+PROCEDURE (or: OberonRef) Load* (r: Storable.Reader) RAISES IO.Error;
   BEGIN
     or. Load^ (r);
     or. target := NIL;
@@ -849,14 +849,14 @@ PROCEDURE (email: Email) Normalize*;
     NormalizeArg (email. displayed)
   END Normalize;
 
-PROCEDURE (email: Email) Store* (w: Storable.Writer);
+PROCEDURE (email: Email) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     email. Store^ (w);
     w. WriteObject (email. address);
     w. WriteObject (email. displayed)
   END Store;
 
-PROCEDURE (email: Email) Load* (r: Storable.Reader);
+PROCEDURE (email: Email) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -905,7 +905,7 @@ PROCEDURE (uref: Uref) Normalize*;
     NormalizeArg (uref. replacement)
   END Normalize;
 
-PROCEDURE (uref: Uref) Store* (w: Storable.Writer);
+PROCEDURE (uref: Uref) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     uref. Store^ (w);
     w. WriteObject (uref. url);
@@ -913,7 +913,7 @@ PROCEDURE (uref: Uref) Store* (w: Storable.Writer);
     w. WriteObject (uref. replacement);
   END Store;
 
-PROCEDURE (uref: Uref) Load* (r: Storable.Reader);
+PROCEDURE (uref: Uref) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -966,14 +966,14 @@ PROCEDURE (p: Paragraph) Normalize*;
     NormalizeInlineList (p. inlineText)
   END Normalize;
 
-PROCEDURE (p: Paragraph) Store* (w: Storable.Writer);
+PROCEDURE (p: Paragraph) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     p. Store^ (w);
     w. WriteObject (p. inlineText);
     w. WriteBool (p. noIndent)
   END Store;
 
-PROCEDURE (p: Paragraph) Load* (r: Storable.Reader);
+PROCEDURE (p: Paragraph) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1011,13 +1011,13 @@ PROCEDURE (ex: Example) NodeName* (VAR name: ARRAY OF CHAR);
 PROCEDURE (ex: Example) Normalize*;
   END Normalize;
 
-PROCEDURE (ex: Example) Store* (w: Storable.Writer);
+PROCEDURE (ex: Example) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     ex. Store^ (w);
     w. WriteObject (ex. inlineText)
   END Store;
 
-PROCEDURE (ex: Example) Load* (r: Storable.Reader);
+PROCEDURE (ex: Example) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1056,13 +1056,13 @@ PROCEDURE (pc: PreCond) Normalize*;
     NormalizeBlockList (pc. blockList)
   END Normalize;
 
-PROCEDURE (pc: PreCond) Store* (w: Storable.Writer);
+PROCEDURE (pc: PreCond) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     pc. Store^ (w);
     w. WriteObject (pc. blockList)
   END Store;
 
-PROCEDURE (pc: PreCond) Load* (r: Storable.Reader);
+PROCEDURE (pc: PreCond) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1101,13 +1101,13 @@ PROCEDURE (pc: PostCond) Normalize*;
     NormalizeBlockList (pc. blockList)
   END Normalize;
 
-PROCEDURE (pc: PostCond) Store* (w: Storable.Writer);
+PROCEDURE (pc: PostCond) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     pc. Store^ (w);
     w. WriteObject (pc. blockList)
   END Store;
 
-PROCEDURE (pc: PostCond) Load* (r: Storable.Reader);
+PROCEDURE (pc: PostCond) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1148,13 +1148,13 @@ PROCEDURE (item: Item) Normalize*;
     item. padAfter := TRUE
   END Normalize;
 
-PROCEDURE (item: Item) Store* (w: Storable.Writer);
+PROCEDURE (item: Item) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     item. Store^ (w);
     w. WriteObject (item. blockList)
   END Store;
 
-PROCEDURE (item: Item) Load* (r: Storable.Reader);
+PROCEDURE (item: Item) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1203,7 +1203,7 @@ PROCEDURE (i: Itemize) Normalize*;
     NoPadLastElement (i. itemList)
   END Normalize;
 
-PROCEDURE (i: Itemize) Store* (w: Storable.Writer);
+PROCEDURE (i: Itemize) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     i. Store^ (w);
     w. WriteObject (i. mark);
@@ -1211,7 +1211,7 @@ PROCEDURE (i: Itemize) Store* (w: Storable.Writer);
     w. WriteObject (i. itemList)
   END Store;
 
-PROCEDURE (i: Itemize) Load* (r: Storable.Reader);
+PROCEDURE (i: Itemize) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1272,7 +1272,7 @@ PROCEDURE (e: Enumerate) Normalize*;
     NoPadLastElement (e. itemList)
   END Normalize;
 
-PROCEDURE (e: Enumerate) Store* (w: Storable.Writer);
+PROCEDURE (e: Enumerate) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     e. Store^ (w);
     w. WriteSInt (e. mode);
@@ -1281,7 +1281,7 @@ PROCEDURE (e: Enumerate) Store* (w: Storable.Writer);
     w. WriteObject (e. itemList)
   END Store;
 
-PROCEDURE (e: Enumerate) Load* (r: Storable.Reader);
+PROCEDURE (e: Enumerate) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1330,13 +1330,13 @@ PROCEDURE (fc: FirstColumn) Normalize*;
     fc. padAfter := FALSE
   END Normalize;
 
-PROCEDURE (fc: FirstColumn) Store* (w: Storable.Writer);
+PROCEDURE (fc: FirstColumn) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     fc. Store^ (w);
     w. WriteObject (fc. inlineText)
   END Store;
 
-PROCEDURE (fc: FirstColumn) Load* (r: Storable.Reader);
+PROCEDURE (fc: FirstColumn) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1381,14 +1381,14 @@ PROCEDURE (tr: TableRow) Normalize*;
     tr. padAfter := TRUE
   END Normalize;
 
-PROCEDURE (tr: TableRow) Store* (w: Storable.Writer);
+PROCEDURE (tr: TableRow) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     tr. Store^ (w);
     w. WriteObject (tr. firstColumnList);
     w. WriteObject (tr. item);
   END Store;
 
-PROCEDURE (tr: TableRow) Load* (r: Storable.Reader);
+PROCEDURE (tr: TableRow) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1434,13 +1434,13 @@ PROCEDURE (t: Table) Normalize*;
     NoPadLastElement (t. rowList)
   END Normalize;
 
-PROCEDURE (t: Table) Store* (w: Storable.Writer);
+PROCEDURE (t: Table) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     t. Store^ (w);
     w. WriteObject (t. rowList)
   END Store;
 
-PROCEDURE (t: Table) Load* (r: Storable.Reader);
+PROCEDURE (t: Table) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1551,14 +1551,14 @@ PROCEDURE (d: Document) AddUsedImport* (importDecl: Storable.Object);
     d. usedImportsList. Append (importDecl)
   END AddUsedImport;
 
-PROCEDURE (d: Document) Store* (w: Storable.Writer);
+PROCEDURE (d: Document) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     w. WriteObject (d. blockList);
     w. WriteObject (d. summary);
     (* don't store decoration, firstColumn, or usedImportsList *)
   END Store;
 
-PROCEDURE (d: Document) Load* (r: Storable.Reader);
+PROCEDURE (d: Document) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN

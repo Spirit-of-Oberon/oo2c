@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 
 IMPORT
   Object, Object:Boxed, Msg, Strings, 
-  ADT:Storable, ADT:Dictionary, ADT:ArrayList,
+  ADT:Storable, ADT:Dictionary, ADT:ArrayList, IO,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
 
@@ -866,7 +866,7 @@ PROCEDURE InitPosition* (position: Position; pos: ModulePos;
     position. column := column
   END InitPosition;
 
-PROCEDURE (position: Position) Store* (w: Storable.Writer);
+PROCEDURE (position: Position) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     (* note: extension Name does not call this Store *)
     w. WriteNum (position. pos);
@@ -874,7 +874,7 @@ PROCEDURE (position: Position) Store* (w: Storable.Writer);
     w. WriteNum (position. column);
   END Store;
 
-PROCEDURE (position: Position) Load* (r: Storable.Reader);
+PROCEDURE (position: Position) Load* (r: Storable.Reader) RAISES IO.Error;
   BEGIN
     (* note: extension Name does not call this Load *)
     r. ReadNum (position. pos);
@@ -890,7 +890,7 @@ PROCEDURE InitName* (name: Name; str: NameString; pos: ModulePos;
     name. str := str
   END InitName;
 
-PROCEDURE (name: Name) Store* (w: Storable.Writer);
+PROCEDURE (name: Name) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     len: LONGINT;
   BEGIN
@@ -900,7 +900,7 @@ PROCEDURE (name: Name) Store* (w: Storable.Writer);
     w. WriteBytes (name. str^, 0, len)
   END Store;
 
-PROCEDURE (name: Name) Load* (r: Storable.Reader);
+PROCEDURE (name: Name) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     str: NameString;
     len: LONGINT;
@@ -944,7 +944,7 @@ PROCEDURE InitItem* (item: Item; parent: Item);
     END
   END InitItem;
 
-PROCEDURE WriteItemList(w: Storable.Writer; item : Item);
+PROCEDURE WriteItemList(w: Storable.Writer; item: Item) RAISES IO.Error;
   BEGIN
     WHILE item # NIL DO
       w. WriteObject(item);
@@ -953,7 +953,7 @@ PROCEDURE WriteItemList(w: Storable.Writer; item : Item);
     w.WriteObject(NIL);
   END WriteItemList;
   
-PROCEDURE ReadItemList(r : Storable.Reader) : Item;
+PROCEDURE ReadItemList(r: Storable.Reader): Item RAISES IO.Error;
   VAR
     last, list : Item;
     obj : Storable.Object;
@@ -974,14 +974,14 @@ PROCEDURE ReadItemList(r : Storable.Reader) : Item;
     RETURN list
   END ReadItemList;
 
-PROCEDURE (item: Item) Store* (w: Storable.Writer);
+PROCEDURE (item: Item) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     WriteItemList(w, item.nestedItems);
     w. WriteObject (item. parent);
     (* item.flagList is not store *)
   END Store;
 
-PROCEDURE (item: Item) Load* (r: Storable.Reader);
+PROCEDURE (item: Item) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1083,7 +1083,7 @@ PROCEDURE InitDeclaration* (decl: Declaration; parent: Item; name: Name;
     decl. usageCount := 0;
   END InitDeclaration;
 
-PROCEDURE (decl: Declaration) Store* (w: Storable.Writer);
+PROCEDURE (decl: Declaration) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     decl. Store^ (w);
     w. WriteObject (decl. name);
@@ -1096,7 +1096,7 @@ PROCEDURE (decl: Declaration) Store* (w: Storable.Writer);
     END;
   END Store;
 
-PROCEDURE (decl: Declaration) Load* (r: Storable.Reader);
+PROCEDURE (decl: Declaration) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i: LONGINT;
     obj: Storable.Object;
@@ -1147,7 +1147,7 @@ PROCEDURE InitType* (type: Type; parent: Item; position: Position);
     type. hasDescriptor := TRUE;
   END InitType;
 
-PROCEDURE (type: Type) Store* (w: Storable.Writer);
+PROCEDURE (type: Type) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     type. Store^ (w);
     w. WriteObject (type. namingDecl);
@@ -1159,7 +1159,7 @@ PROCEDURE (type: Type) Store* (w: Storable.Writer);
     w. WriteBool (type. hasDescriptor);
   END Store;
 
-PROCEDURE (type: Type) Load* (r: Storable.Reader);
+PROCEDURE (type: Type) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
     i: LONGINT;
@@ -1216,12 +1216,12 @@ PROCEDURE InitLinkDirective (l: LinkDirective);
     l. next := NIL;
   END InitLinkDirective;
 
-PROCEDURE (l: LinkDirective) Store* (w: Storable.Writer);
+PROCEDURE (l: LinkDirective) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     w. WriteObject (l. next)
   END Store;
 
-PROCEDURE (l: LinkDirective) Load* (r: Storable.Reader);
+PROCEDURE (l: LinkDirective) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1233,8 +1233,9 @@ PROCEDURE (l: LinkDirective) Load* (r: Storable.Reader);
     END
   END Load;
 
-PROCEDURE (l: LinkFile) Store* (w: Storable.Writer);
-  PROCEDURE WriteURI (w: Storable.Writer; uri: URI.HierarchicalURI);
+PROCEDURE (l: LinkFile) Store* (w: Storable.Writer) RAISES IO.Error;
+  PROCEDURE WriteURI (w: Storable.Writer; uri: URI.HierarchicalURI)
+  RAISES IO.Error;
     VAR
       b: ARRAY 1024 OF CHAR;
     BEGIN
@@ -1249,7 +1250,8 @@ PROCEDURE (l: LinkFile) Store* (w: Storable.Writer);
     w. WriteStr (l. suffixOption);
   END Store;
 
-PROCEDURE ReadString8(r: Storable.Reader): STRING;
+PROCEDURE ReadString8(r: Storable.Reader): STRING
+RAISES IO.Error;
   VAR
     str: STRING;
   BEGIN
@@ -1261,8 +1263,9 @@ PROCEDURE ReadString8(r: Storable.Reader): STRING;
     END;
   END ReadString8;
 
-PROCEDURE (l: LinkFile) Load* (r: Storable.Reader);
-  PROCEDURE ReadURI (r: Storable.Reader; VAR uri: URI.HierarchicalURI);
+PROCEDURE (l: LinkFile) Load* (r: Storable.Reader) RAISES IO.Error;
+  PROCEDURE ReadURI (r: Storable.Reader; VAR uri: URI.HierarchicalURI)
+  RAISES IO.Error;
     VAR
       b: ARRAY 1024 OF CHAR;
       u: URI.URI;
@@ -1286,7 +1289,7 @@ PROCEDURE (l: LinkFile) Load* (r: Storable.Reader);
   END Load;
 
 
-PROCEDURE (l: LinkLib) Store* (w: Storable.Writer);
+PROCEDURE (l: LinkLib) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
   BEGIN
@@ -1300,7 +1303,7 @@ PROCEDURE (l: LinkLib) Store* (w: Storable.Writer);
     END;
   END Store;
 
-PROCEDURE (l: LinkLib) Load* (r: Storable.Reader);
+PROCEDURE (l: LinkLib) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     len, i: LONGINT;
   BEGIN
@@ -1331,7 +1334,7 @@ PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
     mod. bodyDecl := bodyDecl;
   END InitModule;
 
-PROCEDURE (mod: Module) Store* (w: Storable.Writer);
+PROCEDURE (mod: Module) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     mod. Store^ (w);
     (* ignore field `ns' *)
@@ -1341,7 +1344,7 @@ PROCEDURE (mod: Module) Store* (w: Storable.Writer);
     w. WriteObject (mod. linkDirectives)
   END Store;
 
-PROCEDURE (mod: Module) Load* (r: Storable.Reader);
+PROCEDURE (mod: Module) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1527,14 +1530,14 @@ PROCEDURE (import: Import) IsInternalImport*(): BOOLEAN;
   END IsInternalImport;
 
 
-PROCEDURE (import: Import) Store* (w: Storable.Writer);
+PROCEDURE (import: Import) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     import. Store^ (w);
     w. WriteObject (import. moduleName);
     w. WriteLInt (import. fingerprint);
   END Store;
 
-PROCEDURE (import: Import) Load* (r: Storable.Reader);
+PROCEDURE (import: Import) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1564,7 +1567,7 @@ PROCEDURE (constDecl: ConstDecl) SetValueType* (value : Boxed.Object; type : Pre
     constDecl.type := type;
   END SetValueType;
 
-PROCEDURE (constDecl: ConstDecl) Store* (w: Storable.Writer);
+PROCEDURE (constDecl: ConstDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     constDecl. Store^ (w);
     w. WriteObject (constDecl. value);
@@ -1577,7 +1580,7 @@ PROCEDURE (constDecl: ConstDecl) Store* (w: Storable.Writer);
     END
   END Store;
 
-PROCEDURE (constDecl: ConstDecl) Load* (r: Storable.Reader);
+PROCEDURE (constDecl: ConstDecl) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
     id: LONGINT;
@@ -1608,14 +1611,14 @@ PROCEDURE InitExceptionName* (exceptionName: ExceptionName; parent: Item;
     exceptionName. type := type;
   END InitExceptionName;
 
-PROCEDURE (exceptionName: ExceptionName) Store* (w: Storable.Writer);
+PROCEDURE (exceptionName: ExceptionName) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     exceptionName. Store^ (w);
     (*w. WriteObject (exceptionName. type);*)
     w. WriteObject (exceptionName. srcCodeType);
   END Store;
 
-PROCEDURE (exceptionName: ExceptionName) Load* (r: Storable.Reader);
+PROCEDURE (exceptionName: ExceptionName) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1666,7 +1669,7 @@ PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
     varDecl. SetType (type);
   END InitVarDecl;
 
-PROCEDURE (varDecl: VarDecl) Store* (w: Storable.Writer);
+PROCEDURE (varDecl: VarDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     varDecl. Store^ (w);
     (*w. WriteObject (varDecl. type);*)
@@ -1681,7 +1684,7 @@ PROCEDURE (varDecl: VarDecl) Store* (w: Storable.Writer);
     w. WriteBool (varDecl. supplementArgs);
   END Store;
 
-PROCEDURE (varDecl: VarDecl) Load* (r: Storable.Reader);
+PROCEDURE (varDecl: VarDecl) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1714,14 +1717,14 @@ PROCEDURE InitTypeDecl* (typeDecl: TypeDecl; parent: Item; name: Name;
     typeDecl. srcCodeType := type
   END InitTypeDecl;
 
-PROCEDURE (typeDecl: TypeDecl) Store* (w: Storable.Writer);
+PROCEDURE (typeDecl: TypeDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     typeDecl. Store^ (w);
     (*w. WriteObject (typeDecl. type);*)
     w. WriteObject (typeDecl. srcCodeType)
   END Store;
 
-PROCEDURE (typeDecl: TypeDecl) Load* (r: Storable.Reader);
+PROCEDURE (typeDecl: TypeDecl) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1740,14 +1743,14 @@ PROCEDURE InitRedirect* (redir: Redirect; parent: Item; name: Name;
     redir. ident := ident;
   END InitRedirect;
 
-PROCEDURE (redir: Redirect) Store* (w: Storable.Writer);
+PROCEDURE (redir: Redirect) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     redir. Store^ (w);
     w. WriteObject (redir. module);
     w. WriteObject (redir. ident);
   END Store;
 
-PROCEDURE (redir: Redirect) Load* (r: Storable.Reader);
+PROCEDURE (redir: Redirect) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1770,7 +1773,7 @@ PROCEDURE InitFieldDecl* (fieldDecl: FieldDecl; parent: Item; name: Name;
     fieldDecl. shadowsPrivateBase := FALSE;
   END InitFieldDecl;
 
-PROCEDURE (fieldDecl: FieldDecl) Store* (w: Storable.Writer);
+PROCEDURE (fieldDecl: FieldDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     fieldDecl. Store^ (w);
     (*w. WriteObject (fieldDecl. type);*)
@@ -1779,7 +1782,7 @@ PROCEDURE (fieldDecl: FieldDecl) Store* (w: Storable.Writer);
     w. WriteBool (fieldDecl. shadowsPrivateBase);
   END Store;
 
-PROCEDURE (fieldDecl: FieldDecl) Load* (r: Storable.Reader);
+PROCEDURE (fieldDecl: FieldDecl) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1806,12 +1809,12 @@ PROCEDURE InitPredefProc* (proc: PredefProc; parent: Item; name: Name;
     proc. maxArgs := maxArgs;
   END InitPredefProc;
 
-PROCEDURE (proc: PredefProc) Store* (w: Storable.Writer);
+PROCEDURE (proc: PredefProc) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     ASSERT (FALSE)
   END Store;
 
-PROCEDURE (proc: PredefProc) Load* (r: Storable.Reader);
+PROCEDURE (proc: PredefProc) Load* (r: Storable.Reader) RAISES IO.Error;
   BEGIN
     ASSERT (FALSE)
   END Load;
@@ -1835,7 +1838,7 @@ PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
     procDecl. hasTryStatm := FALSE;
   END InitProcDecl;
 
-PROCEDURE (procDecl: ProcDecl) Store* (w: Storable.Writer);
+PROCEDURE (procDecl: ProcDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     procDecl. Store^ (w);
     w. WriteBool (procDecl. isTypeBound);
@@ -1847,7 +1850,7 @@ PROCEDURE (procDecl: ProcDecl) Store* (w: Storable.Writer);
     (* ignore field `ns' & `procAST' *)
   END Store;
 
-PROCEDURE (procDecl: ProcDecl) Load* (r: Storable.Reader);
+PROCEDURE (procDecl: ProcDecl) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1930,12 +1933,12 @@ PROCEDURE InitPredefType* (ptype: PredefType; parent: Item; id: PredefId);
     ptype. id := id;
   END InitPredefType;
 
-PROCEDURE (tname: PredefType) Store* (w: Storable.Writer);
+PROCEDURE (tname: PredefType) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     ASSERT (FALSE)
   END Store;
 
-PROCEDURE (tname: PredefType) Load* (r: Storable.Reader);
+PROCEDURE (tname: PredefType) Load* (r: Storable.Reader) RAISES IO.Error;
   BEGIN
     ASSERT (FALSE)
   END Load;
@@ -1949,14 +1952,14 @@ PROCEDURE InitTypeName* (tname: TypeName; parent: Item; position: Position;
     tname. ident := ident
   END InitTypeName;
 
-PROCEDURE (tname: TypeName) Store* (w: Storable.Writer);
+PROCEDURE (tname: TypeName) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     tname. Store^ (w);
     w. WriteObject (tname. module);
     w. WriteObject (tname. ident)
   END Store;
 
-PROCEDURE (tname: TypeName) Load* (r: Storable.Reader);
+PROCEDURE (tname: TypeName) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -1996,7 +1999,7 @@ PROCEDURE InitRecord* (record: Record; parent: Item; position: Position;
     record. className := NIL
   END InitRecord;
 
-PROCEDURE (record: Record) Store* (w: Storable.Writer);
+PROCEDURE (record: Record) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     record. Store^ (w);
     (*w. WriteObject (record. baseType);*)
@@ -2009,7 +2012,7 @@ PROCEDURE (record: Record) Store* (w: Storable.Writer);
     (* ignore field `ns' *)
   END Store;
 
-PROCEDURE (record: Record) Load* (r: Storable.Reader);
+PROCEDURE (record: Record) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -2060,7 +2063,7 @@ PROCEDURE InitPointer* (pointer: Pointer; parent: Item; position: Position;
     pointer. isStatic := FALSE;
   END InitPointer;
 
-PROCEDURE (pointer: Pointer) Store* (w: Storable.Writer);
+PROCEDURE (pointer: Pointer) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     pointer. Store^ (w);
     (*w. WriteObject (pointer. baseType);*)
@@ -2069,7 +2072,7 @@ PROCEDURE (pointer: Pointer) Store* (w: Storable.Writer);
     w. WriteBool (pointer. isStatic);
   END Store;
 
-PROCEDURE (pointer: Pointer) Load* (r: Storable.Reader);
+PROCEDURE (pointer: Pointer) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -2095,7 +2098,7 @@ PROCEDURE InitArray* (array: Array; parent: Item; position: Position;
     array. lengthExpr := lengthExpr;
   END InitArray;
 
-PROCEDURE (array: Array) Store* (w: Storable.Writer);
+PROCEDURE (array: Array) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     array. Store^ (w);
     w. WriteBool (array. isOpenArray);
@@ -2106,7 +2109,7 @@ PROCEDURE (array: Array) Store* (w: Storable.Writer);
     w. WriteNum (array. length);    
   END Store;
 
-PROCEDURE (array: Array) Load* (r: Storable.Reader);
+PROCEDURE (array: Array) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
   BEGIN
@@ -2201,7 +2204,7 @@ PROCEDURE (formalPars: FormalPars) EnableRestParameters*;
     formalPars. anyRestParameters := TRUE
   END EnableRestParameters;
   
-PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer);
+PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
   BEGIN
@@ -2229,7 +2232,7 @@ PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer);
     END;
   END Store;
 
-PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader);
+PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
     len, i: LONGINT;

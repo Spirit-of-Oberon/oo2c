@@ -41,9 +41,6 @@ RAISES IO.Error;
       fp := mr.fingerprint;
       w.WriteBytes(fp, 0, SIZE(LONGINT));
     END;
-    IF (w.error # NIL) THEN
-      RAISE(w.error);
-    END;
     
     mem.SetPosition(0);
     d := mem.TransferTo(mem.length, ch);
