@@ -59,7 +59,8 @@ OOC_INT32 IO_Select__SelectorDesc_Select(IO_Select__Selector s,
   struct timeval tv, *tvptr;
   IO__SelectionKey k;
   int res;
-  OOC_INT32 updates;
+  OOC_INT32 readyCount;
+  OOC_UINT32 readyUponCall = 0;
   
   OOC_METHOD(s,IO__SelectorDesc_RemoveCanceled)((IO__Selector)s);
   
@@ -70,6 +71,7 @@ OOC_INT32 IO_Select__SelectorDesc_Select(IO_Select__Selector s,
     /* only select() on read/write if the key's interest mask has bits set
        that are not in the current ready mask */
     OOC_UINT32 ops = k->interestOps & ~k->channel->readyOps;
+    readyUponCall |= k->channel->readyOps;
     if (ops & read_mask) {
       FD_SET(k->fd,&fds->read);
     }
@@ -79,7 +81,11 @@ OOC_INT32 IO_Select__SelectorDesc_Select(IO_Select__Selector s,
     k = k->nextKey;
   }
   
-  if (sec >= 0) {
+  if (readyUponCall) {
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    tvptr = &tv;
+  } else if (sec >= 0) {
     tv.tv_sec = sec;
     tv.tv_usec = usec;
     tvptr = &tv;
@@ -93,15 +99,13 @@ OOC_INT32 IO_Select__SelectorDesc_Select(IO_Select__Selector s,
   } while ((res == -1) && (errno == EINTR));
   if (res < 0) {
     IO_StdChannels__IOError(NULL);
-  } else if (res == 0) {  /* timeout, no fd ready */
-    return 0;
   }
   
-  updates = 0;
+  readyCount = 0;
   s->current = (IO_Select__SelectionKey)s->keys;  /* reset NextKey() */
   k = s->keys;
   while (k) {
-    OOC_UINT32 readyOps = 0;
+    OOC_UINT32 readyOps = k->channel->readyOps;
     if (FD_ISSET(k->fd, &fds->read)) {
       readyOps |= (k->interestOps & read_mask);
     }
@@ -109,13 +113,13 @@ OOC_INT32 IO_Select__SelectorDesc_Select(IO_Select__Selector s,
       readyOps |= (k->interestOps & write_mask);
     }
     if (readyOps) {
-      k->channel->readyOps |= readyOps;
-      updates++;
+      readyCount++;
     }
+    k->channel->readyOps = readyOps;
     k = k->nextKey;
   }
   
-  return updates;
+  return readyCount;
 }
 
 IO_Select__SelectionKey IO_Select__SelectorDesc_NextKey(IO_Select__Selector s) {

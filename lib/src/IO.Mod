@@ -80,9 +80,9 @@ TYPE
 TYPE
   Selector* = POINTER TO SelectorDesc;
   SelectorDesc* = RECORD [ABSTRACT]
-  (**A mechanism to discover channels that have become ready for I/O
-     operations.  For example, a selector can be used to find out for which
-     channels new input data has arrived.
+  (**A mechanism to discover channels that are ready for I/O operations.  For
+     example, a selector can be used to find out for which channels input
+     data is available.
 
      Note: The definition of this class covers both selectors that report the
      current state of a channel, and those that only report an event if a
@@ -90,7 +90,8 @@ TYPE
      but never clears them.  I/O operations like @oproc{ByteChannel.Read},
      @oproc{ByteChannel.Write}, @oproc{*SocketChannel.Channel.Connect}, and
      @oproc{*SocketChannel.ServerChannel.Accept} clear the corresponding flag
-     if the channel is in non-blocking mode.  *)
+     if the channel is in non-blocking mode and they get an @samp{EWOULDBLOCK}
+     error from the libc function.  *)
     (Object.ObjectDesc)
     keys-: SelectionKey;
     (**A list of selection keys registered for this selector.  The keys are
@@ -275,21 +276,15 @@ PROCEDURE (s: Selector) Close*();
 
 PROCEDURE (s: Selector) [ABSTRACT] Select*(sec, usec: LONGINT): LONGINT
 RAISES Error;
-(**Determine if operations on registered channels have become ready.  The
-   function returns the number of ready sets that have been modified.  This may
-   differ from the number of channels that have a non-empty ready set on
-   completion, if any channels where already marked as ready at the time of the
-   call.
+(**Determine if operations on registered channels are ready.  The function
+   returns the number of channels with a non-empty ready set.  Result is
+   @samp{0} if no channels are ready or have become ready until the time the
+   specified timeout expires.  If this function is called with a channel
+   already being ready, then it behaves as if a timeout of zero had been
+   requested.
 
-   Result is @samp{0} if no channels have become ready until the time the
-   specified timeout expires.  After a call to @oproc{Selector.Select}, the
-   method @oproc{Selector.NextKey} iterates over all ready channels.
-
-   Note: Unlike the C function @samp{select()}, this method reports on
-   operations that have @emph{become} ready, instead of the operations the are
-   @emph{currently} ready.  For example, if a channel is marked as ``ready to
-   read'' when @oproc{Selector.Select} is called, then this particular
-   operation is not tested for and will not count in the method's result value.  *)
+   After a call to @oproc{Selector.Select}, the method @oproc{Selector.NextKey}
+   iterates over all ready channels.  *)
   END Select;
 
 PROCEDURE (s: Selector) [ABSTRACT] NextKey*(): SelectionKey;
