@@ -23,7 +23,8 @@ MODULE OOC:SymbolTable:Predef;
 
 IMPORT
   Strings, Language, Language:Boolean, Language:Integer, Language:String8,
-  Language:Real, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
+  Language:String16, Language:Real,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
 CONST
@@ -76,6 +77,10 @@ CONST
      Normally, this is the same as @oconst{longint}.  Use this symbolic
      name when producing values the are array indices or lengths.  *)
 
+CONST
+  minChar* = MIN(CHAR);         maxChar* = MAX(CHAR);
+  minLongchar* = MIN(LONGCHAR); maxLongchar* = MAX(LONGCHAR);
+  
 VAR
   minConst, maxConst: ARRAY lastId+1 OF Language.Value;
   (**Array with the @code{MIN} and @code{MAX} values of the predefined
@@ -188,10 +193,11 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefConst ("TRUE", Boolean.New (TRUE), ptype);
     
     ptype := PredefType (stb, module, char, "CHAR", 1, 1,
-                         String8.NewChar (MIN (CHAR)),
-                         String8.NewChar (MAX (CHAR)));
+                         String8.NewChar (minChar),
+                         String8.NewChar (maxChar));
     ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2,
-                         NIL, NIL);      (* FIXME... add MIN/MAX *)
+                         String16.NewChar (minLongchar),
+                         String16.NewChar (maxLongchar));
     ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1,
                          Integer.New (MIN (SHORTINT)),
                          Integer.New (MAX (SHORTINT)));
