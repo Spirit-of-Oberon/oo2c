@@ -1,7 +1,7 @@
 MODULE Config:Simple;
 
 IMPORT
-  Object, Msg, ProgramArgs, IO, IO:Memory,
+  Msg, ProgramArgs, IO, IO:Memory,
   
   C := Config,
   Config:Parser,
@@ -21,7 +21,7 @@ TYPE
   Config* = POINTER TO ConfigDesc;
   ConfigDesc* = RECORD
     (C.ConfigDesc)
-    cfgFile: Object.String8;
+    cfgFile: STRING;
     cfgFileEnvVar: Environment.VariableTemplate;
     cfgFileCmdLineOption: CmdLine.OptionTemplate;
     
@@ -38,7 +38,7 @@ TYPE
   END;
 
 
-PROCEDURE Init* (config: Config; defaultConfigFile: Object.String8);
+PROCEDURE Init* (config: Config; defaultConfigFile: STRING);
   BEGIN
     C.InitConfig (config);
     
@@ -69,7 +69,7 @@ PROCEDURE Init* (config: Config; defaultConfigFile: Object.String8);
   END Init;
 
 
-PROCEDURE New* (defaultConfigFile: Object.String8): Config;
+PROCEDURE New* (defaultConfigFile: STRING): Config;
   VAR
     config: Config;
   BEGIN
@@ -95,7 +95,7 @@ PROCEDURE (config: Config) Read* (errList: Msg.MsgList) RAISES IO.Error;
     cmdEnv: Environment.Command;
     cmdCmdLine: CmdLine.Command;
     
-  PROCEDURE EvaluateFile (fileName: Object.String8) RAISES IO.Error;
+  PROCEDURE EvaluateFile (fileName: STRING) RAISES IO.Error;
     VAR
       p: Parser.Parser;
     BEGIN

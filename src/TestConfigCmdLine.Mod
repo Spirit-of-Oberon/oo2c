@@ -1,7 +1,8 @@
 MODULE TestConfigCmdLine;
 
 IMPORT
-  RT0, Msg, Out, ProgramArgs, IO:StdChannels, Config:Source:CmdLine;
+  Msg, Out, ProgramArgs, OS:ProcessParameters,
+  IO:StdChannels, Config:Source:CmdLine;
 
 
 VAR
@@ -15,13 +16,13 @@ BEGIN
   
   cmdLine := CmdLine.New();
 
-  IF RT0.GetEnv ("DISABLE_DASH_DASH", errText) THEN
+  IF (ProcessParameters.GetEnv("DISABLE_DASH_DASH") # NIL) THEN
     cmdLine. EnableDashDash (FALSE)
   END;
-  IF RT0.GetEnv ("DISABLE_EXPAND_SINGLE", errText) THEN
+  IF (ProcessParameters.GetEnv("DISABLE_EXPAND_SINGLE") # NIL) THEN
     cmdLine. EnableExpandToSingleChar (FALSE)
   END;
-  IF RT0.GetEnv ("DISABLE_START_WITH_DASH", errText) THEN
+  IF (ProcessParameters.GetEnv("DISABLE_START_WITH_DASH") # NIL) THEN
     cmdLine. OptionsStartWithDash (FALSE)
   END;
   

@@ -2,7 +2,7 @@ MODULE TestThread;
 <*Assertions := TRUE*>
 
 IMPORT
-  Log, Exception, Thread:PThread;
+  Log, Exception, Thread:PThread, Thread:Semaphore;
 
 CONST
   arraySize = 1024;

@@ -1,7 +1,7 @@
 MODULE TestConfigSimple;
 
 IMPORT
-  RT0, Object, Out, Err, Msg,
+  Out, Err, Msg, OS:ProcessParameters,
   Config:Simple, Config:Source:Environment, Config:Source:CmdLine,
   Config, Config:Section:Options;
 
@@ -12,12 +12,11 @@ VAR
   
   optionA: Options.Option;
   
-  fileName: ARRAY 1024 OF CHAR;
+  fileName: STRING;
   str: ARRAY 4*1024 OF CHAR;
   errList: Msg.MsgList;
   msg: Msg.Msg;
   i: LONGINT;
-  dummy: BOOLEAN;
   
 PROCEDURE WriteOption (opt: Options.Option);
   BEGIN
@@ -38,9 +37,9 @@ PROCEDURE WriteArgument (i: LONGINT);
   END WriteArgument;
 
 BEGIN
-  dummy := RT0.GetEnv ("DEFAULT_CFG_FILE", fileName);
-  ASSERT (dummy);
-  config := Simple.New (Object.NewLatin1(fileName));
+  fileName := ProcessParameters.GetEnv("DEFAULT_CFG_FILE");
+  ASSERT(fileName # NIL);
+  config := Simple.New (fileName);
   
   optionA := config. options. Set ("a", Config.NewStringVar("default"));
   

@@ -1,7 +1,7 @@
 MODULE Config:Source:Environment;
 
 IMPORT
-  Object, Msg, LongStrings, RT0, IO, Writer := IO:TextRider,
+  Object, Msg, LongStrings, OS:ProcessParameters, IO, Writer := IO:TextRider,
   Config:Source, Config:Parser;
 
 
@@ -95,10 +95,8 @@ PROCEDURE (env: Environment) AddVariableTemplate* (name, transformation: Object.
 PROCEDURE (env: Environment) Parse*(): Msg.Msg;
   VAR
     t: VariableTemplate;
-    chars: Object.CharsLatin1;
     cmd: Command;
-    found: BOOLEAN;
-    value: ARRAY 1024 OF CHAR;
+    value: STRING;
     
   PROCEDURE Append (VAR list: Command);
     BEGIN
@@ -112,13 +110,12 @@ PROCEDURE (env: Environment) Parse*(): Msg.Msg;
   BEGIN
     t := env. variableTemplates;
     WHILE (t # NIL) DO
-      chars := t.name.CharsLatin1();
-      found := RT0.GetEnv (chars^, value);
-      IF found THEN
+      value := ProcessParameters.GetEnv(t.name);
+      IF (value # NIL) THEN
         NEW (cmd);
         cmd. nextCommand := NIL;
         cmd. template := t;
-        cmd. argument := Object.NewLatin1(value);
+        cmd. argument := value(Object.String8);
         cmd. doNotWrite := FALSE;
         Append (env. commandList)
       END;
