@@ -10,9 +10,8 @@ dnl information on the package
 dnl checks for programs
 rm -f ./oo2c ./ooef ./oocn 2>/dev/null  # make sure no local files are found
 AC_PROG_INSTALL
-AC_PATH_PROGS(OOC,oo2c Oo2c,oo2c)
-AC_PATH_PROGS(OOEF,ooef Ooef,ooef)
-AC_PATH_PROGS(OOCN,oocn Oocn,oocn)
+AC_PATH_PROG(OOC,oo2c,oo2c)
+AC_PATH_PROG(OOEF,ooef,ooef)
 AC_PATH_PROG(LIBTOOL,libtool,libtool)
 AC_PATH_PROG(DIFF,diff,diff)
 AC_PATH_PROG(XSLTPROC,xsltproc,xsltproc)

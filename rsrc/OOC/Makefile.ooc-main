@@ -2,14 +2,6 @@
 
 include $(OOC_DEV_ROOT)/Makefile.config
 
-# DOC_TARGETS: Lists the target names of all suported documentation formats.
-# For every name listed here, the corresponding output format is generated
-# by "make doc".  The directories in DOC_SUBDIRS are removed when calling 
-# "make doc-clean".
-DOC_TARGETS=doc-txt doc-html doc-xref
-DOC_SUBDIRS=$(subst -,/,$(DOC_TARGETS))
-
-
 # ------------------------------------------------------------------------
 # Auxiliary Variables
 # ------------------------------------------------------------------------
@@ -25,37 +17,6 @@ endif
 
 TEST_LIST_CLEAN=$(patsubst %,$(OOC_DEV_ROOT)/%/.test-clean,$(TEST_LIST))
 TEST_LIST_TEST=$(patsubst %,$(OOC_DEV_ROOT)/%/.test,$(TEST_LIST))
-
-
-
-
-# ------------------------------------------------------------------------
-# Documentation targets
-# ------------------------------------------------------------------------
-
-.PHONY: $(DOC_TARGETS) doc-clean doc-buildall doc
-
-doc1-txt:
-	$(MKDIR) $(top_builddir)/doc/txt
-	$(OOCN) --def-txt -Cv -o $(top_builddir)/doc/txt $(DOC_ROOT_MODULES)
-
-doc1-html:
-	$(MKDIR) $(top_builddir)/doc/html
-	$(OOCN) --def-html -Cv -o $(top_builddir)/doc/html $(DOC_ROOT_MODULES)
-
-doc1-xref:
-	$(MKDIR) $(top_builddir)/doc/xref
-	$(OOCN) --xref -Cv -o $(top_builddir)/doc/xref $(DOC_ROOT_MODULES)
-
-doc1-clean:
-	cd $(OOC_DEV_ROOT) && $(RM_R) $(DOC_SUBDIRS)
-
-doc1-buildall: $(DOC_TARGETS)
-
-# Delegate to the "doc" makefile, calling the target "doc1-buildall" above
-doc1:
-	$(MAKE) -f $(OOC_DEV_ROOT)/doc/Makefile doc-buildall
-
 
 # ------------------------------------------------------------------------
 # Test targets
