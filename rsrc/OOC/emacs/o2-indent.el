@@ -436,7 +436,7 @@ Else returns nil."
   ;; Comments
   (require 'newcomment)
   (set (make-local-variable 'comment-start) "(*")
-  (set (make-local-variable 'comment-end) "(*")
+  (set (make-local-variable 'comment-end) "*)")
   (comment-normalize-vars))
 
 (defun ob2-indent-buffer-and-save (arg)
