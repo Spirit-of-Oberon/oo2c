@@ -66,7 +66,7 @@
     <td valign="top" align="left">
       <xsl:for-each select="table-first-column">
         <xsl:apply-templates select="."/>
-        <xsl:if test="position(.) != last()"><br/></xsl:if>
+        <xsl:if test="position() != last()"><br/></xsl:if>
       </xsl:for-each>
     </td>
     <td><xsl:apply-templates select="item"/></td>

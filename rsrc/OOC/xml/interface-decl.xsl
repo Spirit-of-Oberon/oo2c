@@ -175,7 +175,7 @@
       <b><xsl:text>Redefines</xsl:text></b><xsl:text>: </xsl:text>
       <xsl:for-each select='redefined-method'>
         <xsl:apply-templates select="." mode="ref-base-obj"/>
-        <xsl:if test="position(.) != last()">, </xsl:if>
+        <xsl:if test="position() != last()">, </xsl:if>
       </xsl:for-each>
     </p>
   </xsl:if>

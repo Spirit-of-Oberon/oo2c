@@ -180,7 +180,7 @@
       <xsl:for-each select="inherited-field">
         <xsl:sort select="@name"/>
         <xsl:apply-templates select="." mode="ref-base-obj"/>
-        <xsl:if test="position(.) != last()">, </xsl:if>
+        <xsl:if test="position() != last()">, </xsl:if>
       </xsl:for-each>
     </p>
   </xsl:if>
@@ -203,7 +203,7 @@
       <xsl:for-each select="inherited-method">
         <xsl:sort select="@name"/>
         <xsl:apply-templates select="." mode="ref-base-obj"/>
-        <xsl:if test="position(.) != last()">, </xsl:if>
+        <xsl:if test="position() != last()">, </xsl:if>
       </xsl:for-each>
     </p>
   </xsl:if>
