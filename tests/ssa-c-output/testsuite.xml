@@ -4,7 +4,7 @@
 
 <testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module var1 var2 var3 var3b">
+  select ="prepare_out_module var1 var2 var3 var3b var4 var4b">
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -36,5 +36,17 @@
       Similar to the preceding test case, with the added complication
       of a nested <code>IF</code> statement.
     </test>
+    
+    <test id="var4" type="run" file="Var4.Mod" output="Var4.Ref">
+      Return value is taken from a global variable that is set in an 
+      <code>IF</code> statement.  The assignments should remain,
+      because the changed variable is visible outside the procedure.
+    </test>
+    
+    <test id="var4b" type="run" file="Var4b.Mod" output="Var4b.Ref">
+      Similar to the preceding test case, with the added complication
+      of a nested <code>IF</code> statement.
+    </test>
+    
   </testcases>
 </testsuite-ext>
