@@ -22,6 +22,9 @@
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; generic72">-->
 
+<!--<testsuite-ext profile="Test Suite for Translation Patterns"
+  select ="&SetupTestCasesWithOut; atomic1">-->
+
   &TestSetupWithOut;
     
   <testcases profile="OOC2 Development" default-lang="O2">
@@ -1363,6 +1366,11 @@
       Defining a formal <code>VAR</code> parameter whose type is an
       <code>ABSTRACT</code> record.
     </test>
+
+    <test id="atomic1" type = "run" file="Atomic1.Mod" output="Atomic1.Ref">
+      Test the classification of atomic types, including records with
+      the NO_TRACED_POINTERS flag.
+    </test>
   </testcases>
   
   <testcases profile="OOC2 Development: Generics Extension"
@@ -2340,7 +2348,7 @@
     <reject-info id="callconv4" pos="%:="
         msg="Expression not compatible with variable type `CallConv1.Proc'"/>
 
-    <reject-info id="vtable2" pos="BDesc = %RECORD (ADesc)"
+    <reject-info id="vtable2" pos="BDesc = %RECORD [VTABLE]"
         msg="VTABLE flag is inconsistent with base type"/>
 
     <warning-info id="undef1" pos="x := %y;"
