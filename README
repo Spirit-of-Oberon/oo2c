@@ -15,6 +15,7 @@ Operating system, architecture, and gcc combinations that are known to
 work:
 
   Linux 2.4.19/i386/gcc 2.95.4 & 3.2.1
+  Linux 2.6.7/x86 and x86-64/gcc 3.4.1
   SunOS 5.6/sparc/gcc 2.95.2 (32 bit)
   SunOS 5.8/sparcv9/gcc 3.2.1 (64 bit)
   Mac OS X/G3/gcc 2.95.2
