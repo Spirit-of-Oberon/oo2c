@@ -776,6 +776,11 @@ PROCEDURE (opnd: Opnd) IsBackedgeOpnd*(): BOOLEAN;
         (opnd.instr.opndList # opnd);
   END IsBackedgeOpnd;
 
+PROCEDURE (opnd: Opnd) IsConst*(): BOOLEAN;
+  BEGIN
+    RETURN (opnd.arg.instr.opcode = const);
+  END IsConst;
+
 
 
 PROCEDURE (res: Result) INIT*(type: Type);

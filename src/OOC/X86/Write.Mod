@@ -296,7 +296,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       sb.AppendLatin1(str);
     END Reg;
 
-  PROCEDURE Const(instr: S.Instr);
+  PROCEDURE Literal(instr: S.Instr);
     VAR
       s: S.Selector;
       value: Boxed.Object;
@@ -344,7 +344,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       | s: S.TypeDescr DO
         sb.Append(Naming.NameOfTypeDescriptor(s.type, qtdData));
       END;
-    END Const;
+    END Literal;
   
   PROCEDURE Result(res: S.Result);
     BEGIN
@@ -354,21 +354,19 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       END;
     END Result;
 
-  PROCEDURE ConstValue(instr: S.Instr): BOOLEAN;
+  PROCEDURE ^ Opnd(opnd: S.Opnd);
+    
+  PROCEDURE DirectOpnd(opnd: S.Opnd);
     VAR
-      s: S.Selector;
+      argInstr: S.Instr;
     BEGIN
-      s := instr.designator[0];
-      WITH s: S.Var DO
-        RETURN (s.decl = NIL);
-      | s: S.Proc DO
-        RETURN FALSE;
-      | s: S.ProcName DO
-        RETURN FALSE;
+      argInstr := opnd.arg.instr;
+      IF (argInstr.opcode = S.const) THEN
+        Literal(argInstr);
       ELSE
-        RETURN TRUE;
+        Opnd(opnd);
       END;
-    END ConstValue;
+    END DirectOpnd;
   
   PROCEDURE Opnd(opnd: S.Opnd);
     VAR
@@ -377,7 +375,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     PROCEDURE Offset(arg1, arg2: S.Result);
       BEGIN
         IF (arg2.instr.opcode = S.const) THEN
-          Const(arg2.instr);
+          Literal(arg2.instr);
           sb.AppendLatin1Char("(");
           Result(arg1);
           sb.AppendLatin1Char(")");
@@ -397,10 +395,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         argInstr := opnd.arg.instr;
         CASE argInstr.opcode OF
         | S.const:
-          IF ConstValue(argInstr) THEN
-            sb.AppendLatin1Char("$");
-          END;
-          Const(argInstr);
+          sb.AppendLatin1Char("$");
+          Literal(argInstr);
         | S.add:           (* address is register plus displacement *)
           Offset(argInstr.opndList.arg,
                  argInstr.opndList.nextOpnd.arg);
@@ -543,10 +539,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.const:
           type := instr.resultList.type;
           Opc("mov");
-          IF ConstValue(instr) THEN
-            sb.AppendLatin1Char("$");
-          END;
-          Const(instr);
+          sb.AppendLatin1Char("$");
+          Literal(instr);
           Comma();
           Result(instr.resultList);
         | S.add:
@@ -599,7 +593,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Opc("ret");
         | S.call:
           Opc("call");
-          Opnd(instr.opndList);
+          DirectOpnd(instr.opndList);
         | S.leave:
           sb.AppendLatin1(nlTab+"popl %ebx");
           sb.AppendLatin1(nlTab+"popl %esi");
@@ -639,7 +633,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
             Opnd(instr.opndList);
             sb.Append(")");
           ELSE
-            Opnd(instr.opndList);
+            DirectOpnd(instr.opndList);
           END;
           Comma();
           Result(instr.resultList);
@@ -657,7 +651,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           OpcT("mov", opnd.arg.type, -1);
           Opnd(opnd);
           sb.Append(", ");
-          Const(instr.opndList.nextOpnd.arg.instr);
+          Literal(instr.opndList.nextOpnd.arg.instr);
           sb.Append("(%esp)");
           
           (* control flow *)

@@ -148,7 +148,7 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
     FOR instr IN b.AllInstructions(-1) DO
       CASE instr.opcode OF
       | S.get, S.set:
-        IF IsOffset(instr.opndList.arg.instr) THEN
+        IF instr.opndList.IsConst() OR IsOffset(instr.opndList.arg.instr) THEN
           instr.opndList.immediate := TRUE;
         END;
       | S.gate:
