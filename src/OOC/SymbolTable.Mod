@@ -539,7 +539,7 @@ TYPE
     (**Variable declarations, formal parameters, and receivers of type-bound
        procedures are stored as instances of this class.  *)
     (DeclarationDesc)
-    type*: Type;                         (*... make this read-only? *)
+    type-: Type;
     (**The type of the variable.  If this is initially a type name,
        it is replaced with a reference to the true type after
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
@@ -561,7 +561,8 @@ TYPE
        passed to the callee as references.  If it is @code{TRUE}, then the
        procedure call passes the address of the argument to the called
        procedure, instead of the arguments value.  @ofield{isVarParam} implies
-       @ofield{isPassPerReference}.  *)
+       @ofield{isPassPerReference}.  Note: This field may hold the wrong
+       value until @ofield{type} has been set to its final value.  *)
   END;
 
 TYPE
@@ -1154,29 +1155,34 @@ PROCEDURE (constDecl: ConstDecl) Load* (r: Object.Reader);
   END Load;
 
 
-PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
-                        visibleFrom: ModulePos; exportMark: ExportMark;
-                        docString: Doc.Document;
-                        isParameter, isReceiver, isVarParam: BOOLEAN;
-                        type: Type);
-  
+PROCEDURE (varDecl: VarDecl) SetType* (type: Type);
   PROCEDURE PassPerReference (type: Type): BOOLEAN;
     BEGIN
       RETURN (type IS Array) OR (type IS Record)
     END PassPerReference;
   
   BEGIN
-    InitDeclaration (varDecl, parent, name, visibleFrom, exportMark, docString);
     varDecl. type := type;
+    varDecl. isPassPerReference :=
+        varDecl. isParameter &
+        (varDecl. isVarParam OR PassPerReference (type));
+  END SetType;
+
+PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
+                        visibleFrom: ModulePos; exportMark: ExportMark;
+                        docString: Doc.Document;
+                        isParameter, isReceiver, isVarParam: BOOLEAN;
+                        type: Type);
+  BEGIN
+    InitDeclaration (varDecl, parent, name, visibleFrom, exportMark, docString);
     varDecl. srcCodeType := type;
     varDecl. isParameter := isParameter;
     varDecl. isReceiver := isReceiver;
     varDecl. isVarParam := isVarParam;
-    varDecl. isPassPerReference :=
-        isParameter & (isVarParam OR PassPerReference (type));
     IF isReceiver THEN
       parent(FormalPars). receiver := varDecl
-    END
+    END;
+    varDecl. SetType (type);
   END InitVarDecl;
 
 PROCEDURE (varDecl: VarDecl) Store* (w: Object.Writer);
