@@ -206,7 +206,7 @@ RAISES IO.Error;
         (* object file is part of a library; for each library encountered
            this way, keep track of one module that it provides *)
         IF ~importedLibs.HasKey(libraryName) THEN
-          importedLibs.Set(imports[i].ifData.libraryName, NIL);
+          importedLibs.Set(libraryName, NIL);
           importedLibsList.Append(imports[i]);
         END;
       ELSIF ~imports[i].ifData.NoObjectFile() THEN
