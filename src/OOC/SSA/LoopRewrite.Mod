@@ -106,6 +106,9 @@ TYPE
 TYPE
   CycleElement = POINTER TO CycleElementDesc;
   CycleElementDesc = RECORD
+    (* For every element in a cycle, at least one of the argument for
+       @ofield{res} is either the induction head, or another element of the
+       cycle.  *)
     next: CycleElement;
     res: SSA.Result;
     id: LONGINT;
@@ -219,19 +222,23 @@ PROCEDURE LogSum(sum: Sum);
     END E;
   
   BEGIN
-    Err.String("ind(");
-    IF (sum.headFactor # zero) THEN
-      Res(sum.head);
-      Err.Char("*");
-      E(sum.headFactor);
+    IF (sum = NIL) THEN
+      Err.String("<NIL>");
+    ELSE
+      Err.String("ind(");
+      IF (sum.headFactor # zero) THEN
+        Res(sum.head);
+        Err.Char("*");
+        E(sum.headFactor);
+      END;
+      Err.String(")+li(");
+      E(sum.loopInvariant);
+      Err.String(")+c(");
+      E(sum.constant);
+      Err.String(")+o(");
+      E(sum.others);
+      Err.String(")");
     END;
-    Err.String(")+li(");
-    E(sum.loopInvariant);
-    Err.String(")+c(");
-    E(sum.constant);
-    Err.String(")+o(");
-    E(sum.others);
-    Err.String(")");
     Err.Ln;
   END LogSum;
 
@@ -249,6 +256,22 @@ PROCEDURE DumpSums(pb: SSA.ProcBlock);
       instr := instr.nextInstr;
     END;
   END DumpSums;
+
+PROCEDURE DumpCycle(ic: InductionCycle);
+  VAR
+    ce: CycleElement;
+  BEGIN
+    Log.Msg("### Inductive Cycle");
+    ce := ic.cycleElements;
+    WHILE (ce # NIL) DO
+      Log.LongInt("ce.id", ce.id);
+      Log.Ptr("  ce", ce);
+      ce.res.LogId("  ce.res");
+      Log.Ptr("  ce", ce);
+      Log.Ptr("  ce.next", ce.next);
+      ce := ce.next;
+    END;
+  END DumpCycle;
 <*END*>  
 
 
@@ -413,7 +436,6 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
     res: SSA.Result;
     opnd: SSA.Opnd;
     ic: InductionCycle;
-    cyclic: BOOLEAN;
 
   PROCEDURE NewInductionCycle(head: SSA.Result): InductionCycle;
     VAR
@@ -450,33 +472,52 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
       END;
     END AddInductionValue;
   
-  PROCEDURE SearchCycle(res, head: SSA.Result; ic: InductionCycle;
-                        VAR cyclic: BOOLEAN);
+  PROCEDURE SearchCycle(res, head: SSA.Result; ic: InductionCycle): BOOLEAN;
     VAR
       opnd: SSA.Opnd;
-      opndCyclic: BOOLEAN;
       resIndex: LONGINT;
+      onCycle: BOOLEAN;
+      arg: SSA.Result;
     BEGIN
       IF (res = head) THEN
-        cyclic := TRUE;
+        RETURN TRUE;
       ELSIF (res.marker = forwardInductive) THEN
-        resIndex := res.ResultIndex();
-        opnd := res.instr.opndList;
-        WHILE (opnd # NIL) DO
-          opndCyclic := FALSE;
-          IF (opnd.arg.instr.opcode = Opcode.collect) THEN
-            SearchCycle(opnd.arg.instr.NthArg(resIndex-1),
-                        head, ic, opndCyclic);
-          ELSE
-            SearchCycle(opnd.arg,
-                        head, ic, opndCyclic);
+        onCycle := FALSE;
+        
+        CASE res.instr.opcode OF
+        | Opcode.add, Opcode.subtract:
+          opnd := res.instr.opndList;
+          WHILE (opnd # NIL) DO
+            IF SearchCycle(opnd.arg, head, ic) THEN
+              onCycle := TRUE;
+            END;
+            opnd := opnd.nextOpnd;
           END;
-          cyclic := cyclic OR opndCyclic;
-          opnd := opnd.nextOpnd;
+          
+        | Opcode.select:
+          resIndex := res.ResultIndex();
+          
+          opnd := res.instr.NthOpnd(1);
+          WHILE (opnd # NIL) DO
+            opnd := opnd.nextOpnd;
+            IF (opnd.arg.instr.opcode = Opcode.collect) THEN
+              arg := opnd.arg.instr.NthArg(resIndex-1);
+            ELSE
+              arg := opnd.arg;
+            END;
+            IF SearchCycle(arg, head, ic) THEN
+              onCycle := TRUE;
+            END;
+            opnd := opnd.nextOpnd;
+          END;
         END;
-        IF cyclic THEN
+        
+        IF onCycle THEN
           AddInductionValue(ic, res);
         END;
+        RETURN onCycle;
+      ELSE
+        RETURN FALSE;
       END;
     END SearchCycle;
   
@@ -492,9 +533,7 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
         AddInductionValue(ic, res);
         
         opnd := loopEnd.opndList.nextOpnd.arg.instr.NthOpnd(count);
-        cyclic := FALSE;
-        SearchCycle(opnd.arg, res, ic, cyclic);
-        IF cyclic THEN
+        IF SearchCycle(opnd.arg, res, ic) THEN
           res.info := ic;
         END;
       END;
@@ -565,6 +604,16 @@ PROCEDURE Flatten*(res: SSA.Result);
     VAR
       p: PList;
       i, ia, ib: LONGINT;
+
+    PROCEDURE CopyProduct(a: Product): Product;
+      VAR
+        p: Product;
+      BEGIN
+        NEW(p);
+        p^ := a^;
+        RETURN p;
+      END CopyProduct;
+    
     BEGIN
       IF (a = zero) THEN
         RETURN ScalePList(b, magnB);
@@ -580,11 +629,11 @@ PROCEDURE Flatten*(res: SSA.Result);
             p.prod[i] := a.prod[ia];
             INC(i); INC(ia);
           ELSIF (ia = a.size) OR (Cmp(a.prod[ia], b.prod[ib]) > 0) THEN
-            p.prod[i] := b.prod[ib];
+            p.prod[i] := CopyProduct(b.prod[ib]);
             p.prod[i].magnitude := p.prod[i].magnitude * magnB;
             INC(i); INC(ib);
           ELSE  (* Cmp() = 0 *)
-            p.prod[i] := a.prod[ia];
+            p.prod[i] := CopyProduct(a.prod[ia]);
             INC(p.prod[i].magnitude, b.prod[ib].magnitude * magnB);
             INC(i); INC(ia); INC(ib);
           END;
@@ -601,12 +650,8 @@ PROCEDURE Flatten*(res: SSA.Result);
       sum: Sum;
       subclass: Opcode.Subclass;
     BEGIN
-      (* ideally, the subclasses of both sides are the same; until then... *)
       ASSERT(a.subclass = b.subclass);
       subclass := a.subclass;
-      IF (b.subclass > subclass) THEN
-        subclass := b.subclass;
-      END;
       
       NEW(sum);
       InitSum(sum, subclass, NIL);
@@ -913,7 +958,6 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
           instr.AddOpnd(res, Opnd.arg);
           instr.AddOpnd(mres, Opnd.arg);
           res := instr;
-          replacement.Set(ce.res, res);
           
         | Opcode.select:
           resultIndex := ce.res.ResultIndex();
@@ -926,10 +970,14 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
             ASSERT(opnd.arg.instr.opcode = Opcode.collect);
             collect := opnd.arg.instr;
             iv := collect.NthArg(resultIndex-1);
-            ASSERT(replacement.HasKey(iv));
             
-            obj := replacement.Get(iv);
-            res := obj(SSA.Result);
+            IF replacement.HasKey(iv) THEN  (* preceeding element in cycle *)
+              obj := replacement.Get(iv);
+              res := obj(SSA.Result);
+            ELSE
+              res := InitialValue(pb, rc, iv);
+            END;
+            
             collect.AddOpnd(res, Opnd.arg);
             
             opnd := next;
@@ -937,6 +985,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
           res := ci.AddResultSubclass(Result.selectValue, sum.subclass);
         END;
         rc.replacements[ce.id] := res;
+        replacement.Set(ce.res, res);
 
         ce := ce.next;
       END;
@@ -1001,7 +1050,13 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
             INC(i1); INC(i2);
           END;
         END;
-        RETURN TRUE;
+        WHILE (i1 # p1.size) & (p1.prod[i1].magnitude = 0) DO
+          INC(i1);
+        END;
+        WHILE (i2 # p2.size) & (p2.prod[i2].magnitude = 0) DO
+          INC(i2);
+        END;
+        RETURN (i1 = p1.size) & (i2 = p2.size);
       END EqualPList;
     
     BEGIN
