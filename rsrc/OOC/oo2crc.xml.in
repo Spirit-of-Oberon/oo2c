@@ -20,7 +20,7 @@
     <set name='ConformantMode'>FALSE</set>  <!-- not supported -->
   </pragmas>
 
-  <repository>
+  <repositories>
     <file-system>@prefix@/lib/oo2c/lib</file-system>
-  </repository>
+  </repositories>
 </configuration>
