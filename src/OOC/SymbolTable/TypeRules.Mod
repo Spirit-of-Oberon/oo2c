@@ -76,12 +76,23 @@ PROCEDURE IsStringConst* (type: Sym.Type): BOOLEAN;
   END IsStringConst;
 
 PROCEDURE IsSTRING* (type: Sym.Type): BOOLEAN;
+(**Return @code{TRUE} if @oparam{type} is the predefined type @code{STRING},
+   or an extension of this type.  *)
+  VAR
+    r: Sym.Record;
   BEGIN
-    RETURN (type IS Sym.Pointer) &
-        (type.namingDecl # NIL) & 
-        (type.namingDecl.name.str^ = "String") & 
-        (type.namingDecl.parent IS Sym.Module) & 
-        (type.namingDecl.parent(Sym.Module).name.str^ = "Language:String0");
+    IF (type IS Sym.Pointer) & (type(Sym.Pointer). baseType IS Sym.Record) THEN
+      r := type(Sym.Pointer). baseType(Sym.Record);
+      WHILE (r. baseType # NIL) DO
+        r := r. baseType(Sym.Record);
+      END;
+      RETURN (r.namingDecl # NIL) & 
+        (r.namingDecl.name.str^ = "StringDesc") & 
+        (r.namingDecl.parent IS Sym.Module) & 
+        (r.namingDecl.parent(Sym.Module).name.str^ = "Language:String0");
+    ELSE
+      RETURN FALSE;
+    END;
   END IsSTRING;
 
 PROCEDURE BaseCharType* (type: Sym.Type): Sym.PredefType;
