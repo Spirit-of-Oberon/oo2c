@@ -137,7 +137,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: Operator.SelectField DO
         RETURN SelectField (expr);
         
-      | expr: IR.TypeConv DO
+      | expr: Operator.TypeConv DO
         (* FIXME... right now, we are simply passing through type converted
            values *)
         RETURN Expression (expr. expr);

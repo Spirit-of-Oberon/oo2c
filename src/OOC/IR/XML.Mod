@@ -194,7 +194,7 @@ PROCEDURE (v : Visitor) VisitCompare* (op : Operator.Compare);
     VisitDyadicOp (v, op, op.variant, op.left, op.right, "compare");
   END VisitCompare;
 
-PROCEDURE (v : Visitor) VisitTypeConv* (op : IR.TypeConv);
+PROCEDURE (v : Visitor) VisitTypeConv* (op : Operator.TypeConv);
   BEGIN
     v. w. StartTag("typeConv", FALSE);
     (* FIXME! Write type. How? *)

@@ -239,7 +239,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : Operator.Compare);
     (* FIXME! *)
   END VisitCompare;
 
-PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
+PROCEDURE (c: ConstFold) VisitTypeConv* (op : Operator.TypeConv);
   VAR
     value : Language.Value;
   BEGIN

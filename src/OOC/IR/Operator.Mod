@@ -94,6 +94,19 @@ TYPE
   END;
 
 TYPE
+  TypeConv* = POINTER TO TypeConvDesc;
+  TypeConvDesc = RECORD
+    (**A TypeConv expression represents a type conversion of an expression
+       @ofield{expr} to a different type.  The source value is converted to an
+       equivalent or close value in the target domain.  Example: An integer
+       type representing the value @code{1} is converted to a floating point
+       value @code{1.0}.  Type conversions are also used to convert between
+       different integer types.  *)
+    (IR.OperatorDesc)
+    expr- : IR.Expression;
+  END;
+
+TYPE
   Len* = POINTER TO LenDesc;
   LenDesc = RECORD
     (**Represents a call to the predefined function @code{LEN}.
@@ -183,6 +196,85 @@ PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List; type
     b.constFold := fold;
     RETURN b
   END NewBuilder;
+
+(* -------- *)
+
+PROCEDURE InitTypeConv (conv: TypeConv; sym: IR.Symbol; type: Sym.Type;
+                     expr: IR.Expression);
+  BEGIN
+    IR.InitOperator (conv, sym, type);
+    conv. expr := expr;
+  END InitTypeConv;
+
+PROCEDURE NewTypeConv (type: Sym.Type; expr : IR.Expression): TypeConv;
+  VAR
+    conv: TypeConv;
+  BEGIN
+    NEW (conv);
+    InitTypeConv (conv, expr.sym, type, expr);
+    RETURN conv
+  END NewTypeConv;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeConv* (conv: TypeConv);
+  END VisitTypeConv;
+
+PROCEDURE (conv: TypeConv) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitTypeConv (conv)
+  END Accept;
+
+PROCEDURE IsPredefType(type : Sym.Type; id : Sym.PredefId) : BOOLEAN;
+BEGIN
+  RETURN (type IS Sym.PredefType) & (type(Sym.PredefType).id = id);
+END IsPredefType;
+
+PROCEDURE (b : Builder) AssignType* (type : Sym.Type; expr : IR.Expression) : IR.Expression;
+(**If necessary, transform @oparam{expr} to be compatible with @oparam{type}.
+   For scalar types, this involves returning an explicit type conversion
+   operator. Where types are already compatible (eg. extension of record
+   types), the original expression is returned without modification. If the
+   type of @oparam{expr} is not compatible with @oparam{type}, the function
+   returns NIL.
+
+   To summarize, we return:
+     NIL        assignment IS NOT allowed
+     expr       assignment IS allowed without modification
+     otherwise  expression IS allowed with modification (eg. type conversion)
+*)
+VAR
+  tr : TypeRules.Rules;
+  exprType : Sym.Type;
+  result : IR.Expression;
+  length : LONGINT;
+BEGIN
+  tr := b.typeRules;
+  exprType := expr.type;
+  result := NIL;
+
+  IF tr.SameType(type, exprType) OR tr.IsExtensionOf(type, exprType) THEN
+    (* same types *)
+    result := expr
+  ELSIF tr.IncludesType(type, exprType) THEN
+    result := NewTypeConv(type, expr)
+  ELSIF IsPredefType(exprType, Predef.charString) THEN
+    (* expression is constant string *)
+    length := expr(IR.Const). value(String8.Value). value. length;
+    IF IsPredefType(type, Predef.char) & (length = 1) THEN
+      (* string of length 1 converts to char *)
+      result := b.NewConst(expr.sym, type, expr(IR.Const). value);
+    ELSE 
+      (* string may be assigned to ARRAY OF CHAR with sufficient length *)
+      WITH type : Sym.Array DO
+        IF IsPredefType(type. elementType, Predef.char) &
+          (type.isOpenArray OR (length < type.length)) THEN
+          result := expr;
+        END;
+      ELSE
+      END;
+    END;
+  END;
+  RETURN result;
+END AssignType;
 
 (* -------- *)
 
@@ -718,12 +810,16 @@ PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;
          and so on  *)
       fpar := formalPars[fparIndex];
       arg := arguments[argIndex];
+
       IF fpar. isVarParam THEN           (* variable parameter *)
         (* ... nothing for now *)
       ELSE                               (* value parameter *)
-        arg := MakeAssignmentCompatible (b, sym, arg, fpar. type);
+        arg := b.AssignType(fpar. type, arg);
+        IF arg = NIL THEN
+          arg := b.ErrExpr(IR.incompatibleActualParam, arguments[argIndex].sym);
+        END;
       END;
-           
+
       IF fpar. isPassPerReference THEN
         (* for argument passed by reference, add the address of the designator
            to the argument list, not its value *)

@@ -185,19 +185,6 @@ TYPE
     (ExpressionDesc)
   END;
 
-TYPE
-  TypeConv* = POINTER TO TypeConvDesc;
-  TypeConvDesc = RECORD
-    (**A TypeConv expression represents a type conversion of an expression
-       @ofield{expr} to a different type.  The source value is converted to an
-       equivalent or close value in the target domain.  Example: An integer
-       type representing the value @code{1} is converted to a floating point
-       value @code{1.0}.  Type conversions are also used to convert between
-       different integer types.  *)
-    (OperatorDesc)
-    expr- : Expression;
-  END;
-
 (* Statements
    ------------------------------------------------------------------------ *)
 
@@ -365,6 +352,8 @@ CONST
   divideByZero* = 8;
   exprNotConstant* = 9;
   rangeError* = 10;
+  exprByRef* = 11;
+  incompatibleActualParam* = 12;
 
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -400,6 +389,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expression is not constant"
     | rangeError:
       t := "Value out of range"
+    | exprByRef:
+      t := "Expression may not be passed by reference"
+    | incompatibleActualParam:
+      t := "Type of actual parameter is not compatible with formal type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -771,52 +764,6 @@ PROCEDURE (assert: Assert) Accept* (v: Visitor);
   BEGIN
     v. VisitAssert (assert)
   END Accept;
-
-(* -------- *)
-
-PROCEDURE InitTypeConv (conv: TypeConv; sym: Symbol; type: Sym.Type;
-                     expr: Expression);
-  BEGIN
-    InitOperator (conv, sym, type);
-    conv. expr := expr;
-  END InitTypeConv;
-
-PROCEDURE NewTypeConv (type: Sym.Type; expr : Expression): TypeConv;
-  VAR
-    conv: TypeConv;
-  BEGIN
-    NEW (conv);
-    InitTypeConv (conv, expr.sym, type, expr);
-    RETURN conv
-  END NewTypeConv;
-
-PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeConv* (conv: TypeConv);
-  END VisitTypeConv;
-
-PROCEDURE (conv: TypeConv) Accept* (v: Visitor);
-  BEGIN
-    v. VisitTypeConv (conv)
-  END Accept;
-
-PROCEDURE (b : Builder) AssignType* (type : Sym.Type; expr : Expression) : Expression;
-(**If necessary, transform @oparam{expr} to be compatible with @oparam{type}.
-   For scalar types, this involves returning an explicit type conversion
-   operator. Where types are already compatible (eg. extension of record
-   types), the original expression is returned without modification. If the
-   type of @oparam{expr} is not ccompatible with @oparam{type}, the function
-   returns NIL. *)
-VAR
-  tr : TypeRules.Rules;
-BEGIN
-  tr := b.typeRules;
-  IF tr.SameType(type, expr.type) OR tr.IsExtensionOf(type, expr.type) THEN
-    RETURN expr
-  ELSIF tr.IncludesType(type, expr.type) THEN
-    RETURN NewTypeConv(type, expr)
-  ELSE
-    RETURN NIL;
-  END;
-END AssignType;
 
 (* -------- *)
 

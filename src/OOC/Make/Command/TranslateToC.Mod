@@ -213,7 +213,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
 	END;
         WriteExpr(w, expr. right);
         
-      | expr: IR.TypeConv DO
+      | expr: Operator.TypeConv DO
         WriteExpr(w, expr.expr);  (* FIXME! generate type casts if required *)
         
       | expr: IR.Call DO
