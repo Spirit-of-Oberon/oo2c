@@ -1,6 +1,7 @@
 MODULE OOC:X86:Destore;
 
 IMPORT
+  Object, ADT:Dictionary,
   Sym := OOC:SymbolTable, S := OOC:X86:SSA, OOC:X86:Aliasing;
 
 TYPE
@@ -9,15 +10,34 @@ TYPE
     next: Worklist;
     instr: S.Instr;
   END;
+  MemAccess = POINTER TO MemAccessDesc;
+  MemAccessDesc = RECORD
+    (Object.ObjectDesc)
+    designator: S.Designator;
+    address: S.Result;
+    type: S.Type;
+  END;
 
 CONST
   read = 0;
+
+PROCEDURE (memAccess: MemAccess) INIT*(type: S.Type; designator: S.Designator;
+                                       address: S.Result);
+  BEGIN
+    memAccess.designator := designator;
+    memAccess.address := address;
+    memAccess.type := type;
+  END INIT;
 
 PROCEDURE Transform*(fctBlock: S.FunctionBlock);
   VAR
     worklist: Worklist;
     undefValue: S.Result;
     instr: S.Instr;
+    gate: S.GateInstr;
+    gateToInstr: Dictionary.Dictionary(S.GateInstr, MemAccess);
+    (* For every gate instruction, this dictionary maps the gate to the
+       instruction that triggered its creation.  *)
 
   PROCEDURE AccessedByCall (calledAdr: S.Result; design: S.Designator;
                             mode: SHORTINT): BOOLEAN;
@@ -35,7 +55,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
       worklist := entry;
     END AddToWorklist;
   
-  PROCEDURE PropagateInstr(instr: S.Instr);
+  PROCEDURE PropagateInstr(propInstr: S.Instr);
   (* Propagate the effect of the instruction down the chain of memory
      dependencies.  *)
 
@@ -48,24 +68,39 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
         dep: S.Dep;
 
       PROCEDURE GetDesignatorGate(merge: S.Block;
-                                  designator: S.Designator): S.Instr;
+                                  designator: S.Designator): S.GateInstr;
         VAR
           instr: S.Instr;
+          gate: S.GateInstr;
           i: LONGINT;
+          type: S.Type;
         BEGIN
           FOR instr IN merge.Instructions() DO
             IF (instr.opcode = S.designatorGate) &
                S.SameDesignator(designator, instr.designator) THEN
-              RETURN instr;
+              RETURN instr(S.GateInstr);
             END;
           END;
 
-          instr := merge.AddGate(S.designatorGate);
-          instr.SetDesignator(designator);
+          gate := merge.AddGate(S.designatorGate);
+          gate.SetDesignator(designator);
           FOR i := 1 TO merge.IncomingPaths() DO
-            instr.AddOpnd(undefValue);
+            gate.AddOpnd(undefValue);
           END;
-          RETURN instr;
+          WITH propInstr: S.GateInstr DO
+            gateToInstr.Set(gate, gateToInstr.Get(propInstr));
+          ELSE
+            CASE propInstr.opcode OF
+            | S.get:
+              type := propInstr.resultList.type;
+            | S.set:
+              type := propInstr.opndList.nextOpnd.arg.type;
+            END;
+            ASSERT(type# S.noType);
+            gateToInstr.Set(gate, NEW(MemAccess, type, propInstr.designator,
+                                      propInstr.opndList.arg));
+          END;
+          RETURN gate;
         END GetDesignatorGate;
       
       PROCEDURE MergeValue(merge: S.MergeInstr; jump: S.Instr;
@@ -99,9 +134,10 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
       PROCEDURE MergeLoopValue(loopStart: S.Block; pathIndex: LONGINT;
                                designator: S.Designator; value: S.Result);
         VAR
-          gate: S.Instr;
+          gate: S.GateInstr;
           opnd: S.Opnd;
           res: S.Result;
+          memAccess: MemAccess;
         BEGIN
           gate := GetDesignatorGate(loopStart, designator);
           opnd := gate.opndList;
@@ -115,7 +151,8 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
             
             INC(gate.marker);
             IF (gate.marker = 1) THEN  (* first one wins *)
-              res := gate.AddResult(gate.opndList.arg.type);
+              memAccess := gateToInstr.Get(gate);
+              res := gate.AddResult(memAccess.type);
               AddToWorklist(gate);
             END;
           ELSE
@@ -183,22 +220,25 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
       END FixedDesignator;
     
     BEGIN
-      IF (instr.info = NIL) THEN
-        instr.info := instr;             (* mark as visited *)
-        CASE instr.opcode OF
+      IF (propInstr.info = NIL) THEN
+        propInstr.info := propInstr;             (* mark as visited *)
+        CASE propInstr.opcode OF
         | S.enter, S.allocateStack, S.return, S.exit, S.guard, S.jump, S.merge,
           S.loopStart, S.loopExit, S.loopBackedge, S.loopEnd, S.call, S.copy:
           (* nothing *)
         | S.get:
-          IF FixedDesignator(instr.designator) THEN
-            PropagateValue(instr.designator, instr.resultList, instr);
+          IF FixedDesignator(propInstr.designator) THEN
+            PropagateValue(propInstr.designator,
+                           propInstr.resultList, propInstr);
           END;
         | S.set:
-          IF FixedDesignator(instr.designator) THEN
-            PropagateValue(instr.designator, instr.opndList.nextOpnd.arg, instr);
+          IF FixedDesignator(propInstr.designator) THEN
+            PropagateValue(propInstr.designator,
+                           propInstr.opndList.nextOpnd.arg, propInstr);
           END;
         | S.designatorGate:
-          PropagateValue(instr.designator, instr.resultList, instr.block);
+          PropagateValue(propInstr.designator,
+                         propInstr.resultList, propInstr.block);
         END;
       END;
     END PropagateInstr;
@@ -381,6 +421,26 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
         END;
       END;
     END AddMemoryDeps;
+
+  PROCEDURE FixLoopStart(gate: S.GateInstr);
+    VAR
+      loopStart: S.LoopStartInstr;
+      get: S.Instr;
+      memAccess: MemAccess;
+      dep: S.Dep;
+    BEGIN
+      loopStart := gate.merge(S.LoopStartInstr);
+      memAccess := gateToInstr.Get(gate);
+      
+      get := fctBlock.AddInstr1(S.get, memAccess.address);
+      get.SetDesignator(memAccess.designator);
+      FOR dep IN loopStart.BeforeList(S.depMemory) DO
+        get.AddDep(S.depMemory, dep.before);
+        dep.DeleteDep();
+      END;
+      loopStart.AddDep(S.depMemory, get);
+      gate.opndList.ReplaceArg(get.AddResult(memAccess.type));
+    END FixLoopStart;
   
   BEGIN
     worklist := NIL;
@@ -388,6 +448,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
     undefValue := fctBlock.enter.AddResult(S.noType);
     
     fctBlock.SetMarkers(NIL, 0);
+    gateToInstr := NEW(Dictionary.Dictionary(S.GateInstr, MemAccess));
     AddToWorklist(fctBlock.enter);
     WHILE (worklist # NIL) DO
       instr := worklist.instr;
@@ -401,6 +462,28 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
       AddMemoryDeps(instr);
     END;
 
+    (* fix partial gates for which not all operands are defined *)
+    WHILE (undefValue.useList # NIL) DO
+      gate := undefValue.useList.instr(S.GateInstr);
+      CASE gate.merge.opcode OF
+      | S.loopStart:
+        IF (gate.opndList = undefValue.useList) THEN
+          (* the loop gate has no "incoming" argument, only the value of the
+             backedge is know: insert "get" instruction in front of the loop
+             that provides the missing information *)
+          FixLoopStart(gate);
+        ELSE
+          (* value of variable is unknown at the end of the loop: discard
+             loop gate *)
+          gate.resultList.ReplaceUses(gate.opndList.arg);
+          gate.Delete();
+        END;
+      | S.merge, S.guard:
+        ASSERT(gate.resultList = NIL);
+        gate.Delete();
+      END;
+    END;
+    
     (* visit all "set" instructions and check if they can be eliminated;
        at this place, all obsolete "get"s must have been removed *)
     fctBlock.SetMarkers(NIL, 0);

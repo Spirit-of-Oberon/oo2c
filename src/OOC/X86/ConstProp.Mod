@@ -25,12 +25,15 @@ PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
     val1, val2, v: Boxed.Object;
     i1, i2: BigInt.BigInt;
   BEGIN
-    IF (instr.opcode = S.typeConv)  THEN
+    IF (instr.opcode = S.typeConv) THEN
       v := instr.opndList.arg.instr.designator[0](S.Const).value;
       IF (v IS BigInt.BigInt) & (instr.resultList.type < S.real32) THEN
         (* FIXME... check for overflow *)
         RETURN pb.AddConstType(NEW(S.Const, v, -1), instr.resultList.type);
       END;
+    ELSIF (instr.opcode = S.gate) THEN
+      (* can only be folded if all paths have the same value *)
+      RETURN NIL;
     ELSIF (instr. SizeOpndList() >= 2) THEN
       arg1 := instr.opndList.arg.info(S.Result);
       val1 := arg1.instr.designator[0](S.Const).value;
@@ -45,7 +48,7 @@ PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
           i1 := val1(BigInt.BigInt);
           i2 := val2(BigInt.BigInt);
           
-          CASE instr. opcode OF
+          CASE instr.opcode OF
           | S.add: v := i1.Add(i2);
           | S.sub: v := i1.Sub(i2);
           | S.mul: v := i1.Mul(i2);
