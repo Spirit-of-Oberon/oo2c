@@ -607,7 +607,7 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
         Err(requireNameAttribute, elem);
         RETURN NIL;
       ELSIF (type = NIL) THEN
-        Err(requireNameAttribute, elem);
+        Err(requireTypeAttribute, elem);
         RETURN NIL;
       ELSE
         stringBuffer := "";
