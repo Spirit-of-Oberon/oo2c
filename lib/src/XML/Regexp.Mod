@@ -20,7 +20,7 @@ MODULE XML:Regexp;
 
 
 IMPORT
-  Out, LongStrings, XML:DTD;
+  LongStrings, XML:DTD;
 
 
 TYPE
@@ -56,7 +56,7 @@ CONST
   endOfRegexp = -1;
 
 
-PROCEDURE DumpRegexp (regexp: Regexp);
+(*PROCEDURE DumpRegexp (regexp: Regexp);
   VAR
     str: ARRAY 128 OF CHAR;
     i: LONGINT;
@@ -79,7 +79,7 @@ PROCEDURE DumpRegexp (regexp: Regexp);
       Out.LongInt (regexp. states[i]. next2, 0);
       Out.Ln
     END
-  END DumpRegexp;
+  END DumpRegexp;*)
 
 
 PROCEDURE New* (contentModel: DTD.CP): Regexp;
@@ -233,7 +233,7 @@ PROCEDURE Include (set: Set; element: State);
     END
   END Include;
 
-PROCEDURE IsMember (set: Set; element: State): BOOLEAN;
+(*PROCEDURE IsMember (set: Set; element: State): BOOLEAN;
   VAR
     i: LONGINT;
   BEGIN
@@ -242,7 +242,7 @@ PROCEDURE IsMember (set: Set; element: State): BOOLEAN;
       INC (i)
     END;
     RETURN (i # set. size)
-  END IsMember;
+  END IsMember;*)
 
 
 
