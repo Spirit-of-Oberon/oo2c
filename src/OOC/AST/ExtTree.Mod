@@ -317,9 +317,9 @@ TYPE
   FunctionCallDesc = RECORD
     (NodeDesc)
     design-: Node;
-    lParen-: AST.Node;
+    lParen-: Terminal;
     arguments-: AST.NodeList;
-    rParen-: AST.Node;
+    rParen-: Terminal;
   END;
 
 
@@ -1209,9 +1209,9 @@ PROCEDURE (b: Builder) FunctionCall* (design, lParen: AST.Node; arguments: AST.N
   BEGIN
     NEW (fc);
     fc. design := design(Node);
-    fc. lParen := lParen;
+    fc. lParen := lParen(Terminal);
     fc. arguments := arguments;
-    fc. rParen := rParen;
+    fc. rParen := rParen(Terminal);
     RETURN fc
   END FunctionCall;
 

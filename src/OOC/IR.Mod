@@ -953,6 +953,8 @@ CONST
   notProcedure = 35;
   isFunctionProcedure = 36;
   notFunctionProcedure = 37;
+  tooFewArguments = 38;
+  tooManyArguments = 39;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1043,6 +1045,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "This is a function procedure"
     | notFunctionProcedure:
       t := "This is not a function procedure"
+    | tooFewArguments:
+      t := "Too few arguments"
+    | tooManyArguments:
+      t := "Too many arguments"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -3798,7 +3804,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 
  PROCEDURE (b: Builder) NewCall* (design: Expression;
                                   arguments: ExpressionList;
-                                  isFunctionCall: BOOLEAN): Expression;
+                                  isFunctionCall: BOOLEAN;
+                                  endOfArgsSym: Symbol): Expression;
   VAR
     call: Call;
     targetType: Sym.PredefId;
@@ -3833,7 +3840,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       END;
     END MakeParameterCompatible;
   
-  PROCEDURE TransformArgs (sym: Symbol;
+  PROCEDURE TransformArgs (sym, endOfArgsSym: Symbol;
                            formalPars: Sym.FormalPars;
                            receiver: Expression;
                            VAR arguments: ExpressionList;
@@ -3919,6 +3926,14 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           newFPars. Append (NIL);
           INC (argIndex);
         END;
+      END;
+      
+      IF (fparIndex # LEN (formalPars. params^)) THEN
+        (* less arguments than formal parameters *)
+        b. ErrSym (tooFewArguments, endOfArgsSym);
+      ELSIF (argIndex # LEN (arguments^)) THEN
+        (* less formal parameters than arguments *)
+        b. ErrSym (tooManyArguments, arguments[argIndex]. sym);
       END;
       
       NEW (arguments, newArgs. size);
@@ -4119,7 +4134,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         ELSE
           receiver := NIL;
         END;
-        TransformArgs (design. sym,
+        TransformArgs (design. sym, endOfArgsSym,
                        design. type(Sym.FormalPars),
                        receiver, arguments, formalPars);
         InitCall (call, design, arguments, formalPars);

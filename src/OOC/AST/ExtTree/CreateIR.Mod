@@ -206,7 +206,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       FOR i := 0 TO LEN (arguments^)-1 DO
         arguments[i] := Expr (call. arguments. n[i*2](ExtTree.Node))
       END;
-      RETURN b. NewCall (design, arguments, ~isProcCall);
+      RETURN b. NewCall (design, arguments, ~isProcCall, call. rParen. sym);
     END FunctionCall;
 
   PROCEDURE StatementSeq (statmSeq: ExtTree.NodeList): IR.StatementSeq;
@@ -218,7 +218,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
 
     PROCEDURE ProcedureCall (call: ExtTree.ProcedureCall): IR.Statement;
       VAR
-        expr: IR.Expression;
+        expr, design: IR.Expression;
         arguments: IR.ExpressionList;
       BEGIN
         IF (call. call IS ExtTree.FunctionCall) THEN
@@ -226,7 +226,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         ELSE
           (* create procedure call from lonely designator *)
           NEW (arguments, 0);
-          expr := b. NewCall (Designator (call. call), arguments, FALSE);
+          design := Designator (call. call);
+          expr := b. NewCall (design, arguments, FALSE, design. sym);
         END;
         WITH expr: IR.Statement DO
           RETURN expr;

@@ -1,0 +1,9 @@
+MODULE Proc5;
+
+PROCEDURE P (a, b: INTEGER);
+  BEGIN
+  END P;
+
+BEGIN
+  P(1, 2, 3);
+END Proc5.

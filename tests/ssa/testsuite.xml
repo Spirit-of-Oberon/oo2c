@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; proc1 proc2 function8">-->
+  select ="&SetupTestCasesWithOut; proc3 proc4 proc5">-->
 
   &TestSetupWithOut;
     
@@ -82,6 +82,15 @@
     </test>
     <test id="proc2" type="reject" file="Proc2.Mod">
       Calling a function procedure in a statement.
+    </test>
+    <test id="proc3" type="reject" file="Proc3.Mod">
+      Calling a procedure with too few arguments.
+    </test>
+    <test id="proc4" type="reject" file="Proc4.Mod">
+      Calling a procedure with parameters without any argument list.
+    </test>
+    <test id="proc5" type="reject" file="Proc5.Mod">
+      Calling a procedure more arguments than formal parameters.
     </test>
     
     <test id="function1" type="run"
@@ -790,6 +799,9 @@
 
     <reject-info id="proc1" pos="%x(" msg="This must be a procedure designator"/>
     <reject-info id="proc2" pos="%P(" msg="This is a function procedure"/>
+    <reject-info id="proc3" pos="P(123%)" msg="Too few arguments"/>
+    <reject-info id="proc4" pos="%P;" msg="Too few arguments"/>
+    <reject-info id="proc5" pos="P(1, 2, %3);" msg="Too many arguments"/>
     <reject-info id="function8" pos=":= %P(" msg="This is not a function procedure"/>
 
     <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>
