@@ -1,4 +1,24 @@
+(* 	$Id$	 *)
 MODULE OOC:SymbolTable:Uses;
+(*  List uses of a given declaration.
+    Copyright (C) 2003  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
 
 IMPORT
   Err, Strings, OOC:Error, Sym := OOC:SymbolTable;
@@ -21,7 +41,9 @@ TYPE
   END;
 
 CONST
-  useOfName = 1;
+  (*noMatch = 0;*)
+  useOfObject = 1;
+  definition = 2;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -39,8 +61,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     t: ARRAY 128 OF Error.LChar;
   BEGIN
     CASE msg. code OF
-    | useOfName:
+    | useOfObject:
       t := prefix+"Use"
+    | definition:
+      t := prefix+"Definition"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -150,9 +174,33 @@ PROCEDURE AddMsg(u: Uses; ident: Sym.Name; code: Error.Code);
   END AddMsg;
 
 PROCEDURE (u: Uses) Matches(decl: Sym.Declaration): BOOLEAN;
-(* FIXME... for procedure names, match redefinitions as well *)
+  VAR
+    index: LONGINT;
+    p: Sym.ProcDecl;
+    record: Sym.Record;
   BEGIN
-    RETURN (decl = u.pattern);
+    IF (decl = u.pattern) THEN
+      RETURN TRUE;
+    ELSIF (u.pattern # NIL) &
+          (decl IS Sym.ProcDecl) & (u.pattern IS Sym.ProcDecl) &
+          (decl.name.str^ = u.pattern.name.str^) &
+          decl(Sym.ProcDecl).isTypeBound &
+          u.pattern(Sym.ProcDecl).isTypeBound &
+          (decl(Sym.ProcDecl).tbProcIndex =
+           u.pattern(Sym.ProcDecl).tbProcIndex) THEN
+      (* two type-bound procedures with the same name and index; if the walk
+         down from decl's base type encounters our pattern, then we have a
+         match *)
+      index := decl(Sym.ProcDecl).tbProcIndex;
+      p := decl(Sym.ProcDecl);
+      REPEAT
+        record := decl(Sym.ProcDecl).Class();
+        p := record.ns.GetSuperProcByIndex(index);
+      UNTIL (p = NIL) OR (p = u.pattern);
+      RETURN (p # NIL);
+    ELSE
+      RETURN FALSE;
+    END;
   END Matches;
 
 PROCEDURE (u: Uses) RegisterSymTab*(symTab: Sym.Module);
@@ -250,10 +298,13 @@ PROCEDURE (u: Uses) RegisterSymTab*(symTab: Sym.Module);
   
   BEGIN
     u.pattern := Resolve();
+    IF (u.pattern # NIL) & (u.pattern.name.pos >= 0) THEN
+      AddMsg(u, u.pattern.name, definition);
+    END;
     
     FOR i := 0 TO u.storedUsesCount-1 DO
       IF u.Matches(u.storedUses[i].decl) THEN
-        AddMsg(u, u.storedUses[i].ident, useOfName);
+        AddMsg(u, u.storedUses[i].ident, useOfObject);
       END;
       u.storedUses[i].ident := NIL;
       u.storedUses[i].decl := NIL;
@@ -283,7 +334,7 @@ PROCEDURE Mark*(decl: Sym.Declaration; uses: Uses; ident: Sym.Name);
           uses.storedUses[uses.storedUsesCount].decl := decl;
           INC(uses.storedUsesCount);
         ELSIF uses.Matches(decl) THEN
-          AddMsg(uses, ident, useOfName);
+          AddMsg(uses, ident, useOfObject);
         END;
       END;
     END;

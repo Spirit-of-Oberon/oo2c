@@ -769,7 +769,8 @@ RAISES IO.Error;
             CheckRecord (record. baseType(Sym.Record));
             record. tbProcCount := record. baseType(Sym.Record). tbProcCount
           END;
-          record.ns(Namespace.Extended).CheckRestrictions (record, errList);
+          record.ns(Namespace.Extended).CheckRestrictions (record, uses,
+                                                           errList);
 
           IF errList.NoErrors() & ~record.isAbstract THEN
             (* Check that no abstract procedure remain.  Only do this if the

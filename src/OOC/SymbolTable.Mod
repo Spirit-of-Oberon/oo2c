@@ -864,6 +864,13 @@ PROCEDURE (ns: Namespace) Identify* (sourceContext: Item;
     RETURN ns.Identify2(sourceContext, name, ignorePosition, baseNotExported);
   END Identify;
 
+PROCEDURE (ns: Namespace) GetSuperProcByIndex* (index: LONGINT): ProcDecl;
+(**Forward declaration of
+   @oproc{*OOC:SymbolTable:Namespace.Extended.GetSuperProcByIndex}.  *)
+  BEGIN
+    ASSERT(FALSE);
+  END GetSuperProcByIndex;
+
 
 
 PROCEDURE InitPosition* (position: Position; pos: ModulePos;

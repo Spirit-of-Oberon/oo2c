@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Namespace;
 (*  Implements namespaces and semantic checks on them.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,7 +22,8 @@ MODULE OOC:SymbolTable:Namespace;
 
 
 IMPORT
-  OOC:Error, Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules;
+  OOC:Error, Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
+  OOC:SymbolTable:Uses;
 
 
 TYPE
@@ -396,6 +397,7 @@ PROCEDURE (ns: Extended) GetSuperProcByIndex* (index: LONGINT): Sym.ProcDecl;
   END GetSuperProcByIndex;
 
 PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
+                                             uses: Uses.Uses;
                                              errList: Error.List);
 (**Checks the restrictions placed by the language on the names of record
    fields and type-bound procedures.  For redefinitions of type-bound 
@@ -446,7 +448,9 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               base. CopyTBProcIndex (decl);
               IF (decl. name. pos < base. visibleFrom) THEN
                 ErrDecl (redefinitionBeforeBase, decl, errList)
-              END
+              END;
+
+              Uses.Mark(base, uses, decl.name);
             ELSE
               ErrDecl (invalidRedefintion, decl, errList)
             END
