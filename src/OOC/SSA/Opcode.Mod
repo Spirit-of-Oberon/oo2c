@@ -328,9 +328,9 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newArray* = 35;
-  (**Allocates space for an array object on the heap.  This opcode is used for
-     both fixed size arrays and arrays with open dimensions.
+  newObject* = 35;
+  (**Allocates space for an array or record object on the heap.  This opcode is
+     used for both fixed size arrays, arrays with open dimensions, and records.
 
      @table @oconst
      @item *OOC:SSA:Opnd.store
@@ -341,22 +341,8 @@ CONST
 
      @item *OOC:SSA.Opnd.arg
      For every open dimension of the array type, one argument with the length
-     of the dimension.  For a fixed size array, no arguments of this class
-     exist.
-     @end table
-
-     The result of the instruction is the address of the new object.  An
-     additional result is the new value of @var{store}.  *)
-  
-  newRecord* = 36;
-  (**Allocates space for a record object on the heap.
-
-     @table @oconst
-     @item *OOC:SSA:Opnd.store
-     The current value of the @var{store}.
-
-     @item *OOC:SSA:Opnd.type
-     The type of the pointer to which the new object will be assigned.
+     of the dimension.  For a fixed size array or record, no arguments of this
+     class exist.
      @end table
 
      The result of the instruction is the address of the new object.  An
@@ -453,9 +439,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | copy: cstr := "copy";
     | getLength: cstr := "get-length";
     | copyParameter: cstr := "copy-parameter";
-    | newArray: cstr := "new-array";
-    | newRecord: cstr := "new-record";
-
+    | newObject: cstr := "new-object";
+      
     | add: cstr := "add";
     | subtract: cstr := "subtract";
     | negate: cstr := "negate";

@@ -10,13 +10,26 @@
   _str.base = NULL; _str.size = _size; _str.len = -1; _str.form = _form
 
 
-OOC_PTR RT0__NewArray(RT0__Struct td, ...) {
-  void* var;
-  
-  if (td->form == RT0__strArray) { /* fixed size array */
+OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
+  void *var, *ptr;
+
+  if (td->form == RT0__strRecord) { /* record */
+    int prefix;
+    int size = td->base->size;
+    if (size == 0) size++;
+    prefix = ROUND_SIZE(sizeof(RT0__Struct));
+    
+    ptr = malloc(prefix+size);
+    /* FIXME... check that result is not NULL */
+    var = (char*)ptr+prefix;
+    ((RT0__Struct*)var)[-1] = td;
+    
+  } else if (td->form == RT0__strArray) { /* fixed size array */
     int size = td->size;
     if (size == 0) size++;
     var = malloc(size);
+    /* FIXME... check that result is not NULL */
+    
   } else {			/* dynamic array */
     va_list ap;
     int i;
@@ -49,23 +62,6 @@ OOC_PTR RT0__NewArray(RT0__Struct td, ...) {
     }
     va_end(ap);
   }
-  
-  return (OOC_PTR)var;
-}
-
-OOC_PTR RT0__NewRecord(RT0__Struct td) {
-  void* var;
-  size_t size, prefix;
-  void* ptr;
-  
-  size = td->base->size;
-  if (size == 0) size++;
-  prefix = ROUND_SIZE(sizeof(RT0__Struct));
-  
-  ptr = malloc(prefix+size);
-  /* FIXME... check that result is not NULL */
-  var = (char*)ptr+prefix;
-  ((RT0__Struct*)var)[-1] = td;
   
   return (OOC_PTR)var;
 }

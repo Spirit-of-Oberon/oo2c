@@ -261,13 +261,9 @@ BEGIN
   END;
 END VisitNegate;
 
-PROCEDURE (c: ConstFold) VisitNewArray* (new: IR.NewArray);
+PROCEDURE (c: ConstFold) VisitNewObject* (new: IR.NewObject);
   BEGIN
-  END VisitNewArray;
-
-PROCEDURE (c: ConstFold) VisitNewRecord* (new: IR.NewRecord);
-  BEGIN
-  END VisitNewRecord;
+  END VisitNewObject;
 
 PROCEDURE (c: ConstFold) VisitCap* (op: IR.Cap);
 VAR 

@@ -360,17 +360,15 @@ TYPE
   END;
 
 TYPE
-  NewArray* = POINTER TO NewArrayDesc;
-  NewArrayDesc = RECORD
+  NewObject* = POINTER TO NewObjectDesc;
+  NewObjectDesc = RECORD
+    (**Allocates a new object on the heap and returns a pointer to it.
+       The type of the new pointer value is stored in @ofield{type}.  *)
     (OperatorDesc)
-    arrayType-: Sym.Array;
     length-: ExpressionList;
-  END;
-
-TYPE
-  NewRecord* = POINTER TO NewRecordDesc;
-  NewRecordDesc = RECORD
-    (OperatorDesc)
+    (**For an array, this holds the length of the open dimensions.  For
+       a fixed size array, the field refers to a list of length zero.
+       For a record type, this field is @code{NIL}.  *)
   END;
 
 TYPE
@@ -1266,64 +1264,43 @@ PROCEDURE (neg: Negate) Accept* (v: Visitor);
     v. VisitNegate (neg)
   END Accept;
 
-(* Operator Class: NewArray
+(* Operator Class: NewObject
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitNewArray (new: NewArray; sym: Symbol; type: Sym.Type;
+PROCEDURE InitNewObject (new: NewObject; sym: Symbol; type: Sym.Type;
                         length: ExpressionList);
   BEGIN
     InitOperator (new, sym, type);
-    new. arrayType := type(Sym.Pointer). baseType(Sym.Array);
     new. length := length;
-  END InitNewArray;
+  END InitNewObject;
 
-PROCEDURE (b: Builder) NewNewArray (sym: Symbol; args: ExpressionList): Expression;
+PROCEDURE (b: Builder) NewNewObject (sym: Symbol; type: Sym.Type;
+                                     args: ExpressionList): Expression;
   VAR
-    new: NewArray;
+    new: NewObject;
     length: ExpressionList;
     i: LONGINT;
   BEGIN
-    NEW (length, LEN (args^)-1);
-    FOR i := 0 TO LEN (length^)-1 DO
-      length[i] := args[i+1];
+    IF (args = NIL) THEN
+      length := NIL;
+    ELSE
+      NEW (length, LEN (args^)-1);
+      FOR i := 0 TO LEN (length^)-1 DO
+        length[i] := args[i+1];
+      END;
     END;
     
     NEW (new);
-    InitNewArray (new, sym, args[0]. type, length);
+    InitNewObject (new, sym, type, length);
     RETURN new;
-  END NewNewArray;
+  END NewNewObject;
 
-PROCEDURE (v: Visitor) [ABSTRACT] VisitNewArray* (new: NewArray);
-  END VisitNewArray;
+PROCEDURE (v: Visitor) [ABSTRACT] VisitNewObject* (new: NewObject);
+  END VisitNewObject;
 
-PROCEDURE (new: NewArray) Accept* (v: Visitor);
+PROCEDURE (new: NewObject) Accept* (v: Visitor);
   BEGIN
-    v. VisitNewArray (new)
-  END Accept;
-
-(* Operator Class: NewRecord
-   ------------------------------------------------------------------------ *)
-
-PROCEDURE InitNewRecord (new: NewRecord; sym: Symbol; type: Sym.Type);
-  BEGIN
-    InitOperator (new, sym, type);
-  END InitNewRecord;
-
-PROCEDURE (b: Builder) NewNewRecord (sym: Symbol; type: Sym.Type): Expression;
-  VAR
-    new: NewRecord;
-  BEGIN
-    NEW (new);
-    InitNewRecord (new, sym, type);
-    RETURN new;
-  END NewNewRecord;
-
-PROCEDURE (v: Visitor) [ABSTRACT] VisitNewRecord* (new: NewRecord);
-  END VisitNewRecord;
-
-PROCEDURE (new: NewRecord) Accept* (v: Visitor);
-  BEGIN
-    v. VisitNewRecord (new)
+    v. VisitNewObject (new)
   END Accept;
 
 (* Operator Class: SelectField
@@ -2561,16 +2538,16 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
           type := arguments[0]. type(Sym.Pointer). baseType;
           IF (type IS Sym.Array) THEN
             IF CheckNumberOfArguments (1, 1+arguments[0]. type(Sym.Pointer). baseType(Sym.Array). GetOpenDimensions()) THEN
-              (* FIXME... check argument type here or in NewNewArray() *)
-              RETURN b. NewAssignment (design. sym,
-                                       arguments[0],
-                                       b. NewNewArray (design. sym, arguments));
+              (* FIXME... check argument type here or in NewNewObject() *)
+              RETURN b. NewAssignment
+                  (design. sym, arguments[0],
+                   b. NewNewObject (design.sym, arguments[0].type, arguments));
             END;
           ELSE (* (type IS Sym.Record) *)
             IF CheckNumberOfArguments (1, 1) THEN
               RETURN b. NewAssignment
                   (design. sym, arguments[0],
-                   b. NewNewRecord (design. sym, arguments[0]. type));
+                   b. NewNewObject (design. sym, arguments[0].type, NIL));
             END;
           END;
         END;

@@ -52,7 +52,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
   PROCEDURE Chain (instr: SSA.Instr);
     BEGIN
-      IF (instr. opcode = Opcode.set) OR (instr. opcode = Opcode.newArray) THEN
+      IF (instr. opcode = Opcode.set) OR (instr. opcode = Opcode.newObject) THEN
         instr. opndList. ReplaceArg (s);
       ELSE
         instr. AddOpnd (s, Opnd.store);
@@ -214,20 +214,22 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END AddCompareOp;
 
-    PROCEDURE NewArray (new: IR.NewArray): SSA.Instr;
+    PROCEDURE NewObject (new: IR.NewObject): SSA.Instr;
       VAR
         instr: SSA.Instr;
         i: LONGINT;
       BEGIN
-        instr := pb. AddInstr (Opcode.newArray, Opcode.scAddress);
+        instr := pb. AddInstr (Opcode.newObject, Opcode.scAddress);
         instr. AddOpnd (s, Opnd.store);
         instr. AddOpnd (pb. GetTypeRef (new. type), Opnd.type);
-        FOR i := 0 TO LEN (new. length^)-1 DO
-          instr. AddOpnd (Expression (new. length[i]), Opnd.arg);
+        IF (new. length # NIL) THEN
+          FOR i := 0 TO LEN (new. length^)-1 DO
+            instr. AddOpnd (Expression (new. length[i]), Opnd.arg);
+          END;
         END;
         Chain (instr);
         RETURN instr;
-      END NewArray;
+      END NewObject;
 
     PROCEDURE ShortcutAnd (left, right: IR.Expression): SSA.Result;
       VAR
@@ -388,15 +390,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           ASSERT (FALSE);
         END;
 
-      | expr: IR.NewArray DO
-        RETURN NewArray (expr);
-        
-      | expr: IR.NewRecord DO
-        instr := pb. AddInstr (Opcode.newRecord, Opcode.scAddress);
-        instr. AddOpnd (s, Opnd.store);
-        instr. AddOpnd (pb. GetTypeRef (expr. type), Opnd.type);
-        Chain (instr);
-        RETURN instr;
+      | expr: IR.NewObject DO
+        RETURN NewObject (expr);
         
       | expr: IR.Call DO
         instr := Call (expr);

@@ -142,14 +142,10 @@ VAR
   integer-: StructDesc;
   longint-: StructDesc;
 
-PROCEDURE NewArray* (td: Struct; ...): SYSTEM.PTR;
-(**Allocates a new array variable on the heap, using the type descriptor
-   @oparam{td}.  For an open array object, the lengths of the array's
-   dimensions are passed as second, third, and so on, parameter.  They must be
-   of type @code{LONGINT}.  *)
-   
-PROCEDURE NewRecord* (td: Struct): SYSTEM.PTR;
-(**Allocates a new record variable on the heap, using the type descriptor
-   @oparam{td}.  *)
+PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
+(**Allocates a new array or record variable on the heap, using the type
+   descriptor @oparam{td}.  For an open array object, the lengths of the
+   array's dimensions are passed as second, third, and so on, parameter.  They
+   must be of type @code{LONGINT}.  *)
    
 END RT0.
