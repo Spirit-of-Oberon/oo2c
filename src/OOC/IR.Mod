@@ -3369,7 +3369,7 @@ PROCEDURE (b: Builder) NewVar* (name: Symbol; decl: Sym.VarDecl): Var;
     var: Var;
   BEGIN
     NEW (var);
-    InitVar (var, name, decl. type, decl);
+    InitVar (var, name, TR.Expand(decl.type), decl);
     RETURN var
   END NewVar;
 

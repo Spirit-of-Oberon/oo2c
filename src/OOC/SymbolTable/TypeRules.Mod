@@ -28,7 +28,122 @@ MODULE OOC:SymbolTable:TypeRules;
    formal parameters, and so on.  *)
 
 IMPORT
+  Log,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+
+
+TYPE
+  TypeExpr* = POINTER TO TypeExprDesc;
+  TypeExprDesc = RECORD
+    (Sym.TypeDesc)
+    baseType: Sym.Type;
+    params: Sym.TypeVarArray;
+    arguments: Sym.TypeRefArray;
+  END;
+
+PROCEDURE InitTypeExpr(te: TypeExpr; position: Sym.Position;
+                       baseType: Sym.Type;
+                       params: Sym.TypeVarArray; arguments: Sym.TypeRefArray);
+  BEGIN
+    Sym.InitType(te, NIL, position);
+    te.baseType := baseType;
+    te.params := params;
+    te.arguments := arguments;
+  END InitTypeExpr;
+
+PROCEDURE NewTypeExpr(position: Sym.Position; baseType: Sym.Type;
+                      params: Sym.TypeVarArray; arguments: Sym.TypeRefArray): TypeExpr;
+  VAR
+    te: TypeExpr;
+  BEGIN
+    NEW(te);
+    InitTypeExpr(te, position, baseType, params, arguments);
+    RETURN te;
+  END NewTypeExpr;
+
+
+PROCEDURE Lookup(context: TypeExpr; tv: Sym.TypeVar): Sym.Type;
+  VAR
+    i: LONGINT;
+  BEGIN
+    i := 0;
+    WHILE (i # LEN(context.params^)) & (context.params[i] # tv)  DO
+      INC(i);
+    END;
+    IF (i = LEN(context.params^)) THEN
+      (* variable is unbound in the given context, for example because it is
+         a variable of the class definition appearing in a variable declaration
+         of a method of the class *)
+      RETURN tv;
+    ELSE
+      RETURN context.arguments[i].type;
+    END;
+  END Lookup;
+
+PROCEDURE ^ Expand*(type: Sym.Type): Sym.Type;
+PROCEDURE ^ ExpandTypeExpr(typeExpr: TypeExpr): Sym.Type;
+
+PROCEDURE ExpandInContext(type: Sym.Type; context: TypeExpr): Sym.Type;
+  VAR
+    i: LONGINT;
+    args: Sym.TypeRefArray;
+  BEGIN
+    IF (type.typePars = NIL) THEN
+      (* no type variables in this type *)
+      RETURN Expand(type);
+    ELSE
+      WITH type: Sym.QualType DO
+        NEW(args, LEN(type.arguments^));
+        FOR i := 0 TO LEN(args^)-1 DO
+          Sym.InitTypeRef(args[i], ExpandInContext(type.arguments[i].type,
+                                                   context));
+        END;
+        RETURN ExpandTypeExpr(NewTypeExpr(type.position, type.baseType,
+                                          type.baseType.typePars.params,
+                                          args));
+        
+      | type: Sym.TypeVar DO
+        RETURN Lookup(context, type);
+
+      ELSE
+        RETURN type;
+      END;
+    END;
+  END ExpandInContext;
+
+PROCEDURE ExpandTypeExpr(typeExpr: TypeExpr): Sym.Type;
+(* Recursivly expand the base type of @oparam{typeExpr}.  *)
+  VAR
+    type: Sym.Type;
+  BEGIN
+    type := ExpandInContext(typeExpr.baseType, typeExpr);
+    IF (type # typeExpr.baseType) THEN
+      RETURN type;
+    ELSE
+      RETURN typeExpr;
+    END;
+  END ExpandTypeExpr;
+
+PROCEDURE Expand*(type: Sym.Type): Sym.Type;
+(**@precond
+   The type @oparam{type} contains unbound type variables that need to be
+   bound to a particular value in the current context.
+   @end precond
+
+   @postcond
+   The result is not an instance of @otype{Sym.QualType}.  If the result is a
+   @otype{TypeExpr}, then this statement holds for the expression's base type.
+   @end postcond  *)
+  BEGIN
+    WITH type: Sym.QualType DO
+      RETURN ExpandTypeExpr(NewTypeExpr(type.position, type.baseType,
+                                        type.baseType.typePars.params,
+                                        type.arguments));
+    ELSE
+      RETURN type;
+    END;
+  END Expand;
+
 
 PROCEDURE IsNamedType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be accessed through
@@ -363,9 +478,35 @@ PROCEDURE ^ FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExten
 
 PROCEDURE SameType* (a, b: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{a} and @oparam{b} are the @dfn{same type},
-   as defined in the language report.  *)
+   as defined in the language report.
+
+   The generics extension of OOC adds an additional rule: Two qualified types
+   are considered to be the same type, if they have the same base type and if
+   their corresponding type arguments are the same type.  *)
+  VAR
+    baseA, baseB: Sym.Type;
+    i: LONGINT;
+    tv: Sym.TypeVar;
   BEGIN
-    RETURN (a = b) & ~IsOpenArrayType (a)
+    (*a := Expand(a); b := Expand(b);*)
+    
+    IF (a = b) & ~IsOpenArrayType (a) THEN
+      RETURN TRUE;
+    ELSIF (a IS TypeExpr) & (b IS TypeExpr) THEN
+      baseA := a(TypeExpr).baseType;
+      baseB := b(TypeExpr).baseType;
+      IF SameType(baseA, baseB) THEN
+        ASSERT(baseA.typePars = baseB.typePars);
+        FOR i := 0 TO LEN(baseA.typePars.params^)-1 DO
+          tv := baseA.typePars.params[i];
+          IF ~SameType(Lookup(a(TypeExpr), tv), Lookup(b(TypeExpr), tv)) THEN
+            RETURN FALSE;
+          END;
+        END;
+        RETURN TRUE;
+      END;
+    END;
+    RETURN FALSE;
   END SameType;
 
 PROCEDURE EqualTypes* (a, b: Sym.Type): BOOLEAN;
