@@ -213,7 +213,7 @@ TYPE
     typeQualifier: TypeQualifier;
     storageClass: StorageClass;
     type: Type;
-    name: String.String;
+    name-: String.String;
   END;
 
 TYPE

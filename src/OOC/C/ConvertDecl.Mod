@@ -318,6 +318,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
                              mode: SHORTINT);
     VAR
       ptr: Sym.Item;
+      decl: DeclWriter.Declaration;
       
     PROCEDURE ExportedVarDecl (ptr: Sym.Item): BOOLEAN;
       BEGIN
@@ -359,9 +360,17 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
                                    (m. GetImport (ptr. moduleName. str^)));
               END;
             ELSE
-              w. AddDeclaration (ConvertDecl (w, ptr, mode));
-              IF (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isTypeBound THEN
-                AddTypeBoundHelpers (w, ptr(Sym.ProcDecl));
+              decl := ConvertDecl (w, ptr, mode);
+              IF (decl. name. array[0] # "(") THEN
+                (* Gross hack: If the declarations name doesn't look like a
+                   name, then omit it from the output.  This can (but probably
+                   shouldn't ;-) be used to define functions and variables
+                   that actually expand to expressions or macros.  Introduced
+                   to allow "(float)sin" as function name in RealMath.Mod.  *)
+                w. AddDeclaration (decl);
+                IF (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isTypeBound THEN
+                  AddTypeBoundHelpers (w, ptr(Sym.ProcDecl));
+                END;
               END;
             END;
           END
