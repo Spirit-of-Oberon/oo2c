@@ -9,7 +9,7 @@ TYPE
 
 PROCEDURE (p: P) Proc1*(a: G.Object);
   VAR
-    v: P.Base;
+    v: R.Base;
   BEGIN
     v := a;
   END Proc1;

@@ -9,15 +9,15 @@ TYPE
     x-: POINTER TO ARRAY OF E;
   END;
 
-PROCEDURE (l: ArrayList) Copy1*(): ArrayList<ArrayList.E>;
+PROCEDURE (l: ArrayList) Copy1*(): ArrayList<ArrayListDesc.E>;
   VAR
-    x: ArrayList<ArrayList.E>;
+    x: ArrayList<ArrayListDesc.E>;
   BEGIN
     x := l;
     RETURN x;
   END Copy1;
 
-PROCEDURE (l: ArrayList) Copy2*(): ArrayList<ArrayList.E>;
+PROCEDURE (l: ArrayList) Copy2*(): ArrayList<ArrayListDesc.E>;
   BEGIN
     RETURN l;
   END Copy2;

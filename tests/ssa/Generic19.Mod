@@ -9,7 +9,7 @@ TYPE
 
 PROCEDURE (p: P) Proc1*(v: G.Object): BOOLEAN;
   BEGIN
-    RETURN (v IS P.Base);
+    RETURN (v IS R.Base);
   END Proc1;
 
 END Generic19.
