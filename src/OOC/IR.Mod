@@ -1749,6 +1749,7 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
   VAR
     v: LONGINT;
     type: INTEGER;
+    str: STRING;
 
   PROCEDURE ValueOf(str[NO_COPY]: ARRAY OF CHAR): LONGINT;
     VAR
@@ -1811,13 +1812,15 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
     ELSE
       IF (v <= ORD (Predef.maxChar)) THEN
         type := Predef.char;
+        str := Object.NewLatin1Char(CHR(v));
       ELSIF (v <= ORD(Predef.maxLongChar)) THEN
         type := Predef.longchar;
+        str := Object.NewUCS4Char(UCS4CHR(v));
       ELSE
         type := Predef.ucs4char;
+        str := Object.NewUCS4Char(UCS4CHR(v));
       END;
-      RETURN NewConst(sym, Predef.GetType(type),
-                      Boxed.NewString(Object.NewUCS4Char(UCS4CHR(v))));
+      RETURN NewConst(sym, Predef.GetType(type), Boxed.NewString(str));
     END
   END NewCharConst16;
 
