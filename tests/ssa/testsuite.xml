@@ -10,8 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard4
-  opTypeGuard5 opTypeGuard6">-->
+  select ="&SetupTestCasesWithOut; opArray9">-->
 
   &TestSetupWithOut;
     
@@ -637,33 +636,29 @@
           file="OpArray1.Mod" output="OpArray1.Ref">
       Exercise array designators.
     </test>
-
     <test id="opArray2" type="reject" file="OpArray2.Mod">
       Array designator applied to non-array.
     </test>
-
     <test id="opArray3" type="reject" file="OpArray3.Mod">
       Array indexed by non-integer.
     </test>
-
     <test id="opArray4" type="reject" file="OpArray4.Mod">
       Constant array index exceeds array length.
     </test>
-
     <test id="opArray5" type="reject" file="OpArray5.Mod">
       Constant array index is negative.
     </test>
-
     <test id="opArray6" type="reject" file="OpArray6.Mod">
       Array designator applied to function result.
     </test>
-
     <test id="opArray7" type="error" file="OpArray7.Mod">
       Accessing an index just after the end of the array.
     </test>
-
     <test id="opArray8" type="error" file="OpArray8.Mod">
       Accessing index <code>-1</code>.
+    </test>
+    <test id="opArray9" type="run" file="OpArray9.Mod" output="OpArray9.Ref">
+      Array index is result of a function call.
     </test>
 
     <test id="opRecord1" type="run" file="OpRecord1.Mod"

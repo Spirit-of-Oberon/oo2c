@@ -345,9 +345,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         INC (dim);
         ASSERT (baseResult. instr. opcode = Opcode.get);
         
-        (* take the "get" instruction of the array's designator and
-           change it into a "get" for the array element *)
+        (* take the "get" instruction of the array's designator and change it
+           into a "get" for the array element; the store seen by the index
+           expression is the one that is passed into the old "get", and the new
+           "get" sees the store after the index expression has been evaluated  *)
         instr := baseResult. instr;
+        s := instr. opndList. arg;
         index := Expression (indexOp. index);
         IF indexOp. checkIndex THEN
           check := AddException (pb, indexOp. sym,
@@ -356,6 +359,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           check. AddOpnd (length, Opnd. arg);
           index := check;
         END;
+        instr. opndList. ReplaceArg (s);
         
         elementType := indexOp. type;
         scaledIndex := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
