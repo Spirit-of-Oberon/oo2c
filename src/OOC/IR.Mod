@@ -1062,6 +1062,7 @@ CONST
   notVarParCompatible = 40;
   redirectFailed = 41;
   readOnlyParameter = 42;
+  noDynamicType = 43;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1212,6 +1213,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Internal error: Name redirection failed"
     | readOnlyParameter:
       t := "This parameter is read-only"
+    | noDynamicType:
+      t := "This variable has no dynamic type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2040,7 +2043,7 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expres
       array := b. NewDeref (sym, array);
     END;
     IF ~(array. type IS Sym.Array) THEN
-      RETURN b. ErrExpr (notArray, array. sym);
+      RETURN b. ErrExpr (notArray, sym);
     ELSE
       IF ~TR.IsIntegerType (index. type) THEN
         b. ErrSym (notInteger, index. sym);
@@ -2754,14 +2757,35 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
   VAR
     test: TypeTest;
     refType: Sym.Type;
+    typeRef: TypeRef;
     origExpr: Expression;
     checkPointer: BOOLEAN;
+
+  PROCEDURE HasDynamicType (expr: Expression): BOOLEAN;
+    VAR
+      type: Sym.Type;
+    BEGIN
+      type := expr.type;
+      WITH type: Sym.Record DO
+        RETURN ~(expr IS Var) OR expr(Var).decl(Sym.VarDecl).isVarParam;
+      | type: Sym.Pointer DO
+        RETURN (type.baseType IS Sym.Record);
+      ELSE
+        RETURN FALSE;
+      END;
+    END HasDynamicType;
+  
   BEGIN
     refType := b. AssertType (referenceType);
     IF (refType = NIL) THEN
       RETURN b. errorExpr;
     ELSIF ~TR.IsExtensionOf (refType, expr. type) THEN
       RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
+    ELSIF ~HasDynamicType(expr) THEN
+      (* The test for TR.IsExtensionOf restricts the type of the variable to
+         record or pointer type.  We must also check that the variable has
+         a dynamix type that can differ from its static one.  *)
+      RETURN b. ErrExpr (noDynamicType, expr.sym);
     ELSE
       origExpr := expr;
       checkPointer := GetPragmaValue (b, StdPragmas.derefCheck, sym. pos);
@@ -2771,8 +2795,13 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
         refType := refType(Sym.Pointer). baseType;
       END;
       NEW (test);
+      IF (referenceType IS TypeRef) THEN
+        typeRef := referenceType(TypeRef);
+      ELSE
+        typeRef := NIL;
+      END;
       InitTypeTest (test, sym, expr, refType(Sym.Record), checkPointer,
-                    origExpr, referenceType(TypeRef));
+                    origExpr, typeRef);
       RETURN test;
     END;
   END NewTypeTest;
@@ -3970,10 +3999,21 @@ PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest;
     nested: Namespace.Nested;
     da: Sym.DeclarationArray;
   BEGIN
-    var := typeTest. expr(Var). decl(Sym.VarDecl);
-    NEW (da, 1);
-    da[0] := NewGuardedVar (var, typeTest. origType. decl(Sym.TypeDecl). type);
-    nested := Namespace.NewNested (da, 1);
+    IF (typeTest.expr IS Var) THEN
+      var := typeTest. expr(Var). decl(Sym.VarDecl);
+      NEW (da, 1);
+      da[0] := NewGuardedVar (var, typeTest. origType. decl(Sym.TypeDecl). type);
+      nested := Namespace.NewNested (da, 1);
+      nested. SetEnclosingNamespace (namespace(Namespace.Nested));
+      namespace := nested;
+      RETURN;
+    ELSE
+      b. ErrSym (notVariable, typeTest.expr.sym);
+    END;
+
+    (* fall through: install empty namespace, so that EndTypeGuard works *)
+    NEW (da, 0);
+    nested := Namespace.NewNested (da, 0);
     nested. SetEnclosingNamespace (namespace(Namespace.Nested));
     namespace := nested;
   END StartTypeGuard;
