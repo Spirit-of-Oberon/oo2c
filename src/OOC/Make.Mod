@@ -892,7 +892,8 @@ PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
       
     ELSE
       success := r.Update(module, Rep.modCodeFileC);
-      IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modCodeFileC) THEN
+      IF success &
+         DerivedIsOlder(module, Rep.modObjectFile, Rep.modCodeFileC) THEN
         module.CreateOutputDir (Rep.modObjectFile, res);
         IF (res = NIL) THEN
           CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
