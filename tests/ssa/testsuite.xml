@@ -6,7 +6,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; loop5">-->
+  select ="&SetupTestCasesWithOut; record10">-->
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -256,6 +256,12 @@ opPointer1 opPointer2 opPointer3 opPointer4 opPointer5">-->
     <test id="record9" type="run" file="Record9.Mod" output="Record9.Ref">
       Similar to <code>record6</code>, but the variable is allocated
       on the heap.
+    </test>
+    
+    <test id="record10" type="run" file="Record10.Mod">
+      An array variable nested within a record.  This test breaks if
+      the array length is not computed before the array size is
+      calculated. 
     </test>
     
     <test id="array1" type="run" file="Array1.Mod" output="Array1.Ref">
