@@ -19,7 +19,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE Chain (instr: SSA.Instr);
     BEGIN
       IF (instr. opcode = Opcode.set) THEN
-        instr. opndList. ReplaceOpnd (s);
+        instr. opndList. ReplaceArg (s);
       ELSE
         instr. AddOpnd (s, Opnd.store);
       END;
@@ -52,7 +52,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         elementAdr := pb. AddInstr (Opcode.add, Opcode.scAddress);
         elementAdr. AddOpnd (adrOpnd. arg, Opnd.arg);
         elementAdr. AddOpnd (index, Opnd. arg);
-        adrOpnd. ReplaceOpnd (elementAdr);
+        adrOpnd. ReplaceArg (elementAdr);
         instr. AddOpnd (index, Opnd.readDesign);
         instr. SetSubclass (Opcode.TypeToSubclass (indexOp. type));
 

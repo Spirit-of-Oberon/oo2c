@@ -142,8 +142,8 @@ CONST
      instruction after the loop.  *)
   
   get* = 10;
-  (**Retrieves the value of a variable.  The operands of the instruction and
-     their class ids are in this order:
+  (**Retrieves the value of a variable.  Result is always a scalar value.  The
+     operands of the instruction and their class ids are in this order:
 
      @table @oconst
      @item *OOC:SSA:Opnd.store
@@ -157,8 +157,22 @@ CONST
      the designator, several successive operands can share this class.  For
      non-heap variables, the first entry in the designator is a reference to
      the declaration of the accessed variable.
-     @end table  *)
+     @end table
+
+     The instruction itself represents the result of the read operation.  If it
+     accesses a volatile variable, then it has an additional result, the new
+     value of @var{store} that is produced by this read operation.  *)
   set* = 11;
+  (**Sets the value of a variable.  The source value is always of scalar type.
+     The operand list resembles that of a @oconst{get} instruction, using the
+     class ids @oconst{*OOC:SSA:Opnd.writeAdr} and
+     @oconst{*OOC:SSA:Opnd.writeDesign} to denote the address and the
+     designator of the variable.  An additional operand
+     @oconst{*OOC:SSA:Opnd.sourceValue} takes the value that should be written
+     to memory.
+
+     The instruction has one result of class @oconst{*OOC:SSA:Result.store},
+     representing the new value of store with the updated variable.  *)
   copy* = 12;
 
   add* = 13;

@@ -248,7 +248,7 @@ PROCEDURE (opnd: Opnd) DeleteOpnd*;
     opnd. instr := NIL
   END DeleteOpnd;
 
-PROCEDURE (opnd: Opnd) ReplaceOpnd* (arg: Result);
+PROCEDURE (opnd: Opnd) ReplaceArg* (arg: Result);
 (**Replaces the current argument of the operand with @oparam{arg}.
 
    @precond
@@ -257,7 +257,7 @@ PROCEDURE (opnd: Opnd) ReplaceOpnd* (arg: Result);
   BEGIN
     DeleteUse (opnd);
     SetUse (arg, opnd)
-  END ReplaceOpnd;
+  END ReplaceArg;
 
 PROCEDURE (opnd: Opnd) OpndIndex*(): LONGINT;
 (**Returns the index of @oparam{opnd} in its instruction's operand list.  The

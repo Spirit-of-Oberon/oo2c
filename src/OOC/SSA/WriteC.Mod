@@ -56,7 +56,7 @@ PROCEDURE Fixup (pb: SSA.ProcBlock);
              instruction, then replace this operand with a `declref';
              this way, the name of the called function is used directly,
              without going through an intermediate address value *)
-          instr. opndList. ReplaceOpnd
+          instr. opndList. ReplaceArg
               (pb. GetDeclRef (instr. opndList. arg(SSA.Address). decl));
         END;
       ELSE (* nothing to do *)

@@ -137,7 +137,14 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
        -1 for instruction that are of no interest for this transformation
        
        *)
-    
+
+  PROCEDURE DoAlias (instr1, instr2: SSA.Instr): BOOLEAN;
+    BEGIN
+      (* rather incomplete function to determine if two "get" or "set"
+         access the same memory locations... FIXME *)
+      RETURN (instr1. marker = instr2. marker)
+    END DoAlias;
+  
   PROCEDURE IdentifyVars(): Dictionary.Dictionary;
     VAR
       varMap: Dictionary.Dictionary;
@@ -174,7 +181,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     PROCEDURE Trace (origin: SSA.Instr; lastDefinition: SSA.Instr;
                      storeOut: SSA.Result): BOOLEAN;
     (**Result is @code{TRUE} if the effects of @oparam{origin} are visible
-       after completion of this procedure, or by called procedures.  *)
+       after completion of this procedure, or by procedures called by this
+       procedure.  *)
       VAR
         use: SSA.Opnd;
         instr: SSA.Instr;
@@ -212,22 +220,32 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           | Opcode.select   : RETURN (select. SizeOpndList() DIV 2)
           | Opcode.loopStart: RETURN select. SizeOpndList()
           END;
-          
         END NumberOfPaths;
 
       PROCEDURE TraceUse (use: SSA.Opnd): BOOLEAN;
         VAR
           originMap: OriginMap;
           visible: BOOLEAN;
+          storeOut: SSA.Result;
         BEGIN
           instr := use. instr;
           CASE instr. opcode OF
           | Opcode.get:
-            (* ignore, we are only interested in writing instructions *)
-            RETURN FALSE;
+            storeOut := instr. GetResultClass (Result.store);
+            IF (storeOut = NIL) OR DoAlias (instr, origin) THEN
+              (* if the `store' chain ends here, then ignore the "get": we are
+                 only interested in writing instructions; if it continues, but
+                 the "get" aliases with the original "set", then the visibility
+                 of the "set" is also at an end  *)
+              RETURN FALSE;
+            ELSE
+              (* the "get" instruction accesses a volatile variable, but it
+                 does not alias with the original "set": continue trace *)
+              RETURN Trace (origin, lastDefinition, storeOut);
+            END;
             
           | Opcode.set:
-            IF (instr. marker =  origin. marker) THEN
+            IF DoAlias (instr, origin) THEN
               (* this "set" instruction defines the variable we are tracing:
                  we are at the end of the visibility of "origin" *)
               RETURN FALSE
@@ -364,7 +382,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             ELSE
               collect := pb. AddInstr (Opcode.collect, Opcode.scNone);
               oldStore := opnd. arg;
-              opnd. ReplaceOpnd (collect. AddResult (Result.store));
+              opnd. ReplaceArg (collect. AddResult (Result.store));
               collect. AddOpnd (oldStore, Opnd.store);
               RETURN collect
             END;
@@ -495,7 +513,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         instr := storeIn. instr;
         CASE instr. opcode OF
         | Opcode.set:
-          IF (instr. marker =  get. marker) THEN
+          IF DoAlias (instr, get) THEN
             (* this "set" instruction defines the variable we are tracing *)
             RETURN instr. GetArgClass (Opnd.sourceValue)
           ELSE
@@ -532,7 +550,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     BEGIN
       instr := pb. instrList;
       WHILE (instr # NIL) DO
-        IF (instr. marker >= 0) & (instr. opcode = Opcode.get) THEN
+        IF (instr. marker >= 0) & (instr. opcode = Opcode.get) &
+           (instr. GetResultClass (Result.store) = NIL) THEN
+          (* don't try to get rid of "get" instructions on volatile variables:
+             we must read from memory, because the value might have changed
+             behind our back *)
           value := Trace (instr, instr. opndList. arg);
           IF (value # NIL) THEN
             instr. ReplaceUses (value)
@@ -553,6 +575,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         IF (instr. marker >= 0) &
            (instr. opcode = Opcode.set) &
            (instr. info # instr) THEN
+          (* FIXME: don't remove "set" for volatile variable... *)
           ASSERT (instr. opcode = Opcode.set);
           storeOut := instr. GetResultClass (Result.store);
           storeOut. ReplaceUses (instr. GetArgClass (Opnd.store));
