@@ -80,6 +80,18 @@ PROCEDURE (v: Value) ToString* (): String.String;
     RETURN String.New (str)
   END ToString;
 
+PROCEDURE (v: Value) Store* (w: Object.Writer);
+  BEGIN
+    v. Store^ (w);
+    w. WriteNum (v. value);
+  END Store;
+
+PROCEDURE (v: Value) Load* (r: Object.Reader);
+  BEGIN
+    v. Load^ (r);
+    r. ReadNum (v. value);
+  END Load;
+
 
 
 PROCEDURE (t: Type) Value* (value: CHAR): Value;

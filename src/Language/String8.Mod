@@ -82,6 +82,21 @@ PROCEDURE (v: Value) ToString* (): String.String;
     RETURN sb. ToString()
   END ToString;
 
+PROCEDURE (v: Value) Store* (w: Object.Writer);
+  BEGIN
+    v. Store^ (w);
+    w. WriteObject (v. value);
+  END Store;
+
+PROCEDURE (v: Value) Load* (r: Object.Reader);
+  VAR
+    obj: Object.Object;
+  BEGIN
+    v. Load^ (r);
+    r. ReadObject (obj);
+    v. value := obj(String.String);
+  END Load;
+
 
 
 PROCEDURE (t: Type) Value* (value: String.String): Value;
