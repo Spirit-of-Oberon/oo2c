@@ -94,7 +94,7 @@ REJECT:
 
   1) p is not a pointer or type-bound procedure [OpPointer1]
   2) p is a type-bound procedure, but does not exist in the base type 
-     [OpPointer2]
+     [OpPointer2, OpPointer7]
   3) p is the result of a function call [OpPointer4]
   4) p is a super call (i.e., proc^^ is not allowed) [OpPointer5]
 

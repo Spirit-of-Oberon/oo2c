@@ -10,8 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; opPointer1 opPointer2 opPointer3
-  opPointer4 opPointer5 opPointer6  opPointer7">-->
+  select ="&SetupTestCasesWithOut; opPointer5">-->
 
   &TestSetupWithOut;
     
@@ -950,7 +949,7 @@
     <test id="opPointer4" type="reject" file="OpPointer4.Mod">
       Dereference operator applied to function result.
     </test>
-    <test id="opPointer5" type="reject" relevance="informal" file="OpPointer5.Mod">
+    <test id="opPointer5" type="reject" file="OpPointer5.Mod">
       More than one level of "super" call.
     </test>
     <test id="opPointer6" type="error" file="OpPointer6.Mod">
@@ -1515,6 +1514,8 @@
         msg="Called procedure not defined in base type"/>
     <reject-info id="opPointer4" pos="New(1)%"
         msg="Operator may not be applied to function result"/>
+    <reject-info id="opPointer5" pos="P\^%\^"
+        msg="Super call can only apply to the direct base type"/>
     <reject-info id="opPointer7" pos="P%^"
         msg="Called procedure not defined in base type"/>
     

@@ -1089,6 +1089,7 @@ CONST
   abstractWithBegin = 57;
   abstractSuperCall = 58;
   notDefinedInBaseType = 59;
+  duplicateSuperCall = 60;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1275,6 +1276,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Called procedure is declared abstract"
     | notDefinedInBaseType:
       t := "Called procedure not defined in base type"
+    | duplicateSuperCall:
+      t := "Super call can only apply to the direct base type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1501,10 +1504,10 @@ PROCEDURE (b: Builder) NewStringConst* (sym: Symbol): Expression;
          the symbol includes the string delimiters, the test actually
          checks for a length of exactly 3 characters *)
       RETURN NewConst (sym, Predef.GetType (Predef.char),
-                       String8.type. ValueOf (sym. str^));
+                       String8.ValueOf (sym. str^));
     ELSE
       RETURN NewConst (sym, Predef.GetType (Predef.charString),
-                       String8.type. ValueOf (sym. str^));
+                       String8.ValueOf (sym. str^));
     END;
   END NewStringConst;
 
@@ -1512,7 +1515,7 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
   VAR
     v: Integer.Value;
   BEGIN
-    v := Integer.type. ValueOf (sym. str^);
+    v := Integer.ValueOf (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (numberOutOfRange, sym);
       RETURN b. errorExpr
@@ -1706,7 +1709,7 @@ PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expressi
   VAR
     v: Language.Value;
   BEGIN
-    v := Real.type. ValueOfLiteral (sym. str^);
+    v := Real.ValueOfLiteral (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (numberOutOfRange, sym);
       RETURN b. errorExpr
@@ -1719,7 +1722,7 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
   VAR
     v: Language.Value;
   BEGIN
-    v := Char.type. ValueOf (sym. str^);
+    v := Char.ValueOf (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (characterOutOfRange, sym);
       RETURN b. errorExpr
@@ -2153,10 +2156,11 @@ PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
     i: Deref;
   BEGIN
     WITH design: SelectProc DO (* super call of type-bound procedure *)
-      (* FIXME... check that we are in a redefinition *)
       design. tbProc := design. recordType. ns(Namespace.Extended).
           GetSuperProcByIndex (design. tbProc. tbProcIndex);
-      IF (design.tbProc = NIL) THEN
+      IF design.isStaticCall THEN
+        RETURN b.ErrExpr(duplicateSuperCall, sym);
+      ELSIF (design.tbProc = NIL) THEN
         RETURN b.ErrExpr(notDefinedInBaseType, sym);
       ELSE
         design. type := design. tbProc. formalPars;
@@ -2166,6 +2170,7 @@ PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
         END;
         RETURN design;
       END;
+
     ELSE
       b.CheckFunctionOp(design, sym);
       IF ~(design.type IS Sym.Pointer) THEN
