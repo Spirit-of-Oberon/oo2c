@@ -9,21 +9,16 @@ T3__f:
 	pushl %esi
 	pushl %ebx
 	subl $8, %esp
-	movb 8(%ebp), %al
 	cmpb $0, 8(%ebp)
 	je .L2
 .L1:
-	movl 12(%ebp), %ecx
-	movl 16(%ebp), %eax
-	addl 16(%ebp), %ecx
-	movl %ecx, %eax
+	movl 12(%ebp), %eax
+	addl 16(%ebp), %eax
 	jmp .LE_T3__f
 	jmp .L3
 .L2:
-	movl 12(%ebp), %ecx
-	movl 16(%ebp), %eax
-	subl 16(%ebp), %ecx
-	movl %ecx, %eax
+	movl 12(%ebp), %eax
+	subl 16(%ebp), %eax
 	jmp .LE_T3__f
 .L3:
 	movl $_mid, 0(%esp)

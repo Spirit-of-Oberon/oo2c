@@ -9,10 +9,8 @@ T2__f:
 	pushl %esi
 	pushl %ebx
 	subl $8, %esp
-	movl 8(%ebp), %ecx
-	movl 12(%ebp), %eax
-	subl 12(%ebp), %ecx
-	movl %ecx, %eax
+	movl 8(%ebp), %eax
+	subl 12(%ebp), %eax
 	jmp .LE_T2__f
 	movl $_mid, 0(%esp)
 	movl $22, 4(%esp)

@@ -1183,7 +1183,7 @@ PROCEDURE (instr: Instr) NonImmediateUses*(): BOOLEAN;
 PROCEDURE (instr: Instr) IsLive*(): BOOLEAN;
   BEGIN
     CASE instr.opcode OF
-    | enter, exit, return, branch, jump, get, set, setStack,
+    | enter, exit, return, branch, jump, set, setStack,
       designatorGate, loopStart, loopExit, loopEnd, loopBackedge, call:
       RETURN TRUE;
     ELSE

@@ -8,10 +8,8 @@ C1__Sub:
 	pushl %esi
 	pushl %ebx
 	subl $8, %esp
-	movl 8(%ebp), %ecx
-	movl 12(%ebp), %eax
-	subl 12(%ebp), %ecx
-	movl %ecx, %eax
+	movl 8(%ebp), %eax
+	subl 12(%ebp), %eax
 	jmp .LE_C1__Sub
 	movl $_mid, 0(%esp)
 	movl $22, 4(%esp)
