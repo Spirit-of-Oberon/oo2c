@@ -32,8 +32,16 @@ PROCEDURE ImmediateOpnd(instr: S.Instr): S.Opnd;
   
   BEGIN
     CASE instr.opcode OF
-    | S.return, S.call, S.guard:
+    | S.call, S.guard:
       n := 0;
+    | S.return:
+      opnd := instr.opndList;
+      IF (opnd.arg.instr.opcode = S.const) THEN
+        (* shortcut return of fp values to load directly into st0 *)
+        RETURN opnd;
+      ELSE
+        RETURN NIL;
+      END;
     | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq,
       (* x86's cmp instruction is not symmetric with immediate opnd *)
       S.add, S.sub, S.bitTestAndSet, S.bitTestAndClear, S.allocateStack:
@@ -107,6 +115,8 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
       offset: LONGINT;
       sp, res: S.Result;
       reg: S.Register;
+      clobbered: SET;
+      type: S.Type;
 
     PROCEDURE ArgSize(arg: S.Result): LONGINT;
       VAR
@@ -143,18 +153,26 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
       END;
 
       (* mark the registers that are potentially clobbered by the call *)
-      IF (call.resultList = NIL) THEN
-        res := call.AddResult(S.gpRegisterType);
+      clobbered := S.callerSaved;
+      IF (call.resultList # NIL) THEN
+        res := call.resultList;
+        IF (res.type >= S.real32) THEN
+          res.register := S.st0;
+        ELSE
+          res.register := S.gp0;
+        END;
+        res.adrMode := S.register;
+        EXCL(clobbered, res.register);
       END;
-      call.resultList.adrMode := S.register;
-      IF (call.resultList.type >= S.real32) THEN
-        call.resultList.register := S.st0;
-        res := call.AddResultReg(S.gpRegisterType, S.gp0);
-      ELSE
-        call.resultList.register := S.gp0;
-      END;
-      FOR reg := S.gp1 TO S.gp2 DO
-        res := call.AddResultReg(S.gpRegisterType, reg);
+      FOR reg := 0 TO MAX(SET) DO
+        IF reg IN clobbered THEN
+          IF (reg < S.st0) THEN
+            type := S.gpRegisterType;
+          ELSE
+            type := S.fpRegisterType;
+          END;
+          res := call.AddResultReg(type, reg);
+        END;
       END;
     END ExpandCall;
   

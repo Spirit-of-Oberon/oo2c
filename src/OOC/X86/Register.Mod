@@ -131,7 +131,8 @@ PROCEDURE IdentifyResults (b: S.FunctionBlock): RegisterFiles;
          Registers that are hot managed by the allocator, like stack pointer
          and frame pointer, are ignored.  *)
       BEGIN
-        RETURN (res.register # S.cc) OR (res.adrMode # S.register);
+        RETURN ((res.register # S.cc) OR (res.adrMode # S.register)) &
+            (res.register # S.st0);
       END Relevant;
     
     BEGIN

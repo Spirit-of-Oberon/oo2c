@@ -705,7 +705,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         fromType := toType;  (* for down conversion *)
         CASE fromType OF
         | S.real32, S.real64:
-          OpcTT("movs", fromType, S.noType);
+          IF (toReg.register # S.st0) THEN
+            OpcTT("movs", fromType, S.noType);
+          ELSE
+            OpcTT("fld", fromType, S.noType);
+          END;
         ELSE
           OpcTT("mov", fromType, S.noType);
         END;
@@ -725,8 +729,10 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           OpndMem(fromMemReg);
         END;
       END;
-      Comma();
-      RegT(toReg.register, toType);
+      IF (toReg.register # S.st0) THEN
+        Comma();
+        RegT(toReg.register, toType);
+      END;
     END MovMemReg;
   
   BEGIN

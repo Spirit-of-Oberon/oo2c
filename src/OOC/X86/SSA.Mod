@@ -227,6 +227,7 @@ CONST  (* Operand and Result Types: *)
   real64* = 11;
   (**Double precision IEEE-754 floating point number.  *)
   gpRegisterType* = signed32;
+  fpRegisterType* = real64;
 
 TYPE
   Node* = POINTER TO NodeDesc;

@@ -391,9 +391,14 @@ PROCEDURE (out: Output) WriteFunction*();
             w.WriteObject(out.Label(instr));
             w.WriteChar(" ");
           ELSE
-            FOR res IN instr.Results() DO
-              w.WriteObject(out.Label(res));
+            w.WriteObject(out.Label(instr.resultList));
+            w.WriteChar(" ");
+            IF (instr.resultList.nextResult # NIL) THEN
+              w.WriteObject(out.Label(instr.resultList.nextResult));
               w.WriteChar(" ");
+              IF (instr.resultList.nextResult.nextResult # NIL) THEN
+                w.WriteString("... ");
+              END;
             END;
             w.WriteString("<- ");
           END;
