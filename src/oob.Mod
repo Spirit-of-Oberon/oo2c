@@ -31,7 +31,7 @@ IMPORT
 
 VAR
   cfgErrList, errList: E.List;
-  help: Options.Option;
+  help, extendRecords: Options.Option;
   arg: Arguments.Argument;
   symTab: Sym.Module;
   
@@ -185,7 +185,8 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
       VAR
         item: Sym.Item;
       BEGIN
-        IF (record.baseType # NIL) THEN
+        IF extendRecords.value(Boolean.Value).boolean &
+           (record.baseType # NIL) THEN
           RecFields(record.baseType(Sym.Record));
         END;
         
@@ -260,6 +261,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
           END;
           Type(type.raises[i].type, type.raises[i].srcCodeType);
         END;
+        
       | type: Sym.Array DO
         IF type.isOpenArray THEN
           Out.String("ARRAY OF ");
@@ -282,12 +284,18 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
 
         RecFields(type);
 
-        FOR i := 0 TO type.tbProcCount-1 DO
+        i := 0;
+        IF ~extendRecords.value(Boolean.Value).boolean &
+           (type.baseType # NIL) THEN
+          i := type.baseType(Sym.Record).tbProcCount;
+        END;
+        WHILE (i # type.tbProcCount) DO
           procDecl := type.ns(Namespace.Extended).GetTBProcByIndex(i);
           Newline;
           ProcDecl(procDecl);
           Out.String(";");
           WriteDoc(procDecl);
+          INC(i);
         END;
         
         DEC(indent);
@@ -428,6 +436,7 @@ PROCEDURE WriteHelp;
     Out.String ("--config <file>           Use <file> as primary configuration file."); Out.Ln;
     Out.String ("--repository <directory>  Add repository."); Out.Ln;
     Out.String ("-r <directory>            Add repository."); Out.Ln;
+    Out.String ("--extended, -x            Include inherited members in records."); Out.Ln;
     Out.String ("--help, -h                Write this text and exit."); Out.Ln;
   END WriteHelp;
 
@@ -439,6 +448,10 @@ PROCEDURE NewConfig;
     help := Config.AddOption("help", Boolean.New(FALSE));
     Config.AddCmdLine("-h,--help",
                       "<options><set name='help'>TRUE</set></options>");
+
+    extendRecords := Config.AddOption("extendRecords", Boolean.New(FALSE));
+    Config.AddCmdLine("-x,--extended",
+                      "<options><set name='extendRecords'>TRUE</set></options>");
   END NewConfig;
 
 BEGIN

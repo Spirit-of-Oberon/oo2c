@@ -22,11 +22,15 @@ module.  That is, aliases assigned through import statements are
 discarded.
 .TP
 Inherited Fields
-A record type show the list of all its fields, including the ones it
+With
+.BR -x ,
+a record type shows the list of all its fields, including the ones it
 inherits from its base types.
 .TP
 Type-bound Procedures
-A record definition lists all type-bound procedures associated with it
+With
+.BR -x ,
+a record definition lists all type-bound procedures associated with it
 within its
 .B RECORD ... END
 block, and includes both local and inherited procedures.
@@ -37,6 +41,12 @@ Use given file as configuration file.
 .TP
 .B --repository <directory>, -r <directory>
 Add a directory to the list of repositories.
+.TP
+.B --extended, -x
+For records, include inherited fields and type-bound procedures in the
+output.  By default, only the local fields of the record and all
+type-bound procedures that are not redefinition of existing ones are
+displayed.
 .TP
 .B --help, -h
 Write short usage summary and exit.
