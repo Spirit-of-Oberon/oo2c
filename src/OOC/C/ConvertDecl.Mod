@@ -169,12 +169,9 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
         fct := w. NewFunction
             (ConvertType (w, type. resultType, type. srcCodeResultType),
              type. anyRestParameters);
-        IF (type. receiver # NIL) THEN
-          ConvertParam (fct, type. receiver)
-        END;
         ptr := type. nestedItems;
         WHILE (ptr # NIL) DO
-          WITH ptr: Sym.Declaration DO
+          WITH ptr: Sym.Declaration DO   (* this pics up receiver and params *)
             ConvertParam (fct, ptr(Sym.VarDecl))
           ELSE                     (* ignore non-declarations *)
           END;
