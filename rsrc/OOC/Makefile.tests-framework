@@ -54,7 +54,7 @@ test-clean:
 ifdef TEST_PROCESSOR
 	$(RM) $(OOC_DEV_ROOT)/$(TEST_PROCESSOR)
 endif
-	$(RM) $(TEST_REPORT) $(TEST_SUMMARY)
+	$(RM) $(TEST_REPORT) $(TEST_SUMMARY) $(TEST_WORKING_DIR)/.memdump
 	$(RM_R) $(TEST_TEMP_DIR)
 
 # include main makefile
