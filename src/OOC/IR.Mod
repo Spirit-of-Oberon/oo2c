@@ -4215,22 +4215,24 @@ PROCEDURE (b: Builder) NewIterateStatm* (sym: Symbol; context: Sym.Item;
     elem, pseudoDesign, expr: Expression;
     stepperCall: Call;
     stepper: Sym.ProcDecl;
-    class: Sym.Record;
+    class: Sym.Type;
     arguments: ExpressionList;
     
-  PROCEDURE GetStepper(type: Sym.Type; VAR class: Sym.Record): Sym.ProcDecl;
+  PROCEDURE GetStepper(type: Sym.Type; VAR class: Sym.Type): Sym.ProcDecl;
     VAR
       decl: Sym.Declaration;
       n: Sym.Name;
       fp: Sym.FormalPars;
+      record: Sym.Record;
     BEGIN
       IF TR.IsPointer(type) THEN
         type := TR.PointerBaseType(type);
       END;
+      class := type;
       type := type.Deparam();
-      class := type(Sym.Record);
+      record := type(Sym.Record);
       n := b.GetName2(sequence.sym, "Next");
-      decl := class.ns.Identify(context, n, FALSE);
+      decl := record.ns.Identify(context, n, FALSE);
       IF (decl # NIL) THEN
         WITH decl: Sym.ProcDecl DO
           fp := decl.formalPars;
