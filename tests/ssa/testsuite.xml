@@ -2073,6 +2073,11 @@
       export it.  Import of this type name should not crash the
       compiler.
     </test>
+
+    <test id="bugTypeDescr1" type="run" file="BugTypeDescr1.Mod">
+      Regression test: Create a type descriptor for an array of
+      procedure variables.  The output should be valid C code.
+    </test>
   </testcases>
   
   <testcases profile="C language Interface" default-lang="OOC O2">
