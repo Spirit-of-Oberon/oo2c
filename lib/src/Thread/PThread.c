@@ -115,6 +115,16 @@ void Thread_PThread__MutexDesc_Lock(Thread_PThread__Mutex m) {
   check_error(pthread_mutex_lock((pthread_mutex_t*)m->mutex), OOC_TRUE);
 }
 
+OOC_BOOLEAN Thread_PThread__MutexDesc_TryLock(Thread_PThread__Mutex m) {
+  int res;
+
+  res = pthread_mutex_lock((pthread_mutex_t*)m->mutex);
+  if (res && (res != EBUSY)) {
+    check_error(res, OOC_TRUE);
+  }
+  return (res == 0);
+}
+
 void Thread_PThread__MutexDesc_Unlock(Thread_PThread__Mutex m) {
   check_error(pthread_mutex_unlock((pthread_mutex_t*)m->mutex), OOC_TRUE);
 }

@@ -93,6 +93,12 @@ PROCEDURE (m: Mutex) Unlock*();
 
 PROCEDURE (m: Mutex) Destroy*();
 
+PROCEDURE (m: Mutex) TryLock*(): BOOLEAN;
+(**Behaves identically to @oproc{Mutex.Lock}, except that it does not block
+   the calling thread if the mutex is already locked by another thread (or by
+   the calling thread in the case of a "fast" mutex).  Instead, this method
+   returns immediatly with @code{FALSE}.  *)
+  
 (* ------------------------------------------------------------------------ *)
 
 PROCEDURE (c: Condition) INIT*();
