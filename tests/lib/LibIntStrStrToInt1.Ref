@@ -1,0 +1,12 @@
+0 strEmpty
+0 strAllRight
+1 strAllRight
+1 strAllRight
+-1 strAllRight
+2147483647 strAllRight
+-2147483648 strAllRight
+0 strOutOfRange
+0 strOutOfRange
+0 strWrongFormat
+0 strWrongFormat
+0 strWrongFormat

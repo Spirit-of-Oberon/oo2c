@@ -7,7 +7,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module ">-->
+  select ="prepare_out_module lib_IntStr_StrToInt1 lib_IntStr_IntToStr1">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -196,10 +196,21 @@
       Use <code>ValueInt</code> to convert strings to integers.
     </test>
  
-   <test id="lib_IntConv_LengthInt1" type="run"
+    <test id="lib_IntConv_LengthInt1" type="run"
           file="LibIntConvLengthInt1.Mod" output="LibIntConvLengthInt1.Ref">
       Use <code>LengthInt</code> to get the length of the decimal
       representation of integers.
     </test>
+
+    <test id="lib_IntStr_StrToInt1" type="run"
+          file="LibIntStrStrToInt1.Mod" output="LibIntStrStrToInt1.Ref">
+      Use <code>StrToInt</code> to convert strings to integers.
+    </test>
+ 
+    <test id="lib_IntStr_IntToStr1" type="run"
+          file="LibIntStrIntToStr1.Mod" output="LibIntStrIntToStr1.Ref">
+      Use <code>IntToStr</code> to convert integers to strings.
+    </test>
+ 
   </testcases>
 </testsuite-ext>
