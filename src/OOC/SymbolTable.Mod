@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -1438,6 +1438,22 @@ PROCEDURE (array: Array) Load* (r: Object.Reader);
     array. srcCodeElementType := obj(Type);
     array. elementType := array. srcCodeElementType;
   END Load;
+
+PROCEDURE (array: Array) GetOpenDimensions* (): LONGINT;
+(**Returns the number of open dimensions for the type @oparam{array}.  Result
+   is zero if the length of the array is known.  *)
+  VAR
+    type: Type;
+    dim: LONGINT;
+  BEGIN
+    dim := 0;
+    type := array;
+    WHILE (type IS Array) & type(Array). isOpenArray DO
+      INC (dim);
+      type := type(Array). elementType
+    END;
+    RETURN dim
+  END GetOpenDimensions;
 
 
 PROCEDURE InitFormalPars* (formalPars: FormalPars; parent: Item;
