@@ -23,6 +23,7 @@ MODULE OOC:SSA:Blocker;
 IMPORT
   Log,
   Channel, TextRider, ADT:String, Dictionary := ADT:Dictionary:IntValue,
+  Language:Integer,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination;
   
 (**
@@ -427,7 +428,20 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         use: SSA.Opnd;
         p: Proxy;
         loopEnd: SSA.Instr;
+        loopProxy: Loop;
+
+      PROCEDURE IsNestedLoop (child: SSA.Instr): BOOLEAN;
+      (* Return TRUE if `child' is one of the loops directly nested into
+         `loopStart'.  *)
+        BEGIN
+          child := child. GetLoopEnd();
+          RETURN (child. info(Loop). parentLoop = loopProxy);
+        END IsNestedLoop;
+      
       BEGIN
+        loopEnd := loopStart. GetLoopEnd();
+        loopProxy := loopEnd. info(Loop);
+        
         res := instr;
         WHILE (res # NIL) DO
           use := res. useList;
@@ -445,9 +459,9 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
               MarkUses (loopStart, loopEnd);
               
             ELSIF (p. loopAssoc = NIL) &
-               (((p. instr. opcode # Opcode.selectExit) &
-                 (p. instr. opcode # Opcode.loopEnd)) OR
-                (p. instr. GetLoopStart() # loopStart)) THEN
+                  (((p. instr. opcode # Opcode.selectExit) &
+                    (p. instr. opcode # Opcode.loopEnd)) OR
+                   IsNestedLoop (p. instr. GetLoopStart())) THEN
               (* stop when we reach an instruction that has already been
                  attached to another loop, and also when we reach a
                  select-exit that belongs to the current loop *)
@@ -902,6 +916,17 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
           | instr: SSA.Address DO
             w. WriteChar ("&");
             w. WriteString (instr. decl. name. str^);
+          ELSE
+            CASE instr. opcode OF
+            | Opcode.getLength:
+              w. WriteString (instr. opndList. nextOpnd. nextOpnd.
+                              arg(SSA.DeclRef). decl. name. str^);
+              w. WriteString ("/dim");
+              w. WriteLInt (instr. opndList. arg(SSA.Const). value(Integer.Value). ToInt(), 0);
+            ELSE
+              instr. LogOpcode ("instr.opcode");
+              ASSERT (FALSE);
+            END;
           END
         ELSE
           id := idMap. Get (res. instr);
