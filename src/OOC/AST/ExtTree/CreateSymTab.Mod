@@ -203,6 +203,8 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
       END;
       str := mf. callConv. GetString (TRUE);
       callConv := Sym.StringToCallConv (str. array^);
+
+      v. stb. SetClass (class);
     END;
     
     moduleDecl := v. stb. NewModule (moduleName, module. name. docString,

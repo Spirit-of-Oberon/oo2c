@@ -74,8 +74,10 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
     BEGIN
       decl := ConvertDecl (w, param, modeFormalParameter);
       fct. AddParameter (decl);
-      AddArrayLength (param. type, 0);
-      AddTypeTag (param);
+      IF param. supplementArgs THEN
+        AddArrayLength (param. type, 0);
+        AddTypeTag (param);
+      END;
     END ConvertParam;
 
   PROCEDURE AddFields (struct: DeclWriter.Struct; type: Sym.Type): LONGINT;

@@ -2964,24 +2964,36 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
           newArgs. Append (arg);
         END;
         newFPars. Append (fpar);
-        
-        fparType := fpar. type;
-        WITH fparType: Sym.Array DO
-          FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
-            newArgs. Append (b. Fold (b. NewLen (arg. sym, arg, i)));
-            newFPars. Append (NIL);
-          END;
 
-        | fparType: Sym.Record DO
-          IF fpar. isVarParam THEN
-            newArgs. Append (b. NewTypeTag (arg. sym, arg));
-            newFPars. Append (NIL);
+        IF fpar. supplementArgs THEN
+          fparType := fpar. type;
+          WITH fparType: Sym.Array DO
+            FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
+              newArgs. Append (b. Fold (b. NewLen (arg. sym, arg, i)));
+              newFPars. Append (NIL);
+            END;
+
+          | fparType: Sym.Record DO
+            IF fpar. isVarParam THEN
+              newArgs. Append (b. NewTypeTag (arg. sym, arg));
+              newFPars. Append (NIL);
+            END;
+          ELSE  (* nothing to do *)
           END;
-        ELSE  (* nothing to do *)
         END;
         
         INC (argIndex);
         INC (fparIndex);
+      END;
+
+      (* do we have a `...' at the end of our parameter list? *)
+      IF formalPars. anyRestParameters THEN
+        WHILE (argIndex # LEN (arguments^)) DO
+          arg := arguments[argIndex];
+          newArgs. Append (arg);
+          newFPars. Append (NIL);
+          INC (argIndex);
+        END;
       END;
       
       NEW (arguments, newArgs. size);

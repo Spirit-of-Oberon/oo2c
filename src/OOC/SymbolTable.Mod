@@ -579,6 +579,10 @@ TYPE
        procedure, instead of the arguments value.  @ofield{isVarParam} implies
        @ofield{isPassPerReference}.  Note: This field may hold the wrong
        value until @ofield{type} has been set to its final value.  *)
+    supplementArgs-: BOOLEAN;
+    (**For a parameter, this is @code{FALSE} if a call to the procedure
+       should omit any type tag or length information for this formal
+       parameter.  Default is @code{TRUE}.  *)
   END;
 
 TYPE
@@ -1217,6 +1221,7 @@ PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
     varDecl. isParameter := isParameter;
     varDecl. isReceiver := isReceiver;
     varDecl. isVarParam := isVarParam;
+    varDecl. supplementArgs := TRUE;
     IF isReceiver THEN
       parent(FormalPars). receiver := varDecl
     END;
@@ -1230,7 +1235,8 @@ PROCEDURE (varDecl: VarDecl) Store* (w: Object.Writer);
     w. WriteObject (varDecl. srcCodeType);
     w. WriteBool (varDecl. isParameter);
     w. WriteBool (varDecl. isReceiver);
-    w. WriteBool (varDecl. isVarParam)
+    w. WriteBool (varDecl. isVarParam);
+    w. WriteBool (varDecl. supplementArgs);
   END Store;
 
 PROCEDURE (varDecl: VarDecl) Load* (r: Object.Reader);
@@ -1244,12 +1250,18 @@ PROCEDURE (varDecl: VarDecl) Load* (r: Object.Reader);
     r. ReadBool (varDecl. isParameter);
     r. ReadBool (varDecl. isReceiver);
     r. ReadBool (varDecl. isVarParam);
+    r. ReadBool (varDecl. supplementArgs);
     
     IF varDecl. isParameter THEN
       (* fix position of formal parameter names; see @oconst{posImportedName}*)
       varDecl. visibleFrom := visiblePosImportedFormalParam
     END
   END Load;
+
+PROCEDURE (varDecl: VarDecl) SetSupplementArgs* (supplementArgs: BOOLEAN);
+  BEGIN
+    varDecl. supplementArgs := supplementArgs;
+  END SetSupplementArgs;
 
 
 PROCEDURE InitTypeDecl* (typeDecl: TypeDecl; parent: Item; name: Name;
