@@ -439,7 +439,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       | Opcode.collect, Opcode.newObject, Opcode.copyParameter, Opcode.loopEnd,
         Opcode.exit, Opcode.return,
         Opcode.halt, Opcode.assert, Opcode.checkIndex, Opcode.checkPointer,
-        Opcode.typeGuard, Opcode.failedWith, Opcode.failedCase:
+        Opcode.typeGuard, Opcode.failedTypeAssert,
+        Opcode.failedWith, Opcode.failedCase:
         RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
 
       | Opcode.loopStart:
