@@ -2,6 +2,10 @@
 <package name="liboo2c">
   <version current="0" revision="0" age="0"/>
   
+  <pragmas>
+    <set name="LIB_HAVE_LIBXNET">@have_libxnet@</set>
+  </pragmas>
+  
   <library name="oo2c" main-module="liboo2c">
     <version current="0" revision="0" age="0"/>
   </library>

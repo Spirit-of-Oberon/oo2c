@@ -21,6 +21,12 @@ AC_PATH_PROG(PERL,perl,perl)
 dnl checks for libraries
 AC_CHECK_LIB(gc,GC_malloc)
 AC_CHECK_LIB(xnet,socket)
+if test $ac_cv_lib_xnet_socket = yes; then
+   have_libxnet=TRUE
+else
+   have_libxnet=FALSE
+fi
+AC_SUBST(have_libxnet)
 
 dnl checks for header files
 AC_HEADER_STDC
@@ -45,6 +51,6 @@ AC_CHECK_FUNCS(backtrace_symbols readdir_r)
 
 dnl checks for system services
 
-AC_CONFIG_FILES([ENV Makefile.config rsrc/OOC/oo2crc.xml.mk
+AC_CONFIG_FILES([ENV Makefile.config rsrc/OOC/oo2crc.xml.mk lib/pkginfo.xml 
 		 src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml])
 AC_OUTPUT

@@ -68,7 +68,7 @@ main-clean: doc-clean test-cleanall
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
 distclean: main-clean
-	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
+	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml lib/pkginfo.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
 	rm -f lib/src/__config.h config.log config.status
 	rm -Rf autom4te.cache stage0/bin bin
 

@@ -2,7 +2,7 @@
 MODULE IO:Socket [FOREIGN "C"; 
                   LINK
                     FILE "Socket.c"
-                    <*IF LIB_HAVE_LIBXNET THEN*>; LIB "xnet"<*END*>
+                    <*IF LIB_HAVE_LIBXNET="TRUE" THEN*>; LIB "xnet"<*END*>
                   END];
 (*  Interface to socket facilities.
     Copyright (C) 2000  Michael van Acken

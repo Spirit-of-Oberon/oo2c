@@ -2486,6 +2486,12 @@ _ACEOF
 
 fi
 
+if test $ac_cv_lib_xnet_socket = yes; then
+   have_libxnet=TRUE
+else
+   have_libxnet=FALSE
+fi
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -4115,7 +4121,7 @@ done
 
 
 
-ac_config_files="$ac_config_files ENV Makefile.config rsrc/OOC/oo2crc.xml.mk src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml"
+ac_config_files="$ac_config_files ENV Makefile.config rsrc/OOC/oo2crc.xml.mk lib/pkginfo.xml src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4591,6 +4597,7 @@ do
   "ENV" ) CONFIG_FILES="$CONFIG_FILES ENV" ;;
   "Makefile.config" ) CONFIG_FILES="$CONFIG_FILES Makefile.config" ;;
   "rsrc/OOC/oo2crc.xml.mk" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/oo2crc.xml.mk" ;;
+  "lib/pkginfo.xml" ) CONFIG_FILES="$CONFIG_FILES lib/pkginfo.xml" ;;
   "src/OOC/Config/Autoconf.Mod" ) CONFIG_FILES="$CONFIG_FILES src/OOC/Config/Autoconf.Mod" ;;
   "rsrc/OOC/TestFramework/config.xml" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/TestFramework/config.xml" ;;
   "lib/src/__config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS lib/src/__config.h" ;;
@@ -4693,6 +4700,7 @@ s,@CPPFLAGS@,$CPPFLAGS,;t t
 s,@ac_ct_CC@,$ac_ct_CC,;t t
 s,@EXEEXT@,$EXEEXT,;t t
 s,@OBJEXT@,$OBJEXT,;t t
+s,@have_libxnet@,$have_libxnet,;t t
 s,@CPP@,$CPP,;t t
 s,@ooc_target_integer@,$ooc_target_integer,;t t
 s,@ooc_target_long_int@,$ooc_target_long_int,;t t
