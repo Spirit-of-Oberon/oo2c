@@ -1,4 +1,4 @@
-subdirs=scanner parser symtab config oberon-doc interface
+subdirs=make scanner parser symtab config oberon-doc interface
 
 export DIFF=diff -u
 
