@@ -717,7 +717,13 @@ PROCEDURE ProcessPackage (root: Parser.Element;
       SkipWS(node);
     END;
     
-    IF AtElement(node, "pragma-list") THEN
+    IF AtElement(node, "options") THEN
+      node := node.nextNode;
+      SkipWS(node);
+    END;
+    
+    IF AtElement(node, "pragmas") THEN
+      node := node.nextNode;
       SkipWS(node);
     END;
     
