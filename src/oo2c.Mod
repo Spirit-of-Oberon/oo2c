@@ -18,7 +18,7 @@ VAR
   i: LONGINT;
   arg: Arguments.Argument;
   mode: SHORTINT;
-  command, libraryName, libraryVersion, useStderr: Options.Option;
+  command, useStderr: Options.Option;
   makeRules: Make.Rules;
   rep: Rep.Repository;
   pkg: Package.Package;
@@ -27,26 +27,28 @@ VAR
 PROCEDURE NewConfig;
   BEGIN
     command := Config.AddOption("command", Integer.New(0));
-    libraryName := Config.AddOption("libraryName", StringValue.New(""));
-    libraryVersion := Config.AddOption("libraryVersion", StringValue.New(""));
     useStderr := Config.AddOption("useStderr", Boolean.New(FALSE));
     
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     Config.AddCmdLine ("--make",
                  "<options><set name='command'>1</set></options>");
-    Config.AddCmdLine ("--make-lib",
-                       "<options><set name='command'>2</set>"+
-                       "<set name='libraryName'>$1</set>"+
-                       "<set name='libraryVersion'>$2</set></options>");
     Config.AddCmdLine ("--build-package",
-                       "<options><set name='command'>3</set></options>");
+                       "<options><set name='command'>2</set></options>");
     Config.AddCmdLine ("--install-package",
-                       "<options><set name='command'>4</set></options>");
-    Config.AddCmdLine ("--library",
-                 "<options><set name='library'>TRUE</set></options>");
+                       "<options><set name='command'>3</set></options>");
     Config.AddCmdLine ("--use-stderr",
                  "<options><set name='useStderr'>TRUE</set></options>");
+    Config.AddCmdLine ("--no-rtc",
+                       "<pragmas>"+
+                       "  <set name='Assertions'>FALSE</set>"+
+                       "  <set name='IndexCheck'>FALSE</set>"+
+                       "  <set name='DerefCheck'>FALSE</set>"+
+                       "  <set name='OverflowCheck'>FALSE</set>"+
+                       "  <set name='CaseSelectCheck'>FALSE</set>"+
+                       "  <set name='FunctResult'>FALSE</set>"+
+                       "  <set name='TypeGuard'>FALSE</set>"+
+                       "</pragmas>");
     
     CCompiler.RegisterConfig;
   END NewConfig;
@@ -281,12 +283,8 @@ BEGIN
   | 1:
     mode := Rep.modExecutable;
   | 2:
-    mode := Rep.modLibrary;
-    makeRules.SetLibraryName(libraryName.value(StringValue.Value).string^,
-                             libraryVersion.value(StringValue.Value).string^);
-  | 3:
     mode := buildPackage;
-  | 4:
+  | 3:
     mode := installPackage;
   END;
   
