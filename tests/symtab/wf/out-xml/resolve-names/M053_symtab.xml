@@ -12,9 +12,10 @@
     </procedure_type>
   </procedure_decl>
   <procedure_decl id='10' name='New' pos='135' line='12' column='10' class='Class' visible_from='149' export='yes' is_type_bound='no' is_forward_decl='no'>
-    <procedure_type id='11' pos='125' line='12' column='0' result_type_id='2'/>
+    <procedure_type id='11' pos='125' line='12' column='0' result_type_id='2'>
+      <type_name id='12' pos='144' line='12' column='19' ident_name='Class' ident_pos='144' ident_line='12' ident_column='19'/>
+    </procedure_type>
   </procedure_decl>
-  <type_name id='12' pos='144' line='12' column='19' ident_name='Class' ident_pos='144' ident_line='12' ident_column='19'/>
   <procedure_decl id='13' name='M1' pos='192' line='15' column='29' class='Class' visible_from='194' export='yes' is_type_bound='yes' is_forward_decl='no' tb_proc_index='0'>
     <procedure_type id='14' pos='163' line='15' column='0' receiver_id='16' resultType='#none'>
       <type_name id='15' pos='181' line='15' column='18' ident_name='ClassDesc' ident_pos='181' ident_line='15' ident_column='18'/>

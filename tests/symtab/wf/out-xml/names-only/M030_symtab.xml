@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
 <module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
   <procedure_decl id='1' name='P' pos='23' line='2' column='12' visible_from='50' export='no' is_type_bound='no' is_forward_decl='yes'>
-    <procedure_type id='2' pos='11' line='2' column='0' result_type_id='5'>
-      <type_name id='3' pos='33' line='2' column='22' ident_name='INTEGER' ident_pos='33' ident_line='2' ident_column='22'/>
-      <var_decl id='4' name='x' pos='30' line='2' column='19' visible_from='40' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='3'/>
+    <procedure_type id='2' pos='11' line='2' column='0' result_type_id='3'>
+      <type_name id='3' pos='43' line='2' column='32' ident_name='INTEGER' ident_pos='43' ident_line='2' ident_column='32'/>
+      <type_name id='4' pos='33' line='2' column='22' ident_name='INTEGER' ident_pos='33' ident_line='2' ident_column='22'/>
+      <var_decl id='5' name='x' pos='30' line='2' column='19' visible_from='40' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='4'/>
     </procedure_type>
   </procedure_decl>
-  <type_name id='5' pos='43' line='2' column='32' ident_name='INTEGER' ident_pos='43' ident_line='2' ident_column='32'/>
   <procedure_decl id='6' name='P' pos='63' line='4' column='10' visible_from='90' export='no' is_type_bound='no' is_forward_decl='no'>
-    <procedure_type id='7' pos='53' line='4' column='0' result_type_id='10'>
-      <type_name id='8' pos='73' line='4' column='20' ident_name='INTEGER' ident_pos='73' ident_line='4' ident_column='20'/>
-      <var_decl id='9' name='x' pos='70' line='4' column='17' visible_from='80' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='8'/>
+    <procedure_type id='7' pos='53' line='4' column='0' result_type_id='8'>
+      <type_name id='8' pos='83' line='4' column='30' ident_name='INTEGER' ident_pos='83' ident_line='4' ident_column='30'/>
+      <type_name id='9' pos='73' line='4' column='20' ident_name='INTEGER' ident_pos='73' ident_line='4' ident_column='20'/>
+      <var_decl id='10' name='x' pos='70' line='4' column='17' visible_from='80' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='9'/>
     </procedure_type>
   </procedure_decl>
-  <type_name id='10' pos='83' line='4' column='30' ident_name='INTEGER' ident_pos='83' ident_line='4' ident_column='30'/>
 </module>

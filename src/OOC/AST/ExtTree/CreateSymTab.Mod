@@ -495,14 +495,14 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
       procDecl. identDef. docString,
       procDecl. receiver # NIL, procDecl. arrow # NIL, procDecl);
     
+    formalPars := v. stb. NewFormalPars (proc,
+                                         GetPosition (procDecl. proc));
     IF (procDecl. formalPars # NIL) &
        (procDecl. formalPars(ExtTree.FormalPars). result # NIL) THEN
-      type := GetType (v, procDecl. formalPars(ExtTree.FormalPars). result)
-    ELSE
-      type := NIL
+      formalPars.SetResultType
+          (GetTypeParent(v, procDecl.formalPars(ExtTree.FormalPars).result,
+                         formalPars));
     END;
-    formalPars := v. stb. NewFormalPars (proc,
-                                         GetPosition (procDecl. proc), type);
     proc. formalPars := formalPars;
 
     IF (procDecl. receiver # NIL) THEN
@@ -645,15 +645,14 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
     nodePtr: AST.Node;
     type: Sym.Type;
   BEGIN
+    formalPars := v. stb. NewFormalPars (v. parent, 
+                                      GetPosition (procType. procedure));
     IF (procType. formalPars # NIL) &
        (procType. formalPars(ExtTree.FormalPars). result # NIL) THEN
-      baseType := GetType (v, procType. formalPars(ExtTree.FormalPars). result)
-    ELSE
-      baseType := NIL
+      formalPars.SetResultType
+          (GetTypeParent(v, procType.formalPars(ExtTree.FormalPars).result,
+                         formalPars));
     END;
-    formalPars := v. stb. NewFormalPars (v. parent, 
-                                      GetPosition (procType. procedure),
-                                      baseType);
     IF (procType.formalPars # NIL) THEN
       AddFlags(formalPars, procType.formalPars(ExtTree.FormalPars).flags);
     END;

@@ -2,9 +2,9 @@
 <module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
   <procedure_decl id='1' name='P' pos='21' line='2' column='10' visible_from='48' export='no' is_type_bound='no' is_forward_decl='no'>
     <procedure_type id='2' pos='11' line='2' column='0' result_type_id='#predef.INTEGER'>
-      <type_name id='3' pos='31' line='2' column='20' ident_name='INTEGER' ident_pos='31' ident_line='2' ident_column='20'/>
-      <var_decl id='4' name='x' pos='28' line='2' column='17' visible_from='38' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='#predef.INTEGER'/>
+      <type_name id='3' pos='41' line='2' column='30' ident_name='INTEGER' ident_pos='41' ident_line='2' ident_column='30'/>
+      <type_name id='4' pos='31' line='2' column='20' ident_name='INTEGER' ident_pos='31' ident_line='2' ident_column='20'/>
+      <var_decl id='5' name='x' pos='28' line='2' column='17' visible_from='38' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='yes' type_id='#predef.INTEGER'/>
     </procedure_type>
   </procedure_decl>
-  <type_name id='5' pos='41' line='2' column='30' ident_name='INTEGER' ident_pos='41' ident_line='2' ident_column='30'/>
 </module>

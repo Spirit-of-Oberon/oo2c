@@ -345,13 +345,12 @@ PROCEDURE (b: Builder) NewExceptionName*(parent: Sym.Item;
   END NewExceptionName;
 
 PROCEDURE (b: Builder) NewFormalPars* (parent: Sym.Item;
-                                       position: Sym.Position;
-                                       resultType: Sym.Type): Sym.FormalPars;
+                                       position: Sym.Position): Sym.FormalPars;
   VAR
     fpars: Sym.FormalPars;
   BEGIN
     NEW (fpars);
-    Sym.InitFormalPars (fpars, parent, position, resultType);
+    Sym.InitFormalPars (fpars, parent, position);
     EvalContext(b, fpars);
     RETURN fpars
   END NewFormalPars;
@@ -375,7 +374,7 @@ PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
     Sym.InitName (bodyName, str, -1, -1, -1);
     bodyDecl := b. NewProcDecl (NIL, bodyName, 0, Sym.nameNotExported,
                                 NIL, FALSE, FALSE, NIL);
-    bodyDecl. formalPars := b. NewFormalPars(bodyDecl, name, NIL);
+    bodyDecl. formalPars := b. NewFormalPars(bodyDecl, name);
     NEW (bodyDecl. formalPars. params, 0);
     NEW (bodyDecl. formalPars. raises, 0);
     
