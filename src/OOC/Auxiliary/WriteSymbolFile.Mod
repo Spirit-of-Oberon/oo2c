@@ -27,6 +27,7 @@ PROCEDURE WriteSymbolFile* (m: Repository.Module; symTab: Sym.Module;
         ch := m. GetOutputChannel (Repository.modSymbolFile, TRUE, res);
         IF (res = NIL) THEN
           w := ch.NewWriter();
+          w.WriteBytes(Builder.magicNumber, 0, Builder.magicNumberSize);
           w.WriteBytes(fp, 0, SIZE(LONGINT));
           mem.CopyToWriter(w);
           ch(Files.File). Register;

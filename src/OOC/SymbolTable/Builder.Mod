@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Strings, Channel, Language, ADT:Object, ADT:Object:Storage,
+  Out, Strings, Channel, Language, ADT:Object, ADT:Object:Storage,
   OOC:Doc, OOC:AST, Sym := OOC:SymbolTable;
 
 
@@ -62,7 +62,12 @@ VAR
      symbol table or the the repository's
      @oproc{*OOC:Repository:GetImports.GetImports}.  Right now, only the
      program @code{oo2c} sets this to @code{TRUE}.  *)
-  
+
+CONST
+  magicNumberSize* = 4;
+
+VAR
+  magicNumber*: ARRAY magicNumberSize+1 OF CHAR;  (* must not contain 0X *)
   
 PROCEDURE Init* (b: Builder);
   BEGIN
@@ -506,8 +511,9 @@ PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Sym.Modul
   VAR
     writer: Storage.Writer;
   BEGIN
-    (* Note: This method omits the fingerprint value and is therefore
-       not symmetric to ReadSymbolTable *)
+    (* Note: This method omits the magic number and the fingerprint value and
+       is therefore not symmetric to ReadSymbolTable.  The two values are
+       written by OOC:Auxiliary:WriteSymbolFile.WriteSymbolFile *)
     writer := Storage.ConnectWriter (ch);
     writer. WriteObject (symTab);
     res := writer. res;
@@ -522,8 +528,16 @@ PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel;
     obj: Object.Object;
     reader: Storage.Reader;
     fp: LONGINT;
+    mn: ARRAY magicNumberSize+1 OF CHAR;
   BEGIN
     reader := Storage.ConnectReader (ch);
+    reader. ReadBytes(mn, 0, magicNumberSize);
+    mn[magicNumberSize] := 0X;
+    IF (mn # magicNumber) THEN
+      Out.String ("Fatal error: Symbol file does not start with required magic number.");
+      Out.Ln;
+      HALT(1);
+    END;
     reader. ReadBytes(fp, 0, SIZE(LONGINT));
     reader. ReadObject (obj);
     res := reader. res;
@@ -549,6 +563,7 @@ PROCEDURE N (str: ARRAY OF CHAR): Name;
 
 BEGIN
   doAutoImport := FALSE;
+  magicNumber := "OOC2";
   
   NEW(autoImport, 2);
   NEW(autoImport[0]);
