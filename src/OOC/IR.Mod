@@ -1067,6 +1067,7 @@ CONST
   dynamicSize = 47;
   notCharacterArray = 48;
   notSet = 49;
+  notPointerVar = 50;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1231,6 +1232,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Argument must be a character array"
     | notSet:
       t := "Expression must be of set type"
+    | notPointerVar:
+      t := "This must be a pointer variable"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2271,7 +2274,7 @@ PROCEDURE (b: Builder) NewNewObject (sym: Symbol; type: Sym.Type;
     ELSE
       NEW (length, LEN (args^)-1);
       FOR i := 0 TO LEN (length^)-1 DO
-        length[i] := args[i+1];
+        length[i] := b.AssertInteger(args[i+1]);
       END;
     END;
     
@@ -4651,21 +4654,25 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
                                  b. NewLen (design. sym, arguments[1], 0));
         
       | Predef.new:
-        ASSERT (arguments[0]. type IS Sym.Pointer);
-        type := arguments[0]. type(Sym.Pointer). baseType;
-        IF (type IS Sym.Array) THEN
-          IF CheckNumberOfArguments (1, 1+arguments[0]. type(Sym.Pointer). baseType(Sym.Array). GetOpenDimensions()) THEN
-            (* FIXME... check argument type here or in NewNewObject() *)
-            RETURN b. NewAssignment
-                (design. sym, arguments[0],
-                 b. NewNewObject (design.sym, arguments[0].type, arguments));
+        IF (arguments[0]. type IS Sym.Pointer) THEN
+          b.AssertVar(arguments[0]);
+          type := arguments[0]. type(Sym.Pointer). baseType;
+          IF (type IS Sym.Array) THEN
+            dim := 1+arguments[0].type(Sym.Pointer).baseType(Sym.Array).GetOpenDimensions();
+            IF CheckNumberOfArguments (dim, dim) THEN
+              RETURN b. NewAssignment
+                  (design. sym, arguments[0],
+                   b. NewNewObject (design.sym, arguments[0].type, arguments));
+            END;
+          ELSE (* (type IS Sym.Record) *)
+            IF CheckNumberOfArguments (1, 1) THEN
+              RETURN b. NewAssignment
+                  (design. sym, arguments[0],
+                   b. NewNewObject (design. sym, arguments[0].type, NIL));
+            END;
           END;
-        ELSE (* (type IS Sym.Record) *)
-          IF CheckNumberOfArguments (1, 1) THEN
-            RETURN b. NewAssignment
-                (design. sym, arguments[0],
-                 b. NewNewObject (design. sym, arguments[0].type, NIL));
-          END;
+        ELSE
+          b.ErrSym(notPointerVar, arguments[0].sym);
         END;
         RETURN b. errorExpr;
         
