@@ -438,9 +438,9 @@ TYPE
     prunedImports*: ModuleRefArray;
     (**List of import entries removed by the @oproc{Prune} function.  This
        field is not part of the fingerprinted area of the symbol file.  *)
-    moduleExtTree-: ExtTree.Node;
+    moduleAST-: ExtTree.Node;
     (**Refers to the abstract syntax tree of the module, for example an
-       instance of @otype{*OOC:ExtTree:ExtTree.Module}.  *)
+       instance of @otype{*OOC:AST:ExtTree.Module}.  *)
     bodyDecl-: ProcDecl;
     (**This pseudo declaration is used to turn the statement sequence in the
        module body into a fully fledged procedure declaration.  It's name
@@ -825,7 +825,7 @@ TYPE
        the procedure on the link level.  Otherwise, it is @code{NIL}.  *)
     procAST-: ExtTree.Node;
     (**Refers to the abstract syntax tree of the procedure, for example an
-       instance of @otype{*OOC:ExtTree:ExtTree.ProcDecl}.  For the pseudo procedure
+       instance of @otype{*OOC:AST:ExtTree.ProcDecl}.  For the pseudo procedure
        representing the module body, this field is @code{NIL}.  In this case,
        the field @ofield{parent} is also @code{NIL}.  *)
     hasTryStatm*: BOOLEAN;
@@ -1650,7 +1650,7 @@ PROCEDURE (l: LinkLib) Load* (r: Storable.Reader) RAISES IO.Error;
 
 PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
                        class: ModuleClass; callConv: CallConv;
-                       moduleExtTree: ExtTree.Node; bodyDecl: ProcDecl);
+                       moduleAST: ExtTree.Node; bodyDecl: ProcDecl);
   BEGIN
     InitDeclaration (mod, NIL, name, 0, nameExported, docString);
     mod. ns := NIL;
@@ -1660,7 +1660,7 @@ PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
     mod. linkDirectives := NIL;
     mod. fingerprint := 0;
     mod. prunedImports := NIL;
-    mod. moduleExtTree := moduleExtTree;
+    mod. moduleAST := moduleAST;
     mod. bodyDecl := bodyDecl;
   END InitModule;
 
@@ -1690,7 +1690,7 @@ PROCEDURE (mod: Module) Load* (r: Storable.Reader) RAISES IO.Error;
       mod. linkDirectives := obj(LinkDirective)
     END;
     mod. prunedImports := NIL;
-    mod. moduleExtTree := NIL;
+    mod. moduleAST := NIL;
   END Load;
 
 PROCEDURE (mod: Module) SetNamespace* (ns: Namespace);
