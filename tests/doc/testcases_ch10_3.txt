@@ -1,6 +1,6 @@
 Still missing: General overflow tests for constant folding (arguments
 in legal range, result in legal range) -- best done in ConstFold, I
-believe.  "Evaluate just once checks" are missing for COPY.
+believe.  "Evaluate just once checks" are missing for COPY, INC, DEC.
 
 
 10.3 Predeclared Procedures ---------------------------
@@ -228,7 +228,7 @@ REJECT:
   4) n is out of range (only a subset of all integers is supported by
      the underlying OS)  [Assert4]
 
-  COPY(x, v)
+### COPY(x, v)
 
 ACCEPT:
 
@@ -255,17 +255,18 @@ REJECT:
 
 ACCEPT:
 
-  1) v is an integer variable
-  2) verify that designator is only evaluated once (eg. INC(a[P()])). This
+  1) v is an integer variable  [Inc1, various Array*, HOTLoop*]
+  2) n is an integer type included by the variable  [HOTLoop12]
+  3) verify that designator is only evaluated once (eg. INC(a[P()])). This
      causes problems with oo2c-1.5.7.
 
 REJECT:
 
-  1) v is not integer
-  2) v is not variable (eg. constant, function result)
-  3) v is read-only variable
+  1) v is not integer  [Inc2]
+  2) v is not variable (eg. constant, function result)  [Inc3]
+  3) v is read-only variable  [same code as Inc3]
   4) n is outside the range of the type of v (that is, the type of v
-     does not include that of n)
+     does not include that of n)  [Inc4 Inc5]
 
 
   EXCL(v, x)

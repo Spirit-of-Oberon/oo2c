@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; copy1 copy2 copy3 copy4 copy5 copy6">-->
+  select ="&SetupTestCasesWithOut; inc1 inc2 inc3 inc4 inc5">-->
 
   &TestSetupWithOut;
     
@@ -268,7 +268,7 @@
       the body.
     </test>
     <test id="loop12" type="run" file="HOTLoop12.Mod" output="HOTLoop12.Ref">
-      A code snipped that caused the SSA back-end to misplace a
+      A code snippet that caused the SSA back-end to misplace a
       <code>select</code> statement in the middle of a block, instead
       of the beginning.  The result was a clobbered register.
     </test>
@@ -381,6 +381,20 @@
     
     <test id="inc1" type="run" file="Inc1.Mod" output="Inc1.Ref">
       Performing <code>INC</code> with default delta on global variable.
+    </test>
+    <test id="inc2" type="reject" file="Inc2.Mod">
+      First argument of <code>INC</code> is of type <code>CHAR</code>.
+    </test>
+    <test id="inc3" type="reject" file="Inc3.Mod">
+      First argument of <code>INC</code> is of constant.
+    </test>
+    <test id="inc4" type="reject" file="Inc4.Mod">
+      Second argument of <code>INC</code> is a constant out of the
+      range of the first argument's type.
+    </test>
+    <test id="inc5" type="reject" file="Inc5.Mod">
+      Second argument of <code>INC</code> is a variable larger than
+      the first argument's type.
     </test>
     
     <test id="dec1" type="run" file="Dec1.Mod" output="Dec1.Ref">
@@ -1155,6 +1169,15 @@
     
     <reject-info id="tbproc8" pos="p. %Proc" msg="Undeclared identifier"/>
 
+    <reject-info id="inc2" pos="INC(%x,1)"
+      msg="Expression must be of integer type"/>
+    <reject-info id="inc3" pos="INC(%x)"
+      msg="This must be a variable"/>
+    <reject-info id="inc4" pos="INC(x, %128)"
+      msg="Invalid type for operator"/>
+    <reject-info id="inc5" pos="INC(x, %y)"
+      msg="Invalid type for operator"/>
+    
     <reject-info id="abs2" pos="ABS(%0X)" msg="Expression must be numeric"/>
 
     <reject-info id="ash2" pos="ASH(%1X"

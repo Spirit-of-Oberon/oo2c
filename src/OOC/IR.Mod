@@ -4412,6 +4412,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     targetType: Sym.PredefId;
     predefProc: Sym.PredefProc;
     dim, dummy: LONGINT;
+    op: SHORTINT;
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
     receiver, delta, code: Expression;
@@ -4651,31 +4652,27 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         END;
         RETURN b. errorExpr;
         
-      | Predef.inc:
+      | Predef.inc, Predef.dec:
+        arguments[0] := b.AssertInteger(arguments[0]);
+        b.AssertVar(arguments[0]);
         IF (LEN (arguments^) = 1) THEN
           delta := b. GetOne (design. sym, arguments[0]. type);
         ELSE
           delta := arguments[1];
         END;
-        IF (delta. type # arguments[0]. type) THEN
-          delta := b.NewTypeConv (arguments[0]. type, delta);
-        END;
-        RETURN b. NewAssignOp (design. sym,
-                               b. NewBinaryArith
-                               (design. sym, arithAdd, arguments[0], delta));
-        
-      | Predef.dec:
-        IF (LEN (arguments^) = 1) THEN
-          delta := b. GetOne (design. sym, arguments[0]. type);
+        IF b.Widen(delta, arguments[0].type) THEN
+          IF (design. decl(Sym.PredefProc). id = Predef.inc) THEN
+            op := arithAdd;
+          ELSE
+            op := arithSub;
+          END;
+          RETURN b. NewAssignOp (design. sym,
+                                 b. NewBinaryArith
+                                 (design. sym, op, arguments[0], delta));
         ELSE
-          delta := arguments[1];
+          b.ErrSym(invalidOpType, delta.sym);
+          RETURN b. NewAssignment(design.sym, arguments[0], arguments[0]);
         END;
-        IF (delta. type # arguments[0]. type) THEN
-          delta := b.NewTypeConv (arguments[0]. type, delta);
-        END;
-        RETURN b. NewAssignOp (design. sym,
-                               b. NewBinaryArith
-                               (design. sym, arithSub, arguments[0], delta));
         
       | Predef.incl:
         RETURN b. NewAssignOp(design. sym,
