@@ -415,7 +415,8 @@ PROCEDURE Dominates (dom, child: Region): BOOLEAN;
     RETURN (child # NIL);
   END Dominates;
 
-PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region);
+PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
+                       marker: Dictionary.Dictionary);
   VAR
     w: TextRider.Writer;
     idMap: IntDictionary.Dictionary;
@@ -439,6 +440,137 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region);
         INC (instrCount);
       END;
     END AssignId;
+
+  PROCEDURE WriteInstrPrefix (p: Proxy);
+    VAR
+      instr: SSA.Instr;
+      i, d: LONGINT;
+      r: Region;
+    BEGIN
+      instr := p. instr;
+
+      IF (instr = NIL) THEN
+        w. WriteHex (SYSTEM.VAL (LONGINT, p), 8);
+      ELSE
+        w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
+      END;
+      w. WriteString ("  ");
+      (*IF (instr = NIL) THEN
+          d := 0;
+        ELSE
+          d := instr. info(Proxy). distance;
+        END;
+         w. WriteLInt (d, 3);
+         w. WriteString ("  ");*)
+      (*IF (instr = NIL) THEN
+          d := 0;
+        ELSE
+          d := instr. info(Proxy). degreeDiff;
+        END;
+         w. WriteLInt (d, 3);
+         w. WriteString ("  ");*)
+      (*w. WriteString ("L:");
+         IF (p. loopAssoc # NIL) THEN
+           WriteResultId (p. loopAssoc. instr);
+         ELSE
+           w. WriteString ("NIL");
+         END;
+         w. WriteString (09X);*)
+      
+      IF (p. region # NIL) THEN
+        d := p. region. nestingDepth;
+        r := p. region;
+        WHILE (r # NIL) DO
+          IF (r IS Select) THEN
+            DEC (d);
+          END;
+          r := r. region;
+        END;
+        FOR i := 1 TO d DO
+          w. WriteString ("  ");
+        END;
+      END;
+    END WriteInstrPrefix;
+  
+  PROCEDURE WriteResultId (res: SSA.Result);
+    VAR
+      id, count: LONGINT;
+      ptr: SSA.Result;
+      value: String.String;
+      instr: SSA.Instr;
+      obj: Object.Object;
+    BEGIN
+      IF marker. HasKey (res) THEN
+        obj := marker. Get (res);
+        w. WriteChar ("[");
+        w. WriteString (obj(String.String). array^);
+        w. WriteChar ("]");
+      END;
+      
+      instr := res. instr;
+      IF instr. IsConst() THEN
+        WITH instr: SSA.Const DO
+          IF (instr. value = NIL) THEN
+            w. WriteString ("NIL");
+          ELSE
+            value := instr. value. ToString();
+            w. WriteString (value. array^);
+          END;
+        | instr: SSA.DeclRef DO
+          w. WriteString (instr. decl. name. str^);
+        | instr: SSA.TypeRef DO
+          w. WriteString ("<typeref>");
+        | instr: SSA.Address DO
+          w. WriteChar ("&");
+          w. WriteString (instr. decl. name. str^);
+        ELSE
+          CASE instr. opcode OF
+          | Opcode.getLength:
+            w. WriteString (instr. opndList. nextOpnd. nextOpnd.
+                            arg(SSA.DeclRef). decl. name. str^);
+            w. WriteString ("/dim");
+            w. WriteLInt (instr. opndList. arg(SSA.Const). value(Integer.Value). ToInt(), 0);
+          ELSE
+            instr. LogOpcode ("instr.opcode");
+            ASSERT (FALSE);
+          END;
+        END
+      ELSE
+        id := idMap. Get (res. instr);
+        w. WriteChar ("(");
+        w. WriteLInt (id, 0);
+        IF (res. instr # res) THEN
+          count := 1;
+          ptr := res. instr. nextResult;
+          WHILE (ptr # res) DO
+            INC (count);
+            ptr := ptr. nextResult;
+          END;
+          w. WriteChar (".");
+          w. WriteLInt (count, 0);
+        END;
+        w. WriteChar (")");
+      END;
+    END WriteResultId;
+
+  PROCEDURE WriteOpnd (opnd: SSA.Opnd);
+    VAR
+      str: ARRAY 64 OF CHAR;
+    BEGIN
+      CASE opnd. class OF
+      | Opnd.antiDependency:
+        w. WriteString ("*ad*");
+      | Opnd.regionDependency:
+        w. WriteString ("*rd*");
+      | Opnd.loopExternalDef:
+        w. WriteString ("*led*");
+      ELSE
+        (*Opnd.GetName (opnd. class, str);
+        w. WriteString (str);
+        w. WriteString (":");*)
+      END;
+      WriteResultId (opnd. arg);
+    END WriteOpnd;
   
   PROCEDURE WriteInstr (p: Proxy);
     VAR
@@ -446,142 +578,45 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region);
       res: SSA.Result;
       opnd: SSA.Opnd;
       str: ARRAY 64 OF CHAR;
-      i, resCount, d: LONGINT;
+      resCount: LONGINT;
       
-    PROCEDURE WriteResultId (res: SSA.Result);
-      VAR
-        id, count: LONGINT;
-        ptr: SSA.Result;
-        value: String.String;
-        instr: SSA.Instr;
-      BEGIN
-        instr := res. instr;
-        IF instr. IsConst() THEN
-          WITH instr: SSA.Const DO
-            IF (instr. value = NIL) THEN
-              w. WriteString ("NIL");
-            ELSE
-              value := instr. value. ToString();
-              w. WriteString (value. array^);
-            END;
-          | instr: SSA.DeclRef DO
-            w. WriteString (instr. decl. name. str^);
-          | instr: SSA.TypeRef DO
-            w. WriteString ("<typeref>");
-          | instr: SSA.Address DO
-            w. WriteChar ("&");
-            w. WriteString (instr. decl. name. str^);
-          ELSE
-            CASE instr. opcode OF
-            | Opcode.getLength:
-              w. WriteString (instr. opndList. nextOpnd. nextOpnd.
-                              arg(SSA.DeclRef). decl. name. str^);
-              w. WriteString ("/dim");
-              w. WriteLInt (instr. opndList. arg(SSA.Const). value(Integer.Value). ToInt(), 0);
-            ELSE
-              instr. LogOpcode ("instr.opcode");
-              ASSERT (FALSE);
-            END;
-          END
-        ELSE
-          id := idMap. Get (res. instr);
-          w. WriteChar ("(");
-          w. WriteLInt (id, 0);
-          IF (res. instr # res) THEN
-            count := 1;
-            ptr := res. instr. nextResult;
-            WHILE (ptr # res) DO
-              INC (count);
-              ptr := ptr. nextResult;
-            END;
-            w. WriteChar (".");
-            w. WriteLInt (count, 0);
-          END;
-          w. WriteChar (")");
-        END;
-      END WriteResultId;
-    
     BEGIN
       instr := p. instr;
-      IF (instr = NIL) OR ~instr. IsConst() THEN
-        w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
-        w. WriteString ("  ");
-        (*IF (instr = NIL) THEN
-          d := 0;
-        ELSE
-          d := instr. info(Proxy). distance;
-        END;
-        w. WriteLInt (d, 3);
-        w. WriteString ("  ");*)
-        (*IF (instr = NIL) THEN
-          d := 0;
-        ELSE
-          d := instr. info(Proxy). degreeDiff;
-        END;
-        w. WriteLInt (d, 3);
-        w. WriteString ("  ");*)
-        (*w. WriteString ("L:");
-        IF (p. loopAssoc # NIL) THEN
-          WriteResultId (p. loopAssoc. instr);
-        ELSE
-          w. WriteString ("NIL");
-        END;
-        w. WriteString (09X);*)
+      IF ~instr. IsConst() THEN
+        WriteInstrPrefix (p);
         
-        IF (p. region # NIL) THEN
-          FOR i := 1 TO p. region. nestingDepth DO
-            w. WriteString ("  ");
-          END;
-        END;
-        
-        IF (instr = NIL) THEN
-          w. WriteString ("----");
-        ELSE
-          resCount := 0;
-          res := instr;
-          WHILE (res # NIL) DO
-            IF (res. useList # NIL) OR (instr. opcode = Opcode.selectReturn) THEN
-              IF (resCount # 0) THEN
-                w. WriteChar (",");
-              END;
-              WriteResultId (res);
-              INC (resCount);
-            END;
-            res := res. nextResult;
-          END;
-          IF (resCount = 0) THEN
-            w. WriteString ("(--)");
-          END;
-          
-          w. WriteString (" := ");
-          Opcode.GetName (instr. opcode, instr. subclass, str);
-          w. WriteString (str);
-          IF (instr. pos >= 0) THEN
-            w. WriteString ("@");
-            w. WriteLInt (instr. pos, 0);
-          END;
-          w. WriteChar (" ");
-          
-          opnd := instr. opndList;
-          WHILE (opnd # NIL) DO
-            IF (opnd # instr. opndList) THEN
+        resCount := 0;
+        res := instr;
+        WHILE (res # NIL) DO
+          IF (res. useList # NIL) OR (instr. opcode = Opcode.selectReturn) THEN
+            IF (resCount # 0) THEN
               w. WriteChar (",");
             END;
-            CASE opnd. class OF
-            | Opnd.antiDependency:
-              w. WriteString ("*ad*");
-            | Opnd.regionDependency:
-              w. WriteString ("*rd*");
-            | Opnd.loopExternalDef:
-              w. WriteString ("*led*");
-            ELSE
-              Opnd.GetName (opnd. class, str);
-              w. WriteString (str);
-              w. WriteString (":");
-            END;
-            WriteResultId (opnd. arg);
-            opnd := opnd. nextOpnd
+            WriteResultId (res);
+            INC (resCount);
           END;
+          res := res. nextResult;
+        END;
+        IF (resCount = 0) THEN
+          w. WriteString ("(--)");
+        END;
+        
+        w. WriteString (" := ");
+        Opcode.GetName (instr. opcode, instr. subclass, str);
+        w. WriteString (str);
+        IF (instr. pos >= 0) THEN
+          w. WriteString ("@");
+          w. WriteLInt (instr. pos, 0);
+        END;
+        w. WriteChar (" ");
+        
+        opnd := instr. opndList;
+        WHILE (opnd # NIL) DO
+          IF (opnd # instr. opndList) THEN
+            w. WriteChar (",");
+          END;
+          WriteOpnd (opnd);
+          opnd := opnd. nextOpnd
         END;
         w. WriteLn;
       END;
@@ -589,19 +624,51 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region);
 
   PROCEDURE WriteRegion (r: Region);
     VAR
-      p: Proxy;
-    BEGIN
-      IF (r. instr = NIL) THEN
-        WriteInstr (r);
-      END;
-      p := r. first;
-      WHILE (p # NIL) DO
-        WITH p: Region DO
-          WriteRegion (p);
-        ELSE
-          WriteInstr (p);
+      i: LONGINT;
+      opnd: SSA.Opnd;
+      
+    PROCEDURE WriteBody (p: Proxy);
+      BEGIN
+        WHILE (p # NIL) DO
+          WITH p: Region DO
+            WriteRegion (p);
+          ELSE
+            WriteInstr (p);
+          END;
+          p := p. nextProxy;
         END;
-        p := p. nextProxy;
+      END WriteBody;
+
+    PROCEDURE WriteBranchHead (select, opnd: SSA.Opnd);
+      BEGIN
+        w. WriteString ("IF ");
+        WriteOpnd (select);
+        w. WriteString (" = ");
+        WriteOpnd (opnd);
+        w. WriteString (" THEN");
+      END WriteBranchHead;
+    
+    BEGIN
+      WITH r: Loop DO
+        WriteInstrPrefix (r); w. WriteString ("LOOP"); w. WriteLn;
+        WriteBody (r. first);
+        WriteInstrPrefix (r); w. WriteString ("END LOOP"); w. WriteLn;
+      | r: Select DO
+        WriteInstrPrefix (r); w. WriteString ("SELECT"); w. WriteLn;
+        opnd := r. instr. opndList;
+        i := 0;
+        WHILE (i # LEN (r. paths^)) DO
+          opnd := opnd. nextOpnd;
+          WriteInstrPrefix (r. paths[i]);
+          WriteBranchHead (r. instr. opndList, opnd);
+          w. WriteLn;
+          WriteBody (r. paths[i]. first);
+          opnd := opnd. nextOpnd;
+          INC (i);
+        END;
+        WriteInstrPrefix (r); w. WriteString ("END SELECT"); w. WriteLn;
+      ELSE
+        WriteBody (r. first);
       END;
       IF (r. instr # NIL) THEN
         WriteInstr (r);
@@ -1791,8 +1858,18 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
     root: Region;
   BEGIN
     root := ArrangeInstructions (pb, FALSE);
-    WriteBlocks (c, pb, root);
+    WriteBlocks (c, pb, root, Dictionary.New());
     RemoveAntiDeps (pb);
   END Write;
+
+PROCEDURE WriteMarker* (c: Channel.Channel; pb: SSA.ProcBlock;
+                        marker: Dictionary.Dictionary);
+  VAR
+    root: Region;
+  BEGIN
+    root := ArrangeInstructions (pb, FALSE);
+    WriteBlocks (c, pb, root, marker);
+    RemoveAntiDeps (pb);
+  END WriteMarker;
 
 END OOC:SSA:Blocker.
