@@ -26,6 +26,7 @@
 typedef unsigned char OOC_BOOLEAN;
 typedef unsigned char OOC_CHAR8;
 typedef unsigned short int OOC_CHAR16;
+typedef unsigned int OOC_CHAR32;
 typedef signed char OOC_INT8;
 typedef signed short int OOC_INT16;
 typedef signed int OOC_INT32;

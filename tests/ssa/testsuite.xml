@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; opPointer5">-->
+  select ="&SetupTestCasesWithOut; long4">-->
 
   &TestSetupWithOut;
     
@@ -594,7 +594,7 @@
       Calling <code>LONG</code> for <code>LONGREAL</code> value.
     </test>
     <test id="long4" type="reject" file="Long4.Mod">
-      Calling <code>LONG</code> for <code>LONGCHAR</code> value.
+      Calling <code>LONG</code> for <code>UCS4CHAR</code> value.
     </test>
     <test id="long5" type="reject" file="Long5.Mod">
       Calling <code>LONG</code> for <code>BOOLEAN</code> value.
@@ -1452,7 +1452,7 @@
       msg="Invalid type for operator"/>
     <reject-info id="long3" pos="LONG(%r64)"
       msg="Invalid type for operator"/>
-    <reject-info id="long4" pos="LONG(%c16)"
+    <reject-info id="long4" pos="LONG(%c32)"
       msg="Invalid type for operator"/>
     <reject-info id="long5" pos="LONG(%b)"
       msg="Invalid type for operator"/>

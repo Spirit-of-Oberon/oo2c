@@ -547,7 +547,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
         END;
       | Predef.char:
         result := CharOp();
-      | Predef.charString, Predef.longCharString:
+      | Predef.stringChar, Predef.stringLongChar, Predef.stringUCS4Char:
         result := StringOp(); 
       | Predef.boolean:
         result := BooleanOp();
@@ -607,9 +607,8 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         value := Boxed.NewLongReal(value(BigInt.BigInt).ToLongInt());
         c.result := c.builder.NewConst(op.sym, op.type,value);
         
-      ELSIF IsPredefType (op. type, Predef.longchar) &
-            IsPredefType (op. expr. type, Predef.char) THEN
-        (* type conversion from CHAR to LONGCHAR is a noop *)
+      ELSIF TR.IsCharType(op.type) & TR.IsCharType(op.expr.type) THEN
+        (* type conversion between character types is a noop *)
         
       ELSIF TR.IsStringConst (op. type) THEN
         (* handle conversion of character and string constants to string

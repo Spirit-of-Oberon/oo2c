@@ -69,7 +69,7 @@ PROCEDURE IsStringConst* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is a string constant.  *)
   BEGIN
     WITH type: Sym.PredefType DO
-      RETURN (type. id IN {Predef.charString, Predef.longCharString})
+      RETURN (type. id IN {Predef.stringChar, Predef.stringLongChar, Predef.stringUCS4Char})
     ELSE
       RETURN FALSE
     END;
@@ -135,10 +135,12 @@ PROCEDURE BaseCharType* (type: Sym.Type): Sym.PredefType;
   BEGIN
     WITH type: Sym.PredefType DO
       CASE type. id OF
-      | Predef.char, Predef.charString:
+      | Predef.char, Predef.stringChar:
         RETURN Predef.GetType (Predef.char);
-      | Predef.longchar, Predef.longCharString:
+      | Predef.longchar, Predef.stringLongChar:
         RETURN Predef.GetType (Predef.longchar);
+      | Predef.ucs4char, Predef.stringUCS4Char:
+        RETURN Predef.GetType (Predef.ucs4char);
       ELSE
         RETURN NIL;
       END;
@@ -158,10 +160,12 @@ PROCEDURE StringBase* (type : Sym.Type) : Sym.Type;
 BEGIN
   WITH type : Sym.PredefType DO
     CASE type.id OF
-    | Predef.charString:
+    | Predef.stringChar:
       RETURN Predef.GetType(Predef.char);
-    | Predef.longCharString:
+    | Predef.stringLongChar:
       RETURN Predef.GetType(Predef.longchar);
+    | Predef.stringUCS4Char:
+      RETURN Predef.GetType(Predef.ucs4char);
     END;
   END;
 END StringBase;
@@ -171,8 +175,9 @@ VAR
   id: Sym.PredefId;
 BEGIN
   CASE type(Sym.PredefType). id OF
-  | Predef.char: id := Predef.charString
-  | Predef.longchar:  id := Predef.longCharString
+  | Predef.char: id := Predef.stringChar
+  | Predef.longchar:  id := Predef.stringLongChar
+  | Predef.ucs4char:  id := Predef.stringUCS4Char
   END;
   RETURN Predef.GetType (id);
 END MatchingStringConst;
@@ -446,7 +451,7 @@ PROCEDURE IsArrayCompatible* (argType, fparType: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type of the actual parameter @oparam{argType}
    is array compatible with that of a formal parameter @oparam{fparType}.
    Note: The case where @oparam{argType} is a string constant
-   @oconst{Predef.charString} must be handled by the caller.  In this
+   @oconst{Predef.stringChar} must be handled by the caller.  In this
    the implementation of this function differs from the @cite{Appendix A}
    of the language report.  *)
   BEGIN

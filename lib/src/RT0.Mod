@@ -43,9 +43,10 @@ CONST  (* predefined types, taken from `OOC:SymbolTable:Predef' *)
   strBoolean* = 0;
   strChar* = 1;
   strLongchar* = 2;
-  strShortint* = 3;
-  strInteger* = 4;
-  strLongint* = 5;
+  strUCS4Char* = 3;
+  strShortint* = 4;
+  strInteger* = 5;
+  strLongint* = 6;
   strReal* = 7;
   strLongreal* = 8;
   strSet32* = 9;
@@ -176,6 +177,7 @@ VAR
   boolean-: StructDesc;
   char-: StructDesc;
   longchar-: StructDesc;
+  ucs4char-: StructDesc;
   shortint-: StructDesc;
   integer-: StructDesc;
   longint-: StructDesc;

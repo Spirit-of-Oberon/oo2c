@@ -91,20 +91,23 @@ CONST
   char16* = 11;
   (**This type is mapped to the name @code{OOC_CHAR16}, the type used to store
      16 bit character values.  Usually, this is equvalient to @oconst{uint16}.  *)
-  real32* = 12;
+  char32* = 12;
+  (**This type is mapped to the name @code{OOC_CHAR32}, the type used to store
+     32 bit character values.  Usually, this is equvalient to @oconst{uint32}.  *)
+  real32* = 13;
   (**This is mapped to the IEEE 754 single precision floating point type,
      usually @code{float}.  *)
-  real64* = 13;
+  real64* = 14;
   (**This is mapped to the IEEE 754 double precision floating point type,
      usually @code{double}.  *)
   
-  lengthType* = 14;
+  lengthType* = 15;
   (**This basic type is used to store the length of arrays.  On the C level, it
      is an alias for a signed integer type.  On 32 bit targets, @oconst{int32}
      and @oconst{lengthType} are mapped to the same C type.  When working on
      the level of the @emph{input} language, the symbol type
      @oconst{*OOC:SymbolTable:Predef.lengthType} should be used.  *)
-  typeTagType* = 15;
+  typeTagType* = 16;
   (**This type is used to store type tag values.  This is a pointer with a
      defined meaning within the run-time system.  *)
   
@@ -298,6 +301,7 @@ PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
     CreateBasicType (uint64, "OOC_UINT64");
     CreateBasicType (char8, "OOC_CHAR8");
     CreateBasicType (char16, "OOC_CHAR16");
+    CreateBasicType (char32, "OOC_CHAR32");
     CreateBasicType (real32, "OOC_REAL32");
     CreateBasicType (real64, "OOC_REAL64");
     CreateBasicType (lengthType, "OOC_LEN");
@@ -1003,7 +1007,7 @@ PROCEDURE (d: Define) Write (w: Writer);
     IF (d. const = NIL) THEN
       w. WriteString (" 0");             (* NULL *)
     ELSE
-      w. WriteConst (d. const, Predef.GetType (Predef.charString));
+      w. WriteConst (d. const, Predef.GetType (Predef.stringChar));
     END;
   END Write;
 

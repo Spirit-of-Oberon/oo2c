@@ -187,6 +187,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): Object.String8;
       | Predef.boolean : str := "boolean"
       | Predef.char    : str := "char"
       | Predef.longchar: str := "longchar"
+      | Predef.ucs4char: str := "ucs4char"
       | Predef.shortint: str := "shortint"
       | Predef.integer : str := "integer"
       | Predef.longint : str := "longint"

@@ -284,14 +284,12 @@ CONST
      The current value of the @var{store}.
 
      @item *OOC:SSA:Opnd.type
-     The element type of the source value of the copy.  This is either a
-     @otype{*OOC:SSA:TypeRef} to @oconst{Predef.char} or
-     @oconst{Predef.longchar}.
+     The element type of the source value of the copy.  This is a
+     @otype{*OOC:SSA:TypeRef} for a character type.
 
      @item *OOC:SSA:Opnd.type
-     The element type of the destination variable of the copy.  This is either
-     a @otype{*OOC:SSA:TypeRef} to @oconst{Predef.char} or
-     @oconst{Predef.longchar}.
+     The element type of the destination variable of the copy.  This is
+     a @otype{*OOC:SSA:TypeRef} for a character type.
 
      @item *OOC:SSA:Opnd.readAdr
      Like the corresponding argument of @oconst{get}.  If the source of the
@@ -330,9 +328,8 @@ CONST
      The current value of the @var{store}.
 
      @item *OOC:SSA:Opnd.type
-     The element type of the strings.  This is either a
-     @otype{*OOC:SSA:TypeRef} to @oconst{Predef.char} or
-     @oconst{Predef.longchar}.
+     The element type of the strings.  This is a
+     @otype{*OOC:SSA:TypeRef} for a character type.
 
      @item *OOC:SSA:Opnd.readAdr
      Like the corresponding argument of @oconst{get}.  If the left side of the
@@ -872,6 +869,7 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       | Predef.void: RETURN scNone
       | Predef.char: RETURN scUnsigned8
       | Predef.longchar: RETURN scUnsigned16
+      | Predef.ucs4char: RETURN scUnsigned32
       | Predef.boolean: RETURN scUnsigned8
       | Predef.shortint: RETURN scSigned8
       | Predef.integer: RETURN scSigned16
@@ -882,8 +880,8 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       | Predef.set: RETURN scUnsigned32
       | Predef.byte: RETURN scUnsigned8
       | Predef.ptr: RETURN scAddress
-      | Predef.charString: RETURN scAddress
-      | Predef.longCharString: RETURN scAddress
+      | Predef.stringChar, Predef.stringLongChar, Predef.stringUCS4Char:
+        RETURN scAddress
       | Predef.nil: RETURN scAddress
       END;
       

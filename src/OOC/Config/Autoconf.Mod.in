@@ -18,8 +18,8 @@ CONST
   compilerMinor* = @COMPILER_MINOR@;
   
   (* Define address type for OOC:SymbolTable:Predef: *)
-  longint* = 5;
-  hugeint* = 6;
+  longint* = 6;
+  hugeint* = 7;
   address* = @ooc_target_address_type@;
 
 END OOC:Config:Autoconf.

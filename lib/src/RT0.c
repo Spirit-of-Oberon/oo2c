@@ -313,6 +313,7 @@ void OOC_RT0_init() {
   PS(RT0__boolean , "BOOLEAN",  RT0__strBoolean , sizeof(OOC_BOOLEAN));
   PS(RT0__char    , "CHAR",     RT0__strChar    , sizeof(OOC_CHAR8));
   PS(RT0__longchar, "LONGCHAR", RT0__strLongchar, sizeof(OOC_CHAR16));
+  PS(RT0__ucs4char, "UCS4CHAR", RT0__strUCS4Char, sizeof(OOC_CHAR32));
   PS(RT0__shortint, "SHORTINT", RT0__strShortint, sizeof(OOC_INT8));
   PS(RT0__integer , "INTEGER",  RT0__strInteger , sizeof(OOC_INT16));
   PS(RT0__longint , "LONGINT",  RT0__strLongint , sizeof(OOC_INT32));

@@ -81,7 +81,7 @@ PROCEDURE WriteExpr (w: DeclWriter.Writer;
     | expr: IR.Len DO
       (* FIXME... there are a lot more variants to LEN than the length
          of a string constant *)
-      ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
+      ASSERT (expr. array. type(Sym.PredefType). id = Predef.stringChar);
       w. WriteLInt (expr. array(IR.Const). value(Boxed.String). value. length+1, 0);
       
     | expr: IR.Negate DO

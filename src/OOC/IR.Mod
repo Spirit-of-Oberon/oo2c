@@ -365,20 +365,26 @@ TYPE
        @code{STRING}.
 
        @item
+       If an operand is a character constant of type @code{UCS4CHAR}, or a
+       string constant based on @code{UCS4CHAR}, then the result is a
+       @code{UCS4CHAR} string constant @oconst{Predef.stringUCS4Char}.
+
+       @item
        If an operand is a character constant of type @code{LONGCHAR}, or a
        string constant based on @code{LONGCHAR}, then the result is a
-       @code{LONGCHAR} string constant @oconst{Predef.longCharString}.
+       @code{LONGCHAR} string constant @oconst{Predef.stringLongChar}.
 
        @item
        Otherweise, result is a @code{CHAR} string constant
-       @oconst{Predef.charString}.
+       @oconst{Predef.stringChar}.
        @end itemize  *)
     (OperatorDesc)
     strings-: ExpressionList;
     (**List of string values that are to be concatenated together.  The entries
-       are restricted to values of type @oconst{Predef.charString},
-       @oconst{Predef.longCharString}, and @ofield{Builder.stringType}.  All
-       entries are of the same type, @ofield{type}.
+       are restricted to values of type @oconst{Predef.stringChar},
+       @oconst{Predef.stringLongChar}, @oconst{Predef.stringUCS4Char}, and
+       @ofield{Builder.stringType}.  All entries are of the same type,
+       @ofield{type}.
 
        Right now, this list is always 2 elements long, but this is likely to
        change in the future to an arbitrary length greater than 1.  *)
@@ -1526,7 +1532,7 @@ PROCEDURE (b: Builder) NewStringConst* (sym: Symbol): Expression;
       RETURN NewConst (sym, Predef.GetType (Predef.char),
                        Boxed.ParseString(sym. str^));
     ELSE
-      RETURN NewConst (sym, Predef.GetType (Predef.charString),
+      RETURN NewConst (sym, Predef.GetType (Predef.stringChar),
                        Boxed.ParseString(sym. str^));
     END;
   END NewStringConst;
@@ -5232,6 +5238,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           | Predef.longint : targetType := Predef.hugeint;
           | Predef.real    : targetType := Predef.longreal;
           | Predef.char    : targetType := Predef.longchar;
+          | Predef.longchar: targetType := Predef.ucs4char;
           ELSE
             b.ErrSym(invalidOpType, arguments[0].sym);
             RETURN arguments[0];
@@ -5253,6 +5260,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           | Predef.hugeint: targetType := Predef.longint;
           | Predef.longreal: targetType := Predef.real;
           | Predef.longchar: targetType := Predef.char;
+          | Predef.ucs4char: targetType := Predef.longchar;
           ELSE
             b.ErrSym(invalidOpType, arguments[0].sym);
             RETURN arguments[0];
@@ -5291,7 +5299,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         
       | Predef.ord:
         IF (arguments[0].type IS Sym.PredefType) &
-           (arguments[0].type(Sym.PredefType).id = Predef.longchar) THEN
+           ((arguments[0].type(Sym.PredefType).id = Predef.longchar) OR
+            (arguments[0].type(Sym.PredefType).id = Predef.ucs4char)) THEN
           targetType := Predef.longint;
         ELSE  (* for CHAR and in case of error *)
           targetType := Predef.integer;

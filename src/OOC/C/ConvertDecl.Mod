@@ -126,6 +126,8 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
           RETURN w. basicType[DeclWriter.char8]
         | Predef.longchar:
           RETURN w. basicType[DeclWriter.char16]
+        | Predef.ucs4char:
+          RETURN w. basicType[DeclWriter.char32]
         | Predef.shortint:
           RETURN w. basicType[DeclWriter.int8]
         | Predef.integer:

@@ -36,44 +36,49 @@ CONST
      byte.  The character encoding is ISO Latin-1.  *)
   longchar* = 2;
   (**Predefined type @code{LONGCHAR}.  An OOC extension.  A 2 byte Unicode
-     character value encoded as UCS-2.  (FIXME... is this the correct encoding
+     character value encoded as UCS-2.
      name?)  *)
-  shortint* = 3;
+  ucs4char* = 3;
+  (**Predefined type @code{UCS4CHAR}.  An OOC extension.  A 4 byte Unicode
+     character value encoded as UCS-4.  *)
+  shortint* = 4;
   (**Integer value, two's complement encoding, stored in one byte.  *)
-  integer* = 4;
+  integer* = 5;
   (**Integer value, two's complement encoding, stored in two bytes.  *)
   longint* = Autoconf.longint;
   (**Integer value, two's complement encoding, stored in four bytes.  *)
   hugeint* = Autoconf.hugeint;
   (**Integer value, two's complement encoding, stored in eight bytes.  *)
-  real* = 7;
+  real* = 8;
   (**Floating point value, IEEE-754 single precision, stored in four bytes.  *)
-  longreal* = 8;
+  longreal* = 9;
   (**Floating point value, IEEE-754 single precision, stored in eight bytes. *)
-  set* = 9;
+  set* = 10;
   (**A set of integer values in the range @samp{0 <= x < 32}.  Stored in
      four bytes.  *)
   
   address* = Autoconf.address;  (* alias to appropriate integer type *)
-  byte* = 10;
-  ptr* = 11;
+  byte* = 11;
+  ptr* = 12;
 
-  charString* = 12;
+  stringChar* = 13;
   (**A string value based on the predefined type @code{CHAR}.  This is a
      sequence of arbitrary @oconst{char} constants.  In particular, the string
      may contain the character code @code{0X}.  *)
-  longCharString* = 13;
-  (**Like @oconst{charString}, but based on the type @code{LONGCHAR}.  *)
-  nil* = 14;
+  stringLongChar* = 14;
+  (**Like @oconst{stringChar}, but based on the type @code{LONGCHAR}.  *)
+  stringUCS4Char* = 15;
+  (**Like @oconst{stringChar}, but based on the type @code{UCS4CHAR}.  *)
+  nil* = 16;
   (**The type of the constant @code{NIL}.  *)
-  void* = 15;
+  void* = 17;
   (**The return type of procedures, indicating that no result is produced.  *)
   
   lastId* = void;
   (**Id of last predefined type.  Typically used in client modules
      to declare variables @code{ARRAY @oconst{lastId}+1 OF @dots{}}.  *)
   
-  lengthType* = 5;
+  lengthType* = longint;
   (**Alias for the integer type used to represent the length of an array.
      This is also the result type of the predefined function @code{LEN}.
      Normally, this is the same as @oconst{longint}.  Use this symbolic
@@ -82,6 +87,7 @@ CONST
 CONST
   minChar* = MIN(CHAR);         maxChar* = MAX(CHAR);
   minLongChar* = MIN(LONGCHAR); maxLongChar* = MAX(LONGCHAR);
+  minUCS4Char* = 0;             maxUCS4Char* = 10FFFFH;  (* FIXME...*)
   
 VAR
   minConst, maxConst: ARRAY lastId+1 OF Boxed.Object;
@@ -217,6 +223,9 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2,
                          Boxed.NewString(Object.NewUCS2Char(minLongChar)),
                          Boxed.NewString(Object.NewUCS2Char(maxLongChar)));
+    ptype := PredefType (stb, module, ucs4char, "UCS4CHAR", 4, 4,
+                         Boxed.NewString(Object.NewUCS4Char(minUCS4Char)),
+                         Boxed.NewString(Object.NewUCS4Char(maxUCS4Char)));
     ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1,
                          BigInt.NewInt(MIN (SHORTINT)),
                          BigInt.NewInt(MAX (SHORTINT)));
@@ -241,9 +250,11 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
                          BigInt.NewInt(MIN (SET)),
                          BigInt.NewInt(MAX (SET)));
     
-    ptype := PredefType (stb, module, charString, "", Sym.dynamicSize, 1,
+    ptype := PredefType (stb, module, stringChar, "", Sym.dynamicSize, 1,
                          NIL, NIL);
-    ptype := PredefType (stb, module, longCharString, "", Sym.dynamicSize, 2,
+    ptype := PredefType (stb, module, stringLongChar, "", Sym.dynamicSize, 2,
+                         NIL, NIL);
+    ptype := PredefType (stb, module, stringUCS4Char, "", Sym.dynamicSize, 4,
                          NIL, NIL);
     ptype := PredefType (stb, module, nil, "", 4, 4,
                          NIL, NIL);

@@ -159,7 +159,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       WITH type: Sym.Array DO
         IF (type. elementType IS Sym.PredefType) THEN
           CASE type. elementType(Sym.PredefType). id OF
-          | Predef.char, Predef.longchar:
+          | Predef.char, Predef.longchar, Predef.ucs4char:
             RETURN type. elementType;
           ELSE
             RETURN NIL;
@@ -169,8 +169,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
       | type: Sym.PredefType DO
         CASE type. id OF
-        | Predef.charString, Predef.longCharString:
-          RETURN Predef.GetType (type. id-Predef.charString+Predef.char);
+        | Predef.stringChar, Predef.stringLongChar, Predef.stringUCS4Char:
+          RETURN Predef.GetType (type. id-Predef.stringChar+Predef.char);
         ELSE
           RETURN NIL;
         END;
@@ -635,15 +635,19 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           CASE conv.expr.type(Sym.PredefType).id OF
           | Predef.char:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewLatin1Char");
-          | Predef.charString:
+          | Predef.stringChar:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewLatin1Region");
           | Predef.longchar:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS2Char");
-          | Predef.longCharString:
+          | Predef.stringLongChar:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS2Region");
+          | Predef.ucs4char:
+            fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS4Char");
+          | Predef.stringUCS4Char:
+            fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS4Region");
           END;
           instr.AddOpnd(pb.GetConst(Boxed.NewString(fct),
-                                    Predef.GetType(Predef.charString)),
+                                    Predef.GetType(Predef.stringChar)),
                         Opnd.arg);
           instr.AddOpnd(const, Opnd.arg);
           IF TR.IsStringConst(conv.expr.type) THEN
