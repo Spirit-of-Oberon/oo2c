@@ -205,7 +205,7 @@ BEGIN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
   ELSIF (Config.arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: TestCompile {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa|--ia32][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
+    Out.String ("Usage: TestCompile [--config <cfg-file>] {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa|--ia32][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
     HALT (1)
   ELSE
     context := NewContext();

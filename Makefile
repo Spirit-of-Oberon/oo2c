@@ -71,8 +71,9 @@ main-clean: doc-clean test-cleanall
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
 distclean: main-clean
-	rm -f ENV rsrc/OOC/Makefile.config rsrc/OOC/TestFramework/config.xml
+	rm -f ENV rsrc/OOC/Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/TestFramework/config.xml
 	rm -f lib/src/__config.h config.log config.status
+	rm -Rf autom4te.cache
 
 FRC:
 
@@ -103,7 +104,7 @@ doc:
 	$(PRINT) "Done.  Index file is $(DOC_DIR)/index.html"
 
 
-lib/src/__config.h.in: acconfig.h configure.ac
+lib/src/__config.h.in: configure.ac
 	autoheader
 
 configure: configure.ac lib/src/__config.h.in

@@ -1,8 +1,8 @@
 MODULE OOC:Config;
 
 IMPORT
-  Msg, Config:Value, Config:Source:CmdLine, Config:Section:Options,
-  Config:Section:Arguments, Config:Simple,
+  Msg, Config:Value, Config:Value:String, Config:Source:CmdLine,
+  Config:Section:Options, Config:Section:Arguments, Config:Simple,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:Config:Repositories, OOC:Config:Repositories:FileSystem(*KEEP THIS!*);
 
@@ -17,17 +17,27 @@ VAR
 CONST
   runtimeModule* = "RT0";
   (**Name of the pseudo module that pulls in the run-time system.  *)
-  defaultConfigFile = "";
+  defaultConfigFile = "rsrc/OOC/oo2crc.xml";
+  configEnvVar = "OO2CRC";
   
 VAR
   config: Simple.Config;
 
 PROCEDURE InitConfig (defaultConfigFile: ARRAY OF CHAR);
+  VAR
+    configFile: Options.Option;
   BEGIN
     config := Simple.New (defaultConfigFile);
     cmdLine := config. cmdLine;
     arguments := config. arguments;
     options := config. options;
+
+    configFile := options. Set ("config-file",
+                                String.New (defaultConfigFile));
+    config. ConfigFileCmdLineOption (cmdLine. AddOptionTemplate (
+       "--config", "<option><set name='config-file'>$1</set></option>"));
+    config. ConfigFileEnvVar(config. envVars. AddVariableTemplate (
+       configEnvVar, "<option><set name='config-file'>$1</set></option>"));
     
     pragmas := Pragmas.New();
     config. sectionList. Add (pragmas);
