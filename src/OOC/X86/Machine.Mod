@@ -122,7 +122,7 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
       instr, memoryDep: S.Instr;
       opnd, next: S.Opnd;
       offset: LONGINT;
-      sp, res: S.Result;
+      sp, res, arg: S.Result;
       reg: S.Register;
       clobbered: SET;
       type: S.Type;
@@ -148,8 +148,13 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
       WHILE (opnd # NIL) DO
         next := opnd.nextOpnd;
 
-        instr := b.AddInstr3(S.setStack, sp, b.AddConstLength(offset),
-                             opnd.arg);
+        arg := opnd.arg;
+        IF S.IsSigned(arg.type) & (arg.type < S.signed32) THEN
+          arg := b.FixType(arg, S.signed32);
+        ELSIF S.IsUnsigned(arg.type) & (arg.type < S.unsigned32) THEN
+          arg := b.FixType(arg, S.unsigned32);
+        END;
+        instr := b.AddInstr3(S.setStack, sp, b.AddConstLength(offset), arg);
         instr.AddDep(S.depMemory, memoryDep);
         call.AddDep(S.depMemory, instr);
         INC(offset, ArgSize(opnd.arg));
@@ -237,6 +242,12 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
         imm := ImmediateOpnd(instr);
         IF (imm # NIL) THEN
           imm.immediate := TRUE;
+        END;
+      | S.guard: (* for guards in a case statement, all opnds are immediate *)
+        opnd := instr.opndList;
+        WHILE (opnd # NIL) DO
+          opnd.immediate := IsConst(opnd);
+          opnd := opnd.nextOpnd;
         END;
       ELSE
         imm := ImmediateOpnd(instr);

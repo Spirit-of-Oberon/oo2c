@@ -128,7 +128,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           branch: S.BranchInstr;
         BEGIN
           (* case: boolean value *)
-          branch := b.AddBranch(SetCC(bool));
+          branch := b.AddBranch(SetCC(bool), FALSE);
           branch.AddDep(S.depControl, controlCP);
           
           (* first, the "true" path *)
@@ -912,6 +912,80 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         LoopEnd(loopStart);
       END ForStatm;
         
+    PROCEDURE CaseStatm(statm: IR.CaseStatm);
+      VAR
+        select: S.Result;
+        branch: S.BranchInstr;
+        guard: S.Block;
+        branchMemory, branchControl, jump: S.Instr;
+        i: LONGINT;
+        paths: ArrayList.ArrayList(S.Block);
+        jumps: ArrayList.ArrayList(S.Instr);
+        merge: S.MergeInstr;
+
+      PROCEDURE Labels(guard: S.Instr; labels: IR.CaseLabels);
+        VAR
+          i: LONGINT;
+          value: S.Result;
+          l: IR.Expression;
+        BEGIN
+          FOR i := 0 TO LEN(labels^)-1 DO
+            l := labels[i];
+            WITH l: IR.SetRange DO
+              guard.AddOpnd (Expression(l.from));
+              guard.AddOpnd (Expression(l.to));
+            ELSE
+              value := Expression(l);
+              guard.AddOpnd(value);
+              guard.AddOpnd(value);
+            END;
+          END;
+        END Labels;
+      
+      BEGIN
+        select := Expression(statm.select);
+        jump := b.AddInstr2(S.call, b.AddAdrRT("RT0__ScanCaseRanges"), sp);
+        MemoryCP(jump);
+        
+        branch := b.AddBranch(jump.AddResult(S.address), TRUE);
+        branch.AddDep(S.depControl, controlCP);
+        branchControl := branch; branchMemory := memoryCP;
+
+        jump.AddOpnd(b.AddConstType(NEW(S.Const, branch, Predef.address),
+                                    S.address));
+        jump.AddOpnd(select);
+                     
+        jumps := NEW(ArrayList.ArrayList(S.Instr), 8);
+        paths := NEW(ArrayList.ArrayList(S.Block), 8);
+        FOR i := 0 TO LEN(statm.caseList^)-1 DO
+          guard := b.AddMerge0(S.guard, NIL);
+          guard.AddDep(S.depControl, branch);
+          Labels(guard, statm.caseList[i].labels);
+          paths.Append(guard);
+                 
+          controlCP := guard; memoryCP := branchMemory;
+          StatmSeq(statm.caseList[i].statmSeq);
+          jumps.Append(AddJump());
+        END;
+
+        IF (statm.default # NIL) THEN
+          guard := b.AddMerge0(S.guard, NIL);
+          guard.AddDep(S.depControl, branch);
+          paths.Append(guard);
+                 
+          controlCP := guard; memoryCP := branchMemory;
+          StatmSeq(statm.default);
+          jumps.Append(AddJump());
+        ELSIF statm. checkMatch THEN
+          (* FIXME... *)
+        END;
+        
+        (* finally, pull all the strings together again *)
+        merge := b.AddMerge(S.merge, jumps.Elements());
+        branch.SetPaths(paths.Elements());
+        controlCP := merge; memoryCP := merge;
+      END CaseStatm;
+    
     BEGIN
       FOR statm IN statmSeq^ DO
         WITH statm: IR.Assignment DO
@@ -963,6 +1037,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           (* finally, pull all the strings together again *)
           merge := b.AddMerge2(S.merge, endTrue, endFalse);
           controlCP := merge; memoryCP := merge;
+
+        | statm: IR.CaseStatm DO
+          CaseStatm(statm);
           
         | statm: IR.Return DO
           type := S.MapType(statm.result.type);

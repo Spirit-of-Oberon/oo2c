@@ -1,7 +1,7 @@
 MODULE OOC:X86:ConstProp;
 
 IMPORT
-  Object:Boxed, Object:BigInt, S := OOC:X86:SSA;
+  Object, Object:Boxed, Object:BigInt, S := OOC:X86:SSA;
   
 (* FIXME... check for overflows, and don't do folding if an overflow
    happens *)
@@ -22,7 +22,7 @@ VAR
 PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
   VAR
     arg1, arg2: S.Result;
-    val1, val2, v: Boxed.Object;
+    val1, val2, v: Object.Object;
     i1, i2: BigInt.BigInt;
   BEGIN
     IF (instr.opcode = S.typeConv) THEN

@@ -382,6 +382,20 @@ RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN 
 void RT0__ObjectDesc_Finalize(RT0__Object o) {
 }
 
+
+void* RT0__ScanCaseRanges(const struct RT0__CaseRange table[],
+			  OOC_INT32 value) {
+  int i=0;
+  while (1) {			/* simple and slow, but correct... */
+    if ((table[i].low <= value) && (value <= table[i].high)) {
+      return table[i].jmp;
+    } else {
+      i++;
+    }
+  }
+}
+
+
 void OOC_RT0_init() {
 #ifdef USE_BOEHM_GC
   GC_all_interior_pointers = 0;

@@ -175,7 +175,14 @@ CONST  (* Instruction Opcodes: *)
      shortcut operators @code{OR} or @code{&}.  Such a branch has no
      @oconst{merge} instruction of its own.  From its @oconst{guard}s, control
      is passed on either to another @oconst{guard} or another branch's
-     @oconst{merge}.  *)
+     @oconst{merge}.
+
+     In a @code{IF} statement, the branch instruction has a single argument
+     that is either the boolean constant @code{0} or @code{1}.  In a
+     @code{CASE} statement, the branch instructions have an even number of
+     arguments, a lower and upper limit taken from an element of the list of
+     labels.  The special case of an no-argument @oconst{branch} represents the
+     @code{ELSE} part of the @code{CASE}.  *)
   guard* = opcodeControlFlow+1;
   merge* = opcodeControlFlow+2;
   (**Instructions with opcode @oconst{merge} are part of a class of
@@ -306,14 +313,14 @@ TYPE
   Const* = POINTER TO ConstDesc;
   ConstDesc = RECORD
     (SelectorDesc)
-    value-: Boxed.Object;
+    value-: Object.Object;
+    (**Either a @otype{Boxed.Object} or @otype{BranchInstr}.  *)
     type-: Sym.PredefId;
     (**This field holds a type id from module @omodule{Predef} or @samp{-1}.
-       It is used to distinguish the type of string constants.  A string
-       constant is identified by its address in the program, but the code
-       generator needs to now if the address points to a sequence of 1, 2, or 4
-       byte values.  For non-string constants, the value of this field is set
-       to @samp{-1}.  *)
+       It is used to distinguish the size of integer constants and the type of
+       string constants.  A string constant is identified by its address in the
+       program, but the code generator needs to now if the address points to a
+       sequence of 1, 2, or 4 byte values.  *)
   END;
   HeapObj* = POINTER TO HeapObjDesc;
   HeapObjDesc = RECORD
@@ -581,6 +588,7 @@ TYPE
     paths-: BlockList;
     (**If this is a boolean branch, then index 0 is the ``true'' path, and
        index 1 ``false''.  *)
+    caseBranch-: BOOLEAN;
   END;
   MergeInstrDesc = RECORD
     (**Used for both @oconst{merge}, @oconst{loopEnd} @emph{and}
@@ -642,6 +650,11 @@ TYPE
 
 CONST
   alignStackTo* = 4;
+
+PROCEDURE IsSigned*(type: Type): BOOLEAN;
+  BEGIN
+    RETURN (signed8 <= type) & (type <= signed64);
+  END IsSigned;
 
 PROCEDURE IsUnsigned*(type: Type): BOOLEAN;
   BEGIN
@@ -731,7 +744,7 @@ PROCEDURE (s: ModuleDescr) SameSelector*(sel: Selector): BOOLEAN;
     RETURN (sel IS ModuleDescr);
   END SameSelector;
 
-PROCEDURE (s: Const) INIT*(value: Boxed.Object; type: Sym.PredefId);
+PROCEDURE (s: Const) INIT*(value: Object.Object; type: Sym.PredefId);
   BEGIN
     s.INIT^();
     s.value := value;
@@ -1044,7 +1057,7 @@ PROCEDURE (res: Result) GetConst*(): Boxed.Object;
    value.  Otherwise, return @code{NIL}.  *)
   BEGIN
     IF (res.instr.opcode = const) & (res.instr.designator[0] IS Const)THEN
-      RETURN res.instr.designator[0](Const).value;
+      RETURN res.instr.designator[0](Const).value(Boxed.Object);
     ELSE
       RETURN NIL;
     END;
@@ -2163,12 +2176,17 @@ PROCEDURE (opnd: Opnd) InsertCopy*();
 
 
 
-PROCEDURE (instr: BranchInstr) INIT*();
+PROCEDURE (instr: BranchInstr) INIT*(caseBranch: BOOLEAN);
   BEGIN
     instr.INIT^(branch);
     instr.paths := NIL;
+    instr.caseBranch := caseBranch;
   END INIT;
 
+PROCEDURE (instr: BranchInstr) SetPaths*(paths: BlockList);
+  BEGIN
+    instr.paths := paths;
+  END SetPaths;
 PROCEDURE (instr: BranchInstr) SetPaths2*(pathTrue, pathFalse: Block);
   VAR
     paths: BlockList;
@@ -2179,11 +2197,12 @@ PROCEDURE (instr: BranchInstr) SetPaths2*(pathTrue, pathFalse: Block);
     instr.paths := paths;
   END SetPaths2;
 
-PROCEDURE (b: Block) AddBranch*(select: Result): BranchInstr;
+PROCEDURE (b: Block) AddBranch*(select: Result;
+                                caseBranch: BOOLEAN): BranchInstr;
   VAR
     instr: BranchInstr;
   BEGIN
-    instr := NEW(BranchInstr);
+    instr := NEW(BranchInstr, caseBranch);
     instr.AddOpnd(select);
     b.Add(instr);
     RETURN instr;
@@ -2236,7 +2255,9 @@ PROCEDURE (b: Block) AddMerge0*(opcode: Opcode; arg1: Result): MergeInstr;
     instr: MergeInstr;
   BEGIN
     instr := b.AddMerge(opcode, NIL);
-    AddOpnd(instr, NEW(Opnd, arg1));
+    IF (arg1 # NIL) THEN
+      AddOpnd(instr, NEW(Opnd, arg1));
+    END;
     RETURN instr;
   END AddMerge0;
 

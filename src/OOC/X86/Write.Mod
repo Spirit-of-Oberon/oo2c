@@ -20,6 +20,7 @@ TYPE
     instructions: StringBuffer.StringBuffer;
     incomingList: Arc;
     branch, jump: Arc;
+    caseBranches: POINTER TO ARRAY OF Arc;
     blockInstr: S.Block;
     label: LONGINT;
   END;
@@ -59,6 +60,7 @@ PROCEDURE (block: Block) INIT*(blockInstr: S.Block);
     block.incomingList := NIL;
     block.branch := NIL;
     block.jump := NIL;
+    block.caseBranches := NIL;
     block.blockInstr := blockInstr;
     block.label := 0;
   END INIT;
@@ -264,26 +266,63 @@ PROCEDURE (w: Writer) Constants();
   VAR
     s, i: LONGINT;
     label: STRING;
-    value: Object.Object;
+    value, x: Object.Object;
     lr: RECORD x, y: LONGINT; END;
+    guard: S.Block;
+    opnd: S.Opnd;
+
+  PROCEDURE AddInt(opnd: S.Opnd);
+    BEGIN
+      w.w.WriteObject(opnd.arg.instr.designator[0](S.Const).value);
+    END AddInt;
+  
   BEGIN
     FOR s := 0 TO Predef.lastId DO
       FOR i := 0 TO w.constantList[s].size-1 DO
         value := w.constantList[s].array[i];
-        label := w.constants[s].Get(value);
-        w.w.WriteObject(nl+label+":");
-        WITH value: STRING DO
-          ASSERT(s = Predef.stringChar);
-          w.w.WriteObject(nlTab+'.string "'+value+'"'); (* FIXME... needs to be quoted *)
-        | value: Boxed.LongReal DO
-          IF (s = Predef.real) THEN
-            w.w.WriteObject(nlTab+'.long 0x'+
-                            ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
-          ELSE
-            SYSTEM.MOVE(SYSTEM.ADR(value.value), SYSTEM.ADR(lr),
-                        SIZE(LONGREAL));
-            w.w.WriteObject(nlTab+'.long 0x'+ToHex(lr.x, 8));
-            w.w.WriteObject(nlTab+'.long 0x'+ToHex(lr.y, 8));
+        IF ~(value IS S.MergeInstr) THEN
+          (* MergeInstr values are auxiliary constants used by the BranchInstr
+             stuff below.  Such constants are embedded in the statement blocks.  *)
+          label := w.constants[s].Get(value);
+          w.w.WriteObject(nl+label+":");
+          WITH value: STRING DO
+            ASSERT(s = Predef.stringChar);
+            w.w.WriteObject(nlTab+'.string "'+value+'"'); (* FIXME... needs to be quoted *)
+            
+          | value: Boxed.LongReal DO
+            IF (s = Predef.real) THEN
+              w.w.WriteObject(nlTab+'.long 0x'+
+                              ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+            ELSE
+              SYSTEM.MOVE(SYSTEM.ADR(value.value), SYSTEM.ADR(lr),
+                          SIZE(LONGREAL));
+              w.w.WriteObject(nlTab+'.long 0x'+ToHex(lr.x, 8));
+              w.w.WriteObject(nlTab+'.long 0x'+ToHex(lr.y, 8));
+            END;
+            
+          | value: S.BranchInstr DO        (* range & jump table of case statm *)
+            FOR guard IN value.paths^ DO
+              opnd := guard.opndList;
+              IF (opnd = NIL) THEN       (* default path aka else *)
+                x := Predef.GetMin(Predef.GetType(Predef.longint));
+                w.w.WriteObject(nlTab+'.long '+x.ToString());
+                x := Predef.GetMax(Predef.GetType(Predef.longint));
+                w.w.WriteObject(nlTab+'.long '+x.ToString());
+                w.w.WriteObject(nlTab+'.long '+
+                                w.constants[Predef.void].Get(guard));
+              ELSE
+                WHILE (opnd # NIL) DO
+                  w.w.WriteObject(nlTab+'.long ');
+                  AddInt(opnd);
+                  opnd := opnd.nextOpnd;
+                  w.w.WriteObject(nlTab+'.long ');
+                  AddInt(opnd);
+                  opnd := opnd.nextOpnd;
+                  w.w.WriteObject(nlTab+'.long '+
+                                  w.constants[Predef.void].Get(guard));
+                END;
+              END;
+            END;
           END;
         END;
       END;
@@ -311,7 +350,7 @@ PROCEDURE (w: Writer) EndFile*();
     w.w.WriteString(nl);
   END EndFile;
 
-PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
+PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
   VAR
     instr, nextInstr, cmp: S.Instr;
     type: S.Type;
@@ -321,7 +360,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     opnd: S.Opnd;
     qtdData: Naming.QualTypeData;
     merge: S.MergeInstr;
+    path: S.Block;
     omitStackArg: BOOLEAN;
+    i: LONGINT;
     
     opndWidth: S.Type;
     (* Operand/result size of the operation.  Defaults to the type of the
@@ -453,7 +494,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
   PROCEDURE Literal(instr: S.Instr);
     VAR
       s: S.Selector;
-      value: Boxed.Object;
+      value: Object.Object;
       i: LONGINT;
       predefId: Sym.PredefId;
     BEGIN
@@ -466,7 +507,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         WITH s: S.Const DO
           value := s.value;
           type := instr.resultList.type;
-          IF (s.type >= 0) THEN          (* string constant *)
+          IF (value IS S.BranchInstr) THEN
+            sb.Append(w.ConstSymbol(value, s.type));
+          ELSIF (s.type >= 0) THEN       (* string constant *)
             sb.Append(w.ConstSymbol(value(Boxed.String).value, s.type));
           ELSIF (value = NIL) THEN
             sb.Append("0");
@@ -680,15 +723,15 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
                      cmp.opndList.arg.type, opc);
         block.SetArc(block.jump, w.GetBlock(path1), -1, S.jump);
       END;
-      dummy := w.WriteBlock(path1);
-      dummy := w.WriteBlock(path2);
+      dummy := w.WriteBlock(path1, NIL);
+      dummy := w.WriteBlock(path2, NIL);
     END WriteBranch2;
 
   PROCEDURE WriteMerge(instr: S.MergeInstr);
     VAR
       dummy: Block;
     BEGIN
-      dummy := w.WriteBlock(instr);
+      dummy := w.WriteBlock(instr, NIL);
       
       block := NEW(Block, NIL);
       dummy.SetArc(dummy.jump, block, -1, S.jump);
@@ -765,6 +808,10 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     block.instructions := sb;
     w.blocks.Append(block);
 
+    IF (label # NIL) THEN
+      sb.Append(nl+label+":");
+    END;
+    
     instr := b.instrList;
     WHILE (instr # NIL) DO
       nextInstr := instr.nextInstr;
@@ -992,7 +1039,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       
       WITH instr: S.BranchInstr DO
         cmp := instr.opndList.arg.instr;
-        IF (instr.paths[0](S.MergeInstr).jumps # NIL) THEN
+        IF instr.caseBranch THEN
+          Opc0("jmp");
+          opndWidth := S.address;
+          Opnd(instr.opndList);
+          NEW(block.caseBranches, LEN(instr.paths^));
+          FOR i := 0 TO LEN(instr.paths^)-1 DO
+            path := instr.paths[i];
+            dummy := w.WriteBlock(path, w.ConstSymbol(path, Predef.void));
+            block.caseBranches[i] := NIL;
+            block.SetArc(block.caseBranches[i], dummy, -1, S.branch);
+          END;
+        ELSIF (instr.paths[0](S.MergeInstr).jumps # NIL) THEN
           WriteBranch2(cmp, FALSE, instr.paths[1], instr.paths[0]);
         ELSE
           WriteBranch2(cmp, TRUE, instr.paths[0], instr.paths[1]);
@@ -1006,7 +1064,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         ASSERT(instr.opcode = S.loopEnd);
         WriteMerge(instr);
       | instr: S.LoopStartInstr DO
-        dummy := w.WriteBlock(instr);
+        dummy := w.WriteBlock(instr, NIL);
       | instr: S.Block DO
         ASSERT(FALSE);
       ELSE
@@ -1111,7 +1169,7 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
   
   BEGIN
     w.labelExit := StartFunction(b);
-    dummy := w.WriteBlock(b);
+    dummy := w.WriteBlock(b, NIL);
     EndFunction();
   END WriteFunction;
 
