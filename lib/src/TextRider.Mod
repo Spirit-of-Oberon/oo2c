@@ -3,7 +3,7 @@ MODULE TextRider [OOC_EXTENSIONS];
 
 (*
     TextRider -  Text-based input/output of Oberon variables.       
-    Copyright (C) 1998, 1999, 2002  Michael van Acken
+    Copyright (C) 1998, 1999, 2002, 2003  Michael van Acken
     Copyright (C) 1997  Michael Griebling
  
     This module is free software; you can redistribute it and/or modify
@@ -1342,7 +1342,9 @@ PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
 PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
   VAR
     chars: Object.CharsLatin1;
+    chars32: Object.CharsUCS4;
     s: Object.String;
+    i: LONGINT;
   BEGIN
     IF (obj = NIL) THEN
       w.WriteString("<NIL>");
@@ -1351,14 +1353,23 @@ PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
       WITH s: Object.String8 DO
         chars := s.CharsLatin1();
         w. byteWriter. WriteBytes (chars^, 0, s.length);
-        w. res := w. byteWriter. res;
-        IF (noBuffering IN w.opt) & (w. res = done) THEN
-          w. base. Flush;
-          w. res := w. base. res
-        END
       | s: Object.String32 DO
-        w.WriteString("[TextRider.WriteObject: String32 not implemented]");
+        chars32 := s.CharsUCS4();
+        FOR i := 0 TO s.length-1 DO
+          IF (chars32[i] >= 100X) THEN
+            w.WriteString("[TextRider.WriteObject: String32 not implemented]");
+            RETURN;
+          END;
+        END;
+        FOR i := 0 TO s.length-1 DO
+          w.byteWriter.WriteByte(SHORT(SHORT(chars32[i])));
+        END;
       END;
+      w. res := w. byteWriter. res;
+      IF (noBuffering IN w.opt) & (w. res = done) THEN
+        w. base. Flush;
+        w. res := w. base. res
+      END
     END
   END WriteObject;
 
