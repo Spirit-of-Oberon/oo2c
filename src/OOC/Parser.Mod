@@ -147,7 +147,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
    For these reasons, the rule for @samp{Designator} does start with an
    @samp{ident} instead of a @samp{Qualident}, and it also includes the
    function call syntax.  The latter is normally part of @samp{Factor}.  Later
-   passes of the compiler must ensure, that designators comply to the original
+   passes of the compiler must ensure that designators comply to the original
    Oberon-2 syntax.
    
    Optional syntactic extensions are enabled through flags of
@@ -1538,6 +1538,5 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
 
 BEGIN
   NEW (parserContext);
-(***)
   Error.InitContext (parserContext, "OOC:Parser")
 END OOC:Parser.
