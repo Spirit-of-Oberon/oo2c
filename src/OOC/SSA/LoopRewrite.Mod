@@ -48,6 +48,8 @@ TYPE
   WorklistDesc = RECORD
     next: Worklist;
     instr: SSA.Instr;
+    (* For an instruction to be in the worklist, at least one argument must
+       be not marked as loopInvariant.  *)
   END;
 
 TYPE
@@ -160,81 +162,57 @@ PROCEDURE Classify(pb: SSA.ProcBlock; loopStart: SSA.Instr);
     instr: SSA.Instr;
     res: SSA.Result;
 
-  PROCEDURE AddToWorklist (instr: SSA.Instr);
-  (* pre-cond: one of the arguments is not loopInvariant *)
-    VAR
-      wl: Worklist;
-    BEGIN
-      IF (instr.marker > 0) THEN  (* not in worklist yet? *)
-        instr. marker := -instr.marker;
-        
-        NEW (wl);
-        wl. next := worklist;
-        wl. instr := instr;
-        worklist := wl;
-      END;
-    END AddToWorklist;
-  
-  PROCEDURE ^ SetMarker(res: SSA.Result; newMarker: LONGINT);
+  PROCEDURE ^ UpdateMarker(res: SSA.Result; newMarker: LONGINT);
     
-  PROCEDURE SetMarkers(instr: SSA.Instr; newMarker: LONGINT);
-  (* Call SetMarker() for every result of `instr'.  *)
+  PROCEDURE UpdateMarkers(instr: SSA.Instr; newMarker: LONGINT);
+  (* Call UpdateMarker() for every result of `instr'.  *)
     VAR
       res: SSA.Result;
     BEGIN
       res := instr;
       WHILE (res # NIL) DO
-        SetMarker(res, newMarker);
+        UpdateMarker(res, newMarker);
         res := res.nextResult;
       END;
-    END SetMarkers;
+    END UpdateMarkers;
   
-  PROCEDURE SetMarker(res: SSA.Result; newMarker: LONGINT);
-    PROCEDURE AddUsesToWorklist (res: SSA.Result);
-      VAR
-        use: SSA.Opnd;
-        useInstr, gate: SSA.Instr;
-        out: SSA.Result;
-      BEGIN
-        use := res. useList;
-        WHILE (use # NIL) DO
-          useInstr := use. instr;
-          IF (useInstr.opcode = Opcode.collect) THEN
-            (* don't add collect instructions to worklist, instead recalculate
-               the label of the gate instruction (select, loop-start, or
-               loop-end) to which the collect passes its result *)
-            SetMarkers(useInstr, bottom);
-            gate := useInstr.GetCollectTarget();
-            IF (gate = loopStart) OR (gate.opcode # Opcode.loopStart) THEN
-              (* don't wrap around to start of loop if gate is not our
-                 loopStart *)
-              out := gate.NthResult(use.OpndIndex()+1);
-              IF (ABS(res.marker) >= ABS(out.marker)) THEN
-                SetMarker(out, ABS(res.marker));
-              END;
-            END;
-          ELSE
-            AddToWorklist (useInstr);
-          END;
-          use := use. nextUse;
-        END;
-      END AddUsesToWorklist;
-    
+  PROCEDURE UpdateMarker(res: SSA.Result; newMarker: LONGINT);
+  (* If `newMarker' is larger than the current `res.marker', then update it
+     and add all instructions that use `res' to the worklist.  *)
+    VAR
+      use: SSA.Opnd;
+      useInstr: SSA.Instr;
+      wl: Worklist;
     BEGIN
-      ASSERT(newMarker >= ABS(res.marker));
-      IF (newMarker # ABS(res.marker)) THEN
+      ASSERT(newMarker > 0);
+      IF (newMarker > ABS(res.marker)) THEN
         IF (res.marker < 0) THEN  (* preserve `in worklist' mark *)
           res.marker := -newMarker;
         ELSE
           res.marker := newMarker;
         END;
-        AddUsesToWorklist(res);
+
+        use := res. useList;
+        WHILE (use # NIL) DO
+          useInstr := use. instr;
+          IF (useInstr.marker > 0) THEN  (* not in worklist yet? *)
+            useInstr.marker := -useInstr.marker;
+            NEW (wl);
+            wl.next := worklist;
+            wl.instr := useInstr;
+            worklist := wl;
+          END;
+          use := use. nextUse;
+        END;
       END;
-    END SetMarker;
+    END UpdateMarker;
 
   PROCEDURE ClassifyInstr(instr: SSA.Instr);
     VAR
-      marker: LONGINT;
+      marker, min, max, m, opndIndex: LONGINT;
+      res: SSA.Result;
+      opnd, next: SSA.Opnd;
+      gate: SSA.Instr;
     BEGIN
       CASE instr.opcode OF
       | Opcode.add, Opcode.subtract:
@@ -242,13 +220,69 @@ PROCEDURE Classify(pb: SSA.ProcBlock; loopStart: SSA.Instr);
         IF (ABS(instr.opndList.arg.marker) > marker) THEN
           marker := ABS(instr.opndList.arg.marker);
         END;
-        SetMarkers(instr, marker);
+        UpdateMarkers(instr, marker);
 
       | Opcode.typeConv: (* interpret type-conv as identity or x+0 operation *)
-        SetMarkers(instr, ABS(instr.opndList.arg.marker));
+        UpdateMarkers(instr, ABS(instr.opndList.arg.marker));
+
+      | Opcode.collect:
+        UpdateMarker(instr, bottom);
+        UpdateMarker(instr.nextResult, bottom);  (* store output *)
+        gate := instr.GetCollectTarget();
+        IF (gate = loopStart) OR (gate.opcode # Opcode.loopStart) THEN
+          (* don't wrap around to start of loop if gate is not our
+             loopStart *)
+          res := gate.nextResult;
+          opnd := instr.opndList;
+          WHILE (res # NIL) DO
+            (* marker of a "select" result is the maximum of all corresponding
+               collect arguments *)
+            UpdateMarker(res, ABS(opnd.arg.marker));
+            res := res.nextResult;
+            opnd := opnd.nextOpnd;
+          END;
+          UpdateMarker(instr.nextResult, ABS(instr.opndList.arg.marker));
+        END;
+
+      | Opcode.select:
+        UpdateMarker(instr, bottom);
+        
+        IF (ABS(instr.opndList.arg.marker) # loopInvariant) THEN
+          (* a loop-variant selecting expression makes all results at
+             least forwardInductive *)
+          min := forwardInductive;
+        ELSE
+          min := loopInvariant;
+        END;
+
+        opndIndex := 0;
+        res := instr.nextResult;
+        WHILE (res # NIL) DO
+          max := min;
+          
+          opnd := instr.opndList.nextOpnd;
+          WHILE (opnd # NIL) DO
+            opnd := opnd.nextOpnd;
+            next := opnd.nextOpnd;
+
+            IF (opnd.arg.instr.opcode = Opcode.collect) THEN
+              opnd := opnd.arg.instr.NthOpnd(opndIndex);
+            END;
+            m := ABS(opnd.arg.marker);
+            IF (m > max) THEN
+              max := m;
+            END;
+            
+            opnd := next;
+          END;
+          UpdateMarker(res, max);
+
+          INC(opndIndex);
+          res := res.nextResult;
+        END;
 
       ELSE  (* one of the arguments is not loopInvariant *)
-        SetMarkers(instr, bottom);
+        UpdateMarkers(instr, bottom);
       END;
     END ClassifyInstr;
   
@@ -256,10 +290,11 @@ PROCEDURE Classify(pb: SSA.ProcBlock; loopStart: SSA.Instr);
     pb.SetMarkers(NIL, loopInvariant);
     worklist := NIL;
 
-    (* mark all result of "loop-start" as forward inductive *)
-    res := loopStart;
+    (* mark all results of "loop-start" as forward inductive *)
+    UpdateMarker(loopStart, bottom);
+    res := loopStart.nextResult;
     WHILE (res # NIL) DO
-      SetMarker(res, forwardInductive);
+      UpdateMarker(res, forwardInductive);
       res := res.nextResult;
     END;
     
@@ -302,6 +337,7 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
     VAR
       ce: CycleElement;
     BEGIN
+      res.LogId("AddInductionValue");
       NEW(ce);
       ce.next := ic.cycleElements;
       ce.res := res;
@@ -1053,11 +1089,16 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
   PROCEDURE DumpMarker(marker: LONGINT);
     VAR
       instr: SSA.Instr;
+      res: SSA.Result;
     BEGIN
       instr := pb.instrList;
       WHILE (instr # NIL) DO
-        IF (ABS(instr.marker) = marker) THEN
-          Log.Ptr("instr", instr);
+        res := instr;
+        WHILE (res # NIL) DO
+          IF (ABS(res.marker) = marker) THEN
+            res.LogId("res");
+          END;
+          res := res.nextResult;
         END;
         instr := instr.nextInstr;
       END;
@@ -1078,6 +1119,12 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
       (* classify instructions as loopInvariant, forwardInductive, or bottom
          with regard to loop *)
       Classify(pb, loopStart);
+      Log.Msg("loopInvariant");
+      DumpMarker(loopInvariant);
+      Log.Msg("forwardInductive");
+      DumpMarker(forwardInductive);
+      Log.Msg("bottom");
+      DumpMarker(bottom);
       
       (* locate inductive cycles in loop *)
       FindInductiveCycles(loopStart);
@@ -1092,6 +1139,7 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
         Flatten(opnd.arg.instr);
         opnd := opnd.nextOpnd;
       END;
+      DumpSums(pb);      
 
       (* find all instructions that are computed through a sum involving the
          head of an induction cycle and insert replacement instructions for
@@ -1137,14 +1185,6 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
         END;
         instr := instr.nextInstr;
       END;
-      
-      Log.Msg("loopInvariant");
-      DumpMarker(loopInvariant);
-      Log.Msg("forwardInductive");
-      DumpMarker(forwardInductive);
-      (*Log.Msg("bottom");
-         DumpMarker(bottom);*)
-      DumpSums(pb);
       
       INC(i);
     END;
