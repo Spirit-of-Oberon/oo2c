@@ -52,7 +52,7 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
       IF (arg1.value IS BigInt.BigInt) &
          (instr.subclass < Opcode.scReal32) THEN
         (* FIXME... check for overflow *)
-        RETURN pb. GetConst(arg1.value, arg1.subclass, NIL);
+        RETURN pb. GetConst(arg1.value, instr.subclass, NIL);
       END;
     ELSIF (instr. SizeOpndList() >= 2) &
        (instr. opcode # Opcode.preloadedVar) &
@@ -100,7 +100,7 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
         IF (v IS Boxed.Boolean) THEN
           RETURN pb. GetConstBool(v(Boxed.Boolean). value);
         ELSE
-          RETURN pb. GetConst(v, arg1.subclass, NIL);
+          RETURN pb. GetConst(v, instr.subclass, NIL);
         END;
       END;
     END;

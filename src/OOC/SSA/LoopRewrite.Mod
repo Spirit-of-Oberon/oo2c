@@ -1001,7 +1001,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       res: SSA.Result;
       instr: SSA.Instr;
     BEGIN
-      res := rc.replacements[0];
+      res := pb.FixSubclass(rc.replacements[0], sum.subclass);
 
       IF (sum.others # zero) THEN
         instr := pb.AddInstr(Opcode.add, sum.subclass);
