@@ -1,7 +1,7 @@
 MODULE VTable5;
 
 IMPORT 
-  Out,
+  Out:=Out0,
   VTable4, (* abstract interface *)
   VTable3; (* FOREIGN c++ implementation *)
 
@@ -16,22 +16,22 @@ TYPE
 
 PROCEDURE (t : TImpl) String* (str : ARRAY OF CHAR);
 BEGIN
-  Out.String(str); Out.Flush;
+  Out.String(str);
 END String;
 
 PROCEDURE (t : TImpl) Int* (i : LONGINT);
 BEGIN
-  Out.LongInt(i, 0); Out.Flush;
+  Out.Int(i, 0);
 END Int;
 
 PROCEDURE (t : TImpl) Ln*;
 BEGIN
-  Out.Ln; Out.Flush;
+  Out.Ln;
 END Ln;
 
 PROCEDURE (t : TImpl) Chain* (obj : T; i : LONGINT);
 BEGIN
-  Out.String("VTable5:T "); Out.LongInt(i, 0); Out.Ln; Out.Flush;
+  Out.String("VTable5:T "); Out.Int(i, 0); Out.Ln;
   IF i > 0 THEN
     obj.Chain(t, i-1);
   END;
