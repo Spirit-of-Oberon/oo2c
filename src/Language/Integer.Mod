@@ -19,7 +19,7 @@ VAR
 
   minus1, zero- : Value;
 
-PROCEDURE New* (val : Integers.Integer) : Value;
+PROCEDURE NewInt (val : Integers.Integer) : Value;
 (** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
 VAR 
   v : Value;
@@ -28,17 +28,12 @@ BEGIN
   L.InitValue (v, type);
   v.value := val;
   RETURN v;
-END New;
-
-PROCEDURE NewLInt* (l : LONGINT) : Value;
-BEGIN
-  RETURN New(Integers.Long(l));
-END NewLInt;
-
-PROCEDURE NewInt* (i : INTEGER) : Value;
-BEGIN
-  RETURN NewLInt(i);
 END NewInt;
+
+PROCEDURE New* (l : LONGINT) : Value;
+BEGIN
+  RETURN NewInt(Integers.Long(l));
+END New;
 
 PROCEDURE (v: Value) Store* (w: Object.Writer);
   VAR
@@ -89,34 +84,34 @@ BEGIN
   RETURN String.New (str)
 END ToString;
 
-PROCEDURE (v: Value) ToLInt*(): LONGINT;
+PROCEDURE (v: Value) ToInt*(): LONGINT;
   BEGIN
     RETURN Integers.Short (v. value);
-  END ToLInt;
+  END ToInt;
 
 PROCEDURE (v : Value) Sum* (right : Value) : Value;
 BEGIN
-  RETURN New(Integers.Sum(v.value, right.value));
+  RETURN NewInt(Integers.Sum(v.value, right.value));
 END Sum;
 
 PROCEDURE (v : Value) Difference* (right : Value) : Value;
 BEGIN
-  RETURN New(Integers.Difference(v.value, right.value));
+  RETURN NewInt(Integers.Difference(v.value, right.value));
 END Difference;
 
 PROCEDURE (v : Value) Product* (right : Value) : Value;
 BEGIN
-  RETURN New(Integers.Product(v.value, right.value));
+  RETURN NewInt(Integers.Product(v.value, right.value));
 END Product;
 
 PROCEDURE (v : Value) Quotient* (right : Value) : Value;
 BEGIN
-  RETURN New(Integers.Quotient(v.value, right.value));
+  RETURN NewInt(Integers.Quotient(v.value, right.value));
 END Quotient;
 
 PROCEDURE (v : Value) Remainder* (right : Value) : Value;
 BEGIN
-  RETURN New(Integers.Remainder(v.value, right.value));
+  RETURN NewInt(Integers.Remainder(v.value, right.value));
 END Remainder;
 
 PROCEDURE (v : Value) Compare* (right : Value) : LONGINT;
@@ -134,12 +129,7 @@ BEGIN
   RETURN v.Product(minus1);
 END Negate;
 
-PROCEDURE (t : Type) ValueLInt* (val : LONGINT) : Value;
-BEGIN
-  RETURN New(Integers.Long(val));
-END ValueLInt;
-
-PROCEDURE (t : Type) Value* (val : Integers.Integer) : Value;
+PROCEDURE (t : Type) Value* (val : LONGINT) : Value;
 BEGIN
   RETURN New(val);
 END Value;
@@ -149,7 +139,7 @@ VAR
   val : Integers.Integer;
 BEGIN
   Integers.ConvertFromString(s, val);
-  RETURN New(val);
+  RETURN NewInt(val);
 END ValueOf;
 
 PROCEDURE (t : Type) ToString* () : String.String;
@@ -162,7 +152,7 @@ BEGIN
   L.InitType(type);
   typeName := String.New("Integer");
 
-  zero := New(Integers.Long(0));
-  minus1 := New(Integers.Long(-1));
+  zero := New(0);
+  minus1 := New(-1);
 END Language:Integer.
 

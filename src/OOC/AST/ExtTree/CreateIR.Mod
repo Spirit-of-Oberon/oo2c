@@ -595,7 +595,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           IF (expr = b. errorExpr) THEN  (* error in array length *)
             item. SetLength (1);
           ELSE
-            item. SetLength (expr(IR.Const). value(Integer.Value). ToLInt());
+            item. SetLength (expr(IR.Const). value(Integer.Value). ToInt());
           END;
         END;
 

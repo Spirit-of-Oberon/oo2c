@@ -472,7 +472,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
         str := value.ToString();
         w. WriteString(str.array^);
       | value: Integer.Value DO
-        IF (value. ToLInt() = MIN (LONGINT)) THEN
+        IF (value. ToInt() = MIN (LONGINT)) THEN
           (* this assumes that MIN(LONGINT) is also the smallest value of
              the C type "int"; to avoid overflow errors, we must rewrite
              the value slightly *)

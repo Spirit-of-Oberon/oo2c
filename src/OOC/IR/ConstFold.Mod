@@ -169,7 +169,7 @@ PROCEDURE (c: ConstFold) VisitLen* (len: IR.Len);
       c.result := NIL; RETURN;
     END;
     c.result := c.builder.NewConst(len.sym, Predef.GetType(Predef.lengthType), 
-      Integer.NewLInt(length));
+      Integer.New(length));
   END VisitLen;
 
 PROCEDURE (c: ConstFold) VisitDeref* (deref: IR.Deref);
@@ -192,7 +192,7 @@ PROCEDURE (c: ConstFold) VisitSetMember* (op: IR.SetMember);
     e, s : Language.Value;
   BEGIN
     IF c.ValidEval(op.element, e) & c.ValidEval(op.set, s) THEN
-      element := e(Integer.Value).ToLInt();
+      element := e(Integer.Value).ToInt();
       set := s(Set.Value).value;
       c.result := c.BooleanConst(element IN set, op);
     ELSE
@@ -206,8 +206,8 @@ PROCEDURE (c: ConstFold) VisitSetRange* (op: IR.SetRange);
     l, r : Language.Value;
   BEGIN
     IF c.ValidEval(op.from, l) & c.ValidEval(op.to, r) THEN
-      left := l(Integer.Value).ToLInt();
-      right := r(Integer.Value).ToLInt();
+      left := l(Integer.Value).ToInt();
+      right := r(Integer.Value).ToInt();
       c.result := c.ValueConst(Set.New({left..right}), op);
     ELSE
       c.result := NIL;
@@ -532,12 +532,12 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
       IF c. builder. typeRules. IsIntegerType (op. type) &
          c. builder. typeRules. IsCharType (op. expr. type) THEN
         (* type conversion from character to integer value (ORD) *)
-        value := Integer.NewLInt (ORD (value(String8.Value). value. array[0]));
+        value := Integer.New (ORD (value(String8.Value). value. array[0]));
         c.result := c. builder. NewConst (op. sym, op. type, value);
       ELSIF c. builder. typeRules. IsCharType (op. type) &
             c. builder. typeRules. IsIntegerType (op. expr. type) THEN
         (* type conversion from integer to character value (CHR) *)
-        value := String8.NewChar (CHR (value(Integer.Value). ToLInt()));
+        value := String8.NewChar (CHR (value(Integer.Value). ToInt()));
         c.result := c. builder. NewConst (op. sym, op. type, value);
       ELSIF c. builder. typeRules. IsRealType (op. type) &
             c. builder. typeRules. IsIntegerType (op. expr. type) THEN

@@ -178,21 +178,21 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2,
                          NIL, NIL);      (* FIXME... add MIN/MAX *)
     ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1,
-                         Integer.NewLInt (MIN (SHORTINT)),
-                         Integer.NewLInt (MAX (SHORTINT)));
+                         Integer.New (MIN (SHORTINT)),
+                         Integer.New (MAX (SHORTINT)));
     ptype := PredefType (stb, module, integer, "INTEGER", 2, 2,
-                         Integer.NewLInt (MIN (INTEGER)),
-                         Integer.NewLInt (MAX (INTEGER)));
+                         Integer.New (MIN (INTEGER)),
+                         Integer.New (MAX (INTEGER)));
     ptype := PredefType (stb, module, longint, "LONGINT", 4, 4,
-                         Integer.NewLInt (MIN (LONGINT)),
-                         Integer.NewLInt (MAX (LONGINT)));
+                         Integer.New (MIN (LONGINT)),
+                         Integer.New (MAX (LONGINT)));
     ptype := PredefType (stb, module, real, "REAL", 4, 4,
                          NIL, NIL);      (* FIXME... add MIN/MAX *)
     ptype := PredefType (stb, module, longreal, "LONGREAL", 8, 8,
                          NIL, NIL);      (* FIXME... add MIN/MAX *)
     ptype := PredefType (stb, module, set, "SET", 4, 4,
-                         Integer.NewLInt (MIN (SET)),
-                         Integer.NewLInt (MAX (SET)));
+                         Integer.New (MIN (SET)),
+                         Integer.New (MAX (SET)));
     
     ptype := PredefType (stb, module, charString, "", Sym.dynamicSize, 1,
                          NIL, NIL);

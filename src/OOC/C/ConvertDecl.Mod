@@ -324,7 +324,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
         d: DeclWriter.Declaration;
       BEGIN
         d := w. NewDefine (Naming.NameOfTypeBoundIndex (proc),
-                           Integer.NewLInt (proc. tbProcIndex));
+                           Integer.New (proc. tbProcIndex));
         w. AddDeclaration (d);
 
         d := w. NewDeclaration (Naming.NameOfTypeBoundSignature (proc),

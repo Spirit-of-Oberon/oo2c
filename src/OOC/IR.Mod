@@ -1134,12 +1134,12 @@ PROCEDURE (b: Builder) NewSize* (sym: Symbol; type: Expression): Expression;
     ASSERT (type IS TypeRef);
     RETURN b. NewConst
         (sym, Predef.GetType (Predef.longint),
-         Integer.NewLInt (type(TypeRef). decl(Sym.TypeDecl). type. size));
+         Integer.New (type(TypeRef). decl(Sym.TypeDecl). type. size));
   END NewSize;
 
 PROCEDURE (b: Builder) GetOne (sym: Symbol; type: Sym.Type): Const;
   BEGIN
-    RETURN b. NewConst (sym, type, Integer.NewLInt (1));
+    RETURN b. NewConst (sym, type, Integer.New (1));
   END GetOne;
 
 (* Expression Class: Operator
@@ -2108,7 +2108,7 @@ PROCEDURE (b: Builder) NewForStatm* (sym: Symbol;
     NEW (forStatm);
     IF (step = NIL) THEN
       step := b. NewConst
-          (sym, Predef.GetType (Predef.shortint), Integer.NewLInt (1));
+          (sym, Predef.GetType (Predef.shortint), Integer.New (1));
     END;
     InitForStatm (forStatm, sym, var, start, end, step, body);
     RETURN forStatm
@@ -2814,7 +2814,7 @@ PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): L
     const := b. AssertConst (expr);
     IF (const # b. errorExpr) THEN
       IF b. typeRules. IsIntegerType (const. type) THEN
-        v := const. value(Integer.Value). ToLInt();
+        v := const. value(Integer.Value). ToInt();
         IF (start <= v) & (v < end) THEN
           RETURN v;
         END;
