@@ -2,7 +2,7 @@ MODULE H2O:Type;
 
 IMPORT
   Obj := Object, ADT:StringBuffer, ADT:ArrayList, Log, Err, O := Object,
-  H2O:Option;
+  H2O:Value, H2O:Option;
 
 CONST 
   (* module name-spaces *)
@@ -138,6 +138,42 @@ BEGIN
     RETURN FALSE;
   END;
 END IsConstructor;
+
+PROCEDURE (t : Type) Size* () : LONGINT;
+VAR size, sum, max : LONGINT;
+
+  PROCEDURE AggregateSize(obj : Object; VAR sum, max : LONGINT);
+  VAR size : LONGINT;
+  BEGIN
+    sum := 0; max := 0;
+    WHILE obj # NIL DO
+      size := obj.type.Size();
+      IF size > max THEN max := size END;
+      sum := sum + size;
+      obj := obj.next;
+    END;
+  END AggregateSize;
+
+BEGIN
+  CASE t.class OF
+  | tInteger, tUnsigned, tReal:
+    RETURN t.size;
+  | tPointer:
+    RETURN pointerSize;
+  | tEnum:
+    RETURN intType.Size();
+  | tArray:
+    size := t.size; IF size < 0 THEN size := 0 END;
+    RETURN size * t.base.Size();
+  | tQualifier, tName:
+    RETURN t.base.Size();
+  | tVoid, tFunction:
+    RETURN 0;
+  | tStruct, tUnion:
+    AggregateSize(t.link, sum, max);
+    IF t.class = tStruct THEN RETURN sum ELSE RETURN max END;
+  END;
+END Size;
 
 PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module));
 
@@ -285,6 +321,30 @@ BEGIN
   END;
   RETURN FALSE;
 END FindObject;
+
+(* Constants may be defined as part of Enum definitions. These may be used
+from other modules as part of expressions. *)
+
+PROCEDURE FindConstant* (name : STRING; VAR result : Value.Object; VAR mod : Module) : BOOLEAN;
+VAR obj : Object; t : Type; const : Object;
+BEGIN
+  mod := modules;
+  WHILE mod # NIL DO
+    obj := mod.types;
+    WHILE obj # NIL DO
+      t := obj.type;
+      IF t.class = tEnum THEN
+        IF FindObjectLocal(t.link, name, const) THEN
+          result := Value.NewLongInt(const.addr);
+          RETURN TRUE;
+        END;
+      END;
+      obj := obj.next;
+    END;
+    mod := mod.next;
+  END;
+  RETURN FALSE;
+END FindConstant;
 
 PROCEDURE AppendObject* (VAR s : Object; elem : Object);
 VAR e : Object;
