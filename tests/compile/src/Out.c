@@ -18,11 +18,11 @@ void Out__Int(OOC_INT32 i, OOC_INT32 n) {
 }
 
 void Out__Real(OOC_REAL32 r, OOC_INT32 n) {
-  fprintf(stdout, "%*f", n, r);
+  fprintf(stdout, "%.*E", n, r);
 }
 
 void Out__LongReal(OOC_REAL64 r, OOC_INT32 n) {
-  fprintf(stdout, "%*f", n, r);
+  fprintf(stdout, "%.*E", n, r);
 }
 
 void Out__Bool(OOC_BOOLEAN b) {
