@@ -1,7 +1,7 @@
 MODULE H2O:Process;
 
 IMPORT
-  Err,
+  Err, Language:=LanguageNew,
   ADT:Storable, ADT:String, ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList,
   H2O:Source, H2O:Error, H2O:Scanner, H2O:Module;
 
@@ -38,7 +38,7 @@ TYPE
   END;
 
   Macro* = POINTER TO MacroDesc;
-  MacroDesc* = RECORD (Storable.ObjectDesc)
+  MacroDesc* = RECORD (Language.ObjectDesc)
     module- : Module.Module;		(* module for macro definition *)
     name- : String.String;		(* name of macro *)
     nParams : INTEGER;			(* number of formal parameters *)
@@ -64,7 +64,7 @@ VAR
 
 PROCEDURE PrintMacro(m : Macro);
 VAR
-  o : Storable.Object;
+  o : Language.Object;
   p : Param;
   i : LinkedList.Iterator;
 BEGIN
@@ -92,7 +92,7 @@ BEGIN
 END PrintMacro;
 
 PROCEDURE (p : Process) FindMacro(name : String.String; VAR result : Macro) : BOOLEAN;
-VAR o : Storable.Object;
+VAR o : Language.Object;
 BEGIN
   IF p.macro.HasKey(name) THEN
     o := p.macro.Get(name);

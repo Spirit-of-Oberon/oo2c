@@ -26,7 +26,9 @@ TYPE
   FileDescrSet* = POINTER TO FileDescrSetDesc;
   FileDescrSetDesc = RECORD
   (**This class encapsulates the C structure @samp{fd_set}.  *)
+<*PUSH; Warnings:=FALSE*>
     fd_set: SYSTEM.PTR;
+<*POP*>
   END;
 
 VAR

@@ -22,8 +22,8 @@ MODULE OOC:SSA;
 
 
 IMPORT
-  SYSTEM, Log, 
-  Language, Language:Integer, Language:Boolean, ADT:Storable, ADT:Dictionary,
+  SYSTEM, Log, Language:=LanguageNew, LanguageOld := Language, 
+  Language:Integer, Language:Boolean, ADT:Storable, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
@@ -143,7 +143,7 @@ TYPE
 TYPE
   ConstDesc = RECORD
     (InstrDesc)
-    value-: Language.Value;
+    value-: LanguageOld.Value;
     (**For a constant representing a @code{NIL} value, this field refers to
        @ovar{nil}.  *)
     type-: Sym.Type;
@@ -970,7 +970,7 @@ PROCEDURE (instr: Instr) IsSwitchStatm*(): BOOLEAN;
 (* ---------------------------------------------------------------------- *)
 
 PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
-                     value: Language.Value; type: Sym.Type);
+                     value: LanguageOld.Value; type: Sym.Type);
   BEGIN
     InitInstr (const, Opcode.const, subclass);
     ASSERT (value # NIL);
@@ -1124,12 +1124,12 @@ PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
     instr. prevInstr := NIL;
   END DeleteInstr;
   
-PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
+PROCEDURE (pb: ProcBlock) GetConst* (value: LanguageOld.Value;
                                      type: Sym.Type): Const;
 (**Returns the @code{const} instruction for the value @oparam{value}.  Equal
    values are mapped to the same unique instruction.  *)
   VAR
-    obj: Storable.Object;
+    obj: Language.Object;
     const: Const;
     bucket: LONGINT;
   BEGIN
@@ -1172,7 +1172,7 @@ PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Sym.Declaration): DeclRef;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
   VAR
-    obj: Storable.Object;
+    obj: Language.Object;
     declRef: DeclRef;
   BEGIN
     IF pb. objMap. HasKey (decl) THEN
@@ -1191,7 +1191,7 @@ PROCEDURE (pb: ProcBlock) GetTypeRef* (type: Sym.Type): TypeRef;
 (**Returns the @code{typeref} instruction for the type @oparam{type}.
    Equal types are mapped to the same unique instruction.  *)
   VAR
-    obj: Storable.Object;
+    obj: Language.Object;
     typeRef: TypeRef;
   BEGIN
     IF pb. objMap. HasKey (type) THEN
@@ -1216,7 +1216,7 @@ PROCEDURE (pb: ProcBlock) GetAddress* (decl: Sym.Declaration): Address;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
   VAR
-    obj: Storable.Object;
+    obj: Language.Object;
     address: Address;
   BEGIN
     IF pb. adrMap. HasKey (decl) THEN

@@ -1,7 +1,7 @@
 MODULE OOC:C:Naming;
 
 IMPORT
-  IntStr, Strings, ADT:Storable, ADT:String, ADT:Dictionary,
+  IntStr, Strings, Language:=LanguageNew, ADT:String, ADT:Dictionary,
   OOC:Config, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
 TYPE
@@ -30,7 +30,7 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
     m: Sym.Item;
     relativeName: BOOLEAN;
     name: String.String;
-    obj: Storable.Object;
+    obj: Language.Object;
 
   PROCEDURE IsReservedName (VAR str: ARRAY OF CHAR): BOOLEAN;
   (* The names "^[ilr]\d+$" are used by the SSA based C back-end for

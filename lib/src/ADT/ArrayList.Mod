@@ -23,7 +23,7 @@ IMPORT
 
 
 TYPE
-  Array = POINTER TO ARRAY OF Storable.Object;
+  Array = POINTER TO ARRAY OF Language.Object;
   ArrayList* = POINTER TO ArrayListDesc;
   ArrayListDesc* = RECORD
   (**Resizable-array implementation of a list.  *)
@@ -133,7 +133,7 @@ PROCEDURE (l: ArrayList) Clear*;
     l. size := 0
   END Clear;
 
-PROCEDURE (l: ArrayList) Append* (obj: Storable.Object);
+PROCEDURE (l: ArrayList) Append* (obj: Language.Object);
 (**Appends the specified element @oparam{obj} to the end of this list.  *)
   BEGIN
     IF (l. size = LEN (l. array^)) THEN
@@ -143,7 +143,7 @@ PROCEDURE (l: ArrayList) Append* (obj: Storable.Object);
     INC (l. size)
   END Append;
 
-PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Storable.Object);
+PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Language.Object);
 (**Inserts the specified element @oparam{obj} at the specified position
    @oparam{index} in this list.  Shifts the element currently at that position
    (if any) and any subsequent elements to the right (adds one to their
@@ -166,7 +166,7 @@ PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Storable.Object);
     INC (l. size)
   END Insert;
 
-PROCEDURE (l: ArrayList) Get* (index: LONGINT): Storable.Object;
+PROCEDURE (l: ArrayList) Get* (index: LONGINT): Language.Object;
 (**Returns the element at the specified position @oparam{index} in this list.
 
    @precond
@@ -177,7 +177,7 @@ PROCEDURE (l: ArrayList) Get* (index: LONGINT): Storable.Object;
     RETURN l. array[index]
   END Get;
 
-PROCEDURE (l: ArrayList) Set* (index: LONGINT; obj: Storable.Object);
+PROCEDURE (l: ArrayList) Set* (index: LONGINT; obj: Language.Object);
 (**Replaces the element at the specified position @oparam{index} in this list
    with the specified element @oparam{obj}.
 
@@ -246,7 +246,7 @@ PROCEDURE (l: ArrayList) Size* (): LONGINT;
     RETURN l. size
   END Size;
 
-PROCEDURE (l: ArrayList) Contains* (obj: Storable.Object): BOOLEAN;
+PROCEDURE (l: ArrayList) Contains* (obj: Language.Object): BOOLEAN;
 (**Returns @code{TRUE} if this list contains the specified element.  *)
   VAR
     i: LONGINT;
@@ -259,9 +259,9 @@ PROCEDURE (l: ArrayList) Contains* (obj: Storable.Object): BOOLEAN;
     RETURN FALSE
   END Contains;
 
-PROCEDURE (l: ArrayList) IndexOf* (obj: Storable.Object): LONGINT;
+PROCEDURE (l: ArrayList) IndexOf* (obj: Language.Object): LONGINT;
 (**Searches for the first occurence of the given argument, testing for equality
-   using the @oproc{Storable.Object.Equals} method.  Returns @code{-1} if the
+   using the @oproc{Language.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
   VAR
     i: LONGINT;
@@ -274,9 +274,9 @@ PROCEDURE (l: ArrayList) IndexOf* (obj: Storable.Object): LONGINT;
     RETURN -1
   END IndexOf;
 
-PROCEDURE (l: ArrayList) LastIndexOf* (obj: Storable.Object): LONGINT;
+PROCEDURE (l: ArrayList) LastIndexOf* (obj: Language.Object): LONGINT;
 (**Searches for the last occurence of the given argument, testing for equality
-   using the @oproc{Storable.Object.Equals} method.  Returns @code{-1} if the
+   using the @oproc{Language.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
   VAR
     i: LONGINT;
@@ -320,11 +320,13 @@ PROCEDURE (l: ArrayList) Store* (w: Storable.Writer);
 PROCEDURE (l: ArrayList) Load* (r: Storable.Reader);
   VAR
     i, size: LONGINT;
+    obj: Storable.Object;
   BEGIN
     r. ReadNum (size);
     Init (l, size);
     FOR i := 0 TO size-1 DO
-      r. ReadObject (l. array[i])
+      r. ReadObject (obj);
+      l. array[i] := obj;
     END;
     l. size := size
   END Load;

@@ -1022,7 +1022,7 @@ PROCEDURE (w: Writer) WriteTypeCast* (t: Type);
   END WriteTypeCast;
 
 
-
+<*PUSH; Warnings:=FALSE*>
 PROCEDURE Test;
   VAR
     w: Writer;
@@ -1090,6 +1090,7 @@ PROCEDURE Test;
     
     Err.String ("no errors"); Err.Ln
   END Test;
+<*POP*>
 
 BEGIN
   (*Test;*)

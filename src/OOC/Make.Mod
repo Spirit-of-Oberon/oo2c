@@ -24,7 +24,7 @@ IMPORT
   <*IF COMPILER_MAJOR>=2 THEN*>RT0,<*END*>
   Channel, Files, Msg, Out, StdChannels, Strings, Time,
 
-  ADT:Storable, ADT:ArrayList, ADT:Dictionary, ADT:String, StringSearch,
+  Language:=LanguageNew, ADT:ArrayList, ADT:Dictionary, ADT:String, StringSearch,
   StringSearch:NoMatch, OS:Path,
   OSFiles := OS:Files, OS:ProcessManagement, URI, URI:Scheme:File,
 
@@ -45,7 +45,7 @@ TYPE
   ShellCommand* = ARRAY 4*1024 OF CHAR;
   ModuleInfo = POINTER TO ModuleInfoDesc;
   ModuleInfoDesc = RECORD
-    (Storable.ObjectDesc)
+    (Language.ObjectDesc)
     updated: ARRAY Rep.maxFileId+1 OF BOOLEAN;
     updateResult: ARRAY Rep.maxFileId+1 OF BOOLEAN;
     compiled: BOOLEAN;
@@ -204,7 +204,7 @@ PROCEDURE (r: Rules) CheckAllImports(module: Rep.Module): BOOLEAN;
 PROCEDURE (r: Rules) GetModuleInfo* (module: Rep.Module): ModuleInfo;
   VAR
     i: LONGINT;
-    obj: Storable.Object;
+    obj: Language.Object;
     mInfo: ModuleInfo;
   BEGIN
     IF r.mInfo.HasKey(module) THEN
@@ -212,7 +212,6 @@ PROCEDURE (r: Rules) GetModuleInfo* (module: Rep.Module): ModuleInfo;
       mInfo := obj(ModuleInfo);
     ELSE
       NEW(mInfo);
-      Storable.Init(mInfo);
       FOR i := 0 TO Rep.maxFileId DO
         mInfo.updated[i] := FALSE;
         mInfo.updateResult[i] := FALSE;
@@ -315,6 +314,7 @@ PROCEDURE (r: Rules) WriteError(module: Rep.Module; res: Msg.Msg);
     r.WriteErrList(errList);
   END WriteError;
 
+<*PUSH; Warnings:=FALSE*>
 PROCEDURE WriteImports (module: Rep.Module);
   VAR
     import: Rep.Module;
@@ -335,6 +335,7 @@ PROCEDURE WriteImports (module: Rep.Module);
       END;
     END;
   END WriteImports;
+<*POP*>
 
 PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
 (**Retrieves the imports of @oparam{module} together with any other data from

@@ -44,7 +44,7 @@ CONST
 TYPE
   Parser* = POINTER TO ParserDesc;
   ParserDesc* = RECORD (Scanner.InterpreterDesc)
-    state : SET;
+    (*state : SET;*)
   END;
 
 CONST

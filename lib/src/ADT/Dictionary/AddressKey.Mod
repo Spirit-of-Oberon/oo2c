@@ -46,9 +46,9 @@ TYPE
   Hash = LONGINT;
   HSet = SET;
   Index = LONGINT;
-  Key* = Storable.Object;
+  Key* = Language.Object;
   (**Type of key entries in the dictionary.  *)
-  Value* = Storable.Object;
+  Value* = Language.Object;
   (**Type of value entries in the dictionary.  *)
   
 TYPE
@@ -98,7 +98,7 @@ TYPE
 
 TYPE
   Dummy = POINTER TO DummyDesc;
-  DummyDesc = RECORD (Storable.ObjectDesc) END;
+  DummyDesc = RECORD (Language.ObjectDesc) END;
 
 VAR
   dummy: Dummy;
@@ -414,11 +414,11 @@ PROCEDURE (dict: Dictionary) Clear*;
   END Clear;
 
 
-PROCEDURE (dict: Dictionary) Keys* (): Storable.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary) Keys* (): Language.ObjectArrayPtr;
 (**Returns the list of keys of the dictionary @oparam{dict}.  The keys are
    listed in no particular order.  *)
   VAR
-    list: Storable.ObjectArrayPtr;
+    list: Language.ObjectArrayPtr;
     i, j: LONGINT;
   BEGIN
     NEW (list, dict. used);
@@ -433,11 +433,11 @@ PROCEDURE (dict: Dictionary) Keys* (): Storable.ObjectArrayPtr;
     RETURN list
   END Keys;
 
-PROCEDURE (dict: Dictionary) Values* (): Storable.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary) Values* (): Language.ObjectArrayPtr;
 (**Returns the list of values of the dictionary @oparam{dict}.  The values are
    listed in no particular order.  *)
   VAR
-    list: Storable.ObjectArrayPtr;
+    list: Language.ObjectArrayPtr;
     i, j: LONGINT;
   BEGIN
     NEW (list, dict. used);
@@ -481,6 +481,7 @@ PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer);
 PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader);
   VAR
     i: LONGINT;
+    obj: Storable.Object;
   BEGIN
     Init (dict);
     r. ReadNum (dict. size);
@@ -489,8 +490,10 @@ PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader);
          file, then impose the hash structure on it *)
       NEW (dict. table, dict. size);
       FOR i := 0 TO dict. size-1 DO
-        r. ReadObject (dict. table[i]. key);
-        r. ReadObject (dict. table[i]. value);
+        r. ReadObject (obj);
+        dict. table[i]. key := obj;
+        r. ReadObject (obj);
+        dict. table[i]. value := obj;
         dict. table[i]. hash := HashCode (dict. table[i]. key)
       END;
       Resize (dict, (dict. size*3) DIV 2)
@@ -503,8 +506,7 @@ PROCEDURE (dummy: Dummy) Destroy*;
 
 BEGIN
   NEW (dummy);
-  Storable.Init (dummy);
-
+  
   polys[0] := 4 + 3;
   polys[1] := 8 + 3;
   polys[2] := 16 + 3;

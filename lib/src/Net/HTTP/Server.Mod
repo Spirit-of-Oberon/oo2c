@@ -18,8 +18,8 @@ MODULE Net:HTTP:Server [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, Channel, IntStr, Msg, Strings, SysClock,
-  ADT:Storable, ADT:String, ADT:StringBuffer, ADT:ArrayList, 
+  Ascii, Channel, IntStr, Msg, Strings, (*SysClock,*)
+  Language:=LanguageNew, ADT:String, ADT:StringBuffer, ADT:ArrayList, 
   URI, URIParser := URI:Parser, HttpURI := URI:Scheme:HTTP, 
   StringURI := URI:String, URI:Query:Unparsed, URI:Query:WWWForm,
   IO:Port, IO:Port:Streaming, IO:Memory, Net:HTTP;
@@ -283,7 +283,7 @@ PROCEDURE (req: Request) GetIntHeader* (name: String.String): LONGINT;
 
 PROCEDURE (req: Request) GetParameter* (name: String.String): String.String;
   VAR
-    obj: Storable.Object;
+    obj: Language.Object;
   BEGIN
     IF req. params. dict. HasKey (name) THEN
       obj := req. params. dict. Get (name);
@@ -295,7 +295,7 @@ PROCEDURE (req: Request) GetParameter* (name: String.String): String.String;
 
 PROCEDURE (req: Request) GetParameterValues* (name: String.String): StringArrayPtr;
   VAR
-    obj: Storable.Object;
+    obj: Language.Object;
     s: StringArrayPtr;
     i: LONGINT;
   BEGIN
@@ -340,8 +340,8 @@ PROCEDURE (resp: Response) GetWriter* (): Channel.Writer;
 
 PROCEDURE SendResponse (resp: Response; port: Streaming.Port);
   VAR
-    time: SysClock.DateTime;
-    short, explain, str: ARRAY 64 OF CHAR;
+    (*time: SysClock.DateTime;*)
+    short, explain(*, str*): ARRAY 64 OF CHAR;
     b: StringBuffer.StringBuffer;
     names: ArrayList.ArrayList;
     i: LONGINT;

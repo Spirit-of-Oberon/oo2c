@@ -24,8 +24,8 @@ MODULE OOC:SSA:Blocker;
 
 IMPORT
   <*IF DEBUG_BLOCKER THEN*>Log,OOC:SSA:Check,StdChannels,<*END*>
-  SYSTEM,
-  Channel, TextRider, ADT:Storable, ADT:String, ADT:Dictionary,
+  SYSTEM, Language:=LanguageNew,
+  Channel, TextRider, ADT:String, ADT:Dictionary,
   IntDictionary := ADT:Dictionary:IntValue, Language:Integer,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination,
   OOC:SSA:Destore;
@@ -502,7 +502,7 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
       ptr: SSA.Result;
       value: String.String;
       instr: SSA.Instr;
-      obj: Storable.Object;
+      obj: Language.Object;
     BEGIN
       IF marker. HasKey (res) THEN
         obj := marker. Get (res);
@@ -1767,7 +1767,7 @@ PROCEDURE GetDependenceData* (pb: SSA.ProcBlock): DependenceData;
 
 PROCEDURE (dd: DependenceData) Conflict* (x, y: SSA.Instr): BOOLEAN;
   VAR
-    p: Storable.Object;
+    p: Language.Object;
     a, b: Region;
   BEGIN
     p := dd. proxyMap. Get (x);
