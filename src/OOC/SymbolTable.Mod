@@ -186,9 +186,9 @@ TYPE
        for empty record types, and for array types with length of zero.  For
        types whose size is computed at run-time (like open array parameters and
        open array heap objects) or whose size is a function of the actual value
-       (as for string constants), this field is @oconst{dynamicSize}.  It field
-       is initialized to @oconst{unknownSize}, and changed to its final value
-       after
+       (as for string constants), this field is @oconst{dynamicSize}.  The
+       field is initialized to @oconst{unknownSize}, and changed to its final
+       value after
 
        @itemize @bullet
        @item
