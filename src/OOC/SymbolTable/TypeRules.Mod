@@ -130,6 +130,17 @@ PROCEDURE (tr: Rules) IsOpenArrayType* (type: Sym.Type): BOOLEAN;
     RETURN (type IS Sym.Array) & type(Sym.Array). isOpenArray
   END IsOpenArrayType;
 
+PROCEDURE (tr: Rules) IsArrayOfChar* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} is an @code{ARRAY OF CHAR}.  *)
+  BEGIN
+    ASSERT (~(type IS Sym.TypeName));
+    RETURN
+        (type IS Sym.Array) &
+        type(Sym.Array). isOpenArray &
+        (type(Sym.Array). elementType IS Sym.PredefType) &
+        (type(Sym.Array). elementType(Sym.PredefType). id = Predef.char)
+  END IsArrayOfChar;
+
 
 
 PROCEDURE (tr: Rules) IsValidRecordBaseType* (type: Sym.Type): BOOLEAN;
@@ -300,13 +311,21 @@ PROCEDURE (tr: Rules) IsArrayType* (type: Sym.Type): BOOLEAN;
     RETURN (type IS Sym.Array)
   END IsArrayType;
 
-PROCEDURE (tr: Rules) IsArrayCompatible* (a, b: Sym.Type): BOOLEAN;
-(**Returns @code{TRUE}, iff @oparam{a} is array compatible to @oparam{b}.  *)
+PROCEDURE (tr: Rules) IsArrayCompatible* (argType, fparType: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type of the actual parameter @oparam{argType}
+   is array compatible with that of a formal parameter @oparam{fparType}.
+   Note: The case where @oparam{argType} is a string constant
+   @oconst{Predef.charString} must be handled by the caller.  In this
+   the implementation of this function differs from the @cite{Appendix A}
+   of the language report.  *)
   BEGIN
-    WHILE tr. IsOpenArrayType (a) & (b IS Sym.Array) DO
-      a := a(Sym.Array). elementType; b := b(Sym.Array). elementType
+    ASSERT (~(argType IS Sym.PredefType) OR
+            (argType(Sym.PredefType). id # Predef.charString));
+    WHILE tr. IsOpenArrayType (argType) & (fparType IS Sym.Array) DO
+      argType := argType(Sym.Array). elementType;
+      fparType := fparType(Sym.Array). elementType
     END;
-    RETURN tr. SameType (a, b)
+    RETURN tr. SameType (argType, fparType)
   END IsArrayCompatible;
 
 PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;

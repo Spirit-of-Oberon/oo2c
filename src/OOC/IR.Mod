@@ -41,8 +41,8 @@ Log,
    theory.  In practice, several distinct operations are sometimes mapped to a
    one class to avoid an explosion of classes doing very similar things.
    Examples for this are the single class for dyadic arithmetic operators
-   @otype{*OOC:IR:Operator.BinaryArith}, or the class
-   @otype{*OOC:IR:Operator.Len} handling the different variations of
+   @otype{*OOC:IR.BinaryArith}, or the class
+   @otype{*OOC:IR.Len} handling the different variations of
    @code{LEN}.)
 
    @item
@@ -2018,7 +2018,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
                                       expr: Expression;
                                       type: Sym.Type): Expression;
   (**Takes an expression and a type, and tries to make the expression's value
-     assignment compatible to the type.  If this is not possible, and error
+     assignment compatible to the type.  If this is not possible, an error
      is reported.  *)
     BEGIN
       expr := b.AssignType(type, expr);
@@ -2028,6 +2028,32 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         RETURN expr
       END;
     END MakeAssignmentCompatible;
+  
+  PROCEDURE MakeParameterCompatible (b: Builder; sym: Symbol;
+                                     arg: Expression;
+                                     fpar: Sym.VarDecl): Expression;
+  (**Takes an expression @oparam{arg} and a formal parameter declaration
+     @oparam{fpar}, and tries to make the expression's value compatible to the
+     formal parameter.  If this is not possible, an error is reported.  *)
+    BEGIN
+      IF fpar. isVarParam THEN           (* variable parameter *)
+        (* ... nothing for now *)
+      ELSE                               (* value parameter *)
+        IF b. typeRules. IsOpenArrayType (fpar. type) THEN
+          IF b. typeRules. IsArrayOfChar (fpar. type) & (arg IS Const) THEN
+            arg := b. AssignType (fpar. type, arg);
+            IF (arg = NIL) THEN
+              arg := b.ErrExpr(incompatibleActualParam, sym);
+            END;
+          ELSIF ~b. typeRules. IsArrayCompatible (arg. type, fpar. type) THEN
+            RETURN b.ErrExpr(incompatibleActualParam, sym);
+          END;
+        ELSE
+          arg := MakeAssignmentCompatible (b, arg. sym, arg, fpar. type);
+        END;
+      END;
+      RETURN arg
+    END MakeParameterCompatible;
   
   PROCEDURE TransformArgs (sym: Symbol;
                            formalPars: Sym.VarDeclArray;
@@ -2052,16 +2078,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       argIndex := 0;
       WHILE (fparIndex # LEN (formalPars^)) &
             (argIndex # LEN (arguments^)) DO
-        (* FIXME... need to check formal and actual type, insert type conversion,
-           and so on  *)
         fpar := formalPars[fparIndex];
         arg := arguments[argIndex];
-        
-        IF fpar. isVarParam THEN           (* variable parameter *)
-          (* ... nothing for now *)
-        ELSE                               (* value parameter *)
-          arg := MakeAssignmentCompatible (b, arg. sym, arg, fpar. type);
-        END;
+        arg := MakeParameterCompatible (b, arg. sym, arg, fpar);
         
         IF fpar. isPassPerReference THEN
           (* for argument passed by reference, add the address of the designator
@@ -2092,8 +2111,6 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
   
   BEGIN
     WITH design: PredefProc DO
-      (* note: predefined functions are handled by a specialization of thie
-         method in module OOC:IR:Operator *)
       CASE design. decl(Sym.PredefProc). id OF
       (* predefined procedures *)
       | Predef.assert:
@@ -2177,6 +2194,9 @@ BEGIN
       result := b.NewConst(expr.sym, type, expr(Const). value);
     ELSE 
       (* string may be assigned to ARRAY OF CHAR with sufficient length *)
+      (* FIXME: can assign a string constant to an "array of char" _only_
+         if the array belongs to a formal parameter... (same with char
+         const below) *)
       WITH type : Sym.Array DO
         IF IsPredefType(type. elementType, Predef.char) &
           (type.isOpenArray OR (length < type.length)) THEN
