@@ -1065,6 +1065,8 @@ CONST
   noDynamicType = 43;
   notNumeric = 44;
   notCharacter = 45;
+  notReal = 46;
+  dynamicSize = 47;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1221,6 +1223,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expression must be numeric"
     | notCharacter:
       t := "Expression must be a character"
+    | notReal:
+      t := "Expression must be of real type"
+    | dynamicSize:
+      t := "Type has no fixed size"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1551,6 +1557,38 @@ PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): L
     RETURN start;
   END AssertIntConst;
 
+PROCEDURE (b: Builder) AssertInteger(expr: Expression): Expression;
+(* Generates an error if `expr' is not an integer value.  On success,
+   `expr' is returned, and otherwise an integer constant with a value of `1'.*)
+  VAR
+    v: Integer.Value;
+  BEGIN
+    IF (expr # b.errorExpr) THEN
+      IF ~TR.IsIntegerType(expr.type) THEN
+        b.ErrSym(notInteger, expr.sym);
+        v := Integer.New(1);
+        RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
+      END;
+    END;
+    RETURN expr;
+  END AssertInteger;
+
+PROCEDURE (b: Builder) AssertReal(expr: Expression): Expression;
+(* Generates an error if `expr' is not a floating point value.  On success,
+   `expr' is returned, and otherwise a REAL constant with a value of `1.0'.*)
+  VAR
+    v: Real.Value;
+  BEGIN
+    IF (expr # b.errorExpr) THEN
+      IF ~TR.IsRealType(expr.type) THEN
+        b.ErrSym(notReal, expr.sym);
+        v := Real.New(1);
+        RETURN NewConst(expr.sym, Predef.GetType(Predef.real), v);
+      END;
+    END;
+    RETURN expr;
+  END AssertReal;
+
 PROCEDURE (b: Builder) AssertNumeric (expr: Expression): Expression;
 (* Generates an error if `expr' is not an integer or real value.  On success,
    `expr' is returned, and otherwise an integer constant with a value of `1'.*)
@@ -1624,11 +1662,19 @@ PROCEDURE (b: Builder) NewNil* (sym: Symbol): Expression;
   END NewNil;
 
 PROCEDURE (b: Builder) NewSize* (sym: Symbol; type: Expression): Expression;
+  VAR
+    t: Sym.Type;
+    size: LONGINT;
   BEGIN
-    ASSERT (type IS TypeRef);
+    t := b.AssertType(type);
+    IF (t.size < 0) THEN
+      b.ErrSym(dynamicSize, type.sym);
+      size := 1;
+    ELSE
+      size := t.size;
+    END;
     RETURN b. NewConst
-        (sym, Predef.GetType (Predef.lengthType),
-         Integer.New (type(TypeRef). decl(Sym.TypeDecl). type. size));
+        (sym, Predef.GetType (Predef.lengthType), Integer.New (size));
   END NewSize;
 
 PROCEDURE (b: Builder) GetOne (sym: Symbol; type: Sym.Type): Const;
@@ -1659,20 +1705,16 @@ PROCEDURE (b : Builder) ValidSetElement(expr : Expression; set : Sym.Type) : Exp
     val := Predef.GetMin(set); min := val(Integer.Value);
     val := Predef.GetMax(set); max := val(Integer.Value);
 
-    IF TR.IsIntegerType(expr.type) THEN
-      WITH expr : Const DO
-        element := expr.value(Integer.Value);
-        IF (element.Compare(min) < 0) OR (element.Compare(max) > 0) THEN
-          b. ErrSym (invalidIntegerConst, expr. sym);
-          b. lastError. SetIntAttrib ("start", min.ToInt());
-          b. lastError. SetIntAttrib ("end", max.ToInt()+1);
-	  RETURN MinElement()
-        END
-      ELSE
-      END;
+    expr := b.AssertInteger(expr);
+    WITH expr : Const DO
+      element := expr.value(Integer.Value);
+      IF (element.Compare(min) < 0) OR (element.Compare(max) > 0) THEN
+        b. ErrSym (invalidIntegerConst, expr. sym);
+        b. lastError. SetIntAttrib ("start", min.ToInt());
+        b. lastError. SetIntAttrib ("end", max.ToInt()+1);
+	RETURN MinElement()
+      END
     ELSE
-      b.ErrSym(notInteger, expr.sym);
-      RETURN MinElement()
     END;
     RETURN expr
   END ValidSetElement;
@@ -1752,7 +1794,7 @@ PROCEDURE (b: Builder) NewAsh (sym: Symbol; value, exp: Expression): Expression;
     ash: Ash;
   BEGIN
     NEW (ash);
-    InitAsh (ash, sym, value, exp);
+    InitAsh (ash, sym, b.AssertInteger(value), b.AssertInteger(exp));
     RETURN ash;
   END NewAsh;
 
@@ -2045,7 +2087,7 @@ PROCEDURE (b: Builder) NewEntier (sym: Symbol; expr: Expression): Expression;
     entier: Entier;
   BEGIN
     NEW (entier);
-    InitEntier (entier, sym, expr);
+    InitEntier (entier, sym, b.AssertReal(expr));
     RETURN entier;
   END NewEntier;
 
@@ -2084,21 +2126,16 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expres
     IF ~(array. type IS Sym.Array) THEN
       RETURN b. ErrExpr (notArray, sym);
     ELSE
-      IF ~TR.IsIntegerType (index. type) THEN
-        b. ErrSym (notInteger, index. sym);
-        index := b. NewConst (index. sym, Predef.GetType (Predef.shortint),
-                              Integer.New (0));
-      ELSE
-        IF index IS Const THEN
-          a := array.type (Sym.Array);
-          IF a.isOpenArray THEN
-	    (* FIXME: For open arrays, we simply need to verify that the
-	    constant index is not negative. MAX(LONGINT) should be a legal
-	    index. *)
-            idx := b.AssertIntConst(index, 0, MAX(LONGINT));
-          ELSE
-            idx := b.AssertIntConst(index, 0, a.length);
-          END
+      index := b.AssertInteger(index);
+      IF index IS Const THEN
+        a := array.type (Sym.Array);
+        IF a.isOpenArray THEN
+	  (* FIXME: For open arrays, we simply need to verify that the
+	     constant index is not negative. MAX(LONGINT) should be a legal
+	     index. *)
+          idx := b.AssertIntConst(index, 0, MAX(LONGINT));
+        ELSE
+          idx := b.AssertIntConst(index, 0, a.length);
         END
       END;
       NEW (i);
@@ -2271,7 +2308,7 @@ PROCEDURE (b: Builder) NewOdd (sym: Symbol; expr: Expression): Expression;
     odd: Odd;
   BEGIN
     NEW (odd);
-    InitOdd (odd, sym, expr);
+    InitOdd (odd, sym, b.AssertInteger(expr));
     RETURN odd;
   END NewOdd;
 
@@ -4350,7 +4387,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     call: Call;
     targetType: Sym.PredefId;
     predefProc: Sym.PredefProc;
-    dim: LONGINT;
+    dim, dummy: LONGINT;
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
     receiver, delta, code: Expression;
@@ -4669,36 +4706,71 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         RETURN b. NewCap (design. sym, b.AssertChar(arguments[0]));
 
       | Predef.long:
-        CASE arguments[0]. type(Sym.PredefType). id OF
-        | Predef.shortint: targetType := Predef.integer;
-        | Predef.integer : targetType := Predef.longint;
-        | Predef.longint : targetType := Predef.hugeint;
-        | Predef.real    : targetType := Predef.longreal;
-        | Predef.char    : targetType := Predef.longchar;
+        IF (arguments[0] IS Const) & TR.IsIntegerType(arguments[0].type) THEN
+          (* LONG is a noop for integer constants *)
+          RETURN arguments[0];
+        ELSIF (arguments[0].type IS Sym.PredefType) THEN
+          CASE arguments[0].type(Sym.PredefType).id OF
+          | Predef.shortint: targetType := Predef.integer;
+          | Predef.integer : targetType := Predef.longint;
+          | Predef.longint : targetType := Predef.hugeint;
+          | Predef.real    : targetType := Predef.longreal;
+          | Predef.char    : targetType := Predef.longchar;
+          ELSE
+            b.ErrSym(invalidOpType, arguments[0].sym);
+            RETURN arguments[0];
+          END;
+          RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        ELSE                             (* user defined type *)
+          b.ErrSym(invalidOpType, arguments[0].sym);
+          RETURN arguments[0];
         END;
-        RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
         
       | Predef.short:
-        CASE arguments[0]. type(Sym.PredefType). id OF
-        | Predef.integer: targetType := Predef.shortint;
-        | Predef.longint: targetType := Predef.integer;
-        | Predef.hugeint: targetType := Predef.longint;
-        | Predef.longreal: targetType := Predef.real;
-        | Predef.longchar: targetType := Predef.char;
+        IF (arguments[0] IS Const) & TR.IsIntegerType(arguments[0].type) THEN
+          (* SHORT is a noop for integer constants *)
+          RETURN arguments[0];
+        ELSIF (arguments[0].type IS Sym.PredefType) THEN
+          CASE arguments[0].type(Sym.PredefType).id OF
+          | Predef.integer: targetType := Predef.shortint;
+          | Predef.longint: targetType := Predef.integer;
+          | Predef.hugeint: targetType := Predef.longint;
+          | Predef.longreal: targetType := Predef.real;
+          | Predef.longchar: targetType := Predef.char;
+          ELSE
+            b.ErrSym(invalidOpType, arguments[0].sym);
+            RETURN arguments[0];
+          END;
+          RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        ELSE                             (* user defined type *)
+          b.ErrSym(invalidOpType, arguments[0].sym);
+          RETURN arguments[0];
         END;
-        RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
         
       | Predef.chr:
+        arguments[0] := b.AssertInteger(arguments[0]);
+        IF (arguments[0] IS Const) THEN
+          (* FIXME... this kind of overflow checking should be done in
+             ConstFold, for the argument and the result of each computation *)
+          dummy := b.AssertIntConst(arguments[0], ORD(Predef.minChar),
+                                    ORD(Predef.maxChar)+1);
+        END;
         RETURN b.NewTypeConv (Predef.GetType (Predef.char), arguments[0]);
       | Predef.longchr:
+        arguments[0] := b.AssertInteger(arguments[0]);
+        IF (arguments[0] IS Const) THEN
+          (* FIXME... this kind of overflow checking should be done in
+             ConstFold, for the argument and the result of each computation *)
+          dummy := b.AssertIntConst(arguments[0],
+                                    ORD(Predef.minLongchar),
+                                    ORD(Predef.maxLongchar)+1);
+        END;
         RETURN b.NewTypeConv (Predef.GetType (Predef.longchar), arguments[0]);
         
       | Predef.entier:
-        (* FIXME... argument must be real *)
         RETURN b. NewEntier (design. sym, arguments[0]);
         
       | Predef.odd:
-        (* FIXME... argument must be integer *)
         RETURN b. NewOdd (design. sym, arguments[0]);
         
       | Predef.ord:
