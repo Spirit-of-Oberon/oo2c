@@ -92,13 +92,13 @@ test-hostess-ooc1:
 doc:
 	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
 	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) TestInterfaceGen
-	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" Strings core
-	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" libadt libadt
-	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" libxml libxml
-	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" gaf2 gaf2
-	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" AllModules ooc2
-	if test -d $(DOC_DIR)/ooc2/rsrc; then :; else $(LN_S) $(OOC_DEV_ROOT)/rsrc $(DOC_DIR)/ooc2/rsrc; fi
-	$(OOC_DEV_ROOT)/TestInterfaceGen --error-style oo2c --html --closure -r "$(DOC_DIR)/core" -r "$(DOC_DIR)/libadt" -r "$(DOC_DIR)/libxml" -r "$(DOC_DIR)/gaf2" -r "$(DOC_DIR)/ooc2" AllModules
+	rm -Rf $(DOC_DIR)
+	mkdir $(DOC_DIR) $(DOC_DIR)/ooc2 $(DOC_DIR)/lib
+	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" Rts oldlib
+	ln -s $(OOC_DEV_ROOT)/src $(DOC_DIR)/ooc2/src
+	ln -s $(OOC_DEV_ROOT)/rsrc $(DOC_DIR)/ooc2/rsrc
+	ln -s $(OOC_DEV_ROOT)/lib/src $(DOC_DIR)/lib/src
+	$(OOC_DEV_ROOT)/TestInterfaceGen --error-style oo2c --html --closure -r "$(DOC_DIR)/oldlib" -r "$(DOC_DIR)/lib" -r "$(DOC_DIR)/ooc2" AllModules
 	cd $(DOC_DIR) && $(OOC_DEV_ROOT)/rsrc/OOC/make-index.sh
 	$(PRINT) "Done.  Index file is $(DOC_DIR)/index.html"
 
