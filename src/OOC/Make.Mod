@@ -106,6 +106,9 @@ VAR
   writeIR*: BOOLEAN;
   (**If @code{TRUE}, write out the intermediate code representation that
      has been derived from the AST.  *)
+  writeStats*: BOOLEAN;
+  (**If @code{TRUE}, then the SSA back-end writes the static intruction count
+     of all compiled procedures to stdout.  *)
   
 CONST
   noSuchModule = 1;
@@ -464,7 +467,7 @@ RAISES IO.Error;
     VAR
       t: TranslateToC.Translator;
     BEGIN
-      t := SSAtoC.NewTranslator(inspectProc, inspectStage);
+      t := SSAtoC.NewTranslator(writeStats, inspectProc, inspectStage);
       RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
     END DoSSAtoC;
   
@@ -1239,6 +1242,7 @@ BEGIN
   inspectStage := NoMatch.matcher;
   writeAST := FALSE;
   writeIR := FALSE;
+  writeStats := FALSE;
   stylesheetSystemId := NIL;
   
   fileIdNames[Rep.modExecutable] := "Executable";

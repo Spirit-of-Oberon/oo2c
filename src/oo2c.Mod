@@ -27,7 +27,7 @@ IMPORT
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
   OOC:SymbolTable:Builder, OOC:Config:Pragmas:StdPragmas, OOC:Error,
-  Rep := OOC:Repository, OOC:Repository:FileSystem, OOC:Make;
+  Rep := OOC:Repository, OOC:Repository:FileSystem, OOC:Make, OOC:SSA:Stats;
   
 
 CONST
@@ -43,7 +43,8 @@ VAR
   i: LONGINT;
   arg: Arguments.Argument;
   mode: SHORTINT;
-  command, useStderr, errorStyle, showHelp, showVersion: Options.Option;
+  command, useStderr, writeStats,
+      errorStyle, showHelp, showVersion: Options.Option;
   makeRules: Make.Rules;
   rep: Rep.Repository;
   pkg, pkgInfo: Package.Package;
@@ -55,6 +56,7 @@ PROCEDURE NewConfig;
   BEGIN
     command := Config.AddOption("command", Integer.New(0));
     useStderr := Config.AddOption("useStderr", Boolean.New(FALSE));
+    writeStats := Config.AddOption("writeStats", Boolean.New(FALSE));
     errorStyle := Config.AddOption("errorStyle",
                                    StringValue.New("file:line:column"));
     showHelp := Config.AddOption("showHelp", Boolean.New(FALSE));
@@ -98,6 +100,8 @@ PROCEDURE NewConfig;
                        "<options><set name='errorStyle'>$1</set></options>");
     Config.AddCmdLine ("--use-stderr",
                        "<options><set name='useStderr'>TRUE</set></options>");
+    Config.AddCmdLine ("--stats",
+                       "<options><set name='writeStats'>TRUE</set></options>");
     CCompiler.RegisterConfig;
   END NewConfig;
 
@@ -547,7 +551,8 @@ BEGIN  <*Warnings:=FALSE*>
   IF useStderr.value(Boolean.Value).boolean THEN
     makeRules.SetErrOut(StdChannels.stderr);
   END;
-    
+  Make.writeStats := writeStats.value(Boolean.Value).boolean;
+      
   CASE command.value(Integer.Value).integer OF
   | 0:
     mode := Rep.modCodeFileC;
@@ -673,7 +678,11 @@ BEGIN  <*Warnings:=FALSE*>
       END;
     END;
     
-    IF ~ok THEN
+    IF ok THEN
+      IF Make.writeStats THEN
+        Stats.Write();
+      END;
+    ELSE
       HALT (1)
     END
   END

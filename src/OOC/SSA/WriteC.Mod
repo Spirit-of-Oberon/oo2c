@@ -29,7 +29,7 @@ IMPORT
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:CSE, OOC:SSA:Algebraic,
-  OOC:SSA:ConstProp,
+  OOC:SSA:ConstProp, OOC:SSA:Stats,
   OOC:SSA:Allocator, OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
   OOC:Make:TranslateToC;
 
@@ -48,6 +48,8 @@ TYPE
     (TranslateToC.TranslatorDesc)
     inspectProc: StringSearch.Matcher;
     inspectStage: StringSearch.Matcher;
+    writeStats: BOOLEAN;
+    
     nonLocalAccess: Dictionary.Dictionary; (* of Sym.VarDecl *)
     (* The keys of this dictionary are variables that are accessed from
        a nested procedure within the procedure in which they are declared.  *)
@@ -1667,7 +1669,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       END;
     END WriteJmpBufDecl;
   
-  PROCEDURE Write (pre, post: ARRAY OF CHAR);
+  PROCEDURE Write (pre, post: ARRAY OF CHAR; addToStats: BOOLEAN);
     BEGIN
       IF writeProc &
          ((t. inspectStage. MatchChars (pre, 0, -1) # NIL) OR
@@ -1686,6 +1688,10 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         CATCH IO.Error:
         END;
         Out.Flush;
+      END;
+
+      IF addToStats THEN
+        Stats.AddProcBlock(Object.NewLatin1(pre), pb);
       END;
     END Write;
 
@@ -1802,19 +1808,22 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     (*Blocker.Write (StdChannels.stdout, pb);*)
     
     (* code transformations *)
-    Write ("initial", "dce-pre");
+    Write ("initial", "dce-pre", FALSE);
     DeadCodeElimination.Transform (pb);
-    Write ("dce-post", "destore-pre");
+    Write ("dce-post", "destore-pre", FALSE);
     destore := Destore.New (pb);
     destore. Transform();
-    Write ("destore-post", "constprop-pre");
-    ConstProp.Transform (pb);
-    Write ("constprop-post", "algebraic-pre");
-    Algebraic.Transform (pb);
-    Write ("algebraic-post", "cse-pre");
     DeadCodeElimination.Transform (pb);
+    Write ("destore-post", "constprop-pre", TRUE);
+    ConstProp.Transform (pb);
+    DeadCodeElimination.Transform (pb);
+    Write ("constprop-post", "algebraic-pre", TRUE);
+    Algebraic.Transform (pb);
+    DeadCodeElimination.Transform (pb);
+    Write ("algebraic-post", "cse-pre", TRUE);
     CSE.Transform (pb);
-    Write ("cse-post", "final");
+    DeadCodeElimination.Transform (pb);
+    Write ("cse-post", "final", TRUE);
 
     (*Blocker.Write (StdChannels.stdout, pb);*)
     
@@ -1870,22 +1879,24 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
 
 
 
-PROCEDURE InitTranslator* (t: Translator;
+PROCEDURE InitTranslator* (t: Translator; writeStats: BOOLEAN;
                            inspectProc, inspectStage: StringSearch.Matcher);
   BEGIN
     TranslateToC.InitTranslator (t);
     t. inspectProc := inspectProc;
     t. inspectStage := inspectStage;
+    t. writeStats := writeStats;
     t. nonLocalAccess := NIL;
     t. preloadedVars := ArrayList.New(16);
   END InitTranslator;
 
-PROCEDURE NewTranslator* (inspectProc, inspectStage: StringSearch.Matcher): Translator;
+PROCEDURE NewTranslator* (writeStats: BOOLEAN;
+                          inspectProc, inspectStage: StringSearch.Matcher): Translator;
   VAR
     t: Translator;
   BEGIN
     NEW (t);
-    InitTranslator (t, inspectProc, inspectStage);
+    InitTranslator (t, writeStats, inspectProc, inspectStage);
     RETURN t
   END NewTranslator;
 
