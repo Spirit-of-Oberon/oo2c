@@ -73,13 +73,18 @@ IMPORT
   (* optional stuff: *)
 <*IF HAVE_LIB_PTHREAD THEN*>
   Thread:PThread,
-<*END*>
 <*IF HAVE_LIB_RT OR HAVE_LIB_POSIX4 THEN*>
   Thread:Semaphore,
+<*END*>
 <*END*>
   
   libc,
   libadt,
-  libxml;            (* mgs -- unknown *)
+  libxml,            (* mgs -- unknown *)
+
+  (* _very_ premininary modules, will change radically without notice: *)
+  Codec,
+  CodecAscii := Codec:Ascii,
+  CodecLatin1 := Codec:Latin1;
 
 END liboo2c.
