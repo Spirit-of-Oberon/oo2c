@@ -19,7 +19,7 @@ MODULE LRealStr;
 *)
 
 IMPORT
-  libc, C, ConvTypes, LRealConv, Real0, Strings;
+  libc, ConvTypes, LRealConv, Real0, Strings;
   
 TYPE
   ConvResults* = ConvTypes.ConvResults;
@@ -70,7 +70,6 @@ PROCEDURE RealToFloat* (real: LONGREAL; sigFigs: INTEGER;
    @end example  *)
   VAR
     s: ARRAY 32 OF CHAR;
-    i, d: INTEGER;
   BEGIN
     IF (sigFigs < 1) OR (sigFigs > prec) THEN sigFigs := prec; END;
     libc.sprintf(s, "%-+#.*E", sigFigs-1, real);
@@ -143,7 +142,7 @@ PROCEDURE RealToStr* (real: LONGREAL;
    part in @oparam{str}.  *)
   VAR
     s: ARRAY 308+32 OF CHAR;
-    d, sigFigs: LONGINT;
+    d: LONGINT;
   BEGIN
     (* use a trial and error approach; this may not be fast, nor unambiguous,
        but it should be correct *)

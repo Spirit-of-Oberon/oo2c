@@ -44,7 +44,7 @@ MODULE ProgramArgs;
 <* IndexCheck := FALSE *>   
 
 IMPORT
-  SYSTEM, RT0, Ch := Channel, PosixFileDescr, CharClass, Time, Msg;
+  SYSTEM, RT0, Ch := Channel, CharClass, Time, Msg;
 
   
 CONST

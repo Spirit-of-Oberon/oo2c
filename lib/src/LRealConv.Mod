@@ -65,7 +65,6 @@ PROCEDURE FormatReal* (str: ARRAY OF CHAR): ConvResults;
 PROCEDURE ValueReal*(str: ARRAY OF CHAR): LONGREAL;
 (* result is undefined if FormatReal(str) # strAllRight *)
   VAR
-    tail: C.charPtr1d;
     i: LONGINT;
     value: LONGREAL;
   BEGIN
