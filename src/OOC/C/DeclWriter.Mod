@@ -784,6 +784,12 @@ PROCEDURE (struct: Struct) WriteLeft (w: Writer);
       w. WriteDeclaration (struct. members. array[i](Declaration));
       w. WriteString (";")
     END;
+    IF (struct. members. Size() = 0) THEN
+      (* avoid an empty struct (and a possible warning)
+         by writing out a dummy member *)
+      w. Newline;
+      w. WriteString ("char __dummy;");
+    END;
     w. Indent (-1);
     w. Newline;
     w. WriteString ("} ");

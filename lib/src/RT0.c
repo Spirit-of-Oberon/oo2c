@@ -35,7 +35,7 @@ OOC_PTR RT0__NewArray(RT0__Struct td, ...) {
     
     ptr = malloc(prefix+size);
     /* FIXME... check that result is not NULL */
-    var = ptr+prefix;
+    var = (char*)ptr+prefix;
     
     /* set length of dimensions */
     dim = (OOC_LEN*)var;
@@ -49,11 +49,13 @@ OOC_PTR RT0__NewArray(RT0__Struct td, ...) {
   return (OOC_PTR)var;
 }
 
-#define PS(form,size) (RT0__StructDesc){NULL, size, -1, form}
+#define PS(_str,_form,_size) \
+  _str.base = NULL; _str.size = _size; _str.len = -1; _str.form = _form
+
 void RT0_init() {
-  RT0__boolean  = PS(RT0__strBoolean , sizeof(OOC_BOOLEAN));
-  RT0__char     = PS(RT0__strChar    , sizeof(OOC_CHAR8));
-  RT0__shortint = PS(RT0__strShortint, sizeof(OOC_INT8));
-  RT0__integer  = PS(RT0__strInteger , sizeof(OOC_INT16));
-  RT0__longint  = PS(RT0__strLongint , sizeof(OOC_INT32));
+  PS(RT0__boolean , RT0__strBoolean , sizeof(OOC_BOOLEAN));
+  PS(RT0__char    , RT0__strChar    , sizeof(OOC_CHAR8));
+  PS(RT0__shortint, RT0__strShortint, sizeof(OOC_INT8));
+  PS(RT0__integer , RT0__strInteger , sizeof(OOC_INT16));
+  PS(RT0__longint , RT0__strLongint , sizeof(OOC_INT32));
 }

@@ -28,7 +28,7 @@ extern void* _ooc_end_vs;  /* end of value stack; defined in __oo2c.c */
 
 #define OOC_INIT_VPAR_STACK(_size) \
   _ooc_top_vs = (void*)malloc(_size); \
-  _ooc_end_vs = _ooc_top_vs+(_size);
+  _ooc_end_vs = (char*)_ooc_top_vs+(_size);
 
 #define OOC_PUSH_VPAR_STACK void* _ooc_old_top_vs = _ooc_top_vs;
 #define OOC_POP_VPAR_STACK _ooc_top_vs = _ooc_old_top_vs;

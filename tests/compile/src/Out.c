@@ -10,7 +10,7 @@ void Out__Char(OOC_CHAR8 ch) {
 }
 
 void Out__String(OOC_CHAR8 s[], OOC_LEN s_0d) {
-  fputs(s, stdout);
+  fputs((const char*)s, stdout);
 }
 
 void Out__Int(OOC_INT32 i, OOC_INT32 n) {
