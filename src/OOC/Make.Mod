@@ -319,9 +319,14 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
     PROCEDURE Err (code: Error.Code; sym: Sym.Name);
       VAR
         lastError: Error.Msg;
+        pos: LONGINT;
       BEGIN
         lastError := Error.New (makeContext, code);
-        lastError. SetIntAttrib ("pos", sym. pos);
+        pos := sym.pos;
+        IF (pos < 0) THEN
+          pos := 0;
+        END;
+        lastError. SetIntAttrib ("pos", pos);
         lastError. SetIntAttrib ("line", sym. line);
         lastError. SetIntAttrib ("column", sym. column);
         lastError. SetStringAttrib ("name", Msg.GetStringPtr(sym. str^));
