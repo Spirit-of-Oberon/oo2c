@@ -112,9 +112,8 @@ PROCEDURE (config: Config) Read* (errList: Msg.MsgList) RAISES IO.Error;
       p. ParseDocument();
       IF (p. errList. msgCount = 0) THEN
         config. sectionList. ProcessElements (p. root, rootName, p) 
-      ELSE
-        errList. AppendList (p. errList)
       END;
+      errList. AppendList (p. errList);
     END EvaluateFile;
   
   PROCEDURE EvaluateSource (source: Source.Source) RAISES IO.Error;
@@ -135,9 +134,8 @@ PROCEDURE (config: Config) Read* (errList: Msg.MsgList) RAISES IO.Error;
       p. ParseDocument();
       IF (p. errList. msgCount = 0) THEN
         config. sectionList. ProcessElements (p. root, rootName, p) 
-      ELSE
-        errList. AppendList (p. errList)
-      END
+      END;
+      errList. AppendList (p. errList);
     END EvaluateSource;
   
   BEGIN
