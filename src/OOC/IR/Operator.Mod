@@ -209,10 +209,10 @@ PROCEDURE InitBinaryArith (op: BinaryArith; sym: IR.Symbol; variant : Variant; l
     op.right := right;
   END InitBinaryArith;
 
-PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
+PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; variant: Variant; left, right: IR.Expression): IR.Expression;
   VAR
     op: BinaryArith;  ok : BOOLEAN;
-    variant : Variant; type : Sym.Type;
+    type : Sym.Type;
     tr : TypeRules.Rules;
   BEGIN
     tr := b.typeRules;
@@ -245,15 +245,6 @@ PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; left, right: IR.Expressio
     END;
 
     IF ok THEN
-      CASE sym.id OF
-      | Symbol.plus:   variant := arithAdd;
-      | Symbol.minus:  variant := arithSub;
-      | Symbol.times:  variant := arithMul;
-      | Symbol.slash:  variant := arithDivR;
-      | Symbol.div:    variant := arithDivI;
-      | Symbol.mod:    variant := arithMod;
-      END;
-
       NEW (op);
       InitBinaryArith (op, sym, variant, left, right, type);
       RETURN op;
@@ -438,12 +429,23 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
 
   VAR
     tr : TypeRules.Rules;
-    isNumeric, isSet, isString : BOOLEAN;
+    isNumeric, isSet: BOOLEAN;
 
   PROCEDURE SetOrNumeric () : IR.Expression;
+    VAR
+      variant: Variant;
   BEGIN
     IF isNumeric THEN
-      RETURN b.Fold(b.NewBinaryArith(sym, left, right))
+      CASE sym.id OF
+      | Symbol.plus:   variant := arithAdd;
+      | Symbol.minus:  variant := arithSub;
+      | Symbol.times:  variant := arithMul;
+      | Symbol.slash:  variant := arithDivR;
+      | Symbol.div:    variant := arithDivI;
+      | Symbol.mod:    variant := arithMod;
+      END;
+
+      RETURN b.Fold(b.NewBinaryArith(sym, variant, left, right))
 (*    ELSIF isSet THEN
       RETURN b.NewSet(sym, left, right); *)
     ELSE
@@ -485,8 +487,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
       CASE sym.id OF
       | Symbol.plus, Symbol.minus, Symbol.times, Symbol.slash:
         RETURN SetOrNumeric();
-      | Symbol.div, Symbol.mod:
-        RETURN b.Fold(b.NewBinaryArith(sym, left, right));
+      | Symbol.div:
+        RETURN b.Fold(b.NewBinaryArith(sym, arithDivI, left, right));
+      | Symbol.mod:
+        RETURN b.Fold(b.NewBinaryArith(sym, arithMod, left, right));
       | Symbol.eql, Symbol.neq, Symbol.lss, Symbol.leq, Symbol.gtr, Symbol.geq:
         RETURN b.Fold(b.NewCompare(sym, left, right));
 (*      | Symbol.and, Symbol.or:
@@ -557,15 +561,6 @@ PROCEDURE (b: Builder) AddSetupCode* (sym: IR.Symbol; decl: Sym.ProcDecl;
     fpar: Sym.VarDecl;
     size, arrayExpr: IR.Expression;
 
-  PROCEDURE MyNewBinaryArith (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
-    VAR
-      op: BinaryArith;
-    BEGIN
-      NEW (op);
-      InitBinaryArith (op, sym, arithMul, left, right, left. type);
-      RETURN op
-    END MyNewBinaryArith;
-
   PROCEDURE AddStatm (statm: IR.Statement);
     BEGIN
       IF (newStatm = NIL) THEN
@@ -602,7 +597,7 @@ PROCEDURE (b: Builder) AddSetupCode* (sym: IR.Symbol; decl: Sym.ProcDecl;
           arrayExpr := b. NewVar (sym, fpar);
           size := b. NewLen (sym, arrayExpr, 0);
           FOR dim := 1 TO fpar. type(Sym.Array). GetOpenDimensions()-1 DO
-            size := MyNewBinaryArith (sym, size, b. NewLen (sym, arrayExpr, dim))
+            size := b. NewBinaryArith (sym, arithMul, size, b. NewLen (sym, arrayExpr, dim))
           END;
         ELSE
           size := NIL;
