@@ -647,6 +647,12 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         
       | Opcode.loopEnd:
         (* nothing *)
+
+      | Opcode.exit:
+        (* nothing, the immediately following jump does all the work *)
+
+      | Opcode.selectExit:
+        (* nothing *)
         
       | Opcode.get:
         IF SimpleVarAccess (instr, Opnd.readAdr) THEN

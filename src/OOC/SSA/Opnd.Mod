@@ -83,8 +83,10 @@ CONST
   (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the initial value
      of @var{store} within the procedure.  *)
   storeExit* = 11;
-  (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the final value
-     of @var{store} within the procedure.  *)
+  (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the final value of
+     @var{store} within the procedure at the place of a @code{RETURN}, or
+     @oconst{*OOC:SSA:Opcode.selectExit} taking the final value of @var{store}
+     within a loop at the place of an @code{EXIT}.  *)
   storeReturn* = 12;
   (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the value
      of @var{store} after a @code{RETURN} statement.  *)
@@ -111,6 +113,11 @@ CONST
      The (global) allocator needs this information so that such value are kept
      live across the whole loop, instead of being clobbered somewhere between
      the loop start and end.  *)
+
+  tempOpnd* = 18;
+  (**This class is used for operands that are inserted into the SSA instruction
+     list during the course of a particular algorithm.  They must be removed
+     once the calculation is done.  *)
   
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)
@@ -125,10 +132,13 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | writeDesign: COPY ("write-design", name)
     | sourceValue: COPY ("source-value", name)
     | functionResult: COPY ("function-result", name)
+    | storeEnter: COPY("store-enter", name)
+    | storeExit: COPY("store-exit", name)
     | forwardRef: COPY ("forward-ref", name)
     | dimension: COPY ("dimension", name)
     | argPointer: COPY ("arg-pointer", name)
     | loopExternalDef: COPY ("loop-external-def", name);
+    | tempOpnd: COPY ("temp-opnd", name);
     END;
   END GetName;
   

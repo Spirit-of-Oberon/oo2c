@@ -139,7 +139,38 @@ CONST
      or procedure.
      @end table  *)
 
-  loopStart* = 8;
+  exit* = 8;
+  (**This instruction marks the place where control flow exists the
+     @code{LOOP}.  The instruction has one operand:
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     The instruction has one result of class @oconst{*OOC:SSA:Result.store}.
+     There is one use of this result, as operand of the loop's
+     @oconst{selectExit} instruction.  *)
+  
+  
+  selectExit* = 9;
+  (**Chooses the @code{EXIT} statement that leaves a @code{LOOP}.  The
+     statement takes @var{n}+2 arguments, all defining values of @var{store} at
+     the end of their corresponding branch of control flow.  Its structure
+     resembles that of @oconst{selectReturn}.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.storeEnter
+     The first argument is the initial value of @var{store} that enters the
+     loop, represented by the @oconst{*OOC:SSA:Result.store} result of the
+     @code{loopStart} instruction.
+
+     @item *OOC:SSA:Opnd.storeExit
+     Subsequent arguments are the @code{store} results of the loop's
+     @code{exit} statements.  Each of them corresponds to a @code{EXIT}
+     statement in the source code.
+     @end table  *)
+
+  loopStart* = 10;
   (**Marks the beginning of a loop construct.
 
      @table @oconst
@@ -149,20 +180,25 @@ CONST
 
      @item *OOC:SSA:Opnd.forwardRef
      The value of store at the end of the loop.  If the loop is evaluted again,
-     then it serves as the input value for the next iteration.
+     then it serves as the input value for the next iteration.  This is the
+     same value as the second operand of @oconst{loopEnd} for @code{WHILE},
+     @code{REPEAT}, and @code{FOR} loops.
      @end table
 
      There is one result, the value of @var{store} as seen by the loop
      body when an iteration begins.  *)
-  loopEnd* = 9;
-  (**Marks the end of a loop construct.  It has
+  loopEnd* = 11;
+  (**Marks the end of a loop construct.  It has four arguments:
 
      @table @oconst
      @item *OOC:SSA:Opnd.arg
      Reference to the corresponding @oconst{loopStart} instruction.
 
      @item *OOC:SSA:Opnd.store
-     Value of @var{store} once evaluation of the loop is done.
+     Value of @var{store} once evaluation of the loop is done.  This is the
+     same value as the second operand of @oconst{loopStart} for @code{WHILE},
+     @code{REPEAT}, and @code{FOR} loops.  For a @code{LOOP}, this is the
+     @var{store} result of the @oconst{selectExit} instruction.
 
      @item *OOC:SSA:Opnd.arg
      The exit predicate of the loop.  A boolean value.
@@ -171,13 +207,13 @@ CONST
      The exit conditional of the loop, a boolean constant.  If the value of the
      preceding argument equals this value, then the loop is exited.  Otherwise,
      its body is evaluted again, using the second argument of
-     @oconst{loopEnd} as its current @var{store}.
+     @oconst{loopStart} as its current @var{store}.
      @end table
 
      There is one result, the value of @var{store} as seen by the first
      instruction after the loop.  *)
   
-  get* = 10;
+  get* = 12;
   (**Retrieves the value of a variable.  Result is always a scalar value.  The
      operands of the instruction and their class ids are in this order:
 
@@ -198,7 +234,7 @@ CONST
      The instruction itself represents the result of the read operation.  If it
      accesses a volatile variable, then it has an additional result, the new
      value of @var{store} that is produced by this read operation.  *)
-  set* = 11;
+  set* = 13;
   (**Sets the value of a variable.  The source value is always of scalar type.
      The operand list resembles that of a @oconst{get} instruction, using the
      class ids @oconst{*OOC:SSA:Opnd.writeAdr} and
@@ -209,36 +245,36 @@ CONST
 
      The instruction has one result of class @oconst{*OOC:SSA:Result.store},
      representing the new value of store with the updated variable.  *)
-  copy* = 12;
+  copy* = 14;
 
-  add* = 13;
+  add* = 15;
   (**Addition operator.  The two operands must be of the same type, which is at
      the same time the result of the operation.  There is one exception to this
      rule: if one of the operands is of type @oconst{scAddress}, then the other
      operand can be any integer type, signed or unsigned, and the result type
      is @oconst{scAddress}.  *)
-  subtract* = 14;
-  negate* = 15;
-  multiply* = 16;
-  divide* = 17;
+  subtract* = 16;
+  negate* = 17;
+  multiply* = 18;
+  divide* = 19;
 
-  eql* = 18;
-  neq* = 19;
-  lss* = 20;
-  leq* = 21;
-  gtr* = 22;
-  geq* = 23;
+  eql* = 20;
+  neq* = 21;
+  lss* = 22;
+  leq* = 23;
+  gtr* = 24;
+  geq* = 25;
 
-  and* = 24;
-  or* = 25;
-  not* = 26;
+  and* = 26;
+  or* = 27;
+  not* = 28;
   
-  cap* = 27;
+  cap* = 29;
   
-  assert* = 28;
-  call* = 29;
+  assert* = 30;
+  call* = 31;
   
-  getLength* = 30;
+  getLength* = 32;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -260,7 +296,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 31;
+  copyParameter* = 33;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -360,6 +396,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | collect: cstr := "collect";
     | return: cstr := "return";
     | selectReturn: cstr := "select-return";
+    | exit: cstr := "exit";
+    | selectExit: cstr := "select-exit";
     | loopStart: cstr := "loop-start";
     | loopEnd: cstr := "loop-end";
       
