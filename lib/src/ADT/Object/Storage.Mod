@@ -172,7 +172,6 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object) RAISES IO.Error;
       IF (tref < 0) THEN  (* back reference; return old index *)
         IF (-tref >= r. typeCounter) THEN
           IO.RaiseFormatError("Invalid type reference");
-          RETURN 0
         ELSE
           RETURN -tref
         END
@@ -180,7 +179,6 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object) RAISES IO.Error;
       ELSE  (* first occurence of this type *)
         IF (tref # r. typeCounter) THEN
           IO.RaiseFormatError("Type count mismatch");
-          RETURN 0;
         END;
         IF (tref = LEN (r. typeTab^)) THEN
           ExtendTypeTab (r. typeTab)
@@ -239,7 +237,6 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object) RAISES IO.Error;
       IF (ref < 0) THEN
         IF (-ref >= r. objCounter) THEN  (* invalid object index *)
           IO.RaiseFormatError("Invalid object reference");
-          obj := NIL;
         ELSE
           obj := r. objTab[-ref]
         END
