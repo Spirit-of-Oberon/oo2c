@@ -1155,7 +1155,7 @@ RAISES IO.Error;
         ELSE  (* ignore *)
         END;
         
-        (* decend into nested objects *)
+        (* descend into nested objects *)
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
           ResolveModifierFlags (ptr, errList);
@@ -1176,6 +1176,146 @@ RAISES IO.Error;
         END;
       END;
     END LinkFileSections;
+
+  PROCEDURE PropagateTypeVars(item: Sym.Item);
+  (* For every type that uses a type variable in its definition, create an
+     entry `Type.typePars' listing all used type variables.  *)
+    VAR
+      ptr: Sym.Item;
+
+    PROCEDURE Propagate(type, srcCodeType: Sym.Type);
+      VAR
+        tv: Sym.TypeVarArray;
+        i: LONGINT;
+        ptr: Sym.Item;
+        
+      PROCEDURE MergePars(type: Sym.Type; typeVars: Sym.TypeVarArray);
+        (* pre: `typeVars' holds only unique variables *)
+        VAR
+          tp: Sym.TypePars;
+          oldVars, tv: Sym.TypeVarArray;
+          i, j, new: LONGINT;
+        BEGIN
+          IF (type.typePars = NIL) THEN  (* use without change *)
+            NEW(tp);
+            Sym.InitTypePars(tp, type.parent);
+            tp.params := typeVars;
+            type.SetTypePars(tp);
+          ELSE                           (* merge with existing list *)
+            oldVars := type.typePars.params;
+            new := 0;
+            i := 0;
+            WHILE (i # LEN(typeVars^)) DO
+              j := 0;
+              WHILE (j # LEN(oldVars^)) & (oldVars[j] # typeVars[i]) DO
+                INC(j);
+              END;
+              IF (j = LEN(oldVars^)) THEN  (* no match in old variables *)
+                typeVars[new] := typeVars[i];
+                INC(new);
+              END;
+              INC(i);
+            END;
+
+            IF (new # 0) THEN
+              NEW(tv, LEN(oldVars^)+new);
+              FOR i := 0 TO LEN(oldVars^)-1 DO
+                tv[i] := oldVars[i];
+              END;
+              FOR i := 0 TO new-1 DO
+                tv[LEN(oldVars^)+i] := typeVars[i];
+              END;
+              type.typePars.params := tv;
+            END;
+          END;
+        END MergePars;
+
+      PROCEDURE Merge(type, baseType: Sym.Type);
+        BEGIN
+          IF (baseType.typePars # NIL) THEN
+            MergePars(type, baseType.typePars.params);
+          END;
+        END Merge;
+
+      PROCEDURE MergeVarDecl(type: Sym.Type; varDecl: Sym.VarDecl);
+        BEGIN
+          Propagate(varDecl.type, varDecl.srcCodeType);
+          Merge(type, varDecl.type);
+        END MergeVarDecl;
+      
+      BEGIN
+        IF (type # NIL) & ((type = srcCodeType) OR (type IS Sym.TypeVar)) THEN
+          (* don't follow type names, because visibility of type variables
+             does not span multiple type declarations *)
+          WITH type: Sym.TypeVar DO
+            IF (type.typePars = NIL) THEN
+              NEW(tv, 1);
+              tv[0] := type;
+              MergePars(type, tv);
+            END;
+            
+          | type: Sym.PredefType DO
+            (* ignore *)
+
+          | type: Sym.Pointer DO
+            Propagate(type.baseType, type.srcCodeBaseType);
+            Merge(type, type.baseType);
+
+          | type: Sym.FormalPars DO
+            IF (type.receiver # NIL) THEN
+              MergeVarDecl(type, type.receiver);
+            END;
+            FOR i := 0 TO LEN(type.params^)-1 DO
+              MergeVarDecl(type, type.params[i]);
+            END;
+            
+          | type: Sym.Array DO
+            Propagate(type.elementType, type.srcCodeElementType);
+            Merge(type, type.elementType);
+
+          | type: Sym.Record DO
+            IF (type.baseType # NIL) THEN
+              Propagate(type.baseType, type.srcCodeBaseType);
+              Merge(type, type.baseType);
+            END;
+            ptr := type.nestedItems;
+            WHILE (ptr # NIL) DO
+              WITH ptr: Sym.FieldDecl DO
+                Propagate(ptr.type, ptr.srcCodeType);
+                Merge(type, ptr.type);
+              ELSE
+                (* ignore *)
+              END;
+              ptr := ptr.nextNested;
+            END;
+
+          | type: Sym.QualType DO
+            (* no variables are propagted out of the unqualified base type *)
+            FOR i := 0 TO LEN(type.arguments^)-1 DO
+              Propagate(type.arguments[i].type, type.arguments[i].srcCodeType);
+              Merge(type, type.arguments[i].type);
+            END;
+
+          | type: Sym.TypeName DO
+            (* ignore *)
+          END;
+        END;
+      END Propagate;
+    
+    BEGIN
+      WITH item: Sym.TypeDecl DO
+        Propagate(item.type, item.srcCodeType);
+      ELSE
+        (* ignore *)
+      END;
+
+      (* descend into nested objects *)
+      ptr := item.nestedItems;
+      WHILE (ptr # NIL) DO
+        PropagateTypeVars(ptr);
+        ptr := ptr.nextNested;
+      END;
+    END PropagateTypeVars;
   
   BEGIN
     ASSERT (errList # NIL);
@@ -1274,6 +1414,11 @@ RAISES IO.Error;
          function cannot operate properly; only run it if we are clean *)
       CheckExtendedRecords (root, errList);
     END;
+
+    (* tenth pass: propagate type variables upward in the tree of constructors,
+       so that every type that has a type variable somewhere has a non-NIL
+       field `type.typePars' *)
+    PropagateTypeVars(root);
     
     ResolveRef.Resolve (root, errList);
     

@@ -214,9 +214,13 @@ TYPE
   TypeVar* = POINTER TO TypeVarDesc;
   TypeVarArray* = POINTER TO ARRAY OF TypeVar;
   TypeParsDesc = RECORD
-    (**This is a formal parameter list of a parameterized type.  All parameters
+    (**This is a formal parameter list of a parameterized type.
+
+       If the instance is associated with a type declaration, all parameters
        are nested in this item, as well as all items that make up the base
-       type.  *)
+       type.  If it is associated with an unnamed type, then it is empty and
+       @ofield{params} is a list of all type variables used in the type's
+       definition.  *)
     (ItemDesc)
     params*: TypeVarArray;
     (**The list of formal type parameters.  @samp{LEN(params^)} is the number
