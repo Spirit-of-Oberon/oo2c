@@ -312,7 +312,7 @@ RAISES IO.Error;
     uri := m. GetURI (fileId, TRUE);
     uri(FileURI.URI). GetPath (path);
     Path.dirname (path, str);
-    OSFiles.makedirs(Object.NewLatin1(str), OSFiles.defaultMode);
+    OSFiles.MakeDirs(Object.NewLatin1(str), OSFiles.defaultMode);
   END CreateOutputDir;
 
 PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId;

@@ -121,7 +121,7 @@ PROCEDURE (proc: Processor) Setup*;
   PROCEDURE MakeDir (dir: STRING);
     BEGIN
       TRY
-        OSFiles.makedirs (dir, 7*64);
+        OSFiles.MakeDirs(dir, 7*64);
       CATCH IO.Error:
         ASSERT(FALSE);
       END;

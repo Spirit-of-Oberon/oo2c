@@ -781,7 +781,7 @@ RAISES IO.Error;
 
         (* create directory for HTML file, if it does not exist *)
         Path.dirname (path, path);
-        OSFiles.makedirs (Object.NewLatin1(path), OSFiles.defaultMode);
+        OSFiles.MakeDirs (Object.NewLatin1(path), OSFiles.defaultMode);
         
         (* append file name of style sheet *)
         uri := GetSystemId (Config.repositories);

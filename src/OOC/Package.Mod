@@ -1398,7 +1398,7 @@ RAISES IO.Error;
   BEGIN
     dirName := targetDir+pkgInfoSubdir;
     
-    files := OSFiles.listdir(dirName);
+    files := OSFiles.ListDir(dirName);
     repository := NewRepository();
     FOR i := 0 TO LEN(files^)-1 DO
       IF IsPkgInfo(files[i]) THEN

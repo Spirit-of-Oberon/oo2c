@@ -41,7 +41,7 @@ static void extend_result(OS_Files__NameArray *result, int *result_len,
 }
 
 #define DIRENT_BUFFER 1024
-OS_Files__NameArray OS_Files__listdir(Object__String path) {
+OS_Files__NameArray OS_Files__ListDir(Object__String path) {
   DIR* dir;
   char* fname = OS_Path__Encode(path);
   
@@ -90,7 +90,7 @@ OS_Files__NameArray OS_Files__listdir(Object__String path) {
   }
 }
 
-void OS_Files__mkdir(Object__String path, OS_Files__Mode mode) {
+void OS_Files__MkDir(Object__String path, OS_Files__Mode mode) {
   int rc;
   char* fname = OS_Path__Encode(path);
 
@@ -104,7 +104,7 @@ void OS_Files__mkdir(Object__String path, OS_Files__Mode mode) {
   }
 }
 
-void OS_Files__makedirs(Object__String path, OS_Files__Mode mode) {
+void OS_Files__MakeDirs(Object__String path, OS_Files__Mode mode) {
   int rc;
   struct stat sbuf;
   char* fname = OS_Path__Encode(path);
@@ -126,16 +126,16 @@ void OS_Files__makedirs(Object__String path, OS_Files__Mode mode) {
       }
     }
     ppath[last] = '\000';
-    OS_Files__makedirs(OS_Path__Decode(ppath, BUFFER_SIZE), mode);
-    OS_Files__mkdir(OS_Path__Decode(fname, OOC_ARRAY_LENGTH(fname,0)), mode);
+    OS_Files__MakeDirs(OS_Path__Decode(ppath, BUFFER_SIZE), mode);
+    OS_Files__MkDir(OS_Path__Decode(fname, OOC_ARRAY_LENGTH(fname,0)), mode);
     
   } else if (!S_ISDIR(sbuf.st_mode)) {
     /* path is not directory: let mkdir get the error message */
-    OS_Files__mkdir(OS_Path__Decode(fname, OOC_ARRAY_LENGTH(fname,0)), mode);
+    OS_Files__MkDir(OS_Path__Decode(fname, OOC_ARRAY_LENGTH(fname,0)), mode);
   }
 }
 
-void OS_Files__remove(Object__String path) {
+void OS_Files__Remove(Object__String path) {
   int rc;
   char* fname = OS_Path__Encode(path);
 
