@@ -36,6 +36,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     
   PROCEDURE ^ Expr (expr: ExtTree.Node): IR.Expression;
     
+  PROCEDURE ^ FunctionCall (call: ExtTree.FunctionCall;
+                            isProcCall: BOOLEAN): IR.Expression;
+    
   PROCEDURE Designator (design: ExtTree.Node): IR.Expression;
     VAR
       left: IR.Expression;
@@ -88,6 +91,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           ASSERT (design. op. sym. id = Symbol.arrow);
           RETURN b. NewDeref (design. op. sym, Designator (design. left));
         END;
+
+      | design: ExtTree.FunctionCall DO
+        RETURN FunctionCall (design, FALSE);
       ELSE
         Log.Type("++ Unknown type in Designator", design);
         ASSERT (FALSE)
@@ -121,9 +127,6 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     RETURN result;
   END SetConstruct;
 
-  PROCEDURE ^ FunctionCall (call: ExtTree.FunctionCall;
-                            isProcCall: BOOLEAN): IR.Expression;
-    
   PROCEDURE Expr (expr: ExtTree.Node): IR.Expression;
     VAR
       left, right, res: IR.Expression;
