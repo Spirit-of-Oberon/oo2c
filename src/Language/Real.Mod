@@ -96,11 +96,11 @@ BEGIN
   RETURN New(v.value / right.value);
 END Quotient;
 
-PROCEDURE (v : Value) Compare* (right : Value) : LONGINT;
+PROCEDURE (v : Value) Compare* (right : Object.Object) : LONGINT;
 BEGIN
-  IF v.value = right.value THEN
+  IF v.value = right(Value).value THEN
     RETURN 0;
-  ELSIF v.value < right.value THEN
+  ELSIF v.value < right(Value).value THEN
     RETURN -1;
   ELSE
     RETURN 1;

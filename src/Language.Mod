@@ -38,6 +38,9 @@ PROCEDURE InitValue* (v: Value; type: Type);
 PROCEDURE (v: Value) [ABSTRACT] Equals* (y: Object.Object): BOOLEAN;
   END Equals;
   
+PROCEDURE (v : Value) [ABSTRACT] Compare* (y: Object.Object): LONGINT;
+  END Compare;
+
 PROCEDURE (v: Value) [ABSTRACT] HashCode* (): LONGINT;
   END HashCode;
   

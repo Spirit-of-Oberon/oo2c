@@ -75,9 +75,9 @@ PROCEDURE (v: Value) CharAt*(i: LONGINT): CHAR;
     RETURN v. value. array[i];
   END CharAt;
 
-PROCEDURE (v : Value) Compare* (str : Value) : LONGINT;
+PROCEDURE (v : Value) Compare* (str : Object.Object) : LONGINT;
 BEGIN
-  RETURN v.value.Compare(str.value);
+  RETURN v.value.Compare(str(Value).value);
 END Compare;
 
 PROCEDURE (v : Value) Concat* (str : Value) : Value;

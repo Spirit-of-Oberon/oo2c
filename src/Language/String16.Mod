@@ -99,9 +99,9 @@ PROCEDURE (v: Value) CharAt*(i: LONGINT): LONGCHAR;
     RETURN v. array[i];
   END CharAt;
 
-PROCEDURE (v : Value) Compare* (str : Value) : LONGINT;
+PROCEDURE (v : Value) Compare* (str : Object.Object) : LONGINT;
 BEGIN
-  RETURN LongStrings.Compare(v.array^, str.array^);
+  RETURN LongStrings.Compare(v.array^, str(Value).array^);
 END Compare;
 
 PROCEDURE (v : Value) Concat* (str : Value) : Value;

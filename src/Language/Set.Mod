@@ -36,6 +36,11 @@ BEGIN
   END;
 END Equals;
 
+PROCEDURE (v: Value) Compare* (y: Object.Object): LONGINT;
+  BEGIN
+    ASSERT (FALSE); RETURN -1;
+  END Compare;
+  
 PROCEDURE (v : Value) HashCode* () : LONGINT;
 VAR
 BEGIN

@@ -48,6 +48,11 @@ PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
     RETURN (y IS Value) & (v. value = y(Value). value)
   END Equals;
   
+PROCEDURE (v: Value) Compare* (y: Object.Object): LONGINT;
+  BEGIN
+    RETURN v. value - y(Value). value;
+  END Compare;
+  
 PROCEDURE (v: Value) HashCode* (): LONGINT;
   BEGIN
     RETURN v. value;

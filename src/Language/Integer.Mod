@@ -127,9 +127,9 @@ BEGIN
   RETURN New(ASH (Integers.Short(v.value), Integers.Short(exp.value)));
 END Ash;
 
-PROCEDURE (v : Value) Compare* (right : Value) : LONGINT;
+PROCEDURE (v : Value) Compare* (right : Object.Object) : LONGINT;
 BEGIN
-  RETURN Integers.Compare(v.value, right.value);
+  RETURN Integers.Compare(v.value, right(Value).value);
 END Compare;
 
 PROCEDURE (v : Value) Sign* () : LONGINT;
