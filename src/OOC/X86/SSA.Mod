@@ -19,11 +19,13 @@ CONST  (* Register Names: *)
   gp1* = 4;                              (* ecx *)
   gp2* = 5;                              (* edx *)
   gp3* = 6;                              (* ebx *)
+  gp4* = 7;                              (* esi, not byte addressable *)
+  gp5* = 8;                              (* edi, not byte addressable *)
   resultRegister* = gp0;                 (* register for function results *)
-  lastRegister* = gp3;                   (* maximum of all register ids *)
+  lastRegister* = gp5;                   (* maximum of all register ids *)
 
   callerSaved* = {gp0, gp1, gp2};
-  calleeSaved* = {sp, fp, gp3};          (* esi, edi *)
+  calleeSaved* = {sp, fp, gp3, gp4, gp5};
 
   lastFpRegister* = 7;
   

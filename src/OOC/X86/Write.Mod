@@ -347,6 +347,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.gp1: str := "%cl";
         | S.gp2: str := "%dl";
         | S.gp3: str := "%bl";
+        (*| S.gp4: str := "%si"; no such thing in x86 *)
+        (*| S.gp5: str := "%di"; no such thing in x86 *)
         END;
       | S.signed16, S.unsigned16:
         CASE reg OF
@@ -356,6 +358,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.gp1: str := "%cx";
         | S.gp2: str := "%dx";
         | S.gp3: str := "%bx";
+        | S.gp4: str := "%si";
+        | S.gp5: str := "%di";
         END;
       | S.signed32, S.unsigned32, S.real32, S.address:
         CASE reg OF
@@ -365,6 +369,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.gp1: str := "%ecx";
         | S.gp2: str := "%edx";
         | S.gp3: str := "%ebx";
+        | S.gp4: str := "%esi";
+        | S.gp5: str := "%edi";
         END;
       END;
       sb.AppendLatin1(str);
