@@ -92,5 +92,5 @@ void AddArray4(float * a, float * b, int len) {
 	}
 }
 
-void OOC_ArrayC_init0(void) { }
+void OOC_ArrayC_open(void) { }
 

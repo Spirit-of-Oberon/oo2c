@@ -47,12 +47,12 @@ OOC_T5_init:
 	leave 
 	ret 
 	.size OOC_T5_init, .-OOC_T5_init
-.global OOC_T5_init0
-	.type OOC_T5_init0, @function
-OOC_T5_init0:
+.global OOC_T5_open
+	.type OOC_T5_open, @function
+OOC_T5_open:
 	call OOC_T5_init
 	ret
-	.size OOC_T5_init0, .-OOC_T5_init0
+	.size OOC_T5_open, .-OOC_T5_open
 	.data
 	.align 4
 	.type _mid_name, @object

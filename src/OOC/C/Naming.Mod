@@ -172,13 +172,13 @@ PROCEDURE NameOfModuleInit* (m: Sym.Module; initFunction: BOOLEAN;
     Strings.Insert("OOC_", 0, str);
     IF initFunction THEN
       IF rtWrapper THEN
-        Strings.Append ("_init0", str);
+        Strings.Append ("_open", str);
       ELSE      
         Strings.Append ("_init", str);
       END;
     ELSE
       IF rtWrapper THEN
-        Strings.Append ("_destroy0", str);
+        Strings.Append ("_close", str);
       ELSE      
         Strings.Append ("_destroy", str);
       END;

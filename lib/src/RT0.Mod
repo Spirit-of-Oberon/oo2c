@@ -250,10 +250,10 @@ TYPE
        defined on the top level.  Descriptors are listed in no particular
        order.  The last element of the array has the value @code{NIL}.  *)
 
-    registered-: BOOLEAN;
-    (**Set to @code{TRUE} by the module's initialization procedure.  This
-       happens before any of the imported modules are intialized, and acts as a
-       guard against double initialization.  *)
+    openCount-: LONGINT;
+    (**Number of times this module's @code{open()} function has been called
+       from client modules.  At the same time, this is the number of client
+       modules actively using this module.  *)
   END;
 
 TYPE

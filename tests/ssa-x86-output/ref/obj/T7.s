@@ -50,12 +50,12 @@ OOC_T7_init:
 	leave 
 	ret 
 	.size OOC_T7_init, .-OOC_T7_init
-.global OOC_T7_init0
-	.type OOC_T7_init0, @function
-OOC_T7_init0:
+.global OOC_T7_open
+	.type OOC_T7_open, @function
+OOC_T7_open:
 	call OOC_T7_init
 	ret
-	.size OOC_T7_init0, .-OOC_T7_init0
+	.size OOC_T7_open, .-OOC_T7_open
 	.data
 	.align 4
 	.type _mid_name, @object

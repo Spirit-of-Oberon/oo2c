@@ -97,7 +97,7 @@ RAISES IO.Error;
        Instr("call RT0__InitVParStack");  
        Instr("addl $16,%esp");*)
     
-    WriteModules (w, Ascii.ht+"call OOC_", "_init0");
+    WriteModules (w, Ascii.ht+"call OOC_", "_open");
     Instr("xorl %eax,%eax");
     Instr("leave");
     Instr("ret");

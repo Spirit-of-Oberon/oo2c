@@ -53,12 +53,12 @@ OOC_T8d_init:
 	leave 
 	ret 
 	.size OOC_T8d_init, .-OOC_T8d_init
-.global OOC_T8d_init0
-	.type OOC_T8d_init0, @function
-OOC_T8d_init0:
+.global OOC_T8d_open
+	.type OOC_T8d_open, @function
+OOC_T8d_open:
 	call OOC_T8d_init
 	ret
-	.size OOC_T8d_init0, .-OOC_T8d_init0
+	.size OOC_T8d_open, .-OOC_T8d_open
 	.data
 	.align 4
 	.type _mid_name, @object

@@ -40,12 +40,12 @@ OOC_T2_init:
 	leave 
 	ret 
 	.size OOC_T2_init, .-OOC_T2_init
-.global OOC_T2_init0
-	.type OOC_T2_init0, @function
-OOC_T2_init0:
+.global OOC_T2_open
+	.type OOC_T2_open, @function
+OOC_T2_open:
 	call OOC_T2_init
 	ret
-	.size OOC_T2_init0, .-OOC_T2_init0
+	.size OOC_T2_open, .-OOC_T2_open
 	.data
 	.align 4
 	.type _mid_name, @object

@@ -444,11 +444,11 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         w. WriteObject (tdNames. array[i](STRING));
         CNli;
       END;
-      w. WriteString ("NULL }, OOC_FALSE };");
+      w. WriteString ("NULL }, 0 };");
       w. WriteLn;
     END ModuleDescr;
 
-  PROCEDURE ModuleInit (module: Sym.Module);
+  PROCEDURE ModuleOpen (module: Sym.Module);
     VAR
       name0, name: STRING;
       ptr: Sym.Item;
@@ -460,11 +460,9 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
       w. WriteObject (name0);
       w. WriteString ("(RT0__Module client) {");
       w. WriteLn;
-      w. WriteString ("  if(!_mid.registered) {");
-      w. WriteLn;
-      w. WriteString ("    _mid.registered = OOC_TRUE;");
-
-      (* call init0 of all imported modules *)
+      w. WriteString ("  if (_mid.openCount == 0) {");
+      
+      (* call open of all imported modules *)
       ptr := module.nestedItems;
       WHILE (ptr # NIL) DO
         WITH ptr: Sym.Import DO
@@ -480,23 +478,26 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         ptr := ptr. nextNested
       END;
       
+      w. WriteLn;
       IF (module. name. str^ # Config.runtimeModule) THEN
         (* cannot register the lowest level run-time module with itself *)
         w. WriteLn;
         w. WriteString ("    RT0__RegisterModule(&_mid);");
       END;
-      
       w. WriteLn;
       w. WriteString ("    ");
       w. WriteObject (name);
       w. WriteString ("();");
       w. WriteLn;
-      w. WriteString ("  }");
+      w. WriteObject ("  }");
+      w. WriteLn;
+      w. WriteString ("  _mid.openCount++;");
+      
       w. WriteLn;
       w. WriteString ("}");
-    END ModuleInit;
+    END ModuleOpen;
   
-  PROCEDURE ModuleDestroy (module: Sym.Module);
+  PROCEDURE ModuleClose (module: Sym.Module);
     VAR
       name0, name: STRING;
       ptr: Sym.Item;
@@ -507,16 +508,15 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
       w. WriteString ("extern void ");
       w. WriteObject (name0);
       w. WriteString ("(RT0__Module client) {");
-      w. WriteLn;
-      w. WriteString ("  if(_mid.registered) {");
-      w. WriteLn;
-      w. WriteString ("    _mid.registered = OOC_FALSE;");
 
+      w. WriteLn;
+      w. WriteString ("  _mid.openCount--;");
+      w. WriteLn;
+      w. WriteString ("  if (_mid.openCount == 0) { ");
       w. WriteLn;
       w. WriteString ("    ");
       w. WriteObject (name);
       w. WriteString ("();");
-      w. WriteLn;
       
       IF (module. name. str^ # Config.runtimeModule) THEN
         (* cannot register the lowest level run-time module with itself *)
@@ -524,7 +524,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         w. WriteString ("    RT0__UnregisterModule(&_mid);");
       END;
       
-      (* call destroy0 of all imported modules *)
+      (* call close of all imported modules *)
+      w. WriteLn;
       ptr := module.nestedItems;
       WHILE (ptr # NIL) DO
         WITH ptr: Sym.Import DO
@@ -540,10 +541,11 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         ptr := ptr. nextNested
       END;
       
+      w. WriteLn;
       w. WriteString ("  }");
       w. WriteLn;
       w. WriteString ("}");
-    END ModuleDestroy;
+    END ModuleClose;
   
   BEGIN
     w := declWriter. textWriter;
@@ -558,8 +560,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
     IF ~writeHeader THEN
       QualTypeDescr(qtdData);
       ModuleDescr (symTab, tdNames);     (* define _mid *)
-      ModuleInit (symTab);
-      ModuleDestroy (symTab);
+      ModuleOpen (symTab);
+      ModuleClose (symTab);
     END;
     w. WriteLn;
   END Write;

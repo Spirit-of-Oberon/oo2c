@@ -66,12 +66,12 @@ OOC_C1_init:
 	leave 
 	ret 
 	.size OOC_C1_init, .-OOC_C1_init
-.global OOC_C1_init0
-	.type OOC_C1_init0, @function
-OOC_C1_init0:
+.global OOC_C1_open
+	.type OOC_C1_open, @function
+OOC_C1_open:
 	call OOC_C1_init
 	ret
-	.size OOC_C1_init0, .-OOC_C1_init0
+	.size OOC_C1_open, .-OOC_C1_open
 	.data
 	.align 4
 	.type _mid_name, @object

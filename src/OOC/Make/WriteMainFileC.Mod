@@ -61,7 +61,7 @@ RAISES IO.Error;
     w. WriteLn; w. WriteString ("  RT0__argc = (OOC_INT32)argc;");
     w. WriteLn; w. WriteString ("  RT0__argv = (OOC_CHAR8**)argv;");
     w. WriteLn;
-    WriteModuleName (w, "  OOC_", module, "_init0(NULL);");
+    WriteModuleName (w, "  OOC_", module, "_open(NULL);");
     w. WriteString ("  return 0;  /* _program_exit_code */");
     w. WriteLn;
     w. WriteString ("}");
