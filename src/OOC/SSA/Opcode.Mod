@@ -302,13 +302,10 @@ CONST
      Dimension for which the length should be retrieved.
 
      @item *OOC:SSA:Opnd.readAdr
-     The address from which the value is read.
+     Like the corresponding argument of @oconst{get}.
 
      @item *OOC:SSA:Opnd.readDesign
-     The symbolic representation of the variable's designator.  Depending on
-     the designator, several successive operands can share this class.  For
-     non-heap variables, the first entry in the designator is a reference to
-     the declaration of the accessed variable.
+     Like the corresponding argument of @oconst{get}.
      @end table
 
      The instruction itself represents the result of the operation.  *)

@@ -15,11 +15,11 @@
   designator1 function6 loop1 loop2 loop3 loop4 varpar1
   ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1
   len1 len2 len3 len4 len5 len6 len7
-  array1 array2 array3 array4 array5 array6">
+  array1 array2 array3 array4 array5 array6 array7 array8">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; array6">-->
+  select ="&SetupTestCasesWithOut; array7 array8">-->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -204,6 +204,16 @@
       Like <code>array1</code>, but the array variable is allocated on
       the heap.  Additionally, summation is also done directly on the
       pointer variable.
+    </test>
+    
+    <test id="array7" type="run" file="Array7.Mod" output="Array7.Ref">
+      Like <code>array6</code>, but the variable is an open
+      array allocated on the heap.
+    </test>
+    
+    <test id="array8" type="run" file="Array8.Mod" output="Array8.Ref">
+      Like <code>array5</code>, but the variable is a 2-dimensional
+      open array allocated on the heap.
     </test>
   </testcases>
   

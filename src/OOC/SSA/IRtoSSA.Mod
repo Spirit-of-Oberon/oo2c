@@ -81,7 +81,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         ASSERT (arrayVariable. type(Sym.PredefType). id = Predef.charString);
         RETURN pb. GetConstInt (arrayVariable(IR.Const). value(String8.Value). value. length+1);
         
-      | IR.lenOpenArrayParam:
+      | IR.lenOpenArrayParam, IR.lenOpenArrayHeap:
         res := Expression (arrayVariable);
         RETURN pb. AddGetLengthInstr (res(SSA.Instr), pb. GetConstInt (dim));
       END;
@@ -213,6 +213,21 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (op. right), Opnd.arg);
         RETURN instr
       END AddCompareOp;
+
+    PROCEDURE NewArray (new: IR.NewArray): SSA.Instr;
+      VAR
+        instr: SSA.Instr;
+        i: LONGINT;
+      BEGIN
+        instr := pb. AddInstr (Opcode.newArray, Opcode.scAddress);
+        instr. AddOpnd (s, Opnd.store);
+        instr. AddOpnd (pb. GetTypeRef (new. type), Opnd.type);
+        FOR i := 0 TO LEN (new. length^)-1 DO
+          instr. AddOpnd (Expression (new. length[i]), Opnd.arg);
+        END;
+        Chain (instr);
+        RETURN instr;
+      END NewArray;
     
     BEGIN
       WITH expr: IR.Const DO
@@ -325,14 +340,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
 
       | expr: IR.NewArray DO
-        instr := pb. AddInstr (Opcode.newArray, Opcode.scAddress);
-        instr. AddOpnd (s, Opnd.store);
-        instr. AddOpnd (pb. GetTypeRef (expr. type), Opnd.type);
-        FOR i := 0 TO LEN (expr. length^)-1 DO
-          instr. AddOpnd (Expression (expr. length[i]), Opnd.arg);
-        END;
-        Chain (instr);
-        RETURN instr;
+        RETURN NewArray (expr);
         
       | expr: IR.Call DO
         instr := Call (expr);

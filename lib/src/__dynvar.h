@@ -19,6 +19,8 @@
 #ifndef __dynvar__
 #define __dynvar__
 
+#include "__typemap.h"
+
 /* Note: all libc functions used here must be prototyped in __libc.h */
 
 extern void* _ooc_top_vs;  /* top of value stack; defined in __oo2c.c */
@@ -41,5 +43,8 @@ extern void* _ooc_end_vs;  /* end of value stack; defined in __oo2c.c */
 
 #define OOC_INITIALIZE_VPAR(_source,_dest,_basetype,_size) \
   memcpy((_dest),(_source),(_size));
+
+
+#define OOC_ARRAY_LENGTH(adr,dim) (((OOC_LEN*)(adr))[-dim-1])
 
 #endif  /* __dynvar__ */
