@@ -406,7 +406,23 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
              must read the value from memory  *)
           RETURN unknownValue;
         ELSE
-          (* this "set" and "origin" work on different variables, and
+          (* this "set" and "get" work on different variables, and
+             cannot interfere with each other: continue trace through
+             `instr' *)
+          RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace)
+        END;
+        
+      | Opcode.copyString:
+        alias := Aliasing.DesignatorAlias (tr,
+                                           get. GetOpndClass (Opnd.readDesign),
+                                           instr. GetOpndClass (Opnd.writeDesign));
+        IF (alias # Aliasing.noAliasing) THEN
+          (* this set operation may define the value read by the "get":
+             read the value from memory, because a more fine grained analysis
+             would not pay off *)
+          RETURN unknownValue;
+        ELSE
+          (* this "copy-string" and "get" work on different variables, and
              cannot interfere with each other: continue trace through
              `instr' *)
           RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace)
@@ -447,6 +463,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         instr, i: SSA.Instr;
         storeOut: SSA.Result;
         alias: Aliasing.Id;
+        readDesign: SSA.Opnd;
         
       PROCEDURE GetVar (instr: SSA.Instr): Sym.VarDecl;
       (* Return the variable that starts the designator of the "get" or
@@ -531,17 +548,23 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                  keep the write operation alive *)
               RETURN TRUE;
             ELSE
-              alias := Aliasing.DesignatorAlias (tr,
-                                                 set. GetOpndClass (Opnd.writeDesign),
-                                                 instr. GetOpndClass (Opnd.readDesign));
-              IF (alias # Aliasing.noAliasing) THEN
-                (* this string copy may read the value that is being written *)
-                RETURN TRUE;
-              ELSE
-                (* "set" and "copy" work on different variables, and cannot
-                   interfere with each other: continue trace through `instr' *)
+              readDesign := instr. GetOpndClass (Opnd.readDesign);
+              IF (readDesign = NIL) THEN (* reading from a string constant *)
                 RETURN VisibleEffect (instr. GetResultStore(), set);
-              END
+              ELSE
+                alias := Aliasing.DesignatorAlias
+                    (tr, set. GetOpndClass (Opnd.writeDesign), readDesign);
+                IF (alias # Aliasing.noAliasing) THEN
+                  (* this string copy may read the value that is being
+                     written *)
+                  RETURN TRUE;
+                ELSE
+                  (* "set" and "copy" work on different variables, and cannot
+                     interfere with each other: continue trace through
+                     `instr' *)
+                  RETURN VisibleEffect (instr. GetResultStore(), set);
+                END
+              END;
             END;
             
           | Opcode.return, Opcode.selectReturn:

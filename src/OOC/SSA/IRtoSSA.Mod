@@ -149,6 +149,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
                                Opcode.TypeToSubclass (deref. derefType));
         instr. AddOpnd (s, Opnd.store);
         instr. AddOpnd (address, Opnd.readAdr);
+        instr. AddOpnd (pb. GetTypeRef (deref. pointer. type), Opnd.readDesign);
         instr. AddOpnd (address, Opnd.readDesign);
         RETURN instr
       END Deref;

@@ -112,6 +112,9 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
     
   PROCEDURE NextPart (opnd: SSA.Opnd): SSA.Opnd;
     BEGIN
+      IF (opnd. arg IS SSA.TypeRef) THEN
+        opnd := opnd. nextOpnd;          (* move over pointer type *)
+      END;
       IF (opnd. nextOpnd = NIL) OR (opnd. nextOpnd. class # opnd. class) THEN
         RETURN NIL
       ELSE
@@ -137,6 +140,23 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
           opnd. arg(SSA.DeclRef). decl(Sym.VarDecl). isVarParam
     END IsVarParam;
 
+  PROCEDURE IsHeapObject (opnd: SSA.Opnd): BOOLEAN;
+  (* TRUE iff `opnd' refers to a heap object.  *)
+    BEGIN
+      RETURN (opnd. arg IS SSA.TypeRef)
+    END IsHeapObject;
+
+  PROCEDURE CompatiblePointers (a, b: Sym.Type): BOOLEAN;
+    BEGIN
+      IF (a = b) THEN
+        RETURN TRUE;
+      ELSIF (a IS Sym.Pointer) & (b IS Sym.Pointer) THEN
+        RETURN tr. IsExtensionOf (a, b) OR tr. IsExtensionOf (b, a);
+      ELSE
+        RETURN FALSE;
+      END;
+    END CompatiblePointers;
+  
   PROCEDURE CheckSelectors (selInstr, selReference: SSA.Opnd;
                             prefixClass: Id): Id;
   (* pre: the classification of the prefix of the designators `selInstr' and
@@ -225,6 +245,27 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
         RETURN noAliasing
       END;
 
+    ELSIF IsHeapObject (instr) & IsHeapObject (reference) THEN
+      (* both designators refer to an object on the heap *)
+      IF CompatiblePointers (instr. arg(SSA.TypeRef). type,
+                             reference. arg(SSA.TypeRef). type) THEN
+        IF (instr. nextOpnd. arg = reference. nextOpnd. arg) THEN
+          (* both designators begin with the same pointer: inspect selectors *)
+          RETURN CheckSelectors (NextPart (instr), NextPart (reference),
+                                 completelyCovered)
+        ELSE
+          (* both designators may or may not begin with the same pointer:
+             inspect selectors *)
+          RETURN CheckSelectors (NextPart (instr), NextPart (reference),
+                                 mayAlias)
+        END;
+      ELSE
+        (* the designators begin with different variable names, and neither of
+           the variables is a variable parameter: the designators cannot
+           possibly access the same memory *)
+        RETURN noAliasing
+      END;
+
     ELSIF IsVarParam (instr) THEN
       IF IsVarParam (reference) &
          (instr.arg(SSA.DeclRef).decl = reference.arg(SSA.DeclRef).decl) THEN
@@ -247,8 +288,10 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
         typeInstr := instr. arg(SSA.DeclRef). decl(Sym.VarDecl). type;
         IF (reference. arg IS SSA.DeclRef) THEN
           typeRef := reference. arg(SSA.DeclRef). decl(Sym.VarDecl). type;
+        ELSIF (reference. arg IS SSA.TypeRef) THEN
+          typeRef := reference. arg(SSA.TypeRef). type;
         ELSE
-          typeRef := NIL; ASSERT (FALSE);
+          ASSERT (FALSE);
         END;
 
         IF tr. IsComponentOf (typeInstr, typeRef, TRUE) OR
@@ -268,6 +311,16 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
          parameters, and we can save half the work by normalizing the arguments
          so that `instr' is the variable parameter *)
       RETURN DesignatorAlias (tr, reference, instr);
+
+    ELSIF IsHeapObject (instr) THEN
+      (* ~IsHeapObject (reference) & ~IsVarParam (reference); in other words,
+         reference must be a variable of the procedure or module *)
+      RETURN noAliasing;
+
+    ELSIF IsHeapObject (reference) THEN
+      (* ~IsHeapObject (instr) & ~IsVarParam (instr); in other words,
+         instr must be a variable of the procedure or module *)
+      RETURN noAliasing;
     END;
     
     (* default: assume the worst *)

@@ -252,9 +252,9 @@ CONST
      The symbolic representation of the variable's designator.  Depending on
      the designator, several successive operands can share this class.  For
      non-heap variables, the first entry in the designator is a reference to
-     the declaration of the accessed variable.  For variables on the heap,
-     the designator begins with the address, that is, it duplicates the
-     second argument @oconst{*OOC:SSA:Opnd.readAdr}.
+     the declaration of the accessed variable.  For variables on the heap, the
+     designator begins with the a @otype{*OOC:SSA.TypeRef} of the pointer's
+     type, followed by the address of the heap object.
      @end table
 
      The instruction itself represents the result of the read operation.  If it
