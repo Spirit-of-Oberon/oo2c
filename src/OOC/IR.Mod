@@ -552,7 +552,7 @@ TYPE
     (**The variable designator.  This is either a record variable, a
        dereferenced pointer variable, or a @code{VAR} parameter of record type.  *)
   END;
-  
+ 
 TYPE
   TypeTest* = POINTER TO TypeTestDesc;
   TypeTestDesc = RECORD
@@ -967,6 +967,8 @@ CONST
   tooFewArguments = 38;
   tooManyArguments = 39;
   notVarParCompatible = 40;
+  invalidTypeGuard = 41;
+  guardNotExtension = 42;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1063,6 +1065,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Too many arguments"
     | notVarParCompatible:
       t := "Actual parameter not compatible with formal VAR parameter"
+    | invalidTypeGuard:
+      t := "Invalid type used as guard"
+    | guardNotExtension:
+      t := "Guard type is not an extension of the designated type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -3839,6 +3845,22 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     END;
   END NewOperator;
 
+ PROCEDURE (b : Builder) NewTypeGuard(design : Expression; ref : TypeRef) : Expression;
+ VAR guardType : Sym.Type;
+ BEGIN
+   guardType := ref. decl(Sym.TypeDecl). type;
+   IF TR.IsValidReceiverType(guardType) THEN
+     IF TR.IsExtensionOf(guardType, design.type) THEN
+       RETURN design;
+       (* RETURN b.NewTypeTest(design.sym, design, ref, TRUE); *)
+     ELSE
+       RETURN b.ErrExpr(guardNotExtension, ref.sym);
+     END;
+   ELSE
+     RETURN b.ErrExpr(invalidTypeGuard, ref.sym);
+   END;
+ END NewTypeGuard;
+
  PROCEDURE (b: Builder) NewCall* (design: Expression;
                                   arguments: ExpressionList;
                                   isFunctionCall: BOOLEAN;
@@ -4200,6 +4222,9 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     ELSE
       IF (design = b. errorExpr) THEN
         RETURN b. errorExpr;        (* fall through for errors in designator *)
+      ELSIF TR.IsValidReceiverType(design.type) 
+        & (LEN(arguments^) = 1) & (arguments[0] IS TypeRef) THEN
+        RETURN b.NewTypeGuard(design, arguments[0] (TypeRef));
       ELSIF ~(design. type IS Sym.FormalPars) THEN
         RETURN b. ErrExpr (notProcedure, design. sym);
       ELSIF isFunctionCall &
