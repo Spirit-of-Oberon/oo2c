@@ -477,7 +477,7 @@ TYPE
        
     className*: Name;                    (* ... make this read-only? *)
     (**If the record has been classified as being part of a @emph{class}
-       definition, then this field is node @code{NIL}.  In this case, it
+       definition, then this field is not @code{NIL}.  In this case, it
        points to the name of the class, typically the name of the pointer
        type that has this record as its base type.  This field is filled
        in by @oproc{*OOC:SymbolTable:Builder.Finalize}.

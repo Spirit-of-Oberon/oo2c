@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<testcases profile="Test Suite Setup" default-lang="OOC">
+<testcases profile="Test Suite Setup" default-lang="O2">
   <test id="prepare_out_module"
         type="accept"
         file="../../../tests/compile/src/Out.Mod">
