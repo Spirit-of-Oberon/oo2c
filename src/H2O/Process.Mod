@@ -44,7 +44,7 @@ TYPE
     nParams : INTEGER;			(* number of formal parameters *)
     params : Param;				(* list of parameter names *)
     body : LinkedList.LinkedList;	(* linked list of tokens *)
-    function : BOOLEAN;			(* macro requires parameters *)
+    function- : BOOLEAN;			(* macro requires parameters *)
     selfdefine : BOOLEAN;		(* symbol defined equivalent to self *)
   END;
 
@@ -55,7 +55,7 @@ TYPE
     in- : Source.Input;
     err- : Error.Error;
     expanded : LinkedList.LinkedList;	(* queue of tokens from expansion *)
-    macro : Dictionary.Dictionary;	(* defined macros *)
+    macro- : Dictionary.Dictionary(STRING,Macro);	(* defined macros *)
   END;
 
 VAR
@@ -107,6 +107,14 @@ PROCEDURE (p : Process) IsDefined*(name : STRING) : BOOLEAN;
 BEGIN
   RETURN p.macro.HasKey(name);
 END IsDefined;
+
+(* Push the body of the given macro into the source stream. This can be used
+   by a parser to retreive the definition of a macro for evaluation. *)
+PROCEDURE (p : Process) PushMacro* (m : Macro);
+BEGIN
+  ASSERT(~m.function);
+  p.expanded.Prepend(Scanner.NewIdentToken(m.name));
+END PushMacro;
 
 PROCEDURE (p : Process) GetToken* (token : Scanner.Token; options : SET);
 VAR
@@ -617,7 +625,7 @@ BEGIN
   p.in := p.scanner.in;
   p.err := err;
   p.ex := ex;
-  p.macro := Dictionary.New();
+  p.macro := NEW(Dictionary.Dictionary(STRING,Macro));
   p.expanded := LinkedList.New();
   RETURN p;
 END New;
