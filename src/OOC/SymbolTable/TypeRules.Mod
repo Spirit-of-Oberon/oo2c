@@ -137,6 +137,35 @@ PROCEDURE (closure: TypeClosure) Closure*(type: Sym.Type): Sym.Type;
                           closure.params, closure.arguments);
   END Closure;
 
+PROCEDURE (closure: TypeClosure) ArgumentsInduced(type: Sym.Type): BOOLEAN;
+(**Return @code{TRUE} if the type arguments of @oparam{closure} are fully
+   induced by the type arguments of @oparam{type}.  That is, given a variable
+   of type @oparam{type}, all type arguments of @oparam{closure} are defined
+   if @oparam{closure} is an extension of @oparam{type}.  *)
+  VAR
+    i, j: LONGINT;
+  BEGIN
+    IF (type = NIL) THEN
+      RETURN (LEN(closure.arguments^) = 0);
+    ELSE
+      WITH type: Sym.QualType DO
+        FOR i := 0 TO LEN(closure.params^)-1 DO
+          j := 0;
+          WHILE (j # LEN(type.arguments^)) &
+                (type.arguments[j].type # closure.params[i]) DO
+            INC(j);
+          END;
+          IF (j = LEN(type.arguments^)) THEN
+            RETURN FALSE;
+          END;
+        END;
+        RETURN TRUE;
+      ELSE
+        RETURN (LEN(closure.arguments^) = 0);
+      END;
+    END;
+  END ArgumentsInduced;
+
 (*PROCEDURE (typeClosure: TypeClosure) Log*();
   VAR
     i: LONGINT;
@@ -622,12 +651,10 @@ PROCEDURE ArrayElementType*(array: Sym.Type): Sym.Type;
     END;
   END ArrayElementType;
 
-PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
-(* Result is TRUE iff the type @oparam{type} is an extension of the type
-   @oparam{base}.  See Oberon-2 report, Appendix A.
-
-   For type variables, the test is based on the type bounds of the
-   arguments.  *)
+PROCEDURE IsInducedExtensionOf* (type, base: Sym.Type;
+                                 ensureInduction: BOOLEAN): BOOLEAN;
+  VAR
+    ptr, qualBase: Sym.Type;
   BEGIN
     (* for a type variable, use the type bound *)
     IF (type IS Sym.TypeVar) THEN
@@ -648,11 +675,29 @@ PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
         IF SameType(type, base) THEN
           RETURN TRUE;
         ELSE
-          type := RecordBaseType(type);
+          ptr := type.Deparam();
+          qualBase := ptr(Sym.Record).baseType;
+          
+          IF ensureInduction & (type IS TypeClosure) &
+             ~type(TypeClosure).ArgumentsInduced(qualBase) THEN
+            RETURN FALSE;
+          END;
+          
+          type := type.Closure(qualBase);
         END;
       END;
     END;
     RETURN FALSE;
+  END IsInducedExtensionOf;
+
+PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
+(* Result is TRUE iff the type @oparam{type} is an extension of the type
+   @oparam{base}.  See Oberon-2 report, Appendix A.
+
+   For type variables, the test is based on the type bounds of the
+   arguments.  *)
+  BEGIN
+    RETURN IsInducedExtensionOf(type, base, FALSE);
   END IsExtensionOf;
 
 PROCEDURE IsExtensionOfNoParams* (type, base: Sym.Type): BOOLEAN;

@@ -12,10 +12,10 @@
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
   generic36 generic37 generic38 generic39 generic40 generic41
-  generic42 generic43 generic44 generic45">-->
+  generic42 generic43 generic44 generic45 generic46">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic45">-->
+  select ="&SetupTestCasesWithOut; generic1 generic40">-->
 
   &TestSetupWithOut;
     
@@ -1474,6 +1474,11 @@
           file="Generic45.Mod" output="Generic45.Ref">
       Calling constructor with <code>INIT</code> procedure.
     </test>
+    <test id="generic46" type="reject" file="Generic46.Mod">
+      In a type guard, the compiler must be able to derive the type
+      arguments of the reference type from the static type of the
+      variable.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2078,6 +2083,8 @@
         msg="Too many arguments"/>
     <reject-info id="generic44" pos=":= NEW(%List"
         msg="Not a record pointer type"/>
+    <reject-info id="generic46" pos="o1(%List("
+        msg="Type must be an extension of the left operand's type"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>

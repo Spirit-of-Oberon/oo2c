@@ -39,7 +39,11 @@ assigned values of type `Ti' (or NIL), and that NEW is not applicable
 to such a variable.
 
 A type variable cannot be used on the right hand side of a type test
-or type guard.
+or type guard.  For any type argument on the right of a type test or
+guard it must be possible to correlate it to an argument of the left
+side's type by an unbroken chain of applications of qualified type
+references.  For example, `v IS ArrayList(Node)' is invalid if the
+type of `v' has no parameters.
 
 Two qualified types are considered to be the same type, if they have
 the same base type and if their corresponding type arguments are of
