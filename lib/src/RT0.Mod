@@ -26,38 +26,82 @@ MODULE RT0 [FOREIGN "C"; LINK FILE "RT0.c" END];
 
    The compiler implicitly adds an import to this module when building an
    executable.  A program may import this module directly, for example to gain
-   access to meta data embedded by the compiler into a module's object file.  *)
+   access to meta data embedded by the compiler into a module's object file.
+   Please note that this module should be considered a part of the compiler,
+   @emph{not} of the standard library.  As such, it may differ across different
+   compiler implementations, and for a given compiler its interface might
+   change without prior notice.  *)
+
+IMPORT
+  SYSTEM;
+
+  
+CONST  (* predefined types, taken from `OOC:SymbolTable:Predef' *)
+  strBoolean* = 0;
+  strChar* = 1;
+  strShortint* = 3;
+  strInteger* = 4;
+  strLongint* = 5;
 
 CONST
-  strArray* = 0;
-  (**An array definition with a fixed length, as in @code{ARRAY 123 OF
+  strArray* = -1;
+  (**An array definition with a fixed length, as in @samp{ARRAY 123 OF
      CHAR}.  *)
 
-  strOpenArray* = 1;
-  (**An array definition with an unspecified length, as in @code{ARRAY OF
+  strOpenArray* = -2;
+  (**An array definition with an unspecified length, as in @samp{ARRAY OF
      CHAR}.  *)
 
+  strPointer* = -3;
+  (**A pointer definition of the form @samp{POINTER TO T}.  *)
+  
 TYPE
   Struct* = POINTER TO StructDesc;
   StructDesc = RECORD [NO_DESCRIPTOR, NOT_EXTENSIBLE]
     (**A type description.
 
        @table @code
+       @item ARRAY n OF @dots{}
+       @itemize @bullet
+       @item @ofield{form} equals @oconst{strArray}.
+       @item @ofield{len} holds the length of the array, for example
+       @samp{123} for an @samp{ARRAY 123 OF CHAR}.
+       @item @ofield{base} is the type descriptor of the array's element type, for
+       example @ovar{char} for @samp{ARRAY 123 OF CHAR}.
+       @end itemize
+
        @item ARRAY OF @dots{}
        @itemize @bullet
        @item @ofield{form} equals @oconst{strOpenArray}.
        @item @ofield{len} holds the number of open dimensions, for example
        @samp{1} for an @samp{ARRAY OF CHAR}.
+       @item @ofield{base} is the type descriptor of the array's base type, for
+       example @ovar{char} for @samp{ARRAY OF CHAR} or @samp{ARRAY OF ARRAY OF
+       CHAR}.  The base type always has a known size, that is, it is neven an
+       open array type.
+       @end itemize
+
+       @item POINTER TO @dots{}
+       @itemize @bullet
+       @item @ofield{form} equals @oconst{strPointer}.
+       @item @ofield{base} is the base type of the pointer.
        @end itemize
 
        @end table  *)
 
-    form-: SHORTINT;
-    (**Identifies which kind of type constructor variant is used.  *)
+    base-: Struct;
+    (**Element type, pointer base type, or record base type.  *)
 
+    size-: LONGINT;
+    (**Size of the data type in bytes.  For an open array type, this field is
+       @samp{-1}.  *)
+    
     len-: LONGINT;
     (**Holds the length of an array, or the number of open dimensions
        of an open array.  *)
+    
+    form-: SHORTINT;
+    (**Identifies which kind of type constructor variant is used.  *)
   END;
 
 TYPE
@@ -66,5 +110,18 @@ TYPE
   ObjectDesc = RECORD [NO_DESCRIPTOR, NOT_EXTENSIBLE]
     (**A named object defined in a declaration.  *)
   END;
-  
+
+VAR
+  boolean-: StructDesc;
+  char-: StructDesc;
+  shortint-: StructDesc;
+  integer-: StructDesc;
+  longint-: StructDesc;
+
+PROCEDURE NewArray* (td: Struct; ...): SYSTEM.PTR;
+(**Allocates a new array object on the heap, using the type descriptor
+   @oparam{td}.  For an open array object, the lengths of the array's
+   dimensions are passed as second, third, and so on, parameter.  They must be
+   of type @code{LONGINT}.  *)
+   
 END RT0.

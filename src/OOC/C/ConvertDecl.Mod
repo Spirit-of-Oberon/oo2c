@@ -116,7 +116,9 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
         END;
         
       | type: Sym.FormalPars DO
-        fct := w. NewFunction (ConvertType (w, type. resultType, type. srcCodeResultType));
+        fct := w. NewFunction
+            (ConvertType (w, type. resultType, type. srcCodeResultType),
+             type. anyRestParameters);
         IF (type. receiver # NIL) THEN
           ConvertParam (fct, type. receiver)
         END;
@@ -307,7 +309,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
            (Naming.NameOfModuleInit (m),
             DeclWriter.tqNone,
             DeclWriter.scExtern, 
-            w. NewFunction (w. basicType[DeclWriter.void])))
+            w. NewFunction (w. basicType[DeclWriter.void], FALSE)))
     END;
   END ConvertSymTab;
 

@@ -144,6 +144,7 @@ TYPE
     (TypeDesc)
     resultType: Type;
     parameters: ArrayList.ArrayList;
+    restParameters: BOOLEAN;
   END;
 
 TYPE
@@ -684,18 +685,19 @@ PROCEDURE (a: Array) WriteRight (w: Writer);
 
 
 
-PROCEDURE InitFunction (fct: Function; resultType: Type);
+PROCEDURE InitFunction (fct: Function; resultType: Type; restParameters: BOOLEAN);
   BEGIN
     fct. resultType := resultType;
     fct. parameters := ArrayList.New (4);
+    fct. restParameters := restParameters;
   END InitFunction;
 
-PROCEDURE (w: Writer) NewFunction* (resultType: Type): Function;
+PROCEDURE (w: Writer) NewFunction* (resultType: Type; restParameters: BOOLEAN): Function;
   VAR
     fct: Function;
   BEGIN
     NEW (fct);
-    InitFunction (fct, resultType);
+    InitFunction (fct, resultType, restParameters);
     RETURN fct
   END NewFunction;
 
@@ -725,6 +727,9 @@ PROCEDURE (fct: Function) WriteRight (w: Writer);
         w. WriteString (", ")
       END;
       w. WriteDeclaration (fct. parameters. array[i](Declaration))
+    END;
+    IF fct. restParameters THEN
+      w. WriteString (", ...");
     END;
     w. WriteChar(")");
     WriteRight (w, fct. resultType, priFunction)
@@ -977,25 +982,25 @@ PROCEDURE Test;
     Cmp(w. NewPointer (tqNone, w. NewArray (w.basicType[int32], 8)), "int (*x)[8]");
     Cmp(w. NewArray (w. NewArray (w.basicType[int32], 8), 4), "int x[4][8]");
     
-    fct := w. NewFunction (w.basicType[int32]);
+    fct := w. NewFunction (w.basicType[int32], FALSE);
     Cmp (fct, "int x()");
-    fct := w. NewFunction (w. NewPointer (tqNone, w.basicType[int32]));
+    fct := w. NewFunction (w. NewPointer (tqNone, w.basicType[int32]), FALSE);
     Cmp (fct, "int *x()");
-    fct := w. NewFunction (w. NewArray (w.basicType[int32], 8));
+    fct := w. NewFunction (w. NewArray (w.basicType[int32], 8), FALSE);
     Cmp (fct, "int x()[8]");
     
-    fct := w. NewPointer (tqNone, w. NewFunction (w.basicType[int32]));
+    fct := w. NewPointer (tqNone, w. NewFunction (w.basicType[int32], FALSE));
     Cmp (fct, "int (*x)()");
-    fct := w. NewPointer (tqNone, w. NewFunction (w. NewPointer (tqNone, w.basicType[int32])));
+    fct := w. NewPointer (tqNone, w. NewFunction (w. NewPointer (tqNone, w.basicType[int32]), FALSE));
     Cmp (fct, "int *(*x)()");
-    fct := w. NewPointer (tqNone, w. NewFunction (w. NewArray (w.basicType[int32], 8)));
+    fct := w. NewPointer (tqNone, w. NewFunction (w. NewArray (w.basicType[int32], 8), FALSE));
     Cmp (fct, "int (*x)()[8]");
     
-    fct := w. NewArray (w. NewFunction (w.basicType[int32]), 4);
+    fct := w. NewArray (w. NewFunction (w.basicType[int32], FALSE), 4);
     Cmp (fct, "int x[4]()");
-    fct := w. NewArray (w. NewFunction (w. NewPointer (tqNone, w.basicType[int32])), 4);
+    fct := w. NewArray (w. NewFunction (w. NewPointer (tqNone, w.basicType[int32]), FALSE), 4);
     Cmp (fct, "int *x[4]()");
-    fct := w. NewArray (w. NewFunction (w. NewArray (w.basicType[int32], 8)), 4);
+    fct := w. NewArray (w. NewFunction (w. NewArray (w.basicType[int32], 8), FALSE), 4);
     Cmp (fct, "int x[4]()[8]");
     
     

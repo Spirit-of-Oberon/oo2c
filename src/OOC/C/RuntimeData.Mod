@@ -36,9 +36,20 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
 
   PROCEDURE Nli ();                      (* new line and indent *)
     BEGIN
-      w. WriteLn;
-      w. WriteString ("  ");
+      (*w. WriteLn;
+      w. WriteString ("  ");*)
+      
+      w. WriteChar (" ");
     END Nli;
+  
+  PROCEDURE CNli ();                     (* comma, new line and indent *)
+    BEGIN
+      (*w. WriteChar (",");
+      w. WriteLn;
+      w. WriteString ("  ");*)
+      
+      w. WriteString (", ");
+    END CNli;
   
   PROCEDURE WriteForm (form: ARRAY OF CHAR);
     BEGIN
@@ -46,41 +57,70 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       w. WriteString (form);
     END WriteForm;
   
-  PROCEDURE ArrayTypeDescr (array: Sym.Array);
+  PROCEDURE WriteDescrVariable (type: Sym.Type);
     VAR
       name: String.String;
     BEGIN
-      name := Naming.NameOfTypeDescriptor (array);
+      name := Naming.NameOfTypeDescriptor (type);
       
       w. WriteLn;
       IF writeHeader THEN
         w. WriteString ("extern ");
       END;
-      w. WriteString (structType);
+      w. WriteString (structTypeDesc);
       w. WriteString (" ");
       w. WriteString (name. array^);
       IF writeHeader THEN
         w. WriteString (";");
       ELSE
-        w. WriteString (" = &("+structTypeDesc+"){");
+        w. WriteString (" = {");
         Nli;
+      END;
+    END WriteDescrVariable;
+  
+  PROCEDURE ArrayTypeDescr (array: Sym.Array);
+    VAR
+      name: String.String;
+      base: Sym.Type;
+    BEGIN
+      WriteDescrVariable (array);
+      IF ~writeHeader THEN
         IF array. isOpenArray THEN
-          WriteForm ("strOpenArray");
-          w. WriteString (",");
-          Nli;
-          w. WriteLInt (array. GetOpenDimensions(), 0);
-          w. WriteString (",");
+          base := array. GetNonOpenElementType();
+          name := Naming.NameOfTypeDescriptor (base);
+          w.WriteChar ("&");
+          w. WriteString (name. array^); (* base *)
+          CNli; w.WriteLInt (-1, 0);     (* size *)
+          CNli; w. WriteLInt (array. GetOpenDimensions(), 0); (* len *)
+          CNli; WriteForm ("strOpenArray"); (* form *)
         ELSE
-          WriteForm ("strArray");
-          w. WriteString (",");
-          Nli;
-          w. WriteLInt (array. length, 0);
-          w. WriteString (",");
+          name := Naming.NameOfTypeDescriptor (array. elementType);
+          w.WriteChar ("&");
+          w. WriteString (name. array^); (* base *)
+          CNli; w.WriteLInt (array. size, 0); (* size *)
+          CNli; w. WriteLInt (array. length, 0); (* len *)
+          CNli; WriteForm ("strArray");  (* form *)
         END;
-        w. WriteLn;
-        w. WriteString ("};");
+        w. WriteString (" };");
       END;
     END ArrayTypeDescr;
+  
+  PROCEDURE PointerTypeDescr (pointer: Sym.Pointer);
+    VAR
+      name: String.String;
+      base: Sym.Type;
+    BEGIN
+      WriteDescrVariable (pointer);
+      IF ~writeHeader THEN
+        name := Naming.NameOfTypeDescriptor (pointer. baseType);
+        w.WriteChar ("&");
+        w. WriteString (name. array^); (* base *)
+        CNli; w.WriteLInt (pointer. size, 0); (* size *)
+        CNli; w. WriteLInt (-1, 0); (* len *)
+        CNli; WriteForm ("strPointer"); (* form *)
+        w. WriteString (" };");
+      END;
+    END PointerTypeDescr;
   
   PROCEDURE Traverse (item: Sym.Item; proc: Sym.ProcDecl);
     VAR
@@ -94,12 +134,18 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         END;
         RETURN (item # proc);
       END IsParameter;
-    
+
     BEGIN
       WITH item: Sym.Array DO
         IF ~IsParameter (item) THEN
           ArrayTypeDescr (item);
         END;
+        
+      | item: Sym.Pointer DO
+        IF (item. baseType IS Sym.Array) THEN (* FIXME... add records *)
+          PointerTypeDescr (item);
+        END;
+        
       | item: Sym.ProcDecl DO            (* adjust current procedure *)
         proc := item;
       ELSE                               (* ignore everything else *)

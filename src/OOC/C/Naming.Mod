@@ -1,7 +1,8 @@
 MODULE OOC:C:Naming;
 
 IMPORT
-  IntStr, Strings, ADT:String, OOC:Repository, Sym := OOC:SymbolTable;
+  IntStr, Strings, ADT:String, OOC:Repository, Sym := OOC:SymbolTable,
+  OOC:SymbolTable:Predef, OOC:Auxiliary:Config;
 
 TYPE
   Buffer = ARRAY 2*1024 OF CHAR;
@@ -29,6 +30,12 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
       relativeName :=
         ~(decl. parent. parent IS Sym.ProcDecl) OR
         (decl. parent. parent. parent IS Sym.Module)
+
+    ELSIF (decl IS Sym.FieldDecl) THEN
+      (* use relative names for record fields, as long as there are no
+         collisions between a local field and one inherited from a
+         base type *)
+      relativeName := TRUE;
     END;
     
     IF relativeName THEN
@@ -99,14 +106,28 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
    @end precond *)
   VAR
     name: String.String;
-    str: ARRAY 32 OF CHAR;
+    str, str2: ARRAY 32 OF CHAR;
   BEGIN
-    name := String.New ("_td_");
-    IF (type. namingDecl = NIL) THEN
-      IntStr.IntToStr (type. position. pos, str);
-      RETURN name. Concat (String.New (str));
+    WITH type: Sym.PredefType DO
+      CASE type. id OF
+      | Predef.boolean : str := "boolean"
+      | Predef.char    : str := "char"
+      | Predef.shortint: str := "shortint"
+      | Predef.integer : str := "integer"
+      | Predef.longint : str := "longint"
+      END;
+      str2 := Config.runtimeModule;
+      Strings.Append ("__", str2);
+      Strings.Append (str, str2);
+      RETURN String.New (str2);
     ELSE
-      RETURN name. Concat (NameOfType (type));
+      name := String.New ("_td_");
+      IF (type. namingDecl = NIL) THEN
+        IntStr.IntToStr (type. position. pos, str);
+        RETURN name. Concat (String.New (str));
+      ELSE
+        RETURN name. Concat (NameOfType (type));
+      END;
     END;
   END NameOfTypeDescriptor;
 
