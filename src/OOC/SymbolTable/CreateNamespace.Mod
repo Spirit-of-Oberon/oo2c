@@ -1066,6 +1066,40 @@ RAISES IO.Error;
       VAR
         i: LONGINT;
         proc: Sym.ProcDecl;
+
+      PROCEDURE AllocateTBProcIndices(record: Sym.Record);
+      (* When this procedure is done, all type-bound procedures of the record
+         namespace have a valid value in @ofield{Sym.ProcDecl.tbProcIndex}, and
+         the record's @ofield{Sym.Record.tbProcCount} correctly reflects the
+         number of type-bound procedures attached to it.  *)
+        VAR
+          decl, base: Sym.Item;
+          ns: Namespace.Extended;
+        BEGIN
+          decl := root.nestedItems;
+          WHILE (decl # NIL) DO
+            WITH decl: Sym.ProcDecl DO
+              IF decl.IsTypeBound() & ~decl.isForwardDecl &
+                 (decl.Class() = record) THEN
+                ns := record.ns(Namespace.Extended);
+                IF (ns.extends = NIL) THEN
+                  base := NIL;
+                ELSE
+                  base := ns.extends.Identify(decl, decl.name, TRUE);
+                END;
+                IF (base # NIL) & (base IS Sym.ProcDecl) THEN
+                  base(Sym.ProcDecl).CopyTBProcIndex(decl);
+                ELSE
+                  record.AssignTBProcIndex(decl);
+                END;
+              END;
+            ELSE
+              (* ignore *)
+            END;
+            decl := decl.nextNested;
+          END;
+        END AllocateTBProcIndices;
+      
       BEGIN
         IF (record. tbProcCount = -1) THEN
           IF (record. baseType = NIL) OR 
@@ -1078,6 +1112,8 @@ RAISES IO.Error;
           record.ns(Namespace.Extended).CheckRestrictions (record, uses,
                                                            errList);
 
+          AllocateTBProcIndices(record);
+          
           IF errList.NoErrors() & ~record.isAbstract THEN
             (* Check that no abstract procedure remain.  Only do this if the
                call to CheckRestrictions did not report any errors, or we might

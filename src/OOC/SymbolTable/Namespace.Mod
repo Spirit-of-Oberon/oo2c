@@ -60,7 +60,7 @@ TYPE
     (**This class implements record namespaces.  A record namespace extends
        the namespace of its base type.  *)
     (NamespaceDesc)
-    extends: Namespace;
+    extends-: Namespace;
     (* Refers to the namespace, of which this namespace is an extension.  If
        the record has no base type, this field is @code{NIL}.  *)
   END;
@@ -413,13 +413,7 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
    fields and type-bound procedures.  For redefinitions of type-bound 
    procedures, this procedure also checks whether the export marks correspond,
    and whether the formal parameter list of the redefinition matches that
-   of the base definition.
-   
-   When this procedure is done, all type-bound procedures of the record
-   namespace have a valid value in
-   @ofield{Sym.ProcDecl.tbProcIndex}, and the record's
-   @ofield{Sym.Record.tbProcCount} correctly reflects the
-   number of type-bound procedures attached to it.  *)
+   of the base definition.  *)
   VAR
     i, j: LONGINT;
     decl, base: Sym.Declaration;
@@ -483,7 +477,6 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               IF base.notRedefined THEN
                 base.notRedefined := FALSE;
               END;
-              base. CopyTBProcIndex (decl);
               IF (decl. name. pos < base. visibleFrom) THEN
                 ErrDecl (redefinitionBeforeBase, decl, errList)
               END;
@@ -504,9 +497,6 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               ErrDecl (invalidRedefintion, decl, errList)
             END;
           END;
-          
-        ELSE
-          record. AssignTBProcIndex (decl)
         END
       END
     END
