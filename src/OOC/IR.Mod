@@ -306,6 +306,13 @@ TYPE
   END;
 
 TYPE
+  Abs* = POINTER TO AbsDesc;
+  AbsDesc = RECORD
+    (OperatorDesc)
+    operand-: Expression;
+  END;
+
+TYPE
   Ash* = POINTER TO AshDesc;
   AshDesc = RECORD
     (OperatorDesc)
@@ -1365,6 +1372,32 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitCap* (cap: Cap);
 PROCEDURE (cap: Cap) Accept* (v: Visitor);
   BEGIN
     v. VisitCap (cap)
+  END Accept;
+
+(* Operator Class: Abs
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitAbs (abs: Abs; sym: Symbol; operand: Expression);
+  BEGIN
+    InitOperator (abs, sym, operand. type);
+    abs. operand := operand;
+  END InitAbs;
+
+PROCEDURE (b: Builder) NewAbs (sym: Symbol; operand: Expression): Expression;
+  VAR
+    abs: Abs;
+  BEGIN
+    NEW (abs);
+    InitAbs (abs, sym, operand);
+    RETURN abs;
+  END NewAbs;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitAbs* (abs: Abs);
+  END VisitAbs;
+
+PROCEDURE (abs: Abs) Accept* (v: Visitor);
+  BEGIN
+    v. VisitAbs (abs)
   END Accept;
 
 (* Operator Class: Ash
@@ -3344,6 +3377,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       | Predef.size:
         RETURN b. NewSize (design. sym, arguments[0])
 
+      | Predef.abs:
+        RETURN b. NewAbs (design. sym, arguments[0]);
+        
       | Predef.ash:
         RETURN b. NewAsh (design. sym, arguments[0], arguments[1]);
         

@@ -97,20 +97,21 @@ CONST
   size* = 2;                             (* SIZE *)
   inc* = 3;                              (* INC *)
   dec* = 4;                              (* DEC *)
-  ash* = 5;                              (* ASH *)
-  cap* = 6;                              (* CAP *)
-  long* = 7;                             (* LONG *)
-  short* = 8;                            (* SHORT *)
-  chr* = 9;                              (* CHR *)
-  entier* = 10;                          (* ENTIER *)
-  odd* = 11;                             (* ODD *)
-  ord* = 12;                             (* ORD *)
-  max* = 13;                             (* MAX *)
-  min* = 14;                             (* MIN *)
-  new* = 15;                             (* NEW *)
-  copy* = 16;                            (* COPY *)
+  abs* = 5;                              (* ABS *)
+  ash* = 6;                              (* ASH *)
+  cap* = 7;                              (* CAP *)
+  long* = 8;                             (* LONG *)
+  short* = 9;                            (* SHORT *)
+  chr* = 10;                             (* CHR *)
+  entier* = 11;                          (* ENTIER *)
+  odd* = 12;                             (* ODD *)
+  ord* = 13;                             (* ORD *)
+  max* = 14;                             (* MAX *)
+  min* = 15;                             (* MIN *)
+  new* = 16;                             (* NEW *)
+  copy* = 17;                            (* COPY *)
 
-  adr* = 17;                             (* SYSTEM.ADR *)
+  adr* = 18;                             (* SYSTEM.ADR *)
   
 VAR
   i: LONGINT;
@@ -238,6 +239,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (stb, module, size, "SIZE", 1, 1);
     PredefProc (stb, module, inc, "INC", 1, 2);
     PredefProc (stb, module, dec, "DEC", 1, 2);
+    PredefProc (stb, module, abs, "ABS", 1, 1);
     PredefProc (stb, module, ash, "ASH", 2, 2);
     PredefProc (stb, module, cap, "CAP", 1, 1);
     PredefProc (stb, module, long, "LONG", 1, 1);
