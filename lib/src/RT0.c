@@ -33,7 +33,8 @@ static int moduleCount = 0, sizeModules = 32;
 #define PS(_str,_name,_form,_size) \
   _str.baseTypes = NULL; _str.tbProcs = NULL; \
   _str.module = &_mid; _str.name = (OOC_CHAR8*)_name; \
-  _str.size = _size; _str.len = -1; _str.form = _form;
+  _str.size = _size; _str.len = -1; _str.form = _form; \
+  _str.typeArgs = NULL;
   
 
 static void write_backtrace () {
@@ -84,8 +85,13 @@ static void _negative_length(OOC_LEN len) {
 
 OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   void *var, *ptr;
-
-  if (td->form == RT0__strRecord) { /* record */
+  OOC_INT8 form = td->form;
+  
+  if (form == RT0__strQualType) { /* get to base type of qualified type */
+    form = td->typeArgs[0]->form;
+  }
+  
+  if (form == RT0__strRecord) { /* record */
     int prefix;
     int size = td->size;
     if (size == 0) size++;
@@ -100,7 +106,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     var = (char*)ptr+prefix;
     OOC_TYPE_TAG(var) = td;
     
-  } else if (td->form == RT0__strArray) { /* fixed size array */
+  } else if (form == RT0__strArray) { /* fixed size array */
     int size = td->size;
     if (size == 0) size++;
     var = GC_MALLOC(size);
@@ -156,6 +162,27 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
 
 RT0__Struct RT0__TypeOf(OOC_PTR ptr) {
   return OOC_TYPE_TAG(ptr);
+}
+
+static OOC_BOOLEAN SameType(RT0__Struct t1, RT0__Struct t2) {
+  if (t1 == t2) {
+    return OOC_TRUE;
+  } else if ((t1->form == RT0__strQualType) &&
+	     (t2->form == RT0__strQualType) &&
+	     (t1->typeArgs[0] == t2->typeArgs[0])) {
+    int i=1;
+    while ((t1->typeArgs[i] != NULL) &&
+	   SameType(t1->typeArgs[i], t2->typeArgs[i])) {
+      i++;
+    }
+    return (t1->typeArgs[i] == NULL);
+  } else {
+    return OOC_FALSE;
+  }
+}
+
+OOC_BOOLEAN RT0__TypeTest(RT0__Struct tag, RT0__Struct td) {
+  return (tag->len >= td->len) && SameType(tag->baseTypes[td->len], td);
 }
 
 OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {

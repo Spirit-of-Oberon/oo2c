@@ -73,6 +73,10 @@ CONST
   
   strPointer* = -4;
   (**A pointer definition of the form @samp{POINTER TO T}.  *)
+
+  strQualType* = -5;
+  (**A qualified type, specifying type arguments for a parametric type's
+     parameter list.  *)
   
 TYPE
   Name* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
@@ -132,6 +136,24 @@ TYPE
        @item @samp{@ofield{baseTypes}[0]} is the base type of the pointer.
        @end itemize
 
+
+       @item @var{T}(@var{A1},@var{A2},@dots{})
+       @itemize @bullet
+       @item @ofield{form} equals @oconst{strQualType}.
+
+       @item @ofield{name} is @code{NIL}.
+       
+       @item @samp{@ofield{typeArgs}[0]} is the base type of the qualified
+       type (the @var{T} in the example above).
+
+       @item @samp{@ofield{typeArgs}[1, 2, @dots{}]} are the type arguments
+       (@var{A1}, @var{A2}, and so on) followed by @code{NIL}.
+
+       @item All other fields hold a value equivalent to the corresponding
+       field in the qualified type's base type.
+       
+       @end itemize
+
        @end table  *)
 
     baseTypes-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF Struct;
@@ -142,12 +164,18 @@ TYPE
     (**Table of type-bound procedures of a record type.  This field is
        @code{NIL} for all other types.  *)
 
+    typeArgs-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF Struct;
+    (**For a qualified type @oconst{strQualType}, this array holds the base
+       type followed by the type arguments applied to the base type, followed
+       by @code{NIL}.  For all other types, this field is @code{NIL}.  *)
+    
     module-: Module;
     (**The module that defines this type descriptor.  For predefined types,
        this is a reference to module @samp{RT0}.  *)
 
     name-: Name;
-    (**Type name.  @code{NIL} for anonymous types.  *)
+    (**Type name.  @code{NIL} for anonymous types and instances of
+       @oconst{strQualType}.  *)
 
     size-: LONGINT;
     (**Size of the data type in bytes.  For an open array type, which has
@@ -213,6 +241,14 @@ PROCEDURE TypeOf* (ptr: SYSTEM.PTR): Struct;
 (**Returns the type of the record pointer @oparam{ptr}.  The address
    @oparam{ptr} must be a previous result of @oproc{NewObject}.  Result is
    undefined if @oparam{ptr} is not a reference to a record object.  *)
+
+PROCEDURE TypeTest* (tag, td: Struct): BOOLEAN;
+(**Return @code{TRUE} if the type tag @oparam{tag} belongs to an object that is
+   an instance of the type @oparam{td}.
+
+   @precond
+   @oparam{tag} and @oparam{td} is the type descriptor of a @samp{RECORD} type.
+   @end precond  *)
 
 PROCEDURE NewBlock* (bytes: LONGINT): SYSTEM.PTR;
 (**Allocates a memory block on the heap with a size of at least @oparam{bytes}
