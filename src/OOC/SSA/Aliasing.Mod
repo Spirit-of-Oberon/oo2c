@@ -245,7 +245,7 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
            the other variable; because of the strict type rules of Oberon-2,
            a static type analysis can rule out many potential aliases *)
         typeInstr := instr. arg(SSA.DeclRef). decl(Sym.VarDecl). type;
-        IF (instr. arg IS (SSA.DeclRef)) THEN
+        IF (reference. arg IS SSA.DeclRef) THEN
           typeRef := reference. arg(SSA.DeclRef). decl(Sym.VarDecl). type;
         ELSE
           typeRef := NIL; ASSERT (FALSE);
