@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!ENTITY % HostessTestcases SYSTEM "testcases.dtd">
+%HostessTestcases;
+
+<!-- If the element "testsuite" has an attribute "select", then only
+     the testcases listed there are tried.  All other cases are
+     skipped -->
+<!ATTLIST testsuite select IDREFS #IMPLIED>

@@ -34,9 +34,10 @@ CONST  (* classifications of test results *)
   passed = 0;
   failed = 1;
   tolerated = 2;
+  skipped = 3;
 
 TYPE
-  Results = ARRAY tolerated+1 OF LONGINT;
+  Results = ARRAY skipped+1 OF LONGINT;
   
 VAR
   testSetup: TestSetup.TestSetup;
@@ -187,7 +188,7 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
         (testType >= Testcases.testRun) &
           (result = Processor.processSuccess)
     END ResultMatches;
-  
+
   BEGIN
     reportWriter. StartTag ("test-report", FALSE);
     SysClock.GetClock (time);
@@ -203,38 +204,45 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
         WHILE (test # NIL) DO
           reportWriter. StartTag ("test-result", FALSE);
           test. Write (reportWriter);
-          
-          proc. Process (test, reportWriter, result);
-          
-          IF (result = Processor.processCrash) THEN
-            (* processor crashed *)
-            class := failed
-          ELSIF (result = Processor.processMainModuleError) OR
+
+          IF ~testSuite. SelectedTest (test) THEN
+            result := Processor.processSkipped;
+            class := skipped
+          ELSE 
+            proc. Process (test, reportWriter, result);
+            
+            IF (result = Processor.processCrash) THEN
+              (* processor crashed *)
+              class := failed
+            ELSIF (result = Processor.processMainModuleError) OR
                 (result = Processor.processBuildError) OR
                 (result = Processor.processCompareFailed) THEN
-            (* some error while processing the test that cannot be
-               attributed to the processor *)
-            class := failed
-          ELSE
-            IF In (testSetup. lang^, test. lang^) THEN
-              IF ResultMatches (test. type, result) THEN
-                class := passed
-              ELSE
-                class := failed
-              END
+              (* some error while processing the test that cannot be
+                 attributed to the processor *)
+              class := failed
             ELSE
-              IF (result = Processor.processReject) THEN
-                class := passed
-              ELSIF ResultMatches (test. type, result) THEN
-                class := tolerated
+              IF In (testSetup. lang^, test. lang^) THEN
+                IF ResultMatches (test. type, result) THEN
+                  class := passed
+                ELSE
+                  class := failed
+                END
               ELSE
-                class := failed
+                IF (result = Processor.processReject) THEN
+                  class := passed
+                ELSIF ResultMatches (test. type, result) THEN
+                  class := tolerated
+                ELSE
+                  class := failed
+                END
               END
             END
           END;
-          
+            
           reportWriter. StartTag ("outcome", FALSE);
           CASE result OF
+          | Processor.processSkipped:
+            str := "skipped"
           | Processor.processCrash:
             str := "compiler crashed"
           | Processor.processReject:
@@ -256,6 +264,7 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
           END;
           reportWriter. AttrStringLatin1 ("result", str);
           CASE class OF
+          | skipped: str := "skipped"
           | passed: str := "passed"
           | failed: str := "failed"
           | tolerated: str := "tolerated"
@@ -263,19 +272,20 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
           reportWriter. AttrStringLatin1 ("class", str);
           reportWriter. EndTag;          (* outcome *)
           reportWriter. EndTag;          (* test-result *)
-          
+            
           Out.String ("--> TEST RESULT: ");
           CASE class OF
+          | skipped: Out.String ("SKIPPED")
           | failed: Out.String ("FAILED")
           | passed: Out.String ("PASSED")
           | tolerated: Out.String ("TOLERATED")
           END;
           IF (test. relevance = Testcases.relevanceInformal) &
-             (result # Processor.processCrash) THEN
+              (result # Processor.processCrash) THEN
             Out.String (" (informal test)")
           ELSE
             IF (class = failed) THEN
-(*              Out.Ln; Out.String ("Aborting..."); Out.Ln; HALT (1)*)
+              (*              Out.Ln; Out.String ("Aborting..."); Out.Ln; HALT (1)*)
             END;
             
             INC (results[class])
@@ -299,57 +309,60 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     reportWriter. EndTag;  (* test-report *)
     reportWriter. EndOfText
   END RunTests;
-
-BEGIN
-  IF (ProgramArgs.args. ArgNumber() # 2) THEN
-    Err.String ("Usage: RunTests <test-setup> <report-file>"); Err.Ln; HALT (1)
-  ELSE
-    (* make error message values "line" and "character position" Emacs
-       compatible be having them start at line 1, point 1 for the XML
-       parser *)
-    XMLError.errMsgLineBase := 1;
-    XMLError.errMsgCharPosBase := 1;
-
-    ReadConfig (testSetup, testSuite)
-  END;
-  
-  proc := Processor.New (testSetup);
-  proc. Setup;
-  results[passed] := 0; results[failed] := 0; results[tolerated] := 0;
-  RunTests (testSetup, testSuite, proc, reportWriter, results);
-  proc. Cleanup;
-  
-  Out.Ln; Out.Ln;
-  Out.String ("OUTCOME"); Out.Ln;
-  Out.String ("passed: "); Out.LongInt (results[passed], 0);
-  Out.String (", failed: "); Out.LongInt (results[failed], 0);
-  Out.String (", tolerated: "); Out.LongInt (results[tolerated], 0); Out.Ln;
-  Out.String ("--> ");
-  exitError := FALSE;
-  IF (results[failed] # 0) THEN
-    Out.String ("Processor incompatible to ");
-    exitError := TRUE;
-  ELSIF (results[tolerated] # 0) THEN
-    Out.String ("Processor accepts ")
-  ELSE
-    Out.String ("Processor is compliant to ")
-  END;
-  LongStrings.Short (testSetup. lang^, "?", str);
-  Out.String (str); Out.Ln;
-  
-(*  writer := Writer.New (StdChannels.stdout. NewWriter(),
-                        Latin1.factory, TRUE, 4);
-  testSetup. Write (writer);
-  writer. EndOfText;
-  
-  writer := Writer.New (StdChannels.stdout. NewWriter(),
-                        Latin1.factory, TRUE, 4);
-  testSuite. Write (writer);
-  writer. EndOfText*)
-
-  IF exitError THEN
-    HALT (1)
-  ELSE
-    HALT (0)
-  END
-END RunTests.
+    
+    BEGIN
+      IF (ProgramArgs.args. ArgNumber() # 2) THEN
+        Err.String ("Usage: RunTests <test-setup> <report-file>"); Err.Ln; HALT (1)
+      ELSE
+        (* make error message values "line" and "character position" Emacs
+           compatible be having them start at line 1, point 1 for the XML
+           parser *)
+            XMLError.errMsgLineBase := 1;
+        XMLError.errMsgCharPosBase := 1;
+        
+        ReadConfig (testSetup, testSuite)
+      END;
+      
+      proc := Processor.New (testSetup);
+      proc. Setup;
+      results[passed] := 0; results[failed] := 0;
+      results[tolerated] := 0; results[skipped] := 0;
+      RunTests (testSetup, testSuite, proc, reportWriter, results);
+      proc. Cleanup;
+      
+      Out.Ln; Out.Ln;
+      Out.String ("OUTCOME"); Out.Ln;
+      Out.String ("passed: "); Out.LongInt (results[passed], 0);
+      Out.String (", failed: "); Out.LongInt (results[failed], 0);
+      Out.String (", tolerated: "); Out.LongInt (results[tolerated], 0);
+      Out.String (", skipped: "); Out.LongInt (results[skipped], 0); Out.Ln;
+      Out.String ("--> ");
+      exitError := FALSE;
+      IF (results[failed] # 0) THEN
+        Out.String ("Processor incompatible to ");
+        exitError := TRUE;
+      ELSIF (results[tolerated] # 0) THEN
+        Out.String ("Processor accepts ")
+      ELSE
+        Out.String ("Processor is compliant to ")
+      END;
+      LongStrings.Short (testSetup. lang^, "?", str);
+      Out.String (str); Out.Ln;
+      
+      (*  writer := Writer.New (StdChannels.stdout. NewWriter(),
+                                Latin1.factory, TRUE, 4);
+         testSetup. Write (writer);
+         writer. EndOfText;
+         
+         writer := Writer.New (StdChannels.stdout. NewWriter(),
+                               Latin1.factory, TRUE, 4);
+         testSuite. Write (writer);
+         writer. EndOfText*)
+          
+      IF exitError THEN
+        HALT (1)
+      ELSE
+        HALT (0)
+      END
+    END RunTests.
+          

@@ -22,7 +22,7 @@ MODULE OOC:TestFramework:Testcases;
 
 
 IMPORT
-  Ch := Channel, Strings, ADT:String,
+  Ch := Channel, LongStrings, Strings, ADT:String,
   URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
   XML:Basic:Parser, XML:Basic:DataType, XML:Writer;
 
@@ -51,13 +51,14 @@ CONST
 CONST
   relevanceStandard* = 0;
   relevanceInformal* = 1;
+  sizeId = 64;
   
 TYPE
   Test* = POINTER TO TestDesc;
   TestDesc = RECORD
     (InlineTextDesc)
     baseURI-: URI.URI;
-    id-: ARRAY 64 OF CHAR;
+    id-: ARRAY sizeId OF CHAR;
     type-: SHORTINT;
     relevance-: SHORTINT;
     file-: URI.URI;
@@ -80,6 +81,7 @@ TYPE
   TestSuiteDesc = RECORD
     (Element.ElementDesc)
     profile-: Element.String;            (* may be NIL *)
+    select-: Element.String;             (* may be NIL *)
     testcasesList-: Element.List;        (* at least one element *)
   END;
 
@@ -436,6 +438,7 @@ PROCEDURE InitTestSuite (testSuite: TestSuite);
   BEGIN
     Element.InitElement (testSuite);
     testSuite. profile := NIL;
+    testSuite. select := NIL;
     testSuite. testcasesList := Element.NewList();
   END InitTestSuite;
 
@@ -450,7 +453,7 @@ PROCEDURE NewTestSuite(): Element.Element;
 
 PROCEDURE (testSuite: TestSuite) IsAttributeName* (localName: Element.String): BOOLEAN;
   BEGIN
-    RETURN (localName^ = "profile")
+    RETURN (localName^ = "profile") OR (localName^ = "select")
   END IsAttributeName;
 
 PROCEDURE (testSuite: TestSuite) AddAttribute* (localName: Element.String;
@@ -458,6 +461,9 @@ PROCEDURE (testSuite: TestSuite) AddAttribute* (localName: Element.String;
   BEGIN
     IF (localName^ = "profile") THEN
       testSuite. profile := value. Flatten (NIL);
+      RETURN TRUE
+    ELSIF (localName^ = "select") THEN
+      testSuite. select := value. Flatten (NIL);
       RETURN TRUE
     ELSE
       RETURN FALSE
@@ -502,6 +508,35 @@ PROCEDURE (testSuite: TestSuite) Write* (writer: Writer.Writer);
     writer. EndTag
   END Write;
 
+PROCEDURE (testSuite: TestSuite) SelectedTest* (test: Test): BOOLEAN;
+  VAR
+    pos, len, i: INTEGER;
+    id: ARRAY sizeId OF LONGCHAR;
+    found: BOOLEAN;
+  BEGIN
+    IF (testSuite. select = NIL) THEN    (* no explicit select: do all *)
+      RETURN TRUE
+    ELSE
+      COPY (test. id, id);
+      pos := 0;
+      len := Strings.Length (test. id);
+      LOOP
+        LongStrings.FindNext (id, testSuite. select^, pos, found, i);
+        IF found THEN
+          IF ((i = 0) OR (testSuite. select[i-1] = " ")) &
+             ((testSuite. select[i+len] = 0X) OR
+              (testSuite. select[i+len] = " ")) THEN
+            RETURN TRUE
+          ELSE
+            pos := i+len
+          END;
+        ELSE
+          RETURN FALSE
+        END;
+      END;
+    END;
+  END SelectedTest;
+  
 
 PROCEDURE Read* (byteReader: Ch.Reader; baseURI: URI.URI; VAR errList: XMLError.List): TestSuite;
   VAR
@@ -522,5 +557,5 @@ PROCEDURE Write* (writer: Writer.Writer; testSuite: TestSuite);
 
 BEGIN
   suiteRoot := Element.NewRootFactory();
-  suiteRoot. AddFactory ("testsuite", NewTestSuite)
+  suiteRoot. AddFactory ("testsuite", NewTestSuite);
 END OOC:TestFramework:Testcases.

@@ -38,7 +38,8 @@ CONST
   processSuccess* = 7;             (* executable ran successfully *)
   processOutputDifference* = 8;    (* executable ran, but output differs *)
   processCompareFailed* = 9;       (* executable ran, but could not compare *)
-
+  processSkipped* = 10;
+  
 TYPE
   Processor* = POINTER TO ProcessorDesc;
   ProcessorDesc = RECORD

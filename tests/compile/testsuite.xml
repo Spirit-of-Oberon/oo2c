@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
-<!DOCTYPE testsuite SYSTEM "../../../hostess/hostess/testcases.dtd" [
+<!DOCTYPE testsuite
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
 
 <!ENTITY baseline-testcases
-         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases.xml">
+         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases-ooc2.xml">
 
 <!ENTITY candidate-testcases
          SYSTEM "../../../hostess/hostess/oberon/candidate.xml">
@@ -12,10 +13,6 @@
 ]>
 
 <testsuite profile="Test Suite for Framework Testing">
-  <testcases profile="dummy" default-lang="O1 O2 AO">
-    <test id="empty" type="accept" file="src/Empty.Mod">
-    </test>
-  </testcases>
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="src/Out.Mod">
@@ -25,7 +22,7 @@
     </test>
   </testcases>
   
-  <!--&baseline-testcases;-->
+  &baseline-testcases;
   <!--&candidate-testcases;-->
   <!--&hostess-testcases;-->
 </testsuite>
