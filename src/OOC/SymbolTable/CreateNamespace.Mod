@@ -660,7 +660,6 @@ RAISES IO.Error;
              (typePars.params[i].type(Sym.TypeVar).bound) THEN
             ErrType(invalidTypeBound, typePars.params[i].srcCodeType);
           END;
-          typePars.params[i].type(Sym.TypeVar).SetIndex(i);
         END;
       END CheckTypePars;
     

@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Object, Object:Boxed, Msg, Strings, 
+  SYSTEM, Object, Object:Boxed, Msg, Strings, 
   ADT:Storable, ADT:Dictionary, ADT:ArrayList, IO,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
@@ -644,10 +644,6 @@ TYPE
     (TypeDesc)
     bound-: Type;
     (**Lower bound of the set of valid type arguments.  *)
-    index-: LONGINT;
-    (**Index of this type variable in the parameter list
-       @ofield{TypePars.params} and the argument list
-       @ofield{QualType.arguments}.  *)
   END;
   
 TYPE
@@ -670,7 +666,7 @@ TYPE
     (**Base type of the qualified type expression.  This is a reference to
        a parametric type.  *)
     srcCodeBaseType-: Type;
-    arguments-: TypeRefArray;
+    arguments*: TypeRefArray;
     (**The arguments of the parametric type.  *)
   END;
 
@@ -2200,7 +2196,6 @@ PROCEDURE InitTypeVar* (typeVar: TypeVar; parent: Item;
   BEGIN
     InitType(typeVar, parent, position);
     typeVar.bound := bound;
-    typeVar.index := -1;
   END InitTypeVar;
 
 PROCEDURE (typeVar: TypeVar) Store* (w: Storable.Writer) RAISES IO.Error;
@@ -2220,18 +2215,12 @@ PROCEDURE (typeVar: TypeVar) Load* (r: Storable.Reader) RAISES IO.Error;
     ELSE
       typeVar.bound := obj(Type);
     END;
-    typeVar.index := -1;
   END Load;
 
 PROCEDURE (typeVar: TypeVar) Bound*(): Type;
   BEGIN
     RETURN typeVar.bound;
   END Bound;
-
-PROCEDURE (typeVar: TypeVar) SetIndex*(index: LONGINT);
-  BEGIN
-    typeVar.index := index;
-  END SetIndex;
 
 
 PROCEDURE InitTypePars* (typePars: TypePars; parent: Item);
@@ -2348,6 +2337,40 @@ PROCEDURE (qualType: QualType) Deparam*(): Type;
   BEGIN
     RETURN qualType.baseType;
   END Deparam;
+
+PROCEDURE (qualType: QualType) HashCode*(): Object.Hash;
+  VAR
+    hash: Object.Hash;
+    i: LONGINT;
+  BEGIN
+    hash := qualType.baseType.HashCode();
+    FOR i := 0 TO LEN(qualType.arguments^)-1 DO
+<*WITH OverflowCheck:=FALSE DO*>
+      hash := SYSTEM.ROT(hash,3)+qualType.arguments[i].type.HashCode();
+<*END*>
+    END;
+    RETURN hash;
+  END HashCode;
+
+PROCEDURE (qualType: QualType) Equals*(y: Object.Object): BOOLEAN;
+  VAR
+    i: LONGINT;
+  BEGIN
+    WITH y: QualType DO
+      IF qualType.baseType.Equals(y.baseType) THEN
+        FOR i := 0 TO LEN(qualType.arguments^)-1 DO
+          IF ~qualType.arguments[i].type.Equals(y.arguments[i].type) THEN
+            RETURN FALSE;
+          END;
+        END;
+        RETURN TRUE;
+      ELSE
+        RETURN FALSE;
+      END;
+    ELSE
+      RETURN FALSE;
+    END;
+  END Equals;
 
 
 PROCEDURE InitPointer* (pointer: Pointer; parent: Item; position: Position;
