@@ -98,12 +98,12 @@ ACCEPT:
 
 REJECT:
 
-  1) expr is not boolean
+  1) expr is not boolean  [HOTIf4]
 
 ACCEPT:
 
-  1) first expr evaluating to TRUE wins
-  2) ELSE is executed if not guard is TRUE
+  1) first expr evaluating to TRUE wins  [HOTIf1, HOTIf2, HOTIf3]
+  2) ELSE is executed if not guard is TRUE  [HOTIf1, HOTIf3]
 
 
 
@@ -142,11 +142,11 @@ ERROR:
 
 REJECT:
 
-  1) expr is not boolean
+  1) expr is not boolean  [HOTLoop7]
 
 ACCEPT:
 
-  1) expr is evaluated before loop body
+  1) expr is evaluated before loop body  [HOTLoop2]
 
 
 
@@ -157,11 +157,11 @@ ACCEPT:
 
 REJECT:
 
-  1) expr is not boolean
+  1) expr is not boolean  [HOTLoop8]
 
 ACCEPT:
 
-  1) expr is evaluated after loop body
+  1) expr is evaluated after loop body  [HOTLoop1]
 
 
 

@@ -918,9 +918,10 @@ CONST
   notInteger = 19;
   notRecord = 20;
   notPointer = 21;
-  illegalFunctionOp = 22;
-  incompatibleAssignment = 23;
-  
+  notBoolean = 22;
+  illegalFunctionOp = 23;
+  incompatibleAssignment = 24;
+    
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -980,6 +981,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expression must be of record type"
     | notPointer:
       t := "Expression must be of pointer type"
+    | notBoolean:
+      t := "Expression must be of type BOOLEAN"
     | illegalFunctionOp:
       t := "Operator may not be applied to function result"
     END;
@@ -1061,6 +1064,19 @@ PROCEDURE (b: Builder) AssertType* (expr: Expression): Sym.Type;
       RETURN expr. type;
     END;
   END AssertType;
+
+PROCEDURE (b: Builder) AssertBoolean* (expr: Expression): Expression;
+(**Generates an error if @oparam{expr} is not a boolean expression.
+   In this case, result is @code{errorExpr}.  Otherwise, @oparam{expr}
+   is returned.  *)
+  BEGIN
+    IF (expr. type IS Sym.PredefType) &
+       (expr. type(Sym.PredefType). id = Predef.boolean) THEN
+      RETURN expr;
+    ELSE
+      RETURN b. ErrExpr (notBoolean, expr. sym);
+    END;
+  END AssertBoolean;
 
 PROCEDURE (b : Builder) Fold* (expr : Expression) : Expression;
 BEGIN
@@ -2887,7 +2903,7 @@ PROCEDURE (b: Builder) NewIfStatm* (sym: Symbol; guard: Expression;
     ifStatm: IfStatm;
   BEGIN
     NEW (ifStatm);
-    InitIfStatm (ifStatm, sym, guard, pathTrue, pathFalse);
+    InitIfStatm (ifStatm, sym, b. AssertBoolean (guard), pathTrue, pathFalse);
     RETURN ifStatm
   END NewIfStatm;
 
@@ -3006,7 +3022,7 @@ PROCEDURE (b: Builder) NewRepeatStatm* (sym: Symbol; body: StatementSeq;
     repeatStatm: RepeatStatm;
   BEGIN
     NEW (repeatStatm);
-    InitRepeatStatm (repeatStatm, sym, body, exitCondition);
+    InitRepeatStatm (repeatStatm, sym, body, b. AssertBoolean (exitCondition));
     RETURN repeatStatm
   END NewRepeatStatm;
 
@@ -3061,7 +3077,7 @@ PROCEDURE (b: Builder) NewWhileStatm* (sym: Symbol; guard: Expression;
     whileStatm: WhileStatm;
   BEGIN
     NEW (whileStatm);
-    InitWhileStatm (whileStatm, sym, guard, body);
+    InitWhileStatm (whileStatm, sym, b. AssertBoolean (guard), body);
     RETURN whileStatm
   END NewWhileStatm;
 

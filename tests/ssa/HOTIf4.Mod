@@ -1,0 +1,14 @@
+MODULE HOTIf4;
+
+PROCEDURE If (b: SHORTINT);
+  BEGIN
+    IF b THEN
+    END;
+  END If;
+
+PROCEDURE Test* ();
+  BEGIN
+    If (1);
+  END Test;
+
+END HOTIf4.
