@@ -608,6 +608,57 @@ PROCEDURE (s: String32) Equals*(y: Object): BOOLEAN;
     END;
   END Equals;
 
+PROCEDURE (s: String) [ABSTRACT] EqualsIgnoreCase*(y: Object): BOOLEAN;
+  END EqualsIgnoreCase;
+
+PROCEDURE (s: String8) EqualsIgnoreCase*(y: Object): BOOLEAN;
+  VAR
+    i: LONGINT;
+  BEGIN
+    IF (y = NIL) OR ~(y IS String) OR (s.length # y(String).length) THEN
+      RETURN FALSE;
+    ELSE
+      (* note: using CAP() restricts the usefulness to ASCII -- for now *)
+      WITH y: String8 DO
+        i := 0;
+        WHILE (i # s.length) & (CAP(s.data[i]) = CAP(y.data[i])) DO
+          INC(i);
+        END;
+        RETURN (i = s.length);
+      | y: String32 DO
+        i := 0;
+        WHILE (i # s.length) & (CAP(s.data[i]) = CAP(y.data[i])) DO
+          INC(i);
+        END;
+        RETURN (i = s.length);
+      END;
+    END;
+  END EqualsIgnoreCase;
+
+PROCEDURE (s: String32) EqualsIgnoreCase*(y: Object): BOOLEAN;
+  VAR
+    i: LONGINT;
+  BEGIN
+    IF (y = NIL) OR ~(y IS String) OR (s.length # y(String).length) THEN
+      RETURN FALSE;
+    ELSE
+      (* note: using CAP() restricts the usefulness to ASCII -- for now *)
+      WITH y: String8 DO
+        i := 0;
+        WHILE (i # s.length) & (CAP(s.data[i]) = CAP(y.data[i])) DO
+          INC(i);
+        END;
+        RETURN (i = s.length);
+      | y: String32 DO
+        i := 0;
+        WHILE (i # s.length) & (CAP(s.data[i]) = CAP(y.data[i])) DO
+          INC(i);
+        END;
+        RETURN (i = s.length);
+      END;
+    END;
+  END EqualsIgnoreCase;
+
 PROCEDURE (s: String) [ABSTRACT] Compare*(y: Object): LONGINT;
 (**Compares the two strings @oparam{s} and @oparam{y}.  The sign of the result 
    signals if @oparam{s} is less than, equal to, or greater than @oparam{y}:
