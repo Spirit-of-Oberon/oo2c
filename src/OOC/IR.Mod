@@ -320,6 +320,7 @@ PROCEDURE (node: Node) [ABSTRACT] Accept* (v: Visitor);
 PROCEDURE InitExpression* (expr: Expression; sym: Symbol; type: Item.Type);
   BEGIN
     InitNode (expr, sym);
+    expr. type := type;
   END InitExpression;
 
 PROCEDURE InitReference (ref: Reference; name: Symbol; type: Item.Type;
@@ -613,7 +614,11 @@ PROCEDURE (return: Return) Accept* (v: Visitor);
 
 PROCEDURE InitCall* (call: Call; design: Expression; arguments: ExpressionList);
   BEGIN
-    InitNode (call, design. sym);
+    InitStatement (call, design. sym);
+    IF (design. type(Item.FormalPars). resultType # NIL) THEN
+      (* fix result type for function calls *)
+      call. type := design. type(Item.FormalPars). resultType
+    END;
     call. design := design;
     call. arguments := arguments;
   END InitCall;
