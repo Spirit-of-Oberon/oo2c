@@ -9,9 +9,11 @@ T8c__f:
 	pushl %esi
 	pushl %ebx
 	subl $8, %esp
+	movb 8(%ebp), %al
 	cmpb $0, 8(%ebp)
 	jne .L3
 .L1:
+	movb 12(%ebp), %al
 	cmpb $0, 12(%ebp)
 	jne .L3
 .L2:
@@ -19,6 +21,7 @@ T8c__f:
 	jmp .LE_T8c__f
 	jmp .L5
 .L3:
+	movb 16(%ebp), %al
 	cmpb $0, 16(%ebp)
 	je .L2
 .L4:

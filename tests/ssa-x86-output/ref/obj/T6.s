@@ -9,9 +9,11 @@ T6__f:
 	pushl %esi
 	pushl %ebx
 	subl $8, %esp
+	movb 8(%ebp), %al
 	cmpb $0, 8(%ebp)
 	je .L3
 .L1:
+	movb 12(%ebp), %al
 	cmpb $0, 12(%ebp)
 	je .L3
 .L2:

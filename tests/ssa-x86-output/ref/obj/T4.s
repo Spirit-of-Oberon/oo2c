@@ -9,15 +9,20 @@ T4__f:
 	pushl %esi
 	pushl %ebx
 	subl $12, %esp
+	movb 8(%ebp), %al
 	cmpb $0, 8(%ebp)
 	je .L2
 .L1:
-	movl 12(%ebp), %eax
-	addl 16(%ebp), %eax
+	movl 12(%ebp), %ecx
+	movl 16(%ebp), %eax
+	addl 16(%ebp), %ecx
+	movl %ecx, %eax
 	jmp .L3
 .L2:
-	movl 12(%ebp), %eax
-	subl 16(%ebp), %eax
+	movl 12(%ebp), %ecx
+	movl 16(%ebp), %eax
+	subl 16(%ebp), %ecx
+	movl %ecx, %eax
 .L3:
 	jmp .LE_T4__f
 	movl $_mid, 0(%esp)
