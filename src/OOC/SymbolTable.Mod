@@ -272,7 +272,7 @@ TYPE
   LinkDirective* = POINTER TO LinkDirectiveDesc;
   LinkDirectiveDesc = RECORD
     (Object.ObjectDesc)
-    next: LinkDirective;
+    next-: LinkDirective;
   END;
 
 TYPE
@@ -280,6 +280,15 @@ TYPE
   LinkFileDesc = RECORD
     (LinkDirectiveDesc)
     file: URI.HierarchicalURI;
+    prefixOption, suffixOption: String.String;
+  END;
+
+TYPE
+  LinkLib* = POINTER TO LinkLibDesc;
+  LinkLibDesc = RECORD
+    (LinkDirectiveDesc)
+    libraryName-: String.String;
+    dependencies: String.StringArrayPtr;
     prefixOption, suffixOption: String.String;
   END;
 
@@ -305,7 +314,7 @@ TYPE
     (**The default calling convention to be used for all procedures in the
        module.  If this is @oconst{callConvDefault}, then the final choice
        is up to the compiler back-end.  *)
-    linkDirectives: LinkDirective;
+    linkDirectives-: LinkDirective;
     (**List of @samp{FILE}, @samp{OBJ}, and @samp{LIB} link directives from
        the module header.  *)
 
@@ -979,6 +988,49 @@ PROCEDURE (l: LinkFile) Load* (r: Object.Reader);
   END Load;
 
 
+PROCEDURE (l: LinkLib) Store* (w: Object.Writer);
+  VAR
+    i: LONGINT;
+  BEGIN
+    l. Store^ (w);
+    w. WriteObject (l. libraryName);
+    w. WriteObject (l. prefixOption);
+    w. WriteObject (l. suffixOption);
+    w. WriteNum (LEN (l. dependencies^));
+    FOR i := 0 TO LEN (l. dependencies^)-1 DO
+      w. WriteObject (l. dependencies[i]);
+    END;
+  END Store;
+
+PROCEDURE (l: LinkLib) Load* (r: Object.Reader);
+  VAR
+    obj: Object.Object;
+    len, i: LONGINT;
+  BEGIN
+    l. Load^ (r);
+    r. ReadObject (obj);
+    l. libraryName := obj(String.String);
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      l. prefixOption := NIL
+    ELSE
+      l. prefixOption := obj(String.String)
+    END;
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      l. suffixOption := NIL
+    ELSE
+      l. suffixOption := obj(String.String)
+    END;
+    r. ReadNum (len);
+    NEW (l. dependencies, len);
+    FOR i := 0 TO len-1 DO
+      r. ReadObject (obj);
+      l. dependencies[i] := obj(String.String);
+    END;
+  END Load;
+
+
 PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
                        class: ModuleClass; callConv: CallConv;
                        moduleAST: AST.Node; bodyDecl: ProcDecl);
@@ -1058,6 +1110,21 @@ PROCEDURE NewLinkFile (file: URI.HierarchicalURI;
     RETURN l
   END NewLinkFile;
 
+PROCEDURE NewLinkLib (libraryName: String.String;
+                      dependencies: String.StringArrayPtr;
+                      prefixOption, suffixOption: String.String): LinkLib;
+  VAR
+    l: LinkLib;
+  BEGIN
+    NEW (l);
+    InitLinkDirective (l);
+    l. libraryName := libraryName;
+    l. dependencies := dependencies;
+    l. prefixOption := prefixOption;
+    l. suffixOption := suffixOption;
+    RETURN l
+  END NewLinkLib;
+
 PROCEDURE AddLinkDirective (VAR list: LinkDirective; l: LinkDirective);
   BEGIN
     IF (list = NIL) THEN
@@ -1074,6 +1141,16 @@ PROCEDURE (mod: Module) AddLinkFile* (file: URI.HierarchicalURI;
     AddLinkDirective (mod. linkDirectives,
                       NewLinkFile (file, prefixOption, suffixOption))
   END AddLinkFile;
+
+PROCEDURE (mod: Module) AddLinkLib* (libraryName: String.String;
+                                     dependencies: String.StringArrayPtr;
+                                     prefixOption, suffixOption: String.String);
+  BEGIN
+    ASSERT (libraryName # NIL);
+    AddLinkDirective (mod. linkDirectives,
+                      NewLinkLib (libraryName, dependencies,
+                                  prefixOption, suffixOption))
+  END AddLinkLib;
 
 
 PROCEDURE (mod: Module) GetExternalSource* (): URI.HierarchicalURI;

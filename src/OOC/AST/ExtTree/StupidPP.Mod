@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree:StupidPP;
 (*  A simple pretty printer: it writes the syntax tree, omitting any comments.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -560,11 +560,11 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           IF (n. lParen # NIL) THEN
             w. WriteString (" (");
             i := 0;
-            WHILE (i < n. dependences. len) DO
+            WHILE (i < n. dependencies. len) DO
               IF (i # 0) THEN
                 w. WriteString (", ")
               END;
-              Node (n. dependences. n[i]);
+              Node (n. dependencies. n[i]);
               INC (i, 2)
             END;
             w. WriteString (")")

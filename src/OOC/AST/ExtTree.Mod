@@ -502,14 +502,14 @@ TYPE
   LinkLibFlagDesc = RECORD
     (NodeDesc)
     lib-: AST.Node;
-    libName-: AST.Node;
+    libName-: Terminal;
     lParen-: AST.Node;
-    dependences-: AST.NodeList;
+    dependencies-: NodeList;
     rParen-: AST.Node;
     addOption-: AST.Node;
-    prefixOpt-: AST.Node;
+    prefixOpt-: Terminal;
     comma-: AST.Node;
-    suffixOpt-: AST.Node;
+    suffixOpt-: Terminal;
   END;
 
 
@@ -1587,21 +1587,33 @@ PROCEDURE (linkObjFlag: LinkObjFlag) Accept* (v: Visitor);
 
 
 PROCEDURE (b: Builder) LinkLibFlag* (lib, libName, lParen: AST.Node;
-                  dependences: AST.NodeList;
+                  dependencies: AST.NodeList;
                   rParen, addOption, prefixOpt, comma, suffixOpt: AST.Node): AST.Node;
   VAR
     llf: LinkLibFlag;
   BEGIN
     NEW (llf);
     llf. lib := lib;
-    llf. libName := libName;
+    llf. libName := libName(Terminal);
     llf. lParen := lParen;
-    llf. dependences := dependences;
+    IF (dependencies = NIL) THEN
+      llf. dependencies := NIL;
+    ELSE
+      llf. dependencies := dependencies(NodeList);
+    END;
     llf. rParen := rParen;
     llf. addOption := addOption;
-    llf. prefixOpt := prefixOpt;
+    IF (prefixOpt = NIL) THEN
+      llf. prefixOpt := NIL
+    ELSE
+      llf. prefixOpt := prefixOpt(Terminal)
+    END;
     llf. comma := comma;
-    llf. suffixOpt := suffixOpt;
+    IF (suffixOpt = NIL) THEN
+      llf. suffixOpt := NIL
+    ELSE
+      llf. suffixOpt := suffixOpt(Terminal)
+    END;
     RETURN llf
   END LinkLibFlag;
 

@@ -185,6 +185,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     res: Msg.Msg;
     i: LONGINT;
     n: AST.Node;
+    depList: String.StringArrayPtr;
   BEGIN
     moduleName := GetName (module. name. nameList. n[0]);
     Sym.InitName (moduleName, module. moduleName, moduleName. pos, 
@@ -228,7 +229,29 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
             suffixOption := NIL
           END;
           moduleDecl. AddLinkFile (uri(URI.HierarchicalURI),
-                                   prefixOption, suffixOption)
+                                   prefixOption, suffixOption);
+
+        | n: ExtTree.LinkLibFlag DO
+          str := n. libName. GetString (TRUE);
+          IF (n. prefixOpt # NIL) THEN
+            prefixOption := n. prefixOpt. GetString (FALSE)
+          ELSE
+            prefixOption := NIL
+          END;
+          IF (n. suffixOpt # NIL) THEN
+            suffixOption := n. suffixOpt. GetString (FALSE)
+          ELSE
+            suffixOption := NIL
+          END;
+          IF (n. dependencies = NIL) THEN
+            NEW (depList, 0);
+          ELSE
+            NEW (depList, n. dependencies. len DIV 2+1);
+            FOR i := 0 TO n. dependencies. len-1 BY 2 DO
+              depList[i DIV 2] := n. dependencies. n[i](ExtTree.Terminal). GetString (FALSE);
+            END;
+          END;
+          moduleDecl. AddLinkLib (str, depList, prefixOption, suffixOption);
         ELSE
           (* ignore list of flags for now *)
         END
