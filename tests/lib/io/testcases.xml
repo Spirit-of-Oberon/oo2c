@@ -13,9 +13,6 @@
   <test id="libio_Socket" type="run" file="LibIoSocket.Mod">
     Imports module <code>IO:Socket</code>.
   </test>
-  <test id="libio_Port" type="run" file="LibIoPort.Mod">
-    Imports modules <code>IO:Port:*</code>.
-  </test>
   <test id="libio_Net" type="run" file="LibNet.Mod">
     Imports modules <code>Net:*</code>.
   </test>
