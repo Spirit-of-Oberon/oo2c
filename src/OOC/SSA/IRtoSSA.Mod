@@ -1329,7 +1329,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr: SSA.Instr;
         cmpClass: Opcode.Class;
       BEGIN
-        IF (forStatm. step(IR.Const). value(BigInt.BigInt). Sign() >= 0) THEN
+        IF forStatm.PositiveStep() THEN
           cmpClass := Opcode.leq;
         ELSE
           cmpClass := Opcode.geq;

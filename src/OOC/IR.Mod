@@ -4142,6 +4142,11 @@ PROCEDURE (forStatm: ForStatm) Accept* (v: Visitor);
     v. VisitForStatm (forStatm)
   END Accept;
 
+PROCEDURE (forStatm: ForStatm) PositiveStep*(): BOOLEAN;
+  BEGIN
+    RETURN (forStatm.step(Const).value(BigInt.BigInt).Sign() >= 0);
+  END PositiveStep;
+
 (* Statement Class: IterateArrayStatm
    ------------------------------------------------------------------------ *)
 
