@@ -97,6 +97,7 @@ CONST
   flagNotExtensible* = 4;
   flagCString* = 5;
   flagNilCompat* = 6;
+  flagUnion* = 7;
   
 CONST
   nameNotExported* = 0;
@@ -551,7 +552,7 @@ TYPE
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}
        has been run.  *)
 
-    isUnion-: BOOLEAN;
+    isUnion*: BOOLEAN;
     (**If @code{TRUE}, then the record is treated like a C-style @code{union}
        type.  *)
     isAbstract*: BOOLEAN;
@@ -956,6 +957,8 @@ PROCEDURE (item: Item) AddFlag* (name: Name);
       id := flagCString;
     ELSIF (name.str^ = "NIL_COMPAT") THEN
       id := flagNilCompat;
+    ELSIF (name.str^ = "UNION") THEN
+      id := flagUnion;
     ELSE
       id := flagUnknownName;
     END;
