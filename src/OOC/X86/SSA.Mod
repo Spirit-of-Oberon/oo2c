@@ -2014,16 +2014,17 @@ PROCEDURE (b: Block) SetMarkers* (newInfo: Node; newMarker: LONGINT);
     instr: Instr;
     res: Result;
   BEGIN
+    b.info := newInfo;
+    b.marker := newMarker;
+    
     instr := b.instrList;
     WHILE (instr # NIL) DO
       WITH instr: Block DO
         instr.SetMarkers(newInfo, newMarker);
       ELSE
-        (* nothing *)
+        instr.info := newInfo;
+        instr.marker := newMarker;
       END;
-      
-      instr.info := newInfo;
-      instr.marker := newMarker;
       
       res := instr.resultList;
       WHILE (res # NIL) DO
