@@ -785,9 +785,6 @@ TYPE
 
 
 CONST
-  unlimited = MAX (LONGINT);
-  
-CONST
   undeclaredIdent = 1;
   expectedIdent = 2;
   numberOutOfRange = 3;
@@ -2769,6 +2766,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
   VAR
     call: Call;
     targetType: Sym.PredefId;
+    predefProc: Sym.PredefProc;
     dim: LONGINT;
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
@@ -2907,6 +2905,15 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
   
   BEGIN
     WITH design: PredefProc DO
+      predefProc := design. decl(Sym.PredefProc);
+
+      IF ~CheckNumberOfArguments(predefProc. minArgs, predefProc. maxArgs) THEN
+        (* call does not have the required number of arguments; we bail out
+           early, to avoid running into run-time errors in the more fine
+           grained checks below *)
+        RETURN b. errorExpr;
+      END;
+      
       CASE design. decl(Sym.PredefProc). id OF
       (* predefined procedures *)
       | Predef.assert:
@@ -2914,64 +2921,53 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
                   ~GetPragmaValue(b, StdPragmas.assertions, design. sym. pos));
 
       | Predef.new:
-        IF CheckNumberOfArguments (1, unlimited) THEN
-          ASSERT (arguments[0]. type IS Sym.Pointer);
-          type := arguments[0]. type(Sym.Pointer). baseType;
-          IF (type IS Sym.Array) THEN
-            IF CheckNumberOfArguments (1, 1+arguments[0]. type(Sym.Pointer). baseType(Sym.Array). GetOpenDimensions()) THEN
-              (* FIXME... check argument type here or in NewNewObject() *)
-              RETURN b. NewAssignment
-                  (design. sym, arguments[0],
-                   b. NewNewObject (design.sym, arguments[0].type, arguments));
-            END;
-          ELSE (* (type IS Sym.Record) *)
-            IF CheckNumberOfArguments (1, 1) THEN
-              RETURN b. NewAssignment
-                  (design. sym, arguments[0],
-                   b. NewNewObject (design. sym, arguments[0].type, NIL));
-            END;
+        ASSERT (arguments[0]. type IS Sym.Pointer);
+        type := arguments[0]. type(Sym.Pointer). baseType;
+        IF (type IS Sym.Array) THEN
+          IF CheckNumberOfArguments (1, 1+arguments[0]. type(Sym.Pointer). baseType(Sym.Array). GetOpenDimensions()) THEN
+            (* FIXME... check argument type here or in NewNewObject() *)
+            RETURN b. NewAssignment
+                (design. sym, arguments[0],
+                 b. NewNewObject (design.sym, arguments[0].type, arguments));
+          END;
+        ELSE (* (type IS Sym.Record) *)
+          IF CheckNumberOfArguments (1, 1) THEN
+            RETURN b. NewAssignment
+                (design. sym, arguments[0],
+                 b. NewNewObject (design. sym, arguments[0].type, NIL));
           END;
         END;
         RETURN b. errorExpr;
         
       (* predefined functions *)
       | Predef.len:
-        IF CheckNumberOfArguments (1, 2) THEN
-          IF (LEN (arguments^) # 2) THEN
-            dim := 0;
-          ELSE  (* LEN (arguments^) = 2 *)
-            dim := b. AssertIntConst (arguments[1], 0,
-                                      arguments[0]. type. ArrayDimensions());
-          END;
-
-          IF ~(arguments[0]. type IS Sym.Array) THEN
-            b. ErrSym (notArray, arguments[0]. sym);
-          END;
-          
-          RETURN b. NewLen (design. sym, arguments[0], dim);
-        ELSE
-          RETURN b. errorExpr;
+        IF (LEN (arguments^) # 2) THEN
+          dim := 0;
+        ELSE  (* LEN (arguments^) = 2 *)
+          dim := b. AssertIntConst (arguments[1], 0,
+                                    arguments[0]. type. ArrayDimensions());
         END;
+        
+        IF ~(arguments[0]. type IS Sym.Array) THEN
+          b. ErrSym (notArray, arguments[0]. sym);
+        END;
+        
+        RETURN b. NewLen (design. sym, arguments[0], dim);
 
       | Predef.min, Predef.max:
-        IF CheckNumberOfArguments (1, 1) THEN
-          type := b. AssertType (arguments[0]);
-          IF (design. decl(Sym.PredefProc). id = Predef.min) THEN
-            value := Predef.GetMin (type);
-          ELSE
-            value := Predef.GetMax (type);
-          END;
-          IF (value = NIL) THEN
-            RETURN b. ErrExpr (noMinMax, arguments[0]. sym);
-          ELSE
-            RETURN b. NewConst (arguments[0]. sym, type, value);
-          END;
+        type := b. AssertType (arguments[0]);
+        IF (design. decl(Sym.PredefProc). id = Predef.min) THEN
+          value := Predef.GetMin (type);
         ELSE
-          RETURN b. errorExpr;
+          value := Predef.GetMax (type);
+        END;
+        IF (value = NIL) THEN
+          RETURN b. ErrExpr (noMinMax, arguments[0]. sym);
+        ELSE
+          RETURN b. NewConst (arguments[0]. sym, type, value);
         END;
         
       | Predef.size:
-        ASSERT (LEN (arguments^) = 1);   (* FIXME... needs error msg *)
         RETURN b. NewSize (design. sym, arguments[0])
 
       | Predef.inc:
@@ -2988,11 +2984,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
                                (design. sym, arithSub, arguments[0],
                                 b. GetOne (design. sym, arguments[0]. type)));
       | Predef.cap:
-        ASSERT (LEN (arguments^) = 1);
         RETURN b. NewCap (design. sym, arguments[0]);
 
       | Predef.long:
-        ASSERT (LEN (arguments^) = 1);
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.shortint: targetType := Predef.integer;
         | Predef.integer : targetType := Predef.longint;
@@ -3000,7 +2994,6 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
         
       | Predef.short:
-        ASSERT (LEN (arguments^) = 1);
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.integer: targetType := Predef.shortint;
         | Predef.longint: targetType := Predef.integer;
@@ -3008,7 +3001,6 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
         
       | Predef.ord:
-        ASSERT (LEN (arguments^) = 1);
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.char: targetType := Predef.integer;
         END;

@@ -521,12 +521,21 @@ TYPE
        instance of @otype{*OOC:AST:ExtTree.ProcDecl}.  *)
   END;
 
+CONST
+  unlimitedArgs* = MAX (INTEGER);
+  
 TYPE
   PredefProc* = POINTER TO PredefProcDesc;
   PredefProcDesc = RECORD
     (**Predefined functions and procedures are mapped to this type.  *)
     (DeclarationDesc)
     id-: PredefId;
+    minArgs-, maxArgs-: INTEGER;
+    (**Minimum and maximum number of arguments for this predefined
+       procedure.  If there is no fixed upper bound, then @ofield{maxArgs}
+       is @oconst{unlimitedArgs}.  For some predefined procures, like
+       @samp{NEW}, the number of arguments depends on the context of its
+       use.  *)
   END;
 
 TYPE
@@ -1304,10 +1313,12 @@ PROCEDURE (fieldDecl: FieldDecl) SetOffset* (offset: LONGINT);
 
 
 PROCEDURE InitPredefProc* (proc: PredefProc; parent: Item; name: Name;
-                           id: PredefId);
+                           id: PredefId; minArgs, maxArgs: INTEGER);
   BEGIN
     InitDeclaration (proc, parent, name, 0, nameExported, NIL);
     proc. id := id;
+    proc. minArgs := minArgs;
+    proc. maxArgs := maxArgs;
   END InitPredefProc;
 
 PROCEDURE (proc: PredefProc) Store* (w: Object.Writer);

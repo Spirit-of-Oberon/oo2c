@@ -128,12 +128,14 @@ PROCEDURE (b: Builder) NewFieldDecl* (parent: Sym.Item; name: Sym.Name;
     RETURN field
   END NewFieldDecl;
 
-PROCEDURE (b: Builder) NewPredefProc* (parent: Sym.Item; name: Sym.Name; id: Sym.PredefId): Sym.PredefProc;
+PROCEDURE (b: Builder) NewPredefProc* (parent: Sym.Item; name: Sym.Name;
+                                       id: Sym.PredefId;
+                                       minArgs, maxArgs: INTEGER): Sym.PredefProc;
   VAR
     pproc: Sym.PredefProc;
   BEGIN
     NEW (pproc);
-    Sym.InitPredefProc (pproc, parent, name, id);
+    Sym.InitPredefProc (pproc, parent, name, id, minArgs, maxArgs);
     RETURN pproc
   END NewPredefProc;
 
