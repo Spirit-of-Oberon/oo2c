@@ -332,7 +332,6 @@ PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
     WHILE (rep # NIL) DO
       IF Select (rep) THEN
         rep(FileSystem.Repository).relativeBaseURI(File.URI).GetPath(str);
-        Strings.Append("/", str);
         rep. GetDefaultSubdir(Repository.modHeaderFileC, subdir);
         Strings.Append(subdir, str);
         
