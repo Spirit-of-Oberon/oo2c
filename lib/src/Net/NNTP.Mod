@@ -1,7 +1,7 @@
 MODULE Net:NNTP;
 
 IMPORT
-  SYS:=SYSTEM, Ascii, CharClass, IntStr, Object, Exception,
+  SYS:=SYSTEM, Ascii, CharClass, IntStr, Object,
   ADT:StringBuffer, IO, IO:Address, IO:SocketChannel;
 
 (* NNTP client supports synchronous and asynchronous operation, incremental
@@ -100,17 +100,6 @@ TYPE
   END;
 
 TYPE
-  ProtocolError* = POINTER TO ProtocolErrorDesc;
-  ProtocolErrorDesc = RECORD
-  (**Raised if malformed data is received from the remote server.  This is
-     @emph{not} used for responses that indicate failure to process a request.
-     Examples for a protocol error is a response message that does not begin
-     with a three digit status code.  After such an error, the connection to
-     the server should be closed immediately.  *)
-    (Exception.ExceptionDesc)
-  END;
-
-TYPE
   ErrorResponse* = POINTER TO ErrorResponseDesc;
   ErrorResponseDesc = RECORD
   (**Raised if the response from the server indicates an error.  All status
@@ -118,7 +107,7 @@ TYPE
      means that associated request has been processed, with a negative
      outcome.  The complete response can be accessed through
      @ofield{request}'s response entry.  *)
-    (Exception.ExceptionDesc)
+    (IO.ErrorResponseDesc)
     request-: Request;
   END;
 
@@ -171,9 +160,9 @@ PROCEDURE (cl: Client) LogRequest*(cmd: Object.String8);
 PROCEDURE (cl: Client) LogResponse*(statusLine: Object.String8);
   END LogResponse;
 
-PROCEDURE RaiseProtocolError(msg: STRING) RAISES ProtocolError;
+PROCEDURE RaiseProtocolError(msg: STRING) RAISES IO.ProtocolError;
   BEGIN
-    RAISE(NEW(ProtocolError, msg));
+    RAISE(NEW(IO.ProtocolError, msg));
   END RaiseProtocolError;
 
 PROCEDURE InitMsg(msg: Msg);
@@ -200,7 +189,7 @@ PROCEDURE InitRequest(req: Request; cmd: Object.String8; long: BOOLEAN);
     req.response := NIL;
   END InitRequest;
 
-PROCEDURE (req: Request) ParseStatus(resp: Response) RAISES ProtocolError;
+PROCEDURE (req: Request) ParseStatus(resp: Response) RAISES IO.ProtocolError;
   BEGIN
   END ParseStatus;
 
@@ -315,18 +304,19 @@ PROCEDURE SendMsg(cl: Client) RAISES IO.Error;
     cl.sPos := pos; cl.sLen := dest;
   END SendMsg;
 
-PROCEDURE (cl: Client) SendRequest*(req: Request) RAISES IO.Error;
+PROCEDURE (cl: Client) SendRequest(req: Request) RAISES IO.Error;
   BEGIN
     Append(cl.waiting, req);
     SendMsg(cl);
   END SendRequest;
 
-PROCEDURE (cl: Client) SendText*(text: Text);
+PROCEDURE (cl: Client) SendText(text: Text);
   BEGIN
+    ASSERT(FALSE);
   END SendText;
 
 PROCEDURE GetResponse(cl: Client; start, end: LONGINT): Response
-RAISES ProtocolError;
+RAISES IO.ProtocolError;
   VAR
     status: LONGINT;
     long: BOOLEAN;
@@ -352,7 +342,7 @@ RAISES ProtocolError;
     END;
   END GetResponse;
 
-PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error, ProtocolError;
+PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error;
 (**Retrieves the next response or chunk of text from the socket.  Undos NNTP
    encoding (CRLF -> LF, ".." --> "." at beginning of line).  Beyond a basic
    check that the status line of a response begins with a 3 digit code, no
@@ -436,7 +426,7 @@ PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error, ProtocolError;
   END GetMsg;
 
 PROCEDURE (cl: Client) RetrieveResponse*(): Response
-RAISES IO.Error, ProtocolError, ErrorResponse;
+RAISES IO.Error, ErrorResponse;
   VAR
     msg: Msg;
     resp: Response;
@@ -468,7 +458,7 @@ RAISES IO.Error, ProtocolError, ErrorResponse;
   END RetrieveResponse;
 
 PROCEDURE (cl: Client) RetrieveText*(): Text
-RAISES IO.Error, ProtocolError;
+RAISES IO.Error;
   (**Retrieves the next text chunk of the current response.  The chunk contains
      an integral number of lines.  That is, it is either empty, or the first
      character of the chunk is the first of a line and character
@@ -486,7 +476,7 @@ RAISES IO.Error, ProtocolError;
   END RetrieveText;
 
 PROCEDURE (cl: Client) Connect*()
-RAISES IO.Error, ProtocolError, ErrorResponse;
+RAISES IO.Error, ErrorResponse;
   VAR
     resp: Response;
     connect: Connect;
@@ -512,7 +502,7 @@ PROCEDURE (cl: Client) Close*() RAISES IO.Error;
 
 
 PROCEDURE ShortRequest(cl: Client; req: Request)
-RAISES IO.Error, ProtocolError, ErrorResponse;
+RAISES IO.Error, ErrorResponse;
   VAR
     resp: Response;
   BEGIN
@@ -538,7 +528,7 @@ PROCEDURE SkipStatus(params: Object.CharsLatin1): LONGINT;
   END SkipStatus;
 
 PROCEDURE GetInt(params: Object.CharsLatin1; VAR pos: LONGINT): LONGINT
-RAISES ProtocolError;
+RAISES IO.ProtocolError;
   VAR
     str: ARRAY 16 OF CHAR;
     start, i: LONGINT;
@@ -583,7 +573,7 @@ PROCEDURE GetString(params: Object.CharsLatin1; VAR pos: LONGINT): Object.String
 (* Commands
    ------------------------------------------------------------------------ *)
 
-PROCEDURE (req: Group) ParseStatus(resp: Response) RAISES ProtocolError;
+PROCEDURE (req: Group) ParseStatus(resp: Response) RAISES IO.ProtocolError;
   VAR
     params: Object.CharsLatin1;
     pos: LONGINT;
@@ -597,7 +587,7 @@ PROCEDURE (req: Group) ParseStatus(resp: Response) RAISES ProtocolError;
   END ParseStatus;
 
 PROCEDURE (cl: Client) Group*(name: STRING): Group
-RAISES IO.Error, ProtocolError, ErrorResponse;
+RAISES IO.Error, ErrorResponse;
   VAR
     req: Group;
     cmd: STRING;
@@ -616,7 +606,7 @@ RAISES IO.Error, ProtocolError, ErrorResponse;
 
 PROCEDURE (req: XHdr) ParseLine*(text: Text; VAR pos: LONGINT;
                                  VAR msgId, startHeader, endHeader: LONGINT)
-RAISES ProtocolError;
+RAISES IO.ProtocolError;
   VAR
     str: ARRAY 16 OF CHAR;
     start, i: LONGINT;
@@ -655,7 +645,7 @@ RAISES ProtocolError;
   END ParseLine;
 
 PROCEDURE (cl: Client) XHdr*(header: STRING; lower, upper: LONGINT): XHdr
-RAISES IO.Error, ProtocolError, ErrorResponse;
+RAISES IO.Error, ErrorResponse;
   VAR
     req: XHdr;
     cmd: STRING;
@@ -677,7 +667,7 @@ RAISES IO.Error, ProtocolError, ErrorResponse;
 
 
 PROCEDURE (cl: Client) Article*(msgId: LONGINT): Article
-RAISES IO.Error, ProtocolError, ErrorResponse;
+RAISES IO.Error, ErrorResponse;
   VAR
     req: Article;
     cmd: STRING;
@@ -695,7 +685,7 @@ RAISES IO.Error, ProtocolError, ErrorResponse;
 
 
 PROCEDURE (cl: Client) Quit*(): Quit
-RAISES IO.Error, ProtocolError, ErrorResponse;
+RAISES IO.Error, ErrorResponse;
   VAR
     req: Quit;
     cmd: STRING;
