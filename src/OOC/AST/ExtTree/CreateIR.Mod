@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree:CreateIR;
 *)
 
 IMPORT
-Log,
+  Log, Language:Integer,
   OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList,
   OOC:AST:ExtTree, Sym := OOC:SymbolTable, OOC:IR, OOC:IR:Operator;
 
@@ -368,10 +368,36 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN b. NewModule (module. module. sym, module. moduleName,
                            procList, statmSeq)
     END Module;
+
+  PROCEDURE TranslateEmbeddedExpr (item: Sym.Item);
+  (**Traverses the symbol table and resolves all expressions.  This pass
+     calculates the value of declared constants, and the length of array
+     types.  Declarations are traversed in the order in which they appear
+     in the source code.  This works fine, as long as no forward references
+     can appear in the resolved expressions.  *)
+    VAR
+      nested: Sym.Item;
+      expr: IR.Expression;
+    BEGIN
+      WITH item: Sym.Array DO
+        IF ~item. isOpenArray THEN
+          expr := Expr (item. lengthExpr(ExtTree.Node));
+          item. SetLength (expr(IR.Const). value(Integer.Value). ToLInt());
+        END;
+      ELSE  (* ignore *)
+      END;
+      
+      nested := item. nestedItems;
+      WHILE (nested # NIL) DO
+        TranslateEmbeddedExpr (nested);
+        nested := nested. nextNested
+      END;
+    END TranslateEmbeddedExpr;
   
   BEGIN
     currentSourceContext := symTab;
     currentNamespace := symTab. ns;
+    TranslateEmbeddedExpr (symTab);
     RETURN Module (module)
   END CreateIR;
 
