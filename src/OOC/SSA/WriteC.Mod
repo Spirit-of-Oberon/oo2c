@@ -359,6 +359,21 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
       item := item. nextNested;
     END;
     
+    (* write prototypes for all nested functions, so that recursive calls
+       between them work *)
+    item := pb. procDecl. nestedItems;
+    WHILE (item # NIL) DO
+      WITH item: Sym.ProcDecl DO
+        cDecl := ConvertDecl.GetProc (w, item, TRUE);
+        w. Newline;
+        w. WriteDeclaration (cDecl);
+        w. WriteChar (";");
+        declMap. Set (item, NIL);
+      ELSE                             (* ignore *)
+      END;
+      item := item. nextNested;
+    END;
+    
     IF haveCopyParameter THEN
       w. Newline;
       w. WriteString ("OOC_PUSH_VPAR_STACK");
