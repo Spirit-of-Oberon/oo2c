@@ -21,7 +21,7 @@ MODULE oob;
 *)
 
 IMPORT
-  Ascii, Err, Out, StdChannels, Strings, IO,
+  Ascii, Err, Out, StdChannels, Strings, IO, OOC:Config:CCompiler,
   Config:Section:Options, Config:Section:Arguments, Config:Value:Boolean,
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,
@@ -442,6 +442,8 @@ PROCEDURE NewConfig;
     extendRecords := Config.AddOption("extendRecords", Boolean.New(FALSE));
     Config.AddCmdLine("-x,--extended",
                       "<options><set name='extendRecords'>TRUE</set></options>");
+
+    CCompiler.RegisterConfig;  (* make oo2c options known *)
   END NewConfig;
 
 BEGIN

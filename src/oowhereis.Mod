@@ -22,7 +22,7 @@ MODULE oowhereis;
 IMPORT
   Out, StdChannels, Strings, URI, URI:Scheme:File,
   Config:Section:Arguments, Config:Section:Options, Config:Value:Boolean,
-  OOC:Config, E := OOC:Error, OOC:Repository;
+  OOC:Config, OOC:Config:CCompiler, E := OOC:Error, OOC:Repository;
 
 
 CONST
@@ -120,6 +120,8 @@ PROCEDURE NewConfig;
     help := Config.AddOption("help", Boolean.New(FALSE));
     Config.AddCmdLine("-h,--help",
                       "<options><set name='help'>TRUE</set></options>");
+    
+    CCompiler.RegisterConfig;  (* make oo2c options known *)
   END NewConfig;
 
 BEGIN
