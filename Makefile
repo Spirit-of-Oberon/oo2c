@@ -124,7 +124,7 @@ dist: $(OOC_DEV_ROOT)/oo2crc-install.xml configure
 	rm -Rf stage0/sym/* stage0/lib/sym/*
 	cd stage0 && $(PERL) $(OOC_DEV_ROOT)/rsrc/OOC/makefilegen.pl >Makefile.ext
 	${MAKE} distclean
-	cd .. && tar -c -v --exclude CVS --exclude '*~' --exclude '.#*' -f - ooc2 | bzip2 -9 >ooc2-dist-`date +"%Y%m%d"`.tar.bz2
+	cd .. && rm -f $(DISTDIR) && ln -s ooc2 $(DISTDIR) && tar -c -v --exclude CVS --exclude '*~' --exclude '.#*' -f - $(DISTDIR)/* | bzip2 -9 >$(DISTDIR).tar.bz2 && rm -f $(DISTDIR)
 
 dist64:
 	sed -e 's:@ooc_target_integer@,[0-9]*:@ooc_target_integer@,64:' \
@@ -132,7 +132,7 @@ dist64:
 	    -e 's:@ooc_target_address_type@,[a-z]*:@ooc_target_address_type@,hugeint:' \
 		config.status >config.status64
 	/bin/sh config.status64
-	${MAKE} dist
+	${MAKE} dist DISTDIR=oo2c_64-$(PACKAGE_VERSION)
 
 ### Create initial compiler executable from distributed C sources.
 stage0/oo2c:
