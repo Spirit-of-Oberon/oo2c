@@ -12,7 +12,7 @@
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
-  designator1 function6 loop1 loop2 loop3 loop4 varpar1
+  designator1 function6 loop1 loop2 loop3 loop4 and1 or1 varpar1
   record1 record2 record3 record4 record5 record6 record7 record8
   record9 procvar1 procvar2 procvar3 procvar4 procvar5
   inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7
@@ -20,7 +20,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; procvar5">-->
+  select ="&SetupTestCasesWithOut; and1 or1">-->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -112,6 +112,14 @@
       DIV 10</code> in a rather silly way for <code>0 &lt;= x &lt; 20</code>.
     </test>
     
+    <test id="and1" type="run" file="And1.Mod" output="And1.Ref">
+      Testing shortcut evaluation of operator `<code>&amp;</code>'.
+    </test>
+    
+    <test id="or1" type="run" file="Or1.Mod" output="Or1.Ref">
+      Testing shortcut evaluation of operator `<code>OR</code>'.
+    </test>
+    
     <test id="varpar1" type="run"
       file= "HOTVarPar1.Mod" output="HOTVarPar1.Ref">
       Accessing a global variable through a <code>VAR</code> parameter.
@@ -162,6 +170,7 @@
     </test>
   </testcases>
   
+    
   <testcases profile="OOC2 Development: Data Types" default-lang="O1 O2 AO">
     <test id="record1" type="run" file="Record1.Mod" output="Record1.Ref">
       Assignments to the fields of a global record variable.
