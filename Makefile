@@ -38,7 +38,7 @@ test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmd
 all:
 
 
-.PHONY: mkdir clean distclean test main-clean
+.PHONY: mkdir clean distclean test main-clean oo2c
 
 ### `mkdir'
 ###      Build all the directories we're going to install oo2c in.   Since
@@ -58,7 +58,7 @@ mkdir: FRC
 main-clean: doc-clean test-cleanall
 	for i in sym obj; do rm -Rf ${top_builddir}/$$i/*; done
 	for i in lib/sym lib/obj; do rm -Rf ${top_builddir}/$$i; done
-	rm -f src/XML
+	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done
 	-rmdir ${top_builddir}/sym ${top_builddir}/obj
 	rm -Rf "$(DOC_DIR)" stage1 stage2 gmon.out
@@ -110,5 +110,22 @@ lib/src/__config.h.in: configure.ac
 
 configure: configure.ac lib/src/__config.h.in
 	autoconf
+
+
+oo2c:
+	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj 2>/dev/null
+	$(OOC) --make -O $(OFLAGS) oo2c
+
+dist: oo2c
+	rm -Rf stage0
+	mkdir stage0 stage0/lib
+	ln -s ../src stage0/src
+	ln -s ../../lib/src stage0/lib/src
+	./oo2c --make -r stage0/lib -r stage0 --cc true stage0/src/oo2c.Mod
+	rm -Rf stage0/sym/* stage0/lib/sym/*
+	cd stage0 && $(PERL) $(OOC_DEV_ROOT)/rsrc/OOC/makefilegen.pl >Makefile.ext
+
+stage0/oo2c:
+	make -C stage0 -f Makefile.ext oo2c
 
 include $(MAIN_MAKEFILE)
