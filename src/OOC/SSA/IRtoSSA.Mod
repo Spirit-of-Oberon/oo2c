@@ -204,6 +204,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END SelectField;
     
+    PROCEDURE SelectProc (selectOp: IR.SelectProc): SSA.Result;
+      BEGIN
+        (* FIXME... handle non-static case *)
+        RETURN pb. GetAddress (selectOp. tbProc);
+      END SelectProc;
+    
     PROCEDURE AddCompareOp (op: IR.Compare; class: Opcode.Class): SSA.Instr;
       VAR
         instr: SSA.Instr;
@@ -349,6 +355,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | expr: IR.SelectField DO
         RETURN SelectField (expr);
+        
+      | expr: IR.SelectProc DO
+        RETURN SelectProc (expr);
         
       | expr: IR.TypeConv DO
         (* FIXME... right now, we are simply passing through type converted

@@ -189,6 +189,14 @@ PROCEDURE (v: Visitor) VisitSelectField* (sf: IR.SelectField);
     v. w. EndTag;  (* select-field *)
   END VisitSelectField;
 
+PROCEDURE (v: Visitor) VisitSelectProc* (sp: IR.SelectProc);
+  BEGIN
+    v. w. StartTag ("select-tb-proc", FALSE);
+    v. w. AttrStringLatin1 ("tb-proc", sp. tbProc. name. str^);
+    sp. receiver. Accept (v);
+    v. w. EndTag;  (* select-tb-proc *)
+  END VisitSelectProc;
+
 PROCEDURE (v: Visitor) VisitNegate* (neg: IR.Negate);
   BEGIN
     v. w. StartTag ("negate", FALSE);

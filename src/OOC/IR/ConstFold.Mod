@@ -236,6 +236,10 @@ PROCEDURE (c: ConstFold) VisitSelectField* (sf: IR.SelectField);
   BEGIN
   END VisitSelectField;
 
+PROCEDURE (c: ConstFold) VisitSelectProc* (sp: IR.SelectProc);
+  BEGIN
+  END VisitSelectProc;
+
 PROCEDURE (c: ConstFold) VisitNegate* (op: IR.Negate);
 VAR 
   id : Sym.PredefId;

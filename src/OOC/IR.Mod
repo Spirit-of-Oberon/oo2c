@@ -381,6 +381,16 @@ TYPE
     field- : Sym.FieldDecl;
   END;
 
+TYPE
+  SelectProc* = POINTER TO SelectProcDesc;
+  SelectProcDesc = RECORD
+    (OperatorDesc)
+    (**This operator selects the type-bound procedure @ofield{tbProc} belonging
+       to the @ofield{receiver} designator.  *)
+    receiver-: Expression;
+    tbProc-: Sym.ProcDecl;
+  END;
+
 TYPE 
   SetMember* = POINTER TO SetMemberDesc;
   SetMemberDesc = RECORD
@@ -1353,14 +1363,14 @@ PROCEDURE (new: NewObject) Accept* (v: Visitor);
 (* Operator Class: SelectField
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitSelectField (sf: SelectField; sym: Symbol; record: Expression; field: Sym.Declaration);
+PROCEDURE InitSelectField (sf: SelectField; sym: Symbol; record: Expression; field: Sym.FieldDecl);
   BEGIN
-    InitOperator (sf, sym, field(Sym.FieldDecl). type);
+    InitOperator (sf, sym, field. type);
     sf.record := record;
-    sf.field := field(Sym.FieldDecl);
+    sf.field := field;
   END InitSelectField;
 
-PROCEDURE (b: Builder) NewSelectField (sym: Symbol; record: Expression; field: Sym.Declaration): SelectField;
+PROCEDURE (b: Builder) NewSelectField (sym: Symbol; record: Expression; field: Sym.FieldDecl): SelectField;
   VAR
     i: SelectField;
   BEGIN
@@ -1375,6 +1385,33 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitSelectField* (sf: SelectField);
 PROCEDURE (sf: SelectField) Accept* (v: Visitor);
   BEGIN
     v. VisitSelectField (sf)
+  END Accept;
+
+(* Operator Class: SelectProc
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitSelectProc (sp: SelectProc; sym: Symbol; receiver: Expression; tbProc: Sym.ProcDecl);
+  BEGIN
+    InitOperator (sp, sym, tbProc. formalPars);
+    sp. receiver := receiver;
+    sp. tbProc := tbProc;
+  END InitSelectProc;
+
+PROCEDURE (b: Builder) NewSelectProc (sym: Symbol; receiver: Expression; tbProc: Sym.ProcDecl): SelectProc;
+  VAR
+    i: SelectProc;
+  BEGIN
+    NEW (i);
+    InitSelectProc (i, sym, receiver, tbProc);
+    RETURN i
+  END NewSelectProc;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitSelectProc* (sp: SelectProc);
+  END VisitSelectProc;
+
+PROCEDURE (sp: SelectProc) Accept* (v: Visitor);
+  BEGIN
+    v. VisitSelectProc (sp)
   END Accept;
 
 (* Operator Class: SetMember
@@ -2281,6 +2318,7 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
 (**Resolves a field or type-bound procedure selector.  *)
   VAR
     varRef: Expression;
+    decl: Sym.Declaration;
   BEGIN
     IF (var. type IS Sym.Pointer) THEN
       varRef := b. NewDeref (sym, var);
@@ -2288,8 +2326,16 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
       varRef := var;
     END;
     ASSERT (varRef. type IS Sym.Record);
-    RETURN b. NewSelectField (sym, varRef, varRef. type(Sym.Record). ns.
-                              Identify (context, b. GetName (name), FALSE));
+    decl := varRef. type(Sym.Record). ns. Identify
+        (context, b. GetName (name), FALSE);
+    (* FIXME... add error checks *)
+    IF (decl IS Sym.FieldDecl) THEN
+      RETURN b. NewSelectField (sym, varRef, decl(Sym.FieldDecl));
+    ELSIF (decl IS Sym.ProcDecl) THEN
+      RETURN b. NewSelectProc (sym, var, decl(Sym.ProcDecl));
+    ELSE
+      ASSERT (FALSE);
+    END;
   END NewSelect;
 
 PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expression;
@@ -2525,6 +2571,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     dim: LONGINT;
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
+    receiver: Expression;
     
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
                                       expr: Expression;
@@ -2568,7 +2615,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     END MakeParameterCompatible;
   
   PROCEDURE TransformArgs (sym: Symbol;
-                           formalPars: Sym.VarDeclArray;
+                           formalPars: Sym.FormalPars;
+                           receiver: Expression;
                            VAR arguments: ExpressionList;
                            VAR argFormalPars: Sym.VarDeclArray);
   (**Takes the argument list from the parser and rewrites it to match the
@@ -2587,12 +2635,22 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       newArgs := ArrayList.New (LEN (arguments^));
       newFPars := ArrayList.New (LEN (arguments^));
       
-      fparIndex := 0;
-      argIndex := 0;
-      WHILE (fparIndex # LEN (formalPars^)) &
+      IF (receiver # NIL) THEN
+        argIndex := -1;
+        fparIndex := -1;
+      ELSE        
+        argIndex := 0;
+        fparIndex := 0;
+      END;
+      WHILE (fparIndex # LEN (formalPars. params^)) &
             (argIndex # LEN (arguments^)) DO
-        fpar := formalPars[fparIndex];
-        arg := arguments[argIndex];
+        IF (argIndex = -1) THEN
+          fpar := formalPars. receiver;
+          arg := receiver;
+        ELSE
+          fpar := formalPars. params[fparIndex];
+          arg := arguments[argIndex];
+        END;
         arg := MakeParameterCompatible (b, arg. sym, arg, fpar);
         
         IF fpar. isPassPerReference THEN
@@ -2604,7 +2662,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         END;
         newFPars. Append (fpar);
         
-        fparType := formalPars[fparIndex]. type;
+        fparType := fpar. type;
         WITH fparType: Sym.Array DO
           FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
             newArgs. Append (b. Fold (b. NewLen (arg. sym, arg, i)));
@@ -2733,12 +2791,17 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
 
     ELSE
       IF (design = b. errorExpr) THEN
-        RETURN b. errorExpr;         (* fall through for erros in designator *)
+        RETURN b. errorExpr;        (* fall through for errors in designator *)
       ELSE
         NEW (call);
+        IF (design IS SelectProc) THEN
+          receiver := design(SelectProc). receiver;
+        ELSE
+          receiver := NIL;
+        END;
         TransformArgs (design. sym,
-                       design. type(Sym.FormalPars). params,
-                       arguments, formalPars);
+                       design. type(Sym.FormalPars),
+                       receiver, arguments, formalPars);
         InitCall (call, design, arguments, formalPars);
         RETURN call;
       END;
