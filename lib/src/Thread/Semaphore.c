@@ -17,11 +17,20 @@ void Thread_Semaphore__SemaphoreDesc_Post(Thread_Semaphore__Semaphore s) {
 }
 
 void Thread_Semaphore__SemaphoreDesc_Wait(Thread_Semaphore__Semaphore s) {
-  sem_wait((sem_t*)s->sem);  /* always returns 0 */
+  int rc;
+  
+  do {
+    rc = sem_wait((sem_t*)s->sem);
+  } while (rc == EINTR);
 }
 
 OOC_BOOLEAN Thread_Semaphore__SemaphoreDesc_TryWait(Thread_Semaphore__Semaphore s) {
-  return (sem_trywait((sem_t*)s->sem) == 0);
+  int rc;
+  
+  do {
+    rc = sem_trywait((sem_t*)s->sem);
+  } while (rc == EINTR);
+  return (rc == 0);
 }
 
 OOC_INT32 Thread_Semaphore__SemaphoreDesc_GetValue(Thread_Semaphore__Semaphore s) {
