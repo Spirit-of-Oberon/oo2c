@@ -780,6 +780,10 @@ RAISES IO.Error;
         uri(File.URI). GetPath (path);
         Strings.Insert (path, 0, str);
         Strings.Insert (" -o ", 0, str);
+
+        (* create directory for HTML file, if it does not exist *)
+        Path.dirname (path, path);
+        OSFiles.makedirs (path, OSFiles.defaultMode, res);
         
         (* prefix option and style sheet argument with command name *)
         Strings.Insert(Config.xsltproc.value(StringValue.Value).string^,
@@ -791,8 +795,6 @@ RAISES IO.Error;
         Strings.Append (" ", str);
         Strings.Append (path, str);
         
-        Path.dirname (path, path);
-        OSFiles.makedirs (path, OSFiles.defaultMode, res);
         IF (res = NIL) THEN
           Logger.ShellCommand(str);
           exit := ProcessManagement.system (str)
