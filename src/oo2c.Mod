@@ -112,16 +112,18 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
       i: LONGINT;
       name: String.String;
     BEGIN
-      (* For every symbol file, add an entry to the package's file list.  The
-         source and destination name is the file name relative to the
-         repository.  Upon installation, the former is interpreted relative to
-         the providing repository, and the latter relative to the installation
-         directory.  *)
+      (* For every symbol and header file, add an entry to the package's file
+         list.  The source and destination name is the file name relative to
+         the repository.  Upon installation, the former is interpreted relative
+         to the providing repository, and the latter relative to the
+         installation directory.  *)
       FOR i := 0 TO LEN(makeRules.imports^)-1 DO
         m := makeRules.imports[i];
+        
         m.origin.GetLocalPath(m, Rep.modSymbolFile, path);
-        name := String.New(path);
-        pkg.fileSet.Append(Package.NewFile(name, NIL));
+        pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+        m.origin.GetLocalPath(m, Rep.modHeaderFileC, path);
+        pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
       END;
       
       IF InstallDirectory("", CCompiler.libdir.value(StringValue.Value).string^) THEN
