@@ -1,0 +1,5 @@
+MODULE Assert2;
+
+BEGIN
+  ASSERT(TRUE, 1X);
+END Assert2.

@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; long1 long2 long3 long4 long5 long6">-->
+  select ="&SetupTestCasesWithOut; copy1 copy2 copy3 copy4 copy5 copy6">-->
 
   &TestSetupWithOut;
     
@@ -561,6 +561,49 @@
       Calling <code>SIZE</code> for an open array type..
     </test>
 
+    <test id="assert1" type="reject" file="Assert1.Mod">
+      Asserted value is a character.
+    </test>
+    <test id="assert2" type="reject" file="Assert2.Mod">
+      Exit code is a character.
+    </test>
+    <test id="assert3" type="reject" file="Assert3.Mod">
+      Exit code is a variable, not a constant.
+    </test>
+    <test id="assert4" type="reject" file="Assert4.Mod">
+      Exit code is out of range.
+    </test>
+
+    <test id="halt1" type="reject" file="Halt1.Mod">
+      Halted value is a character.
+    </test>
+    <test id="halt3" type="reject" file="Halt3.Mod">
+      Exit code is a variable, not a constant.
+    </test>
+    <test id="halt4" type="reject" file="Halt4.Mod">
+      Exit code is out of range.
+    </test>
+
+    <test id="copy1" type="run" file="Copy1.Mod" output="Copy1.Ref">
+      Some valid invocations of <code>COPY</code>.
+    </test>
+    <test id="copy2" type="reject" file="Copy2.Mod">
+      Target of <code>COPY</code> is an undefined variable.
+    </test>
+    <test id="copy3" type="reject" file="Copy3.Mod">
+      Trying to <code>COPY</code> to an <code>ARRAY OF
+      SHORTINT</code>.
+    </test>
+    <test id="copy4" type="reject" file="Copy4.Mod">
+      Trying to <code>COPY</code> to a <code>RECORD</code>.
+    </test>
+    <test id="copy5" type="reject" file="Copy5.Mod">
+      Trying to <code>COPY</code> to a read-only imported variable.
+    </test>
+    <test id="copy6" type="reject" file="Copy6.Mod">
+      Trying to <code>COPY</code> an <code>ARRAY OF SHORTINT</code>.
+    </test>
+    
     <test id="val1" type="run" file="Val1.Mod" output="Val1.Ref">
       Use <code>SYSTEM.VAL</code> to cast a <code>REAL</code> to
       a <code>LONGINT</code>.  This requires some trickery in the C
@@ -1183,6 +1226,33 @@
       msg="Invalid type for operator"/>
     <reject-info id="long6" pos="LONG(%r)"
       msg="Invalid type for operator"/>
+    
+    <reject-info id="assert1" pos="ASSERT(%1X)"
+      msg="Expression must be of type BOOLEAN"/>
+    <reject-info id="assert2" pos="ASSERT(TRUE, %1X)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 128' required"/>
+    <reject-info id="assert3" pos="ASSERT(TRUE, %x)"
+      msg="Expression is not constant"/>
+    <reject-info id="assert4" pos="ASSERT(TRUE, %-1)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 128' required"/>
+    
+    <reject-info id="halt1" pos="HALT(%1X)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 128' required"/>
+    <reject-info id="halt3" pos="HALT(%x)"
+      msg="Expression is not constant"/>
+    <reject-info id="halt4" pos="HALT(%-1)"
+      msg="Integer constant in the range `0 &lt;= x &lt; 128' required"/>
+    
+    <reject-info id="copy2" pos="COPY(&quot;abc&quot;, %x)"
+      msg="Undeclared identifier"/>
+    <reject-info id="copy3" pos="COPY(&quot;abc&quot;, %y)"
+      msg="Argument must be a character array"/>
+    <reject-info id="copy4" pos="COPY(&quot;abc&quot;, %y)"
+      msg="Argument must be a character array"/>
+    <reject-info id="copy5" pos="COPY(&quot;abc&quot;, Copy1.%a4)"
+      msg="This variable is read-only"/>
+    <reject-info id="copy6" pos="COPY(%x, y)"
+      msg="Argument must be a character array"/>
     
     <reject-info id="opArray2" pos=" i%[0]"
         msg="Expression must be an array value"/>

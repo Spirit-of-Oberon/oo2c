@@ -1,0 +1,5 @@
+MODULE Assert1;
+
+BEGIN
+  ASSERT(1X);
+END Assert1.

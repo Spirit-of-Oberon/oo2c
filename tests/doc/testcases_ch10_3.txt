@@ -1,6 +1,6 @@
 Still missing: General overflow tests for constant folding (arguments
 in legal range, result in legal range) -- best done in ConstFold, I
-believe.
+believe.  "Evaluate just once checks" are missing for COPY.
 
 
 10.3 Predeclared Procedures ---------------------------
@@ -211,31 +211,31 @@ REJECT:
 Proper Procedures
 -----------------
 
-  ASSERT(x)
-  ASSERT(x, n)
+### ASSERT(x)
+### ASSERT(x, n)
 
 ACCEPT:
 
-  1) x is BOOLEAN variable
-  2) x is TRUE
-  3) x is FALSE
+  1) x is BOOLEAN expression  [For11 HOTLoop12]
+  2) x is TRUE  [For11]
+  3) x is FALSE  [HOTBaselineError1.Mod]
 
 REJECT:
 
-  1) x is not BOOLEAN (eg. CHAR)
-  2) n is not integer (eg. CHAR)
-  3) n is not constant (eg. integer variable)
+  1) x is not BOOLEAN (eg. CHAR)  [Assert1]
+  2) n is not integer (eg. CHAR)  [Assert2]
+  3) n is not constant (eg. integer variable)  [Assert3]
   4) n is out of range (only a subset of all integers is supported by
-     the underlying OS)
+     the underlying OS)  [Assert4]
 
   COPY(x, v)
 
 ACCEPT:
 
-  1) x is a string constant
-  2) x is a character array containing terminating 0X
+  1) x is a string constant  [Copy1]
+  2) x is a character array containing terminating 0X  [Copy1]
   3) x is a string longer than LEN(v)-1. Verify that result is
-     truncated with terminating 0X.
+     truncated with terminating 0X.  [Copy1]
   4) verify that designator v is only evaluated once
 
   Note: If x is a character array without terminating 0X, then the
@@ -243,9 +243,9 @@ ACCEPT:
 
 REJECT:
 
-  1) v is not a character array
-  2) v is read-only
-  3) x is not a character array or string
+  1) v is not a character array  [Copy3 Copy4]
+  2) v is read-only  [Copy5]
+  3) x is not a character array or string  [Copy6]
 
 
   DEC(v)
@@ -284,17 +284,19 @@ REJECT:
   4) x is not integer
   5) x is a constant with x<MIN(v) or x>MAX(v)
 
-  HALT(n)
+
+### HALT(n)
 
 ACCEPT:
 
-  1) n is an integer constant
+  1) n is an integer constant  [omitted; the test framework tests no
+     exit code]
 
 REJECT:
 
-  1) n is not integer 
-  2) n is not constant
-  3) n is out of range (like ASSERT)
+  1) n is not integer  [Halt1]
+  2) n is not constant  [Halt3]
+  3) n is out of range (like ASSERT)  [Halt4]
 
 
   NEW(v)

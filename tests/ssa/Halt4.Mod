@@ -1,0 +1,5 @@
+MODULE Halt4;
+
+BEGIN
+  HALT(-1);
+END Halt4.
