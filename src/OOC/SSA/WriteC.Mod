@@ -28,6 +28,7 @@ IMPORT
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:CSE, OOC:SSA:Algebraic,
+  OOC:SSA:ConstProp,
   OOC:SSA:Allocator, OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
   OOC:Make:Command:TranslateToC;
 
@@ -561,7 +562,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
             passByReference OR
             TR.IsPredefType (type, Predef.ptr) THEN
         IF (var IS SSA.Const) &
-           (var(SSA.Const). value # NIL) &
            (var(SSA.Const). value IS LString.Value) THEN
           (* omit cast on string constant *)
         ELSIF passByReference OR
@@ -1578,7 +1578,9 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Write ("dce-post", "destore-pre");
     destore := Destore.New (pb);
     destore. Transform();
-    Write ("destore-post", "algebraic-pre");
+    Write ("destore-post", "constprop-pre");
+    ConstProp.Transform (pb);
+    Write ("constprop-post", "algebraic-pre");
     Algebraic.Transform (pb);
     Write ("algebraic-post", "dce-pre");
     DeadCodeElimination.Transform (pb);
