@@ -67,6 +67,16 @@ PROCEDURE (tr: Rules) IsCharType* (type: Sym.Type): BOOLEAN;
     END;
   END IsCharType;
 
+PROCEDURE (tr: Rules) IsStringConst* (type: Sym.Type): BOOLEAN;
+(**Result is @code{TRUE} iff @oparam{type} is a string constant.  *)
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN (type. id IN {Predef.charString, Predef.longcharString})
+    ELSE
+      RETURN FALSE
+    END;
+  END IsStringConst;
+
 PROCEDURE (tr: Rules) IsIntegerType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is an integer type.  *)
   BEGIN
