@@ -41,6 +41,7 @@ typedef void *OOC_PTR;
 
 /* type used to store length of array types: */
 typedef OOC_INT32 OOC_LEN;
+typedef OOC_UINT32 OOC_ULEN;
 
 /* type of character position in files: */
 typedef OOC_INT32 OOC_CHARPOS;
@@ -53,7 +54,8 @@ typedef OOC_INT32 OOC_CHARPOS;
 #define OOC_TRUE 1
 
 /* format string used by printf for OOC_INT32 (%i if it is equal to int,
-   %li if it is long int) */
+   %li if it is long int), and OOC_LEN */
 #define OOC_INT32_FORMAT "%i"
+#define OOC_LEN_FORMAT "%i"
 
 #endif  /* __typemap__ */

@@ -37,10 +37,19 @@ OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r) {
 
 /* --- functions to handle exceptions and failed run-time checks: */
 #define PREFIX "## "
+#define EXIT_RUNTIME_ERROR exit(127)
 
 void _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) {
   (void)fprintf(stderr, PREFIX "Assertion failed, code: " 
 		OOC_INT32_FORMAT "\n", code);
   exit(code);
 }
+
+void _index_out_of_range(OOC_LEN index, OOC_LEN length) {
+  (void)fprintf(stderr, PREFIX "Array index out of range: " 
+		OOC_LEN_FORMAT " not in 0 <= x < "
+		OOC_LEN_FORMAT "\n", index, length);
+  EXIT_RUNTIME_ERROR;
+}
+
 

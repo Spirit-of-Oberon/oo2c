@@ -37,6 +37,14 @@
 #endif
 
 
+
+extern void NORETURN _index_out_of_range(OOC_LEN index, OOC_LEN length) NORETURN2;
+#define _check_index(index,length,utype)   \
+  ({ if ((utype)index >= (OOC_ULEN)length) {  \
+       _index_out_of_range(index,length);  \
+     }                                     \
+     index; })
+
 /* ASSERT(p) and ASSERT(p,code) */
 extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN2;
 #define _assert(p,code,pos) \
