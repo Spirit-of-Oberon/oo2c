@@ -218,7 +218,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
     
     BEGIN
       WITH srcCodeType: Sym.TypeName DO
-        IF (srcCodeType.module # NIL) THEN
+        IF (srcCodeType.module # NIL) & ~srcCodeType.IsPredefReference() THEN
           (* expand the locally used module alias to the full module name;
              this way, aliases make no appearance at all in the output *)
           name := ModuleName(srcCodeType);
