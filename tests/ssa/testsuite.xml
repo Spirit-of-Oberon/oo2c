@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; loop12">-->
+  select ="&SetupTestCasesWithOut; cap2">-->
 
   &TestSetupWithOut;
     
@@ -376,6 +376,9 @@
     
     <test id="cap1" type="run" file="Cap1.Mod" output="Cap1.Ref">
       Predefined function <code>CAP</code> for some ASCII characters.
+    </test>
+    <test id="cap2" type="run" file="Cap2.Mod" output="Cap2.Ref">
+      Code snipped using <code>CAP</code> to decode hex digits.
     </test>
     
     <test id="div1" type="run" file="Div1.Mod" output="Div1.Ref">
