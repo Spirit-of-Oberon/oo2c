@@ -26,8 +26,8 @@ IMPORT
   URI, OOC:Make:Entity:ModuleFile,
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Error, OOC:Repository, OOC:AST,
-  OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR,
-  OOC:IR, OOC:IR:Operator, OOC:IR:XML,
+  OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
+  OOC:IR, OOC:IR:Operator, IRtoXML := OOC:IR:XML,
   OOC:SymbolTable:Item, OOC:SymbolTable:Exports,
   OOC:C:WriteConst, OOC:C:WriteDecl, OOC:C:ConvertDecl, OOC:C:Naming,
   WriteSSA := OOC:SSA:WriteC;
@@ -38,12 +38,13 @@ TYPE
     (Make.CommandDesc)
     module: Repository.Module;
     errList: Error.List;
-    useSSA: BOOLEAN;
+    writeAST: BOOLEAN;
     writeIR: BOOLEAN;
+    useSSA: BOOLEAN;
   END;
 
 PROCEDURE New* (context: Make.Context; module: Repository.Module;
-                useSSA, writeIR: BOOLEAN): Command;
+                writeAST, writeIR, useSSA: BOOLEAN): Command;
   VAR
     cmd: Command;
   BEGIN
@@ -51,8 +52,9 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
     Make.InitCommand (cmd, context);
     cmd. module := module;
     cmd. errList := NIL;
-    cmd. useSSA := useSSA;
+    cmd. writeAST := writeAST;
     cmd. writeIR := writeIR;
+    cmd. useSSA := useSSA;
     RETURN cmd
   END New;
 
@@ -384,11 +386,13 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     (* symbol file is written by the `ParseModule' function *)
     
     IF (errList. msgCount = 0) THEN
+      IF cmd. writeAST THEN
+        ASTtoXML.Write (StdChannels.stdout.NewWriter(), ast(ExtTree.Module));
+      END;
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
                                  Operator.NewBuilder (pragmaHistory, errList));
       IF cmd. writeIR THEN
-        XML.Write (StdChannels.stdout. NewWriter(), module);
-        
+        IRtoXML.Write (StdChannels.stdout. NewWriter(), module);
       END;
       
       exports := Exports.GetExports (symTab);

@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree:CreateIR;
 *)
 
 IMPORT
-Log, OOC:AST:ExtTree:XML, StdChannels,
+Log,
   OOC:Scanner:Symbol, OOC:AST:ExtTree, OOC:SymbolTable:Item, OOC:IR;
 
 
@@ -249,8 +249,6 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     END Module;
   
   BEGIN
-    XML.Write (StdChannels.stdout.NewWriter(), module);
-    
     currentSourceContext := symTab;
     currentNamespace := symTab. ns;
     RETURN Module (module)

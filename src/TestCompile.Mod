@@ -31,8 +31,9 @@ VAR
   mode: SHORTINT;
   
   make: Options.Option;
-  useSSA: Options.Option;
+  writeAST: Options.Option;
   writeIR: Options.Option;
+  useSSA: Options.Option;
 
   
 PROCEDURE InitContext (context: Context; config: Config.Config;
@@ -57,8 +58,9 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
       | Rep.modSymbolFile, Rep.modHeaderFileC,
         Rep.modDeclFileC, Rep.modCodeFileC:
         RETURN TranslateToC.New (context, entity. module,
-                                 useSSA. value(BooleanValue.Value). boolean,
-                                 writeIR. value(BooleanValue.Value). boolean)
+                                 writeAST. value(BooleanValue.Value). boolean,
+                                 writeIR. value(BooleanValue.Value). boolean,
+                                 useSSA. value(BooleanValue.Value). boolean)
       | Rep.modMainFileC:
         RETURN WriteMainFileC.New (context, entity. module)
       | Rep.modObjectFile, Rep.modMainObjectFile:
@@ -92,8 +94,9 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
     Config.InitConfig (config, defaultConfigFile);
 
     make := config. options. Set ("make", BooleanValue.New (FALSE));
-    useSSA := config. options. Set ("use-ssa", BooleanValue.New (FALSE));
+    writeAST := config. options. Set ("write-ast", BooleanValue.New (FALSE));
     writeIR := config. options. Set ("write-ir", BooleanValue.New (FALSE));
+    useSSA := config. options. Set ("use-ssa", BooleanValue.New (FALSE));
     
     RegisterCmdLineOptions (config);
     RETURN config
@@ -115,7 +118,7 @@ BEGIN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
   ELSIF (config. arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: TestCompile {-r <base-dir>} [--make][--use-ssa][--write-ir] <file>"); Out.Ln;
+    Out.String ("Usage: TestCompile {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa] <file>"); Out.Ln;
     HALT (1)
   ELSE
     context := NewContext (config);
