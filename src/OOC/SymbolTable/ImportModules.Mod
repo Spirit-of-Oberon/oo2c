@@ -81,7 +81,14 @@ PROCEDURE ImportModules* (systemModule: Sym.Module;
         IF (m = NIL) THEN
           Err (noSuchModule, import. moduleName)
         ELSE
-          symTab := m. ReadSymbolFile (res);
+          IF (m.ifQuality = Repository.importsWithFingerprint) THEN
+            (* we already read the symbol file, and it has not been
+               invalidated at this time: take old data *)
+            symTab := m.ifData;
+            res := NIL;
+          ELSE
+            symTab := m.ReadSymbolFile (res);
+          END;
           IF (res # NIL) THEN
             Err (readErrorSymbolFile, import. moduleName);
             lastError. SetMsgAttrib ("reason", res)
