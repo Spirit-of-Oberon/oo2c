@@ -1455,7 +1455,7 @@ PROCEDURE (d: Document) Store* (w: Object.Writer);
     d. Store^ (w);
     w. WriteObject (d. blockList);
     w. WriteObject (d. summary);
-    (* don't store decoration or firstColumn *)
+    (* don't store decoration, firstColumn, or usedImportsList *)
   END Store;
 
 PROCEDURE (d: Document) Load* (r: Object.Reader);
@@ -1474,7 +1474,10 @@ PROCEDURE (d: Document) Load* (r: Object.Reader);
       d. summary := NIL
     ELSE
       d. summary := obj(InlineElement)
-    END
+    END;
+    d. decoration := NIL;
+    d. firstColumn := 0;
+    d. usedImportsList := NIL;
   END Load;
 
 PROCEDURE (doc: Document) Normalize*;
