@@ -116,7 +116,7 @@ PROCEDURE IdentifyResults (b: S.FunctionBlock): RegisterFiles;
       (**TRUE if the result must be assigned a register, or if its assigned
          register must be considered when computing the interference graph.
          Registers that are hot managed by the allocator, like stack pointer
-         and frame pointer, or ignored.  *)
+         and frame pointer, are ignored.  *)
       BEGIN
         RETURN (res.register # S.cc) OR (res.adrMode # S.register);
       END Relevant;
