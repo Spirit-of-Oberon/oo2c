@@ -1489,33 +1489,34 @@ PROCEDURE (pb: ProcBlock) Destroy*;
     instr := pb.instrList;
     WHILE (instr # NIL) DO
       nextInstr := instr.nextInstr;
-
-      opnd := instr.opndList;
-      WHILE (opnd # NIL) DO
-        nextOpnd := opnd.nextOpnd;
-        opnd.arg := NIL;
-        opnd.nextOpnd := NIL;
-        opnd.instr := NIL;
-        opnd.nextUse := NIL;
-        opnd := nextOpnd;
+      IF (instr.opcode # Opcode.preloadedVar) THEN
+        (* need to keep preloadedVar instruction alive for module init code *)
+        opnd := instr.opndList;
+        WHILE (opnd # NIL) DO
+          nextOpnd := opnd.nextOpnd;
+          opnd.arg := NIL;
+          opnd.nextOpnd := NIL;
+          opnd.instr := NIL;
+          opnd.nextUse := NIL;
+          opnd := nextOpnd;
+        END;
+        
+        res := instr;
+        WHILE (res # NIL) DO
+          nextResult := res.nextResult;
+          res.nextResult := NIL;
+          res.instr := NIL;
+          res.useList := NIL;
+          res.info := NIL;
+          res.marker := 0;
+          res := nextResult;
+        END;
+        
+        instr.opndList := NIL;
+        instr.nextInstr := NIL;
+        instr.prevInstr := NIL;
+        instr.pos := 0;
       END;
-
-      res := instr;
-      WHILE (res # NIL) DO
-        nextResult := res.nextResult;
-        res.nextResult := NIL;
-        res.instr := NIL;
-        res.useList := NIL;
-        res.info := NIL;
-        res.marker := 0;
-        res := nextResult;
-      END;
-
-      instr.opndList := NIL;
-      instr.nextInstr := NIL;
-      instr.prevInstr := NIL;
-      instr.pos := 0;
-      
       instr := nextInstr;
     END;
     
