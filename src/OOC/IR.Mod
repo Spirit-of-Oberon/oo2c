@@ -678,6 +678,10 @@ TYPE
     (StatementDesc)
     source-: Expression;
     dest-: Expression;
+    checkDynamicType-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the
+       dynamic type of the @ofield{dest} record does not match its
+       static type.  *)
   END;
   
 TYPE
@@ -2690,19 +2694,40 @@ PROCEDURE (call: Call) Accept* (v: Visitor);
 (* Statement Class: Copy
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitCopy (cp: Copy; sym: Symbol; source, dest: Expression);
+PROCEDURE InitCopy (cp: Copy; sym: Symbol; source, dest: Expression;
+                    checkDynamicType: BOOLEAN);
   BEGIN
     InitStatement (cp, sym);
     cp. source := source;
     cp. dest := dest;
+    cp. checkDynamicType := checkDynamicType;
   END InitCopy;
 
 PROCEDURE (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
   VAR
     cp: Copy;
+    checkDynamicType: BOOLEAN;
+
+  PROCEDURE HasDynamicType (dest: Expression): BOOLEAN;
+    BEGIN
+      IF (dest. type IS Sym.Record) THEN
+        IF (dest IS Deref) THEN
+          RETURN TRUE;
+        ELSIF (dest IS Var) THEN
+          RETURN dest(Var). decl(Sym.VarDecl). isVarParam;
+        END;
+      END;
+      RETURN FALSE;
+    END HasDynamicType;
+  
   BEGIN
+    checkDynamicType :=
+        (dest. type IS Sym.Record) &
+        
+        GetPragmaValue (b, StdPragmas.typeGuard, sym. pos);
+    
     NEW (cp);
-    InitCopy (cp, sym, source, dest);
+    InitCopy (cp, sym, source, dest, checkDynamicType);
     RETURN cp
   END NewCopy;
 

@@ -577,12 +577,13 @@ CONST
 
   failedCase* = 59;
   failedWith* = 60;
+  failedTypeAssert* = 61;
   
-  selectException* = 61;
+  selectException* = 62;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
   
-  labels* = 62;
+  labels* = 63;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -727,6 +728,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | checkPointer: cstr := "check-pointer";
     | failedCase: cstr := "failed-case";
     | failedWith: cstr := "failed-with";
+    | failedTypeAssert: cstr := "failed-type-assert";
     | selectException: cstr := "select-exception";
     END;
     

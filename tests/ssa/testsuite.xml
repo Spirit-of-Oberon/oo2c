@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; function7" >-->
+  select ="&SetupTestCasesWithOut; record11" >-->
 
   &TestSetupWithOut;
     
@@ -282,6 +282,11 @@
       An array variable nested within a record.  This test breaks if
       the array length is not computed before the array size is
       calculated. 
+    </test>
+    
+    <test id="record11" type="error" file="Record11.Mod">
+      Assigning to a record variable whose dynamic type does not match
+      its static type.
     </test>
     
     <test id="array1" type="run" file="Array1.Mod" output="Array1.Ref">

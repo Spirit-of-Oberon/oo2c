@@ -43,7 +43,7 @@ ACCEPT (assignment compatible)
 
 ERROR (assignment compatible)
 
-  1) var is a record whose dynamic and static type differ
+  1) var is a record whose dynamic and static type differ [Record11]
 
 
 

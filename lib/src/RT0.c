@@ -133,6 +133,10 @@ void RT0__ErrorFailedWith (RT0__Module mid, OOC_CHARPOS pos) {
   _runtime_error("WITH error, none of the guards matches", mid, pos);
 }
 
+void RT0__ErrorFailedTypeAssert (RT0__Module mid, OOC_CHARPOS pos) {
+  _runtime_error("Dynamic type differs from static type", mid, pos);
+}
+
 void RT0__ErrorFailedFunction (RT0__Module mid, OOC_CHARPOS pos) {
   _runtime_error("Control reaches end of function procedure", mid, pos);
 }
