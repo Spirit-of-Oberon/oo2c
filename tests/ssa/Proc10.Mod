@@ -1,0 +1,11 @@
+MODULE Proc10;
+
+VAR
+  x: ARRAY 8 OF CHAR;
+  
+PROCEDURE P (y: ARRAY OF ARRAY OF CHAR);
+  END P;
+
+BEGIN
+  P(x);
+END Proc10.

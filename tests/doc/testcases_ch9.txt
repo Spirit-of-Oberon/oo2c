@@ -58,12 +58,12 @@ REJECT:
   1) type of proc is not procedure  [Proc1]
   2) proc is a function procedure  [Proc2, HOTFunction8]
   3) too few or too many entries in argument list  [Proc3, Proc4, Proc5]
-  4) argument not assignment compatible to value parameter
-  5) argument to VAR parameter is not a variable designator
-  6) argument to VAR parameter is imported read-only
+  4) argument not assignment compatible to value parameter  [Proc6]
+  5) argument to VAR parameter is not a variable designator  [Proc7]
+  6) argument to VAR parameter is imported read-only  [Proc8]
   7) formal parameter type is an open array, but the argument is
      not array compatible (wrong base type, different number of
-     dimensions)
+     dimensions)  [Proc9, Proc10, Proc11, Proc12]
 
 ACCEPT:
   

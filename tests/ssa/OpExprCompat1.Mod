@@ -35,7 +35,7 @@ BEGIN
 
   Out.Int(li,0); Out.Ln;
   Out.Int(i,0); Out.Ln;
-  Out.Real(r,0,0); Out.Ln;
+  Out.Real(r,0); Out.Ln;
   Out.String(a2); Out.Ln;
 END Test;
 

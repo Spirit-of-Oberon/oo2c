@@ -1,0 +1,11 @@
+MODULE Proc9;
+
+VAR
+  x: ARRAY 8 OF CHAR;
+  
+PROCEDURE P (y: ARRAY OF SHORTINT);
+  END P;
+
+BEGIN
+  P(x);
+END Proc9.

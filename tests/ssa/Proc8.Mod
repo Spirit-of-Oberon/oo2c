@@ -1,0 +1,11 @@
+MODULE Proc8;
+
+IMPORT AssignRO;
+  
+PROCEDURE P (VAR a: INTEGER);
+  BEGIN
+  END P;
+
+BEGIN
+  P(AssignRO.x);
+END Proc8.

@@ -1,0 +1,9 @@
+MODULE Proc7;
+
+PROCEDURE P (VAR a: INTEGER);
+  BEGIN
+  END P;
+
+BEGIN
+  P(1);
+END Proc7.

@@ -10,7 +10,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; proc3 proc4 proc5">-->
+  select ="&SetupTestCasesWithOut; assign_ro proc6 proc7 proc8 proc9
+  proc10 proc11 proc12">-->
 
   &TestSetupWithOut;
     
@@ -91,6 +92,30 @@
     </test>
     <test id="proc5" type="reject" file="Proc5.Mod">
       Calling a procedure more arguments than formal parameters.
+    </test>
+    <test id="proc6" type="reject" file="Proc6.Mod">
+      Argument not assignment compatible to value parameter.
+    </test>
+    <test id="proc7" type="reject" file="Proc7.Mod">
+      Argument to a variable parameter is a constant.
+    </test>
+    <test id="proc8" type="reject" file="Proc8.Mod">
+      Argument to a variable parameter is imported read-only.
+    </test>
+    <test id="proc9" type="reject" file="Proc9.Mod">
+      Argument to an open array value parameter has wrong element type.
+    </test>
+    <test id="proc10" type="reject" file="Proc10.Mod">
+      Argument to an open array value parameter has wrong number of
+      dimensions.
+    </test>
+    <test id="proc11" type="reject" file="Proc11.Mod">
+      Argument to an open array variable parameter has wrong element
+      type.
+    </test>
+    <test id="proc12" type="reject" file="Proc12.Mod">
+      Argument to an open array variable parameter has wrong number of
+      dimensions.
     </test>
     
     <test id="function1" type="run"
@@ -802,6 +827,13 @@
     <reject-info id="proc3" pos="P(123%)" msg="Too few arguments"/>
     <reject-info id="proc4" pos="%P;" msg="Too few arguments"/>
     <reject-info id="proc5" pos="P(1, 2, %3);" msg="Too many arguments"/>
+    <reject-info id="proc6" pos="P(%128);" msg="Type of actual parameter is not compatible with formal type"/>
+    <reject-info id="proc7" pos="P(%1);" msg="This must be a variable"/>
+    <reject-info id="proc8" pos="P(AssignRO.%x);" msg="This variable is read-only"/>
+    <reject-info id="proc9" pos="P(%x);" msg="Type of actual parameter is not compatible with formal type"/>
+    <reject-info id="proc10" pos="P(%x);" msg="Type of actual parameter is not compatible with formal type"/>
+    <reject-info id="proc11" pos="P(%x);" msg="Actual parameter not compatible with formal VAR parameter"/>
+    <reject-info id="proc12" pos="P(%x);" msg="Actual parameter not compatible with formal VAR parameter"/>
     <reject-info id="function8" pos=":= %P(" msg="This is not a function procedure"/>
 
     <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>

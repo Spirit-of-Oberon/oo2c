@@ -955,6 +955,7 @@ CONST
   notFunctionProcedure = 37;
   tooFewArguments = 38;
   tooManyArguments = 39;
+  notVarParCompatible = 40;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1049,6 +1050,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Too few arguments"
     | tooManyArguments:
       t := "Too many arguments"
+    | notVarParCompatible:
+      t := "Actual parameter not compatible with formal VAR parameter"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2637,33 +2640,32 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
     assignment. value := value;
   END InitAssignment;
 
+PROCEDURE (b: Builder) AssertVar (expr: Expression);
+  BEGIN
+    WITH expr: Var DO
+      IF b. typeRules. IsReadOnly (b. module, expr. decl) THEN
+        b. ErrSym (importedReadOnly, expr. sym);
+      END;
+    | expr: Deref DO
+      (* a pointer dereference is always a variable *)
+    | expr: Index DO
+      b. AssertVar (expr. array);   (* check that value is writable *)
+    | expr: SelectField DO
+      b. AssertVar (expr. record);  (* check that value is writable *)
+      IF b. typeRules. IsReadOnly (b. module, expr. field) THEN
+        b. ErrSym (importedReadOnly, expr. fieldSym);
+      END;
+    ELSE
+      b. ErrSym (notVariable, expr. sym);
+    END;
+  END AssertVar;
+
 PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
                                        variable, value: Expression): Statement;
   VAR
     assignment: Assignment;
-
-  PROCEDURE CheckVar (expr: Expression);
-    BEGIN
-      WITH expr: Var DO
-        IF b. typeRules. IsReadOnly (b. module, expr. decl) THEN
-          b. ErrSym (importedReadOnly, expr. sym);
-        END;
-      | expr: Deref DO
-        (* a pointer dereference is always a variable *)
-      | expr: Index DO
-        CheckVar (expr. array);     (* check that value is writable *)
-      | expr: SelectField DO
-        CheckVar (expr. record);    (* check that value is writable *)
-        IF b. typeRules. IsReadOnly (b. module, expr. field) THEN
-          b. ErrSym (importedReadOnly, expr. fieldSym);
-        END;
-      ELSE
-        b. ErrSym (notVariable, expr. sym);
-      END;
-    END CheckVar;
-  
   BEGIN
-    CheckVar (variable);
+    b. AssertVar (variable);
     MakeAssignmentCompatible (b, sym, value, variable. type);
     IF b. typeRules. IsStringConst (value. type) THEN
       (* assigning a string constant: create CopyString opcode *)
@@ -3826,7 +3828,36 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       ok: BOOLEAN;
     BEGIN
       IF fpar. isVarParam THEN           (* variable parameter *)
-        (* ... nothing for now *)
+        b. AssertVar (arg);
+
+        IF fpar. isReceiver & (arg. type IS Sym.Pointer) THEN
+          (* receiver is a VAR record, argument a pointer: add deref *)
+          arg := b. NewDeref (arg. sym, arg);
+        END;
+        
+        IF b. typeRules. SameType (fpar. type, arg. type) OR
+           IsPredefType (fpar. type, Predef.byte) &
+             b. typeRules. IsByteCompatible (arg. type) OR
+           b. typeRules. IsOpenArrayType (fpar. type) &
+             IsPredefType (fpar.type(Sym.Array).elementType, Predef.byte) THEN
+          (* same type, or passing a CHAR or SHORTINT to a BYTE, or passing
+             anything to an ARRAY OF BYTE: argument is compatible to formal
+             parameter *)
+        ELSIF (fpar. type IS Sym.Record) THEN
+          IF ~b. typeRules. IsExtensionOf (arg. type, fpar. type) THEN
+            (* formal parameter is record, and the argument type is not
+               an extension of the record type *)
+            b. ErrSym (notVarParCompatible, arg. sym);
+          END;
+        ELSIF b. typeRules. IsOpenArrayType (fpar. type) THEN
+          IF ~b. typeRules. IsArrayCompatible (arg. type, fpar. type) THEN
+            (* formal parameter is open array, and the argument type is not
+               array compatible to it *)
+            b. ErrSym (notVarParCompatible, arg. sym);
+          END;
+        ELSE                             (* not compatible *)
+          b. ErrSym (notVarParCompatible, arg. sym);
+        END;
       ELSE                               (* value parameter *)
         IF b. typeRules. IsOpenArrayType (fpar. type) THEN
           ok := b. typeRules. IsArrayCompatible (arg. type, fpar. type) OR
@@ -3857,6 +3888,18 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       fparType: Sym.Type;
       fpar: Sym.VarDecl;
       arg: Expression;
+
+    PROCEDURE Dimensions (type: Sym.Type): LONGINT;
+      BEGIN
+        IF b. typeRules. IsStringConst (type) THEN
+          RETURN 1;
+        ELSIF (type IS Sym.Array) THEN
+          RETURN type(Sym.Array). ArrayDimensions();
+        ELSE
+          RETURN 0;
+        END;
+      END Dimensions;
+    
     BEGIN
       newArgs := ArrayList.New (LEN (arguments^));
       newFPars := ArrayList.New (LEN (arguments^));
@@ -3898,7 +3941,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
                                             Predef.GetType (Predef.lengthType),
                                             Integer.New (arg. type. size)));
               newFPars. Append (NIL);
-            ELSE
+            ELSIF (Dimensions (arg.type) >= fparType. GetOpenDimensions()) THEN
+              (* only try to add the lengths if there are enough dimensions
+                 in the argument; otherwise, MakeParameterCompatible should
+                 have written out an error message for us *)
               FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
                 newArgs. Append (b. Fold (b. NewLen (arg. sym, arg, i)));
                 newFPars. Append (NIL);
