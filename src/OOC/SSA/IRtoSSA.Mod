@@ -99,6 +99,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         len: SSA.Result;
         lenp: SSA.Instr;
       BEGIN
+        type := type.Deparam();
         WITH type: Sym.Array DO
           IF type.isOpenArray THEN
             len := pb.AddGetLengthInstr (baseArray(SSA.Instr), dim+1, type);
@@ -107,7 +108,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           END;
           len := FixLength(len);
           
-          IF (type.elementType IS Sym.Array) THEN
+          IF TR.IsArray(type.elementType) THEN
             lenp := pb. AddInstr (Opcode.multiply, Opcode.scLength);
             lenp. AddOpnd (len, Opnd.arg);
             lenp. AddOpnd (RecursiveGetLength (type.elementType, dim+1),
