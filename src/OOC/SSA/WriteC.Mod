@@ -231,7 +231,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       RefList (assert. opndList, Opnd.arg);
       w. WriteString (", ");
       w. WriteString ("0");  (* ... file position missing *)
-      w. WriteString (");")
+      w. WriteChar (")")
     END Assert;
   
   PROCEDURE Call (call: SSA.Instr);
@@ -299,19 +299,16 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       CASE instr. opcode OF
       | Opcode.const:
         WriteConst.Write (w. w, instr(SSA.Const). value);
-        w. WriteChar (";")
 
       | Opcode.address:
         name := Naming.NameOfDeclaration (instr(SSA.Address). decl);
         w. WriteChar ("&");
         w. WriteString (name. array^);
-        w. WriteChar (";")
 
       | Opcode.get:
         (* another *very* drastic shortcut... *)
         name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. nextOpnd. arg(SSA.DeclRef). decl);
         w. WriteString (name. array^);
-        w. WriteChar (";")
         
       | Opcode.set:
         (* another *very* drastic shortcut... *)
@@ -319,31 +316,38 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         w. WriteString (name. array^);
         w. WriteString (" = ");
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
-        w. WriteChar (";")
+
+      | Opcode.add:
+        w. Ref (instr. opndList);
+        w. WriteChar ("+");
+        w. Ref (instr. opndList. nextOpnd);
+        
+      | Opcode.negate:
+        w. WriteChar ("-");
+        w. Ref (instr. opndList);
         
       | Opcode.assert:
         Assert (instr)
             
       | Opcode.call:
         Call (instr);
-        w. WriteChar (";")
             
       | Opcode.return:
         opnd := instr. GetOpndClass (Opnd.functionResult);
         IF (opnd # NIL) THEN
           w. WriteString ("return ");
-          w. Ref (opnd);
-          w. WriteChar (";");
+          w. Ref (opnd)
         ELSE
-          w. WriteString ("return;")
+          w. WriteString ("return")
         END;
         
       | Opcode.selectReturn:
         IF ~AllPathsClosed (instr) THEN
-          w. WriteString ("return;")
+          w. WriteString ("return")
         END;
       ELSE
       END;
+      w. WriteChar (";");
       
       proxy := proxy. nextProxy
     END;

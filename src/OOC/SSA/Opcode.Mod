@@ -121,9 +121,19 @@ CONST
      @end table  *)
   set* = 8;
   copy* = 9;
+
+  add* = 10;
+  (**Addition operator.  The two operands must be of the same type, which
+     is at the same time the result of the operation.  (Question: What types
+     are used in address arithmetic?  Should address be treated as unsigned
+     or signed? FIXME...) *)
+  subtract* = 11;
+  negate* = 12;
+  multiply* = 13;
+  divide* = 14;
   
-  assert* = 10;
-  call* = 11;
+  assert* = 15;
+  call* = 16;
 
 CONST
   scNone* = 0;
@@ -178,7 +188,13 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | get: cstr := "get";
     | set: cstr := "set";
     | copy: cstr := "copy";
-          
+
+    | add: cstr := "add";
+    | subtract: cstr := "subtract";
+    | negate: cstr := "negate";
+    | multiply: cstr := "multiply";
+    | divide: cstr := "divide";
+      
     | enter: cstr := "enter";
     | select: cstr := "select";
     | return: cstr := "return";
@@ -191,7 +207,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     COPY (cstr, name);
     IF (subclass # scNone) THEN
       CASE subclass OF
-      | scNone      : scstr := "none"
+      (*| scNone      : scstr := "none"*)
       | scSigned8   : scstr := "i8"
       | scSigned16  : scstr := "i16"
       | scSigned32  : scstr := "i32"

@@ -81,8 +81,16 @@ PROCEDURE (v: Visitor) VisitNegate* (neg: Operator.Negate);
   BEGIN
     v. w. StartTag ("negate", FALSE);
     neg. opnd1. Accept (v);
-    v. w. EndTag;  (* module-reference *)
+    v. w. EndTag;  (* negate *)
   END VisitNegate;
+
+PROCEDURE (v: Visitor) VisitAdd* (add: Operator.Add);
+  BEGIN
+    v. w. StartTag ("add", FALSE);
+    add. opnd1. Accept (v);
+    add. opnd2. Accept (v);
+    v. w. EndTag;  (* add *)
+  END VisitAdd;
 
 
 PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);

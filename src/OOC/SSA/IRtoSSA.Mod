@@ -46,11 +46,18 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
             
       | expr: Operator.Negate DO
-        (* ok, I'm being very lazy here; don't want to introduce expression
-           for something as trifling as `-123' right now, so I'm doing some
-           trivial constant folding here... *)
-        RETURN pb. GetConst(Integer.New (-SHORT(expr.opnd1(IR.Const).value(Integer.Value).value)), expr.opnd1(IR.Const).type)
-
+        instr := pb. AddInstr (Opcode.negate,
+                               Opcode.TypeToSubclass (expr. opnd1. type));
+        instr. AddOpnd (Expression (expr. opnd1), Opnd.arg);
+        RETURN instr
+            
+      | expr: Operator.Add DO
+        instr := pb. AddInstr (Opcode.add,
+                               Opcode.TypeToSubclass (expr. opnd1. type));
+        instr. AddOpnd (Expression (expr. opnd1), Opnd.arg);
+        instr. AddOpnd (Expression (expr. opnd2), Opnd.arg);
+        RETURN instr
+            
       | expr: IR.Call DO
         RETURN Call (expr)
       ELSE

@@ -22,6 +22,12 @@ TYPE
     (IR.OperatorDesc)
   END;
 
+TYPE
+  Add* = POINTER TO AddDesc;
+  AddDesc = RECORD
+    (IR.OperatorDesc) 
+  END;
+  
 
 PROCEDURE InitVisitor* (v: Visitor);
   BEGIN
@@ -68,12 +74,40 @@ PROCEDURE (neg: Negate) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
+PROCEDURE InitAdd (add: Add; sym: IR.Symbol; left, right: IR.Expression);
+  BEGIN
+    IR.InitOperator (add, sym, left. type, left, right);
+  END InitAdd;
+
+PROCEDURE NewAdd (sym: IR.Symbol; left, right: IR.Expression): Add;
+  VAR
+    add: Add;
+  BEGIN
+    NEW (add);
+    InitAdd (add, sym, left, right);
+    RETURN add
+  END NewAdd;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitAdd* (add: Add);
+  END VisitAdd;
+
+PROCEDURE (add: Add) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitAdd (add)
+  END Accept;
+
+(* -------- *)
+
 PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
   BEGIN
     CASE sym. id OF
     | Symbol.minus:
       ASSERT (left = NIL);
       RETURN NewNegate (sym, right)
+
+    | Symbol.plus:
+      ASSERT (left. type = right. type);
+      RETURN NewAdd (sym, left, right)
     END
   END NewOperator;
 

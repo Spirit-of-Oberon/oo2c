@@ -156,6 +156,8 @@ TYPE
      @samp{LEN}, are also mapped on operators.  *)
     (ExpressionDesc)
     opnd1-, opnd2-: Expression;
+    (**The operands of the operator.  For dyadic operations, both are
+       non-@code{NIL}.  With monadic operators, @ofield{opnd2} is @code{NIL}.  *)
   END;
 
 (* Statements

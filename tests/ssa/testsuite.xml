@@ -17,11 +17,11 @@
   select ="prepare_out_module
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
-  function1 function2 function3 if1 if2 if3">
+  function1 function2 function3 if1 if2 if3 function4 function5">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module if1 if2 if3">-->
+  select ="prepare_out_module if1 if2 if3 function4 function5">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -71,6 +71,19 @@
       file="HOTIf3.Mod" output="HOTIf3.Ref">
       A simple <code>IF-ELSIF-ELSE-END</code> statement, using 
       boolean parameters as guards.
+    </test>
+    
+    <test id="function4" type="run"
+      file="HOTFunction4.Mod" output="HOTFunction4.Ref">
+      Another simple function: The boolean input parameter selects
+      between one of the two <code>RETURN</code> statements in
+      the <code>IF</code> statement.
+    </test>
+    
+    <test id="function5" type="run"
+      file="HOTFunction5.Mod" output="HOTFunction5.Ref">
+      Yet another simple function: Increment input value by one and
+      return the result.
     </test>
   </testcases>
   
