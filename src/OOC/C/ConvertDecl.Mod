@@ -19,17 +19,29 @@ PROCEDURE ^ ConvertDecl (w: DeclWriter.Writer;
 
 PROCEDURE ConvertType (w: DeclWriter.Writer;
                        resolvedType, type: Sym.Type): DeclWriter.Type;
+(**Produces a C type declaration from an Oberon-2 type constructor.
+   @oparam{resolvedType} refers to the concrete type that is to be translated,
+   that is, the bare bones constructor that remains after all naming and
+   aliasing issues have been resolved.  @oparam{type} is the type reference
+   that appeared in the source code to identify the @oparam{resolvedType}.  It
+   is either equal to @oparam{resolvedType}, or a type name that is resolved to
+   @oparam{resolvedType}.
+
+   The object @oparam{w} is used to construct the type expression.  Result
+   is the C type expression corresponding to @oparam{type}.  *)
   VAR
-x:String.String;
     ptr: Sym.Item;
     fct: DeclWriter.Function;
     struct: DeclWriter.Struct;
+    base: DeclWriter.Type;
 
   PROCEDURE ConvertParam (fct: DeclWriter.Function; param: Sym.VarDecl);
     VAR
       decl: DeclWriter.Declaration;
 
     PROCEDURE AddArrayLength (type: Sym.Type; dim: LONGINT);
+    (* If `type' is an open array, add length arguments to the parameter list,
+       one for each open dimension.  *)
       VAR
         length: DeclWriter.Declaration;
       BEGIN
@@ -83,20 +95,21 @@ x:String.String;
           RETURN w. basicType[DeclWriter.ptr]
         END
 
-        (* nothing *)
       | type: Sym.TypeName DO
         WITH resolvedType: Sym.PredefType DO
           RETURN ConvertType (w, resolvedType, resolvedType);
         ELSE
-          x := Naming.NameOfType (resolvedType);
-          ASSERT (x.array[0]#"#");
           RETURN w. NewTypeRef (DeclWriter.refTypedef,
                                 Naming.NameOfType (resolvedType));
         END;
         
       | type: Sym.Pointer DO
-        ASSERT (FALSE);
-        (*ConvertType (type. srcCodeBaseType);*)
+        base := ConvertType (w, type. baseType, type. srcCodeBaseType);
+        IF (type. baseType IS Sym.Array) THEN
+          RETURN base;
+        ELSE
+          RETURN w. NewPointer (DeclWriter.tqNone, base);
+        END;
         
       | type: Sym.FormalPars DO
         fct := w. NewFunction (ConvertType (w, type. resultType, type. srcCodeResultType));
@@ -237,8 +250,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
                              mode: SHORTINT);
     VAR
       ptr: Sym.Item;
-      decl: DeclWriter.Declaration;
-
+      
     PROCEDURE ExportedVarDecl (ptr: Sym.Item): BOOLEAN;
       BEGIN
         WITH ptr: Sym.VarDecl DO
@@ -258,12 +270,13 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
           IF (exports. HasKey (ptr) = (mode = modeWriteExported)) OR
              ExportedVarDecl (ptr) THEN
             WITH ptr: Sym.Import DO
-              decl := w. NewIncludeModule
-                  (m. GetImport (ptr. moduleName. str^));
+              IF ~ptr. IsInternalImport() THEN
+                w. AddDeclaration (w. NewIncludeModule
+                                   (m. GetImport (ptr. moduleName. str^)));
+              END;
             ELSE
-              decl := ConvertDecl (w, ptr, mode)
+              w. AddDeclaration (ConvertDecl (w, ptr, mode));
             END;
-            w. AddDeclaration (decl)
           END
         ELSE                               (* ignore non-declarations *)
         END;
