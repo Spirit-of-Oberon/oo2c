@@ -86,6 +86,7 @@ static int new_system(const char * args) {
   return GetLastError();
 }
 
+#ifdef USE_SHELL
 char * prefix = "/bin/sh -c \"";
 
 int OS_ProcessManagement__system(const OOC_CHAR8* command, OOC_LEN command_0d) {
@@ -140,6 +141,12 @@ int OS_ProcessManagement__system(const OOC_CHAR8* command, OOC_LEN command_0d) {
   free(buffer);
   return result;
 }
+
+#else
+int OS_ProcessManagement__system(const OOC_CHAR8* command, OOC_LEN command_0d) {
+  return new_system((const char*)command);
+}
+#endif
 #else
 int OS_ProcessManagement__system(const OOC_CHAR8* command, OOC_LEN command_0d) {
   return system((const char*)command);
