@@ -622,7 +622,10 @@ CONST
      This instruction is not implemented yet.  *)
   
   labels* = 68;
-  (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
+  (**Pseudo instruction listing all labels of a @code{CASE} branch.  Every
+     range and every single value is represented by two consecutive operands,
+     the lower and the upper bound.  All operands are of class
+     @oconst{*OOC:SSA:Opnd.arg}  *)
   
   
 CONST
