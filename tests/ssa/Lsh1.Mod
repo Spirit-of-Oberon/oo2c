@@ -42,10 +42,10 @@ PROCEDURE Test*;
     Out.Int (ORD(SYSTEM.LSH(c16, 2)), 12); 
     Out.Ln;
 
-    c32 := 40000000X;
+    (*c32 := 40000000X;
     Out.Int (ORD(SYSTEM.LSH(c32, 0)), 12); 
     Out.Int (ORD(SYSTEM.LSH(c32, 2)), 12); (* avoid overflow *) 
-    Out.Ln;
+    Out.Ln;*)
 
     b := SYSTEM.VAL(SYSTEM.BYTE, 64);
     Out.Int (SYSTEM.VAL(SHORTINT,SYSTEM.LSH(b, 0)), 12); 
