@@ -251,7 +251,7 @@ PROCEDURE GetMin* (type: Sym.Type): Language.Value;
 PROCEDURE GetMax* (type: Sym.Type): Language.Value;
   BEGIN
     WITH type: Sym.PredefType DO
-      RETURN minConst[type. id];
+      RETURN maxConst[type. id];
     ELSE
       RETURN NIL;
     END;
