@@ -1,7 +1,8 @@
 MODULE Config:Source:Environment;
 
 IMPORT
-  Channel, TextRider, Msg, Strings, LongStrings, Rts,
+  Channel, TextRider, Msg, Strings, LongStrings,
+  <*IF COMPILER_MAJOR=1 THEN*>Rts,<*ELSE*>RT0,<*END*>
   Config:Value, Config:Source, Config:Parser;
 
 
@@ -112,7 +113,11 @@ PROCEDURE (env: Environment) Parse*(): Msg.Msg;
   BEGIN
     t := env. variableTemplates;
     WHILE (t # NIL) DO
+<*IF COMPILER_MAJOR=1 THEN*>
       found := Rts.GetEnv (value, t. name^);
+<*ELSE*>
+      found := RT0.GetEnv (t. name^, value);
+<*END*>
       IF found THEN
         NEW (cmd);
         cmd. nextCommand := NIL;
