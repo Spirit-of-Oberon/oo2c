@@ -122,14 +122,6 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
     END;
   END AttrRef;
 
-PROCEDURE ShorthandInstr (instr: SSA.Instr): BOOLEAN;
-  BEGIN
-    RETURN
-        (instr IS SSA.Const) OR
-        (instr IS SSA.DeclRef) OR
-        (instr IS SSA.Address);
-  END ShorthandInstr;
-
 PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
   VAR
     value: String.String;
@@ -176,7 +168,7 @@ PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
     END WriteOpnd;
   
   BEGIN
-    IF ShorthandInstr (instr) THEN
+    IF instr. IsConst() THEN
       (* these kinds of instructions are written in a shorthand form:
          their actual value is indicated in the "opnd" tag, and the
          instructions themselves are omitted *)
@@ -233,7 +225,7 @@ PROCEDURE (w: Writer) WriteProcBody* (pb: SSA.ProcBlock;
           opnd := opnd. nextOpnd
         END;
         
-        IF ~ShorthandInstr (instr) THEN
+        IF ~instr. IsConst() THEN
           w. idMap. Set (instr, -instrCount);
           INC (instrCount);
         END;
@@ -253,7 +245,7 @@ PROCEDURE (w: Writer) WriteProcBody* (pb: SSA.ProcBlock;
       opnd: SSA.Opnd;
       id: LONGINT;
     BEGIN
-      IF ~ShorthandInstr (instr) THEN
+      IF ~instr. IsConst() THEN
         id := w. idMap. Get (instr);
         IF (id < 0) THEN                   (* not yet scheduled? *)
           w. idMap. Set (instr, -id); (* mark as scheduled *)
@@ -357,7 +349,7 @@ PROCEDURE (w: Writer) WriteSchedule* (domRoot: Schedule.Block);
     BEGIN
       proxy := b. proxyList;
       WHILE (proxy # NIL) DO
-        IF ~ShorthandInstr (proxy. instr) THEN
+        IF ~proxy. instr. IsConst() THEN
           w. idMap. Set (proxy. instr, instrCount);
           INC (instrCount);
         END;
