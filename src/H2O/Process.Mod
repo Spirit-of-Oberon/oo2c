@@ -2,7 +2,7 @@ MODULE H2O:Process;
 
 IMPORT
   Err, Object,
-  ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList,
+  ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList, ADT:ArrayList,
   H2O:Source, H2O:Error, H2O:Scanner, H2O:Module;
 
 CONST
@@ -55,7 +55,8 @@ TYPE
     in- : Source.Input;
     err- : Error.Error;
     expanded : LinkedList.LinkedList;	(* queue of tokens from expansion *)
-    macro- : Dictionary.Dictionary(STRING,Macro);	(* defined macros *)
+    macro : Dictionary.Dictionary(STRING,Macro);	(* defined macros *)
+    macroDecl- : ArrayList.ArrayList(Macro); (* macros in declared order *)
   END;
 
 VAR
@@ -362,7 +363,8 @@ VAR
       lastParam := NIL;
 
       NEW(m); 
-      m.module := NIL;
+      m.module := p.scanner.in.GetModule();
+      m.module.AddDefinition();
       m.name := name;
       m.nParams := 0;
       m.params := NIL;
@@ -415,6 +417,7 @@ VAR
       END;
 
       p.macro.Set(name, m);
+      p.macroDecl.Append(m);
       IF debugDefine IN moduleOptions THEN PrintMacro(m) END;
       End();
     END Define;
@@ -427,6 +430,7 @@ VAR
       ELSIF ~p.macro.HasKey(token.name) THEN 
         p.err.MsgParam("#undef macro '$0' not defined", token.name, NIL, NIL, strictUndefine IN moduleOptions);
       ELSE
+        p.macroDecl.Remove(p.macroDecl.IndexOf(p.macro.Get(token.name)));
         p.macro.Delete(token.name);
       END;
       GetSymP;
@@ -626,6 +630,7 @@ BEGIN
   p.err := err;
   p.ex := ex;
   p.macro := NEW(Dictionary.Dictionary(STRING,Macro));
+  p.macroDecl := NEW(ArrayList.ArrayList(Macro), 10);
   p.expanded := LinkedList.New();
   RETURN p;
 END New;
