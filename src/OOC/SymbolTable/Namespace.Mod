@@ -65,6 +65,11 @@ TYPE
        the record has no base type, this field is @code{NIL}.  *)
   END;
 
+TYPE
+  PType* = POINTER TO PTypeDesc;
+  PTypeDesc = RECORD
+    (NestedDesc) 
+  END;
 
 
 CONST
@@ -461,6 +466,58 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
       END
     END
   END CheckRestrictions;
+
+
+PROCEDURE InitPType (ns: PType; da: Sym.DeclarationArray; len: LONGINT);
+  BEGIN
+    InitNested(ns, da, len);
+  END InitPType;
+
+PROCEDURE NewPType* (da: Sym.DeclarationArray; len: LONGINT): PType;
+  VAR
+    ns: PType;
+  BEGIN
+    NEW (ns);
+    InitPType (ns, da, len);
+    RETURN ns
+  END NewPType;
+
+PROCEDURE (ns: PType) IdentifyLocal2*(sourceContext: Sym.Item;
+                                      name: Sym.Name;
+                                      ignorePosition: BOOLEAN;
+                                      VAR baseNotExported: BOOLEAN): Sym.Declaration;
+  VAR
+    decl: Sym.Declaration;
+    receiver: Sym.VarDecl;
+    typePars: Sym.TypePars;
+    item: Sym.Item;
+  BEGIN
+    decl := ns.IdentifyLocal2^(sourceContext, name,
+                               ignorePosition, baseNotExported);
+    IF (decl # NIL) &
+       (decl IS Sym.TypeDecl) &
+       (decl(Sym.TypeDecl).type IS Sym.TypeVar) THEN
+      (* impose restricted visibility on type variables *)
+      typePars := decl(Sym.TypeDecl).type(Sym.TypeVar).parent(Sym.TypePars);
+      item := sourceContext;
+      WHILE (item # NIL) DO
+        IF (item = typePars) THEN
+          (* lookup within type declaration: always visible *)
+          RETURN decl;
+        ELSIF (item IS Sym.ProcDecl) & item(Sym.ProcDecl).isTypeBound THEN
+          (* only permit lookup in type-bound procedures of the parametric
+             type to which this namespace belongs *)
+          receiver := item(Sym.ProcDecl).formalPars.receiver;
+          IF (receiver.type.typePars = typePars) THEN
+            RETURN decl;
+          END;
+        END;
+        item := item.parent;
+      END;
+      RETURN NIL;
+    END;
+    RETURN decl;
+  END IdentifyLocal2;
 
 BEGIN
   NEW (namespaceContext);

@@ -260,10 +260,14 @@ RAISES IO.Error;
      @emph{not} included in the namespace mapping.
 
      This procedure also adds all record types to @ovar{privateRecords}.  *)
+    CONST
+      namespaceNested = 0;
+      namespaceExtended = 1;
+      namespacePType = 2;
     VAR
       ptr: Sym.Item;
 
-    PROCEDURE Assemble (item: Sym.Item; nested: BOOLEAN): Sym.Namespace;
+    PROCEDURE Assemble (item: Sym.Item; nsType: SHORTINT): Sym.Namespace;
       VAR
         ptr: Sym.Item;
         c: LONGINT;
@@ -335,8 +339,7 @@ RAISES IO.Error;
           END;
           ptr := ptr. nextNested
         END;
-        IF (item IS Sym.ProcDecl) (*&     (* add formal parameters *)
-           (item(Sym.ProcDecl). visibleFrom >= 0)...*) THEN
+        IF (item IS Sym.ProcDecl) THEN    (* add formal parameters *)
           ptr := item(Sym.ProcDecl). formalPars. nestedItems;
           WHILE (ptr # NIL) DO
             IF IsDeclaration (ptr) THEN
@@ -349,11 +352,11 @@ RAISES IO.Error;
 
         (* sort array *)
         Quicksort (da, 0, c-1);
-        
-        IF nested THEN
-          RETURN Namespace.NewNested (da, c)
-        ELSE
-          RETURN Namespace.NewExtended (da, c)
+
+        CASE nsType OF
+        | namespaceNested  : RETURN Namespace.NewNested(da, c);
+        | namespaceExtended: RETURN Namespace.NewExtended(da, c);
+        | namespacePType   : RETURN Namespace.NewPType(da, c);
         END
       END Assemble;
 
@@ -366,14 +369,14 @@ RAISES IO.Error;
         END;
 
         WITH item: Sym.Module DO
-          item. SetNamespace (Assemble (item, TRUE))
+          item. SetNamespace (Assemble (item, namespaceNested))
         | item: Sym.ProcDecl DO
-          item. SetNamespace (Assemble (item, TRUE))
+          item. SetNamespace (Assemble (item, namespaceNested))
         | item: Sym.Record DO
-          item. SetNamespace (Assemble (item, FALSE));
+          item. SetNamespace (Assemble (item, namespaceExtended));
           privateRecords.Set(item, NIL);
         | item: Sym.TypePars DO
-          item. SetNamespace (Assemble (item, TRUE));
+          item. SetNamespace (Assemble (item, namespacePType));
         ELSE  (* no other item is associated with a namespace *)
         END
       END
@@ -463,6 +466,7 @@ RAISES IO.Error;
     VAR
       ptr: Sym.Item;
       i: LONGINT;
+      receiver: Sym.VarDecl;
       
     PROCEDURE GetTypeByName (typeName: Sym.Type; contextOfUse: Sym.Item; 
                       extendedSearch: BOOLEAN; errList: Error.List): Sym.Type;
@@ -554,7 +558,10 @@ RAISES IO.Error;
           END;
           
         | item: Sym.VarDecl DO
-          item. SetType (GetTypeByName (item. type, contextOfUse, FALSE, errList));
+          IF ~item.isReceiver THEN
+            item.SetType(GetTypeByName(item.type, contextOfUse,
+                                       FALSE, errList));
+          END;
           
         | item: Sym.FieldDecl DO
           item. type := GetTypeByName (item. type, contextOfUse, FALSE, errList)
@@ -598,6 +605,11 @@ RAISES IO.Error;
         | item: Sym.Module DO
           contextOfUse := item
         | item: Sym.ProcDecl DO
+          IF (item.formalPars # NIL) & (item.formalPars.receiver # NIL) THEN
+            receiver := item.formalPars.receiver;
+            receiver.SetType(GetTypeByName(receiver.type,
+                                           contextOfUse, FALSE, errList));
+          END;
           contextOfUse := item
         | item: Sym.TypePars DO
           contextOfUse := item
