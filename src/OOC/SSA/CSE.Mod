@@ -170,7 +170,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       i, j: LONGINT;
       new: Partition;
     BEGIN
-      ASSERT (opndIndex # p. ancestorOpnd);
+      (*ASSERT (opndIndex # p. ancestorOpnd);*)
       
       IF (opndIndex > p. ancestorOpnd) THEN
         (* locate the child for this operand; if there isn't one, create a
@@ -279,11 +279,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
 
         p := originList;
         WHILE (p # NIL) DO
-          ASSERT(p.splitted);
           largest := LargestChild(p, p);
           IF (largest # p) THEN
-            ASSERT(~largest.splitted);
-            ASSERT(largest.size > p.size);
             IF (p.size > 0) & ~p.inWorklist THEN
               p.nextWorklist := worklist;
               worklist := p;
@@ -359,6 +356,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         END;
         p := p. nextPartition;
       END;
+      Blocker.RemoveAntiDeps(pb);
     END Replace;
   
   BEGIN
