@@ -152,6 +152,9 @@ TYPE
     (**Set of instructions that make up the procedure block.  The instructions
        are linked with @ofield{Instr.nextInstr} and @ofield{Instr.nextInstr}.
        @emph{Note}: The order of instructions in the list is of no relevance.  *)
+    procDecl-: Item.ProcDecl;
+    (**The procedure declaration to which this code block belongs.  *)
+    
     objMap: Dictionary.Dictionary;
     (**Maps constant values onto @code{const} instructions, and declarations
        from the symbol table onto @code{declref} instructions.  See
@@ -159,8 +162,7 @@ TYPE
     
     adrMap: Dictionary.Dictionary;
     (**Maps items of the symbol table to their @code{adr} instructions.  See
-       @opr
-     | oc{ProcBlock.GetAdr}.  *)
+       @oproc{ProcBlock.GetAdr}.  *)
   END;
   
 
@@ -309,6 +311,20 @@ PROCEDURE (res: Result) DeleteResult*;
     END;
     prev. nextResult := res. nextResult
   END DeleteResult;
+
+PROCEDURE (res: Result) ReplaceUses* (with: Result);
+(**Replaces all uses of @oparam{res} with @oparam{with}.  *)
+  VAR
+    use, nextUse: Opnd;
+  BEGIN
+    use := res. useList;
+    WHILE (use # NIL) DO
+      nextUse := use. nextUse;
+      DeleteUse (use);
+      SetUse (with, use);
+      use := nextUse
+    END
+  END ReplaceUses;
 
 PROCEDURE (result: Result) ResultIndex*(): LONGINT;
 (**Returns the index of @oparam{result} in its instruction's result list. The
@@ -482,7 +498,7 @@ PROCEDURE (instr: Instr) GetOpndClass* (class: OpndClass.Class): Opnd;
     RETURN opnd
   END GetOpndClass;
 
-PROCEDURE (instr: Instr) GetArgId* (class: OpndClass.Class): Result;
+PROCEDURE (instr: Instr) GetArgClass* (class: OpndClass.Class): Result;
 (**Returns the first argument of @oparam{instr} whose operand's
    @ofield{Opnd.class} matches @oparam{class}.  If no such operand exists, result is
    @code{NIL}.  *)
@@ -498,7 +514,7 @@ PROCEDURE (instr: Instr) GetArgId* (class: OpndClass.Class): Result;
     ELSE
       RETURN opnd. arg
     END
-  END GetArgId;
+  END GetArgClass;
 
 PROCEDURE (instr: Instr) NthResult* (nth: LONGINT): Result;
 (**Returns the @oparam{nth} result of @oparam{instr}.  A value of
@@ -578,7 +594,7 @@ PROCEDURE InitAddress (address: Address; decl: Item.Declaration);
 PROCEDURE ^ (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
                                        subclass: Opcode.Subclass): Instr;
   
-PROCEDURE InitProcBlock (pb: ProcBlock);
+PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Item.ProcDecl);
   VAR
     enter: Instr;
     initialStore: Result;
@@ -586,6 +602,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock);
     InitNode (pb);
     pb. instrList := NIL;
     pb. instrTail := NIL;
+    pb. procDecl := procDecl;
     
     pb. selectReturn := pb. AddInstr (Opcode.selectReturn, Opcode.scNone);
     enter := pb. AddInstr (Opcode.enter, Opcode.scNone);
@@ -596,13 +613,13 @@ PROCEDURE InitProcBlock (pb: ProcBlock);
     pb. adrMap := Dictionary.New();
   END InitProcBlock;
 
-PROCEDURE NewProcBlock* (): ProcBlock;
+PROCEDURE NewProcBlock* (procDecl: Item.ProcDecl): ProcBlock;
 (**Creates a new instance of @otype{ProcBlock}.  *)
   VAR
     pb: ProcBlock;
   BEGIN
     NEW (pb);
-    InitProcBlock (pb);
+    InitProcBlock (pb, procDecl);
     RETURN pb
   END NewProcBlock;
 
@@ -863,5 +880,16 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
     END;
     RETURN (waiting = NIL)
   END TopSort;
+
+PROCEDURE (pb: ProcBlock) GetEnter*(): Instr;
+  VAR
+    instr: Instr;
+  BEGIN
+    instr := pb. instrList;
+    WHILE (instr # NIL) & (instr. opcode # Opcode.enter) DO
+      instr := instr. nextInstr
+    END;
+    RETURN instr
+  END GetEnter;
 
 END OOC:SSA.

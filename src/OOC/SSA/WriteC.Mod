@@ -5,7 +5,7 @@ IMPORT
   ADT:Object, ADT:String, ADT:Dictionary,
   OOC:SymbolTable:Item, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
-  OOC:SSA:DeadCodeElimination,
+  OOC:SSA:DeadCodeElimination, OOC:SSA:Destore,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:WriteConst, OOC:C:WriteDecl;
 
 
@@ -130,6 +130,7 @@ PROCEDURE WriteLocalDecl (w: TextRider.Writer;
   PROCEDURE GetLocalDecl (instr: SSA.Instr): Item.VarDecl;
     VAR
       opnd: SSA.Opnd;
+      varDecl: Item.VarDecl;
     BEGIN
       opnd := instr. opndList;
       WHILE (opnd # NIL) &
@@ -138,10 +139,12 @@ PROCEDURE WriteLocalDecl (w: TextRider.Writer;
         opnd := opnd. nextOpnd;
       END;
       IF (opnd. arg IS SSA.DeclRef) THEN
-        RETURN opnd. arg(SSA.DeclRef). decl(Item.VarDecl)
-      ELSE
-        RETURN NIL
+        varDecl := opnd. arg(SSA.DeclRef). decl(Item.VarDecl);
+        IF (varDecl. Procedure() = pb. procDecl) THEN
+          RETURN varDecl
+        END;
       END;
+      RETURN NIL
     END GetLocalDecl;
   
   BEGIN
@@ -504,7 +507,7 @@ PROCEDURE ProcBody* (textWriter: TextRider.Writer;
     domRoot: Schedule.Block;
     w: Writer;
   BEGIN
-    pb := SSA.NewProcBlock();
+    pb := SSA.NewProcBlock (procDecl. decl);
     enter := pb. selectReturn. opndList. arg. instr;
     s := IRtoSSA.StatmSeq (pb, enter. nextResult,
                            procDecl. statmSeq);
@@ -512,6 +515,8 @@ PROCEDURE ProcBody* (textWriter: TextRider.Writer;
 
     (* code transformations *)
     DeadCodeElimination.Transform (pb);
+(*    Destore.Transform (pb);
+    DeadCodeElimination.Transform (pb);*)
 
     (* write SSA code to stdout, both in native and scheduled format *)
     XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);

@@ -17,6 +17,7 @@ TEST_SUBDIRS=\
   tests/oberon-doc \
   tests/compile \
   tests/ssa \
+  tests/ssa-c-output \
 
 top_builddir=$(OOC_DEV_ROOT)
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite-ext
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd">
+
+<testsuite-ext
+  profile="Test Suite for Framework Testing"
+  select ="prepare_out_module var1 var2">
+
+  <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
+    <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
+      This is not a test case.  Rather, it prepares an Oakwood
+      compliant module <code>Out</code> to supersede OOC's differing
+      module of the same name.
+    </test>
+  </testcases>
+  
+  <testcases profile="OOC/SSA: Quality Check C Code" default-lang="O2">
+    <test id="var1" type="run" file="Var1.Mod" output="Var1.Ref">
+      Reading a variable with a known value: instead of accessing
+      memory, the known value should be used, and the local variable
+      <code>F.y</code> should not be read.
+    </test>
+  </testcases>
+
+  <testcases profile="OOC/SSA: Quality Check C Code" default-lang="O2">
+    <test id="var2" type="run" file="Var2.Mod" output="Var2.Ref">
+      Assignment masked by subsequent assignment to the same var.
+      The first assignment should be discarded, but the second must survive.
+    </test>
+  </testcases>
+</testsuite-ext>
