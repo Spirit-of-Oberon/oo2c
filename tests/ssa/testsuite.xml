@@ -6,7 +6,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; record10">-->
+  select ="&SetupTestCasesWithOut; opString1 opString2 opString3 opString4">-->
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -538,6 +538,25 @@
       Result of numeric operator is "widened" to largest operand.
     </test>
 
+    <test id="opString1" type="run" file="OpString1.Mod" output="OpString1.Ref">
+      Test string concatenation operator.
+    </test>
+
+    <test id="opString2" type="accept" file="OpString2.Mod">
+      Test compatibility of string constant with character and character array
+      types.
+    </test>
+
+    <test id="opString3" type="accept" file="OpString3.Mod">
+      Test compatibility of character constant with character and character
+      array types.
+    </test>
+
+    <test id="opString4" type="reject" file="OpString4.Mod">
+      Test compatibility of character constant with character and character
+      array types.
+    </test>
+
   </testcases>
     
   <processor-info processor-name="TestCompile">
@@ -599,5 +618,8 @@
         msg="Type of expression is not compatible with variable type"/>
     <reject-info id="opExprCompat14" pos=" %:="
         msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="opString4" pos=" c %:="
+        msg="Type of expression is not compatible with variable type"/>
+
   </processor-info>
 </testsuite-ext>
