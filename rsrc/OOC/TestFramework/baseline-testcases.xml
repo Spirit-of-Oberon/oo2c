@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <testcases profile="Baseline Testcases for Test Framework"
-	   default-lang="O1">
+	   default-lang="O1 O2 AO">
   <test id="baseline1" type="reject" file="HOTBaselineReject1.Mod">
     Test file is <em>completely</em> empty.  The compiler should
     reject this invalid module.
