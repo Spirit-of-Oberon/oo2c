@@ -836,8 +836,26 @@ PROCEDURE (instr: Instr) IsConst*(): BOOLEAN;
     END;
   END IsConst;
 
+PROCEDURE (instr: Instr) IsSync*(): BOOLEAN;
+(**Returns @code{TRUE} if @oparam{instr} is a synchronization point for the
+   global program state @var{store}, but does not change it itself.  That is,
+   this function identifies instructions that have @var{store} both as input
+   and output parameter, but do not change any of the variables in it.  *)
+  BEGIN  (* note: "select", "collect", and "loop" variants are omitted *)
+    CASE instr. opcode OF
+    | Opcode.return, Opcode.exit,
+      Opcode.get,
+      Opcode.newObject,
+      Opcode.assert, Opcode.halt,
+      Opcode.checkIndex, Opcode.checkPointer, Opcode.typeGuard,
+      Opcode.failedCase, Opcode.failedWith, Opcode.failedTypeAssert:
+      RETURN TRUE;
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsSync;
 
-  (* ---------------------------------------------------------------------- *)
+(* ---------------------------------------------------------------------- *)
 
 PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
                      value: Language.Value; type: Sym.Type);
@@ -896,7 +914,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl;
     pb. selectReturn := pb. AddInstr (Opcode.selectReturn, Opcode.scNone);
     enter := pb. AddInstr (Opcode.enter, Opcode.scNone);
     initialStore := enter. AddResult (ResultClass.store);
-    pb. selectReturn. AddOpnd (initialStore, OpndClass.store);
+    pb. selectReturn. AddOpnd (initialStore, OpndClass.storeEnter);
     
     pb. selectExit := NIL;
     FOR i := 0 TO Predef.lastId DO
