@@ -50,6 +50,7 @@ PROCEDURE (ch: Channel) Connect*(endPoint: Address.Socket): BOOLEAN
 RAISES IO.Error;
   BEGIN
     ch.connected := ch.socket.Connect(endPoint);
+    ch.connectionPending := ~ch.connected;
     RETURN ch.connected;
   END Connect;
 
@@ -59,6 +60,7 @@ RAISES IO.Error;
     ch.connected := ch.socket.FinishConnect();
     IF ch.connected THEN
       EXCL(ch.readyOps, IO.opConnect);
+      ch.connectionPending := FALSE;
     END;
     RETURN ch.connected;
   END FinishConnect;
