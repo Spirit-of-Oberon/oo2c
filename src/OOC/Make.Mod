@@ -1137,6 +1137,8 @@ PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
         res := r.UpdateMainObjectFile(module);
       | Rep.modMainFileC:
         res := r.UpdateMainFileC(module);
+      | Rep.modMainFileAssembler:
+        res := r.UpdateMainFileAssembler(module);
       | Rep.modObjectFile:
         res := r.UpdateObjectFile(module);
       | Rep.modObjectFileLib:
@@ -1147,6 +1149,8 @@ PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
         res := r.UpdateDeclFileC(module);
       | Rep.modHeaderFileC:
         res := r.UpdateHeaderFileC(module);
+      | Rep.modAssemblerFile:
+        res := r.UpdateAssemblerFile(module);
       | Rep.modInterfaceDescr:
         res := r.UpdateInterfaceDescr(module);
       | Rep.modInterfaceXML:
