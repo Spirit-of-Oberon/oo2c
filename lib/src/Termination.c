@@ -28,7 +28,6 @@
 #include <unistd.h>
 #elif HAVE_IO_H
 #include <io.h>
-typedef int ssize_t;
 #endif
 
 

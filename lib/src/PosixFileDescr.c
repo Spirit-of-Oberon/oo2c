@@ -51,7 +51,6 @@
 #endif
 
 #ifdef __MINGW32__
-typedef int ssize_t;
 #include <fcntl.h>
 #endif
 

@@ -12,7 +12,6 @@
 
 #ifdef __MINGW32__
 #include <windows.h>
-typedef int ssize_t;
 #endif
 
 /* if the system imposes no limit on the length of a file name, choose an 

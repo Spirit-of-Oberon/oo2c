@@ -5,9 +5,9 @@
 #include <sys/types.h>
 #ifdef __MINGW32__
 #include <winsock.h>
-typedef int ssize_t;
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #define EINPROGRESS WSAEINPROGRESS
+#include <stdio.h>
 #else
 #include <sys/socket.h>
 #include <unistd.h>

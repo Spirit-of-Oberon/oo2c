@@ -9,10 +9,6 @@
 #include <limits.h>
 #include <string.h>
 
-#ifdef __MINGW32__
-typedef int ssize_t;
-#endif
-
 void IO_StdChannels__IOError(Object__String suffix) {
   RT0__Struct e_type;
   const int size_buffer = 1024;
