@@ -143,12 +143,12 @@ stage1/exe/oo2c: stage0/exe/oo2c stage1/lib/src/RT0.Mod stage1/src/oo2c.Mod
 
 stage1/lib/obj/liboo2c.o: stage1/exe/oo2c
 	stage1/exe/oo2c --config rsrc/OOC/oo2crc.xml -r stage1/lib --make liboo2c
-	cd stage1/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
 	chmod -R a+rX,go-w stage1/lib lib/src
 	chmod 644 rsrc/OOC/oo2crc.xml
 
 install: stage1/lib/obj/liboo2c.o mkdir
 	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(libdir)/lib)
+	cd $(libdir)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
 	(umask 022; cp stage1/lib/src/*.h $(libdir)/lib/src)
 	(umask 022; cp rsrc/OOC/oo2crc.xml $(libdir))
 	${INSTALL_PROGRAM} stage1/exe/oo2c $(bindir)
