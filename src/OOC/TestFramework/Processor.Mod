@@ -303,9 +303,9 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       
       Out.Flush;
       exit := ProcessManagement.system (path);
-      status := ASH (exit, -8) MOD 256;
-      signal := exit MOD 256;
-      
+      signal := ProcessManagement.TermSignal(exit);
+      status := ProcessManagement.ExitStatus(exit);
+     
       IF (proc. filterCmd # NIL) THEN
         (* pass stdout output through filter *)
         chars := proc.filterCmd(Object.String8).CharsLatin1();
@@ -506,8 +506,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
           Out.String (path); Out.Ln;
           Out.Flush;
           exit := ProcessManagement.system (path);
-          status := ASH (exit, -8) MOD 256;
-          signal := exit MOD 256;
+          status := ProcessManagement.ExitStatus(exit);
+          signal := ProcessManagement.TermSignal(exit);
           IF (status = 0) & (signal = 0) THEN
             result := processSuccess;
             IF (test. type = Testcases.testOutput) THEN
