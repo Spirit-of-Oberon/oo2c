@@ -454,6 +454,10 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
     END;
   END VisitTypeConv;
 
+PROCEDURE (c: ConstFold) VisitTypeTest* (op : IR.TypeTest);
+  BEGIN
+  END VisitTypeTest;
+
 PROCEDURE (c: ConstFold) VisitCall* (call: IR.Call);
   BEGIN
   END VisitCall;

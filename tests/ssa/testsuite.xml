@@ -15,12 +15,12 @@
   designator1 function6 loop1 loop2 loop3 loop4 and1 or1 varpar1
   record1 record2 record3 record4 record5 record6 record7 record8
   record9 procvar1 procvar2 procvar3 procvar4 procvar5
-  inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7
+  inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7 typetest1
   array1 array2 array3 array4 array5 array6 array7 array8">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; and1 or1">-->
+  select ="&SetupTestCasesWithOut; typetest1">-->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -281,6 +281,13 @@
       have a value and a <code>VAR</code> argument of type
       <code>ARRAY</code>.
     </test>
+
+    
+    <test id="typetest1" type="run" file="TypeTest1.Mod" output="TypeTest1.Ref">
+      Type tests on pointer variables.
+    </test>
+
+    
   </testcases>
   
   <processor-info processor-name="TestCompile">

@@ -22,7 +22,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     ptr = malloc(prefix+size);
     /* FIXME... check that result is not NULL */
     var = (char*)ptr+prefix;
-    ((RT0__Struct*)var)[-1] = td;
+    OOC_TYPE_TAG(var) = td;
     
   } else if (td->form == RT0__strArray) { /* fixed size array */
     int size = td->size;

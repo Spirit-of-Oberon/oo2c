@@ -282,6 +282,33 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         s := select. AddResult (Result.store);
         RETURN select. AddResultSubclass (Result.selectValue, Opcode.scBoolean)
       END ShortcutOr;
+
+    PROCEDURE TypeTag (design: IR.Expression): SSA.Instr;
+      VAR
+        var: SSA.Result;
+        instr: SSA.Instr;
+      BEGIN
+        var := Expression (design);
+        IF (design. type IS Sym.Pointer) THEN
+          instr := pb. AddInstr (Opcode.typeTag, Opcode.scAddress);
+          instr. AddOpnd (var, Opnd.arg);
+          RETURN instr;
+        ELSE
+          (* FIXME... handle variable parameters *)
+          ASSERT (FALSE);
+          RETURN NIL;
+        END;
+      END TypeTag;
+    
+    PROCEDURE TypeTest (test: IR.TypeTest): SSA.Instr;
+      VAR
+        instr: SSA.Instr; 
+      BEGIN
+        instr := pb. AddInstr (Opcode.typeTest, Opcode.scBoolean);
+        instr. AddOpnd (TypeTag (test. expr), Opnd.arg);
+        instr. AddOpnd (pb. GetTypeRef (test. referenceType), Opnd.type);
+        RETURN instr
+      END TypeTest;
     
     BEGIN
       WITH expr: IR.Const DO
@@ -324,7 +351,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         (* FIXME... right now, we are simply passing through type converted
            values *)
         RETURN Expression (expr. expr);
-            
+
+      | expr: IR.TypeTest DO
+        RETURN TypeTest (expr);
+        
       | expr: IR.Negate DO
         instr := pb. AddInstr (Opcode.negate,
                                Opcode.TypeToSubclass (expr. operand. type));
@@ -434,15 +464,24 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     VAR
       instr: SSA.Instr;
       i: LONGINT;
+      fpar: Sym.VarDecl;
+      type: Sym.Type;
+      isVarParam: BOOLEAN;
     BEGIN
       instr := pb. AddInstr (Opcode.call, Opcode.TypeToSubclass (call. type));
       instr. AddTypedOpnd (Expression (call. design), Opnd.procAdr,
                            call. design. type, FALSE);
       FOR i := 0 TO LEN (call. arguments^)-1 DO
+        IF (call. formalPars[i] # NIL) THEN
+          fpar := call. formalPars[i];
+          type := fpar. type;
+          isVarParam := fpar. isPassPerReference;
+        ELSE
+          type := call. arguments[i]. type;
+          isVarParam := FALSE;
+        END;
         instr. AddTypedOpnd (Expression (call. arguments[i]),
-                             Opnd.arg,
-                             call. arguments[i]. type,
-                             call. passByReference[i]);
+                             Opnd.arg, type, isVarParam);
       END;
       RETURN instr
     END Call;

@@ -45,6 +45,4 @@ extern void* _ooc_end_vs;  /* end of value stack; defined in __oo2c.c */
   memcpy((_dest),(_source),(_size));
 
 
-#define OOC_ARRAY_LENGTH(adr,dim) (((OOC_LEN*)(adr))[-dim-1])
-
 #endif  /* __dynvar__ */

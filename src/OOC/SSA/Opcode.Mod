@@ -348,6 +348,32 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
+  typeTag* = 36;
+  (**Returns the type tag of a pointer variable or of a variable parameter.
+
+     @table @oconst
+     @item *OOC:SSA.Opnd.arg
+     This is either a pointer value, or a @oconst{declRef}.
+     @end table
+
+     The result of the instruction is the address of the type descriptor.  *)
+  
+  typeTest* = 37;
+  (**Performs a type test on a given type tag.
+
+     @table @oconst
+     @item *OOC:SSA.Opnd.arg
+     The type tag of the variable being tested.  This an address of a type
+     descriptor.
+
+     @item *OOC:SSA:Opnd.type
+     The type of which the first operand must be an extension of.  The argument
+     is an instance of @otype{OOC:SSA.TypeRef}.  This type is either equal to
+     the one of the first operand, or an extension of it.
+     @end table
+
+     The result of the instruction is a boolean value.  *)
+  
 CONST
   scNone* = 0;
   (**The operation has no variants.  *)
@@ -440,6 +466,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | getLength: cstr := "get-length";
     | copyParameter: cstr := "copy-parameter";
     | newObject: cstr := "new-object";
+    | typeTag: cstr := "type-tag";
+    | typeTest: cstr := "type-test";
       
     | add: cstr := "add";
     | subtract: cstr := "subtract";

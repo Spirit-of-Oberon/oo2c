@@ -516,6 +516,29 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (");");
     END NewObject;
   
+  PROCEDURE TypeTag (instr: SSA.Instr);
+    BEGIN
+      (* FIXME... handle tags of VAR parameters *)
+      CastFromPtr (instr);
+      w. WriteString ("OOC_TYPE_TAG(");
+      w. Ref (instr. opndList);
+      w. WriteString (");");
+    END TypeTag;
+  
+  PROCEDURE TypeTest (instr: SSA.Instr);
+    VAR
+      name: String.String;
+      opnd: SSA.Opnd;
+    BEGIN
+      w. WriteString ("OOC_TYPE_TEST(");
+      w. Ref (instr. opndList);
+      w. WriteString (", &");
+      opnd := instr. opndList. nextOpnd;
+      name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
+      w. WriteString (name. array^);
+      w. WriteString (");");
+    END TypeTest;
+  
   PROCEDURE CopyParameter (instr: SSA.Address);
     VAR
       varDecl: Sym.VarDecl;
@@ -760,6 +783,10 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
 
       | Opcode.newObject:
         NewObject (instr);
+      | Opcode.typeTag:
+        TypeTag (instr);
+      | Opcode.typeTest:
+        TypeTest (instr);
         
       | Opcode.add:
         WriteDyadicOp (instr, "+");
