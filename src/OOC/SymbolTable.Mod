@@ -300,7 +300,7 @@ TYPE
 
     class-: ModuleClass;
     (**Identifies the class of the module.  It is one of @oconst{mcStandard},
-       @oconst{mcForeign}, or @oconst{mcInterface}.  *)
+       @oconst{mcInternal}, @oconst{mcForeign}, or @oconst{mcInterface}.  *)
     callConv-: CallConv;
     (**The default calling convention to be used for all procedures in the
        module.  If this is @oconst{callConvDefault}, then the final choice
@@ -321,7 +321,7 @@ TYPE
 TYPE
   Import* = POINTER TO ImportDesc;
   (**An item of this class represents an import declaration.  It has a
-     name, either the module name, or the alias assigned to it.  *)
+     name, either the module's name, or the alias assigned to it.  *)
   ImportDesc = RECORD
     (DeclarationDesc)
     moduleName-: Name;
@@ -1050,10 +1050,12 @@ PROCEDURE (mod: Module) AddLinkFile* (file: URI.HierarchicalURI;
 
 
 PROCEDURE (mod: Module) GetExternalSource* (): URI.HierarchicalURI;
+(**For a module of class @oconst{mcForeign} or @oconst{mcInterface}, return the
+   file path for the first @samp{FILE} directive.  Such an entry must exist.  *)
   VAR
     l: LinkDirective;
   BEGIN
-    ASSERT (mod. class = mcForeign);
+    ASSERT ((mod. class = mcForeign) OR (mod. class = mcInterface));
     l := mod. linkDirectives;
     WHILE (l # NIL) & ~(l IS LinkFile) DO
       l := l. next
@@ -1088,6 +1090,13 @@ PROCEDURE (import: Import) SetExternalSymTab* (symTab: Module);
   BEGIN
     import. externalSymTab := symTab
   END SetExternalSymTab;
+
+PROCEDURE (import: Import) IsInternalImport*(): BOOLEAN;
+(**Return @code{TRUE} if the imported module is pseudo module like
+   @samp{SYSTEM}, which does not exist outside of the compiler itself.  *)
+  BEGIN
+    RETURN (import. externalSymTab. class = mcInternal);
+  END IsInternalImport;
 
 
 PROCEDURE (import: Import) Store* (w: Object.Writer);
