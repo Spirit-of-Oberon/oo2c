@@ -1,6 +1,6 @@
 (*	$Id$	*)
 MODULE IO:Select [FOREIGN "C"; LINK FILE "Select.c" 
-  <* IF TARGET_OS="Win32" THEN *> ; LIB "wsock32" <* END *>
+  <* IF HAVE_LIB_WSOCK32 THEN *> ; LIB "wsock32" <* END *>
 END];
 (*  Selector implementation based on the select() function.
     Copyright (C) 2003  Michael van Acken
