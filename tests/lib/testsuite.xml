@@ -7,7 +7,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_IntStr_StrToInt1 lib_IntStr_IntToStr1">-->
+  select ="prepare_out_module lib_LRealStr_RealToFloat1">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -269,5 +269,12 @@
       numbers.
     </test>
  
+    <test id="lib_LRealStr_RealToFloat1" type="run"
+          file="LibLRealStrRealToFloat1.Mod"
+	  output="LibLRealStrRealToFloat1.Ref">
+      Use <code>RealToFloat</code> to convert <code>LONGREAL</code>
+      values to strings.  Note: "inf" and "NaN" are not tested.
+    </test>
+
   </testcases>
 </testsuite-ext>
