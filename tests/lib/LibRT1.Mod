@@ -1,6 +1,6 @@
 MODULE LibRT1;
 
-IMPORT RT0, Language:String0;
+IMPORT RT0, LanguageNew;
 
 PROCEDURE Test* ();
   BEGIN

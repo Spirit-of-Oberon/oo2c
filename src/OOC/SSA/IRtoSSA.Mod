@@ -22,7 +22,7 @@ MODULE OOC:SSA:IRtoSSA;
 
 IMPORT
   Log, Language:String, Language:String8, Language:Integer,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:SymbolTable:Builder,
   TR := OOC:SymbolTable:TypeRules, OOC:IR, 
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Allocator;
 
@@ -634,13 +634,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           instr := pb.AddInstr(Opcode.preloadedVar, Opcode.scAddress);
           CASE conv.expr.type(Sym.PredefType).id OF
           | Predef.char:
-            fct := String8.NewString("Language_String0__NewLatin1Char");
+            fct := String8.NewString(Builder.stringModuleC+"__NewLatin1Char");
           | Predef.charString:
-            fct := String8.NewString("Language_String0__NewLatin1Region");
+            fct := String8.NewString(Builder.stringModuleC+"__NewLatin1Region");
           | Predef.longchar:
-            fct := String8.NewString("Language_String0__NewUCS2Char");
+            fct := String8.NewString(Builder.stringModuleC+"__NewUCS2Char");
           | Predef.longcharString:
-            fct := String8.NewString("Language_String0__NewUCS2Region");
+            fct := String8.NewString(Builder.stringModuleC+"__NewUCS2Region");
           END;
           instr.AddOpnd(pb.GetConst(fct, Predef.GetType(Predef.charString)),
                         Opnd.arg);

@@ -25,6 +25,7 @@ IMPORT
   Language := LanguageNew, ADT:String, ADT:Dictionary, ADT:ArrayList,
   LString := Language:String, Language:String8, Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
+  OOC:SymbolTable:Builder,
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:CSE, OOC:SSA:Algebraic,
@@ -958,7 +959,7 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
     VAR
       opnd: SSA.Opnd;
     BEGIN
-      w.WriteString ("Language_String0__Concat2(");
+      w.WriteString (Builder.stringModuleC+"__Concat2(");
       opnd := instr.opndList;
       WHILE (opnd # NIL) DO
         IF (opnd # instr.opndList) THEN

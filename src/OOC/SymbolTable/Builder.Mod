@@ -56,6 +56,11 @@ TYPE
   END;
 
 CONST
+  prefixAutoImport* = "-";
+  stringModule* = "LanguageNew";
+  stringModuleC* = "LanguageNew";
+
+CONST
   noAutoImport* = 0;
   (**Don't do any automatical import in the symbol table or in the repository's
      @oproc{*OOC:Repository:GetImports.GetImports}.  *)
@@ -611,7 +616,7 @@ BEGIN
   autoImport[0].exclude[0] := autoImport[0].module;
   autoImport[0].exclude[1] := N("Out0");
   NEW(autoImport[1]);
-  autoImport[1].module := N("Language:String0");
+  autoImport[1].module := N(stringModule);
   NEW (autoImport[1].exclude, 3);
   autoImport[1].exclude[0] := autoImport[0].module;
   autoImport[1].exclude[1] := autoImport[1].module;

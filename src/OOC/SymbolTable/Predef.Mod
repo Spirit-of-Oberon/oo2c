@@ -355,7 +355,8 @@ PROCEDURE Init;
       minConst[i] := NIL; maxConst[i] := NIL;
     END;
     
-    nameStringModule := GetName("-Language:String0");
+    nameStringModule := GetName(Builder.prefixAutoImport+
+                                Builder.stringModule);
     nameStringType := GetName("String");
   END Init;
 
