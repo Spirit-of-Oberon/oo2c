@@ -1,8 +1,8 @@
 MODULE HOTBaselineError1;
 
-PROCEDURE Eval*;
+PROCEDURE Test*;
   BEGIN
     ASSERT (FALSE)
-  END Eval;
+  END Test;
 
 END HOTBaselineError1.

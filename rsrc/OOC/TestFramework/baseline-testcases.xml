@@ -19,14 +19,14 @@
   </test>
   
   <test id="baseline4" type="run" file="HOTBaselineRun1.Mod">
-    Module with a single, empty, procedure <code>Eval</code>.  The
+    Module with a single, empty, procedure <code>Test</code>.  The
     module should compile and evaluate fine, but does not do anything
     at all.
   </test>
   
   <test id="baseline5" type="run" file="HOTBaselineOutput1.Mod"
 	output="HOTBaselineOutput1.Ref">
-    Evaluation of the procedure <code>Eval</code> prints the famous
+    Testuation of the procedure <code>Test</code> prints the famous
     <code>Hello World!</code>, followed by a single newline character.
     Command execution should succeed, and the command's output should
     match the content of file <code>HOTBaselineOutput1.Ref</code>

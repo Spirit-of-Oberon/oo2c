@@ -1,7 +1,7 @@
 MODULE HOTBaselineRun1;
 
-PROCEDURE Eval*;
+PROCEDURE Test*;
   BEGIN
-  END Eval;
+  END Test;
 
 END HOTBaselineRun1.

@@ -2,9 +2,9 @@ MODULE HOTBaselineOutput1;
 
 IMPORT Out;
 
-PROCEDURE Eval*;
+PROCEDURE Test*;
   BEGIN
     Out.String ("Hello World!"); Out.Ln
-  END Eval;
+  END Test;
 
 END HOTBaselineOutput1.
