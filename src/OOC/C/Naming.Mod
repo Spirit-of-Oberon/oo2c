@@ -1,7 +1,7 @@
 MODULE OOC:C:Naming;
 
 IMPORT
-  Strings, ADT:String, OOC:Repository, Sym := OOC:SymbolTable;
+  IntStr, Strings, ADT:String, OOC:Repository, Sym := OOC:SymbolTable;
 
 TYPE
   Buffer = ARRAY 2*1024 OF CHAR;
@@ -63,5 +63,18 @@ PROCEDURE NameOfModuleInit* (m: Repository.Module): String.String;
     Strings.Append ("_init", str);
     RETURN String.New (str)
   END NameOfModuleInit;
+
+PROCEDURE NameOfLengthParam* (param: Sym.VarDecl; dim: LONGINT): String.String;
+  VAR
+    str: Buffer;
+    name: String.String;
+  BEGIN
+    name := NameOfDeclaration (param);
+    IntStr.IntToStr (dim, str);
+    Strings.Insert ("_", 0, str);
+    Strings.Append ("d", str);
+    Strings.Insert (name. array^, 0, str);
+    RETURN String.New (str)
+  END NameOfLengthParam;
 
 END OOC:C:Naming.

@@ -1,7 +1,7 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
-  IntStr, Strings, ADT:Dictionary, ADT:String,
+  ADT:Dictionary, 
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -30,16 +30,10 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
 
       PROCEDURE AddArrayLength (type: Sym.Type; dim: LONGINT);
         VAR
-          str: ARRAY 1024 OF CHAR;
           length: DeclWriter.Declaration;
         BEGIN
           IF (type IS Sym.Array) & type(Sym.Array). isOpenArray THEN
-            IntStr.IntToStr (dim, str);
-            Strings.Insert ("_", 0, str);
-            Strings.Insert (param. name. str^, 0, str);
-            Strings.Append ("d", str);
-
-            length := w. NewDeclaration (String.New (str),
+            length := w. NewDeclaration (Naming.NameOfLengthParam (param, dim),
                                          DeclWriter.tqNone,
                                          DeclWriter.scAuto,
                                          w. basicType[DeclWriter.lengthType]);
