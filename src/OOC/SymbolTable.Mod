@@ -165,7 +165,7 @@ CONST
 TYPE
   Type* = POINTER TO TypeDesc;
   TypeDecl* = POINTER TO TypeDeclDesc;
-  TypeDesc = RECORD [ABSTRACT]
+  TypeDesc* = RECORD [ABSTRACT]
     (**Common base type of all type definitions.  As far as the symbol table is
        concerned, a type is either a type reference (that is, an instance of
        @otype{TypeName}), or a type constructor defining a new record, array,
