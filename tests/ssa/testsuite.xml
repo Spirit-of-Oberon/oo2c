@@ -8,7 +8,7 @@
   select ="&SetupTestCasesWithOut; generic1 generic2 generic3 generic4
   generic5 generic6 generic7 generic8 generic9 generic10 generic11
   generic12 generic13 generic14 generic15 generic16 generic17
-  generic18 generic19">-->
+  generic18 generic19 generic20">-->
 
   &TestSetupWithOut;
     
@@ -1364,6 +1364,10 @@
     <test id="generic19" type="reject" file="Generic19.Mod">
       Cannot use a type variable in a type test.
     </test>
+    <test id="generic20" type="reject" file="Generic20.Mod">
+      Cannot use <code>NEW</code> on a variable based on a type
+      variable.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -1903,6 +1907,8 @@
         msg="Type test requires static type instance"/>
     <reject-info id="generic19" pos="v IS P.%Base"
         msg="Type test requires static type instance"/>
+    <reject-info id="generic20" pos="NEW(%v)"
+        msg="This must be a pointer variable"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>

@@ -33,11 +33,16 @@ type argument equals the corresponding type bound.
 
 Within a type-bound procedure, a variable `v:Ti', with ti declarared
 with a type bound `ti:Bi', can for the most part be used like it had
-been declared as `v:Bi'.  The one exception is it can only be assigned
-values of type `Ti', or NIL.
+been declared as `v:Bi'.  The exceptions are that it can only be
+assigned values of type `Ti' (or NIL), and that NEW is not applicable
+to such a variable.
 
 A type variable cannot be used on the right hand side of a type test
 or type guard.
+
+Note: Some of the restrictions on type variables and qualified types
+follow the assumption that no type information for parametric types is
+available during run-time.
 
 
 
