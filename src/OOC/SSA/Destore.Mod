@@ -116,6 +116,13 @@ TYPE
     value: SSA.Result;
   END;
   
+TYPE
+  Worklist = POINTER TO WorklistDesc;
+  WorklistDesc = RECORD
+    next: Worklist;
+    instr: SSA.Instr;
+  END;
+
 CONST
   read = 0;
   write = 1;
@@ -276,45 +283,27 @@ PROCEDURE (s: State) ClobberedBy* (readDesign: SSA.Opnd; instr: SSA.Instr): BOOL
   END ValidValue;*)
 
 PROCEDURE (s: State) Transform*;
+  CONST
+    notInWorklist = SSA.initMarker;
+    inWorklist = notInWorklist+1;
   VAR
     pb: SSA.ProcBlock;
     instr, next: SSA.Instr;
     value: SSA.Result;
+    use, nextUse, opnd: SSA.Opnd;
+    worklist: Worklist;
 
   PROCEDURE UnknownValue (res: SSA.Result): BOOLEAN;
     BEGIN
       RETURN (res. class = Result.store);
     END UnknownValue;
   
-  PROCEDURE GetValue (store: SSA.Result; get: SSA.Instr;
-                      loopTrace: SSA.Instr): SSA.Result;
+  PROCEDURE GetValue (store: SSA.Result; get: SSA.Instr): SSA.Result;
   (* Return the value from the @oparam{store} for the memory location (and
      type) designated by the instruction @oparam{get}.  If the value is not
      known, or if there is no single value, result is a SSA result of class
      @oconst{Result.store} from which the value can be retrieved.  Note: It is
-     always safe to return the @var{store} argument of the @oparam{get}.
-
-     If @oparam{loopTrace} is not @code{NIL}, then the semantics of the result
-     change:
-
-     @itemize @bullet
-     @item
-     If the value of the designator is loop invariant with respect to
-     @oparam{store}, then result is @oparam{loopTrace}.
-
-     @item
-     If it is not invariant, and the value resides in @var{store}, the result
-     is a a SSA result of class @oconst{Result.store}.  When this is the
-     outcome for the whole loop body, then the @oparam{get} is left unchanged.
-
-     @item
-     Any other result indicates that it is not invariant, and the value is not
-     in @var{store}.  If this is the outcome for the whole loop, then the
-     @oparam{get} is replaced with a gated result of the ``loop-start''
-     instruction.  @emph{Important}: In this case, the returned value must
-     @emph{not} be used as an argument of an instruction, because it may
-     be a placeholder value like a reference to a select instruction.
-     @end itemize  *)
+     always safe to return the @var{store} argument of the @oparam{get}.  *)
     VAR
       alias: Aliasing.Id;
       instr: SSA.Instr;
@@ -364,232 +353,71 @@ PROCEDURE (s: State) Transform*;
         instr. info := entry;
         RETURN entry
       END AddToCache;
-    
-    PROCEDURE GetCollect (select: SSA.Instr; pathNum: LONGINT): SSA.Instr;
-    (* Return the "collect" instruction of path @oparam{pathNum} leading
-       into @oparam{select}.  The first path has the number @samp{0}.
-       If no matching "collect" exists, create one.  *)
-      VAR
-        opnd: SSA.Opnd;
-        collect, loopEnd: SSA.Instr;
-        oldStore: SSA.Result;
+
+    PROCEDURE InitialReplacement(dgate: SSA.Instr);
       BEGIN
-        CASE select. opcode OF
-        | Opcode.select:
-          opnd := select. NthOpnd (pathNum*2+2);
-          
-        | Opcode.loopEnd:         (* place collect _before_ "exit" *)
-          opnd := select. NthOpnd (pathNum+2);
-          ASSERT (opnd. arg. instr. opcode = Opcode.exit);
-          opnd := opnd. arg. instr. opndList;
-          
-        | Opcode.loopStart:
-          IF (pathNum = 0) THEN
-            opnd := select. NthOpnd (pathNum);
-          ELSE
-            loopEnd := select. GetLoopEnd();
-            opnd := loopEnd. GetOpndClass (Opnd.backwardFeed);
-          END;
-        END;
-        
-        IF (opnd. arg. instr. opcode = Opcode.collect) THEN
-          RETURN opnd. arg.instr
-        ELSE
-          collect := pb. AddInstr (Opcode.collect, Opcode.scNone);
-          oldStore := opnd. arg;
-          opnd. ReplaceArg (collect. AddResult (Result.store));
-          collect. AddOpnd (oldStore, Opnd.store);
-          RETURN collect
-        END;
-      END GetCollect;
+        dgate.AddOpnd(dgate.AddResultSubclass(Result.dgatePlaceholder,
+                                              dgate.subclass), Opnd.arg);
+        (*dgate.AddOpnd(select.GetResultStore(), Opnd.arg);*)
+      END InitialReplacement;
     
     PROCEDURE GetSelectValue (select: SSA.Instr): SSA.Result;
     (* Calculate the value of (store,get) for each of the paths leading
        into the select instruction.  *)
       VAR
         opnd: SSA.Opnd;
-        values: POINTER TO ARRAY OF SSA.Result;
-        i: LONGINT;
-        noUnknownValue, allTheSame: BOOLEAN;
-        collect: SSA.Instr;
-        r: SSA.Result;
+        res: SSA.Result;
+        dgate: SSA.Instr;
         dummy: CacheEntry;
-
-      PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
-      (* Return the number of paths leading into the select.  *)
-        BEGIN
-          CASE select. opcode OF
-          | Opcode.select    :
-            IF (select. GetOpndClass (Opnd.labels) = NIL) THEN
-              RETURN (select. CountOpndClass (Opnd.arg) DIV 2);
-            ELSE
-              RETURN (select. CountOpndClass (Opnd.arg)-1);
-            END;
-          | Opcode.loopStart : RETURN 2
-          | Opcode.loopEnd   : RETURN select. CountOpndClass (Opnd.storeExit)
-          END;
-        END NumberOfPaths;
-      
       BEGIN
-        IF InCache (select, r) THEN
+        IF InCache (select, res) THEN
           (* a previous call to this function already computed the result
-             for the designator of this "get"; reuse it, instead of adding
-             another result representing the same value *)
-          RETURN r;
+             for the designator of this "get": reuse it *)
+          RETURN res;
         ELSE
-          NEW (values, NumberOfPaths (select));
+          (* add a "dgate" instruction for the get's designator and determine
+             for each incoming path the get's value *)
+          dgate := pb.AddInstr(Opcode.dgate, get.subclass);
+          dgate.AddOpnd(select, Opnd.dgateBase);
+          InitialReplacement(dgate);
+          dummy := AddToCache (select, dgate);
           
-          i := 0; noUnknownValue := TRUE; allTheSame := TRUE;
           CASE select. opcode OF
           | Opcode.select    : opnd := select. NthOpnd (2)
           | Opcode.loopEnd   : opnd := select. NthOpnd (2)
           END;
           WHILE (opnd # NIL) & ~opnd. IsScheduleOpnd() DO
-            values[i] := GetValue (opnd. arg, get, loopTrace);
-            IF UnknownValue (values[i]) THEN
-              noUnknownValue := FALSE;
-            END;
-            IF (values[i] # values[0]) THEN
-              allTheSame := FALSE;
-            END;
+            dgate.AddOpnd(GetValue(opnd. arg, get), Opnd.arg);
             opnd := opnd. nextOpnd;
             IF (select. opcode = Opcode.select) & (opnd # NIL) THEN
               opnd := opnd. nextOpnd;
             END;
-            INC (i);
           END;
-          
-          IF allTheSame THEN
-            (* for all input paths the same value is passed to "get" *)
-            IF (LEN (values^) = 0) THEN
-              ASSERT(FALSE);             (* wrong? better return store?*)
-              RETURN select;
-            ELSE
-              IF (loopTrace = NIL) THEN
-                dummy := AddToCache (select, values[0]);
-              END;
-              RETURN values[0];
-            END;
-          ELSIF ~noUnknownValue THEN
-            (* for at least one path into the select no value can be
-               computed; the using instruction should get its value from
-               memory *)
-            dummy := AddToCache (select, select. GetResultStore());
-            RETURN dummy. value;
-          ELSIF (loopTrace # NIL) THEN
-            (* we are tracing the use of the designator in the loop body, and
-               at this place the value is not invariant, and not in memory:
-               return the current instruction to signal this to the caller  *)
-            RETURN select;
-          ELSE
-            (* "collect" all values into the "select", return the new result *)
-            ASSERT (i = LEN (values^));
-            FOR i := 0 TO LEN (values^)-1 DO
-              collect := GetCollect (select, i);
-              collect. AddOpnd (values[i], Opnd.arg);
-            END;
-            r := select. AddResultSubclass (Result.selectValue, get. subclass);
-            dummy := AddToCache (select, r);
-            RETURN r; 
-          END;
+          RETURN dgate;
         END;
       END GetSelectValue;
 
     PROCEDURE GetLoopValue (loopStart: SSA.Instr): SSA.Result;
       VAR
-        invariant, r: SSA.Result;
-        entry: CacheEntry;
-        collect, newGet: SSA.Instr;
-        
-      PROCEDURE DuplicateGet (storeIn: SSA.Result): SSA.Instr;
-      (* Takes the "get" instruction and creates a duplicate whose "store"
-         input parameter is `storeIn'.  No corresponding "store" output is
-         created.  *)
-        VAR
-          new: SSA.Instr;
-          opnd: SSA.Opnd;
-        BEGIN
-          new := pb. AddInstr (Opcode.get, get. subclass);
-          opnd := get. opndList;
-          WHILE (opnd # NIL) DO
-            IF (opnd. class = Opnd.store) THEN
-              new. AddOpnd (storeIn, Opnd.store)
-            ELSE
-              new. AddOpnd (opnd. arg, opnd. class)
-            END;
-            opnd := opnd. nextOpnd
-          END;
-          RETURN new
-        END DuplicateGet;
-      
+        res: SSA.Result;
+        dummy: CacheEntry;
+        dgate: SSA.Instr;
       BEGIN
-        IF (loopTrace = loopStart) THEN
-          RETURN loopTrace;
-          
-        ELSIF InCache (loopStart, r) THEN
+        IF InCache (loopStart, res) THEN
           (* a previous call to this function already computed the result
              for the designator of this "get" *)
-          IF ~UnknownValue (r) &
-             (r IS SSA.Instr) &
-             (r(SSA.Instr). opcode = Opcode.loopStart) THEN
-            (* don't return the bogus cache line added by the code below;
-               we know that the "get" is invariant with regard to this loop,
-               so we can simply return the value from before the loop *)
-            RETURN GetValue (loopStart. opndList. arg, get, loopTrace);
-          ELSE
-            RETURN r;
-          END;
-
-(*        ELSIF ~SimpleDesignator (get. GetOpndClass (Opnd.readDesign)) THEN
-          (* if the designator has components that are loop variant, then
-             its end result cannot be moved into a register acroos the loop *)
-          RETURN loopStart. GetResultStore();*)
-          
+          RETURN res;
         ELSE
-          invariant := GetValue (loopStart. GetBackwardFeed(), get, loopStart);
-          IF (invariant = loopStart) THEN (* designator is invariant to loop *)
-            IF (loopTrace = NIL) THEN
-              (* within the loop, all "get" see the value of the designator
-                 before the loop; in case of nested loops, we may end up
-                 analysing this loop again; to prevent infinite looping, add a
-                 preliminary result to the cache *)
-              entry := AddToCache (loopStart, loopStart);
-              entry. value := GetValue (loopStart. opndList. arg, get, loopTrace)
-            ELSE
-              (* we are within a loop trace, which means that the value
-                 returned by the GetValue() in the other branch may be
-                 a placeholde (read: a reference to a select instruction);
-                 so don't try to cache the value *)
-              RETURN GetValue (loopStart. opndList. arg, get, loopTrace);
-            END;
-                
-          ELSIF UnknownValue (invariant) THEN (* in memory at end of loop *)
-            (* "store" of designator is not loop invariant *)
-            entry := AddToCache (loopStart, loopStart. GetResultStore());
-            
-          ELSE   (* not invariant, and not in memory at end of loop *)
-            (* value is passed through "collect" operands to "select" result *)
-            r := loopStart. AddResultSubclass (Result.selectValue,
-                                               get. subclass);
-            entry := AddToCache (loopStart, r);
+          (* add a "dgate" instruction for the get's designator and determine
+             for incoming and backedge path the get's value *)
+          dgate := pb.AddInstr(Opcode.dgate, get.subclass);
+          dgate.AddOpnd(loopStart, Opnd.dgateBase);
+          InitialReplacement(dgate);
+          dummy := AddToCache (loopStart, dgate);
 
-            (* extend back-edge "collect" *)
-            r := GetValue (loopStart. GetBackwardFeed(), get, NIL);
-            ASSERT (~UnknownValue (r));
-            collect := GetCollect (loopStart, 1);
-            collect. AddOpnd (r, Opnd.arg);
-
-            (* extend input "collect" *)
-            r := GetValue (loopStart. opndList. arg, get, NIL);
-            collect := GetCollect (loopStart, 0);
-            IF UnknownValue (r) THEN
-              newGet := DuplicateGet (collect. opndList. arg);
-              collect. opndList. ReplaceArg (newGet. AddResult (Result.store));
-              r := newGet;
-            END;
-            collect. AddOpnd (r, Opnd.arg);
-          END;
-          RETURN entry. value
+          dgate.AddOpnd(GetValue (loopStart.opndList.arg, get), Opnd.arg);
+          dgate.AddOpnd(GetValue(loopStart.GetBackwardFeed(), get), Opnd.arg);
+          RETURN dgate;
         END;
       END GetLoopValue;
 
@@ -611,11 +439,11 @@ PROCEDURE (s: State) Transform*;
           (* this "set" and "get" work on different variables, and
              cannot interfere with each other: continue trace through
              `instr' *)
-          RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace)
+          RETURN GetValue (instr. GetArgClass (Opnd.store), get)
         END;
 
       | Opcode.get:
-        RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
+        RETURN GetValue (instr. GetArgClass (Opnd.store), get);
         
       | Opcode.copy, Opcode.copyString:
         alias := Aliasing.DesignatorAlias (get. GetOpndClass (Opnd.readDesign),
@@ -629,7 +457,7 @@ PROCEDURE (s: State) Transform*;
           (* this "copy" (or "copy-string") and the "get" work on different
              variables, and cannot interfere with each other: continue trace
              through `instr' *)
-          RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace)
+          RETURN GetValue (instr. GetArgClass (Opnd.store), get)
         END;
         
       | Opcode.enter:
@@ -646,7 +474,7 @@ PROCEDURE (s: State) Transform*;
         Opcode.halt, Opcode.assert, Opcode.checkIndex, Opcode.checkPointer,
         Opcode.typeGuard, Opcode.failedTypeAssert,
         Opcode.failedWith, Opcode.failedCase:
-        RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
+        RETURN GetValue (instr. GetArgClass (Opnd.store), get);
 
       | Opcode.loopStart:
         RETURN GetLoopValue (instr);
@@ -660,7 +488,7 @@ PROCEDURE (s: State) Transform*;
           (* the "get" accesses a local variable that cannot be accessed by the
              called procedure; this means it cannot be written to behind our
              backs from within this procedure call  *)
-          RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
+          RETURN GetValue (instr. GetArgClass (Opnd.store), get);
         END;
         
       | Opcode.moveBlock:
@@ -828,6 +656,180 @@ PROCEDURE (s: State) Transform*;
       storeOut. DeleteResult;
     END ReplaceStoreUses;
 
+  PROCEDURE AddToWorklist (instr: SSA.Instr);
+    VAR
+      wl: Worklist;
+    BEGIN
+      IF (instr. marker = notInWorklist) THEN
+        instr. marker := inWorklist;
+        
+        NEW (wl);
+        wl. next := worklist;
+        wl. instr := instr;
+        worklist := wl;
+      END;
+    END AddToWorklist;
+
+  PROCEDURE AddUsesToWorklist (res: SSA.Result);
+    VAR
+      use: SSA.Opnd;
+      useInstr: SSA.Instr;
+    BEGIN
+      use := res. useList;
+      WHILE (use # NIL) DO
+        useInstr := use. instr;
+        IF (useInstr.opcode = Opcode.dgate) THEN
+          AddToWorklist (useInstr);
+        END;
+        use := use. nextUse;
+      END;
+    END AddUsesToWorklist;
+  
+  PROCEDURE ComputeReplacement(dgate: SSA.Instr): SSA.Result;
+    VAR
+      select: SSA.Instr;
+      opnd: SSA.Opnd;
+      allTheSame, haveUnknownValue: BOOLEAN;
+      value, firstValue: SSA.Result;
+      
+    PROCEDURE NormValue(opnd: SSA.Opnd): SSA.Result;
+    (* If `opnd' refers to a dgate, then map the argument to the dgate's
+       replacement value.  *)
+      VAR
+        value: SSA.Result;
+      BEGIN
+        value := opnd.arg;
+        IF (value IS SSA.Instr) & (value(SSA.Instr).opcode = Opcode.dgate) THEN
+          (* use replacement value *)
+          value := value(SSA.Instr).opndList.nextOpnd.arg;
+        END;
+        RETURN value;
+      END NormValue;
+
+    PROCEDURE SameInstr(instr: SSA.Instr; res: SSA.Result): BOOLEAN;
+      BEGIN
+        RETURN (instr = res.instr);
+      END SameInstr;
+    
+    BEGIN
+      select := dgate.opndList.arg(SSA.Instr);
+      IF (select.opcode = Opcode.loopStart) &
+         (dgate.NthOpnd(3) # NIL) &
+         (SameInstr(select, NormValue(dgate.NthOpnd(3))) OR
+          SameInstr(dgate, NormValue(dgate.NthOpnd(3)))) THEN
+        opnd := dgate.NthOpnd(3);
+        opnd.DeleteOpnd();
+        RETURN NormValue(dgate.NthOpnd(2));
+      ELSE
+        
+        allTheSame := TRUE;
+        haveUnknownValue := FALSE;
+        opnd := dgate.NthOpnd(2);
+        firstValue := NormValue(opnd);
+        WHILE (opnd # NIL) DO
+          value := NormValue(opnd);
+          IF (value # firstValue) THEN
+            allTheSame := FALSE;
+          END;
+          IF UnknownValue(value) THEN
+            haveUnknownValue := TRUE;
+          END;
+          opnd := opnd.nextOpnd;
+        END;
+        
+        IF allTheSame THEN
+          RETURN firstValue;
+        ELSIF haveUnknownValue THEN
+          RETURN select.GetResultStore();
+        ELSE
+          (* pass through collected values *)          
+          RETURN dgate.GetResultClass(Result.dgatePlaceholder);
+        END;
+      END;
+    END ComputeReplacement;
+  
+  PROCEDURE DGateReplacement(dgate: SSA.Instr): SSA.Result;
+    VAR
+      select, collect: SSA.Instr;
+      opnd: SSA.Opnd;
+      replacement, newRes: SSA.Result;
+      i: LONGINT;
+      
+    PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
+    (* Return the number of paths leading into the select.  *)
+      BEGIN
+        CASE select. opcode OF
+        | Opcode.select    :
+          IF (select. GetOpndClass (Opnd.labels) = NIL) THEN
+            RETURN (select. CountOpndClass (Opnd.arg) DIV 2);
+          ELSE
+            RETURN (select. CountOpndClass (Opnd.arg)-1);
+          END;
+        | Opcode.loopStart : RETURN 2
+        | Opcode.loopEnd   : RETURN select. CountOpndClass (Opnd.storeExit)
+        END;
+      END NumberOfPaths;
+    
+    PROCEDURE GetCollect (select: SSA.Instr; pathNum: LONGINT): SSA.Instr;
+    (* Return the "collect" instruction of path @oparam{pathNum} leading
+       into @oparam{select}.  The first path has the number @samp{0}.
+       If no matching "collect" exists, create one.  *)
+      VAR
+        opnd: SSA.Opnd;
+        collect, loopEnd: SSA.Instr;
+        oldStore: SSA.Result;
+      BEGIN
+        CASE select. opcode OF
+        | Opcode.select:
+          opnd := select. NthOpnd (pathNum*2+2);
+          
+        | Opcode.loopEnd:         (* place collect _before_ "exit" *)
+          opnd := select. NthOpnd (pathNum+2);
+          ASSERT (opnd. arg. instr. opcode = Opcode.exit);
+          opnd := opnd. arg. instr. opndList;
+          
+        | Opcode.loopStart:
+          IF (pathNum = 0) THEN
+            opnd := select. NthOpnd (pathNum);
+          ELSE
+            loopEnd := select. GetLoopEnd();
+            opnd := loopEnd. GetOpndClass (Opnd.backwardFeed);
+          END;
+        END;
+        
+        IF (opnd. arg. instr. opcode = Opcode.collect) THEN
+          RETURN opnd. arg.instr
+        ELSE
+          collect := pb. AddInstr (Opcode.collect, Opcode.scNone);
+          oldStore := opnd. arg;
+          opnd. ReplaceArg (collect. AddResult (Result.store));
+          collect. AddOpnd (oldStore, Opnd.store);
+          RETURN collect
+        END;
+      END GetCollect;
+    
+    BEGIN
+      replacement := dgate.opndList.nextOpnd.arg;
+      IF (replacement.class = Result.dgatePlaceholder) THEN
+        (* produce a gated value: extend collects, and the select
+           instruction *)
+        dgate := replacement.instr;      (* may differ from input parameter *)
+        select := dgate.opndList.arg(SSA.Instr);
+        opnd := dgate.NthOpnd(2); i := 0;
+        WHILE (opnd # NIL) DO
+          collect := GetCollect(select, i);
+          collect.AddOpnd(opnd.arg, Opnd.arg);
+          opnd := opnd.nextOpnd; INC(i);
+        END;
+        ASSERT(i = NumberOfPaths(select));
+        newRes := select.AddResultSubclass(Result.selectValue, dgate.subclass);
+        replacement.ReplaceUses(newRes);
+        RETURN newRes;
+      ELSE
+        RETURN replacement;
+      END;
+    END DGateReplacement;
+  
   BEGIN
     pb := s. pb;
     
@@ -837,16 +839,107 @@ PROCEDURE (s: State) Transform*;
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       IF (instr. opcode = Opcode.get) THEN
-        value := GetValue (instr. GetArgStore(), instr, NIL);
+        value := GetValue (instr. GetArgStore(), instr);
         IF UnknownValue (value) THEN
           ReplaceStoreUses (instr. GetResultStore(), instr. opndList. arg);
           instr. opndList. ReplaceArg (value);
+        ELSIF (value IS SSA.Instr) &
+              (value(SSA.Instr). opcode = Opcode.dgate) THEN
+          instr.AddOpnd(value, Opnd.dgateRef);
         ELSE
           instr. ReplaceUses (value);
         END;
       END;
       instr := instr. nextInstr;
     END;
+
+    (* visit all "dgate" instructions and compute their replacement
+       value *)
+    worklist := NIL;
+    instr := pb.instrList;
+    WHILE (instr # NIL) DO
+      next := instr.nextInstr;
+      IF (instr.opcode = Opcode.dgate) & (instr.marker = notInWorklist) THEN
+        value := ComputeReplacement(instr);
+        IF (value # instr.opndList.nextOpnd.arg) THEN
+          instr.opndList.nextOpnd.ReplaceArg(value);
+          AddUsesToWorklist(instr);
+        END;
+      END;
+      instr := next;
+    END;
+    WHILE (worklist # NIL) DO            (* repeat until worklist empty *)
+      instr := worklist.instr;
+      instr.marker := notInWorklist;
+      worklist := worklist.next;
+      value := ComputeReplacement(instr);
+      IF (value # instr.opndList.nextOpnd.arg) THEN
+        instr.opndList.nextOpnd.ReplaceArg(value);
+        AddUsesToWorklist(instr);
+      END;
+    END;
+
+    (* visit all "dgate" instructions and replace their uses with the
+       replacement value *)
+    instr := pb.instrList;
+    WHILE (instr # NIL) DO
+      next := instr.nextInstr;
+      IF (instr.opcode = Opcode.dgate) THEN
+        value := DGateReplacement(instr);
+        
+        IF UnknownValue(value) THEN      (* need to take value from memory *)
+          use := instr.useList;
+          WHILE (use # NIL) DO
+            nextUse := use.nextUse;
+            IF (use.class = Opnd.dgateRef) THEN
+              ASSERT(use.instr.opcode = Opcode.get);
+              opnd := use.instr.GetOpndClass(Opnd.store);
+              ASSERT(opnd # NIL);
+              ASSERT(opnd.instr.nextResult.class = Result.store);
+              ReplaceStoreUses(opnd.instr.nextResult, opnd.arg);
+              opnd.ReplaceArg(value);
+            ELSE
+              ASSERT(use.instr.opcode = Opcode.dgate);
+            END;
+            use.DeleteOpnd;
+            use := nextUse;
+          END;
+        ELSE                 (* have value, use it instead of dgate *)
+          use := instr.useList;
+          WHILE (use # NIL) DO
+            nextUse := use.nextUse;
+            IF (use.class = Opnd.dgateRef) THEN
+              use.instr.ReplaceUses(value);
+              use.DeleteOpnd;
+            ELSE
+              use.ReplaceArg(value);
+            END;
+            use := nextUse;
+          END;
+        END;
+        ASSERT(instr.useList = NIL);
+        pb.DeleteInstr(instr);
+      END;
+      instr := next;
+    END;
+    
+(*    (* XXX *)
+    instr := pb.instrList;
+    WHILE (instr # NIL) DO
+      next := instr.nextInstr;
+      IF (instr.opcode = Opcode.dgate) THEN
+        use := instr.useList;
+        WHILE (use # NIL) DO
+          nextUse := use.nextUse;
+          use.DeleteOpnd;
+          use := nextUse;
+        END;
+        ASSERT(instr.useList = NIL);
+        pb.DeleteInstr(instr);
+      END;
+      instr := next;
+    END;*)
+    
     
     (* visit all "get" instructions that have no uses and eliminate them;
        this is done in a separate step, instead of deleting them in the
@@ -866,7 +959,6 @@ PROCEDURE (s: State) Transform*;
       instr := next;
     END;
     
-
     (* visit all "set" instructions and check if they can be eliminated;
        at this place, all obsolete "get"s must have been removed *)
     pb. SetMarkers (NIL, 0);
