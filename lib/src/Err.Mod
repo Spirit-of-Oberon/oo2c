@@ -92,9 +92,9 @@ PROCEDURE ShortInt* (sint: SHORTINT; n: LONGINT);
     writer. WriteSInt (sint, n)
   END ShortInt;
 
-PROCEDURE Int* (int: INTEGER; n: LONGINT);
+PROCEDURE Int* (int: LONGINT; n: LONGINT);
   BEGIN
-    writer. WriteInt (int, n)
+    writer. WriteLInt (int, n)
   END Int;
 
 PROCEDURE Hex* (lint: LONGINT; n: LONGINT);

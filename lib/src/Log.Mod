@@ -131,11 +131,11 @@ PROCEDURE ShortInt* (msg[NO_COPY]: ARRAY OF CHAR; sint: SHORTINT);
     writer. WriteLn
   END ShortInt;
 
-PROCEDURE Int* (msg[NO_COPY]: ARRAY OF CHAR; int: INTEGER);
+PROCEDURE Int* (msg[NO_COPY]: ARRAY OF CHAR; int: LONGINT);
   BEGIN
     writer. WriteString (msg);
     writer. WriteString (": ");
-    writer. WriteInt (int, 0);
+    writer. WriteLInt (int, 0);
     writer. WriteLn
   END Int;
 
