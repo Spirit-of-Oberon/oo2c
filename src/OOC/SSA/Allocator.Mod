@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Allocator;
 (*  A register allocator for the C back-end.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -180,11 +180,14 @@ PROCEDURE GetBlockList (enterBlock, exitBlock: Schedule.Block): BlockList;
 
 PROCEDURE SubclassToBasicType* (subclass: Opcode.Subclass): DeclWriter.BasicTypeId;
   (**Maps a subclass id to a basic type of the C back-end.  *)
-  
   BEGIN
     CASE subclass OF
     | Opcode.scNone: RETURN DeclWriter.void
-    | Opcode.scAddress: RETURN DeclWriter.ptr
+    | Opcode.scAddress:
+      CASE Predef.address OF
+      | Predef.hugeint: RETURN DeclWriter.int64;
+      | Predef.longint: RETURN DeclWriter.int32;
+      END;
     | Opcode.scUnsigned8: RETURN DeclWriter.uint8
     | Opcode.scUnsigned16: RETURN DeclWriter.uint16
     | Opcode.scUnsigned32: RETURN DeclWriter.uint32
