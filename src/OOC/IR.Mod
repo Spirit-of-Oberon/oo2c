@@ -432,6 +432,17 @@ TYPE
   END;
 
 TYPE
+  TypeTest* = POINTER TO TypeTestDesc;
+  TypeTestDesc = RECORD
+    (**The type test operator @samp{IS}.  The operator is normalized in the
+       sense that an expression @samp{p^ IS R} is treated as @samp{p IS P},
+       where @samp{P} is some @samp{POINTER TO R}.  *)
+    (OperatorDesc)
+    expr-: Expression;
+    referenceType-: Sym.Record;
+  END;
+  
+TYPE
   Reference* = POINTER TO ReferenceDesc;
   ReferenceDesc = RECORD [ABSTRACT]
   (**Represents a using occurence of a name.  A reference is associatd with
@@ -522,7 +533,6 @@ TYPE
   
 TYPE
   Call* = POINTER TO CallDesc;
-  BooleanArray* = POINTER TO ARRAY OF BOOLEAN;
   CallDesc = RECORD
     (**Calls to normal functions and procedures are mapped to this class.  It
        is not used to represent calls to type-bound procedures, nor to
@@ -535,10 +545,19 @@ TYPE
     (StatementDesc)
     design-: Expression;
     arguments-: ExpressionList;
-    passByReference-: BooleanArray;
-    (**If @samp{passByReference[i]} is @code{TRUE}, then the corresponding
-       value from @ofield{arguments} is the address of the actual argument,
-       not its value.  *)
+    
+    formalPars-: Sym.VarDeclArray;
+    (**Lists the formal parameter declarations matching the expressions in
+       @ofield{arguments}.  This information is passed along for the sake of C
+       back-ends, which need to be aware of the differences between formal and
+       actual type to be able to insert appropriate type casts.
+
+       @samp{formalPars[@var{i}]} is only @code{NIL}, if the value of
+       @samp{arguments[@var{i}]} does not represent the actual argument, but
+       rather an additional piece of information like an array length or a type
+       tag.  In this case, @samp{formalPars[@var{j}]} with @var{j} being the
+       largest index with @samp{@var{j} < @var{i}} and
+       @samp{formalPars[@var{j}] # NIL}, holds the matching formal parameter.  *)
   END;
 
 TYPE
@@ -719,7 +738,9 @@ CONST
   wrongNumberOfArguments = 13;
   invalidIntegerConst = 14;
   notArray = 15;
-
+  notTypeExpression = 16;
+  notExtensionOfLHS = 17;
+  
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -765,6 +786,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Integer constant in the range `${start} <= x < ${end}' required"
     | notArray:
       t := "First argument of LEN must be an array designator"
+    | notTypeExpression:
+      t := "Type name expected"
+    | notExtensionOfLHS:
+      t := "Type must be an extension of the left operand's type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1453,6 +1478,49 @@ PROCEDURE (conv: TypeConv) Accept* (v: Visitor);
     v. VisitTypeConv (conv)
   END Accept;
 
+(* Operator Class: TypeTest
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitTypeTest (test: TypeTest; sym: Symbol;
+                        expr: Expression; referenceType: Sym.Record);
+  BEGIN
+    InitOperator (test, sym, Predef.GetType(Predef.boolean));
+    test. expr := expr;
+    test. referenceType := referenceType;
+  END InitTypeTest;
+
+PROCEDURE (b: Builder) NewTypeTest (sym: Symbol; expr, referenceType: Expression): Expression;
+  VAR
+    test: TypeTest;
+    refType: Sym.Type;
+  BEGIN
+    IF (referenceType. type # b. typeType) THEN
+      RETURN b. ErrExpr (notTypeExpression, referenceType. sym);
+    ELSE
+      refType := referenceType(TypeRef). decl(Sym.TypeDecl). type;
+      IF ~b. typeRules. IsExtensionOf (refType, expr. type) THEN
+        RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
+      ELSE
+        IF (expr IS Deref) THEN
+          expr := expr(Deref). pointer;
+        ELSIF (expr. type IS Sym.Pointer) THEN
+          refType := refType(Sym.Pointer). baseType;
+        END;
+        NEW (test);
+        InitTypeTest (test, sym, expr, refType(Sym.Record));
+        RETURN test;
+      END;
+    END;
+  END NewTypeTest;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeTest* (test: TypeTest);
+  END VisitTypeTest;
+
+PROCEDURE (test: TypeTest) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTypeTest (test)
+  END Accept;
+
 (* Expression Class: Reference
    ------------------------------------------------------------------------ *)
 
@@ -1699,7 +1767,7 @@ PROCEDURE (ao: AssignOp) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList;
-                    passByReference: BooleanArray);
+                    formalPars: Sym.VarDeclArray);
   BEGIN
     InitStatement (call, design. sym);
     IF (design. type(Sym.FormalPars). resultType # NIL) THEN
@@ -1708,7 +1776,7 @@ PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList;
     END;
     call. design := design;
     call. arguments := arguments;
-    call. passByReference := passByReference;
+    call. formalPars := formalPars;
   END InitCall;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitCall* (call: Call);
@@ -2365,8 +2433,9 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       result := b.NewCompare(sym, left, right);
     ELSIF (id = Id.in) & leftIsInteger & rightIsSet THEN
       result := b.NewSetMember(sym, left, right);
+    ELSIF (id = Id.is) THEN
+      result := b.NewTypeTest(sym, left, right);
     ELSE
-      (* FIXME... handle IS *)
       result := b.ErrExpr(invalidOpType, sym);
     END;
     RETURN result;
@@ -2419,8 +2488,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     targetType: Sym.PredefId;
     dim: LONGINT;
     type: Sym.Type;
-    passByReference: BooleanArray;
-
+    formalPars: Sym.VarDeclArray;
+    
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
                                       expr: Expression;
                                       type: Sym.Type): Expression;
@@ -2464,8 +2533,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
   
   PROCEDURE TransformArgs (sym: Symbol;
                            formalPars: Sym.VarDeclArray;
-                           arguments: ExpressionList;
-                           VAR passByReference: BooleanArray): ExpressionList;
+                           VAR arguments: ExpressionList;
+                           VAR argFormalPars: Sym.VarDeclArray);
   (**Takes the argument list from the parser and rewrites it to match the
      formal parameters of the called procedure.  The translation includes
      changes to the argument expressions (for example, type conversion to a
@@ -2473,12 +2542,11 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
      example, array length for open array parameters, or insertion of a type
      tag for a @code{VAR} parameter of record type).  *)
     VAR
-      newArgs: ArrayList.ArrayList;
+      newArgs, newFPars: ArrayList.ArrayList;
       i, fparIndex, argIndex: LONGINT;
       fparType: Sym.Type;
       fpar: Sym.VarDecl;
       arg: Expression;
-      exprList: ExpressionList;
       pbr: ARRAY 32 OF SET;  (* max of 1024 arguments *)
     CONST
       sizeSet = MAX (SET)+1;
@@ -2497,6 +2565,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     
     BEGIN
       newArgs := ArrayList.New (LEN (arguments^));
+      newFPars := ArrayList.New (LEN (arguments^));
       
       fparIndex := 0;
       argIndex := 0;
@@ -2509,18 +2578,18 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         IF fpar. isPassPerReference THEN
           (* for argument passed by reference, add the address of the
              designator to the argument list, not its value *)
-          PassByReference (TRUE);
           newArgs. Append (b. NewAdr (sym, arg));
         ELSE
-          PassByReference (FALSE);
           newArgs. Append (arg);
         END;
+        newFPars. Append (fpar);
         
         fparType := formalPars[fparIndex]. type;
         WITH fparType: Sym.Array DO
           FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
             PassByReference (FALSE);
-            newArgs. Append (b. Fold (b. NewLen (sym, arg, i)))
+            newArgs. Append (b. Fold (b. NewLen (sym, arg, i)));
+            newFPars. Append (NIL);
           END;
         ELSE  (* nothing to do *)
         END;
@@ -2529,13 +2598,16 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         INC (fparIndex);
       END;
       
-      NEW (exprList, newArgs. size);
-      NEW (passByReference, newArgs. size);
+      NEW (arguments, newArgs. size);
+      NEW (argFormalPars, newArgs. size);
       FOR i := 0 TO newArgs. size-1 DO
-        exprList[i] := newArgs. array[i](Expression);
-        passByReference[i] := (i MOD sizeSet) IN pbr[i DIV sizeSet];
+        arguments[i] := newArgs. array[i](Expression);
+        IF (newFPars. array[i] = NIL) THEN
+          argFormalPars[i] := NIL;
+        ELSE
+          argFormalPars[i] := newFPars. array[i](Sym.VarDecl);
+        END;
       END;
-      RETURN exprList
     END TransformArgs;
 
   PROCEDURE CheckNumberOfArguments (min, max: LONGINT): BOOLEAN;
@@ -2639,10 +2711,10 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         RETURN b. errorExpr;         (* fall through for erros in designator *)
       ELSE
         NEW (call);
-        arguments := TransformArgs (design. sym,
-                                    design. type(Sym.FormalPars). params,
-                                    arguments, passByReference);
-        InitCall (call, design, arguments, passByReference);
+        TransformArgs (design. sym,
+                       design. type(Sym.FormalPars). params,
+                       arguments, formalPars);
+        InitCall (call, design, arguments, formalPars);
         RETURN call;
       END;
     END
