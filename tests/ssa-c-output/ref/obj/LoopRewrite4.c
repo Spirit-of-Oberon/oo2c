@@ -3,51 +3,59 @@
 #include <setjmp.h>
 
 static void LoopRewrite4__Zero1(OOC_CHAR8 a[][], OOC_LEN a_0d, OOC_LEN a_1d) {
-  register OOC_INT32 i0,i1,i2,i3,i4;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5;
 
   i0 = 0!=a_0d;
   if (!i0) goto l16;
-  i0 = (OOC_INT32)a+(a_1d*a_0d);
-  i1 = 0!=a_1d;
-  i2=(OOC_INT32)a;
+  i0 = (OOC_INT32)a+a_1d;
+  i1 = i0+(a_1d*a_0d);
+  i2 = 0!=a_1d;
+  i3=i0;i0=(OOC_INT32)a;
 l3_loop:
-  if (!i1) goto l11;
-  i3=i2;
+  if (!i2) goto l11;
+  i4=i0;
 l6_loop:
-  *(OOC_UINT8*)i3 = 0u;
-  i3 = i3+1;
-  i4 = i3!=i2;
-  if (i4) goto l6_loop;
+  *(OOC_UINT8*)i4 = 0u;
+  i4 = i4+1;
+  i5 = i4!=i3;
+  if (i5) goto l6_loop;
 l11:
-  i2 = i2+a_1d;
-  i3 = i2!=i0;
-  if (i3) goto l3_loop;
+  i3 = i3+a_1d;
+  i4 = i3!=i1;
+  if (!i4) goto l16;
+  i0 = i0+a_1d;
+  
+  goto l3_loop;
 l16:
   return;
   ;
 }
 
 static void LoopRewrite4__Zero2(OOC_INT16 a[][], OOC_LEN a_0d, OOC_LEN a_1d) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
 
   i0 = 0!=a_0d;
   if (!i0) goto l16;
   i0 = 2*a_1d;
-  i1 = (OOC_INT32)a+(i0*a_0d);
-  i2 = 0!=a_1d;
-  i3=(OOC_INT32)a;
+  i1 = (OOC_INT32)a+i0;
+  i2 = i1+(i0*a_0d);
+  i3 = 0!=a_1d;
+  i4=i1;i1=(OOC_INT32)a;
 l3_loop:
-  if (!i2) goto l11;
-  i4=i3;
+  if (!i3) goto l11;
+  i5=i1;
 l6_loop:
-  *(OOC_INT16*)i4 = 0;
-  i4 = i4+2;
-  i5 = i4!=i3;
-  if (i5) goto l6_loop;
+  *(OOC_INT16*)i5 = 0;
+  i5 = i5+2;
+  i6 = i5!=i4;
+  if (i6) goto l6_loop;
 l11:
-  i3 = i3+i0;
-  i4 = i3!=i1;
-  if (i4) goto l3_loop;
+  i4 = i4+i0;
+  i5 = i4!=i2;
+  if (!i5) goto l16;
+  i1 = i1+i0;
+  
+  goto l3_loop;
 l16:
   return;
   ;
