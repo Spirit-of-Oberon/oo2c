@@ -52,6 +52,7 @@ IMPORT
 
    @example
    Exception.PopContext;
+   temp := Exception.Current();
    WITH temp: T1 DO
      C1;
    | temp: T2 DO
