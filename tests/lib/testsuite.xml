@@ -13,12 +13,13 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_LRealStr_RealToStr1">-->
+  select ="prepare_out_module libxml libxml1">-->
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_Exception23 lib_Exception28">
-  &TestSetupWithOut;-->
+  select ="prepare_out_module lib_rt1 lib_Exception23 lib_Exception28">-->
+  
+  &TestSetupWithOut;
   
   <testcases profile="OOC Core Library" default-lang="O2">
     <test id="lib_rt1" type="run" file="LibRT1.Mod">
