@@ -39,6 +39,7 @@ clean: doc-clean test-clean
 	for i in ${test_programs}; do rm -f $$i; done
 	for i in ${subdirs}; do cd $$i && ${MAKE} clean; done
 	-rmdir ${top_builddir}/sym ${top_builddir}/obj
+	${MAKE} -C tests/hostess-ooc1 test-clean
 
 ### `distclean'
 ###      Delete all files from the current directory that are created by
@@ -55,5 +56,7 @@ FRC:
 test: mkdir test-runall
 	cd tests && ${MAKE} test
 
+test-hostess-ooc1:
+	${MAKE} -C tests/hostess-ooc1 test-runall
 
 include $(MAIN_MAKEFILE)
