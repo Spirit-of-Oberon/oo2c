@@ -650,6 +650,8 @@ TYPE
     (DeclarationDesc)
     (**This class represents constant declarations.  *)
     value-: Language.Value;
+    (**The value of the constant.  For the special value @samp{NIL}, this
+       field is @code{NIL}.  *)
     type-: PredefType;
     constExpr-: AST.Node;
     (**The part of the abstract syntax tree that defines the value of the
