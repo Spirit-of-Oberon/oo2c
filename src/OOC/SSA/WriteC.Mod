@@ -612,6 +612,7 @@ PROCEDURE CastToPtr (w: Writer; var: SSA.Result; type: Sym.Type;
       w. WriteString ("(RT0__Struct)");
     ELSIF (type IS Sym.Pointer) OR
           (type IS Sym.FormalPars) OR
+          (type IS Sym.TypeVar) OR
           passByReference OR
           TR.IsPredefType (type, Predef.ptr) THEN
       IF (var IS SSA.Const) &
