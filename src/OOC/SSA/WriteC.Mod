@@ -550,6 +550,15 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (");")
     END CheckIndex;
 
+  PROCEDURE CheckPointer (checkPointer: SSA.Instr);
+    BEGIN
+      w. WriteString ("_check_pointer(");
+      w. Ref (checkPointer. opndList. nextOpnd);
+      w. WriteString (", ");
+      w. WriteLInt (checkPointer. pos, 0);
+      w. WriteString (");")
+    END CheckPointer;
+
   PROCEDURE FailedCheck (instr: SSA.Instr; fct: ARRAY OF CHAR; opnd: SSA.Opnd);
     BEGIN
       w. Newline;
@@ -1119,6 +1128,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         Assert (instr);
       | Opcode.checkIndex:
         CheckIndex (instr);
+      | Opcode.checkPointer:
+        CheckPointer (instr);
       | Opcode.failedCase:
         FailedCheck (instr, "_failed_case", instr. opndList. nextOpnd);
       | Opcode.failedWith:

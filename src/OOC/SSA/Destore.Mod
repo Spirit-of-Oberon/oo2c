@@ -440,7 +440,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         
       | Opcode.collect, Opcode.newObject, Opcode.copyParameter, Opcode.loopEnd,
         Opcode.exit, Opcode.return,
-        Opcode.assert, Opcode.checkIndex:
+        Opcode.assert, Opcode.checkIndex, Opcode.checkPointer:
         RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
 
       | Opcode.loopStart:

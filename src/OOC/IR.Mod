@@ -343,6 +343,9 @@ TYPE
        value.  *)
     pointer-: Expression;
     derefType-: Sym.Type;
+    checkPointer-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the
+       pointer value is @code{NIL}.  *)
   END;
   
 TYPE
@@ -1567,11 +1570,13 @@ PROCEDURE (op: Compare) Accept* (v: Visitor);
 (* Operator Class: Deref
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitDeref (d: Deref; sym: Symbol; pointer: Expression);
+PROCEDURE InitDeref (d: Deref; sym: Symbol; pointer: Expression;
+                     checkPointer: BOOLEAN);
   BEGIN
     InitOperator (d, sym, pointer. type(Sym.Pointer). baseType);
     d. pointer := pointer;
     d. derefType := pointer. type(Sym.Pointer). baseType;
+    d. checkPointer := checkPointer;
     ASSERT ((d. derefType IS Sym.Record) OR (d. derefType IS Sym.Array));
   END InitDeref;
 
@@ -1593,7 +1598,8 @@ PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
         RETURN b.ErrExpr(notPointer, design.sym);
       ELSE
         NEW (i);
-        InitDeref (i, sym, design);
+        InitDeref (i, sym, design,
+                   GetPragmaValue (b, StdPragmas.derefCheck, sym. pos));
         RETURN i
       END
     END;

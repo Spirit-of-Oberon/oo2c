@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; case2 with3 opArray8" >-->
+  select ="&SetupTestCasesWithOut; opPointer6" >-->
 
   &TestSetupWithOut;
     
@@ -494,6 +494,10 @@
       More than one level of "super" call.
     </test>
 -->
+
+    <test id="opPointer6" type="error" file="OpPointer6.Mod">
+      Dereferencing a <code>NIL</code> pointer.
+    </test>
 
 <!--
     <test id="opTypeGuard1" type="run" relevance="informal" file="OpTypeGuard1.Mod"

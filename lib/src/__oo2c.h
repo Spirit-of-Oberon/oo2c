@@ -43,6 +43,11 @@
        RT0__ErrorIndexOutOfRange(&_mid,pos,index,length); \
      }                                                    \
      index; })
+#define _check_pointer(adr,pos)         \
+  ({ if ((void*)adr == NULL) {          \
+       RT0__ErrorDerefOfNil(&_mid,pos); \
+     }                                  \
+     adr; })
 #define _failed_case(select,pos) RT0__ErrorFailedCase(&_mid,pos,select)
 #define _failed_with(pos) RT0__ErrorFailedWith(&_mid,pos)
 

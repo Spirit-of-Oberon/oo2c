@@ -560,15 +560,29 @@ CONST
      The result of the instruction is the checked index.  One additional result
      is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
+  checkPointer* = 58;
+  (**Raise an exception if the pointer value is @code{NIL}.
 
-  failedCase* = 58;
-  failedWith* = 59;
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA.Opnd.arg
+     The pointer value.
+     @end table
+
+     The result of the instruction is the checked pointer.  One additional
+     result is the new value of @var{store}, another one is of class
+     @oconst{*OOC:SSA:Result.exception}.  *)
+
+  failedCase* = 59;
+  failedWith* = 60;
   
-  selectException* = 60;
+  selectException* = 61;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
   
-  labels* = 61;
+  labels* = 62;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -710,6 +724,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
 
     | assert: cstr := "assert";
     | checkIndex: cstr := "check-index";
+    | checkPointer: cstr := "check-pointer";
     | failedCase: cstr := "failed-case";
     | failedWith: cstr := "failed-with";
     | selectException: cstr := "select-exception";

@@ -228,12 +228,19 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
     PROCEDURE Deref (deref: IR.Deref): SSA.Result;
       VAR
-        instr: SSA.Instr;
+        instr, check: SSA.Instr;
         address: SSA.Result;
       BEGIN
         (* take the value of the pointer and use it to start a new "get"
            instruction *)
         address := Expression (deref. pointer);
+        IF deref. checkPointer THEN
+          check := AddException (pb, deref. sym,
+                                 Opcode.checkPointer, address. subclass);
+          check. AddOpnd (address, Opnd.arg);
+          address := check;
+        END;
+        
         instr := pb. AddInstr (Opcode.get, 
                                Opcode.TypeToSubclass (deref. derefType));
         instr. AddOpnd (s, Opnd.store);

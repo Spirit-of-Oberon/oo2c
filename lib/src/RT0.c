@@ -118,6 +118,10 @@ void RT0__ErrorIndexOutOfRange (RT0__Module mid, OOC_CHARPOS pos,
   _runtime_error(s, mid, pos);
 }
 
+void RT0__ErrorDerefOfNil (RT0__Module mid, OOC_CHARPOS pos) {
+  _runtime_error("Dereference of NIL", mid, pos);
+}
+
 void RT0__ErrorFailedCase (RT0__Module mid, OOC_CHARPOS pos, OOC_INT32 select) {
   char s[128];
   (void)sprintf(s, "CASE error, `" OOC_INT32_FORMAT

@@ -28,6 +28,7 @@ CONST
   defaultWarnings = FALSE;
   defaultAssertions = TRUE;
   defaultIndexCheck = TRUE;
+  defaultDerefCheck = TRUE;
   defaultOverflowCheck = FALSE;
   defaultCaseSelectCheck = TRUE;
   defaultTypeGuard = TRUE;
@@ -39,6 +40,7 @@ VAR
   warnings-: Pragmas.Pragma;
   assertions-: Pragmas.Pragma;
   indexCheck-: Pragmas.Pragma;
+  derefCheck-: Pragmas.Pragma;
   overflowCheck-: Pragmas.Pragma;
   caseSelectCheck-: Pragmas.Pragma;
   typeGuard-: Pragmas.Pragma;
@@ -54,6 +56,7 @@ PROCEDURE CreateVariables* (s: Pragmas.Section);
     warnings := s. Set ("Warnings", Boolean.New (defaultWarnings));
     assertions := s. Set ("Assertions", Boolean.New (defaultAssertions));
     indexCheck := s. Set ("IndexCheck", Boolean.New (defaultIndexCheck));
+    derefCheck := s. Set ("DerefCheck", Boolean.New (defaultDerefCheck));
     overflowCheck := s. Set ("OverflowCheck", Boolean.New (defaultOverflowCheck));
     caseSelectCheck := s. Set ("CaseSelectCheck", Boolean.New (defaultCaseSelectCheck));
     typeGuard := s. Set ("TypeGuard", Boolean.New (defaultTypeGuard));

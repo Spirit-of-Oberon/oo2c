@@ -169,6 +169,7 @@ PROCEDURE (v: Visitor) VisitLen* (len: IR.Len);
 PROCEDURE (v: Visitor) VisitDeref* (deref: IR.Deref);
   BEGIN
     v. w. StartTag ("deref", FALSE);
+    v. w. AttrBool ("check-pointer", deref. checkPointer);
     deref. pointer. Accept (v);
     v. w. EndTag;  (* deref *)
   END VisitDeref;
@@ -437,6 +438,9 @@ PROCEDURE (v: Visitor) VisitForStatm* (whileStatm: IR.ForStatm);
 PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
     v. w. StartTag ("if-statm", FALSE);
+    IF ifStatm. isWithClause THEN
+      v. w. AttrBool ("check-match", ifStatm. checkMatch);
+    END;
     v. w. StartTag ("guard", FALSE);
     ifStatm. guard. Accept (v);
     v. w. EndTag;  (* guard *)
@@ -477,6 +481,7 @@ PROCEDURE (v: Visitor) VisitCaseStatm* (caseStatm: IR.CaseStatm);
     i: LONGINT;
   BEGIN
     v. w. StartTag ("case-statm", FALSE);
+    v. w. AttrBool ("check-match", caseStatm. checkMatch);
     v. w. StartTag ("select", FALSE);
     caseStatm. select. Accept (v);
     v. w. EndTag;  (* select *)

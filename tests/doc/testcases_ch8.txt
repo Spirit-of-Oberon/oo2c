@@ -90,7 +90,7 @@ REJECT:
 
 ERROR:
 
-  1) p is NIL
+  1) p is NIL [OpPointer6]
 
 
   v(T)
