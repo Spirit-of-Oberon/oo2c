@@ -4,6 +4,13 @@
 # project and sourcing the file ENV there: `. ENV' (this assumes a Bourne
 # compatible shell)
 
+ifndef OOC_DEV_ROOT
+$(error Environment variable OOC_DEV_ROOT is not set)
+endif
+ifndef MAIN_MAKEFILE
+$(error Environment variable MAIN_MAKEFILE is not set)
+endif
+
 include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
 
 # TEST_SUBDIRS: List of subdirectories with testcases.
