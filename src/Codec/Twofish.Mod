@@ -21,7 +21,7 @@ MODULE Codec:Twofish[OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, Codec, String := Language:String0, Codec:TwofishC;
+  SYSTEM, Codec, Object, ADT:StringBuffer, Codec:TwofishC;
 
 (**NOTE: As it is, this module implements ECB with zero padding if the
    data length is not a multiple of 16.  ECB is very simple, and rather
@@ -79,10 +79,10 @@ PROCEDURE (c: Twofish) NewEncoder*(): Encoder;
     RETURN enc;
   END NewEncoder;
 
-PROCEDURE (dec: Decoder) SetKey* (key: String.String8);
+PROCEDURE (dec: Decoder) SetKey* (key: Object.String8);
   VAR
     len: LONGINT;
-    c: String.CharsLatin1;
+    c: Object.CharsLatin1;
   BEGIN
     len := key. length;
     IF (len > maxKeySize) THEN
@@ -92,10 +92,10 @@ PROCEDURE (dec: Decoder) SetKey* (key: String.String8);
     TwofishC.Twofish_prepare_key(c^, len, dec.xkey);
   END SetKey;
 
-PROCEDURE (enc: Encoder) SetKey* (key: String.String8);
+PROCEDURE (enc: Encoder) SetKey* (key: Object.String8);
   VAR
     len: LONGINT;
-    c: String.CharsLatin1;
+    c: Object.CharsLatin1;
   BEGIN
     len := key. length;
     IF (len > maxKeySize) THEN
@@ -107,7 +107,7 @@ PROCEDURE (enc: Encoder) SetKey* (key: String.String8);
 
 PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
                                       start, end: LONGINT;
-                                      b: String.Buffer);
+                                      b: StringBuffer.StringBuffer);
   CONST
     sizeBuffer = 4*1024;
   VAR
@@ -167,17 +167,17 @@ PROCEDURE (dec: Decoder) Reset*;
     dec. incompleteSize := 0;
   END Reset;
 
-PROCEDURE (enc: Encoder) Encode*(s: String.String;
+PROCEDURE (enc: Encoder) Encode*(s: Object.String;
                                      start, end: LONGINT;
-                                     b: String.Buffer);
+                                     b: StringBuffer.StringBuffer);
   CONST
     sizeBuffer = 4*1024;
   VAR
     d: ARRAY sizeBuffer+blockSize OF CHAR;
-    c: String.CharsLatin1;
+    c: Object.CharsLatin1;
     dpos, len: LONGINT;
   BEGIN
-    c := s(String.String8).CharsLatin1();
+    c := s(Object.String8).CharsLatin1();
 
     dpos := 0;
     IF (enc.incompleteSize # 0) THEN    (* pending incomplete block *)
@@ -226,7 +226,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
     enc.incompleteSize := end-start;
   END Encode;
 
-PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
+PROCEDURE (enc: Encoder) Closure*(b: StringBuffer.StringBuffer);
   VAR
     d: ARRAY blockSize OF CHAR;
     i: LONGINT;

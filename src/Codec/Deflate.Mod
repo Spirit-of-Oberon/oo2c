@@ -21,7 +21,7 @@ MODULE Codec:Deflate[OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, C, Codec, Log, String := Language:String0, Codec:zlib;
+  SYSTEM, C, Codec, Log, Object, ADT:StringBuffer, Codec:zlib;
 
 TYPE
   Deflate* = POINTER TO DeflateDesc;
@@ -78,8 +78,8 @@ PROCEDURE (dec: Decoder) Start*;
   END Start;
 
 PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
-                                      start, end: LONGINT;
-                                      b: String.Buffer);
+                                  start, end: LONGINT;
+                                  b: StringBuffer.StringBuffer);
   VAR
     d: ARRAY sizeBuffer OF CHAR;
     err: C.int;
@@ -131,14 +131,14 @@ PROCEDURE (enc: Encoder) Start*;
              "deflateInit_");
   END Start;
 
-PROCEDURE (enc: Encoder) Encode*(s: String.String;
+PROCEDURE (enc: Encoder) Encode*(s: Object.String;
                                      start, end: LONGINT;
-                                     b: String.Buffer);
+                                     b: StringBuffer.StringBuffer);
   VAR
     d: ARRAY sizeBuffer OF CHAR;
-    c: String.CharsLatin1;
+    c: Object.CharsLatin1;
   BEGIN
-    c := s(String.String8).CharsLatin1();
+    c := s(Object.String8).CharsLatin1();
     enc.strm.next_in := SYSTEM.ADR(c[start]);
     enc.strm.avail_in := end-start;
     
@@ -150,7 +150,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
     END;
   END Encode;
 
-PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
+PROCEDURE (enc: Encoder) Closure*(b: StringBuffer.StringBuffer);
   VAR
     d: ARRAY sizeBuffer OF CHAR;
     err: C.int;

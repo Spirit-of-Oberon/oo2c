@@ -14,10 +14,12 @@ IMPORT
   SYSTEM;
   
 TYPE
+<*PUSH; Warnings:=FALSE*>
   Twofish_key* = RECORD
     s: ARRAY 4, 256 OF LONGINT;
     K: ARRAY 40 OF LONGINT;
   END;
+<*POP*>
   
 PROCEDURE Twofish_initialise*;
 

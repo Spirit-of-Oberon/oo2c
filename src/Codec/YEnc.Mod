@@ -21,8 +21,7 @@ MODULE Codec:YEnc [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Log,
-  Ascii, CharClass, Codec, IntStr, String := Language:String0, Codec:UU;
+  Ascii, CharClass, Codec, IntStr, Object, ADT:StringBuffer, Codec:UU;
 
 CONST
   lineLength = 128;
@@ -397,8 +396,8 @@ PROCEDURE LineEnd* (data[NO_COPY]: ARRAY OF CHAR;
   END LineEnd;
 
 PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
-                                      start, end: LONGINT;
-                                      b: String.Buffer);
+                                  start, end: LONGINT;
+                                  b: StringBuffer.StringBuffer);
   CONST
     sizeBuffer = 4*1024;
   VAR
@@ -427,7 +426,7 @@ PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
           dec.endsWithEscape := TRUE;
           EXIT;
         END;
-        ASSERT (~UU.IsEOL(data[start]), String.invalidData);
+        ASSERT (~UU.IsEOL(data[start]), Codec.invalidData);
         d[dpos] := CHR((ORD(data[start+1])-(64+42)) MOD 256);
         INC (dpos);
         INC (start, 2);
@@ -453,18 +452,18 @@ PROCEDURE (dec: Decoder) Reset*;
     dec. endsWithEscape := FALSE;
   END Reset;
 
-PROCEDURE (enc: Encoder) Encode*(s: String.String;
+PROCEDURE (enc: Encoder) Encode*(s: Object.String;
                                  start, end: LONGINT;
-                                 b: String.Buffer);
+                                 b: StringBuffer.StringBuffer);
   CONST
     sizeBuffer = 4*1024;
   VAR
     d: ARRAY sizeBuffer+lineLength+2 OF CHAR;
-    c: String.CharsLatin1;
+    c: Object.CharsLatin1;
     dpos, avail: LONGINT;
     ch: CHAR;
   BEGIN
-    c := s(String.String8).CharsLatin1();
+    c := s(Object.String8).CharsLatin1();
 
     dpos := 0;
     avail := enc.incompleteAvail;
@@ -502,7 +501,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
     enc.incompleteAvail := avail;
   END Encode;
 
-PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
+PROCEDURE (enc: Encoder) Closure*(b: StringBuffer.StringBuffer);
   BEGIN
     IF (enc.incompleteAvail # lineLength) THEN
       b.AppendLatin1Char(Ascii.lf);

@@ -1,7 +1,7 @@
 MODULE Codec:Latin1 [OOC_EXTENSIONS];
 
 IMPORT
-  Codec, String := Language:String0;
+  Object, ADT:StringBuffer, Codec;
 
 
 TYPE
@@ -48,64 +48,64 @@ PROCEDURE (c: Latin1) NewEncoder*(): Encoder;
   END NewEncoder;
 
 PROCEDURE (c: Latin1) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
-                                    start, end: LONGINT): String.String;
+                                    start, end: LONGINT): STRING;
   BEGIN
-    RETURN String.NewLatin1Region(data, start, end);
+    RETURN Object.NewLatin1Region(data, start, end);
   END DecodeRegion;
 
 PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
-                                            start, end: LONGINT;
-                                            b: String.Buffer);
+                                  start, end: LONGINT;
+                                  b: StringBuffer.StringBuffer);
   BEGIN
     b. AppendLatin1Region (data, start, end);
   END Decode;
   
-PROCEDURE (c: Latin1) EncodeRegion*(s: String.String;
-                                    start, end: LONGINT): String.String8;
+PROCEDURE (c: Latin1) EncodeRegion*(s: STRING;
+                                    start, end: LONGINT): Object.String8;
   VAR
     i, len: LONGINT;
     d: POINTER TO ARRAY OF CHAR;
-    d8: String.CharsLatin1;
-    d32: String.CharsUCS4;
+    d8: Object.CharsLatin1;
+    d32: Object.CharsUCS4;
   BEGIN
-    WITH s: String.String8 DO
+    WITH s: Object.String8 DO
       d8 := s.CharsLatin1();
-      RETURN String.NewLatin1Region(d8^, start, end);
+      RETURN Object.NewLatin1Region(d8^, start, end);
       
-    | s: String.String32 DO
+    | s: Object.String32 DO
       d32 := s.CharsUCS4();
       len := end-start;
       NEW (d, len+1);
       i := 0;
       WHILE (start # end) DO
-        ASSERT (d32[start] < 256, String.invalidChar);
-        d[i] := CHR (d32[start]);
+        ASSERT (d32[start] <= MAX(CHAR), Codec.invalidChar);
+        d[i] := SHORT(SHORT(d32[start]));
         INC (start); INC (i);
       END;
       d[len] := 0X;
-      RETURN String.NewLatin1Region(d^, 0, len);
+      RETURN Object.NewLatin1Region(d^, 0, len);
     END;
   END EncodeRegion;
 
-PROCEDURE (enc: Encoder) Encode*(s: String.String;
-                                           start, end: LONGINT;
-                                           b: String.Buffer);
+PROCEDURE (enc: Encoder) Encode*(s: STRING;
+                                 start, end: LONGINT;
+                                 b: StringBuffer.StringBuffer);
   VAR
-    d: String.BufferLatin1;
-    d8: String.CharsLatin1;
-    d32: String.CharsUCS4;
+    d: Codec.BufferLatin1;
+    d8: Object.CharsLatin1;
+    d32: Object.CharsUCS4;
     i: LONGINT;
   BEGIN
-    WITH s: String.String8 DO
+    WITH s: Object.String8 DO
       d8 := s.CharsLatin1();
       b. AppendLatin1Region (d8^, 0, s. length);
       
-    | s: String.String32 DO
+    | s: Object.String32 DO
       d32 := s.CharsUCS4();
       i := 0;
       WHILE (start # end) DO
-        ASSERT (d32[start] < 256, String.invalidChar);
-        d[i] := CHR (d32[start]);
+        ASSERT (d32[start] <= MAX(CHAR), Codec.invalidChar);
+        d[i] := SHORT(SHORT(d32[start]));
         INC (start); INC (i);
 
         IF (i = LEN (d)) THEN
@@ -117,7 +117,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
     END;
   END Encode;
 
-PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
+PROCEDURE (enc: Encoder) Closure*(b: StringBuffer.StringBuffer);
   END Closure;
 
 PROCEDURE Register*;

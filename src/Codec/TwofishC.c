@@ -10,6 +10,8 @@
  * in the source code of this or any derived work.
  */
 
+void OOC_Codec_TwofishC_init0() {
+}
 
 /*
  * PLATFORM FIXES

@@ -3,7 +3,7 @@ MODULE encdec;
 IMPORT
   SYSTEM, Ascii, Channel, Files, Log, Msg,
   ProgramArgs, StdChannels, TextRider, 
-  String := Language:String0, Codec,
+  Object, ADT:StringBuffer, Codec,
   Codec:Latin1, Codec:UTF32, Codec:UU, Codec:YEnc,
   Codec:Twofish, Codec:Deflate;
 
@@ -32,11 +32,11 @@ CONST
 VAR
   mode: SHORTINT;
   codec1: Codec.Codec;
-  key: String.String;
+  key: Object.String;
   
   codecUU, codecYEnc: Codec.Codec;
   decoder: Codec.Decoder;
-  outputBuffer: String.Buffer;
+  outputBuffer: StringBuffer.StringBuffer;
   state: State;
   yencHeader: YEnc.Header;
   
@@ -48,11 +48,11 @@ VAR
 
 PROCEDURE StartFile (codec: Codec.Codec; name: ARRAY OF CHAR);
   VAR
-    c: String.CharsLatin1;
+    c: Object.CharsLatin1;
     res: Msg.Msg;
   BEGIN
     Log.String ("writing to file", name);
-    c := codec.preferredName(String.String8).CharsLatin1();
+    c := codec.preferredName(Object.String8).CharsLatin1();
     Log.String ("codec", c^);
 
     file := Files.New(name, {Files.write}, res);
@@ -116,7 +116,7 @@ PROCEDURE SkipJunkUU (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
 PROCEDURE ProcessDataUU (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
   VAR
     eol, startOfData, endOfData: LONGINT;
-    chars: String.CharsLatin1;
+    chars: StringBuffer.CharsLatin1;
   BEGIN
     startOfData := start;
     LOOP
@@ -194,7 +194,7 @@ PROCEDURE SearchNextYEnc (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT
 PROCEDURE ProcessDataYEnc (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
   VAR
     eol, startOfData, endOfData: LONGINT;
-    chars: String.CharsLatin1;
+    chars: StringBuffer.CharsLatin1;
     endOfPart: BOOLEAN;
   BEGIN
     endOfPart := FALSE;
@@ -388,7 +388,7 @@ PROCEDURE DecodeFiles (r: Channel.Reader);
     start := 0; end := 0; endOfData := 0;
     done := FALSE;
     ReadBlock;
-    outputBuffer := String.NewBuffer(sizeBuffer);
+    outputBuffer := StringBuffer.NewCapacity(sizeBuffer);
     state := SearchForFile;
     
     LOOP
@@ -415,17 +415,17 @@ PROCEDURE DecodeFiles (r: Channel.Reader);
 PROCEDURE Encode (enc: Codec.Encoder; r: Channel.Reader; w: Channel.Writer);
   VAR
     d: ARRAY sizeBuffer OF CHAR;
-    b: String.Buffer;
-    s: String.String;
-    c: String.CharsLatin1;
+    b: StringBuffer.StringBuffer;
+    s: Object.String;
+    c: StringBuffer.CharsLatin1;
   BEGIN
-    b := String.NewBuffer (sizeBuffer+256);
+    b := StringBuffer.NewCapacity (sizeBuffer+256);
     LOOP
       r.ReadBytes (d, 0, sizeBuffer);
       IF (r.bytesRead = 0) THEN
         EXIT;
       ELSE
-        s := String.NewLatin1Region (d, 0, r.bytesRead);
+        s := Object.NewLatin1Region (d, 0, r.bytesRead);
         enc.Encode (s, 0, r.bytesRead, b);
         
         c := b.CharsLatin1();
@@ -441,17 +441,17 @@ PROCEDURE Encode (enc: Codec.Encoder; r: Channel.Reader; w: Channel.Writer);
 PROCEDURE Decode (dec: Codec.Decoder; r: Channel.Reader; w: Channel.Writer);
   VAR
     d: ARRAY sizeBuffer OF CHAR;
-    b: String.Buffer;
-    s: String.String;
-    c: String.CharsLatin1;
+    b: StringBuffer.StringBuffer;
+    s: Object.String;
+    c: StringBuffer.CharsLatin1;
   BEGIN
-    b := String.NewBuffer (sizeBuffer+256);
+    b := StringBuffer.NewCapacity (sizeBuffer+256);
     LOOP
       r.ReadBytes (d, 0, sizeBuffer);
       IF (r.bytesRead = 0) THEN
         EXIT;
       ELSE
-        s := String.NewLatin1Region (d, 0, r.bytesRead);
+        s := Object.NewLatin1Region (d, 0, r.bytesRead);
         dec.Decode (d, 0, r.bytesRead, b);
         
         c := b.CharsLatin1();
@@ -467,13 +467,13 @@ PROCEDURE ParseArguments (r: TextRider.Reader);
   VAR
     arg: ARRAY 256 OF CHAR;
 
-  PROCEDURE GetCodec (name: ARRAY OF CHAR): Codec.Codec;
+  PROCEDURE GetCodec (name: STRING): Codec.Codec;
     VAR
       c: Codec.Codec;
     BEGIN
       c := Codec.Get (name);
       IF (c = NIL) THEN
-        Log.String ("No such codec", name);
+        Log.Str ("No such codec", name);
         HALT(1);
       END;
       RETURN c;
@@ -490,16 +490,16 @@ PROCEDURE ParseArguments (r: TextRider.Reader);
         IF (arg = "--encode") THEN
           mode := encode;
           r. ReadLine (arg);
-          codec1 := GetCodec (arg);
+          codec1 := GetCodec (Object.NewLatin1(arg));
         ELSIF (arg = "--decode") THEN
           mode := decode;
           r. ReadLine (arg);
-          codec1 := GetCodec (arg);
+          codec1 := GetCodec (Object.NewLatin1(arg));
         ELSIF (arg = "--decode-files") THEN
           mode := decodeFiles;
         ELSIF (arg = "--key") THEN
           r. ReadLine (arg);
-          key := String.NewLatin1(arg);
+          key := Object.NewLatin1(arg);
         ELSE
           Log.String ("Unknown argument", arg);
           HALT (1);
@@ -528,7 +528,7 @@ BEGIN
   | encode:
     enc := codec1.NewEncoder();
     WITH enc: Codec.CryptoEncoder DO
-      enc.SetKey(key(String.String8));
+      enc.SetKey(key(Object.String8));
     ELSE
     END;
     enc.Start;
@@ -537,7 +537,7 @@ BEGIN
   | decode:
     dec := codec1.NewDecoder();
     WITH dec: Codec.CryptoDecoder DO
-      dec.SetKey(key(String.String8));
+      dec.SetKey(key(Object.String8));
     ELSE
     END;
     dec.Start;

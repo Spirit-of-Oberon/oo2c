@@ -21,7 +21,7 @@ MODULE Codec:UU [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, Ascii, Codec, String := Language:String0;
+  SYSTEM, Ascii, Codec, Object, ADT:StringBuffer;
 
 CONST
   lineLength = 45;  (* number of bytes per line when encoding *)
@@ -248,8 +248,8 @@ PROCEDURE LineEnd* (data[NO_COPY]: ARRAY OF CHAR;
   END LineEnd;
 
 PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
-                                      start, end: LONGINT;
-                                      b: String.Buffer);
+                                  start, end: LONGINT;
+                                  b: StringBuffer.StringBuffer);
   CONST
     overhead = 65*4;
     sizeBuffer = 4*1024;
@@ -287,7 +287,7 @@ PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
         EXIT
       ELSE
         len := DecodeByte (data[start]);
-        ASSERT (len >= 0, String.invalidData);
+        ASSERT (len >= 0, Codec.invalidData);
         triplets := (len+2) DIV 3;
         shortData := len-triplets*3;
         lineEnd := start+1+triplets*4;
@@ -304,7 +304,7 @@ PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
             t := 0; shift := 18;
             WHILE (shift >= 0) DO
               byte := DecodeByte(data[start]);
-              ASSERT (byte >= 0, String.invalidData);
+              ASSERT (byte >= 0, Codec.invalidData);
               INC (t, ASH(byte, shift));
               INC (start);
               DEC (shift, 6);
@@ -365,17 +365,17 @@ PROCEDURE EncodeLine (data[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
     INC (opos);
   END EncodeLine;
 
-PROCEDURE (enc: Encoder) Encode*(s: String.String;
-                                     start, end: LONGINT;
-                                     b: String.Buffer);
+PROCEDURE (enc: Encoder) Encode*(s: Object.String;
+                                 start, end: LONGINT;
+                                 b: StringBuffer.StringBuffer);
   CONST
     sizeBuffer = 4*1024;
   VAR
     d: ARRAY sizeBuffer+lengthBufferCode OF CHAR;
-    c: String.CharsLatin1;
+    c: Object.CharsLatin1;
     dpos, len: LONGINT;
   BEGIN
-    c := s(String.String8).CharsLatin1();
+    c := s(Object.String8).CharsLatin1();
 
     dpos := 0;
     IF (enc.incompleteSize # 0) THEN    (* pending incomplete line *)
@@ -419,7 +419,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
     enc.incompleteSize := end-start;
   END Encode;
 
-PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
+PROCEDURE (enc: Encoder) Closure*(b: StringBuffer.StringBuffer);
   VAR
     d: ARRAY lengthBufferCode OF CHAR;
     i: LONGINT;
