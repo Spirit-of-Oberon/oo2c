@@ -49,6 +49,13 @@ TYPE
     jump-: Block;
     (**Default target of control flow when leaving this block.  Only @code{NIL}
        if the block is last in a procedure.  *)
+
+    degreeIn-: LONGINT;
+    (**The number of jumps or branches that have this block as target.  *)
+
+    isWritten*: BOOLEAN;
+    (**Auxiliary field for output procedure: if @code{TRUE}, then this
+       block has been written out already.  *)
   END;
   
 TYPE
@@ -74,6 +81,8 @@ PROCEDURE InitBlock (b: Block; jump: Block);
     b. nextDom := NIL;
     b. domList := NIL;
     b. jump := jump;
+    b. degreeIn := 0;
+    b. isWritten := FALSE;
   END InitBlock;
 
 PROCEDURE NewBlock (jump: Block): Block;
@@ -171,7 +180,8 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
    the sequence of instructions; this is always the original value
    of `enter'
 
-   precond: instructions within the block are topologically sorted *)
+   precond: instructions within the block are topologically sorted
+   in descending order; that is, if A depends on B, then B follows A *)
   VAR
     proxy: InstrProxy;
 
@@ -183,8 +193,8 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
     (**Recursively moves the instructions producing @oparam{result} into their
        target blocks.  Order of dependent instructions is kept unchanged.  That
        is, if an instruction @samp{A} depends on instruction @samp{B}, and
-       @samp{A} is placed after @samp{B} in the original block, then the same
-       holds for the target block.  *)
+       @samp{A} is placed before @samp{B} in the original block, then the same
+       holds for their respective placement in the target block.  *)
       VAR
         instr: SSA.Instr;
         opnd: SSA.Opnd;
@@ -386,9 +396,26 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     instr: SSA.Instr;
     proxy: InstrProxy;
     ok: BOOLEAN;
+
+  PROCEDURE CalculateDegree (b: Block);
+    BEGIN
+      IF (b # NIL) THEN
+        INC (b. degreeIn);
+        IF (b. degreeIn = 1) THEN
+          WITH b: BranchBlock DO
+            CalculateDegree (b. branchTo);
+            CalculateDegree (b. jump);
+          ELSE
+            CalculateDegree (b. jump);
+          END;
+        END;
+      END;
+    END CalculateDegree;
+  
   BEGIN
-    (* first, put all instructions into a single block; if we are _very_ lucky,
-       we don't need any other blocks and are already done *)
+    (* first, put all instructions into a single block; instructions are
+       sorted topological first, and this order is reversed when creating
+       the list of `InstrProxy' instances (for DebranchBlock) *)
     ok := pb. TopSort();
     ASSERT (ok);
     pb. SetMarkers (NIL, -1);
@@ -408,6 +435,11 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     
     (* third, schedule instructions within each basic block *)
     SortBlocks (b);
+
+    
+    (* set the `degreeIn' fields to the number of blocks that jump or branch
+       into the block *)
+    CalculateDegree (b);
     
     RETURN b
   END Schedule;

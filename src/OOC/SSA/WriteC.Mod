@@ -13,8 +13,6 @@ TYPE
   WriterDesc = RECORD
     w: TextRider.Writer;
     registerMap: Dictionary.Dictionary;
-    blockMap: Dictionary.Dictionary;
-    blockCount: LONGINT;
   END;
 
 PROCEDURE NewWriter (textWriter: TextRider.Writer;
@@ -25,8 +23,6 @@ PROCEDURE NewWriter (textWriter: TextRider.Writer;
     NEW (w);
     w. w := textWriter;
     w. registerMap := registerMap;
-    w. blockMap := Dictionary.New();
-    w. blockCount := 0;
     RETURN w
   END NewWriter;
 
@@ -353,61 +349,93 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
     END;
   END WriteInstrList;
 
-PROCEDURE (w: Writer) WriteBlocks (b: Schedule.Block);
+PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
   VAR
-    nested: Schedule.Block;
-
-  PROCEDURE WriteBlockId (b: Schedule.Block);
+    lastBlock: Schedule.Block;
+    blockCount: LONGINT;
+    blockMap: Dictionary.Dictionary;
+    
+  PROCEDURE AssignIds (b: Schedule.Block);
+  (* assign block ids in the same order as they are written by `WriteBlock' *)
     VAR
-      obj: Object.Object;
       str: ARRAY 16 OF CHAR;
+      obj: Object.Object;
     BEGIN
-      IF w. blockMap. HasKey (b) THEN
-        obj := w. blockMap. Get(b);
-      ELSE
-        IntStr.IntToStr (w. blockCount, str);
+      IF (b # NIL) & ~blockMap. HasKey (b) THEN
+        IntStr.IntToStr (blockCount, str);
         Strings.Insert ("l", 0, str);
         obj := String.New (str);
-        w. blockMap. Set (b, obj);
-        INC (w. blockCount);
+        blockMap. Set (b, obj);
+        INC (blockCount);
+        
+        WITH b: Schedule.BranchBlock DO
+          AssignIds (b. jump);
+          AssignIds (b. branchTo);
+        ELSE (* standard block *)
+          AssignIds (b. jump);
+        END;
       END;
-      w. WriteString (obj(String.String). array^);
-    END WriteBlockId;
+    END AssignIds;
   
-  PROCEDURE WriteGoto (target: Schedule.Block);
+  PROCEDURE WriteBlock (b: Schedule.Block);
+    PROCEDURE WriteBlockId (b: Schedule.Block);
+      VAR
+        obj: Object.Object;
+      BEGIN
+        obj := blockMap. Get (b);
+        w. WriteString (obj(String.String). array^);
+      END WriteBlockId;
+    
+    PROCEDURE WriteGoto (target: Schedule.Block);
+      BEGIN
+        w. WriteString ("goto ");
+        WriteBlockId (target);
+        w. WriteChar (";");
+      END WriteGoto;
+    
     BEGIN
-      w. WriteString ("goto ");
-      WriteBlockId (target);
-      w. WriteChar (";");
-    END WriteGoto;
+      IF (b = NIL) THEN
+        RETURN
+      ELSIF b. isWritten THEN
+        w. Newline;
+        WriteGoto (b)
+      ELSE
+        b. isWritten := TRUE;
+        IF (b. degreeIn # 1) OR
+           (lastBlock # NIL) & (lastBlock. jump # b) THEN
+          (* we have a goto instruction jumping in this block, so we
+             better write out a label *)
+          w. w. WriteLn;
+          WriteBlockId (b);
+          w. WriteChar (":");
+        END;
+        w. WriteInstrList (b);
+        
+        WITH b: Schedule.BranchBlock DO
+          w. Newline;
+          w. WriteString ("if (");
+          IF ~b. branchOnTrue THEN
+            w. WriteChar("!");
+          END;
+          w. Ref (b. select. opndList);
+          w. WriteString (") ");
+          WriteGoto (b. branchTo);
+          WriteBlock (b. jump);
+          WriteBlock (b. branchTo);
+        ELSE (* standard block *)
+          WriteBlock (b. jump);
+        END;
+        lastBlock := b;
+      END;
+    END WriteBlock;
   
   BEGIN
-    w. w. WriteLn;
-    WriteBlockId (b);
-    w. WriteChar (":");
-    w. WriteInstrList (b);
+    blockCount := 0;
+    blockMap := Dictionary.New();
+    lastBlock := NIL;
 
-    WITH b: Schedule.BranchBlock DO
-      w. Newline;
-      w. WriteString ("if (");
-      IF ~b. branchOnTrue THEN
-        w. WriteChar("!");
-      END;
-      w. Ref (b. select. opndList);
-      w. WriteString (") ");
-      WriteGoto (b. branchTo);
-    ELSE (* standard block *)
-    END;
-    IF (b. jump # NIL) THEN
-      w. Newline;
-      WriteGoto (b. jump);
-    END;
-    
-    nested := b. domList;
-    WHILE (nested # NIL) DO
-      w. WriteBlocks (nested);
-      nested := nested. nextDom
-    END;
+    AssignIds (domRoot);
+    WriteBlock (domRoot)
   END WriteBlocks;
 
 PROCEDURE ProcBody* (textWriter: TextRider.Writer;
