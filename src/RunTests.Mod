@@ -283,6 +283,8 @@ RAISES IO.Error;
             str := "program ran, but output does not match reference"
           | Processor.processCompareFailed:
             str := "program ran, but failed to compare output with reference"
+          | Processor.processWarningMismatch:
+            str := "accepted by compiler, but warnings do not match"
           END;
           reportWriter. AttrStringLatin1 ("result", str);
           CASE class OF

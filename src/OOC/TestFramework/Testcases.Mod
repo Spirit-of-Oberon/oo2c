@@ -87,11 +87,18 @@ TYPE
   END;
 
 TYPE
+  WarningInfo* = POINTER TO WarningInfoDesc;
+  WarningInfoDesc = RECORD
+    (RejectInfoDesc)
+  END;
+
+TYPE
   ProcessorInfo* = POINTER TO ProcessorInfoDesc;
   ProcessorInfoDesc = RECORD
     (Element.ElementDesc)
     processorName-: TestSetup.String8;
     rejectInfoList-: Element.List;       (* may be empty *)
+    warningInfoList-: Element.List;      (* may be empty *)
   END;
   
 TYPE
@@ -514,11 +521,37 @@ PROCEDURE (rejInfo: RejectInfo) Write* (writer: Writer.Writer);
 
 
 
+PROCEDURE InitWarningInfo (warnInfo: WarningInfo);
+  BEGIN
+    InitRejectInfo(warnInfo);
+  END InitWarningInfo;
+
+PROCEDURE NewWarningInfo(): Element.Element;
+  VAR
+    warnInfo: WarningInfo;
+  BEGIN
+    NEW (warnInfo);
+    InitWarningInfo (warnInfo);
+    RETURN warnInfo
+  END NewWarningInfo;
+
+PROCEDURE (warnInfo: WarningInfo) Write* (writer: Writer.Writer);
+  BEGIN
+    writer. StartTag ("warning-info", FALSE);
+    writer. AttrStringLatin1 ("id", warnInfo. id);
+    writer. AttrString ("pos", warnInfo. pos^);
+    writer. AttrString ("msg", warnInfo. msg^);
+    writer. EndTag
+  END Write;
+
+
+
 PROCEDURE InitProcessorInfo (processorInfo: ProcessorInfo);
   BEGIN
     Element.InitElement (processorInfo);
     processorInfo. processorName := "";
     processorInfo. rejectInfoList := Element.NewList();
+    processorInfo. warningInfoList := Element.NewList();
   END InitProcessorInfo;
 
 PROCEDURE NewProcessorInfo(): Element.Element;
@@ -556,13 +589,15 @@ PROCEDURE (processorInfo: ProcessorInfo) MissingAttribute* (): Element.String;
 
 PROCEDURE (processorInfo: ProcessorInfo) IsChildName* (localName: Element.String): BOOLEAN;
   BEGIN
-    RETURN (localName^ = "reject-info")
+    RETURN (localName^ = "reject-info") OR (localName^ = "warning-info");
   END IsChildName;
 
 PROCEDURE (processorInfo: ProcessorInfo) NewChild* (localName: Element.String): Element.Element;
   BEGIN
     IF (localName^ = "reject-info") THEN
       RETURN NewRejectInfo()
+    ELSIF (localName^ = "warning-info") THEN
+      RETURN NewWarningInfo()
     ELSE
       RETURN NIL
     END
@@ -570,7 +605,11 @@ PROCEDURE (processorInfo: ProcessorInfo) NewChild* (localName: Element.String): 
   
 PROCEDURE (processorInfo: ProcessorInfo) AddChild* (child: Element.Element);
   BEGIN
-    processorInfo. rejectInfoList. Append (child)
+    WITH child: WarningInfo DO
+      processorInfo. warningInfoList. Append (child)
+    | child: RejectInfo DO
+      processorInfo. rejectInfoList. Append (child)
+    END;
   END AddChild;
 
 PROCEDURE (processorInfo: ProcessorInfo) Write* (writer: Writer.Writer);
@@ -578,6 +617,7 @@ PROCEDURE (processorInfo: ProcessorInfo) Write* (writer: Writer.Writer);
     writer. StartTag ("processorInfo", FALSE);
     writer. AttrStringLatin1 ("processor-name", processorInfo. processorName);
     processorInfo. rejectInfoList. Write (writer);
+    processorInfo. warningInfoList. Write (writer);
     writer. EndTag
   END Write;
 

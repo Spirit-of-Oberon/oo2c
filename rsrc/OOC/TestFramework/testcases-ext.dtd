@@ -26,7 +26,7 @@
      output for a test case to succeed.  The "processor-element" only
      applies if its "processor-name" attribute matches that of the
      test setup.  -->
-<!ELEMENT processor-info (reject-info*)>
+<!ELEMENT processor-info (reject-info|warning-info)*>
 <!ATTLIST processor-info
           processor-name CDATA #REQUIRED>
 
@@ -54,6 +54,15 @@
 -->
 <!ELEMENT reject-info EMPTY>
 <!ATTLIST reject-info
+          id        IDREF       #REQUIRED
+	  pos	    CDATA	#REQUIRED
+	  msg	    CDATA	#REQUIRED>
+
+<!-- For a test case of type `accept' or `run', the error list emitted by the
+     compiler must contain a warning indicated by the pattern "pos",
+     with the error message "msg".  -->
+<!ELEMENT warning-info EMPTY>
+<!ATTLIST warning-info
           id        IDREF       #REQUIRED
 	  pos	    CDATA	#REQUIRED
 	  msg	    CDATA	#REQUIRED>
