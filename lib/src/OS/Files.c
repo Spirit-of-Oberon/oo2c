@@ -1,3 +1,11 @@
+#include <__oo2c.h>
+#include <__config.h>
+#include <OS/Files.d>
+
+#ifdef HAVE_READDIR_R
+#define _POSIX_PTHREAD_SEMANTICS  /* for Solaris 5.x */
+#endif
+
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
@@ -11,10 +19,6 @@
 #ifndef NAME_MAX
 #define NAME_MAX PATH_MAX
 #endif
-
-#include <__oo2c.h>
-#include <__config.h>
-#include <OS/Files.d>
 
 #define BUFFER_SIZE 1024
 
