@@ -43,3 +43,5 @@ void Var5__Test() {
 void Var5_init(void) {
 
 }
+
+/* --- */

@@ -21,3 +21,5 @@ void VarPar1c__Test() {
 void VarPar1c_init(void) {
 
 }
+
+/* --- */

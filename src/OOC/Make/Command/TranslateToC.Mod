@@ -28,7 +28,7 @@ IMPORT
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, 
-  OOC:C:DeclWriter, OOC:C:ConvertDecl;
+  OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:RuntimeData;
 
 TYPE
   Translator* = POINTER TO TranslatorDesc;
@@ -168,6 +168,12 @@ PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
        module header file *)
     w. WriteString ('#include "__typemap.h"');
     w. WriteLn;
+
+    (* pull in type definitions for the run-time meta data: module descriptor,
+       type descriptor, and so on.  *)
+    w. WriteString ('#include "'+Config.runtimeModule+'.h"');
+    w. WriteLn;
+    
     import := m. importList;
     WHILE (import # NIL) DO
       w. WriteInclude (import.imported.GetURI (Repository.modHeaderFileC));
@@ -177,7 +183,7 @@ PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
     
     ConvertDecl.ConvertSymTab (w, m, symTab, exports, TRUE);
     w. WriteDeclarationList;
-    w. WriteLn;
+    RuntimeData.Write (w, symTab, TRUE);
     
     WriteModuleName (w, "#endif /* _MODULE_", m, "_ */", TRUE);
   END WriteHeaderFile;
@@ -186,8 +192,10 @@ PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
                          symTab: Sym.Module; exports: Dictionary.Dictionary);
   BEGIN
     w. WriteInclude (m. GetURI (Repository.modHeaderFileC));
+
     ConvertDecl.ConvertSymTab (w, m, symTab, exports, FALSE);
     w. WriteDeclarationList;
+    RuntimeData.Write (w, symTab, FALSE);
   END WriteDeclFile;
 
 PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
@@ -240,8 +248,9 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     exports: Dictionary.Dictionary;
     module: IR.Module;
     pragmaHistory: Pragmas.History;
+    wh, wd, wc: DeclWriter.Writer;
 
-  PROCEDURE WriteFile (fileId: Repository.FileId);
+  PROCEDURE WriteFile (fileId: Repository.FileId): DeclWriter.Writer;
     VAR
       res: Error.Msg;
       w: DeclWriter.Writer;
@@ -257,12 +266,27 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         | Repository.modCodeFileC:
           WriteCodeFile (w, m, module, cmd. translator);
         END;
-        w. Close (res);
+        RETURN w
+      ELSE
+        errList. Append (res);
+        RETURN NIL
       END;
-      IF (res # NIL) THEN
-        errList. Append (res)
-      END
     END WriteFile;
+
+  PROCEDURE CloseFile (w: DeclWriter.Writer);
+    VAR
+      res: Error.Msg;
+    BEGIN
+      IF (w # NIL) THEN
+        w. WriteLn;
+        w. WriteString ("/* --- */");
+        w. WriteLn;
+        w. Close (res);
+        IF (res # NIL) THEN
+          errList. Append (res)
+        END
+      END;
+    END CloseFile;
   
   BEGIN
     m := cmd. module;
@@ -288,13 +312,23 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       IF (errList. msgCount = 0) THEN
         (* only attempt to produce output if program compiled without errors *)
 
-        WriteFile (Repository.modHeaderFileC);
-        WriteFile (Repository.modDeclFileC);
+        wh := WriteFile (Repository.modHeaderFileC);
+        wd := WriteFile (Repository.modDeclFileC);
         IF (symTab. class = Sym.mcStandard) THEN
-          WriteFile (Repository.modCodeFileC);
+          wc := WriteFile (Repository.modCodeFileC);
+        ELSE
+          wc := NIL;
         END;
 
         WriteSymbolFile.WriteSymbolFile (m, symTab, errList);
+
+        (* close all C output files after adding a tidbit of text to them;
+           this way, these files are as old or more recent than the symbol
+           file, and the generated C files may depened on the symbol file
+           in the make rules *)
+        CloseFile (wh);
+        CloseFile (wd);
+        CloseFile (wc);
       END;
     END;
     

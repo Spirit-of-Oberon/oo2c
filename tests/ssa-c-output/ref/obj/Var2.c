@@ -22,3 +22,5 @@ void Var2__Test() {
 void Var2_init(void) {
 
 }
+
+/* --- */

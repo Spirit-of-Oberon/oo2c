@@ -30,3 +30,5 @@ void Var9__Test() {
 void Var9_init(void) {
 
 }
+
+/* --- */
