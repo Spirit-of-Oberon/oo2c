@@ -22,7 +22,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Language:Boolean, Language:Char, 
+  Language, Language:Boolean, Language:Char, Language:Set,
   Language:String8, Language:String16, Language:Integer, Language:Real,
   ADT:Object, ADT:ArrayList, ADT:String,
   Config:Value, BooleanValue := Config:Value:Boolean, 
@@ -463,8 +463,11 @@ TYPE
   (**A SetRange represents a sub-range SET constructor.  A range consists of a
      @ofield{from} and @ofield{to} expression which must have the same type. If
      both values are constant, then @ofield{from} must not be greater than
-     @ofield{to}. *)
+     @ofield{to}.
 
+     The constructor of this class may be called with both @ofield{from}
+     and @ofield{to} being @code{NIL}.  This special range is immediately
+     converted into an empty set constant.  *)
     (OperatorDesc)
     from-, to- : Expression;
   END;
@@ -1131,10 +1134,67 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
       b. ErrSym (numberOutOfRange, sym);
       RETURN b. errorExpr
     ELSE
-(*      RETURN NewConst (sym, Predef.GetType (Predef.integer), v)*)
       RETURN NewConst (sym, Predef.SmallestIntType (v), v)
     END
   END NewIntConst10;
+
+PROCEDURE (b: Builder) NewIntConst16* (sym: Symbol): Expression;
+  VAR
+    v: Integer.Value;
+    result: LONGINT;
+    spos, epos: INTEGER;
+      
+  PROCEDURE GetDigit(c: CHAR): INTEGER;
+    VAR
+      d: INTEGER;
+    BEGIN
+      d:=ORD(c);
+      IF (ORD ("0") <= d) & (d <= ORD ("9")) THEN
+        DEC (d, ORD ("0"))
+      ELSE  (* (ORD ("A") <= d) & (d <= ORD ("F")) *)
+        (* the explicit test can be omitted, since this procedure is only 
+           called for numbers with H or X suffix, and the initial REPEAT 
+           loop in `Number' only accepts valid hexadecimal digits from 
+           the ranges "0".."9" and "A".."F" *)
+        DEC (d, ORD ("A")-10)
+      END;
+      RETURN d
+    END GetDigit;
+  
+  BEGIN
+    (* FIXME... string conversion should probably put into Language.Integer *)
+    result := 0; spos := 0; epos := 0;
+    WHILE (sym. str[epos] # "H") DO
+      INC (epos);
+    END;
+    
+    (* skip leading zeros *)
+    WHILE (sym. str[spos] = "0") DO 
+      INC (spos)
+    END;
+    IF (epos-spos > 7) THEN  (* value has more than 8 significant digits *)
+      ASSERT (FALSE);                 (* number out of range *)
+    ELSIF (spos <= epos) THEN         (* if any non-zero digits follow *)
+      result := GetDigit (sym. str[spos]);
+      INC (spos);
+      IF (epos-spos = 6) & (result >= 8) THEN
+        (* value is beyond MAX(LONGINT)=07FFFFFFFH: correct this by sub-
+           tracting 16 from the value of the most significant digit, creating
+           the negative number that matches the bit pattern *)
+        (* warning: hex const mapped to negative value *)
+        (* FIXME... with HUGEINT, this is no longer true *)
+        DEC (result, 10H)
+      END;
+      WHILE (spos <= epos) DO
+        result := result*10H + GetDigit (sym. str[spos]);
+        INC (spos)
+      END;
+      (* ELSE: number is non-empty sequence of "0", keep result=0 *)
+    END;
+    
+    v := Integer.New (result);
+    RETURN NewConst (sym, Predef.SmallestIntType (v), v)
+  END NewIntConst16;
 
 PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expression;
   VAR
@@ -1767,18 +1827,22 @@ PROCEDURE (op: SetOp) Accept* (v: Visitor);
 PROCEDURE InitSetRange (range: SetRange; sym: Symbol;
                         from, to : Expression);
   BEGIN
-    InitOperator (range, sym, from.type);
+    InitOperator (range, sym, Predef.GetType (Predef.set));
     range.from := from;
     range.to := to;
   END InitSetRange;
 
-PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to : Expression) : SetRange;
+PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to: Expression): Expression;
   VAR
     range: SetRange;
   BEGIN
-    NEW (range);
-    InitSetRange (range, sym, from, to);
-    RETURN range
+    IF (from = NIL) & (to = NIL) THEN  (* empty set *)
+      RETURN b. NewConst (sym, Predef.GetType (Predef.set), Set.New ({}));
+    ELSE
+      NEW (range);
+      InitSetRange (range, sym, from, to);
+      RETURN range
+    END;
   END NewSetRange;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitSetRange* (range: SetRange);
@@ -3226,6 +3290,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         ELSE
           delta := arguments[1];
         END;
+        IF (delta. type # arguments[0]. type) THEN
+          delta := NewTypeConv (arguments[0]. type, delta);
+        END;
         RETURN b. NewAssignOp (design. sym,
                                b. NewBinaryArith
                                (design. sym, arithAdd, arguments[0], delta));
@@ -3235,6 +3302,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
           delta := b. GetOne (design. sym, arguments[0]. type);
         ELSE
           delta := arguments[1];
+        END;
+        IF (delta. type # arguments[0]. type) THEN
+          delta := NewTypeConv (arguments[0]. type, delta);
         END;
         RETURN b. NewAssignOp (design. sym,
                                b. NewBinaryArith
@@ -3265,6 +3335,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         IF (value = NIL) THEN
           RETURN b. ErrExpr (noMinMax, arguments[0]. sym);
         ELSE
+          IF b. typeRules. IsSetType (type) THEN (* fix type for SET *)
+            type := Predef.GetType (Predef.shortint);
+          END;
           RETURN b. NewConst (arguments[0]. sym, type, value);
         END;
         
@@ -3281,6 +3354,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.shortint: targetType := Predef.integer;
         | Predef.integer : targetType := Predef.longint;
+        | Predef.longint : targetType := Predef.hugeint;
+        | Predef.real    : targetType := Predef.longreal;
         | Predef.char    : targetType := Predef.longchar;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
@@ -3289,6 +3364,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.integer: targetType := Predef.shortint;
         | Predef.longint: targetType := Predef.integer;
+        | Predef.hugeint: targetType := Predef.longint;
+        | Predef.longreal: targetType := Predef.real;
         | Predef.longchar: targetType := Predef.char;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
@@ -3361,6 +3438,8 @@ BEGIN
   IF tr.SameType(type, exprType) OR tr.IsExtensionOf(type, exprType) THEN
     (* same types *)
     result := expr
+  ELSIF IsPredefType (type, Predef.byte) & tr.IsByteCompatible (exprType) THEN
+    result := expr;
   ELSIF tr.IncludesType(type, exprType) THEN
     result := NewTypeConv(type, expr)
   ELSIF IsPredefType(exprType, Predef.charString) THEN
