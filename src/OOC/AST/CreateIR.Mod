@@ -704,7 +704,7 @@ PROCEDURE CreateIR* (module: AST.Module;
       
       WITH item: Sym.Array DO
         IF ~item. isOpenArray THEN
-          expr := Expr (item. lengthExpr);
+          expr := b.AssertConst(Expr(item.lengthExpr));
           IF (expr = b. errorExpr) THEN  (* error in array length *)
             item. SetLength(1);
           ELSE
