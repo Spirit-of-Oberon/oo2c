@@ -77,7 +77,8 @@ CONST
      The instruction has one mandatory result of class
      @oconst{*OOC:SSA:Result.store}.  If there @var{store} arguments are
      produced by @oconst{collect} statements, then there are additional
-     results, one for each collected value.
+     results, one for each collected value.  These results use the class
+     id @oconst{*OOC:SSA:Result.selectValue}.
 
      FIXME... still need more explanation.  *)
   collect* = 6;

@@ -770,6 +770,9 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     END MarkBackedges;
 
   PROCEDURE RemoveUnreachable (VAR b: Block);
+  (* Note: This procedure does not eliminate blocks that contain the end marker
+     of a block, like @oconst{Opcode.loopEnd} or @oconst{Opcode.selectReturn},
+     even if they are unreachable.  *)
     VAR
       d, i: LONGINT;
       j: Jump;
