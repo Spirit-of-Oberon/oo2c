@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; undef1">-->
+  select ="&SetupTestCasesWithOut; undef11">-->
 
   &TestSetupWithOut;
     
@@ -1301,10 +1301,63 @@
     </test>
   </testcases>
   
-  <!--<testcases profile="Tests for Warnings" default-lang="OOC O2">
+  <testcases profile="Tests for Warnings" default-lang="OOC O2">
     <test id="undef1" type="accept" file="Undef1.Mod">
+      Trivial example of reading an uninitialized scalar variable.
     </test>
-  </testcases>-->
+    <test id="undef2" type="accept" file="Undef2.Mod">
+      Previous assignment to record field should prevent warning.
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef3" type="accept" file="Undef3.Mod">
+      Variable is undefined on <code>TRUE</code> path through
+      <code>IF</code> statement.
+    </test>
+    <test id="undef4" type="accept" file="Undef4.Mod">
+      Variable is undefined on <code>TRUE</code> path through
+      <code>IF</code> statement.
+    </test>
+    <test id="undef5" type="accept" file="Undef5.Mod">
+      Assignment on both paths through <code>IF</code> should prevent
+      warning. 
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef6" type="accept" file="Undef6.Mod">
+      Variable is undefined for one <code>EXIT</code>.
+    </test>
+    <test id="undef7" type="accept" file="Undef7.Mod">
+      Assignment visible for all <code>EXIT</code> should prevent
+      warning. 
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef8" type="accept" file="Undef8.Mod">
+      Dereferencing an undefined pointer variable.
+    </test>
+    <test id="undef9" type="accept" file="Undef9.Mod">
+      Statements after <code>RETURN</code> are unreachable.
+    </test>
+    <test id="undef10" type="accept" file="Undef10.Mod">
+      Statements after <code>LOOP</code> without <code>EXIT</code> 
+      are unreachable.
+    </test>
+    <test id="undef11" type="accept" file="Undef11.Mod">
+      Statements after <code>EXIT</code> 
+      are unreachable.
+    </test>
+    <test id="undef12" type="accept" file="Undef12.Mod">
+      Control can reach end of function.
+    </test>
+    <test id="undef13" type="accept" file="Undef13.Mod">
+      Control can reach end of function.
+    </test>
+    <test id="undef14" type="accept" file="Undef14.Mod">
+      A <code>WITH</code> without an <code>ELSE</code> has no 
+      default path.
+    </test>
+  </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC O2">
     <test id="bugDestore1" type="accept" file="BugDestore1.Mod">
@@ -1702,7 +1755,27 @@
     <reject-info id="abstract9" pos="R1 = %RECORD"
         msg="Inherited procedure `Proc' is still abstract"/>
 
-    <!--<warning-info id="undef1" pos="x := %y;"
-        msg="Warning: Undefined variable"/>-->
+    <warning-info id="undef1" pos="x := %y;"
+        msg="Warning: Undefined variable"/>
+    <warning-info id="undef3" pos="RETURN %x;"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef4" pos="RETURN %x;"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef6" pos="RETURN %x;"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef8" pos="%p.a"
+        msg="Warning: Undefined variable"/>
+    <warning-info id="undef9" pos="%P()"
+        msg="Warning: Unreachable code"/>
+    <warning-info id="undef10" pos="%P()"
+        msg="Warning: Unreachable code"/>
+    <warning-info id="undef11" pos="%P()"
+        msg="Warning: Unreachable code"/>
+    <warning-info id="undef12" pos="%END Fct"
+        msg="Warning: Control may reach end of function procedure"/>
+    <warning-info id="undef13" pos="%END Fct"
+        msg="Warning: Control may reach end of function procedure"/>
+    <warning-info id="undef14" pos="%P()"
+        msg="Warning: Unreachable code"/>
   </processor-info>
 </testsuite-ext>

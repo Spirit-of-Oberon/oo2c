@@ -1,0 +1,19 @@
+MODULE Undef14;
+
+TYPE
+  R1 = RECORD END;
+  R2 = RECORD (R1) END;
+  
+PROCEDURE P();
+  BEGIN
+  END P;
+
+PROCEDURE Proc*(VAR x: R1): BOOLEAN;
+  BEGIN
+    WITH x: R2 DO
+      RETURN FALSE;
+    END;
+    P();
+  END Proc;
+
+END Undef14.
