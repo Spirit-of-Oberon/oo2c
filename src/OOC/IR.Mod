@@ -2587,6 +2587,7 @@ BEGIN
       InitTypeGuard(guard, design.sym, guardType, test(TypeTest));
 
       (* FIXME! Keep compiler happy until back-end handles type guard *)
+      design.type := guardType;
       RETURN design;    (* No-Op for now *)
 
       RETURN guard;
