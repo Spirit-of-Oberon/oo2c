@@ -477,5 +477,9 @@
       Imports the module <code>Files</code>.  No further tests.
     </test>
     
+    <test id="lib_ProgramArgs" type="run" file="LibProgramArgs.Mod">
+      Imports the module <code>ProgramArgs</code>.  No further tests.
+    </test>
+    
   </testcases>
 </testsuite-ext>

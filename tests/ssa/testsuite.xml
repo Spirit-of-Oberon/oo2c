@@ -118,6 +118,10 @@ opPointer1 opPointer2 opPointer3 opPointer4 opPointer5">-->
       Nested <code>REPEAT-UNTIL</code> loops.
     </test>
     
+    <test id="loop6" type="run" file="HOTLoop6.Mod">
+      Nested loops that triggered a bug in the SSA back-end.
+    </test>
+    
     <test id="case1" type="run" file="Case1.Mod" output="Case1.Ref">
       <code>CASE</code> statement using branches with one label, two
       labels, a range as a label, and an <code>ELSE</code> part.
