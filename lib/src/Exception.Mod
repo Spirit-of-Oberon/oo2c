@@ -73,12 +73,12 @@ IMPORT
    and the program is aborted.
 
    Within a @code{CATCH}, the optional name given in parenthesis refers to the
-   current exception that triggered the @code{CACTH}.  Its type is the one
-   from the @code{CATCH} clause.  The variable is read-only.
-   
-   An exception @var{E} must either be caught within a procedure, or the
-   procedure must declare that it may pass an exception of type @var{E} up to
-   its caller.  For example,
+   current exception that triggered the @code{CACTH}.  Its type is the one from
+   the @code{CATCH} clause.  The variable is read-only.
+
+   An exception @var{E} that is an extension of @otype{Checked} must either be
+   caught within a procedure, or the procedure must declare that it may pass an
+   exception of type @var{E} up to its caller.  For example,
 
    @example
    PROCEDURE P() RAISES E;
@@ -89,8 +89,12 @@ IMPORT
    or an extension thereof.
 
    Within the module body no exceptions can be passed up, because there is no
-   caller.  As a consequence, any exception that is not caught explicity is
-   written to @var{stderr} and aborts the program.
+   caller.  As a consequence, any checked exception that is not caught
+   explicity is written to @var{stderr} and aborts the program.
+
+   Exceptions derived from @otype{Unchecked} can always be raised, independent
+   of the context.  They do not need to be enclosed in a @code{TRY} statement,
+   nor are they required to be listed in a procedure's @code{RAISES} list.
 
    @emph{Note}: A @code{TRY} block is mapped to C's @samp{setjmp()} function by
    @code{oo2c}.  The amount of data stored by this function depends on the
@@ -105,14 +109,34 @@ CONST
   
 TYPE
   Exception* = POINTER TO ExceptionDesc;
-  ExceptionDesc* = RECORD
+  ExceptionDesc = RECORD [ABSTRACT]
   (**An exception describes an anomalous condition that makes it impossible to
      complete a given task.  It provides a short, human readable text
      describing the problem.  If supported, it also includes information on the
-     top few entries of the procedure call stack.  *)
+     top few entries of the procedure call stack.
+
+     This class is the common base type of all exceptions.  It cannot be
+     instanciated or extended directly.  Instead, use @otype{Checked} or
+     @otype{Unchecked}.  If the class appears in a @code{RAISES} list, it is
+     treated like a checked exception.  *)
     msg: STRING;
     backtrace: ARRAY maxBacktraceSize OF SYSTEM.PTR;
     backtraceSize: LONGINT;  (* -1 if backtrace() hasn't been called yet *)
+  END;
+  Checked* = POINTER TO CheckedDesc;
+  CheckedDesc* = RECORD
+  (**Exceptions of this kind must be explicitly dealt with, either by catching
+     them or declaring to pass them on.  The compiler enforces this
+     restriction.  *)
+    (ExceptionDesc)
+  END;
+  Unchecked* = POINTER TO UncheckedDesc;
+  UncheckedDesc* = RECORD [UNCHECKED_EXCEPTION]
+    (**Exceptions derived from this class can be raised anytime, without
+       restrictions.  In particular, they do not need to be declared in a
+       procedure's @code{RAISES} list if the procedure may raise such an
+       exception.  *)
+    (ExceptionDesc)
   END;
   ContextPtr = POINTER TO Context;
   Context* = RECORD [NO_DESCRIPTOR]

@@ -5,7 +5,7 @@ IMPORT
 
 TYPE
   One = POINTER TO OneDesc;
-  OneDesc = RECORD (Exception.ExceptionDesc) END;
+  OneDesc = RECORD (Exception.CheckedDesc) END;
   
 PROCEDURE NewException(): Exception.Exception;
   VAR

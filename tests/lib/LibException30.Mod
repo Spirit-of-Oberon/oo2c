@@ -6,7 +6,7 @@ IMPORT
 TYPE
   E* = POINTER TO EDesc;
   EDesc = RECORD
-    (Exception.ExceptionDesc)
+    (Exception.CheckedDesc)
     x: INTEGER;
   END;
 

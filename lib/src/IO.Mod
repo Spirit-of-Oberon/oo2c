@@ -132,7 +132,7 @@ TYPE
   Error* = POINTER TO ErrorDesc;
   ErrorDesc* = RECORD
   (**Base class of all I/O exceptions raised by channel implementations.  *)
-    (Exception.ExceptionDesc) 
+    (Exception.CheckedDesc) 
   END;
   FileNotFound* = POINTER TO FileNotFoundDesc;
   FileNotFoundDesc = RECORD

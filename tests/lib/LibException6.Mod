@@ -6,7 +6,7 @@ IMPORT
 PROCEDURE Test*();
   BEGIN
     TRY
-    CATCH Exception.ExceptionDesc:
+    CATCH Exception.CheckedDesc:
     END;
   END Test;
 

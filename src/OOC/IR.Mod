@@ -4577,40 +4577,46 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
       module: Sym.Module;
       raises: Sym.ExceptionNameArray;
     BEGIN
-      try := currentTry;
-      WHILE (try # NIL) DO
-        FOR i := 0 TO LEN(try.catchList^)-1 DO
-          IF TR.IsExtensionOf(try.catchList[i].exceptionType,
-                              exception) THEN
-            try.catchList[i].triggered := TRUE;
+      IF exception.IsCheckedException() THEN
+        (* skip checks unless the exception type is marked as a "checked"
+           exception *)
+        try := currentTry;
+        WHILE (try # NIL) DO
+          FOR i := 0 TO LEN(try.catchList^)-1 DO
+            IF TR.IsExtensionOf(try.catchList[i].exceptionType,
+                                exception) THEN
+              try.catchList[i].triggered := TRUE;
+            END;
+            IF TR.IsExtensionOf(exception,
+                                try.catchList[i].exceptionType) THEN
+              try.catchList[i].triggered := TRUE;
+              RETURN;
+            END;
           END;
-          IF TR.IsExtensionOf(exception,
-                              try.catchList[i].exceptionType) THEN
-            try.catchList[i].triggered := TRUE;
-            RETURN;
+          try := try.enclosingTry;
+        END;
+        
+        IF (procDecl # NIL) THEN
+          raises := procDecl.formalPars.raises;
+          FOR i := 0 TO LEN(raises^)-1 DO
+            IF TR.IsExtensionOf(exception, raises[i].type) THEN
+              RETURN;
+            END;
           END;
         END;
-        try := try.enclosingTry;
-      END;
-      
-      IF (procDecl # NIL) THEN
-        raises := procDecl.formalPars.raises;
-        FOR i := 0 TO LEN(raises^)-1 DO
-          IF TR.IsExtensionOf(exception, raises[i].type) THEN
-            RETURN;
-          END;
+        
+        IF (procDecl = NIL) OR
+           (procDecl.parent = NIL) THEN (* in module body *)
+          b.WarnSym(moduleUnhandledException, sym);
+        ELSE
+          b.ErrSym(unhandledException, sym);
         END;
+        module := exception.Module();
+        b.lastError.SetStringAttrib("module",
+                                    Msg.GetStringPtr(module.name.str^));
+        b.lastError.SetStringAttrib("name",
+                                    Msg.GetStringPtr(exception.namingDecl.name.str^));
       END;
-      
-      IF (procDecl = NIL) OR
-         (procDecl.parent = NIL) THEN (* in module body *)
-        b.WarnSym(moduleUnhandledException, sym);
-      ELSE
-        b.ErrSym(unhandledException, sym);
-      END;
-      module := exception.Module();
-      b.lastError.SetStringAttrib("module", Msg.GetStringPtr(module.name.str^));
-      b.lastError.SetStringAttrib("name", Msg.GetStringPtr(exception.namingDecl.name.str^));
     END CheckException;
   
   PROCEDURE CheckStatmSeq (statmSeq: StatementSeq);
@@ -4839,7 +4845,8 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           currentTry := statm.enclosingTry;
           DEC(enclosingTry);
           FOR i := 0 TO LEN(statm.catchList^)-1 DO
-            IF ~statm.catchList[i].triggered THEN
+            IF statm.catchList[i].exceptionType.IsCheckedException() &
+               ~statm.catchList[i].triggered THEN
               b.WarnSym(untriggeredCatch, statm.catchList[i].sym);
             END;
             CheckStatmSeq(statm.catchList[i].statmSeq);

@@ -6,13 +6,13 @@ IMPORT
 TYPE
   E* = POINTER TO EDesc;
   EDesc = RECORD
-    (Exception.ExceptionDesc) 
+    (Exception.CheckedDesc) 
   END;
   
 PROCEDURE Test*() RAISES Exception.Exception;
   PROCEDURE P() RAISES Exception.Exception;
     VAR
-      e: Exception.Exception;
+      e: Exception.Checked;
     BEGIN
       NEW(e);
       e.INIT("Some other exception");

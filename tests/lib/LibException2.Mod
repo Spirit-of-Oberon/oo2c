@@ -5,11 +5,11 @@ IMPORT
 
 TYPE
   One = POINTER TO OneDesc;
-  OneDesc = RECORD (Exception.ExceptionDesc) END;
+  OneDesc = RECORD (Exception.CheckedDesc) END;
   Two = POINTER TO TwoDesc;
-  TwoDesc = RECORD (Exception.ExceptionDesc) END;
+  TwoDesc = RECORD (Exception.CheckedDesc) END;
   Three = POINTER TO ThreeDesc;
-  ThreeDesc = RECORD (Exception.ExceptionDesc) END;
+  ThreeDesc = RECORD (Exception.CheckedDesc) END;
   
 PROCEDURE NewException(x: SHORTINT): Exception.Exception;
   VAR

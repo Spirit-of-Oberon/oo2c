@@ -1,8 +1,8 @@
 MODULE LibException17;
 
 TYPE
-  Exception* = POINTER TO ExceptionDesc;
-  ExceptionDesc = RECORD
+  Exception* = POINTER TO CheckedDesc;
+  CheckedDesc = RECORD
   END;
 
 PROCEDURE P() RAISES Exception;

@@ -1280,6 +1280,8 @@ RAISES IO.Error;
                 SetFlag(item.isExtensible, FALSE);
               | Sym.flagExtensible:
                 SetFlag(item.isExtensible, TRUE);
+              | Sym.flagUncheckedException:
+                SetFlag(item.isUncheckedException, TRUE);
               | Sym.flagVtable:
                 SetFlag(item.isVtable, TRUE);
               | Sym.flagUnion:
@@ -1371,6 +1373,13 @@ RAISES IO.Error;
             item.isStatic := TRUE;
           END;
 
+        | item: Sym.Record DO
+          IF (item.baseType # NIL) &
+             (item.baseType IS Sym.Record) &
+             item.baseType(Sym.Record).isUncheckedException THEN
+            item.isUncheckedException := TRUE;
+          END;
+          
         | item: Sym.VarDecl DO
           IF item.isParameter THEN
             type := item.type;

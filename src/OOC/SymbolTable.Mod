@@ -105,12 +105,12 @@ CONST
   (**This flag is disabled, because it causes a deref of NIL in
      @omodule{*OOC:SymbolTable:InterfaceDescr} due to an unset
      @ofield{Record.className}.  *)
-
   flagAlign1* = 13;
   flagAlign2* = 14;
   flagAlign4* = 15;
   flagAlign8* = 16;
   flagVtable* = 17;
+  flagUncheckedException* = 18;
 
 CONST
   libTypeStandard* = 0;
@@ -677,6 +677,10 @@ TYPE
     (**If @code{TRUE}, then this type can serve as a base type for other
        records.  Default is @code{TRUE} for non-
        @code{INTERFACE} modules.  *)
+    isUncheckedException*: BOOLEAN;
+    (**If @code{TRUE}, then this record represents an unchecked exception.  The
+       default is checked, that is, @code{FALSE}.  This applies to
+       @otype{*Exception.Exception}.  *)
     isVtable*: BOOLEAN;
     (**If @code{TRUE}, then this type has a C++ virtual method table. *)
     fieldAlign* : INTEGER;
@@ -1326,6 +1330,8 @@ PROCEDURE (item: Item) AddFlag* (name: Name);
       id := flagNotExtensible;
     (*ELSIF (name.str^ = "EXTENSIBLE") THEN
       id := flagExtensible;*)
+    ELSIF (name.str^ = "UNCHECKED_EXCEPTION") THEN
+      id := flagUncheckedException;
     ELSIF (name.str^ = "CSTRING") THEN
       id := flagCString;
     ELSIF (name.str^ = "NIL_COMPAT") THEN
@@ -1456,6 +1462,19 @@ PROCEDURE (type: Type) PreciousTypePars*(): BOOLEAN;
   BEGIN
     RETURN (type.typePars # NIL) & (type.typePars.nestedItems # NIL);
   END PreciousTypePars;
+
+PROCEDURE (type: Type) IsCheckedException*(): BOOLEAN;
+  VAR
+    ptr: Type;
+  BEGIN
+    IF (type IS Pointer) THEN
+      ptr := type.Deparam();
+      ptr := ptr(Pointer).baseType.Deparam();
+      RETURN ~(ptr IS Record) OR ~ptr(Record).isUncheckedException;
+    ELSE
+      RETURN TRUE;
+    END;
+  END IsCheckedException;
 
 PROCEDURE (type: Type) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
@@ -2396,6 +2415,7 @@ PROCEDURE InitRecord* (record: Record; parent: Item; position: Position;
     record. isUnion := FALSE;
     record. isAbstract := FALSE;
     record. isExtensible := TRUE;
+    record. isUncheckedException := FALSE;
     record. isVtable := FALSE;
     record. fieldAlign := 0;
     record. className := NIL
@@ -2409,6 +2429,7 @@ PROCEDURE (record: Record) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteBool (record. isUnion);
     w. WriteBool (record. isAbstract);
     w. WriteBool (record. isExtensible);
+    w. WriteBool (record. isUncheckedException);
     w. WriteBool (record. isVtable);
     w. WriteInt (record. fieldAlign);
     w. WriteObject (record. className);
@@ -2426,6 +2447,7 @@ PROCEDURE (record: Record) Load* (r: Storable.Reader) RAISES IO.Error;
     r. ReadBool (record. isUnion);
     r. ReadBool (record. isAbstract);
     r. ReadBool (record. isExtensible);
+    r. ReadBool (record. isUncheckedException);
     r. ReadBool (record. isVtable);
     r. ReadInt (record. fieldAlign);
     r. ReadObject (obj);

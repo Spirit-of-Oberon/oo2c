@@ -13,7 +13,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_Exception33">-->
+  select ="prepare_out_module lib_rt1 lib_Exception34 lib_Exception35 lib_Exception36 lib_Exception37">-->
   
   &TestSetupWithOut;
   
@@ -685,6 +685,24 @@
       If a @code{TRY} is used within a @code{CATCH} block, than
       restore the current exception after the nested @code{TRY}.
     </test>
+    <test id="lib_Exception34" type="accept" file="LibException34.Mod">
+      Raising an unchecked exception is possible without a
+      surrounding <code>TRY</code> or a <code>RAISES</code>
+      declaration.
+    </test>
+    <test id="lib_Exception35" type="accept" file="LibException35.Mod">
+      Unchecked exceptions in a procedure's <code>RAISES</code> list
+      are ignored when calling the procedure.
+    </test>
+    <test id="lib_Exception36" type="accept" file="LibException36.Mod">
+      There is no warning for <code>CATCH</code> clauses on
+      unchecked exceptions if the <code>TRY</code> block contains no
+      code that may raise it.
+    </test>
+    <test id="lib_Exception37" type="reject" file="LibException37.Mod">
+      All exceptions derived from <code>Exception.Checked</code>
+      inherit the "checked" property.
+    </test>
     
     <test id="lib_BigInt1" type="run" file="LibBigInt1.Mod">
       Tests most of the functions of the <code>BigInt</code>
@@ -703,7 +721,7 @@
     <reject-info id="lib_STRING2" pos="Write(%&quot;abc"
       msg="This must be a variable"/>
 
-    <reject-info id="lib_Exception6" pos="CATCH Exception.%ExceptionDesc:"
+    <reject-info id="lib_Exception6" pos="CATCH Exception.%CheckedDesc:"
       msg="Type is not an extension of `Exception.Exception'"/>
     <reject-info id="lib_Exception7" pos="CATCH %e:"
       msg="Type name expected"/>
@@ -725,5 +743,7 @@
       msg="This must be a variable"/>
     <reject-info id="lib_Exception32" pos="e := %EXCEPTION"
       msg="Undeclared identifier"/>
+    <reject-info id="lib_Exception37" pos="%RAISE"
+      msg="Exception `LibException37.E' neither caught nor passed up"/>
   </processor-info>
 </testsuite-ext>

@@ -6,11 +6,11 @@ IMPORT
 TYPE
   E* = POINTER TO EDesc;
   EDesc = RECORD
-    (Exception.ExceptionDesc)
+    (Exception.CheckedDesc)
   END;
   F* = POINTER TO FDesc;
   FDesc = RECORD
-    (Exception.ExceptionDesc)
+    (Exception.CheckedDesc)
   END;
   
 PROCEDURE NewException(): E;
