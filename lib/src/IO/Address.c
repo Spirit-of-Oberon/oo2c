@@ -10,6 +10,9 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#ifdef HAVE_INTTYPES_H
+#  include <inttypes.h>
+#endif
 #endif
 #include <string.h>
 #ifdef HAVE_STDINT_H
