@@ -105,7 +105,7 @@ PROCEDURE (enc: Encoder) SetKey* (key: String.String8);
     TwofishC.Twofish_prepare_key(c^, len, enc.xkey);
   END SetKey;
 
-PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
+PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
                                       start, end: LONGINT;
                                       b: String.Buffer);
   CONST
@@ -160,14 +160,14 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
                    end-start);
     END;
     dec.incompleteSize := end-start;
-  END DecodeIncr;
+  END Decode;
 
 PROCEDURE (dec: Decoder) Reset*;
   BEGIN
     dec. incompleteSize := 0;
   END Reset;
 
-PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
+PROCEDURE (enc: Encoder) Encode*(s: String.String;
                                      start, end: LONGINT;
                                      b: String.Buffer);
   CONST
@@ -224,7 +224,7 @@ PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
                    end-start);
     END;
     enc.incompleteSize := end-start;
-  END EncodeIncr;
+  END Encode;
 
 PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
   VAR

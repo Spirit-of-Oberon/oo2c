@@ -77,7 +77,7 @@ PROCEDURE (dec: Decoder) Start*;
              "inflateInit_");
   END Start;
 
-PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
+PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
                                       start, end: LONGINT;
                                       b: String.Buffer);
   VAR
@@ -99,7 +99,7 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
         b.AppendLatin1Region (d, 0, sizeBuffer-dec.strm.avail_out);
       END;
     END;
-  END DecodeIncr;
+  END Decode;
 
 PROCEDURE (dec: Decoder) End*;
   BEGIN
@@ -131,7 +131,7 @@ PROCEDURE (enc: Encoder) Start*;
              "deflateInit_");
   END Start;
 
-PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
+PROCEDURE (enc: Encoder) Encode*(s: String.String;
                                      start, end: LONGINT;
                                      b: String.Buffer);
   VAR
@@ -148,7 +148,7 @@ PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
       CheckErr(zlib.deflate(enc.strm, zlib.Z_NO_FLUSH), "deflate/NO_FLUSH");
       b.AppendLatin1Region (d, 0, sizeBuffer-enc.strm.avail_out);
     END;
-  END EncodeIncr;
+  END Encode;
 
 PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
   VAR

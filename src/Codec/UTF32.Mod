@@ -74,7 +74,7 @@ PROCEDURE (c: UTF32) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
     RETURN String.NewUTF32Region(d^, 0, LEN(d^));
   END DecodeRegion;
 
-PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
+PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
                                            start, end: LONGINT;
                                            b: String.Buffer);
   VAR
@@ -107,7 +107,7 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
                     SYSTEM.ADR(dec.incomplete), dec. incompleteSize);
       END;
     END;
-  END DecodeIncr;
+  END Decode;
   
 PROCEDURE (dec: Decoder) Reset*;
   BEGIN
@@ -144,7 +144,7 @@ PROCEDURE (c: UTF32) EncodeRegion*(s: String.String;
     RETURN String.NewLatin1Region(e^, 0, LEN(e^));
   END EncodeRegion;
 
-PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
+PROCEDURE (enc: Encoder) Encode*(s: String.String;
                                           start, end: LONGINT;
                                           b: String.Buffer);
   VAR
@@ -177,7 +177,7 @@ PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
         INC (start, len);
       END;
     END;
-  END EncodeIncr;
+  END Encode;
 
 PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
   END Closure;

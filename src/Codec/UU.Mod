@@ -230,7 +230,7 @@ PROCEDURE LineEnd* (data[NO_COPY]: ARRAY OF CHAR;
     END;
   END LineEnd;
 
-PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
+PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
                                       start, end: LONGINT;
                                       b: String.Buffer);
   CONST
@@ -248,7 +248,7 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
                      SYSTEM.ADR(dec.incompleteData[dec.incompleteSize]),
                      len);
         dec.incompleteSize := 0;        (* break recursion *)
-        dec.DecodeIncr (dec.incompleteData, 0, dec.incompleteLength, b);
+        dec.Decode (dec.incompleteData, 0, dec.incompleteLength, b);
         INC (start, len);
       ELSE
         (* still not enough data: add more data to buffer and exit *)
@@ -308,7 +308,7 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
       END;
     END;
     b.AppendLatin1Region (d, 0, dpos);
-  END DecodeIncr;
+  END Decode;
 
 PROCEDURE (dec: Decoder) Reset*;
   BEGIN
@@ -348,7 +348,7 @@ PROCEDURE EncodeLine (data[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
     INC (opos);
   END EncodeLine;
 
-PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
+PROCEDURE (enc: Encoder) Encode*(s: String.String;
                                      start, end: LONGINT;
                                      b: String.Buffer);
   CONST
@@ -400,7 +400,7 @@ PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
                    end-start);
     END;
     enc.incompleteSize := end-start;
-  END EncodeIncr;
+  END Encode;
 
 PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
   VAR

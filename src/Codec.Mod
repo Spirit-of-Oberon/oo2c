@@ -125,7 +125,7 @@ PROCEDURE InitDecoder* (dec: Decoder);
 
 PROCEDURE (dec: Decoder) Start*;
 (**Allocates and initializes all resources required for the decoder instance.
-   This method must be called once before @oproc{dec.DecodeIncr}.  The default
+   This method must be called once before @oproc{dec.Decode}.  The default
    implementation is a no-op.
 
    The amount of memory allocated in this step differs significantly across the
@@ -134,9 +134,9 @@ PROCEDURE (dec: Decoder) Start*;
    several hundreds of KBytes.  *)
   END Start;
 
-PROCEDURE (dec: Decoder) [ABSTRACT] DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
-                                                 start, end: LONGINT;
-                                                 b: String0.Buffer);
+PROCEDURE (dec: Decoder) [ABSTRACT] Decode* (data[NO_COPY]: ARRAY OF CHAR;
+                                             start, end: LONGINT;
+                                             b: String0.Buffer);
 (**Decode the 8-bit character sequence in @samp{data[start, end-1]} starting
    with the decoder state @oparam{dec}.  The result is appended to the string
    buffer @oparam{b}.  On completion, @oparam{state} is updated to reflect the
@@ -146,7 +146,7 @@ PROCEDURE (dec: Decoder) [ABSTRACT] DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
    @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{data})}.
    @oproc{dec.Start} has been called.
    @end precond  *)
-  END DecodeIncr;
+  END Decode;
 
 PROCEDURE (dec: Decoder) Reset*;
 (**Resets the decoder's state to that created by the initial @oproc{dec.Start}.
@@ -168,7 +168,7 @@ PROCEDURE InitEncoder* (enc: Encoder);
 
 PROCEDURE (enc: Encoder) Start*;
 (**Allocates and initializes all resources required for the encoder instance.
-   This method must be called once before @oproc{enc.EncodeIncr}.  The default
+   This method must be called once before @oproc{enc.Encode}.  The default
    implementation is a no-op.
 
    The amount of memory allocated in this step differs significantly across the
@@ -177,9 +177,9 @@ PROCEDURE (enc: Encoder) Start*;
    several MBytes of memory.  *)
   END Start;
 
-PROCEDURE (enc: Encoder) [ABSTRACT] EncodeIncr*(s: String0.String;
-                                                start, end: LONGINT;
-                                                b: String0.Buffer);
+PROCEDURE (enc: Encoder) [ABSTRACT] Encode*(s: String0.String;
+                                            start, end: LONGINT;
+                                            b: String0.Buffer);
 (**Encode the 8-bit character sequence in @samp{s[start, end-1]} starting with
    the encoder state @oparam{enc}.  The result is a string holding only code
    points in the range @samp{[U+0000, U+00FF]}, which is appended to the string
@@ -192,11 +192,11 @@ PROCEDURE (enc: Encoder) [ABSTRACT] EncodeIncr*(s: String0.String;
    end-1]} are valid.  That is, neither is out of range nor from the surrogate
    areas.
    @end precond  *)
-  END EncodeIncr;
+  END Encode;
 
 PROCEDURE (enc: Encoder) [ABSTRACT] Closure*(b: String0.Buffer);
 (**If the encoder still holds any partial data from previous calls to
-   @oproc{enc.EncodeIncr}, then flush this data to the buffer @oparam{b}.  This
+   @oproc{enc.Encode}, then flush this data to the buffer @oparam{b}.  This
    method must be called at the end of the data stream for codecs that operate
    on blocks of data, and for which the last and possibly incomplete block must
    be handled specially.  *)
@@ -253,7 +253,7 @@ PROCEDURE (codec: Codec) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
     dec := codec. NewDecoder();
     b := String0.NewBuffer(end-start);
     dec. Start;
-    dec. DecodeIncr (data, start, end, b);
+    dec. Decode (data, start, end, b);
     dec. End;
     RETURN b. ToString();
   END DecodeRegion;
@@ -289,7 +289,7 @@ PROCEDURE (codec: Codec) EncodeRegion*(s: String0.String;
     enc := codec. NewEncoder();
     b := String0.NewBuffer (end-start);
     enc. Start;
-    enc. EncodeIncr (s, start, end, b);
+    enc. Encode (s, start, end, b);
     enc. End;
     s8 := b. ToString();
     RETURN s8(String0.String8);

@@ -53,12 +53,12 @@ PROCEDURE (c: Latin1) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
     RETURN String.NewLatin1Region(data, start, end);
   END DecodeRegion;
 
-PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
+PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
                                             start, end: LONGINT;
                                             b: String.Buffer);
   BEGIN
     b. AppendLatin1Region (data, start, end);
-  END DecodeIncr;
+  END Decode;
   
 PROCEDURE (c: Latin1) EncodeRegion*(s: String.String;
                                     start, end: LONGINT): String.String8;
@@ -87,7 +87,7 @@ PROCEDURE (c: Latin1) EncodeRegion*(s: String.String;
     END;
   END EncodeRegion;
 
-PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
+PROCEDURE (enc: Encoder) Encode*(s: String.String;
                                            start, end: LONGINT;
                                            b: String.Buffer);
   VAR
@@ -115,7 +115,7 @@ PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
       END;
       b. AppendLatin1Region (d, 0, i);
     END;
-  END EncodeIncr;
+  END Encode;
 
 PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
   END Closure;

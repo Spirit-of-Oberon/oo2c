@@ -75,7 +75,7 @@ PROCEDURE ProcessDataUU (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
       END;
     END;
 
-    decoder. DecodeIncr (data, startOfData, endOfData, outputBuffer);
+    decoder. Decode (data, startOfData, endOfData, outputBuffer);
 
     IF (outputBuffer. length >= sizeBuffer DIV 2) THEN
       chars := outputBuffer.CharsLatin1();
@@ -176,7 +176,7 @@ PROCEDURE Encode (enc: Codec.Encoder; r: Channel.Reader; w: Channel.Writer);
         EXIT;
       ELSE
         s := String.NewLatin1Region (d, 0, r.bytesRead);
-        enc.EncodeIncr (s, 0, r.bytesRead, b);
+        enc.Encode (s, 0, r.bytesRead, b);
         
         c := b.CharsLatin1();
         w.WriteBytes(c^, 0, b.length);
@@ -202,7 +202,7 @@ PROCEDURE Decode (dec: Codec.Decoder; r: Channel.Reader; w: Channel.Writer);
         EXIT;
       ELSE
         s := String.NewLatin1Region (d, 0, r.bytesRead);
-        dec.DecodeIncr (d, 0, r.bytesRead, b);
+        dec.Decode (d, 0, r.bytesRead, b);
         
         c := b.CharsLatin1();
         w.WriteBytes(c^, 0, b.length);
