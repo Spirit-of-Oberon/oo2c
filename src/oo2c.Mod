@@ -37,6 +37,8 @@ CONST
   updateRepository = -4;
   getOption = -5;
   buildPackageDoc = -6;
+  packageInstalled = -7;
+  listPackages     = -8;
   
 VAR
   cfgErrList, errList: Error.List;
@@ -47,6 +49,7 @@ VAR
       errorStyle, showHelp, showVersion: Options.Option;
   makeRules: Make.Rules;
   rep: Rep.Repository;
+  r: Package.Repository;
   pkg, pkgInfo: Package.Package;
   ok, forceUpdateRepository, doInstall: BOOLEAN;
   option: Options.Option;
@@ -80,6 +83,10 @@ PROCEDURE NewConfig;
                        "<options><set name='command'>6</set></options>");
     Config.AddCmdLine ("--build-pkg-doc",
                        "<options><set name='command'>7</set></options>");
+    Config.AddCmdLine ("--package-installed",
+                       "<options><set name='command'>8</set></options>");
+    Config.AddCmdLine ("--list-packages",
+                       "<options><set name='command'>9</set></options>");
 
     Config.AddCmdLine ("-h,--help",
                        "<options><set name='showHelp'>TRUE</set></options>");
@@ -543,6 +550,8 @@ PROCEDURE WriteHelp();
     Out.String("  oo2c --install-package [options] <package>"); Out.Ln;
     Out.String("  oo2c --uninstall-package [options] <package>"); Out.Ln;
     Out.String("  oo2c --build-pkg-doc [options] <package>"); Out.Ln;
+    Out.String("  oo2c --installed-package [options] <package>"); Out.Ln;
+    Out.String("  oo2c --list-packages [options]"); Out.Ln;
     Out.String("Options:"); Out.Ln;
     Out.String("  --config <file>"); Out.Ln;
     Out.String("  --repository <directory>, -r <directory>"); Out.Ln;
@@ -589,6 +598,10 @@ BEGIN  <*Warnings:=FALSE*>
     mode := getOption; Logger.silence := TRUE;
   | 7:
     mode := buildPackageDoc;
+  | 8:
+    mode := packageInstalled; Logger.silence := TRUE;
+  | 9:
+    mode := listPackages; Logger.silence := TRUE;
   END;
   IF (errorStyle.value(StringValue.Value).string^ = "file:line:column") THEN
     Error.style := Error.styleFileLineColumn;
@@ -608,7 +621,8 @@ BEGIN  <*Warnings:=FALSE*>
     HALT(0);
   ELSIF showHelp.value(Boolean.Value).boolean THEN
     WriteHelp;
-  ELSIF (mode = updateRepository) # (Config.arguments. ArgNumber() = 0) THEN
+  ELSIF ((mode = updateRepository) OR (mode = listPackages))
+    # (Config.arguments. ArgNumber() = 0) THEN
     WriteHelp;
     HALT (1)
   ELSE
@@ -616,6 +630,15 @@ BEGIN  <*Warnings:=FALSE*>
 
     IF (mode = updateRepository) THEN
       ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string^);
+
+    ELSIF (mode = listPackages) THEN
+
+      r:=Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string^,errList);
+      errList.Write(StdChannels.stderr);
+      FOR i := 0 TO r.installedPkgs.size-1 DO
+        Out.Object(r.installedPkgs.array[i]); Out.Ln;
+      END;
+
     ELSE
       IF ~Package.ParseMetaData(Config.options, Config.pragmas) THEN
         HALT(1);
@@ -681,6 +704,12 @@ BEGIN  <*Warnings:=FALSE*>
             ok := BuildPackageDoc(pkg);
           END;
           
+        | packageInstalled:
+          pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
+          IF (pkg = NIL) THEN
+            HALT(1);
+          END;
+
         ELSE
           module := GetModule(Object.NewLatin1(arg^));
           IF (mode = Rep.modCodeFileC) THEN
