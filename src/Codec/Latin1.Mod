@@ -24,27 +24,19 @@ VAR
 (* Codec: Latin1
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitLatin1 (c: Latin1; preferredName: ARRAY OF CHAR);
+PROCEDURE (c: Latin1) INIT*(preferredName: ARRAY OF CHAR);
   BEGIN
-    Codec.InitCodec (c, Codec.unicode, preferredName);
-  END InitLatin1;
+    c.INIT^(Codec.unicode, preferredName);
+  END INIT;
 
 PROCEDURE (c: Latin1) NewDecoder*(): Decoder;
-  VAR
-    dec: Decoder;
   BEGIN
-    NEW (dec);
-    Codec.InitDecoder (dec);
-    RETURN dec;
+    RETURN NEW(Decoder);
   END NewDecoder;
 
 PROCEDURE (c: Latin1) NewEncoder*(): Encoder;
-  VAR
-    enc: Encoder;
   BEGIN
-    NEW (enc);
-    Codec.InitEncoder (enc);
-    RETURN enc;
+    RETURN NEW(Encoder, Codec.exceptionEncoder);
   END NewEncoder;
 
 PROCEDURE (c: Latin1) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
@@ -96,27 +88,35 @@ PROCEDURE (enc: Encoder) EncodeLatin1*(s[NO_COPY]: ARRAY OF CHAR;
 
 PROCEDURE (enc: Encoder) EncodeUTF16*(s[NO_COPY]: ARRAY OF LONGCHAR;
                                       start, end: LONGINT;
-                                      b: StringBuffer.StringBuffer);
+                                      b: StringBuffer.StringBuffer)
+RAISES Codec.EncodingError;
   VAR
     d: Codec.BufferLatin1;
     i: LONGINT;
   BEGIN
-    i := 0;
     WHILE (start # end) DO
-      ASSERT (s[start] <= MAX(CHAR), Codec.invalidChar);
-      d[i] := SHORT(s[start]);
-      INC (start); INC (i);
+      i := 0;
+      WHILE (start # end) & (s[start] < 100X) DO
+        d[i] := SHORT(s[start]);
+        INC(start);INC (i);
+        
+        IF (i = LEN(d)) THEN
+          b.AppendLatin1Region(d, 0, i);
+          i := 0;
+        END;
+      END;
+      b.AppendLatin1Region(d, 0, i);
       
-      IF (i = LEN (d)) THEN
-        b. AppendLatin1Region (d, 0, i);
-        i := 0;
+      IF (start # end) THEN
+        i := start;
+        REPEAT
+          INC(i);
+        UNTIL (i = end) OR (s[i] < 100X);
+        Codec.EscapeUTF16(enc, s, start, i, b);
+        start := i;
       END;
     END;
-    b. AppendLatin1Region (d, 0, i);
   END EncodeUTF16;
-
-PROCEDURE (enc: Encoder) Closure*(b: StringBuffer.StringBuffer);
-  END Closure;
 
 PROCEDURE Register*;
   BEGIN
@@ -132,6 +132,5 @@ PROCEDURE Register*;
   END Register;
 
 BEGIN
-  NEW (codec);
-  InitLatin1 (codec, "ISO-8859-1");
+  codec := NEW(Latin1, "ISO-8859-1");
 END Codec:Latin1.
