@@ -21,8 +21,7 @@ MODULE OOC:Make:Command:TranslateToC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Log,
-  Channel, Make, StdChannels, ADT:String, ADT:Dictionary, 
+  Channel, Out, Make, StdChannels, ADT:String, ADT:Dictionary, 
   OOC:Config, OOC:Make:Entity:ModuleFile,
   OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
@@ -345,7 +344,8 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
   
   BEGIN
     m := cmd. module;
-    Log.String ("module", m. name^);
+    Out.String ("module: "); Out.String(m. name^); Out.Ln; Out.Flush;
+    
     ParseModule.ParseModule (m, TRUE, TRUE, FALSE,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
