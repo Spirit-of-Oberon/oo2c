@@ -1,14 +1,15 @@
 MODULE OOC:Auxiliary:ParseModule;
 
 IMPORT
-  Channel, Files, Msg, URI, OOC:Auxiliary:Config, OOC:Repository,
+  Channel, Files, Msg, URI, 
+  OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,
   OOC:Parser, OOC:AST, OOC:AST:ExtTree,
   OOC:SymbolTable:Item, OOC:SymbolTable:Builder,
   OOC:AST:ExtTree:CreateSymTab, OOC:SymbolTable:CreateNamespace,
-  OOC:SymbolTable:Exports, OOC:Doc:ResolveRef;
+  OOC:SymbolTable:Exports;
   
 
 
@@ -16,6 +17,7 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
                         createNamespace, writeSymbolFile: BOOLEAN;
                         VAR ast: AST.Node;
                         VAR symTab: Item.Module;
+                        VAR pragmaHistory: Pragmas.History;
                         VAR errList: Error.List);
 (**If this function is called multiple times for the same module while
    evaluating a build command, only on of these calls should pass @code{TRUE}
@@ -36,6 +38,7 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
     IF (inputBuffer = NIL) THEN
       ast := NIL;
       symTab := NIL;
+      pragmaHistory := NIL;
       uri := m. GetURI (Repository.modModuleSource);
       uri. GetString (uriStr);
       errList := Error.NewList (uriStr);
@@ -45,6 +48,7 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
       scannerBuilder := BasicList.New (inputBuffer, TRUE);
       Scanner.ScanInput (scannerBuilder, config. pragmas, Scanner.enableAll);
       inputBuffer. Close;
+      pragmaHistory := scannerBuilder. pragmaHistory;
       
       ast := NIL;
       IF (errList. msgCount = 0) THEN
