@@ -1,6 +1,6 @@
 ;;; oberon2.el --- major mode for Oberon-2 editing and compilation
 
-;; Copyright (C) 1995-2001  Michael van Acken  <acken@informatik.uni-kl.de>
+;; Copyright (C) 1995-2002  Michael van Acken  <acken@informatik.uni-kl.de>
 ;; 
 ;; Version: 1.16, requires Emacs 19.28
 ;; You can ignore the "free variable o2-source-for-errors" errors when 
@@ -1036,7 +1036,6 @@ With argument, move up ARG levels."
     (if (and extension
 	     (not (string-match "\\.\\w+" file-name)))
 	(setq file-name (concat file-name "." extension)))
-    ;(setq file-name (o2-module-to-file file-name 'no-mod))
     (set-buffer (get-buffer-create "*command execution*"))
     (erase-buffer)
     (o2-execute-command (concat o2-whereis-command file-name))
@@ -1513,7 +1512,7 @@ given."
     (save-match-data
      (goto-char (point-min))
      (if (re-search-forward "MODULE\\s-+\\([a-zA-Z0-9_:]+\\)" nil t)
-	 (o2-module-to-file (match-string 1))
+	 (match-string 1)
        (file-name-nondirectory (buffer-file-name))))))
 
 (defun o2-compile (module &optional compile-command)
