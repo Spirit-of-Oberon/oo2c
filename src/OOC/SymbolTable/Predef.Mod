@@ -120,6 +120,11 @@ CONST
   move* = 24;                            (* SYSTEM.MOVE *)
   rot* = 25;                             (* SYSTEM.ROT *)
   val* = 26;                             (* SYSTEM.VAL *)
+
+CONST
+  minExitCode* = 0;
+  maxExitCode* = 127+1;
+  defaultAssertCode* = 127;
   
 VAR
   nameStringModule-, nameStringType-: Sym.Name;
