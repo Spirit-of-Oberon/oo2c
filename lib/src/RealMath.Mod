@@ -24,8 +24,8 @@ MODULE RealMath [INTERFACE "C"; LINK LIB "m" END];
    with some C level type cast trickery, which prevent them from being
    used in a procedure variable, but should work fine otherwise.  *)
 
-IMPORT
-  LRealMath;
+IMPORT  <*Warnings:=FALSE*>
+  LRealMath;  (* unused but mandatory *)
 
 CONST
   pi*   = 3.1415926535897932384626433832795028841972E0;
