@@ -17,7 +17,10 @@ CONST
 VAR
   keywords: Dictionary.Dictionary;
   (* maps C/C++ keywords to a safer counterpart *)
-  
+  prefix: String.String;
+  (* prefix string used to mangle reserved names *)
+    
+
 PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
   VAR
     relativeId: Sym.NameString;
@@ -27,6 +30,24 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
     relativeName: BOOLEAN;
     name: String.String;
     obj: Object.Object;
+
+  PROCEDURE IsReservedName (VAR str: ARRAY OF CHAR): BOOLEAN;
+  (* The names "^[ilr]\d+$" are used by the SSA based C back-end for
+     local variables.  *)
+    VAR
+      i: LONGINT;
+    BEGIN
+      IF (str[0] = "i") OR (str[0] = "l") OR (str[0] = "r") THEN
+        i := 1;
+        WHILE ("0" <= str[i]) & (str[i] <= "9") DO
+          INC (i)
+        END;
+        RETURN (i > 1) & (str[i] = 0X);
+      ELSE
+        RETURN FALSE;
+      END;
+    END IsReservedName;
+  
   BEGIN
     relativeName := FALSE;
     
@@ -76,6 +97,8 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
     IF keywords. HasKey (name) THEN
       obj := keywords. Get (name);
       RETURN obj(String.String);
+    ELSIF IsReservedName (str) THEN
+      RETURN prefix. Concat (name);
     ELSE
       RETURN name;
     END;
@@ -176,9 +199,6 @@ PROCEDURE NameOfTypeBoundSignature* (proc: Sym.ProcDecl): String.String;
   END NameOfTypeBoundSignature;
 
 PROCEDURE Init ();
-  VAR
-    prefix: String.String;
-    
   PROCEDURE RW (str: ARRAY OF CHAR);
     VAR
       name: String.String;
