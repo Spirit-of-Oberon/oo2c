@@ -43,7 +43,7 @@ VAR
   i: LONGINT;
   arg: Arguments.Argument;
   mode: SHORTINT;
-  command, useStderr, writeStats,
+  command, forceUpdate, useStderr, writeStats,
       errorStyle, showHelp, showVersion: Options.Option;
   makeRules: Make.Rules;
   rep: Rep.Repository;
@@ -55,6 +55,7 @@ VAR
 PROCEDURE NewConfig;
   BEGIN
     command := Config.AddOption("command", Integer.New(0));
+    forceUpdate := Config.AddOption("forceUpdate", Boolean.New(FALSE));
     useStderr := Config.AddOption("useStderr", Boolean.New(FALSE));
     writeStats := Config.AddOption("writeStats", Boolean.New(FALSE));
     errorStyle := Config.AddOption("errorStyle",
@@ -96,6 +97,8 @@ PROCEDURE NewConfig;
     Config.AddCmdLine ("--verbose,-v", "");  (* ignored for now *)
     Config.AddCmdLine ("--warnings,-w", ""); (* ignored for now *)
     
+    Config.AddCmdLine ("-A,--all",
+                       "<options><set name='forceUpdate'>TRUE</set></options>");
     Config.AddCmdLine ("--error-style",
                        "<options><set name='errorStyle'>$1</set></options>");
     Config.AddCmdLine ("--use-stderr",
@@ -537,6 +540,7 @@ PROCEDURE WriteHelp();
     Out.String("  --config <file>"); Out.Ln;
     Out.String("  --repository <directory>, -r <directory>"); Out.Ln;
     Out.String("  --no-rtc"); Out.Ln;
+    Out.String("  (--all|-A)"); Out.Ln;
     Out.String("  --error-style (file:line:column|char-pos|attributes)");
     Out.Ln;
   END WriteHelp;
@@ -552,6 +556,7 @@ BEGIN  <*Warnings:=FALSE*>
   IF useStderr.value(Boolean.Value).boolean THEN
     makeRules.SetErrOut(StdChannels.stderr);
   END;
+  makeRules.SetForceUpdate(forceUpdate.value(Boolean.Value).boolean);
   Make.writeStats := writeStats.value(Boolean.Value).boolean;
       
   CASE command.value(Integer.Value).integer OF

@@ -82,6 +82,11 @@ TYPE
     
     errout: Channel.Channel;
     (**Error messages are written to this channel.  *)
+
+    forceUpdate: BOOLEAN;
+    (**If @code{TRUE}, then compile module even if all derived files are up
+       to date with respect to the source code.  This flag has no effect if
+       no source code is available.  *)
   END;
 
 CONST
@@ -150,6 +155,7 @@ PROCEDURE InitRules* (r: Rules);
     r.extensionDict := NIL;
     r.runCreateNamespace := TRUE;
     r.errout := StdChannels.stdout;
+    r.forceUpdate := FALSE;
   END InitRules;
 
 PROCEDURE NewRules*(): Rules;
@@ -183,6 +189,11 @@ PROCEDURE (r: Rules) SetErrOut* (ch: Channel.Channel);
   BEGIN
     r.errout := ch;
   END SetErrOut;
+
+PROCEDURE (r: Rules) SetForceUpdate*(forceUpdate: BOOLEAN);
+  BEGIN
+    r.forceUpdate := forceUpdate;
+  END SetForceUpdate;
 
 PROCEDURE (r: Rules) SetExtensionDict*(dict: Dictionary.Dictionary);
   BEGIN
@@ -770,11 +781,12 @@ RAISES IO.Error;
   END UpdateInterfaceHTML;
 
 PROCEDURE UpdateCompilerOutput (r: Rules; module: Rep.Module;
-                               fileId: Rep.FileId): BOOLEAN
+                                fileId: Rep.FileId): BOOLEAN
 RAISES IO.Error;
   BEGIN
     IF Exists(module, Rep.modModuleSource) THEN
-      IF DerivedIsOlder(module, fileId, Rep.modModuleSource) THEN
+      IF r.forceUpdate OR
+         DerivedIsOlder(module, fileId, Rep.modModuleSource) THEN
         RETURN r.CompileModule(module);
       ELSE
         RETURN TRUE;
