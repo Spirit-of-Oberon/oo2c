@@ -530,7 +530,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     BEGIN
       w. Newline;
       w. WriteString ("_assert(");
-      RefList (assert. opndList, Opnd.arg);
+      RefList (assert. opndList. nextOpnd, Opnd.arg);
       w. WriteString (", ");
       w. WriteLInt (assert. pos, 0);
       w. WriteString (");")

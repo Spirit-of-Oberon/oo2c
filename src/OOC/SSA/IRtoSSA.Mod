@@ -205,6 +205,19 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       RETURN instr;
     END Copy;
   
+  PROCEDURE AddException (pb: SSA.ProcBlock; sym: IR.Symbol;
+                          opcode: Opcode.Class; subclass: Opcode.Subclass): SSA.Instr;
+    VAR
+      instr: SSA.Instr;
+      res: SSA.Result;
+    BEGIN
+      instr := pb. AddInstr (opcode, subclass);
+      instr. SetPos (sym);
+      res := instr. AddResult (Result.exception);
+      Chain (instr);
+      RETURN instr;
+    END AddException;
+  
   PROCEDURE Expression (expr: IR.Expression): SSA.Result;
     VAR
       instr: SSA.Instr;
@@ -244,17 +257,6 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
       END GetIndexBaseArray;
 
-    PROCEDURE AddException (pb: SSA.ProcBlock; sym: IR.Symbol;
-                            opcode: Opcode.Class; subclass: Opcode.Subclass): SSA.Instr;
-      VAR
-        instr: SSA.Instr;
-      BEGIN
-        instr := pb. AddInstr (opcode, subclass);
-        instr. SetPos (sym);
-        Chain (instr);
-        RETURN instr;
-      END AddException;
-    
     PROCEDURE Index (indexOp: IR.Index;
                      baseArray: SSA.Result;
                      elementSize: SSA.Result;
@@ -703,15 +705,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       END;
     END Expression;
 
-  PROCEDURE Assert (assert: IR.Assert): SSA.Instr;
+  PROCEDURE Assert (assert: IR.Assert);
     VAR
+      predicate: SSA.Result;
       instr: SSA.Instr;
     BEGIN
-      instr := pb. AddInstr (Opcode.assert, Opcode.scNone);
-      instr. SetPos (assert. sym);
-      instr. AddOpnd (Expression (assert. predicate), Opnd.arg);
+      predicate := Expression (assert. predicate);
+      instr := AddException (pb, assert. sym, Opcode.assert, Opcode.scNone);
+      instr. AddOpnd (predicate, Opnd.arg);
       instr. AddOpnd (pb. GetConstInt (assert. code), Opnd.arg);
-      RETURN instr
     END Assert;
   
   PROCEDURE Assignment (assignment: IR.Assignment): SSA.Instr;
@@ -1058,7 +1060,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     FOR i := 0 TO LEN (statmSeq^)-1 DO
       statm := statmSeq[i];
       WITH statm: IR.Assert DO
-        Chain (Assert (statm));
+        Assert (statm);
 
       | statm: IR.Assignment DO
         Chain (Assignment (statm));

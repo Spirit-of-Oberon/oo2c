@@ -432,8 +432,8 @@ CONST
   (**Arithmetic shift.  *)
   odd* = 47;
   (**Return @code{TRUE} for odd numbers.  *)
-  
-  assert* = 48;
+
+  (* 48 is unused ... *)
   
   call* = 49;
   (**Used to call a procedure or a function.  The first argument is the
@@ -539,7 +539,9 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  checkIndex* = 56;
+  assert* = 56;
+  
+  checkIndex* = 57;
   (**Ensures that an index is value with respect to a given array length.  An
      exception is raised if the index is negative, or less or equal to the
      array's length.
@@ -558,8 +560,12 @@ CONST
      The result of the instruction is the checked index.  One additional result
      is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
+
+  selectException* = 58;
+  (**Joins all possible exception paths within the procedure body.  Note:
+     This instruction is not implemented yet.  *)
   
-  labels* = 57;
+  labels* = 59;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -697,10 +703,11 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | lsh: cstr := "lsh";
     | odd: cstr := "odd";
       
-    | assert: cstr := "assert";
     | call: cstr := "call";
 
+    | assert: cstr := "assert";
     | checkIndex: cstr := "check-index";
+    | selectException: cstr := "select-exception";
     END;
     
     COPY (cstr, name);
