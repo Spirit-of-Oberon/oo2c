@@ -188,7 +188,7 @@ VAR
   argc-: LONGINT;
   argv-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF
                       POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
-
+  sizeVParStack-: LONGINT;
 
 PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
 (**Allocates a new array or record variable on the heap, using the type
@@ -209,12 +209,6 @@ PROCEDURE NewBlock* (bytes: LONGINT): SYSTEM.PTR;
 
 PROCEDURE FreeBlock* (ptr: SYSTEM.PTR);
 (**Frees a block of memory allocated with @oproc{NewBlock}.  *)
-
-PROCEDURE InitVParStack* (bytes: LONGINT);
-(**Allocates the heap block that serves as a stack for value parameters of
-   open array type.  It is used as a fallback if no mechanism is available
-   to store the data on the normal C stack.  This procedure is called once,
-   from the program's setup code.  *)
 
 PROCEDURE CollectGarbage*;
 (**Explicitly trigger a full, world-stop garbage collection.  *)

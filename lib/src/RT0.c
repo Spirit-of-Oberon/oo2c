@@ -140,13 +140,10 @@ void RT0__FreeBlock(OOC_PTR ptr) {
   GC_free(ptr);			/* inverse to RT0__NewBlock */
 }
 
-void RT0__InitVParStack(OOC_INT32 bytes) {
-  _ooc_top_vs = (void*)GC_malloc(bytes);
-  _ooc_end_vs = (char*)_ooc_top_vs+(bytes);
-}
-
 void RT0__CollectGarbage() {
+#ifdef USE_BOEHM_GC
   GC_gcollect();
+#endif
 }
 
 
@@ -266,15 +263,19 @@ OOC_BOOLEAN RT0__GetEnv(const OOC_CHAR8 name[], OOC_LEN name_0d, OOC_CHAR8 value
 
 void RT0_init() {
 #ifdef USE_BOEHM_GC
+  GC_all_interior_pointers = 0;
   GC_INIT();
   /* tell GC to accept pointers with an offset of 8/16/24 as references to
-     a given object; this is necessary if the GC was built without the
+     a given object; this is necessary if the GC is runnung with the
      ALL_INTERIOR_POINTERS option; the offsets cover records and open 
      arrays with upto 5 free dimensions on 32 bit architectures */
   GC_register_displacement(8);
   GC_register_displacement(16);
   GC_register_displacement(24);
 #endif
+  
+  _ooc_top_vs = (void*)GC_malloc(RT0__sizeVParStack);
+  _ooc_end_vs = (char*)_ooc_top_vs+(RT0__sizeVParStack);
   
   modules = RT0__NewBlock(sizeModules*sizeof(RT0__Module));
   
