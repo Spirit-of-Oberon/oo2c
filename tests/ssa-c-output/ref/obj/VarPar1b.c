@@ -7,8 +7,7 @@ static OOC_INT16 VarPar1b__F(OOC_INT16 *p) {
   VarPar1b__x = 1;
   *p = 2;
   i0 = VarPar1b__x;
-  i0 = i0+2;
-  return i0;
+  return (i0+2);
 }
 
 void VarPar1b__Test() {

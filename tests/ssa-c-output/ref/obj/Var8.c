@@ -9,12 +9,12 @@ static void Var8__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
   if (!i1) goto l8;
   i1=0;
 l3_loop:
-  i2 = _check_index(i1, str_0d, OOC_UINT32, 148);
-  i2 = (OOC_INT32)str+i2;
-  i1 = i1+1;
-  i3 = i1<=i0;
-  *(OOC_UINT8*)i2 = (OOC_CHAR8)'\000';
-  if (i3) goto l3_loop;
+  i2 = i1+1;
+  i3 = i2<=i0;
+  *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i1, str_0d, OOC_UINT32, 148))) = (OOC_CHAR8)'\000';
+  if (!i3) goto l8;
+  i1=i2;
+  goto l3_loop;
 l8:
   return;
 }

@@ -7,12 +7,10 @@ static void Alloc1__F(OOC_INT16 a) {
   i0 = a;
   i1 = i0<0;
   if (i1) goto l3;
-  i0 = i0-1;
-  Out0__Int(i0, 0);
+  Out0__Int((i0-1), 0);
   goto l4;
 l3:
-  i0 = i0+1;
-  Out0__Int(i0, 0);
+  Out0__Int((i0+1), 0);
 l4:
   Out0__Ln();
   return;

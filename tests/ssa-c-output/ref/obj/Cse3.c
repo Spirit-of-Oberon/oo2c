@@ -6,8 +6,7 @@ static OOC_INT16 Cse3__F(OOC_INT16 x) {
 
   i0 = x;
   i0 = i0+i0;
-  i0 = i0+i0;
-  return i0;
+  return (i0+i0);
 }
 
 void Cse3__Test() {

@@ -12,9 +12,7 @@ static OOC_INT16 Var7b__Len(const OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
 l1_loop:
   i0 = i0+1;
   Var7b__i = i0;
-  i1 = _check_index(i0, str_0d, OOC_UINT16, 187);
-  i1 = (OOC_INT32)str+i1;
-  i1 = *(OOC_UINT8*)i1;
+  i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT16, 187)));
   i1 = i1==(OOC_CHAR8)'\000';
   if (!i1) goto l1_loop;
 l5:
