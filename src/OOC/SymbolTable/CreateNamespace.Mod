@@ -585,7 +585,13 @@ RAISES IO.Error;
     BEGIN
       IF (item # NIL) THEN
         WITH item: Sym.TypeDecl DO
-          item.type := GetTypeByName(item.type, contextOfUse, FALSE, errList);
+          IF (item.type.typePars # NIL) & (item.type.typePars.ns # NIL) THEN
+            item.type := GetTypeByName(item.type, item.type.typePars,
+                                       FALSE, errList);
+          ELSE
+            item.type := GetTypeByName(item.type, contextOfUse,
+                                       FALSE, errList);
+          END;
           IF item.isTypeParameter THEN
             item.InsertTypeVar();
           END;
@@ -646,7 +652,8 @@ RAISES IO.Error;
           END;
           contextOfUse := item
         | item: Sym.TypePars DO
-          contextOfUse := item
+          ASSERT(item.ns # NIL);
+          contextOfUse := item;
         ELSE  (* ignore any other kind items *)
         END;
         
@@ -680,7 +687,7 @@ RAISES IO.Error;
         ELSE
           (* ignore *)
         END;
-      END
+      END;
     END ResolveTypeNames;
   
   PROCEDURE CheckTypeRestrictions (item: Sym.Item; errList: Error.List);
