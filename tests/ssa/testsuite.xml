@@ -15,7 +15,7 @@
   generic42 generic43 generic44 generic45 generic46 generic47">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic47 generic48">-->
+  select ="&SetupTestCasesWithOut; generic1 generic50">-->
 
   &TestSetupWithOut;
     
@@ -1485,6 +1485,16 @@
     </test>
     <test id="generic48" type="accept" file="Generic48.Mod">
       Qualified type with a qualified identifier as argument.
+    </test>
+    <test id="generic49" type="accept" file="Generic49.Mod">
+      With a qualified type as array element type, the code generator
+      needs to take properties like element size and alignment from
+      the qualified type's base type.
+    </test>
+    <test id="generic50" type="run"
+          file="Generic50.Mod" output="Generic50.Ref">
+      Calling a type-bound procedure on a type variable is like
+      calling it on the variable's type bound.
     </test>
   </testcases>
 
