@@ -24,6 +24,8 @@ CONST  (* Register Names: *)
 
   callerSaved* = {gp0, gp1, gp2};
   calleeSaved* = {sp, fp, gp3};          (* esi, edi *)
+
+  lastFpRegister* = 7;
   
 CONST  (* Addressing Modes of Locations: *)
   register* = 0;
@@ -1092,9 +1094,9 @@ PROCEDURE TypeSize*(type: Type): LONGINT;
       RETURN 1;
     | signed16, unsigned16:
       RETURN 2;
-    | signed32, unsigned32, address:
+    | signed32, unsigned32, real32, address:
       RETURN 4;
-    | signed64, unsigned64:
+    | signed64, unsigned64, real64:
       RETURN 8;
     END;
   END TypeSize;

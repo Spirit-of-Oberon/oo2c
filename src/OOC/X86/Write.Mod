@@ -1,7 +1,7 @@
 MODULE OOC:X86:Write;
 
 IMPORT
-  Ascii, Object, Object:Boxed, Object:BigInt,
+  SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
   Sym := OOC:SymbolTable, OOC:C:Naming, S := OOC:X86:SSA;
 
@@ -217,7 +217,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           RETURN "b";
         | S.signed16, S.unsigned16:
           RETURN "w";
-        | S.signed32, S.unsigned32, S.address:
+        | S.signed32, S.unsigned32, S.real32, S.address:
           RETURN "l";
         | S.signed64, S.unsigned64:
           RETURN "q";
@@ -288,6 +288,27 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     VAR
       s: S.Selector;
       value: Boxed.Object;
+
+    PROCEDURE ToHex(n: LONGINT; digits: LONGINT): STRING;
+      CONST
+        BASE=16;
+      VAR
+        dig, shift, i: LONGINT;
+        str: ARRAY 16 OF CHAR;
+      BEGIN
+        shift := -4*digits;
+        FOR i := 0 TO digits-1 DO
+          INC(shift, 4);
+          dig := ASH(n, shift) MOD BASE;
+          IF (dig <= 9) THEN
+            str[i] := CHR(ORD("0") + dig);
+          ELSE
+            str[i] := CHR(ORD("A") - 10 + dig);
+          END;
+        END;
+        RETURN Object.NewLatin1Region(str, 0, digits);
+      END ToHex;
+    
     BEGIN
       s := instr.designator[0];
       WITH s: S.Const DO
@@ -296,6 +317,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           sb.AppendInt(ORD(value.value.CharAt(0)));
         | value: Boxed.Set DO
           sb.AppendInt(value.ToLongInt());
+        | value: Boxed.LongReal DO
+          sb.Append("0x");
+          sb.Append(ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
         ELSE
           sb.Append(s.value);
         END;
