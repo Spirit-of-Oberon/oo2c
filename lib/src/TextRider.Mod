@@ -37,52 +37,66 @@ CONST
   tab*=6; line*=7; ident*=8; error*=9; invalid*=10;
   
   (* Writer options *)
-  noBuffering*=0;        (* when set output is not buffered.  This allows
-                            interactive output prompts to appear as soon as
-                            they are written *)
+  noBuffering*=0;
+  (**When set output is not buffered.  This allows interactive output prompts
+     to appear as soon as they are written.  *)
 
   (* Reader/Scanner options *)
-  returnCtrlChars*=0;    (* when set returns EOL & TAB characters; otherwise
-                            they are treated like whitespace *)
+  returnCtrlChars*=0;
+  (**When set the @otype{Reader} or @otype{Scanner} returns EOL & TAB
+     characters.  Otherwise they are treated like whitespace.  *)
                            
   (* additional Scanner options *)
-  interpretBools*=1;     (* when set returns truth values of the strings "TRUE"
-                            and "FALSE"; otherwise returns the strings *)
-  interpretSets*=2;      (* when set returns a set value of the string set
-                            representation; otherwise returns the brace and
-                            comma characters, and the numbers individually *)
-  interpretStrings*=3;   (* when set returns a complete string contained
-                            within open and closing quotes; otherwise returns
-                            the quote characters and string contents as
-                            separate tokens. *)
-  useSignedNumbers*=4;   (* when set returns a complete signed number;
-                            otherwise returns the sign characters and the
-                            number tokens separately. *)
+  interpretBools*=1;
+  (**When set the @otype{Scanner} returns truth values of the strings
+     @code{TRUE} and @code{FALSE}.  Otherwise it returns them as strings.  *)
+  interpretSets*=2;
+  (**When set the @otype{Scanner} returns a set value of the string set
+     representation.  Otherwise it returns the brace, comma, and
+     numbers individually.  *)
+  interpretStrings*=3;
+  (**When set the @otype{Scanner} returns a complete string contained within
+     open and closing quotes.  Otherwise it returns the quote characters and
+     string contents as separate tokens.  *)
+  useSignedNumbers*=4;
+  (**When set the @otype{Scanner} returns a complete signed number.  Otherwise
+     it returns the sign characters and the number tokens separately.  *)
                             
   defReaderOptions*  = {};
+  (**Default reader options.  *)
   defWriterOptions*  = {};
+  (**Default writer options.  *)
   defScannerOptions* = defReaderOptions + {interpretBools..useSignedNumbers};
+  (**Default scanner options: interpret boolean, set, and string values, and
+     signed integer values.  *)
 
 CONST
-  maxLengthEol* = 2; (* system dependent, >= 2 *)
+  maxLengthEol* = 2;
+  (**Maximum length of an end of line character sequence.  This value is
+     system dependent, and always larger or equal to 2.  *)
   maxLookahead = 2;  (* must be >= maxLengthEol and >=2 *)
   
 TYPE
   Reader* = POINTER TO ReaderDesc;
   ReaderDesc* = RECORD
     res*: Msg.Msg;       (* READ-ONLY *)
-    opt-: SET;                  (* current reader options (see above) *)
-    byteReader-: Channel.Reader;(* only to be used by extensions of Reader *)
+    opt-: SET;
+    (**Current reader options.  *)
+    byteReader-: Channel.Reader;
+    (**Binary reader underneath this text reader.  This field should only
+       be used by extensions of this type.  *)
     base-: Channel.Channel;
+    (**The channel on which this reader is operating.  *)
     
-    (* the end of line marker may contain the character 0X, which means its
-       length must be stored in a separate field; the eol marker cannot be 
-       empty, and it is required to contain control characters with an 
-       ASCII code in 00X..1FX  *)
     eol-: ARRAY maxLengthEol OF CHAR;
-      (* character sequence of end of line marker; all chars < 20X *)
+    (**Character sequence of the end of line marker.  All characters have a
+       code less than @samp{20X}.  The end of line marker may contain the
+       character @samp{0X}, which means its length must be stored in a separate
+       field.  The eol marker cannot be empty, and it is required to contain
+       control characters with an ASCII code in @samp{00X..1FX}.  *)
     eolLen-: INTEGER;
-      (* number of characters in `eol'; -1 means auto detect (the default) *)
+    (**Number of characters in @ofield{eol}.  @samp{-1} means auto detect,
+       which is the default.  *)
     deferredEol: BOOLEAN;        (* TRUE iff eol detection is progress *)
     
     (* la: small buffer of characters, used to "peek" to the following
@@ -99,9 +113,13 @@ TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc* = RECORD 
     res*: Msg.Msg;       (* READ-ONLY *)
-    opt-: SET;                  (* current writer options (see above) *)
-    byteWriter-: Channel.Writer;(* only to be used by extensions of Writer *)
+    opt-: SET;
+    (**Current writer options.  *)
+    byteWriter-: Channel.Writer;
+    (**Binary writer underneath this text writer.  This field should only
+       be used by extensions of this type.  *)
     base-: Channel.Channel;
+    (**The channel on which this writer is operating.  *)
     
     eol: ARRAY maxLengthEol OF CHAR;
       (* character sequence of end of line marker *)
@@ -112,18 +130,34 @@ TYPE
   Scanner* = POINTER TO ScannerDesc;
   ScannerDesc* = RECORD
     res*: Msg.Msg;       (* READ-ONLY *)
-    r-: Reader;      (* attached reader; exported only for extensions of Scanner *)
+    r-: Reader;
+    (**Text reader underneath this scanner.  This field should only
+       be used by extensions of this type.  *)
     base-: Channel.Channel;
-    opt-: SET;       (* current scanner options (see above) *)
-    type-: INTEGER;  (* scanned token type (see above) *)
-    pos-: LONGINT;   (* position of current token in the channel *) 
-    lines-: LONGINT; (* total of scanner eol markers; starts at 0 *)
-    int-: LONGINT;   (* integer from channel *)
-    real-: LONGREAL; (* real from channel *)
-    char-: CHAR;     (* char from channel *)
-    string-: String; (* string from channel *)
-    set-: SET;       (* set from channel *)
-    bool-: BOOLEAN;  (* boolean from channel *)
+    opt-: SET;
+    (**Current scanner options.  *)
+    type-: INTEGER;
+    (**Type of the most recently scanned token.  One of @oconst{char},
+       @oconst{string}, @oconst{int}, @oconst{real}, @oconst{bool},
+       @oconst{set}, @oconst{tab}, @oconst{line}, @oconst{ident},
+       @oconst{error}, or @oconst{invalid}.  Please note that depending on the
+       scanner options, some input data is reported under different types.  *)
+    pos-: LONGINT;
+    (**Position of current token in the channel.  *) 
+    lines-: LONGINT;
+    (**Total of scanned eol markers.  Counting starts at zero.  *)
+    int-: LONGINT;
+    (**Integer from channel.  *)
+    real-: LONGREAL;
+    (**Real from channel.  *)
+    char-: CHAR;
+    (**Char from channel.  *)
+    string-: String;
+    (**String from channel.  *)
+    set-: SET;
+    (**Set from channel.  *)
+    bool-: BOOLEAN;
+    (**Boolean from channel.  *)
   END;
 
 
@@ -154,8 +188,8 @@ reporting this.
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc* = RECORD
-     (* this record is exported, so that extensions of Channel can access the
-        error descriptions by extending `ErrorContextDesc' *)
+     (**This record is exported, so that extensions of Channel can access the
+        error descriptions by extending @otype{ErrorContextDesc}.  *)
     (Msg.ContextDesc)
   END;
 
@@ -321,44 +355,50 @@ PROCEDURE (r: Reader) SetPos* (newPos: LONGINT);
   END SetPos;
 
 PROCEDURE (r: Reader) SetOpts* (opts: SET);
-(* Set the reader options `r.opt' which are defined above. *)
+(**Set the reader options @ofield{r.opt}.  *)
   BEGIN
     r.opt:=opts
   END SetOpts;
 
 PROCEDURE (r: Reader) SetEol* (marker: ARRAY OF CHAR; markerLen: INTEGER);
-(* Sets new end of line marker.  If the passed string marker does not fit into
-   the field `eol', or it does contain a character >= " ", then 
-   `r.Res()' is set to `invalidFormat'. 
-   
-   A marker length `markerLen=-1' enables auto detection of the end-of-line
-   convention used by the channel.  The channel is required to use one of the
-   following eol markers:
-     LF      used by Unix
-     CR      used by MacOS
-     CR/LF   used by MS-DOS and Windows
-     
-   Enabling auto detection introduces a (small) inconsistency: if the first 
-   line of the channel ends with a <CR>, then skipping over the complete eol 
-   marker of this line is not done at once iff the next character is a <LF>. 
-   All reading procedures except for `ReadChar' will automatically skip the
-   spurious <LF>.
-   
-   Example: 
-     Input is "line1<CR><LF>line2".
-     The first ReadLine leaves the reading position between <CR> and <LF>,
-     and a second ReadLine skips automagically the <LF> and returns "line2".
-     But if the second operation is a ReadChar, it will return <LF>, not
-     "l".
-     
-   The reason for this is that ReadChar is the only operation that can look
-   at parts of an multi-byte end-of-line marker, while such a marker is an 
-   atomic entity for all other read operations if the channel is read 
-   sequentially.
-   
-   pre: (r.Res() = done) & 
-        ((markerLen = -1) OR (1 <= markerLen < LEN (marker))) &
-        (markerLen <= maxLengthEol) & (for all i: marker[i] < 20X) *)
+(**Sets new end of line marker.  If the passed string marker does not fit into
+   the field @ofield{r.eol}, or it does contain a character greater or equal to
+   space (@samp{ }), then @ofield{r.res} is set to @oconst{invalidFormat}.
+
+   A marker length @samp{markerLen=-1} enables auto detection of the
+   end-of-line convention used by the channel.  The channel is required to use
+   one of the following eol markers:
+
+   @table @code
+   @item LF
+   used by Unix
+   @item CR
+   used by MacOS
+   @item CR/LF
+   used by MS-DOS and Windows
+   @end table
+
+   Enabling auto detection introduces a (small) inconsistency: if the first
+   line of the channel ends with a @code{CR}, then skipping over the complete
+   eol marker of this line is not done at once iff the next character is a
+   @code{LF}.  All reading procedures except for @oproc{Reader.ReadChar} will
+   automatically skip the spurious @code{LF}.
+
+   Example: Input is @samp{line1@code{CR}@code{LF}line2}.  The first
+   @oproc{Reader.ReadLine} leaves the reading position between @code{CR} and
+   @code{LF}, and a second @oproc{Reader.ReadLine} skips automagically the
+   @code{LF} and returns @samp{line2}.  But if the second operation is a
+   @oproc{Reader.ReadChar}, it will return @code{LF}, not @samp{l}.
+
+   The reason for this is that @oproc{Reader.ReadChar} is the only operation
+   that can look at parts of an multi-byte end-of-line marker, while such a
+   marker is an atomic entity for all other read operations if the channel is
+   read sequentially.
+
+   @precond
+   (r.Res() = done) & ((markerLen = -1) OR (1 <= markerLen < LEN (marker))) &
+   (markerLen <= maxLengthEol) & (for all i: marker[i] < 20X)
+   @end precond  *)
   VAR
     i: INTEGER;
   BEGIN
@@ -378,16 +418,16 @@ PROCEDURE (r: Reader) SetEol* (marker: ARRAY OF CHAR; markerLen: INTEGER);
   END SetEol;
 
 PROCEDURE (r: Reader) ReadChar* (VAR ch: CHAR);
-(* Read a character.  NOTE: no new characters will be read
-   if an error has occurred. *)
+(**Read a character.  @emph{Note}: No new characters will be read
+   if an error has occurred.  *)
   BEGIN
     ch := Consume (r)
   END ReadChar;
   
 PROCEDURE (r: Reader) Eol*(): BOOLEAN;
-(* Return TRUE if the character at the current position is the system-dependent
-   end-of-line character sequence or the last character has been read.  
-   If `r.res # done', then result is TRUE.  *)
+(**Return @code{TRUE} if the character at the current position is the
+   system-dependent end-of-line character sequence or the last character has
+   been read.  If @samp{r.res # done}, then result is TRUE.  *)
   VAR
     i: INTEGER;
   BEGIN
@@ -464,9 +504,13 @@ PROCEDURE (r: Reader) ReadLn*;
   END ReadLn;
 
 PROCEDURE (r: Reader) ReadString* (VAR s: ARRAY OF CHAR);
-(* Pre: input = [whitespace] '"' {char} '"' | [whitespace] "'" {char} "'"
-   Illegal chars terminate with invalidFormat.
- *)
+(**Reads an Oberon-2 string literal.  Illegal chars terminate with
+   @oconst{invalidFormat}.
+
+   @precond
+   @samp{input = [whitespace] '"' @{char@} '"' | [whitespace] "'" @{char@}
+   "'"}.
+   @end precond  *)
   VAR
     cnt: INTEGER;
     quote: CHAR;
@@ -506,10 +550,10 @@ PROCEDURE (r: Reader) ReadString* (VAR s: ARRAY OF CHAR);
   END ReadString;
 
 PROCEDURE (r: Reader) ReadLine* (VAR s: ARRAY OF CHAR);
-(* Reads characters until an end of line character is encountered, or the 
-   array `s' is full.  CAUTION: If reading multiple lines of input and an
-   integer, real, etc. has just been read, the channel may be positioned
-   at a eol character and this method will return an empty string. *)
+(**Reads characters until an end of line character is encountered, or the array
+   @oparam{s} is full.  @emph{Caution}: If reading multiple lines of input and
+   an integer, real, etc. has just been read, the channel may be positioned at
+   a eol character and this method will return an empty string.  *)
   VAR
     cnt: INTEGER;
     dummy: CHAR;
@@ -535,8 +579,9 @@ PROCEDURE (r: Reader) ReadLine* (VAR s: ARRAY OF CHAR);
   END ReadLine;
 
 PROCEDURE (r: Reader) ReadIdentifier* (VAR s: ARRAY OF CHAR);
-(* Pre: input = [whitespace] letter {letter | digit}
- *)
+(**@precond
+   @samp{input = [whitespace] letter @{letter | digit@}}
+   @end precond  *)
   VAR
     cnt: INTEGER;
     ch: CHAR;
@@ -572,8 +617,14 @@ PROCEDURE (r: Reader) ReadIdentifier* (VAR s: ARRAY OF CHAR);
   END ReadIdentifier;
  
 PROCEDURE (r: Reader) ReadBool* (VAR bool: BOOLEAN);
-(* Pre: input=[whitespace] ["TRUE"|"FALSE"]; Post: bool=TRUE iff input="TRUE"
-   and bool=FALSE iff input="FALSE"; undefined otherwise *)
+(**@precond
+   @samp{input=[whitespace] ["TRUE"|"FALSE"]}
+   @end precond
+
+   @postcond
+   @samp{bool=TRUE} iff input equals @samp{TRUE} and @samp{bool=FALSE} iff
+   input equals @samp{FALSE}.  Result is undefined otherwise.
+   @end postcond  *)
   VAR
     ident: ARRAY 8 OF CHAR;
   BEGIN
