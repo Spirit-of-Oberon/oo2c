@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opArray9">-->
+  select ="&SetupTestCasesWithOut; opString7">-->
 
   &TestSetupWithOut;
     
@@ -785,32 +785,32 @@
     <test id="opExprCompat14" type="reject" file="OpExprCompat14.Mod">
       Result of numeric operator is "widened" to largest operand.
     </test>
-
+    
+    
     <test id="opString1" type="run" file="OpString1.Mod" output="OpString1.Ref">
       Test string concatenation operator.
     </test>
-
     <test id="opString2" type="accept" file="OpString2.Mod">
       Test compatibility of string constant with character and character array
       types.
     </test>
-
     <test id="opString3" type="accept" file="OpString3.Mod">
       Test compatibility of character constant with character and character
       array types.
     </test>
-
     <test id="opString4" type="reject" file="OpString4.Mod">
       Test compatibility of character constant with character and character
       array types.
     </test>
-
     <test id="opString5" type="run" file="OpString5.Mod" output="OpString5.Ref">
       Test comparison operators for character strings.
     </test>
-
     <test id="opString6" type="run" file="OpString6.Mod" output="OpString5.Ref">
       Test comparison operators for long character strings.
+    </test>
+    <test id="opString7" type="run" file="OpString7.Mod" output="OpString7.Ref">
+      Check argument passing for which string constants must be
+      converted to <code>LONGCHAR</code> strings.
     </test>
   </testcases>
     
