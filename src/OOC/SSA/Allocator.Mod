@@ -210,7 +210,9 @@ PROCEDURE RegisterType* (ctype: DeclWriter.BasicTypeId): DeclWriter.BasicTypeId;
       DeclWriter.int8 .. DeclWriter.int32,
       DeclWriter.uint8 .. DeclWriter.uint32:
       RETURN DeclWriter.int32
-    | DeclWriter.real32, DeclWriter.real64:
+    | DeclWriter.real32:
+      RETURN DeclWriter.real32
+    | DeclWriter.real64:
       RETURN DeclWriter.real64
     END;
   END RegisterType;
@@ -228,6 +230,7 @@ PROCEDURE GetRegisterFiles (): RegisterFiles;
       rfs[i] := NIL;
     END;
     rfs[DeclWriter.int32] := NewRegisterFile (DeclWriter.int32);
+    rfs[DeclWriter.real32] := NewRegisterFile (DeclWriter.real32);
     rfs[DeclWriter.real64] := NewRegisterFile (DeclWriter.real64);
     RETURN rfs
   END GetRegisterFiles;
@@ -537,8 +540,10 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
         CASE rf. registerType OF
         | DeclWriter.int32:
           Strings.Insert ("i", 0, str);
+        | DeclWriter.real32:
+          Strings.Insert ("f", 0, str);
         | DeclWriter.real64:
-          Strings.Insert ("r", 0, str);
+          Strings.Insert ("d", 0, str);
         END;
         names[i] := String.New (str);
       END;
