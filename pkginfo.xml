@@ -4,6 +4,7 @@
   
   <executable main-module="oo2c"/>
   <executable main-module="ooef"/>
+  <executable main-module="oowhereis"/>
 
   <file-set source-dir=".">
     <file name="install-sh" />
