@@ -35,21 +35,7 @@ IMPORT
    intended that is serves as the starting point for creating the assembler
    output, where control flow is realized by jump and branch instructions.
 
-   Anti-dependencies are also resolved by @oproc{ArrangeInstructions}.  The
-   basic assumption is, that whenever an instruction @var{u} changes the
-   current store, the set of read operations @var{r} that operate on the
-   ``old'' store is a subset of the using instructions of the ``old'' store.
-   For every @var{u}, the instructions from its corresponding read set @var{r}
-   are added as @oconst{Opnd.antiDependency} operands to its operand list.
-   Because the algorithm of @oproc{ArrangeInstructions} only places an
-   instruction in a region if all its uses have been placed already, this
-   ensures that the instructions from @var{r} are all put into a region after
-   the writing instruction @var{u} has been placed.  Within the region, the
-   anti-dependency operands guarantee proper scheduling.  For this to work,
-   operands of the class @oconst{Opnd.antiDependency} must be ignored when
-   calculating the region where an instruction should be placed, because they
-   do not propagate real values and may conflict with the control flow between
-   instructions.  *)
+  *)
 
 (*
    
@@ -600,32 +586,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       RETURN result;
     END UpwardStore;
   
-  PROCEDURE AddAntiDeps (update: SSA.Instr; storeIn: SSA.Result);
-    VAR
-      use: SSA.Opnd;
-      storeOut: SSA.Result;
-    BEGIN
-      use := storeIn. useList;
-      WHILE (use # NIL) DO
-        storeOut := use. instr. GetResultStore();
-        IF (use. instr = update) THEN
-          (* ignore *)
-        ELSIF ~IgnoredUse (use) & (storeOut = NIL) THEN
-          (* the using instruction reads the state described by `storeIn',
-             but it does not change it; it must be scheduled before any
-             instruction that destroys `storeIn' *)
-          (* FIXME... only add opnd if it aliases with the using instruction *)
-          update. AddOpnd (use. instr, Opnd.antiDependency);
-        ELSIF PassThrough (use. instr) & (storeOut # NIL) THEN
-          (* the instruction does not change store, which means that any
-             instruction reading its output also reads the input of `update';
-             FIXME... this is only an approximation for the real thing *)
-          AddAntiDeps (update, storeOut);
-        END;
-        use := use. nextUse;
-      END;
-    END AddAntiDeps;
-  
   PROCEDURE UpdateDefs (p: Proxy);
     VAR
       opnd: SSA.Opnd;
@@ -914,26 +874,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     END;
     ASSERT (waiting. first = NIL);
     
-    (* add pseudo operands to `set' instructions that make anti-dependencies
-       between these and any `get's working on the same store explicit;
-       
-       Note: It is currently not clear if this must be done before creating
-       regions, or if it can happen after blocking.  The latter would be
-       better, because it would allow to use the control flow information
-       encoded into the region structure.  In this case, the anti-dependency
-       detection should be moved to the scheduler.  The current implementation
-       is more than a patchwork than a general and correct solution... *)
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      IF IsWrite (instr) THEN
-        res := instr. GetArgStore();
-        IF (res # NIL) THEN
-          AddAntiDeps (instr, UpwardStore (res));
-        END;
-      END;
-      instr := instr. nextInstr;
-    END;
-    
     RETURN root
   END ArrangeInstructions;
 
@@ -1082,6 +1022,10 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
           w. WriteString (" := ");
           Opcode.GetName (instr. opcode, instr. subclass, str);
           w. WriteString (str);
+          IF (instr. pos >= 0) THEN
+            w. WriteString ("@");
+            w. WriteLInt (instr. pos, 0);
+          END;
           w. WriteChar (" ");
           
           opnd := instr. opndList;
