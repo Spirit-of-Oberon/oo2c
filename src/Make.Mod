@@ -474,6 +474,14 @@ PROCEDURE (entity: Entity) [ABSTRACT] Discover*(): EntityState;
    @item
    Set the final state of the entity.  In this case, the function result is
    either@oconst{entityValid} or @oconst{entityInvalid}.
+   Set the final state of the entity to @samp{success}.  In this case, the
+   function result is @oconst{entityValid}.
+ 
+   @item
+   Set the final state of the entity to @samp{failure}.  In this case, the
+   function result is @oconst{entityInvalid}.  The the failure is caused by the
+   entity itself, and not by one of its ancestors, then the function is also
+   required to produce an error message.
 
    @item
    Tell the framework to (re-)build the entity by running the command
