@@ -41,7 +41,8 @@ TYPE
     libraryVersion: String.String;
     (**When building a library, then version used in the final link step
        is taken from this field.  *)
-    
+
+    localRepository: Rep.Repository;
     imports: POINTER TO ARRAY OF Rep.Module;
     mInfo: Dictionary.Dictionary;
     
@@ -83,6 +84,7 @@ VAR
   
 CONST
   noSuchModule = 1;
+  partOfAnotherLibrary = 2;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -100,6 +102,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     CASE msg. code OF
     | noSuchModule:
       t := "Cannot locate module `${name}'"
+    | partOfAnotherLibrary:
+      t := "Module is already part of library `${name}'"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -110,6 +114,8 @@ PROCEDURE InitRules* (r: Rules);
     r.backend := backendSSAtoC;
     r.libraryName := NIL;
     r.libraryVersion := NIL;
+    
+    r.localRepository := NIL;
     r.imports := NIL;
     r.mInfo := Dictionary.New();
     r.extensionDict := NIL;
@@ -379,41 +385,42 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
     success: BOOLEAN;
     mInfo: ModuleInfo;
     errList: Error.List;
-
-  PROCEDURE DoEmptyBackend(): Error.List;
+    libraryName: String.String;
+    
+  PROCEDURE DoEmptyBackend(libraryName: String.String): Error.List;
     VAR
       ast: AST.Node;
       symTab: Sym.Module;
       errList: Error.List;
       pragmaHistory: Pragmas.History;
     BEGIN
-      ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE, r.libraryName,
+      ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE, libraryName,
                                ast, symTab, pragmaHistory, errList);
       RETURN errList;
     END DoEmptyBackend;
   
-  PROCEDURE DoSSAtoC(): Error.List;
+  PROCEDURE DoSSAtoC(libraryName: String.String): Error.List;
     VAR
       t: TranslateToC.Translator;
     BEGIN
       t := SSAtoC.NewTranslator(inspectProc, inspectStage);
-      RETURN TranslateToC.Run(module, r.libraryName, writeAST, writeIR, t);
+      RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
     END DoSSAtoC;
   
-  PROCEDURE DoIRtoC(): Error.List;
+  PROCEDURE DoIRtoC(libraryName: String.String): Error.List;
     VAR
       t: TranslateToC.Translator;
     BEGIN
       t := IRtoC.NewTranslator();
-      RETURN TranslateToC.Run(module, r.libraryName, writeAST, writeIR, t);
+      RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
     END DoIRtoC;
   
-  PROCEDURE DoSSAtoIA32(): Error.List;
+  PROCEDURE DoSSAtoIA32(libraryName: String.String): Error.List;
     VAR
       t: TranslateToIA32.Translator;
     BEGIN
       t := SSAtoIA32.NewTranslator(module, inspectProc, inspectStage);
-      RETURN TranslateToIA32.Run(module, r.libraryName, writeAST, writeIR, t);
+      RETURN TranslateToIA32.Run(module, libraryName, writeAST, writeIR, t);
     END DoSSAtoIA32;
   
   BEGIN
@@ -424,15 +431,24 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
     ELSE
       Logger.EnterMake("CompileModule", module.name^);
 
+      libraryName := r.libraryName;
+      IF (libraryName # NIL) & (module.origin # r.localRepository) THEN
+        (* only include modules from the repository of the top-level module
+           in the library; alternatively, we might report this as a fatal
+           error, because shared libraries cannot depend on plain object files
+           on some (all?) systems *)
+        libraryName := NIL;
+      END;
+      
       CASE r.backend OF
       | backendNone:
-        errList := DoEmptyBackend();
+        errList := DoEmptyBackend(libraryName);
       | backendSSAtoC:
-        errList := DoSSAtoC();
+        errList := DoSSAtoC(libraryName);
       | backendIRtoC:
-        errList := DoIRtoC();
+        errList := DoIRtoC(libraryName);
       | backendSSAtoIA32:
-        errList := DoSSAtoIA32();
+        errList := DoSSAtoIA32(libraryName);
       END;
 
       success := (errList = NIL) OR (errList.msgCount = 0);
@@ -461,6 +477,7 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
     i: LONGINT;
     isUpToDate: BOOLEAN;
     errList: Error.List;
+    err: Error.Msg;
   BEGIN
     IF (module.ifQuality = Rep.completeInterface) THEN
       (* we have the results cached *)
@@ -470,7 +487,26 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
          exist, or if the symbol file is not older than the source *)
       isUpToDate := ~Exists(module, Rep.modModuleSource) OR
           ~DerivedIsOlder(module, Rep.modSymbolFile, Rep.modModuleSource);
-
+      
+      IF (r.libraryName # NIL) & (module.origin = r.localRepository) THEN
+        IF (module.ifData.libraryName = NIL) THEN
+          (* the symbol file does not exist, or it does not associated the
+             module with any library: force compilation of module *)
+          Logger.ExplainMake("module is not part of a library");
+          isUpToDate := FALSE;
+          
+        ELSIF ~module.ifData.libraryName.Equals(r.libraryName) THEN
+          (* the symbol file says the module is part of another library in
+             the same repository; assume that this is not intended and
+             report a fatal error *)
+          err := Error.New (makeContext, partOfAnotherLibrary);
+          err. SetStringAttrib ("name", Msg.GetStringPtr
+                                (module.ifData.libraryName.array^));
+          r.WriteError(module, err);
+          RETURN FALSE;
+        END;
+      END;
+      
       (* unconditionally bring the symbol files of all imported modules up to
          date and see if any of them invalidates this symbol file  *)
       i := 0;
@@ -973,27 +1009,35 @@ PROCEDURE (r: Rules) UpdateLibrary(module: Rep.Module): BOOLEAN;
 (**Update or create a library that is described by the import list of
    @oparam{module}.  Library name and version number are taken from the
    module's source code.  Result is @code{TRUE} on success, and @code{FALSE} if
-   the current library is not up to date, and could not be rebuild.  *)
+   the current library is not up to date, and could not be rebuild.
+
+   @precond
+   @ofield{r.libraryName} and @ofield{r.libraryVersion} are set.
+   @end precond*)
   VAR
     success: BOOLEAN;
   BEGIN
-    success := r.GetImports(module);
+    r.localRepository := module.origin;
     
-    (* Discovery and object file creation: Update all modules from the current
-       repository that are imported by `module' for inclusion in the indicated
-       library.  It is an error if a module from the current repository is
-       already part of another library, or if a module imported from another
-       library is not part of a library.  *)
-
-    (* Collect library meta data: Scan for libraries that need to be linked
-       into this library.  Only consider libraries that are linked directly
-       into our library, and assume that libtool keeps track of nested
-       links.  *)
-
-    (* Create library files (static and shared).  *)
-
-    (* Write library meta file containing OOC's information about the new
-       library.  *)
+    success := r.Update(module, Rep.modSymbolFile);
+    IF success THEN
+      (* Discovery and object file creation: Update all modules from the
+         current repository that are imported by `module' for inclusion in the
+         indicated library.  It is an error if a module from the current
+         repository is already part of another library, or if a module imported
+         from another library is not part of a library.  *)
+      
+      (* Collect library meta data: Scan for libraries that need to be linked
+         into this library.  Only consider libraries that are linked directly
+         into our library, and assume that libtool keeps track of nested
+         links.  *)
+      
+      (* Create library files (static and shared).  *)
+      
+      (* Write library meta file containing OOC's information about the new
+         library.  *)
+    END;
+    RETURN success;
   END UpdateLibrary;
 
 PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
