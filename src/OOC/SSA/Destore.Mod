@@ -588,8 +588,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             END;
             
           | Opcode.loopStart, Opcode.selectExit, Opcode.collect,
-            Opcode.select, Opcode.newObject(*,
-            Opcode.assert, Opcode.checkIndex*):
+            Opcode.select, Opcode.newObject,
+            Opcode.assert, Opcode.checkIndex:
             RETURN VisibleEffect (instr. GetResultStore(), set)
             
           ELSE

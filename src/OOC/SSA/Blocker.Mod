@@ -494,18 +494,40 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
             (use. instr. opndList # use)
     END IgnoredUse;
 
+  PROCEDURE PassThrough (instr: SSA.Instr): BOOLEAN;
+    BEGIN
+      RETURN (instr. opcode = Opcode.checkIndex);
+    END PassThrough;
+
+  PROCEDURE UpwardStore (result: SSA.Result): SSA.Result;
+    BEGIN
+      WHILE PassThrough (result. instr) DO
+        result := result. instr. GetArgStore();
+      END;
+      RETURN result;
+    END UpwardStore;
+  
   PROCEDURE AddAntiDeps (update: SSA.Instr; storeIn: SSA.Result);
     VAR
       use: SSA.Opnd;
+      storeOut: SSA.Result;
     BEGIN
       use := storeIn. useList;
       WHILE (use # NIL) DO
-        IF ~IgnoredUse (use) & (use. instr. GetResultStore() = NIL) THEN
+        storeOut := use. instr. GetResultStore();
+        IF (use. instr = update) THEN
+          (* ignore *)
+        ELSIF ~IgnoredUse (use) & (storeOut = NIL) THEN
           (* the using instruction reads the state described by `storeIn',
              but it does not change it; it must be scheduled before any
              instruction that destroys `storeIn' *)
           (* FIXME... only add opnd if it aliases with the using instruction *)
           update. AddOpnd (use. instr, Opnd.antiDependency);
+        ELSIF PassThrough (use. instr) & (storeOut # NIL) THEN
+          (* the instruction does not change store, which means that any
+             instruction reading its output also reads the input of `update';
+             FIXME... this is only an approximation for the real thing *)
+          AddAntiDeps (update, storeOut);
         END;
         use := use. nextUse;
       END;
@@ -731,19 +753,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     (*WriteLoops (mainLoop, 0);*)
     AttachToLoop (mainLoop);
 
-    (* add pseudo operands to `set' instructions that make anti-dependencies
-       between these and any `get's working on the same store explicit *)
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      IF IsWrite (instr) THEN
-        res := instr. GetArgStore();
-        IF (res # NIL) THEN
-          AddAntiDeps (instr, res);
-        END;
-      END;
-      instr := instr. nextInstr;
-    END;
-    
     (* for every instruction, write the number of uses into its `marker'
        field; instructions with no uses are placed in `ready', the rest
        is put into `waiting' *)
@@ -784,7 +793,8 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     root := p(Region);
     
     (* remove instructions whose uses have been scheduled already from `ready'
-       and schedule them into their region *)
+       and schedule them into their region; this creates a hierarchy of
+       regions containing all instructions *)
     WHILE (ready. first # NIL) DO
       p := ready. first;
       ready. Remove (p);
@@ -794,6 +804,26 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       region. Insert (p);
     END;
     ASSERT (waiting. first = NIL);
+    
+    (* add pseudo operands to `set' instructions that make anti-dependencies
+       between these and any `get's working on the same store explicit;
+       
+       Note: It is currently not clear if this must be done before creating
+       regions, or if it can happen after blocking.  The latter would be
+       better, because it would allow to use the control flow information
+       encoded into the region structure.  In this case, the anti-dependency
+       detection should be moved to the scheduler.  The current implementation
+       is more than a patchwork than a general and correct solution... *)
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      IF IsWrite (instr) THEN
+        res := instr. GetArgStore();
+        IF (res # NIL) THEN
+          AddAntiDeps (instr, UpwardStore (res));
+        END;
+      END;
+      instr := instr. nextInstr;
+    END;
     
     RETURN root
   END ArrangeInstructions;

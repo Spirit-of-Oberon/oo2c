@@ -290,7 +290,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
            change it into a "get" for the array element *)
         instr := baseResult. instr;
         index := Expression (indexOp. index);
-        IF FALSE & indexOp. checkIndex THEN
+        IF indexOp. checkIndex THEN
           check := AddException (pb, Opcode.checkIndex, index. subclass);
           check. AddOpnd (index, Opnd.arg);
           check. AddOpnd (length, Opnd. arg);
