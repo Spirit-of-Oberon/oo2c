@@ -25,7 +25,7 @@ IMPORT
   Channel, Files, Make, StdChannels, TextRider, ADT:String, ADT:Dictionary,
   URI, OOC:Make:Entity:ModuleFile,
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
-  OOC:Error, OOC:Repository, OOC:AST,
+  OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, OOC:IR:Operator, IRtoXML := OOC:IR:XML,
   OOC:SymbolTable:Item, OOC:SymbolTable:Exports,
@@ -333,8 +333,8 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         
         
       | Repository.modDeclFileC:
-         WriteInclude (w, m. GetURI (Repository.modHeaderFileC));
-         WriteDeclarations (w, converter, FALSE);
+        WriteInclude (w, m. GetURI (Repository.modHeaderFileC));
+        WriteDeclarations (w, converter, FALSE);
           
       | Repository.modCodeFileC:
          WriteInclude (w, m. GetURI (Repository.modDeclFileC));
@@ -381,9 +381,11 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
   BEGIN
     m := cmd. module;
     config := cmd. context. config(Config.Config);
-    ParseModule.ParseModule (m, config, TRUE, TRUE, TRUE,
+    ParseModule.ParseModule (m, config, TRUE, TRUE, FALSE,
                              ast, symTab, pragmaHistory, errList);
-    (* symbol file is written by the `ParseModule' function *)
+    (* note: don't let `ParseModule' write the symbol file; this reduces the
+       data in `symTab' to the view of client modules, because declarations
+       private to the module are stripped *)
     
     IF (errList. msgCount = 0) THEN
       IF cmd. writeAST THEN
@@ -405,7 +407,11 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       IF (symTab. class = Item.mcStandard) THEN
         WriteFile (m, Repository.modCodeFileC, errList, converter,
                    module, cmd. useSSA)
-      END
+      END;
+
+      IF (errList. msgCount = 0) THEN
+        WriteSymbolFile.WriteSymbolFile (m, symTab, errList);
+      END;
     END;
     
     cmd. errList := errList;
