@@ -11,12 +11,10 @@
   generic18 generic19 generic20 generic21 generic22 generic23
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
-  generic36 generic37">-->
+  generic36 generic37 generic38">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; deprecated1 deprecated2
-  deprecated3 deprecated4 deprecated5 deprecated6 deprecated7
-  deprecated8 deprecated9 deprecated10">-->
+  select ="&SetupTestCasesWithOut; generic1 generic38">-->
 
   &TestSetupWithOut;
     
@@ -1440,6 +1438,10 @@
     </test>
     <test id="generic37" type="accept" file="Generic37.Mod">
       Calling <code>NEW</code> on a variable of parametric type.
+    </test>
+    <test id="generic38" type="accept" file="Generic38.Mod">
+      The argument of a qualified type can be another qualified type.
+      Qualified types can be used as part of formal parameters.
     </test>
   </testcases>
 
