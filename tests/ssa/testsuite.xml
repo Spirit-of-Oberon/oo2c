@@ -14,10 +14,10 @@
   generic36 generic37 generic38 generic39 generic40 generic41
   generic42 generic43 generic44 generic45 generic46 generic47
   generic48 generic48 generic49 generic50 generic52
-  generic53 generic54 generic55 generic56 generic57">-->
+  generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; bugDeclC1">-->
+  select ="&SetupTestCasesWithOut; generic1 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
@@ -1529,6 +1529,10 @@
     <test id="generic57" type="accept" file="Generic57.Mod">
       Regression test: Call procedure <code>NEW</code> for a
       parametric array pointer.
+    </test>
+    <test id="generic58" type="accept" file="Generic58.Mod">
+      Regression test: Pass parametric type to a variable open array
+      parameter.
     </test>
   </testcases>
 
