@@ -227,7 +227,7 @@ PROCEDURE (rep: Repository) GetLocalPath*(m: Rep.Module; fileId: Rep.FileId;
 PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId;
                                allowRelative: BOOLEAN): URI.HierarchicalURI;
   VAR
-    subdir, suffix, path, str: Rep.URIBuffer;
+    path: Rep.URIBuffer;
     uri: URI.URI;
     huri: URI.HierarchicalURI;
     res: Msg.Msg;

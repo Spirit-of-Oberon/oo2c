@@ -21,11 +21,10 @@ MODULE OOC:Config:Repositories [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Msg, Channel, TextRider, LongStrings, StdChannels,
+  Msg, Channel, TextRider, LongStrings,
   ADT:String, URI, URIParser := URI:Parser, URI:Scheme:File, 
   XML:DTD, XML:Locator, Config:Parser, CS := Config:Section,
-  Config:Section:Options,
-  OOC:Error, OOC:Repository, OOC:Repository:FileSystem;
+  OOC:Repository, OOC:Repository:FileSystem;
 
 
 TYPE

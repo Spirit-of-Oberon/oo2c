@@ -155,8 +155,6 @@ PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
 
 PROCEDURE UninstallProgramCmd*(path: ARRAY OF CHAR; asLibrary: BOOLEAN;
                                VAR cmd: ARRAY OF CHAR);
-  VAR
-    str: ARRAY 1024 OF CHAR;
   BEGIN
     IF HaveLibtool() THEN
       COPY (libtool.value(StringValue.Value).string^, cmd);
