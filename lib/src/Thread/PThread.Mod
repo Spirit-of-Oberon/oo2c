@@ -32,7 +32,7 @@ IMPORT
 TYPE
   Error* = POINTER TO ErrorDesc;
   ErrorDesc = RECORD
-    (Exception.ExceptionDesc)
+    (Exception.CheckedDesc)
     errorCode-: LONGINT;
   END;
 
