@@ -22,7 +22,7 @@ void Var10__Test() {
   ;
 }
 
-void Var10_init(void) {
+void OOC_Var10_init(void) {
 
   return;
   ;

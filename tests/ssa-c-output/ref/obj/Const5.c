@@ -9,7 +9,7 @@ void Const5__Test() {
   ;
 }
 
-void Const5_init(void) {
+void OOC_Const5_init(void) {
 
   return;
   ;

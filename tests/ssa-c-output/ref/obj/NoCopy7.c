@@ -7,7 +7,7 @@ static void NoCopy7__P(const OOC_CHAR8 a[], OOC_LEN a_0d) {
   ;
 }
 
-void NoCopy7_init(void) {
+void OOC_NoCopy7_init(void) {
 
   return;
   ;

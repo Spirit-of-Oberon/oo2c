@@ -17,7 +17,7 @@ void Const1__Test() {
   ;
 }
 
-void Const1_init(void) {
+void OOC_Const1_init(void) {
 
   return;
   ;

@@ -20,7 +20,7 @@ void Const6__Test() {
   ;
 }
 
-void Const6_init(void) {
+void OOC_Const6_init(void) {
 
   return;
   ;

@@ -28,7 +28,7 @@ void Var3c__Test() {
   ;
 }
 
-void Var3c_init(void) {
+void OOC_Var3c_init(void) {
 
   return;
   ;

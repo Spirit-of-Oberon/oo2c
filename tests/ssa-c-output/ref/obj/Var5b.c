@@ -46,7 +46,7 @@ void Var5b__Test() {
   ;
 }
 
-void Var5b_init(void) {
+void OOC_Var5b_init(void) {
 
   return;
   ;

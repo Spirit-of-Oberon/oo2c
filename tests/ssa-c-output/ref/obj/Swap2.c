@@ -43,7 +43,7 @@ void Swap2__Test() {
   ;
 }
 
-void Swap2_init(void) {
+void OOC_Swap2_init(void) {
 
   return;
   ;

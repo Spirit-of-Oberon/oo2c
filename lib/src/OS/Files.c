@@ -221,7 +221,7 @@ void OS_Files__remove(const OS_Files__Path path, OOC_LEN path_0d,
   }
 }
 
-void OS_Files_init(void) {
+void OOC_OS_Files_init(void) {
   OS_Files__errorContext = 
     RT0__NewObject(OOC_TYPE_DESCR(OS_Files,ErrorContextDesc));
   Msg__InitContext((Msg__Context)OS_Files__errorContext, 

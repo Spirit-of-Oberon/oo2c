@@ -20,7 +20,7 @@ void Cse3__Test() {
   ;
 }
 
-void Cse3_init(void) {
+void OOC_Cse3_init(void) {
 
   return;
   ;

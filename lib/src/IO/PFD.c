@@ -522,7 +522,7 @@ void IO_PFD__Truncate(IO_PFD__Writer w, OOC_INT32 newLength) {
   }
 }
 
-void IO_PFD_init(void) {
+void OOC_IO_PFD_init(void) {
   IO_PFD__errorContext =
     RT0__NewObject(OOC_TYPE_DESCR(IO_PFD,ErrorContextDesc));
   Msg__InitContext((Msg__Context)IO_PFD__errorContext, 

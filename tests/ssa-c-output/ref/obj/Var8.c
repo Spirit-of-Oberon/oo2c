@@ -28,7 +28,7 @@ void Var8__Test() {
   ;
 }
 
-void Var8_init(void) {
+void OOC_Var8_init(void) {
 
   return;
   ;

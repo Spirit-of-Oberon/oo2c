@@ -68,14 +68,14 @@ PROCEDURE WriteFile*(module: Repository.Module;
       w := TextRider.ConnectWriter (ch);
       w. WriteString ('#include "RT0'+Repository.headerSuffix+'"');
       w. WriteLn;
-      WriteModules (w, "extern void ", "_init0(void);");
+      WriteModules (w, "extern void OOC_", "_init0(void);");
       w. WriteLn;
       
       w. WriteString ("int main (int argc, char *argv[]) {");
       w. WriteLn; w. WriteString ("  RT0__argc = (OOC_INT32)argc;");
       w. WriteLn; w. WriteString ("  RT0__argv = (OOC_CHAR8**)argv;");
       w. WriteLn;
-      WriteModules (w, "  ", "_init0();");
+      WriteModules (w, "  OOC_", "_init0();");
       w. WriteString ("  return 0;  /* _program_exit_code */");
       w. WriteLn;
       w. WriteString ("}");

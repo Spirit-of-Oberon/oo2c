@@ -24,7 +24,7 @@ void VarPar1b__Test() {
   ;
 }
 
-void VarPar1b_init(void) {
+void OOC_VarPar1b_init(void) {
 
   return;
   ;

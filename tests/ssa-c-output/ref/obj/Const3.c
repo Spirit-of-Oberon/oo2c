@@ -20,7 +20,7 @@ void Const3__Test() {
   ;
 }
 
-void Const3_init(void) {
+void OOC_Const3_init(void) {
 
   return;
   ;

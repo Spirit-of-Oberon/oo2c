@@ -81,5 +81,5 @@ void Out0__Ln() {
   fputc('\n', stdout);
 }
 
-void Out0_init() {
+void OOC_Out0_init() {
 }

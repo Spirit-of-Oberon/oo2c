@@ -78,7 +78,7 @@ void OS_ProcessParameters__getcwd(OS_ProcessParameters__Path buffer, OOC_LEN buf
 }
 
 
-void OS_ProcessParameters_init(void) {
+void OOC_OS_ProcessParameters_init(void) {
   OS_ProcessParameters__errorContext =
     RT0__NewObject(OOC_TYPE_DESCR(OS_ProcessParameters,ErrorContextDesc));
   Msg__InitContext((Msg__Context)OS_ProcessParameters__errorContext, 

@@ -124,7 +124,7 @@ static void catch_signal (int sig) {
   }
 }
 
-void Termination_init(void) {
+void OOC_Termination_init(void) {
   /* error signals */
   catch_signal(SIGFPE);
   catch_signal(SIGILL);

@@ -957,7 +957,7 @@ void PosixFileDescr__Truncate(PosixFileDescr__Writer w, int newLength) {
   }
 }
 
-void PosixFileDescr_init(void) {
+void OOC_PosixFileDescr_init(void) {
   PosixFileDescr__errorContext = RT0__NewObject(OOC_TYPE_DESCR(PosixFileDescr,ErrorContextDesc));
   Msg__InitContext((Msg__Context)PosixFileDescr__errorContext, 
 		   (const OOC_CHAR8*)"OOC:Core:PosixFileDescr", 24);

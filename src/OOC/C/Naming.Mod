@@ -130,6 +130,7 @@ PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): String.String;
       IF (str[i] = ":") THEN str[i] := "_" END;
       INC (i)
     END;
+    Strings.Insert("OOC_", 0, str);
     IF rtWrapper THEN
       Strings.Append ("_init0", str);
     ELSE      

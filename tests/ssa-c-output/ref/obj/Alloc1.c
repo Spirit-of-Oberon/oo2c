@@ -25,7 +25,7 @@ void Alloc1__Test() {
   ;
 }
 
-void Alloc1_init(void) {
+void OOC_Alloc1_init(void) {
 
   return;
   ;

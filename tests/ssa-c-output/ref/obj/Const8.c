@@ -61,7 +61,7 @@ void Const8__Test() {
   ;
 }
 
-void Const8_init(void) {
+void OOC_Const8_init(void) {
 
   return;
   ;

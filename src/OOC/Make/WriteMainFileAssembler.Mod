@@ -98,7 +98,7 @@ PROCEDURE WriteFile*(module: Repository.Module;
       Instr("call RT0__InitVParStack");  
       Instr("addl $16,%esp");*)
       
-      WriteModules (w, Ascii.ht+"call ", "_init0");
+      WriteModules (w, Ascii.ht+"call OOC_", "_init0");
       Instr("xorl %eax,%eax");
       Instr("leave");
       Instr("ret");

@@ -72,7 +72,7 @@ l10:
   ;
 }
 
-void Quicksort1_init(void) {
+void OOC_Quicksort1_init(void) {
 
   return;
   ;

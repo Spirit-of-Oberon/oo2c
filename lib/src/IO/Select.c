@@ -88,5 +88,5 @@ OOC_INT32 IO_Select__Select(IO_Select__FileDescrSet read,
   return res;
 }
 
-void IO_Select_init(void) {
+void OOC_IO_Select_init(void) {
 }

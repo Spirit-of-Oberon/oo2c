@@ -285,7 +285,7 @@ OOC_BOOLEAN RT0__GetEnv(const OOC_CHAR8 name[], OOC_LEN name_0d, OOC_CHAR8 value
 
 
 
-void RT0_init() {
+void OOC_RT0_init() {
 #ifdef USE_BOEHM_GC
   GC_all_interior_pointers = 0;
   GC_INIT();

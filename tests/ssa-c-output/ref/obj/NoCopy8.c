@@ -7,7 +7,7 @@ static void NoCopy8__P(const struct NoCopy8__R *a) {
   ;
 }
 
-void NoCopy8_init(void) {
+void OOC_NoCopy8_init(void) {
 
   return;
   ;

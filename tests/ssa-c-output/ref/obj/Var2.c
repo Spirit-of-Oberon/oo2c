@@ -22,7 +22,7 @@ void Var2__Test() {
   ;
 }
 
-void Var2_init(void) {
+void OOC_Var2_init(void) {
 
   return;
   ;

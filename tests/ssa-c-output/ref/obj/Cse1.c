@@ -9,7 +9,7 @@ void Cse1__Test() {
   ;
 }
 
-void Cse1_init(void) {
+void OOC_Cse1_init(void) {
 
   return;
   ;

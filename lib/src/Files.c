@@ -620,7 +620,7 @@ static void close_all_files (void) {
   }
 }
 
-void Files_init(void) {
+void OOC_Files_init(void) {
   Files__errorContext = RT0__NewObject(OOC_TYPE_DESCR(Files,ErrorContextDesc));
   Msg__InitContext((Msg__Context)Files__errorContext, 
 		   (const OOC_CHAR8*)"OOC:Core:Files", 15);

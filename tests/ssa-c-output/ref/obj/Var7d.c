@@ -30,7 +30,7 @@ void Var7d__Test() {
   ;
 }
 
-void Var7d_init(void) {
+void OOC_Var7d_init(void) {
 
   return;
   ;

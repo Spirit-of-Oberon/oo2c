@@ -9,7 +9,7 @@ void Const2__Test() {
   ;
 }
 
-void Const2_init(void) {
+void OOC_Const2_init(void) {
 
   return;
   ;

@@ -399,7 +399,7 @@ void IO_Socket__SocketDesc_ConnectDone(IO_Socket__Socket s) {
 }
 
 
-void IO_Socket_init(void) {
+void OOC_IO_Socket_init(void) {
   IO_Socket__errorContext =
     RT0__NewObject(OOC_TYPE_DESCR(IO_Socket,ErrorContextDesc));
   Msg__InitContext((Msg__Context)IO_Socket__errorContext, 

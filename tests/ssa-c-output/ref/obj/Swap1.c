@@ -33,7 +33,7 @@ void Swap1__Test() {
   ;
 }
 
-void Swap1_init(void) {
+void OOC_Swap1_init(void) {
 
   return;
   ;

@@ -39,7 +39,7 @@ void Var3b__Test() {
   ;
 }
 
-void Var3b_init(void) {
+void OOC_Var3b_init(void) {
 
   return;
   ;

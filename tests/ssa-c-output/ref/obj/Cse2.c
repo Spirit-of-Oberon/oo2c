@@ -30,7 +30,7 @@ void Cse2__Test() {
   ;
 }
 
-void Cse2_init(void) {
+void OOC_Cse2_init(void) {
 
   return;
   ;

@@ -19,7 +19,7 @@ void VarPar1c__Test() {
   ;
 }
 
-void VarPar1c_init(void) {
+void OOC_VarPar1c_init(void) {
 
   return;
   ;

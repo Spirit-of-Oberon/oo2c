@@ -200,7 +200,7 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
       END;
     END;
     w. WriteLn;
-    WriteModuleName (w, "void ", m, "_init(void) {", FALSE);
+    WriteModuleName (w, "void OOC_", m, "_init(void) {", FALSE);
     translator. WriteProcBody (moduleIR. moduleBody);
     w. WriteLn;
     w. WriteString ("}");

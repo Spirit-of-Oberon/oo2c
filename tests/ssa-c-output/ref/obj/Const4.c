@@ -18,7 +18,7 @@ void Const4__Test() {
   ;
 }
 
-void Const4_init(void) {
+void OOC_Const4_init(void) {
 
   return;
   ;
