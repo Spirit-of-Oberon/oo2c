@@ -27,6 +27,7 @@ TYPE
 
     options- : Option.Options;
     path : Option.StringList;
+    exclude : Option.StringList;
     frameworks : Option.StringList;
 
 (* frameworkMap associates each framework with the path to its Headers
@@ -221,25 +222,34 @@ END SearchPath;
 
 PROCEDURE (i : Input) Include* (fileName : STRING; search : BOOLEAN);
 VAR
+  found : BOOLEAN;
   realFileName : STRING;
   moduleName : STRING;
   module : Module.Module;
   s : Source;
   channel : IO.ByteChannel;
 BEGIN
+  IF i.exclude.Contains(fileName) THEN 
+    RETURN;
+  END;
   TRY
     IF search THEN
-      IF ~i.SearchPath(fileName, realFileName, channel) &
-         ~i.SearchFrameworks(fileName, realFileName, channel) THEN
-        Err.String ("Error: Cannot locate module ");
-        Err.Object (fileName);
-        Err.Ln;
-        HALT (1)
-      END;    
+      found := i.SearchPath(fileName, realFileName, channel) OR
+        i.SearchFrameworks(fileName, realFileName, channel);
     ELSE
-      realFileName := fileName;
-      channel := FileChannel.Open(fileName, {FileChannel.read});
+      IF i.src = NIL THEN
+        realFileName := fileName;
+      ELSE
+        realFileName := Path.DirName(i.src.name) + "/" + fileName;
+      END;
+      found := i.SearchFile(realFileName, channel);
     END;
+    IF ~found THEN
+      Err.String ("Error: Cannot locate module ");
+      Err.Object (fileName);
+      Err.Ln;
+      HALT (1)
+    END;    
   CATCH IO.Error:
 	i.Exception(Exception.Current());
   END;
@@ -287,6 +297,7 @@ BEGIN
 
   i.options := NEW(Option.Options);
   i.path := i.options.StringList("Include");
+  i.exclude := i.options.StringList("Exclude");
   i.frameworks := i.options.StringList("Framework");
   i.frameworkMap := NEW(Dictionary.Dictionary(STRING,STRING));
   i.frameworkLength := 0;
