@@ -207,7 +207,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     
     moduleDecl := v. stb. NewModule (moduleName, module. name. docString,
                                      class, callConv);
-    IF (mf # NIL) THEN
+    IF (mf # NIL) & (mf. linkSections # NIL) THEN
       FOR i := 0 TO mf. linkSections. len-1 DO
         n := mf. linkSections. n[i];
         WITH n: ExtTree.LinkFileFlag DO
@@ -227,6 +227,8 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
           END;
           moduleDecl. AddLinkFile (uri(URI.HierarchicalURI),
                                    prefixOption, suffixOption)
+        ELSE
+          (* ignore list of flags for now *)
         END
       END
     END;
