@@ -172,6 +172,7 @@ install-strip:
 
 uninstall: uninstall-man FRC
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml $(OFLAGS) --uninstall-package oo2c liboo2c
+	rm -f $(oocdir)/pkginfo.xml
 
 ifdef MAIN_MAKEFILE
 include $(MAIN_MAKEFILE)
