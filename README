@@ -86,6 +86,12 @@ For input modules that hang or crash the compiler, please send me the
 module or modules that trigger the problem.  This does not need to be
 small.  Don't send me module fragments!
 
+Reporting about bugs can be a surprisingly difficult excercise in
+communication.  There is a very nice essay "How to Report Bugs
+Effectively" at http://www.chiark.greenend.org.uk/~sgtatham/bugs.html
+It should recommended reading for everyone who will ever write -- or
+read -- a bug report.
+
 
 Build and Install Using a CVS Working Copy
 ==========================================
