@@ -1143,40 +1143,38 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
   BEGIN
     COPY(targetDir, fileName);
     Strings.Append(pkgInfoSubdir, fileName);
+    Strings.Append("/", fileName);
+    Strings.Append(pkg.name.array^, fileName);
+    Strings.Append(".xml", fileName);
+    
+    f := Files.New(fileName, {Files.write}, res);
     IF (res = NIL) THEN
-      Strings.Append("/", fileName);
-      Strings.Append(pkg.name.array^, fileName);
-      Strings.Append(".xml", fileName);
+      w := Writer.New(f.NewWriter(), Latin1.factory, TRUE, 2);
       
-      f := Files.New(fileName, {Files.write}, res);
+      w.StartTag("package", FALSE);
+      w.AttrStringLatin1("name", pkg.name.array^);
+      WriteVersion(w, pkg.version);
+      WriteKeyValue(w, "options", pkg.options);
+      WriteKeyValue(w, "pragmas", pkg.pragmas);
+      FOR i := 0 TO pkg.library.size-1 DO
+        WriteLibrary(w, pkg.library.array[i](Library));
+      END;
+      FOR i := 0 TO pkg.executable.size-1 DO
+        WriteExecutable(w, pkg.executable.array[i](Executable));
+      END;
+      WriteFileSet(w, pkg.fileSet);
+      w.EndTag();  (* package *)
+      w.EndOfText();
+      
+      res := w.writer.res;
+      f.Close();
       IF (res = NIL) THEN
-        w := Writer.New(f.NewWriter(), Latin1.factory, TRUE, 2);
-                          
-        w.StartTag("package", FALSE);
-        w.AttrStringLatin1("name", pkg.name.array^);
-        WriteVersion(w, pkg.version);
-        WriteKeyValue(w, "options", pkg.options);
-        WriteKeyValue(w, "pragmas", pkg.pragmas);
-        FOR i := 0 TO pkg.library.size-1 DO
-          WriteLibrary(w, pkg.library.array[i](Library));
-        END;
-        FOR i := 0 TO pkg.executable.size-1 DO
-          WriteExecutable(w, pkg.executable.array[i](Executable));
-        END;
-        WriteFileSet(w, pkg.fileSet);
-        w.EndTag();  (* package *)
-        w.EndOfText();
-        
-        res := w.writer.res;
-        f.Close();
-        IF (res = NIL) THEN
-          res := f.res;
-        END;
-        IF (res = NIL) THEN
-          Strings.Insert("chmod 644 ", 0, fileName);
-          Logger.ShellCommand(fileName);
-          i := ProcessManagement.system(fileName);
-        END;
+        res := f.res;
+      END;
+      IF (res = NIL) THEN
+        Strings.Insert("chmod 644 ", 0, fileName);
+        Logger.ShellCommand(fileName);
+        i := ProcessManagement.system(fileName);
       END;
     END;
   END WritePackage;
