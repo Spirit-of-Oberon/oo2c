@@ -35,6 +35,10 @@ TYPE
   END;
 
 
+PROCEDURE Init* (tr: Rules);
+  BEGIN
+  END Init;
+
 PROCEDURE (tr: Rules) IsNamedType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be accessed through
    a type name.  *)
@@ -53,18 +57,51 @@ PROCEDURE (tr: Rules) IsScalarType* (type: Sym.Type): BOOLEAN;
            (type IS Sym.FormalPars)
   END IsScalarType;
 
-PROCEDURE (tr : Rules) IsPredefClass* (type : Sym.Type; class : SET) : BOOLEAN;
-(**Returns @code{TRUE}, iff the type @oparam{type} is a a member of a class of
-   types. A class is represented by a SET of @otype{Sym.PredefId} values.
-   These are defined by classXXX constants in @omodule{*OOC:SymbolTable:Predef}.
-   *)
+PROCEDURE (tr: Rules) IsCharType* (type: Sym.Type): BOOLEAN;
+(**Result is @code{TRUE} iff @oparam{type} is a character type.  *)
   BEGIN
-    WITH type : Sym.PredefType DO
-      RETURN type.id IN class;
+    WITH type: Sym.PredefType DO
+      RETURN (type. id IN {Predef.char, Predef.longchar})
     ELSE
       RETURN FALSE
     END;
-  END IsPredefClass;
+  END IsCharType;
+
+PROCEDURE (tr: Rules) IsIntegerType* (type: Sym.Type): BOOLEAN;
+(**Result is @code{TRUE} iff @oparam{type} is an integer type.  *)
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN (type. id IN {Predef.shortint, Predef.integer, Predef.longint})
+    ELSE
+      RETURN FALSE
+    END;
+  END IsIntegerType;
+
+PROCEDURE (tr: Rules) IsRealType* (type: Sym.Type): BOOLEAN;
+(**Result is @code{TRUE} iff @oparam{type} is a floating point type.  *)
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN (type. id IN {Predef.real, Predef.longreal})
+    ELSE
+      RETURN FALSE
+    END;
+  END IsRealType;
+
+PROCEDURE (tr: Rules) IsNumericType* (type: Sym.Type): BOOLEAN;
+(**Result is @code{TRUE} iff @oparam{type} is a numeric type.  *)
+  BEGIN
+    RETURN tr. IsIntegerType(type) OR tr. IsRealType(type)
+  END IsNumericType;
+
+PROCEDURE (tr: Rules) IsSetType* (type: Sym.Type): BOOLEAN;
+(**Result is @code{TRUE} iff @oparam{type} is a set type.  *)
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN (type. id IN {Predef.set})
+    ELSE
+      RETURN FALSE
+    END;
+  END IsSetType;
 
 PROCEDURE (tr : Rules) IncludesType* (large, small: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE} iff type @oparam{large} includes type @oparam{small}.
@@ -76,10 +113,10 @@ PROCEDURE (tr : Rules) IncludesType* (large, small: Sym.Type): BOOLEAN;
     IF (large IS Sym.PredefType) & (small IS Sym.PredefType) THEN
       largeId := large(Sym.PredefType).id;
       smallId := small(Sym.PredefType).id;
-      IF (largeId IN Predef.classNumeric) THEN
-        RETURN (smallId IN Predef.classNumeric) & (smallId <= largeId);
-      ELSIF (largeId IN Predef.classChar) THEN
-        RETURN (smallId IN Predef.classChar) & (smallId <= largeId);
+      IF tr. IsNumericType(large) THEN
+        RETURN tr. IsNumericType(small) & (smallId <= largeId);
+      ELSIF tr. IsCharType(large) THEN
+        RETURN tr. IsCharType(small) & (smallId <= largeId);
       END;
     END;
     RETURN FALSE;
@@ -308,5 +345,123 @@ PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;
       RETURN FALSE
     END
   END IsComponentOf;
+
+
+PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
+(**This maps a type @oparam{t} onto the size and alignment constrains of the
+   destination architecture.  That is, it sets size and aligment of @oparam{t},
+   and calculates offsets of record fields.  The exact mapping is usually a
+   function of the target architecture.  The default implementation assumes a
+   generic 32 bit architecture.  See @ofield{Sym.Type.size} and
+   @ofield{Sym.Type.align} for more information.
+
+   @precond
+   @oparam{type} is not a @otype{Sym.TypeName}.  
+   There are no cyclic references between structured types (like records or
+   arrays) that are not broken by intermediate pointer types.
+   @end precond
+
+   @postcond
+   The field @ofield{type.size} and @ofield{type.align} are set, as are the
+   fields of all types that are part of @oparam{type} or are referenced by it.
+   @end postcond  *)
+  CONST
+    pointerSize = 4;
+    pointerAlign = 4;
+  VAR
+    i, size: LONGINT;
+    align, maxAlign, fieldAlign: INTEGER;
+    nested: Sym.Item;
+  BEGIN
+    IF (type. size = Sym.unknownSize) THEN
+      (* note: size and alignment of predefined types is defined in
+         module OOC:SymbolTable:Predef *)
+      WITH type: Sym.Pointer DO
+        type. SetSize (pointerSize, pointerAlign); (* this breaks any cycles *)
+        tr. AllocateType (type. baseType);
+
+      | type: Sym.FormalPars DO
+        type. SetSize (pointerSize, pointerAlign); (* this breaks any cycles *)
+        IF (type. receiver # NIL) THEN
+          tr. AllocateType (type. receiver. type);
+        END;
+        FOR i := 0 TO LEN (type. params^)-1 DO
+          tr. AllocateType (type. params[i]. type);
+        END;
+        
+      | type: Sym.Array DO
+        tr. AllocateType (type. elementType);
+        IF type. isOpenArray THEN
+          type. SetSize (Sym.dynamicSize, type. elementType. align);
+        ELSE
+          type. SetSize (type. length*type. elementType. size,
+                         type. elementType. align);
+        END;
+
+      | type: Sym.Record DO
+        (* initialize size and alignment, take base type into account *)
+        IF (type. baseType = NIL) THEN 
+          align := 1;  (* this alignment is also used if the record is empty *)
+          size := 0
+        ELSE
+          tr. AllocateType (type. baseType);
+          align := type. baseType. align;
+          size := type. baseType. size
+        END;
+      
+        (* determine maximum alignment value, as selected by ALIGN[1248] *)
+        (*IF (t. beFlags*{structAlign1..structAlign8} # {}) THEN
+          i := structAlign8;
+          WHILE ~(i IN t. beFlags) DO
+            DEC (i)
+          END;
+          maxAlign := SHORT (ASH (1, i-structAlign1))
+        ELSE*)
+          maxAlign := MAX (INTEGER);
+        (*END;*)
+
+        nested := type. nestedItems;
+        WHILE (nested # NIL) DO
+          WITH nested: Sym.FieldDecl DO
+            fieldAlign := nested. type. align;
+            IF (fieldAlign > maxAlign) THEN
+              fieldAlign := maxAlign
+            END;
+            
+            IF (fieldAlign > align) THEN
+              (* record's alignment is the highest alignment of all fields *)
+              align := fieldAlign
+            END;
+            
+            IF type. isUnion THEN
+              (* union type: map all fields to the same offset 0; the overall 
+                 size is equal to the size of the largest union element *)
+              nested. SetOffset (0);
+              IF (nested. type. size > size) THEN
+                size := nested. type. size
+              END
+            ELSE
+              (* record type: adjust the offset to satisfy the field's
+                 alignment requirements, then add field size to record size *)
+              IF (size MOD fieldAlign # 0) THEN
+                INC (size, fieldAlign - size MOD fieldAlign)
+              END;
+              nested. SetOffset (size);
+              INC (size, nested. type. size)
+            END
+          ELSE  (* ignore *)
+          END;
+          nested := nested. nextNested
+        END;
+        
+        (* adjust record size to be a multiple of its alignment *)
+        IF (size MOD align # 0) THEN
+          type. SetSize (size + align - size MOD align, align)
+        ELSE
+          type. SetSize (size, align)
+        END;
+      END;
+    END;
+  END AllocateType;
 
 END OOC:SymbolTable:TypeRules.

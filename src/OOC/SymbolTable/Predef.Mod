@@ -54,18 +54,11 @@ CONST
      name when producing values the are array indices or lengths.  *)
   
 CONST
-  (* These represent set of types that may be treated similarly. *)
-
-  classChar* = {char, longchar};
-  classInteger* = {shortint, integer, longint};
-  classReal* = {real, longreal};
-  classNumeric* = classInteger + classReal;
-  classSet* = {set};
-
-CONST
   (* predefined procedures and functions *)
   assert* = 0;                           (* ASSERT *)
   len* = 1;                              (* LEN *)
+  size* = 2;                             (* SIZE *)
+
 
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
   VAR
@@ -82,12 +75,14 @@ PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
 PROCEDURE PredefType (stb: Builder.Builder;
                       module: Sym.Module;
                       id: Sym.PredefId;
-                      name: ARRAY OF CHAR): Sym.PredefType;
+                      name: ARRAY OF CHAR;
+                      size: LONGINT; align: INTEGER): Sym.PredefType;
   VAR
     ptype: Sym.PredefType;
     tdecl: Sym.TypeDecl;
   BEGIN
     ptype := stb. NewPredefType (module, id);
+    ptype. SetSize (size, SHORT (size));
     Sym.predefIdToType[id] := ptype;
     IF (name # "") THEN
       tdecl := stb. NewTypeDecl (module, GetName (name), 0,
@@ -126,25 +121,26 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     module := stb. NewModule (GetName ("#predef"), NIL, Sym.mcInternal,
                               Sym.callConvInternal, NIL);
     
-    ptype := PredefType (stb, module, boolean, "BOOLEAN");
+    ptype := PredefType (stb, module, boolean, "BOOLEAN", 1, 1);
     PredefConst ("FALSE", Boolean.New (FALSE), ptype);
     PredefConst ("TRUE", Boolean.New (TRUE), ptype);
     
-    ptype := PredefType (stb, module, char, "CHAR");
-    ptype := PredefType (stb, module, longchar, "LONGCHAR");
-    ptype := PredefType (stb, module, shortint, "SHORTINT");
-    ptype := PredefType (stb, module, integer, "INTEGER");
-    ptype := PredefType (stb, module, longint, "LONGINT");
-    ptype := PredefType (stb, module, real, "REAL");
-    ptype := PredefType (stb, module, longreal, "LONGREAL");
-    ptype := PredefType (stb, module, set, "SET");
+    ptype := PredefType (stb, module, char, "CHAR", 1, 1);
+    ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2);
+    ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1);
+    ptype := PredefType (stb, module, integer, "INTEGER", 2, 2);
+    ptype := PredefType (stb, module, longint, "LONGINT", 4, 4);
+    ptype := PredefType (stb, module, real, "REAL", 4, 4);
+    ptype := PredefType (stb, module, longreal, "LONGREAL", 8, 8);
+    ptype := PredefType (stb, module, set, "SET", 4, 4);
     
-    ptype := PredefType (stb, module, charString, "");
-    ptype := PredefType (stb, module, longcharString, "");
-    ptype := PredefType (stb, module, void, "");
+    ptype := PredefType (stb, module, charString, "", Sym.dynamicSize, 1);
+    ptype := PredefType (stb, module, longcharString, "", Sym.dynamicSize, 2);
+    ptype := PredefType (stb, module, void, "", 0, 1);
     
     PredefProc (assert, "ASSERT");
     PredefProc (len, "LEN");
+    PredefProc (size, "SIZE");
     
     stb. Finalize (module);
     RETURN module
@@ -159,9 +155,9 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
     module := stb. NewModule (GetName ("SYSTEM"), NIL, Sym.mcInternal,
                               Sym.callConvInternal, NIL);
     
-    ptype := PredefType (stb, module, address, "ADDRESS");
-    ptype := PredefType (stb, module, byte, "BYTE");
-    ptype := PredefType (stb, module, ptr, "PTR");
+    ptype := PredefType (stb, module, address, "ADDRESS", 4, 4);
+    ptype := PredefType (stb, module, byte, "BYTE", 1, 1);
+    ptype := PredefType (stb, module, ptr, "PTR", 4, 4);
     
     stb. Finalize (module);
     RETURN module
