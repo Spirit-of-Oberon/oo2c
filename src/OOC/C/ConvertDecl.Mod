@@ -119,10 +119,13 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
         END;
         RETURN fct
 
-      | type: Sym.Array DO
-        ASSERT (type. isOpenArray);
-        RETURN w. NewArray (ConvertType (w, type. elementType, type. srcCodeElementType), -1)
-(*              ConvertType (type. srcCodeElementType)*)
+        | type: Sym.Array DO
+          IF type. isOpenArray THEN
+            RETURN w. NewArray (ConvertType (w, type. elementType, type. srcCodeElementType), -1)
+          ELSE
+            RETURN w. NewArray (ConvertType (w, type. elementType, type. srcCodeElementType), type. length)
+          END;
+          
       | type: Sym.Record DO
         ASSERT (FALSE)
 (*              IF (type. srcCodeBaseType # NIL) THEN
@@ -204,8 +207,10 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
 (*          ConvertType (item. srcCodeType)*)
 
     | item: Sym.TypeDecl DO
-      ASSERT (FALSE);
-(*          ConvertType (item. srcCodeType)*)
+      RETURN w. NewDeclaration (Naming.NameOfDeclaration (item),
+                                DeclWriter.tqNone,
+                                DeclWriter.scTypedef,
+                                ConvertType (w, item. type, item. srcCodeType))
     END
   END ConvertDecl;
 
