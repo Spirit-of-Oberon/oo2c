@@ -13,6 +13,7 @@
 #endif
 #define MAX_BACKTRACE_LEVELS 20  /* max number of backtraced procedure calls */
 
+/* note: __config.h might set defines for gc.h, like GC_PTHREADS */
 #if defined(HAVE_LIBGC) && defined(HAVE_GC_GC_H)
 #  define USE_BOEHM_GC
 #  include <gc/gc.h>
