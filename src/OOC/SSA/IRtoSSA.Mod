@@ -1045,7 +1045,14 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       fpar: Sym.VarDecl;
       type: Sym.Type;
       isVarParam: BOOLEAN;
+      args: POINTER TO ARRAY OF SSA.Result;
     BEGIN
+      (* evaluate arguments right to left, and procedure designator last *)
+      NEW(args, LEN(call.arguments^));
+      FOR i := LEN (call. arguments^)-1 TO 0 BY -1 DO
+        args[i] := Expression (call. arguments[i]);
+      END;
+      
       instr := pb. AddInstr (Opcode.call, Opcode.TypeToSubclass (call. type));
       instr. AddTypedOpnd (Expression (call. design), Opnd.procAdr,
                            call. design. type, FALSE);
@@ -1058,8 +1065,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           type := call. arguments[i]. type;
           isVarParam := FALSE;
         END;
-        instr. AddTypedOpnd (Expression (call. arguments[i]),
-                             Opnd.arg, type, isVarParam);
+        instr. AddTypedOpnd (args[i], Opnd.arg, type, isVarParam);
       END;
       RETURN instr
     END Call;
