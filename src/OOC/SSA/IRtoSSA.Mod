@@ -70,31 +70,14 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := instr. AddResult (Result.store)
     END Chain;
 
-  PROCEDURE FixSubclass(arg: SSA.Result; subclass: Opcode.Subclass): SSA.Result;
-    VAR
-      instr: SSA.Instr;
-    BEGIN
-      IF (arg.subclass # subclass) THEN
-        WITH arg: SSA.Const DO
-          RETURN pb.GetConst(arg.value, subclass, NIL);
-        ELSE
-          instr := pb.AddInstr(Opcode.typeConv, subclass);
-          instr. AddOpnd (arg, Opnd.arg);
-          RETURN instr;
-        END;
-      ELSE
-        RETURN arg;
-      END;
-    END FixSubclass;
-  
   PROCEDURE FixAddress(arg: SSA.Result): SSA.Result;
     BEGIN
-      RETURN FixSubclass(arg, Opcode.scAddress);
+      RETURN pb.FixSubclass(arg, Opcode.scAddress);
     END FixAddress;
   
   PROCEDURE FixLength(arg: SSA.Result): SSA.Result;
     BEGIN
-      RETURN FixSubclass(arg, Opcode.scLength);
+      RETURN pb.FixSubclass(arg, Opcode.scLength);
     END FixLength;
   
   PROCEDURE ^ Call (call: IR.Call): SSA.Instr;
@@ -778,8 +761,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: IR.Adr DO
         res := Expression (expr. design);
         IF (res. instr. opcode = Opcode.get) THEN
-          RETURN FixSubclass(res. instr. GetArgClass (Opnd.readAdr),
-                             Opcode.TypeToSubclass(expr.type));
+          RETURN pb.FixSubclass(res. instr. GetArgClass (Opnd.readAdr),
+                                Opcode.TypeToSubclass(expr.type));
         ELSE
           (* must be a string constant; currently, this is its own address
              FIXME... we should probably introduce an address opcode here *)
