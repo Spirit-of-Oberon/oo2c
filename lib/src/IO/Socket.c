@@ -384,7 +384,7 @@ void IO_Socket__SocketDesc_ConnectDone(IO_Socket__Socket s) {
   int error, len, rc;
   
   len = sizeof(error);
-  if ((rc = getsockopt(s->fd, SOL_SOCKET, SO_ERROR, &error, &len)) < 0) {
+  if ((rc = getsockopt(s->fd, SOL_SOCKET, SO_ERROR, (void*)&error, &len)) < 0) {
     s->res = get_error(rc);	/* Solaris pending error */
   } else {
     /* Berkeley-derived implementations return an rc of 0, with the
