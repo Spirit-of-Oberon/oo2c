@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Make:Command:TranslateToC;
+MODULE OOC:Make:Command:TranslateToC [OOC_EXTENSIONS];
 (*  Translates a module file into a bunch of C code files.
     Copyright (C) 2001, 2002  Michael van Acken
 
@@ -21,17 +21,20 @@ MODULE OOC:Make:Command:TranslateToC;
 *)
 
 IMPORT
-  Log,
-  Channel, Make, StdChannels, ADT:String, ADT:Dictionary, Language:String8,
-  StringSearch, OOC:Make:Entity:ModuleFile,
+  Channel, Make, StdChannels, ADT:String, ADT:Dictionary, 
+  OOC:Make:Entity:ModuleFile,
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Predef,
-  OOC:SymbolTable:TypeRules,
-  OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:Naming,
-  WriteSSA := OOC:SSA:WriteC;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, 
+  OOC:C:DeclWriter, OOC:C:ConvertDecl;
+
+TYPE
+  Translator* = POINTER TO TranslatorDesc;
+  TranslatorDesc* = RECORD [ABSTRACT]
+    w-: DeclWriter.Writer;
+  END;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -41,13 +44,29 @@ TYPE
     errList: Error.List;
     writeAST: BOOLEAN;
     writeIR: BOOLEAN;
-    useSSA: BOOLEAN;
-    inspectProc: StringSearch.Matcher;
+    translator: Translator;
   END;
 
+
+PROCEDURE InitTranslator* (t: Translator);
+  BEGIN
+    t. w := NIL;
+  END InitTranslator;
+
+PROCEDURE (t: Translator) SetWriter* (w: DeclWriter.Writer);
+  BEGIN
+    t. w := w;
+  END SetWriter;
+
+PROCEDURE (t: Translator) [ABSTRACT] WriteProcBody* (proc: IR.Procedure);
+  END WriteProcBody;
+
+PROCEDURE (t: Translator) [ABSTRACT] WriteModuleBody* (statmSeq: IR.StatementSeq);
+  END WriteModuleBody;
+
+
 PROCEDURE New* (context: Make.Context; module: Repository.Module;
-                writeAST, writeIR, useSSA: BOOLEAN;
-                inspectProc: StringSearch.Matcher): Command;
+                writeAST, writeIR: BOOLEAN; translator: Translator): Command;
   VAR
     cmd: Command;
   BEGIN
@@ -57,8 +76,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
     cmd. errList := NIL;
     cmd. writeAST := writeAST;
     cmd. writeIR := writeIR;
-    cmd. useSSA := useSSA;
-    cmd. inspectProc := inspectProc;
+    cmd. translator := translator;
     RETURN cmd
   END New;
 
@@ -173,173 +191,7 @@ PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
   END WriteDeclFile;
 
 PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
-                         moduleIR: IR.Module;
-                         tr: TypeRules.Rules;
-                         useSSA: BOOLEAN; inspectProc: StringSearch.Matcher);
-  PROCEDURE ^ WriteExpr (w : DeclWriter.Writer; expr : IR.Expression);
-    
-  PROCEDURE Call (statm: IR.Call);
-    VAR
-      i: LONGINT;
-      design: IR.Expression;
-      name: String.String;
-    BEGIN
-      design := statm. design;
-      WITH design: IR.ProcedureRef DO
-        name := Naming.NameOfDeclaration (design. decl);
-        w. WriteString (name. array^)
-      END;
-      w. WriteString ("(");
-      FOR i := 0 TO LEN (statm. arguments^)-1 DO
-        (* FIXME... this may be incorrect if the argument list includes
-           multiple occurences of expressions that should only be 
-           evaluated once *)
-        IF (i # 0) THEN
-          w. WriteString (", ")
-        END;
-        WriteExpr (w, statm. arguments[i])
-      END;
-      w. WriteString (")");
-    END Call;
- 
-  PROCEDURE SetRange(expr : IR.SetRange);
-
-    PROCEDURE Bit(expr : IR.Expression; next : BOOLEAN);
-    BEGIN
-      w. WriteString("(1<<(");
-      WriteExpr(w, expr);
-      IF next THEN w.WriteString("+1") END;
-      w.WriteString("))");
-    END Bit;
-
-  BEGIN
-    IF expr.to = expr.from THEN
-      Bit(expr.from, FALSE);
-    ELSE
-      w. WriteString ("(");
-      Bit(expr.to, TRUE);
-      w. WriteString("-");
-      Bit(expr.from, FALSE);
-      w. WriteString(")");
-    END;
-  END SetRange;
-
-  PROCEDURE WriteExpr (w: DeclWriter.Writer;
-                       expr: IR.Expression);
-    VAR
-      name: String.String;
-    BEGIN
-      WITH expr: IR.Const DO
-        w. WriteConst (expr. value, expr. type)
-        
-      | expr: IR.Var DO
-        name := Naming.NameOfDeclaration (expr. decl);
-        w. WriteString (name. array^);
-        
-      | expr: IR.Adr DO
-        (* FIXME... this is a workaround to get addresses of string constants
-           translated properly; breaks horribly for all other cases *)
-        WriteExpr (w, expr. design);
-        
-      | expr: IR.Len DO
-        (* FIXME... there are a lot more variants to LEN than the length
-           of a string constant *)
-        ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
-        w. WriteLInt (expr. array(IR.Const). value(String8.Value). value. length+1, 0);
-                      
-      | expr: IR.Negate DO
-        w. WriteChar ("-");
-        WriteExpr (w, expr. operand);
-
-      | expr: IR.BinaryArith DO
-        WriteExpr(w, expr. left);
-	CASE expr.variant OF
-        | IR.arithAdd:  w. WriteChar("+");
-	| IR.arithSub:  w. WriteChar("-");
-	| IR.arithDivI: w. WriteChar("/");
-	| IR.arithDivR: w. WriteChar("/");
-	| IR.arithMul:  w. WriteChar("*");
-	| IR.arithMod:  w. WriteChar("%");
-	END;
-        WriteExpr(w, expr. right);
-
-      | expr: IR.SetOp DO
-        WriteExpr(w, expr.left);
-        CASE expr.variant OF
-        | IR.setUnion:  w. WriteChar("|");
-        | IR.setDiff:   w. WriteString("& ~");
-        | IR.setIntersect: w. WriteChar("&");
-        | IR.setSymDiff:   w. WriteChar("^");
-        END;
-        WriteExpr(w, expr.right);        
-
-      | expr: IR.TypeConv DO
-        WriteExpr(w, expr.expr);  (* FIXME! generate type casts if required *)
-        
-      | expr: IR.Call DO
-        Call (expr)
-
-      | expr : IR.SetRange DO
-        SetRange(expr);
-      ELSE
-        Log.Type("++ Unknown operator class in WriteExpr", expr);
-        ASSERT (FALSE)
-      END
-    END WriteExpr;
-    
-
-  PROCEDURE WriteStatmSeq (w: DeclWriter.Writer;
-                           statmSeq: IR.StatementSeq);
-    VAR
-      i: LONGINT;
-      statm: IR.Statement;
-    
-    PROCEDURE Assert (statm: IR.Assert);
-      BEGIN
-        IF ~statm. disabled THEN
-          w. WriteLn;
-          w. WriteString ("_assert(");
-          WriteExpr (w, statm. predicate);
-          w. WriteString (", ");
-          w. WriteLInt (statm. code, 0);
-          w. WriteString (", ");
-          w. WriteString ("0");  (* ... file position missing *)
-          w. WriteString (");")
-        END
-      END Assert;
-    
-    PROCEDURE Return (return: IR.Return);
-      BEGIN
-        w. WriteLn;
-        IF (return. result = NIL) THEN
-          w. WriteString ("return;")
-        ELSE
-          w. WriteString ("return ");
-          WriteExpr (w, return. result);
-          w. WriteString (";")
-        END;
-      END Return;
-    
-    BEGIN
-      (* quick and dirty translation with limited scope; should be placed
-         in a separate module ... *)
-      FOR i := 0 TO LEN (statmSeq^)-1 DO
-        statm := statmSeq[i];
-        WITH statm: IR.Assert DO
-          Assert (statm)
-        | statm: IR.Call DO
-          w. WriteLn;
-          Call (statm);
-          w. WriteChar (";");
-        | statm: IR.Return DO
-          Return (statm)
-        ELSE
-          Log.Type("++ Unknown statement class in WriteStatmSeq", statm);
-          ASSERT (FALSE)
-        END
-      END
-    END WriteStatmSeq;
-  
+                         moduleIR: IR.Module; translator: Translator);
   PROCEDURE WriteProcedures (w: DeclWriter.Writer;
                              procList: IR.ProcedureList);
     VAR
@@ -351,11 +203,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
         w. WriteLn;
         w. WriteDeclaration (d);
         w. WriteString (" {");
-        IF useSSA THEN
-          WriteSSA.ProcBody (w, tr, procList[i], inspectProc);
-        ELSE
-          WriteStatmSeq (w, procList[i]. statmSeq);
-        END;
+        translator. WriteProcBody (procList[i]);
         w. WriteLn;
         w. WriteString ("}");
         w. WriteLn
@@ -364,6 +212,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
   
   BEGIN
     w. WriteInclude (m. GetURI (Repository.modDeclFileC));
+    translator. SetWriter (w);
     
     (* include full __oo2c.h only in generated C code files; this way,
        the .h and .d files can be used without pulling in all the 
@@ -373,7 +222,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
     WriteProcedures (w, moduleIR. procList);
     w. WriteLn;
     WriteModuleName (w, "void ", m, "_init(void) {", FALSE);
-    WriteStatmSeq (w, moduleIR. statmSeq);
+    translator. WriteModuleBody (moduleIR. statmSeq);
     w. WriteLn;
     w. WriteString ("}");
     w. WriteLn;
@@ -406,8 +255,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         | Repository.modDeclFileC:
           WriteDeclFile (w, m, symTab, exports);
         | Repository.modCodeFileC:
-          WriteCodeFile (w, m, module, config. typeRules,
-                         cmd. useSSA, cmd. inspectProc);
+          WriteCodeFile (w, m, module, cmd. translator);
         END;
         w. Close (res);
       END;
