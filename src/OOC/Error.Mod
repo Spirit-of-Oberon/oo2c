@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Error;
 (*  Creates lists of error messages and converts them to text.
-    Copyright (C) 1999, 2000, 2001, 2002  Michael van Acken
+    Copyright (C) 1999, 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -116,6 +116,14 @@ PROCEDURE IsWarning (msg: Msg): BOOLEAN;
     END;
     RETURN found;
   END IsWarning;
+
+PROCEDURE (l: List) AppendWarning*(msg: Msg);
+  VAR
+    msgPos: M.Attribute;
+  BEGIN
+    msgPos := msg.GetAttribute(posAttr);
+    l.Append^(msg);
+  END AppendWarning;
 
 PROCEDURE (l: List) Append* (msg: Msg);
   VAR

@@ -32,7 +32,7 @@ IMPORT
   OOC:Doc:ResolveRef, Rep := OOC:Repository, OOC:AST,
   Sym := OOC:SymbolTable, OOC:SymbolTable:CreateNamespace,
   OOC:SymbolTable:InterfaceDescr, OOC:SymbolTable:InterfaceXML,
-  OOC:Auxiliary:ParseModule, OOC:Make:LinkProgramC,
+  OOC:SymbolTable:Uses, OOC:Auxiliary:ParseModule, OOC:Make:LinkProgramC,
   
   OOC:C:IRtoC,
   OOC:Config:CCompiler, OOC:Make:TranslateToC,
@@ -87,6 +87,9 @@ TYPE
     (**If @code{TRUE}, then compile module even if all derived files are up
        to date with respect to the source code.  This flag has no effect if
        no source code is available.  *)
+
+    uses: Uses.Uses;
+    (**Used to track uses of a given list of objects.  Can be @code{NIL}.  *)
   END;
 
 CONST
@@ -156,6 +159,8 @@ PROCEDURE InitRules* (r: Rules);
     r.runCreateNamespace := TRUE;
     r.errout := StdChannels.stdout;
     r.forceUpdate := FALSE;
+    r.forceUpdate := FALSE;
+    r.uses := NIL;
   END InitRules;
 
 PROCEDURE NewRules*(): Rules;
@@ -194,6 +199,12 @@ PROCEDURE (r: Rules) SetForceUpdate*(forceUpdate: BOOLEAN);
   BEGIN
     r.forceUpdate := forceUpdate;
   END SetForceUpdate;
+
+PROCEDURE (r: Rules) ListUsesOf*(extIdent: ARRAY OF CHAR): BOOLEAN;
+  BEGIN
+    r.uses := Uses.New(extIdent);
+    RETURN (r.uses # NIL);
+  END ListUsesOf;
 
 PROCEDURE (r: Rules) SetExtensionDict*(dict: Dictionary.Dictionary);
   BEGIN
@@ -406,7 +417,7 @@ RAISES IO.Error;
       (* the symbol file does not exist, or the source file is more recent
          than the symbol file: extract information from source file *)
       ParseModule.ParseModule(module, FALSE, FALSE, FALSE, TRUE,
-                              r.libraryName,
+                              r.libraryName, r.uses,
                               ast, symTab, pragmaHistory, errList);
       IF errList.NoErrors() THEN
         module.SetInterfaceData(symTab, Rep.importsOnly,
@@ -469,7 +480,7 @@ RAISES IO.Error;
       pragmaHistory: Pragmas.History;
     BEGIN
       ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE, libraryName,
-                               ast, symTab, pragmaHistory, errList);
+                               r.uses, ast, symTab, pragmaHistory, errList);
       RETURN errList;
     END DoEmptyBackend;
   
@@ -479,7 +490,8 @@ RAISES IO.Error;
       t: TranslateToC.Translator;
     BEGIN
       t := SSAtoC.NewTranslator(writeStats, inspectProc, inspectStage);
-      RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
+      RETURN TranslateToC.Run(module, libraryName, r.uses,
+                              writeAST, writeIR, t);
     END DoSSAtoC;
   
   PROCEDURE DoIRtoC(libraryName: STRING): Error.List
@@ -488,7 +500,8 @@ RAISES IO.Error;
       t: TranslateToC.Translator;
     BEGIN
       t := IRtoC.NewTranslator();
-      RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
+      RETURN TranslateToC.Run(module, libraryName, r.uses,
+                              writeAST, writeIR, t);
     END DoIRtoC;
   
   PROCEDURE DoSSAtoIA32(libraryName: STRING): Error.List
@@ -497,7 +510,8 @@ RAISES IO.Error;
       t: TranslateToIA32.Translator;
     BEGIN
       t := SSAtoIA32.NewTranslator(module, inspectProc, inspectStage);
-      RETURN TranslateToIA32.Run(module, libraryName, writeAST, writeIR, t);
+      RETURN TranslateToIA32.Run(module, libraryName, r.uses,
+                                 writeAST, writeIR, t);
     END DoSSAtoIA32;
   
   BEGIN
@@ -616,7 +630,7 @@ RAISES IO.Error;
 
       IF isUpToDate THEN
         errList := CreateErrList(module);
-        CreateNamespace.CreateNamespace(module.ifData, errList);
+        CreateNamespace.CreateNamespace(module.ifData, r.uses, errList);
         r.WriteErrList(errList);
         IF ~errList.NoErrors() THEN
           r.WriteErrList(errList);
@@ -657,7 +671,7 @@ RAISES IO.Error;
          depending on only the local symbol file should be sufficient  *)
       IF DerivedIsOlder(module, Rep.modInterfaceDescr, Rep.modSymbolFile) THEN
         errList := CreateErrList(module);
-        CreateNamespace.CreateNamespace(module.ifData, errList);
+        CreateNamespace.CreateNamespace(module.ifData, r.uses, errList);
         ResolveRef.Resolve(module.ifData, errList);
         ASSERT (errList.msgCount = 0);
         
@@ -695,7 +709,7 @@ RAISES IO.Error;
         errList := CreateErrList(module);
 
         ParseModule.ParseModule(module, FALSE, TRUE, FALSE, FALSE,
-                                r.libraryName,
+                                r.libraryName, r.uses,
                                 ast, symTab, pragmaHistory, errList);
         IF errList.NoErrors() THEN
           outputChannel := module.GetOutputChannel(Rep.modInterfaceXML, TRUE);

@@ -7,7 +7,7 @@ IMPORT
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,
   OOC:Parser, OOC:AST, OOC:AST:ExtTree,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Builder,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Builder, OOC:SymbolTable:Uses,
   OOC:AST:ExtTree:CreateSymTab, OOC:SymbolTable:CreateNamespace,
   OOC:Auxiliary:WriteSymbolFile;
   
@@ -17,6 +17,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
                         checkModuleName, createNamespace,
                         writeSymbolFile, abortAfterImport: BOOLEAN;
                         libraryName: STRING;
+                        uses: Uses.Uses;
                         VAR ast: AST.Node;
                         VAR symTab: Sym.Module;
                         VAR pragmaHistory: Pragmas.History;
@@ -89,7 +90,7 @@ RAISES IO.Error;
            m. origin. baseURI);
         IF createNamespace THEN
           IF errList.NoErrors() THEN
-            CreateNamespace.CreateNamespace (symTab, errList)
+            CreateNamespace.CreateNamespace (symTab, uses, errList)
           END;
           IF errList.NoErrors() & writeSymbolFile THEN
             (* no error in the declaration part of the module: write the

@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 
 IMPORT
   Msg, IO, ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable,
-  OOC:SymbolTable:Namespace,
+  OOC:SymbolTable:Namespace, OOC:SymbolTable:Uses,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Predef, OOC:SymbolTable:ImportModules, OOC:Doc:ResolveRef;
 
@@ -129,6 +129,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 
 PROCEDURE ResolveQualident* (ns: Sym.Namespace; contextOfUse: Sym.Item;
+                             uses: Uses.Uses;
                              module, ident: Sym.Name): Sym.Declaration;
   VAR
     m, decl: Sym.Declaration;
@@ -137,17 +138,16 @@ PROCEDURE ResolveQualident* (ns: Sym.Namespace; contextOfUse: Sym.Item;
     IF (m = NIL) OR ~(m IS Sym.Import) THEN
       RETURN NIL;
     ELSE
-      m.IncrUsageCount();
+      Uses.Mark(m, uses, module);
       ns := m(Sym.Import).externalSymTab.ns;
     END;
     decl := ns.Identify(contextOfUse, ident, FALSE);
-    IF (decl # NIL) THEN
-      decl.IncrUsageCount();
-    END;
+    Uses.Mark(decl, uses, ident);
     RETURN decl;
   END ResolveQualident;
 
 PROCEDURE CreateNamespace* (root: Sym.Module;
+                            uses: Uses.Uses;
                             errList: Error.List)
 RAISES IO.Error;
 (**Populates the namespaces of the symbol table @oparam{root} and performs
@@ -159,7 +159,10 @@ RAISES IO.Error;
    @omodule{TR}.  Any errors are reported to the error list @oparam{errList}.
    After successful completion of this procedure, the symbol table
    @oparam{root} can be used to resolve any using occurences of names within
-   the module's source code.  *)
+   the module's source code.
+
+   If @oparam{uses} is not @code{NIL}, then declarations are registered with
+   this object, and it is notified for references to module and type names.  *)
   VAR
     lastError: Error.Msg;
     visited, privateRecords: Dictionary.Dictionary;
@@ -222,9 +225,7 @@ RAISES IO.Error;
               (* for each of the imported modules: create namespace information
                  and resolve any reference commands in embedded documentation
                  strings *)
-              CreateNamespace (ptr. externalSymTab, errList);
-(*              ResolveRef.Resolve (ptr. externalSymTab, repositories, errList)
-... moved to end of CreateNamespace *)
+              CreateNamespace (ptr. externalSymTab, NIL, errList);
             END
           ELSE
           END;
@@ -453,9 +454,7 @@ RAISES IO.Error;
           IF (typeName. module # NIL) THEN
             (* resolve module name to get to external namespace *)
             item := ns. Identify (contextOfUse, typeName. module, FALSE);
-            IF (item # NIL) THEN
-              item.IncrUsageCount();
-            END;
+            Uses.Mark(item, uses, typeName.module);
             IF (item = NIL) THEN
               Err (undeclaredModule, typeName);
               RETURN typeName
@@ -478,11 +477,11 @@ RAISES IO.Error;
           ELSE
             (* if the type name refers to a name redirection, then resolve the
                redirection and continue with the resulting symbol table entry  *)
-            item.IncrUsageCount();
+            Uses.Mark(item, uses, typeName.ident);
             itemRedir := item;
             WITH itemRedir: Sym.Redirect DO
               item := ResolveQualident(contextOfUse.Namespace(), contextOfUse,
-                                       itemRedir.module, itemRedir.ident);
+                                      uses, itemRedir.module, itemRedir.ident);
               IF (item = NIL) THEN
                 Err (undeclaredIdent, typeName);
                 RETURN typeName;
@@ -999,6 +998,10 @@ RAISES IO.Error;
       END;
     ELSE
     END;
+
+    IF (uses # NIL) THEN
+      uses.StartModule(root, errList);
+    END;
     
     (* The declarations of a module are resolved in a multi-pass process.
        Instead of reading the parse tree, creating the symbol tale, and
@@ -1083,7 +1086,11 @@ RAISES IO.Error;
       CheckExtendedRecords (root, errList);
     END;
     
-    ResolveRef.Resolve (root, errList)
+    ResolveRef.Resolve (root, errList);
+    
+    IF (uses # NIL) & errList.NoErrors() THEN
+      uses.RegisterSymTab(root);
+    END;
   END CreateNamespace;
 
 (*PROCEDURE CreateNamespaceRec*(root: Sym.Module;
@@ -1118,8 +1125,8 @@ PROCEDURE Init* ();
     predef := Predef.CreatePredef (stb);
     system := Predef.CreateSYSTEM (stb);
     TRY
-      CreateNamespace (predef, Error.NewList (""));
-      CreateNamespace (system, Error.NewList(""));
+      CreateNamespace (predef, NIL, Error.NewList (""));
+      CreateNamespace (system, NIL, Error.NewList(""));
     CATCH IO.Error:
       (* cannot happen *)
     END;

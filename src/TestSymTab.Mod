@@ -55,7 +55,7 @@ RAISES IO.Error;
     errList: Error.List;
     pragmaHistory: Pragmas.History;
   BEGIN
-    ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE, NIL,
+    ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE, NIL, NIL,
                              ast, symTab, pragmaHistory, errList);
     (* symbol file is written by the `ParseModule' function *)
     r.WriteErrList(errList);
@@ -76,7 +76,7 @@ RAISES IO.Error;
     pragmaHistory: Pragmas.History;
   BEGIN
     IF r.Update(m, Rep.modSymbolFile) THEN
-      ParseModule.ParseModule (m, FALSE, r.resolve, FALSE, FALSE, NIL,
+      ParseModule.ParseModule (m, FALSE, r.resolve, FALSE, FALSE, NIL, NIL,
                                ast, symTab, pragmaHistory, errList);
       IF (errList. msgCount = 0) THEN
         outputURI := m. GetURI (Rep.modSymbolTableXML, FALSE);

@@ -26,7 +26,7 @@ IMPORT
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold, OOC:IR:CheckUses,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, 
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Uses,
   OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:RuntimeData;
 
 TYPE
@@ -213,7 +213,7 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
   END WriteCodeFile;
 
 
-PROCEDURE Run*(m: Repository.Module; libraryName: STRING;
+PROCEDURE Run*(m: Repository.Module; libraryName: STRING; uses: Uses.Uses;
                writeAST: BOOLEAN; writeIR: BOOLEAN;
                translator: Translator): Error.List
 RAISES IO.Error;
@@ -260,7 +260,7 @@ RAISES IO.Error;
     END CloseFile;
   
   BEGIN
-    ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE, libraryName,
+    ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE, libraryName, uses,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
        data in `symTab' to the view of client modules: declarations private to
@@ -271,7 +271,7 @@ RAISES IO.Error;
         ASTtoXML.Write (StdChannels.stdout, ast(ExtTree.Module));
       END;
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
-                                   IR.NewBuilder (symTab, pragmaHistory,
+                                   IR.NewBuilder (symTab, uses, pragmaHistory,
                                                   errList, 
                                                   ConstFold.NewConstFold()));
       IF errList.NoErrors() THEN

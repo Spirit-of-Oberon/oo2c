@@ -1131,10 +1131,10 @@ PROCEDURE (decl: Declaration) Load* (r: Storable.Reader) RAISES IO.Error;
     decl. usageCount := 0;
   END Load;
 
-PROCEDURE (decl: Declaration) IncrUsageCount*;
+PROCEDURE (decl: Declaration) IncrUsageCounter*;
   BEGIN
     INC(decl.usageCount);
-  END IncrUsageCount;
+  END IncrUsageCounter;
 
 
 PROCEDURE ExportTypePosition (type: Type): BOOLEAN;

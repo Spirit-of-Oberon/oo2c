@@ -29,7 +29,7 @@ Log,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Namespace,
-  OOC:SymbolTable:CreateNamespace;
+  OOC:SymbolTable:CreateNamespace, OOC:SymbolTable:Uses;
 
 (**Some rules regarding the intermediate representation (short ``IR''):
 
@@ -1038,6 +1038,7 @@ TYPE
     pragmaHistory: Pragmas.History;
     errList: Error.List;
     constFold- : ConstFold;
+    uses: Uses.Uses;
     
     errorExpr-: Const;
     (**This value is returned if there is no real value because of an error.
@@ -4904,7 +4905,7 @@ END InitConstFold;
 (* Class: Builder
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
+PROCEDURE InitBuilder* (b: Builder; module: Sym.Module; uses: Uses.Uses;
                         pragmaHistory: Pragmas.History; errList: Error.List;
                         fold : ConstFold);
   VAR
@@ -4939,9 +4940,10 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
     b. moduleType := NewModuleType (NIL, NIL);
     b. lastError := NIL;
     b. constFold := fold;
+    b. uses := uses;
     fold. builder := b;
 
-    string := CreateNamespace.ResolveQualident(module.ns, module,
+    string := CreateNamespace.ResolveQualident(module.ns, module, uses,
                                                Predef.nameStringModule,
                                                Predef.nameStringType);
     IF (string = NIL) THEN
@@ -4951,13 +4953,14 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
     END;
   END InitBuilder;
 
-PROCEDURE NewBuilder* (module: Sym.Module; pragmaHistory: Pragmas.History;
+PROCEDURE NewBuilder* (module: Sym.Module; uses: Uses.Uses;
+                       pragmaHistory: Pragmas.History;
                        errList: Error.List; constFold: ConstFold): Builder;
   VAR
     b: Builder;
   BEGIN
     NEW (b);
-    InitBuilder (b, module, pragmaHistory, errList, constFold);
+    InitBuilder (b, module, uses, pragmaHistory, errList, constFold);
     RETURN b
   END NewBuilder;
 
@@ -5000,13 +5003,15 @@ PROCEDURE (b: Builder) NewIdentRef* (baseNS, ns: Sym.Namespace;
     decl: Sym.Declaration;
     varRef: Var;
     redirModule: Sym.Item;
+    n: Sym.Name;
   BEGIN
     IF (name. id = Id.ident) THEN
-      decl := ns. Identify (context, b. GetName (name), FALSE);
+      n := b.GetName(name);
+      decl := ns. Identify (context, n, FALSE);
       IF (decl = NIL) THEN
         b. ErrSym (undeclaredIdent, name)
       ELSE
-        decl.IncrUsageCount();
+        Uses.Mark(decl, b.uses, n);
         WITH decl: Sym.ConstDecl DO
           RETURN NewConst (name, decl. type, decl. value)
         | decl: Sym.VarDecl DO
@@ -5060,6 +5065,7 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
   VAR
     varRef: Expression;
     decl: Sym.Declaration;
+    n: Sym.Name;
   BEGIN
     b.CheckFunctionOp(var, sym);
     IF (var. type IS Sym.Pointer) THEN
@@ -5069,11 +5075,9 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
     END;
     
     IF varRef. type IS Sym.Record THEN
-      decl := varRef. type(Sym.Record). ns. Identify
-          (context, b. GetName (name), FALSE);
-      IF (decl # NIL) THEN
-        decl.IncrUsageCount();
-      END;
+      n := b.GetName(name);
+      decl := varRef.type(Sym.Record).ns.Identify(context, n, FALSE);
+      Uses.Mark(decl, b.uses, n);
       
       IF decl = NIL THEN
         RETURN b.ErrExpr(undeclaredIdent, name);
