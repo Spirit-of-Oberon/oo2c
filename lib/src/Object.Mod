@@ -936,15 +936,53 @@ PROCEDURE (s: String) [ABSTRACT] Substring* (start, end: LONGINT): String;
    @end precond *)
   END Substring;
 
-PROCEDURE (s: String8) Substring* (start, end: LONGINT): String;
+PROCEDURE (s: String8) Substring* (start, end: LONGINT): String8;
   BEGIN
     RETURN NewString8(S.ADR(s.data^)+start, end-start);
   END Substring;
 
-PROCEDURE (s: String16) Substring* (start, end: LONGINT): String;
+PROCEDURE (s: String16) Substring* (start, end: LONGINT): String16;
   BEGIN
     RETURN NewString16(S.ADR(s.data^)+start*SIZE(LONGCHAR), end-start);
   END Substring;
+
+
+PROCEDURE (s: String) [ABSTRACT] Trim*(): String;
+(**Return the substring beginning with the first character of @oparam{s} and
+   ending with the last character of @oparam{s} with a code greater than space
+   (@samp{20X}).  If @oparam{s} contains no such characters, then result is the
+   empty string.  *)
+  END Trim;
+
+PROCEDURE (s: String8) Trim*(): String8;
+  VAR
+    a, b: LONGINT;
+  BEGIN
+    a := 0;
+    WHILE (a # s.length) & (s.data[a] <= " ") DO
+      INC(a);
+    END;
+    b := s.length;
+    WHILE (b # a) & (s.data[b-1] <= " ") DO
+      DEC(b);
+    END;
+    RETURN NewString8(S.ADR(s.data^)+a, b-a);
+  END Trim;
+
+PROCEDURE (s: String16) Trim*(): String16;
+  VAR
+    a, b: LONGINT;
+  BEGIN
+    a := 0;
+    WHILE (a # s.length) & (s.data[a] <= " ") DO
+      INC(a);
+    END;
+    b := s.length;
+    WHILE (b # a) & (s.data[b-1] <= " ") DO
+      DEC(b);
+    END;
+    RETURN NewString16(S.ADR(s.data^)+a*SIZE(LONGCHAR), b-a);
+  END Trim;
 
 
 PROCEDURE (s: String) [ABSTRACT] IndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT;
