@@ -7,7 +7,11 @@
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
   select ="&SetupTestCasesWithOut; div1 div2 mod1 mod2">-->
-  
+
+<!--<testsuite-ext
+  profile="Test Suite for Framework Testing"
+  select ="&SetupTestCasesWithOut; opArray1 opArray2 opArray3 opArray4 opArray5 opArray6">-->
+
   &TestSetupWithOut;
     
   <testcases profile="OOC2 Development" default-lang="O2">
@@ -387,7 +391,31 @@
       Calling a nested procedure, which sets a variable of the 
       enclosing procedure that is shadowed by one of its parameters.
     </test>
-    
+
+    <test id="opArray1" type="run"  
+          file="OpArray1.Mod" output="OpArray1.Ref">
+      Exercise array designators.
+    </test>
+
+    <test id="opArray2" type="reject" relevance="informal" file="OpArray2.Mod">
+      Array designator applied to non-array.
+    </test>
+
+    <test id="opArray3" type="reject" relevance="informal" file="OpArray3.Mod">
+      Array indexed by non-integer.
+    </test>
+
+    <test id="opArray4" type="reject" relevance="informal" file="OpArray4.Mod">
+      Constant array index exceeds array length.
+    </test>
+
+    <test id="opArray5" type="reject" relevance="informal" file="OpArray5.Mod">
+      Constant array index is negative.
+    </test>
+
+    <test id="opArray6" type="reject" relevance="informal" file="OpArray6.Mod">
+      Array designator applied to function result.
+    </test>
   </testcases>
     
   <processor-info processor-name="TestCompile">
