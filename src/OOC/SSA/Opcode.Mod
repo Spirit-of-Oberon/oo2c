@@ -401,31 +401,42 @@ CONST
   not* = 33;
   (**Boolean @samp{NOT}.  *)
 
-  typeConv* = 34;
+  logicalAnd* = 34;
+  logicalOr* = 35;
+  logicalXor* = 36;
+  logicalComplement* = 37;
+  (* 38 unused *)
+  
+  typeConv* = 39;
   (**Type conversion operation.  Takes one argument, the value that should be
      converted.  The result type of the convertion is the instructions's
      subclass, the source type that of the first argument.  *)
-  setMember* = 35;
+  setMember* = 40;
   (**Set membership test.  First argument is an index, second is the
      set value.  *)
-  setRange* = 36;
+  setRange* = 41;
   (**Set range.  Produces a set with the elements [from, to] inclusive.
      The range is empty if to<from.  *)
-  cap* = 37;
+  (* 42 unused *)
+  abs* = 43;
+  (**Absolute value.  *)
+  ash* = 44;
+  (**Arithmetic shift.  *)
+  cap* = 45;
   (**Capitalize character.  *)
-  entier* = 38;
+  entier* = 46;
   (**Floating point to integer, rounding to @samp{-inf}.  *)
-  odd* = 39;
+  odd* = 47;
   (**Return @code{TRUE} for odd numbers.  *)
   
-  assert* = 40;
+  assert* = 48;
   
-  call* = 41;
+  call* = 49;
   (**Used to call a procedure or a function.  The first argument is the
      address of the procedure to be called, followed by the call's arguments.
      This opcode is used both for normal and type-bound procedures.  *)
   
-  getLength* = 42;
+  getLength* = 50;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -444,7 +455,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 43;
+  copyParameter* = 51;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -462,7 +473,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 44;
+  newObject* = 52;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -482,7 +493,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 45;
+  typeTag* = 53;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -493,7 +504,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 46;
+  typeTest* = 54;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -509,7 +520,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 47;
+  tbProcAddress* = 55;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -524,7 +535,7 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  labels* = 48;
+  labels* = 56;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -595,7 +606,7 @@ PROCEDURE GetSubclassName* (subclass: Subclass; VAR name: ARRAY OF CHAR);
 PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of a (class, subclass) pair.  *)
   VAR
-    cstr, scstr: ARRAY 16 OF CHAR;
+    cstr, scstr: ARRAY 32 OF CHAR;
   BEGIN
     CASE class OF
     | const: cstr := "const";
@@ -646,10 +657,16 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | and: cstr := "and";
     | or: cstr := "or";
     | not: cstr := "not";
-
+    | logicalAnd: cstr := "logical-and";
+    | logicalOr: cstr := "logical-or";
+    | logicalXor: cstr := "logical-xor";
+    | logicalComplement: cstr := "logical-complement";
+      
     | typeConv: cstr := "type-conv";
     | setMember: cstr := "set-member";
     | setRange: cstr := "set-range";
+    | abs: cstr := "abs";
+    | ash: cstr := "ash";
     | cap: cstr := "cap";
     | entier: cstr := "entier";
     | odd: cstr := "odd";

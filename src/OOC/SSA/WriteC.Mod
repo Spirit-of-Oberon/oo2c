@@ -937,9 +937,23 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteDyadicOp (instr, "||");
       | Opcode.not:
         WriteMonadicOp (instr, "!", ";");
-
+      | Opcode.logicalAnd:
+        WriteDyadicOp (instr, "&");
+      | Opcode.logicalOr:
+        WriteDyadicOp (instr, "|");
+      | Opcode.logicalXor:
+        WriteDyadicOp (instr, "^");
+      | Opcode.logicalComplement:
+        WriteMonadicOp (instr, "!", ";");
+        
       | Opcode.setMember:
         WriteDyadicFct (instr, "_in");
+      | Opcode.setRange:
+        WriteDyadicFct (instr, "_bit_range");
+      | Opcode.abs:
+        WriteMonadicOp (instr, "_abs(", ");");
+      | Opcode.ash:
+        WriteDyadicFct (instr, "_ash");
       | Opcode.cap:
         WriteMonadicOp (instr, "_cap(", ");");
       | Opcode.entier:

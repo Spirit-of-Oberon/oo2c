@@ -524,6 +524,17 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. element), Opnd.arg);
         instr. AddOpnd (Expression (expr. set), Opnd.arg);
         RETURN instr;
+
+      | expr: IR.Abs DO
+        instr := pb. AddInstr (Opcode.abs, Opcode.TypeToSubclass (expr. type));
+        instr. AddOpnd (Expression (expr. operand), Opnd.arg);
+        RETURN instr;
+        
+      | expr: IR.Ash DO
+        instr := pb. AddInstr (Opcode.ash, Opcode.TypeToSubclass (expr. type));
+        instr. AddOpnd (Expression (expr. value), Opnd.arg);
+        instr. AddOpnd (Expression (expr. exp), Opnd.arg);
+        RETURN instr;
         
       | expr: IR.Cap DO
         instr := pb. AddInstr (Opcode.cap, Opcode.TypeToSubclass (expr. type));
@@ -568,6 +579,27 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           Log.Type("++ Unknown variant of BooleanOp in Expression", expr);
           ASSERT (FALSE);
         END;
+        
+      | expr: IR.SetOp DO
+        CASE expr.variant OF
+        | IR.setUnion : opcode := Opcode.logicalOr;
+(*        | IR.setDiff  : opcode := Opcode.subtract;*)
+        | IR.setIntersect : opcode := Opcode.logicalAnd;
+        | IR.setSymDiff : opcode := Opcode.logicalXor;
+        ELSE
+          Log.Int("++ Unknown variant of SetOp in Expression",
+                  expr. variant);
+          ASSERT (FALSE);
+        END;
+        instr := pb. AddInstr (opcode, Opcode.TypeToSubclass (expr.left.type));
+        instr. AddOpnd (Expression (expr. left), Opnd.arg);
+        instr. AddOpnd (Expression (expr. right), Opnd.arg);
+        RETURN instr;
+      | expr: IR.SetRange DO
+        instr := pb. AddInstr (Opcode.setRange, Opcode.TypeToSubclass (expr.type));
+        instr. AddOpnd (Expression (expr. from), Opnd.arg);
+        instr. AddOpnd (Expression (expr. to), Opnd.arg);
+        RETURN instr;
         
       | expr: IR.Compare DO
         CASE expr.variant OF
