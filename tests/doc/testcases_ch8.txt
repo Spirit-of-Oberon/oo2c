@@ -23,15 +23,15 @@ REJECT
 
 ACCEPT:
 
-  1) a is an array
+  1) a is an array [OpArray1]
   2) a is a pointer an array
 
 REJECT:
 
-  1) a does not designate an array or a pointer to array
-  2) e is not an integer
-  3) e is constant and not in the range 0 <= e < LEN(a)
-  4) a is the result of a function all
+  1) a does not designate an array or a pointer to array [OpArray2]
+  2) e is not an integer [OpArray3]
+  3) e is constant and not in the range 0 <= e < LEN(a) [OpArray4 OpArray5]
+  4) a is the result of a function all [OpArray6]
 
 ERROR:
 
@@ -59,14 +59,14 @@ ERROR:
 
 ACCEPT:
 
-  1) r is a record
+  1) r is a record [OpRecord1]
   2) r is a pointer to a record
 
 REJECT:
 
-  1) r is not a record or a pointer to a record.
-  2) there is no field or procedure f bound to the static type of r.
-  3) r is the result of a function all
+  1) r is not a record or a pointer to a record [OpRecord2]
+  2) there is no field or procedure f bound to the static type of r [OpRecord3]
+  3) r is the result of a function all [OpRecord4]
 
 ERROR:
 
@@ -75,12 +75,18 @@ ERROR:
 
   p^
 
+ACCEPT:
+
+  1) Explicit and implied pointer indirection [OpRecord1, OpArray1]
+  2) Super call [OpPointer3]
+
 REJECT:
 
-  1) p is not a pointer or type-bound procedure
-  2) p is a type-bound procedure, but does not exist in the base type
-  3) p is the result of a function all
-  4) p is a super call (i.e., proc^^ is not allowed)
+  1) p is not a pointer or type-bound procedure [OpPointer1]
+  2) p is a type-bound procedure, but does not exist in the base type 
+     [OpPointer2]
+  3) p is the result of a function all [OpPointer4]
+  4) p is a super call (i.e., proc^^ is not allowed) [OpPointer5]
 
 ERROR:
 
