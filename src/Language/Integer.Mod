@@ -158,10 +158,11 @@ BEGIN
 END ToString;
 
 BEGIN
-  zero := New(Integers.Long(0));
-  minus1 := New(Integers.Long(-1));
   NEW(type);
   L.InitType(type);
   typeName := String.New("Integer");
+
+  zero := New(Integers.Long(0));
+  minus1 := New(Integers.Long(-1));
 END Language:Integer.
 

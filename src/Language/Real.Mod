@@ -1,7 +1,7 @@
 MODULE Language:Real [OOC_EXTENSIONS];
 
 IMPORT
-  ADT:Object, ADT:String, L := Language, LRealStr;
+  ADT:Object, ADT:String, L := Language, LRealStr, SYSTEM;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -19,8 +19,8 @@ VAR
 
   zero- : Value;
 
-PROCEDURE NewLReal* (val : LONGREAL) : Value;
-(** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
+PROCEDURE New* (val : LONGREAL) : Value;
+(** Return a @otype{Value} for real @oparam{val}. *)
 VAR 
   v : Value;
 BEGIN
@@ -28,18 +28,7 @@ BEGIN
   L.InitValue (v, type);
   v.value := val;
   RETURN v;
-END NewLReal;
-
-PROCEDURE NewReal* (val : REAL) : Value;
-(** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
-VAR 
-  v : Value;
-BEGIN
-  NEW(v);
-  L.InitValue (v, type);
-  v.value := val;
-  RETURN v;
-END NewReal;
+END New;
 
 PROCEDURE (v: Value) Store* (w: Object.Writer);
   BEGIN
@@ -59,9 +48,20 @@ PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   END Equals;
   
 PROCEDURE (v: Value) HashCode* (): LONGINT;
-  BEGIN
-    RETURN ENTIER(v.value);
-  END HashCode;
+(* Compute hash code by XORing bits in the LONGREAL's binary representation. *)
+CONST 
+  size = SIZE(LONGREAL) DIV SIZE(SET);
+VAR
+  a : ARRAY size OF SET;
+  i : LONGINT; hash : SET;
+BEGIN
+  SYSTEM.MOVE(SYSTEM.ADR(v.value), SYSTEM.ADR(a), size * SIZE(LONGINT));
+  hash := {};
+  FOR i := 0 TO size-1 DO
+    hash := hash / a[i];
+  END;
+  RETURN SYSTEM.VAL(LONGINT, hash);
+END HashCode;
 
 PROCEDURE (v : Value) ToString* () : String.String;
 VAR 
@@ -71,34 +71,29 @@ BEGIN
   RETURN String.New (str)
 END ToString;
 
-PROCEDURE (v : Value) ToLReal*() : LONGREAL;
+PROCEDURE (v : Value) ToReal*() : LONGREAL;
 BEGIN
   RETURN v.value;
-END ToLReal;
-
-PROCEDURE (v : Value) ToReal*() : REAL;
-BEGIN
-  RETURN SHORT(v.value);
 END ToReal;
 
 PROCEDURE (v : Value) Sum* (right : Value) : Value;
 BEGIN
-  RETURN NewLReal(v.value + right.value);
+  RETURN New(v.value + right.value);
 END Sum;
 
 PROCEDURE (v : Value) Difference* (right : Value) : Value;
 BEGIN
-  RETURN NewLReal(v.value - right.value);
+  RETURN New(v.value - right.value);
 END Difference;
 
 PROCEDURE (v : Value) Product* (right : Value) : Value;
 BEGIN
-  RETURN NewLReal(v.value * right.value);
+  RETURN New(v.value * right.value);
 END Product;
 
 PROCEDURE (v : Value) Quotient* (right : Value) : Value;
 BEGIN
-  RETURN NewLReal(v.value / right.value);
+  RETURN New(v.value / right.value);
 END Quotient;
 
 PROCEDURE (v : Value) Compare* (right : Value) : LONGINT;
@@ -119,12 +114,12 @@ END Sign;
 
 PROCEDURE (v : Value) Negate* () : Value;
 BEGIN
-  RETURN NewLReal(-v.value);
+  RETURN New(-v.value);
 END Negate;
 
 PROCEDURE (t : Type) Value* (val : LONGREAL) : Value;
 BEGIN
-  RETURN NewLReal(val);
+  RETURN New(val);
 END Value;
 
 PROCEDURE (t : Type) ValueOf* (s : ARRAY OF CHAR) : Value;
@@ -134,7 +129,7 @@ VAR
 BEGIN
   LRealStr.StrToReal(s, real, res);
   IF res = LRealStr.strAllRight THEN
-    RETURN NewLReal(real);
+    RETURN New(real);
   ELSE
     RETURN NIL;
   END;
@@ -146,9 +141,10 @@ BEGIN
 END ToString;
 
 BEGIN
-  zero := NewLReal(0.0);
   NEW(type);
   L.InitType(type);
   typeName := String.New("Real");
+
+  zero := New(0.0);
 END Language:Real.
 
