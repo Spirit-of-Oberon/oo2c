@@ -22,7 +22,7 @@ MODULE OOC:Scanner;
 
 IMPORT
   Ascii, IO, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol,
-  OOC:Scanner:Builder, OOC:Scanner:Pragma, OOC:Config:Pragmas;
+  OOC:Scanner:Pragma, OOC:Scanner:SymList, OOC:Config:Pragmas;
 
 
 CONST
@@ -120,7 +120,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
 
-PROCEDURE ScanInput* (builder: Builder.Builder;
+PROCEDURE ScanInput* (builder: SymList.Builder;
                       defaultPragmas: Pragmas.Section; scanOptions: SET)
 RAISES IO.Error;
 (**Reads sequence of characters from input buffer @samp{builder. inputBuffer}

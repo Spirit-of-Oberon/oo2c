@@ -26,7 +26,7 @@ characters are used by these symbols.  *)
 
 IMPORT
   Channel, TextRider, Strings, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol,
-  B := OOC:Scanner:Builder;
+  B := OOC:Scanner:SymList;
 
 CONST
   maxSymbols= 256;
@@ -45,7 +45,7 @@ PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: Channel.Channel);
   VAR
     i: LONGINT;
   BEGIN
-    B.Init (b, buffer);
+    B.Init (b, buffer, TRUE);
     b. w := TextRider.ConnectWriter (ch);
     b. numOfSymbols := 0;
     b. numOfChars := 0;

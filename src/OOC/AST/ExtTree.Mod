@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Object, OOC:Scanner:BasicList, OOC:AST, OOC:Doc;
+  Object, OOC:Scanner:SymList, OOC:AST, OOC:Doc;
 
 
 
@@ -66,7 +66,7 @@ TYPE
   Terminal* = POINTER TO TerminalDesc;
   TerminalDesc = RECORD
     (NodeDesc)
-    sym-: BasicList.Symbol;
+    sym-: SymList.Symbol;
   END;
 
 TYPE
@@ -760,7 +760,7 @@ PROCEDURE (nl: NodeList) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) Terminal* (sym: BasicList.Symbol): Node;
+PROCEDURE (b: Builder) Terminal* (sym: SymList.Symbol): Node;
   VAR
     t: Terminal;
   BEGIN

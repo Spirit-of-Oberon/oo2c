@@ -22,7 +22,7 @@ MODULE OOC:Doc:Decoration;
 
 IMPORT
   Ascii, CharClass, Strings,
-  OOC:Scanner:InputBuffer, OOC:Scanner, OOC:Scanner:BasicList;
+  OOC:Scanner:InputBuffer, OOC:Scanner, OOC:Scanner:SymList;
   
 
 TYPE
@@ -52,7 +52,7 @@ TYPE
     (PlainIndentDesc)
   END;
   
-PROCEDURE Remove* (sym: BasicList.Symbol; VAR deco: Decoration): String;
+PROCEDURE Remove* (sym: SymList.Symbol; VAR deco: Decoration): String;
 (* Remove any decoration and the comment delimiters from the string `sym',
    and replace CR+LF or CR end of line characters with `CharClass.eol'.  
    A description of the detected decoration variant is passed back in 

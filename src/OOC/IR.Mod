@@ -24,7 +24,7 @@ IMPORT
 Log,
   Msg, Object, Object:Boxed, Object:BigInt, Strings,
   ADT:ArrayList, ADT:StringBuffer, Config,
-  Id := OOC:Scanner:Symbol, OOC:Scanner:BasicList, OOC:Error,
+  Id := OOC:Scanner:Symbol, OOC:Scanner:SymList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:StdPragmas,
   OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Namespace,
@@ -152,7 +152,7 @@ Log,
 
 TYPE
   Name* = AST.Name;
-  Symbol* = BasicList.Symbol;
+  Symbol* = SymList.Symbol;
   
 TYPE
   Node* = POINTER TO NodeDesc;
@@ -5328,7 +5328,7 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module; uses: Uses.Uses;
     b. module := module;
     b. pragmaHistory := pragmaHistory;
     b. errList := errList;
-    b. errorExpr := NewConst (BasicList.NewSymbol (NIL, -1),
+    b. errorExpr := NewConst (SymList.NewSymbol (NIL, -1),
                               Predef.GetType(Predef.void),
                               Boxed.false);
     b. typeType := NewTypeType (NIL, NIL);
@@ -5462,7 +5462,7 @@ PROCEDURE (b: Builder) NewIdentRef* (baseNS, ns: Sym.Namespace;
           ELSE
             ns := redirModule(Sym.Import).externalSymTab.ns;
             RETURN b.NewIdentRef(ns, ns, context,
-                                 BasicList.CloneSymbol(name, decl.ident.str^));
+                                 SymList.CloneSymbol(name, decl.ident.str^));
           END;
         ELSE
           Log.Type ("Unknown decl in NewIdentRef", decl);

@@ -2,8 +2,8 @@ MODULE OOC:Scanner:Pragma;
 
 IMPORT
   Object, Object:BigInt, Msg, Strings, RT0, Config,
-  OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol, OOC:Scanner:Builder,
-  OOC:Scanner:BasicList, OOC:Config:Pragmas;
+  OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol,
+  OOC:Scanner:SymList, OOC:Config:Pragmas;
 
 (* Added in oo2c-2.0.7:
 
@@ -30,7 +30,7 @@ TYPE
     
     prev: ConditionStack;
     (* link to preceding item in stack, top of stack is in `condStack' *)
-    ifPos: BasicList.Symbol;
+    ifPos: SymList.Symbol;
     (* position of initial `IF' keyword *)
     skippedCond: BOOLEAN;
     (* TRUE iff whole condition is part of skipped text *)
@@ -47,7 +47,7 @@ TYPE
     buffer: InputBuffer.Buffer;
     (* input buffer, from which the symbols in @ofield{symList} were taken *)
     
-    builder: Builder.Builder;
+    builder: SymList.Builder;
     (* builder that is served by the associated scanner instance *)
     
     
@@ -60,7 +60,7 @@ TYPE
        that must only be correct on the syntax (or lexical) level; the
        value of this variable changes with conditional pragma statements *)
     
-    symList: BasicList.Builder;
+    symList: SymList.Builder;
     (* all symbols within a `<*...*>' pragma section are collected into this
        list; the list excludes the beginning delimiter, but includes the 
        @oconst{Symbol.pragmaEnd} symbol *)
@@ -157,7 +157,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
   END GetTemplate;
 
 
-PROCEDURE Init* (VAR state: State; builder: Builder.Builder;
+PROCEDURE Init* (VAR state: State; builder: SymList.Builder;
                  defaultPragmas: Pragmas.Section);
 (* The parameter @oparam{defaultPragmas} is a reference to the configuration
    section that holds the values of pragma variables.  The values listed there
@@ -173,7 +173,7 @@ PROCEDURE Init* (VAR state: State; builder: Builder.Builder;
   BEGIN
     state. builder := builder;
     state. buffer := builder. inputBuffer;
-    state. symList := BasicList.New (builder. inputBuffer, FALSE);
+    state. symList := SymList.New (builder. inputBuffer, FALSE);
     state. condStack := NIL;
     state. evalText := TRUE;
     state. variableHistory := Pragmas.NewHistory (defaultPragmas);
@@ -183,15 +183,15 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
   TYPE  
     Value = RECORD
       value: Config.Variable;          (* NIL means undefined value *)
-      sym: BasicList.Symbol;
+      sym: SymList.Symbol;
     END;
     
   VAR
     dummy, err, nested: BOOLEAN;
-    sym, prevSym: BasicList.Symbol;
+    sym, prevSym: SymList.Symbol;
     lastError: Error.Msg;
   
-  PROCEDURE AppendErr (sym: BasicList.Symbol);
+  PROCEDURE AppendErr (sym: SymList.Symbol);
     BEGIN
       lastError. SetIntAttrib ("pos", sym. pos);
       lastError. SetIntAttrib ("line", sym. line);
@@ -199,13 +199,13 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
       state. buffer. errList. Append (lastError)
     END AppendErr;
   
-  PROCEDURE Err (code: Error.Code; sym: BasicList.Symbol);
+  PROCEDURE Err (code: Error.Code; sym: SymList.Symbol);
     BEGIN
       lastError := Error.New (pragmaContext, code);
       AppendErr (sym)
     END Err;
 
-  PROCEDURE CheckName (sym: BasicList.Symbol);
+  PROCEDURE CheckName (sym: SymList.Symbol);
     VAR
       name: InputBuffer.CharArray;
     BEGIN
@@ -272,7 +272,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
   PROCEDURE Expression (eval: BOOLEAN; VAR value: Value);
     VAR
       right: Value;
-      pos: BasicList.Symbol;
+      pos: SymList.Symbol;
       op: Symbol.Id;
       leftString, rightString: STRING;
       cmp: LONGINT;
@@ -494,9 +494,9 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
   PROCEDURE Assignment (define, eval: BOOLEAN);
   (* define=TRUE: defining assignment, eval=TRUE: execute assignment *)
     VAR
-      name: BasicList.Symbol;
+      name: SymList.Symbol;
       value: Value;
-      pos: BasicList.Symbol;
+      pos: SymList.Symbol;
       varValue: Config.Variable;
     BEGIN
       IF (sym. id = Symbol.ident) THEN
@@ -662,7 +662,7 @@ PROCEDURE AddSymbol* (VAR state: State; VAR inputMode: InputMode;
       state. buffer. errList. Append (lastError)
     END Err;
   
-  PROCEDURE ErrSym (code: Error.Code; sym: BasicList.Symbol);
+  PROCEDURE ErrSym (code: Error.Code; sym: SymList.Symbol);
     BEGIN
       lastError := Error.New (pragmaContext, code);
       lastError. SetIntAttrib ("pos", sym. pos);

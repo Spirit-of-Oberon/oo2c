@@ -4,7 +4,7 @@ IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Msg,
   Object, IO, IO:FileChannel, Std:=IO:StdChannels,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, 
-  OOC:Scanner, OOC:Scanner:BasicList, OOC:Parser, OOC:AST, 
+  OOC:Scanner, OOC:Scanner:SymList, OOC:Parser, OOC:AST, 
   OOC:AST:ExtTree, OOC:AST:ExtTree:XML, OOC:AST:ExtTree:StupidPP;
   
 CONST
@@ -19,7 +19,7 @@ VAR
   errList: Error.List;
   inputBuffer: InputBuffer.Buffer;
   pragmaSection: Pragmas.Section;
-  scannerBuilder: BasicList.Builder;
+  scannerBuilder: SymList.Builder;
   astBuilder: ExtTree.Builder;
   ast: AST.Node;
   mode: INTEGER;
@@ -52,7 +52,7 @@ BEGIN
           errList := Error.NewList(Object.NewLatin1(arg));
           inputBuffer := InputBuffer.New (file, errList);
           pragmaSection := Pragmas.New();
-          scannerBuilder := BasicList.New (inputBuffer, TRUE);
+          scannerBuilder := SymList.New (inputBuffer, TRUE);
           Scanner.ScanInput (scannerBuilder, pragmaSection, Scanner.enableAll);
           astBuilder := ExtTree.New();
           ast := Parser.Module (scannerBuilder. head, 

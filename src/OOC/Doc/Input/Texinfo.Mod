@@ -4,7 +4,7 @@ MODULE OOC:Doc:Input:Texinfo;
 IMPORT
   Ascii, CharClass, IntStr, Out, Msg, Channel, TextRider, StdChannels, Strings,
   OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner, 
-  OOC:Scanner:BasicList, OOC:Doc, OOC:Doc:Decoration,
+  OOC:Scanner:SymList, OOC:Doc, OOC:Doc:Decoration,
   OOC:Doc:TextBuffer;
 
 
@@ -180,7 +180,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
   END GetTemplate;
 
 
-PROCEDURE Tokenize (sym: BasicList.Symbol; str: Decoration.String;
+PROCEDURE Tokenize (sym: SymList.Symbol; str: Decoration.String;
                     errList: Error.List): Token;
 (* Tokenizes the Texinfo string in `str' and returns a list of tokens.
    Result is NIL if an error was found.  *)
@@ -479,7 +479,7 @@ PROCEDURE WriteTokens (ch: Channel.Channel; t: Token);
   END WriteTokens;
 
 
-PROCEDURE Parse* (sym: BasicList.Symbol; removeDecoration: BOOLEAN;
+PROCEDURE Parse* (sym: SymList.Symbol; removeDecoration: BOOLEAN;
                   errList: Error.List): Doc.Document;
   VAR
     str: Decoration.String;

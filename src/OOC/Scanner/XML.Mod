@@ -55,7 +55,7 @@ produces this XML document
 
 IMPORT
   Channel, TextRider,
-  OOC:Scanner:Symbol, OOC:Scanner:InputBuffer, B := OOC:Scanner:Builder;
+  OOC:Scanner:Symbol, OOC:Scanner:InputBuffer, B := OOC:Scanner:SymList;
 
 TYPE
   Builder* = POINTER TO BuilderDesc;
@@ -67,7 +67,7 @@ TYPE
 
 PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: Channel.Channel);
   BEGIN
-    B.Init (b, buffer);
+    B.Init (b, buffer, TRUE);
     b. w := TextRider.ConnectWriter (ch);
   END Init;
 

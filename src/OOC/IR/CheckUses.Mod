@@ -26,7 +26,7 @@ IMPORT
   OOC:Config:Pragmas, OOC:Config:StdPragmas,
   Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
   OOC:SymbolTable:Predef,
-  OOC:Error, OOC:Scanner:BasicList, OOC:IR, OOC:IR:VisitAll;
+  OOC:Error, OOC:Scanner:SymList, OOC:IR, OOC:IR:VisitAll;
 
 
 (* Some notes on the dataflow analysis of this module:
@@ -113,7 +113,7 @@ CONST
   passEmitWarnings = 2;
   
 TYPE
-  Symbol = BasicList.Symbol;
+  Symbol = SymList.Symbol;
   Visitor = POINTER TO VisitorDesc;
   VisitorDesc = RECORD
     (VisitAll.VisitorDesc)

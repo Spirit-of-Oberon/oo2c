@@ -2,7 +2,7 @@ MODULE TestScanner;
 
 IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Object, IO, IO:FileChannel, Config,
-  OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Builder,
+  OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:SymList,
   OOC:Scanner, OOC:Scanner:XML, OOC:Scanner:Identity, 
   OOC:Scanner:Statistics;
 
@@ -19,7 +19,7 @@ VAR
   inputBuffer: InputBuffer.Buffer;
   pragmaSection: Pragmas.Section;
   pv: Pragmas.Pragma;
-  scannerBuilder: Builder.Builder;
+  scannerBuilder: SymList.Builder;
   mode: INTEGER;
 BEGIN
   IF (ProgramArgs.args. ArgNumber() = 0) THEN

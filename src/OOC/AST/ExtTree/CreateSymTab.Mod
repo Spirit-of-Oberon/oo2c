@@ -22,7 +22,7 @@ MODULE OOC:AST:ExtTree:CreateSymTab;
 
 IMPORT
   Object, Exception, URI, ParserURI := URI:Parser,
-  OOC:Scanner:Symbol, OOC:AST, OOC:Scanner:BasicList, OOC:AST:ExtTree,
+  OOC:Scanner:Symbol, OOC:AST, OOC:Scanner:SymList, OOC:AST:ExtTree,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   SymTabBuilder := OOC:SymbolTable:Builder;
 
@@ -55,7 +55,7 @@ TYPE
 
 PROCEDURE GetName* (node: AST.Node): Sym.Name;
   VAR
-    sym: BasicList.Symbol;
+    sym: SymList.Symbol;
     name: Sym.Name;
   BEGIN
     WITH node: ExtTree.Terminal DO
@@ -70,7 +70,7 @@ PROCEDURE GetName* (node: AST.Node): Sym.Name;
 
 PROCEDURE GetPosition (node: AST.Node): Sym.Position;
   VAR
-    sym: BasicList.Symbol;
+    sym: SymList.Symbol;
     position: Sym.Position;
   BEGIN
     WITH node: ExtTree.Terminal DO
@@ -360,7 +360,7 @@ PROCEDURE (v: Visitor) VisitImportDecl* (importDecl: ExtTree.ImportDecl);
   VAR
     import: Sym.Import;
     name, moduleName: Sym.Name;
-    nameSym: BasicList.Symbol;
+    nameSym: SymList.Symbol;
   BEGIN
     (* extract module name from import statment *)
     moduleName := GetName (importDecl. module. nameList. n[0]);

@@ -22,7 +22,7 @@ MODULE OOC:Parser;
 
 IMPORT
   Msg, Strings,
-  OOC:Error, OOC:Scanner:Symbol, OOC:Scanner:BasicList, OOC:AST,
+  OOC:Error, OOC:Scanner:Symbol, OOC:Scanner:SymList, OOC:AST,
   OOC:Doc, OOC:Doc:Input:Texinfo;
 
 
@@ -132,7 +132,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
   END GetTemplate;
 
 
-PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
+PROCEDURE Module* (sym: SymList.Symbol; ast: AST.Builder;
                    errList: Error.List; parseOptions: SET): AST.Node;
 (**This procedure implements a recursive descent parser for a slightly modified
    Oberon-2 syntax.  It takes a sequences of tokens in @oparam{sym} and creates
@@ -158,7 +158,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
    multi-part identifiers, and C style rest parameters.  See the list under
    @oconst{enableAll} for more details.  *)
   VAR
-    prevSym, nameSym: BasicList.Symbol;
+    prevSym, nameSym: SymList.Symbol;
     lastError: Error.Msg;
     module, name, moduleFlags, scolon, import, body, period, eof: AST.Node;
     headName: AST.Name;
@@ -167,7 +167,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     (* node with name of last declaration; if a doc comment is found, the
        comment is attached to this node *)
     
-  PROCEDURE Err (code: Error.Code; sym: BasicList.Symbol);
+  PROCEDURE Err (code: Error.Code; sym: SymList.Symbol);
   (* Creates an error message, using the starting position of the symbol 
      @oparam{sym} for the error position.  The newly created message is 
      appended to @oparam{errList}, and a reference to the message is
@@ -180,7 +180,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
       errList. Append (lastError)
     END Err;
   
-  PROCEDURE ErrEndPos (code: Error.Code; sym: BasicList.Symbol);
+  PROCEDURE ErrEndPos (code: Error.Code; sym: SymList.Symbol);
   (* Creates an error message, using the @emph{ending} position of the symbol 
      @oparam{sym} for the error position.  The newly created message is 
      appended to @oparam{errList}, and a reference to the message is
@@ -587,7 +587,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
       VAR
         alias, becomes, module: AST.Node;
         name: AST.Name;
-        ptr: BasicList.Symbol;
+        ptr: SymList.Symbol;
       BEGIN
         (*S: ImportDecl = [ident ":="] mp_ident.  *)
         IF (sym. next # NIL) & (sym. next. id = Symbol.becomes) THEN
@@ -1142,7 +1142,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     VAR
       begin, end, name: AST.Node;
       declSeq, statmSeq: AST.NodeList;
-      ptr: BasicList.Symbol;
+      ptr: SymList.Symbol;
       tailName: AST.Name;
     
     PROCEDURE DeclSeq(): AST.NodeList;
@@ -1652,7 +1652,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         RETURN list
       END StatementSeq;
     
-    PROCEDURE CheckName (sym: BasicList.Symbol; head, tail: AST.Name);
+    PROCEDURE CheckName (sym: SymList.Symbol; head, tail: AST.Name);
       BEGIN
         IF (errList. msgCount = 0) & (head^ # tail^) THEN
           Err (nameMismatch, sym);

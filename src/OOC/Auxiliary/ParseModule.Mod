@@ -5,7 +5,7 @@ IMPORT
   OOC:Config, OOC:Config:Pragmas, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
-  OOC:Scanner, OOC:Scanner:BasicList,
+  OOC:Scanner, OOC:Scanner:SymList,
   OOC:Parser, OOC:AST, OOC:AST:ExtTree,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Builder, OOC:SymbolTable:Uses,
   OOC:AST:ExtTree:CreateSymTab, OOC:SymbolTable:CreateNamespace,
@@ -41,7 +41,7 @@ RAISES IO.Error;
    *)
   VAR
     inputBuffer: InputBuffer.Buffer;
-    scannerBuilder: BasicList.Builder;
+    scannerBuilder: SymList.Builder;
     astBuilder: ExtTree.Builder;
     stb: Builder.Builder;
     uri: URI.URI;
@@ -56,7 +56,7 @@ RAISES IO.Error;
       errList := Error.NewList(uri.ToString());
     ELSE
       errList := inputBuffer. errList;
-      scannerBuilder := BasicList.New (inputBuffer, TRUE);
+      scannerBuilder := SymList.New (inputBuffer, TRUE);
       scannerFlags := Scanner.enableAll;
       IF abortAfterImport THEN
         INCL(scannerFlags, Scanner.abortAtDeclarations);

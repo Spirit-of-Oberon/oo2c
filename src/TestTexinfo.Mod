@@ -2,7 +2,7 @@ MODULE TestTexinfo;
 
 IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Files, Msg, Std:=IO:StdChannels,
-  Object, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:BasicList,
+  Object, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:SymList,
   OOC:Doc, OOC:Doc:Input:Texinfo, OOC:Doc:Output:XML, OOC:Doc:Output:Text;
 
 CONST
@@ -20,7 +20,7 @@ VAR
   s: Doc.String;
   processComment: BOOLEAN;
 
-PROCEDURE GetFile (file: Files.File): BasicList.Symbol;
+PROCEDURE GetFile (file: Files.File): SymList.Symbol;
   VAR
     len: LONGINT;
     reader: Files.Reader;
@@ -33,7 +33,7 @@ PROCEDURE GetFile (file: Files.File): BasicList.Symbol;
     ASSERT (reader. res = Files.done);
     s[len] := 0X;
     file. Close;
-    RETURN BasicList.NewSymbol (s, reader. bytesRead)
+    RETURN SymList.NewSymbol (s, reader. bytesRead)
   END GetFile;
 
 BEGIN
