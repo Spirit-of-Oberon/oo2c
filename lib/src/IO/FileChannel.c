@@ -84,8 +84,7 @@ static void cleanup_tmp_files() {
 IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String xfile,
 						       OOC_UINT32 mode) {
   int flags = 0;
-  Object__String8 file = OS_Path__Encode(xfile);
-  char* fname = (char*)OOC_METHOD(file,Object__String8Desc_CharsLatin1)(file);
+  char* fname = OS_Path__Encode(xfile);
   int fd;
   Object__String8 tmpName = NULL;
   
@@ -134,13 +133,13 @@ IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String xfile,
   }
   
   if (fd < 0) {
-    IO_StdChannels__IOError((Object__String)file);
+    IO_StdChannels__IOError(xfile);
   } else {
     IO_FileChannel__Channel ch =
       RT0__NewObject(OOC_TYPE_DESCR(IO_FileChannel,ChannelDesc));
     IO__InitByteChannel((IO__ByteChannel)ch);
     ch->fd = fd;
-    ch->origName = file;
+    ch->origName = xfile;
     ch->tmpName = tmpName;
     if (tmpName) {
       add_tmp_file(ch);
@@ -209,7 +208,7 @@ void IO_FileChannel__ChannelDesc_Close(IO_FileChannel__Channel ch) {
   }
     
   if (res < 0) {
-    IO_StdChannels__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
+    IO_StdChannels__IOError(ch->tmpIndex<0?(Object__String)ch->tmpName:ch->origName);
   }
 }
 
@@ -221,8 +220,8 @@ void IO_FileChannel__ChannelDesc_CloseAndRegister(IO_FileChannel__Channel ch) {
     IO__ChannelDesc_Close((IO__Channel)ch);
     
     if (ch->tmpIndex >= 0) {
-      char* fname = (char*)OOC_METHOD(ch->origName,Object__String8Desc_CharsLatin1)(ch->origName);
-      char* tname = (char*)OOC_METHOD(ch->tmpName,Object__String8Desc_CharsLatin1)(ch->tmpName);
+      char* fname = OS_Path__Encode(ch->origName);
+      char* tname = OS_Path__Encode((Object__String)ch->tmpName);
 #ifdef __MINGW32__
         if (MoveFileEx(tname, fname, MOVEFILE_REPLACE_EXISTING) == 0)
           res = GetLastError();
@@ -236,14 +235,14 @@ void IO_FileChannel__ChannelDesc_CloseAndRegister(IO_FileChannel__Channel ch) {
   }
   
   if (res < 0) {
-    IO_StdChannels__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
+    IO_StdChannels__IOError(ch->tmpIndex<0?(Object__String)ch->tmpName:ch->origName);
   }
 }
 
 void IO_FileChannel__ChannelDesc_SetPos(IO_FileChannel__Channel ch,
 					     OOC_INT32 pos) {
   if (lseek(ch->fd, (off_t)pos, SEEK_SET) < 0) {
-    IO_StdChannels__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
+    IO_StdChannels__IOError(ch->tmpIndex<0?(Object__String)ch->tmpName:ch->origName);
   }
 }
 

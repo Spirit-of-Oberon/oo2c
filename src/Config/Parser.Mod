@@ -239,10 +239,8 @@ RAISES IO.Error;
   BEGIN
     NEW (p);
     p. builder := NewBuilder();
-    filePath := Path.Encode(filePath);
-    chars := filePath(Object.String8).CharsLatin1();
-    p. xmlParser := XMLParser.NewFile (chars^, NIL, NIL, NIL,
-                                       p. builder);
+    chars := Path.Encode(filePath);
+    p. xmlParser := XMLParser.NewFile (chars^, NIL, NIL, NIL, p. builder);
     RETURN p
   END NewFile;
 

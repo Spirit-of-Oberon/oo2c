@@ -95,8 +95,7 @@ PROCEDURE NewList* (fileName: STRING): List;
     list: List;
     chars: Object.CharsLatin1;
   BEGIN
-    fileName := Path.Encode(fileName);
-    chars := fileName(Object.String8).CharsLatin1();
+    chars := Path.Encode(fileName);
     
     NEW (list);
     M.InitMsgList (list);

@@ -30,7 +30,8 @@ TYPE
        by itself.  *)
     (IO.ByteChannelDesc)
     fd: IO.FileDescriptor;
-    origName, tmpName: Object.String8;
+    origName: STRING;
+    tmpName: Object.String8;
     tmpIndex: LONGINT;
     (* For a temporary file, this is an index into an array of all open
        temporary files.  For all other files, this is @samp{-1}.  *)

@@ -147,8 +147,7 @@ int OS_ProcessManagement__system(Object__String command) {
   if (command == NULL) {
     return new_system(NULL);
   } else {
-    Object__String8 cmd8 = OS_Path__Encode(command);
-    return new_system((char*)OOC_METHOD(cmd8,Object__String8Desc_CharsLatin1)(cmd8));
+    return new_system(OS_Path__Encode(command));
   }
 }
 #endif
@@ -157,8 +156,7 @@ int OS_ProcessManagement__system(Object__String command) {
   if (command == NULL) {
     return system(NULL);
   } else {
-    Object__String8 cmd8 = OS_Path__Encode(command);
-    return system((char*)OOC_METHOD(cmd8,Object__String8Desc_CharsLatin1)(cmd8));
+    return system(OS_Path__Encode(command));
   }
 }
 #endif

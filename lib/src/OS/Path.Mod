@@ -102,7 +102,7 @@ PROCEDURE splitext* (path: ARRAY OF CHAR; VAR root, ext: ARRAY OF CHAR);
   END splitext;
 
 
-PROCEDURE Encode*(path: STRING): Object.String8;
+PROCEDURE Encode*(path: STRING): Object.CharsLatin1;
 (**Encode the file path or command @oparam{path} as a system-specific sequence
    of bytes.
 
@@ -110,8 +110,11 @@ PROCEDURE Encode*(path: STRING): Object.String8;
    @samp{0FFX} replaced with the character @samp{_}.  That is, non ISO Latin1
    characters are discarded.  For instances of @otype{Object.String8}, it is
    the identity operation.  *)
+  VAR
+    path8: Object.String8;
   BEGIN
-    RETURN path.ToString8("_");
+    path8 := path.ToString8("_");
+    RETURN path8.CharsLatin1();
   END Encode;
 
 PROCEDURE Decode*(path[NO_COPY]: ARRAY OF CHAR): STRING;
