@@ -2181,35 +2181,9 @@ PROCEDURE InitTypeConv (conv: TypeConv; sym: Symbol; type: Sym.Type;
 PROCEDURE (b : Builder) NewTypeConv (type: Sym.Type; expr: Expression): Expression;
   VAR
     conv: TypeConv;
-    str: LString.Value;
-
-  PROCEDURE BaseChar (type: Sym.PredefType): Sym.PredefId;
-    BEGIN
-      CASE type. id OF
-      | Predef.char, Predef.charString:
-        RETURN Predef.char
-      | Predef.longchar, Predef.longcharString:
-        RETURN Predef.longchar
-      END;
-    END BaseChar;
-  
   BEGIN
     IF (expr. type = type) THEN
       RETURN expr;                       (* no conversion necessary *)
-      
-    ELSIF b. typeRules. IsStringConst (type) THEN
-      (* handle conversion of character and string constants to string
-         constants *)
-      ASSERT (b. typeRules. IsStringConst (expr. type) OR
-              (expr IS Const) & b. typeRules. IsCharType (expr. type));
-      str := expr(Const). value(LString.Value);
-      IF (BaseChar (expr. type(Sym.PredefType)) <
-          BaseChar (type(Sym.PredefType))) THEN
-        str := String16.NewRegion8 (str(String8.Value). value. array^,
-                                    0, str. Length())
-      END;
-      RETURN b. NewConst (expr. sym, type, str);
-      
     ELSE
       IF (expr IS TypeConv) & b.typeRules.IncludesType(type, expr.type) THEN
         (* handle transitivity *)
@@ -2300,7 +2274,7 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
           tr. IncludesType(tr. BaseCharType (type),
                            tr. BaseCharType (expr. type)) THEN
       (* Case 5: char const and string const < string const *)
-      expr := b. NewTypeConv (type, expr);
+      expr := b. Fold (b. NewTypeConv (type, expr));
       RETURN TRUE;
 
     ELSIF (expr IS Const) &
