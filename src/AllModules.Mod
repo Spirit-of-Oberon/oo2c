@@ -217,6 +217,20 @@ IMPORT
      values passed between instructions roughly correspond to values passed
      through registers.)  *)
 
+  OOC:SSA:Blocker,
+  (* Imposes a block structure on a flat list of SSA instructions.  The result
+     resembles a guarded command structure like it is used in GSA.  This module
+     is used by two different kinds of clients.  First, SSA visualization
+     modules use it to improve readability of the rendered SSA code.  Second,
+     the code scheduler takes ``blocked'' SSA as input to create basic blocks
+     and jumps&branches between them.  *)
+
+  OOC:SSA:Schedule,
+  (* Generates basic block representation and schedules instructions.  This
+     transforms an SSA representation that is free of explicit control flow
+     information into a representation that uses the lower-level concept of
+     basic blocks and explicit jumps&branches between them.  *)
+  
   OOC:SSA:IGraph,
   (* Manipulation of interference graph of values' life ranges.  Used by the
      allocator module below.  *)
@@ -251,5 +265,22 @@ IMPORT
   RunTests;
   (* Implements the XML based test framework.  Used for language
      compliance tests, and to check results of executables.  *)
+
+  (* Library Modules
+     ----------------------------------------------------------------------
+
+     Note: Library modules should be added to this list as they are moved into
+     the ooc2 source tree under lib/src/ and have been successfully tested with
+     the new compiler.  At the moment, this requires that a decent test
+     coverage of the provided functions exist, and that the SSA back-end does
+     not fail on them.  Because ooc2 must be build with oo2c v1 and its core
+     library for the forseeable future, the modules listed here are not used
+     directly by ooc2.  The list is therefore purely informal.
+
+     Ascii
+     CharClass
+     Strings
+     
+     ----  *)
 
 END AllModules.
