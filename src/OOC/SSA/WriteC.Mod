@@ -3,7 +3,7 @@ MODULE OOC:SSA:WriteC;
 IMPORT
   Log, IntStr, StdChannels, Strings, TextRider,
   ADT:Object, ADT:String, ADT:Dictionary,
-  OOC:IR, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd,
+  OOC:SymbolTable:Item, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:XML,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:WriteConst, OOC:C:WriteDecl;
 
@@ -86,6 +86,59 @@ PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.D
     w. WriteLn;
     RETURN registerMap;
   END AssignRegisters;
+
+PROCEDURE WriteLocalDecl (w: TextRider.Writer;
+                          converter: ConvertDecl.Converter;
+                          pb: SSA.ProcBlock);
+(**Writes local declarations of the procedure, most of all local variables.  *)
+  VAR
+    declMap: Dictionary.Dictionary;
+    instr: SSA.Instr;
+    decl: Item.VarDecl;
+    cDecl: WriteDecl.Declaration;
+    block: WriteDecl.Block;
+
+  PROCEDURE GetLocalDecl (instr: SSA.Instr): Item.VarDecl;
+    VAR
+      opnd: SSA.Opnd;
+    BEGIN
+      opnd := instr. opndList;
+      WHILE (opnd # NIL) &
+            ((opnd. class # Opnd.readDesign) &
+             (opnd. class # Opnd.writeDesign)) DO
+        opnd := opnd. nextOpnd;
+      END;
+      IF (opnd. arg IS SSA.DeclRef) THEN
+        RETURN opnd. arg(SSA.DeclRef). decl(Item.VarDecl)
+      ELSE
+        RETURN NIL
+      END;
+    END GetLocalDecl;
+  
+  BEGIN
+    block := WriteDecl.NewBlock ();
+    
+    declMap := Dictionary.New();
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      IF (instr. opcode = Opcode.get) OR (instr. opcode = Opcode.set) THEN
+        decl := GetLocalDecl (instr);
+        IF (decl # NIL) & ~declMap. HasKey (decl) &
+           ~decl. isParameter THEN
+          cDecl := converter. ConvertDecl (block, decl);
+          w. WriteLn;
+          w. WriteString ("  ");
+          cDecl. Write (w);
+          w. WriteChar (";");
+          declMap. Set (decl, NIL)
+        END;
+      END;
+      instr := instr. nextInstr
+    END;
+    
+    w. WriteLn;
+  END WriteLocalDecl;
+
 
 PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
                           registerMap: Dictionary.Dictionary);
@@ -210,6 +263,14 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
         w. WriteString (name. array^);
         w. WriteChar (";")
         
+      | Opcode.set:
+        (* another *very* drastic shortcut... *)
+        name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. nextOpnd. arg(SSA.DeclRef). decl);
+        w. WriteString (name. array^);
+        w. WriteString (" = ");
+        Ref (instr. GetOpndClass (Opnd.sourceValue));
+        w. WriteChar (";")
+        
       | Opcode.assert:
         Assert (instr)
             
@@ -252,6 +313,7 @@ PROCEDURE ProcBody* (w: TextRider.Writer; converter: ConvertDecl.Converter;
     XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
 
     Fixup (pb);
+    WriteLocalDecl (w, converter, pb);
     registerMap := AssignRegisters (w, pb);
     WriteInstrList (w, pb, registerMap);
   END ProcBody;

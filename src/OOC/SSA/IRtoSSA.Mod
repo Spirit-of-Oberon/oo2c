@@ -1,7 +1,7 @@
 MODULE OOC:SSA:IRtoSSA;
 
 IMPORT
-  Log, Language:Integer, OOC:SymbolTable:Item, OOC:IR, OOC:IR:Operator,
+  Log, Language:Integer, OOC:IR, OOC:IR:Operator,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 
@@ -18,7 +18,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
   PROCEDURE Chain (instr: SSA.Instr);
     BEGIN
-      instr. AddOpnd (s, Opnd.store);
+      IF (instr. opcode = Opcode.set) THEN
+        instr. opndList. ReplaceOpnd (s);
+      ELSE
+        instr. AddOpnd (s, Opnd.store);
+      END;
       s := instr. AddResult (Result.store)
     END Chain;
 
@@ -65,6 +69,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       RETURN instr
     END Assert;
   
+  PROCEDURE Assignment (assignment: IR.Assignment): SSA.Instr;
+    VAR
+      get: SSA.Result;
+    BEGIN
+      (* ... shortcut: ignore non-scalar assignments *)
+      get := Expression (assignment. variable);
+      RETURN pb. AddSetInstr (get(SSA.Instr), Expression (assignment. value));
+    END Assignment;
+  
   PROCEDURE Call (call: IR.Call): SSA.Instr;
     VAR
       instr: SSA.Instr;
@@ -83,8 +96,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       statm := statmSeq[i];
       WITH statm: IR.Assert DO
         Chain (Assert (statm));
+
+      | statm: IR.Assignment DO
+        Chain (Assignment (statm))
+            
       | statm: IR.Call DO
         Chain (Call (statm));
+        
       | statm: IR.Return DO
         (* lets pretend for a moment that a RETURN is not a control flow
            construct... FIXME *)

@@ -134,7 +134,7 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
         | arg: SSA.Address DO
           w. AttrStringLatin1 ("address-of", arg. decl. name. str^);
         ELSE
-          AttrId ("arg", opnd. arg);
+          AttrId ("arg-id", opnd. arg);
         END;
         w. EndTag;  (* opnd *)
       END WriteOpnd;
