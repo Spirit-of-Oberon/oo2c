@@ -337,6 +337,14 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
              array type *)
           ctype := w. NewPointer (DeclWriter.tqNone, ctype);
         END;
+      ELSIF (mode # modeWriteExported) &
+            (item.exportMark # Sym.nameNotExported) &
+            TR.IsRecord(item.type) &
+            (item.type.namingDecl = NIL) THEN
+        (* for an exported record variable, we don't want to repeat the
+           struct definition in the .oh and the .d file; instead we use
+           typeof() to recycle the header's type in the variable definition *)
+        ctype := w.NewTypeOf(name);
       END;
       
       RETURN w. NewDeclaration (name, tq, sc, ctype)
