@@ -450,6 +450,8 @@ TYPE
 TYPE
   Negate* = POINTER TO NegateDesc;
   NegateDesc = RECORD
+    (**Severely overloaded: integer negation, real negation, and set
+       complement.  *)
     (OperatorDesc)
     operand- : Expression;
   END;

@@ -736,7 +736,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN TypeGuard (expr);
         
       | expr: IR.Negate DO
-        instr := pb. AddInstr (Opcode.negate,
+        IF TR.IsPredefType(expr.type, Predef.set) THEN
+          opcode := Opcode.logicalComplement;
+        ELSE
+          opcode := Opcode.negate;
+        END;
+        instr := pb. AddInstr (opcode,
                                Opcode.TypeToSubclass (expr. operand. type));
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr;
