@@ -715,8 +715,6 @@ TYPE
     code-: LONGINT;
     disabled-: BOOLEAN;
   END;
-CONST
-  defaultAssertCode = 1;
 
 TYPE
   Assignment* = POINTER TO AssignmentDesc;
@@ -1068,6 +1066,7 @@ CONST
   notReal = 46;
   dynamicSize = 47;
   notCharacterArray = 48;
+  notSet = 49;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1230,6 +1229,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Type has no fixed size"
     | notCharacterArray:
       t := "Argument must be a character array"
+    | notSet:
+      t := "Expression must be of set type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1624,6 +1625,22 @@ PROCEDURE (b: Builder) AssertChar(expr: Expression): Expression;
     END;
     RETURN expr;
   END AssertChar;
+
+PROCEDURE (b: Builder) AssertSet(expr: Expression): Expression;
+(* Generates an error if `expr' is not a set value.  On success,
+   `expr' is returned, and otherwise the empty set.  *)
+  VAR
+    v: Set.Value;
+  BEGIN
+    IF (expr # b.errorExpr) THEN
+      IF ~TR.IsSetType(expr.type) THEN
+        b.ErrSym(notSet, expr.sym);
+        v := Set.New({});
+        RETURN NewConst(expr.sym, Predef.GetType(Predef.set), v);
+      END;
+    END;
+    RETURN expr;
+  END AssertSet;
 
 PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expression;
   VAR
@@ -4674,13 +4691,17 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           RETURN b. NewAssignment(design.sym, arguments[0], arguments[0]);
         END;
         
-      | Predef.incl:
+      | Predef.incl, Predef.excl:
+        b.AssertVar(arguments[0]);
+        arguments[0] := b.AssertSet(arguments[0]);
+        arguments[1] := b.AssertInteger(arguments[1]);
+        IF (design. decl(Sym.PredefProc). id = Predef.incl) THEN
+          op := inclElement;
+        ELSE
+          op := exclElement;
+        END;
         RETURN b. NewAssignOp(design. sym,
-                              b. NewChangeElement(design. sym, inclElement,
-                                                  arguments[0], arguments[1]));
-      | Predef.excl:
-        RETURN b. NewAssignOp(design. sym,
-                              b. NewChangeElement(design. sym, exclElement,
+                              b. NewChangeElement(design. sym, op,
                                                   arguments[0], arguments[1]));
         
       (* predefined functions *)

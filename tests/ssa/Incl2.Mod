@@ -1,0 +1,7 @@
+MODULE Incl2;
+
+VAR
+  x: INTEGER;
+BEGIN
+  INCL(x,1);
+END Incl2.

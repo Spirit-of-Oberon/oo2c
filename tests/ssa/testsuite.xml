@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; inc1 inc2 inc3 inc4 inc5">-->
+  select ="&SetupTestCasesWithOut; incl1 incl2 incl3 incl4">-->
 
   &TestSetupWithOut;
     
@@ -400,6 +400,22 @@
     <test id="dec1" type="run" file="Dec1.Mod" output="Dec1.Ref">
       Performing <code>DEC</code> with default delta on global variable.
     </test>
+    
+    <test id="incl1" type="run" file="Incl1.Mod" output="Incl1.Ref">
+      Doing <code>INCL</code> and <code>EXCL</code> on
+      <code>SET</code> variable.
+    </test>
+    <test id="incl2" type="reject" file="Incl2.Mod">
+      First argument of <code>INCL</code> is <code>INTEGER</code>
+      variable.
+    </test>
+    <test id="incl3" type="reject" file="Incl3.Mod">
+      First argument of <code>INCL</code> is a constant.
+    </test>
+    <test id="incl4" type="reject" file="Incl4.Mod">
+      Second argument of <code>INCL</code> is a character.
+    </test>
+    
     
     <test id="abs1" type="run" file="Abs1.Mod" output="Abs1.Ref">
       Predefined function <code>ABS</code> for some integers and reals.
@@ -1177,6 +1193,12 @@
       msg="Invalid type for operator"/>
     <reject-info id="inc5" pos="INC(x, %y)"
       msg="Invalid type for operator"/>
+    
+    <reject-info id="incl2" pos="INCL(%x,1)"
+      msg="Expression must be of set type"/>
+    <reject-info id="incl3" pos="INCL(%x" msg="This must be a variable"/>
+    <reject-info id="incl4" pos="INCL(x,%1X)"
+      msg="Expression must be of integer type"/>
     
     <reject-info id="abs2" pos="ABS(%0X)" msg="Expression must be numeric"/>
 

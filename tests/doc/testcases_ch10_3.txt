@@ -1,6 +1,7 @@
 Still missing: General overflow tests for constant folding (arguments
 in legal range, result in legal range) -- best done in ConstFold, I
-believe.  "Evaluate just once checks" are missing for COPY, INC, DEC.
+believe.  "Evaluate just once checks" are missing for COPY, INC, DEC,
+INCL, EXCL.  Check for constant element in range for INCL, EXCL, IN.
 
 
 10.3 Predeclared Procedures ---------------------------
@@ -269,20 +270,20 @@ REJECT:
      does not include that of n)  [Inc4 Inc5]
 
 
-  EXCL(v, x)
-  INCL(v, x)
+### EXCL(v, x)
+### INCL(v, x)
 
 ACCEPT:
 
-  1) v is a set variable
+  1) v is a set variable  [Incl1]
   2) verify that designator is only evaluated once (see above).
 
 REJECT:
 
-  1) v is not SET
-  2) v is not variable (eg. constant, function result)
-  3) v is read-only variable
-  4) x is not integer
+  1) v is not SET  [Incl2]
+  2) v is not variable (eg. constant, function result)  [Incl3]
+  3) v is read-only variable  [same code as Incl3]
+  4) x is not integer  [Incl4]
   5) x is a constant with x<MIN(v) or x>MAX(v)
 
 
