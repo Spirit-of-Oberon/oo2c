@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic70">-->
+  select ="&SetupTestCasesWithOut; generic71">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5 generic1 generic41 generic45">-->
@@ -1608,6 +1608,10 @@
       It is an error if a <code>NEW(T)</code> appears before the
       definition to <code>T</code>'s <code>INIT</code> procedure.
     </test>
+    <test id="generic71" type="reject" file="Generic71.Mod">
+      Regression test for <code>oo2c</code>: Don't crash when
+      stumbling over a type name for a botched parametric type.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2294,6 +2298,8 @@
         msg="Undeclared identifier"/>
     <reject-info id="generic70" pos="NEW(%Bet,"
         msg="The type's INIT procedure must be defined before its use"/>
+    <reject-info id="generic71" pos="%A(B)"
+        msg="Undeclared identifier"/>
 
     <reject-info id="align2" pos=", %ALIGN2"
         msg="This modifier flag has no effect here"/>

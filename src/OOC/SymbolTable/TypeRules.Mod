@@ -33,9 +33,13 @@ IMPORT
 
 PROCEDURE IsNamedType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be accessed through
-   a type name.  *)
+   a type name.
+
+   Note: If @oparam{type} is a type name, then a previous error prevented
+   resolving the type name to its type definition.  In this case, result is
+   @code{FALSE}.  This is true for most of the other @samp{IsXXX()} predicates
+   as well.  *)
   BEGIN
-    ASSERT (~(type IS Sym.TypeName));
     RETURN (type. namingDecl # NIL)
   END IsNamedType;
 
@@ -248,7 +252,6 @@ PROCEDURE IsOpenArrayType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is an array, and its
    length is not known at compile time.  *)
   BEGIN
-    ASSERT (~(type IS Sym.TypeName));
     type := type.Deparam();
     RETURN (type IS Sym.Array) & type(Sym.Array). isOpenArray
   END IsOpenArrayType;
@@ -259,7 +262,6 @@ PROCEDURE IsArrayOfChar* (type: Sym.Type; includeFixed: BOOLEAN): BOOLEAN;
    If @oparam{includeFixed} is @code{TRUE}, then a fixed size array also
    returns @code{TRUE}.  *)
   BEGIN
-    ASSERT (~(type IS Sym.TypeName));
     RETURN
         (type IS Sym.Array) &
         (includeFixed OR type(Sym.Array). isOpenArray) &
@@ -283,7 +285,6 @@ PROCEDURE IsValidParameterType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    type of a formal parameter definition.  *)
   BEGIN
-    ASSERT (~(type IS Sym.TypeName));
     type := type.Deparam();
     RETURN IsNamedType (type) OR
            IsOpenArrayType (type) OR
@@ -294,7 +295,6 @@ PROCEDURE IsValidReceiverType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    type of a receiver declaration.  *)
   BEGIN
-    ASSERT (~(type IS Sym.TypeName));
     type := type.Deparam();
     RETURN
         (type IS Sym.Record) OR
@@ -740,7 +740,6 @@ PROCEDURE IsArrayType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{type} is an array type.
    FIXME... duplicate of IsArray() *)
   BEGIN
-    ASSERT (~(type IS Sym.TypeName));
     RETURN (type.Deparam() IS Sym.Array)
   END IsArrayType;
 
