@@ -20,18 +20,18 @@ MODULE ADT:Arrays;
 
 
 IMPORT
-  ADT:Storable, ADT:Comparator;
+  Object, ADT:Comparator;
 
 
 
-PROCEDURE Sort* (VAR a: ARRAY OF Storable.Object; pos, endpos: LONGINT;
+PROCEDURE Sort* (VAR a: ARRAY OF Object.Object; pos, endpos: LONGINT;
                  cmp: Comparator.Comparator);
 (**Sort array interval @samp{@oparam{a}[@oparam{pos}, @oparam{endpos}[}
    according to the comparator function @oparam{cmp}.  *)
    
   PROCEDURE Quicksort (l, r: LONGINT);
     VAR
-      t, v: Storable.Object;
+      t, v: Object.Object;
       i, j, m: LONGINT;
     BEGIN
       IF (r > l) THEN
