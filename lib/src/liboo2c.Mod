@@ -1,0 +1,45 @@
+MODULE liboo2c;
+<* Warnings := FALSE *>
+
+IMPORT
+  Ascii,
+  BinaryRider,
+  C,
+  Channel,
+  CharClass,
+  ConvTypes,
+  Err,
+  Files,
+  In,
+  IntConv,
+  IntStr,
+  Integers,
+  LRealConv,
+  LRealMath,
+  LRealStr,
+  Log,
+  LongStrings,
+  Msg,
+  Out,
+  PosixFileDescr,
+  ProgramArgs,
+  RT0,
+  RandomNumbers,
+  Real0,
+  RealConv,
+  RealMath,
+  RealStr,
+  StdChannels,
+  StringSearch,
+  Strings,
+  SysClock,
+  Termination,
+  TextRider,
+  Time,
+  URI,
+
+  libc,
+  libadt,
+  libxml;
+
+END liboo2c.

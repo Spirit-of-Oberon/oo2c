@@ -19,4 +19,8 @@
     <set name='TypeGuard'>TRUE</set>
     <set name='ConformantMode'>FALSE</set>  <!-- not supported -->
   </pragmas>
+
+  <repository>
+    <file-system>@prefix@/lib/oo2c/lib</file-system>
+  </repository>
 </configuration>

@@ -1198,6 +1198,7 @@ OOC_DEV_ROOT=`cd "$srcdir" && pwd`
 
 
 
+rm -f ./oo2c ./ooef ./oocn 2>/dev/null  # make sure no local files are found
 ac_aux_dir=
 for ac_dir in $srcdir $srcdir/.. $srcdir/../..; do
   if test -f $ac_dir/install-sh; then
@@ -3932,7 +3933,7 @@ done
 
 
 
-ac_config_files="$ac_config_files ENV rsrc/OOC/Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/TestFramework/config.xml"
+ac_config_files="$ac_config_files ENV rsrc/OOC/Makefile.config rsrc/OOC/oo2crc.xml src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4408,6 +4409,7 @@ do
   "ENV" ) CONFIG_FILES="$CONFIG_FILES ENV" ;;
   "rsrc/OOC/Makefile.config" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/Makefile.config" ;;
   "rsrc/OOC/oo2crc.xml" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/oo2crc.xml" ;;
+  "src/OOC/Config/Autoconf.Mod" ) CONFIG_FILES="$CONFIG_FILES src/OOC/Config/Autoconf.Mod" ;;
   "rsrc/OOC/TestFramework/config.xml" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/TestFramework/config.xml" ;;
   "lib/src/__config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS lib/src/__config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5

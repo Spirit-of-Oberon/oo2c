@@ -1,3 +1,29 @@
+# ==================== Where To Install Things ===========================
+
+# The default location for installation.  Everything is placed in
+# subdirectories of this directory.  The default values for many of
+# the variables below are expressed in terms of this one, so you may
+# not need to change them.  This defaults to /usr/local.
+prefix=@prefix@
+
+# Like `prefix', but used for architecture-specific files.
+exec_prefix=@exec_prefix@
+
+# Where to install oo2c and other binaries that people will want to
+# run directly.
+bindir=@bindir@
+
+# Where to install library and other files to run oo2c.
+libdir=@libdir@/oo2c
+
+# ==================== Utility Programs for the Build ====================
+
+# Allow the user to specify the install program.
+INSTALL=@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+
+# ========================================================================
+
 export OOC=@OOC@
 export OOCN=@OOCN@
 export OOEF=@OOEF@

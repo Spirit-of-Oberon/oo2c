@@ -1,11 +1,13 @@
 1. Prerequisites
 
-
   oo2c 1.5.7.1 (patch at http://pweb.de/vanacken.do/ooc/oo2c-patches/)
   libadt (from the CVS repository)
   libxml (from the CVS repository)
   gaf2 (from the CVS repository)
   GNU make
+
+  For "make test" and packaging, you will also need perl and GNU tar,
+  and for "make doc" you need xsltproc.
 
 2. Setting up the Development Environment
 
@@ -24,8 +26,9 @@ Then, do
 
 If this produces an error other than the one described below, mail me.
 (Note: The ". ENV" assumes a Bourne compabtible shell.  This command
-sets the environment variables OOC_DEV_ROOT and MAIN_MAKEFILE.  If you
-are running a different shell, you need to do something equivalent.)
+sets the environment variables OOC_DEV_ROOT, MAIN_MAKEFILE, and
+OO2CRC.  If you are running a different shell, you need to do
+something equivalent.)
 
 
 KNOWN PROBLEMS:

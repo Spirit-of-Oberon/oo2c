@@ -3,7 +3,7 @@ MODULE OOC:Config;
 IMPORT
   Msg, Config:Value, Config:Value:String, Config:Source:CmdLine,
   Config:Section:Options, Config:Section:Arguments, Config:Simple,
-  OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
+  OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas, OOC:Config:Autoconf,
   OOC:Config:Repositories, OOC:Config:Repositories:FileSystem(*KEEP THIS!*);
 
 
@@ -17,7 +17,6 @@ VAR
 CONST
   runtimeModule* = "RT0";
   (**Name of the pseudo module that pulls in the run-time system.  *)
-  defaultConfigFile = "rsrc/OOC/oo2crc.xml";
   configEnvVar = "OO2CRC";
   
 VAR
@@ -70,5 +69,5 @@ PROCEDURE Read* (errList: Msg.MsgList);
   END Read;
 
 BEGIN
-  InitConfig (defaultConfigFile);
+  InitConfig (Autoconf.configFile);
 END OOC:Config.

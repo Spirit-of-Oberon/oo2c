@@ -42,5 +42,5 @@ AC_CHECK_FUNCS(gettimeofday settimeofday)
 dnl checks for system services
 
 AC_CONFIG_FILES(ENV rsrc/OOC/Makefile.config rsrc/OOC/oo2crc.xml
-                rsrc/OOC/TestFramework/config.xml)
+                src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml)
 AC_OUTPUT

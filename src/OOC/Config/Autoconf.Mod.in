@@ -1,0 +1,9 @@
+MODULE OOC:Config:Autoconf;
+
+(**This module provides all constants that are defined by running
+   @code{./configure} in the top-level directory.  *)
+
+CONST
+  configFile* = "@prefix@/lib/oo2c/oo2crc.xml";
+  
+END OOC:Config:Autoconf.
