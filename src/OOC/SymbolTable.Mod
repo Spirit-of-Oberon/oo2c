@@ -655,6 +655,9 @@ TYPE
     (TypeDesc)
     bound*: Type;
     (**Lower bound of the set of valid type arguments.  *)
+    srcCodeBound-: Type;
+    (**Similar to @ofield{bound}, but it is not changed by
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
   END;
   
 TYPE
@@ -2230,12 +2233,13 @@ PROCEDURE InitTypeVar* (typeVar: TypeVar; parent: Item;
   BEGIN
     InitType(typeVar, parent, position);
     typeVar.bound := bound;
+    typeVar.srcCodeBound := bound;
   END InitTypeVar;
 
 PROCEDURE (typeVar: TypeVar) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     typeVar.Store^(w);
-    w.WriteObject(typeVar.bound);
+    w.WriteObject(typeVar.srcCodeBound);
   END Store;
 
 PROCEDURE (typeVar: TypeVar) Load* (r: Storable.Reader) RAISES IO.Error;
@@ -2245,10 +2249,11 @@ PROCEDURE (typeVar: TypeVar) Load* (r: Storable.Reader) RAISES IO.Error;
     typeVar.Load^(r);
     r.ReadObject(obj);
     IF (obj = NIL) THEN
-      typeVar.bound := NIL
+      typeVar.srcCodeBound := NIL
     ELSE
-      typeVar.bound := obj(Type);
+      typeVar.srcCodeBound := obj(Type);
     END;
+    typeVar.bound := typeVar.srcCodeBound;
   END Load;
 
 PROCEDURE (typeVar: TypeVar) Bound*(): Type;
@@ -2480,9 +2485,9 @@ PROCEDURE (array: Array) GetOpenDimensions* (): LONGINT;
   BEGIN
     dim := 0;
     type := array;
-    WHILE (type IS Array) & type(Array). isOpenArray DO
+    WHILE (type IS Array) & type(Array).isOpenArray DO
       INC (dim);
-      type := type(Array). elementType
+      type := type(Array).elementType.Deparam();
     END;
     RETURN dim
   END GetOpenDimensions;
@@ -2493,8 +2498,8 @@ PROCEDURE (array: Array) GetNonOpenElementType* (): Type;
     type: Type;
   BEGIN
     type := array;
-    WHILE (type IS Array) & type(Array). isOpenArray DO
-      type := type(Array). elementType
+    WHILE (type IS Array) & type(Array).isOpenArray DO
+      type := type(Array).elementType.Deparam();
     END;
     RETURN type
   END GetNonOpenElementType;
@@ -2506,7 +2511,7 @@ PROCEDURE (array: Array) GetInnermostElementType* (): Type;
   BEGIN
     type := array;
     WHILE (type IS Array) DO
-      type := type(Array). elementType
+      type := type(Array).elementType.Deparam();
     END;
     RETURN type
   END GetInnermostElementType;
@@ -2519,7 +2524,7 @@ PROCEDURE (array: Array) GetNthElementType* (dim: LONGINT): Type;
   BEGIN
     type := array;
     WHILE (dim > 0) DO
-      type := type(Array). elementType;
+      type := type(Array).elementType.Deparam();
       DEC (dim);
     END;
     RETURN type;
