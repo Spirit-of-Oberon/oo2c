@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
-<module id='0' name='M056' pos='7' line='0' column='7' visible_from='0' export='no'>
+<module id='0' name='M056' pos='7' line='0' column='7' visible_from='0' export='yes'>
   <import id='1' name='M055' pos='38' line='2' column='7' visible_from='42' export='no' imported_module_name='M055' imported_module_pos='38' imported_module_line='2' imported_module_column='7'/>
   <type_name id='2' pos='74' line='5' column='24' ident_name='ChannelDesc' ident_pos='74' ident_line='5' ident_column='24'/>
   <pointer_type id='3' pos='63' line='5' column='13' class='Channel' base_type_id='5'/>

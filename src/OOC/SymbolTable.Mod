@@ -1043,7 +1043,7 @@ PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
                        class: ModuleClass; callConv: CallConv;
                        moduleAST: AST.Node; bodyDecl: ProcDecl);
   BEGIN
-    InitDeclaration (mod, NIL, name, 0, nameNotExported, docString);
+    InitDeclaration (mod, NIL, name, 0, nameExported, docString);
     mod. ns := NIL;
     mod. class := class;
     mod. callConv := callConv;
