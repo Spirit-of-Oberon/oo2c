@@ -31,9 +31,6 @@
     <set name='FunctResult'>TRUE</set>
     <set name='TypeGuard'>TRUE</set>
     <set name='ConformantMode'>FALSE</set>  <!-- not supported -->
-    
-    <define name='TARGET_OS' type='string'>@TARGET_OS@</define>
-      <!-- the variable TARGET_OS is undefined before 2.0.7 -->
   </pragmas>
 
   <repositories>
