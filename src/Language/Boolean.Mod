@@ -1,7 +1,7 @@
 MODULE Language:Boolean;
 
 IMPORT 
-  ADT:String, L := Language;
+  ADT:Object, ADT:String, L := Language;
 
 TYPE
   Type* = POINTER TO TypeDesc;
@@ -28,6 +28,20 @@ BEGIN
   RETURN v;
 END New;
 
+PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
+  BEGIN
+    RETURN (y IS Value) & (v. value = y(Value). value)
+  END Equals;
+  
+PROCEDURE (v: Value) HashCode* (): LONGINT;
+  BEGIN
+    IF v. value THEN
+      RETURN 1
+    ELSE
+      RETURN 2
+    END;
+  END HashCode;
+  
 PROCEDURE (v : Value) ToString* () : String.String;
 BEGIN
   IF v.value THEN

@@ -35,8 +35,14 @@ PROCEDURE InitValue* (v: Value; type: Type);
     v. type := type
   END InitValue;
 
+PROCEDURE (v: Value) [ABSTRACT] Equals* (y: Object.Object): BOOLEAN;
+  END Equals;
+  
+PROCEDURE (v: Value) [ABSTRACT] HashCode* (): LONGINT;
+  END HashCode;
+  
 PROCEDURE (v: Value) [ABSTRACT] ToString*() : String.String;
-END ToString;
+  END ToString;
 
 PROCEDURE (v: Value) Store* (w: Object.Writer);
   BEGIN

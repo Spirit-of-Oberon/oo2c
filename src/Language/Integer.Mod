@@ -4,10 +4,14 @@ IMPORT
   L := Language,
   I := Language:IntegerType;
 
+TYPE
+  Type* = I.Type;
+  Value* = I.Value;
+  
 VAR
-  type- : I.Type;
+  type- : Type;
 
-PROCEDURE New*(value : INTEGER) : I.Value;
+PROCEDURE New*(value : INTEGER) : Value;
 BEGIN
   RETURN type.Value(value)
 END New;

@@ -1,7 +1,7 @@
 MODULE Language:IntegerType [OOC_EXTENSIONS];
 
 IMPORT 
-  IntStr, ADT:String, ADT:StringBuffer, L := Language;
+  IntStr, ADT:Object, ADT:String, ADT:StringBuffer, L := Language;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -30,6 +30,16 @@ BEGIN
   RETURN v;
 END New;
 
+PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
+  BEGIN
+    RETURN (y IS Value) & (v. value = y(Value). value)
+  END Equals;
+  
+PROCEDURE (v: Value) HashCode* (): LONGINT;
+  BEGIN
+    RETURN v. value
+  END HashCode;
+  
 PROCEDURE (v : Value) ToString* () : String.String;
 VAR str: ARRAY 32 OF CHAR;
 BEGIN

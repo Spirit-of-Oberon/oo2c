@@ -1,7 +1,7 @@
 MODULE Language:String8 [OOC_EXTENSIONS];
 
 IMPORT 
-  ADT:String, ADT:StringBuffer, L := Language;
+  ADT:Object, ADT:String, ADT:StringBuffer, L := Language;
 
 TYPE
   Type* = POINTER TO TypeDesc;
@@ -49,6 +49,16 @@ PROCEDURE NewString* (source[NO_COPY]: ARRAY OF CHAR): Value;
     RETURN NewRegion (source, 0, i)
   END NewString;
 
+PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
+  BEGIN
+    RETURN (y IS Value) & v. value. Equals(y(Value). value)
+  END Equals;
+  
+PROCEDURE (v: Value) HashCode* (): LONGINT;
+  BEGIN
+    RETURN v. value. HashCode();
+  END HashCode;
+  
 PROCEDURE (v: Value) ToString* (): String.String;
   VAR
     i: LONGINT;
