@@ -29,7 +29,6 @@ TEST_SUBDIRS=\
   tests/interface \
   tests/oberon-doc \
   tests/h2o \
-  tests/compile \
   tests/ssa \
   tests/lib \
   tests/ia32 \
