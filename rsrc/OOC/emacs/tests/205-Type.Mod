@@ -1,0 +1,14 @@
+MODULE M;  (* -*-Mode: oberon-2-*- *)
+
+TYPE
+  P0* = PROCEDURE;
+  P1* = PROCEDURE (x: INTEGER);
+  P2* = PROCEDURE (VAR x: INTEGER);
+  P3* = PROCEDURE (): INTEGER;
+  P4* = PROCEDURE (x, y: CHAR): INTEGER;
+  P5* = PROCEDURE (VAR x, y: CHAR): INTEGER;
+
+VAR
+  x: LONGINT;
+  
+END M.

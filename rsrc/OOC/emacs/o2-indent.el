@@ -28,8 +28,8 @@
     ("\\<UNTIL\\>" . until)
     ("\\<WHILE\\>" . while)
     ("\\<WITH\\>" . with)
-    ;; 'proc does not match procedure forward declarations
-    ("\\<PROCEDURE\\>[ \t]*\\(([^)]*)\\s-*\\)?\\(\\sw+\\)" . proc)
+    ;; 'proc does not match procedure forward declarations or procedure types
+    ("\\<PROCEDURE\\>[ \t]*\\(([^;]*)\\s-*\\)?\\(\\sw+\\)" . proc)
     ("\\<PROCEDURE\\>[ \t]*\\^" . proc-forward))
 "Regexps matching code that affects indentation.
 A symbolic name belongs to each regexp.")
@@ -406,7 +406,7 @@ the n:th line of a multi-line comment, where n > 1."
 Else returns nil."
   (let ((saved-point (save-excursion
                        (save-match-data(ob2-re-search-backward-code
-                                        (ob2-get-indent-re 'proc))))))
+					"\\<PROCEDURE\\>")))))
       (and saved-point
            (looking-at "\\<VAR\\>")
            (> (nth 0 (parse-partial-sexp saved-point (point)))
