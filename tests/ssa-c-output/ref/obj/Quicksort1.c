@@ -49,20 +49,20 @@ void Quicksort1__Test() {
 
   i0=0;
 l1_loop:
-  i1 = i0+1;
-  i2 = RandomNumbers__RND(64);
-  *(OOC_INT32*)((OOC_INT32)a+(i0*4)) = i2;
-  i0 = i1<=63;
+  i1 = RandomNumbers__RND(64);
+  i2 = i0+1;
+  *(OOC_INT32*)((OOC_INT32)a+(i0*4)) = i1;
+  i0 = i2<=63;
   if (!i0) goto l5;
-  i0=i1;
+  i0=i2;
   goto l1_loop;
 l5:
   Quicksort1__Sort((void*)(OOC_INT32)a, 64, 0, 63);
   i0=0;
 l6_loop:
   i1 = *(OOC_INT32*)((OOC_INT32)a+(i0*4));
-  i0 = i0+1;
   Out0__Int(i1, 4);
+  i0 = i0+1;
   i1 = i0<=63;
   if (i1) goto l6_loop;
 l10:

@@ -1405,6 +1405,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
           ELSE
             CASE proxy. instr. opcode OF
             | Opcode.collect: l := 0;
+            | Opcode.call   : l := 20;
             ELSE
               l := 1;
             END;
