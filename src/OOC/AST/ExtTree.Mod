@@ -297,9 +297,9 @@ TYPE
   SetDesc = RECORD
     (NodeDesc)
     type-: AST.Node;
-    lBrace-: AST.Node;
+    lBrace-: Terminal;
     elementList-: AST.NodeList;
-    rBrace-: AST.Node;
+    rBrace-: Terminal;
   END;
 
 TYPE
@@ -1173,9 +1173,9 @@ PROCEDURE (b: Builder) Set* (type, lBrace: AST.Node; elementList: AST.NodeList; 
   BEGIN
     NEW (s);
     s. type := type;
-    s. lBrace := lBrace;
+    s. lBrace := lBrace(Terminal);
     s. elementList := elementList;
-    s. rBrace := rBrace;
+    s. rBrace := rBrace(Terminal);
     RETURN s
   END Set;
 
