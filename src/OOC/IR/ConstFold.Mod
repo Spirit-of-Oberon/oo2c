@@ -35,30 +35,9 @@ TYPE
   END;
 
 CONST
-  maxIntegerTypes = 5;
-
   (* To enable constant folding for REAL expressions, set foldReals TRUE. Even
   better, allow it to be enabled/disabled at run-time *)
-
   foldReals = FALSE;
-
-TYPE
-  IntegerType = RECORD
-    low, high : Integer.Value;
-    id : Sym.PredefId;
-  END;
-
-VAR
-  nIntegerTypes : INTEGER;
-  integerType : ARRAY maxIntegerTypes OF IntegerType;
-
-PROCEDURE AddIntegerType(id : Sym.PredefId; low, high : ARRAY OF CHAR);
-BEGIN
-  integerType[nIntegerTypes].low := Integer.type.ValueOf(low);
-  integerType[nIntegerTypes].high := Integer.type.ValueOf(high);
-  integerType[nIntegerTypes].id := id;
-  INC(nIntegerTypes);
-END AddIntegerType;
 
 PROCEDURE InitConstFold (c : ConstFold);
 BEGIN
@@ -76,16 +55,9 @@ END NewConstFold;
 
 PROCEDURE SmallestType(value : Language.Value) : Sym.Type;
 (**Return the smallest type that can represent @oparam{value}. *)
-VAR i : INTEGER;
 BEGIN
   WITH value : Integer.Value DO
-    FOR i := 0 TO nIntegerTypes-1 DO
-      IF (value.Compare(integerType[i].low) >= 0)
-       & (value.Compare(integerType[i].high) <= 0) THEN
-        RETURN Predef.GetType(integerType[i].id)
-      END;
-    END;
-    RETURN NIL;
+    RETURN Predef.SmallestIntType (value);
   | value : Real.Value DO
     (* FIXME! Figure out the appropriate REAL type *)
     RETURN Predef.GetType(Predef.real);
@@ -256,7 +228,7 @@ BEGIN
   IF c.ValidEval(op.operand, value) THEN
     id := op.operand.type(Sym.PredefType).id;
     CASE id OF
-    | Predef.integer:
+    | Predef.shortint .. Predef.real-1:
       c.result := c.ValueConst(value(Integer.Value).Negate(), op);
     | Predef.set:
       c.result := c.ValueConst(Set.New(-value(Set.Value).value), op);
@@ -659,9 +631,4 @@ PROCEDURE (c: ConstFold) VisitModule* (module: IR.Module);
   BEGIN
   END VisitModule;
 
-BEGIN
-  nIntegerTypes := 0;
-  AddIntegerType(Predef.shortint, "-128", "127");
-  AddIntegerType(Predef.integer, "-32768", "32767");
-  AddIntegerType(Predef.longint, "-2147483648", "2147483647");
 END OOC:IR:ConstFold.
