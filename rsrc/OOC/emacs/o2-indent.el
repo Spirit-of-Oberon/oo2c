@@ -10,6 +10,7 @@
   '(("|" . guard-sep)
     ("\\<BEGIN\\>" . begin)
     ("\\<CASE\\>" . case)
+    ("\\<CATCH\\>" . catch)
     ("\\<\\(CONST\\|TYPE\\|VAR\\)\\>" . const-type-var)
     ("\\<ELSE\\>" . else)
     ("\\<ELSIF\\>" . elsif)
@@ -25,6 +26,7 @@
     ("\\<MODULE\\>" . module)
     ("\\<RECORD\\>" . record)
     ("\\<REPEAT\\>" . repeat)
+    ("\\<TRY\\>" . try)
     ("\\<UNTIL\\>" . until)
     ("\\<WHILE\\>" . while)
     ("\\<WITH\\>" . with)
@@ -56,9 +58,9 @@ returned."
 (defconst ob2-indent-interrupt-re
   (mapconcat 'identity
              (delq nil (mapcar (lambda (x) (ob2-get-indent-re x))
-                               '(begin const-type-var else elsif end guard-sep
-                                       import proc end-proc-or-module until
-				       proc-forward)))
+                               '(begin catch const-type-var else elsif end
+				       guard-sep import proc end-proc-or-module
+				       until proc-forward)))
              "\\|")
 "Regexp matching code that interrupt indentation of previous line.
 Indentation relative to the previous line is either incremented
@@ -79,10 +81,11 @@ statement sequence or a list of declarations.")
 (defsubst ob2-inside-statement-sequence-p ()
   "Return non-nil if point is inside a statement sequence.
 Else return nil."
-  (save-excursion
-    (if (ob2-re-search-backward-code ob2-statements-or-declarations-re)
-	(eq (ob2-get-indent-symbol (match-string-no-properties 0)) 'begin)
-      nil)))
+  (save-match-data
+    (save-excursion
+      (if (ob2-re-search-backward-code ob2-statements-or-declarations-re)
+	  (eq (ob2-get-indent-symbol (match-string-no-properties 0)) 'begin)
+	nil))))
 
 
 ;; ------
@@ -181,6 +184,7 @@ pair is not in the hash, then C is assumed to be zero.  One step equals
     (puthash '(end-proc-or-module . until) -1 table)
     (puthash '(other . begin) 1 table)
     (puthash '(other . case) 1 table)
+    (puthash '(other . catch) 1 table)
     (puthash '(other . const-type-var) 1 table)
     (puthash '(other . else) 1 table)
     (puthash '(other . elsif) 1 table)
@@ -192,6 +196,7 @@ pair is not in the hash, then C is assumed to be zero.  One step equals
     (puthash '(other . record) 1 table)
     (puthash '(other . repeat) 1 table)
     (puthash '(other . proc) 1 table)
+    (puthash '(other . try) 1 table)
     (puthash '(other . while) 1 table)
     (puthash '(other . with) 1 table)
     (puthash '(proc . end-proc-or-module) -1 table)
@@ -239,24 +244,7 @@ the key '(CURRENT PARENT).  See `ob2-indent-table'."
           ((ob2-inside-multi-line-expr-p)
            (ob2-calc-indent-multi-line-expr))
 
-	  ((ob2-first-case-or-with-case-p)
-	   (1- (ob2-calc-indent-normal)))
-
           (t (ob2-calc-indent-normal)))))
-
-
-(defun ob2-first-case-or-with-case-p ()
-"Return non-nil if point is on the first CASE or WITH statement.
-Non-nil is returned if the first line of the first case of a CASE or
-WITH statement starts on a line.  Else returns nil."
-  (and (save-excursion
-	 (and (ob2-re-search-backward-code ob2-indent-re)
-	      (looking-at "\\<\\(CASE\\|WITH\\)\\>")))
-       (not (looking-at "|\\|\\(CASE\\|WITH\\)\\>"))
-       (let ((saved-point (save-excursion (ob2-re-search-forward-code ":"))))
-         (and saved-point
-              (= (count-lines (point) saved-point)
-                 1)))))
 
 
 (defun ob2-re-search-backward-code-2 (regexp)
@@ -268,7 +256,8 @@ is no match."
 	   nil)
 	  ((ob2-looking-at-ref-param-p)	;skip reference parameter
 	   (ob2-re-search-backward-code-2 regexp))
-	  ((and (looking-at (ob2-get-indent-re 'end)) ;skip record-end
+	  ((and (save-match-data	;skip record-end
+		  (looking-at (ob2-get-indent-re 'end)))
 		(not (ob2-inside-statement-sequence-p)))
 	   (ob2-re-search-backward-code-2 ob2-record-re)
 	   (ob2-re-search-backward-code-2 regexp))
@@ -328,7 +317,7 @@ Else returns nil."
 
 (defconst ob2-indent-begin-inside-body-re
   (concat "\\(" (regexp-opt '("BEGIN" "CASE" "FOR" "IF" "LOOP" "REPEAT"
-                                    "WHILE" "WITH") 'words)
+                                    "TRY" "WHILE" "WITH") 'words)
           "\\)")
   "Indentation inside body regexp.
 
@@ -404,13 +393,13 @@ the n:th line of a multi-line comment, where n > 1."
 (defun ob2-looking-at-ref-param-p ()
   "Return non-nil if looking at a reference parameter.
 Else returns nil."
-  (let ((saved-point (save-excursion
-                       (save-match-data(ob2-re-search-backward-code
-					"\\<PROCEDURE\\>")))))
+  (save-match-data 
+    (let ((saved-point (save-excursion
+			 (ob2-re-search-backward-code "\\<PROCEDURE\\>"))))
       (and saved-point
            (looking-at "\\<VAR\\>")
-           (> (nth 0 (parse-partial-sexp saved-point (point)))
-              0))))
+	   (> (nth 0 (parse-partial-sexp saved-point (point)))
+              0)))))
 
 
 ;;;;
