@@ -563,6 +563,12 @@ PROCEDURE (c: ConstFold) VisitTypeCast* (op : IR.TypeCast);
 PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
   VAR
     value : Language.Value;
+
+  PROCEDURE IsPredefType(type: Sym.Type; id: Sym.PredefId): BOOLEAN;
+    BEGIN
+      RETURN (type IS Sym.PredefType) & (type(Sym.PredefType). id = id);
+    END IsPredefType;
+
   BEGIN
     (* FIXME... this needs to be made "safe": if there is no code
        that performs the required type conversion, then "op"
@@ -584,8 +590,14 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
       ELSIF c. builder. typeRules. IsRealType (op. type) &
             c. builder. typeRules. IsIntegerType (op. expr. type) THEN
         c.result := NIL;
+      ELSIF IsPredefType (op. type, Predef.longchar) &
+            IsPredefType (op. expr. type, Predef.char) THEN
+        (* type conversion from CHAR to LONGCHAR *)
+        value := String16.NewChar (LONG (value(String8.Value). CharAt (0)));
+        c.result := c. builder. NewConst (op. sym, op. type, value);
+      ELSE
+        c.result := c.builder.NewConst(op.sym, op.type, value)
       END;
-      c.result := c.builder.NewConst(op.sym, op.type, value)
     ELSE
       c.result := NIL;
     END;
