@@ -1,35 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
 <!DOCTYPE testsuite-ext
-          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd">
 
-<!ENTITY baseline-testcases
-         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases.xml">
-]>
-
-<testsuite-ext
-  profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut;
-  baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
-  baseline8 baseline10 baseline11
-  function1 function2 function3 if1 if2 if3 with1 with2 function4 function5
-  designator1 function6 loop1 loop2 loop3 loop4 case1 and1 or1 varpar1
-  record1 record2 record3 record4 record5 record6 record7 record8
-  record9 procvar1 procvar2 procvar3 procvar4 procvar5
-  inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7 antidep1
-  typetest1 typetest2 typetest3 typetest4
-  array1 array2 array3 array4 array5 array6 array7 array8
-  tbproc1 tbproc2 tbproc3 tbproc4 tbproc5 tbproc6 tbproc7
-  nestedproc1 nestedproc2 nestedproc3">
+<testsuite-ext profile="Test Suite for Framework Testing">
 
 <!-- <testsuite-ext -->
 <!--   profile="Test Suite for Framework Testing" -->
 <!--   select ="&SetupTestCasesWithOut; with1 with2"> -->
   
   &TestSetupWithOut;
-  &baseline-testcases;
-  <!--&candidate-testcases;
-  &hostess-testcases;-->
-  
+    
   <testcases profile="OOC2 Development" default-lang="O2">
     <test id="function1" type="run"
       file="../compile/HOTFunction1.Mod" output="../compile/HOTFunction1.Ref">
@@ -387,7 +367,7 @@
   </testcases>
     
   <processor-info processor-name="TestCompile">
-    <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
+    <!--<reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>-->
     
     <reject-info id="len2" pos="Int (%LEN " msg="Wrong number of arguments"/>
     <reject-info id="len3" pos="Int (%LEN " msg="Wrong number of arguments"/>
