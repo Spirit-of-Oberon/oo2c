@@ -19,7 +19,7 @@ include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.tests-framework
 
 
 %.diff:
-	$(DIFF) wd/$* ref/$*
+	$(DIFF) ref/$* wd/$*
 
 test-diff-all: test1-runall $(addsuffix .diff,$(patsubst wd/%,%,$(wildcard wd/obj/[^x]*[^_].c)))
 	$(PRINT) Done checking C output.
