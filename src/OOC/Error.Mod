@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Error;
 (*  Creates lists of error messages and converts them to text.
-    Copyright (C) 1999, 2000, 2001  Michael van Acken
+    Copyright (C) 1999, 2000, 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -55,8 +55,16 @@ TYPE
 
 VAR
   oo2cStyleErrors*: BOOLEAN;
-
-
+  minErrorDistance*: LONGINT;
+  (**If an error message's position is less than this number of characters
+     before or after an existing error message, then it is silently discarded.
+     By default, this is @samp{0}, which means that no messages
+     are thrown away.  *)
+     
+CONST
+  posAttr = "pos";
+  lineAttr = "line";
+  
 PROCEDURE InitContext* (c: Context; id: M.String);
   BEGIN
     M.InitContext (c, id)
@@ -79,6 +87,23 @@ PROCEDURE NewList* (fileName: ARRAY OF CHAR): List;
     RETURN list
   END NewList;
 
+PROCEDURE (l: List) Append* (msg: Msg);
+  VAR
+    ptr: M.Msg;
+    msgPos, ptrPos: M.Attribute;
+  BEGIN
+    msgPos := msg.GetAttribute(posAttr);
+    ptr := l.msgList;
+    WHILE (ptr # NIL) DO
+      ptrPos := ptr.GetAttribute(posAttr);
+      IF (ABS(ptrPos(M.IntAttribute).int - msgPos(M.IntAttribute).int) < 
+          minErrorDistance) THEN
+        RETURN;
+      END;
+      ptr := ptr.nextMsg;
+    END;
+    l.Append^(msg);
+  END Append;
 
 PROCEDURE (c: Context) BaseTemplate* (msg: Msg; text: LString; VAR templ: LString);
 (**Creates the default error description for message @oparam{msg}.  The
@@ -130,6 +155,48 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
     msg: Msg;
     text: ARRAY 8*1024 OF CHAR;
     attrPos, attrLine: M.Attribute;
+    lastPos: LONGINT;
+    
+  PROCEDURE WriteMsg (msg: Msg);
+    BEGIN
+      msg. GetText (text);
+      
+      IF errList. adjustCharPos THEN  (* adjust character position *)
+        attrPos := msg. GetAttribute (posAttr);
+        attrLine := msg. GetAttribute (lineAttr);
+        IF (attrPos # NIL) & (attrLine # NIL) THEN
+          msg. SetIntAttrib (posAttr, attrPos(M.IntAttribute). int-
+                             attrLine(M.IntAttribute). int);
+          msg. GetText (text);
+          msg. SetIntAttrib (posAttr, attrPos(M.IntAttribute). int)
+        END
+      END;
+      writer. WriteString (text);
+      writer. WriteLn;
+    END WriteMsg;
+
+  PROCEDURE GetNext (VAR lastPos: LONGINT): Msg;
+    VAR
+      msg, best: Msg;
+      bestPos: LONGINT;
+      pos: M.Attribute;
+    BEGIN
+      best := NIL;
+      bestPos := -1;
+      msg := errList. msgList;
+      WHILE (msg # NIL) DO
+        pos := msg.GetAttribute(posAttr);
+        IF (pos(M.IntAttribute).int >= lastPos) &
+           ((best = NIL) OR (pos(M.IntAttribute).int < bestPos)) THEN
+          best := msg;
+          bestPos := pos(M.IntAttribute).int;
+        END;
+        msg := msg. nextMsg
+      END;
+      lastPos := bestPos;
+      RETURN best;
+    END GetNext;
+  
   BEGIN
     writer := TextRider.ConnectWriter (ch);
     ASSERT (writer # NIL);
@@ -140,27 +207,20 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
       writer. WriteString (": ");
       writer. WriteLn
     END;
-    
-    msg := errList. msgList;
-    WHILE (msg # NIL) DO
-      msg. GetText (text);
-      
-      IF errList. adjustCharPos THEN  (* adjust character position *)
-        attrPos := msg. GetAttribute ("pos");
-        attrLine := msg. GetAttribute ("line");
-        IF (attrPos # NIL) & (attrLine # NIL) THEN
-          msg. SetIntAttrib ("pos", attrPos(M.IntAttribute). int-
-                                    attrLine(M.IntAttribute). int);
-          msg. GetText (text);
-          msg. SetIntAttrib ("pos", attrPos(M.IntAttribute). int)
-        END
+
+    lastPos := -1;
+    LOOP
+      msg := GetNext(lastPos);
+      IF (msg = NIL) THEN
+        EXIT;
+      ELSE
+        WriteMsg (msg);
+        msg.SetIntAttrib(posAttr, -2);   (* mark as written *)
       END;
-      writer. WriteString (text);
-      writer. WriteLn;
-      msg := msg. nextMsg
-    END
+    END;
   END Write;
 
 BEGIN
-  oo2cStyleErrors := FALSE
+  oo2cStyleErrors := FALSE;
+  minErrorDistance := 0;
 END OOC:Error.

@@ -104,6 +104,7 @@ PROCEDURE NewConfig;
 
 BEGIN
   Error.oo2cStyleErrors := TRUE;
+  Error.minErrorDistance := 16;
   Builder.doAutoImport := TRUE;
   cfgErrList := Error.NewList ("");
   NewConfig;
