@@ -21,15 +21,15 @@ MODULE OOC:SSA:Result;
 *)
 
 TYPE
-  Id* = SHORTINT;
+  Class* = SHORTINT;
   (**Identifies the function of the data produced by a result.  Results are
      identified by either of two means: their position in an instruction's
-     operand list, or their identifier @ofield{*OOC:SSA:Instr.Result.id}.  The
-     id describes the data that is passed from the instruction, and is
+     operand list, or their class @ofield{*OOC:SSA:Instr.Result.class}.  The
+     class describes the data that is passed from the instruction, and is
      primarily used to mark optional results, and to structure highly variable
      result lists.
 
-     Operands and results of the same kind share the same id.  See
+     Operands and results of the same kind share the same class id.  See
      @omodule{*OOC:SSA:Opnd}.  *)
 
 CONST
@@ -43,7 +43,7 @@ CONST
      is the instruction itself, and has the index @code{0}.  *)
   
   result* = 0;
-  (**A result without any special id.  The result derives its meaning
+  (**A result without any special class.  The result derives its meaning
      exclusively from its index in the instruction's result list.  *)
 
   store* = 2;
@@ -60,10 +60,10 @@ CONST
      function result, but does not modify any nonlocal variables, nor does it
      initiate any I/O, nor can it throw an exception.  *)
   
-PROCEDURE GetName* (id: Id; VAR name: ARRAY OF CHAR);
-(**Retrieves the symbolic name of a result id.  *)
+PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
+(**Retrieves the symbolic name of a result class.  *)
   BEGIN
-    CASE id OF
+    CASE class OF
     | void: COPY ("void", name)
     | primary: COPY ("primary", name)
     | store: COPY ("store", name)
