@@ -172,6 +172,27 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
       dep: S.Dep;
 
     PROCEDURE Merge (a, b: S.Block): S.Block;
+      PROCEDURE Up(b: S.Block): S.Block;
+        BEGIN
+          IF (b.info # NIL) THEN
+            RETURN b.info(S.Block);
+          ELSE
+            RETURN b.block;
+          END;
+        END Up;
+      
+      PROCEDURE NestingDepth(b: S.Block): LONGINT;
+        VAR
+          i: LONGINT;
+        BEGIN
+          i := 0;
+          WHILE (b # NIL) DO
+            INC(i);
+            b := Up(b);
+          END;
+          RETURN i;
+        END NestingDepth;
+      
       BEGIN
         (* Without loops, the rules of block selection are simple: the
            instruction is placed into the least global block that dominates
@@ -183,18 +204,17 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
 
            In addition to this, an instruction may end up within a loop,
            although it is in fact loop invariant.  *)
-        WHILE (a.NestingDepth() > b.NestingDepth()) DO
-          a := a.block;
+        WHILE (NestingDepth(a) > NestingDepth(b)) DO
+          a := Up(a);
         END;
-        WHILE (b.NestingDepth() > a.NestingDepth()) DO
-          b := b.block;
+        WHILE (NestingDepth(b) > NestingDepth(a)) DO
+          b := Up(b);
         END;
         WHILE (a # b) DO
-          a := a.block;
-          b := b.block;
+          a := Up(a); b := Up(b);
         END;
         (*IF (a # NIL) & (a.opcode = Opcode.select) THEN
-          a := a.block;
+          a := Up(a);
         END;*)
         RETURN a;
       END Merge;

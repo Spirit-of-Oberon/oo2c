@@ -619,6 +619,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       
       localVars := b.AddInstr2(S.allocateStack,
                                sp, b.AddFramePointerOffset(NIL));
+      ControlCP(localVars);  (* FIXME... temporary workaround for misscheduling of branch/merge combination; this call should be removed later *)
       MemoryCP(localVars);
       sp := localVars.AddResultReg(S.address, S.sp);
       ASSERT(sp.register = S.sp);
