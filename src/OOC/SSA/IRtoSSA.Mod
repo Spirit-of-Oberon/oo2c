@@ -873,7 +873,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       END;
       
       store := instr. AddResult (Result.store);
-      pb. selectReturn. AddOpnd (store, Opnd.store);
+      pb. selectReturn. AddOpnd (store, Opnd.storeExit);
       s := store
     END Return;
 
