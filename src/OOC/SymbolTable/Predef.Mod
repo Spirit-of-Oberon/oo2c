@@ -143,7 +143,7 @@ VAR
   nameStringModule-, nameStringType-: Sym.Name;
   
   
-PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
+PROCEDURE GetName*(name: ARRAY OF CHAR): Sym.Name;
   VAR
     n: Sym.Name;
     str: Sym.NameString;
@@ -383,6 +383,40 @@ PROCEDURE IsStaticMethod*(name: ARRAY OF CHAR): BOOLEAN;
   BEGIN
     RETURN (name = initMethod);
   END IsStaticMethod;
+
+PROCEDURE ImplementsFinalize*(t: Sym.Record): BOOLEAN;
+(* Determine if record @oparam{t} overrides RT0:ObjectDesc.Finalize. *) 
+  CONST
+    name = "Finalize";
+    class = "ObjectDesc";
+    module = "RT0";
+  VAR 
+    decl : Sym.Declaration;   (* method declaration *)
+    root : Sym.Type;          (* root class for @oparam{t} *)
+    impl : Sym.Type;          (* implementing class for Finalize method *)
+  BEGIN
+    decl := t.ns.Identify(t, GetName(name), TRUE);
+    IF (decl # NIL) & (decl IS Sym.ProcDecl) THEN
+      (* @oparam{t} implements procedure Finalize *)
+      
+      (* Find the root type that this record implements. *)
+      root := t.Deparam();
+      WHILE (root IS Sym.Record) & (root(Sym.Record).baseType # NIL) DO
+        root := root(Sym.Record).baseType.Deparam();
+      END;
+      
+      (* Find the record type to which Finalize is bound. *) 
+      impl := decl(Sym.ProcDecl).formalPars.receiver.type.Deparam();
+      impl := impl(Sym.Pointer).baseType.Deparam();
+      
+      RETURN (impl # root) &
+          (root.namingDecl.name.str^ = class) &
+          (root.namingDecl.parent IS Sym.Module) &
+          (root.namingDecl.parent(Sym.Module).name.str^ = module);
+    ELSE
+      RETURN FALSE;
+    END;
+  END ImplementsFinalize;
 
 PROCEDURE Init;
   VAR
