@@ -231,6 +231,7 @@ PROCEDURE (v: Visitor) VisitOdd* (odd: IR.Odd);
 PROCEDURE (v: Visitor) VisitShift* (shift: IR.Shift);
   BEGIN
     v. w. StartTag ("logical-shift", FALSE);
+    v. w. AttrBool ("rotate", shift. rotate);
     shift. value. Accept (v);
     shift. by. Accept (v);
     v. w. EndTag;  (* logical-shift *)

@@ -449,16 +449,18 @@ CONST
   (**Floating point to integer, rounding to @samp{-inf}.  *)
   lsh* = 48;
   (**Arithmetic shift.  *)
-  odd* = 49;
+  rot* = 49;
+  (**Rotate bits.  *)
+  odd* = 50;
   (**Return @code{TRUE} for odd numbers.  *)
   
   
-  call* = 50;
+  call* = 51;
   (**Used to call a procedure or a function.  The first argument is the
      address of the procedure to be called, followed by the call's arguments.
      This opcode is used both for normal and type-bound procedures.  *)
   
-  getLength* = 51;
+  getLength* = 52;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -477,7 +479,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 52;
+  copyParameter* = 53;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -495,7 +497,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 53;
+  newObject* = 54;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -515,7 +517,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 54;
+  typeTag* = 55;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -526,7 +528,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 55;
+  typeTest* = 56;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -542,7 +544,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 56;
+  tbProcAddress* = 57;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -557,10 +559,10 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  assert* = 57;
-  halt* = 58;
+  assert* = 58;
+  halt* = 59;
   
-  checkIndex* = 59;
+  checkIndex* = 60;
   (**Ensures that an index is value with respect to a given array length.  An
      exception is raised if the index is negative, or less or equal to the
      array's length.
@@ -579,7 +581,7 @@ CONST
      The result of the instruction is the checked index.  One additional result
      is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  checkPointer* = 60;
+  checkPointer* = 61;
   (**Raise an exception if the pointer value is @code{NIL}.
 
      @table @oconst
@@ -593,7 +595,7 @@ CONST
      The result of the instruction is the checked pointer.  One additional
      result is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  typeGuard* = 61;
+  typeGuard* = 62;
   (**Raise an exception if the given type is not an extension of the type tag.
 
      @table @oconst
@@ -617,15 +619,15 @@ CONST
      of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
 
-  failedCase* = 62;
-  failedWith* = 63;
-  failedTypeAssert* = 64;
+  failedCase* = 63;
+  failedWith* = 64;
+  failedTypeAssert* = 65;
   
-  selectException* = 65;
+  selectException* = 66;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
   
-  labels* = 66;
+  labels* = 67;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -770,6 +772,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | cap: cstr := "cap";
     | entier: cstr := "entier";
     | lsh: cstr := "lsh";
+    | rot: cstr := "rot";
     | odd: cstr := "odd";
       
     | call: cstr := "call";

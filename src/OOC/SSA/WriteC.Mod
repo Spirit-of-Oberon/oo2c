@@ -863,9 +863,13 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (");");
     END MoveBlock;
   
-  PROCEDURE Shift (instr: SSA.Instr);
+  PROCEDURE Shift (instr: SSA.Instr; rotate: BOOLEAN);
     BEGIN
-      w. WriteString ("_lsh(");
+      IF rotate THEN
+        w. WriteString ("_rot(");
+      ELSE
+        w. WriteString ("_lsh(");
+      END;
       w. WriteString (w. basicType[Allocator.SubclassToBasicType (instr. subclass)]. repr);
       w. WriteString (", ");
       w. Ref (instr. opndList);
@@ -1157,7 +1161,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.entier:
         WriteMonadicOp (instr, "_entier(", ");");
       | Opcode.lsh:
-        Shift (instr);
+        Shift (instr, FALSE);
+      | Opcode.rot:
+        Shift (instr, TRUE);
       | Opcode.odd:
         WriteMonadicOp (instr, "_odd(", ");");
         

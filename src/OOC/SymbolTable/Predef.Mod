@@ -117,7 +117,8 @@ CONST
   adr* = 21;                             (* SYSTEM.ADR *)
   lsh* = 22;                             (* SYSTEM.LSH *)
   move* = 23;                            (* SYSTEM.MOVE *)
-  val* = 24;                             (* SYSTEM.VAL *)
+  rot* = 24;                             (* SYSTEM.ROT *)
+  val* = 25;                             (* SYSTEM.VAL *)
   
   
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
@@ -279,6 +280,7 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
     PredefProc (stb, module, adr, "ADR", 1, 1);
     PredefProc (stb, module, lsh, "LSH", 2, 2);
     PredefProc (stb, module, move, "MOVE", 3, 3);
+    PredefProc (stb, module, rot, "ROT", 2, 2);
     PredefProc (stb, module, val, "VAL", 2, 2);
     
     stb. Finalize (module);
