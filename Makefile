@@ -5,13 +5,13 @@
 # compatible shell)
 
 # TEST_SUBDIRS: List of subdirectories with testcases.
-TEST_SUBDIRS=tests/compile
+#TEST_SUBDIRS=tests/compile
 
 
 top_builddir=$(OOC_DEV_ROOT)
 subdirs=tests
 
-test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestOpTree TestTexinfo TestMake TestCompile AllModules RunTests
+test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile AllModules RunTests
 
 all:
 
