@@ -2,6 +2,7 @@ MODULE Const7;
 
 IMPORT Out:=Out0;
 
+<*CaseSelectCheck:=TRUE*>
 PROCEDURE P (b: BOOLEAN);
   BEGIN
     LOOP
@@ -9,6 +10,7 @@ PROCEDURE P (b: BOOLEAN);
       | 0:
         Out.String ("foo");
         EXIT;
+      ELSE
       END;
     END;
     Out.String ("bar");                  (* unreachable *)
