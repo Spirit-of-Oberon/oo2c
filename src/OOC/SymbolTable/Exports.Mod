@@ -132,7 +132,9 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
           IF (ptr. exportMark # Sym.nameNotExported) OR 
              (ptr IS Sym.VarDecl) & ptr(Sym.VarDecl). isParameter OR
              (ptr IS Sym.Import) OR
-             forSymbolFile & (ptr IS Sym.FieldDecl) THEN
+             forSymbolFile &
+             ((ptr IS Sym.FieldDecl) OR
+              (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isTypeBound) THEN
             MarkDecl (ptr)
           END
         ELSE                               (* ignore non-declarations *)

@@ -162,13 +162,10 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
             w. WriteChar (",");
           END;
           proc := record. ns(Namespace.Extended). GetTBProcByIndex (i);
-          IF (proc = NIL) THEN (* procedure is private to base type *)
-            w. WriteString ("NULL");
-          ELSE
-            w. WriteString ("(void*)");
-            name := Naming.NameOfDeclaration (proc);
-            w. WriteString (name. array^);
-          END;
+          ASSERT (proc # NIL);
+          w. WriteString ("(void*)");
+          name := Naming.NameOfDeclaration (proc);
+          w. WriteString (name. array^);
         END;
       END TBProcs;
     

@@ -227,7 +227,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       | modeWriteFctDef:
         IF (item. parent IS Sym.ProcDecl) THEN
           sc := DeclWriter.scAuto; (* definition of nested function *)
-        ELSIF (item. exportMark = Sym.nameNotExported) THEN
+        ELSIF (item. exportMark = Sym.nameNotExported) & ~item.isTypeBound THEN
           sc := DeclWriter.scStatic
         ELSE
           sc := DeclWriter.scAuto
