@@ -33,6 +33,7 @@
 
   <repositories>
     <file-system>%oocdir%</file-system>
+    <file-system>.</file-system>
   </repositories>
 </configuration>
 
