@@ -93,6 +93,18 @@ PROCEDURE MarkLive (res: SSA.Result);
         MarkStore(loopEnd.opndList.nextOpnd, i);
       END;
       
+    | Opcode.loopEnd:
+      IF (res.marker = dead) THEN
+        res.marker := live;
+        i := res.ResultIndex();
+        
+        opnd := instr.NthOpnd(2);
+        WHILE (opnd # NIL) & (opnd.class = Opnd.storeExit) DO
+          ASSERT(opnd.arg.instr.opcode = Opcode.exit);
+          MarkStore(opnd.arg.instr.opndList, i);
+          opnd := opnd.nextOpnd;
+        END;
+      END;
     ELSE  (* ignore *)
     END;
   END MarkLive;
@@ -105,8 +117,6 @@ PROCEDURE DeleteDeadCode (pb: SSA.ProcBlock);
     i: LONGINT;
 
   PROCEDURE DeleteStore(opnd: SSA.Opnd; index: LONGINT);
-    VAR
-      collect: SSA.Instr;
     BEGIN
       ASSERT(index > 1);
       ASSERT(opnd.arg.instr.opcode = Opcode.collect);
@@ -167,6 +177,25 @@ PROCEDURE DeleteDeadCode (pb: SSA.ProcBlock);
             
             DeleteStore(instr.opndList, i);
             DeleteStore(loopEnd.opndList.nextOpnd, i);
+            res.DeleteResult();
+          END;
+          res := nextResult;
+        END;
+
+      ELSIF (instr.opcode = Opcode.loopEnd) THEN
+        res := instr.nextResult;
+        WHILE (res # NIL) DO
+          nextResult := res.nextResult;
+          IF (res.marker = dead) THEN
+            (* if the result is dead, remove the corresponding operand from
+               any exit instructions feeding into the loop-end *)
+            i := res.ResultIndex();
+            
+            opnd := instr.NthOpnd(2);
+            WHILE (opnd # NIL) & (opnd.class = Opnd.storeExit) DO
+              DeleteStore(opnd.arg.instr.opndList, i);
+              opnd := opnd.nextOpnd;
+            END;
             res.DeleteResult();
           END;
           res := nextResult;
