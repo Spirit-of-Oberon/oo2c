@@ -294,6 +294,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         value := s.value;
         WITH value: Boxed.String DO
           sb.AppendInt(ORD(value.value.CharAt(0)));
+        | value: Boxed.Set DO
+          sb.AppendInt(value.ToLongInt());
         ELSE
           sb.Append(s.value);
         END;
