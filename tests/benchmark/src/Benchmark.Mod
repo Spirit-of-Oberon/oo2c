@@ -5,6 +5,7 @@ IMPORT
 
   Driver, Category,
 
+  MiscDriver,
   FFTDriver,
   SortDriver,
   ArrayDriver;
