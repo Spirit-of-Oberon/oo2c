@@ -3248,10 +3248,10 @@ PROCEDURE (case: Case) CheckLabels (b: Builder; type: Sym.Type;
     deleted := 0;
     FOR i := 0 TO LEN (case. labels^)-1 DO
       range := case. labels[i](SetRange);
-      IF ~TR.IncludesType (type, range. from. type) THEN
+      IF ~b. Widen (range. from, type) THEN
         b. ErrSym (labelNotInSelect, range. from. sym);
         case. labels[i] := NIL; INC (deleted); (* get rid of the problem *)
-      ELSIF ~TR.IncludesType (type, range. to. type) THEN
+      ELSIF ~b. Widen (range. to, type) THEN
         b. ErrSym (labelNotInSelect, range. to. sym);
         case. labels[i] := NIL; INC (deleted); (* get rid of the problem *)
       ELSIF range. IsEmpty() THEN
@@ -4415,6 +4415,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         
       | Predef.chr:
         RETURN b.NewTypeConv (Predef.GetType (Predef.char), arguments[0]);
+      | Predef.longchr:
+        RETURN b.NewTypeConv (Predef.GetType (Predef.longchar), arguments[0]);
         
       | Predef.entier:
         (* FIXME... argument must be real *)
