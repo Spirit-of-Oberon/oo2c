@@ -89,7 +89,9 @@ MODULE OS:HostPath [FOREIGN "C"; LINK FILE "HostPath.c" END];
 *)
 
 IMPORT
+<*WITH Warnings:=FALSE DO*>
   Msg, LongStrings, CharClass, C;
+<*END*>
 
 TYPE
   Result* = Msg.Msg;
@@ -111,7 +113,9 @@ CONST
   END;
 
 VAR
+<*WITH Warnings:=FALSE DO*>
   errorContext: ErrorContext;
+<*END*>
 
 PROCEDURE Normalize* (VAR path : ARRAY OF CHAR; VAR res : Msg.Msg);
 (**Convert path from host OS to normal form. *)
