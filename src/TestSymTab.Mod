@@ -2,7 +2,7 @@ MODULE TestSymTab;
 
 IMPORT
   StdChannels, Out, Err, Msg, Channel, URI, ADT:String,
-  Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
+  Config:Source:CmdLine, Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,
   OOC:Error, OOC:AST, Sym := OOC:SymbolTable, Rep := OOC:Repository,
@@ -16,7 +16,6 @@ CONST
   modeInterfaceXML = 2;
   
 VAR
-  config: Config.Config;
   cfgErrList: Error.List;
   i: LONGINT;
   arg: Arguments.Argument;
@@ -84,14 +83,12 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     outputURI: URI.HierarchicalURI;
     m: Rep.Module;
     resolve: BOOLEAN;
-    config: Config.Config;
     pragmaHistory: Pragmas.History;
   BEGIN
     m := cmd. module;
-    config := cmd. context. config(Config.Config);
     resolve := mode. value(IntegerValue.Value). integer = modeResolveNamesXML;
 
-    ParseModule.ParseModule (m, config, FALSE, resolve, FALSE,
+    ParseModule.ParseModule (m, FALSE, resolve, FALSE,
                              ast, symTab, pragmaHistory, errList);
     IF (errList. msgCount = 0) THEN
       outputURI := m. GetURI (Rep.modSymbolTableXML);
@@ -118,18 +115,17 @@ PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
   END ProduceOutput;
 
 
-PROCEDURE InitContext (context: Context; config: Config.Config;
-                       target: Make.Command);
+PROCEDURE InitContext (context: Context; target: Make.Command);
   BEGIN
-    Make.InitContext (context, config, target);
+    Make.InitContext (context, NIL, target);
   END InitContext;
 
-PROCEDURE NewContext (config: Config.Config): Context;
+PROCEDURE NewContext(): Context;
   VAR
     context: Context;
   BEGIN
     NEW (context);
-    InitContext (context, config, Target.New());
+    InitContext (context, Target.New());
     RETURN context
   END NewContext;
 
@@ -147,56 +143,52 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
   
 
 
-PROCEDURE RegisterCmdLineOptions (config: Config.Config);
+PROCEDURE RegisterCmdLineOptions();
   VAR
     ot: CmdLine.OptionTemplate;
   BEGIN
-    ot := config. cmdLine. AddOptionTemplate ("--repository,-r",
+    ot := Config.cmdLine. AddOptionTemplate ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
-    ot := config. cmdLine. AddOptionTemplate ("--names-only-xml",
+    ot := Config.cmdLine. AddOptionTemplate ("--names-only-xml",
            "<options><set name='mode'>0</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--resolve-names-xml",
+    ot := Config.cmdLine. AddOptionTemplate ("--resolve-names-xml",
            "<options><set name='mode'>1</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--interface-xml",
+    ot := Config.cmdLine. AddOptionTemplate ("--interface-xml",
            "<options><set name='mode'>2</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--terse-errors",
+    ot := Config.cmdLine. AddOptionTemplate ("--terse-errors",
            "<options><set name='oo2cStyleErrors'>TRUE</set></options>");
   END RegisterCmdLineOptions;
 
-PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
-  VAR
-    config: Config.Config;
+PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
   BEGIN
-    NEW (config);
-    Config.InitConfig (config, defaultConfigFile);
+    Config.InitConfig (defaultConfigFile);
 
-    mode := config. options. Set ("mode", IntegerValue.New (modeResolveNamesXML));
-    oo2cStyleErrors := config. options. Set ("oo2cStyleErrors", BooleanValue.New (FALSE));
+    mode := Config.options. Set ("mode", IntegerValue.New (modeResolveNamesXML));
+    oo2cStyleErrors := Config.options. Set ("oo2cStyleErrors", BooleanValue.New (FALSE));
     
-    RegisterCmdLineOptions (config);
-    RETURN config
+    RegisterCmdLineOptions;
   END NewConfig;
 
 BEGIN
   cfgErrList := Error.NewList ("");
-  config := NewConfig ("");
-  config. Read (cfgErrList);
+  NewConfig ("");
+  Config.Read (cfgErrList);
   
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
-  ELSIF (config. arguments. ArgNumber() = 0) THEN
+  ELSIF (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: TestSymTab [--names-only-xml|--resolve-names-xml|--interface-xml] [--terse-errors] -r <repository> <file>"); Out.Ln;
     HALT (1)
   ELSE
     Error.oo2cStyleErrors := oo2cStyleErrors. value(BooleanValue.Value). boolean;
     
-    context := NewContext (config);
+    context := NewContext();
     
-    FOR i := 0 TO config. arguments. ArgNumber()-1 DO
-      arg := config. arguments. Get (i);
+    FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
+      arg := Config.arguments. Get (i);
       IF Rep.ValidModuleName (arg^) THEN
-        m := config. repositories. GetModule (arg^);
+        m := Config.repositories. GetModule (arg^);
         IF (m = NIL) THEN
           Err.String ("Error: Cannot locate module ");
           Err.String (arg^);

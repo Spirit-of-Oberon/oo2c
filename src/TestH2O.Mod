@@ -3,12 +3,11 @@ MODULE TestH2O;
 IMPORT 
   StdChannels, Out,
   H2O:Scanner, E := H2O:Error, H2O:Source, H2O:Process, H2O:Parser,
-  Config:Source:CmdLine, OOC:Auxiliary:Config, Config:Section:Arguments,
+  Config:Source:CmdLine, OOC:Config, Config:Section:Arguments,
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   OOC:Error;
 
 VAR
-  config: Config.Config;
   cfgErrList: Error.List;
   arg: Arguments.Argument;
   tokenSource : Scanner.TokenSource;
@@ -28,58 +27,51 @@ VAR
 
   processOptions : SET; 
 
-PROCEDURE RegisterCmdLineOptions (config: Config.Config);
+PROCEDURE RegisterCmdLineOptions;
   VAR
     ot: CmdLine.OptionTemplate;
   BEGIN
-    ot := config. cmdLine. AddOptionTemplate ("--repository,-r",
+    ot := Config.cmdLine. AddOptionTemplate ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
-    ot := config. cmdLine. AddOptionTemplate ("--preprocess",
+    ot := Config.cmdLine. AddOptionTemplate ("--preprocess",
                  "<options><set name='preprocess'>TRUE</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--strictRedefine",
+    ot := Config.cmdLine. AddOptionTemplate ("--strictRedefine",
                  "<options><set name='strictRedefine'>TRUE</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--strictUndefine",
+    ot := Config.cmdLine. AddOptionTemplate ("--strictUndefine",
                  "<options><set name='strictUndefine'>TRUE</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--debugDefine",
+    ot := Config.cmdLine. AddOptionTemplate ("--debugDefine",
                  "<options><set name='debugDefine'>TRUE</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--text",
+    ot := Config.cmdLine. AddOptionTemplate ("--text",
                  "<options><set name='text'>TRUE</set></options>");
 
   END RegisterCmdLineOptions;
 
-PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
-  VAR
-    config: Config.Config;
-
+PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
   BEGIN
-    NEW (config);
-    Config.InitConfig (config, defaultConfigFile);
+    Config.InitConfig (defaultConfigFile);
 
-    strictRedefine := config.options.Set("strictRedefine", BooleanValue.New(FALSE));
-    strictUndefine := config.options.Set("strictUndefine", BooleanValue.New(FALSE));
-    debugDefine := config.options.Set("debugDefine", BooleanValue.New(FALSE));
-    text := config.options.Set("text", BooleanValue.New(FALSE));
-    preprocess := config.options.Set("preprocess", BooleanValue.New(FALSE)); 
+    strictRedefine := Config.options.Set("strictRedefine", BooleanValue.New(FALSE));
+    strictUndefine := Config.options.Set("strictUndefine", BooleanValue.New(FALSE));
+    debugDefine := Config.options.Set("debugDefine", BooleanValue.New(FALSE));
+    text := Config.options.Set("text", BooleanValue.New(FALSE));
+    preprocess := Config.options.Set("preprocess", BooleanValue.New(FALSE)); 
 
-    RegisterCmdLineOptions (config);
-    RETURN config
+    RegisterCmdLineOptions;
   END NewConfig;
 
 BEGIN
   Error.oo2cStyleErrors := TRUE;
   cfgErrList := Error.NewList ("");
-  config := NewConfig ("");
-  config. Read (cfgErrList);
+  NewConfig ("");
+  Config.Read (cfgErrList);
 
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
-  ELSIF (config. arguments. ArgNumber() = 0) THEN
+  ELSIF (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: H2OTestCompile {-r <base-dir>} <file>"); Out.Ln;
     HALT (1)
   ELSE
-    Source.Init(config);
-
     processOptions := {};
     IF debugDefine.value(BooleanValue.Value).boolean THEN
       INCL(processOptions, Process.debugDefine);
@@ -93,12 +85,12 @@ BEGIN
     Process.Init(processOptions);
 
 (*
-    FOR i := 0 TO config. arguments. ArgNumber()-1 DO
-      arg := config. arguments. Get (i);
+    FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
+      arg := Config.arguments. Get (i);
       Scanner.Include(arg^, FALSE);
     END;
 *)
-    arg := config. arguments. Get(0);
+    arg := Config.arguments. Get(0);
 
     source := Source.New(); source.Include(arg^, FALSE);
     error := E.New(source);

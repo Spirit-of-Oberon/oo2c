@@ -23,7 +23,7 @@ MODULE OOC:Make:Command:TranslateToIA32 [OOC_EXTENSIONS];
 IMPORT
   Ascii, Channel, Make, Msg, StdChannels, ADT:String, ADT:Dictionary, 
   OOC:Make:Entity:ModuleFile,
-  OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
+  OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, Rep := OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
@@ -218,7 +218,6 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     symTab: Sym.Module;
     errList: Error.List;
     m: Rep.Module;
-    config: Config.Config;
     exports: Dictionary.Dictionary;
     module: IR.Module;
     pragmaHistory: Pragmas.History;
@@ -240,8 +239,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
   
   BEGIN
     m := cmd. module;
-    config := cmd. context. config(Config.Config);
-    ParseModule.ParseModule (m, config, TRUE, TRUE, FALSE,
+    ParseModule.ParseModule (m, TRUE, TRUE, FALSE,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
        data in `symTab' to the view of client modules: declarations private to

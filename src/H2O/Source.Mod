@@ -4,7 +4,7 @@ IMPORT
   ADT:String,
   H2O:Module,
   TextRider, Channel, Err, Msg, Files, Strings,
-  OOC:Auxiliary:Config, OOC:Repository, URI;
+  OOC:Config, OOC:Repository, URI;
 
 CONST
   cr = 0DX;
@@ -30,9 +30,6 @@ TYPE
     lines, files : LONGINT;
     src : Source;
   END;
-
-VAR
-  config : Config.Config; (* FiXME *)
 
 PROCEDURE (i : Input) ShowContext*;
 VAR s : Source;
@@ -117,7 +114,7 @@ VAR
   msg : Msg.Msg;
 BEGIN
   IF search THEN
-    m := config. repositories. GetModule (fileName);
+    m := Config.repositories. GetModule (fileName);
     IF (m = NIL) THEN
       Err.String ("Error: Cannot locate module ");
       Err.String (fileName);
@@ -175,10 +172,5 @@ BEGIN
   i.files := 0;
   RETURN i;
 END New;
-
-PROCEDURE Init* (conf : Config.Config);
-BEGIN
-  config := conf;
-END Init;
 
 END H2O:Source.

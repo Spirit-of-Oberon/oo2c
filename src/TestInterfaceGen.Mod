@@ -2,7 +2,7 @@ MODULE TestInterfaceGen;
 
 IMPORT
   StdChannels, Out, Err, Make, Make:Command:Target, Make:Entity:Group,
-  Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
+  Config:Source:CmdLine, Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String,
   OOC:Make:Entity:ModuleFile,
@@ -24,7 +24,6 @@ VAR
 
 
 VAR
-  config: Config.Config;
   cfgErrList: Error.List;
   i: LONGINT;
   arg: Arguments.Argument;
@@ -38,19 +37,18 @@ VAR
   errorStyle: Options.Option;
   
 
-PROCEDURE InitContext (context: Context; config: Config.Config;
-                       target: Make.Command);
+PROCEDURE InitContext (context: Context; target: Make.Command);
   BEGIN
-    Make.InitContext (context, config, target);
+    Make.InitContext (context, NIL, target);
     context. usageData := NIL;
   END InitContext;
 
-PROCEDURE NewContext (config: Config.Config): Context;
+PROCEDURE NewContext(): Context;
   VAR
     context: Context;
   BEGIN
     NEW (context);
-    InitContext (context, config, Target.New());
+    InitContext (context, Target.New());
     RETURN context
   END NewContext;
 
@@ -77,48 +75,44 @@ PROCEDURE (context: Context) GetNamedEntity* (name: ARRAY OF CHAR): Make.Entity;
   END GetNamedEntity;
 
 
-PROCEDURE RegisterCmdLineOptions (config: Config.Config);
+PROCEDURE RegisterCmdLineOptions;
   VAR
     ot: CmdLine.OptionTemplate;
   BEGIN
-    ot := config. cmdLine. AddOptionTemplate ("--repository,-r",
+    ot := Config.cmdLine. AddOptionTemplate ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
-    ot := config. cmdLine. AddOptionTemplate ("--html",
+    ot := Config.cmdLine. AddOptionTemplate ("--html",
                  "<options><set name='build-html'>TRUE</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--closure",
+    ot := Config.cmdLine. AddOptionTemplate ("--closure",
                  "<options><set name='closure'>TRUE</set></options>");
-    ot := config. cmdLine. AddOptionTemplate ("--error-style",
+    ot := Config.cmdLine. AddOptionTemplate ("--error-style",
                  "<options><set name='error-style'>$1</set></options>");
   END RegisterCmdLineOptions;
 
-PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
-  VAR
-    config: Config.Config;
+PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
   BEGIN
-    NEW (config);
-    Config.InitConfig (config, defaultConfigFile);
+    Config.InitConfig (defaultConfigFile);
 
-    buildHTML := config. options. Set ("build-html", BooleanValue.New (FALSE));
-    closure := config. options. Set ("closure", BooleanValue.New (FALSE));
-    errorStyle := config. options. Set ("error-style", StringValue.New ("default"));
+    buildHTML := Config.options. Set ("build-html", BooleanValue.New (FALSE));
+    closure := Config.options. Set ("closure", BooleanValue.New (FALSE));
+    errorStyle := Config.options. Set ("error-style", StringValue.New ("default"));
     
-    RegisterCmdLineOptions (config);
-    RETURN config
+    RegisterCmdLineOptions;
   END NewConfig;
 
 BEGIN
   cfgErrList := Error.NewList ("");
-  config := NewConfig ("");
-  config. Read (cfgErrList);
+  NewConfig ("");
+  Config.Read (cfgErrList);
   
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
-  ELSIF (config. arguments. ArgNumber() = 0) THEN
+  ELSIF (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: TestInterfaceGen [--html][--closure][--error-style <style>] {-r <base-dir>} <file>"); Out.Ln;
     HALT (1)
   ELSE
-    context := NewContext (config);
+    context := NewContext();
 
     IF (errorStyle. value(StringValue.Value). string^ = "oo2c") THEN
       Error.oo2cStyleErrors := TRUE;
@@ -139,10 +133,10 @@ BEGIN
        the name "UsageData" to their ancestor list *)
     context. usageData := UsageData.NewEntity (context);
     
-    FOR i := 0 TO config. arguments. ArgNumber()-1 DO
-      arg := config. arguments. Get (i);
+    FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
+      arg := Config.arguments. Get (i);
       IF Rep.ValidModuleName (arg^) THEN
-        m := config. repositories. GetModule (arg^);
+        m := Config.repositories. GetModule (arg^);
         IF (m = NIL) THEN
           Err.String ("Error: Cannot locate module ");
           Err.String (arg^);

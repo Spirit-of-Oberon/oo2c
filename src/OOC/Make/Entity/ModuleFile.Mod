@@ -25,7 +25,7 @@ IMPORT
   Msg, Out, Strings, Files, Time, ADT:String, ADT:StringBuffer, 
   URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
-  ConfigOOC := OOC:Auxiliary:Config, OOC:Config:Assembler, OOC:Error,
+  OOC:Config, OOC:Config:Assembler, OOC:Error,
   OOC:Repository, OOC:Repository:GetImports, OOC:Repository:GetModuleClass,
   Sym := OOC:SymbolTable;
 
@@ -233,15 +233,13 @@ PROCEDURE AncestorClosure* (descendant: Entity; entity: Entity;
     importedEntity: Entity;
     dummyErrList: Error.List;
     import: Repository.Import;
-    config: ConfigOOC.Config;
   BEGIN
     IF ~descendant. IsDescendantOf (entity) THEN
       descendant. AddAncestor (entity);
-
-      config := entity. context. config(ConfigOOC.Config);
+      
       GetImports.GetImports (entity. module,
-                             config. pragmas,
-                             config. repositories,
+                             Config.pragmas,
+                             Config.repositories,
                              dummyErrList);
       (* ignore any errors when scanning the imports; for dependency scanning,
          malformed modules are of no importance *)
@@ -259,13 +257,11 @@ PROCEDURE DiscoverCompile* (command: Make.Command; module: Repository.Module);
     ancestorEntity: Entity;
     dummyErrList: Error.List;
     import: Repository.Import;
-    config: ConfigOOC.Config;
   BEGIN
     ASSERT (command. state = Make.commandUndiscovered);
     
-    config := command. context. config(ConfigOOC.Config);
-    GetImports.GetImports (module, config. pragmas,
-                           config. repositories, dummyErrList);
+    GetImports.GetImports (module, Config.pragmas,
+                           Config.repositories, dummyErrList);
     (* ignore any errors when scanning the imports; for dependency scanning,
        malformed modules are of no importance *)
     import := module. importList;
@@ -283,7 +279,6 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
     nextState: Make.EntityState;
     dummy: Sym.Module;
     res: Msg.Msg;
-    config: ConfigOOC.Config;
   
   PROCEDURE AddImportDeps (entity: Entity; fileId: Repository.FileId;
                            timeDep: BOOLEAN);
@@ -291,11 +286,9 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       ancestorEntity: Entity;
       dummyErrList: Error.List;
       import: Repository.Import;
-      config: ConfigOOC.Config;
     BEGIN
-      config := entity. context. config(ConfigOOC.Config);
-      GetImports.GetImports (entity. module, config. pragmas,
-                             config. repositories, dummyErrList);
+      GetImports.GetImports (entity. module, Config.pragmas,
+                             Config.repositories, dummyErrList);
       (* ignore any errors when scanning the imports; for dependency scanning,
          malformed modules are of no importance *)
       import := entity. module. importList;
@@ -610,12 +603,11 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
           RETURN entity. state+1
         END
       ELSIF (entity. state = Make.entityUndiscovered+1) THEN
-        config := entity. context. config(ConfigOOC.Config);
         IF Assembler.useAssembler &
            ((entity. module. symbolTable # NIL) &
             (entity. module. symbolTable. class = Sym.mcStandard) OR
             (GetModuleClass.GetModuleClass (entity. module,
-                                            config. pragmas) = Sym.mcStandard)) THEN
+                                            Config.pragmas) = Sym.mcStandard)) THEN
           srcEntity := GetEntity (entity. context, entity. module,
                                   Repository.modAssemblerFile);
         ELSE
@@ -661,8 +653,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
              not the right place to do this if other back-ends are 
              supported ... *)
           srcEntity := GetEntity (entity. context, 
-            entity. context. config(ConfigOOC.Config).
-              repositories. GetModule (ConfigOOC.runtimeModule),
+            Config.repositories. GetModule (Config.runtimeModule),
             Repository.modObjectFile);
           entity. AddAncestor (srcEntity);
           
@@ -690,16 +681,14 @@ PROCEDURE CreateClosure* (closureGroup: Make.Entity; entity: Entity);
     importedEntity: Entity;
     dummyErrList: Error.List;
     import: Repository.Import;
-    config: ConfigOOC.Config;
   BEGIN
     IF ~closureGroup. IsDescendantOf (entity) THEN
       (* add `entity' to the group *)
       closureGroup. AddAncestor (entity);
       
-      config := entity. context. config(ConfigOOC.Config);
       GetImports.GetImports (entity. module,
-                             config. pragmas,
-                             config. repositories,
+                             Config.pragmas,
+                             Config.repositories,
                              dummyErrList);
       (* ignore any errors when scanning the imports; for dependency scanning,
          malformed modules are of no importance *)

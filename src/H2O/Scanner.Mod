@@ -25,7 +25,7 @@ MODULE H2O:Scanner [OOC_EXTENSIONS];
 IMPORT
   Err, CharClass, TextRider,
   ADT:String, ADT:StringBuffer, ADT:Object,
-  OOC:Auxiliary:Config,
+  OOC:Config,
   H2O:Source, H2O:Error;
 
 CONST
@@ -145,9 +145,6 @@ TYPE
     buffer- : StringBuffer.StringBuffer;
     valid : BOOLEAN;		(* FIXME! *)
   END;
-
-VAR
-  config : Config.Config; 
 
 PROCEDURE (s : TokenSource) [ABSTRACT] GetToken* (token : Token; options : SET);
 END GetToken;

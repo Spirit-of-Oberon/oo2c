@@ -22,8 +22,8 @@ MODULE OOC:C:RuntimeData;
 
 
 IMPORT
-  TextRider, ADT:String, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
-  OOC:Auxiliary:Config, OOC:C:Naming, OOC:C:DeclWriter;
+  TextRider, ADT:String, OOC:Config, Sym := OOC:SymbolTable,
+  OOC:SymbolTable:Namespace, OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
   structTypeDesc = Config.runtimeModule+"__StructDesc";

@@ -1,8 +1,8 @@
 MODULE OOC:Auxiliary:ParseModule;
 
 IMPORT
-  Msg, URI, 
-  OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Repository,
+  Msg, URI,
+  OOC:Config, OOC:Config:Pragmas, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,
@@ -13,7 +13,7 @@ IMPORT
   
 
 
-PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
+PROCEDURE ParseModule* (m: Repository.Module;
                         checkModuleName, createNamespace, writeSymbolFile: BOOLEAN;
                         VAR ast: AST.Node;
                         VAR symTab: Sym.Module;
@@ -45,7 +45,7 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
     ELSE
       errList := inputBuffer. errList;
       scannerBuilder := BasicList.New (inputBuffer, TRUE);
-      Scanner.ScanInput (scannerBuilder, config. pragmas, Scanner.enableAll);
+      Scanner.ScanInput (scannerBuilder, Config.pragmas, Scanner.enableAll);
       inputBuffer. Close;
       pragmaHistory := scannerBuilder. pragmaHistory;
       
@@ -68,9 +68,9 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
         IF createNamespace THEN
           IF (errList. msgCount = 0) THEN
             CreateNamespace.CreateNamespace (symTab,
-                                             config. predefModule,
-                                             config. systemModule,
-                                             config. repositories, errList)
+                                             Config.predefModule,
+                                             Config.systemModule,
+                                             Config.repositories, errList)
           END;
           IF (errList. msgCount = 0) & writeSymbolFile THEN
             (* no error in the declaration part of the module: write the

@@ -22,9 +22,9 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 
 IMPORT
   IntStr, Out, StdChannels, Strings, StringSearch,
-  ADT:Object, ADT:String, ADT:Dictionary, OOC:Auxiliary:Config,
+  ADT:Object, ADT:String, ADT:Dictionary, 
   LString := Language:String,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  OOC:Config, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
@@ -44,7 +44,6 @@ TYPE
   Translator* = POINTER TO TranslatorDesc;
   TranslatorDesc = RECORD
     (TranslateToC.TranslatorDesc)
-    config: Config.Config;
     inspectProc: StringSearch.Matcher;
     inspectStage: StringSearch.Matcher;
     nonLocalAccess: Dictionary.Dictionary; (* of Sym.VarDecl *)
@@ -1439,7 +1438,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       END;
       IF (t. inspectStage. MatchChars ("schedule-html", 0, -1) # NIL) THEN
         (* create a temporary web server displaying the SSA code *)
-        Inspector.Show (t. config. repositories, proc, domRoot);
+        Inspector.Show (Config.repositories, proc, domRoot);
       END;
     END;
     
@@ -1457,23 +1456,20 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
 
 
 PROCEDURE InitTranslator* (t: Translator; 
-                           config: Config.Config;
                            inspectProc, inspectStage: StringSearch.Matcher);
   BEGIN
     TranslateToC.InitTranslator (t);
-    t. config := config;
     t. inspectProc := inspectProc;
     t. inspectStage := inspectStage;
     t. nonLocalAccess := NIL;
   END InitTranslator;
 
-PROCEDURE NewTranslator* (config: Config.Config;
-                          inspectProc, inspectStage: StringSearch.Matcher): Translator;
+PROCEDURE NewTranslator* (inspectProc, inspectStage: StringSearch.Matcher): Translator;
   VAR
     t: Translator;
   BEGIN
     NEW (t);
-    InitTranslator (t, config, inspectProc, inspectStage);
+    InitTranslator (t, inspectProc, inspectStage);
     RETURN t
   END NewTranslator;
 

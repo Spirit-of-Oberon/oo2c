@@ -2,9 +2,9 @@ MODULE OOC:Auxiliary:GetSymbolTable;
 
 IMPORT
   URI, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:CreateNamespace,
-  OOC:Repository, OOC:Auxiliary:Config;
+  OOC:Repository, OOC:Config;
   
-PROCEDURE GetSymbolTable* (module: Repository.Module; config: Config.Config;
+PROCEDURE GetSymbolTable* (module: Repository.Module;
                            VAR res: Error.Msg): Sym.Module;
   VAR
     symTab: Sym.Module;
@@ -18,9 +18,9 @@ PROCEDURE GetSymbolTable* (module: Repository.Module; config: Config.Config;
       uri. GetString (uriStr);
       errList := Error.NewList (uriStr);
       CreateNamespace.CreateNamespace (symTab,
-                                       config. predefModule,
-                                       config. systemModule,
-                                       config. repositories, errList);
+                                       Config.predefModule,
+                                       Config.systemModule,
+                                       Config.repositories, errList);
       ASSERT (errList. msgCount = 0)
     END;
     RETURN symTab

@@ -22,7 +22,7 @@ MODULE OOC:Config:Assembler;
 
 IMPORT
   Strings, ADT:String, URI, URI:Scheme:File,
-  Config:Section:Options, OOC:Repository, OOC:Auxiliary:Config;
+  Config:Section:Options, OOC:Config, OOC:Repository;
 
 VAR
   (* FIXME... move this into a config module: *)
@@ -30,8 +30,7 @@ VAR
   (**If @code{FALSE}, then the C code is emitted instead of assembler code.  *)
   
      
-PROCEDURE AssembleFileCmd* (config: Config.Config; in, out: URI.URI;
-                            VAR cmd: ARRAY OF CHAR);
+PROCEDURE AssembleFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 2*1024 OF CHAR;
     include: String.StringArrayPtr;
@@ -44,7 +43,7 @@ PROCEDURE AssembleFileCmd* (config: Config.Config; in, out: URI.URI;
       uri: URI.HierarchicalURI;
       f: File.URI;
     BEGIN
-      m := config. repositories. GetModule (Config.runtimeModule);
+      m := Config.repositories. GetModule (Config.runtimeModule);
       ASSERT (m # NIL);  (* ... if this fails, then we have no __oo2c.h *)
       uri := m. GetURI (Repository.modModuleSource);
       f := uri(File.URI);

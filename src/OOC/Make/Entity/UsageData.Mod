@@ -24,7 +24,7 @@ IMPORT
   Channel, Msg, ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
   Make, OOC:Make:Entity:ModuleFile, 
   Rep := OOC:Repository, Sym := OOC:SymbolTable,
-  OOC:Auxiliary:Config, OOC:Auxiliary:GetSymbolTable;
+  OOC:Config, OOC:Auxiliary:GetSymbolTable;
 
 
 
@@ -76,16 +76,14 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     list: ArrayList.ArrayList;
     obj: Object.Object;
     res: Msg.Msg;
-    config: Config.Config;
   BEGIN
     extensionDict := Dictionary.New();
-    config := cmd. context. config(Config.Config);
     
     edge := cmd. usageData. ancestorList;
     WHILE (edge # NIL) DO
       IF (edge. ancestor # cmd) THEN
-        module := GetSymbolTable.GetSymbolTable (
-                      edge. ancestor(ModuleFile.Entity). module, config, res);
+        module := GetSymbolTable.GetSymbolTable
+            (edge. ancestor(ModuleFile.Entity). module, res);
         ptr := module. nestedItems;
         WHILE (ptr # NIL) DO
           IF (ptr IS Sym.Record) & (ptr(Sym.Record). baseType # NIL) THEN

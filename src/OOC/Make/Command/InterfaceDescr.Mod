@@ -23,7 +23,7 @@ MODULE OOC:Make:Command:InterfaceDescr;
 
 IMPORT
   Channel, Files, Make, Msg, ADT:String, ADT:Dictionary, URI, 
-  OOC:Auxiliary:GetSymbolTable, OOC:Auxiliary:Config,
+  OOC:Auxiliary:GetSymbolTable, OOC:Config,
   OOC:Error, OOC:Repository, Sym := OOC:SymbolTable, 
   OOC:SymbolTable:InterfaceDescr, OOC:Make:Entity:ModuleFile, 
   OOC:Doc:ResolveRef, OOC:Make:Entity:UsageData;
@@ -69,7 +69,6 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     outputChannel: Channel.Channel;
     outputURI: URI.HierarchicalURI;
     m: Repository.Module;
-    config: Config.Config;
   
   PROCEDURE GetExtensionDict (n: Make.Node): Dictionary.Dictionary;
     VAR
@@ -87,11 +86,10 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
   
   BEGIN
     m := cmd. output. module;
-    config := cmd. context. config(Config.Config);
-    symTab := GetSymbolTable.GetSymbolTable (m, config, res);
+    symTab := GetSymbolTable.GetSymbolTable (m, res);
     
     errList := Error.NewList ("");
-    ResolveRef.Resolve (symTab, config. repositories, errList);
+    ResolveRef.Resolve (symTab, Config.repositories, errList);
     ASSERT (errList. msgCount = 0);
     
     outputURI := m. GetURI (Repository.modInterfaceDescr);
@@ -100,7 +98,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       errList. Append (res)
     ELSE
       InterfaceDescr.Write (outputChannel.NewWriter(), outputURI, symTab,
-                         config. repositories, GetExtensionDict (cmd. output));
+                         Config.repositories, GetExtensionDict (cmd. output));
       outputChannel(Files.File). Register;
       outputChannel. Close;
       IF (outputChannel. res # Channel.done) THEN

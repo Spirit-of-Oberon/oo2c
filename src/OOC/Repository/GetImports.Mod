@@ -22,8 +22,8 @@ MODULE OOC:Repository:GetImports;
 
 
 IMPORT
-  Msg, URI, Rep := OOC:Repository,
-  OOC:Config:Repositories, OOC:Config:Pragmas, OOC:Auxiliary:Config,
+  Msg, URI, OOC:Config, Rep := OOC:Repository,
+  OOC:Config:Repositories, OOC:Config:Pragmas,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,

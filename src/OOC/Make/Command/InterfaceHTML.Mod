@@ -25,7 +25,7 @@ IMPORT
   Channel, Err, Out, Strings, Make, Msg, ADT:String, 
   URI, URI:Scheme:File, OS:Path, OS:Files, OS:ProcessManagment,
   OOC:Error, OOC:Make:Entity:ModuleFile, OOC:Repository,
-  OOC:Config:Repositories, OOC:Auxiliary:Config;
+  OOC:Config:Repositories, OOC:Config;
 
 
 TYPE
@@ -94,12 +94,10 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     exit: LONGINT;
     res: Msg.Msg;
     errList: Error.List;
-    config: Config.Config;
   BEGIN
     exit := 0;
     m := cmd. module;
-    config := cmd. context. config(Config.Config);
-    uri := GetSystemId (config. repositories);
+    uri := GetSystemId (Config.repositories);
     uri(File.URI). GetPath (str);
     
     uri := m. GetURI (Repository.modInterfaceDescr);

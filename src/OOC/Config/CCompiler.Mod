@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Config:CCompiler;
 (*  Generates command lines for the C compiler and linker.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,10 +22,9 @@ MODULE OOC:Config:CCompiler;
 
 IMPORT
   Strings, ADT:String, URI, URI:Scheme:File,
-  Config:Section:Options, OOC:Repository, OOC:Auxiliary:Config;
+  Config:Section:Options, OOC:Config, OOC:Repository;
 
-PROCEDURE CompileFileCmd* (config: Config.Config; in, out: URI.URI;
-                           VAR cmd: ARRAY OF CHAR);
+PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 2*1024 OF CHAR;
     include: String.StringArrayPtr;
@@ -38,7 +37,7 @@ PROCEDURE CompileFileCmd* (config: Config.Config; in, out: URI.URI;
       uri: URI.HierarchicalURI;
       f: File.URI;
     BEGIN
-      m := config. repositories. GetModule (Config.runtimeModule);
+      m := Config.repositories. GetModule (Config.runtimeModule);
       ASSERT (m # NIL);  (* ... if this fails, then we have no __oo2c.h *)
       uri := m. GetURI (Repository.modModuleSource);
       f := uri(File.URI);
@@ -50,7 +49,7 @@ PROCEDURE CompileFileCmd* (config: Config.Config; in, out: URI.URI;
   BEGIN
     COPY ("gcc -Wall -W -Wno-unused -Wno-format -Werror -g -pipe", cmd);
     
-    include := config. repositories. GetIncludePaths();
+    include := Config.repositories. GetIncludePaths();
     FOR i := 0 TO LEN (include^)-1 DO
       Strings.Append (" -I", cmd);
       Strings.Append (include[i]. array^, cmd)
@@ -73,8 +72,7 @@ PROCEDURE CompileFileCmd* (config: Config.Config; in, out: URI.URI;
     Strings.Append (str, cmd);
   END CompileFileCmd;
 
-PROCEDURE LinkProgramCmd* (config:Config.Config; execFile: URI.URI;
-                           VAR cmd: ARRAY OF CHAR);
+PROCEDURE LinkProgramCmd* (execFile: URI.URI; VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN

@@ -24,7 +24,7 @@ IMPORT
   Channel, Make, Out, Strings, URI, URI:Scheme:File,
   ADT:Object, ADT:String, ADT:Dictionary,
   OS:ProcessManagment, OOC:Make:Entity:ModuleFile,
-  OOC:Error, OOC:Repository, OOC:Config:CCompiler, OOC:Auxiliary:Config,
+  OOC:Error, OOC:Repository, OOC:Config:CCompiler,
   Sym := OOC:SymbolTable;
 
 TYPE
@@ -71,7 +71,6 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     uri: URI.URI;
     exit, i: LONGINT;
     res: Error.Msg;
-    config: Config.Config;
     aEdge: Make.Edge;
     fileId: Repository.FileId;
     ancestor: Repository.Module;
@@ -80,12 +79,11 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     libs: Object.ObjectArrayPtr;
   BEGIN
     exit := 0;
-    config := cmd. context. config(Config.Config);
     
     cmd. module. CreateOutputDir (Repository.modExecutable, res);
     IF (res = NIL) THEN
-      CCompiler.LinkProgramCmd (config, 
-                          cmd. module. GetURI (Repository.modExecutable), str);
+      CCompiler.LinkProgramCmd
+          (cmd. module. GetURI (Repository.modExecutable), str);
 
       libsMap := Dictionary.New();
       aEdge := cmd. ancestorList;
