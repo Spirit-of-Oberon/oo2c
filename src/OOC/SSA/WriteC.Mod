@@ -1160,6 +1160,11 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         IF ~AllPathsClosed (instr) THEN
           PrefixReturn;
           IF (w. procBlock. procDecl. formalPars. resultType # NIL) THEN
+            IF w. procBlock. checkFunctionResult THEN
+              w. WriteString ("_failed_function(");
+              w. WriteLInt (w. procBlock. procDecl. name. pos, 0);
+              w. WriteString ("); ");
+            END;
             w. WriteString ("return 0;");
           ELSE
             w. WriteString ("return;")
@@ -1387,7 +1392,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
   
   BEGIN
     (*Log.String ("procedure",proc. decl. name. str^);*)
-    pb := SSA.NewProcBlock (proc. decl);
+    pb := SSA.NewProcBlock (proc);
     writeProc := (t. inspectProc. MatchChars (proc. decl. name. str^, 0, -1) # NIL);
     enter := pb. selectReturn. opndList. arg. instr;
     s := IRtoSSA.StatmSeq (pb, enter. nextResult,

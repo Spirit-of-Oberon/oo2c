@@ -191,6 +191,11 @@ TYPE
        @emph{Note}: The order of instructions in the list is of no relevance.  *)
     procDecl-: Sym.ProcDecl;
     (**The procedure declaration to which this code block belongs.  *)
+
+    checkFunctionResult-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the end
+       of the function body is reached without encountering any @code{RETURN}.
+       *)
     
     constMap: ARRAY Predef.lastId+1 OF Dictionary.Dictionary;
     (**Maps constant values onto @code{const} instructions.  See
@@ -875,7 +880,8 @@ PROCEDURE NewAddress (opcode: Opcode.Class; decl: Sym.Declaration): Address;
 PROCEDURE ^ (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
                                        subclass: Opcode.Subclass): Instr;
   
-PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl);
+PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl;
+                         checkFunctionResult: BOOLEAN);
   VAR
     enter: Instr;
     initialStore: Result;
@@ -885,12 +891,13 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl);
     pb. instrList := NIL;
     pb. instrTail := NIL;
     pb. procDecl := procDecl;
+    pb. checkFunctionResult := checkFunctionResult;
     
     pb. selectReturn := pb. AddInstr (Opcode.selectReturn, Opcode.scNone);
     enter := pb. AddInstr (Opcode.enter, Opcode.scNone);
     initialStore := enter. AddResult (ResultClass.store);
     pb. selectReturn. AddOpnd (initialStore, OpndClass.store);
-
+    
     pb. selectExit := NIL;
     FOR i := 0 TO Predef.lastId DO
       pb. constMap[i] := NIL;
@@ -899,13 +906,13 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl);
     pb. adrMap := Dictionary.New();
   END InitProcBlock;
 
-PROCEDURE NewProcBlock* (procDecl: Sym.ProcDecl): ProcBlock;
+PROCEDURE NewProcBlock* (proc: IR.Procedure): ProcBlock;
 (**Creates a new instance of @otype{ProcBlock}.  *)
   VAR
     pb: ProcBlock;
   BEGIN
     NEW (pb);
-    InitProcBlock (pb, procDecl);
+    InitProcBlock (pb, proc. decl, proc. checkFunctionResult);
     RETURN pb
   END NewProcBlock;
 

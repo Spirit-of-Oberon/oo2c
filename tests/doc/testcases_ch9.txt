@@ -225,7 +225,7 @@ REJECT:
 
 ERROR:
 
-  1) control reaches end of a function's body
+  1) control reaches end of a function's body [HOTFunction7]
 
 
 

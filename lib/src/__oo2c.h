@@ -50,7 +50,7 @@
      adr; })
 #define _failed_case(select,pos) RT0__ErrorFailedCase(&_mid,pos,select)
 #define _failed_with(pos) RT0__ErrorFailedWith(&_mid,pos)
-
+#define _failed_function(pos) RT0__ErrorFailedFunction(&_mid,pos)
 
 
 /* ASSERT(p) and ASSERT(p,code) */

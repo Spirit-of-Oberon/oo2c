@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opPointer6" >-->
+  select ="&SetupTestCasesWithOut; function7" >-->
 
   &TestSetupWithOut;
     
@@ -95,6 +95,11 @@
       file="HOTFunction6.Mod" output="HOTFunction6.Ref">
       Simple functions: Compare character parameter with constant
       character and return different integer values depending on the result.
+    </test>
+
+    <test id="function7" type="error" file="HOTFunction7.Mod">
+      An error should be signaled if control reaches the end of a
+      function.
     </test>
 
     <test id="loop1" type="run"

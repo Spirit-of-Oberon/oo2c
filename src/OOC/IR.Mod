@@ -815,6 +815,10 @@ TYPE
     (NodeDesc)
     decl-: Sym.ProcDecl;
     statmSeq-: StatementSeq;             (* statements in body, never NIL *)
+    checkFunctionResult-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the end
+       of the function body is reached without encountering any @code{RETURN}.
+       *)
   END;
 
 TYPE
@@ -3049,11 +3053,13 @@ PROCEDURE (whileStatm: WhileStatm) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitProcedure* (p: Procedure; sym: Symbol; 
-                          decl: Sym.ProcDecl; statmSeq: StatementSeq);
+                          decl: Sym.ProcDecl; statmSeq: StatementSeq;
+                          checkFunctionResult: BOOLEAN);
   BEGIN
     InitNode (p, sym);
     p. decl := decl;
     p. statmSeq := statmSeq;
+    p. checkFunctionResult := checkFunctionResult;
   END InitProcedure;
 
 PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
@@ -3122,7 +3128,9 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     
     NEW (p);
     statmSeq := AddSetupCode (sym, decl, statmSeq);
-    InitProcedure (p, sym, decl, statmSeq);
+    InitProcedure (p, sym, decl, statmSeq,
+                   GetPragmaValue (b, StdPragmas.functionResultCheck,
+                                   decl. name. pos));
     RETURN p
   END NewProcedure;
 

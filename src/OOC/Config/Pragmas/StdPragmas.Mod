@@ -31,6 +31,7 @@ CONST
   defaultDerefCheck = TRUE;
   defaultOverflowCheck = FALSE;
   defaultCaseSelectCheck = TRUE;
+  defaultFunctionResultCheck = TRUE;
   defaultTypeGuard = TRUE;
   defaultConformantMode = FALSE;
   defaultTargetInteger = 32;
@@ -43,6 +44,7 @@ VAR
   derefCheck-: Pragmas.Pragma;
   overflowCheck-: Pragmas.Pragma;
   caseSelectCheck-: Pragmas.Pragma;
+  functionResultCheck-: Pragmas.Pragma;
   typeGuard-: Pragmas.Pragma;
   conformantMode-: Pragmas.Pragma;
   targetInteger-: Pragmas.Pragma;
@@ -59,6 +61,7 @@ PROCEDURE CreateVariables* (s: Pragmas.Section);
     derefCheck := s. Set ("DerefCheck", Boolean.New (defaultDerefCheck));
     overflowCheck := s. Set ("OverflowCheck", Boolean.New (defaultOverflowCheck));
     caseSelectCheck := s. Set ("CaseSelectCheck", Boolean.New (defaultCaseSelectCheck));
+    functionResultCheck := s. Set ("FunctResult", Boolean.New (defaultFunctionResultCheck));
     typeGuard := s. Set ("TypeGuard", Boolean.New (defaultTypeGuard));
     conformantMode := s. Set ("ConformantMode", Boolean.New (defaultConformantMode));
 
