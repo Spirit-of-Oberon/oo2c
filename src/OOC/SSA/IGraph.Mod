@@ -148,6 +148,15 @@ PROCEDURE (g: Graph) In* (res: LONGINT; live: Vector): BOOLEAN;
     RETURN (res MOD bitsPerSet) IN live[res DIV bitsPerSet]
   END In;
 
+PROCEDURE (g: Graph) Conflicts* (i, j: LONGINT): BOOLEAN;
+(**Returns @code{TRUE} if @oparam{i} conflicts with @oparam{j}.  *)
+  VAR
+    m: BitMatrix;
+  BEGIN
+    m := g. m;
+    RETURN (j MOD bitsPerSet IN m[i, j DIV bitsPerSet]);
+  END Conflicts;
+
 PROCEDURE (g: Graph) MergeVector* (source, dest: Vector);
 (**Stores the union of the elements in @oparam{source} and @oparam{dest}
    in @oparam{dest}.  *)
