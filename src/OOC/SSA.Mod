@@ -194,9 +194,12 @@ TYPE
        @oconst{Opcode.loopEnd}.  *)
 
     tryContext-: Instr;
-    (**The currently open @oconst{Opcode.pushExceptionContext} instruction.
-       This is @code{NIL} if the current code is not within a @code{TRY}
-       statement.  *)
+    (**With a @code{TRY}, this is the currently open
+       @oconst{Opcode.pushExceptionContext} instruction.  With the first
+       @code{CATCH} clause, the value changes to the current exception thrown
+       within the @code{TRY}.  After the @code{TRY} statement, it changes back
+       to the value it had before it, and it is @code{NIL} if the current code
+       is not within a @code{TRY} statement.  *)
     
     instrList-, instrTail: Instr;
     (**Set of instructions that make up the procedure block.  The instructions

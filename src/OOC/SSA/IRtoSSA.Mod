@@ -735,16 +735,6 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN obj;
       END Constructor;
     
-    PROCEDURE CurrentException(expr: IR.CurrentException): SSA.Result;
-      VAR
-        instr: SSA.Instr;
-      BEGIN
-        instr := pb.AddInstr(Opcode.currentException, Opcode.scAddress);
-        instr.AddOpnd(pb.tryContext, Opnd.arg);
-        instr.AddOpnd(s, Opnd.store);
-        RETURN instr;
-      END CurrentException;
-    
     BEGIN
       WITH expr: IR.Const DO
         IF (expr. value = NIL) THEN
@@ -990,7 +980,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: IR.Constructor DO
         RETURN Constructor(expr);
       | expr: IR.CurrentException DO
-        RETURN CurrentException(expr);
+        RETURN pb.tryContext;
         
       ELSE
         Log.Type("++ Unknown type in Expression", expr);
@@ -1458,9 +1448,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := PopExceptionContext(start.AddResult(Result.store), 1);
       
       (* get type tag of current exception *)
-      e := pb.AddInstr(Opcode.storeCurrentException, Opcode.scAddress);
+      e := pb.AddInstr(Opcode.currentException, Opcode.scAddress);
       e.AddOpnd(pb.tryContext, Opnd.arg);
       e.AddOpnd(s, Opnd.store);
+      instr := pb.SetTryContext(e); (* set `tryContext' to current exception *)
       typeTag := pb.AddInstr(Opcode.typeTag, Opcode.scAddress);
       typeTag.AddOpnd(e, Opnd.arg);
       sCatch := s;

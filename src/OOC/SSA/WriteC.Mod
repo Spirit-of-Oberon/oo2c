@@ -652,8 +652,7 @@ PROCEDURE WriteExceptionContext(w: Writer; instr: SSA.Instr): Object.Object;
     CASE instr.opcode OF
     | Opcode.pushExceptionContext:
       (* keep instr *)
-    | Opcode.clearException, Opcode.storeCurrentException,
-      Opcode.currentException:
+    | Opcode.clearException, Opcode.currentException:
       instr := instr.opndList.arg.instr;
     END;
     obj := w.jmpbufMap.Get(instr.opndList.arg.instr);
@@ -666,7 +665,6 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
   VAR
     opnd: SSA.Opnd;
     var: SSA.Result;
-    obj: Object.Object;
 
   PROCEDURE ^ Call (call: SSA.Instr);
     
@@ -1303,15 +1301,9 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       END;
       Call (instr);
 
-    | Opcode.storeCurrentException:
-      CastFromPtr(instr);
-      w.WriteString("Exception__StoreCurrentException(&");
-      obj := WriteExceptionContext(w, instr);
-      w.WriteString(")");
     | Opcode.currentException:
       CastFromPtr(instr);
-      obj := WriteExceptionContext(w, instr);
-      w.WriteString(".localException");
+      w.WriteString("Exception__Current()");
       
     | Opcode.preloadedVar:
       PreloadedVar(instr);

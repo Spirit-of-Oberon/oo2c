@@ -700,13 +700,7 @@ CONST
   raiseException* = 74;
   (**Raise an exception.  Takes @var{store} and the exception as
      arguments and produces a new @var{store}.  *)
-  storeCurrentException* = 75;
-  (**Retrieve the current exception with @samp{Exception.Current()} and store
-     it in the local stack frame.  Result is the current exception.  Takes its
-     associated @oconst{pushExceptionContext} instruction and @var{store} as
-     arguments.
-
-     This value is subsequently retrieved with @oconst{currentException}.  *)
+  (*storeCurrentException* = 75;  ... unused *)
   currentException* = 76;
   (**Produces a pointer to the current exception.  Result is @code{NIL} if
      there is no active exception.  Takes its @oconst{pushExceptionContext}
@@ -959,7 +953,6 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | tryEnd: cstr := "try-end";
     | raiseException: cstr := "raise-exception";
     | currentException: cstr := "current-exception";
-    | storeCurrentException: cstr := "store-current-exception";
     | clearException: cstr := "clear-exception";
     | pushExceptionContext: cstr := "push-exception-context";
     | popExceptionContext: cstr := "pop-exception-context";
