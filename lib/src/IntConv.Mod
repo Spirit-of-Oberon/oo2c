@@ -124,7 +124,6 @@ BEGIN
   class:=Conv.padding; prev:=class;
   state:=SI; int:=0; positive:=TRUE;
   LOOP
-    IF index=len THEN EXIT END;
     ch:=str[index];
     state.p(ch, class, state);
     CASE class OF
@@ -149,14 +148,23 @@ BEGIN
             END
           END
         END
-    | Conv.invalid, Conv.terminator: EXIT
+      
+    | Conv.invalid:
+      IF (prev = Conv.padding) THEN
+        RETURN strEmpty;
+      ELSE
+        RETURN strWrongFormat;
+      END;
+      
+    | Conv.terminator:
+      IF (ch = 0X) THEN
+        RETURN strAllRight;
+      ELSE
+        RETURN strWrongFormat;
+      END;
     END;
     prev:=class; INC(index)
   END;
-  IF class IN {Conv.invalid, Conv.terminator} THEN RETURN strWrongFormat
-  ELSIF prev=Conv.padding THEN RETURN strEmpty
-  ELSE RETURN strAllRight
-  END
 END FormatInt;
  
  
