@@ -550,7 +550,6 @@ PROCEDURE (w: Writer) WriteDeclarationList*;
   END WriteDeclarationList;
 
 
-
 (* Types
    ------------------------------------------------------------------------ *)
 
@@ -961,6 +960,15 @@ PROCEDURE (d: Define) Write (w: Writer);
     w. WriteConst (d. const, Predef.GetType (Predef.charString));
   END Write;
 
+
+
+PROCEDURE (w: Writer) WriteTypeCast* (t: Type);
+  BEGIN
+    w. WriteChar ("(");
+    t. WriteLeft (w);
+    t. WriteRight (w);
+    w. WriteChar (")");
+  END WriteTypeCast;
 
 
 
