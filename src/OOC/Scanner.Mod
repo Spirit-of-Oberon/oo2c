@@ -48,7 +48,7 @@ CONST
      as @oconst{Symbol.pragma}.  Like comments, such a symbol can span 
      multiple lines and must be treated as whitespace.  *)
   enableCharPosAdjust* = 4;
-  (**If set, then change the @otype{Error.ErrList} instance so that it 
+  (**If set, then change the @otype{Error.List} instance so that it 
      reports a character position that is decremented by the line number of
      the error.  This fixes CR/LF reporting for editors that count this as a
      single end of line character.  *)
