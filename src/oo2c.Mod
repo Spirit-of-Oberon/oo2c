@@ -247,6 +247,31 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
       END;
       RETURN TRUE;
     END InstallFiles;
+
+  PROCEDURE BuildDocs(module: Rep.Module; makeRules: Make.Rules;
+                      install: BOOLEAN): BOOLEAN;
+    VAR
+      m: Rep.Module;
+      ok: BOOLEAN;
+      i: LONGINT;
+      path: Rep.URIBuffer;
+    BEGIN
+      ok := TRUE;
+      i := 0;
+      WHILE ok & (i #  LEN(makeRules.imports^)) DO
+        m := makeRules.imports[i];
+        IF install THEN
+          m.origin.GetLocalPath(m, Rep.modInterfaceDescr, path);
+          pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+          m.origin.GetLocalPath(m, Rep.modInterfaceHTML, path);
+          pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+        ELSE
+          ok := makeRules.Update(m, Rep.modInterfaceHTML);
+        END;
+        INC(i);
+      END;
+      RETURN ok;
+    END BuildDocs;
   
   BEGIN
     ok := TRUE;
@@ -258,6 +283,12 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
       module := GetModule(lib.mainModule.array^);
       ok := makeRules.Update(module, Rep.modLibrary)
           & (~install OR InstallLibrary(module, makeRules));
+
+      IF ok THEN
+        (* build HTML documentation for modules in library *)
+        ok := BuildDocs(module, makeRules, install);
+      END;
+      
       makeRules.SetLibraryName("", "");
       INC(i);
     END;
