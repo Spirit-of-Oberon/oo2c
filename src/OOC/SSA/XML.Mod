@@ -77,7 +77,7 @@ PROCEDURE (w: Writer) AttrId* (name: ARRAY OF LONGCHAR; result: SSA.Result);
     countSameId, posSameId: LONGINT;
   BEGIN
     w. sb. Delete (0, w. sb. length);
-    w. sb. AppendLongInt (w. GetId (result. instr));
+    w. sb. AppendLongInt (ABS (w. GetId (result. instr)));
     IF (result # result. instr) THEN
       w. sb. AppendChar (".");
       Result.GetName (result. class, str);
@@ -121,6 +121,14 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
       END;
     END;
   END AttrRef;
+
+PROCEDURE ShorthandInstr (instr: SSA.Instr): BOOLEAN;
+  BEGIN
+    RETURN
+        (instr IS SSA.Const) OR
+        (instr IS SSA.DeclRef) OR
+        (instr IS SSA.Address);
+  END ShorthandInstr;
 
 PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
   VAR
@@ -168,14 +176,12 @@ PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
     END WriteOpnd;
   
   BEGIN
-(*    IF (instr IS SSA.Const) OR
-       (instr IS SSA.DeclRef) OR
-       (instr IS SSA.Address) THEN
+    IF ShorthandInstr (instr) THEN
       (* these kinds of instructions are written in a shorthand form:
          their actual value is indicated in the "opnd" tag, and the
          instructions themselves are omitted *)
       RETURN
-    END;*)
+    END;
     
     StartTagInstr (w, instr);
     w. AttrInt ("id", w. GetId (instr));
@@ -227,9 +233,11 @@ PROCEDURE (w: Writer) WriteProcBody* (pb: SSA.ProcBlock;
           opnd := opnd. nextOpnd
         END;
         
-        w. idMap. Set (instr, -instrCount);
-        INC (instrCount);
-
+        IF ~ShorthandInstr (instr) THEN
+          w. idMap. Set (instr, -instrCount);
+          INC (instrCount);
+        END;
+        
         opnd := instr. opndList;
         WHILE (opnd # NIL) DO
           IF (opnd. class = Opnd.forwardRef) THEN
@@ -245,17 +253,28 @@ PROCEDURE (w: Writer) WriteProcBody* (pb: SSA.ProcBlock;
       opnd: SSA.Opnd;
       id: LONGINT;
     BEGIN
-      id := w. idMap. Get (instr);
-      IF (id < 0) THEN                   (* not yet scheduled? *)
-        w. idMap. Set (instr, -id); (* mark as scheduled *)
-        
-        (* schedule all operands for writing _before_ this instruction *)
-        opnd := instr. opndList;
-        WHILE (opnd # NIL) DO
-          TraverseInstr (opnd. arg. instr);
-          opnd := opnd. nextOpnd
+      IF ~ShorthandInstr (instr) THEN
+        id := w. idMap. Get (instr);
+        IF (id < 0) THEN                   (* not yet scheduled? *)
+          w. idMap. Set (instr, -id); (* mark as scheduled *)
+
+          IF (instr. opcode = Opcode.loopStart) THEN
+            (* for a loop-start instruction, write the input path
+               of the loop before the instruction, and the back-edge
+               after it *)
+            TraverseInstr (instr. opndList. arg. instr);
+            w. WriteInstr (instr);
+            TraverseInstr (instr. opndList. nextOpnd. arg. instr);
+          ELSE
+            (* schedule all operands for writing _before_ this instruction *)
+            opnd := instr. opndList;
+            WHILE (opnd # NIL) DO
+              TraverseInstr (opnd. arg. instr);
+              opnd := opnd. nextOpnd
+            END;
+            w. WriteInstr (instr);
+          END;
         END;
-        w. WriteInstr (instr);
       END;
     END TraverseInstr;
   
@@ -338,8 +357,10 @@ PROCEDURE (w: Writer) WriteSchedule* (domRoot: Schedule.Block);
     BEGIN
       proxy := b. proxyList;
       WHILE (proxy # NIL) DO
-        w. idMap. Set (proxy. instr, instrCount);
-        INC (instrCount);
+        IF ~ShorthandInstr (proxy. instr) THEN
+          w. idMap. Set (proxy. instr, instrCount);
+          INC (instrCount);
+        END;
         proxy := proxy. nextProxy
       END;
 
