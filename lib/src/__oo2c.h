@@ -42,6 +42,17 @@ extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN
 #define _assert(p,code,pos) \
   if (!(p)) { _assertion_failed(code, pos); }
 
+/* COPY(s,d) */
+#define _copy(_src,_dest,_max_len) {            \
+  char* _d=(char*)_dest;                        \
+  const char* _s=(const char*)_src;             \
+  char* _max=_d+_max_len-1;                     \
+  while ((_d != _max) && (*(_d++) = *(_s++)));  \
+  if (_d == _max) *_d = '\000';                 \
+}
+
+
+
 /* CAP(CHAR) and CAP(LONGCHAR) */
 #define _cap(_c) ((96<_c && _c<123) || (224<=_c && _c<255 && _c!=247)) ? (_c-32) : _c
 #define _capl(_c) _cap(_c)
