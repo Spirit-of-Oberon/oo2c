@@ -374,8 +374,9 @@ PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
 
 PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
   PROCEDURE CollectFormalPars (item: Sym.Item);
-  (* Sets the field @ofield{Sym.FormalPars.params} for
-     all formal parameter definitions under @oparam{item}.  *)
+  (* Sets the field @ofield{Sym.FormalPars.params} and
+     @ofield{Sym.TypePars.params} for all formal parameter definitions under
+     @oparam{item}.  *)
     VAR
       ptr: Sym.Item;
       c: LONGINT;
@@ -404,7 +405,28 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
               INC (c)
             END;
             ptr := ptr. nextNested
-          END
+          END;
+
+        | item: Sym.TypePars DO
+          c := 0;
+          ptr := item. nestedItems;
+          WHILE (ptr # NIL) DO
+            IF (ptr IS Sym.TypeDecl) THEN
+              INC (c)
+            END;
+            ptr := ptr. nextNested
+          END;
+          
+          NEW (item. params, c);
+          c := 0;
+          ptr := item. nestedItems;
+          WHILE (ptr # NIL) DO
+            IF (ptr IS Sym.TypeDecl) THEN
+              item. params[c] := ptr(Sym.TypeDecl);
+              INC (c)
+            END;
+            ptr := ptr. nextNested
+          END;
         ELSE
         END;
         

@@ -337,6 +337,19 @@ PROCEDURE IsValidCaseSelector* (type: Sym.Type): BOOLEAN;
     RETURN IsIntegerType (type) OR IsCharType (type);
   END IsValidCaseSelector;
 
+PROCEDURE IsValidTypeBound* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
+   bound of a type parameter of a parametric type.  *)
+  BEGIN
+    type := type.Deparam();
+    IF (type IS Sym.Pointer) THEN
+      type := type(Sym.Pointer).baseType.Deparam();
+      RETURN (type IS Sym.Record);
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsValidTypeBound;
+
 PROCEDURE VariableInstance* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type can be used to instanciate variables.
    In other words, it can be used to define variables, record fields, or

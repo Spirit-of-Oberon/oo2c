@@ -54,6 +54,11 @@ CONST
   procedureStillAbstract = 24;
   atMostOneLinkFile = 25;
   notException = 26;
+  invalidTypeBound = 27;
+  notParametricType = 28;
+  tooFewTypeArgs = 29;
+  tooManyTypeArgs = 30;
+  notExtensionOfBound = 31;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -123,6 +128,16 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Module must provide at most one LINK FILE directive"
     | notException:
       t := "Type is not an extension of `Exception.Exception'"
+    | invalidTypeBound:
+      t := "Invalid type bound"
+    | notParametricType:
+      t := "This is not a parametric type"
+    | tooFewTypeArgs:
+      t := "Too few type arguments"
+    | tooManyTypeArgs:
+      t := "Too many type arguments"
+    | notExtensionOfBound:
+      t := "This is not an extension of the type bound"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -607,6 +622,7 @@ RAISES IO.Error;
       record: Sym.Record;
       i: LONGINT;
       ns: Sym.Namespace;
+      typePars: Sym.TypePars;
     
     PROCEDURE CheckOpenArray (type, srcCodeType: Sym.Type);
       BEGIN
@@ -621,6 +637,18 @@ RAISES IO.Error;
           ErrType(cannotCreateInstance, srcCodeType);
         END;
       END CheckInstance;
+
+    PROCEDURE CheckTypePars(typePars: Sym.TypePars);
+      VAR
+        i: LONGINT;
+      BEGIN
+        FOR i := 0 TO LEN(typePars.params^)-1 DO
+          IF ~TR.IsValidTypeBound
+             (typePars.params[i].type(Sym.TypeVar).bound) THEN
+            ErrType(invalidTypeBound, typePars.params[i].srcCodeType);
+          END;
+        END;
+      END CheckTypePars;
     
     BEGIN
       IF (item # NIL) THEN
@@ -702,8 +730,33 @@ RAISES IO.Error;
               Err (illegalRecordBase, type(Sym.TypeName))
             END
           END
-          
+
+        | item: Sym.QualType DO
+          typePars := item.baseType.typePars;
+          IF (typePars = NIL) THEN
+            ErrType(notParametricType, item.srcCodeBaseType);
+          ELSIF (LEN(typePars.params^) < LEN(item.arguments^)) THEN
+            ErrType(tooManyTypeArgs,
+                    item.arguments[LEN(typePars.params^)].srcCodeType);
+          ELSIF (LEN(typePars.params^) > LEN(item.arguments^)) THEN
+            ErrType(tooFewTypeArgs, item.srcCodeBaseType);
+          ELSE
+            FOR i := 0 TO LEN(typePars.params^)-1 DO
+              type := item.arguments[i].type;
+              IF (type IS Sym.TypeVar) THEN
+                type := type(Sym.TypeVar).bound;
+              END;
+              IF ~TR.IsExtensionOf
+                     (type, typePars.params[i].type(Sym.TypeVar).bound) THEN
+                ErrType(notExtensionOfBound, item.arguments[i].srcCodeType);
+              END;
+            END;
+          END;
         ELSE  (* ignore any other kind of items *)
+        END;
+
+        IF (item IS Sym.Type) & (item(Sym.Type).typePars # NIL) THEN
+          CheckTypePars(item(Sym.Type).typePars);
         END;
         
         (* descend into nested objects *)
