@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE Exception [FOREIGN "C"; LINK FILE "Exception.c" END];
 (*  Implements the run-time part of the exceptions mechanism.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002,2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -124,7 +124,7 @@ PROCEDURE Init*(e: Exception; msg: STRING);
    @precond
    @oparam{e} is not @code{NIL}.
    @end precond *)
-PROCEDURE Raise*(e: Exception) RAISES Exception;
+PROCEDURE Raise* [NO_RETURN](e: Exception) RAISES Exception;
 (**Raise exception @oparam{e}.  This procedure is the implementation of the
    predefined procedure @code{RAISE}.
 
@@ -150,7 +150,7 @@ PROCEDURE PopContext*(n: LONGINT);
    @precond
    @samp{@oparam{n} >= 1}.
    @end precond *)
-PROCEDURE ActivateContext*;
+PROCEDURE ActivateContext* [NO_RETURN]();
 (**Activate the execution context on the top of the exception handler stack.
    If the stack is empty, a message with details of the current exception is
    written to @var{stderr}, and the program is aborted.  This procedure should

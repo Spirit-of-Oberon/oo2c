@@ -1,6 +1,6 @@
 /*      $Id$    */
 /*  Mapping of basic types to C types.
-    Copyright (C) 1997-2002  Michael van Acken
+    Copyright (C) 1997-2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -58,5 +58,18 @@ typedef OOC_INT32 OOC_CHARPOS;
    %li if it is long int), and OOC_LEN */
 #define OOC_INT32_FORMAT "%i"
 #define OOC_LEN_FORMAT "%i"
+
+
+
+#undef NORETURN
+#undef NORETURN2
+#if __GNUC__>2 || (__GNUC__==2 && __GNUC_MINOR__>=6)
+#define NORETURN
+#define NORETURN2 __attribute__ ((__noreturn__))
+#else
+#define NORETURN
+#define NORETURN2
+#endif
+
 
 #endif  /* __typemap__ */

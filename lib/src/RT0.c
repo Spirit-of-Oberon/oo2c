@@ -52,7 +52,8 @@ static void write_backtrace () {
 
 #define PREFIX "## "
 #define EXIT_CODE 127
-void NORETURN _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) {
+void NORETURN _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) NORETURN2;
+void _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) {
   (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
 		"Runtime error in module %s at pos " OOC_INT32_FORMAT
 		"\n" PREFIX "%s\n" PREFIX "\n",
@@ -61,7 +62,8 @@ void NORETURN _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) {
   exit(EXIT_CODE);
 }
 
-static NORETURN void _out_of_memory(int size) {
+static NORETURN void _out_of_memory(int size) NORETURN2;
+static void _out_of_memory(int size) {
   (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
 		"Out of memory, failed to allocate %i bytes\n" PREFIX "\n",
 		size);
@@ -69,7 +71,8 @@ static NORETURN void _out_of_memory(int size) {
   exit(EXIT_CODE);
 }
 
-static NORETURN void _negative_length(OOC_LEN len) {
+static NORETURN void _negative_length(OOC_LEN len) NORETURN2;
+static void _negative_length(OOC_LEN len) {
   (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
 		"NewObject: Negative array length %i\n" PREFIX "\n",
 		len);

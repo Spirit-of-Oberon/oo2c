@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE RT0 [FOREIGN "C"; LINK FILE "RT0.c"; LIB "m" END];
 (*  Proxy module for the run-time system of C back-ends of OOC2
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -221,16 +221,16 @@ PROCEDURE CollectGarbage*;
 (**Explicitly trigger a full, world-stop garbage collection.  *)
 
 
-PROCEDURE ErrorIndexOutOfRange* (mid: Module; pos: LONGINT;
+PROCEDURE ErrorIndexOutOfRange* [NO_RETURN](mid: Module; pos: LONGINT;
                                  index, length: LONGINT);
-PROCEDURE ErrorDerefOfNil* (mid: Module; pos: LONGINT);
-PROCEDURE ErrorFailedTypeGuard* (mid: Module; pos: LONGINT; typeTag: Struct);
-PROCEDURE ErrorFailedCase* (mid: Module; pos: LONGINT; select: LONGINT);
-PROCEDURE ErrorFailedWith* (mid: Module; pos: LONGINT; typeTag: Struct);
-PROCEDURE ErrorFailedTypeAssert* (mid: Module; pos: LONGINT);
-PROCEDURE ErrorFailedFunction* (mid: Module; pos: LONGINT);
-PROCEDURE ErrorAssertionFailed* (mid: Module; pos: LONGINT; code: LONGINT);
-PROCEDURE Halt* (code: LONGINT);
+PROCEDURE ErrorDerefOfNil* [NO_RETURN](mid: Module; pos: LONGINT);
+PROCEDURE ErrorFailedTypeGuard* [NO_RETURN](mid: Module; pos: LONGINT; typeTag: Struct);
+PROCEDURE ErrorFailedCase* [NO_RETURN](mid: Module; pos: LONGINT; select: LONGINT);
+PROCEDURE ErrorFailedWith* [NO_RETURN](mid: Module; pos: LONGINT; typeTag: Struct);
+PROCEDURE ErrorFailedTypeAssert* [NO_RETURN](mid: Module; pos: LONGINT);
+PROCEDURE ErrorFailedFunction* [NO_RETURN](mid: Module; pos: LONGINT);
+PROCEDURE ErrorAssertionFailed* [NO_RETURN](mid: Module; pos: LONGINT; code: LONGINT);
+PROCEDURE Halt* [NO_RETURN](code: LONGINT);
 
 PROCEDURE RegisterModule* (mid: Module);
 (**Registers the module descriptor with the run-time system.  *)
