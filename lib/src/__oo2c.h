@@ -65,7 +65,9 @@ extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN
   if (_d == _max) *_d = '\000';                 \
 }
 
-
+/* string compare */
+extern OOC_INT32 _cmp8(const OOC_CHAR8* l, const OOC_CHAR8* r);
+extern OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r);
 
 /* CAP(CHAR) and CAP(LONGCHAR) */
 #define _cap(_c) ((96<_c && _c<123) || (224<=_c && _c<255 && _c!=247)) ? (_c-32) : _c

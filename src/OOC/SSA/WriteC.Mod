@@ -622,16 +622,15 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (name. array^);
       WriteTypeAndSize
     END CopyParameter;
-
+  
+  PROCEDURE TypeId (res: SSA.Result): LONGINT;
+    BEGIN
+      RETURN res(SSA.TypeRef). type(Sym.PredefType). id;
+    END TypeId;
+  
   PROCEDURE CopyString (instr: SSA.Instr);
     VAR
       source, dest: LONGINT;
-      
-    PROCEDURE TypeId (res: SSA.Result): LONGINT;
-      BEGIN
-        RETURN res(SSA.TypeRef). type(Sym.PredefType). id;
-      END TypeId;
-    
     BEGIN
       w. Newline;
       source := TypeId (instr. NthArg (1));
@@ -651,6 +650,28 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. Ref (instr. GetOpndClass (Opnd.arg));
       w. WriteString (");");
     END CopyString;
+  
+  PROCEDURE CmpString (instr: SSA.Instr);
+    VAR
+      source: LONGINT;
+    BEGIN
+      w. Newline;
+      source := TypeId (instr. NthArg (1));
+
+      IF (source = Predef.char) THEN
+        w. WriteString ("_cmp8((const void*)");
+      ELSE
+        w. WriteString ("_cmp16((const void*)");
+      END;
+      opnd := instr. GetOpndClass (Opnd.readAdr);
+      w. Ref (opnd);
+      w. WriteString (",(const void*)");
+      REPEAT                             (* locate second readAdr *)
+        opnd := opnd. nextOpnd;
+      UNTIL (opnd. class = Opnd.readAdr);
+      w. Ref (opnd);
+      w. WriteString (");");
+    END CmpString;
   
   PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
   (* Returns TRUE if all paths into the "select-return" end with a
@@ -854,6 +875,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
 
       | Opcode.copyString:
         CopyString (instr);
+      | Opcode.cmpString:
+        CmpString (instr);
         
       | Opcode.getLength:
         GetLength (instr);
@@ -935,6 +958,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         opnd := instr. GetOpndClass (Opnd.functionResult);
         IF (opnd # NIL) THEN
           w. WriteString ("return ");
+          CastToPtr (opnd. arg, w. procBlock. procDecl. formalPars. resultType, FALSE);
           w. Ref (opnd);
           w. WriteChar (";");
         ELSE

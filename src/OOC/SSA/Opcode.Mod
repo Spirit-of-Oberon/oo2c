@@ -317,69 +317,104 @@ CONST
      @samp{0X}, or if the target as a length of zero characters.  The
      instruction has one result of class @oconst{*OOC:SSA:Result.store},
      representing the new value of store with the updated variable.  *)  
-  copyBytes* = 17;
+  cmpString* = 17;
+  (**Compare two string values and return the difference of the first
+     characters that differ, or @samp{0} if both strings are equal.
+     If the result is negative, then the left side is smaller than the
+     right side, and it is positive if the left side is greater than the
+     right.
+     
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.type
+     The element type of the strings.  This is either a
+     @otype{*OOC:SSA:TypeRef} to @oconst{Predef.char} or
+     @oconst{Predef.longchar}.
+
+     @item *OOC:SSA:Opnd.readAdr
+     Like the corresponding argument of @oconst{get}.  If the left side of the
+     compare operation is a string constant, then this operand refers to the
+     constant.
+
+     @item *OOC:SSA:Opnd.readDesign
+     Like the corresponding argument of @oconst{get}.  If the left side of the
+     compare operation is a string constant, then this argument does not
+     exists.
+
+     @item *OOC:SSA:Opnd.readAdr
+     Right side of the compare.
+
+     @item *OOC:SSA:Opnd.readDesign
+     Right side of the compare.
+     @end table
+
+     The result is undefined if the strings are not terminated with
+     @samp{0X}.  *)  
+  copyBytes* = 18;
   (**Copy a memory block between two addresses in memory.  This corresponds to
      the @samp{SYSTEM.MOVE} statement.  Not implemented yet...  *)
   
-  add* = 18;
+  add* = 19;
   (**Addition operator.  The two operands must be of the same type, which is at
      the same time the result of the operation.  There is one exception to this
      rule: if one of the operands is of type @oconst{scAddress}, then the other
      operand can be any integer type, signed or unsigned, and the result type
      is @oconst{scAddress}.  *)
-  subtract* = 19;
-  negate* = 20;
-  multiply* = 21;
+  subtract* = 20;
+  negate* = 21;
+  multiply* = 22;
   (**Multiplication.  The two operands must be of the same type, which is
      also the result of the operation.  There is one exception: when
      multiplying an index with the size of the element, then the result is
      a value of type @oconst{scAddress}.  *)
-  divide* = 22;
-  modulo* = 23;
+  divide* = 23;
+  modulo* = 24;
 
-  eql* = 24;
-  neq* = 25;
-  lss* = 26;
-  leq* = 27;
-  gtr* = 28;
-  geq* = 29;
+  eql* = 25;
+  neq* = 26;
+  lss* = 27;
+  leq* = 28;
+  gtr* = 29;
+  geq* = 30;
 
-  and* = 30;
+  and* = 31;
   (**Boolean @samp{AND}.  Note: This opcode does not perform shortcut
      evaluation.  That is, both arguments are always evaluated, irregardless
      of the value of the first argument.  *)
-  or* = 31;
+  or* = 32;
   (**Boolean @samp{OR}.  Note: This opcode does not perform shortcut
      evaluation.  That is, both arguments are always evaluated, irregardless
      of the value of the first argument.  *)
-  not* = 32;
+  not* = 33;
   (**Boolean @samp{NOT}.  *)
 
-  typeConv* = 33;
+  typeConv* = 34;
   (**Type conversion operation.  Takes one argument, the value that should be
      converted.  The result type of the convertion is the instructions's
      subclass, the source type that of the first argument.  *)
-  setMember* = 34;
+  setMember* = 35;
   (**Set membership test.  First argument is an index, second is the
      set value.  *)
-  setRange* = 35;
+  setRange* = 36;
   (**Set range.  Produces a set with the elements [from, to] inclusive.
      The range is empty if to<from.  *)
-  cap* = 36;
+  cap* = 37;
   (**Capitalize character.  *)
-  entier* = 37;
+  entier* = 38;
   (**Floating point to integer, rounding to @samp{-inf}.  *)
-  odd* = 38;
+  odd* = 39;
   (**Return @code{TRUE} for odd numbers.  *)
   
-  assert* = 39;
+  assert* = 40;
   
-  call* = 40;
+  call* = 41;
   (**Used to call a procedure or a function.  The first argument is the
      address of the procedure to be called, followed by the call's arguments.
      This opcode is used both for normal and type-bound procedures.  *)
   
-  getLength* = 41;
+  getLength* = 42;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -398,7 +433,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 42;
+  copyParameter* = 43;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -416,7 +451,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 43;
+  newObject* = 44;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -436,7 +471,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 44;
+  typeTag* = 45;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -447,7 +482,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 45;
+  typeTest* = 46;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -463,7 +498,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 46;
+  tbProcAddress* = 47;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -478,7 +513,7 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  labels* = 47;
+  labels* = 48;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -573,6 +608,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | set: cstr := "set";
     | copy: cstr := "copy";
     | copyString: cstr := "copy-string";
+    | cmpString: cstr := "cmp-string";
     | copyBytes: cstr := "copy-bytes";
       
     | getLength: cstr := "get-length";

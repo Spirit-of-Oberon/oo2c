@@ -131,6 +131,81 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       RETURN RecursiveGetSize (type, dim);
     END CalculateSize;
   
+  PROCEDURE TypeOfString (type: Sym.Type): Sym.Type;
+    BEGIN
+      WITH type: Sym.Array DO
+        IF (type. elementType IS Sym.PredefType) THEN
+          CASE type. elementType(Sym.PredefType). id OF
+          | Predef.char, Predef.longchar:
+            RETURN type. elementType;
+          ELSE
+            RETURN NIL;
+          END;
+        ELSE
+          RETURN NIL;
+        END;
+      | type: Sym.PredefType DO
+        CASE type. id OF
+        | Predef.charString, Predef.longcharString:
+          RETURN Predef.GetType (type. id-Predef.charString+Predef.char);
+        ELSE
+          RETURN NIL;
+        END;
+      ELSE
+        RETURN NIL;
+      END;
+    END TypeOfString;
+  
+  PROCEDURE TransferReadDesign (source: SSA.Result; instr: SSA.Instr);
+    VAR
+      opnd: SSA.Opnd;
+    BEGIN
+      IF (source IS SSA.Const) THEN
+        (* copying a string constant *)
+        instr. AddOpnd (source, Opnd.readAdr);
+      ELSE
+        opnd := source. instr. opndList;
+        WHILE (opnd # NIL) DO
+          IF (opnd. class = Opnd.readAdr) OR
+             (opnd. class = Opnd.readDesign) THEN
+            instr. AddOpnd (opnd. arg, opnd. class);
+          END;
+          opnd := opnd. nextOpnd;
+        END;
+      END;
+    END TransferReadDesign;
+  
+  PROCEDURE CopyString (cp: IR.CopyString): SSA.Instr;
+    VAR
+      instr: SSA.Instr;
+      source, dest, maxLength: SSA.Result;
+      opnd: SSA.Opnd;
+    BEGIN
+      instr := pb. AddInstr (Opcode.copyString, Opcode.scNone);
+
+      source := Expression (cp. source);
+      dest := Expression (cp. dest);
+      maxLength := Expression (cp. maxLength);
+
+      instr. AddOpnd (s, Opnd.store);
+      instr. AddOpnd (pb. GetTypeRef (TypeOfString (cp. source. type)), Opnd.type);
+      instr. AddOpnd (pb. GetTypeRef (TypeOfString (cp. dest. type)), Opnd.type);
+      TransferReadDesign (source, instr);
+      
+      opnd := dest. instr. opndList;
+      WHILE (opnd # NIL) DO
+        IF (opnd. class = Opnd.readAdr) THEN
+          instr. AddOpnd (opnd. arg, Opnd.writeAdr);
+        ELSIF (opnd. class = Opnd.readDesign) THEN
+          instr. AddOpnd (opnd. arg, Opnd.writeDesign);
+        END;
+        opnd := opnd. nextOpnd;
+      END;
+      instr. AddOpnd (maxLength, Opnd.arg);
+
+      RETURN instr;
+    END CopyString;
+  
   PROCEDURE Expression (expr: IR.Expression): SSA.Result;
     VAR
       instr: SSA.Instr;
@@ -207,14 +282,31 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         
         RETURN instr
       END SelectField;
-    
+
     PROCEDURE AddCompareOp (op: IR.Compare; class: Opcode.Class): SSA.Instr;
       VAR
         instr: SSA.Instr;
+        left, right: SSA.Result;
+        typeOfString: Sym.Type;
       BEGIN
+        typeOfString := TypeOfString (op. left. type);
+        left := Expression (op. left);
+        right := Expression (op. right);
+        
+        IF (typeOfString # NIL) THEN     (* string compare *)
+          instr := pb. AddInstr (Opcode.cmpString, Opcode.scSigned32);
+          instr. AddOpnd (s, Opnd.store);
+          instr. AddOpnd (pb. GetTypeRef (typeOfString), Opnd.type);
+          TransferReadDesign (left, instr);
+          TransferReadDesign (right, instr);
+          
+          left := instr;
+          right := pb. GetConstInt (0);
+        END;
+        
         instr := pb. AddInstr (class, Opcode.scBoolean);
-        instr. AddOpnd (Expression (op. left), Opnd.arg);
-        instr. AddOpnd (Expression (op. right), Opnd.arg);
+        instr. AddOpnd (left, Opnd.arg);
+        instr. AddOpnd (right, Opnd.arg);
         RETURN instr
       END AddCompareOp;
 
@@ -842,62 +934,6 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           (cp. param. decl(Sym.VarDecl), s, CalculateSize (pb, cp. param, -1));
       s := instr. AddResult (Result.store);
     END CopyParameter;
-  
-  PROCEDURE CopyString (cp: IR.CopyString): SSA.Instr;
-    VAR
-      instr: SSA.Instr;
-      source, dest, maxLength: SSA.Result;
-      opnd: SSA.Opnd;
-
-    PROCEDURE TypeOf (type: Sym.Type): Sym.Type;
-      BEGIN
-        WITH type: Sym.Array DO
-          RETURN type. elementType;
-        | type: Sym.PredefType DO
-          CASE type. id OF
-          | Predef.charString: RETURN Predef.GetType (Predef.char);
-          | Predef.longcharString: RETURN Predef.GetType (Predef.longchar);
-          END;
-        END;
-      END TypeOf;
-    
-    BEGIN
-      instr := pb. AddInstr (Opcode.copyString, Opcode.scNone);
-
-      source := Expression (cp. source);
-      dest := Expression (cp. dest);
-      maxLength := Expression (cp. maxLength);
-
-      instr. AddOpnd (s, Opnd.store);
-      instr. AddOpnd (pb. GetTypeRef (TypeOf (cp. source. type)), Opnd.type);
-      instr. AddOpnd (pb. GetTypeRef (TypeOf (cp. dest. type)), Opnd.type);
-      IF (cp. source IS IR.Const) THEN
-        (* copying a string constant *)
-        instr. AddOpnd (source, Opnd.readAdr);
-      ELSE
-        opnd := source. instr. opndList;
-        WHILE (opnd # NIL) DO
-          IF (opnd. class = Opnd.readAdr) OR
-             (opnd. class = Opnd.readDesign) THEN
-            instr. AddOpnd (opnd. arg, opnd. class);
-          END;
-          opnd := opnd. nextOpnd;
-        END;
-      END;
-      
-      opnd := dest. instr. opndList;
-      WHILE (opnd # NIL) DO
-        IF (opnd. class = Opnd.readAdr) THEN
-          instr. AddOpnd (opnd. arg, Opnd.writeAdr);
-        ELSIF (opnd. class = Opnd.readDesign) THEN
-          instr. AddOpnd (opnd. arg, Opnd.writeDesign);
-        END;
-        opnd := opnd. nextOpnd;
-      END;
-      instr. AddOpnd (maxLength, Opnd.arg);
-
-      RETURN instr;
-    END CopyString;
   
   BEGIN
     FOR i := 0 TO LEN (statmSeq^)-1 DO
