@@ -120,7 +120,8 @@ command:
 
   cvs diff -u >../mypatch
 
-If "diff -u" does not work use "diff -c" as fallback.
+If "diff -u" does not work use "diff -c" as fallback.  The resulting
+file can be applied with "patch -p0 <file".
 
 
 -- Michael van Acken <mva@users.sf.net>
