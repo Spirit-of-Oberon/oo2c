@@ -22,6 +22,7 @@ static const OOC_UINT32 write_mask = ((1U<<IO__opWrite)|
 
 
 void IO_Select__Init(IO_Select__Selector s) {
+  IO__InitSelector((IO__Selector)s);
   s->sets = RT0__NewBlock(sizeof(struct fdsets));
   s->current = NULL;
 }
