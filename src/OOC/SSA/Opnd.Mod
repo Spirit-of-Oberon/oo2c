@@ -61,7 +61,20 @@ CONST
      @oconst{*OOC:SSA:Opcode.get} or @oconst{*OOC:SSA:Opcode.copy} instruction
      reads its data.  *)
 
-  functionResult* = 6;
+  writeAdr* = 6;
+  (**The address to which a @oconst{*OOC:SSA:Opcode.set} or
+     @oconst{*OOC:SSA:Opcode.copy} instruction writes its data.  *)
+
+  writeDesign* = 7;
+  (**A part of the symbolic representation of the designator to which a
+     @oconst{*OOC:SSA:Opcode.set} or @oconst{*OOC:SSA:Opcode.copy} instruction
+     writes its data.  *)
+
+  sourceValue* = 8;
+  (**Source value of a @oconst{*OOC:SSA:Opcode.set} instruction.  Must
+     be a scalar type.  *)
+
+  functionResult* = 9;
   (**The argument of this operand is a function result.  That is, it is
      defined either directly or indirectly by the expression of a @code{RETURN}
      statement.  *)
@@ -76,6 +89,9 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | procAdr: COPY ("proc-adr", name)
     | readAdr: COPY ("read-adr", name)
     | readDesign: COPY ("read-design", name)
+    | writeAdr: COPY ("write-adr", name)
+    | writeDesign: COPY ("write-design", name)
+    | sourceValue: COPY ("source-value", name)
     | functionResult: COPY ("function-result", name)
     END;
   END GetName;
