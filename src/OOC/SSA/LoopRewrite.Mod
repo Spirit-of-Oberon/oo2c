@@ -21,7 +21,7 @@ MODULE OOC:SSA:LoopRewrite;
 *)
 
 IMPORT
-  SYSTEM, Err, Log,
+  SYSTEM, Err, Log, OOC:SSA:Blocker, IO:StdChannels,
   Object, ADT:Dictionary, ADT:ArrayList,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
@@ -156,6 +156,88 @@ PROCEDURE InitSum(sum: Sum; subclass: Opcode.Subclass; atom: SSA.Result);
 
     sum.replacement := NIL;
   END InitSum;
+
+PROCEDURE Res(res: SSA.Result);
+  VAR
+    ptr: LONGINT;
+  BEGIN
+    ptr := SYSTEM.VAL(LONGINT, res.instr);
+    Err.Hex(ptr, 8);
+    IF (res # res.instr) THEN
+      Err.Char(".");
+      Err.LongInt(res.ResultIndex(), 0);
+    END;
+  END Res;
+
+PROCEDURE LogSum(sum: Sum);
+  PROCEDURE E(plist: PList);
+    VAR
+      i, j, m: LONGINT;
+      instr: SSA.Result;
+    BEGIN
+      IF (plist = zero) THEN
+        Err.Char("0");
+      ELSIF (plist.size = 0) THEN
+        Err.Char("1");
+      ELSE
+        FOR i := 0 TO plist.size-1 DO
+          m := plist.prod[i].magnitude;
+          IF (m >= 0) & (i # 0) THEN
+            Err.Char("+");
+          END;
+          IF (m # 1) THEN
+            Err.LongInt(m, 0);
+            Err.Char("*");
+          END;
+          FOR j := 0 TO LEN(plist.prod[i].factors^)-1 DO
+            instr := plist.prod[i].factors[j].atom;
+            IF (j # 0) THEN Err.Char("*") END;
+            IF (instr = NIL) THEN
+              Err.String("<NIL>");
+            ELSE
+              WITH instr: SSA.Const DO
+                Err.Object(instr.value.ToString());
+              ELSE
+                Res(instr);
+              END;
+            END;
+          END;
+        END;
+      END;
+    END E;
+  
+  BEGIN
+    Err.String("ind(");
+    IF (sum.headFactor # zero) THEN
+      Res(sum.head);
+      Err.Char("*");
+      E(sum.headFactor);
+    END;
+    Err.String(")+li(");
+    E(sum.loopInvariant);
+    Err.String(")+c(");
+    E(sum.constant);
+    Err.String(")+o(");
+    E(sum.others);
+    Err.String(")");
+    Err.Ln;
+  END LogSum;
+
+PROCEDURE DumpSums(pb: SSA.ProcBlock);
+  VAR
+    instr: SSA.Instr;
+  BEGIN
+    instr := pb.instrList;
+    WHILE (instr # NIL) DO
+      IF (instr.info # NIL) THEN
+        Res(instr);
+        Err.String(": ");
+        LogSum(instr.info(Sum));
+      END;
+      instr := instr.nextInstr;
+    END;
+  END DumpSums;
+
 
 PROCEDURE Classify(pb: SSA.ProcBlock; loopStart: SSA.Instr);
   VAR
@@ -444,14 +526,38 @@ PROCEDURE Flatten*(res: SSA.Result);
     instr: SSA.Instr;
     sum: Sum;
     opnd: SSA.Opnd;
-    
+
+  PROCEDURE ScalePList(a: PList; b: LONGINT): PList;
+  (* Calculate a*b.  *)
+    VAR
+      c: PList;
+      i: LONGINT;
+    BEGIN
+      IF (b = 1) THEN
+        RETURN a;
+      ELSIF (a = zero) THEN
+        RETURN zero;
+      ELSE
+        NEW(c);
+        NEW(c.prod, a.size);
+        c.size := a.size;
+        FOR i := 0 TO a.size-1 DO
+          NEW(c.prod[i]);
+          c.prod[i].magnitude := a.prod[i].magnitude*b;
+          c.prod[i].factors := a.prod[i].factors;
+        END;
+        RETURN c;
+      END;
+    END ScalePList;
+  
   PROCEDURE AddPLists(a, b: PList; magnB: LONGINT): PList;
+  (* Calculate a+magnB*b.  *)
     VAR
       p: PList;
       i, ia, ib: LONGINT;
     BEGIN
       IF (a = zero) THEN
-        RETURN b;
+        RETURN ScalePList(b, magnB);
       ELSIF (b = zero) THEN
         RETURN a;
       ELSE
@@ -479,6 +585,7 @@ PROCEDURE Flatten*(res: SSA.Result);
     END AddPLists;
   
   PROCEDURE AddSum(a, b: Sum; magnB: LONGINT): Sum;
+  (* Calculate a+magnB*b.  *)
     VAR
       sum: Sum;
       subclass: Opcode.Subclass;
@@ -494,15 +601,13 @@ PROCEDURE Flatten*(res: SSA.Result);
       InitSum(sum, subclass, NIL);
       IF (a.headFactor = zero) THEN
         sum.head := b.head;
-        sum.headFactor := b.headFactor;
       ELSIF (b.headFactor = zero) THEN
         sum.head := a.head;
-        sum.headFactor := a.headFactor;
       ELSE
         ASSERT(a.head = b.head);
         sum.head := a.head;
-        sum.headFactor := AddPLists(a.headFactor, b.headFactor, magnB);
       END;
+      sum.headFactor := AddPLists(a.headFactor, b.headFactor, magnB);
       sum.loopInvariant := AddPLists(a.loopInvariant, b.loopInvariant, magnB);
       sum.constant := AddPLists(a.constant, b.constant, magnB);
       sum.others := AddPLists(a.others, b.others, magnB);
@@ -882,12 +987,12 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
     
     BEGIN
       RETURN EqualPList(sum1.headFactor, sum2.headFactor) &
-          EqualPList(sum1.loopInvariant, sum2.loopInvariant);
+               EqualPList(sum1.loopInvariant, sum2.loopInvariant);
     END EqualAB;
   
   BEGIN
-    Log.Msg("XXX");
-
+    Err.String("rewriting sum: "); LogSum(sum);
+    
     ic := sum.head.info(InductionCycle);
     rc := ic.rewrittenCycles;
     WHILE (rc # NIL) & ~EqualAB(sum, rc.origin) DO
@@ -1006,86 +1111,11 @@ PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
     END;
   END RewriteUses;
 
-PROCEDURE DumpSums(pb: SSA.ProcBlock);
-  VAR
-    instr: SSA.Instr;
-    sum: Sum;
-
-  PROCEDURE Res(res: SSA.Result);
-    VAR
-      ptr: LONGINT;
-    BEGIN
-      ptr := SYSTEM.VAL(LONGINT, res.instr);
-      Err.Hex(ptr, 8);
-      IF (res # res.instr) THEN
-        Err.Char(".");
-        Err.LongInt(res.ResultIndex(), 0);
-      END;
-    END Res;
-
-  PROCEDURE E(plist: PList);
-    VAR
-      i, j, m: LONGINT;
-      instr: SSA.Result;
-    BEGIN
-      IF (plist = zero) THEN
-        Err.Char("0");
-      ELSIF (plist.size = 0) THEN
-        Err.Char("1");
-      ELSE
-        FOR i := 0 TO plist.size-1 DO
-          m := plist.prod[i].magnitude;
-          IF (m >= 0) & (i # 0) THEN
-            Err.Char("+");
-          END;
-          IF (m # 1) THEN
-            Err.LongInt(m, 0);
-            Err.Char("*");
-          END;
-          FOR j := 0 TO LEN(plist.prod[i].factors^)-1 DO
-            instr := plist.prod[i].factors[j].atom;
-            IF (j # 0) THEN Err.Char("*") END;
-            IF (instr = NIL) THEN
-              Err.String("<NIL>");
-            ELSE
-              WITH instr: SSA.Const DO
-                Err.Object(instr.value.ToString());
-              ELSE
-                Res(instr);
-              END;
-            END;
-          END;
-        END;
-      END;
-    END E;
-  
-  BEGIN
-    instr := pb.instrList;
-    WHILE (instr # NIL) DO
-      IF (instr.info # NIL) THEN
-        sum := instr.info(Sum);
-
-        Res(instr);
-        Err.String(": ind(");
-        IF (sum.headFactor # zero) THEN
-          Res(sum.head);
-          Err.Char("*");
-          E(sum.headFactor);
-        END;
-        Err.String(")+li(");
-        E(sum.loopInvariant);
-        Err.String(")+c(");
-        E(sum.constant);
-        Err.String(")+o(");
-        E(sum.others);
-        Err.String(")");
-        Err.Ln;
-      END;
-      instr := instr.nextInstr;
-    END;
-  END DumpSums;
-
 PROCEDURE Transform*(pb: SSA.ProcBlock);
+(**The rewriting algorithm expects that constant propagation, non-substituting
+   algebraic transformations, and common subexpression have been run.
+   Otherwise, results may be less than optimal, for example because two
+   accesses to a pointer variable are interpreted as two distinct values.  *)
   VAR
     loops: ArrayList.ArrayList;
     loopStart, loopEnd, instr: SSA.Instr;
@@ -1157,6 +1187,7 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
     i := 0;
     WHILE (i # loops.size) DO
       loopStart := loops.array[i](SSA.Instr);
+      Blocker.Write(StdChannels.stderr, pb);
       Log.Ptr("### loopStart", loopStart);
       
       (* classify instructions as loopInvariant, forwardInductive, or bottom
