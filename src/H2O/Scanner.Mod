@@ -65,6 +65,7 @@ CONST
   condIf*=110;
   dotdotdot* = 111;
   hash* = 112;
+  paste* = 113;
 
   (* 200: arithmetic operators *)
 
@@ -432,7 +433,13 @@ BEGIN
       Number(FALSE);
     | '"': GetString('"')
     | "'": GetString("'")
-    | "#": SymOp(hash);
+    | "#": 
+      AcceptChar;
+      IF ch = "#" THEN
+        SymOp(paste);
+      ELSE
+        token.sym := hash;
+      END;
     | ')': SymOp(rbracket);
     | '(': SymOp(lbracket);
     | ']': SymOp(rsqbracket);
