@@ -1088,6 +1088,7 @@ CONST
   cannotCreateInstance = 56;
   abstractWithBegin = 57;
   abstractSuperCall = 58;
+  notDefinedInBaseType = 59;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1272,6 +1273,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Abstract procedure cannot have a BEGIN part"
     | abstractSuperCall:
       t := "Called procedure is declared abstract"
+    | notDefinedInBaseType:
+      t := "Called procedure not defined in base type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2153,12 +2156,16 @@ PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
       (* FIXME... check that we are in a redefinition *)
       design. tbProc := design. recordType. ns(Namespace.Extended).
           GetSuperProcByIndex (design. tbProc. tbProcIndex);
-      design. type := design. tbProc. formalPars;
-      design. isStaticCall := TRUE;
-      IF design.tbProc.isAbstract THEN
-        b.ErrSym(abstractSuperCall, sym);
+      IF (design.tbProc = NIL) THEN
+        RETURN b.ErrExpr(notDefinedInBaseType, sym);
+      ELSE
+        design. type := design. tbProc. formalPars;
+        design. isStaticCall := TRUE;
+        IF design.tbProc.isAbstract THEN
+          b.ErrSym(abstractSuperCall, sym);
+        END;
+        RETURN design;
       END;
-      RETURN design;
     ELSE
       b.CheckFunctionOp(design, sym);
       IF ~(design.type IS Sym.Pointer) THEN

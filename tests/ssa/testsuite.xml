@@ -10,7 +10,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; opRecord6">-->
+  select ="&SetupTestCasesWithOut; opPointer1 opPointer2 opPointer3
+  opPointer4 opPointer5 opPointer6  opPointer7">-->
 
   &TestSetupWithOut;
     
@@ -938,33 +939,27 @@
     <test id="opPointer1" type="reject" file="OpPointer1.Mod">
       Dereference operator applied to non-pointer.
     </test>
-
-<!--
-    <test id="opPointer2" type="reject" relevance="informal" file="OpPointer2.Mod">
+    <test id="opPointer2" type="reject" file="OpPointer2.Mod">
       Dereference operator applied to type-bound procedure that does not exist
       in the base type.
     </test>
--->
-
     <test id="opPointer3" type="run" file="OpPointer3.Mod"
-    output="OpPointer3.Ref">
+      output="OpPointer3.Ref">
       Super call.
     </test>
-
     <test id="opPointer4" type="reject" file="OpPointer4.Mod">
       Dereference operator applied to function result.
     </test>
-
-<!--
     <test id="opPointer5" type="reject" relevance="informal" file="OpPointer5.Mod">
       More than one level of "super" call.
     </test>
--->
-
     <test id="opPointer6" type="error" file="OpPointer6.Mod">
       Dereferencing a <code>NIL</code> pointer.
     </test>
-
+    <test id="opPointer7" type="reject" file="OpPointer7.Mod">
+      Variant of <code>opPointer2</code>, where no base type exists.
+    </test>
+    
     <test id="opTypeGuard1" type="run" file="OpTypeGuard1.Mod"
       output="OpTypeGuard1.Ref">
       Excercise type guards.
@@ -1516,8 +1511,13 @@
     
     <reject-info id="opPointer1" pos=":= %i"
         msg="Expression must be of pointer type"/>
+    <reject-info id="opPointer2" pos="P%^"
+        msg="Called procedure not defined in base type"/>
     <reject-info id="opPointer4" pos="New(1)%"
         msg="Operator may not be applied to function result"/>
+    <reject-info id="opPointer7" pos="P%^"
+        msg="Called procedure not defined in base type"/>
+    
     <reject-info id="opExprCompat2" pos=" %+"
         msg="Incompatible types for operator"/>
     <reject-info id="opExprCompat3" pos=" %+"
