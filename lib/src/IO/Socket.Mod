@@ -1,5 +1,9 @@
 (*	$Id$	*)
-MODULE IO:Socket [FOREIGN "C"; LINK FILE "Socket.c" END];
+MODULE IO:Socket [FOREIGN "C"; LINK FILE "Socket.c"
+  <* IF TARGET_OS="Win32" THEN *> ; LIB "wsock32" <* END *>
+  END];
+(* 
+MODULE IO:Socket [FOREIGN "C"; LINK FILE "Socket.c" END]; *)
 (*  Server and client sockets for TCP streams.
     Copyright (C) 2003  Michael van Acken
 
