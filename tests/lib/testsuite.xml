@@ -469,5 +469,13 @@
       Imports the module <code>Log</code>.  No further tests.
     </test>
     
+    <test id="lib_In" type="run" file="LibIn.Mod">
+      Imports the module <code>In</code>.  No further tests.
+    </test>
+    
+    <test id="lib_Files" type="run" file="LibFiles.Mod">
+      Imports the module <code>Files</code>.  No further tests.
+    </test>
+    
   </testcases>
 </testsuite-ext>
