@@ -62,7 +62,12 @@ TYPE
     libraryVersion: String.String;
     (**When building a library, then version used in the final link step
        is taken from this field.  *)
-
+    checkAllImportsModule: Rep.Module;
+    (* If not NIL, then for all modules but this one the set of imported
+       modules is only checked if they contribute to the module's symbol
+       file.  This can speed up a simple compile run on a module considerably,
+       when only the correctness of the current module is to be checked.  *)
+       
     localRepository: Rep.Repository;
     imports-: ModuleList;
     mInfo: Dictionary.Dictionary;
@@ -135,6 +140,7 @@ PROCEDURE InitRules* (r: Rules);
     r.backend := backendSSAtoC;
     r.libraryName := NIL;
     r.libraryVersion := NIL;
+    r.checkAllImportsModule := NIL;
     
     r.localRepository := NIL;
     r.imports := NIL;
@@ -171,6 +177,11 @@ PROCEDURE (r: Rules) SetLibraryName* (name, version: ARRAY OF CHAR);
     END;
   END SetLibraryName;
 
+PROCEDURE (r: Rules) SetAllImportsModule*(module: Rep.Module);
+  BEGIN
+    r.checkAllImportsModule := module;
+  END SetAllImportsModule;
+
 PROCEDURE (r: Rules) SetErrOut* (ch: Channel.Channel);
   BEGIN
     r.errout := ch;
@@ -180,6 +191,15 @@ PROCEDURE (r: Rules) SetExtensionDict*(dict: Dictionary.Dictionary);
   BEGIN
     r.extensionDict := dict;
   END SetExtensionDict;
+
+PROCEDURE (r: Rules) CheckAllImports(module: Rep.Module): BOOLEAN;
+(**If @code{TRUE}, then an update on a symbol file checks all imports
+   of the module.  Otherwise, only the imported modules that contribute
+    to the module's own symbol file are considered.  *)
+  BEGIN
+    RETURN (r.checkAllImportsModule = NIL) OR
+        (r.checkAllImportsModule = module);
+  END CheckAllImports;
 
 PROCEDURE (r: Rules) GetModuleInfo* (module: Rep.Module): ModuleInfo;
   VAR
@@ -380,7 +400,8 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
                               r.libraryName,
                               ast, symTab, pragmaHistory, errList);
       IF errList.NoErrors() THEN
-        module.SetInterfaceData(symTab, Rep.importsOnly);
+        module.SetInterfaceData(symTab, Rep.importsOnly,
+                                r.CheckAllImports(module));
       END;
       
     ELSE
@@ -391,7 +412,8 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
       IF (res # NIL) THEN
         errList.Append(res);
       ELSE
-        module.SetInterfaceData(symTab, Rep.importsWithFingerprint);
+        module.SetInterfaceData(symTab, Rep.importsWithFingerprint,
+                                r.CheckAllImports(module));
         module.SetFingerprint(symTab.fingerprint);
       END;
     END;
@@ -497,10 +519,10 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       success := (errList = NIL) OR errList.NoErrors();
       IF success THEN
         (* read symbol file that we have just written *)
-        module.SetInterfaceData(NIL, Rep.noInterfaceData);
+        module.SetInterfaceData(NIL, Rep.noInterfaceData, TRUE);
         success := r.GetImports(module);
         IF success THEN
-          module.SetInterfaceData(module.ifData, Rep.completeInterface);
+          module.SetInterfaceData(module.ifData, Rep.completeInterface, TRUE);
         END;
       END;
       r.WriteErrList(errList);
@@ -576,7 +598,8 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
         (* if the file is current, then GetImports() has already read it
            and we only need to complete the data *)
         ASSERT(module.ifData # NIL);
-        module.SetInterfaceData(module. ifData, Rep.completeInterface);
+        module.SetInterfaceData(module. ifData, Rep.completeInterface,
+                                r.CheckAllImports(module));
       ELSE
         isUpToDate := r.CompileModule(module);
       END;

@@ -300,7 +300,9 @@ PROCEDURE (rep: Repository) [ABSTRACT] DumpContent* (w: TextRider.Writer);
   END DumpContent;
 
 
-PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT);
+PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module;
+                                        ifQuality: SHORTINT;
+                                        allImports: BOOLEAN);
   VAR
     count, i: LONGINT;
     item: Sym.Item;
@@ -324,7 +326,7 @@ PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT)
         END;
         item := item.nextNested;
       END;
-      IF (ifData.prunedImports # NIL) THEN
+      IF allImports & (ifData.prunedImports # NIL) THEN
         INC(count, LEN(ifData.prunedImports^));
       END;
       
@@ -343,7 +345,7 @@ PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT)
         item := item.nextNested;
       END;
 
-      IF (ifData.prunedImports # NIL) THEN
+      IF allImports & (ifData.prunedImports # NIL) THEN
         FOR i := 0 TO LEN(ifData.prunedImports^)-1 DO
           mr := ifData.prunedImports[i];
           NEW(name);

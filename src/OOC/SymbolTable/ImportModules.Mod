@@ -89,7 +89,7 @@ PROCEDURE ImportModules* (systemModule: Sym.Module;
             (* when we reach this point, then the imported modules have
                been processed one way or other, and we must make sure that
                we only see exactly this processed data further on *)
-            m.SetInterfaceData(symTab, Repository.completeInterface);
+            m.SetInterfaceData(symTab, Repository.completeInterface, TRUE);
             m.SetFingerprint(symTab.fingerprint);
             import. SetExternalSymTab (symTab)
           END

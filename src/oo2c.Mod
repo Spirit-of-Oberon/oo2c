@@ -27,6 +27,7 @@ VAR
   pkg, pkgInfo: Package.Package;
   ok, forceUpdateRepository, doInstall: BOOLEAN;
   option: Options.Option;
+  module: Rep.Module;
   
 PROCEDURE NewConfig;
   BEGIN
@@ -527,8 +528,14 @@ BEGIN
             Out.String(option.value(StringValue.Value).string^);
           END;
           Out.Ln;
+          
         ELSE
-          ok := makeRules.Update(GetModule(arg^), mode);
+          module := GetModule(arg^);
+          IF (mode = Rep.modCodeFileC) THEN
+            makeRules.SetAllImportsModule(module);
+          END;
+          ok := makeRules.Update(module, mode);
+          makeRules.SetAllImportsModule(NIL);
         END;
         INC(i);
       END;
