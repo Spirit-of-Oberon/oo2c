@@ -233,10 +233,8 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
          fpars(DeclWriter.Pointer). base);
 
     | item: Sym.ConstDecl DO
-      IF (item. value # NIL) THEN
-        RETURN w. NewDefine (Naming.NameOfDeclaration (item),
-                             item. value);
-      END;
+      RETURN w. NewDefine (Naming.NameOfDeclaration (item),
+                           item. value);
       
     | item: Sym.VarDecl DO
       tq := DeclWriter.tqNone;
