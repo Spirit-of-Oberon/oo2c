@@ -258,12 +258,12 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
       END
     END GetBool;
 
-  PROCEDURE GetInt (value: Value): IntegerValue.Type;
+  PROCEDURE GetInt (value: Value): LONGINT;
     BEGIN
       RETURN value. value(IntegerValue.Value). integer
     END GetInt;
 
-  PROCEDURE GetString (value: Value): StringValue.Type;
+  PROCEDURE GetString (value: Value): STRING;
     BEGIN
       RETURN value. value(StringValue.Value). string
     END GetString;
@@ -273,7 +273,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
       right: Value;
       pos: BasicList.Symbol;
       op: Symbol.Id;
-      leftString, rightString: StringValue.Type;
+      leftString, rightString: STRING;
       cmp: LONGINT;
       res: BOOLEAN;
       

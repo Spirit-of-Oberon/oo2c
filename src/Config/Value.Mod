@@ -5,10 +5,6 @@ IMPORT
 
 
 TYPE
-  Char* = CHAR;
-  String* = ARRAY OF Char;
-
-TYPE
   Value* = POINTER TO ValueDesc;
   ValueDesc* = RECORD [ABSTRACT]
     (Object.ObjectDesc)

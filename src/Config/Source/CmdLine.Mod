@@ -204,7 +204,7 @@ PROCEDURE New* (): CmdLine;
   END New;
 
 PROCEDURE (cmdLine: CmdLine) AddOptionTemplate* (names: ARRAY OF CHAR;
-                                 transformation: Value.String): OptionTemplate;
+                                transformation: ARRAY OF CHAR): OptionTemplate;
 (**Registers a command line option for the section under the names listed in
    @oparam{names}.  This arguments is a list of names separated by commas
    @samp{,}.  The names can contain any character but @code{0X} and @samp{,}.

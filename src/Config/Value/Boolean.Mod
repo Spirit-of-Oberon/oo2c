@@ -5,15 +5,14 @@ IMPORT
 
 
 TYPE
-  Type* = BOOLEAN;
   Value* = POINTER TO ValueDesc;
   ValueDesc = RECORD
     (ConfigValue.ValueDesc)
-    boolean-: Type;
+    boolean-: BOOLEAN;
   END;
 
 
-PROCEDURE New* (boolean: Type): Value;
+PROCEDURE New* (boolean: BOOLEAN): Value;
   VAR
     s: Value;
   BEGIN

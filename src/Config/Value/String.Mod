@@ -5,11 +5,10 @@ IMPORT
 
 
 TYPE
-  Type* = STRING;
   Value* = POINTER TO ValueDesc;
   ValueDesc = RECORD
     (ConfigValue.ValueDesc)
-    string-: Type;
+    string-: STRING;
   END;
 
 PROCEDURE New* (str: Object.String8): Value;

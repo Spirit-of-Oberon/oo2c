@@ -5,15 +5,14 @@ IMPORT
 
 
 TYPE
-  Type* = LONGINT;
   Value* = POINTER TO ValueDesc;
   ValueDesc = RECORD
     (ConfigValue.ValueDesc)
-    integer-: Type;
+    integer-: LONGINT;
   END;
 
 
-PROCEDURE New* (int: Type): Value;
+PROCEDURE New* (int: LONGINT): Value;
   VAR
     s: Value;
   BEGIN
@@ -28,7 +27,7 @@ RAISES Exception.ParseError;
     strip: STRING;
     str8: Object.String8;
     chars: Object.CharsLatin1;
-    int: Type;
+    int: LONGINT;
     res: IntStr.ConvResults;
     i, start: LONGINT;
   BEGIN
