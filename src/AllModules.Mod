@@ -3,13 +3,13 @@ MODULE AllModules;
 IMPORT
   (* Make Framework
      ---------------------------------------------------------------------- *)
-  Make,
-  Make:Command:Target,
-  Make:Edge:TimeDep,
-  Make:Entity:Group,
-  Make:Entity:Resource,
+  OOC:Make,
+  OOC:Make:TranslateToC,
+  OOC:Make:WriteMainFileC,
+  OOC:Make:TranslateToIA32,
+  OOC:Make:WriteMainFileAssembler,
+  OOC:Make:LinkProgramC,
   
-
   (* Boxed Versions of Builtin Types
      ---------------------------------------------------------------------- *)
   Language,
@@ -142,9 +142,6 @@ IMPORT
        locate a module's files and to create new files in it.  *)
   RepFileSystem := OOC:Repository:FileSystem,
     (* A repository implementation using the local file system.  *)
-  OOC:Repository:GetImports,
-    (* Given a module, add all modules that are imported by it to the
-       import list in the module's repository entry.  *)
   
   OOC:Config:Pragmas,
   OOC:Config:Pragmas:StdPragmas,
@@ -157,19 +154,6 @@ IMPORT
        system based repository.  *)
   OOC:Config:CCompiler,
   OOC:Config:Assembler,
-  
-  OOC:Make:Command:AssembleFile,
-  OOC:Make:Command:CompileFileC,
-  OOC:Make:Command:CompileModule,
-  OOC:Make:Command:InterfaceDescr,
-  OOC:Make:Command:InterfaceHTML,
-  OOC:Make:Command:InterfaceXML,
-  OOC:Make:Command:LinkProgramC,
-  OOC:Make:Command:TranslateToC,
-  OOC:Make:Command:WriteMainFileC,
-  OOC:Make:Command:WriteMainFileAssembler,
-  OOC:Make:Entity:ModuleFile,
-  OOC:Make:Entity:UsageData,
   
   OOC:Auxiliary:ParseModule,
 
@@ -263,18 +247,13 @@ IMPORT
   SSAXML := OOC:SSA:XML,
   (* Writes out the SSA representation of a procedure body as an XML
      document.  *)
-
-  OOC:SSA:Inspector,
-  (* Similar to the XML module above, this module converts SSA code into a
-     human readable format: it renders SSA code as HTML and serves it through a
-     HTTP server.  *)
-
+  
 
   (* Test Programs
      ---------------------------------------------------------------------- *)
   TestScanner, TestParser, TestSymTab, TestConfigSections,
   TestConfigCmdLine, TestConfigEnv, TestConfigSimple, TestInterfaceGen,
-  TestTexinfo, TestMake, TestCompile,
+  TestTexinfo, TestCompile,
   
   RunTests;
   (* Implements the XML based test framework.  Used for language
