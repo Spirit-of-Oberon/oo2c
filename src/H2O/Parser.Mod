@@ -77,10 +77,10 @@ VAR
   token : Scanner.Token;
   options : SET;
   parser : Parser;
-  scope, types : T.Object;
+  scope, types, typedefs : T.Object;
   depend : ArrayList.ArrayList;
 
-PROCEDURE FindType(name : STRING) : T.Type;
+PROCEDURE FindType(types : T.Object; name : STRING) : T.Type;
 VAR obj : T.Object;
 BEGIN
   IF T.FindObject(types, name, obj) THEN
@@ -118,7 +118,7 @@ BEGIN
   END;
 END Install;
 
-PROCEDURE InstallType(name : STRING; new : T.Type);
+PROCEDURE InstallType(VAR types : T.Object; name : STRING; new : T.Type);
 BEGIN
   Install(types, "Type", name, new);
   new.module := process.in.module;
@@ -132,7 +132,7 @@ BEGIN
   new.name := name;
 
   IF name # NIL THEN
-    InstallType(name, new);
+    InstallType(types, name, new);
   END;
   RETURN new;
 END NewNamedType;
@@ -163,7 +163,7 @@ BEGIN
     enum, void, struct, union:
     RETURN TRUE;
   | Scanner.ident:
-    RETURN FindType(token.name) # NIL;
+    RETURN FindType(typedefs, token.name) # NIL;
   ELSE
     RETURN FALSE;
   END;
@@ -269,7 +269,7 @@ VAR
       END;
       Expect(Scanner.rbrace);
     ELSIF tag # NIL THEN
-      t := FindType(tag);
+      t := FindType(types, tag);
       IF t = NIL THEN
         (* probably didn't mean to omit the declaration *)
         err.ErrorParam("Unknown enumeration `$0'", tag, NIL, NIL);
@@ -340,7 +340,7 @@ VAR
       FieldList(t);
       Expect(Scanner.rbrace);
     ELSIF tag # NIL THEN
-      t := FindType(tag);
+      t := FindType(types, tag);
       IF t = NIL THEN
         t := NewNamedType(class, tag);
       ELSIF t.class # class THEN
@@ -383,11 +383,11 @@ compiler, but it doesn't strictly follow the language definition. *)
     | enum:
       type := enum; t := EnumDecl();
     | struct:
-      type := struct; t := StructDecl(T.tStruct);
+      type := struct; t := StructDecl(T.tStruct); EXIT;
     | union:
-      type := union; t := StructDecl(T.tUnion);
+      type := union; t := StructDecl(T.tUnion); EXIT;
     | Scanner.ident:
-      s := FindType(token.name);
+      s := FindType(typedefs, token.name);
       IF s # NIL THEN 
         t := s; GetSym; type := typedef;
       END;
@@ -1110,7 +1110,7 @@ BEGIN
     END;
     IF class = T.scTypedef THEN
       t := T.NewType(T.tName, type, type.size, {}); t.name := name;
-      InstallType(name, t);
+      InstallType(typedefs, name, t);
     ELSE
       Install(scope, "Object", name, type);
     END;
@@ -1288,7 +1288,7 @@ BEGIN
   AddKeyWords;
   AddOperators;
   options := {}; token := Scanner.NewToken(Scanner.endFile);
-  types := NIL; scope := NIL;
+  types := NIL; typedefs := NIL; scope := NIL;
   depend := ArrayList.New(10);
 END H2O:Parser.
 
