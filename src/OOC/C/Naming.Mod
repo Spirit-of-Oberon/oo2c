@@ -93,4 +93,21 @@ PROCEDURE NameOfType* (type: Sym.Type): String.String;
     RETURN NameOfDeclaration (type. namingDecl);
   END NameOfType;
 
+PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
+(**@precond
+   @samp{type. namingDecl # NIL}
+   @end precond *)
+  VAR
+    name: String.String;
+    str: ARRAY 32 OF CHAR;
+  BEGIN
+    name := String.New ("_td_");
+    IF (type. namingDecl = NIL) THEN
+      IntStr.IntToStr (type. position. pos, str);
+      RETURN name. Concat (String.New (str));
+    ELSE
+      RETURN name. Concat (NameOfType (type));
+    END;
+  END NameOfTypeDescriptor;
+
 END OOC:C:Naming.

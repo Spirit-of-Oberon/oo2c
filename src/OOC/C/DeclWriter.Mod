@@ -236,7 +236,7 @@ TYPE
        task of writing C type expressions.  *)
     ch: Channel.Channel;
     baseURI: URI.HierarchicalURI;
-    textWriter: TextRider.Writer;
+    textWriter-: TextRider.Writer;
     
     includes: ArrayList.ArrayList;
     declarations: ArrayList.ArrayList;
@@ -521,10 +521,14 @@ PROCEDURE (w: Writer) WriteDeclarationList*;
   PROCEDURE WriteDeclarations;
     VAR
       i: LONGINT;
+      d: Declaration;
     BEGIN
       FOR i := 0 TO w. declarations. Size()-1 DO
-        w. WriteDeclaration (w. declarations. array[i](Declaration));
-        w. WriteChar (";");
+        d := w. declarations. array[i](Declaration);
+        w. WriteDeclaration (d);
+        IF ~(d IS Define) THEN
+          w. WriteChar (";");
+        END;
         w. WriteLn
       END
     END WriteDeclarations;
