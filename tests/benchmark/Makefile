@@ -17,7 +17,7 @@ CCC = gcc $(CCFLAGS) -O2 -S -I$(LIB)/src -I$(LIB)/obj -Iwd/obj
 CCC1 = gcc $(CCFLAGS) -O2 -S -I/usr/local/lib/oo2c/lib -I/usr/local/lib/oo2c/obj -Iwd1/obj
 
 # benchmarks to test for ASM output
-BENCHMARKS = FFT Sort
+BENCHMARKS = FFT Sort Array
 
 test: compile
 	wd/exe/Benchmark --all --normalise
