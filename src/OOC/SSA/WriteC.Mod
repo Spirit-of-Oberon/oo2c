@@ -1440,6 +1440,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
           w. Indent (-1);
           nested := nested. nextDom; INC (i);
         END;
+        ASSERT (nested. nextDom = NIL);
         w. Newline;
         w. WriteString ("}");
         registeredGoto := NIL;
@@ -1498,8 +1499,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     PROCEDURE Chain (VAR jump: Schedule.Jump);
       BEGIN
         WHILE w. EmptyBlock (jump. dest) & (jump. dest # jump. src) DO
-          Schedule.SetJump (jump, jump. src,
-                            jump. dest(Schedule.JumpBlock). jump. dest);
+          Schedule.ChangeJumpTarget (jump, 
+                                     jump.dest(Schedule.JumpBlock).jump.dest);
         END;
       END Chain;
     
