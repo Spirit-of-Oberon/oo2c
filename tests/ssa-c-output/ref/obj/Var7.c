@@ -7,6 +7,7 @@ static OOC_INT16 Var7__Len(OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
   OOC_PUSH_VPAR_STACK
 
   i0 = str_0d;
+  i0 = i0*1;
   OOC_ALLOCATE_VPAR(str,OOC_CHAR8 ,i0)
   OOC_INITIALIZE_VPAR(str__ref,str,OOC_CHAR8 ,i0)
   i0=-1;

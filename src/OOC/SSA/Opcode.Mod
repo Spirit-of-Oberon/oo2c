@@ -318,10 +318,7 @@ CONST
      The current value of the @var{store}.
 
      @item *OOC:SSA.Opnd.arg
-     If the parameter is an open array, then this argument holds the total
-     number of elements of the array.  This is the product of the length of all
-     open array dimensions.  For all other parameter type, this operand is
-     omitted.
+     The size of the parameter in bytes.
      @end table
 
      The result of the instruction is the address of the new copy.  An

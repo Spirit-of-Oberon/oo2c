@@ -464,11 +464,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
           w. TypeRef (varDecl. type);
         END;
         w. WriteString (",");
-        IF (size = NIL) THEN
-          w. WriteString ("1")
-        ELSE
-          w. Ref (size)
-        END;
+        w. Ref (size);
         w. WriteString (")");
       END WriteTypeAndSize;
     

@@ -953,9 +953,7 @@ PROCEDURE (pb: ProcBlock) AddCopyParameter*
   BEGIN
     address := NewAddress (Opcode.copyParameter, param);
     address. AddOpnd (storeIn, OpndClass.store);
-    IF (size # NIL) THEN
-      address. AddOpnd (size, OpndClass.arg);
-    END;
+    address. AddOpnd (size, OpndClass.arg);
     AppendInstr (pb, address);
     pb. SetAddress (param, address);
     RETURN address
