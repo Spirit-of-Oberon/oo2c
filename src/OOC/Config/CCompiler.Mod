@@ -53,7 +53,7 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
   BEGIN
     IF forLibrary THEN
       COPY (libtool. value(StringValue.Value). string^, cmd);
-      Strings.Append (" ", cmd);
+      Strings.Append (" --mode=compile ", cmd);
     ELSE
       COPY("", cmd);
     END;
@@ -94,7 +94,7 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
     (* always use the libtool wrapper, so that we can add .la files to
        the linker argument line *)
     COPY (libtool. value(StringValue.Value). string^, cmd);
-    Strings.Append (" ", cmd);
+    Strings.Append (" --mode=link ", cmd);
     
     Strings.Append (cc. value(StringValue.Value). string^, cmd);
     Strings.Append (" -o ", cmd);
