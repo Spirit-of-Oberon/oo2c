@@ -34,7 +34,11 @@ CONST
 
 VAR
   dtdSystemId: URI.URI;
-
+  absoluteDtdSystemId*: BOOLEAN;
+  (**If @code{TRUE} (which is the default), then write the system ID of the
+     XML interface description document as an absolute path.  Otherwise,
+     write a relative one.  *)
+  
 PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
   BEGIN
     IF (dtdSystemId = NIL) THEN
@@ -600,7 +604,7 @@ RAISES IO.Error;
     w. WriteTextDecl ("1.0", "no");
     w. NewLine;
     w. Write8 ("<!DOCTYPE interface-description SYSTEM '");
-    w. WriteURI (GetSystemId (repositories), TRUE);
+    w. WriteURI (GetSystemId (repositories), absoluteDtdSystemId);
     w. Write8 ("'>");
 (*    Sym.Prune (module, Exports.GetExports (module)); (* ... *)*)
     (* note: prune doesn't work if not-exported declarations are targets
@@ -636,5 +640,6 @@ RAISES IO.Error;
   END Write;
 
 BEGIN
-  dtdSystemId := NIL
+  dtdSystemId := NIL;
+  absoluteDtdSystemId := TRUE;
 END OOC:SymbolTable:InterfaceDescr.

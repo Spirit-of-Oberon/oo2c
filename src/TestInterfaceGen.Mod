@@ -4,7 +4,7 @@ IMPORT
   StdChannels, Out, Err, Object, ADT:Dictionary, ADT:ArrayList,
   Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
-  StringValue := Config:Value:String,
+  StringValue := Config:Value:String, OOC:SymbolTable:InterfaceDescr,
   OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable, OOC:Make;
   
 
@@ -89,6 +89,8 @@ PROCEDURE CollectExtensions (moduleList: ARRAY OF Rep.Module): Dictionary.Dictio
   END CollectExtensions;
 
 BEGIN
+  InterfaceDescr.absoluteDtdSystemId := FALSE;
+  
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);
