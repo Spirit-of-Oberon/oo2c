@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:Entity:ModuleFile;
 (*  Implements `Make' entities for various files associated with modules.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -26,7 +26,7 @@ IMPORT
   URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
   ConfigOOC := OOC:Auxiliary:Config, OOC:Error,
-  OOC:Repository, OOC:Repository:GetImports;
+  OOC:Repository, OOC:Repository:GetImports, Sym := OOC:SymbolTable;
 
 
 
@@ -119,9 +119,18 @@ PROCEDURE Exists (entity: Entity; fileId: Repository.FileId): BOOLEAN;
     uri: URI.URI;
     path: Repository.URIBuffer;
   BEGIN
-    uri := entity. module. GetURI (fileId);
-    uri(File.URI). GetPath (path);
-    RETURN Files.Exists (path)
+    IF (fileId = Repository.modCodeFileC) &
+       (entity. module. symbolTable # NIL) &  (* have no symbol file yet *)
+       (entity. module. symbolTable. class # Sym.mcStandard) THEN
+      (* assume that for INTERFACE & FOREIGN modules the code file always
+         exists; if it does not, we are not able to build it anyway, because
+         it is always provided by the user *)
+      RETURN TRUE;
+    ELSE
+      uri := entity. module. GetURI (fileId);
+      uri(File.URI). GetPath (path);
+      RETURN Files.Exists (path)
+    END;
   END Exists;
 
 PROCEDURE (entity: Entity) Exists* (): BOOLEAN;
@@ -479,12 +488,12 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       
     | Repository.modDeclFileC:
       (* For the declaration file to be up to date, it must be more recent than
-         the source code file.  The file is also dependent on all files that
-         are included by it, because these files must exist before it can be
-         used.  *)
+         the symbol file, which in turn must be more recent than the source
+         code file.  The file is also dependent on all files that are included
+         by it, because these files must exist before it can be used.  *)
       IF (entity. state = Make.entityUndiscovered) THEN
         srcEntity := GetEntity (entity. context, entity. module,
-                                Repository.modModuleSource);
+                                Repository.modSymbolFile);
         AddTimeDep (entity. context, entity, srcEntity);
         
         entity. AddAncestor (GetEntity (entity. context, entity. module,
@@ -497,11 +506,12 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       END
       
     | Repository.modCodeFileC:
-      (* The C code of a module must be more recent than the source code.  
-         It also depends on the existence of the declaration file.  *)
+      (* The C code of a module must be more recent than the symbol file, which
+         in turn must be more recent than the source code.  It also depends on
+         the existence of the declaration file.  *)
       IF (entity. state = Make.entityUndiscovered) THEN
         srcEntity := GetEntity (entity. context, entity. module,
-                                Repository.modModuleSource);
+                                Repository.modSymbolFile);
         AddTimeDep (entity. context, entity, srcEntity);
         srcEntity := GetEntity (entity. context, entity. module,
                                 Repository.modDeclFileC);
