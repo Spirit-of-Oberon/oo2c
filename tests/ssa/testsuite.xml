@@ -15,7 +15,7 @@
   generic42 generic43 generic44 generic45 generic46 generic47">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic50">-->
+  select ="&SetupTestCasesWithOut; generic1 generic52">-->
 
   &TestSetupWithOut;
     
@@ -1497,6 +1497,10 @@
       calling it on the variable's type bound.
     </test>
     <!-- generic51 is in tests/ssa-c-output/ -->
+    <test id="generic52" type="accept" file="Generic52.Mod">
+      Qualified pointer typs and type variables are assignment
+      compatible to <code>SYSTEM.PTR</code>.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
