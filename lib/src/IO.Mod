@@ -181,7 +181,7 @@ TYPE
     (ErrorDesc) 
   END;
   ProtocolError* = POINTER TO ProtocolErrorDesc;
-  ProtocolErrorDesc = RECORD
+  ProtocolErrorDesc* = RECORD
   (**Raised if malformed data is received from the remote side of a
      conversation.  This is @emph{not} used for responses that indicate failure
      to process a request.  An example for a protocol error is an NNTP response
