@@ -315,7 +315,7 @@ Else returns nil."
 
 
 (defconst ob2-operator-re
- (concat "\\([=#+/&-]\\|<=\\|>=\\|[^<]*\\|[^*]>\\|<[^*]\\|"
+ (concat "\\([=#+/&-]\\|<=\\|>=\\|[^<]\\*\\|[^*]>\\|<[^*]\\|"
          (regexp-opt '("DIV" "IN" "IS" "MOD" "OR") 'words)
          "\\)")
  "Regular expression matching any Oberon-2 operator.")
