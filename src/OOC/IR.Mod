@@ -337,6 +337,9 @@ TYPE
     variant-: Variant;
     array-: Expression;
     dim-: LONGINT;
+    arrayVariable-: Expression;
+    (**The array variable whose length is taken.  This may differ from the
+       array in @ofield{array} for expressions like @samp{LEN(a[0])}.  *)
   END;
 
 TYPE
@@ -637,6 +640,9 @@ TYPE
 
        @strong{Note}: A function can @emph{only} return this value for a node,
        if it also emits an error message.  *)
+
+    lastError: Error.Msg;
+    (* Holds the last error message produced by @oproc{Builder.ErrSym}.  *)
   END;
 
 TYPE
@@ -674,7 +680,9 @@ CONST
   rangeError* = 10;
   exprByRef* = 11;
   incompatibleActualParam* = 12;
-
+  wrongNumberOfArguments = 13;
+  invalidIntegerConst = 14;
+  
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -714,6 +722,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expression may not be passed by reference"
     | incompatibleActualParam:
       t := "Type of actual parameter is not compatible with formal type"
+    | wrongNumberOfArguments:
+      t := "Wrong number of arguments"
+    | invalidIntegerConst:
+      t := "This must be an integer constant in the range `${start} <= x < ${end}'"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -748,13 +760,14 @@ PROCEDURE (c : ConstFold) TryConstFold* (expr: Expression): Expression;
 
 PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
   VAR
-    lastError: Error.Msg;
+    e: Error.Msg;
   BEGIN
-    lastError := Error.New (irContext, code);
-    lastError. SetIntAttrib ("pos", sym. pos);
-    lastError. SetIntAttrib ("line", sym. line);
-    lastError. SetIntAttrib ("column", sym. column);
-    b. errList. Append (lastError)
+    e := Error.New (irContext, code);
+    e. SetIntAttrib ("pos", sym. pos);
+    e. SetIntAttrib ("line", sym. line);
+    e. SetIntAttrib ("column", sym. column);
+    b. errList. Append (e);
+    b. lastError := e;
   END ErrSym;
 
 PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Expression;
@@ -1117,34 +1130,42 @@ PROCEDURE (index: Index) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitLen (len: Len; sym: Symbol; variant: Variant;
-                   array: Expression; dim: LONGINT);
+                   array, arrayVariable: Expression; dim: LONGINT);
   BEGIN
     InitOperator (len, sym, Predef.GetType (Predef.lengthType));
     len. variant := variant;
     len. array := array;
+    len. arrayVariable := arrayVariable;
     len. dim := dim;
   END InitLen;
 
-PROCEDURE (b: Builder) NewLen* (sym: Symbol;
-                                array: Expression; dim: LONGINT): Expression;
+PROCEDURE (b: Builder) NewLen* (sym: Symbol; array: Expression;
+                                dim: LONGINT): Expression;
   VAR
     len: Len;
     variant: Variant;
+    arrayVariable: Expression;
   BEGIN
     NEW (len);
 
-    IF (array. type IS Sym.PredefType) THEN
+    arrayVariable := array;
+    WHILE (arrayVariable IS Index) DO
+      arrayVariable := arrayVariable(Index). array;
+      INC (dim);
+    END;
+    
+    IF (arrayVariable. type IS Sym.PredefType) THEN
       variant := lenStringConst
-    ELSIF (array. type IS Sym.Array) &
-          ~array. type(Sym.Array). isOpenArray THEN
+    ELSIF (arrayVariable. type IS Sym.Array) &
+          (dim >= arrayVariable. type(Sym.Array). GetOpenDimensions()) THEN
       variant := lenFixedArray
-    ELSIF (array IS Var) THEN
+    ELSIF (arrayVariable IS Var) THEN
       variant := lenOpenArrayParam
     ELSE
       variant := lenOpenArrayHeap
     END;
-    
-    InitLen (len, sym, variant, array, dim);
+
+    InitLen (len, sym, variant, array, arrayVariable, dim);
     RETURN len;
   END NewLen;
 
@@ -1980,6 +2001,7 @@ PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Err
     b. errList := errList;
     b. typeRules := typeRules;
     b. errorExpr := NewConst (NIL, Predef.GetType(Predef.void), Boolean.New (FALSE));
+    b. lastError := NIL;
     b. constFold := fold;
     fold. builder := b;
   END InitBuilder;
@@ -2241,10 +2263,40 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     END;
   END NewOperator;
 
+PROCEDURE (b: Builder) CheckIntConst (expr: Expression; start, end: LONGINT): LONGINT;
+(* Generates an error if `expr' is not an integer constant on the range
+   `start <= expr < end'.  On success, the value of the constant is returned,
+   and `start' otherwise.
+
+   Note: If `start >= end', the error message is discarded, because it would
+   be meaningless.  In this case, it is assumed that something else went wrong
+   and that the caller handles this case.  *)
+  VAR
+    v: LONGINT;
+  BEGIN
+    WITH expr: Const DO
+      IF b. typeRules. IsIntegerType (expr. type) THEN
+        v := expr. value(Integer.Value). ToLInt();
+        IF (start <= v) & (v < end) THEN
+          RETURN v;
+        END;
+      END;
+    END;
+
+    IF (start < end) THEN  (* only write error if it makes sense ;-) *)
+      b. ErrSym (invalidIntegerConst, expr. sym);
+      b. lastError. SetIntAttrib ("start", start);
+      b. lastError. SetIntAttrib ("end", end);
+    END;
+    
+    RETURN start;
+  END CheckIntConst;
+
 PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList): Expression;
   VAR
     call: Call;
     targetType: Sym.PredefId;
+    dim: LONGINT;
 
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
                                       expr: Expression;
@@ -2340,6 +2392,13 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       END;
       RETURN exprList
     END TransformArgs;
+
+  PROCEDURE CheckNumberOfArguments (min, max: LONGINT);
+    BEGIN
+      IF (LEN (arguments^) < min) OR (LEN (arguments^) > max) THEN
+        b. ErrSym (wrongNumberOfArguments, design. sym);
+      END;
+    END CheckNumberOfArguments;
   
   BEGIN
     WITH design: PredefProc DO
@@ -2351,8 +2410,14 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
 
       (* predefined functions *)
       | Predef.len:
-        ASSERT (LEN (arguments^) = 1);   (* FIXME... needs error msg *)
-        RETURN b. NewLen (design. sym, arguments[0], 0)
+        CheckNumberOfArguments (1, 2);
+        IF (LEN (arguments^) # 2) THEN
+          dim := 0;
+        ELSE  (* LEN (arguments^) = 2 *)
+          dim := b. CheckIntConst (arguments[1], 0,
+                                   arguments[0]. type. ArrayDimensions());
+        END;
+        RETURN b. NewLen (design. sym, arguments[0], dim);
         
       | Predef.size:
         ASSERT (LEN (arguments^) = 1);   (* FIXME... needs error msg *)

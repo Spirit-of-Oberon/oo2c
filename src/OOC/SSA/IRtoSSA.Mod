@@ -162,7 +162,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           RETURN pb. GetConstInt (expr. array(IR.Const). value(String8.Value). value. length+1);
 
         | IR.lenOpenArrayParam:
-          res := Expression (expr. array);
+          res := Expression (expr. arrayVariable);
           RETURN pb. AddGetLengthInstr (res(SSA.Instr),
                                         pb. GetConstInt (expr. dim));
         END;
@@ -200,8 +200,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           instr := pb. AddInstr (Opcode.subtract,
                                  Opcode.TypeToSubclass (expr. left. type));
           
+        | IR.arithMul:
+          instr := pb. AddInstr (Opcode.multiply,
+                                 Opcode.TypeToSubclass (expr. left. type));
+          
         ELSE
-          Log.Type("++ Unknown variant of BinaryArith in Expression", expr);
+          Log.Int("++ Unknown variant of BinaryArith in Expression",
+                  expr. variant);
           ASSERT (FALSE);
         END;
         instr. AddOpnd (Expression (expr. left), Opnd.arg);

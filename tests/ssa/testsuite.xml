@@ -13,7 +13,7 @@
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
   designator1 function6 loop1 loop2 loop3 loop4 varpar1
-  ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1 array1 array2">
+  ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1 len1 array1 array2">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -131,6 +131,14 @@
     
     <test id="cap1" type="run" file="Cap1.Mod" output="Cap1.Ref">
       Predefined function <code>CAP</code> for some ASCII characters.
+    </test>
+    
+    <test id="len1" type="run" file="Len1.Mod" output="Len1.Ref">
+      Calling <code>LEN</code> on a 2-dimensional array.  All legal
+      argument variants are excercised: without dimension, with
+      dimension, and with partially indexed array.  Three different
+      kinds of array variables are used: global array variable, open
+      array parameter, and partially open array parameter.
     </test>
   </testcases>
   

@@ -146,14 +146,18 @@ PROCEDURE (c: ConstFold) VisitAdr* (adr: IR.Adr);
   END VisitAdr;
 
 PROCEDURE (c: ConstFold) VisitLen* (len: IR.Len);
-  VAR length : LONGINT;
+  VAR
+    length: LONGINT;
+    type: Sym.Type;
   BEGIN
-    (* FIXME! Implement lenFixedArray, but how do we get its length? . *)
     CASE len. variant OF
     | IR.lenStringConst:
       length := len.array(IR.Const).value(String8.Value).value.length+1;
+      
     | IR.lenFixedArray:
-      length := len.array.type(Sym.Array).length;
+      type := len. arrayVariable. type(Sym.Array). GetNthElementType (len.dim);
+      length := type(Sym.Array).length;
+      
     | IR.lenOpenArrayParam, IR.lenOpenArrayHeap:
       c.result := NIL; RETURN;
     END;
