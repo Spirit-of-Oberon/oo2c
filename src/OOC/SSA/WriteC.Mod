@@ -24,10 +24,9 @@ IMPORT
   IntStr, Out, StdChannels, Strings, StringSearch,
   ADT:Object, ADT:String, ADT:Dictionary, OOC:Auxiliary:Config,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
-  OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
+  OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
-  OOC:SSA:Blocker,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
   OOC:Make:Command:TranslateToC;
 
@@ -47,6 +46,9 @@ TYPE
     config: Config.Config;
     inspectProc: StringSearch.Matcher;
     inspectStage: StringSearch.Matcher;
+    nonLocalAccess: Dictionary.Dictionary; (* of Sym.VarDecl *)
+    (* The keys of this dictionary are variables that are accessed from
+       a nested procedure within the procedure in which they are declared.  *)
   END;
 
 TYPE
@@ -61,9 +63,48 @@ TYPE
     swapHelperVars: LONGINT;
   END;
 
+TYPE
+  Visitor* = POINTER TO VisitorDesc;
+  VisitorDesc = RECORD
+    (VisitAll.VisitorDesc)
+    currentProcedure: Sym.ProcDecl;
+    nonLocalAccess: Dictionary.Dictionary; (* of Sym.VarDecl *)
+  END;
+  
 CONST
   enableDebugOutput = FALSE;
   
+
+PROCEDURE NewVisitor (): Visitor;
+  VAR
+    v: Visitor;
+  BEGIN
+    NEW (v);
+    VisitAll.InitVisitor (v);
+    v. currentProcedure := NIL;
+    v. nonLocalAccess := Dictionary.New();
+    RETURN v
+  END NewVisitor;
+
+PROCEDURE (v: Visitor) VisitProcedure* (procedure: IR.Procedure);
+  BEGIN
+    v. currentProcedure := procedure. decl;
+    v. VisitProcedure^ (procedure);
+    v. currentProcedure := NIL;
+  END VisitProcedure;
+
+PROCEDURE (v: Visitor) VisitVar* (var: IR.Var);
+  VAR
+    proc: Sym.ProcDecl;
+  BEGIN
+    proc := var. decl. Procedure();
+    IF (proc # v. currentProcedure) THEN
+      v. nonLocalAccess. Set (var. decl, proc);
+    END;
+  END VisitVar;
+
+
+
 
 PROCEDURE SubclassToBasicType (res: SSA.Result): DeclWriter.BasicTypeId;
   BEGIN
@@ -228,15 +269,15 @@ PROCEDURE WriteTypeCast (w: DeclWriter.Writer; ctype: DeclWriter.BasicTypeId);
 
 
 
-PROCEDURE WriteLocalDecl (w: Writer;
-                          pb: SSA.ProcBlock;
-                          VAR haveCopyParameter: BOOLEAN);
+PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
+                          pb: SSA.ProcBlock; VAR haveCopyParameter: BOOLEAN);
 (**Writes local declarations of the procedure, most of all local variables.  *)
   VAR
     declMap: Dictionary.Dictionary;
     instr: SSA.Instr;
     decl: Sym.VarDecl;
     cDecl: DeclWriter.Declaration;
+    item: Sym.Item;
     
   PROCEDURE GetLocalDecl (instr: SSA.Instr): Sym.VarDecl;
     VAR
@@ -298,6 +339,26 @@ PROCEDURE WriteLocalDecl (w: Writer;
       instr := instr. nextInstr
     END;
 
+    (* pick up any additional variable declarations that are not touch
+       by the body of the current procedure, but are referenced by
+       local procedures of it *)
+    item := pb. procDecl. nestedItems;
+    WHILE (item # NIL) DO
+      WITH item: Sym.VarDecl DO
+        IF ~item. isParameter &
+           ~declMap. HasKey (item) &
+           t. nonLocalAccess. HasKey (item) THEN
+          cDecl := ConvertDecl.GetDecl (w, item);
+          w. Newline;
+          w. WriteDeclaration (cDecl);
+          w. WriteChar (";");
+          declMap. Set (item, NIL);
+        END;
+      ELSE                             (* ignore *)
+      END;
+      item := item. nextNested;
+    END;
+    
     IF haveCopyParameter THEN
       w. Newline;
       w. WriteString ("OOC_PUSH_VPAR_STACK");
@@ -1261,15 +1322,17 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     END;
     
     Fixup (pb);
+    t. w. Indent (1);
     registerMap := Allocator.AssignRegisters (pb, domRoot, t. w);
     w := NewWriter (t. w, pb, registerMap);
-    w. Indent (1);
-    WriteLocalDecl (w, pb, haveCopyParameter);
+    WriteLocalDecl (t, w, pb, haveCopyParameter);
     t. WriteNestedProcedures();          (* up call *)
     w. WriteLn;
     w. WriteBlocks (domRoot, haveCopyParameter);
-    w. Indent (-1);
+    t. w. Indent (-1);
   END WriteProcBody;
+
+
 
 PROCEDURE InitTranslator* (t: Translator; 
                            config: Config.Config;
@@ -1279,6 +1342,7 @@ PROCEDURE InitTranslator* (t: Translator;
     t. config := config;
     t. inspectProc := inspectProc;
     t. inspectStage := inspectStage;
+    t. nonLocalAccess := NIL;
   END InitTranslator;
 
 PROCEDURE NewTranslator* (config: Config.Config;
@@ -1290,5 +1354,21 @@ PROCEDURE NewTranslator* (config: Config.Config;
     InitTranslator (t, config, inspectProc, inspectStage);
     RETURN t
   END NewTranslator;
+
+PROCEDURE (t: Translator) SetProcedureList* (procList: IR.ProcedureList);
+  VAR
+    v: Visitor;
+    i: LONGINT;
+  BEGIN
+    t. SetProcedureList^ (procList);
+
+    IF (procList # NIL) THEN
+      v := NewVisitor();
+      FOR i := 0 TO LEN (procList^)-1 DO
+        procList[i]. Accept (v);
+      END;
+      t. nonLocalAccess := v. nonLocalAccess;
+    END;
+  END SetProcedureList;
 
 END OOC:SSA:WriteC.
