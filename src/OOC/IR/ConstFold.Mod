@@ -304,6 +304,11 @@ BEGIN
   END;
 END VisitCap;
 
+PROCEDURE (c: ConstFold) VisitEntier* (op: IR.Entier);
+BEGIN
+    (* FIXME! *)
+END VisitEntier;
+
 PROCEDURE (c: ConstFold) VisitOdd* (op: IR.Odd);
 BEGIN
     (* FIXME! *)

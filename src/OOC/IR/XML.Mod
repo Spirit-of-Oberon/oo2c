@@ -233,6 +233,13 @@ PROCEDURE (v: Visitor) VisitCap* (cap: IR.Cap);
     v. w. EndTag;  (* cap *)
   END VisitCap;
 
+PROCEDURE (v: Visitor) VisitEntier* (entier: IR.Entier);
+  BEGIN
+    v. w. StartTag ("entier", FALSE);
+    entier. operand. Accept (v);
+    v. w. EndTag;  (* entier *)
+  END VisitEntier;
+
 PROCEDURE (v: Visitor) VisitOdd* (odd: IR.Odd);
   BEGIN
     v. w. StartTag ("odd", FALSE);

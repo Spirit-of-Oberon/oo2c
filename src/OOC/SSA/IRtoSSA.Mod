@@ -417,6 +417,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr;
 
+      | expr: IR.Entier DO
+        instr := pb. AddInstr (Opcode.entier, Opcode.TypeToSubclass (expr. type));
+        instr. AddOpnd (Expression (expr. operand), Opnd.arg);
+        RETURN instr;
+            
       | expr: IR.Odd DO
         instr := pb. AddInstr (Opcode.odd, Opcode.TypeToSubclass (expr. type));
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);

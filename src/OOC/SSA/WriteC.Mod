@@ -884,6 +884,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteDyadicFct (instr, "_in");
       | Opcode.cap:
         WriteMonadicOp (instr, "_cap(", ");");
+      | Opcode.entier:
+        WriteMonadicOp (instr, "_entier(", ");");
       | Opcode.odd:
         WriteMonadicOp (instr, "_odd(", ");");
         

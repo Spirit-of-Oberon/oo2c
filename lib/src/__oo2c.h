@@ -57,6 +57,9 @@ extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN
 #define _cap(_c) ((96<_c && _c<123) || (224<=_c && _c<255 && _c!=247)) ? (_c-32) : _c
 #define _capl(_c) _cap(_c)
 
+/* ENTIER(real) */
+#define _entier(_r) ((OOC_INT32)floor(_r))
+
 /* ODD(integer) */
 #define _odd(_i) ((_i) & 1)
 

@@ -386,6 +386,13 @@ TYPE
   END;
 
 TYPE
+  Entier* = POINTER TO EntierDesc;
+  EntierDesc = RECORD
+    (OperatorDesc)
+    operand- : Expression;
+  END;
+
+TYPE
   Odd* = POINTER TO OddDesc;
   OddDesc = RECORD
     (OperatorDesc)
@@ -1522,6 +1529,32 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitNot* (neg: Not);
 PROCEDURE (neg: Not) Accept* (v: Visitor);
   BEGIN
     v. VisitNot (neg)
+  END Accept;
+
+(* Operator Class: Entier
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitEntier (entier: Entier; sym: Symbol; expr: Expression);
+  BEGIN
+    InitOperator (entier, sym, Predef.GetType (Predef.longint));
+    entier. operand := expr;
+  END InitEntier;
+
+PROCEDURE (b: Builder) NewEntier (sym: Symbol; expr: Expression): Expression;
+  VAR
+    entier: Entier;
+  BEGIN
+    NEW (entier);
+    InitEntier (entier, sym, expr);
+    RETURN entier;
+  END NewEntier;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitEntier* (entier: Entier);
+  END VisitEntier;
+
+PROCEDURE (entier: Entier) Accept* (v: Visitor);
+  BEGIN
+    v. VisitEntier (entier)
   END Accept;
 
 (* Operator Class: Odd
@@ -2906,7 +2939,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     dim: LONGINT;
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
-    receiver: Expression;
+    receiver, delta: Expression;
     value: Language.Value;
     
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
@@ -3123,18 +3156,25 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         RETURN b. NewSize (design. sym, arguments[0])
 
       | Predef.inc:
-        ASSERT (LEN (arguments^) = 1);
+        IF (LEN (arguments^) = 1) THEN
+          delta := b. GetOne (design. sym, arguments[0]. type);
+        ELSE
+          delta := arguments[1];
+        END;
         RETURN b. NewAssignOp (design. sym,
                                b. NewBinaryArith
-                               (design. sym, arithAdd, arguments[0],
-                                b. GetOne (design. sym, arguments[0]. type)));
+                               (design. sym, arithAdd, arguments[0], delta));
         
       | Predef.dec:
-        ASSERT (LEN (arguments^) = 1);
+        IF (LEN (arguments^) = 1) THEN
+          delta := b. GetOne (design. sym, arguments[0]. type);
+        ELSE
+          delta := arguments[1];
+        END;
         RETURN b. NewAssignOp (design. sym,
                                b. NewBinaryArith
-                               (design. sym, arithSub, arguments[0],
-                                b. GetOne (design. sym, arguments[0]. type)));
+                               (design. sym, arithSub, arguments[0], delta));
+        
       | Predef.cap:
         RETURN b. NewCap (design. sym, arguments[0]);
 
@@ -3154,6 +3194,10 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         
       | Predef.chr:
         RETURN NewTypeConv (Predef.GetType (Predef.char), arguments[0]);
+        
+      | Predef.entier:
+        (* FIXME... argument must be real *)
+        RETURN b. NewEntier (design. sym, arguments[0]);
         
       | Predef.odd:
         (* FIXME... argument must be integer *)
