@@ -2531,7 +2531,7 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expres
     type := array.type.Deparam();
     IF (type IS Sym.Pointer) THEN
       array := b. NewDeref (sym, array);
-      type := array.type;
+      type := array.type.Deparam();
     END;
     IF ~(type IS Sym.Array) THEN
       RETURN b. ErrExpr (notArray, sym);
@@ -2582,8 +2582,9 @@ PROCEDURE (b: Builder) NewLen* (sym: Symbol; array: Expression;
     len: Len;
     variant: Variant;
     arrayVariable: Expression;
+    type: Sym.Type;
   BEGIN
-    IF ~(array.type IS Sym.Array) & ~TR.IsStringConst(array.type) THEN
+    IF ~TR.IsArray(array.type) & ~TR.IsStringConst(array.type) THEN
       b.ErrSym(notArray, array.sym);
       RETURN b.errorExpr;
     END;
@@ -2595,11 +2596,12 @@ PROCEDURE (b: Builder) NewLen* (sym: Symbol; array: Expression;
       arrayVariable := arrayVariable(Index). array;
       INC (dim);
     END;
-    
-    IF (arrayVariable. type IS Sym.PredefType) THEN
+
+    type := arrayVariable.type.Deparam();
+    IF (type IS Sym.PredefType) THEN
       variant := lenStringConst
-    ELSIF (arrayVariable. type IS Sym.Array) &
-          (dim >= arrayVariable. type(Sym.Array). GetOpenDimensions()) THEN
+    ELSIF (type IS Sym.Array) &
+          (dim >= type(Sym.Array). GetOpenDimensions()) THEN
       variant := lenFixedArray
     ELSIF (arrayVariable IS Var) THEN
       variant := lenOpenArrayParam;
@@ -2608,7 +2610,7 @@ PROCEDURE (b: Builder) NewLen* (sym: Symbol; array: Expression;
     END;
     
     IF ((variant = lenOpenArrayHeap) OR (variant = lenOpenArrayHeap)) &
-       ~arrayVariable.type(Sym.Array).hasLengthInfo THEN
+       ~type(Sym.Array).hasLengthInfo THEN
       RETURN b. ErrExpr (noLengthInfo, array.sym);
     END;
     
@@ -5998,7 +6000,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
                                     arguments[0]. type. ArrayDimensions());
         END;
         
-        IF ~(arguments[0]. type IS Sym.Array) THEN
+        IF ~TR.IsArray(arguments[0].type) THEN
+          (* no string const allowed here *)
           b. ErrSym (notArray, arguments[0]. sym);
         END;
         
