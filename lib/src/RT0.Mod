@@ -99,8 +99,8 @@ TYPE
 
        @item @samp{@ofield{baseTypes}[0]} is the type descriptor of the array's
        base type, for example @ovar{char} for @samp{ARRAY OF CHAR} or
-       @samp{ARRAY OF ARRAY OF CHAR}.  The base type always has a known size,
-       that is, it is neven an open array type.
+       @samp{ARRAY OF ARRAY OF CHAR}.  The base type always has a known size;
+       that is, it is never an open array type.
        @end itemize
 
 
