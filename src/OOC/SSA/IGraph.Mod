@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:IGraph;
 (*  Manipulation of interference graph of values' life ranges.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -155,8 +155,10 @@ PROCEDURE (g: Graph) MergeVector* (source, dest: Vector);
     i: LONGINT;
   BEGIN
     ASSERT (LEN (source^) = LEN (dest^));
-    FOR i := 0 TO LEN (dest^)-1 DO
-      dest[i] := dest[i]+source[i]
+    FOR i := 0 TO g. size-1 DO
+      IF g. In (i, source) THEN
+        g. AddToLive (i, dest);
+      END;
     END;
   END MergeVector;
 

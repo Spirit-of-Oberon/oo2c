@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Allocator;
 (*  A register allocator for the C back-end.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -35,7 +35,8 @@ TYPE
   RegisterFileDesc = RECORD
     (SSA.NodeDesc)
     registerType: DeclWriter.BasicTypeId;
-    resultList: ArrayList.ArrayList;
+    resultList: ArrayList.ArrayList;     (* of SSA.Result *)
+    blockList: ArrayList.ArrayList;      (* of Schedule.Block *)
     iGraph: IGraph.Graph;
     maxColor: IGraph.Color;
     names: NameArray;
@@ -59,6 +60,7 @@ PROCEDURE NewRegisterFile (registerType: DeclWriter.BasicTypeId): RegisterFile;
     SSA.InitNode (rf);
     rf. registerType := registerType;
     rf. resultList := ArrayList.New (16);
+    rf. blockList := ArrayList.New (16);
     rf. iGraph := NIL;
     rf. maxColor := -1;
     rf. names := NIL;
@@ -180,7 +182,8 @@ PROCEDURE GetRegisterFiles (): RegisterFiles;
 PROCEDURE IdentifyResults (blockList: BlockList): RegisterFiles;
 (**Identifies all results of instructions from @oparam{blockList} that are
    stored in registers.  These results are added to the
-   @ofield{RegisterFile.resultList}, there @ofield{SSA.Result.info} is changed
+   @ofield{RegisterFile.resultList}, their containing block to
+   @ofield{RegisterFiles.blockList}, their @ofield{SSA.Result.info} is changed
    to refer to its instance of @otype{RegisterFile}, and
    @ofield{SSA.Result.marker} is set to the index of the result in the list
    @ofield{RegisterFile.resultList}.
@@ -221,6 +224,7 @@ PROCEDURE IdentifyResults (blockList: BlockList): RegisterFiles;
         result. info := rfs[rtype];
         result. marker := rfs[rtype]. resultList. size;
         rfs[rtype]. resultList. Append (result);
+        rfs[rtype]. blockList. Append (b);
       END RegisterResult;
     
     BEGIN
@@ -361,6 +365,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
     VAR
       ld: LiveData;
       outgoingJumps: LONGINT;
+      loopHead: Schedule.Block;
       
     PROCEDURE Propagate (jump: Schedule.Jump);
       BEGIN
@@ -380,32 +385,73 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
             (jump = NIL) OR
             (jump. dest. isLoopHead & jump. isLoopBackedge)
       END BackedgeJump;
+
+    PROCEDURE InclNonlocalDefines (loopHead, block: Schedule.Block;
+                                   live: IGraph.Vector);
+      VAR
+        nested: Schedule.Block;
+        proxy: Schedule.InstrProxy;
+        opnd: SSA.Opnd;
+      BEGIN
+        proxy := block. proxyList;
+        WHILE (proxy # NIL) DO
+          opnd := proxy. instr. opndList;
+          WHILE (opnd # NIL) DO
+            IF (opnd. arg. info = rf) THEN
+              (* if the argument is from our current register file, and
+                 if it is defined outside of `loopHead', then it is live
+                 across the whole loop *)
+              IF ~Schedule.Dominates
+                 (loopHead,
+                  rf. blockList. array[opnd. arg. marker](Schedule.Block)) THEN
+                rf. iGraph. AddToLive (opnd. arg. marker, live);
+              END;
+            END;
+            opnd := opnd. nextOpnd;
+          END;
+          proxy := proxy. nextProxy;
+        END;
+        
+        nested := block. domList;
+        WHILE (nested # NIL) DO
+          InclNonlocalDefines (loopHead, nested, live);
+          nested := nested. nextDom;
+        END;
+      END InclNonlocalDefines;
     
     BEGIN
       (* a. for normal source blocks, do the same sweep
          b. for branch blocks, merge the life sets of both jump targets
             before doing the sweep
          c. for a loop branch, the back edge does not contribute to the life
-            set *)
+            set, but all results that are defined outside the loop and are
+            used within it are live at the end of the branch *)
 
       WITH b: Schedule.BranchBlock DO
         IF (b. info = NIL) THEN
           outgoingJumps := 2;
+          loopHead := NIL;
           IF BackedgeJump (b. branchTo) THEN
+            loopHead := b. branchTo. dest;
             DEC (outgoingJumps)
           END;
           IF BackedgeJump (b. jump) THEN
+            loopHead := b. jump. dest;
             DEC (outgoingJumps)
           END;
           ld := NewLiveData (rf. iGraph, outgoingJumps);
+          IF (loopHead # NIL) THEN
+            InclNonlocalDefines (loopHead, loopHead, ld. live);
+          END;
           b. info := ld
         ELSE
           ld := b. info(LiveData);
         END;
         rf. iGraph. MergeVector (live, ld. live);
         INC (ld. knownJumps);
-
+        
         IF (ld. knownJumps = ld. outgoingJumps) THEN
+          live := ld. live;
           SweepLiveSet (rf, b, live);
           IF (b # enterBlock) THEN
             Propagate (b. targetUseList)

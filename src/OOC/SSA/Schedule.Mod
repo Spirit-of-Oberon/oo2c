@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Schedule [OOC_EXTENSIONS];
 (*  Generates basic block representation and schedules instructions.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -224,7 +224,7 @@ PROCEDURE MakeDominator (dominator, child: Block);
     child. parent := dominator
   END MakeDominator;
 
-PROCEDURE Dominates (dominator, child: Block): BOOLEAN;
+PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
   BEGIN
     WHILE (child # NIL) & (child # dominator) DO
       child := child. parent
