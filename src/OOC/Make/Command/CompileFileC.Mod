@@ -23,7 +23,7 @@ MODULE OOC:Make:Command:CompileFileC;
 IMPORT
   Channel, Make, Msg, Out, ADT:String, OS:ProcessManagment, URI,
   OOC:Make:Entity:ModuleFile, OOC:Error, OOC:Repository, 
-  OOC:SymbolTable:Item, OOC:Config:CCompiler, OOC:Auxiliary:Config;
+  Sym := OOC:SymbolTable, OOC:Config:CCompiler, OOC:Auxiliary:Config;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -41,7 +41,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
   VAR
     cmd: Command;
     src: Repository.FileId;
-    symTab: Item.Module;
+    symTab: Sym.Module;
     res: Msg.Msg;
   BEGIN
     NEW (cmd);
@@ -61,7 +61,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
     (* revise data if the module is FOREIGN: use externally provided C file *)
     IF (fileId = Repository.modObjectFile) THEN
       symTab := module. GetSymbolTable (res);
-      IF (res = NIL) & (symTab. class = Item.mcForeign) THEN
+      IF (res = NIL) & (symTab. class = Sym.mcForeign) THEN
         cmd. externalSource := TRUE;
         cmd. sourceURI := symTab. GetExternalSource()
       END

@@ -68,7 +68,7 @@ TYPE
        @oproc{*OOC:Doc:ResolveRef.Resolve} to resolve module names in reference
        commands.  If no such references were found, this field stays
        @code{NIL}.  The list contains instances of
-       @otype{*OOC:SymbolTable:Item.Import}.  *)
+       @otype{*Sym := OOC:SymbolTable.Import}.  *)
   END;
 
 
@@ -144,7 +144,7 @@ TYPE
   OberonRef* = POINTER TO OberonRefDesc;
   OberonRefDesc = RECORD
     (MarkedInlineDesc)
-    target-: Object.Object;    (* is OOC:SymbolTable:Item.Declaration *)
+    target-: Object.Object;    (* is Sym := OOC:SymbolTable.Declaration *)
     externalModule-,
     externalId-: InputBuffer.CharArray;
     (* either target or (externalModule, externalId) are NIL; these fields

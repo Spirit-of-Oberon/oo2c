@@ -22,7 +22,7 @@ MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 
 IMPORT
   ADT:String, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc,
-  OOC:SymbolTable:Item;
+  Sym := OOC:SymbolTable;
 
 
 
@@ -245,7 +245,7 @@ TYPE
     body-: Body;  (* can be NIL *)
     semicolon2-: AST.Node;
     
-    symTabEntry-: Item.ProcDecl;
+    symTabEntry-: Sym.ProcDecl;
   END;
 
 TYPE
@@ -1049,9 +1049,9 @@ PROCEDURE (procDecl: ProcDecl) Accept* (v: Visitor);
     v. VisitProcDecl (procDecl)
   END Accept;
 
-PROCEDURE (procDecl: ProcDecl) SetSymTabEntry* (item: Item.Item);
+PROCEDURE (procDecl: ProcDecl) SetSymTabEntry* (item: Sym.Item);
   BEGIN
-    procDecl. symTabEntry := item(Item.ProcDecl)
+    procDecl. symTabEntry := item(Sym.ProcDecl)
   END SetSymTabEntry;
 
 

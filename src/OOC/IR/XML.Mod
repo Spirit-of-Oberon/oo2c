@@ -2,7 +2,7 @@ MODULE OOC:IR:XML;
 
 IMPORT
   Channel, ADT:String, XML:Writer, XML:UnicodeCodec:Latin1,
-  OOC:SymbolTable:Item, OOC:IR, OOC:IR:Operator;
+  Sym := OOC:SymbolTable, OOC:IR, OOC:IR:Operator;
 
 
 
@@ -61,7 +61,7 @@ PROCEDURE (v: Visitor) VisitPredefProc* (pproc: IR.PredefProc);
 
 PROCEDURE (v: Visitor) VisitProcedureRef* (procRef: IR.ProcedureRef);
   VAR
-    module: Item.Module;
+    module: Sym.Module;
   BEGIN
     v. w. StartTag ("procedure-reference", FALSE);
     module := procRef. decl. Module();

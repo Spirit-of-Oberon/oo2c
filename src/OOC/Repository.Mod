@@ -22,7 +22,7 @@ MODULE OOC:Repository [OOC_EXTENSIONS];
 
 IMPORT
   Msg, Channel, TextRider, Strings, Time, ADT:Object, URI, OS:Path,
-  OOC:Scanner:InputBuffer, OOC:SymbolTable:Item, OOC:SymbolTable:Builder;
+  OOC:Scanner:InputBuffer, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
 TYPE
@@ -69,7 +69,7 @@ TYPE
        be accessed through the field @ofield{Module.importList}.  Imported
        modules are added to the list through @oproc{Module.AddImport}.  *)
     importList-: Import;
-    symbolTable-: Item.Module;
+    symbolTable-: Sym.Module;
     (**After the module's symbol file has been read, this field refers to
        its symbol table.  *)
   END;
@@ -96,7 +96,7 @@ CONST
      importing modules.  *)
   modSymbolTableXML* = 2;
   (**This is an XML representation of the internal symbol table built of the
-     datatypes defined in @omodule{*OOC:SymbolTable:Item}.  It is used for
+     datatypes defined in @omodule{*Sym := OOC:SymbolTable}.  It is used for
      debugging.  *)
   modInterfaceXML* = 3;
   (**An XML representation of the public interface of a module.  Files of this
@@ -435,7 +435,7 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
   END GetModuleByURI;
 
 
-PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Item.Module;
+PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Sym.Module;
 (**Locates and reads the symbol table of module @oparam{m}.  In general, any
    type references in the returned symbol table are @emph{not} resolved.  Use
    @oproc{*OOC:Auxiliary:GetSymbolTable.GetSymbolTable} to get such a symbol
@@ -444,7 +444,7 @@ PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Item.Module;
     stb: Builder.Builder;
     ch: Channel.Channel;
     uri: URI.URI;
-    symTab: Item.Module;
+    symTab: Sym.Module;
   BEGIN
     IF (m. symbolTable # NIL) THEN
       res := NIL;

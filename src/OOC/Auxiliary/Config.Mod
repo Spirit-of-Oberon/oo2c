@@ -3,7 +3,7 @@ MODULE OOC:Auxiliary:Config;
 IMPORT
   Config:Simple, OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:Config:Repositories, OOC:Config:Repositories:FileSystem(*KEEP THIS!*),
-  OOC:SymbolTable:Item, OOC:SymbolTable:Predef, OOC:SymbolTable:TypeRules,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:SymbolTable:TypeRules,
   OOC:SymbolTable:Builder, OOC:SymbolTable:CreateNamespace, OOC:Error;
 
 
@@ -15,8 +15,8 @@ TYPE
     repositories-: Repositories.Section;
     
     typeRules-: TypeRules.Rules;
-    predefModule-: Item.Module;
-    systemModule-: Item.Module;
+    predefModule-: Sym.Module;
+    systemModule-: Sym.Module;
   END;
 
 CONST

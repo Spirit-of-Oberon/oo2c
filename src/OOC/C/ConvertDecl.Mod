@@ -2,7 +2,7 @@ MODULE OOC:C:ConvertDecl;
 
 IMPORT
   ADT:Dictionary, 
-  OOC:Repository, OOC:SymbolTable:Item, OOC:SymbolTable:Predef,
+  OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:WriteDecl;
 
 
@@ -16,7 +16,7 @@ TYPE
   Converter* = POINTER TO ConverterDesc;
   ConverterDesc = RECORD
     m: Repository.Module;
-    symTab: Item.Module;
+    symTab: Sym.Module;
     exports: Dictionary.Dictionary;
     mode: SHORTINT;
     b: WriteDecl.Block;
@@ -24,7 +24,7 @@ TYPE
 
 PROCEDURE InitConverter (c: Converter;
                          m: Repository.Module;
-                         symTab: Item.Module;
+                         symTab: Sym.Module;
                          exports: Dictionary.Dictionary);
   BEGIN
     c. m := m;
@@ -35,7 +35,7 @@ PROCEDURE InitConverter (c: Converter;
   END InitConverter;
 
 PROCEDURE NewConverter* (m: Repository.Module;
-                         symTab: Item.Module;
+                         symTab: Sym.Module;
                          exports: Dictionary.Dictionary): Converter;
 (**Creates a converter to transform the declarations in the symbol table
    @oparam{symTab} of the module @oparam{m} into a series of C declarations. *)
@@ -48,20 +48,20 @@ PROCEDURE NewConverter* (m: Repository.Module;
   END NewConverter;
 
 
-PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declaration;
+PROCEDURE ConvertDecl (c: Converter; item: Sym.Declaration): WriteDecl.Declaration;
   VAR
     sc: WriteDecl.StorageClass;
 
-  PROCEDURE ConvertType (resolvedType, type: Item.Type): WriteDecl.Type;
+  PROCEDURE ConvertType (resolvedType, type: Sym.Type): WriteDecl.Type;
     VAR
-      ptr: Item.Item;
+      ptr: Sym.Item;
       fct: WriteDecl.Function;
-(*          decl: Item.Declaration;*)
+(*          decl: Sym.Declaration;*)
     BEGIN
       IF (type = NIL) THEN
         RETURN WriteDecl.basicType[WriteDecl.void]
       ELSE
-        WITH type: Item.PredefType DO
+        WITH type: Sym.PredefType DO
           CASE type. id OF
           | Predef.boolean:
             RETURN WriteDecl.basicType[WriteDecl.char8]
@@ -91,7 +91,7 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
           END
 
           (* nothing *)
-        | type: Item.TypeName DO
+        | type: Sym.TypeName DO
           IF (type. module = NIL) THEN
             RETURN ConvertType (resolvedType, resolvedType)
           ELSE
@@ -109,17 +109,17 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
             ConvertDecl (decl)
           END*)
 
-        | type: Item.Pointer DO
+        | type: Sym.Pointer DO
           ASSERT (FALSE)
 (*              ConvertType (type. srcCodeBaseType)*)
-        | type: Item.FormalPars DO
+        | type: Sym.FormalPars DO
           fct := c. b. NewFunction (ConvertType (type. resultType, type. srcCodeResultType));
           IF (type. receiver # NIL) THEN
             fct. AddParameter (ConvertDecl (c, type. receiver))
           END;
           ptr := type. nestedItems;
           WHILE (ptr # NIL) DO
-            WITH ptr: Item.Declaration DO
+            WITH ptr: Sym.Declaration DO
               fct. AddParameter (ConvertDecl (c, ptr))
             ELSE                     (* ignore non-declarations *)
             END;
@@ -127,11 +127,11 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
           END;
           RETURN fct
 
-        | type: Item.Array DO
+        | type: Sym.Array DO
           ASSERT (type. isOpenArray);
           RETURN c. b. NewArray (ConvertType (type. elementType, type. srcCodeElementType), -1)
 (*              ConvertType (type. srcCodeElementType)*)
-        | type: Item.Record DO
+        | type: Sym.Record DO
           ASSERT (FALSE)
 (*              IF (type. srcCodeBaseType # NIL) THEN
             ConvertType (type. srcCodeBaseType)
@@ -142,18 +142,18 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
     END ConvertType;
 
   BEGIN  (* pre: (exports. HasKey (ptr) = writeExported) *)
-    WITH item: Item.Import DO
+    WITH item: Sym.Import DO
       c. b. IncludeModule (c. m. GetImport (item. moduleName. str^));
       RETURN NIL;
       
-    | item: Item.ProcDecl DO
+    | item: Sym.ProcDecl DO
       CASE c. mode OF
       | modeWriteExported:
         sc := WriteDecl.scExtern
       | modeWritePrivate:
         sc := WriteDecl.scStatic
       | modeWriteFctDef:
-        IF (item. exportMark = Item.nameNotExported) THEN
+        IF (item. exportMark = Sym.nameNotExported) THEN
           sc := WriteDecl.scStatic
         ELSE
           sc := WriteDecl.scAuto
@@ -163,17 +163,17 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
         (Naming.NameOfDeclaration (item), WriteDecl.tqNone, sc,
          ConvertType (item. formalPars, item. formalPars));
 
-    | item: Item.ConstDecl DO
+    | item: Sym.ConstDecl DO
       ASSERT (FALSE);
 
-    | item: Item.VarDecl DO
+    | item: Sym.VarDecl DO
       IF item. isParameter THEN
         sc := WriteDecl.scAuto
       ELSE
         IF (c. mode = modeWriteExported) THEN
           sc := WriteDecl.scExtern
-        ELSIF (item. exportMark = Item.nameNotExported) &
-              (item. parent IS Item.Module) THEN
+        ELSIF (item. exportMark = Sym.nameNotExported) &
+              (item. parent IS Sym.Module) THEN
           sc := WriteDecl.scStatic
         ELSE
           sc := WriteDecl.scAuto
@@ -184,23 +184,23 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
         (Naming.NameOfDeclaration (item), WriteDecl.tqNone, sc,
          ConvertType (item. type, item. srcCodeType))
 
-    | item: Item.FieldDecl DO
+    | item: Sym.FieldDecl DO
       ASSERT (FALSE);
 (*          ConvertType (item. srcCodeType)*)
 
-    | item: Item.TypeDecl DO
+    | item: Sym.TypeDecl DO
       ASSERT (FALSE);
 (*          ConvertType (item. srcCodeType)*)
     END
   END ConvertDecl;
 
-PROCEDURE ConvertList (c: Converter; root: Item.Item);
+PROCEDURE ConvertList (c: Converter; root: Sym.Item);
   VAR
-    ptr: Item.Item;
+    ptr: Sym.Item;
   BEGIN
     ptr := root. nestedItems;
     WHILE (ptr # NIL) DO
-      WITH ptr: Item.Declaration DO
+      WITH ptr: Sym.Declaration DO
         IF (c. exports. HasKey (ptr) = (c. mode = modeWriteExported)) THEN
           c. b. AddDecl (ConvertDecl (c, ptr))
         END
@@ -237,7 +237,7 @@ PROCEDURE (c: Converter) ConvertSymTab* (b: WriteDecl.Block; writeExported: BOOL
     END;
   END ConvertSymTab;
 
-PROCEDURE (c: Converter) ConvertProc* (b: WriteDecl.Block; procDecl: Item.ProcDecl): WriteDecl.Declaration;
+PROCEDURE (c: Converter) ConvertProc* (b: WriteDecl.Block; procDecl: Sym.ProcDecl): WriteDecl.Declaration;
 (**Creates the header of a C function definition matching the procedure
    declaration @oparam{procDecl}.  The declaration instance is created using
    the factory methods of @oparam{b}.  *)
@@ -247,7 +247,7 @@ PROCEDURE (c: Converter) ConvertProc* (b: WriteDecl.Block; procDecl: Item.ProcDe
     RETURN ConvertDecl (c, procDecl)
   END ConvertProc;
 
-PROCEDURE (c: Converter) ConvertDecl* (b: WriteDecl.Block; decl: Item.Declaration): WriteDecl.Declaration;
+PROCEDURE (c: Converter) ConvertDecl* (b: WriteDecl.Block; decl: Sym.Declaration): WriteDecl.Declaration;
 (**Creates a C declaration for the object @oparam{decl}.  *)
   BEGIN
     c. b := b;

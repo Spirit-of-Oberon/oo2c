@@ -23,16 +23,16 @@ MODULE OOC:AST:ExtTree:CreateIR;
 IMPORT
 Log,
   OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList,
-  OOC:AST:ExtTree, OOC:SymbolTable:Item, OOC:IR, OOC:IR:Operator;
+  OOC:AST:ExtTree, Sym := OOC:SymbolTable, OOC:IR, OOC:IR:Operator;
 
 
 
 PROCEDURE CreateIR* (module: ExtTree.Module;
-                     symTab: Item.Module;
+                     symTab: Sym.Module;
                      b: Operator.Builder): IR.Module;
   VAR
-    currentNamespace: Item.Namespace;
-    currentSourceContext: Item.Item;
+    currentNamespace: Sym.Namespace;
+    currentSourceContext: Sym.Item;
     
   PROCEDURE ^ Expr (expr: ExtTree.Node): IR.Expression;
     
@@ -275,8 +275,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
   PROCEDURE ProcDecl (procDecl: ExtTree.ProcDecl): IR.Procedure;
     VAR
       statmSeq: IR.StatementSeq;
-      oldNamespace: Item.Namespace;
-      oldSourceContext: Item.Item;
+      oldNamespace: Sym.Namespace;
+      oldSourceContext: Sym.Item;
     BEGIN
       oldNamespace := currentNamespace;
       oldSourceContext := currentSourceContext;

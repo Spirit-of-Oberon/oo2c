@@ -1,27 +1,27 @@
 MODULE OOC:C:Naming;
 
 IMPORT
-  Strings, ADT:String, OOC:Repository, OOC:SymbolTable:Item;
+  Strings, ADT:String, OOC:Repository, Sym := OOC:SymbolTable;
 
 TYPE
   Buffer = ARRAY 2*1024 OF CHAR;
   
-PROCEDURE NameOfDeclaration* (decl: Item.Declaration): String.String;
+PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
   VAR
-    relativeId: Item.NameString;
+    relativeId: Sym.NameString;
     str: Buffer;
     i: LONGINT;
-    m: Item.Item;
+    m: Sym.Item;
     relativeName: BOOLEAN;
   BEGIN
     relativeName := FALSE;
     
-    IF (decl IS Item.VarDecl) & (decl(Item.VarDecl). isParameter) THEN
+    IF (decl IS Sym.VarDecl) & (decl(Sym.VarDecl). isParameter) THEN
       (* use relative names for parameters for procedure types and for
          global procedures *)
       relativeName :=
-        ~(decl. parent. parent IS Item.ProcDecl) OR
-        (decl. parent. parent. parent IS Item.Module)
+        ~(decl. parent. parent IS Sym.ProcDecl) OR
+        (decl. parent. parent. parent IS Sym.Module)
     END;
     
     IF relativeName THEN
@@ -29,10 +29,10 @@ PROCEDURE NameOfDeclaration* (decl: Item.Declaration): String.String;
     ELSE
       (* replace ":" in module name with "_" *)
       m := decl;
-      WHILE ~(m IS Item.Module) DO
+      WHILE ~(m IS Sym.Module) DO
         m := m. parent
       END;
-      COPY (m(Item.Module). name. str^, str);
+      COPY (m(Sym.Module). name. str^, str);
       i := 0;
       WHILE (str[i] # 0X) DO
         IF (str[i] = ":") THEN str[i] := "_" END;

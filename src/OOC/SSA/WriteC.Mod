@@ -3,7 +3,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 IMPORT
   IntStr, StdChannels, Strings, TextRider,
   ADT:Object, ADT:String, ADT:Dictionary,
-  OOC:SymbolTable:Item, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
+  Sym := OOC:SymbolTable, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:WriteConst, OOC:C:WriteDecl;
@@ -133,14 +133,14 @@ PROCEDURE WriteLocalDecl (w: TextRider.Writer;
   VAR
     declMap: Dictionary.Dictionary;
     instr: SSA.Instr;
-    decl: Item.VarDecl;
+    decl: Sym.VarDecl;
     cDecl: WriteDecl.Declaration;
     block: WriteDecl.Block;
 
-  PROCEDURE GetLocalDecl (instr: SSA.Instr): Item.VarDecl;
+  PROCEDURE GetLocalDecl (instr: SSA.Instr): Sym.VarDecl;
     VAR
       opnd: SSA.Opnd;
-      varDecl: Item.VarDecl;
+      varDecl: Sym.VarDecl;
     BEGIN
       opnd := instr. opndList;
       WHILE (opnd # NIL) &
@@ -149,7 +149,7 @@ PROCEDURE WriteLocalDecl (w: TextRider.Writer;
         opnd := opnd. nextOpnd;
       END;
       IF (opnd. arg IS SSA.DeclRef) THEN
-        varDecl := opnd. arg(SSA.DeclRef). decl(Item.VarDecl);
+        varDecl := opnd. arg(SSA.DeclRef). decl(Sym.VarDecl);
         IF (varDecl. Procedure() = pb. procDecl) THEN
           RETURN varDecl
         END;
@@ -363,8 +363,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         
       | Opcode.address:
         name := Naming.NameOfDeclaration (instr(SSA.Address). decl);
-        IF ~(instr(SSA.Address). decl IS Item.VarDecl) OR
-             ~(instr(SSA.Address). decl(Item.VarDecl). type IS Item.Array) THEN
+        IF ~(instr(SSA.Address). decl IS Sym.VarDecl) OR
+             ~(instr(SSA.Address). decl(Sym.VarDecl). type IS Sym.Array) THEN
           (* charming C: the address of the variable is its name, all
              others need the address operator *)
           w. WriteChar ("&");

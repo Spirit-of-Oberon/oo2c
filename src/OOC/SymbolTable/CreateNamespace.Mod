@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 (*  Creates namespaces for module, and resolves type names in declarations.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  OOC:Error, OOC:SymbolTable:Item, OOC:SymbolTable:Namespace,
+  OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
   OOC:SymbolTable:TypeRules, OOC:SymbolTable:ImportModules,
   OOC:Config:Repositories, OOC:Doc:ResolveRef;
 
@@ -102,8 +102,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
   END GetTemplate;
 
 
-PROCEDURE CreateNamespace* (root: Item.Module;
-                            predefModule, systemModule: Item.Module;
+PROCEDURE CreateNamespace* (root: Sym.Module;
+                            predefModule, systemModule: Sym.Module;
                             tr: TypeRules.Rules;
                             repositories: Repositories.Section;
                             errList: Error.List);
@@ -122,9 +122,9 @@ PROCEDURE CreateNamespace* (root: Item.Module;
   VAR
     lastError: Error.Msg;
     
-  PROCEDURE Err (code: Error.Code; tname: Item.TypeName);
+  PROCEDURE Err (code: Error.Code; tname: Sym.TypeName);
     VAR
-      pos: Item.Position;
+      pos: Sym.Position;
     BEGIN
       IF (code = undeclaredIdent) THEN
         (* if we have an undeclared identifier, don't refer to the module name,
@@ -141,7 +141,7 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       errList. Append (lastError)
     END Err;
   
-  PROCEDURE ErrType (code: Error.Code; type: Item.Type);
+  PROCEDURE ErrType (code: Error.Code; type: Sym.Type);
     BEGIN
       lastError := Error.New (createNamespaceContext, code);
       lastError. SetIntAttrib ("pos", type. position. pos);
@@ -150,7 +150,7 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       errList. Append (lastError)
     END ErrType;
   
-  PROCEDURE ErrDecl (code: Error.Code; decl: Item.Declaration; errList: Error.List);
+  PROCEDURE ErrDecl (code: Error.Code; decl: Sym.Declaration; errList: Error.List);
     BEGIN
       lastError := Error.New (createNamespaceContext, code);
       lastError. SetIntAttrib ("pos", decl. name. pos);
@@ -159,15 +159,15 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       errList. Append (lastError)
     END ErrDecl;
 
-  PROCEDURE ImportAllModules (root: Item.Module);
+  PROCEDURE ImportAllModules (root: Sym.Module);
     VAR
-      ptr: Item.Item;
+      ptr: Sym.Item;
     BEGIN
       ImportModules.ImportModules (systemModule, repositories, root, errList);
       IF (errList. msgCount = 0) THEN
         ptr := root. nestedItems;
         WHILE (ptr # NIL) DO
-          WITH ptr: Item.Import DO
+          WITH ptr: Sym.Import DO
             IF (ptr. externalSymTab. ns = NIL) THEN
               (* for each of the imported modules: create namespace information
                  and resolve any reference commands in embedded documentation
@@ -184,7 +184,7 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       END
     END ImportAllModules;
   
-  PROCEDURE PopulateNamespace (item: Item.Item);
+  PROCEDURE PopulateNamespace (item: Sym.Item);
   (* For all definitions that include a namespace (i.e., for module, procedure,
      and record type), create a namespace that initially includes all the
      declarations local to this particular definition.  When this procedure
@@ -194,28 +194,28 @@ PROCEDURE CreateNamespace* (root: Item.Module;
      Note: Type-bound procedures and forward declarations of procedures are
      @emph{not} included in the namespace mapping.  *)
     VAR
-      ptr: Item.Item;
+      ptr: Sym.Item;
 
-    PROCEDURE Assemble (item: Item.Item; nested: BOOLEAN): Item.Namespace;
+    PROCEDURE Assemble (item: Sym.Item; nested: BOOLEAN): Sym.Namespace;
       VAR
-        ptr: Item.Item;
+        ptr: Sym.Item;
         c: LONGINT;
-        da: Item.DeclarationArray;
+        da: Sym.DeclarationArray;
 
-      PROCEDURE IsDeclaration (item: Item.Item): BOOLEAN;
+      PROCEDURE IsDeclaration (item: Sym.Item): BOOLEAN;
         BEGIN
-          WITH item: Item.ProcDecl DO
+          WITH item: Sym.ProcDecl DO
             RETURN ~(item. isTypeBound OR item. isForwardDecl)
           ELSE
-            RETURN (item IS Item.Declaration)
+            RETURN (item IS Sym.Declaration)
           END
         END IsDeclaration;
       
-      PROCEDURE Quicksort (da: Item.DeclarationArray; l, r: LONGINT);
+      PROCEDURE Quicksort (da: Sym.DeclarationArray; l, r: LONGINT);
         VAR
           i, j: LONGINT;
-          t: Item.Declaration;
-          v: Item.NameString;
+          t: Sym.Declaration;
+          v: Sym.NameString;
         BEGIN
           IF (l < r) THEN
             i := l-1; j := r;
@@ -242,13 +242,13 @@ PROCEDURE CreateNamespace* (root: Item.Module;
           END;
           ptr := ptr. nextNested
         END;
-        IF (item IS Item.ProcDecl) (*&
-           (item(Item.ProcDecl). visibleFrom >= 0) ... *) THEN
+        IF (item IS Sym.ProcDecl) (*&
+           (item(Sym.ProcDecl). visibleFrom >= 0) ... *) THEN
           (* add formal parameters, but only if the module is not an imported
              symbol file; otherwise, due to the missing visibility information,
              identification of parameter types may wrongly take a parameter
              name as defining occurence *)
-          ptr := item(Item.ProcDecl). formalPars. nestedItems;
+          ptr := item(Sym.ProcDecl). formalPars. nestedItems;
           WHILE (ptr # NIL) DO
             IF IsDeclaration (ptr) THEN
               INC (c)
@@ -263,17 +263,17 @@ PROCEDURE CreateNamespace* (root: Item.Module;
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
           IF IsDeclaration (ptr) THEN
-            da[c] := ptr(Item.Declaration);
+            da[c] := ptr(Sym.Declaration);
             INC (c)
           END;
           ptr := ptr. nextNested
         END;
-        IF (item IS Item.ProcDecl) (*&     (* add formal parameters *)
-           (item(Item.ProcDecl). visibleFrom >= 0)...*) THEN
-          ptr := item(Item.ProcDecl). formalPars. nestedItems;
+        IF (item IS Sym.ProcDecl) (*&     (* add formal parameters *)
+           (item(Sym.ProcDecl). visibleFrom >= 0)...*) THEN
+          ptr := item(Sym.ProcDecl). formalPars. nestedItems;
           WHILE (ptr # NIL) DO
             IF IsDeclaration (ptr) THEN
-              da[c] := ptr(Item.Declaration);
+              da[c] := ptr(Sym.Declaration);
               INC (c)
             END;
             ptr := ptr. nextNested
@@ -298,25 +298,25 @@ PROCEDURE CreateNamespace* (root: Item.Module;
           ptr := ptr. nextNested
         END;
 
-        WITH item: Item.Module DO
+        WITH item: Sym.Module DO
           item. SetNamespace (Assemble (item, TRUE))
-        | item: Item.ProcDecl DO
+        | item: Sym.ProcDecl DO
           item. SetNamespace (Assemble (item, TRUE))
-        | item: Item.Record DO
+        | item: Sym.Record DO
           item. SetNamespace (Assemble (item, FALSE))
         ELSE  (* no other item is associated with a namespace *)
         END
       END
     END PopulateNamespace;
   
-  PROCEDURE CheckLocalUniqueness (item: Item.Item; errList: Error.List);
+  PROCEDURE CheckLocalUniqueness (item: Sym.Item; errList: Error.List);
   (* Using the namespace information created by @oproc{PopulateNamespace},
      check that any declaration's name is unique in its local namespace.
      That is, if a namespace contains two local declarations of the same name,
      the second declaration is reported as faulty.  *)
     VAR
-      ptr: Item.Item;
-      ns0: Item.Namespace;
+      ptr: Sym.Item;
+      ns0: Sym.Namespace;
     BEGIN
       IF (item # NIL) THEN
         ns0 := item. Namespace();
@@ -333,7 +333,7 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       END
     END CheckLocalUniqueness;
   
-  PROCEDURE ConnectNamespaces (item: Item.Item; predefModule: Item.Module;
+  PROCEDURE ConnectNamespaces (item: Sym.Item; predefModule: Sym.Module;
                                errList: Error.List);
   (* For the module and procedure namespaces, set the nesting information 
      of their respective namespaces.  Any module, except the virtual module
@@ -344,22 +344,22 @@ PROCEDURE CreateNamespace* (root: Item.Module;
      
      Note: Record namespaces are @emph{not} completed by this procedure.  *)
     VAR
-      ptr: Item.Item;
+      ptr: Sym.Item;
     BEGIN
       IF (item # NIL) THEN
-        WITH item: Item.Module DO
+        WITH item: Sym.Module DO
           IF (predefModule # NIL) THEN
             item. ns(Namespace.Nested). 
               SetEnclosingNamespace (predefModule. ns(Namespace.Namespace))
           END
-        | item: Item.ProcDecl DO
-          IF (item. parent IS Item.Module) THEN
+        | item: Sym.ProcDecl DO
+          IF (item. parent IS Sym.Module) THEN
             item. ns(Namespace.Nested). 
-              SetEnclosingNamespace (item. parent(Item.Module). 
+              SetEnclosingNamespace (item. parent(Sym.Module). 
                                        ns(Namespace.Namespace))
-          ELSIF (item. parent IS Item.ProcDecl) THEN
+          ELSIF (item. parent IS Sym.ProcDecl) THEN
             item. ns(Namespace.Nested). 
-              SetEnclosingNamespace (item. parent(Item.ProcDecl). 
+              SetEnclosingNamespace (item. parent(Sym.ProcDecl). 
                                        ns(Namespace.Namespace))
           END
         ELSE  (* no other item is associated with a namespace *)
@@ -374,18 +374,18 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       END
     END ConnectNamespaces;
   
-  PROCEDURE ResolveTypeNames (item: Item.Item; contextOfUse: Item.Item;
+  PROCEDURE ResolveTypeNames (item: Sym.Item; contextOfUse: Sym.Item;
                               tr: TypeRules.Rules; errList: Error.List);
   (* Replaces all type names in @oparam{item} with a reference to the 
      indicated type.  Names are resolved in the context of the procedure
      (or module) @oparam{contextOfUse}.  Restrictions placed on the base
      type of a record are checked.  *)
     VAR
-      ptr: Item.Item;
-      baseType: Item.Type;
+      ptr: Sym.Item;
+      baseType: Sym.Type;
       
-    PROCEDURE GetTypeByName (typeName: Item.Type; contextOfUse: Item.Item; 
-                      extendedSearch: BOOLEAN; errList: Error.List): Item.Type;
+    PROCEDURE GetTypeByName (typeName: Sym.Type; contextOfUse: Sym.Item; 
+                      extendedSearch: BOOLEAN; errList: Error.List): Sym.Type;
     (**Resolves type name @oparam{typeName}, within the context of procedure
        (or module) @oparam{contextOfUse}.  With @oparam{extendedSearch} set to
        @code{TRUE} and the standard search failing, perform an extended search
@@ -393,10 +393,10 @@ PROCEDURE CreateNamespace* (root: Item.Module;
        declarations.  This is used to resolve names used as pointer base
        types.  *)
       VAR
-        item: Item.Item;
-        ns: Item.Namespace;
+        item: Sym.Item;
+        ns: Sym.Namespace;
       BEGIN
-        WITH typeName: Item.TypeName DO
+        WITH typeName: Sym.TypeName DO
           ns := contextOfUse. Namespace();
           IF (typeName. module # NIL) THEN
             (* resolve module name to get to external namespace *)
@@ -404,11 +404,11 @@ PROCEDURE CreateNamespace* (root: Item.Module;
             IF (item = NIL) THEN
               Err (undeclaredModule, typeName);
               RETURN typeName
-            ELSIF ~(item IS Item.Import) THEN
+            ELSIF ~(item IS Sym.Import) THEN
               Err (notModule, typeName);
               RETURN typeName
             ELSE
-              ns := item(Item.Import). externalSymTab. ns;
+              ns := item(Sym.Import). externalSymTab. ns;
               ASSERT (ns # NIL)
             END
           END;
@@ -419,11 +419,11 @@ PROCEDURE CreateNamespace* (root: Item.Module;
           IF (item = NIL) THEN
             Err (undeclaredIdent, typeName);
             RETURN typeName
-          ELSIF ~(item IS Item.TypeDecl) THEN
+          ELSIF ~(item IS Sym.TypeDecl) THEN
             Err (notTypeName, typeName);
             RETURN typeName
           ELSE
-            RETURN item(Item.TypeDecl). type
+            RETURN item(Sym.TypeDecl). type
           END
         ELSE
           RETURN typeName
@@ -432,46 +432,46 @@ PROCEDURE CreateNamespace* (root: Item.Module;
 
     BEGIN
       IF (item # NIL) THEN
-        WITH item: Item.TypeDecl DO
+        WITH item: Sym.TypeDecl DO
           item. type := GetTypeByName (item. type, contextOfUse, FALSE, errList)
           
-        | item: Item.VarDecl DO
+        | item: Sym.VarDecl DO
           item. type := GetTypeByName (item. type, contextOfUse, FALSE, errList);
-        | item: Item.FieldDecl DO
+        | item: Sym.FieldDecl DO
           item. type := GetTypeByName (item. type, contextOfUse, FALSE, errList)
           
-        | item: Item.Pointer DO
+        | item: Sym.Pointer DO
           item. baseType := GetTypeByName (item. baseType,
                                            contextOfUse, TRUE, errList)
-        | item: Item.FormalPars DO
+        | item: Sym.FormalPars DO
           IF (item. resultType # NIL) THEN
             item. resultType := GetTypeByName (item. resultType,
                                                contextOfUse, FALSE, errList)
           END
           
-        | item: Item.Array DO
+        | item: Sym.Array DO
           item. elementType := GetTypeByName (item. elementType,
                                               contextOfUse, FALSE, errList)
-        | item: Item.Record DO
+        | item: Sym.Record DO
           IF (item. baseType # NIL) THEN
             baseType := GetTypeByName (item. baseType, contextOfUse, FALSE, errList);
-            IF ~(baseType IS Item.TypeName) THEN
+            IF ~(baseType IS Sym.TypeName) THEN
               IF tr. IsValidRecordBaseType (baseType) THEN
                 item. ns(Namespace.Extended). 
-                  SetBaseNamespace (baseType(Item.Record). 
+                  SetBaseNamespace (baseType(Sym.Record). 
                                       ns(Namespace.Namespace));
                 item. baseType := baseType
               ELSE
-                Err (illegalRecordBase, item. baseType(Item.TypeName))
+                Err (illegalRecordBase, item. baseType(Sym.TypeName))
               END
             END
           END
         
         (* scope objects: fix context of use for using 
            occurences of identifiers *)
-        | item: Item.Module DO
+        | item: Sym.Module DO
           contextOfUse := item
-        | item: Item.ProcDecl DO
+        | item: Sym.ProcDecl DO
           contextOfUse := item
         ELSE  (* ignore any other kind items *)
         END;
@@ -485,61 +485,61 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       END
     END ResolveTypeNames;
   
-  PROCEDURE CheckTypeRestrictions (item: Item.Item; tr: TypeRules.Rules;
+  PROCEDURE CheckTypeRestrictions (item: Sym.Item; tr: TypeRules.Rules;
                                    errList: Error.List);
   (* Checks the type restrictions placed by the language on declarations
      and definitions.  *)
     VAR
-      ptr: Item.Item;
-      type: Item.Type;
+      ptr: Sym.Item;
+      type: Sym.Type;
     
-    PROCEDURE CheckOpenArray (type, srcCodeType: Item.Type);
+    PROCEDURE CheckOpenArray (type, srcCodeType: Sym.Type);
       BEGIN
-        IF ~(type IS Item.TypeName) & tr. IsOpenArrayType (type) THEN
+        IF ~(type IS Sym.TypeName) & tr. IsOpenArrayType (type) THEN
           ErrType (invalidOpenArray, srcCodeType)
         END
       END CheckOpenArray;
     
     BEGIN
       IF (item # NIL) THEN
-        WITH item: Item.VarDecl DO
+        WITH item: Sym.VarDecl DO
           type := item. type;
           IF item. isParameter THEN
-            IF ~(type IS Item.TypeName) & ~tr. IsValidParameterType (type) THEN
+            IF ~(type IS Sym.TypeName) & ~tr. IsValidParameterType (type) THEN
               ErrType (invalidParameterType, item. srcCodeType)
             END
           ELSE
             CheckOpenArray (item. type, item. srcCodeType)
           END;
-          IF item. isReceiver & ~(type IS Item.TypeName) THEN
+          IF item. isReceiver & ~(type IS Sym.TypeName) THEN
             IF ~tr. IsValidReceiverType (type) THEN
               ErrType (invalidReceiverType, item. srcCodeType)
-            ELSIF (type IS Item.Record) & ~item. isVarParam THEN
+            ELSIF (type IS Sym.Record) & ~item. isVarParam THEN
               ErrType (invalidReceiverModeRecord, item. srcCodeType)
-            ELSIF (type IS Item.Pointer) & item. isVarParam THEN
+            ELSIF (type IS Sym.Pointer) & item. isVarParam THEN
               ErrType (invalidReceiverModePointer, item. srcCodeType)
             END
           END
           
-        | item: Item.FieldDecl DO
+        | item: Sym.FieldDecl DO
           CheckOpenArray (item. type, item. srcCodeType)
           
-        | item: Item.Pointer DO
+        | item: Sym.Pointer DO
           type := item. baseType;
-          IF ~(type IS Item.TypeName) & ~tr. IsValidPointerBaseType (type) THEN
+          IF ~(type IS Sym.TypeName) & ~tr. IsValidPointerBaseType (type) THEN
             ErrType (invalidPointerBaseType, item. srcCodeBaseType)
           END
           
-        | item: Item.FormalPars DO
+        | item: Sym.FormalPars DO
           type := item. resultType;
-          IF (type # NIL) & ~(type IS Item.TypeName) &
+          IF (type # NIL) & ~(type IS Sym.TypeName) &
              ~tr. IsValidResultType (type) THEN
             ErrType (invalidResultType, item. srcCodeResultType)
           END
           
-        | item: Item.Array DO
+        | item: Sym.Array DO
           type := item. elementType;
-          IF ~(type IS Item.TypeName) &
+          IF ~(type IS Sym.TypeName) &
              ~tr. IsValidArrayElementType (type, item. isOpenArray) THEN
             ErrType (invalidArrayElementType, item. srcCodeElementType)
           END
@@ -556,20 +556,20 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       END
     END CheckTypeRestrictions;
   
-  PROCEDURE InsertTypeBoundProcs (module: Item.Module; errList: Error.List);
+  PROCEDURE InsertTypeBoundProcs (module: Sym.Module; errList: Error.List);
   (* Adds type-bound procedures to the namespace of their record base type.  *)
     VAR
-      ptr, record: Item.Item;
+      ptr, record: Sym.Item;
     BEGIN
       ptr := root. nestedItems;
       WHILE (ptr # NIL) DO
-        WITH ptr: Item.ProcDecl DO
+        WITH ptr: Sym.ProcDecl DO
           IF ptr. isTypeBound & ~ptr. isForwardDecl THEN
             record := ptr. formalPars. receiver. type;
-            IF (record IS Item.Pointer) THEN
-              record := record(Item.Pointer). baseType
+            IF (record IS Sym.Pointer) THEN
+              record := record(Sym.Pointer). baseType
             END;
-            WITH record: Item.Record DO
+            WITH record: Sym.Record DO
               record. ns(Namespace.Extended). InsertTBProc (ptr, errList)
             ELSE  (* receiver is malformed in some way *)
             END
@@ -580,20 +580,20 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       END
     END InsertTypeBoundProcs;
 
-  PROCEDURE ResolveForwardDecl (item: Item.Item; tr: TypeRules.Rules;
+  PROCEDURE ResolveForwardDecl (item: Sym.Item; tr: TypeRules.Rules;
                                 errList: Error.List);
   (* Checks the validity of procedure forward declarations, and adjusts the
      range of visibility of the forward declared procedures.  *)
     VAR
-      ptr: Item.Item;
-      forward: Item.ProcDecl;
-      def: Item.Declaration;
-      class: Item.Record;
-      ns: Item.Namespace;
+      ptr: Sym.Item;
+      forward: Sym.ProcDecl;
+      def: Sym.Declaration;
+      class: Sym.Record;
+      ns: Sym.Namespace;
     BEGIN
       IF (item # NIL) THEN
-        IF (item IS Item.ProcDecl) & item(Item.ProcDecl). isForwardDecl THEN
-          forward := item(Item.ProcDecl);
+        IF (item IS Sym.ProcDecl) & item(Sym.ProcDecl). isForwardDecl THEN
+          forward := item(Sym.ProcDecl);
           
           IF forward. isTypeBound THEN
             class := forward. Class();
@@ -606,7 +606,7 @@ PROCEDURE CreateNamespace* (root: Item.Module;
           
           IF (def = NIL) THEN
             ErrDecl (unresolvedForwardDecl, forward, errList)
-          ELSIF ~(def IS Item.ProcDecl) THEN
+          ELSIF ~(def IS Sym.ProcDecl) THEN
             ErrDecl (forwardNameClash, forward, errList)
           ELSIF (def. visibleFrom < def. name. pos) THEN
             IF (def. visibleFrom >= 0) THEN (* this isn't imported *)
@@ -615,10 +615,10 @@ PROCEDURE CreateNamespace* (root: Item.Module;
           ELSIF (def. visibleFrom < forward. visibleFrom) THEN
             ErrDecl (forwardAfterDefinition, forward, errList)
           ELSIF ~tr. IsValidForwardDecl (forward. formalPars,
-                                         def(Item.ProcDecl). formalPars) THEN
+                                         def(Sym.ProcDecl). formalPars) THEN
             ErrDecl (forwardMismatchFPars, forward, errList)
           ELSE
-            def(Item.ProcDecl). RegisterForwardDecl (forward)
+            def(Sym.ProcDecl). RegisterForwardDecl (forward)
           END
         END;
         
@@ -630,24 +630,24 @@ PROCEDURE CreateNamespace* (root: Item.Module;
       END
     END ResolveForwardDecl;
   
-  PROCEDURE CheckExtendedRecords (item: Item.Item; tr: TypeRules.Rules;
+  PROCEDURE CheckExtendedRecords (item: Sym.Item; tr: TypeRules.Rules;
                                   errList: Error.List);
   (* Performs semantic checks on the field and type-bound procedure of 
      records.  Also, this procedure sets the fields
-     @ofield{OOC:SymbolTable:Item.ProcDecl.tbProcIndex}, and
-     @ofield{OOC:SymbolTable:Item.Record.tbProcCount}.  *)
+     @ofield{Sym := OOC:SymbolTable.ProcDecl.tbProcIndex}, and
+     @ofield{Sym := OOC:SymbolTable.Record.tbProcCount}.  *)
     VAR
-      ptr: Item.Item;
+      ptr: Sym.Item;
     
-    PROCEDURE CheckRecord (record: Item.Record);
+    PROCEDURE CheckRecord (record: Sym.Record);
       BEGIN
         IF (record. tbProcCount = -1) THEN
           IF (record. baseType = NIL) OR 
-             ~(record. baseType IS Item.Record) THEN
+             ~(record. baseType IS Sym.Record) THEN
             record. tbProcCount := 0
           ELSE
-            CheckRecord (record. baseType(Item.Record));
-            record. tbProcCount := record. baseType(Item.Record). tbProcCount
+            CheckRecord (record. baseType(Sym.Record));
+            record. tbProcCount := record. baseType(Sym.Record). tbProcCount
           END;
           record. ns(Namespace.Extended). 
             CheckRestrictions (record, tr, errList)
@@ -656,7 +656,7 @@ PROCEDURE CreateNamespace* (root: Item.Module;
     
     BEGIN
       IF (item # NIL) THEN
-        WITH item: Item.Record DO
+        WITH item: Sym.Record DO
           CheckRecord (item)
         ELSE
         END;
@@ -712,7 +712,7 @@ PROCEDURE CreateNamespace* (root: Item.Module;
     ResolveTypeNames (root, NIL, tr, errList);
 
     (* CAUTION: Some type names may not have been resolved successfully
-       past this point.  Check for instances of Item.TypeName before assuming
+       past this point.  Check for instances of Sym.TypeName before assuming
        that the types are valid.  *)
       
     (* fifth pass: check type restrictions of declarations *)

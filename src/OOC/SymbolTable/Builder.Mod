@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 
 IMPORT
   Strings, Channel, Language, ADT:Object, ADT:Object:Storage,
-  OOC:Doc, OOC:SymbolTable:Item;
+  OOC:Doc, Sym := OOC:SymbolTable;
 
 
 TYPE
@@ -33,7 +33,7 @@ TYPE
        are passed directly to the initialization procedures of the
        corresponding classes from @omodule{Item}.
        The arguments correspond directly to the record fields defined for
-       the specializations of @otype{Item.Item}.  *)
+       the specializations of @otype{Sym.Item}.  *)
   END;
 
 
@@ -51,197 +51,197 @@ PROCEDURE New* (): Builder;
   END New;
 
 
-PROCEDURE (b: Builder) NewModule* (name: Item.Name; docString: Doc.Document;
-                                   class: Item.ModuleClass;
-                                   callConv: Item.CallConv): Item.Module;
+PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
+                                   class: Sym.ModuleClass;
+                                   callConv: Sym.CallConv): Sym.Module;
   VAR
-    mod: Item.Module;
+    mod: Sym.Module;
   BEGIN
     NEW (mod);
-    Item.InitModule (mod, name, docString, class, callConv);
+    Sym.InitModule (mod, name, docString, class, callConv);
     RETURN mod
   END NewModule;
 
-PROCEDURE (b: Builder) NewImport* (parent: Item.Item; name: Item.Name;
-                                   visibleFrom: Item.ModulePos;
+PROCEDURE (b: Builder) NewImport* (parent: Sym.Item; name: Sym.Name;
+                                   visibleFrom: Sym.ModulePos;
                                    docString: Doc.Document;
-                                   moduleName: Item.Name): Item.Import;
+                                   moduleName: Sym.Name): Sym.Import;
   VAR
-    import: Item.Import;
+    import: Sym.Import;
   BEGIN
     NEW (import);
-    Item.InitImport (import, parent, name, visibleFrom, docString, moduleName);
+    Sym.InitImport (import, parent, name, visibleFrom, docString, moduleName);
     RETURN import
   END NewImport;
 
-PROCEDURE (b: Builder) NewConstDecl* (parent: Item.Item; name: Item.Name;
-                                      visibleFrom: Item.ModulePos;
-                                      exportMark: Item.ExportMark;
+PROCEDURE (b: Builder) NewConstDecl* (parent: Sym.Item; name: Sym.Name;
+                                      visibleFrom: Sym.ModulePos;
+                                      exportMark: Sym.ExportMark;
                                       docString: Doc.Document;
                                       value: Language.Value;
-                                      type: Item.PredefType): Item.ConstDecl;
+                                      type: Sym.PredefType): Sym.ConstDecl;
 (**Note: If the value and type of the constant are not known yet, 
    then @oparam{value} is @code{NIL}.  *)
   VAR
-    const: Item.ConstDecl;
+    const: Sym.ConstDecl;
   BEGIN
     NEW (const);
-    Item.InitConstDecl (const, parent, name, visibleFrom, exportMark,
+    Sym.InitConstDecl (const, parent, name, visibleFrom, exportMark,
                         docString, value, type);
     RETURN const
   END NewConstDecl;
 
-PROCEDURE (b: Builder) NewTypeDecl* (parent: Item.Item; name: Item.Name;
-                                 visibleFrom: Item.ModulePos;
-                                 exportMark: Item.ExportMark;
+PROCEDURE (b: Builder) NewTypeDecl* (parent: Sym.Item; name: Sym.Name;
+                                 visibleFrom: Sym.ModulePos;
+                                 exportMark: Sym.ExportMark;
                                  docString: Doc.Document;
-                                 type: Item.Type): Item.TypeDecl;
+                                 type: Sym.Type): Sym.TypeDecl;
   VAR
-    t: Item.TypeDecl;
+    t: Sym.TypeDecl;
   BEGIN
     NEW (t);
-    Item.InitTypeDecl (t, parent, name, visibleFrom, exportMark, docString, type);
+    Sym.InitTypeDecl (t, parent, name, visibleFrom, exportMark, docString, type);
     IF (type. typeName = NIL) THEN
       type. SetTypeName (name);
     END;
     RETURN t
   END NewTypeDecl;
 
-PROCEDURE (b: Builder) NewVarDecl* (parent: Item.Item; name: Item.Name;
-                                 visibleFrom: Item.ModulePos;
-                                 exportMark: Item.ExportMark;
+PROCEDURE (b: Builder) NewVarDecl* (parent: Sym.Item; name: Sym.Name;
+                                 visibleFrom: Sym.ModulePos;
+                                 exportMark: Sym.ExportMark;
                                  docString: Doc.Document;
                                  isParameter, isReceiver, isVarParam: BOOLEAN;
-                                 type: Item.Type): Item.VarDecl;
+                                 type: Sym.Type): Sym.VarDecl;
   VAR
-    var: Item.VarDecl;
+    var: Sym.VarDecl;
   BEGIN
     NEW (var);
-    Item.InitVarDecl (var, parent, name, visibleFrom, exportMark, docString,
+    Sym.InitVarDecl (var, parent, name, visibleFrom, exportMark, docString,
                       isParameter, isReceiver, isVarParam, type);
     RETURN var
   END NewVarDecl;
 
-PROCEDURE (b: Builder) NewFieldDecl* (parent: Item.Item; name: Item.Name;
-                                      visibleFrom: Item.ModulePos;
-                                      exportMark: Item.ExportMark;
+PROCEDURE (b: Builder) NewFieldDecl* (parent: Sym.Item; name: Sym.Name;
+                                      visibleFrom: Sym.ModulePos;
+                                      exportMark: Sym.ExportMark;
                                       docString: Doc.Document;
-                                      type: Item.Type): Item.FieldDecl;
+                                      type: Sym.Type): Sym.FieldDecl;
   VAR
-    field: Item.FieldDecl;
+    field: Sym.FieldDecl;
   BEGIN
     NEW (field);
-    Item.InitFieldDecl (field, parent, name, visibleFrom, exportMark, docString, type);
+    Sym.InitFieldDecl (field, parent, name, visibleFrom, exportMark, docString, type);
     RETURN field
   END NewFieldDecl;
 
-PROCEDURE (b: Builder) NewPredefProc* (parent: Item.Item; name: Item.Name; id: Item.PredefId): Item.PredefProc;
+PROCEDURE (b: Builder) NewPredefProc* (parent: Sym.Item; name: Sym.Name; id: Sym.PredefId): Sym.PredefProc;
   VAR
-    pproc: Item.PredefProc;
+    pproc: Sym.PredefProc;
   BEGIN
     NEW (pproc);
-    Item.InitPredefProc (pproc, parent, name, id);
+    Sym.InitPredefProc (pproc, parent, name, id);
     RETURN pproc
   END NewPredefProc;
 
-PROCEDURE (b: Builder) NewProcDecl* (parent: Item.Item; name: Item.Name;
-                           visibleFrom: Item.ModulePos;
-                           exportMark: Item.ExportMark;
+PROCEDURE (b: Builder) NewProcDecl* (parent: Sym.Item; name: Sym.Name;
+                           visibleFrom: Sym.ModulePos;
+                           exportMark: Sym.ExportMark;
                            docString: Doc.Document;
-                           isTypeBound, isForwardDecl: BOOLEAN): Item.ProcDecl;
+                           isTypeBound, isForwardDecl: BOOLEAN): Sym.ProcDecl;
   VAR
-    procDecl: Item.ProcDecl;
+    procDecl: Sym.ProcDecl;
   BEGIN
     NEW (procDecl);
-    Item.InitProcDecl (procDecl, parent, name, visibleFrom, exportMark, 
+    Sym.InitProcDecl (procDecl, parent, name, visibleFrom, exportMark, 
                        docString, isTypeBound, isForwardDecl);
     RETURN procDecl
   END NewProcDecl;
 
 
 
-PROCEDURE (b: Builder) NewPredefType* (parent: Item.Item; id: Item.PredefId): Item.PredefType;
+PROCEDURE (b: Builder) NewPredefType* (parent: Sym.Item; id: Sym.PredefId): Sym.PredefType;
   VAR
-    ptype: Item.PredefType;
+    ptype: Sym.PredefType;
   BEGIN
     NEW (ptype);
-    Item.InitPredefType (ptype, parent, id);
+    Sym.InitPredefType (ptype, parent, id);
     RETURN ptype
   END NewPredefType;
 
-PROCEDURE (b: Builder) NewTypeName* (parent: Item.Item;
-                                     position: Item.Position;
-                                     module, ident: Item.Name): Item.TypeName;
+PROCEDURE (b: Builder) NewTypeName* (parent: Sym.Item;
+                                     position: Sym.Position;
+                                     module, ident: Sym.Name): Sym.TypeName;
   VAR
-    tname: Item.TypeName;
+    tname: Sym.TypeName;
   BEGIN
     NEW (tname);
-    Item.InitTypeName (tname, parent, position, module, ident);
+    Sym.InitTypeName (tname, parent, position, module, ident);
     RETURN tname
   END NewTypeName;
 
-PROCEDURE (b: Builder) NewRecord* (parent: Item.Item;
-                                   position: Item.Position;
-                                   baseType: Item.Type): Item.Record;
+PROCEDURE (b: Builder) NewRecord* (parent: Sym.Item;
+                                   position: Sym.Position;
+                                   baseType: Sym.Type): Sym.Record;
   VAR
-    record: Item.Record;
+    record: Sym.Record;
   BEGIN
     NEW (record);
-    Item.InitRecord (record, parent, position, baseType);
+    Sym.InitRecord (record, parent, position, baseType);
     RETURN record
   END NewRecord;
 
-PROCEDURE (b: Builder) NewArray* (parent: Item.Item; 
-                                  position: Item.Position;
+PROCEDURE (b: Builder) NewArray* (parent: Sym.Item; 
+                                  position: Sym.Position;
                                   isOpenArray: BOOLEAN;
-                                  elementType: Item.Type): Item.Array;
+                                  elementType: Sym.Type): Sym.Array;
   VAR
-    array: Item.Array;
+    array: Sym.Array;
   BEGIN
     NEW (array);
-    Item.InitArray (array, parent, position, isOpenArray, elementType);
+    Sym.InitArray (array, parent, position, isOpenArray, elementType);
     RETURN array
   END NewArray;
 
-PROCEDURE (b: Builder) NewPointer* (parent: Item.Item;
-                                    position: Item.Position;
-                                    baseType: Item.Type): Item.Pointer;
+PROCEDURE (b: Builder) NewPointer* (parent: Sym.Item;
+                                    position: Sym.Position;
+                                    baseType: Sym.Type): Sym.Pointer;
   VAR
-    ptr: Item.Pointer;
+    ptr: Sym.Pointer;
   BEGIN
     NEW (ptr);
-    Item.InitPointer (ptr, parent, position, baseType);
+    Sym.InitPointer (ptr, parent, position, baseType);
     RETURN ptr
   END NewPointer;
 
-PROCEDURE (b: Builder) NewFormalPars* (parent: Item.Item;
-                                       position: Item.Position;
-                                       resultType: Item.Type): Item.FormalPars;
+PROCEDURE (b: Builder) NewFormalPars* (parent: Sym.Item;
+                                       position: Sym.Position;
+                                       resultType: Sym.Type): Sym.FormalPars;
   VAR
-    fpars: Item.FormalPars;
+    fpars: Sym.FormalPars;
   BEGIN
     NEW (fpars);
-    Item.InitFormalPars (fpars, parent, position, resultType);
+    Sym.InitFormalPars (fpars, parent, position, resultType);
     RETURN fpars
   END NewFormalPars;
 
 
-PROCEDURE (b: Builder) Finalize* (module: Item.Module);
-  PROCEDURE CollectFormalPars (item: Item.Item);
-  (* Sets the field @ofield{OOC:SymbolTable:Item.FormalPars.params} for
+PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
+  PROCEDURE CollectFormalPars (item: Sym.Item);
+  (* Sets the field @ofield{Sym := OOC:SymbolTable.FormalPars.params} for
      all formal parameter definitions under @oparam{item}.  *)
     VAR
-      ptr: Item.Item;
+      ptr: Sym.Item;
       c: LONGINT;
     BEGIN
       IF (item # NIL) THEN
-        WITH item: Item.FormalPars DO
+        WITH item: Sym.FormalPars DO
           c := 0;
           ptr := item. nestedItems;
           WHILE (ptr # NIL) DO
-            IF (ptr IS Item.VarDecl) & 
-               ptr(Item.VarDecl). isParameter &
-               ~ptr(Item.VarDecl). isReceiver THEN
+            IF (ptr IS Sym.VarDecl) & 
+               ptr(Sym.VarDecl). isParameter &
+               ~ptr(Sym.VarDecl). isReceiver THEN
               INC (c)
             END;
             ptr := ptr. nextNested
@@ -251,10 +251,10 @@ PROCEDURE (b: Builder) Finalize* (module: Item.Module);
           c := 0;
           ptr := item. nestedItems;
           WHILE (ptr # NIL) DO
-            IF (ptr IS Item.VarDecl) &
-               ptr(Item.VarDecl). isParameter &
-               ~ptr(Item.VarDecl). isReceiver THEN
-              item. params[c] := ptr(Item.VarDecl);
+            IF (ptr IS Sym.VarDecl) &
+               ptr(Sym.VarDecl). isParameter &
+               ~ptr(Sym.VarDecl). isReceiver THEN
+              item. params[c] := ptr(Sym.VarDecl);
               INC (c)
             END;
             ptr := ptr. nextNested
@@ -270,18 +270,18 @@ PROCEDURE (b: Builder) Finalize* (module: Item.Module);
       END
     END CollectFormalPars;
   
-  PROCEDURE SetClassName (item: Item.Item);
+  PROCEDURE SetClassName (item: Sym.Item);
     VAR
-      ptr: Item.Item;
-      pointerDecl: Item.TypeDecl;
-      pointerName: Item.Name;
-      record: Item.Record;
+      ptr: Sym.Item;
+      pointerDecl: Sym.TypeDecl;
+      pointerName: Sym.Name;
+      record: Sym.Record;
       found: BOOLEAN;
       pos: INTEGER;
     
-    PROCEDURE SameType (decl: Item.Name; typeName: Item.Type): BOOLEAN;
+    PROCEDURE SameType (decl: Sym.Name; typeName: Sym.Type): BOOLEAN;
       BEGIN
-        WITH typeName: Item.TypeName DO
+        WITH typeName: Sym.TypeName DO
           RETURN (typeName. module = NIL) &
                  (typeName. ident. str^ = decl. str^)
         ELSE
@@ -289,17 +289,17 @@ PROCEDURE (b: Builder) Finalize* (module: Item.Module);
         END
       END SameType;
     
-    PROCEDURE GetPointerDecl (scope: Item.Item; typeName: Item.Name): Item.TypeDecl;
+    PROCEDURE GetPointerDecl (scope: Sym.Item; typeName: Sym.Name): Sym.TypeDecl;
       VAR
-        ptr: Item.Item;
-        pointerDecl: Item.TypeDecl;
+        ptr: Sym.Item;
+        pointerDecl: Sym.TypeDecl;
       BEGIN
         pointerDecl := NIL;
         ptr := scope. nestedItems;
         WHILE (ptr # NIL) DO
-          WITH ptr: Item.TypeDecl DO
-            IF (ptr. type IS Item.Pointer) &
-               SameType (typeName, ptr.type(Item.Pointer).srcCodeBaseType) THEN
+          WITH ptr: Sym.TypeDecl DO
+            IF (ptr. type IS Sym.Pointer) &
+               SameType (typeName, ptr.type(Sym.Pointer).srcCodeBaseType) THEN
               IF (pointerDecl = NIL) THEN
                 pointerDecl := ptr
               ELSE
@@ -313,14 +313,14 @@ PROCEDURE (b: Builder) Finalize* (module: Item.Module);
         RETURN pointerDecl
       END GetPointerDecl;
     
-    PROCEDURE HasTypeBoundProcedures (scope: Item.Item;
-                                      record, pointer: Item.Name): BOOLEAN;
+    PROCEDURE HasTypeBoundProcedures (scope: Sym.Item;
+                                      record, pointer: Sym.Name): BOOLEAN;
       VAR
-        ptr: Item.Item;
+        ptr: Sym.Item;
       BEGIN
         ptr := scope. nestedItems;
         WHILE (ptr # NIL) DO
-          WITH ptr: Item.ProcDecl DO
+          WITH ptr: Sym.ProcDecl DO
             IF ptr. isTypeBound &
                (SameType (record, ptr.formalPars.receiver.srcCodeType) OR
                 (pointer # NIL) &
@@ -336,11 +336,11 @@ PROCEDURE (b: Builder) Finalize* (module: Item.Module);
     
     BEGIN
       IF (item # NIL) THEN
-        WITH item: Item.TypeDecl DO
-          IF (item. type IS Item.Record) THEN
+        WITH item: Sym.TypeDecl DO
+          IF (item. type IS Sym.Record) THEN
             (* this is a type declaration for a record on the module level *)
-            ASSERT (item. parent IS Item.Module);
-            record := item. type(Item.Record);
+            ASSERT (item. parent IS Sym.Module);
+            record := item. type(Sym.Record);
             pointerDecl := GetPointerDecl (item. parent, item. name);
             IF (pointerDecl # NIL) THEN
               pointerName := pointerDecl. name
@@ -362,7 +362,7 @@ PROCEDURE (b: Builder) Finalize* (module: Item.Module);
               END
             END
           END
-        | item: Item.ProcDecl DO  (* skip all non-global declarations *)
+        | item: Sym.ProcDecl DO  (* skip all non-global declarations *)
           RETURN
         ELSE
         END;
@@ -380,7 +380,7 @@ PROCEDURE (b: Builder) Finalize* (module: Item.Module);
     SetClassName (module)
   END Finalize;
 
-PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Item.Module; VAR res: Channel.Result);
+PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Sym.Module; VAR res: Channel.Result);
   VAR
     writer: Storage.Writer;
   BEGIN
@@ -392,7 +392,7 @@ PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Item.Modu
     END
   END WriteSymbolTable;
 
-PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel; VAR res: Channel.Result): Item.Module;
+PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel; VAR res: Channel.Result): Sym.Module;
   VAR
     obj: Object.Object;
     reader: Storage.Reader;
@@ -403,7 +403,7 @@ PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel; VAR res: Channel.R
     IF (obj = NIL) THEN
       RETURN NIL
     ELSE
-      RETURN obj(Item.Module)
+      RETURN obj(Sym.Module)
     END
   END ReadSymbolTable;
 

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Namespace;
 (*  Implements namespaces and semantic checks on them.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:Namespace;
 
 
 IMPORT
-  OOC:Error, OOC:SymbolTable:Item, OOC:SymbolTable:TypeRules;
+  OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules;
 
 
 TYPE
@@ -31,8 +31,8 @@ TYPE
     (**A namespace maps names to declarations.  There are two different 
        search methods: @oproc{Namespace.IdentifyLocal} and 
        @oproc{Namespace.Identify}.  *)
-    (Item.NamespaceDesc)
-    localDecl-: Item.DeclarationArray;
+    (Sym.NamespaceDesc)
+    localDecl-: Sym.DeclarationArray;
     (* A list of local declarations of the namespace.  The array elements
        @samp{localDecl[0..@ofield{localCount}-1]} hold valid references.  *)
     localCount-: LONGINT;
@@ -110,19 +110,19 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 
 
-PROCEDURE InitNamespace (ns: Namespace; da: Item.DeclarationArray; 
+PROCEDURE InitNamespace (ns: Namespace; da: Sym.DeclarationArray; 
                          len: LONGINT);
   BEGIN
-    Item.InitNamespace (ns);
+    Sym.InitNamespace (ns);
     ns. localDecl := da;
     ns. localCount := len
   END InitNamespace;
 
-PROCEDURE (ns: Namespace) IdentifyLocal* (sourceContext: Item.Item;
-                   name: Item.Name; ignorePosition: BOOLEAN): Item.Declaration;
+PROCEDURE (ns: Namespace) IdentifyLocal* (sourceContext: Sym.Item;
+                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
   VAR
     s, e, m: LONGINT;
-    decl: Item.Declaration;
+    decl: Sym.Declaration;
   BEGIN
     s := 0; e := ns. localCount;
     WHILE (s < e) DO
@@ -142,7 +142,7 @@ PROCEDURE (ns: Namespace) IdentifyLocal* (sourceContext: Item.Item;
         IF (decl. visibleFrom > name. pos) & ~ignorePosition THEN
           decl := NIL
         END
-      ELSIF (decl. exportMark = Item.nameNotExported) THEN
+      ELSIF (decl. exportMark = Sym.nameNotExported) THEN
         (* query and declaration are in different modules: check if the name
            is exported *)
         decl := NIL
@@ -153,13 +153,13 @@ PROCEDURE (ns: Namespace) IdentifyLocal* (sourceContext: Item.Item;
     END
   END IdentifyLocal;
 
-PROCEDURE (ns: Namespace) Identify* (sourceContext: Item.Item;
-                   name: Item.Name; ignorePosition: BOOLEAN): Item.Declaration;
+PROCEDURE (ns: Namespace) Identify* (sourceContext: Sym.Item;
+                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
   BEGIN
     RETURN ns. IdentifyLocal (sourceContext, name, ignorePosition)
   END Identify;
 
-PROCEDURE ErrDecl (code: Error.Code; decl: Item.Declaration; errList: Error.List);
+PROCEDURE ErrDecl (code: Error.Code; decl: Sym.Declaration; errList: Error.List);
   VAR
     lastError: Error.Msg;
   BEGIN
@@ -179,7 +179,7 @@ PROCEDURE (ns: Namespace) CheckLocalUniqueness* (errList: Error.List);
    Note: Forward declarations of procedures are not part of any namespace.  *)
   VAR
     min, i, j, h: LONGINT;
-    da: Item.DeclarationArray;
+    da: Sym.DeclarationArray;
   BEGIN
     da := ns. localDecl;
     i := 0;
@@ -220,13 +220,13 @@ PROCEDURE (ns: Namespace) CheckLocalUniqueness* (errList: Error.List);
 
 
 PROCEDURE InitNested (ns: Nested; 
-                               da: Item.DeclarationArray; len: LONGINT);
+                               da: Sym.DeclarationArray; len: LONGINT);
   BEGIN
     InitNamespace (ns, da, len);
     ns. nestedIn := NIL
   END InitNested;
 
-PROCEDURE NewNested* (da: Item.DeclarationArray; len: LONGINT): Namespace;
+PROCEDURE NewNested* (da: Sym.DeclarationArray; len: LONGINT): Namespace;
   VAR
     ns: Nested;
   BEGIN
@@ -241,16 +241,16 @@ PROCEDURE (ns: Nested) SetEnclosingNamespace* (ns0: Namespace);
     ns. nestedIn := ns0
   END SetEnclosingNamespace;
 
-PROCEDURE (ns: Nested) IdentifyLocal* (sourceContext: Item.Item;
-                   name: Item.Name; ignorePosition: BOOLEAN): Item.Declaration;
+PROCEDURE (ns: Nested) IdentifyLocal* (sourceContext: Sym.Item;
+                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
   BEGIN
     RETURN ns. IdentifyLocal^ (sourceContext, name, ignorePosition)
   END IdentifyLocal;
 
-PROCEDURE (ns: Nested) Identify* (sourceContext: Item.Item;
-                   name: Item.Name; ignorePosition: BOOLEAN): Item.Declaration;
+PROCEDURE (ns: Nested) Identify* (sourceContext: Sym.Item;
+                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
   VAR
-    decl: Item.Declaration;
+    decl: Sym.Declaration;
   BEGIN
     decl := ns. IdentifyLocal (sourceContext, name, ignorePosition);
     IF (decl = NIL) & (ns. nestedIn # NIL) THEN
@@ -261,13 +261,13 @@ PROCEDURE (ns: Nested) Identify* (sourceContext: Item.Item;
 
 
 PROCEDURE InitExtended (ns: Extended; 
-                        da: Item.DeclarationArray; len: LONGINT);
+                        da: Sym.DeclarationArray; len: LONGINT);
   BEGIN
     InitNamespace (ns, da, len);
     ns. extends := NIL
   END InitExtended;
 
-PROCEDURE NewExtended* (da: Item.DeclarationArray; len: LONGINT): Namespace;
+PROCEDURE NewExtended* (da: Sym.DeclarationArray; len: LONGINT): Namespace;
   VAR
     ns: Extended;
   BEGIN
@@ -282,16 +282,16 @@ PROCEDURE (ns: Extended) SetBaseNamespace* (ns0: Namespace);
     ns. extends := ns0
   END SetBaseNamespace;
 
-PROCEDURE (ns: Extended) IdentifyLocal* (sourceContext: Item.Item;
-                   name: Item.Name; ignorePosition: BOOLEAN): Item.Declaration;
+PROCEDURE (ns: Extended) IdentifyLocal* (sourceContext: Sym.Item;
+                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
   BEGIN
     RETURN ns. IdentifyLocal^ (sourceContext, name, ignorePosition)
   END IdentifyLocal;
 
-PROCEDURE (ns: Extended) Identify* (sourceContext: Item.Item;
-                   name: Item.Name; ignorePosition: BOOLEAN): Item.Declaration;
+PROCEDURE (ns: Extended) Identify* (sourceContext: Sym.Item;
+                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
   VAR
-    decl: Item.Declaration;
+    decl: Sym.Declaration;
   BEGIN
     decl := ns. IdentifyLocal (sourceContext, name, ignorePosition);
     IF (decl = NIL) & (ns. extends # NIL) THEN
@@ -300,7 +300,7 @@ PROCEDURE (ns: Extended) Identify* (sourceContext: Item.Item;
     RETURN decl
   END Identify;
 
-PROCEDURE (ns: Extended) InsertTBProc* (procDecl: Item.ProcDecl;
+PROCEDURE (ns: Extended) InsertTBProc* (procDecl: Sym.ProcDecl;
                                         errList: Error.List);
 (**Adds the type-bound procedure @oparam{procDecl} to the namespace 
    @oparam{ns}.  If a record field or type-bound procedure of this name
@@ -311,7 +311,7 @@ PROCEDURE (ns: Extended) InsertTBProc* (procDecl: Item.ProcDecl;
    Inherited names are not taken into account.  *)
   VAR
     s, e, m, i: LONGINT;
-    n: Item.DeclarationArray;
+    n: Sym.DeclarationArray;
   BEGIN
     IF (ns. IdentifyLocal (procDecl, procDecl. name, FALSE) # NIL) THEN
       ErrDecl (multipleMemberForName, procDecl, errList)
@@ -345,7 +345,7 @@ PROCEDURE (ns: Extended) InsertTBProc* (procDecl: Item.ProcDecl;
     END
   END InsertTBProc;
 
-PROCEDURE (ns: Extended) CheckRestrictions* (record: Item.Record;
+PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
                                              tr: TypeRules.Rules;
                                              errList: Error.List);
 (**Checks the restrictions placed by the language on the names of record
@@ -356,30 +356,30 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Item.Record;
    
    When this procedure is done, all type-bound procedures of the record
    namespace have a valid value in
-   @ofield{Item.ProcDecl.tbProcIndex}, and the record's
-   @ofield{Item.Record.tbProcCount} correctly reflects the
+   @ofield{Sym.ProcDecl.tbProcIndex}, and the record's
+   @ofield{Sym.Record.tbProcCount} correctly reflects the
    number of type-bound procedures attached to it.  *)
   VAR
     i: LONGINT;
-    decl, base: Item.Declaration;
+    decl, base: Sym.Declaration;
   BEGIN
     FOR i := 0 TO ns. localCount-1 DO
       decl := ns. localDecl[i];
-      WITH decl: Item.FieldDecl DO
+      WITH decl: Sym.FieldDecl DO
         IF (ns. extends # NIL) & 
            (ns. extends. Identify (decl, decl. name, TRUE) # NIL) THEN
           ErrDecl (definedForBaseType, decl, errList)
         END
-      | decl: Item.ProcDecl DO
+      | decl: Sym.ProcDecl DO
         IF (ns. extends = NIL) THEN
           base := NIL
         ELSE
           base := ns. extends. Identify (decl, decl. name, TRUE);
         END;
         IF (base # NIL) THEN
-          WITH base: Item.FieldDecl DO
+          WITH base: Sym.FieldDecl DO
             ErrDecl (fieldExistsInBaseType, decl, errList)
-          | base: Item.ProcDecl DO
+          | base: Sym.ProcDecl DO
             IF (decl. exportMark # base. exportMark) THEN
               ErrDecl (invalidTBProcExport, decl, errList)
             END;

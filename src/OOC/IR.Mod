@@ -7,7 +7,7 @@ Log,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   SymbolId := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
-  OOC:AST, OOC:SymbolTable:Item, OOC:SymbolTable:Predef;
+  OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
 (**Some rules regarding the intermediate representation (short ``IR''):
 
@@ -81,7 +81,7 @@ TYPE
   ExpressionList* = POINTER TO ARRAY OF Expression;
   ExpressionDesc* = RECORD [ABSTRACT]
     (NodeDesc)
-    type-: Item.Type;
+    type-: Sym.Type;
   END;
 
 
@@ -93,7 +93,7 @@ TYPE
      and operators, this declaration may be overloaded, but in all other cases
      the declaration uniquely identifies the referenced entity.  *)
     (ExpressionDesc)
-    decl-: Item.Declaration;
+    decl-: Sym.Declaration;
     (**The entity refered to.  *)
   END;
 
@@ -254,7 +254,7 @@ TYPE
   ProcedureList* = POINTER TO ARRAY OF Procedure;
   ProcedureDesc = RECORD
     (NodeDesc)
-    decl-: Item.ProcDecl;
+    decl-: Sym.ProcDecl;
     statmSeq-: StatementSeq;             (* statements in body, never NIL *)
   END;
 
@@ -361,14 +361,14 @@ PROCEDURE (node: Node) [ABSTRACT] Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitExpression* (expr: Expression; sym: Symbol; type: Item.Type);
+PROCEDURE InitExpression* (expr: Expression; sym: Symbol; type: Sym.Type);
   BEGIN
     InitNode (expr, sym);
     expr. type := type;
   END InitExpression;
 
-PROCEDURE InitReference (ref: Reference; name: Symbol; type: Item.Type;
-                         decl: Item.Declaration);
+PROCEDURE InitReference (ref: Reference; name: Symbol; type: Sym.Type;
+                         decl: Sym.Declaration);
   BEGIN
     InitExpression (ref, name, type);
     ref. decl := decl;
@@ -377,14 +377,14 @@ PROCEDURE InitReference (ref: Reference; name: Symbol; type: Item.Type;
 
 (* -------- *)
 
-PROCEDURE InitConst (const: Const; sym: Symbol; type: Item.Type;
+PROCEDURE InitConst (const: Const; sym: Symbol; type: Sym.Type;
                      value: Language.Value);
   BEGIN
     InitExpression (const, sym, type);
     const. value := value;
   END InitConst;
 
-PROCEDURE NewConst (sym: Symbol; type: Item.Type;
+PROCEDURE NewConst (sym: Symbol; type: Sym.Type;
                     value: Language.Value): Const;
   VAR
     const: Const;
@@ -444,13 +444,13 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
 
 (* -------- *)
 
-PROCEDURE InitVar (var: Var; name: Symbol; type: Item.Type;
-                   decl: Item.VarDecl);
+PROCEDURE InitVar (var: Var; name: Symbol; type: Sym.Type;
+                   decl: Sym.VarDecl);
   BEGIN
     InitReference (var, name, type, decl);
   END InitVar;
 
-PROCEDURE NewVar (name: Symbol; decl: Item.VarDecl): Var;
+PROCEDURE NewVar (name: Symbol; decl: Sym.VarDecl): Var;
   VAR
     var: Var;
   BEGIN
@@ -469,13 +469,13 @@ PROCEDURE (var: Var) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitPredefProc (pproc: PredefProc; name: Symbol; type: Item.Type;
-                          decl: Item.PredefProc);
+PROCEDURE InitPredefProc (pproc: PredefProc; name: Symbol; type: Sym.Type;
+                          decl: Sym.PredefProc);
   BEGIN
     InitReference (pproc, name, type, decl);
   END InitPredefProc;
 
-PROCEDURE NewPredefProc (name: Symbol; decl: Item.PredefProc): PredefProc;
+PROCEDURE NewPredefProc (name: Symbol; decl: Sym.PredefProc): PredefProc;
   VAR
     pproc: PredefProc;
   BEGIN
@@ -494,12 +494,12 @@ PROCEDURE (pproc: PredefProc) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitProcedureRef (procRef: ProcedureRef; name: Symbol; decl: Item.ProcDecl);
+PROCEDURE InitProcedureRef (procRef: ProcedureRef; name: Symbol; decl: Sym.ProcDecl);
   BEGIN
     InitReference (procRef, name, decl. formalPars, decl);
   END InitProcedureRef;
 
-PROCEDURE NewProcedureRef (name: Symbol; decl: Item.ProcDecl): ProcedureRef;
+PROCEDURE NewProcedureRef (name: Symbol; decl: Sym.ProcDecl): ProcedureRef;
   VAR
     procRef: ProcedureRef;
   BEGIN
@@ -518,12 +518,12 @@ PROCEDURE (procRef: ProcedureRef) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitModuleRef (modRef: ModuleRef; name: Symbol; decl: Item.Module);
+PROCEDURE InitModuleRef (modRef: ModuleRef; name: Symbol; decl: Sym.Module);
   BEGIN
     InitReference (modRef, name, NIL, decl);
   END InitModuleRef;
 
-PROCEDURE NewModuleRef (name: Symbol; decl: Item.Module): ModuleRef;
+PROCEDURE NewModuleRef (name: Symbol; decl: Sym.Module): ModuleRef;
   VAR
     modRef: ModuleRef;
   BEGIN
@@ -542,17 +542,17 @@ PROCEDURE (modRef: ModuleRef) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item; 
+PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item; 
                                      name: Symbol): Expression;
   VAR
-    decl: Item.Declaration;
+    decl: Sym.Declaration;
   
-  PROCEDURE GetName (sym: Symbol): Item.Name;
+  PROCEDURE GetName (sym: Symbol): Sym.Name;
     VAR
-      name: Item.Name;
+      name: Sym.Name;
     BEGIN
       NEW (name);
-      Item.InitName (name, sym. str, sym. pos, sym. line, sym. column);
+      Sym.InitName (name, sym. str, sym. pos, sym. line, sym. column);
       RETURN name
     END GetName;
   
@@ -562,15 +562,15 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
       IF (decl = NIL) THEN
         b. ErrSym (undeclaredIdent, name)
       ELSE
-        WITH decl: Item.ConstDecl DO
+        WITH decl: Sym.ConstDecl DO
           RETURN NewConst (name, decl. type, decl. value)
-        | decl: Item.VarDecl DO
+        | decl: Sym.VarDecl DO
           RETURN NewVar (name, decl)
-        | decl: Item.PredefProc DO
+        | decl: Sym.PredefProc DO
           RETURN NewPredefProc (name, decl)
-        | decl: Item.ProcDecl DO
+        | decl: Sym.ProcDecl DO
           RETURN NewProcedureRef (name, decl)
-        | decl: Item.Import DO
+        | decl: Sym.Import DO
           RETURN NewModuleRef (name, decl. externalSymTab)
         ELSE
           Log.Type ("Unknown decl in NewIdentRef", decl);
@@ -587,15 +587,15 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
     RETURN errorExpr 
   END NewIdentRef;
 
-PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Item.Item; 
+PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Sym.Item; 
                                       name: Symbol): Expression;
   BEGIN
-    RETURN b. NewIdentRef (modref. decl(Item.Module). ns, context, name)
+    RETURN b. NewIdentRef (modref. decl(Sym.Module). ns, context, name)
   END NewQualident;
 
 (* -------- *)
 
-PROCEDURE InitOperator* (op: Operator; sym: Symbol; type: Item.Type;
+PROCEDURE InitOperator* (op: Operator; sym: Symbol; type: Sym.Type;
                          opnd1, opnd2: Expression);
   BEGIN
     InitExpression (op, sym, type);
@@ -793,9 +793,9 @@ PROCEDURE (whileStatm: WhileStatm) Accept* (v: Visitor);
 PROCEDURE InitCall* (call: Call; design: Expression; arguments: ExpressionList);
   BEGIN
     InitStatement (call, design. sym);
-    IF (design. type(Item.FormalPars). resultType # NIL) THEN
+    IF (design. type(Sym.FormalPars). resultType # NIL) THEN
       (* fix result type for function calls *)
-      call. type := design. type(Item.FormalPars). resultType
+      call. type := design. type(Sym.FormalPars). resultType
     END;
     call. design := design;
     call. arguments := arguments;
@@ -807,7 +807,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
   BEGIN
     NEW (call);
     WITH design: PredefProc DO
-      CASE design. decl(Item.PredefProc). id OF
+      CASE design. decl(Sym.PredefProc). id OF
       | Predef.assert:
         RETURN b. NewAssert (design. sym, arguments,
                    GetPragmaValue (b, StdPragmas.assertions, design. sym. pos))
@@ -829,7 +829,7 @@ PROCEDURE (call: Call) Accept* (v: Visitor);
 (* -------- *)
 
 PROCEDURE InitProcedure* (p: Procedure; sym: Symbol; 
-                          decl: Item.ProcDecl; statmSeq: StatementSeq);
+                          decl: Sym.ProcDecl; statmSeq: StatementSeq);
   BEGIN
     InitNode (p, sym);
     p. decl := decl;
@@ -837,7 +837,7 @@ PROCEDURE InitProcedure* (p: Procedure; sym: Symbol;
   END InitProcedure;
 
 PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
-                       decl: Item.ProcDecl; statmSeq: StatementSeq): Procedure;
+                       decl: Sym.ProcDecl; statmSeq: StatementSeq): Procedure;
   VAR
     p: Procedure;
   BEGIN

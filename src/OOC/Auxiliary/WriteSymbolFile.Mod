@@ -2,11 +2,11 @@ MODULE OOC:Auxiliary:WriteSymbolFile;
 
 IMPORT
   Channel, Files, Msg, 
-  OOC:Repository, OOC:Error, OOC:SymbolTable:Item, OOC:SymbolTable:Builder,
+  OOC:Repository, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Exports;
   
 
-PROCEDURE WriteSymbolFile* (m: Repository.Module; symTab: Item.Module;
+PROCEDURE WriteSymbolFile* (m: Repository.Module; symTab: Sym.Module;
                             errList: Error.List);
   VAR
     res: Msg.Msg;
@@ -15,7 +15,7 @@ PROCEDURE WriteSymbolFile* (m: Repository.Module; symTab: Item.Module;
   BEGIN
     ch := m. GetOutputChannel (Repository.modSymbolFile, TRUE, res);
     IF (res = NIL) THEN
-      Item.Prune (symTab, Exports.GetExports (symTab)); (* ... *)
+      Sym.Prune (symTab, Exports.GetExports (symTab)); (* ... *)
       stb := Builder.New();
       stb. WriteSymbolTable (ch, symTab, res);
       ch(Files.File). Register;

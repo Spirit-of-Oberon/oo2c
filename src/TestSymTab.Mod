@@ -5,9 +5,9 @@ IMPORT
   Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,
-  OOC:Error, OOC:AST, OOC:SymbolTable:Item, Rep := OOC:Repository,
+  OOC:Error, OOC:AST, Sym := OOC:SymbolTable, Rep := OOC:Repository,
   Make, Make:Command:Target, OOC:Make:Entity:ModuleFile,
-  XML := OOC:SymbolTable:Item:XML, OOC:Auxiliary:ParseModule,
+  XML := OOC:SymbolTable:XML, OOC:Auxiliary:ParseModule,
   OOC:Make:Command:InterfaceXML, OOC:Make:Command:CompileModule;
   
 CONST
@@ -77,7 +77,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
    *)
   VAR
     ast: AST.Node;
-    symTab: Item.Module;
+    symTab: Sym.Module;
     errList: Error.List;
     res: Msg.Msg;
     outputChannel: Channel.Channel;

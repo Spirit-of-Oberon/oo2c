@@ -23,7 +23,7 @@ MODULE OOC:SymbolTable:Predef;
 
 IMPORT
   Strings, Language, Language:Boolean,
-  OOC:SymbolTable:Item, OOC:SymbolTable:Builder;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
 CONST
@@ -52,63 +52,63 @@ CONST
   assert* = 0;
 
 
-PROCEDURE GetName (name: ARRAY OF CHAR): Item.Name;
+PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
   VAR
-    n: Item.Name;
-    str: Item.NameString;
+    n: Sym.Name;
+    str: Sym.NameString;
   BEGIN
     NEW (n);
     NEW (str, Strings.Length (name)+1);
     COPY (name, str^);
-    Item.InitName (n, str, 0, 1, 0);
+    Sym.InitName (n, str, 0, 1, 0);
     RETURN n
   END GetName;
 
 PROCEDURE PredefType (stb: Builder.Builder;
-                      module: Item.Module;
-                      id: Item.PredefId;
-                      name: ARRAY OF CHAR): Item.PredefType;
+                      module: Sym.Module;
+                      id: Sym.PredefId;
+                      name: ARRAY OF CHAR): Sym.PredefType;
   VAR
-    ptype: Item.PredefType;
-    tdecl: Item.TypeDecl;
+    ptype: Sym.PredefType;
+    tdecl: Sym.TypeDecl;
   BEGIN
     ptype := stb. NewPredefType (module, id);
-    Item.predefIdToType[id] := ptype;
+    Sym.predefIdToType[id] := ptype;
     IF (name # "") THEN
       tdecl := stb. NewTypeDecl (module, GetName (name), 0,
-                                 Item.nameExported, NIL, ptype)
+                                 Sym.nameExported, NIL, ptype)
     END;
     RETURN ptype
   END PredefType;
 
-PROCEDURE CreatePredef* (stb: Builder.Builder): Item.Module;
+PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
 (**Creates the symbol table of the pseudo module that contains the predefined
    entities of the language, that can be used directly in a module without
    prefixing them with a module name.  It declares types like @samp{CHAR},
    @samp{BOOLEAN}, or @samp{INTEGER}, as well as predefined procedures and
    functions, like @samp{COPY} or @samp{LEN}.  *)
   VAR
-    module: Item.Module;
-    ptype: Item.PredefType;
+    module: Sym.Module;
+    ptype: Sym.PredefType;
     
-  PROCEDURE PredefProc (id: Item.PredefId; name: ARRAY OF CHAR);
+  PROCEDURE PredefProc (id: Sym.PredefId; name: ARRAY OF CHAR);
     VAR
-      pproc: Item.PredefProc;
+      pproc: Sym.PredefProc;
     BEGIN
       pproc := stb. NewPredefProc (module, GetName (name), id);
     END PredefProc;
   
   PROCEDURE PredefConst (name: ARRAY OF CHAR; value: Language.Value;
-                         type: Item.PredefType);
+                         type: Sym.PredefType);
     VAR
-      cdecl: Item.ConstDecl;
+      cdecl: Sym.ConstDecl;
     BEGIN
-      cdecl := stb. NewConstDecl (module, GetName (name), 0, Item.nameExported,
+      cdecl := stb. NewConstDecl (module, GetName (name), 0, Sym.nameExported,
                                   NIL, value, type)
     END PredefConst;
   
   BEGIN
-    module := stb. NewModule (GetName ("#predef"), NIL, Item.mcInternal, Item.callConvInternal);
+    module := stb. NewModule (GetName ("#predef"), NIL, Sym.mcInternal, Sym.callConvInternal);
     
     ptype := PredefType (stb, module, boolean, "BOOLEAN");
     PredefConst ("FALSE", Boolean.New (FALSE), ptype);
@@ -133,13 +133,13 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Item.Module;
     RETURN module
   END CreatePredef;
 
-PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Item.Module;
+PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
 (**Creates the symbol table of the pseudo module @code{SYSTEM}.  *)
   VAR
-    module: Item.Module;
-    ptype: Item.PredefType;
+    module: Sym.Module;
+    ptype: Sym.PredefType;
   BEGIN
-    module := stb. NewModule (GetName ("SYSTEM"), NIL, Item.mcInternal, Item.callConvInternal);
+    module := stb. NewModule (GetName ("SYSTEM"), NIL, Sym.mcInternal, Sym.callConvInternal);
     
     ptype := PredefType (stb, module, address, "ADDRESS");
     ptype := PredefType (stb, module, byte, "BYTE");
@@ -149,11 +149,11 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Item.Module;
     RETURN module
   END CreateSYSTEM;
 
-PROCEDURE GetType* (id: Item.PredefId): Item.PredefType;
+PROCEDURE GetType* (id: Sym.PredefId): Sym.PredefType;
   BEGIN
-    RETURN Item.predefIdToType[id]
+    RETURN Sym.predefIdToType[id]
   END GetType;
 
 BEGIN
-  NEW (Item.predefIdToType, lastId+1)
+  NEW (Sym.predefIdToType, lastId+1)
 END OOC:SymbolTable:Predef.

@@ -1,13 +1,13 @@
 MODULE OOC:Auxiliary:GetSymbolTable;
 
 IMPORT
-  URI, OOC:Error, OOC:SymbolTable:Item, OOC:SymbolTable:CreateNamespace,
+  URI, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:CreateNamespace,
   OOC:Repository, OOC:Auxiliary:Config;
   
 PROCEDURE GetSymbolTable* (module: Repository.Module; config: Config.Config;
-                           VAR res: Error.Msg): Item.Module;
+                           VAR res: Error.Msg): Sym.Module;
   VAR
-    symTab: Item.Module;
+    symTab: Sym.Module;
     errList: Error.List;
     uriStr: Repository.URIBuffer;
     uri: URI.URI;

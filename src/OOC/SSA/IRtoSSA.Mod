@@ -1,7 +1,7 @@
 MODULE OOC:SSA:IRtoSSA;
 
 IMPORT
-  Log,  OOC:SymbolTable:Item, OOC:SymbolTable:Predef, OOC:IR, OOC:IR:Operator,
+  Log,  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, OOC:IR:Operator,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 
@@ -39,7 +39,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         adrOpnd: SSA.Opnd;
       BEGIN
         (* doesn't calculate size yet... FIXME *)
-        ASSERT (indexOp. type(Item.PredefType). id = Predef.char);
+        ASSERT (indexOp. type(Sym.PredefType). id = Predef.char);
 
         (* take the "get" instruction of the array's designator and
            change it into a "get" for the array element *)

@@ -24,8 +24,8 @@ MODULE OOC:Make:Command:InterfaceDescr;
 IMPORT
   Channel, Files, Make, Msg, ADT:String, ADT:Dictionary, URI, 
   OOC:Auxiliary:GetSymbolTable, OOC:Auxiliary:Config,
-  OOC:Error, OOC:Repository, OOC:SymbolTable:Item, 
-  OOC:SymbolTable:Item:InterfaceDescr, OOC:Make:Entity:ModuleFile, 
+  OOC:Error, OOC:Repository, Sym := OOC:SymbolTable, 
+  OOC:SymbolTable:InterfaceDescr, OOC:Make:Entity:ModuleFile, 
   OOC:Doc:ResolveRef, OOC:Make:Entity:UsageData;
 
 TYPE
@@ -63,7 +63,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
 (**Writes the description of the module's public interface as an XML document.
    *)
   VAR
-    symTab: Item.Module;
+    symTab: Sym.Module;
     errList: Error.List;
     res: Msg.Msg;
     outputChannel: Channel.Channel;

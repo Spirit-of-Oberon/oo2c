@@ -103,22 +103,22 @@ IMPORT
 
 (* Symbol Table
    ------------------------------------------------------------------------ *)
-  OOC:SymbolTable:Item,
+  Sym := OOC:SymbolTable,
     (* Defines the entries and structure of the standard symbol table.
        Provides the basic namespace interface, and the basic infrastructure
        for storage and retrieval of persistent symbol table data.  *)
   
-  OOC:SymbolTable:Item:XML,
+  OOC:SymbolTable:XML,
     (* Writes a symbol table to an XML document.  *)
   
-  OOC:SymbolTable:Item:GetClass,
+  OOC:SymbolTable:GetClass,
     (* Determines the class name for a given item.  This is mainly used
        to structure documentation automatically generated from sources
        files.  *)
        
   SymbolTableBuilder := OOC:SymbolTable:Builder,
     (* Defines a builder class with factory methods for the symbol table
-       entries defined in @omodule{OOC:SymbolTable:Item}.  *)
+       entries defined in @omodule{Sym := OOC:SymbolTable}.  *)
   
   OOC:SymbolTable:Predef,
     (* Defines symbol table of pseudo module with predefined entities,

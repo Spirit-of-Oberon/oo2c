@@ -22,7 +22,7 @@ MODULE OOC:AST [OOC_EXTENSIONS];
 
 IMPORT
   Strings, OOC:Scanner:InputBuffer, OOC:Doc, OOC:Scanner:Builder:BasicList,
-  OOC:SymbolTable:Item, OOC:Scanner:Symbol (*for refs in docs*);
+  Sym := OOC:SymbolTable, OOC:Scanner:Symbol (*for refs in docs*);
 
 TYPE
   Name* = InputBuffer.CharArray;
@@ -220,7 +220,7 @@ PROCEDURE (n: Node) AttachDocString* (docComment: Doc.Document);
    Note: This procedure can be called more than once for a given node.  *)
   END AttachDocString;
 
-PROCEDURE (n: Node) SetSymTabEntry* (item: Item.Item);
+PROCEDURE (n: Node) SetSymTabEntry* (item: Sym.Item);
 (**Sets a reference from the node @oparam{n} of the abstract syntax tree to
    the corresponding item in the symbol table.  Currently, this method is
    only defined for procedure declarations.  *)

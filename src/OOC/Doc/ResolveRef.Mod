@@ -2,7 +2,7 @@ MODULE OOC:Doc:ResolveRef;
 
 IMPORT
   Msg, Strings, ADT:Object, ADT:Dictionary,
-  OOC:Error, OOC:Doc, OOC:SymbolTable:Item, OOC:SymbolTable:Exports,
+  OOC:Error, OOC:Doc, Sym := OOC:SymbolTable, OOC:SymbolTable:Exports,
   OOC:Config:Repositories;
   
 CONST
@@ -219,7 +219,7 @@ PROCEDURE ParseRef (ref: Doc.OberonRef; errList: Error.List;
     RETURN (lastError = NIL)
   END ParseRef;
 
-PROCEDURE Resolve* (symTab: Item.Module;
+PROCEDURE Resolve* (symTab: Sym.Module;
                     repositories: Repositories.Section;
                     errList: Error.List);
   VAR
@@ -227,25 +227,25 @@ PROCEDURE Resolve* (symTab: Item.Module;
     
   PROCEDURE ResolveRef (doc: Doc.Document;
                         ref: Doc.OberonRef;
-                        refererDecl: Item.Declaration;
-                        identificationContext: Item.Item;
-                        nsRecord: Item.Namespace);
+                        refererDecl: Sym.Declaration;
+                        identificationContext: Sym.Item;
+                        nsRecord: Sym.Namespace);
     VAR
-      decl: Item.Declaration;
-      ns: Item.Namespace;
+      decl: Sym.Declaration;
+      ns: Sym.Namespace;
       tokenList: Doc.InlineList;
       external: BOOLEAN;
       part, ptr: Doc.InlineElement;
       lastError: Error.Msg;
-      module, id: Item.NameString;
+      module, id: Sym.NameString;
       len: LONGINT;
 
-    PROCEDURE GetName (): Item.Name;
+    PROCEDURE GetName (): Sym.Name;
       VAR
-        n: Item.Name;
+        n: Sym.Name;
       BEGIN
         NEW (n);
-        Item.InitName (n, part(Doc.Text). string, ref. pos. char,
+        Sym.InitName (n, part(Doc.Text). string, ref. pos. char,
                        ref. pos. line, ref. pos. column);
         RETURN n
       END GetName;
@@ -262,13 +262,13 @@ PROCEDURE Resolve* (symTab: Item.Module;
         errList. Append (lastError)
       END Err;
 
-    PROCEDURE Exported (decl: Item.Declaration): BOOLEAN;
+    PROCEDURE Exported (decl: Sym.Declaration): BOOLEAN;
       VAR
-        module: Item.Module;
+        module: Sym.Module;
         obj: Object.Object;
         exports: Dictionary.Dictionary;
       BEGIN
-        IF (decl IS Item.Module) THEN
+        IF (decl IS Sym.Module) THEN
           (* export flags don't apply to modules; an module is always public *)
           RETURN TRUE
         ELSE
@@ -327,10 +327,10 @@ PROCEDURE Resolve* (symTab: Item.Module;
             ns := identificationContext. Namespace();
             decl := ns. Identify (identificationContext, GetName(), TRUE)
           END;
-          IF (decl # NIL) & (decl IS Item.Import) THEN
+          IF (decl # NIL) & (decl IS Sym.Import) THEN
             (* replace import with the imported module *)
             doc. AddUsedImport (decl);
-            decl := decl(Item.Import). externalSymTab
+            decl := decl(Sym.Import). externalSymTab
           END;
 
           WHILE (decl # NIL) & (part. nextInline # NIL) DO
@@ -346,32 +346,32 @@ PROCEDURE Resolve* (symTab: Item.Module;
           ELSE
             CASE ref. mark OF
             | Doc.markOberonModule:
-              IF ~(decl IS Item.Module) THEN
+              IF ~(decl IS Sym.Module) THEN
                 Err (notModule)
               END
             | Doc.markOberonConst:
-              IF ~(decl IS Item.ConstDecl) THEN
+              IF ~(decl IS Sym.ConstDecl) THEN
                 Err (notConstDecl)
               END
             | Doc.markOberonField:
-              IF ~(decl IS Item.FieldDecl) THEN
+              IF ~(decl IS Sym.FieldDecl) THEN
                 Err (notFieldDecl)
               END
             | Doc.markOberonParam:
-              IF ~(decl IS Item.VarDecl) OR
-                 ~decl(Item.VarDecl). isParameter THEN
+              IF ~(decl IS Sym.VarDecl) OR
+                 ~decl(Sym.VarDecl). isParameter THEN
                 Err (notParameterDecl)
               END
             | Doc.markOberonProc:
-              IF ~(decl IS Item.ProcDecl) THEN
+              IF ~(decl IS Sym.ProcDecl) THEN
                 Err (notProcDecl)
               END
             | Doc.markOberonType:
-              IF ~(decl IS Item.TypeDecl) THEN
+              IF ~(decl IS Sym.TypeDecl) THEN
                 Err (notTypeDecl)
               END
             | Doc.markOberonVar:
-              IF ~(decl IS Item.VarDecl) OR decl(Item.VarDecl). isParameter THEN
+              IF ~(decl IS Sym.VarDecl) OR decl(Sym.VarDecl). isParameter THEN
                 Err (notVarDecl)
               END
             END;
@@ -386,9 +386,9 @@ PROCEDURE Resolve* (symTab: Item.Module;
       END
     END ResolveRef;
   
-  PROCEDURE ResolveDoc (doc: Doc.Document; refererDecl: Item.Declaration;
-                        identificationContext: Item.Item;
-                        nsRecord: Item.Namespace);
+  PROCEDURE ResolveDoc (doc: Doc.Document; refererDecl: Sym.Declaration;
+                        identificationContext: Sym.Item;
+                        nsRecord: Sym.Namespace);
                         
     PROCEDURE ResolveInlineList (inlineList: Doc.InlineElement);
       VAR
@@ -453,31 +453,31 @@ PROCEDURE Resolve* (symTab: Item.Module;
       ResolveInlineList (doc. summary)
     END ResolveDoc;
   
-  PROCEDURE RecResolve (item: Item.Item; identificationContext: Item.Item;
-                        nsRecord: Item.Namespace);
+  PROCEDURE RecResolve (item: Sym.Item; identificationContext: Sym.Item;
+                        nsRecord: Sym.Namespace);
     VAR
-      ptr: Item.Item;
-      ns: Item.Namespace;
+      ptr: Sym.Item;
+      ns: Sym.Namespace;
     BEGIN
-      IF (item IS Item.Declaration) THEN
+      IF (item IS Sym.Declaration) THEN
 
-        IF (item IS Item.ProcDecl) THEN
+        IF (item IS Sym.ProcDecl) THEN
           identificationContext := item
         ELSE
-          ns := item(Item.Declaration). GetEmbeddedNamespace (FALSE);
+          ns := item(Sym.Declaration). GetEmbeddedNamespace (FALSE);
           IF (ns # NIL) THEN
             nsRecord := ns
           END
         END;
         
-        IF (item(Item.Declaration). docString # NIL) THEN
-          ResolveDoc (item(Item.Declaration). docString, 
-                      item(Item.Declaration),
+        IF (item(Sym.Declaration). docString # NIL) THEN
+          ResolveDoc (item(Sym.Declaration). docString, 
+                      item(Sym.Declaration),
                       identificationContext,
                       nsRecord)
         END
         
-      ELSIF (item IS Item.Record) THEN
+      ELSIF (item IS Sym.Record) THEN
         nsRecord := item. Namespace()
       END;
       

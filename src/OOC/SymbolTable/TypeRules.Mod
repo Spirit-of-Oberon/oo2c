@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:TypeRules;
 (*  Defines the type rules of the language.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:TypeRules;
 *)
 
 IMPORT
-  OOC:SymbolTable:Item;
+  Sym := OOC:SymbolTable;
 
 
 TYPE
@@ -36,62 +36,62 @@ TYPE
   END;
 
 
-PROCEDURE (tr: Rules) IsNamedType* (type: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsNamedType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be accessed through
    a type name.  *)
   BEGIN
-    ASSERT (~(type IS Item.TypeName));
+    ASSERT (~(type IS Sym.TypeName));
     RETURN (type. typeName # NIL)
   END IsNamedType;
 
-PROCEDURE (tr: Rules) IsScalarType* (type: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsScalarType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is a scalar type, that is,
    if it is a predefined type, a pointer type, or a procedure type.  Result
    is @code{FALSE} for record and array types.  *)
   BEGIN
-    RETURN (type IS Item.PredefType) OR
-           (type IS Item.Pointer) OR
-           (type IS Item.FormalPars)
+    RETURN (type IS Sym.PredefType) OR
+           (type IS Sym.Pointer) OR
+           (type IS Sym.FormalPars)
   END IsScalarType;
 
 
-PROCEDURE (tr: Rules) IsOpenArrayType* (type: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsOpenArrayType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is an array, and its
    length is not known at compile time.  *)
   BEGIN
-    ASSERT (~(type IS Item.TypeName));
-    RETURN (type IS Item.Array) & type(Item.Array). isOpenArray
+    ASSERT (~(type IS Sym.TypeName));
+    RETURN (type IS Sym.Array) & type(Sym.Array). isOpenArray
   END IsOpenArrayType;
 
 
-PROCEDURE (tr: Rules) IsValidRecordBaseType* (type: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsValidRecordBaseType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    base type of a record definition.  *)
   BEGIN
-    RETURN (type IS Item.Record)
+    RETURN (type IS Sym.Record)
   END IsValidRecordBaseType;
 
-PROCEDURE (tr: Rules) IsValidParameterType* (type: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsValidParameterType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    type of a formal parameter definition.  *)
   BEGIN
-    ASSERT (~(type IS Item.TypeName));
+    ASSERT (~(type IS Sym.TypeName));
     RETURN tr. IsNamedType (type) OR
            tr. IsOpenArrayType (type) OR
-           (type IS Item.FormalPars)
+           (type IS Sym.FormalPars)
   END IsValidParameterType;
 
-PROCEDURE (tr: Rules) IsValidReceiverType* (type: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsValidReceiverType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    type of a receiver declaration.  *)
   BEGIN
-    ASSERT (~(type IS Item.TypeName));
+    ASSERT (~(type IS Sym.TypeName));
     RETURN
-      (type IS Item.Record) OR
-      (type IS Item.Pointer) & (type(Item.Pointer). baseType IS Item.Record)
+      (type IS Sym.Record) OR
+      (type IS Sym.Pointer) & (type(Sym.Pointer). baseType IS Sym.Record)
   END IsValidReceiverType;
 
-PROCEDURE (tr: Rules) IsValidResultType* (type: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsValidResultType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    result type of a formal parameter definition.  This function also 
    return @code{TRUE}, if @oparam{type} is @code{NIL}.  *)
@@ -99,14 +99,14 @@ PROCEDURE (tr: Rules) IsValidResultType* (type: Item.Type): BOOLEAN;
     RETURN (type = NIL) OR tr. IsScalarType (type)
   END IsValidResultType;
 
-PROCEDURE (tr: Rules) IsValidPointerBaseType* (type: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsValidPointerBaseType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
    base type of a pointer type definition.  *)
   BEGIN
-    RETURN (type IS Item.Array) OR (type IS Item.Record)
+    RETURN (type IS Sym.Array) OR (type IS Sym.Record)
   END IsValidPointerBaseType;
 
-PROCEDURE (tr: Rules) IsValidArrayElementType* (type: Item.Type; isOpenArray: BOOLEAN): BOOLEAN;
+PROCEDURE (tr: Rules) IsValidArrayElementType* (type: Sym.Type; isOpenArray: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
    element type of a array type definition.  The result may differ for
    open arrays and fixed length arrays.  *)
@@ -114,56 +114,56 @@ PROCEDURE (tr: Rules) IsValidArrayElementType* (type: Item.Type; isOpenArray: BO
     IF isOpenArray THEN
       RETURN TRUE
     ELSE
-      RETURN ~(type IS Item.Array) OR ~type(Item.Array). isOpenArray
+      RETURN ~(type IS Sym.Array) OR ~type(Sym.Array). isOpenArray
     END
   END IsValidArrayElementType;
 
-PROCEDURE ^ (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Item.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
+PROCEDURE ^ (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
 
-PROCEDURE (tr: Rules) SameType* (a, b: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) SameType* (a, b: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{a} and @oparam{b} are the @dfn{same type},
    as defined in the language report.  *)
   BEGIN
     RETURN (a = b) & ~tr. IsOpenArrayType (a)
   END SameType;
 
-PROCEDURE (tr: Rules) EqualTypes* (a, b: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) EqualTypes* (a, b: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{a} and @oparam{b} are of @dfn{equal type},
    as defined in the language report.  *)
   BEGIN
     RETURN tr. SameType (a, b) OR
            tr. IsOpenArrayType (a) & tr. IsOpenArrayType (b) &
-             tr. EqualTypes (a(Item.Array). elementType, 
-                             b(Item.Array). elementType) OR
-           (a IS Item.FormalPars) & (b IS Item.FormalPars) &
-             tr. FormalParamsMatch (a(Item.FormalPars), b(Item.FormalPars), FALSE)
+             tr. EqualTypes (a(Sym.Array). elementType, 
+                             b(Sym.Array). elementType) OR
+           (a IS Sym.FormalPars) & (b IS Sym.FormalPars) &
+             tr. FormalParamsMatch (a(Sym.FormalPars), b(Sym.FormalPars), FALSE)
            
   END EqualTypes;
 
-PROCEDURE (tr: Rules) IsExtensionOf* (type, base: Item.Type): BOOLEAN;
+PROCEDURE (tr: Rules) IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
 (* Result is TRUE iff the type @oparam{type} is an extension of the type
    @oparam{base}.  See Oberon-2 report, Appendix A.  *)
   BEGIN
     (* if `type' and `base' are pointers: reduce them to their base types *)
-    IF (type IS Item.Pointer) & (base IS Item.Pointer) THEN
-      type := type(Item.Pointer). baseType;
-      base := base(Item.Pointer). baseType
+    IF (type IS Sym.Pointer) & (base IS Sym.Pointer) THEN
+      type := type(Sym.Pointer). baseType;
+      base := base(Sym.Pointer). baseType
     END;
-    IF (type IS Item.Record) & (base IS Item.Record) THEN
+    IF (type IS Sym.Record) & (base IS Sym.Record) THEN
       (* either `type' and `base' where records from the start, or they were
          both record pointers *)
-      WHILE (type # NIL) & (type IS Item.Record) DO 
+      WHILE (type # NIL) & (type IS Sym.Record) DO 
         IF tr. SameType (type, base) THEN
           RETURN TRUE
         ELSE
-          type := type(Item.Record). baseType
+          type := type(Sym.Record). baseType
         END
       END
     END;
     RETURN FALSE
   END IsExtensionOf;
 
-PROCEDURE (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Item.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
+PROCEDURE (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE}, iff the formal parameter lists described by 
    @oparam{baseFPars} and @oparam{procFPars} match.  The comparison includes
    the formal parameters, the result type, and any rest parameter.  The
@@ -203,7 +203,7 @@ PROCEDURE (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Item.FormalPars;
     END
   END FormalParamsMatch;
 
-PROCEDURE (tr: Rules) IsValidRedefinition* (baseFPars, procFPars: Item.FormalPars): BOOLEAN;
+PROCEDURE (tr: Rules) IsValidRedefinition* (baseFPars, procFPars: Sym.FormalPars): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{procFPars} is a valid redefinition of
    the type-bound procedure @oparam{baseFPars}.  *)
   BEGIN
@@ -212,7 +212,7 @@ PROCEDURE (tr: Rules) IsValidRedefinition* (baseFPars, procFPars: Item.FormalPar
       tr. FormalParamsMatch (baseFPars, procFPars, TRUE)
   END IsValidRedefinition;
 
-PROCEDURE (tr: Rules) IsValidForwardDecl* (forward, proc: Item.FormalPars): BOOLEAN;
+PROCEDURE (tr: Rules) IsValidForwardDecl* (forward, proc: Sym.FormalPars): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{forward} is a valid forward declaration
    of the procedure @oparam{proc}.  *)
   BEGIN

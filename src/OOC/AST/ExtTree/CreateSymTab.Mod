@@ -23,7 +23,7 @@ MODULE OOC:AST:ExtTree:CreateSymTab;
 IMPORT
   Msg, ADT:String, URI, ParserURI := URI:Parser,
   OOC:AST, OOC:Scanner:Builder:BasicList, OOC:AST:ExtTree,
-  OOC:SymbolTable:Item,
+  Sym := OOC:SymbolTable,
   SymTabBuilder := OOC:SymbolTable:Builder;
 
 
@@ -33,13 +33,13 @@ TYPE
     (ExtTree.VisitorDesc)
     stb: SymTabBuilder.Builder;
     (* the builder used to create the symbol table entries *)
-    parent: Item.Item;
+    parent: Sym.Item;
     (* when calling a visit method, this field holds a reference to the
        current parent of newly created symbol table entries *)
-    type: Item.Type;
+    type: Sym.Type;
     (* a visit method that creates a new type (or a type name), places
        the type object here *)
-    root: Item.Module;
+    root: Sym.Module;
     (* the root of the newly created symbol table; this is the result of
        @oproc{CreateSymTab} *)
     baseURI: URI.HierarchicalURI;
@@ -49,10 +49,10 @@ TYPE
   END;
 
 
-PROCEDURE GetName* (node: AST.Node): Item.Name;
+PROCEDURE GetName* (node: AST.Node): Sym.Name;
   VAR
     sym: BasicList.Symbol;
-    name: Item.Name;
+    name: Sym.Name;
   BEGIN
     WITH node: ExtTree.Terminal DO
       sym := node. sym
@@ -60,14 +60,14 @@ PROCEDURE GetName* (node: AST.Node): Item.Name;
       sym := node. ident. sym
     END;
     NEW (name);
-    Item.InitName (name, sym. str, sym. pos, sym. line, sym. column);
+    Sym.InitName (name, sym. str, sym. pos, sym. line, sym. column);
     RETURN name
   END GetName;
 
-PROCEDURE GetPosition (node: AST.Node): Item.Position;
+PROCEDURE GetPosition (node: AST.Node): Sym.Position;
   VAR
     sym: BasicList.Symbol;
-    position: Item.Position;
+    position: Sym.Position;
   BEGIN
     WITH node: ExtTree.Terminal DO
       sym := node. sym
@@ -75,27 +75,27 @@ PROCEDURE GetPosition (node: AST.Node): Item.Position;
       sym := node. ident. sym
     END;
     NEW (position);
-    Item.InitPosition (position, sym. pos, sym. line, sym. column);
+    Sym.InitPosition (position, sym. pos, sym. line, sym. column);
     RETURN position
   END GetPosition;
 
-PROCEDURE ExportMark (id: AST.Node): Item.ExportMark;
+PROCEDURE ExportMark (id: AST.Node): Sym.ExportMark;
   BEGIN
     WITH id: ExtTree.IdentDef DO
       IF (id. mark = NIL) THEN
-        RETURN Item.nameNotExported
+        RETURN Sym.nameNotExported
       ELSIF (id. mark. sym. str^ = "*") THEN
-        RETURN Item.nameExported
+        RETURN Sym.nameExported
       ELSIF (id. mark. sym. str^ = "-") THEN
-        RETURN Item.nameExportedRO
+        RETURN Sym.nameExportedRO
       ELSE
       END
     END
   END ExportMark;
 
-PROCEDURE EndOfType (t: AST.Node): Item.ModulePos;
+PROCEDURE EndOfType (t: AST.Node): Sym.ModulePos;
   VAR
-    end: Item.ModulePos;
+    end: Sym.ModulePos;
   BEGIN
     IF (t = NIL) THEN
       RETURN -1
@@ -135,19 +135,19 @@ PROCEDURE EndOfType (t: AST.Node): Item.ModulePos;
 
 PROCEDURE Accept (v: Visitor; node: AST.Node);
   VAR
-    oldParent: Item.Item;
+    oldParent: Sym.Item;
   BEGIN
     oldParent := v. parent;
     node(ExtTree.Node). Accept (v);
     v. parent := oldParent
   END Accept;
 
-PROCEDURE AcceptParent (v: Visitor; node: AST.Node; newParent: Item.Item);
+PROCEDURE AcceptParent (v: Visitor; node: AST.Node; newParent: Sym.Item);
 (* Like @oproc{Accept} above, but change the field @samp{v.parent} to 
    @oparam{newParent} before calling @oproc{Accept} for @oparam{node}.
    Afterwards, the old value of @samp{v.parent} is restored.  *)
   VAR
-    oldParent: Item.Item;
+    oldParent: Sym.Item;
   BEGIN
     oldParent := v. parent;
     v. parent := newParent;
@@ -155,9 +155,9 @@ PROCEDURE AcceptParent (v: Visitor; node: AST.Node; newParent: Item.Item);
     v. parent := oldParent
   END AcceptParent;
 
-PROCEDURE GetType (v: Visitor; node: AST.Node): Item.Type;
+PROCEDURE GetType (v: Visitor; node: AST.Node): Sym.Type;
   VAR
-    t: Item.Type;
+    t: Sym.Type;
   BEGIN
     v. type := NIL;
     Accept (v, node);
@@ -175,10 +175,10 @@ PROCEDURE (v: Visitor) VisitNodeList* (nl: ExtTree.NodeList);
 
 PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
   VAR
-    moduleDecl: Item.Module;
-    moduleName: Item.Name;
-    class: Item.ModuleClass;
-    callConv: Item.CallConv;
+    moduleDecl: Sym.Module;
+    moduleName: Sym.Name;
+    class: Sym.ModuleClass;
+    callConv: Sym.CallConv;
     mf: ExtTree.ModuleFlags;
     uri: URI.URI;
     str, prefixOption, suffixOption: String.String;
@@ -187,22 +187,22 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     n: AST.Node;
   BEGIN
     moduleName := GetName (module. name. nameList. n[0]);
-    Item.InitName (moduleName, module. moduleName, moduleName. pos, 
+    Sym.InitName (moduleName, module. moduleName, moduleName. pos, 
                    moduleName. line, moduleName. column);
     
     mf := NIL;
-    class := Item.mcStandard;
-    callConv := Item.callConvDefault;
+    class := Sym.mcStandard;
+    callConv := Sym.callConvDefault;
     IF (module. flags # NIL) & 
        (module. flags. flagList. n[0] IS ExtTree.ModuleFlags) THEN
       mf := module. flags. flagList. n[0](ExtTree.ModuleFlags);
       IF (mf. external. sym. str^ = "FOREIGN") THEN
-        class := Item.mcForeign
+        class := Sym.mcForeign
       ELSIF (mf. external. sym. str^ = "INTERFACE") THEN
-        class := Item.mcInterface
+        class := Sym.mcInterface
       END;
       str := mf. callConv. GetString (TRUE);
-      callConv := Item.StringToCallConv (str. array^);
+      callConv := Sym.StringToCallConv (str. array^);
     END;
     
     moduleDecl := v. stb. NewModule (moduleName, module. name. docString,
@@ -262,13 +262,13 @@ PROCEDURE (v: Visitor) VisitBody* (body: ExtTree.Body);
 
 PROCEDURE (v: Visitor) VisitImportDecl* (importDecl: ExtTree.ImportDecl);
   VAR
-    import: Item.Import;
-    name, moduleName: Item.Name;
+    import: Sym.Import;
+    name, moduleName: Sym.Name;
     nameSym: BasicList.Symbol;
   BEGIN
     (* extract module name from import statment *)
     moduleName := GetName (importDecl. module. nameList. n[0]);
-    Item.InitName (moduleName, importDecl. moduleName, moduleName. pos, 
+    Sym.InitName (moduleName, importDecl. moduleName, moduleName. pos, 
                    moduleName. line, moduleName. column);
 
     (* under which name is the module imported? *)
@@ -287,7 +287,7 @@ PROCEDURE (v: Visitor) VisitImportDecl* (importDecl: ExtTree.ImportDecl);
 
 PROCEDURE (v: Visitor) VisitConstDecl* (constDecl: ExtTree.ConstDecl);
   VAR
-    const: Item.ConstDecl;
+    const: Sym.ConstDecl;
   BEGIN
     const := v. stb. NewConstDecl (
         v. parent, GetName (constDecl. identDef. ident),
@@ -298,7 +298,7 @@ PROCEDURE (v: Visitor) VisitConstDecl* (constDecl: ExtTree.ConstDecl);
 
 PROCEDURE (v: Visitor) VisitTypeDecl* (typeDecl: ExtTree.TypeDecl);
   VAR
-    type: Item.TypeDecl;
+    type: Sym.TypeDecl;
   BEGIN
     type := v. stb. NewTypeDecl (
         v. parent, GetName (typeDecl. identDef. ident),
@@ -308,8 +308,8 @@ PROCEDURE (v: Visitor) VisitTypeDecl* (typeDecl: ExtTree.TypeDecl);
 
 PROCEDURE (v: Visitor) VisitVarDecl* (varDecl: ExtTree.VarDecl);
   VAR
-    type: Item.Type;
-    var: Item.VarDecl;
+    type: Sym.Type;
+    var: Sym.VarDecl;
     i: LONGINT;
   BEGIN
     type := GetType (v, varDecl. type);
@@ -325,27 +325,27 @@ PROCEDURE (v: Visitor) VisitVarDecl* (varDecl: ExtTree.VarDecl);
 
 PROCEDURE (v: Visitor) VisitReceiver* (receiver: ExtTree.Receiver);
   VAR
-    type: Item.Type;
-    var: Item.VarDecl;
+    type: Sym.Type;
+    var: Sym.VarDecl;
   BEGIN
     type := GetType (v, receiver. type);
     var := v. stb. NewVarDecl (v. parent, 
       GetName (receiver. ident), EndOfType (receiver. type),
-      Item.nameNotExported, receiver. ident. docString,
+      Sym.nameNotExported, receiver. ident. docString,
       TRUE, TRUE, receiver. var # NIL, type)
   END VisitReceiver;
 
 PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
   VAR
-    type: Item.Type;
-    var: Item.VarDecl;
+    type: Sym.Type;
+    var: Sym.VarDecl;
     i: LONGINT;
   BEGIN
     type := GetType (v, fpSection. type);
     FOR i := 0 TO fpSection. identList. len-1 BY 3 DO
       var := v. stb. NewVarDecl (v. parent,
         GetName (fpSection. identList. n[i]),
-        EndOfType (fpSection. type), Item.nameNotExported,
+        EndOfType (fpSection. type), Sym.nameNotExported,
         fpSection. identList. n[i](ExtTree.IdentDef). docString,
         TRUE, FALSE, fpSection. var # NIL, type)
     END
@@ -353,10 +353,10 @@ PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
 
 PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
   VAR
-    proc: Item.ProcDecl;
-    type: Item.Type;
-    formalPars: Item.FormalPars;
-    endPos: Item.ModulePos;
+    proc: Sym.ProcDecl;
+    type: Sym.Type;
+    formalPars: Sym.FormalPars;
+    endPos: Sym.ModulePos;
     i: LONGINT;
     nodePtr: AST.Node;
   BEGIN
@@ -405,8 +405,8 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
 
 PROCEDURE (v: Visitor) VisitFieldList* (fieldList: ExtTree.FieldList);
   VAR
-    field: Item.FieldDecl;
-    type: Item.Type;
+    field: Sym.FieldDecl;
+    type: Sym.Type;
     i: LONGINT;
   BEGIN
     type := GetType (v, fieldList. type);
@@ -435,8 +435,8 @@ PROCEDURE (v: Visitor) VisitOperator* (operator: ExtTree.Operator);
 
 PROCEDURE (v: Visitor) VisitRecordType* (recordType: ExtTree.RecordType);
   VAR
-    record: Item.Record;
-    baseType: Item.Type;
+    record: Sym.Record;
+    baseType: Sym.Type;
     i: LONGINT;
   BEGIN
     IF (recordType. baseType # NIL) THEN
@@ -463,8 +463,8 @@ PROCEDURE (v: Visitor) VisitPointerType* (pointerType: ExtTree.PointerType);
 
 PROCEDURE (v: Visitor) VisitArrayType* (arrayType: ExtTree.ArrayType);
   VAR
-    array: Item.Array;
-    baseType: Item.Type;
+    array: Sym.Array;
+    baseType: Sym.Type;
     i: LONGINT;
   BEGIN
     IF (arrayType. exprList. len > 0) THEN
@@ -473,7 +473,7 @@ PROCEDURE (v: Visitor) VisitArrayType* (arrayType: ExtTree.ArrayType);
         baseType := v. stb. NewArray (v. parent,
                                GetPosition (arrayType. array), FALSE, baseType)
       END;
-      array := baseType(Item.Array)
+      array := baseType(Sym.Array)
     ELSE
       array := v. stb. NewArray (v. parent, GetPosition (arrayType. array),
                                  TRUE, GetType (v, arrayType. type))
@@ -483,8 +483,8 @@ PROCEDURE (v: Visitor) VisitArrayType* (arrayType: ExtTree.ArrayType);
 
 PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
   VAR
-    formalPars: Item.FormalPars;
-    baseType: Item.Type;
+    formalPars: Sym.FormalPars;
+    baseType: Sym.Type;
     i: LONGINT;
   BEGIN
     IF (procType. formalPars # NIL) &
@@ -507,7 +507,7 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
   END VisitProcType;
 
 
-PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder; baseURI: URI.HierarchicalURI): Item.Module;
+PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder; baseURI: URI.HierarchicalURI): Sym.Module;
 (**Creates a symbol table from the abstract syntax tree in @oparam{module}.
    The elements of the symbol table are created by calling appropriate 
    factory methods of @oparam{stb}.  Result is the root object of the newly

@@ -23,7 +23,7 @@ MODULE OOC:Make:Entity:UsageData;
 IMPORT
   Channel, Msg, ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
   Make, OOC:Make:Entity:ModuleFile, 
-  Rep := OOC:Repository, OOC:SymbolTable:Item,
+  Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Auxiliary:Config, OOC:Auxiliary:GetSymbolTable;
 
 
@@ -70,8 +70,8 @@ PROCEDURE (cmd: Command) Discover*(): Make.CommandState;
 PROCEDURE (cmd: Command) Run*(): BOOLEAN;
   VAR
     edge: Make.Edge;
-    module: Item.Module;
-    ptr, base: Item.Item;
+    module: Sym.Module;
+    ptr, base: Sym.Item;
     extensionDict: Dictionary.Dictionary;
     list: ArrayList.ArrayList;
     obj: Object.Object;
@@ -88,8 +88,8 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
                       edge. ancestor(ModuleFile.Entity). module, config, res);
         ptr := module. nestedItems;
         WHILE (ptr # NIL) DO
-          IF (ptr IS Item.Record) & (ptr(Item.Record). baseType # NIL) THEN
-            base := ptr(Item.Record). baseType;
+          IF (ptr IS Sym.Record) & (ptr(Sym.Record). baseType # NIL) THEN
+            base := ptr(Sym.Record). baseType;
             IF extensionDict. HasKey (base) THEN
               obj := extensionDict. Get (base);
               list := obj(ArrayList.ArrayList)

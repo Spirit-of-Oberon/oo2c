@@ -22,7 +22,7 @@ MODULE OOC:SSA:Destore;
 
 IMPORT
   Dictionary := ADT:Dictionary:IntValue,
-  OOC:SymbolTable:Item, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd;
+  Sym := OOC:SymbolTable, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd;
   
 (**The initial version of the SSA code, as produced by
    @omodule{*OOC:SSA:IRtoSSA}, converts all accesses to variables into
@@ -97,7 +97,7 @@ TYPE
        the instruction setting this variable may be visible by others *)
   END;
   
-PROCEDURE GetVar (instr: SSA.Instr): Item.VarDecl;
+PROCEDURE GetVar (instr: SSA.Instr): Sym.VarDecl;
   VAR
     opnd: SSA.Opnd;
     class: Opnd.Class;
@@ -108,13 +108,13 @@ PROCEDURE GetVar (instr: SSA.Instr): Item.VarDecl;
     END;
     opnd := instr. GetOpndClass (class);
     IF ~(opnd. arg IS SSA.DeclRef) OR
-       ~(opnd. arg(SSA.DeclRef). decl IS Item.VarDecl) OR
+       ~(opnd. arg(SSA.DeclRef). decl IS Sym.VarDecl) OR
        (opnd. nextOpnd # NIL) & (opnd. nextOpnd. class = class) THEN
       (* designator does not begin with a variable, or it is
          structured designator: bail out *)
       RETURN NIL
     ELSE
-      RETURN opnd. arg(SSA.DeclRef). decl(Item.VarDecl)
+      RETURN opnd. arg(SSA.DeclRef). decl(Sym.VarDecl)
     END;
   END GetVar;
 
@@ -149,7 +149,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     VAR
       varMap: Dictionary.Dictionary;
       instr: SSA.Instr;
-      var: Item.VarDecl;
+      var: Sym.VarDecl;
       count, id: LONGINT;
     BEGIN
       count := 0;
@@ -208,7 +208,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           RETURN originMap
         END NewOriginMap;
 
-      PROCEDURE ExternalVisibility (var: Item.VarDecl): BOOLEAN;
+      PROCEDURE ExternalVisibility (var: Sym.VarDecl): BOOLEAN;
       (* TRUE if this variable still exists after the procedure is done.  *)
         BEGIN
           RETURN (var. Procedure() # pb. procDecl)

@@ -21,10 +21,10 @@ MODULE OOC:SymbolTable:Exports;
 *)
 
 IMPORT
-  Log, ADT:Dictionary, OOC:SymbolTable:Item, OOC:Doc;
+  Log, ADT:Dictionary, Sym := OOC:SymbolTable, OOC:Doc;
 
 
-PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
+PROCEDURE GetExports* (module: Sym.Module): Dictionary.Dictionary;
 (**Creates a dictionary with all items that appear in the
    module's symbol file.
    
@@ -41,26 +41,26 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
         (* mark all import statements that appear in the documentation
            string *)
         FOR i := 0 TO doc. usedImportsList. size-1 DO
-          dict. Set (doc. usedImportsList. array[i](Item.Import), NIL)
+          dict. Set (doc. usedImportsList. array[i](Sym.Import), NIL)
         END
       END
     END MarkReferencedImports;
   
-  PROCEDURE MarkList (root: Item.Item);
+  PROCEDURE MarkList (root: Sym.Item);
     VAR
-      ptr: Item.Item;
+      ptr: Sym.Item;
       
-    PROCEDURE MarkDecl (item: Item.Declaration);
-      PROCEDURE MarkType (type: Item.Type);
+    PROCEDURE MarkDecl (item: Sym.Declaration);
+      PROCEDURE MarkType (type: Sym.Type);
         VAR
-          decl: Item.Declaration;
+          decl: Sym.Declaration;
         BEGIN
           IF ~dict. HasKey (type) THEN
             dict. Set (type, NIL);
             
-            WITH type: Item.PredefType DO
+            WITH type: Sym.PredefType DO
               (* nothing *)
-            | type: Item.TypeName DO
+            | type: Sym.TypeName DO
               IF (type. module = NIL) THEN
                 decl := module. ns. IdentifyLocal (root, type. ident, TRUE)
                 (* this may be NIL if we are looking at the name of a
@@ -72,9 +72,9 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
               IF (decl # NIL) THEN
                 MarkDecl (decl)
               END
-            | type: Item.Pointer DO
+            | type: Sym.Pointer DO
               MarkType (type. srcCodeBaseType)
-            | type: Item.FormalPars DO
+            | type: Sym.FormalPars DO
               IF (type. srcCodeResultType # NIL) THEN
                 MarkType (type. srcCodeResultType)
               END;
@@ -82,9 +82,9 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
                 MarkDecl (type. receiver)
               END;
               MarkList (type)
-            | type: Item.Array DO
+            | type: Sym.Array DO
               MarkType (type. srcCodeElementType)
-            | type: Item.Record DO
+            | type: Sym.Record DO
               IF (type. srcCodeBaseType # NIL) THEN
                 MarkType (type. srcCodeBaseType)
               END;
@@ -99,19 +99,19 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
           
           MarkReferencedImports (item. docString);
           
-          WITH item: Item.Import DO
+          WITH item: Sym.Import DO
             (* nothing *)
-          | item: Item.ProcDecl DO
+          | item: Sym.ProcDecl DO
             MarkType (item. formalPars)
-          | item: Item.PredefProc DO
+          | item: Sym.PredefProc DO
             (* nothing *)
-          | item: Item.ConstDecl DO
+          | item: Sym.ConstDecl DO
             (* nothing *)
-          | item: Item.VarDecl DO
+          | item: Sym.VarDecl DO
             MarkType (item. srcCodeType)
-          | item: Item.FieldDecl DO
+          | item: Sym.FieldDecl DO
             MarkType (item. srcCodeType)
-          | item: Item.TypeDecl DO
+          | item: Sym.TypeDecl DO
             MarkType (item. srcCodeType)
           ELSE
             Log.Type ("-- [OOC:SymbolTable:Exports]: Unknown type of `item'",
@@ -124,9 +124,9 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
     BEGIN
       ptr := root. nestedItems;
       WHILE (ptr # NIL) DO
-        WITH ptr: Item.Declaration DO
-          IF (ptr. exportMark # Item.nameNotExported) OR 
-             (ptr IS Item.VarDecl) & ptr(Item.VarDecl). isParameter THEN
+        WITH ptr: Sym.Declaration DO
+          IF (ptr. exportMark # Sym.nameNotExported) OR 
+             (ptr IS Sym.VarDecl) & ptr(Sym.VarDecl). isParameter THEN
             MarkDecl (ptr)
           END
         ELSE                               (* ignore non-declarations *)

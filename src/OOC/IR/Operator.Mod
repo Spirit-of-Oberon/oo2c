@@ -2,7 +2,7 @@ MODULE OOC:IR:Operator [OOC_EXTENSIONS];
 
 IMPORT
   Log,
-  OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, OOC:SymbolTable:Item,
+  OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, Sym := OOC:SymbolTable,
   OOC:IR;
 
 
@@ -75,7 +75,7 @@ PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List): Bui
 
 PROCEDURE InitIndex (i: Index; sym: IR.Symbol; array, index: IR.Expression);
   BEGIN
-    IR.InitOperator (i, sym, array. type(Item.Array). elementType,
+    IR.InitOperator (i, sym, array. type(Sym.Array). elementType,
                      array, index);
   END InitIndex;
 

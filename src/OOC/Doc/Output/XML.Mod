@@ -3,10 +3,10 @@ MODULE OOC:Doc:Output:XML;
 IMPORT
   Channel, Strings, ADT:Object, ADT:Dictionary,
   XML:Writer, XML:UnicodeCodec:Latin1,
-  OOC:Config:Repositories, OOC:Repository, OOC:Doc, OOC:SymbolTable:Item;
+  OOC:Config:Repositories, OOC:Repository, OOC:Doc, Sym := OOC:SymbolTable;
   
 PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
-                           localModule: Item.Module;
+                           localModule: Sym.Module;
                            rewriteMap: Dictionary.Dictionary;
                            repositories: Repositories.Section;
                            moduleDict: Dictionary.Dictionary);
@@ -30,7 +30,7 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
    @code{NIL}, or if a module name can not be resolved, no entry is added to
    @oparam{moduleDict}, and any hyperlinks to this module will not work.  *)
 
-  PROCEDURE AttrExternalHref (module, id: Item.NameString);
+  PROCEDURE AttrExternalHref (module, id: Sym.NameString);
     VAR
       str: ARRAY 2*1024 OF CHAR;
       repModule: Repository.Module;
@@ -51,9 +51,9 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
       w. AttrStringLatin1 ("href", str)
     END AttrExternalHref;
   
-  PROCEDURE AttrHref (target: Item.Declaration);
+  PROCEDURE AttrHref (target: Sym.Declaration);
     VAR
-      module: Item.Module;
+      module: Sym.Module;
     BEGIN
       module := target. Module();
       AttrExternalHref (module. name. str, target. GetId())
@@ -96,16 +96,16 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
             IF (rewriteMap # NIL) & rewriteMap. HasKey (inline. target) THEN
               (* rewrite reference to another declaration *)
               rewrittenTo := rewriteMap. Get (inline. target);
-              AttrHref (rewrittenTo(Item.Declaration))
+              AttrHref (rewrittenTo(Sym.Declaration))
             ELSE
-              AttrHref (inline. target(Item.Declaration))
+              AttrHref (inline. target(Sym.Declaration))
             END
           ELSIF (inline. externalModule # NIL) THEN
             AttrExternalHref (inline. externalModule, inline. externalId)
           END;
           
           IF (rewrittenTo # NIL) THEN
-            w. WriteLatin1 (rewrittenTo(Item.Declaration). name. str^)
+            w. WriteLatin1 (rewrittenTo(Sym.Declaration). name. str^)
           ELSIF (inline. inlineText # NIL) &
               (inline. inlineText IS Doc.Text) &
              (AsteriskPrefix (inline. inlineText(Doc.Text). string^) >= 0) THEN
@@ -221,7 +221,7 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
   END WriteOberonDoc;
 
 PROCEDURE Write* (cw: Channel.Writer; document: Doc.Document;
-                  localModule: Item.Module;
+                  localModule: Sym.Module;
                   rewriteMap: Dictionary.Dictionary;
                   repositories: Repositories.Section;
                   moduleDict: Dictionary.Dictionary);

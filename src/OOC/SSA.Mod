@@ -24,7 +24,7 @@ MODULE OOC:SSA;
 IMPORT
   Log,
   Language, Language:Integer, Language:Boolean, ADT:Object, ADT:Dictionary,
-  OOC:SymbolTable:Item, OOC:SymbolTable:Predef,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
   
@@ -132,13 +132,13 @@ TYPE
 TYPE
   DeclRefDesc = RECORD
     (InstrDesc)
-    decl-: Item.Declaration;
+    decl-: Sym.Declaration;
   END;
   
 TYPE
   AddressDesc = RECORD
     (InstrDesc)
-    decl-: Item.Declaration;
+    decl-: Sym.Declaration;
   END;
   
 TYPE
@@ -158,7 +158,7 @@ TYPE
     (**Set of instructions that make up the procedure block.  The instructions
        are linked with @ofield{Instr.nextInstr} and @ofield{Instr.nextInstr}.
        @emph{Note}: The order of instructions in the list is of no relevance.  *)
-    procDecl-: Item.ProcDecl;
+    procDecl-: Sym.ProcDecl;
     (**The procedure declaration to which this code block belongs.  *)
     
     objMap: Dictionary.Dictionary;
@@ -615,13 +615,13 @@ PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
     const. value := value;
   END InitConst;
 
-PROCEDURE InitDeclRef (declRef: DeclRef; decl: Item.Declaration);
+PROCEDURE InitDeclRef (declRef: DeclRef; decl: Sym.Declaration);
   BEGIN
     InitInstr (declRef, Opcode.declRef, Opcode.scNone);
     declRef. decl := decl;
   END InitDeclRef;
 
-PROCEDURE InitAddress (address: Address; decl: Item.Declaration);
+PROCEDURE InitAddress (address: Address; decl: Sym.Declaration);
   BEGIN
     InitInstr (address, Opcode.address, Opcode.scAddress);
     address. decl := decl;
@@ -632,7 +632,7 @@ PROCEDURE InitAddress (address: Address; decl: Item.Declaration);
 PROCEDURE ^ (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
                                        subclass: Opcode.Subclass): Instr;
   
-PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Item.ProcDecl);
+PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl);
   VAR
     enter: Instr;
     initialStore: Result;
@@ -651,7 +651,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Item.ProcDecl);
     pb. adrMap := Dictionary.New();
   END InitProcBlock;
 
-PROCEDURE NewProcBlock* (procDecl: Item.ProcDecl): ProcBlock;
+PROCEDURE NewProcBlock* (procDecl: Sym.ProcDecl): ProcBlock;
 (**Creates a new instance of @otype{ProcBlock}.  *)
   VAR
     pb: ProcBlock;
@@ -714,7 +714,7 @@ PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
   END DeleteInstr;
   
 PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
-                                     type: Item.Type): Const;
+                                     type: Sym.Type): Const;
 (**Returns the @code{const} instruction for the value @oparam{value}.  Equal
    values are mapped to the same unique instruction.  *)
   VAR
@@ -746,7 +746,7 @@ PROCEDURE (pb: ProcBlock) GetConstBool* (b: BOOLEAN): Const;
   END GetConstBool;
 
 
-PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Item.Declaration): DeclRef;
+PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Sym.Declaration): DeclRef;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
   VAR
@@ -765,7 +765,7 @@ PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Item.Declaration): DeclRef;
     END;
   END GetDeclRef;
 
-PROCEDURE (pb: ProcBlock) GetAddress* (decl: Item.Declaration): Address;
+PROCEDURE (pb: ProcBlock) GetAddress* (decl: Sym.Declaration): Address;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
   VAR

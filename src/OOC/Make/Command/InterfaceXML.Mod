@@ -25,7 +25,7 @@ IMPORT
   Channel, Files, Msg, URI, Make, ADT:String,
   OOC:Make:Entity:ModuleFile, OOC:Auxiliary:ParseModule, OOC:Auxiliary:Config,
   OOC:Error, OOC:Config:Pragmas, OOC:Repository, OOC:AST, 
-  OOC:SymbolTable:Item, OOC:SymbolTable:Item:InterfaceXML;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:InterfaceXML;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -63,7 +63,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
    *)
   VAR
     ast: AST.Node;
-    symTab: Item.Module;
+    symTab: Sym.Module;
     errList: Error.List;
     res: Msg.Msg;
     outputChannel: Channel.Channel;

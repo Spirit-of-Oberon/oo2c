@@ -7,7 +7,7 @@ IMPORT
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,
   OOC:Parser, OOC:AST, OOC:AST:ExtTree,
-  OOC:SymbolTable:Item, OOC:SymbolTable:Builder,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Builder,
   OOC:AST:ExtTree:CreateSymTab, OOC:SymbolTable:CreateNamespace,
   OOC:Auxiliary:WriteSymbolFile;
   
@@ -16,7 +16,7 @@ IMPORT
 PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
                         checkModuleName, createNamespace, writeSymbolFile: BOOLEAN;
                         VAR ast: AST.Node;
-                        VAR symTab: Item.Module;
+                        VAR symTab: Sym.Module;
                         VAR pragmaHistory: Pragmas.History;
                         VAR errList: Error.List);
 (**If this function is called multiple times for the same module while

@@ -21,7 +21,7 @@ MODULE OOC:SSA:Opcode;
 *)
 
 IMPORT
-  Strings, OOC:SymbolTable:Item, OOC:SymbolTable:Predef;
+  Strings, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
   
 TYPE
@@ -306,9 +306,9 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     END;
   END GetName;
 
-PROCEDURE TypeToSubclass* (type: Item.Type): Subclass;
+PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
   BEGIN
-    WITH type: Item.PredefType DO
+    WITH type: Sym.PredefType DO
       CASE type. id OF
       | Predef.void: RETURN scNone
       | Predef.char: RETURN scUnsigned8
@@ -320,7 +320,7 @@ PROCEDURE TypeToSubclass* (type: Item.Type): Subclass;
       | Predef.longcharString: RETURN scAddress
       END;
       
-    | type: Item.Array DO
+    | type: Sym.Array DO
       RETURN scNone
     END;
   END TypeToSubclass;
