@@ -34,6 +34,12 @@ AC_HEADER_TIME
 
 dnl checks for types
 OOC_CHECK_INT64_T()
+AC_CHECK_SIZEOF(void*,4)
+AC_SUBST(ooc_target_address,[`expr $ac_cv_sizeof_voidp '*' 8`])
+AC_SUBST(ooc_target_address_type,["longint"])
+if test $ooc_target_address = 64; then
+  ooc_target_address_type="hugeint"
+fi
 
 dnl checks for structures
 

@@ -24,7 +24,7 @@ MODULE OOC:SymbolTable:Predef;
 IMPORT
   Strings, Language, Language:Boolean, Language:Integer, Language:String8,
   Language:String16, Language:Real,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
+  OOC:Config:Autoconf, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
 CONST
@@ -43,9 +43,9 @@ CONST
   (**Integer value, two's complement encoding, stored in one byte.  *)
   integer* = 4;
   (**Integer value, two's complement encoding, stored in two bytes.  *)
-  longint* = 5;
+  longint* = Autoconf.longint;
   (**Integer value, two's complement encoding, stored in four bytes.  *)
-  hugeint* = 6;
+  hugeint* = Autoconf.hugeint;
   (**Integer value, two's complement encoding, stored in eight bytes.  *)
   real* = 7;
   (**Floating point value, IEEE-754 single precision, stored in four bytes.  *)
@@ -55,7 +55,7 @@ CONST
   (**A set of integer values in the range @samp{0 <= x < 32}.  Stored in
      four bytes.  *)
   
-  address* = longint;
+  address* = Autoconf.address;  (* alias to appropriate integer type *)
   byte* = 10;
   ptr* = 11;
 
@@ -227,9 +227,11 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, longint, "LONGINT", 4, 4,
                          Integer.New (MIN (LONGINT)),
                          Integer.New (MAX (LONGINT)));
-    ptype := PredefType (stb, module, hugeint, "HUGEINT", 4, 4,
-                         Integer.NewString ("-9223372036854775808"),
-                         Integer.NewString ("9223372036854775807"));
+    IF (Autoconf.bitsTargetInteger > 32) THEN
+      ptype := PredefType (stb, module, hugeint, "HUGEINT", 8, 8,
+                           Integer.NewString ("-9223372036854775808"),
+                           Integer.NewString ("9223372036854775807"));
+    END;
     ptype := PredefType (stb, module, real, "REAL", 4, 4,
                          Real.New (MIN (REAL)),
                          Real.New (MAX (REAL)));
@@ -288,9 +290,12 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
     module := stb. NewModule (GetName ("SYSTEM"), NIL, Sym.mcInternal,
                               Sym.callConvInternal, NIL);
 
-    TypeAlias (stb, module, "ADDRESS", Sym.predefIdToType[longint]);
+    TypeAlias (stb, module, "ADDRESS", Sym.predefIdToType[address]);
     ptype := PredefType (stb, module, byte, "BYTE", 1, 1, NIL, NIL);
-    ptype := PredefType (stb, module, ptr, "PTR", 4, 4, NIL, NIL);
+    ptype := PredefType (stb, module, ptr, "PTR",
+                         Sym.predefIdToType[address].size,
+                         Sym.predefIdToType[address].align,
+                         NIL, NIL);
 
     PredefProc (stb, module, adr, "ADR", 1, 1);
     PredefProc (stb, module, lsh, "LSH", 2, 2);

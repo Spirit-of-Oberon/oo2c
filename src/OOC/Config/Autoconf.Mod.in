@@ -5,5 +5,16 @@ MODULE OOC:Config:Autoconf;
 
 CONST
   configFile* = "@prefix@/lib/oo2c/oo2crc.xml";
-  
+  (**Default configuration file to be used if no --config is given and
+     OO2CRC is not set.  *)
+  bitsTargetInteger* = @ooc_target_integer@;
+  (**Number of bits of the largest supported integer type for the target.  *)
+  bitsTargetAddress* = @ooc_target_address@;
+  (**Number of bits of address type for the target.  *)
+
+  (* Define address type for OOC:SymbolTable:Predef: *)
+  longint* = 5;
+  hugeint* = 6;
+  address* = @ooc_target_address_type@;
+
 END OOC:Config:Autoconf.

@@ -21,7 +21,8 @@ MODULE OOC:Config:Pragmas:StdPragmas;
 *)
 
 IMPORT
-  Config:Value:Boolean, Config:Value:Integer, OOC:Config:Pragmas;
+  Config:Value:Boolean, Config:Value:Integer, OOC:Config:Autoconf,
+  OOC:Config:Pragmas;
 
 
 CONST
@@ -46,8 +47,8 @@ CONST
 
   defaultCompilerMajor = 2;
   
-  defaultTargetInteger = 32;
-  defaultTargetAddress = 32;
+  defaultTargetInteger = Autoconf.bitsTargetInteger;
+  defaultTargetAddress = Autoconf.bitsTargetAddress;
   
 VAR
   warnings-: Pragmas.Pragma;
