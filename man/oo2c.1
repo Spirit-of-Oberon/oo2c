@@ -38,6 +38,15 @@ oo2c \- Oberon-2 compiler
 .I <package>
 .br
 .B oo2c
+.I --package-installed
+.RI [ options ]
+.I <package>
+.br
+.B oo2c
+.I --list-packages
+.RI [ options ]
+.br
+.B oo2c
 .I --update-repository
 .RI [ options ]
 .SH NOTE
@@ -93,9 +102,9 @@ and
 .I --uninstall-package
 packages are compiled, installed, and uninstalled.  A package is a set
 of libraries, executables, resource files, option definitions, and
-pragma definitions.  It is described in it repository's
+pragma definitions.  Its content is described by the file
 .I pkginfo.xml
-file.
+in the package's top-level directory.
 
 The option
 .I --build-pkg-doc
@@ -103,6 +112,17 @@ creates HTML documentation for all modules used by the libraries and
 executables of the given package.  After successful completion, the
 files can be found under
 .IR <repository>/oocdoc/html .
+
+.I --package-installed
+tests if a given package is installed.  If the package name appears in
+the repository's manifest file
+.IR <oocdir>/pkginfo.xml ,
+then the exit code is 0.  Otherwise, the program exits with a non-zero
+code.
+.I --list-packages
+writes a list of all packages to
+.IR stdout ,
+one package per line.  The first word in the line is the package name.
 
 The command
 .I --update-repository
