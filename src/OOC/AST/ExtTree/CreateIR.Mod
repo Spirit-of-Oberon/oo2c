@@ -43,36 +43,48 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
   PROCEDURE Designator (design: ExtTree.Node): IR.Expression;
     VAR
       left: IR.Expression;
-      name: Item.Name;
     BEGIN
       WITH design: ExtTree.Terminal DO
-        name := CreateSymTab.GetName (design);
-        IF (design. sym. id = Symbol.ident) THEN
-          RETURN b. NewIdentRef (currentNamespace, currentSourceContext, name)
-        ELSE
-          b. ErrName (IR.expectedIdent, name);
-          RETURN IR.errorExpr
-        END
+        RETURN b. NewIdentRef (currentNamespace, currentSourceContext,
+                               design. sym. id, CreateSymTab.GetName (design))
       | design: ExtTree.Operator DO
         (* we only do qualified identifiers for now: "module.ident" *)
         ASSERT (design. op. sym. id = Symbol.period);
         left := Designator (design. left);
         WITH left: IR.ModuleRef DO
-          RETURN b. NewQualident (left, currentSourceContext,
+          RETURN b. NewQualident (left, currentSourceContext, 
+                        design. right(ExtTree.Terminal). sym. id,
                         CreateSymTab.GetName (design. right(ExtTree.Terminal)))
         END
       END
     END Designator;
   
   PROCEDURE Expr (expr: ExtTree.Node): IR.Expression;
+    VAR
+      left, right: IR.Expression;
     BEGIN
       WITH expr: ExtTree.Terminal DO
         CASE expr. sym. id OF
         | Symbol.ident:
           RETURN Designator (expr)
         | Symbol.stringSingle, Symbol.stringDouble:
-          RETURN b. NewStringConst (expr. sym. str^)
+          RETURN b. NewStringConst (expr. sym)
+        | Symbol.number10:
+          RETURN b. NewIntConst10 (expr. sym)
         END
+        
+      | expr: ExtTree.Operator DO
+        IF (expr. left # NIL) THEN
+          left := Expr (expr. left)
+        ELSE
+          left := NIL
+        END;
+        IF (expr. right # NIL) THEN
+          right := Expr (expr. right)
+        ELSE
+          right := NIL
+        END;
+        RETURN b. NewOperator (expr. op. sym. id, left, right)
       END
     END Expr;
   
@@ -140,12 +152,22 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
   PROCEDURE ProcDecl (procDecl: ExtTree.ProcDecl): IR.Procedure;
     VAR
       statmSeq: IR.StatementSeq;
+      oldNamespace: Item.Namespace;
+      oldSourceContext: Item.Item;
     BEGIN
+      oldNamespace := currentNamespace;
+      oldSourceContext := currentSourceContext;
+      currentNamespace := procDecl. symTabEntry. ns;
+      currentSourceContext := procDecl. symTabEntry;
+      
       IF (procDecl. body = NIL) OR (procDecl. body. statmSeq = NIL) THEN
         NEW (statmSeq, 0)
       ELSE
         statmSeq := StatementSeq (procDecl. body. statmSeq)
       END;
+      
+      currentNamespace := oldNamespace;
+      currentSourceContext := oldSourceContext;
       RETURN b. NewProcedure (procDecl. symTabEntry, statmSeq)
     END ProcDecl;
 <* POP *>

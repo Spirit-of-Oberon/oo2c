@@ -2,9 +2,10 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Language:Boolean, Language:String8,
+  Language, Language:Boolean, Language:String8, Language:Integer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
-  OOC:Error, OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
+  OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
+  OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:AST, OOC:SymbolTable:Item, OOC:SymbolTable:Predef;
 
 (**Some rules regarding the intermediate representation (short ``IR''):
@@ -66,7 +67,7 @@ CONST
 TYPE
   Expression* = POINTER TO ExpressionDesc;
   ExpressionList* = POINTER TO ARRAY OF Expression;
-  ExpressionDesc = RECORD [ABSTRACT]
+  ExpressionDesc* = RECORD [ABSTRACT]
     (NodeDesc)
   END;
 
@@ -76,6 +77,14 @@ TYPE
     (ExpressionDesc)
     value-: Language.Value;
     decl-: Item.ConstDecl;
+  END;
+
+TYPE
+  Var* = POINTER TO VarDesc;
+  VarDesc = RECORD
+    (ExpressionDesc)
+    name-: Item.Name;
+    decl-: Item.VarDecl;
   END;
 
 TYPE
@@ -104,6 +113,31 @@ TYPE
     (ExpressionDesc)
     name-: Item.Name;
     decl-: Item.Module;
+  END;
+
+TYPE
+  Operator* = POINTER TO OperatorDesc;
+  OperatorDesc* = RECORD [ABSTRACT]
+  (**An operator represents a unary or dyadic operator and its argument(s).
+     There are several differences between a function call and an operator:
+
+     @itemize @bullet
+     @item
+     An operator is guaranteed to be free of side-effects.
+     @item
+     An operator is typically overloaded.  For example, all addition operations
+     on numeric types are mapped to a single class.
+     @item
+     Operators are defined by the compiler, not the program.  At least,
+     Oberon-2 does not allow to define operators.
+     @end itemize
+
+     There is no one-to-one relationship between operators and operator
+     symbols.  For example, the symbol @samp{+} is either mapped onto a numeric
+     addition, or a set union.  Also some predefined functions, like
+     @samp{LEN}, are also mapped on operators.  *)
+    (ExpressionDesc)
+    opnd1-, opnd2-: Expression;
   END;
 
 (* Statements
@@ -164,7 +198,7 @@ TYPE
 
 TYPE
   Builder* = POINTER TO BuilderDesc;
-  BuilderDesc = RECORD
+  BuilderDesc* = RECORD [ABSTRACT]
     pragmaHistory: Pragmas.History;
     errList: Error.List;
   END;
@@ -186,7 +220,8 @@ VAR
   
 CONST
   undeclaredIdent = 1;
-  expectedIdent* = 2;
+  expectedIdent = 2;
+  numberOutOfRange = 3;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -206,6 +241,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Undeclared identifier"
     | expectedIdent:
       t := "Expected identifier"
+    | numberOutOfRange:
+      t := "Number out of range"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -222,15 +259,6 @@ PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Err
     b. errList := errList;
   END InitBuilder;
 
-PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List): Builder;
-  VAR
-    b: Builder;
-  BEGIN
-    NEW (b);
-    InitBuilder (b, pragmaHistory, errList);
-    RETURN b
-  END NewBuilder;
-
 PROCEDURE (b: Builder) ErrName* (code: Error.Code; name: Item.Name);
   VAR
     lastError: Error.Msg;
@@ -241,6 +269,17 @@ PROCEDURE (b: Builder) ErrName* (code: Error.Code; name: Item.Name);
     lastError. SetIntAttrib ("column", name. column);
     b. errList. Append (lastError)
   END ErrName;
+
+PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: BasicList.Symbol);
+  VAR
+    lastError: Error.Msg;
+  BEGIN
+    lastError := Error.New (irContext, code);
+    lastError. SetIntAttrib ("pos", sym. pos);
+    lastError. SetIntAttrib ("line", sym. line);
+    lastError. SetIntAttrib ("column", sym. column);
+    b. errList. Append (lastError)
+  END ErrSym;
 
 
 
@@ -284,11 +323,49 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
     v. VisitConst (const)
   END Accept;
 
-PROCEDURE (b: Builder) NewStringConst* (VAR delimitedString: ARRAY OF CHAR): Const;
+PROCEDURE (b: Builder) NewStringConst* (sym: BasicList.Symbol): Expression;
   BEGIN
-    RETURN NewConst (String8.NewString (delimitedString), NIL);
+    RETURN NewConst (String8.type. ValueOf (sym. str^), NIL);
   END NewStringConst;
 
+PROCEDURE (b: Builder) NewIntConst10* (sym: BasicList.Symbol): Expression;
+  VAR
+    v: Language.Value;
+  BEGIN
+    v := Integer.type. ValueOf (sym. str^);
+    IF (v = NIL) THEN
+      b. ErrSym (numberOutOfRange, sym);
+      RETURN errorExpr
+    ELSE
+      RETURN NewConst (v, NIL);
+    END
+  END NewIntConst10;
+
+(* -------- *)
+
+PROCEDURE InitVar (var: Var; name: Item.Name; decl: Item.VarDecl);
+  BEGIN
+    InitExpression (var);
+    var. name := name;
+    var. decl := decl;
+  END InitVar;
+
+PROCEDURE NewVar (name: Item.Name; decl: Item.VarDecl): Var;
+  VAR
+    var: Var;
+  BEGIN
+    NEW (var);
+    InitVar (var, name, decl);
+    RETURN var
+  END NewVar;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitVar* (var: Var);
+  END VisitVar;
+
+PROCEDURE (var: Var) Accept* (v: Visitor);
+  BEGIN
+    v. VisitVar (var)
+  END Accept;
 
 (* -------- *)
 
@@ -371,25 +448,31 @@ PROCEDURE (modRef: ModuleRef) Accept* (v: Visitor);
 (* -------- *)
 
 PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item; 
-                                     name: Item.Name): Expression;
+                                     id: Symbol.Id; name: Item.Name): Expression;
   VAR
     decl: Item.Declaration;
   BEGIN
-    decl := ns. Identify (context, name, FALSE);
-    IF (decl = NIL) THEN
-      b. ErrName (undeclaredIdent, name)
-    ELSE
-      WITH decl: Item.ConstDecl DO
-        RETURN NewConst (decl. value, decl)
-      | decl: Item.PredefProc DO
-        RETURN NewPredefProc (name, decl)
-      | decl: Item.ProcDecl DO
-        RETURN NewProcedureRef (name, decl)
-      | decl: Item.Import DO
-        RETURN NewModuleRef (name, decl. externalSymTab)
+    IF (id = Symbol.ident) THEN
+      decl := ns. Identify (context, name, FALSE);
+      IF (decl = NIL) THEN
+        b. ErrName (undeclaredIdent, name)
       ELSE
-        Log.Type ("decl", decl); ASSERT (FALSE);
+        WITH decl: Item.ConstDecl DO
+          RETURN NewConst (decl. value, decl)
+        | decl: Item.VarDecl DO
+          RETURN NewVar (name, decl)
+        | decl: Item.PredefProc DO
+          RETURN NewPredefProc (name, decl)
+        | decl: Item.ProcDecl DO
+          RETURN NewProcedureRef (name, decl)
+        | decl: Item.Import DO
+          RETURN NewModuleRef (name, decl. externalSymTab)
+        ELSE
+          Log.Type ("decl", decl); ASSERT (FALSE);
+        END
       END
+    ELSE
+      b. ErrName (expectedIdent, name)
     END;
     
     (* in the case of an error, return the value "FALSE"; returning NIL
@@ -399,11 +482,22 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
   END NewIdentRef;
 
 PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Item.Item; 
-                                      name: Item.Name): Expression;
+                                   id: Symbol.Id; name: Item.Name): Expression;
   BEGIN
-    RETURN b. NewIdentRef (modref. decl. ns, context, name)
+    RETURN b. NewIdentRef (modref. decl. ns, context, id, name)
   END NewQualident;
 
+(* -------- *)
+
+PROCEDURE InitOperator* (op: Operator; opnd1, opnd2: Expression);
+  BEGIN
+    InitExpression (op);
+    op. opnd1 := opnd1;
+    op. opnd2 := opnd2;
+  END InitOperator;
+
+PROCEDURE (b: Builder) [ABSTRACT] NewOperator* (id: Symbol.Id; left, right: Expression): Expression;
+  END NewOperator;
 
 (* -------- *)
 
@@ -536,7 +630,6 @@ PROCEDURE (m: Module) Accept* (v: Visitor);
   BEGIN
     v. VisitModule (m)
   END Accept;
-
 
 BEGIN
   NEW (irContext);
