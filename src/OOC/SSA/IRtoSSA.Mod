@@ -349,8 +349,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           address := check;
         END;
         
-        instr := pb. AddInstr (Opcode.get, 
-                               Opcode.TypeToSubclass (deref. derefType));
+        instr := pb. AddInstr (Opcode.get, Opcode.TypeToSubclass (deref.type));
         instr. AddOpnd (s, Opnd.store);
         instr. AddOpnd (address, Opnd.readAdr);
         instr. AddOpnd (pb. GetTypeRef (deref. pointer. type), Opnd.readDesign);
