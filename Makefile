@@ -84,11 +84,11 @@ test-hostess-ooc1:
 
 
 ### Create header file that is used as input for GNU autoconf.
-lib/src/__config.h.in: configure.ac
+lib/src/__config.h.in: configure.ac aclocal.m4
 	autoheader
 
 ### Create configure script using GNU autoconf.
-configure: configure.ac lib/src/__config.h.in
+configure: configure.ac aclocal.m4 lib/src/__config.h.in
 	autoconf
 
 ### Some variables are defined recursively by configure.  Expanding these
