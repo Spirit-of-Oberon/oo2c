@@ -1,7 +1,7 @@
 MODULE OOC:SSA:IRtoSSA;
 
 IMPORT
-  Log, Language:Integer, OOC:IR, OOC:IR:Operator,
+  Log, Language:Integer, OOC:SymbolTable:Item, OOC:IR, OOC:IR:Operator,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 
@@ -29,12 +29,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       instr: SSA.Instr;
     BEGIN
       WITH expr: IR.Const DO
-        RETURN pb. GetConst (expr. value)
+        RETURN pb. GetConst (expr. value, expr. type)
+            
       | expr: IR.ProcedureRef DO
         RETURN pb. GetAddress (expr. decl)
 
       | expr: IR.Var DO
-        instr := pb. AddInstr (Opcode.get, Opcode.scNone);
+        instr := pb. AddInstr (Opcode.get, Opcode.TypeToSubclass (expr. type));
         instr. AddOpnd (s, Opnd.store);
         instr. AddOpnd (pb. GetAddress (expr. decl), Opnd.readAdr);
         instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.readDesign);
@@ -44,7 +45,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         (* ok, I'm being very lazy here; don't want to introduce expression
            for something as trifling as `-123' right now, so I'm doing some
            trivial constant folding here... *)
-        RETURN pb. GetConst(Integer.New (-SHORT(expr.opnd1(IR.Const).value(Integer.Value).value)))
+        RETURN pb. GetConst(Integer.New (-SHORT(expr.opnd1(IR.Const).value(Integer.Value).value)), expr.opnd1(IR.Const).type)
 
       | expr: IR.Call DO
         RETURN Call (expr)
@@ -69,7 +70,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       instr: SSA.Instr;
       i: LONGINT;
     BEGIN
-      instr := pb. AddInstr (Opcode.call, Opcode.scNone);
+      instr := pb. AddInstr (Opcode.call, Opcode.TypeToSubclass (call. type));
       instr. AddOpnd (Expression (call. design), Opnd.procAdr);
       FOR i := 0 TO LEN (call. arguments^)-1 DO
         instr. AddOpnd (Expression (call. arguments[i]), Opnd.arg);

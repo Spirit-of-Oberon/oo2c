@@ -22,7 +22,8 @@ MODULE OOC:SSA;
 
 
 IMPORT
-  Language, Language:Integer, ADT:Object, ADT:Dictionary, OOC:SymbolTable:Item,
+  Language, Language:Integer, ADT:Object, ADT:Dictionary,
+  OOC:SymbolTable:Item, OOC:SymbolTable:Predef,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
   
@@ -519,9 +520,10 @@ PROCEDURE (instr: Instr) GetResultType* (): Opcode.Subclass;
 
   (* ---------------------------------------------------------------------- *)
 
-PROCEDURE InitConst (const: Const; value: Language.Value);
+PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
+                     value: Language.Value);
   BEGIN
-    InitInstr (const, Opcode.const, Opcode.scNone);
+    InitInstr (const, Opcode.const, subclass);
     const. value := value;
   END InitConst;
 
@@ -533,7 +535,7 @@ PROCEDURE InitDeclRef (declRef: DeclRef; decl: Item.Declaration);
 
 PROCEDURE InitAddress (address: Address; decl: Item.Declaration);
   BEGIN
-    InitInstr (address, Opcode.address, Opcode.scNone);
+    InitInstr (address, Opcode.address, Opcode.scAddress);
     address. decl := decl;
   END InitAddress;
 
@@ -615,7 +617,8 @@ PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
     instr. prevInstr := NIL;
   END DeleteInstr;
   
-PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value): Const;
+PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
+                                     type: Item.Type): Const;
 (**Returns the @code{const} instruction for the value @oparam{value}.  Equal
    values are mapped to the same unique instruction.  *)
   VAR
@@ -627,7 +630,7 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value): Const;
       RETURN obj(Const);
     ELSE
       NEW (const);
-      InitConst (const, value);
+      InitConst (const, Opcode.TypeToSubclass (type), value);
       AppendInstr (pb, const);
       pb. objMap. Set (value, const);
       RETURN const
@@ -636,7 +639,8 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value): Const;
 
 PROCEDURE (pb: ProcBlock) GetConstInt* (int: LONGINT): Const;
   BEGIN
-    RETURN pb. GetConst (Integer.New (SHORT (int)))  (* ...should be Longint *)
+    RETURN pb. GetConst (Integer.New (SHORT (int)),  (* ...should be Longint *)
+                         Predef.GetType (Predef.integer))
   END GetConstInt;
 
 PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Item.Declaration): DeclRef;
