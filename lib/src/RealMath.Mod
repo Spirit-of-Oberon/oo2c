@@ -39,7 +39,7 @@ PROCEDURE ["(float)sqrt"] sqrt*(x: REAL): REAL;
 PROCEDURE ["(float)exp"] exp*(x: REAL): REAL;
 (**Returns the exponential of x for x < Ln(MAX(REAL).  *)
 
-PROCEDURE ["(float)ln"] ln*(x: REAL): REAL;
+PROCEDURE ["(float)log"] ln*(x: REAL): REAL;
 (**Returns the natural logarithm of x for x > 0.  *)
 
 PROCEDURE ["(float)sin"] sin* (x: REAL): REAL;

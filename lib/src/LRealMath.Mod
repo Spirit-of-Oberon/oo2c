@@ -30,7 +30,7 @@ PROCEDURE sqrt*(x: LONGREAL): LONGREAL;
 PROCEDURE exp*(x: LONGREAL): LONGREAL;
 (**Returns the exponential of x for x < Ln(MAX(REAL).  *)
 
-PROCEDURE ln*(x: LONGREAL): LONGREAL;
+PROCEDURE ["log"] ln*(x: LONGREAL): LONGREAL;
 (**Returns the natural logarithm of x for x > 0.  *)
 
 PROCEDURE sin* (x: LONGREAL): LONGREAL;
