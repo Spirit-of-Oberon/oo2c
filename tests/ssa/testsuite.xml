@@ -10,14 +10,13 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; undef16 undef17 undef18 undef19
-  undef20 undef21 undef22 undef23 undef24">-->
+  select ="&SetupTestCasesWithOut; undef26">-->
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; undef1 undef2 undef3 undef4 undef5
   undef6 undef7 undef8 undef9 undef10 undef11 undef12 undef13 
   undef14 undef15 undef16 undef17 undef18 undef19
-  undef20 undef21 undef22 undef23 undef24">-->
+  undef20 undef21 undef22 undef23 undef24 undef25 undef26">-->
 
   &TestSetupWithOut;
     
@@ -1404,6 +1403,16 @@
     <test id="undef24" type="accept" file="Undef24.Mod">
       The assignment and the recursive nature of the called procedure 
       should prevent warning.
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef25" type="accept" file="Undef25.Mod">
+      Initializing a record through a variable parameter.
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
+    <test id="undef26" type="accept" file="Undef26.Mod">
+      Test for <code>WITH</code> guards.  There should be no warning.
       (Note: There is currently no way to check that warning is
       <em>not</em> produced.)
     </test>
