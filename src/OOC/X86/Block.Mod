@@ -6,7 +6,6 @@ IMPORT
 PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
   VAR
     instr, next: S.Instr;
-    dep: S.Dep;
     ready, waiting, block: S.Block;
     dummy: S.MergeInstr;
 
@@ -19,6 +18,7 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
     PROCEDURE NextInControlFlow(instr: S.Instr): S.Instr;
       VAR
         next: S.Instr;
+        dep: S.Dep;
         
       PROCEDURE RelevantAfterDep(dep: S.Dep): BOOLEAN;
         BEGIN
