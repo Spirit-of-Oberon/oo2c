@@ -917,14 +917,21 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       source := TypeId (instr. NthArg (1));
       dest := TypeId (instr. NthArg (2));
 
-      IF (source = Predef.char) & (dest = Predef.char) THEN
-        w. WriteString ("_copy_8(");
-      ELSIF (source = Predef.longchar) & (dest = Predef.longchar) THEN
-        w. WriteString ("_copy_16(");
-      ELSE (* (source = Predef.char) & (dest = Predef.longchar) *)
-        w. WriteString ("_copy_8to16(");
+      IF (source = Predef.char) THEN
+        CASE dest OF
+        | Predef.char    : w. WriteString ("_copy_8(");
+        | Predef.longchar: w. WriteString ("_copy_8to16(");
+        | Predef.ucs4char: w. WriteString ("_copy_8to32(");
+        END;
+      ELSIF (source = Predef.longchar) THEN
+        CASE dest OF
+        | Predef.longchar: w. WriteString ("_copy_16(");
+        | Predef.ucs4char: w. WriteString ("_copy_16to32(");
+        END;
+      ELSE (* (source = Predef.ucs4char) & (dest = Predef.ucs4char) *)
+        w. WriteString ("_copy_32(");
       END;
-      w. WriteString ("(void*)");
+      w. WriteString ("(const void*)");
       w. Ref (instr. GetOpndClass (Opnd.readAdr));
       w. WriteString (",(void*)");
       w. Ref (instr. GetOpndClass (Opnd.writeAdr));
@@ -934,16 +941,12 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
     END CopyString;
   
   PROCEDURE CmpString (instr: SSA.Instr);
-    VAR
-      source: LONGINT;
     BEGIN
       w. Newline;
-      source := TypeId (instr. NthArg (1));
-
-      IF (source = Predef.char) THEN
-        w. WriteString ("_cmp8((const void*)");
-      ELSE
-        w. WriteString ("_cmp16((const void*)");
+      CASE TypeId(instr.NthArg(1)) OF
+      | Predef.char:     w.WriteString("_cmp8((const void*)");
+      | Predef.longchar: w.WriteString("_cmp16((const void*)");
+      | Predef.ucs4char: w.WriteString("_cmp32((const void*)");
       END;
       opnd := instr. GetOpndClass (Opnd.readAdr);
       w. Ref (opnd);

@@ -470,9 +470,14 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
           END;
 
         ELSE
-          IF (type(Sym.PredefType). id = Predef.longchar) THEN
+          IF TR.IsCharType(type) THEN
+            CASE type(Sym.PredefType).id OF
+            | Predef.longchar:
+              w. WriteString ("(OOC_CHAR16)");
+            | Predef.ucs4char:
+              w. WriteString ("(OOC_CHAR32)");
+            END;
             charValue := s.CharAt(0);
-            w. WriteString ("(OOC_CHAR16)");
             IF (charValue < ORD (" ")) OR (charValue >= 127) OR
                (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
               w. textWriter. WriteLInt (charValue, 0);
@@ -486,7 +491,12 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
                cannot be passed to a cpp macro, because the preprocessor
                interprets the `,' as its argument separator.  On the other
                hand, `((T){1,2})' works.  *)
-            w. WriteString ("((OOC_CHAR16[]){");
+            CASE type(Sym.PredefType).id OF
+            | Predef.stringLongChar:
+              w. WriteString ("((OOC_CHAR16[]){");
+            | Predef.stringUCS4Char:
+              w. WriteString ("((OOC_CHAR32[]){");
+            END;
             i := 0; len := s.length;
             WHILE (i # len) DO
               IF (i # 0) THEN

@@ -66,8 +66,11 @@
 
 /* COPY(s,d) */
 extern void _copy_8(const OOC_CHAR8* src, OOC_CHAR8* dest, OOC_LEN max_len);
-extern void _copy_16(const OOC_CHAR16* src, OOC_CHAR16* dest, OOC_LEN max_len);
 extern void _copy_8to16(const OOC_CHAR8* src, OOC_CHAR16* dest, OOC_LEN max_len);
+extern void _copy_8to32(const OOC_CHAR8* src, OOC_CHAR32* dest, OOC_LEN max_len);
+extern void _copy_16(const OOC_CHAR16* src, OOC_CHAR16* dest, OOC_LEN max_len);
+extern void _copy_16to32(const OOC_CHAR16* src, OOC_CHAR32* dest, OOC_LEN max_len);
+extern void _copy_32(const OOC_CHAR32* src, OOC_CHAR32* dest, OOC_LEN max_len);
 
 /* copy record or array value */
 #define _copy_block(_src,_dest,_len) \
@@ -80,6 +83,7 @@ extern void _copy_8to16(const OOC_CHAR8* src, OOC_CHAR16* dest, OOC_LEN max_len)
 /* string compare */
 extern OOC_INT32 _cmp8(const OOC_CHAR8* l, const OOC_CHAR8* r);
 extern OOC_INT32 _cmp16(const OOC_CHAR16* l, const OOC_CHAR16* r);
+extern OOC_INT32 _cmp32(const OOC_CHAR32* l, const OOC_CHAR32* r);
 
 /* range of set values */
 #define _bit_range(_from,_to) (_from > _to) ? (OOC_UINT32)0 : \

@@ -1591,7 +1591,7 @@ PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): L
     IF (const # b. errorExpr) THEN
       IF TR.IsIntegerType (const. type) THEN
         v := const. value(BigInt.BigInt). ToLongInt();
-        IF (start <= v) & (v < end) THEN
+        IF (start <= v) & ((end = MIN(LONGINT)) OR (v < end)) THEN
           RETURN v;
         END;
       END;
@@ -1702,6 +1702,7 @@ PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expressi
 PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
   VAR
     v: LONGINT;
+    type: INTEGER;
 
   PROCEDURE ValueOf(str[NO_COPY]: ARRAY OF CHAR): LONGINT;
     VAR
@@ -1745,8 +1746,8 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
       ELSIF (i >= 2) & (str[i-1] = "X") & (hexCount+1 = i) THEN
         (* character written has hexadecimal constant nnX *)
         IF HexToInt (str, "X", ord) &
-           (ORD(Predef.minLongChar) <= ord) &
-           (ord <= ORD(Predef.maxLongChar)) THEN
+           ((Predef.minUCS4Char) <= ord) &
+           (ord <= (Predef.maxUCS4Char)) THEN
           RETURN ord;
         ELSE  (* overflow *)
           RETURN -1;
@@ -1763,12 +1764,14 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
       RETURN b. errorExpr
     ELSE
       IF (v <= ORD (Predef.maxChar)) THEN
-        RETURN NewConst (sym, Predef.GetType (Predef.char),
-                         Boxed.NewString(Object.NewLatin1Char(CHR (v))));
+        type := Predef.char;
+      ELSIF (v <= ORD(Predef.maxLongChar)) THEN
+        type := Predef.longchar;
       ELSE
-        RETURN NewConst (sym, Predef.GetType (Predef.longchar),
-                         Boxed.NewString(Object.NewUCS2Char(LONGCHR (v))));
+        type := Predef.ucs4char;
       END;
+      RETURN NewConst(sym, Predef.GetType(type),
+                      Boxed.NewString(Object.NewUCS4Char(v)));
     END
   END NewCharConst16;
 
@@ -5290,6 +5293,18 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
                                     ORD(Predef.maxLongChar)+1);
         END;
         RETURN b.NewTypeConv (Predef.GetType (Predef.longchar), arguments[0]);
+        
+      | Predef.ucs4chr:
+        arguments[0] := b.AssertInteger(arguments[0]);
+        IF (arguments[0] IS Const) THEN
+          (* FIXME... this kind of overflow checking should be done in
+             ConstFold, for the argument and the result of each computation *)
+          dummy := b.AssertIntConst(arguments[0],
+                                    (Predef.minUCS4Char),
+                                    (Predef.maxUCS4Char));
+          (* FIXME... the last should be +1 *)
+        END;
+        RETURN b.NewTypeConv (Predef.GetType (Predef.ucs4char), arguments[0]);
         
       | Predef.entier:
         RETURN b. NewEntier (design. sym, arguments[0]);

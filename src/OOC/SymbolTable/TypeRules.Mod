@@ -59,7 +59,7 @@ PROCEDURE IsCharType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is a character type.  *)
   BEGIN
     WITH type: Sym.PredefType DO
-      RETURN (type. id IN {Predef.char, Predef.longchar})
+      RETURN (type. id IN {Predef.char, Predef.longchar, Predef.ucs4char})
     ELSE
       RETURN FALSE
     END;

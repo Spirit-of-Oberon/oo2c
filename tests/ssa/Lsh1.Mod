@@ -9,6 +9,7 @@ PROCEDURE Test*;
     i32: LONGINT;
     c8: CHAR;
     c16: LONGCHAR;
+    c32: UCS4CHAR;
     b: SYSTEM.BYTE;
   BEGIN
     i8 := 64;
@@ -39,6 +40,11 @@ PROCEDURE Test*;
     Out.Int (ORD(SYSTEM.LSH(c16, 0)), 12); 
     Out.Int (ORD(SYSTEM.LSH(c16, 1)), 12); 
     Out.Int (ORD(SYSTEM.LSH(c16, 2)), 12); 
+    Out.Ln;
+
+    c32 := 40000000X;
+    Out.Int (ORD(SYSTEM.LSH(c32, 0)), 12); 
+    Out.Int (ORD(SYSTEM.LSH(c32, 2)), 12); (* avoid overflow *) 
     Out.Ln;
 
     b := SYSTEM.VAL(SYSTEM.BYTE, 64);
@@ -77,6 +83,12 @@ PROCEDURE Test*;
     Out.Int (ORD(SYSTEM.LSH(c16, 0)), 12); 
     Out.Int (ORD(SYSTEM.LSH(c16, -1)), 12); 
     Out.Int (ORD(SYSTEM.LSH(c16, -2)), 12); 
+    Out.Ln;
+
+    c32 := 2X;
+    Out.Int (ORD(SYSTEM.LSH(c32, 0)), 12); 
+    Out.Int (ORD(SYSTEM.LSH(c32, -1)), 12); 
+    Out.Int (ORD(SYSTEM.LSH(c32, -2)), 12); 
     Out.Ln;
 
     b := SYSTEM.VAL(SYSTEM.BYTE, 2);

@@ -87,7 +87,7 @@ CONST
 CONST
   minChar* = MIN(CHAR);         maxChar* = MAX(CHAR);
   minLongChar* = MIN(LONGCHAR); maxLongChar* = MAX(LONGCHAR);
-  minUCS4Char* = 0;             maxUCS4Char* = 10FFFFH;  (* FIXME...*)
+  minUCS4Char* = 0;             maxUCS4Char* = 7FFFFFFFH;
   
 VAR
   minConst, maxConst: ARRAY lastId+1 OF Boxed.Object;
@@ -112,20 +112,21 @@ CONST
   short* = 12;                           (* SHORT *)
   chr* = 13;                             (* CHR *)
   longchr* = 14;                         (* LONGCHR *)
-  entier* = 15;                          (* ENTIER *)
-  odd* = 16;                             (* ODD *)
-  ord* = 17;                             (* ORD *)
-  max* = 18;                             (* MAX *)
-  min* = 19;                             (* MIN *)
-  new* = 20;                             (* NEW *)
-  copy* = 21;                            (* COPY *)
+  ucs4chr* = 15;                         (* UCS4CHR *)
+  entier* = 16;                          (* ENTIER *)
+  odd* = 17;                             (* ODD *)
+  ord* = 18;                             (* ORD *)
+  max* = 19;                             (* MAX *)
+  min* = 20;                             (* MIN *)
+  new* = 21;                             (* NEW *)
+  copy* = 22;                            (* COPY *)
 
-  adr* = 22;                             (* SYSTEM.ADR *)
-  lsh* = 23;                             (* SYSTEM.LSH *)
-  move* = 24;                            (* SYSTEM.MOVE *)
-  systemNew* = 25;                       (* SYSTEM.NEW *)
-  rot* = 26;                             (* SYSTEM.ROT *)
-  val* = 27;                             (* SYSTEM.VAL *)
+  adr* = 23;                             (* SYSTEM.ADR *)
+  lsh* = 24;                             (* SYSTEM.LSH *)
+  move* = 25;                            (* SYSTEM.MOVE *)
+  systemNew* = 26;                       (* SYSTEM.NEW *)
+  rot* = 27;                             (* SYSTEM.ROT *)
+  val* = 28;                             (* SYSTEM.VAL *)
 
 CONST
   minExitCode* = 0;
@@ -279,6 +280,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (stb, module, short, "SHORT", 1, 1);
     PredefProc (stb, module, chr, "CHR", 1, 1);
     PredefProc (stb, module, longchr, "LONGCHR", 1, 1);
+    PredefProc (stb, module, ucs4chr, "UCS4CHR", 1, 1);
     PredefProc (stb, module, entier, "ENTIER", 1, 1);
     PredefProc (stb, module, odd, "ODD", 1, 1);
     PredefProc (stb, module, ord, "ORD", 1, 1);

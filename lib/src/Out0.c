@@ -22,6 +22,14 @@ void Out0__LString(const OOC_CHAR16 s[], OOC_LEN s_0d) {
   }
 }
 
+void Out0__UString(const OOC_CHAR32 s[], OOC_LEN s_0d) {
+  const OOC_CHAR32* c = s;
+  while (*c) {
+    putc((*c < 256) ? (OOC_CHAR8)*c : '?', stdout);
+    c++;
+  }
+}
+
 void Out0__Int(OOC_INT32 i, OOC_INT32 n) {
   fprintf(stdout, "%*i", n, i);
 }

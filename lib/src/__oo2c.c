@@ -32,19 +32,44 @@ OOC_INT32 _cmp16(const OOC_CHAR16* l, const OOC_CHAR16* r) {
   return ((OOC_INT32)*l-(OOC_INT32)*r);
 }
 
+OOC_INT32 _cmp32(const OOC_CHAR32* l, const OOC_CHAR32* r) {
+  while ((*l == *r) && *l) { l++; r++; }
+  return ((OOC_INT32)*l-(OOC_INT32)*r);
+}
+
 /* --- string copy */
 void _copy_8(const OOC_CHAR8* src, OOC_CHAR8* dest, OOC_LEN max_len) {
   OOC_CHAR8* max=dest+max_len-1;
   while ((dest != max) && (*(dest++) = *(src++)));
   if (dest == max) *dest = '\000';
 }
+
+void _copy_8to16(const OOC_CHAR8* src, OOC_CHAR16* dest, OOC_LEN max_len) {
+  OOC_CHAR16* max=dest+max_len-1;
+  while ((dest != max) && (*(dest++) = *(src++)));
+  if (dest == max) *dest = '\000';
+}
+
+void _copy_8to32(const OOC_CHAR8* src, OOC_CHAR32* dest, OOC_LEN max_len) {
+  OOC_CHAR32* max=dest+max_len-1;
+  while ((dest != max) && (*(dest++) = *(src++)));
+  if (dest == max) *dest = '\000';
+}
+
 void _copy_16(const OOC_CHAR16* src, OOC_CHAR16* dest, OOC_LEN max_len) {
   OOC_CHAR16* max=dest+max_len-1;
   while ((dest != max) && (*(dest++) = *(src++)));
   if (dest == max) *dest = '\000';
 }
-void _copy_8to16(const OOC_CHAR8* src, OOC_CHAR16* dest, OOC_LEN max_len) {
-  OOC_CHAR16* max=dest+max_len-1;
+
+void _copy_16to32(const OOC_CHAR16* src, OOC_CHAR32* dest, OOC_LEN max_len) {
+  OOC_CHAR32* max=dest+max_len-1;
+  while ((dest != max) && (*(dest++) = *(src++)));
+  if (dest == max) *dest = '\000';
+}
+
+void _copy_32(const OOC_CHAR32* src, OOC_CHAR32* dest, OOC_LEN max_len) {
+  OOC_CHAR32* max=dest+max_len-1;
   while ((dest != max) && (*(dest++) = *(src++)));
   if (dest == max) *dest = '\000';
 }
