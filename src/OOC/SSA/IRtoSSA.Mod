@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:IRtoSSA;
 (*  Converts the IR of a procedure into its SSA representation.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -1130,20 +1130,20 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
       END;
       
-      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.labels);
       IF (caseStatm. default # NIL) THEN
         select. AddOpnd (StatmSeq (pb, storeAfterSelect, caseStatm. default),
-                         Opnd.labels);
+                         Opnd.arg);
         
       ELSIF caseStatm. checkMatch THEN
         s := storeAfterSelect;
         instr := AddException (pb, caseStatm. sym,
                                Opcode.failedCase, Opcode.scNone);
         instr. AddOpnd (select. opndList. arg, Opnd.arg);
-        select. AddOpnd (s, Opnd.labels);
+        select. AddOpnd (s, Opnd.arg);
         
       ELSE
-        select. AddOpnd (storeAfterSelect, Opnd.labels)
+        select. AddOpnd (storeAfterSelect, Opnd.arg)
       END;
 
       s := select. AddResult (Result.store)

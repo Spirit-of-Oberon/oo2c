@@ -58,15 +58,20 @@ CONST
   enter* = 4;
   select* = 5;
   (**Select one of several states, depending on the value of the selecting
-     expression.
-
+     expression.  This instruction is used for @code{IF}, @code{WITH}, and
+     @code{CASE} statements, as well as for the boolean operators @code{&}
+     and @code{OR}.
+     
      @table @oconst
      @item *OOC:SSA:Opnd.arg
      The selecting expression.
 
      @item *OOC:SSA:Opnd.arg
-     A constant, one of the possible values of the first argument.
-
+     A constant, one of the possible values of the first argument.  For a
+     branch of a @code{CASE} statement, the operand is of class
+     @oconst{*OOC:SSA:Opnd.arg} and refers either to an instruction of type
+     @oconst{labels}, or, for the default path, to the constant @samp{FALSE}.
+     
      @item *OOC:SSA:Opnd.arg
      The value of store if the first argument matches the preceeding constant.
      @end table

@@ -799,7 +799,7 @@ PROCEDURE (s: State) Transform*;
           IF (select. GetOpndClass (Opnd.labels) = NIL) THEN
             RETURN (select. CountOpndClass (Opnd.arg) DIV 2);
           ELSE
-            RETURN (select. CountOpndClass (Opnd.arg)-1);
+            RETURN select. CountOpndClass (Opnd.labels);
           END;
         | Opcode.loopStart : RETURN 2
         | Opcode.loopEnd   : RETURN select. CountOpndClass (Opnd.storeExit)
