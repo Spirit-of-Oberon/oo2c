@@ -351,17 +351,27 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
     VAR
       opnd: SSA.Opnd;
       opndCyclic: BOOLEAN;
+      resIndex: LONGINT;
     BEGIN
       IF (res = head) THEN
+        res.LogId("SearchCycle: head");
         cyclic := TRUE;
       ELSIF (res.marker = forwardInductive) THEN
+        resIndex := res.ResultIndex();
         opnd := res.instr.opndList;
         WHILE (opnd # NIL) DO
           opndCyclic := FALSE;
-          SearchCycle(opnd.arg, head, ic, opndCyclic);
+          IF (opnd.arg.instr.opcode = Opcode.collect) THEN
+            SearchCycle(opnd.arg.instr.NthArg(resIndex-1),
+                        head, ic, opndCyclic);
+          ELSE
+            SearchCycle(opnd.arg,
+                        head, ic, opndCyclic);
+          END;
           cyclic := cyclic OR opndCyclic;
           opnd := opnd.nextOpnd;
         END;
+        res.LogId("SearchCycle: forwardInductive");
         IF cyclic THEN
           AddInductionValue(ic, res);
         END;
@@ -732,44 +742,75 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
 
   PROCEDURE RewriteCycle(rc: RewrittenCycle; ce: CycleElement): SSA.Result;
     VAR
-      ci, mult, instr: SSA.Instr;
-      iv, ni, res, mres: SSA.Result;
+      ci, mult, instr, collect: SSA.Instr;
+      iv, ni, res, mres, hres: SSA.Result;
       obj: Object.Object;
+      resultIndex: LONGINT;
+      opnd, next: SSA.Opnd;
     BEGIN
-      ci := ce.res.instr;
-      CASE ci.opcode OF
-      | Opcode.add:
-        iv := ci.opndList.arg;           (* induction value *)
-        ni := ci.opndList.nextOpnd.arg;  (* non-induction *)
-        IF replacement.HasKey(ni) THEN   (* oops, got that backward *)
-          res := iv; iv := ni; ni := res;
-        END;
-        ASSERT(replacement.HasKey(iv));
-
-        obj := replacement.Get(iv);
-        res := obj(SSA.Result);
-        ni := pb.FixSubclass(ni, sum.subclass);
-        IF (rc.a # NIL) THEN
-          mult := pb.AddInstr(Opcode.multiply, sum.subclass);
-          mult.AddOpnd(ni, Opnd.arg);
-          mult.AddOpnd(rc.a, Opnd.arg);
-          mres := mult;
-        ELSE
-          mres := ni;
-        END;
+      IF (ce = NIL) THEN
+        RETURN NIL;
+      ELSE
+        hres := RewriteCycle(rc, ce.next);
+        ce.res.LogId("RewriteCycle");
         
-        instr := pb.AddInstr(Opcode.add, sum.subclass);
-        instr.AddOpnd(res, Opnd.arg);
-        instr.AddOpnd(mres, Opnd.arg);
-        res := instr;
-        replacement.Set(ce.res, res);
+        ci := ce.res.instr;
+        CASE ci.opcode OF
+        | Opcode.add, Opcode.subtract:
+          iv := ci.opndList.arg;           (* induction value *)
+          ni := ci.opndList.nextOpnd.arg;  (* non-induction *)
+          IF replacement.HasKey(ni) THEN   (* oops, got that backward *)
+            res := iv; iv := ni; ni := res;
+          END;
+          ASSERT(replacement.HasKey(iv));
+          
+          obj := replacement.Get(iv);
+          res := obj(SSA.Result);
+          ni := pb.FixSubclass(ni, sum.subclass);
+          IF (rc.a # NIL) THEN
+            mult := pb.AddInstr(Opcode.multiply, sum.subclass);
+            mult.AddOpnd(ni, Opnd.arg);
+            mult.AddOpnd(rc.a, Opnd.arg);
+            mres := mult;
+          ELSE
+            mres := ni;
+          END;
+          
+          instr := pb.AddInstr(ci.opcode, sum.subclass);
+          instr.AddOpnd(res, Opnd.arg);
+          instr.AddOpnd(mres, Opnd.arg);
+          res := instr;
+          replacement.Set(ce.res, res);
+          
+        | Opcode.select:
+          resultIndex := ce.res.ResultIndex();
+          
+          opnd := ci.opndList.nextOpnd;
+          WHILE (opnd # NIL) DO
+            opnd := opnd.nextOpnd;
+            next := opnd.nextOpnd;
+            
+            ASSERT(opnd.arg.instr.opcode = Opcode.collect);
+            collect := opnd.arg.instr;
+            iv := collect.NthArg(resultIndex-1);
+            iv.LogId("  replacing arg");
+            ASSERT(replacement.HasKey(iv));
+            
+            obj := replacement.Get(iv);
+            res := obj(SSA.Result);
+            collect.AddOpnd(res, Opnd.arg);
+            
+            opnd := next;
+          END;
+          res := ci.AddResultSubclass(Result.selectValue, sum.subclass);
+        END;
+        rc.replacements[ce.id] := res;
+        
+        IF (hres = NIL) THEN
+          hres := res;
+        END;
+        RETURN hres;
       END;
-      rc.replacements[ce.id] := res;
-      
-      IF (ce.next # NIL) THEN
-        res := RewriteCycle(rc, ce.next);
-      END;
-      RETURN res;
     END RewriteCycle;
 
   PROCEDURE ComputeReplacement(rc: RewrittenCycle; sum: Sum): SSA.Result;
