@@ -119,10 +119,12 @@ PROCEDURE IsWarning (msg: Msg): BOOLEAN;
 
 PROCEDURE (l: List) AppendWarning*(msg: Msg);
   VAR
-    msgPos: M.Attribute;
+    oldNoError: BOOLEAN;
   BEGIN
-    msgPos := msg.GetAttribute(posAttr);
-    l.Append^(msg);
+    oldNoError := l.noError;
+    l.Append(msg);
+    l.noError := oldNoError;
+    (* NOTE: l.Append^(msg) should only be called in Append() below *)
   END AppendWarning;
 
 PROCEDURE (l: List) Append* (msg: Msg);
