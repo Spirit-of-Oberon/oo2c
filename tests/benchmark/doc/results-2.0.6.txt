@@ -40,3 +40,38 @@ gcc-3.2.2, -march=pentium2 -O2, Mobile Pentium II, 400MHz (mva)
   FFT2                3661.4   87.5%
   FFT2C               4185.2
   -------------------------- -------
+
+gcc-3.2.2, -march=athlon-xp -O2, Athlon XP 1800, 1.5GHz (mva)
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  ZeroArray1         76099.6  100.0%
+  ZeroArray2        101429.3  100.0%
+  ZeroArray4        151342.4   99.7%
+  CopyArray1         47038.2   77.5%
+  CopyArray2         64995.7   99.5%
+  CopyArray4         69222.1   99.9%
+  CopyArrayMove      67671.9   99.8%
+  AddArray1          34155.6   99.5%
+  AddArray2          40611.0  102.8%
+  AddArray4          40311.2  103.0%
+  ZeroArray1C        76132.7
+  ZeroArray2C       101439.1
+  ZeroArray4C       151758.6
+  ZeroArrayBlockC   150538.5
+  CopyArray1C        60667.4
+  CopyArray2C        65299.3
+  CopyArray4C        69281.5
+  CopyArrayBlockC    67807.6
+  AddArray1C         34330.0
+  AddArray2C         39521.2
+  AddArray4C         39137.7
+  QSORT               1168.4   89.9%
+  QSORTC              1299.7
+  BSORT                758.9  100.0%
+  BSORTC               758.9
+  FFT                22834.8  142.7%
+  FFTC               16003.9
+  FFT2               16659.9   90.2%
+  FFT2C              18472.6
+  -------------------------- -------
