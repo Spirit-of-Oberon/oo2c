@@ -24,6 +24,7 @@ IMPORT
   Msg, Channel, TextRider, LongStrings, StdChannels,
   ADT:String, URI, URIParser := URI:Parser, URI:Scheme:File, 
   XML:DTD, XML:Locator, Config:Parser, CS := Config:Section,
+  Config:Section:Options,
   OOC:Error, OOC:Repository, OOC:Repository:FileSystem, OOC:Package;
 
 
@@ -363,23 +364,34 @@ PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
     RETURN result
   END GetIncludePaths;
 
-PROCEDURE (s: Section) ParseMetaData*(): BOOLEAN;
+PROCEDURE (s: Section) ParseMetaData*(options, pragmas: Options.Section): BOOLEAN;
   VAR
-    rep: Repository.Repository;
-    uri: URI.URI;
-    fileName: Repository.URIBuffer;
     errList: Error.List;
+
+  PROCEDURE Parse(rep: Repository.Repository);
+    VAR
+      uri: URI.URI;
+      pkg: Package.Package;
+      fileName: Repository.URIBuffer;
+    BEGIN
+      IF (rep # NIL) THEN
+        Parse(rep.baseRep);
+        
+        uri := rep.GetResource("", packageData);
+        IF (uri # NIL) THEN
+          uri(File.URI).GetPath(fileName);
+          pkg := Package.ParseFile(fileName, errList);
+          rep.SetPackageInfo(pkg);
+          IF (pkg # NIL) THEN
+            pkg.MergeConfig(options, pragmas);
+          END;
+        END;
+      END;
+    END Parse;
+  
   BEGIN
     errList := Error.NewList("");
-    rep := s. topLevelRep;
-    WHILE (rep # NIL) DO
-      uri := rep.GetResource("", packageData);
-      IF (uri # NIL) THEN
-        uri(File.URI).GetPath(fileName);
-        rep.SetPackageInfo(Package.ParseFile(fileName, errList));
-      END;
-      rep := rep. baseRep
-    END;
+    Parse(s.topLevelRep);
     errList.Write(StdChannels.stdout);
     RETURN errList.NoErrors();
   END ParseMetaData;
