@@ -17,7 +17,8 @@
 	     version="1.5.5"
 	     command="/usr/bin/Oo2c"
 	     config-file="./sample-oo2crc"
-	     flags="" />
+	     flags="-Ov"
+	     working-dir="/tmp/ooc-tests" />
 
   <test-suite uri="testsuite.xml" />
 </test-setup>

@@ -29,7 +29,8 @@
           version CDATA #REQUIRED
           command CDATA #REQUIRED
           config-file %URI; #IMPLIED
-          flags CDATA #REQUIRED >
+          flags CDATA #REQUIRED 
+          working-dir CDATA #REQUIRED >
 
 <!ELEMENT test-suite EMPTY >
 <!ATTLIST test-suite
