@@ -1905,6 +1905,8 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     END AddSetupCode;
   
   BEGIN
+    CheckExit (statmSeq, NIL);
+    
     NEW (p);
     statmSeq := AddSetupCode (sym, decl, statmSeq);
     InitProcedure (p, sym, decl, statmSeq);
@@ -1938,6 +1940,8 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol;
   VAR
     m: Module;
   BEGIN
+    CheckExit (statmSeq, NIL);
+    
     NEW (m);
     InitModule (m, sym, name, procList, statmSeq);
     RETURN m
