@@ -43,13 +43,10 @@ CONST
 TYPE
   OverflowError*     = POINTER TO OverflowErrorDesc;
   OverflowErrorDesc* = RECORD
-                         (**
-                           Raised if the parsed datatype has correct syntax
-                           but it interpetation is not valid, because of
-                           numerical overflow or similar reason.
-                         *)
-                         (IO.ErrorDesc)
-                       END;
+    (**Raised if the parsed datatype has correct syntax but it interpetation is
+       not valid, because of numerical overflow or similar reason.  *)
+    (IO.ErrorDesc)
+  END;
 
   Writer* = POINTER TO WriterDesc;
   WriterDesc* = RECORD
@@ -71,56 +68,42 @@ TYPE
 
   Reader*     = POINTER TO ReaderDesc;
   ReaderDesc* = RECORD
-                  channel-: IO.ByteChannel;
-                  (**
-                    The channel on which this reader is operating.
-                  *)
-                  buffer,
-                  (**
-                    buffer that holds the current line. Buffer must always be at
-                    least @ofield{lineLength}+1 big.
-                  *)
-                  tmp        : Buffer;
-                  (**
-                    A second temporary buffer use by some conversion routines. Will
-                    always have the same size as @ofield{buffer}.
-                  *)
-                  pos,
-                  (**
-                    Current scan position in the buffer. Must always be
-                    0<=@ofield{pos}<=@ofield{lineLength}.
-                    @ofield{pos}=@ofield{lineLength} signals that the content
-                    of the line (excluding apossible EOL token) has been read.
-                  *)
-                  lineLength : LONGINT;  (** Length of the current line *)
-                  consumeEOL
-                  (**
-                    The current line is terminated by a EOL token
-                  *)
-                             : BOOLEAN;
-                  eol        : SHORTINT; (** The EOL token that is in use *)
-                END;
+    channel-: IO.ByteChannel;
+    (**The channel on which this reader is operating.  *)
+    
+    buffer: Buffer;
+    (**Buffer that holds the current line. Buffer must always be at least
+       @ofield{lineLength}+1 big.  *)
+    tmp: Buffer;
+    (**A second temporary buffer use by some conversion routines. Will always
+       have the same size as @ofield{buffer}.  *)
+    pos: LONGINT;
+    (**Current scan position in the buffer. Must always be
+       0<=@ofield{pos}<=@ofield{lineLength}.  @ofield{pos}=@ofield{lineLength}
+       signals that the content of the line (excluding apossible EOL token) has
+       been read.  *)
+    lineLength: LONGINT;  (** Length of the current line *)
+    consumeEOL: BOOLEAN;
+    (**The current line is terminated by a EOL token  *)
+    eol: SHORTINT;                 (** The EOL token that is in use *)
+  END;
 
-  PROCEDURE NewProtocolError*(msg: STRING):IO.ProtocolError;
-
+PROCEDURE NewProtocolError*(msg: STRING):IO.ProtocolError;
   BEGIN
     RETURN NEW(IO.ProtocolError, msg);
   END NewProtocolError;
 
-  PROCEDURE RaiseProtocolError*(msg: STRING) RAISES IO.ProtocolError;
-
+PROCEDURE RaiseProtocolError*(msg: STRING) RAISES IO.ProtocolError;
   BEGIN
     RAISE(NewProtocolError(msg));
   END RaiseProtocolError;
 
-  PROCEDURE NewOverflowError*(msg: STRING):OverflowError;
-
+PROCEDURE NewOverflowError*(msg: STRING):OverflowError;
   BEGIN
     RETURN NEW(OverflowError, msg);
   END NewOverflowError;
 
-  PROCEDURE RaiseOverflowError*(msg: STRING) RAISES OverflowError;
-
+PROCEDURE RaiseOverflowError*(msg: STRING) RAISES OverflowError;
   BEGIN
     RAISE(NewOverflowError(msg));
   END RaiseOverflowError;
@@ -445,17 +428,17 @@ PROCEDURE (w: Writer) WriteLn*();
     END
   END WriteLn;
 
-  PROCEDURE (r : Reader) INIT*(ch: IO.ByteChannel);
 
-    (**
-      Initializes a already allocated @otype{Reader} with the
-      @otype{IO.ByteChannel} @oparam{ch}.
+(* Reader methods
+   ------------------------------------------------------------------------ *)
 
-      @precond
-      @oparam{ch} is in blocking mode.
-      @end precond
-    *)
+PROCEDURE (r: Reader) INIT*(ch: IO.ByteChannel);
+(**Initializes a already allocated @otype{Reader} with the
+   @otype{IO.ByteChannel} @oparam{ch}.
 
+   @precond
+   @oparam{ch} is in blocking mode.
+   @end precond  *)
   BEGIN
     r.channel := ch;
     r.buffer:=NIL;
@@ -467,45 +450,31 @@ PROCEDURE (w: Writer) WriteLn*();
     r.pos:=0;
   END INIT;
 
-  PROCEDURE ConnectReader*(ch: IO.ByteChannel): Reader;
+PROCEDURE ConnectReader*(ch: IO.ByteChannel): Reader;
+(**Create a new instance of @otype{Reader} that is initialized with
+   @otype{IO.ByteChannel} @oparam{ch}.
 
-    (**
-      Create a new instance of @otype{Reader} that is initialized with
-      @otype{IO.ByteChannel} @oparam{ch}.
-
-      @precond
-      @oparam{ch} is in blocking mode.
-      @end precond
-    *)
-
+   @precond
+   @oparam{ch} is in blocking mode.
+   @end precond  *)
   BEGIN
     RETURN NEW(Reader,ch);
   END ConnectReader;
 
-  PROCEDURE (r : Reader) SetEOL*(type : SHORTINT);
-
-    (**
-      Define which character token is interpreted as line end. Currently
-      available are @oconst{eolLF}, which is in general used by @code{UNIX},
-      @oconst{eolCR}, which is used by @code{Mac OS} and @oconst{eolCRLF},
-      which is used by @code{DOS}, @code{Windows} and various text based
-      network protocols.
-    *)
-
+PROCEDURE (r: Reader) SetEOL*(type: SHORTINT);
+(**Define which character token is interpreted as line end. Currently available
+   are @oconst{eolLF}, which is in general used by @code{UNIX}, @oconst{eolCR},
+   which is used by @code{Mac OS} and @oconst{eolCRLF}, which is used by
+   @code{DOS}, @code{Windows} and various text based network protocols.  *)
   BEGIN
     r.eol:=type;
   END SetEOL;
 
-  PROCEDURE (r : Reader) AquireBufferWithSize(size : LONGINT);
-
-    (**
-      Reallocates @ofield{Reader.buffer} and @ofield{Reader.tmp} to
-      be at least of size @oparam{size}.
-    *)
-
+PROCEDURE (r: Reader) AquireBufferWithSize(size: LONGINT);
+(**Reallocates @ofield{Reader.buffer} and @ofield{Reader.tmp} to be at least of
+   size @oparam{size}.  *)
   VAR
-    tmp : Buffer;
-
+    tmp: Buffer;
   BEGIN
     IF (r.buffer=NIL) OR (LEN(r.buffer^)<size) THEN
       NEW(r.tmp,size+size DIV 2);
@@ -516,37 +485,31 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END AquireBufferWithSize;
 
-  PROCEDURE (r : Reader) ReadLineBuffer() RAISES IO.Error;
+PROCEDURE (r: Reader) ReadLineBuffer() RAISES IO.Error;
+(**Read a new line into the buffer.
 
-    (**
-      Read a new line into the buffer.
+   @precond
+   Data available. Else an exception will be thrown.
+   @end precond
 
-      @precond
-      Data available. Else an exception will be thrown.
-      @end precond
+   @precond
+   The must be characters left to read.  If the end of the file has been
+   reached a @otype{IO.FormatError}-exception will be thrown.
+   @end precond
 
-      @precond
-      The must be characters left to read.
-      If the end of the file has been reached a
-      @otype{IO.FormatError}-exception will be thrown.
-      @end precond
-
-      @postcond
-      @ofield{Reader.pos} has value 0 and points to the first
-      character of the new line.
-      @end postcond
-    *)
-
+   @postcond
+   @ofield{Reader.pos} has value 0 and points to the first character of the new
+   line.
+   @end postcond  *)
   VAR
-    ch : CHAR;
-
+    ch: CHAR;
   BEGIN
     r.pos:=0;
     r.consumeEOL:=FALSE;
     r.lineLength:=0;
 
     CASE r.eol OF
-      eolLF:
+    | eolLF:
       LOOP
         IF (r.channel.Read(ch,0,1)#1) THEN
           IF r.lineLength=0 THEN
@@ -617,21 +580,17 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END ReadLineBuffer;
 
-  PROCEDURE (r : Reader) ConsumeWhiteSpace() RAISES IO.Error;
+PROCEDURE (r: Reader) ConsumeWhiteSpace() RAISES IO.Error;
+(**Read data until a non-whitespace character is found.
 
-    (**
-      Read data until a non-whitespace character is found.
+   @precond
+   A non-whitespace chahracter is available. Else an
+   @otype{IO.FormatError}-exception will be thrown.
+   @end precond
 
-      @precond
-      A non-whitespace chahracter is available. Else an
-      @otype{IO.FormatError}-exception will be thrown.
-      @end precond
-
-      @postcond
-      @ofield{Reader.pos} points to the first non-whitespace character found.
-      @end postcond
-    *)
-
+   @postcond
+   @ofield{Reader.pos} points to the first non-whitespace character found.
+   @end postcond  *)
   BEGIN
     LOOP
       WHILE r.pos=r.lineLength DO (* Skip line end and all following empty lines *)
@@ -645,26 +604,21 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END ConsumeWhiteSpace;
 
-  PROCEDURE (r : Reader) ReadChar*(VAR ch : CHAR) RAISES IO.Error;
-    (**
-      Read a character. end-of-line tokens will be skipped.
+PROCEDURE (r: Reader) ReadChar*(VAR ch: CHAR) RAISES IO.Error;
+(**Read a character. end-of-line tokens will be skipped.
 
-      @emph{Note}: If no character is available a @otype{IO.FormatError}-exception
-      will be thrown.
-    *)
-
-
+   @emph{Note}: If no character is available a @otype{IO.FormatError}-exception
+   will be thrown.  *)
   BEGIN
     IF (r.pos=r.lineLength) & ~r.consumeEOL THEN
       r.ReadLineBuffer;
     END;
 
     IF (r.pos=r.lineLength) THEN
-      (*
-        Either we have read a new line and the new line is finished, then it must
-        have EOL, or ReadLineBuffer would have been failed, or we did not
-        read a new line, then a EOL must be avaiable, too (because of above check).
-      *)
+      (*Either we have read a new line and the new line is finished, then it
+        must have EOL, or ReadLineBuffer would have been failed, or we did not
+        read a new line, then a EOL must be avaiable, too (because of above
+        check).  *)
       ch:=Ascii.lf;
       r.consumeEOL:=FALSE;
     ELSE
@@ -673,40 +627,36 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END ReadChar;
 
-  PROCEDURE (r : Reader) ReadString*(VAR s : ARRAY OF CHAR) RAISES IO.Error;
+PROCEDURE (r: Reader) ReadString*(VAR s: ARRAY OF CHAR) RAISES IO.Error;
+(**Reads in a sequence of characters enclosed in single (@code{'}) or double
+   (@code{"}) quote marks. The opening quote must be the same as the closing
+   quote and must not occur within the string. Characters will be read until
+   the terminating quote mark is encountered, an invalid character is read
+   (end-of-line is always considered invalid), there are no more characters
+   available in the channel, or the string s is full. s is always terminated
+   with 0X.
 
-    (**
-      Reads in a sequence of characters enclosed in single (@code{'}) or double
-      (@code{"}) quote marks. The opening quote must be the same as the closing
-      quote and must not occur within the string. Characters will be
-      read until the terminating quote mark is encountered, an invalid
-      character is read (end-of-line is always considered invalid),
-      there are no more characters available in the channel, or the
-      string s is full. s is always terminated with 0X.
+   Strings with no terminating quote generate a
+   @otype{IO.FormatError}-exception.
 
-      Strings with no terminating quote generate a @otype{IO.FormatError}-exception.
+   @precond
+   If s is not large enough to hold the entire input, a
+   @otype{OverflowError}-exception will be generated.
 
-      @precond
-      If s is not large  enough to hold the entire input,
-      a @otype{OverflowError}-exception will be generated.
+   If the strings contains illegal characters (@code{char<" "}) a
+   @otype{IO.FormatError}-exception is generated.
 
-      If the strings contains illegal characters (@code{char<" "}) a
-      @otype{IO.FormatError}-exception is generated.
+   Upon encountering an error, the value of s is undefined.
 
-      Upon encountering an error, the value of s is undefined.
+   @samp{input = [whitespace] '"' @{char@} '"' | [whitespace] "'" @{char@}
+   "'"}.
 
-      @samp{input = [whitespace] '"' @{char@} '"' | [whitespace] "'" @{char@}
-      "'"}.
+   @oparam{s} must a least have a size of 1.
 
-      @oparam{s} must a leats have a size of 1.
-
-      @end precond
-    *)
-
+   @end precond  *)
   VAR
-    quote : CHAR;
-    pos   : LONGINT;
-
+    quote: CHAR;
+    pos: LONGINT;
   BEGIN
     r.ConsumeWhiteSpace;
 
@@ -739,23 +689,19 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END ReadString;
 
-  PROCEDURE (r : Reader) ReadLInt*(VAR lint : LONGINT) RAISES IO.Error;
-    (**
-      @precond
-      Returns the long integer constant @oparam{lint} at the current position
-      according to the format: @samp{IntConst = [whitespace] ["+"|"-"] digit
-      @{digit@}}.
+PROCEDURE (r: Reader) ReadLInt*(VAR lint: LONGINT) RAISES IO.Error;
+(**@precond
+   Returns the long integer constant @oparam{lint} at the current position
+   according to the format: @samp{IntConst = [whitespace] ["+"|"-"] digit
+   @{digit@}}.
 
-      @emph{Note}: If no identifier is available a @otype{IO.FormatError}-exception
-      will be thrown. If the parsed value is too big to be hold a
-      @otype{OverflowError} will be thrown.
-      @end precond
-    *)
-
+   @emph{Note}: If no identifier is available a
+   @otype{IO.FormatError}-exception will be thrown. If the parsed value is too
+   big to be hold a @otype{OverflowError} will be thrown.
+   @end precond  *)
   VAR
-    x   : LONGINT;
-    res : IntStr.ConvResults;
-
+    x: LONGINT;
+    res: IntStr.ConvResults;
   BEGIN
     r.ConsumeWhiteSpace;
 
@@ -767,9 +713,9 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
 
     (*
-      IntStr.StrToInt may do this for us, but IMHO it better to have
-      it explicitely in here, too.
-    *)
+       IntStr.StrToInt may do this for us, but IMHO it better to have
+       it explicitely in here, too.
+       *)
     IF (r.buffer[r.pos]>="0") & (r.buffer[r.pos]<="9") THEN
       r.tmp[x]:=r.buffer[r.pos];
       INC(x);
@@ -797,15 +743,10 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END ReadLInt;
 
-  PROCEDURE (r : Reader) ReadInt*(VAR int : INTEGER) RAISES IO.Error;
-
-    (**
-      See @oproc{Reader.ReadLInt}.
-    *)
-
+PROCEDURE (r: Reader) ReadInt*(VAR int: INTEGER) RAISES IO.Error;
+(**See @oproc{Reader.ReadLInt}.  *)
   VAR
-    tmp : LONGINT;
-
+    tmp: LONGINT;
   BEGIN
     r.ReadLInt(tmp);
 
@@ -816,15 +757,10 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END ReadInt;
 
-  PROCEDURE (r : Reader) ReadSInt*(VAR sint : SHORTINT) RAISES IO.Error;
-
-    (**
-      See @oproc{Reader.ReadLInt}.
-    *)
-
+PROCEDURE (r: Reader) ReadSInt*(VAR sint: SHORTINT) RAISES IO.Error;
+(**See @oproc{Reader.ReadLInt}.  *)
   VAR
-    tmp : LONGINT;
-
+    tmp: LONGINT;
   BEGIN
     r.ReadLInt(tmp);
 
@@ -835,23 +771,19 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END ReadSInt;
 
-  PROCEDURE (r : Reader) ReadIdentifier*(VAR s : ARRAY OF CHAR) RAISES IO.Error;
-    (**
-      Reads an Oberon-2 identifier.
+PROCEDURE (r: Reader) ReadIdentifier*(VAR s: ARRAY OF CHAR) RAISES IO.Error;
+(**Reads an Oberon-2 identifier.
 
-      @precond
-      @samp{input = [whitespace] letter @{letter | digit@}}.
+   @precond
+   @samp{input = [whitespace] letter @{letter | digit@}}.
 
-      @emph{Note}: @oparam{s} must a least have a size of 2.
-      If s is not large  enough to hold the entire input, a
-      @otype{OverflowError}-exception will be generated. If no identifier is
-      available a @otype{IO.FormatError}-exception will be thrown.
-      @end precond
-    *)
-
+   @emph{Note}: @oparam{s} must a least have a size of 2.  If s is not large
+   enough to hold the entire input, a @otype{OverflowError}-exception will be
+   generated. If no identifier is available a @otype{IO.FormatError}-exception
+   will be thrown.
+   @end precond  *)
   VAR
-    x : LONGINT;
-
+    x: LONGINT;
   BEGIN
     ASSERT(LEN(s)>=2);
 
@@ -877,23 +809,20 @@ PROCEDURE (w: Writer) WriteLn*();
     s[x]:=0X;
   END ReadIdentifier;
 
-  PROCEDURE (r: Reader) ReadBool*(VAR bool: BOOLEAN)  RAISES IO.Error;
-    (**
-      @precond
-      @samp{input=[whitespace] ["TRUE"|"FALSE"]}
+PROCEDURE (r: Reader) ReadBool*(VAR bool: BOOLEAN)  RAISES IO.Error;
+(**@precond
+   @samp{input=[whitespace] ["TRUE"|"FALSE"]}
 
-      @emph{Note}: If no bool value is available a @otype{IO.FormatError}-exception
-      will be thrown.
-      @end precond
+   @emph{Note}: If no bool value is available a
+   @otype{IO.FormatError}-exception will be thrown.
+   @end precond
 
-      @postcond
-      @samp{bool=TRUE} if input equals @samp{TRUE} and @samp{bool=FALSE} if
-      input equals @samp{FALSE}. Result is undefined otherwise.
-      @end postcond
-    *)
+   @postcond
+   @samp{bool=TRUE} if input equals @samp{TRUE} and @samp{bool=FALSE} if input
+   equals @samp{FALSE}. Result is undefined otherwise.
+   @end postcond  *)
   VAR
     ident: ARRAY 8 OF CHAR;
-
   BEGIN
     r. ReadIdentifier(ident);
 
@@ -906,25 +835,23 @@ PROCEDURE (w: Writer) WriteLn*();
     END
   END ReadBool;
 
-  PROCEDURE HexDigit (ch: CHAR):BOOLEAN;
+PROCEDURE HexDigit (ch: CHAR):BOOLEAN;
 
   BEGIN
     RETURN ((ch>="0") & (ch<="9")) OR ((ch>="A") & (ch<="F"))
   END HexDigit;
 
-  PROCEDURE HexToInt (str: ARRAY OF CHAR; VAR lint: LONGINT): BOOLEAN;
-    (**
-      Returns the long integer constant `lint' in the string `str' according
-      to the format:
-      IntConst = digit @{hexdigit@}
+PROCEDURE HexToInt (str: ARRAY OF CHAR; VAR lint: LONGINT): BOOLEAN;
+(**Returns the long integer constant `lint' in the string `str' according to
+   the format: IntConst = digit @{hexdigit@}
 
-      Note: 80000000H-FFFFFFFFH are valid inputs which map to the negative
-      integers. *)
+   Note: 80000000H-FFFFFFFFH are valid inputs which map to the negative
+   integers.  *)
 
   VAR
     spos, epos: INTEGER;
 
-    PROCEDURE GetDigit(c: CHAR): INTEGER;
+  PROCEDURE GetDigit(c: CHAR): INTEGER;
 
     VAR
       d: INTEGER;
@@ -933,12 +860,10 @@ PROCEDURE (w: Writer) WriteLn*();
       IF (ORD ("0") <= d) & (d <= ORD ("9")) THEN
         DEC (d, ORD ("0"))
       ELSE  (* (ORD ("A") <= d) & (d <= ORD ("F")) *)
-        (*
-          the explicit test can be omitted, since this procedure is only
-          called for numbers with H or X suffix, and the initial REPEAT
-          loop in `Number' only accepts valid hexadecimal digits from
-          the ranges "0".."9" and "A".."F"
-        *)
+        (*the explicit test can be omitted, since this procedure is only called
+          for numbers with H or X suffix, and the initial REPEAT loop in
+          `Number' only accepts valid hexadecimal digits from the ranges
+          "0".."9" and "A".."F"  *)
         DEC (d, ORD ("A")-10)
       END;
       RETURN d
@@ -961,11 +886,9 @@ PROCEDURE (w: Writer) WriteLn*();
       lint := GetDigit (str[spos]);
       INC (spos);
       IF (epos-spos = 6) & (lint >= 8) THEN
-        (*
-          value is beyond MAX(LONGINT)=07FFFFFFFH: correct this by sub-
-          tracting 16 from the value of the most significant digit, creating
-          the negative number that matches the bit pattern
-        *)
+        (* value is beyond MAX(LONGINT)=07FFFFFFFH: correct this by sub-
+           tracting 16 from the value of the most significant digit, creating
+           the negative number that matches the bit pattern *)
         DEC (lint, 10H)
       END;
       WHILE (spos <= epos) DO
@@ -977,21 +900,17 @@ PROCEDURE (w: Writer) WriteLn*();
     RETURN (epos >= 0);
   END HexToInt;
 
-  PROCEDURE (r : Reader) ReadHex*(VAR int : LONGINT) RAISES IO.Error;
-    (**
-      Reads a Oberon-2 hex value.
+PROCEDURE (r: Reader) ReadHex*(VAR int: LONGINT) RAISES IO.Error;
+(**Reads a Oberon-2 hex value.
 
-      @precond
-      @samp{input = [whitespace] digit @{hexdigit@}}.
+   @precond
+   @samp{input = [whitespace] digit @{hexdigit@}}.
 
-      @emph{Note}: If no identifier is available a @otype{IO.FormatError}-exception
-      will be thrown.
-      @end precond
-    *)
-
+   @emph{Note}: If no identifier is available a
+   @otype{IO.FormatError}-exception will be thrown.
+   @end precond  *)
   VAR
-    x : LONGINT;
-
+    x: LONGINT;
   BEGIN
     r.ConsumeWhiteSpace;
 
@@ -1024,54 +943,44 @@ PROCEDURE (w: Writer) WriteLn*();
     END;
   END ReadHex;
 
-  PROCEDURE (r : Reader) ReadLn*() RAISES IO.Error;
-
-    (**
-      This method reads and discards all characters up to and including
-      the next end-of-line character. If the end of the channel is
-      reached before encountering an end-of-line character, a
-      readAfterEnd error occurs.
-    *)
-
+PROCEDURE (r: Reader) ReadLn*() RAISES IO.Error;
+(**This method reads and discards all characters up to and including the next
+   end-of-line character. If the end of the channel is reached before
+   encountering an end-of-line character, a readAfterEnd error occurs.  *)
   BEGIN
     r.pos:=r.lineLength;
   END ReadLn;
 
-  PROCEDURE (r : Reader) ReadLine*(VAR s : ARRAY OF CHAR) RAISES IO.Error;
+PROCEDURE (r: Reader) ReadLine*(VAR s: ARRAY OF CHAR) RAISES IO.Error;
+(**Reads a sequence of characters into @oparam{s}; reading continues until an
+   end-of-line character is encountered, the array @oparam{s} is full, or
+   @oparam{r} reaches the end of the channel.  The end-of-line character is
+   discarded and @oparam{s} is always terminated with 0X. If @oparam{r} is
+   already positioned at an end-of-line character, @oparam{s} returns as an
+   empty string.
 
-    (**
-      Reads a sequence of characters into @oparam{s}; reading continues
-      until an end-of-line character is encountered, the array @oparam{s}
-      is full, or @oparam{r} reaches the end of the channel.
-      The end-of-line character is discarded and @oparam{s} is always
-      terminated with 0X. If @oparam{r} is already positioned at
-      an end-of-line character, @oparam{s} returns as an empty string.
+   @precond
+   @oparam{s} must be big enough to hold the line, else a
+   @otype{IO.FormatError}-exception will be thrown.  @oparam{s} returns with
+   the sequence of characters that have been read so far (terminated by
+   @code{0X}).
 
-      @precond
-      @oparam{s} must be big enough to hold the line, else a
-      @otype{IO.FormatError}-exception will be thrown.
-      @oparam{s} returns with the sequence of characters that have been
-      read so far (terminated by @code{0X}).
+   Reading past the end of file will generate a
+   @otype{IO.FormatError}-exception. The content of @oparam{s} is undefined in
+   this case.
+   @end precond
 
-      Reading past the end of file will generate a
-      @otype{IO.FormatError}-exception. The content of @oparam{s} is
-      undefined in this case.
-      @end precond
-
-      @emph{Caution}: If reading multiple lines of input and
-      an integer, real, etc. has just been read, the channel may be positioned at
-      a eol character and this method will return an empty string.
-    *)
-
+   @emph{Caution}: If reading multiple lines of input and an integer, real,
+   etc. has just been read, the channel may be positioned at a eol character
+   and this method will return an empty string.  *)
   VAR
-    pos : LONGINT;
-
+    pos: LONGINT;
   BEGIN
     ASSERT(LEN(s)>0);
 
     IF r.pos=r.lineLength THEN (* positioned at the end of line *)
       IF (r.lineLength>0) & r.consumeEOL THEN
-        (* we already have read content and stilll must consume the EOL marker *)
+        (* we already have read content and still must consume the EOL marker *)
         s[0]:=0X;
         r.consumeEOL:=FALSE;
         RETURN;
