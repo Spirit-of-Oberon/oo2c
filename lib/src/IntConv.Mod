@@ -3,7 +3,7 @@ MODULE IntConv;
 (*
     IntConv -  Low-level integer/string conversions.       
     Copyright (C) 1995 Michael Griebling
-    Copyright (C) 2000 Michael van Acken
+    Copyright (C) 2000, 2002 Michael van Acken
  
     This module is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as 
@@ -22,7 +22,7 @@ MODULE IntConv;
 *)
  
 IMPORT
-  Char := CharClass, Str := Strings, Conv := ConvTypes;
+  Char := CharClass, Conv := ConvTypes;
  
 TYPE
   ConvResults* = Conv.ConvResults;
@@ -42,7 +42,12 @@ CONST
 
 VAR
   W, S, SI: Conv.ScanState;
+  minInt, maxInt: ARRAY 11 OF CHAR;
 
+CONST
+  maxDigits = 10;                        (* length of minInt, maxInt *)
+
+  
 (* internal state machine procedures *)
 
 PROCEDURE WState(inputCh: CHAR; VAR chClass: Conv.ScanClass; VAR nextState: Conv.ScanState);
@@ -114,39 +119,41 @@ PROCEDURE FormatInt*(str: ARRAY OF CHAR): ConvResults;
 (**Returns the format of the string value for conversion to LONGINT.  *)
 VAR
   ch: CHAR;
-  int: LONGINT;
-  len, index, digit: INTEGER;
+  index, start: INTEGER;
   state: Conv.ScanState;
   positive: BOOLEAN;
   prev, class: Conv.ScanClass;
+
+PROCEDURE LessOrEqual (VAR high: ARRAY OF CHAR; start, end: INTEGER): BOOLEAN;
+  VAR
+    i: INTEGER;
+  BEGIN  (* pre: index-start = maxDigits *)
+    i := 0;
+    WHILE (start # end) DO
+      IF (str[start] < high[i]) THEN
+        RETURN TRUE;
+      ELSIF (str[start] > high[i]) THEN
+        RETURN FALSE;
+      ELSE  (* str[start] = high[i] *)
+        INC (start); INC (i);
+      END;
+    END;
+    RETURN TRUE;                       (* full match *)
+  END LessOrEqual;
+
 BEGIN
-  len:=Str.Length(str); index:=0;
-  class:=Conv.padding; prev:=class;
-  state:=SI; int:=0; positive:=TRUE;
+  index:=0; prev:=Conv.padding; state:=SI; positive:=TRUE; start := -1;
   LOOP
     ch:=str[index];
     state.p(ch, class, state);
     CASE class OF
     | Conv.padding: (* nothing to do *)
+      
     | Conv.valid:
         IF ch="-" THEN positive:=FALSE
         ELSIF ch="+" THEN positive:=TRUE
-        ELSE (* must be a digit *)
-          digit:=ORD(ch)-ORD("0");
-          IF positive THEN
-            IF int>(MAX(LONGINT)-digit) DIV 10 THEN RETURN strOutOfRange END;
-            int:=int*10+digit
-          ELSE
-            IF int>(MIN(LONGINT)+digit) DIV 10 THEN
-              int:=int*10-digit
-            ELSIF (int < (MIN(LONGINT)+digit) DIV 10) OR
-                  ((int = (MIN(LONGINT)+digit) DIV 10) &
-                    ((MIN(LONGINT)+digit) MOD 10 # 0)) THEN
-              RETURN strOutOfRange
-            ELSE
-              int:=int*10-digit
-            END
-          END
+        ELSIF (start < 0) & (ch # "0") THEN
+          start := index;
         END
       
     | Conv.invalid:
@@ -158,7 +165,14 @@ BEGIN
       
     | Conv.terminator:
       IF (ch = 0X) THEN
-        RETURN strAllRight;
+        IF (index-start < maxDigits) OR
+           (index-start = maxDigits) &
+            (positive & LessOrEqual (maxInt, start, index) OR
+             ~positive & LessOrEqual (minInt, start, index)) THEN
+          RETURN strAllRight;
+        ELSE
+          RETURN strOutOfRange;
+        END;
       ELSE
         RETURN strWrongFormat;
       END;
@@ -173,32 +187,36 @@ PROCEDURE ValueInt*(str: ARRAY OF CHAR): LONGINT;
    @oparam{str} if @oparam{str} is well-formed.  Otherwise, result is
    undefined.  *)
 VAR
-  ch: CHAR;
-  len, index, digit: INTEGER;
+  i: INTEGER;
   int: LONGINT;  
-  state: Conv.ScanState;
   positive: BOOLEAN;
-  class: Conv.ScanClass;  
 BEGIN
   IF FormatInt(str)=strAllRight THEN
-    len:=Str.Length(str); index:=0;
-    state:=SI; int:=0; positive:=TRUE;
-    FOR index:=0 TO len-1 DO
-      ch:=str[index];
-      state.p(ch, class, state);
-      IF class=Conv.valid THEN
-        IF ch="-" THEN positive:=FALSE
-        ELSIF ch="+" THEN positive:=TRUE
-        ELSE (* must be a digit *)
-          digit:=ORD(ch)-ORD("0");
-          IF positive THEN int:=int*10+digit
-          ELSE int:=int*10-digit
-          END
-        END
-      END
+    (* here holds: `str' is a well formed string and its value is in range *)
+    
+    i:=0; positive:=TRUE;
+    WHILE (str[i] < "0") OR (str[i] > "9") DO    (* skip whitespace and sign *)
+      IF (str[i] = "-") THEN
+        positive := FALSE;
+      END;
+      INC (i);
     END;
-    RETURN int
-  ELSE RETURN 0 (* raise exception here *)
+
+    int := 0;
+    IF positive THEN
+      WHILE (str[i] # 0X) DO
+        int:=int*10 + (ORD(str[i]) - ORD("0"));
+        INC (i);
+      END;
+    ELSE
+      WHILE (str[i] # 0X) DO
+        int:=int*10 - (ORD(str[i]) - ORD("0"));
+        INC (i);
+      END;
+    END;
+    RETURN int;
+  ELSE                                   (* result is undefined *)
+    RETURN 0;
   END
 END ValueInt;
 
@@ -211,16 +229,21 @@ PROCEDURE LengthInt*(int: LONGINT): INTEGER;
 VAR
   cnt: INTEGER;
 BEGIN
-  IF int=MIN(LONGINT) THEN int:=-(int+1); cnt:=1 (* argh!! *)
-  ELSIF int<=0 THEN int:=-int; cnt:=1 
-  ELSE cnt:=0 
+  IF int=MIN(LONGINT) THEN
+    RETURN maxDigits+1;
+  ELSE
+    IF int<=0 THEN int:=-int; cnt:=1 
+    ELSE cnt:=0 
+    END;
+    WHILE int>0 DO INC(cnt); int:=int DIV 10 END;
+    RETURN cnt;
   END;
-  WHILE int>0 DO INC(cnt); int:=int DIV 10 END;
-  RETURN cnt
 END LengthInt; 
 
 BEGIN
   (* kludge necessary because of recursive procedure declaration *)
   NEW(S); NEW(W); NEW(SI);  
-  S.p:=SState; W.p:=WState; SI.p:=ScanInt
+  S.p:=SState; W.p:=WState; SI.p:=ScanInt;
+  minInt := "2147483648";
+  maxInt := "2147483647";
 END IntConv.
