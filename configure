@@ -2545,6 +2545,7 @@ echo $ECHO_N "checking for libtool... $ECHO_C" >&6
 echo "${ECHO_T}disabled" >&6
 fi
 
+if test $TARGET_OS = Unix; then
 
 echo "$as_me:$LINENO: checking for sin in -lm" >&5
 echo $ECHO_N "checking for sin in -lm... $ECHO_C" >&6
@@ -2610,6 +2611,14 @@ _ACEOF
 
 fi
 
+fi
+if test $ac_cv_lib_m_sin = yes; then
+   have_libm=TRUE
+else
+   have_libm=FALSE
+fi
+
+
 
 echo "$as_me:$LINENO: checking for GC_malloc in -lgc" >&5
 echo $ECHO_N "checking for GC_malloc in -lgc... $ECHO_C" >&6
@@ -2674,6 +2683,7 @@ _ACEOF
   LIBS="-lgc $LIBS"
 
 fi
+
 
 
 echo "$as_me:$LINENO: checking for socket in -lxnet" >&5
@@ -5282,6 +5292,7 @@ s,@DIFF@,$DIFF,;t t
 s,@XSLTPROC@,$XSLTPROC,;t t
 s,@PERL@,$PERL,;t t
 s,@LIBTOOL@,$LIBTOOL,;t t
+s,@have_libm@,$have_libm,;t t
 s,@have_libxnet@,$have_libxnet,;t t
 s,@ooc_target_integer@,$ooc_target_integer,;t t
 s,@ooc_target_long_int@,$ooc_target_long_int,;t t

@@ -34,8 +34,18 @@ else
 fi
 
 dnl checks for libraries
-AC_CHECK_LIB(m,sin)
+if test $TARGET_OS = Unix; then
+  AC_CHECK_LIB(m,sin)
+fi
+if test $ac_cv_lib_m_sin = yes; then
+   have_libm=TRUE
+else
+   have_libm=FALSE
+fi
+AC_SUBST(have_libm)
+
 AC_CHECK_LIB(gc,GC_malloc)
+
 AC_CHECK_LIB(xnet,socket)
 if test $ac_cv_lib_xnet_socket = yes; then
    have_libxnet=TRUE

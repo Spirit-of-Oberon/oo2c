@@ -4,6 +4,7 @@
   
   <pragmas>
     <define name="LIB_HAVE_LIBXNET" type="boolean">@have_libxnet@</define>
+    <define name="LIB_HAVE_LIBM" type="boolean">@have_libm@</define>
   </pragmas>
   
   <library name="oo2c" main-module="liboo2c">
