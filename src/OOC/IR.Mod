@@ -3221,6 +3221,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       | Predef.ord:
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.char: targetType := Predef.integer;
+        | Predef.longchar: targetType := Predef.longint;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
         
