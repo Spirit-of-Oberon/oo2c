@@ -110,6 +110,7 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
             END;
 
             IF (type.typePars # NIL) THEN
+              dict.Set(type.typePars, NIL);
               MarkList(type.typePars);
             END;
           END
