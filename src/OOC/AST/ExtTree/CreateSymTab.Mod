@@ -204,7 +204,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     uri: URI.URI;
     str, prefixOption, suffixOption: String.String;
     res: Msg.Msg;
-    i: LONGINT;
+    i, j: LONGINT;
     n: AST.Node;
     depList: String.StringArrayPtr;
   BEGIN
@@ -269,8 +269,8 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
             NEW (depList, 0);
           ELSE
             NEW (depList, n. dependencies. len DIV 2+1);
-            FOR i := 0 TO n. dependencies. len-1 BY 2 DO
-              depList[i DIV 2] := n. dependencies. n[i](ExtTree.Terminal). GetString (TRUE);
+            FOR j := 0 TO n. dependencies. len-1 BY 2 DO
+              depList[j DIV 2] := n. dependencies. n[j](ExtTree.Terminal). GetString (TRUE);
             END;
           END;
           moduleDecl. AddLinkLib (str, depList, prefixOption, suffixOption);
