@@ -3,7 +3,7 @@ MODULE OOC:X86:Write;
 IMPORT
   SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, Log,
   OOC:C:Naming, S := OOC:X86:SSA, OOC:X86:RuntimeData;
 
 TYPE
@@ -271,8 +271,15 @@ PROCEDURE (w: Writer) Constants();
     opnd: S.Opnd;
 
   PROCEDURE AddInt(opnd: S.Opnd);
+    VAR
+      value: Object.Object;
     BEGIN
-      w.w.WriteObject(opnd.arg.instr.designator[0](S.Const).value);
+      value := opnd.arg.instr.designator[0](S.Const).value;
+      WITH value: Boxed.String DO
+        w.w.WriteLInt(ORD(value.value.CharAt(0)), 0);
+      ELSE
+        w.w.WriteObject(value);
+      END;
     END AddInt;
   
   BEGIN
@@ -506,7 +513,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
         WITH s: S.Const DO
           value := s.value;
           type := instr.resultList.type;
-          IF (value IS S.BranchInstr) THEN
+          IF (value # NIL) & (value IS S.BranchInstr) THEN
             sb.Append(w.ConstSymbol(value, s.type));
           ELSIF (s.type >= 0) THEN       (* string constant *)
             sb.Append(w.ConstSymbol(value(Boxed.String).value, s.type));
