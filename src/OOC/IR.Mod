@@ -27,7 +27,7 @@ Log,
 
    @item
    Creation of the IR is done by means of a dedicated builder class
-   @otype{Builder}.  The builder also implement error checks.  It, and not the
+   @otype{Builder}.  The builder also implements error checks.  It, and not the
    code calling the factory methods, guarantees that the constructed IR is
    valid if it does not report an error in the process of assembling the IR.
 
@@ -37,7 +37,13 @@ Log,
    identified by the instruction name.  There should be no variants in an
    instruction's semantics based on its arguments.  In other words, in the next
    step of the translation process it should be possible to use a single code
-   pattern to translate instructions of the same kind.
+   pattern to translate instructions of the same kind.  (Well, that is the
+   theory.  In practice, several distinct operations are sometimes mapped to a
+   one class to avoid an explosion of classes doing very similar things.
+   Examples for this are the single class for dyadic arithmetic operators
+   @otype{*OOC:IR:Operator.BinaryArith}, or the class
+   @otype{*OOC:IR:Operator.Len} handling the different variations of
+   @code{LEN}.)
 
    @item
    All implicit semantics in a module's code is made explicit.  For example,
@@ -244,6 +250,25 @@ TYPE
     body-: StatementSeq;
   END;
 
+TYPE
+  CopyParameter* = POINTER TO CopyParameterDesc;
+  CopyParameterDesc = RECORD
+    (**Used to create local copies of value parameters that are passed to
+       the callee as references.  This statement allocates the space for a
+       local copy of the parameter, and initializes it with the actual
+       value of the argument.  *)
+    (StatementDesc)
+    
+    param-: Sym.VarDecl;
+    (**The value parameter that must be copied.  *)
+
+    openArraySize-: Expression;
+    (**If the parameter is an open array, then this field holds the total
+       number of elements of the array.  The number is the product of the
+       array length for all open dimensions.  If the parameter is not an
+       open array, then this field is @code{NIL}.  *)
+  END;
+  
 TYPE
   Status* = SHORTINT;
   (** Description of exceptions that may occur during evaluation. *)
@@ -570,7 +595,7 @@ PROCEDURE InitVar (var: Var; name: Symbol; type: Sym.Type;
     InitReference (var, name, type, decl);
   END InitVar;
 
-PROCEDURE NewVar (name: Symbol; decl: Sym.VarDecl): Var;
+PROCEDURE (b: Builder) NewVar* (name: Symbol; decl: Sym.VarDecl): Var;
   VAR
     var: Var;
   BEGIN
@@ -685,7 +710,7 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
         WITH decl: Sym.ConstDecl DO
           RETURN NewConst (name, decl. type, decl. value)
         | decl: Sym.VarDecl DO
-          RETURN NewVar (name, decl)
+          RETURN b. NewVar (name, decl)
         | decl: Sym.PredefProc DO
           RETURN NewPredefProc (name, decl)
         | decl: Sym.ProcDecl DO
@@ -907,6 +932,35 @@ PROCEDURE (whileStatm: WhileStatm) Accept* (v: Visitor);
 
 (* -------- *)
 
+PROCEDURE InitCopyParameter (cp: CopyParameter; sym: Symbol;
+                             param: Sym.VarDecl; openArraySize: Expression);
+  BEGIN
+    InitStatement (cp, sym);
+    cp. param := param;
+    cp. openArraySize := openArraySize;
+  END InitCopyParameter;
+
+PROCEDURE (b: Builder) NewCopyParameter* (sym: Symbol; param: Sym.VarDecl;
+                                          openArraySize: Expression): CopyParameter;
+  VAR
+    cp: CopyParameter;
+  BEGIN
+    ASSERT (b.typeRules.IsOpenArrayType (param.type) = (openArraySize#NIL));
+    NEW (cp);
+    InitCopyParameter (cp, sym, param, openArraySize);
+    RETURN cp
+  END NewCopyParameter;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitCopyParameter* (cp: CopyParameter);
+  END VisitCopyParameter;
+
+PROCEDURE (cp: CopyParameter) Accept* (v: Visitor);
+  BEGIN
+    v. VisitCopyParameter (cp)
+  END Accept;
+
+(* -------- *)
+
 PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList);
   BEGIN
     InitStatement (call, design. sym);
@@ -967,12 +1021,21 @@ PROCEDURE InitProcedure* (p: Procedure; sym: Symbol;
     p. statmSeq := statmSeq;
   END InitProcedure;
 
+PROCEDURE (b: Builder) [ABSTRACT] AddSetupCode*
+  (sym: Symbol; decl: Sym.ProcDecl; statmSeq: StatementSeq): StatementSeq;
+(**Takes the statement sequence representing the body of a procedure and
+   extends it with procedure setup (or tear down) code.  For example,
+   statements that allocate and intialize local copies of value parameters
+   are added here.  *)
+  END AddSetupCode;
+
 PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
                        decl: Sym.ProcDecl; statmSeq: StatementSeq): Procedure;
   VAR
     p: Procedure;
   BEGIN
     NEW (p);
+    statmSeq := b. AddSetupCode (sym, decl, statmSeq);
     InitProcedure (p, sym, decl, statmSeq);
     RETURN p
   END NewProcedure;
