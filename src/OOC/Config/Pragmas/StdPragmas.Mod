@@ -84,17 +84,6 @@ PROCEDURE CreateVariables* (s: Pragmas.Section);
     
     targetInteger := s. Set ("TARGET_INTEGER", Integer.New (defaultTargetInteger));
     targetAddress := s. Set ("TARGET_ADDRESS", Integer.New (defaultTargetAddress));
-    
-
-    (* FIXME badly... these have to go eventually *)
-    dummy := s. Set ("LIB_HAVE_LIBIMLIB", Boolean.New (TRUE));
-    dummy := s. Set ("LIB_HAVE_LIBM", Boolean.New (TRUE));
-    dummy := s. Set ("LIB_HAVE_LIBZ", Boolean.New (TRUE));
-    dummy := s. Set ("LIB_HAVE_LIBJPEG", Boolean.New (TRUE));
-    dummy := s. Set ("LIB_HAVE_LIBTIFF", Boolean.New (TRUE));
-    dummy := s. Set ("LIB_HAVE_LIBPNG", Boolean.New (TRUE));
-    dummy := s. Set ("LIB_HAVE_LIBGIF", Boolean.New (TRUE));
-    dummy := s. Set ("LIB_HAVE_LIBXNET", Boolean.New (FALSE));
   END CreateVariables;
 
 END OOC:Config:Pragmas:StdPragmas.
