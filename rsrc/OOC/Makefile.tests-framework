@@ -41,12 +41,14 @@ endif
 test1-process: test1-setup
 	cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT)
 
-test-runall: test1-setup
+test1-runall: test1-setup
 	if cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT); then \
 	  $(TEST_CREATE_SUMMARY); \
 	else \
 	  $(TEST_CREATE_SUMMARY); exit 1; \
 	fi
+
+test-runall: test1-runall
 
 test-clean:
 ifdef TEST_PROCESSOR
