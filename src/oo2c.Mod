@@ -233,27 +233,29 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
   
   BEGIN
     ok := TRUE;
-    
-    FOR i := 0 TO pkg.library.size-1 DO
+
+    i := 0;
+    WHILE ok & (i # pkg.library.size) DO
       lib := pkg.library.array[i](Package.Library);
       makeRules.SetLibraryName(lib.name.array^, lib.version.tuple);
       module := GetModule(lib.mainModule.array^);
       ok := makeRules.Update(module, Rep.modLibrary)
-          & (~install OR InstallLibrary(module, makeRules))
-          & ok;
+          & (~install OR InstallLibrary(module, makeRules));
+      INC(i);
     END;
-    
-    FOR i := 0 TO pkg.executable.size-1 DO
+
+    i := 0;
+    WHILE ok & (i # pkg.executable.size) DO
       exec := pkg.executable.array[i](Package.Executable);
       module := GetModule(exec.mainModule.array^);
       ok := makeRules.Update(module, Rep.modExecutable)
-          & (~install OR InstallExecutable(module))
-          & ok;
+          & (~install OR InstallExecutable(module));
+      INC(i);
     END;
     
-    IF install THEN
+    IF ok & install THEN
       normSet := Package.Normalize(pkg.fileSet);
-      ok := InstallFiles(normSet.head) & ok;
+      ok := InstallFiles(normSet.head);
     END;
     
     RETURN ok;
@@ -298,7 +300,8 @@ BEGIN
     HALT (1)
   ELSE
     ok := TRUE;
-    FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
+    i := 0;
+    WHILE ok & (i # Config.arguments. ArgNumber()) DO
       arg := Config.arguments. Get (i);
       CASE mode OF
       | buildPackage, installPackage:
@@ -309,11 +312,12 @@ BEGIN
           Err.Ln;
           HALT (1)
         ELSE
-          ok := BuildPackage(pkg, rep, (mode = installPackage)) & ok;
+          ok := BuildPackage(pkg, rep, (mode = installPackage));
         END;
       ELSE
-        ok := makeRules.Update(GetModule(arg^), mode) & ok;
+        ok := makeRules.Update(GetModule(arg^), mode);
       END;
+      INC(i);
     END;
     
     IF ~ok THEN
