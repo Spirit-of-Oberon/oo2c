@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Repository [OOC_EXTENSIONS];
 (*  Abstraction of storage of source, intermediate, and target code.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -69,6 +69,14 @@ TYPE
        be accessed through the field @ofield{Module.importList}.  Imported
        modules are added to the list through @oproc{Module.AddImport}.  *)
     importList-: Import;
+    (**Lists all modules imported by this module.  The list does not contain
+       pseudo modules like @code{SYSTEM}.  On the other hand, modules that are
+       implicitly imported by all modules, like the one representing the
+       run-time system, are always part of this list.
+
+       Note: This field only holds valid data if
+       @samp{@ofield{importListScanned}=@code{TRUE}}.  The list is produced by
+       @oproc{*OOC:Repository:GetImports.GetImports}.  *)
     symbolTable-: Sym.Module;
     (**After the module's symbol file has been read, this field refers to
        its symbol table.  *)
@@ -90,10 +98,16 @@ CONST
      Source files are located by using the function
      @oproc{*OOC:Config:Repositories.Section.GetModule} and then calling
      @oproc{*OOC:Repository.Module.GetURI} (or one of its friends) on the
-     result.  *)
+     result.
+
+     Note: In the make facility, the only entity that is allowed to register a
+     dependency on this file is @oconst{modSymbolFile}.  *)
   modSymbolFile* = 1;
   (**A module's symbol file holds all information that is made available to
-     importing modules.  *)
+     importing modules.  When compiling the module, then this file is always
+     the one with the oldest time stamp of all generated files.  This way,
+     within a make graph any other output file of the compiler can register a
+     dependency on this file, instead of @oconst{modModuleSource}.  *)
   modSymbolTableXML* = 2;
   (**This is an XML representation of the internal symbol table built of the
      datatypes defined in @omodule{*OOC:SymbolTable}.  It is used for
