@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE ADT:Dictionary:AddressKey:IntValue;
 (*  A dictionary implementation using objects' addresses as keys.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -152,8 +152,8 @@ PROCEDURE HashCode (obj: Key): LONGINT;
   BEGIN
 <*IF TARGET_ADDRESS = 64 THEN*>
     RETURN S.VAL (LONGINT,
-      S.VAL (SET, S.LSH (S.ROT (S.VAL (S.ADDRESS, obj), 32), -32)) /
-      S.VAL (SET, S.LSH (S.VAL (S.ADDRESS, obj), -32)))
+      S.VAL (SET, SHORT (S.LSH (S.ROT (S.VAL (S.ADDRESS, obj), 32), -32))) /
+      S.VAL (SET, (S.LSH (S.VAL (S.ADDRESS, obj), -32))))
 <*ELSE*>
     RETURN S.VAL (LONGINT, obj)
 <*END*>
