@@ -1105,7 +1105,7 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
     END
   END NewIntConst10;
 
-PROCEDURE (b: Builder) NewRealConst* (sym: Symbol): Expression;
+PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expression;
   VAR
     v: Language.Value;
   BEGIN
@@ -1114,7 +1114,7 @@ PROCEDURE (b: Builder) NewRealConst* (sym: Symbol): Expression;
       b. ErrSym (numberOutOfRange, sym);
       RETURN b. errorExpr
     ELSE
-      RETURN NewConst (sym, Predef.GetType (Predef.real), v)
+      RETURN NewConst (sym, Predef.GetType (type), v)
     END
   END NewRealConst;
 
