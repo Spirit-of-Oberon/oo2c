@@ -1,7 +1,7 @@
 #include "./Var7c.d"
 #include "__oo2c.h"
 
-static OOC_INT16 Var7c__Len(OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
+static OOC_INT16 Var7c__Len(const OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
   register OOC_INT32 i0,i1,i2;
   OOC_CHAR8 *str;
   OOC_PUSH_VPAR_STACK

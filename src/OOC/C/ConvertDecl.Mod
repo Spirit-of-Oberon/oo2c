@@ -209,6 +209,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
                        mode: SHORTINT): DeclWriter.Declaration;
   VAR
     sc: DeclWriter.StorageClass;
+    tq: DeclWriter.TypeQualifier;
     name: String.String;
     ctype: DeclWriter.Type;
     fpars: DeclWriter.Type;
@@ -238,8 +239,15 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       END;
       
     | item: Sym.VarDecl DO
+      tq := DeclWriter.tqNone;
       IF item. isParameter THEN
-        sc := DeclWriter.scAuto
+        sc := DeclWriter.scAuto;
+
+        IF ~item. isVarParam & item. isPassPerReference THEN
+          (* value parameter is converted into a reference: signal that
+             the dereferenced object is not modified by the procedure *)
+          tq := DeclWriter.tqConst;
+        END;
       ELSE
         IF (mode = modeWriteExported) THEN
           sc := DeclWriter.scExtern
@@ -270,7 +278,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
         END;
       END;
       
-      RETURN w. NewDeclaration (name, DeclWriter.tqNone, sc, ctype)
+      RETURN w. NewDeclaration (name, tq, sc, ctype)
 
     | item: Sym.FieldDecl DO
       RETURN w. NewDeclaration

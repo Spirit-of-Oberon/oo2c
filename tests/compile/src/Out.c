@@ -9,7 +9,7 @@ void Out__Char(OOC_CHAR8 ch) {
   putc(ch, stdout);
 }
 
-void Out__String(OOC_CHAR8 s[], OOC_LEN s_0d) {
+void Out__String(const OOC_CHAR8 s[], OOC_LEN s_0d) {
   fputs((const char*)s, stdout);
 }
 
