@@ -614,6 +614,13 @@ PROCEDURE (context: Context) [ABSTRACT] GetCommand* (entity: Entity): Command;
    @end postcond  *)
   END GetCommand;
 
+PROCEDURE (context: Context) NotifyCompletion* (node: Node; success: BOOLEAN);
+(**Called after @samp{node.Run} has finished.  The result of this method
+   is passed as input argument to @oparam{success}.  The default implementation
+   is an empty procedure.  *)
+  BEGIN
+  END NotifyCompletion;
+
 PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
 (**Attempts to bring all entities registered as ancestors of
    @ofield{context.target} up to date.  If necessary, resources are build or
@@ -690,6 +697,7 @@ PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
   PROCEDURE RunCommands;
     VAR
       node: Node;
+      success: BOOLEAN;
     BEGIN
       node := context. nodeList;
       WHILE (node # NIL) DO
@@ -698,7 +706,8 @@ PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
         | node: Command DO
           IF (node. state = commandSchedule) THEN
             WriteLog (node, "running");
-            IF node. Run () THEN
+            success := node. Run();
+            IF success THEN
               WriteLog (node, "completed successfully");
               node. SetState (commandSuccessful);
               MarkDescendantsValid (node);
@@ -707,8 +716,9 @@ PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
               node. SetState (commandFailed);
               MarkDescendantsInvalid (node)
             END;
-            node. ProduceOutput (stdout, stderr)
-          END
+            node. ProduceOutput (stdout, stderr);
+            context.NotifyCompletion(node, success);
+          END;
         END;
         node := node. nextNode
       END;

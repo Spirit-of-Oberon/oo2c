@@ -1,6 +1,9 @@
 MODULE oo2c;
 
 IMPORT
+  <*IF COMPILER_MAJOR>=2 THEN*>
+    RT0,
+  <*END*>
   StdChannels, Out, Err, Make, Make:Command:Target, StringSearch:NoMatch, 
   Config:Section:Arguments, Config:Section:Options, Config:Value:Boolean,
   OOC:Config, OOC:Config:CCompiler, OOC:Config:Assembler,
@@ -45,6 +48,16 @@ PROCEDURE NewContext(): Context;
     InitContext (context, Target.New());
     RETURN context
   END NewContext;
+
+PROCEDURE (context: Context) NotifyCompletion* (node: Make.Node;
+                                                success: BOOLEAN);
+  BEGIN
+    IF (node IS TranslateToC.Command) THEN
+<*IF COMPILER_MAJOR>=2 THEN*>
+      RT0.CollectGarbage;
+<*END*>
+    END;
+  END NotifyCompletion;
 
 PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
   PROCEDURE CompileToC (entity: ModuleFile.Entity): Make.Command;
