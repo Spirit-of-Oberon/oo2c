@@ -76,18 +76,25 @@ doc:
 # Test targets
 # ------------------------------------------------------------------------
 
-.PHONY: test1-setup test1-xml test1-clean test-clean test-runall
+.PHONY: test1-setup test1-process test1-report test1-clean test-clean test-runall
 
 test1-setup:
 	$(OOC) -MOv $(TEST_DRIVER)
 ifdef TEST_PROCESSOR
 	$(OOC) -MOv $(TEST_PROCESSOR)
 endif
+	$(RM_R) $(TEST_WORKING_DIR)
 	$(MKDIR) $(TEST_WORKING_DIR)
 
-test1-report: test1-setup
+test1-process: test1-setup
 	cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT)
-	$(TEST_CREATE_SUMMARY)
+
+test1-report: test1-setup
+	if cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT); then \
+	  $(TEST_CREATE_SUMMARY); \
+	else \
+	  $(TEST_CREATE_SUMMARY); exit 1; \
+	fi
 
 test1-clean:
 ifdef TEST_PROCESSOR
