@@ -1067,6 +1067,7 @@ CONST
   notCharacter = 45;
   notReal = 46;
   dynamicSize = 47;
+  notCharacterArray = 48;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1227,6 +1228,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expression must be of real type"
     | dynamicSize:
       t := "Type has no fixed size"
+    | notCharacterArray:
+      t := "Argument must be a character array"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -3096,9 +3099,18 @@ PROCEDURE (b: Builder) NewAssert (sym: Symbol; predicate, code: Expression;
                                   disabled: BOOLEAN): Assert;
   VAR
     assert: Assert;
-  BEGIN  (* ... FIXME: check arguments, add default arg *)
+    c: LONGINT;
+  BEGIN
     NEW (assert);
-    InitAssert (assert, sym, predicate, defaultAssertCode, disabled);
+    IF (predicate # NIL) THEN
+      predicate := b.AssertBoolean(predicate);
+    END;
+    IF (code = NIL) THEN
+      c := Predef.defaultAssertCode;
+    ELSE
+      c := b.AssertIntConst(code, Predef.minExitCode, Predef.maxExitCode);
+    END;
+    InitAssert (assert, sym, predicate, c, disabled);
     RETURN assert
   END NewAssert;
 
@@ -3325,13 +3337,25 @@ PROCEDURE (b: Builder) NewCopyString* (sym: Symbol;
     baseChar: Sym.Type;
     ok: BOOLEAN;
   BEGIN
+    b.AssertVar(dest);
+    IF ~TR.IsArrayOfChar(dest.type, TRUE) THEN
+      b.ErrSym(notCharacterArray, dest.sym);
+    END;
+    
     IF (source IS Const) THEN
       (* make sure that any character constant source is converted into
          its equivalent string constant form; this way, the copy operation
          doesn't need to deal with single characters *)
       baseChar := TR.BaseCharType (dest. type);
-      ok := b. Widen (source, TR.MatchingStringConst (baseChar));
+      IF (baseChar = NIL) THEN
+        b.ErrSym(notCharacterArray, source.sym);
+      ELSE
+        ok := b. Widen (source, TR.MatchingStringConst (baseChar));
+      END;
+    ELSIF ~TR.IsArrayOfChar(source.type, TRUE) THEN
+      b.ErrSym(notCharacterArray, source.sym);
     END;
+    
     NEW (cp);
     InitCopyString (cp, sym, source, dest, b. Fold (maxLength));
     RETURN cp
