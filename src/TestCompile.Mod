@@ -90,6 +90,7 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
   END NewConfig;
 
 BEGIN
+  Error.oo2cStyleErrors := TRUE;
   cfgErrList := Error.NewList ("");
   config := NewConfig ("");
   config. Read (cfgErrList);
