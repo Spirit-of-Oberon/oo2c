@@ -22,8 +22,7 @@ MODULE OOC:Repository:GetImports;
 
 
 IMPORT
-  Msg, URI, OOC:Config, Rep := OOC:Repository,
-  OOC:Config:Repositories, OOC:Config:Pragmas,
+  Msg, URI, OOC:Config, Rep := OOC:Repository, OOC:SymbolTable:Builder,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,
@@ -99,26 +98,28 @@ PROCEDURE GetImports* (m: Rep.Module; VAR errList: Error.List);
       END
     END StoreImports;
 
-  PROCEDURE AppendRuntimeModule ();
+  PROCEDURE AppendRuntimeModules;
     VAR
-      import: Rep.Import;
+      a, e: LONGINT;
       rtModule: Rep.Module;
     BEGIN
-      IF (m. name^ # Config.runtimeModule) THEN
-        import := m. importList;
-        WHILE (import # NIL) &
-              (import. imported. name^ # Config.runtimeModule) DO
-          import := import. nextImport;
-        END;
-        IF (import = NIL) THEN
-          rtModule := Config.repositories. GetModule (Config.runtimeModule);
-          IF (rtModule # NIL) THEN
-            (* in a standard environment, this file should always exist *)
-            m. AddImport (rtModule);
+      IF Builder.doAutoImport THEN
+        FOR a := 0 TO LEN(Builder.autoImport^)-1 DO
+          e := LEN(Builder.autoImport[a].exclude^)-1;
+          WHILE (e >= 0) &
+                (Builder.autoImport[a].exclude[e]^ # m.name^) DO
+            DEC (e);
+          END;
+          IF (e < 0) THEN (* this module doesn't appear in exclusion list *)
+            rtModule := Config.repositories.GetModule (Builder.autoImport[a].module^);
+            IF (rtModule # NIL) THEN
+              (* in a standard environment, this file should always exist *)
+              m. AddImport (rtModule);
+            END;
           END;
         END;
       END;
-    END AppendRuntimeModule;
+    END AppendRuntimeModules;
   
   BEGIN
     IF m. importListScanned THEN         (* imports are already known *)
@@ -139,7 +140,7 @@ PROCEDURE GetImports* (m: Rep.Module; VAR errList: Error.List);
         END;
         item := item. nextNested
       END;
-      AppendRuntimeModule;
+      AppendRuntimeModules;
       m. AddImport (NIL)  (* mark module with "import scanned" *)
     ELSE                                 (* take imports from source file *)
       
@@ -167,9 +168,9 @@ PROCEDURE GetImports* (m: Rep.Module; VAR errList: Error.List);
            (ast(ExtTree.Module). importList # NIL) THEN
           StoreImports (m, ast(ExtTree.Module).
                         importList(ExtTree.ImportList). imports);
-          AppendRuntimeModule;
-          m. AddImport (NIL)  (* mark module with "import scanned" *)
-        END
+        END;
+        AppendRuntimeModules;
+        m. AddImport (NIL)  (* mark module with "import scanned" *)
       END
     END;
   END GetImports;

@@ -42,7 +42,28 @@ TYPE
        adjusted for this.  *)
   END;
 
+TYPE
+  AutoImport* = POINTER TO AutoImportDesc;
+  Name = POINTER TO ARRAY OF CHAR;
+  AutoImportDesc = RECORD
+    module-: Name;
+    (**Full name of the module that is to be imported into every module
+       not found in the exclude list.  *)
+    exclude-: POINTER TO ARRAY OF Name;
+    (**Lists the names of all modules for which @ofield{module} is not
+       to be imported automatically.  This list is never empty, because it
+       must include the value of @ofield{module}.  *)
+  END;
 
+VAR
+  autoImport-: POINTER TO ARRAY OF AutoImport;
+  doAutoImport*: BOOLEAN;
+  (**If @code{FALSE} (the default), don't do any automatical import in the
+     symbol table or the the repository's
+     @oproc{OOC:Repository:GetImports.GetImports}.  Right now, only the program
+     @code{oo2c} sets this to @code{TRUE}.  *)
+  
+  
 PROCEDURE Init* (b: Builder);
   BEGIN
     b. class := Sym.mcStandard;
@@ -416,10 +437,48 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
         END
       END
     END SetClassName;
+
+  PROCEDURE AddAutoImports (module: Sym.Module);
+    VAR
+      a, e: LONGINT;
+      import: Sym.Import;
+      
+    PROCEDURE GetName (str: ARRAY OF CHAR; prefix: BOOLEAN): Sym.Name;
+      VAR
+        name: Sym.Name;
+        nameStr: Sym.NameString;
+      BEGIN
+        NEW(name);
+        NEW(nameStr, Strings.Length(str)+2);
+        COPY(str, nameStr^);
+        IF prefix THEN
+          Strings.Insert("-", 0, nameStr^);
+        END;
+        Sym.InitName(name, nameStr, 0, 0, 0);
+        RETURN name;
+      END GetName;
+    
+    BEGIN
+      FOR a := 0 TO LEN(autoImport^)-1 DO
+        e := LEN(autoImport[a].exclude^)-1;
+        WHILE (e >= 0) & (autoImport[a].exclude[e]^ # module. name. str^) DO
+          DEC (e);
+        END;
+        IF (e < 0) THEN (* this module does not appear in the exclusion list *)
+          import := b. NewImport (module,
+                                  GetName(autoImport[a].module^, TRUE),
+                                  0, NIL,
+                                  GetName(autoImport[a].module^, FALSE));
+        END;
+      END;
+    END AddAutoImports;
   
   BEGIN
     CollectFormalPars (module);
-    SetClassName (module)
+    SetClassName (module);
+    IF doAutoImport THEN
+      AddAutoImports (module);
+    END;
   END Finalize;
 
 PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Sym.Module; VAR res: Channel.Result);
@@ -449,4 +508,31 @@ PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel; VAR res: Channel.R
     END
   END ReadSymbolTable;
 
+
+PROCEDURE N (str: ARRAY OF CHAR): Name;
+  VAR
+    len: LONGINT;
+    name: Name;
+  BEGIN
+    len := Strings.Length(str);
+    NEW (name, len+1);
+    COPY (str, name^);
+    RETURN name;
+  END N;
+
+BEGIN
+  doAutoImport := FALSE;
+  
+  NEW(autoImport, 2);
+  NEW(autoImport[0]);
+  autoImport[0].module := N("RT0");
+  NEW (autoImport[0].exclude, 2);
+  autoImport[0].exclude[0] := autoImport[0].module;
+  autoImport[0].exclude[1] := N("Out0");
+  NEW(autoImport[1]);
+  autoImport[1].module := N("Language:String0");
+  NEW (autoImport[1].exclude, 3);
+  autoImport[1].exclude[0] := autoImport[0].module;
+  autoImport[1].exclude[1] := autoImport[1].module;
+  autoImport[1].exclude[2] := N("Out0");
 END OOC:SymbolTable:Builder.
