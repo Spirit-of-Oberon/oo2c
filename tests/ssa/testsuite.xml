@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic66 generic67 generic68">-->
+  select ="&SetupTestCasesWithOut; generic66 generic67 generic68 generic69">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5 generic1 generic41 generic45">-->
@@ -1595,6 +1595,11 @@
     <test id="generic68" type="run" file="Generic68.Mod">
       Regression test for <code>oo2c</code>: Don't reference the
       record type before it has been declared.
+    </test>
+    <test id="generic69" type="run" file="Generic69.Mod"
+          output="Generic69.Ref">
+      Regression test for <code>oo2c</code>: Don't drop inherited
+      type-bound procedures if the record base type is parametric.
     </test>
   </testcases>
 
