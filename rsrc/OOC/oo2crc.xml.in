@@ -3,8 +3,20 @@
   <options>
     <set name='cc'>@CC@</set>
     <set name='cflags'>@CFLAGS@</set>
-    <!-- for debugging: -Wall -W -Wno-unused -Wno-format -Werror -O2 -Wno-uninitialized -g -pipe -->
     <set name='ldflags'>@LDFLAGS@</set>
     <set name='libs'>@LIBS@</set>
   </options>
+
+  <pragmas>
+    <set name='Warnings'>TRUE</set>  <!-- not supported -->
+    <set name='Assertions'>TRUE</set>
+    
+    <set name='IndexCheck'>TRUE</set>
+    <set name='DerefCheck'>TRUE</set>
+    <set name='OverflowCheck'>FALSE</set>  <!-- not supported -->
+    <set name='CaseSelectCheck'>TRUE</set>
+    <set name='FunctResult'>TRUE</set>
+    <set name='TypeGuard'>TRUE</set>
+    <set name='ConformantMode'>FALSE</set>  <!-- not supported -->
+  </pragmas>
 </configuration>
