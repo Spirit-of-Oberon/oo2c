@@ -361,7 +361,7 @@ RAISES IO.Error;
 
     i := 0;
     WHILE ok & (i # pkg.library.size) DO
-      lib := pkg.library.array[i](Package.Library);
+      lib := pkg.library.array[i];
 
       module := GetModule(lib.mainModule);
       IF installObjects THEN
@@ -385,7 +385,7 @@ RAISES IO.Error;
 
     i := 0;
     WHILE ok & (i # pkg.executable.size) DO
-      exec := pkg.executable.array[i](Package.Executable);
+      exec := pkg.executable.array[i];
       module := GetModule(exec.mainModule);
       ok := makeRules.Update(module, Rep.modExecutable)
           & (~install OR InstallExecutable(module));
@@ -476,13 +476,13 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
   BEGIN
     i := 0;
     WHILE (i # pkg.library.size) DO
-      UninstallLibrary(pkg.library.array[i](Package.Library));
+      UninstallLibrary(pkg.library.array[i]);
       INC(i);
     END;
 
     i := 0;
     WHILE (i # pkg.executable.size) DO
-      UninstallExecutable(pkg.executable.array[i](Package.Executable));
+      UninstallExecutable(pkg.executable.array[i]);
       INC(i);
     END;
     
@@ -525,14 +525,14 @@ RAISES IO.Error;
 
     i := 0;
     WHILE ok & (i # pkg.library.size) DO
-      lib := pkg.library.array[i](Package.Library);
+      lib := pkg.library.array[i];
       ok := BuildDocs(GetModule(lib.mainModule));
       INC(i);
     END;
 
     i := 0;
     WHILE ok & (i # pkg.executable.size) DO
-      exec := pkg.executable.array[i](Package.Executable);
+      exec := pkg.executable.array[i];
       ok := BuildDocs(GetModule(exec.mainModule));
       INC(i);
     END;
@@ -632,8 +632,7 @@ BEGIN  <*Warnings:=FALSE*>
       ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string^);
 
     ELSIF (mode = listPackages) THEN
-
-      r:=Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string^,errList);
+      r := Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string^, errList);
       errList.Write(StdChannels.stderr);
       FOR i := 0 TO r.installedPkgs.size-1 DO
         Out.Object(r.installedPkgs.array[i]); Out.Ln;
@@ -705,8 +704,11 @@ BEGIN  <*Warnings:=FALSE*>
           END;
           
         | packageInstalled:
-          pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
-          IF (pkg = NIL) THEN
+          r := Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string^, errList);
+          errList.Write(StdChannels.stderr);
+          IF r.PackageInstalled(Object.NewLatin1(arg^)) THEN
+            HALT(0);
+          ELSE
             HALT(1);
           END;
 
