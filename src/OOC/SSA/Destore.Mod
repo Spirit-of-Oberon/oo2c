@@ -550,6 +550,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             CASE select. opcode OF
             | Opcode.select:
               opnd := select. NthOpnd (pathNum*2+2);
+
+            | Opcode.selectExit:         (* place collect _before_ "exit" *)
+              opnd := select. NthOpnd (pathNum+1);
+              ASSERT (opnd. arg. instr. opcode = Opcode.exit);
+              opnd := opnd. arg. instr. opndList;
               
             | Opcode.loopStart:
               IF (pathNum = 0) THEN
@@ -559,6 +564,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                 opnd := loopEnd. GetOpndClass (Opnd.backwardFeed);
               END;
             END;
+            
             IF (opnd. arg. instr. opcode = Opcode.collect) THEN
               RETURN opnd. arg.instr
             ELSE
