@@ -33,6 +33,7 @@ TYPE
   END;
   
 TYPE
+  ModuleList = POINTER TO ARRAY OF Rep.Module;
   Rules* = POINTER TO RulesDesc;
   RulesDesc* = RECORD
     backend: LONGINT;
@@ -43,7 +44,7 @@ TYPE
        is taken from this field.  *)
 
     localRepository: Rep.Repository;
-    imports: POINTER TO ARRAY OF Rep.Module;
+    imports: ModuleList;
     mInfo: Dictionary.Dictionary;
     
     extensionDict: Dictionary.Dictionary;
@@ -819,7 +820,8 @@ PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
         module.CreateOutputDir (Rep.modObjectFile, res);
         IF (res = NIL) THEN
           CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC),
-                                   module.GetURI(Rep.modObjectFile), str);
+                                   module.GetURI(Rep.modObjectFile),
+                                   FALSE, str);
           Logger.ShellCommand(str);
           success := (ProcessManagement.system (str) = 0);
         ELSE
@@ -830,6 +832,37 @@ PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
     END;
     RETURN success;
   END UpdateObjectFile;
+
+PROCEDURE (r: Rules) UpdateObjectFileLib(module: Rep.Module): BOOLEAN;
+(* Like UpdateObjectFileLib(), but produce an object file suitable for
+   a libtool-style library.
+
+   @precond
+   This method is called from @oproc{Rules.UpdateLibrary}.  
+   @end precond *)
+  VAR
+    res: Msg.Msg;
+    str: ShellCommand;
+    success: BOOLEAN;
+    outputFile: URI.URI;
+  BEGIN
+    success := r.Update(module, Rep.modCodeFileC);
+    IF DerivedIsOlder(module, Rep.modObjectFileLib, Rep.modCodeFileC) THEN
+      module.CreateOutputDir (Rep.modObjectFile, res);
+      IF (res = NIL) THEN
+        outputFile := module.GetURI(Rep.modObjectFileLib);
+        CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC),
+                                 module.GetURI(Rep.modObjectFileLib),
+                                 TRUE, str);
+        Logger.ShellCommand(str);
+        success := (ProcessManagement.system (str) = 0);
+      ELSE
+        r.WriteError(module, res);
+        success := FALSE;
+      END;
+    END;
+    RETURN success;
+  END UpdateObjectFileLib;
 
 PROCEDURE (r: Rules) UpdateMainFileC (module: Rep.Module): BOOLEAN;
 (* Write a new main file if it does not exist, or if a symbol file
@@ -930,7 +963,8 @@ PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
         module.CreateOutputDir (Rep.modMainObjectFile, res);
         IF (res = NIL) THEN
           CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC),
-                                   module.GetURI(Rep.modMainObjectFile), str);
+                                   module.GetURI(Rep.modMainObjectFile),
+                                   FALSE, str);
           Logger.ShellCommand(str);
           success := (ProcessManagement.system (str) = 0);
         ELSE
@@ -941,6 +975,44 @@ PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
     END;
     RETURN success;
   END UpdateMainObjectFile;
+
+PROCEDURE ModuleClosure (module: Rep.Module; restrictToLibrary: String.String): ModuleList;
+  VAR
+    i: LONGINT;
+    dict: Dictionary.Dictionary;
+    list: ArrayList.ArrayList;
+    a: ModuleList;
+    
+  PROCEDURE Closure (module: Rep.Module);
+    VAR
+      i: LONGINT;
+    BEGIN
+      IF ((restrictToLibrary = NIL) OR
+          (restrictToLibrary.Equals(module.ifData.libraryName))) &
+         ~dict.HasKey(module) THEN
+        dict.Set(module, NIL);
+        
+        FOR i := 0 TO LEN(module.ifImportList^)-1 DO
+          IF ~module.ifImportList[i].internal THEN
+            ASSERT(module.ifImportList[i].module # NIL);
+            Closure(module.ifImportList[i].module);
+          END;
+        END;
+
+        list.Append(module);  (* importing module follows its imports *)
+      END;
+    END Closure;
+  
+  BEGIN
+    dict := Dictionary.New();
+    list := ArrayList.New(16);
+    Closure(module);
+    NEW(a, list.size);
+    FOR i := 0 TO list.size-1 DO
+      a[i] := list.array[i](Rep.Module);
+    END;
+    RETURN a;
+  END ModuleClosure;
 
 PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
 (**Update executable that uses @oparam{module} as its main module.  If any of
@@ -977,13 +1049,7 @@ PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
       (* the link command depends on the object file containing the main()
          function, and on the object files of all modules that are imported
          directly or indirectly by the main module  *)
-      dict := Dictionary.New();
-      list := ArrayList.New(16);
-      Closure(module);
-      NEW(r.imports, list.size);
-      FOR i := 0 TO list.size-1 DO
-        r.imports[i] := list.array[i](Rep.Module);
-      END;
+      r.imports := ModuleClosure(module, NIL);
       
       IF ~r.Update(module, Rep.modMainObjectFile) THEN
         RETURN FALSE;
@@ -1000,7 +1066,7 @@ PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
         END;
       END;
       
-      success := isUpToDate OR LinkProgramC.Run(module, r.imports^);
+      success := isUpToDate OR LinkProgramC.Run(module, r.imports^, FALSE);
     END;
     RETURN success;
   END UpdateExecutable;
@@ -1015,27 +1081,43 @@ PROCEDURE (r: Rules) UpdateLibrary(module: Rep.Module): BOOLEAN;
    @ofield{r.libraryName} and @ofield{r.libraryVersion} are set.
    @end precond*)
   VAR
-    success: BOOLEAN;
+    success, isUpToDate: BOOLEAN;
+    closure: ModuleList;
+    i: LONGINT;
   BEGIN
     r.localRepository := module.origin;
     
+    (* Discovery and symbol file creation: Update all modules from the
+       current repository that are imported by `module' for inclusion in the
+       indicated library.  *)
     success := r.Update(module, Rep.modSymbolFile);
     IF success THEN
-      (* Discovery and object file creation: Update all modules from the
-         current repository that are imported by `module' for inclusion in the
-         indicated library.  It is an error if a module from the current
-         repository is already part of another library, or if a module imported
-         from another library is not part of a library.  *)
-      
-      (* Collect library meta data: Scan for libraries that need to be linked
-         into this library.  Only consider libraries that are linked directly
-         into our library, and assume that libtool keeps track of nested
-         links.  *)
-      
+      closure := ModuleClosure(module, r.libraryName);
       (* Create library files (static and shared).  *)
-      
-      (* Write library meta file containing OOC's information about the new
-         library.  *)
+      isUpToDate := Exists(module, Rep.modLibrary);
+      FOR i := 0 TO LEN(closure^)-1 DO
+        IF ~r.Update(closure[i], Rep.modObjectFileLib) THEN
+          RETURN FALSE;
+        ELSIF DerivedIsOlder2(module, Rep.modLibrary,
+                              closure[i], Rep.modObjectFileLib) THEN
+          isUpToDate := FALSE;
+        END;
+      END;
+
+      IF ~isUpToDate THEN
+        (* Collect library meta data: Scan for libraries that need to be linked
+           into this library.  Only consider libraries that are linked directly
+           into our library, and assume that libtool keeps track of nested
+           links.  *)
+        (* ... *)
+        
+        (* Link library *)
+        success := isUpToDate OR LinkProgramC.Run(module, closure^, TRUE);
+        
+        (* Write library meta file containing OOC's information about the new
+           library.  *)
+        (* ... *)
+      END;
     END;
     RETURN success;
   END UpdateLibrary;
@@ -1062,6 +1144,8 @@ PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
         res := r.UpdateMainFileC(module);
       | Rep.modObjectFile:
         res := r.UpdateObjectFile(module);
+      | Rep.modObjectFileLib:
+        res := r.UpdateObjectFileLib(module);
       | Rep.modCodeFileC:
         res := r.UpdateCodeFileC(module);
       | Rep.modDeclFileC:
@@ -1093,9 +1177,11 @@ BEGIN
   scriptSystemId := NIL;
   
   fileIdNames[Rep.modExecutable] := "Executable";
+  fileIdNames[Rep.modLibrary] := "Library";
   fileIdNames[Rep.modMainObjectFile] := "MainObjectFile";
   fileIdNames[Rep.modMainFileC] := "MainFileC";
   fileIdNames[Rep.modObjectFile] := "ObjectFile";
+  fileIdNames[Rep.modObjectFileLib] := "ObjectFileLib";
   fileIdNames[Rep.modCodeFileC] := "CodeFileC";
   fileIdNames[Rep.modDeclFileC] := "DeclFileC";
   fileIdNames[Rep.modHeaderFileC] := "HeaderFileC";

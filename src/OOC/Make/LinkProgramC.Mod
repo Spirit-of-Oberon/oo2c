@@ -26,7 +26,8 @@ IMPORT
   Sym := OOC:SymbolTable;
 
 PROCEDURE Run*(module: Repository.Module;
-               imports: ARRAY OF Repository.Module): BOOLEAN;
+               imports: ARRAY OF Repository.Module;
+               forLibrary: BOOLEAN): BOOLEAN;
   VAR
     str: ARRAY 16*1024 OF CHAR;        (* link commands can get _very_ long *)
     path: Repository.URIBuffer;
@@ -36,17 +37,25 @@ PROCEDURE Run*(module: Repository.Module;
     linkDirective: Sym.LinkDirective;
     libsMap: Dictionary.Dictionary;
     libs: Object.ObjectArrayPtr;
+    objectFile, outputFile: Repository.FileId;
   BEGIN
     exit := 0;
+    IF forLibrary THEN
+      objectFile := Repository.modObjectFileLib;
+      outputFile := Repository.modLibrary;
+    ELSE
+      objectFile := Repository.modObjectFile;
+      outputFile := Repository.modExecutable;
+    END;
     
-    module. CreateOutputDir (Repository.modExecutable, res);
+    module. CreateOutputDir (outputFile, res);
     IF (res = NIL) THEN
       CCompiler.LinkProgramCmd
-          (module. GetURI (Repository.modExecutable), str);
+          (module. GetURI (outputFile), forLibrary, str);
 
       libsMap := Dictionary.New();
       FOR i := 0 TO LEN(imports)-1 DO
-        uri := imports[i]. GetURI (Repository.modObjectFile);
+        uri := imports[i]. GetURI (objectFile);
         uri(File.URI). GetPath (path);
         Strings.Append (" ", str);
         Strings.Append (path, str);
@@ -62,11 +71,13 @@ PROCEDURE Run*(module: Repository.Module;
         END;
       END;
 
-      (* add file with function main() *)
-      uri := module. GetURI (Repository.modMainObjectFile);
-      uri(File.URI). GetPath (path);
-      Strings.Append (" ", str);
-      Strings.Append (path, str);
+      IF ~forLibrary THEN
+        (* add file with function main() *)
+        uri := module. GetURI (Repository.modMainObjectFile);
+        uri(File.URI). GetPath (path);
+        Strings.Append (" ", str);
+        Strings.Append (path, str);
+      END;
       
       (* add "-l" options for the external libraries *)
       (* FIXME... honor interdependencies between libraries in order

@@ -26,9 +26,10 @@ IMPORT
   OOC:Config, OOC:Repository;
 
 VAR
-  cc, cppflags, cflags, ldflags, libs, libtool: Options.Option;
+  cc, cppflags, cflags, ldflags, libs, libtool, libdir: Options.Option;
 
-PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
+PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
+                           VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 2*1024 OF CHAR;
     include: String.StringArrayPtr;
@@ -51,7 +52,13 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
     END GetURIofRT;
   
   BEGIN
-    COPY (cc. value(StringValue.Value). string^, cmd);
+    IF forLibrary THEN
+      COPY (libtool. value(StringValue.Value). string^, cmd);
+      Strings.Append (" ", cmd);
+    ELSE
+      COPY("", cmd);
+    END;
+    Strings.Append (cc. value(StringValue.Value). string^, cmd);
     Strings.Append (" ", cmd);
     Strings.Append (cflags. value(StringValue.Value). string^, cmd);
     Strings.Append (" ", cmd);
@@ -80,14 +87,25 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
     Strings.Append (str, cmd);
   END CompileFileCmd;
 
-PROCEDURE LinkProgramCmd* (execFile: URI.URI; VAR cmd: ARRAY OF CHAR);
+PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
+                           VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    COPY (cc. value(StringValue.Value). string^, cmd);
+    IF forLibrary THEN
+      COPY (libtool. value(StringValue.Value). string^, cmd);
+      Strings.Append (" ", cmd);
+    ELSE
+      COPY("", cmd);
+    END;
+    Strings.Append (cc. value(StringValue.Value). string^, cmd);
     Strings.Append (" -o ", cmd);
     execFile(File.URI). GetPath (str);
     Strings.Append (str, cmd);
+    IF forLibrary THEN
+      Strings.Append (" -rpath ", cmd);
+      Strings.Append (libdir. value(StringValue.Value). string^, cmd);
+    END;
     Strings.Append (" ", cmd);
     Strings.Append (ldflags. value(StringValue.Value). string^, cmd);
     Strings.Append (" ", cmd);
@@ -101,8 +119,6 @@ PROCEDURE RegisterConfig*;
     cflags := Config.AddOption ("cflags", StringValue.New ("-O2 -g"));
     ldflags := Config.AddOption ("ldflags", StringValue.New (""));
     libs := Config.AddOption ("libs", StringValue.New ("-lgc"));
-    libtool := Config.AddOption ("libtool", StringValue.New ("libtool"));
-
     Config.AddCmdLine ("--cc",
                        "<options><set name='cc'>$1</set></options>");
     Config.AddCmdLine ("--cppflags",
@@ -113,8 +129,13 @@ PROCEDURE RegisterConfig*;
                        "<options><set name='ldflags'>$1</set></options>");
     Config.AddCmdLine ("--libs",
                        "<options><set name='libs'>$1</set></options>");
+    
+    libtool := Config.AddOption ("libtool", StringValue.New ("libtool"));
+    libdir := Config.AddOption ("libdir", StringValue.New ("libdir"));
     Config.AddCmdLine ("--libtool",
                        "<options><set name='libtool'>$1</set></options>");
+    Config.AddCmdLine ("--libdir",
+                       "<options><set name='libdir'>$1</set></options>");
   END RegisterConfig;
 
 END OOC:Config:CCompiler.

@@ -151,12 +151,11 @@ CONST
   modObjectFile* = 7;
   (**This is a standard object file, usually with the suffix @file{.o}, derived
      from the module's source code.  *)
-  modObjectFileSharedLib* = 8;
-  (**An object file suitable for inclusion into a shared library.  Library
-     support may be implemented through external tools like @code{libtool}.  *)
-  modObjectFileStaticLib* = 9;
-  (**An object file suitable for inclusion into a static library.  Library
-     support may be implemented through external tools like @code{libtool}.  *)
+  modObjectFileLib* = 8;
+  (**An object file suitable for inclusion into a shared library.  When using
+     libtool, then this is the @file{.lo} file that acts as a standin for both
+     the file for the static and for the shared library.  *)
+  (* ... unused: 9 *)
   modObjectFileDynamicLoad* = 10;
   (**An object file that can be dynamically loaded into a program.  Generating
      such files may be delegated to external tools like @code{libtool}.  *)
@@ -394,12 +393,12 @@ PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF 
       modAssemblerFile, modObjectFileDynamicLoad,
       modMainFileC, modMainFileAssembler, modMainObjectFile:
       COPY ("obj", subdir)
-    | modObjectFileSharedLib, modObjectFileStaticLib:
-      COPY ("lib/obj", subdir)
+    | modObjectFileLib:
+      COPY ("obj", subdir)
     | modExecutable:
       COPY ("exe", subdir)
     | modLibrary:
-      COPY ("lib", subdir)
+      COPY ("obj", subdir)
     | resourceFile:
       COPY ("rsrc", subdir)
     END
@@ -422,8 +421,10 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
       COPY (".html", suffix)
     | modOpTreeXML:
       COPY ("_op.xml", suffix)
-    | modObjectFile, modObjectFileDynamicLoad, modObjectFileStaticLib:
+    | modObjectFile, modObjectFileDynamicLoad:
       COPY (".o", suffix)
+    | modObjectFileLib:
+      COPY (".lo", suffix)
     | modCodeFileC:
       COPY (".c", suffix)
     | modDeclFileC:
@@ -432,8 +433,6 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
       COPY (".h", suffix)
     | modAssemblerFile:
       COPY (".s", suffix)
-    | modObjectFileSharedLib:
-      COPY (".lo", suffix)
     | modMainFileC:
       COPY ("_.c", suffix)
     | modMainFileAssembler:
@@ -443,7 +442,7 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
     | modExecutable:
       COPY ("", suffix)
     | modLibrary:
-      COPY (".Lib", suffix)
+      COPY (".la", suffix)
     | resourceFile:
       ASSERT (FALSE)
     END
