@@ -462,7 +462,7 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
          loop *)
       out := NewJumpBlock (block);
       opnd := loopEnd. NthOpnd (2);
-      WHILE (opnd # NIL) DO
+      WHILE (opnd # NIL) & (opnd. class = Opnd.storeExit) DO
         exit := opnd. arg. instr. info(InstrProxy). block(JumpBlock);
         SetJump (exit. jump, exit, out);
         opnd := opnd. nextOpnd;
@@ -879,7 +879,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
   BEGIN
     (*Blocker.Write (StdChannels.stdout, pb);*)
     
-    root := Blocker.ArrangeInstructions (pb);
+    root := Blocker.ArrangeInstructions (pb, TRUE);
     proxy := NewInstrProxy (root. instr);
     root. instr. info := proxy;
     b := NewJumpBlock (NIL);
