@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Scheme:File;
 (*  Implementation of the "file" URI scheme.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ MODULE URI:Scheme:File;
 
 
 IMPORT
-  Msg, Strings, Files, OS:ProcessParameters, 
-  URI0 := URI, URI:Error, URI:CharClass, URI:String, 
+  Msg, Strings, OS:ProcessParameters, Object, IO, IO:FileChannel,
+  URI0 := URI, URI:CharClass, URI:String, 
   URI:Scheme:Hierarchical, URI:Authority:ServerBased, URI:Parser;
 
 
@@ -87,18 +87,25 @@ PROCEDURE (file: URI) GetPath* (VAR filePath: ARRAY OF CHAR);
     END
   END GetPath;
 
-PROCEDURE (file: URI) GetChannel* (mode: URI0.ChannelMode; VAR res: Error.Msg): Files.File;
+PROCEDURE (file: URI) GetChannel* (mode: URI0.ChannelMode): FileChannel.Channel
+RAISES IO.Error;
   VAR
     filePath: ARRAY 2*1024 OF CHAR;
+    s: Object.String8;
   BEGIN
     file. GetPath (filePath);
+    s := Object.NewLatin1(filePath);
     CASE mode OF
     | URI0.channelNew:
-      RETURN Files.New (filePath, {Files.read, Files.write}, res)
+      RETURN FileChannel.Open(s,
+                              {FileChannel.read, FileChannel.write,
+                               FileChannel.create, FileChannel.truncate});
     | URI0.channelTmp:
-      RETURN Files.Tmp (filePath, {Files.read, Files.write}, res)
+      RETURN FileChannel.Open(s,
+                              {FileChannel.read, FileChannel.write,
+                               FileChannel.tmpFile});
     | URI0.channelOld:
-      RETURN Files.Old (filePath, {Files.read}, res)
+      RETURN FileChannel.Open(s, {FileChannel.read});
     END
   END GetChannel;
 
