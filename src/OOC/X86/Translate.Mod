@@ -72,6 +72,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       loopStart: S.LoopStartInstr;
       irExpr: IR.Expression;
       type: S.Type;
+      oldLoopExits: ArrayList.ArrayList(S.Instr);
       
     PROCEDURE SetCC(res: S.Result): S.Result;
       VAR
@@ -236,6 +237,19 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         SplitValue();
       END SplitPaths;
     
+    PROCEDURE LoopStart(): S.LoopStartInstr;
+      VAR
+        loopStart: S.LoopStartInstr;
+      BEGIN
+        loopStart := b.AddLoopStart();
+        ControlCP(loopStart); MemoryCP(loopStart);
+
+        oldLoopExits := loopExits;
+        loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
+        
+        RETURN loopStart;
+      END LoopStart;
+        
     PROCEDURE LoopEnd(loopStart: S.LoopStartInstr);
       VAR
         instr: S.Instr;
@@ -250,7 +264,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         loopEnd.AddDep(S.depControl, loopStart);
         loopStart.SetEnd(loopEnd);
         controlCP := loopEnd; memoryCP := loopEnd;
-        loopExits.Clear();
+        loopExits := oldLoopExits;
       END LoopEnd;
         
     PROCEDURE ^ Expression(expr: IR.Expression): S.Result;
@@ -861,8 +875,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         v := Expression(statm.var);
         Assign(v, Expression(statm.start));
         
-        loopStart := b.AddLoopStart();
-        ControlCP(loopStart); MemoryCP(loopStart);
+        loopStart := LoopStart();
         
         res := Guard(endValue);
         SplitPaths(res, controlCP, memoryCP,
@@ -956,16 +969,14 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           returns.Append(instr);
 
         | statm: IR.LoopStatm DO
-          loopStart := b.AddLoopStart();
-          ControlCP(loopStart); MemoryCP(loopStart);
+          loopStart := LoopStart();
           StatmSeq(statm.body);
           LoopEnd(loopStart);
           
         | statm: IR.RepeatStatm DO
           (* "REPEAT s UNTIL e"  is translated to
              "LOOP s; IF e THEN EXIT END END" *)
-          loopStart := b.AddLoopStart();
-          ControlCP(loopStart); MemoryCP(loopStart);
+          loopStart := LoopStart();
           StatmSeq(statm.body);
           
           res := Expression(statm.exitCondition);
@@ -990,8 +1001,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         | statm: IR.WhileStatm DO  (* FIXME... change to if & repeat *)
           (* "WHILE e DO s END"  is translated to
              "LOOP IF e THEN EXIT END; s END" *)
-          loopStart := b.AddLoopStart();
-          ControlCP(loopStart); MemoryCP(loopStart);
+          loopStart := LoopStart();
           
           res := Expression(statm.guard);
           SplitPaths(res, controlCP, memoryCP,
@@ -1126,7 +1136,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
 
   BEGIN
     returns := NEW(ArrayList.ArrayList(S.Instr), 4);
-    loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
+    loopExits := NIL;
     
     w := NEW(W.Writer, symTab, ch);
     FOR p IN moduleIR.procList^ DO
