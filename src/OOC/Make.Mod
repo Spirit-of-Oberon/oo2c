@@ -139,9 +139,16 @@ PROCEDURE (r: Rules) SetBackend* (backend: LONGINT);
   END SetBackend;
 
 PROCEDURE (r: Rules) SetLibraryName* (name, version: ARRAY OF CHAR);
+(**Calling this method with empty string as @oparam{name} clears all
+   library specific data from @oparam{r}.  *)
   BEGIN
-    r.libraryName := String.New(name);
-    r.libraryVersion := String.New(version);
+    IF (name = "") THEN
+      r.libraryName := NIL;
+      r.libraryVersion := NIL;
+    ELSE
+      r.libraryName := String.New(name);
+      r.libraryVersion := String.New(version);
+    END;
   END SetLibraryName;
 
 PROCEDURE (r: Rules) SetErrOut* (ch: Channel.Channel);
@@ -1060,7 +1067,11 @@ PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
       
       isUpToDate := TRUE;
       FOR i := 0 TO LEN(r.imports^)-1 DO
-        IF ~r.Update(r.imports[i], Rep.modObjectFile) THEN
+        IF (r.imports[i].ifQuality = Rep.completeInterface) &
+           (r.imports[i].ifData.libraryName # NIL) THEN
+          (* the module is part of a library: assume that the library
+             exists and that the object file in it is up to date *)
+        ELSIF ~r.Update(r.imports[i], Rep.modObjectFile) THEN
           RETURN FALSE;
         ELSIF DerivedIsOlder2(module, Rep.modExecutable,
                               r.imports[i], Rep.modObjectFile) THEN

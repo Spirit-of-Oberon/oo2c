@@ -251,6 +251,7 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
       module := GetModule(lib.mainModule.array^);
       ok := makeRules.Update(module, Rep.modLibrary)
           & (~install OR InstallLibrary(module, makeRules));
+      makeRules.SetLibraryName("", "");
       INC(i);
     END;
 
