@@ -1,0 +1,991 @@
+MODULE OOC:Make;
+
+IMPORT
+  <*IF COMPILER_MAJOR>=2 THEN*>RT0,<*END*>
+  Channel, Files, Msg, Out, StdChannels, Strings, Time,
+
+  ADT:Object, ADT:ArrayList, ADT:Dictionary, StringSearch,
+  StringSearch:NoMatch, OS:Path,
+  OSFiles := OS:Files, OS:ProcessManagement, URI, URI:Scheme:File,
+
+  OOC:Logger, OOC:Error, OOC:Config,
+  OOC:Config:Pragmas, OOC:Config:Repositories,
+  OOC:Doc:ResolveRef, Rep := OOC:Repository, OOC:AST,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:CreateNamespace,
+  OOC:SymbolTable:InterfaceDescr, OOC:SymbolTable:InterfaceXML,
+  OOC:Auxiliary:ParseModule, OOC:Make:LinkProgramC,
+  
+  OOC:C:IRtoC,
+  OOC:Config:CCompiler, OOC:Make:TranslateToC,
+      OOC:Make:WriteMainFileC, SSAtoC := OOC:SSA:WriteC,
+  OOC:Config:Assembler, OOC:Make:TranslateToIA32,
+      OOC:Make:WriteMainFileAssembler, SSAtoIA32 := OOC:IA32:WriteAssembler;
+
+TYPE
+  ShellCommand = ARRAY 4*1024 OF CHAR;
+  ModuleInfo = POINTER TO ModuleInfoDesc;
+  ModuleInfoDesc = RECORD
+    (Object.ObjectDesc)
+    updated: ARRAY Rep.maxFileId+1 OF BOOLEAN;
+    updateResult: ARRAY Rep.maxFileId+1 OF BOOLEAN;
+    compiled: BOOLEAN;
+    compileResult: BOOLEAN;
+  END;
+  
+TYPE
+  Rules* = POINTER TO RulesDesc;
+  RulesDesc* = RECORD
+    imports: POINTER TO ARRAY OF Rep.Module;
+    mInfo: Dictionary.Dictionary;
+    
+    extensionDict: Dictionary.Dictionary;
+    (**Used by @oproc{Rules.UpdateInterfaceDescr}.  It maps record types
+       to a list of known extensions.  *)
+       
+    runCreateNamespace: BOOLEAN;
+    (**If @code{TRUE} (the default), then @oproc{Rules.UpdateSymbolFile} runs
+       @oproc{CreateNamespace.CreateNamespace} immediately after if has
+       read in the symbol file.  *)
+    
+    errout: Channel.Channel;
+    (**Error messages are written to this channel.  *)
+  END;
+
+CONST
+  scriptPackageName = "OOC";
+  scriptResourcePath = "xml/gen-interface-description";
+  backendNone* = 0;
+  backendSSAtoC* = 1;
+  backendIRtoC* = 2;
+  backendSSAtoIA32* = 3;
+  
+VAR
+  fileIdNames: ARRAY Rep.maxFileId+1 OF ARRAY 24 OF CHAR;
+  scriptSystemId: URI.URI;
+  inspectProc*, inspectStage*: StringSearch.Matcher;
+  backend*: LONGINT;
+  writeAST*: BOOLEAN;
+  writeIR*: BOOLEAN;
+  
+CONST
+  noSuchModule = 1;
+  
+TYPE
+  ErrorContext = POINTER TO ErrorContextDesc;
+  ErrorContextDesc = RECORD  (* stateless *)
+    (Error.ContextDesc)
+  END;
+
+VAR
+  makeContext: ErrorContext;
+
+PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error.LString);
+  VAR
+    t: ARRAY 128 OF Error.LChar;
+  BEGIN
+    CASE msg. code OF
+    | noSuchModule:
+      t := "Cannot locate module `${name}'"
+    END;
+    context. BaseTemplate (msg, t, templ)
+  END GetTemplate;
+
+
+PROCEDURE InitRules* (r: Rules);
+  BEGIN
+    r.imports := NIL;
+    r.mInfo := Dictionary.New();
+    r.extensionDict := NIL;
+    r.runCreateNamespace := TRUE;
+    r.errout := StdChannels.stdout;
+  END InitRules;
+
+PROCEDURE NewRules*(): Rules;
+  VAR
+    r: Rules;
+  BEGIN
+    NEW(r);
+    InitRules(r);
+    RETURN r;
+  END NewRules;
+
+PROCEDURE (r: Rules) SetErrOut* (ch: Channel.Channel);
+  BEGIN
+    r.errout := ch;
+  END SetErrOut;
+
+PROCEDURE (r: Rules) SetExtensionDict*(dict: Dictionary.Dictionary);
+  BEGIN
+    r.extensionDict := dict;
+  END SetExtensionDict;
+
+PROCEDURE (r: Rules) GetModuleInfo* (module: Rep.Module): ModuleInfo;
+  VAR
+    i: LONGINT;
+    obj: Object.Object;
+    mInfo: ModuleInfo;
+  BEGIN
+    IF r.mInfo.HasKey(module) THEN
+      obj := r.mInfo.Get(module);
+      mInfo := obj(ModuleInfo);
+    ELSE
+      NEW(mInfo);
+      Object.Init(mInfo);
+      FOR i := 0 TO Rep.maxFileId DO
+        mInfo.updated[i] := FALSE;
+        mInfo.updateResult[i] := FALSE;
+      END;
+      mInfo.compiled := FALSE;
+      mInfo.compileResult := FALSE;
+      r.mInfo.Set(module, mInfo);
+    END;
+    RETURN mInfo;
+  END GetModuleInfo;
+
+PROCEDURE Exists (module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
+  BEGIN
+    IF module.FileExists(fileId)THEN
+      Logger.ExplainFileMake("file ", module.GetURI(fileId), " exists");
+      RETURN TRUE;
+    ELSE
+      Logger.ExplainFileMake("file ", module.GetURI(fileId), " does not exist");
+      RETURN FALSE;
+    END;
+  END Exists;
+
+PROCEDURE DerivedIsOlder2 (descendentModule: Rep.Module;
+                           descendent: Rep.FileId;
+                           ancestorModule: Rep.Module;
+                           ancestor: Rep.FileId): BOOLEAN;
+(**Return TRUE if the derived file (@oparam{descendentModule},
+   @oparam{descendent}) does not exist, or is older than its ancestor file
+   (@oparam{ancestorModule}, @oparam{ancestor}).
+
+   @precond
+   The ancestor file exists and is up to date.
+   @end precond  *)
+  VAR
+    tsDesc, tsAncest: Time.TimeStamp;
+  BEGIN
+    descendentModule.GetTimeStamp(descendent, tsDesc);
+    IF (tsDesc.days = MAX(LONGINT)) THEN
+      Logger.ExplainFileMake("file ", descendentModule.GetURI(descendent),
+                             " does not exist");
+      RETURN TRUE;
+    ELSE
+      ancestorModule.GetTimeStamp(ancestor, tsAncest);
+      IF (tsDesc.Cmp(tsAncest) >= 0) THEN
+        Logger.ExplainFilesMake("ts(", descendentModule.GetURI(descendent),
+                                ") >= ts(", ancestorModule.GetURI(ancestor), ")");
+        RETURN FALSE;
+      ELSE
+        Logger.ExplainFilesMake("ts(", descendentModule.GetURI(descendent),
+                                ") < ts(", ancestorModule.GetURI(ancestor), ")");
+        RETURN TRUE;
+      END;
+    END;
+  END DerivedIsOlder2;
+
+PROCEDURE DerivedIsOlder (module: Rep.Module; descendent, ancestor: Rep.FileId): BOOLEAN;
+  BEGIN
+    RETURN DerivedIsOlder2(module, descendent, module, ancestor);
+  END DerivedIsOlder;
+
+PROCEDURE CreateErrList(module: Rep.Module): Error.List;
+  VAR
+    uri: URI.URI;
+    uriStr: Rep.URIBuffer;
+  BEGIN
+    uri := module.GetURI(Rep.modModuleSource);
+    uri. GetString(uriStr);
+    RETURN Error.NewList (uriStr);
+  END CreateErrList;
+
+PROCEDURE (r: Rules) WriteErrList* (errList: Error.List);
+  BEGIN
+    IF (errList.msgCount # 0) THEN
+      errList.Write(r.errout);
+    END;
+  END WriteErrList;
+
+PROCEDURE (r: Rules) WriteError(module: Rep.Module; res: Msg.Msg);
+  VAR
+    errList: Error.List;
+  BEGIN
+    errList := CreateErrList(module);
+    errList.Append(res);
+    r.WriteErrList(errList);
+  END WriteError;
+
+PROCEDURE WriteImports (module: Rep.Module);
+  VAR
+    import: Rep.Module;
+    i: LONGINT;
+  BEGIN
+    ASSERT(module.ifQuality >= Rep.importsOnly);
+    Out.String("> IMPORT of "); Out.String(module.name^); Out.Ln;
+    FOR i := 0 TO LEN(module.ifImportList^)-1 DO
+      import := Config.repositories.GetModule(module.ifImportList[i].name.str^);
+      IF (import = NIL) THEN
+        Out.String("> no such module: ");
+        Out.String(module.ifImportList[i].name.str^);
+        Out.Ln;
+      ELSE
+        Out.String("> ");
+        Out.String(import.name^);
+        Out.Ln;
+      END;
+    END;
+  END WriteImports;
+
+PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
+(**Retrieves the imports of @oparam{module} together with any other data from
+   the module header, and stores the result in @oparam{module}.  Result is
+   @code{TRUE} on success, and @code{FALSE} if no provably up to date data
+   could be retrieved for the module.
+
+   Note: This function only looks at the given module.  It does not descend to
+   other modules that are imported by it.  *)
+  VAR
+    ast: AST.Node;
+    symTab: Sym.Module;
+    pragmaHistory: Pragmas.History;
+    errList: Error.List;
+    res: Error.Msg;
+
+  PROCEDURE ResolveNames ();
+    VAR
+      i: LONGINT;
+      import: Rep.Module;
+      
+    PROCEDURE Err (code: Error.Code; sym: Sym.Name);
+      VAR
+        lastError: Error.Msg;
+      BEGIN
+        lastError := Error.New (makeContext, code);
+        lastError. SetIntAttrib ("pos", sym. pos);
+        lastError. SetIntAttrib ("line", sym. line);
+        lastError. SetIntAttrib ("column", sym. column);
+        lastError. SetStringAttrib ("name", Msg.GetStringPtr(sym. str^));
+        errList. Append (lastError)
+      END Err;
+    
+    BEGIN
+      FOR i := 0 TO LEN(module.ifImportList^)-1 DO
+        IF ~module.ifImportList[i].internal THEN
+          import := Config.repositories.GetModule(module.ifImportList[i].name.str^);
+          IF (import = NIL) THEN
+            Err (noSuchModule, module.ifImportList[i].name);
+          ELSE
+            module.ifImportList[i].module := import;
+          END;
+        END;
+      END;
+    END ResolveNames;
+  
+  BEGIN
+    Logger.EnterMake("GetImports", module.name^);
+    IF (module.ifQuality # Rep.noInterfaceData) THEN
+      Logger.ExplainMake("using cached value");
+      RETURN Logger.ExitMake("GetImports", module.name^, TRUE);
+      
+    ELSIF Exists(module, Rep.modModuleSource) &
+          DerivedIsOlder(module, Rep.modSymbolFile, Rep.modModuleSource) THEN
+      (* the symbol file does not exist, or the source file is more recent
+         than the symbol file: extract information from source file *)
+      ParseModule.ParseModule(module, FALSE, FALSE, FALSE, TRUE,
+                              ast, symTab, pragmaHistory, errList);
+      IF (errList.msgCount = 0) THEN
+        module.SetInterfaceData(symTab, Rep.importsOnly);
+      END;
+      
+    ELSE
+      (* symbol file exists and is up to date, at least as far as the
+         import list and the module header are concerned *)
+      errList := CreateErrList(module);
+      symTab := module.ReadSymbolFile(res);
+      IF (res # NIL) THEN
+        errList.Append(res);
+      ELSE
+        module.SetInterfaceData(symTab, Rep.importsWithFingerprint);
+      END;
+    END;
+
+    ResolveNames();
+    
+    IF (errList.msgCount # 0) THEN
+      r.WriteErrList(errList);
+      RETURN Logger.ExitMake("GetImports", module.name^, FALSE);
+    ELSE
+(*      WriteImports(module);*)
+      RETURN Logger.ExitMake("GetImports", module.name^, TRUE);
+    END;
+  END GetImports;
+
+
+PROCEDURE ^ (r: Rules) Update*(module: Rep.Module;
+                               fileId: Rep.FileId): BOOLEAN;
+
+PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
+  VAR
+    success: BOOLEAN;
+    mInfo: ModuleInfo;
+    errList: Error.List;
+
+  PROCEDURE DoEmptyBackend(): Error.List;
+    VAR
+      ast: AST.Node;
+      symTab: Sym.Module;
+      errList: Error.List;
+      pragmaHistory: Pragmas.History;
+    BEGIN
+      ParseModule.ParseModule (module, FALSE, TRUE, TRUE, FALSE,
+                               ast, symTab, pragmaHistory, errList);
+      RETURN errList;
+    END DoEmptyBackend;
+  
+  PROCEDURE DoSSAtoC(): Error.List;
+    VAR
+      t: TranslateToC.Translator;
+    BEGIN
+      t := SSAtoC.NewTranslator(inspectProc, inspectStage);
+      RETURN TranslateToC.Run(module, writeAST, writeIR, t);
+    END DoSSAtoC;
+  
+  PROCEDURE DoIRtoC(): Error.List;
+    VAR
+      t: TranslateToC.Translator;
+    BEGIN
+      t := IRtoC.NewTranslator();
+      RETURN TranslateToC.Run(module, writeAST, writeIR, t);
+    END DoIRtoC;
+  
+  PROCEDURE DoSSAtoIA32(): Error.List;
+    VAR
+      t: TranslateToIA32.Translator;
+    BEGIN
+      t := SSAtoIA32.NewTranslator(module, inspectProc, inspectStage);
+      RETURN TranslateToIA32.Run(module, writeAST, writeIR, t);
+    END DoSSAtoIA32;
+  
+  BEGIN
+    mInfo := r.GetModuleInfo(module);
+    IF mInfo.compiled THEN
+      Logger.ExplainMake("cached result: CompileModule");
+      RETURN mInfo.compileResult;
+    ELSE
+      Logger.EnterMake("CompileModule", module.name^);
+
+      CASE backend OF
+      | backendNone:
+        errList := DoEmptyBackend();
+      | backendSSAtoC:
+        errList := DoSSAtoC();
+      | backendIRtoC:
+        errList := DoIRtoC();
+      | backendSSAtoIA32:
+        errList := DoSSAtoIA32();
+      END;
+
+      success := (errList = NIL) OR (errList.msgCount = 0);
+      IF success THEN
+        (* read symbol file that we have just written *)
+        module.SetInterfaceData(NIL, Rep.noInterfaceData);
+        success := r.GetImports(module);
+        IF success THEN
+          module.SetInterfaceData(module.ifData, Rep.completeInterface);
+        END;
+      END;
+      r.WriteErrList(errList);
+      
+<*IF COMPILER_MAJOR>=2 THEN*>
+      RT0.CollectGarbage;
+<*END*>
+
+      mInfo.compiled := TRUE;
+      mInfo.compileResult := success;
+      RETURN Logger.ExitMake("CompileModule", module.name^, success);
+    END;
+  END CompileModule;
+
+PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
+  VAR
+    i: LONGINT;
+    isUpToDate: BOOLEAN;
+    errList: Error.List;
+  BEGIN
+    IF (module.ifQuality = Rep.completeInterface) THEN
+      (* we have the results cached *)
+      RETURN TRUE;
+    ELSIF r.GetImports(module) THEN
+      (* tentatively mark file as up to date if the source file does not
+         exist, or if the symbol file is not older than the source *)
+      isUpToDate := ~Exists(module, Rep.modModuleSource) OR
+          ~DerivedIsOlder(module, Rep.modSymbolFile, Rep.modModuleSource);
+
+      (* unconditionally bring the symbol files of all imported modules up to
+         date and see if any of them invalidates this symbol file  *)
+      i := 0;
+      WHILE (i # LEN(module.ifImportList^)) DO
+        IF ~module.ifImportList[i].internal THEN
+          IF r.Update(module.ifImportList[i].module, Rep.modSymbolFile) THEN
+            (* mark for compilation if an imported symbol file is more recent
+               than our file, but not if the times are equal; compilation of
+               small modules may produce the same timestamp as that of an
+               imported module  *)
+            isUpToDate := isUpToDate &
+                ~DerivedIsOlder2(module,
+                                 Rep.modSymbolFile,
+                                 module.ifImportList[i].module,
+                                 Rep.modSymbolFile);
+          ELSE
+            RETURN FALSE;
+          END;
+        END;
+        INC(i);
+      END;
+      
+      IF isUpToDate THEN
+        (* if the file is current, then GetImports() has already read it
+           and we only need to complete the data *)
+        ASSERT(module.ifData # NIL);
+        module.SetInterfaceData(module. ifData, Rep.completeInterface);
+      ELSE
+        isUpToDate := r.CompileModule(module);
+      END;
+
+      IF isUpToDate THEN
+        errList := CreateErrList(module);
+        CreateNamespace.CreateNamespace(module.ifData, errList);
+        ASSERT(errList.msgCount = 0);
+      END;
+      
+      RETURN isUpToDate;
+    END;
+    RETURN FALSE;
+  END UpdateSymbolFile;
+
+PROCEDURE (r: Rules) UpdateSymbolTableXML*(module: Rep.Module): BOOLEAN;
+(* Must be redefined by application when used.  *)
+  BEGIN
+    ASSERT(FALSE); RETURN FALSE;
+  END UpdateSymbolTableXML;
+
+PROCEDURE (r: Rules) UpdateInterfaceDescr (module: Rep.Module): BOOLEAN;
+  VAR
+    success: BOOLEAN;
+    outputChannel: Channel.Channel;
+    errList: Error.List;
+    res: Msg.Msg;
+  BEGIN
+    success := r.Update(module, Rep.modSymbolFile);
+    IF success THEN
+      (* the interface XML code depends on the symbol file of the module, which
+         includes descriptions of declarations, and on the symbol files of all
+         modules imported by it; actually, it may even contain 
+         information from modules that are imported indirectly, e.g., when
+         inheriting a method description from a remote base class
+
+         because changes in a symbol file's signature are propagated upward,
+         depending on only the local symbol file should be sufficient  *)
+      IF DerivedIsOlder(module, Rep.modInterfaceDescr, Rep.modSymbolFile) THEN
+        errList := CreateErrList(module);
+        CreateNamespace.CreateNamespace(module.ifData, errList);
+        ResolveRef.Resolve(module.ifData, errList);
+        ASSERT (errList.msgCount = 0);
+        
+        outputChannel := module.GetOutputChannel(Rep.modInterfaceDescr, TRUE, res);
+        IF (outputChannel = NIL) THEN
+          errList.Append (res)
+        ELSE
+          InterfaceDescr.Write (outputChannel.NewWriter(),
+                                module.GetURI (Rep.modInterfaceDescr),
+                                module.ifData,
+                                Config.repositories, r.extensionDict);
+          outputChannel(Files.File).Register;
+          outputChannel.Close;
+          IF (outputChannel.res # Channel.done) THEN
+            errList.Append (outputChannel.res)
+          END
+        END;
+
+        IF (errList.msgCount # 0) THEN
+          r.WriteErrList(errList);
+        END;
+        success := (errList.msgCount = 0);
+      END;
+    END;
+    RETURN success;
+  END UpdateInterfaceDescr;
+
+PROCEDURE (r: Rules) UpdateInterfaceXML (module: Rep.Module): BOOLEAN;
+  VAR
+    success: BOOLEAN;
+    outputChannel: Channel.Channel;
+    errList: Error.List;
+    res: Msg.Msg;
+    ast: AST.Node;
+    symTab: Sym.Module;
+    pragmaHistory: Pragmas.History;
+  BEGIN
+    success := r.Update(module, Rep.modSymbolFile);
+    IF success THEN
+      (* the interface XML code depends on the symbol file and the XML
+         interface descriptions of all imported modules; the latter is
+         necessary because the current HTML generation process relies on
+         the XML files of directly and indirectly imported modules *)
+      IF DerivedIsOlder(module, Rep.modInterfaceXML, Rep.modSymbolFile) THEN
+        errList := CreateErrList(module);
+
+        ParseModule.ParseModule(module, FALSE, TRUE, FALSE, FALSE,
+                                 ast, symTab, pragmaHistory, errList);
+        IF (errList.msgCount = 0) THEN
+          outputChannel := module.GetOutputChannel(Rep.modInterfaceXML, TRUE, res);
+          IF (outputChannel = NIL) THEN
+            errList.Append(res)
+          ELSE
+            InterfaceXML.Write(outputChannel.NewWriter(),
+                               module.GetURI(Rep.modInterfaceXML),
+                               symTab, Config.repositories);
+            outputChannel(Files.File).Register;
+            outputChannel.Close;
+            IF (outputChannel.res # Channel.done) THEN
+              errList.Append(outputChannel.res)
+            END
+          END
+        END;
+
+        IF (errList.msgCount # 0) THEN
+          r.WriteErrList(errList);
+        END;
+        success := (errList.msgCount = 0);
+      END;
+    END;
+    RETURN success;
+  END UpdateInterfaceXML;
+
+PROCEDURE (r: Rules) UpdateInterfaceHTML(module: Rep.Module): BOOLEAN;
+  VAR
+    res: Msg.Msg;
+    str: ShellCommand;
+    success: BOOLEAN;
+    path: Rep.URIBuffer;
+    uri: URI.URI;
+    exit: LONGINT;
+    errList: Error.List;
+
+  PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
+    BEGIN
+      IF (scriptSystemId = NIL) THEN
+        scriptSystemId := repositories. GetResource (scriptPackageName, scriptResourcePath);
+        IF (scriptSystemId = NIL) THEN
+          Out.String ("Error: Cannot locate script "+scriptResourcePath+
+                      " from package "+scriptPackageName+" in any of the "+
+                      "configured repositories.");
+          Out.Ln;
+          HALT (1)
+        END;
+        RETURN scriptSystemId
+      ELSE
+        RETURN scriptSystemId
+      END
+    END GetSystemId;
+  
+  BEGIN
+    success := r.Update(module, Rep.modInterfaceDescr);
+    IF success THEN
+      IF DerivedIsOlder(module, Rep.modInterfaceHTML, Rep.modInterfaceDescr) THEN
+        exit := 0;
+        uri := GetSystemId (Config.repositories);
+        uri(File.URI). GetPath (str);
+        
+        uri := module. GetURI (Rep.modInterfaceDescr);
+        uri(File.URI). GetPath (path);
+        Strings.Append (" '", str);
+        Strings.Append (path, str);
+        Strings.Append ("' '", str);
+        
+        uri := module. GetURI (Rep.modInterfaceHTML);
+        uri(File.URI). GetPath (path);
+        Strings.Append (path, str);
+        Strings.Append ("'", str);
+        
+        Path.dirname (path, path);
+        OSFiles.makedirs (path, OSFiles.defaultMode, res);
+        IF (res = NIL) THEN
+          Logger.ShellCommand(str);
+          exit := ProcessManagement.system (str)
+        END;
+        
+        errList := NIL;
+        IF (res # NIL) THEN
+          errList := Error.NewList("");
+          errList. Append (res)
+        END;
+        
+        success :=  (res = NIL) & (exit = 0);
+      END;
+    END;
+    RETURN success;
+  END UpdateInterfaceHTML;
+
+PROCEDURE UpdateCompilerOutput (r: Rules; module: Rep.Module;
+                               fileId: Rep.FileId): BOOLEAN;
+  BEGIN
+    IF Exists(module, Rep.modModuleSource) THEN
+      IF DerivedIsOlder(module, fileId, Rep.modModuleSource) THEN
+        RETURN r.CompileModule(module);
+      ELSE
+        RETURN TRUE;
+      END;
+    ELSE
+      RETURN Exists(module, fileId);
+    END;
+  END UpdateCompilerOutput;
+
+PROCEDURE (r: Rules) UpdateHeaderFileC(module: Rep.Module): BOOLEAN;
+(* Update header file and all other header files included by it.
+
+   Note: Interface changes are propagated through the symbol files, which may
+   cause header files to be updated as well.  In general new header files do
+   @emph{not} cause their client headers or C files to be updated.  *)
+  VAR
+    i: LONGINT;
+  BEGIN
+    IF r.GetImports(module) THEN
+      FOR i := 0 TO LEN(module.ifImportList^)-1 DO
+        IF ~module.ifImportList[i].internal &
+           ~r.Update(module.ifImportList[i].module, Rep.modHeaderFileC) THEN
+          RETURN FALSE;
+        END;
+      END;
+      RETURN UpdateCompilerOutput(r, module, Rep.modHeaderFileC);
+    ELSE
+      RETURN FALSE;
+    END;
+  END UpdateHeaderFileC;
+
+PROCEDURE (r: Rules) UpdateDeclFileC(module: Rep.Module): BOOLEAN;
+  BEGIN
+    RETURN
+        r.Update(module, Rep.modHeaderFileC) &
+        UpdateCompilerOutput(r, module, Rep.modDeclFileC);
+  END UpdateDeclFileC;
+
+PROCEDURE (r: Rules) UpdateCodeFileC(module: Rep.Module): BOOLEAN;
+  BEGIN
+    IF r.Update(module, Rep.modDeclFileC) THEN
+      IF (module.ifData.class = Sym.mcForeign) OR
+         (module.ifData.class = Sym.mcInterface) THEN
+        Logger.ExplainMake("module's C code provided by user");
+        RETURN TRUE;
+      ELSE
+        RETURN UpdateCompilerOutput(r, module, Rep.modCodeFileC);
+      END;
+    ELSE
+      RETURN FALSE;
+    END;
+  END UpdateCodeFileC;
+
+PROCEDURE (r: Rules) UpdateAssemblerFile(module: Rep.Module): BOOLEAN;
+  BEGIN
+    IF r.Update(module, Rep.modDeclFileC) THEN
+      IF (module.ifData.class = Sym.mcForeign) OR
+         (module.ifData.class = Sym.mcInterface) THEN
+        Logger.ExplainMake("module's C code provided by user");
+        RETURN TRUE;
+      ELSE
+        RETURN UpdateCompilerOutput(r, module, Rep.modCodeFileC);
+      END;
+    ELSE
+      RETURN FALSE;
+    END;
+  END UpdateAssemblerFile;
+
+PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
+(* Update object file if the underlying symbol file or C file has been changed.
+   Because the symbol file is regenerated each time the interface of an
+   imported module changes, the dependency on the symbol file triggers an
+   update if the interface of an included header file may have changed in a
+   significant way.  *)
+  VAR
+    res: Msg.Msg;
+    str: ShellCommand;
+    success: BOOLEAN;
+  BEGIN
+    IF (backend = backendSSAtoIA32) THEN
+      success := r.Update(module, Rep.modAssemblerFile);
+      IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modAssemblerFile) THEN
+        module.CreateOutputDir (Rep.modObjectFile, res);
+        IF (res = NIL) THEN
+          Assembler.AssembleFileCmd(module.GetURI(Rep.modAssemblerFile),
+                                    module.GetURI(Rep.modObjectFile), str);
+          Logger.ShellCommand(str);
+          success := (ProcessManagement.system (str) = 0);
+        ELSE
+          r.WriteError(module, res);
+          success := FALSE;
+        END;
+      END;
+      
+    ELSE
+      success := r.Update(module, Rep.modCodeFileC);
+      IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modCodeFileC) THEN
+        module.CreateOutputDir (Rep.modObjectFile, res);
+        IF (res = NIL) THEN
+          CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC),
+                                   module.GetURI(Rep.modObjectFile), str);
+          Logger.ShellCommand(str);
+          success := (ProcessManagement.system (str) = 0);
+        ELSE
+          r.WriteError(module, res);
+          success := FALSE;
+        END;
+      END;
+    END;
+    RETURN success;
+  END UpdateObjectFile;
+
+PROCEDURE (r: Rules) UpdateMainFileC (module: Rep.Module): BOOLEAN;
+(* Write a new main file if it does not exist, or if a symbol file
+   of a module in @oparam{imports} is more recent than the existing
+   main file.  The latter avoids re-linking if no file has been touched.
+   
+   @precond
+   This method is called within @oproc{Rules.UpdateExecutable}.
+   @endprecond *)
+  VAR
+    success, isUpToDate: BOOLEAN;
+    res: Msg.Msg;
+    i: LONGINT;
+  BEGIN  (* pre: symbol files of all imports[x] are up to date *)
+    success := r.Update(module, Rep.modSymbolFile); (* also updates import data *)
+    IF success THEN
+      isUpToDate := Exists(module, Rep.modMainFileC);
+      i := 0;
+      WHILE isUpToDate & (i # LEN(r.imports^)) DO
+        IF DerivedIsOlder2(module, Rep.modMainFileC,
+                           r.imports[i], Rep.modSymbolFile) THEN
+          isUpToDate := FALSE;
+        END;
+        INC(i);
+      END;
+      
+      IF ~isUpToDate THEN
+        WriteMainFileC.WriteFile(module, r.imports^, res);
+        success := (res = NIL);
+        IF (res # NIL) THEN
+          r.WriteError(module, res);
+        END;
+      END;
+    END;
+    RETURN success;
+  END UpdateMainFileC;
+
+PROCEDURE (r: Rules) UpdateMainFileAssembler (module: Rep.Module): BOOLEAN;
+  VAR
+    success, isUpToDate: BOOLEAN;
+    res: Msg.Msg;
+    i: LONGINT;
+  BEGIN  (* pre: symbol files of all imports[x] are up to date *)
+    success := r.Update(module, Rep.modSymbolFile); (* also updates import data *)
+    IF success THEN
+      isUpToDate := Exists(module, Rep.modMainFileAssembler);
+      i := 0;
+      WHILE isUpToDate & (i # LEN(r.imports^)) DO
+        IF DerivedIsOlder2(module, Rep.modMainFileAssembler,
+                           r.imports[i], Rep.modSymbolFile) THEN
+          isUpToDate := FALSE;
+        END;
+        INC(i);
+      END;
+      
+      IF ~isUpToDate THEN
+        WriteMainFileAssembler.WriteFile(module, r.imports^, res);
+        success := (res = NIL);
+        IF (res # NIL) THEN
+          r.WriteError(module, res);
+        END;
+      END;
+    END;
+    RETURN success;
+  END UpdateMainFileAssembler;
+
+PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
+(* Produce a new object file with the main function if the file does not
+   exist, or if the input C file is more recent.
+
+   @precond
+   This method is called within @oproc{Rules.UpdateExecutable}.
+   @endprecond *)
+  VAR
+    res: Msg.Msg;
+    str: ShellCommand;
+    success: BOOLEAN;
+  BEGIN
+    IF (backend = backendSSAtoIA32) THEN
+      success := r.Update(module, Rep.modMainFileAssembler);
+      IF DerivedIsOlder(module, Rep.modMainObjectFile,
+                        Rep.modMainFileAssembler) THEN
+        module.CreateOutputDir (Rep.modMainObjectFile, res);
+        IF (res = NIL) THEN
+          Assembler.AssembleFileCmd(module.GetURI(Rep.modMainFileAssembler),
+                                    module.GetURI(Rep.modMainObjectFile), str);
+          Logger.ShellCommand(str);
+          success := (ProcessManagement.system (str) = 0);
+        ELSE
+          r.WriteError(module, res);
+          success := FALSE;
+        END;
+      END;
+      
+    ELSE
+      success := r.Update(module, Rep.modMainFileC);
+      IF DerivedIsOlder(module, Rep.modMainObjectFile, Rep.modMainFileC) THEN
+        module.CreateOutputDir (Rep.modMainObjectFile, res);
+        IF (res = NIL) THEN
+          CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC),
+                                   module.GetURI(Rep.modMainObjectFile), str);
+          Logger.ShellCommand(str);
+          success := (ProcessManagement.system (str) = 0);
+        ELSE
+          r.WriteError(module, res);
+          success := FALSE;
+        END;
+      END;
+    END;
+    RETURN success;
+  END UpdateMainObjectFile;
+
+PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
+(**Update executable that uses @oparam{module} as its main module.  If any of
+   the modules has changed, or if an object file is missing, then rebuild as
+   needed.  Result is @code{TRUE} on success, and @code{FALSE} if the current
+   executable is not up to date, and could not be rebuild.  *)
+  VAR
+    i: LONGINT;
+    success, isUpToDate: BOOLEAN;
+    dict: Dictionary.Dictionary;
+    list: ArrayList.ArrayList;
+    
+  PROCEDURE Closure (module: Rep.Module);
+    VAR
+      i: LONGINT;
+    BEGIN
+      IF ~dict.HasKey(module) THEN
+        dict.Set(module, NIL);
+        
+        FOR i := 0 TO LEN(module.ifImportList^)-1 DO
+          IF ~module.ifImportList[i].internal THEN
+            ASSERT(module.ifImportList[i].module # NIL);
+            Closure(module.ifImportList[i].module);
+          END;
+        END;
+
+        list.Append(module);  (* importing module follows its imports *)
+      END;
+    END Closure;
+  
+  BEGIN
+    success := FALSE;
+    IF r.Update(module, Rep.modSymbolFile) THEN (* also updates all import data *)
+      (* the link command depends on the object file containing the main()
+         function, and on the object files of all modules that are imported
+         directly or indirectly by the main module  *)
+      dict := Dictionary.New();
+      list := ArrayList.New(16);
+      Closure(module);
+      NEW(r.imports, list.size);
+      FOR i := 0 TO list.size-1 DO
+        r.imports[i] := list.array[i](Rep.Module);
+      END;
+      
+      IF ~r.Update(module, Rep.modMainObjectFile) THEN
+        RETURN FALSE;
+      END;
+      
+      isUpToDate :=
+          ~DerivedIsOlder(module, Rep.modExecutable, Rep.modMainObjectFile);
+      FOR i := 0 TO LEN(r.imports^)-1 DO
+        IF ~r.Update(r.imports[i], Rep.modObjectFile) THEN
+          RETURN FALSE;
+        ELSIF DerivedIsOlder2(module, Rep.modExecutable,
+                              r.imports[i], Rep.modObjectFile) THEN
+          isUpToDate := FALSE;
+        END;
+      END;
+      
+      success := isUpToDate OR LinkProgramC.Run(module, r.imports^);
+    END;
+    RETURN success;
+  END UpdateExecutable;
+
+PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
+  VAR
+    res: BOOLEAN;
+    mInfo: ModuleInfo;
+  BEGIN
+    mInfo := r.GetModuleInfo(module);
+    IF mInfo.updated[fileId] THEN
+      RETURN Logger.CachedMake(fileIdNames[fileId],
+                               module.name^, mInfo.updateResult[fileId]);
+    ELSE
+      Logger.EnterMake(module.name^, fileIdNames[fileId]);
+      CASE fileId OF
+      | Rep.modExecutable:
+        res := r.UpdateExecutable(module);
+      | Rep.modMainObjectFile:
+        res := r.UpdateMainObjectFile(module);
+      | Rep.modMainFileC:
+        res := r.UpdateMainFileC(module);
+      | Rep.modObjectFile:
+        res := r.UpdateObjectFile(module);
+      | Rep.modCodeFileC:
+        res := r.UpdateCodeFileC(module);
+      | Rep.modDeclFileC:
+        res := r.UpdateDeclFileC(module);
+      | Rep.modHeaderFileC:
+        res := r.UpdateHeaderFileC(module);
+      | Rep.modInterfaceDescr:
+        res := r.UpdateInterfaceDescr(module);
+      | Rep.modInterfaceXML:
+        res := r.UpdateInterfaceXML(module);
+      | Rep.modInterfaceHTML:
+        res := r.UpdateInterfaceHTML(module);
+      | Rep.modSymbolTableXML:
+        res := r.UpdateSymbolTableXML(module);
+      | Rep.modSymbolFile:
+        res := r.UpdateSymbolFile(module);
+      END;
+      mInfo.updated[fileId] := TRUE;
+      mInfo.updateResult[fileId] := res;
+      RETURN Logger.ExitMake(module.name^, fileIdNames[fileId], res);
+    END;
+  END Update;
+
+BEGIN
+  backend := backendSSAtoC;
+  inspectProc := NoMatch.matcher;
+  inspectStage := NoMatch.matcher;
+  writeAST := FALSE;
+  writeIR := FALSE;
+  scriptSystemId := NIL;
+  
+  fileIdNames[Rep.modExecutable] := "Executable";
+  fileIdNames[Rep.modMainObjectFile] := "MainObjectFile";
+  fileIdNames[Rep.modMainFileC] := "MainFileC";
+  fileIdNames[Rep.modObjectFile] := "ObjectFile";
+  fileIdNames[Rep.modCodeFileC] := "CodeFileC";
+  fileIdNames[Rep.modDeclFileC] := "DeclFileC";
+  fileIdNames[Rep.modHeaderFileC] := "HeaderFileC";
+  fileIdNames[Rep.modInterfaceDescr] := "InterfaceDescr";
+  fileIdNames[Rep.modInterfaceXML] := "InterfaceXML";
+  fileIdNames[Rep.modInterfaceHTML] := "InterfaceHTML";
+  fileIdNames[Rep.modSymbolFile] := "SymbolFile";
+  fileIdNames[Rep.modSymbolTableXML] := "SymbolTableXML";
+  fileIdNames[Rep.modAssemblerFile] := "AssembleFile";
+  fileIdNames[Rep.modMainFileAssembler] := "MainFileAssembler";
+  
+  NEW (makeContext);
+  Error.InitContext (makeContext, "OOC:Make");
+END OOC:Make.

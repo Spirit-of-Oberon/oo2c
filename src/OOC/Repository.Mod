@@ -46,6 +46,11 @@ TYPE
 TYPE
   ModuleName* = Msg.String;
   ModuleNamePtr* = Msg.StringPtr;
+  ModuleRef* = RECORD
+    name-: Sym.Name;
+    module*: Module;
+    internal-: BOOLEAN;
+  END;
   ModuleDesc* = RECORD [ABSTRACT]
     (Object.ObjectDesc)
     (**Note: The function @oproc{*OOC:Config:Repositories.Section.GetModule} is
@@ -80,8 +85,34 @@ TYPE
     symbolTable-: Sym.Module;
     (**After the module's symbol file has been read, this field refers to
        its symbol table.  *)
+
+    ifData-: Sym.Module;
+    (**Interface data of this module.  This includes both its imports and
+       its exports.  Depending on @ofield{ifQuality}, only part of the
+       data may be available at the moment.  *)
+    ifQuality-: SHORTINT;
+    (**Quality of data in the field @ofield{ifData}.  One of
+       @oconst{noInterfaceData}, @oconst{importsOnly},
+       @oconst{importsWithFingerprint}, or @oconst{completeInterface}.  *)
+    ifImportList-: POINTER TO ARRAY OF ModuleRef;
+    (**Mirrors the imports from @ofield{ifData}.  *)
   END;
 
+CONST
+  noInterfaceData* = 1;
+  (**No interface data is known.  @ofield{Module.ifData} is @code{NIL}.  *)
+  importsOnly* = 2;
+  (**Only the module names in the import list and the data from the module
+     header in @ofield{Module.ifData} can be trusted.  Additional information
+     is either missing, or may not be up to date.  *)
+  importsWithFingerprint* = 3;
+  (**Like @oconst{importsOnly}, with the addition of fingerprint values for
+     all modules in the import list.  *)
+  completeInterface* = 4;
+  (**The data in @ofield{Module.ifData} is complete and up to date.  The
+     symbol table, and all symbol tables that are referenced by it, can be used
+     when compiling a module.  *)
+  
 TYPE
   FileId* = SHORTINT;
   (**This type identifies the various output files that can be derived from an
@@ -204,6 +235,9 @@ PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName;
     m. importList := NIL;
     m. symbolTable := NIL;
     m. srcFileOverride := srcFileOverride;
+    
+    m. ifQuality := noInterfaceData;
+    m. ifData := NIL;
   END InitModule;
 
 
@@ -237,6 +271,45 @@ PROCEDURE (rep: Repository) [ABSTRACT] GetResource* (package, path: ARRAY OF CHA
 PROCEDURE (rep: Repository) [ABSTRACT] DumpContent* (w: TextRider.Writer);
   END DumpContent;
 
+
+PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT);
+  VAR
+    count: LONGINT;
+    item: Sym.Item;
+    oldIfData: Sym.Module;
+  BEGIN
+    oldIfData := m.ifData;
+    m.ifData := ifData;
+    m.ifQuality := ifQuality;
+
+    IF (ifData = NIL) THEN
+      m.ifImportList := NIL;
+    ELSIF (oldIfData # ifData) THEN
+      count := 0;
+      item := ifData.nestedItems;
+      WHILE (item # NIL) DO
+        WITH item: Sym.Import DO
+          INC(count);
+        ELSE
+        END;
+        item := item.nextNested;
+      END;
+      
+      NEW(m.ifImportList, count);
+      count := 0;
+      item := ifData.nestedItems;
+      WHILE (item # NIL) DO
+        WITH item: Sym.Import DO
+          m.ifImportList[count].name := item.moduleName;
+          m.ifImportList[count].module := NIL;
+          m.ifImportList[count].internal := (item.moduleName.str^ = "SYSTEM");
+          INC(count);
+        ELSE
+        END;
+        item := item.nextNested;
+      END;
+    END;
+  END SetInterfaceData;
 
 PROCEDURE (m: Module) AddImport* (imported: Module);
 (**Adds a new module @oparam{imported} to the import list of @oparam{m}.
@@ -277,9 +350,26 @@ PROCEDURE (m: Module) GetImport* (name: ARRAY OF CHAR): Module;
     IF (import = NIL) THEN
       RETURN NIL
     ELSE
+      ASSERT(import.imported # NIL);
       RETURN import. imported
     END
   END GetImport;
+
+PROCEDURE (m: Module) GetImportedModule*(name: ARRAY OF CHAR): Module;
+  VAR
+    i: LONGINT;
+  BEGIN
+    i := 0;
+    WHILE (i # LEN(m.ifImportList^)) &
+          (m.ifImportList[i].name.str^ # name) DO
+      INC(i);
+    END;
+    IF (i = LEN(m.ifImportList^)) THEN
+      RETURN NIL;
+    ELSE
+      RETURN m.ifImportList[i].module;
+    END;
+  END GetImportedModule;
 
 
 PROCEDURE (m: Module) [ABSTRACT] GetInputBuffer* (VAR msg: Msg.Msg): InputBuffer.Buffer;
@@ -312,7 +402,12 @@ PROCEDURE (m: Module) MatchesURI* (fileId: FileId; uri: URI.URI): BOOLEAN;
   END MatchesURI;
 
 PROCEDURE (m: Module) [ABSTRACT] GetTimeStamp* (fileId: FileId; VAR ts: Time.TimeStamp);
+(**If the file does not exist, or the time stamp cannot be retrieved for
+   some other reason, @ofield{ts.days} is @code{MAX(LONGINT)}.  *)
   END GetTimeStamp;
+
+PROCEDURE (m: Module) [ABSTRACT] FileExists* (fileId: FileId): BOOLEAN;
+  END FileExists;
 
 PROCEDURE (m: Module) [ABSTRACT] CreateOutputDir* (fileId: FileId; VAR res: Msg.Msg);
   END CreateOutputDir;
@@ -501,5 +596,36 @@ PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Sym.Module;
       RETURN NIL
     END
   END GetSymbolTable;
+
+PROCEDURE (m: Module) ReadSymbolFile*(VAR res: Msg.Msg): Sym.Module;
+(**Locates and reads the symbol table of module @oparam{m}.  In general, any
+   type references in the returned symbol table are @emph{not} resolved.  Use
+   @oproc{*OOC:Auxiliary:GetSymbolTable.GetSymbolTable} to get such a symbol
+   table.  *)
+  VAR
+    stb: Builder.Builder;
+    ch: Channel.Channel;
+    uri: URI.URI;
+    symTab: Sym.Module;
+  BEGIN
+    IF (m.ifQuality = completeInterface) THEN
+      res := NIL;
+      RETURN m.ifData;
+    ELSE
+      uri := m. GetURI (modSymbolFile);
+      ch := uri. GetChannel (URI.channelOld, res);
+      IF (res = NIL) THEN
+        Logger.ReadFile(uri);
+        stb := Builder.New();
+        symTab := stb. ReadSymbolTable (ch, res);
+        ch. Close;
+        IF (res = NIL) THEN
+          m. symbolTable := symTab;    (* cache for later use *)
+          RETURN symTab
+        END
+      END;
+      RETURN NIL
+    END;
+  END ReadSymbolFile;
 
 END OOC:Repository.

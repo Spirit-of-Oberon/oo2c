@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Make:Command:WriteMainFileC;
+MODULE OOC:Make:WriteMainFileC;
 (*  Generates the main file of a program.
     Copyright (C) 2001, 2002  Michael van Acken
 
@@ -21,56 +21,17 @@ MODULE OOC:Make:Command:WriteMainFileC;
 *)
 
 IMPORT
-  Channel, Files, Make, TextRider, ADT:Dictionary, ADT:String,
-  OOC:Make:Entity:ModuleFile, OOC:Error, OOC:Repository;
-
-TYPE
-  Command* = POINTER TO CommandDesc;
-  CommandDesc = RECORD
-    (Make.CommandDesc)
-    module: Repository.Module;
-    res: Error.Msg;
-  END;
+  Channel, Files, TextRider, ADT:Dictionary, OOC:Error, OOC:Repository;
 
 CONST
   sizeVParStack* = 256*1024;
   (* this should come from config data; until we switch to alloca() or
      something similar, use a value that is >>128k *)
 
-PROCEDURE New* (context: Make.Context; module: Repository.Module): Command;
-  VAR
-    cmd: Command;
-  BEGIN
-    NEW (cmd);
-    Make.InitCommand (cmd, context);
-    cmd. module := module;
-    cmd. res := NIL;
-    RETURN cmd
-  END New;
-
-PROCEDURE (cmd: Command) Id* (): String.String;
-  BEGIN
-    RETURN String.New ("[OOC:Make:Command:WriteMainFileC]")
-  END Id;
-
-PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
-  VAR
-    entity: Make.Entity;
-  BEGIN
-    IF (cmd. state = Make.commandUndiscovered) THEN
-      entity := ModuleFile.GetEntity (cmd. context, cmd. module, Repository.modMainFileC);
-      cmd. AddAncestors (entity);
-      RETURN cmd. state+1
-    ELSE
-      IF cmd. HasInvalidAncestor() THEN
-        RETURN Make.commandInvalid
-      ELSE
-        RETURN Make.commandSchedule
-      END
-    END
-  END Discover;
-
-PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
+  
+PROCEDURE WriteFile*(module: Repository.Module;
+                     imports: ARRAY OF Repository.Module;
+                     VAR res: Error.Msg);
   VAR
     ch: Channel.Channel;
     w: TextRider.Writer;
@@ -95,31 +56,22 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
       w. WriteLn;
     END WriteModuleName;
   
-  PROCEDURE WriteModules (w: TextRider.Writer; done: Dictionary.Dictionary;
-                          module: Repository.Module;
-                          prefix, suffix: ARRAY OF CHAR);
+  PROCEDURE WriteModules (w: TextRider.Writer; prefix, suffix: ARRAY OF CHAR);
     VAR
-      import: Repository.Import;
+      i: LONGINT;
     BEGIN
-      IF ~done. HasKey (module) THEN
-        done. Set (module, module);
-        import := module. importList;
-        WHILE (import # NIL) DO
-          WriteModules (w, done, import. imported, prefix, suffix);
-          import := import. nextImport
-        END;
-        WriteModuleName (w, prefix, module, suffix)
-      END
+      FOR i := 0 TO LEN(imports)-1 DO
+        WriteModuleName (w, prefix, imports[i], suffix)
+      END;
     END WriteModules;
   
   BEGIN
-    ch := cmd. module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
+    ch := module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
     IF (res = Channel.done) THEN
       w := TextRider.ConnectWriter (ch);
       w. WriteString ('#include "RT0.h"');
       w. WriteLn;
-      WriteModules (w, Dictionary.New(), cmd. module,
-                    "extern void ", "_init0(void);");
+      WriteModules (w, "extern void ", "_init0(void);");
       w. WriteLn;
       
       w. WriteString ("int main (int argc, char *argv[]) {");
@@ -132,7 +84,7 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
         w. WriteString (";");
       END;
       w. WriteLn;
-      WriteModules (w, Dictionary.New(), cmd. module, "  ", "_init0();");
+      WriteModules (w, "  ", "_init0();");
       w. WriteString ("  return 0;  /* _program_exit_code */");
       w. WriteLn;
       w. WriteString ("}");
@@ -146,22 +98,4 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
     END
   END WriteFile;
 
-
-PROCEDURE (cmd: Command) Run*(): BOOLEAN;
-  BEGIN
-    WriteFile (cmd, cmd. res);
-    RETURN (cmd. res = NIL)
-  END Run;
-
-PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
-  VAR
-    errList: Error.List;
-  BEGIN
-    IF (cmd. res # NIL) THEN
-      errList := Error.NewList("");
-      errList. Append (cmd. res);
-      errList. Write (stderr)
-    END
-  END ProduceOutput;
-
-END OOC:Make:Command:WriteMainFileC.
+END OOC:Make:WriteMainFileC.

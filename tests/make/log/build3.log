@@ -1,6 +1,0 @@
-entity('a').Discover() --> entityBuild
-entity('a').GetCommand()
-command('A').Discover() --> commandStateUnknown+1
-entity('b').Discover() --> entityInvalid
-command('A').Discover() --> commandInvalid
-failure

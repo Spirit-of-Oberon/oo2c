@@ -21,7 +21,6 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Log,
   ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Predef, OOC:SymbolTable:ImportModules, OOC:Doc:ResolveRef;
@@ -898,6 +897,26 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     ResolveRef.Resolve (root, errList)
   END CreateNamespace;
 
+(*PROCEDURE CreateNamespaceRec*(root: Sym.Module;
+                              errList: Error.List);
+  VAR
+    ptr: Sym.Item;
+  BEGIN
+    IF (root.ns = NIL) THEN
+      ptr := root. nestedItems;
+      WHILE (ptr # NIL) & (errList.msgCount = 0) DO
+        WITH ptr: Sym.Import DO
+          CreateNamespaceRec(ptr.externalSymTab, errList);
+        ELSE
+        END;
+        ptr := ptr. nextNested
+      END;
+      IF (errList.msgCount = 0) THEN
+        CreateNamespace(root, errList);
+      END;
+    END;
+  END CreateNamespaceRec;*)
+    
 PROCEDURE Init* ();
   VAR
     stb: Builder.Builder;

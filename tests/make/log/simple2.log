@@ -1,4 +1,0 @@
-entity('a').Discover() --> entityValid
-target.Discover() --> commandSchedule
-target.Run() --> TRUE
-success

@@ -284,7 +284,9 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     IF (module. importList # NIL) THEN
       AcceptParent (v, module. importList, moduleDecl)
     END;
-    AcceptParent (v, module. body, moduleDecl)
+    IF (module. body # NIL) THEN (* no body if parsing stopped after IMPORT *)
+      AcceptParent (v, module. body, moduleDecl)
+    END;
   END VisitModule;
 
 PROCEDURE (v: Visitor) VisitImportList* (importList: ExtTree.ImportList);

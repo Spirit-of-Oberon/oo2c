@@ -21,8 +21,7 @@ MODULE OOC:SymbolTable:ImportModules;
 *)
 
 IMPORT
-  Msg, OOC:Config, OOC:Error, Sym := OOC:SymbolTable,
-  OOC:Repository, OOC:Config:Repositories;
+  Msg, OOC:Config, OOC:Error, Sym := OOC:SymbolTable, OOC:Repository;
 
 
 CONST
@@ -75,18 +74,22 @@ PROCEDURE ImportModules* (systemModule: Sym.Module;
       m: Repository.Module;
       res: Msg.Msg;
     BEGIN
-      IF (import. moduleName. str^ = "SYSTEM") THEN
+      IF import. IsInternalImport() THEN
         import. SetExternalSymTab (systemModule)
       ELSE
         m := Config.repositories. GetModule (import. moduleName. str^);
         IF (m = NIL) THEN
           Err (noSuchModule, import. moduleName)
         ELSE
-          symTab := m. GetSymbolTable (res);
+          symTab := m. ReadSymbolFile (res);
           IF (res # NIL) THEN
             Err (readErrorSymbolFile, import. moduleName);
             lastError. SetMsgAttrib ("reason", res)
           ELSE
+            (* when we reach this point, then the imported modules have
+               been processed one way or other, and we must make sure that
+               we only see exactly this processed data further on *)
+            m.SetInterfaceData(symTab, Repository.completeInterface);
             import. SetExternalSymTab (symTab)
           END
         END

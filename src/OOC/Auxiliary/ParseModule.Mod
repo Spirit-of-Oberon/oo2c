@@ -14,7 +14,8 @@ IMPORT
 
 
 PROCEDURE ParseModule* (m: Repository.Module;
-                        checkModuleName, createNamespace, writeSymbolFile: BOOLEAN;
+                        checkModuleName, createNamespace,
+                        writeSymbolFile, abortAfterImport: BOOLEAN;
                         VAR ast: AST.Node;
                         VAR symTab: Sym.Module;
                         VAR pragmaHistory: Pragmas.History;
@@ -23,7 +24,18 @@ PROCEDURE ParseModule* (m: Repository.Module;
    evaluating a build command, only on of these calls should pass @code{TRUE}
    to @oparam{writeSymbolFile}.  Otherwise the build logic implemented in
    @omodule{*OOC:Make} would get confused, because it assumes that the time
-   of the symbol file designates the time of the last compilation.  *)
+   of the symbol file designates the time of the last compilation.
+
+   With @oparam{abortAfterImport}, abort after the import list has been
+   processed.  This results in a partial symbol table in @oparam{symTab},
+   that contains little more than the import statement and the module
+   header.
+
+   @postcond
+   The output parameter @oparam{errList} lists all errors the occurred
+   during parsing and namespace creation.
+   @end postcond
+   *)
   VAR
     res: Msg.Msg;
     inputBuffer: InputBuffer.Buffer;
@@ -32,6 +44,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
     stb: Builder.Builder;
     uri: URI.URI;
     uriStr: Repository.URIBuffer;
+    scannerFlags, parserFlags: SET;
   BEGIN
     inputBuffer := m. GetInputBuffer (res);
     IF (inputBuffer = NIL) THEN
@@ -45,7 +58,11 @@ PROCEDURE ParseModule* (m: Repository.Module;
     ELSE
       errList := inputBuffer. errList;
       scannerBuilder := BasicList.New (inputBuffer, TRUE);
-      Scanner.ScanInput (scannerBuilder, Config.pragmas, Scanner.enableAll);
+      scannerFlags := Scanner.enableAll;
+      IF abortAfterImport THEN
+        INCL(scannerFlags, Scanner.abortAtDeclarations);
+      END;
+      Scanner.ScanInput (scannerBuilder, Config.pragmas, scannerFlags);
       inputBuffer. Close;
       pragmaHistory := scannerBuilder. pragmaHistory;
       
@@ -55,9 +72,13 @@ PROCEDURE ParseModule* (m: Repository.Module;
         IF checkModuleName THEN
           astBuilder. SetModuleName (m. name^)
         END;
+        parserFlags := Parser.enableAll;
+        IF abortAfterImport THEN
+          INCL(parserFlags, Parser.onlyParseImport);
+          EXCL(parserFlags, Parser.enableDocComment);
+        END;
         ast := Parser.Module (scannerBuilder. head, 
-                              astBuilder, errList,
-                              Parser.enableAll)
+                              astBuilder, errList, parserFlags);
       END;
 
       symTab := NIL;

@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Make:Command:TranslateToIA32 [OOC_EXTENSIONS];
+MODULE OOC:Make:TranslateToIA32 [OOC_EXTENSIONS];
 (*  Translates a module file into a bunch of C code files.
     Copyright (C) 2001, 2002  Michael van Acken
 
@@ -21,8 +21,7 @@ MODULE OOC:Make:Command:TranslateToIA32 [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, Channel, Make, Msg, StdChannels, ADT:String, ADT:Dictionary, 
-  OOC:Make:Entity:ModuleFile,
+  Ascii, Channel, Msg, StdChannels, ADT:Dictionary, 
   OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, Rep := OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
@@ -45,17 +44,6 @@ TYPE
     (* Index of the most recent call to @oproc{Translator.WriteProcedure}.
        This method restores it to its old value when it is done, which means it
        is aware of procedure nesting.  *)
-  END;
-
-TYPE
-  Command* = POINTER TO CommandDesc;
-  CommandDesc = RECORD
-    (Make.CommandDesc)
-    module: Rep.Module;
-    errList: Error.List;
-    writeAST: BOOLEAN;
-    writeIR: BOOLEAN;
-    translator: Translator;
   END;
 
 
@@ -119,73 +107,6 @@ PROCEDURE (t: Translator) WriteNestedProcedures*;
   END WriteNestedProcedures;
 
 
-PROCEDURE New* (context: Make.Context; module: Rep.Module;
-                writeAST, writeIR: BOOLEAN; translator: Translator): Command;
-  VAR
-    cmd: Command;
-  BEGIN
-    NEW (cmd);
-    Make.InitCommand (cmd, context);
-    cmd. module := module;
-    cmd. errList := NIL;
-    cmd. writeAST := writeAST;
-    cmd. writeIR := writeIR;
-    cmd. translator := translator;
-    RETURN cmd
-  END New;
-
-PROCEDURE (cmd: Command) Id* (): String.String;
-  BEGIN
-    RETURN String.New ("[OOC:Make:Command:TranslateToIA32]")
-  END Id;
-
-PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
-  PROCEDURE HasInvalidAncestor(): BOOLEAN;
-    VAR
-      aEdge: Make.Edge;
-    BEGIN
-      aEdge := cmd. ancestorList;
-      WHILE (aEdge # NIL) DO
-        IF (aEdge. ancestor IS Make.Entity) &
-           (aEdge. ancestor(Make.Entity). state = Make.entityInvalid) &
-           (aEdge. ancestor(Make.Entity). command # NIL) THEN
-          RETURN TRUE
-        END;
-        aEdge := aEdge. nextAncestor
-      END;
-      RETURN FALSE
-    END HasInvalidAncestor;
-
-  PROCEDURE AddDescendant (fileId: Rep.FileId);
-    VAR
-      desc: ModuleFile.Entity;
-    BEGIN
-      desc := ModuleFile.GetEntity (cmd. context, cmd. module, fileId);
-      IF ~desc. IsDescendantOf (cmd) THEN
-        cmd. AddDescendant (desc)
-      END
-    END AddDescendant;
-  
-  BEGIN
-    IF (cmd. state = Make.commandUndiscovered) THEN
-      AddDescendant (Rep.modAssemblerFile);
-      AddDescendant (Rep.modSymbolFile);
-      ModuleFile.DiscoverCompile (cmd, cmd. module);
-      RETURN cmd. state+1
-    ELSE
-      (* if one of the ancestors is invalid because of failed build, then
-         don't try to run this command; note: an ancestor that is invalid
-         without any attempt to build it does not generate an error, so we
-         run this command just to get an error message *)
-      IF HasInvalidAncestor() THEN
-        RETURN Make.commandInvalid
-      ELSE
-        RETURN Make.commandSchedule
-      END
-    END
-  END Discover;
-
-
 PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
                          moduleIR: IR.Module; translator: Translator);
   VAR
@@ -214,15 +135,15 @@ PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
   END WriteCodeFile;
 
 
-PROCEDURE (cmd: Command) Run*(): BOOLEAN;
-(**Compiles a module, creating the symbol file and all relevant C files.  *)
+PROCEDURE Run*(m: Rep.Module; writeAST, writeIR: BOOLEAN;
+               translator: Translator): Error.List;
+(**Compiles a module, creating the symbol file and the assembler file.  *)
   VAR
     ast: AST.Node;
     symTab: Sym.Module;
     errList: Error.List;
-    m: Rep.Module;
     exports: Dictionary.Dictionary;
-    module: IR.Module;
+    moduleIR: IR.Module;
     pragmaHistory: Pragmas.History;
     w: Writer.Writer;
     res: Msg.Msg;
@@ -241,23 +162,22 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     END CloseFile;
   
   BEGIN
-    m := cmd. module;
-    ParseModule.ParseModule (m, TRUE, TRUE, FALSE,
+    ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
        data in `symTab' to the view of client modules: declarations private to
        the module are stripped when writing the symbol file  *)
     
     IF (errList. msgCount = 0) THEN
-      IF cmd. writeAST THEN
+      IF writeAST THEN
         ASTtoXML.Write (StdChannels.stdout.NewWriter(), ast(ExtTree.Module));
       END;
-      module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
-                                   IR.NewBuilder (symTab, pragmaHistory,
-                                                  errList,
-                                                  ConstFold.NewConstFold()));
-      IF cmd. writeIR THEN
-        IRtoXML.Write (StdChannels.stdout. NewWriter(), module);
+      moduleIR := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
+                                     IR.NewBuilder (symTab, pragmaHistory,
+                                                    errList,
+                                                    ConstFold.NewConstFold()));
+      IF writeIR THEN
+        IRtoXML.Write (StdChannels.stdout. NewWriter(), moduleIR);
       END;
       
       exports := Exports.GetExports (symTab, TRUE);
@@ -268,7 +188,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         w := Writer.NewWriter
             (m. GetOutputChannel (Rep.modAssemblerFile, TRUE, res));
         IF (res = Channel.done) THEN
-          WriteCodeFile (w, m, symTab, module, cmd. translator);
+          WriteCodeFile (w, m, symTab, moduleIR, translator);
         ELSE
           errList. Append (res);
         END;
@@ -281,15 +201,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       END;
     END;
     
-    cmd. errList := errList;
-    RETURN (errList. msgCount = 0)
+    RETURN errList;
   END Run;
 
-PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
-  BEGIN
-    IF (cmd. errList. msgCount # 0) THEN
-      cmd. errList. Write (stderr)
-    END
-  END ProduceOutput;
-
-END OOC:Make:Command:TranslateToIA32.
+END OOC:Make:TranslateToIA32.

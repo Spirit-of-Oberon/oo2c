@@ -356,8 +356,8 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
              ExportedVarDecl (ptr) THEN
             WITH ptr: Sym.Import DO
               IF ~ptr. IsInternalImport() THEN
-                w. AddDeclaration (w. NewIncludeModule
-                                   (m. GetImport (ptr. moduleName. str^)));
+                w. AddDeclaration(w.NewIncludeModule
+                                  (m.GetImportedModule(ptr.moduleName.str^)));
               END;
             ELSE
               IF (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isForwardDecl THEN

@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Make:Command:TranslateToC [OOC_EXTENSIONS];
+MODULE OOC:Make:TranslateToC [OOC_EXTENSIONS];
 (*  Translates a module file into a bunch of C code files.
     Copyright (C) 2001, 2002  Michael van Acken
 
@@ -21,9 +21,8 @@ MODULE OOC:Make:Command:TranslateToC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Channel, Out, Make, StdChannels, ADT:String, ADT:Dictionary, 
-  OOC:Config, OOC:Make:Entity:ModuleFile,
-  OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
+  Channel, Out, StdChannels, ADT:Dictionary, 
+  OOC:Config, OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
@@ -50,18 +49,7 @@ TYPE
        is aware of procedure nesting.  *)
   END;
 
-TYPE
-  Command* = POINTER TO CommandDesc;
-  CommandDesc = RECORD
-    (Make.CommandDesc)
-    module: Repository.Module;
-    errList: Error.List;
-    writeAST: BOOLEAN;
-    writeIR: BOOLEAN;
-    translator: Translator;
-  END;
-
-
+  
 PROCEDURE InitTranslator* (t: Translator);
   BEGIN
     t. w := NIL;
@@ -135,76 +123,6 @@ PROCEDURE (t: Translator) WriteNestedProcedures*;
       END;
     END;
   END WriteNestedProcedures;
-
-
-PROCEDURE New* (context: Make.Context; module: Repository.Module;
-                writeAST, writeIR: BOOLEAN; translator: Translator): Command;
-  VAR
-    cmd: Command;
-  BEGIN
-    NEW (cmd);
-    Make.InitCommand (cmd, context);
-    cmd. module := module;
-    cmd. errList := NIL;
-    cmd. writeAST := writeAST;
-    cmd. writeIR := writeIR;
-    cmd. translator := translator;
-    RETURN cmd
-  END New;
-
-PROCEDURE (cmd: Command) Id* (): String.String;
-  BEGIN
-    RETURN String.New ("[OOC:Make:Command:TranslateToC]")
-  END Id;
-
-PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
-  PROCEDURE HasInvalidAncestor(): BOOLEAN;
-    VAR
-      aEdge: Make.Edge;
-    BEGIN
-      aEdge := cmd. ancestorList;
-      WHILE (aEdge # NIL) DO
-        IF (aEdge. ancestor IS Make.Entity) &
-           (aEdge. ancestor(Make.Entity). state = Make.entityInvalid) &
-           (aEdge. ancestor(Make.Entity). command # NIL) THEN
-          RETURN TRUE
-        END;
-        aEdge := aEdge. nextAncestor
-      END;
-      RETURN FALSE
-    END HasInvalidAncestor;
-
-  PROCEDURE AddDescendant (fileId: Repository.FileId);
-    VAR
-      desc: ModuleFile.Entity;
-    BEGIN
-      desc := ModuleFile.GetEntity (cmd. context, cmd. module, fileId);
-      IF ~desc. IsDescendantOf (cmd) THEN
-        cmd. AddDescendant (desc)
-      END
-    END AddDescendant;
-  
-  BEGIN
-    IF (cmd. state = Make.commandUndiscovered) THEN
-      AddDescendant (Repository.modHeaderFileC);
-      AddDescendant (Repository.modDeclFileC);
-      AddDescendant (Repository.modCodeFileC);
-      AddDescendant (Repository.modSymbolFile);
-      ModuleFile.DiscoverCompile (cmd, cmd. module);
-      RETURN cmd. state+1
-    ELSE
-      (* if one of the ancestors is invalid because of failed build, then
-         don't try to run this command; note: an ancestor that is invalid
-         without any attempt to build it does not generate an error, so we
-         run this command just to get an error message *)
-      IF HasInvalidAncestor() THEN
-        RETURN Make.commandInvalid
-      ELSE
-        RETURN Make.commandSchedule
-      END
-    END
-  END Discover;
-
 
 PROCEDURE WriteModuleName (w: DeclWriter.Writer; 
                            prefix: ARRAY OF CHAR; module: Repository.Module;
@@ -292,13 +210,15 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
   END WriteCodeFile;
 
 
-PROCEDURE (cmd: Command) Run*(): BOOLEAN;
+PROCEDURE Run*(m: Repository.Module;
+               writeAST: BOOLEAN;
+               writeIR: BOOLEAN;
+               translator: Translator): Error.List;
 (**Compiles a module, creating the symbol file and all relevant C files.  *)
   VAR
     ast: AST.Node;
     symTab: Sym.Module;
     errList: Error.List;
-    m: Repository.Module;
     exports: Dictionary.Dictionary;
     module: IR.Module;
     pragmaHistory: Pragmas.History;
@@ -318,7 +238,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         | Repository.modDeclFileC:
           WriteDeclFile (w, m, symTab, exports);
         | Repository.modCodeFileC:
-          WriteCodeFile (w, wd, m, module, cmd. translator);
+          WriteCodeFile (w, wd, m, module, translator);
         END;
         RETURN w
       ELSE
@@ -343,24 +263,23 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     END CloseFile;
   
   BEGIN
-    m := cmd. module;
     Out.String ("module: "); Out.String(m. name^); Out.Ln; Out.Flush;
     
-    ParseModule.ParseModule (m, TRUE, TRUE, FALSE,
+    ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
        data in `symTab' to the view of client modules: declarations private to
        the module are stripped when writing the symbol file  *)
     
     IF (errList. msgCount = 0) THEN
-      IF cmd. writeAST THEN
+      IF writeAST THEN
         ASTtoXML.Write (StdChannels.stdout.NewWriter(), ast(ExtTree.Module));
       END;
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
                                    IR.NewBuilder (symTab, pragmaHistory,
                                                   errList, 
                                                   ConstFold.NewConstFold()));
-      IF cmd. writeIR THEN
+      IF writeIR THEN
         IRtoXML.Write (StdChannels.stdout. NewWriter(), module);
       END;
       
@@ -390,15 +309,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       module.Destroy;                    (* cleanup for the sake of the gc *)
     END;
     
-    cmd. errList := errList;
-    RETURN (errList. msgCount = 0)
+    RETURN errList;
   END Run;
 
-PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
-  BEGIN
-    IF (cmd. errList. msgCount # 0) THEN
-      cmd. errList. Write (stderr)
-    END
-  END ProduceOutput;
-
-END OOC:Make:Command:TranslateToC.
+END OOC:Make:TranslateToC.

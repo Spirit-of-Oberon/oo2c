@@ -972,6 +972,7 @@ PROCEDURE (w: Writer) NewIncludeModule* (module: Repository.Module): IncludeModu
   VAR
     d: IncludeModule;
   BEGIN
+    ASSERT(module # NIL);
     NEW (d);
     InitIncludeModule (d, module);
     RETURN d

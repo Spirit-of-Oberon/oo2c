@@ -17,7 +17,6 @@ include $(OOC_DEV_ROOT)/Makefile.config
 # TEST_SUBDIRS: List of subdirectories with testcases.
 TEST_SUBDIRS=\
   $(addprefix tests/config/,sections cmdline environment simple) \
-  tests/make \
   tests/scanner \
   tests/parser \
   tests/symtab \
@@ -34,7 +33,7 @@ DOC_DIR=$(OOC_DEV_ROOT)/oocdoc
 
 top_builddir=$(OOC_DEV_ROOT)
 
-test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile TestH2O TestWebServer TestCodec encdec AllModules RunTests
+test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestCompile TestH2O TestWebServer TestCodec encdec AllModules RunTests
 
 all: stage1/lib/obj/liboo2c.o
 

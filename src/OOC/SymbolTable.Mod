@@ -374,7 +374,7 @@ TYPE
        but no whitespace.  *)
     
     externalSymTab-: Module;
-    (**A reference to the imported symbol table of the external modules.  This
+    (**A reference to the imported symbol table of the external module.  This
        field is initialized to @code{NIL}, and is filled when
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace} is called.  *)
   END;

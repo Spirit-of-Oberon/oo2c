@@ -33,7 +33,7 @@ IMPORT
   ADT:String,
   Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,OOC:SymbolTable:Predef,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Schedule, 
-  OOC:C:Naming, OOC:IA32:Writer, OOC:Make:Command:TranslateToIA32,
+  OOC:C:Naming, OOC:IA32:Writer, OOC:Make:TranslateToIA32,
   OOC:SSA:IRtoSSA, OOC:SSA:XML, OOC:SSA:Inspector,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore,
   Language, Language:Boolean, Language:Integer, Language:String8,

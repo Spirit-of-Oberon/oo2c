@@ -31,7 +31,7 @@ IMPORT
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:CSE, OOC:SSA:Algebraic,
   OOC:SSA:ConstProp,
   OOC:SSA:Allocator, OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
-  OOC:Make:Command:TranslateToC;
+  OOC:Make:TranslateToC;
 
 
 TYPE

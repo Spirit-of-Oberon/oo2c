@@ -3,7 +3,7 @@ MODULE OOC:C:IRtoC;
 IMPORT
   Log, ADT:String, Language:String8,
   OOC:IR,  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
-  OOC:C:DeclWriter, OOC:C:Naming, OOC:Make:Command:TranslateToC;
+  OOC:C:DeclWriter, OOC:C:Naming, OOC:Make:TranslateToC;
 
 TYPE
   Translator* = POINTER TO TranslatorDesc;

@@ -228,6 +228,16 @@ PROCEDURE (m: Module) GetTimeStamp* (fileId: Rep.FileId; VAR ts: Time.TimeStamp)
     END
   END GetTimeStamp;
 
+PROCEDURE (m: Module) FileExists* (fileId: Rep.FileId): BOOLEAN;
+  VAR
+    uri: URI.URI;
+    path: Rep.URIBuffer;
+  BEGIN
+    uri := m. GetURI (fileId);
+    uri(FileURI.URI). GetPath (path);
+    RETURN Files.Exists(path);
+  END FileExists;
+
 PROCEDURE (m: Module) GetInputBuffer* (VAR res: Msg.Msg): InputBuffer.Buffer;
   VAR
     file: Channel.Channel;

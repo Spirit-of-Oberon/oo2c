@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Make:Command:WriteMainFileAssembler;
+MODULE OOC:Make:WriteMainFileAssembler;
 (*  Generates the main file of a program as i386 assembler code.
     Copyright (C) 2002  Michael van Acken
 
@@ -21,51 +21,11 @@ MODULE OOC:Make:Command:WriteMainFileAssembler;
 *)
 
 IMPORT
-  Ascii, Channel, Files, Make, TextRider, ADT:Dictionary, ADT:String,
-  OOC:Make:Entity:ModuleFile, OOC:Error, OOC:Repository;
+  Ascii, Channel, Files, TextRider, OOC:Error, OOC:Repository;
 
-TYPE
-  Command* = POINTER TO CommandDesc;
-  CommandDesc = RECORD
-    (Make.CommandDesc)
-    module: Repository.Module;
-    res: Error.Msg;
-  END;
-
-PROCEDURE New* (context: Make.Context; module: Repository.Module): Command;
-  VAR
-    cmd: Command;
-  BEGIN
-    NEW (cmd);
-    Make.InitCommand (cmd, context);
-    cmd. module := module;
-    cmd. res := NIL;
-    RETURN cmd
-  END New;
-
-PROCEDURE (cmd: Command) Id* (): String.String;
-  BEGIN
-    RETURN String.New ("[OOC:Make:Command:WriteMainFileAssembler]")
-  END Id;
-
-PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
-  VAR
-    entity: Make.Entity;
-  BEGIN
-    IF (cmd. state = Make.commandUndiscovered) THEN
-      entity := ModuleFile.GetEntity (cmd. context, cmd. module, Repository.modMainFileAssembler);
-      cmd. AddAncestors (entity);
-      RETURN cmd. state+1
-    ELSE
-      IF cmd. HasInvalidAncestor() THEN
-        RETURN Make.commandInvalid
-      ELSE
-        RETURN Make.commandSchedule
-      END
-    END
-  END Discover;
-
-PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
+PROCEDURE WriteFile*(module: Repository.Module;
+                     imports: ARRAY OF Repository.Module;
+                     VAR res: Error.Msg);
   VAR
     ch: Channel.Channel;
     w: TextRider.Writer;
@@ -90,21 +50,13 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
       w. WriteLn;
     END WriteModuleName;
   
-  PROCEDURE WriteModules (w: TextRider.Writer; done: Dictionary.Dictionary;
-                          module: Repository.Module;
-                          prefix, suffix: ARRAY OF CHAR);
+  PROCEDURE WriteModules (w: TextRider.Writer; prefix, suffix: ARRAY OF CHAR);
     VAR
-      import: Repository.Import;
+      i: LONGINT;
     BEGIN
-      IF ~done. HasKey (module) THEN
-        done. Set (module, module);
-        import := module. importList;
-        WHILE (import # NIL) DO
-          WriteModules (w, done, import. imported, prefix, suffix);
-          import := import. nextImport
-        END;
-        WriteModuleName (w, prefix, module, suffix)
-      END
+      FOR i := 0 TO LEN(imports)-1 DO
+        WriteModuleName (w, prefix, imports[i], suffix)
+      END;
     END WriteModules;
 
   PROCEDURE Directive (cmd: ARRAY OF CHAR);
@@ -121,7 +73,7 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
     END Instr;
   
   BEGIN
-    ch := cmd. module. GetOutputChannel (Repository.modMainFileAssembler, TRUE, res);
+    ch := module.GetOutputChannel(Repository.modMainFileAssembler, TRUE, res);
     IF (res = Channel.done) THEN
       w := TextRider.ConnectWriter (ch);
       Directive(".text");
@@ -144,7 +96,7 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
       Instr("call RT0__InitVParStack");  
       Instr("addl $16,%esp");*)
       
-      WriteModules (w, Dictionary.New(), cmd. module, Ascii.ht+"call ", "_init0");
+      WriteModules (w, Ascii.ht+"call ", "_init0");
       Instr("xorl %eax,%eax");
       Instr("leave");
       Instr("ret");
@@ -163,22 +115,4 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
     END
   END WriteFile;
 
-
-PROCEDURE (cmd: Command) Run*(): BOOLEAN;
-  BEGIN
-    WriteFile (cmd, cmd. res);
-    RETURN (cmd. res = NIL)
-  END Run;
-
-PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
-  VAR
-    errList: Error.List;
-  BEGIN
-    IF (cmd. res # NIL) THEN
-      errList := Error.NewList("");
-      errList. Append (cmd. res);
-      errList. Write (stderr)
-    END
-  END ProduceOutput;
-
-END OOC:Make:Command:WriteMainFileAssembler.
+END OOC:Make:WriteMainFileAssembler.
