@@ -510,6 +510,11 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
             END;
             opnd := opnd.nextOpnd;
           END;
+
+        | Opcode.loopStart:
+          (* we reached the beginning of the loop, but did not end up with
+             our current head *)
+          onCycle := FALSE;
         END;
         
         IF onCycle THEN
