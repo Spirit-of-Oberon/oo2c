@@ -424,7 +424,7 @@
     <reject-info id="len2" pos="Int (%LEN " msg="Wrong number of arguments"/>
     <reject-info id="len3" pos="Int (%LEN " msg="Wrong number of arguments"/>
     <reject-info id="len4" pos="LEN (%&quot;abc&quot;"
-        msg="First argument of LEN must be an array designator"/>
+        msg="Expression must be an array value"/>
     <reject-info id="len5" pos="a, %2),"
         msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
     <reject-info id="len6" pos="a, %0X),"
