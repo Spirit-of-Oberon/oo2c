@@ -220,14 +220,16 @@ PROCEDURE IsOpenArrayType* (type: Sym.Type): BOOLEAN;
     RETURN (type IS Sym.Array) & type(Sym.Array). isOpenArray
   END IsOpenArrayType;
 
-PROCEDURE IsArrayOfChar* (type: Sym.Type): BOOLEAN;
+PROCEDURE IsArrayOfChar* (type: Sym.Type; includeFixed: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is an
-   @code{ARRAY OF CHAR} or an @code{ARRAY OF LONGCHAR}.  *)
+   @code{ARRAY OF CHAR} or an @code{ARRAY OF LONGCHAR}.
+   If @oparam{includeFixed} is @code{TRUE}, then a fixed size array also
+   returns @code{TRUE}.  *)
   BEGIN
     ASSERT (~(type IS Sym.TypeName));
     RETURN
         (type IS Sym.Array) &
-        type(Sym.Array). isOpenArray &
+        (includeFixed OR type(Sym.Array). isOpenArray) &
         IsCharType (type(Sym.Array). elementType)
   END IsArrayOfChar;
 
