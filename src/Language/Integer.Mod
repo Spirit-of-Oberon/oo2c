@@ -63,6 +63,11 @@ BEGIN
   RETURN String.New (str)
 END ToString;
 
+PROCEDURE (v: Value) ToLInt*(): LONGINT;
+  BEGIN
+    RETURN Integers.Short (v. value);
+  END ToLInt;
+
 PROCEDURE (t : Type) ValueLInt* (val : LONGINT) : Value;
 BEGIN
   RETURN New(Integers.Long(val));
@@ -89,6 +94,6 @@ END ToString;
 BEGIN
   NEW(type);
   L.InitType(type);
-  typeName := String.New("INTEGER");
+  typeName := String.New("Integer");
 END Language:Integer.
 
