@@ -308,16 +308,16 @@ RAISES IO.Error;
           StartDecl ("module-interface", item);
           str := item. ClassToString();
           (*IF (str. array^ # "standard") THEN*)
-            w. AttrStr ("class", str);
+            w. AttrObject ("class", str);
           (*END;*)
           
           IF (item.libraryName # NIL) THEN
-            w. AttrStr("library-name", item.libraryName);
+            w. AttrObject("library-name", item.libraryName);
           END;
           
           str := item. CallConvToString();
           (*IF (str. array^ # "default") THEN*)
-            w. AttrStr ("call-conv", str);
+            w. AttrObject ("call-conv", str);
           (*END;*)
           moduleRepository := repositories. GetModule (item. name. str^);
           

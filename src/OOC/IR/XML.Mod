@@ -50,7 +50,7 @@ PROCEDURE NewVisitor (w: Writer.Writer): Visitor;
 PROCEDURE TypeAttr (w : Writer.Writer; type : Sym.Type);
 (** Output the name of @oparam{type} as attribute "Type" of the current tag. *)
   BEGIN
-    w.AttrStr("Type", IR.TypeName(type));
+    w.AttrObject("Type", IR.TypeName(type));
   END TypeAttr;
 
 PROCEDURE (v: Visitor) VisitConst* (const: IR.Const);

@@ -1128,7 +1128,7 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
     FOR i := 0 TO list.size-1 DO
       kv := list.array[i](KeyValue);
       w.StartTag("define", TRUE);
-      w.AttrStr("name", kv.key);
+      w.AttrObject("name", kv.key);
       v := kv.value;
       WITH v: StringValue.Value DO
         type := "string";
@@ -1169,8 +1169,8 @@ RAISES IO.Error;
   PROCEDURE WriteLibrary(w: Writer.Writer; library: Library);
     BEGIN
       w.StartTag("library", FALSE);
-      w.AttrStr("name", library.name);
-      w.AttrStr("main-module", library.mainModule);
+      w.AttrObject("name", library.name);
+      w.AttrObject("main-module", library.mainModule);
       WriteVersion(w, library.version);
       w.EndTag();  (* library *)
     END WriteLibrary;
@@ -1178,7 +1178,7 @@ RAISES IO.Error;
   PROCEDURE WriteExecutable(w: Writer.Writer; executable: Executable);
     BEGIN
       w.StartTag("executable", FALSE);
-      w.AttrStr("main-module", executable.mainModule);
+      w.AttrObject("main-module", executable.mainModule);
       w.EndTag();  (* executable *)
     END WriteExecutable;
 
@@ -1189,18 +1189,18 @@ RAISES IO.Error;
     PROCEDURE WriteFile(w: Writer.Writer; file: File);
       BEGIN
         w.StartTag("file", FALSE);
-        w.AttrStr("name", file.name);
+        w.AttrObject("name", file.name);
         IF (file.destName # NIL) THEN
-          w.AttrStr("dest-name", file.destName);
+          w.AttrObject("dest-name", file.destName);
         END;
         w.EndTag();  (* file *)
       END WriteFile;
     
     BEGIN
       w.StartTag("file-set", FALSE);
-      w.AttrStr("source-dir", fileSet.sourceDir);
+      w.AttrObject("source-dir", fileSet.sourceDir);
       IF (fileSet.destDir # NIL) THEN
-        w.AttrStr("dest-dir", fileSet.destDir);
+        w.AttrObject("dest-dir", fileSet.destDir);
       END;
       ptr := fileSet.head;
       WHILE (ptr # NIL) DO
@@ -1228,7 +1228,7 @@ RAISES IO.Error;
     w := Writer.New(f, Latin1.factory, TRUE, 2);
     
     w.StartTag("package", FALSE);
-    w.AttrStr("name", pkg.name);
+    w.AttrObject("name", pkg.name);
     WriteVersion(w, pkg.version);
     WriteKeyValue(w, "options", pkg.options);
     WriteKeyValue(w, "pragmas", pkg.pragmas);
@@ -1260,7 +1260,7 @@ RAISES IO.Error;
   PROCEDURE WriteInstalledPkg(w: Writer.Writer; pkgName: STRING);
     BEGIN
       w.StartTag("installed", FALSE);
-      w.AttrStr("package", pkgName);
+      w.AttrObject("package", pkgName);
       w.EndTag();  (* pkgName *)
     END WriteInstalledPkg;
 

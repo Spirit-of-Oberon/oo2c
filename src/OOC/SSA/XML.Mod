@@ -99,7 +99,7 @@ PROCEDURE (w: Writer) AttrId* (name: ARRAY OF LONGCHAR; result: SSA.Result);
         w. sb. AppendInt (posSameId);
       END;
     END;
-    w. AttrStr(name, w. sb.ToString());
+    w. AttrObject(name, w. sb.ToString());
   END AttrId;
 
 PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
@@ -116,9 +116,9 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
           value := res. value. ToString();
         END;
         IF (value IS Object.String32) THEN
-          w. AttrStr ("const-value", "[Object.String32]");
+          w. AttrObject ("const-value", "[Object.String32]");
         ELSE
-          w. AttrStr ("const-value", value(Object.String8));
+          w. AttrObject ("const-value", value(Object.String8));
         END;
       | res: SSA.DeclRef DO
         w. AttrStringLatin1 ("declref", res. decl. name. str^);
@@ -197,7 +197,7 @@ PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
       ELSE
         value := instr. value. ToString();        
       END;
-      w. AttrStr ("value", value(Object.String8));
+      w. AttrObject ("value", value(Object.String8));
 
     | instr: SSA.Address DO
       w. AttrStringLatin1 ("address-of", instr. decl. name. str^);
