@@ -3,9 +3,9 @@ MODULE OOC:Package;
 IMPORT
   Files, IntStr, LongStrings, Msg, Strings,
   ADT:Object, ADT:String, ADT:ArrayList, OSFiles := OS:Files,
-  URI, FileURI := URI:Scheme:File, XML:UnicodeCodec:Latin1,
+  XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
-  Config:Parser,
+  Config:Parser, StringValue := Config:Value:String, Config:Section:Options,
   OOC:Logger, OOC:Error;
 
 TYPE
@@ -60,6 +60,13 @@ TYPE
     destDir: String.String;
     head-, tail: FileData;
   END;
+
+TYPE
+  KeyValue* = POINTER TO KeyValueDesc;
+  KeyValueDesc = RECORD
+    (Object.ObjectDesc)
+    key-, value-: String.String;
+  END;
   
 TYPE
   Package* = POINTER TO PackageDesc;
@@ -68,9 +75,12 @@ TYPE
     version: Version;
     library-: ArrayList.ArrayList;
     executable-: ArrayList.ArrayList;
+    
     fileSet-: FileSet;
     (**This is a reference to a file set with a source and destination
        path of @samp{.}.  *)
+
+    options-, pragmas-: ArrayList.ArrayList;  (* of KeyValue *)
   END;
   
 CONST
@@ -86,7 +96,9 @@ CONST
   requireMainModuleAttribute = 9;
   requireSourceDirAttribute = 10;
   requireFileOrFileSet = 11;
-  notUnsignedInteger = 12;
+  requireSet = 12;
+  notUnsignedInteger = 13;
+  requireCharacterData = 14;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -127,8 +139,12 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Msg.Msg; VAR templ: Msg.LSt
       t := "This element requires an attribute `source-dir'"
     | requireFileOrFileSet:
       t := "Expected child element `file' or `file-set'"
+    | requireSet:
+      t := "Expected child element `set'"
     | notUnsignedInteger:
       t := "Attribute `${name}' must be an unsigned integer"
+    | requireCharacterData:
+      t := "Only character data allowed here"
     END;
     context. WriteTemplate (msg, t, templ)
   END GetTemplate;
@@ -205,6 +221,17 @@ PROCEDURE NewFile*(name, destName: String.String): File;
     RETURN file;
   END NewFile;
 
+PROCEDURE NewKeyValue*(key, value: String.String): KeyValue;
+  VAR
+    kv: KeyValue;
+  BEGIN
+    NEW(kv);
+    Object.Init(kv);
+    kv.key := key;
+    kv.value := value;
+    RETURN kv;
+  END NewKeyValue;
+
 PROCEDURE NewPackage(): Package;
   VAR
     p: Package;
@@ -215,9 +242,26 @@ PROCEDURE NewPackage(): Package;
     p.library := ArrayList.New(4);
     p.executable := ArrayList.New(4);
     p.fileSet := NIL;
+    p.options := ArrayList.New(4);
+    p.pragmas := ArrayList.New(4);
     RETURN p;
   END NewPackage;
 
+PROCEDURE (pkg: Package) MergeConfig*(options, pragmas: Options.Section);
+  VAR
+    i: LONGINT;
+    kv: KeyValue;
+    o: Options.Option;
+  BEGIN
+    FOR i := 0 TO pkg.options.size-1 DO
+      kv := pkg.options.array[i](KeyValue);
+      o := options.Set(kv.key.array^, StringValue.New(kv.value.array^));
+    END;
+    FOR i := 0 TO pkg.pragmas.size-1 DO
+      kv := pkg.pragmas.array[i](KeyValue);
+      o := pragmas.Set(kv.key.array^, StringValue.New(kv.value.array^));
+    END;
+  END MergeConfig;
 
 PROCEDURE Normalize*(fileSet: FileSet): FileSet;
 (**Converts a hierarchy of file sets and files into a flat list of files.
@@ -681,6 +725,68 @@ PROCEDURE ProcessPackage (root: Parser.Element;
       END;
       RETURN fileSet;
     END ParseFileSet;
+
+  PROCEDURE ParseKeyValue(elem: Parser.Element; list: ArrayList.ArrayList);
+  (* pre: element.name="options" or "pragmas" *)
+    VAR
+      node: Parser.Node;
+      
+    PROCEDURE ParseSet(elem: Parser.Element): KeyValue;
+    (* pre: element.name="set" *)
+      VAR
+        i: LONGINT;
+        node: Parser.Node;
+        name, value: String.String;
+        str: ARRAY 1024 OF CHAR;
+      BEGIN
+        name := NIL;
+        FOR i := 0 TO elem.attrList.len-1 DO
+          att := elem.attrList.attr[i];
+          IF (att.localName^ = "name") THEN
+            name := StringAttr(att);
+          ELSE
+            Err(invalidAttribute, elem);
+            lastError.SetLStringAttrib("name", Msg.GetLStringPtr(att.localName^));
+          END
+        END;
+        IF (name = NIL) THEN
+          Err(requireNameAttribute, elem);
+        END;
+        
+        value := String.New("");
+        node := elem.content;
+        WHILE (node # NIL) DO
+          WITH node: Parser.CharData DO
+            LongStrings.Short(node.string^, "?", str);
+            value := value.Concat(String.New(str));
+          ELSE
+            Err(requireCharacterData, node);
+          END;
+          node := node.nextNode;
+        END;
+        
+        RETURN NewKeyValue(name, value);
+      END ParseSet;
+    
+    BEGIN
+      IF (elem.attrList.len # 0) THEN
+        Err(invalidAttribute, elem);
+        lastError.SetLStringAttrib("name", Msg.GetLStringPtr(att.localName^));
+      END;
+      
+      node := elem.content;
+      SkipWS(node);
+      WHILE (node # NIL) DO
+        IF AtElement(node, "set") THEN
+          list.Append(ParseSet(node(Parser.Element)));
+          node := node.nextNode;
+        ELSE
+          Err(requireSet, node);
+          node := node.nextNode;
+        END;
+        SkipWS(node);
+      END;
+    END ParseKeyValue;
   
   BEGIN
     IF (root.name^ # rootPackage) THEN
@@ -718,11 +824,13 @@ PROCEDURE ProcessPackage (root: Parser.Element;
     END;
     
     IF AtElement(node, "options") THEN
+      ParseKeyValue(node(Parser.Element), pkg.options);
       node := node.nextNode;
       SkipWS(node);
     END;
     
     IF AtElement(node, "pragmas") THEN
+      ParseKeyValue(node(Parser.Element), pkg.pragmas);
       node := node.nextNode;
       SkipWS(node);
     END;
@@ -759,7 +867,6 @@ PROCEDURE ParseFile* (fileName: ARRAY OF CHAR; VAR errList: Error.List): Package
   VAR
     p: Parser.Parser;
     res: Msg.Msg;
-    path: URIBuffer;
   BEGIN
     Logger.ReadFileName(fileName);
     p := Parser.NewFile (fileName, res);
@@ -842,6 +949,22 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
       END;
       w.EndTag();  (* file-set *)
     END WriteFileSet;
+
+  PROCEDURE WriteKeyValue(tag: ARRAY OF CHAR; list: ArrayList.ArrayList);
+    VAR
+      i: LONGINT;
+      kv: KeyValue;
+    BEGIN
+      w.StartTagLatin1(tag, FALSE);
+      FOR i := 0 TO list.size-1 DO
+        kv := list.array[i](KeyValue);
+        w.StartTag("set", TRUE);
+        w.AttrStringLatin1("name", kv.key.array^);
+        w.WriteLatin1(kv.value.array^);
+        w.EndTag();  (* set *)
+      END;
+      w.EndTag();
+    END WriteKeyValue;
   
   BEGIN
     COPY(targetDir, fileName);
@@ -859,6 +982,8 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
         w.StartTag("package", FALSE);
         w.AttrStringLatin1("name", pkg.name.array^);
         WriteVersion(w, pkg.version);
+        WriteKeyValue("options", pkg.options);
+        WriteKeyValue("pragmas", pkg.pragmas);
         FOR i := 0 TO pkg.library.size-1 DO
           WriteLibrary(w, pkg.library.array[i](Library));
         END;
