@@ -157,11 +157,11 @@ TYPE
     (**Identifies which kind of type constructor variant is used.  *)
   END;
 
-TYPE
+(*TYPE
   Object* = POINTER TO ObjectDesc;
   ObjectDesc = RECORD [NO_DESCRIPTOR, NOT_EXTENSIBLE]
     (**A named object defined in a declaration.  *)
-  END;
+  END;*)
 
 TYPE
   ModuleDesc = RECORD
