@@ -86,7 +86,7 @@ PROCEDURE (t: Translator) WriteProcedure (procIndex: LONGINT);
     t. currentProc := procIndex;
     
     w := t. w;
-    d := ConvertDecl.GetProc (w, t. procList[procIndex]. decl);
+    d := ConvertDecl.GetProc (w, t. procList[procIndex]. decl, FALSE);
     w. Newline;
     w. WriteDeclaration (d);
     w. WriteString (" {");
@@ -112,12 +112,13 @@ PROCEDURE (t: Translator) WriteNestedProcedures*;
     IF (t. currentProc >= 0) THEN (* not writing the module pseudo procedure *)
       currentDecl := t. procList[t. currentProc]. decl;
       i := t. currentProc+1;
-      WHILE (i # LEN (t. procList^)) &
-            (t. procList[i]. decl. parent = currentDecl) DO
-        t. w. Indent (1);
-        t. w. Newline;
-        t. WriteProcedure (i);
-        t. w. Indent (-1);
+      WHILE (i # LEN (t. procList^)) DO
+        IF (t. procList[i]. decl. parent = currentDecl) THEN
+          t. w. Indent (1);
+          t. w. Newline;
+          t. WriteProcedure (i);
+          t. w. Indent (-1);
+        END;
         INC (i);
       END;
     END;
