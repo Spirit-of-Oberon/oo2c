@@ -1717,6 +1717,40 @@ PROCEDURE (b: Block) AddInFront*(instr: Instr);
     instr.block := b;
   END AddInFront;
 
+PROCEDURE (b: Block) MoveBehind*(before, after: Instr);
+(**Move instruction @oparam{after} behind instruction @oparam{before}.
+
+   @precond
+   Both instructions are part of block @oparam{b}.
+   @end precond  *)
+  BEGIN
+    ASSERT(before.block = b);
+    ASSERT(after.block = b);
+    IF (before.nextInstr # after) THEN
+      (* remove `after' *)
+      IF (after.prevInstr = NIL) THEN
+        b.instrList := after.nextInstr;
+      ELSE
+        after.prevInstr.nextInstr := after.nextInstr;
+      END;
+      IF (after.nextInstr = NIL) THEN
+        b.instrTail := after.prevInstr;
+      ELSE
+        after.nextInstr.prevInstr := after.prevInstr;
+      END;
+
+      (* add behind `before' *)
+      after.prevInstr := before;
+      after.nextInstr := before.nextInstr;
+      before.nextInstr := after;
+      IF (after.nextInstr = NIL) THEN
+        b.instrTail := after;
+      ELSE
+        after.nextInstr.prevInstr := after;
+      END;
+    END;
+  END MoveBehind;
+
 PROCEDURE (b: Block) Remove*(instr: Instr);
 (**Removes @oparam{instr} from list of instructions of @oparam{b}.  Operands
    and uses are not touched.  *)

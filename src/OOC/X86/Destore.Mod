@@ -306,7 +306,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
         | S.return, S.exit:
           (* we've reached the end of the procedure: we are done *)
           RETURN ExternalVisibility(GetVar(set.designator));
-        | S.merge, S.loopStart, S.loopEnd:
+        | S.guard, S.merge, S.loopStart, S.loopEnd:
           RETURN VisibleEffect(instr, set);
         | S.loopBackedge:
           RETURN VisibleEffect(instr(S.LoopBackedgeInstr).start, set);

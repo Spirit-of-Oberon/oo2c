@@ -21,7 +21,7 @@ MODULE OOC:SSA:IGraph;
 *)
 
 IMPORT
-  Exception;
+  Log, Exception;
   
 TYPE
   SetType = SET;
@@ -306,7 +306,7 @@ PROCEDURE (g: Graph) ColorGraphCombinatorial*(): ColorArray;
    The number of non-coalesced life ranges does not exceed @code{MAX(set)}.
    @end precond  *)
   CONST
-    sizeSet = MAX(SET);
+    sizeSet = MAX(SET)+1;
   VAR
     i, j, k, best, size: LONGINT;
     ca: ColorArray;
@@ -391,7 +391,9 @@ PROCEDURE (g: Graph) ColorGraphCombinatorial*(): ColorArray;
         END;
       END;
     END;
-    
+
+    Log.Int("### g.size", g.size);
+    Log.Int("### size", size);
     ASSERT(size <= sizeSet);
     
     NEW (ca, g.size);

@@ -303,6 +303,9 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
     BEGIN
       FOR instr IN b.Instructions() DO
         WITH instr: S.Block DO
+          IF (instr.opcode = S.loopStart) THEN
+            instr.block.MoveBehind(instr, instr(S.LoopStartInstr).end);
+          END;
           SortBlock(instr);
         ELSE
           IF (instr.opcode = S.gate) OR (instr.opcode = S.enter) THEN
