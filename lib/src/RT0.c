@@ -222,6 +222,19 @@ RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN 
 }
 
 
+
+OOC_BOOLEAN RT0__GetEnv(const OOC_CHAR8 name[], OOC_LEN name_0d, OOC_CHAR8 value[], OOC_LEN value_0d) {
+  char *ptr = getenv((const char*)name);
+  if (ptr) {
+    _copy_8(ptr,value,value_0d);
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+
+
 void RT0_init() {
   modules = RT0__NewBlock(sizeModules*sizeof(RT0__Module));
   

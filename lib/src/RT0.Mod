@@ -235,4 +235,8 @@ PROCEDURE ThisType* (mid: Module; name: ARRAY OF CHAR): Struct;
 (**Returns the type descriptor for the type @oparam{name} of module
    @oparam{mid}.  Result is @code{NIL} if there is not such type descriptor.  *)
 
+PROCEDURE GetEnv* (name: ARRAY OF CHAR; VAR value: ARRAY OF CHAR): BOOLEAN;
+(**If an environment variable @oparam{name} exists, copy its value into
+   @oparam{value} and return @code{TRUE}.  Otherwise, return @code{FALSE}.  *)
+
 END RT0.
