@@ -513,7 +513,9 @@ PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
       writeList := ArrayList.New(8);
       writeMaybeDict := DictInt.New();
       FOR i := 0 TO LEN(call.arguments^)-1 DO
-        IF (call.formalPars[i] # NIL) & call.formalPars[i].isVarParam THEN
+        IF (call.formalPars[i] = NIL) THEN
+          (* ignore *)
+        ELSIF call.formalPars[i].isVarParam THEN
           design := call.arguments[i](IR.Adr).design;
           IF (inout = NIL) THEN  (* no info on caller, assume write *)
             writeList.Append(design);
@@ -650,10 +652,10 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
         defIn, def2: Def;
         obj: Object.Object;
 
-      PROCEDURE CheckWith(def: Def; with: IR.WithStatm;
+      PROCEDURE CheckWith(defIn: Def; with: IR.WithStatm;
                           prevGuards: ArrayList.ArrayList);
         VAR
-          def2: Def;
+          def2, defOld: Def;
           localTest, test: IR.TypeTest;
         BEGIN
           localTest := with.guard(IR.TypeTest);
@@ -665,19 +667,26 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
               WarnSym(errList, pragmaHistory, localTest.sym, deadTypeTest);
             END;
           END;
-          
+
+          defOld := def;
+          def := defIn;
           CheckExpr(with.guard);
-          def2 := def.Copy();
-          CheckStatmSeq(def, with.pathTrue);
+          def := defOld;
+          
+          def2 := defIn.Copy();
+          CheckStatmSeq(def2, with.pathTrue);
+          def.Merge(def2);
+          
           IF (with.pathFalse # NIL) THEN
             IF (LEN(with.pathFalse^) = 1) &
                (with.pathFalse[0] IS IR.WithStatm) THEN
               prevGuards.Append(with.guard(IR.TypeTest));
-              CheckWith(def2, with.pathFalse[0](IR.WithStatm), prevGuards);
+              CheckWith(defIn, with.pathFalse[0](IR.WithStatm), prevGuards);
             ELSE
+              def2 := defIn.Copy();
               CheckStatmSeq(def2, with.pathFalse);
+              def.Merge(def2);
             END;
-            def.Merge(def2);
           END;
         END CheckWith;
       
@@ -788,7 +797,9 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
           CheckStatmSeq(def, statm.body);
           
         | statm: IR.WithStatm DO
-          CheckWith(def, statm, ArrayList.New(4));
+          defIn := def.Copy();
+          def.Unreachable();
+          CheckWith(defIn, statm, ArrayList.New(4));
         END;
       END CheckStatm;
     
