@@ -1,14 +1,14 @@
 MODULE TestSymTab;
 
 IMPORT
-  StdChannels, Out, Err, Msg, Channel, URI,
+  StdChannels, Out, Err, Msg, Channel, URI, ADT:String,
   Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean,
   OOC:Error, OOC:AST, OOC:SymbolTable:Item, Rep := OOC:Repository,
-  OOC:Make, OOC:Make:SyncDispatcher, OOC:Make:Node:ModuleOutput,
-  OOC:Make:BuildCmd:InterfaceXML, XML := OOC:SymbolTable:Item:XML,
-  OOC:Make:BuildCmd:CompileModule, OOC:Auxiliary:ParseModule;
+  Make, Make:Command:Target, OOC:Make:Entity:ModuleFile,
+  XML := OOC:SymbolTable:Item:XML, OOC:Auxiliary:ParseModule,
+  OOC:Make:Command:InterfaceXML, OOC:Make:Command:CompileModule;
   
 CONST
   modeNameOnlyXML = 0;
@@ -20,7 +20,6 @@ VAR
   cfgErrList: Error.List;
   i: LONGINT;
   arg: Arguments.Argument;
-  dg: Make.DepGraph;
   dummy: Make.Node;
   m: Rep.Module;
 
@@ -28,20 +27,52 @@ VAR
   oo2cStyleErrors: Options.Option;
 
 TYPE
-  BuildCmd* = POINTER TO BuildCmdDesc;
-  BuildCmdDesc = RECORD
-    (Make.BuildCmdDesc)
+  Command = POINTER TO CommandDesc;
+  CommandDesc = RECORD
+    (Make.CommandDesc)
+    module: Rep.Module;
+    errList: Error.List;
   END;
 
-PROCEDURE NewBuildCmd*(): BuildCmd;
+TYPE
+  Context = POINTER TO ContextDesc;
+  ContextDesc = RECORD
+    (Make.ContextDesc)
+  END;
+
+VAR
+  context: Context;
+
+
+PROCEDURE InitCommand (cmd: Command; module: Rep.Module);
+  BEGIN
+    Make.InitCommand (cmd);
+    cmd. module := module;
+    cmd. errList := NIL;
+  END InitCommand;
+
+PROCEDURE NewCommand (module: Rep.Module): Command;
   VAR
-    cmd: BuildCmd;
+    cmd: Command;
   BEGIN
     NEW (cmd);
+    InitCommand (cmd, module);
     RETURN cmd
-  END NewBuildCmd;
+  END NewCommand;
 
-PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
+PROCEDURE (cmd: Command) Id* (): String.String;
+  BEGIN
+    RETURN String.New ("[TestSymTab.Command]")
+  END Id;
+
+PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
+  BEGIN
+    cmd. AddAncestors (ModuleFile.GetEntity (cmd. context, cmd. module,
+                                             Rep.modSymbolFile));
+    RETURN Make.commandSchedule
+  END Discover;
+
+PROCEDURE (cmd: Command) Run*(): BOOLEAN;
 (**Writes the description of the module's public interface as an XML document.
    *)
   VAR
@@ -53,12 +84,13 @@ PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
     outputURI: URI.HierarchicalURI;
     m: Rep.Module;
     resolve: BOOLEAN;
+    config: Config.Config;
   BEGIN
-    m := n(ModuleOutput.Node). module;
+    m := cmd. module;
+    config := cmd. context. config(Config.Config);
     resolve := mode. value(IntegerValue.Value). integer = modeResolveNamesXML;
 
-    ParseModule.ParseModule (m, n. dg. config, resolve, FALSE,
-        ast, symTab, errList);
+    ParseModule.ParseModule (m, config, resolve, FALSE, ast, symTab, errList);
     IF (errList. msgCount = 0) THEN
       outputURI := m. GetURI (Rep.modSymbolTableXML, res);
       outputChannel := m. GetOutputChannel (Rep.modSymbolTableXML, FALSE, res);
@@ -72,9 +104,45 @@ PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
         END
       END
     END;
-    RETURN Make.NewBuildResult (errList. msgCount = 0, FALSE, errList)
-  END Build;
+    cmd. errList := errList;
+    RETURN (errList. msgCount = 0)
+  END Run;
 
+PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
+  BEGIN
+    IF (cmd. errList. msgCount # 0) THEN
+      cmd. errList. Write (stderr)
+    END
+  END ProduceOutput;
+
+
+PROCEDURE InitContext (context: Context; config: Config.Config;
+                       target: Make.Command);
+  BEGIN
+    Make.InitContext (context, config, target);
+  END InitContext;
+
+PROCEDURE NewContext (config: Config.Config): Context;
+  VAR
+    context: Context;
+  BEGIN
+    NEW (context);
+    InitContext (context, config, Target.New());
+    RETURN context
+  END NewContext;
+
+PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
+  VAR
+    e: ModuleFile.Entity;
+  BEGIN
+    e := entity(ModuleFile.Entity);
+    CASE e. fileId OF
+    | Rep.modSymbolFile    : RETURN CompileModule.New (e. module)
+    | Rep.modSymbolTableXML: RETURN NewCommand (e. module)
+    | Rep.modInterfaceXML  : RETURN InterfaceXML.New (e. module)
+    END
+  END GetCommand;
+  
 
 
 PROCEDURE RegisterCmdLineOptions (config: Config.Config);
@@ -121,10 +189,7 @@ BEGIN
   ELSE
     Error.oo2cStyleErrors := oo2cStyleErrors. value(BooleanValue.Value). boolean;
     
-    dg := Make.NewDepGraph (config, SyncDispatcher.New());
-    dg. SetBuildCmd (Rep.modSymbolFile, CompileModule.New());
-    dg. SetBuildCmd (Rep.modSymbolTableXML, NewBuildCmd());
-    dg. SetBuildCmd (Rep.modInterfaceXML, InterfaceXML.New());
+    context := NewContext (config);
     
     FOR i := 0 TO config. arguments. ArgNumber()-1 DO
       arg := config. arguments. Get (i);
@@ -138,10 +203,11 @@ BEGIN
         ELSE
           CASE mode. value(IntegerValue.Value). integer OF
           | modeNameOnlyXML, modeResolveNamesXML:
-            dummy := ModuleOutput.GetNode (dg, m, Rep.modSymbolTableXML)
+            dummy := ModuleFile.GetEntity (context, m, Rep.modSymbolTableXML)
           | modeInterfaceXML:
-            dummy := ModuleOutput.GetNode (dg, m, Rep.modInterfaceXML)
-          END
+            dummy := ModuleFile.GetEntity (context, m, Rep.modInterfaceXML)
+          END;
+          context. target. AddAncestor (dummy)
         END
       ELSE
         Err.String ("Error: Invalid module name ");
@@ -150,7 +216,7 @@ BEGIN
         HALT (1)
       END
     END;
-    IF ~dg. Evaluate() THEN
+    IF ~context. Solve (StdChannels.stdout, StdChannels.stderr) THEN
       HALT (1)
     END
   END

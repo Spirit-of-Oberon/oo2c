@@ -1,0 +1,8 @@
+entity('a').Discover() --> entityStateUnknown+2
+entity('c').Discover() --> entityValid
+entity('b').Discover() --> entityStateUnknown+1
+entity('b').Discover() --> entityValid
+entity('a').Discover() --> entityValid
+target.Discover() --> commandSchedule
+target.Run() --> TRUE
+success

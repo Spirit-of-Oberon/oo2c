@@ -1,0 +1,9 @@
+entity('a').Discover() --> entityBuild
+entity('a').GetCommand()
+command('A').Discover() --> commandStateUnknown+1
+entity('b').Discover() --> entityValid
+command('A').Discover() --> commandSchedule
+command('A').Run() --> TRUE
+target.Discover() --> commandSchedule
+target.Run() --> TRUE
+success

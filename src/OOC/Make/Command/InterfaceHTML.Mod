@@ -1,18 +1,19 @@
-MODULE OOC:Make:BuildCmd:InterfaceHTML;
+MODULE OOC:Make:Command:InterfaceHTML;
 
 IMPORT
-  Err, Out, Strings, Msg, URI, URI:Scheme:File, OS:Path, OS:Files, 
-  OS:ProcessManagment,
-  OOC:Error, OOC:Make, OOC:Make:Node:ModuleOutput, OOC:Repository,
-  OOC:Config:Repositories;
+  Channel, Err, Out, Strings, Make, Msg, ADT:String, 
+  URI, URI:Scheme:File, OS:Path, OS:Files, OS:ProcessManagment,
+  OOC:Error, OOC:Make:Entity:ModuleFile, OOC:Repository,
+  OOC:Config:Repositories, OOC:Auxiliary:Config;
 
 
 TYPE
-  BuildCmd* = POINTER TO BuildCmdDesc;
-  BuildCmdDesc = RECORD
-    (Make.BuildCmdDesc)
+  Command* = POINTER TO CommandDesc;
+  CommandDesc = RECORD
+    (Make.CommandDesc)
+    module: Repository.Module;
+    errList: Error.List;
   END;
-
 
 CONST
   scriptPackageName = "OOC";
@@ -39,15 +40,30 @@ PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
     END
   END GetSystemId;
 
-PROCEDURE New*(): BuildCmd;
+PROCEDURE New* (module: Repository.Module): Command;
   VAR
-    cmd: BuildCmd;
+    cmd: Command;
   BEGIN
     NEW (cmd);
+    Make.InitCommand (cmd);
+    cmd. module := module;
+    cmd. errList := NIL;
     RETURN cmd
   END New;
 
-PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
+PROCEDURE (cmd: Command) Id* (): String.String;
+  BEGIN
+    RETURN String.New ("[OOC:Make:Command:InterfaceHTML]")
+  END Id;
+
+PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
+  BEGIN
+    cmd. AddAncestors (ModuleFile.GetEntity (cmd. context, cmd. module,
+                                             Repository.modInterfaceXML));
+    RETURN Make.commandSchedule
+  END Discover;
+
+PROCEDURE (cmd: Command) Run*(): BOOLEAN;
 (**Create an HTML document from a module's XML interface description.  *)
   VAR
     m: Repository.Module;
@@ -57,10 +73,12 @@ PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
     exit: LONGINT;
     res: Msg.Msg;
     errList: Error.List;
+    config: Config.Config;
   BEGIN
     exit := 0;
-    m := n(ModuleOutput.Node). module;
-    uri := GetSystemId (n. dg. config. repositories);
+    m := cmd. module;
+    config := cmd. context. config(Config.Config);
+    uri := GetSystemId (config. repositories);
     uri(File.URI). GetPath (str);
     uri := m. GetURI (Repository.modInterfaceDescr, res);
     IF (res = NIL) THEN
@@ -91,9 +109,17 @@ PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
       errList. Append (res)
     END;
     
-    RETURN Make.NewBuildResult ((res = NIL) & (exit = 0), FALSE, errList)
-  END Build;
+    cmd. errList := errList;
+    RETURN (res = NIL) & (exit = 0)
+  END Run;
+
+PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
+  BEGIN
+    IF (cmd. errList # NIL) & (cmd. errList. msgCount # 0) THEN
+      cmd. errList. Write (stderr)
+    END
+  END ProduceOutput;
 
 BEGIN
   scriptSystemId := NIL
-END OOC:Make:BuildCmd:InterfaceHTML.
+END OOC:Make:Command:InterfaceHTML.

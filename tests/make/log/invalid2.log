@@ -1,0 +1,7 @@
+entity('a').Discover() --> entityStateUnknown+2
+entity('b').Discover() --> entityStateUnknown+1
+entity('c').Discover() --> entityInvalid
+entity('b').Discover() --> entityInvalid
+entity('a').Discover() --> entityInvalid
+target.Discover() --> commandInvalid
+failure

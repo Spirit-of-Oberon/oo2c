@@ -134,16 +134,18 @@ IMPORT
   OOC:OpTree:StdOpTree,
 
   OOC:Make,
-  OOC:Make:SyncDispatcher,
-  OOC:Make:Node:ModuleOutput,
-  OOC:Make:BuildCmd:InterfaceXML,
-  OOC:Make:Edge:TimeStampDep,
+  OOC:Make:Command:CompileModule,
+  OOC:Make:Command:InterfaceDescr,
+  OOC:Make:Command:InterfaceHTML,
+  OOC:Make:Command:InterfaceXML,
+  OOC:Make:Entity:ModuleFile,
+  OOC:Make:Entity:UsageData,
   
   OOC:Auxiliary:ParseModule,
   
 (* Test Programs
    ------------------------------------------------------------------------ *)
   TestScanner, TestParser, TestSymTab, TestConfigSections, TestConfigCmdLine,
-  TestConfigEnv, TestConfigSimple, TestInterfaceGen, TestTexinfo, TestOpTree;
+  TestConfigEnv, TestConfigSimple, TestInterfaceGen, TestTexinfo;
   
 END AllModules.

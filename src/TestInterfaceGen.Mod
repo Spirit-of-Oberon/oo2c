@@ -1,14 +1,25 @@
 MODULE TestInterfaceGen;
 
 IMPORT
-  StdChannels, Out, Err, 
+  StdChannels, Out, Err, Make, Make:Command:Target, Make:Entity:Group,
   Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
-  OOC:Make, OOC:Make:SyncDispatcher, OOC:Make:Node:ModuleOutput,
-  OOC:Make:BuildCmd:InterfaceDescr, OOC:Make:BuildCmd:InterfaceHTML,
-  OOC:Make:BuildCmd:CompileModule, OOC:Error, Rep := OOC:Repository,
-  OOC:Make:Node:Group, OOC:Make:Node:UsageData;
+  OOC:Make:Entity:ModuleFile,
+  OOC:Make:Command:InterfaceDescr, OOC:Make:Command:InterfaceHTML,
+  OOC:Make:Command:CompileModule, OOC:Error, Rep := OOC:Repository,
+  OOC:Make:Entity:UsageData;
   
+
+
+TYPE
+  Context = POINTER TO ContextDesc;
+  ContextDesc = RECORD
+    (Make.ContextDesc)
+    usageData: Make.Entity;
+  END;
+
+VAR
+  context: Context;
 
 
 VAR
@@ -16,14 +27,53 @@ VAR
   cfgErrList: Error.List;
   i: LONGINT;
   arg: Arguments.Argument;
-  dg: Make.DepGraph;
-  node: ModuleOutput.Node;
+  node: ModuleFile.Entity;
   m: Rep.Module;
   mode: SHORTINT;
-  closureGroup: Group.Node;
+  closureGroup: Make.Entity;
   
   buildHTML: Options.Option;
   closure: Options.Option;
+
+
+PROCEDURE InitContext (context: Context; config: Config.Config;
+                       target: Make.Command);
+  BEGIN
+    Make.InitContext (context, config, target);
+    context. usageData := NIL;
+  END InitContext;
+
+PROCEDURE NewContext (config: Config.Config): Context;
+  VAR
+    context: Context;
+  BEGIN
+    NEW (context);
+    InitContext (context, config, Target.New());
+    RETURN context
+  END NewContext;
+
+PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
+  BEGIN
+    WITH entity: UsageData.Entity DO
+      RETURN UsageData.NewCommand (entity)
+    | entity: ModuleFile.Entity DO
+      CASE entity. fileId OF
+      | Rep.modSymbolFile    : RETURN CompileModule.New (entity. module)
+      | Rep.modInterfaceDescr: RETURN InterfaceDescr.New (entity)
+      | Rep.modInterfaceHTML : RETURN InterfaceHTML.New (entity. module)
+      END
+    END
+  END GetCommand;
+  
+PROCEDURE (context: Context) GetNamedEntity* (name: ARRAY OF CHAR): Make.Entity;
+  BEGIN
+    IF (name = "UsageData") THEN
+      RETURN context. usageData
+    ELSE
+      RETURN NIL
+    END
+  END GetNamedEntity;
+
 
 PROCEDURE RegisterCmdLineOptions (config: Config.Config);
   VAR
@@ -63,10 +113,7 @@ BEGIN
     Out.String ("Usage: TestInterfaceGen [--html][--closure] {-r <base-dir>} <file>"); Out.Ln;
     HALT (1)
   ELSE
-    dg := Make.NewDepGraph (config, SyncDispatcher.New());
-    dg. SetBuildCmd (Rep.modSymbolFile, CompileModule.New());
-    dg. SetBuildCmd (Rep.modInterfaceDescr, InterfaceDescr.New());
-    dg. SetBuildCmd (Rep.modInterfaceHTML, InterfaceHTML.New());
+    context := NewContext (config);
     
     IF buildHTML. value(BooleanValue.Value). boolean THEN
       mode := Rep.modInterfaceHTML
@@ -74,15 +121,16 @@ BEGIN
       mode := Rep.modInterfaceDescr
     END;
     IF closure. value(BooleanValue.Value). boolean THEN
-      closureGroup := Group.NewNode (TRUE);
-      dg. AddNode (closureGroup)
+      closureGroup := Group.New();
+      context. AddNode (closureGroup);
+      context. target. AddAncestor (closureGroup);
     ELSE
       closureGroup := NIL
     END;
 
     (* instances of `Rep.modInterfaceDescr' automatically add the node with
        the name "UsageData" to their ancestor list *)
-    dg. AddNamedNode (UsageData.NewNode(), "UsageData");
+    context. usageData := UsageData.NewEntity (context);
     
     FOR i := 0 TO config. arguments. ArgNumber()-1 DO
       arg := config. arguments. Get (i);
@@ -94,9 +142,10 @@ BEGIN
           Err.Ln;
           HALT (1)
         ELSE
-          node := ModuleOutput.GetNode (dg, m, mode);
+          node := ModuleFile.GetEntity (context, m, mode);
+          context. target. AddAncestor (node);
           IF (closureGroup # NIL) THEN
-            ModuleOutput.CreateClosure (closureGroup, node)
+            ModuleFile.CreateClosure (closureGroup, node)
           END
         END
       ELSE
@@ -107,7 +156,7 @@ BEGIN
       END
     END;
     
-    IF ~dg. Evaluate() THEN
+    IF ~context. Solve (StdChannels.stdout, StdChannels.stderr) THEN
       HALT (1)
     END
   END
