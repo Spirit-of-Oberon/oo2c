@@ -11,13 +11,14 @@
 <!ENTITY % glyph 'bullet|dots|minus|em-dash|result|left-quote|right-quote'>
 <!ENTITY % oberon-ref 'oberon-module|oberon-const|oberon-field|oberon-param
                       |oberon-proc|oberon-type|oberon-var'>
-<!ENTITY % inline-element '#PCDATA|asis|cite|code|dfn|emph|file|kbd|samp|strong
+<!ENTITY % inline-element '#PCDATA|asis|cite|code|command|dfn|emph|file|kbd|samp|strong
                            |var|email|uref|url|%glyph;|%oberon-ref;'>
 <!ENTITY % inline-elements '(%inline-element;)*'>
 
 <!ELEMENT asis %inline-elements;>
 <!ELEMENT cite %inline-elements;>
 <!ELEMENT code %inline-elements;>
+<!ELEMENT command %inline-elements;>
 <!ELEMENT dfn %inline-elements;>
 <!ELEMENT emph %inline-elements;>
 <!ELEMENT file %inline-elements;>
@@ -61,7 +62,7 @@
 
 <!ELEMENT summary %inline-elements;>
 
-<!ENTITY % block-element 'p|example|pre-cond|post-cond|itemize|table'>
+<!ENTITY % block-element 'p|example|pre-cond|post-cond|itemize|enumerate|table'>
 <!ENTITY % block-elements '(%block-element;)*'>
 <!ENTITY % block-attr "pad-after (yes|no) #REQUIRED">
 
@@ -84,6 +85,12 @@
 <!ELEMENT itemize-text %block-elements;>
 <!ELEMENT item %block-elements;>
 <!ATTLIST item %block-attr;>
+
+<!ELEMENT enumerate (enumerate-text?, (item)*)>
+<!ATTLIST enumerate %block-attr;
+                    mode (number|uppercase|lowercase) #REQUIRED
+                    start CDATA #REQUIRED>
+<!ELEMENT enumerate-text %block-elements;>
 
 <!ELEMENT table (table-row*)>
 <!ATTLIST table %block-attr;>

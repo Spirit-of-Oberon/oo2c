@@ -90,6 +90,18 @@
 </xsl:template>
 
 
+<xsl:template match="enumerate">
+  <ol>
+    <xsl:if test="enumerate-text">
+      <li><xsl:apply-templates select="enumerate-text"/></li>
+    </xsl:if>
+    <xsl:for-each select="item">
+      <li><xsl:apply-templates select="."/></li>
+    </xsl:for-each>
+  </ol>
+</xsl:template>
+
+
 
 <!-- inline elements -->
 <xsl:template match="p//text()"><xsl:value-of select="."/></xsl:template>
@@ -102,7 +114,7 @@
 
 <xsl:template match="cite"><cite><xsl:apply-templates/></cite></xsl:template>
 
-<xsl:template match='code'>
+<xsl:template match='code|command'>
   <font face="Arial,Helvetica">
     <xsl:apply-templates/>
   </font>
