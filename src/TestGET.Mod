@@ -28,7 +28,7 @@ BEGIN
     argReader.ReadLine (buffer);        (* get argument *)
 
     URI.RegisterScheme(HTTP.NewPrototype());
-    uri := Parser.NewURI(buffer, NIL);  (* parse URI *)
+    uri := Parser.NewURILatin1(buffer, NIL);  (* parse URI *)
     ch := uri.GetChannel(URI.channelOld); (* get channel for URI *)
 
     (* on success: copy channel to stdout *)
