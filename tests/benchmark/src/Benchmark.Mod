@@ -3,10 +3,11 @@ MODULE Benchmark;
 IMPORT 
   Channel, ProgramArgs, TextRider, Out, Err, Time, Strings,
 
-  Driver,
+  Driver, Category,
 
   FFTDriver,
-  SortDriver;
+  SortDriver,
+  ArrayDriver;
 
 TYPE
   ScheduleEntry = POINTER TO ScheduleEntryDesc;
@@ -52,26 +53,16 @@ BEGIN
   END;
 END AppendTest;
 
-PROCEDURE FindTest(name : ARRAY OF CHAR; VAR driver : Driver.Driver; VAR id : LONGINT) : BOOLEAN;
-(* Check if some driver supports a test with the given name. If so, set the
-driver and test id and return TRUE. *)
-VAR 
-  d : Driver.DriverEntry;
-  info : Driver.Info;
-  i : LONGINT;
+PROCEDURE AppendCategory(c : Category.Category);
+VAR
+  e : Category.CategoryEntry;
 BEGIN
-  d := Driver.drivers;
-  WHILE d # NIL DO
-    info := d.driver.GetInfo();
-    FOR i := 0 TO LEN(info^)-1 DO
-      IF info[i].name = name THEN
-        driver := d.driver; id := i; RETURN TRUE;
-      END
-    END;
-    d := d.next;
+  e := c.entries;
+  WHILE e # NIL DO
+    AppendTest(e.driver, e.id);
+    e := e.next;
   END;
-  RETURN FALSE
-END FindTest;
+END AppendCategory;
 
 PROCEDURE FindSchedule(driver : Driver.Driver; id : LONGINT) : ScheduleEntry;
 (* Search the current schedule for the given (driver,id). If found, return the
@@ -259,10 +250,33 @@ BEGIN
   END;
 END ShowTests;
 
+PROCEDURE ShowCategories;
+VAR 
+  c : Category.Category;
+  e : Category.CategoryEntry;
+  info : Driver.Info;
+BEGIN
+  Out.String("Categories:"); Out.Ln;
+  c := Category.categories;
+  WHILE c # NIL DO
+    Out.Char(' '); StringWidth(c.name, 16); 
+    e := c.entries;
+    WHILE e # NIL DO
+      Out.Char(' ');
+      info := e.driver.GetInfo();
+      Out.String(info[e.id].name);
+      e := e.next;
+    END;
+    Out.Ln;
+    c := c.next;
+  END;
+END ShowCategories;
+
 PROCEDURE ShowUsage;
 BEGIN
   Out.String("Usage: Benchmark [--all|--normalise] <tests>"); Out.Ln;
   ShowTests();
+  ShowCategories();
 END ShowUsage;
 
 PROCEDURE ParseOptions;
@@ -271,6 +285,7 @@ VAR
   line : ARRAY 256 OF CHAR;
   driver : Driver.Driver;
   id : LONGINT;
+  c : Category.Category;
   errors : LONGINT;
 BEGIN
   errors := 0;
@@ -291,8 +306,10 @@ BEGIN
       ELSIF (line = "--all") THEN
         all := TRUE;
       ELSE
-        IF FindTest(line, driver, id) THEN
+        IF Driver.FindTest(line, driver, id) THEN
           AppendTest(driver, id);
+        ELSIF Category.FindCategory(line, c) THEN
+          AppendCategory(c);
         ELSE
           Err.String("Test '"); Err.String(line); 
           Err.String("' unknown."); Err.Ln;

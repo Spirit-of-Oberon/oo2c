@@ -5,4 +5,6 @@ TYPE
     r*, i* : REAL
   END;
 
+  RealArray* = POINTER TO ARRAY OF REAL;
+
 END Type.

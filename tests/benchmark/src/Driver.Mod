@@ -61,6 +61,27 @@ BEGIN
   drivers := e;
 END Register;
 
+PROCEDURE FindTest* (name : ARRAY OF CHAR; VAR driver : Driver; VAR id : LONGINT) : BOOLEAN;
+(* Check if some driver supports a test with the given name. If so, set the
+driver and test id and return TRUE. *)
+VAR 
+  d : DriverEntry;
+  info : Info;
+  i : LONGINT;
+BEGIN
+  d := drivers;
+  WHILE d # NIL DO
+    info := d.driver.GetInfo();
+    FOR i := 0 TO LEN(info^)-1 DO
+      IF info[i].name = name THEN
+        driver := d.driver; id := i; RETURN TRUE;
+      END
+    END;
+    d := d.next;
+  END;
+  RETURN FALSE
+END FindTest;
+
 BEGIN
   drivers := NIL;
 END Driver.

@@ -2,7 +2,7 @@ MODULE FFTDriver;
 
 IMPORT 
   Out, R := RealMath,
-  D := Driver, Type,
+  D := Driver, C := Category, Type,
 
   FFT, FFTC;
 
@@ -14,6 +14,7 @@ TYPE
 VAR
   driver : Driver;
   info : D.Info;
+  c : C.Category;
 
 VAR
   (* Complex array for FFT *)
@@ -99,4 +100,8 @@ BEGIN
 
   NEW(driver);
   D.Register(driver);
+
+  c := C.New("TestFFT");
+  c.AddTest("FFT"); c.AddTest("FFT2"); c.AddTest("FFTC"); c.AddTest("FFT2C");
+  C.Register(c);
 END FFTDriver.

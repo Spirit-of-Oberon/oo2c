@@ -1,7 +1,7 @@
 MODULE SortDriver;
 
 IMPORT 
-  D := Driver,
+  D := Driver, C := Category,
 
   Sort, SortC;
 
@@ -13,6 +13,7 @@ TYPE
 VAR
   driver : Driver;
   info : D.Info;
+  c : C.Category;
 
 CONST
   size = 1000;
@@ -86,4 +87,10 @@ BEGIN
 
   NEW(driver);
   D.Register(driver);
+
+  c := C.New("Sort");
+  c.AddTest("QSORT"); c.AddTest("QSORTC");
+  c.AddTest("BSORT"); c.AddTest("BSORTC");
+  C.Register(c);
+
 END SortDriver.
