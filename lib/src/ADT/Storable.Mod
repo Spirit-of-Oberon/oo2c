@@ -129,7 +129,7 @@ PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel);
     BinaryRider.InitReader (r, ch, BinaryRider.littleEndian)
   END InitReader;
 
-PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Object)
+PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Obj.Object)
 RAISES IO.Error;
 (**Writes object to the channel underlying the writer @oparam{w}.  The
    externalization framework is provided by the concrete instance of writer
@@ -150,7 +150,7 @@ PROCEDURE (w: Writer) [ABSTRACT] Disconnect*;
    all operations on @oparam{w} are undefined.  *)
   END Disconnect;
 
-PROCEDURE (r: Reader) [ABSTRACT] ReadObject* (VAR obj: Object)
+PROCEDURE (r: Reader) [ABSTRACT] ReadObject* (VAR obj: Obj.Object)
 RAISES IO.Error;
 (**Reads an object reference from the channel underlying the reader @oparam{r}.
    The object @oparam{obj} itself is required to provide the necessary

@@ -21,7 +21,7 @@ MODULE OOC:Doc [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  CharClass, Strings, ADT:Storable, ADT:ArrayList, IO,
+  CharClass, Strings, Object, ADT:Storable, ADT:ArrayList, IO,
   OOC:Doc:Decoration, OOC:Scanner:InputBuffer;
 
 
@@ -345,7 +345,7 @@ PROCEDURE (e: InlineElement) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (e: InlineElement) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     e. Load^ (r);
     r. ReadObject (obj);
@@ -374,7 +374,7 @@ PROCEDURE (e: BlockElement) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (e: BlockElement) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     e. Load^ (r);
     r. ReadObject (obj);
@@ -762,7 +762,7 @@ PROCEDURE (mi: MarkedInline) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (mi: MarkedInline) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     mi. Load^ (r);
     r. ReadNum (mi. mark);
@@ -857,7 +857,7 @@ PROCEDURE (email: Email) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (email: Email) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     email. Load^ (r);
     r. ReadObject (obj);
@@ -914,7 +914,7 @@ PROCEDURE (uref: Uref) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (uref: Uref) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     uref. Load^ (r);
     r. ReadObject (obj);
@@ -974,7 +974,7 @@ PROCEDURE (p: Paragraph) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (p: Paragraph) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     p. Load^ (r);
     r. ReadObject (obj);
@@ -1018,7 +1018,7 @@ PROCEDURE (ex: Example) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (ex: Example) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     ex. Load^ (r);
     r. ReadObject (obj);
@@ -1063,7 +1063,7 @@ PROCEDURE (pc: PreCond) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (pc: PreCond) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     pc. Load^ (r);
     r. ReadObject (obj);
@@ -1108,7 +1108,7 @@ PROCEDURE (pc: PostCond) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (pc: PostCond) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     pc. Load^ (r);
     r. ReadObject (obj);
@@ -1155,7 +1155,7 @@ PROCEDURE (item: Item) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (item: Item) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     item. Load^ (r);
     r. ReadObject (obj);
@@ -1212,7 +1212,7 @@ PROCEDURE (i: Itemize) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (i: Itemize) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     i. Load^ (r);
     r. ReadObject (obj);
@@ -1282,7 +1282,7 @@ PROCEDURE (e: Enumerate) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (e: Enumerate) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     e. Load^ (r);
     r. ReadSInt (e. mode);
@@ -1337,7 +1337,7 @@ PROCEDURE (fc: FirstColumn) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (fc: FirstColumn) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     fc. Load^ (r);
     r. ReadObject (obj);
@@ -1389,7 +1389,7 @@ PROCEDURE (tr: TableRow) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (tr: TableRow) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     tr. Load^ (r);
     r. ReadObject (obj);
@@ -1441,7 +1441,7 @@ PROCEDURE (t: Table) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (t: Table) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     t. Load^ (r);
     r. ReadObject (obj);
@@ -1558,7 +1558,7 @@ PROCEDURE (d: Document) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (d: Document) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     r. ReadObject (obj);
     IF (obj = NIL) THEN

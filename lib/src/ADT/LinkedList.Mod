@@ -400,7 +400,7 @@ END Store;
 
 PROCEDURE (l: LinkedList) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    o : Storable.Object;
+    o : Object.Object;
     i, size: LONGINT;
   BEGIN
     r. ReadNum (size);

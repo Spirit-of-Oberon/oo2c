@@ -326,7 +326,7 @@ PROCEDURE (l: ArrayList(E)) Store* (w: Storable.Writer) RAISES IO.Error;
 PROCEDURE (l: ArrayList(E)) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i, size: LONGINT;
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     r. ReadNum (size);
     l.INIT(size);

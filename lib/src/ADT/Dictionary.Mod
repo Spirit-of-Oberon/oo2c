@@ -480,7 +480,7 @@ PROCEDURE (dict: Dictionary(K, V)) Store* (w: Storable.Writer) RAISES IO.Error;
 PROCEDURE (dict: Dictionary(K, V)) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i: LONGINT;
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     dict.INIT();
     r. ReadNum (dict. size);

@@ -1089,7 +1089,7 @@ RAISES IO.Error;
 PROCEDURE ReadType(r: Storable.Reader; VAR type, srcCodeType: Type)
 RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     r.ReadObject(obj);
     IF (obj = NIL) THEN
@@ -1194,7 +1194,7 @@ PROCEDURE ReadItemList(r: Storable.Reader;
                        VAR list, last: Item)
 RAISES IO.Error;
   VAR
-    obj : Storable.Object;
+    obj : Object.Object;
   BEGIN
     list := NIL; last := NIL;
     r. ReadObject(obj);
@@ -1220,7 +1220,7 @@ PROCEDURE (item: Item) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (item: Item) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     item. nextNested := NIL;
     ReadItemList(r, item. nestedItems, item. tailNestedItems);
@@ -1360,7 +1360,7 @@ PROCEDURE (decl: Declaration) Store* (w: Storable.Writer) RAISES IO.Error;
 PROCEDURE (decl: Declaration) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     i: LONGINT;
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     decl. Load^ (r);
     r. ReadObject (obj);
@@ -1445,7 +1445,7 @@ PROCEDURE (type: Type) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (type: Type) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
     i: LONGINT;
   BEGIN
     type. Load^ (r);
@@ -1545,7 +1545,7 @@ PROCEDURE (l: LinkDirective) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (l: LinkDirective) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     r. ReadObject (obj);
     IF (obj = NIL) THEN
@@ -1675,7 +1675,7 @@ PROCEDURE (mod: Module) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (mod: Module) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     mod. Load^ (r);
     mod. ns := NIL;
@@ -1871,7 +1871,7 @@ PROCEDURE (import: Import) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (import: Import) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     import. Load^ (r);
     r. ReadObject (obj);
@@ -1914,7 +1914,7 @@ PROCEDURE (constDecl: ConstDecl) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (constDecl: ConstDecl) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
     id: LONGINT;
   BEGIN
     constDecl. Load^ (r);
@@ -2105,7 +2105,7 @@ PROCEDURE (redir: Redirect) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (redir: Redirect) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     redir. Load^ (r);
     r. ReadObject (obj);
@@ -2204,7 +2204,7 @@ PROCEDURE (procDecl: ProcDecl) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (procDecl: ProcDecl) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     procDecl. Load^ (r);
     r. ReadSInt (procDecl. procClass);
@@ -2320,7 +2320,7 @@ PROCEDURE (tname: TypeName) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (tname: TypeName) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     tname. Load^ (r);
     r. ReadObject (obj);
@@ -2374,7 +2374,7 @@ PROCEDURE (record: Record) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (record: Record) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     record. Load^ (r);
     ReadType(r, record.baseType, record.srcCodeBaseType);
@@ -2476,7 +2476,7 @@ PROCEDURE StoreTypeRef(w: Storable.Writer;
 PROCEDURE LoadTypeRef(r: Storable.Reader;
                       VAR typeRef: TypeRef) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
   BEGIN
     r. ReadObject (obj);
     typeRef.srcCodeType := obj(Type);
@@ -2714,7 +2714,7 @@ PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
     len, i: LONGINT;
   BEGIN
     formalPars. Load^ (r);

@@ -44,7 +44,7 @@ MODULE ADT:Object:Storage;
 
 IMPORT
   SYSTEM, RT0, Strings, IO,
-  ADT:Storable, Dictionary := ADT:Dictionary:AddressKey:IntValue;
+  Object, ADT:Storable, Dictionary := ADT:Dictionary:AddressKey:IntValue;
 
 TYPE
   TypeRefMap = POINTER TO ARRAY OF RECORD
@@ -52,7 +52,7 @@ TYPE
     type: RT0.Name;
     ref: LONGINT;
   END;
-  ObjectArray = POINTER TO ARRAY OF Storable.Object;
+  ObjectArray = POINTER TO ARRAY OF Object.Object;
   TypeArray = POINTER TO ARRAY OF RECORD
     type: RT0.Struct;
     moduleName: RT0.Name;
@@ -91,6 +91,10 @@ TYPE
 CONST
   pointerGap = 4;
 
+VAR
+  object: RT0.Module;
+  string8, string16: RT0.Struct;
+  
 PROCEDURE InitReader*(r: Reader; ch: IO.ByteChannel);
   BEGIN
     Storable.InitReader (r, ch);
@@ -144,10 +148,12 @@ PROCEDURE ConnectWriter* (ch: IO.ByteChannel): Writer;
 
 
 
-PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object) RAISES IO.Error;
+PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object) RAISES IO.Error;
   VAR
     ref, tref: LONGINT;
     module: RT0.Module;
+    type: RT0.Struct;
+    str: Object.String;
   
   PROCEDURE ReadType(): LONGINT RAISES IO.Error;
     VAR
@@ -245,17 +251,22 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Storable.Object) RAISES IO.Error;
           IO.RaiseFormatError("Object count mismatch");
         END;
         tref := ReadType();
-        IF (r. typeTab[tref]. type = NIL) THEN
+        type := r. typeTab[tref]. type;
+        IF (type = NIL) THEN
           Storable.RaiseTypeError("Failed to resolve type name");
         ELSE  (* create new object of the requested type and load it *)
-          obj := SYSTEM.VAL (Storable.Object,
-                             RT0.NewObject (r. typeTab[tref]. type));
-          IF (ref = LEN (r. objTab^)) THEN
-            ExtendObjTab (r. objTab)
+          IF (ref = LEN(r.objTab^)) THEN
+            ExtendObjTab(r.objTab);
           END;
-          r. objTab[ref] := obj;
-          INC (r. objCounter);
-          obj. Load (r)
+          INC(r.objCounter);
+          IF (type = string8) OR (type = string16) THEN
+            r.ReadStr(str);
+            r.objTab[ref] := str;
+          ELSE
+            obj := SYSTEM.VAL(Object.Object, RT0.NewObject(type));
+            r.objTab[ref] := obj;
+            obj(Storable.Object).Load(r);
+          END;
         END
       END
     END
@@ -280,7 +291,7 @@ PROCEDURE (r: Reader) Disconnect*;
 
 
 
-PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object) RAISES IO.Error;
+PROCEDURE (w: Writer) WriteObject* (obj: Object.Object) RAISES IO.Error;
   VAR
     tref: LONGINT;
     type: RT0.Struct;
@@ -351,7 +362,11 @@ PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object) RAISES IO.Error;
           COPY (type. name^, w. charBuffer);
           w. WriteString (w. charBuffer);
         END;
-        obj. Store (w)
+        WITH obj: Object.String DO
+          w.WriteStr(obj);
+        ELSE
+          obj(Storable.Object).Store(w);
+        END;
       END
     END
   END WriteObject;
@@ -372,4 +387,8 @@ PROCEDURE (w: Writer) Disconnect*;
     w. objCounter := 0
   END Disconnect;
 
+BEGIN
+  object := RT0.ThisModule("Object");
+  string8 := RT0.ThisType(object, "String8");
+  string16 := RT0.ThisType(object, "String16");
 END ADT:Object:Storage.

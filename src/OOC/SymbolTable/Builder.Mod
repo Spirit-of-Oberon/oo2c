@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Out, Strings, Object, Object:Boxed, ADT:Storable, ADT:Dictionary, IO,
+  Out, Strings, Object, Object:Boxed, ADT:Dictionary, IO,
   OOC:Doc, OOC:AST, Sym := OOC:SymbolTable;
 
 
@@ -684,7 +684,7 @@ PROCEDURE (w: Writer) INIT*(ch, chDoc: IO.ByteChannel);
     w.names := NEW(Dictionary.Dictionary(STRING, Sym.Name));
   END INIT;
 
-PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object) RAISES IO.Error;
+PROCEDURE (w: Writer) WriteObject* (obj: Object.Object) RAISES IO.Error;
   VAR
     str: STRING;
   BEGIN
@@ -727,7 +727,7 @@ RAISES IO.Error;
 PROCEDURE (b: Builder) ReadSymbolTable* (ch, chDoc: IO.ByteChannel): Sym.Module
 RAISES IO.Error;
   VAR
-    obj: Storable.Object;
+    obj: Object.Object;
     reader: Reader;
     fp, i, fpi, len: LONGINT;
     mn: ARRAY magicNumberSize+1 OF CHAR;

@@ -659,7 +659,6 @@ RAISES IO.Error;
                   ptr.type := receiver.type;
                   ptr.srcCodeType := receiver.srcCodeType;
                 END;
-                INC(count);
               ELSE
                 (* ignore *)
               END;
