@@ -165,11 +165,11 @@ PROCEDURE Test*;
     z := BigInt.NewInt(-1000); str := z.Format( 32);
     ASSERT(str.Equals(Object.NewLatin1("-V8")));
 
-    z := BigInt.NewString("0", 10); ASSERT(z.ToLongInt() = 0);
-    z := BigInt.NewString("1", 10); ASSERT(z.ToLongInt() = 1);
-    z := BigInt.NewString("-1", 10); ASSERT(z.ToLongInt() = -1);
-    z := BigInt.NewString(" 7FFFFFFF", 16); ASSERT(z.ToLongInt() = MAX(LONGINT));
-    z := BigInt.NewString("-80000000", 16); ASSERT(z.ToLongInt() = MIN(LONGINT));
+    z := BigInt.NewLatin1("0", 10); ASSERT(z.ToLongInt() = 0);
+    z := BigInt.NewLatin1("1", 10); ASSERT(z.ToLongInt() = 1);
+    z := BigInt.NewLatin1("-1", 10); ASSERT(z.ToLongInt() = -1);
+    z := BigInt.NewLatin1(" 7FFFFFFF", 16); ASSERT(z.ToLongInt() = MAX(LONGINT));
+    z := BigInt.NewLatin1("-80000000", 16); ASSERT(z.ToLongInt() = MIN(LONGINT));
     
     FOR i := 0 TO 1*1000*repeat-1 DO
       x0 := RandomNumbers.RND(MAX(LONGINT));
@@ -177,7 +177,7 @@ PROCEDURE Test*;
       IF (RandomNumbers.RND(1000) < 500) THEN a := a.Neg(); END;
 
       str := a.Format(10);
-      b := BigInt.NewStr(str, 10);
+      b := BigInt.New(str, 10);
       ASSERT(a.Equals(b));
     END;
 
