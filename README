@@ -27,10 +27,16 @@ If this produces an error other than the one described below, mail me.
 sets the environment variables OOC_DEV_ROOT and MAIN_MAKEFILE.  If you
 are running a different shell, you need to do something equivalent.)
 
-There is one known problem that may cause "make test" to fail after
-the sources have been checked out.  If the tests in tests/compile/
-produce an "100 Value out of range" for the test case `baseline8', make
-sure you have oo2c-1.5.7 installed.
+
+KNOWN PROBLEMS:
+
+"make test" fails under MacOS X if the (default) HFS+ is used, because
+the case-insensive file name confuse the compiler.  Use a UFS
+partition instead.
+
+If the tests in tests/compile/ produce an "100 Value out of range" for
+the test case `baseline8', make sure you have oo2c-1.5.7 installed.
+
 
 --------
 
