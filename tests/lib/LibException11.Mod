@@ -1,0 +1,32 @@
+MODULE LibException11;
+
+IMPORT
+  Out:=Out0, Exception;
+
+TYPE
+  One = POINTER TO OneDesc;
+  OneDesc = RECORD (Exception.ExceptionDesc) END;
+  
+PROCEDURE NewException(): Exception.Exception;
+  VAR
+    e1: One;
+  BEGIN
+    NEW(e1);
+    Exception.Init(e1, "Exception message");
+    RETURN e1;
+  END NewException;
+
+PROCEDURE Test*() RAISES Exception.Exception;
+  VAR
+    i: LONGINT;
+  BEGIN
+    i := 0;
+    TRY
+      i := 1;
+      Exception.Raise(NewException());
+    CATCH One:
+      Out.String("Catch... "); Out.Int(i, 0); Out.Ln;
+    END;
+  END Test;
+
+END LibException11.

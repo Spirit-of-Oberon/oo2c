@@ -17,8 +17,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_STRING6 lib_STRING7">-->
-
+  select ="prepare_out_module lib_rt1 ">-->
   &TestSetupWithOut;
   
   <testcases profile="OOC Core Library" default-lang="O2">
@@ -551,6 +550,119 @@
       an instance of <code>Object.Object</code>.
     </test>
     
+    <test id="lib_Exception1" type="run"
+          file="LibException1.Mod" output="LibException1.Ref">
+      Minimal <code>TRY-CATCH</code> statement, calling
+      <code>Exception.Raise</code> to raise an exception.
+    </test>
+    <test id="lib_Exception2" type="run"
+          file="LibException2.Mod" output="LibException2.Ref">
+      <code>TRY-CATCH</code> statement with three catch clauses.
+    </test>
+    <test id="lib_Exception3" type="run"
+          file="LibException3.Mod" output="LibException3.Ref">
+      Borderline case: <code>TRY</code> statement without any
+      <code>CATCH</code> clause.
+    </test>
+    <test id="lib_Exception4" type="error" file="LibException4.Mod">
+      Exception being raised outside a <code>TRY</code> statement.
+    </test>
+    <test id="lib_Exception5" type="error" file="LibException5.Mod">
+      Exception being raised in a <code>TRY</code> statement without
+      a matching catch clause.
+    </test>
+    <test id="lib_Exception6" type="reject" file="LibException6.Mod">
+      Type of catch clause is not an extension of
+      <code>Exception.Exception</code>.
+    </test>
+    <test id="lib_Exception7" type="reject" file="LibException7.Mod">
+      Qualident of catch clause is not a type name.
+    </test>
+    <test id="lib_Exception8" type="run" file="LibException8.Mod"
+      output="LibException8.Ref">
+      <code>EXIT</code> needs to clean up enclosing <code>TRY</code>.
+    </test>
+    <test id="lib_Exception9" type="run" file="LibException9.Mod"
+      output="LibException9.Ref">
+      <code>RETURN</code> needs to clean up enclosing <code>TRY</code>.
+    </test>
+    <test id="lib_Exception10" type="run" file="LibException10.Mod"
+      output="LibException10.Ref">
+      Assignments to local variables within a <code>TRY</code> are
+      visible in the catch clauses and after the statement.
+    </test>
+    <test id="lib_Exception11" type="run" file="LibException11.Mod"
+      output="LibException11.Ref">
+      Assignments to local variables within a <code>TRY</code> are
+      visible in the catch clauses.
+    </test>
+    <test id="lib_Exception12" type="run" file="LibException12.Mod"
+      output="LibException12.Ref">
+      Assignments to local variables within a <code>TRY</code> are
+      visible after the statement.
+    </test>
+    <test id="lib_Exception13" type="run" file="LibException13.Mod"
+      output="LibException13.Ref">
+      Similar to <code>lib_Exception10</code>, but the
+      <code>TRY</code> is part of a nested procedure.
+    </test>
+    <test id="lib_Exception14" type="accept" file="LibException14.Mod">
+      Procedure declaration with <code>RAISES</code> clause.
+    </test>
+    <test id="lib_Exception15" type="reject" file="LibException15.Mod">
+      Type referenced in <code>RAISES</code> clause does not exist.
+    </test>
+    <test id="lib_Exception16" type="reject" file="LibException16.Mod">
+      Name referenced in <code>RAISES</code> clause is not a type.
+    </test>
+    <test id="lib_Exception17" type="reject" file="LibException17.Mod">
+      Type in <code>RAISES</code> clause is not an extension of
+      <code>Exception.Exception</code>.
+    </test>
+    <test id="lib_Exception18" type="accept" file="LibException18.Mod">
+      Tests redefinition of methods with exception declarations.
+      Three cases are covered: same set of exceptions, smaller set,
+      and using an exception that is an extension of one of the base
+      exceptions.
+    </test>
+    <test id="lib_Exception19" type="reject" file="LibException19.Mod">
+      Redefinition cannot raise more exceptions than the base method.
+    </test>
+    <test id="lib_Exception20" type="reject" file="LibException20.Mod">
+      Redefinition's exception must be extension of one of the base
+      method. 
+    </test>
+    <test id="lib_Exception21" type="reject" file="LibException21.Mod">
+      It is an error if an exception is not caught in a procedure or
+      explicitly passed upward.
+    </test>
+    <test id="lib_Exception22" type="accept" file="LibException22.Mod">
+      It is only a warning if an exception is not caught within a
+      module body.
+    </test>
+    <test id="lib_Exception23" type="accept" file="LibException23.Mod"
+      output="LibException23.Ref">
+      Like <code>lib_Exception1</code>, but use the predefined
+      procedure <code>RAISE</code> to raise an exception.
+    </test>
+    <test id="lib_Exception24" type="accept" file="LibException24.Mod"
+      output="LibException24.Ref">
+      Use <code>RAISE</code> with an extension of
+      <code>Exception.Exception</code>.
+    </test>
+    <test id="lib_Exception25" type="reject" file="LibException25.Mod">
+      Calling <code>RAISE</code> with a value that is no extension of
+      <code>Exception.Exception</code>.
+    </test>
+    <test id="lib_Exception26" type="accept" file="LibException26.Mod">
+      Two variants of unreachable <code>CATCH</code> clauses.
+    </test>
+    <test id="lib_Exception27" type="accept" file="LibException27.Mod">
+      In the C output, both variables should be flagged
+      <code>volatile</code>.  This test should be in
+      <code>tests/ssa-c-output/</code>.
+    </test>
+    
     <test id="lib_BigInt1" type="run" file="LibBigInt1.Mod">
       Tests most of the functions of the <code>BigInt</code>
       implementation.
@@ -567,5 +679,24 @@
   <processor-info processor-name="oo2c">
     <reject-info id="lib_STRING2" pos="Write(%&quot;abc"
       msg="This must be a variable"/>
+
+    <reject-info id="lib_Exception6" pos="CATCH Exception.%ExceptionDesc:"
+      msg="Type is not an extension of `Exception.Exception'"/>
+    <reject-info id="lib_Exception7" pos="CATCH %e:"
+      msg="Type name expected"/>
+    <reject-info id="lib_Exception15" pos="Exception.%Foo"
+      msg="Undeclared identifier"/>
+    <reject-info id="lib_Exception16" pos="%Exception.Init"
+      msg="Data type expected"/>
+    <reject-info id="lib_Exception17" pos="RAISES %Exception"
+      msg="Type is not an extension of `Exception.Exception'"/>
+    <reject-info id="lib_Exception19" pos=" %P1()"
+      msg="Formal parameters don't match inherited declaration"/>
+    <reject-info id="lib_Exception20" pos=" %P1()"
+      msg="Formal parameters don't match inherited declaration"/>
+    <reject-info id="lib_Exception21" pos="Exception.%Raise"
+      msg="Exception `Exception.Exception' neither caught nor passed up"/>
+    <reject-info id="lib_Exception25" pos="RAISE(%NewException"
+      msg="Type is not an extension of `Exception.Exception'"/>
   </processor-info>
 </testsuite-ext>
