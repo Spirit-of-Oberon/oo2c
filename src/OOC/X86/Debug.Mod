@@ -167,6 +167,8 @@ PROCEDURE Register*(reg: S.Register): STRING;
     | S.gp1: RETURN "gp1";
     | S.gp2: RETURN "gp2";
     | S.gp3: RETURN "gp3";
+    | S.gp4: RETURN "gp4";
+    | S.gp5: RETURN "gp5";
     END;
   END Register;
 
@@ -526,32 +528,35 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
     BEGIN
       instr := s.instr;
       WHILE (instr # NIL) DO
-        IF (instr.opcode = S.branch) OR (instr.opcode = S.loopStart) THEN
+        CASE instr.opcode OF
+        | S.branch, S.loopStart, S.loopExit:
           s.instr := instr;
           RETURN;
-        ELSIF instr.IsLive()THEN
-          IF HasControlDep(instr) THEN
-            s.controlCP := instr;
-          END;
-          
-          ValidateOpnds(instr);
-          
-          FOR res IN instr.Results() DO
-            IF (res.adrMode # S.register) THEN
-              Log("not in register", res);
-              ASSERT(res.adrMode = S.register);
+        ELSE
+          IF instr.IsLive()THEN
+            IF HasControlDep(instr) THEN
+              s.controlCP := instr;
             END;
-            IF (s.reg[res.register] # NIL) THEN
-              ASSERT(s.reg[res.register].instr # instr);
+            
+            ValidateOpnds(instr);
+            
+            FOR res IN instr.Results() DO
+              IF (res.adrMode # S.register) THEN
+                Log("not in register", res);
+                ASSERT(res.adrMode = S.register);
+              END;
+              IF (s.reg[res.register] # NIL) THEN
+                ASSERT(s.reg[res.register].instr # instr);
+              END;
+              s.reg[res.register] := res;
             END;
-            s.reg[res.register] := res;
-          END;
-          
-          inOutOpnd := M.InOutOpnd(instr);
-          IF (inOutOpnd # NIL) THEN
-            IF (inOutOpnd.arg.register # instr.resultList.register) THEN
-              Log("in/out opnd mismatch", inOutOpnd);
-              ASSERT(inOutOpnd.arg.register = instr.resultList.register);
+            
+            inOutOpnd := M.InOutOpnd(instr);
+            IF (inOutOpnd # NIL) THEN
+              IF (inOutOpnd.arg.register # instr.resultList.register) THEN
+                Log("in/out opnd mismatch", inOutOpnd);
+                ASSERT(inOutOpnd.arg.register = instr.resultList.register);
+              END;
             END;
           END;
         END;
@@ -650,6 +655,13 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
           END;
         | S.loopStart:
           PushBlock(s, s.instr(S.Block));
+        | S.loopExit:
+          (* add state to loopEnd *)
+          block := s.instr.MergingTarget();
+          MergeState(block(S.MergeInstr), s);
+          (* and push instruction after the loopExit *)
+          s.instr := s.instr.nextInstr;
+          PushState(s);
         END;
       ELSIF (s.block.opcode = S.merge) THEN
         (* continue after the branch in the block that contains the
@@ -657,6 +669,12 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
         ASSERT(s.block.block.opcode = S.branch);
         s.instr := s.block.block.nextInstr;
         s.block := s.block.block.block;
+        s.controlCP := s.instr;
+        PushState(s);
+      ELSIF (s.block.opcode = S.loopEnd) THEN
+        (* continue after the loopEnd block *)
+        s.instr := s.block.nextInstr;
+        s.block := s.block.block;
         s.controlCP := s.instr;
         PushState(s);
       ELSE
