@@ -1,7 +1,7 @@
 MODULE Config:Section:Options;
 
 IMPORT
-  Object, Msg, Channel, TextRider, LongStrings,
+  Exception, Object, Msg, Channel, TextRider, LongStrings,
   XMLBuilder := XML:Builder, XML:DTD, XML:Locator,
   Config:Value, Config:Parser, CS := Config:Section;
 
@@ -191,7 +191,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     parserString: Parser.StringPtr;
     att: XMLBuilder.Attribute;
     name, type: DTD.String;
-    lastError, errMsg: Msg.Msg;
+    lastError: Msg.Msg;
     name8, valueString: ARRAY 1024 OF CHAR;
     newValue: Value.Value;
     option: Option;
@@ -201,6 +201,16 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     BEGIN
       lastError := errorListener. Error (optionsContext, code, FALSE, xmlNode. pos)
     END Err;
+
+  PROCEDURE SetReason(e: Exception.Exception);
+    VAR
+      chars: Object.CharsLatin1;
+      msg: STRING;
+    BEGIN
+      msg := e.GetMessage();
+      chars := msg(Object.String8).CharsLatin1();
+      lastError.SetStringAttrib("reason", Msg.GetStringPtr(chars^));
+    END SetReason;
   
   BEGIN
     node := sectionRoot. content;
@@ -233,13 +243,12 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
               (* ... get rid of this Short() once Value.String and
                  XML.String are the same *)
               LongStrings.Short (parserString^, "?", valueString);
-              option. value. StringToValue (valueString, errMsg);
-              IF (errMsg = NIL) THEN
-                (*s. Set (name8, option. value)  this is a noop *)
-              ELSE
+              TRY
+                option. value. StringToValue (valueString);
+              CATCH Exception.ParseError:
                 Err (invalidValue, node);
-                lastError. SetMsgAttrib ("reason", errMsg)
-              END
+                SetReason(Exception.Current());
+              END;
             END
           END
           
@@ -278,12 +287,12 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
                 (* ... get rid of this Short() once Value.String and
                    XML.String are the same *)
                 LongStrings.Short (parserString^, "?", valueString);
-                newValue. StringToValue (valueString, errMsg);
-                IF (errMsg = NIL) THEN
-                  option := s. Set (name8, newValue)
-                ELSE
+                TRY
+                  newValue. StringToValue (valueString);
+                  option := s. Set (name8, newValue);
+                CATCH Exception.ParseError:
                   Err (invalidValue, node);
-                  lastError. SetMsgAttrib ("reason", errMsg)
+                  SetReason(Exception.Current());
                 END
               END
             END

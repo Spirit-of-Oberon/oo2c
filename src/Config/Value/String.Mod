@@ -1,7 +1,7 @@
 MODULE Config:Value:String;
 
 IMPORT
-  Msg, ConfigValue := Config:Value;
+  ConfigValue := Config:Value;
 
 
 TYPE
@@ -21,10 +21,9 @@ PROCEDURE New* (str: ConfigValue.String): Value;
     RETURN s
   END New;
 
-PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String; VAR errMsg: Msg.Msg);
+PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String);
   BEGIN
     v. string := ConfigValue.GetStringPtr (str);
-    errMsg := NIL
   END StringToValue;
 
 PROCEDURE (v: Value) ValueToString* (VAR str: ConfigValue.String);

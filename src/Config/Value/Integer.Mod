@@ -1,7 +1,7 @@
 MODULE Config:Value:Integer;
 
 IMPORT
-  Strings, IntStr, Msg, ConfigValue := Config:Value;
+  Exception, Strings, IntStr, ConfigValue := Config:Value;
 
 
 TYPE
@@ -13,38 +13,6 @@ TYPE
   END;
 
 
-CONST
-  strOutOfRange = IntStr.strOutOfRange;
-  strWrongFormat = IntStr.strWrongFormat;
-  strEmpty = IntStr.strEmpty;
-  
-TYPE
-  ErrorContext = POINTER TO ErrorContextDesc;
-  ErrorContextDesc = RECORD  (* stateless *)
-    (ConfigValue.ErrorContextDesc)
-  END;
-
-VAR
-  integerContext: ErrorContext;
-
-
-PROCEDURE (context: ErrorContext) GetTemplate* (msg: Msg.Msg; VAR templ: Msg.LString);
-  VAR
-    t: ARRAY 128 OF Msg.LChar;
-  BEGIN
-    CASE msg. code OF
-    | strOutOfRange:
-      t := "Integer value out of range"
-    | strWrongFormat:
-      t := "Invalid format for integer value"
-    | strEmpty:
-      t := "Value is empty"
-    END;
-    context. WriteTemplate (msg, t, templ)
-  END GetTemplate;
-
-
-
 PROCEDURE New* (int: Type): Value;
   VAR
     s: Value;
@@ -54,17 +22,19 @@ PROCEDURE New* (int: Type): Value;
     RETURN s
   END New;
 
-PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String; VAR errMsg: Msg.Msg);
+PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String)
+RAISES Exception.ParseError;
   VAR
     int: Type;
     res: IntStr.ConvResults;
-    i, len: INTEGER;
+    i, len, start: INTEGER;
   BEGIN
     (* strip leading whitespace from `str' *)
     i := 0;
     WHILE (str[i] # 0X) & (str[i] <= " ") DO
       INC (i)
     END;
+    start := i;
     Strings.Delete (str, 0, i);
     
     (* strip trailing whitespace from `str' *)
@@ -79,10 +49,13 @@ PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String; VAR errMsg: Msg.Ms
     CASE res OF
     | IntStr.strAllRight:
       v. integer := int;
-      errMsg := NIL
-    ELSE
-      errMsg := Msg.New (integerContext, res)
-    END
+    | IntStr.strWrongFormat:
+      RAISE(NEW(Exception.ParseError, ConfigValue.wrongFormat, start));
+    | IntStr.strOutOfRange:
+      RAISE(NEW(Exception.ParseError, ConfigValue.outOfRange, start));
+    | IntStr.strEmpty:
+      RAISE(NEW(Exception.ParseError, ConfigValue.empty, start));
+    END;
   END StringToValue;
 
 PROCEDURE (v: Value) ValueToString* (VAR str: ConfigValue.String);
@@ -104,7 +77,4 @@ PROCEDURE (v: Value) DefiningModule* (VAR str: ConfigValue.String);
     COPY ("Config:Value:Integer", str)
   END DefiningModule;
 
-BEGIN
-  NEW (integerContext);
-  Msg.InitContext (integerContext, "Config:Value:Integer");
 END Config:Value:Integer.

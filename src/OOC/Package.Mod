@@ -2,7 +2,7 @@ MODULE OOC:Package;
 
 IMPORT
   IntStr, LongStrings, Msg, Out, StdChannels, Strings, IO, IO:FileChannel,
-  Object, ADT:ArrayList, ADT:StringBuffer, OSFiles := OS:Files,
+  Exception, Object, ADT:ArrayList, ADT:StringBuffer, OSFiles := OS:Files,
   OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
   Config:Parser, Config:Value, StringValue := Config:Value:String,
@@ -579,6 +579,16 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
       errList.Append(lastError);
     END Err;
 
+  PROCEDURE SetReason(e: Exception.Exception);
+    VAR
+      chars: Object.CharsLatin1;
+      msg: STRING;
+    BEGIN
+      msg := e.GetMessage();
+      chars := msg(Object.String8).CharsLatin1();
+      lastError.SetStringAttrib("reason", Msg.GetStringPtr(chars^));
+    END SetReason;
+  
   PROCEDURE SkipWS(VAR node: Parser.Node);
     BEGIN
       WHILE (node # NIL) & (node IS Parser.CharData) DO
@@ -599,7 +609,6 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
       str: ARRAY 1024 OF CHAR;
       att: Builder.Attribute;
       stringBuffer: STRING;
-      errMsg: Msg.Msg;
       chars: Object.CharsLatin1;
     BEGIN
       name := NIL;
@@ -641,11 +650,12 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
           lastError.SetStringAttrib("type", Msg.GetStringPtr(chars^))
         ELSE
           chars := stringBuffer(Object.String8).CharsLatin1();
-          value.StringToValue(chars^, errMsg);
-          IF (errMsg # NIL) THEN
+          TRY
+            value.StringToValue(chars^);
+          CATCH Exception.ParseError:
             Err(invalidValue, elem);
-            lastError.SetMsgAttrib("reason", errMsg)
-          END
+            SetReason(Exception.Current());
+          END;
         END;
         
         RETURN NewKeyValue(name, value);

@@ -1,7 +1,7 @@
 MODULE Config:Value [OOC_EXTENSIONS];
 
 IMPORT
-  Object, Strings, Msg, ADT:Dictionary;
+  Exception, Object, Strings, ADT:Dictionary;
 
 
 TYPE
@@ -18,19 +18,14 @@ TYPE
 TYPE
   PrototypeMap* = Dictionary.Dictionary(STRING, Value);
 
-TYPE
-  ErrorContext* = POINTER TO ErrorContextDesc;
-  ErrorContextDesc* = RECORD
-    (Msg.ContextDesc)
-  END;
+CONST
+  outOfRange* = "Value out of range";
+  wrongFormat* = "Invalid format";
+  empty* = "Value is empty";
 
 
-PROCEDURE (ec: ErrorContext) WriteTemplate* (msg: Msg.Msg; VAR text, templ: Msg.LString);
-  BEGIN
-    COPY (text, templ)
-  END WriteTemplate;
-  
-PROCEDURE (v: Value) [ABSTRACT] StringToValue* (str: String; VAR errMsg: Msg.Msg);
+PROCEDURE (v: Value) [ABSTRACT] StringToValue* (str: String)
+RAISES Exception.ParseError;
   END StringToValue;
 
 PROCEDURE (v: Value) [ABSTRACT] ValueToString* (VAR str: String);
