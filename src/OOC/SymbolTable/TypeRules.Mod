@@ -715,10 +715,11 @@ PROCEDURE IsValidForwardDecl* (forward, proc: Sym.FormalPars): BOOLEAN;
 
 
 PROCEDURE IsArrayType* (type: Sym.Type): BOOLEAN;
-(**Returns @code{TRUE}, iff @oparam{type} is an array type. *)
+(**Returns @code{TRUE}, iff @oparam{type} is an array type.
+   FIXME... duplicate of IsArray() *)
   BEGIN
     ASSERT (~(type IS Sym.TypeName));
-    RETURN (type IS Sym.Array)
+    RETURN (type.Deparam() IS Sym.Array)
   END IsArrayType;
 
 PROCEDURE IsArrayCompatible* (argType, fparType: Sym.Type): BOOLEAN;
