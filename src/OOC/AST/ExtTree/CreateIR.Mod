@@ -465,12 +465,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
   VAR
     expr : IR.Expression;
   BEGIN
-    expr := Expr(constExpr);
-    WITH expr : IR.Const DO
-      constDecl.SetValueType(expr.value, expr.type(Sym.PredefType));
-    ELSE
-      b.ErrSym(IR.exprNotConstant, expr.sym);
-    END;
+    expr := b. AssertConst (Expr (constExpr));
+    constDecl. SetValueType (expr(IR.Const). value, expr. type(Sym.PredefType))
   END ConstDecl;
    
 <* PUSH; Warnings := FALSE *>

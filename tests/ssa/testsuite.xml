@@ -378,6 +378,6 @@
     <reject-info id="len6" pos="a, %0X),"
         msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
     <reject-info id="len7" pos="a, %d),"
-        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+        msg="Expression is not constant"/>
   </processor-info>
 </testsuite-ext>

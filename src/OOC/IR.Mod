@@ -746,7 +746,7 @@ TYPE
     
     typeRules- : TypeRules.Rules;
     
-    errorExpr-: Expression;
+    errorExpr-: Const;
     (**This value is returned if there is no real value because of an error.
        For example, if an identifier cannot be resolved, or if a designator
        does not begin with an identifier, then this value is passed to the
@@ -794,7 +794,7 @@ CONST
   incompatibleTypes* = 7;
   (** types of operands are not equivalent as required by operator *)
   divideByZero* = 8;
-  exprNotConstant* = 9;
+  exprNotConstant = 9;
   rangeError* = 10;
   exprByRef = 11;
   incompatibleActualParam = 12;
@@ -899,7 +899,7 @@ PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
     b. lastError := e;
   END ErrSym;
 
-PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Expression;
+PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Const;
   BEGIN
     b.ErrSym(code, sym);
     RETURN b. errorExpr;
@@ -2690,7 +2690,19 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     END;
   END NewOperator;
 
-PROCEDURE (b: Builder) CheckIntConst (expr: Expression; start, end: LONGINT): LONGINT;
+PROCEDURE (b: Builder) AssertConst* (expr: Expression): Const;
+(**Generates an error if @oparam{expr} is not a constant.  In this case, result
+   is @ofield{b.errorExpr}.  Otherwise, @oparam{expr} is returned.  In any
+   case, the returned value is an instance of @otype{Const}.  *)
+  BEGIN
+    WITH expr: Const DO
+      RETURN expr;
+    ELSE  (* not a constant: report error *)
+      RETURN b. ErrExpr (exprNotConstant, expr. sym);
+    END;
+  END AssertConst;
+
+PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): LONGINT;
 (* Generates an error if `expr' is not an integer constant on the range
    `start <= expr < end'.  On success, the value of the constant is returned,
    and `start' otherwise.
@@ -2700,25 +2712,25 @@ PROCEDURE (b: Builder) CheckIntConst (expr: Expression; start, end: LONGINT): LO
    and that the caller handles this case.  *)
   VAR
     v: LONGINT;
+    const: Const;
   BEGIN
-    WITH expr: Const DO
-      IF b. typeRules. IsIntegerType (expr. type) THEN
-        v := expr. value(Integer.Value). ToLInt();
+    const := b. AssertConst (expr);
+    IF (const # b. errorExpr) THEN
+      IF b. typeRules. IsIntegerType (const. type) THEN
+        v := const. value(Integer.Value). ToLInt();
         IF (start <= v) & (v < end) THEN
           RETURN v;
         END;
       END;
-    ELSE  (* not a constant: report error *)
+      
+      IF (start < end) THEN  (* only write error if it makes sense ;-) *)
+        b. ErrSym (invalidIntegerConst, const. sym);
+        b. lastError. SetIntAttrib ("start", start);
+        b. lastError. SetIntAttrib ("end", end);
+      END;
     END;
-
-    IF (start < end) THEN  (* only write error if it makes sense ;-) *)
-      b. ErrSym (invalidIntegerConst, expr. sym);
-      b. lastError. SetIntAttrib ("start", start);
-      b. lastError. SetIntAttrib ("end", end);
-    END;
-    
     RETURN start;
-  END CheckIntConst;
+  END AssertIntConst;
 
 PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList): Expression;
   VAR
@@ -2894,8 +2906,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
           IF (LEN (arguments^) # 2) THEN
             dim := 0;
           ELSE  (* LEN (arguments^) = 2 *)
-            dim := b. CheckIntConst (arguments[1], 0,
-                                     arguments[0]. type. ArrayDimensions());
+            dim := b. AssertIntConst (arguments[1], 0,
+                                      arguments[0]. type. ArrayDimensions());
           END;
 
           IF ~(arguments[0]. type IS Sym.Array) THEN
