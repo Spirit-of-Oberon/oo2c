@@ -55,13 +55,13 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           RETURN b. NewQualident (currentNamespace, left, currentSourceContext,
                                   design. right(ExtTree.Terminal). sym);
           
-        | left: IR.Const DO
-          ASSERT (left = b. errorExpr);
-          RETURN b. errorExpr;           (* left side has errors *)
-
         ELSE                             (* field or tb procedure selector *)
-          RETURN b. NewSelect (design. op. sym, left, currentSourceContext,
-                               design. right(ExtTree.Terminal). sym);
+          IF (left = b.errorExpr) THEN
+            RETURN b. errorExpr;           (* left side has errors *)
+          ELSE
+            RETURN b. NewSelect (design. op. sym, left, currentSourceContext,
+                                 design. right(ExtTree.Terminal). sym);
+          END;
         END
       END Select;
     

@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; record12 record13 record14 record15">-->
+  select ="&SetupTestCasesWithOut; opRecord6">-->
 
   &TestSetupWithOut;
     
@@ -931,6 +931,9 @@
     <test id="opRecord5" type="error" file="OpRecord5.Mod">
       Using a record pointer with a value of <code>NIL</code>.
     </test>
+    <test id="opRecord6" type="reject" file="OpRecord6.Mod">
+      Left side of a field sector is an integer constant.
+    </test>
 
     <test id="opPointer1" type="reject" file="OpPointer1.Mod">
       Dereference operator applied to non-pointer.
@@ -1508,6 +1511,9 @@
         msg="Undeclared identifier"/>
     <reject-info id="opRecord4" pos="New(1)%.i"
         msg="Operator may not be applied to function result"/>
+    <reject-info id="opRecord6" pos="%r.f :="
+        msg="Expression must be of record type"/>
+    
     <reject-info id="opPointer1" pos=":= %i"
         msg="Expression must be of pointer type"/>
     <reject-info id="opPointer4" pos="New(1)%"
