@@ -127,6 +127,7 @@
   <processor-info processor-name="TestCompile">
     <reject-info id="constfold3" pos="c=1%+" msg="Incompatible types for operator"/>
     <reject-info id="constfold4" pos="c=%a" msg="Expression is not constant"/>
-    <reject-info id="constfold6" pos="minLongInt%-offset" msg="Type of actual parameter is not compatible with formal type"/>
+    <reject-info id="constfold6" pos="minLongInt%-offset"
+      msg="Argument not compatible with formal type `LONGINT'"/>
   </processor-info>
 </testsuite-ext>

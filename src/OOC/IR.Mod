@@ -22,7 +22,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Msg, Object, Object:Boxed, Object:BigInt,
+  Msg, Object, Object:Boxed, Object:BigInt, Strings,
   ADT:ArrayList, ADT:StringBuffer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:BasicList, OOC:Error,
@@ -1238,9 +1238,9 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     | exprByRef:
       t := "Expression may not be passed by reference"
     | incompatibleActualParam:
-      t := "Type of actual parameter is not compatible with formal type"
+      t := "Argument not compatible with formal type `${name}'"
     | incompatibleAssignment:
-      t := "Type of expression is not compatible with variable type"
+      t := "Expression not compatible with variable type `${name}'"
     | wrongNumberOfArguments:
       t := "Wrong number of arguments"
     | invalidIntegerConst:
@@ -1294,7 +1294,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     | tooManyArguments:
       t := "Too many arguments"
     | notVarParCompatible:
-      t := "Actual parameter not compatible with formal VAR parameter"
+      t := "Argument not compatible with formal VAR parameter `${name}'"
     | redirectFailed:
       t := "Internal error: Name redirection failed"
     | readOnlyParameter:
@@ -1418,6 +1418,47 @@ PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
     END;
     b. lastError := e;
   END ErrSym;
+
+PROCEDURE (b: Builder) SetNameToType(type: Sym.Type);
+(* For the most recent error message, set the attribute `name' to the type name
+   of `type', if one is available.  *)
+  VAR
+    module: Sym.Module;
+    name: ARRAY 256 OF CHAR;
+  BEGIN
+    IF (type.namingDecl # NIL) THEN
+      module := type.namingDecl.Module();
+      IF (module.name.str[0] = "#") OR (type IS Sym.TypeVar) THEN
+        (* predefined type names have no module name, and for type variables
+           the module name is of no importance *)
+        name := "";
+      ELSE
+        COPY(module.name.str^, name);
+        Strings.Append(".", name);
+      END;
+      Strings.Append(type.namingDecl.name.str^, name);
+    ELSE
+      type := type.Deparam();
+      WITH type: Sym.TypeName DO
+        COPY(type.module.str^, name);
+        Strings.Append(".", name);
+        Strings.Append(type.ident.str^, name);
+      | type: Sym.Pointer DO
+        name := "POINTER";
+      | type: Sym.FormalPars DO
+        name := "PROCEDURE";
+      | type: Sym.Array DO
+        name := "ARRAY";
+      | type: Sym.Record DO
+        name := "RECORD";
+      | type: Sym.TypeVar DO
+        name := "TYPE_VAR";
+      | type: Sym.PredefType DO
+        name := "#predef";
+      END;
+    END;
+    b.lastError.SetStringAttrib("name", Msg.GetStringPtr(name));
+  END SetNameToType;
 
 PROCEDURE GetPragmaValue (b: Builder; pragma: Pragmas.Pragma; charPos: Pragmas.CharPos): BOOLEAN;
   VAR
@@ -3078,6 +3119,7 @@ PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
   BEGIN
     IF ~b. WidenForAssign (expr, type) & (expr # b.errorExpr) THEN
       b.ErrSym(incompatibleAssignment, sym);
+      b.SetNameToType(type);
     END;
   END MakeAssignmentCompatible;
 
@@ -5397,15 +5439,18 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
             (* formal parameter is record, and the argument type is not
                an extension of the record type *)
             b. ErrSym (notVarParCompatible, arg. sym);
+            b.SetNameToType(fpar.type);
           END;
         ELSIF TR.IsOpenArrayType (fpar. type) THEN
           IF ~TR.IsArrayCompatible (arg. type, fpar. type) THEN
             (* formal parameter is open array, and the argument type is not
                array compatible to it *)
             b. ErrSym (notVarParCompatible, arg. sym);
+            b.SetNameToType(fpar.type);
           END;
         ELSE                             (* not compatible *)
           b. ErrSym (notVarParCompatible, arg. sym);
+          b.SetNameToType(fpar.type);
         END;
         
       ELSE                               (* value parameter *)
@@ -5422,6 +5467,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         END;
         IF ~ok THEN
           b.ErrSym(incompatibleActualParam, arg. sym);
+          b.SetNameToType(fpar.type);
         END;
       END;
     END MakeParameterCompatible;

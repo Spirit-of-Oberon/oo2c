@@ -1536,20 +1536,20 @@
     <reject-info id="assign2" pos="r%. TBProc :=" msg="This must be a variable"/>
     <reject-info id="assign3" pos="AssignRO.%x :=" msg="This variable is read-only"/>
     <reject-info id="assign4" pos="AssignRO.y. %a :=" msg="This variable is read-only"/>
-    <reject-info id="assign5" pos="x %:= INTEGER" msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign6" pos="x %:= Out" msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign7" pos="a %:= b" msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign8" pos="x %:= NIL" msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign9" pos='x %:= "123"' msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign10" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign11" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign12" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign13" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="assign14" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign5" pos="x %:= INTEGER" msg="Expression not compatible with variable type `INTEGER'"/>
+    <reject-info id="assign6" pos="x %:= Out" msg="Expression not compatible with variable type `INTEGER'"/>
+    <reject-info id="assign7" pos="a %:= b" msg="Expression not compatible with variable type `ARRAY'"/>
+    <reject-info id="assign8" pos="x %:= NIL" msg="Expression not compatible with variable type `LONGINT'"/>
+    <reject-info id="assign9" pos='x %:= "123"' msg="Expression not compatible with variable type `ARRAY'"/>
+    <reject-info id="assign10" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign11" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign12" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign13" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign14" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
         
     <reject-info id="return1" pos="RETURN %123" msg="RETURN must not provide a result value"/>
     <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>
-    <reject-info id="return3" pos="RETURN %128;" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="return3" pos="RETURN %128;" msg="Expression not compatible with variable type `SHORTINT'"/>
     <reject-info id="return4" pos="RETURN %123" msg="RETURN must not provide a result value"/>
 
     <reject-info id="proc1" pos="%x(" msg="This must be a procedure designator"/>
@@ -1557,13 +1557,18 @@
     <reject-info id="proc3" pos="P(123%)" msg="Too few arguments"/>
     <reject-info id="proc4" pos="%P;" msg="Too few arguments"/>
     <reject-info id="proc5" pos="P(1, 2, %3);" msg="Too many arguments"/>
-    <reject-info id="proc6" pos="P(%128);" msg="Type of actual parameter is not compatible with formal type"/>
+    <reject-info id="proc6" pos="P(%128);"
+      msg="Argument not compatible with formal type `SHORTINT'"/>
     <reject-info id="proc7" pos="P(%1);" msg="This must be a variable"/>
     <reject-info id="proc8" pos="P(AssignRO.%x);" msg="This variable is read-only"/>
-    <reject-info id="proc9" pos="P(%x);" msg="Type of actual parameter is not compatible with formal type"/>
-    <reject-info id="proc10" pos="P(%x);" msg="Type of actual parameter is not compatible with formal type"/>
-    <reject-info id="proc11" pos="P(%x);" msg="Actual parameter not compatible with formal VAR parameter"/>
-    <reject-info id="proc12" pos="P(%x);" msg="Actual parameter not compatible with formal VAR parameter"/>
+    <reject-info id="proc9" pos="P(%x);"
+      msg="Argument not compatible with formal type `ARRAY'"/>
+    <reject-info id="proc10" pos="P(%x);"
+      msg="Argument not compatible with formal type `ARRAY'"/>
+    <reject-info id="proc11" pos="P(%x);"
+      msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
+    <reject-info id="proc12" pos="P(%x);"
+      msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
     <reject-info id="function8" pos=":= %P(" msg="This is not a function procedure"/>
 
     <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>
@@ -1574,8 +1579,8 @@
     <reject-info id="for1" pos="a%[0]" msg="Expected symbol `:='"/>
     <reject-info id="for2" pos="FOR %T :=" msg="This must be a variable"/>
     <reject-info id="for3" pos="FOR %x :=" msg="Expression must be of integer type"/>
-    <reject-info id="for4" pos=":= %128" msg="Type of expression is not compatible with variable type"/>
-    <reject-info id="for5" pos="TO %128 DO" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="for4" pos=":= %128" msg="Expression not compatible with variable type `SHORTINT'"/>
+    <reject-info id="for5" pos="TO %128 DO" msg="Expression not compatible with variable type `SHORTINT'"/>
     <reject-info id="for6" pos="BY %128 DO" msg="Step value not in type of loop variable"/>
     <reject-info id="for7" pos="BY %y DO" msg="Expression is not constant"/>
     <reject-info id="for8" pos="BY %0 DO" msg="Step value must not be zero"/>
@@ -1788,19 +1793,19 @@
     <reject-info id="opExprCompat8" pos=" %="
         msg="Incompatible types for operator"/>
     <reject-info id="opExprCompat9" pos=" %:="
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `SHORTINT'"/>
     <reject-info id="opExprCompat10" pos=" %:="
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `INTEGER'"/>
     <reject-info id="opExprCompat11" pos=" %:="
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `LONGINT'"/>
     <reject-info id="opExprCompat12" pos=" %:="
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `REAL'"/>
     <reject-info id="opExprCompat13" pos=" %:="
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `INTEGER'"/>
     <reject-info id="opExprCompat14" pos=" %:="
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `REAL'"/>
     <reject-info id="opString4" pos=" c %:="
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `CHAR'"/>
     <reject-info id="opTypeGuard2" pos=" a(%INTEGER)"
         msg="Type must be an extension of the left operand's type"/>
     <reject-info id="opTypeGuard3" pos=" a(%C)"
@@ -1866,7 +1871,7 @@
     <reject-info id="nilCompat2" pos="a[%NIL_COMPAT]"
         msg="Invalid modifier flag"/>
     <reject-info id="nilCompat4" pos="P1(%NIL)"
-        msg="Actual parameter not compatible with formal VAR parameter"/>
+        msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
 
     <reject-info id="noLengthInfo2" pos="ARRAY[%NO_LENGTH_INFO]"
         msg="Invalid modifier flag"/>
@@ -1925,7 +1930,7 @@
     <reject-info id="generic15" pos="R1.%B"
         msg="Undeclared identifier"/>
     <reject-info id="generic17" pos="v %:= a;"
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `Base'"/>
     <reject-info id="generic18" pos="a(P.%Base)"
         msg="Type test requires static type instance"/>
     <reject-info id="generic19" pos="v IS P.%Base"
@@ -1933,9 +1938,9 @@
     <reject-info id="generic20" pos="NEW(%v)"
         msg="This must be a pointer variable"/>
     <reject-info id="generic22" pos="o3 %:= o1"
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
     <reject-info id="generic23" pos="o3 %:= o1"
-        msg="Type of expression is not compatible with variable type"/>
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>
