@@ -197,9 +197,14 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
           | passed: Out.String ("PASSED")
           | tolerated: Out.String ("TOLERATED")
           END;
-          IF (test. relevance = Testcases.relevanceInformal) THEN
+          IF (test. relevance = Testcases.relevanceInformal) &
+             (result # Processor.processCrash) THEN
             Out.String (" (informal test)")
           ELSE
+            IF (class = failed) THEN
+(*              Out.Ln; Out.String ("Aborting..."); Out.Ln; HALT (1)*)
+            END;
+            
             INC (results[class])
           END;
           Out.Ln;
