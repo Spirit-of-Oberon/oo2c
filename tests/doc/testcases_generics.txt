@@ -13,8 +13,8 @@ A type declared with a type parameter list like
 `T<t1:B1,t2:B2,...,tn:Bn>' is called a `parametric type'.  The formal
 type Bi of a type parameter declaration is called a type bound.  It
 must be a record pointer.  A type name ti is visible to the end of the
-type declaration, and within all type-bound procedures whose receiver
-type is T.
+type declaration, and, if T is a record type, within all type-bound
+procedures of T.
 
 For a qualified type expression of the form `T<A1,A2,...,An>',
 
