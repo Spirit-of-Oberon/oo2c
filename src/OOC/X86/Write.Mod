@@ -1,7 +1,6 @@
 MODULE OOC:X86:Write;
 
 IMPORT
-  Log, D := OOC:X86:Debug,
   SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
@@ -555,9 +554,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       NEW(io, merge.Count(S.gate));
       i := 0;
       FOR opnd IN jump.GateOperands() DO
-        io[i].in := opnd;
-        io[i].out := opnd.instr.resultList;
-        INC(i);
+        IF opnd.instr.IsLive() THEN
+          io[i].in := opnd;
+          io[i].out := opnd.instr.resultList;
+          INC(i);
+        END;
       END;
 
       (* pass 1: eliminate all moves from and to the same location *)
@@ -865,8 +866,6 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       | instr: S.LoopStartInstr DO
         dummy := w.WriteBlock(instr);
       | instr: S.Block DO
-        Log.Type("instr", instr);
-        D.Log("instr", instr);
         ASSERT(FALSE);
       ELSE
         (* nothing *)
