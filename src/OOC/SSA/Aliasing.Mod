@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Aliasing;
 (*  Calculates aliasing between instructions.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002,2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -149,10 +149,13 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
     BEGIN
       IF (a = b) THEN
         RETURN TRUE;
-      ELSIF (a IS Sym.Pointer) & (b IS Sym.Pointer) THEN
-        RETURN TR.IsExtensionOf (a, b) OR TR.IsExtensionOf (b, a);
       ELSE
-        RETURN FALSE;
+        a := a.Bound(); b := b.Bound();
+        IF TR.IsPointer(a) & TR.IsPointer(b) THEN
+          RETURN TR.IsExtensionOf (a, b) OR TR.IsExtensionOf (b, a);
+        ELSE
+          RETURN FALSE;
+        END;
       END;
     END CompatiblePointers;
   
