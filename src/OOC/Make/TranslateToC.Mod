@@ -262,8 +262,6 @@ PROCEDURE Run*(m: Repository.Module; libraryName: String.String;
     END CloseFile;
   
   BEGIN
-    Out.String ("module: "); Out.String(m. name^); Out.Ln; Out.Flush;
-    
     ParseModule.ParseModule (m, TRUE, TRUE, FALSE, FALSE, libraryName,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
