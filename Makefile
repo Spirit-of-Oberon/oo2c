@@ -149,14 +149,14 @@ bin/oo2c: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml lib/obj/liboo
 
 ### Remove manual pages.
 uninstall-man:
-	for i in oo2c ooef oowhereis; do \
+	for i in oo2c oob ooef oowhereis; do \
 	  rm -f $(mandir)/$$i$(manext) $(mandir)/$$i$(manext).gz; \
 	done
 
 ### Install manual pages.
 install-man: uninstall-man
 	$(INSTALL) -d $(mandir)
-	for i in oo2c ooef oowhereis; do \
+	for i in oo2c oob ooef oowhereis; do \
 	  $(INSTALL_DATA) man/$$i.1 $(mandir)/$$i$(manext); \
 	done
 

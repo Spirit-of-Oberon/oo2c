@@ -1,0 +1,51 @@
+.TH oob 1
+.UC 5
+.SH NAME
+oob \- OOC symbol file browser
+.SH SYNOPSIS
+.B oob
+.RI [ options ]
+.I <module>
+.SH DESCRIPTION
+.B oob
+displays the interface definition of a module, based on information
+extracted from the module's symbol file.  It accepts a single
+argument, the name of a module.  The contents of the symbol file are
+written to
+.I stdout
+in an extended module syntax.  Compared an Oberon-2 module, it differs
+in these points:
+.TP
+Expanded Module Names
+The module part of a type name is expanded to the full name of the
+module.  That is, aliases assigned through import statements are
+discarded.
+.TP
+Inherited Fields
+A record type show the list of all its fields, including the ones it
+inherits from its base types.
+.TP
+Type-bound Procedures
+A record definition lists all type-bound procedures associated with it
+within its
+.B RECORD ... END
+block, and includes both local and inherited procedures.
+.SH OPTIONS
+.TP
+.B --config <file>
+Use given file as configuration file.
+.TP
+.B --repository <directory>, -r <directory>
+Add a directory to the list of repositories.
+.TP
+.B --help, -h
+Write short usage summary and exit.
+.SH ENVIRONMENT
+.I OO2CRC
+holds the name of the configuration file.
+.SH DIAGNOSTICS
+Exit status is 0 on success, and 1 otherwise.
+.SH SEE ALSO
+oo2c(1), OOC2 Reference Manual
+.SH AUTHOR
+Michael van Acken <mia@de.uu.net>
