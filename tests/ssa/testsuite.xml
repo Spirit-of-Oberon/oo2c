@@ -484,6 +484,10 @@
     <test id="chr3" type="reject" file="Chr3.Mod">
       Calling <code>CHR</code> with an invalid integer constant.
     </test>
+    <test id="chr4" type="accept" file="Chr4.Mod">
+      Calling <code>LONGCHR</code> and <code>UCS4CHR</code> with
+      constant argument.
+    </test>
     
     <test id="entier1" type="run" file="Entier1.Mod" output="Entier1.Ref">
       Predefined function <code>ENTIER</code> for <code>REAL</code>

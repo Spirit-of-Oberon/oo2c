@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:IR:ConstFold;
 (*  Constant folding on IR expressions.
-    Copyright (C) 2002  Stewart Greenhill, Michael van Acken
+    Copyright (C) 2002, 2003  Stewart Greenhill, Michael van Acken
 
     This file is part of OOC.
 
@@ -587,12 +587,15 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         
       ELSIF TR.IsCharType (op. type) &
             TR.IsIntegerType (op. expr. type) THEN
-        (* type conversion from integer to character value (CHR, LONGCHR) *)
+        (* type conversion from integer to character value (CHR, LONGCHR,
+           UCS4CHAR) *)
         CASE op. type(Sym.PredefType). id OF
         | Predef.char:
           value := Boxed.NewString(Object.NewLatin1Char(CHR (value(BigInt.BigInt). ToLongInt())));
         | Predef.longchar:
           value := Boxed.NewString(Object.NewUCS2Char(LONGCHR (value(BigInt.BigInt). ToLongInt())));
+        | Predef.ucs4char:
+          value := Boxed.NewString(Object.NewUCS4Char(UCS4CHR (value(BigInt.BigInt). ToLongInt())));
         END;
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
