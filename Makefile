@@ -26,8 +26,7 @@ TEST_SUBDIRS=\
   tests/compile \
   tests/ssa \
   tests/lib \
-
-  #tests/ssa-c-output \   right now, these tests are broken
+  tests/ssa-c-output \
 
 DOC_DIR=$(OOC_DEV_ROOT)/oocdoc
 
