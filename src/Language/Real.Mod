@@ -1,7 +1,7 @@
 MODULE Language:Real [OOC_EXTENSIONS];
 
 IMPORT
-  ADT:Object, ADT:String, L := Language, LRealStr, SYSTEM;
+  ADT:Object, ADT:String, L := Language, RealStr, LRealStr, SYSTEM;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -134,6 +134,40 @@ BEGIN
     RETURN NIL;
   END;
 END ValueOf;
+
+PROCEDURE (t : Type) ValueOfLiteral* (s : ARRAY OF CHAR) : Value;
+(**Like @oproc{Type.ValueOf}, but the character of the exponent decides
+   whether the value should be treated as a @code{REAL} or @code{LONGREAL}
+   literal.  *)
+VAR 
+  real : REAL;
+  longreal : LONGREAL;
+  res : LRealStr.ConvResults;
+  v: Value;
+  i: LONGINT;
+BEGIN
+  (* check if the number has a "D" exponent, which would make it LONGREAL;
+     this influences the rounding for the resulting real value *)
+  i := 0;
+  WHILE (s[i] # 0X) & (s[i] # "D") DO
+    INC (i);
+  END;
+
+  v := NIL;
+  IF (s[i] = "D") THEN
+    s[i] := "E";
+    LRealStr.StrToReal(s, longreal, res);
+    IF res = LRealStr.strAllRight THEN
+      v := New(longreal);
+    END;
+  ELSE
+    RealStr.StrToReal(s, real, res);
+    IF res = LRealStr.strAllRight THEN
+      v := New(real);
+    END;
+  END;
+  RETURN v;
+END ValueOfLiteral;
 
 PROCEDURE (t : Type) ToString* () : String.String;
 BEGIN

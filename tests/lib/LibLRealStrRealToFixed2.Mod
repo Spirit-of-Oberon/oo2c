@@ -42,7 +42,7 @@ PROCEDURE Test* ();
     Value (19951, -3);                   (* round up *)
     Value (19950.0001, -3);              (* round up *)
     Value (19950, -3);                   (* round up (to even) *)
-    Value (19850.0001, -3);              (* round up *)
+    Value (19850.0001D0, -3);            (* round up (E0 would round down) *)
     Value (19850, -3);                   (* round down (to even) *)
     Value (19800, -3);                   (* round down *)
     
