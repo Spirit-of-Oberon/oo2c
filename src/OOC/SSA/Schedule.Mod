@@ -453,7 +453,7 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
       | bProxy: Blocker.Select DO
         block := TransferSelect (bProxy, block);
       | bProxy: Blocker.Region DO        (* this is a "select-exit" *)
-        block := TransferInstructions (bProxy(Blocker.Region), block);
+        block := TransferInstructions (bProxy, block);
       ELSE
         (* nothing to do *)
       END;
@@ -792,6 +792,8 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     END CheckCollects;
   
   BEGIN
+    (*Blocker.Write (StdChannels.stdout, pb);*)
+    
     root := Blocker.ArrangeInstructions (pb);
     proxy := NewInstrProxy (root. instr);
     root. instr. info := proxy;
