@@ -90,6 +90,7 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
     module: Rep.Module;
     res: Msg.Msg;
     str: ARRAY 256 OF CHAR;
+    installObjects: BOOLEAN;
 
   PROCEDURE InstallDirectory(prefix, path: ARRAY OF CHAR): BOOLEAN;
     VAR
@@ -118,7 +119,10 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
       m: Rep.Module;
       path: Rep.URIBuffer;
       i: LONGINT;
+      installObjects: BOOLEAN;
     BEGIN
+      installObjects := ~CCompiler.HaveLibtool();
+      
       (* For every symbol and header file, add an entry to the package's file
          list.  The source and destination name is the file name relative to
          the repository.  Upon installation, the former is interpreted relative
@@ -126,14 +130,21 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
          installation directory.  *)
       FOR i := 0 TO LEN(makeRules.imports^)-1 DO
         m := makeRules.imports[i];
+
+        IF installObjects & ~m.ifData.NoObjectFile() THEN
+          m.origin.GetLocalPath(m, Rep.modObjectFile, path);
+          pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+        END;
         
         m.origin.GetLocalPath(m, Rep.modSymbolFile, path);
         pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
         m.origin.GetLocalPath(m, Rep.modHeaderFileC, path);
         pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
       END;
-      
-      IF InstallDirectory("", CCompiler.libdir.value(StringValue.Value).string^) THEN
+
+      IF installObjects THEN
+        RETURN TRUE;
+      ELSIF InstallDirectory("", CCompiler.libdir.value(StringValue.Value).string^) THEN
         uri := module.GetURI(Rep.modLibrary, TRUE);
         CCompiler.InstallProgramCmd(uri, TRUE, str);
         Logger.ShellCommand(str);
@@ -276,15 +287,22 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
     END BuildDocs;
   
   BEGIN
+    installObjects := ~CCompiler.HaveLibtool();
     ok := TRUE;
 
     i := 0;
     WHILE ok & (i # pkg.library.size) DO
       lib := pkg.library.array[i](Package.Library);
-      makeRules.SetLibraryName(lib.name.array^, lib.version.tuple);
+
       module := GetModule(lib.mainModule.array^);
-      ok := makeRules.Update(module, Rep.modLibrary)
-          & (~install OR InstallLibrary(module, makeRules));
+      IF installObjects THEN
+        ok := makeRules.Update(module, Rep.modExecutable)
+            & (~install OR InstallLibrary(module, makeRules));
+      ELSE
+        makeRules.SetLibraryName(lib.name.array^, lib.version.tuple);
+        ok := makeRules.Update(module, Rep.modLibrary)
+            & (~install OR InstallLibrary(module, makeRules));
+      END;
 
       IF ok THEN
         (* build HTML documentation for modules in library *)

@@ -29,7 +29,26 @@ VAR
   cc, cppflags, cflags, ldflags, libs-, libtool, libdir-: Options.Option;
   install-, installProgram, installData-, uninstall-: Options.Option;
   bindir-, oocdir-: Options.Option;
-  
+
+PROCEDURE HaveLibtool*(): BOOLEAN;
+  BEGIN
+    RETURN (libtool.value(StringValue.Value).string^ # "no");
+  END HaveLibtool;
+
+PROCEDURE SetCommand(mode: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);
+  BEGIN
+    IF (mode # "") & HaveLibtool() THEN
+      COPY (libtool. value(StringValue.Value). string^, cmd);
+      Strings.Append (" --mode=", cmd);
+      Strings.Append (mode, cmd);
+      Strings.Append (" ", cmd);
+    ELSE
+      COPY("", cmd);
+    END;
+    Strings.Append (cc. value(StringValue.Value). string^, cmd);
+    Strings.Append (" ", cmd);
+  END SetCommand;
+
 PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
                            VAR cmd: ARRAY OF CHAR);
   VAR
@@ -54,13 +73,10 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
   
   BEGIN
     IF forLibrary THEN
-      COPY (libtool. value(StringValue.Value). string^, cmd);
-      Strings.Append (" --mode=compile ", cmd);
+      SetCommand("compile", cmd);
     ELSE
-      COPY("", cmd);
+      SetCommand("", cmd);
     END;
-    Strings.Append (cc. value(StringValue.Value). string^, cmd);
-    Strings.Append (" ", cmd);
     Strings.Append (cflags. value(StringValue.Value). string^, cmd);
     Strings.Append (" ", cmd);
     Strings.Append (cppflags. value(StringValue.Value). string^, cmd);
@@ -93,16 +109,11 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    (* always use the libtool wrapper, so that we can add .la files to
-       the linker argument line *)
-    COPY (libtool. value(StringValue.Value). string^, cmd);
-    Strings.Append (" --mode=link ", cmd);
-    
-    Strings.Append (cc. value(StringValue.Value). string^, cmd);
-    Strings.Append (" -o ", cmd);
+    SetCommand("link", cmd);
+    Strings.Append ("-o ", cmd);
     execFile(File.URI). GetPath (str);
     Strings.Append (str, cmd);
-    IF forLibrary THEN
+    IF forLibrary & HaveLibtool() THEN
       Strings.Append (" -rpath ", cmd);
       Strings.Append (libdir. value(StringValue.Value). string^, cmd);
     END;
@@ -122,8 +133,12 @@ PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    COPY (libtool.value(StringValue.Value).string^, cmd);
-    Strings.Append(" --mode=install ", cmd);
+    IF HaveLibtool() THEN
+      COPY (libtool.value(StringValue.Value).string^, cmd);
+      Strings.Append(" --mode=install ", cmd);
+    ELSE
+      COPY("", cmd);
+    END;
     
     Strings.Append(installProgram.value(StringValue.Value).string^, cmd);
     Strings.Append(" ", cmd);
@@ -142,8 +157,12 @@ PROCEDURE UninstallProgramCmd*(path: ARRAY OF CHAR; asLibrary: BOOLEAN;
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    COPY (libtool.value(StringValue.Value).string^, cmd);
-    Strings.Append(" --mode=uninstall ", cmd);
+    IF HaveLibtool() THEN
+      COPY (libtool.value(StringValue.Value).string^, cmd);
+      Strings.Append(" --mode=uninstall ", cmd);
+    ELSE
+      COPY("", cmd);
+    END;
     
     Strings.Append(uninstall.value(StringValue.Value).string^, cmd);
     Strings.Append(" ", cmd);
