@@ -3,7 +3,7 @@
   <version current="0" revision="0" age="0"/>
   
   <pragmas>
-    <set name="LIB_HAVE_LIBXNET">@have_libxnet@</set>
+    <define name="LIB_HAVE_LIBXNET" type="boolean">@have_libxnet@</define>
   </pragmas>
   
   <library name="oo2c" main-module="liboo2c">
