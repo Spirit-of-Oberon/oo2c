@@ -261,5 +261,13 @@
       <code>LONGREAL</code>.  Only values that can be represented as
       denormalized numbers.
     </test>
+
+    <test id="lib_LRealStr_StrToReal1" type="run"
+          file="LibLRealStrStrToReal1.Mod"
+	  output="LibLRealStrStrToReal1.Ref">
+      Use <code>StrToReal</code> to convert strings to floating point
+      numbers.
+    </test>
+ 
   </testcases>
 </testsuite-ext>
