@@ -23,7 +23,7 @@ MODULE OOC:SSA:Algebraic;
 (* FIXME... add more transformations *)
 
 IMPORT
-  Language, Language:Integer, OOC:SSA, OOC:SSA:Opcode;
+  Language, Language:Integer, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
 
 TYPE
   Worklist = POINTER TO WorklistDesc;
@@ -31,9 +31,32 @@ TYPE
     next: Worklist;
     instr: SSA.Instr;
   END;
+
+CONST
+  maxPower2 = 63;
   
 VAR
-  intZero, intOne: Integer.Value;
+  intZero, intOne, intTwo: Integer.Value;
+  power2: ARRAY maxPower2+1 OF Integer.Value;
+
+PROCEDURE IsPowerOf2 (value: Integer.Value): LONGINT;
+(**Returns a non-negative integer if @oparam{value} is a power of two, and
+   @samp{-1} otherwise.  *)
+  VAR
+    i, cmp: LONGINT;
+  BEGIN
+    i := 0;
+    WHILE (i <= maxPower2) DO
+      cmp := value. Compare (power2[i]);
+      IF (cmp = 0) THEN
+        RETURN i;
+      ELSIF (cmp < 0) THEN
+        RETURN -1;
+      END;
+      INC (i);
+    END;
+    RETURN -1;
+  END IsPowerOf2;
 
 PROCEDURE Transform* (pb: SSA.ProcBlock);
   VAR
@@ -41,6 +64,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     worklist: Worklist;
 
   PROCEDURE InspectInstr (instr: SSA.Instr);
+    VAR
+      exp: LONGINT;
+      new: SSA.Instr;
+      
     PROCEDURE Replace (instr: SSA.Instr; with: SSA.Opnd);
       VAR
         use: SSA.Opnd;
@@ -101,7 +128,19 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         ELSIF Equals (instr. opndList. nextOpnd, intZero) THEN (* x*0 = 0 *)
           Replace (instr, instr. opndList. nextOpnd);
         END;
-        
+
+      | Opcode.divide: (* replace DIV by power of two with right shift *)
+        IF (instr. subclass < Opcode.scReal32) &
+           (instr. opndList. nextOpnd. arg IS SSA.Const) THEN
+          exp := IsPowerOf2 (instr. opndList. nextOpnd. arg(SSA.Const). value(Integer.Value));
+          IF (exp >= 0) THEN
+            new := pb. AddInstr (Opcode.shiftRight, instr. subclass);
+            new. AddOpnd (instr. opndList. arg, Opnd.arg);
+            new. AddOpnd (pb. GetConstInt (exp), Opnd.arg);
+            instr. ReplaceUses (new);
+            ASSERT (instr. nextResult = NIL);
+          END;
+        END;
       ELSE  (* ignore any other instructions *)
       END;
     END InspectInstr;
@@ -124,7 +163,20 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     END;
   END Transform;
 
+PROCEDURE Init ();
+  VAR
+    i: LONGINT;
+  BEGIN
+    intZero := Integer.New (0);
+    intOne := Integer.New (1);
+    intTwo := Integer.New (2);
+    
+    power2[0] := intOne;
+    FOR i := 1 TO maxPower2 DO
+      power2[i] := power2[i-1]. Product (intTwo);
+    END;
+  END Init;
+
 BEGIN
-  intZero := Integer.New (0);
-  intOne := Integer.New (1);
+  Init;
 END OOC:SSA:Algebraic.
