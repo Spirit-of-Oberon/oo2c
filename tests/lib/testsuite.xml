@@ -7,7 +7,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_Time">-->
+  select ="prepare_out_module lib_LongStrings_Short1">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -428,6 +428,12 @@
 
     <test id="lib_Time" type="run" file="LibTime.Mod">
       Imports the module <code>Time</code>.  No further tests.
+    </test>
+    
+    <test id="lib_LongStrings_Short1" type="run"
+          file="LibLongStringsShort1.Mod" output="LibLongStringsShort1.Ref">
+      Use <code>Short</code> to convert array of <code>LONGCHAR</code> 
+      to <code>CHAR</code>.
     </test>
     
   </testcases>
