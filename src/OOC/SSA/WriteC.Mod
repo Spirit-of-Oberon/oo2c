@@ -119,6 +119,8 @@ PROCEDURE SubclassToBasicType (res: SSA.Result): DeclWriter.BasicTypeId;
     | Opcode.scSigned16: RETURN DeclWriter.int16
     | Opcode.scSigned32: RETURN DeclWriter.int32
     | Opcode.scSigned64: RETURN DeclWriter.int64
+    | Opcode.scReal32: RETURN DeclWriter.real32
+    | Opcode.scReal64: RETURN DeclWriter.real64
     END;
   END SubclassToBasicType;
 

@@ -217,8 +217,6 @@ PROCEDURE WriteModuleName (w: DeclWriter.Writer;
 
 PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
                            symTab: Sym.Module; exports: Dictionary.Dictionary);
-  VAR
-    import: Repository.Import;
   BEGIN
     WriteModuleName (w, "#ifndef _MODULE_", m, "_", TRUE);
     WriteModuleName (w, "#define _MODULE_", m, "_", TRUE);
