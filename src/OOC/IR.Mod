@@ -1,6 +1,7 @@
 MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
+Log,
   Language, Config:Value, BooleanValue := Config:Value:Boolean, 
   OOC:Error, OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:AST, OOC:SymbolTable:Item, OOC:SymbolTable:Predef;
@@ -79,9 +80,29 @@ TYPE
 TYPE
   PredefProc* = POINTER TO PredefProcDesc;
   PredefProcDesc = RECORD
+  (**Identifies a predefined procedure.  Calls to predefined procedures and
+     functions are always mapped to specialized code.  Instances of
+     @otype{PredefProc} are created during the translation process, but should
+     never appear in the final IR.  *)
     (ExpressionDesc)
     name-: Item.Name;
     decl-: Item.PredefProc;
+  END;
+
+TYPE
+  ProcedureRef* = POINTER TO ProcedureRefDesc;
+  ProcedureRefDesc = RECORD
+    (ExpressionDesc)
+    name-: Item.Name;
+    decl-: Item.ProcDecl;
+  END;
+
+TYPE
+  ModuleRef* = POINTER TO ModuleRefDesc;
+  ModuleRefDesc = RECORD
+    (ExpressionDesc)
+    name-: Item.Name;
+    decl-: Item.Module;
   END;
 
 (* Statements
@@ -127,7 +148,7 @@ TYPE
   ProcedureDesc = RECORD
     (NodeDesc)
     decl-: Item.ProcDecl;
-    statmSeq-: StatementSeq;
+    statmSeq-: StatementSeq;             (* statements in body, never NIL *)
   END;
 
 TYPE
@@ -136,6 +157,7 @@ TYPE
     (NodeDesc)
     name-: Name;
     procList-: ProcedureList;
+    statmSeq-: StatementSeq;             (* statements in body, never NIL *)
   END;
 
 
@@ -280,6 +302,58 @@ PROCEDURE (pproc: PredefProc) Accept* (v: Visitor);
 
 (* -------- *)
 
+PROCEDURE InitProcedureRef (procRef: ProcedureRef; name: Item.Name; decl: Item.ProcDecl);
+  BEGIN
+    InitExpression (procRef);
+    procRef. name := name;
+    procRef. decl := decl;
+  END InitProcedureRef;
+
+PROCEDURE NewProcedureRef (name: Item.Name; decl: Item.ProcDecl): ProcedureRef;
+  VAR
+    procRef: ProcedureRef;
+  BEGIN
+    NEW (procRef);
+    InitProcedureRef (procRef, name, decl);
+    RETURN procRef
+  END NewProcedureRef;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitProcedureRef* (procRef: ProcedureRef);
+  END VisitProcedureRef;
+
+PROCEDURE (procRef: ProcedureRef) Accept* (v: Visitor);
+  BEGIN
+    v. VisitProcedureRef (procRef)
+  END Accept;
+
+(* -------- *)
+
+PROCEDURE InitModuleRef (modRef: ModuleRef; name: Item.Name; decl: Item.Module);
+  BEGIN
+    InitExpression (modRef);
+    modRef. name := name;
+    modRef. decl := decl;
+  END InitModuleRef;
+
+PROCEDURE NewModuleRef (name: Item.Name; decl: Item.Module): ModuleRef;
+  VAR
+    modRef: ModuleRef;
+  BEGIN
+    NEW (modRef);
+    InitModuleRef (modRef, name, decl);
+    RETURN modRef
+  END NewModuleRef;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitModuleRef* (modRef: ModuleRef);
+  END VisitModuleRef;
+
+PROCEDURE (modRef: ModuleRef) Accept* (v: Visitor);
+  BEGIN
+    v. VisitModuleRef (modRef)
+  END Accept;
+
+(* -------- *)
+
 PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item; 
                                      name: Item.Name): Expression;
   VAR
@@ -293,11 +367,23 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
         RETURN NewConst (decl. value, decl)
       | decl: Item.PredefProc DO
         RETURN NewPredefProc (name, decl)
+      | decl: Item.ProcDecl DO
+        RETURN NewProcedureRef (name, decl)
+      | decl: Item.Import DO
+        RETURN NewModuleRef (name, decl. externalSymTab)
+      ELSE
+        Log.Type ("decl", decl); ASSERT (FALSE);
       END
     END;
     
     RETURN NIL
   END NewIdentRef;
+
+PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Item.Item; 
+                                      name: Item.Name): Expression;
+  BEGIN
+    RETURN b. NewIdentRef (modref. decl. ns, context, name)
+  END NewQualident;
 
 
 (* -------- *)
@@ -405,19 +491,22 @@ PROCEDURE (p: Procedure) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitModule* (m: Module; name: Name; procList: ProcedureList);
+PROCEDURE InitModule* (m: Module; name: Name; procList: ProcedureList;
+                       statmSeq: StatementSeq);
   BEGIN
     InitNode (m);
     m. name := name;
     m. procList := procList;
+    m. statmSeq := statmSeq;
   END InitModule;
 
-PROCEDURE (b: Builder) NewModule* (name: Name; procList: ProcedureList): Module;
+PROCEDURE (b: Builder) NewModule* (name: Name; procList: ProcedureList;
+                                   statmSeq: StatementSeq): Module;
   VAR
     m: Module;
   BEGIN
     NEW (m);
-    InitModule (m, name, procList);
+    InitModule (m, name, procList, statmSeq);
     RETURN m
   END NewModule;
 
