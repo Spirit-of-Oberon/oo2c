@@ -10,7 +10,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard4 opTypeGuard5">-->
+  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard4
+  opTypeGuard5 opTypeGuard6">-->
 
   &TestSetupWithOut;
     
@@ -728,6 +729,10 @@
     <test id="opTypeGuard5" type="error" file="OpTypeGuard5.Mod">
       Provoke failure of type guard on a <code>NIL</code> value.
     </test>
+    <!--<test id="opTypeGuard6" type="error" file="OpTypeGuard6.Mod">
+      Provoke failure of type guard on a variable parameter of record
+      type.
+    </test>-->
 
     <test id="opExprCompat1" type="run" relevance="informal" file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
