@@ -16,4 +16,7 @@
   <test id="libio_Net" type="run" file="LibNet.Mod">
     Imports modules <code>Net:*</code>.
   </test>
+  <test id="libio_TextRider1" type="run" file="LibIoTextRider1.Mod" output="LibIoTextRider1.Ref">
+    Tests the <code>Reader</code> defined in <code>IO:TextRider</code>.
+  </test>
 </testcases>
