@@ -295,7 +295,7 @@ RAISES IO.Error;
     ELSE
       modURI.GetString(str);
     END;
-    errList := Error.NewList (str);
+    errList := Error.NewList (Object.NewLatin1(str));
     
     (* open file for reading *)
     file := modURI. GetChannel (URI.channelOld);

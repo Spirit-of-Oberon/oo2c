@@ -1,7 +1,7 @@
 MODULE Config:Parser;
 
 IMPORT
-  Object, IO, LongStrings,
+  Object, IO, LongStrings, OS:Path,
   XML:EntityResolver, XMLBuilder := XML:Builder, XML:DTD, XML:Error,
   Locator := XML:Locator, XMLParser := XML:Parser,
   <*PUSH; Warnings:=FALSE*>XML:UnicodeCodec:Latin1<*POP*>;
@@ -239,6 +239,7 @@ RAISES IO.Error;
   BEGIN
     NEW (p);
     p. builder := NewBuilder();
+    filePath := Path.Encode(filePath);
     chars := filePath(Object.String8).CharsLatin1();
     p. xmlParser := XMLParser.NewFile (chars^, NIL, NIL, NIL,
                                        p. builder);

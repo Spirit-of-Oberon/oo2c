@@ -369,6 +369,7 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
           IF (buffer = NIL) OR (path.length >= LEN(buffer^)) THEN
             NEW(buffer, path.length+1);
           END;
+          path := path.ToString8("?");
           chars := path(Object.String8).CharsLatin1();
           COPY(chars^, buffer^);
 
@@ -1322,21 +1323,18 @@ RAISES IO.Error;
     i := ProcessManagement.system(cmd);
   END WriteRepository;
 
-PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: STRING;
-                            VAR cmd: ARRAY OF CHAR);
+PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: STRING): STRING;
   VAR
-    b: StringBuffer.StringBuffer;
-    chars: StringBuffer.CharsLatin1;
+    sb: StringBuffer.StringBuffer;
   BEGIN
-    b := StringBuffer.New(uninstall);
-    b.Append(" ");
-    b.Append(targetDir);
-    b.Append(pkgInfoSubdir);
-    b.Append("/");
-    b.Append(pkg.name);
-    b.Append(".xml");
-    chars := b.CharsLatin1();
-    COPY(chars^, cmd);
+    sb := StringBuffer.New(uninstall);
+    sb.Append(" ");
+    sb.Append(targetDir);
+    sb.Append(pkgInfoSubdir);
+    sb.Append("/");
+    sb.Append(pkg.name);
+    sb.Append(".xml");
+    RETURN sb.ToString();
   END RemovePkgInfoCmd;
 
 PROCEDURE GetPkgInfo*(targetDir: STRING; pkgName: STRING;
@@ -1346,18 +1344,16 @@ RAISES IO.Error;
     pkgInfo: Rep.PkgInfo;
     sb: StringBuffer.StringBuffer;
     str: STRING;
-    chars: StringBuffer.CharsLatin1;
   BEGIN
     sb := StringBuffer.NewCapacity(256);
     sb.Append(targetDir);
     sb.Append(pkgInfoSubdir);
     sb.Append("/");
-    sb.Append(pkgName.ToString8("?"));
+    sb.Append(pkgName);
     sb.Append(".xml");
 
     str := sb.ToString();
-    chars := sb.CharsLatin1();
-    errList := Error.NewList(chars^);
+    errList := Error.NewList(str);
     pkgInfo := ParseFile(str, TRUE, errList);
     IF (pkgInfo # NIL) THEN
       RETURN pkgInfo(Package);
@@ -1372,12 +1368,10 @@ RAISES IO.Error;
   VAR
     fileName: STRING;
     pkgInfo: Rep.PkgInfo;
-    chars: Object.CharsLatin1;
   BEGIN
     fileName := targetDir+pkgInfoFile;
     
-    chars := fileName(Object.String8).CharsLatin1();
-    errList := Error.NewList(chars^);
+    errList := Error.NewList(fileName);
     pkgInfo := ParseFile(fileName, FALSE, errList);
     IF (pkgInfo # NIL) THEN
       RETURN pkgInfo(Repository);
@@ -1405,6 +1399,7 @@ RAISES IO.Error;
   
   BEGIN
     dirName := targetDir+pkgInfoSubdir;
+    dirName := dirName.ToString8("?");
     chars := dirName(Object.String8).CharsLatin1();
     
     files := OSFiles.listdir(chars^, res);
@@ -1413,9 +1408,8 @@ RAISES IO.Error;
       FOR i := 0 TO LEN(files^)-1 DO
         IF IsPkgInfo(files[i]) THEN
           fileName := dirName+"/"+files[i];
-          chars := fileName(Object.String8).CharsLatin1();
           
-          errList := Error.NewList(chars^);
+          errList := Error.NewList(fileName);
           pkg := ParseFile(fileName, TRUE, errList);
           IF (errList.msgCount # 0) THEN
             errList.Write(StdChannels.stdout);

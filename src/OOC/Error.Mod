@@ -22,7 +22,7 @@ MODULE OOC:Error;
 
 
 IMPORT
-  Channel, TextRider, LongStrings, CharClass, M := Msg;
+  Channel, TextRider, LongStrings, CharClass, M := Msg, Object, OS:Path;
   
   
 TYPE
@@ -89,14 +89,18 @@ PROCEDURE New* (context: Context; code: Code): Msg;
     RETURN M.New (context, code)
   END New;
 
-PROCEDURE NewList* (fileName: ARRAY OF CHAR): List;
+PROCEDURE NewList* (fileName: STRING): List;
 (**Creates new error list for the file @oparam{fileName}.  *)
   VAR
     list: List;
+    chars: Object.CharsLatin1;
   BEGIN
+    fileName := Path.Encode(fileName);
+    chars := fileName(Object.String8).CharsLatin1();
+    
     NEW (list);
     M.InitMsgList (list);
-    COPY (fileName, list. fileName);
+    COPY (chars^, list. fileName);
     list. adjustCharPos := FALSE;
     list. noError := TRUE;
     RETURN list

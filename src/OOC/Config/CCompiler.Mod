@@ -21,7 +21,7 @@ MODULE OOC:Config:CCompiler;
 *)
 
 IMPORT
-  Strings, Object, ADT:StringBuffer, URI, URI:Scheme:File,
+  Object, ADT:StringBuffer, URI, URI:Scheme:File,
   CfgData := Config, Config:Section:Options, OOC:Config, OOC:Repository;
 
 VAR
@@ -34,15 +34,6 @@ PROCEDURE HaveLibtool*(): BOOLEAN;
     RETURN ~libtool.value(CfgData.StringVar).string.Equals("no");
   END HaveLibtool;
 
-PROCEDURE Append(str: STRING; VAR cmd: ARRAY OF CHAR);
-  VAR
-    chars: Object.CharsLatin1;
-  BEGIN
-    str := str.ToString8("?");
-    chars := str(Object.String8).CharsLatin1();
-    Strings.Append(chars^, cmd);
-  END Append;
-
 PROCEDURE SetCommand(mode: STRING): StringBuffer.StringBuffer;
   VAR
     sb: StringBuffer.StringBuffer;
@@ -54,7 +45,7 @@ PROCEDURE SetCommand(mode: STRING): StringBuffer.StringBuffer;
       sb.Append(mode);
       sb.Append(" ");
     END;
-    sb.Append(cc.value(CfgData.StringVar).string);
+    sb.Append(cc.value);
     sb.Append(" ");
     RETURN sb;
   END SetCommand;
@@ -87,9 +78,9 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN): STRING;
     ELSE
       sb := SetCommand("");
     END;
-    sb.Append(cflags. value(CfgData.StringVar). string);
+    sb.Append(cflags.value);
     sb.Append(" ");
-    sb.Append(cppflags. value(CfgData.StringVar). string);
+    sb.Append(cppflags.value);
     
     (* Add include path for the run-time header files.  In theory, this include
        directory should have the highest priority, but _only_ for run-time
@@ -134,52 +125,54 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN): STRING;
     RETURN sb.ToString();
   END LinkProgramCmd;
 
-PROCEDURE InstallDirectoryCmd*(path: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);
+PROCEDURE InstallDirectoryCmd*(path: STRING): STRING;
+  VAR
+    sb: StringBuffer.StringBuffer;
   BEGIN
-    COPY("", cmd);
-    Append(install.value(CfgData.StringVar).string, cmd);
-    Strings.Append(" -d ", cmd);
-    Strings.Append(path, cmd);
+    sb := StringBuffer.New(install.value.ToString());
+    sb.Append(" -d ");
+    sb.Append(path);
+    RETURN sb.ToString();
   END InstallDirectoryCmd;
 
-PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
-                             VAR cmd: ARRAY OF CHAR);
+PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN): STRING;
   VAR
+    sb: StringBuffer.StringBuffer;
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    COPY("", cmd);
+    sb := StringBuffer.New("");
     IF HaveLibtool() THEN
-      Append(libtool.value(CfgData.StringVar).string, cmd);
-      Strings.Append(" --mode=install ", cmd);
+      sb.Append(libtool.value);
+      sb.Append(" --mode=install ");
     END;
     
-    Append(installProgram.value(CfgData.StringVar).string, cmd);
-    Strings.Append(" ", cmd);
+    sb.Append(installProgram.value);
+    sb.Append(" ");
     file(File.URI).GetPath(str);
-    Strings.Append(str, cmd);
-    Strings.Append(" ", cmd);
+    sb.AppendLatin1(str);
+    sb.Append(" ");
     IF asLibrary THEN
-      Append (libdir.value(CfgData.StringVar).string, cmd);
+      sb.Append(libdir.value);
     ELSE
-      Append (bindir.value(CfgData.StringVar).string, cmd);
+      sb.Append(bindir.value);
     END;
+    RETURN sb.ToString();
   END InstallProgramCmd;
 
-PROCEDURE UninstallProgramCmd*(path: STRING; asLibrary: BOOLEAN;
-                               VAR cmd: ARRAY OF CHAR);
+PROCEDURE UninstallProgramCmd*(path: STRING; asLibrary: BOOLEAN): STRING;
   VAR
-    chars: Object.CharsLatin1;
+    sb: StringBuffer.StringBuffer;
   BEGIN
-    COPY("", cmd);
+    sb := StringBuffer.New("");
     IF HaveLibtool() THEN
-      Append(libtool.value(CfgData.StringVar).string, cmd);
-      Strings.Append(" --mode=uninstall ", cmd);
+      sb.Append(libtool.value);
+      sb.Append(" --mode=uninstall ");
     END;
     
-    Append(uninstall.value(CfgData.StringVar).string, cmd);
-    Strings.Append(" ", cmd);
-    chars := path(Object.String8).CharsLatin1();
-    Strings.Append(chars^, cmd);
+    sb.Append(uninstall.value);
+    sb.Append(" ");
+    sb.Append(path);
+    RETURN sb.ToString();
   END UninstallProgramCmd;
 
 PROCEDURE RegisterConfig*;

@@ -21,20 +21,22 @@ MODULE OOC:Config:Assembler;
 *)
 
 IMPORT
-  Strings, URI, URI:Scheme:File;
+  ADT:StringBuffer, URI, URI:Scheme:File;
 
 
-PROCEDURE AssembleFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
+PROCEDURE AssembleFileCmd* (in, out: URI.URI): STRING;
   VAR
     str: ARRAY 2*1024 OF CHAR;
+    sb: StringBuffer.StringBuffer;
   BEGIN
-    COPY ("as ", cmd);
+    sb := StringBuffer.New("as ");
     
     in(File.URI). GetPath (str);
-    Strings.Append (str, cmd);
-    Strings.Append (" -o ", cmd);
+    sb.AppendLatin1(str);
+    sb.Append(" -o ");
     out(File.URI). GetPath (str);
-    Strings.Append (str, cmd);
+    sb.AppendLatin1(str);
+    RETURN sb.ToString();
   END AssembleFileCmd;
 
 END OOC:Config:Assembler.

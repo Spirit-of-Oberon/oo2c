@@ -1,7 +1,7 @@
 MODULE OOC:Auxiliary:ParseModule;
 
 IMPORT
-  IO, URI,
+  IO, URI, Object,
   OOC:Config, OOC:Config:Pragmas, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
@@ -55,7 +55,7 @@ RAISES IO.Error;
       pragmaHistory := NIL;
       uri := m. GetURI (Repository.modModuleSource, TRUE);
       uri. GetString (uriStr);
-      errList := Error.NewList (uriStr);
+      errList := Error.NewList(Object.NewLatin1(uriStr));
     ELSE
       errList := inputBuffer. errList;
       scannerBuilder := BasicList.New (inputBuffer, TRUE);

@@ -21,9 +21,9 @@ MODULE OOC:Make;
 *)
 
 IMPORT
-  Channel, Msg, Out, StdChannels, Strings, Time, IO, CfgData := Config,
+  Channel, Msg, Out, StdChannels, Time, IO,
 
-  Object, ADT:ArrayList, ADT:Dictionary, StringSearch,
+  Object, ADT:ArrayList, ADT:Dictionary, ADT:StringBuffer, StringSearch,
   StringSearch:NoMatch, OS:Path,
   OSFiles := OS:Files, OS:ProcessManagement, URI, URI:Scheme:File,
 
@@ -41,7 +41,6 @@ IMPORT
       OOC:Make:WriteMainFileAssembler, SSAtoIA32 := OOC:IA32:WriteAssembler;
 
 TYPE
-  ShellCommand* = ARRAY 4*1024 OF CHAR;
   ModuleInfo = POINTER TO ModuleInfoDesc;
   ModuleInfoDesc = RECORD
     (Object.ObjectDesc)
@@ -316,7 +315,7 @@ PROCEDURE CreateErrList(module: Rep.Module): Error.List;
   BEGIN
     uri := module.GetURI(Rep.modModuleSource, TRUE);
     uri. GetString(uriStr);
-    RETURN Error.NewList (uriStr);
+    RETURN Error.NewList(Object.NewLatin1(uriStr));
   END CreateErrList;
 
 PROCEDURE (r: Rules) WriteErrList* (errList: Error.List);
@@ -740,15 +739,15 @@ RAISES IO.Error;
 PROCEDURE (r: Rules) UpdateInterfaceHTML(module: Rep.Module): BOOLEAN
 RAISES IO.Error;
   VAR
+    sb: StringBuffer.StringBuffer;
+    cmd: STRING;
     res: Msg.Msg;
-    str: ShellCommand;
     success: BOOLEAN;
     path: Rep.URIBuffer;
     uri: URI.URI;
     exit: LONGINT;
     errList: Error.List;
-    chars: Object.CharsLatin1;
-
+    
   PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
     BEGIN
       IF (stylesheetSystemId = NIL) THEN
@@ -771,34 +770,36 @@ RAISES IO.Error;
     IF success THEN
       IF DerivedIsOlder(module, Rep.modInterfaceHTML, Rep.modInterfaceDescr) THEN
         exit := 0;
-        (* put file name of style sheet into str *)
-        uri := GetSystemId (Config.repositories);
-        uri(File.URI). GetPath (str);
-                
+
+        (* xsltproc command name *)
+        sb := StringBuffer.New(Config.xsltproc.value.ToString());
+        
         (* put -o <file> option in front of style sheet  *)
-        Strings.Insert (" ", 0, str);
+        sb.Append(" -o ");
         uri := module. GetURI (Rep.modInterfaceHTML, TRUE);
         uri(File.URI). GetPath (path);
-        Strings.Insert (path, 0, str);
-        Strings.Insert (" -o ", 0, str);
+        sb.AppendLatin1(path);
 
         (* create directory for HTML file, if it does not exist *)
         Path.dirname (path, path);
         OSFiles.makedirs (path, OSFiles.defaultMode, res);
         
-        (* prefix option and style sheet argument with command name *)
-        chars := Config.xsltproc.value(CfgData.StringVar).string(Object.String8).CharsLatin1();
-        Strings.Insert(chars^, 0, str);
-
+        (* append file name of style sheet *)
+        uri := GetSystemId (Config.repositories);
+        uri(File.URI). GetPath (path);
+        sb.Append(" ");
+        sb.AppendLatin1(path);        
+        
         (* append name of XML file *)
         uri := module. GetURI (Rep.modInterfaceDescr, TRUE);
         uri(File.URI). GetPath (path);
-        Strings.Append (" ", str);
-        Strings.Append (path, str);
+        sb.Append(" ");
+        sb.AppendLatin1(path);
         
         IF (res = NIL) THEN
-          Logger.ShellCommand(Object.NewLatin1(str));
-          exit := ProcessManagement.system (Object.NewLatin1(str))
+          cmd := sb.ToString();
+          Logger.ShellCommand(cmd);
+          exit := ProcessManagement.system(cmd);
         END;
         
         errList := NIL;
@@ -901,7 +902,6 @@ RAISES IO.Error;
    significant way.  *)
   VAR
     cmd: STRING;
-    str: ShellCommand;
     success: BOOLEAN;
   BEGIN
     IF ~CCompiler.HaveLibtool() &
@@ -920,10 +920,10 @@ RAISES IO.Error;
       success := r.Update(module, Rep.modAssemblerFile);
       IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modAssemblerFile) THEN
         module.CreateOutputDir (Rep.modObjectFile);
-        Assembler.AssembleFileCmd(module.GetURI(Rep.modAssemblerFile, TRUE),
-                                  module.GetURI(Rep.modObjectFile, TRUE), str);
-        Logger.ShellCommand(Object.NewLatin1(str));
-        success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
+        cmd := Assembler.AssembleFileCmd(module.GetURI(Rep.modAssemblerFile, TRUE),
+                                  module.GetURI(Rep.modObjectFile, TRUE));
+        Logger.ShellCommand(cmd);
+        success := (ProcessManagement.system (cmd) = 0);
       END;
       
     ELSE
@@ -1035,7 +1035,6 @@ RAISES IO.Error;
    @endprecond *)
   VAR
     cmd: STRING;
-    str: ShellCommand;
     success: BOOLEAN;
   BEGIN
     IF (r.backend = backendSSAtoIA32) THEN
@@ -1043,10 +1042,10 @@ RAISES IO.Error;
       IF DerivedIsOlder(module, Rep.modMainObjectFile,
                         Rep.modMainFileAssembler) THEN
         module.CreateOutputDir (Rep.modMainObjectFile);
-        Assembler.AssembleFileCmd(module.GetURI(Rep.modMainFileAssembler, TRUE),
-                                  module.GetURI(Rep.modMainObjectFile, TRUE), str);
-        Logger.ShellCommand(Object.NewLatin1(str));
-        success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
+        cmd := Assembler.AssembleFileCmd(module.GetURI(Rep.modMainFileAssembler, TRUE),
+                                  module.GetURI(Rep.modMainObjectFile, TRUE));
+        Logger.ShellCommand(cmd);
+        success := (ProcessManagement.system(cmd) = 0);
       END;
       
     ELSE
