@@ -273,7 +273,7 @@ PROCEDURE Resolve* (symTab: Sym.Module;
         ELSE
           module := decl. Module();
           IF ~interfaceCache. HasKey (module) THEN
-            interfaceCache. Set (module, Exports.GetExports (module))
+            interfaceCache. Set (module, Exports.GetExports (module, FALSE))
           END;
           obj := interfaceCache. Get (module);
           exports := obj(Dictionary.Dictionary);
@@ -316,7 +316,7 @@ PROCEDURE Resolve* (symTab: Sym.Module;
              (ref. mark = Doc.markOberonField) & 
              (tokenList. head. nextInline = NIL) THEN
             (* if we are within a record, and the reference command is
-               `ofield', and if the reference is a single symbol, the try to
+               `ofield', and if the reference is a single symbol, then try to
                resolve the identifier in the record context  *)
             decl := nsRecord. Identify (identificationContext, GetName(), TRUE)
           END;
@@ -458,26 +458,29 @@ PROCEDURE Resolve* (symTab: Sym.Module;
       ptr: Sym.Item;
       ns: Sym.Namespace;
     BEGIN
-      IF (item IS Sym.Declaration) THEN
-
+      WITH item: Sym.Declaration DO
         IF (item IS Sym.ProcDecl) THEN
           identificationContext := item
         ELSE
-          ns := item(Sym.Declaration). GetEmbeddedNamespace (FALSE);
+          ns := item. GetEmbeddedNamespace (FALSE);
           IF (ns # NIL) THEN
             nsRecord := ns
           END
         END;
         
-        IF (item(Sym.Declaration). docString # NIL) THEN
+        IF (item. exportMark # Sym.nameNotExported) &
+           (item. docString # NIL) THEN
           ResolveDoc (item(Sym.Declaration). docString, 
                       item(Sym.Declaration),
                       identificationContext,
                       nsRecord)
         END
         
-      ELSIF (item IS Sym.Record) THEN
-        nsRecord := item. Namespace()
+      | item: Sym.Record DO
+        nsRecord := item. Namespace();
+
+      ELSE
+        (* nothing to do *)
       END;
       
       ptr := item. nestedItems;
