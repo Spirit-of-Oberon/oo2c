@@ -46,7 +46,7 @@ VAR
   reportWriter: XMLWriter.Writer;
   results: Results;
   str: ARRAY 256 OF CHAR;
-  exitError: BOOLEAN;
+  exitError, stopOnError: BOOLEAN;
 
 PROCEDURE CheckErrorFile (msg: Msg.Msg; file: ARRAY OF CHAR);
   VAR
@@ -73,7 +73,8 @@ PROCEDURE CheckError (msg: Msg.Msg);
   END CheckError;
 
 PROCEDURE ReadConfig (VAR setup: TestSetup.TestSetup;
-                      VAR suite: Testcases.TestSuite);
+                      VAR suite: Testcases.TestSuite;
+                      VAR stopOnError: BOOLEAN);
   CONST
     testSetup = 0;
     testCases = 1;
@@ -121,12 +122,17 @@ PROCEDURE ReadConfig (VAR setup: TestSetup.TestSetup;
   
   BEGIN
     setup := NIL;
+    stopOnError := FALSE;
     r := TextRider.ConnectReader (ProgramArgs.args);
     IF (r = NIL) THEN
       CheckError (ProgramArgs.args. res)
     ELSE
       r. ReadLine (arg);
       r. ReadLine (arg);
+      IF (arg = "--stop-on-error") THEN
+        stopOnError := TRUE;
+        r. ReadLine (arg);
+      END;
       
       elem := ReadURI (File.ToURI (arg), testSetup);
       setup := elem(TestSetup.TestSetup);
@@ -313,8 +319,8 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
               (result # Processor.processCrash) THEN
             Out.String (" (informal test)")
           ELSE
-            IF (class = failed) THEN
-              (*              Out.Ln; Out.String ("Aborting..."); Out.Ln; HALT (1)*)
+            IF (class = failed) & stopOnError THEN
+              Out.Ln; Out.String ("Aborting..."); Out.Ln; HALT (2)
             END;
             
             INC (results[class])
@@ -340,8 +346,9 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
   END RunTests;
     
 BEGIN
-  IF (ProgramArgs.args. ArgNumber() # 2) THEN
-    Err.String ("Usage: RunTests <test-setup> <report-file>"); Err.Ln; HALT (1)
+  IF (ProgramArgs.args. ArgNumber() # 2) &
+     (ProgramArgs.args. ArgNumber() # 3) THEN
+    Err.String ("Usage: RunTests [--stop-on-error] <test-setup> <report-file>"); Err.Ln; HALT (1)
   ELSE
     (* make error message values "line" and "character position" Emacs
        compatible be having them start at line 1, point 1 for the XML
@@ -349,7 +356,7 @@ BEGIN
     XMLError.errMsgLineBase := 1;
     XMLError.errMsgCharPosBase := 1;
     
-    ReadConfig (testSetup, testSuite)
+    ReadConfig (testSetup, testSuite, stopOnError)
   END;
   
   proc := Processor.New (testSetup);
