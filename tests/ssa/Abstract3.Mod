@@ -1,0 +1,7 @@
+MODULE Abstract3;
+
+TYPE
+  R = RECORD [ABSTRACT] END;
+  Q = ARRAY 128 OF R;
+  
+END Abstract3.

@@ -1,0 +1,12 @@
+MODULE Abstract9;
+
+TYPE
+  R0 = RECORD [ABSTRACT] END;
+  P0 = POINTER TO R0;
+  R1 = RECORD (R0) END;
+  P1 = POINTER TO R1;
+  
+PROCEDURE (p: P0) [ABSTRACT] Proc*;
+  END Proc;
+
+END Abstract9.

@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; noLengthInfo1">-->
+  select ="&SetupTestCasesWithOut; noDescriptor1">-->
   
   &TestSetupWithOut;
     
@@ -220,6 +220,11 @@
       Declares a pointer variable whose array lacks length information
       and writes to the pointer element.  Even with index checks
       enabled, this particular index access must not be checked.
+    </test>
+
+    <test id="noDescriptor1" type="accept" file="NoDescriptor1.Mod">
+      A <code>NO_TYPE_TAG</code> record as a formal variable
+      parameter is not accompanied by a type tag value.
     </test>
   </testcases>
 </testsuite-ext>

@@ -21,7 +21,8 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
+  Msg, ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable,
+  OOC:SymbolTable:Namespace,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Predef, OOC:SymbolTable:ImportModules, OOC:Doc:ResolveRef;
 
@@ -47,6 +48,10 @@ CONST
   notModule = 18;
   invalidModifierFlag = 19;
   modifierFlagWithoutEffect = 20;
+  cannotCreateInstance = 21;
+  abstractProcForConcreteRecord = 22;
+  abstractProcNotExported = 23;
+  procedureStillAbstract = 24;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -58,7 +63,6 @@ VAR
   createNamespaceContext: ErrorContext;
   predefModule: Sym.Module;
   systemModule: Sym.Module;
-
 
 PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error.LString);
   VAR
@@ -105,6 +109,14 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Invalid modifier flag"
     | modifierFlagWithoutEffect:
       t := "This modifier flag has no effect here"
+    | cannotCreateInstance:
+      t := "Cannot create an instance an abstract type"
+    | abstractProcForConcreteRecord:
+      t := "Receiver type is not abstract"
+    | abstractProcNotExported:
+      t := "Abstract procedure must be exported"
+    | procedureStillAbstract:
+      t := "Inherited procedure `${name}' is still abstract"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -404,7 +416,6 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
      type of a record are checked.  *)
     VAR
       ptr: Sym.Item;
-      baseType: Sym.Type;
       
     PROCEDURE GetTypeByName (typeName: Sym.Type; contextOfUse: Sym.Item; 
                       extendedSearch: BOOLEAN; errList: Error.List): Sym.Type;
@@ -497,17 +508,8 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
                                               contextOfUse, FALSE, errList)
         | item: Sym.Record DO
           IF (item. baseType # NIL) THEN
-            baseType := GetTypeByName (item. baseType, contextOfUse, FALSE, errList);
-            IF ~(baseType IS Sym.TypeName) THEN
-              IF TR.IsValidRecordBaseType (baseType) THEN
-                item. ns(Namespace.Extended). 
-                  SetBaseNamespace (baseType(Sym.Record). 
-                                      ns(Namespace.Namespace));
-                item. baseType := baseType
-              ELSE
-                Err (illegalRecordBase, item. baseType(Sym.TypeName))
-              END
-            END
+            item.baseType := GetTypeByName (item.baseType, contextOfUse,
+                                            FALSE, errList);
           END
         
         (* scope objects: fix context of use for using 
@@ -534,6 +536,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     VAR
       ptr: Sym.Item;
       type: Sym.Type;
+      record: Sym.Record;
     
     PROCEDURE CheckOpenArray (type, srcCodeType: Sym.Type);
       BEGIN
@@ -541,6 +544,13 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           ErrType (invalidOpenArray, srcCodeType)
         END
       END CheckOpenArray;
+
+    PROCEDURE CheckInstance (type, srcCodeType: Sym.Type);
+      BEGIN
+        IF ~TR.VariableInstance(type) THEN
+          ErrType(cannotCreateInstance, srcCodeType);
+        END;
+      END CheckInstance;
     
     BEGIN
       IF (item # NIL) THEN
@@ -551,7 +561,8 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
               ErrType (invalidParameterType, item. srcCodeType)
             END
           ELSE
-            CheckOpenArray (item. type, item. srcCodeType)
+            CheckOpenArray (item. type, item. srcCodeType);
+            CheckInstance(item.type, item.srcCodeType);
           END;
           IF item. isReceiver & ~(type IS Sym.TypeName) THEN
             IF ~TR.IsValidReceiverType (type) THEN
@@ -561,10 +572,22 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
             ELSIF (type IS Sym.Pointer) & item. isVarParam THEN
               ErrType (invalidReceiverModePointer, item. srcCodeType)
             END
-          END
+          END;
           
         | item: Sym.FieldDecl DO
-          CheckOpenArray (item. type, item. srcCodeType)
+          CheckOpenArray (item. type, item. srcCodeType);
+          CheckInstance(item.type, item.srcCodeType);
+
+        | item: Sym.ProcDecl DO
+          IF item.isTypeBound & item.isAbstract THEN
+            record := item.Class();
+            IF (record # NIL) & ~record.isAbstract THEN
+              ErrDecl(abstractProcForConcreteRecord, item, errList);
+            END;
+            IF (item.exportMark = Sym.nameNotExported) THEN
+              ErrDecl(abstractProcNotExported, item, errList);
+            END;
+          END;
           
         | item: Sym.Pointer DO
           type := item. baseType;
@@ -584,8 +607,20 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           IF ~(type IS Sym.TypeName) &
              ~TR.IsValidArrayElementType (type, item. isOpenArray) THEN
             ErrType (invalidArrayElementType, item. srcCodeElementType)
+          END;
+          CheckInstance(item.elementType, item.srcCodeElementType);
+
+        | item: Sym.Record DO
+          IF (item.baseType # NIL) THEN
+            type := item.baseType;
+            IF TR.IsValidRecordBaseType(type) THEN
+              item.ns(Namespace.Extended). 
+                  SetBaseNamespace(type(Sym.Record).ns(Namespace.Namespace));
+            ELSE
+              Err (illegalRecordBase, item.srcCodeBaseType(Sym.TypeName))
+            END
           END
-        
+          
         ELSE  (* ignore any other kind of items *)
         END;
         
@@ -674,12 +709,15 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
   PROCEDURE CheckExtendedRecords (item: Sym.Item; errList: Error.List);
   (* Performs semantic checks on the field and type-bound procedure of 
      records.  Also, this procedure sets the fields
-     @ofield{Sym := OOC:SymbolTable.ProcDecl.tbProcIndex}, and
-     @ofield{Sym := OOC:SymbolTable.Record.tbProcCount}.  *)
+     @ofield{Sym.ProcDecl.tbProcIndex}, and
+     @ofield{Sym.Record.tbProcCount}.  *)
     VAR
       ptr: Sym.Item;
     
     PROCEDURE CheckRecord (record: Sym.Record);
+      VAR
+        i: LONGINT;
+        proc: Sym.ProcDecl;
       BEGIN
         IF (record. tbProcCount = -1) THEN
           IF (record. baseType = NIL) OR 
@@ -689,8 +727,19 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
             CheckRecord (record. baseType(Sym.Record));
             record. tbProcCount := record. baseType(Sym.Record). tbProcCount
           END;
-          record. ns(Namespace.Extended). 
-            CheckRestrictions (record, errList)
+          record.ns(Namespace.Extended).CheckRestrictions (record, errList);
+
+          IF ~record.isAbstract THEN
+            (* check that no abstract procedure remain *)
+            FOR i := 0 TO record.tbProcCount-1 DO
+              proc := record.ns(Namespace.Extended).GetTBProcByIndex (i);
+              IF proc.isAbstract THEN
+                ErrType(procedureStillAbstract, record);
+                lastError.SetStringAttrib("name",
+                                          Msg.GetStringPtr(proc.name.str^));
+              END;
+            END;
+          END;
         END
       END CheckRecord;
     
@@ -711,12 +760,9 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     END CheckExtendedRecords;
   
   PROCEDURE ResolveModifierFlags (item: Sym.Item; errList: Error.List);
-  (* Performs semantic checks on the field and type-bound procedure of 
-     records.  Also, this procedure sets the fields
-     @ofield{Sym := OOC:SymbolTable.ProcDecl.tbProcIndex}, and
-     @ofield{Sym := OOC:SymbolTable.Record.tbProcCount}.  *)
     VAR
       ptr: Sym.Item;
+      type: Sym.Type;
       
     PROCEDURE ResolveFlags (item: Sym.Item);
       VAR
@@ -820,10 +866,35 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           END;
         END;
       END ResolveFlags;
+
+    PROCEDURE ResolveFlagsDirect(referrer, item: Sym.Item);
+      BEGIN
+        IF (referrer.Module() = item.Module()) THEN
+          ResolveFlags(item);
+        END;
+      END ResolveFlagsDirect;
     
     BEGIN
       IF (item # NIL) THEN
         ResolveFlags(item);
+        
+        WITH item: Sym.Pointer DO
+          IF (item.baseType IS Sym.Record) &
+             ~item.baseType(Sym.Record).hasDescriptor THEN
+            item.isStatic := TRUE;
+          END;
+
+        | item: Sym.VarDecl DO
+          IF item.isParameter THEN
+            type := item.type;
+            ResolveFlagsDirect(item, type);
+            IF (type IS Sym.Record) & ~type(Sym.Record).hasDescriptor OR
+               (type IS Sym.Array) & ~type(Sym.Array).hasLengthInfo THEN
+              item.supplementArgs := FALSE;
+            END;
+          END;
+        ELSE  (* ignore *)
+        END;
         
         (* decend into nested objects *)
         ptr := item. nestedItems;
@@ -879,6 +950,12 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
        past this point.  Check for instances of Sym.TypeName before assuming
        that the types are valid.  *)
       
+    (* fourth and a half pass: resolve modifier flags that may be attached to
+       declarations and types; this must be done before dealing with any
+       restrictions imposed on data type *)
+    visited := Dictionary.New();
+    ResolveModifierFlags (root, errList);
+    
     (* fifth pass: check type restrictions of declarations *)
     CheckTypeRestrictions (root, errList);
 
@@ -897,16 +974,10 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
 
     (* here holds: any namespace (module, procedure, or record) can be
        searched and is guaranteed to deliver the correct results *)
-
-
+    
     (* nineth pass: check namespace restrictions imposed on extended
        records and assign indexes to type-bound procedures *)
     CheckExtendedRecords (root, errList);
-    
-    (* last pass(?): resolve modifier flags that may be attached to
-       declarations and types *)
-    visited := Dictionary.New();
-    ResolveModifierFlags (root, errList);
     
     ResolveRef.Resolve (root, errList)
   END CreateNamespace;

@@ -1071,6 +1071,10 @@ CONST
   objectSizeMismatch = 52;
   unusedDeclaration = 53;
   noLengthInfo = 54;
+  noTypeTag = 55;
+  cannotCreateInstance = 56;
+  abstractWithBegin = 57;
+  abstractSuperCall = 58;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1245,6 +1249,14 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := Error.warningPrefix+"Unused object"
     | noLengthInfo:
       t := "Length of this array value cannot be determined"
+    | noTypeTag:
+      t := "This variable has no type tag"
+    | cannotCreateInstance:
+      t := "Cannot create an instance an abstract type"
+    | abstractWithBegin:
+      t := "Abstract procedure cannot have a BEGIN part"
+    | abstractSuperCall:
+      t := "Called procedure is declared abstract"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2123,12 +2135,14 @@ PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
     i: Deref;
   BEGIN
     WITH design: SelectProc DO (* super call of type-bound procedure *)
-      (* FIXME... check that we are in a redefinition; make sure that "^"
-         cannot be stacked ;-) *)
+      (* FIXME... check that we are in a redefinition *)
       design. tbProc := design. recordType. ns(Namespace.Extended).
           GetSuperProcByIndex (design. tbProc. tbProcIndex);
       design. type := design. tbProc. formalPars;
       design. isStaticCall := TRUE;
+      IF design.tbProc.isAbstract THEN
+        b.ErrSym(abstractSuperCall, sym);
+      END;
       RETURN design;
     ELSE
       b.CheckFunctionOp(design, sym);
@@ -2908,6 +2922,11 @@ PROCEDURE (b: Builder) NewTypeTag (sym: Symbol; design: Expression): Expression;
   VAR
     tag: TypeTag;
   BEGIN
+    IF ~(design.type IS Sym.Record) OR
+       ~design.type(Sym.Record).hasDescriptor THEN
+      b.ErrSym(noTypeTag, design.sym);
+    END;
+    
     NEW (tag);
     InitTypeTag (tag, sym, design);
     RETURN tag;
@@ -2951,9 +2970,11 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
     BEGIN
       type := expr.type;
       WITH type: Sym.Record DO
-        RETURN ~(expr IS Var) OR expr(Var).decl(Sym.VarDecl).isVarParam;
+        RETURN ~(expr IS Var) OR
+            (expr(Var).decl(Sym.VarDecl).isVarParam &
+             expr(Var).decl(Sym.VarDecl).supplementArgs);
       | type: Sym.Pointer DO
-        RETURN (type.baseType IS Sym.Record);
+        RETURN (type.baseType IS Sym.Record) & ~type.isStatic;
       ELSE
         RETURN FALSE;
       END;
@@ -2968,7 +2989,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
     ELSIF ~HasDynamicType(expr) THEN
       (* The test for TR.IsExtensionOf restricts the type of the variable to
          record or pointer type.  We must also check that the variable has
-         a dynamix type that can differ from its static one.  *)
+         a dynamic type that can differ from its static one.  *)
       RETURN b. ErrExpr (noDynamicType, expr.sym);
     ELSE
       origExpr := expr;
@@ -4010,7 +4031,9 @@ PROCEDURE InitProcedure* (p: Procedure; sym: Symbol;
   END InitProcedure;
 
 PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
-                       decl: Sym.ProcDecl; statmSeq: StatementSeq): Procedure;
+                                      decl: Sym.ProcDecl;
+                                      statmSeq: StatementSeq;
+                                      hasBegin: BOOLEAN): Procedure;
   VAR
     p: Procedure;
     
@@ -4071,6 +4094,9 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     END AddSetupCode;
   
   BEGIN
+    IF decl.isAbstract & hasBegin THEN
+      b.ErrSym(abstractWithBegin, sym);
+    END;
     b. CheckExit (decl, statmSeq, NIL);
     
     NEW (p);
@@ -4140,7 +4166,7 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
     
     NEW (m);
     InitModule (m, sym, name, procList,
-                b. NewProcedure (sym, decl. bodyDecl, statmSeq));
+                b. NewProcedure (sym, decl. bodyDecl, statmSeq, TRUE));
     RETURN m
   END NewModule;
 
@@ -5014,6 +5040,9 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
                    b. NewNewObject (design.sym, arguments[0].type, arguments));
             END;
           ELSE (* (type IS Sym.Record) *)
+            IF ~TR.VariableInstance(type) THEN
+              b.ErrSym(cannotCreateInstance, arguments[0].sym);
+            END;
             IF CheckNumberOfArguments (1, 1) THEN
               RETURN b. NewAssignment
                   (design. sym, arguments[0],

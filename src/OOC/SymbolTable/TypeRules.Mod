@@ -239,7 +239,7 @@ PROCEDURE IsValidRecordBaseType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    base type of a record definition.  *)
   BEGIN
-    RETURN (type IS Sym.Record)
+    RETURN (type IS Sym.Record) & type(Sym.Record).isExtensible;
   END IsValidRecordBaseType;
 
 PROCEDURE IsValidParameterType* (type: Sym.Type): BOOLEAN;
@@ -295,6 +295,15 @@ PROCEDURE IsValidCaseSelector* (type: Sym.Type): BOOLEAN;
   BEGIN
     RETURN IsIntegerType (type) OR IsCharType (type);
   END IsValidCaseSelector;
+
+PROCEDURE VariableInstance* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type can be used to instanciate variables.
+   In other words, it can be used to define variables, record fields, or
+   array base types.  *)
+  BEGIN
+    RETURN ~(type IS Sym.Record) OR ~type(Sym.Record).isAbstract;
+  END VariableInstance;
+
 
 PROCEDURE ^ FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
 

@@ -509,7 +509,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       
       currentNamespace := oldNamespace;
       currentSourceContext := oldSourceContext;
-      RETURN b. NewProcedure (procCode. proc. sym, procDecl, statmSeq)
+      RETURN b. NewProcedure (procCode. proc. sym, procDecl, statmSeq,
+                              (procCode.body # NIL) &
+                              (procCode.body.begin # NIL))
     END ProcDecl;
 <* POP *>
   

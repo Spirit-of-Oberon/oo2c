@@ -10,7 +10,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; noLengthInfo4 noLengthInfo5">-->
+  select ="&SetupTestCasesWithOut; abstract1 abstract2 abstract3
+  abstract4 abstract5 abstract6 abstract7 abstract8 abstract9">-->
 
   &TestSetupWithOut;
     
@@ -1215,6 +1216,51 @@
       Implicit usage of <code>LEN</code> on a
       <code>NO_LENGTH_INFO</code> array.
     </test>
+    
+    <!-- noDescriptor1 is in tests/ssa-c-output/ -->
+    <test id="noDescriptor2" type="reject" file="NoDescriptor2.Mod">
+      Applying a type test of a <code>NO_DESCRIPTOR</code> record
+      type.
+    </test>
+
+    <test id="notExtensible1" type="reject" file="NotExtensible1.Mod">
+      Trying to extend a <code>NOT_EXTENSIBLE</code> record type.
+    </test>
+
+    <test id="abstract1" type="reject" file="Abstract1.Mod">
+      Trying to declare a variable for an <code>ABSTRACT</code> record
+      type.
+    </test>
+    <test id="abstract2" type="reject" file="Abstract2.Mod">
+      Trying to declare a field for an <code>ABSTRACT</code> record
+      type.
+    </test>
+    <test id="abstract3" type="reject" file="Abstract3.Mod">
+      Trying to declare an array with an <code>ABSTRACT</code> record
+      type.
+    </test>
+    <test id="abstract4" type="reject" file="Abstract4.Mod">
+      Trying to call <code>NEW</code> with an <code>ABSTRACT</code>
+      record base type.
+    </test>
+    <test id="abstract5" type="reject" file="Abstract5.Mod">
+      Declaring an <code>ABSTRACT</code> type-bound procedure for a
+      non-abstract record type.
+    </test>
+    <test id="abstract6" type="reject" file="Abstract6.Mod">
+      Declaring an <code>ABSTRACT</code> type-bound procedure with
+      a <code>BEGIN</code> part.
+    </test>
+    <test id="abstract7" type="reject" file="Abstract7.Mod">
+      Super call refers to an <code>ABSTRACT</code> type-bound procedure.
+    </test>
+    <test id="abstract8" type="reject" file="Abstract8.Mod">
+      An <code>ABSTRACT</code> type-bound procedure that is not exported.
+    </test>
+    <test id="abstract9" type="reject" file="Abstract9.Mod">
+      A concrete extension of an <code>ABSTRACT</code> record does not
+      define an inherited abstract type-bound procedure.
+    </test>
   </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC">
@@ -1554,5 +1600,30 @@
         msg="Length of this array value cannot be determined"/>
     <reject-info id="noLengthInfo5" pos="P(a%"
         msg="Length of this array value cannot be determined"/>
+    
+    <reject-info id="noDescriptor2" pos="IF %r IS"
+        msg="This variable has no dynamic type"/>
+    
+    <reject-info id="notExtensible1" pos="(%R1)"
+        msg="This type cannot be used as a record base type"/>
+
+    <reject-info id="abstract1" pos="r: %R"
+        msg="Cannot create an instance an abstract type"/>
+    <reject-info id="abstract2" pos="r: %R"
+        msg="Cannot create an instance an abstract type"/>
+    <reject-info id="abstract3" pos="OF %R"
+        msg="Cannot create an instance an abstract type"/>
+    <reject-info id="abstract4" pos="NEW(%p)"
+        msg="Cannot create an instance an abstract type"/>
+    <reject-info id="abstract5" pos="[ABSTRACT] %P"
+        msg="Receiver type is not abstract"/>
+    <reject-info id="abstract6" pos="%PROCEDURE (p: P)"
+        msg="Abstract procedure cannot have a BEGIN part"/>
+    <reject-info id="abstract7" pos="p.Proc%\^"
+        msg="Called procedure is declared abstract"/>
+    <reject-info id="abstract8" pos=" %Proc"
+        msg="Abstract procedure must be exported"/>
+    <reject-info id="abstract9" pos="R1 = %RECORD"
+        msg="Inherited procedure `Proc' is still abstract"/>
   </processor-info>
 </testsuite-ext>

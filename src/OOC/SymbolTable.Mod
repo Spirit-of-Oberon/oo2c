@@ -452,6 +452,10 @@ TYPE
        array or string constant to such a pointer variable is legal, and
        assigns the @emph{address} (but not the @emph{contents}) of the array or
        string to the variable.  *)
+    isStatic*: BOOLEAN;
+    (**If set, then no run-time information is available for the referenced
+       objects beyond its static type.  Default is @code{FALSE} for non-
+       @code{INTERFACE} modules.  *)
   END;
 
 TYPE
@@ -495,10 +499,12 @@ TYPE
     (**TRUE, iff the array type is defined as @samp{ARRAY OF Foo}.  *)
     hasDescriptor*: BOOLEAN;
     (**If @code{TRUE}, then instances of this array have an associated
-       type descriptor.  *)
+       type descriptor.  Default is @code{TRUE} for non-
+       @code{INTERFACE} modules.  *)
     hasLengthInfo*: BOOLEAN;
     (**If @code{TRUE}, then the length of this array can be obtained
-       during run-time.  *)
+       during run-time.  Default is @code{TRUE} for non-
+       @code{INTERFACE} modules.  *)
     elementType*: Type;                  (*... make this read-only? *)
     (**The type of the array elements.  If this is initially a type name,
        it is replaced with a reference to the true type after
@@ -549,13 +555,16 @@ TYPE
     (**If @code{TRUE}, then the record is treated like a C-style @code{union}
        type.  *)
     isAbstract*: BOOLEAN;
-    (**If @code{TRUE}, then the record defines an abstract class.  *)
+    (**If @code{TRUE}, then the record defines an abstract class.  Default
+       is @code{FALSE}.  *)
     hasDescriptor*: BOOLEAN;
     (**If @code{TRUE}, then instances of this record have an associated
-       type descriptor.  *)
+       type descriptor.  Default is @code{TRUE} for non-
+       @code{INTERFACE} modules.  *)
     isExtensible*: BOOLEAN;
     (**If @code{TRUE}, then this type can serve as a base type for other
-       records.  *)
+       records.  Default is @code{TRUE} for non-
+       @code{INTERFACE} modules.  *)
     
     className*: Name;                    (* ... make this read-only? *)
     (**If the record has been classified as being part of a @emph{class}
@@ -680,7 +689,7 @@ TYPE
     (**If set for a parameter, then the value @code{NIL} may be passed to this
        parameter.  This is only possible if arguments for this parameter are
        passed by reference, not by value.  *)
-    supplementArgs-: BOOLEAN;
+    supplementArgs*: BOOLEAN;
     (**For a parameter, this is @code{FALSE} if a call to the procedure
        should omit any type tag or length information for this formal
        parameter.  Default is @code{TRUE}.  *)
@@ -1556,11 +1565,6 @@ PROCEDURE (varDecl: VarDecl) Load* (r: Object.Reader);
     END
   END Load;
 
-PROCEDURE (varDecl: VarDecl) SetSupplementArgs* (supplementArgs: BOOLEAN);
-  BEGIN
-    varDecl. supplementArgs := supplementArgs;
-  END SetSupplementArgs;
-
 
 PROCEDURE InitTypeDecl* (typeDecl: TypeDecl; parent: Item; name: Name;
                          visibleFrom: ModulePos; exportMark: ExportMark;
@@ -1756,7 +1760,11 @@ PROCEDURE (procDecl: ProcDecl) Class* (): Record;
       IF (class IS Pointer) THEN
         class := class(Pointer). baseType
       END;
-      RETURN class(Record)
+      IF (class IS Record) THEN
+        RETURN class(Record)
+      ELSE
+        RETURN NIL
+      END;
     ELSE
       RETURN NIL
     END
@@ -1913,6 +1921,7 @@ PROCEDURE InitPointer* (pointer: Pointer; parent: Item; position: Position;
     pointer. baseType := baseType;
     pointer. srcCodeBaseType := baseType;
     pointer. doCArrayAssignment := FALSE;
+    pointer. isStatic := FALSE;
   END InitPointer;
 
 PROCEDURE (pointer: Pointer) Store* (w: Object.Writer);
@@ -1921,6 +1930,7 @@ PROCEDURE (pointer: Pointer) Store* (w: Object.Writer);
     (*w. WriteObject (pointer. baseType);*)
     w. WriteObject (pointer. srcCodeBaseType);
     w. WriteBool (pointer. doCArrayAssignment);
+    w. WriteBool (pointer. isStatic);
   END Store;
 
 PROCEDURE (pointer: Pointer) Load* (r: Object.Reader);
@@ -1932,8 +1942,8 @@ PROCEDURE (pointer: Pointer) Load* (r: Object.Reader);
     pointer. srcCodeBaseType := obj(Type);
     pointer. baseType := pointer. srcCodeBaseType;
     r. ReadBool (pointer. doCArrayAssignment);
+    r. ReadBool (pointer. isStatic);
   END Load;
-
 
 PROCEDURE InitArray* (array: Array; parent: Item; position: Position; 
                       isOpenArray: BOOLEAN; elementType: Type;
