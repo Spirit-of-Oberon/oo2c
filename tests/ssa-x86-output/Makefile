@@ -13,7 +13,7 @@ include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.tests-framework
 # note: this rule must be evaluated in a separate make process, once
 # test1-runall has been completed, or $(OUTFILES) will be incomplete
 test-diff-all: $(addsuffix .diff,$(OUT_FILES))
-	$(PRINT) Done checking C output.
+	$(PRINT) Done checking assembler output.
 
 test-runall: test1-runall
 	$(MAKE) -f $(OOC_DEV_ROOT)/$(TEST_BASE)/Makefile test-diff-all
