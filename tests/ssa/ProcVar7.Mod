@@ -25,6 +25,7 @@ PROCEDURE Sum(a: ARRAY OF INTEGER): INTEGER;
     END Add;
   
   BEGIN
+    sum := 0;
     Iterate(a, Add);
     RETURN sum;
   END Sum;
