@@ -212,6 +212,35 @@
       initialization and the increment of the variable.
     </test>
 
+    <test id="rewrite1" type="accept" file="LoopRewrite1.Mod">
+      Simple loops iterating over an array index.  The index can be
+      replaced completely with a pointer that is incremeted by 1 (or
+      2) bytes with each iteration.
+    </test>
+    <test id="rewrite2" type="accept" file="LoopRewrite2.Mod">
+      Loops iterating over all elements of an array and terminating
+      when the index reaches the length of the array.
+    </test>
+    <test id="rewrite3" type="accept" file="LoopRewrite3.Mod">
+      Calculating the length of a character array.  The final value of
+      the induction variable should be recovered from the last pointer
+      value after the loop.
+    </test>
+    <test id="rewrite4" type="accept" file="LoopRewrite4.Mod">
+      A variantion of <code>rewrite2</code>, iterating over a 2
+      dimenional array.
+    </test>
+    <test id="rewrite5" type="accept" file="LoopRewrite5.Mod">
+      Eliminate all characters <code>&lt;= 20X</code> from string.
+      This loop has two induction variables, one incremented with each
+      iteration and the other within a guarded command.  Both should
+      be rewritten.
+    </test>
+    <test id="rewrite6" type="accept" file="LoopRewrite6.Mod">
+      Zeroing an array on the heap.  CSE should have merged the two
+      pointer deref operations, so that only one induction cycle needs
+      to be maintained.
+    </test>
     
     <test id="noCopy7" type="accept" file="NoCopy7.Mod">
       The callee should not create a local copy of the
