@@ -146,7 +146,7 @@ Expression Compatible Types:
 ACCEPT (Expression-compatible):
 
   Combinations of different but expression-compatible types. Test combinations
-  in both orders.
+  in both orders [OpExprCompat1].
 
   1) shortint + integer
   2) integer + longint
@@ -163,24 +163,25 @@ REJECT (Expression-compatible):
   Combinations of types which are allowed for the operator, but which are
   not expression-compatible.
 
-  1) integer + string
-  2) integer + set
-  3) string + set
-  4) real DIV real
-  5) numeric = char
-  6) numeric = NIL
+  1) integer + string [OpExprCompat2]
+  2) integer + set [OpExprCompat3]
+  3) string + set [OpExprCompat4]
+  4) real DIV real [OpExprCompat5]
+  5) numeric = char [OpExprCompat6]
+  6) numeric = NIL [OpExprCompat7]
   7) POINTER TO T = POINTER TO S, where S in not an extension of T.
+     [OpExprCompat8]
 
 REJECT (Expression compatible):
 
   To verify that numeric types are "widened" correctly, reject these:
 
-  1) shortint := shortint + integer;
-  2) integer := integer + longint;
-  3) longint := longint + real;
-  4) real := real + longreal;
-  5) integer := integer / integer;
-  6) real := real / longreal;
+  1) shortint := shortint + integer; [OpExprCompat9]
+  2) integer := integer + longint; [OpExprCompat10]
+  3) longint := longint + real; [OpExprCompat11]
+  4) real := real + longreal; [OpExprCompat12]
+  5) integer := integer / integer; [OpExprCompat13]
+  6) real := real / longreal; [OpExprCompat14]
 
 REJECT (Divide by zero, compile-time):
 
