@@ -105,7 +105,7 @@ TYPE
      top few entries of the procedure call stack.  *)
     msg: STRING;
     backtrace: ARRAY maxBacktraceSize OF SYSTEM.PTR;
-    backtraceSize: LONGINT;
+    backtraceSize: LONGINT;  (* -1 if backtrace() hasn't been called yet *)
   END;
   ContextPtr = POINTER TO Context;
   Context* = RECORD [NO_DESCRIPTOR]
@@ -116,22 +116,23 @@ TYPE
   END;
   
 PROCEDURE Init*(e: Exception; msg: STRING);
-(**Initialize exception @oparam{e} and set @oparam{msg} as its message.  On
-   systems that support it, this also stores the first few entries of the call
-   stack.  @oparam{msg} may be @code{NIL}, but in this case
+(**Initialize exception @oparam{e} and set @oparam{msg} as its message.
+   @oparam{msg} may be @code{NIL}, but in this case
    @oproc{Exception.GetMessage} must be redefined to provide a non-@code{NIL}
    message.
-   
-   @precond
-   @oparam{e} is not @code{NIL}.
-   @end precond *)
-PROCEDURE Raise* [NO_RETURN](e: Exception) RAISES Exception;
-(**Raise exception @oparam{e}.  This procedure is the implementation of the
-   predefined procedure @code{RAISE}.
 
    @precond
    @oparam{e} is not @code{NIL}.
-   @end precond *)
+   @end precond  *)
+PROCEDURE Raise* [NO_RETURN](e: Exception) RAISES Exception;
+(**Raise exception @oparam{e}.  On systems that support it, the first time this
+   procedure is called with a given exception it stores the first few entries
+   of the call stack.  This procedure is the implementation of the predefined
+   procedure @code{RAISE}.
+
+   @precond
+   @oparam{e} is not @code{NIL}.
+   @end precond  *)
 PROCEDURE Current*(): Exception;
 (**Pointer to the currently active exception.  This is @code{NIL}
    if no exeception has been raised, or when a @code{CATCH} clause has been

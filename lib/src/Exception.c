@@ -15,11 +15,7 @@ static Exception__ContextPtr contextStack = NULL;
 
 void Exception__Init(Exception__Exception e, Object__String msg) {
   e->msg = msg;
-#if HAVE_BACKTRACE_SYMBOLS
-  e->backtraceSize = backtrace(e->backtrace, Exception__maxBacktraceSize);
-#else
-  e->backtraceSize = 0;
-#endif
+  e->backtraceSize = -1;
 }
 
 Exception__Exception Exception__Current() {
@@ -68,6 +64,14 @@ void Exception__ActivateContext() {
 }
 
 void Exception__Raise(Exception__Exception e) {
+  if (e->backtraceSize < 0) {
+#if HAVE_BACKTRACE_SYMBOLS
+    e->backtraceSize = backtrace(e->backtrace, Exception__maxBacktraceSize);
+#else
+    e->backtraceSize = 0;
+#endif
+  }
+  
   current = e;
   Exception__ActivateContext();
 }
@@ -92,11 +96,13 @@ void Exception__ExceptionDesc_WriteBacktrace(Exception__Exception e) {
   int i;
   char** names;
   
-  names = backtrace_symbols(e->backtrace, e->backtraceSize);
-  for (i=0; i<e->backtraceSize; i++) {
-    (void)fprintf(stderr, "%d: %s\n", i, names[i]);
+  if (e->backtraceSize >= 0) {
+    names = backtrace_symbols(e->backtrace, e->backtraceSize);
+    for (i=0; i<e->backtraceSize; i++) {
+      (void)fprintf(stderr, "%d: %s\n", i, names[i]);
+    }
+    free(names);
   }
-  free(names);
 #endif
 }
 
