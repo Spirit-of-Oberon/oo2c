@@ -692,20 +692,28 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     PROCEDURE SelectProc (selectOp: IR.SelectProc): SSA.Result;
       VAR
         object: IR.Expression;
+        type : Sym.Type;
       BEGIN
         IF selectOp. isStaticCall THEN   (* use static address *)
           RETURN pb. GetAddress (selectOp. tbProc);
         ELSE                             (* use dynamic address *)
-          instr := pb. AddInstr (Opcode.tbProcAddress, Opcode.scAddress);
           IF (selectOp. receiver IS IR.Deref) THEN
             object := selectOp. receiver(IR.Deref). pointer;
           ELSE
             object := selectOp. receiver;
           END;
-          instr. AddOpnd (TypeTag (object,
+          type := selectOp. recordType. Deparam();
+          IF type(Sym.Record).isVtable THEN
+            (* TODO: Add deref check *)
+            instr := pb. AddInstr (Opcode.vtableProcAddress, Opcode.scAddress);
+            instr. AddOpnd (Expression(object), Opnd.arg);
+          ELSE
+            instr := pb. AddInstr (Opcode.tbProcAddress, Opcode.scAddress);
+            instr. AddOpnd (TypeTag (object,
                                    Expression (object),
                                    selectOp. checkPointer,
                                    selectOp. sym), Opnd.arg);
+          END;
           instr. AddOpnd (pb. GetDeclRef (selectOp. tbProc), Opnd.arg);
           RETURN instr;
         END;

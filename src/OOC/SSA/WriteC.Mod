@@ -767,8 +767,11 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       decl: Sym.Declaration;
       name: STRING;
       procType: Sym.FormalPars;
+      class : Opcode.Class;
     BEGIN
-      IF (call. opndList. arg. instr. opcode = Opcode.tbProcAddress) THEN
+      class := call. opndList. arg. instr. opcode;
+      IF   (class = Opcode.tbProcAddress) 
+        OR (class = Opcode.vtableProcAddress) THEN
         (* calling type bound procedure: cast procedure address *)
         adr := call. opndList. arg. instr;
         decl := adr. opndList. nextOpnd. arg. instr(SSA.DeclRef). decl;
@@ -971,6 +974,19 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       w. WriteObject (name);
       w. WriteString (")");
     END TBProcAddress;
+
+   PROCEDURE VTableProcAddress (instr: SSA.Instr);
+    VAR
+      name: STRING;
+    BEGIN
+      CastFromPtr (instr);
+      w. WriteString ("OOC_VTABLEPROC_ADR(");
+      w. Ref (instr. opndList);
+      w. WriteString (", ");
+      name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. arg(SSA.DeclRef). decl);
+      w. WriteObject (name);
+      w. WriteString (")");
+    END VTableProcAddress;
   
   PROCEDURE CopyParameter (instr: SSA.Address);
     VAR
@@ -1207,7 +1223,8 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       TypeTest (instr);
     | Opcode.tbProcAddress:
       TBProcAddress (instr);
-      
+    | Opcode.vtableProcAddress:
+      VTableProcAddress (instr);
     | Opcode.typeCast:
       TypeCast (instr);
     | Opcode.typeConv:
