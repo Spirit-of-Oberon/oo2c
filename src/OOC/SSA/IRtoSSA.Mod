@@ -1,7 +1,7 @@
 MODULE OOC:SSA:IRtoSSA;
 
 IMPORT
-  Log, Language:String8,
+  Log, Integers, Language:String8, Language:Integer,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, 
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
@@ -396,6 +396,90 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := select. AddResult (Result.store)
     END WhileStatm;
 
+  PROCEDURE ForStatm (forStatm: IR.ForStatm);
+    VAR
+      start, end, select, dummy: SSA.Instr;
+      guard1, guard2, storeAfterGuard1, v, endValue, stepValue: SSA.Result;
+
+    PROCEDURE Guard (bound: SSA.Result): SSA.Instr;
+      VAR
+        instr: SSA.Instr;
+        cmpClass: Opcode.Class;
+      BEGIN
+        IF (Integers.Sign (forStatm. step(IR.Const). value(Integer.Value). value) >= 0) THEN
+          cmpClass := Opcode.leq;
+        ELSE
+          cmpClass := Opcode.geq;
+        END;
+        instr := pb. AddInstr (Opcode.leq, Opcode.scBoolean);
+        instr. AddOpnd (Expression (forStatm. var), Opnd.arg);
+        instr. AddOpnd (bound, Opnd.arg);
+        RETURN instr
+      END Guard;
+    
+    BEGIN
+      (* FOR v := beg TO end BY step DO s END;
+
+         is translated to
+
+         temp := end; v := beg;
+         IF step>0 THEN
+           IF v<=temp THEN
+             REPEAT
+               s; v := v+step
+             UNTIL ~(v<=temp);
+           END
+         ELSE
+           IF v>=temp THEN
+             REPEAT
+               s; v := v+step
+             UNTIL ~(v>=temp);
+           END
+         END *)
+      endValue := Expression (forStatm. end);
+      stepValue := Expression (forStatm. step);
+      v := Expression (forStatm. var);
+      Chain (pb. AddSetInstr (v(SSA.Instr), Expression (forStatm. start)));
+      
+      guard1 := Guard (endValue);
+      storeAfterGuard1 := s;
+
+      (* insert "loop-start" instruction *)
+      start := pb. AddInstr (Opcode.loopStart, Opcode.scNone);
+      start. AddOpnd (s, Opnd.store);
+      s := start. AddResult (Result.store);
+      
+      (* evaluate loop body, followed by the exit condition *)
+      s := StatmSeq (pb, s, forStatm. body);
+      dummy := pb. AddInstr (Opcode.add,
+                             Opcode.TypeToSubclass (forStatm. var. type));
+      v := Expression (forStatm. var);
+      dummy. AddOpnd (v, Opnd.arg);
+      dummy. AddOpnd (stepValue, Opnd.arg);
+      Chain (pb. AddSetInstr (v(SSA.Instr), dummy));
+      guard2 := Guard (endValue);
+      
+      (* create "loop-end" instruction *)
+      end := pb. AddInstr (Opcode. loopEnd, Opcode.scNone);
+      end. AddOpnd (start, Opnd.arg);
+      end. AddOpnd (s, Opnd.store);
+      end. AddOpnd (guard2, Opnd.arg);
+      end. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      
+      (* add forward reference from "loop-start" to `store' at end of loop *)
+      AddStoreForwardRef (pb, start, s);
+      
+      (* create the "select" for the IF statement around the loop *)
+      select := pb. AddInstr (Opcode.select, Opcode.scNone);
+      select. AddOpnd (guard1, Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
+      select. AddOpnd (end. AddResult (Result.store), Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      select. AddOpnd (storeAfterGuard1, Opnd.arg);
+
+      s := select. AddResult (Result.store);
+    END ForStatm;
+  
   PROCEDURE CopyParameter (cp: IR.CopyParameter);
     VAR
       instr: SSA.Instr;
@@ -437,8 +521,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         WhileStatm (statm);
 
       | statm: IR.ForStatm DO
-        (* FIXME... translate to nothing for now *)
-
+        ForStatm (statm);
+        
       | statm: IR.CopyParameter DO
         CopyParameter (statm)
             

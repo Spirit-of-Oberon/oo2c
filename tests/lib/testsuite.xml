@@ -48,5 +48,17 @@
       Tests the <code>Extract</code> function with a result 
       that must be truncated to fit into the destination string.
     </test>
+    
+    <test id="lib_Strings_Delete1" type="run"
+      file="LibStringsDelete1.Mod" output="LibStringsDelete1.Ref">
+      Tests the <code>Delete</code> function with range parameters
+      that are within the limits of the input string.
+    </test>
+    
+    <test id="lib_Strings_Delete2" type="run"
+      file="LibStringsDelete2.Mod" output="LibStringsDelete2.Ref">
+      Call delete on string ranges <code>Delete</code> beyond the
+      end of the input string, and after the end of the string.
+    </test>
   </testcases>
 </testsuite-ext>

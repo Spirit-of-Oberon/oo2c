@@ -2,14 +2,10 @@
 <!DOCTYPE testsuite-ext
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd">
 
-<testsuite-ext
-  profile="Test Suite for Framework Testing"
-  select ="prepare_out_module var1 var2 var3 var3b var3c var4 var4b 
-  var5 var5b var6 var6b var7 var7b var7c swap1 swap2
-  varpar1 varpar1b varpar1c">
+<testsuite-ext profile="Test Suite for Framework Testing">
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module">-->
+  select ="prepare_out_module var8">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -104,6 +100,11 @@
       the loop.
     </test>
 
+    <test id="var8" type="run" file="Var8.Mod">
+      Zeroing a character array using a <code>FOR</code> loop.  The
+      loop variable should be kept in a register from beginning to end.
+    </test>
+    
 
     <test id="swap1" type="run" file="Swap1.Mod" output="Swap1.Ref">
       Swapping to values.  The swap is done in memory.  Register
