@@ -72,7 +72,7 @@ IMPORT
 
   (* optional stuff: *)
 <*IF HAVE_LIB_PTHREAD THEN*>
-  PThread,
+  Thread:PThread,
 <*END*>
   
   libc,
