@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; case12">-->
+  select ="&SetupTestCasesWithOut; bugLoopRewrite3">-->
 
   &TestSetupWithOut;
     
@@ -1307,6 +1307,21 @@
       <code>OOC:SSA:Destore</code> to place a reference to a
       <code>select</code> instruction in a normal value argument.
     </test>
+    
+    <test id="bugLoopRewrite1" type="accept" file="BugLoopRewrite1.Mod">
+      Regression test: Improper handling of gate within the induction
+      cycle crashed the compiler.
+    </test>
+    <test id="bugLoopRewrite2" type="run"
+          file="BugLoopRewrite2.Mod" output="BugLoopRewrite2.Ref">
+      Regression test: Rewritten cycle used wrong induction cycle as base.
+    </test>
+    <test id="bugLoopRewrite3" type="run"
+          file="BugLoopRewrite3.Mod" output="BugLoopRewrite3.Ref">
+      Regression test: Flatten modified operand of sum when adding two
+      flattened summations.
+    </test>
+
   </testcases>
   
   <processor-info processor-name="TestCompile">
