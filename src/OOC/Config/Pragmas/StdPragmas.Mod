@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Config:Pragmas:StdPragmas;
 (*  Creates standard pragma variables with default values.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -27,6 +27,7 @@ IMPORT
 CONST
   defaultWarnings = FALSE;
   defaultAssertions = TRUE;
+  defaultIndexCheck = TRUE;
   defaultOverflowCheck = FALSE;
   defaultConformantMode = FALSE;
   defaultTargetInteger = 32;
@@ -35,6 +36,7 @@ CONST
 VAR
   warnings-: Pragmas.Pragma;
   assertions-: Pragmas.Pragma;
+  indexCheck-: Pragmas.Pragma;
   overflowCheck-: Pragmas.Pragma;
   conformantMode-: Pragmas.Pragma;
   targetInteger-: Pragmas.Pragma;
@@ -47,7 +49,8 @@ PROCEDURE CreateVariables* (s: Pragmas.Section);
   BEGIN
     warnings := s. Set ("Warnings", Boolean.New (defaultWarnings));
     assertions := s. Set ("Assertions", Boolean.New (defaultAssertions));
-    assertions := s. Set ("OverflowCheck", Boolean.New (defaultOverflowCheck));
+    indexCheck := s. Set ("IndexCheck", Boolean.New (defaultIndexCheck));
+    overflowCheck := s. Set ("OverflowCheck", Boolean.New (defaultOverflowCheck));
     
     conformantMode := s. Set ("ConformantMode", Boolean.New (defaultConformantMode));
 

@@ -370,7 +370,7 @@ TYPE
   TypeConvDesc = RECORD
     (**A TypeConv expression represents a type conversion of an expression
        @ofield{expr} to a different type.  The source value of type
-       @ofield{expr.type} is converted to an equivalent or close value in the
+       @samp{expr.type} is converted to an equivalent or close value in the
        target domain @ofield{type}.  Example: An integer type representing the
        value @code{1} is converted to a floating point value @code{1.0}.  Type
        conversions are also used to convert between different integer types.

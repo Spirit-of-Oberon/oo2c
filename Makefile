@@ -86,9 +86,10 @@ doc:
 	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" Strings core
 	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" libadt libadt
 	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" libxml libxml
+	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" gaf2 gaf2
 	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" AllModules ooc2
 	if test -d $(DOC_DIR)/ooc2/rsrc; then :; else $(LN_S) $(OOC_DEV_ROOT)/rsrc $(DOC_DIR)/ooc2/rsrc; fi
-	$(OOC_DEV_ROOT)/TestInterfaceGen --error-style oo2c --html --closure -r "$(DOC_DIR)/core" -r "$(DOC_DIR)/libadt" -r "$(DOC_DIR)/libxml" -r "$(DOC_DIR)/ooc2" AllModules
+	$(OOC_DEV_ROOT)/TestInterfaceGen --error-style oo2c --html --closure -r "$(DOC_DIR)/core" -r "$(DOC_DIR)/libadt" -r "$(DOC_DIR)/libxml" -r "$(DOC_DIR)/gaf2" -r "$(DOC_DIR)/ooc2" AllModules
 	cd $(DOC_DIR) && $(OOC_DEV_ROOT)/rsrc/OOC/make-index.sh
 	$(PRINT) "Done.  Index file is $(DOC_DIR)/index.html"
 
