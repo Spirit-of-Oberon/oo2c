@@ -20,7 +20,7 @@ MODULE IO:Address [FOREIGN "C"; LINK FILE "Address.c" END];
 <*Warnings:=FALSE*>
 
 IMPORT
-  RT0, Exception, Object;
+  RT0, Exception, Object, IO;
   
 TYPE
   Inet* = POINTER TO InetDesc;
@@ -65,7 +65,7 @@ TYPE
 TYPE
   UnknownHostException* = POINTER TO UnknownHostExceptionDesc;
   UnknownHostExceptionDesc = RECORD
-    (Exception.ExceptionDesc)
+    (IO.ErrorDesc)
   END;
 
 VAR
