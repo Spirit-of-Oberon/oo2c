@@ -26,7 +26,7 @@ PROCEDURE ImmediateOpnd(instr: S.Instr): S.Opnd;
     opnd: S.Opnd;
   BEGIN
     CASE instr.opcode OF
-    | S.return, S.call:
+    | S.return, S.call, S.guard:
       n := 0;
     | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq,
       (* x86's cmp instruction is not symmetric with immediate opnd *)
