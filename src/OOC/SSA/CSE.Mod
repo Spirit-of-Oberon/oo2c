@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:CSE;
 (*  Common subexpression elimination using value numbering.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -51,6 +51,7 @@ TYPE
        @ofield{ancestorOpnd} of every child is greater than the
        @ofield{ancestorOpnd} of this instance.  The end of the list is marked
        by an entry @code{NIL}.  *)
+    nextTouched: Partition;
   END;
 
 
@@ -158,7 +159,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       RETURN p;
     END AddPartition;
 
-  PROCEDURE SplittedPartition (p: Partition; opndIndex: LONGINT): Partition;
+  PROCEDURE SplittedPartition (p: Partition; opndIndex: LONGINT;
+                               VAR touchedList: Partition): Partition;
     VAR
       newList: ChildrenList;
       i, j: LONGINT;
@@ -186,6 +188,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           new := AddPartition();
           new. ancestor := p;
           new. ancestorOpnd := opndIndex;
+          new. nextTouched := touchedList;
+          touchedList := new;
           p. splitChildren[i] := new;
           p. splitChildren[i+1] := NIL;
           RETURN new;
@@ -198,8 +202,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
            would violate the invariant on the childrens' `ancestorIndex';
            delegate locating a partition for `opndIndex' to the ancestor,
            and then get the child for `p.ancestorOpnd' *) 
-        new := SplittedPartition (p. ancestor, opndIndex);
-        RETURN SplittedPartition (new, p. ancestorOpnd);
+        new := SplittedPartition (p. ancestor, opndIndex, touchedList);
+        RETURN SplittedPartition (new, p. ancestorOpnd, touchedList);
       END;
     END SplittedPartition;
   
@@ -210,7 +214,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       i, nextResultCount: LONGINT;
       res: SSA.Result;
       use: SSA.Opnd;
-      p: Partition;
+      p, touched: Partition;
 
     PROCEDURE MarkUnchanged (worklist: Partition);
       BEGIN
@@ -232,6 +236,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
          iteration, iList[0..size-1] holds the remaining results, with size
          shrinking to 0 in the last iteration.  *)
       WHILE (size # 0) DO
+        touched := NIL;
         nextResultCount := 0;
         FOR i := 0 TO size-1 DO
           res := iList[i];
@@ -239,7 +244,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           use := res. useList;
           WHILE (use # NIL) DO
             p := SplittedPartition (use. instr. info(Partition),
-                                    use. OpndIndex());
+                                    use. OpndIndex(), touched);
             p. Add (use. instr);
             use := use. nextUse;
           END;
@@ -255,12 +260,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         MarkUnchanged (worklist);
         
         (* reset data of touched partitions *)
-        p := pList;
+        p := touched;
         WHILE (p # NIL) DO
           p. ancestor := NIL;
           p. ancestorOpnd := -1;
           p. splitChildren[0] := NIL;
-          p := p. nextPartition;
+          p := p. nextTouched;
         END;
         
         size := nextResultCount;
