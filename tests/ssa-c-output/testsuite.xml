@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Framework Testing">
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; var9">-->
+  select ="&SetupTestCasesWithOut; quicksort1">-->
   
   &TestSetupWithOut;
     

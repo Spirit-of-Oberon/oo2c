@@ -21,7 +21,8 @@ MODULE OOC:SSA:Destore;
 *)
 
 IMPORT
-  Sym := OOC:SymbolTable, OOC:SSA, OOC:SSA:Opcode,
+  Log,
+  ADT:Dictionary, Sym := OOC:SymbolTable, OOC:SSA, OOC:SSA:Opcode,
   OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Aliasing;
 
   
@@ -102,10 +103,75 @@ IMPORT
 PROCEDURE Transform* (pb: SSA.ProcBlock);
   CONST
     unknownValue = NIL;
+    read = 0;
+    write = 1;
   VAR
     instr, next: SSA.Instr;
     value: SSA.Result;
+    localVarWithAdr: Dictionary.Dictionary;
+
+  PROCEDURE IsLocalVariable (decl: Sym.Declaration): BOOLEAN;
+    BEGIN
+      RETURN (decl IS Sym.VarDecl) & (decl. Procedure() = pb. procDecl);
+    END IsLocalVariable;
+
+  PROCEDURE AccessedByCall (calledAdr: SSA.Result; design: SSA.Opnd;
+                            mode: SHORTINT): BOOLEAN;
+  (* Determine of the designator @oparam{design} is accessed by the called
+     procedure @oparam{calledAdr}.  If yes, then return @code{TRUE}.
+
+     The function implements this approximation: If the called procedure is
+     nested into the current one, the result is always @code{TRUE}.  Otherwise,
+     result is only @code{FALSE} if @oparam{design} refers to a local variable
+     of the current procedure whose address is exclusively used as
+     @oconst{Opnd.readAdr} or @oconst{Opnd.writeAdr} of a data read or write.
+     This effectively covers local variables of scalar type that are not passed
+     to a @code{VAR} parameter, nor used in conjunction with @code{SYSTEM.ADR}.
+
+     This function can be improved if more is known about the access patterns
+     of the called procedure.
+
+     @precond
+     @ofield{design.class} is either @oconst{Opnd.readDesign} or
+     @oconst{Opnd.writeDesign}.
+
+     @oparam{mode} is either @oconst{read} or @oconsr{write}.
+     @end precond  *)
     
+    PROCEDURE LocalVarWithoutAdr (design: SSA.Opnd): BOOLEAN;
+      BEGIN
+        IF (design. arg IS SSA.DeclRef) &
+           IsLocalVariable (design. arg(SSA.DeclRef). decl) THEN
+          RETURN ~localVarWithAdr. HasKey (design. arg(SSA.DeclRef). decl);
+        ELSE
+          RETURN FALSE;
+        END;
+      END LocalVarWithoutAdr;
+
+    PROCEDURE NestedProc (calledAdr: SSA.Result; procDecl: Sym.ProcDecl): BOOLEAN;
+      VAR
+        proc: Sym.ProcDecl;
+      BEGIN
+        IF (calledAdr. instr. opcode = Opcode.address) THEN
+          proc := calledAdr. instr(SSA.Address). decl(Sym.ProcDecl);
+          REPEAT
+            proc := proc. Procedure();
+          UNTIL (proc = NIL) OR (proc = procDecl);
+          RETURN (proc # NIL);
+        ELSE
+          (* this is either a type-bound procedure or a procedure variable;
+             in either case, the called procedure is global and cannot be
+             nested in this procedure *)
+          RETURN FALSE;
+        END;
+      END NestedProc;
+    
+    BEGIN
+      RETURN
+          NestedProc (calledAdr, pb. procDecl) OR
+          ~LocalVarWithoutAdr (design);
+    END AccessedByCall;
+  
   PROCEDURE GetValue (store: SSA.Result; get: SSA.Instr;
                       loopTrace: SSA.Instr): SSA.Result;
   (* Return the value from the @oparam{store} for the memory location (and
@@ -394,10 +460,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           RETURN entry. value
         END;
       END GetLoopValue;
-    
+
     BEGIN
       instr := store. instr;
-      CASE store. instr. opcode OF
+      CASE instr. opcode OF
       | Opcode.set:
         alias := Aliasing.DesignatorAlias (get. GetOpndClass (Opnd.readDesign),
                                            instr. GetOpndClass (Opnd.writeDesign));
@@ -451,9 +517,16 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         RETURN GetLoopValue (instr);
         
       | Opcode.call:
-        (* FIXME... detect when a call can modify our variable; for now
-           be pessimistic: the call rewrites our variable *)
-        RETURN unknownValue;
+        IF AccessedByCall (instr. opndList. arg,
+                           get. GetOpndClass (Opnd.readDesign), write) THEN
+          (* be pessimistic: the call rewrites our variable *)
+          RETURN unknownValue;
+        ELSE
+          (* the "get" accesses a local variable that cannot be accessed by the
+             called procedure; this means it cannot be written to behind our
+             backs from within this procedure call  *)
+          RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
+        END;
         
       | Opcode.moveBlock:
         (* assume that a SYSTEM.MOVE can interact with anything *)
@@ -597,6 +670,15 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             Opcode.assert, Opcode.checkIndex:
             RETURN VisibleEffect (instr. GetResultStore(), set)
             
+          | Opcode.call:
+            IF AccessedByCall (instr. opndList. arg,
+                               set. GetOpndClass (Opnd.writeDesign), read) THEN
+              RETURN TRUE;               (* assume the worst *)
+            ELSE
+              (* the called procedure cannot read the local variable  *)
+              RETURN VisibleEffect (instr. GetResultStore(), set)
+            END;
+            
           ELSE
             RETURN TRUE;
           END;
@@ -616,8 +698,36 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         RETURN FALSE;
       END;
     END VisibleEffect;
+
+  PROCEDURE UsesAreVarAccess (res: SSA.Result): BOOLEAN;
+    VAR
+      use: SSA.Opnd;
+    BEGIN
+      use := res. useList;
+      WHILE (use # NIL) DO
+        IF (use. class # Opnd.readAdr) & (use. class # Opnd.writeAdr) THEN
+          RETURN FALSE;
+        END;
+        use := use. nextUse;
+      END;
+      RETURN TRUE;
+    END UsesAreVarAccess;
   
   BEGIN
+    (* create a dictionary of all local variables whose address is taken
+       somewhere in this procedure, and used within an instruction other than
+       "get", "set", or "copy"  *)
+    localVarWithAdr := Dictionary.New();
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      IF (instr IS SSA.Address) &
+         IsLocalVariable (instr(SSA.Address). decl) &
+         ~UsesAreVarAccess (instr) THEN
+        localVarWithAdr. Set (instr(SSA.Address). decl, NIL);
+      END;
+      instr := instr. nextInstr;
+    END;
+    
     (* visit all "get" instructions and check if their uses can be replaced
        with the value that they are retrieving from memory *)
     pb. SetMarkers (NIL, 0);
