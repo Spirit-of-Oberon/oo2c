@@ -121,6 +121,9 @@ CONST
   rot* = 25;                             (* SYSTEM.ROT *)
   val* = 26;                             (* SYSTEM.VAL *)
   
+VAR
+  nameStringModule-, nameStringType-: Sym.Name;
+  
   
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
   VAR
@@ -241,7 +244,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
                          NIL, NIL);
 
     redir := stb. NewRedirect(module, GetName("STRING"),
-                              GetName("-Language:String0"), GetName("String"));
+                              nameStringModule, nameStringType);
     
     PredefProc (stb, module, assert, "ASSERT", 1, 2);
     PredefProc (stb, module, halt, "HALT", 1, 1);
@@ -339,6 +342,9 @@ PROCEDURE Init;
     FOR i := 0 TO lastId DO
       minConst[i] := NIL; maxConst[i] := NIL;
     END;
+    
+    nameStringModule := GetName("-Language:String0");
+    nameStringType := GetName("String");
   END Init;
 
 BEGIN

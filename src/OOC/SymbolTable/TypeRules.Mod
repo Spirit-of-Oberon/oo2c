@@ -75,6 +75,15 @@ PROCEDURE IsStringConst* (type: Sym.Type): BOOLEAN;
     END;
   END IsStringConst;
 
+PROCEDURE IsSTRING* (type: Sym.Type): BOOLEAN;
+  BEGIN
+    RETURN (type IS Sym.Pointer) &
+        (type.namingDecl # NIL) & 
+        (type.namingDecl.name.str^ = "String") & 
+        (type.namingDecl.parent IS Sym.Module) & 
+        (type.namingDecl.parent(Sym.Module).name.str^ = "Language:String0");
+  END IsSTRING;
+
 PROCEDURE BaseCharType* (type: Sym.Type): Sym.PredefType;
 (**For any of the types that are characters, or are derived from characters,
    return the character type they are based on.
