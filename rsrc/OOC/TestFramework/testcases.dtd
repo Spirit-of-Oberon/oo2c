@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+This DTD specifies the format for ``Hostess'' test suite descriptions.
+For a more information on the ``Hostess'' project, please refer to
+
+  http://hostess.sourceforge.net/
+
+-->
 
 <!ENTITY % TESTTYPE "(reject|accept|error|run)">
 <!ENTITY % LANGUAGES "CDATA">  <!-- list of language dialects, may be empty -->
@@ -12,7 +20,7 @@
           profile	CDATA		#IMPLIED >
 
 <!--
-    The root element of a collection should be "testcases".  It groups
+    The root element of a collection is "testcases".  It groups
     a set of tests in a particular "profile", which is descriptive.  For
     example, a "Oberon-1" profile might group test cases with modules
     derived from the Oberon-1 language specification.  Or the profile
