@@ -22,7 +22,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Language:Boolean, Language:Char8, Language:String8,
+  Language, Language:Boolean, Language:Char, Language:String8,
   Language:Integer, Language:Real,
   ADT:Object, ADT:ArrayList, ADT:String,
   Config:Value, BooleanValue := Config:Value:Boolean, 
@@ -1130,12 +1130,12 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
     v: Language.Value;
     str: ARRAY 2 OF CHAR;
   BEGIN
-    v := Char8.type. ValueOf (sym. str^);
+    v := Char.type. ValueOf (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (characterOutOfRange, sym);
       RETURN b. errorExpr
     ELSE
-      WITH v: Char8.Value DO
+      WITH v: Char.Value DO
         ASSERT (v. value < 256);
         str[0] := CHR (v. value);
         str[1] := 0X;

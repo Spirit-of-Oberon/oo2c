@@ -1,4 +1,4 @@
-MODULE Language:Char8 [OOC_EXTENSIONS];
+MODULE Language:Char [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, ADT:Object, ADT:String, L := Language;
@@ -16,7 +16,7 @@ TYPE
 
 CONST
   min = 0;
-  max = 255;
+  max = 0FFFFH;                          (* MAX(LONGCHAR) *)
   
 VAR
   type-: Type;
@@ -24,17 +24,17 @@ VAR
   zero: Value;
 
   
-PROCEDURE Init (v: Value; value: CHAR);
+PROCEDURE Init (v: Value; value: LONGINT);
   BEGIN
     L.InitValue (v, type);
-    v.value := ORD (value);
+    v.value := value;
   END Init;
 
-PROCEDURE New* (value: CHAR): Value;
+PROCEDURE New* (value: LONGINT): Value;
   VAR
     v: Value;
   BEGIN
-    IF (value = 0X) THEN
+    IF (value = 0) THEN
       RETURN zero
     ELSE
       NEW(v);
@@ -55,7 +55,9 @@ PROCEDURE (v: Value) HashCode* (): LONGINT;
   
 PROCEDURE (v: Value) ToString* (): String.String;
   VAR
-    str: ARRAY 4 OF CHAR;
+    str, rev: ARRAY 16 OF CHAR;
+    i, j: INTEGER;
+    x: LONGINT;
 
   PROCEDURE ToHex (i: LONGINT): CHAR;
     BEGIN
@@ -68,12 +70,31 @@ PROCEDURE (v: Value) ToString* (): String.String;
   
   BEGIN
     IF (v. value < ORD (" ")) OR (v. value >= ORD (Ascii.del)) THEN
-      str := "xxX";
-      str[0] := ToHex (v. value DIV 16);
-      str[1] := ToHex (v. value MOD 16);
-    ELSIF (v. value = ORD ('"')) THEN
+      x := v. value;
+      i := 0;
+      REPEAT
+        rev[i] := ToHex (x MOD 16);
+        x := x DIV 16;
+        INC (i);
+      UNTIL (x = 0);
+
+      (* prefix number with a "0" if its hex representation starts with
+         a letter *)
+      IF (rev[i-1] > "9") THEN
+        rev[i] := "0";
+        INC (i);
+      END;
+
+      j := i-1;
+      REPEAT
+        str[j-i] := rev[i-1];
+        DEC (i);
+      UNTIL (i = 0);
+      str[j+1] := "X";
+      str[j+2] := 0X;
+    ELSIF (v. value = ORD ('"')) THEN    (* double quote *)
       str := "'"+'"'+'"';
-    ELSE
+    ELSE                                 (* printable character *)
       str := '" "';
       str[1] := CHR (v. value);
     END;
@@ -94,7 +115,7 @@ PROCEDURE (v: Value) Load* (r: Object.Reader);
 
 
 
-PROCEDURE (t: Type) Value* (value: CHAR): Value;
+PROCEDURE (t: Type) Value* (value: LONGINT): Value;
   BEGIN
     RETURN New(value);
   END Value;
@@ -136,11 +157,11 @@ PROCEDURE (t: Type) ValueOf* (str[NO_COPY]: ARRAY OF CHAR): Value;
     END;
     IF (i = 3) & (str[0] = str[i-1]) & ((str[0] = '"') OR (str[0] = "'")) THEN
       (* single character, written as '...' or "..." *)
-      RETURN New (str[1])
+      RETURN New (ORD (str[1]))
     ELSIF (i >= 2) & (str[i-1] = "X") & (hexCount+1 = i) THEN
       (* character written has hexadecimal constant nnX *)
       IF HexToInt (str, "X", ord) & (min <= ord) & (ord <= max) THEN
-        RETURN New (CHR (ord))
+        RETURN New (ord)
       ELSE  (* overflow *)
         RETURN NIL
       END
@@ -157,8 +178,8 @@ PROCEDURE (t: Type) ToString* (): String.String;
 BEGIN
   NEW(type);
   L.InitType (type);
-  typeName := String.New ("Char8");
+  typeName := String.New ("Char");
 
   NEW (zero);
-  Init (zero, 0X);
-END Language:Char8.
+  Init (zero, 0);
+END Language:Char.
