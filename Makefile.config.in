@@ -20,6 +20,10 @@ libdir=@libdir@
 # Where to install other files needed to run oo2c, like symbol files.
 oocdir=@libdir@/oo2c
 
+# Where to install oo2c's man pages, and what extension they should have.
+mandir=@mandir@/man1
+manext=.1
+
 # ==================== Utility Programs for the Build ====================
 
 # Allow the user to specify the install program.
