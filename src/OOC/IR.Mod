@@ -3359,10 +3359,8 @@ PROCEDURE (b: Builder) AssertVar (expr: Expression);
     WITH expr: Var DO
       IF TR.IsReadOnly (b. module, expr. decl) THEN
         b. ErrSym (importedReadOnly, expr. sym);
-(*  FIXME... disabled, because the writer classes use VAR x:ARRAY OF BYTE
-             as value input parameters
       ELSIF (expr.decl IS Sym.VarDecl) & expr.decl(Sym.VarDecl).isReadOnly THEN
-        b.ErrSym(readOnlyParameter, expr.sym);*)
+        b.ErrSym(readOnlyParameter, expr.sym);
       END;
     | expr: Deref DO
       (* a pointer dereference is always a variable *)
@@ -4962,7 +4960,12 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         
       ELSE                               (* value parameter *)
         IF TR.IsOpenArrayType (fpar. type) THEN
+          (* Note: The language report only treats VAR parameters of type
+             ARRAY OF BYTE as special.  We extend this to value parameters
+             as well, in order to be able to tighten the read-only checks
+             on NO_COPY parameters.  *)
           ok := TR.IsArrayCompatible (arg. type, fpar. type) OR
+              IsPredefType(fpar.type(Sym.Array).elementType, Predef.byte) OR
               b. Widen (arg, fpar. type);  (* do string promotion *)
         ELSE
           ok := b. WidenForAssign (arg, fpar. type);
