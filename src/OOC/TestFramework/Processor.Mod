@@ -250,9 +250,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       status := ASH (exit, -8) MOD 256;
       signal := exit MOD 256;
       
-      IF (proc. filterCmd # NIL) & (status # 0) THEN
-        (* if exit status is non-zero, then filter the stdout output through
-           filter *)
+      IF (proc. filterCmd # NIL) THEN
+        (* pass stdout output through filter *)
         COPY (proc. filterCmd. array^, path);
         Strings.Insert ("'", 0, path);
         Strings.Append ("' <'", path);
