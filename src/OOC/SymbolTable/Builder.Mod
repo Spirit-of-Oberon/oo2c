@@ -197,12 +197,14 @@ PROCEDURE (b: Builder) NewRecord* (parent: Sym.Item;
 PROCEDURE (b: Builder) NewArray* (parent: Sym.Item; 
                                   position: Sym.Position;
                                   isOpenArray: BOOLEAN;
+                                  lengthExpr: Sym.TempNode;
                                   elementType: Sym.Type): Sym.Array;
   VAR
     array: Sym.Array;
   BEGIN
     NEW (array);
-    Sym.InitArray (array, parent, position, isOpenArray, elementType);
+    Sym.InitArray (array, parent, position, isOpenArray,
+                   elementType, lengthExpr);
     RETURN array
   END NewArray;
 
