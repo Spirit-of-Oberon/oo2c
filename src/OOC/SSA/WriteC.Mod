@@ -35,6 +35,9 @@ IMPORT
   OOC:Make:TranslateToC;
 
 
+CONST
+  enableLoopRewriting = TRUE;
+  
 TYPE
   RegisterSwap = RECORD
     source, dest: STRING;
@@ -1839,30 +1842,43 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     
     (* code transformations *)
     DeadCodeElimination.Transform (pb);
-    Write ("initial", "destore-pre", TRUE);
-    destore := Destore.New (pb);
+    Write ("initial", "destore1-pre", TRUE);
+    destore := Destore.New(pb);
     destore. Transform();
     DeadCodeElimination.RemoveDesignators(pb);
-    DeadCodeElimination.Transform (pb);
-    Write ("destore-post", "constprop-pre", TRUE);
-    ConstProp.Transform (pb);
-    DeadCodeElimination.Transform (pb);
-    Write ("constprop-post", "algebraic-pre", TRUE);
-    Algebraic.Transform (pb, TRUE);  (* use FALSE with LoopRewrite *)
-    DeadCodeElimination.Transform (pb);
+    DeadCodeElimination.Transform(pb);
+    Write("destore1-post", "constprop1-pre", TRUE);
     
-    (*Write ("algebraic-post", "loop-pre", TRUE);
-    Blocker.Write (StdChannels.stdout, pb);
-    LoopRewrite.Transform (pb);
-    ConstProp.Transform (pb);
-    Algebraic.Transform (pb, TRUE);
-    DeadCodeElimination.Transform (pb);*)
+    ConstProp.Transform(pb);
+    DeadCodeElimination.Transform(pb);
+    Write("constprop1-post", "algebraic1-pre", TRUE);
     
-    Write ("loop-post", "cse-pre", TRUE);
-    CSE.Transform (pb);
-    DeadCodeElimination.Transform (pb);
-    Write ("cse-post", "final", TRUE);
+    Algebraic.Transform(pb, ~enableLoopRewriting);
+    DeadCodeElimination.Transform(pb);
+    Write("algebraic1-post", "cse1-pre", TRUE);
+    
+    CSE.Transform(pb);
+    DeadCodeElimination.Transform(pb);
+    Write("cse1-post", "loop-pre", TRUE);
 
+    IF enableLoopRewriting THEN
+      LoopRewrite.Transform(pb);
+      DeadCodeElimination.Transform(pb);
+      Write("loop-post", "constprop2-pre", TRUE);
+      
+      ConstProp.Transform(pb);
+      DeadCodeElimination.Transform(pb);
+      Write("constprop2-post", "algebraic2-pre", TRUE);
+      
+      Algebraic.Transform(pb, TRUE);
+      DeadCodeElimination.Transform(pb);
+      Write("algebraic2-post", "cse2-pre", TRUE);
+      
+      CSE.Transform(pb);
+      DeadCodeElimination.Transform(pb);
+      Write("cse2-post", "final", TRUE);
+    END;
+    
     (*Blocker.Write (StdChannels.stdout, pb);*)
     
     Fixup (pb, jmpbufMap);
