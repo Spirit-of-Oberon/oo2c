@@ -531,6 +531,7 @@ PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
     k: Object.ObjectArrayPtr;
     callee: Sym.ProcDecl;
     varDecl: Sym.VarDecl;
+    type: Sym.Type;
   BEGIN
     oldMode := v.mode;
     call.design.Accept(v);
@@ -655,7 +656,8 @@ PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
     END;
     
     v.mode := oldMode;
-    IF call.design.type(Sym.FormalPars).noReturn THEN
+    type := call.design.type.Deparam();
+    IF type(Sym.FormalPars).noReturn THEN
       v.def.Unreachable();
     END;
   END VisitCall;
