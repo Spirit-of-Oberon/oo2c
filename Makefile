@@ -28,12 +28,12 @@ TEST_SUBDIRS=\
   tests/symtab \
   tests/interface \
   tests/oberon-doc \
+  tests/h2o \
   tests/compile \
   tests/ssa \
   tests/lib \
   tests/ia32 \
   tests/ssa-c-output \
-#  tests/h2o \
 
 top_builddir=$(OOC_DEV_ROOT)
 
