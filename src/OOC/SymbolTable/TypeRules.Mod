@@ -576,13 +576,29 @@ PROCEDURE FunctionResultType*(formalPars: Sym.Type): Sym.Type;
     END;
   END FunctionResultType;
 
+PROCEDURE CallingConventionsMatch* (a, b : Sym.CallConv) : BOOLEAN;
+(**Returns @code{TRUE} iff calling conventions @oparam{a} and @oparam{b} are
+  compatible. For the current C back-end "callConvDefault" is compatible with
+  "callConvC". This is required by @code{FOREIGN "C"} modules. *)
+CONST
+  DefaultConvention = {Sym.callConvDefault, Sym.callConvC};
+BEGIN
+  IF (a = Sym.callConvInvalid) OR (b = Sym.callConvInvalid) THEN
+    RETURN FALSE
+  ELSIF a IN DefaultConvention THEN
+    RETURN b IN DefaultConvention
+  ELSE
+	RETURN a = b;
+  END;
+END CallingConventionsMatch;
+
 PROCEDURE FormalParamsMatch* (baseFParsClosure: Sym.Type;
                               procFPars: Sym.FormalPars;
                               allowSpecialization: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE}, iff the formal parameter lists described by
    @oparam{baseFParsClosure} and @oparam{procFPars} match.  The comparison
-   includes the formal parameters, the result type, and any rest parameter.
-   The receiver of the formal parameter lists is ignored.
+   includes the formal parameters, the result type, calling convention, and any
+   rest parameter.  The receiver of the formal parameter lists is ignored.
 
    If @oparam{allowSpecialization} is @code{TRUE}, then @oparam{procFPars} must
    not be equal to @oparam{baseFParsClosure}, but may be a specialized version
@@ -683,7 +699,11 @@ PROCEDURE FormalParamsMatch* (baseFParsClosure: Sym.Type;
           END;
         END;
       END;
-      
+
+      IF ~CallingConventionsMatch(baseFPars.callConv, procFPars.callConv) THEN
+        RETURN FALSE
+      END;
+
       RETURN TRUE
     END
   END FormalParamsMatch;
