@@ -441,17 +441,15 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
       
       BEGIN
         (*S: ModuleFlags = "OOC_EXTENSIONS" |
-          S:   [Library] ("INTERFACE"|"FOREIGN") string {"," ident}
+          S:   ("INTERFACE"|"FOREIGN") string {"," ident}
           S:   [";" "LINK" LinkSection {";" LinkSection} "END".  *)
         IF Ident ("OOC_EXTENSIONS") THEN
           RETURN CheckSym (Symbol.ident)
         ELSE
-          external := NIL;
-          IF Ident ("INTERFACE") OR Ident ("FOREIGN") THEN
-            external := CheckSym (Symbol.ident)
-          ELSE
+          IF ~Ident("INTERFACE") & ~Ident("FOREIGN") THEN
             Err (expectExternalKW, sym)
           END;
+          external := CheckSym(Symbol.ident);
           callConv := CheckString();
           
           moduleFlags := ast. NewNodeList();
