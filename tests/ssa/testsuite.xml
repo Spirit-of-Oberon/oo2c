@@ -1183,6 +1183,14 @@
     -->
   </testcases>
   
+  <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC">
+    <test id="bugDestore1" type="accept" file="BugDestore1.Mod">
+      The test statements caused the module
+      <code>OOC:SSA:Destore</code> to place a reference to a
+      <code>select</code> instruction in a normal value argument.
+    </test>
+  </testcases>
+  
   <processor-info processor-name="TestCompile">
     <reject-info id="assign1" pos="%c :=" msg="This must be a variable"/>
     <reject-info id="assign2" pos="r%. TBProc :=" msg="This must be a variable"/>
