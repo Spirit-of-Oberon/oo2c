@@ -22,7 +22,8 @@ MODULE oo2c;
 
 IMPORT
   StdChannels, Out, Err, Object, URI, URI:Scheme:File, CfgData := Config,
-  ADT:StringBuffer, IO, OS:ProcessManagement, Config:Section:Options,
+  ADT:StringBuffer, IO, OS:ProcessManagement, OS:Path, OS:Files,
+  Config:Section:Options,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
   OOC:SymbolTable:Builder, OOC:Config:StdPragmas, OOC:Error,
   Rep := OOC:Repository, OOC:Repository:FileSystem, OOC:Make, OOC:SSA:Stats;
@@ -156,10 +157,15 @@ RAISES IO.Error;
       IF (prefix.length # 0) THEN
         path := prefix+"/"+path;
       END;
-      
-      cmd := CCompiler.InstallDirectoryCmd(path);
-      Logger.ShellCommand(cmd);
-      RETURN (ProcessManagement.system(cmd) = 0);
+
+      IF Files.Exists(path) THEN
+        (* path name exists (although it may be a non-directory *)
+        RETURN TRUE;
+      ELSE
+        cmd := CCompiler.InstallDirectoryCmd(path);
+        Logger.ShellCommand(cmd);
+        RETURN (ProcessManagement.system(cmd) = 0);
+      END;
     END InstallDirectory;
   
   PROCEDURE InstallLibrary(module: Rep.Module; makeRules: Make.Rules): BOOLEAN;
@@ -229,12 +235,12 @@ RAISES IO.Error;
   PROCEDURE InstallFiles(list: Package.FileData): BOOLEAN;
     VAR
       end: Package.FileData;
-      dir, str, sourcePrefix, string: STRING;
+      dir, str, sourcePrefix: STRING;
       cmd: StringBuffer.StringBuffer;
       baseURI: URI.URI;
       chars: Object.CharsLatin1;
       
-    PROCEDURE SameDirectory(a, b: Package.File): BOOLEAN;
+    (*PROCEDURE SameDirectory(a, b: Package.File): BOOLEAN;
       VAR
         sa, sb: STRING;
         i, j: LONGINT;
@@ -267,7 +273,7 @@ RAISES IO.Error;
           END;
         END;
         RETURN FALSE;
-      END SameDirectory;
+      END SameDirectory;*)
     
     BEGIN
       baseURI := rep(FileSystem.Repository).relativeBaseURI;
@@ -275,20 +281,16 @@ RAISES IO.Error;
       
       WHILE (list # NIL) DO
         end := list.nextFileData;
-        WHILE (end # NIL) &
+        (* don't call install with multiple input files: the fallback script
+           install-sh does not support this
+           
+           WHILE (end # NIL) &
               SameDirectory(list(Package.File), end(Package.File)) DO
           end := end.nextFileData;
-        END;
+        END;*)
 
-        (* extract name of target directory *)
-        dir := list(Package.File).destName;
-        i := dir.length;
-        WHILE (i # 0) & (dir.CharAt(i-1) # "/") DO
-          DEC(i);
-        END;
-        string := dir.Substring(0, i);
-        dir := string(Object.String8);
-
+        dir := Path.DirName(list(Package.File).destName);
+        
         chars := dir(Object.String8).CharsLatin1();
         IF InstallDirectory(CCompiler.oocdir.value(CfgData.StringVar).string,
                             dir(Object.String8)) THEN
@@ -303,7 +305,9 @@ RAISES IO.Error;
           cmd.Append(" ");
           IF (CCompiler.oocdir.value(CfgData.StringVar).string.length # 0) THEN
             cmd.Append(CCompiler.oocdir.value(CfgData.StringVar).string);
-            cmd.Append("/");
+            IF (dir.length # 0) THEN
+              cmd.Append("/");
+            END;
           END;
           cmd.Append(dir);
 
