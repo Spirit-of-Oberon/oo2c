@@ -22,7 +22,7 @@ MODULE OOC:SSA;
 
 
 IMPORT
-  SYSTEM, Log, Out,
+  SYSTEM, Log, 
   Language, Language:Integer, Language:Boolean, ADT:Object, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
@@ -141,8 +141,8 @@ TYPE
   ConstDesc = RECORD
     (InstrDesc)
     value-: Language.Value;
-    (**For a constant representing a @code{NIL} value, this field is
-       @code{NIL}.  *)
+    (**For a constant representing a @code{NIL} value, this field refers to
+       @ovar{nil}.  *)
     type-: Sym.Type;
   END;
   
@@ -210,8 +210,11 @@ TYPE
     (**Maps items of the symbol table to their @code{adr} instructions.  See
        @oproc{ProcBlock.GetAddress}.  *)
   END;
-  
 
+VAR
+  nil-: Integer.Value;
+
+  
 PROCEDURE InitNode* (n: Node);
   BEGIN
     Object.Init (n);
@@ -358,8 +361,6 @@ PROCEDURE (opnd: Opnd) IsValueOpnd*(): BOOLEAN;
    value of the instruction, and that must be physically computed by the output
    code.  Otherwise, the operand represents meta data that should not appear in
    the emitted code at all.  *)
-  VAR
-    instr: Instr;
   BEGIN
     CASE opnd. class OF
     | OpndClass.antiDependency,
@@ -956,6 +957,7 @@ PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
                      value: Language.Value; type: Sym.Type);
   BEGIN
     InitInstr (const, Opcode.const, subclass);
+    ASSERT (value # NIL);
     const. value := value;
     const. type := type;
   END InitConst;
@@ -1090,10 +1092,6 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
     const: Const;
     bucket: LONGINT;
   BEGIN
-    Out.String("");  (* FIXME... *)
-    (* this statm is for good luck; don't ask, I don't have an answer :-{
-       this occasional failed assert in Dictionary is driving me mad -- mva *)
-
     WITH type: Sym.PredefType DO
       bucket := type. id;
     ELSE
@@ -1142,7 +1140,7 @@ PROCEDURE (pb: ProcBlock) GetConstBool* (b: BOOLEAN): Const;
 
 PROCEDURE (pb: ProcBlock) GetConstNil*(): Const;
   BEGIN
-    RETURN pb. GetConst (NIL, Predef.GetType (Predef.nil))
+    RETURN pb. GetConst (nil, Predef.GetType (Predef.nil))
   END GetConstNil;
 
 
@@ -1455,4 +1453,6 @@ PROCEDURE (pb: ProcBlock) GetEnter*(): Instr;
     RETURN instr
   END GetEnter;
 
+BEGIN
+  nil := Integer.NewDistinct(0);
 END OOC:SSA.

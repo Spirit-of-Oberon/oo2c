@@ -510,7 +510,7 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
       instr := res. instr;
       IF instr. IsConst() THEN
         WITH instr: SSA.Const DO
-          IF (instr. value = NIL) THEN
+          IF (instr. value = SSA.nil) THEN
             w. WriteString ("NIL");
           ELSE
             value := instr. value. ToString();

@@ -615,7 +615,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     
     BEGIN
       WITH expr: IR.Const DO
-        RETURN pb. GetConst (expr. value, expr. type)
+        IF (expr. value = NIL) THEN
+          RETURN pb. GetConst (SSA.nil, expr. type)
+        ELSE
+          RETURN pb. GetConst (expr. value, expr. type)
+        END;
             
       | expr: IR.ProcedureRef DO
         RETURN pb. GetAddress (expr. decl)

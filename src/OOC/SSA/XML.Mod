@@ -110,7 +110,7 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
       w. AttrString ("argref", "NIL");
     ELSE
       WITH res: SSA.Const DO
-        IF (res. value = NIL) THEN
+        IF (res. value = SSA.nil) THEN
           value := String.New ("NIL");
         ELSE
           value := res. value. ToString();
@@ -188,7 +188,7 @@ PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
     w. AttrInt ("id", w. GetId (instr));
     
     WITH instr: SSA.Const DO
-      IF (instr. value = NIL) THEN
+      IF (instr. value = SSA.nil) THEN
         value := String.New ("NIL");
       ELSE
         value := instr. value. ToString();        
