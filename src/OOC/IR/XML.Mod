@@ -91,13 +91,21 @@ BEGIN
   RETURN name.ToString();
 END TypeName;
 
+PROCEDURE TypeAttr (w : Writer.Writer; type : Sym.Type);
+(** Output the name of @oparam{type} as attribute "Type" of the current tag. *)
+  VAR
+    name : String.String;
+  BEGIN
+    name := TypeName(type);
+    w. AttrStringLatin1("Type", name.array^);
+  END TypeAttr;
+
 PROCEDURE (v: Visitor) VisitConst* (const: IR.Const);
   VAR
-    type, value: String.String;
+    value: String.String;
   BEGIN
     v. w. StartTag ("const", TRUE);
-    type := TypeName(const. type);
-    v. w. AttrStringLatin1 ("type", type. array^);
+    TypeAttr(v.w, const.type);
     value := const. ToString();
     v. w. WriteLatin1 (value. array^);
     v. w. EndTag;  (* const *)
@@ -309,7 +317,7 @@ PROCEDURE (v: Visitor) VisitSetOp* (op: IR.SetOp);
 PROCEDURE (v : Visitor) VisitTypeCast* (op : IR.TypeCast);
   BEGIN
     v. w. StartTag("type-cast", FALSE);
-    (* FIXME! Write type. How? *)
+    TypeAttr(v.w, op.type);
     op. expr. Accept(v);
     v. w. EndTag;
   END VisitTypeCast;
@@ -317,10 +325,18 @@ PROCEDURE (v : Visitor) VisitTypeCast* (op : IR.TypeCast);
 PROCEDURE (v : Visitor) VisitTypeConv* (op : IR.TypeConv);
   BEGIN
     v. w. StartTag("type-conv", FALSE);
-    (* FIXME! Write type. How? *)
+    TypeAttr(v.w, op.type);
     op. expr. Accept(v);
     v. w. EndTag;
   END VisitTypeConv;
+
+PROCEDURE (v : Visitor) VisitTypeGuard* (op : IR.TypeGuard);
+  BEGIN
+    v. w. StartTag("type-guard", FALSE);
+    TypeAttr(v.w, op.type);
+    op. test. expr. Accept(v);
+    v. w. EndTag;
+  END VisitTypeGuard;
 
 PROCEDURE (v : Visitor) VisitTypeTag* (op : IR.TypeTag);
   BEGIN
@@ -333,10 +349,9 @@ PROCEDURE (v : Visitor) VisitTypeTest* (op : IR.TypeTest);
   BEGIN
     v. w. StartTag("type-test", FALSE);
     op. expr. Accept(v);
-    (* FIXME! Write type. How? *)
+    TypeAttr(v.w, op.type);
     v. w. EndTag;
   END VisitTypeTest;
-
 
 PROCEDURE VisitStatementSeq (v: Visitor; statmSeq: IR.StatementSeq);
   VAR

@@ -633,6 +633,10 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
     END;
   END VisitTypeConv;
 
+PROCEDURE (c: ConstFold) VisitTypeGuard* (op : IR.TypeGuard);
+  BEGIN
+  END VisitTypeGuard;
+
 PROCEDURE (c: ConstFold) VisitTypeTag* (op : IR.TypeTag);
   BEGIN
   END VisitTypeTag;

@@ -558,6 +558,7 @@ TYPE
     expr- : Expression;
   END;
 
+
 TYPE
   TypeTag* = POINTER TO TypeTagDesc;
   TypeRef* = POINTER TO TypeRefDesc;
@@ -583,6 +584,15 @@ TYPE
     (**Unnormalized value of @ofield{expr}.  *)
     origType-: TypeRef;
     (**Unnormalized value of @ofield{referenceType}.  *)
+  END;
+
+TYPE
+  TypeGuard* = POINTER TO TypeGuardDesc;
+  TypeGuardDesc = RECORD
+    (**The type guard operator. The operator is normalized in the same sense as
+       the type test operator. *)
+    (OperatorDesc)
+    test- : TypeTest;
   END;
   
 TYPE
@@ -2552,6 +2562,51 @@ PROCEDURE (test: TypeTest) Accept* (v: Visitor);
     v. VisitTypeTest (test)
   END Accept;
 
+(* Operator Class: TypeGuard
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitTypeGuard (guard: TypeGuard; sym: Symbol;
+                        type : Sym.Type; test : TypeTest);
+  BEGIN
+    InitOperator (guard, sym, type);
+    guard. test := test;
+  END InitTypeGuard;
+
+PROCEDURE (b : Builder) NewTypeGuard(design : Expression; ref : TypeRef) : Expression;
+VAR 
+  guardType : Sym.Type;
+  guard : TypeGuard;
+  test : Expression;
+BEGIN
+  guardType := ref. decl(Sym.TypeDecl). type;
+  IF TR.IsValidReceiverType(guardType) THEN
+    IF TR.IsExtensionOf(guardType, design.type) THEN
+      NEW(guard);
+      test := b.NewTypeTest(design.sym, design, ref);
+
+      InitTypeGuard(guard, design.sym, guardType, test(TypeTest));
+
+      (* FIXME! Keep compiler happy until back-end handles type guard *)
+      RETURN design;    (* No-Op for now *)
+
+      RETURN guard;
+    ELSE
+      RETURN b.ErrExpr(guardNotExtension, ref.sym);
+    END;
+  ELSE
+    RETURN b.ErrExpr(invalidTypeGuard, ref.sym);
+  END;
+END NewTypeGuard;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeGuard* (test: TypeGuard);
+  END VisitTypeGuard;
+
+PROCEDURE (test: TypeGuard) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTypeGuard (test)
+  END Accept;
+
+
 (* Expression Class: Reference
    ------------------------------------------------------------------------ *)
 
@@ -3942,23 +3997,6 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       RETURN BinaryOperator();
     END;
   END NewOperator;
-
- PROCEDURE (b : Builder) NewTypeGuard(design : Expression; ref : TypeRef) : Expression;
- VAR guardType : Sym.Type;
- BEGIN
-   guardType := ref. decl(Sym.TypeDecl). type;
-   IF TR.IsValidReceiverType(guardType) THEN
-     IF TR.IsExtensionOf(guardType, design.type) THEN
-       design. type := guardType; (* ... quick fix to get the type right *)
-       RETURN design;
-       (* RETURN b.NewTypeTest(design.sym, design, ref, TRUE); *)
-     ELSE
-       RETURN b.ErrExpr(guardNotExtension, ref.sym);
-     END;
-   ELSE
-     RETURN b.ErrExpr(invalidTypeGuard, ref.sym);
-   END;
- END NewTypeGuard;
 
  PROCEDURE (b: Builder) NewCall* (design: Expression;
                                   arguments: ExpressionList;

@@ -181,6 +181,11 @@ PROCEDURE (v: Visitor) VisitTypeConv* (op: IR.TypeConv);
     op. expr. Accept (v);
   END VisitTypeConv;
 
+PROCEDURE (v: Visitor) VisitTypeGuard* (op: IR.TypeGuard);
+  BEGIN
+    op. test. Accept(v);
+  END VisitTypeGuard;
+
 PROCEDURE (v: Visitor) VisitTypeTag* (op: IR.TypeTag);
   BEGIN
     op. design. Accept (v);
@@ -190,8 +195,6 @@ PROCEDURE (v: Visitor) VisitTypeTest* (op: IR.TypeTest);
   BEGIN
     op. expr. Accept(v);
   END VisitTypeTest;
-
-
 
 PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
   END VisitModuleRef;
