@@ -70,7 +70,7 @@ main-clean: doc-clean test-cleanall
 distclean: main-clean
 	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
 	rm -f lib/src/__config.h config.log config.status
-	rm -Rf autom4te.cache stage0/exe/.libs
+	rm -Rf autom4te.cache stage0/exe
 
 ### `cvs-clean'
 ###      Delete everything that should not appear in the CVS.
