@@ -618,7 +618,7 @@ PROCEDURE N (str: ARRAY OF CHAR): Name;
 
 BEGIN
   doAutoImport := noAutoImport;
-  magicNumber := "OOC3";
+  magicNumber := "OOC4";
   
   NEW(autoImport, 2);
   NEW(autoImport[0]);
