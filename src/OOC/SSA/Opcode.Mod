@@ -762,8 +762,24 @@ CONST
      a procedure, so that CSE can still discover equivalent computations.  *)
 
   equiv* = 84;
+  (**Marks a equivalence between two values.  Both results are of class
+     @oconst{*OOC:SSA:Opnd.arg}.  The first result is the preferred
+     representation of the two values.  The instruction has one use,
+     which is an operand of a @oconst{noop} instruction.  Right now,
+     only loop rewriting makes use of this instruction, in combination with
+     partial redundancy elimination.  *)
+  equivPRE* = 85;
+  (**Like @oconst{equiv}, but this instruction has an additional operand
+     referring to a @oconst{collect} instruction.  Use for partial
+     redundancy elimination.  *)
+     
+  noop* = 86;
+  (**No operation.  Used to anchor other information in the SSA graph.
+     Conceptually, every result of this instruction is the value of the
+     corresponding operand.  Any operands beyond the number of results is
+     simply swallowed.  The instruction itself has no uses.  *)
   
-  lastOpcode* = equiv;
+  lastOpcode* = noop;
   
 CONST
   scNone* = 0;
@@ -940,6 +956,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | dgate: cstr := "dgate";
     | designStandin: cstr := "design-standin";
     | equiv: cstr := "equiv";
+    | equivPRE: cstr := "equiv-pre";
+    | noop: cstr := "noop";
     END;
     
     COPY (cstr, name);

@@ -28,7 +28,7 @@ MODULE OOC:SSA:PRE;
 
 IMPORT
   ADT:ArrayList, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
-  OOC:SSA:Blocker;
+  OOC:SSA:Blocker, OOC:SSA:CSE;
 
 PROCEDURE GetSelect(collect: SSA.Instr): SSA.Instr;
   VAR
@@ -45,6 +45,28 @@ PROCEDURE GetSelect(collect: SSA.Instr): SSA.Instr;
     END;
   END GetSelect;
 
+PROCEDURE GetNoop(pb: SSA.ProcBlock; storeOut: SSA.Result): SSA.Instr;
+  VAR
+    use: SSA.Opnd;
+    noop: SSA.Instr;
+    res: SSA.Result;
+  BEGIN
+    ASSERT(storeOut.class = Result.store);
+    use := storeOut.useList;
+    WHILE (use # NIL) DO
+      IF (use.instr.opcode = Opcode.noop) THEN
+        RETURN use.instr;
+      END;
+      use := use.nextUse;
+    END;
+    
+    noop := pb.AddInstr(Opcode.noop, Opcode.scNone);
+    res := noop.AddResult(Result.store);
+    storeOut.ReplaceUses(res);
+    noop.AddOpnd(storeOut, Opnd.store);
+    RETURN noop;
+  END GetNoop;
+
 PROCEDURE Transform* (pb: SSA.ProcBlock);
   VAR
     worklist, equivList: ArrayList.ArrayList;
@@ -54,15 +76,15 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     i: LONGINT;
     
   PROCEDURE MigrateCandidates(collectOpnd: SSA.Opnd;
-                              anchor, undefValue: SSA.Instr);
+                              undefValue: SSA.Instr);
     VAR
       use, opnd: SSA.Opnd;
-      instr, collect, select, new, equiv, sameInstr: SSA.Instr;
+      instr, collect, select, new, equiv, sameInstr, anchor: SSA.Instr;
       res, selectResult: SSA.Result;
       
     PROCEDURE Dominates(res: SSA.Result; instr: SSA.Instr): BOOLEAN;
       BEGIN
-        RETURN TRUE(*dd.Dominates(res.instr, instr)*);
+        RETURN dd.Dominates(res.instr, instr);
       END Dominates;
     
     PROCEDURE GetSelectResult(select, collect: SSA.Instr;
@@ -81,10 +103,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           res := select.NthResult(opnd.OpndIndex()+1);
           use := res.useList;
           WHILE (use # NIL) DO
-            IF (use.instr.opcode = Opcode.equiv) & (use.instr.opndList = use) &
+            IF (use.instr.opcode = Opcode.equivPRE) &
+               (use.instr.opndList = use) &
                (use.instr.NthArg(2) = collect) THEN
               (* if there is already an "equiv" entry for the result of the
-                 "select" instruction, then teturn the constructed instruction
+                 "select" instruction, then return the constructed instruction
                  that is other side of the equivalence *)
               RETURN use.instr.NthArg(1);
             END;
@@ -97,11 +120,13 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     BEGIN
       collect := collectOpnd.instr;
       select := GetSelect(collect);
+      anchor := GetNoop(pb, select.nextResult);
       
       use := collectOpnd.arg.useList;
       WHILE (use # NIL) DO
         IF dd.SameRegion(collect, use.instr) &
            (use.instr.opcode # Opcode.equiv) &
+           (use.instr.opcode # Opcode.equivPRE) &
            (use.instr.nextResult = NIL) &    (* only one result (no collect) *)
            dd.Dominates(collect, use.instr) THEN  (* is in collect's region *)
           instr := use.instr;
@@ -150,7 +175,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
               opnd := opnd.nextOpnd;
             END;
             
-            equiv := pb.AddInstr(Opcode.equiv, Opcode.scNone);
+            equiv := pb.AddInstr(Opcode.equivPRE, Opcode.scNone);
             equiv.AddOpnd(selectResult, Opnd.arg);
             equiv.AddOpnd(new, Opnd.arg);
             equiv.AddOpnd(collect, Opnd.arg);
@@ -171,8 +196,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       selOpnd, opnd, h: SSA.Opnd;
       resultIndex: LONGINT;
     BEGIN
-      ASSERT(equiv.opcode = Opcode.equiv);
-      ASSERT(equiv.useList.instr.opcode = Opcode.selectReturn);
+      ASSERT(equiv.opcode = Opcode.equivPRE);
       
       arg := equiv.NthArg(2);
       collect := arg.instr;
@@ -236,7 +260,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     BEGIN
       use := res.useList;
       WHILE (use # NIL) DO
-        IF (use.instr.opcode # Opcode.equiv) THEN
+        IF (use.instr.opcode # Opcode.equivPRE) THEN
           RETURN FALSE;
         END;
         use := use.nextUse;
@@ -269,12 +293,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     WHILE (worklist.size # 0) DO
       opnd := worklist.array[worklist.size-1](SSA.Opnd);
       worklist.Remove(worklist.size-1);
-      MigrateCandidates(opnd, pb.selectReturn, enter);
+      MigrateCandidates(opnd, enter);
     END;
 
-    (* There should be no need for a full fledged CSE here, because we try
-       above to fold instructions with same instructions as early as possible:
-       CSE.Transform(pb);  *)
+    CSE.Transform(pb);
     
     (* remove all "equiv" instructions where the newly added instruction has
        not been merged by CSE with an existing one *)
@@ -306,5 +328,30 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       END;
     END;
   END Transform;
+
+PROCEDURE ResolveEquiv*(pb: SSA.ProcBlock);
+(**Resolves instructions @oconst{Opcode.equiv} and @oconst{Opcode.noop}
+   that were inserted by @oproc{*OOC:SSA:LoopRewrite.Transform}.  *)
+  VAR
+    instr, next: SSA.Instr;
+  BEGIN
+    instr := pb.instrList;
+    WHILE (instr # NIL) DO
+      next := instr.nextInstr;
+      IF (instr.opcode = Opcode.equiv) THEN
+        instr.opndList.nextOpnd.arg.ReplaceUses(instr.opndList.arg);
+        IF (instr.useList # NIL) THEN
+          ASSERT(instr.useList.nextUse = NIL);
+          instr.useList.DeleteOpnd();
+        END;
+        pb.DeleteInstr(instr);
+
+      ELSIF (instr.opcode = Opcode.noop) THEN
+        instr.nextResult.ReplaceUses(instr.opndList.arg);
+        pb.DeleteInstr(instr);
+      END;
+      instr := next;
+    END;
+  END ResolveEquiv;
 
 END OOC:SSA:PRE.

@@ -21,8 +21,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  OOC:SSA:Blocker,
-  IntStr, Out, Strings, StringSearch, IO, IO:StdChannels,
+  IntStr, Err, Out, Strings, StringSearch, IO, IO:StdChannels,
   Object, Object:Boxed, ADT:Dictionary, ADT:ArrayList,
   Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
@@ -32,7 +31,7 @@ IMPORT
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:CSE, OOC:SSA:Algebraic,
   OOC:SSA:ConstProp, OOC:SSA:LoopRewrite, OOC:SSA:PRE, OOC:SSA:Stats,
   OOC:SSA:Allocator, OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
-  OOC:Make:TranslateToC;
+  OOC:Make:TranslateToC, OOC:SSA:Blocker;
 
 
 CONST
@@ -1707,17 +1706,19 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       IF writeProc &
          ((t. inspectStage. MatchChars (pre, 0, -1) # NIL) OR
           (t. inspectStage. MatchChars (post, 0, -1) # NIL)) THEN
-        Out.String ("PROCEDURE ");
-        Out.String (pb. procDecl. name. str^);
-        Out.String ("/");
-        Out.String (pre);
-        Out.String ("/");
-        Out.String (post);
-        Out.String (":");
-        Out.Ln;
-        Out.Flush;
+        Err.String ("PROCEDURE ");
+        Err.String (pb. procDecl. name. str^);
+        Err.String ("/");
+        Err.String (pre);
+        Err.String ("/");
+        Err.String (post);
+        Err.String (":");
+        Err.Ln;
+        Err.Flush;
+
+        (*XML.ToStderr(pb);*)
         Blocker.Write(StdChannels.stderr, pb);
-        Out.Flush;
+        Err.Flush;
       END;
 
       IF addToStats THEN
@@ -1864,6 +1865,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       Write("loop-post", "pared-pre", TRUE);
       
       PRE.Transform(pb);
+      PRE.ResolveEquiv(pb);
       DeadCodeElimination.Transform(pb);
       Write("pared-post", "constprop2-pre", TRUE);
       

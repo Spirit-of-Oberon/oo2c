@@ -46,6 +46,7 @@ CONST
   loopInvariant = 1;
   forwardInductive = 2;
   bottom = 3;
+  initMarker = SSA.initMarker;
   
 TYPE
   Worklist = POINTER TO WorklistDesc;
@@ -94,7 +95,10 @@ TYPE
     id: LONGINT;
     (* If `instr' is non-NIL, this is an unique identifier for the result.
        It is used for normalization purposes.  *)
-    
+    replacementCandidate: BOOLEAN;
+    (* If TRUE, then the instruction that corresponds to this sum is scheduled
+       for replacement by a new induction cycle.  *)
+       
     ce: CycleElement;     (* element of induction cycle*)
     ceFactor: PList;      (* loop invariant multiple of `ce' *)
     loopInvariant: PList; (* loop invariant but non constant part of the sum *)
@@ -102,8 +106,26 @@ TYPE
     others: PList;        (* the opaque rest of the computation *)
 
     replacement: SSA.Result;
+    useClass: SHORTINT;
+    reconstruct: SSA.Result;
   END;
 
+CONST
+  useOutsideLoop = 0;
+  (* This use happens outside the loop.  *)
+  useIndirectOutsideLoop = 1;
+  (* Use contributes to an instruction that is outside the loop.  *)
+  useReplacementCandidate = 2;
+  (* This use constributes only to instructions that are scheduled for
+     replacement.  *)
+  useReplacementCode = 3;
+  (* Use is part of newly added replacement code.  *)
+  useInCycleElement = 3;
+  (* Use happens in a cycle element of the same induction cycle.  *)
+  useBackedgeValue = 4;
+  (* Use feeds the value back to the beginning of the loop.  *)
+  maxUseId = useBackedgeValue;
+  
 TYPE
   InductionCycle = POINTER TO InductionCycleDesc;
   CycleElementDesc = RECORD
@@ -121,6 +143,7 @@ TYPE
        @ofield{InductionCycle.cycleLength}.  The cycle head has id `0',
        the result at the end of the cycle `cycleLength-1'.  *)
     ic: InductionCycle;
+    useCount: ARRAY maxUseId+1 OF LONGINT;
   END;
   RewrittenCycle = POINTER TO RewrittenCycleDesc;
   RewrittenCycleDesc = RECORD
@@ -170,12 +193,15 @@ PROCEDURE InitSum(sum: Sum; subclass: Opcode.Subclass; atom: SSA.Result);
     sum.others := zero;
 
     sum.replacement := NIL;
+    sum.replacementCandidate := FALSE;
+    sum.useClass := -1;
   END InitSum;
 
 PROCEDURE InitCycleElement(ce: CycleElement; ic: InductionCycle;
                            res: SSA.Result);
   VAR
     ptr: CycleElement;
+    i: LONGINT;
   BEGIN
     InitSum(ce, res.subclass, NIL);
 
@@ -199,6 +225,11 @@ PROCEDURE InitCycleElement(ce: CycleElement; ic: InductionCycle;
       END;
       ptr.next := ce;
     END;
+
+    FOR i := 0 TO maxUseId DO
+      ce.useCount[i] := 0;
+    END;
+    ce.reconstruct := NIL;
   END InitCycleElement;
 
 PROCEDURE InitInductionCycle(ic: InductionCycle; res: SSA.Result);
@@ -465,7 +496,7 @@ PROCEDURE Classify(pb: SSA.ProcBlock; loopStart: SSA.Instr);
     END;
   END Classify;
 
-PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
+PROCEDURE FindInductiveCycles(loopStart: SSA.Instr);
 (* Locate inductive cycles.  For every cycle, install an instance of
    InductionCycle in the loop-start's result that is its head.  *)
   VAR
@@ -866,13 +897,19 @@ PROCEDURE Flatten*(res: SSA.Result);
           sum := NewSum(instr.subclass, instr);
           sum.others := NewPList(sum);
           instr.info := sum;
+        ELSE
+          sum := instr.info(Sum);
+          sum.replacementCandidate := 
+              (sum.ce # NIL) &
+              (sum.loopInvariant # zero);
         END;
       END;
     END;
   END Flatten;
 
 PROCEDURE InitialValue(pb: SSA.ProcBlock;
-                       rc: RewrittenCycle; initOld: SSA.Result): SSA.Result;
+                       rc: RewrittenCycle; initOld: SSA.Result;
+                       marker: LONGINT): SSA.Result;
   VAR
     res: SSA.Result;
     instr: SSA.Instr;
@@ -880,11 +917,15 @@ PROCEDURE InitialValue(pb: SSA.ProcBlock;
   BEGIN
     subclass := rc.origin.subclass;
     res := pb.FixSubclass(initOld, subclass);
+    IF (res # initOld) THEN  (* new conversion instruction *)
+      res.instr.marker := marker;
+    END;
     
     IF (rc.a # NIL) THEN
       instr := pb.AddInstr(Opcode.multiply, subclass);
-      instr.AddOpnd(rc.a, Opnd.arg);
       instr.AddOpnd(res, Opnd.arg);
+      instr.AddOpnd(rc.a, Opnd.arg);
+      instr.marker := marker;
       res := instr;
     END;
     
@@ -892,6 +933,7 @@ PROCEDURE InitialValue(pb: SSA.ProcBlock;
       instr := pb.AddInstr(Opcode.add, subclass);
       instr.AddOpnd(rc.b, Opnd.arg);
       instr.AddOpnd(res, Opnd.arg);
+      instr.marker := marker;
       res := instr;
     END;
     
@@ -1007,7 +1049,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
               obj := replacement.Get(iv);
               res := obj(SSA.Result);
             ELSE
-              res := InitialValue(pb, rc, iv);
+              res := InitialValue(pb, rc, iv, initMarker);
             END;
             
             collect.AddOpnd(res, Opnd.arg);
@@ -1124,7 +1166,8 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       loopStart := sum.ce.ic.res.instr;
       collect := loopStart.opndList.arg.instr;
       res := InitialValue(pb, rc,
-                          collect.NthArg(sum.ce.ic.res.ResultIndex()-1));
+                          collect.NthArg(sum.ce.ic.res.ResultIndex()-1),
+                          initMarker);
       collect.AddOpnd(res, Opnd.arg);
       
       (* add result as gate output to loopStart, and register it in the
@@ -1151,6 +1194,77 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
     (* compute replacement for `origInstr', and register it with `sum' *)
     sum.replacement := ComputeReplacement(rc, sum);
   END Rewrite;
+
+PROCEDURE ClassifyUse(use: SSA.Opnd; ic: InductionCycle): SHORTINT;
+  VAR
+    instr, target: SSA.Instr;
+    res: SSA.Result;
+    recUse: SSA.Opnd;
+    min, x: SHORTINT;
+    sum: Sum;
+  BEGIN
+    instr := use.instr;
+    IF (instr.marker = SSA.initMarker) THEN
+      RETURN useReplacementCode;
+    ELSIF (use.class = Opnd.backwardFeed) THEN
+      RETURN useBackedgeValue;
+    ELSIF (instr.info = NIL) THEN
+      RETURN useOutsideLoop;
+    ELSIF (instr.opcode = Opcode.collect) THEN
+      target := instr.GetCollectTarget();
+      res := target.NthResult(use.OpndIndex()+1);
+      IF (res.info # NIL) & (res.info IS CycleElement) &
+         (res.info(CycleElement).ic = ic) THEN
+        RETURN useInCycleElement;
+      ELSIF (target.opcode = Opcode.loopStart) THEN
+        RETURN useBackedgeValue;
+      ELSE
+        min := MAX(SHORTINT);
+        recUse := res.useList;
+        WHILE (recUse # NIL) DO
+          x := ClassifyUse(recUse, ic);
+          IF (x < min) THEN
+            min := x;
+          END;
+          recUse := recUse.nextUse;
+        END;
+        IF (min = useOutsideLoop) THEN
+          RETURN useIndirectOutsideLoop;
+        ELSE
+          RETURN min;
+        END;
+      END;
+    ELSIF (instr.info # NIL) & (instr.info IS CycleElement) &
+          (instr.info(CycleElement).ic = ic) THEN
+      RETURN useInCycleElement;
+    ELSE
+      sum := instr.info(Sum);
+      IF sum.replacementCandidate THEN
+        RETURN useReplacementCandidate;
+      ELSIF (sum.useClass >= 0) THEN
+        RETURN sum.useClass;
+      ELSE
+        min := MAX(SHORTINT);
+        res := instr;
+        WHILE (res # NIL) DO
+          recUse := res.useList;
+          WHILE (recUse # NIL) DO
+            x := ClassifyUse(recUse, ic);
+            IF (x < min) THEN
+              min := x;
+            END;
+            recUse := recUse.nextUse;
+          END;
+          res := res.nextResult;
+        END;
+        IF (min = useOutsideLoop) THEN
+          min := useIndirectOutsideLoop;
+        END;
+        sum.useClass := min;
+        RETURN min;
+      END;
+    END;
+  END ClassifyUse;
 
 PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
   VAR
@@ -1270,13 +1384,14 @@ PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
             IF (other.marker = loopInvariant) THEN
               new := pb.AddInstr(newOpcode, rc.origin.subclass);
               new.AddOpnd(rc.replacements[ce.pos], Opnd.arg);
-              new.AddOpnd(InitialValue(pb, rc, other), Opnd.arg);
+              new.AddOpnd(InitialValue(pb, rc, other, initMarker),
+                          Opnd.arg);
             END;
           | 1:
             other := instr.NthArg(0);
             IF (other.marker = loopInvariant) THEN
               new := pb.AddInstr(newOpcode, rc.origin.subclass);
-              new.AddOpnd(InitialValue(pb, rc, other), Opnd.arg);
+              new.AddOpnd(InitialValue(pb, rc, other, initMarker), Opnd.arg);
               new.AddOpnd(rc.replacements[ce.pos], Opnd.arg);
             END;
           END;
@@ -1289,30 +1404,124 @@ PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
           END;
         END;
 
-      ELSIF (instr.marker # loopInvariant) & (instr.info = NIL) THEN
+      ELSIF (ClassifyUse(use, ce.ic) = useOutsideLoop) THEN
         (* using instruction is after the loop *)
-        res := rc.replacements[ce.pos];
-
-        IF (rc.b # NIL) THEN
-          new := pb.AddInstr(Opcode.subtract, rc.origin.subclass);
-          new.AddOpnd(res, Opnd.arg);
-          new.AddOpnd(rc.b, Opnd.arg);
-          res := new;
+        IF (ce.reconstruct = NIL) THEN
+          res := rc.replacements[ce.pos];
+          
+          IF (rc.b # NIL) THEN
+            new := pb.AddInstr(Opcode.subtract, rc.origin.subclass);
+            new.AddOpnd(res, Opnd.arg);
+            new.AddOpnd(rc.b, Opnd.arg);
+            res := new;
+          END;
+          
+          IF (rc.a # NIL) THEN
+            new := pb.AddInstr(Opcode.divide, rc.origin.subclass);
+            new.AddOpnd(res, Opnd.arg);
+            new.AddOpnd(rc.a, Opnd.arg);
+            res := new;
+          END;
+          
+          res := pb.FixSubclass(res, ce.res.subclass);
+          ce.reconstruct := res;
+        ELSE
+          res := ce.reconstruct;
         END;
 
-        IF (rc.a # NIL) THEN
-          new := pb.AddInstr(Opcode.divide, rc.origin.subclass);
-          new.AddOpnd(res, Opnd.arg);
-          new.AddOpnd(rc.a, Opnd.arg);
-          res := new;
-        END;
-
-        use.ReplaceArg(pb.FixSubclass(res, ce.res.subclass));
+        use.ReplaceArg(res);
       END;
       
       use := nextUse;
     END;
   END RewriteUses;
+
+
+PROCEDURE ClassifyCEUses(pb: SSA.ProcBlock; loopStart: SSA.Instr);
+  VAR
+    res: SSA.Result;
+    ic: InductionCycle;
+    ce: CycleElement;
+    use: SSA.Opnd;
+  BEGIN
+    res := loopStart;
+    WHILE (res # NIL) DO
+      IF (res.info # NIL) & (res.info IS InductionCycle) THEN
+        ic := res.info(InductionCycle);
+        ce := ic;
+        WHILE (ce # NIL) DO
+          use := ce.res.useList;
+          WHILE (use # NIL) DO
+            INC(ce.useCount[ClassifyUse(use, ic)]);
+            use := use.nextUse;
+          END;
+
+          (*ce.res.LogId("ce.res");
+          FOR i := 0 TO maxUseId DO
+            Log.LongInt("  id", i);
+            Log.LongInt("  count", ce.useCount[i]);
+          END;*)
+          
+          ce := ce.next;
+        END;
+      END;
+      res := res.nextResult;
+    END;
+  END ClassifyCEUses;
+
+PROCEDURE InstallEquivCE(pb: SSA.ProcBlock; loopStart: SSA.Instr);
+  VAR
+    res, storeOut: SSA.Result;
+    rc: RewrittenCycle;
+    ce: CycleElement;
+    equiv, anchor, loopEnd: SSA.Instr;
+
+  PROCEDURE UsedOutsideLoop(res: SSA.Result): BOOLEAN;
+    VAR
+      use: SSA.Opnd;
+    BEGIN
+      use := res.useList;
+      WHILE (use # NIL) DO
+        IF (use.instr.marker # loopInvariant) & (use.instr.info = NIL) THEN
+          RETURN TRUE;
+        END;
+        use := use.nextUse;
+      END;
+      RETURN FALSE;
+    END UsedOutsideLoop;
+  
+  BEGIN
+    (* install a "noop" immediately after the loop-end, using the store output
+       result to integrate it into the dataflow *)
+    loopEnd := loopStart.GetLoopEnd();
+    anchor := pb.AddInstr(Opcode.noop, Opcode.scNone);
+    storeOut := loopEnd.nextResult;
+    res := anchor.AddResult(Result.store);
+    storeOut.ReplaceUses(res);
+    anchor.AddOpnd(storeOut, Opnd.store);
+    
+    res := loopStart;
+    WHILE (res # NIL) DO
+      IF (res.info # NIL) & (res.info IS InductionCycle) THEN
+        rc := res.info(InductionCycle).rewrittenCycles;
+        WHILE (rc # NIL) DO
+          ce := res.info(InductionCycle);
+          WHILE (ce # NIL) DO
+            IF UsedOutsideLoop(ce.res) THEN
+              equiv := pb.AddInstr(Opcode.equiv, Opcode.scNone);
+              equiv.AddOpnd(rc.replacements[ce.pos], Opnd.arg);
+              equiv.AddOpnd(InitialValue(pb, rc, ce.res, bottom),
+                            Opnd.arg);
+              anchor.AddOpnd(equiv, Opnd.arg);
+            END;
+            ce := ce.next;
+          END;
+          rc := rc.next;
+        END;
+      END;
+      res := res.nextResult;
+    END;
+  END InstallEquivCE;
 
 PROCEDURE Transform*(pb: SSA.ProcBlock);
 (**The rewriting algorithm expects that constant propagation, non-substituting
@@ -1441,6 +1650,15 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
         instr := instr.nextInstr;
       END;
 
+      (* for every element of an induction cycle, count the uses that are
+         replaced *)
+      ClassifyCEUses(pb, loopStart);
+      
+      (* for every element of a rewritten cycle, install an "equiv"
+         instruction demonstrating the equivalence of the rewritten element
+         with a standard (a*x+b)+c expression after the loop *)
+      InstallEquivCE(pb, loopStart);
+      
       (* traverse all elements of the induction cycles and see if they are
          used in comparison instructions; if possible, rewrite the comparisons
          to use the rewritten induction cycle *)
@@ -1458,6 +1676,8 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
         END;
         res := res.nextResult;
       END;
+
+(*      Blocker.Write(StdChannels.stderr, pb);*)
       
       (* replace instructions with their tediously computed equivalents *)
       instr := pb.instrList;
