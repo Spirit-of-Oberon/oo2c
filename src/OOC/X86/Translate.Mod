@@ -908,6 +908,30 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         | statm: IR.Call DO
           res := Call(statm);
 
+        | statm: IR.Assert DO
+          IF (statm.predicate = NIL) THEN
+            instr := b.AddInstr2(S.call, b.AddAdrRT("RT0__Halt"), sp);
+            instr.AddOpnd(b.AddConstLength(statm.code));
+            MemoryCP(instr);
+            ControlCP(instr);
+          ELSIF ~statm.disabled THEN
+            res := Expression(statm.predicate);
+            SplitPaths(res, controlCP, memoryCP,
+                       controlTrue, memoryTrue,
+                       controlFalse, memoryFalse);
+            (* first, the "true" path *)
+            memoryCP := memoryTrue; controlCP := controlTrue;
+            endTrue := AddJump();
+            (* second, the "false" path;  *)
+            memoryCP := memoryFalse; controlCP := controlFalse;
+            FailedCheck("RT0__ErrorAssertionFailed", statm.sym.pos,
+                        b.AddConstLength(statm.code));
+            endFalse := AddJump();
+            (* finally, pull all the strings together again *)
+            merge := b.AddMerge2(S.merge, endTrue, endFalse);
+            controlCP := merge; memoryCP := merge;
+          END;
+          
         | statm: IR.CopyParameter DO
           (* handled in FctProlog *)
         END;
