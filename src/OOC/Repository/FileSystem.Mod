@@ -200,6 +200,15 @@ PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId): URI.HierarchicalURI;
         END;
         COPY (m. name^, str);
         ModuleToFileName (str);
+
+        IF (fileId = Rep.modLibrary) THEN
+          ASSERT(m.ifQuality = Rep.completeInterface);
+          Strings.Append("lib", path);
+          COPY(m.ifData.libraryName.array^, str);
+        ELSE
+          ModuleToFileName (str);
+        END;
+        
         Strings.Append (str, path);
         Strings.Append (suffix, path);
         uri := URIParser.NewURI (path, m. origin. baseURI, res);

@@ -115,8 +115,7 @@ CONST
 
      Source files are located by using the function
      @oproc{*OOC:Config:Repositories.Section.GetModule} and then calling
-     @oproc{*OOC:Repository.Module.GetURI} (or one of its friends) on the
-     result.
+     @oproc{Module.GetURI} (or one of its friends) on the result.
 
      Note: In the make facility, the only entity that is allowed to register a
      dependency on this file is @oconst{modSymbolFile}.  *)
@@ -199,6 +198,11 @@ CONST
      by the operating system, or how.  Building a library may result in just a
      static part, or in both static and shared parts.
 
+     The file name of the library is derived indirectly from the module:
+     instead of the module's name, the name of its library is used, prefixed
+     by the string @samp{lib}.  This means, that @oproc{Module.GetURI}
+     return the same URI for all modules of the library.
+     
      [These statements should be general enough to bes true.  Since this topic
      is highly dependent on the operating system, I'm not willing to bet much
      on this, though.  As it is, it is the current working hypothesis ;-)]  *)
