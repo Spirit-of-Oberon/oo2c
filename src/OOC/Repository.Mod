@@ -159,12 +159,17 @@ CONST
   (**This file contains the main function of a program.  It is a variant of
      @oconst{modCodeFileC} in that it contains C code and is compiled to an
      object file.  *)
-  modMainObjectFile* = 15;
-  (**Compiled version of @oconst{modMainFileC}.  *)
-  modExecutable* = 16;
+  modMainFileAssembler* = 15;
+  (**This file contains the main function of a program as assembler code.  It
+     is equivalent to @oconst{modMainFileC}, and is translated to
+     @oconst{modMainObjectFile}.  *)
+  modMainObjectFile* = 16;
+  (**Compiled version of @oconst{modMainFileC} or
+     @oconst{modMainFileAssembler}.  *)
+  modExecutable* = 17;
   (**Represents the executable one gets when using this module as a program's
      main module.  *)
-  resourceFile* = 17;
+  resourceFile* = 18;
   (**A resource file is a non-Oberon file that accompanies a package.
      Resources are typically located in the @file{rsrc} subdirectory of a
      package or repository.  For example, XML DTD files and XSL stylesheets
@@ -324,7 +329,8 @@ PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF 
     | modInterfaceHTML:
       COPY ("doc/html", subdir)
     | modObjectFile, modCodeFileC, modDeclFileC, modHeaderFileC,
-      modObjectFileDynamicLoad, modMainFileC, modMainObjectFile:
+      modObjectFileDynamicLoad,
+      modMainFileC, modMainFileAssembler, modMainObjectFile:
       COPY ("obj", subdir)
     | modObjectFileSharedLib, modObjectFileStaticLib:
       COPY ("lib/obj", subdir)
@@ -364,6 +370,8 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
       COPY (".lo", suffix)
     | modMainFileC:
       COPY ("_.c", suffix)
+    | modMainFileAssembler:
+      COPY ("_.s", suffix)
     | modMainObjectFile:
       COPY ("_.o", suffix)
     | modExecutable:

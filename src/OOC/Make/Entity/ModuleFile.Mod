@@ -25,7 +25,7 @@ IMPORT
   Msg, Out, Strings, Files, Time, ADT:String, ADT:StringBuffer, 
   URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
-  ConfigOOC := OOC:Auxiliary:Config, OOC:Error,
+  ConfigOOC := OOC:Auxiliary:Config, OOC:Config:Assembler, OOC:Error,
   OOC:Repository, OOC:Repository:GetImports, Sym := OOC:SymbolTable;
 
 
@@ -201,6 +201,8 @@ PROCEDURE (entity: Entity) Id* (): String.String;
       str. AppendString ("modCodeFileC")
     | Repository.modMainFileC:
       str. AppendString ("modMainFileC")
+    | Repository.modMainFileAssembler:
+      str. AppendString ("modMainFileAssembler")
     | Repository.modMainObjectFile:
       str. AppendString ("modMainObjectFile")
     | Repository.modExecutable:
@@ -539,7 +541,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
         RETURN nextState;
       END
       
-    | Repository.modMainFileC:
+    | Repository.modMainFileC, Repository.modMainFileAssembler:
       (* This file depends on the existence of all included header files.  *)
       IF (entity. state = Make.entityUndiscovered) THEN
         entity. AddAncestor (GetEntity (entity. context, entity. module,
@@ -577,8 +579,13 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
     
     | Repository.modMainObjectFile:
       IF (entity. state = Make.entityUndiscovered) THEN
-        srcEntity := GetEntity (entity. context, entity. module,
-                                Repository.modMainFileC);
+        IF Assembler.useAssembler THEN
+          srcEntity := GetEntity (entity. context, entity. module,
+                                  Repository.modMainFileAssembler);
+        ELSE
+          srcEntity := GetEntity (entity. context, entity. module,
+                                  Repository.modMainFileC);
+        END;
         AddTimeDep (entity. context, entity, srcEntity);
         RETURN entity. state+1
       ELSE

@@ -6,8 +6,9 @@ IMPORT
   Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, ADT:String,
-  OOC:Make:Entity:ModuleFile, OOC:Make:Command:TranslateToC,
+  OOC:Repository, OOC:Make:Entity:ModuleFile, OOC:Make:Command:TranslateToC,
   OOC:Make:Command:WriteMainFileC, OOC:Make:Command:CompileFileC,
+  OOC:Make:Command:WriteMainFileAssembler, OOC:Make:Command:AssembleFile,
   OOC:Make:Command:LinkProgramC, OOC:Error, Rep := OOC:Repository,
   OOC:C:IRtoC, SSAtoC := OOC:SSA:WriteC;
   
@@ -75,6 +76,20 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
       END;
       RETURN matcher
     END OptionToMatcher;
+
+  PROCEDURE AssemblerInput (aEdge: Make.Edge): BOOLEAN;
+    VAR
+      ancestor: ModuleFile.Entity;
+    BEGIN
+      WHILE (aEdge # NIL) DO
+        ancestor := aEdge. ancestor(ModuleFile.Entity);
+        IF (ancestor. fileId = Repository.modMainFileAssembler) THEN
+          RETURN TRUE;
+        END;
+        aEdge := aEdge. nextAncestor;
+      END;
+      RETURN FALSE;
+    END AssemblerInput;
   
   BEGIN
     WITH entity: ModuleFile.Entity DO
@@ -96,8 +111,14 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
                                  t);
       | Rep.modMainFileC:
         RETURN WriteMainFileC.New (context, entity. module)
+      | Rep.modMainFileAssembler:
+        RETURN WriteMainFileAssembler.New (context, entity. module)
       | Rep.modObjectFile, Rep.modMainObjectFile:
-        RETURN CompileFileC.New (context, entity. module, entity. fileId)
+        IF AssemblerInput (entity. ancestorList) THEN
+          RETURN AssembleFile.New (context, entity. module, entity. fileId);
+        ELSE
+          RETURN CompileFileC.New (context, entity. module, entity. fileId);
+        END;
       | Rep.modExecutable:
         RETURN LinkProgramC.New (context, entity. module)
       END

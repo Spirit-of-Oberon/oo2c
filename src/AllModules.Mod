@@ -155,8 +155,10 @@ IMPORT
   ConfigRepFileSystem := OOC:Config:Repositories:FileSystem,
     (* Parses the data from the symbol file that describes a file
        system based repository.  *)
+  OOC:Config:CCompiler,
+  OOC:Config:Assembler,
   
-  
+  OOC:Make:Command:AssembleFile,
   OOC:Make:Command:CompileFileC,
   OOC:Make:Command:CompileModule,
   OOC:Make:Command:InterfaceDescr,
@@ -165,6 +167,7 @@ IMPORT
   OOC:Make:Command:LinkProgramC,
   OOC:Make:Command:TranslateToC,
   OOC:Make:Command:WriteMainFileC,
+  OOC:Make:Command:WriteMainFileAssembler,
   OOC:Make:Entity:ModuleFile,
   OOC:Make:Entity:UsageData,
   

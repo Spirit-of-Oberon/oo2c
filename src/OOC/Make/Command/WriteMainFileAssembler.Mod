@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
-MODULE OOC:Make:Command:WriteMainFileC;
-(*  Generates the main file of a program.
-    Copyright (C) 2001, 2002  Michael van Acken
+MODULE OOC:Make:Command:WriteMainFileAssembler;
+(*  Generates the main file of a program as i386 assembler code.
+    Copyright (C) 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:Make:Command:WriteMainFileC;
 *)
 
 IMPORT
-  Channel, Files, Make, TextRider, ADT:Dictionary, ADT:String,
+  Ascii, Channel, Files, Make, TextRider, ADT:Dictionary, ADT:String,
   OOC:Make:Entity:ModuleFile, OOC:Error, OOC:Repository;
 
 TYPE
@@ -31,11 +31,6 @@ TYPE
     module: Repository.Module;
     res: Error.Msg;
   END;
-
-CONST
-  sizeVParStack* = 256*1024;
-  (* this should come from config data; until we switch to alloca() or
-     something similar, use a value that is >>128k *)
 
 PROCEDURE New* (context: Make.Context; module: Repository.Module): Command;
   VAR
@@ -50,7 +45,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module): Command;
 
 PROCEDURE (cmd: Command) Id* (): String.String;
   BEGIN
-    RETURN String.New ("[OOC:Make:Command:WriteMainFileC]")
+    RETURN String.New ("[OOC:Make:Command:WriteMainFileAssembler]")
   END Id;
 
 PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
@@ -58,7 +53,7 @@ PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
     entity: Make.Entity;
   BEGIN
     IF (cmd. state = Make.commandUndiscovered) THEN
-      entity := ModuleFile.GetEntity (cmd. context, cmd. module, Repository.modMainFileC);
+      entity := ModuleFile.GetEntity (cmd. context, cmd. module, Repository.modMainFileAssembler);
       cmd. AddAncestors (entity);
       RETURN cmd. state+1
     ELSE
@@ -74,7 +69,7 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
   VAR
     ch: Channel.Channel;
     w: TextRider.Writer;
-  
+    
   PROCEDURE WriteModuleName (w: TextRider.Writer; 
                              prefix: ARRAY OF CHAR;
                              module: Repository.Module;
@@ -111,30 +106,46 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
         WriteModuleName (w, prefix, module, suffix)
       END
     END WriteModules;
+
+  PROCEDURE Directive (cmd: ARRAY OF CHAR);
+    BEGIN
+      w. WriteString (cmd);
+      w. WriteLn;
+    END Directive;
+
+  PROCEDURE Instr (instr: ARRAY OF CHAR);
+    BEGIN
+      w. WriteChar (Ascii.ht);
+      w. WriteString (instr);
+      w. WriteLn;
+    END Instr;
   
   BEGIN
-    ch := cmd. module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
+    ch := cmd. module. GetOutputChannel (Repository.modMainFileAssembler, TRUE, res);
     IF (res = Channel.done) THEN
       w := TextRider.ConnectWriter (ch);
-      w. WriteString ('#include "RT0.h"');
-      w. WriteLn;
-      WriteModules (w, Dictionary.New(), cmd. module,
-                    "extern void ", "_init(void);");
-      w. WriteLn;
-      
-      w. WriteString ("int main (int argc, char *argv[]) {");
-      IF (sizeVParStack >= 0) THEN
-        w. WriteLn;
-        w. WriteString ("  RT0__InitVParStack(");
-        w. WriteLInt (sizeVParStack, 0);
-        w. WriteString (");");
-      END;
-      w. WriteLn;
-      WriteModules (w, Dictionary.New(), cmd. module, "  ", "_init();");
-      w. WriteString ("  return 0;  /* _program_exit_code */");
-      w. WriteLn;
-      w. WriteString ("}");
-      w. WriteLn;
+      Directive(".text");
+      Directive(".Ltext0:");
+      Instr(".align 4");
+      Directive(".globl main");
+      Instr(".type "+Ascii.ht+" main,@function");
+      Directive("main:");
+      Instr("pushl %ebp");
+      Instr("movl %esp,%ebp");
+      Instr("subl $8,%esp");
+      Instr("addl $-12,%esp");
+      Instr("pushl $262144");
+      Instr("call RT0__InitVParStack");
+      WriteModules (w, Dictionary.New(), cmd. module, Ascii.ht+"call ", "_init");
+      Instr("xorl %eax,%eax");
+      Instr("leave");
+      Instr("ret");
+      Directive(".Lfe1:");
+      Instr(".size"+Ascii.ht+" main,.Lfe1-main");
+      Directive(".Lscope0:");
+      Instr(".text");
+      Directive("Letext:");
+      Instr(".ident"+Ascii.ht+'"OOC: 0.1"');
       
       res := w. res;
       ch(Files.File). Register;
@@ -162,4 +173,4 @@ PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
     END
   END ProduceOutput;
 
-END OOC:Make:Command:WriteMainFileC.
+END OOC:Make:Command:WriteMainFileAssembler.
