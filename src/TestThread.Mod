@@ -1,7 +1,7 @@
 MODULE TestThread;
 
 IMPORT
-  Log, Exception, PThread;
+  Log, Exception, Thread:PThread;
 
 CONST
   arraySize = 1024;

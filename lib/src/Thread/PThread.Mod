@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE PThread [FOREIGN "C"; LINK LIB "pthread"; FILE "PThread.c" END];
+MODULE Thread:PThread [FOREIGN "C"; LINK LIB "pthread"; FILE "PThread.c" END];
 (*  Interface for ths POSIX threads library.
     Copyright (C) 2003  Michael van Acken
 
@@ -105,4 +105,4 @@ PROCEDURE (c: Condition) Wait*(m: Mutex);
 
 PROCEDURE (c: Condition) Destroy*();
 
-END PThread.
+END Thread:PThread.
