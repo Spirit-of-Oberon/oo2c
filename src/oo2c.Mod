@@ -1,15 +1,16 @@
 MODULE oo2c;
 
 IMPORT
-  StdChannels, Out, Err,
+  StdChannels, Out, Err, URI, OS:ProcessManagement,
   Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, Config:Value:String,
-  OOC:Config, OOC:Config:CCompiler, OOC:Package,
+  OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
   OOC:SymbolTable:Builder, OOC:Error, Rep := OOC:Repository, OOC:Make;
   
 
 CONST
   buildPackage = -1;
+  installPackage = -2;
   
 VAR
   cfgErrList: Error.List;
@@ -38,6 +39,8 @@ PROCEDURE NewConfig;
                        "<set name='libraryVersion'>$2</set></options>");
     Config.AddCmdLine ("--build-package",
                        "<options><set name='command'>3</set></options>");
+    Config.AddCmdLine ("--install-package",
+                       "<options><set name='command'>4</set></options>");
     Config.AddCmdLine ("--library",
                  "<options><set name='library'>TRUE</set></options>");
     Config.AddCmdLine ("--use-stderr",
@@ -60,25 +63,57 @@ PROCEDURE GetModule (moduleName: ARRAY OF CHAR): Rep.Module;
     RETURN m;
   END GetModule;
 
-PROCEDURE BuildPackage (pkg: Package.Package): BOOLEAN;
+PROCEDURE BuildPackage(pkg: Package.Package; install: BOOLEAN): BOOLEAN;
   VAR
     ok: BOOLEAN;
     i: LONGINT;
     lib: Package.Library;
     exec: Package.Executable;
+    module: Rep.Module;
+    
+  PROCEDURE InstallLibrary(module: Rep.Module): BOOLEAN;
+  (* pre: Full update has been done for the library's main module.  The
+     target directory `libdir' must exist.  *)
+    VAR
+      uri: URI.URI;
+      str: Make.ShellCommand;
+    BEGIN
+      uri := module.GetURI(Rep.modLibrary, TRUE);
+      CCompiler.InstallProgramCmd(uri, TRUE, str);
+      Logger.ShellCommand(str);
+      RETURN (ProcessManagement.system(str) = 0);
+    END InstallLibrary;
+  
+  PROCEDURE InstallExecutable(module: Rep.Module): BOOLEAN;
+  (* pre: Full update has been done for the program's main module.  The
+     target directory `bindir' must exist. *)
+    VAR
+      uri: URI.URI;
+      str: Make.ShellCommand;
+    BEGIN
+      uri := module.GetURI(Rep.modExecutable, TRUE);
+      CCompiler.InstallProgramCmd(uri, FALSE, str);
+      Logger.ShellCommand(str);
+      RETURN (ProcessManagement.system(str) = 0);
+    END InstallExecutable;
+  
   BEGIN
     ok := TRUE;
     
     FOR i := 0 TO pkg.library.size-1 DO
       lib := pkg.library.array[i](Package.Library);
       makeRules.SetLibraryName(lib.name^, lib.version.tuple);
-      ok := makeRules.Update(GetModule(lib.mainModule^), Rep.modLibrary)
+      module := GetModule(lib.mainModule^);
+      ok := makeRules.Update(module, Rep.modLibrary)
+          & (~install OR InstallLibrary(module))
           & ok;
     END;
     
     FOR i := 0 TO pkg.executable.size-1 DO
       exec := pkg.executable.array[i](Package.Executable);
-      ok := makeRules.Update(GetModule(exec.mainModule^), Rep.modExecutable)
+      module := GetModule(exec.mainModule^);
+      ok := makeRules.Update(module, Rep.modExecutable)
+          & (~install OR InstallExecutable(module))
           & ok;
     END;
     
@@ -110,6 +145,8 @@ BEGIN
                              libraryVersion.value(String.Value).string^);
   | 3:
     mode := buildPackage;
+  | 4:
+    mode := installPackage;
   END;
   
   IF (cfgErrList. msgCount # 0) THEN
@@ -125,7 +162,7 @@ BEGIN
     FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
       arg := Config.arguments. Get (i);
       CASE mode OF
-      | buildPackage:
+      | buildPackage, installPackage:
         pkg := Config.repositories.GetPackage(arg^);
         IF (pkg = NIL) THEN
           Err.String ("Error: Cannot locate package ");
@@ -133,7 +170,7 @@ BEGIN
           Err.Ln;
           HALT (1)
         ELSE
-          ok := BuildPackage(pkg) & ok;
+          ok := BuildPackage(pkg, (mode = installPackage)) & ok;
         END;
       ELSE
         ok := makeRules.Update(GetModule(arg^), mode) & ok;
