@@ -1,7 +1,7 @@
 1. Prerequisites
 
 
-  oo2c 1.5.7
+  oo2c 1.5.7.1 (patch at http://pweb.de/vanacken.do/ooc/oo2c-patches/)
   libadt (from the CVS repository)
   libxml (from the CVS repository)
   gaf2 (from the CVS repository)
