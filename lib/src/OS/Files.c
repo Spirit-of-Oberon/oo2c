@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <limits.h>
 
 #include "__oo2c.h"
 #include "__config.h"
