@@ -62,7 +62,7 @@ CONST
      to be outdated.  If the entity cannot be rebuild, it stays in this state.  *)
   entityUndiscovered* = 0;
   (**The entity's state has not been determined yet.  The framework treats all
-     values @samp{>=@oconst{entityUndiscovered}}.  *)
+     values @samp{>=@oconst{entityUndiscovered}} alike.  *)
 
 TYPE
   CommandState* = LONGINT;
