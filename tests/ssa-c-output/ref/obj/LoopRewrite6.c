@@ -9,7 +9,7 @@ static void LoopRewrite6__ZeroArray2(LoopRewrite6__RealArray a, OOC_INT32 len) {
   i1 = 0<i0;
   if (!i1) goto l8;
   i1 = (OOC_INT32)a;
-  i0 = i1+(4*i0);
+  i0 = i1+i0*4;
   
 l3_loop:
   *(OOC_REAL32*)i1 = 0.0000000000000000f;

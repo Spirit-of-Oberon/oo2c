@@ -8,7 +8,7 @@ static void LoopRewrite5__Trim1(OOC_CHAR8 src[], OOC_LEN src_0d, OOC_CHAR8 dest[
   i0 = *(OOC_UINT8*)(OOC_INT32)src;
   i0 = i0!=0u;
   if (i0) goto l3;
-  i0=0;
+  i0=(OOC_INT32)dest;
   goto l13;
 l3:
   i0=(OOC_INT32)src;i1=(OOC_INT32)dest;
@@ -25,10 +25,9 @@ l8:
   i2 = i2!=0u;
   if (i2) goto l4_loop;
 l12:
-  i0 = i1-(OOC_INT32)dest;
-  
+  i0=i1;
 l13:
-  *(OOC_UINT8*)((OOC_INT32)dest+i0) = 0u;
+  *(OOC_UINT8*)i0 = 0u;
   return;
   ;
 }
@@ -39,7 +38,7 @@ static void LoopRewrite5__Trim2(OOC_CHAR16 src[], OOC_LEN src_0d, OOC_CHAR16 des
   i0 = *(OOC_UINT16*)(OOC_INT32)src;
   i0 = i0!=0u;
   if (i0) goto l3;
-  i0=0;
+  i0=(OOC_INT32)dest;
   goto l13;
 l3:
   i0=(OOC_INT32)src;i1=(OOC_INT32)dest;
@@ -56,10 +55,9 @@ l8:
   i2 = i2!=0u;
   if (i2) goto l4_loop;
 l12:
-  i0 = (i1-(OOC_INT32)dest)>>1;
-  
+  i0=i1;
 l13:
-  *(OOC_UINT16*)((OOC_INT32)dest+i0*2) = 0u;
+  *(OOC_UINT16*)i0 = 0u;
   return;
   ;
 }

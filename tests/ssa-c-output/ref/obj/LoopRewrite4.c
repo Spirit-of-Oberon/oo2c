@@ -8,7 +8,7 @@ static void LoopRewrite4__Zero1(OOC_CHAR8 a[][], OOC_LEN a_0d, OOC_LEN a_1d) {
   i0 = 0!=a_0d;
   if (!i0) goto l16;
   i0 = (OOC_INT32)a+a_1d;
-  i1 = i0+(a_1d*a_0d);
+  i1 = i0+(a_0d*a_1d);
   i2 = 0!=a_1d;
   i3=i0;i0=(OOC_INT32)a;
 l3_loop:
@@ -35,8 +35,8 @@ static void LoopRewrite4__Zero2(OOC_INT16 a[][], OOC_LEN a_0d, OOC_LEN a_1d) {
   i0 = 0!=a_0d;
   if (!i0) goto l16;
   i0 = 2*a_1d;
-  i1 = (OOC_INT32)a+i0;
-  i2 = i1+(i0*a_0d);
+  i1 = (OOC_INT32)a+a_1d*2;
+  i2 = i1+(a_0d*i0);
   i3 = 0!=a_1d;
   i4=i1;i1=(OOC_INT32)a;
 l3_loop:

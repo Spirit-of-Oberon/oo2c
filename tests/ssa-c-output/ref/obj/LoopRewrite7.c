@@ -10,7 +10,7 @@ void LoopRewrite7__CopyArray1(LoopRewrite7__RealArray a, LoopRewrite7__RealArray
   i1 = 0<i0;
   if (!i1) goto l8;
   i1 = (OOC_INT32)a;
-  i0 = i1+(4*i0);
+  i0 = i1+i0*4;
   i2 = (OOC_INT32)b;
   {register OOC_INT32 h0=i1;i1=i2;i2=h0;}
 l3_loop:

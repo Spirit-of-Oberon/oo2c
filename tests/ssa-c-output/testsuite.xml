@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; pre1 pre2">-->
+  select ="&SetupTestCasesWithOut; pre3">-->
   
   &TestSetupWithOut;
     
@@ -251,6 +251,9 @@
       The scheduler should be smart enough to have just one jump
       within the loop, the one going backwards to its beginning.
     </test>
+    <test id="rewrite8" type="accept" file="LoopRewrite8.Mod">
+      A slightly simplified version of <code>Strings.FindNext</code>.
+    </test>
     
     <test id="pre1" type="accept" file="PRE1.Mod">
       The array index computed in the <code>RETURN</code> is partially
@@ -262,6 +265,13 @@
     <test id="pre2" type="accept" file="PRE2.Mod">
       The array index is computed in both branches of the
       <code>IF</code>.  It can be reused after the <code>IF</code>.
+    </test>
+    <test id="pre3" type="accept" file="PRE3.Mod">
+      The value of <code>flags.n</code> must only be accessed
+      <em>after</em> <code>flags</code> has been tested for
+      non-<code>NIL</code>.  In other words, it is an error to move an
+      instruction out of a region if only the region's guard allows
+      it to succeed.
     </test>
     
     <test id="noCopy7" type="accept" file="NoCopy7.Mod">

@@ -14,7 +14,7 @@ void Quicksort1__Sort(OOC_INT32 a[], OOC_LEN a_0d, OOC_INT32 m, OOC_INT32 n) {
   i4 = i1-1;
   i5=i0;
 l3_loop:
-  i4 = (OOC_INT32)a+(4*i4);
+  i4 = (OOC_INT32)a+i4*4;
   
 l4_loop:
   i4 = i4+4;
@@ -22,7 +22,7 @@ l4_loop:
   i7 = i6>=i3;
   if (!i7) goto l4_loop;
 l8:
-  i5 = (OOC_INT32)a+(4*i5);
+  i5 = (OOC_INT32)a+i5*4;
   
 l9_loop:
   i5 = i5-4;
@@ -32,7 +32,7 @@ l9_loop:
 l13:
   i8 = (i4-(OOC_INT32)a)>>2;
   i9 = (i5-(OOC_INT32)a)>>2;
-  i10 = (OOC_UINT32)((OOC_INT32)a+(4*i8))>=(OOC_UINT32)i5;
+  i10 = (OOC_UINT32)i4>=(OOC_UINT32)i5;
   if (i10) goto l17;
   *(OOC_INT32*)i4 = i7;
   *(OOC_INT32*)i5 = i6;
