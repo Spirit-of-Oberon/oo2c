@@ -441,6 +441,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       adr: SSA.Instr;
       decl: Sym.Declaration;
       name: String.String;
+      procType: Sym.FormalPars;
     BEGIN
       IF (call. opndList. arg. instr. opcode = Opcode.tbProcAddress) THEN
         (* calling type bound procedure: cast procedure address *)
@@ -454,9 +455,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. WriteChar (")");
       ELSIF ~(call. opndList. arg IS SSA.DeclRef) THEN
         (* calling through variable: cast address to function type *)
+        procType := call. opndList(SSA.TypedOpnd). type(Sym.FormalPars);
         w. WriteChar ("(");
-        CastToPtr (call. opndList. arg,
-                   call. opndList(SSA.TypedOpnd). type, FALSE);
+        w. WriteTypeCast (ConvertDecl.ConvertType (w, procType, procType));
         w. Ref (call. opndList);
         w. WriteChar (")");
       ELSE
