@@ -32,10 +32,10 @@ IMPORT
 
 
 (**This modules provides a string abstraction based on the code point
-   definitions of Unicode 3.1.  It defines the classes @otype{String},
-   @otype{Buffer}, and @otype{Codec}, representing string values, a way to put
-   strings together, and a mechanism to translate between string
-   representations.
+   definitions of Unicode 3.1.  It defines the classes @otype{String} and
+   @otype{Buffer}, representing string values and a way to put
+   strings together.  A mechanism to translate between string
+   representations is provided in a companion module, @omodule{*Codec}.
 
    In order of importance, the use cases addressed by these classes are
 
@@ -47,6 +47,14 @@ IMPORT
    Interacting with Oberon-2's notion of strings.  In particular, it must be
    easy to pass a string to an @code{ARRAY OF CHAR}, and vice versa.
    @item
+   Efficient access to a string's value as a sequence of characters.  This is
+   for applications like scanners and pattern matchers, which need a short path
+   to character data for performance reasons.
+   @end itemize
+
+   The @omodule{*Codec} module deals with translation issues:
+   @itemize @bullet
+   @item
    Translating between different encodings of string values, for example from
    UTF-8 to Latin-1.
    @item
@@ -55,10 +63,6 @@ IMPORT
    @item
    Encoding or decoding a chunked stream of bytes, while giving the programmer
    some control over the resources being used for this purpose.
-   @item
-   Efficient access to a string's value as a sequence of characters.  This is
-   for applications like scanners and pattern matchers, which need a short path
-   to character data for performance reasons.
    @end itemize  *)
   
 TYPE
@@ -86,7 +90,13 @@ TYPE
 TYPE
   Buffer* = POINTER TO BufferDesc;
   CharsLatin1* = POINTER TO ARRAY OF CHAR;
+  (**Note: The elements of this type should be considered read-only in
+     importing modules, similar to read-only exported record fields.  This
+     restriction may be enforced by the OOC2 compiler at a later stage.  *)
   CharsUTF32* = POINTER TO ARRAY OF Char;
+  (**Note: The elements of this type should be considered read-only in
+     importing modules, similar to read-only exported record fields.  This
+     restriction may be enforced by the OOC2 compiler at a later stage.  *)
   BufferDesc = RECORD
   (**A buffer is the preferred way to assemble several strings into one
      large string value.  *)
@@ -106,7 +116,7 @@ TYPE
     (StringDesc)
     data: CharsLatin1;
     (**Holds a sequence of Unicode code points in the range @samp{U+0000} to
-       @samp{U+00FF}.  The array is of length @ofield{length+1}, with
+       @samp{U+00FF}.  The array is of length @samp{@ofield{length}+1}, with
        @samp{data[length]} having the value @samp{0X}.  *)
   END;
   
@@ -118,8 +128,8 @@ TYPE
     data: CharsUTF32;
     (**Holds a sequence of Unicode code points in the range @samp{U+0000} to
        @samp{U+10FFFF}, excluding the surrogate area @samp{[U+DC00, U+DFFFF]}.
-       The array is of length @ofield{length+1}, with @samp{data[length]}
-       having the value @samp{0X}.  *)
+       The array is of length @samp{@ofield{length}+1}, with
+       @samp{data[length]} having the value @samp{0X}.  *)
   END;
 
 CONST
@@ -319,7 +329,7 @@ PROCEDURE NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT): St
 (**Create a string value from @samp{str[start, end-1]} without any translation.
 
    @precond
-   @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{data})}.
+   @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{str})}.
    The characters in @oparam{str} are Latin-1 code points.
    @end precond  *)
   BEGIN
@@ -358,7 +368,7 @@ PROCEDURE NewUTF32Region*(str[NO_COPY]: ARRAY OF Char;
 (**Create a string value from @samp{str[start, end]} without any translation.
 
    @precond
-   @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{data})}.
+   @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{str})}.
    All characters are Unicode 3.1 code points outside the surrogate areas.
    @end precond  *)
   BEGIN
