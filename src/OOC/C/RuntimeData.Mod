@@ -97,6 +97,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     VAR
       name: STRING;
     BEGIN
+      type := type.Deparam();
       IF type.hasDescriptor THEN
         w.WriteString("&");
         name := Naming.NameOfTypeDescriptor(type);

@@ -182,6 +182,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): STRING;
     string: STRING;
     str, str2: ARRAY 32 OF CHAR;
   BEGIN
+    type := type.Deparam();
     WITH type: Sym.PredefType DO
       CASE type. id OF
       | Predef.boolean : str := "boolean"
