@@ -453,5 +453,9 @@
       Imports the module <code>StdChannels</code>.  No further tests.
     </test>
     
+    <test id="lib_TextRider" type="run" file="LibTextRider.Mod">
+      Imports the module <code>TextRider</code>.  No further tests.
+    </test>
+    
   </testcases>
 </testsuite-ext>
