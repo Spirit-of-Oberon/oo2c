@@ -5,6 +5,7 @@ IMPORT
   ADT:Object, ADT:String, ADT:Dictionary,
   OOC:SymbolTable:Item, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
+  OOC:SSA:DeadCodeElimination,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:WriteConst, OOC:C:WriteDecl;
 
 
@@ -76,13 +77,23 @@ PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.D
     ctype: WriteDecl.BasicTypeId;
     str: ARRAY 32 OF CHAR;
     count: LONGINT;
+
+  PROCEDURE StoredInRegister (instr: SSA.Instr): BOOLEAN;
+    BEGIN
+      WITH instr: SSA.Const DO
+        RETURN FALSE
+      ELSE
+        RETURN TRUE
+      END;
+    END StoredInRegister;
+  
   BEGIN
     count := 0;
     registerMap := Dictionary.New();
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       type := instr. GetResultType();
-      IF (type # Opcode.scNone) THEN
+      IF (type # Opcode.scNone) & StoredInRegister (instr) THEN
         ctype := SubclassToBasicType (type);
 
         (* create name for result *)
@@ -186,6 +197,12 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
          when calling a procedure *)
       name := Naming.NameOfDeclaration (arg. decl);
       w. WriteString (name. array^)
+
+    | arg: SSA.Const DO
+      (* write constant values directly, without going through an
+         intermediate register; kind of unnatural for C code *)
+      WriteConst.Write (w. w, arg. value);
+      
     ELSE
       IF w. registerMap. HasKey (opnd. arg) THEN
         obj := w. registerMap. Get (opnd. arg);
@@ -306,7 +323,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       
       CASE instr. opcode OF
       | Opcode.const:
-        WriteConst.Write (w. w, instr(SSA.Const). value);
+        (* nothing *)
 
       | Opcode.declRef:
         (* nothing *)
@@ -493,6 +510,10 @@ PROCEDURE ProcBody* (textWriter: TextRider.Writer;
                            procDecl. statmSeq);
     pb. selectReturn. AddOpnd (s, Opnd.store);
 
+    (* code transformations *)
+    DeadCodeElimination.Transform (pb);
+
+    (* write SSA code to stdout, both in native and scheduled format *)
     XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
     domRoot := Schedule.Schedule (pb);
     XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
