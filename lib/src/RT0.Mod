@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE RT0 [FOREIGN "C"; LINK FILE "RT0.c" END];
+MODULE RT0 [FOREIGN "C"; LINK FILE "RT0.c"; LIB "m" END];
 (*  Proxy module for the run-time system of C back-ends of OOC2
     Copyright (C) 2001, 2002  Michael van Acken
 
@@ -30,7 +30,10 @@ MODULE RT0 [FOREIGN "C"; LINK FILE "RT0.c" END];
    Please note that this module should be considered a part of the compiler,
    @emph{not} of the standard library.  As such, it may differ across different
    compiler implementations, and for a given compiler its interface might
-   change without prior notice.  *)
+   change without prior notice.
+
+   Note: The math library @samp{libm} is always linked in for the sake of the
+   predefined function @code{ENTIER}.  *)
 
 IMPORT
   SYSTEM;
@@ -163,5 +166,11 @@ PROCEDURE NewBlock* (bytes: LONGINT): SYSTEM.PTR;
    bytes.  Pointers in the allocated block are ignored during garbage
    collection.  That is, the block must not contain any references to objects
    on the heap that are not kept live by other pointers.  *)
-   
+
+PROCEDURE InitVParStack* (bytes: LONGINT);
+(**Allocates the heap block that serves as a stack for value parameters of
+   open array type.  It is used as a fallback if no mechanism is available
+   to store the data on the normal C stack.  This procedure is called once,
+   from the program's setup code.  *)
+  
 END RT0.

@@ -114,7 +114,7 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
     ch := cmd. module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
     IF (res = Channel.done) THEN
       w := TextRider.ConnectWriter (ch);
-      w. WriteString ('#include "__oo2c.h"');
+      w. WriteString ('#include "RT0.h"');
       w. WriteLn;
       WriteModules (w, Dictionary.New(), cmd. module,
                     "extern void ", "_init(void);");
@@ -123,9 +123,9 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
       w. WriteString ("int main (int argc, char *argv[]) {");
       IF (sizeVParStack >= 0) THEN
         w. WriteLn;
-        w. WriteString ("  OOC_INIT_VPAR_STACK(");
+        w. WriteString ("  RT0__InitVParStack(");
         w. WriteLInt (sizeVParStack, 0);
-        w. WriteString (")");
+        w. WriteString (");");
       END;
       w. WriteLn;
       WriteModules (w, Dictionary.New(), cmd. module, "  ", "_init();");

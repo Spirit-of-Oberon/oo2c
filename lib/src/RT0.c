@@ -75,6 +75,11 @@ OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
   return (OOC_PTR)ptr;
 }
 
+void RT0__InitVParStack(OOC_INT32 bytes) {
+  _ooc_top_vs = (void*)malloc(bytes); /* not GC_malloc_atomic!!! */
+  _ooc_end_vs = (char*)_ooc_top_vs+(bytes);
+}
+
 void RT0_init() {
   PS(RT0__boolean , RT0__strBoolean , sizeof(OOC_BOOLEAN));
   PS(RT0__char    , RT0__strChar    , sizeof(OOC_CHAR8));

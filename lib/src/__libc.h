@@ -19,20 +19,6 @@
 #ifndef __oo2c_libc__
 #define __oo2c_libc__
 
-/* make sure that __config.h has been included before this file,
-   or OOC_SIZE_T is not defined! */
-
-extern void* malloc(OOC_SIZE_T n);
-
-#ifdef __GNUC__
-/* somehow gcc 2.7.2 on SunOS 4 doesn't like our size_t type and
-   complains about a declaration conflict with its builtin memcpy; but with 
-   gcc there is always a tricky and non-standard way around this problem: */
-extern void* memcpy(void* dest, const void* src, __typeof__(sizeof(int)) n);
-extern void* memset(void* block, int c, __typeof__(sizeof(int)) n);
-#else
-extern void* memcpy(void* dest, const void* src, OOC_SIZE_T n);
-extern void* memset(void* block, int c, OOC_SIZE_T n);
-#endif
+extern double floor(double x);
 
 #endif /* __oo2c_libc__ */
