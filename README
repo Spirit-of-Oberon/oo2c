@@ -6,8 +6,10 @@ oo2c translates Oberon-2 source code into a variant of C supported by
 the gcc family of compilers.  It uses a variant of SSA for its
 intermediate representation, and performs common optimizations like
 common subexpression elimination, invariant code motion, constant
-propagation, algebraic transformations, and dead code removal.
-The compiler relies on Boehm's gc for garbage collection.
+propagation, algebraic transformations, and dead code removal.  The
+compiler relies on Boehm's gc for garbage collection.  A summary of
+the user visible changes from oo2c-1.5.9 to oo2c-2.0.x can be found in
+directory doc/from-v1-to-v2/.
 
 Operating system, architecture, and gcc combinations that are known to
 work:
