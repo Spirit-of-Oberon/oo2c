@@ -77,6 +77,18 @@ extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN
 extern OOC_INT32 _cmp8(const OOC_CHAR8* l, const OOC_CHAR8* r);
 extern OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r);
 
+/* range of set values */
+#define _bit_range(_from,_to) (_from > _to) ? (OOC_UINT32)0 : \
+  (((OOC_UINT32)1 << _to)*2-1) & ~(((OOC_UINT32)1 << _from)-1)
+
+/* ABS(numeric) */
+#define _abs(_x) (_x<0?-_x:_x)
+
+/* ASH(x,n) */
+#define _ashl(_x,_n) (_x << _n)
+#define _ashr(_x,_n) (_x >> _n) | ((_x >= 0) ? 0 : ~(~(OOC_INT32)0 >> _n))
+#define _ash(_x,_n) (_n >= 0) ? _ashl(_x,_n) : _ashr(_x,- _n)
+
 /* CAP(CHAR) and CAP(LONGCHAR) */
 #define _cap(_c) ((96<_c && _c<123) || (224<=_c && _c<255 && _c!=247)) ? (_c-32) : _c
 #define _capl(_c) _cap(_c)
