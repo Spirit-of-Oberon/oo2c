@@ -17,7 +17,7 @@ VAR
   type- : Type;
   typeName : String.String;
 
-  minus1, zero- : Value;
+  minus1, zero-, one : Value;
 
 PROCEDURE NewInt (val : Integers.Integer) : Value;
 (** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
@@ -30,9 +30,23 @@ BEGIN
   RETURN v;
 END NewInt;
 
-PROCEDURE New* (l : LONGINT) : Value;
+PROCEDURE NewDistinct* (l : LONGINT) : Value;
+(**Return a new integer object for value @oparam{l}.  The returned object's
+   address is guaranteed to be different from all other instance of
+   @otype{Value}.  *)
 BEGIN
   RETURN NewInt(Integers.Long(l));
+END NewDistinct;
+
+PROCEDURE New* (l : LONGINT) : Value;
+BEGIN
+  CASE l OF
+  |  0: RETURN zero;
+  |  1: RETURN one;
+  | -1: RETURN minus1;
+  ELSE
+    RETURN NewInt(Integers.Long(l));
+  END;
 END New;
 
 PROCEDURE NewString* (str: ARRAY OF CHAR): Value;
@@ -165,7 +179,8 @@ BEGIN
   L.InitType(type);
   typeName := String.New("Integer");
 
-  zero := New(0);
-  minus1 := New(-1);
+  zero := NewDistinct(0);
+  one := NewDistinct(1);
+  minus1 := NewDistinct(-1);
 END Language:Integer.
 
