@@ -7,8 +7,12 @@
   GNU make
   GNU libtool 1.4
 
-  For "make test" and packaging, you will also need perl and GNU tar,
-  and for "make doc" you need xsltproc.
+  Optional:
+
+  Boehm's gc (libgc must be in library path, gc/gc.h in include path)
+
+  For "make test" and packaging, you will also need perl, GNU tar,
+  and xsltproc.
 
 2. Setting up the Development Environment
 
