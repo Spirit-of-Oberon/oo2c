@@ -214,6 +214,33 @@ PROCEDURE (lh: Handle) Debug*(msg: STRING);
     END;
   END Debug;
   
+PROCEDURE (lh: Handle) DebugObject*(msg: STRING; x: Object.Object);
+  VAR
+    str: STRING;
+  BEGIN
+    IF (x = NIL) THEN
+      str := "<NIL>";
+    ELSE
+      str := x.ToString();
+    END;
+    lh.Debug(msg+": "+str);
+  END DebugObject;
+
+PROCEDURE (lh: Handle) DebugInt*(msg: STRING; x: LONGINT);
+  BEGIN
+    lh.Debug(msg+": "+Boxed.IntToString(x));
+  END DebugInt;
+
+PROCEDURE (lh: Handle) DebugBool*(msg: STRING; x: BOOLEAN);
+  BEGIN
+    lh.Debug(msg+": "+Boxed.BooleanToString(x));
+  END DebugBool;
+  
+PROCEDURE (lh: Handle) DebugLongReal*(msg: STRING; x: LONGREAL);
+  BEGIN
+    lh.Debug(msg+": "+Boxed.LongRealToString(x));
+  END DebugLongReal;
+  
 PROCEDURE (lh: Handle) Report*(msg: STRING);
 (**Report messages are also duplicated into the debug log.  *)
   BEGIN
