@@ -1,6 +1,7 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
+  Log,
   Object, Object:BigInt,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules, OOC:C:Naming, OOC:C:DeclWriter;
@@ -120,6 +121,7 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
     IF (type = NIL) THEN
       RETURN w. basicType[DeclWriter.void]
     ELSE
+      Log.Type("type", type);
       WITH type: Sym.PredefType DO
         CASE type. id OF
         | Predef.boolean:
@@ -152,6 +154,13 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
         END
 
       | type: Sym.TypeName DO
+        IF (resolvedType IS Sym.QualType) THEN
+          (* avoid running into the default part below if the type name is
+             a parametric record type, or we may refer to the struct name
+             too early *)
+          resolvedType := resolvedType(Sym.QualType).baseType;
+        END;
+        
         WITH resolvedType: Sym.PredefType DO
           RETURN ConvertType (w, resolvedType, resolvedType);
         | resolvedType: Sym.Record DO
@@ -173,6 +182,8 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
           srcCodeBaseType := baseType(Sym.Array). srcCodeElementType;
           baseType := baseType(Sym.Array). elementType;
         END;
+        Log.Type("baseType=resolvedType", baseType);
+        Log.Type("srcCodeBaseType=type", srcCodeBaseType);
         RETURN w. NewPointer (DeclWriter.tqNone,
                               ConvertType (w, baseType, srcCodeBaseType));
         
