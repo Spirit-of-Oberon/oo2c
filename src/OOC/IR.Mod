@@ -5,7 +5,7 @@ Log,
   Language, Language:Boolean, Language:Char8, Language:String8,
   Language:Integer, ADT:Object, ADT:ArrayList,
   Config:Value, BooleanValue := Config:Value:Boolean, 
-  SymbolId := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
+  Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:SymbolTable:TypeRules;
 
@@ -192,6 +192,9 @@ CONST
   (**@code{LEN()} on a variable length array parameter.  *)
   lenOpenArrayHeap* = 19;
   (**@code{LEN()} on a variable length array on the heap.  *)
+
+  and* = 20;
+  or* = 21;
  
 TYPE
   Expression* = POINTER TO ExpressionDesc;
@@ -834,78 +837,12 @@ PROCEDURE InitBinaryArith (op: BinaryArith; sym: Symbol; variant : Variant; left
 
 PROCEDURE (b: Builder) NewBinaryArith (sym: Symbol; variant: Variant; left, right: Expression): Expression;
   VAR
-    op: BinaryArith;  ok : BOOLEAN;
-    type : Sym.Type;
-    tr : TypeRules.Rules;
-    
-  PROCEDURE AdjustTypes (VAR left, right : Expression; VAR type : Sym.Type) : BOOLEAN;
-  (**AdjustTypes implements type checking for arguments of operands. Section
-     8.2.2 of the language report states "The type of the result is the type of
-     that operand which includes the type of the other operand ...". Where
-     required, this procedure modifies left or right expressions with an
-     explicit type conversion operator so that the two expressions have
-     compatible types. The broadest type of the two operands is returned in
-     @oparam{type}.  *)
-    VAR
-      expr : Expression;
-      tr : TypeRules.Rules;
-    BEGIN
-      tr := b.typeRules;
-      IF tr.SameType(left.type, right.type) THEN
-        type := left.type; RETURN TRUE;
-      ELSE
-        expr := b.AssignType(left.type, right);
-        IF expr = NIL THEN
-          expr := b.AssignType(right.type, left);
-          IF expr = NIL THEN
-            RETURN FALSE;
-          ELSE
-            left := expr; type := right.type; RETURN TRUE;
-          END;
-        ELSE
-          right := expr; type := left.type; RETURN TRUE;
-        END;
-      END;
-    END AdjustTypes;
-  
+    op : BinaryArith;
   BEGIN
-    tr := b.typeRules;
-
-    CASE variant OF
-    | arithAdd, arithSub, arithMul:
-      (* require two eqivalent numeric types *)
-      ok := (AdjustTypes(left, right, type) &
-             b. typeRules. IsNumericType(type));
-    | arithDivI, arithMod:
-      (* require two equivalent integer types *)
-      ok := (AdjustTypes(left, right, type) &
-             b. typeRules. IsIntegerType(type));
-    | arithDivR:
-      (* require two real operands *)
-      IF b. typeRules. IsRealType(left. type) OR
-         b. typeRules. IsRealType(right. type) THEN
-        (* one operand is already real *)
-        ok := AdjustTypes(left, right, type);
-      ELSE
-        (* Neither operand is real, so try to convert both to real. This
-        special case avoids the possibility of generating two TypeConv
-        operators (eg. to widen an integer, then to widen integer to real. *)
-
-        left := b.AssignType(real, left); right := b.AssignType(real, right);
-        type := real;
-        ok := (left # NIL) & (right # NIL)
-      END;
-    ELSE
-      RETURN b.ErrExpr(invalidOpType, sym);
-    END;
-
-    IF ok THEN
-      NEW (op);
-      InitBinaryArith (op, sym, variant, left, right, type);
-      RETURN op;
-    ELSE
-      RETURN b.ErrExpr(invalidOpType, sym);
-    END;
+    NEW (op);
+    ASSERT(b.typeRules.SameType(left.type, right.type));
+    InitBinaryArith (op, sym, variant, left, right, left.type);
+    RETURN op;
   END NewBinaryArith;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitBinaryArith* (op: BinaryArith);
@@ -960,12 +897,12 @@ PROCEDURE (b: Builder) NewCompare (sym: Symbol; left, right: Expression): Compar
   BEGIN
     (* FIXME! Check types of left and right operands *)
     CASE sym.id OF
-    | SymbolId.eql:  variant := equal;
-    | SymbolId.neq:  variant := notEqual;
-    | SymbolId.lss:  variant := less;
-    | SymbolId.leq:  variant := lessEqual;
-    | SymbolId.gtr:  variant := greater;
-    | SymbolId.geq:  variant := greaterEqual;
+    | Id.eql:  variant := equal;
+    | Id.neq:  variant := notEqual;
+    | Id.lss:  variant := less;
+    | Id.leq:  variant := lessEqual;
+    | Id.gtr:  variant := greater;
+    | Id.geq:  variant := greaterEqual;
     END;
     NEW (op);
     InitCompare (op, sym, variant, left, right);
@@ -1713,7 +1650,7 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
   VAR
     decl: Sym.Declaration;
   BEGIN
-    IF (name. id = SymbolId.ident) THEN
+    IF (name. id = Id.ident) THEN
       decl := ns. Identify (context, b. GetName (name), FALSE);
       IF (decl = NIL) THEN
         b. ErrSym (undeclaredIdent, name)
@@ -1764,86 +1701,186 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 (**Return an IR expression for the given symbol and left/right expressions.
    This procedure handles operator polymorphism, mapping an operator symbol to
    different operations according to the type of its operands. This procedure
-   returns an operator, or the value errorExpr. If the given symbol is not a
-   recognised operator, an unknownOp error is signalled. If the types of the
-   arguments are not valid for the given operator, an invalidOpType error is
-   signalled. *)
+   implements the rules defined for "Expression Compatible" in Appendix A of
+   the Oberon-2 language report.
+
+   This procedure returns an operator, or the value errorExpr. If the given
+   symbol is not a recognised operator, an unknownOp error is signalled. If the
+   types of the arguments are not valid for the given operator, an
+   invalidOpType error is signalled.  
+
+   Error reporting could probably be improved...
+   *)
 
   VAR
     tr : TypeRules.Rules;
-    isNumeric, isSet: BOOLEAN;
+    id : Id.Id;
 
-  PROCEDURE SetOrNumeric () : Expression;
-    VAR
-      variant: Variant;
+  PROCEDURE IsPredefClass(type : Sym.Type; classes : SET) : BOOLEAN;
   BEGIN
-    IF isNumeric THEN
-      CASE sym.id OF
-      | SymbolId.plus:   variant := arithAdd;
-      | SymbolId.minus:  variant := arithSub;
-      | SymbolId.times:  variant := arithMul;
-      | SymbolId.slash:  variant := arithDivR;
-      | SymbolId.div:    variant := arithDivI;
-      | SymbolId.mod:    variant := arithMod;
-      END;
-
-      RETURN b.NewBinaryArith(sym, variant, left, right)
-(*    ELSIF isSet THEN
-      RETURN b.NewSet(sym, left, right); *)
+    WITH type : Sym.PredefType DO
+      RETURN type.id IN classes;
     ELSE
-      RETURN b.ErrExpr(invalidOpType, sym);
+      RETURN FALSE;
     END;
-  END SetOrNumeric;
+  END IsPredefClass;
 
+  PROCEDURE UnaryOperator() : Expression;
+  VAR 
+    isNumeric, isSet, isBoolean : BOOLEAN;
+    type : Sym.Type;
   BEGIN
-    tr := b.typeRules;
-    isNumeric := b. typeRules. IsNumericType(right. type);
-    isSet := b. typeRules. IsSetType(right. type);
+    type := right.type;
+    isNumeric := tr.IsNumericType(type);
+    isSet := tr.IsSetType(type);
+    isBoolean := IsPredefClass(type, {Predef.boolean});
 
-    IF left = NIL THEN 
-      (* unary operator *)
-      CASE sym.id OF
-      | SymbolId.minus:
-        IF isNumeric THEN
-          RETURN b.NewNegate(sym, right);
-        ELSIF isSet THEN
-          (* for now, map set/numeric negation onto Negate operator *)
-          RETURN b.NewNegate(sym, right);
-        ELSE
-          RETURN b.ErrExpr(invalidOpType, sym);
-        END;
-      | SymbolId.plus:
-        IF isNumeric THEN 
-	  RETURN right;
-	ELSE
-	  RETURN b.ErrExpr(invalidOpType, sym);
-	END;
-      | SymbolId.not:
-        (* for now, map logical negation onto Negate operator *)
+    CASE id OF
+    | Id.minus:
+      IF isNumeric THEN
+        RETURN b.NewNegate(sym, right);
+      ELSIF isSet THEN
+        (* for now, map set/numeric negation onto Negate operator *)
         RETURN b.NewNegate(sym, right);
       ELSE
-        RETURN b.ErrExpr(unknownOp, sym);
-      END;
-    ELSE
-      (* binary operator *)
-      CASE sym.id OF
-      | SymbolId.plus, SymbolId.minus, SymbolId.times, SymbolId.slash:
-        RETURN SetOrNumeric();
-      | SymbolId.div:
-        RETURN b.NewBinaryArith(sym, arithDivI, left, right);
-      | SymbolId.mod:
-        RETURN b.NewBinaryArith(sym, arithMod, left, right);
-      | SymbolId.eql, SymbolId.neq,
-        SymbolId.lss, SymbolId.leq,
-        SymbolId.gtr, SymbolId.geq:
-        RETURN b.NewCompare(sym, left, right);
-(*      | Symbol.and, Symbol.or:
-        RETURN b.NewBoolean(sym, left, right); *)
+        RETURN b.ErrExpr(invalidOpType, sym);
+      END
+    | Id.plus:
+      IF isNumeric THEN 
+        RETURN right;
       ELSE
-        RETURN b.ErrExpr(unknownOp, sym);
-      END;
+        RETURN b.ErrExpr(invalidOpType, sym);
+      END
+    | Id.not:
+      (* for now, map logical negation onto Negate operator *)
+      IF isBoolean THEN
+        RETURN b.NewNegate(sym, right);
+      ELSE
+        RETURN b.ErrExpr(invalidOpType, sym);
+      END
+    ELSE
+      RETURN b.ErrExpr(unknownOp, sym);
     END;
-    RETURN b.ErrExpr(unknownOp, sym);  (* shouldn't get here *)
+  END UnaryOperator;
+
+  PROCEDURE BinaryOperator() : Expression;
+  VAR 
+    result : Expression;
+    variant : Variant;
+    leftType, rightType : Sym.Type;
+    leftIsNumeric, leftIsSet, leftIsInteger, leftIsBoolean, leftIsChar : BOOLEAN;
+    rightIsNumeric, rightIsSet, rightIsInteger, rightIsBoolean, rightIsChar : BOOLEAN;
+
+    PROCEDURE WidenType();
+    (**This procedure adjusts the expressions to that they have the smallest
+       type that includes both types. A type conversion operator is used where
+       required.
+
+       PRE: types of left and right are the same, or one includes the other. 
+       POST: types of left and right are the same *)
+    BEGIN
+      IF tr.SameType(leftType, rightType) THEN
+        (* do nothing *)
+      ELSIF tr.IncludesType(leftType, rightType) THEN
+        right := NewTypeConv(leftType, right);
+      ELSIF tr.IncludesType(rightType, leftType) THEN
+        left := NewTypeConv(rightType, left);
+      ELSE
+        ASSERT(FALSE);   (* we made a mistake in BinaryOperator *)
+      END;
+    END WidenType;
+
+  BEGIN
+    leftType := left.type; 
+    leftIsNumeric := tr.IsNumericType(leftType);
+    leftIsInteger := tr.IsIntegerType(leftType);
+    leftIsSet := tr.IsSetType(leftType);
+    leftIsBoolean := IsPredefClass(leftType, {Predef.boolean});
+    leftIsChar := tr.IsCharType(leftType);
+
+    rightType := right.type; 
+    rightIsNumeric := tr.IsNumericType(rightType);
+    rightIsInteger := tr.IsIntegerType(rightType);
+    rightIsSet := tr.IsSetType(rightType);
+    rightIsBoolean := IsPredefClass(rightType, {Predef.boolean});
+    rightIsChar := tr.IsCharType(rightType);
+
+    result := NIL;  (* FIXME. keep the compiler happy until ASSERTs are removed *)
+    IF (id IN {Id.plus, Id.minus, Id.times})
+      & leftIsNumeric & rightIsNumeric THEN
+      (* ---- arithmetic operator ---- *)
+      CASE id OF
+      | Id.plus: variant := arithAdd;
+      | Id.minus: variant := arithSub;
+      | Id.times: variant := arithMul;
+      END;
+      WidenType();
+      result := b.NewBinaryArith(sym, variant, left, right);
+
+    ELSIF (id IN {Id.slash }) & leftIsNumeric & rightIsNumeric THEN
+      (* ---- arithmetic real division ---- *)
+      IF leftIsInteger & rightIsInteger THEN
+        left := NewTypeConv(real, left);
+        right := NewTypeConv(real, right);
+      ELSE
+        WidenType();
+      END;
+      result := b.NewBinaryArith(sym, arithDivR, left, right);
+
+    ELSIF (id IN {Id.div, Id.mod}) & leftIsInteger & rightIsInteger THEN
+      (* ---- arithmetic integer division/modulus ---- *)
+      CASE id OF
+      | Id.div: variant := arithDivI;
+      | Id.mod: variant := arithMul;
+      END;
+      WidenType();
+      result := b.NewBinaryArith(sym, variant, left, right)
+
+    ELSIF (id IN {Id.plus, Id.minus, Id.times, Id.slash})
+      & leftIsSet & rightIsSet THEN
+      (* ---- set operator ---- *)
+      CASE id OF
+      | Id.plus: variant := setUnion;
+      | Id.minus: variant := setDiff;
+      | Id.times: variant := setIntersect;
+      | Id.slash: variant := setSymDiff
+      END;
+      (* FIXME... RETURN b.NewSetOp(sym, left, right) *)
+      ASSERT(FALSE);
+
+    ELSIF (id IN {Id.and, Id.or}) & leftIsBoolean & rightIsBoolean THEN
+      CASE id OF
+      | Id.and: variant := and;
+      | Id.or: variant := or;
+      END;
+      (* FIXME... RETURN b.NewBooleanOp(sym, left, right) *)
+      ASSERT(FALSE);
+
+    ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
+      & ((leftIsNumeric & rightIsNumeric) OR (leftIsChar & rightIsChar)) THEN
+      (* FIXME... handle char array., string *)
+      result := b.NewCompare(sym, left, right);
+
+    ELSIF (id IN {Id.eql, Id.neq})
+      & ((leftIsBoolean & rightIsBoolean) OR (leftIsSet & rightIsSet)) THEN
+      (* FIXME... handle pointer types, procedure types *)
+      result := b.NewCompare(sym, left, right);
+    ELSE
+      (* FIXME... handle IN and IS *)
+      result := b.ErrExpr(invalidOpType, sym);
+    END;
+    RETURN result;
+  END BinaryOperator;
+
+  BEGIN
+    id := sym.id;
+    tr := b.typeRules;
+
+    IF left = NIL THEN 
+      RETURN UnaryOperator();
+    ELSE
+      RETURN BinaryOperator();
+    END;
   END NewOperator;
 
 PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList): Expression;
