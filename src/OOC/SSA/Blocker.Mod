@@ -21,10 +21,10 @@ MODULE OOC:SSA:Blocker;
 *)
 
 IMPORT
-  SYSTEM,
   Channel, TextRider, ADT:Object, ADT:String, ADT:Dictionary,
   IntDictionary := ADT:Dictionary:IntValue, Language:Integer,
-  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination,
+  OOC:SSA:Destore;
   
 (**
 
@@ -57,26 +57,21 @@ IMPORT
 
    a) depends on the value of the loop's back edge, and
 
-   b) it contributes to the loop's back edge, or to the predicate 
-      that determines the end of the loop.
+   b) it contributes to the loop's back edge.
 
 3. Non-local exits: exit & return
 
    A block containing an EXIT or RETURN instruction effectively ends
    with this instruction.
 
-4. Non-local exit from a loop: select-exit
-
-   The select-exit defines a region which contains a single
-   instruction, its corresponding loop-end.  Note that loop-end
-   is itself a region.
-      
-5. Non-local merge of control flow: select-return
+4. Non-local merge of control flow: select-return
 
    For a select-return, the corresponding block is the whole procedure
    body.
 *)
 
+
+<*DEFINE DEBUG_BLOCKER:=FALSE*>
 
 TYPE
   Proxy* = POINTER TO ProxyDesc;
@@ -122,6 +117,9 @@ TYPE
     
     discoveredForLoop: Loop;
     (**This field is used by @oproc{ArrangeInstructions.DiscoverLoopStructure}.  *)
+
+    marker: LONGINT;
+    (**Use by @oproc{AntiDepViolation}.  *)
   END;
   RegionDesc = RECORD
     (ProxyDesc)
@@ -192,6 +190,7 @@ PROCEDURE InitProxy (p: Proxy; instr: SSA.Instr);
     p. visitedForLoop := NIL;
     p. visitedResult := FALSE;
     p. discoveredForLoop := NIL;
+    p. marker := 0;
   END InitProxy;
 
 PROCEDURE NewProxy (instr: SSA.Instr): Proxy;
@@ -203,6 +202,22 @@ PROCEDURE NewProxy (instr: SSA.Instr): Proxy;
     RETURN p;
   END NewProxy;
 
+PROCEDURE ClearMarkers (r: Region);
+  VAR
+    proxy: Proxy;
+  BEGIN
+    r. marker := 0;
+    proxy := r. first;
+    WHILE (proxy # NIL) DO
+      proxy. marker := 0;
+      WITH proxy: Region DO
+        ClearMarkers (proxy);
+      ELSE                               (* ignore *)
+      END;
+      proxy := proxy. nextProxy;
+    END;
+  END ClearMarkers;
+
 (* Region
    ------------------------------------------------------------------------ *)
 
@@ -212,6 +227,7 @@ PROCEDURE InitRegion (r: Region; instr: SSA.Instr);
     r. first := NIL;
     r. last := NIL;
     r. nestingDepth := 0;
+    r. marker := 0;
   END InitRegion;
 
 PROCEDURE NewRegion (instr: SSA.Instr): Region;
@@ -225,6 +241,8 @@ PROCEDURE NewRegion (instr: SSA.Instr): Region;
 
 PROCEDURE (r: Region) Append (p: Proxy);
   BEGIN
+    ASSERT (p. region = NIL);
+    
     p. prevProxy := r. last;
     p. nextProxy := NIL;
     IF (r. last # NIL) THEN
@@ -242,6 +260,8 @@ PROCEDURE (r: Region) Append (p: Proxy);
 
 PROCEDURE (r: Region) Insert (p: Proxy);
   BEGIN
+    ASSERT (p. region = NIL);
+    
     p. prevProxy := NIL;
     p. nextProxy := r. first;
     IF (r. first # NIL) THEN
@@ -250,6 +270,7 @@ PROCEDURE (r: Region) Insert (p: Proxy);
       r. last := p;
     END;
     r. first := p;
+    
     p. region := r;
     IF (p IS Region) THEN
       p(Region). nestingDepth := r. nestingDepth+1
@@ -258,6 +279,7 @@ PROCEDURE (r: Region) Insert (p: Proxy);
 
 PROCEDURE (r: Region) Remove (p: Proxy);
   BEGIN
+    ASSERT (p. region = r);
     IF (p. prevProxy # NIL) THEN
       p. prevProxy. nextProxy := p. nextProxy;
     ELSE
@@ -274,6 +296,7 @@ PROCEDURE (r: Region) Remove (p: Proxy);
       p(Region). nestingDepth := 0
     END;
   END Remove;
+
 
 (* Select
    ------------------------------------------------------------------------ *)
@@ -361,8 +384,386 @@ PROCEDURE GetProxy (instr: SSA.Instr): Proxy;
     END;
   END GetProxy;
 
-PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
-(**Don't forget to call @oproc{RemoveAntiDeps} when done!  *)
+PROCEDURE Dominates (dom, child: Region): BOOLEAN;
+  BEGIN
+    WHILE (child # NIL) & (child # dom) DO
+      child := child. region;
+    END;
+    RETURN (child # NIL);
+  END Dominates;
+
+PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region);
+  VAR
+    w: TextRider.Writer;
+    idMap: IntDictionary.Dictionary;
+    instrCount: LONGINT;
+    
+  PROCEDURE AssignId (p: Proxy);
+    VAR
+      n: Proxy;
+    BEGIN
+      WITH p: Region DO
+        n := p. first;
+        WHILE (n # NIL) DO
+          AssignId (n);
+          n := n. nextProxy;
+        END;
+      ELSE
+      END;
+
+      IF (p. instr # NIL) & ~p. instr. IsConst() THEN
+        idMap. Set (p. instr, instrCount);
+        INC (instrCount);
+      END;
+    END AssignId;
+  
+  PROCEDURE WriteInstr (p: Proxy);
+    VAR
+      instr: SSA.Instr;
+      res: SSA.Result;
+      opnd: SSA.Opnd;
+      str: ARRAY 64 OF CHAR;
+      i, resCount: LONGINT;
+      
+    PROCEDURE WriteResultId (res: SSA.Result);
+      VAR
+        id, count: LONGINT;
+        ptr: SSA.Result;
+        value: String.String;
+        instr: SSA.Instr;
+      BEGIN
+        instr := res. instr;
+        IF instr. IsConst() THEN
+          WITH instr: SSA.Const DO
+            IF (instr. value = NIL) THEN
+              w. WriteString ("NIL");
+            ELSE
+              value := instr. value. ToString();
+              w. WriteString (value. array^);
+            END;
+          | instr: SSA.DeclRef DO
+            w. WriteString (instr. decl. name. str^);
+          | instr: SSA.TypeRef DO
+            w. WriteString ("<typeref>");
+          | instr: SSA.Address DO
+            w. WriteChar ("&");
+            w. WriteString (instr. decl. name. str^);
+          ELSE
+            CASE instr. opcode OF
+            | Opcode.getLength:
+              w. WriteString (instr. opndList. nextOpnd. nextOpnd.
+                              arg(SSA.DeclRef). decl. name. str^);
+              w. WriteString ("/dim");
+              w. WriteLInt (instr. opndList. arg(SSA.Const). value(Integer.Value). ToInt(), 0);
+            ELSE
+              instr. LogOpcode ("instr.opcode");
+              ASSERT (FALSE);
+            END;
+          END
+        ELSE
+          id := idMap. Get (res. instr);
+          w. WriteChar ("(");
+          w. WriteLInt (id, 0);
+          IF (res. instr # res) THEN
+            count := 1;
+            ptr := res. instr. nextResult;
+            WHILE (ptr # res) DO
+              INC (count);
+              ptr := ptr. nextResult;
+            END;
+            w. WriteChar (".");
+            w. WriteLInt (count, 0);
+          END;
+          w. WriteChar (")");
+        END;
+      END WriteResultId;
+    
+    BEGIN
+      instr := p. instr;
+      IF (instr = NIL) OR ~instr. IsConst() THEN
+        (*w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
+        w. WriteString ("  ");*)
+        (*w. WriteString ("L:");
+        IF (p. loopAssoc # NIL) THEN
+          WriteResultId (p. loopAssoc. instr);
+        ELSE
+          w. WriteString ("NIL");
+        END;
+        w. WriteString (09X);*)
+        
+        IF (p. region # NIL) THEN
+          FOR i := 1 TO p. region. nestingDepth DO
+            w. WriteString ("  ");
+          END;
+        END;
+        
+        IF (instr = NIL) THEN
+          w. WriteString ("----");
+        ELSE
+          resCount := 0;
+          res := instr;
+          WHILE (res # NIL) DO
+            IF (res. useList # NIL) OR (instr. opcode = Opcode.selectReturn) THEN
+              IF (resCount # 0) THEN
+                w. WriteChar (",");
+              END;
+              WriteResultId (res);
+              INC (resCount);
+            END;
+            res := res. nextResult;
+          END;
+          IF (resCount = 0) THEN
+            w. WriteString ("(--)");
+          END;
+          
+          w. WriteString (" := ");
+          Opcode.GetName (instr. opcode, instr. subclass, str);
+          w. WriteString (str);
+          IF (instr. pos >= 0) THEN
+            w. WriteString ("@");
+            w. WriteLInt (instr. pos, 0);
+          END;
+          w. WriteChar (" ");
+          
+          opnd := instr. opndList;
+          WHILE (opnd # NIL) DO
+            IF (opnd # instr. opndList) THEN
+              w. WriteChar (",");
+            END;
+            CASE opnd. class OF
+            | Opnd.antiDependency:
+              w. WriteString ("*ad*");
+            | Opnd.regionDependency:
+              w. WriteString ("*rd*");
+            | Opnd.loopExternalDef:
+              w. WriteString ("*led*");
+            ELSE
+              (* omit class *)
+            END;
+            WriteResultId (opnd. arg);
+            opnd := opnd. nextOpnd
+          END;
+        END;
+        w. WriteLn;
+      END;
+    END WriteInstr;
+
+  PROCEDURE WriteRegion (r: Region);
+    VAR
+      p: Proxy;
+    BEGIN
+      IF (r. instr = NIL) THEN
+        WriteInstr (r);
+      END;
+      p := r. first;
+      WHILE (p # NIL) DO
+        WITH p: Region DO
+          WriteRegion (p);
+        ELSE
+          WriteInstr (p);
+        END;
+        p := p. nextProxy;
+      END;
+      IF (r. instr # NIL) THEN
+        WriteInstr (r);
+      END;
+    END WriteRegion;
+  
+  BEGIN
+    idMap := IntDictionary.New();
+    instrCount := 1;
+    AssignId (root);
+
+    w := TextRider.ConnectWriter (c);
+    w. WriteLn;
+    w. WriteString ("Procedure: ");
+    w. WriteString (pb. procDecl. name. str^);
+    w. WriteLn;
+    WriteRegion (root);
+  END WriteBlocks;
+
+PROCEDURE AntiDepViolation (pb: SSA.ProcBlock; root: Region): BOOLEAN;
+  VAR
+    get: SSA.Instr;
+    destore: Destore.State;
+    violationCount, currentId: LONGINT;
+    startOfScan: Proxy;
+    
+  PROCEDURE ScanBackward (region: Region; proxy: Proxy;
+                          readDesign: SSA.Opnd; storeInGet: SSA.Result);
+    VAR
+      storeOut: SSA.Result;
+      i: LONGINT;
+      opnd: SSA.Opnd;
+      x: Proxy;
+    BEGIN
+      WHILE (proxy # NIL) & ~(proxy IS Region) DO
+        storeOut := proxy. instr. GetResultStore();
+        IF (proxy. marker = currentId) OR (storeOut = storeInGet) THEN
+          (* done; we have reached the instruction that produces the state
+             we are using, or we have been here before *)
+          RETURN;
+          
+        ELSIF (storeOut # NIL) &
+              destore. ClobberedBy (readDesign, proxy. instr) THEN
+          INC (violationCount);
+          proxy. instr. AddOpnd (get, Opnd.antiDependency);
+<*IF DEBUG_BLOCKER THEN*>
+          Log.Ptr ("  adding backward anti-dep to", proxy. instr);
+          Check.All (pb);
+<*END*>
+        END;
+        proxy. marker := currentId;
+        proxy := proxy. prevProxy;
+      END;
+
+      IF (proxy # NIL) THEN
+        (* descending in nested region; we return from the nested region
+           if the search "falls off" its beginning; if it doesn't fall off,
+           we never return to this region *)
+        storeOut := proxy. instr. GetResultStore();
+        IF (proxy. marker = currentId) OR (storeOut = storeInGet) THEN
+          RETURN;
+        ELSE
+          proxy. marker := currentId;
+          WITH proxy: Select DO
+            i := 0;
+            WHILE (i # LEN (proxy. paths^)) DO
+              ScanBackward (proxy. paths[i], proxy. paths[i]. last,
+                            readDesign, storeInGet);
+              INC (i);
+            END;
+            
+          | proxy: Loop DO
+            opnd := proxy. instr. NthOpnd (2);
+            WHILE (opnd # NIL) & (opnd. class = Opnd.storeExit) DO
+              x := opnd. arg. instr. info(Proxy);
+              ScanBackward (x. region, x, readDesign, storeInGet);
+              opnd := opnd. nextOpnd;
+            END;
+          ELSE  (* not a nested region *)
+          END;
+        END;
+        
+      ELSE
+        (* falling off the beginning of the region *)
+        IF (region. region # NIL) THEN
+          IF (region. region IS Select) THEN
+            region := region. region;
+          END;
+          ScanBackward (region. region, region. prevProxy,
+                        readDesign, storeInGet);
+        END;
+      END;
+    END ScanBackward;
+
+  PROCEDURE ScanForward (proxy: Proxy; readDesign: SSA.Opnd);
+    VAR
+      storeOut: SSA.Result;
+    BEGIN
+      (* note: scanning aborts with the first region; this is fine, as long
+         no scheduler building on this tries to move instructions of this
+         region over nested regions  *)
+      WHILE (proxy # NIL) & ~(proxy IS Region) DO
+        storeOut := proxy. instr. GetResultStore();
+        IF (storeOut # NIL) &
+           destore. ClobberedBy (readDesign, proxy. instr) THEN
+          proxy. instr. AddOpnd (get, Opnd.antiDependency);
+<*IF DEBUG_BLOCKER THEN*>
+          Log.Ptr ("  adding forward anti-dep to", proxy. instr);
+          Check.All (pb);
+<*END*>
+        END;
+        proxy := proxy. nextProxy;
+      END;
+    END ScanForward;
+
+  BEGIN
+    destore := Destore.New (pb);
+    ClearMarkers (root);
+    violationCount := 0;
+    currentId := 1;
+    
+    get := pb. instrList;
+    WHILE (get # NIL) DO
+      IF (get. opcode = Opcode.get) & (get. GetResultStore() = NIL) THEN
+<*IF DEBUG_BLOCKER THEN*>
+        Log.Ptr ("get base", get);
+<*END*>
+        startOfScan := get. info(Proxy);
+        ScanBackward (startOfScan. region,
+                      startOfScan. prevProxy,
+                      get. GetOpndClass (Opnd.readDesign),
+                      get. opndList. arg);
+        
+        ScanForward (startOfScan. nextProxy,
+                     get. GetOpndClass (Opnd.readDesign));
+        
+        INC (currentId);
+      END;
+      get := get. nextInstr;
+    END;
+
+<*IF DEBUG_BLOCKER THEN*>
+    IF (violationCount # 0) THEN
+      (* try again with additional anti-dependencies being inserted *)
+      Log.Msg ("RETRY ARRANGE_INSTRUCTIONS");
+      WriteBlocks (StdChannels.stderr, pb, root);
+      Check.All(pb);
+    END;
+<*END*>
+    RETURN (violationCount # 0);
+  END AntiDepViolation;
+
+PROCEDURE RemoveAntiDeps* (pb: SSA.ProcBlock);
+  VAR
+    instr: SSA.Instr;
+    opnd, next: SSA.Opnd;
+  BEGIN
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      opnd := instr. opndList;
+      WHILE (opnd # NIL) DO
+        next := opnd. nextOpnd;
+        CASE opnd. class OF
+        | Opnd.antiDependency, Opnd.regionDependency:
+          opnd. DeleteOpnd;
+        ELSE                             (* keep *)
+        END;
+        opnd := next;
+      END;
+      instr := instr. nextInstr;
+    END;
+  END RemoveAntiDeps;
+
+PROCEDURE RemoveRegionDeps* (pb: SSA.ProcBlock);
+  VAR
+    instr: SSA.Instr;
+    opnd, next: SSA.Opnd;
+  BEGIN
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      opnd := instr. opndList;
+      WHILE (opnd # NIL) DO
+        next := opnd. nextOpnd;
+        IF (opnd. class = Opnd.regionDependency) THEN
+          opnd. DeleteOpnd;
+        END;
+        opnd := next;
+      END;
+      instr := instr. nextInstr;
+    END;
+  END RemoveRegionDeps;
+
+PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
+                                markAntiDeps: BOOLEAN): Region;
+(**With @oparam{markAntiDeps}, the resulting schedule honors data dependencies.
+   Additional operands are added to some instructions to make anti-dependencies
+   explicit.  As long as the calling procedure does not move instructions
+   between regions or across regions, all schedules derived from the produced
+   region hierarchy should be valid.
+   
+   Don't forget to call @oproc{RemoveAntiDeps} when done!  *)
   VAR
     instr, enter: SSA.Instr;
     res: SSA.Result;
@@ -573,58 +974,77 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       END;
     END AttachToLoop;
 
-  PROCEDURE AddLoopDeps (pb: SSA.ProcBlock; mainLoop: Loop);
-  (* Add additional operands that make the dependency of an instruction on a
-     value produced within a nested loop explicit.  The new operand refers to
-     the instruction that represents the loop region in question within the
-     region of the instruction.  That is, the additional operands always refer
-     to instructions within the region of the operand's instruction.  This
-     ensures that the depending instruction is placed after the loop body it
-     is dependent on.  *)
+  PROCEDURE AddRegionDeps (r: Region);
     VAR
-      instr: SSA.Instr;
+      proxy: Proxy;
       opnd: SSA.Opnd;
-      instrLoop, opndLoop, l: Loop;
 
-    PROCEDURE GetLoopProxy (instr: SSA.Instr): Loop;
+    PROCEDURE AddOpndDep (proxy: Proxy; opnd: SSA.Opnd);
       VAR
-        p: Proxy;
-        loop: Loop;
+        argProxy, a, b: Proxy;
+        argLoop: Loop;
+        exit: SSA.Opnd;
+        exitInstr: SSA.Instr;
       BEGIN
-        p := GetProxy(instr);
-        loop := p. loopAssoc;
-        IF (loop = NIL) THEN
-          loop := mainLoop;
+        argProxy := opnd. arg. instr. info(Proxy);
+        IF (argProxy. region # r) THEN
+          a := argProxy;
+          b := proxy;
+          WHILE (a. region. nestingDepth > b. region. nestingDepth) DO
+            a := a. region;
+          END;
+          WHILE (b. region. nestingDepth > a. region. nestingDepth) DO
+            b := b. region;
+          END;
+          WHILE (a. region # b. region) DO
+            a := a. region;
+            b := b. region;
+          END;
+          b. instr. AddUniqueOpnd (a. instr, Opnd.regionDependency);
         END;
-        RETURN loop;
-      END GetLoopProxy;
-    
-    BEGIN
-      instr := pb. instrList;
-      WHILE (instr # NIL) DO
-        IF (instr. opcode # Opcode.loopStart) &
-           (instr. opcode # Opcode.loopEnd) THEN
-          instrLoop := GetLoopProxy(instr);
-          
-          opnd := instr. opndList;
-          WHILE (opnd # NIL) & (opnd. class # Opnd.antiDependency) DO
-            opndLoop := GetLoopProxy(opnd. arg. instr);
-            
-            IF (opndLoop # instrLoop) THEN
-              l := opndLoop;
-              WHILE (l # NIL) & (l. parentLoop # instrLoop) DO
-                l := l. parentLoop;
-              END;
-              IF (l # NIL) THEN
-                instr. AddUniqueOpnd(l. instr, Opnd.antiDependency);
-              END;
-            END;
-            opnd := opnd. nextOpnd;
+
+        (* if a loop variant value is used outside of the loop, then it must
+           be available at all places where an "exit" appears *)
+        argLoop := argProxy. loopAssoc;
+        IF (argLoop # NIL) & ~Dominates (argLoop, proxy. region) THEN
+          ASSERT (argLoop. instr. opcode = Opcode.loopEnd);
+          exit := argLoop. instr. NthOpnd (2);
+          WHILE (exit # NIL) & (exit. class = Opnd.storeExit) DO
+            exitInstr := exit. arg. instr;
+            ASSERT (exitInstr. opcode = Opcode.exit);
+            exitInstr. AddOpnd (opnd. arg. instr, Opnd.antiDependency);
+            AddOpndDep (exitInstr. info(Proxy), exitInstr. LastOpnd());
+            exit := exit. nextOpnd;
           END;
         END;
-        instr := instr. nextInstr;
+      END AddOpndDep;
+    
+    BEGIN
+      proxy := r. first;
+      WHILE (proxy # NIL) DO
+        IF (proxy. instr # NIL) THEN
+          CASE proxy. instr. opcode OF
+          | Opcode.select:
+            AddOpndDep (proxy, proxy. instr. opndList);
+          | Opcode.selectReturn:
+            (* nothing *)
+          | Opcode.loopEnd:
+            (* nothing *)
+          ELSE
+            opnd := proxy. instr. opndList;
+            WHILE (opnd # NIL) & (opnd. class # Opnd.regionDependency) DO
+              AddOpndDep (proxy, opnd);
+              opnd := opnd. nextOpnd;
+            END;
+          END;
+        END;
+
+        IF (proxy IS Region) THEN
+          AddRegionDeps (proxy(Region));
+        END;
+        proxy := proxy. nextProxy;
       END;
-    END AddLoopDeps;
+    END AddRegionDeps;
   
   PROCEDURE IgnoredUse (use: SSA.Opnd): BOOLEAN;
     BEGIN
@@ -703,7 +1123,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         instr := opnd. instr;
         IF (instr. opcode = Opcode.select) THEN
           i := opnd. OpndIndex();
-          IF (i = 0) THEN
+          IF (i = 0) OR opnd. IsScheduleOpnd() THEN
             RETURN instr. info(Proxy). region;
           ELSE
             pathNum := (i-1) DIV 2;
@@ -772,14 +1192,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         RETURN region;
       END MoveLoopInvariants;
 
-    PROCEDURE Dominates (dom, child: Region): BOOLEAN;
-      BEGIN
-        WHILE (child # NIL) & (child # dom) DO
-          child := child. region;
-        END;
-        RETURN (child # NIL);
-      END Dominates;
-    
     BEGIN
       IF (p. instr. opcode = Opcode.loopStart) THEN
         (* a "loop-start" is always placed in the region defined by the
@@ -792,11 +1204,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         WHILE (res # NIL) DO
           use := res. useList;
           WHILE (use # NIL) DO
-            IF ~IgnoredUse (use) & (use. class # Opnd.antiDependency) THEN
-              (* anti dependencies are not considered when determing the
-                 placement of the instruction: we know that all writing
-                 instructions with such a dependency on the current one
-                 have been placed somewhere after it *)
+            IF ~IgnoredUse (use) THEN
               useRegion := RegionOfUse (use);
               IF (p. loopAssoc = NIL) OR
                  Dominates (p. loopAssoc, useRegion) THEN
@@ -847,13 +1255,140 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         n := n. nextLoop;
       END;
     END WriteLoops;*)
+
+  PROCEDURE SortRegion (r: Region);
+    VAR
+      proxy, ready, waiting: Proxy;
+
+    PROCEDURE Add (VAR list: Proxy; proxy: Proxy);
+      BEGIN
+        proxy. nextProxy := list;
+        list := proxy;
+      END Add;
+
+    PROCEDURE Remove (VAR list: Proxy; proxy: Proxy);
+      BEGIN
+        IF (list = proxy) THEN
+          list := proxy. nextProxy;
+        ELSE
+          Remove (list. nextProxy, proxy); 
+        END;
+      END Remove;
+    
+    PROCEDURE CountLocalUses (VAR head, tail: Proxy);
+      VAR
+        proxy: Proxy;
+        opndCount: LONGINT;
+        opnd: SSA.Opnd;
+      BEGIN
+        WHILE (head # NIL) DO
+          proxy := head;
+          head := head. nextProxy;
+          
+          opndCount := 0;
+          IF (proxy. instr # NIL) THEN
+            opnd := proxy. instr. opndList;
+            WHILE (opnd # NIL) DO
+              IF (opnd. arg. instr. info(Proxy). region = r) THEN
+                INC (opndCount);
+              END;
+              opnd := opnd. nextOpnd;
+            END;
+            proxy. instr. marker := opndCount;
+          END;
+
+          IF (opndCount = 0) THEN
+            Add (ready, proxy);
+          ELSE
+            ASSERT (proxy.instr # NIL);
+            Add (waiting, proxy);
+          END;
+
+          WITH proxy: Region DO
+            SortRegion (proxy);
+          ELSE
+          END;
+        END;
+        tail := NIL;
+      END CountLocalUses;
+    
+    PROCEDURE UpdateUses (instr: SSA.Instr);
+      VAR
+        res: SSA.Result;
+        use: SSA.Opnd;
+        useProxy: Proxy;
+      BEGIN
+        res := instr;
+        WHILE (res # NIL) DO
+          use := res. useList;
+          WHILE (use # NIL) DO
+            useProxy := use. instr. info(Proxy);
+            IF (useProxy. region = r) THEN
+              DEC (use. instr. marker);
+              IF (use. instr. marker = 0) THEN
+                Remove (waiting, useProxy);
+                Add (ready, useProxy);
+              END;
+            END;
+            use := use. nextUse;
+          END;
+          res := res. nextResult;
+        END;
+      END UpdateUses;
+
+    BEGIN
+      (* for every instruction, write the number of operands that refer to
+         result from the current region into its `marker' field; instructions
+         with no such operands are placed in `ready', the rest
+         is put into `waiting' *)
+      ready := NIL;
+      waiting := NIL;
+      CountLocalUses (r. first, r. last);
+      ASSERT (r. first = NIL);
+      ASSERT (r. last = NIL);
+      
+      (* remove instructions whose definitions have been scheduled already from
+         `ready' and schedule them  *)
+      WHILE (ready # NIL) DO
+        proxy := ready;
+        Remove (ready, proxy);
+        UpdateUses (proxy. instr);
+        ASSERT (proxy. region = r);
+        proxy. region := NIL;
+        r. Append (proxy);
+      END;
+      ASSERT (waiting = NIL);
+    END SortRegion;
+
+  PROCEDURE ClearRegion (r: Region);
+    VAR
+      p: Proxy;
+    BEGIN
+      p := r. first;
+      WHILE (p # NIL) DO
+        WITH p: Region DO
+          ClearRegion (p);
+          IF ~(p. region IS Select) THEN
+            p. region := NIL;
+          END;
+        ELSE
+          p. region := NIL;
+        END;
+        p := p. nextProxy;
+      END;
+      IF ~(r IS Select) THEN
+        r. first := NIL;
+        r. last := NIL;
+      END;
+    END ClearRegion;
   
   BEGIN
     (* get rid of dead instructions.  they cannot be put at their
        "right" place, because this would require using instructions ---
        and by definition dead code has no using instructions *)
     DeadCodeElimination.Transform (pb);
-    
+
+    RemoveAntiDeps (pb);
     pb. SetMarkers (NIL, 0);
     enter := pb. GetEnter();
     mainLoop := NewLoop (NIL);
@@ -862,79 +1397,83 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     SortNestedLoops (mainLoop);
     (*WriteLoops (mainLoop, 0);*)
     AttachToLoop (mainLoop);
-    AddLoopDeps (pb, mainLoop);
-    
-    (* for every instruction, write the number of uses into its `marker'
-       field; instructions with no uses are placed in `ready', the rest
-       is put into `waiting' *)
-    ready := NewRegion (NIL);
-    waiting := NewRegion (NIL);
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      useCount := 0;
-      res := instr;
-      WHILE (res # NIL) DO
-        use := res. useList;
-        WHILE (use # NIL) DO
-          IF ~IgnoredUse (use) THEN
-            INC (useCount);
+
+    LOOP
+      (* for every instruction, write the number of uses into its `marker'
+         field; instructions with no uses are placed in `ready', the rest
+         is put into `waiting' *)
+      ready := NewRegion (NIL);
+      waiting := NewRegion (NIL);
+      instr := pb. instrList;
+      WHILE (instr # NIL) DO
+        useCount := 0;
+        res := instr;
+        WHILE (res # NIL) DO
+          use := res. useList;
+          WHILE (use # NIL) DO
+            IF ~IgnoredUse (use) THEN
+              INC (useCount);
+            END;
+            use := use. nextUse;
           END;
-          use := use. nextUse;
+          res := res. nextResult;
         END;
-        res := res. nextResult;
+        
+        p := GetProxy (instr);
+        instr. marker := useCount;
+        IF (useCount = 0) THEN
+          ready. Append (p);
+        ELSE
+          waiting. Append (p);
+        END;
+        instr := instr. nextInstr;
       END;
 
-      p := GetProxy (instr);
-      instr. marker := useCount;
-      IF (useCount = 0) THEN
-        ready. Append (p);
-      ELSE
-        waiting. Append (p);
-      END;
-      instr := instr. nextInstr;
-    END;
-
-    (* the `ready' list must contain the "select-return" instruction;
-       eliminate this instruction from the list and make it the root region *)
-    p := ready. first;
-    WHILE (p # NIL) & (p. instr. opcode # Opcode.selectReturn) DO
-      p := p. nextProxy;
-    END;
-    ready. Remove (p);
-    root := p(Region);
-    
-    (* remove instructions whose uses have been scheduled already from `ready'
-       and schedule them into their region; this creates a hierarchy of
-       regions containing all instructions *)
-    WHILE (ready. first # NIL) DO
+      (* the `ready' list must contain the "select-return" instruction;
+         eliminate this instruction from the list and make it the root region*)
       p := ready. first;
-      ready. Remove (p);
-      UpdateDefs (p);
-
-      region := GetRegion (p);
-      region. Insert (p);
-    END;
-    ASSERT (waiting. first = NIL);
-    
-    RETURN root
-  END ArrangeInstructions;
-
-PROCEDURE RemoveAntiDeps* (pb: SSA.ProcBlock);
-  VAR
-    instr: SSA.Instr;
-    opnd, next: SSA.Opnd;
-  BEGIN
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      opnd := instr. GetOpndClass (Opnd.antiDependency);
-      WHILE (opnd # NIL) & (opnd. class = Opnd.antiDependency) DO
-        next := opnd. nextOpnd;
-        opnd. DeleteOpnd;
-        opnd := next;
+      WHILE (p # NIL) & (p. instr. opcode # Opcode.selectReturn) DO
+        p := p. nextProxy;
       END;
-      instr := instr. nextInstr;
+      ready. Remove (p);
+      root := p(Region);
+
+      (* remove instructions whose uses have been scheduled already from
+         `ready' and schedule them into their region; this creates a hierarchy
+         of regions containing all instructions  *)
+      WHILE (ready. first # NIL) DO
+        p := ready. first;
+        ready. Remove (p);
+        UpdateDefs (p);
+        
+        region := GetRegion (p);
+        region. Insert (p);
+      END;
+      ASSERT (waiting. first = NIL);
+      
+      (* sort instructions within each newly created region *)
+      AddRegionDeps (root);
+      SortRegion (root);
+
+<*IF DEBUG_BLOCKER THEN*>
+      IF markAntiDeps THEN
+        Log.Msg ("PRE ANTI-DEP VIOLATION");
+        WriteBlocks (StdChannels.stderr, pb, root);
+      END;
+<*END*>
+      IF markAntiDeps & AntiDepViolation (pb, root) THEN
+        RemoveRegionDeps (pb);
+        ClearRegion (root);
+      ELSE
+        EXIT;
+      END;
     END;
-  END RemoveAntiDeps;
+    
+<*IF DEBUG_BLOCKER THEN*>
+    Check.All(pb);
+<*END*>
+    RETURN root;
+  END ArrangeInstructions;
 
 
 
@@ -945,7 +1484,7 @@ PROCEDURE GetDependenceData* (pb: SSA.ProcBlock): DependenceData;
     instr: SSA.Instr;
   BEGIN
     NEW (dd);
-    dd. root := ArrangeInstructions (pb);
+    dd. root := ArrangeInstructions (pb, FALSE);
     
     proxyMap := Dictionary.New();
     instr := pb. instrList;
@@ -1016,200 +1555,45 @@ PROCEDURE (dd: DependenceData) DependsOn* (x, y: SSA.Instr): BOOLEAN;
 PROCEDURE (dd: DependenceData) AvailableTo* (x, y: SSA.Instr): BOOLEAN;
 (**Return @code{TRUE} if the results of instruction @oparam{x} are available
    at the place of instruction @oparam{y}.  *)
+  VAR
+    xValue: SSA.Instr;
+    xLoop: Loop;
+    exit: SSA.Opnd;
   BEGIN
-    RETURN ~dd. Conflict (x, y) & ~dd. DependsOn (x, y);
+    (* a loop variant value is only available outside the loop, if it is
+       available at the place of every loop exit; in this case, the value
+       if available everywhere after the loop *)
+    xValue := x;
+    xLoop := x. info(Proxy). loopAssoc;
+    WHILE (xLoop # NIL) & ~Dominates (xLoop, y. info(Proxy). region) DO
+      exit := xLoop. instr. NthOpnd (2);
+      WHILE (exit # NIL) & (exit. class = Opnd.storeExit) DO
+        IF ~dd. AvailableTo (xValue, exit. arg. instr) THEN
+          (* value `x' is not visible after the loop, and `y' is not part of
+             the loop: we can abort with a nak *)
+          RETURN FALSE;
+        END;
+        exit := exit. nextOpnd;
+      END;
+      xValue := xLoop. instr;
+      xLoop := xLoop. loopAssoc;
+    END;
+
+    (* note: the test for `Dominates()' ensures that no common subexpressions
+       are pulled out of two different selects, possibly past the guards that
+       would prevent them from being executed at all *)
+    RETURN
+        Dominates (xValue. info(Proxy). region, y. info(Proxy). region) &
+        ~dd. DependsOn (xValue, y);
   END AvailableTo;
 
 
 PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
   VAR
-    w: TextRider.Writer;
-    idMap: IntDictionary.Dictionary;
-    instrCount: LONGINT;
     root: Region;
-    
-  PROCEDURE AssignId (p: Proxy);
-    VAR
-      n: Proxy;
-    BEGIN
-      WITH p: Region DO
-        n := p. first;
-        WHILE (n # NIL) DO
-          AssignId (n);
-          n := n. nextProxy;
-        END;
-      ELSE
-      END;
-
-      IF (p. instr # NIL) & ~p. instr. IsConst() THEN
-        idMap. Set (p. instr, instrCount);
-        INC (instrCount);
-      END;
-    END AssignId;
-  
-  PROCEDURE WriteInstr (p: Proxy);
-    VAR
-      instr: SSA.Instr;
-      res: SSA.Result;
-      opnd: SSA.Opnd;
-      str: ARRAY 64 OF CHAR;
-      i, resCount: LONGINT;
-      
-    PROCEDURE WriteResultId (res: SSA.Result);
-      VAR
-        id, count: LONGINT;
-        ptr: SSA.Result;
-        value: String.String;
-        instr: SSA.Instr;
-      BEGIN
-        instr := res. instr;
-        IF instr. IsConst() THEN
-          WITH instr: SSA.Const DO
-            IF (instr. value = NIL) THEN
-              w. WriteString ("NIL");
-            ELSE
-              value := instr. value. ToString();
-              w. WriteString (value. array^);
-            END;
-          | instr: SSA.DeclRef DO
-            w. WriteString (instr. decl. name. str^);
-          | instr: SSA.TypeRef DO
-            w. WriteString ("<typeref>");
-          | instr: SSA.Address DO
-            w. WriteChar ("&");
-            w. WriteString (instr. decl. name. str^);
-          ELSE
-            CASE instr. opcode OF
-            | Opcode.getLength:
-              w. WriteString (instr. opndList. nextOpnd. nextOpnd.
-                              arg(SSA.DeclRef). decl. name. str^);
-              w. WriteString ("/dim");
-              w. WriteLInt (instr. opndList. arg(SSA.Const). value(Integer.Value). ToInt(), 0);
-            ELSE
-              instr. LogOpcode ("instr.opcode");
-              ASSERT (FALSE);
-            END;
-          END
-        ELSE
-          id := idMap. Get (res. instr);
-          w. WriteChar ("(");
-          w. WriteLInt (id, 0);
-          IF (res. instr # res) THEN
-            count := 1;
-            ptr := res. instr. nextResult;
-            WHILE (ptr # res) DO
-              INC (count);
-              ptr := ptr. nextResult;
-            END;
-            w. WriteChar (".");
-            w. WriteLInt (count, 0);
-          END;
-          w. WriteChar (")");
-        END;
-      END WriteResultId;
-    
-    BEGIN
-      instr := p. instr;
-      IF (instr = NIL) OR ~instr. IsConst() THEN
-        w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
-        w. WriteString ("  ");
-        (*w. WriteString ("L:");
-        IF (p. loopAssoc # NIL) THEN
-          WriteResultId (p. loopAssoc. instr);
-        ELSE
-          w. WriteString ("NIL");
-        END;
-        w. WriteString (09X);*)
-        
-        IF (p. region # NIL) THEN
-          FOR i := 1 TO p. region. nestingDepth DO
-            w. WriteString ("  ");
-          END;
-        END;
-        
-        IF (instr = NIL) THEN
-          w. WriteString ("----");
-        ELSE
-          resCount := 0;
-          res := instr;
-          WHILE (res # NIL) DO
-            IF (res. useList # NIL) OR (instr. opcode = Opcode.selectReturn) THEN
-              IF (resCount # 0) THEN
-                w. WriteChar (",");
-              END;
-              WriteResultId (res);
-              INC (resCount);
-            END;
-            res := res. nextResult;
-          END;
-          IF (resCount = 0) THEN
-            w. WriteString ("(--)");
-          END;
-          
-          w. WriteString (" := ");
-          Opcode.GetName (instr. opcode, instr. subclass, str);
-          w. WriteString (str);
-          IF (instr. pos >= 0) THEN
-            w. WriteString ("@");
-            w. WriteLInt (instr. pos, 0);
-          END;
-          w. WriteChar (" ");
-          
-          opnd := instr. opndList;
-          WHILE (opnd # NIL) DO
-            IF (opnd # instr. opndList) THEN
-              w. WriteChar (",");
-            END;
-            CASE opnd. class OF
-            | Opnd.antiDependency:
-              w. WriteString ("*ad*");
-            | Opnd.loopExternalDef:
-              w. WriteString ("*led*");
-            ELSE
-              (* omit class *)
-            END;
-            WriteResultId (opnd. arg);
-            opnd := opnd. nextOpnd
-          END;
-        END;
-        w. WriteLn;
-      END;
-    END WriteInstr;
-
-  PROCEDURE WriteRegion (r: Region);
-    VAR
-      p: Proxy;
-    BEGIN
-      IF (r. instr = NIL) THEN
-        WriteInstr (r);
-      END;
-      p := r. first;
-      WHILE (p # NIL) DO
-        WITH p: Region DO
-          WriteRegion (p);
-        ELSE
-          WriteInstr (p);
-        END;
-        p := p. nextProxy;
-      END;
-      IF (r. instr # NIL) THEN
-        WriteInstr (r);
-      END;
-    END WriteRegion;
-  
   BEGIN
-    root := ArrangeInstructions (pb);
-    idMap := IntDictionary.New();
-    instrCount := 1;
-    AssignId (root);
-
-    w := TextRider.ConnectWriter (c);
-    w. WriteLn;
-    w. WriteString ("Procedure: ");
-    w. WriteString (pb. procDecl. name. str^);
-    w. WriteLn;
-    WriteRegion (root);
-
+    root := ArrangeInstructions (pb, FALSE);
+    WriteBlocks (c, pb, root);
     RemoveAntiDeps (pb);
   END Write;
 
