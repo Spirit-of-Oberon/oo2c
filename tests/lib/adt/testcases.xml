@@ -14,7 +14,8 @@
     Imports the module <code>ADT:StringBuffer</code>, and performs
     some operations on buffer instances.
   </test>
-  <test id="libadt_Dictionary" type="run" file="LibAdtDictionary.Mod">
+  <test id="libadt_Dictionary" type="run"
+        file="LibAdtDictionary.Mod" output="LibAdtDictionary.Ref">
     Imports the various variants of module <code>ADT:Dictionary</code>.
   </test>
   <test id="libadt_StringSearch1" type="run" file="LibStringSearch1.Mod">
