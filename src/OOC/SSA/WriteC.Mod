@@ -330,8 +330,8 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
         obj := w. registerMap. Get (opnd. arg);
         w. WriteString (obj(String.String). array^)
       ELSE
-        w. WriteString ("/*internal error*/");
-(*        w. WriteString ("XXX undefined ref /*internal error*/");*)
+        (* provoke an C error if this value is used: *)
+        w. WriteString ("XXX undefined ref /*internal error*/");
       END
     END
   END Ref;
