@@ -58,15 +58,27 @@ extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN
 #define _capl(_c) _cap(_c)
 
 /* DIV(integer, integer) -- note: macro uses gcc style expression statement */
-#define _div(_x,_y) ({                               \
+/* def: sign(_x MOD _y)==sign(_y) */
+/*#define _div(_x,_y) ({                               \
   typeof(_x) _quot = _x / _y, _rem = _x % _y;        \
   if (_rem && ((_rem > 0) != (_y > 0))) _quot--;     \
+  _quot; })*/
+/* def: _x MOD _y >= 0 for _y>0, and undefined otherwise */
+#define _div(_x,_y) ({                               \
+  typeof(_x) _quot = _x / _y;                        \
+  if ((_x<0) && (_y>0) && (_quot*_y!=_x)) _quot--;   \
   _quot; })
 
 /* MOD(integer, integer) -- note: macro uses gcc style expression statement */
-#define _mod(_x,_y) ({                               \
+/* def: sign(_x MOD _y)==sign(_y) */
+/*#define _mod(_x,_y) ({                               \
   typeof(_x) _rem = _x % _y;                         \
   if (_rem && ((_rem > 0) != (_y > 0))) _rem += _y;  \
+  _rem; })*/
+/* def: _x MOD _y >= 0 for _y>0, and undefined otherwise */
+#define _mod(_x,_y) ({                               \
+  typeof(_x) _rem = _x % _y;                         \
+  if ((_x<0) && (_y>0) && (_rem != 0)) _rem += _y;   \
   _rem; })
 
 

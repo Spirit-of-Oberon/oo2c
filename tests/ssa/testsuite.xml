@@ -144,7 +144,8 @@
       infinity.  The divisor is positive.
     </test>
     
-    <test id="div2" type="run" file="Div2.Mod" output="Div2.Ref">
+    <test id="div2" type="run" relevance="informal"
+          file="Div2.Mod" output="Div2.Ref">
       Checks result of <code>DIV</code> if the divisor is negative.
     </test>
     
@@ -153,7 +154,8 @@
       infinity.  The divisor is positive.
     </test>
     
-    <test id="mod2" type="run" file="Mod2.Mod" output="Mod2.Ref">
+    <test id="mod2" type="run" relevance="informal"
+          file="Mod2.Mod" output="Mod2.Ref">
       Checks result of <code>MOD</code> if the divisor is negative.
     </test>
     
