@@ -35,7 +35,7 @@ PROCEDURE NewConfig;
     
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
-    Config.AddCmdLine ("--make",
+    Config.AddCmdLine ("--make,-M",
                  "<options><set name='command'>1</set></options>");
     Config.AddCmdLine ("--build-package",
                        "<options><set name='command'>2</set></options>");
