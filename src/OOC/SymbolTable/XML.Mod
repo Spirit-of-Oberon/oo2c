@@ -298,6 +298,8 @@ RAISES IO.Error;
             element := "parametric_type"
           | item: Sym.TypeVar DO
             element := "type_var"
+          | item: Sym.QualType DO
+            element := "qual_type"
           END;
           StartTag (element, Id (item));
 
@@ -340,6 +342,8 @@ RAISES IO.Error;
             AttribTypeId ("", "base_type_id", item. baseType)
           | item: Sym.TypeVar DO
             AttribTypeId ("", "bound_id", item. bound)
+          | item: Sym.QualType DO
+            AttribTypeId ("", "base_type_id", item. baseType);
           END;
           
           WriteNested (item);

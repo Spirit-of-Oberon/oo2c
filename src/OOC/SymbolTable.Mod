@@ -648,6 +648,30 @@ TYPE
        has been run.  *)
   END;
 
+TYPE
+  QualType* = POINTER TO QualTypeDesc;
+  TypeRef = RECORD
+    type*: Type;                         (*... make this read-only? *)
+    (**The type argument.  If this is initially a type name,
+       it is replaced with a reference to the true type after
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
+    srcCodeType-: Type;
+    (**Similar to @ofield{type}, but it is not changed by
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
+  END;
+  TypeRefArray* = POINTER TO ARRAY OF TypeRef;
+  QualTypeDesc = RECORD
+    (**An instance of a parametric type qualified by a set of type
+       arguments.  *)
+    (TypeDesc)
+    baseType*: Type;                     (*... make this read-only? *)
+    (**Base type of the qualified type expression.  This is a reference to
+       a parametric type.  *)
+    srcCodeBaseType-: Type;
+    arguments-: TypeRefArray;
+    (**The arguments of the parametric type.  *)
+  END;
+
 
 (* Objects
    ------------------------------------------------------------------------ *)
@@ -2232,6 +2256,68 @@ PROCEDURE (parType: ParametricType) SetBaseType*(baseType: Type);
   END SetBaseType;
 
 
+PROCEDURE InitTypeRef*(VAR typeRef: TypeRef; type: Type);
+  BEGIN
+    typeRef.type := type;
+    typeRef.srcCodeType := type;
+  END InitTypeRef;
+
+PROCEDURE StoreTypeRef(w: Storable.Writer;
+                       VAR typeRef: TypeRef) RAISES IO.Error;
+  BEGIN
+    w. WriteObject (typeRef.srcCodeType);
+  END StoreTypeRef;
+
+PROCEDURE LoadTypeRef(r: Storable.Reader;
+                      VAR typeRef: TypeRef) RAISES IO.Error;
+  VAR
+    obj: Storable.Object;
+  BEGIN
+    r. ReadObject (obj);
+    typeRef.srcCodeType := obj(Type);
+    typeRef.type := obj(Type);
+  END LoadTypeRef;
+
+
+PROCEDURE InitQualType* (qualType: QualType; parent: Item;
+                         position: Position; baseType: Type;
+                         arguments: TypeRefArray);
+  BEGIN
+    InitType(qualType, parent, position);
+    qualType.baseType := baseType;
+    qualType.srcCodeBaseType := baseType;
+    qualType.arguments := arguments;
+  END InitQualType;
+
+PROCEDURE (qualType: QualType) Store* (w: Storable.Writer) RAISES IO.Error;
+  VAR
+    i: LONGINT;
+  BEGIN
+    qualType.Store^(w);
+    w. WriteObject (qualType.srcCodeBaseType);
+    w.WriteNum(LEN(qualType.arguments^));
+    FOR i := 0 TO LEN(qualType.arguments^)-1 DO
+      StoreTypeRef(w, qualType.arguments[i]);
+    END;
+  END Store;
+
+PROCEDURE (qualType: QualType) Load* (r: Storable.Reader) RAISES IO.Error;
+  VAR
+    obj: Storable.Object;
+    i, len: LONGINT;
+  BEGIN
+    qualType.Load^(r);
+    r. ReadObject (obj);
+    qualType.srcCodeBaseType := obj(Type);
+    qualType.baseType := qualType.srcCodeBaseType;
+    r.ReadNum(len);
+    NEW(qualType.arguments, len);
+    FOR i := 0 TO len-1 DO
+      LoadTypeRef(r, qualType.arguments[i]);
+    END;
+  END Load;
+
+
 PROCEDURE InitPointer* (pointer: Pointer; parent: Item; position: Position;
                         baseType: Type);
   BEGIN
@@ -2670,6 +2756,8 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
           RETURN type. ns
         | type: TypeVar DO
           RETURN NamespaceOfType (type. bound, srcType)
+        | type: QualType DO
+          RETURN NamespaceOfType (type. baseType, type. srcCodeBaseType)
         END
       END
     END NamespaceOfType;

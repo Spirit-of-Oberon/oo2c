@@ -302,6 +302,8 @@ PROCEDURE IsValidPointerBaseType* (type: Sym.Type): BOOLEAN;
   BEGIN
     WITH type: Sym.ParametricType DO
       RETURN IsValidPointerBaseType(type.baseType);
+    | type: Sym.QualType DO
+      RETURN IsValidPointerBaseType(type.baseType);
     ELSE
       RETURN (type IS Sym.Array) OR (type IS Sym.Record)
     END;
@@ -731,6 +733,10 @@ PROCEDURE AllocateType* (type: Sym.Type);
       | type: Sym.TypeVar DO
         AllocateType(type.bound);
         type.SetSize(type.bound.size, type.bound.align);
+
+      | type: Sym.QualType DO
+        AllocateType(type.baseType);
+        type.SetSize(type.baseType.size, type.baseType.align);
       END;
     END;
   END AllocateType;

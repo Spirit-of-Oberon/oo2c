@@ -1088,8 +1088,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             END
           END;
           right := CheckSym(Symbol.gtr);
-          RETURN type;
-          (*RETURN ast.QualType(type, left, list, right);*)
+          RETURN ast.QualType(type, left, list, right);
         ELSE
           RETURN type;
         END;

@@ -107,6 +107,11 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
               MarkList (type)
             | type: Sym.TypeVar DO
               (* ignore, the parameter TypeDecl already marks our type *)
+            | type: Sym.QualType DO
+              MarkType (type. srcCodeBaseType);
+              FOR i := 0 TO LEN(type.arguments^)-1  DO
+                MarkType(type.arguments[i].srcCodeType);
+              END;
             END
           END
         END MarkType;

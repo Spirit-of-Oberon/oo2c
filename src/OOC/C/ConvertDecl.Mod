@@ -216,6 +216,9 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
 
       | type: Sym.TypeVar DO
         RETURN ConvertType(w, type.bound, type);
+
+      | type: Sym.QualType DO
+        RETURN ConvertType(w, type.baseType, type.srcCodeBaseType);
       END
     END
   END ConvertType;

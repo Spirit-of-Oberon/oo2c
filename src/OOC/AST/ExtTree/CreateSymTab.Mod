@@ -132,6 +132,8 @@ PROCEDURE EndOfType (t: AST.Node): Sym.ModulePos;
         ELSE
           RETURN -1
         END
+      | t: ExtTree.QualType DO
+        RETURN EndOfType(t.rParen);
       END
     END
   END EndOfType;
@@ -677,6 +679,23 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
     END;
     v. type := formalPars
   END VisitProcType;
+
+PROCEDURE (v: Visitor) VisitQualType* (qualType: ExtTree.QualType);
+  VAR
+    baseType: Sym.Type;
+    arguments: Sym.TypeRefArray;
+    i: LONGINT;
+  BEGIN
+    baseType := GetType(v, qualType.qualident);
+    NEW(arguments, (qualType.arguments.len+1) DIV 2);
+    FOR i := 0 TO LEN(arguments^) BY 2 DO
+      Sym.InitTypeRef(arguments[i DIV 2],
+                      GetType(v, qualType.arguments.n[i]));
+    END;
+    v.type := v.stb.NewQualType(v.parent,
+                                GetPosition(qualType.qualident),
+                                baseType, arguments);
+  END VisitQualType;
 
 
 PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder;

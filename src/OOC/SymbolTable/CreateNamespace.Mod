@@ -21,7 +21,6 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Log,
   Msg, IO, ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:SymbolTable:Uses,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
@@ -515,7 +514,13 @@ RAISES IO.Error;
             ELSE
               RETURN item(Sym.TypeDecl). type
             END
-          END
+          END;
+          
+        | typeName: Sym.QualType DO
+          typeName.baseType := GetTypeByName(typeName.baseType, contextOfUse,
+                                             extendedSearch, errList);
+          RETURN typeName;
+          
         ELSE
           RETURN typeName
         END
@@ -559,6 +564,16 @@ RAISES IO.Error;
                                             FALSE, errList);
           END
         
+        | item: Sym.QualType DO
+          (* don't look up baseType; the interpretation of this name depends
+             on the context of use, i.e., pointer base or not *)
+          FOR i := 0 TO LEN(item.arguments^)-1 DO
+            item.arguments[i].type :=
+                GetTypeByName(item.arguments[i].srcCodeType, contextOfUse,
+                              FALSE, errList);
+          END;
+                                         
+
         (* scope objects: fix context of use for using 
            occurences of identifiers *)
         | item: Sym.Module DO

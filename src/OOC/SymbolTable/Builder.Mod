@@ -309,6 +309,19 @@ PROCEDURE (b: Builder) NewParametricType* (parent: Sym.Item;
     RETURN parType
   END NewParametricType;
 
+PROCEDURE (b: Builder) NewQualType* (parent: Sym.Item;
+                                     position: Sym.Position;
+                                     baseType: Sym.Type;
+                                     arguments: Sym.TypeRefArray): Sym.QualType;
+  VAR
+    qualType: Sym.QualType;
+  BEGIN
+    NEW (qualType);
+    Sym.InitQualType(qualType, parent, position, baseType, arguments);
+    EvalContext(b, qualType);
+    RETURN qualType
+  END NewQualType;
+
 PROCEDURE (b: Builder) NewExceptionName*(parent: Sym.Item;
                                          type: Sym.Type): Sym.ExceptionName;
   VAR
