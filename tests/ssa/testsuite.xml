@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; record11 record12">-->
+  select ="&SetupTestCasesWithOut; opTypeGuard1">-->
 
   &TestSetupWithOut;
     
@@ -724,7 +724,7 @@
       Dereferencing a <code>NIL</code> pointer.
     </test>
 
-    <test id="opTypeGuard1" type="run" relevance="informal" file="OpTypeGuard1.Mod"
+    <test id="opTypeGuard1" type="run" file="OpTypeGuard1.Mod"
       output="OpTypeGuard1.Ref">
       Excercise type guards.
     </test>
@@ -753,7 +753,7 @@
     <test id="opTypeGuard9" type="reject" file="OpTypeGuard9.Mod">
       Guard type is not a type.
     </test>
-    <test id="opExprCompat1" type="run" relevance="informal" file="OpExprCompat1.Mod"
+    <test id="opExprCompat1" type="run" file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
       Excercise combinations of different operand types.
     </test>
