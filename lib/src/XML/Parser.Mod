@@ -516,7 +516,7 @@ PROCEDURE SetBaseURI(err: Error.Msg; name: ARRAY OF CHAR; uri: URI.URI);
     str8: Object.String8;
     chars: Object.CharsLatin1;
   BEGIN
-    str := uri.GetString();
+    str := uri.ToString();
     str8 := str.ToString8("?");
     chars := str8.CharsLatin1();
     err.SetStringAttrib(name, Msg.GetStringPtr(chars^));

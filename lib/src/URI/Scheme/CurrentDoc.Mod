@@ -65,9 +65,9 @@ PROCEDURE (uri: CurrentDoc) WriteXML* (w: TextRider.Writer);
     w. WriteString (CharClass.eol+"<current-document/>")
   END WriteXML;
 
-PROCEDURE (uri: CurrentDoc) GetString*(): Object.String8;
+PROCEDURE (uri: CurrentDoc) ToString*(): Object.String8;
   BEGIN
     RETURN "";
-  END GetString;
+  END ToString;
 
 END URI:Scheme:CurrentDoc.

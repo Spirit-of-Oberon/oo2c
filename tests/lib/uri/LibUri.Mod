@@ -71,7 +71,7 @@ PROCEDURE Write* (str: ARRAY OF CHAR);
       w := TextRider.ConnectWriter (StdChannels.stdout);
       w. WriteString ("<test-parse-uri>");
       w. WriteString ("<uri-string>");
-      w. WriteObject (uri.GetString ());
+      w. WriteObject (uri.ToString ());
       w. WriteString ("</uri-string>");
       w. WriteLn;
       uri. WriteXML (w);

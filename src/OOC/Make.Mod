@@ -313,7 +313,7 @@ PROCEDURE CreateErrList(module: Rep.Module): Error.List;
     uri: URI.URI;
   BEGIN
     uri := module.GetURI(Rep.modModuleSource, TRUE);
-    RETURN Error.NewList(uri.GetString());
+    RETURN Error.NewList(uri.ToString());
   END CreateErrList;
 
 PROCEDURE (r: Rules) WriteErrList* (errList: Error.List);

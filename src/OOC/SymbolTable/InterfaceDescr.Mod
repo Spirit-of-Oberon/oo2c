@@ -498,7 +498,7 @@ RAISES IO.Error;
         w. AttrStringLatin1 ("type", "html");
         remoteURI := remoteMod. GetURI (Repository.modInterfaceHTML, FALSE);
         relativeURI := remoteURI. MakeRelative (baseURI);
-        w. AttrObject ("relative-uri", relativeURI. GetString());
+        w. AttrObject ("relative-uri", relativeURI.ToString());
         w. EndTag;
 
         w. EndTag

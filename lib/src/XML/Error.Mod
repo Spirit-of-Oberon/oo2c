@@ -228,7 +228,7 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
     writer := TextRider.ConnectWriter (ch);
     ASSERT (writer # NIL);
 
-    Copy(errList.cwdURI.GetString(), repl1);
+    Copy(errList.cwdURI.ToString(), repl1);
     Copy(errList.cwdURI(File.URI).GetPath(), repl2);
     Strings.Insert ("file_name=", 0, repl2);
     

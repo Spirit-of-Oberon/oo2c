@@ -21,7 +21,7 @@ PROCEDURE WriteURI (uri: URI.URI);
       WITH uri: File.URI DO
         Out.Object(uri.GetPath());
       ELSE
-        Out.Object(uri.GetString());
+        Out.Object(uri.ToString());
       END;
     END;
   END WriteURI;

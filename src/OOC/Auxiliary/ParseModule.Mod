@@ -53,7 +53,7 @@ RAISES IO.Error;
       symTab := NIL;
       pragmaHistory := NIL;
       uri := m. GetURI (Repository.modModuleSource, TRUE);
-      errList := Error.NewList(uri.GetString());
+      errList := Error.NewList(uri.ToString());
     ELSE
       errList := inputBuffer. errList;
       scannerBuilder := BasicList.New (inputBuffer, TRUE);

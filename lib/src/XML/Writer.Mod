@@ -244,7 +244,7 @@ PROCEDURE (w: Writer) WriteURI* (uri: URI.URI; absolute: BOOLEAN);
     IF ~absolute THEN
       uri := uri.MakeRelative(w.baseURI);
     END;
-    w.WriteObject(uri.GetString())
+    w.WriteObject(uri.ToString())
   END WriteURI;
 
 PROCEDURE (w: Writer) WriteLInt* (value: LONGINT);
@@ -429,7 +429,7 @@ PROCEDURE (w: Writer) AttrURI* (name[NO_COPY]: ARRAY OF Char; uri: URI.URI;
     IF ~absolute THEN
       uri := uri. MakeRelative (w. baseURI)
     END;
-    w.AttrObject(name, uri.GetString());
+    w.AttrObject(name, uri.ToString());
   END AttrURI;
 
 

@@ -1466,7 +1466,7 @@ PROCEDURE (l: LinkFile) Store* (w: Storable.Writer) RAISES IO.Error;
       str8: Object.String8;
       chars: Object.CharsLatin1;
     BEGIN
-      str8 := uri.GetString();
+      str8 := uri.ToString();
       chars := str8.CharsLatin1();
       w.WriteString(chars^);
     END WriteURI;

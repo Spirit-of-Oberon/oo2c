@@ -308,7 +308,7 @@ RAISES IO.Error;
             END;
             Out.String (test. id);
             Out.String (" / ");
-            Out.Object (Path.BaseName(test.file.GetString()));
+            Out.Object (Path.BaseName(test.file.ToString()));
             IF (test. relevance = Testcases.relevanceInformal) &
                (result # Processor.processCrash) THEN
               Out.String (" (informal test)")

@@ -53,6 +53,7 @@ TYPE
      specializations (@otype{HierarchicalURI} and @otype{OpaqueURI}) in this
      module.  All concrete specializations should be in modules with the name
      prefix @samp{URI:Scheme:*}.  *)
+    (Object.ObjectDesc)
     schemeId-: STRING;
     (**Scheme part of the URI.  For a relative URI (and all instances of
        @otype{*URI:Scheme:CurrentDoc.CurrentDoc}), this field is @code{NIL}. *)
@@ -182,11 +183,11 @@ PROCEDURE (uri: URI) [ABSTRACT] WriteXML* (w: TextRider.Writer);
    @oparam{w}.  *)
   END WriteXML;
 
-PROCEDURE (uri: URI) [ABSTRACT] GetString*(): Object.String8;
+PROCEDURE (uri: URI) [ABSTRACT] ToString*(): Object.String8;
 (**Converts the URI @oparam{uri} to its string representation.
    Reserved characters in the URI and characters that may not appear in a valid
    URI are escaped where necessary.  *)
-  END GetString;
+  END ToString;
 
 PROCEDURE (uri: URI) AppendScheme* (sb: StringBuffer.StringBuffer);
 (**Appends the scheme component of @oparam{uri} to the string @oparam{sb}.  *)
@@ -547,7 +548,7 @@ PROCEDURE (ref: Reference) WriteXML* (w: TextRider.Writer);
     w. WriteString (CharClass.eol+"</uri-reference>")
   END WriteXML;
 
-PROCEDURE (ref: Reference) GetString*(): Object.String8;
+PROCEDURE (ref: Reference) ToString*(): Object.String8;
 (**Converts the URI reference @oparam{ref} to its string representation.
    Reserved characters in the URI and fragment identifier are escaped where
    necessary.  *)
@@ -556,7 +557,7 @@ PROCEDURE (ref: Reference) GetString*(): Object.String8;
     str: STRING;
   BEGIN
     IF (ref. uri # NIL) THEN
-      sb := StringBuffer.New(ref.uri.GetString());
+      sb := StringBuffer.New(ref.uri.ToString());
     ELSE
       sb := StringBuffer.New("");
     END;
@@ -565,25 +566,10 @@ PROCEDURE (ref: Reference) GetString*(): Object.String8;
     END;
     str := sb.ToString();
     RETURN str(Object.String8);
-  END GetString;
+  END ToString;
 
 
 (* ------------------------------------------------------------------------ *)
-
-PROCEDURE Equal (a, b: STRING): BOOLEAN;
-  VAR
-    i: LONGINT;
-  BEGIN
-    i := 0;
-    WHILE (i # a.length) DO
-      IF (CAP(a.CharAt(i)) = CAP(b.CharAt(i))) THEN
-        INC (i)
-      ELSE
-        RETURN FALSE
-      END
-    END;
-    RETURN (i = b.length)
-  END Equal;
 
 PROCEDURE RegisterScheme* (scheme: URI);
 (**Registers a new prototype object @oparam{scheme} under the name
@@ -597,7 +583,7 @@ PROCEDURE RegisterScheme* (scheme: URI);
         NEW (list);
         list. next := NIL;
         list. scheme := scheme
-      ELSIF Equal(list.scheme.schemeId, scheme.schemeId) THEN
+      ELSIF scheme.schemeId.EqualsIgnoreCase(list.scheme.schemeId) THEN
         list. scheme := scheme
       ELSE
         Append (list. next)
@@ -617,7 +603,7 @@ PROCEDURE GetScheme* (name: Str.STRING): URI;
   
   BEGIN
     scheme := schemeList;
-    WHILE (scheme # NIL) & ~Equal (scheme.scheme.schemeId, name) DO
+    WHILE (scheme # NIL) & ~name.EqualsIgnoreCase(scheme.scheme.schemeId) DO
       scheme := scheme. next
     END;
     IF (scheme = NIL) THEN

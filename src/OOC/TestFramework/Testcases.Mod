@@ -322,7 +322,7 @@ PROCEDURE (test: Test) ModuleName* (): STRING;
     path, ext: STRING;
   BEGIN
     IF (test. moduleName = NIL) THEN
-      path := Path.BaseName(test.file.GetString());
+      path := Path.BaseName(test.file.ToString());
       Path.SplitExt(path, test.moduleName, ext);
     END;
     RETURN test. moduleName

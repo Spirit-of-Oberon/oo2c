@@ -188,7 +188,7 @@ PROCEDURE (rep: Repository) GetResource* (package, path: ARRAY OF CHAR): URI.URI
 PROCEDURE (rep: Repository) DumpContent* (w: TextRider.Writer);
   BEGIN
     w. WriteString ("  <file-system>");
-    w. WriteObject (rep.baseURI.GetString());
+    w. WriteObject (rep.baseURI.ToString());
     w. WriteString ("</file-system>");
     w. WriteLn
   END DumpContent;
@@ -289,7 +289,7 @@ RAISES IO.Error;
     IF (modURI IS FileURI.URI) THEN
       str := modURI(FileURI.URI).GetPath();
     ELSE
-      str := modURI.GetString();
+      str := modURI.ToString();
     END;
     errList := Error.NewList(str);
     

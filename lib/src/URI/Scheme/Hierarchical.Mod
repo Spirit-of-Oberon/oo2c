@@ -571,7 +571,7 @@ PROCEDURE (uri: Generic) AppendPath* (sb: StringBuffer.StringBuffer);
     END
   END AppendPath;
 
-PROCEDURE (uri: Generic) GetString*(): Object.String8;
+PROCEDURE (uri: Generic) ToString*(): Object.String8;
   VAR
     sb: StringBuffer.StringBuffer;
     str: STRING;
@@ -587,6 +587,6 @@ PROCEDURE (uri: Generic) GetString*(): Object.String8;
     END;
     str := sb.ToString();
     RETURN str(Object.String8);
-  END GetString;
+  END ToString;
 
 END URI:Scheme:Hierarchical.
