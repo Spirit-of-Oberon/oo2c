@@ -617,7 +617,8 @@ void PosixFileDescr__WriterDesc_WriteBytes(PosixFileDescr__Writer w, const OOC_B
       w->bytesWritten = 0;
 
     } else if (ch->buffering == PosixFileDescr__noBuffer) {
-      res = write_bytes(ch, w->pos, n, x+start, &w->bytesWritten);
+      res = write_bytes(ch, w->pos, n, (const OOC_BYTE*)x+start,
+			&w->bytesWritten);
       if (res) w->res = res;
       w->pos += w->bytesWritten;
       
@@ -638,7 +639,8 @@ void PosixFileDescr__WriterDesc_WriteBytes(PosixFileDescr__Writer w, const OOC_B
       if (n >= ch->sizeBuffer) {
         /* the written block is larger than the buffer, so don't bother
            filling it and transfer bytes directly from x+start*/
-        res = write_bytes(ch, w->pos, n, x+start, &w->bytesWritten);
+        res = write_bytes(ch, w->pos, n, (const OOC_BYTE*)x+start,
+			  &w->bytesWritten);
         if (res) w->res = res;
 	/* determine the intersection between buffer and write request */
 	s = ch->bufStart;
@@ -676,8 +678,8 @@ void PosixFileDescr__WriterDesc_WriteBytes(PosixFileDescr__Writer w, const OOC_B
          first write the bytes in front of the buffer, then extend the buffer,
          and finally write the bytes after the buffer */
       if (w->pos < ch->bufStart) {
-        res = write_bytes(ch, w->pos, ch->bufStart - w->pos, x+start, 
-                          &w->bytesWritten);
+        res = write_bytes(ch, w->pos, ch->bufStart - w->pos,
+			  (const OOC_BYTE*)x+start, &w->bytesWritten);
         w->pos += w->bytesWritten;
         if (res) {
           w->res = res;
