@@ -17,9 +17,10 @@ CONST
 VAR
   keywords: Dictionary.Dictionary;
   (* maps C/C++ keywords to a safer counterpart *)
-  prefix: String.String;
+  rwPrefix: String.String;
   (* prefix string used to mangle reserved names *)
-    
+  tdPrefix: String.String;
+  (* prefix of the type descriptor namespace *)
 
 PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
   VAR
@@ -98,7 +99,7 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
       obj := keywords. Get (name);
       RETURN obj(String.String);
     ELSIF IsReservedName (str) THEN
-      RETURN prefix. Concat (name);
+      RETURN rwPrefix. Concat (name);
     ELSE
       RETURN name;
     END;
@@ -168,7 +169,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
       Strings.Append (str, str2);
       RETURN String.New (str2);
     ELSE
-      name := String.New ("_td_");
+      name := tdPrefix. Concat (NameOfDeclaration (type. Module()));
       IF (type. namingDecl = NIL) THEN
         IntStr.IntToStr (type. position. pos, str);
         RETURN name. Concat (String.New (str));
@@ -204,12 +205,13 @@ PROCEDURE Init ();
       name: String.String;
     BEGIN
       name := String.New (str);
-      keywords. Set (name, prefix. Concat (name));
+      keywords. Set (name, rwPrefix. Concat (name));
     END RW;
   
   BEGIN
     keywords := Dictionary.New();
-    prefix := String.New ("_");
+    rwPrefix := String.New ("_");
+    tdPrefix := String.New ("_td_");
     
     (* reserved words of ANSI-C *)
     RW ("auto"); RW ("break"); RW ("case"); RW ("char"); RW ("const"); 
