@@ -90,6 +90,19 @@ PROCEDURE RealToFloat* (real: LONGREAL; sigFigs: INTEGER;
 
 PROCEDURE RealToEng* (real: LONGREAL; sigFigs: INTEGER;
                       VAR str: ARRAY OF CHAR);
+(**Converts the value of @oparam{real} to floating-point string form, with
+   @oparam{sigFigs} significant figures, and copies the possibly truncated
+   result to @oparam{str}.  The number is scaled with one to three digits in
+   the whole number part and with an exponent that is a multiple of three.  For
+   example:
+
+   @example
+   value:   3923009     39.23009   0.0003923009
+   sigFigs
+   1        4E+6        40         400E-6 
+   2        3.9E+6      39         390E-6
+   5        3.9230E+6   39.230     392.30E-6     
+   @end example  *)
   VAR
     s: ARRAY 32 OF CHAR;
     i, d, fract, exp, posExp, offset: INTEGER;
