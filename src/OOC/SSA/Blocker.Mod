@@ -822,7 +822,7 @@ PROCEDURE AntiDepViolation (pb: SSA.ProcBlock; root: Region): BOOLEAN;
     IF (violationCount # 0) THEN
       (* try again with additional anti-dependencies being inserted *)
       Log.Msg ("RETRY ARRANGE_INSTRUCTIONS");
-      WriteBlocks (StdChannels.stderr, pb, root);
+      WriteBlocks (StdChannels.stderr, pb, root, Dictionary.New());
       Check.All(pb);
     END;
 <*END*>
@@ -1723,7 +1723,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
 <*IF DEBUG_BLOCKER THEN*>
       IF markAntiDeps THEN
         Log.Msg ("PRE ANTI-DEP VIOLATION");
-        WriteBlocks (StdChannels.stderr, pb, root);
+        WriteBlocks (StdChannels.stderr, pb, root, Dictionary.New());
       END;
 <*END*>
       IF markAntiDeps & AntiDepViolation (pb, root) THEN
