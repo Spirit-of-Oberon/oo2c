@@ -20,7 +20,7 @@
   select ="&SetupTestCasesWithOut; rot4">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
+  select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5">-->
 
   &TestSetupWithOut;
     
@@ -1773,13 +1773,13 @@
     </test>
   </testcases>
   
-  <testcases profile="C language Interface" default-lang="O2">
+  <testcases profile="C language Interface" default-lang="OOC O2">
     <test id="align1" type="run" file="Align1.Mod" output="Align1.Ref">
       Check that alignment produces correct field offsets for a number of 
       alignment options.
     </test>
     <test id="align2" type="reject" file="Align2.Mod">
-    Reject case with more than one alignment specified
+      Reject case with more than one alignment specified.
     </test>
     <test id="callconv1" type = "accept" file="CallConv1.Mod">
       Accept calling conventions flags on procedures and procedure types.
@@ -1795,6 +1795,24 @@
     </test>
     <test id="cstring1" type = "run" file="CString1.Mod" output="CString1.Ref">
       Accept various kinds of strings as POINTER [CSTRING].
+    </test>
+    <test id="vtable1" type = "run" file="VTable1.Mod">
+      Check that VTABLE flag is accepted for RECORD. This should generate a
+      non-zero RECORD size (allowing space for the VTBL pointer).
+    </test>
+    <test id="vtable2" type = "reject" file="VTable2.Mod">
+      Reject case where record extension does not preserve VTABLE flag.
+    </test>
+    <test id="vtable4" type = "accept" file="VTable4.Mod">
+      Accept abstract VTABLE interface declaration.
+    </test>
+    <test id="vtable3" type = "accept" file="VTable3.Mod" relevance="informal">
+      Accept VTABLE object implemented by foreign code (C++ class).
+    </test>
+    <test id="vtable5" type = "run" file="VTable5.Mod" relevance="informal"
+		output="VTable5.Ref">
+	  Recursively call and call-back between Oberon-2 and C++ VTABLE objects.
+      This will fail if method table is incorrectly ordered, 
     </test>
   </testcases>
 
@@ -2243,7 +2261,8 @@
 
     <reject-info id="callconv4" pos="%:="
         msg="Expression not compatible with variable type `CallConv1.Proc'"/>
-
+    <reject-info id="vtable2" pos="BDesc = %RECORD (ADesc)"
+        msg="VTABLE flag is inconsistent with base type"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>
