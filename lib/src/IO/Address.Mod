@@ -1,5 +1,10 @@
 (*	$Id$	*)
-MODULE IO:Address [FOREIGN "C"; LINK FILE "Address.c" END];
+MODULE IO:Address [
+  FOREIGN "C";
+  LINK
+    FILE "Address.c";
+    <*IF HAVE_LIB_XNET THEN*>LIB "xnet";<*END*>
+  END ];
 (*  Types and functions for Internet and socket addresses.
     Copyright (C) 2003  Michael van Acken
 

@@ -1,7 +1,10 @@
 (*	$Id$	*)
-MODULE IO:Socket [FOREIGN "C"; LINK FILE "Socket.c"
-  <* IF HAVE_LIB_WSOCK32 THEN *> ; LIB "wsock32" <* END *>
-  END];
+MODULE IO:Socket [FOREIGN "C";
+  LINK
+    FILE "Socket.c";
+    <*IF HAVE_LIB_XNET THEN*>LIB "xnet";<*END*>
+    <*IF HAVE_LIB_WSOCK32 THEN*>LIB "wsock32";<*END*>
+  END ];
 (*  Server and client sockets for TCP streams.
     Copyright (C) 2003  Michael van Acken
 
