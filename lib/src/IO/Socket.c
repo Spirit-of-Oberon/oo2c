@@ -3,11 +3,26 @@
 #include <IO/Socket.d>
 
 #include <sys/types.h>
+#ifdef __MINGW32__
+#include <winsock.h>
+typedef int ssize_t;
+#define EWOULDBLOCK WSAEWOULDBLOCK
+#else
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#endif
 #include <fcntl.h>
 #include <errno.h>
+
+int GetError() {
+#ifdef __MINGW32__
+/* Store WinSock error code in "errno" so that it is available to 
+   StdChannels:IOError() */
+  errno = WSAGetLastError();
+#endif
+  return errno;
+}
 
 IO_Socket__Socket IO_Socket__New() {
   IO_Socket__Socket s =
@@ -19,8 +34,17 @@ IO_Socket__Socket IO_Socket__New() {
   return s;
 }
 
-void IO_Socket__SocketDesc_SetBlocking(IO_Socket__Socket s, OOC_CHAR8 block) {
-  int delay_flag = fcntl(s->fd, F_GETFL, 0);
+void SetBlocking(int fd, OOC_CHAR8 block) {
+#ifdef __MINGW32__
+  u_long args;
+  if (block) {
+    args = 0;
+  } else {
+    args = 1;
+  }
+  ioctlsocket(fd, FIONBIO, &args);  /* FIXME: check result */
+#else
+  int delay_flag = fcntl(fd, F_GETFL, 0);
   if (delay_flag < 0) {
     IO_StdChannels__IOError(NULL);
   }
@@ -29,9 +53,14 @@ void IO_Socket__SocketDesc_SetBlocking(IO_Socket__Socket s, OOC_CHAR8 block) {
   } else {
     delay_flag |= O_NDELAY;
   }
-  if (fcntl(s->fd, F_SETFL, delay_flag) < 0) {
+  if (fcntl(fd, F_SETFL, delay_flag) < 0) {
     IO_StdChannels__IOError(NULL);
   }
+#endif
+}
+
+void IO_Socket__SocketDesc_SetBlocking(IO_Socket__Socket s, OOC_CHAR8 block) {
+  SetBlocking(s->fd, block);
 }
 
 void IO_Socket__SocketDesc_Bind(IO_Socket__Socket s,
@@ -77,7 +106,13 @@ IO_Address__Socket IO_Socket__SocketDesc_RemoteAddress(IO_Socket__Socket s) {
 }
 
 void IO_Socket__SocketDesc_Close(IO_Socket__Socket s) {
-  if (close(s->fd) < 0) {
+  int res;
+#ifdef __MINGW32__
+  res = closesocket(s->fd);
+#else
+  res = close(s->fd);
+#endif
+  if (res < 0) {
     IO_StdChannels__IOError(NULL);
   }
   s->fd = -1;
@@ -100,18 +135,7 @@ void IO_Socket__ServerDesc_SetReuseAddress(IO_Socket__Server s, OOC_CHAR8 on) {
 }
 
 void IO_Socket__ServerDesc_SetBlocking(IO_Socket__Server s, OOC_CHAR8 block) {
-  int delay_flag = fcntl(s->fd, F_GETFL, 0);
-  if (delay_flag < 0) {
-    IO_StdChannels__IOError(NULL);
-  }
-  if (block) {
-    delay_flag &= (~O_NDELAY);
-  } else {
-    delay_flag |= O_NDELAY;
-  }
-  if (fcntl(s->fd, F_SETFL, delay_flag) < 0) {
-    IO_StdChannels__IOError(NULL);
-  }
+  SetBlocking(s->fd, block);
 }
 
 void IO_Socket__ServerDesc_Bind(IO_Socket__Server s,
@@ -137,7 +161,7 @@ IO_Socket__Socket IO_Socket__ServerDesc_Accept(IO_Socket__Server s) {
   int fd = accept(s->fd, (struct sockaddr*)&clientname, &size);
 
   if (fd < 0) {
-    if (errno == EWOULDBLOCK) {
+    if (GetError() == EWOULDBLOCK) {
       return NULL;
     } else {
       IO_StdChannels__IOError(NULL);
@@ -159,13 +183,13 @@ OOC_INT32 IO_Socket__Read(IO_Socket__Socket ch,
 			   OOC_CHAR8 buffer[], OOC_LEN x_0d,
 			   OOC_INT32 start, OOC_INT32 length) {
   ssize_t res;
-  
+ 
   do {
-    res = read(ch->fd, buffer+start, (size_t)length);
-  } while ((res == -1) && (errno == EINTR));
+    res = recv(ch->fd, buffer+start, (size_t)length, 0);
+  } while ((res == -1) && (GetError() == EINTR));
   
   if (res == -1) {		/* check error condition */
-    if (errno == EWOULDBLOCK) {
+    if (GetError() == EWOULDBLOCK) {
       return 0;
     } else {
       IO_StdChannels__IOError(NULL);
@@ -182,11 +206,11 @@ OOC_INT32 IO_Socket__Write(IO_Socket__Socket ch,
   ssize_t res;
   
   do {
-    res = write(ch->fd, buffer+start, (size_t)length);
-  } while ((res == -1) && (errno == EINTR));
+    res = send(ch->fd, buffer+start, (size_t)length, 0);
+  } while ((res == -1) && (GetError() == EINTR));
   
   if (res == -1) {
-    if (errno == EWOULDBLOCK) {
+    if (GetError() == EWOULDBLOCK) {
       return 0;
     } else {
       IO_StdChannels__IOError(NULL);
@@ -195,6 +219,29 @@ OOC_INT32 IO_Socket__Write(IO_Socket__Socket ch,
   return res;
 }
 
+#ifdef __MINGW32__
+void StartNet(void) {
+  WSADATA data;
+  int err;
+
+  err = WSAStartup(0x0101, &data);
+  if (err != 0) {
+    fprintf(stderr, "IO:Socket.c: Cannot start WinSock library. Error %08x\n", err);
+  }
+}
+
+void StopNet(void) {
+  int err;
+  err = WSACleanup();
+  if (err != 0) {
+    fprintf(stderr, "IO:Socket.c: Cannot stop WinSock library. Error %08x\n", err);
+  }
+}
+#endif
+
 
 void OOC_IO_Socket_init(void) {
+#ifdef __MINGW32__
+  StartNet();
+#endif
 }
