@@ -454,27 +454,27 @@ PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
       s. SetExitFlag;
       w. EndTag;  (* p *)
     ELSE
+      w. WriteLatin1 (s. proc. decl. name. str^);
+      w. Write (": ");
+      w. StartTag ("a", TRUE);
+      w. AttrString ("href", "ssa-list");
+      w. Write ("Block List");
+      w. EndTag;  (* a *)
+      w. Write (" || ");
+      w. StartTag ("a", TRUE);
+      w. AttrString ("href", "ssa-dom-tree");
+      w. Write ("Dominator Tree");
+      w. EndTag;  (* a *)
+      w. Write (" || ");
+      w. StartTag ("a", TRUE);
+      w. AttrString ("href", "exit");
+      w. WriteLatin1 ("exit");
+      w. EndTag;  (* a *)
+      
       IF (uriString = "http:/ssa-dom-tree") THEN
         WriteNestedBlocks (s, s. root);
       ELSIF (uriString = "http:/ssa-list") THEN
         WriteBlockList (s, s. root);
-      ELSE
-        w. WriteLatin1 (s. proc. decl. name. str^);
-        w. Write (": ");
-        w. StartTag ("a", TRUE);
-        w. AttrString ("href", "ssa-list");
-        w. Write ("Block List");
-        w. EndTag;  (* a *)
-        w. Write (" || ");
-        w. StartTag ("a", TRUE);
-        w. AttrString ("href", "ssa-dom-tree");
-        w. Write ("Dominator Tree");
-        w. EndTag;  (* a *)
-        w. Write (" || ");
-        w. StartTag ("a", TRUE);
-        w. AttrString ("href", "exit");
-        w. WriteLatin1 ("exit");
-        w. EndTag;  (* a *)
       END;
     END;
     
