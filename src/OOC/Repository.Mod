@@ -21,7 +21,7 @@ MODULE OOC:Repository [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Msg, Channel, TextRider, Strings, Time, ADT:Object, URI, OS:Path,
+  Msg, Channel, TextRider, Strings, Time, ADT:Object, URI, OS:Path, OOC:Logger,
   OOC:Scanner:InputBuffer, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
@@ -489,6 +489,7 @@ PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Sym.Module;
       uri := m. GetURI (modSymbolFile);
       ch := uri. GetChannel (URI.channelOld, res);
       IF (res = NIL) THEN
+        Logger.ReadFile(uri);
         stb := Builder.New();
         symTab := stb. ReadSymbolTable (ch, res);
         ch. Close;

@@ -24,7 +24,7 @@ IMPORT
   Msg, Channel, Files, TextRider, Strings, Time, OSFiles := OS:Files, OS:Path,
   URI, URIParser := URI:Parser, URIError := URI:Error,
   FileURI := URI:Scheme:File,
-  OOC:Error, OOC:Scanner:InputBuffer, Rep := OOC:Repository;
+  OOC:Logger, OOC:Error, OOC:Scanner:InputBuffer, Rep := OOC:Repository;
 
 
 TYPE
@@ -263,6 +263,7 @@ PROCEDURE (m: Module) GetInputBuffer* (VAR res: Msg.Msg): InputBuffer.Buffer;
     IF (file = NIL) THEN
       RETURN NIL
     ELSE
+      Logger.ReadFile(modURI);
       RETURN InputBuffer.New (file, errList)
     END
   END GetInputBuffer;
@@ -285,6 +286,7 @@ PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId; makeTmp: BOOLEAN; V
     m. CreateOutputDir (fileId, res);
     IF (res = OSFiles.done) THEN
       uri := m. GetURI (fileId);
+      Logger.WriteFile(uri);
       IF makeTmp THEN
         RETURN uri. GetChannel (URI.channelTmp, res)
       ELSE
