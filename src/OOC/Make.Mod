@@ -206,6 +206,22 @@ PROCEDURE DerivedIsOlder (module: Rep.Module; descendent, ancestor: Rep.FileId):
     RETURN DerivedIsOlder2(module, descendent, module, ancestor);
   END DerivedIsOlder;
 
+PROCEDURE FingerprintMismatch (descendentModule: Rep.Module;
+                               descendentFP: LONGINT;
+                               ancestorModule: Rep.Module;
+                               ancestorFP: LONGINT): BOOLEAN;
+  BEGIN
+    IF (descendentFP = ancestorFP) THEN
+      Logger.ExplainFilesMake("fp(", descendentModule.GetURI(Rep.modSymbolFile),
+                              ") = fp(", ancestorModule.GetURI(Rep.modSymbolFile), ")");
+      RETURN FALSE;
+    ELSE
+      Logger.ExplainFilesMake("fp(", descendentModule.GetURI(Rep.modSymbolFile),
+                              ") # fp(", ancestorModule.GetURI(Rep.modSymbolFile), ")");
+      RETURN TRUE;
+    END;
+  END FingerprintMismatch;
+
 PROCEDURE CreateErrList(module: Rep.Module): Error.List;
   VAR
     uri: URI.URI;
@@ -267,7 +283,7 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
     pragmaHistory: Pragmas.History;
     errList: Error.List;
     res: Error.Msg;
-
+    
   PROCEDURE ResolveNames ();
     VAR
       i: LONGINT;
@@ -323,10 +339,13 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
         errList.Append(res);
       ELSE
         module.SetInterfaceData(symTab, Rep.importsWithFingerprint);
+        module.SetFingerprint(symTab.fingerprint);
       END;
     END;
 
-    ResolveNames();
+    IF (errList.msgCount = 0) THEN
+      ResolveNames();
+    END;
     
     IF (errList.msgCount # 0) THEN
       r.WriteErrList(errList);
@@ -449,10 +468,10 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
                small modules may produce the same timestamp as that of an
                imported module  *)
             isUpToDate := isUpToDate &
-                ~DerivedIsOlder2(module,
-                                 Rep.modSymbolFile,
-                                 module.ifImportList[i].module,
-                                 Rep.modSymbolFile);
+                ~FingerprintMismatch(module,
+                                     module.ifImportList[i].fingerprint,
+                                     module.ifImportList[i].module,
+                                     module.ifImportList[i].module.ifData.fingerprint);
           ELSE
             RETURN FALSE;
           END;

@@ -50,6 +50,7 @@ TYPE
     name-: Sym.Name;
     module*: Module;
     internal-: BOOLEAN;
+    fingerprint-: LONGINT;
   END;
   ModuleDesc* = RECORD [ABSTRACT]
     (Object.ObjectDesc)
@@ -79,6 +80,9 @@ TYPE
        @oconst{importsWithFingerprint}, or @oconst{completeInterface}.  *)
     ifImportList-: POINTER TO ARRAY OF ModuleRef;
     (**Mirrors the imports from @ofield{ifData}.  *)
+
+    haveFingerprint: BOOLEAN;
+    fingerprint: LONGINT;
   END;
 
 CONST
@@ -219,6 +223,9 @@ PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName;
     m. ifQuality := noInterfaceData;
     m. ifData := NIL;
     m. ifImportList := NIL;
+
+    m. haveFingerprint := FALSE;
+    m. fingerprint := 0;
   END InitModule;
 
 
@@ -284,6 +291,7 @@ PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT)
           m.ifImportList[count].name := item.moduleName;
           m.ifImportList[count].module := NIL;
           m.ifImportList[count].internal := (item.moduleName.str^ = "SYSTEM");
+          m.ifImportList[count].fingerprint := item.fingerprint;
           INC(count);
         ELSE
         END;
@@ -291,6 +299,12 @@ PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT)
       END;
     END;
   END SetInterfaceData;
+
+PROCEDURE (m: Module) SetFingerprint* (fp: LONGINT);
+  BEGIN
+    m.haveFingerprint := TRUE;
+    m.fingerprint := fp;
+  END SetFingerprint;
 
 PROCEDURE (m: Module) GetImportedModule*(name: ARRAY OF CHAR): Module;
   VAR
@@ -503,15 +517,16 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
   END GetModuleByURI;
 
 PROCEDURE (m: Module) ReadSymbolFile*(VAR res: Msg.Msg): Sym.Module;
-(**Locates and reads the symbol table of module @oparam{m}.  In general, any
-   type references in the returned symbol table are @emph{not} resolved.  This
-   must be done manually by calling
+(**Locates and reads the symbol table of module @oparam{m}.  The symbol file's
+   fingerprint value is set in the returned object.  In general, any type
+   references in the returned symbol table are @emph{not} resolved.  This must
+   be done manually by calling
    @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.
 
    If available and @oconst{completeInterface}, the cached symbol table
-   @ofield{m.ifData} is returned.  If the symbol file is read from disk,
-   it is @emph{not} stored in @ofield{m.ifData}, because only the calling
-   function knows about the quality of the imported data.  *)
+   @ofield{m.ifData} is returned.  If the symbol file is read from disk, it is
+   @emph{not} stored in @ofield{m.ifData}, because only the calling function
+   knows about the quality of the imported data.  *)
   VAR
     stb: Builder.Builder;
     ch: Channel.Channel;

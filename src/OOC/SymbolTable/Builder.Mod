@@ -495,6 +495,8 @@ PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Sym.Modul
   VAR
     writer: Storage.Writer;
   BEGIN
+    (* Note: This method omits the fingerprint value and is therefore
+       not symmetric to ReadSymbolTable *)
     writer := Storage.ConnectWriter (ch);
     writer. WriteObject (symTab);
     res := writer. res;
@@ -503,17 +505,21 @@ PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Sym.Modul
     END
   END WriteSymbolTable;
 
-PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel; VAR res: Channel.Result): Sym.Module;
+PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel;
+                                         VAR res: Channel.Result): Sym.Module;
   VAR
     obj: Object.Object;
     reader: Storage.Reader;
+    fp: LONGINT;
   BEGIN
     reader := Storage.ConnectReader (ch);
+    reader. ReadBytes(fp, 0, SIZE(LONGINT));
     reader. ReadObject (obj);
     res := reader. res;
     IF (obj = NIL) THEN
       RETURN NIL
     ELSE
+      obj(Sym.Module).fingerprint := fp;
       RETURN obj(Sym.Module)
     END
   END ReadSymbolTable;

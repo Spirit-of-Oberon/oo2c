@@ -352,7 +352,10 @@ TYPE
     linkDirectives-: LinkDirective;
     (**List of @samp{FILE}, @samp{OBJ}, and @samp{LIB} link directives from
        the module header.  *)
-
+    fingerprint*: LONGINT;
+    (**The fingerprint value of the module's symbol file.  This field is
+       only valid if the @otype{Module} object has been read from file.  *)
+    
     moduleAST-: AST.Node;
     (**Refers to the abstract syntax tree of the module, for example an
        instance of @otype{*OOC:AST:ExtTree.Module}.  *)
@@ -377,6 +380,12 @@ TYPE
     (**A reference to the imported symbol table of the external module.  This
        field is initialized to @code{NIL}, and is filled when
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace} is called.  *)
+
+    fingerprint-: LONGINT;
+    (**The fingerprint of the imported module's symbol file.
+       If @ofield{externalSymTab} is set, then this is changed to the symbol
+       table's fingerprint field.  If the import is read from file, then
+       its the value store in the symbol file.  *)
   END;
 
 
@@ -1200,6 +1209,7 @@ PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
     mod. class := class;
     mod. callConv := callConv;
     mod. linkDirectives := NIL;
+    mod. fingerprint := 0;
     mod. moduleAST := moduleAST;
     mod. bodyDecl := bodyDecl;
   END InitModule;
@@ -1355,7 +1365,8 @@ PROCEDURE InitImport* (import: Import; parent: Item; name: Name;
 
 PROCEDURE (import: Import) SetExternalSymTab* (symTab: Module);
   BEGIN
-    import. externalSymTab := symTab
+    import. externalSymTab := symTab;
+    import. fingerprint := symTab.fingerprint;
   END SetExternalSymTab;
 
 PROCEDURE (import: Import) IsInternalImport*(): BOOLEAN;
@@ -1369,7 +1380,8 @@ PROCEDURE (import: Import) IsInternalImport*(): BOOLEAN;
 PROCEDURE (import: Import) Store* (w: Object.Writer);
   BEGIN
     import. Store^ (w);
-    w. WriteObject (import. moduleName)
+    w. WriteObject (import. moduleName);
+    w. WriteLInt (import. fingerprint);
   END Store;
 
 PROCEDURE (import: Import) Load* (r: Object.Reader);
@@ -1378,7 +1390,8 @@ PROCEDURE (import: Import) Load* (r: Object.Reader);
   BEGIN
     import. Load^ (r);
     r. ReadObject (obj);
-    import. moduleName := obj(Name)
+    import. moduleName := obj(Name);
+    r. ReadLInt (import. fingerprint);
   END Load;
 
 
