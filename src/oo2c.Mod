@@ -110,7 +110,6 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
       m: Rep.Module;
       path: Rep.URIBuffer;
       i: LONGINT;
-      name: String.String;
     BEGIN
       (* For every symbol and header file, add an entry to the package's file
          list.  The source and destination name is the file name relative to
@@ -376,7 +375,9 @@ BEGIN
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);
-  ASSERT(Config.repositories.ParseMetaData());
+  IF ~Config.repositories.ParseMetaData(Config.options, Config.pragmas) THEN
+    HALT(1);
+  END;
   
   makeRules := Make.NewRules();
   IF useStderr.value(Boolean.Value).boolean THEN
