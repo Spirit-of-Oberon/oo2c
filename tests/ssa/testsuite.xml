@@ -17,7 +17,11 @@
   select ="prepare_out_module
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
-  function1 function2 function3">
+  function1 function2 function3 if1">
+
+<!--<testsuite-ext
+  profile="Test Suite for Framework Testing"
+  select ="prepare_out_module if1">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -49,6 +53,12 @@
       Another very simple function: The input parameter is copied to 
       a local variable, which is subsequently used as the
       function's return value.
+    </test>
+
+    <test id="if1" type="run"
+      file="HOTIf1.Mod" output="HOTIf1.Ref">
+      A simple <code>IF</code> statement, using a boolean parameter
+      as guard.
     </test>
   </testcases>
   
