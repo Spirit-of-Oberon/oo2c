@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:Command:LinkProgramC;
 (*  Links object files and libraries to create an executable file.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,9 +21,11 @@ MODULE OOC:Make:Command:LinkProgramC;
 *)
 
 IMPORT
-  Channel, Make, Out, Strings, URI, URI:Scheme:File, ADT:String,
+  Channel, Make, Out, Strings, URI, URI:Scheme:File,
+  ADT:Object, ADT:String, ADT:Dictionary,
   OS:ProcessManagment, OOC:Make:Entity:ModuleFile,
-  OOC:Error, OOC:Repository, OOC:Config:CCompiler, OOC:Auxiliary:Config;
+  OOC:Error, OOC:Repository, OOC:Config:CCompiler, OOC:Auxiliary:Config,
+  Sym := OOC:SymbolTable;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -67,12 +69,15 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     str: ARRAY 4*1024 OF CHAR;
     path: Repository.URIBuffer;
     uri: URI.URI;
-    exit: LONGINT;
+    exit, i: LONGINT;
     res: Error.Msg;
     config: Config.Config;
     aEdge: Make.Edge;
     fileId: Repository.FileId;
     ancestor: Repository.Module;
+    linkDirective: Sym.LinkDirective;
+    libsMap: Dictionary.Dictionary;
+    libs: Object.ObjectArrayPtr;
   BEGIN
     exit := 0;
     config := cmd. context. config(Config.Config);
@@ -81,6 +86,8 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     IF (res = NIL) THEN
       CCompiler.LinkProgramCmd (config, 
                           cmd. module. GetURI (Repository.modExecutable), str);
+
+      libsMap := Dictionary.New();
       aEdge := cmd. ancestorList;
       WHILE (aEdge # NIL) DO
         fileId := aEdge. ancestor(ModuleFile.Entity). fileId;
@@ -89,10 +96,29 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
           uri := ancestor. GetURI (fileId);
           uri(File.URI). GetPath (path);
           Strings.Append (" ", str);
-          Strings.Append (path, str)
+          Strings.Append (path, str);
+
+          (* note down any libraries that need to be linked in *)
+          linkDirective := ancestor. symbolTable. linkDirectives;
+          WHILE (linkDirective # NIL) DO
+            WITH linkDirective: Sym.LinkLib DO
+              libsMap. Set (linkDirective. libraryName, NIL);
+            ELSE                         (* ignore *)
+            END;
+            linkDirective := linkDirective. next
+          END;
         END;
         aEdge := aEdge. nextAncestor
-      END
+      END;
+
+      (* add "-l" options for the external libraries *)
+      (* FIXME... honor interdependencies between libraries in order
+         of options *)
+      libs := libsMap. Keys();
+      FOR i := 0 TO LEN (libs^)-1 DO
+        Strings.Append (" -l", str);
+        Strings.Append (libs[i](String.String). array^, str);
+      END;
     END;
     IF (res = NIL) THEN
       Out.String (str);
