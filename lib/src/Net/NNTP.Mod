@@ -76,7 +76,7 @@ TYPE
   END;
 
 TYPE
-  Request = POINTER TO RequestDesc;
+  Request* = POINTER TO RequestDesc;
   RequestDesc = RECORD [ABSTRACT]
     (**Represents an NNTP request.  *)
     (MsgDesc)
@@ -207,16 +207,14 @@ TYPE
   Group* = POINTER TO GroupDesc;
   GroupDesc = RECORD
     (RequestDesc)
-    msgCount-, first-, last-: LONGINT;
-    name-: Object.String8;
+    msgCount-, first-, last-: LONGINT;  (* output parameters *)
+    name-: Object.String8;  (* output parameter *)
   END;
   
 TYPE
   XHdr* = POINTER TO XHdrDesc;
   XHdrDesc = RECORD
     (RequestDesc)
-    msgCount-, first-, last-: LONGINT;
-    name-: Object.String8;
   END;
   
 TYPE
