@@ -78,13 +78,17 @@ statement sequence or a list of declarations.")
 	     '(record end) "\\|")
   "Regexp matching code that starts or ends a record definition.")
 
+(defsubst ob2-get-match-symbol ()
+  "Return the symbol representing the most recent match."
+  (ob2-get-indent-symbol (match-string-no-properties 0)))
+
 (defsubst ob2-inside-statement-sequence-p ()
   "Return non-nil if point is inside a statement sequence.
 Else return nil."
   (save-match-data
     (save-excursion
       (if (ob2-re-search-backward-code ob2-statements-or-declarations-re)
-	  (eq (ob2-get-indent-symbol (match-string-no-properties 0)) 'begin)
+	  (eq (ob2-get-match-symbol) 'begin)
 	nil))))
 
 
@@ -271,8 +275,7 @@ is no match."
     (message "---> point=%s" (point))
     (save-excursion
       (when (ob2-re-search-backward-code-2 ob2-indent-re)
-        (setq saved-word (ob2-get-indent-symbol
-                          (match-string-no-properties 0)))
+        (setq saved-word (ob2-get-match-symbol))
         (setq saved-column (current-indentation))))
     
     ;;(message "save-column=%s, saved-word=%s" saved-column saved-word)
@@ -284,9 +287,7 @@ is no match."
             (save-excursion               ;place re in match-string
               (ob2-re-search-forward-code ob2-indent-re)
               (setq factor
-                    (ob2-get-indent-increment (ob2-get-indent-symbol
-                                               (match-string-no-properties
-                                                0))
+                    (ob2-get-indent-increment (ob2-get-match-symbol)
                                               saved-word)))
           (setq factor (ob2-get-indent-increment 'other saved-word)))
 	  (if (null factor)
@@ -346,19 +347,35 @@ spans several lines.  Else nil is returned."
 
 Returns the correct indentation for the current line when point is
 inside a multiline expression."
+  ;;(message "ob2-calc-indent-multi-line-expr point=%s" (point))
   (save-excursion
     (while (and (not (bobp)) (ob2-inside-multi-line-expr-p))
       (backward-to-indentation 1))
-    (if (> (count-lines (point)
-                        (or (ob2-re-search-forward-code
-			     (concat ":=\\|" ob2-indent-begin-inside-body-re))
-                            2))
-           1)
-        (error "Don't know how to indent line")
-      (if (save-match-data (string-match ":?=" (match-string-no-properties 0)))
-          (progn (goto-char (match-end 0))
-                 (current-column))
-        (+ (current-indentation) (* ob2-indent-level 2))))))
+    ;;(message "ob2-calc-indent-multi-line-expr point2=%s" (point))
+    
+    (let ((sym (progn
+		 (looking-at ob2-indent-re)
+		 (ob2-get-match-symbol)))
+	  (current-indent (current-indentation)))
+      (cond ((eq sym 'if)
+	     (+ current-indent 3))
+	    ((memq sym '(while elsif))
+	     (+ current-indent 6))
+	    ((eq sym 'case)
+	     (+ current-indent 5))
+	    (t
+	     (if (> (count-lines (point)
+				 (or (ob2-re-search-forward-code
+				      (concat ":=\\|" 
+					      ob2-indent-begin-inside-body-re))
+				     2))
+		    1)
+		 (error "Don't know how to indent line")
+	       (if (save-match-data
+		     (string-match ":?=" (match-string-no-properties 0)))
+		   (progn (goto-char (match-end 0))
+			  (current-column))
+		 (+ current-indent (* ob2-indent-level 2)))))))))
 
 
 (defun ob2-calc-indent-inside-multi-line-param-list ()
@@ -421,6 +438,7 @@ Else returns nil."
 
   ;; Indentation
   (set (make-local-variable 'indent-line-function) 'ob2-indent-line)
+  (setq indent-tabs-mode nil)
   
   (setq case-fold-search nil)
   (setq major-mode 'oberon-2-mode)
