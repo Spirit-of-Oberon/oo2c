@@ -19,6 +19,9 @@ AC_PATH_PROG(PERL,perl,perl)
 dnl checks for libraries
 
 dnl checks for header files
+AC_HEADER_STDC
+AC_CHECK_HEADERS(sys/time.h unistd.h io.h pwd.h)
+AC_HEADER_TIME
 
 dnl checks for types
 OOC_CHECK_LONG_SIZE_T()
@@ -29,6 +32,11 @@ dnl checks for structures
 dnl checks for compiler characteristics
 
 dnl checks for library functions
+AC_TYPE_SIGNAL
+dnl   ANSI functions:
+AC_CHECK_FUNCS(atexit raise)
+dnl   BSD functions:
+AC_CHECK_FUNCS(gettimeofday settimeofday)
 
 dnl checks for system services
 
