@@ -319,6 +319,13 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       END;
     END GetLoop;
 
+  PROCEDURE IsDataOpnd (opnd: SSA.Opnd): BOOLEAN;
+    BEGIN
+      RETURN
+          (opnd. class # Opnd.antiDependency) &
+          (opnd. class # Opnd.regionDependency);
+    END IsDataOpnd;
+  
   <*IF DEBUG_ALLOCATOR THEN*>
   PROCEDURE WriteLive (b: Schedule.Block; msg: ARRAY OF CHAR;
                        g: IGraph.Graph; live: IGraph.Vector);
@@ -386,7 +393,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       (* every argument of the instruction is checked whether it starts a
          live range and is placed into the live vector if it does *)
       opnd := proxy. instr. opndList;
-      WHILE (opnd # NIL) DO
+      WHILE (opnd # NIL) & IsDataOpnd (opnd) DO
         IF (opnd. arg. info = rf) THEN
           IF ~iGraph. In (opnd. arg. marker, live) THEN
             (* the live range of the value passed to `opnd' interferes with all
