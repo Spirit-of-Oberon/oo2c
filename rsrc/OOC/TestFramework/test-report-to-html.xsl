@@ -99,7 +99,7 @@
 	<xsl:value-of select="$class" />
 	<xsl:text>: </xsl:text>
 	<xsl:choose>
-	  <xsl:when test="$class = 'passed'">
+	  <xsl:when test="$relevance='standard' and $class='passed'">
 	    ... (<xsl:value-of select="count($nodes)"/> tests)
 	  </xsl:when>
 	  <xsl:otherwise>
