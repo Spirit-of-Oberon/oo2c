@@ -62,7 +62,6 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         RETURN left
             
       | design: ExtTree.Operator DO
-        (* we only do qualified identifiers for now: "module.ident" *)
         ASSERT (design. op. sym. id = Symbol.period);
         left := Designator (design. left);
         WITH left: IR.ModuleRef DO

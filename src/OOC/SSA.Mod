@@ -643,7 +643,7 @@ PROCEDURE (instr: Instr) GetBackwardFeed*(): Result;
 
 PROCEDURE (instr: Instr) GetLoopStart* (): Instr;
 (**Given a @oconst{Opcode.loopEnd} or @oconst{Opcode.selectExit} instruction,
-   returns the corresponding @oconst{Opcode.loopdStart}.  *)
+   returns the corresponding @oconst{Opcode.loopStart}.  *)
   BEGIN
     IF (instr. opcode = Opcode.selectExit) THEN
       RETURN instr. opndList. arg(Instr). GetLoopStart();
