@@ -33,7 +33,7 @@ test-cleanall: $(TEST_LIST_CLEAN)
 # Change ".test" tag to "Makefile", thus call the package makefile which
 # in turn recalls this makefile with target test1-report.
 %.test: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
-	$(MAKE) -k -f $(subst .test,Makefile,$@) test-runall
+	$(MAKE) -f $(subst .test,Makefile,$@) test-runall
 
 test: $(TEST_LIST_TEST)
 	$(PRINT) Done test.
