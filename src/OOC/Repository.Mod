@@ -90,7 +90,10 @@ TYPE
        @oconst{importsWithFingerprint}, or @oconst{completeInterface}.  *)
     ifImportList-: POINTER TO ARRAY OF ModuleRef;
     (**Mirrors the imports from @ofield{ifData}.  *)
-
+    visitedByMake*: SET;
+    (**Used by @omodule{*OOC:Make} to detect cyclic dependencies when
+       updating or building files.  *)
+    
     haveFingerprint: BOOLEAN;
     fingerprint: LONGINT;
   END;
@@ -250,7 +253,8 @@ PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName;
     m. ifQuality := noInterfaceData;
     m. ifData := NIL;
     m. ifImportList := NIL;
-
+    m. visitedByMake := {};
+    
     m. haveFingerprint := FALSE;
     m. fingerprint := 0;
   END InitModule;

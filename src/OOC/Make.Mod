@@ -1224,8 +1224,14 @@ PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
     IF mInfo.updated[fileId] THEN
       RETURN Logger.CachedMake(fileIdNames[fileId],
                                module.name^, mInfo.updateResult[fileId]);
+    ELSIF (fileId IN module.visitedByMake) THEN
+      Out.String("Error: Cyclic dependency in module ");
+      Out.String(module.name^);
+      Out.Ln;
+      RETURN FALSE;
     ELSE
       Logger.EnterMake(module.name^, fileIdNames[fileId]);
+      INCL(module.visitedByMake, fileId);
       CASE fileId OF
       | Rep.modExecutable:
         res := r.UpdateExecutable(module);
@@ -1262,6 +1268,7 @@ PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
       END;
       mInfo.updated[fileId] := TRUE;
       mInfo.updateResult[fileId] := res;
+      EXCL(module.visitedByMake, fileId);
       RETURN Logger.ExitMake(module.name^, fileIdNames[fileId], res);
     END;
   END Update;
