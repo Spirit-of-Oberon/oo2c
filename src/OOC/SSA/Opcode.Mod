@@ -55,10 +55,11 @@ CONST
      @item *OOC:SSA:Opnd.readAdr
      The address from which the value is read.
 
-     @item *OOC:SSA:Opnd.readDesign@dots{}
-     The symbolic representation of the variable's designator.  For non-heap
-     variables, the first entry in the designator is a reference to the
-     declaration of the accessed variable.
+     @item *OOC:SSA:Opnd.readDesign
+     The symbolic representation of the variable's designator.  Depending on
+     the designator, several successive operands can share this class.  For
+     non-heap variables, the first entry in the designator is a reference to
+     the declaration of the accessed variable.
      @end table  *)
   set* = 6;
   copy* = 7;
