@@ -53,6 +53,42 @@ CONST
   enter* = 3;
   select* = 4;
   collect* = 5;
+  (**A @oconst{collect} instruction temporarily merges local values into the
+     global @var{store} state.  This result is subsequently fed into an
+     instruction that joins multiple paths of control flow, for example a
+     @oconst{select} or a @oconst{loopStart}.  The local values resurface in
+     the joining instruction as its results.  The first argument of a
+     @oconst{collect} corresponds to the first (non-instruction) result, the
+     second argument to the second result, and so on.
+
+     Collects are a little unusual in that they describe an effect that, when
+     expressed in terms of basic blocks and jumps, happens as part of a jump
+     from the originating block to the joining block.  That is, they define an
+     operation that cannot be placed at the end of the originating block, nor
+     at the beginning of the target block, but must happen somewhere on the way
+     between them.  This can make scheduling and code generation slightly
+     tricky.  One way to resolve this is to introduce an additional block
+     representing the edge between the ``real'' blocks, containing the
+     @oconst{collect} as its sole instruction.
+
+     Operands of the instruction:
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.arg
+     Arbitrary number of values (possible no value) that are collected in the
+     @var{store}.
+     @end table
+
+     There is one result, the new value of @var{store}.
+
+     In the initial SSA code, as produced from the intermediate representation,
+     only @oconst{collect} instructions with the @var{store} operand are
+     created, which are basically identity operations on @var{store}.
+     @omodule{*OOC:SSA:Destore} adds further collects, and typically adds more
+     values to the argument lists.  *)
   
   return* = 6;
   (**This instruction serves two purposes: it marks the place where control

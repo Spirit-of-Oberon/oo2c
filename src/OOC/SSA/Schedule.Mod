@@ -957,7 +957,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       | b: BranchBlock DO
         proxy := b. proxyList;
         WHILE (proxy # NIL) DO
-(*          ASSERT (proxy. instr. opcode # Opcode.collect);*)
+          ASSERT (proxy. instr. opcode # Opcode.collect);
           proxy := proxy. nextProxy
         END;
       | b: DeadEndBlock DO

@@ -308,6 +308,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
 
           | Opcode.loopEnd:
             RETURN Trace (lastDefinition, instr. GetResultClass (Result.store))
+
+          | Opcode.collect: 
+            RETURN Trace (lastDefinition, instr. GetResultClass (Result.store))
             
           | Opcode.call:
             (* FIXME... detect when a call can modify our variable; for now
