@@ -21,7 +21,7 @@ MODULE OOC:SSA:IGraph;
 *)
 
 IMPORT
-  Log, Exception;
+  Exception;
   
 TYPE
   SetType = SET;
@@ -379,6 +379,10 @@ PROCEDURE (g: Graph) ColorGraphCombinatorial*(): ColorArray;
       INC(size);
     END;
 
+    IF (size > sizeSet) THEN             (* bail out *)
+      RETURN NIL;
+    END;
+    
     (* create our own interference matrix based on the permutation *)
     g.AssertSymmetricMatrix();
     FOR i := 0 TO sizeSet-1 DO
@@ -392,10 +396,6 @@ PROCEDURE (g: Graph) ColorGraphCombinatorial*(): ColorArray;
       END;
     END;
 
-    Log.Int("### g.size", g.size);
-    Log.Int("### size", size);
-    ASSERT(size <= sizeSet);
-    
     NEW (ca, g.size);
     IF (size # 0) THEN
       (* find a k-coloring for our reduced graph *)
