@@ -208,12 +208,29 @@ PROCEDURE (b: Builder) NewProcDecl* (parent: Sym.Item; name: Sym.Name;
 
 
 
+PROCEDURE EvalContext(b: Builder; type: Sym.Type);
+  BEGIN
+    IF (b.class = Sym.mcInterface) THEN
+      type.hasDescriptor := FALSE;
+      WITH type: Sym.Record DO
+        type.isExtensible := FALSE;
+      | type: Sym.Array DO
+        type.hasLengthInfo := ~type.isOpenArray;
+      | type: Sym.Pointer DO
+        type.isStatic := TRUE;
+      ELSE
+        (* nothing *)
+      END;
+    END;
+  END EvalContext;
+
 PROCEDURE (b: Builder) NewPredefType* (parent: Sym.Item; id: Sym.PredefId): Sym.PredefType;
   VAR
     ptype: Sym.PredefType;
   BEGIN
     NEW (ptype);
     Sym.InitPredefType (ptype, parent, id);
+    EvalContext(b, ptype);
     RETURN ptype
   END NewPredefType;
 
@@ -225,6 +242,7 @@ PROCEDURE (b: Builder) NewTypeName* (parent: Sym.Item;
   BEGIN
     NEW (tname);
     Sym.InitTypeName (tname, parent, position, module, ident);
+    EvalContext(b, tname);
     RETURN tname
   END NewTypeName;
 
@@ -236,10 +254,7 @@ PROCEDURE (b: Builder) NewRecord* (parent: Sym.Item;
   BEGIN
     NEW (record);
     Sym.InitRecord (record, parent, position, baseType);
-    IF (b.class = Sym.mcInterface) THEN
-      record.hasDescriptor := FALSE;
-      record.isExtensible := FALSE;
-    END;
+    EvalContext(b, record);
     RETURN record
   END NewRecord;
 
@@ -254,10 +269,7 @@ PROCEDURE (b: Builder) NewArray* (parent: Sym.Item;
     NEW (array);
     Sym.InitArray (array, parent, position, isOpenArray,
                    elementType, lengthExpr);
-    IF isOpenArray & (b.class = Sym.mcInterface) THEN
-      array.hasDescriptor := FALSE;
-      array.hasLengthInfo := FALSE;
-    END;
+    EvalContext(b, array);
     RETURN array
   END NewArray;
 
@@ -269,9 +281,7 @@ PROCEDURE (b: Builder) NewPointer* (parent: Sym.Item;
   BEGIN
     NEW (ptr);
     Sym.InitPointer (ptr, parent, position, baseType);
-    IF (b.class = Sym.mcInterface) THEN
-      ptr.isStatic := TRUE;
-    END;
+    EvalContext(b, ptr);
     RETURN ptr
   END NewPointer;
 
@@ -283,6 +293,7 @@ PROCEDURE (b: Builder) NewFormalPars* (parent: Sym.Item;
   BEGIN
     NEW (fpars);
     Sym.InitFormalPars (fpars, parent, position, resultType);
+    EvalContext(b, fpars);
     RETURN fpars
   END NewFormalPars;
 

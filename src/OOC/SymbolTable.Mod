@@ -242,6 +242,10 @@ TYPE
     (**Minimum alignment of this type.  A variable holding a value of this type
        must be allocated at a memory address that is a multiple of this number.
        The field is initialized to @samp{1}, the minimum possible alignment.  *)
+    hasDescriptor*: BOOLEAN;
+    (**If @code{TRUE}, then this type has an associated type descriptor that is
+       available during run-time.  Default is @code{TRUE} for type from
+       non-@code{INTERFACE} modules.  *)
   END;
 
 
@@ -498,10 +502,6 @@ TYPE
     (TypeDesc)
     isOpenArray-: BOOLEAN;
     (**TRUE, iff the array type is defined as @samp{ARRAY OF Foo}.  *)
-    hasDescriptor*: BOOLEAN;
-    (**If @code{TRUE}, then instances of this array have an associated
-       type descriptor.  Default is @code{TRUE} for non-
-       @code{INTERFACE} modules.  *)
     hasLengthInfo*: BOOLEAN;
     (**If @code{TRUE}, then the length of this array can be obtained
        during run-time.  Default is @code{TRUE} for non-
@@ -558,10 +558,6 @@ TYPE
     isAbstract*: BOOLEAN;
     (**If @code{TRUE}, then the record defines an abstract class.  Default
        is @code{FALSE}.  *)
-    hasDescriptor*: BOOLEAN;
-    (**If @code{TRUE}, then instances of this record have an associated
-       type descriptor.  Default is @code{TRUE} for non-
-       @code{INTERFACE} modules.  *)
     isExtensible*: BOOLEAN;
     (**If @code{TRUE}, then this type can serve as a base type for other
        records.  Default is @code{TRUE} for non-
@@ -1084,6 +1080,7 @@ PROCEDURE InitType* (type: Type; parent: Item; position: Position);
     type. namingDecl := NIL;
     type. size := unknownSize;
     type. align := 1;
+    type. hasDescriptor := TRUE;
   END InitType;
 
 PROCEDURE (type: Type) Store* (w: Object.Writer);
@@ -1095,6 +1092,7 @@ PROCEDURE (type: Type) Store* (w: Object.Writer);
     END;
     w. WriteNum (type. size);
     w. WriteNum (type. align);
+    w. WriteBool (type. hasDescriptor);
   END Store;
 
 PROCEDURE (type: Type) Load* (r: Object.Reader);
@@ -1118,6 +1116,7 @@ PROCEDURE (type: Type) Load* (r: Object.Reader);
     r. ReadNum (type. size);
     r. ReadNum (i);
     type. align := SHORT (i);
+    r. ReadBool (type. hasDescriptor);
   END Load;
 
 PROCEDURE (type: Type) SetNamingDecl* (namingDecl: TypeDecl);
@@ -1901,7 +1900,6 @@ PROCEDURE InitRecord* (record: Record; parent: Item; position: Position;
     record. ns := NIL;
     record. isUnion := FALSE;
     record. isAbstract := FALSE;
-    record. hasDescriptor := TRUE;
     record. isExtensible := TRUE;
     record. className := NIL
   END InitRecord;
@@ -1914,7 +1912,6 @@ PROCEDURE (record: Record) Store* (w: Object.Writer);
     w. WriteNum (record. tbProcCount);
     w. WriteBool (record. isUnion);
     w. WriteBool (record. isAbstract);
-    w. WriteBool (record. hasDescriptor);
     w. WriteBool (record. isExtensible);
     w. WriteObject (record. className);
     (* ignore field `ns' *)
@@ -1936,7 +1933,6 @@ PROCEDURE (record: Record) Load* (r: Object.Reader);
     record. ns := NIL;
     r. ReadBool (record. isUnion);
     r. ReadBool (record. isAbstract);
-    r. ReadBool (record. hasDescriptor);
     r. ReadBool (record. isExtensible);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
@@ -1999,7 +1995,6 @@ PROCEDURE InitArray* (array: Array; parent: Item; position: Position;
   BEGIN
     InitType (array, parent, position);
     array. isOpenArray := isOpenArray;
-    array. hasDescriptor := TRUE;
     array. hasLengthInfo := TRUE;
     array. elementType := elementType;
     array. srcCodeElementType := elementType;
@@ -2011,7 +2006,6 @@ PROCEDURE (array: Array) Store* (w: Object.Writer);
   BEGIN
     array. Store^ (w);
     w. WriteBool (array. isOpenArray);
-    w. WriteBool (array. hasDescriptor);
     w. WriteBool (array. hasLengthInfo);
     (*w. WriteObject (array. elementType);*)
     w. WriteObject (array. srcCodeElementType);
@@ -2024,7 +2018,6 @@ PROCEDURE (array: Array) Load* (r: Object.Reader);
   BEGIN
     array. Load^ (r);
     r. ReadBool (array. isOpenArray);
-    r. ReadBool (array. hasDescriptor);
     r. ReadBool (array. hasLengthInfo);
     r. ReadObject (obj);
     array. srcCodeElementType := obj(Type);

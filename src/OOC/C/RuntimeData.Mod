@@ -92,19 +92,30 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         w. WriteChar ('"');
       END;
     END WriteName;
+
+  PROCEDURE WriteTDRef(type: Sym.Type);
+    VAR
+      name: String.String;
+    BEGIN
+      IF type.hasDescriptor THEN
+        w.WriteString("&");
+        name := Naming.NameOfTypeDescriptor(type);
+        w.WriteString(name.array^);
+      ELSE
+        w.WriteString("NULL");
+      END;
+    END WriteTDRef;
   
   PROCEDURE ArrayTypeDescr (array: Sym.Array);
     VAR
-      name: String.String;
       base: Sym.Type;
     BEGIN
       WriteDescrVariable (array);
       IF ~writeHeader THEN
         IF array. isOpenArray THEN
           base := array. GetNonOpenElementType();
-          name := Naming.NameOfTypeDescriptor (base);
-          w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
-          w. WriteString (name. array^);
+          w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
+          WriteTDRef(base);
           w. WriteChar ("}");
           CNli; w. WriteString ("NULL"); (* tbProcs *)
           CNli; w. WriteString ("&_mid"); (* module *)
@@ -113,9 +124,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           CNli; w. WriteLInt (array. GetOpenDimensions(), 0); (* len *)
           CNli; WriteForm ("strOpenArray"); (* form *)
         ELSE
-          name := Naming.NameOfTypeDescriptor (array. elementType);
-          w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
-          w. WriteString (name. array^);
+          w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
+          WriteTDRef(array.elementType);
           w. WriteChar ("}");
           CNli; w. WriteString ("NULL"); (* tbProcs *)
           CNli; w. WriteString ("&_mid"); (* module *)
@@ -188,14 +198,11 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     END RecordTypeDescr;
   
   PROCEDURE PointerTypeDescr (pointer: Sym.Pointer);
-    VAR
-      name: String.String;
     BEGIN
       WriteDescrVariable (pointer);
       IF ~writeHeader THEN
-        name := Naming.NameOfTypeDescriptor (pointer. baseType);
-        w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
-        w. WriteString (name. array^);
+        w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
+        WriteTDRef(pointer.baseType);
         w. WriteChar ("}");
         CNli; w. WriteString ("NULL");   (* tbProcs *)
         CNli; w. WriteString ("&_mid");  (* module *)
@@ -222,15 +229,19 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
 
     BEGIN
       WITH item: Sym.Array DO
-        IF ~IsParameter (item) THEN
+        IF item.hasDescriptor & ~IsParameter (item) THEN
           ArrayTypeDescr (item);
         END;
 
       | item: Sym.Record DO
-        RecordTypeDescr (item);
+        IF item.hasDescriptor THEN
+          RecordTypeDescr (item);
+        END;
         
       | item: Sym.Pointer DO
-        PointerTypeDescr (item);
+        IF item.hasDescriptor THEN
+          PointerTypeDescr (item);
+        END;
         
       | item: Sym.ProcDecl DO            (* adjust current procedure *)
         proc := item;
