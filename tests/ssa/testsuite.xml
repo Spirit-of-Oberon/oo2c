@@ -8,10 +8,11 @@
   select ="&SetupTestCasesWithOut; generic1 generic2 generic3 generic4
   generic5 generic6 generic7 generic8 generic9 generic10 generic11
   generic12 generic13 generic14 generic15 generic16 generic17
-  generic18 generic19 generic20 generic21">-->
+  generic18 generic19 generic20 generic21 generic22 generic23 generic24">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic21 generic22">-->
+  select ="&SetupTestCasesWithOut; generic1 generic21 generic22
+  generic23 generic4">-->
 
   &TestSetupWithOut;
     
@@ -1377,7 +1378,13 @@
       itself.  Not sure if this makes much sense, but it is certainly
       a border case.
     </test>
-    <test id="generic22" type="accept" file="Generic22.Mod">
+    <test id="generic22" type="reject" file="Generic22.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic23" type="reject" file="Generic23.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic24" type="accept" file="Generic24.Mod">
       Function result of a type-bound procedure may refer to a type
       parameter of the class.  A receiver variable's type is
       implicitly qualified by the type parameters of the class,
@@ -1925,6 +1932,10 @@
         msg="Type test requires static type instance"/>
     <reject-info id="generic20" pos="NEW(%v)"
         msg="This must be a pointer variable"/>
+    <reject-info id="generic22" pos="o3 %:= o1"
+        msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="generic23" pos="o3 %:= o1"
+        msg="Type of expression is not compatible with variable type"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>
