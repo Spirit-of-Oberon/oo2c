@@ -277,7 +277,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
     w. Write8 ("<!DOCTYPE module-interface SYSTEM '");
     w. WriteURI (GetSystemId (repositories), FALSE);
     w. Write8 ("'>");
-    Sym.Prune (module, Exports.GetExports (module)); (* ... *)
+    Sym.Prune (module, Exports.GetExports (module, FALSE));
     WriteItem (module);
     w. EndOfText
   END Write;

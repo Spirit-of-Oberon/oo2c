@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:InterfaceDescr;
 (*  Writes a description of a module's interface as XML.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -353,10 +353,15 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
           w. EndTag
           
         | item: Sym.FieldDecl DO
-          StartDecl ("field-decl", item);
-          DeclDocString (item);
-          WriteType ("type", item. srcCodeType, item. type);
-          w. EndTag
+          IF (item. exportMark # Sym.nameNotExported) THEN
+            (* record fields may be part of the symbol file of a module even
+               if they are not exported explicitly, but we don't want such
+               fields to appear in a human readable interface description *)
+            StartDecl ("field-decl", item);
+            DeclDocString (item);
+            WriteType ("type", item. srcCodeType, item. type);
+            w. EndTag;
+          END;
         
         | item: Sym.ProcDecl DO
           IF ~item. isForwardDecl THEN

@@ -15,7 +15,7 @@ PROCEDURE WriteSymbolFile* (m: Repository.Module; symTab: Sym.Module;
   BEGIN
     ch := m. GetOutputChannel (Repository.modSymbolFile, TRUE, res);
     IF (res = NIL) THEN
-      Sym.Prune (symTab, Exports.GetExports (symTab)); (* ... *)
+      Sym.Prune (symTab, Exports.GetExports (symTab, TRUE));
       stb := Builder.New();
       stb. WriteSymbolTable (ch, symTab, res);
       ch(Files.File). Register;

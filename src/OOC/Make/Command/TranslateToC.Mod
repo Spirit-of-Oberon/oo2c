@@ -351,7 +351,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         IRtoXML.Write (StdChannels.stdout. NewWriter(), module);
       END;
       
-      exports := Exports.GetExports (symTab);
+      exports := Exports.GetExports (symTab, TRUE);
       
       IF (errList. msgCount = 0) THEN
         (* only attempt to produce output if program compiled without errors *)

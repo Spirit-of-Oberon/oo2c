@@ -24,12 +24,13 @@ IMPORT
   Log, ADT:Dictionary, Sym := OOC:SymbolTable, OOC:Doc;
 
 
-PROCEDURE GetExports* (module: Sym.Module): Dictionary.Dictionary;
-(**Creates a dictionary with all items that appear in the
-   module's symbol file.
-   
-   FIXME: Can we remove record fields that are not exported?
-   No, if we need them to compute field offsets! ... *)
+PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.Dictionary;
+(**Creates a dictionary with all items that appear in the module's symbol file.
+
+   With @oparam{forSymbolFile}, additional declarations are included that must
+   appear in the symbol or (or C header file, for that matter), even if they
+   are not exported themself.  Examples for this are fields of records
+   appearing in the public interface.  *)
   VAR
     dict: Dictionary.Dictionary;
   
@@ -130,7 +131,8 @@ PROCEDURE GetExports* (module: Sym.Module): Dictionary.Dictionary;
         WITH ptr: Sym.Declaration DO
           IF (ptr. exportMark # Sym.nameNotExported) OR 
              (ptr IS Sym.VarDecl) & ptr(Sym.VarDecl). isParameter OR
-             (ptr IS Sym.Import) THEN
+             (ptr IS Sym.Import) OR
+             forSymbolFile & (ptr IS Sym.FieldDecl) THEN
             MarkDecl (ptr)
           END
         ELSE                               (* ignore non-declarations *)
@@ -141,8 +143,6 @@ PROCEDURE GetExports* (module: Sym.Module): Dictionary.Dictionary;
   
   BEGIN
     dict := Dictionary.New();
-    (*MarkReferencedImports (module. docString);
-         --> obsolete, all imports must appear in the symbol file *)
     MarkList (module);
     RETURN dict
   END GetExports;
