@@ -26,7 +26,7 @@ IMPORT
   OOC:Config, OOC:Repository;
 
 VAR
-  cc, cppflags, cflags, ldflags, libs: Options.Option;
+  cc, cppflags, cflags, ldflags, libs, libtool: Options.Option;
 
 PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
   VAR
@@ -101,6 +101,7 @@ PROCEDURE RegisterConfig*;
     cflags := Config.AddOption ("cflags", StringValue.New ("-O2 -g"));
     ldflags := Config.AddOption ("ldflags", StringValue.New (""));
     libs := Config.AddOption ("libs", StringValue.New ("-lgc"));
+    libtool := Config.AddOption ("libtool", StringValue.New ("libtool"));
 
     Config.AddCmdLine ("--cc",
                        "<options><set name='cc'>$1</set></options>");
@@ -112,6 +113,8 @@ PROCEDURE RegisterConfig*;
                        "<options><set name='ldflags'>$1</set></options>");
     Config.AddCmdLine ("--libs",
                        "<options><set name='libs'>$1</set></options>");
+    Config.AddCmdLine ("--libtool",
+                       "<options><set name='libtool'>$1</set></options>");
   END RegisterConfig;
 
 END OOC:Config:CCompiler.

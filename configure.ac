@@ -13,6 +13,7 @@ AC_PROG_INSTALL
 AC_PATH_PROGS(OOC,oo2c Oo2c,oo2c)
 AC_PATH_PROGS(OOEF,ooef Ooef,ooef)
 AC_PATH_PROGS(OOCN,oocn Oocn,oocn)
+AC_PATH_PROG(LIBTOOL,libtool,libtool)
 AC_PATH_PROG(DIFF,diff,diff)
 AC_PATH_PROG(XSLTPROC,xsltproc,xsltproc)
 AC_PATH_PROG(PERL,perl,perl)
