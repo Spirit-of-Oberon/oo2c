@@ -4,6 +4,8 @@ IMPORT
   Out, RT0, SYSTEM;
 
 TYPE
+  Name = POINTER TO ARRAY OF CHAR;
+
   (* Atomic types : these contain no pointers to heap objects *)
 
   A1 = RECORD 
@@ -32,9 +34,13 @@ TYPE
   A7(T : RT0.Object) = RECORD
   END;
 
-  (* Non-atomic types : these contain pointers to heap objects *)
+  A8 = ARRAY OF CHAR;
 
-  Name = POINTER TO ARRAY OF CHAR;
+  A9 = ARRAY 128 OF CHAR;
+
+  A10 = ARRAY [NO_TRACED_POINTERS] OF Name;
+
+  (* Non-atomic types : these contain pointers to heap objects *)
 
   P1 = RECORD 
     a : SYSTEM.PTR;
@@ -73,6 +79,15 @@ TYPE
     b : P8;
   END;
 
+  P10 = ARRAY OF Name;
+
+  P11 = ARRAY 128 OF Name;
+
+  P12 = RECORD
+    a : LONGINT;
+    b : P11;
+  END;
+
 VAR
   module : RT0.Module;
 
@@ -99,6 +114,9 @@ BEGIN
   P("A5");
   P("A6");
   P("A7");
+  P("A8");
+  P("A9");
+  P("A10");
 
   P("P1");
   P("P2");
@@ -109,6 +127,9 @@ BEGIN
   P("P7");
   P("P8");
   P("P9");
+  P("P10");
+  P("P11");
+  P("P12");
 END Test;
 
 END Atomic1.
