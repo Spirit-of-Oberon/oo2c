@@ -21,7 +21,7 @@ MODULE OOC:SSA:Schedule;
 *)
 
 IMPORT
-  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd;
+  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
 
 TYPE
   Block* = POINTER TO BlockDesc;
@@ -336,8 +336,8 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
     VAR
       in, body, oldEnter, exitIn, exitBody, exitEnter: Block;
       predicate: SSA.Opnd;
-      storeIn: SSA.Result;
-
+      loopStart: SSA.Instr;
+      
     PROCEDURE Move (result: SSA.Result; source, target: Block);
     (**Recursively moves the instructions producing @oparam{result} into
        @oparam{target}.  Order of dependent instructions is kept unchanged.
@@ -409,26 +409,22 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       in := NewBlock (body);
       body(BranchBlock). branchTo := body;
       
-      (* move all instructions contributing to the "loop-end" into the `in'
-         block; then, move all instruction in `in' that derive input from
-         "loop-start" into `body' *)
+      (* move all instructions contributing to the "loop-end" or to the forward
+         reference from "loop-start" into the `in' block; then, move all
+         instruction in `in' that derive input from "loop-start" into `body' *)
+      loopStart := loopEnd. opndList. arg(SSA.Instr);
+      ASSERT (loopStart. opcode = Opcode.loopStart);
       Move (loopEnd. NthArg (1), enter, in);
       Move (loopEnd. NthArg (2), enter, in);
-      storeIn := loopEnd. opndList. arg(SSA.Instr). GetResultClass (Result.store);
-      ASSERT (storeIn. instr. opcode = Opcode.loopStart);
-      MoveUses (storeIn. instr, in, body, loopEnd);
+      Move (loopStart. NthArg (1), enter, in);
+      MoveUses (loopStart, in, body, loopEnd);
       
-      
-(*      exitIn := DebranchBlock (in);
+      exitIn := DebranchBlock (in);
       exitBody := DebranchBlock (body);
       loopEnd. opcode := -loopEnd. opcode; (* mask the current loopEnd *)
       exitEnter := DebranchBlock (enter);
       loopEnd. opcode := -loopEnd. opcode; (* unmask it again *)
-   *)
-   exitIn := in;
-   exitBody := body;
-   exitEnter := enter;
-
+      
       exitIn. jump := body;
       exitBody(BranchBlock). jump := enter;
       exitBody(BranchBlock). branchTo := body;
