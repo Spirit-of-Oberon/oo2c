@@ -108,6 +108,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
                                 cmd. module. GetURI (cmd. fileId), str);
       Out.String (str);
       Out.Ln;
+      Out.Flush;
       exit := ProcessManagment.system (str)
     END;
     

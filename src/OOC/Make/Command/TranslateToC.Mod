@@ -27,7 +27,7 @@ IMPORT
   OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, OOC:IR, OOC:IR:XML,
   OOC:SymbolTable:Item, OOC:SymbolTable:Exports,
-  OOC:C:WriteConst, OOC:C:WriteDecl, OOC:C:ConvertDecl;
+  OOC:C:WriteConst, OOC:C:WriteDecl, OOC:C:ConvertDecl, OOC:C:Naming;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -104,12 +104,13 @@ PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
 PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
                      errList: Error.List;
                      converter: ConvertDecl.Converter;
-                     procList: IR.ProcedureList);
+                     moduleIR: IR.Module);
   VAR
     ch: Channel.Channel;
     baseURI: URI.HierarchicalURI;
     res: Error.Msg;
     w: TextRider.Writer;
+    import: Repository.Import;
   
   PROCEDURE WriteInclude (w: TextRider.Writer;
                           includeURI: URI.HierarchicalURI);
@@ -131,7 +132,8 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
   PROCEDURE WriteModuleName (w: TextRider.Writer; 
                              prefix: ARRAY OF CHAR;
                              module: Repository.Module;
-                             suffix: ARRAY OF CHAR);
+                             suffix: ARRAY OF CHAR;
+                             newline: BOOLEAN);
     VAR
       str: ARRAY 1024 OF CHAR;
       i: LONGINT;
@@ -145,7 +147,9 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       w. WriteString (prefix);
       w. WriteString (str);
       w. WriteString (suffix);
-      w. WriteLn;
+      IF newline THEN
+        w. WriteLn
+      END
     END WriteModuleName;
   
   PROCEDURE WriteDeclarations (w: TextRider.Writer;
@@ -174,22 +178,52 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
     VAR
       i: LONGINT;
       statm: IR.Statement;
+    
+    PROCEDURE Assert (statm: IR.Assert);
+      BEGIN
+        IF ~statm. disabled THEN
+          w. WriteLn;
+          w. WriteString ("_assert(");
+          WriteExpr (w, converter, statm. predicate);
+          w. WriteString (", ");
+          w. WriteLInt (statm. code, 0);
+          w. WriteString (", ");
+          w. WriteString ("0");  (* ... file position missing *)
+          w. WriteString (");")
+        END
+      END Assert;
+    
+    PROCEDURE Call (statm: IR.Call);
+      VAR
+        i: LONGINT;
+        design: IR.Expression;
+        name: String.String;
+      BEGIN
+        w. WriteLn;
+        design := statm. design;
+        WITH design: IR.ProcedureRef DO
+          name := Naming.NameOfDeclaration (design. decl);
+          w. WriteString (name. array^)
+        END;
+        w. WriteString ("(");
+        FOR i := 0 TO LEN (statm. arguments^)-1 DO
+          (* FIXME... this may be incorrect if the argument list includes
+             multiple occurences of expressions that should only be 
+             evaluated once *)
+          WriteExpr (w, converter, statm. arguments[i])
+        END;
+        w. WriteString (");");
+      END Call;
+    
     BEGIN
       (* quick and dirty translation with limited scope; should be placed
          in a separate module ... *)
       FOR i := 0 TO LEN (statmSeq^)-1 DO
         statm := statmSeq[i];
         WITH statm: IR.Assert DO
-          IF ~statm. disabled THEN
-            w. WriteLn;
-            w. WriteString ("_assert(");
-            WriteExpr (w, converter, statm. predicate);
-            w. WriteString (", ");
-            w. WriteLInt (statm. code, 0);
-            w. WriteString (", ");
-            w. WriteString ("0");  (* ... file position missing *)
-            w. WriteString (");")
-          END
+          Assert (statm)
+        | statm: IR.Call DO
+          Call (statm)
         END
       END
     END WriteStatmSeq;
@@ -223,25 +257,26 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       
       CASE fileId OF
       | Repository.modHeaderFileC:
-        WriteModuleName (w, "#ifndef _MODULE_", m, "_");
-        WriteModuleName (w, "#define _MODULE_", m, "_");
+        WriteModuleName (w, "#ifndef _MODULE_", m, "_", TRUE);
+        WriteModuleName (w, "#define _MODULE_", m, "_", TRUE);
         w. WriteLn;
         
         (* __typemap definitions are required parse definitions of the
            module header file *)
         w. WriteString ('#include "__typemap.h"');
         w. WriteLn;
-(*        import := m. importList;
+        import := m. importList;
         WHILE (import # NIL) DO
           WriteInclude (w, import. imported.
             GetURI (Repository.modHeaderFileC));
           import := import. nextImport
-        END;*)
+        END;
+        w. WriteLn;
         
         WriteDeclarations (w, converter, TRUE);
         w. WriteLn;
         
-        WriteModuleName (w, "#endif /* _MODULE_", m, "_ */");
+        WriteModuleName (w, "#endif /* _MODULE_", m, "_ */", TRUE);
         
         
       | Repository.modDeclFileC:
@@ -256,9 +291,11 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
            declarations of the run-time header file *)
          w. WriteString ('#include "__oo2c.h"');
          w. WriteLn;
-         WriteProcedures (w, converter, procList);
+         WriteProcedures (w, converter, moduleIR. procList);
          w. WriteLn;
-         WriteModuleName (w, "void ", m, "_init(void) {");
+         WriteModuleName (w, "void ", m, "_init(void) {", FALSE);
+         WriteStatmSeq (w, converter, moduleIR. statmSeq);
+         w. WriteLn;
          w. WriteString ("}");
          w. WriteLn
       END;
@@ -303,13 +340,10 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       exports := Exports.GetExports (symTab);
       converter := ConvertDecl.NewConverter (m, symTab, exports);
       
-      WriteFile (m, Repository.modHeaderFileC, errList,
-                 converter, NIL);
-      WriteFile (m, Repository.modDeclFileC, errList,
-                 converter, NIL);
+      WriteFile (m, Repository.modHeaderFileC, errList, converter, NIL);
+      WriteFile (m, Repository.modDeclFileC, errList, converter, NIL);
       IF (symTab. class = Item.mcStandard) THEN
-        WriteFile (m, Repository.modCodeFileC, errList,
-                   converter, module. procList)
+        WriteFile (m, Repository.modCodeFileC, errList, converter, module)
       END
     END;
     

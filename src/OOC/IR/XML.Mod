@@ -1,7 +1,8 @@
 MODULE OOC:IR:XML;
 
 IMPORT
-  Channel, ADT:String, XML:Writer, XML:UnicodeCodec:Latin1, OOC:IR;
+  Channel, ADT:String, XML:Writer, XML:UnicodeCodec:Latin1,
+  OOC:SymbolTable:Item, OOC:IR;
 
 
 
@@ -50,6 +51,24 @@ PROCEDURE (v: Visitor) VisitPredefProc* (pproc: IR.PredefProc);
     v. w. AttrStringLatin1 ("name", pproc. decl. name. str^);
     v. w. EndTag;  (* predef-proc *)
   END VisitPredefProc;
+
+PROCEDURE (v: Visitor) VisitProcedureRef* (procRef: IR.ProcedureRef);
+  VAR
+    module: Item.Module;
+  BEGIN
+    v. w. StartTag ("procedure-reference", FALSE);
+    module := procRef. decl. Module();
+    v. w. AttrStringLatin1 ("module", module. name. str^);
+    v. w. AttrStringLatin1 ("name", procRef. decl. name. str^);
+    v. w. EndTag;  (* procedure-reference *)
+  END VisitProcedureRef;
+
+PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
+  BEGIN
+    v. w. StartTag ("module-reference", FALSE);
+    v. w. AttrStringLatin1 ("name", modRef. decl. name. str^);
+    v. w. EndTag;  (* module-reference *)
+  END VisitModuleRef;
 
 
 PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
@@ -100,7 +119,9 @@ PROCEDURE (v: Visitor) VisitProcedure* (procedure: IR.Procedure);
   BEGIN
     v. w. StartTag ("procedure", FALSE);
     v. w. AttrStringLatin1 ("name", procedure. decl. name. str^);
+    v. w. StartTag ("proc-code", FALSE);
     VisitStatementSeq (v, procedure. statmSeq);
+    v. w. EndTag;  (* proc-code *)
     v. w. EndTag;  (* procedure *)
   END VisitProcedure;
 
@@ -109,6 +130,9 @@ PROCEDURE (v: Visitor) VisitModule* (module: IR.Module);
     v. w. StartTag ("module", FALSE);
     v. w. AttrStringLatin1 ("name", module. name^);
     VisitProcedureList (v, module. procList);
+    v. w. StartTag ("init-code", FALSE);
+    VisitStatementSeq (v, module. statmSeq);
+    v. w. EndTag;  (* init-code *)
     v. w. EndTag;  (* module *)
   END VisitModule;
 
