@@ -287,6 +287,7 @@ RAISES IO.Error;
       IF errList.NoErrors() THEN
         (* only attempt to produce output if program compiled without errors *)
 
+        wd := NIL;  (* prevent warning for call in next line *)
         wh := WriteFile (Repository.modHeaderFileC);
         IF errList.NoErrors() THEN
           wd := WriteFile (Repository.modDeclFileC);
