@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OS:Path;
 (*  Manipulation of file and directory names.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -19,7 +19,7 @@ MODULE OS:Path;
 *)
 
 IMPORT
-  Strings;
+  Object, Strings;
 
 
 PROCEDURE dirname* (path: ARRAY OF CHAR; VAR dirname: ARRAY OF CHAR);
@@ -100,5 +100,25 @@ PROCEDURE splitext* (path: ARRAY OF CHAR; VAR root, ext: ARRAY OF CHAR);
       COPY ("", ext)
     END
   END splitext;
+
+
+PROCEDURE Encode*(path: STRING): Object.String8;
+(**Encode the file path or command @oparam{path} as a system-specific sequence
+   of bytes.
+
+   The default implementation returns a string with all character codes above
+   @samp{0FFX} replaced with the character @samp{_}.  That is, non ISO Latin1
+   characters are discarded.  For instances of @otype{Object.String8}, it is
+   the identity operation.  *)
+  BEGIN
+    RETURN path.ToString8("_");
+  END Encode;
+
+PROCEDURE Decode*(path[NO_COPY]: ARRAY OF CHAR): STRING;
+(**Convert a system-specific sequence of bytes @oparam{path} representing a
+   file path into a string instance.  This is the inverse of @oproc{Encode}.  *)
+  BEGIN
+    RETURN Object.NewLatin1(path);
+  END Decode;
 
 END OS:Path.
