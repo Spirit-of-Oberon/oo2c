@@ -58,10 +58,16 @@ TYPE
 
 CONST
   surrogateLow* = 0D800X;
+  (**Smallest code of the surrogate area, and the beginning of the low
+     surrogate area.  *)
   surrogateHigh* = 0DC00X;
+  (**Beginning of the high surrogate area.  *)
   surrogateEnd* = 0E000X;
+  (**First code @emph{after} the surrogate area.  *)
   surrogateLimit* = 10000X;
-  
+  (**Starting with this code point, a Unicode character is mapped onto two
+     16-bit values in UTF-16.  *)
+     
 TYPE
   String* = POINTER TO StringDesc;
   StringArray* = ARRAY OF String;
@@ -406,7 +412,7 @@ PROCEDURE NewUTF16Char*(ch: LONGCHAR): String;
 
 PROCEDURE NewUCS4Char*(ch: UCS4CHAR): String;
 (**Create a string value from @oparam{ch}.  The length of the string instance
-   is 2 of @samp{@oparam{ch} >= @oconst{surrogateLimit}}, and 1 otherwise.
+   is 2 if @samp{@oparam{ch} >= @oconst{surrogateLimit}}, and 1 otherwise.
 
    @precond
    @oparam{ch} is a Unicode code point.
