@@ -350,7 +350,6 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         else: IR.Statement;
         elseSeq, region: IR.StatementSeq;
         i: LONGINT;
-        oldType: Sym.Type;
         guard: IR.Expression;
 
       PROCEDURE TypeTestExpr (op: ExtTree.Operator): IR.Expression;
@@ -367,9 +366,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         i := withStatm. guardList. len-4;
         REPEAT
           guard := TypeTestExpr(withStatm.guardList.n[i+1](ExtTree.Operator));
-          oldType := b. StartTypeGuard (guard(IR.TypeTest));
+          b. StartTypeGuard (guard(IR.TypeTest), currentNamespace);
           region := StatementSeq(withStatm.guardList.n[i+3](ExtTree.NodeList));
-          b. EndTypeGuard (guard(IR.TypeTest), oldType);
+          b. EndTypeGuard (currentNamespace);
           
           else := b. NewWithStatm
               (withStatm. guardList. n[i](ExtTree.Terminal). sym,

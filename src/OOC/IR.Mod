@@ -172,7 +172,14 @@ TYPE
        written, because the node already triggered an error message.  *)
   END;
 
-
+TYPE
+  GuardedVar* = POINTER TO GuardedVarDesc;
+  GuardedVarDesc = RECORD
+    (Sym.DeclarationDesc)
+    var-: Sym.VarDecl;
+    type-: Sym.Type;
+  END;
+  
 
 (* Expressions
    ------------------------------------------------------------------------ *)
@@ -1055,6 +1062,33 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
+
+
+(* Guarded Variable Declaration
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitGuardedVar (gv: GuardedVar; var: Sym.VarDecl; type: Sym.Type);
+  BEGIN
+    Sym.InitDeclaration (gv, NIL, var. name, var. visibleFrom,
+                         var. exportMark, var. docString);
+    gv. var := var;
+    gv. type := type;
+  END InitGuardedVar;
+
+PROCEDURE NewGuardedVar (var: Sym.VarDecl; type: Sym.Type): GuardedVar;
+  VAR
+    gv: GuardedVar;
+  BEGIN
+    NEW (gv);
+    InitGuardedVar (gv, var, type);
+    RETURN gv;
+  END NewGuardedVar;
+
+PROCEDURE (gv: GuardedVar) Module*(): Sym.Module;
+  BEGIN
+    RETURN gv. var. Module();
+  END Module;
+
 
 (* Helper Procedures
    ------------------------------------------------------------------------ *)
@@ -3527,28 +3561,31 @@ PROCEDURE NewBuilder* (module: Sym.Module; pragmaHistory: Pragmas.History;
   END NewBuilder;
 
 
-PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest): Sym.Type;
+PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest;
+                                        VAR namespace: Sym.Namespace);
   VAR
     var: Sym.VarDecl;
-    type: Sym.TypeDecl;
-    oldType: Sym.Type;
+    nested: Namespace.Nested;
+    da: Sym.DeclarationArray;
   BEGIN
     var := typeTest. expr(Var). decl(Sym.VarDecl);
-    type := typeTest. origType. decl(Sym.TypeDecl);
-    oldType := var. type;
-    var. SetType (type. type);
-    RETURN oldType;
+    NEW (da, 1);
+    da[0] := NewGuardedVar (var, typeTest. origType. decl(Sym.TypeDecl). type);
+    nested := Namespace.NewNested (da, 1);
+    nested. SetEnclosingNamespace (namespace(Namespace.Nested));
+    namespace := nested;
   END StartTypeGuard;
 
-PROCEDURE (b: Builder) EndTypeGuard* (typeTest: TypeTest; oldType: Sym.Type);
+PROCEDURE (b: Builder) EndTypeGuard* (VAR namespace: Sym.Namespace);
   BEGIN
-    typeTest. expr(Var). decl(Sym.VarDecl). SetType (oldType);
+    namespace := namespace(Namespace.Nested). nestedIn;
   END EndTypeGuard;
 
 PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item; 
                                      name: Symbol): Expression;
   VAR
     decl: Sym.Declaration;
+    varRef: Var;
   BEGIN
     IF (name. id = Id.ident) THEN
       decl := ns. Identify (context, b. GetName (name), FALSE);
@@ -3559,6 +3596,10 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
           RETURN NewConst (name, decl. type, decl. value)
         | decl: Sym.VarDecl DO
           RETURN b. NewVar (name, decl)
+        | decl: GuardedVar DO
+          varRef := b. NewVar (name, decl. var);
+          varRef. type := decl. type;
+          RETURN varRef;
         | decl: Sym.TypeDecl DO
           RETURN b. NewTypeRef (name, decl)
         | decl: Sym.PredefProc DO
@@ -3601,7 +3642,7 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
     ELSE
       varRef := var;
     END;
-   
+    
     IF varRef. type IS Sym.Record THEN
       decl := varRef. type(Sym.Record). ns. Identify
           (context, b. GetName (name), FALSE);

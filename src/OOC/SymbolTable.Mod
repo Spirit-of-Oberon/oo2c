@@ -127,7 +127,7 @@ CONST
 
 TYPE
   Declaration* = POINTER TO DeclarationDesc;
-  DeclarationDesc = RECORD [ABSTRACT]
+  DeclarationDesc* = RECORD [ABSTRACT]
     (**A declaration defines an Oberon-2 object, and associates a name with
        this object.  *)
     (ItemDesc)

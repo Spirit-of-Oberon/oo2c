@@ -47,7 +47,7 @@ TYPE
        and a procedure's namespace is nested in the one of the enclosing
        procedure, or the one of the module.  *)
     (NamespaceDesc)
-    nestedIn: Namespace;
+    nestedIn-: Namespace;
     (* Refers to the namespace, in which this namespace is nested.  If there
        is no such namespace, e.g. because the namespace belongs to the
        pseudo module of the predefined entities, this field is @code{NIL}.  *)
@@ -226,7 +226,7 @@ PROCEDURE InitNested (ns: Nested;
     ns. nestedIn := NIL
   END InitNested;
 
-PROCEDURE NewNested* (da: Sym.DeclarationArray; len: LONGINT): Namespace;
+PROCEDURE NewNested* (da: Sym.DeclarationArray; len: LONGINT): Nested;
   VAR
     ns: Nested;
   BEGIN

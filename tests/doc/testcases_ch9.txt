@@ -245,9 +245,9 @@ REJECT:
 ACCEPT:
 
   1) within a guarded region, var is regarded as if it has
-     the indicated static type
+     the indicated static type  [With2]
   2) the type guard on a parameter variable does not change the
-     signature of the parameter's procedure
+     signature of the parameter's procedure  [With4]
 
 ERROR:
 

@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; proc13 array9 array10">-->
+  select ="&SetupTestCasesWithOut; with1 with2 with3 with4">-->
 
   &TestSetupWithOut;
     
@@ -164,7 +164,6 @@
       A simple <code>WITH</code> statement, serving as a sequence
       of type tests.
     </test>
-    
     <test id="with2" type="run" file="With2.Mod" output="With2.Ref">
       A simple <code>WITH</code> statement.  Fields of the guarded
       variable are accessed under the guard.  The variable is
@@ -172,11 +171,14 @@
       a compiler passes this test even if it modifies the signature
       of a procedure within a branch of a <code>WITH</code>.
     </test>
-    
     <test id="with3" type="error" file="With3.Mod">
       Check that a run-time error is reported if none of the guards
       triggers, and the <code>WITH</code> has no <code>ELSE</code>
       part.
+    </test>
+    <test id="with4" type="accept" file="With4.Mod">
+      Check that the procedure signature remains unchanged when seen
+      from within a <code>WITH</code> region.
     </test>
     
     <test id="function4" type="run"
