@@ -549,6 +549,39 @@ RAISES IO.Error;
         END
       END GetTypeByName;
 
+    PROCEDURE CollectFormalPars (item: Sym.FormalPars);
+    (* Sets the field @ofield{Sym.FormalPars.params}.  Doing this here means
+       we can omit this field from the symbol file, eliminating a few bytes
+       of redundancy.  *)
+      VAR
+        ptr: Sym.Item;
+        c: LONGINT;
+      BEGIN
+        c := 0;
+        ptr := item.nestedItems;
+        WHILE (ptr # NIL) DO
+          IF (ptr IS Sym.VarDecl) & 
+             ptr(Sym.VarDecl).isParameter &
+             ~ptr(Sym.VarDecl).isReceiver THEN
+            INC(c);
+          END;
+          ptr := ptr.nextNested
+        END;
+        
+        NEW(item.params, c);
+        c := 0;
+        ptr := item.nestedItems;
+        WHILE (ptr # NIL) DO
+          IF (ptr IS Sym.VarDecl) &
+             ptr(Sym.VarDecl).isParameter &
+             ~ptr(Sym.VarDecl).isReceiver THEN
+            item.params[c] := ptr(Sym.VarDecl);
+            INC(c);
+          END;
+          ptr := ptr.nextNested
+        END;
+      END CollectFormalPars;
+    
     BEGIN
       IF (item # NIL) THEN
         WITH item: Sym.TypeDecl DO
@@ -641,6 +674,9 @@ RAISES IO.Error;
             END;
             ptr := ptr.nextNested;
           END;
+          
+        | item: Sym.FormalPars DO
+          CollectFormalPars(item);
         ELSE
           (* ignore *)
         END;

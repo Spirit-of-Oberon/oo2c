@@ -374,37 +374,41 @@ PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
 
 PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
   PROCEDURE CollectFormalPars (item: Sym.Item);
-  (* Sets the field @ofield{Sym.FormalPars.params} and
-     @ofield{Sym.TypePars.params} for all formal parameter definitions under
-     @oparam{item}.  *)
+  (* Sets the field @ofield{Sym.FormalPars.params} for all formal parameter
+     definitions under @oparam{item}.  Strictly speaking, this is not necessary
+     for the compiler proper because @omodule{*OOC:SymbolTable:CreateNamespace}
+     is already doing this.  For the sake of tools that do not run
+     CreateNamespace, we repeat the process here.  *)
     VAR
       ptr: Sym.Item;
       c: LONGINT;
     BEGIN
       IF (item # NIL) THEN
         WITH item: Sym.FormalPars DO
-          c := 0;
-          ptr := item. nestedItems;
-          WHILE (ptr # NIL) DO
-            IF (ptr IS Sym.VarDecl) & 
-               ptr(Sym.VarDecl). isParameter &
-               ~ptr(Sym.VarDecl). isReceiver THEN
-              INC (c)
+          IF (item.params = NIL) THEN
+            c := 0;
+            ptr := item. nestedItems;
+            WHILE (ptr # NIL) DO
+              IF (ptr IS Sym.VarDecl) & 
+                 ptr(Sym.VarDecl). isParameter &
+                 ~ptr(Sym.VarDecl). isReceiver THEN
+                INC (c)
+              END;
+              ptr := ptr. nextNested
             END;
-            ptr := ptr. nextNested
-          END;
-          
-          NEW (item. params, c);
-          c := 0;
-          ptr := item. nestedItems;
-          WHILE (ptr # NIL) DO
-            IF (ptr IS Sym.VarDecl) &
-               ptr(Sym.VarDecl). isParameter &
-               ~ptr(Sym.VarDecl). isReceiver THEN
-              item. params[c] := ptr(Sym.VarDecl);
-              INC (c)
+            
+            NEW (item. params, c);
+            c := 0;
+            ptr := item. nestedItems;
+            WHILE (ptr # NIL) DO
+              IF (ptr IS Sym.VarDecl) &
+                 ptr(Sym.VarDecl). isParameter &
+                 ~ptr(Sym.VarDecl). isReceiver THEN
+                item. params[c] := ptr(Sym.VarDecl);
+                INC (c)
+              END;
+              ptr := ptr. nextNested
             END;
-            ptr := ptr. nextNested
           END;
         ELSE
         END;

@@ -2512,14 +2512,6 @@ PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteObject (formalPars. receiver);
     (*w. WriteObject (formalPars. resultType);*)
     w. WriteObject (formalPars. srcCodeResultType);
-    IF (formalPars. params = NIL) THEN
-      w. WriteNum (-1)
-    ELSE
-      w. WriteNum (LEN (formalPars. params^));
-      FOR i := 0 TO LEN (formalPars. params^)-1 DO
-        w. WriteObject (formalPars. params[i])
-      END
-    END;
     w. WriteBool (formalPars. anyRestParameters);
     w. WriteBool (formalPars. noReturn);
     IF (formalPars. raises = NIL) THEN
@@ -2551,16 +2543,7 @@ PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader) RAISES IO.Error;
       formalPars. srcCodeResultType := obj(Type)
     END;
     formalPars. resultType := formalPars. srcCodeResultType;
-    r. ReadNum (len);
-    IF (len < 0) THEN
-      formalPars. params := NIL
-    ELSE
-      NEW (formalPars. params, len);
-      FOR i := 0 TO len-1 DO
-        r. ReadObject (obj);
-        formalPars. params[i] := obj(VarDecl)
-      END
-    END;
+    formalPars. params := NIL;
     r. ReadBool (formalPars. anyRestParameters);
     r. ReadBool (formalPars. noReturn);
     
