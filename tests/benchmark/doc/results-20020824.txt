@@ -33,7 +33,7 @@ Pentium-II / 400Mhz  (mva)
   FFT2C               3920.6
   -------------------------- -------
 
-Athlon XP / 1544Mhz (mva)
+Athlon XP / 1533Mhz (mva)
 
   Test             tests/sec % optimal
   -------------------------- -------
