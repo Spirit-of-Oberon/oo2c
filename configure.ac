@@ -38,11 +38,13 @@ AC_CHECK_LIB(gc,GC_malloc)
 OOC_CHECK_LIB(xnet,socket)
 if test $TARGET_OS = Win32; then
   ooc_have_lib_m=FALSE
+  OOC_CHECK_LIB(mingwex,main)
+  OOC_CHECK_LIB(wsock32,main)
 else
   OOC_CHECK_LIB(m,sin)
+  ooc_have_lib_mingwex=FALSE
+  ooc_have_lib_wsock32=FALSE
 fi
-OOC_CHECK_LIB(mingwex,main)
-OOC_CHECK_LIB(wsock32,main)
 
 dnl checks for header files
 AC_HEADER_STDC
