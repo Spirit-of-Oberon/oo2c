@@ -143,7 +143,7 @@ OS_Files__NameArray OS_Files__listdir(const OS_Files__Path path__ref,
 	  i = 0;
 	}
 	len = strlen(de->d_name);
-	buffer[i] = Object__NewLatin1(de->d_name, len);
+	buffer[i] = Object__NewLatin1Region(de->d_name, len+1, 0, len);
 	i++;
       }
     }
