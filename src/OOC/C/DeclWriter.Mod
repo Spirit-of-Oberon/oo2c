@@ -414,6 +414,14 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value);
     END
   END WriteConst;
 
+PROCEDURE (w : Writer) DeclareConst* (name : String.String; value : Language.Value);
+BEGIN
+  w.WriteString("#define ");
+  w.WriteString(name.array^);
+  w.WriteString(" ");
+  w.WriteConst(value);
+  w.WriteLn;
+END DeclareConst;
 
 PROCEDURE (w: Writer) WriteDeclaration* (d: Declaration);
 (**Writes the declaration @oparam{d} to @oparam{w}.  *)

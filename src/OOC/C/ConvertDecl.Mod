@@ -234,6 +234,10 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
             WITH ptr: Sym.Import DO
               decl := w. NewIncludeModule
                   (m. GetImport (ptr. moduleName. str^));
+            | ptr: Sym.ConstDecl DO
+	      IF ptr.value # NIL THEN
+	        w. DeclareConst(Naming.NameOfDeclaration (ptr), ptr.value);
+              END;
             ELSE
               decl := ConvertDecl (w, ptr, mode)
             END;
