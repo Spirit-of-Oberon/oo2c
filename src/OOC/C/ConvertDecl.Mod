@@ -159,8 +159,11 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
          ConvertType (w, item. formalPars, item. formalPars));
 
     | item: Sym.ConstDecl DO
-      ASSERT (FALSE);
-
+      IF (item. value # NIL) THEN
+        RETURN w. NewDefine (Naming.NameOfDeclaration (item),
+                             item. value);
+      END;
+      
     | item: Sym.VarDecl DO
       IF item. isParameter THEN
         sc := DeclWriter.scAuto
@@ -234,10 +237,6 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
             WITH ptr: Sym.Import DO
               decl := w. NewIncludeModule
                   (m. GetImport (ptr. moduleName. str^));
-            | ptr: Sym.ConstDecl DO
-	      IF ptr.value # NIL THEN
-	        w. DeclareConst(Naming.NameOfDeclaration (ptr), ptr.value);
-              END;
             ELSE
               decl := ConvertDecl (w, ptr, mode)
             END;
