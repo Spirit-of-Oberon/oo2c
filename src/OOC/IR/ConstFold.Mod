@@ -228,6 +228,11 @@ BEGIN
   c.result := NIL;
 END VisitBinaryArith;
 
+PROCEDURE (c: ConstFold) VisitBooleanOp* (op: IR.BooleanOp);
+  BEGIN
+    (* FIXME! *)
+  END VisitBooleanOp;
+
 PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
   BEGIN
     (* FIXME! *)

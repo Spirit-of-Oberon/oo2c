@@ -189,6 +189,11 @@ PROCEDURE (v: Visitor) VisitBinaryArith* (op: IR.BinaryArith);
     VisitDyadicOp (v, op, op.variant, op.left, op.right, "binaryArith");
   END VisitBinaryArith;
 
+PROCEDURE (v: Visitor) VisitBooleanOp* (op: IR.BooleanOp);
+  BEGIN
+    VisitDyadicOp (v, op, op.variant, op.left, op.right, "booleanOp");
+  END VisitBooleanOp;
+
 PROCEDURE (v : Visitor) VisitCompare* (op : IR.Compare);
   BEGIN
     VisitDyadicOp (v, op, op.variant, op.left, op.right, "compare");

@@ -271,6 +271,14 @@ TYPE
   END;
 
 TYPE
+  BooleanOp* = POINTER TO BooleanOpDesc;
+  BooleanOpDesc = RECORD 
+    (OperatorDesc)
+    variant- : Variant;
+    left-, right- : Expression;
+  END;
+
+TYPE
   Cap* = POINTER TO CapDesc;
   CapDesc = RECORD
     (OperatorDesc)
@@ -851,6 +859,36 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitBinaryArith* (op: BinaryArith);
 PROCEDURE (op: BinaryArith) Accept* (v: Visitor);
   BEGIN
     v. VisitBinaryArith (op)
+  END Accept;
+
+(* Operator Class: BooleanOp
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitBooleanOp (op: BooleanOp; sym: Symbol; variant : Variant; left, right: Expression; type : Sym.Type);
+  BEGIN
+    InitOperator (op, sym, type);
+    op.variant := variant;
+    op.left := left;
+    op.right := right;
+  END InitBooleanOp;
+
+PROCEDURE (b: Builder) NewBooleanOp (sym: Symbol; variant: Variant; left, right: Expression): Expression;
+  VAR
+    op : BooleanOp;
+  BEGIN
+    NEW (op);
+    ASSERT (left. type(Sym.PredefType). id = Predef.boolean);
+    ASSERT (right. type(Sym.PredefType). id = Predef.boolean);
+    InitBooleanOp (op, sym, variant, left, right, left.type);
+    RETURN op;
+  END NewBooleanOp;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitBooleanOp* (op: BooleanOp);
+  END VisitBooleanOp;
+
+PROCEDURE (op: BooleanOp) Accept* (v: Visitor);
+  BEGIN
+    v. VisitBooleanOp (op)
   END Accept;
 
 (* Operator Class: Cap
@@ -1853,8 +1891,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       | Id.and: variant := and;
       | Id.or: variant := or;
       END;
-      (* FIXME... RETURN b.NewBooleanOp(sym, left, right) *)
-      ASSERT(FALSE);
+      result := b.NewBooleanOp(sym, variant, left, right);
 
     ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
       & ((leftIsNumeric & rightIsNumeric) OR (leftIsChar & rightIsChar)) THEN
@@ -2003,14 +2040,19 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       | Predef.cap:
         ASSERT (LEN (arguments^) = 1);
         RETURN b. NewCap (design. sym, arguments[0]);
-      END
+      END;
+
     ELSE
-      NEW (call);
-      arguments := TransformArgs (design. sym,
-                                  design. type(Sym.FormalPars). params,
-                                  arguments);
-      InitCall (call, design, arguments);
-      RETURN call;
+      IF (design = b. errorExpr) THEN
+        RETURN b. errorExpr;         (* fall through for erros in designator *)
+      ELSE
+        NEW (call);
+        arguments := TransformArgs (design. sym,
+                                    design. type(Sym.FormalPars). params,
+                                    arguments);
+        InitCall (call, design, arguments);
+        RETURN call;
+      END;
     END
   END NewCall;
 
