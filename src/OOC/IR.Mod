@@ -635,6 +635,16 @@ TYPE
   END;
 
 TYPE
+  Copy* = POINTER TO CopyDesc;
+  CopyDesc = RECORD
+    (**Copies a record or fixed size array value.  Used for the assignment
+       operator @samp{:=}, if the copied value is not of scalar type.  *)
+    (StatementDesc)
+    source-: Expression;
+    dest-: Expression;
+  END;
+  
+TYPE
   CopyParameter* = POINTER TO CopyParameterDesc;
   CopyParameterDesc = RECORD
     (**Used to create local copies of value parameters that are passed to
@@ -1000,6 +1010,8 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
         (* nothing *)
       | statm: Call DO
         (* nothing *)
+      | statm: Copy DO
+        (* nothing *)
       | statm: CopyParameter DO
         (* nothing *)
       | statm: CopyString DO
@@ -1039,6 +1051,7 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
   END CheckExit;
 
 PROCEDURE ^ (b : Builder) AssignType (type : Sym.Type; expr : Expression) : Expression;
+PROCEDURE ^ (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
 PROCEDURE ^ (b: Builder) NewCopyString* (sym: Symbol; source, dest, maxLength: Expression): CopyString;
 
 
@@ -2080,6 +2093,10 @@ PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
       (* FIXME... check assignment restrictions *)
       RETURN b. NewCopyString (sym, value, variable,
                                b. Fold (b. NewLen (sym, variable, 0)));
+    ELSIF (value. type IS Sym.Array) OR (value. type IS Sym.Record) THEN
+      (* assigning a structured value: create Copy opcode *)
+      (* FIXME... check assignment restrictions *)
+      RETURN b. NewCopy (sym, value, variable);
     ELSE
       NEW (assignment);
       InitAssignment (assignment, sym, variable, value);
@@ -2146,6 +2163,33 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitCall* (call: Call);
 PROCEDURE (call: Call) Accept* (v: Visitor);
   BEGIN
     v. VisitCall (call)
+  END Accept;
+
+(* Statement Class: Copy
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitCopy (cp: Copy; sym: Symbol; source, dest: Expression);
+  BEGIN
+    InitStatement (cp, sym);
+    cp. source := source;
+    cp. dest := dest;
+  END InitCopy;
+
+PROCEDURE (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
+  VAR
+    cp: Copy;
+  BEGIN
+    NEW (cp);
+    InitCopy (cp, sym, source, dest);
+    RETURN cp
+  END NewCopy;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitCopy* (cp: Copy);
+  END VisitCopy;
+
+PROCEDURE (cp: Copy) Accept* (v: Visitor);
+  BEGIN
+    v. VisitCopy (cp)
   END Accept;
 
 (* Statement Class: CopyParameter

@@ -174,25 +174,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
       END;
     END TransferReadDesign;
-  
-  PROCEDURE CopyString (cp: IR.CopyString): SSA.Instr;
+
+  PROCEDURE TransferWriteDesign (source: SSA.Result; instr: SSA.Instr);
     VAR
-      instr: SSA.Instr;
-      source, dest, maxLength: SSA.Result;
       opnd: SSA.Opnd;
     BEGIN
-      instr := pb. AddInstr (Opcode.copyString, Opcode.scNone);
-
-      source := Expression (cp. source);
-      dest := Expression (cp. dest);
-      maxLength := Expression (cp. maxLength);
-
-      instr. AddOpnd (s, Opnd.store);
-      instr. AddOpnd (pb. GetTypeRef (TypeOfString (cp. source. type)), Opnd.type);
-      instr. AddOpnd (pb. GetTypeRef (TypeOfString (cp. dest. type)), Opnd.type);
-      TransferReadDesign (source, instr);
-      
-      opnd := dest. instr. opndList;
+      opnd := source. instr. opndList;
       WHILE (opnd # NIL) DO
         IF (opnd. class = Opnd.readAdr) THEN
           instr. AddOpnd (opnd. arg, Opnd.writeAdr);
@@ -201,10 +188,43 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
         opnd := opnd. nextOpnd;
       END;
+    END TransferWriteDesign;
+  
+  PROCEDURE CopyString (cp: IR.CopyString): SSA.Instr;
+    VAR
+      instr: SSA.Instr;
+      source, dest, maxLength: SSA.Result;
+    BEGIN
+      source := Expression (cp. source);
+      dest := Expression (cp. dest);
+      maxLength := Expression (cp. maxLength);
+
+      instr := pb. AddInstr (Opcode.copyString, Opcode.scNone);
+      instr. AddOpnd (s, Opnd.store);
+      instr. AddOpnd (pb. GetTypeRef (TypeOfString (cp. source. type)), Opnd.type);
+      instr. AddOpnd (pb. GetTypeRef (TypeOfString (cp. dest. type)), Opnd.type);
+      TransferReadDesign (source, instr);
+      TransferWriteDesign (dest, instr);
       instr. AddOpnd (maxLength, Opnd.arg);
 
       RETURN instr;
     END CopyString;
+  
+  PROCEDURE Copy (cp: IR.Copy): SSA.Instr;
+    VAR
+      instr: SSA.Instr;
+      source, dest: SSA.Result;
+    BEGIN
+      source := Expression (cp. source);
+      dest := Expression (cp. dest);
+      
+      instr := pb. AddInstr (Opcode.copy, Opcode.scNone);
+      instr. AddOpnd (s, Opnd.store);
+      instr. AddOpnd (pb. GetTypeRef (cp. dest. type), Opnd.type);
+      TransferReadDesign (source, instr);
+      TransferWriteDesign (dest, instr);
+      RETURN instr;
+    END Copy;
   
   PROCEDURE Expression (expr: IR.Expression): SSA.Result;
     VAR
@@ -973,6 +993,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | statm: IR.Exit DO
         Exit (statm);
         
+      | statm: IR.Copy DO
+        Chain (Copy (statm));
+            
       | statm: IR.CopyParameter DO
         CopyParameter (statm);
             

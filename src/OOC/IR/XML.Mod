@@ -502,6 +502,18 @@ PROCEDURE (v: Visitor) VisitWhileStatm* (whileStatm: IR.WhileStatm);
     v. w. EndTag;  (* while-statm *)
   END VisitWhileStatm;
 
+PROCEDURE (v: Visitor) VisitCopy* (cp: IR.Copy);
+  BEGIN
+    v. w. StartTag ("copy", FALSE);
+    v. w. StartTag ("source", FALSE);
+    cp. source. Accept (v);
+    v. w. EndTag;  (* source *)
+    v. w. StartTag ("dest", FALSE);
+    cp. dest. Accept (v);
+    v. w. EndTag;  (* dest *)
+    v. w. EndTag;  (* copy *)
+  END VisitCopy;
+
 PROCEDURE (v: Visitor) VisitCopyParameter* (cp: IR.CopyParameter);
   BEGIN
     v. w. StartTag ("copy-parameter", FALSE);

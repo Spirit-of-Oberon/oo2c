@@ -623,6 +623,21 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       WriteTypeAndSize
     END CopyParameter;
   
+  PROCEDURE Copy (instr: SSA.Instr);
+    VAR
+      type: Sym.Type;
+    BEGIN
+      w. Newline;
+      type := instr. opndList. nextOpnd. arg(SSA.TypeRef). type;
+      w. WriteString ("_copy_block(");
+      w. Ref (instr. GetOpndClass (Opnd.readAdr));
+      w. WriteChar (",");
+      w. Ref (instr. GetOpndClass (Opnd.writeAdr));
+      w. WriteChar (",");
+      w. WriteLInt (type. size, 0);
+      w. WriteString (");");
+    END Copy;
+  
   PROCEDURE TypeId (res: SSA.Result): LONGINT;
     BEGIN
       RETURN res(SSA.TypeRef). type(Sym.PredefType). id;
@@ -873,6 +888,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
         w. WriteChar (";");
 
+      | Opcode.copy:
+        Copy (instr);
       | Opcode.copyString:
         CopyString (instr);
       | Opcode.cmpString:
@@ -948,7 +965,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
             
       | Opcode.call:
         IF ~w. registerMap. HasKey (instr) THEN
-          w. Newline
+          w. Newline;
+        ELSE
+          CastFromPtr (instr);
         END;
         Call (instr);
         w. WriteChar (";");

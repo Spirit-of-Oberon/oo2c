@@ -65,6 +65,14 @@ extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN
   if (_d == _max) *_d = '\000';                 \
 }
 
+/* copy record or array value */
+#define _copy_block(_src,_dest,_len) {          \
+  char* _d=(char*)_dest;                        \
+  const char* _s=(const char*)_src;             \
+  char* _max=_d+_len;                           \
+  while (_d != _max) { *(_d++) = *(_s++); }     \
+}
+
 /* string compare */
 extern OOC_INT32 _cmp8(const OOC_CHAR8* l, const OOC_CHAR8* r);
 extern OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r);
