@@ -11,10 +11,10 @@
   generic18 generic19 generic20 generic21 generic22 generic23
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
-  generic36">-->
+  generic36 generic37">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic35 generic36">-->
+  select ="&SetupTestCasesWithOut; generic1 generic35 generic36 generic37">-->
 
   &TestSetupWithOut;
     
@@ -1435,6 +1435,9 @@
     <test id="generic36" type="accept" file="Generic36.Mod">
       Arguments of a parametric type without parameter list default to
       the bounds of the type parameters.
+    </test>
+    <test id="generic37" type="accept" file="Generic37.Mod">
+      Calling <code>NEW</code> on a variable of parametric type.
     </test>
   </testcases>
 

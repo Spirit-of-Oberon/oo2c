@@ -5725,15 +5725,16 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
                                  b. NewLen (design. sym, arguments[1], 0));
         
       | Predef.new:
-        IF (arguments[0]. type IS Sym.Pointer) THEN
+        type := arguments[0].type.Deparam();
+        IF (type IS Sym.Pointer) THEN
           b.AssertVar(arguments[0]);
-          type := arguments[0]. type(Sym.Pointer). baseType;
+          type := type(Sym.Pointer).baseType;
           IF (type IS Sym.Array) THEN
-            dim := 1+arguments[0].type(Sym.Pointer).baseType(Sym.Array).GetOpenDimensions();
+            dim := 1+type(Sym.Array).GetOpenDimensions();
             IF CheckNumberOfArguments (dim, dim) THEN
               RETURN b. NewAssignment
-                  (design. sym, arguments[0],
-                   b. NewNewObject (design.sym, arguments[0].type, arguments));
+                  (design.sym, arguments[0],
+                   b.NewNewObject(design.sym, arguments[0].type, arguments));
             END;
           ELSE (* (type IS Sym.Record) *)
             IF ~TR.VariableInstance(type) THEN
@@ -5741,8 +5742,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
             END;
             IF CheckNumberOfArguments (1, 1) THEN
               RETURN b. NewAssignment
-                  (design. sym, arguments[0],
-                   b. NewNewObject (design. sym, arguments[0].type, NIL));
+                  (design.sym, arguments[0],
+                   b.NewNewObject(design.sym, arguments[0].type, NIL));
             END;
           END;
         ELSE

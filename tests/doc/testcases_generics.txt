@@ -48,6 +48,9 @@ the same type.
 `NIL' is assignment compatible with a parametric type if it is
 assignment compatible with the type's base type.
 
+`NEW()' is applicable to a variable of parametric type if its base
+type is a pointer.
+
 
 Note: Some of the restrictions on type variables and qualified types
 follow from the assumption that no type information for parametric
@@ -96,6 +99,7 @@ ACCEPT
   7) NIL is assignment compatbile with `x', if it is compatible with 
      (unqualified) T.  [Generic24]
   8) T without <...> implies bounds as default arguments.  [Generic36]
+  9) NEW with parametric pointer type.  [Generic37]
 
 REJECT
 
