@@ -2,60 +2,46 @@
 #include "__oo2c.h"
 
 void Quicksort1__Sort(OOC_INT32 a[], OOC_LEN a_0d, OOC_INT32 m, OOC_INT32 n) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11;
 
-  i0 = n;
-  i1 = m;
-  i0 = i0>i1;
-  if (!i0) goto l25;
-  i1 = m;
-  i2 = n;
-  i3 = n;
-  i4 = i3*4;
-  i4 = (OOC_INT32)a+i4;
-  i3 = *(OOC_INT32*)i4;
-  i1 = i1-1;
-  
-l5_loop:
-  i1 = i1+1;
+  i0 = m;
+  i1 = n;
+  i2 = i1>i0;
+  if (!i2) goto l25;
+  i3 = i0-1;
   i4 = i1*4;
   i4 = (OOC_INT32)a+i4;
   i5 = *(OOC_INT32*)i4;
-  i5 = i5>=i3;
-  if (!i5) goto l5_loop;
+  i6=i1;
+l5_loop:
+  i3 = i3+1;
+  i7 = i3*4;
+  i7 = (OOC_INT32)a+i7;
+  i8 = *(OOC_INT32*)i7;
+  i9 = i8>=i5;
+  if (!i9) goto l5_loop;
 l12_loop:
-  i2 = i2-1;
-  i5 = i2*4;
-  i5 = (OOC_INT32)a+i5;
-  i6 = *(OOC_INT32*)i5;
-  i6 = i6<=i3;
-  if (!i6) goto l12_loop;
+  i6 = i6-1;
+  i9 = i6*4;
+  i9 = (OOC_INT32)a+i9;
+  i10 = *(OOC_INT32*)i9;
+  i11 = i10<=i5;
+  if (!i11) goto l12_loop;
 l18:
-  i6 = i1>=i2;
-  if (i6) goto l24;
+  i11 = i3>=i6;
+  if (i11) goto l24;
 l23:
-  i6 = *(OOC_INT32*)i4;
-  i7 = *(OOC_INT32*)i5;
-  *(OOC_INT32*)i4 = i7;
-  *(OOC_INT32*)i5 = i6;
+  *(OOC_INT32*)i7 = i10;
+  *(OOC_INT32*)i9 = i8;
   
   goto l5_loop;
 l24:
-  i3 = *(OOC_INT32*)i4;
-  i5 = n;
-  i6 = i5*4;
-  i6 = (OOC_INT32)a+i6;
-  i5 = *(OOC_INT32*)i6;
-  *(OOC_INT32*)i4 = i5;
-  i4 = n;
-  i5 = i4*4;
-  i5 = (OOC_INT32)a+i5;
-  *(OOC_INT32*)i5 = i3;
-  i3 = m;
-  Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, i3, i2);
-  i2 = n;
-  i1 = i1+1;
-  Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, i1, i2);
+  i5 = *(OOC_INT32*)i4;
+  *(OOC_INT32*)i7 = i5;
+  *(OOC_INT32*)i4 = i8;
+  Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, i0, i6);
+  i0 = i3+1;
+  Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, i0, i1);
 l25:
   return;
 }

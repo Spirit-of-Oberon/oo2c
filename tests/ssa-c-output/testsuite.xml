@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Framework Testing">
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; quicksort1">-->
+  select ="&SetupTestCasesWithOut; antidep1">-->
   
   &TestSetupWithOut;
     
@@ -106,12 +106,17 @@
       loop variable should be kept in a register from beginning to end.
     </test>
     
+    <test id="var10" type="run" file="Var10.Mod">
+      A somewhat convoluted exit out of a <code>LOOP</code> loop.  The
+      return statement can only see the value <code>x=1</code> ever,
+      and an argument <code>FALSE</code> triggers and endless loop.
+    </test>
+    
 
     <test id="swap1" type="run" file="Swap1.Mod" output="Swap1.Ref">
       Swapping to values.  The swap is done in memory.  Register
       variables are used as temporary stores.
     </test>
-    
     <test id="swap2" type="run" file="Swap2.Mod" output="Swap2.Ref">
       Swapping to values.  The swap is done in the register file.  A
       temporary variable must be created to avoid clobbering a swapped
@@ -149,6 +154,10 @@
     <test id="cse1" type="run" file="Cse1.Mod">
       Common subexpression elimination must not merge the two calls to
       <code>NEW</code>.
+    </test>
+    <test id="cse2" type="run" file="Cse2.Mod">
+      Common subexpression elimination must not merge move the memory
+      access <code>p.x</code> over the guard <code>x#NIL</code>.
     </test>
   </testcases>
 </testsuite-ext>

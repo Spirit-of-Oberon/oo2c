@@ -4,10 +4,10 @@
 static void Swap2__Swap(OOC_CHAR8 swap) {
   register OOC_INT32 i0,i1,i2;
 
-  i0 = Swap2__x;
-  i1 = Swap2__y;
+  i0 = Swap2__y;
+  i1 = Swap2__x;
   i2 = swap;
-  if (!i2) goto l4;
+  if (i2) goto l4;
   {register OOC_INT32 h0=i0;i0=i1;i1=h0;}
 l4:
   Swap2__x = i0;
