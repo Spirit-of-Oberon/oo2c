@@ -35,6 +35,14 @@ BEGIN
   RETURN NewInt(Integers.Long(l));
 END New;
 
+PROCEDURE NewString* (str: ARRAY OF CHAR): Value;
+  VAR
+    i: Integers.Integer;
+  BEGIN
+    Integers.ConvertFromString (str, i);
+    RETURN NewInt(i);
+  END NewString;
+
 PROCEDURE (v: Value) Store* (w: Object.Writer);
   VAR
     i: LONGINT;
