@@ -195,9 +195,13 @@ PROCEDURE Classify(pb: SSA.ProcBlock; loopStart: SSA.Instr);
                loop-end) to which the collect passes its result *)
             SetMarkers(useInstr, bottom);
             gate := useInstr.GetCollectTarget();
-            out := gate.NthResult(use.OpndIndex()+1);
-            IF (ABS(res.marker) >= ABS(out.marker)) THEN
-              SetMarker(out, ABS(res.marker));
+            IF (gate = loopStart) OR (gate.opcode # Opcode.loopStart) THEN
+              (* don't wrap around to start of loop if gate is not our
+                 loopStart *)
+              out := gate.NthResult(use.OpndIndex()+1);
+              IF (ABS(res.marker) >= ABS(out.marker)) THEN
+                SetMarker(out, ABS(res.marker));
+              END;
             END;
           ELSE
             AddToWorklist (useInstr);
@@ -445,7 +449,7 @@ PROCEDURE Flatten*(res: SSA.Result);
 
   PROCEDURE MultSum(a, b: Sum): Sum;
     VAR
-      h: Sum;
+      h, mult: Sum;
 
     PROCEDURE MultPList(a: PList; b: Sum; subclass: Opcode.Subclass): Sum;
       VAR
@@ -523,18 +527,21 @@ PROCEDURE Flatten*(res: SSA.Result);
     BEGIN
       ASSERT(a.subclass = b.subclass);
       
-      IF (b.headFactor = zero) &
-         (b.loopInvariant = zero) &
-         (b.others = zero) THEN
+      IF (b.headFactor = zero) & (b.others = zero) THEN
         h := a; a := b; b := h;
       END;
-      IF (a.headFactor # zero) OR
-         (a.loopInvariant # zero) OR
-         (a.others # zero) THEN
+      IF (a.headFactor # zero) OR (a.others # zero) THEN
         RETURN NIL;
       END;
 
-      RETURN MultPList(a.constant, b, a.subclass);
+      mult := MultPList(a.constant, b, a.subclass);
+      IF (a.loopInvariant # zero) THEN
+        h := MultPList(a.loopInvariant, b, a.subclass);
+        h.loopInvariant := AddPLists(h.loopInvariant, h.constant, 1);
+        h.constant := zero;
+        mult := AddSum(mult, h, 1);
+      END;
+      RETURN mult;
     END MultSum;
   
   PROCEDURE NewPList(factor: Sum): PList;
@@ -556,6 +563,10 @@ PROCEDURE Flatten*(res: SSA.Result);
       (* been here, done it *)
     ELSIF ~(res IS SSA.Instr) THEN
       (* we are only interested in the instruction itself *)
+      sum := NewSum(res.subclass, NIL);
+      sum.others := NewPList(sum);
+      res.info := sum;
+      Flatten(res.instr);
     ELSE
       instr := res(SSA.Instr);
       IF (instr.marker = loopInvariant) THEN
@@ -571,7 +582,7 @@ PROCEDURE Flatten*(res: SSA.Result);
       ELSE
         opnd := instr.opndList;
         WHILE (opnd # NIL) DO
-          Flatten(opnd.arg.instr);
+          Flatten(opnd.arg);
           opnd := opnd.nextOpnd;
         END;
 
@@ -948,10 +959,14 @@ PROCEDURE DumpSums(pb: SSA.ProcBlock);
           FOR j := 0 TO LEN(plist.prod[i].factors^)-1 DO
             instr := plist.prod[i].factors[j].instr;
             IF (j # 0) THEN Err.Char("*") END;
-            WITH instr: SSA.Const DO
-              Err.Object(instr.value.ToString());
+            IF (instr = NIL) THEN
+              Err.String("<NIL>");
             ELSE
-              Res(instr);
+              WITH instr: SSA.Const DO
+                Err.Object(instr.value.ToString());
+              ELSE
+                Res(instr);
+              END;
             END;
           END;
         END;
@@ -1051,6 +1066,7 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
     i := 0;
     WHILE (i # loops.size) DO
       loopStart := loops.array[i](SSA.Instr);
+      Log.Ptr("### loopStart", loopStart);
       
       (* classify instructions as loopInvariant, forwardInductive, or bottom
          with regard to loop *)
@@ -1115,16 +1131,16 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
         instr := instr.nextInstr;
       END;
       
+      Log.Msg("loopInvariant");
+      DumpMarker(loopInvariant);
+      Log.Msg("forwardInductive");
+      DumpMarker(forwardInductive);
+      (*Log.Msg("bottom");
+         DumpMarker(bottom);*)
+      DumpSums(pb);
+      
       INC(i);
     END;
-
-    Log.Msg("loopInvariant");
-    DumpMarker(loopInvariant);
-    Log.Msg("forwardInductive");
-    DumpMarker(forwardInductive);
-    (*Log.Msg("bottom");
-    DumpMarker(bottom);*)
-    DumpSums(pb);
   END Transform;
 
 BEGIN
