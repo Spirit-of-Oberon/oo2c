@@ -497,7 +497,11 @@ PROCEDURE (result: Result) LogId* (msg: ARRAY OF CHAR);
   BEGIN
     Log.writer. WriteString (msg);
     Log.writer. WriteString (": ");
+<*IF TARGET_ADDRESS = 64 THEN*>
+    Log.writer. WriteString ("???");
+<*ELSE*>
     Log.writer. WriteHex (SYSTEM.VAL (LONGINT, result. instr), 8);
+<*END*>
     i := result. ResultIndex();
     IF (i # 0) THEN
       Log.writer. WriteChar (".");

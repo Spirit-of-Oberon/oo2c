@@ -449,11 +449,15 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
     BEGIN
       instr := p. instr;
 
+<*IF TARGET_ADDRESS = 64 THEN*>
+      w. WriteString ("???");
+<*ELSE*>
       IF (instr = NIL) THEN
         w. WriteHex (SYSTEM.VAL (LONGINT, p), 8);
       ELSE
         w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
       END;
+<*END*>
       w. WriteString ("  ");
       (*IF (instr = NIL) THEN
           d := 0;
