@@ -1,0 +1,12 @@
+src:abc
+in :
+out:abc
+src:bc
+in :a
+out:abc
+src:ab
+in :c
+out:abc
+src:b
+in :ac
+out:abc

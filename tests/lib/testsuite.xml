@@ -6,8 +6,8 @@
   profile="Test Suite for OOC Core Library">
 
 <!--<testsuite-ext
-  profile="Test Suite for OOC Core Library">
-  select ="prepare_out_module lib_Strings_Length1">-->
+  profile="Test Suite for OOC Core Library"
+  select ="prepare_out_module lib_Strings_Insert1">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -59,6 +59,13 @@
       file="LibStringsDelete2.Mod" output="LibStringsDelete2.Ref">
       Call delete on string ranges <code>Delete</code> beyond the
       end of the input string, and after the end of the string.
+    </test>
+
+    <test id="lib_Strings_Insert1" type="run"
+      file="LibStringsInsert1.Mod" output="LibStringsInsert1.Ref">
+      Calls the <code>Insert</code> function to insert substrings
+      before, after, and into another string.  The results fit into
+      the destination array.
     </test>
   </testcases>
 </testsuite-ext>
