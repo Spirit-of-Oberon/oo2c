@@ -310,7 +310,13 @@ TYPE
   AdrDesc = RECORD
     (**Produces the address of a designator.  Nodes of this type are
        created for calls to @code{SYSTEM.ADR}, and implicitly for pass
-       by reference arguments to procedure calls.  *)
+       by reference arguments to procedure calls.
+
+       The type of this expression if @oconst{Predef.ptr}.  Translation
+       of @samp{SYSTEM.ADR} wraps a type conversion to @oconst{Predef.address}
+       around it.  This distinction is used by the SSA back-end to
+       differentiate between ``normal'' address computations and ``manual''
+       address arithmetics involving @samp{SYSTEM.ADR}.  *)
     (OperatorDesc)
     design-: Expression;
   END;
@@ -1926,7 +1932,7 @@ PROCEDURE (abs: Abs) Accept* (v: Visitor);
 
 PROCEDURE InitAdr (adr: Adr; sym: Symbol; design: Expression);
   BEGIN
-    InitOperator (adr, sym, Predef.GetType (Predef.address));
+    InitOperator (adr, sym, Predef.GetType (Predef.ptr));
     adr. design := design;
   END InitAdr;
 
@@ -5733,7 +5739,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         
       (* SYSTEM functions: *)
       | Predef.adr:
-        RETURN b. NewAdr (design. sym, arguments[0]);
+        RETURN b.NewTypeConv(Predef.GetType(Predef.address),
+                             b.NewAdr(design.sym, arguments[0]));
 
       | Predef.lsh:
         RETURN b. NewShift (design. sym, arguments[0], arguments[1], FALSE);
