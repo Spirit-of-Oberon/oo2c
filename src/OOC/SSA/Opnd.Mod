@@ -119,7 +119,12 @@ CONST
   (**This class is used for operands that are inserted into the SSA instruction
      list during the course of a the data dependency analysis.  See
      @omodule{*OOC:SSA:Blocker}.  *)
-  
+
+  regionDependency* = 20;
+  (**Used by @omodule{*OOC:SSA:Blocker} to make dependencies between regions
+     and instructions, or regions and regions, explicit on the level of the
+     common domination region of the two.  *)
+
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)
   BEGIN
@@ -141,6 +146,7 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | labels: COPY ("labels", name)
     | loopExternalDef: COPY ("loop-external-def", name);
     | antiDependency: COPY ("anti-dependency", name);
+    | regionDependency: COPY ("region-dependency", name);
     END;
   END GetName;
   
