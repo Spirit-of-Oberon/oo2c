@@ -316,6 +316,16 @@ TYPE
     pragmaHistory: Pragmas.History;
     errList: Error.List;
     typeRules- : TypeRules.Rules;
+    
+    errorExpr-: Expression;
+    (**This value is returned if there is no real value because of an error.
+       For example, if an identifier cannot be resolved, or if a designator
+       does not begin with an identifier, then this value is passed to the
+       caller.  Within the IR, no other value is used to indicate illegal
+       operations.
+
+       @strong{Note}: A function can @emph{only} return this value for a node,
+       if it also emits an error message.  *)
   END;
 
 TYPE
@@ -327,16 +337,6 @@ TYPE
   END;
 
 
-VAR
-  errorExpr-: Expression;
-  (**This value is returned if there is no real value because of an error.  For
-     example, if an identifier cannot be resolved, or if a designator does not
-     begin with an identifier, then this value is passed to the caller.  Within
-     the IR, no other value is used to indicate illegal operations.
-
-     @strong{Note}: A function can @emph{only} return this value for a node, if
-     it also emits an error message.  *)
-  
 CONST
   undeclaredIdent* = 1;
   expectedIdent* = 2;
@@ -396,11 +396,15 @@ PROCEDURE InitVisitor* (v: Visitor);
   BEGIN
   END InitVisitor;
 
+PROCEDURE ^ NewConst (sym: Symbol; type: Sym.Type;
+                      value: Language.Value): Const;
+  
 PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Error.List; typeRules : TypeRules.Rules);
   BEGIN
     b. pragmaHistory := pragmaHistory;
     b. errList := errList;
     b. typeRules := typeRules;
+    b. errorExpr := NewConst (NIL, Predef.GetType(Predef.void), Boolean.New (FALSE));
   END InitBuilder;
 
 PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
@@ -417,7 +421,7 @@ PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
 PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Expression;
   BEGIN
     b.ErrSym(code, sym);
-    RETURN errorExpr;
+    RETURN b. errorExpr;
   END ErrExpr;
 
 PROCEDURE InitNode* (n: Node; sym: Symbol);
@@ -498,7 +502,7 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
     v := Integer.type. ValueOf (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (numberOutOfRange, sym);
-      RETURN errorExpr
+      RETURN b. errorExpr
     ELSE
       RETURN NewConst (sym, Predef.GetType (Predef.integer), v)
     END
@@ -511,7 +515,7 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
     v := Char8.type. ValueOf (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (characterOutOfRange, sym);
-      RETURN errorExpr
+      RETURN b. errorExpr
     ELSE
       RETURN NewConst (sym, Predef.GetType (Predef.char), v)
     END
@@ -684,7 +688,7 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
     (* in the case of an error, return the value "FALSE"; returning NIL
        would require more effort in the callers to distinguish between
        correct and faulty expressions *)
-    RETURN errorExpr 
+    RETURN b. errorExpr 
   END NewIdentRef;
 
 PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Sym.Item; 
@@ -1085,5 +1089,4 @@ PROCEDURE (m: Module) Accept* (v: Visitor);
 BEGIN
   NEW (irContext);
   Error.InitContext (irContext, "OOC:IR");
-  errorExpr := NewConst (NIL, Predef.GetType(Predef.void), Boolean.New (FALSE));
 END OOC:IR.
