@@ -7,6 +7,7 @@ PROCEDURE Char* (ch: CHAR);
 PROCEDURE String* (s: ARRAY OF CHAR);
 PROCEDURE Int* (i, n: LONGINT);
 PROCEDURE Bool* (b : BOOLEAN);
+PROCEDURE Set* (s : SET);
 (*PROCEDURE Real* (x: REAL; n: INTEGER);*)
 (*PROCEDURE LongReal* (x: LONGREAL; n: INTEGER);*)
 PROCEDURE Ln*;

@@ -20,7 +20,7 @@
   function1 function2
   constfold1 constfold2 constfold3 constfold4 constfold5
   constfold6 constfold7 constfold8 constfold9 constfold10 constfold11
-  constfold12 constfold13 constfold14">
+  constfold12 constfold13 constfold14 constfold15 constfold16">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -128,7 +128,17 @@
       file="ConstFold14.Mod" output="ConstFold14.Ref">
       Tests evaluation of String compare expressions.
     </test>
-   </testcases>
+
+    <test id="constfold15" type="run" 
+      file="ConstFold15.Mod" output="ConstFold15.Ref">
+      Tests evaluation of CHAR compare expressions.
+    </test>
+
+    <test id="constfold16" type="run" 
+      file="ConstFold16.Mod" output="ConstFold16.Ref">
+      Tests evaluation of CHAR compare expressions.
+    </test>
+  </testcases>
   
   <processor-info processor-name="TestCompile">
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
