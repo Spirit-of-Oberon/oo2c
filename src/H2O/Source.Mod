@@ -2,8 +2,8 @@ MODULE H2O:Source [OOC_EXTENSIONS];
 
 IMPORT
   H2O:Module,
-  Object, Err, ADT:ArrayList,
-  IO, IO:FileChannel, Exception;
+  Object, Err, Log, ADT:ArrayList,
+  IO, IO:FileChannel, OS:Files, OS:Path, Exception;
 
 CONST
   cr = 0DX;
@@ -26,12 +26,18 @@ TYPE
     lines, files : LONGINT;
     src : Source;
     path : ArrayList.ArrayList;
+    frameworks : ArrayList.ArrayList;
   END;
 
 PROCEDURE (i : Input) AppendPath* (path : STRING);
 BEGIN
   i.path.Append(path);
 END AppendPath;
+
+PROCEDURE (i : Input) AppendFrameworkPath* (path : STRING);
+BEGIN
+  i.frameworks.Append(path);
+END AppendFrameworkPath;
 
 PROCEDURE (i : Input) ShowContext*;
 VAR s : Source;
@@ -107,7 +113,75 @@ BEGIN
   END;
 END ReadChar;
 
-PROCEDURE (i : Input) Search(fileName : STRING; VAR path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
+PROCEDURE (i : Input) SearchFile(path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
+BEGIN
+  Log.Object("SearchFile", path);
+  TRY
+    channel := FileChannel.Open(path, {FileChannel.read});
+    RETURN TRUE;
+  CATCH IO.Error:
+    RETURN FALSE;
+  END;
+END SearchFile;
+
+PROCEDURE (i : Input) SearchFramework(base : STRING; fileName : STRING; frameworkName : STRING; VAR path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
+VAR 
+  pos : LONGINT;
+  list : Files.NameArray;
+  frameworksDir, element, root, ext, includeDir : STRING;
+BEGIN
+  frameworksDir := base + "/Frameworks";
+  IF Files.Exists(frameworksDir) THEN
+    (* how to check if this is a file or directory *)
+  TRY
+    list := Files.ListDir(frameworksDir);
+    IF (list # NIL) THEN
+      FOR pos := 0 TO LEN(list^)-1 DO
+        element := frameworksDir + "/" + list[pos];
+        Path.SplitExt(Path.BaseName(element), root, ext);
+        IF ext.Equals(".framework") THEN
+          includeDir := element + "/Headers/";
+          IF root.Equals(frameworkName) THEN
+            path := includeDir + fileName;
+            IF i.SearchFile(path, channel) THEN RETURN TRUE END;
+          END;
+          path := includeDir + frameworkName + "/" + fileName;
+          IF i.SearchFile(path, channel) THEN RETURN TRUE END;
+          IF i.SearchFramework(element, fileName, frameworkName, path, channel) THEN
+            RETURN TRUE;
+          END;
+        END
+      END
+    END
+  CATCH IO.Error:
+  END;
+  END;
+  RETURN FALSE
+END SearchFramework;
+
+(* Locate a file using Apple "framework" packages. 
+Note: this implementation is a little slow. Rather than searching the
+entire pacakge tree for every file, a package directory should be build
+using just one search at the start. *)
+
+PROCEDURE (i : Input) SearchFrameworks(name : STRING; VAR path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
+VAR
+  pos : LONGINT;
+  obj : Object.Object;
+  fileName, frameworkName : STRING;
+BEGIN
+  fileName := Path.BaseName(name);
+  frameworkName := Path.DirName(name);
+  FOR pos := 0 TO i.frameworks.Size() - 1 DO
+    obj := i.frameworks.Get(pos);
+    IF i.SearchFramework(obj(STRING), fileName, frameworkName, path, channel) THEN 
+      RETURN TRUE
+    END;
+  END;
+  RETURN FALSE;
+END SearchFrameworks;
+
+PROCEDURE (i : Input) SearchPath(fileName : STRING; VAR path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
 VAR 
   pos : LONGINT;
   obj : Object.Object;
@@ -115,14 +189,12 @@ BEGIN
   FOR pos := 0 TO i.path.Size() - 1 DO
     obj := i.path.Get(pos);
     path := obj(STRING) + "/" + fileName;
-    TRY
-      channel := FileChannel.Open(path, {FileChannel.read});
-      RETURN TRUE;
-    CATCH IO.Error:
+    IF i.SearchFile(path, channel) THEN 
+      RETURN TRUE
     END;
   END;
   RETURN FALSE;
-END Search;
+END SearchPath;
 
 PROCEDURE (i : Input) Include* (fileName : STRING; search : BOOLEAN);
 VAR
@@ -134,7 +206,8 @@ VAR
 BEGIN
   TRY
     IF search THEN
-      IF ~i.Search(fileName, realFileName, channel) THEN
+      IF ~i.SearchPath(fileName, realFileName, channel) &
+         ~i.SearchFrameworks(fileName, realFileName, channel) THEN
         Err.String ("Error: Cannot locate module ");
         Err.Object (fileName);
         Err.Ln;
@@ -186,6 +259,7 @@ BEGIN
   i.lines := 0;
   i.files := 0;
   i.path := ArrayList.New(10);
+  i.frameworks := ArrayList.New(10);
   RETURN i;
 END New;
 
