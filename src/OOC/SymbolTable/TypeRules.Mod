@@ -453,6 +453,7 @@ PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
         nested := type. nestedItems;
         WHILE (nested # NIL) DO
           WITH nested: Sym.FieldDecl DO
+            tr. AllocateType (nested. type);
             fieldAlign := nested. type. align;
             IF (fieldAlign > maxAlign) THEN
               fieldAlign := maxAlign
