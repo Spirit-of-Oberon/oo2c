@@ -69,8 +69,12 @@ TYPE
     outputName- : Option.String;
     interfaceType- : Option.String;
     prolog- : Option.String;
+    epilog- : Option.String;
     linkFramework- : Option.StringList;
     linkLib- : Option.StringList;
+    defaultVar- : Option.Boolean;
+    translate- : Option.Boolean;
+    visited* : BOOLEAN;
   END;
 
   TypeDesc* = RECORD (Obj.ObjectDesc)
@@ -108,6 +112,7 @@ VAR
   charType-, unsignedCharType-, voidType- : Type;
 
   modules- : Module;
+  reserved- : ArrayList.ArrayList(STRING);
 
 CONST
   pointerSize* = 4;
@@ -375,16 +380,16 @@ BEGIN
   ((class = tStruct) OR (class = tUnion) OR (class = tEnum));
 END TypeNeedsName;
 
-(* Determine if two types are the same. *)
+(* Determine if two types are the same. If <structural> is true, the test uses structural equivalence rather than name equivalence. *)
 
-PROCEDURE SameTypes* (t1, t2 : Type) : BOOLEAN;
+PROCEDURE SameTypes* (t1, t2 : Type; structural : BOOLEAN) : BOOLEAN;
 CONST
   ignoreQualifiers = TRUE;
 
   PROCEDURE SameTypesList (o1, o2 : Object) : BOOLEAN;
   BEGIN
     WHILE ((o1 # NIL) & (o2 # NIL)) DO
-      IF ~SameTypes(o1.type, o2.type) THEN RETURN FALSE END;
+      IF ~SameTypes(o1.type, o2.type, structural) THEN RETURN FALSE END;
       o1 := o1.next;
       o2 := o2.next;
     END;
@@ -394,6 +399,11 @@ CONST
 
 BEGIN
   ASSERT((t1 # NIL) & (t2 # NIL));
+
+  IF structural THEN
+    t1 := t1.Base(); t2 := t2.Base();
+  END;
+
   IF ignoreQualifiers THEN
     WHILE t1.class = tQualifier DO t1 := t1.base END;
     WHILE t2.class = tQualifier DO t2 := t2.base END;
@@ -404,15 +414,15 @@ BEGIN
   | tInteger, tUnsigned, tReal:
     RETURN t1.size = t2.size;
   | tPointer:
-    RETURN SameTypes(t1.base, t2.base)
+    RETURN SameTypes(t1.base, t2.base, structural)
   | tArray:
-    RETURN SameTypes(t1.base, t2.base) & (t1.size = t2.size)
+    RETURN SameTypes(t1.base, t2.base, structural) & (t1.size = t2.size)
   | tVoid, tEnum, tStruct, tUnion:
     RETURN t1 = t2;
   | tFunction:
-    RETURN SameTypes(t1.base, t2.base) & SameTypesList(t1.link, t2.link);
+    RETURN SameTypes(t1.base, t2.base, structural) & SameTypesList(t1.link, t2.link);
   | tQualifier:
-    RETURN (t1.qualifiers = t2.qualifiers) & SameTypes(t1.base, t2.base);
+    RETURN (t1.qualifiers = t2.qualifiers) & SameTypes(t1.base, t2.base, structural);
   | tName:
     RETURN t1 = t2;
   END;
@@ -436,7 +446,9 @@ VAR c : UCS4CHAR;
 BEGIN
   IF (name.length > 0) THEN
     c := name.CharAt(0);
-    RETURN IsLetter(c) OR (c = '_');
+    IF IsLetter(c) OR (c = '_') THEN
+      RETURN ~reserved.Contains(name);
+    END;
   END;
   RETURN FALSE
 END ValidOutputSymbol;
@@ -457,10 +469,11 @@ END IsTypeConstructor;
   
 (* Find a declared type that is a equivalent to a given type constructor *)
 
-PROCEDURE FindAliasTypeLocal* (obj : Object; t : Type) : Type;
+PROCEDURE FindAliasTypeLocal* (obj : Object; t : Type; structural : BOOLEAN) : Type;
 BEGIN
-  WHILE (obj # NIL) & (obj.type.base # t) DO
-    IF SameTypes(t, obj.type.base) THEN
+  IF t.class = tName THEN RETURN NIL END;
+  WHILE obj # NIL DO
+    IF (obj.type.base # t) & SameTypes(t, obj.type.base, structural) THEN
       (* Log.Object("Type", t);
       Log.Object("Alias", obj.type); *)
       RETURN obj.type
@@ -470,15 +483,15 @@ BEGIN
   RETURN NIL
 END FindAliasTypeLocal;
 
-PROCEDURE FindAliasTypeModule* (mod : Module; t : Type) : Type;
+PROCEDURE FindAliasTypeModule* (mod : Module; t : Type; structural : BOOLEAN) : Type;
 VAR i : LONGINT; result : Type; imported : Module;
 BEGIN
-  result := FindAliasTypeLocal(mod.typedefs, t);
+  result := FindAliasTypeLocal(mod.typedefs, t, structural);
   IF result # NIL THEN RETURN result END;
     
   FOR i := 0 TO mod.imports.Size()-1 DO
     imported := mod.imports.Get(i);
-    result := FindAliasTypeLocal(imported.typedefs, t);
+    result := FindAliasTypeLocal(imported.typedefs, t, structural);
     IF result # NIL THEN RETURN result END;
   END;
   RETURN NIL
@@ -486,15 +499,19 @@ END FindAliasTypeModule;
 
 (* Determine if a type has a name *)
 
+PROCEDURE IsTaggedType* (t : Type) : BOOLEAN;
+BEGIN
+  RETURN ((t.class IN {tEnum, tStruct, tUnion}) & (t.name # NIL));
+END IsTaggedType;
+
 PROCEDURE IsNamedType* (t : Type) : BOOLEAN;
 BEGIN
-  RETURN ((t.class IN {tEnum, tStruct, tUnion}) & (t.name # NIL)) OR
-    (t.class = tName)
+  RETURN IsTaggedType(t) OR (t.class = tName);
 END IsNamedType;
 
 PROCEDURE ^VisitObjects(o : Object; mod : Module; v : Visitor);
 
-PROCEDURE VisitType(VAR t : Type; mod : Module; v : Visitor);
+PROCEDURE VisitType*(VAR t : Type; mod : Module; v : Visitor);
 BEGIN
   IF pre IN v.type THEN
     v.AcceptPre(t, mod);
@@ -503,7 +520,7 @@ BEGIN
     VisitObjects(t.link, mod, v)
   END;
   IF t.class = tPointer THEN
-    IF ~IsNamedType(t.base.Base()) THEN
+    IF ~IsNamedType(t.base (* .Base() *)) THEN
       VisitType(t.base, mod, v);
     END;
   ELSIF t.class IN { tFunction, tArray, tQualifier } THEN
@@ -622,8 +639,12 @@ BEGIN
   m.outputName := m.options.String("OutputName", m.name);
   m.interfaceType := m.options.String("InterfaceType", "C");
   m.prolog := m.options.String("Prolog", "");
+  m.epilog := m.options.String("Epilog", "");
   m.linkFramework := m.options.StringList("LinkFramework");
   m.linkLib := m.options.StringList("LinkLib");
+  m.defaultVar := m.options.Boolean("DefaultVar", FALSE);
+  m.translate := m.options.Boolean("Translate", TRUE);
+  m.visited := FALSE;
   m.vars := NIL;
   m.types := NIL;
   m.typedefs := NIL;
@@ -648,7 +669,42 @@ BEGIN
   RETURN name;
 END MapName;
 
+PROCEDURE Key(name : STRING);
 BEGIN
+  reserved.Append(name);
+END Key;
+
+PROCEDURE DefineKeywords;
+BEGIN
+  (* Oberon-2 reserved words *)
+  Key("ARRAY"); Key("BEGIN"); Key("BY"); Key("CASE"); Key("CONST");
+  Key("DIV"); Key("DO"); Key("ELSE"); Key("ELSIF"); Key("END");
+  Key("EXIT"); Key("FOR"); Key("IF"); Key("IMPORT"); Key("IN");
+  Key("IS"); Key("LOOP"); Key("MOD"); Key("MODULE"); Key("NIL");
+  Key("OF"); Key("OR"); Key("POINTER"); Key("PROCEDURE"); Key("RECORD");
+  Key("REPEAT"); Key("RETURN"); Key("THEN"); Key("TO"); Key("TYPE");
+  Key("UNTIL"); Key("VAR"); Key("WHILE"); Key("WITH"); 
+
+  (* Oberon-2 predeclared identifiers *)
+  Key("ASSERT"); Key("ABS"); Key("ASH"); Key("BOOLEAN"); Key("CAP");
+  Key("CHAR"); Key("CHR"); Key("COPY"); Key("DEC"); Key("ENTIER");
+  Key("EXCL"); Key("FALSE"); Key("HALT"); Key("INC"); Key("INCL");
+  Key("INTEGER"); Key("LEN"); Key("LONG"); Key("LONGINT"); Key("LONGREAL");
+  Key("MAX"); Key("MIN"); Key("NEW"); Key("ODD"); Key("ORD"); Key("REAL");
+  Key("SET"); Key("SHORT"); Key("SHORTINT"); Key("SIZE"); Key("TRUE"); 
+
+  (* OOC reserved words *)
+  Key("TRY"); Key("CATCH"); Key("RAISES");
+
+  (* OOC predeclared identifiers *)
+  Key("LONGCHAR"); Key("UCS4CHAR"); Key("HUGEINT"); Key("EXCEPTION");
+  Key("STRING");
+END DefineKeywords;
+
+BEGIN
+  reserved := NEW(ArrayList.ArrayList(STRING),20);
+  DefineKeywords;
+
   charType := BaseType(tInteger, 1, "char");  
   unsignedCharType := BaseType(tUnsigned, 1, "unsigned char");
   shortType := BaseType(tInteger, 2, "short");
