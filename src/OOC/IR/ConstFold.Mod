@@ -86,7 +86,7 @@ PROCEDURE (c : ConstFold) ValidEval (expr : IR.Expression; VAR result : Language
 BEGIN
   c.result := NIL;
   expr.Accept(c);
-  IF c.result # NIL THEN
+  IF (c.result # NIL) & (c.result # c.builder.errorExpr) THEN
     result := c.result(IR.Const).value;
     RETURN TRUE;
   END;
