@@ -131,7 +131,8 @@ PROCEDURE (t: Type) ValueOf* (str[NO_COPY]: ARRAY OF CHAR): Value;
     
   PROCEDURE HexDigit (ch: CHAR): LONGINT;
     BEGIN
-      CASE CAP (ch) OF
+      ch := CAP (ch);
+      CASE ch OF
       | "0".."9": RETURN ORD(ch)-ORD("0")
       | "A".."F": RETURN ORD(ch)+(10-ORD("A"))
       ELSE
