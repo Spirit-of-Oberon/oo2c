@@ -3,7 +3,7 @@
 #include <setjmp.h>
 
 void Quicksort1__Sort(OOC_INT32 a[], OOC_LEN a_0d, OOC_INT32 m, OOC_INT32 n) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11,i12;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10;
 
   i0 = n;
   i1 = m;
@@ -14,40 +14,40 @@ void Quicksort1__Sort(OOC_INT32 a[], OOC_LEN a_0d, OOC_INT32 m, OOC_INT32 n) {
   i4 = i1-1;
   i5=i0;
 l3_loop:
-  i6 = 4+((OOC_INT32)a+(4*i4));
+  i4 = 4+((OOC_INT32)a+(4*i4));
   
 l4_loop:
-  i7 = i6+4;
-  i8 = *(OOC_INT32*)i6;
-  i4 = i4+1;
-  i9 = i8>=i3;
-  if (i9) goto l8;
-  i6=i7;
+  i6 = i4+4;
+  i7 = *(OOC_INT32*)i4;
+  i8 = i7>=i3;
+  if (i8) goto l8;
+  i4=i6;
   goto l4_loop;
 l8:
-  i9 = (-4)+((OOC_INT32)a+(4*i5));
+  i5 = (-4)+((OOC_INT32)a+(4*i5));
   
 l9_loop:
-  i10 = i9-4;
-  i11 = *(OOC_INT32*)i9;
-  i5 = i5-1;
-  i12 = i11<=i3;
-  if (i12) goto l13;
-  i9=i10;
+  i8 = i5-4;
+  i9 = *(OOC_INT32*)i5;
+  i10 = i9<=i3;
+  if (i10) goto l13;
+  i5=i8;
   goto l9_loop;
 l13:
-  i12 = i4>=i5;
-  if (i12) goto l17;
-  *(OOC_INT32*)i6 = i11;
-  *(OOC_INT32*)i9 = i8;
-  
+  i6 = ((i6-4)-(OOC_INT32)a)>>2;
+  i10 = ((i8-(-4))-(OOC_INT32)a)>>2;
+  i8 = (OOC_UINT32)((-4)+((OOC_INT32)a+(4*i6)))>=(OOC_UINT32)i8;
+  if (i8) goto l17;
+  *(OOC_INT32*)i4 = i9;
+  *(OOC_INT32*)i5 = i7;
+  i4=i6;i5=i10;
   goto l3_loop;
 l17:
   i3 = *(OOC_INT32*)i2;
-  *(OOC_INT32*)i6 = i3;
-  *(OOC_INT32*)i2 = i8;
-  Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, i1, (((i10-(-4))-(OOC_INT32)a)>>2));
-  Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, ((((i7-4)-(OOC_INT32)a)>>2)+1), i0);
+  *(OOC_INT32*)i4 = i3;
+  *(OOC_INT32*)i2 = i7;
+  Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, i1, i10);
+  Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, (i6+1), i0);
 l18:
   return;
   ;
