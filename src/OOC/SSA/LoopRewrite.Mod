@@ -65,6 +65,8 @@ TYPE
   SumDesc = RECORD
     (SSA.NodeDesc)
     subclass: Opcode.Subclass;
+    (* Subclass of the result produced by this sum.  Any summation operand
+       that is not of this type needs to be converted to it.  *)
     instr: SSA.Instr;
     (* For atomic values (constant, loop-invariant, or ``others'') this refers
        to the instruction that represents this value in the SSA form.  For all
@@ -208,12 +210,17 @@ PROCEDURE Classify(pb: SSA.ProcBlock; loopStart: SSA.Instr);
     VAR
       marker: LONGINT;
     BEGIN
-      IF (instr.opcode = Opcode.add) OR (instr.opcode = Opcode.subtract) THEN
+      CASE instr.opcode OF
+      | Opcode.add, Opcode.subtract:
         marker := ABS(instr.opndList.nextOpnd.arg.marker);
         IF (ABS(instr.opndList.arg.marker) > marker) THEN
           marker := ABS(instr.opndList.arg.marker);
         END;
         SetMarkers(instr, marker);
+
+      | Opcode.typeConv: (* interpret type-conv as identity or x+0 operation *)
+        SetMarkers(instr, ABS(instr.opndList.arg.marker));
+
       ELSE  (* one of the arguments is not loopInvariant *)
         SetMarkers(instr, bottom);
       END;
@@ -397,6 +404,7 @@ PROCEDURE Flatten*(res: SSA.Result);
     
     BEGIN
       (* ideally, the subclasses of both sides are the same; until then... *)
+      ASSERT(a.subclass = b.subclass);
       subclass := a.subclass;
       IF (b.subclass > subclass) THEN
         subclass := b.subclass;
@@ -458,13 +466,20 @@ PROCEDURE Flatten*(res: SSA.Result);
           Flatten(opnd.arg.instr);
           opnd := opnd.nextOpnd;
         END;
-        
-        IF (instr.opcode = Opcode.add) THEN
+
+        CASE instr.opcode OF
+        | Opcode.add:
           instr.info := AddSum(instr.opndList.arg.info(Sum),
                                instr.opndList.nextOpnd.arg.info(Sum), 1);
-        ELSIF (instr.opcode = Opcode.subtract) THEN
+        | Opcode.subtract:
           instr.info := AddSum(instr.opndList.arg.info(Sum),
                                instr.opndList.nextOpnd.arg.info(Sum), -1);
+        | Opcode.typeConv:  (* copy sum and adjust type *)
+          NEW(sum);
+          sum^ := instr.opndList.arg.info(Sum)^;
+          sum.subclass := instr.subclass;
+          instr.info := sum;
+        ELSE  (* fall through *)
         END;
         IF (instr.info = NIL) THEN
           sum := NewSum(instr.subclass, instr);
@@ -493,17 +508,17 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
         i: LONGINT;
         res, mult: SSA.Instr;
       BEGIN
-        res := f[0].instr;
-        FOR i := 0 TO LEN(f^)-1 DO
+        res := pb.FixSubclassInstr(f[0].instr, subclass);
+        FOR i := 1 TO LEN(f^)-1 DO
           mult := pb.AddInstr(Opcode.multiply, subclass);
           mult.AddOpnd(res, Opnd.arg);
-          mult.AddOpnd(f[i].instr, Opnd.arg);
+          mult.AddOpnd(pb.FixSubclass(f[i].instr, subclass), Opnd.arg);
           res := mult;
         END;
         IF (m # 1) THEN
           mult := pb.AddInstr(Opcode.multiply, subclass);
           mult.AddOpnd(res, Opnd.arg);
-          mult.AddOpnd(pb.GetConstInt(m), Opnd.arg);
+          mult.AddOpnd(pb.FixSubclass(pb.GetConstInt(m), subclass), Opnd.arg);
           res := mult;
         END;
         RETURN res;
@@ -527,19 +542,21 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       res: SSA.Result;
       instr: SSA.Instr;
     BEGIN
-      res := initOld;
+      res := pb.FixSubclass(initOld, sum.subclass);
 
       IF (rc.a # NIL) THEN
+        Log.Msg("... rc.a#NIL");
         instr := pb.AddInstr(Opcode.multiply, sum.subclass);
-        instr.AddOpnd(res, Opnd.arg);
         instr.AddOpnd(rc.a, Opnd.arg);
+        instr.AddOpnd(res, Opnd.arg);
         res := instr;
       END;
 
       IF (rc.b # NIL) THEN
+        Log.Msg("... rc.b#NIL");
         instr := pb.AddInstr(Opcode.add, sum.subclass);
-        instr.AddOpnd(res, Opnd.arg);
         instr.AddOpnd(rc.b, Opnd.arg);
+        instr.AddOpnd(res, Opnd.arg);
         res := instr;
       END;
 
@@ -564,6 +581,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
 
         obj := replacement.Get(iv);
         res := obj(SSA.Result);
+        ni := pb.FixSubclass(ni, sum.subclass);
         IF (rc.a # NIL) THEN
           mult := pb.AddInstr(Opcode.multiply, sum.subclass);
           mult.AddOpnd(ni, Opnd.arg);
@@ -684,7 +702,12 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
          collect instruction in front of the loop *)
       loopStart := sum.head.instr;
       collect := loopStart.opndList.arg.instr;
+      Log.Ptr("head", sum.head.instr);
+      Log.LongInt("index", sum.head.ResultIndex()-1);
+      Log.Ptr("collect", collect);
       res := InitialValue(rc, collect.NthArg(sum.head.ResultIndex()-1));
+      Log.Ptr("new initial", res);
+      res.instr.LogOpcode("opc");
       collect.AddOpnd(res, Opnd.arg);
       
       (* add result as gate output to loopStart, and register it in the
