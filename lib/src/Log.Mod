@@ -23,12 +23,12 @@ IMPORT
 
 VAR
   writer-: TextRider.Writer;
-  (* This is the rider used by the output procedures.  Initialized to hold a
-     text writer to the `StdChannels.stderr' channel.  Can be changed by 
-     calling SetWriter.  *)
+  (**This is the rider used by the output procedures.  It is initialized to
+     hold a text writer to the channel @ovar{StdChannels.stderr}.  This can be
+     changed by calling @oproc{SetWriter}.  *)
      
 PROCEDURE Done* () : BOOLEAN;
-(* Returns TRUE if the last operation was successful.  *)
+(**Returns @code{TRUE} if the last operation was successful.  *)
   BEGIN
     RETURN (writer. res = TextRider.done)
   END Done;
@@ -40,10 +40,9 @@ PROCEDURE ClearError*;
 
 
 PROCEDURE SetWriter* (w: TextRider.Writer);
-(* Changes the rider `writer'.  All following calls to output procedures will 
-   write to `w'.  The preferred method of connecting to the standard error
-   channel is with a call like SetWriter(NIL).
- *)
+(* Changes the rider @ovar{writer}.  All following calls to output procedures
+   will write to @oparam{w}.  The preferred method of connecting to the
+   standard output channel is to call @samp{SetWriter(NIL)}.  *)
   BEGIN
     IF w=NIL THEN writer:=TextRider.ConnectWriter (StdChannels.stderr)
     ELSE writer:=w
@@ -51,7 +50,7 @@ PROCEDURE SetWriter* (w: TextRider.Writer);
   END SetWriter;
 
 PROCEDURE Flush*;
-(* Flushes all buffers associated with `writer'.  *)
+(**Flushes all buffers associated with @ovar{writer}.  *)
   BEGIN
     writer. base. Flush
   END Flush;
@@ -74,11 +73,12 @@ PROCEDURE String* (msg[NO_COPY]: ARRAY OF CHAR; s[NO_COPY]: ARRAY OF CHAR);
   END String;
 
 PROCEDURE LString* (msg[NO_COPY]: ARRAY OF CHAR; s[NO_COPY]: ARRAY OF LONGCHAR);
-(* Very primitive.  It writes a string of SHORTed characters.  If a character
-   cannot be shorted, it is replaced by "?".  In the future, this may be
-   changed to UTF-8 output.  Use at your own risk!  
-   
-   As it is, this procedure should _not_ be documented in the reference
+(**Very primitive @code{LONGCHAR} output.  The procedure writes a string of
+   @code{SHORT}ed characters.  If a character cannot be shorted, it is replaced
+   by the character @samp{?}.  In the future, this may be changed to UTF-8
+   output.  Use at your own risk!
+
+   As it is, this procedure should @emph{not} be documented in the reference
    manual.  *)
   VAR
     i: LONGINT;

@@ -26,13 +26,13 @@ IMPORT
 
 VAR
   writer-: TextRider.Writer;
-  (* This is the rider used by the output procedures.  Initialized to hold a
-     text writer to the `StdChannels.stdout' channel.  Can be changed by 
-     calling SetWriter.  *)
+  (**This is the rider used by the output procedures.  It is initialized to
+     hold a text writer to the channel @ovar{StdChannels.stdout}.  This can be
+     changed by calling @oproc{SetWriter}.  *)
      
 
 PROCEDURE Done* () : BOOLEAN;
-(* Returns TRUE if the last operation was successful.  *)
+(**Returns @code{TRUE} if the last operation was successful.  *)
   BEGIN
     RETURN (writer.res = TextRider.done)
   END Done;
@@ -44,14 +44,11 @@ PROCEDURE ClearError*;
 
 
 PROCEDURE SetWriter* (w: TextRider.Writer);
-(* Changes the rider `writer'.  All following calls to output procedures will 
-   write to `w'.  The preferred method of connecting to the standard output
-   channel is with a call like SetWriter(NIL).  NOTE: If interactive input
-   is desired, ensure that the writer output buffering is turned off as
-   follows: 
-   
-        Out.writer.SetOpts({TextRider.noBuffering}) 
- *)
+(* Changes the rider @ovar{writer}.  All following calls to output procedures
+   will write to @oparam{w}.  The preferred method of connecting to the
+   standard output channel is to call @samp{SetWriter(NIL)}.  @emph{Note}: If
+   interactive input is desired, ensure that the writer output buffering is
+   turned off as follows: @samp{Out.writer.SetOpts(@{TextRider.noBuffering@})}.  *)
   BEGIN
     IF w=NIL THEN writer:=TextRider.ConnectWriter (StdChannels.stdout)     
     ELSE writer:=w
@@ -59,7 +56,7 @@ PROCEDURE SetWriter* (w: TextRider.Writer);
   END SetWriter;
 
 PROCEDURE Flush*;
-(* Flushes all buffers associated with `writer'.  *)
+(**Flushes all buffers associated with @ovar{writer}.  *)
   BEGIN
     writer. base. Flush
   END Flush;
@@ -101,43 +98,42 @@ PROCEDURE Hex* (lint: LONGINT; n: LONGINT);
   END Hex;
   
 PROCEDURE LongReal* (lreal: LONGREAL; n, k: LONGINT);
-(* Write `lreal' with `k' significant digits and right-justified
-   in a field of width n. *)
+(**Write @oparam{lreal} with @oparam{k} significant digits and right-justified
+   in a field of width @oparam{n}.  *)
   BEGIN
     writer. WriteLReal (lreal, n, k)
   END LongReal;
 
 PROCEDURE Real* (real: REAL; n, k: LONGINT);
-(* as LongReal *)
+(**As @oproc{LongReal}.  *)
   BEGIN
     writer. WriteReal (real, n, k)
   END Real;
 
 PROCEDURE LongRealFix* (lreal: LONGREAL; n, k: LONGINT);
-(* Write `lreal' rounded to `k' digits relative to the decimal
-   point and right-justified in a field of width n.  Negative
-   values of `k' round to the left of the decimal point and
-   positive `k' round to the right of the decimal point. *)
+(**Write @oparam{lreal} rounded to @oparam{k} digits relative to the decimal
+   point and right-justified in a field of width @oparam{n}.  Negative values
+   of @oparam{k} round to the left of the decimal point and positive @oparam{k}
+   round to the right of the decimal point.  *)
   BEGIN
     writer. WriteLRealFix (lreal, n, k)
   END LongRealFix;
 
 PROCEDURE RealFix* (real: REAL; n, k: LONGINT);
-(* as LongRealFix *)
+(**As @oproc{LongRealFix}.  *)
   BEGIN
     writer. WriteRealFix (real, n, k)
   END RealFix;
 
 PROCEDURE LongRealEng* (lreal: LONGREAL; n, k: LONGINT);
-(* as LongReal except exponent is always a multiple of
-   3 and there are 1 to 3 digits to the left of the
-   decimal point. *)
+(**As @oproc{LongReal}, except that the exponent is always a multiple of 3 and
+   there are 1 to 3 digits to the left of the decimal point.  *)
   BEGIN
     writer. WriteLRealEng (lreal, n, k)
   END LongRealEng;
 
 PROCEDURE RealEng* (real: REAL; n, k: LONGINT);
-(* as LongRealEng *)
+(**As @oproc{LongRealEng}.  *)
   BEGIN
     writer. WriteRealEng (real, n, k)
   END RealEng;
@@ -151,7 +147,6 @@ PROCEDURE Ln*;
   BEGIN
     writer. WriteLn
   END Ln;
-
 
 BEGIN
   SetWriter(NIL) 
