@@ -395,7 +395,7 @@ PROCEDURE NewUCS2Region*(str[NO_COPY]: ARRAY OF LONGCHAR; start, end: LONGINT): 
     FOR j := start TO end-1 DO
       d[j-start] := ORD(str[j]);
     END;
-    d[i-1] := 0;
+    d[i] := 0;
     RETURN s;
   END NewUCS2Region;
 
@@ -457,6 +457,66 @@ PROCEDURE NewUTF32*(str[NO_COPY]: ARRAY OF Char): String;
     END;
     RETURN NewString32 (SYSTEM.ADR(str), i);
   END NewUTF32;
+
+PROCEDURE Concat2* (s1, s2: String): String;
+  VAR
+    c8: String8;
+    c32: String32;
+    i: LONGINT;
+  BEGIN
+    WITH s1: String8 DO
+      WITH s2: String8 DO                (* String8+String8 *)
+        NEW(c8);
+        c8.length := s1.length+s2.length;
+        NEW(c8.data, s1.length+s2.length+1);
+        SYSTEM.MOVE(SYSTEM.ADR(s1.data^),
+                    SYSTEM.ADR(c8.data^),
+                    s1.length*SIZE(CHAR));
+        SYSTEM.MOVE(SYSTEM.ADR(s2.data^),
+                    SYSTEM.ADR(c8.data[s1.length]),
+                    s2.length*SIZE(CHAR)+SIZE(CHAR));
+        RETURN c8;
+        
+      | s2: String32 DO                  (* String8+String32 *)
+        NEW(c32);
+        c32.length := s1.length+s2.length;
+        NEW(c32.data, s1.length+s2.length+1);
+        FOR i := 0 TO s1.length-1 DO
+          c32.data[i] := ORD(s1.data[i]);
+        END;
+        SYSTEM.MOVE(SYSTEM.ADR(s2.data^),
+                    SYSTEM.ADR(c32.data[s1.length]),
+                    s2.length*SIZE(Char)+SIZE(Char));
+        RETURN c32;
+      END;
+      
+    | s1: String32 DO
+      WITH s2: String8 DO
+        NEW(c32);
+        c32.length := s1.length+s2.length;
+        NEW(c32.data, s1.length+s2.length+1);
+        SYSTEM.MOVE(SYSTEM.ADR(s1.data^),
+                    SYSTEM.ADR(c32.data^),
+                    s1.length*SIZE(Char));
+        FOR i := 0 TO s2.length DO
+          c32.data[s1.length+i] := ORD(s2.data[i]);
+        END;
+        RETURN c32;
+        
+      | s2: String32 DO                  (* String32+String32 *)
+        NEW(c32);
+        c32.length := s1.length+s2.length;
+        NEW(c32.data, s1.length+s2.length+1);
+        SYSTEM.MOVE(SYSTEM.ADR(s1.data^),
+                    SYSTEM.ADR(c32.data^),
+                    s1.length*SIZE(Char));
+        SYSTEM.MOVE(SYSTEM.ADR(s2.data^),
+                    SYSTEM.ADR(c32.data[s1.length]),
+                    s2.length*SIZE(Char)+SIZE(Char));
+        RETURN c32;
+      END;
+    END;
+  END Concat2;
 
 PROCEDURE (s: String8) CharsLatin1*(): CharsLatin1;
   BEGIN
