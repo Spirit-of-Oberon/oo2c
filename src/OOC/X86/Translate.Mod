@@ -1143,11 +1143,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       b.DeadCodeElimination();
       
       M.ApplyMachineModel(b);
-      D.WriteFunction(b);
       
       B.ArrangeInstructions(b);
       R.AssignRegisters(b);
-      D.WriteFunction(b);
       D.ValidateAllocation(b);
 
       D.WriteFunction(b);

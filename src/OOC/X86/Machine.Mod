@@ -82,6 +82,13 @@ PROCEDURE MemOpnd(instr: S.Instr): S.Opnd;
       END;
     | S.setStack, S.typeTag:
       RETURN NIL;
+    | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq:
+      opnd := instr.opndList.nextOpnd;
+      IF (opnd.arg.instr.opcode = S.get) THEN
+        RETURN opnd;
+      ELSE
+        RETURN NIL;
+      END;
     ELSE
       inout := InOutOpnd(instr);
       opnd := instr.opndList;

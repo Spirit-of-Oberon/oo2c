@@ -34,6 +34,7 @@ TYPE
     blockMap: Dictionary.Dictionary(S.Block, Block);
     blockCount: LONGINT;
 
+    constantsCount: LONGINT;
     constants: ARRAY Predef.lastId+1 OF ObjectToLabel;
     constantList: ARRAY Predef.lastId+1 OF ArrayList.ArrayList;
     
@@ -173,6 +174,7 @@ PROCEDURE (w: Writer) INIT*(module: Sym.Module; ch: IO.ByteChannel);
     w.w.WriteString(tab+".arch pentium4"); (* no arch k8 *)
     w.blockCount := 0;
 
+    w.constantsCount := 0;
     FOR i := 0 TO Predef.lastId DO
       w.constants[i] := NEW(ObjectToLabel);
       w.constantList[i] := NEW(ArrayList.ArrayList, 8);
@@ -231,7 +233,8 @@ PROCEDURE (w: Writer) ConstSymbol(value: Object.Object;
     dict := w.constants[type];
     array := w.constantList[type];
     IF ~dict.HasKey(value) THEN
-      dict.Set(value, ".LC"+Boxed.IntToString(array.size));
+      dict.Set(value, ".LC"+Boxed.IntToString(w.constantsCount));
+      INC(w.constantsCount);
       array.Append(value);
     END;
     RETURN dict.Get(value);
@@ -830,7 +833,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           AssertResultMatch(instr.opndList);
         | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq:
           opndWidth := instr.opndList.arg.type;
-          Opc("cmp");
+          IF S.IsFloat(opndWidth) THEN
+            Opc("ucomis");
+          ELSE
+            Opc("cmp");
+          END;
           Opnd(instr.opndList.nextOpnd);
           Comma();
           Opnd(instr.opndList);
