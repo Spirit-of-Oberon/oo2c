@@ -20,6 +20,10 @@ PROCEDURE Ref (w: TextRider.Writer; opnd: SSA.Opnd);
       name := Naming.NameOfDeclaration (arg. decl);
       w. WriteString (name. array^)
 
+    | arg: SSA.Address DO
+      name := Naming.NameOfDeclaration (arg. decl);
+      w. WriteString (name. array^)
+
     | arg: SSA.Instr DO
       ASSERT (arg. opcode = Opcode.get); (* another drastic shortcut... *)
       Ref (w, arg. opndList. nextOpnd);
@@ -30,7 +34,7 @@ PROCEDURE Ref (w: TextRider.Writer; opnd: SSA.Opnd);
     END;
   END Ref;
 
-PROCEDURE RefList (w: TextRider.Writer; start: SSA.Opnd; id: Opnd.Id);
+PROCEDURE RefList (w: TextRider.Writer; start: SSA.Opnd; class: Opnd.Class);
   VAR
     opnd: SSA.Opnd;
     count: LONGINT;
@@ -38,7 +42,7 @@ PROCEDURE RefList (w: TextRider.Writer; start: SSA.Opnd; id: Opnd.Id);
     count := 0;
     opnd := start;
     WHILE (opnd # NIL) DO
-      IF (opnd. id = id) THEN
+      IF (opnd. class = class) THEN
         IF (count # 0) THEN
           w. WriteString (", ")
         END;

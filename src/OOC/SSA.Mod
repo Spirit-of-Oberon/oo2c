@@ -23,7 +23,7 @@ MODULE OOC:SSA;
 
 IMPORT
   Language, Language:Integer, ADT:Object, ADT:Dictionary, OOC:SymbolTable:Item,
-  OOC:SSA:Opcode, ResultId := OOC:SSA:Result, OpndId := OOC:SSA:Opnd;
+  OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
   
 TYPE
@@ -33,6 +33,7 @@ TYPE
   Instr* = POINTER TO InstrDesc;
   Const* = POINTER TO ConstDesc;
   DeclRef* = POINTER TO DeclRefDesc;
+  Address* = POINTER TO AddressDesc;
 
 TYPE
   NodeDesc = RECORD
@@ -46,8 +47,8 @@ TYPE
     (**Reference to a result of an instruction that defines this operand's
        value.  *)
 
-    id-: OpndId.Id;
-    (**Identifies the function of the operand.  See @omodule{OpndId}.  *)
+    class-: OpndClass.Class;
+   (**Identifies the function of the operand.  See @omodule{OpndClass}.  *)
     
     nextOpnd-: Opnd;
     (**This field refers to the next element in the list of operands of an
@@ -72,8 +73,8 @@ TYPE
        instruction, that is, the instruction is the first element of the result
        list.  *)
     
-    id-: ResultId.Id;
-    (**Identifies the function of the operand.  See @omodule{ResultId}.  *)
+    class-: ResultClass.Class;
+    (**Identifies the function of the operand.  See @omodule{ResultClass}.  *)
     
     instr-: Instr;
     (**The instruction to which this result belongs.  *)
@@ -124,6 +125,12 @@ TYPE
   END;
   
 TYPE
+  AddressDesc = RECORD
+    (InstrDesc)
+    decl-: Item.Declaration;
+  END;
+  
+TYPE
   ProcBlock* = POINTER TO ProcBlockDesc;
   ProcBlockDesc = RECORD
     (**A procedure block holds the set of instructions of a procedure or module
@@ -144,6 +151,10 @@ TYPE
     (**Maps constant values onto @code{const} instructions, and declarations
        from the symbol table onto @code{declref} instructions.  See
        @oproc{ProcBlock.GetConst} and @oproc{ProcBlock.GetDeclRef}.  *)
+    
+    adrMap: Dictionary.Dictionary;
+    (**Maps items of the symbol table to their @code{adr} instructions.  See
+       @oproc{ProcBlock.GetAdr}.  *)
   END;
   
 
@@ -181,7 +192,7 @@ PROCEDURE DeleteUse (opnd: Opnd);
     opnd. arg := NIL
   END DeleteUse;
 
-PROCEDURE InitOpnd (opnd: Opnd; arg: Result; id: OpndId.Id);
+PROCEDURE InitOpnd (opnd: Opnd; arg: Result; class: OpndClass.Class);
 (* Initializes operand and adds it to the use list of `arg'.  *)
   BEGIN
     InitNode (opnd);
@@ -189,17 +200,17 @@ PROCEDURE InitOpnd (opnd: Opnd; arg: Result; id: OpndId.Id);
     opnd. nextUse := NIL;
     opnd. nextOpnd := NIL;
     opnd. instr := NIL;
-    opnd. id := id;
+    opnd. class := class;
     SetUse (arg, opnd);      (* add `opnd' to list of uses of `arg' *)
   END InitOpnd;
 
-PROCEDURE NewOpnd (arg: Result; id: OpndId.Id): Opnd;
+PROCEDURE NewOpnd (arg: Result; class: OpndClass.Class): Opnd;
 (* Creates a new operand and adds it to the use list of `arg'.  *)
   VAR
     opnd: Opnd;
   BEGIN
     NEW (opnd);
-    InitOpnd (opnd, arg, id);
+    InitOpnd (opnd, arg, class);
     RETURN opnd
   END NewOpnd;
   
@@ -252,24 +263,24 @@ PROCEDURE (opnd: Opnd) OpndIndex*(): LONGINT;
 
   (* ---------------------------------------------------------------------- *)
   
-PROCEDURE InitResult (res: Result; id: ResultId.Id);
+PROCEDURE InitResult (res: Result; class: ResultClass.Class);
 (* Initializes result.  *)
   BEGIN
     InitNode (res);
     res. nextResult := NIL;
     res. instr := NIL;
-    res. id := id;
+    res. class := class;
     res. marker := -1;
     res. useList := NIL;
   END InitResult;
 
-PROCEDURE NewResult (id: ResultId.Id): Result;
+PROCEDURE NewResult (class: ResultClass.Class): Result;
 (* Creates a new result instance.  *)
   VAR
     res: Result;
   BEGIN
     NEW (res);
-    InitResult (res, id);
+    InitResult (res, class);
     RETURN res
   END NewResult;
   
@@ -313,7 +324,7 @@ PROCEDURE (result: Result) ResultIndex*(): LONGINT;
 
 PROCEDURE InitInstr (instr: Instr; opcode: Opcode.Class; subclass: Opcode.Subclass);
   BEGIN
-    InitResult (instr, ResultId.primary);
+    InitResult (instr, ResultClass.primary);
     instr. instr := instr; (* an instruction is a result that defines itself *)
     instr. opndList := NIL;
     instr. nextInstr := NIL;
@@ -322,7 +333,7 @@ PROCEDURE InitInstr (instr: Instr; opcode: Opcode.Class; subclass: Opcode.Subcla
     instr. subclass := subclass;
   END InitInstr;
 
-PROCEDURE (instr: Instr) AddOpnd* (arg: Result; id: OpndId.Id);
+PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
 (**Adds @oparam{arg} to the end of the operand list of instruction
    @oparam{instr}.
 
@@ -332,7 +343,7 @@ PROCEDURE (instr: Instr) AddOpnd* (arg: Result; id: OpndId.Id);
   VAR
     opnd, prev: Opnd;
   BEGIN
-    opnd := NewOpnd (arg, id);
+    opnd := NewOpnd (arg, class);
     opnd. instr := instr;
     IF (instr. opndList = NIL) THEN
       instr. opndList := opnd
@@ -345,13 +356,13 @@ PROCEDURE (instr: Instr) AddOpnd* (arg: Result; id: OpndId.Id);
     END;
   END AddOpnd;
 
-PROCEDURE (instr: Instr) AddResult* (id: ResultId.Id): Result;
+PROCEDURE (instr: Instr) AddResult* (class: ResultClass.Class): Result;
 (**Adds a new result to the end of the result list of instruction
    @oparam{instr}.  *)
   VAR
     res, prev: Result;
   BEGIN
-    res := NewResult (id);
+    res := NewResult (class);
     res. instr := instr;
     IF (instr. nextResult = NIL) THEN
       instr. nextResult := res
@@ -431,28 +442,28 @@ PROCEDURE (instr: Instr) NthArg* (nth: LONGINT): Result;
     RETURN opnd. arg
   END NthArg;
 
-PROCEDURE (instr: Instr) GetOpndId* (id: OpndId.Id): Opnd;
-(**Returns the first operand of @oparam{instr} whose @ofield{Opnd.id} matches
-   @oparam{id}.  If no such operand exists, result is @code{NIL}.  *)
+PROCEDURE (instr: Instr) GetOpndClass* (class: OpndClass.Class): Opnd;
+(**Returns the first operand of @oparam{instr} whose @ofield{Opnd.class} matches
+   @oparam{class}.  If no such operand exists, result is @code{NIL}.  *)
   VAR
     opnd: Opnd;
   BEGIN
     opnd := instr. opndList;
-    WHILE (opnd # NIL) & (opnd. id # id) DO
+    WHILE (opnd # NIL) & (opnd. class # class) DO
       opnd := opnd. nextOpnd;
     END;
     RETURN opnd
-  END GetOpndId;
+  END GetOpndClass;
 
-PROCEDURE (instr: Instr) GetArgId* (id: OpndId.Id): Result;
+PROCEDURE (instr: Instr) GetArgId* (class: OpndClass.Class): Result;
 (**Returns the first argument of @oparam{instr} whose operand's
-   @ofield{Opnd.id} matches @oparam{id}.  If no such operand exists, result is
+   @ofield{Opnd.class} matches @oparam{class}.  If no such operand exists, result is
    @code{NIL}.  *)
   VAR
     opnd: Opnd;
   BEGIN
     opnd := instr. opndList;
-    WHILE (opnd # NIL) & (opnd. id # id) DO
+    WHILE (opnd # NIL) & (opnd. class # class) DO
       opnd := opnd. nextOpnd;
     END;
     IF (opnd = NIL) THEN
@@ -480,18 +491,18 @@ PROCEDURE (instr: Instr) NthResult* (nth: LONGINT): Result;
     RETURN res;    
   END NthResult;
 
-PROCEDURE (instr: Instr) GetResultId* (id: ResultId.Id): Result;
-(**Returns the first result of @oparam{instr} whose @ofield{Result.id} matches
-   @oparam{id}.  If no such result exists, @code{NIL} is returned.  *)
+PROCEDURE (instr: Instr) GetResultClass* (class: ResultClass.Class): Result;
+(**Returns the first result of @oparam{instr} whose @ofield{Result.class} matches
+   @oparam{class}.  If no such result exists, @code{NIL} is returned.  *)
   VAR
     result: Result;
   BEGIN
     result := instr;
-    WHILE (result # NIL) & (result. id # id) DO
+    WHILE (result # NIL) & (result. class # class) DO
       result := result. nextResult;
     END;
     RETURN result
-  END GetResultId;
+  END GetResultClass;
 
 PROCEDURE (instr: Instr) GetOpcodeName* (VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of the instruction's opcode.  The name includes
@@ -515,6 +526,12 @@ PROCEDURE InitDeclRef (declRef: DeclRef; decl: Item.Declaration);
     declRef. decl := decl;
   END InitDeclRef;
 
+PROCEDURE InitAddress (address: Address; decl: Item.Declaration);
+  BEGIN
+    InitInstr (address, Opcode.address, Opcode.scNone);
+    address. decl := decl;
+  END InitAddress;
+
   (* ---------------------------------------------------------------------- *)
 
 PROCEDURE ^ (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
@@ -528,6 +545,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock);
     pb. instrTail := NIL;
     pb. exit := pb. AddInstr (Opcode.exit, Opcode.scNone);
     pb. objMap := Dictionary.New();
+    pb. adrMap := Dictionary.New();
   END InitProcBlock;
 
 PROCEDURE NewProcBlock* (): ProcBlock;
@@ -611,6 +629,11 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value): Const;
     END;
   END GetConst;
 
+PROCEDURE (pb: ProcBlock) GetConstInt* (int: LONGINT): Const;
+  BEGIN
+    RETURN pb. GetConst (Integer.New (SHORT (int)))  (* ...should be Longint *)
+  END GetConstInt;
+
 PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Item.Declaration): DeclRef;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
@@ -630,10 +653,24 @@ PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Item.Declaration): DeclRef;
     END;
   END GetDeclRef;
 
-PROCEDURE (pb: ProcBlock) GetConstInt* (int: LONGINT): Const;
+PROCEDURE (pb: ProcBlock) GetAddress* (decl: Item.Declaration): Address;
+(**Returns the @code{declref} instruction for the declaration @oparam{decl}.
+   Equal declarations are mapped to the same unique instruction.  *)
+  VAR
+    obj: Object.Object;
+    address: Address;
   BEGIN
-    RETURN pb. GetConst (Integer.New (SHORT (int)))  (* ...should be Longint *)
-  END GetConstInt;
+    IF pb. adrMap. HasKey (decl) THEN
+      obj := pb. adrMap. Get (decl);
+      RETURN obj(Address);
+    ELSE
+      NEW (address);
+      InitAddress (address, decl);
+      AppendInstr (pb, address);
+      pb. adrMap. Set (decl, address);
+      RETURN address
+    END;
+  END GetAddress;
 
 PROCEDURE (pb: ProcBlock) SetMarkers* (newMarker: LONGINT);
 (**Set the field @ofield{Result.marker} of all results in the procedure block

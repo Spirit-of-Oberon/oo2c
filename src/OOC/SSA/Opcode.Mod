@@ -28,13 +28,15 @@ TYPE
 CONST
   const* = 0;
   declRef* = 1;
-  enter* = 2;
-  exit* = 3;
-  get* = 4;
-  set* = 5;
-  copy* = 6;
-  assert* = 7;
-  call* = 8;
+  address* = 2;
+  
+  enter* = 3;
+  exit* = 4;
+  get* = 5;
+  set* = 6;
+  copy* = 7;
+  assert* = 8;
+  call* = 9;
 
 CONST
   scNone* = 0;
@@ -46,6 +48,7 @@ PROCEDURE GetName* (opcode: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     CASE opcode OF
     | const: COPY ("const", name)
     | declRef: COPY ("declref", name)
+    | address: COPY ("address", name)
 
     | get: COPY ("get", name)
     | set: COPY ("set", name)
