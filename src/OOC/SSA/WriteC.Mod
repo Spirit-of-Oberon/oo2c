@@ -879,23 +879,19 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     END Shift;
 
   PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
-  (* Returns TRUE if all paths into the "select-return" end with a
-     "return" instruction.  *)
+  (* Returns TRUE if all paths into the "select-return" end with a "return"
+     instruction.  The current approximation only checks if the function ends
+     with a RETURN statement.  A more sophisticated version could traverse the
+     final store backward and see if all paths end at a RETURN or at a
+     procedure call that cannot return.  *)
     VAR
       opnd: SSA.Opnd;
     BEGIN
-      IF (selectReturn. opndList. nextOpnd. nextOpnd = NIL) THEN
-        RETURN FALSE                     (* not at single RETURN in the proc *)
-      ELSE
-        opnd := selectReturn. opndList. nextOpnd;
-        WHILE (opnd. nextOpnd # NIL) DO
-          IF ~(opnd. arg. instr. opcode = Opcode.return) THEN
-            RETURN FALSE
-          END;
-          opnd := opnd. nextOpnd;
-        END;
-        RETURN TRUE
-      END
+      opnd := selectReturn. opndList. nextOpnd;
+      WHILE (opnd. nextOpnd # NIL) DO
+        opnd := opnd. nextOpnd;
+      END;
+      RETURN (opnd. arg. instr. opcode = Opcode.return);
     END AllPathsClosed;
   
   PROCEDURE WriteCollect (collect, targetInstr: SSA.Instr);
