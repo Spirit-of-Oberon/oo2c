@@ -163,7 +163,8 @@ PROCEDURE GetImports* (m: Rep.Module; VAR errList: Error.List);
           astBuilder := ExtTree.New();
           ast := Parser.Module (scannerBuilder. head, 
                                 astBuilder, errList,
-                                Parser.enableAll+{Parser.onlyParseImport})
+                                Parser.enableAll+{Parser.onlyParseImport}-
+                                {Parser.enableDocComment})
         END;
         IF (errList. msgCount = 0) &
            (ast(ExtTree.Module). importList # NIL) THEN
