@@ -28,41 +28,42 @@ MODULE OOC:SymbolTable:TypeRules;
    formal parameters, and so on.  *)
 
 IMPORT
-  Log,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
 
 TYPE
-  TypeExpr* = POINTER TO TypeExprDesc;
-  TypeExprDesc = RECORD
+  TypeClosure = POINTER TO TypeClosureDesc;
+  TypeClosureDesc = RECORD
     (Sym.TypeDesc)
     baseType: Sym.Type;
     params: Sym.TypeVarArray;
     arguments: Sym.TypeRefArray;
   END;
 
-PROCEDURE InitTypeExpr(te: TypeExpr; position: Sym.Position;
-                       baseType: Sym.Type;
-                       params: Sym.TypeVarArray; arguments: Sym.TypeRefArray);
+PROCEDURE InitTypeClosure(tc: TypeClosure; position: Sym.Position;
+                          baseType: Sym.Type;
+                          params: Sym.TypeVarArray;
+                          arguments: Sym.TypeRefArray);
   BEGIN
-    Sym.InitType(te, NIL, position);
-    te.baseType := baseType;
-    te.params := params;
-    te.arguments := arguments;
-  END InitTypeExpr;
+    Sym.InitType(tc, NIL, position);
+    tc.baseType := baseType;
+    tc.params := params;
+    tc.arguments := arguments;
+  END InitTypeClosure;
 
-PROCEDURE NewTypeExpr(position: Sym.Position; baseType: Sym.Type;
-                      params: Sym.TypeVarArray; arguments: Sym.TypeRefArray): TypeExpr;
+PROCEDURE NewTypeClosure(position: Sym.Position; baseType: Sym.Type;
+                         params: Sym.TypeVarArray;
+                         arguments: Sym.TypeRefArray): TypeClosure;
   VAR
-    te: TypeExpr;
+    tc: TypeClosure;
   BEGIN
-    NEW(te);
-    InitTypeExpr(te, position, baseType, params, arguments);
-    RETURN te;
-  END NewTypeExpr;
+    NEW(tc);
+    InitTypeClosure(tc, position, baseType, params, arguments);
+    RETURN tc;
+  END NewTypeClosure;
 
 
-PROCEDURE Lookup(context: TypeExpr; tv: Sym.TypeVar): Sym.Type;
+PROCEDURE Lookup(context: TypeClosure; tv: Sym.TypeVar): Sym.Type;
   VAR
     i: LONGINT;
   BEGIN
@@ -81,9 +82,9 @@ PROCEDURE Lookup(context: TypeExpr; tv: Sym.TypeVar): Sym.Type;
   END Lookup;
 
 PROCEDURE ^ Expand*(type: Sym.Type): Sym.Type;
-PROCEDURE ^ ExpandTypeExpr(typeExpr: TypeExpr): Sym.Type;
+PROCEDURE ^ ExpandTypeClosure(typeClosure: TypeClosure): Sym.Type;
 
-PROCEDURE ExpandInContext(type: Sym.Type; context: TypeExpr): Sym.Type;
+PROCEDURE ExpandInContext(type: Sym.Type; context: TypeClosure): Sym.Type;
   VAR
     i: LONGINT;
     args: Sym.TypeRefArray;
@@ -98,9 +99,9 @@ PROCEDURE ExpandInContext(type: Sym.Type; context: TypeExpr): Sym.Type;
           Sym.InitTypeRef(args[i], ExpandInContext(type.arguments[i].type,
                                                    context));
         END;
-        RETURN ExpandTypeExpr(NewTypeExpr(type.position, type.baseType,
-                                          type.baseType.typePars.params,
-                                          args));
+        RETURN ExpandTypeClosure(NewTypeClosure(type.position, type.baseType,
+                                                type.baseType.typePars.params,
+                                                args));
         
       | type: Sym.TypeVar DO
         RETURN Lookup(context, type);
@@ -111,34 +112,35 @@ PROCEDURE ExpandInContext(type: Sym.Type; context: TypeExpr): Sym.Type;
     END;
   END ExpandInContext;
 
-PROCEDURE ExpandTypeExpr(typeExpr: TypeExpr): Sym.Type;
-(* Recursivly expand the base type of @oparam{typeExpr}.  *)
+PROCEDURE ExpandTypeClosure(typeClosure: TypeClosure): Sym.Type;
+(* Recursivly expand the base type of @oparam{typeClosure}.  *)
   VAR
     type: Sym.Type;
   BEGIN
-    type := ExpandInContext(typeExpr.baseType, typeExpr);
-    IF (type # typeExpr.baseType) THEN
+    type := ExpandInContext(typeClosure.baseType, typeClosure);
+    IF (type # typeClosure.baseType) THEN
       RETURN type;
     ELSE
-      RETURN typeExpr;
+      RETURN typeClosure;
     END;
-  END ExpandTypeExpr;
+  END ExpandTypeClosure;
 
 PROCEDURE Expand*(type: Sym.Type): Sym.Type;
 (**@precond
-   The type @oparam{type} contains unbound type variables that need to be
-   bound to a particular value in the current context.
+   The type @oparam{type} contains unbound type variables that need to be bound
+   to a particular value in the current context.
    @end precond
 
    @postcond
    The result is not an instance of @otype{Sym.QualType}.  If the result is a
-   @otype{TypeExpr}, then this statement holds for the expression's base type.
+   @samp{TypeClosure}, then this statement holds for the expression's base
+   type.
    @end postcond  *)
   BEGIN
     WITH type: Sym.QualType DO
-      RETURN ExpandTypeExpr(NewTypeExpr(type.position, type.baseType,
-                                        type.baseType.typePars.params,
-                                        type.arguments));
+      RETURN ExpandTypeClosure(NewTypeClosure(type.position, type.baseType,
+                                              type.baseType.typePars.params,
+                                              type.arguments));
     ELSE
       RETURN type;
     END;
@@ -492,14 +494,15 @@ PROCEDURE SameType* (a, b: Sym.Type): BOOLEAN;
     
     IF (a = b) & ~IsOpenArrayType (a) THEN
       RETURN TRUE;
-    ELSIF (a IS TypeExpr) & (b IS TypeExpr) THEN
-      baseA := a(TypeExpr).baseType;
-      baseB := b(TypeExpr).baseType;
+    ELSIF (a IS TypeClosure) & (b IS TypeClosure) THEN
+      baseA := a(TypeClosure).baseType;
+      baseB := b(TypeClosure).baseType;
       IF SameType(baseA, baseB) THEN
         ASSERT(baseA.typePars = baseB.typePars);
         FOR i := 0 TO LEN(baseA.typePars.params^)-1 DO
           tv := baseA.typePars.params[i];
-          IF ~SameType(Lookup(a(TypeExpr), tv), Lookup(b(TypeExpr), tv)) THEN
+          IF ~SameType(Lookup(a(TypeClosure), tv),
+                       Lookup(b(TypeClosure), tv)) THEN
             RETURN FALSE;
           END;
         END;
