@@ -526,9 +526,6 @@ PROCEDURE AllocateType* (type: Sym.Type);
    The field @ofield{type.size} and @ofield{type.align} are set, as are the
    fields of all types that are part of @oparam{type} or are referenced by it.
    @end postcond  *)
-  CONST
-    pointerSize = 4;
-    pointerAlign = 4;
   VAR
     i, size: LONGINT;
     align, maxAlign, fieldAlign: INTEGER;
@@ -538,13 +535,17 @@ PROCEDURE AllocateType* (type: Sym.Type);
       (* note: size and alignment of predefined types is defined in
          module OOC:SymbolTable:Predef *)
       WITH type: Sym.Pointer DO
-        type. SetSize (pointerSize, pointerAlign); (* this breaks any cycles *)
+        type. SetSize (Sym.predefIdToType[Predef.ptr].size,
+                       Sym.predefIdToType[Predef.ptr].align);
+        (* this breaks any cycles *)
         (* don't call `AllocateType (type. baseType)' here: this may
            be a forward reference, and some pieces of information about this
            type may not be computed yet *)
 
       | type: Sym.FormalPars DO
-        type. SetSize (pointerSize, pointerAlign); (* this breaks any cycles *)
+        type. SetSize (Sym.predefIdToType[Predef.ptr].size,
+                       Sym.predefIdToType[Predef.ptr].align);
+        (* this breaks any cycles *)
         IF (type. receiver # NIL) THEN
           AllocateType (type. receiver. type);
         END;
