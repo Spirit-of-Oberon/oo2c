@@ -451,7 +451,7 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
       paths, i: LONGINT;
       opnd: SSA.Opnd;
     BEGIN
-      IF (select. instr. GetOpndClass (Opnd.labels) # NIL) THEN
+      IF select. instr. IsSwitchStatm() THEN
         (* this select represents a CASE statement *)
         paths := select. instr. CountOpndClass (Opnd.labels);
         switch := NewSwitchBlock (block, select. instr. opndList, paths);
@@ -974,8 +974,10 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       | b: JumpBlock DO
         IF b. jump. isLoopBackedge THEN
           (* A block ending with a jump to the beginning of a loop dominates
-             no other blocks.  *)
-          ASSERT (b. domList = NIL);
+             no other blocks, unless it is the loop body itself.  *)
+          IF ~b. isLoopHead THEN
+            ASSERT (b. domList = NIL);
+          END;
         ELSIF (b. domList # NIL) THEN
           IF b. isLoopHead THEN
             (* A loop always begins with a jump block containing the prefix
