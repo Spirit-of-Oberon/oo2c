@@ -2,7 +2,7 @@ MODULE encdec;
 
 IMPORT
   SYSTEM, Ascii, Channel, Files, Log, ProgramArgs, StdChannels, TextRider, 
-  String := Language:String0, Codec, Codec:UU, Codec:Twofish;
+  String := Language:String0, Codec, Codec:UU, Codec:Twofish, Codec:Deflate;
 
 TYPE
   State = PROCEDURE (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
@@ -259,9 +259,10 @@ PROCEDURE ParseArguments (r: TextRider.Reader);
 
 BEGIN
   UU.Register;
-  codecUU := UU.uu;
   Twofish.Register;
+  Deflate.Register;
   
+  codecUU := UU.uu;
   key := NIL;
   ParseArguments (TextRider.ConnectReader(ProgramArgs.args));
   
@@ -270,11 +271,17 @@ BEGIN
   CASE mode OF
   | encode:
     enc := codec1.NewEncoder();
-    enc(Codec.CryptoEncoder). SetKey(key(String.String8));
+    WITH enc: Codec.CryptoEncoder DO
+      enc.SetKey(key(String.String8));
+    ELSE
+    END;
     Encode (enc, r, w);
   | decode:
     dec := codec1.NewDecoder();
-    dec(Codec.CryptoDecoder). SetKey(key(String.String8));
+    WITH dec: Codec.CryptoDecoder DO
+      dec.SetKey(key(String.String8));
+    ELSE
+    END;
     Decode (dec, r, w);
   | decodeFiles:
     DecodeFiles (r);
