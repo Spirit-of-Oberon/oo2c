@@ -113,7 +113,11 @@ $(OOC_DEV_ROOT)/oo2crc-install.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
 		-e 's:<repositories>:<repositories><file-system>$(OOC_DEV_ROOT)/lib</file-system><file-system>$(OOC_DEV_ROOT)</file-system>:' \
 		 $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml >$(OOC_DEV_ROOT)/oo2crc-install.xml
 
-dist: $(OOC_DEV_ROOT)/oo2crc-install.xml configure
+config.status: configure
+	@echo Error: Stale config.status.  Please run ./configure and try again.
+	@/bin/false
+
+dist: $(OOC_DEV_ROOT)/oo2crc-install.xml configure config.status
 	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1 2>/dev/null
 	$(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml --make $(OFLAGS) oo2c
 	rm -Rf stage0
