@@ -37,7 +37,7 @@ dnl checks for libraries
 if test $TARGET_OS = Unix; then
   AC_CHECK_LIB(m,sin)
 fi
-if test $ac_cv_lib_m_sin = yes; then
+if test "$ac_cv_lib_m_sin" = yes; then
    have_libm=TRUE
 else
    have_libm=FALSE
