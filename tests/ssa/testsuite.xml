@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE testsuite-ext
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
+
+<!ENTITY baseline-testcases
+         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases.xml">
+
+<!ENTITY candidate-testcases
+         SYSTEM "../../../hostess/hostess/oberon/candidate.xml">
+
+<!ENTITY hostess-testcases
+         SYSTEM "../../../hostess/hostess/oberon/testcases.xml">
+]>
+
+<testsuite-ext
+  profile="Test Suite for Framework Testing"
+  select ="prepare_out_module
+  baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
+  baseline8 baseline10 baseline11
+  function1 function2 function3">
+  
+  <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
+    <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
+      This is not a test case.  Rather, it prepares an Oakwood
+      compliant module <code>Out</code> to supersede OOC's differing
+      module of the same name.
+    </test>
+  </testcases>
+  
+  &baseline-testcases;
+  <!--&candidate-testcases;
+  &hostess-testcases;-->
+  
+  <testcases profile="OOC2 Development" default-lang="O1 O2 AO">
+    <test id="function1" type="run"
+      file="../compile/HOTFunction1.Mod" output="../compile/HOTFunction1.Ref">
+      A very simple function: No input arguments, and a return
+      statement with a constant expression.
+    </test>
+    
+    <test id="function2" type="run"
+      file="../compile/HOTFunction2.Mod" output="../compile/HOTFunction2.Ref">
+      Another very simple function: The input parameter is used as the
+      function's return value, without any transformation.
+    </test>
+    
+    <test id="function3" type="run"
+      file="HOTFunction3.Mod" output="HOTFunction3.Ref">
+      Another very simple function: The input parameter is copied to 
+      a local variable, which is subsequently used as the
+      function's return value.
+    </test>
+  </testcases>
+  
+  <processor-info processor-name="TestCompile">
+    <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
+  </processor-info>
+</testsuite-ext>

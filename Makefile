@@ -7,7 +7,7 @@
 include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
 
 # TEST_SUBDIRS: List of subdirectories with testcases.
-TEST_SUBDIRS=tests/compile
+TEST_SUBDIRS=tests/compile tests/ssa
 
 
 top_builddir=$(OOC_DEV_ROOT)
