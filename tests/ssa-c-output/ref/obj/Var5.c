@@ -29,7 +29,7 @@ l4:
 void Var5__Test() {
   register OOC_INT32 i0;
 
-  Var5__x = -1;
+  Var5__x = (-1);
   i0 = Var5__F(0u);
   Out0__Int(i0, 0);
   Out0__Ln();

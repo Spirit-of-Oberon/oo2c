@@ -20,7 +20,7 @@ l4:
 
 void Alloc1__Test() {
 
-  Alloc1__F(-1);
+  Alloc1__F((-1));
   Alloc1__F(1);
   return;
   ;

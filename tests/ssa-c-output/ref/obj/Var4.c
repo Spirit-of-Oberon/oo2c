@@ -21,7 +21,7 @@ l4:
 void Var4__Test() {
   register OOC_INT32 i0;
 
-  Var4__x = -1;
+  Var4__x = (-1);
   i0 = Var4__F(0u);
   Out0__Int(i0, 0);
   Out0__Ln();

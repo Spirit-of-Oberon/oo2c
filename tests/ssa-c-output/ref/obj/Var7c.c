@@ -7,7 +7,7 @@ static OOC_INT16 Var7c__Len(const OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
   OOC_ALLOCATE_VPAR(str,OOC_CHAR8 ,str_0d)
 
   OOC_INITIALIZE_VPAR(str__ref,str,OOC_CHAR8 ,str_0d)
-  i0=-1;
+  i0=(-1);
 l1_loop:
   i0 = i0+1;
   i1 = *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT16, 201)));

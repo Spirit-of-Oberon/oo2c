@@ -407,6 +407,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
   VAR
     i, len, charValue: LONGINT;
     s: STRING;
+    paren: BOOLEAN;
     
   PROCEDURE WriteOct (ch: LONGINT);
     BEGIN
@@ -507,10 +508,13 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
         END;
         
       | value: Boxed.LongReal DO
+        paren := (value.value < 0);
+        IF paren THEN w.WriteString("(") END;
         w. WriteObject(value.ToString());
         IF TR.IsPredefType(type, Predef.real) THEN
           w. WriteString("f");
         END;
+        IF paren THEN w.WriteString(")") END;
         
       | value: BigInt.BigInt DO
         IF (value. ToLongInt() = MIN (LONGINT)) THEN
@@ -521,7 +525,10 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
           w. WriteLInt (MAX (LONGINT), 0);
           w. WriteString ("-1)");
         ELSE
+          paren := (value.Sign() < 0);
+          IF paren THEN w.WriteString("(") END;
           w. WriteObject(value.ToString());
+          IF paren THEN w.WriteString(")") END;
         END;
         
       | value: Boxed.Set DO
@@ -540,7 +547,7 @@ PROCEDURE (w: Writer) WriteBasicConst* (value: Boxed.Object;
   VAR
     charValue: LONGINT;
     s: STRING;
-    signed: BOOLEAN;
+    signed, paren: BOOLEAN;
     
   PROCEDURE WriteOct (ch: LONGINT);
     BEGIN
@@ -600,10 +607,13 @@ PROCEDURE (w: Writer) WriteBasicConst* (value: Boxed.Object;
         END;
         
       | value: Boxed.LongReal DO
+        paren := (value.value < 0);
+        IF paren THEN w.WriteString("(") END;
         w. WriteObject(value.ToString());
         IF (type = real32) THEN
           w. WriteString("f");
         END;
+        IF paren THEN w.WriteString(")") END;
         
       | value: BigInt.BigInt DO
         signed := (type < uint8);
@@ -615,10 +625,13 @@ PROCEDURE (w: Writer) WriteBasicConst* (value: Boxed.Object;
           w. WriteLInt (MAX (LONGINT), 0);
           w. WriteString ("-1)");
         ELSE
+          paren := (value.Sign() < 0);
+          IF paren THEN w.WriteString("(") END;
           w. WriteObject(value.ToString());
           IF ~signed THEN
             w.WriteString("u");
           END;
+          IF paren THEN w.WriteString(")") END;
         END;
         
       | value: Boxed.Set DO
