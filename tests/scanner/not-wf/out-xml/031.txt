@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*WITH predef_true:=FALSE; DO*&gt;</symbol>
+<symbol id='whitespace' pos='31' line='0' column='31'>&#10;</symbol>
+<symbol id='pragma' pos='32' line='1' column='0'>&lt;*ELSE*&gt;</symbol>
+<symbol id='whitespace' pos='40' line='1' column='8'>&#10;</symbol>
+<symbol id='pragma' pos='41' line='2' column='0'>&lt;*END*&gt;</symbol>
+<symbol id='endOfFile' pos='48' line='2' column='7'></symbol>
+</document>

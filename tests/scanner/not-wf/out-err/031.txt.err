@@ -1,0 +1,11 @@
+In file not-wf/031.txt: 
+`WITH' statement lacks `END'
+column=2
+line=0
+pos=2
+
+`ELSE' part already defined
+column=2
+line=1
+pos=34
+

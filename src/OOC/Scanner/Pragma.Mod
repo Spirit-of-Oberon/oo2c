@@ -10,6 +10,14 @@ IMPORT
   IntegerValue := Config:Value:Integer,
   StringValue := Config:Value:String;
 
+(* Added in oo2c-2.0.7:
+
+   The statement @samp{WITH [Assignment] @{";" [Assignment]@} DO @dots{} END}
+   is equivalent to @samp{PUSH; [Assignment] @{";" [Assignment]@}; @dots{};
+   POP}.  That is, a sequence of assignments is done before the statement
+   sequence, and their effect is undone at the end of the block.  The
+   @samp{PUSH}/@samp{POP} statements may be phased out later, in favor of
+   @samp{WITH}.  *)
 
 TYPE
   InputMode* = SHORTINT;
@@ -22,6 +30,9 @@ CONST
 TYPE 
   ConditionStack = POINTER TO ConditionStackDesc;
   ConditionStackDesc = RECORD
+    (* Note: A "WITH ... DO" is translated like a "IF TRUE THEN", but an
+       "ELSIF" or "ELSE" is forbidden *)
+    
     prev: ConditionStack;
     (* link to preceding item in stack, top of stack is in `condStack' *)
     ifPos: BasicList.Symbol;
@@ -32,6 +43,8 @@ TYPE
     (* TRUE iff a preceding IF or ELSIF guard evaluated to TRUE *)
     elsePresent: BOOLEAN;
     (* set when an ELSE part has been parsed *)
+    withStatm: BOOLEAN;
+    (* TRUE iff this is a WITH statement *)
   END;
 
 TYPE
@@ -89,6 +102,7 @@ CONST
   pragmaVarAlreadyDefined = 14;
   notAssignmentCompatible = 15;
   unbalancedPop = 16;
+  withWithoutEnd = 17;
 
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -135,6 +149,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Value not assignment compatible to variable"
     | unbalancedPop:
       t := "No values stored on pragma stack"
+    | withWithoutEnd:
+      t := "`WITH' statement lacks `END'"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -432,6 +448,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
       cond. skippedCond := ~state. evalText;
       cond. foundTrue := FALSE;
       cond. elsePresent := FALSE;
+      cond. withStatm := FALSE;
       state. condStack := cond
     END PushCond;
   
@@ -539,6 +556,13 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
       ELSIF (sym. id = Symbol.end) THEN
         CheckForIf (FALSE);
         state. evalText := ~state. condStack. skippedCond;
+        IF state.condStack.withStatm & state.evalText THEN
+          IF (state.variableHistory.numPushes = 0) THEN
+            Err(unbalancedPop, sym);
+          ELSE
+            state.variableHistory.Pop(sym.pos); (* restore state before WITH *)
+          END;
+        END;
         PopCond;  (* remove top of stack *)
         NextSym
       ELSIF (sym. id = Symbol.ident) & (sym. str^ = "DEFINE") THEN
@@ -558,6 +582,28 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
           END
         END;
         NextSym
+      ELSIF (sym.id = Symbol.with) THEN
+        PushCond;
+        state.condStack.withStatm := TRUE;
+        state.condStack.elsePresent := TRUE;  (* prevent ELSIF and END *)
+        
+        (* push current state of variables *)
+        IF state. evalText THEN
+          state. variableHistory. Push
+        END;
+        NextSym;
+
+        (* parse list of assignments: [Assignment] {";" [Assignment]} *)
+        IF (sym.id = Symbol.ident) THEN
+          Assignment(FALSE, state.evalText);
+        END;
+        WHILE (sym.id = Symbol.semicolon) DO
+          NextSym;
+          IF (sym.id = Symbol.ident) THEN
+            Assignment(FALSE, state.evalText);
+          END;
+        END;
+        CheckSym (Symbol.do);
       ELSIF (sym. id = Symbol.ident) THEN
         Assignment (FALSE, state. evalText)
       END;
@@ -629,7 +675,11 @@ PROCEDURE AddSymbol* (VAR state: State; VAR inputMode: InputMode;
         state. startColumn := column
       | Symbol.endOfFile:
         IF (state. condStack # NIL) THEN
-          ErrSym (ifWithoutEnd, state. condStack. ifPos)
+          IF state.condStack.withStatm THEN
+            ErrSym (withWithoutEnd, state.condStack.ifPos);
+          ELSE
+            ErrSym (ifWithoutEnd, state.condStack.ifPos);
+          END;
         END;
         state. builder. AddSymbol(Symbol.endOfFile, cstart, cend, line, column)
       END
