@@ -444,7 +444,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
          BranchBlock, or the beginning of SwitchBlock).  *)
       opnd := proxy. instr. opndList;
       WHILE (opnd # NIL) DO
-        IF (opnd. arg. info = rf) & opnd. IsValueOpnd() THEN
+        IF (opnd. arg. info = rf) & opnd. IsValueOpndHere() THEN
           IF ~iGraph. In (opnd. arg. marker, live) THEN
             (* the live range of the value passed to `opnd' interferes with
                all live ranges currently active: calculate union between bit
@@ -696,7 +696,7 @@ PROCEDURE CollectCrossLoopResults (rf: RegisterFile;
       WHILE (proxy # NIL) DO
         opnd := proxy. instr. opndList;
         WHILE (opnd # NIL) DO
-          IF (opnd. arg. info = rf) (*& opnd. IsValueOpnd() ... leads to endless loop in tests/lib??? FIXME *) THEN
+          IF (opnd. arg. info = rf) & opnd. IsValueOpnd() THEN
             (* if the argument is from our current register file, and
                if it is defined outside of `loopHead', then it is live
                across the whole loop *)
@@ -998,7 +998,7 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
             opnd := opnd. nextOpnd;
           END;
           WHILE (opnd # NIL) DO
-            IF opnd. IsValueOpnd() THEN
+            IF opnd. IsValueOpndHere() THEN
               CheckOpnd (opnd);
             END;
             opnd := opnd. nextOpnd;

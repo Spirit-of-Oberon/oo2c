@@ -354,10 +354,10 @@ PROCEDURE (opnd: Opnd) IsScheduleOpnd*(): BOOLEAN;
   END IsScheduleOpnd;
 
 PROCEDURE (opnd: Opnd) IsValueOpnd*(): BOOLEAN;
-(**Return @code{TRUE} if operand takes a value that represents a true input
-   value of the instruction, and that must be passed physically to this
-   instruction in the output.  Otherwise, the operand represents meta data
-   that does should not appear in the emitted code.  *)
+(**Return @code{TRUE} if operand takes an argument that represents a true input
+   value of the instruction, and that must be physically computed by the output
+   code.  Otherwise, the operand represents meta data that should not appear in
+   the emitted code at all.  *)
   VAR
     instr: Instr;
   BEGIN
@@ -368,14 +368,35 @@ PROCEDURE (opnd: Opnd) IsValueOpnd*(): BOOLEAN;
       OpndClass.writeDesign:
       RETURN FALSE;
     ELSE
+      RETURN TRUE;
+    END;
+  END IsValueOpnd;
+
+PROCEDURE (opnd: Opnd) IsValueOpndHere*(): BOOLEAN;
+(**Return @code{TRUE} if the operand takes an argument that represents a
+   phyiscally computed value, and if this value must be available at the place
+   of the instruction.
+
+   Right now, this method is only different from @oproc{Opnd.IsValueOpnd} for
+   the first operand of a @oconst{Opcode.select}.  This value must be computed,
+   but it is used before the select paths and the @oconst{Opcode.select}
+   instruction itself.  Therefore, result is @code{FALSE} for this operand.
+   The scheduler and the allocator must make sure that the value of the
+   selecting expression is available where control flow is split.  *)
+  VAR
+    instr: Instr;
+  BEGIN
+    IF opnd. IsValueOpnd() THEN
       instr := opnd. instr;
       (* Return TRUE if the operand is not the first operand of a "select".
          The selecting expression is evaluated before even one of the
          paths into the "select" is entered.  For this reason, it must
          not be live at the place of the select instruction itself.  *)
       RETURN (instr. opcode # Opcode.select) OR (instr. opndList # opnd);
+    ELSE
+      RETURN FALSE;
     END;
-  END IsValueOpnd;
+  END IsValueOpndHere;
 
   (* ---------------------------------------------------------------------- *)
   

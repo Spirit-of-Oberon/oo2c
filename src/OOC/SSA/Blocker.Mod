@@ -1451,7 +1451,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
             END;
             opnd := proxy. instr. opndList;
             WHILE (opnd # NIL) DO
-              IF opnd. IsValueOpnd() & CountAsRegister (opnd. arg) THEN
+              IF opnd. IsValueOpndHere() & CountAsRegister (opnd. arg) THEN
                 DEC (degreeDiff);
               END;
               opnd := opnd. nextOpnd;
