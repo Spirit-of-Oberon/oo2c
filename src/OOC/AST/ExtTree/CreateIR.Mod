@@ -319,7 +319,6 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     expr : IR.Expression;
   BEGIN
     expr := Expr(constExpr);
-    IF expr = b. errorExpr THEN RETURN END;
     WITH expr : IR.Const DO
       constDecl.SetValueType(expr.value, expr.type(Sym.PredefType));
     ELSE

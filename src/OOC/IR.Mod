@@ -743,6 +743,7 @@ PROCEDURE NewConst (sym: Symbol; type: Sym.Type;
   VAR
     const: Const;
   BEGIN
+    ASSERT (type # NIL);
     NEW (const);
     InitConst (const, sym, type, value);
     RETURN const
@@ -2189,9 +2190,7 @@ BEGIN
   exprType := expr.type;
   result := NIL;
 
-  IF expr.type = NIL THEN
-    (* expression may not have type, due to semantic error *)
-  ELSIF tr.SameType(type, exprType) OR tr.IsExtensionOf(type, exprType) THEN
+  IF tr.SameType(type, exprType) OR tr.IsExtensionOf(type, exprType) THEN
     (* same types *)
     result := expr
   ELSIF tr.IncludesType(type, exprType) THEN
