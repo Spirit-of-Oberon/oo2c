@@ -97,18 +97,18 @@ ERROR:
 
 ACCEPT:
 
-  1) v is a pointer to a record type
-  2) v is a variable parameter of record type
-  3) v is a dereferenced pointer to a record type (like p^(R))
-  4) v is the result of a function call
+  1) v is a pointer to a record type [OpTypeGuard1]
+  2) v is a variable parameter of record type [OpTypeGuard1]
+  3) v is a dereferenced pointer to a record type (like p^(R)) [OpTypeGuard1]
 
 REJECT:
 
   1) v is not a (dereferenced) pointer or variable parameter of record
-     type. 
-  2) v is a pointer of non-record type (eg. pointer to array).
-  3) T is not a type.
-  4) T is not an extension of the static type of v.
+     type. [OpTypeGuard2]
+  2) v is a pointer of non-record type (eg. pointer to array). [OpTypeGuard8]
+  3) T is not a type. [OpTypeGuard9]
+  4) T is not an extension of the static type of v. [OpTypeGuard3]
+  5) v is the result of a function call [OpTypeGuard7]
 
 ERROR:
 
