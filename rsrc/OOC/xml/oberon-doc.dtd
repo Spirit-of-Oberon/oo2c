@@ -80,7 +80,7 @@
 
 <!ELEMENT itemize (itemize-mark, itemize-text?, (item)*)>
 <!ATTLIST itemize %block-attr;>
-<!ELEMENT itemize-mark (#PCDATA|bullet|dots|minus|em-dash|result)*>
+<!ELEMENT itemize-mark (#PCDATA|%glyph;)*>
 <!ELEMENT itemize-text %block-elements;>
 <!ELEMENT item %block-elements;>
 <!ATTLIST item %block-attr;>
