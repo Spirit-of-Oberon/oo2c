@@ -537,7 +537,8 @@ PROCEDURE WriteHelp();
     Out.String("  --config <file>"); Out.Ln;
     Out.String("  --repository <directory>, -r <directory>"); Out.Ln;
     Out.String("  --no-rtc"); Out.Ln;
-    Out.String("  --error-style <string>"); Out.Ln;
+    Out.String("  --error-style (file:line:column|char-pos|attributes)");
+    Out.Ln;
   END WriteHelp;
 
 BEGIN  <*Warnings:=FALSE*>
