@@ -172,12 +172,34 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. right), Opnd.arg);
         RETURN instr
 
+      | expr: IR.BooleanOp DO
+        CASE expr.variant OF
+        | IR.and:
+          instr := pb. AddInstr (Opcode.and, Opcode.scBoolean);
+        | IR.or:
+          instr := pb. AddInstr (Opcode.or, Opcode.scBoolean);
+        ELSE
+          Log.Type("++ Unknown variant of BooleanOp in Expression", expr);
+          ASSERT (FALSE);
+        END;
+        instr. AddOpnd (Expression (expr. left), Opnd.arg);
+        instr. AddOpnd (Expression (expr. right), Opnd.arg);
+        RETURN instr
+        
       | expr: IR.Compare DO
         CASE expr.variant OF
         | IR.equal:
           RETURN AddCompareOp (expr, Opcode.eql);
         | IR.notEqual:
           RETURN AddCompareOp (expr, Opcode.neq);
+        | IR.less:
+          RETURN AddCompareOp (expr, Opcode.lss);
+        | IR.lessEqual:
+          RETURN AddCompareOp (expr, Opcode.leq);
+        | IR.greater:
+          RETURN AddCompareOp (expr, Opcode.gtr);
+        | IR.greaterEqual:
+          RETURN AddCompareOp (expr, Opcode.geq);
         ELSE
           Log.Type("++ Unknown variant of Compare in Expression", expr);
           ASSERT (FALSE);
@@ -399,10 +421,14 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RepeatStatm (statm)
             
       | statm: IR.WhileStatm DO
-        WhileStatm (statm)
+        WhileStatm (statm);
+
+      | statm: IR.ForStatm DO
+        (* FIXME... translate to nothing for now *)
 
       | statm: IR.CopyParameter DO
         CopyParameter (statm)
+            
       ELSE
         Log.Type("++ Unknown statement class in StatmSeq", statm);
         ASSERT (FALSE)
@@ -411,7 +437,4 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     RETURN s
   END StatmSeq;
 
-
-BEGIN
-  
 END OOC:SSA:IRtoSSA.

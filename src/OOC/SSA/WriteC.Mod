@@ -650,6 +650,15 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         
       | Opcode.negate:
         WriteMonadicOp (instr, "-", ";");
+
+      | Opcode.and:
+        WriteDyadicOp (instr, "&&");
+        
+      | Opcode.or:
+        WriteDyadicOp (instr, "||");
+        
+      | Opcode.not:
+        WriteMonadicOp (instr, "!", "");
         
       | Opcode.cap:
         WriteMonadicOp (instr, "_cap(", ");");
@@ -658,6 +667,14 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteDyadicOp (instr, "==");
       | Opcode.neq:
         WriteDyadicOp (instr, "!=");
+      | Opcode.lss:
+        WriteDyadicOp (instr, "<");
+      | Opcode.leq:
+        WriteDyadicOp (instr, "<=");
+      | Opcode.gtr:
+        WriteDyadicOp (instr, ">");
+      | Opcode.geq:
+        WriteDyadicOp (instr, ">=");
         
       | Opcode.assert:
         Assert (instr)
@@ -811,6 +828,8 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     w: Writer;
     haveCopyParameter: BOOLEAN;
   BEGIN
+    (*Log.String ("procedure", procDecl. decl. name. str^);*)
+    
     pb := SSA.NewProcBlock (procDecl. decl);
     enter := pb. selectReturn. opndList. arg. instr;
     s := IRtoSSA.StatmSeq (pb, enter. nextResult,
