@@ -59,7 +59,7 @@ test: mkdir
 ###      Run set of ``Hostess'' tests.  Convert XML report into HTML summary.
 ###      Note: This is only a template, hardcoded for a particular environment.
 ###      In other words: it won't work for you as is!
-run-hostess:
+run-hostess: mkdir
 	${OOC} -MOv RunTests
 	./RunTests rsrc/OOC/TestFramework/test-setup.xml /tmp/hostess-report.xml
 	java org.apache.xalan.xslt.Process -IN /tmp/hostess-report.xml -XSL rsrc/OOC/TestFramework/test-report-to-html.xsl -OUT /tmp/hostess-report.html
