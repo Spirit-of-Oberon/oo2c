@@ -306,6 +306,13 @@ TYPE
   END;
 
 TYPE
+  Ash* = POINTER TO AshDesc;
+  AshDesc = RECORD
+    (OperatorDesc)
+    value-, exp- :Expression;
+  END;
+
+TYPE
   Cap* = POINTER TO CapDesc;
   CapDesc = RECORD
     (OperatorDesc)
@@ -1151,7 +1158,7 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
 
 PROCEDURE (b: Builder) NewNil* (sym: Symbol): Expression;
   BEGIN
-    RETURN NewConst (sym, Predef.GetType (Predef.char), NIL);
+    RETURN NewConst (sym, Predef.GetType (Predef.nil), NIL);
   END NewNil;
 
 PROCEDURE (b: Builder) NewSize* (sym: Symbol; type: Expression): Expression;
@@ -1284,6 +1291,33 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitCap* (cap: Cap);
 PROCEDURE (cap: Cap) Accept* (v: Visitor);
   BEGIN
     v. VisitCap (cap)
+  END Accept;
+
+(* Operator Class: Ash
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitAsh (ash: Ash; sym: Symbol; value, exp: Expression);
+  BEGIN
+    InitOperator (ash, sym, Predef.GetType (Predef.longint));
+    ash. value := value;
+    ash. exp := exp;
+  END InitAsh;
+
+PROCEDURE (b: Builder) NewAsh (sym: Symbol; value, exp: Expression): Expression;
+  VAR
+    ash: Ash;
+  BEGIN
+    NEW (ash);
+    InitAsh (ash, sym, value, exp);
+    RETURN ash;
+  END NewAsh;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitAsh* (ash: Ash);
+  END VisitAsh;
+
+PROCEDURE (ash: Ash) Accept* (v: Visitor);
+  BEGIN
+    v. VisitAsh (ash)
   END Accept;
 
 (* Operator Class: Compare
@@ -2158,7 +2192,7 @@ PROCEDURE (b: Builder) NewCopyString* (sym: Symbol;
     cp: CopyString;
   BEGIN
     NEW (cp);
-    InitCopyString (cp, sym, source, dest, maxLength);
+    InitCopyString (cp, sym, source, dest, b. Fold (maxLength));
     RETURN cp
   END NewCopyString;
 
@@ -2804,7 +2838,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     leftIsSet := tr.IsSetType(leftType);
     leftIsBoolean := IsPredefClass(leftType, {Predef.boolean});
     leftIsChar := tr.IsCharType(leftType);
-    leftIsString := IsPredefClass(leftType, {Predef.charString});
+    leftIsString := tr.IsStringConst(leftType) OR
+        (leftType IS Sym.Array) & tr.IsCharType (leftType(Sym.Array). elementType);
 
     rightType := right.type; 
     rightIsNumeric := tr.IsNumericType(rightType);
@@ -2812,9 +2847,11 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     rightIsSet := tr.IsSetType(rightType);
     rightIsBoolean := IsPredefClass(rightType, {Predef.boolean});
     rightIsChar := tr.IsCharType(rightType);
-    rightIsString := IsPredefClass(rightType, {Predef.charString});
+    rightIsString := tr.IsStringConst(rightType) OR
+        (rightType IS Sym.Array) & tr.IsCharType (rightType(Sym.Array). elementType);
 
     result := NIL;  (* FIXME. keep the compiler happy until ASSERTs are removed *)
+    
     IF (id IN {Id.plus, Id.minus, Id.times})
       & leftIsNumeric & rightIsNumeric THEN
       (* ---- arithmetic operator ---- *)
@@ -2873,8 +2910,9 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       & (leftIsString & rightIsString) THEN
       (* FIXME... handle char array., string *)
       result := b.NewCompare(sym, left, right);
-    ELSIF (id IN {Id.eql, Id.neq})
-      & (leftType IS Sym.Pointer) & (rightType IS Sym.Pointer) THEN
+    ELSIF (id IN {Id.eql, Id.neq}) &
+          ((leftType IS Sym.Pointer) OR (leftType = Predef.GetType (Predef.nil))) &
+          ((rightType IS Sym.Pointer) OR (rightType = Predef.GetType (Predef.nil))) THEN
       (* FIXME... deal with NIL, check types  *)
       result := b.NewCompare(sym, left, right);
     ELSIF (id IN {Id.eql, Id.neq})
@@ -3137,6 +3175,26 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         END;
         RETURN b. errorExpr;
         
+      | Predef.inc:
+        IF (LEN (arguments^) = 1) THEN
+          delta := b. GetOne (design. sym, arguments[0]. type);
+        ELSE
+          delta := arguments[1];
+        END;
+        RETURN b. NewAssignOp (design. sym,
+                               b. NewBinaryArith
+                               (design. sym, arithAdd, arguments[0], delta));
+        
+      | Predef.dec:
+        IF (LEN (arguments^) = 1) THEN
+          delta := b. GetOne (design. sym, arguments[0]. type);
+        ELSE
+          delta := arguments[1];
+        END;
+        RETURN b. NewAssignOp (design. sym,
+                               b. NewBinaryArith
+                               (design. sym, arithSub, arguments[0], delta));
+        
       (* predefined functions *)
       | Predef.len:
         IF (LEN (arguments^) # 2) THEN
@@ -3168,25 +3226,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       | Predef.size:
         RETURN b. NewSize (design. sym, arguments[0])
 
-      | Predef.inc:
-        IF (LEN (arguments^) = 1) THEN
-          delta := b. GetOne (design. sym, arguments[0]. type);
-        ELSE
-          delta := arguments[1];
-        END;
-        RETURN b. NewAssignOp (design. sym,
-                               b. NewBinaryArith
-                               (design. sym, arithAdd, arguments[0], delta));
-        
-      | Predef.dec:
-        IF (LEN (arguments^) = 1) THEN
-          delta := b. GetOne (design. sym, arguments[0]. type);
-        ELSE
-          delta := arguments[1];
-        END;
-        RETURN b. NewAssignOp (design. sym,
-                               b. NewBinaryArith
-                               (design. sym, arithSub, arguments[0], delta));
+      | Predef.ash:
+        RETURN b. NewAsh (design. sym, arguments[0], arguments[1]);
         
       | Predef.cap:
         RETURN b. NewCap (design. sym, arguments[0]);

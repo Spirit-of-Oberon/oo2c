@@ -290,6 +290,15 @@ BEGIN
   END;
 END VisitNot;
 
+PROCEDURE (c: ConstFold) VisitAsh* (op: IR.Ash);
+  VAR
+    v, e: Integer.Value;
+  BEGIN
+    v := op. value(IR.Const). value(Integer.Value);
+    e := op. exp(IR.Const). value(Integer.Value);
+    c. result := c. ValueConst (v. Ash (e), op);
+  END VisitAsh;
+
 PROCEDURE (c: ConstFold) VisitCap* (op: IR.Cap);
 VAR 
   value : Language.Value;

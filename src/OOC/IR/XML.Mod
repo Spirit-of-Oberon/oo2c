@@ -226,6 +226,14 @@ PROCEDURE (v: Visitor) VisitNot* (neg: IR.Not);
     v. w. EndTag;  (* not *)
   END VisitNot;
 
+PROCEDURE (v: Visitor) VisitAsh* (ash: IR.Ash);
+  BEGIN
+    v. w. StartTag ("ash", FALSE);
+    ash. value. Accept (v);
+    ash. exp. Accept (v);
+    v. w. EndTag;  (* ash *)
+  END VisitAsh;
+
 PROCEDURE (v: Visitor) VisitCap* (cap: IR.Cap);
   BEGIN
     v. w. StartTag ("cap", FALSE);
