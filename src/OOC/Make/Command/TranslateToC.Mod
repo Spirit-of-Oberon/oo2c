@@ -224,7 +224,7 @@ PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
     WriteModuleName (w, "#define _MODULE_", m, "_", TRUE);
     w. WriteLn;
     
-    (* __typemap definitions are required parse definitions of the
+    (* __typemap definitions are required to parse definitions of the
        module header file *)
     w. WriteString ('#include "__typemap.h"');
     w. WriteLn;
@@ -232,13 +232,6 @@ PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
     (* pull in type definitions for the run-time meta data: module descriptor,
        type descriptor, and so on.  *)
     w. WriteString ('#include "'+Config.runtimeModule+'.h"');
-    w. WriteLn;
-    
-    import := m. importList;
-    WHILE (import # NIL) DO
-      w. WriteInclude (import.imported.GetURI (Repository.modHeaderFileC));
-      import := import. nextImport
-    END;
     w. WriteLn;
     
     ConvertDecl.ConvertSymTab (w, m, symTab, exports, TRUE);
