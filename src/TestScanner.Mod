@@ -1,0 +1,77 @@
+MODULE TestScanner;
+
+IMPORT
+  StdChannels, ProgramArgs, TextRider, Out, Files, Msg,
+  OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Builder,
+  OOC:Scanner, OOC:Scanner:Builder:XML, OOC:Scanner:Builder:Identity, 
+  OOC:Scanner:Builder:Statistics, BooleanValue := Config:Value:Boolean;
+
+CONST
+  modeXML = 0;
+  modeIdentity = 1;
+  modeStatistics = 2;
+  
+VAR
+  argReader: TextRider.Reader;
+  file: Files.File;
+  arg, msgText: ARRAY 1024 OF CHAR;
+  res: Msg.Msg;
+  errList: Error.List;
+  inputBuffer: InputBuffer.Buffer;
+  pragmaSection: Pragmas.Section;
+  pv: Pragmas.Pragma;
+  scannerBuilder: Builder.Builder;
+  mode: INTEGER;
+BEGIN
+  IF (ProgramArgs.args. ArgNumber() = 0) THEN
+    Out.String ("Usage: TestScanner [--xml|--identity|--statistics] <file>"); Out.Ln;
+    HALT (1)
+  ELSE
+    mode := modeXML;
+    argReader := TextRider.ConnectReader (ProgramArgs.args);
+    argReader. ReadLine (arg);           (* skip command name *)
+    LOOP
+      argReader. ReadLine (arg);
+      IF (argReader. res # TextRider.done) THEN
+        EXIT
+      END;
+      
+      IF (arg = "--xml") THEN
+        mode := modeXML
+      ELSIF (arg = "--identity") THEN
+        mode := modeIdentity
+      ELSIF (arg = "--statistics") THEN
+        mode := modeStatistics
+      ELSE
+        file := Files.Old (arg, {Files.read}, res);
+        IF (file = NIL) THEN
+          res. GetText (msgText);
+          Out.String ("Error opening "); Out.String (arg); Out.Ln;
+          Out.String (msgText); Out.Ln;
+          HALT (1)
+        ELSE
+          errList := Error.NewList (arg);
+          inputBuffer := InputBuffer.New (file, errList);
+          pragmaSection := Pragmas.New();
+          pv := pragmaSection. Set ("predef_true", BooleanValue.New (TRUE));
+          pv := pragmaSection. Set ("predef_false", BooleanValue.New (FALSE));
+          
+          CASE mode OF
+          | modeXML:
+            scannerBuilder := XML.New (inputBuffer, StdChannels.stdout)
+          | modeIdentity:
+            scannerBuilder := Identity.New (inputBuffer, StdChannels.stdout)
+          | modeStatistics:
+            scannerBuilder := Statistics.New (inputBuffer, StdChannels.stdout)
+          END;
+          
+          Scanner.ScanInput (scannerBuilder, pragmaSection, Scanner.enableAll);
+          IF (errList. msgCount # 0) THEN
+            errList. Write (StdChannels.stderr);
+            HALT (1)
+          END
+        END
+      END
+    END
+  END
+END TestScanner.

@@ -1,0 +1,13 @@
+In file not-wf/src/M011.Mod: 
+Could not resolve identifier `b'
+column=12
+ident=b
+line=1
+pos=25
+
+Could not resolve identifier `b'
+column=12
+ident=b
+line=1
+pos=25
+

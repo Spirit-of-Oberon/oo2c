@@ -1,0 +1,5 @@
+The list of text markup includes these commands: cite (@cite{sample}),
+code (@code{sample}), dfn (@dfn{sample}), emph (@emph{sample}), file
+(@file{sample}), kbd (@kbd{sample}), samp (@samp{sample}), strong
+(@strong{sample}), var (@var{sample}), url (@url{sample}), asis
+(@asis{sample}).

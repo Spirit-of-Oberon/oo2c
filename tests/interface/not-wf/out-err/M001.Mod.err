@@ -1,0 +1,11 @@
+In file not-wf/src/M001.Mod: 
+Found `{' outside of a command
+column=43
+line=1
+pos=56
+
+Found `}' outside of a command
+column=30
+line=2
+pos=89
+

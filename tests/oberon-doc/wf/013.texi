@@ -1,0 +1,2 @@
+The @@email command can have one or two arguments.  They are rendered
+like this: @email{foo@@bar.org} and @email{foo@@bar.org, displayed text}.

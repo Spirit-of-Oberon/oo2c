@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*DEFINE new:=1*&gt;</symbol>
+<symbol id='whitespace' pos='17' line='0' column='17'>&#10;</symbol>
+<symbol id='pragma' pos='18' line='1' column='0'>&lt;*PUSH; new:=2; IF new=2 THEN*&gt;</symbol>
+<symbol id='whitespace' pos='49' line='1' column='31'>&#10;</symbol>
+<symbol id='ident' pos='50' line='2' column='0'>a</symbol>
+<symbol id='whitespace' pos='51' line='2' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='52' line='3' column='0'>&lt;*END; PUSH; new:=3; IF new=3 THEN*&gt;</symbol>
+<symbol id='whitespace' pos='88' line='3' column='36'>&#10;</symbol>
+<symbol id='ident' pos='89' line='4' column='0'>b</symbol>
+<symbol id='whitespace' pos='90' line='4' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='91' line='5' column='0'>&lt;*END; POP; IF new=2 THEN*&gt;</symbol>
+<symbol id='whitespace' pos='118' line='5' column='27'>&#10;</symbol>
+<symbol id='ident' pos='119' line='6' column='0'>c</symbol>
+<symbol id='whitespace' pos='120' line='6' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='121' line='7' column='0'>&lt;*END; POP; IF new=1 THEN*&gt;</symbol>
+<symbol id='whitespace' pos='148' line='7' column='27'>&#10;</symbol>
+<symbol id='ident' pos='149' line='8' column='0'>d</symbol>
+<symbol id='whitespace' pos='150' line='8' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='151' line='9' column='0'>&lt;*END*&gt;</symbol>
+<symbol id='endOfFile' pos='158' line='9' column='7'></symbol>
+</document>

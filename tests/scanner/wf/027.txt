@@ -1,0 +1,10 @@
+<*DEFINE d:=1*>
+a
+<*IF d=1 THEN*>
+b
+<*END; d:=2; IF d=2 THEN*>
+c
+<*END; d:=3; IF d=0 THEN*>
+d
+<*END*>
+e

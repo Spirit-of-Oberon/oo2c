@@ -1,0 +1,9 @@
+Another table, this one uses a default different than `asis':
+VAR1
+     First item.
+
+VAR2
+     Second item.
+
+   And so it ends.
+

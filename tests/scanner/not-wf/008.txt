@@ -1,0 +1,1 @@
+slightly messed up exponent: 10.0E 10

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>has</symbol>
+<symbol id='whitespace' pos='3' line='0' column='3'> </symbol>
+<symbol id='ident' pos='4' line='0' column='4'>a</symbol>
+<symbol id='whitespace' pos='5' line='0' column='5'> </symbol>
+<symbol id='ident' pos='6' line='0' column='6'>hex</symbol>
+<symbol id='whitespace' pos='9' line='0' column='9'> </symbol>
+<symbol id='ident' pos='10' line='0' column='10'>digit</symbol>
+<symbol id='comma' pos='15' line='0' column='15'>,</symbol>
+<symbol id='whitespace' pos='16' line='0' column='16'> </symbol>
+<symbol id='ident' pos='17' line='0' column='17'>but</symbol>
+<symbol id='whitespace' pos='20' line='0' column='20'> </symbol>
+<symbol id='ident' pos='21' line='0' column='21'>is</symbol>
+<symbol id='whitespace' pos='23' line='0' column='23'> </symbol>
+<symbol id='ident' pos='24' line='0' column='24'>intended</symbol>
+<symbol id='whitespace' pos='32' line='0' column='32'> </symbol>
+<symbol id='ident' pos='33' line='0' column='33'>as</symbol>
+<symbol id='whitespace' pos='35' line='0' column='35'> </symbol>
+<symbol id='ident' pos='36' line='0' column='36'>decimal</symbol>
+<symbol id='colon' pos='43' line='0' column='43'>:</symbol>
+<symbol id='whitespace' pos='44' line='0' column='44'> </symbol>
+<symbol id='invalid' pos='45' line='0' column='45'>1A</symbol>
+<symbol id='whitespace' pos='47' line='0' column='47'>&#10;</symbol>
+<symbol id='endOfFile' pos='48' line='1' column='0'></symbol>
+</document>

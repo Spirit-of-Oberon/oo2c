@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>slightly</symbol>
+<symbol id='whitespace' pos='8' line='0' column='8'> </symbol>
+<symbol id='ident' pos='9' line='0' column='9'>messed</symbol>
+<symbol id='whitespace' pos='15' line='0' column='15'> </symbol>
+<symbol id='ident' pos='16' line='0' column='16'>up</symbol>
+<symbol id='whitespace' pos='18' line='0' column='18'> </symbol>
+<symbol id='ident' pos='19' line='0' column='19'>exponent</symbol>
+<symbol id='colon' pos='27' line='0' column='27'>:</symbol>
+<symbol id='whitespace' pos='28' line='0' column='28'> </symbol>
+<symbol id='invalid' pos='29' line='0' column='29'>10.0E</symbol>
+<symbol id='whitespace' pos='34' line='0' column='34'> </symbol>
+<symbol id='number10' pos='35' line='0' column='35'>10</symbol>
+<symbol id='whitespace' pos='37' line='0' column='37'>&#10;</symbol>
+<symbol id='endOfFile' pos='38' line='1' column='0'></symbol>
+</document>

@@ -1,0 +1,5 @@
+MODULE M;
+
+VAR t*: INTEGER;
+
+END M.

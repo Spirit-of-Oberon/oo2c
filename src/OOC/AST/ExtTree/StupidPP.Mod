@@ -1,0 +1,594 @@
+(* 	$Id$	 *)
+MODULE OOC:AST:ExtTree:StupidPP;
+(*  A simple pretty printer: it writes the syntax tree, omitting any comments.
+    Copyright (C) 2000  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
+
+
+IMPORT
+  Log, Channel, TextRider, OOC:Scanner:Symbol, OOC:AST, OOC:AST:ExtTree;
+  
+PROCEDURE Write* (ch: Channel.Channel; m: ExtTree.Module);
+(**Writes the abstract syntax tree @oparam{m} to the output channel 
+   @oparam{ch}.  The result is the content of the source module, with a
+   very rigid formatting and minus any embedded comments or pragmas.  *)
+  VAR
+    w: TextRider.Writer;
+    indent: LONGINT;
+    
+  PROCEDURE NewLine;
+    VAR
+      i: LONGINT;
+    BEGIN
+      w. WriteLn;
+      FOR i := 1 TO indent DO
+        w. WriteString ("  ")
+      END
+    END NewLine;
+
+  PROCEDURE Node (n: AST.Node);
+    VAR
+      i, j: LONGINT;
+
+    BEGIN
+      IF (n # NIL) THEN
+        WITH n: AST.NodeList DO
+          FOR i := 0 TO n. len-1 DO
+            Node (n. n[i])
+          END
+         
+        | n: ExtTree.Terminal DO
+          w. byteWriter. WriteBytes (n. sym. str^, 0, n. sym. len)
+        
+        | n: ExtTree.IdentDef DO
+          Node (n. ident);
+          IF (n. mark # NIL) THEN
+            Node (n. mark)
+          END
+        
+        | n: ExtTree.ModuleIdent DO
+          Node (n. nameList)
+          
+        | n: ExtTree.ArrayType DO
+          w. WriteString ("ARRAY");
+          Node (n. flags);
+          i := 0;
+          WHILE (i < n. exprList. len) DO
+            IF (i # 0) THEN
+              w. WriteString (", ")
+            ELSE
+              w. WriteString (" ")
+            END;
+            Node (n. exprList. n[i]);
+            INC (i, 2)
+          END;
+          w. WriteString (" OF ");
+          Node (n. type)
+        
+        | n: ExtTree.FieldList DO
+          i := 0;
+          WHILE (i < n. identList. len) DO
+            IF (i # 0) THEN
+              w. WriteString (", ")
+            END;
+            Node (n. identList. n[i]);
+            INC (i, 2)
+          END;
+          w. WriteString (": ");
+          Node (n. type)
+        
+        | n: ExtTree.RecordType DO
+          w. WriteString ("RECORD");
+          Node (n. flags);
+          INC (indent);
+          IF (n. baseType # NIL) THEN
+            NewLine;
+            w. WriteString ("(");
+            Node (n. baseType);
+            w. WriteString (")")
+          END;
+          i := 0;
+          WHILE (i < n. fieldLists. len) DO
+            IF (n. fieldLists. n[i] = NIL) THEN
+              (* emtpy field list *)
+            ELSIF (n. fieldLists. n[i] IS ExtTree.Terminal) THEN
+              w. WriteString (";")
+            ELSE
+              NewLine;
+              Node (n. fieldLists. n[i]);
+            END;
+            INC (i)
+          END;
+          DEC (indent);
+          NewLine;
+          w. WriteString ("END")
+        
+        | n: ExtTree.PointerType DO
+          w. WriteString ("POINTER ");
+          Node (n. flags);
+          w. WriteString ("TO ");
+          Node (n. type)
+        
+        | n: ExtTree.FPSection DO
+          IF (n. var # NIL) THEN
+            w. WriteString ("VAR ")
+          END;
+          Node (n. identList. n[0]);
+          Node (n. identList. n[1]);
+          i := 3;
+          WHILE (i < n. identList. len) DO
+            w. WriteString (", ");
+            Node (n. identList. n[i]);
+            Node (n. identList. n[i+1]);
+            INC (i, 3)
+          END;
+          w. WriteString (": ");
+          Node (n. type)
+        
+        | n: ExtTree.FormalPars DO
+          Node (n. flags);
+          IF (n. fpSections # NIL) THEN
+            w. WriteString (" (");
+            i := 0;
+            WHILE (i < n. fpSections. len) DO
+              IF (i # 0) THEN
+                w. WriteString ("; ")
+              END;
+              Node (n. fpSections. n[i]);  (* fpSection or restParam *)
+              INC (i, 2)
+            END;
+            w. WriteString (")");
+            IF (n. result # NIL) THEN
+              w. WriteString (": ");
+              Node (n. result)
+            END
+          END
+        
+        | n: ExtTree.ProcType DO
+          w. WriteString ("PROCEDURE ");
+          Node (n. formalPars)
+          
+        | n: ExtTree.ImportDecl DO
+          IF (n. alias # NIL) THEN
+            Node (n. alias);
+            w. WriteString (" := ")
+          END;
+          Node (n. module)
+          
+        | n: ExtTree.ConstDecl DO
+          INC (indent);
+          NewLine;
+          Node (n. identDef);
+          w. WriteString (" = ");
+          Node (n. expr);
+          w. WriteString (";");
+          DEC (indent)
+          
+        | n: ExtTree.TypeDecl DO
+          INC (indent);
+          NewLine;
+          Node (n. identDef);
+          w. WriteString (" = ");
+          Node (n. type);
+          w. WriteString (";");
+          DEC (indent)
+          
+        | n: ExtTree.VarDecl DO
+          INC (indent);
+          NewLine;
+          Node (n. identList. n[0]);
+          Node (n. identList. n[1]);
+          i := 3;
+          WHILE (i < n. identList. len) DO
+            w. WriteString (", ");
+            Node (n. identList. n[i]);
+            Node (n. identList. n[i+1]);
+            INC (i, 3)
+          END;
+          w. WriteString (": ");
+          Node (n. type);
+          w. WriteString (";");
+          DEC (indent)
+          
+        | n: ExtTree.Receiver DO
+          w. WriteString ("(");
+          IF (n. var # NIL) THEN
+            w. WriteString ("VAR ")
+          END;
+          Node (n. ident);
+          w. WriteString (": ");
+          Node (n. type);
+          w. WriteString (") ")
+          
+        | n: ExtTree.ProcDecl DO
+          NewLine; NewLine;
+          w. WriteString ("PROCEDURE ");
+          IF (n. arrow # NIL) THEN
+            w. WriteString ("^")
+          END;
+          Node (n. receiver);
+          Node (n. flags);
+          Node (n. identDef);
+          Node (n. formalPars);
+          w. WriteString (";");
+          IF (n. body # NIL) THEN
+            INC (indent);
+            Node (n. body);
+            DEC (indent);
+            w. WriteString (";")
+          END
+        
+        | n: ExtTree.ImportList DO
+          NewLine;
+          NewLine;
+          w. WriteString ("IMPORT");
+          INC (indent);
+          NewLine;
+          Node (n. imports. n[0]);
+          i := 2;
+          WHILE (i < n. imports. len) DO
+            w. WriteString (", ");
+            Node (n. imports. n[i]);
+            INC (i, 2)
+          END;
+          w. WriteString (";");
+          DEC (indent);
+        
+        | n: ExtTree.Body DO
+          FOR i := 0 TO n. declSeq. len-1 DO
+            IF (n. declSeq. n[i] IS ExtTree.Terminal) THEN
+              NewLine; NewLine
+            END;
+            Node (n. declSeq. n[i])
+          END;
+          IF (n. begin # NIL) THEN
+            NewLine;
+            w. WriteString ("BEGIN");
+            INC (indent);
+            Node (n. statmSeq);
+            DEC (indent)
+          END;
+          NewLine;
+          w. WriteString ("END ");
+          Node (n. name)
+          
+        | n: ExtTree.Module DO
+          w. WriteString ("MODULE ");
+          Node (n. name);
+          Node (n. flags);
+          w. WriteString (";");
+          Node (n. importList);
+          Node (n. body);
+          w. WriteString (".");
+          w. WriteLn
+        
+        | n: ExtTree.Operator DO
+          IF (n. op(ExtTree.Terminal). sym. id = Symbol.becomes) THEN
+            NewLine
+          END;
+          Node (n. left);
+          IF Symbol.IsKeyword (n. op(ExtTree.Terminal). sym. id) THEN
+            w. WriteString (" ");
+            Node (n. op);
+            w. WriteString (" ")
+          ELSE
+            Node (n. op);
+          END;
+          Node (n. right)
+        
+        | n: ExtTree.Factor DO
+          w. WriteString ("(");
+          Node (n. expr);
+          w. WriteString (")")
+          
+        
+        | n: ExtTree.Set DO
+          IF (n. type # NIL) THEN
+            Node (n. type)
+          END;
+          w. WriteString ("{");
+          i := 0;
+          WHILE (i < n. elementList. len) DO
+            IF (i # 0) THEN
+              w. WriteString (", ")
+            END;
+            Node (n. elementList. n[i]);
+            INC (i, 2)
+          END;
+          w. WriteString ("}")
+        
+        | n: ExtTree.ArrayIndex DO
+          Node (n. design);
+          w. WriteString ("[");
+          i := 0;
+          WHILE (i < n. indices. len) DO
+            IF (i # 0) THEN
+              w. WriteString (", ")
+            END;
+            Node (n. indices. n[i]);
+            INC (i, 2)
+          END;
+          w. WriteString ("]");
+        
+        | n: ExtTree.FunctionCall DO
+          Node (n. design);
+          w. WriteString ("(");
+          i := 0;
+          WHILE (i < n. arguments. len) DO
+            IF (i # 0) THEN
+              w. WriteString (", ")
+            END;
+            Node (n. arguments. n[i]);
+            INC (i, 2)
+          END;
+          w. WriteString (")");
+        
+        
+        | n: ExtTree.Assignment DO
+          NewLine;
+          Node (n. assignment)
+          
+        | n: ExtTree.ProcedureCall DO
+          NewLine;
+          Node (n. call)
+          
+        | n: ExtTree.IfStatm DO
+          i := 0;
+          WHILE (i < n. guardList. len) DO
+            NewLine;
+            IF (i = 0) THEN
+              w. WriteString ("IF ")
+            ELSE
+              w. WriteString ("ELSIF ")
+            END;
+            Node (n. guardList. n[i+1]);
+            w. WriteString (" THEN");
+            INC (indent);
+            Node (n. guardList. n[i+3]);
+            DEC (indent);
+            INC (i, 4)
+          END;
+          IF (n. else # NIL) THEN
+            NewLine;
+            w. WriteString ("ELSE");
+            INC (indent);
+            Node (n. elseStatmSeq);
+            DEC (indent)
+          END;
+          NewLine;
+          w. WriteString ("END")
+        
+        | n: ExtTree.CaseStatm DO
+          NewLine;
+          w. WriteString ("CASE ");
+          Node (n. expr);
+          w. WriteString (" OF");
+          i := 0;
+          WHILE (i < n. caseList. len) DO
+            ASSERT (i+2 < n. caseList. len);
+            IF (n. caseList. n[i] # NIL) THEN
+              NewLine;
+              w. WriteString ("| ");
+              j := 0;
+              WHILE (j < n. caseList. n[i](AST.NodeList). len) DO
+                IF (j # 0) THEN
+                  w. WriteString (", ")
+                END;
+                Node (n. caseList. n[i](AST.NodeList). n[j]);
+                INC (j, 2)
+              END;
+              w. WriteString (": ");
+              INC (indent);
+              Node (n. caseList. n[i+2]);
+              DEC (indent)
+            END;
+            INC (i, 4)
+          END;
+          IF (n. else # NIL) THEN
+            NewLine;
+            w. WriteString ("ELSE");
+            INC (indent);
+            Node (n. elseStatmSeq);
+            DEC (indent)
+          END;
+          NewLine;
+          w. WriteString ("END")
+        
+        | n: ExtTree.WhileStatm DO
+          NewLine;
+          w. WriteString ("WHILE ");
+          Node (n. guard);
+          w. WriteString (" DO");
+          INC (indent);
+          Node (n. statmSeq);
+          DEC (indent);
+          NewLine;
+          w. WriteString ("END")
+        
+        | n: ExtTree.RepeatStatm DO
+          NewLine;
+          w. WriteString ("REPEAT");
+          INC (indent);
+          Node (n. statmSeq);
+          DEC (indent);
+          NewLine;
+          w. WriteString ("UNTIL ");
+          Node (n. expr)
+        
+        | n: ExtTree.ForStatm DO
+          NewLine;
+          w. WriteString ("FOR ");
+          Node (n. ident);
+          w. WriteString (" := ");
+          Node (n. startValue);
+          w. WriteString (" TO ");
+          Node (n. endValue);
+          IF (n. step # NIL) THEN
+            w. WriteString (" BY ");
+            Node (n. step)
+          END;
+          w. WriteString (" DO");
+          INC (indent);
+          Node (n. statmSeq);
+          DEC (indent);
+          NewLine;
+          w. WriteString ("END")
+          
+        | n: ExtTree.LoopStatm DO
+          NewLine;
+          w. WriteString ("LOOP");
+          INC (indent);
+          Node (n. statmSeq);
+          DEC (indent);
+          NewLine;
+          w. WriteString ("END")
+        
+        | n: ExtTree.WithStatm DO
+          i := 0;
+          WHILE (i < n. guardList. len) DO
+            NewLine;
+            IF (i = 0) THEN
+              w. WriteString ("WITH ")
+            ELSE
+              w. WriteString ("| ")
+            END;
+            Node (n. guardList. n[i+1]);
+            w. WriteString (" DO");
+            INC (indent);
+            Node (n. guardList. n[i+3]);
+            DEC (indent);
+            INC (i, 4)
+          END;
+          IF (n. else # NIL) THEN
+            NewLine;
+            w. WriteString ("ELSE");
+            INC (indent);
+            Node (n. elseStatmSeq);
+            DEC (indent)
+          END;
+          NewLine;
+          w. WriteString ("END")
+        
+        | n: ExtTree.ExitStatm DO
+          NewLine;
+          w. WriteString ("EXIT")
+        
+        | n: ExtTree.ReturnStatm DO
+          NewLine;
+          w. WriteString ("RETURN");
+          IF (n. expr # NIL) THEN
+            w. WriteString (" ");
+            Node (n. expr)
+          END
+        
+        
+        
+        | n: ExtTree.Flags DO
+          w. WriteString (" [");
+          Node (n. flagList);
+          w. WriteString ("]")
+        
+        | n: ExtTree.ProcIdFlag DO
+          w. WriteString ("PROC_ID=");
+          Node (n. number)
+        
+        | n: ExtTree.LibraryFlag DO
+          w. WriteString ("LIBRARY ");
+          Node (n. name);
+          w. WriteString (" ");
+          Node (n. version);
+          w. WriteString ("; ")
+        
+        | n: ExtTree.ModuleFlags DO
+          Node (n. library);
+          Node (n. external);
+          w. WriteString (" ");
+          Node (n. callConv);
+          i := 1;
+          WHILE (i < n. moduleFlags. len) DO
+            w. WriteString (", ");
+            Node (n. moduleFlags. n[i]);
+            INC (i, 2)
+          END;
+          IF (n. semicolon # NIL) THEN
+            w. WriteString ("; LINK ");
+            i := 0;
+            WHILE (i < n. linkSections. len) DO
+              IF (i # 0) THEN
+                w. WriteString ("; ")
+              END;
+              Node (n. linkSections. n[i]);
+              INC (i, 2)
+            END;
+            w. WriteString (" END")
+          END
+        
+        | n: ExtTree.LinkFileFlag DO
+          w. WriteString ("FILE ");
+          Node (n. fileName);
+          IF (n. addOption # NIL) THEN
+            w. WriteString (" ADD_OPTION ");
+            Node (n. prefixOpt);
+            IF (n. comma # NIL) THEN
+              w. WriteString (", ");
+              Node (n. suffixOpt)
+            END
+          END
+        
+        | n: ExtTree.LinkObjFlag DO
+          w. WriteString ("OBJ ");
+          Node (n. fileName)
+        
+        | n: ExtTree.LinkLibFlag DO
+          w. WriteString ("LIB ");
+          Node (n. libName);
+          IF (n. lParen # NIL) THEN
+            w. WriteString (" (");
+            i := 0;
+            WHILE (i < n. dependences. len) DO
+              IF (i # 0) THEN
+                w. WriteString (", ")
+              END;
+              Node (n. dependences. n[i]);
+              INC (i, 2)
+            END;
+            w. WriteString (")")
+          END;
+          IF (n. addOption # NIL) THEN
+            w. WriteString (" ADD_OPTION ");
+            Node (n. prefixOpt);
+            IF (n. comma # NIL) THEN
+              w. WriteString (", ");
+              Node (n. suffixOpt)
+            END
+          END
+        ELSE
+          Log.Type ("unknown node type", n);
+          ASSERT (FALSE)
+        END  
+      END
+    END Node;
+
+  BEGIN
+    w := TextRider.ConnectWriter (ch);
+    indent := 0;
+    Node (m)
+  END Write;
+
+END OOC:AST:ExtTree:StupidPP.

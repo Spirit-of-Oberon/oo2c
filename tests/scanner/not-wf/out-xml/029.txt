@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*IF predef_true THEN*&gt;</symbol>
+<symbol id='endOfFile' pos='23' line='0' column='23'></symbol>
+</document>

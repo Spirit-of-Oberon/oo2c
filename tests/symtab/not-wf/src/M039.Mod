@@ -1,0 +1,8 @@
+MODULE M;
+
+PROCEDURE ^ P;
+
+PROCEDURE P (x: INTEGER);
+  END P;
+  
+END M.

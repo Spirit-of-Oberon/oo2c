@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>The first paragraph is never indented.</summary>
+  <p pad-after='yes' no-indent='yes'>The first paragraph is never indented.</p>
+  <p pad-after='yes' no-indent='yes'>To avoid the additional indenting of the first line of a parapgraph, like this one, insert a @noindent command before the paragraph.</p>
+</oberon-doc>

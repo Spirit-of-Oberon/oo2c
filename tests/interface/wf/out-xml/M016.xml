@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M016' id=''>
+  <class name='C0'>
+    <type-decl name='C0' id='C0' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='C0Desc' href='#C0Desc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='C0Desc' id='C0Desc' export='no'>
+      <type>
+        <record/>
+      </type>
+    </type-decl>
+    <procedure name='P' id='C0Desc.P' export='yes'>
+      <oberon-doc>
+        <summary><oberon-param href='#C0Desc.P.xxx'>xxx</oberon-param>, <oberon-param href='#C0Desc.P.y'>y</oberon-param></summary>
+        <p pad-after='yes' no-indent='yes'><oberon-param href='#C0Desc.P.xxx'>xxx</oberon-param>, <oberon-param href='#C0Desc.P.y'>y</oberon-param></p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='xxx' id='C0Desc.P.xxx' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='C0' href='#C0'/>
+          </type>
+        </receiver-decl>
+        <parameter-decl name='y' id='C0Desc.P.y' export='no' variable-parameter='no'>
+          <type>
+            <type-name module='#predef' name='CHAR'/>
+          </type>
+        </parameter-decl>
+      </formal-parameters>
+    </procedure>
+    <known-extension module='M016' name='C1Desc' class='C1' href='#C1Desc'/>
+    <known-extension module='M016' name='C2Desc' class='C2' href='#C2Desc'/>
+  </class>
+  <class name='C1'>
+    <type-decl name='C1' id='C1' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='C1Desc' href='#C1Desc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='C1Desc' id='C1Desc' export='no'>
+      <type>
+        <record>
+          <field-decl name='a' id='C1Desc.a' export='read-only'>
+            <type>
+              <type-name module='#predef' name='INTEGER'/>
+            </type>
+          </field-decl>
+        </record>
+      </type>
+    </type-decl>
+    <procedure name='P' id='C1Desc.P' export='yes'>
+      <doc-inherited-from module='M016' name='P' class='C0' href='#C0Desc.P'/>
+      <oberon-doc>
+        <summary><oberon-param href='#C1Desc.P.c1'>c1</oberon-param>, <oberon-param href='#C1Desc.P.b'>b</oberon-param></summary>
+        <p pad-after='yes' no-indent='yes'><oberon-param href='#C1Desc.P.c1'>c1</oberon-param>, <oberon-param href='#C1Desc.P.b'>b</oberon-param></p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='c1' id='C1Desc.P.c1' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='C1' href='#C1'/>
+          </type>
+        </receiver-decl>
+        <parameter-decl name='b' id='C1Desc.P.b' export='no' variable-parameter='no'>
+          <type>
+            <type-name module='#predef' name='CHAR'/>
+          </type>
+        </parameter-decl>
+      </formal-parameters>
+      <redefined-method module='M016' name='P' class='C0' href='#C0Desc.P'/>
+    </procedure>
+    <base-class module='M016' class='C0' href='#C0'>
+      <inherited-method module='M016' name='P' class='C0' href='#C0Desc.P'/>
+    </base-class>
+    <known-extension module='M016' name='C2Desc' class='C2' href='#C2Desc'/>
+  </class>
+  <class name='C2'>
+    <type-decl name='C2' id='C2' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='C2Desc' href='#C2Desc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='C2Desc' id='C2Desc' export='no'>
+      <type>
+        <record/>
+      </type>
+    </type-decl>
+    <base-class module='M016' class='C1' href='#C1'>
+      <inherited-method module='M016' name='P' class='C1' href='#C1Desc.P'/>
+      <inherited-field module='M016' name='a' class='C1' href='#C1Desc.a'/>
+      <base-class module='M016' class='C0' href='#C0'/>
+    </base-class>
+  </class>
+</interface-description>

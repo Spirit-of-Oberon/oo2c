@@ -1,0 +1,10 @@
+<arguments>
+</arguments>
+<options>
+  <value name='a' defining_module='Config:Value:Integer'>0</value>
+  <value name='b' defining_module='Config:Value:Integer'>0</value>
+  <value name='c' defining_module='Config:Value:Integer'>-1</value>
+  <value name='d' defining_module='Config:Value:Integer'>1</value>
+  <value name='e' defining_module='Config:Value:Integer'>2147483647</value>
+  <value name='f' defining_module='Config:Value:Integer'>-2147483648</value>
+</options>

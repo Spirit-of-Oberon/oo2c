@@ -1,0 +1,6 @@
+In file not-wf/009.Mod: 
+A module cannot import itself
+column=10
+line=1
+pos=25
+

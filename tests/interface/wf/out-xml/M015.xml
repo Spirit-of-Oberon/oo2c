@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M015' id=''>
+  <type-decl name='ArgList' id='ArgList' export='no'>
+    <type>
+      <pointer>
+        <pointer-base>
+          <array>
+            <element-type>
+              <pointer>
+                <pointer-base>
+                  <array>
+                    <element-type>
+                      <type-name module='#predef' name='CHAR'/>
+                    </element-type>
+                  </array>
+                </pointer-base>
+              </pointer>
+            </element-type>
+          </array>
+        </pointer-base>
+      </pointer>
+    </type>
+  </type-decl>
+  <class name='OptionTemplate'>
+    <type-decl name='OptionTemplate' id='OptionTemplate' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='OptionTemplateDesc' href='#OptionTemplateDesc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='OptionTemplateDesc' id='OptionTemplateDesc' export='no'>
+      <type>
+        <record>
+          <field-decl name='optTemplate' id='OptionTemplateDesc.optTemplate' export='read-only'>
+            <type>
+              <type-name module='#predef' name='CHAR'/>
+            </type>
+          </field-decl>
+        </record>
+      </type>
+    </type-decl>
+  </class>
+  <class name='Command'>
+    <type-decl name='Command' id='Command' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='CommandDesc' href='#CommandDesc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='CommandDesc' id='CommandDesc' export='no'>
+      <type>
+        <record>
+          <field-decl name='template' id='CommandDesc.template' export='read-only'>
+            <oberon-doc>
+              <summary>Text template, that is used to create the XML fragment.</summary>
+              <p pad-after='yes' no-indent='yes'>Text template, that is used to create the XML fragment.  Any references $1, $2, ..., $9 are replaced with the arguments from <oberon-field href='#CommandDesc.argList'>argList</oberon-field>.</p>
+            </oberon-doc>
+            <type>
+              <type-name name='OptionTemplate' href='#OptionTemplate'/>
+            </type>
+          </field-decl>
+          <field-decl name='argList' id='CommandDesc.argList' export='read-only'>
+            <oberon-doc>
+              <summary>Arguments of the command line option.</summary>
+              <p pad-after='yes' no-indent='yes'>Arguments of the command line option.  If the option has no arguments, <samp>LEN(argList^)</samp> is zero.</p>
+            </oberon-doc>
+            <type>
+              <type-name name='ArgList' href='#ArgList'/>
+            </type>
+          </field-decl>
+        </record>
+      </type>
+    </type-decl>
+  </class>
+</interface-description>

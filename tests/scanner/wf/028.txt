@@ -1,0 +1,4 @@
+<*PUSH*>
+<*POP*>
+<*IF predef_true THEN*>a<*END*>
+<*IF predef_false THEN*>b<*END*>

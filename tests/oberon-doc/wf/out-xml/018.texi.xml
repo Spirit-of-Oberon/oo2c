@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>This test has items that have multiple paragraph, and it has an example of the @itemx command.</summary>
+  <p pad-after='yes' no-indent='yes'>This test has items that have multiple paragraph, and it has an example of the @itemx command.</p>
+  <table pad-after='yes'>
+    <table-row pad-after='yes'>
+      <table-first-column pad-after='no'><asis>Item No. 1</asis></table-first-column>
+      <item pad-after='no'>
+        <p pad-after='yes' no-indent='yes'>First paragraph.</p>
+        <p pad-after='no' no-indent='no'>Second paragraph.</p>
+      </item>
+    </table-row>
+    <table-row pad-after='no'>
+      <table-first-column pad-after='no'><asis>Item No. 2</asis></table-first-column>
+      <table-first-column pad-after='no'><asis>Item No. 3</asis></table-first-column>
+      <item pad-after='no'>
+        <p pad-after='no' no-indent='yes'>This is easy, isn't it?</p>
+      </item>
+    </table-row>
+  </table>
+</oberon-doc>

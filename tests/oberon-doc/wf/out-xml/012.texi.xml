@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Commands can have more than one argument.</summary>
+  <p pad-after='yes' no-indent='yes'>Commands can have more than one argument.  If just one argument is expected, any embedded <samp>,</samp> characters are ignored, like in <samp>sample1, sample2</samp>.  Otherwise, the <samp>,</samp> is interpreted as an argument separator.  For example, the @uref command can have up to three arguments: <uref><uref-url>URL</uref-url></uref>, <uref><uref-url>URL</uref-url><uref-text>TEXT</uref-text></uref>, or <uref><uref-url>URL</uref-url><uref-text>TEXT</uref-text><uref-replacement>REPLACEMENT</uref-replacement></uref>.  Additional <samp>,</samp> are considered part of the last argument, but are removed: <uref><uref-url>URL</uref-url><uref-text>TEXT</uref-text><uref-replacement>REPLACEMENT1 REPLACEMENT2</uref-replacement></uref>.</p>
+</oberon-doc>

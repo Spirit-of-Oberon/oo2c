@@ -1,0 +1,4 @@
+MODULE Simple;
+PROCEDURE P(a: INTEGER); VAR x-: INTEGER; END P;
+END Simple.
+

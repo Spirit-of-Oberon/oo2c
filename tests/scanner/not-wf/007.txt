@@ -1,0 +1,1 @@
+Oberon-2 does not have a symbol %

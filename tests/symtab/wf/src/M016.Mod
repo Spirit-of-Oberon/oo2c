@@ -1,0 +1,5 @@
+MODULE M;
+
+TYPE P = PROCEDURE (): INTEGER;
+
+END M.

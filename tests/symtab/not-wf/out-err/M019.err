@@ -1,0 +1,6 @@
+In file not-wf/src/M019.Mod: 
+Receiver of record type must be a variable parameter
+column=14
+line=4
+pos=47
+

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Lists are a very convenient feature of any type-setting system.</summary>
+  <p pad-after='yes' no-indent='yes'>Lists are a very convenient feature of any type-setting system.  OOC supports a subset of the available Texinfo commands, and lists are of course supported.  The @itemize command is the most simple list around:</p>
+  <itemize pad-after='yes'>
+    <itemize-mark><bullet/></itemize-mark>
+    <item pad-after='yes'>
+      <p pad-after='no' no-indent='yes'>First item.  The list items are indented and marked with a bullet.  In the ASCII representation the bullet is a simple <samp>*</samp>.  This looks nicer in the paper version, thanks to TeX.</p>
+    </item>
+    <item pad-after='yes'>
+      <p pad-after='no' no-indent='yes'>This second item follows the first without any line break in between.</p>
+    </item>
+    <item pad-after='yes'>
+      <p pad-after='no' no-indent='yes'>But the third has three hard line breaks in front of it, and it is also closed with two hard line breaks.</p>
+    </item>
+    <item pad-after='no'>
+      <p pad-after='no' no-indent='yes'>This is the last item.  Bye.</p>
+    </item>
+  </itemize>
+  <p pad-after='yes' no-indent='no'>THE END</p>
+</oberon-doc>

@@ -1,0 +1,7 @@
+MODULE M;
+
+CONST
+TYPE
+VAR
+  
+END M.

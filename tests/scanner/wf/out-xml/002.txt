@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>some</symbol>
+<symbol id='whitespace' pos='4' line='0' column='4'> </symbol>
+<symbol id='ident' pos='5' line='0' column='5'>tab</symbol>
+<symbol id='whitespace' pos='8' line='0' column='8'> </symbol>
+<symbol id='ident' pos='9' line='0' column='9'>characters</symbol>
+<symbol id='colon' pos='19' line='0' column='19'>:</symbol>
+<symbol id='whitespace' pos='20' line='0' column='20'>&#10;</symbol>
+<symbol id='ident' pos='21' line='1' column='0'>x</symbol>
+<symbol id='whitespace' pos='22' line='1' column='1'>&#10;&#9;</symbol>
+<symbol id='ident' pos='24' line='2' column='8'>x</symbol>
+<symbol id='whitespace' pos='25' line='2' column='9'>&#10;</symbol>
+<symbol id='ident' pos='26' line='3' column='0'>a</symbol>
+<symbol id='whitespace' pos='27' line='3' column='1'>&#9;</symbol>
+<symbol id='ident' pos='28' line='3' column='8'>x</symbol>
+<symbol id='whitespace' pos='29' line='3' column='9'>&#10;</symbol>
+<symbol id='ident' pos='30' line='4' column='0'>bb</symbol>
+<symbol id='whitespace' pos='32' line='4' column='2'>&#9;</symbol>
+<symbol id='ident' pos='33' line='4' column='8'>x</symbol>
+<symbol id='whitespace' pos='34' line='4' column='9'>&#10;</symbol>
+<symbol id='ident' pos='35' line='5' column='0'>ccc</symbol>
+<symbol id='whitespace' pos='38' line='5' column='3'>&#9;</symbol>
+<symbol id='ident' pos='39' line='5' column='8'>x</symbol>
+<symbol id='whitespace' pos='40' line='5' column='9'>&#10;</symbol>
+<symbol id='ident' pos='41' line='6' column='0'>dddd</symbol>
+<symbol id='whitespace' pos='45' line='6' column='4'>&#9;</symbol>
+<symbol id='ident' pos='46' line='6' column='8'>x</symbol>
+<symbol id='whitespace' pos='47' line='6' column='9'>&#10;</symbol>
+<symbol id='ident' pos='48' line='7' column='0'>eeeee</symbol>
+<symbol id='whitespace' pos='53' line='7' column='5'>&#9;</symbol>
+<symbol id='ident' pos='54' line='7' column='8'>x</symbol>
+<symbol id='whitespace' pos='55' line='7' column='9'>&#10;</symbol>
+<symbol id='ident' pos='56' line='8' column='0'>ffffff</symbol>
+<symbol id='whitespace' pos='62' line='8' column='6'>&#9;</symbol>
+<symbol id='ident' pos='63' line='8' column='8'>x</symbol>
+<symbol id='whitespace' pos='64' line='8' column='9'>&#10;</symbol>
+<symbol id='ident' pos='65' line='9' column='0'>ggggggg</symbol>
+<symbol id='whitespace' pos='72' line='9' column='7'>&#9;</symbol>
+<symbol id='ident' pos='73' line='9' column='8'>x</symbol>
+<symbol id='whitespace' pos='74' line='9' column='9'>&#10;</symbol>
+<symbol id='ident' pos='75' line='10' column='0'>hhhhhhhh</symbol>
+<symbol id='whitespace' pos='83' line='10' column='8'>&#9;</symbol>
+<symbol id='ident' pos='84' line='10' column='16'>x</symbol>
+<symbol id='whitespace' pos='85' line='10' column='17'>&#10;&#9; </symbol>
+<symbol id='ident' pos='88' line='11' column='9'>y</symbol>
+<symbol id='whitespace' pos='89' line='11' column='10'>&#10;</symbol>
+<symbol id='ident' pos='90' line='12' column='0'>a</symbol>
+<symbol id='whitespace' pos='91' line='12' column='1'>&#9; </symbol>
+<symbol id='ident' pos='93' line='12' column='9'>y</symbol>
+<symbol id='whitespace' pos='94' line='12' column='10'>&#10;</symbol>
+<symbol id='ident' pos='95' line='13' column='0'>bb</symbol>
+<symbol id='whitespace' pos='97' line='13' column='2'>&#9; </symbol>
+<symbol id='ident' pos='99' line='13' column='9'>y</symbol>
+<symbol id='whitespace' pos='100' line='13' column='10'>&#10;</symbol>
+<symbol id='ident' pos='101' line='14' column='0'>ccc</symbol>
+<symbol id='whitespace' pos='104' line='14' column='3'>&#9; </symbol>
+<symbol id='ident' pos='106' line='14' column='9'>y</symbol>
+<symbol id='whitespace' pos='107' line='14' column='10'>&#10;</symbol>
+<symbol id='ident' pos='108' line='15' column='0'>dddd</symbol>
+<symbol id='whitespace' pos='112' line='15' column='4'>&#9; </symbol>
+<symbol id='ident' pos='114' line='15' column='9'>y</symbol>
+<symbol id='whitespace' pos='115' line='15' column='10'>&#10;</symbol>
+<symbol id='ident' pos='116' line='16' column='0'>eeeee</symbol>
+<symbol id='whitespace' pos='121' line='16' column='5'>&#9; </symbol>
+<symbol id='ident' pos='123' line='16' column='9'>y</symbol>
+<symbol id='whitespace' pos='124' line='16' column='10'>&#10;</symbol>
+<symbol id='ident' pos='125' line='17' column='0'>ffffff</symbol>
+<symbol id='whitespace' pos='131' line='17' column='6'>&#9; </symbol>
+<symbol id='ident' pos='133' line='17' column='9'>y</symbol>
+<symbol id='whitespace' pos='134' line='17' column='10'>&#10;</symbol>
+<symbol id='ident' pos='135' line='18' column='0'>ggggggg</symbol>
+<symbol id='whitespace' pos='142' line='18' column='7'>&#9; </symbol>
+<symbol id='ident' pos='144' line='18' column='9'>y</symbol>
+<symbol id='whitespace' pos='145' line='18' column='10'>&#10;</symbol>
+<symbol id='ident' pos='146' line='19' column='0'>hhhhhhhh</symbol>
+<symbol id='whitespace' pos='154' line='19' column='8'>&#9; </symbol>
+<symbol id='ident' pos='156' line='19' column='17'>y</symbol>
+<symbol id='whitespace' pos='157' line='19' column='18'>&#10;</symbol>
+<symbol id='comment' pos='158' line='20' column='0'>(*&#9;*)</symbol>
+<symbol id='ident' pos='163' line='20' column='10'>comment</symbol>
+<symbol id='whitespace' pos='170' line='20' column='17'>&#10;&#10;   &#9;</symbol>
+<symbol id='endOfFile' pos='176' line='22' column='8'></symbol>
+</document>

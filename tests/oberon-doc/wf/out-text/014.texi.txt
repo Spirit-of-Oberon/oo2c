@@ -1,0 +1,11 @@
+This is an example of an @example command:
+
+     This text is   part of   an example block.
+     Examples are not reformatted by the Texinfo parser.
+     
+         Dubidubido!
+     
+     text separated by empty lines
+     
+     end of example
+

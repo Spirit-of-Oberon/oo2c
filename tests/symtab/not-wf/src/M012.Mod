@@ -1,0 +1,8 @@
+MODULE M;
+
+TYPE A=RECORD END;
+
+PROCEDURE P(): A;
+  END P;
+  
+END M.

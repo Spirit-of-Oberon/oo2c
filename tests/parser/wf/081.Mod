@@ -1,0 +1,6 @@
+MODULE M;
+BEGIN
+  REPEAT
+    x := 1
+  UNTIL a
+END M.

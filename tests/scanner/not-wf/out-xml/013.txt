@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>foo</symbol>
+<symbol id='pragma' pos='3' line='0' column='3'>&lt;*bar</symbol>
+<symbol id='endOfFile' pos='8' line='0' column='8'></symbol>
+</document>

@@ -1,0 +1,8 @@
+MODULE M054;
+
+IMPORT M005;
+
+VAR
+  x: M005.T;
+  
+END M054.

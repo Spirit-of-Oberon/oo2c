@@ -1,0 +1,6 @@
+MODULE M;
+
+CONST X = 1;
+TYPE P = POINTER TO X;
+
+END M.

@@ -1,0 +1,16 @@
+The block commands @@precond and @@postcond are not part of Texinfo.
+They are an extension used in oberon-doc to describe the pre and post
+conditions of a procedure.
+
+@precond
+@oparam{sourceLength}, @oparam{startPos}, and @oparam{numberToExtract}
+are not negative.
+@end precond
+
+And here is a post condition example:
+
+@postcond
+After termination, evaluation of the procedure has done all the right
+things and none of the wrong things.  In other words, the procedure is
+@emph{perfect}, and to hell with anyone who questions this fact.
+@end postcond

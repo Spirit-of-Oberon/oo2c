@@ -1,0 +1,7 @@
+Commands can have more than one argument.  If just one argument is
+expected, any embedded `,' characters are ignored, like in `sample1,
+sample2'.  Otherwise, the `,' is interpreted as an argument separator.
+For example, the @uref command can have up to three arguments: `URL',
+TEXT (URL), or REPLACEMENT.  Additional `,' are considered part of the
+last argument, but are removed: REPLACEMENT1 REPLACEMENT2.
+

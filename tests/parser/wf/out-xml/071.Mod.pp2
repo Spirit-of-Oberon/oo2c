@@ -1,0 +1,5 @@
+MODULE M;
+BEGIN
+  CASE x OF
+  END
+END M.

@@ -1,0 +1,3 @@
+In file not-wf/004.xml: 
+line=3, column=5
+94: This element requires an attribute `name'

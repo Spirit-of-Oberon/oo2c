@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>The block commands @precond and @postcond are not part of Texinfo.</summary>
+  <p pad-after='yes' no-indent='yes'>The block commands @precond and @postcond are not part of Texinfo.  They are an extension used in oberon-doc to describe the pre and post conditions of a procedure.</p>
+  <pre-cond pad-after='yes'>
+    <p pad-after='no' no-indent='yes'><oberon-param>sourceLength</oberon-param>, <oberon-param>startPos</oberon-param>, and <oberon-param>numberToExtract</oberon-param> are not negative.</p>
+  </pre-cond>
+  <p pad-after='yes' no-indent='no'>And here is a post condition example:</p>
+  <post-cond pad-after='yes'>
+    <p pad-after='no' no-indent='yes'>After termination, evaluation of the procedure has done all the right things and none of the wrong things.  In other words, the procedure is <emph>perfect</emph>, and to hell with anyone who questions this fact.</p>
+  </post-cond>
+</oberon-doc>

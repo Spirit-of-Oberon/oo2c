@@ -1,0 +1,3 @@
+MODULE Simple;
+IMPORT AnotherModule;
+END Simple.

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<configuration>
+  <options>
+    <define name='foo' type='string'>first</define>
+  </options>
+  <options>
+    <set name='foo'>second</set>
+  </options>
+</configuration>

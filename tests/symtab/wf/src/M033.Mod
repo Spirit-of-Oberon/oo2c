@@ -1,0 +1,6 @@
+MODULE M;
+
+PROCEDURE P (a: ARRAY OF CHAR);
+  END P;
+
+END M.

@@ -1,0 +1,1 @@
+a<*IF predef_false THEN*>b<*END*>c

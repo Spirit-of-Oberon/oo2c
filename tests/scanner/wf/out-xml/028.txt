@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*PUSH*&gt;</symbol>
+<symbol id='whitespace' pos='8' line='0' column='8'>&#10;</symbol>
+<symbol id='pragma' pos='9' line='1' column='0'>&lt;*POP*&gt;</symbol>
+<symbol id='whitespace' pos='16' line='1' column='7'>&#10;</symbol>
+<symbol id='pragma' pos='17' line='2' column='0'>&lt;*IF predef_true THEN*&gt;</symbol>
+<symbol id='ident' pos='40' line='2' column='23'>a</symbol>
+<symbol id='pragma' pos='41' line='2' column='24'>&lt;*END*&gt;</symbol>
+<symbol id='whitespace' pos='48' line='2' column='31'>&#10;</symbol>
+<symbol id='pragma' pos='49' line='3' column='0'>&lt;*IF predef_false THEN*&gt;b&lt;*END*&gt;</symbol>
+<symbol id='whitespace' pos='81' line='3' column='32'>&#10;</symbol>
+<symbol id='endOfFile' pos='82' line='4' column='0'></symbol>
+</document>

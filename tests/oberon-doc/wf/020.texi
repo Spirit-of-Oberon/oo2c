@@ -1,0 +1,5 @@
+@precond
+Paragraph 1.
+
+Paragraph 2.
+@end precond

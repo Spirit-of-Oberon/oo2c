@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<configuration>
+  <options>
+    <define name='a' type='integer'>0</define>
+    <define name='b' type='integer'> 0 </define>
+    <define name='c' type='integer'>
+      -1
+    </define>
+    <define name='d' type='integer'>+1</define>
+    <define name='e' type='integer'>2147483647</define>
+    <define name='f' type='integer'>-2147483648</define>
+  </options>
+</configuration>

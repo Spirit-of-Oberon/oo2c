@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='number10' pos='0' line='0' column='0'>123</symbol>
+<symbol id='ident' pos='3' line='0' column='3'>T</symbol>
+<symbol id='whitespace' pos='4' line='0' column='4'>&#10;</symbol>
+<symbol id='if' pos='5' line='1' column='0'>IF</symbol>
+<symbol id='comment' pos='7' line='1' column='2'>(**)</symbol>
+<symbol id='then' pos='11' line='1' column='6'>THEN</symbol>
+<symbol id='whitespace' pos='15' line='1' column='10'>&#10;</symbol>
+<symbol id='if' pos='16' line='2' column='0'>IF</symbol>
+<symbol id='whitespace' pos='18' line='2' column='2'> </symbol>
+<symbol id='number10' pos='19' line='2' column='3'>12</symbol>
+<symbol id='then' pos='21' line='2' column='5'>THEN</symbol>
+<symbol id='whitespace' pos='25' line='2' column='9'>&#10;</symbol>
+<symbol id='if' pos='26' line='3' column='0'>IF</symbol>
+<symbol id='whitespace' pos='28' line='3' column='2'> </symbol>
+<symbol id='numberExpE' pos='29' line='3' column='3'>12.</symbol>
+<symbol id='then' pos='32' line='3' column='6'>THEN</symbol>
+<symbol id='whitespace' pos='36' line='3' column='10'>&#10;</symbol>
+<symbol id='if' pos='37' line='4' column='0'>IF</symbol>
+<symbol id='whitespace' pos='39' line='4' column='2'> </symbol>
+<symbol id='numberExpE' pos='40' line='4' column='3'>12.3</symbol>
+<symbol id='then' pos='44' line='4' column='7'>THEN</symbol>
+<symbol id='whitespace' pos='48' line='4' column='11'>&#10;</symbol>
+<symbol id='if' pos='49' line='5' column='0'>IF</symbol>
+<symbol id='whitespace' pos='51' line='5' column='2'> </symbol>
+<symbol id='numberExpE' pos='52' line='5' column='3'>12.3E4</symbol>
+<symbol id='then' pos='58' line='5' column='9'>THEN</symbol>
+<symbol id='whitespace' pos='62' line='5' column='13'>&#10;</symbol>
+<symbol id='ident' pos='63' line='6' column='0'>IF12THEN</symbol>
+<symbol id='whitespace' pos='71' line='6' column='8'>&#10;</symbol>
+<symbol id='ident' pos='72' line='7' column='0'>IF12</symbol>
+<symbol id='period' pos='76' line='7' column='4'>.</symbol>
+<symbol id='then' pos='77' line='7' column='5'>THEN</symbol>
+<symbol id='whitespace' pos='81' line='7' column='9'>&#10;</symbol>
+<symbol id='ident' pos='82' line='8' column='0'>IF12</symbol>
+<symbol id='period' pos='86' line='8' column='4'>.</symbol>
+<symbol id='number10' pos='87' line='8' column='5'>3</symbol>
+<symbol id='then' pos='88' line='8' column='6'>THEN</symbol>
+<symbol id='whitespace' pos='92' line='8' column='10'>&#10;</symbol>
+<symbol id='if' pos='93' line='9' column='0'>IF</symbol>
+<symbol id='stringDouble' pos='95' line='9' column='2'>"abc"</symbol>
+<symbol id='then' pos='100' line='9' column='7'>THEN</symbol>
+<symbol id='whitespace' pos='104' line='9' column='11'>&#10;</symbol>
+<symbol id='if' pos='105' line='10' column='0'>IF</symbol>
+<symbol id='stringSingle' pos='107' line='10' column='2'>'abc'</symbol>
+<symbol id='then' pos='112' line='10' column='7'>THEN</symbol>
+<symbol id='whitespace' pos='116' line='10' column='11'>&#10;</symbol>
+<symbol id='endOfFile' pos='117' line='11' column='0'></symbol>
+</document>

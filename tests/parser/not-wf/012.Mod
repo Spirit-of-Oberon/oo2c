@@ -1,0 +1,4 @@
+MODULE Simple;
+TYPE T-=INTEGER;
+END Simple.
+

@@ -1,0 +1,7 @@
+Commands can have more than one argument.  If just one argument is
+expected, any embedded @samp{,} characters are ignored, like in
+@samp{sample1, sample2}.  Otherwise, the @samp{,} is interpreted as an
+argument separator.  For example, the @@uref command can have up to
+three arguments: @uref{URL}, @uref{URL, TEXT}, or @uref{URL, TEXT,
+REPLACEMENT}.  Additional @samp{,} are considered part of the last
+argument, but are removed: @uref{URL, TEXT, REPLACEMENT1, REPLACEMENT2}.

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='ident' pos='0' line='0' column='0'>a</symbol>
+<symbol id='pragma' pos='1' line='0' column='1'>&lt;*IF TRUE THEN IF TRUE THEN*&gt;</symbol>
+<symbol id='ident' pos='30' line='0' column='30'>b</symbol>
+<symbol id='pragma' pos='31' line='0' column='31'>&lt;*END END*&gt;</symbol>
+<symbol id='ident' pos='42' line='0' column='42'>c</symbol>
+<symbol id='endOfFile' pos='43' line='0' column='43'></symbol>
+</document>

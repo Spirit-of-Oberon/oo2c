@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='invalid' pos='0' line='0' column='0'>(* this comment is not closed&#10;* )&#10;</symbol>
+<symbol id='endOfFile' pos='34' line='2' column='0'></symbol>
+</document>

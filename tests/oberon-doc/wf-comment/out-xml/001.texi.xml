@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>...is set to the position after the mark.</summary>
+  <p pad-after='yes' no-indent='yes'>...is set to the position after the mark.</p>
+  <pre-cond pad-after='yes'>
+    <p pad-after='no' no-indent='yes'>foobar</p>
+  </pre-cond>
+</oberon-doc>

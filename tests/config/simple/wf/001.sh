@@ -1,0 +1,1 @@
+env DEFAULT_CFG_FILE="" $TEST_PROG

@@ -1,0 +1,13 @@
+This test has items that have multiple paragraph, and it has an example
+of the @@itemx command.
+
+@table @asis
+@item Item No. 1
+First paragraph.
+
+Second paragraph.
+
+@item Item No. 2
+@itemx Item No. 3
+This is easy, isn't it?
+@end table

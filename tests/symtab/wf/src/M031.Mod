@@ -1,0 +1,8 @@
+MODULE M;
+
+TYPE R = RECORD END;
+
+PROCEDURE (VAR r: R) P;
+  END P;
+  
+END M.

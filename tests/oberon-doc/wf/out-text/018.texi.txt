@@ -1,0 +1,12 @@
+This test has items that have multiple paragraph, and it has an example
+of the @itemx command.
+
+Item No. 1
+     First paragraph.
+
+     Second paragraph.
+
+Item No. 2
+Item No. 3
+     This is easy, isn't it?
+

@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*DEFINE d:=1*&gt;</symbol>
+<symbol id='whitespace' pos='15' line='0' column='15'>&#10;</symbol>
+<symbol id='ident' pos='16' line='1' column='0'>a</symbol>
+<symbol id='whitespace' pos='17' line='1' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='18' line='2' column='0'>&lt;*IF d=1 THEN*&gt;</symbol>
+<symbol id='whitespace' pos='33' line='2' column='15'>&#10;</symbol>
+<symbol id='ident' pos='34' line='3' column='0'>b</symbol>
+<symbol id='whitespace' pos='35' line='3' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='36' line='4' column='0'>&lt;*END; d:=2; IF d=2 THEN*&gt;</symbol>
+<symbol id='whitespace' pos='62' line='4' column='26'>&#10;</symbol>
+<symbol id='ident' pos='63' line='5' column='0'>c</symbol>
+<symbol id='whitespace' pos='64' line='5' column='1'>&#10;</symbol>
+<symbol id='pragma' pos='65' line='6' column='0'>&lt;*END; d:=3; IF d=0 THEN*&gt;&#10;d&#10;&lt;*END*&gt;</symbol>
+<symbol id='whitespace' pos='101' line='8' column='7'>&#10;</symbol>
+<symbol id='ident' pos='102' line='9' column='0'>e</symbol>
+<symbol id='whitespace' pos='103' line='9' column='1'>&#10;</symbol>
+<symbol id='endOfFile' pos='104' line='10' column='0'></symbol>
+</document>

@@ -1,0 +1,68 @@
+Split stylesheet.  First generate documentation from interface
+description, doing all the complicated and computational intensive
+tasks.  Then have a simple XSLT stylesheet doing the transformation to
+HTML, TeX, XSL:FO, or whatever.
+[--> mostly done]
+
+Make linking between different items explicit.  Check if XLink can be
+used for this.
+[--> done, id and href attributes are used, but no XLink]
+
+> sg> I haven't studied the markup format properly, but it looks like there
+> sg> are facilities in there to reference parameters, fields, etc so it
+> sg> should be possible to generate some nice cross-references in the
+> sg> documentation.
+> The provision for this is there, using tags like @otype{...},
+> @ofield{...}, @oparam{...}, and so on.  Unfortunately, the
+> implementation is incomplete.  Such tags are not checked if the target
+> object exists and is of the right type, and the HTML formatter do not
+> insert hyperlinks for them.
+[--> done, although external links (prefixed with `*') could be improved]
+
+Build indexes for the modules, types, variables & constants,
+procedure, classes, methods.
+
+Move class descriptions into separate files.  This would mean that all
+information exported by a module would be distributed over several
+files.
+[--> discarded, would not make things better]
+
+Make the core library having description texts :-/
+[--> who cares]
+
+When inheriting descriptions for method, rewrite references to local
+parameters.
+
+For constant aliasing "CONST b* = M.a", make "b" inherit the
+description of "M.a".  Rewriting should change any references to "M.a"
+in the text.  Something similar should be done for type aliases.
+
+
+Extend linking to cover usage as well.  For example, a class might
+list all its known specializations, and a method all its
+redefinitions.
+[Stewart Greenhill:]
+> The only thing that I would add to this is a list of sub-classes for
+> each class. This is particularly useful when one is dealing with an
+> abstract class and need to figure out how to actually instantiate an
+> instance. I realise that this is probably hard to impelment, since it
+> involves some sort of global analysis between modules.
+
+
+[Mike Griebling]
+> I do notice some strangeness with the ARRAY OF TYPE declarations where
+> it looks like the "ARRAY OF" is in a different-sized font than the
+> TYPE.  Can you substitute a helvetica font for the ugly typewriter
+> font used in the code extracts?
+The different sizes are probably browser settings (Courier smaller
+than Times Roman).  The Helvetica font is a good idea, although I
+don't know how portable this is, and how I would write it into the
+HTML.  A proportional font will surely mess up the indentation in
+RECORD and PROCEDURE types.
+[--> done, replaced tt with font ariel,helvetica ]
+
+[Tim Teulings]
+> - Optional wäre natürlich eine Frame-Version irgendwann schön.
+Meinst du mit Frames irgendetwas was Indizes irgendwo links
+einblendet?  Im Moment gibt es keine Indizes, also gibt es auch keine
+Frames.

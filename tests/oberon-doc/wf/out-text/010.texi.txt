@@ -1,0 +1,8 @@
+     [Some text after @itemize tag, that streches over multiple lines.
+     I have no idea what this feature is for, but `makeinfo' renders it
+     nevertheless.]
+
+     A second paragraph.
+
+   * Lonely item.  This is its second line.
+

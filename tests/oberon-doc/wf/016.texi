@@ -1,0 +1,13 @@
+Now lets check out some tables.
+
+@table @asis
+@item Item No. 1
+This is the first item of the table.  The first column should be set in
+the default face.
+@item @code{Item No. 2}
+This time, the first column is set as code.
+@item I0
+An item with a very short title.
+@item And finally a slightly longer first column
+Foo!
+@end table

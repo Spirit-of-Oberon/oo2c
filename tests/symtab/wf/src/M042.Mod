@@ -1,0 +1,15 @@
+MODULE M;
+
+TYPE R0 = RECORD END;
+     R1 = RECORD (R0) END;
+
+PROCEDURE (VAR r: R0) ProcA;
+  END ProcA;
+
+PROCEDURE (VAR r: R1) ProcA;
+  END ProcA;
+
+PROCEDURE (VAR r: R1) ProcB;
+  END ProcB;
+
+END M.

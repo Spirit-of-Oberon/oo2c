@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M002' id=''>
+  <procedure name='Length' id='Length' export='yes'>
+    <formal-parameters>
+      <parameter-decl name='stringVal' id='Length.stringVal' export='no' variable-parameter='no'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+      <result-type>
+        <type-name module='#predef' name='INTEGER'/>
+      </result-type>
+    </formal-parameters>
+  </procedure>
+  <procedure name='Assign' id='Assign' export='yes'>
+    <formal-parameters>
+      <parameter-decl name='source' id='Assign.source' export='no' variable-parameter='no'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='destination' id='Assign.destination' export='no' variable-parameter='yes'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+    </formal-parameters>
+  </procedure>
+  <procedure name='Extract' id='Extract' export='yes'>
+    <formal-parameters>
+      <parameter-decl name='source' id='Extract.source' export='no' variable-parameter='no'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='startPos' id='Extract.startPos' export='no' variable-parameter='no'>
+        <type>
+          <type-name module='#predef' name='INTEGER'/>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='numberToExtract' id='Extract.numberToExtract' export='no' variable-parameter='no'>
+        <type>
+          <type-name module='#predef' name='INTEGER'/>
+        </type>
+      </parameter-decl>
+      <parameter-decl name='destination' id='Extract.destination' export='no' variable-parameter='yes'>
+        <type>
+          <array>
+            <element-type>
+              <type-name module='#predef' name='CHAR'/>
+            </element-type>
+          </array>
+        </type>
+      </parameter-decl>
+    </formal-parameters>
+  </procedure>
+</interface-description>

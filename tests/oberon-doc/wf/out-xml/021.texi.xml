@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary><samp>foo=${foo}</samp></summary>
+  <p pad-after='yes' no-indent='yes'><samp>foo=${foo}</samp></p>
+</oberon-doc>

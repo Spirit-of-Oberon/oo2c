@@ -1,0 +1,1 @@
+<*IF predef_false THEN DEFINE 1=2 END*>

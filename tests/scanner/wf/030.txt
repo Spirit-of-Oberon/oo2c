@@ -1,0 +1,4 @@
+<*PUSH*>
+<*DEFINE new:=TRUE*>
+<*POP*>
+<*IF new THEN*>a<*END*>

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>An empty line separates two paragraphs.</summary>
+  <p pad-after='yes' no-indent='yes'>An empty line separates two paragraphs.</p>
+  <p pad-after='yes' no-indent='no'>Two or more empty lines serve the same purpose.</p>
+</oberon-doc>

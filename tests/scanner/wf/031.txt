@@ -1,0 +1,10 @@
+<*DEFINE new:=1*>
+<*PUSH; new:=2; IF new=2 THEN*>
+a
+<*END; PUSH; new:=3; IF new=3 THEN*>
+b
+<*END; POP; IF new=2 THEN*>
+c
+<*END; POP; IF new=1 THEN*>
+d
+<*END*>

@@ -1,0 +1,15 @@
+Now lets check out some tables.
+
+Item No. 1
+     This is the first item of the table.  The first column should be
+     set in the default face.
+
+`Item No. 2'
+     This time, the first column is set as code.
+
+I0
+     An item with a very short title.
+
+And finally a slightly longer first column
+     Foo!
+

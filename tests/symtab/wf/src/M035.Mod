@@ -1,0 +1,6 @@
+MODULE M;
+
+PROCEDURE P (a: PROCEDURE; ...);
+  END P;
+
+END M.

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>A @noindent command can be followed by an empty line.</summary>
+  <p pad-after='yes' no-indent='yes'>A @noindent command can be followed by an empty line.</p>
+  <p pad-after='yes' no-indent='yes'>The empty lines do not cancel its effect on the following paragraph.</p>
+</oberon-doc>

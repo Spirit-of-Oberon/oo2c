@@ -1,0 +1,13 @@
+MODULE M;
+
+TYPE
+  R0 = RECORD END; P0 = POINTER TO R0;
+  R1 = RECORD (R0) END; P1 = POINTER TO R1;
+
+PROCEDURE (VAR r: R0) a;
+  END a;
+  
+PROCEDURE (r: P1) a;
+  END a;
+  
+END M.

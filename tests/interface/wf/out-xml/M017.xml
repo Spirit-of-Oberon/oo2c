@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='no'?>
+<!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
+<interface-description name='M017' id=''>
+  <import-decl name='E' id='E' export='no' module='E'/>
+  <class name='ExtClass'>
+    <type-decl name='ExtClass' id='ExtClass' export='yes'>
+      <type>
+        <pointer>
+          <pointer-base>
+            <type-name name='ExtClassDesc' href='#ExtClassDesc'/>
+          </pointer-base>
+        </pointer>
+      </type>
+    </type-decl>
+    <type-decl name='ExtClassDesc' id='ExtClassDesc' export='no'>
+      <type>
+        <record/>
+      </type>
+    </type-decl>
+    <procedure name='Method' id='ExtClassDesc.Method' export='yes'>
+      <doc-inherited-from module='E' name='Method' class='Class' href='E#ClassDesc.Method'/>
+      <oberon-doc>
+        <summary>This is an exported type-bound procedure.</summary>
+        <p pad-after='yes' no-indent='yes'>This is an exported type-bound procedure.  The receiver is <oberon-param href='#ExtClassDesc.Method.ext'>ext</oberon-param>.</p>
+      </oberon-doc>
+      <formal-parameters>
+        <receiver-decl name='ext' id='ExtClassDesc.Method.ext' export='no' variable-parameter='no'>
+          <type>
+            <type-name name='ExtClass' href='#ExtClass'/>
+          </type>
+        </receiver-decl>
+      </formal-parameters>
+      <redefined-method module='E' name='Method' class='Class' href='E#ClassDesc.Method'/>
+    </procedure>
+    <base-class module='E' class='Class' href='E#Class'>
+      <inherited-method module='E' name='Method' class='Class' href='E#ClassDesc.Method'/>
+    </base-class>
+  </class>
+  <module-ref name='E'>
+    <ref-target type='html' relative-uri='E.html'/>
+  </module-ref>
+</interface-description>

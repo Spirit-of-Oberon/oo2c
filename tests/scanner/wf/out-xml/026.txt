@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<document>
+<symbol id='pragma' pos='0' line='0' column='0'>&lt;*DEFINE d:="abc"; DEFINE s:="foo"*&gt;</symbol>
+<symbol id='whitespace' pos='36' line='0' column='36'>&#10;</symbol>
+<symbol id='pragma' pos='37' line='1' column='0'>&lt;*IF d&lt;=s THEN*&gt;</symbol>
+<symbol id='ident' pos='53' line='1' column='16'>b</symbol>
+<symbol id='pragma' pos='54' line='1' column='17'>&lt;*END*&gt;</symbol>
+<symbol id='ident' pos='61' line='1' column='24'>c</symbol>
+<symbol id='endOfFile' pos='62' line='1' column='25'></symbol>
+</document>

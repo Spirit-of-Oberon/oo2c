@@ -1,0 +1,7 @@
+MODULE M;
+
+TYPE
+  T = RECORD
+    a: CHAR
+  END;
+END M.

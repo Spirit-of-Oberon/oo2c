@@ -1,0 +1,14 @@
+The block commands @precond and @postcond are not part of Texinfo.
+They are an extension used in oberon-doc to describe the pre and post
+conditions of a procedure.
+
+*Pre-condition*: SOURCELENGTH, STARTPOS, and NUMBERTOEXTRACT are not
+negative.
+
+   And here is a post condition example:
+
+*Pre-condition*: After termination, evaluation of the procedure has
+done all the right things and none of the wrong things.  In other
+words, the procedure is _perfect_, and to hell with anyone who
+questions this fact.
+

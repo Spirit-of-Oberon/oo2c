@@ -1,0 +1,13 @@
+MODULE M;
+
+TYPE
+  R0 = RECORD END;
+  R1 = RECORD (R0) END;
+
+PROCEDURE (VAR r: R0) a(): CHAR;
+  END a;
+  
+PROCEDURE (VAR r: R1) a(): INTEGER;
+  END a;
+  
+END M.

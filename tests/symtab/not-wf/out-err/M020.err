@@ -1,0 +1,6 @@
+In file not-wf/src/M020.Mod: 
+Receiver of pointer type must be a value parameter
+column=18
+line=4
+pos=69
+

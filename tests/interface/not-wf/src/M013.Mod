@@ -1,0 +1,4 @@
+MODULE M013;
+IMPORT E;
+(**@ovar{E.c}*)
+END M013.

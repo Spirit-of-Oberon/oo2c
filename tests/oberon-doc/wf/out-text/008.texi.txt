@@ -1,0 +1,8 @@
+Please note that it does make a difference in the ASCII version of this
+document, if there are paragraph separators in front or behind a list
+command.  Here is an @itemize without surrounding paragraph separators:
+   - Item 1.
+
+   - Item 2.
+   And this is the end of the list.
+
