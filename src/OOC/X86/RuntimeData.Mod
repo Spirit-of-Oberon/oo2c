@@ -188,7 +188,46 @@ PROCEDURE Write*(sb: StringBuffer.StringBuffer; symTab: Sym.Module);
       END;
     END TypeDescrRef;
   
-  PROCEDURE RecordTypeDescr (record: Sym.Record);
+  PROCEDURE ArrayTypeDescr(array: Sym.Array);
+    VAR
+      nameTypeDesc, nameTypeName, nameBaseTypes: STRING;
+      base: Sym.Type;
+    BEGIN
+      nameTypeDesc := Naming.NameOfTypeDescriptor(array, qtdData);
+      nameTypeName := nameTypeDesc+"_name";
+      nameBaseTypes := nameTypeDesc+"_base_types";
+
+      nameTypeName := WriteName(nameTypeName, array);
+      IF array.isOpenArray THEN
+        base := array.GetNonOpenElementType();
+      ELSE
+        base := array.elementType;
+      END;
+      dw.Object(nameBaseTypes, sizeAddress, FALSE);
+      TypeDescrRef(base);
+      
+      dw.Object(nameTypeDesc, sizeStructDesc, FALSE);
+      dw.Adr(nameBaseTypes);
+      dw.Null();                         (* tbProcs *)
+      dw.Null();                         (* typeArgs *)
+      dw.Adr(moduleDescriptor);          (* module *)
+      dw.Adr(nameTypeName);              (* name *)
+      IF array.isOpenArray THEN
+        ASSERT(base.size >= 0);
+        dw.LongInt(base.size);             (* size *)
+        dw.LongInt(array.GetOpenDimensions()); (* len *)
+        dw.TypeFlags(array);               (* flags *)
+        dw.ShortInt(RT0.strOpenArray);     (* form *)
+      ELSE
+        dw.LongInt(array.size);            (* size *)
+        dw.LongInt(array.length);          (* len *)
+        dw.TypeFlags(array);               (* flags *)
+        dw.ShortInt(RT0.strArray);         (* form *)
+      END;
+      dw.FixAlign(sizeStructDesc);
+    END ArrayTypeDescr;
+  
+  PROCEDURE RecordTypeDescr(record: Sym.Record);
     VAR
       len: LONGINT;
       nameTypeDesc, nameTypeName, nameBaseTypes: STRING;
@@ -230,7 +269,7 @@ PROCEDURE Write*(sb: StringBuffer.StringBuffer; symTab: Sym.Module);
       dw.FixAlign(sizeStructDesc);
     END RecordTypeDescr;
   
-  PROCEDURE PointerTypeDescr (pointer: Sym.Pointer);
+  PROCEDURE PointerTypeDescr(pointer: Sym.Pointer);
     VAR
       nameTypeDesc, nameTypeName, nameBaseTypes: STRING;
     BEGIN
@@ -256,7 +295,7 @@ PROCEDURE Write*(sb: StringBuffer.StringBuffer; symTab: Sym.Module);
       dw.FixAlign(sizeStructDesc);
     END PointerTypeDescr;
   
-  PROCEDURE Traverse (item: Sym.Item; proc: Sym.ProcDecl);
+  PROCEDURE Traverse(item: Sym.Item; proc: Sym.ProcDecl);
     VAR
       nested: Sym.Item;
 
@@ -271,9 +310,9 @@ PROCEDURE Write*(sb: StringBuffer.StringBuffer; symTab: Sym.Module);
 
     BEGIN
       WITH item: Sym.Array DO
-        (*IF item.hasDescriptor & ~IsParameter(item) THEN
+        IF item.hasDescriptor & ~IsParameter(item) THEN
           ArrayTypeDescr(item);
-        END;*)
+        END;
       | item: Sym.Record DO
         IF item.hasDescriptor THEN
           RecordTypeDescr(item);
