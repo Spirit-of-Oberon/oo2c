@@ -163,7 +163,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
         instr.info := instr;             (* mark as visited *)
         CASE instr.opcode OF
         | S.enter, S.allocateStack, S.return, S.exit, S.guard, S.jump, S.merge,
-          S.loopStart, S.loopExit, S.loopBackedge, S.loopEnd, S.call:
+          S.loopStart, S.loopExit, S.loopBackedge, S.loopEnd, S.call, S.copy:
           (* nothing *)
         | S.get:
           IF FixedDesignator(instr.designator) THEN
