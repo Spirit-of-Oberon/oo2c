@@ -41,7 +41,10 @@ IMPORT
   Object,
   Object:Boxed,
   Object:BigInt,
-  URI,
+  ADT:Storable,
+  ADT:StringBuffer,
+  ADT:Dictionary,
+  ADT:ArrayList,
   
   libc,
   libadt,
