@@ -61,7 +61,7 @@ main-clean: doc-clean test-cleanall
 	rm -f src/XML
 	for i in ${test_programs}; do rm -f $$i; done
 	-rmdir ${top_builddir}/sym ${top_builddir}/obj
-	rm -Rf "$(DOC_DIR)" stage1 stage2
+	rm -Rf "$(DOC_DIR)" stage1 stage2 gmon.out
 	${MAKE} -C tests/hostess-ooc1 test-clean
 
 ### `distclean'
