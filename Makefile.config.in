@@ -33,6 +33,7 @@ export PERL=@PERL@
 
 export CC=@CC@
 export CFLAGS=@CFLAGS@
+export CPPFLAGS=@CPPFLAGS@
 export LDFLAGS=@LDFLAGS@
 export LIBS=@LIBS@
 
