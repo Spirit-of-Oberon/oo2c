@@ -438,16 +438,49 @@ PROCEDURE NewUCS4Char*(ch: UCS4CHAR): String;
     END;
   END NewUCS4Char;
 
-(*PROCEDURE NewUCS4Region*(str[NO_COPY]: ARRAY OF UCS4CHAR;
-                          start, end: LONGINT): String;
+PROCEDURE NewUCS4Region*(str[NO_COPY]: ARRAY OF UCS4CHAR;
+                         start, end: LONGINT): String;
 (**Create a string value from @samp{str[start, end]} without any translation.
 
    @precond
    @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{str})}.
    All characters are Unicode 3.1 code points outside the surrogate areas.
    @end precond  *)
+  VAR
+    s: String16;
+    i, c, v: LONGINT;
+    d: CharsUTF16;
   BEGIN
-    RETURN NewString32 (S.ADR(str)+start*SIZE(UCS4CHAR), end-start);
+    c := 0;
+    i := start;
+    WHILE (i # end) DO
+      IF (str[i] >= surrogateLimit) THEN
+        INC(c, 2);
+      ELSE
+        INC(c);
+      END;
+      INC(i);
+    END;
+
+    NEW(d, c+1);
+    i := 0;
+    WHILE (start # end) DO
+      IF (str[start] >= surrogateLimit) THEN
+        v := ORD(str[start])-ORD(surrogateLimit);
+        d[i] := LONGCHR(ORD(surrogateLow) + v DIV 1024);
+        d[i+1] := LONGCHR(ORD(surrogateHigh) + v MOD 1024);
+        INC(i, 2);
+      ELSE
+        d[i] := SHORT(str[start]);
+        INC(i);
+      END;
+      INC(start);
+    END;
+
+    NEW(s);
+    s.length := c;
+    s.data := d;
+    RETURN s;
   END NewUCS4Region;
 
 PROCEDURE NewUCS4*(str[NO_COPY]: ARRAY OF UCS4CHAR): String;
@@ -464,8 +497,8 @@ PROCEDURE NewUCS4*(str[NO_COPY]: ARRAY OF UCS4CHAR): String;
     WHILE(str[i] # 0X) DO
       INC(i);
     END;
-    RETURN NewString32 (S.ADR(str), i);
-  END NewUCS4;*)
+    RETURN NewUCS4Region(str, 0, i);
+  END NewUCS4;
 
 PROCEDURE Concat2* (s1, s2: String): String;
 (**Concatenates two strings.
