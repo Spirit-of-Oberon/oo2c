@@ -376,6 +376,21 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
 PROCEDURE ^ (r: Rules) Update*(module: Rep.Module;
                                fileId: Rep.FileId): BOOLEAN;
 
+PROCEDURE (r: Rules) SelectBackend(module: Rep.Module): LONGINT;
+  VAR
+    b: LONGINT;
+  BEGIN
+    b := r.backend;
+    IF r.GetImports(module) THEN
+      IF (b = backendSSAtoIA32) &
+         ((module.ifData.class = Sym.mcForeign) OR
+          (module.ifData.class = Sym.mcInterface)) THEN
+        b := backendSSAtoC;
+      END;
+    END;
+    RETURN b;
+  END SelectBackend;
+
 PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
   VAR
     success: BOOLEAN;
@@ -436,7 +451,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
         libraryName := NIL;
       END;
       
-      CASE r.backend OF
+      CASE r.SelectBackend(module) OF
       | backendNone:
         errList := DoEmptyBackend(libraryName);
       | backendSSAtoC:
@@ -766,13 +781,13 @@ PROCEDURE (r: Rules) UpdateCodeFileC(module: Rep.Module): BOOLEAN;
 
 PROCEDURE (r: Rules) UpdateAssemblerFile(module: Rep.Module): BOOLEAN;
   BEGIN
-    IF r.Update(module, Rep.modDeclFileC) THEN
+    IF r.GetImports(module) THEN
       IF (module.ifData.class = Sym.mcForeign) OR
          (module.ifData.class = Sym.mcInterface) THEN
         Logger.ExplainMake("module's C code provided by user");
         RETURN TRUE;
       ELSE
-        RETURN UpdateCompilerOutput(r, module, Rep.modCodeFileC);
+        RETURN UpdateCompilerOutput(r, module, Rep.modAssemblerFile);
       END;
     ELSE
       RETURN FALSE;
@@ -790,7 +805,7 @@ PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
     str: ShellCommand;
     success: BOOLEAN;
   BEGIN
-    IF (r.backend = backendSSAtoIA32) THEN
+    IF (r.SelectBackend(module) = backendSSAtoIA32) THEN
       success := r.Update(module, Rep.modAssemblerFile);
       IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modAssemblerFile) THEN
         module.CreateOutputDir (Rep.modObjectFile, res);
@@ -1189,7 +1204,7 @@ BEGIN
   fileIdNames[Rep.modInterfaceHTML] := "InterfaceHTML";
   fileIdNames[Rep.modSymbolFile] := "SymbolFile";
   fileIdNames[Rep.modSymbolTableXML] := "SymbolTableXML";
-  fileIdNames[Rep.modAssemblerFile] := "AssembleFile";
+  fileIdNames[Rep.modAssemblerFile] := "AssemblerFile";
   fileIdNames[Rep.modMainFileAssembler] := "MainFileAssembler";
   
   NEW (makeContext);

@@ -190,6 +190,13 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
       | Opcode.labels:
         (* nothing *)
 
+      | Opcode.multiply:
+        (* ... *)
+      | Opcode.getLengthParam:
+        (* ... *)
+      | Opcode.copyParameter:
+        (* ... *)
+        
       | Opcode.return:
         (* nothing *)
       | Opcode.selectReturn:

@@ -100,10 +100,10 @@ BEGIN
     HALT (1)
   ELSE
     makeRules := Make.NewRules();
-    IF useSSA.value(BooleanValue.Value).boolean THEN
-      makeRules.SetBackend(Make.backendSSAtoC);
-    ELSIF translateIA32.value(BooleanValue.Value).boolean THEN
+    IF translateIA32.value(BooleanValue.Value).boolean THEN
       makeRules.SetBackend(Make.backendSSAtoIA32);
+    ELSIF useSSA.value(BooleanValue.Value).boolean THEN
+      makeRules.SetBackend(Make.backendSSAtoC);
     ELSE
       makeRules.SetBackend(Make.backendIRtoC);
     END;
