@@ -651,6 +651,10 @@ PROCEDURE (c: ConstFold) VisitWhileStatm* (whileStatm: IR.WhileStatm);
   BEGIN
   END VisitWhileStatm;
 
+PROCEDURE (c: ConstFold) VisitWithStatm* (withStatm: IR.WithStatm);
+  BEGIN
+  END VisitWithStatm;
+
 PROCEDURE (c: ConstFold) VisitCopy* (cp: IR.Copy);
   BEGIN
   END VisitCopy;

@@ -327,6 +327,15 @@ PROCEDURE (v: Visitor) VisitWhileStatm* (whileStatm: IR.WhileStatm);
     VisitStatementSeq (v, whileStatm. body);
   END VisitWhileStatm;
 
+PROCEDURE (v: Visitor) VisitWithStatm* (withStatm: IR.WithStatm);
+  BEGIN
+    withStatm. guard. Accept (v);
+    VisitStatementSeq (v, withStatm. pathTrue);
+    IF (withStatm. pathFalse # NIL) THEN
+      VisitStatementSeq (v, withStatm. pathFalse);
+    END;
+  END VisitWithStatm;
+
 
 PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);
   VAR

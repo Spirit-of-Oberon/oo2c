@@ -438,9 +438,6 @@ PROCEDURE (v: Visitor) VisitForStatm* (whileStatm: IR.ForStatm);
 PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
     v. w. StartTag ("if-statm", FALSE);
-    IF ifStatm. isWithClause THEN
-      v. w. AttrBool ("check-match", ifStatm. checkMatch);
-    END;
     v. w. StartTag ("guard", FALSE);
     ifStatm. guard. Accept (v);
     v. w. EndTag;  (* guard *)
@@ -530,6 +527,25 @@ PROCEDURE (v: Visitor) VisitWhileStatm* (whileStatm: IR.WhileStatm);
     v. w. EndTag;  (* body *)
     v. w. EndTag;  (* while-statm *)
   END VisitWhileStatm;
+
+PROCEDURE (v: Visitor) VisitWithStatm* (withStatm: IR.WithStatm);
+  BEGIN
+    v. w. StartTag ("with-statm", FALSE);
+    v. w. StartTag ("guard", FALSE);
+    withStatm. guard. Accept (v);
+    v. w. EndTag;  (* guard *)
+    
+    v. w. StartTag ("path-true", FALSE);
+    VisitStatementSeq (v, withStatm. pathTrue);
+    v. w. EndTag;  (* path-true *)
+    
+    IF (withStatm. pathFalse # NIL) THEN
+      v. w. StartTag ("path-false", FALSE);
+      VisitStatementSeq (v, withStatm. pathFalse);
+      v. w. EndTag;  (* path-false *)
+    END;
+    v. w. EndTag;  (* with-statm *)
+  END VisitWithStatm;
 
 PROCEDURE (v: Visitor) VisitCopy* (cp: IR.Copy);
   BEGIN

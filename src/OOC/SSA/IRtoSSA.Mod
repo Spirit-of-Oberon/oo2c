@@ -801,7 +801,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
   PROCEDURE IfStatm (ifStatm: IR.IfStatm);
     VAR
-      select, instr: SSA.Instr;
+      select: SSA.Instr;
       storeAfterGuard: SSA.Result;
     BEGIN
       select := pb. AddInstr (Opcode.select, Opcode.scNone);
@@ -816,19 +816,43 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       IF (ifStatm. pathFalse # NIL) THEN
         select. AddOpnd (StatmSeq (pb, storeAfterGuard, ifStatm. pathFalse),
                          Opnd.arg);
-        
-      ELSIF ifStatm. checkMatch THEN
-        s := storeAfterGuard;
-        instr := AddException (pb, ifStatm. sym,
-                               Opcode.failedWith, Opcode.scNone);
-        select. AddOpnd (s, Opnd.arg)
-        
       ELSE
         select. AddOpnd (storeAfterGuard, Opnd.arg)
       END;
 
       s := select. AddResult (Result.store)
     END IfStatm;
+
+  PROCEDURE WithStatm (withStatm: IR.WithStatm);
+    VAR
+      select, instr: SSA.Instr;
+      storeAfterGuard: SSA.Result;
+    BEGIN
+      select := pb. AddInstr (Opcode.select, Opcode.scNone);
+      select. AddOpnd (Expression (withStatm. guard), Opnd.arg);
+      storeAfterGuard := s;
+      
+      select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
+      select. AddOpnd (StatmSeq (pb, storeAfterGuard, withStatm. pathTrue),
+                       Opnd.arg);
+      
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      IF (withStatm. pathFalse # NIL) THEN
+        select. AddOpnd (StatmSeq (pb, storeAfterGuard, withStatm. pathFalse),
+                         Opnd.arg);
+        
+      ELSIF withStatm. checkMatch THEN
+        s := storeAfterGuard;
+        instr := AddException (pb, withStatm. sym,
+                               Opcode.failedWith, Opcode.scNone);
+        select. AddOpnd (s, Opnd.arg);
+            
+      ELSE
+        select. AddOpnd (storeAfterGuard, Opnd.arg)
+      END;
+
+      s := select. AddResult (Result.store)
+    END WithStatm;
 
   PROCEDURE CaseStatm (caseStatm: IR.CaseStatm);
     VAR
@@ -1119,6 +1143,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | statm: IR.IfStatm DO
         IfStatm (statm);
+
+      | statm: IR.WithStatm DO
+        WithStatm (statm);
 
       | statm: IR.CaseStatm DO
         CaseStatm (statm);

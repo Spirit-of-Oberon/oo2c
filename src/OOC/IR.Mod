@@ -738,15 +738,6 @@ TYPE
     guard-: Expression;
     pathTrue-: StatementSeq;
     pathFalse-: StatementSeq;  (* NIL if the IF statement has no ELSE *)
-    isWithClause-: BOOLEAN;
-    (**If @code{TRUE}, then this statement was derived from a @code{WITH}
-       statement.  In this case, @ofield{guard} is a type test, and the guard
-       asserts that the tested variable is of the right hand side type across
-       the whole region of @ofield{pathTrue}.  *)
-    checkMatch-: BOOLEAN;
-    (**If @code{TRUE}, then a run-time error should be reported if the
-       type guard does not evaluate to @code{TRUE}, and there is no @code{ELSE}
-       part.  *)
   END;
 
 TYPE
@@ -806,6 +797,22 @@ TYPE
     (StatementDesc)
     guard-: Expression;
     body-: StatementSeq;
+  END;
+
+TYPE
+  WithStatm* = POINTER TO WithStatmDesc;
+  WithStatmDesc = RECORD
+    (**Holds a @code{WITH} statement.  If there is no @code{ELSE}, then
+       @ofield{pathFalse} is @code{NIL}.  @code{WITH} statements with
+       multiple guards are translated to nested @code{WITH} statements.  *)
+    (StatementDesc)
+    guard-: Expression;
+    pathTrue-: StatementSeq;
+    pathFalse-: StatementSeq;  (* NIL if the WITH statement has no ELSE *)
+    checkMatch-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the
+       type guard does not evaluate to @code{TRUE}, and there is no @code{ELSE}
+       part.  *)
   END;
 
   
@@ -1108,6 +1115,9 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
         (* nothing *)
       | statm: WhileStatm DO
         CheckExit (statm. body, currentLoop);
+      | statm: WithStatm DO
+        CheckExit (statm. pathTrue, currentLoop);
+        CheckExit (statm. pathFalse, currentLoop);
       END;
     END CheckStatm;
   
@@ -2863,30 +2873,21 @@ PROCEDURE (forStatm: ForStatm) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitIfStatm (ifStatm: IfStatm; sym: Symbol; guard: Expression;
-                       pathTrue, pathFalse: StatementSeq;
-                       isWithClause, checkMatch: BOOLEAN);
+                       pathTrue, pathFalse: StatementSeq);
   BEGIN
     InitStatement (ifStatm, sym);
     ifStatm. guard := guard;
     ifStatm. pathTrue := pathTrue;
     ifStatm. pathFalse := pathFalse;
-    ifStatm. isWithClause := isWithClause;
-    ifStatm. checkMatch := checkMatch;
   END InitIfStatm;
 
 PROCEDURE (b: Builder) NewIfStatm* (sym: Symbol; guard: Expression;
-                                    pathTrue, pathFalse: StatementSeq;
-                                    isWithClause: BOOLEAN): IfStatm;
+                                    pathTrue, pathFalse: StatementSeq): IfStatm;
   VAR
     ifStatm: IfStatm;
-    checkMatch: BOOLEAN;
   BEGIN
-    checkMatch := isWithClause &
-        GetPragmaValue (b, StdPragmas.typeGuard, sym. pos);
-    
     NEW (ifStatm);
-    InitIfStatm (ifStatm, sym, guard, pathTrue, pathFalse,
-                 isWithClause, checkMatch);
+    InitIfStatm (ifStatm, sym, guard, pathTrue, pathFalse);
     RETURN ifStatm
   END NewIfStatm;
 
@@ -3070,6 +3071,41 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitWhileStatm* (whileStatm: WhileStatm);
 PROCEDURE (whileStatm: WhileStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitWhileStatm (whileStatm)
+  END Accept;
+
+(* Statement Class: WithStatm
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitWithStatm (withStatm: WithStatm; sym: Symbol; guard: Expression;
+                         pathTrue, pathFalse: StatementSeq;
+                         checkMatch: BOOLEAN);
+  BEGIN
+    InitStatement (withStatm, sym);
+    withStatm. guard := guard;
+    withStatm. pathTrue := pathTrue;
+    withStatm. pathFalse := pathFalse;
+    withStatm. checkMatch := checkMatch;
+  END InitWithStatm;
+
+PROCEDURE (b: Builder) NewWithStatm* (sym: Symbol; guard: Expression;
+                                      pathTrue, pathFalse: StatementSeq): WithStatm;
+  VAR
+    withStatm: WithStatm;
+    checkMatch: BOOLEAN;
+  BEGIN
+    checkMatch := GetPragmaValue (b, StdPragmas.typeGuard, sym. pos);
+    
+    NEW (withStatm);
+    InitWithStatm (withStatm, sym, guard, pathTrue, pathFalse, checkMatch);
+    RETURN withStatm
+  END NewWithStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitWithStatm* (withStatm: WithStatm);
+  END VisitWithStatm;
+
+PROCEDURE (withStatm: WithStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitWithStatm (withStatm)
   END Accept;
 
 

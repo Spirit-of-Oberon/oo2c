@@ -271,7 +271,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
               (ifStatm. guardList. n[i](ExtTree.Terminal). sym,
                Expr (ifStatm. guardList. n[i+1](ExtTree.Node)),
                StatementSeq (ifStatm. guardList. n[i+3](ExtTree.NodeList)),
-               elseSeq, FALSE);
+               elseSeq);
           NEW (elseSeq, 1);
           elseSeq[0] := else;
           DEC (i, 4)
@@ -370,9 +370,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           region := StatementSeq(withStatm.guardList.n[i+3](ExtTree.NodeList));
           b. EndTypeGuard (guard(IR.TypeTest), oldType);
           
-          else := b. NewIfStatm
+          else := b. NewWithStatm
               (withStatm. guardList. n[i](ExtTree.Terminal). sym,
-               guard, region, elseSeq, TRUE);
+               guard, region, elseSeq);
           NEW (elseSeq, 1);
           elseSeq[0] := else;
           DEC (i, 4)
