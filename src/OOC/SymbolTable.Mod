@@ -2753,6 +2753,13 @@ PROCEDURE InitTypeClosure(tc: TypeClosure; position: Position;
     tc.baseType := baseType;
     tc.params := params;
     tc.arguments := arguments;
+    IF (baseType # NIL) THEN
+      tc.size := baseType.size;
+      tc.align := baseType.align;
+    ELSE
+      tc.size := -1;
+      tc.align := -1;
+    END;
   END InitTypeClosure;
 
 PROCEDURE NewTypeClosure*(position: Position; baseType: Type;
