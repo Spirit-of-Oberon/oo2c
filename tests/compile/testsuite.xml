@@ -19,12 +19,12 @@
   baseline8 baseline10 baseline11
   function1 function2
   constfold1 constfold2 constfold3 constfold4 constfold5
-  constfold6 constfold7">
+  constfold6 constfold7 constfold8 constfold9">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
   select ="prepare_out_module
-  constfold7"> -->
+  constfold7 constfold8 constfold9">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="src/Out.Mod">
@@ -89,6 +89,18 @@
       file="ConstFold7.Mod" output="ConstFold7.Ref">
       Define an array type of fixed length, and write out the length
       using the <code>LEN</code> function.
+    </test>
+    
+    <test id="constfold8" type="run" 
+      file="ConstFold8.Mod" output="ConstFold8.Ref">
+      Define an array type of fixed length and declare a constant
+      using its <code>LEN</code>.
+    </test>
+    
+    <test id="constfold9" type="run" 
+      file="ConstFold9.Mod" output="ConstFold9.Ref">
+      Similar to <code>constfold7</code>, but the array type's length
+      is taken from a declared constant.
     </test>
   </testcases>
   
