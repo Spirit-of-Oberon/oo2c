@@ -73,6 +73,11 @@ PROCEDURE Read* (errList: Msg.MsgList);
     config. Read (errList);
   END Read;
 
+PROCEDURE HaveXsltProc*(): BOOLEAN;
+  BEGIN
+    RETURN (xsltproc.value(String.Value).string^ # "no");
+  END HaveXsltProc;
+
 BEGIN
   InitConfig (Autoconf.configFile);
 END OOC:Config.

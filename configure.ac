@@ -14,7 +14,7 @@ AC_PATH_PROG(OOC,oo2c,oo2c)
 AC_PATH_PROG(OOEF,ooef,ooef)
 AC_PATH_PROG(LIBTOOL,libtool,libtool)
 AC_PATH_PROG(DIFF,diff,diff)
-AC_PATH_PROG(XSLTPROC,xsltproc,xsltproc)
+AC_PATH_PROG(XSLTPROC,xsltproc,no)
 AC_PATH_PROG(PERL,perl,perl)
 
 dnl checks for libraries

@@ -257,18 +257,20 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
       path: Rep.URIBuffer;
     BEGIN
       ok := TRUE;
-      i := 0;
-      WHILE ok & (i #  LEN(makeRules.imports^)) DO
-        m := makeRules.imports[i];
-        IF install THEN
-          m.origin.GetLocalPath(m, Rep.modInterfaceDescr, path);
-          pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
-          m.origin.GetLocalPath(m, Rep.modInterfaceHTML, path);
-          pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
-        ELSE
-          ok := makeRules.Update(m, Rep.modInterfaceHTML);
+      IF Config.HaveXsltProc() THEN
+        i := 0;
+        WHILE ok & (i #  LEN(makeRules.imports^)) DO
+          m := makeRules.imports[i];
+          IF install THEN
+            m.origin.GetLocalPath(m, Rep.modInterfaceDescr, path);
+            pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+            m.origin.GetLocalPath(m, Rep.modInterfaceHTML, path);
+            pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+          ELSE
+            ok := makeRules.Update(m, Rep.modInterfaceHTML);
+          END;
+          INC(i);
         END;
-        INC(i);
       END;
       RETURN ok;
     END BuildDocs;
