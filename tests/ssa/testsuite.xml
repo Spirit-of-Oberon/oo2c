@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opTypeGuard1">-->
+  select ="&SetupTestCasesWithOut; loop13">-->
 
   &TestSetupWithOut;
     
@@ -262,6 +262,10 @@
       A code snipped that caused the SSA back-end to misplace a
       <code>select</code> statement in the middle of a block, instead
       of the beginning.  The result was a clobbered register.
+    </test>
+    <test id="loop13" type="accept" file="HOTLoop13.Mod">
+      Empty <code>LOOP-END</code>.  This should not force the
+      <em>compiler</em> into an endless loop ;-)
     </test>
  
     
