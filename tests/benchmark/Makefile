@@ -37,7 +37,6 @@ setup-ooc1:
 	mkdir wd1 wd1/obj wd1/sym wd1/asm wd1/exe
 
 compile-ooc1: setup-ooc1
-	$(COMPILE) --make Benchmark
 	$(OOC) --optimize -Mv --cflags "-O2" Benchmark
 
 test-ooc1: compile-ooc1
