@@ -237,6 +237,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     domRoot: Schedule.Block;
     writeProc: BOOLEAN;
     destore: Destore.State;
+    instr, next: SSA.Instr;
 
   PROCEDURE Write (pre, post: ARRAY OF CHAR);
     BEGIN
@@ -281,6 +282,19 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     DeadCodeElimination.Transform (pb);
     Write ("dce-post", "final");
 
+    (* type-conv is not supported yet ;-) *)
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      next := instr.nextInstr;
+      CASE instr. opcode OF
+      | Opcode.typeConv:
+        instr.ReplaceUses(instr.opndList.arg);
+        pb.DeleteInstr(instr);
+      ELSE (* nothing to do *)
+      END;
+      instr := next;
+    END;
+    
     domRoot := Schedule.Schedule (pb);
     IF writeProc THEN
       IF (t. inspectStage. MatchChars ("schedule", 0, -1) # NIL) THEN
