@@ -1,7 +1,7 @@
 MODULE gi;
 
 IMPORT
-  SYSTEM, Ascii, Channel, CharClass, Err, IntStr, Msg, StdChannels,
+  SYSTEM, Ascii, Channel, CharClass, Err, IntStr, StdChannels,
   RT0, Object, Exception, ADT:ArrayList, ADT:Dictionary, ADT:StringBuffer,
   ADT:Arrays, ADT:Comparator, OS:Path, OS:Files,
   StringSearch, StringSearch:RegexpDFA, StringSearch:NoMatch,
@@ -81,12 +81,8 @@ PROCEDURE (cmp: CmpFile) Compare*(o1: Object.Object; o2: Object.Object): LONGINT
 
 PROCEDURE NewClient*(serverAddr: Address.SocketInet;
                      async: BOOLEAN): Client;
-  VAR
-    cl: Client;
   BEGIN
-    NEW(cl);
-    NNTP.InitClient(cl, serverAddr, async);
-    RETURN cl;
+    RETURN NEW(Client, serverAddr, async, TRUE);
   END NewClient;
 
 PROCEDURE (cl: Client) LogRequest*(cmd: Object.String8);
@@ -242,18 +238,6 @@ RAISES IO.Error;
     gd: GroupData;
     header: Header;
 
-  PROCEDURE CreateDir(fileName: STRING);
-    VAR
-      str: Object.CharsLatin1;
-      path: ARRAY 1024 OF CHAR;
-      res: Msg.Msg;
-    BEGIN
-      str := fileName(Object.String8).CharsLatin1();
-      Path.dirname(str^, path);
-      Files.makedirs(path, Files.defaultMode, res);
-      ASSERT(res = NIL);
-    END CreateDir;
-  
   PROCEDURE ParseInt(VAR b: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
     CONST
       maxLength = 12;
@@ -333,7 +317,7 @@ RAISES IO.Error;
     
     fileName := dataDir+"/"+group;
     LogMsg("Reading group file "+fileName);
-    CreateDir(fileName);
+    Files.MakeDirs(Path.DirName(fileName), Files.defaultMode);
     ch := FileChannel.Open(fileName(String), {FileChannel.read, FileChannel.write, FileChannel.create});
     
     pos := 0; end := 0; lastId := -1;
@@ -495,7 +479,7 @@ PROCEDURE ReduceGroupData(gd: GroupData; first, last: LONGINT): LONGINT;
   END ReduceGroupData;
 
 PROCEDURE AppendXHdr(gd: GroupData; req: NNTP.XHdr; last: LONGINT)
-RAISES IO.Error, NNTP.ProtocolError;
+RAISES IO.Error;
   VAR
     text: NNTP.Text;
     headers: ArrayList.ArrayList;
@@ -736,7 +720,7 @@ PROCEDURE AddToHistory(file: File) RAISES IO.Error;
   END AddToHistory;
 
 PROCEDURE DownloadFiles(fileList: FileList)
-RAISES IO.Error, NNTP.ProtocolError, NNTP.ErrorResponse;
+RAISES IO.Error, NNTP.ErrorResponse;
   VAR
     i, j, status: LONGINT;
     file: File;
