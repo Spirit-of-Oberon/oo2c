@@ -402,6 +402,10 @@ PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
 
 
 PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
+  VAR
+    getPointerDecl: Dictionary.Dictionary(STRING, Sym.TypeDecl);
+    hasTypeBoundProc: Dictionary.Dictionary(STRING, Object.Object);
+    
   PROCEDURE CollectFormalPars (item: Sym.Item);
   (* Sets the field @ofield{Sym.FormalPars.params} for all formal parameter
      definitions under @oparam{item}.  Strictly speaking, this is not necessary
@@ -449,6 +453,46 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
         END
       END
     END CollectFormalPars;
+
+  PROCEDURE PreprocessSetClassName(module: Sym.Module);
+    VAR
+      ptr: Sym.Item;
+      name: Object.String8;
+
+    PROCEDURE UnqualifiedName(type: Sym.Type): BOOLEAN;
+      BEGIN
+        WITH type: Sym.TypeName DO
+          RETURN (type.module = NIL);
+        ELSE
+          RETURN FALSE;
+        END
+      END UnqualifiedName;
+    
+    BEGIN
+      ptr := module.nestedItems;
+      WHILE (ptr # NIL) DO
+        WITH ptr: Sym.TypeDecl DO
+          IF (ptr.type IS Sym.Pointer) &
+             UnqualifiedName(ptr.type(Sym.Pointer).srcCodeBaseType) THEN
+            name := Object.NewLatin1(ptr.type(Sym.Pointer).srcCodeBaseType(Sym.TypeName).ident.str^);
+            IF getPointerDecl.HasKey(name) THEN
+              (* multiple pointers to one record or array type *)
+              getPointerDecl.Set(name, NIL);
+            ELSE
+              getPointerDecl.Set(name, ptr);
+            END;
+          END;
+
+        | ptr: Sym.ProcDecl DO
+          IF ptr.IsTypeBound() THEN
+            name := Object.NewLatin1(ptr.formalPars.receiver.srcCodeType(Sym.TypeName).ident.str^);
+            hasTypeBoundProc.Set(name, NIL)
+          END;
+        ELSE
+        END;
+        ptr := ptr.nextNested;
+      END;
+    END PreprocessSetClassName;
   
   PROCEDURE SetClassName (item: Sym.Item);
     VAR
@@ -473,45 +517,69 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
       VAR
         ptr: Sym.Item;
         pointerDecl: Sym.TypeDecl;
+        name: Object.String8;
       BEGIN
-        pointerDecl := NIL;
-        ptr := scope. nestedItems;
-        WHILE (ptr # NIL) DO
-          WITH ptr: Sym.TypeDecl DO
-            IF (ptr. type IS Sym.Pointer) &
-               SameType (typeName, ptr.type(Sym.Pointer).srcCodeBaseType) THEN
-              IF (pointerDecl = NIL) THEN
-                pointerDecl := ptr
-              ELSE
-                RETURN NIL
-              END
-            END
+        IF (scope IS Sym.Module) THEN
+          name := Object.NewLatin1(typeName.str^);
+          IF getPointerDecl.HasKey(name) THEN
+            RETURN getPointerDecl.Get(name);
           ELSE
+            RETURN NIL;
           END;
-          ptr := ptr. nextNested
+        ELSE  (* not in module scope: fallback to old search *)
+          pointerDecl := NIL;
+          ptr := scope.nestedItems;
+          WHILE (ptr # NIL) DO
+            WITH ptr: Sym.TypeDecl DO
+              IF (ptr.type IS Sym.Pointer) &
+                 SameType(typeName, ptr.type(Sym.Pointer).srcCodeBaseType) THEN
+                IF (pointerDecl = NIL) THEN
+                  pointerDecl := ptr;
+                ELSE
+                  RETURN NIL;
+                END;
+              END;
+            ELSE
+            END;
+            ptr := ptr.nextNested;
+          END;
+          RETURN pointerDecl;
         END;
-        RETURN pointerDecl
       END GetPointerDecl;
     
     PROCEDURE HasTypeBoundProcedures (scope: Sym.Item;
                                       record, pointer: Sym.Name): BOOLEAN;
       VAR
         ptr: Sym.Item;
+        name: Object.String8;
       BEGIN
-        ptr := scope. nestedItems;
-        WHILE (ptr # NIL) DO
-          WITH ptr: Sym.ProcDecl DO
-            IF ptr.IsTypeBound() &
-               (SameType (record, ptr.formalPars.receiver.srcCodeType) OR
-                (pointer # NIL) &
-                SameType (pointer, ptr.formalPars.receiver.srcCodeType)) THEN
-              RETURN TRUE
-            END
-          ELSE
+        IF (scope IS Sym.Module) THEN
+          name := Object.NewLatin1(record.str^);
+          IF hasTypeBoundProc.HasKey(name) THEN
+            RETURN TRUE;
+          ELSIF (pointer # NIL) THEN
+            name := Object.NewLatin1(pointer.str^);
+            IF hasTypeBoundProc.HasKey(name) THEN
+              RETURN TRUE;
+            END;
           END;
-          ptr := ptr. nextNested
+          RETURN FALSE;
+        ELSE  (* not in module scope: fallback to old search *)
+          ptr := scope. nestedItems;
+          WHILE (ptr # NIL) DO
+            WITH ptr: Sym.ProcDecl DO
+              IF ptr.IsTypeBound() &
+                 (SameType(record, ptr.formalPars.receiver.srcCodeType) OR
+                  (pointer # NIL) &
+                  SameType(pointer, ptr.formalPars.receiver.srcCodeType)) THEN
+                RETURN TRUE;
+              END;
+            ELSE
+            END;
+            ptr := ptr.nextNested;
+          END;
+          RETURN FALSE;
         END;
-        RETURN FALSE
       END HasTypeBoundProcedures;
     
     BEGIN
@@ -592,7 +660,13 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
   
   BEGIN
     CollectFormalPars (module);
+
+    (* compute `getPointerDecl' for `SetClassName()' *)
+    getPointerDecl := NEW(Dictionary.Dictionary(STRING, Sym.TypeDecl));
+    hasTypeBoundProc := NEW(Dictionary.Dictionary(STRING, Object.Object));
+    PreprocessSetClassName(module);
     SetClassName (module);
+    
     IF (module.class = Sym.mcInternal) THEN
       (* no auto imports at all *)
     ELSIF (doAutoImport = fullAutoImport) THEN
