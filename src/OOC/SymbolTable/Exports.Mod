@@ -71,7 +71,9 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
                    predefined type; in this case, we are done *)
               ELSE
                 decl := module. ns. IdentifyLocal (root, type. module, TRUE);
-                ASSERT (decl # NIL)
+                (* if this is NIL, then the module has an unresolved
+                   reference; ignore this here, it has already triggered
+                   an error message *)
               END;
               IF (decl # NIL) THEN
                 MarkDecl (decl)
