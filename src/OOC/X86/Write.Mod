@@ -3,7 +3,7 @@ MODULE OOC:X86:Write;
 IMPORT
   SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, Log,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, S := OOC:X86:SSA, OOC:X86:RuntimeData;
 
 TYPE
@@ -684,7 +684,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
         IF (j = len) THEN  (* can clobber old value of location *)
           (* FIXME... mem/mem does not work *)
           opndWidth := io[i].out.type;
-          Opc("mov");
+          IF S.IsFloat(opndWidth) THEN
+            Opc("movs");
+          ELSE
+            Opc("mov");
+          END;
           Opnd(io[i].in);
           Comma();
           Result(io[i].out);

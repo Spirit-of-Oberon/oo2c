@@ -790,7 +790,14 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN instr.AddResultExpr(expr.type);
           
         | expr: IR.Negate DO
-          instr := b.AddInstr1(S.neg, Expression(expr.operand));
+          arg1 := Expression(expr.operand);
+          IF S.IsFloat(arg1.type) THEN  (* convert to `0-x' *)
+            instr := b.AddInstr2(S.sub,
+                                 b.AddConstReal(Boxed.zeroLongReal,
+                                                expr.type), arg1);
+          ELSE
+            instr := b.AddInstr1(S.neg, arg1);
+          END;
           RETURN instr.AddResultExpr(expr.type);
 
         | expr: IR.Compare DO

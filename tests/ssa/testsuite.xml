@@ -5,8 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; longreal1 longreal2 longreal3
-  longreal4 longreal5 longreal6 longreal7">-->
+  select ="&SetupTestCasesWithOut; abs0">-->
 
   &TestSetupWithOut;
     
@@ -627,6 +626,9 @@
       Applying a field selector to the result of <code>NEW</code>.
     </test>
     
+    <test id="abs0" type="run" file="Abs0.Mod" output="Abs0.Ref">
+      "Manual" computation of absolute value.
+    </test>
     <test id="abs1" type="run" file="Abs1.Mod" output="Abs1.Ref">
       Predefined function <code>ABS</code> for some integers and reals.
     </test>

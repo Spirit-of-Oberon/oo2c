@@ -2073,6 +2073,12 @@ PROCEDURE (b: Block) AddConstInt*(value: BigInt.BigInt;
     RETURN b.AddConst(NEW(Const, value, -1), type);
   END AddConstInt;
 
+PROCEDURE (b: Block) AddConstReal*(value: Boxed.LongReal;
+                                  type: Sym.Type): Result;
+  BEGIN
+    RETURN b.AddConst(NEW(Const, value, -1), type);
+  END AddConstReal;
+
 PROCEDURE (b: Block) AddConstDim*(dim: LONGINT): Result;
   BEGIN
     RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim), -1),
