@@ -1,13 +1,16 @@
 include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
 
 # Extra flags to GCC
-CCFLAGS = -traditional-cpp 
+CCFLAGS = #-traditional-cpp
 
 # location of library directory
 LIB = $(OOC_DEV_ROOT)/lib
 
+# binary that produces the tested excutables
+TEST_DRIVER = TestCompile
+
 # command to compile benchmarks
-COMPILE = $(OOC_DEV_ROOT)/TestCompile -r $(OOC_DEV_ROOT)/lib -r wd --use-ssa
+COMPILE = $(OOC_DEV_ROOT)/$(TEST_DRIVER) -r $(OOC_DEV_ROOT)/lib -r wd --use-ssa
 
 # command to generate assembley output from C
 CCC = gcc $(CCFLAGS) -O2 -S -I$(LIB)/src -I$(LIB)/obj -Iwd/obj
@@ -15,13 +18,15 @@ CCC = gcc $(CCFLAGS) -O2 -S -I$(LIB)/src -I$(LIB)/obj -Iwd/obj
 # benchmarks to test for ASM output
 BENCHMARKS = FFT Sort
 
-test: setup
-	$(COMPILE) --make Benchmark 
+test: compile
+	wd/exe/Benchmark --all --normalise
 
 compile: setup
-	$(COMPILE) --make Benchmark 2>&1 | grep -v module | $(OOEF)
+	$(COMPILE) --make Benchmark
 
 setup:
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
+	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) $(TEST_DRIVER)
 	rm -rf wd
 	mkdir wd wd/obj wd/sym wd/asm
 	ln -s ../src wd/src
@@ -30,8 +35,12 @@ setup-ooc1:
 	rm -rf wd1
 	mkdir wd1 wd1/obj wd1/sym wd1/exe
 
-test-ooc1: setup-ooc1
-	oo2c --optimize -Mv Benchmark
+compile-ooc1: setup-ooc1
+	$(COMPILE) --make Benchmark
+	$(OOC) --optimize -Mv Benchmark
+
+test-ooc1: compile-ooc1
+	wd1/exe/Benchmark --all --normalise
 
 # Attempt to find the differences in assembled output
 # This is a quick hack, but probably as good as it will get
@@ -43,6 +52,6 @@ asm: test
           diff -yd wd/asm/$$i.s wd/asm/$${i}C.s > wd/asm/$$i.diff; \
           true; \
 	done
-	
+
 clean:
 	rm -rf wd wd1
