@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <errno.h>
+#include <string.h>
 
 #include "__oo2c.h"
 #include "__config.h"
