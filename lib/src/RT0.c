@@ -133,6 +133,16 @@ void RT0__ErrorDerefOfNil (RT0__Module mid, OOC_CHARPOS pos) {
   _runtime_error("Dereference of NIL", mid, pos);
 }
 
+void RT0__ErrorFailedTypeGuard (RT0__Module mid, OOC_CHARPOS pos,
+				RT0__Struct typeTag) {
+  char s[1024];
+  
+  (void)sprintf(s, "Type guard failed, actual type is %s.%s",
+		(const char*)typeTag->module->name,
+		(const char*)typeTag->name);
+  _runtime_error(s, mid, pos);
+}
+
 void RT0__ErrorFailedCase (RT0__Module mid, OOC_CHARPOS pos, OOC_INT32 select) {
   char s[128];
   (void)sprintf(s, "CASE error, `" OOC_INT32_FORMAT

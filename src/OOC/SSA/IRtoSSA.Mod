@@ -189,11 +189,32 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       RETURN instr;
     END CopyString;
   
-  PROCEDURE TypeTag (design: IR.Expression; value: SSA.Result): SSA.Instr;
-  (* `design' is the variable designator, `value' its translation to SSA *)
+  PROCEDURE AddException (pb: SSA.ProcBlock; sym: IR.Symbol;
+                          opcode: Opcode.Class; subclass: Opcode.Subclass): SSA.Instr;
     VAR
       instr: SSA.Instr;
+      res: SSA.Result;
     BEGIN
+      instr := pb. AddInstr (opcode, subclass);
+      instr. SetPos (sym);
+      res := instr. AddResult (Result.exception);
+      Chain (instr);
+      RETURN instr;
+    END AddException;
+  
+  PROCEDURE TypeTag (design: IR.Expression; value: SSA.Result;
+                     checkDerefOfNil: BOOLEAN; derefSym: IR.Symbol): SSA.Instr;
+  (* `design' is the variable designator, `value' its translation to SSA *)
+    VAR
+      instr, check: SSA.Instr;
+    BEGIN
+      IF checkDerefOfNil & (design. type IS Sym.Pointer) THEN
+        check := AddException (pb, derefSym,
+                               Opcode.checkPointer, value. subclass);
+        check. AddOpnd (value, Opnd.arg);
+        value := check;
+      END;
+      
       instr := pb. AddInstr (Opcode.typeTag, Opcode.scAddress);
       IF (design. type IS Sym.Pointer) THEN
         instr. AddOpnd (value, Opnd.arg);
@@ -208,19 +229,6 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       RETURN instr;
     END TypeTag;
   
-  PROCEDURE AddException (pb: SSA.ProcBlock; sym: IR.Symbol;
-                          opcode: Opcode.Class; subclass: Opcode.Subclass): SSA.Instr;
-    VAR
-      instr: SSA.Instr;
-      res: SSA.Result;
-    BEGIN
-      instr := pb. AddInstr (opcode, subclass);
-      instr. SetPos (sym);
-      res := instr. AddResult (Result.exception);
-      Chain (instr);
-      RETURN instr;
-    END AddException;
-  
   PROCEDURE Copy (cp: IR.Copy): SSA.Instr;
     VAR
       instr, dynTag, staticTag, neq, failed, select: SSA.Instr;
@@ -230,7 +238,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       dest := Expression (cp. dest);
 
       IF cp. checkDynamicType THEN
-        dynTag := TypeTag (cp. dest, dest);
+        dynTag := TypeTag (cp. dest, dest, FALSE, NIL);
         staticTag := pb. AddInstr (Opcode.typeTag, Opcode.scAddress);
         staticTag. AddOpnd (pb. GetTypeRef (cp. dest. type), Opnd.arg);
 
@@ -490,11 +498,36 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr: SSA.Instr; 
       BEGIN
         instr := pb. AddInstr (Opcode.typeTest, Opcode.scBoolean);
-        instr. AddOpnd (TypeTag (test. expr, Expression (test. expr)),
+        instr. AddOpnd (TypeTag (test. expr, Expression (test. expr),
+                                 test. checkPointer, test. sym),
                         Opnd.arg);
         instr. AddOpnd (pb. GetTypeRef (test. referenceType), Opnd.type);
         RETURN instr
       END TypeTest;
+    
+    PROCEDURE TypeGuard (guard: IR.TypeGuard): SSA.Result;
+      VAR
+        design: SSA.Result;
+        instr, tag: SSA.Instr; 
+      BEGIN
+        design := Expression (guard. test. expr);
+        ASSERT (design. instr. opcode = Opcode.get);
+
+        IF guard. checkType THEN
+          tag := TypeTag (guard. test. expr, design,
+                          guard. checkPointer, guard. sym);
+          
+          instr := AddException (pb, guard. test. origType. sym,
+                                 Opcode.typeGuard, design. subclass);
+          instr. AddOpnd (design, Opnd.arg);
+          instr. AddOpnd (tag, Opnd.arg);
+          instr. AddOpnd (pb. GetTypeRef (guard. test. referenceType),
+                          Opnd.type);
+          RETURN instr;
+        ELSE
+          RETURN design;
+        END;
+      END TypeGuard;
     
     PROCEDURE TypeCast (cast: IR.TypeCast): SSA.Result;
       VAR
@@ -535,7 +568,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         ELSE                             (* use dynamic address *)
           instr := pb. AddInstr (Opcode.tbProcAddress, Opcode.scAddress);
           instr. AddOpnd (TypeTag (selectOp. receiver,
-                                   Expression (selectOp. receiver)), Opnd.arg);
+                                   Expression (selectOp. receiver),
+                                   selectOp. checkPointer,
+                                   selectOp. sym), Opnd.arg);
           instr. AddOpnd (pb. GetDeclRef (selectOp. tbProc), Opnd.arg);
           RETURN instr;
         END;
@@ -596,9 +631,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: IR.TypeConv DO
         RETURN TypeConv (expr);
       | expr: IR.TypeTag DO
-        RETURN TypeTag (expr. design, Expression (expr. design));
+        RETURN TypeTag (expr. design, Expression (expr. design), FALSE, NIL);
       | expr: IR.TypeTest DO
         RETURN TypeTest (expr);
+      | expr: IR.TypeGuard DO
+        RETURN TypeGuard (expr);
         
       | expr: IR.Negate DO
         instr := pb. AddInstr (Opcode.negate,
@@ -860,7 +897,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       ELSIF withStatm. checkMatch THEN
         s := storeAfterGuard;
         var := withStatm. guard(IR.TypeTest). expr;
-        typeTag := TypeTag (var, Expression (var));
+        typeTag := TypeTag (var, Expression (var), TRUE, withStatm. sym);
         instr := AddException (pb, withStatm. sym,
                                Opcode.failedWith, Opcode.scNone);
         instr. AddOpnd (typeTag, Opnd.arg);

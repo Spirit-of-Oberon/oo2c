@@ -593,16 +593,39 @@ CONST
      The result of the instruction is the checked pointer.  One additional
      result is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
+  typeGuard* = 61;
+  (**Raise an exception if the given type is not an extension of the type tag.
 
-  failedCase* = 61;
-  failedWith* = 62;
-  failedTypeAssert* = 63;
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA.Opnd.arg
+     The address of the variable being tested.
+
+     @item *OOC:SSA.Opnd.arg
+     The type tag of the variable.  This an address of a type descriptor.
+
+     @item *OOC:SSA:Opnd.type
+     The type of which the first operand must be an extension of.  The argument
+     is an instance of @otype{*OOC:SSA.TypeRef}.  This type is either equal to
+     the one of the first operand, or an extension of it.
+     @end table
+
+     The result of the instruction is the checked variable address, that is,
+     the value of the second argument.  One additional result is the new value
+     of @var{store}, another one is of class
+     @oconst{*OOC:SSA:Result.exception}.  *)
+
+  failedCase* = 62;
+  failedWith* = 63;
+  failedTypeAssert* = 64;
   
-  selectException* = 64;
+  selectException* = 65;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
   
-  labels* = 65;
+  labels* = 66;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -755,6 +778,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | halt: cstr := "halt";
     | checkIndex: cstr := "check-index";
     | checkPointer: cstr := "check-pointer";
+    | typeGuard: cstr := "type-guard";
     | failedCase: cstr := "failed-case";
     | failedWith: cstr := "failed-with";
     | failedTypeAssert: cstr := "failed-type-assert";

@@ -216,6 +216,7 @@ PROCEDURE InitVParStack* (bytes: LONGINT);
 PROCEDURE ErrorIndexOutOfRange* (mid: Module; pos: LONGINT;
                                  index, length: LONGINT);
 PROCEDURE ErrorDerefOfNil* (mid: Module; pos: LONGINT);
+PROCEDURE ErrorFailedTypeGuard* (mid: Module; pos: LONGINT; typeTag: Struct);
 PROCEDURE ErrorFailedCase* (mid: Module; pos: LONGINT; select: LONGINT);
 PROCEDURE ErrorFailedWith* (mid: Module; pos: LONGINT; typeTag: Struct);
 PROCEDURE ErrorFailedTypeAssert* (mid: Module; pos: LONGINT);

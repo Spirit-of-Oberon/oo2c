@@ -566,6 +566,22 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (");")
     END CheckPointer;
 
+  PROCEDURE TypeGuard (typeGuard: SSA.Instr);
+    VAR
+      name: String.String;
+      opnd: SSA.Opnd;
+    BEGIN
+      w. WriteString ("_type_guard(");
+      RefList (typeGuard. opndList. nextOpnd, Opnd.arg);
+      w. WriteString (", &");
+      opnd := typeGuard. GetOpndClass (Opnd.type);
+      name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
+      w. WriteString (name. array^);
+      w. WriteString (", ");
+      w. WriteLInt (typeGuard. pos, 0);
+      w. WriteString (");")
+    END TypeGuard;
+
   PROCEDURE FailedCheck (instr: SSA.Instr; fct: ARRAY OF CHAR; opnd: SSA.Opnd);
     BEGIN
       w. Newline;
@@ -1169,6 +1185,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         CheckIndex (instr);
       | Opcode.checkPointer:
         CheckPointer (instr);
+      | Opcode.typeGuard:
+        TypeGuard (instr);
       | Opcode.failedCase:
         FailedCheck (instr, "_failed_case", instr. opndList. nextOpnd);
       | Opcode.failedWith:

@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; tbproc1 tbproc8">-->
+  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard4 opTypeGuard5">-->
 
   &TestSetupWithOut;
     
@@ -716,13 +716,17 @@
       output="OpTypeGuard1.Ref">
       Excercise type guards.
     </test>
-
     <test id="opTypeGuard2" type="reject" file="OpTypeGuard2.Mod">
       Guard type is not a valid RECORD type.
     </test>
-
     <test id="opTypeGuard3" type="reject" file="OpTypeGuard3.Mod">
       Guard type is not extension of designator type.
+    </test>
+    <test id="opTypeGuard4" type="error" file="OpTypeGuard4.Mod">
+      Provoke failure of type guard on a pointer variable.
+    </test>
+    <test id="opTypeGuard5" type="error" file="OpTypeGuard5.Mod">
+      Provoke failure of type guard on a <code>NIL</code> value.
     </test>
 
     <test id="opExprCompat1" type="run" relevance="informal" file="OpExprCompat1.Mod"

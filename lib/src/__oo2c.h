@@ -48,6 +48,11 @@
        RT0__ErrorDerefOfNil(&_mid,pos); \
      }                                  \
      adr; })
+#define _type_guard(adr,tag,guard,pos)                          \
+  ({ if (!OOC_TYPE_TEST(tag,guard)) {                           \
+       RT0__ErrorFailedTypeGuard(&_mid,pos,(RT0__Struct)tag);   \
+     }                                                          \
+     adr; })
 #define _failed_case(select,pos) RT0__ErrorFailedCase(&_mid,pos,select)
 #define _failed_with(type_tag,pos) RT0__ErrorFailedWith(&_mid,pos,(RT0__Struct)type_tag)
 #define _failed_type_assert(pos) RT0__ErrorFailedTypeAssert(&_mid,pos)

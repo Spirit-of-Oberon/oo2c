@@ -468,6 +468,9 @@ TYPE
        to the @ofield{receiver} designator.  *)
     receiver-: Expression;
     (**The receiver designator of the call.  *)
+    checkPointer-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the
+       receiver value is @code{NIL}.  *)
     
     recordType-: Sym.Record;
     (**The record type of which the type-bound procedure is called.  *)
@@ -563,7 +566,7 @@ TYPE
   TypeTag* = POINTER TO TypeTagDesc;
   TypeRef* = POINTER TO TypeRefDesc;
   TypeTagDesc = RECORD
-    (**Computes the type tag of a record variable.  *)
+    (**Computes the type tag of a variable parameter of type @code{RECORD}.  *)
     (OperatorDesc)
     design-: Expression;
     (**The variable designator.  This is either a record variable, a
@@ -579,6 +582,9 @@ TYPE
     (OperatorDesc)
     expr-: Expression;
     referenceType-: Sym.Record;
+    checkPointer-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the
+       left side of the type test is @code{NIL}.  *)
 
     origExpr-: Expression;
     (**Unnormalized value of @ofield{expr}.  *)
@@ -593,6 +599,12 @@ TYPE
        the type test operator. *)
     (OperatorDesc)
     test- : TypeTest;
+    checkPointer-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the
+       left side of the type guard is @code{NIL}.  *)
+    checkType-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the
+       guard fails.  *)
   END;
   
 TYPE
@@ -2054,11 +2066,13 @@ PROCEDURE (sf: SelectField) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitSelectProc (sp: SelectProc; sym: Symbol; receiver: Expression;
+                          checkPointer: BOOLEAN;
                           recordType: Sym.Record; tbProc: Sym.ProcDecl;
                           tbProcSym: Symbol; isStaticCall: BOOLEAN);
   BEGIN
     InitOperator (sp, sym, tbProc. formalPars);
     sp. receiver := receiver;
+    sp. checkPointer := checkPointer;
     sp. recordType := recordType;
     sp. tbProc := tbProc;
     sp. tbProcSym := tbProcSym;
@@ -2072,9 +2086,13 @@ PROCEDURE (b: Builder) NewSelectProc (sym: Symbol; receiver: Expression;
                                       isStaticCall: BOOLEAN): SelectProc;
   VAR
     i: SelectProc;
+    checkPointer: BOOLEAN;
   BEGIN
+    checkPointer := GetPragmaValue (b, StdPragmas.derefCheck, sym. pos);
+    
     NEW (i);
-    InitSelectProc (i, sym, receiver, recordType, tbProc, tbProcSym, isStaticCall);
+    InitSelectProc (i, sym, receiver, checkPointer,
+                    recordType, tbProc, tbProcSym, isStaticCall);
     RETURN i
   END NewSelectProc;
 
@@ -2520,11 +2538,13 @@ PROCEDURE (tag: TypeTag) Accept* (v: Visitor);
 
 PROCEDURE InitTypeTest (test: TypeTest; sym: Symbol;
                         expr: Expression; referenceType: Sym.Record;
+                        checkPointer: BOOLEAN;
                         origExpr: Expression; origType: TypeRef);
   BEGIN
     InitOperator (test, sym, Predef.GetType(Predef.boolean));
     test. expr := expr;
     test. referenceType := referenceType;
+    test. checkPointer := checkPointer;
     test. origExpr := origExpr;
     test. origType := origType;
   END InitTypeTest;
@@ -2534,6 +2554,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
     test: TypeTest;
     refType: Sym.Type;
     origExpr: Expression;
+    checkPointer: BOOLEAN;
   BEGIN
     refType := b. AssertType (referenceType);
     IF (refType = NIL) THEN
@@ -2542,13 +2563,14 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
     ELSE
       origExpr := expr;
+      checkPointer := GetPragmaValue (b, StdPragmas.derefCheck, sym. pos);
       IF (expr IS Deref) THEN
         expr := expr(Deref). pointer;
       ELSIF (expr. type IS Sym.Pointer) THEN
         refType := refType(Sym.Pointer). baseType;
       END;
       NEW (test);
-      InitTypeTest (test, sym, expr, refType(Sym.Record),
+      InitTypeTest (test, sym, expr, refType(Sym.Record), checkPointer,
                     origExpr, referenceType(TypeRef));
       RETURN test;
     END;
@@ -2566,13 +2588,17 @@ PROCEDURE (test: TypeTest) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitTypeGuard (guard: TypeGuard; sym: Symbol;
-                        type : Sym.Type; test : TypeTest);
+                         type: Sym.Type; test: TypeTest;
+                         checkPointer, checkType: BOOLEAN);
   BEGIN
     InitOperator (guard, sym, type);
     guard. test := test;
+    guard. checkPointer := checkPointer;
+    guard. checkType := checkType;
   END InitTypeGuard;
 
-PROCEDURE (b : Builder) NewTypeGuard(design : Expression; ref : TypeRef) : Expression;
+PROCEDURE (b : Builder) NewTypeGuard(sym: Symbol; design: Expression;
+                                     ref: TypeRef): Expression;
 VAR 
   guardType : Sym.Type;
   guard : TypeGuard;
@@ -2582,14 +2608,10 @@ BEGIN
   IF TR.IsValidReceiverType(guardType) THEN
     IF TR.IsExtensionOf(guardType, design.type) THEN
       NEW(guard);
-      test := b.NewTypeTest(design.sym, design, ref);
-
-      InitTypeGuard(guard, design.sym, guardType, test(TypeTest));
-
-      (* FIXME! Keep compiler happy until back-end handles type guard *)
-      design.type := guardType;
-      RETURN design;    (* No-Op for now *)
-
+      test := b.NewTypeTest(sym, design, ref);
+      InitTypeGuard(guard, sym, guardType, test(TypeTest),
+                    GetPragmaValue (b, StdPragmas.derefCheck, sym. pos),
+                    GetPragmaValue (b, StdPragmas.typeGuard, sym. pos));
       RETURN guard;
     ELSE
       RETURN b.ErrExpr(guardNotExtension, ref.sym);
@@ -4384,7 +4406,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         RETURN b. errorExpr;        (* fall through for errors in designator *)
       ELSIF TR.IsValidReceiverType(design.type) 
         & (LEN(arguments^) = 1) & (arguments[0] IS TypeRef) THEN
-        RETURN b.NewTypeGuard(design, arguments[0] (TypeRef));
+        RETURN b.NewTypeGuard(arguments[0]. sym, design,
+                              arguments[0](TypeRef));
       ELSIF ~(design. type IS Sym.FormalPars) THEN
         RETURN b. ErrExpr (notProcedure, design. sym);
       ELSIF isFunctionCall &
