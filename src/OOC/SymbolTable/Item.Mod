@@ -689,7 +689,7 @@ PROCEDURE (item: Item) Load* (r: Object.Reader);
   END Load;
 
 PROCEDURE (item: Item) Module*(): Module;
-(**Returns the item, that is the root of the item hierarchy that includes
+(**Returns the item, that is the root of the hierarchy that includes
    @oparam{item}.  The returned item is never @code{NIL}, because even
    predefined items are nested in pseudo modules.  *)
   BEGIN
@@ -698,6 +698,20 @@ PROCEDURE (item: Item) Module*(): Module;
     END;
     RETURN item(Module)
   END Module;
+
+PROCEDURE (item: Item) Procedure*(): ProcDecl;
+(**Returns the procedure item in which @oparam{item} is nested.  The result is
+   @code{NIL}, if @oparam{item} is not part of a procedure.  *)
+  BEGIN
+    WHILE (item # NIL) & ~(item IS ProcDecl) DO
+      item := item. parent
+    END;
+    IF (item = NIL) THEN
+      RETURN NIL
+    ELSE
+      RETURN item(ProcDecl)
+    END;
+  END Procedure;
 
 
 PROCEDURE InitDeclaration* (decl: Declaration; parent: Item; name: Name;
