@@ -548,8 +548,8 @@ PROCEDURE ProcBody* (textWriter: TextRider.Writer;
 
     (* code transformations *)
     DeadCodeElimination.Transform (pb);
-(*    Destore.Transform (pb);
-    DeadCodeElimination.Transform (pb);*)
+    Destore.Transform (pb);
+    DeadCodeElimination.Transform (pb);
 
     (* write SSA code to stdout, both in native and scheduled format *)
     XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
