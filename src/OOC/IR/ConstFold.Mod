@@ -25,7 +25,7 @@ IMPORT
   Language, 
   Language:Integer, Language:Boolean, Language:String8, 
   Language:Set,
-  ADT:String, Integers;
+  ADT:String;
 
 TYPE
   ConstFold = POINTER TO ConstFoldDesc;
@@ -38,19 +38,18 @@ CONST
 
 TYPE
   IntegerType = RECORD
-    low, high : Integers.Integer;
+    low, high : Integer.Value;
     id : Sym.PredefId;
   END;
 
 VAR
-  minus1, zero : Integers.Integer;
   nIntegerTypes : INTEGER;
   integerType : ARRAY maxIntegerTypes OF IntegerType;
 
 PROCEDURE AddIntegerType(id : Sym.PredefId; low, high : ARRAY OF CHAR);
 BEGIN
-  Integers.ConvertFromString(low, integerType[nIntegerTypes].low);
-  Integers.ConvertFromString(high, integerType[nIntegerTypes].high);
+  integerType[nIntegerTypes].low := Integer.type.ValueOf(low);
+  integerType[nIntegerTypes].high := Integer.type.ValueOf(high);
   integerType[nIntegerTypes].id := id;
   INC(nIntegerTypes);
 END AddIntegerType;
@@ -75,8 +74,8 @@ VAR i : INTEGER;
 BEGIN
   WITH value : Integer.Value DO
     FOR i := 0 TO nIntegerTypes-1 DO
-      IF (Integers.Compare(value.value, integerType[i].low) >= 0)
-       & (Integers.Compare(value.value, integerType[i].high) <= 0) THEN
+      IF (value.Compare(integerType[i].low) >= 0)
+       & (value.Compare(integerType[i].high) <= 0) THEN
         RETURN Predef.GetType(integerType[i].id)
       END;
     END;
@@ -249,11 +248,9 @@ BEGIN
     id := op.operand.type(Sym.PredefType).id;
     CASE id OF
     | Predef.boolean:
-        c.result := c.BooleanConst(~value(Boolean.Value).value, op);
+      c.result := c.BooleanConst(~value(Boolean.Value).value, op);
     | Predef.integer:
-      value := Integer.New(Integers.Product(minus1, value(Integer.Value).value));
-
-      c.result := c.ValueConst(value, op);
+      c.result := c.ValueConst(value(Integer.Value).Negate(), op);
     | Predef.set:
       c.result := c.ValueConst(Set.New(-value(Set.Value).value), op);
     ELSE
@@ -290,32 +287,32 @@ VAR
 
   PROCEDURE IntegerOp () : Language.Value;
   VAR
-    result, left, right : Integers.Integer;
+    left, right : Integer.Value;
   BEGIN
-    left := l(Integer.Value).value; 
-    right := r(Integer.Value).value;
+    left := l(Integer.Value);
+    right := r(Integer.Value);
     
     CASE op.variant OF
       (* FIXME! Properly check for overflow. *)
-    | IR.arithAdd:  result := Integers.Sum(left, right);
-    | IR.arithSub:  result := Integers.Difference(left, right);
-    | IR.arithMul:  result := Integers.Product(left, right);
+    | IR.arithAdd:  RETURN left.Sum(right);
+    | IR.arithSub:  RETURN left.Difference(right);
+    | IR.arithMul:  RETURN left.Product(right);
     | IR.arithDivI: 
-      IF Integers.Compare(right, zero) = 0 THEN
-        c.builder.ErrSym(IR.divideByZero, op.sym); RETURN NIL;
+      IF right.Sign() = 0 THEN
+        c.builder.ErrSym(IR.divideByZero, op.sym);
       ELSE
-        result := Integers.Quotient(left, right);
+        RETURN left.Quotient(right);
       END;
     | IR.arithMod:
-      IF Integers.Compare(right, zero) = 0 THEN
-        c.builder.ErrSym(IR.divideByZero, op.sym); RETURN NIL;
+      IF right.Sign() = 0 THEN
+        c.builder.ErrSym(IR.divideByZero, op.sym);
       ELSE
-        result := Integers.Remainder(left, right);
+        RETURN left.Remainder(right);
       END;
     ELSE
-      c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+      c.builder.ErrSym(IR.unknownOp, op.sym);
     END;
-    RETURN Integer.type.Value(result);
+    RETURN NIL;
   END IntegerOp;
 
   PROCEDURE RealOp () : Language.Value;
@@ -384,18 +381,18 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
 
   PROCEDURE IntegerOp () : Boolean.Value;
   VAR
-    left, right : Integers.Integer; result : BOOLEAN;
+    left, right : Integer.Value; result : BOOLEAN;
   BEGIN
-    left := l(Integer.Value).value; 
-    right := r(Integer.Value).value;
+    left := l(Integer.Value); 
+    right := r(Integer.Value);
     
     CASE op.variant OF
-    | IR.equal:        result := Integers.Compare(left, right) = 0;
-    | IR.notEqual:     result := Integers.Compare(left, right) # 0;
-    | IR.less:         result := Integers.Compare(left, right) < 0;
-    | IR.lessEqual:    result := Integers.Compare(left, right) <= 0;
-    | IR.greater:      result := Integers.Compare(left, right) > 0;
-    | IR.greaterEqual: result := Integers.Compare(left, right) >= 0;
+    | IR.equal:        result := left.Compare(right) = 0;
+    | IR.notEqual:     result := left.Compare(right) # 0;
+    | IR.less:         result := left.Compare(right) < 0;
+    | IR.lessEqual:    result := left.Compare(right) <= 0;
+    | IR.greater:      result := left.Compare(right) > 0;
+    | IR.greaterEqual: result := left.Compare(right) >= 0;
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
@@ -581,7 +578,4 @@ BEGIN
   AddIntegerType(Predef.shortint, "-128", "127");
   AddIntegerType(Predef.integer, "-32768", "32767");
   AddIntegerType(Predef.longint, "-2147483648", "2147483647");
-
-  zero := Integers.Long(0);
-  minus1 := Integers.Long(-1);
 END OOC:IR:ConstFold.

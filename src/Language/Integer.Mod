@@ -17,6 +17,8 @@ VAR
   type- : Type;
   typeName : String.String;
 
+  minus1, zero- : Value;
+
 PROCEDURE New* (val : Integers.Integer) : Value;
 (** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
 VAR 
@@ -92,6 +94,46 @@ PROCEDURE (v: Value) ToLInt*(): LONGINT;
     RETURN Integers.Short (v. value);
   END ToLInt;
 
+PROCEDURE (v : Value) Sum* (right : Value) : Value;
+BEGIN
+  RETURN New(Integers.Sum(v.value, right.value));
+END Sum;
+
+PROCEDURE (v : Value) Difference* (right : Value) : Value;
+BEGIN
+  RETURN New(Integers.Difference(v.value, right.value));
+END Difference;
+
+PROCEDURE (v : Value) Product* (right : Value) : Value;
+BEGIN
+  RETURN New(Integers.Product(v.value, right.value));
+END Product;
+
+PROCEDURE (v : Value) Quotient* (right : Value) : Value;
+BEGIN
+  RETURN New(Integers.Quotient(v.value, right.value));
+END Quotient;
+
+PROCEDURE (v : Value) Remainder* (right : Value) : Value;
+BEGIN
+  RETURN New(Integers.Remainder(v.value, right.value));
+END Remainder;
+
+PROCEDURE (v : Value) Compare* (right : Value) : LONGINT;
+BEGIN
+  RETURN Integers.Compare(v.value, right.value);
+END Compare;
+
+PROCEDURE (v : Value) Sign* () : LONGINT;
+BEGIN
+  RETURN Integers.Sign(v.value);
+END Sign;
+
+PROCEDURE (v : Value) Negate* () : Value;
+BEGIN
+  RETURN v.Product(minus1);
+END Negate;
+
 PROCEDURE (t : Type) ValueLInt* (val : LONGINT) : Value;
 BEGIN
   RETURN New(Integers.Long(val));
@@ -116,6 +158,8 @@ BEGIN
 END ToString;
 
 BEGIN
+  zero := New(Integers.Long(0));
+  minus1 := New(Integers.Long(-1));
   NEW(type);
   L.InitType(type);
   typeName := String.New("Integer");

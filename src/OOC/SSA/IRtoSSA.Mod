@@ -21,7 +21,7 @@ MODULE OOC:SSA:IRtoSSA;
 *)
 
 IMPORT
-  Log, Integers, Language:String8, Language:Integer,
+  Log, Language:String8, Language:Integer,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, 
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Allocator;
 
@@ -702,7 +702,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr: SSA.Instr;
         cmpClass: Opcode.Class;
       BEGIN
-        IF (Integers.Sign (forStatm. step(IR.Const). value(Integer.Value). value) >= 0) THEN
+        IF (forStatm. step(IR.Const). value(Integer.Value). Sign() >= 0) THEN
           cmpClass := Opcode.leq;
         ELSE
           cmpClass := Opcode.geq;
