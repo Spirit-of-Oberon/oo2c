@@ -763,7 +763,7 @@ TYPE
     (TypeDesc)
     baseType-: Type;
     params: TypeVarArray;
-    arguments: TypeRefArray;
+    arguments-: TypeRefArray;
   END;
 
 VAR
