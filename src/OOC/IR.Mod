@@ -1325,12 +1325,16 @@ PROCEDURE (b: Builder) WarnName (code: Error.Code; name: Sym.Name);
   VAR
     e: Error.Msg;
   BEGIN
-    e := Error.New (irContext, code);
-    e. SetIntAttrib ("pos", name. pos);
-    e. SetIntAttrib ("line", name. line);
-    e. SetIntAttrib ("column", name. column);
-    b. errList. Append (e);
-    b. lastError := e;
+    IF (name.str[0] # "-") THEN
+      (* don't warn for declarations that were inserted by the compiler
+         behind the user's back *)
+      e := Error.New (irContext, code);
+      e. SetIntAttrib ("pos", name. pos);
+      e. SetIntAttrib ("line", name. line);
+      e. SetIntAttrib ("column", name. column);
+      b. errList. Append (e);
+      b. lastError := e;
+    END;
   END WarnName;
 
 PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Const;
@@ -4104,6 +4108,7 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
         IF (item.usageCount = 0) &
            (item.exportMark = Sym.nameNotExported) &
            (~(item IS Sym.VarDecl) OR ~item(Sym.VarDecl).isParameter) &
+           (~(item IS Sym.ProcDecl) OR ~item(Sym.ProcDecl).isForwardDecl) &
            GetPragmaValue(b, StdPragmas.warnings, item.name.pos) THEN
           b.WarnName(unusedDeclaration, item.name);
         END;
