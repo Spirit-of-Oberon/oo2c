@@ -1,0 +1,9 @@
+MODULE Lsh3;
+
+IMPORT SYSTEM;
+
+VAR
+  r: INTEGER;
+BEGIN
+  r := SYSTEM.LSH(1,1.0);
+END Lsh3.

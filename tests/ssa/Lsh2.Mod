@@ -1,0 +1,9 @@
+MODULE Lsh2;
+
+IMPORT SYSTEM;
+
+VAR
+  r: REAL;
+BEGIN
+  r := SYSTEM.LSH(r,0);
+END Lsh2.

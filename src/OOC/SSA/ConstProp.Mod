@@ -50,7 +50,9 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
     IF (instr. SizeOpndList() >= 2) &
        (instr. opcode # Opcode.preloadedVar) &
        (instr. opcode # Opcode.setBit) &
-       (instr. opcode # Opcode.clearBit) THEN
+       (instr. opcode # Opcode.clearBit) &
+       (instr. opcode # Opcode.lsh) &
+       (instr. opcode # Opcode.rot) THEN
       (* FIXME... add clearBit, setBit, logical and/or/not/etc. *)
       arg1 := instr. opndList. arg. info(SSA.Const);
       arg2 := instr. opndList. nextOpnd. arg. info(SSA.Const);

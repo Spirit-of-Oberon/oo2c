@@ -1069,7 +1069,7 @@ CONST
   notPointerVar = 50;
   notAddressable = 51;
   objectSizeMismatch = 52;
-  
+
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -2573,9 +2573,27 @@ PROCEDURE (b: Builder) NewShift (sym: Symbol; value, by: Expression;
                                  rotate: BOOLEAN): Expression;
   VAR
     shift: Shift;
+    
+  PROCEDURE AssertShiftable (expr: Expression): Expression;
+    VAR
+      v: Integer.Value;
+    BEGIN
+      IF (expr # b.errorExpr) THEN
+        IF ~(TR.IsIntegerType(expr.type) OR
+             TR.IsCharType(expr.type) OR
+             TR.IsPredefType(expr.type, Predef.byte)) THEN
+          b.ErrSym(invalidOpType, expr.sym);
+          v := Integer.New(1);
+          RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
+        END;
+      END;
+      RETURN expr;
+    END AssertShiftable;
+  
   BEGIN
     NEW (shift);
-    InitShift (shift, sym, value, by, rotate);
+    InitShift (shift, sym, AssertShiftable(value),
+               b.AssertInteger(by), rotate);
     RETURN shift;
   END NewShift;
 

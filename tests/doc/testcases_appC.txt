@@ -26,36 +26,39 @@ REJECT
   1) a or n are not integer
   2) type of a is larger than SYSTEM.ADDRESS
 
-LSH(x,n)
+
+### LSH(x,n)
 
 ACCEPT
 
   1) For integer types, number of significant bits is taken from the
      first argument.  Bits above this limit are cleared.  Test
      positive, negative, and zero n.  Shift with ABS(n) larger than
-     bits in x is undefined.
-  2) LSH(char,n) and LSH(longchar) for +-0
-  3) LSH(byte,n) for +-0
+     bits in x is undefined.  [Lsh1]
+  2) LSH(char,n) and LSH(longchar) for +-0  [Lsh1]
+  3) LSH(byte,n) for +-0  [Lsh1]
 
 REJECT
 
-  1) some other scalar type, e.g. x being REAL 
+  1) some other scalar type, e.g. x being REAL  [Lsh2]
+  2) offset is not integer  [Lsh3]
 
 
-ROT(x,n)
+### ROT(x,n)
 
 ACCEPT
 
   1) For integer types, number of significant bits is taken from the
      first argument.  Bits above this limit wrap around.  Test
      positive, negative, and zero n.  Shift with ABS(n) larger than
-     bits in x is undefined.
-  2) ROT(char,n) and ROT(longchar) for +-0
-  3) ROT(byte,n) for +-0
+     bits in x is undefined.  [Rot1]
+  2) ROT(char,n) and ROT(longchar) for +-0  [Rot1]
+  3) ROT(byte,n) for +-0  [Rot1]
 
 REJECT
 
-  1) some other scalar type, e.g. x being REAL 
+  1) some other scalar type, e.g. x being REAL  [Rot2]
+  2) offset is not integer  [Rot3]
 
 
 ### VAL(T,x)
