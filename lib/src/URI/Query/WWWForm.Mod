@@ -31,10 +31,9 @@ TYPE
   Query* = POINTER TO QueryDesc;
   QueryDesc = RECORD
     (URI.QueryDesc)
-    names-: ArrayList.ArrayList(Object.String8);
-    values-: ArrayList.ArrayList(Object.String8);
-    dict-: Dictionary.Dictionary(Object.String8,
-                                 ArrayList.ArrayList(Object.String8));
+    names-: ArrayList.ArrayList(STRING);
+    values-: ArrayList.ArrayList(STRING);
+    dict-: Dictionary.Dictionary(STRING, ArrayList.ArrayList(STRING));
     (**Maps a name to a list of its values.  *)
   END;
 
@@ -45,11 +44,10 @@ CONST
 PROCEDURE Init* (query: Query);
   BEGIN
     URI.InitQuery (query);
-    query.names := NEW(ArrayList.ArrayList(Object.String8), 4);
-    query.values := NEW(ArrayList.ArrayList(Object.String8), 4);
+    query.names := NEW(ArrayList.ArrayList(STRING), 4);
+    query.values := NEW(ArrayList.ArrayList(STRING), 4);
     query.dict := NEW(Dictionary.Dictionary
-                      (Object.String8,
-                       ArrayList.ArrayList(Object.String8)));
+                      (STRING, ArrayList.ArrayList(STRING)));
   END Init;
 
 PROCEDURE New* (): Query;
@@ -80,16 +78,16 @@ PROCEDURE (query: Query) Copy* (dest: URI.Query);
     END
   END Copy;
 
-PROCEDURE (query: Query) Add* (name, value: Object.String8);
+PROCEDURE (query: Query) Add* (name, value: STRING);
   VAR
-    al: ArrayList.ArrayList(Object.String8);
+    al: ArrayList.ArrayList(STRING);
   BEGIN
     query.names.Append(name);
     query.values.Append(value);
     IF query.dict.HasKey (name) THEN
       al := query.dict.Get(name);
     ELSE
-      al := NEW(ArrayList.ArrayList(Object.String8), 4);
+      al := NEW(ArrayList.ArrayList(STRING), 4);
       query.dict.Set(name,al);
     END;
     al.Append(value);
@@ -99,7 +97,7 @@ PROCEDURE (query: Query) ParseString* (b[NO_COPY]: ARRAY OF CHAR;
                                        pos, endpos: LONGINT);
   VAR
     str: ARRAY 1024 OF CHAR;
-    n, v: Object.String8;
+    n, v: STRING;
     i: INTEGER;
     
   PROCEDURE Hex (ch: CHAR): INTEGER;
