@@ -33,7 +33,7 @@ static void extend_result(OS_Files__NameArray *result, int *result_len,
   newResult = RT0__NewObject(OOC_PTRBASE_DESCR(OS_Files,NameArray), len);
   if (*result != NULL) {
     for(i = 0; i != *result_len; i++) {
-      newResult[i] = *result[i];
+      newResult[i] = (*result)[i];
     }
   }
   for(i = 0; i != buffer_len; i++) {
