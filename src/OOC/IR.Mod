@@ -3429,7 +3429,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       RETURN b. errorExpr;
     ELSIF (refType IS Sym.TypeVar) THEN
       RETURN b.ErrExpr(notTypeInstance, referenceType.sym);
-    ELSIF ~TR.IsInducedExtensionOf(Sym.Expand(refType), expr.type, TRUE) THEN
+    ELSIF ~TR.IsExtensionOf(Sym.Expand(refType), expr.type) THEN
       RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
     ELSIF ~HasDynamicType(expr) THEN
       (* The test for TR.IsExtensionOf restricts the type of the variable to
@@ -3446,7 +3446,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       IF (expr IS Deref) THEN
         expr := expr(Deref). pointer;
       ELSIF (expr.type IS Sym.Pointer) OR (expr.type IS Sym.TypeVar) THEN
-        refType := TR.PointerBaseType(refType);
+        refType := TR.PointerBaseType(Sym.Expand(refType));
       END;
       NEW (test);
       IF (referenceType IS TypeRef) THEN
