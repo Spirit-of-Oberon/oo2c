@@ -37,7 +37,7 @@ setup-ooc1:
 
 compile-ooc1: setup-ooc1
 	$(COMPILE) --make Benchmark
-	$(OOC) --optimize -Mv Benchmark
+	$(OOC) --optimize -Mv --cflags "-O2" Benchmark
 
 test-ooc1: compile-ooc1
 	wd1/exe/Benchmark --all --normalise
