@@ -461,5 +461,13 @@
       Imports the module <code>Out</code>.  Minimal output tests.
     </test>
     
+    <test id="lib_Err" type="run" file="LibErr.Mod">
+      Imports the module <code>Err</code>.  No further tests.
+    </test>
+    
+    <test id="lib_Log" type="run" file="LibLog.Mod">
+      Imports the module <code>Log</code>.  No further tests.
+    </test>
+    
   </testcases>
 </testsuite-ext>
