@@ -25,7 +25,7 @@ IMPORT
 
 
 CONST
-  defaultWarnings = FALSE;
+  defaultWarnings = TRUE;
   defaultAssertions = TRUE;
   
   defaultIndexCheck = TRUE;
