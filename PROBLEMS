@@ -4,8 +4,9 @@ Known installation problems (and workarounds):
 
 (configure): If configure fails to link against a particular library
 -lfoo, then check config.log for the error message reported by the
-compiler.  Obscure messages reporting a failure determine a type size
-can also be caused by a broken -lfoo entry in LDFLAGS.
+compiler.  Obscure messages reporting a failure when trying to
+determine a type size can also be caused by a non-functional -lfoo
+entry in LDFLAGS.
 
 ----
 
