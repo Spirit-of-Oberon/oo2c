@@ -33,6 +33,7 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
     ptr: Sym.Item;
     fct: DeclWriter.Function;
     struct: DeclWriter.Struct;
+    trefClass: DeclWriter.TypeRefClass;
     name: String.String;
     baseType, srcCodeBaseType: Sym.Type;
     dummy: LONGINT;
@@ -148,8 +149,12 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
         WITH resolvedType: Sym.PredefType DO
           RETURN ConvertType (w, resolvedType, resolvedType);
         | resolvedType: Sym.Record DO
-          RETURN w. NewTypeRef (DeclWriter.refStruct,
-                                Naming.NameOfType (resolvedType));
+          IF resolvedType.isUnion THEN
+            trefClass := DeclWriter.refUnion;
+          ELSE
+            trefClass := DeclWriter.refStruct;
+          END;
+          RETURN w. NewTypeRef (trefClass, Naming.NameOfType (resolvedType));
         ELSE
           RETURN w. NewTypeRef (DeclWriter.refTypedef,
                                 Naming.NameOfType (resolvedType));
