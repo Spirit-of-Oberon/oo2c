@@ -552,7 +552,8 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
       IF isUpToDate THEN
         errList := CreateErrList(module);
         CreateNamespace.CreateNamespace(module.ifData, errList);
-        ASSERT(errList.msgCount = 0);
+        r.WriteErrList(errList);
+        ASSERT(errList.NoErrors());
       END;
       
       RETURN isUpToDate;
