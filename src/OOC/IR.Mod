@@ -5668,7 +5668,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
     op: SHORTINT;
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
-    receiver, delta, code: Expression;
+    receiver, delta, code, expr: Expression;
     value: Boxed.Object;
  
   PROCEDURE MakeParameterCompatible (b: Builder; sym: Symbol;
@@ -5895,30 +5895,23 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
       END;
     END CheckNumberOfArguments;
 
-  PROCEDURE StripFirst(exprList: ExpressionList): ExpressionList;
-    VAR
-      newList: ExpressionList;
-      i: LONGINT;
+  PROCEDURE TranslatePredef(design: PredefProc;
+                            id: Sym.PredefId): Expression;
+    
+    PROCEDURE StripFirst(exprList: ExpressionList): ExpressionList;
+      VAR
+        newList: ExpressionList;
+        i: LONGINT;
+      BEGIN
+        NEW(newList, LEN(exprList^)-1);
+        FOR i := 1 TO LEN(exprList^)-1 DO
+          newList[i-1] := exprList[i];
+        END;
+        RETURN newList;
+      END StripFirst;
+    
     BEGIN
-      NEW(newList, LEN(exprList^)-1);
-      FOR i := 1 TO LEN(exprList^)-1 DO
-        newList[i-1] := exprList[i];
-      END;
-      RETURN newList;
-    END StripFirst;
-  
-  BEGIN
-    WITH design: PredefProc DO
-      predefProc := design. decl(Sym.PredefProc);
-
-      IF ~CheckNumberOfArguments(predefProc. minArgs, predefProc. maxArgs) THEN
-        (* call does not have the required number of arguments; we bail out
-           early, to avoid running into run-time errors in the more fine
-           grained checks below *)
-        RETURN b. errorExpr;
-      END;
-      
-      CASE design. decl(Sym.PredefProc). id OF
+      CASE id OF
       (* predefined procedures *)
       | Predef.assert:
         IF (LEN (arguments^) > 1) THEN
@@ -6174,6 +6167,32 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
       | Predef.rot:
         RETURN b. NewShift (design. sym, arguments[0], arguments[1], TRUE);
       END;
+    END TranslatePredef;
+
+  PROCEDURE IsStatement(expr: Expression): BOOLEAN;
+    BEGIN
+      (* we have an empty statement if `expr=NIL' *)
+      RETURN (expr = NIL) OR (expr.type = Predef.GetType(Predef.void));
+    END IsStatement;
+  
+  BEGIN
+    WITH design: PredefProc DO
+      predefProc := design. decl(Sym.PredefProc);
+
+      IF ~CheckNumberOfArguments(predefProc. minArgs, predefProc. maxArgs) THEN
+        (* call does not have the required number of arguments; we bail out
+           early, to avoid running into run-time errors in the more fine
+           grained checks below *)
+        RETURN b. errorExpr;
+      END;
+      expr := TranslatePredef(design, predefProc.id);
+      IF isFunctionCall & IsStatement(expr) THEN
+        RETURN b. ErrExpr (notFunctionProcedure, design. sym);
+      ELSIF ~isFunctionCall & ~IsStatement(expr) THEN
+        RETURN b. ErrExpr (isFunctionProcedure, design. sym);
+      END;
+      RETURN expr;
+      
     ELSE
       IF (design = b. errorExpr) THEN
         RETURN b. errorExpr;        (* fall through for errors in designator *)

@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic58">-->
+  select ="&SetupTestCasesWithOut; abs1 abs2 abs3">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
@@ -458,6 +458,9 @@
     </test>
     <test id="abs2" type="reject" file="Abs2.Mod">
       Calling <code>ABS</code> for a character value.
+    </test>
+    <test id="abs3" type="reject" file="Abs3.Mod">
+      Calling <code>ABS</code> as a normal procedure.
     </test>
     
     <test id="ash1" type="run" file="Ash1.Mod" output="Ash1.Ref">
@@ -1853,6 +1856,7 @@
       msg="This must be a pointer variable"/>
     
     <reject-info id="abs2" pos="ABS(%0X)" msg="Expression must be numeric"/>
+    <reject-info id="abs3" pos="%ABS(-1)" msg="This is a function procedure"/>
 
     <reject-info id="ash2" pos="ASH(%1X"
       msg="Expression must be of integer type"/>
