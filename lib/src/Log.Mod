@@ -202,14 +202,14 @@ PROCEDURE Ln*;
     writer. WriteLn
   END Ln;
 
-(*PROCEDURE Ptr* (msg[NO_COPY]: ARRAY OF CHAR; ptr: S.PTR);
+PROCEDURE Ptr* (msg[NO_COPY]: ARRAY OF CHAR; ptr: S.PTR);
   BEGIN
     IF (ptr = NIL) THEN
       String (msg, "NIL")
     ELSE
       HexAdr (msg, S.VAL (S.ADDRESS, ptr))
     END
-  END Ptr;*)
+  END Ptr;
 
 PROCEDURE Adr* (msg[NO_COPY]: ARRAY OF CHAR; VAR x: ARRAY OF S.BYTE);
   BEGIN
