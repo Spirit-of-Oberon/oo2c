@@ -161,6 +161,8 @@ TYPE
        the current item.  The descendants are linked using the field
        @ofield{nextNested}.  For an item that is not an inner node of an
        item hierarchy, this field is always @code{NIL}.  *)
+    tailNestedItems: Item;
+    (* Last entry in list of @ofield{nestedItems}, or @code{NIL}.  *)
     flagList-: Flag;
     (**List of modifier flags for this declaration or type.  This list is
        never written to the symbol file.  *)
@@ -1158,17 +1160,10 @@ PROCEDURE (name: Name) Load* (r: Storable.Reader) RAISES IO.Error;
 
 
 PROCEDURE InitItem* (item: Item; parent: Item);
-  PROCEDURE Append (l: Item);
-    BEGIN
-      WHILE l.nextNested # NIL DO
-        l := l.nextNested
-      END;
-      l.nextNested := item;
-    END Append;
- 
   BEGIN
     item. nextNested := NIL;
     item. nestedItems := NIL;
+    item. tailNestedItems := NIL;
     item. parent := parent;
     item. flagList := NIL;
     IF (parent # NIL) THEN
@@ -1180,8 +1175,9 @@ PROCEDURE InitItem* (item: Item; parent: Item);
       IF parent.nestedItems = NIL THEN
         parent.nestedItems := item;
       ELSE
-        Append(parent.nestedItems);
-      END
+        parent.tailNestedItems.nextNested := item;
+      END;
+      parent.tailNestedItems := item;
     END
   END InitItem;
 
@@ -1194,9 +1190,10 @@ PROCEDURE WriteItemList(w: Storable.Writer; item: Item) RAISES IO.Error;
     w.WriteObject(NIL);
   END WriteItemList;
   
-PROCEDURE ReadItemList(r: Storable.Reader): Item RAISES IO.Error;
+PROCEDURE ReadItemList(r: Storable.Reader;
+                       VAR list, last: Item)
+RAISES IO.Error;
   VAR
-    last, list : Item;
     obj : Storable.Object;
   BEGIN
     list := NIL; last := NIL;
@@ -1212,7 +1209,6 @@ PROCEDURE ReadItemList(r: Storable.Reader): Item RAISES IO.Error;
       END;
       r.ReadObject(obj)
     END;
-    RETURN list
   END ReadItemList;
 
 PROCEDURE (item: Item) Store* (w: Storable.Writer) RAISES IO.Error;
@@ -1227,7 +1223,7 @@ PROCEDURE (item: Item) Load* (r: Storable.Reader) RAISES IO.Error;
     obj: Storable.Object;
   BEGIN
     item. nextNested := NIL;
-    item. nestedItems := ReadItemList(r);
+    ReadItemList(r, item. nestedItems, item. tailNestedItems);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
       item. parent := NIL
@@ -2965,14 +2961,14 @@ PROCEDURE Prune* (root: Module; keep: Exports);
     import: Import;
     i: LONGINT;
     
-  PROCEDURE PruneList (VAR list: Item);
+  PROCEDURE PruneList (VAR list, last: Item);
     VAR
-      this, last : Item;
+      this : Item;
     BEGIN
       this := list; last := NIL; list := NIL;
       WHILE this # NIL DO
         IF keep. HasKey (this) THEN
-          PruneList (this. nestedItems);
+          PruneList (this. nestedItems, this. tailNestedItems);
           (* append "this" to end of "list" *)
           IF last = NIL THEN
             list := this;
@@ -2993,7 +2989,7 @@ PROCEDURE Prune* (root: Module; keep: Exports);
   
   BEGIN
     prunedImports := ArrayList.New(8);
-    PruneList (root. nestedItems);
+    PruneList (root. nestedItems, root. tailNestedItems);
     NEW(root.prunedImports, prunedImports.size);
     FOR i := 0 TO prunedImports.size-1 DO
       import := prunedImports.array[i](Import);
