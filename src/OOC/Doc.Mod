@@ -164,7 +164,7 @@ TYPE
   OberonRef* = POINTER TO OberonRefDesc;
   OberonRefDesc = RECORD
     (MarkedInlineDesc)
-    target-: Object.Object;    (* is Sym := OOC:SymbolTable.Declaration *)
+    target-: Object.Object;    (* is Sym.Declaration *)
     externalModule-,
     externalId-: InputBuffer.CharArray;
     (* either target or (externalModule, externalId) are NIL; these fields
