@@ -3,6 +3,12 @@ export OOCN=@OOCN@
 export OOEF=@OOEF@
 export DIFF=@DIFF@
 export XSLTPROC=@XSLTPROC@
+export PERL=@PERL@
+
+export CC=@CC@
+export CFLAGS=@CFLAGS@
+export LDFLAGS=@LDFLAGS@
+export LIBS=@LIBS@
 
 OFLAGS=-v
 
