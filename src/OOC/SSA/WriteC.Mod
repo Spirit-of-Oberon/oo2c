@@ -987,7 +987,11 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.selectReturn:
         IF ~AllPathsClosed (instr) THEN
           PrefixReturn;
-          w. WriteString ("return;")
+          IF (w. procBlock. procDecl. formalPars. resultType # NIL) THEN
+            w. WriteString ("return 0;");
+          ELSE
+            w. WriteString ("return;")
+          END;
         END;
       END;
       
