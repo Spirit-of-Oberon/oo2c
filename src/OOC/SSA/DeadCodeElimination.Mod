@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:DeadCodeElimination;
 (*  Removes unreachable code from a procedure's SSA representation.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:SSA:DeadCodeElimination;
 *)
 
 IMPORT
-  OOC:SSA;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
 
 CONST
   dead = 0;
@@ -36,7 +36,11 @@ PROCEDURE MarkLive (instr: SSA.Instr);
       instr. marker := live;
       opnd := instr. opndList;
       WHILE (opnd # NIL) DO
-        MarkLive (opnd. arg. instr);
+        IF (opnd. class # Opnd.storeExit) THEN
+          (* a use within a "store-exit" of a "loop-end" or "select-return"
+             does not make the instruction live *)
+          MarkLive (opnd. arg. instr);
+        END;
         opnd := opnd. nextOpnd
       END;
     END;
@@ -45,11 +49,25 @@ PROCEDURE MarkLive (instr: SSA.Instr);
 PROCEDURE DeleteDeadCode (pb: SSA.ProcBlock);
   VAR
     instr, next: SSA.Instr;
+    use, nextUse: SSA.Opnd;
   BEGIN
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       next := instr.nextInstr;
       IF (instr. marker = dead) THEN
+        CASE instr. opcode  OF
+        | Opcode.exit, Opcode.return:
+          (* make sure that any dangling uses in "select-return" or "loop-end"
+             are discarded *)
+          use := instr. nextResult. useList;
+          WHILE (use # NIL) DO
+            nextUse := use. nextUse;
+            use. DeleteOpnd;
+            use := nextUse;
+          END;
+        ELSE
+        END;
+        
         pb. DeleteInstr (instr)
       END;
       instr := next;
