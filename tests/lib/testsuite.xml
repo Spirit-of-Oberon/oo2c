@@ -238,6 +238,12 @@
       Use <code>FormatReal</code> to classify a number of strings.
       Only syntax is tested, not overflow errors.
     </test>
-    
+
+    <test id="lib_LRealConv_FormatReal2" type="run"
+          file="LibLRealConvFormatReal2.Mod"
+	  output="LibLRealConvFormatReal2.Ref">
+      Use <code>FormatReal</code> to classify a number of strings.
+      The tests check that out of range numbers are classified correctly.
+    </test>    
   </testcases>
 </testsuite-ext>

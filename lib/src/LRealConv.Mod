@@ -42,7 +42,12 @@ TYPE
 
 CONST
   SigFigs*=15;  (* Accuracy of LONGREALs.  Scrap this? ... FIXME *)
-
+  expChar = "E";
+  maxValue = "17976931348623157";
+  (* signifcant digits of the maximum value 1.7976931348623157D+308 *)
+  maxExp = 308;
+  (* maxium positive exponent of a normalized number *)
+  
 VAR
   RS, P, F, E, SE, WE, SR: ScanState;
  
@@ -72,7 +77,7 @@ PROCEDURE PState(inputCh: CHAR;
       chClass:=valid; nextState:=P
     ELSIF inputCh="." THEN
       chClass:=valid; nextState:=F
-    ELSIF inputCh="E" THEN
+    ELSIF inputCh=expChar THEN
       chClass:=valid; nextState:=E  
     ELSE
       chClass:=terminator; nextState:=NIL
@@ -84,7 +89,7 @@ PROCEDURE FState(inputCh: CHAR;
   BEGIN
     IF CharClass.IsNumeric(inputCh) THEN
       chClass:=valid; nextState:=F
-    ELSIF inputCh="E" THEN
+    ELSIF inputCh=expChar THEN
       chClass:=valid; nextState:=E  
     ELSE
       chClass:=terminator; nextState:=NIL
@@ -143,7 +148,63 @@ PROCEDURE FormatReal* (str: ARRAY OF CHAR): ConvResults;
     ch: CHAR;
     state: ScanState;
     class: ScanClass;
+    wSigFigs, fLeadingZeros, exp, startOfExp: LONGINT;
+    expNegative, allZeroDigit: BOOLEAN;
+    
+  CONST
+    expCutoff = 100000000;
+    (* assume overflow if the value of the exponent is larger than this *)
+
+  PROCEDURE NonZeroDigit (): LONGINT;
+  (* locate first non-zero digit in str *)
+    BEGIN
+      i := 0;
+      WHILE (i # startOfExp) & ((str[i] < "1") OR (str[i] > "9")) DO
+        INC (i);
+      END;
+      RETURN i;
+    END NonZeroDigit;
+  
+  PROCEDURE LessOrEqual (upperBound: ARRAY OF CHAR): BOOLEAN;
+    VAR
+      i, j: LONGINT;
+    BEGIN
+      i := NonZeroDigit();
+      IF (i # startOfExp) THEN         (* str[i] is non-zero digit  *)
+        j := 0;
+        WHILE (i # startOfExp) & (upperBound[j] # 0X) DO
+          IF (str[i] < upperBound[j]) THEN
+            RETURN TRUE;
+          ELSIF (str[i] > upperBound[j]) THEN
+            RETURN FALSE;
+          ELSE
+            INC (j); INC (i);
+            IF (str[i] = ".") THEN       (* skip decimal point *)
+              INC (i);
+            END;
+          END;
+        END;
+        
+        IF (upperBound[j] = 0X) THEN
+          (* any trailing zeros don't change the outcome: skip them *)
+          WHILE (str[i] = "0") OR (str[i] = ".") DO
+            INC (i);
+          END;
+        END;
+      END;
+      RETURN (i = startOfExp);
+    END LessOrEqual;
+  
   BEGIN
+    (* normalize exponent character *)
+    i := 0;
+    WHILE (str[i] # 0X) & (str[i] # "e") DO
+      INC (i);
+    END;
+    IF (str[i] = "e") THEN
+      str[i] := expChar;
+    END;
+    
     (* move index `i' over padding characters *)
     i := 0;
     state := SR;
@@ -157,30 +218,76 @@ PROCEDURE FormatReal* (str: ARRAY OF CHAR): ConvResults;
       RETURN strEmpty;
     ELSE
       (* scan part before decimal point or exponent *)
-      WHILE (class = valid) & (state # F) & (state # E) DO
-        ch := CAP (str[i]);
-        state.p(ch, class, state);
-        INC (i);
-      END;
-      
-      (* scan fractional part exponent *)
-      WHILE (class = valid) & (state # E) DO
-        ch := CAP (str[i]);
-        state.p(ch, class, state);
-        INC (i);
-      END;
-      
-      (* scan exponent *)
-      WHILE (class = valid) DO
+      WHILE (class = valid) & (state # F) & (state # E) &
+            ((ch < "1") OR (ch > "9")) DO
         ch := str[i];
         state.p(ch, class, state);
         INC (i);
       END;
+      wSigFigs := 0;
+      WHILE (class = valid) & (state # F) & (state # E) DO
+        INC (wSigFigs);
+        ch := str[i];
+        state.p(ch, class, state);
+        INC (i);
+      END;
+      (* here holds: wSigFigs is the number of significant digits in
+         the whole number part of the number; 0 means there are only
+         zeros before the decimal point *)
+      
+      (* scan fractional part exponent *)
+      fLeadingZeros := 0; allZeroDigit := TRUE;
+      WHILE (class = valid) & (state # E) DO
+        ch := str[i];
+        IF allZeroDigit THEN
+          IF (ch = "0") THEN
+            INC (fLeadingZeros);
+          ELSIF (ch # ".") THEN
+            allZeroDigit := FALSE;
+          END;
+        END;
+        state.p(ch, class, state);
+        INC (i);
+      END;
+      (* here holds: fLeadingZeros holds the number of zeros after
+         the decimal point *)
+      
+      (* scan exponent *)
+      startOfExp := i-1; exp := 0; expNegative := FALSE;
+      WHILE (class = valid) DO
+        ch := str[i];
+        IF (ch = "-") THEN
+          expNegative := TRUE;
+        ELSIF ("0" <= ch) & (ch <= "9") & (exp < expCutoff) THEN
+          exp := exp*10 + (ORD(ch)-ORD("0"));
+        END;
+        state.p(ch, class, state);
+        INC (i);
+      END;
+      IF expNegative THEN
+        exp := -exp;
+      END;
+      (* here holds: exp holds the value of the exponent; if it's absolute
+         value is larger than expCutoff, then there has been an overflow  *)
 
       IF (class = invalid) OR (ch # 0X) THEN
         RETURN strWrongFormat;
       ELSE (* (class = terminator) & (ch = 0X) *)
-        RETURN strAllRight;
+        (* normalize the number: calculate the exponent if the number would
+           start with a non-zero digit, immediately followed by the
+           decimal point *)
+        IF (wSigFigs > 0) THEN
+          exp := exp+wSigFigs-1;
+        ELSE
+          exp := exp-fLeadingZeros-1;
+        END;
+        
+        IF (exp > maxExp) & (NonZeroDigit() # startOfExp) OR
+           (exp = maxExp) & ~LessOrEqual (maxValue) THEN
+          RETURN strOutOfRange;
+        ELSE
+          RETURN strAllRight;
+        END;
       END;
     END;
   END FormatReal;
