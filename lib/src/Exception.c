@@ -35,15 +35,20 @@ void Exception__ActivateContext() {
     Object__String msg =
       OOC_TBCALL(OOC_TBPROC_ADR(td,Exception__ExceptionDesc_GetMessage),
 		 Exception__ExceptionDesc_GetMessage)(current);
-    (void)fprintf(stderr, "Exception: %s.%s", td->module->name, td->name);
+    /* if the type name ends with "Desc", then drop the last 4 characters */
+    int len = strlen(td->name);
+    if ((len >= 4) && (strcmp(td->name + (len-4), "Desc") == 0)) {
+      len -= 4;
+    }
+    fprintf(stderr, "## Exception: %s.%.*s", td->module->name, len, td->name);
     
     if (msg) {
       char buffer[SIZE_BUFFER];
-      int i, j = 1;
+      int i, j = 4;
       _TBP_Object__StringDesc_CharAt charAt =
 	OOC_TBPROC_ADR(OOC_TYPE_TAG(msg), Object__StringDesc_CharAt);
       
-      buffer[0] = '\n';
+      strcpy(buffer, "\n## ");
       for (i=0; i != msg->length; i++) {
 	OOC_INT32 c = OOC_TBCALL(charAt,Object__StringDesc_CharAt)(msg,i);
 	buffer[j] = (c>0xff) ? '?' : (char)c;
