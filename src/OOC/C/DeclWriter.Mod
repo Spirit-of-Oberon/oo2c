@@ -145,7 +145,14 @@ TYPE
     parameters: ArrayList.ArrayList;
   END;
 
-
+TYPE
+  Struct* = POINTER TO StructDesc;
+  StructDesc = RECORD
+    (TypeDesc)
+    isUnion: BOOLEAN;
+    members: ArrayList.ArrayList;        (* of Declaration *)
+  END;
+  
 TYPE
   StorageClass* = SHORTINT;
   (**Storage class of a declaration.  One of @oconst{scMember},
@@ -219,7 +226,9 @@ TYPE
     relativeIncludePaths: BOOLEAN;
     (**If TRUE, then include paths are written relative to @ofield{baseURI};
        otherwise, they are written as absolute paths.  *)
-
+    indentation: LONGINT;
+    (**Current indentation level.  Used by @oproc{Writer.Newline}.  *)
+    
     basicType-: ARRAY lastBasicType+1 OF BasicType;
     (**Maps ids of basic types (see @otype{BasicTypeId}) onto the corresponding
        instances of @otype{BasicType}.  *)
@@ -228,6 +237,7 @@ TYPE
 
 CONST
   priName = 0;
+  priStruct = 1;
   priPointer = 1;
   priArray = 2;
   priFunction = 2;
@@ -248,6 +258,7 @@ PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
   BEGIN
     w. ch := ch;
     w. baseURI := baseURI;
+    w. indentation := 0;
     
     w. relativeIncludePaths := (baseURI # NIL);
     w. textWriter := TextRider.ConnectWriter (ch);
@@ -294,6 +305,7 @@ PROCEDURE (w: Writer) CopyTo* (dest: Writer);
     dest. textWriter := w. textWriter;
     dest. includes := w. includes;
     dest. declarations := w. declarations;
+    dest. indentation := w. indentation;
     dest. relativeIncludePaths := w. relativeIncludePaths;
     dest. basicType := w. basicType;
   END CopyTo;
@@ -317,6 +329,22 @@ PROCEDURE (w: Writer) WriteLInt*(lint: LONGINT; n: LONGINT);
   BEGIN
     w. textWriter. WriteLInt (lint, n)
   END WriteLInt;
+
+PROCEDURE (w: Writer) Indent* (delta: LONGINT);
+(**Change current indentation by @oparam{delta} levels.  *)
+  BEGIN
+    INC (w. indentation, delta);
+  END Indent;
+
+PROCEDURE (w: Writer) Newline*;
+  VAR
+    i: LONGINT;
+  BEGIN
+    w. WriteLn;
+    FOR i := 1 TO w. indentation DO
+      w. WriteString ("  ");
+    END;
+  END Newline;
 
 PROCEDURE (w: Writer) WriteInclude* (includeURI: URI.HierarchicalURI);
 (**Write an include statement @code{#include "@dots{}"} for the indicated file.
@@ -673,6 +701,58 @@ PROCEDURE (fct: Function) WriteRight (w: Writer);
     END;
     w. WriteChar(")");
     WriteRight (w, fct. resultType, priFunction)
+  END WriteRight;
+
+(* -------- *)
+
+PROCEDURE InitStruct (struct: Struct; isUnion: BOOLEAN);
+  BEGIN
+    struct. isUnion := isUnion;
+    struct. members := ArrayList.New (4);
+  END InitStruct;
+
+PROCEDURE (w: Writer) NewStruct* (isUnion: BOOLEAN): Struct;
+  VAR
+    struct: Struct;
+  BEGIN
+    NEW (struct);
+    InitStruct (struct, isUnion);
+    RETURN struct
+  END NewStruct;
+
+PROCEDURE (struct: Struct) AddMember* (param: Declaration);
+  BEGIN
+    struct. members. Append (param)
+  END AddMember;
+
+
+PROCEDURE (struct: Struct) Priority (): SHORTINT;
+  BEGIN
+    RETURN priStruct
+  END Priority;
+
+PROCEDURE (struct: Struct) WriteLeft (w: Writer);
+  VAR
+    i: LONGINT;
+  BEGIN
+    IF struct. isUnion THEN
+      w. WriteString ("union {");
+    ELSE
+      w. WriteString ("struct {");
+    END;
+    w. Indent (1);
+    FOR i := 0 TO struct. members. Size()-1 DO
+      w. Newline;
+      w. WriteDeclaration (struct. members. array[i](Declaration));
+      w. WriteString (";")
+    END;
+    w. Indent (-1);
+    w. Newline;
+    w. WriteString ("} ");
+  END WriteLeft;
+
+PROCEDURE (struct: Struct) WriteRight (w: Writer);
+  BEGIN
   END WriteRight;
 
 

@@ -22,7 +22,7 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
   VAR
     ptr: Sym.Item;
     fct: DeclWriter.Function;
-(*          decl: Sym.Declaration;*)
+    struct: DeclWriter.Struct;
 
   PROCEDURE ConvertParam (fct: DeclWriter.Function; param: Sym.VarDecl);
     VAR
@@ -91,8 +91,8 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
         END;
 (*              IF (type. module = NIL) THEN
           decl := module. ns. IdentifyLocal (root, type. ident, TRUE)
-          (* this may be NIL if we are looking at the name of a
-             predefined type; in this case, we are done *)
+           * this may be NIL if we are looking at the name of a
+             predefined type; in this case, we are done *
         ELSE
           decl := module. ns. IdentifyLocal (root, type. module, TRUE);
           ASSERT (decl # NIL)
@@ -102,8 +102,9 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
         END*)
 
       | type: Sym.Pointer DO
-        ASSERT (FALSE)
-(*              ConvertType (type. srcCodeBaseType)*)
+        ASSERT (FALSE);
+        (*ConvertType (type. srcCodeBaseType);*)
+        
       | type: Sym.FormalPars DO
         fct := w. NewFunction (ConvertType (w, type. resultType, type. srcCodeResultType));
         IF (type. receiver # NIL) THEN
@@ -117,21 +118,28 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
           END;
           ptr := ptr. nextNested
         END;
-        RETURN fct
-
-        | type: Sym.Array DO
-          IF type. isOpenArray THEN
-            RETURN w. NewArray (ConvertType (w, type. elementType, type. srcCodeElementType), -1)
-          ELSE
-            RETURN w. NewArray (ConvertType (w, type. elementType, type. srcCodeElementType), type. length)
-          END;
+        RETURN fct;
+        
+      | type: Sym.Array DO
+        IF type. isOpenArray THEN
+          RETURN w. NewArray (ConvertType (w, type. elementType, type. srcCodeElementType), -1)
+        ELSE
+          RETURN w. NewArray (ConvertType (w, type. elementType, type. srcCodeElementType), type. length)
+        END;
           
       | type: Sym.Record DO
-        ASSERT (FALSE)
-(*              IF (type. srcCodeBaseType # NIL) THEN
-          ConvertType (type. srcCodeBaseType)
+        ASSERT (type. baseType = NIL);
+        
+        struct := w. NewStruct (type. isUnion);
+        ptr := type. nestedItems;
+        WHILE (ptr # NIL) DO
+          WITH ptr: Sym.FieldDecl DO
+            struct. AddMember (ConvertDecl (w, ptr, modeFormalParameter));
+          ELSE                     (* ignore non-declarations *)
+          END;
+          ptr := ptr. nextNested
         END;
-        ConvertList (type)*)
+        RETURN struct
       END
     END
   END ConvertType;
@@ -203,9 +211,12 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       RETURN w. NewDeclaration (name, DeclWriter.tqNone, sc, ctype)
 
     | item: Sym.FieldDecl DO
-      ASSERT (FALSE);
-(*          ConvertType (item. srcCodeType)*)
-
+      RETURN w. NewDeclaration
+          (Naming.NameOfDeclaration (item),
+           DeclWriter.tqNone,
+           DeclWriter.scMember,
+           ConvertType (w, item. type, item. srcCodeType));
+      
     | item: Sym.TypeDecl DO
       RETURN w. NewDeclaration (Naming.NameOfDeclaration (item),
                                 DeclWriter.tqNone,
