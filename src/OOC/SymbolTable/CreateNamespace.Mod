@@ -648,6 +648,23 @@ RAISES IO.Error;
         IF (class.typePars = NIL) THEN
           IF receiver.hasAliasList THEN
             ErrType(cannotDefineTypeAliases, receiver.srcCodeType);
+
+            (* finish the type alias declarations by assigning them the type
+               of the receiver; this gets rid of a NIL pointer that may trip
+               up later stages *)
+            ptr := procDecl.formalPars.nestedItems;
+            WHILE (ptr # NIL) DO
+              WITH ptr: Sym.TypeDecl DO
+                IF (ptr.type = NIL) THEN
+                  ptr.type := receiver.type;
+                  ptr.srcCodeType := receiver.srcCodeType;
+                END;
+                INC(count);
+              ELSE
+                (* ignore *)
+              END;
+              ptr := ptr.nextNested;
+            END;
           END;
         ELSE
           count := 0;

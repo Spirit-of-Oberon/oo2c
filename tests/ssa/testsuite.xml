@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; abs1 abs2 abs3">-->
+  select ="&SetupTestCasesWithOut; generic59">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
@@ -1537,6 +1537,11 @@
       Regression test: Pass parametric type to a variable open array
       parameter.
     </test>
+    <test id="generic59" type="reject" file="Generic59.Mod">
+      Regression test: Defining an <code>INIT</code> procedure with a
+      type parameter, even though the base record is a non-parametric
+      type.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2176,6 +2181,8 @@
     <reject-info id="generic54" pos="(a: %A)"
         msg="The base record type has 2 type parameter(s)"/>
     <reject-info id="generic55" pos="(a: %A())"
+        msg="The base record type has no type parameters"/>
+    <reject-info id="generic59" pos="r: %R(T)"
         msg="The base record type has no type parameters"/>
 
     <reject-info id="align2" pos=", %ALIGN2"
