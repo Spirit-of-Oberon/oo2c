@@ -20,17 +20,43 @@ BEGIN
   Out.String("B:Do"); Out.Ln;
 END Do;
 
+PROCEDURE TestPointer(a : A);
+BEGIN
+  a.Do;
+  a(B).Do;
+END TestPointer;
+
+PROCEDURE (VAR a : ADesc) DoVar;
+BEGIN
+  Out.String("ADesc:DoVar"); Out.Ln;
+END DoVar;
+
+PROCEDURE (VAR b : BDesc) DoVar;
+BEGIN
+  Out.String("BDesc:DoVar"); Out.Ln;
+END DoVar;
+
+PROCEDURE TestVar(VAR a : ADesc);
+BEGIN
+  a.DoVar;
+  a(BDesc).DoVar;
+END TestVar;
+
+PROCEDURE TestPointer2(a : A);
+BEGIN
+  a^.DoVar;
+  a^(BDesc).DoVar;
+END TestPointer2;
 
 PROCEDURE Test*;
 VAR
-  a : A;
   b : B;
+  bDesc : BDesc;
 BEGIN
   NEW(b);
-  a := b;
-
-  a.Do;
-  a(B).Do;
+  TestPointer(b);
+  TestPointer2(b);
+  TestVar(bDesc);
 END Test;
 
 END OpTypeGuard1.

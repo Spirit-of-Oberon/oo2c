@@ -6,7 +6,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard2 opTypeGuard3 opTypeGuard4 opTypeGuard5 opTypeGuard6">-->
+  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard2 opTypeGuard3 opTypeGuard4 opTypeGuard5 opTypeGuard6 opTypeGuard7 opTypeGuard8 opTypeGuard9">-->
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -724,7 +724,7 @@
       Dereferencing a <code>NIL</code> pointer.
     </test>
 
-    <test id="opTypeGuard1" type="run" file="OpTypeGuard1.Mod"
+    <test id="opTypeGuard1" type="run" relevance="informal" file="OpTypeGuard1.Mod"
       output="OpTypeGuard1.Ref">
       Excercise type guards.
     </test>
@@ -744,7 +744,15 @@
       Provoke failure of type guard on a variable parameter of record
       type.
     </test>
-
+    <test id="opTypeGuard7" type="reject" file="OpTypeGuard7.Mod">
+      Type guard applied to function result.
+    </test>
+    <test id="opTypeGuard8" type="reject" file="OpTypeGuard8.Mod">
+      Type guard applied to pointer to non-record (ie. pointer to array)
+    </test>
+    <test id="opTypeGuard9" type="reject" file="OpTypeGuard9.Mod">
+      Guard type is not a type.
+    </test>
     <test id="opExprCompat1" type="run" relevance="informal" file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
       Excercise combinations of different operand types.
@@ -951,6 +959,12 @@
         msg="Type must be an extension of the left operand's type"/>
     <reject-info id="opTypeGuard3" pos=" a(%C)"
         msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="opTypeGuard7" pos=" F(a)(%B)"
+        msg="Operator may not be applied to function result"/>
+    <reject-info id="opTypeGuard8" pos=" %a(ADesc)"
+        msg="This must be a procedure designator"/>
+    <reject-info id="opTypeGuard9" pos=" %a(a)"
+        msg="This must be a procedure designator"/>
 
   </processor-info>
 </testsuite-ext>
