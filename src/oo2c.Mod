@@ -102,8 +102,8 @@ PROCEDURE BuildPackage(pkg: Package.Package; install: BOOLEAN): BOOLEAN;
     
     FOR i := 0 TO pkg.library.size-1 DO
       lib := pkg.library.array[i](Package.Library);
-      makeRules.SetLibraryName(lib.name^, lib.version.tuple);
-      module := GetModule(lib.mainModule^);
+      makeRules.SetLibraryName(lib.name.array^, lib.version.tuple);
+      module := GetModule(lib.mainModule.array^);
       ok := makeRules.Update(module, Rep.modLibrary)
           & (~install OR InstallLibrary(module))
           & ok;
@@ -111,7 +111,7 @@ PROCEDURE BuildPackage(pkg: Package.Package; install: BOOLEAN): BOOLEAN;
     
     FOR i := 0 TO pkg.executable.size-1 DO
       exec := pkg.executable.array[i](Package.Executable);
-      module := GetModule(exec.mainModule^);
+      module := GetModule(exec.mainModule.array^);
       ok := makeRules.Update(module, Rep.modExecutable)
           & (~install OR InstallExecutable(module))
           & ok;

@@ -300,7 +300,7 @@ PROCEDURE (s: Section) GetPackage* (pkgName: ARRAY OF CHAR): Package.Package;
     (* module not found in cache: traverse repositories *)
     rep := s. topLevelRep;
     WHILE (rep # NIL) DO
-      IF (rep.packageInfo # NIL) & (rep.packageInfo.name^ = pkgName) THEN
+      IF (rep.packageInfo # NIL) & (rep.packageInfo.name.array^ = pkgName) THEN
         RETURN rep.packageInfo;
       END;
       rep := rep.baseRep;
