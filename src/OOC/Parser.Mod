@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Parser;
 (*  Parses an Oberon-2 module and creates an abstract syntax tree.
-    Copyright (C) 1999, 2000  Michael van Acken
+    Copyright (C) 1999-2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -72,6 +72,7 @@ CONST
   invalidFlag = 16;
   expectExternalKW = 17;
   expectLinkSection = 18;
+  fileNameMismatch = 19;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -124,6 +125,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expected keyword `INTERFACE' or `FOREIGN'"
     | expectLinkSection:
       t := "Expected link section"
+    | fileNameMismatch:
+      t := "Module name does not match access path `${name}'"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -155,7 +158,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
    multi-part identifiers, and C style rest parameters.  See the list under
    @oconst{enableAll} for more details.  *)
   VAR
-    prevSym: BasicList.Symbol;
+    prevSym, nameSym: BasicList.Symbol;
     lastError: Error.Msg;
     module, name, moduleFlags, scolon, import, body, period, eof: AST.Node;
     headName: AST.Name;
@@ -1515,7 +1518,14 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     
     (*S: Module = "MODULE" mp_ident Flags ";" [ImportList] Body ".".  *)
     module := CheckSym (Symbol.module);
+    nameSym := sym;
     name := MultiPartIdent (headName);
+    IF (ast. expectedModuleName # NIL) &
+       (headName^ # ast. expectedModuleName^) THEN
+      Err (fileNameMismatch, nameSym);
+      ErrStringAttrib ("name", ast. expectedModuleName^)
+    END;
+    
     lastIdentDef := name;
     moduleFlags := Flags (AST.flagsModule);
     scolon := CheckSym (Symbol.semicolon);

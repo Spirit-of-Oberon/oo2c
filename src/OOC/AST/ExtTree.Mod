@@ -675,6 +675,7 @@ PROCEDURE (v: Visitor) VisitLinkLibFlag* (linkLibFlag: LinkLibFlag);
 
 PROCEDURE Init* (b: Builder);
   BEGIN
+    AST.InitBuilder (b);
   END Init;
 
 PROCEDURE New* (): Builder;

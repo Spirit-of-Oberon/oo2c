@@ -342,7 +342,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
   BEGIN
     m := cmd. module;
     config := cmd. context. config(Config.Config);
-    ParseModule.ParseModule (m, config, TRUE, TRUE,
+    ParseModule.ParseModule (m, config, TRUE, TRUE, TRUE,
                              ast, symTab, pragmaHistory, errList);
     (* symbol file is written by the `ParseModule' function *)
     

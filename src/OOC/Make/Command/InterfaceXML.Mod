@@ -74,7 +74,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
   BEGIN
     m := cmd. module;
     config := cmd. context. config(Config.Config);
-    ParseModule.ParseModule (m, config, TRUE, FALSE,
+    ParseModule.ParseModule (m, config, FALSE, TRUE, FALSE,
                              ast, symTab, pragmaHistory, errList);
     IF (errList. msgCount = 0) THEN
       outputURI := m. GetURI (Repository.modInterfaceXML);

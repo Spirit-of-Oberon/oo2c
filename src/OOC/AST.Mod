@@ -21,7 +21,7 @@ MODULE OOC:AST [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  OOC:Scanner:InputBuffer, OOC:Doc, OOC:Scanner:Builder:BasicList,
+  Strings, OOC:Scanner:InputBuffer, OOC:Doc, OOC:Scanner:Builder:BasicList,
   OOC:SymbolTable:Item;
 
 TYPE
@@ -56,6 +56,8 @@ TYPE
        @omodule{*OOC:Parser} will call the factory methods below to create
        the abstract syntax tree.  Typically, a factory method corresponds
        to the production of the grammar with the same name.  *)
+    expectedModuleName-: Name;
+    (**See @oproc{Builder.SetModuleName}.  *)
   END;
 
 (**
@@ -226,6 +228,21 @@ PROCEDURE (n: Node) SetSymTabEntry* (item: Item.Item);
     ASSERT (FALSE);
   END SetSymTabEntry;
 
+
+
+PROCEDURE InitBuilder* (b: Builder);
+  BEGIN
+    b. expectedModuleName := NIL;
+  END InitBuilder;
+
+PROCEDURE (b: Builder) SetModuleName* (name: ARRAY OF CHAR);
+(**Sets the expected module in the builder instance.  If set, then the parser
+   will compare the expected with the actual module name, and report an error
+   if they differ.  *)
+  BEGIN
+    NEW (b. expectedModuleName, Strings.Length (name)+1);
+    COPY (name, b. expectedModuleName^);
+  END SetModuleName;
 
 PROCEDURE (b: Builder) [ABSTRACT] Terminal* (sym: BasicList.Symbol): Node;
 (**Takes the symbol @oparam{sym} and creates a terminal node of the syntax

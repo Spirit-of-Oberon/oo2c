@@ -14,7 +14,7 @@ IMPORT
 
 
 PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
-                        createNamespace, writeSymbolFile: BOOLEAN;
+                        checkModuleName, createNamespace, writeSymbolFile: BOOLEAN;
                         VAR ast: AST.Node;
                         VAR symTab: Item.Module;
                         VAR pragmaHistory: Pragmas.History;
@@ -53,6 +53,9 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
       ast := NIL;
       IF (errList. msgCount = 0) THEN
         astBuilder := ExtTree.New();
+        IF checkModuleName THEN
+          astBuilder. SetModuleName (m. name^)
+        END;
         ast := Parser.Module (scannerBuilder. head, 
                               astBuilder, errList,
                               Parser.enableAll)

@@ -91,7 +91,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     config := cmd. context. config(Config.Config);
     resolve := mode. value(IntegerValue.Value). integer = modeResolveNamesXML;
 
-    ParseModule.ParseModule (m, config, resolve, FALSE,
+    ParseModule.ParseModule (m, config, FALSE, resolve, FALSE,
                              ast, symTab, pragmaHistory, errList);
     IF (errList. msgCount = 0) THEN
       outputURI := m. GetURI (Rep.modSymbolTableXML);
