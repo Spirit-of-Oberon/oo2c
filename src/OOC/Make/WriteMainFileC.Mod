@@ -61,7 +61,9 @@ PROCEDURE WriteFile*(module: Repository.Module;
       i: LONGINT;
     BEGIN
       FOR i := 0 TO LEN(imports)-1 DO
-        WriteModuleName (w, prefix, imports[i], suffix)
+        IF ~imports[i].ifData.NoObjectFile() THEN
+          WriteModuleName (w, prefix, imports[i], suffix);
+        END;
       END;
     END WriteModules;
   

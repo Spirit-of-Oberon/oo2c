@@ -205,7 +205,7 @@ PROCEDURE Run*(module: Repository.Module;
             importedLibs.Set(imports[i].ifData.libraryName, NIL);
             importedLibsList.Append(imports[i]);
           END;
-        ELSE
+        ELSIF ~imports[i].ifData.NoObjectFile() THEN
           uri := imports[i]. GetURI (objectFile, TRUE);
           uri(File.URI). GetPath (path);
           Strings.Append (" ", str);

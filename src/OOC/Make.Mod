@@ -1071,6 +1071,8 @@ PROCEDURE (r: Rules) UpdateExecutable(module: Rep.Module): BOOLEAN;
            (r.imports[i].ifData.libraryName # NIL) THEN
           (* the module is part of a library: assume that the library
              exists and that the object file in it is up to date *)
+        ELSIF r.imports[i].ifData.NoObjectFile() THEN
+          (* this in an INTERFACE or MODULE without a code file *)
         ELSIF ~r.Update(r.imports[i], Rep.modObjectFile) THEN
           RETURN FALSE;
         ELSIF DerivedIsOlder2(module, Rep.modExecutable,
@@ -1121,7 +1123,9 @@ PROCEDURE (r: Rules) UpdateLibrary(module: Rep.Module): BOOLEAN;
       (* Create library files (static and shared).  *)
       isUpToDate := Exists(module, Rep.modLibrary);
       FOR i := 0 TO LEN(closure^)-1 DO
-        IF ~r.Update(closure[i], Rep.modObjectFileLib) THEN
+        IF closure[i].ifData.NoObjectFile() THEN
+          (* skip *)
+        ELSIF ~r.Update(closure[i], Rep.modObjectFileLib) THEN
           RETURN FALSE;
         ELSIF DerivedIsOlder2(module, Rep.modLibrary,
                               closure[i], Rep.modObjectFileLib) THEN

@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE LRealMath [INTERFACE "C"; LINK FILE "LRealMath.c"; LIB "m" END];
+MODULE LRealMath [INTERFACE "C"; LINK LIB "m" END];
 (*  Math functions for LONGREAL.
     Copyright (C) 2002  Michael van Acken
 

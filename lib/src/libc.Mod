@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE libc [INTERFACE "C"; LINK FILE "libc.c" END];
+MODULE libc [INTERFACE "C"];
 (*  Basic data types for interfacing to C code.
     Copyright (C) 1997-1998  Michael van Acken
 

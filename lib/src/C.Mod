@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE C [INTERFACE "C"; LINK FILE "C.c" END];
+MODULE C [INTERFACE "C"];
 (*  Basic data types for interfacing to C code.
     Copyright (C) 1997-1998  Michael van Acken
 

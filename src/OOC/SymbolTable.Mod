@@ -1403,12 +1403,32 @@ PROCEDURE (mod: Module) AddLinkLib* (libraryName: String.String;
                                   prefixOption, suffixOption))
   END AddLinkLib;
 
+PROCEDURE (mod: Module) NoObjectFile*(): BOOLEAN;
+(**Returns @code{TRUE} if @oparam{mod} is an @samp{INTERFACE} or @samp{FOREIGN}
+   module without @samp{LINK FILE} entries.  As far as the C back-end is
+   concerned, such modules are translated into header files, but have no
+   corresponding code or object file.  This also implies that there is no
+   module descriptor, nor are there any type descriptors for definitions of the
+   module.  *)
+  VAR
+    l: LinkDirective;
+  BEGIN
+    IF (mod.class = mcInterface) OR (mod.class = mcForeign) THEN
+      l := mod.linkDirectives;
+      WHILE (l # NIL) & ~(l IS LinkFile) DO
+        l := l.next
+      END;
+      RETURN (l = NIL);
+    ELSE
+      RETURN FALSE;
+    END;
+  END NoObjectFile;
 
 PROCEDURE (mod: Module) GetExternalSource* (rootURI: URI.HierarchicalURI): URI.HierarchicalURI;
 (**For a module of class @oconst{mcForeign} or @oconst{mcInterface}, return the
-   file path for the first @samp{FILE} directive.  Such an entry must exist.
-   The URI of the file is expanded relative to the root of the repository,
-   @oparam{rootURI}.  *)
+   file path for the first @samp{FILE} directive.  The URI of the file is
+   expanded relative to the root of the repository, @oparam{rootURI}.  If there
+   is no @samp{FILE}, result is @code{NIL}.  *)
   VAR
     l: LinkDirective;
   BEGIN
@@ -1417,9 +1437,13 @@ PROCEDURE (mod: Module) GetExternalSource* (rootURI: URI.HierarchicalURI): URI.H
     WHILE (l # NIL) & ~(l IS LinkFile) DO
       l := l. next
     END;
-    ASSERT (l(LinkFile). file # NIL);
-    l(LinkFile). file. ResolveRelative (rootURI);
-    RETURN l(LinkFile). file;
+    IF (l = NIL) THEN
+      RETURN NIL;
+    ELSE
+      ASSERT (l(LinkFile). file # NIL);
+      l(LinkFile). file. ResolveRelative (rootURI);
+      RETURN l(LinkFile). file;
+    END;
   END GetExternalSource;
 
 PROCEDURE StringToCallConv*(str: ARRAY OF CHAR): CallConv;
