@@ -183,7 +183,12 @@ PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
    descriptor @oparam{td}.  For an open array object, the lengths of the
    array's dimensions are passed as second, third, and so on, parameter.  They
    must be of type @code{LONGINT}.  *)
-   
+
+PROCEDURE TypeOf* (ptr: SYSTEM.PTR): Struct;
+(**Returns the type of the record pointer @oparam{ptr}.  The address
+   @oparam{ptr} must be a previous result of @oproc{NewObject}.  Result is
+   undefined if @oparam{ptr} is not a reference to a record object.  *)
+
 PROCEDURE NewBlock* (bytes: LONGINT): SYSTEM.PTR;
 (**Allocates a memory block on the heap with a size of at least @oparam{bytes}
    bytes.  Pointers in the allocated block are ignored during garbage

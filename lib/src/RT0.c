@@ -92,6 +92,10 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   return (OOC_PTR)var;
 }
 
+RT0__Struct RT0__TypeOf(OOC_PTR ptr) {
+  return OOC_TYPE_TAG(ptr);
+}
+
 OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
   void *ptr;
   
