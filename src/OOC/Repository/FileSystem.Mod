@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Repository:FileSystem;
 (*  Implementation of a repository in the local file system.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -183,29 +183,35 @@ PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId): URI.HierarchicalURI;
   VAR
     subdir, suffix, path, str: Rep.URIBuffer;
     uri: URI.URI;
+    huri: URI.HierarchicalURI;
     res: Msg.Msg;
   BEGIN
-    IF (fileId = Rep.modModuleSource) & (m. srcFileOverride # NIL) THEN
-      RETURN m. srcFileOverride
+    huri := m. GetURI^ (fileId);
+    IF (huri = NIL) THEN
+      IF (fileId = Rep.modModuleSource) & (m. srcFileOverride # NIL) THEN
+        RETURN m. srcFileOverride
+      ELSE
+        m. origin. GetDefaultSubdir (fileId, subdir);
+        m. origin. GetDefaultSuffix (fileId, suffix);
+        
+        COPY (subdir, path);
+        IF (path # "") & (path[Strings.Length (path)-1] # "/") THEN
+          Strings.Append ("/", path)
+        END;
+        COPY (m. name^, str);
+        ModuleToFileName (str);
+        Strings.Append (str, path);
+        Strings.Append (suffix, path);
+        uri := URIParser.NewURI (path, m. origin. baseURI, res);
+        
+        ASSERT (res = NIL);
+        (* this should never trigger if subdir and suffix are ok *)
+        
+        RETURN uri(URI.HierarchicalURI)
+      END
     ELSE
-      m. origin. GetDefaultSubdir (fileId, subdir);
-      m. origin. GetDefaultSuffix (fileId, suffix);
-
-      COPY (subdir, path);
-      IF (path # "") & (path[Strings.Length (path)-1] # "/") THEN
-        Strings.Append ("/", path)
-      END;
-      COPY (m. name^, str);
-      ModuleToFileName (str);
-      Strings.Append (str, path);
-      Strings.Append (suffix, path);
-      uri := URIParser.NewURI (path, m. origin. baseURI, res);
-      
-      ASSERT (res = NIL);
-      (* this should never trigger if subdir and suffix are ok *)
-      
-      RETURN uri(URI.HierarchicalURI)
-    END
+      RETURN huri;
+    END;
   END GetURI;
 
 PROCEDURE (m: Module) GetTimeStamp* (fileId: Rep.FileId; VAR ts: Time.TimeStamp);

@@ -278,7 +278,16 @@ PROCEDURE (m: Module) [ABSTRACT] GetInputBuffer* (VAR msg: Msg.Msg): InputBuffer
 (* result is NIL in case of error, with msg holding the error message *)
   END GetInputBuffer;
 
-PROCEDURE (m: Module) [ABSTRACT] GetURI* (fileId: FileId): URI.HierarchicalURI;
+PROCEDURE (m: Module) GetURI* (fileId: FileId): URI.HierarchicalURI;
+  BEGIN
+    (* check if the module provides its own .c file; in this case, return
+       the given name, instead of the automatically generated one *)
+    IF (fileId = modCodeFileC) & (m. symbolTable # NIL) &
+       (m. symbolTable. class # Sym.mcStandard) THEN
+      RETURN m. symbolTable. GetExternalSource();
+    ELSE
+      RETURN NIL;
+    END;
   END GetURI;
 
 PROCEDURE (m: Module) MatchesURI* (fileId: FileId; uri: URI.URI): BOOLEAN;
