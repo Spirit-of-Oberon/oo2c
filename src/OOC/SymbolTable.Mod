@@ -329,7 +329,7 @@ TYPE
     (LinkDirectiveDesc)
     libraryName-: String.String;
     dependencies-: String.StringArrayPtr;
-    prefixOption, suffixOption: String.String;
+    prefixOption-, suffixOption-: String.String;
   END;
 
 CONST
