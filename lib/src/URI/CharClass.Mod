@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:CharClass;
 (*  Predicates and auxiliary functions for URI character classes.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,7 +20,9 @@ MODULE URI:CharClass;
 
 
 CONST
-  unreservedPChar* = ":@&=+$,";
+  unreservedChar* = "@&=+$,";
+  (**Like @oconst{unreservedPChar}, but without @samp{:}.  *)
+  unreservedPChar* = ":"+unreservedChar;
   (**All characters that are classified as reserved, but need not to be
      escaped if used as a @samp{pchar}.  In particular, these characters
      can be used unchanged as part of a path segment or path parameter.  *)

@@ -151,7 +151,9 @@ PROCEDURE ToURI* (filePath: ARRAY OF CHAR): URI;
       String.AppendEscaped (filePath, CharClass.unreservedPChar+"/", uriString);
       uri := Parser.NewURI (uriString, NIL, res)
     ELSE
-      uri := Parser.NewURI (filePath, GetCwd(), res)
+      uriString := "";
+      String.AppendEscaped (filePath, CharClass.unreservedChar+"/", uriString);
+      uri := Parser.NewURI (uriString, GetCwd(), res)
     END;
     IF (uri = NIL) THEN
       RETURN NIL
