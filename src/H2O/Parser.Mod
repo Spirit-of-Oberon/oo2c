@@ -8,6 +8,9 @@ IMPORT
   T := H2O:Type, H2O:Variant, StringSearch, StringSearch:RegexpDFA;
 
 CONST
+  debugProgress = FALSE;
+
+CONST
   (* 800: C keywords *)
 
   extern* = 800;
@@ -128,19 +131,20 @@ END ShowDepend;
 PROCEDURE Install* (scope : INTEGER; mod : T.Module; tag : STRING; name : STRING; new : T.Type; tail : BOOLEAN);
 VAR 
   obj : T.Object;
+  warn : BOOLEAN;
 BEGIN
   IF T.FindObjectModule(mod, {scope}, name, obj) THEN
-    IF T.AllowedRedefinition(new, obj.type) THEN
-      obj.type := new;
-    ELSE
-      err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type.Base());
-    END
+    warn := T.AllowedRedefinition(new, obj.type);
+    IF warn THEN
+      obj.type := new
+    END;
+    err.MsgParam("$0 `$1' already defined as $2", tag, name, obj.type.Base(), ~warn)
   ELSE
     T.Bind(scope, name, 0, new, mod, tail);
   END;
-  new.Depend(depend);
+  new.Depend(depend, mod);
   IF parserOutputDependencies.value THEN
-    IF depend.size > 0 THEN ShowDepend(name, depend) END;
+    IF TRUE (*depend.size > 0*) THEN ShowDepend(name, depend) END;
   END;
   mod.AddImports(depend);
   mod.AddDefinition();
@@ -682,6 +686,8 @@ BEGIN
   WITH arg : Value.LongInt DO
     radix := Max(radix, arg.radix);
     size := Max(size, arg.size);
+  ELSE
+    Log.Object("AdjustSize", arg);
   END;
 END AdjustSize;
 
@@ -952,6 +958,7 @@ VAR
 
       ELSIF token.sym = Scanner.lbracket THEN
         (* bracket indicates either a nested expression OR a type cast *)
+        GetSym;
         IF StartsTypeSpecifier() THEN
           (* type cast *)
           GetSym;
@@ -961,7 +968,6 @@ VAR
           result := Factor();
         ELSE
           (* nested expression *)
-          GetSym;
           result := Expr(0);
           Expect(Scanner.rbracket);
         END
@@ -1211,6 +1217,7 @@ BEGIN
     END;
     IF type.class = T.tFunction THEN
       IF token.sym = Scanner.lbrace THEN
+		Log.Msg("SkipBody");
         SkipBody;
         RETURN;
       END;
@@ -1218,6 +1225,7 @@ BEGIN
     IF token.sym = Scanner.comma THEN
       GetSym;
     ELSIF token.sym = Scanner.semicolon THEN
+      GetSym;
       RETURN;
     END;
   END;
@@ -1467,7 +1475,6 @@ BEGIN
       H2OConfig();
     ELSE
       Declaration();
-      Expect(Scanner.semicolon);
     END;
   END;
 END Body;
@@ -1519,12 +1526,13 @@ VAR
   i : LONGINT;
   macro : Process.Macro;
 BEGIN
-  Log.Msg("Parsing macros");
+  IF debugProgress THEN Log.Msg("Parsing macros"); END;
   items := process.macroDecl;
-  Log.Int("Macro count", items.Size());
+  IF debugProgress THEN Log.Int("Macro count", items.Size()); END;
   FOR i := 0 TO items.Size()-1 DO
     macro := items.Get(i);
     IF macro.module = mod THEN
+      IF debugProgress THEN Log.Object("macro: ", macro.name); END;
       ParseMacro(e, items.Get(i));
     END;
   END;
