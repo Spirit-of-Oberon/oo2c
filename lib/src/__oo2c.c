@@ -75,18 +75,18 @@ void _copy_32(const OOC_CHAR32* src, OOC_CHAR32* dest, OOC_LEN max_len) {
 }
 
 #ifndef HAVE_LRINT
-void ooc_round_real32(OOC_REAL32 x) {
+OOC_INT32 ooc_round_real32(OOC_REAL32 x) {
   if (x >= 0.0f) {
-    return (int)(x+0.5f);
+    return (OOC_INT32)(x+0.5f);
   } else {
-    return (int)(x-0.5f);
+    return (OOC_INT32)(x-0.5f);
   }
 }
-void ooc_round_real32(OOC_REAL64 x) {
+OOC_INT32 ooc_round_real64(OOC_REAL64 x) {
   if (x >= 0.0) {
-    return (int)(x+0.5);
+    return (OOC_INT32)(x+0.5);
   } else {
-    return (int)(x-0.5);
+    return (OOC_INT32)(x-0.5);
   }
 }
 #endif
