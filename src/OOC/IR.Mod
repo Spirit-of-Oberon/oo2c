@@ -21,8 +21,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Language:Boolean, Language:Char, Language:Set,
-  LString := Language:String,
+  Language, Language:Boolean, Language:Set, LString := Language:String,
   Language:String8, Language:String16, Language:Integer, Language:Real,
   Object, ADT:ArrayList, ADT:String, ADT:StringBuffer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
@@ -1720,21 +1719,73 @@ PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expressi
 
 PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
   VAR
-    v: Language.Value;
+    v: LONGINT;
+
+  PROCEDURE ValueOf(str[NO_COPY]: ARRAY OF CHAR): LONGINT;
+    VAR
+      i, hexCount, ord: LONGINT;
+      
+    PROCEDURE HexDigit (ch: CHAR): LONGINT;
+      BEGIN
+        ch := CAP (ch);
+        CASE ch OF
+        | "0".."9": RETURN ORD(ch)-ORD("0")
+        | "A".."F": RETURN ORD(ch)+(10-ORD("A"))
+        ELSE
+          RETURN -1
+        END;
+      END HexDigit;
+    
+    PROCEDURE HexToInt (str: ARRAY OF CHAR; end: CHAR; VAR result: LONGINT): BOOLEAN;
+      BEGIN
+        result := 0; i := 0;
+        WHILE (str[i] # end) DO
+          IF ((MAX (LONGINT)-HexDigit (str[i])) DIV 16 < result) THEN
+            RETURN FALSE
+          END;
+          result := result*16+HexDigit (str[i]);
+          INC (i)
+        END;
+        RETURN TRUE
+      END HexToInt;
+    
+    BEGIN
+      i := 0; hexCount := 0;
+      WHILE (str[i] # 0X) DO
+        IF (HexDigit (str[i]) >= 0) THEN
+          INC (hexCount)
+        END;
+        INC (i)
+      END;
+      IF (i = 3) & (str[0] = str[i-1]) & ((str[0] = '"') OR (str[0] = "'")) THEN
+        (* single character, written as '...' or "..." *)
+        RETURN ORD (str[1])
+      ELSIF (i >= 2) & (str[i-1] = "X") & (hexCount+1 = i) THEN
+        (* character written has hexadecimal constant nnX *)
+        IF HexToInt (str, "X", ord) &
+           (ORD(Predef.minLongchar) <= ord) &
+           (ord <= ORD(Predef.maxLongchar)) THEN
+          RETURN ord;
+        ELSE  (* overflow *)
+          RETURN -1;
+        END
+      ELSE  (* string is not delimited properly, nor is in hex notation *)
+        RETURN -1;
+      END
+    END ValueOf;
+  
   BEGIN
-    v := Char.ValueOf (sym. str^);
-    IF (v = NIL) THEN
+    v := ValueOf(sym. str^);
+    IF (v < 0) THEN
       b. ErrSym (characterOutOfRange, sym);
       RETURN b. errorExpr
     ELSE
-      WITH v: Char.Value DO
-        IF (v. value <= ORD (Predef.maxChar)) THEN
-          RETURN NewConst (sym, Predef.GetType (Predef.char),
-                           String8.NewChar (CHR (v. value)));
-        ELSE
-          RETURN NewConst (sym, Predef.GetType (Predef.longchar),
-                           String16.NewChar (LONGCHR (v. value)));
-        END;
+      IF (v <= ORD (Predef.maxChar)) THEN
+        RETURN NewConst (sym, Predef.GetType (Predef.char),
+                         String8.NewChar (CHR (v)));
+      ELSE
+        RETURN NewConst (sym, Predef.GetType (Predef.longchar),
+                         String16.NewChar (LONGCHR (v)));
       END;
     END
   END NewCharConst16;

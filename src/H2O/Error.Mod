@@ -2,7 +2,7 @@ MODULE H2O:Error;
 
 IMPORT 
   Err,
-  H2O:Source, Language:Char,
+  H2O:Source, Language:String8,
   Object, ADT:String, ADT:StringBuffer;
 
 TYPE 
@@ -67,7 +67,7 @@ END MsgParam;
 
 PROCEDURE (e : Error) UnexpectedCharacter* (ch : CHAR);
 BEGIN
-  e.ErrorParam("Unexpected character '$0'",Char.New(ORD(ch)),NIL,NIL);
+  e.ErrorParam("Unexpected character '$0'",String8.NewChar(ch),NIL,NIL);
 END UnexpectedCharacter;
 
 PROCEDURE (e : Error) ExpectedToken* (expected, found : Object.Object);
