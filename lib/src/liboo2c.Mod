@@ -4,6 +4,7 @@ MODULE liboo2c;
 IMPORT
   RT0,
   Out0,
+  HashCode,
   Exception,
   
   Ascii,
@@ -38,7 +39,7 @@ IMPORT
   Termination,
   TextRider,
   Time,
-  
+
   Object,
   Object:Boxed,
   Object:BigInt,

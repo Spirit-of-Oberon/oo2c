@@ -296,16 +296,16 @@ PROCEDURE (l: ArrayList(E)) IsEmpty* (): BOOLEAN;
 
 PROCEDURE (l: ArrayList(E)) Equals* (obj: Object.Object): BOOLEAN;
   BEGIN
-<*PUSH; Assertions:=TRUE*>
+<*WITH Assertions:=TRUE DO*>
     ASSERT (FALSE);
-<*POP*>
+<*END*>
   END Equals;
 
-PROCEDURE (l: ArrayList(E)) HashCode* (): LONGINT;
+PROCEDURE (l: ArrayList(E)) HashCode* (): Object.Hash;
   BEGIN
-<*PUSH; Assertions:=TRUE*>
+<*WITH Assertions:=TRUE DO*>
     ASSERT (FALSE);
-<*POP*>
+<*END*>
   END HashCode;
 
 PROCEDURE (l: ArrayList(E)) Store* (w: Storable.Writer) RAISES IO.Error;

@@ -28,8 +28,8 @@ MODULE Object:Boxed;
    it during their lifetime.  *)
 
 IMPORT
-  SYSTEM, IntStr, RealStr, LRealStr, Strings,
-  Obj := Object, IO, ADT:Storable, ADT:StringBuffer;
+  IntStr, RealStr, LRealStr, Strings,
+  HashCode, Obj := Object, IO, ADT:Storable, ADT:StringBuffer;
 
 TYPE
   Object* = POINTER TO ObjectDesc;
@@ -124,11 +124,7 @@ PROCEDURE (v: Boolean) Cmp*(y: Obj.Object): LONGINT;
   
 PROCEDURE (v: Boolean) HashCode*(): Obj.Hash;
   BEGIN
-    IF v.value THEN
-      RETURN 1
-    ELSE
-      RETURN 2
-    END;
+    RETURN HashCode.Boolean(v.value);
   END HashCode;
   
 PROCEDURE (v: Boolean) ToString*(): Obj.String;
@@ -233,19 +229,8 @@ PROCEDURE (v: LongReal) Equals*(y: Obj.Object): BOOLEAN;
   END Equals;
   
 PROCEDURE (v: LongReal) HashCode*(): Obj.Hash;
-(* Compute hash code by XORing bits in the LONGREAL's binary representation. *)
-  CONST 
-    size = SIZE(LONGREAL) DIV SIZE(SET);
-  VAR
-    a: ARRAY size OF SET;
-    i: LONGINT; hash: SET;
   BEGIN
-    SYSTEM.MOVE(SYSTEM.ADR(v.value), SYSTEM.ADR(a), size * SIZE(LONGINT));
-    hash := {};
-    FOR i := 0 TO size-1 DO
-      hash := hash / a[i];
-    END;
-    RETURN SYSTEM.VAL(Obj.Hash, hash);
+    RETURN HashCode.LongReal(v.value);
   END HashCode;
 
 PROCEDURE (v: LongReal) ToString*(): Obj.String;
@@ -331,7 +316,7 @@ PROCEDURE (v: Set) Cmp*(y: Obj.Object): LONGINT;
   
 PROCEDURE (v: Set) HashCode*(): Obj.Hash;
   BEGIN
-    RETURN SYSTEM.VAL(Obj.Hash, v.value);
+    RETURN HashCode.Set(v.value);
   END HashCode;
 
 PROCEDURE SetToString(val: SET; VAR str: ARRAY OF CHAR);
@@ -414,7 +399,7 @@ PROCEDURE (v: String) Equals*(y: Obj.Object): BOOLEAN;
   
 PROCEDURE (v: String) HashCode*(): Obj.Hash;
   BEGIN
-    RETURN v. value. HashCode();
+    RETURN v.value.HashCode();
   END HashCode;
   
 PROCEDURE (v: String) ToString*(): Obj.String;

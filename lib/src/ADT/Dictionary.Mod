@@ -440,16 +440,16 @@ PROCEDURE (dict: Dictionary(K, V)) Values* (): Object.ObjectArrayPtr;
 
 PROCEDURE (dict: Dictionary(K, V)) Equals* (obj: Object.Object): BOOLEAN;
   BEGIN
-<*PUSH; Assertions:=TRUE*>
+<*WITH Assertions:=TRUE DO*>
     ASSERT (FALSE);
-<*POP*>
+<*END*>
   END Equals;
 
-PROCEDURE (dict: Dictionary(K, V)) HashCode* (): LONGINT;
+PROCEDURE (dict: Dictionary(K, V)) HashCode* (): Object.Hash;
   BEGIN
-<*PUSH; Assertions:=TRUE*>
+<*WITH Assertions:=TRUE DO*>
     ASSERT (FALSE);
-<*POP*>
+<*END*>
   END HashCode;
 
 PROCEDURE (dict: Dictionary(K, V)) Store* (w: Storable.Writer) RAISES IO.Error;

@@ -39,7 +39,7 @@ MODULE ADT:Dictionary:AddressKey;
    @end itemize  *)
 
 IMPORT
-  S := SYSTEM, ADT:Storable, Object, IO;
+  S := SYSTEM, ADT:Storable, HashCode, Object, IO;
 
 
 TYPE
@@ -153,17 +153,6 @@ PROCEDURE (dict: Dictionary) Destroy*;
   END Destroy;
 
 
-
-PROCEDURE HashCode (obj: Key): LONGINT;
-  BEGIN
-<*IF TARGET_ADDRESS = 64 THEN*>
-    RETURN S.VAL (LONGINT,
-      S.VAL (SET, SHORT (S.LSH (S.ROT (S.VAL (S.ADDRESS, obj), 32), -32))) /
-      S.VAL (SET, SHORT (S.LSH (S.VAL (S.ADDRESS, obj), -32))))
-<*ELSE*>
-    RETURN S.VAL (LONGINT, obj)
-<*END*>
-  END HashCode;
 
 PROCEDURE IsSet (key: Key): BOOLEAN;
 (* Returns TRUE iff `key' does not stand for an unused dictionary slot.  *)
@@ -311,7 +300,7 @@ PROCEDURE (dict: Dictionary) HasKey* (key: Key): BOOLEAN;
     IF (dict. used = 0) THEN
       RETURN FALSE
     ELSE
-      index := Lookup (dict, key, HashCode (key));
+      index := Lookup (dict, key, HashCode.Ptr(key));
       RETURN IsSet (dict. table[index]. key)
     END
   END HasKey;
@@ -335,7 +324,7 @@ PROCEDURE (dict: Dictionary) Get* (key: Key): Value;
   BEGIN
     ASSERT (key # NIL);
     ASSERT (dict. used # 0);
-    i := Lookup (dict, key, HashCode (key));
+    i := Lookup (dict, key, HashCode.Ptr(key));
     ASSERT (IsSet (dict. table[i]. key));
     RETURN dict. table[i]. value
   END Get;
@@ -354,7 +343,7 @@ PROCEDURE (dict: Dictionary) Set* (key: Key; value: Value);
     IF (dict. fill*3 >= dict. size*2) THEN
       Resize (dict, dict. used*2)
     END;
-    Insert (dict, key, HashCode (key), value)
+    Insert (dict, key, HashCode.Ptr(key), value)
   END Set;
 
 PROCEDURE (dict: Dictionary) Copy* (): Dictionary;
@@ -391,7 +380,7 @@ PROCEDURE (dict: Dictionary) Delete* (key: Key);
   BEGIN
     ASSERT (key # NIL);
     ASSERT (dict. used # 0);
-    i := Lookup (dict, key, HashCode (key));
+    i := Lookup (dict, key, HashCode.Ptr(key));
     ASSERT (IsSet (dict. table[i]. key));
     dict. table[i]. key := dummy;       (* replace key with dummy, _not_ NIL *)
     dict. table[i]. value := NIL;
@@ -505,7 +494,7 @@ PROCEDURE (dict: Dictionary) Load* (r: Storable.Reader) RAISES IO.Error;
         dict. table[i]. key := obj;
         r. ReadObject (obj);
         dict. table[i]. value := obj;
-        dict. table[i]. hash := HashCode (dict. table[i]. key)
+        dict. table[i]. hash := HashCode.Ptr(dict. table[i]. key)
       END;
       Resize (dict, (dict. size*3) DIV 2)
     END
