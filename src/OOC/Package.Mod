@@ -6,6 +6,7 @@ IMPORT
   OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
   Config:Parser, Config:Value, StringValue := Config:Value:String,
+  BooleanValue := Config:Value:Boolean, IntegerValue := Config:Value:Integer,
   Config:Section:Options,
   OOC:Logger, OOC:Config, OOC:Error, Rep := OOC:Repository;
 
@@ -95,6 +96,9 @@ TYPE
   
 CONST
   packageData = "pkginfo.xml";
+
+VAR
+  stringType: String.String;
   
 CONST
   invalidContent = 0;
@@ -108,12 +112,13 @@ CONST
   requireRevisionAttribute = 8;
   requireMainModuleAttribute = 9;
   requireSourceDirAttribute = 10;
-  requireFileOrFileSet = 11;
-  requireSet = 12;
-  notUnsignedInteger = 13;
-  requireCharacterData = 14;
-  unknownType = 15;
-  invalidValue = 16;
+  requireTypeAttribute = 11;
+  requireFileOrFileSet = 12;
+  requireDefine = 13;
+  notUnsignedInteger = 14;
+  requireCharacterData = 15;
+  unknownType = 16;
+  invalidValue = 17;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -152,10 +157,12 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Msg.Msg; VAR templ: Msg.LSt
       t := "This element requires an attribute `main-module'"
     | requireSourceDirAttribute:
       t := "This element requires an attribute `source-dir'"
+    | requireTypeAttribute:
+      t := "This element requires an attribute `type'"
     | requireFileOrFileSet:
       t := "Expected child element `file' or `file-set'"
-    | requireSet:
-      t := "Expected child element `set'"
+    | requireDefine:
+      t := "Expected child element `define'"
     | notUnsignedInteger:
       t := "Attribute `${name}' must be an unsigned integer"
     | requireCharacterData:
@@ -544,6 +551,7 @@ PROCEDURE AtElement(node: Parser.Node;
 PROCEDURE ParseKeyValue(elem: Parser.Element;
                         list: ArrayList.ArrayList;
                         options: Options.Section;
+                        defaultType: String.String;
                         errorListener: Locator.ErrorListener;
                         errList: Error.List);
 (* pre: element.name="options" or "pragmas" *)
@@ -568,12 +576,12 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
       END;
     END SkipWS;
 
-  PROCEDURE ParseSet(elem: Parser.Element): KeyValue;
-  (* pre: element.name="set" *)
+  PROCEDURE ParseDefine(elem: Parser.Element): KeyValue;
+  (* pre: element.name="define" *)
     VAR
       i: LONGINT;
       node: Parser.Node;
-      name: String.String;
+      name, type: String.String;
       value: Value.Value;
       str: ARRAY 1024 OF CHAR;
       att: Builder.Attribute;
@@ -581,10 +589,13 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
       errMsg: Msg.Msg;
     BEGIN
       name := NIL;
+      type := defaultType;
       FOR i := 0 TO elem.attrList.len-1 DO
         att := elem.attrList.attr[i];
         IF (att.localName^ = "name") THEN
           name := StringAttr(att);
+        ELSIF (att.localName^ = "type") THEN
+          type := StringAttr(att);
         ELSE
           Err(invalidAttribute, elem);
           lastError.SetLStringAttrib("name", Msg.GetLStringPtr(att.localName^));
@@ -592,34 +603,38 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
       END;
       IF (name = NIL) THEN
         Err(requireNameAttribute, elem);
-      END;
-      
-      stringBuffer := String.New("");
-      node := elem.content;
-      WHILE (node # NIL) DO
-        WITH node: Parser.CharData DO
-          LongStrings.Short(node.string^, "?", str);
-          stringBuffer := stringBuffer.Concat(String.New(str));
-        ELSE
-          Err(requireCharacterData, node);
-        END;
-        node := node.nextNode;
-      END;
-      
-      value := options.typeList.GetClone("string");
-      IF (value = NIL) THEN
-        Err(unknownType, node);
-        lastError.SetLStringAttrib("type", Msg.GetLStringPtr("string"))
+        RETURN NIL;
+      ELSIF (type = NIL) THEN
+        Err(requireNameAttribute, elem);
+        RETURN NIL;
       ELSE
-        value.StringToValue(stringBuffer.array^, errMsg);
-        IF (errMsg # NIL) THEN
-          Err(invalidValue,node);
-          lastError.SetMsgAttrib("reason", errMsg)
-        END
+        stringBuffer := String.New("");
+        node := elem.content;
+        WHILE (node # NIL) DO
+          WITH node: Parser.CharData DO
+            LongStrings.Short(node.string^, "?", str);
+            stringBuffer := stringBuffer.Concat(String.New(str));
+          ELSE
+            Err(requireCharacterData, node);
+          END;
+          node := node.nextNode;
+        END;
+        
+        value := options.typeList.GetClone(type.array^);
+        IF (value = NIL) THEN
+          Err(unknownType, node);
+          lastError.SetStringAttrib("type", Msg.GetStringPtr(type.array^))
+        ELSE
+          value.StringToValue(stringBuffer.array^, errMsg);
+          IF (errMsg # NIL) THEN
+            Err(invalidValue,node);
+            lastError.SetMsgAttrib("reason", errMsg)
+          END
+        END;
+        
+        RETURN NewKeyValue(name, value);
       END;
-      
-      RETURN NewKeyValue(name, value);
-    END ParseSet;
+    END ParseDefine;
   
   BEGIN
     IF (elem.attrList.len # 0) THEN
@@ -630,11 +645,11 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
     node := elem.content;
     SkipWS(node);
     WHILE (node # NIL) DO
-      IF AtElement(node, "set") THEN
-        list.Append(ParseSet(node(Parser.Element)));
+      IF AtElement(node, "define") THEN
+        list.Append(ParseDefine(node(Parser.Element)));
         node := node.nextNode;
       ELSE
-        Err(requireSet, node);
+        Err(requireDefine, node);
         node := node.nextNode;
       END;
       SkipWS(node);
@@ -914,14 +929,14 @@ PROCEDURE ProcessPackage (root: Parser.Element;
     
     IF AtElement(node, "options") THEN
       ParseKeyValue(node(Parser.Element), pkg.options, Config.options,
-                    errorListener, errList);
+                    stringType, errorListener, errList);
       node := node.nextNode;
       SkipWS(node);
     END;
     
     IF AtElement(node, "pragmas") THEN
       ParseKeyValue(node(Parser.Element), pkg.pragmas, Config.pragmas,
-                    errorListener, errList);
+                    stringType, errorListener, errList);
       node := node.nextNode;
       SkipWS(node);
     END;
@@ -995,14 +1010,14 @@ PROCEDURE ProcessRepository (root: Parser.Element;
     
     IF AtElement(node, "options") THEN
       ParseKeyValue(node(Parser.Element), rep.options, Config.options,
-                    errorListener, errList);
+                    stringType, errorListener, errList);
       node := node.nextNode;
       SkipWS(node);
     END;
     
     IF AtElement(node, "pragmas") THEN
       ParseKeyValue(node(Parser.Element), rep.pragmas, Config.pragmas,
-                    errorListener, errList);
+                    stringType, errorListener, errList);
       node := node.nextNode;
       SkipWS(node);
     END;
@@ -1099,13 +1114,24 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
   VAR
     i: LONGINT;
     kv: KeyValue;
+    v: Value.Value;
     str: ARRAY 1024 OF CHAR;
+    type: ARRAY 32 OF CHAR;
   BEGIN
     w.StartTagLatin1(tag, FALSE);
     FOR i := 0 TO list.size-1 DO
       kv := list.array[i](KeyValue);
-      w.StartTag("set", TRUE);
+      w.StartTag("define", TRUE);
       w.AttrStringLatin1("name", kv.key.array^);
+      v := kv.value;
+      WITH v: StringValue.Value DO
+        type := "string";
+      | v: BooleanValue.Value DO
+        type := "boolean";
+      | v: IntegerValue.Value DO
+        type := "integer";
+      END;
+      w.AttrStringLatin1("type", type);
       kv.value.ValueToString(str);
       w.WriteLatin1(str);
       w.EndTag();  (* set *)
@@ -1358,6 +1384,7 @@ PROCEDURE UpdateRepository*(targetDir: ARRAY OF CHAR): BOOLEAN;
   END UpdateRepository;
 
 BEGIN
+  stringType := String.New("string");
   NEW (packageContext);
   Msg.InitContext (packageContext, "OOC:Package");
 END OOC:Package.
