@@ -51,6 +51,7 @@ CONST
      instruction produces a value of type address.  *)
   
   enter* = 3;
+  select* = 4;
   
   return* = 5;
   (**This instruction serves two purposes: it marks the place where control
@@ -100,7 +101,7 @@ CONST
      The last argument is the value of @var{store} at the end of the function
      or procedure.
      @end table  *)
-     
+
   get* = 7;
   (**Retrieves the value of a variable.  The operands of the instruction and
      their class ids are in this order:
@@ -179,6 +180,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | copy: cstr := "copy";
           
     | enter: cstr := "enter";
+    | select: cstr := "select";
     | return: cstr := "return";
     | selectReturn: cstr := "select-return";
       

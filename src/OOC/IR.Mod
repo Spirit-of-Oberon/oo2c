@@ -213,7 +213,18 @@ TYPE
        a procedure.  *)
   END;
 
-
+ TYPE
+  IfStatm* = POINTER TO IfStatmDesc;
+  IfStatmDesc = RECORD
+    (**Holds an @code{IF-ELSE-END} statement.  If there is no @code{ELSE}, then
+       @ofield{pathFalse} is @code{NIL}.  @code{IF} statements with
+       @code{ELSIF} parts are translated to nested @code{IF} statements.  *)
+    (StatementDesc)
+    guard-: Expression;
+    pathTrue-: StatementSeq;
+    pathFalse-: StatementSeq;  (* NIL if the IF statement has no ELSE *)
+  END;
+  
 (* Modules and Procedures
    ------------------------------------------------------------------------ *)
 
@@ -653,6 +664,35 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitReturn* (return: Return);
 PROCEDURE (return: Return) Accept* (v: Visitor);
   BEGIN
     v. VisitReturn (return)
+  END Accept;
+
+(* -------- *)
+
+PROCEDURE InitIfStatm (ifStatm: IfStatm; sym: Symbol; guard: Expression;
+                       pathTrue, pathFalse: StatementSeq);
+  BEGIN
+    InitStatement (ifStatm, sym);
+    ifStatm. guard := guard;
+    ifStatm. pathTrue := pathTrue;
+    ifStatm. pathFalse := pathFalse;
+  END InitIfStatm;
+
+PROCEDURE (b: Builder) NewIfStatm* (sym: Symbol; guard: Expression;
+                                    pathTrue, pathFalse: StatementSeq): IfStatm;
+  VAR
+    ifStatm: IfStatm;
+  BEGIN
+    NEW (ifStatm);
+    InitIfStatm (ifStatm, sym, guard, pathTrue, pathFalse);
+    RETURN ifStatm
+  END NewIfStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitIfStatm* (ifStatm: IfStatm);
+  END VisitIfStatm;
+
+PROCEDURE (ifStatm: IfStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitIfStatm (ifStatm)
   END Accept;
 
 (* -------- *)

@@ -1,12 +1,34 @@
-MODULE OOC:SSA:WriteC;
+MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 
 IMPORT
-  Log, IntStr, StdChannels, Strings, TextRider,
+  IntStr, StdChannels, Strings, TextRider,
   ADT:Object, ADT:String, ADT:Dictionary,
-  OOC:SymbolTable:Item, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd,
-  OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:XML,
+  OOC:SymbolTable:Item, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
+  OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:WriteConst, OOC:C:WriteDecl;
 
+
+TYPE
+  Writer* = POINTER TO WriterDesc;
+  WriterDesc = RECORD
+    w: TextRider.Writer;
+    registerMap: Dictionary.Dictionary;
+    blockMap: Dictionary.Dictionary;
+    blockCount: LONGINT;
+  END;
+
+PROCEDURE NewWriter (textWriter: TextRider.Writer;
+                     registerMap: Dictionary.Dictionary): Writer;
+  VAR
+    w: Writer;
+  BEGIN
+    NEW (w);
+    w. w := textWriter;
+    w. registerMap := registerMap;
+    w. blockMap := Dictionary.New();
+    w. blockCount := 0;
+    RETURN w
+  END NewWriter;
 
 PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): WriteDecl.BasicTypeId;
   BEGIN
@@ -140,9 +162,47 @@ PROCEDURE WriteLocalDecl (w: TextRider.Writer;
   END WriteLocalDecl;
 
 
-PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
-                          registerMap: Dictionary.Dictionary);
+PROCEDURE (w: Writer) WriteString (str[NO_COPY]: ARRAY OF CHAR);
+  BEGIN
+    w. w. WriteString (str)
+  END WriteString;
+
+PROCEDURE (w: Writer) WriteChar (ch: CHAR);
+  BEGIN
+    w. w. WriteChar (ch)
+  END WriteChar;
+
+PROCEDURE (w: Writer) Newline;
+  BEGIN
+    w. w. WriteLn;
+    w. w. WriteString ("  ");
+  END Newline;
+
+PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
   VAR
+    arg: SSA.Result;
+    obj: Object.Object;
+    name: String.String;
+  BEGIN
+    arg := opnd. arg;
+    WITH arg: SSA.DeclRef DO
+      (* insert name of the object; shortcut to save the type cast
+         when calling a procedure *)
+      name := Naming.NameOfDeclaration (arg. decl);
+      w. WriteString (name. array^)
+    ELSE
+      IF w. registerMap. HasKey (opnd. arg) THEN
+        obj := w. registerMap. Get (opnd. arg);
+        w. WriteString (obj(String.String). array^)
+      ELSE
+        w. WriteString ("/* undefined ref */")
+      END
+    END
+  END Ref;
+
+PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
+  VAR
+    proxy: Schedule.InstrProxy;
     instr: SSA.Instr;
     opnd: SSA.Opnd;
     target: Object.Object;
@@ -150,27 +210,6 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
 
   PROCEDURE ^ Call (call: SSA.Instr);
     
-  PROCEDURE Ref (opnd: SSA.Opnd);
-    VAR
-      arg: SSA.Result;
-      obj: Object.Object;
-    BEGIN
-      arg := opnd. arg;
-      WITH arg: SSA.DeclRef DO
-        (* insert name of the object; shortcut to save the type cast
-           when calling a procedure *)
-        name := Naming.NameOfDeclaration (arg. decl);
-        w. WriteString (name. array^)
-      ELSE
-        IF registerMap. HasKey (opnd. arg) THEN
-          obj := registerMap. Get (opnd. arg);
-          w. WriteString (obj(String.String). array^)
-        ELSE
-          w. WriteString ("/* undefined ref */")
-        END
-      END
-    END Ref;
-  
   PROCEDURE RefList (start: SSA.Opnd; class: Opnd.Class);
     VAR
       opnd: SSA.Opnd;
@@ -183,7 +222,7 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
           IF (count # 0) THEN
             w. WriteString (", ")
           END;
-          Ref (opnd);
+          w. Ref (opnd);
           INC (count)
         END;
         opnd := opnd. nextOpnd
@@ -201,16 +240,11 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
   
   PROCEDURE Call (call: SSA.Instr);
     BEGIN
-      Ref (call. opndList);
+      w. Ref (call. opndList);
       w. WriteString ("(");
       RefList (call. opndList, Opnd.arg);
       w. WriteString (")")
     END Call;
-  
-  PROCEDURE Newline;
-    BEGIN
-      w. WriteLn; w. WriteString ("  ");
-    END Newline;
   
   PROCEDURE WriteOpcode (instr: SSA.Instr);
     VAR
@@ -233,22 +267,42 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
       w. WriteString ("*/ ");
     END WriteOpcode;
   
+  PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
+  (* Returns TRUE if all paths into the "select-return" end with a
+     "return" instruction.  *)
+    VAR
+      opnd: SSA.Opnd;
+    BEGIN
+      IF (selectReturn. opndList. nextOpnd. nextOpnd = NIL) THEN
+        RETURN FALSE                     (* not at single RETURN in the proc *)
+      ELSE
+        opnd := selectReturn. opndList. nextOpnd;
+        WHILE (opnd. nextOpnd # NIL) DO
+          IF ~(opnd. arg. instr. opcode = Opcode.return) THEN
+            RETURN FALSE
+          END;
+          opnd := opnd. nextOpnd;
+        END;
+        RETURN TRUE
+      END
+    END AllPathsClosed;
+  
   BEGIN
-    ASSERT (pb. TopSort());
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      Newline;
+    proxy := b. proxyList;
+    WHILE (proxy # NIL) DO
+      instr := proxy. instr;
+      w. Newline;
       WriteOpcode (instr);
 
-      IF registerMap. HasKey (instr) THEN
-        target := registerMap. Get (instr);
+      IF w. registerMap. HasKey (instr) THEN
+        target := w. registerMap. Get (instr);
         w. WriteString (target(String.String). array^);
         w. WriteString (" = ");
       END;
       
       CASE instr. opcode OF
       | Opcode.const:
-        WriteConst.Write (w, instr(SSA.Const). value);
+        WriteConst.Write (w. w, instr(SSA.Const). value);
         w. WriteChar (";")
 
       | Opcode.address:
@@ -268,7 +322,7 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
         name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. nextOpnd. arg(SSA.DeclRef). decl);
         w. WriteString (name. array^);
         w. WriteString (" = ");
-        Ref (instr. GetOpndClass (Opnd.sourceValue));
+        w. Ref (instr. GetOpndClass (Opnd.sourceValue));
         w. WriteChar (";")
         
       | Opcode.assert:
@@ -282,27 +336,90 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
         opnd := instr. GetOpndClass (Opnd.functionResult);
         IF (opnd # NIL) THEN
           w. WriteString ("return ");
-          Ref (opnd);
+          w. Ref (opnd);
           w. WriteChar (";");
         ELSE
           w. WriteString ("return;")
         END;
         
+      | Opcode.selectReturn:
+        IF ~AllPathsClosed (instr) THEN
+          w. WriteString ("return;")
+        END;
       ELSE
       END;
       
-      instr := instr. nextInstr
+      proxy := proxy. nextProxy
     END;
   END WriteInstrList;
 
-PROCEDURE ProcBody* (w: TextRider.Writer; converter: ConvertDecl.Converter;
+PROCEDURE (w: Writer) WriteBlocks (b: Schedule.Block);
+  VAR
+    nested: Schedule.Block;
+
+  PROCEDURE WriteBlockId (b: Schedule.Block);
+    VAR
+      obj: Object.Object;
+      str: ARRAY 16 OF CHAR;
+    BEGIN
+      IF w. blockMap. HasKey (b) THEN
+        obj := w. blockMap. Get(b);
+      ELSE
+        IntStr.IntToStr (w. blockCount, str);
+        Strings.Insert ("l", 0, str);
+        obj := String.New (str);
+        w. blockMap. Set (b, obj);
+        INC (w. blockCount);
+      END;
+      w. WriteString (obj(String.String). array^);
+    END WriteBlockId;
+  
+  PROCEDURE WriteGoto (target: Schedule.Block);
+    BEGIN
+      w. WriteString ("goto ");
+      WriteBlockId (target);
+      w. WriteChar (";");
+    END WriteGoto;
+  
+  BEGIN
+    w. w. WriteLn;
+    WriteBlockId (b);
+    w. WriteChar (":");
+    w. WriteInstrList (b);
+
+    WITH b: Schedule.BranchBlock DO
+      w. Newline;
+      w. WriteString ("if (");
+      IF ~b. branchOnTrue THEN
+        w. WriteChar("!");
+      END;
+      w. Ref (b. select. opndList);
+      w. WriteString (") ");
+      WriteGoto (b. branchTo);
+    ELSE (* standard block *)
+    END;
+    IF (b. jump # NIL) THEN
+      w. Newline;
+      WriteGoto (b. jump);
+    END;
+    
+    nested := b. domList;
+    WHILE (nested # NIL) DO
+      w. WriteBlocks (nested);
+      nested := nested. nextDom
+    END;
+  END WriteBlocks;
+
+PROCEDURE ProcBody* (textWriter: TextRider.Writer;
+                     converter: ConvertDecl.Converter;
                      procDecl: IR.Procedure);
   
   VAR
     pb: SSA.ProcBlock;
     enter: SSA.Instr;
     s: SSA.Result;
-    registerMap: Dictionary.Dictionary;
+    domRoot: Schedule.Block;
+    w: Writer;
   BEGIN
     pb := SSA.NewProcBlock();
     enter := pb. selectReturn. opndList. arg. instr;
@@ -311,11 +428,13 @@ PROCEDURE ProcBody* (w: TextRider.Writer; converter: ConvertDecl.Converter;
     pb. selectReturn. AddOpnd (s, Opnd.store);
 
     XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
-
+    domRoot := Schedule.Schedule (pb);
+    XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
+    
     Fixup (pb);
-    WriteLocalDecl (w, converter, pb);
-    registerMap := AssignRegisters (w, pb);
-    WriteInstrList (w, pb, registerMap);
+    WriteLocalDecl (textWriter, converter, pb);
+    w := NewWriter (textWriter, AssignRegisters (textWriter, pb));
+    w. WriteBlocks (domRoot);
   END ProcBody;
 
 PROCEDURE ModuleBody* (w: TextRider.Writer; converter: ConvertDecl.Converter;

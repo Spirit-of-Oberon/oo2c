@@ -127,6 +127,30 @@ PROCEDURE (v: Visitor) VisitAssignment* (assignment: IR.Assignment);
     v. w. EndTag;  (* assignment *)
   END VisitAssignment;
 
+PROCEDURE VisitStatementSeq (v: Visitor; statmSeq: IR.StatementSeq);
+  VAR
+    i: LONGINT;
+  BEGIN
+    FOR i := 0 TO LEN (statmSeq^)-1 DO
+      statmSeq[i]. Accept (v)
+    END;
+  END VisitStatementSeq;
+
+PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
+  BEGIN
+    v. w. StartTag ("if-statm", FALSE);
+    ifStatm. guard. Accept (v);
+    v. w. StartTag ("path-true", FALSE);
+    VisitStatementSeq (v, ifStatm. pathTrue);
+    v. w. EndTag;  (* path-true *)
+    IF (ifStatm. pathFalse # NIL) THEN
+      v. w. StartTag ("path-false", FALSE);
+      VisitStatementSeq (v, ifStatm. pathFalse);
+      v. w. EndTag;  (* path-false *)
+    END;
+    v. w. EndTag;  (* if-statm *)
+  END VisitIfStatm;
+
 
 PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);
   VAR
@@ -136,15 +160,6 @@ PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);
       procList[i]. Accept (v)
     END;
   END VisitProcedureList;
-
-PROCEDURE VisitStatementSeq (v: Visitor; statmSeq: IR.StatementSeq);
-  VAR
-    i: LONGINT;
-  BEGIN
-    FOR i := 0 TO LEN (statmSeq^)-1 DO
-      statmSeq[i]. Accept (v)
-    END;
-  END VisitStatementSeq;
 
 PROCEDURE (v: Visitor) VisitProcedure* (procedure: IR.Procedure);
   BEGIN

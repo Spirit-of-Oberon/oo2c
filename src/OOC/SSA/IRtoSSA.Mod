@@ -106,6 +106,24 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       pb. selectReturn. AddOpnd (store, Opnd.store);
       s := store
     END Return;
+
+  PROCEDURE IfStatm (ifStatm: IR.IfStatm);
+    VAR
+      select: SSA.Instr;
+    BEGIN
+      select := pb. AddInstr (Opcode.select, Opcode.scNone);
+      select. AddOpnd (Expression (ifStatm. guard), Opnd.arg);
+      
+      select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
+      select. AddOpnd (StatmSeq (pb, s, ifStatm. pathTrue), Opnd.arg);
+      
+      IF (ifStatm. pathFalse # NIL) THEN
+        select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+        select. AddOpnd (StatmSeq (pb, s, ifStatm. pathFalse), Opnd.arg);
+      END;
+
+      s := select. AddResult (Result.store)
+    END IfStatm;
   
   BEGIN
     FOR i := 0 TO LEN (statmSeq^)-1 DO
@@ -123,6 +141,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         (* lets pretend for a moment that a RETURN is not a control flow
            construct... FIXME *)
         Return (statm)
+
+      | statm: IR.IfStatm DO
+        IfStatm (statm)
       ELSE
         Log.Type("++ Unknown statement class in StatmSeq", statm);
         ASSERT (FALSE)

@@ -22,7 +22,7 @@ MODULE OOC:SSA;
 
 
 IMPORT
-  Language, Language:Integer, ADT:Object, ADT:Dictionary,
+  Language, Language:Integer, Language:Boolean, ADT:Object, ADT:Dictionary,
   OOC:SymbolTable:Item, OOC:SymbolTable:Predef,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
@@ -37,7 +37,7 @@ TYPE
   Address* = POINTER TO AddressDesc;
 
 TYPE
-  NodeDesc = RECORD
+  NodeDesc* = RECORD
     (Object.ObjectDesc)
   END;
   
@@ -84,14 +84,18 @@ TYPE
     (**List of uses (use-chain) of this result.  Uses are linked with
        @ofield{Opnd.nextUse}.  *)
 
-    marker*: LONGINT;
+    info*: Node;
     (**General purpose field.  Can be used by algorithms to store arbitrary
        data on behalf on a given result.  An algorithm must initialize this
        field before using it.  Keep in mind that this field can serve only one
        operation at a given time.  In case of conflict, consider to use
-       @omodule{*ADT:Dictionary:IntValue} instead of this field.  *)
-END;
-
+       @omodule{*ADT:Dictionary} instead of this field.  *)
+    marker*: LONGINT;
+    (**General purpose field, like @ofield{info}.  In case of conflict,
+       consider to use @omodule{*ADT:Dictionary:IntValue} instead of this
+       field.  *)
+  END;
+  
 TYPE
   InstrDesc = RECORD 
     (ResultDesc)
@@ -160,7 +164,7 @@ TYPE
   END;
   
 
-PROCEDURE InitNode (n: Node);
+PROCEDURE InitNode* (n: Node);
   BEGIN
     Object.Init (n);
   END InitNode;
@@ -272,6 +276,7 @@ PROCEDURE InitResult (res: Result; class: ResultClass.Class);
     res. nextResult := NIL;
     res. instr := NIL;
     res. class := class;
+    res. info := NIL;
     res. marker := -1;
     res. useList := NIL;
   END InitResult;
@@ -321,6 +326,20 @@ PROCEDURE (result: Result) ResultIndex*(): LONGINT;
     END;
     RETURN i;    
   END ResultIndex;
+
+PROCEDURE (result: Result) IsBooleanConst* (value: BOOLEAN): BOOLEAN;
+(**Returns @code{TRUE} if the result is an instruction of type @otype{Const}
+   with a boolean value of @oparam{value}.
+
+   @precond
+   @samp{@oparam{result} IS @otype{Const}} and the constant value is of type
+   @otype{Boolean.Value}.
+   @end precond  *)
+  BEGIN
+    ASSERT (result IS Const);
+    ASSERT (result(Const). value IS Boolean.Value);
+    RETURN (result(Const). value(Boolean.Value). value = value)
+  END IsBooleanConst;
 
   (* ---------------------------------------------------------------------- *)
 
@@ -659,6 +678,13 @@ PROCEDURE (pb: ProcBlock) GetConstInt* (int: LONGINT): Const;
                          Predef.GetType (Predef.integer))
   END GetConstInt;
 
+PROCEDURE (pb: ProcBlock) GetConstBool* (b: BOOLEAN): Const;
+  BEGIN
+    RETURN pb. GetConst (Boolean.New (b),
+                         Predef.GetType (Predef.boolean))
+  END GetConstBool;
+
+
 PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Item.Declaration): DeclRef;
 (**Returns the @code{declref} instruction for the declaration @oparam{decl}.
    Equal declarations are mapped to the same unique instruction.  *)
@@ -697,9 +723,9 @@ PROCEDURE (pb: ProcBlock) GetAddress* (decl: Item.Declaration): Address;
     END;
   END GetAddress;
 
-PROCEDURE (pb: ProcBlock) SetMarkers* (newMarker: LONGINT);
-(**Set the field @ofield{Result.marker} of all results in the procedure block
-   to @oparam{newMarker}.  *)
+PROCEDURE (pb: ProcBlock) SetMarkers* (newInfo: Node; newMarker: LONGINT);
+(**Set the fields @ofield{Result.info} and @ofield{Result.marker} of all
+   results in the procedure block to @oparam{newInfo} and @oparam{newMarker}.  *)
   VAR
     instr: Instr;
     res: Result;
@@ -708,6 +734,7 @@ PROCEDURE (pb: ProcBlock) SetMarkers* (newMarker: LONGINT);
     WHILE (instr # NIL) DO
       res := instr;
       WHILE (res # NIL) DO
+        res. info := newInfo;
         res. marker := newMarker;
         res := res. nextResult
       END;
@@ -734,6 +761,7 @@ PROCEDURE (pb: ProcBlock) AddSetInstr* (get: Instr; sourceValue: Result): Instr;
     END MapOpndClass;
   
   BEGIN
+    ASSERT (get. instr. opcode = Opcode.get);
     set := pb. AddInstr (Opcode.set, get. subclass);
     opnd := get. opndList;
     WHILE (opnd # NIL) DO
@@ -743,78 +771,5 @@ PROCEDURE (pb: ProcBlock) AddSetInstr* (get: Instr; sourceValue: Result): Instr;
     set. AddOpnd (sourceValue, OpndClass.sourceValue);
     RETURN set
   END AddSetInstr;
-
-PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
-(**Topological sort on instructions in @oparam{pb}.  If there are no cyclic
-   dependencies between the instructions, the result is @code{TRUE}.  *)
-  VAR
-    instr, next: Instr;
-    ready, waiting: Instr;
-    res: Result;
-    use: Opnd;
-
-  PROCEDURE Add (VAR list: Instr; instr: Instr);
-    BEGIN
-      instr. prevInstr := NIL;
-      instr. nextInstr := list;
-      IF (list # NIL) THEN
-        list. prevInstr := instr
-      END;
-      list := instr
-    END Add;
-  
-  PROCEDURE Remove (VAR list: Instr; instr: Instr);
-    BEGIN
-      IF (instr. prevInstr = NIL) THEN
-        list := instr. nextInstr
-      ELSE
-        instr. prevInstr. nextInstr := instr. nextInstr
-      END;
-      IF (instr. nextInstr # NIL) THEN
-        instr. nextInstr. prevInstr := instr. prevInstr
-      END
-    END Remove;
-  
-  BEGIN
-    ready := NIL;
-    waiting := NIL;
-    
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      next := instr. nextInstr;
-      instr. marker := instr. SizeOpndList();
-      IF (instr. marker = 0) THEN
-        Add (ready, instr)
-      ELSE
-        Add (waiting, instr)
-      END;
-      instr := next
-    END;
-
-    pb. instrList := NIL;
-    pb. instrTail := NIL;
-    WHILE (ready # NIL) DO
-      instr := ready;
-      Remove (ready, instr);
-      AppendInstr (pb, instr);
-
-      (* decrement marker (=count of blocking results) for all uses of all
-         results of `instr' *)
-      res := instr;
-      WHILE (res # NIL) DO
-        use := res. useList;
-        WHILE (use # NIL) DO
-          DEC (use. instr. marker);
-          IF (use. instr. marker = 0) THEN
-            Remove (waiting, use. instr);
-            Add (ready, use. instr)
-          END;
-          use := use. nextUse
-        END;
-        res := res. nextResult
-      END;
-    END;
-    RETURN (waiting = NIL)
-  END TopSort;
 
 END OOC:SSA.

@@ -117,46 +117,72 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN b. NewCall (design, arguments)
     END FunctionCall;
   
-  PROCEDURE ProcedureCall (call: ExtTree.ProcedureCall): IR.Statement;
-    VAR
-      expr: IR.Expression;
-      arguments: IR.ExpressionList;
-    BEGIN
-      IF (call. call IS ExtTree.FunctionCall) THEN
-        expr := FunctionCall (call. call(ExtTree.FunctionCall), TRUE);
-      ELSE
-        (* create procedure call from lonely designator *)
-        NEW (arguments, 0);
-        expr := b. NewCall (Designator (call. call), arguments)
-      END;
-      RETURN expr(IR.Statement)
-    END ProcedureCall;
-  
-  PROCEDURE Return (return: ExtTree.ReturnStatm): IR.Statement;
-    BEGIN
-      IF (return. expr = NIL) THEN
-        RETURN b. NewReturn (return. return. sym, NIL)
-      ELSE
-        RETURN b. NewReturn (return. return. sym,
-                             Expr (return. expr(ExtTree.Node)))
-      END;
-    END Return;
-
-  PROCEDURE Assignment (design, op, value: ExtTree.Node): IR.Statement;
-    VAR
-      variable, valueExpr: IR.Expression;
-    BEGIN
-      variable := Designator (design);
-      valueExpr := Expr (value);
-      RETURN b. NewAssignment (op(ExtTree.Terminal). sym, variable, valueExpr)
-    END Assignment;
-  
   PROCEDURE StatementSeq (statmSeq: ExtTree.NodeList): IR.StatementSeq;
     VAR
       i, count: LONGINT;
       n: ExtTree.Node;
       statmSeqIR: IR.StatementSeq;
       statm: IR.Statement;
+
+    PROCEDURE ProcedureCall (call: ExtTree.ProcedureCall): IR.Statement;
+      VAR
+        expr: IR.Expression;
+        arguments: IR.ExpressionList;
+      BEGIN
+        IF (call. call IS ExtTree.FunctionCall) THEN
+          expr := FunctionCall (call. call(ExtTree.FunctionCall), TRUE);
+        ELSE
+          (* create procedure call from lonely designator *)
+          NEW (arguments, 0);
+          expr := b. NewCall (Designator (call. call), arguments)
+        END;
+        RETURN expr(IR.Statement)
+      END ProcedureCall;
+  
+    PROCEDURE Return (return: ExtTree.ReturnStatm): IR.Statement;
+      BEGIN
+        IF (return. expr = NIL) THEN
+          RETURN b. NewReturn (return. return. sym, NIL)
+        ELSE
+          RETURN b. NewReturn (return. return. sym,
+                               Expr (return. expr(ExtTree.Node)))
+        END;
+      END Return;
+
+    PROCEDURE Assignment (design, op, value: ExtTree.Node): IR.Statement;
+      VAR
+        variable, valueExpr: IR.Expression;
+      BEGIN
+        variable := Designator (design);
+        valueExpr := Expr (value);
+        RETURN b. NewAssignment (op(ExtTree.Terminal). sym, variable, valueExpr)
+      END Assignment;
+    
+    PROCEDURE IfStatm (ifStatm: ExtTree.IfStatm): IR.Statement;
+      VAR
+        else: IR.Statement;
+        elseSeq: IR.StatementSeq;
+        i: LONGINT;
+      BEGIN
+        IF (ifStatm. else # NIL) THEN
+          elseSeq := StatementSeq (ifStatm. elseStatmSeq)
+        ELSE
+          elseSeq := NIL
+        END;
+        i := ifStatm. guardList. len-4;
+        REPEAT
+          else := b. NewIfStatm
+              (ifStatm. guardList. n[i](ExtTree.Terminal). sym,
+               Expr (ifStatm. guardList. n[i+1](ExtTree.Node)),
+               StatementSeq (ifStatm. guardList. n[i+3](ExtTree.NodeList)),
+               elseSeq);
+          NEW (elseSeq, 1);
+          elseSeq[0] := else;
+          DEC (i, 4)
+        UNTIL (i < 0);
+        RETURN else
+      END IfStatm;
+  
     BEGIN
       (* count number of statements, allocate array to hold IR of sequence *)
       count := 0;
@@ -180,6 +206,10 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
             statm := Assignment (n. assignment. left,
                                  n. assignment. op,
                                  n. assignment. right)
+
+          | n: ExtTree.IfStatm DO
+            statm := IfStatm (n)
+                
           ELSE
             Log.Type("++ Unknown type in StatementSeq", n);
             ASSERT (FALSE)
