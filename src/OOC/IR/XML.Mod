@@ -77,6 +77,13 @@ PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
     v. w. EndTag;  (* module-reference *)
   END VisitModuleRef;
 
+PROCEDURE (v: Visitor) VisitAdr* (adr: Operator.Adr);
+  BEGIN
+    v. w. StartTag ("adr", FALSE);
+    adr. design. Accept (v);
+    v. w. EndTag;  (* adr *)
+  END VisitAdr;
+
 PROCEDURE (v: Visitor) VisitLen* (len: Operator.Len);
   VAR
     str: ARRAY 32 OF CHAR;

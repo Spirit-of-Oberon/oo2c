@@ -139,6 +139,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
   VAR
     sc: DeclWriter.StorageClass;
     name: String.String;
+    ctype: DeclWriter.Type;
   BEGIN
     WITH item: Sym.ProcDecl DO
       CASE mode OF
@@ -175,16 +176,25 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       END;
 
       name := Naming.NameOfDeclaration (item);
-      IF (mode = modeFormalParameter) &
-         item. isParameter &
-         ~item. isVarParam &
-         item. isPassPerReference THEN
-        name := name. Concat (String.New (Naming.suffixPassPerRef))
+      ctype := ConvertType (w, item. type, item. srcCodeType);
+      IF (mode = modeFormalParameter) & item. isParameter THEN
+        IF ~item. isVarParam & item. isPassPerReference THEN
+          (* for non-scalar values that are passed to a value parameter, the
+             name of the address passed from the caller is extended; this way,
+             it can be distinguished from the name of the local copy of the
+             value parameter *)
+          name := name. Concat (String.New (Naming.suffixPassPerRef))
+        END;
+
+        IF item. isPassPerReference & ~(item. type IS Sym.Array) THEN
+          (* for pass-by-reference arguments, turn the argument type into
+             a pointer; C arrays are already pointers, so we skip this for
+             array type *)
+          ctype := w. NewPointer (DeclWriter.tqNone, ctype);
+        END;
       END;
       
-      RETURN w. NewDeclaration
-        (name, DeclWriter.tqNone, sc,
-         ConvertType (w, item. type, item. srcCodeType))
+      RETURN w. NewDeclaration (name, DeclWriter.tqNone, sc, ctype)
 
     | item: Sym.FieldDecl DO
       ASSERT (FALSE);

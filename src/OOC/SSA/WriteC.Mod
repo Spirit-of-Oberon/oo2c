@@ -28,7 +28,9 @@ TYPE
     swapHelperVars: LONGINT;
   END;
 
-
+CONST
+  enableDebugOutput = FALSE;
+  
 
 PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): DeclWriter.BasicTypeId;
   BEGIN
@@ -284,6 +286,13 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
       (* insert name of the object; shortcut to save the type cast
          when calling a procedure *)
       name := Naming.NameOfDeclaration (arg. decl);
+      IF (arg. decl IS Sym.VarDecl) &
+         arg. decl(Sym.VarDecl). isPassPerReference &
+         ~(arg. decl(Sym.VarDecl). type IS Sym.Array) THEN
+        (* deref pass-per-reference parameters, unless the parameter type
+           happens to be an array *)
+        w. WriteString ("*")
+      END;
       w. WriteString (name. array^)
 
     | arg: SSA.Const DO
@@ -333,7 +342,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
 
   PROCEDURE ^ Call (call: SSA.Instr);
     
-  PROCEDURE RefList (start: SSA.Opnd; class: Opnd.Class);
+  PROCEDURE RefList (start: SSA.Opnd; class, castClass: Opnd.Class);
     VAR
       opnd: SSA.Opnd;
       count: LONGINT;
@@ -341,9 +350,12 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       count := 0;
       opnd := start;
       WHILE (opnd # NIL) DO
-        IF (opnd. class = class) THEN
+        IF (opnd. class = class) OR (opnd. class = castClass) THEN
           IF (count # 0) THEN
             w. WriteString (", ")
+          END;
+          IF (opnd. class = castClass) THEN
+            w. WriteString ("(void*)")
           END;
           w. Ref (opnd);
           INC (count)
@@ -356,7 +368,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     BEGIN
       w. Newline;
       w. WriteString ("_assert(");
-      RefList (assert. opndList, Opnd.arg);
+      RefList (assert. opndList, Opnd.arg, -1);
       w. WriteString (", ");
       w. WriteString ("0");  (* ... file position missing *)
       w. WriteString (");")
@@ -366,7 +378,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     BEGIN
       w. Ref (call. opndList);
       w. WriteString ("(");
-      RefList (call. opndList, Opnd.arg);
+      RefList (call. opndList, Opnd.arg, Opnd.argPointer);
       w. WriteString (")")
     END Call;
   
@@ -548,11 +560,13 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     WHILE (proxy # NIL) DO
       instr := proxy. instr;
 
-(*      w. Newline;
-      instr. GetOpcodeName (str);
-      w. WriteString ("/* ");
-      w. WriteString (str);
-      w. WriteString (": */ ");*)
+      IF enableDebugOutput THEN
+        w. Newline;
+        instr. GetOpcodeName (str);
+        w. WriteString ("/* ");
+        w. WriteString (str);
+        w. WriteString (": */ ");
+      END;
       
       IF w. registerMap. HasKey (instr) THEN
         w. Newline;

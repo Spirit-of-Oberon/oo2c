@@ -85,6 +85,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.readDesign);
         RETURN instr
 
+      | expr: Operator.Adr DO
+        res := Expression (expr. design);
+        IF (res. instr. opcode = Opcode.get) THEN
+          RETURN res. instr. GetArgClass (Opnd.readAdr);
+        ELSE
+          (* must be a string constant; currently, this is its own address
+             FIXME... we should probably introduce an address opcode here *)
+          RETURN res
+        END;
+        
       | expr: Operator.Len DO
         CASE expr. variant OF
         | Operator.lenStringConst:
@@ -168,11 +178,26 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     VAR
       instr: SSA.Instr;
       i: LONGINT;
+      opndClass: Opnd.Class;
+
+    PROCEDURE IsPointer (type: Sym.Type): BOOLEAN;
+      BEGIN
+        RETURN
+            (type IS Sym.Pointer) OR
+            ((type IS Sym.PredefType) &
+             (type(Sym.PredefType). id = Predef.address))
+      END IsPointer;
+    
     BEGIN
       instr := pb. AddInstr (Opcode.call, Opcode.TypeToSubclass (call. type));
       instr. AddOpnd (Expression (call. design), Opnd.procAdr);
       FOR i := 0 TO LEN (call. arguments^)-1 DO
-        instr. AddOpnd (Expression (call. arguments[i]), Opnd.arg);
+        IF IsPointer (call. arguments[i]. type) THEN
+          opndClass := Opnd.argPointer
+        ELSE
+          opndClass := Opnd.arg
+        END;
+        instr. AddOpnd (Expression (call. arguments[i]), opndClass);
       END;
       RETURN instr
     END Call;

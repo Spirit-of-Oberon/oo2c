@@ -24,10 +24,10 @@ l1_loop:
 void Var7__Test() {
   register OOC_INT32 i0;
 
-  i0 = Var7__Len("", 1);
+  i0 = Var7__Len((void*)"", 1);
   Out__Int(i0, 0);
   Out__Ln();
-  i0 = Var7__Len("abc", 4);
+  i0 = Var7__Len((void*)"abc", 4);
   Out__Int(i0, 0);
   Out__Ln();
   return;

@@ -99,7 +99,13 @@ CONST
   dimension* = 15;
   (**Dimension identifier of a @oconst{*OOC:SSA:Opcode.getLength} instruction.
      This is an integer constant.  *)
+
+  argPointer* = 16;
+  (**For @oconst{*OOC:SSA:Opcode.call}: Used instead of @oconst{arg} to
+     indicate that this operand is passed to a pointer variable, and must
+     therefore cast to void* by the C back-end.  *)
   
+
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)
   BEGIN
@@ -115,6 +121,7 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | functionResult: COPY ("function-result", name)
     | forwardRef: COPY ("forward-ref", name)
     | dimension: COPY ("dimension", name)
+    | argPointer: COPY ("arg-pointer", name)
     END;
   END GetName;
   

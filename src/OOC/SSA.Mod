@@ -63,7 +63,6 @@ TYPE
     (**Links that make up the ``uses'' list of a given value.  By traversing
        this list, all using occurences of a result are reached.  The head of
        the list is @ofield{Result.useList}.  *)
-    
   END;
 
 TYPE

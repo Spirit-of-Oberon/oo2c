@@ -87,6 +87,16 @@ TYPE
   END;
 
 TYPE
+  Adr* = POINTER TO AdrDesc;
+  AdrDesc = RECORD
+    (**Produces the address of a designator.  Nodes of this type are
+       created for calls to @code{SYSTEM.ADR}, and implicitly for pass
+       by reference arguments to procedure calls.  *)
+    (IR.OperatorDesc)
+    design-: IR.Expression;
+  END;
+
+TYPE
   Len* = POINTER TO LenDesc;
   LenDesc = RECORD
     (**Represents a call to the predefined function @code{LEN}.
@@ -458,6 +468,37 @@ PROCEDURE (op: Compare) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
+PROCEDURE InitAdr (adr: Adr; sym: IR.Symbol; design: IR.Expression);
+  BEGIN
+    IR.InitOperator (adr, sym, Predef.GetType (Predef.address));
+    adr. design := design;
+  END InitAdr;
+
+PROCEDURE (b: Builder) NewAdr* (sym: IR.Symbol; design: IR.Expression): Adr;
+  VAR
+    adr: Adr;
+  BEGIN
+    NEW (adr);
+    InitAdr (adr, sym, design);
+    RETURN adr
+  END NewAdr;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitAdr* (adr: Adr);
+  END VisitAdr;
+
+PROCEDURE (adr: Adr) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitAdr (adr)
+  END Accept;
+
+PROCEDURE (adr: Adr) Evaluate* (VAR env : IR.Environment): Language.Value;
+  BEGIN
+    ASSERT(FALSE);
+    RETURN NIL;
+  END Evaluate;
+
+(* -------- *)
+
 PROCEDURE InitLen (len: Len; sym: IR.Symbol; variant: Variant;
                    array: IR.Expression; dim: LONGINT);
   BEGIN
@@ -663,6 +704,7 @@ PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;
     newArgs: ArrayList.ArrayList;
     i, fparIndex, argIndex: LONGINT;
     fparType: Sym.Type;
+    fpar: Sym.VarDecl;
     exprList: IR.ExpressionList;
   BEGIN
     newArgs := ArrayList.New (LEN (arguments^));
@@ -673,7 +715,14 @@ PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;
           (argIndex # LEN (arguments^)) DO
       (* FIXME... need to check formal and actual type, insert type conversion,
          and so on  *)
-      newArgs. Append (arguments[argIndex]);
+      fpar := formalPars[fparIndex];
+      IF fpar. isPassPerReference THEN
+        (* for argument passed by reference, add the address of the designator
+           to the argument list, not its value *)
+        newArgs. Append (b. NewAdr (sym, arguments[argIndex]));
+      ELSE
+        newArgs. Append (arguments[argIndex]);
+      END;
       
       fparType := formalPars[fparIndex]. type;
       WITH fparType: Sym.Array DO

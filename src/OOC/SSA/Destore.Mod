@@ -178,7 +178,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
                      storeOut: SSA.Result): BOOLEAN;
     (**Result is @code{TRUE} if the effects of @oparam{origin} are visible
        after completion of this procedure, or by procedures called by this
-       procedure.  *)
+       procedure, or the memory write must go through because of aliasing
+       effects.  *)
       VAR
         use: SSA.Opnd;
         instr: SSA.Instr;
@@ -207,7 +208,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       PROCEDURE ExternalVisibility (var: Sym.VarDecl): BOOLEAN;
       (* TRUE if this variable still exists after the procedure is done.  *)
         BEGIN
-          RETURN (var. Procedure() # pb. procDecl)
+          RETURN var. isVarParam OR (var. Procedure() # pb. procDecl)
         END ExternalVisibility;
 
       PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
@@ -223,23 +224,15 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           originMap: OriginMap;
           visible: BOOLEAN;
           storeOut: SSA.Result;
+          alias: Aliasing.Id;
 
-        PROCEDURE Covered (writeDesign, referenceDesign: SSA.Opnd): BOOLEAN;
-          VAR
-            a: Aliasing.Id;
-          BEGIN
-            a := Aliasing.DesignatorAlias (writeDesign, referenceDesign);
-            RETURN (a = Aliasing.completelyCovered)
-          END Covered;
-        
         BEGIN
           instr := use. instr;
           CASE instr. opcode OF
           | Opcode.get:
             storeOut := instr. GetResultClass (Result.store);
-            IF (storeOut = NIL) OR
-               Covered (originWriteDesign,
-                        instr. GetOpndClass (Opnd.readDesign)) THEN
+            alias := Aliasing.DesignatorAlias (originWriteDesign, instr. GetOpndClass (Opnd.readDesign));
+            IF (storeOut = NIL) OR (alias = Aliasing.completelyCovered) THEN
               (* if the `store' chain ends here, then ignore the "get": we are
                  only interested in writing instructions; if it continues, but
                  the "get" aliases with the original "set", then the visibility
@@ -247,19 +240,24 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
               RETURN FALSE;
             ELSE
               (* the "get" instruction accesses a volatile variable, but it
-                 does not alias with the original "set": continue trace *)
+                 does not alias completely with the original "set": continue
+                 trace  *)
               RETURN Trace (lastDefinition, storeOut);
             END;
             
           | Opcode.set:
-            IF Covered (originWriteDesign,
-                        instr. GetOpndClass (Opnd.writeDesign)) THEN
+            alias := Aliasing.DesignatorAlias (originWriteDesign, instr. GetOpndClass (Opnd.writeDesign));
+            IF (alias = Aliasing.completelyCovered) THEN
               (* this "set" instruction defines the variable we are tracing:
                  we are at the end of the visibility of "origin" *)
               RETURN FALSE
+            ELSIF (alias # Aliasing.noAliasing) THEN
+              (* this set operation does not overwrite completely the original
+                 set, or no static aliasing calculation can be done: we must
+                 keep the write operation alive, but its static visibility ends
+                 here *)
+              RETURN TRUE
             ELSE
-              (* FIXME... with variable parameters, this "set" may
-                 alias with "origin"; this also ends the trace *)
               (* this "set" and "origin" work on different variables, and
                  cannot interfere with each other: continue trace through
                  `instr' *)
@@ -367,6 +365,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
        of the original "get" instruction.  *)
       VAR
         instr: SSA.Instr;
+        alias: Aliasing.Id;
         
       PROCEDURE TraceSelect (select: SSA.Instr; var: LONGINT;
                              subclass: Opcode.Subclass): SSA.Result;
@@ -518,24 +517,20 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           END;
         END TraceSelect;
       
-      PROCEDURE Covered (readDesign, referenceDesign: SSA.Opnd): BOOLEAN;
-        VAR
-          a: Aliasing.Id;
-        BEGIN
-          a := Aliasing.DesignatorAlias (readDesign, referenceDesign);
-          RETURN (a = Aliasing.completelyCovered)
-        END Covered;
-      
       BEGIN
         instr := storeIn. instr;
         CASE instr. opcode OF
         | Opcode.set:
-          IF Covered (getDesign, instr. GetOpndClass (Opnd.writeDesign)) THEN
+          alias := Aliasing.DesignatorAlias (getDesign, instr. GetOpndClass (Opnd.writeDesign));
+          IF (alias = Aliasing.completelyCovered) THEN
             (* this "set" instruction defines the variable we are tracing *)
             RETURN instr. GetArgClass (Opnd.sourceValue)
+          ELSIF (alias # Aliasing.noAliasing) THEN
+            (* this set operation does not define completely the value read by
+               the "get", or no static aliasing calculation can be done: we
+               must read the value from memory  *)
+            RETURN NIL;
           ELSE
-            (* FIXME... with variable parameters, this "set" may
-               alias with "get"; this also ends the trace, unsuccessfully *)
             (* this "set" and "origin" work on different variables, and
                cannot interfere with each other: continue trace through
                `instr' *)

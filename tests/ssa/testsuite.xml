@@ -18,11 +18,11 @@
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
-  designator1 function6 loop1 loop2">
+  designator1 function6 loop1 loop2 varpar1">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module loop1 loop2">-->
+  select ="prepare_out_module varpar1">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -108,6 +108,11 @@
     <test id="loop2" type="run"
       file="HOTLoop2.Mod" output="HOTLoop2.Ref">
       Loop variant <code>WHILE-DO</code>: Calculate string length.
+    </test>
+    
+    <test id="varpar1" type="run"
+      file= "HOTVarPar1.Mod" output="HOTVarPar1.Ref">
+      Accessing a global variable through a <code>VAR</code> parameter.
     </test>
   </testcases>
   
