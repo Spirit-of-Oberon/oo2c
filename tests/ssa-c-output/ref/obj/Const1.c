@@ -1,5 +1,6 @@
 #include <Const1.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 static OOC_INT16 Const1__F() {
 

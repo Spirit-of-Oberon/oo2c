@@ -1,5 +1,6 @@
 #include <Alloc1.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 static void Alloc1__F(OOC_INT16 a) {
   register OOC_INT32 i0,i1;

@@ -1,5 +1,6 @@
 #include <Const3.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 static void Const3__P(OOC_CHAR8 b) {
   register OOC_INT32 i0;

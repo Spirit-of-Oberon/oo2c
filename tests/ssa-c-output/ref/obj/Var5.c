@@ -1,5 +1,6 @@
 #include <Var5.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 static void Var5__Set(OOC_INT16 y) {
   register OOC_INT32 i0;

@@ -1,5 +1,6 @@
 #include <Var9.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 static void Var9__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
   register OOC_INT32 i0,i1;

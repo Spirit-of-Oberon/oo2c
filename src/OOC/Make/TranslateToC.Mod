@@ -193,6 +193,8 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
        declarations of the run-time header file *)
     w. WriteString ('#include <__oo2c.h>');
     w. WriteLn;
+    w. WriteString ('#include <setjmp.h>');
+    w. WriteLn;
     translator. SetDataWriter (wd);
     translator. SetProcedureList (moduleIR. procList);
     FOR i := 0 TO LEN (moduleIR. procList^)-1 DO

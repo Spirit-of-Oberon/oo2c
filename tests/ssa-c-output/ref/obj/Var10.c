@@ -1,5 +1,6 @@
 #include <Var10.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 static OOC_INT16 Var10__F(OOC_CHAR8 b) {
   register OOC_INT32 i0;

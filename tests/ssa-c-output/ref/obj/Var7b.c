@@ -1,5 +1,6 @@
 #include <Var7b.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 static OOC_INT16 Var7b__Len(const OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
   register OOC_INT32 i0,i1;

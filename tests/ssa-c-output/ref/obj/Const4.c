@@ -1,5 +1,6 @@
 #include <Const4.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 static void Const4__P(OOC_CHAR8 b) {
 

@@ -1,5 +1,6 @@
 #include <Const2.d>
 #include <__oo2c.h>
+#include <setjmp.h>
 
 void Const2__Test() {
 
