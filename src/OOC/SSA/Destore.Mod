@@ -102,7 +102,6 @@ IMPORT
 
 PROCEDURE Transform* (pb: SSA.ProcBlock);
   CONST
-    unknownValue = NIL;
     read = 0;
     write = 1;
   VAR
@@ -110,6 +109,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     value: SSA.Result;
     localVarWithAdr: Dictionary.Dictionary;
 
+  PROCEDURE UnknownValue (res: SSA.Result): BOOLEAN;
+    BEGIN
+      RETURN (res. class = Result.store);
+    END UnknownValue;
+  
   PROCEDURE IsLocalVariable (decl: Sym.Declaration): BOOLEAN;
     BEGIN
       RETURN (decl IS Sym.VarDecl) & (decl. Procedure() = pb. procDecl);
@@ -189,8 +193,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
                       loopTrace: SSA.Instr): SSA.Result;
   (* Return the value from the @oparam{store} for the memory location (and
      type) designated by the instruction @oparam{get}.  If the value is not
-     known, or if there is no single value, result is @oconst{unknownValue}.
-     Note: It is always safe to return @oconst{unknownValue}.
+     known, or if there is no single value, result is a SSA result of class
+     @oconst{Result.store} from which the value can be retrieved.  Note: It is
+     always safe to return the @var{store} argument of the @oparam{get}.
 
      If @oparam{loopTrace} is not @code{NIL}, then the semantics of the result
      change:
@@ -202,8 +207,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
 
      @item
      If it is not invariant, and the value resides in @var{store}, the result
-     is @oconst{unknownValue} otherwise.  When this is the outcome for the
-     whole loop body, then the @oparam{get} is left unchanged.
+     is a a SSA result of class @oconst{Result.store}.  When this is the
+     outcome for the whole loop body, then the @oparam{get} is left unchanged.
 
      @item
      Any other result indicates that it is not invariant, and the value is not
@@ -324,9 +329,14 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       (* Return the number of paths leading into the select.  *)
         BEGIN
           CASE select. opcode OF
-          | Opcode.select    : RETURN (select. SizeOpndList() DIV 2)
+          | Opcode.select    :
+            IF (select. GetOpndClass (Opnd.labels) = NIL) THEN
+              RETURN (select. CountOpndClass (Opnd.arg) DIV 2);
+            ELSE
+              RETURN (select. CountOpndClass (Opnd.arg)-1);
+            END;
           | Opcode.loopStart : RETURN 2
-          | Opcode.loopEnd   : RETURN (select. SizeOpndList() - 2)
+          | Opcode.loopEnd   : RETURN select. CountOpndClass (Opnd.storeExit)
           END;
         END NumberOfPaths;
       
@@ -346,7 +356,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           END;
           WHILE (opnd # NIL) & noUnknownValue DO
             values[i] := GetValue (opnd. arg, get, loopTrace);
-            IF (values[i] = unknownValue) THEN
+            IF UnknownValue (values[i]) THEN
               noUnknownValue := FALSE;
             END;
             IF (values[i] # values[0]) THEN
@@ -359,12 +369,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             INC (i);
           END;
           
-          IF ~noUnknownValue THEN
-            (* for at least one path into the select no value can be
-               computed; the using should get its value from memory *)
-            dummy := AddToCache (select, unknownValue);
-            RETURN unknownValue;
-          ELSIF allTheSame THEN
+          IF allTheSame THEN
             (* for all input paths the same value is passed to "get" *)
             IF (LEN (values^) = 0) THEN
               RETURN select;
@@ -374,6 +379,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
               END;
               RETURN values[0];
             END;
+          ELSIF ~noUnknownValue THEN
+            (* for at least one path into the select no value can be
+               computed; the using instruction should get its value from
+               memory *)
+            dummy := AddToCache (select, select. GetResultStore());
+            RETURN dummy. value;
           ELSIF (loopTrace # NIL) THEN
             (* we are tracing the use of the designator in the loop body, and
                at this place the value is not invariant, and not in memory:
@@ -427,7 +438,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         ELSIF InCache (loopStart, r) THEN
           (* a previous call to this function already computed the result
              for the designator of this "get" *)
-          IF (r # unknownValue) &
+          IF ~UnknownValue (r) &
              (r IS SSA.Instr) &
              (r(SSA.Instr). opcode = Opcode.loopStart) THEN
             (* don't return the bogus cache line added by the code below;
@@ -438,10 +449,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             RETURN r;
           END;
 
-        ELSIF ~SimpleDesignator (get. GetOpndClass (Opnd.readDesign)) THEN
+(*        ELSIF ~SimpleDesignator (get. GetOpndClass (Opnd.readDesign)) THEN
           (* if the designator has components that are loop variant, then
              its end result cannot be moved into a register acroos the loop *)
-          RETURN unknownValue;
+          RETURN loopStart. GetResultStore();*)
           
         ELSE
           invariant := GetValue (loopStart. GetBackwardFeed(), get, loopStart);
@@ -453,8 +464,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             entry := AddToCache (loopStart, loopStart);
             entry. value := GetValue (loopStart. opndList. arg, get, loopTrace)
                 
-          ELSIF (invariant = unknownValue) THEN (* in memory at end of loop *)
-            entry := AddToCache (loopStart, unknownValue)
+          ELSIF UnknownValue (invariant) THEN (* in memory at end of loop *)
+            entry := AddToCache (loopStart, invariant)
             
           ELSE   (* not invariant, and not in memory at end of loop *)
             (* value is passed through "collect" operands to "select" result *)
@@ -464,14 +475,14 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
 
             (* extend back-edge "collect" *)
             r := GetValue (loopStart. GetBackwardFeed(), get, NIL);
-            ASSERT (r # unknownValue);
+            ASSERT (~UnknownValue (r));
             collect := GetCollect (loopStart, 1);
             collect. AddOpnd (r, Opnd.arg);
 
             (* extend input "collect" *)
             r := GetValue (loopStart. opndList. arg, get, NIL);
             collect := GetCollect (loopStart, 0);
-            IF (r = unknownValue) THEN
+            IF UnknownValue (r) THEN
               newGet := DuplicateGet (collect. opndList. arg);
               collect. opndList. ReplaceArg (newGet. AddResult (Result.store));
               r := newGet;
@@ -495,7 +506,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           (* this set operation does not define completely the value read by
              the "get", or no static aliasing calculation can be done: we
              must read the value from memory  *)
-          RETURN unknownValue;
+          RETURN instr. GetResultStore();
         ELSE
           (* this "set" and "get" work on different variables, and
              cannot interfere with each other: continue trace through
@@ -513,7 +524,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           (* this set operation may define the value read by the "get":
              read the value from memory, because a more fine grained analysis
              would not pay off *)
-          RETURN unknownValue;
+          RETURN instr. GetResultStore();
         ELSE
           (* this "copy" (or "copy-string") and the "get" work on different
              variables, and cannot interfere with each other: continue trace
@@ -525,7 +536,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         (* we are at the beginning of the procedure; the value is either
            coming for an external source, like a parameter or a global
            variable, or it is an undefined value *)        
-        RETURN unknownValue;
+        RETURN instr. GetResultStore();
         
       | Opcode.select, Opcode.loopEnd:
         RETURN GetSelectValue (instr);
@@ -544,7 +555,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         IF AccessedByCall (instr. opndList. arg,
                            get. GetOpndClass (Opnd.readDesign), write) THEN
           (* be pessimistic: the call rewrites our variable *)
-          RETURN unknownValue;
+          RETURN instr. GetResultStore();
         ELSE
           (* the "get" accesses a local variable that cannot be accessed by the
              called procedure; this means it cannot be written to behind our
@@ -554,7 +565,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         
       | Opcode.moveBlock:
         (* assume that a SYSTEM.MOVE can interact with anything *)
-        RETURN unknownValue;
+        RETURN instr. GetResultStore();
       END;
     END GetValue;
 
@@ -747,7 +758,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     WHILE (instr # NIL) DO
       IF (instr. opcode = Opcode.get) THEN
         value := GetValue (instr. GetArgStore(), instr, NIL);
-        IF (value # unknownValue) THEN
+        IF ~UnknownValue (value) THEN
           instr. ReplaceUses (value);
         END;
       END;
