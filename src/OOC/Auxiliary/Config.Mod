@@ -3,8 +3,7 @@ MODULE OOC:Auxiliary:Config;
 IMPORT
   Config:Simple, OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:Config:Repositories, OOC:Config:Repositories:FileSystem(*KEEP THIS!*),
-  OOC:SymbolTable:Item, OOC:SymbolTable:Predef, OOC:SymbolTable:System,
-  OOC:SymbolTable:TypeRules,
+  OOC:SymbolTable:Item, OOC:SymbolTable:Predef, OOC:SymbolTable:TypeRules,
   OOC:SymbolTable:Builder, OOC:SymbolTable:CreateNamespace, OOC:Error;
 
 
@@ -40,11 +39,11 @@ PROCEDURE InitConfig* (config: Config; defaultConfigFile: ARRAY OF CHAR);
        procedures, and function *)
     NEW (config. typeRules);
     stb := Builder.New();
-    config. predefModule := Predef.CreateModule (stb);
+    config. predefModule := Predef.CreatePredef (stb);
     CreateNamespace.CreateNamespace (config. predefModule, NIL, NIL,
                                      config. typeRules, config. repositories,
                                      Error.NewList(""));
-    config. systemModule := System.CreateModule (stb);
+    config. systemModule := Predef.CreateSYSTEM (stb);
     CreateNamespace.CreateNamespace (config. systemModule, NIL, NIL,
                                      config. typeRules, config. repositories,
                                      Error.NewList(""))

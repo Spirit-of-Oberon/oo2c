@@ -27,8 +27,8 @@ IMPORT
 
 
 CONST
-  (* note: ids must be unique across all predefined types; this includes
-     the ones defined in `System.Mod' *)
+  (* note: ids must be unique across all predefined types; changing the
+     id of a type breaks existing symbol files! *)
   boolean* = 0;
   char* = 1;
   longchar* = 2;
@@ -38,13 +38,50 @@ CONST
   real* = 6;
   longreal* = 7;
   set* = 8;
+  address* = 9;
+  byte* = 10;
+  ptr* = 11;
 
+  charString* = 12;
+  longcharString* = 13;
+  void* = 14;
+  lastId = void;
+  
 CONST
   (* predefine procedures and functions *)
   assert* = 0;
 
 
-PROCEDURE CreateModule* (stb: Builder.Builder): Item.Module;
+PROCEDURE GetName (name: ARRAY OF CHAR): Item.Name;
+  VAR
+    n: Item.Name;
+    str: Item.NameString;
+  BEGIN
+    NEW (n);
+    NEW (str, Strings.Length (name)+1);
+    COPY (name, str^);
+    Item.InitName (n, str, 0, 1, 0);
+    RETURN n
+  END GetName;
+
+PROCEDURE PredefType (stb: Builder.Builder;
+                      module: Item.Module;
+                      id: Item.PredefId;
+                      name: ARRAY OF CHAR): Item.PredefType;
+  VAR
+    ptype: Item.PredefType;
+    tdecl: Item.TypeDecl;
+  BEGIN
+    ptype := stb. NewPredefType (module, id);
+    Item.predefIdToType[id] := ptype;
+    IF (name # "") THEN
+      tdecl := stb. NewTypeDecl (module, GetName (name), 0,
+                                 Item.nameExported, NIL, ptype)
+    END;
+    RETURN ptype
+  END PredefType;
+
+PROCEDURE CreatePredef* (stb: Builder.Builder): Item.Module;
 (**Creates the symbol table of the pseudo module that contains the predefined
    entities of the language, that can be used directly in a module without
    prefixing them with a module name.  It declares types like @samp{CHAR},
@@ -52,29 +89,8 @@ PROCEDURE CreateModule* (stb: Builder.Builder): Item.Module;
    functions, like @samp{COPY} or @samp{LEN}.  *)
   VAR
     module: Item.Module;
-  
-  PROCEDURE GetName (name: ARRAY OF CHAR): Item.Name;
-    VAR
-      n: Item.Name;
-      str: Item.NameString;
-    BEGIN
-      NEW (n);
-      NEW (str, Strings.Length (name)+1);
-      COPY (name, str^);
-      Item.InitName (n, str, 0, 1, 0);
-      RETURN n
-    END GetName;
-
-  PROCEDURE PredefType (id: Item.PredefId; name: ARRAY OF CHAR);
-    VAR
-      ptype: Item.PredefType;
-      tdecl: Item.TypeDecl;
-    BEGIN
-      ptype := stb. NewPredefType (module, id);
-      tdecl := stb. NewTypeDecl (module, GetName (name), 0,
-                                 Item.nameExported, NIL, ptype)
-    END PredefType;
-  
+    ptype: Item.PredefType;
+    
   PROCEDURE PredefProc (id: Item.PredefId; name: ARRAY OF CHAR);
     VAR
       pproc: Item.PredefProc;
@@ -82,34 +98,62 @@ PROCEDURE CreateModule* (stb: Builder.Builder): Item.Module;
       pproc := stb. NewPredefProc (module, GetName (name), id);
     END PredefProc;
   
-  PROCEDURE PredefConst (name: ARRAY OF CHAR; value: Language.Value);
+  PROCEDURE PredefConst (name: ARRAY OF CHAR; value: Language.Value;
+                         type: Item.PredefType);
     VAR
       cdecl: Item.ConstDecl;
     BEGIN
       cdecl := stb. NewConstDecl (module, GetName (name), 0, Item.nameExported,
-                                  NIL, value)
+                                  NIL, value, type)
     END PredefConst;
   
   BEGIN
     module := stb. NewModule (GetName ("#predef"), NIL, Item.mcInternal, Item.callConvInternal);
     
-    PredefType (boolean, "BOOLEAN");
-    PredefType (char, "CHAR");
-    PredefType (longchar, "LONGCHAR");
-    PredefType (shortint, "SHORTINT");
-    PredefType (integer, "INTEGER");
-    PredefType (longint, "LONGINT");
-    PredefType (real, "REAL");
-    PredefType (longreal, "LONGREAL");
-    PredefType (set, "SET");
+    ptype := PredefType (stb, module, boolean, "BOOLEAN");
+    PredefConst ("FALSE", Boolean.New (FALSE), ptype);
+    PredefConst ("TRUE", Boolean.New (TRUE), ptype);
+    
+    ptype := PredefType (stb, module, char, "CHAR");
+    ptype := PredefType (stb, module, longchar, "LONGCHAR");
+    ptype := PredefType (stb, module, shortint, "SHORTINT");
+    ptype := PredefType (stb, module, integer, "INTEGER");
+    ptype := PredefType (stb, module, longint, "LONGINT");
+    ptype := PredefType (stb, module, real, "REAL");
+    ptype := PredefType (stb, module, longreal, "LONGREAL");
+    ptype := PredefType (stb, module, set, "SET");
+    
+    ptype := PredefType (stb, module, charString, "");
+    ptype := PredefType (stb, module, longcharString, "");
+    ptype := PredefType (stb, module, void, "");
     
     PredefProc (assert, "ASSERT");
     
-    PredefConst ("FALSE", Boolean.New (FALSE));
-    PredefConst ("TRUE", Boolean.New (TRUE));
+    stb. Finalize (module);
+    RETURN module
+  END CreatePredef;
+
+PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Item.Module;
+(**Creates the symbol table of the pseudo module @code{SYSTEM}.  *)
+  VAR
+    module: Item.Module;
+    ptype: Item.PredefType;
+  BEGIN
+    module := stb. NewModule (GetName ("SYSTEM"), NIL, Item.mcInternal, Item.callConvInternal);
+    
+    ptype := PredefType (stb, module, address, "ADDRESS");
+    ptype := PredefType (stb, module, byte, "BYTE");
+    ptype := PredefType (stb, module, ptr, "PTR");
     
     stb. Finalize (module);
     RETURN module
-  END CreateModule;
+  END CreateSYSTEM;
 
+PROCEDURE GetType* (id: Item.PredefId): Item.PredefType;
+  BEGIN
+    RETURN Item.predefIdToType[id]
+  END GetType;
+
+BEGIN
+  NEW (Item.predefIdToType, lastId+1)
 END OOC:SymbolTable:Predef.

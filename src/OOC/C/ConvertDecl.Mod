@@ -3,8 +3,7 @@ MODULE OOC:C:ConvertDecl;
 IMPORT
 Log,OOC:SymbolTable:Item:XML,StdChannels,
   ADT:Dictionary, 
-  OOC:Repository, OOC:SymbolTable:Item,
-  OOC:SymbolTable:Predef, OOC:SymbolTable:System,
+  OOC:Repository, OOC:SymbolTable:Item, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:WriteDecl;
 
 
@@ -84,11 +83,11 @@ PROCEDURE ConvertDecl (c: Converter; item: Item.Declaration): WriteDecl.Declarat
           | Predef.set:
             RETURN WriteDecl.basicType[WriteDecl.uint32]
 
-          | System.address:
+          | Predef.address:
             RETURN WriteDecl.basicType[WriteDecl.int32]
-          | System.byte:
+          | Predef.byte:
             RETURN WriteDecl.basicType[WriteDecl.char8]
-          | System.ptr:
+          | Predef.ptr:
             RETURN WriteDecl.basicType[WriteDecl.ptr]
           END
 
