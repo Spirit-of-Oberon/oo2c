@@ -21,7 +21,8 @@ MODULE OOC:SSA:Destore;
 *)
 
 IMPORT
-  ADT:Dictionary, Sym := OOC:SymbolTable, OOC:SSA, OOC:SSA:Opcode,
+  ADT:Dictionary, ADT:ArrayList,
+  Sym := OOC:SymbolTable, OOC:SSA, OOC:SSA:Opcode,
   OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Aliasing;
 
   
@@ -310,6 +311,8 @@ PROCEDURE (s: State) Transform*;
     value: SSA.Result;
     use, nextUse, opnd: SSA.Opnd;
     worklist: Worklist;
+    unknownList: ArrayList.ArrayList;
+    i: LONGINT;
 
   PROCEDURE UnknownValue (res: SSA.Result): BOOLEAN;
     BEGIN
@@ -325,6 +328,7 @@ PROCEDURE (s: State) Transform*;
     VAR
       alias: Aliasing.Id;
       instr: SSA.Instr;
+      upstream: SSA.Result;
 
     PROCEDURE InCache (instr: SSA.Instr; VAR value: SSA.Result): BOOLEAN;
       VAR
@@ -461,7 +465,17 @@ PROCEDURE (s: State) Transform*;
         END;
 
       | Opcode.get:
-        RETURN GetValue (instr. GetArgClass (Opnd.store), get);
+        upstream := GetValue (instr. GetArgClass (Opnd.store), get);
+        IF UnknownValue(upstream) THEN
+          alias := Aliasing.DesignatorAlias (get. GetOpndClass (Opnd.readDesign),
+                                             instr. GetOpndClass (Opnd.readDesign));
+          IF (alias = Aliasing.completelyCovered) THEN
+            (* this "get" instruction reads the variable we are tracing, and
+               we don't know what this "get" will return *)
+            RETURN instr;
+          END;
+        END;
+        RETURN upstream;
         
       | Opcode.copy, Opcode.copyString:
         alias := Aliasing.DesignatorAlias (get. GetOpndClass (Opnd.readDesign),
@@ -871,14 +885,15 @@ PROCEDURE (s: State) Transform*;
     
     (* visit all "get" instructions and check if their uses can be replaced
        with the value that they are retrieving from memory *)
+    unknownList := ArrayList.New(8);
     pb. SetMarkers (NIL, 0);
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       IF (instr. opcode = Opcode.get) THEN
         value := GetValue (instr. GetArgStore(), instr);
         IF UnknownValue (value) THEN
-          ReplaceStoreUses (instr. GetResultStore(), instr. opndList. arg);
-          instr. opndList. ReplaceArg (value);
+          unknownList.Append(instr);
+          unknownList.Append(value);
         ELSIF (value IS SSA.Instr) &
               (value(SSA.Instr). opcode = Opcode.dgate) THEN
           instr.AddOpnd(value, Opnd.dgateRef);
@@ -888,7 +903,13 @@ PROCEDURE (s: State) Transform*;
       END;
       instr := instr. nextInstr;
     END;
-
+    FOR i := 0 TO unknownList.size-1 BY 2 DO
+      instr := unknownList.array[i](SSA.Instr);
+      value := unknownList.array[i+1](SSA.Result);
+      ReplaceStoreUses(instr.GetResultStore(), instr.opndList.arg);
+      instr.opndList.ReplaceArg(value);
+    END;
+    
     (* visit all "dgate" instructions and compute their replacement
        value *)
     worklist := NIL;

@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; rewrite7">-->
+  select ="&SetupTestCasesWithOut; var11">-->
   
   &TestSetupWithOut;
     
@@ -110,6 +110,12 @@
       A somewhat convoluted exit out of a <code>LOOP</code> loop.  The
       return statement can only see the value <code>x=1</code> ever,
       and an argument <code>FALSE</code> triggers and endless loop.
+    </test>
+    
+    <test id="var11" type="accept" file="Var11.Mod">
+      The parameter is read from four times, and written to once, but
+      the target code should contain only one load from memory and no
+      store at all.
     </test>
     
 
