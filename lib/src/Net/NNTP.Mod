@@ -93,8 +93,8 @@ TYPE
     rLine: LONGINT;   (* start of current line; 0<=rLine<=rLen *)
     rPos: LONGINT;    (* current scanning position; rLine<=rPos<=rLen *)
     rText: Text;      (* if #NIL: rLine is in text part of a response *)
-    sPos: LONGINT;    (* position of first unset char in `waiting' *)
-    sLen: LONGINT;    (* number of valid bytes in `r'; 0<=sLen<=LEN(s) *)
+    sPos: LONGINT;    (* position of first unsend char in `waiting' *)
+    sLen: LONGINT;    (* number of valid bytes in `s'; 0<=sLen<=LEN(s) *)
     s, r: ARRAY bufferCapacity OF CHAR;
     waiting, sent: Msg;
   END;
