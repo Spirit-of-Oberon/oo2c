@@ -13,11 +13,20 @@ TYPE
     usedImportsList-: ArrayList;
   END;
 
+PROCEDURE New* (initialSize: LONGINT): ArrayList;
+  BEGIN
+    RETURN NIL;
+  END New;
+
 PROCEDURE (l: ArrayList) Append* (obj: ArrayListDesc.E);
   END Append;
 
 PROCEDURE (d: Document) P*(importDecl: G.A1);
   BEGIN
+    IF (d. usedImportsList = NIL) THEN
+      d. usedImportsList := ArrayList.New (2)
+    END;
+    (* ... *)
     d. usedImportsList. Append (importDecl)
   END P;
 
