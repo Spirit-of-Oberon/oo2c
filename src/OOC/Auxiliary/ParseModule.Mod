@@ -1,7 +1,7 @@
 MODULE OOC:Auxiliary:ParseModule;
 
 IMPORT
-  Channel, Files, Msg, URI, 
+  Msg, URI, 
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
@@ -9,7 +9,7 @@ IMPORT
   OOC:Parser, OOC:AST, OOC:AST:ExtTree,
   OOC:SymbolTable:Item, OOC:SymbolTable:Builder,
   OOC:AST:ExtTree:CreateSymTab, OOC:SymbolTable:CreateNamespace,
-  OOC:SymbolTable:Exports;
+  OOC:Auxiliary:WriteSymbolFile;
   
 
 
@@ -32,7 +32,6 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
     stb: Builder.Builder;
     uri: URI.URI;
     uriStr: Repository.URIBuffer;
-    ch: Channel.Channel;
   BEGIN
     inputBuffer := m. GetInputBuffer (res);
     IF (inputBuffer = NIL) THEN
@@ -78,19 +77,7 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
             (* no error in the declaration part of the module: write the
                symbol table to file, skipping any external references and
                strictly local information on the way *)
-            ch := m. GetOutputChannel (Repository.modSymbolFile, TRUE, res);
-            IF (res = NIL) THEN
-              Item.Prune (symTab, Exports.GetExports (symTab)); (* ... *)
-              stb. WriteSymbolTable (ch, symTab, res);
-              ch(Files.File). Register;
-              ch. Close;
-              IF (res = Channel.done) THEN
-                res := ch. res
-              END
-            END;
-            IF (res # NIL) THEN
-              errList. Append (res)
-            END
+            WriteSymbolFile.WriteSymbolFile (m, symTab, errList);
           END
         END
       END
