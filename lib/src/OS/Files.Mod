@@ -1,5 +1,7 @@
 (* 	$Id$	 *)
-MODULE OS:Files [FOREIGN "C"; LINK FILE "Files.c" END];
+MODULE OS:Files [FOREIGN "C"; LINK FILE "Files.c" 
+  <*IF TARGET_OS="Win32" THEN *> ; LIB "mingwex" <* END *>
+  END];
 (*  Manipulation of file and directory entries.
     Copyright (C) 2000, 2002  Michael van Acken
 
