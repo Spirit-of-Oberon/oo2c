@@ -298,13 +298,13 @@ PROCEDURE (opnd: Opnd) GetIntConst*(): LONGINT;
 
   (* ---------------------------------------------------------------------- *)
   
-PROCEDURE InitResult (res: Result; class: ResultClass.Class;
+PROCEDURE InitResult (res: Result; instr: Instr; class: ResultClass.Class;
                       subclass: Opcode.Subclass);
 (* Initializes result.  *)
   BEGIN
     InitNode (res);
     res. nextResult := NIL;
-    res. instr := NIL;
+    res. instr := instr;
     res. class := class;
     res. subclass := subclass;
     res. info := NIL;
@@ -312,13 +312,13 @@ PROCEDURE InitResult (res: Result; class: ResultClass.Class;
     res. useList := NIL;
   END InitResult;
 
-PROCEDURE NewResult (class: ResultClass.Class; subclass: Opcode.Subclass): Result;
+PROCEDURE NewResult (instr: Instr; class: ResultClass.Class; subclass: Opcode.Subclass): Result;
 (* Creates a new result instance.  *)
   VAR
     res: Result;
   BEGIN
     NEW (res);
-    InitResult (res, class, subclass);
+    InitResult (res, instr, class, subclass);
     RETURN res
   END NewResult;
   
@@ -390,8 +390,7 @@ PROCEDURE (result: Result) IsBooleanConst* (value: BOOLEAN): BOOLEAN;
 
 PROCEDURE InitInstr (instr: Instr; opcode: Opcode.Class; subclass: Opcode.Subclass);
   BEGIN
-    InitResult (instr, ResultClass.primary, subclass);
-    instr. instr := instr; (* an instruction is a result that defines itself *)
+    InitResult (instr, instr, ResultClass.primary, subclass);
     instr. opndList := NIL;
     instr. nextInstr := NIL;
     instr. prevInstr := NIL;
@@ -435,8 +434,7 @@ PROCEDURE (instr: Instr) AddResultSubclass* (class: ResultClass.Class;
   VAR
     res, prev: Result;
   BEGIN
-    res := NewResult (class, subclass);
-    res. instr := instr;
+    res := NewResult (instr, class, subclass);
     IF (instr. nextResult = NIL) THEN
       instr. nextResult := res
     ELSE
@@ -619,6 +617,28 @@ PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
     RETURN storeOut. useList. instr
   END GetCollectTarget;
 
+PROCEDURE (instr: Instr) GetLoopEnd* (): Instr;
+(**Given a @oconst{Opcode.loopStart} instruction, returns the corresponding
+   @oconst{Opcode.loopEnd}.  *)
+  VAR
+    use: Opnd;
+  BEGIN
+    ASSERT (instr. opcode = Opcode.loopStart);
+    use := instr. useList;
+    WHILE (use # NIL) & (use. instr. opcode # Opcode.loopEnd) DO
+      use := use. nextUse;
+    END;
+    RETURN use. instr;
+  END GetLoopEnd;
+
+PROCEDURE (instr: Instr) GetLoopStart* (): Instr;
+(**Given a @oconst{Opcode.loopEnd} instruction, returns the corresponding
+   @oconst{Opcode.loopStart}.  *)
+  BEGIN
+    ASSERT (instr. opcode = Opcode.loopEnd);
+    RETURN instr. opndList. arg(Instr);
+  END GetLoopStart;
+
 PROCEDURE (instr: Instr) LogOpcode* (msg: ARRAY OF CHAR);
   VAR
     name: ARRAY 64 OF CHAR;
@@ -638,6 +658,15 @@ PROCEDURE (instr: Instr) IsLoopEndWithExits (): BOOLEAN;
       RETURN FALSE;
     END;
   END IsLoopEndWithExits;
+
+PROCEDURE (instr: Instr) IsConst*(): BOOLEAN;
+(**Returns @code{TRUE} if @oparam{instr} represents a constant value.  Such
+   instructions have no operands, and within a given procedure block two
+   instructions represent the same value iff they are identical.  *)
+  BEGIN
+    RETURN (instr IS Const) OR (instr IS DeclRef) OR (instr IS Address);
+  END IsConst;
+
 
   (* ---------------------------------------------------------------------- *)
 
