@@ -4968,6 +4968,7 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
         | statm: IterateObjectStatm DO
           CheckExpr(statm.var);
           CheckExpr(statm.iteratorFactory);
+          CheckExpr(statm.stepperCall);
           CheckStatmSeq (statm. body);
         | statm: IfStatm DO
           CheckExpr(statm.guard);
