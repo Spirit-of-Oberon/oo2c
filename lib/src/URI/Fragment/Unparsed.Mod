@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Fragment:Unparsed;
 (*  Implements class for unparsed fragment identifiers.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ MODULE URI:Fragment:Unparsed;
 
 
 IMPORT
-  Strings, TextRider, CC := CharClass,
-  URI, URI:String, URI:CharClass, URI:Error;
+  TextRider, CC := CharClass, Object, Exception, ADT:StringBuffer,
+  URI, URI:CharClass;
 
 TYPE
   Fragment* = POINTER TO FragmentDesc;
@@ -32,7 +32,7 @@ TYPE
      user agent after the URI document has been retrieved.  That it, it depends
      on the document, and @emph{not} on the URI scheme being used.  *)
     (URI.FragmentDesc)
-    unparsed-: String.StringPtr;
+    unparsed-: STRING;
     (**Holds the fragment identifier of a URI @emph{without} any modifications.
        In particular, escaped characters are @emph{not} replaced with their
        character value.  Interpretation of special characters and escaped
@@ -40,14 +40,7 @@ TYPE
   END;
 
 
-CONST
-  illegalFragmentChar = 1;
-
-VAR
-  fragContext: Error.Context;
-
-
-PROCEDURE Init* (frag: Fragment; unparsed: String.StringPtr);
+PROCEDURE Init* (frag: Fragment; unparsed: STRING);
 (**Initializes unparsed fragment identifier.
 
    @precond
@@ -58,7 +51,7 @@ PROCEDURE Init* (frag: Fragment; unparsed: String.StringPtr);
     frag. unparsed := unparsed
   END Init;
 
-PROCEDURE New* (unparsed: String.StringPtr): Fragment;
+PROCEDURE New* (unparsed: STRING): Fragment;
 (**Creates new unparsed fragment identifier.
 
    @precond
@@ -85,39 +78,38 @@ PROCEDURE (frag: Fragment) Copy* (dest: URI.Fragment);
   BEGIN
     (*frag. Copy^ (dest); procedure is abstract in super class *)
     WITH dest: Fragment DO
-      dest. unparsed := String.Copy (frag. unparsed^)
+      dest. unparsed := frag. unparsed;
     END
   END Copy;
 
-PROCEDURE (frag: Fragment) ParseFragment* (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
+PROCEDURE (frag: Fragment) ParseFragment* (str: Object.CharsLatin1;
+                                           offset: URI.Offset)
+RAISES Exception.ParseError;
   VAR
     i: URI.Offset;
   BEGIN
     i := 0;
     WHILE CharClass.SkipURIC (str^, i) DO END;
     IF (str[i] # 0X) THEN
-      RETURN Error.New (fragContext, illegalFragmentChar, i+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Illegal character in fragment component",
+                i+offset));
     ELSE
-      frag. unparsed := str;
-      RETURN NIL
+      frag.unparsed := Object.NewLatin1(str^);
     END
   END ParseFragment;
 
 PROCEDURE (frag: Fragment) WriteXML* (w: TextRider.Writer);
   BEGIN
     w. WriteString (CC.eol+"<fragment-unparsed>");
-    w. WriteString (frag. unparsed^);
+    w. WriteObject (frag. unparsed);
     w. WriteString ("</fragment-unparsed>")
   END WriteXML;
 
-PROCEDURE (frag: Fragment) Append* (VAR str: ARRAY OF CHAR);
+PROCEDURE (frag: Fragment) Append* (sb: StringBuffer.StringBuffer);
   BEGIN
-    Strings.Append ("#", str);
-    Strings.Append (frag. unparsed^, str)
+    sb.Append("#");
+    sb.Append(frag. unparsed);
   END Append;
 
-BEGIN
-  fragContext := Error.NewContext ("URI:Fragment:Unparsed");
-  fragContext. SetString (illegalFragmentChar,
-    "Illegal character in fragment component");
 END URI:Fragment:Unparsed.

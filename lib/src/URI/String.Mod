@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:String;
 (*  Auxiliary string functions for URI parser.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000,2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,48 +20,26 @@ MODULE URI:String;
 
 
 IMPORT
-  Strings, URI:CharClass;
+  Object, ADT:StringBuffer, URI:CharClass;
 
 
 TYPE
-  String* = ARRAY OF CHAR;
-  StringPtr* = POINTER TO String;
   Offset* = INTEGER;
 
 
-PROCEDURE Extract* (str: String; start, end: INTEGER): StringPtr;
-(**Creates a copy of the character sequence @samp{str[start,end[}.  *)
-  VAR
-    i: INTEGER;
-    ptr: StringPtr;
-  BEGIN
-    NEW (ptr, end-start+1);
-    i := 0;
-    WHILE (start # end) DO
-      ptr[i] := str[start]; INC (i); INC (start)
-    END;
-    ptr[i] := 0X;
-    RETURN ptr
-  END Extract;
-
-PROCEDURE Copy* (str: String): StringPtr;
-(**Creates a copy of @oparam{str}.  *)
-  BEGIN
-    RETURN Extract (str, 0, Strings.Length (str))
-  END Copy;
-
-PROCEDURE Unescape* (str: StringPtr): StringPtr;
+PROCEDURE Unescape* (x: STRING): STRING;
 (**Replaces escaped characters with their ISO Latin-1 counterparts.  The
    escape sequence @samp{%00} is translated to a space (ASCII code 32).
    
    @precond
-   The string @oparam{str} is well-formed.  That is, every occurence of
+   The string @oparam{x} is well-formed.  That is, every occurence of
    the character @samp{%} is followed by two valid hexadecimal digits.
    @end precond  *)
   VAR
     i, j: Offset;
-    res: StringPtr;
-  
+    str: Object.CharsLatin1;
+    res: POINTER TO ARRAY OF CHAR;
+    
   PROCEDURE Hex (ch: CHAR): INTEGER;
     BEGIN
       CASE ch OF
@@ -75,12 +53,14 @@ PROCEDURE Unescape* (str: StringPtr): StringPtr;
     END Hex;
   
   BEGIN
+    str := x(Object.String8).CharsLatin1();
+    
     i := 0;
     WHILE (str[i] # 0X) & (str[i] # "%") DO
       INC (i)
     END;
     IF (str[i] = 0X) THEN
-      RETURN str
+      RETURN x;
     ELSE
       NEW (res, LEN (str^));
       i := 0; j := 0;
@@ -97,13 +77,12 @@ PROCEDURE Unescape* (str: StringPtr): StringPtr;
         END;
         INC (j)
       END;
-      res[j] := 0X;
-      RETURN res
+      RETURN Object.NewLatin1Region(res^, 0, j);
     END
   END Unescape;
 
-PROCEDURE AppendEscaped* (source, unreserved: ARRAY OF CHAR;
-                          VAR dest: ARRAY OF CHAR);
+PROCEDURE AppendEscaped* (source: STRING; unreserved: ARRAY OF CHAR;
+                          dest: StringBuffer.StringBuffer);
 (**Appends the string @oparam{source} to @oparam{dest}, possibly escaping some
    characters on the way.  All characters from @oproc{CharClass.IsUnreserved}
    and all characters in @oparam{unreserved} are copied as is.  Any other
@@ -111,7 +90,8 @@ PROCEDURE AppendEscaped* (source, unreserved: ARRAY OF CHAR;
    @samp{H} is a hex digit from @samp{[0-9A-F]}.  If @oparam{dest} cannot 
    hold the whole result, then the result string is truncated.  *)
   VAR
-    i, j: INTEGER;
+    i: INTEGER;
+    src: Object.CharsLatin1;
   
   PROCEDURE ToHex (i: INTEGER): CHAR;
     BEGIN
@@ -123,31 +103,19 @@ PROCEDURE AppendEscaped* (source, unreserved: ARRAY OF CHAR;
     END ToHex;
   
   BEGIN
-    i := 0; j := Strings.Length (dest);
-    WHILE (source[i] # 0X) DO
-      IF ~CharClass.IsUnreserved (source[i]) &
-         ~CharClass.IsMember (source[i], unreserved) THEN
-        IF (j < LEN (dest)) THEN
-          dest[j] := "%"
-        END;
-        IF (j+1 < LEN (dest)) THEN
-          dest[j+1] := ToHex (ORD (source[i]) DIV 16)
-        END;
-        IF (j+2 < LEN (dest)) THEN
-          dest[j+2] := ToHex (ORD (source[i]) MOD 16)
-        END;
-        INC (j, 3)
-      ELSIF (j < LEN (dest)) THEN
-        dest[j] := source[i];
-        INC (j)
+    src := source(Object.String8).CharsLatin1();
+    i := 0;
+    WHILE (src[i] # 0X) DO
+      IF ~CharClass.IsUnreserved (src[i]) &
+         ~CharClass.IsMember (src[i], unreserved) THEN
+        dest.AppendLatin1Char("%");
+        dest.AppendLatin1Char(ToHex(ORD(src[i]) DIV 16));
+        dest.AppendLatin1Char(ToHex(ORD(src[i]) MOD 16));
+      ELSE
+        dest.AppendLatin1Char(src[i]);
       END;
       INC (i)
     END;
-    IF (j < LEN (dest)) THEN
-      dest[j] := 0X
-    ELSE
-      dest[LEN (dest)-1] := 0X
-    END
   END AppendEscaped;
 
 END URI:String.

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Scheme:Hierarchical;
 (*  Implementation of the generic hierarchical URI.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ MODULE URI:Scheme:Hierarchical;
 
 
 IMPORT
-  Strings, TextRider, CC := CharClass, 
-  URI, Str := URI:String, URI:Error, URI:CharClass,
+  TextRider, CC := CharClass, Object, Exception, ADT:StringBuffer,
+  URI, Str := URI:String, URI:CharClass,
   UnparsedAuth := URI:Authority:Unparsed, UnparsedQuery := URI:Query:Unparsed;
 
 
@@ -31,7 +31,7 @@ TYPE
   (**A parameter of a path segment.  A path segment can have a list of
      several parameters.  *)
     next-: Parameter;
-    string-: URI.StringPtr;
+    string-: STRING;
     (**Parameter text.  Any escaped characters have been replaced by their
        character value.  *)
   END;
@@ -41,7 +41,7 @@ TYPE
   SegmentDesc = RECORD
   (**A path segment of a hierarchical URI.  *)
     next-: Segment;
-    string-: URI.StringPtr;
+    string-: STRING;
     (**Segment text.  Any escaped characters have been replaced by their
        character value.  *)
     hasEscapes: BOOLEAN;
@@ -65,23 +65,16 @@ TYPE
   END;
 
 
-CONST
-  illegalPathChar = 1;
-
-VAR
-  pathContext: Error.Context;
-
-
 (* Parameter
    ------------------------------------------------------------------------ *)
    
-PROCEDURE InitParameter* (param: Parameter; string: URI.StringPtr);
+PROCEDURE InitParameter* (param: Parameter; string: STRING);
   BEGIN
     param. next := NIL;
     param. string := string
   END InitParameter;
 
-PROCEDURE NewParameter* (string: URI.StringPtr): Parameter;
+PROCEDURE NewParameter* (string: STRING): Parameter;
   VAR
     param: Parameter;
   BEGIN
@@ -93,7 +86,7 @@ PROCEDURE NewParameter* (string: URI.StringPtr): Parameter;
 PROCEDURE (param: Parameter) Copy* (dest: Parameter);
   BEGIN
     dest. next := NIL;
-    dest. string := Str.Copy (param. string^)
+    dest. string := param.string;
   END Copy;
 
 PROCEDURE (param: Parameter) Clone* (): Parameter;
@@ -108,20 +101,20 @@ PROCEDURE (param: Parameter) Clone* (): Parameter;
 PROCEDURE (param: Parameter) WriteXML* (w: TextRider.Writer);
   BEGIN
     w. WriteString (CC.eol+"<parameter>");
-    w. WriteString (param. string^);
+    w. WriteObject (param. string);
     w. WriteString ("</parameter>");
   END WriteXML;
 
-PROCEDURE (param: Parameter) Append* (VAR str: ARRAY OF CHAR);
+PROCEDURE (param: Parameter) Append* (sb: StringBuffer.StringBuffer);
   BEGIN
-    Str.AppendEscaped (param. string^, CharClass.unreservedPChar, str)
+    Str.AppendEscaped (param. string, CharClass.unreservedPChar, sb)
   END Append;
 
 
 (* Path Segment
    ------------------------------------------------------------------------ *)
    
-PROCEDURE InitSegment* (segm: Segment; string: URI.StringPtr);
+PROCEDURE InitSegment* (segm: Segment; string: STRING);
   BEGIN
     segm. next := NIL;
     segm. string := string;
@@ -129,7 +122,7 @@ PROCEDURE InitSegment* (segm: Segment; string: URI.StringPtr);
     segm. hasEscapes := FALSE
   END InitSegment;
 
-PROCEDURE NewSegment* (string: URI.StringPtr): Segment;
+PROCEDURE NewSegment* (string: STRING): Segment;
   VAR
     segm: Segment;
   BEGIN
@@ -158,7 +151,7 @@ PROCEDURE (segm: Segment) Copy* (dest: Segment);
     param: Parameter;
   BEGIN
     dest. next := segm. next;
-    dest. string := Str.Copy (segm. string^);
+    dest. string := segm. string;
     dest. paramList := NIL;
     param := segm. paramList;
     WHILE (param # NIL) DO
@@ -182,7 +175,7 @@ PROCEDURE (segm: Segment) WriteXML* (w: TextRider.Writer);
   BEGIN
     w. WriteString (CC.eol+"<segment>");
     w. WriteString (CC.eol+"<value>");
-    w. WriteString (segm. string^);
+    w. WriteObject (segm. string);
     w. WriteString ("</value>");
     param := segm. paramList;
     WHILE (param # NIL) DO
@@ -192,15 +185,15 @@ PROCEDURE (segm: Segment) WriteXML* (w: TextRider.Writer);
     w. WriteString (CC.eol+"</segment>");
   END WriteXML;
 
-PROCEDURE (segm: Segment) Append* (VAR str: ARRAY OF CHAR);
+PROCEDURE (segm: Segment) Append* (sb: StringBuffer.StringBuffer);
   VAR
     param: Parameter;
   BEGIN
-    Str.AppendEscaped (segm. string^, CharClass.unreservedPChar, str);
+    Str.AppendEscaped (segm. string, CharClass.unreservedPChar, sb);
     param := segm. paramList;
     WHILE (param # NIL) DO
-      Strings.Append (";", str);
-      param. Append (str);
+      sb.Append(";");
+      param. Append (sb);
       param := param. next
     END;
   END Append;
@@ -209,7 +202,7 @@ PROCEDURE (segm: Segment) Append* (VAR str: ARRAY OF CHAR);
 (* Generic Hierarchical URI
    ------------------------------------------------------------------------ *)
 
-PROCEDURE Init* (uri: Generic; schemeId: URI.StringPtr;
+PROCEDURE Init* (uri: Generic; schemeId: STRING;
                  authority: URI.Authority; query: URI.Query);
 (**See @otype{Generic}.  *)
   BEGIN
@@ -218,7 +211,7 @@ PROCEDURE Init* (uri: Generic; schemeId: URI.StringPtr;
     uri. absolutePath := TRUE
   END Init;
 
-PROCEDURE New* (schemeId: URI.StringPtr;
+PROCEDURE New* (schemeId: STRING;
                 authority: URI.Authority; query: URI.Query): Generic;
 (**See @otype{Generic}.  *)
   VAR
@@ -332,20 +325,22 @@ PROCEDURE (uri: Generic) ClearPath*;
 
 PROCEDURE (uri: Generic) NewAuthority* (): URI.Authority;
   BEGIN
-    RETURN UnparsedAuth.New (Str.Copy (""))
+    RETURN UnparsedAuth.New("");
   END NewAuthority;
 
 PROCEDURE (uri: Generic) NewQuery* (): URI.Query;
   BEGIN
-    RETURN UnparsedQuery.New (Str.Copy (""))
+    RETURN UnparsedQuery.New("");
   END NewQuery;
 
-PROCEDURE (uri: Generic) ParsePath* (str: URI.StringPtr; absolute: BOOLEAN; offset: URI.Offset): Error.Msg;
+PROCEDURE (uri: Generic) ParsePath* (str: Object.CharsLatin1;
+                                     absolute: BOOLEAN; offset: URI.Offset)
+RAISES Exception.ParseError;
   VAR
     i, start: URI.Offset;
     segment, oldPathList: Segment;
     absToggle: BOOLEAN;
-    substr: URI.StringPtr;
+    substr: STRING;
   BEGIN
     oldPathList := uri. pathList;
     absToggle := absolute;
@@ -355,9 +350,9 @@ PROCEDURE (uri: Generic) ParsePath* (str: URI.StringPtr; absolute: BOOLEAN; offs
       start := i;
       WHILE (absToggle OR (str[i] # ":")) & CharClass.SkipPChar (str^, i) DO
       END;
-      substr := Str.Extract (str^, start, i);
-      segment := NewSegment (Str.Unescape (substr));
-      segment. hasEscapes := CharClass.IsMember ("%", substr^);
+      substr := Object.NewLatin1Region(str^, start, i);
+      segment := NewSegment(Str.Unescape(substr));
+      segment. hasEscapes := (substr.IndexOf("%", 0) >= 0);
 
       WHILE (str[i] = ";") DO
         INC (i);
@@ -365,7 +360,7 @@ PROCEDURE (uri: Generic) ParsePath* (str: URI.StringPtr; absolute: BOOLEAN; offs
         WHILE (absToggle OR (str[i] # ":")) & CharClass.SkipPChar (str^, i) DO
         END;
         segment. AppendParameter (NewParameter 
-          (Str.Unescape (Str.Extract (str^, start, i))))
+          (Str.Unescape(Object.NewLatin1Region(str^, start, i))))
       END;
 
       uri. AppendSegment (segment);
@@ -378,10 +373,10 @@ PROCEDURE (uri: Generic) ParsePath* (str: URI.StringPtr; absolute: BOOLEAN; offs
     END;
     IF (str[i] # 0X) THEN
       uri. pathList := oldPathList;
-      RETURN Error.New (pathContext, illegalPathChar, i+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Illegal character in path component of the URI", i+offset));
     ELSE
-      uri. absolutePath := absolute;
-      RETURN NIL
+      uri.absolutePath := absolute;
     END
   END ParsePath;
 
@@ -392,9 +387,9 @@ PROCEDURE (uri: Generic) ResolveRelative* (baseURI: URI.HierarchicalURI);
   
   PROCEDURE RemoveDot (VAR segm: Segment);
     BEGIN
-      WHILE (segm # NIL) & (segm. string^ = ".") & ~segm. hasEscapes DO
+      WHILE (segm # NIL) & ~segm. hasEscapes & segm.string.Equals(".") DO
         IF (segm. next = NIL) THEN
-          segm. string := Str.Copy ("")
+          segm.string := "";
         ELSE
           segm := segm. next
         END
@@ -408,12 +403,12 @@ PROCEDURE (uri: Generic) ResolveRelative* (baseURI: URI.HierarchicalURI);
     BEGIN
       IF (segm # NIL) THEN
         IF (segm # NIL) &
-           ((segm. string^ # "..") OR segm. hasEscapes) &
-           (segm. next # NIL) &
-           (segm. next. string^ = "..") &
-           ~segm. next. hasEscapes THEN
+           (segm.hasEscapes OR ~segm.string.Equals("..")) &
+           (segm.next # NIL) &
+           segm.next.string.Equals("..") &
+           ~segm.next.hasEscapes THEN
           IF (segm. next. next = NIL) THEN
-            segm. string := Str.Copy ("");
+            segm. string := "";
             segm. next := NIL
           ELSE
             segm := segm. next. next
@@ -489,7 +484,7 @@ PROCEDURE (uri: Generic) MakeRelative* (baseURI: URI.HierarchicalURI): Generic;
               suffixBase := baseURI. pathList;
               suffixRel := uri. pathList;
               WHILE (suffixBase. next # NIL) & (suffixRel. next # NIL) &
-                    (suffixBase. string^ = suffixRel. string^) DO
+                    suffixBase.string.Equals(suffixRel.string) DO
                 suffixBase := suffixBase. next;
                 suffixRel := suffixRel. next
               END
@@ -500,7 +495,7 @@ PROCEDURE (uri: Generic) MakeRelative* (baseURI: URI.HierarchicalURI): Generic;
             relURI. ClearPath;
             ptr := suffixBase;
             WHILE (ptr. next # NIL) DO
-              relURI. AppendSegment (NewSegment (Str.Copy ("..")));
+              relURI. AppendSegment(NewSegment(".."));
               ptr := ptr. next
             END;
             ptr := suffixRel;
@@ -528,7 +523,7 @@ PROCEDURE (uri: Generic) WriteXML* (w: TextRider.Writer);
     w. WriteString (CC.eol+"<hierarchical-uri>");
     IF (uri. schemeId # NIL) THEN
       w. WriteString (CC.eol+"<scheme>");
-      w. WriteString (uri. schemeId^);
+      w. WriteObject (uri. schemeId);
       w. WriteString ("</scheme>");
     END;
     IF (uri. authority # NIL) THEN
@@ -557,40 +552,41 @@ PROCEDURE (uri: Generic) WriteXML* (w: TextRider.Writer);
     w. WriteString (CC.eol+"</hierarchical-uri>");
   END WriteXML;
 
-PROCEDURE (uri: Generic) AppendPath* (VAR str: ARRAY OF CHAR);
+PROCEDURE (uri: Generic) AppendPath* (sb: StringBuffer.StringBuffer);
   VAR
     segm: Segment;
   BEGIN
     IF (uri. pathList # NIL) THEN
       IF uri. absolutePath THEN
-        Strings.Append ("/", str)
+        sb.Append ("/");
       END;
       segm := uri. pathList;
       WHILE (segm # NIL) DO
         IF (segm # uri. pathList) THEN
-          Strings.Append ("/", str)
+          sb.Append("/");
         END;
-        segm. Append (str);
+        segm. Append (sb);
         segm := segm. next
       END
     END
   END AppendPath;
 
-PROCEDURE (uri: Generic) GetString* (VAR str: ARRAY OF CHAR);
+PROCEDURE (uri: Generic) GetString*(): Object.String8;
+  VAR
+    sb: StringBuffer.StringBuffer;
+    str: STRING;
   BEGIN
-    COPY ("", str);
-    uri. AppendScheme (str);
+    sb := StringBuffer.New("");
+    uri. AppendScheme (sb);
     IF (uri. authority # NIL) THEN
-      uri. authority. Append (str)
+      uri. authority. Append (sb)
     END;
-    uri. AppendPath (str);
+    uri. AppendPath (sb);
     IF (uri. query # NIL) THEN
-      uri. query. Append (str)
-    END
+      uri. query. Append (sb)
+    END;
+    str := sb.ToString();
+    RETURN str(Object.String8);
   END GetString;
 
-BEGIN
-  pathContext := Error.NewContext ("URI:Scheme:Hierarchical");
-  pathContext. SetString (illegalPathChar,
-    "Illegal character in path component of the URI");
 END URI:Scheme:Hierarchical.

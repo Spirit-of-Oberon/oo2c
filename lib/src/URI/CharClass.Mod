@@ -44,7 +44,7 @@ PROCEDURE IsAlpha* (ch: CHAR): BOOLEAN;
     RETURN ("A" <= CAP (ch)) & (CAP (ch) <= "Z")
   END IsAlpha;
 
-PROCEDURE SkipAlpha* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipAlpha* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     IF ("A" <= CAP (str[pos])) & (CAP (str[pos]) <= "Z") THEN
       INC (pos);
@@ -59,7 +59,7 @@ PROCEDURE IsDigit* (ch: CHAR): BOOLEAN;
     RETURN ("0" <= ch) & (ch <= "9")
   END IsDigit;
 
-PROCEDURE SkipDigit* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipDigit* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     IF ("0" <= str[pos]) & (str[pos] <= "9") THEN
       INC (pos);
@@ -74,7 +74,7 @@ PROCEDURE IsAlphaNum* (ch: CHAR): BOOLEAN;
     RETURN IsAlpha (ch) OR IsDigit (ch)
   END IsAlphaNum;
 
-PROCEDURE SkipAlphaNum* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipAlphaNum* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     RETURN SkipAlpha (str, pos) OR SkipDigit (str, pos)
   END SkipAlphaNum;
@@ -95,7 +95,7 @@ PROCEDURE IsReserved* (ch: CHAR): BOOLEAN;
     RETURN IsMember (ch, reserved)
   END IsReserved;
 
-PROCEDURE SkipReserved* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipReserved* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     IF IsMember (str[pos], reserved) THEN
       INC (pos);
@@ -115,7 +115,7 @@ PROCEDURE IsMark* (ch: CHAR): BOOLEAN;
     END
   END IsMark;
 
-PROCEDURE SkipMark* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipMark* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     IF IsMark (str[pos]) THEN
       INC (pos);
@@ -130,12 +130,12 @@ PROCEDURE IsUnreserved* (ch: CHAR): BOOLEAN;
     RETURN IsAlphaNum (ch) OR IsMark (ch)
   END IsUnreserved;
 
-PROCEDURE SkipUnreserved* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipUnreserved* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     RETURN SkipAlphaNum (str, pos) OR SkipMark (str, pos)
   END SkipUnreserved;
 
-PROCEDURE SkipEscaped* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipEscaped* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   PROCEDURE SkipHex (ch: CHAR): BOOLEAN;
     BEGIN
       RETURN ("0" <= ch) & (ch <= "9") OR ("A" <= CAP(ch)) & (CAP(ch) <= "F")
@@ -150,7 +150,7 @@ PROCEDURE SkipEscaped* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
     END
   END SkipEscaped;
 
-PROCEDURE SkipPChar* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipPChar* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     IF IsMember (str[pos], unreservedPChar) THEN
       INC (pos);
@@ -160,14 +160,14 @@ PROCEDURE SkipPChar* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
     END
   END SkipPChar;
 
-PROCEDURE SkipURIC* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipURIC* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     RETURN SkipUnreserved (str, pos) OR
            SkipReserved (str, pos) OR
            SkipEscaped (str, pos)
   END SkipURIC;
 
-PROCEDURE SkipMember* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER;
+PROCEDURE SkipMember* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER;
                        set: ARRAY OF CHAR): BOOLEAN;
   BEGIN
     IF IsMember (str[pos], set) THEN
@@ -178,7 +178,7 @@ PROCEDURE SkipMember* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER;
     END
   END SkipMember;
 
-PROCEDURE SkipAuthChar* (VAR str: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
+PROCEDURE SkipAuthChar* (str[NO_COPY]: ARRAY OF CHAR; VAR pos: INTEGER): BOOLEAN;
   BEGIN
     RETURN SkipUnreserved (str, pos) OR
            SkipEscaped (str, pos) OR

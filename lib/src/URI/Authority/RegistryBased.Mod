@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Authority:RegistryBased;
 (*  Implements class for registry-based authority components.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ MODULE URI:Authority:RegistryBased;
 
 
 IMPORT
-  Strings, CC := CharClass, TextRider,
-  URI, URI:CharClass, URI:String, URI:Error;
+  CC := CharClass, TextRider, Object, Exception, ADT:StringBuffer,
+  URI, URI:CharClass, URI:String;
 
 TYPE
   Authority* = POINTER TO AuthorityDesc;
@@ -31,26 +31,18 @@ TYPE
      authority name must not be empty, and that any escaped characters are
      replaced by their value.  *)
     (URI.AuthorityDesc)
-    regName-: URI.StringPtr;
+    regName-: STRING;
     (**Holds the authority substring of a URI.  Escaped characters are
        replaced with their character value.  *)
   END;
 
 
-CONST
-  illegalRegNameChar = 1;
-  emptyRegName = 2;
-
-VAR
-  regNameContext: Error.Context;
-
-
-PROCEDURE Init* (auth: Authority; regName: URI.StringPtr);
+PROCEDURE Init* (auth: Authority; regName: STRING);
   BEGIN
     auth. regName := regName
   END Init;
 
-PROCEDURE New* (regName: URI.StringPtr): Authority;
+PROCEDURE New* (regName: STRING): Authority;
   VAR
     auth: Authority;
   BEGIN
@@ -72,43 +64,42 @@ PROCEDURE (auth: Authority) Copy* (dest: URI.Authority);
   BEGIN
     (*auth. Copy^ (dest); procedure is abstract in super class *)
     WITH dest: Authority DO
-      dest. regName := String.Copy (auth. regName^)
+      dest. regName := auth. regName;
     END
   END Copy;
 
-PROCEDURE (auth: Authority) ParseAuthority* (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
+PROCEDURE (auth: Authority) ParseAuthority* (str: Object.CharsLatin1;
+                                             offset: URI.Offset)
+RAISES Exception.ParseError;
   VAR
     i: URI.Offset;
   BEGIN
     i := 0;
     WHILE CharClass.SkipAuthChar (str^, i) DO END;
     IF (i = 0) THEN
-      RETURN Error.New (regNameContext, emptyRegName, i+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Registry-based naming authority must not be empty",
+                i+offset));
     ELSIF (str[i] # 0X) THEN
-      RETURN Error.New (regNameContext, illegalRegNameChar, i+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Illegal character in registry-based naming authority",
+                i+offset));
     ELSE
-      auth. regName := String.Unescape (str);
-      RETURN NIL
+      auth.regName := String.Unescape(Object.NewLatin1(str^));
     END
   END ParseAuthority;
 
 PROCEDURE (auth: Authority) WriteXML* (w: TextRider.Writer);
   BEGIN
     w. WriteString (CC.eol+"<authority-registry-based>");
-    w. WriteString (auth. regName^);
+    w. WriteObject (auth. regName);
     w. WriteString ("</authority-registry-based>")
   END WriteXML;
 
-PROCEDURE (auth: Authority) Append* (VAR str: ARRAY OF CHAR);
+PROCEDURE (auth: Authority) Append* (sb: StringBuffer.StringBuffer);
   BEGIN
-    Strings.Append ("//", str);
-    String.AppendEscaped (auth. regName^, "$,;:@&=+", str)
+    sb.Append ("//");
+    String.AppendEscaped(auth. regName, "$,;:@&=+", sb);
   END Append;
 
-BEGIN
-  regNameContext := Error.NewContext ("URI:Authority:RegistryBased");
-  regNameContext. SetString (illegalRegNameChar,
-    "Illegal character in registry-based naming authority");
-  regNameContext. SetString (emptyRegName,
-    "Registry-based naming authority must not be empty");
 END URI:Authority:RegistryBased.

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Authority:ServerBased;
 (*  Implements class for registry-based authority components.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ MODULE URI:Authority:ServerBased;
 
 
 IMPORT
-  Strings, IntStr, TextRider, CC := CharClass,
-  URI, URI:CharClass, URI:String, URI:Error;
+  IntStr, TextRider, CC := CharClass, Object, Exception, ADT:StringBuffer,
+  URI, URI:CharClass, URI:String;
 
 CONST
   defaultPort = -1;
@@ -32,10 +32,10 @@ TYPE
   AuthorityDesc* = RECORD
   (**Server-based authority component of an URI.  *)
     (URI.AuthorityDesc)
-    userinfo-: String.StringPtr;
+    userinfo-: STRING;
     (**Userinfo from authority component.  @code{NIL} if no userinfo is
        given.  *)
-    host-: String.StringPtr;
+    host-: STRING;
     (**Host part.  This is never @code{NIL}.  *)
     port-: Port;
     (**Port number.  If the port is part of the authority component, this
@@ -47,20 +47,7 @@ TYPE
   END;
 
 
-CONST
-  illegalUserInfoChar = 1;
-  malformedIPv4Address = 2;
-  malformedHostName = 3;
-  emptyHostName = 4;
-  malformedPort = 5;
-  portOutOfRange = 6;
-  junkAfterAuthority = 7;
-  
-VAR
-  serverContext: Error.Context;
-
-
-PROCEDURE Init* (auth: Authority; userinfo, host: String.StringPtr; port, defaultPort: Port);
+PROCEDURE Init* (auth: Authority; userinfo, host: STRING; port, defaultPort: Port);
   BEGIN
     ASSERT (host # NIL);
     auth. userinfo := userinfo;
@@ -69,7 +56,7 @@ PROCEDURE Init* (auth: Authority; userinfo, host: String.StringPtr; port, defaul
     auth. defaultPort := defaultPort
   END Init;
 
-PROCEDURE New* (userinfo, host: String.StringPtr; port, defaultPort: Port): Authority;
+PROCEDURE New* (userinfo, host: STRING; port, defaultPort: Port): Authority;
 (**Creates a new server-based authority component.  The arguments
    @oparam{userinfo}, @oparam{host}, @oparam{port}, and @oparam{defaultPort}
    are used to initialize the corresponding fields of a new instance of
@@ -100,12 +87,12 @@ PROCEDURE (auth: Authority) Copy* (dest: URI.Authority);
     (*auth. Copy^ (dest); procedure is abstract in super class *)
     WITH dest: Authority DO
       IF (auth. userinfo # NIL) THEN
-        dest. userinfo := String.Copy (auth. userinfo^)
+        dest. userinfo := auth.userinfo;
       ELSE
         dest. userinfo := NIL
       END;
       IF (dest. host # NIL) THEN
-        dest. host := String.Copy (auth. host^)
+        dest. host := auth.host;
       ELSE
         dest. host := NIL
       END;
@@ -114,11 +101,12 @@ PROCEDURE (auth: Authority) Copy* (dest: URI.Authority);
     END
   END Copy;
 
-PROCEDURE ParseHost (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
+PROCEDURE ParseHost (str: Object.CharsLatin1; offset: URI.Offset)
+RAISES Exception.ParseError;
   VAR
     i, j, lastLabelStart: URI.Offset;
     
-  PROCEDURE IsIPv4Address (str: URI.StringPtr): BOOLEAN;
+  PROCEDURE IsIPv4Address (str: Object.CharsLatin1): BOOLEAN;
     VAR
       i: URI.Offset;
     BEGIN
@@ -169,19 +157,25 @@ PROCEDURE ParseHost (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
       END;
       RETURN FALSE
     END SkipLabel;
+
+  PROCEDURE ErrorIPv4() RAISES Exception.ParseError;
+    BEGIN
+      RAISE(NEW(Exception.ParseError,
+                "Malformed IPv4 address in authority component", i+offset));
+    END ErrorIPv4;
   
   BEGIN
     i := 0;
     IF IsIPv4Address (str) THEN
       FOR j := 1 TO 4 DO
         IF ~SkipDigits() THEN
-          RETURN Error.New (serverContext, malformedIPv4Address, i+offset)
+          ErrorIPv4();
         END;
         IF (j < 4) THEN
           IF (str[i] = ".") THEN
             INC (i)
           ELSE
-            RETURN Error.New (serverContext, malformedIPv4Address, i+offset)
+            ErrorIPv4();
           END
         END
       END
@@ -189,7 +183,7 @@ PROCEDURE ParseHost (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
       LOOP
         lastLabelStart := i;
         IF ~SkipLabel() THEN
-          RETURN Error.New (serverContext, malformedIPv4Address, i+offset)
+          ErrorIPv4();
         END;
         IF (str[i] = ".") THEN
           INC (i);
@@ -201,17 +195,19 @@ PROCEDURE ParseHost (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
         END
       END;
       IF ~CharClass.IsAlpha (str[lastLabelStart]) THEN
-        RETURN Error.New (serverContext, malformedHostName, i+offset)
+        RAISE(NEW(Exception.ParseError,
+                  "Malformed host name in authority component", i+offset));
       END
     END;
-    RETURN NIL
   END ParseHost;
 
-PROCEDURE (auth: Authority) ParseAuthority* (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
+PROCEDURE (auth: Authority) ParseAuthority* (str: Object.CharsLatin1;
+                                             offset: URI.Offset)
+RAISES Exception.ParseError;
   VAR
     i, start: INTEGER;
-    res: Error.Msg;
-    userinfo, host: String.StringPtr;
+    userinfo: STRING;
+    host: Object.String8;
     port: LONGINT;
   BEGIN
     i := 0;
@@ -228,10 +224,12 @@ PROCEDURE (auth: Authority) ParseAuthority* (str: URI.StringPtr; offset: URI.Off
             CharClass.SkipMember (str^, i, ";:&=+$,") DO
       END;
       IF (str[i] = "@") THEN
-        userinfo := String.Unescape (String.Extract (str^, 0, i));
+        userinfo := String.Unescape (Object.NewLatin1Region(str^, 0, i));
         INC (i)
       ELSE
-        RETURN Error.New (serverContext, illegalUserInfoChar, i+offset)
+        RAISE(NEW(Exception.ParseError,
+                  "Illegal character in user info part of authority component",
+                  i+offset));
       END
     ELSE                                 (* no user info *)
       i := 0
@@ -242,13 +240,11 @@ PROCEDURE (auth: Authority) ParseAuthority* (str: URI.StringPtr; offset: URI.Off
       INC (i)
     END;
     IF (i = start) THEN
-      RETURN Error.New (serverContext, emptyHostName, i+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Host name in authority component is empty", i+offset));
     ELSE
-      host := String.Extract (str^, start, i);
-      res := ParseHost (host, offset+start);
-      IF (res # NIL) THEN
-        RETURN res
-      END
+      host := Object.NewLatin1Region(str^, start, i);
+      ParseHost (host.CharsLatin1(), offset+start);
     END;
     
     port := defaultPort;
@@ -264,13 +260,16 @@ PROCEDURE (auth: Authority) ParseAuthority* (str: URI.StringPtr; offset: URI.Off
           INC (i)
         END;
         IF (port > 65535) THEN
-          RETURN Error.New (serverContext, portOutOfRange, start+offset)
+          RAISE(NEW(Exception.ParseError,
+                    "Port number out of range in authority component",
+                    start+offset));
         END
       END
     END;
     
     IF (str[i] # 0X) THEN
-      RETURN Error.New (serverContext, junkAfterAuthority, i+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Junk after authority component", i+offset));
     END;
     
     auth. userinfo := userinfo;
@@ -280,7 +279,6 @@ PROCEDURE (auth: Authority) ParseAuthority* (str: URI.StringPtr; offset: URI.Off
     ELSE
       auth. port := port
     END;
-    RETURN NIL
   END ParseAuthority;
 
 PROCEDURE (auth: Authority) WriteXML* (w: TextRider.Writer);
@@ -290,11 +288,11 @@ PROCEDURE (auth: Authority) WriteXML* (w: TextRider.Writer);
     w. WriteString (CC.eol+"<authority-server-based>");
     IF (auth. userinfo # NIL) THEN
       w. WriteString (CC.eol+"<userinfo>");
-      w. WriteString (auth. userinfo^);
+      w. WriteObject (auth. userinfo);
       w. WriteString ("</userinfo>");
     END;
     w. WriteString (CC.eol+"<host>");
-    w. WriteString (auth. host^);
+    w. WriteObject (auth. host);
     w. WriteString ("</host>");
     IF (auth. port >= 0) THEN
       w. WriteString (CC.eol+"<port>");
@@ -305,37 +303,21 @@ PROCEDURE (auth: Authority) WriteXML* (w: TextRider.Writer);
     w. WriteString (CC.eol+"</authority-server-based>");
   END WriteXML;
 
-PROCEDURE (auth: Authority) Append* (VAR str: ARRAY OF CHAR);
+PROCEDURE (auth: Authority) Append* (sb: StringBuffer.StringBuffer);
   VAR
     s: ARRAY 32 OF CHAR;
   BEGIN
-    Strings.Append ("//", str);
-    IF (auth. userinfo # NIL) THEN
-      String.AppendEscaped (auth. userinfo^, CharClass.unreservedUserinfo, str);
-      Strings.Append ("@", str)
+    sb.Append("//");
+    IF (auth.userinfo # NIL) THEN
+      String.AppendEscaped(auth.userinfo, CharClass.unreservedUserinfo, sb);
+      sb.Append("@");
     END;
-    Strings.Append (auth. host^, str);
-    IF (auth. port >= 0) & (auth. port # auth. defaultPort) THEN
-      Strings.Append (":", str);
-      IntStr.IntToStr (auth. port, s);
-      Strings.Append (s, str)
+    sb.Append(auth.host);
+    IF (auth.port >= 0) & (auth.port # auth.defaultPort) THEN
+      sb.Append(":");
+      IntStr.IntToStr(auth.port, s);
+      sb.AppendLatin1(s);
     END
   END Append;
 
-BEGIN
-  serverContext := Error.NewContext ("URI:Authority:ServerBased");
-  serverContext. SetString (illegalUserInfoChar,
-    "Illegal character in user info part of authority component");
-  serverContext. SetString (malformedIPv4Address,
-    "Malformed IPv4 address in authority component");
-  serverContext. SetString (malformedHostName,
-    "Malformed host name in authority component");
-  serverContext. SetString (emptyHostName,
-    "Host name in authority component is empty");
-  serverContext. SetString (malformedPort,
-    "Malformed port number in authority component");
-  serverContext. SetString (portOutOfRange,
-    "Port number out of range in authority component");
-  serverContext. SetString (junkAfterAuthority,
-    "Junk after authority component");
 END URI:Authority:ServerBased.

@@ -20,7 +20,8 @@ MODULE URI:Scheme:Opaque;
 
 
 IMPORT
-  TextRider, CC := CharClass, URI, URI:Error, URI:CharClass, URI:String;
+  TextRider, CC := CharClass, Object, Exception, ADT:StringBuffer,
+  URI, URI:CharClass, URI:String;
 
 
 TYPE
@@ -28,25 +29,18 @@ TYPE
   GenericDesc* = RECORD
   (**This class implements the generic opaque URI.  *)
     (URI.OpaqueURIDesc)
-    opaque-: URI.StringPtr;
+    opaque-: STRING;
   END;
 
 
-CONST
-  illegalOpaqueChar = 1;
-
-VAR
-  opaqueContext: Error.Context;
-
-
-PROCEDURE Init* (uri: Generic; schemeId, opaque: URI.StringPtr);
+PROCEDURE Init* (uri: Generic; schemeId, opaque: STRING);
   BEGIN
     URI.InitOpaqueURI (uri, schemeId);
     ASSERT (opaque # NIL);
     uri. opaque := opaque
   END Init;
 
-PROCEDURE New* (schemeId, opaque: URI.StringPtr): Generic;
+PROCEDURE New* (schemeId, opaque: STRING): Generic;
   VAR
     uri: Generic;
   BEGIN
@@ -68,11 +62,11 @@ PROCEDURE (uri: Generic) Copy* (dest: URI.URI);
   BEGIN
     uri. Copy^ (dest);
     WITH dest: Generic DO
-      dest. opaque := String.Copy (uri. opaque^)
+      dest. opaque := uri. opaque;
     END
   END Copy;
 
-PROCEDURE IsValidOpaqueStr (str: URI.String): URI.Offset;
+PROCEDURE IsValidOpaqueStr (str[NO_COPY]: ARRAY OF CHAR): URI.Offset;
   VAR
     i: URI.Offset;
   BEGIN
@@ -89,16 +83,18 @@ PROCEDURE IsValidOpaqueStr (str: URI.String): URI.Offset;
     END
   END IsValidOpaqueStr;
 
-PROCEDURE (uri: Generic) ParseOpaquePart* (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
+PROCEDURE (uri: Generic) ParseOpaquePart* (str: Object.CharsLatin1; offset: URI.Offset)
+RAISES Exception.ParseError;
   VAR
     pos: URI.Offset;
   BEGIN
     pos := IsValidOpaqueStr (str^);
     IF (pos < 0) THEN
-      uri. opaque := String.Unescape (str);
-      RETURN NIL
+      uri. opaque := String.Unescape(Object.NewLatin1(str^));
     ELSE
-      RETURN Error.New (opaqueContext, illegalOpaqueChar, pos+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Illegal character for opaque component of an URI",
+                pos+offset));
     END
   END ParseOpaquePart;
 
@@ -107,24 +103,25 @@ PROCEDURE (uri: Generic) WriteXML* (w: TextRider.Writer);
     w. WriteString (CC.eol+"<opaque-uri>");
     IF (uri. schemeId # NIL) THEN
       w. WriteString (CC.eol+"<scheme>");
-      w. WriteString (uri. schemeId^);
+      w. WriteObject (uri. schemeId);
       w. WriteString ("</scheme>")
     END;
     w. WriteString (CC.eol+"<opaque-part>");
-    w. WriteString (uri. opaque^);
+    w. WriteObject (uri. opaque);
     w. WriteString ("</opaque-part>");
     w. WriteString (CC.eol+"</opaque-uri>")
   END WriteXML;
 
-PROCEDURE (uri: Generic) GetString* (VAR str: ARRAY OF CHAR);
+PROCEDURE (uri: Generic) GetString*(): Object.String8;
+  VAR
+    sb: StringBuffer.StringBuffer;
+    str: STRING;
   BEGIN
-    COPY ("", str);
-    uri. AppendScheme (str);
-    String.AppendEscaped (uri. opaque^, CharClass.reserved, str)
+    sb := StringBuffer.New("");
+    uri. AppendScheme (sb);
+    String.AppendEscaped (uri. opaque, CharClass.reserved, sb);
+    str := sb.ToString();
+    RETURN str(Object.String8);
   END GetString;
 
-BEGIN
-  opaqueContext := Error.NewContext ("URI:Scheme:Opaque");
-  opaqueContext. SetString (illegalOpaqueChar,
-    "Illegal character for opaque component of an URI");
 END URI:Scheme:Opaque.

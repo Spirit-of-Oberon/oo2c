@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Authority:Unparsed;
 (*  Implements class for unparsed authority components.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -19,8 +19,8 @@ MODULE URI:Authority:Unparsed;
 *)
 
 IMPORT
-  Strings, TextRider, CC := CharClass,
-  URI, URI:Error, URI:String, URI:CharClass;
+  TextRider, CC := CharClass, Object, Exception, ADT:StringBuffer,
+  URI, URI:CharClass;
 
 
 TYPE
@@ -28,28 +28,21 @@ TYPE
   AuthorityDesc = RECORD
   (**Unparsed authority component of an URI.  *)
     (URI.AuthorityDesc)
-    unparsed-: URI.StringPtr
+    unparsed-: STRING
     (**Holds the authority substring of a URI @emph{without} any
        modifications.  In particular, escaped characters are @emph{not}
        replaced with their character value.  *)
   END;
 
 
-CONST
-  illegalAuthChar = 1;
-
-VAR
-  authContext: Error.Context;
-
-
-PROCEDURE Init* (auth: Authority; unparsed: URI.StringPtr);
+PROCEDURE Init* (auth: Authority; unparsed: STRING);
   BEGIN
     URI.InitAuthority (auth);
     ASSERT (unparsed # NIL);
     auth. unparsed := unparsed
   END Init;
 
-PROCEDURE New* (unparsed: URI.StringPtr): Authority;
+PROCEDURE New* (unparsed: STRING): Authority;
   VAR
     auth: Authority;
   BEGIN
@@ -71,39 +64,37 @@ PROCEDURE (auth: Authority) Copy* (dest: URI.Authority);
   BEGIN
     (*auth. Copy^ (dest); procedure is abstract in super class *)
     WITH dest: Authority DO
-      dest. unparsed := String.Copy (auth. unparsed^)
+      dest. unparsed := auth. unparsed;
     END
   END Copy;
 
-PROCEDURE (auth: Authority) ParseAuthority* (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
+PROCEDURE (auth: Authority) ParseAuthority* (str: Object.CharsLatin1;
+                                             offset: URI.Offset)
+RAISES Exception.ParseError;
   VAR
     i: URI.Offset;
   BEGIN
     i := 0;
     WHILE CharClass.SkipAuthChar (str^, i) DO END;
     IF (str[i] # 0X) THEN
-      RETURN Error.New (authContext, illegalAuthChar, i+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Illegal character in authority component", i+offset));
     ELSE
-      auth. unparsed := str;
-      RETURN NIL
+      auth.unparsed := Object.NewLatin1Region(str^, 0, i);
     END
   END ParseAuthority;
 
 PROCEDURE (auth: Authority) WriteXML* (w: TextRider.Writer);
   BEGIN
     w. WriteString (CC.eol+"<authority-unparsed>");
-    w. WriteString (auth. unparsed^);
+    w. WriteObject (auth. unparsed);
     w. WriteString ("</authority-unparsed>")
   END WriteXML;
 
-PROCEDURE (auth: Authority) Append* (VAR str: ARRAY OF CHAR);
+PROCEDURE (auth: Authority) Append* (sb: StringBuffer.StringBuffer);
   BEGIN
-    Strings.Append ("//", str);
-    Strings.Append (auth. unparsed^, str)
+    sb.Append("//");
+    sb.Append(auth. unparsed);
   END Append;
 
-BEGIN
-  authContext := Error.NewContext ("URI:Authority:Unparsed");
-  authContext. SetString (illegalAuthChar,
-    "Illegal character in authority component");
 END URI:Authority:Unparsed.

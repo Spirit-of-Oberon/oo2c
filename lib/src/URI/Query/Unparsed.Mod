@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Query:Unparsed;
 (*  Implements class for unparsed query components.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -19,8 +19,8 @@ MODULE URI:Query:Unparsed;
 *)
 
 IMPORT
-  Strings, TextRider, CC := CharClass, 
-  URI, URI:Error, URI:String, URI:CharClass;
+  TextRider, CC := CharClass, Object, Exception, ADT:StringBuffer,
+  URI, URI:CharClass;
 
 
 TYPE
@@ -28,28 +28,21 @@ TYPE
   QueryDesc = RECORD
   (**Unparsed query component of an URI.  *)
     (URI.QueryDesc)
-    unparsed-: URI.StringPtr;
+    unparsed-: STRING;
     (**Holds the query substring of a URI @emph{without} any modifications.
        In particular, escaped characters are @emph{not} replaced with their
        character value.  This field is never @code{NIL}.  *)
   END;
 
 
-CONST
-  illegalQueryChar = 1;
-
-VAR
-  queryContext: Error.Context;
-
-
-PROCEDURE Init* (query: Query; unparsed: URI.StringPtr);
+PROCEDURE Init* (query: Query; unparsed: STRING);
   BEGIN
     URI.InitQuery (query);
     ASSERT (unparsed # NIL);
     query. unparsed := unparsed
   END Init;
 
-PROCEDURE New* (unparsed: URI.StringPtr): Query;
+PROCEDURE New* (unparsed: STRING): Query;
   VAR
     query: Query;
   BEGIN
@@ -71,39 +64,37 @@ PROCEDURE (query: Query) Copy* (dest: URI.Query);
   BEGIN
     (*query. Copy^ (dest); procedure is abstract in super class *)
     WITH dest: Query DO
-      dest. unparsed := String.Copy (query. unparsed^)
+      dest.unparsed := query.unparsed;
     END
   END Copy;
 
-PROCEDURE (query: Query) ParseQuery* (str: URI.StringPtr; offset: URI.Offset): Error.Msg;
+PROCEDURE (query: Query) ParseQuery* (str: Object.CharsLatin1;
+                                      offset: URI.Offset)
+RAISES Exception.ParseError;
   VAR
     i: URI.Offset;
   BEGIN
     i := 0;
     WHILE CharClass.SkipURIC (str^, i) DO END;
     IF (str[i] # 0X) THEN
-      RETURN Error.New (queryContext, illegalQueryChar, i+offset)
+      RAISE(NEW(Exception.ParseError,
+                "Illegal character in query component", i+offset));
     ELSE
-      query. unparsed := str;
-      RETURN NIL
+      query.unparsed := Object.NewLatin1Region(str^, 0, i);
     END
   END ParseQuery;
 
 PROCEDURE (query: Query) WriteXML* (w: TextRider.Writer);
   BEGIN
     w. WriteString (CC.eol+"<query-unparsed>");
-    w. WriteString (query. unparsed^);
+    w. WriteObject (query. unparsed);
     w. WriteString ("</query-unparsed>");
   END WriteXML;
 
-PROCEDURE (query: Query) Append* (VAR str: ARRAY OF CHAR);
+PROCEDURE (query: Query) Append* (sb: StringBuffer.StringBuffer);
   BEGIN
-    Strings.Append ("?", str);
-    Strings.Append (query. unparsed^, str)
+    sb.Append("?");
+    sb.Append(query.unparsed);
   END Append;
 
-BEGIN
-  queryContext := Error.NewContext ("URI:Query:Unparsed");
-  queryContext. SetString (illegalQueryChar,
-    "Illegal character in query component");
 END URI:Query:Unparsed.
