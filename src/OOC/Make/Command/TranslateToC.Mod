@@ -227,7 +227,10 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         WriteModuleName (w, "#define _MODULE_", m, "_");
         w. WriteLn;
         
-        (*w. WriteString ('#include "_oo2c.h"'); w. WriteLn;*)
+        (* __typemap definitions are required parse definitions of the
+           module header file *)
+        w. WriteString ('#include "__typemap.h"');
+        w. WriteLn;
 (*        import := m. importList;
         WHILE (import # NIL) DO
           WriteInclude (w, import. imported.
@@ -242,11 +245,17 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         
         
       | Repository.modDeclFileC:
-        WriteInclude (w, m. GetURI (Repository.modHeaderFileC));
-        WriteDeclarations (w, converter, FALSE);
+         WriteInclude (w, m. GetURI (Repository.modHeaderFileC));
+         WriteDeclarations (w, converter, FALSE);
           
       | Repository.modCodeFileC:
          WriteInclude (w, m. GetURI (Repository.modDeclFileC));
+
+        (* include full __oo2c.h only in generated C code files; this way,
+           the .h and .d files can be used without pulling in all the 
+           declarations of the run-time header file *)
+         w. WriteString ('#include "__oo2c.h"');
+         w. WriteLn;
          WriteProcedures (w, converter, procList);
          w. WriteLn;
          WriteModuleName (w, "void ", m, "_init(void) {");
