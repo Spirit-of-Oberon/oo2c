@@ -65,6 +65,7 @@ AC_SUBST(ooc_target_address_type,["longint"])
 if test $ooc_target_address = 64; then
   ooc_target_address_type="hugeint"
 fi
+AC_CHECK_TYPES([ssize_t],,,[#include <unistd.h>])
 
 dnl checks for structures
 AC_CHECK_MEMBER(struct stat.st_mtime_usec,[AC_DEFINE(HAVE_STRUCT_STAT_USEC,1,[Define to 1 if struct stat has usec members.])],,[#include <sys/stat.h>])
