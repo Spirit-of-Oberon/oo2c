@@ -119,11 +119,13 @@ BEGIN
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);
-  
+  (* discard errors in config file 
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
-  ELSIF (Config.arguments. ArgNumber() = 0) THEN
+  END;*)
+
+  IF (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: TestSymTab [--names-only-xml|--resolve-names-xml|--interface-xml] [--terse-errors] -r <repository> <file>"); Out.Ln;
     HALT (1)
   ELSE

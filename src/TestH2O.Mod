@@ -55,10 +55,12 @@ BEGIN
   NewConfig;
   Config.Read (cfgErrList);
 
+  (* discard errors in config file
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
-  ELSIF (Config.arguments. ArgNumber() = 0) THEN
+  END;*)
+  IF (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: TestH2O {-r <base-dir>} <file>"); Out.Ln;
     HALT (1)
   ELSE

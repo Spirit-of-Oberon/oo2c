@@ -101,12 +101,12 @@ BEGIN
   Make.inspectProc := OptionToMatcher(inspectProc, "--inspect.1");
   Make.inspectStage := OptionToMatcher(inspectStage, "--inspect.2");
   
+  (* discard errors in config file 
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
-  END;
-  IF ~cfgErrList.NoErrors() THEN
     HALT (1)
-  ELSIF (Config.arguments. ArgNumber() = 0) THEN
+  END;*)
+  IF (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: TestCompile [--config <cfg-file>] {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa|--ia32][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
     HALT (1)
   ELSE
