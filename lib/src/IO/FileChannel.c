@@ -81,9 +81,10 @@ static void cleanup_tmp_files() {
 }
 
 
-IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String8 file,
+IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String xfile,
 						       OOC_UINT32 mode) {
   int flags = 0;
+  Object__String8 file = OS_Path__Encode(xfile);
   char* fname = (char*)OOC_METHOD(file,Object__String8Desc_CharsLatin1)(file);
   int fd;
   Object__String8 tmpName = NULL;
@@ -150,7 +151,7 @@ IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String8 file,
   }
 }
 
-IO_Buffer__Channel IO_FileChannel__Open(Object__String8 file,
+IO_Buffer__Channel IO_FileChannel__Open(Object__String file,
 					OOC_UINT32 mode) {
   return IO_Buffer__Open
     ((IO__ByteChannel)IO_FileChannel__OpenUnbuffered(file, mode));
