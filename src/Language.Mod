@@ -17,11 +17,11 @@ TYPE
 
   Value* = POINTER TO ValueDesc;
   ValueDesc* = RECORD [ABSTRACT] (Object.ObjectDesc)
-    (** This is the base type for all Oberon-2 values. Each value has an
-     * associtated type (the @ofield{type} field). A @otype{Value} may be
-     * converted to a @otype{String}, but otherwise its main function is to
-     * expose a read-only field @ofield{type} via which expressions may do
-     * their work. *)
+    (**This is the base type for all Oberon-2 values. Each value has an *
+       associtated type (the @ofield{type} field). A @otype{Value} may be *
+       converted to a @otype{String.String}, but otherwise its main function is
+       to * expose a read-only field @ofield{type} via which expressions may do
+       * their work.  *)
 
     type-: Type;            
     (** The type of this value. *)

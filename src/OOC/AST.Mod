@@ -22,7 +22,7 @@ MODULE OOC:AST [OOC_EXTENSIONS];
 
 IMPORT
   Strings, OOC:Scanner:InputBuffer, OOC:Doc, OOC:Scanner:Builder:BasicList,
-  OOC:SymbolTable:Item;
+  OOC:SymbolTable:Item, OOC:Scanner:Symbol (*for refs in docs*);
 
 TYPE
   Name* = InputBuffer.CharArray;

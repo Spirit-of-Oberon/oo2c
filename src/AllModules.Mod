@@ -1,6 +1,24 @@
 MODULE AllModules;
 
 IMPORT
+  (* Make Framework
+     ---------------------------------------------------------------------- *)
+  Make,
+  Make:Command:Target,
+  Make:Edge:TimeDep,
+  Make:Entity:Group,
+  Make:Entity:Resource,
+  
+
+  (* Boxed Versions of Builtin Types
+     ---------------------------------------------------------------------- *)
+  Language,
+  Language:Boolean,
+  Language:IntegerType,
+  Language:Integer,
+  Language:String8,
+
+  
 (* Miscellaneous Modules
    ------------------------------------------------------------------------ *)
   OOC:Error,
@@ -93,6 +111,11 @@ IMPORT
   OOC:SymbolTable:Item:XML,
     (* Writes a symbol table to an XML document.  *)
   
+  OOC:SymbolTable:Item:GetClass,
+    (* Determines the class name for a given item.  This is mainly used
+       to structure documentation automatically generated from sources
+       files.  *)
+       
   SymbolTableBuilder := OOC:SymbolTable:Builder,
     (* Defines a builder class with factory methods for the symbol table
        entries defined in @omodule{OOC:SymbolTable:Item}.  *)
@@ -116,34 +139,46 @@ IMPORT
 
 
 
-  OOC:SymbolTable:Item:GetClass,
   OOC:Repository,
   RepFileSystem := OOC:Repository:FileSystem,
+  OOC:Repository:GetImports,
   
   OOC:Config:Pragmas,
   OOC:Config:Pragmas:StdPragmas,
   
   OOC:Config:Repositories,
   ConfigRepFileSystem := OOC:Config:Repositories:FileSystem,
-  
-  Make,
-  Make:Command:Target,
-  Make:Edge:TimeDep,
-  Make:Entity:Group,
-  Make:Entity:Resource,
-  
+
+  OOC:Make:Command:CompileFileC,
   OOC:Make:Command:CompileModule,
   OOC:Make:Command:InterfaceDescr,
   OOC:Make:Command:InterfaceHTML,
   OOC:Make:Command:InterfaceXML,
+  OOC:Make:Command:LinkProgramC,
+  OOC:Make:Command:TranslateToC,
+  OOC:Make:Command:WriteMainFileC,
   OOC:Make:Entity:ModuleFile,
   OOC:Make:Entity:UsageData,
   
   OOC:Auxiliary:ParseModule,
-  
-(* Test Programs
-   ------------------------------------------------------------------------ *)
+
+  OOC:SSA,
+  OOC:SSA:IRtoSSA,
+  OOC:SSA:Opcode,
+  OOC:SSA:Opnd,
+  OOC:SSA:Result,
+  OOC:SSA:WriteC,
+  SSAXML := OOC:SSA:XML,
+
+
+  (* Test Programs
+     ---------------------------------------------------------------------- *)
   TestScanner, TestParser, TestSymTab, TestConfigSections, TestConfigCmdLine,
-  TestConfigEnv, TestConfigSimple, TestInterfaceGen, TestTexinfo, TestMake;
+  TestConfigEnv, TestConfigSimple, TestInterfaceGen, TestTexinfo, TestMake,
+  TestCompile,
+  
+  RunTests;
+  (* Implements the XML based test framework.  Used for language compliance
+     tests, and to check results of executables.  *)
   
 END AllModules.

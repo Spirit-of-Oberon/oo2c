@@ -210,15 +210,16 @@ PROCEDURE ConvertList (c: Converter; root: Item.Item);
   END ConvertList;
 
 PROCEDURE (c: Converter) ConvertSymTab* (b: WriteDecl.Block; writeExported: BOOLEAN);
-(**Translates all declarations of the module to C.
-   The C declarations are emitted into the block object @oparam{b}.
+(**Translates all declarations of the module to C.  The C declarations are
+   emitted into the block object @oparam{b}.
 
    The procedure supports two different modes of operations: writing the public
    interface of a module, and writing the complement to the public interface.
-   The set of emitted declarations is selected by @ofield{c.exports}.  With
-   @samp{@oparam{writeExported}=@code{TRUE}}, all items in @ofield{c.exports}
-   are written.  Otherwise, all items @emph{not} in @ofield{c.exports} are
-   emitted.  *)
+   The set of emitted declarations is selected by
+   @oparam{NewConverter.exports}.  With
+   @samp{@oparam{writeExported}=@code{TRUE}}, all items in
+   @oparam{NewConverter.exports} are written.  Otherwise, all items @emph{not}
+   in @oparam{NewConverter.exports} are emitted.  *)
   BEGIN
     c. b := b;
     IF writeExported THEN

@@ -69,7 +69,7 @@ TYPE
     variableHistory-: Pragmas.History;
     (**This object keeps track of the changes to pragma variables through
        assignments and @code{PUSH} and @code{POP} operations.  The initial
-       values of the variables are taken from @ofield{pragmas}  *)
+       values of the variables are taken from @oparam{Init.defaultPragmas}  *)
   END;
 
 

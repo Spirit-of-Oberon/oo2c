@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Exports;
 (*  Marks declarations that are part of the module's symbol file.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Exports;
 *)
 
 IMPORT
-  ADT:Dictionary, OOC:SymbolTable:Item, OOC:Doc;
+  Log, ADT:Dictionary, OOC:SymbolTable:Item, OOC:Doc;
 
 
 PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
@@ -103,6 +103,8 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
             (* nothing *)
           | item: Item.ProcDecl DO
             MarkType (item. formalPars)
+          | item: Item.PredefProc DO
+            (* nothing *)
           | item: Item.ConstDecl DO
             (* nothing *)
           | item: Item.VarDecl DO
@@ -111,6 +113,10 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
             MarkType (item. srcCodeType)
           | item: Item.TypeDecl DO
             MarkType (item. srcCodeType)
+          ELSE
+            Log.Type ("-- [OOC:SymbolTable:Exports]: Unknown type of `item'",
+                      item);
+            ASSERT (FALSE);
           END
         END
       END MarkDecl;

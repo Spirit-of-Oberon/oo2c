@@ -59,7 +59,7 @@ TYPE
     nextUse-: Opnd;
     (**Links that make up the ``uses'' list of a given value.  By traversing
        this list, all using occurences of a result are reached.  The head of
-       the list is @ofield{Usable.useList}.  *)
+       the list is @ofield{Result.useList}.  *)
     
   END;
 
@@ -87,7 +87,7 @@ TYPE
        data on behalf on a given result.  An algorithm must initialize this
        field before using it.  Keep in mind that this field can serve only one
        operation at a given time.  In case of conflict, consider to use
-       @omodule{ADT:Dictionary:IntValue} instead of this field.  *)
+       @omodule{*ADT:Dictionary:IntValue} instead of this field.  *)
 END;
 
 TYPE
@@ -205,7 +205,7 @@ PROCEDURE NewOpnd (arg: Result; id: OpndId.Id): Opnd;
   
 PROCEDURE (opnd: Opnd) DeleteOpnd*;
 (**Removes the operand @oparam{opnd} from the operand list of instruction
-   @ofield{{opnd. instr}.  *)
+   @ofield{opnd.instr}.  *)
   VAR
     prev: Opnd;
   BEGIN
@@ -531,7 +531,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock);
   END InitProcBlock;
 
 PROCEDURE NewProcBlock* (): ProcBlock;
-(**Creates a new instance of @oparam{ProcBlock}.  *)
+(**Creates a new instance of @otype{ProcBlock}.  *)
   VAR
     pb: ProcBlock;
   BEGIN
@@ -612,8 +612,8 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value): Const;
   END GetConst;
 
 PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Item.Declaration): DeclRef;
-(**Returns the @code{const} instruction for the value @oparam{value}.  Equal
-   values are mapped to the same unique instruction.  *)
+(**Returns the @code{declref} instruction for the declaration @oparam{decl}.
+   Equal declarations are mapped to the same unique instruction.  *)
   VAR
     obj: Object.Object;
     declRef: DeclRef;
