@@ -828,7 +828,11 @@ PROCEDURE (decl: Declaration) Store* (w: Object.Writer);
     w. WriteObject (decl. name);
     (*w. WriteNum (decl. visibleFrom);*)
     w. WriteNum (decl. exportMark);
-    w. WriteObject (decl. docString)
+    IF (decl. exportMark # nameNotExported) THEN
+      w. WriteObject (decl. docString);
+    ELSE
+      w. WriteObject (NIL);
+    END;
   END Store;
 
 PROCEDURE (decl: Declaration) Load* (r: Object.Reader);

@@ -468,8 +468,7 @@ PROCEDURE Resolve* (symTab: Sym.Module;
           END
         END;
         
-        IF (item. exportMark # Sym.nameNotExported) &
-           (item. docString # NIL) THEN
+        IF (item. docString # NIL) THEN
           ResolveDoc (item(Sym.Declaration). docString, 
                       item(Sym.Declaration),
                       identificationContext,
