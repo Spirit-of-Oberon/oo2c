@@ -220,7 +220,6 @@ PROCEDURE ParseRef (ref: Doc.OberonRef; errList: Error.List;
   END ParseRef;
 
 PROCEDURE Resolve* (symTab: Sym.Module;
-                    repositories: Repositories.Section;
                     errList: Error.List);
   VAR
     interfaceCache: Dictionary.Dictionary;

@@ -24,7 +24,7 @@ MODULE OOC:SymbolTable:Predef;
 IMPORT
   Strings, Language, Language:Boolean, Language:Integer, Language:String8,
   Language:String16, Language:Real,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
+  OOC:Config, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
 CONST
@@ -115,9 +115,6 @@ CONST
   lsh* = 19;                             (* SYSTEM.LSH *)
   val* = 20;                             (* SYSTEM.VAL *)
   
-VAR
-  i: LONGINT;
-
   
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
   VAR
@@ -317,9 +314,22 @@ PROCEDURE SmallestIntType* (value: Integer.Value): Sym.Type;
     RETURN NIL;
   END SmallestIntType;
 
+
+PROCEDURE Init;
+  VAR
+    i: LONGINT;
+    stb: Builder.Builder;
+  BEGIN
+    NEW (Sym.predefIdToType, lastId+1);
+    FOR i := 0 TO lastId DO
+      minConst[i] := NIL; maxConst[i] := NIL;
+    END;
+
+    stb := Builder.New();
+    Config.SetPredefModules (CreatePredef (stb),
+                             CreateSYSTEM (stb));
+  END Init;
+
 BEGIN
-  NEW (Sym.predefIdToType, lastId+1);
-  FOR i := 0 TO lastId DO
-    minConst[i] := NIL; maxConst[i] := NIL;
-  END;
+  Init;
 END OOC:SymbolTable:Predef.

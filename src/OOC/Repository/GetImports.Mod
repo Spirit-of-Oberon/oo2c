@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Repository:GetImports;
 (*  Determine the list of modules imported by a given module.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -58,7 +58,6 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 PROCEDURE GetImports* (m: Rep.Module;
                        pragmas: Pragmas.Section;
-                       repositories: Repositories.Section;
                        VAR errList: Error.List);
   VAR
     res: Msg.Msg;
@@ -90,7 +89,7 @@ PROCEDURE GetImports* (m: Rep.Module;
     BEGIN
       i := 0;
       WHILE (i < imports. len) DO
-        import := repositories. GetModule (imports. n[i](ExtTree.ImportDecl). moduleName^);
+        import := Config.repositories. GetModule (imports. n[i](ExtTree.ImportDecl). moduleName^);
         IF (import = NIL) THEN
           Err (noSuchModule,
                imports. n[i](ExtTree.ImportDecl). module. 
@@ -114,7 +113,7 @@ PROCEDURE GetImports* (m: Rep.Module;
           import := import. nextImport;
         END;
         IF (import = NIL) THEN
-          rtModule := repositories. GetModule (Config.runtimeModule);
+          rtModule := Config.repositories. GetModule (Config.runtimeModule);
           IF (rtModule # NIL) THEN
             (* in a standard environment, this file should always exist *)
             m. AddImport (rtModule);
@@ -134,7 +133,7 @@ PROCEDURE GetImports* (m: Rep.Module;
       WHILE (item # NIL) DO
         WITH item: Sym.Import DO
           IF ~item. IsInternalImport() THEN
-            import := repositories. GetModule (item. moduleName. str^);
+            import := Config.repositories. GetModule (item. moduleName. str^);
             ASSERT (import # NIL);
             m. AddImport (import);
           END;

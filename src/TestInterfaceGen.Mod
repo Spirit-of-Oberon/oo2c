@@ -89,10 +89,8 @@ PROCEDURE RegisterCmdLineOptions;
                  "<options><set name='error-style'>$1</set></options>");
   END RegisterCmdLineOptions;
 
-PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
+PROCEDURE NewConfig;
   BEGIN
-    Config.InitConfig (defaultConfigFile);
-
     buildHTML := Config.options. Set ("build-html", BooleanValue.New (FALSE));
     closure := Config.options. Set ("closure", BooleanValue.New (FALSE));
     errorStyle := Config.options. Set ("error-style", StringValue.New ("default"));
@@ -102,7 +100,7 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
 
 BEGIN
   cfgErrList := Error.NewList ("");
-  NewConfig ("");
+  NewConfig;
   Config.Read (cfgErrList);
   
   IF (cfgErrList. msgCount # 0) THEN

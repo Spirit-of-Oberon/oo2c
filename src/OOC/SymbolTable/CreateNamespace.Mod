@@ -23,7 +23,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 IMPORT
   OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:ImportModules,
-  OOC:Config:Repositories, OOC:Doc:ResolveRef;
+  OOC:Config, OOC:Config:Repositories, OOC:Doc:ResolveRef;
 
 
 CONST
@@ -104,7 +104,6 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 PROCEDURE CreateNamespace* (root: Sym.Module;
                             predefModule, systemModule: Sym.Module;
-                            repositories: Repositories.Section;
                             errList: Error.List);
 (**Populates the namespaces of the symbol table @oparam{root} and performs
    semantic checks on the declarations.  It is assumed, that the namespace
@@ -162,7 +161,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     VAR
       ptr: Sym.Item;
     BEGIN
-      ImportModules.ImportModules (systemModule, repositories, root, errList);
+      ImportModules.ImportModules (systemModule, root, errList);
       IF (errList. msgCount = 0) THEN
         ptr := root. nestedItems;
         WHILE (ptr # NIL) DO
@@ -172,7 +171,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
                  and resolve any reference commands in embedded documentation
                  strings *)
               CreateNamespace (ptr. externalSymTab, predefModule, systemModule,
-                               repositories, errList);
+                               errList);
 (*              ResolveRef.Resolve (ptr. externalSymTab, repositories, errList)
 ... moved to end of CreateNamespace *)
             END
@@ -737,10 +736,12 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     CheckExtendedRecords (root, errList);
     
     
-    ResolveRef.Resolve (root, repositories, errList)
+    ResolveRef.Resolve (root, errList)
   END CreateNamespace;
 
 BEGIN
   NEW (createNamespaceContext);
-  Error.InitContext (createNamespaceContext, "OOC:SymbolTable:CreateNamespace")
+  Error.InitContext (createNamespaceContext, "OOC:SymbolTable:CreateNamespace");
+  CreateNamespace (Config.predefModule, NIL, NIL, Error.NewList (""));
+  CreateNamespace (Config.systemModule, NIL, NIL, Error.NewList(""));
 END OOC:SymbolTable:CreateNamespace.

@@ -19,8 +19,7 @@ PROCEDURE GetSymbolTable* (module: Repository.Module;
       errList := Error.NewList (uriStr);
       CreateNamespace.CreateNamespace (symTab,
                                        Config.predefModule,
-                                       Config.systemModule,
-                                       Config.repositories, errList);
+                                       Config.systemModule, errList);
       ASSERT (errList. msgCount = 0)
     END;
     RETURN symTab

@@ -277,7 +277,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       END;
       IF (t. inspectStage. MatchChars ("schedule-html", 0, -1) # NIL) THEN
         (* create a temporary web server displaying the SSA code *)
-        Inspector.Show (Config.repositories, proc, domRoot);
+        Inspector.Show (proc, domRoot);
       END;
     END;
     

@@ -182,10 +182,8 @@ PROCEDURE RegisterCmdLineOptions;
                  "<options><set name='inspect-proc'>$1</set><set name='inspect-stage'>$2</set></options>");
   END RegisterCmdLineOptions;
 
-PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
+PROCEDURE NewConfig;
   BEGIN
-    Config.InitConfig (defaultConfigFile);
-
     make := Config.options. Set ("make", BooleanValue.New (FALSE));
     writeAST := Config.options. Set ("write-ast", BooleanValue.New (FALSE));
     writeIR := Config.options. Set ("write-ir", BooleanValue.New (FALSE));
@@ -200,7 +198,7 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
 BEGIN
   Error.oo2cStyleErrors := TRUE;
   cfgErrList := Error.NewList ("");
-  NewConfig ("");
+  NewConfig;
   Config.Read (cfgErrList);
   
   IF make. value(BooleanValue.Value). boolean THEN

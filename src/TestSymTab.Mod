@@ -159,10 +159,8 @@ PROCEDURE RegisterCmdLineOptions();
            "<options><set name='oo2cStyleErrors'>TRUE</set></options>");
   END RegisterCmdLineOptions;
 
-PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
+PROCEDURE NewConfig;
   BEGIN
-    Config.InitConfig (defaultConfigFile);
-
     mode := Config.options. Set ("mode", IntegerValue.New (modeResolveNamesXML));
     oo2cStyleErrors := Config.options. Set ("oo2cStyleErrors", BooleanValue.New (FALSE));
     
@@ -171,7 +169,7 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR);
 
 BEGIN
   cfgErrList := Error.NewList ("");
-  NewConfig ("");
+  NewConfig;
   Config.Read (cfgErrList);
   
   IF (cfgErrList. msgCount # 0) THEN
