@@ -92,10 +92,12 @@ CONST
   cap* = 5;                              (* CAP *)
   long* = 6;                             (* LONG *)
   short* = 7;                            (* SHORT *)
-  ord* = 8;                              (* ORD *)
-  max* = 9;                              (* MAX *)
-  min* = 10;                             (* MIN *)
-  new* = 11;                             (* NEW *)
+  chr* = 8;                              (* CHR *)
+  ord* = 9;                              (* ORD *)
+  max* = 10;                             (* MAX *)
+  min* = 11;                             (* MIN *)
+  new* = 12;                             (* NEW *)
+  copy* = 13;                            (* COPY *)
   
 VAR
   i: LONGINT;
@@ -209,10 +211,12 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (cap, "CAP", 1, 1);
     PredefProc (long, "LONG", 1, 1);
     PredefProc (short, "SHORT", 1, 1);
+    PredefProc (chr, "CHR", 1, 1);
     PredefProc (ord, "ORD", 1, 1);
     PredefProc (max, "MAX", 1, 1);
     PredefProc (min, "MIN", 1, 1);
     PredefProc (new, "NEW", 1, Sym.unlimitedArgs);
+    PredefProc (copy, "COPY", 2, 2);
     
     stb. Finalize (module);
     RETURN module
