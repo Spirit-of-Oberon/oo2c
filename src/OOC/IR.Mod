@@ -649,7 +649,7 @@ TYPE
        where @samp{P} is some @samp{POINTER TO R}.  *)
     (OperatorDesc)
     expr-: Expression;
-    referenceType-: Sym.Record;
+    referenceType-: Sym.Type;  (* record or qualified record *)
     checkPointer-: BOOLEAN;
     (**If @code{TRUE}, then a run-time error should be reported if the
        left side of the type test is @code{NIL}.  *)
@@ -3212,7 +3212,7 @@ PROCEDURE (tag: TypeTag) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitTypeTest (test: TypeTest; sym: Symbol;
-                        expr: Expression; referenceType: Sym.Record;
+                        expr: Expression; referenceType: Sym.Type;
                         checkPointer: BOOLEAN;
                         origExpr: Expression; origType: TypeRef);
   BEGIN
@@ -3236,13 +3236,13 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
     VAR
       type: Sym.Type;
     BEGIN
-      type := expr.type;
+      type := expr.type.Deparam();
       WITH type: Sym.Record DO
         RETURN ~(expr IS Var) OR
             (expr(Var).decl(Sym.VarDecl).isVarParam &
              expr(Var).decl(Sym.VarDecl).supplementArgs);
       | type: Sym.Pointer DO
-        RETURN (type.baseType IS Sym.Record) & ~type.isStatic;
+        RETURN TR.IsRecord(type.baseType) & ~type.isStatic;
       | type: Sym.TypeVar DO
         RETURN TRUE;  (* because the bound is always a record pointer *)
       ELSE
@@ -3256,7 +3256,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       RETURN b. errorExpr;
     ELSIF (refType IS Sym.TypeVar) THEN
       RETURN b.ErrExpr(notTypeInstance, referenceType.sym);
-    ELSIF ~TR.IsExtensionOf (refType, expr. type) THEN
+    ELSIF ~TR.IsExtensionOf(TR.Expand(refType), expr.type) THEN
       RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
     ELSIF ~HasDynamicType(expr) THEN
       (* The test for TR.IsExtensionOf restricts the type of the variable to
@@ -3281,8 +3281,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       ELSE
         typeRef := NIL;
       END;
-      InitTypeTest (test, sym, expr, refType(Sym.Record), checkPointer,
-                    origExpr, typeRef);
+      InitTypeTest(test, sym, expr, refType, checkPointer, origExpr, typeRef);
       RETURN test;
     END;
   END NewTypeTest;
@@ -3315,14 +3314,14 @@ VAR
   guard : TypeGuard;
   test : Expression;
 BEGIN
-  guardType := ref. decl(Sym.TypeDecl). type;
+  guardType := ref.qualType;
   b.CheckFunctionOp(design, sym);
   test := b.NewTypeTest(sym, design, ref);
   IF test IS TypeTest THEN
     NEW(guard);
-    InitTypeGuard(guard, sym, guardType, test(TypeTest),
-                GetPragmaValue (b, StdPragmas.derefCheck, sym. pos),
-                GetPragmaValue (b, StdPragmas.typeGuard, sym. pos));
+    InitTypeGuard(guard, sym, TR.Expand(guardType), test(TypeTest),
+                  GetPragmaValue(b, StdPragmas.derefCheck, sym.pos),
+                  GetPragmaValue(b, StdPragmas.typeGuard, sym.pos));
     RETURN guard;
   ELSE
     RETURN test;
@@ -3447,7 +3446,7 @@ PROCEDURE (b: Builder) NewTypeRef (name: Symbol; decl: Sym.TypeDecl): TypeRef;
       (* add argument list default to the bounds of the parameters *)
       NEW(arguments, LEN(qualType.typePars.params^));
       FOR i := 0 TO LEN(arguments^)-1 DO
-        Sym.InitTypeRef(arguments[i], qualType.typePars.params[i]);
+        Sym.InitTypeRef(arguments[i], qualType.typePars.params[i].bound);
       END;
       qualType := Sym.NewQualType(NIL, qualType.position, qualType,
                                   arguments);
@@ -5267,7 +5266,7 @@ PROCEDURE (b: Builder) NewQualType*(type: Expression;
         FOR i := 0 TO LEN(params^)-1 DO
           t := arguments[i](TypeRef).qualType;
           IF TR.IsExtensionOf(t, params[i].bound) THEN
-            arguments[i](TypeRef).qualType := t;
+            Sym.InitTypeRef(qualType(Sym.QualType).arguments[i], t);
           ELSE
             b.ErrSym(notExtensionOfBound, arguments[i].sym);
           END;

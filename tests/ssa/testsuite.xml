@@ -11,10 +11,10 @@
   generic18 generic19 generic20 generic21 generic22 generic23
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
-  generic36 generic37 generic38 generic39">-->
+  generic36 generic37 generic38 generic39 generic40">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic24 generic39">-->
+  select ="&SetupTestCasesWithOut; generic1 generic40">-->
 
   &TestSetupWithOut;
     
@@ -1446,6 +1446,10 @@
     <test id="generic39" type="accept" file="Generic39.Mod">
       Retrieving a generic value from the generic receiver parameter
       and returning it.
+    </test>
+    <test id="generic40" type="accept" file="Generic40.Mod">
+      Type guards, type tests, and <code>WITH</code> statements with
+      parametric types.
     </test>
   </testcases>
 
