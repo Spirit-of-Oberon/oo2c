@@ -360,8 +360,16 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
 
 PROCEDURE (b: Builder) NewStringConst* (sym: Symbol): Expression;
   BEGIN
-    RETURN NewConst (sym, Predef.GetType (Predef.charString),
-                     String8.type. ValueOf (sym. str^));
+    IF (sym. str[2] # 0X) & (sym. str[3] = 0X) THEN
+      (* strings with one char are mapped to characters; note: because
+         the symbol includes the string delimiters, the test actually
+         checks for a lengh of exactly 3 characters *)
+      RETURN NewConst (sym, Predef.GetType (Predef.char),
+                       String8.type. ValueOf (sym. str^));
+    ELSE
+      RETURN NewConst (sym, Predef.GetType (Predef.charString),
+                       String8.type. ValueOf (sym. str^));
+    END;
   END NewStringConst;
 
 PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
