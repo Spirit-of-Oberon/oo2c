@@ -34,7 +34,7 @@ IMPORT
   Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,OOC:SymbolTable:Predef,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Schedule, 
   OOC:C:Naming, OOC:IA32:Writer, OOC:Make:TranslateToIA32,
-  OOC:SSA:IRtoSSA, OOC:SSA:XML, OOC:SSA:Inspector,
+  OOC:SSA:IRtoSSA, OOC:SSA:XML,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore,
   Language, Language:Boolean, Language:Integer, Language:String8,
   Language:String16, Language:Real, Language:Set;
@@ -275,10 +275,6 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         (* write schedule SSA code to stdout *)
         XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
         Out.Flush
-      END;
-      IF (t. inspectStage. MatchChars ("schedule-html", 0, -1) # NIL) THEN
-        (* create a temporary web server displaying the SSA code *)
-        Inspector.Show (proc, domRoot);
       END;
     END;
     

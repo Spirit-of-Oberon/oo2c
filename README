@@ -4,7 +4,6 @@
   oo2c 1.5.7.2 (patch at http://pweb.de/vanacken.do/ooc/oo2c-patches/)
   libxml (from the CVS repository; must be installed)
   libadt (from the CVS repository; only needs to be available)
-  gaf2 (from the CVS repository; only needs to be available)
   GNU make
 
   For "make test" and packaging, you will also need perl and GNU tar,
@@ -12,12 +11,12 @@
 
 2. Setting up the Development Environment
 
-Make sure that libxml/src/, libadt/src/, and gaf2/src/ is in the
-search path for *.Mod and *.c, for example, by editing and including
-`.oo2crc_local'.  The easiest way to include `.oo2crc_local' is to
-have a file `~/.oo2crc' with a line `INCLUDE ./.oo2crc_local END'.
-The provided `.oo2crc_local' assumes that the directories `libxml/',
-`libadt/', `gaf2/', and `ooc2/' all reside in the same directory.
+Make sure that libxml/src/ and libadt/src/ is in the search path for
+*.Mod and *.c, for example, by editing and including `.oo2crc_local'.
+The easiest way to include `.oo2crc_local' is to have a file
+`~/.oo2crc' with a line `INCLUDE ./.oo2crc_local END'.  The provided
+`.oo2crc_local' assumes that the directories `libxml/', `libadt/', and
+`ooc2/' all reside in the same directory.
 
 For the language specific tests, the Hostess test files are expected
 to reside at `../hostess/hostess/oberon/testcases.xml', as seen from
