@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Exports;
 (*  Marks declarations that are part of the module's symbol file.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -57,6 +57,9 @@ PROCEDURE GetExports* (module: Sym.Module): Dictionary.Dictionary;
         BEGIN
           IF ~dict. HasKey (type) THEN
             dict. Set (type, NIL);
+            IF (type. namingDecl # NIL) THEN
+              MarkDecl (type. namingDecl)
+            END;
             
             WITH type: Sym.PredefType DO
               (* nothing *)

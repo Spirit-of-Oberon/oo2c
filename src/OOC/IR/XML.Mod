@@ -48,8 +48,8 @@ BEGIN
   IF type.parent # NIL THEN
     AppendContext(name, type.parent);
   END;
-  IF type.typeName # NIL THEN
-    name.AppendString(type.typeName.str^);
+  IF type.namingDecl # NIL THEN
+    name.AppendString(type.namingDecl.name.str^);
   ELSE
     WITH 
       type : Sym.PredefType DO

@@ -106,8 +106,8 @@ PROCEDURE (b: Builder) NewTypeDecl* (parent: Sym.Item; name: Sym.Name;
   BEGIN
     NEW (t);
     Sym.InitTypeDecl (t, parent, name, visibleFrom, exportMark, docString, type);
-    IF (type. typeName = NIL) THEN
-      type. SetTypeName (name);
+    IF (type. namingDecl = NIL) THEN
+      type. SetNamingDecl (t);
     END;
     RETURN t
   END NewTypeDecl;

@@ -164,6 +164,7 @@ CONST
   
 TYPE
   Type* = POINTER TO TypeDesc;
+  TypeDecl* = POINTER TO TypeDeclDesc;
   TypeDesc = RECORD [ABSTRACT]
     (**Common base type of all type definitions.  As far as the symbol table is
        concerned, a type is either a type reference (that is, an instance of
@@ -173,13 +174,12 @@ TYPE
     position-: Position;
     (**Position of the type name or type constructor.  This field is mostly
        used to attach a position to any type related error messages.  *)
-    typeName-: Name;
-    (**For a type that is associated with a name, this field refers to the
-       name of the type declaration that defines this type.  It is @code{NIL}
-       for anonymous types, that is, for type constructors that do not
-       appear on the right side of a type declaration.  If multiple aliases
-       are defined for a type, this field refers to the name of the original
-       declaration.  *)
+    namingDecl-: TypeDecl;
+    (**For a type that is associated with a name, this field refers to the type
+       declaration that defines this type.  It is @code{NIL} for anonymous
+       types, that is, for type constructors that do not appear on the right
+       side of a type declaration.  If multiple aliases are defined for a type,
+       this field refers to the name of the original declaration.  *)
     size-: LONGINT;                      (* FIXME... make this `Integer'? *)
     (**Size in bytes of the memory that needs to be allocated to hold a value
        of this type.  For most types, this is a non-negative value.  It is zero
@@ -584,7 +584,6 @@ TYPE
   END;
 
 TYPE
-  TypeDecl* = POINTER TO TypeDeclDesc;
   TypeDeclDesc = RECORD
     (**All type declarations are mapped to instances of this class.  *)
     (DeclarationDesc)
@@ -830,7 +829,7 @@ PROCEDURE InitType* (type: Type; parent: Item; position: Position);
   BEGIN
     InitItem (type, parent);
     type. position := position;
-    type. typeName := NIL;
+    type. namingDecl := NIL;
     type. size := unknownSize;
     type. align := 1;
   END InitType;
@@ -839,7 +838,7 @@ PROCEDURE (type: Type) Store* (w: Object.Writer);
   BEGIN
     type. Store^ (w);
     w. WriteObject (type. position);
-    w. WriteObject (type. typeName)
+    w. WriteObject (type. namingDecl)
   END Store;
 
 PROCEDURE (type: Type) Load* (r: Object.Reader);
@@ -851,19 +850,19 @@ PROCEDURE (type: Type) Load* (r: Object.Reader);
     type. position := obj(Position);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
-      type. typeName := NIL
+      type. namingDecl := NIL
     ELSE
-      type. typeName := obj(Name)
+      type. namingDecl := obj(TypeDecl)
     END;
     type. size := unknownSize;
     type. align := 1;
   END Load;
 
-PROCEDURE (type: Type) SetTypeName* (name: Name);
-(**Sets the field @ofield{Type.typeName} of @oparam{type} to @oparam{name}.  *)
+PROCEDURE (type: Type) SetNamingDecl* (namingDecl: TypeDecl);
+(**Sets the field @ofield{Type.namingDecl} of @oparam{type} to @oparam{namingDecl}.  *)
   BEGIN
-    type. typeName := name
-  END SetTypeName;
+    type. namingDecl := namingDecl
+  END SetNamingDecl;
 
 PROCEDURE (type: Type) SetSize* (size: LONGINT; align: INTEGER);
   BEGIN

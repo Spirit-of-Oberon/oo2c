@@ -44,7 +44,7 @@ PROCEDURE (tr: Rules) IsNamedType* (type: Sym.Type): BOOLEAN;
    a type name.  *)
   BEGIN
     ASSERT (~(type IS Sym.TypeName));
-    RETURN (type. typeName # NIL)
+    RETURN (type. namingDecl # NIL)
   END IsNamedType;
 
 PROCEDURE (tr: Rules) IsScalarType* (type: Sym.Type): BOOLEAN;

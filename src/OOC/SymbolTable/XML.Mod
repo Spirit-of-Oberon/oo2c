@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:XML;
 (*  Converts symbol table to XML document.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -158,7 +158,7 @@ PROCEDURE Write* (cw: Channel.Writer; module: Sym.Module);
         ELSE
           COPY (m. name. str^, str);
           Strings.Append (".", str);
-          Strings.Append (type. typeName. str^, str);
+          Strings.Append (type. namingDecl. name. str^, str);
           AttribString (prefix, name, str)
         END
       END AttribTypeId;
