@@ -188,6 +188,7 @@ PROCEDURE (w: Writer) EndFile*();
     w.w.WriteObject(nl+".global "+name0);
     w.w.WriteObject(nlTab+".type "+name0+", @function");
     w.w.WriteObject(nl+name0+":");
+    w.w.WriteObject(nlTab+"call "+name);
     w.w.WriteObject(nlTab+"ret");
     w.w.WriteObject(nlTab+".size "+name0+", .-"+name0);
     
@@ -668,7 +669,11 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
       w.blockMap := NEW(Dictionary.Dictionary(S.Block, Block));
       w.blocks := NEW(ArrayList.ArrayList(Block), 16);
       w.fctBlock := fctBlock;
-      w.name := Naming.NameOfDeclaration(fctBlock.procDecl);
+      IF (fctBlock.procDecl.procAST = NIL) THEN
+        w.name := Naming.NameOfModuleInit(w.module, FALSE);
+      ELSE        
+        w.name := Naming.NameOfDeclaration(fctBlock.procDecl);
+      END;
       
       w.w.WriteObject(padFunction);
       IF IsGlobal(fctBlock.procDecl) THEN

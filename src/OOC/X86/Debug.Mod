@@ -370,8 +370,15 @@ PROCEDURE UndefState(s: State);
   END UndefState;
 
 PROCEDURE WriteFunction*(b: S.FunctionBlock);
+  VAR
+    name: STRING;
   BEGIN
-    out := NEW(Output, b, Naming.NameOfDeclaration(b.procDecl));
+    IF (b.procDecl.procAST = NIL) THEN
+      name := "MODULE_BODY";
+    ELSE
+      name := Naming.NameOfDeclaration(b.procDecl);
+    END;
+    out := NEW(Output, b, name);
     out.WriteFunction();
   END WriteFunction;
 

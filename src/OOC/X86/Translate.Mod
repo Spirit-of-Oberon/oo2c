@@ -638,13 +638,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       MemoryCP(exit);
       b.SetExit(exit);
     END FctEpilog;
-  
-  BEGIN
-    returns := NEW(ArrayList.ArrayList(S.Instr), 4);
-    loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
-    
-    w := NEW(W.Writer, symTab, ch);
-    FOR p IN moduleIR.procList^ DO
+
+  PROCEDURE Procedure(p: IR.Procedure);
+    BEGIN
       b := NEW(S.FunctionBlock, p.decl);
       FctProlog(b);
       StatmSeq(p.statmSeq);
@@ -664,7 +660,18 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
 
       (*D.WriteFunction(b);*)
       w.WriteFunction(b);
+    END Procedure;
+  
+  BEGIN
+    returns := NEW(ArrayList.ArrayList(S.Instr), 4);
+    loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
+    
+    w := NEW(W.Writer, symTab, ch);
+    FOR p IN moduleIR.procList^ DO
+      Procedure(p);
     END;
+    Procedure(moduleIR.moduleBody);
+    
     w.EndFile();
   END Translate;
   
