@@ -7,7 +7,7 @@
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; iterator1 iterator2 iterator3
   iterator4 iterator5 iterator6 iterator7 iterator8 iterator9
-  iterator10 iterator11">-->
+  iterator10 iterator11 iterator12">-->
 
   &TestSetupWithOut;
     
@@ -1789,6 +1789,10 @@
       Type of variable does not match that of the <code>Next()</code>
       method's variable parameter.
     </test>
+    <test id="iterator12" type="reject" file="Iterator12.Mod">
+      Iterator factory expression does not produce an object with a 
+      <code>Next()</code> method.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2514,6 +2518,8 @@
         msg="The iterator object has no Next() method with a valid signature"/>
     <reject-info id="iterator11" pos="FOR %c IN"
         msg="Argument not compatible with formal VAR parameter `CHAR'"/>
+    <reject-info id="iterator12" pos="IN %b"
+        msg="The iterator object has no Next() method with a valid signature"/>
 
     <reject-info id="align2" pos=", %ALIGN2"
         msg="This modifier flag has no effect here"/>

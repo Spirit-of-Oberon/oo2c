@@ -4199,14 +4199,16 @@ PROCEDURE (b: Builder) NewIterateStatm* (sym: Symbol; context: Sym.Item;
       class := type(Sym.Record);
       n := b.GetName2(sequence.sym, "Next");
       decl := class.ns.Identify(context, n, FALSE);
-      WITH decl: Sym.ProcDecl DO
-        fp := decl.formalPars;
-        IF (fp.resultType = Predef.GetType(Predef.boolean)) &
-           (LEN(fp.params^) = 1) &
-           fp.params[0].isVarParam THEN
-          RETURN decl;
+      IF (decl # NIL) THEN
+        WITH decl: Sym.ProcDecl DO
+          fp := decl.formalPars;
+          IF (fp.resultType = Predef.GetType(Predef.boolean)) &
+             (LEN(fp.params^) = 1) &
+             fp.params[0].isVarParam THEN
+            RETURN decl;
+          END;
+        ELSE  (* miss *)
         END;
-      ELSE  (* miss *)
       END;
       RETURN NIL;
     END GetStepper;
