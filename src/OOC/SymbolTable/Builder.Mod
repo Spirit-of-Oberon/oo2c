@@ -615,16 +615,25 @@ BEGIN
   doAutoImport := noAutoImport;
   magicNumber := "OOC4";
   
-  NEW(autoImport, 2);
+  NEW(autoImport, 3);
   NEW(autoImport[0]);
   autoImport[0].module := N("RT0");
   NEW (autoImport[0].exclude, 2);
   autoImport[0].exclude[0] := autoImport[0].module;
   autoImport[0].exclude[1] := N("Out0");
+  
   NEW(autoImport[1]);
   autoImport[1].module := N(stringModule);
   NEW (autoImport[1].exclude, 3);
   autoImport[1].exclude[0] := autoImport[0].module;
   autoImport[1].exclude[1] := autoImport[1].module;
   autoImport[1].exclude[2] := N("Out0");
+  
+  NEW(autoImport[2]);
+  autoImport[2].module := N("Exception");
+  NEW (autoImport[2].exclude, 4);
+  autoImport[2].exclude[0] := autoImport[0].module;
+  autoImport[2].exclude[1] := autoImport[1].module;
+  autoImport[2].exclude[2] := autoImport[2].module;
+  autoImport[2].exclude[3] := N("Out0");
 END OOC:SymbolTable:Builder.
