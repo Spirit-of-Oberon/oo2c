@@ -285,12 +285,8 @@ RAISES IO.Error;
 
    Note: Currently, only the @samp{file} URI (@omodule{*URI:Scheme:File}) and
    the @samp{http} URI (@omodule{*URI:Scheme:HTTP}) support this method.  *)
-  VAR
-    e: IO.NotImplemented;
   BEGIN
-    NEW(e);
-    IO.InitError(e, NIL);
-    RAISE(e);
+    RAISE(NEW(IO.NotImplemented, NIL));
   END GetChannel;
 
 

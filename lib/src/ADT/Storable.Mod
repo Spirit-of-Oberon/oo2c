@@ -86,12 +86,8 @@ TYPE
   END;
 
 PROCEDURE RaiseTypeError*(msg: STRING) RAISES TypeError;
-  VAR
-    e: TypeError;
   BEGIN
-    NEW(e);
-    IO.InitError(e, "Unknown type");
-    RAISE(e);
+    RAISE(NEW(TypeError, msg));
   END RaiseTypeError;
 
 

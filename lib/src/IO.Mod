@@ -153,18 +153,14 @@ TYPE
     (ErrorDesc) 
   END;
 
-PROCEDURE InitError*(e: Error; msg: STRING);
+PROCEDURE (e: Error) INIT*(msg: STRING);
   BEGIN
-    e.INIT(msg);
-  END InitError;
+    e.INIT^(msg);
+  END INIT;
 
 PROCEDURE NewFormatError*(msg: STRING): FormatError;
-  VAR
-    e: FormatError;
   BEGIN
-    NEW(e);
-    InitError(e, msg);
-    RETURN e;
+    RETURN NEW(FormatError, msg);
   END NewFormatError;
 
 PROCEDURE RaiseFormatError*(msg: STRING) RAISES FormatError;
@@ -173,12 +169,8 @@ PROCEDURE RaiseFormatError*(msg: STRING) RAISES FormatError;
   END RaiseFormatError;
 
 PROCEDURE RaiseNotImplemented*() RAISES NotImplemented;
-  VAR
-    e: NotImplemented;
   BEGIN
-    NEW(e);
-    InitError(e, NIL);
-    RAISE(e);
+    RAISE(NEW(NotImplemented, NIL));
   END RaiseNotImplemented;
 
 PROCEDURE InitSelectionKey*(k: SelectionKey; fd: FileDescriptor;

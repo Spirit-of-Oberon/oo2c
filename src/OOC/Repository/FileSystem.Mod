@@ -309,16 +309,13 @@ RAISES IO.Error;
     path, str: Rep.URIBuffer;
     uri: URI.URI;
     res: Msg.Msg;
-    e: IO.Error;
   BEGIN
     uri := m. GetURI (fileId, TRUE);
     uri(FileURI.URI). GetPath (path);
     Path.dirname (path, str);
     OSFiles.makedirs(str, OSFiles.defaultMode, res);
     IF (res # NIL) THEN
-      NEW(e);
-      IO.InitError(e, "Failed to create directory");
-      RAISE(e);
+      RAISE(NEW(IO.Error, "Failed to create directory"));
     END;
   END CreateOutputDir;
 

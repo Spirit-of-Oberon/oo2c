@@ -41,7 +41,7 @@ void IO_StdChannels__IOError(Object__String suffix) {
   } else {
     str = (Object__String)msg;
   }
-  IO__InitError((IO__Error)e, str);
+  IO__ErrorDesc_INIT((IO__Error)e, str);
   Exception__Raise(e);
 }
 
