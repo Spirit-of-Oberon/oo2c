@@ -13,6 +13,7 @@
     <set name='install'>%INSTALL%</set>
     <set name='installProgram'>%INSTALL_PROGRAM%</set>
     <set name='installData'>%INSTALL_DATA%</set>
+    <set name='bindir'>%bindir%</set>
   </options>
 
   <pragmas>

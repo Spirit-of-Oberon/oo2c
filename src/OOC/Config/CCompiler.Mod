@@ -27,7 +27,7 @@ IMPORT
 
 VAR
   cc, cppflags, cflags, ldflags, libs-, libtool, libdir: Options.Option;
-  install, installProgram, installData: Options.Option;
+  install, installProgram, installData, bindir: Options.Option;
   
 PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
                            VAR cmd: ARRAY OF CHAR);
@@ -109,6 +109,26 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
     Strings.Append (ldflags. value(StringValue.Value). string^, cmd);
   END LinkProgramCmd;
 
+PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
+                             VAR cmd: ARRAY OF CHAR);
+  VAR
+    str: ARRAY 1024 OF CHAR;
+  BEGIN
+    COPY (libtool.value(StringValue.Value).string^, cmd);
+    Strings.Append(" --mode=install ", cmd);
+    
+    Strings.Append(installProgram.value(StringValue.Value).string^, cmd);
+    Strings.Append(" ", cmd);
+    file(File.URI).GetPath(str);
+    Strings.Append(str, cmd);
+    Strings.Append(" ", cmd);
+    IF asLibrary THEN
+      Strings.Append (libdir.value(StringValue.Value).string^, cmd);
+    ELSE
+      Strings.Append (bindir.value(StringValue.Value).string^, cmd);
+    END;
+  END InstallProgramCmd;
+
 PROCEDURE RegisterConfig*;
   BEGIN
     cc := Config.AddOption ("cc", StringValue.New ("gcc"));
@@ -139,12 +159,15 @@ PROCEDURE RegisterConfig*;
                                         StringValue.New ("install -c"));
     installData := Config.AddOption ("installData",
                                      StringValue.New ("install -c -m 644"));
+    bindir := Config.AddOption ("bindir", StringValue.New ("bindir"));
     Config.AddCmdLine ("--install",
                        "<options><set name='install'>$1</set></options>");
     Config.AddCmdLine ("--install-program",
                        "<options><set name='installProgram'>$1</set></options>");
     Config.AddCmdLine ("--install-data",
                        "<options><set name='installData'>$1</set></options>");
+    Config.AddCmdLine ("--bindir",
+                       "<options><set name='bindir'>$1</set></options>");
   END RegisterConfig;
 
 END OOC:Config:CCompiler.

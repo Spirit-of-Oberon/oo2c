@@ -124,6 +124,7 @@ write-libdir: FRC
 rsrc/OOC/oo2crc.xml: rsrc/OOC/oo2crc.xml.mk Makefile.config
 	sed -e 's:%libdir%:$(libdir):g' \
 	    -e 's:%libdir_oo2c%:$(libdir_oo2c):g' \
+	    -e 's:%bindir%:$(bindir):g' \
 	    -e 's:%INSTALL%:$(INSTALL):g' \
 	    -e 's:%INSTALL_PROGRAM%:$(INSTALL_PROGRAM):g' \
 	    -e 's:%INSTALL_DATA%:$(INSTALL_DATA):g' \
