@@ -241,7 +241,6 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
           END;
           str := mf. callConv. GetString (TRUE);
           callConv := Sym.StringToCallConv (str);
-          
           v. stb. SetClass (class);
           
         | n: ExtTree.Terminal DO
@@ -249,7 +248,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
         END;
       END;
     END;
-    
+
     moduleDecl := v. stb. NewModule (moduleName, module. name. docString,
                                      class, callConv, module);
     IF (module. flags # NIL) THEN  (* process list of flag names *)
@@ -506,6 +505,24 @@ PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);
     END
   END VisitFPSection;
 
+  PROCEDURE ParseFormalParsFlags (fpars: Sym.FormalPars; flags: ExtTree.NodeList);
+    VAR
+      i: LONGINT;
+      n: ExtTree.Node;
+    BEGIN
+      FOR i := 0 TO flags. len-1 BY 2 DO
+        n := flags. n[i](ExtTree.Node);
+        WITH n: ExtTree.Terminal DO
+          CASE n.sym.id OF
+          | Symbol.stringSingle, Symbol.stringDouble:
+		    fpars. callConv := Sym.StringToCallConv(n. GetString (TRUE));
+          ELSE
+            fpars. AddFlag(GetName(n));
+          END;
+        END;
+      END;
+    END ParseFormalParsFlags;
+
 PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
   VAR
     proc: Sym.ProcDecl;
@@ -517,7 +534,7 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
     i: LONGINT;
     nodePtr: AST.Node;
 
-  PROCEDURE ParseFlags (proc: Sym.ProcDecl; flags: ExtTree.NodeList);
+  PROCEDURE ParseProcDeclFlags (proc: Sym.ProcDecl; flags: ExtTree.NodeList);
     VAR
       i: LONGINT;
       n: ExtTree.Node;
@@ -533,9 +550,9 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
           END;
         END;
       END;
-    END ParseFlags;
+    END ParseProcDeclFlags;
   
-  BEGIN
+   BEGIN
     endPos := EndOfType (procDecl. formalPars);
     IF (endPos < 0) THEN
       endPos := EndOfType (procDecl. identDef. ident)
@@ -569,7 +586,9 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
     END;
     IF (procDecl. formalPars # NIL) THEN
       fpar := procDecl. formalPars(ExtTree.FormalPars);
-      AddFlags(formalPars, fpar.flags);
+      IF fpar.flags # NIL THEN
+	    ParseFormalParsFlags(formalPars, fpar.flags.flagList(ExtTree.NodeList));
+	  END;
       IF (fpar. fpSections # NIL) THEN
         FOR i := 0 TO fpar. fpSections. len-1 BY 2 DO
           nodePtr := fpar. fpSections. n[i];
@@ -595,7 +614,7 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
       END;
     END;
     IF (procDecl. flags # NIL) THEN
-      ParseFlags (proc, procDecl. flags. flagList(ExtTree.NodeList));
+      ParseProcDeclFlags (proc, procDecl. flags. flagList(ExtTree.NodeList));
     END;
     
     IF (procDecl. body # NIL) THEN
@@ -707,6 +726,7 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
     i: LONGINT;
     nodePtr: AST.Node;
     type: Sym.Type;
+    fpars : ExtTree.FormalPars;
   BEGIN
     formalPars := v. stb. NewFormalPars (v. parent, 
                                       GetPosition (procType. procedure));
@@ -717,7 +737,11 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
                          formalPars));
     END;
     IF (procType.formalPars # NIL) THEN
-      AddFlags(formalPars, procType.formalPars(ExtTree.FormalPars).flags);
+      fpars := procType.formalPars(ExtTree.FormalPars);
+      IF fpars.flags # NIL THEN
+        ParseFormalParsFlags(formalPars,
+          fpars.flags.flagList(ExtTree.NodeList))
+      END
     END;
     IF (procType. formalPars # NIL) THEN
       fpar := procType. formalPars(ExtTree.FormalPars);

@@ -1120,7 +1120,7 @@ RAISES IO.Error;
             InvalidFlag(flag, modifierFlagWithoutEffect);
           END;
         END SetAlign;
- 
+
       BEGIN
         IF ~visited.HasKey(item) THEN
           visited.Set(item, NIL);
@@ -1146,7 +1146,7 @@ RAISES IO.Error;
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;
-              
+
             | item: Sym.ConstDecl DO
               CASE flag.id OF
               | Sym.flagDeprecated:
@@ -1268,7 +1268,24 @@ RAISES IO.Error;
           ResolveFlags(item);
         END;
       END ResolveFlagsDirect;
-    
+
+    PROCEDURE ResolveCallingConvention(fpars : Sym.FormalPars);
+      (**Resolve the calling convention for formal parameter declaration. If
+        "default", then the declaration inherits the calling convention
+        declared for the enclosing module. *)
+
+        VAR 
+          parentItem : Sym.Item;
+        BEGIN
+          IF fpars.callConv = Sym.callConvDefault THEN
+            parentItem := fpars.parent;
+            WHILE parentItem.parent # NIL DO 
+              parentItem := parentItem.parent;
+            END;
+            fpars.callConv := parentItem(Sym.Module).callConv;
+          END;
+        END ResolveCallingConvention;
+
     BEGIN
       IF (item # NIL) THEN
         ResolveFlags(item);
@@ -1298,6 +1315,8 @@ RAISES IO.Error;
               type := type(Sym.Record).baseType;
             END;
           END;
+        | item: Sym.FormalPars DO
+          ResolveCallingConvention(item);
         ELSE  (* ignore *)
         END;
         
