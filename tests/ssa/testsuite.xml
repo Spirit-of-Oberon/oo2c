@@ -10,8 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; noCopy1 noCopy2 noCopy3 noCopy4
-  noCopy5 noCopy6">-->
+  select ="&SetupTestCasesWithOut; opTypeGuard10">-->
 
   &TestSetupWithOut;
     
@@ -180,6 +179,15 @@
     <test id="with4" type="accept" file="With4.Mod">
       Check that the procedure signature remains unchanged when seen
       from within a <code>WITH</code> region.
+    </test>
+    <test id="with5" type="reject" file="With5.Mod">
+      The variable of the type test is not a qualified identifier.
+    </test>
+    <test id="with6" type="reject" file="With6.Mod">
+      The variable of the type test is a value parameter.
+    </test>
+    <test id="with7" type="reject" file="With7.Mod">
+      The given type is not an extension of the type of the variable.
     </test>
     
     <test id="function4" type="run"
@@ -590,19 +598,31 @@
     <test id="typetest1" type="run" file="TypeTest1.Mod" output="TypeTest1.Ref">
       Type tests on pointer variables.
     </test>
-
     <test id="typetest2" type="run" file="TypeTest2.Mod" output="TypeTest2.Ref">
       This is like <code>typetest1</code>, only that the pointer are
       dereferenced and tested against the corresponding record type.
     </test>
-    
     <test id="typetest3" type="run" file="TypeTest3.Mod" output="TypeTest3.Ref">
       Type tests on <code>VAR</code> parameters of record type.  The
       record variables are deferenced pointers.
     </test>
-    
     <test id="typetest4" type="run" file="TypeTest4.Mod" output="TypeTest4.Ref">
       Like <code>typetest3</code>, but using record variables.
+    </test>
+    <test id="typetest5" type="reject" file="TypeTest5.Mod">
+      The type expression is <code>LONGINT</code>.
+    </test>
+    <test id="typetest6" type="reject" file="TypeTest6.Mod">
+      The type expression is variable.
+    </test>
+    <test id="typetest7" type="reject" file="TypeTest7.Mod">
+      The type is no extension of the tested expression's type.
+    </test>
+    <test id="typetest8" type="error" file="TypeTest8.Mod">
+      Applying a type test to <code>NIL</code>.
+    </test>
+    <test id="typetest9" type="reject" file="TypeTest9.Mod">
+      The tested variable is a value parameter of type <code>RECORD</code>.
     </test>
   </testcases>
 
@@ -684,22 +704,30 @@
     <test id="opArray9" type="run" file="OpArray9.Mod" output="OpArray9.Ref">
       Array index is result of a function call.
     </test>
+    <test id="opArray10" type="error" file="OpArray10.Mod">
+      Trying to access an element of a array pointer with value
+      <code>NIL</code>.
+    </test>
+    <test id="opArray11" type="reject"
+          file="OpArray11.Mod" output="OpArray11.Ref">
+      Trying to access a third dimension of a 2-dimensional array.
+    </test>
 
     <test id="opRecord1" type="run" file="OpRecord1.Mod"
        output="OpRecord1.Ref">
       Excercise RECORD operators.
     </test>
-
     <test id="opRecord2" type="reject" file="OpRecord2.Mod">
       Field selection operator applied to non-RECORD.
     </test>
-
     <test id="opRecord3" type="reject" file="OpRecord3.Mod">
       Select a field that is not bound to a record type.
     </test>
-
     <test id="opRecord4" type="reject" file="OpRecord4.Mod">
       Operator applied to function result.
+    </test>
+    <test id="opRecord5" type="error" file="OpRecord5.Mod">
+      Using a record pointer with a value of <code>NIL</code>.
     </test>
 
     <test id="opPointer1" type="reject" file="OpPointer1.Mod">
@@ -760,6 +788,9 @@
     </test>
     <test id="opTypeGuard9" type="reject" file="OpTypeGuard9.Mod">
       Guard type is not a type.
+    </test>
+    <test id="opTypeGuard10" type="reject" file="OpTypeGuard10.Mod">
+      Applying a type guard type to a value parameter.
     </test>
     <test id="opExprCompat1" type="run" file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
@@ -844,6 +875,7 @@
       Check argument passing for which string constants must be
       converted to <code>LONGCHAR</code> strings.
     </test>
+    
     <test id="opSet1" type="reject" file="OpSet1.Mod">
       Set range constructor with non-integer single argument
     </test>
@@ -864,6 +896,10 @@
     </test>
     <test id="opSet7" type="reject" file="OpSet7.Mod">
       "a IN b" with b non-set
+    </test>
+    <test id="opSet8" type="run" file="OpSet8.Mod" output="OpSet8.Ref">
+      Set range "{a..b}" with some combinations of <code>a</code> and
+      <code>b</code>, both constant and variable.
     </test>
     
   </testcases>
@@ -952,6 +988,21 @@
     <reject-info id="case8" pos="| 1X, %1X:" msg="Label already in use"/>
     <reject-info id="case9" pos="| 0%..2:" msg="Label already in use"/>
 
+    <reject-info id="with5" pos="r%.p" msg="This must be a variable"/>
+    <reject-info id="with6" pos="WITH %r:"
+      msg="This variable has no dynamic type"/>
+    <reject-info id="with7" pos="WITH r: %R1"
+      msg="Type must be an extension of the left operand's type"/>
+    
+    <reject-info id="typetest5" pos="IS %LONGINT"
+      msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="typetest6" pos="IS %x"
+      msg="Type name expected"/>
+    <reject-info id="typetest7" pos="IS %P1"
+      msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="typetest9" pos="(%r IS"
+      msg="This variable has no dynamic type"/>
+    
     <reject-info id="tbproc8" pos="p. %Proc" msg="Undeclared identifier"/>
         
     <reject-info id="len2" pos="Int (%LEN " msg="Wrong number of arguments"/>
@@ -964,7 +1015,8 @@
         msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
     <reject-info id="len7" pos="a, %d),"
         msg="Expression is not constant"/>
-    <reject-info id="opArray2" pos=" %i[0]"
+    
+    <reject-info id="opArray2" pos=" i%[0]"
         msg="Expression must be an array value"/>
     <reject-info id="opArray3" pos=" a[%c]"
         msg="Expression must be of integer type"/>
@@ -974,6 +1026,9 @@
         msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
     <reject-info id="opArray6" pos="P()%[0]"
         msg="Operator may not be applied to function result"/>
+    <reject-info id="opArray11" pos="a[0,1%,2]"
+        msg="Expression must be an array value"/>
+    
     <reject-info id="opRecord2" pos=":= %i."
         msg="Expression must be of record type"/>
     <reject-info id="opRecord3" pos="p.%r :="
@@ -1022,6 +1077,8 @@
         msg="This must be a procedure designator"/>
     <reject-info id="opTypeGuard9" pos=" %a(a)"
         msg="This must be a procedure designator"/>
+    <reject-info id="opTypeGuard10" pos=" %a(ADesc)"
+        msg="This variable has no dynamic type"/>
     <reject-info id="opSet1" pos="{%TRUE"
         msg="Expression must be of integer type"/>
     <reject-info id="opSet2" pos="..%TRUE"

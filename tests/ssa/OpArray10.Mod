@@ -1,0 +1,16 @@
+MODULE OpArray10;
+
+TYPE
+  A = POINTER TO ARRAY OF CHAR;
+
+PROCEDURE P(a: A);
+  BEGIN
+    a[0] := 0X;
+  END P;
+
+PROCEDURE Test*;
+BEGIN
+  P(NIL);
+END Test;
+
+END OpArray10.

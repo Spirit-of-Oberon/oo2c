@@ -238,9 +238,9 @@ ERROR:
 
 REJECT:
 
-  1) var is no qualident
-  2) var is no variable parameter or record pointer
-  3) type is not an extensions of var's type
+  1) var is no qualident  [With5]
+  2) var is no variable parameter or record pointer  [With6]
+  3) type is not an extension of var's type  [With7]
 
 ACCEPT:
 

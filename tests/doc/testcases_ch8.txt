@@ -1,5 +1,7 @@
 8. Expressions
 
+Missing Tests 2002/10/15: Literals, Division by Zero (compile-time, run-time)
+
 Literals
 --------
 
@@ -24,7 +26,7 @@ REJECT
 ACCEPT:
 
   1) a is an array [OpArray1]
-  2) a is a pointer an array
+  2) a is a pointer an array [OpArray6]
 
 REJECT:
 
@@ -35,24 +37,26 @@ REJECT:
 
 ERROR:
 
-  1) a is a NIL pointer
+  1) a is a NIL pointer [OpArray10]
   2) e is not in the range 0 <= e < LEN(a) [OpArray7 OpArray8]
 
 
   a[e_1, e_2, ..., e_n]
 
+(Only test for dimension related stuff, the above tests should cover
+the rest.)
 REJECT:
 
-  1) a does not designate an array or pointer to array
-  2) a has less than n dimensions
-  3) some e_i is not an integer
-  4) e_i is constant not in the range 0 <= e_i < LEN(a,i)
-  5) a is the result of a function call
+  1) a does not designate an array or pointer to array  [OpArray2]
+  2) a has less than n dimensions  [OpArray11]
+  3) some e_i is not an integer  [OpArray3]
+  4) e_i is constant not in the range 0 <= e_i < LEN(a,i)  [OpArray4 OpArray5]
+  5) a is the result of a function call  [OpArray6]
 
 ERROR:
 
-  1) a is a NIL pointer
-  2) e_i is not in the range 0 <= e_i < LEN(a,i)
+  1) a is a NIL pointer  [OpArray10]
+  2) e_i is not in the range 0 <= e_i < LEN(a,i)  [OpArray7 OpArray8]
 
 
   r.f
@@ -60,7 +64,7 @@ ERROR:
 ACCEPT:
 
   1) r is a record [OpRecord1]
-  2) r is a pointer to a record
+  2) r is a pointer to a record  [OpRecord1]
 
 REJECT:
 
@@ -70,7 +74,7 @@ REJECT:
 
 ERROR:
 
-  1) r is a NIL pointer
+  1) r is a NIL pointer [OpRecord5]
 
 
   p^
@@ -104,7 +108,7 @@ ACCEPT:
 REJECT:
 
   1) v is not a (dereferenced) pointer or variable parameter of record
-     type. [OpTypeGuard2]
+     type. [OpTypeGuard2 OpTypeGuard10]
   2) v is a pointer of non-record type (eg. pointer to array). [OpTypeGuard8]
   3) T is not a type. [OpTypeGuard9]
   4) T is not an extension of the static type of v. [OpTypeGuard3]
@@ -202,8 +206,8 @@ ACCEPT (Boolean operator evaluation):
 
   Verify that "short-circuit" evaulation of BOOLEAN expressions occurs. ie.
 
-  1) (FALSE & b) does not evaulate b.
-  2) (TRUE OR b) does not evaulate b.
+  1) (FALSE & b) does not evaulate b.  [And1]
+  2) (TRUE OR b) does not evaulate b.  [Or1]
 
 ERROR (Character arrays):
 
@@ -237,24 +241,24 @@ REJECT (SET constructor):
 
 ACCEPT (SET constructor):
 
-  1) a > b produces the empty set (both compile-time and run-time)
+  1) a > b produces the empty set (both compile-time and run-time)  [OpSet8]
 
 
   v IS T
 
 ACCEPT:
 
-  1) v is a variable parameter of record type.
-  2) v is a pointer to a record type.
-  3) v is a dereferenced pointer to a record type.
+  1) v is a variable parameter of record type.  [TypeTest3 TypeTest4]
+  2) v is a pointer to a record type.  [TypeTest1]
+  3) v is a dereferenced pointer to a record type.  [TypeTest2]
 
 REJECT:
 
   1) v is neither a variable record type or (possibly derferenced)
-     pointer. 
-  2) T is not a type.
-  3) T is not an extension of the static type of v.
+     pointer.  [TypeTest5 TypeTest9]
+  2) T is not a type.  [TypeTest6]
+  3) T is not an extension of the static type of v.  [TypeTest7]
 
 ERROR:
 
-  1) v is NIL
+  1) v is NIL  [TypeTest8]

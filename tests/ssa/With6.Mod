@@ -1,0 +1,13 @@
+MODULE With6;
+
+TYPE
+  R0 = RECORD      a: INTEGER; END;   P0 = POINTER TO R0;
+  R1 = RECORD (R0) b: INTEGER; END;   P1 = POINTER TO R1;
+  
+PROCEDURE Write (r: R0);
+  BEGIN
+    WITH r: R1 DO
+    END;
+  END Write;
+
+END With6.
