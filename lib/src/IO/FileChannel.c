@@ -65,10 +65,8 @@ static void cleanup_tmp_files() {
   IO_FileChannel__Channel ch;
   
   while (tmp_files_used != 0) {
-    tmp_files_used--;
-    
     /* close and unlink all temporary files, ignoring any errors */
-    ch = tmp_files[tmp_files_used];
+    ch = tmp_files[tmp_files_used-1];
     close(ch->fd);
     tname = (char*)OOC_METHOD(ch->tmpName,
 			      Object__String8Desc_CharsLatin1)(ch->tmpName);
