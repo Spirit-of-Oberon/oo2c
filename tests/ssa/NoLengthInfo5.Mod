@@ -1,0 +1,12 @@
+MODULE NoLengthInfo5;
+
+VAR
+  a: POINTER TO ARRAY [NO_LENGTH_INFO] OF CHAR;
+
+PROCEDURE P (str: ARRAY OF CHAR);
+  BEGIN
+  END P;
+
+BEGIN
+  P(a^);
+END NoLengthInfo5.

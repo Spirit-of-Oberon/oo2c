@@ -173,7 +173,7 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object);
   
   PROCEDURE ReadType(): LONGINT;
     VAR
-      tref: LONGINT;
+      tref, len, i: LONGINT;
       tp: RT0.Struct;
       
     PROCEDURE ExtendTypeTab (VAR tab: TypeArray);
@@ -212,8 +212,11 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object);
         r. ReadString (r. name);
         module := RT0.ThisModule (r. name);
         IF (module = NIL) THEN
-          NEW (r. typeTab[tref]. moduleName, Strings.Length (r. name)+1);
-          COPY (r. name, r. typeTab[tref]. moduleName^);
+          len := Strings.Length (r. name)+1;
+          NEW (r. typeTab[tref]. moduleName, len);
+          FOR i := 0 TO len-1 DO
+            r.typeTab[tref].moduleName[i] := r.name[i];
+          END;
           r. ReadString (r. name);
           tp := NIL
         ELSE
@@ -222,8 +225,11 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object);
           tp := RT0.ThisType (module, r. name);
         END;
         IF (tp = NIL) THEN
-          NEW (r. typeTab[tref]. typeName, Strings.Length (r. name)+1);
-          COPY (r. name, r. typeTab[tref]. typeName^)
+          len := Strings.Length (r. name)+1;
+          NEW (r. typeTab[tref]. typeName, len);
+          FOR i := 0 TO len-1 DO
+            r.typeTab[tref].typeName[i] := r.name[i];
+          END;
         ELSE
           r. typeTab[tref]. typeName := tp. name
         END;

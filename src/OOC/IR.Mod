@@ -1070,6 +1070,7 @@ CONST
   notAddressable = 51;
   objectSizeMismatch = 52;
   unusedDeclaration = 53;
+  noLengthInfo = 54;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1242,6 +1243,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Size mismatch between type and expression"
     | unusedDeclaration:
       t := Error.warningPrefix+"Unused object"
+    | noLengthInfo:
+      t := "Length of this array value cannot be determined"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2262,11 +2265,16 @@ PROCEDURE (b: Builder) NewLen* (sym: Symbol; array: Expression;
           (dim >= arrayVariable. type(Sym.Array). GetOpenDimensions()) THEN
       variant := lenFixedArray
     ELSIF (arrayVariable IS Var) THEN
-      variant := lenOpenArrayParam
+      variant := lenOpenArrayParam;
     ELSE
       variant := lenOpenArrayHeap
     END;
-
+    
+    IF ((variant = lenOpenArrayHeap) OR (variant = lenOpenArrayHeap)) &
+       ~arrayVariable.type(Sym.Array).hasLengthInfo THEN
+      RETURN b. ErrExpr (noLengthInfo, array.sym);
+    END;
+    
     InitLen (len, sym, variant, array, arrayVariable, dim);
     RETURN len;
   END NewLen;

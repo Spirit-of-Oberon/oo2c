@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; noLengthInfo2 noLengthInfo3">-->
+  select ="&SetupTestCasesWithOut; noLengthInfo4 noLengthInfo5">-->
 
   &TestSetupWithOut;
     
@@ -1207,6 +1207,14 @@
       <code>NO_LENGTH_INFO</code> is used for an array whose
       element type is another open array.
     </test>
+    <test id="noLengthInfo4" type="reject" file="NoLengthInfo4.Mod">
+      Can't call <code>LEN</code> on a <code>NO_LENGTH_INFO</code> 
+      array.
+    </test>
+    <test id="noLengthInfo5" type="reject" file="NoLengthInfo5.Mod">
+      Implicit usage of <code>LEN</code> on a
+      <code>NO_LENGTH_INFO</code> array.
+    </test>
   </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC">
@@ -1542,5 +1550,9 @@
         msg="Invalid modifier flag"/>
     <reject-info id="noLengthInfo3" pos="ARRAY[%NO_LENGTH_INFO]"
         msg="Invalid modifier flag"/>
+    <reject-info id="noLengthInfo4" pos="LEN(a%"
+        msg="Length of this array value cannot be determined"/>
+    <reject-info id="noLengthInfo5" pos="P(a%"
+        msg="Length of this array value cannot be determined"/>
   </processor-info>
 </testsuite-ext>
