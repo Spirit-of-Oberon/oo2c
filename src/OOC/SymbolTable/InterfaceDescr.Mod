@@ -600,7 +600,7 @@ RAISES IO.Error;
     w. WriteTextDecl ("1.0", "no");
     w. NewLine;
     w. Write8 ("<!DOCTYPE interface-description SYSTEM '");
-    w. WriteURI (GetSystemId (repositories), FALSE);
+    w. WriteURI (GetSystemId (repositories), TRUE);
     w. Write8 ("'>");
 (*    Sym.Prune (module, Exports.GetExports (module)); (* ... *)*)
     (* note: prune doesn't work if not-exported declarations are targets
