@@ -282,19 +282,23 @@ VAR
      Otherwise, the memory is left as provided by the used libc or libgc
      library.  This is the default.  *)
 
-PROCEDURE (o : Object) Finalize*;
-(**This procedure is called by the run-time system immediately before an
-   object is collected by the garbage collector. This procedure may be used to
-   reclaim any system resources (other than GC-managed memory) associated with
-   this object (eg. OS handles). Any type that overrides this method is
+PROCEDURE (o: Object) Finalize*;
+(**This procedure is called by the run-time system immediately before an object
+   is collected by the garbage collector. This procedure may be used to reclaim
+   any system resources (other than GC-managed memory) associated with this
+   object (eg. OS handles). Any type that overrides this method is
    automatically registered for finalization by the run-time system.
-   
+
    The Boehm GC finalizes objects in @emph{topological order}. That is, if
    @var{A} points to @var{B}, and both are registered for finalization, it is
-   guaranteed the @var{A} will be finalized first. This usually guarantees
-   that finalization procedures see only unfinalized objects. For more details
-   on finalization, see:
-   @url{http://www.hpl.hp.com/personal/Hans_Boehm/gc/finalization.html}. *)
+   guaranteed the @var{A} will be finalized first. This usually guarantees that
+   finalization procedures see only unfinalized objects. For more details on
+   finalization, see:
+   @url{http://www.hpl.hp.com/personal/Hans_Boehm/gc/finalization.html}.
+
+   @strong{Important}: Program behaviour is undefined if this procedure raises
+   an exception and passes it on to its caller.  In this case, the caller is
+   the garbage collector and it is not prepared to handle exceptions.  *)
 
 PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
 (**Allocates a new array or record variable on the heap, using the type
