@@ -46,7 +46,7 @@ PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List): Bui
 
 PROCEDURE InitNegate (neg: Negate; sym: IR.Symbol; opnd: IR.Expression);
   BEGIN
-    IR.InitOperator (neg, sym, opnd, NIL);
+    IR.InitOperator (neg, sym, opnd. type, opnd, NIL);
   END InitNegate;
 
 PROCEDURE NewNegate (sym: IR.Symbol; opnd: IR.Expression): Negate;

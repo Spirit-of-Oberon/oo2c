@@ -80,6 +80,7 @@ TYPE
   ExpressionList* = POINTER TO ARRAY OF Expression;
   ExpressionDesc* = RECORD [ABSTRACT]
     (NodeDesc)
+    type-: Item.Type;
   END;
 
 
@@ -303,32 +304,35 @@ PROCEDURE (node: Node) [ABSTRACT] Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitExpression* (expr: Expression; sym: Symbol);
+PROCEDURE InitExpression* (expr: Expression; sym: Symbol; type: Item.Type);
   BEGIN
     InitNode (expr, sym);
   END InitExpression;
 
-PROCEDURE InitReference (ref: Reference; name: Symbol; decl: Item.Declaration);
+PROCEDURE InitReference (ref: Reference; name: Symbol; type: Item.Type;
+                         decl: Item.Declaration);
   BEGIN
-    InitNode (ref, name);
+    InitExpression (ref, name, type);
     ref. decl := decl;
   END InitReference;
 
 
 (* -------- *)
 
-PROCEDURE InitConst (const: Const; sym: Symbol; value: Language.Value);
+PROCEDURE InitConst (const: Const; sym: Symbol; type: Item.Type;
+                     value: Language.Value);
   BEGIN
-    InitExpression (const, sym);
+    InitExpression (const, sym, type);
     const. value := value;
   END InitConst;
 
-PROCEDURE NewConst (sym: Symbol; value: Language.Value): Const;
+PROCEDURE NewConst (sym: Symbol; type: Item.Type;
+                    value: Language.Value): Const;
   VAR
     const: Const;
   BEGIN
     NEW (const);
-    InitConst (const, sym, value);
+    InitConst (const, sym, type, value);
     RETURN const
   END NewConst;
 
@@ -342,7 +346,8 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
 
 PROCEDURE (b: Builder) NewStringConst* (sym: Symbol): Expression;
   BEGIN
-    RETURN NewConst (sym, String8.type. ValueOf (sym. str^));
+    RETURN NewConst (sym, Predef.GetType (Predef.charString),
+                     String8.type. ValueOf (sym. str^));
   END NewStringConst;
 
 PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
@@ -354,15 +359,16 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
       b. ErrSym (numberOutOfRange, sym);
       RETURN errorExpr
     ELSE
-      RETURN NewConst (sym, v)
+      RETURN NewConst (sym, Predef.GetType (Predef.integer), v)
     END
   END NewIntConst10;
 
 (* -------- *)
 
-PROCEDURE InitVar (var: Var; name: Symbol; decl: Item.VarDecl);
+PROCEDURE InitVar (var: Var; name: Symbol; type: Item.Type;
+                   decl: Item.VarDecl);
   BEGIN
-    InitReference (var, name, decl);
+    InitReference (var, name, type, decl);
   END InitVar;
 
 PROCEDURE NewVar (name: Symbol; decl: Item.VarDecl): Var;
@@ -370,7 +376,7 @@ PROCEDURE NewVar (name: Symbol; decl: Item.VarDecl): Var;
     var: Var;
   BEGIN
     NEW (var);
-    InitVar (var, name, decl);
+    InitVar (var, name, decl. type, decl);
     RETURN var
   END NewVar;
 
@@ -384,9 +390,10 @@ PROCEDURE (var: Var) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitPredefProc (pproc: PredefProc; name: Symbol; decl: Item.PredefProc);
+PROCEDURE InitPredefProc (pproc: PredefProc; name: Symbol; type: Item.Type;
+                          decl: Item.PredefProc);
   BEGIN
-    InitReference (pproc, name, decl);
+    InitReference (pproc, name, type, decl);
   END InitPredefProc;
 
 PROCEDURE NewPredefProc (name: Symbol; decl: Item.PredefProc): PredefProc;
@@ -394,7 +401,7 @@ PROCEDURE NewPredefProc (name: Symbol; decl: Item.PredefProc): PredefProc;
     pproc: PredefProc;
   BEGIN
     NEW (pproc);
-    InitPredefProc (pproc, name, decl);
+    InitPredefProc (pproc, name, NIL, decl);
     RETURN pproc
   END NewPredefProc;
 
@@ -410,7 +417,7 @@ PROCEDURE (pproc: PredefProc) Accept* (v: Visitor);
 
 PROCEDURE InitProcedureRef (procRef: ProcedureRef; name: Symbol; decl: Item.ProcDecl);
   BEGIN
-    InitReference (procRef, name, decl);
+    InitReference (procRef, name, decl. formalPars, decl);
   END InitProcedureRef;
 
 PROCEDURE NewProcedureRef (name: Symbol; decl: Item.ProcDecl): ProcedureRef;
@@ -434,7 +441,7 @@ PROCEDURE (procRef: ProcedureRef) Accept* (v: Visitor);
 
 PROCEDURE InitModuleRef (modRef: ModuleRef; name: Symbol; decl: Item.Module);
   BEGIN
-    InitReference (modRef, name, decl);
+    InitReference (modRef, name, NIL, decl);
   END InitModuleRef;
 
 PROCEDURE NewModuleRef (name: Symbol; decl: Item.Module): ModuleRef;
@@ -477,7 +484,7 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
         b. ErrSym (undeclaredIdent, name)
       ELSE
         WITH decl: Item.ConstDecl DO
-          RETURN NewConst (name, decl. value)
+          RETURN NewConst (name, decl. type, decl. value)
         | decl: Item.VarDecl DO
           RETURN NewVar (name, decl)
         | decl: Item.PredefProc DO
@@ -508,9 +515,10 @@ PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Item.Item;
 
 (* -------- *)
 
-PROCEDURE InitOperator* (op: Operator; sym: Symbol; opnd1, opnd2: Expression);
+PROCEDURE InitOperator* (op: Operator; sym: Symbol; type: Item.Type;
+                         opnd1, opnd2: Expression);
   BEGIN
-    InitExpression (op, sym);
+    InitExpression (op, sym, type);
     op. opnd1 := opnd1;
     op. opnd2 := opnd2;
   END InitOperator;
@@ -522,7 +530,7 @@ PROCEDURE (b: Builder) [ABSTRACT] NewOperator* (op: Symbol; left, right: Express
 
 PROCEDURE InitStatement* (statm: Statement; sym: Symbol);
   BEGIN
-    InitExpression (statm, sym);
+    InitExpression (statm, sym, Predef.GetType (Predef.void));
   END InitStatement;
 
 (* -------- *)
@@ -658,5 +666,5 @@ PROCEDURE (m: Module) Accept* (v: Visitor);
 BEGIN
   NEW (irContext);
   Error.InitContext (irContext, "OOC:IR");
-  errorExpr := NewConst (NIL, Boolean.New (FALSE));
+  errorExpr := NewConst (NIL, NIL, Boolean.New (FALSE));
 END OOC:IR.
