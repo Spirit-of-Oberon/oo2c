@@ -609,6 +609,7 @@ RAISES IO.Error;
             receiver := item.formalPars.receiver;
             receiver.SetType(GetTypeByName(receiver.type,
                                            contextOfUse, FALSE, errList));
+            item.formalPars.SetTypePars(receiver.type.typePars);
           END;
           contextOfUse := item
         | item: Sym.TypePars DO
@@ -659,6 +660,7 @@ RAISES IO.Error;
              (typePars.params[i].type(Sym.TypeVar).bound) THEN
             ErrType(invalidTypeBound, typePars.params[i].srcCodeType);
           END;
+          typePars.params[i].type(Sym.TypeVar).SetIndex(i);
         END;
       END CheckTypePars;
     

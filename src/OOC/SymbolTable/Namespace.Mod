@@ -488,7 +488,6 @@ PROCEDURE (ns: PType) IdentifyLocal2*(sourceContext: Sym.Item;
                                       VAR baseNotExported: BOOLEAN): Sym.Declaration;
   VAR
     decl: Sym.Declaration;
-    receiver: Sym.VarDecl;
     typePars: Sym.TypePars;
     item: Sym.Item;
   BEGIN
@@ -507,8 +506,7 @@ PROCEDURE (ns: PType) IdentifyLocal2*(sourceContext: Sym.Item;
         ELSIF (item IS Sym.ProcDecl) & item(Sym.ProcDecl).isTypeBound THEN
           (* only permit lookup in type-bound procedures of the parametric
              type to which this namespace belongs *)
-          receiver := item(Sym.ProcDecl).formalPars.receiver;
-          IF (receiver.type.typePars = typePars) THEN
+          IF (item(Sym.ProcDecl).formalPars.typePars = typePars) THEN
             RETURN decl;
           END;
         END;

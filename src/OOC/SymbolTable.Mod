@@ -255,8 +255,12 @@ TYPE
        side of a type declaration.  If multiple aliases are defined for a type,
        this field refers to the name of the original declaration.  *)
     typePars-: TypePars;
-    (**For a parametric type, this field holds a reference to the formal
-       parameter list.  Otherwise, it is @code{NIL}.  *)
+    (**For a parametric type, or a type-bound procedure of a parametric type,
+       this field holds a reference to the formal parameter list.  Otherwise,
+       it is @code{NIL}.
+
+       The @otype{FormalPars} of type-bound procedures duplicate the
+       @ofield{typePars} of the receiver's type.  *)
     size-: LONGINT;                      (* FIXME... make this `Integer'? *)
     (**Size in bytes of the memory that needs to be allocated to hold a value
        of this type.  For most types, this is a non-negative value.  It is zero
@@ -640,6 +644,10 @@ TYPE
     (TypeDesc)
     bound-: Type;
     (**Lower bound of the set of valid type arguments.  *)
+    index-: LONGINT;
+    (**Index of this type variable in the parameter list
+       @ofield{TypePars.params} and the argument list
+       @ofield{QualType.arguments}.  *)
   END;
   
 TYPE
@@ -2192,6 +2200,7 @@ PROCEDURE InitTypeVar* (typeVar: TypeVar; parent: Item;
   BEGIN
     InitType(typeVar, parent, position);
     typeVar.bound := bound;
+    typeVar.index := -1;
   END InitTypeVar;
 
 PROCEDURE (typeVar: TypeVar) Store* (w: Storable.Writer) RAISES IO.Error;
@@ -2211,6 +2220,7 @@ PROCEDURE (typeVar: TypeVar) Load* (r: Storable.Reader) RAISES IO.Error;
     ELSE
       typeVar.bound := obj(Type);
     END;
+    typeVar.index := -1;
   END Load;
 
 PROCEDURE (typeVar: TypeVar) Bound*(): Type;
@@ -2218,6 +2228,10 @@ PROCEDURE (typeVar: TypeVar) Bound*(): Type;
     RETURN typeVar.bound;
   END Bound;
 
+PROCEDURE (typeVar: TypeVar) SetIndex*(index: LONGINT);
+  BEGIN
+    typeVar.index := index;
+  END SetIndex;
 
 
 PROCEDURE InitTypePars* (typePars: TypePars; parent: Item);
