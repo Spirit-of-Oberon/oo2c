@@ -1470,6 +1470,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     registerMap: Dictionary.Dictionary;
     w: Writer;
     haveCopyParameter, writeProc: BOOLEAN;
+    destore: Destore.State;
 
   PROCEDURE Write (pre, post: ARRAY OF CHAR);
     BEGIN
@@ -1574,7 +1575,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Write ("initial", "dce-pre");
     DeadCodeElimination.Transform (pb);
     Write ("dce-post", "destore-pre");
-    Destore.Transform (pb);
+    destore := Destore.New (pb);
+    destore. Transform();
     Write ("destore-post", "dce-pre");
     DeadCodeElimination.Transform (pb);
     Write ("destore-post", "cse-pre");

@@ -100,81 +100,181 @@ IMPORT
    A ``set'' is made obsolete by replacing all ``get'' instructions reading its
    source value from the variable with the source value itself.  *)
 
-PROCEDURE Transform* (pb: SSA.ProcBlock);
-  CONST
-    read = 0;
-    write = 1;
+
+TYPE
+  State* = POINTER TO StateDesc;
+  StateDesc = RECORD
+    pb: SSA.ProcBlock;
+    localVarWithAdr: Dictionary.Dictionary;
+  END;
+  
+TYPE
+  CacheEntry = POINTER TO CacheEntryDesc;
+  CacheEntryDesc = RECORD
+    (SSA.NodeDesc)
+    next: CacheEntry;
+    design: SSA.Opnd;
+    value: SSA.Result;
+  END;
+  
+CONST
+  read = 0;
+  write = 1;
+
+PROCEDURE IsLocalVariable (pb: SSA.ProcBlock; decl: Sym.Declaration): BOOLEAN;
+  BEGIN
+    RETURN (decl IS Sym.VarDecl) & (decl. Procedure() = pb. procDecl);
+  END IsLocalVariable;
+
+PROCEDURE InitState (VAR s: State; pb: SSA.ProcBlock);
   VAR
+    localVarWithAdr: Dictionary.Dictionary;
+    instr: SSA.Instr;
+    
+  PROCEDURE UsesAreVarAccess (res: SSA.Result): BOOLEAN;
+    VAR
+      use: SSA.Opnd;
+    BEGIN
+      use := res. useList;
+      WHILE (use # NIL) DO
+        IF (use. class # Opnd.readAdr) &
+           (use. class # Opnd.writeAdr) &
+           ~use. IsScheduleOpnd() THEN
+          RETURN FALSE;
+        END;
+        use := use. nextUse;
+      END;
+      RETURN TRUE;
+    END UsesAreVarAccess;
+  
+  BEGIN
+    s. pb := pb;
+    
+    (* create a dictionary of all local variables whose address is taken
+       somewhere in this procedure, and used within an instruction other than
+       "get", "set", or "copy"  *)
+    localVarWithAdr := Dictionary.New();
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      IF (instr IS SSA.Address) &
+         IsLocalVariable (pb, instr(SSA.Address). decl) &
+         ~UsesAreVarAccess (instr) THEN
+        localVarWithAdr. Set (instr(SSA.Address). decl, NIL);
+      END;
+      instr := instr. nextInstr;
+    END;
+    s. localVarWithAdr := localVarWithAdr;
+  END InitState;
+
+PROCEDURE New* (pb: SSA.ProcBlock): State;
+  VAR
+    s: State;
+  BEGIN
+    NEW (s);
+    InitState (s, pb);
+    RETURN s;
+  END New;
+
+PROCEDURE AccessedByCall (s: State;
+                          calledAdr: SSA.Result; design: SSA.Opnd;
+                          mode: SHORTINT): BOOLEAN;
+(* Determine of the designator @oparam{design} is accessed by the called
+   procedure @oparam{calledAdr}.  If yes, then return @code{TRUE}.
+
+   The function implements this approximation: If the called procedure is
+   nested into the current one, the result is always @code{TRUE}.  Otherwise,
+   result is only @code{FALSE} if @oparam{design} refers to a local variable of
+   the current procedure whose address is exclusively used as
+   @oconst{Opnd.readAdr} or @oconst{Opnd.writeAdr} of a data read or write.
+   This effectively covers local variables of scalar type that are not passed
+   to a variable parameter, nor used in conjunction with @code{SYSTEM.ADR}.
+
+   This function can be improved if more is known about the access patterns of
+   the called procedure.
+
+   @precond
+   @ofield{design.class} is either @oconst{Opnd.readDesign} or
+   @oconst{Opnd.writeDesign}.
+
+   @oparam{mode} is either @oconst{read} or @oconsr{write}.
+   @end precond  *)
+  
+  PROCEDURE LocalVarWithoutAdr (design: SSA.Opnd): BOOLEAN;
+    BEGIN
+      IF (design. arg IS SSA.DeclRef) &
+         IsLocalVariable (s. pb, design. arg(SSA.DeclRef). decl) THEN
+        RETURN ~s. localVarWithAdr. HasKey (design. arg(SSA.DeclRef). decl);
+      ELSE
+        RETURN FALSE;
+      END;
+    END LocalVarWithoutAdr;
+  
+  PROCEDURE NestedProc (calledAdr: SSA.Result; procDecl: Sym.ProcDecl): BOOLEAN;
+    VAR
+      proc: Sym.ProcDecl;
+    BEGIN
+      IF (calledAdr. instr. opcode = Opcode.address) THEN
+        proc := calledAdr. instr(SSA.Address). decl(Sym.ProcDecl);
+        REPEAT
+          proc := proc. Procedure();
+        UNTIL (proc = NIL) OR (proc = procDecl);
+        RETURN (proc # NIL);
+      ELSE
+        (* this is either a type-bound procedure or a procedure variable;
+           in either case, the called procedure is global and cannot be
+           nested in this procedure *)
+        RETURN FALSE;
+      END;
+    END NestedProc;
+  
+  BEGIN
+    RETURN
+        NestedProc (calledAdr, s. pb. procDecl) OR
+        ~LocalVarWithoutAdr (design);
+  END AccessedByCall;
+
+PROCEDURE (s: State) ClobberedBy* (readDesign: SSA.Opnd; instr: SSA.Instr): BOOLEAN;
+(**Return @code{TRUE} if the value described by the read designator
+   @oparam{readDesign} may be clobbered by the evaluation of the instruction
+   @oparam{instr}.  *)
+  VAR
+    alias: Aliasing.Id;
+  BEGIN
+    (* Note: This predicate must mirror the rules of Transform.GetValue *)
+
+    CASE instr. opcode OF
+    | Opcode.set, Opcode.copy, Opcode.copyString:
+      alias := Aliasing.DesignatorAlias (readDesign,
+                                         instr. GetOpndClass (Opnd.writeDesign));
+      RETURN (alias # Aliasing.noAliasing);
+      
+    | Opcode.enter, Opcode.get, Opcode.select,
+      Opcode.loopStart, Opcode.loopEnd,
+      Opcode.collect, Opcode.newObject, Opcode.copyParameter,
+      Opcode.exit, Opcode.return,
+      Opcode.halt, Opcode.assert, Opcode.checkIndex, Opcode.checkPointer,
+      Opcode.typeGuard, Opcode.failedTypeAssert,
+      Opcode.failedWith, Opcode.failedCase:
+      RETURN FALSE;
+      
+    | Opcode.call:
+      RETURN AccessedByCall (s, instr. opndList. arg, readDesign, write);
+      
+    | Opcode.moveBlock:
+      RETURN TRUE;
+    END;
+  END ClobberedBy;
+
+PROCEDURE (s: State) Transform*;
+  VAR
+    pb: SSA.ProcBlock;
     instr, next: SSA.Instr;
     value: SSA.Result;
-    localVarWithAdr: Dictionary.Dictionary;
 
   PROCEDURE UnknownValue (res: SSA.Result): BOOLEAN;
     BEGIN
       RETURN (res. class = Result.store);
     END UnknownValue;
-  
-  PROCEDURE IsLocalVariable (decl: Sym.Declaration): BOOLEAN;
-    BEGIN
-      RETURN (decl IS Sym.VarDecl) & (decl. Procedure() = pb. procDecl);
-    END IsLocalVariable;
-
-  PROCEDURE AccessedByCall (calledAdr: SSA.Result; design: SSA.Opnd;
-                            mode: SHORTINT): BOOLEAN;
-  (* Determine of the designator @oparam{design} is accessed by the called
-     procedure @oparam{calledAdr}.  If yes, then return @code{TRUE}.
-
-     The function implements this approximation: If the called procedure is
-     nested into the current one, the result is always @code{TRUE}.  Otherwise,
-     result is only @code{FALSE} if @oparam{design} refers to a local variable
-     of the current procedure whose address is exclusively used as
-     @oconst{Opnd.readAdr} or @oconst{Opnd.writeAdr} of a data read or write.
-     This effectively covers local variables of scalar type that are not passed
-     to a @code{VAR} parameter, nor used in conjunction with @code{SYSTEM.ADR}.
-
-     This function can be improved if more is known about the access patterns
-     of the called procedure.
-
-     @precond
-     @ofield{design.class} is either @oconst{Opnd.readDesign} or
-     @oconst{Opnd.writeDesign}.
-
-     @oparam{mode} is either @oconst{read} or @oconsr{write}.
-     @end precond  *)
-    
-    PROCEDURE LocalVarWithoutAdr (design: SSA.Opnd): BOOLEAN;
-      BEGIN
-        IF (design. arg IS SSA.DeclRef) &
-           IsLocalVariable (design. arg(SSA.DeclRef). decl) THEN
-          RETURN ~localVarWithAdr. HasKey (design. arg(SSA.DeclRef). decl);
-        ELSE
-          RETURN FALSE;
-        END;
-      END LocalVarWithoutAdr;
-
-    PROCEDURE NestedProc (calledAdr: SSA.Result; procDecl: Sym.ProcDecl): BOOLEAN;
-      VAR
-        proc: Sym.ProcDecl;
-      BEGIN
-        IF (calledAdr. instr. opcode = Opcode.address) THEN
-          proc := calledAdr. instr(SSA.Address). decl(Sym.ProcDecl);
-          REPEAT
-            proc := proc. Procedure();
-          UNTIL (proc = NIL) OR (proc = procDecl);
-          RETURN (proc # NIL);
-        ELSE
-          (* this is either a type-bound procedure or a procedure variable;
-             in either case, the called procedure is global and cannot be
-             nested in this procedure *)
-          RETURN FALSE;
-        END;
-      END NestedProc;
-    
-    BEGIN
-      RETURN
-          NestedProc (calledAdr, pb. procDecl) OR
-          ~LocalVarWithoutAdr (design);
-    END AccessedByCall;
   
   PROCEDURE GetValue (store: SSA.Result; get: SSA.Instr;
                       loopTrace: SSA.Instr): SSA.Result;
@@ -203,15 +303,6 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
      @oparam{get} is replaced with a gated result of the ``loop-start''
      instruction.
      @end itemize  *)
-    TYPE
-      CacheEntry = POINTER TO CacheEntryDesc;
-      CacheEntryDesc = RECORD
-        (SSA.NodeDesc)
-        next: CacheEntry;
-        design: SSA.Opnd;
-        value: SSA.Result;
-      END;
-      
     VAR
       alias: Aliasing.Id;
       instr: SSA.Instr;
@@ -540,7 +631,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         RETURN GetLoopValue (instr);
         
       | Opcode.call:
-        IF AccessedByCall (instr. opndList. arg,
+        IF AccessedByCall (s, instr. opndList. arg,
                            get. GetOpndClass (Opnd.readDesign), write) THEN
           (* be pessimistic: the call rewrites our variable *)
           RETURN instr. GetResultStore();
@@ -682,7 +773,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             RETURN VisibleEffect (instr. GetResultStore(), set)
             
           | Opcode.call:
-            IF AccessedByCall (instr. opndList. arg,
+            IF AccessedByCall (s, instr. opndList. arg,
                                set. GetOpndClass (Opnd.writeDesign), read) THEN
               RETURN TRUE;               (* assume the worst *)
             ELSE
@@ -710,41 +801,14 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       END;
     END VisibleEffect;
 
-  PROCEDURE UsesAreVarAccess (res: SSA.Result): BOOLEAN;
-    VAR
-      use: SSA.Opnd;
-    BEGIN
-      use := res. useList;
-      WHILE (use # NIL) DO
-        IF (use. class # Opnd.readAdr) & (use. class # Opnd.writeAdr) THEN
-          RETURN FALSE;
-        END;
-        use := use. nextUse;
-      END;
-      RETURN TRUE;
-    END UsesAreVarAccess;
-  
-  PROCEDURE ReplaceStoreUses (baseResult: SSA.Result;
-                              storeOut, storeIn: SSA.Result);
+  PROCEDURE ReplaceStoreUses (storeOut, storeIn: SSA.Result);
     BEGIN
       storeOut. ReplaceUses (storeIn);
       storeOut. DeleteResult;
     END ReplaceStoreUses;
 
   BEGIN
-    (* create a dictionary of all local variables whose address is taken
-       somewhere in this procedure, and used within an instruction other than
-       "get", "set", or "copy"  *)
-    localVarWithAdr := Dictionary.New();
-    instr := pb. instrList;
-    WHILE (instr # NIL) DO
-      IF (instr IS SSA.Address) &
-         IsLocalVariable (instr(SSA.Address). decl) &
-         ~UsesAreVarAccess (instr) THEN
-        localVarWithAdr. Set (instr(SSA.Address). decl, NIL);
-      END;
-      instr := instr. nextInstr;
-    END;
+    pb := s. pb;
     
     (* visit all "get" instructions and check if their uses can be replaced
        with the value that they are retrieving from memory *)
@@ -754,10 +818,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       IF (instr. opcode = Opcode.get) THEN
         value := GetValue (instr. GetArgStore(), instr, NIL);
         IF UnknownValue (value) THEN
-          (* ... disabled, leads to problems with anti-dependencies ...
-             ReplaceStoreUses (instr. AddResult (Result.scheduleDependency),
-                            instr. GetResultStore(), instr. opndList. arg);
-          instr. opndList. ReplaceArg (value);*)
+          ReplaceStoreUses (instr. GetResultStore(), instr. opndList. arg);
+          instr. opndList. ReplaceArg (value);
         ELSE
           instr. ReplaceUses (value);
         END;
@@ -772,10 +834,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       next := instr. nextInstr;
-      IF (instr. opcode = Opcode.get) & (instr. useList = NIL)THEN
-        ASSERT (instr. nextResult # NIL);
-        ASSERT (instr. nextResult. nextResult = NIL);
-        instr. nextResult. ReplaceUses (instr. opndList. arg);
+      IF (instr. opcode = Opcode.get) & (instr. useList = NIL) THEN
+        IF (instr. nextResult # NIL) THEN
+          (* store result has not been eliminated yet, remove manually *)
+          ASSERT (instr. nextResult. nextResult = NIL);
+          instr. nextResult. ReplaceUses (instr. opndList. arg);
+        END;
         pb. DeleteInstr (instr);
       END;
       instr := next;

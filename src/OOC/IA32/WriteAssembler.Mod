@@ -227,6 +227,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     s: SSA.Result;
     domRoot: Schedule.Block;
     writeProc: BOOLEAN;
+    destore: Destore.State;
 
   PROCEDURE Write (pre, post: ARRAY OF CHAR);
     BEGIN
@@ -262,7 +263,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Write ("initial", "dce-pre");
     DeadCodeElimination.Transform (pb);
     Write ("dce-post", "destore-pre");
-    Destore.Transform (pb);
+    destore := Destore.New (pb);
+    destore. Transform();
     Write ("destore-post", "dce-pre");
     DeadCodeElimination.Transform (pb);
     Write ("dce-post", "final");
