@@ -3275,9 +3275,11 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
       RETURN b. Widen(expr, TR.MatchingStringConst(type(Sym.Array). elementType));
 
     ELSIF (expr IS Const) &
-          TR.IsObject(type) &
+          (TR.IsSTRING(type) OR TR.IsObjectType(type)) &
           (TR.BaseCharType(expr. type) # NIL) THEN
-      (* Case 8: char const and string const < Object.Object *)
+      (* Case 8: char const and string const < Object.Object
+         Note: Only special case Object.Object and extensions of Object.String,
+               but _not_ all extensions of Object.Object *)
       expr := b. NewTypeConv (b.stringType, expr);
       RETURN TRUE;
   
