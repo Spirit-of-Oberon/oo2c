@@ -54,7 +54,7 @@ all: lib/obj/liboo2c.la bin/oo2c
 ###      with them.
 main-clean: test-cleanall
 	for i in sym obj bin sym-v1 obj-v1; do rm -Rf ${top_builddir}/$$i; done
-	for i in lib/sym lib/obj lib/doc; do rm -Rf ${top_builddir}/$$i; done
+	for i in lib/sym lib/obj lib/bin lib/doc; do rm -Rf ${top_builddir}/$$i; done
 	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done
 	-cd stage0 && rm -f *.o */*.o */*/*.o */*/*/*.o
