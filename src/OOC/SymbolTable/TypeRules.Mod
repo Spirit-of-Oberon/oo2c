@@ -45,6 +45,7 @@ PROCEDURE InitTypeClosure(tc: TypeClosure; position: Sym.Position;
                           params: Sym.TypeVarArray;
                           arguments: Sym.TypeRefArray);
   BEGIN
+    ASSERT(LEN(params^) = LEN(arguments^));
     Sym.InitType(tc, NIL, position);
     tc.baseType := baseType;
     tc.params := params;
@@ -85,6 +86,7 @@ PROCEDURE Lookup(context: TypeClosure; tv: Sym.TypeVar): Sym.Type;
   VAR
     i: LONGINT;
   BEGIN
+    ASSERT(LEN(context.params^) = LEN(context.arguments^));
     i := 0;
     WHILE (i # LEN(context.params^)) & (context.params[i] # tv)  DO
       INC(i);
@@ -111,7 +113,8 @@ PROCEDURE ExpandInContext(type: Sym.Type; context: TypeClosure): Sym.Type;
       RETURN Expand(type);
     ELSE
       WITH type: Sym.QualType DO
-        NEW(args, LEN(type.arguments^));
+        ASSERT(LEN(type.arguments^) = LEN(type.typePars.params^));
+        NEW(args, LEN(type.baseType.typePars.params^));
         FOR i := 0 TO LEN(args^)-1 DO
           Sym.InitTypeRef(args[i], ExpandInContext(type.arguments[i].type,
                                                    context));
@@ -574,6 +577,41 @@ PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
     END;
     RETURN FALSE
   END IsExtensionOf;
+
+PROCEDURE IsExtensionOfNoParams* (type, base: Sym.Type): BOOLEAN;
+(**Like @oproc{IsExtensionOf}, but this ignores type parameters and qualified
+   types.  *)
+  BEGIN
+    (* for a type variable, use the type bound *)
+    IF (type IS Sym.TypeVar) THEN
+      type := type(Sym.TypeVar).bound;
+    END;
+    IF (base IS Sym.TypeVar) THEN
+      base := base(Sym.TypeVar).bound;
+    END;
+    type := type.Deparam();
+    base := base.Deparam();
+    (* if `type' and `base' are pointers: reduce them to their base types *)
+    IF (type IS Sym.Pointer) & (base IS Sym.Pointer) THEN
+      type := type(Sym.Pointer).baseType.Deparam();
+      base := base(Sym.Pointer).baseType.Deparam();
+    END;
+    IF (type IS Sym.Record) & (base IS Sym.Record) THEN
+      (* either `type' and `base' where records from the start, or they were
+         both record pointers *)
+      WHILE (type # NIL) & (type IS Sym.Record) DO 
+        IF SameType(type, base) THEN
+          RETURN TRUE
+        ELSE
+          type := type(Sym.Record).baseType;
+          IF (type # NIL) THEN
+            type := type.Deparam();
+          END;
+        END;
+      END;
+    END;
+    RETURN FALSE
+  END IsExtensionOfNoParams;
 
 PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowSpecialization: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE}, iff the formal parameter lists described by
