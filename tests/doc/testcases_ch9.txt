@@ -68,16 +68,16 @@ REJECT:
 ACCEPT:
   
   1) accept "proc" and "proc()" if the formal parameter list
-     is empty
+     is empty  [TBProc1, TBProc2]
   2) argument of basic type (value and VAR); assignment 
      to value parameter are invisible outside proc, while
-     assigning to VAR parameter is visible
-  3) argument of record type (value and VAR); dito
-  4) argument of array type (value and VAR); dito
+     assigning to VAR parameter is visible  [Proc13, HOTVarPar1]
+  3) argument of record type (value and VAR); dito  [Record3, Record11]
+  4) argument of array type (value and VAR); dito  [Array9, Array10]
   5) formal parameter Tf is a VAR record, and the argument type is
-     an extension of Tf
+     an extension of Tf  [Record5, Record8]
   6) formal parameter is ARRAY OF CHAR, argument is a string
-     constant
+     constant  [HOTDesignator1]
 
 
 

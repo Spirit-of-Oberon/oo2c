@@ -10,8 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; assign_ro proc6 proc7 proc8 proc9
-  proc10 proc11 proc12">-->
+  select ="&SetupTestCasesWithOut; proc13 array9 array10">-->
 
   &TestSetupWithOut;
     
@@ -116,6 +115,10 @@
     <test id="proc12" type="reject" file="Proc12.Mod">
       Argument to an open array variable parameter has wrong number of
       dimensions.
+    </test>
+    <test id="proc13" type="run" file="Proc13.Mod" output="Proc13.Ref">
+      Assignment to value parameter of type <code>INTEGER</code> has
+      no effect outside procedure.
     </test>
     
     <test id="function1" type="run"
@@ -496,41 +499,42 @@
       summing up the elements.  The array is passed both as value and
       variable parameter to the summation function.
     </test>
-    
     <test id="array2" type="run" file="Array2.Mod" output="Array2.Ref">
       As <code>array1</code>, but with <code>INTEGER</code> as element
       type.
     </test>
-    
     <test id="array3" type="run" file="Array3.Mod" output="Array3.Ref">
       Fill an 2-dimensional array of <code>INTEGER</code> and write
       the array lines.  The array is a global variable.
     </test>
-    
     <test id="array4" type="run" file="Array4.Mod" output="Array4.Ref">
       Like <code>array3</code>, but the array is a parameter with 2
       open dimensions.
     </test>
-    
     <test id="array5" type="run" file="Array5.Mod" output="Array5.Ref">
       Like <code>array4</code>, but the array elements are of type
       <code>SHORTINT</code>.
     </test>
-    
     <test id="array6" type="run" file="Array6.Mod" output="Array6.Ref">
       Like <code>array1</code>, but the array variable is allocated on
       the heap.  Additionally, summation is also done directly on the
       pointer variable.
     </test>
-    
     <test id="array7" type="run" file="Array7.Mod" output="Array7.Ref">
       Like <code>array6</code>, but the variable is an open
       array allocated on the heap.
     </test>
-    
     <test id="array8" type="run" file="Array8.Mod" output="Array8.Ref">
       Like <code>array5</code>, but the variable is a 2-dimensional
       open array allocated on the heap.
+    </test>
+    <test id="array9" type="run" file="Array9.Mod" output="Array9.Ref">
+      Assignment to a value parameter of array type is not visible
+      outside procedure.
+    </test>
+    <test id="array10" type="run" file="Array10.Mod" output="Array10.Ref">
+      Assignment to a variable parameter of array type is visible
+      outside procedure.
     </test>
 
     <test id="procvar1" type="run" file="ProcVar1.Mod" output="ProcVar1.Ref">
