@@ -680,9 +680,21 @@ PROCEDURE (c: ConstFold) VisitMoveBlock* (move: IR.MoveBlock);
   BEGIN
   END VisitMoveBlock;
 
+PROCEDURE (c: ConstFold) VisitRaise* (raise: IR.Raise);
+  BEGIN
+  END VisitRaise;
+
 PROCEDURE (c: ConstFold) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
   BEGIN
   END VisitRepeatStatm;
+
+PROCEDURE (c: ConstFold) VisitCatchClause* (catch: IR.CatchClause);
+  BEGIN
+  END VisitCatchClause;
+
+PROCEDURE (c: ConstFold) VisitTryStatm* (tryStatm: IR.TryStatm);
+  BEGIN
+  END VisitTryStatm;
 
 PROCEDURE (c: ConstFold) VisitWhileStatm* (whileStatm: IR.WhileStatm);
   BEGIN

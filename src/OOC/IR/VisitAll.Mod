@@ -340,6 +340,11 @@ PROCEDURE (v: Visitor) VisitMoveBlock* (move: IR.MoveBlock);
     move. size. Accept (v);
   END VisitMoveBlock;
 
+PROCEDURE (v: Visitor) VisitRaise* (raise: IR.Raise);
+  BEGIN
+    raise. exception. Accept (v);
+  END VisitRaise;
+
 PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
   BEGIN
     VisitStatementSeq (v, repeatStatm. body);
@@ -352,6 +357,21 @@ PROCEDURE (v: Visitor) VisitReturn* (return: IR.Return);
       return. result. Accept (v);
     END;
   END VisitReturn;
+
+PROCEDURE (v: Visitor) VisitCatchClause* (catch: IR.CatchClause);
+  BEGIN
+    VisitStatementSeq(v, catch.statmSeq);
+  END VisitCatchClause;
+
+PROCEDURE (v: Visitor) VisitTryStatm* (tryStatm: IR.TryStatm);
+  VAR
+    i: LONGINT;
+  BEGIN
+    VisitStatementSeq(v, tryStatm.statmSeq);
+    FOR i := 0 TO LEN(tryStatm.catchList^)-1 DO
+      tryStatm.catchList[i].Accept(v);
+    END;
+  END VisitTryStatm;
 
 PROCEDURE (v: Visitor) VisitWhileStatm* (whileStatm: IR.WhileStatm);
   BEGIN

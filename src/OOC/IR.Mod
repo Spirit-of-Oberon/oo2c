@@ -21,7 +21,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Object, Object:Boxed, Object:BigInt,
+  Msg, Object, Object:Boxed, Object:BigInt,
   ADT:ArrayList, ADT:StringBuffer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
@@ -829,6 +829,7 @@ TYPE
     (**Exit statement.  *)
     (StatementDesc)
     loop-: LoopStatm;
+    popExceptionContext-: LONGINT;
   END;
   
 TYPE
@@ -895,6 +896,13 @@ TYPE
     dest-: Expression;
     size-: Expression;
   END;
+
+TYPE
+  Raise* = POINTER TO RaiseDesc;
+  RaiseDesc = RECORD
+    (StatementDesc)
+    exception-: Expression; 
+  END;
   
 TYPE
   RepeatStatm* = POINTER TO RepeatStatmDesc;
@@ -913,8 +921,31 @@ TYPE
     result-: Expression;
     (**The result expression.  @code{NIL} if this is a return from
        a procedure.  *)
+    popExceptionContext-: LONGINT;
   END;
 
+TYPE
+  CatchClause* = POINTER TO CatchClauseDesc;
+  CatchList* = POINTER TO ARRAY OF CatchClause;
+  CatchClauseDesc = RECORD
+    (StatementDesc)
+    exceptionType-: Sym.Type;
+    (**The pointer type that guard the body of the catch clause.  *)
+    statmSeq-: StatementSeq;
+    triggered: BOOLEAN;
+  END;
+  
+TYPE
+  TryStatm* = POINTER TO TryStatmDesc;
+  TryStatmDesc = RECORD
+    (StatementDesc)
+    statmSeq-: StatementSeq;
+    catchList-: CatchList;
+    enclosingTry-: TryStatm;
+    (**Pointer to the enclosing @samp{TRY} statement if it exists, and
+       @code{NIL} otherwise.  *)
+  END;
+  
 TYPE
   WhileStatm* = POINTER TO WhileStatmDesc;
   WhileStatmDesc = RECORD
@@ -1098,6 +1129,11 @@ CONST
   notDefinedInBaseType = 59;
   duplicateSuperCall = 60;
   redundantTypeTest = 61;
+  notException = 62;
+  unhandledException = 63;
+  moduleUnhandledException = 64;
+  unreachableGuard = 65;
+  untriggeredCatch = 66;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1288,6 +1324,16 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Super call can only apply to the direct base type"
     | redundantTypeTest:
       t := Error.warningPrefix+"Redundant type test"
+    | notException:
+      t := "Type is not an extension of `Exception.Exception'"
+    | unhandledException:
+      t := "Exception `${module}.${name}' neither caught nor passed up"
+    | moduleUnhandledException:
+      t := Error.warningPrefix+"Exception `${module}.${name}' not caught"
+    | unreachableGuard:
+      t := Error.warningPrefix+"Unreachable guard"
+    | untriggeredCatch:
+      t := Error.warningPrefix+"Type matches none of the raised exceptions"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -3597,6 +3643,7 @@ PROCEDURE InitExit* (exit: Exit; sym: Symbol);
   BEGIN
     InitStatement (exit, sym);
     exit. loop := NIL;
+    exit. popExceptionContext := 0;
   END InitExit;
 
 PROCEDURE (b: Builder) NewExit* (sym: Symbol): Exit;
@@ -3904,6 +3951,37 @@ PROCEDURE (move: MoveBlock) Accept* (v: Visitor);
     v. VisitMoveBlock (move)
   END Accept;
 
+(* Statement Class: Raise
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitRaise (raise: Raise; sym: Symbol; exception: Expression);
+  BEGIN
+    InitStatement (raise, sym);
+    raise. exception := exception;
+  END InitRaise;
+
+PROCEDURE (b: Builder) NewRaise* (sym: Symbol; exception: Expression): Raise;
+  VAR
+    raise: Raise;
+  BEGIN
+    IF TR.IsException(exception.type) THEN
+      NEW (raise);
+      InitRaise (raise, sym, exception);
+      RETURN raise;
+    ELSE
+      b.ErrSym(notException, exception.sym);
+      RETURN NIL;
+    END;
+  END NewRaise;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitRaise* (raise: Raise);
+  END VisitRaise;
+
+PROCEDURE (raise: Raise) Accept* (v: Visitor);
+  BEGIN
+    v. VisitRaise (raise)
+  END Accept;
+
 (* Statement Class: RepeatStatm
    ------------------------------------------------------------------------ *)
 
@@ -3940,6 +4018,7 @@ PROCEDURE InitReturn (return: Return; sym: Symbol; result: Expression);
   BEGIN
     InitStatement (return, sym);
     return. result := result;
+    return. popExceptionContext := 0;
   END InitReturn;
 
 PROCEDURE (b: Builder) NewReturn* (sym: Symbol; result: Expression): Return;
@@ -3957,6 +4036,82 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitReturn* (return: Return);
 PROCEDURE (return: Return) Accept* (v: Visitor);
   BEGIN
     v. VisitReturn (return)
+  END Accept;
+
+(* Statement Class: TryStatm
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitCatchClause(catch: CatchClause; sym: Symbol;
+                          exceptionType: Sym.Type;
+                          statmSeq: StatementSeq);
+  BEGIN
+    InitStatement(catch, sym);
+    catch.exceptionType := exceptionType;
+    catch.statmSeq := statmSeq;
+    catch.triggered := FALSE;
+  END InitCatchClause;
+
+PROCEDURE (b: Builder) NewCatchClause*(guardType: Expression;
+                                       statmSeq: StatementSeq): CatchClause;
+  VAR
+    catch: CatchClause;
+    type: Sym.Type;
+  BEGIN
+    NEW(catch);
+    type := b.AssertType(guardType);
+    IF ~TR.IsException(type) THEN
+      b.ErrSym(notException, guardType.sym);
+    END;
+    InitCatchClause(catch, guardType.sym, type, statmSeq);
+    RETURN catch;
+  END NewCatchClause;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitCatchClause* (catch: CatchClause);
+  END VisitCatchClause;
+
+PROCEDURE (catch: CatchClause) Accept* (v: Visitor);
+  BEGIN
+    v. VisitCatchClause (catch)
+  END Accept;
+
+PROCEDURE InitTryStatm (tryStatm: TryStatm; sym: Symbol;
+                        statmSeq: StatementSeq; catchList: CatchList);
+  BEGIN
+    InitStatement(tryStatm, sym);
+    tryStatm.statmSeq := statmSeq;
+    tryStatm.catchList := catchList;
+    tryStatm.enclosingTry := NIL;
+  END InitTryStatm;
+
+PROCEDURE (b: Builder) NewTryStatm* (sym: Symbol; statmSeq: StatementSeq;
+                                     catchList: CatchList): TryStatm;
+  VAR
+    tryStatm: TryStatm;
+    i, j: LONGINT;
+  BEGIN
+    FOR i := 0 TO LEN(catchList^)-1 DO
+      j := 0;
+      WHILE (i # j) & ~TR.IsExtensionOf(catchList[i].exceptionType,
+                                        catchList[j].exceptionType) DO
+        INC(j);
+      END;
+      IF (i # j) THEN
+        b.WarnSym(unreachableGuard, catchList[i].sym);
+        catchList[i].triggered := TRUE;  (* prevent other warning *)
+      END;
+    END;
+    
+    NEW (tryStatm);
+    InitTryStatm (tryStatm, sym, statmSeq, catchList);
+    RETURN tryStatm
+  END NewTryStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitTryStatm* (tryStatm: TryStatm);
+  END VisitTryStatm;
+
+PROCEDURE (tryStatm: TryStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTryStatm (tryStatm)
   END Accept;
 
 (* Statement Class: WhileStatm
@@ -4029,11 +4184,19 @@ PROCEDURE (withStatm: WithStatm) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
-                                  statmSeq: StatementSeq;
-                                  currentLoop: LoopStatm);
+                                  statmSeq: StatementSeq);
 (* Check that an @code{EXIT} appears within a @code{LOOP}, and that the
-   result value of a @code{RETURN} statement is valid.  *)
-  
+   result value of a @code{RETURN} statement is valid.  Add information
+   regarding enclosing @code{TRY} statements to @code{RETURN}, @code{EXIT},
+   and @code{TRY}.  *)
+  VAR
+    currentLoop: LoopStatm;
+    currentTry: TryStatm;
+    enclosingTry: LONGINT;
+    (* Number of enclosing TRY statements.  *)
+    enclosingTryLastLoop: LONGINT;
+    (* Number of enclosing TRY statements of the nearest LOOP.  *)
+    
   PROCEDURE CheckStatmSeq (statmSeq: StatementSeq);
     VAR
       i: LONGINT;
@@ -4041,12 +4204,63 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
     PROCEDURE CheckStatm (statm: Statement);
       VAR
         i: LONGINT;
+        oldLoop: LoopStatm;
+        oldEnclTryLastLoop: LONGINT;
+        fpars: Sym.FormalPars;
+        
+      PROCEDURE CheckException(exception: Sym.Type; sym: Symbol);
+        VAR
+          try: TryStatm;
+          i: LONGINT;
+          module: Sym.Module;
+          raises: Sym.ExceptionNameArray;
+        BEGIN
+          try := currentTry;
+          WHILE (try # NIL) DO
+            FOR i := 0 TO LEN(try.catchList^)-1 DO
+              IF TR.IsExtensionOf(try.catchList[i].exceptionType,
+                                  exception) THEN
+                try.catchList[i].triggered := TRUE;
+              END;
+              IF TR.IsExtensionOf(exception,
+                                  try.catchList[i].exceptionType) THEN
+                try.catchList[i].triggered := TRUE;
+                RETURN;
+              END;
+	    END;
+            try := try.enclosingTry;
+          END;
+
+          IF (procDecl # NIL) THEN
+            raises := procDecl.formalPars.raises;
+            FOR i := 0 TO LEN(raises^)-1 DO
+              IF TR.IsExtensionOf(exception, raises[i].type) THEN
+                RETURN;
+              END;
+            END;
+          END;
+
+          IF (procDecl = NIL) OR
+             (procDecl.parent = NIL) THEN (* in module body *)
+            b.WarnSym(moduleUnhandledException, sym);
+          ELSE
+            b.ErrSym(unhandledException, sym);
+          END;
+          module := exception.Module();
+          b.lastError.SetStringAttrib("module", Msg.GetStringPtr(module.name.str^));
+          b.lastError.SetStringAttrib("name", Msg.GetStringPtr(exception.namingDecl.name.str^));
+        END CheckException;
+      
       BEGIN
         WITH statm: Assert DO
           (* nothing *)
         | statm: Assignment DO             (* this includes AssignOp *)
           (* nothing *)
         | statm: Call DO
+          fpars := statm.design.type(Sym.FormalPars);
+          FOR i := 0 TO LEN(fpars.raises^)-1 DO
+            CheckException(fpars.raises[i].type, statm.sym);
+          END;
           (* nothing *)
         | statm: Copy DO
           (* nothing *)
@@ -4060,6 +4274,7 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           ELSE
             statm. loop := currentLoop;
           END;
+          statm. popExceptionContext := enclosingTry-enclosingTryLastLoop;
         | statm: ForStatm DO
           CheckStatmSeq (statm. body);
         | statm: IfStatm DO
@@ -4073,9 +4288,17 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           END;
           CheckStatmSeq (statm. default);
         | statm: LoopStatm DO
-          b. CheckExit (procDecl, statm. body, statm);
+          oldLoop := currentLoop;
+          currentLoop := statm;
+          oldEnclTryLastLoop := enclosingTryLastLoop;
+          enclosingTryLastLoop := enclosingTry;
+          CheckStatmSeq (statm. body);
+          enclosingTryLastLoop := oldEnclTryLastLoop;
+          currentLoop := oldLoop;
         | statm: MoveBlock DO
           (* nothing *)
+        | statm: Raise DO
+          CheckException(statm.exception.type, statm.sym);
         | statm: RepeatStatm DO
           CheckStatmSeq (statm. body);
         | statm: Return DO
@@ -4094,7 +4317,21 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
                                         procDecl. formalPars. resultType);
             END;
           END;
-          (* nothing *)
+          statm. popExceptionContext := enclosingTry;
+        | statm: TryStatm DO
+          procDecl.hasTryStatm := TRUE;
+          INC(enclosingTry);
+          statm.enclosingTry := currentTry;
+          currentTry := statm;
+          CheckStatmSeq(statm.statmSeq);
+          currentTry := statm.enclosingTry;
+          DEC(enclosingTry);
+          FOR i := 0 TO LEN(statm.catchList^)-1 DO
+            IF ~statm.catchList[i].triggered THEN
+              b.WarnSym(untriggeredCatch, statm.catchList[i].sym);
+            END;
+            CheckStatmSeq(statm.catchList[i].statmSeq);
+          END;
         | statm: WhileStatm DO
           CheckStatmSeq (statm. body);
         | statm: WithStatm DO
@@ -4112,6 +4349,10 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
     END CheckStatmSeq;
 
   BEGIN
+    currentLoop := NIL;
+    currentTry := NIL;
+    enclosingTry := 0;
+    enclosingTryLastLoop := 0;
     CheckStatmSeq (statmSeq);
   END CheckExit;
 
@@ -4192,7 +4433,7 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     IF decl.isAbstract & hasBegin THEN
       b.ErrSym(abstractWithBegin, sym);
     END;
-    b. CheckExit (decl, statmSeq, NIL);
+    b. CheckExit (decl, statmSeq);
     
     NEW (p);
     statmSeq := AddSetupCode (sym, decl, statmSeq);
@@ -4255,14 +4496,12 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
     END UnusedDeclarations;
 
   BEGIN
-    b. CheckExit (NIL, statmSeq, NIL);
-    IF b.errList.NoErrors() THEN
-      UnusedDeclarations(decl);
-    END;
-    
     NEW (m);
     InitModule (m, sym, name, procList,
                 b. NewProcedure (sym, decl. bodyDecl, statmSeq, TRUE));
+    IF b.errList.NoErrors() THEN
+      UnusedDeclarations(decl);
+    END;
     RETURN m
   END NewModule;
 
@@ -4463,11 +4702,20 @@ PROCEDURE (m: Module) Destroy*;
           E(n.source);
           E(n.dest);
           E(n.size);
+        | n: Raise DO
+          E(n.exception);
         | n: RepeatStatm DO
           SSeq(n.body);
           E(n.exitCondition);
         | n: Return DO
           E(n.result);
+        | n: TryStatm DO
+          SSeq(n.statmSeq);
+          FOR i := 0 TO LEN(n.catchList^)-1 DO
+            n.catchList[i].type := NIL;
+            SSeq(n.catchList[i].statmSeq);
+          END;
+          n.catchList := NIL;
         | n: WhileStatm DO
           E(n.guard);
           SSeq(n.body);
@@ -5203,6 +5451,9 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         RETURN b. NewAssignOp(design. sym,
                               b. NewChangeElement(design. sym, op,
                                                   arguments[0], arguments[1]));
+
+      | Predef.raise:
+        RETURN b.NewRaise(design.sym, arguments[0]);
         
       (* predefined functions *)
       | Predef.len:

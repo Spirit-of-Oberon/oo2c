@@ -513,8 +513,15 @@ PROCEDURE (v: Visitor) VisitMoveBlock* (move: IR.MoveBlock);
     v. w. StartTag ("size", FALSE);
     move. size. Accept (v);
     v. w. EndTag;  (* size *)
-    v. w. EndTag;  (* loop-statm *)
+    v. w. EndTag;  (* move *)
   END VisitMoveBlock;
+
+PROCEDURE (v: Visitor) VisitRaise* (raise: IR.Raise);
+  BEGIN
+    v. w. StartTag ("raise", FALSE);
+    raise. exception. Accept (v);
+    v. w. EndTag;  (* raise *)
+  END VisitRaise;
 
 PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
   BEGIN
@@ -527,6 +534,26 @@ PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
     v. w. EndTag;  (* exit-condition *)
     v. w. EndTag;  (* repeat-statm *)
   END VisitRepeatStatm;
+
+PROCEDURE (v: Visitor) VisitCatchClause* (catch: IR.CatchClause);
+  BEGIN
+    v.w.StartTag("catch", FALSE);
+    TypeAttr(v.w, catch.type);
+    VisitStatementSeq(v, catch.statmSeq);
+    v.w.EndTag();  (* catch *)
+  END VisitCatchClause;
+
+PROCEDURE (v: Visitor) VisitTryStatm* (tryStatm: IR.TryStatm);
+  VAR
+    i: LONGINT;
+  BEGIN
+    v.w.StartTag("try-statm", FALSE);
+    VisitStatementSeq(v, tryStatm.statmSeq);
+    FOR i := 0 TO LEN(tryStatm.catchList^)-1 DO
+      tryStatm.catchList[i].Accept(v);
+    END;
+    v.w.EndTag();  (* try-statm *)
+  END VisitTryStatm;
 
 PROCEDURE (v: Visitor) VisitWhileStatm* (whileStatm: IR.WhileStatm);
   BEGIN
