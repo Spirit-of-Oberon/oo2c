@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Scanner:InputBuffer;
 (*  Defines input buffer for OOC's scanner.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -186,11 +186,7 @@ PROCEDURE New* (ch: Channel.Channel; errList: Error.List): Buffer;
     IF (ch. res = Channel.done) THEN
       NEW (b. chars, sizeOfBuffer);
       b. chars[0] := markerEOB;
-      IF b. NextBlock() THEN
-        RETURN b
-      ELSE
-        RETURN NIL
-      END
+      RETURN b
     ELSE
       errList. Append (ch. res);
       RETURN NIL
