@@ -53,6 +53,12 @@ TYPE
     
     nextTargetUse-: Jump;
     (**Next entry in target list @ofield{Block.targetUseList}.  *)
+
+    isLoopBackedge-: BOOLEAN;
+    (**@code{TRUE} iff this jump instruction returns control to the beginning
+       of the loop.  This is equivalent to the target block of the jump
+       instruction dominating the origin block:
+       @samp{Dominates(@ofield{dest},@ofield{src})}.  *)
   END;
   
 TYPE
@@ -218,7 +224,7 @@ PROCEDURE MakeDominator (dominator, child: Block);
     child. parent := dominator
   END MakeDominator;
 
-PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
+PROCEDURE Dominates (dominator, child: Block): BOOLEAN;
   BEGIN
     WHILE (child # NIL) & (child # dominator) DO
       child := child. parent
@@ -726,17 +732,6 @@ PROCEDURE SortBlocks (b: Block);
   END SortBlocks;
 
 
-PROCEDURE FollowJump* (jump: Jump): Block;
-(**Returns @code{NIL} if @oparam{jump} is @code{NIL}, and the target of the
-   jump otherwise.  *)
-  BEGIN
-    IF (jump = NIL) THEN
-      RETURN NIL
-    ELSE
-      RETURN jump. dest
-    END;
-  END FollowJump;
-
 PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
 (**Takes a procedure representation in SSA format and converts it into a graph
    representation consisting of basic blocks.  *)
@@ -898,6 +893,32 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       (* sort nested blocks *)
       SortBlocks (b);
     END ArrangeBlock;
+
+  PROCEDURE MarkBackedges (b: Block);
+    VAR
+      nested: Block;
+
+    PROCEDURE Check (jump: Jump);
+      BEGIN
+        jump. isLoopBackedge := Dominates (jump. dest, b)
+      END Check;
+    
+    BEGIN
+      WITH b: JumpBlock DO
+        Check (b. jump)
+      | b: BranchBlock DO
+        Check (b. branchTo);
+        Check (b. jump)
+      | b: DeadEndBlock DO
+        (* nowhere to go *)
+      END;
+
+      nested := b. domList;
+      WHILE (nested # NIL) DO
+        MarkBackedges (nested);
+        nested := nested. nextDom
+      END;
+    END MarkBackedges;
   
   BEGIN
     (* first, put all instructions into a single block; instructions are
@@ -919,6 +940,9 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
        blocks accordingly, and add links between them representing branches and
        unconditional jumps  *)
     exit := DebranchBlock (b);
+
+    (* mark jump instructions that are loop backedges *)
+    MarkBackedges (b);
     
     (* third, schedule instructions within each basic block *)
     SortBlocks (b);
