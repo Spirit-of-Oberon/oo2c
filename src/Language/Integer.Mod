@@ -38,6 +38,29 @@ BEGIN
   RETURN NewLInt(i);
 END NewInt;
 
+PROCEDURE (v: Value) Store* (w: Object.Writer);
+  VAR
+    i: LONGINT;
+  BEGIN
+    v. Store^ (w);
+    w. WriteNum (LEN (v. value^));
+    FOR i := 0 TO LEN (v. value^)-1 DO
+      w. WriteInt (v. value[i]);
+    END;
+  END Store;
+
+PROCEDURE (v: Value) Load* (r: Object.Reader);
+  VAR
+    len, i: LONGINT;
+  BEGIN
+    v. Load^ (r);
+    r. ReadNum (len);
+    NEW (v. value, len);
+    FOR i := 0 TO len-1 DO
+      r. ReadInt (v. value[i]);
+    END;
+  END Load;
+
 PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Value) & (Integers.Compare(y(Value).value, v.value) = 0);
@@ -50,6 +73,7 @@ PROCEDURE (v: Value) HashCode* (): LONGINT;
 (*    RETURN Integers.Digits10Of(v.value);*)
     (* FIXME... Digits10Of seems to be broken; as a workaround,
        I'm simply adding the digits to get the hash *)
+    h := 0;
     FOR i := 0 TO LEN (v.value^)-1 DO
       INC (h, v. value[i]);
     END;
