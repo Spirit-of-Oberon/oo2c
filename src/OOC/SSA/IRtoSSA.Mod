@@ -787,7 +787,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           RETURN pb. GetConstInt (expr. arrayVariable(IR.Const). value(Boxed.String). value. length+1);
         ELSE
           baseArray := Expression (expr. arrayVariable);
-          type := expr. arrayVariable. type(Sym.Array). GetNthElementType (expr. dim);
+          type := expr. arrayVariable. type.Deparam();
+          type := type(Sym.Array).GetNthElementType(expr.dim);
           RETURN pb. AddGetLengthInstr (baseArray(SSA.Instr), expr. dim,
                                         type(Sym.Array));
         END;
