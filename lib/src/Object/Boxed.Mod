@@ -51,6 +51,16 @@ VAR
   trueString, falseString: Obj.String;
   
 TYPE
+  LongInt* = POINTER TO LongIntDesc;
+  LongIntDesc* = RECORD
+    (ObjectDesc)
+    value-: LONGINT;
+  END;
+  
+VAR
+  zeroLongInt-: LongInt;
+
+TYPE
   LongReal* = POINTER TO LongRealDesc;
   LongRealDesc* = RECORD
     (ObjectDesc)
@@ -152,6 +162,106 @@ PROCEDURE (v: Boolean) Load*(r: Storable.Reader) RAISES IO.Error;
     r.ReadSInt(si);
     v.value := (si # 0);
   END Load;
+
+(* LongReal
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE NewLongInt*(val: LONGINT): LongInt;
+(** Return a @otype{LongInt} for @oparam{val}. *)
+  VAR 
+    v: LongInt;
+  BEGIN
+    NEW(v);
+    v.value := val;
+    RETURN v;
+  END NewLongInt;
+
+PROCEDURE ParseLongInt*(s: ARRAY OF CHAR): LongInt;
+  VAR 
+    int: LONGINT;
+    res: IntStr.ConvResults;
+  BEGIN
+    IntStr.StrToInt(s, int, res);
+    IF res = IntStr.strAllRight THEN
+      RETURN NewLongInt(int);
+    ELSE
+      RETURN NIL;
+    END;
+  END ParseLongInt;
+
+PROCEDURE (v: LongInt) Store*(w: Storable.Writer) RAISES IO.Error;
+  BEGIN
+    w. WriteLInt(v.value);
+  END Store;
+
+PROCEDURE (v: LongInt) Load*(r: Storable.Reader) RAISES IO.Error;
+  BEGIN
+    r. ReadLInt(v.value);
+  END Load;
+
+PROCEDURE (v: LongInt) Equals*(y: Obj.Object): BOOLEAN;
+  BEGIN
+    RETURN (y IS LongInt) & (v.value = y(LongInt).value);
+  END Equals;
+  
+PROCEDURE (v: LongInt) HashCode*(): Obj.Hash;
+  BEGIN
+    RETURN v.value;
+  END HashCode;
+
+PROCEDURE (v: LongInt) ToString*(): Obj.String;
+  VAR 
+    str: ARRAY 10 OF CHAR;
+  BEGIN
+    IntStr.IntToStr(v.value, str);
+    RETURN Obj.NewLatin1(str);
+  END ToString;
+
+PROCEDURE (v: LongInt) Add*(right: LongInt): LongInt;
+  BEGIN
+    RETURN NewLongInt(v.value + right.value);
+  END Add;
+
+PROCEDURE (v: LongInt) Sub*(right: LongInt): LongInt;
+  BEGIN
+    RETURN NewLongInt(v.value - right.value);
+  END Sub;
+
+PROCEDURE (v: LongInt) Mul*(right: LongInt): LongInt;
+  BEGIN
+    RETURN NewLongInt(v.value * right.value);
+  END Mul;
+
+PROCEDURE (v: LongInt) Div*(right: LongInt): LongInt;
+  BEGIN
+    RETURN NewLongInt(v.value DIV right.value);
+  END Div;
+
+PROCEDURE (v: LongInt) Mod*(right: LongInt): LongInt;
+  BEGIN
+    RETURN NewLongInt(v.value MOD right.value);
+  END Mod;
+
+PROCEDURE (v: LongInt) Cmp*(right: Obj.Object): LONGINT;
+  BEGIN
+    IF v.value = right(LongInt).value THEN
+      RETURN 0;
+    ELSIF v.value < right(LongInt).value THEN
+      RETURN -1;
+    ELSE
+      RETURN 1;
+    END;
+  END Cmp;
+
+PROCEDURE (v: LongInt) Sign*(): LONGINT;
+  BEGIN
+    RETURN v.Cmp(zeroLongInt);
+  END Sign;
+
+PROCEDURE (v: LongInt) Neg*(): LongInt;
+  BEGIN
+    RETURN NewLongInt(-v.value);
+  END Neg;
 
 (* LongReal
    ------------------------------------------------------------------------ *)
