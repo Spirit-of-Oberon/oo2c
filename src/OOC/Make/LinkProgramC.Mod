@@ -21,9 +21,9 @@ MODULE OOC:Make:LinkProgramC;
 *)
 
 IMPORT
-  Out, IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
+  IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
   ADT:ArrayList, ADT:StringBuffer, CfgData := Config,
-  OS:ProcessManagement, OOC:Package, OOC:Repository, OOC:Config,
+  OS:ProcessManagement, OOC:Package, OOC:Repository, OOC:Logger, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
 VAR
@@ -249,8 +249,7 @@ RAISES IO.Error;
     sb.Append(CCompiler.libs.value);
 
     cmd := sb.ToString();
-    Out.Object(cmd);
-    Out.Ln;
+    Logger.ShellCommand(cmd);
     exit := ProcessManagement.system(cmd);
     RETURN (exit = 0)
   END Run;

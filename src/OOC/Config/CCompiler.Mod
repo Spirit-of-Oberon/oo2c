@@ -23,7 +23,7 @@ MODULE OOC:Config:CCompiler;
 IMPORT
   Object, ADT:StringBuffer, URI, URI:Scheme:File,
   CfgData := Config, Config:Section:Options,
-  OOC:Config, OOC:Package, OOC:Repository;
+  OOC:Logger, OOC:Config, OOC:Package, OOC:Repository;
 
 VAR
   cc, cppflags, cflags, ldflags, libs-, libtool, libdir-: Options.Option;
@@ -52,6 +52,9 @@ PROCEDURE SetCommand(mode: STRING): StringBuffer.StringBuffer;
       sb.Append(" --mode=");
       sb.Append(mode);
       sb.Append(" ");
+      IF Logger.silence THEN
+        sb.Append("--quiet ");
+      END;
     END;
     sb.Append(cc.value);
     sb.Append(" ");
