@@ -23,13 +23,14 @@ MODULE OOC:C:RuntimeData;
 
 IMPORT
   IO:TextRider, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
-  OOC:SymbolTable:Namespace, OOC:C:Naming, OOC:C:DeclWriter;
+  OOC:SymbolTable:Namespace, TR := OOC:SymbolTable:TypeRules,
+  OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
   structTypeDesc = Config.runtimeModule+"__StructDesc";
   
-PROCEDURE Write* (declWriter: DeclWriter.Writer;
-                  symTab: Sym.Module; writeHeader: BOOLEAN);
+PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
+                  qtdData: Naming.QualTypeData; writeHeader: BOOLEAN);
   VAR
     w: TextRider.Writer;
     tdNames: ArrayList.ArrayList;
@@ -61,7 +62,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     VAR
       name: STRING;
     BEGIN
-      name := Naming.NameOfTypeDescriptor (type);
+      name := Naming.NameOfTypeDescriptor (type, qtdData);
       
       w. WriteLn;
       IF writeHeader THEN
@@ -100,7 +101,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       type := type.Deparam();
       IF type.hasDescriptor THEN
         w.WriteString("&");
-        name := Naming.NameOfTypeDescriptor(type);
+        name := Naming.NameOfTypeDescriptor(type, qtdData);
         w.WriteObject(name);
       ELSE
         w.WriteString("NULL");
@@ -119,6 +120,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           WriteTDRef(base);
           w. WriteChar ("}");
           CNli; w. WriteString ("NULL"); (* tbProcs *)
+          CNli; w. WriteString ("NULL"); (* typeArgs *)
           CNli; w. WriteString ("&_mid"); (* module *)
           WriteName (array);             (* name *)
           ASSERT(base.size >= 0);
@@ -130,6 +132,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           WriteTDRef(array.elementType);
           w. WriteChar ("}");
           CNli; w. WriteString ("NULL"); (* tbProcs *)
+          CNli; w. WriteString ("NULL"); (* typeArgs *)
           CNli; w. WriteString ("&_mid"); (* module *)
           WriteName (array);             (* name *)
           CNli; w.WriteLInt (array. size, 0); (* size *)
@@ -139,6 +142,24 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         w. WriteString (" };");
       END;
     END ArrayTypeDescr;
+  
+  PROCEDURE TBProcs (record: Sym.Record; tbProcCount: LONGINT);
+    VAR
+      i: LONGINT;
+      proc: Sym.ProcDecl;
+      name: STRING;
+    BEGIN
+      FOR i := 0 TO tbProcCount-1 DO
+        IF (i # 0) THEN
+          w. WriteChar (",");
+        END;
+        proc := record. ns(Namespace.Extended). GetTBProcByIndex (i);
+        ASSERT (proc # NIL);
+        w. WriteString ("(void*)");
+        name := Naming.NameOfDeclaration (proc);
+        w. WriteObject (name);
+      END;
+    END TBProcs;
   
   PROCEDURE RecordTypeDescr (record: Sym.Record);
     VAR
@@ -154,7 +175,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         ELSE
           t := t.Deparam();
           len := BaseTypes (t(Sym.Record). baseType);
-          name := Naming.NameOfTypeDescriptor (t);
+          name := Naming.NameOfTypeDescriptor (t, qtdData);
           w. WriteChar ("&");
           w. WriteObject(name);
           IF (t # record) THEN
@@ -164,24 +185,6 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         END;
       END BaseTypes;
 
-    PROCEDURE TBProcs (tbProcCount: LONGINT);
-      VAR
-        i: LONGINT;
-        proc: Sym.ProcDecl;
-        name: STRING;
-      BEGIN
-        FOR i := 0 TO tbProcCount-1 DO
-          IF (i # 0) THEN
-            w. WriteChar (",");
-          END;
-          proc := record. ns(Namespace.Extended). GetTBProcByIndex (i);
-          ASSERT (proc # NIL);
-          w. WriteString ("(void*)");
-          name := Naming.NameOfDeclaration (proc);
-          w. WriteObject (name);
-        END;
-      END TBProcs;
-    
     BEGIN
       WriteDescrVariable (record);
       IF ~writeHeader THEN
@@ -189,8 +192,9 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         len := BaseTypes (record);
         w. WriteChar ("}");
         CNli; w. WriteString ("(void*[]){");   (* tbProcs *)
-        TBProcs (record. tbProcCount);
+        TBProcs(record, record.tbProcCount);
         w. WriteChar ("}");
+        CNli; w. WriteString ("NULL");   (* typeArgs *)
         CNli; w. WriteString ("&_mid");  (* module *)
         WriteName (record);              (* name *)
         CNli; w. WriteLInt (record. size, 0); (* size *)
@@ -208,6 +212,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         WriteTDRef(pointer.baseType);
         w. WriteChar ("}");
         CNli; w. WriteString ("NULL");   (* tbProcs *)
+        CNli; w. WriteString ("NULL");   (* typeArgs *)
         CNli; w. WriteString ("&_mid");  (* module *)
         WriteName (pointer);             (* name *)
         CNli; w. WriteLInt (pointer. size, 0); (* size *)
@@ -258,6 +263,85 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       END;
     END Traverse;
 
+  PROCEDURE QualTypeDescr(qtdData: Naming.QualTypeData);
+    VAR
+      i: LONGINT;
+
+    PROCEDURE BaseTypes (record: Sym.Type; t: Sym.Type): LONGINT;
+      VAR
+        len: LONGINT;
+        name: STRING;
+      BEGIN
+        IF (t = NIL) THEN
+          RETURN -1;
+        ELSE
+          len := BaseTypes(record, TR.RecordBaseType(t));
+          name := Naming.NameOfTypeDescriptor (t, qtdData);
+          w. WriteChar ("&");
+          w. WriteObject(name);
+          IF (t # record) THEN
+            w. WriteChar (",");
+          END;
+          RETURN len+1;
+        END;
+      END BaseTypes;
+
+    PROCEDURE WriteQualTypeDescr(qtd: Naming.QualTypeDescr);
+      VAR
+        i, len: LONGINT;
+        name: STRING;
+        record: Sym.Record;
+      BEGIN
+        w.WriteLn;
+        w.WriteString("static ");
+        w.WriteString(structTypeDesc);
+        w.WriteString(" ");
+        w.WriteObject(qtd.name);
+        w.WriteString(" = {");
+        Nli;
+
+        IF (qtd.type.Deparam() IS Sym.Record) THEN
+          w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
+          len := BaseTypes (qtd.type, qtd.type);
+          w. WriteChar ("}");
+          
+          CNli; w. WriteString ("(void*[]){");   (* tbProcs *)
+          record := qtd.type.baseType(Sym.Record);
+          TBProcs(record, record.tbProcCount);
+          w. WriteChar ("}");
+        ELSE  (* IS Sym.Pointer *)
+          w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
+          w.WriteString("&");
+          name := Naming.NameOfTypeDescriptor(TR.PointerBaseType(qtd.type),
+                                              qtdData);
+          w.WriteObject(name);
+          w. WriteChar ("}");
+          CNli; w.WriteString("NULL");    (* tbProcs *)
+        END;
+        
+        CNli; w.WriteString("(RT0__Struct[]){"); (* typeArgs *)
+        WriteTDRef(qtd.type.baseType);
+        FOR i := 0 TO LEN(qtd.type.arguments^)-1 DO
+          CNli;
+          WriteTDRef(qtd.type.arguments[i].type);
+        END;
+        w.WriteString(", NULL}");
+        
+        CNli; w.WriteString("&_mid");  (* module *)
+        CNli; w.WriteString("NULL");    (* name *)
+        CNli; w.WriteLInt(qtd.type.size, 0); (* size *)
+        CNli; w.WriteLInt(len, 0); (* len *)
+        CNli; WriteForm("strQualType");   (* form *)
+        
+        w.WriteString(" };");
+      END WriteQualTypeDescr;
+    
+    BEGIN
+      FOR i := 0 TO qtdData.list.size-1 DO
+        WriteQualTypeDescr(qtdData.list.array[i]);
+      END;
+    END QualTypeDescr;
+  
   PROCEDURE ModuleDescr (module: Sym.Module; tdNames: ArrayList.ArrayList);
     VAR
       i: LONGINT;
@@ -314,6 +398,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     END;
     Traverse (symTab, NIL);
     IF ~writeHeader THEN
+      QualTypeDescr(qtdData);
       ModuleDescr (symTab, tdNames);     (* define _mid *)
       ModuleInit (symTab);
     END;

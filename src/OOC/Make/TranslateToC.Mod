@@ -27,7 +27,7 @@ IMPORT
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold, OOC:IR:CheckUses,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Uses,
-  OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:RuntimeData;
+  OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:RuntimeData, OOC:C:Naming;
 
 TYPE
   Translator* = POINTER TO TranslatorDesc;
@@ -47,6 +47,8 @@ TYPE
     (* Index of the most recent call to @oproc{Translator.WriteProcedure}.
        This method restores it to its old value when it is done, which means it
        is aware of procedure nesting.  *)
+
+    qtdData-: Naming.QualTypeData;
   END;
 
   
@@ -56,6 +58,7 @@ PROCEDURE InitTranslator* (t: Translator);
     t. wd := NIL;
     t. procList := NIL;
     t. currentProc := -1;
+    t. qtdData := NEW(Naming.QualTypeData);
   END InitTranslator;
 
 PROCEDURE (t: Translator) SetWriter* (w: DeclWriter.Writer);
@@ -147,7 +150,8 @@ PROCEDURE WriteModuleName (w: DeclWriter.Writer;
   END WriteModuleName;
 
 PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
-                           symTab: Sym.Module; exports: Sym.Exports);
+                           symTab: Sym.Module; exports: Sym.Exports;
+                           qtdData: Naming.QualTypeData);
   BEGIN
     WriteModuleName (w, "#ifndef _MODULE_", m, "_", TRUE);
     WriteModuleName (w, "#define _MODULE_", m, "_", TRUE);
@@ -165,19 +169,20 @@ PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
     
     ConvertDecl.ConvertSymTab (w, m, symTab, exports, TRUE);
     w. WriteDeclarationList;
-    RuntimeData.Write (w, symTab, TRUE);
+    RuntimeData.Write (w, symTab, qtdData, TRUE);
     
     WriteModuleName (w, "#endif /* _MODULE_", m, "_ */", TRUE);
   END WriteHeaderFile;
 
 PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
-                         symTab: Sym.Module; exports: Sym.Exports);
+                         symTab: Sym.Module; exports: Sym.Exports;
+                         qtdData: Naming.QualTypeData);
   BEGIN
     w.WriteModuleInclude(m, Repository.modHeaderFileC);
     
     ConvertDecl.ConvertSymTab (w, m, symTab, exports, FALSE);
     w. WriteDeclarationList;
-    RuntimeData.Write (w, symTab, FALSE);
+    RuntimeData.Write (w, symTab, qtdData, FALSE);
   END WriteDeclFile;
 
 PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
@@ -238,9 +243,8 @@ RAISES IO.Error;
       w := DeclWriter.NewWriter (ch, m. GetURI (fileId, FALSE));
       CASE fileId OF
       | Repository.modHeaderFileC:
-        WriteHeaderFile (w, m, symTab, exports);
+        WriteHeaderFile (w, m, symTab, exports, translator.qtdData);
       | Repository.modDeclFileC:
-        WriteDeclFile (w, m, symTab, exports);
       | Repository.modCodeFileC:
         WriteCodeFile (w, wd, m, module, translator);
       END;
@@ -288,17 +292,16 @@ RAISES IO.Error;
       IF errList.NoErrors() & ~analysisOnly THEN
         (* only attempt to produce output if program compiled without errors *)
 
-        wd := NIL;  (* prevent warning for call in next line *)
+        wd := DeclWriter.NewWriter(m.GetOutputChannel(Repository.modDeclFileC, TRUE),
+                                   m.GetURI(Repository.modDeclFileC, FALSE));
         wh := WriteFile (Repository.modHeaderFileC);
-        IF errList.NoErrors() THEN
-          wd := WriteFile (Repository.modDeclFileC);
-        ELSE
-          wd := NIL;
-        END;
         IF (symTab. class = Sym.mcStandard) & errList.NoErrors() THEN
           wc := WriteFile (Repository.modCodeFileC);
         ELSE
           wc := NIL;
+        END;
+        IF errList.NoErrors() THEN
+          WriteDeclFile (wd, m, symTab, exports, translator.qtdData);
         END;
 
         IF errList.NoErrors() THEN
@@ -307,7 +310,7 @@ RAISES IO.Error;
         
         (* close all C output files after adding a tidbit of text to them;
            this way, these files are as old or more recent than the symbol
-           file, and the generated C files may depened on the symbol file
+           file, and the generated C files may depend on the symbol file
            in the make rules *)
         CloseFile (wh);
         CloseFile (wd);

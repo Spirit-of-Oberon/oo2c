@@ -1,12 +1,30 @@
 MODULE OOC:C:Naming;
 
 IMPORT
-  IntStr, Strings, Object, ADT:Dictionary,
-  OOC:Config, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+  IntStr, Strings, Object, ADT:Dictionary, ADT:ArrayList, 
+  OOC:Config, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  TR := OOC:SymbolTable:TypeRules;
 
 TYPE
   Buffer = ARRAY 2*1024 OF CHAR;
-
+  QualTypeDescr* = POINTER TO QualTypeDescrDesc;
+  QualTypeDescrDesc = RECORD
+    (**Describes a type descriptor for a qualified type.  *)
+    (Object.ObjectDesc)
+    name-: STRING;
+    (* Name of the variable that holds the type descriptor.  Initially
+       @code{NIL}.  *)
+    type-: Sym.TypeClosure;
+  END;
+  QualTypeData* = POINTER TO QualTypeDataDesc;
+  QualTypeDataDesc = RECORD
+    list-: ArrayList.ArrayList(QualTypeDescr);
+    (* List of type descriptors referenced in the program code or by other
+       descriptors.  The entries are sorted so that a descriptor at position
+       @var{x} only references non-qualified type descriptors or type
+       descriptors with positions smaller than @var{x}.  *)
+  END;
+  
 CONST
   suffixPassPerRef* = "__ref";
   (**Suffix attached to parameter names if they are value parameters that
@@ -21,6 +39,21 @@ VAR
   (* prefix string used to mangle reserved names *)
   tdPrefix: STRING;
   (* prefix of the type descriptor namespace *)
+
+
+PROCEDURE (qtd: QualTypeDescr) INIT*(id: LONGINT; type: Sym.TypeClosure);
+  VAR
+    str: ARRAY 16 OF CHAR;
+  BEGIN
+    IntStr.IntToStr(id, str);
+    qtd.name := "_td__qtd"+Object.NewLatin1(str);
+    qtd.type := type;
+  END INIT;
+
+PROCEDURE (qtdData: QualTypeData) INIT*();
+  BEGIN
+    qtdData.list := NEW(ArrayList.ArrayList(QualTypeDescr), 8);
+  END INIT;
 
 PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): STRING;
   VAR
@@ -174,43 +207,88 @@ PROCEDURE NameOfType* (type: Sym.Type): STRING;
     END;
   END NameOfType;
 
-PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): STRING;
+PROCEDURE NameOfTypeDescriptor* (type: Sym.Type;
+                                 qtdData: QualTypeData): STRING;
 (**@precond
    @samp{type. namingDecl # NIL}
    @end precond *)
   VAR
     string: STRING;
     str, str2: ARRAY 32 OF CHAR;
+    i: LONGINT;
+    qtd: QualTypeDescr;
+    base: Sym.Type;
+    dummy: STRING;
   BEGIN
-    type := type.Deparam();
-    WITH type: Sym.PredefType DO
-      CASE type. id OF
-      | Predef.boolean : str := "boolean"
-      | Predef.char    : str := "char"
-      | Predef.longchar: str := "longchar"
-      | Predef.ucs4char: str := "ucs4char"
-      | Predef.shortint: str := "shortint"
-      | Predef.integer : str := "integer"
-      | Predef.longint : str := "longint"
-      | Predef.real    : str := "real"
-      | Predef.longreal: str := "longreal"
-      | Predef.set     : str := "set32"
-      | Predef.byte    : str := "byte"
-      | Predef.ptr     : str := "ptr"
-      END;
-      str2 := Config.runtimeModule;
-      Strings.Append ("__", str2);
-      Strings.Append (str, str2);
-      RETURN Object.NewLatin1(str2);
-    ELSE
-      IF (type. namingDecl = NIL) THEN
-        string := tdPrefix. Concat (NameOfDeclaration (type. Module()));
-        IntStr.IntToStr (type. position. pos, str);
-        string := string. Concat (Object.NewLatin1(str));
-        RETURN string;
+    WITH type: Sym.QualType DO
+      RETURN NameOfTypeDescriptor(Sym.Expand(type), qtdData);
+      
+    | type: Sym.TypeClosure DO
+      base := type.baseType;
+      
+      (* only create qualified type descriptors for records and record
+         pointers; all other types only have non-qualified descriptors *)
+      WITH base: Sym.Pointer DO
+        IF ~TR.IsRecord(base.baseType) THEN
+          RETURN NameOfTypeDescriptor(base, qtdData);
+        END;
+      | base: Sym.Record DO
+        (* fall through *)
       ELSE
-        string := tdPrefix. Concat (NameOfType (type));
-        RETURN string;
+        RETURN NameOfTypeDescriptor(base, qtdData);
+      END;
+      
+      FOR i := 0 TO qtdData.list.size-1 DO
+        IF TR.SameType(type, qtdData.list.array[i].type) THEN
+          RETURN qtdData.list.array[i].name;
+        END;
+      END;
+         
+      WITH base: Sym.Pointer DO
+        dummy := NameOfTypeDescriptor(TR.PointerBaseType(type), qtdData);
+      | base: Sym.Record DO
+        IF (base.baseType # NIL) THEN
+          (* make sure the type descriptor of the base type exists *)
+          dummy := NameOfTypeDescriptor(TR.RecordBaseType(type), qtdData);
+        END;
+      ELSE
+        (* ignore *)
+      END;
+         
+      qtd := NEW(QualTypeDescr, qtdData.list.size, type);
+      qtdData.list.Append(qtd);
+      RETURN qtd.name;
+      
+    ELSE
+      WITH type: Sym.PredefType DO
+        CASE type. id OF
+        | Predef.boolean : str := "boolean"
+        | Predef.char    : str := "char"
+        | Predef.longchar: str := "longchar"
+        | Predef.ucs4char: str := "ucs4char"
+        | Predef.shortint: str := "shortint"
+        | Predef.integer : str := "integer"
+        | Predef.longint : str := "longint"
+        | Predef.real    : str := "real"
+        | Predef.longreal: str := "longreal"
+        | Predef.set     : str := "set32"
+        | Predef.byte    : str := "byte"
+        | Predef.ptr     : str := "ptr"
+        END;
+        str2 := Config.runtimeModule;
+        Strings.Append ("__", str2);
+        Strings.Append (str, str2);
+        RETURN Object.NewLatin1(str2);
+      ELSE
+        IF (type. namingDecl = NIL) THEN
+          string := tdPrefix. Concat (NameOfDeclaration (type. Module()));
+          IntStr.IntToStr (type. position. pos, str);
+          string := string. Concat (Object.NewLatin1(str));
+          RETURN string;
+        ELSE
+          string := tdPrefix. Concat (NameOfType (type));
+          RETURN string;
+        END;
       END;
     END;
   END NameOfTypeDescriptor;
