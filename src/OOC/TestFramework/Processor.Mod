@@ -22,7 +22,8 @@ MODULE OOC:TestFramework:Processor;
 
 
 IMPORT
-  C, Files, Msg, Out, Strings, TextRider, ADT:String, OSFiles := OS:Files,
+  C, Files, Msg, Out, Strings, TextRider, ADT:String, ADT:StringBuffer,
+  OSFiles := OS:Files,
   OS:ProcessManagment, URI:Scheme:File, XMLWriter := XML:Writer,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases;
 
@@ -51,7 +52,7 @@ TYPE
 
 PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
   VAR
-    s: String.String;
+    sb: StringBuffer.StringBuffer;
     path: FilePath;
     
   PROCEDURE GetPath (subdir: ARRAY OF CHAR): String.String;
@@ -76,14 +77,14 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     proc. txtDir := GetPath ("txt");
     
     (* put together command string for compile/make *)
-    s := String.New (setup. processor. command);
-    s. AppendString (" --config '");
+    sb := StringBuffer.New (setup. processor. command);
+    sb. AppendString (" --config '");
     setup. processor. configFile(File.URI). GetPath (path);
-    s. AppendString (path);
-    s. AppendString ("' ");
-    s. AppendString (setup. processor. flags);
-    s. AppendString (" ");
-    proc. processCmd := s;
+    sb. AppendString (path);
+    sb. AppendString ("' ");
+    sb. AppendString (setup. processor. flags);
+    sb. AppendString (" ");
+    proc. processCmd := sb. ToString();
     
     proc. filterCmd := NIL;
     IF (setup. processor. filterCommand # "") THEN
