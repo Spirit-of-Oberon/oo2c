@@ -273,7 +273,7 @@ PROCEDURE (s: State) ClobberedBy* (readDesign: SSA.Opnd; instr: SSA.Instr): BOOL
       Opcode.copyParameter, Opcode.exit, Opcode.return,
       Opcode.halt, Opcode.assert, Opcode.checkIndex, Opcode.checkPointer,
       Opcode.typeGuard, Opcode.failedTypeAssert,
-      Opcode.failedWith, Opcode.failedCase,
+      Opcode.failedWith, Opcode.failedCase, Opcode.raiseException,
       Opcode.tryStart, Opcode.tryEnd, Opcode.activateContext,
       Opcode.pushExceptionContext, Opcode.popExceptionContext:
       RETURN FALSE;
@@ -491,7 +491,7 @@ PROCEDURE (s: State) Transform*;
         Opcode.copyParameter, Opcode.exit, Opcode.return,
         Opcode.halt, Opcode.assert, Opcode.checkIndex, Opcode.checkPointer,
         Opcode.typeGuard, Opcode.failedTypeAssert,
-        Opcode.failedWith, Opcode.failedCase,
+        Opcode.failedWith, Opcode.failedCase, Opcode.raiseException,
         Opcode.clearException, Opcode.activateContext,
         Opcode.pushExceptionContext, Opcode.popExceptionContext:
         RETURN GetValue (instr. GetArgClass (Opnd.store), get);
