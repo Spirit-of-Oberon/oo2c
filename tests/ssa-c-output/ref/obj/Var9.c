@@ -18,7 +18,7 @@ l6:
   ;
 }
 
-void Var9__Test() {
+void Var9__Test(void) {
   OOC_CHAR8 s4[4];
 
   Var9__Zero((void*)(OOC_INT32)s4, 4);

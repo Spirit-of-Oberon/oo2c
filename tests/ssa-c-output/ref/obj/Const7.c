@@ -11,7 +11,7 @@ l3:
   ;
 }
 
-void Const7__Test() {
+void Const7__Test(void) {
 
   Const7__P(1u);
   Out0__Ln();

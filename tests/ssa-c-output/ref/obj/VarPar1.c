@@ -9,7 +9,7 @@ static OOC_INT16 VarPar1__F(OOC_INT16 *p) {
   ;
 }
 
-void VarPar1__Test() {
+void VarPar1__Test(void) {
   register OOC_INT32 i0;
 
   i0 = VarPar1__F((void*)(OOC_INT32)&VarPar1__a);

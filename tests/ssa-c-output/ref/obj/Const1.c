@@ -2,13 +2,13 @@
 #include <__oo2c.h>
 #include <setjmp.h>
 
-static OOC_INT16 Const1__F() {
+static OOC_INT16 Const1__F(void) {
 
   return 12;
   ;
 }
 
-void Const1__Test() {
+void Const1__Test(void) {
   register OOC_INT32 i0;
 
   i0 = Const1__F();

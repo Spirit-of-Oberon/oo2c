@@ -13,7 +13,7 @@ l5:
   ;
 }
 
-void Var10__Test() {
+void Var10__Test(void) {
   register OOC_INT32 i0;
 
   i0 = Var10__F(1u);

@@ -24,7 +24,7 @@ l8:
   ;
 }
 
-void Var4b__Test() {
+void Var4b__Test(void) {
   register OOC_INT32 i0;
 
   Var4b__x = (-1);

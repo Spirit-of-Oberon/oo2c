@@ -2,7 +2,7 @@
 #include <__oo2c.h>
 #include <setjmp.h>
 
-static void Dead1__P() {
+static void Dead1__P(void) {
   register OOC_INT32 i0,i1;
 
   i0=0;

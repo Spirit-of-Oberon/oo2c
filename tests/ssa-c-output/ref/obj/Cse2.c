@@ -24,7 +24,7 @@ l7:
   ;
 }
 
-void Cse2__Test() {
+void Cse2__Test(void) {
 
   Cse2__F((Cse2__P)(OOC_INT32)0);
   return;

@@ -8,7 +8,7 @@ static void NoDescriptor1__P(struct NoDescriptor1__R *r) {
   ;
 }
 
-void NoDescriptor1__Test() {
+void NoDescriptor1__Test(void) {
   struct NoDescriptor1__R r;
 
   NoDescriptor1__P((void*)(OOC_INT32)&r);

@@ -11,7 +11,7 @@ l3:
   ;
 }
 
-void Const4__Test() {
+void Const4__Test(void) {
 
   Const4__P(1u);
   Out0__Ln();

@@ -2,14 +2,14 @@
 #include <__oo2c.h>
 #include <setjmp.h>
 
-static OOC_INT16 Var2__F() {
+static OOC_INT16 Var2__F(void) {
 
   Var2__x = 2;
   return 2;
   ;
 }
 
-void Var2__Test() {
+void Var2__Test(void) {
   register OOC_INT32 i0;
 
   Var2__x = 0;

@@ -21,7 +21,7 @@ l8:
   ;
 }
 
-void Var3b__Test() {
+void Var3b__Test(void) {
   register OOC_INT32 i0;
 
   i0 = Var3b__F(0u, 0u);

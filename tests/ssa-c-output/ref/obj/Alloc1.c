@@ -18,7 +18,7 @@ l4:
   ;
 }
 
-void Alloc1__Test() {
+void Alloc1__Test(void) {
 
   Alloc1__F((-1));
   Alloc1__F(1);

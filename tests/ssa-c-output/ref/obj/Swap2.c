@@ -17,7 +17,7 @@ l4:
   ;
 }
 
-void Swap2__Test() {
+void Swap2__Test(void) {
   register OOC_INT32 i0;
 
   Swap2__x = 1;

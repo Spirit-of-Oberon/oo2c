@@ -26,7 +26,7 @@ l4:
   ;
 }
 
-void Var6b__Test() {
+void Var6b__Test(void) {
   register OOC_INT32 i0;
 
   Var6b__x = (-1);

@@ -43,7 +43,7 @@ l18:
   ;
 }
 
-void Quicksort1__Test() {
+void Quicksort1__Test(void) {
   register OOC_INT32 i0,i1,i2;
   OOC_INT32 a[64];
 

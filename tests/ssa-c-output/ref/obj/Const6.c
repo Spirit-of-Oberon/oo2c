@@ -13,7 +13,7 @@ l1_loop:
   ;
 }
 
-void Const6__Test() {
+void Const6__Test(void) {
 
   Const6__P(1u);
   Out0__Ln();

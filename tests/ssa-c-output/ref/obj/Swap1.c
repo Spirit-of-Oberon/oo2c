@@ -2,7 +2,7 @@
 #include <__oo2c.h>
 #include <setjmp.h>
 
-static void Swap1__Swap() {
+static void Swap1__Swap(void) {
   register OOC_INT32 i0,i1;
 
   i0 = Swap1__x;
@@ -13,7 +13,7 @@ static void Swap1__Swap() {
   ;
 }
 
-void Swap1__Test() {
+void Swap1__Test(void) {
   register OOC_INT32 i0;
 
   Swap1__x = 1;

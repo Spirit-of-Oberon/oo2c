@@ -2,7 +2,7 @@
 #include <__oo2c.h>
 #include <setjmp.h>
 
-void Const2__Test() {
+void Const2__Test(void) {
 
   Out0__String("bar", 4);
   Out0__Ln();

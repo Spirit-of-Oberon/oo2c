@@ -44,7 +44,7 @@ l4:
   ;
 }
 
-void Const8__Test() {
+void Const8__Test(void) {
 
   Const8__Tand(1u);
   Const8__Tand(0u);

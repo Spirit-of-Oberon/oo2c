@@ -11,7 +11,7 @@ static OOC_INT16 Cse3__F(OOC_INT16 x) {
   ;
 }
 
-void Cse3__Test() {
+void Cse3__Test(void) {
   register OOC_INT32 i0;
 
   i0 = Cse3__F(3);

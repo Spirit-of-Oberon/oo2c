@@ -19,7 +19,7 @@ l5:
   ;
 }
 
-void Var7b__Test() {
+void Var7b__Test(void) {
   register OOC_INT32 i0;
 
   i0 = Var7b__Len("", 1);
