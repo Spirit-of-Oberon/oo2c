@@ -376,6 +376,17 @@ PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;
     END
   END IsComponentOf;
 
+PROCEDURE (tr: Rules) IsByteCompatible* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} can be assigned to
+   a @samp{BYTE} variable.  *)
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN (type. id = Predef.char) OR (type. id = Predef.shortint);
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsByteCompatible;
+
 
 PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
 (**This maps a type @oparam{type} onto the size and alignment constrains of the
