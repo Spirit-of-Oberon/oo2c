@@ -127,7 +127,6 @@ PROCEDURE AssignRegisters (w: DeclWriter.Writer; pb: SSA.ProcBlock): Dictionary.
   END AssignRegisters;
 
 PROCEDURE WriteLocalDecl (w: DeclWriter.Writer;
-                          converter: ConvertDecl.Converter;
                           pb: SSA.ProcBlock);
 (**Writes local declarations of the procedure, most of all local variables.  *)
   VAR
@@ -164,7 +163,7 @@ PROCEDURE WriteLocalDecl (w: DeclWriter.Writer;
         decl := GetLocalDecl (instr);
         IF (decl # NIL) & ~declMap. HasKey (decl) &
            ~decl. isParameter THEN
-          cDecl := converter. ConvertDecl (w, decl);
+          cDecl := ConvertDecl.GetDecl (w, decl);
           w. WriteLn;
           w. WriteString ("  ");
           w. WriteDeclaration (cDecl);
@@ -544,7 +543,6 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
   END WriteBlocks;
 
 PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
-                     converter: ConvertDecl.Converter;
                      procDecl: IR.Procedure);
   
   VAR
@@ -571,13 +569,12 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
     
     Fixup (pb);
-    WriteLocalDecl (cWriter, converter, pb);
+    WriteLocalDecl (cWriter, pb);
     w := NewWriter (cWriter, AssignRegisters (cWriter, pb));
     w. WriteBlocks (domRoot);
   END ProcBody;
 
-PROCEDURE ModuleBody* (w: TextRider.Writer; converter: ConvertDecl.Converter;
-                       procDecl: IR.Procedure);
+PROCEDURE ModuleBody* (w: TextRider.Writer; procDecl: IR.Procedure);
   BEGIN
   END ModuleBody;
 

@@ -111,50 +111,68 @@ PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
     END
   END Discover;
 
-PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
-                     errList: Error.List;
-                     converter: ConvertDecl.Converter;
-                     moduleIR: IR.Module; useSSA: BOOLEAN);
+
+PROCEDURE WriteModuleName (w: DeclWriter.Writer; 
+                           prefix: ARRAY OF CHAR; module: Repository.Module;
+                           suffix: ARRAY OF CHAR; newline: BOOLEAN);
   VAR
-    res: Error.Msg;
-    w: DeclWriter.Writer;
+    str: ARRAY 1024 OF CHAR;
+    i: LONGINT;
+  BEGIN
+    COPY (module. name^, str);
+    i := 0;
+    WHILE (str[i] # 0X) DO
+      IF (str[i] = ":") THEN str[i] := "_" END;
+      INC (i)
+    END;
+    w. WriteString (prefix);
+    w. WriteString (str);
+    w. WriteString (suffix);
+    IF newline THEN
+      w. WriteLn
+    END
+  END WriteModuleName;
+
+PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
+                           symTab: Sym.Module; exports: Dictionary.Dictionary);
+  VAR
     import: Repository.Import;
-  
-  PROCEDURE WriteModuleName (w: DeclWriter.Writer; 
-                             prefix: ARRAY OF CHAR;
-                             module: Repository.Module;
-                             suffix: ARRAY OF CHAR;
-                             newline: BOOLEAN);
-    VAR
-      str: ARRAY 1024 OF CHAR;
-      i: LONGINT;
-    BEGIN
-      COPY (module. name^, str);
-      i := 0;
-      WHILE (str[i] # 0X) DO
-        IF (str[i] = ":") THEN str[i] := "_" END;
-        INC (i)
-      END;
-      w. WriteString (prefix);
-      w. WriteString (str);
-      w. WriteString (suffix);
-      IF newline THEN
-        w. WriteLn
-      END
-    END WriteModuleName;
-  
-  PROCEDURE WriteDeclarations (w: DeclWriter.Writer;
-                               converter: ConvertDecl.Converter;
-                               writeExported: BOOLEAN);
-    BEGIN
-      converter. ConvertSymTab (w, writeExported);
-      w. WriteDeclarationList
-    END WriteDeclarations;
-  
+  BEGIN
+    WriteModuleName (w, "#ifndef _MODULE_", m, "_", TRUE);
+    WriteModuleName (w, "#define _MODULE_", m, "_", TRUE);
+    w. WriteLn;
+    
+    (* __typemap definitions are required parse definitions of the
+       module header file *)
+    w. WriteString ('#include "__typemap.h"');
+    w. WriteLn;
+    import := m. importList;
+    WHILE (import # NIL) DO
+      w. WriteInclude (import.imported.GetURI (Repository.modHeaderFileC));
+      import := import. nextImport
+    END;
+    w. WriteLn;
+    
+    ConvertDecl.ConvertSymTab (w, m, symTab, exports, TRUE);
+    w. WriteDeclarationList;
+    w. WriteLn;
+    
+    WriteModuleName (w, "#endif /* _MODULE_", m, "_ */", TRUE);
+  END WriteHeaderFile;
+
+PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
+                         symTab: Sym.Module; exports: Dictionary.Dictionary);
+  BEGIN
+    w. WriteInclude (m. GetURI (Repository.modHeaderFileC));
+    ConvertDecl.ConvertSymTab (w, m, symTab, exports, FALSE);
+    w. WriteDeclarationList;
+  END WriteDeclFile;
+
+PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
+                         moduleIR: IR.Module; useSSA: BOOLEAN);
   PROCEDURE ^ Call (statm: IR.Call);
     
   PROCEDURE WriteExpr (w: DeclWriter.Writer;
-                       converter: ConvertDecl.Converter;
                        expr: IR.Expression);
     VAR
       name: String.String;
@@ -168,7 +186,7 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         
       | expr: Operator.Negate DO
         w. WriteChar ("-");
-        WriteExpr (w, converter, expr. opnd1);
+        WriteExpr (w, expr. opnd1);
 
       | expr: IR.Call DO
         Call (expr)
@@ -197,13 +215,12 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         IF (i # 0) THEN
           w. WriteString (", ")
         END;
-        WriteExpr (w, converter, statm. arguments[i])
+        WriteExpr (w, statm. arguments[i])
       END;
       w. WriteString (")");
     END Call;
   
   PROCEDURE WriteStatmSeq (w: DeclWriter.Writer;
-                           converter: ConvertDecl.Converter;
                            statmSeq: IR.StatementSeq);
     VAR
       i: LONGINT;
@@ -214,7 +231,7 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         IF ~statm. disabled THEN
           w. WriteLn;
           w. WriteString ("_assert(");
-          WriteExpr (w, converter, statm. predicate);
+          WriteExpr (w, statm. predicate);
           w. WriteString (", ");
           w. WriteLInt (statm. code, 0);
           w. WriteString (", ");
@@ -230,7 +247,7 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
           w. WriteString ("return;")
         ELSE
           w. WriteString ("return ");
-          WriteExpr (w, converter, return. result);
+          WriteExpr (w, return. result);
           w. WriteString (";")
         END;
       END Return;
@@ -256,21 +273,20 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
     END WriteStatmSeq;
   
   PROCEDURE WriteProcedures (w: DeclWriter.Writer;
-                             converter: ConvertDecl.Converter;
                              procList: IR.ProcedureList);
     VAR
       d: DeclWriter.Declaration;
       i: LONGINT;
     BEGIN
       FOR i := 0 TO LEN (procList^)-1 DO
-        d := converter. ConvertProc (w, procList[i]. decl);
+        d := ConvertDecl.GetProc (w, procList[i]. decl);
         w. WriteLn;
         w. WriteDeclaration (d);
         w. WriteString (" {");
         IF useSSA THEN
-          WriteSSA.ProcBody (w, converter, procList[i]);
+          WriteSSA.ProcBody (w, procList[i]);
         ELSE
-          WriteStatmSeq (w, converter, procList[i]. statmSeq);
+          WriteStatmSeq (w, procList[i]. statmSeq);
         END;
         w. WriteLn;
         w. WriteString ("}");
@@ -279,60 +295,21 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
     END WriteProcedures;
   
   BEGIN
-    w := DeclWriter.NewWriter (m. GetOutputChannel (fileId, TRUE, res),
-                               m. GetURI (fileId));
-    IF (res = Channel.done) THEN
-      CASE fileId OF
-      | Repository.modHeaderFileC:
-        WriteModuleName (w, "#ifndef _MODULE_", m, "_", TRUE);
-        WriteModuleName (w, "#define _MODULE_", m, "_", TRUE);
-        w. WriteLn;
-        
-        (* __typemap definitions are required parse definitions of the
-           module header file *)
-        w. WriteString ('#include "__typemap.h"');
-        w. WriteLn;
-        import := m. importList;
-        WHILE (import # NIL) DO
-          w. WriteInclude (import.imported.GetURI (Repository.modHeaderFileC));
-          import := import. nextImport
-        END;
-        w. WriteLn;
-        
-        WriteDeclarations (w, converter, TRUE);
-        w. WriteLn;
-        
-        WriteModuleName (w, "#endif /* _MODULE_", m, "_ */", TRUE);
-        
-        
-      | Repository.modDeclFileC:
-        w. WriteInclude (m. GetURI (Repository.modHeaderFileC));
-        WriteDeclarations (w, converter, FALSE);
-          
-      | Repository.modCodeFileC:
-         w. WriteInclude (m. GetURI (Repository.modDeclFileC));
-
-        (* include full __oo2c.h only in generated C code files; this way,
-           the .h and .d files can be used without pulling in all the 
-           declarations of the run-time header file *)
-         w. WriteString ('#include "__oo2c.h"');
-         w. WriteLn;
-         WriteProcedures (w, converter, moduleIR. procList);
-         w. WriteLn;
-         WriteModuleName (w, "void ", m, "_init(void) {", FALSE);
-         WriteStatmSeq (w, converter, moduleIR. statmSeq);
-         w. WriteLn;
-         w. WriteString ("}");
-         w. WriteLn
-      END;
-
-      w. Close (res);
-    END;
+    w. WriteInclude (m. GetURI (Repository.modDeclFileC));
     
-    IF (res # NIL) THEN
-      errList. Append (res)
-    END
-  END WriteFile;
+    (* include full __oo2c.h only in generated C code files; this way,
+       the .h and .d files can be used without pulling in all the 
+       declarations of the run-time header file *)
+    w. WriteString ('#include "__oo2c.h"');
+    w. WriteLn;
+    WriteProcedures (w, moduleIR. procList);
+    w. WriteLn;
+    WriteModuleName (w, "void ", m, "_init(void) {", FALSE);
+    WriteStatmSeq (w, moduleIR. statmSeq);
+    w. WriteLn;
+    w. WriteString ("}");
+    w. WriteLn;
+  END WriteCodeFile;
 
 
 PROCEDURE (cmd: Command) Run*(): BOOLEAN;
@@ -345,16 +322,39 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     config: Config.Config;
     exports: Dictionary.Dictionary;
     module: IR.Module;
-    converter: ConvertDecl.Converter;
     pragmaHistory: Pragmas.History;
+
+  PROCEDURE WriteFile (fileId: Repository.FileId);
+    VAR
+      res: Error.Msg;
+      w: DeclWriter.Writer;
+    BEGIN
+      w := DeclWriter.NewWriter (m. GetOutputChannel (fileId, TRUE, res),
+                                 m. GetURI (fileId));
+      IF (res = Channel.done) THEN
+        CASE fileId OF
+        | Repository.modHeaderFileC:
+          WriteHeaderFile (w, m, symTab, exports);
+        | Repository.modDeclFileC:
+          WriteDeclFile (w, m, symTab, exports);
+        | Repository.modCodeFileC:
+          WriteCodeFile (w, m, module, cmd. useSSA);
+        END;
+        w. Close (res);
+      END;
+      IF (res # NIL) THEN
+        errList. Append (res)
+      END
+    END WriteFile;
+  
   BEGIN
     m := cmd. module;
     config := cmd. context. config(Config.Config);
     ParseModule.ParseModule (m, config, TRUE, TRUE, FALSE,
                              ast, symTab, pragmaHistory, errList);
     (* note: don't let `ParseModule' write the symbol file; this reduces the
-       data in `symTab' to the view of client modules, because declarations
-       private to the module are stripped *)
+       data in `symTab' to the view of client modules: declarations private to
+       the module are stripped when writing the symbol file  *)
     
     IF (errList. msgCount = 0) THEN
       IF cmd. writeAST THEN
@@ -367,15 +367,11 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       END;
       
       exports := Exports.GetExports (symTab);
-      converter := ConvertDecl.NewConverter (m, symTab, exports);
       
-      WriteFile (m, Repository.modHeaderFileC, errList, converter,
-                 NIL, cmd. useSSA);
-      WriteFile (m, Repository.modDeclFileC, errList, converter,
-                 NIL, cmd. useSSA);
+      WriteFile (Repository.modHeaderFileC);
+      WriteFile (Repository.modDeclFileC);
       IF (symTab. class = Sym.mcStandard) THEN
-        WriteFile (m, Repository.modCodeFileC, errList, converter,
-                   module, cmd. useSSA)
+        WriteFile (Repository.modCodeFileC);
       END;
 
       IF (errList. msgCount = 0) THEN
