@@ -1705,7 +1705,7 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
   VAR
     v: BigInt.BigInt;
   BEGIN
-    v := BigInt.NewString(sym. str^, 10);
+    v := BigInt.NewLatin1(sym. str^, 10);
     IF (v = NIL) THEN
       b. ErrSym (numberOutOfRange, sym);
       RETURN b. errorExpr
@@ -1723,7 +1723,7 @@ PROCEDURE (b: Builder) NewIntConst16* (sym: Symbol): Expression;
     WHILE (sym.str[epos] # "H") DO
       INC(epos);
     END;
-    v := BigInt.NewRegion(sym.str^, 0, epos, 16);
+    v := BigInt.NewLatin1Region(sym.str^, 0, epos, 16);
     RETURN NewConst(sym, Predef.SmallestIntType (v), v)
   END NewIntConst16;
 
