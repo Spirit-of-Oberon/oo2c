@@ -998,6 +998,31 @@ PROCEDURE ProcessRepository (root: Parser.Element;
       END;
     END SkipWS;
 
+  PROCEDURE ParseInstalled(elem: Parser.Element): STRING;
+  (* pre: element.name="installed" *)
+    VAR
+      i: LONGINT;
+      package: STRING;
+      att: Builder.Attribute;
+    BEGIN
+      package := NIL;
+      FOR i := 0 TO elem.attrList.len-1 DO
+        att := elem.attrList.attr[i];
+        IF (att.localName^ = "package") THEN
+          package := StringAttr(att);
+        ELSE
+          Err(invalidAttribute, elem);
+          lastError.SetLStringAttrib("name", Msg.GetLStringPtr(att.localName^));
+        END
+      END;
+      IF (package = NIL) THEN
+        Err(requireNameAttribute, elem);
+        RETURN NIL;
+      ELSE
+        RETURN package;
+      END;
+    END ParseInstalled;
+  
   BEGIN
     IF (root.name^ # rootRepository) THEN
       Err (invalidRootName, root);
@@ -1008,6 +1033,7 @@ PROCEDURE ProcessRepository (root: Parser.Element;
     node := root.content;
     SkipWS(node);
     WHILE AtElement(node, "installed") DO
+      rep.installedPkgs.Append(ParseInstalled(node(Parser.Element)));
       node := node.nextNode;
       SkipWS(node);
     END;
@@ -1328,6 +1354,25 @@ RAISES IO.Error;
       RETURN NIL;
     END;
   END GetPkgInfo;
+
+PROCEDURE GetRepository*(targetDir: ARRAY OF CHAR;
+                         VAR errList: Error.List): Repository
+RAISES IO.Error;
+  VAR
+    fileName: URIBuffer;
+    pkgInfo: Rep.PkgInfo;
+  BEGIN
+    COPY(targetDir, fileName);
+    Strings.Append(pkgInfoFile, fileName);
+    
+    errList := Error.NewList(fileName);
+    pkgInfo := ParseFile(fileName, FALSE, errList);
+    IF (pkgInfo # NIL) THEN
+      RETURN pkgInfo(Repository);
+    ELSE
+      RETURN NIL;
+    END;
+  END GetRepository;
 
 PROCEDURE UpdateRepository*(targetDir: ARRAY OF CHAR): BOOLEAN
 RAISES IO.Error;
