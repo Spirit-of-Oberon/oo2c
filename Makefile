@@ -34,7 +34,7 @@ DOC_DIR=$(OOC_DEV_ROOT)/oocdoc
 
 top_builddir=$(OOC_DEV_ROOT)
 
-test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile TestH2O TestWebServer AllModules RunTests
+test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile TestH2O TestWebServer TestCodec encdec AllModules RunTests
 
 all: stage1/lib/obj/liboo2c.o
 

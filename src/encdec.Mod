@@ -1,8 +1,8 @@
-MODULE uudec;
+MODULE encdec;
 
 IMPORT
   SYSTEM, Ascii, Channel, Files, Log, ProgramArgs, StdChannels, TextRider, 
-  String := Language:String0, Codec, Codec:UU;
+  String := Language:String0, Codec, Codec:UU, Codec:Twofish;
 
 TYPE
   State = PROCEDURE (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
@@ -24,12 +24,15 @@ CONST
 VAR
   mode: SHORTINT;
   codec1: Codec.Codec;
+  key: String.String;
   
   codecUU: Codec.Codec;
   decoder: Codec.Decoder;
   outputBuffer: String.Buffer;
   state: State;
   
+  enc: Codec.Encoder;
+  dec: Codec.Decoder;
   r: Channel.Reader;
   w: Channel.Writer;
   
@@ -171,7 +174,6 @@ PROCEDURE Encode (enc: Codec.Encoder; r: Channel.Reader; w: Channel.Writer);
       IF (r.bytesRead = 0) THEN
         EXIT;
       ELSE
-        Log.Msg ("aa");
         s := String.NewLatin1Region (d, 0, r.bytesRead);
         enc.EncodeIncr (s, 0, r.bytesRead, b);
         
@@ -186,8 +188,28 @@ PROCEDURE Encode (enc: Codec.Encoder; r: Channel.Reader; w: Channel.Writer);
   END Encode;
 
 PROCEDURE Decode (dec: Codec.Decoder; r: Channel.Reader; w: Channel.Writer);
+  VAR
+    d: ARRAY sizeBuffer OF CHAR;
+    b: String.Buffer;
+    s: String.String;
+    c: String.CharsLatin1;
   BEGIN
-    ASSERT (FALSE);
+    b := String.NewBuffer (sizeBuffer+256);
+    LOOP
+      r.ReadBytes (d, 0, sizeBuffer);
+      IF (r.bytesRead = 0) THEN
+        EXIT;
+      ELSE
+        s := String.NewLatin1Region (d, 0, r.bytesRead);
+        dec.DecodeIncr (d, 0, r.bytesRead, b);
+        
+        c := b.CharsLatin1();
+        w.WriteBytes(c^, 0, b.length);
+        b.Clear;
+      END;
+    END;
+    c := b.CharsLatin1();
+    w.WriteBytes(c^, 0, b.length);
   END Decode;
 
 PROCEDURE ParseArguments (r: TextRider.Reader);
@@ -224,6 +246,9 @@ PROCEDURE ParseArguments (r: TextRider.Reader);
           codec1 := GetCodec (arg);
         ELSIF (arg = "--decode-files") THEN
           mode := decodeFiles;
+        ELSIF (arg = "--key") THEN
+          r. ReadLine (arg);
+          key := String.NewLatin1(arg);
         ELSE
           Log.String ("Unknown argument", arg);
           HALT (1);
@@ -235,17 +260,23 @@ PROCEDURE ParseArguments (r: TextRider.Reader);
 BEGIN
   UU.Register;
   codecUU := UU.uu;
-
+  Twofish.Register;
+  
+  key := NIL;
   ParseArguments (TextRider.ConnectReader(ProgramArgs.args));
   
   r := StdChannels.stdin.NewReader();
   w := StdChannels.stdout.NewWriter();
   CASE mode OF
   | encode:
-    Encode (codec1.NewEncoder(), r, w);
+    enc := codec1.NewEncoder();
+    enc(Codec.CryptoEncoder). SetKey(key(String.String8));
+    Encode (enc, r, w);
   | decode:
-    Decode (codec1.NewDecoder(), r, w);
+    dec := codec1.NewDecoder();
+    dec(Codec.CryptoDecoder). SetKey(key(String.String8));
+    Decode (dec, r, w);
   | decodeFiles:
     DecodeFiles (r);
   END;
-END uudec.
+END encdec.

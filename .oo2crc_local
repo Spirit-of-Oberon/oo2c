@@ -9,7 +9,7 @@ GET *.Sym, *.Lib FROM
 GET *.h, *.d, *.c, *.o FROM
   obj;
 GET *.c FROM
-  src; ../libxml/src;
+  src; src/Codec; ../libxml/src;
 END
 
 PRAGMAS

@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE Codec;
+MODULE Codec [OOC_EXTENSIONS];
 (*  Registry for encoders/decoders of binary and character data.
     Copyright (C) 2002  Michael van Acken
 
@@ -59,9 +59,38 @@ TYPE
     (Object.ObjectDesc)
     codec: String0.Codec;
   END;
-  
+
+TYPE
+  CryptoDecoder* = POINTER TO CryptoDecoderDesc;
+  CryptoDecoderDesc* = RECORD [ABSTRACT]
+    (String0.DecoderDesc)
+  END;
+
+TYPE
+  CryptoEncoder* = POINTER TO CryptoEncoderDesc;
+  CryptoEncoderDesc* = RECORD [ABSTRACT]
+    (String0.EncoderDesc)
+  END;
+
 VAR
   reg: Dictionary.Dictionary;
+
+PROCEDURE InitCryptoDecoder* (dec: CryptoDecoder);
+  BEGIN
+    String0.InitDecoder (dec);
+  END InitCryptoDecoder;
+
+PROCEDURE InitCryptoEncoder* (enc: CryptoEncoder);
+  BEGIN
+    String0.InitEncoder (enc);
+  END InitCryptoEncoder;
+
+PROCEDURE (dec: CryptoDecoder) [ABSTRACT] SetKey* (key: String0.String8);
+  END SetKey;
+
+PROCEDURE (enc: CryptoEncoder) [ABSTRACT] SetKey* (key: String0.String8);
+  END SetKey;
+
 
 PROCEDURE NewWrapper (codec: String0.Codec): Wrapper;
   VAR
