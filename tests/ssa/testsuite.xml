@@ -18,12 +18,12 @@
   inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7
   typetest1 typetest2 typetest3 typetest4
   array1 array2 array3 array4 array5 array6 array7 array8
-  tbproc1 tbproc2 tbproc3 tbproc4 tbproc5 tbproc6 tbproc7">
+  tbproc1 tbproc2 tbproc3 tbproc4 tbproc5 tbproc6 tbproc7
+  nestedproc1 nestedproc2 nestedproc3">
 
 <!-- <testsuite-ext -->
 <!--   profile="Test Suite for Framework Testing" -->
-<!--   select ="&SetupTestCasesWithOut; tbproc1 tbproc2 tbproc3 tbproc4 -->
-<!--   tbproc5 tbproc6 tbproc7"> -->
+<!--   select ="&SetupTestCasesWithOut; nestedproc1 nestedproc2 nestedproc3"> -->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -305,8 +305,7 @@
     </test>
   </testcases>
 
-  <testcases profile="OOC2 Development: Type-bound Procedures"
-             default-lang="O2">
+  <testcases profile="OOC2 Development: Procedures" default-lang="O2">
     <test id="tbproc1" type="run" file="TBProc1.Mod" output="TBProc1.Ref">
       Calling a type-bound procedure of a pointer variable.
     </test>
@@ -339,6 +338,25 @@
       procedure is redefined in an extension of the pointer's type,
       and the redefinition does a super call.
     </test>
+
+    
+    <test id="nestedproc1" type="run"
+          file="NestedProc1.Mod" output="NestedProc1.Ref">
+      Calling a nested procedure.
+    </test>
+    
+    <test id="nestedproc2" type="run"
+          file="NestedProc2.Mod" output="NestedProc2.Ref">
+      Calling a nested procedure, which sets a variable of the 
+      enclosing procedure.
+    </test>
+    
+    <test id="nestedproc3" type="run"
+          file="NestedProc3.Mod" output="NestedProc3.Ref">
+      Calling a nested procedure, which sets a variable of the 
+      enclosing procedure that is shadowed by one of its parameters.
+    </test>
+    
   </testcases>
     
   <processor-info processor-name="TestCompile">

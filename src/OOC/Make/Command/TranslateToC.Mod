@@ -34,6 +34,14 @@ TYPE
   Translator* = POINTER TO TranslatorDesc;
   TranslatorDesc* = RECORD [ABSTRACT]
     w-: DeclWriter.Writer;
+    
+    procList: IR.ProcedureList;
+    (* List of all procedures in this module.  *)
+    
+    currentProc: LONGINT;
+    (* Index of the most recent call to @oproc{Translator.WriteProcedure}.
+       This method restores it to its old value when it is done, which means it
+       is aware of procedure nesting.  *)
   END;
 
 TYPE
@@ -51,6 +59,8 @@ TYPE
 PROCEDURE InitTranslator* (t: Translator);
   BEGIN
     t. w := NIL;
+    t. procList := NIL;
+    t. currentProc := -1;
   END InitTranslator;
 
 PROCEDURE (t: Translator) SetWriter* (w: DeclWriter.Writer);
@@ -58,11 +68,61 @@ PROCEDURE (t: Translator) SetWriter* (w: DeclWriter.Writer);
     t. w := w;
   END SetWriter;
 
+PROCEDURE (t: Translator) SetProcedureList* (procList: IR.ProcedureList);
+  BEGIN
+    t. procList := procList;
+  END SetProcedureList;
+
 PROCEDURE (t: Translator) [ABSTRACT] WriteProcBody* (proc: IR.Procedure);
   END WriteProcBody;
 
-PROCEDURE (t: Translator) [ABSTRACT] WriteModuleBody* (body: IR.Procedure);
-  END WriteModuleBody;
+PROCEDURE (t: Translator) WriteProcedure (procIndex: LONGINT);
+  VAR
+    w: DeclWriter.Writer;
+    d: DeclWriter.Declaration;
+    oldProcIndex: LONGINT;
+  BEGIN
+    oldProcIndex := t. currentProc;
+    t. currentProc := procIndex;
+    
+    w := t. w;
+    d := ConvertDecl.GetProc (w, t. procList[procIndex]. decl);
+    w. Newline;
+    w. WriteDeclaration (d);
+    w. WriteString (" {");
+    t. WriteProcBody (t. procList[procIndex]);
+    w. Newline;
+    w. WriteString ("}");
+    w. WriteLn;
+
+    t. currentProc := oldProcIndex;
+  END WriteProcedure;
+
+PROCEDURE (t: Translator) WriteNestedProcedures*;
+(**The implementation of @oproc{Translator.ProcBody} may call this procedure to
+   write out all procedures that are nested into the procedure for which it was
+   called.  The translator instance keeps track of which procedure that was,
+   and which of the other procedures are part of it.
+
+   Note: ANSI-C does not support nested functions.  This is a feature
+   of gcc.  *)
+  VAR
+    currentDecl: Sym.ProcDecl;
+    i: LONGINT;
+  BEGIN
+    IF (t. currentProc >= 0) THEN (* not writing the module pseudo procedure *)
+      currentDecl := t. procList[t. currentProc]. decl;
+      i := t. currentProc+1;
+      WHILE (i # LEN (t. procList^)) &
+            (t. procList[i]. decl. parent = currentDecl) DO
+        t. w. Indent (1);
+        t. w. Newline;
+        t. WriteProcedure (i);
+        t. w. Indent (-1);
+        INC (i);
+      END;
+    END;
+  END WriteNestedProcedures;
 
 
 PROCEDURE New* (context: Make.Context; module: Repository.Module;
@@ -200,24 +260,8 @@ PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
 
 PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
                          moduleIR: IR.Module; translator: Translator);
-  PROCEDURE WriteProcedures (w: DeclWriter.Writer;
-                             procList: IR.ProcedureList);
-    VAR
-      d: DeclWriter.Declaration;
-      i: LONGINT;
-    BEGIN
-      FOR i := 0 TO LEN (procList^)-1 DO
-        d := ConvertDecl.GetProc (w, procList[i]. decl);
-        w. WriteLn;
-        w. WriteDeclaration (d);
-        w. WriteString (" {");
-        translator. WriteProcBody (procList[i]);
-        w. WriteLn;
-        w. WriteString ("}");
-        w. WriteLn
-      END
-    END WriteProcedures;
-  
+  VAR
+    i: LONGINT;
   BEGIN
     w. WriteInclude (m. GetURI (Repository.modDeclFileC));
     translator. SetWriter (w);
@@ -227,13 +271,20 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
        declarations of the run-time header file *)
     w. WriteString ('#include "__oo2c.h"');
     w. WriteLn;
-    WriteProcedures (w, moduleIR. procList);
+    translator. SetProcedureList (moduleIR. procList);
+    FOR i := 0 TO LEN (moduleIR. procList^)-1 DO
+      IF (moduleIR. procList[i]. decl. parent IS Sym.Module) THEN
+        translator. WriteProcedure (i);
+      END;
+    END;
     w. WriteLn;
     WriteModuleName (w, "void ", m, "_init(void) {", FALSE);
-    translator. WriteModuleBody (moduleIR. moduleBody);
+    translator. WriteProcBody (moduleIR. moduleBody);
     w. WriteLn;
     w. WriteString ("}");
     w. WriteLn;
+
+    translator. SetProcedureList (NIL);
   END WriteCodeFile;
 
 

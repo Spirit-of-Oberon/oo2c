@@ -1087,15 +1087,11 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     w := NewWriter (t. w, pb, registerMap);
     w. Indent (1);
     WriteLocalDecl (w, pb, haveCopyParameter);
+    t. WriteNestedProcedures();          (* up call *)
     w. WriteLn;
     w. WriteBlocks (domRoot, haveCopyParameter);
     w. Indent (-1);
   END WriteProcBody;
-
-PROCEDURE (t: Translator) WriteModuleBody* (body: IR.Procedure);
-  BEGIN
-    t. WriteProcBody (body);
-  END WriteModuleBody;
 
 PROCEDURE InitTranslator* (t: Translator; 
                            config: Config.Config;
