@@ -75,9 +75,7 @@ PROCEDURE IsStringConst* (type: Sym.Type): BOOLEAN;
     END;
   END IsStringConst;
 
-PROCEDURE IsObject*(type: Sym.Type): BOOLEAN;
-(**Return @code{TRUE} if @oparam{type} is the library type
-   @otype{*Object.Object}, or an extension of this type.  *)
+PROCEDURE ExtendsLibType(type: Sym.Type; module, recordName: ARRAY OF CHAR): BOOLEAN;
   VAR
     r: Sym.Record;
   BEGIN
@@ -88,13 +86,27 @@ PROCEDURE IsObject*(type: Sym.Type): BOOLEAN;
         r := r.baseType(Sym.Record);
       END;
       RETURN (r.namingDecl # NIL) & 
-        (r.namingDecl.name.str^ = "ObjectDesc") & 
+        (r.namingDecl.name.str^ = recordName) & 
         (r.namingDecl.parent IS Sym.Module) & 
-        (r.namingDecl.parent(Sym.Module).name.str^ = "Object");
+        (r.namingDecl.parent(Sym.Module).name.str^ = module);
     ELSE
       RETURN FALSE;
     END;
+  END ExtendsLibType;
+
+PROCEDURE IsObject*(type: Sym.Type): BOOLEAN;
+(**Return @code{TRUE} if @oparam{type} is the library type
+   @otype{*Object.Object}, or an extension of this type.  *)
+  BEGIN
+    RETURN ExtendsLibType(type, "Object", "ObjectDesc");
   END IsObject;
+
+PROCEDURE IsException*(type: Sym.Type): BOOLEAN;
+(**Return @code{TRUE} if @oparam{type} is an extension of
+   @otype{*Exception.Exception}.  *)
+  BEGIN
+    RETURN ExtendsLibType(type, "Exception", "ExceptionDesc");
+  END IsException;
 
 PROCEDURE IsSTRING* (type: Sym.Type): BOOLEAN;
 (**Return @code{TRUE} if @oparam{type} is the predefined type @code{STRING},
@@ -378,28 +390,45 @@ PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
     RETURN FALSE
   END IsExtensionOf;
 
-PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
-(**Returns @code{TRUE}, iff the formal parameter lists described by 
+PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowSpecialization: BOOLEAN): BOOLEAN;
+(**Returns @code{TRUE}, iff the formal parameter lists described by
    @oparam{baseFPars} and @oparam{procFPars} match.  The comparison includes
    the formal parameters, the result type, and any rest parameter.  The
    receiver of the formal parameter lists is ignored.
-   
-   If @oparam{allowExtendedResult} is @code{TRUE}, then the result type of
-   @oparam{procFPars} may be an extension of the result type of
-   @oparam{baseFPars}, otherwise the result types must be the same.  *)
+
+   If @oparam{allowSpecialization} is @code{TRUE}, then @oparam{procFPars} must
+   not be equal to @oparam{baseFPars}, but may be a specialized version of
+   @oparam{baseFPars} with a narrower signature.  In particular, its
+
+   @itemize @bullet
+   @item
+   result type may be an extension of the result type of @oparam{baseFPars},
+
+   @item
+   its list of exception declarations may have less entries than that of
+   @oparam{baseFPars}, and
+
+   @item
+   the exception declarations may be extensions of the ones on
+   @oparam{baseFPars}.
+   @end itemize
+
+   Without @oparam{allowSpecialization}, the result of both formal parameter
+   definitions must have the same type, and for each declared exception there
+   must be a corresponding entry of the same type.  *)
   VAR
-    i: LONGINT;
+    i, j: LONGINT;
   BEGIN
     IF (LEN (baseFPars. params^) # LEN (procFPars. params^)) THEN
       RETURN FALSE
     ELSIF ((baseFPars. resultType = NIL) # (procFPars. resultType = NIL)) THEN
       RETURN FALSE
     ELSIF (baseFPars. resultType # NIL) & 
-          ~allowExtendedResult &   
+          ~allowSpecialization &   
           ~SameType (baseFPars. resultType, procFPars. resultType) THEN
       RETURN FALSE
     ELSIF (baseFPars. resultType # NIL) & 
-          allowExtendedResult &
+          allowSpecialization &
           ~(SameType (baseFPars. resultType, procFPars. resultType) OR
             IsExtensionOf (procFPars. resultType, baseFPars. resultType)) THEN
       RETURN FALSE
@@ -414,6 +443,48 @@ PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtende
           RETURN FALSE
         END
       END;
+
+      IF allowSpecialization THEN
+        FOR i := 0 TO LEN(procFPars.raises^)-1 DO
+          j := 0;
+          WHILE (j # LEN(baseFPars.raises^)) &
+                ~IsExtensionOf(procFPars.raises[j].type,
+                               baseFPars.raises[i].type) DO
+            INC(j);
+          END;
+          IF (j = LEN(baseFPars.raises^)) THEN (* no match *)
+            RETURN FALSE;
+          END;
+        END;
+        
+      ELSE
+        (* For every entry in procFPars, there must be an entry of the
+           same type in baseFPars, and vice versa.  Note: The lists may contain
+           duplicates.  This is permitted by this implementation.  *)
+        FOR i := 0 TO LEN(procFPars.raises^)-1 DO
+          j := 0;
+          WHILE (j # LEN(baseFPars.raises^)) &
+                ~SameType(baseFPars.raises[j].type,
+                          procFPars.raises[i].type) DO
+            INC(j);
+          END;
+          IF (j = LEN(baseFPars.raises^)) THEN (* no match *)
+            RETURN FALSE;
+          END;
+        END;
+        FOR i := 0 TO LEN(baseFPars.raises^)-1 DO
+          j := 0;
+          WHILE (j # LEN(procFPars.raises^)) &
+                ~SameType(procFPars.raises[j].type,
+                          baseFPars.raises[i].type) DO
+            INC(j);
+          END;
+          IF (j = LEN(procFPars.raises^)) THEN (* no match *)
+            RETURN FALSE;
+          END;
+        END;
+      END;
+      
       RETURN TRUE
     END
   END FormalParamsMatch;
