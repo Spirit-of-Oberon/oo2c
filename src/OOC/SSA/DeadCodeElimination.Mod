@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:DeadCodeElimination;
 (*  Removes unreachable code from a procedure's SSA representation.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -28,28 +28,92 @@ CONST
   live = 1;
 
 
-PROCEDURE MarkLive (instr: SSA.Instr);
+PROCEDURE MarkLive (res: SSA.Result);
   VAR
+    instr, loopEnd: SSA.Instr;
     opnd: SSA.Opnd;
+    i: LONGINT;
+
+  PROCEDURE MarkStore(opnd: SSA.Opnd; index: LONGINT);
+    BEGIN
+      IF (index < 1) OR
+         (index = 1) & (opnd.arg.instr.opcode # Opcode.collect) THEN
+        MarkLive(opnd.arg);
+      ELSE
+        ASSERT(opnd.arg.instr.opcode = Opcode.collect);
+        opnd.arg.marker := live;
+        MarkLive(opnd.arg.instr.NthArg(index-1));
+      END;
+    END MarkStore;
+  
   BEGIN
-    IF (instr. marker = dead) THEN
+    instr := res.instr;
+    
+    IF (instr.marker = dead) THEN
       instr. marker := live;
       opnd := instr. opndList;
-      WHILE (opnd # NIL) DO
-        IF (opnd. class # Opnd.storeExit) THEN
-          (* a use within a "store-exit" of a "loop-end" or "select-return"
-             does not make the instruction live *)
-          MarkLive (opnd. arg. instr);
+      IF (instr.opcode # Opcode.collect) THEN
+        WHILE (opnd # NIL) DO
+          IF (opnd. class # Opnd.storeExit) THEN
+            (* a use within a "store-exit" of a "loop-end" or "select-return"
+               does not make the instruction live *)
+            MarkLive (opnd. arg);
+          END;
+          opnd := opnd. nextOpnd
         END;
-        opnd := opnd. nextOpnd
+      ELSE  (* only follow the store operand, the rest is marked on demand *)
+        MarkLive (opnd. arg);
       END;
+    END;
+    
+    CASE instr.opcode OF
+    | Opcode.select:
+      IF (res.marker = dead) THEN
+        res.marker := live;
+        i := res.ResultIndex();
+        
+        opnd := instr.NthOpnd(2);
+        WHILE (opnd # NIL) & (opnd.class = Opnd.arg) DO
+          MarkStore(opnd, i);
+          opnd := opnd.nextOpnd;
+          IF (opnd # NIL) THEN
+            opnd := opnd.nextOpnd;
+          END;
+        END;
+      END;
+      
+    | Opcode.loopStart:
+      IF (res.marker = dead) THEN
+        res.marker := live;
+        i := res.ResultIndex();
+        
+        MarkStore(instr.opndList, i);
+        loopEnd := instr.GetLoopEnd();
+        ASSERT(loopEnd.opndList.arg = instr);
+        MarkStore(loopEnd.opndList.nextOpnd, i);
+      END;
+      
+    ELSE  (* ignore *)
     END;
   END MarkLive;
 
 PROCEDURE DeleteDeadCode (pb: SSA.ProcBlock);
   VAR
-    instr, next: SSA.Instr;
-    use, nextUse: SSA.Opnd;
+    instr, next, loopEnd: SSA.Instr;
+    use, nextUse, opnd: SSA.Opnd;
+    res, nextResult: SSA.Result;
+    i: LONGINT;
+
+  PROCEDURE DeleteStore(opnd: SSA.Opnd; index: LONGINT);
+    VAR
+      collect: SSA.Instr;
+    BEGIN
+      ASSERT(index > 1);
+      ASSERT(opnd.arg.instr.opcode = Opcode.collect);
+      opnd := opnd.arg.instr.NthOpnd(index-1);
+      opnd.DeleteOpnd();
+    END DeleteStore;
+  
   BEGIN
     instr := pb. instrList;
     WHILE (instr # NIL) DO
@@ -67,8 +131,46 @@ PROCEDURE DeleteDeadCode (pb: SSA.ProcBlock);
           END;
         ELSE
         END;
+        pb. DeleteInstr (instr);
+
+      ELSIF (instr.opcode = Opcode.select) THEN
+        res := instr.nextResult;
+        WHILE (res # NIL) DO
+          nextResult := res.nextResult;
+          IF (res.marker = dead) THEN
+            (* if the result is dead, remove the corresponding operand from
+               all collect instructions feeding into the select *)
+            i := res.ResultIndex();
+            
+            opnd := instr.NthOpnd(2);
+            WHILE (opnd # NIL) & (opnd.class = Opnd.arg) DO
+              DeleteStore(opnd, i);
+              opnd := opnd.nextOpnd;
+              IF (opnd # NIL) THEN
+                opnd := opnd.nextOpnd;
+              END;
+            END;
+            res.DeleteResult();
+          END;
+          res := nextResult;
+        END;
         
-        pb. DeleteInstr (instr)
+      ELSIF (instr.opcode = Opcode.loopStart) THEN
+        loopEnd := instr.GetLoopEnd();
+        res := instr.nextResult;
+        WHILE (res # NIL) DO
+          nextResult := res.nextResult;
+          IF (res.marker = dead) THEN
+            (* if the result is dead, remove the corresponding operand from
+               the two collect instructions feeding into the loop-start *)
+            i := res.ResultIndex();
+            
+            DeleteStore(instr.opndList, i);
+            DeleteStore(loopEnd.opndList.nextOpnd, i);
+            res.DeleteResult();
+          END;
+          res := nextResult;
+        END;
       END;
       instr := next;
     END;
@@ -78,7 +180,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
   BEGIN
     (* mark all instructions in `pb' as dead *)
     pb. SetMarkers (NIL, dead);
-    (* mark exit instruction and all instruction contributing to it as live *)
+    (* mark exit instruction and all instruction contributing to it as live;
+       collect instructions are treated specially: their arguments are only
+       marked live if the corresponding result of a selct or loop-start is
+       live *)
     MarkLive (pb. selectReturn);
     (* remove all instructions marked as dead *)
     DeleteDeadCode (pb)
