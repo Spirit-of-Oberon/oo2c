@@ -13,4 +13,7 @@
   <test id="libadt_Dictionary" type="run" file="LibAdtDictionary.Mod">
     Imports the various variants of module <code>ADT:Dictionary</code>.
   </test>
+  <test id="libadt_StringSearch1" type="run" file="LibStringSearch1.Mod">
+    Imports module <code>StringSearch</code> and derived modules.
+  </test>
 </testcases>
