@@ -75,6 +75,8 @@ PROCEDURE NewConfig;
 
     haveLibM := Config.pragmas.Set("HAVE_LIB_M", (* added for module RT0 *)
                                   CfgData.NewBooleanVar(Autoconf.haveLibM));
+    haveLibGC := Config.pragmas.Set("HAVE_LIB_DL", (* added for module RT0 *)
+                                    CfgData.NewBooleanVar(Autoconf.haveLibDL));
     haveLibGC := Config.pragmas.Set("HAVE_LIB_GC", (* added for module RT0 *)
                                     CfgData.NewBooleanVar(Autoconf.haveLibGC));
     
