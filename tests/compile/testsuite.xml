@@ -67,7 +67,7 @@
   
   <processor-info processor-name="TestCompile">
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
-    <reject-info id="constfold3" pos="\A%\Z" msg="Invalid type for operator"/>
-    <reject-info id="constfold4" pos="\A%\Z" msg="Expression is not constant"/>
+    <reject-info id="constfold3" pos="c=1%+" msg="Invalid type for operator"/>
+    <reject-info id="constfold4" pos="c=%a" msg="Expression is not constant"/>
   </processor-info>
 </testsuite-ext>
