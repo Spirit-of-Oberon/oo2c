@@ -14,7 +14,7 @@
   generic36 generic37 generic38 generic39 generic40 generic41
   generic42 generic43 generic44 generic45 generic46 generic47
   generic48 generic48 generic49 generic50 generic52
-  generic53 generic54 generic55 generic56">-->
+  generic53 generic54 generic55 generic56 generic57">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; bugDeclC1">-->
@@ -1525,6 +1525,10 @@
     <test id="generic56" type="accept" file="Generic56.Mod">
       Apply type closure to formal parameters of the function variant
       of <code>NEW</code>.
+    </test>
+    <test id="generic57" type="accept" file="Generic57.Mod">
+      Regression test: Call procedure <code>NEW</code> for a
+      parametric array pointer.
     </test>
   </testcases>
 

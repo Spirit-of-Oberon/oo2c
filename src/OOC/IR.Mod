@@ -5932,7 +5932,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
                                   context, endOfArgsSym);
         ELSIF (type IS Sym.Pointer) THEN
           b.AssertVar(arguments[0]);
-          type := type(Sym.Pointer).baseType;
+          type := type(Sym.Pointer).baseType.Deparam();
           IF (type IS Sym.Array) THEN
             dim := 1+type(Sym.Array).GetOpenDimensions();
             IF CheckNumberOfArguments (dim, dim) THEN
