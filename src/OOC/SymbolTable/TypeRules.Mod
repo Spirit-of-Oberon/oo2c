@@ -81,7 +81,7 @@ PROCEDURE (tr: Rules) IsIntegerType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is an integer type.  *)
   BEGIN
     WITH type: Sym.PredefType DO
-      RETURN (type. id IN {Predef.shortint, Predef.integer, Predef.longint})
+      RETURN (type. id IN {Predef.shortint .. Predef.real-1})
     ELSE
       RETURN FALSE
     END;
