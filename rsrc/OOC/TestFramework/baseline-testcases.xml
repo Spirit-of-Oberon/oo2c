@@ -26,7 +26,7 @@
   
   <test id="baseline5" type="run" file="HOTBaselineOutput1.Mod"
 	output="HOTBaselineOutput1.Ref">
-    Testuation of the procedure <code>Test</code> prints the famous
+    Evaluation of the procedure <code>Test</code> prints the famous
     <code>Hello World!</code>, followed by a single newline character.
     Command execution should succeed, and the command's output should
     match the content of file <code>HOTBaselineOutput1.Ref</code>
