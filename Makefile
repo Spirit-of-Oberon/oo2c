@@ -70,7 +70,7 @@ main-clean: test-cleanall
 ###      distribution.
 distclean: main-clean
 	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml lib/pkginfo.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
-	rm -f lib/src/__config.h config.log config.status
+	rm -f lib/src/__config.h config.log config.status config.status64
 	rm -Rf autom4te.cache stage0/bin bin
 
 ### `cvs-clean'
@@ -149,6 +149,14 @@ dist: $(OOC_DEV_ROOT)/oo2crc-install.xml
 	cd stage0 && $(PERL) $(OOC_DEV_ROOT)/rsrc/OOC/makefilegen.pl >Makefile.ext
 	${MAKE} distclean
 	cd .. && tar -c -v --exclude CVS --exclude '*~' --exclude '.#*' -f - ooc2 | bzip2 -9 >ooc2-dist-`date +"%Y%m%d"`.tar.bz2
+
+dist64:
+	sed -e 's:@ooc_target_integer@,[0-9]*:@ooc_target_integer@,64:' \
+	    -e 's:@ooc_target_address@,[0-9]*:@ooc_target_address@,64:' \
+	    -e 's:@ooc_target_address_type@,[a-z]*:@ooc_target_address_type@,hugeint:' \
+		config.status >config.status64
+	/bin/sh config.status64
+	${MAKE} dist
 
 ### Create initial compiler executable from distributed C sources.
 stage0/oo2c:
