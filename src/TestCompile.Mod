@@ -183,13 +183,13 @@ PROCEDURE RegisterCmdLineOptions;
 
 PROCEDURE NewConfig;
   BEGIN
-    make := Config.options. Set ("make", BooleanValue.New (FALSE));
-    writeAST := Config.options. Set ("write-ast", BooleanValue.New (FALSE));
-    writeIR := Config.options. Set ("write-ir", BooleanValue.New (FALSE));
-    useSSA := Config.options. Set ("use-ssa", BooleanValue.New (FALSE));
-    translateIA32 := Config.options. Set ("translate-ia32", BooleanValue.New (FALSE));
-    inspectProc := Config.options. Set ("inspect-proc", StringValue.New ("$"));
-    inspectStage := Config.options. Set ("inspect-stage", StringValue.New ("$"));
+    make := Config.AddOption ("make", BooleanValue.New (FALSE));
+    writeAST := Config.AddOption ("write-ast", BooleanValue.New (FALSE));
+    writeIR := Config.AddOption ("write-ir", BooleanValue.New (FALSE));
+    useSSA := Config.AddOption ("use-ssa", BooleanValue.New (FALSE));
+    translateIA32 := Config.AddOption ("translate-ia32", BooleanValue.New (FALSE));
+    inspectProc := Config.AddOption ("inspect-proc", StringValue.New ("$"));
+    inspectStage := Config.AddOption ("inspect-stage", StringValue.New ("$"));
     
     RegisterCmdLineOptions;
   END NewConfig;

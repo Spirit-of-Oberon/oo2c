@@ -161,8 +161,8 @@ PROCEDURE RegisterCmdLineOptions();
 
 PROCEDURE NewConfig;
   BEGIN
-    mode := Config.options. Set ("mode", IntegerValue.New (modeResolveNamesXML));
-    oo2cStyleErrors := Config.options. Set ("oo2cStyleErrors", BooleanValue.New (FALSE));
+    mode := Config.AddOption ("mode", IntegerValue.New (modeResolveNamesXML));
+    oo2cStyleErrors := Config.AddOption ("oo2cStyleErrors", BooleanValue.New (FALSE));
     
     RegisterCmdLineOptions;
   END NewConfig;

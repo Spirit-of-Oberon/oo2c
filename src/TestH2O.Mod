@@ -48,11 +48,11 @@ PROCEDURE RegisterCmdLineOptions;
 
 PROCEDURE NewConfig;
   BEGIN
-    strictRedefine := Config.options.Set("strictRedefine", BooleanValue.New(FALSE));
-    strictUndefine := Config.options.Set("strictUndefine", BooleanValue.New(FALSE));
-    debugDefine := Config.options.Set("debugDefine", BooleanValue.New(FALSE));
-    text := Config.options.Set("text", BooleanValue.New(FALSE));
-    preprocess := Config.options.Set("preprocess", BooleanValue.New(FALSE)); 
+    strictRedefine := Config.AddOption("strictRedefine", BooleanValue.New(FALSE));
+    strictUndefine := Config.AddOption("strictUndefine", BooleanValue.New(FALSE));
+    debugDefine := Config.AddOption("debugDefine", BooleanValue.New(FALSE));
+    text := Config.AddOption("text", BooleanValue.New(FALSE));
+    preprocess := Config.AddOption("preprocess", BooleanValue.New(FALSE)); 
 
     RegisterCmdLineOptions;
   END NewConfig;

@@ -1,17 +1,16 @@
 MODULE OOC:Config;
 
 IMPORT
-  Msg, Config:Source:CmdLine, Config:Section:Options,
+  Msg, Config:Value, Config:Source:CmdLine, Config:Section:Options,
   Config:Section:Arguments, Config:Simple,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
-  OOC:Config:Repositories, OOC:Config:Repositories:FileSystem(*KEEP THIS!*),
-  Sym := OOC:SymbolTable;
+  OOC:Config:Repositories, OOC:Config:Repositories:FileSystem(*KEEP THIS!*);
 
 
 VAR
   cmdLine-: CmdLine.CmdLine;
   arguments-: Arguments.Section;
-  options-: Options.Section;
+  options: Options.Section;
   pragmas-: Pragmas.Section;
   repositories-: Repositories.Section;
 
@@ -36,6 +35,14 @@ PROCEDURE InitConfig (defaultConfigFile: ARRAY OF CHAR);
     repositories := Repositories.New();
     config. sectionList. Add (repositories);
   END InitConfig;
+
+PROCEDURE AddOption* (name: ARRAY OF CHAR; init: Value.Value): Options.Option;
+(**Add the command line option @oparam{name} to the configuration parser.
+   Its initial value is @oparam{init}.  The new option instance is
+   returned.  *)
+  BEGIN
+    RETURN options. Set (name, init);
+  END AddOption;
 
 PROCEDURE Read* (errList: Msg.MsgList);
   BEGIN

@@ -91,9 +91,9 @@ PROCEDURE RegisterCmdLineOptions;
 
 PROCEDURE NewConfig;
   BEGIN
-    buildHTML := Config.options. Set ("build-html", BooleanValue.New (FALSE));
-    closure := Config.options. Set ("closure", BooleanValue.New (FALSE));
-    errorStyle := Config.options. Set ("error-style", StringValue.New ("default"));
+    buildHTML := Config.AddOption ("build-html", BooleanValue.New (FALSE));
+    closure := Config.AddOption ("closure", BooleanValue.New (FALSE));
+    errorStyle := Config.AddOption ("error-style", StringValue.New ("default"));
     
     RegisterCmdLineOptions;
   END NewConfig;
