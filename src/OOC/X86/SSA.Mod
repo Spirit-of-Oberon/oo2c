@@ -2,7 +2,8 @@ MODULE OOC:X86:SSA;
 
 IMPORT
   Object, Object:Boxed, Object:BigInt, IntDict := ADT:Dictionary:IntValue,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  TR := OOC:SymbolTable:TypeRules;
 
 TYPE
   Opcode* = SHORTINT;
@@ -2445,7 +2446,11 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
     
   PROCEDURE ArgumentSize(type: Sym.Type): LONGINT;
     BEGIN
-      RETURN 4;
+      IF TR.IsPredefType(type, Predef.longreal) THEN
+        RETURN 8;
+      ELSE
+        RETURN 4;
+      END;
     END ArgumentSize;
   
   BEGIN

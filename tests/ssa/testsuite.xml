@@ -5,8 +5,8 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; real1 real2 real3 real4 real5 real6
-  real7 for11">-->
+  select ="&SetupTestCasesWithOut; longreal1 longreal2 longreal3
+  longreal4 longreal5 longreal6 longreal7">-->
 
   &TestSetupWithOut;
     
@@ -288,6 +288,39 @@
     </test>
     <test id="real7" type="run" file="Real7.Mod" output="Real7.Ref">
       Compare two <code>REAL</code> values.
+    </test>
+      
+    <test id="longreal1" type="run"
+          file="LongReal1.Mod" output="LongReal1.Ref">
+      Passing <code>LONGREAL</code> constant to procedure parameter.
+    </test>
+    <test id="longreal2" type="run"
+          file="LongReal2.Mod" output="LongReal2.Ref">
+      Passing non-constant <code>LONGREAL</code> value to procedure
+      parameter.
+    </test>
+    <test id="longreal3" type="run"
+          file="LongReal3.Mod" output="LongReal3.Ref">
+      Returning <code>LONGREAL</code> constant from function.
+    </test>
+    <test id="longreal4" type="run"
+          file="LongReal4.Mod" output="LongReal4.Ref">
+      Add and subtract two <code>LONGREAL</code> values taken from global
+      variables.
+    </test>
+    <test id="longreal5" type="run"
+          file="LongReal5.Mod" output="LongReal5.Ref">
+      Add and subtract two <code>LONGREAL</code> values taken from
+      parameters and return the result.
+    </test>
+    <test id="longreal6" type="run"
+          file="LongReal6.Mod" output="LongReal6.Ref">
+      Add and subtract two <code>LONGREAL</code> values produced by
+      functions.
+    </test>
+    <test id="longreal7" type="run"
+          file="LongReal7.Mod" output="LongReal7.Ref">
+      Compare two <code>LONGREAL</code> values.
     </test>
       
     <test id="if1" type="run"

@@ -265,6 +265,7 @@ PROCEDURE (w: Writer) Constants();
     s, i: LONGINT;
     label: STRING;
     value: Object.Object;
+    lr: RECORD x, y: LONGINT; END;
   BEGIN
     FOR s := 0 TO Predef.lastId DO
       FOR i := 0 TO w.constantList[s].size-1 DO
@@ -275,9 +276,15 @@ PROCEDURE (w: Writer) Constants();
           ASSERT(s = Predef.stringChar);
           w.w.WriteObject(nlTab+'.string "'+value+'"'); (* FIXME... needs to be quoted *)
         | value: Boxed.LongReal DO
-          ASSERT(s = Predef.real);
-          w.w.WriteObject(nlTab+'.long 0x'+
-                          ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+          IF (s = Predef.real) THEN
+            w.w.WriteObject(nlTab+'.long 0x'+
+                            ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+          ELSE
+            SYSTEM.MOVE(SYSTEM.ADR(value.value), SYSTEM.ADR(lr),
+                        SIZE(LONGREAL));
+            w.w.WriteObject(nlTab+'.long 0x'+ToHex(lr.x, 8));
+            w.w.WriteObject(nlTab+'.long 0x'+ToHex(lr.y, 8));
+          END;
         END;
       END;
     END;
@@ -343,7 +350,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.real32:
           RETURN "s";
         | S.real64:
-          RETURN "d";
+          IF (opc[0] = "f") THEN
+            RETURN "l";               (* x87 opcodes use suffix "l" *)
+          ELSE
+            RETURN "d";               (* SSE2 opcodes use suffix "d" *)
+          END;
         END;
       END Type;
     
