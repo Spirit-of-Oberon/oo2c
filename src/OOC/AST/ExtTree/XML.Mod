@@ -145,12 +145,36 @@ RAISES IO.Error;
           Node (n. rParen);
           Node (n. colon);
           Node (n. result);
+          Node (n. raises);
+          Node (n. raisesList);
           w. EndTag
           
         | n: ExtTree.ProcType DO
           w. StartTag ("proc_type", FALSE);
           Node (n. procedure);
           Node (n. formalPars);
+          w. EndTag
+          
+        | n: ExtTree.TPSection DO
+          w. StartTag ("tp_section", FALSE);
+          Node (n. identList);
+          Node (n. colon);
+          Node (n. type);
+          w. EndTag
+        
+        | n: ExtTree.TypePars DO
+          w. StartTag ("type_pars", FALSE);
+          Node (n. lParen);
+          Node (n. tpSections);
+          Node (n. rParen);
+          w. EndTag
+          
+        | n: ExtTree.QualType DO
+          w. StartTag ("qual_type", FALSE);
+          Node (n. qualident);
+          Node (n. lParen);
+          Node (n. arguments);
+          Node (n. rParen);
           w. EndTag
           
         | n: ExtTree.ImportDecl DO
@@ -171,6 +195,7 @@ RAISES IO.Error;
         | n: ExtTree.TypeDecl DO
           w. StartTag ("type_decl", FALSE);
           Node (n. identDef);
+          Node (n. typePars);
           Node (n. equal);
           Node (n. type);
           Node (n. semicolon);

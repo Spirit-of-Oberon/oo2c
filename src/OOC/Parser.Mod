@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Parser;
 (*  Parses an Oberon-2 module and creates an abstract syntax tree.
-    Copyright (C) 1999-2002  Michael van Acken
+    Copyright (C) 1999-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -46,7 +46,9 @@ CONST
      (@oproc{AST.Builder.IdentDef}, or @oproc{AST.Builder.ModuleIdent})
      of the preceding declaration for any documentation comment
      encountered in the symbol list.  *)
-  onlyParseImport* = 4;
+  enableTypeParams* = 4;
+  (**If set, the a type declaration may include a list of type parameters.  *)
+  onlyParseImport* = 5;
   (**If set, stop parsing right after the import list.  Otherwise, parse
      the whole module.  *)
   enableAll* = {MIN(SET)..MAX(SET)}-{onlyParseImport};
@@ -914,6 +916,55 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
                               colon, result, raises, raisesList);
     END FormalPars;
   
+  PROCEDURE TypePars(): AST.Node;
+    VAR
+      lParen, rParen, oldLastIdentDef: AST.Node;
+      tpSections: AST.NodeList;
+    
+    PROCEDURE TPSection (): AST.Node;
+      VAR
+        colon, type, ident: AST.Node;
+        tpList: AST.NodeList;
+        dummy: AST.Name;
+      BEGIN
+        (*S: TypePars = ident {"," ident} ":" Qualident.  *)
+        tpList := ast.NewNodeList();
+        LOOP
+          ident := IdentDef(0, FALSE, TRUE, dummy);
+          lastIdentDef := ident;
+          tpList.Append (ident);
+          IF (sym. id = Symbol.comma) THEN
+            tpList.Append(CheckSym(Symbol.comma));
+          ELSE
+            EXIT;
+          END
+        END;
+        colon := CheckSym(Symbol.colon);
+        type := Qualident();
+        (*type := Type(MIN(LONGINT));*)
+        RETURN ast.TPSection(tpList, colon, type);
+      END TPSection;
+    
+    BEGIN  (* pre: (sym.id = Symbol.lss) *)
+      (*S: TypePars = "<" [TPSection {";" TPSection} ] ">".  *)
+      oldLastIdentDef := lastIdentDef;
+      lParen := CheckSym(Symbol.lss);
+      tpSections := ast.NewNodeList();
+      IF (sym.id = Symbol.ident) THEN
+        LOOP
+          tpSections.Append(TPSection());
+          IF (sym.id = Symbol.semicolon) THEN
+            tpSections.Append(CheckSym(Symbol.semicolon));
+          ELSE
+            EXIT;
+          END
+        END
+      END;
+      rParen := CheckSym(Symbol.gtr);
+      lastIdentDef := oldLastIdentDef;
+      RETURN ast.TypePars(lParen, tpSections, rParen);
+    END TypePars;
+  
   PROCEDURE Type (level: LONGINT): AST.Node;
     VAR
       type: AST.Node;
@@ -1021,12 +1072,37 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         formalPars := FormalPars();
         RETURN ast. ProcType (procedure, formalPars)
       END ProcType;
+
+    PROCEDURE QualType(): AST.Node;
+      VAR
+        type, left, right: AST.Node;
+        list: AST.NodeList;
+      BEGIN
+        (*S: QualType = Qualident ["<" [QualType {"," QualType}] ">"] *)
+        type :=  Qualident();
+        IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
+          left := CheckSym(Symbol.lss);
+          list := ast.NewNodeList();
+          IF (sym.id # Symbol.gtr) THEN
+            list.Append(QualType());
+            WHILE (sym.id = Symbol.comma) DO
+              list.Append(CheckSym(Symbol.comma));
+              list.Append(QualType());
+            END
+          END;
+          right := CheckSym(Symbol.gtr);
+          RETURN type;
+          (*RETURN ast.QualType(type, left, list, right);*)
+        ELSE
+          RETURN type;
+        END;
+      END QualType;
     
     BEGIN
-      (*S: Type = Qualident|ArrayType|RecordType|PointerType|ProcType.  *)
+      (*S: Type = QualType|ArrayType|RecordType|PointerType|ProcType.  *)
       CASE sym. id OF
       | Symbol.ident:
-        type :=  Qualident()
+        type :=  QualType();
       | Symbol.array:
         type :=  ArrayType()
       | Symbol.record:
@@ -1079,15 +1155,20 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
 
       PROCEDURE TypeDecl (): AST.Node;
         VAR
-          identDef, equal, type, scolon: AST.Node;
+          identDef, typePars, equal, type, scolon: AST.Node;
           dummy: AST.Name;
         BEGIN  (* pre: (sym. id = Symbol.ident) *)
-          (*S: TypeDecl = IdentDef "=" Type ";".  *)
+          (*S: TypeDecl = IdentDef  [TypePars] "=" Type ";".  *)
           identDef := IdentDef (level, TRUE, FALSE, dummy);
+          IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
+            typePars := TypePars();
+          ELSE
+            typePars := NIL;
+          END;
           equal := CheckSym (Symbol.eql);
           type := Type (level);
           scolon := CheckSym (Symbol.semicolon);
-          RETURN ast. TypeDecl (identDef, equal, type, scolon)
+          RETURN ast. TypeDecl (identDef, typePars, equal, type, scolon)
         END TypeDecl;
 
       PROCEDURE VarDecl (): AST.Node;

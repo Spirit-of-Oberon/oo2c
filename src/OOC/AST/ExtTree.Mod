@@ -168,6 +168,35 @@ TYPE
     formalPars-: AST.Node;
   END;
 
+TYPE
+  TPSection* = POINTER TO TPSectionDesc;
+  TPSectionDesc = RECORD
+    (NodeDesc)
+    var-: AST.Node;
+    identList-: AST.NodeList;
+    colon-: AST.Node;
+    type-: AST.Node;
+  END;
+
+TYPE
+  TypePars* = POINTER TO TypeParsDesc;
+  TypeParsDesc = RECORD
+    (NodeDesc)
+    lParen-: AST.Node;
+    tpSections-: AST.NodeList;
+    rParen-: AST.Node;
+  END;
+
+TYPE
+  QualType* = POINTER TO QualTypeDesc;
+  QualTypeDesc = RECORD
+    (NodeDesc)
+    qualident-: AST.Node;
+    lParen-: AST.Node;
+    arguments-: AST.NodeList;
+    rParen-: AST.Node;
+  END;
+
 
 TYPE
   ImportDecl* = POINTER TO ImportDeclDesc;
@@ -194,6 +223,7 @@ TYPE
   TypeDeclDesc = RECORD
     (NodeDesc)
     identDef-: IdentDef;
+    typePars-: TypePars;
     equal-: AST.Node;
     type-: AST.Node;
     semicolon-: AST.Node;
@@ -569,6 +599,16 @@ PROCEDURE (v: Visitor) VisitFormalPars* (formalPars: FormalPars);
 PROCEDURE (v: Visitor) VisitProcType* (procType: ProcType);
   END VisitProcType;
 
+PROCEDURE (v: Visitor) VisitTPSection* (tpSection: TPSection);
+  END VisitTPSection;
+
+PROCEDURE (v: Visitor) VisitTypePars* (typePars: TypePars);
+  END VisitTypePars;
+
+PROCEDURE (v: Visitor) VisitQualType* (qualType: QualType);
+  END VisitQualType;
+
+
 (* declarations *)
 PROCEDURE (v: Visitor) VisitImportDecl* (importDecl: ImportDecl);
   END VisitImportDecl;
@@ -940,6 +980,63 @@ PROCEDURE (procType: ProcType) Accept* (v: Visitor);
   END Accept;
 
 
+PROCEDURE (b: Builder) TPSection* (identList: AST.NodeList; colon, type: AST.Node): Node;
+  VAR
+    tp: TPSection;
+  BEGIN
+    NEW (tp);
+    tp. identList := identList;
+    tp. colon := colon;
+    tp. type := type;
+    RETURN tp
+  END TPSection;
+
+PROCEDURE (tpSection: TPSection) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTPSection (tpSection)
+  END Accept;
+
+
+PROCEDURE (b: Builder) TypePars* (lParen: AST.Node;
+                                  tpSections: AST.NodeList;
+                                  rParen: AST.Node): Node;
+  VAR
+    tp: TypePars;
+  BEGIN
+    NEW (tp);
+    tp. lParen := lParen;
+    tp. tpSections := tpSections;
+    tp. rParen := rParen;
+    RETURN tp
+  END TypePars;
+  
+PROCEDURE (typePars: TypePars) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTypePars (typePars)
+  END Accept;
+
+
+PROCEDURE (b: Builder) QualType*(qualident: AST.Node;
+                                 lParen: AST.Node;
+                                 arguments: AST.NodeList;
+                                 rParen: AST.Node): Node;
+  VAR
+    qt: QualType;
+  BEGIN
+    NEW (qt);
+    qt.qualident := qualident;
+    qt.lParen := lParen;
+    qt.arguments := arguments;
+    qt.rParen := rParen;
+    RETURN qt;
+  END QualType;
+  
+PROCEDURE (qualType: QualType) Accept* (v: Visitor);
+  BEGIN
+    v. VisitQualType (qualType)
+  END Accept;
+
+
 
 PROCEDURE (b: Builder) ImportDecl* (alias, becomes, module: AST.Node;
                                     moduleName: AST.Name): Node;
@@ -978,12 +1075,18 @@ PROCEDURE (constDecl: ConstDecl) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) TypeDecl* (identDef, equal, type, semicolon: AST.Node): Node;
+PROCEDURE (b: Builder) TypeDecl* (identDef, typePars, equal,
+                                  type, semicolon: AST.Node): Node;
   VAR
     td: TypeDecl;
   BEGIN
     NEW (td);
     td. identDef := identDef(IdentDef);
+    IF (typePars = NIL) THEN
+      td. typePars := NIL;
+    ELSE
+      td. typePars := typePars(TypePars);
+    END;
     td. equal := equal;
     td. type := type;
     td. semicolon := semicolon;

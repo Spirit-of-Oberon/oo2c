@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST [OOC_EXTENSIONS];
 (*  Abstract builder class for parser output.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -477,6 +477,82 @@ PROCEDURE (b: Builder) [ABSTRACT] ProcType* (procedure, formalPars: Node): Node;
    @end table  *)
   END ProcType;
 
+PROCEDURE (b: Builder) [ABSTRACT] TPSection* (identList: NodeList; colon, type: Node): Node;
+(**Section of type parameters.
+
+   @table @oparam
+   @item identList
+   A list of identifiers, separated by commas.
+   
+   @table @samp
+   @item identList MOD 3 == 0
+   A field name, result of @oproc{Builder.Terminal}.
+   @item identList MOD 3 == 1
+   The symbol @samp{,}, result of @oproc{Builder.Terminal}.
+   @end table
+   
+   @item colon
+   The symbol @samp{:}, result of @oproc{Builder.Terminal}.
+   
+   @item type
+   A type name.
+   @end table  *)
+  END TPSection;
+
+PROCEDURE (b: Builder) [ABSTRACT] TypePars* (lParen: Node;
+                                             tpSections: NodeList;
+                                             rParen: Node): Node;
+(**Type parameter definition.
+
+   @table @oparam
+   @item lParen
+   The symbol @samp{<}, result of @oproc{Builder.Terminal}.
+   
+   @item tpSections
+   A list of type parameter sections.  This list may have a length of zero.
+   
+   @table @samp
+   @item tpSections MOD 2 == 0
+   A formal parameter section, result of @oproc{Builder.TPSection}.
+   @item fpSections MOD 2 == 1
+   The symbol @samp{;}, result of @oproc{Builder.Terminal}.
+   @end table
+   
+   @item rParen
+   The symbol @samp{>}, result of @oproc{Builder.Terminal}.
+   @end table  *)
+  END TypePars;
+  
+PROCEDURE (b: Builder) [ABSTRACT] QualType* (qualident: Node;
+                                             lParen: Node;
+                                             arguments: NodeList;
+                                             rParen: Node): Node;
+(**A qualified type reference.
+
+   @table @oparam
+   @item qualident
+   The type name,  @oproc{Builder.Terminal} or @oproc{Builder.Operator}.
+   
+   @item lParen
+   The symbol @samp{<}, result of @oproc{Builder.Terminal}.
+   
+   @item arguments
+   A list of type parameter sections.  This list may have a length of zero.
+   
+   @table @samp
+   @item tpSections MOD 2 == 0
+   A qualified type,  @oproc{Builder.Terminal}, @oproc{Builder.Operator}, or
+   @oproc{Builder.QualType}.
+   @item fpSections MOD 2 == 1
+   The symbol @samp{,}, result of @oproc{Builder.Terminal}.
+   @end table
+   
+   @item rParen
+   The symbol @samp{>}, result of @oproc{Builder.Terminal}.
+   @end table  *)
+  END QualType;
+  
+
 PROCEDURE (b: Builder) [ABSTRACT] ImportDecl* (alias, becomes, module: Node;
                                                moduleName: Name): Node;
 (**An import declaration for a single module.
@@ -520,20 +596,25 @@ PROCEDURE (b: Builder) [ABSTRACT] ConstDecl* (identDef, equal, expr, semicolon: 
    @end table  *)
   END ConstDecl;
 
-PROCEDURE (b: Builder) [ABSTRACT] TypeDecl* (identDef, equal, type, semicolon: Node): Node;
+PROCEDURE (b: Builder) [ABSTRACT] TypeDecl* (identDef, typePars, equal,
+                                             type, semicolon: Node): Node;
 (**Type declaration.
 
    @table @oparam
    @item identDef
-   The identifier, optionally followed by an export mark.  Result 
-   of @oproc{Builder.IdentDef}.
-   
+   The identifier, optionally followed by an export mark.  Result of
+   @oproc{Builder.IdentDef}.
+
+   @item typePars
+   For a parameterized type, this is the list of type parameters (a result of
+   @oproc{Builder.TypePars}).  Otherwise, it is @code{NIL}.
+
    @item equal
    The symbol @samp{=}, result of @oproc{Builder.Terminal}.
-   
+
    @item type
    A type reference or type constructor.
-   
+
    @item semicolon
    The symbol @samp{;}, result of @oproc{Builder.Terminal}.
    @end table  *)
