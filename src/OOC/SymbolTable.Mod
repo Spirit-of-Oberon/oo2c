@@ -2574,6 +2574,11 @@ PROCEDURE (item: TypePars) Namespace* (): Namespace;
     RETURN item. ns
   END Namespace;
 
+PROCEDURE (item: QualType) Namespace* (): Namespace;
+  BEGIN
+    RETURN item.baseType.Namespace();
+  END Namespace;
+
 
 PROCEDURE Prune* (root: Module; keep: Dictionary.Dictionary);
 (**Eliminates all items from the symbol table @oparam{root}, that do not

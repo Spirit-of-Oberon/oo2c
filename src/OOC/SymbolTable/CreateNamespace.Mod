@@ -606,6 +606,7 @@ RAISES IO.Error;
       type: Sym.Type;
       record: Sym.Record;
       i: LONGINT;
+      ns: Sym.Namespace;
     
     PROCEDURE CheckOpenArray (type, srcCodeType: Sym.Type);
       BEGIN
@@ -690,10 +691,15 @@ RAISES IO.Error;
           IF (item.baseType # NIL) THEN
             type := item.baseType;
             IF TR.IsValidRecordBaseType(type) THEN
-              item.ns(Namespace.Extended). 
-                  SetBaseNamespace(type(Sym.Record).ns(Namespace.Namespace));
+              ns := type.Namespace();
+              item.ns(Namespace.Extended).SetBaseNamespace
+                  (ns(Namespace.Namespace));
             ELSE
-              Err (illegalRecordBase, item.srcCodeBaseType(Sym.TypeName))
+              type := item.srcCodeBaseType;
+              IF (type IS Sym.QualType) THEN
+                type := type(Sym.QualType).srcCodeBaseType;
+              END;
+              Err (illegalRecordBase, type(Sym.TypeName))
             END
           END
           

@@ -270,7 +270,11 @@ PROCEDURE IsValidRecordBaseType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
    base type of a record definition.  *)
   BEGIN
-    RETURN (type IS Sym.Record) & type(Sym.Record).isExtensible;
+    WITH type: Sym.QualType DO
+      RETURN IsValidRecordBaseType(type.baseType);
+    ELSE
+      RETURN (type IS Sym.Record) & type(Sym.Record).isExtensible;
+    END;
   END IsValidRecordBaseType;
 
 PROCEDURE IsValidParameterType* (type: Sym.Type): BOOLEAN;

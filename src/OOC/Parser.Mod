@@ -924,7 +924,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         tpList: AST.NodeList;
         dummy: AST.Name;
       BEGIN
-        (*S: TypePars = ident {"," ident} ":" Qualident.  *)
+        (*S: TPSection = ident {"," ident} ":" Qualident.  *)
         tpList := ast.NewNodeList();
         LOOP
           ident := IdentDef(0, FALSE, TRUE, dummy);
@@ -965,6 +965,30 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
   PROCEDURE Type (level: LONGINT): AST.Node;
     VAR
       type: AST.Node;
+    
+    PROCEDURE QualType(): AST.Node;
+      VAR
+        type, left, right: AST.Node;
+        list: AST.NodeList;
+      BEGIN
+        (*S: QualType = Qualident ["<" [QualType {"," QualType}] ">"] *)
+        type :=  Qualident();
+        IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
+          left := CheckSym(Symbol.lss);
+          list := ast.NewNodeList();
+          IF (sym.id # Symbol.gtr) THEN
+            list.Append(QualType());
+            WHILE (sym.id = Symbol.comma) DO
+              list.Append(CheckSym(Symbol.comma));
+              list.Append(QualType());
+            END
+          END;
+          right := CheckSym(Symbol.gtr);
+          RETURN ast.QualType(type, left, list, right);
+        ELSE
+          RETURN type;
+        END;
+      END QualType;
     
     PROCEDURE ArrayType (): AST.Node;
       VAR
@@ -1017,13 +1041,13 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         END FieldList;
       
       BEGIN
-        (*S: RecordType = "RECORD" Flags ["("Qualident")"] 
+        (*S: RecordType = "RECORD" Flags ["("QualType")"] 
           S:              [FieldList] {";" [FieldList]} "END".  *)
         record := CheckSym (Symbol.record);
         flags := Flags (AST.flagsRecordType);
         IF (sym. id = Symbol.lParen) THEN
           lParen := CheckSym (Symbol.lParen);
-          qualident := Qualident();
+          qualident := QualType();
           rParen := CheckSym (Symbol.rParen)
         ELSE
           lParen := NIL;
@@ -1070,30 +1094,6 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         RETURN ast. ProcType (procedure, formalPars)
       END ProcType;
 
-    PROCEDURE QualType(): AST.Node;
-      VAR
-        type, left, right: AST.Node;
-        list: AST.NodeList;
-      BEGIN
-        (*S: QualType = Qualident ["<" [QualType {"," QualType}] ">"] *)
-        type :=  Qualident();
-        IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
-          left := CheckSym(Symbol.lss);
-          list := ast.NewNodeList();
-          IF (sym.id # Symbol.gtr) THEN
-            list.Append(QualType());
-            WHILE (sym.id = Symbol.comma) DO
-              list.Append(CheckSym(Symbol.comma));
-              list.Append(QualType());
-            END
-          END;
-          right := CheckSym(Symbol.gtr);
-          RETURN ast.QualType(type, left, list, right);
-        ELSE
-          RETURN type;
-        END;
-      END QualType;
-    
     BEGIN
       (*S: Type = QualType|ArrayType|RecordType|PointerType|ProcType.  *)
       CASE sym. id OF
@@ -1154,7 +1154,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
           identDef, typePars, equal, type, scolon: AST.Node;
           dummy: AST.Name;
         BEGIN  (* pre: (sym. id = Symbol.ident) *)
-          (*S: TypeDecl = IdentDef  [TypePars] "=" Type ";".  *)
+          (*S: TypeDecl = IdentDef [TypePars] "=" Type ";".  *)
           identDef := IdentDef (level, TRUE, FALSE, dummy);
           IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
             typePars := TypePars();

@@ -151,6 +151,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         IF (t = NIL) THEN
           RETURN -1;
         ELSE
+          t := t.Deparam();
           len := BaseTypes (t(Sym.Record). baseType);
           name := Naming.NameOfTypeDescriptor (t);
           w. WriteChar ("&");

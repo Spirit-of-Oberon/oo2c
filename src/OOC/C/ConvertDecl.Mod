@@ -88,6 +88,7 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
       IF (type = NIL) THEN
         RETURN 0;
       ELSE
+        type := type.Deparam();
         offset := AddFields (struct, type(Sym.Record). baseType);
         ptr := type(Sym.Record). nestedItems;
         WHILE (ptr # NIL) DO
