@@ -640,7 +640,6 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
   VAR
     fpar: ExtTree.FormalPars;
     formalPars: Sym.FormalPars;
-    baseType: Sym.Type;
     i: LONGINT;
     nodePtr: AST.Node;
     type: Sym.Type;
