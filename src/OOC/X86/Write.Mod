@@ -36,7 +36,6 @@ TYPE
 
     strings: ARRAY 3 OF StringToLabel;
     stringList: ARRAY 3 OF ArrayList.ArrayList(STRING);
-    allocatedStack: S.Opnd;
     
     (* current function: *)
     fctBlock: S.FunctionBlock;
@@ -177,7 +176,6 @@ PROCEDURE (w: Writer) INIT*(module: Sym.Module; ch: IO.ByteChannel);
       w.strings[i] := NEW(StringToLabel);
       w.stringList[i] := NEW(ArrayList.ArrayList(STRING), 8);
     END;
-    w.allocatedStack := NIL;
   END INIT;
 
 PROCEDURE (w: Writer) GetBlock(b: S.Block): Block;
@@ -667,7 +665,6 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
             sb.AppendLatin1(nlTab+"pushl %edi");
             sb.AppendLatin1(nlTab+"pushl %esi");
             sb.AppendLatin1(nlTab+"pushl %ebx");
-            w.allocatedStack := instr.opndList.nextOpnd;
           END;
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
             OpcR2("dec");
@@ -709,7 +706,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Opc("call");
           DirectOpnd(instr.opndList);
         | S.leave:
-          Opc("addl"); Opnd(w.allocatedStack); sb.Append(", %esp");
+          (* undo local variables and call arguments: *)
+          sb.AppendLatin1(nlTab+"lea -12(%ebp), %esp");
           sb.AppendLatin1(nlTab+"popl %ebx");
           sb.AppendLatin1(nlTab+"popl %esi");
           sb.AppendLatin1(nlTab+"popl %edi");
