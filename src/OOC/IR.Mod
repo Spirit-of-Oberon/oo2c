@@ -5522,10 +5522,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     END;
   END NewOperator;
 
- PROCEDURE (b: Builder) NewCall* (design: Expression;
-                                  arguments: ExpressionList;
-                                  isFunctionCall: BOOLEAN;
-                                  endOfArgsSym: Symbol): Expression;
+PROCEDURE (b: Builder) NewCall* (design: Expression;
+                                 arguments: ExpressionList;
+                                 isFunctionCall: BOOLEAN;
+                                 endOfArgsSym: Symbol): Expression;
   VAR
     call: Call;
     targetType: Sym.PredefId;
