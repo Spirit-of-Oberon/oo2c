@@ -476,6 +476,7 @@ TYPE
     (DeclarationDesc)
     (**This class represents constant declarations.  *)
     value-: Language.Value;
+    type-: PredefType;
   END;
 
 TYPE
@@ -532,6 +533,11 @@ TYPE
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
   END;
 
+VAR
+  predefIdToType*: POINTER TO ARRAY OF PredefType;
+  (**This array maps ids to instances of @otype{PredefType}.  It is set
+     by @oproc{*OOC:SymbolTable:Predef.CreatePredef} and
+     @oproc{*OOC:SymbolTable:Predef.CreateSYSTEM}.  *)
 
 
 PROCEDURE InitNamespace* (ns: Namespace);
@@ -1004,22 +1010,26 @@ PROCEDURE (import: Import) Load* (r: Object.Reader);
 
 PROCEDURE InitConstDecl* (constDecl: ConstDecl; parent: Item; name: Name;
                           visibleFrom: ModulePos; exportMark: ExportMark;
-                          docString: Doc.Document; value: Language.Value);
+                          docString: Doc.Document;
+                          value: Language.Value; type: PredefType);
   BEGIN
     InitDeclaration (constDecl, parent, name, visibleFrom, exportMark,
                      docString);
-    constDecl. value := value
+    constDecl. value := value;
+    constDecl. type := type;
   END InitConstDecl;
 
 PROCEDURE (constDecl: ConstDecl) Store* (w: Object.Writer);
   BEGIN
     constDecl. Store^ (w);
     w. WriteObject (constDecl. value);
+    w. WriteNum (constDecl. type. id);
   END Store;
 
 PROCEDURE (constDecl: ConstDecl) Load* (r: Object.Reader);
   VAR
     obj: Object.Object;
+    id: LONGINT;
   BEGIN
     constDecl. Load^ (r);
     r. ReadObject (obj);
@@ -1027,7 +1037,10 @@ PROCEDURE (constDecl: ConstDecl) Load* (r: Object.Reader);
       constDecl. value := NIL
     ELSE
       constDecl. value := obj(Language.Value)
-    END
+    END;
+    r. ReadNum (id);
+    constDecl. type := predefIdToType[id];
+    ASSERT (constDecl. type # NIL)
   END Load;
 
 
@@ -1673,4 +1686,6 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
     END
   END GetEmbeddedNamespace;
 
+BEGIN
+  predefIdToType := NIL;
 END OOC:SymbolTable:Item.

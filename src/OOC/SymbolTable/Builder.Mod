@@ -75,10 +75,11 @@ PROCEDURE (b: Builder) NewImport* (parent: Item.Item; name: Item.Name;
   END NewImport;
 
 PROCEDURE (b: Builder) NewConstDecl* (parent: Item.Item; name: Item.Name;
-                                  visibleFrom: Item.ModulePos;
-                                  exportMark: Item.ExportMark;
-                                  docString: Doc.Document;
-                                  value: Language.Value): Item.ConstDecl;
+                                      visibleFrom: Item.ModulePos;
+                                      exportMark: Item.ExportMark;
+                                      docString: Doc.Document;
+                                      value: Language.Value;
+                                      type: Item.PredefType): Item.ConstDecl;
 (**Note: If the value and type of the constant are not known yet, 
    then @oparam{value} is @code{NIL}.  *)
   VAR
@@ -86,7 +87,7 @@ PROCEDURE (b: Builder) NewConstDecl* (parent: Item.Item; name: Item.Name;
   BEGIN
     NEW (const);
     Item.InitConstDecl (const, parent, name, visibleFrom, exportMark,
-                        docString, value);
+                        docString, value, type);
     RETURN const
   END NewConstDecl;
 
