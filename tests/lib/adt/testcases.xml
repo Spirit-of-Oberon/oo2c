@@ -29,11 +29,9 @@
   </test>
 
 
-  <!--
   <test id="libadt_ObjectStorage" type="run" file="LibAdtObjectStorage.Mod">
-    Imports <code>ADT:ObjectStorage</code>.
+    Imports <code>ADT:Object:Storage</code>.
   </test>
-  -->
   
   
   <test id="libadt_StringSearch1" type="run" file="LibStringSearch1.Mod">
