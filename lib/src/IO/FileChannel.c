@@ -10,6 +10,7 @@
 #include <string.h>
 
 #ifdef __MINGW32__
+#include <windows.h>
 typedef int ssize_t;
 #endif
 
@@ -222,12 +223,13 @@ void IO_FileChannel__ChannelDesc_CloseAndRegister(IO_FileChannel__Channel ch) {
       char* fname = (char*)OOC_METHOD(ch->origName,Object__String8Desc_CharsLatin1)(ch->origName);
       char* tname = (char*)OOC_METHOD(ch->tmpName,Object__String8Desc_CharsLatin1)(ch->tmpName);
 #ifdef __MINGW32__
-/* Windows doesn't allow files to be renamed over existing files. Therefore,
- * we first remove the destination file. */
-
-        res = unlink(fname);
-#endif
+        if (MoveFileEx(tname, fname, MOVEFILE_REPLACE_EXISTING) == 0)
+          res = GetLastError();
+        else
+          res = 0;
+#else
       res = rename(tname, fname);
+#endif
       remove_tmp_file(ch);
     }
   }
