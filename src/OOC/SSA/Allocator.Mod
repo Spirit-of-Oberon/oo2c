@@ -206,14 +206,15 @@ PROCEDURE RegisterType* (ctype: DeclWriter.BasicTypeId): DeclWriter.BasicTypeId;
    entry must appear in the output of @oproc{GetRegisterFiles} below.  *)
   BEGIN
     CASE ctype OF
-    | DeclWriter.ptr:
+    | DeclWriter.ptr,
+      DeclWriter.int8 .. DeclWriter.int32,
+      DeclWriter.uint8 .. DeclWriter.uint32:
       CASE Predef.address OF
       | Predef.hugeint: RETURN DeclWriter.int64;
       | Predef.longint: RETURN DeclWriter.int32;
       END;
-    | DeclWriter.int8 .. DeclWriter.int32,
-      DeclWriter.uint8 .. DeclWriter.uint32:
-      RETURN DeclWriter.int32
+    | DeclWriter.int64, DeclWriter.uint64:
+      RETURN DeclWriter.int64;
     | DeclWriter.real32:
       RETURN DeclWriter.real32
     | DeclWriter.real64:
@@ -234,6 +235,7 @@ PROCEDURE GetRegisterFiles (): RegisterFiles;
       rfs[i] := NIL;
     END;
     rfs[DeclWriter.int32] := NewRegisterFile (DeclWriter.int32);
+    rfs[DeclWriter.int64] := NewRegisterFile (DeclWriter.int64);
     rfs[DeclWriter.real32] := NewRegisterFile (DeclWriter.real32);
     rfs[DeclWriter.real64] := NewRegisterFile (DeclWriter.real64);
     RETURN rfs
@@ -537,13 +539,16 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
       END;
       rf. maxColor := maxColor;
 
-      (* determine variable name for every color id *)
+      (* determine variable name for every color id; needs to be coordinated
+         with OOC:C:Naming.NameOfDeclaration.IsReservedName *)
       NEW (names, maxColor+1);
       FOR i := 0 TO maxColor DO
         IntStr.IntToStr (i, str);
         CASE rf. registerType OF
         | DeclWriter.int32:
           Strings.Insert ("i", 0, str);
+        | DeclWriter.int64:
+          Strings.Insert ("w", 0, str);
         | DeclWriter.real32:
           Strings.Insert ("f", 0, str);
         | DeclWriter.real64:
