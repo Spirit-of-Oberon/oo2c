@@ -21,7 +21,7 @@ PROCEDURE SumVar (VAR a: ARRAY OF I): INTEGER;
     RETURN sum
   END SumVar;
 
-PROCEDURE SumValue (VAR a: ARRAY OF I): INTEGER;
+PROCEDURE SumValue (a: ARRAY OF I): INTEGER;
   VAR
     i, sum: INTEGER;
   BEGIN
