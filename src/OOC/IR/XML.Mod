@@ -168,6 +168,13 @@ PROCEDURE (v: Visitor) VisitNegate* (neg: Operator.Negate);
     v. w. EndTag;  (* negate *)
   END VisitNegate;
 
+PROCEDURE (v: Visitor) VisitCap* (neg: Operator.Cap);
+  BEGIN
+    v. w. StartTag ("cap", FALSE);
+    neg. operand. Accept (v);
+    v. w. EndTag;  (* cap *)
+  END VisitCap;
+
 PROCEDURE VisitDyadicOp (v: Visitor; op: IR.Operator; variant : SHORTINT; left, right : IR.Expression; name: ARRAY OF CHAR);
   BEGIN
     v. w. StartTagLatin1 (name, FALSE);

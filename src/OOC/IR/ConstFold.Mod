@@ -171,6 +171,21 @@ BEGIN
   END;
 END VisitNegate;
 
+PROCEDURE (c: ConstFold) VisitCap* (op: Operator.Cap);
+VAR 
+  value : Language.Value;
+  str: ARRAY 2 OF CHAR;
+BEGIN
+  IF c.ValidEval(op.operand, value) THEN
+    str[0] := CAP (value(String8.Value).value.array[0]);
+    str[1] := 0X;
+    c.result := c.builder.NewConst(op.sym, Predef.GetType(Predef.char), 
+                                   String8.NewString (str));
+  ELSE
+    c.result := NIL;
+  END;
+END VisitCap;
+
 PROCEDURE (c: ConstFold) VisitBinaryArith* (op: Operator.BinaryArith);
 VAR 
   l, r, result : Language.Value;

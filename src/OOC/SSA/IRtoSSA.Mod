@@ -148,6 +148,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr
             
+      | expr: Operator.Cap DO
+        instr := pb. AddInstr (Opcode.cap,
+                               Opcode.TypeToSubclass (expr. operand. type));
+        instr. AddOpnd (Expression (expr. operand), Opnd.arg);
+        RETURN instr
+            
       | expr: Operator.BinaryArith DO
         CASE expr.variant OF
         | Operator.arithAdd:

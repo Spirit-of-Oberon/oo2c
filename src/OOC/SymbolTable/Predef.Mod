@@ -60,6 +60,7 @@ CONST
   size* = 2;                             (* SIZE *)
   inc* = 3;                              (* INC *)
   dec* = 4;                              (* DEC *)
+  cap* = 5;                              (* CAP *)
   
   
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
@@ -145,6 +146,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (size, "SIZE");
     PredefProc (inc, "INC");
     PredefProc (dec, "DEC");
+    PredefProc (cap, "CAP");
     
     stb. Finalize (module);
     RETURN module

@@ -192,11 +192,13 @@ CONST
   leq* = 21;
   gtr* = 22;
   geq* = 23;
+
+  cap* = 24;
   
-  assert* = 24;
-  call* = 25;
+  assert* = 25;
+  call* = 26;
   
-  getLength* = 26;
+  getLength* = 27;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -218,7 +220,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 27;
+  copyParameter* = 28;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -340,6 +342,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | leq: cstr := "leq";
     | gtr: cstr := "gtr";
     | geq: cstr := "geq";
+
+    | cap: cstr := "cap";
       
     | assert: cstr := "assert";
     | call: cstr := "call";

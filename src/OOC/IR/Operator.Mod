@@ -137,6 +137,13 @@ TYPE
   END;
 
 TYPE
+  Cap* = POINTER TO CapDesc;
+  CapDesc = RECORD
+    (IR.OperatorDesc)
+    operand- : IR.Expression;
+  END;
+
+TYPE
   AssignOp* = POINTER TO AssignOpDesc;
   AssignOpDesc = RECORD
     (IR.AssignmentDesc)
@@ -475,6 +482,31 @@ PROCEDURE (neg: Negate) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
+PROCEDURE InitCap (cap: Cap; sym: IR.Symbol; expr: IR.Expression);
+  BEGIN
+    IR.InitOperator (cap, sym, expr. type);
+    cap. operand := expr;
+  END InitCap;
+
+PROCEDURE (b: Builder) NewCap (sym: IR.Symbol; expr: IR.Expression): IR.Expression;
+  VAR
+    cap: Cap;
+  BEGIN
+    NEW (cap);
+    InitCap (cap, sym, expr);
+    RETURN cap;
+  END NewCap;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitCap* (cap: Cap);
+  END VisitCap;
+
+PROCEDURE (cap: Cap) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitCap (cap)
+  END Accept;
+
+(* -------- *)
+
 PROCEDURE (b: Builder) NewSize* (sym: IR.Symbol; type: IR.Expression): IR.Expression;
   BEGIN
     ASSERT (type IS IR.TypeRef);
@@ -629,6 +661,9 @@ PROCEDURE (b: Builder) NewCall* (design: IR.Expression; arguments: IR.Expression
                                b. NewBinaryArith (design. sym, arithSub,
                                                   arguments[0],
                                                   GetOne (arguments[0].type)));
+      | Predef.cap:
+        ASSERT (LEN (arguments^) = 1);
+        RETURN b. NewCap (design. sym, arguments[0]);
         
       ELSE
         RETURN b. NewCall^ (design, arguments);

@@ -388,6 +388,13 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteChar (";");
     END WriteDyadicOp;
   
+  PROCEDURE WriteMonadicOp (instr: SSA.Instr; op, suffix: ARRAY OF CHAR);
+    BEGIN
+      w. WriteString (op);
+      w. Ref (instr. opndList);
+      w. WriteString (suffix);
+    END WriteMonadicOp;
+  
   PROCEDURE GetLength (instr: SSA.Instr);
     VAR
       varDecl: SSA.Result;
@@ -642,9 +649,10 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteDyadicOp (instr, "-");
         
       | Opcode.negate:
-        w. WriteChar ("-");
-        w. Ref (instr. opndList);
-        w. WriteChar (";");
+        WriteMonadicOp (instr, "-", ";");
+        
+      | Opcode.cap:
+        WriteMonadicOp (instr, "_cap(", ");");
         
       | Opcode.eql:
         WriteDyadicOp (instr, "==");
