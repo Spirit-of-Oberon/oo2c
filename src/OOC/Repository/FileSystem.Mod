@@ -31,7 +31,7 @@ TYPE
   Repository* = POINTER TO RepositoryDesc;
   RepositoryDesc = RECORD
     (Rep.RepositoryDesc)
-    relativeBaseURI: URI.HierarchicalURI;
+    relativeBaseURI-: URI.HierarchicalURI;
   END;
 
 TYPE
@@ -194,6 +194,33 @@ PROCEDURE (rep: Repository) DumpContent* (w: TextRider.Writer);
     w. WriteLn
   END DumpContent;
 
+PROCEDURE (rep: Repository) GetLocalPath*(m: Rep.Module; fileId: Rep.FileId;
+                                          VAR path: ARRAY OF CHAR);
+  VAR
+    subdir, suffix, str: Rep.URIBuffer;
+  BEGIN
+    rep. GetDefaultSubdir (fileId, subdir);
+    rep. GetDefaultSuffix (fileId, suffix);
+    
+    COPY (subdir, path);
+    IF (path # "") & (path[Strings.Length (path)-1] # "/") THEN
+      Strings.Append ("/", path)
+    END;
+    COPY (m. name^, str);
+    ModuleToFileName (str);
+    
+    IF (fileId = Rep.modLibrary) THEN
+      ASSERT(m.ifQuality = Rep.completeInterface);
+      Strings.Append("lib", path);
+      COPY(m.ifData.libraryName.array^, str);
+    ELSE
+      ModuleToFileName (str);
+    END;
+    
+    Strings.Append (str, path);
+    Strings.Append (suffix, path);
+  END GetLocalPath;
+
 PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId;
                                allowRelative: BOOLEAN): URI.HierarchicalURI;
   VAR
@@ -207,26 +234,7 @@ PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId;
       IF (fileId = Rep.modModuleSource) & (m. srcFileOverride # NIL) THEN
         RETURN m. srcFileOverride
       ELSE
-        m. origin. GetDefaultSubdir (fileId, subdir);
-        m. origin. GetDefaultSuffix (fileId, suffix);
-        
-        COPY (subdir, path);
-        IF (path # "") & (path[Strings.Length (path)-1] # "/") THEN
-          Strings.Append ("/", path)
-        END;
-        COPY (m. name^, str);
-        ModuleToFileName (str);
-
-        IF (fileId = Rep.modLibrary) THEN
-          ASSERT(m.ifQuality = Rep.completeInterface);
-          Strings.Append("lib", path);
-          COPY(m.ifData.libraryName.array^, str);
-        ELSE
-          ModuleToFileName (str);
-        END;
-        
-        Strings.Append (str, path);
-        Strings.Append (suffix, path);
+        m.origin.GetLocalPath(m, fileId, path);
         IF allowRelative THEN
           uri := URIParser.NewURI (path, m. origin(Repository). relativeBaseURI, res);
         ELSE

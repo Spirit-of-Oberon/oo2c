@@ -36,17 +36,17 @@ TYPE
   END;
 
 TYPE
-  FileData = POINTER TO FileDataDesc;
+  FileData* = POINTER TO FileDataDesc;
   FileDataDesc = RECORD
-    nextFileData: FileData;
+    nextFileData-: FileData;
   END;
   
 TYPE
   File* = POINTER TO FileDesc;
   FileDesc = RECORD
     (FileDataDesc)
-    name: String.String;
-    destName: String.String;
+    name-: String.String;
+    destName-: String.String;
   END;
 
 TYPE
@@ -55,7 +55,7 @@ TYPE
     (FileDataDesc)
     sourceDir: String.String;
     destDir: String.String;
-    head, tail: FileData;
+    head-, tail: FileData;
   END;
   
 TYPE
@@ -66,6 +66,8 @@ TYPE
     library-: ArrayList.ArrayList;
     executable-: ArrayList.ArrayList;
     fileSet-: FileSet;
+    (**This is a reference to a file set with a source and destination
+       path of @samp{.}.  *)
   END;
   
 CONST
@@ -179,7 +181,7 @@ PROCEDURE NewFileSet(): FileSet;
     RETURN fileSet;
   END NewFileSet;
 
-PROCEDURE (fileSet: FileSet) Append(fdata: FileData);
+PROCEDURE (fileSet: FileSet) Append*(fdata: FileData);
   BEGIN
     IF (fileSet.tail = NIL) THEN
       fileSet.head := fdata;
@@ -189,14 +191,14 @@ PROCEDURE (fileSet: FileSet) Append(fdata: FileData);
     fileSet.tail := fdata;
   END Append;
 
-PROCEDURE NewFile(): File;
+PROCEDURE NewFile*(name, destName: String.String): File;
   VAR
     file: File;
   BEGIN
     NEW(file);
     InitFileData(file);
-    file.name := NIL;
-    file.destName := NIL;
+    file.name := name;
+    file.destName := destName;
     RETURN file;
   END NewFile;
 
@@ -209,11 +211,12 @@ PROCEDURE NewPackage(): Package;
     p.version := NIL;
     p.library := ArrayList.New(4);
     p.executable := ArrayList.New(4);
+    p.fileSet := NIL;
     RETURN p;
   END NewPackage;
 
 
-PROCEDURE Normalize(fileSet: FileSet): FileSet;
+PROCEDURE Normalize*(fileSet: FileSet): FileSet;
 (**Converts a hierarchy of file sets and files into a flat list of files.
 
    @itemize @bullet
@@ -244,7 +247,6 @@ PROCEDURE Normalize(fileSet: FileSet): FileSet;
    @end itemize  *)
   VAR
     norm: FileSet;
-    ptr: FileData;
     buffer: POINTER TO ARRAY OF CHAR;
     
   PROCEDURE NormalizeFileSet(fileSet: FileSet;
@@ -255,6 +257,7 @@ PROCEDURE Normalize(fileSet: FileSet): FileSet;
     PROCEDURE NormalizeFile(file: File);
       VAR
         nFile: File;
+        name, destName: String.String;
 
       PROCEDURE NormalizePath(path: String.String): String.String;
         VAR
@@ -315,13 +318,13 @@ PROCEDURE Normalize(fileSet: FileSet): FileSet;
         END NormalizePath;
       
       BEGIN
-        nFile := NewFile();
-        nFile.name := NormalizePath(sourcePrefix.Concat(file.name));
+        name := NormalizePath(sourcePrefix.Concat(file.name));
         IF (file.destName # NIL) THEN
-          nFile.destName := NormalizePath(destPrefix.Concat(file.destName));
+          destName := NormalizePath(destPrefix.Concat(file.destName));
         ELSE
-          nFile.destName := NormalizePath(destPrefix.Concat(file.name));
+          destName := NormalizePath(destPrefix.Concat(file.name));
         END;
+        nFile := NewFile(name, destName);
         norm.Append(nFile);
       END NormalizeFile;
     
@@ -388,7 +391,7 @@ PROCEDURE Normalize(fileSet: FileSet): FileSet;
         b := MergeSort(b);
 
         (* merge `a' and `b' into a sorted list *)
-        list := NewFile(); tail := list;
+        list := NewFile(NIL, NIL); tail := list;
         WHILE (a # NIL) OR (b # NIL) DO
           IF (a # NIL) & ((b = NIL) OR Less(a(File), b(File))) THEN
             ptr := a; a := a.nextFileData;
@@ -612,22 +615,23 @@ PROCEDURE ProcessPackage (root: Parser.Element;
     (* pre: element.name="file" *)
       VAR
         i: LONGINT;
-        file: File;
         node: Parser.Node;
+        name, destName: String.String;
       BEGIN
-        file := NewFile();
+        name := NIL;
+        destName := NIL;
         FOR i := 0 TO elem.attrList.len-1 DO
           att := elem.attrList.attr[i];
           IF (att.localName^ = "name") THEN
-            file.name := StringAttr(att);
+            name := StringAttr(att);
           ELSIF (att.localName^ = "dest-name") THEN
-            file.destName := StringAttr(att);
+            destName := StringAttr(att);
           ELSE
             Err(invalidAttribute, elem);
             lastError.SetLStringAttrib("name", Msg.GetLStringPtr(att.localName^));
           END
         END;
-        IF (file.name = NIL) THEN
+        IF (name = NIL) THEN
           Err(requireNameAttribute, elem);
         END;
         
@@ -637,7 +641,7 @@ PROCEDURE ProcessPackage (root: Parser.Element;
           Err(junkAtEndOfElement, node);
         END;
         
-        RETURN file;
+        RETURN NewFile(name, destName);
       END ParseFile;
     
     BEGIN
@@ -724,9 +728,12 @@ PROCEDURE ProcessPackage (root: Parser.Element;
       node := node.nextNode;
       SkipWS(node);
     END;
-    
+
+    pkg.fileSet := NewFileSet();
+    pkg.fileSet.sourceDir := String.New(".");
+    pkg.fileSet.destDir := String.New(".");
     WHILE AtElement(node, "file-set") DO
-      pkg.fileSet := Normalize(ParseFileSet(node(Parser.Element)));
+      pkg.fileSet.Append(ParseFileSet(node(Parser.Element)));
       node := node.nextNode;
       SkipWS(node);
     END;

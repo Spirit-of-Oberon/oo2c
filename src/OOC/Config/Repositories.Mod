@@ -293,9 +293,8 @@ PROCEDURE (s: Section) GetModule* (moduleRef: ARRAY OF CHAR): Repository.Module;
     END
   END GetModule;
 
-PROCEDURE (s: Section) GetPackage* (pkgName: ARRAY OF CHAR): Package.Package;
-  VAR
-    rep: Repository.Repository;
+PROCEDURE (s: Section) GetPackage* (pkgName: ARRAY OF CHAR;
+                                    VAR rep: Repository.Repository): Package.Package;
   BEGIN
     (* module not found in cache: traverse repositories *)
     rep := s. topLevelRep;

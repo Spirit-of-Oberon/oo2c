@@ -44,7 +44,7 @@ TYPE
        is taken from this field.  *)
 
     localRepository: Rep.Repository;
-    imports: ModuleList;
+    imports-: ModuleList;
     mInfo: Dictionary.Dictionary;
     
     extensionDict: Dictionary.Dictionary;
@@ -1084,7 +1084,9 @@ PROCEDURE (r: Rules) UpdateLibrary(module: Rep.Module): BOOLEAN;
 (**Update or create a library that is described by the import list of
    @oparam{module}.  Library name and version number are taken from the
    module's source code.  Result is @code{TRUE} on success, and @code{FALSE} if
-   the current library is not up to date, and could not be rebuild.
+   the current library is not up to date, and could not be rebuild.  As a
+   side-effect, @ofield{r.imports} is set to the list of modules that are
+   part of the library.
 
    @precond
    @ofield{r.libraryName} and @ofield{r.libraryVersion} are set.
@@ -1102,6 +1104,8 @@ PROCEDURE (r: Rules) UpdateLibrary(module: Rep.Module): BOOLEAN;
     success := r.Update(module, Rep.modSymbolFile);
     IF success THEN
       closure := ModuleClosure(module, r.libraryName);
+      r.imports := closure;
+      
       (* Create library files (static and shared).  *)
       isUpToDate := Exists(module, Rep.modLibrary);
       FOR i := 0 TO LEN(closure^)-1 DO

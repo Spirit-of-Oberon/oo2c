@@ -348,6 +348,11 @@ PROCEDURE (m: Module) GetImportedModule*(name: ARRAY OF CHAR): Module;
     END;
   END GetImportedModule;
 
+PROCEDURE (rep: Repository) [ABSTRACT] GetLocalPath*(m: Module; fileId: FileId;
+                                                     VAR path: ARRAY OF CHAR);
+(**Return the path to the indicated module file, relative to the
+   repositories base URI.  *)
+  END GetLocalPath;
 
 PROCEDURE (m: Module) [ABSTRACT] GetInputBuffer* (VAR msg: Msg.Msg): InputBuffer.Buffer;
 (* result is NIL in case of error, with msg holding the error message *)
