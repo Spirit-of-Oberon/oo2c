@@ -3807,14 +3807,16 @@ PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
                                        variable, value: Expression): Statement;
   VAR
     assignment: Assignment;
+    valueType: Sym.Type;
   BEGIN
     b. AssertVar (variable);
     MakeAssignmentCompatible (b, sym, value, variable. type);
-    IF TR.IsStringConst (value. type) THEN
+    valueType := value.type.Deparam();
+    IF TR.IsStringConst (valueType) THEN
       (* assigning a string constant: create CopyString opcode *)
       RETURN b. NewCopyString (sym, value, variable,
                                b. Fold (b. NewLen (sym, variable, 0)));
-    ELSIF (value. type IS Sym.Array) OR (value. type IS Sym.Record) THEN
+    ELSIF (valueType IS Sym.Array) OR (valueType IS Sym.Record) THEN
       (* assigning a structured value: create Copy opcode *)
       RETURN b. NewCopy (sym, value, variable);
     ELSE

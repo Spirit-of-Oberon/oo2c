@@ -20,7 +20,7 @@
   select ="&SetupTestCasesWithOut; tbproc1 tbproc13">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5 generic1 generic41 generic45">-->
+  select ="&SetupTestCasesWithOut; generic72">-->
 
   &TestSetupWithOut;
     
@@ -1621,6 +1621,11 @@
     <test id="generic71" type="reject" file="Generic71.Mod">
       Regression test for <code>oo2c</code>: Don't crash when
       stumbling over a type name for a botched parametric type.
+    </test>
+    <test id="generic72" type="run" file="Generic72.Mod">
+      Regression test: Handle assignment of non-scalar type correctly,
+      even if the right hand side of the assignment is a parametric
+      record.
     </test>
   </testcases>
 
