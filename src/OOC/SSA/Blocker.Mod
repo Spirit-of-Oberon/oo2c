@@ -554,8 +554,6 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
     END WriteResultId;
 
   PROCEDURE WriteOpnd (opnd: SSA.Opnd);
-    VAR
-      str: ARRAY 64 OF CHAR;
     BEGIN
       CASE opnd. class OF
       | Opnd.antiDependency:

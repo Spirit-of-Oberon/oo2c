@@ -21,31 +21,12 @@ MODULE OOC:Config:Assembler;
 *)
 
 IMPORT
-  Strings, ADT:String, URI, URI:Scheme:File,
-  Config:Section:Options, OOC:Config, OOC:Repository;
+  Strings, URI, URI:Scheme:File;
 
 
 PROCEDURE AssembleFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 2*1024 OF CHAR;
-    include: String.StringArrayPtr;
-    i: LONGINT;
-    f: File.URI;
-    
-  PROCEDURE GetURIofRT(): File.URI;
-    VAR
-      m: Repository.Module;
-      uri: URI.HierarchicalURI;
-      f: File.URI;
-    BEGIN
-      m := Config.repositories. GetModule (Config.runtimeModule);
-      ASSERT (m # NIL);  (* ... if this fails, then we have no __oo2c.h *)
-      uri := m. GetURI (Repository.modModuleSource, TRUE);
-      f := uri(File.URI);
-      f. StripSegments (1);
-      RETURN f;
-    END GetURIofRT;
-  
   BEGIN
     COPY ("as ", cmd);
     

@@ -269,8 +269,6 @@ PROCEDURE (m: Module) GetInputBuffer* (VAR res: Msg.Msg): InputBuffer.Buffer;
     errList: Error.List;
     str: Rep.URIBuffer;
     modURI: URI.URI;
-    i: LONGINT;
-    scheme: ARRAY 6 OF CHAR;
   BEGIN
     (* create new error list for the source file *)
     modURI := m. GetURI (Rep.modModuleSource, TRUE);

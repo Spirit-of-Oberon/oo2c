@@ -21,7 +21,7 @@ MODULE OOC:Make:WriteMainFileC;
 *)
 
 IMPORT
-  Channel, Files, TextRider, ADT:Dictionary, OOC:Error, OOC:Repository;
+  Channel, Files, TextRider, OOC:Error, OOC:Repository;
 
 CONST
   sizeVParStack* = 256*1024;

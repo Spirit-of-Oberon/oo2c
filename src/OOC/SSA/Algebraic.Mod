@@ -23,7 +23,6 @@ MODULE OOC:SSA:Algebraic;
 (* FIXME... add more transformations *)
 
 IMPORT
-  Log,
   Language, Language:Integer, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
 
 TYPE

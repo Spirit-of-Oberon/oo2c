@@ -22,12 +22,8 @@ MODULE OOC:IA32:RuntimeData;
 
 
 IMPORT
-  TextRider, ADT:String, OOC:Config, Sym := OOC:SymbolTable,
-  OOC:SymbolTable:Namespace, OOC:C:Naming, OOC:IA32:Writer;
+  OOC:Config, Sym := OOC:SymbolTable, OOC:IA32:Writer;
 
-CONST
-  structTypeDesc = Config.runtimeModule+"__StructDesc";
-  
 PROCEDURE Write* (w: Writer.Writer; symTab: Sym.Module);
   PROCEDURE ModuleDescr (module: Sym.Module);
     BEGIN

@@ -21,7 +21,6 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Log,
   IntStr, Out, StdChannels, Strings, StringSearch,
   ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
   LString := Language:String, Language:String8, Sym := OOC:SymbolTable,

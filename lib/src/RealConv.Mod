@@ -19,7 +19,7 @@ MODULE RealConv;
 *)
 
 IMPORT
-  SYSTEM, libc, C, CharClass, ConvTypes, Real0;
+  SYSTEM, libc, CharClass, ConvTypes, Real0;
 
 (**
 

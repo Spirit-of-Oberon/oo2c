@@ -2,7 +2,7 @@ MODULE OOC:C:Naming;
 
 IMPORT
   IntStr, Strings, ADT:Object, ADT:String, ADT:Dictionary,
-  OOC:Config, OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+  OOC:Config, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
 TYPE
   Buffer = ARRAY 2*1024 OF CHAR;

@@ -1,7 +1,7 @@
 MODULE Language:String [OOC_EXTENSIONS];
 
 IMPORT 
-  ADT:Object, ADT:String, ADT:StringBuffer, L := Language;
+  L := Language;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -9,7 +9,7 @@ TYPE
     (L.ValueDesc)
   END;
 
-PROCEDURE Init (v: Value; type: L.Type);
+PROCEDURE Init* (v: Value; type: L.Type);
   BEGIN
     L.InitValue (v, type);
   END Init;

@@ -2,8 +2,7 @@ MODULE OOC:Doc:ResolveRef;
 
 IMPORT
   Msg, Strings, ADT:Object, ADT:Dictionary,
-  OOC:Error, OOC:Doc, Sym := OOC:SymbolTable, OOC:SymbolTable:Exports,
-  OOC:Config:Repositories;
+  OOC:Error, OOC:Doc, Sym := OOC:SymbolTable, OOC:SymbolTable:Exports;
   
 CONST
   refEmpty = 0;
@@ -469,10 +468,7 @@ PROCEDURE Resolve* (symTab: Sym.Module;
         END;
         
         IF (item. docString # NIL) THEN
-          ResolveDoc (item(Sym.Declaration). docString, 
-                      item(Sym.Declaration),
-                      identificationContext,
-                      nsRecord)
+          ResolveDoc (item. docString, item, identificationContext, nsRecord);
         END
         
       | item: Sym.Record DO

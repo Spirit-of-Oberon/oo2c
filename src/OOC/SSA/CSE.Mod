@@ -21,8 +21,7 @@ MODULE OOC:SSA:CSE;
 *)
 
 IMPORT
-  OOC:SSA:Blocker, Log, StdChannels,
-  OOC:SSA, OOC:SSA:Opcode;
+  OOC:SSA:Blocker, OOC:SSA, OOC:SSA:Opcode;
   
 TYPE
   ResultList = POINTER TO ARRAY OF SSA.Result;

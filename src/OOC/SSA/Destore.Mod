@@ -21,7 +21,6 @@ MODULE OOC:SSA:Destore;
 *)
 
 IMPORT
-  Log,
   ADT:Dictionary, Sym := OOC:SymbolTable, OOC:SSA, OOC:SSA:Opcode,
   OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Aliasing;
 
