@@ -69,3 +69,38 @@ PPC G4 / Dual 800Mhz (sg)
   FFT2C               5418.9
   -------------------------- -------
 
+
+For completeness, the results for i386 with the current code base.
+The ratio between the C version and the O2 version seem to improve a
+bit for the FFT tests on the Athlon, but there is virtually no change
+in all the other test cases.
+
+Pentium-II / 400Mhz  (mva)
+gcc 2.95.2, -O2
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                362.4   99.5%
+  QSORTC               364.1
+  BSORT                131.5   83.6%
+  BSORTC               157.4
+  FFT                 4064.2   94.1%
+  FFTC                4317.8
+  FFT2                3621.6   92.3%
+  FFT2C               3921.7
+  -------------------------- -------
+
+Athlon XP / 1544Mhz (mva)
+gcc 2.95.2, -O2
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT               1316.7   99.3%
+  QSORTC              1325.7
+  BSORT                563.7   80.4%
+  BSORTC               701.2
+  FFT                16654.6   96.7%
+  FFTC               17223.7
+  FFT2               15453.9   95.7%
+  FFT2C              16155.8
+  -------------------------- -------
