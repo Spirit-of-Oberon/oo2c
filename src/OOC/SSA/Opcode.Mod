@@ -704,8 +704,9 @@ CONST
   (**Produces a pointer to the current exception.  Result is @code{NIL} if
      there is no active exception.  Takes @var{store} as argument.  *)
   clearException* = 76;
-  (**Clears the variable with the current exception.  Takes @var{store} as
-     argument and produces a new @var{store}.  *)
+  (**Clears the variable with the current exception.  Takes 
+     its @oconst{pushExceptionContext} instruction and @var{store} as
+     arguments and produces a new @var{store}.  *)
   pushExceptionContext* = 77;
   (**Puts the current exception handler context on the top of the stack.
      This instruction takes a single argument, the @var{store} result of its

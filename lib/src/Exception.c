@@ -85,8 +85,13 @@ void Exception__Clear() {
   current = NULL;
 }
 
+void Exception__ClearFixed(struct Exception__Context *context) {
+  current = context->savedException;
+}
+
 void Exception__PushContext(struct Exception__Context *context,
 			    OOC_PTR jmpbuf) {
+  context->savedException = current;
   context->next = contextStack;
   context->jmpbuf = jmpbuf;
   contextStack = context;

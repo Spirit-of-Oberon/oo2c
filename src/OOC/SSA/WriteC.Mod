@@ -1517,7 +1517,10 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
           w.WriteString(");");
         | Opcode.clearException:
           w.Newline;
-          w.WriteString("Exception__Clear();");
+          w.WriteString("Exception__ClearFixed(&_context");
+          obj := w.jmpbufMap.Get(instr.opndList.arg.instr.opndList.arg.instr);
+          w.WriteObject(obj);
+          w.WriteString(");");
         | Opcode.activateContext:
           w.Newline;
           w.WriteString("Exception__ActivateContext();");

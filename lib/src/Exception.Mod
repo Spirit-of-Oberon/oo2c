@@ -123,6 +123,7 @@ TYPE
   Context* = RECORD [NO_DESCRIPTOR]
   (**Use by the run-time system to store an execution context for later
      (re)use.  *)
+    savedException: Exception;
     next: ContextPtr;
     jmpbuf: SYSTEM.PTR;
   END;
@@ -165,8 +166,11 @@ PROCEDURE Current*(): Exception;
    same pointer value.  *)
   
 PROCEDURE Clear*;
-(**Set the current exception marker to @code{NIL}.  This procedure should never
-   be called directly.  *)
+(**FIXME... Replace this procedure with @oproc{ClearFixed} with the next
+   release.  *)
+PROCEDURE ClearFixed*(VAR context: Context);
+(**Set the current exception marker to value it had before the @code{TRY}
+   statement.  This procedure should never be called directly.  *)
 PROCEDURE PushContext*(VAR context: Context; jmpbuf: SYSTEM.PTR);
 (**Push @oparam{context} on the stack of exception handlers, and make it point
    to the execution context @oparam{jmpbuf}.  This procedure should never be
