@@ -457,5 +457,9 @@
       Imports the module <code>TextRider</code>.  No further tests.
     </test>
     
+    <test id="lib_Out" type="run" file="LibOut.Mod" output="LibOut.Ref">
+      Imports the module <code>Out</code>.  Minimal output tests.
+    </test>
+    
   </testcases>
 </testsuite-ext>
