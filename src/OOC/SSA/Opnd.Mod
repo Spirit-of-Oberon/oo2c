@@ -105,7 +105,13 @@ CONST
      indicate that this operand is passed to a pointer variable, and must
      therefore cast to void* by the C back-end.  *)
   
-
+  loopExternalDef* = 17;
+  (**An argument added to the back-edge collect instruction of a loop refering
+     to a value that is used within the loop, but defined outside the loop.
+     The (global) allocator needs this information so that such value are kept
+     live across the whole loop, instead of being clobbered somewhere between
+     the loop start and end.  *)
+  
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)
   BEGIN
@@ -122,6 +128,7 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | forwardRef: COPY ("forward-ref", name)
     | dimension: COPY ("dimension", name)
     | argPointer: COPY ("arg-pointer", name)
+    | loopExternalDef: COPY ("loop-external-def", name);
     END;
   END GetName;
   

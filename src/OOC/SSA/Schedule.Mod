@@ -255,7 +255,12 @@ PROCEDURE NewBranchBlock (predicate: SSA.Opnd;
 
 PROCEDURE (b: BranchBlock) DefaultTarget*(): Block;
   BEGIN
-    RETURN b. jump. dest
+    IF (b. branchTo. dest IS JumpBlock) &
+       b. branchTo. dest(JumpBlock). jump. isLoopBackedge THEN
+      RETURN b. branchTo. dest;
+    ELSE
+      RETURN b. jump. dest;
+    END;
   END DefaultTarget;
 
 
@@ -507,7 +512,8 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
     VAR
       in, body, oldEnter, exitIn, exitBody, exitEnter: Block;
       predicate: SSA.Opnd;
-      loopStart: SSA.Instr;
+      loopStart, backedgeStore: SSA.Instr;
+      adapter: JumpBlock;
       
     PROCEDURE Move (result: SSA.Result; source, target: Block);
     (**Recursively moves the instructions producing @oparam{result} into
@@ -597,9 +603,25 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       SetJump (exitBody(BranchBlock). jump, exitBody, enter);
       SetJump (exitBody(BranchBlock). branchTo, exitBody, body);
       
+      
+      (* check if the backedge refers to a collect; if this collect is located
+         in a branch, move it into a separate block; the back-edge store
+         is the second argument of the loop-start instruction *)
+      backedgeStore := loopEnd. opndList. arg(SSA.Instr). opndList. nextOpnd. arg. instr;
+      IF (backedgeStore. opcode = Opcode.collect) &
+         (backedgeStore. info(InstrProxy). block IS BranchBlock) THEN
+        ASSERT (backedgeStore. info(InstrProxy). block = exitBody);
+        adapter := NewJumpBlock ();
+        SetJump (adapter. jump, adapter, body);
+        SetJump (exitBody(BranchBlock). branchTo, exitBody, adapter);
+        MoveProxy (backedgeStore. info(InstrProxy), adapter);
+        MakeDominator (exitBody, adapter);
+      END;
+
+      
       MakeDominator (in, body);
       MakeDominator (body, enter);
-      
+
       enter := in;
       ASSERT (exitEnter = oldEnter);
       RETURN exitEnter
@@ -689,6 +711,12 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
     ClearProxyList (b);
     WHILE (ready # NIL) DO
       proxy := ready;
+      IF (proxy. instr. opcode = Opcode.collect) &
+         (proxy. nextProxy # NIL) THEN
+        (* postpone scheduling of collect instructions until the very end
+           of the block *)
+        proxy := proxy. nextProxy
+      END;
       Remove (ready, proxy);
 
       (* append `proxy' to list of instructions in `b' *)
@@ -920,6 +948,28 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       END;
     END MarkBackedges;
   
+  PROCEDURE CheckCollects (b: Block);
+    VAR
+      nested: Block;
+      proxy: InstrProxy;
+    BEGIN
+      WITH b: JumpBlock DO
+      | b: BranchBlock DO
+        proxy := b. proxyList;
+        WHILE (proxy # NIL) DO
+(*          ASSERT (proxy. instr. opcode # Opcode.collect);*)
+          proxy := proxy. nextProxy
+        END;
+      | b: DeadEndBlock DO
+      END;
+
+      nested := b. domList;
+      WHILE (nested # NIL) DO
+        CheckCollects (nested);
+        nested := nested. nextDom
+      END;
+    END CheckCollects;
+  
   BEGIN
     (* first, put all instructions into a single block; instructions are
        sorted topological first, and this order is reversed when creating
@@ -936,7 +986,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       instr := instr. nextInstr
     END;
 
-    (* second, scan instructions for branches in the control flow; create new
+    (* scan instructions for branches in the control flow; create new
        blocks accordingly, and add links between them representing branches and
        unconditional jumps  *)
     exit := DebranchBlock (b);
@@ -944,13 +994,15 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     (* mark jump instructions that are loop backedges *)
     MarkBackedges (b);
     
-    (* third, schedule instructions within each basic block *)
+    (* schedule instructions within each basic block *)
     SortBlocks (b);
 
-    (* fourth, arrange dominated blocks within each block in such way that
+    (* arrange dominated blocks within each block in such way that
        loop branches have a target earlier in the chain of blocks, and all
        other jumps and branches a target later in the chain *)
     ArrangeBlock (b);
+
+    CheckCollects(b);
     
     RETURN b
   END Schedule;

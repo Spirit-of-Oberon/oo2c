@@ -32,6 +32,7 @@ TYPE
   WriterDesc = RECORD
     (DeclWriter.WriterDesc)
     registerMap: Dictionary.Dictionary;
+    procBlock: SSA.ProcBlock;
     
     swapArray: SwapArray;                (* used by WriteCollect *)
     lengthSwapArray: LONGINT;            (* used by WriteCollect *)
@@ -65,12 +66,14 @@ PROCEDURE RegisterType (ctype: DeclWriter.BasicTypeId): DeclWriter.BasicTypeId;
 
 
 PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
+                     procBlock: SSA.ProcBlock;
                      registerMap: Dictionary.Dictionary): Writer;
   VAR
     w: Writer;
   BEGIN
     NEW (w);
     cWriter. CopyTo (w);
+    w. procBlock := procBlock;
     w. registerMap := registerMap;
     NEW (w. swapArray, 8);
     w. lengthSwapArray := 0;
@@ -500,7 +503,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. ClearSwapData;
       opnd := collect. opndList;
       res := targetInstr. nextResult;
-      WHILE (opnd # NIL) DO
+      WHILE (opnd # NIL) & (opnd. class # Opnd.loopExternalDef) DO
         IF (opnd. class # Opnd.store) THEN
           targetVar := w. registerMap. Get (res);
           IF w. registerMap. HasKey (opnd. arg) THEN
@@ -537,7 +540,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       (* final pass: write out anything that does not read from a register *)
       opnd := collect. opndList;
       res := targetInstr. nextResult;
-      WHILE (opnd # NIL) DO
+      WHILE (opnd # NIL) & (opnd. class # Opnd.loopExternalDef) DO
         IF (opnd. class # Opnd.store) THEN
           targetVar := w. registerMap. Get (res);
           IF ~w. registerMap. HasKey (opnd. arg) THEN
@@ -746,7 +749,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
       obj := String.New (str);
       blockMap. Set (b, obj);
       INC (blockCount);
-
+      
       nested := b. domList;
       WHILE (nested # NIL) DO
         AssignIds (nested);
@@ -758,15 +761,23 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
     VAR
       obj: Object.Object;
     BEGIN
-      obj := blockMap. Get (b);
-      w. WriteString (obj(String.String). array^);
+      IF (b = NIL) THEN
+        w. WriteString ("XXX WriteBlockId(NIL)");
+      ELSE
+        obj := blockMap. Get (b);
+        w. WriteString (obj(String.String). array^);
+      END;
     END WriteBlockId;
   
   PROCEDURE WriteGoto (target: Schedule.Block);
     BEGIN
-      w. WriteString ("goto ");
-      WriteBlockId (target);
-      w. WriteChar (";");
+      IF (target = NIL) THEN
+        w. WriteString ("/* goto: unreachable */");
+      ELSE
+        w. WriteString ("goto ");
+        WriteBlockId (target);
+        w. WriteChar (";");
+      END;
     END WriteGoto;
   
   PROCEDURE FixLastJump (currentBlock: Schedule.Block);
@@ -804,12 +815,21 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
       WITH b: Schedule.BranchBlock DO
         w. Newline;
         w. WriteString ("if (");
-        IF ~b. branchOnTrue THEN
-          w. WriteChar("!");
+        IF (b. DefaultTarget() = b. jump. dest) THEN
+          IF ~b. branchOnTrue THEN
+            w. WriteChar("!");
+          END;
+          w. Ref (b. predicate);
+          w. WriteString (") ");
+          WriteGoto (b. branchTo. dest);
+        ELSE
+          IF b. branchOnTrue THEN
+            w. WriteChar("!");
+          END;
+          w. Ref (b. predicate);
+          w. WriteString (") ");
+          WriteGoto (b. jump. dest);
         END;
-        w. Ref (b. predicate);
-        w. WriteString (") ");
-        WriteGoto (b. branchTo. dest);
       ELSE (* standard block *)
       END;
       lastBlock := b;
@@ -856,6 +876,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         Out.Ln;
         Out.Flush;
         XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
+        Out.Flush;
       END;
     END Write;
   
@@ -877,18 +898,21 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Write ("dce-post", "final");
 
     domRoot := Schedule.Schedule (pb);
-    IF writeProc & (t. inspectStage. MatchChars ("schedule", 0, -1) # NIL) THEN
-      (* write schedule SSA code to stdout *)
-      XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
-    END;
-    IF (t. inspectStage. MatchChars ("schedule-html", 0, -1) # NIL) THEN
-      (* create a temporary web server displaying the SSA code *)
-      Inspector.Show (t. config. repositories, proc, domRoot);
+    IF writeProc THEN
+      IF (t. inspectStage. MatchChars ("schedule", 0, -1) # NIL) THEN
+        (* write schedule SSA code to stdout *)
+        XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
+        Out.Flush
+      END;
+      IF (t. inspectStage. MatchChars ("schedule-html", 0, -1) # NIL) THEN
+        (* create a temporary web server displaying the SSA code *)
+        Inspector.Show (t. config. repositories, proc, domRoot);
+      END;
     END;
     
     Fixup (pb);
     registerMap := Allocator.AssignRegisters (pb, domRoot, t. w);
-    w := NewWriter (t. w, registerMap);
+    w := NewWriter (t. w, pb, registerMap);
     w. Indent (1);
     WriteLocalDecl (w, pb, haveCopyParameter);
     w. WriteLn;

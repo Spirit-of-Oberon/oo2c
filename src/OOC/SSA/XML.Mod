@@ -22,8 +22,8 @@ MODULE OOC:SSA:XML;
 
 
 IMPORT
-  Channel, Dictionary := ADT:Dictionary:IntValue, ADT:String, ADT:StringBuffer,
-  XML:Writer, XML:UnicodeCodec:Latin1,
+  Channel, Dictionary := ADT:Dictionary:IntValue, StdChannels,
+  ADT:String, ADT:StringBuffer, XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd, OOC:SSA, OOC:SSA:Schedule;
 
 
@@ -49,7 +49,7 @@ PROCEDURE GetId (idMap: Dictionary.Dictionary; result: SSA.Result): LONGINT;
   END GetId;
 
 PROCEDURE WriteInstr (w: Writer.Writer; instr: SSA.Instr;
-                      idMap: Dictionary.Dictionary);
+                      idMap: Dictionary.Dictionary; markResult: SSA.Result);
   VAR
     value: String.String;
     res: SSA.Result;
@@ -94,6 +94,9 @@ PROCEDURE WriteInstr (w: Writer.Writer; instr: SSA.Instr;
       w. StartTag ("res", FALSE);
       
       AttrId ("id", res);
+      IF (markResult = res) THEN
+        w. AttrString ("mark", "XXX");
+      END;
       
       Result.GetName (res. class, str);
       w. AttrStringLatin1 ("class", str);
@@ -167,12 +170,8 @@ PROCEDURE WriteInstr (w: Writer.Writer; instr: SSA.Instr;
     w. EndTag;  (* instr *)
   END WriteInstr;
 
-PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
-                  includeDeadCode: BOOLEAN);
-(**Note: If @oparam{includeDeadCode} is set and the block contains instructions
-   that are dead, then the output depends on the order of instructions in the
-   blocks instruction list.  Consequently, it is no longer canonical and may
-   differ for otherwise equivalent SSA sequences.  *)
+PROCEDURE WriteProcBody (cw: Channel.Writer; pb: SSA.ProcBlock;
+                         includeDeadCode: BOOLEAN; markResult: SSA.Result);
   VAR
     w: Writer.Writer;
     instr: SSA.Instr;
@@ -225,7 +224,7 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
           TraverseInstr (opnd. arg. instr);
           opnd := opnd. nextOpnd
         END;
-        WriteInstr (w, instr, idMap);
+        WriteInstr (w, instr, idMap, markResult);
       END;
     END TraverseInstr;
   
@@ -257,8 +256,23 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
     END;
     w. EndTag;  (* procedure-body *)
     w. EndOfText
+  END WriteProcBody;
+
+PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
+                  includeDeadCode: BOOLEAN);
+(**Note: If @oparam{includeDeadCode} is set and the block contains instructions
+   that are dead, then the output depends on the order of instructions in the
+   blocks instruction list.  Consequently, it is no longer canonical and may
+   differ for otherwise equivalent SSA sequences.  *)
+  BEGIN
+    WriteProcBody (cw, pb, includeDeadCode, NIL);
   END Write;
-  
+
+PROCEDURE Dump* (pb: SSA.ProcBlock; markResult: SSA.Result);
+  BEGIN
+    WriteProcBody (StdChannels.stdout. NewWriter(), pb, TRUE, markResult);
+  END Dump;
+
 PROCEDURE WriteSchedule* (cw: Channel.Writer; domRoot: Schedule.Block);
   VAR
     w: Writer.Writer;
@@ -278,7 +292,7 @@ PROCEDURE WriteSchedule* (cw: Channel.Writer; domRoot: Schedule.Block);
       
       proxy := b. proxyList;
       WHILE (proxy # NIL) DO
-        WriteInstr (w, proxy. instr, idMap);
+        WriteInstr (w, proxy. instr, idMap, NIL);
         proxy := proxy. nextProxy
       END;
 

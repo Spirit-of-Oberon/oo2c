@@ -22,7 +22,8 @@ MODULE OOC:SSA:Allocator;
 
 IMPORT
   IntStr, Strings, ADT:ArrayList, ADT:Dictionary, ADT:String,
-  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Schedule, OOC:SSA:IGraph, OOC:C:DeclWriter;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd,
+  OOC:SSA:Schedule, OOC:SSA:IGraph, OOC:C:DeclWriter;
 
 
 TYPE
@@ -263,6 +264,17 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
     opnd: SSA.Opnd;
   BEGIN
     iGraph := rf. iGraph;
+
+    WITH b: Schedule.BranchBlock DO
+      (* the predicate that is evaluated at the end of a branch block must
+         be live at the end of the block *)
+      res := b. predicate. arg;
+      IF (res. info = rf) & ~iGraph. In (res. marker, live)THEN
+        iGraph. AddToLive (res. marker, live);
+      END;
+    ELSE  (* nothing to do *)
+    END;
+    
     proxy := b. proxyTail;
     WHILE (proxy # NIL) DO
       res := proxy. instr;
@@ -308,9 +320,11 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
 
 PROCEDURE AssignRegisterFile (rf: RegisterFile;
                               enterBlock, exitBlock: Schedule.Block;
+                              deadEnds: ArrayList.ArrayList;
                               registerMap: Dictionary.Dictionary);
   VAR
     live: IGraph.Vector;
+    i: LONGINT;
     
   PROCEDURE AssignRegisterNames (rf: RegisterFile;
                                  colors: IGraph.ColorArray;
@@ -365,7 +379,6 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
     VAR
       ld: LiveData;
       outgoingJumps: LONGINT;
-      loopHead: Schedule.Block;
       
     PROCEDURE Propagate (jump: Schedule.Jump);
       BEGIN
@@ -386,39 +399,6 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
             (jump. dest. isLoopHead & jump. isLoopBackedge)
       END BackedgeJump;
 
-    PROCEDURE InclNonlocalDefines (loopHead, block: Schedule.Block;
-                                   live: IGraph.Vector);
-      VAR
-        nested: Schedule.Block;
-        proxy: Schedule.InstrProxy;
-        opnd: SSA.Opnd;
-      BEGIN
-        proxy := block. proxyList;
-        WHILE (proxy # NIL) DO
-          opnd := proxy. instr. opndList;
-          WHILE (opnd # NIL) DO
-            IF (opnd. arg. info = rf) THEN
-              (* if the argument is from our current register file, and
-                 if it is defined outside of `loopHead', then it is live
-                 across the whole loop *)
-              IF ~Schedule.Dominates
-                 (loopHead,
-                  rf. blockList. array[opnd. arg. marker](Schedule.Block)) THEN
-                rf. iGraph. AddToLive (opnd. arg. marker, live);
-              END;
-            END;
-            opnd := opnd. nextOpnd;
-          END;
-          proxy := proxy. nextProxy;
-        END;
-        
-        nested := block. domList;
-        WHILE (nested # NIL) DO
-          InclNonlocalDefines (loopHead, nested, live);
-          nested := nested. nextDom;
-        END;
-      END InclNonlocalDefines;
-    
     BEGIN
       (* a. for normal source blocks, do the same sweep
          b. for branch blocks, merge the life sets of both jump targets
@@ -430,19 +410,13 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
       WITH b: Schedule.BranchBlock DO
         IF (b. info = NIL) THEN
           outgoingJumps := 2;
-          loopHead := NIL;
           IF BackedgeJump (b. branchTo) THEN
-            loopHead := b. branchTo. dest;
             DEC (outgoingJumps)
           END;
           IF BackedgeJump (b. jump) THEN
-            loopHead := b. jump. dest;
             DEC (outgoingJumps)
           END;
           ld := NewLiveData (rf. iGraph, outgoingJumps);
-          IF (loopHead # NIL) THEN
-            InclNonlocalDefines (loopHead, loopHead, ld. live);
-          END;
           b. info := ld
         ELSE
           ld := b. info(LiveData);
@@ -466,28 +440,89 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
         END
       END;
     END TraverseBlocks;
-  
+
   BEGIN
     rf. iGraph := IGraph.NewGraph (rf. resultList. size);
     
-    (* determine set of values life at the end of `exitBlock'; mark all of
-       them as interfering with each other *)
-    live := rf. iGraph. NewVector();
-    (* ...FIXME: having an empty set is ok when starting at the end of
-       the procedure, but a hierarchical allocator that may begin its sweep
-       in the middle of the procedure requires non-empty starting sets *)
-
     (* sweep life set backwards over blocks; if a life range begins at a
        instruction, remove it from the life set, if ends there, then add it
        to the life set; each time a new entry is added, it must be marked
        as interfering with all current elements of the set *)
-    TraverseBlocks (rf, exitBlock, live);
+    FOR i := 0 TO deadEnds. size-1 DO
+      live := rf. iGraph. NewVector();
+      TraverseBlocks (rf, deadEnds. array[i](Schedule.Block), live);
+    END;
     rf. iGraph. SymmetricMatrix;
 
     (* calculate a coloring for the resulting graph; use the coloring to
        assign register ids to results *)
     AssignRegisterNames (rf, rf. iGraph. ColorGraphSimple(), registerMap);
   END AssignRegisterFile;
+
+PROCEDURE CollectCrossLoopResults (rf: RegisterFile;
+                                   b: Schedule.Block;
+                                   closestLoop: Schedule.Block);
+  VAR
+    child, loop: Schedule.Block;
+    proxy: Schedule.InstrProxy;
+    opnd: SSA.Opnd;
+
+  PROCEDURE AddToCollect (loopHead: Schedule.Block; res: SSA.Result);
+    VAR
+      loopStart: Schedule.InstrProxy;
+      collect: SSA.Instr;
+      opnd: SSA.Opnd;
+    BEGIN
+      loopStart := loopHead. proxyList;
+      WHILE (loopStart. instr. opcode # Opcode.loopStart) DO
+        loopStart := loopStart. nextProxy
+      END;
+      collect := loopStart. instr. opndList. nextOpnd. arg. instr;
+      opnd := collect. opndList;
+      WHILE (opnd # NIL) & (opnd. arg # res) DO
+        opnd := opnd. nextOpnd;
+      END;
+      IF (opnd = NIL) THEN
+        collect. AddOpnd (res, Opnd.loopExternalDef);
+      END;
+    END AddToCollect;
+  
+  BEGIN
+    IF b. isLoopHead THEN
+      closestLoop := b;
+    END;
+    IF (closestLoop # NIL) THEN
+      proxy := b. proxyList;
+      WHILE (proxy # NIL) DO
+        opnd := proxy. instr. opndList;
+        WHILE (opnd # NIL) DO
+          IF (opnd. arg. info = rf) THEN
+            (* if the argument is from our current register file, and
+               if it is defined outside of `loopHead', then it is live
+               across the whole loop *)
+            loop := closestLoop;
+            WHILE (loop # NIL) &
+                  ~Schedule.Dominates
+                  (loop,
+                   rf. blockList. array[opnd. arg. marker](Schedule.Block)) DO
+              AddToCollect (loop, opnd. arg);
+              REPEAT
+                loop := loop. parent;
+              UNTIL (loop = NIL) OR loop. isLoopHead;
+            END;
+          END;
+          opnd := opnd. nextOpnd;
+        END;
+        proxy := proxy. nextProxy;
+      END;
+    END;
+    
+    child := b. domList;
+    WHILE (child # NIL) DO
+      CollectCrossLoopResults (rf, child, closestLoop);
+      child := child. nextDom
+    END;
+  END CollectCrossLoopResults;
 
 PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
                             w: DeclWriter.Writer): Dictionary.Dictionary;
@@ -505,7 +540,60 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
     rfs: RegisterFiles;
     i: LONGINT;
     registerMap: Dictionary.Dictionary;
+    deadEnds: ArrayList.ArrayList;
 
+  PROCEDURE LocateDeadEnds (root: Schedule.Block): ArrayList.ArrayList;
+    VAR
+      deadEnds: ArrayList.ArrayList;
+
+    PROCEDURE CheckBlock (b: Schedule.Block);
+      VAR
+        child: Schedule.Block;
+        outgoingJumps: LONGINT;
+        
+     PROCEDURE BackedgeJump (jump: Schedule.Jump): BOOLEAN;
+       BEGIN
+         RETURN
+             (jump. dest. isLoopHead & jump. isLoopBackedge)
+       END BackedgeJump;
+
+      BEGIN
+        WITH b: Schedule.BranchBlock DO
+          outgoingJumps := 2;
+          IF BackedgeJump (b. branchTo) THEN
+            DEC (outgoingJumps)
+          END;
+          IF BackedgeJump (b. jump) THEN
+            DEC (outgoingJumps)
+          END;
+          
+        | b: Schedule.JumpBlock DO
+          outgoingJumps := 1;
+          IF BackedgeJump (b. jump) THEN
+            DEC (outgoingJumps)
+          END;
+
+        | b: Schedule.DeadEndBlock DO
+          outgoingJumps := 0;
+        END;
+
+        IF (outgoingJumps = 0) THEN
+          deadEnds. Append (b);
+        END;
+
+        child := b. domList;
+        WHILE (child # NIL) DO
+          CheckBlock (child);
+          child := child. nextDom
+        END;
+      END CheckBlock;
+    
+    BEGIN
+      deadEnds := ArrayList.New(4);
+      CheckBlock (root);
+      RETURN deadEnds
+    END LocateDeadEnds;
+  
   PROCEDURE WriteNames (w: DeclWriter.Writer;
                         registerType: DeclWriter.BasicTypeId;
                         names: NameArray);
@@ -539,12 +627,27 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
     blockList := GetBlockList (enterBlock, exitBlock);
     rfs := IdentifyResults (blockList);
 
+    (* for each loop, add all values (which are stored in registers) that are
+       used within the loop, but are defined outside the loop, to the argument
+       list of the collect instruction  *)
+    FOR i := 0 TO LEN (rfs^)-1 DO
+      IF (rfs[i] # NIL) THEN
+        CollectCrossLoopResults (rfs[i], domRoot, NIL);
+      END;
+    END;
+    
+    (* locate all blocks that a dead ends from the point of view of the
+       interference calculation; that is, get a list of all blocks whose
+       live set if known to be empty at their end *)
+    deadEnds := LocateDeadEnds (enterBlock);
+    
     (* assign concrete registers for every result; this is done for each of
        the different register files *)
     registerMap := Dictionary.New();
     FOR i := 0 TO LEN (rfs^)-1 DO
       IF (rfs[i] # NIL) THEN
-        AssignRegisterFile (rfs[i], enterBlock, exitBlock, registerMap);
+        AssignRegisterFile (rfs[i], enterBlock, exitBlock, deadEnds,
+                            registerMap);
         WriteNames (w, rfs[i]. registerType, rfs[i]. names);
       END;
     END;
