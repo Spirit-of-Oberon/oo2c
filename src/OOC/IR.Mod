@@ -782,15 +782,12 @@ TYPE
 CONST
   unlimited = MAX (LONGINT);
   
-VAR
-  real : Sym.Type;
-
 CONST
-  undeclaredIdent* = 1;
-  expectedIdent* = 2;
-  numberOutOfRange* = 3;
-  characterOutOfRange* = 4;
-  invalidOpType* = 5;
+  undeclaredIdent = 1;
+  expectedIdent = 2;
+  numberOutOfRange = 3;
+  characterOutOfRange = 4;
+  invalidOpType = 5;
   (** types of operands are not allowed for this operator *)
   unknownOp* = 6;
   (** symbol is not an operator *)
@@ -799,8 +796,8 @@ CONST
   divideByZero* = 8;
   exprNotConstant* = 9;
   rangeError* = 10;
-  exprByRef* = 11;
-  incompatibleActualParam* = 12;
+  exprByRef = 11;
+  incompatibleActualParam = 12;
   wrongNumberOfArguments = 13;
   invalidIntegerConst = 14;
   notArray = 15;
@@ -2624,8 +2621,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     ELSIF (id IN {Id.slash }) & leftIsNumeric & rightIsNumeric THEN
       (* ---- arithmetic real division ---- *)
       IF leftIsInteger & rightIsInteger THEN
-        left := NewTypeConv(real, left);
-        right := NewTypeConv(real, right);
+        left := NewTypeConv(Predef.GetType(Predef.real), left);
+        right := NewTypeConv(Predef.GetType(Predef.real), right);
       ELSE
         WidenType();
       END;
@@ -2635,7 +2632,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       (* ---- arithmetic integer division/modulus ---- *)
       CASE id OF
       | Id.div: variant := arithDivI;
-      | Id.mod: variant := arithMul;
+      | Id.mod: variant := arithMod;
       END;
       WidenType();
       result := b.NewBinaryArith(sym, variant, left, right)
@@ -3043,5 +3040,4 @@ END AssignType;
 BEGIN
   NEW (irContext);
   Error.InitContext (irContext, "OOC:IR");
-  real := Predef.GetType(Predef.real);
 END OOC:IR.
