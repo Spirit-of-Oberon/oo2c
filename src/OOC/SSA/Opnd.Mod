@@ -85,7 +85,7 @@ CONST
   storeExit* = 11;
   (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the final value of
      @var{store} within the procedure at the place of a @code{RETURN}, or
-     @oconst{*OOC:SSA:Opcode.selectExit} taking the final value of @var{store}
+     @oconst{*OOC:SSA:Opcode.loopEnd} taking the final value of @var{store}
      within a loop at the place of an @code{EXIT}.  *)
 
   type* = 12;

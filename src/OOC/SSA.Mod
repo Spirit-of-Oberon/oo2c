@@ -180,10 +180,10 @@ TYPE
        block's instructions are summarized---directly or indirectly---in this
        instruction's operand list.  See @oconst{Opcode.selectReturn}.  *)
     
-    selectExit-: Instr;
+    loopContext-: Instr;
     (**Represents the exit paths of the currently open @code{LOOP} statement,
        or is @code{NIL} if there is no @code{LOOP}.  See
-       @oconst{Opcode.selectExit}.  *)
+       @oconst{Opcode.loopEnd}.  *)
     
     instrList-, instrTail: Instr;
     (**Set of instructions that make up the procedure block.  The instructions
@@ -709,13 +709,19 @@ PROCEDURE (instr: Instr) GetResultType* (): Opcode.Subclass;
   END GetResultType;
 
 PROCEDURE (instr: Instr) GetLoopEnd* (): Instr;
-(**Given a @oconst{Opcode.loopStart} instruction, returns the corresponding
-   @oconst{Opcode.loopEnd}.  *)
+(**Given a @oconst{Opcode.loopStart} or @code{Opcode.exit} instruction, returns
+   the corresponding @oconst{Opcode.loopEnd}.  *)
   VAR
     use: Opnd;
+    res: Result;
   BEGIN
-    ASSERT (instr. opcode = Opcode.loopStart);
-    use := instr. useList;
+    CASE instr. opcode OF
+    | Opcode.loopStart:
+      use := instr. useList;
+    | Opcode.exit:
+      res := instr. GetResultStore();
+      use := res. useList;
+    END;
     WHILE (use # NIL) & (use. instr. opcode # Opcode.loopEnd) DO
       use := use. nextUse;
     END;
@@ -735,41 +741,12 @@ PROCEDURE (instr: Instr) GetBackwardFeed*(): Result;
   END GetBackwardFeed;
 
 PROCEDURE (instr: Instr) GetLoopStart* (): Instr;
-(**Given a @oconst{Opcode.loopEnd} or @oconst{Opcode.selectExit} instruction,
+(**Given a @oconst{Opcode.loopEnd} instruction,
    returns the corresponding @oconst{Opcode.loopStart}.  *)
   BEGIN
-    IF (instr. opcode = Opcode.selectExit) THEN
-      RETURN instr. opndList. arg(Instr). GetLoopStart();
-    ELSE
-      ASSERT (instr. opcode = Opcode.loopEnd);
-      RETURN instr. opndList. arg(Instr);
-    END;
+    ASSERT (instr. opcode = Opcode.loopEnd);
+    RETURN instr. opndList. arg(Instr);
   END GetLoopStart;
-
-PROCEDURE (instr: Instr) GetSelectExit* (): Instr;
-(**Given a @oconst{Opcode.loopEnd} or @oconst{Opcode.exit} instruction, returns
-   the corresponding @oconst{Opcode.selectExit}, or @code{NIL} if no such thing
-   exists.  *)
-  VAR
-    use: Opnd;
-    res: Result;
-  BEGIN
-    ASSERT ((instr. opcode = Opcode.loopEnd) OR (instr. opcode = Opcode.exit));
-    IF (instr. opcode = Opcode.exit) THEN
-      res := instr. GetResultStore();
-    ELSE
-      res := instr;
-    END;
-    use := res. useList;
-    WHILE (use # NIL) & (use. instr. opcode # Opcode.selectExit) DO
-      use := use. nextUse;
-    END;
-    IF (use = NIL) THEN
-      RETURN NIL;
-    ELSE
-      RETURN use. instr;
-    END;
-  END GetSelectExit;
 
 PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
 (**For a collect instruction, return the target instruction into which it
@@ -789,10 +766,10 @@ PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
       RETURN storeOut. useList. instr. GetLoopStart();
     ELSIF (storeOut. useList. instr. opcode = Opcode.exit) THEN
       (* logically, a collect feeding into an "exit" instruction
-         passes its data to the "select-exit" instruction *)
+         passes its data to the "loop-end" instruction *)
       storeOut := storeOut. useList. instr. GetResultStore();
       use := storeOut. useList;
-      WHILE (use. instr. opcode # Opcode.selectExit) DO
+      WHILE (use. instr. opcode # Opcode.loopEnd) DO
         use := use. nextUse;
       END;
       RETURN use. instr;
@@ -808,18 +785,6 @@ PROCEDURE (instr: Instr) LogOpcode* (msg: ARRAY OF CHAR);
     instr. GetOpcodeName (name);
     Log.String (msg, name)
   END LogOpcode;
-
-PROCEDURE (instr: Instr) IsLoopEndWithExits (): BOOLEAN;
-  VAR
-    opnd: Opnd;
-  BEGIN
-    IF (instr. opcode = Opcode.loopEnd) THEN
-      opnd := instr. NthOpnd (2);
-      RETURN (opnd. arg(Instr). opcode = Opcode.selectExit);
-    ELSE
-      RETURN FALSE;
-    END;
-  END IsLoopEndWithExits;
 
 PROCEDURE (instr: Instr) IsConst*(): BOOLEAN;
 (**Returns @code{TRUE} if @oparam{instr} represents a constant value.  Such
@@ -916,7 +881,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl;
     initialStore := enter. AddResult (ResultClass.store);
     pb. selectReturn. AddOpnd (initialStore, OpndClass.storeEnter);
     
-    pb. selectExit := NIL;
+    pb. loopContext := NIL;
     FOR i := 0 TO Predef.lastId DO
       pb. constMap[i] := NIL;
     END;
@@ -1248,14 +1213,14 @@ PROCEDURE (pb: ProcBlock) AddGetLengthInstr* (get: Instr; dim: LONGINT;
     END;
   END AddGetLengthInstr;
 
-PROCEDURE (pb: ProcBlock) SetSelectExit* (selectExit: Instr): Instr;
+PROCEDURE (pb: ProcBlock) SetLoopContext* (loopContext: Instr): Instr;
   VAR
     old: Instr;
   BEGIN
-    old := pb. selectExit;
-    pb. selectExit := selectExit;
+    old := pb. loopContext;
+    pb. loopContext := loopContext;
     RETURN old
-  END SetSelectExit;
+  END SetLoopContext;
 
 
 PROCEDURE Add (VAR list: Instr; instr: Instr);

@@ -488,8 +488,7 @@ PROCEDURE (w: Writer) Noop (instr: SSA.Instr): BOOLEAN;
       Opcode.labels,
       Opcode.loopStart,
       Opcode.loopEnd,
-      Opcode.exit,
-      Opcode.selectExit:
+      Opcode.exit:
       RETURN TRUE;
       
     | Opcode.collect:
@@ -1112,9 +1111,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.exit:
         (* nothing, the immediately following jump does all the work *)
 
-      | Opcode.selectExit:
-        (* nothing *)
-        
       | Opcode.get:
         CastFromPtr (instr);
         IF SimpleVarAccess (instr, Opnd.readAdr) THEN

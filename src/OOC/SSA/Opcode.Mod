@@ -179,25 +179,11 @@ CONST
      
      The instruction has one result of class @oconst{*OOC:SSA:Result.store}.
      There is one use of this result, as operand of the loop's
-     @oconst{selectExit} instruction.  *)
+     @oconst{loopEnd} instruction.  *)
   
   
-  selectExit* = 10;
-  (**Chooses the @code{EXIT} statement that leaves a @code{LOOP}.  The
-     statement takes @var{n}+1 arguments.  All but the first one define values
-     of @var{store} at the end of their corresponding branch of control flow,
-     that is at the place of the @code{EXIT} instructions.
-
-     @table @oconst
-     @item *OOC:SSA:Opnd.arg
-     The first argument refers to the loop's @oconst{loopEnd} instruction.
-
-     @item *OOC:SSA:Opnd.storeExit
-     Subsequent arguments are the @code{store} results of the loop's
-     @code{exit} statements.  Each of them corresponds to a @code{EXIT}
-     statement in the source code.
-     @end table  *)
-
+  (* selectExit* = 10;  ... unused opcode *)
+  
   loopStart* = 11;
   (**Marks the beginning of a loop construct.  It has a single operand:
 
@@ -218,9 +204,7 @@ CONST
      There is one result, the value of @var{store} as seen by the loop body
      when an iteration begins.  *)
   loopEnd* = 12;
-  (**Marks the end of a loop construct.  Such an instruction appears in two
-     variants, with and without a corresponding @oconst{selectExit}.  The
-     variants differ in the way the loop is exited.  The instruction has five
+  (**Marks the end of a loop construct.  The instruction has n+2
      arguments:
 
      @table @oconst
@@ -234,13 +218,15 @@ CONST
      avoid cycles in the instruction graph.  Some algorithms need to treat this
      argument specially, treat it is if it is any argument of the
      @oconst{loopStart}.
+
+     @item *OOC:SSA:Opnd.storeExit
+     Subsequent arguments are the @code{store} results of the loop's
+     @code{exit} statements.  Each of them corresponds to a @code{EXIT}
+     statement in the source code.
      @end table
 
-     If the instruction is not attached to a @oconst{selectExit}, then there is
-     one result of class @oconst{*OOC:SSA:Opnd.arg}, the value of @var{store}
-     as seen by the first instruction after the loop.  With a
-     @oconst{selectExit}, there is no additional result and the instruction
-     itself appears as the first argument of the @oconst{selectExit}.  *)
+     There is one result of class @oconst{*OOC:SSA:Opnd.store}, the value of
+     @var{store} as seen by the first instruction after the loop.  *)
   
   get* = 13;
   (**Retrieves the value of a variable.  Result is always a scalar value.  The
@@ -727,7 +713,6 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | return: cstr := "return";
     | selectReturn: cstr := "select-return";
     | exit: cstr := "exit";
-    | selectExit: cstr := "select-exit";
     | loopStart: cstr := "loop-start";
     | loopEnd: cstr := "loop-end";
       

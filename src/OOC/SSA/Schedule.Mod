@@ -384,29 +384,6 @@ PROCEDURE AppendProxy (b: Block; proxy: InstrProxy);
     b. proxyTail := proxy;
   END AppendProxy;
 
-PROCEDURE RemoveProxy (b: Block; proxy: InstrProxy);
-  BEGIN
-    IF (proxy. prevProxy # NIL) THEN
-      proxy. prevProxy. nextProxy := proxy. nextProxy
-    ELSE
-      b. proxyList := proxy. nextProxy
-    END;
-    IF (proxy. nextProxy # NIL) THEN
-      proxy. nextProxy. prevProxy := proxy. prevProxy
-    ELSE
-      b. proxyTail := proxy. prevProxy
-    END;
-    proxy. nextProxy := NIL;
-    proxy. prevProxy := NIL;
-    proxy. block := NIL;
-  END RemoveProxy;
-
-PROCEDURE MoveProxy (proxy: InstrProxy; to: Block);
-  BEGIN
-    RemoveProxy (proxy. block, proxy);
-    AppendProxy  (to, proxy)
-  END MoveProxy;
-
 
 PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpBlock;
   VAR
@@ -468,52 +445,27 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
   
   PROCEDURE TransferLoop (loop: Blocker.Loop; block: JumpBlock): JumpBlock;
     VAR
-      body, bodyEnd, backward, out, exit: JumpBlock;
-      branch: BranchBlock;
-      predicate, opnd: SSA.Opnd;
-      loopStart, selectExit: SSA.Instr;
-      backwardStore: SSA.Result;
+      body, bodyEnd, out, exit: JumpBlock;
+      opnd: SSA.Opnd;
+      loopEnd: SSA.Instr;
     BEGIN
       (* transfer instructions of loop body *)
       body := NewJumpBlock (block);
       SetJump (block. jump, block, body);
       bodyEnd := TransferInstructions (loop, body);
 
-      predicate := loop. instr. NthOpnd (2);
-      selectExit := loop. instr. GetSelectExit();
-      IF (selectExit # NIL) THEN
-        SetJump (bodyEnd. jump, bodyEnd, body);
-
-        (* fixup blocks with exit instructions to jump to the end of the
-           loop *)
-        out := NewJumpBlock (block);
-        opnd := selectExit. opndList. nextOpnd;
-        WHILE (opnd # NIL) DO
-          exit := opnd. arg. instr. info(InstrProxy). block(JumpBlock);
-          SetJump (exit. jump, exit, out);
-          opnd := opnd. nextOpnd;
-        END;
-      ELSE
-        (* attach a branch block to the end of the loop body *)
-        branch := NewBranchBlock
-            (bodyEnd, predicate,
-             predicate. nextOpnd. arg. IsBooleanConst (FALSE));
-        SetJump (bodyEnd. jump, bodyEnd, branch);
-        
-        (* install backward jump; the collect is moved from the loop body
-           into the backward path *)
-        backward := NewJumpBlock (branch);
-        SetJump (branch. branchTo, branch, backward);
-        SetJump (backward. jump, backward, body);
-        loopStart := loop. instr. GetLoopStart();
-        backwardStore := loopStart. GetBackwardFeed();
-        IF (backwardStore. instr. opcode = Opcode.collect) THEN
-          MoveProxy (backwardStore. instr. info(InstrProxy), backward);
-        END;
-        
-        (* install outgoing block *)
-        out := NewJumpBlock (branch);
-        SetJump (branch. jump, branch, out);
+      loopEnd := loop. instr;
+      ASSERT (loopEnd # NIL);
+      SetJump (bodyEnd. jump, bodyEnd, body);
+      
+      (* fixup blocks with exit instructions to jump to the end of the
+         loop *)
+      out := NewJumpBlock (block);
+      opnd := loopEnd. NthOpnd (2);
+      WHILE (opnd # NIL) DO
+        exit := opnd. arg. instr. info(InstrProxy). block(JumpBlock);
+        SetJump (exit. jump, exit, out);
+        opnd := opnd. nextOpnd;
       END;
       RETURN out;
     END TransferLoop;

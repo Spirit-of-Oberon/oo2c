@@ -342,8 +342,6 @@ PROCEDURE GetProxy (instr: SSA.Instr): Proxy;
         p := NewSelect (instr);
       | Opcode.loopEnd:
         p := NewLoop (instr);
-      | Opcode.selectExit:
-        p := NewRegion (instr);
       ELSE
         p := NewProxy (instr);
       END;
@@ -573,7 +571,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
      ensures that the depending instruction is placed after the loop body it
      is dependent on.  *)
     VAR
-      instr, dep: SSA.Instr;
+      instr: SSA.Instr;
       opnd: SSA.Opnd;
       instrLoop, opndLoop, l: Loop;
 
@@ -594,8 +592,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       instr := pb. instrList;
       WHILE (instr # NIL) DO
         IF (instr. opcode # Opcode.loopStart) &
-           (instr. opcode # Opcode.loopEnd) &
-           (instr. opcode # Opcode.selectExit) THEN
+           (instr. opcode # Opcode.loopEnd) THEN
           instrLoop := GetLoopProxy(instr);
           
           opnd := instr. opndList;
@@ -608,15 +605,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
                 l := l. parentLoop;
               END;
               IF (l # NIL) THEN
-                IF (l. instr. opcode = Opcode.loopEnd) THEN
-                  dep := l. instr. GetSelectExit();
-                  IF (dep = NIL) THEN
-                    dep := l. instr;
-                  END;
-                ELSE
-                  dep := l. instr;
-                END;
-                instr. AddOpnd(dep, Opnd.antiDependency);
+                instr. AddOpnd(l. instr, Opnd.antiDependency);
               END;
             END;
             opnd := opnd. nextOpnd;
@@ -634,8 +623,8 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
          after that) *)
       RETURN
           (use. instr. opcode = Opcode.selectReturn) OR
-          (use. instr. opcode = Opcode.selectExit) &
-            (use. instr. opndList # use)
+          (use. instr. opcode = Opcode.loopEnd) &
+            (use. class = Opnd.storeExit)
     END IgnoredUse;
 
   PROCEDURE UpdateDefs (p: Proxy);
@@ -716,10 +705,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
           END;
         ELSIF (instr. opcode = Opcode.loopEnd) THEN
           RETURN instr. info(Loop);
-        ELSIF (instr. opcode = Opcode.selectExit) &
-              (opnd = instr. opndList) THEN
-          (* place loop-end inside a loop-exit, if the latter exists *)
-          RETURN instr. info(Region);
         ELSE
           RETURN instr. info(Proxy). region;
         END;
@@ -772,11 +757,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
           (* move instruction just below the most global loop for which
              it is an invariant *)
           region := lastLoop. region;
-          IF (region. instr # NIL) &
-             (region. instr. opcode = Opcode.selectExit) THEN
-            (* also skip the select-exit around the loop on the way up *)
-            region := region. region;
-          END;
         END;
         RETURN region;
       END MoveLoopInvariants;

@@ -31,21 +31,21 @@ l12_loop:
   i4 = i4<=i3;
   if (!i4) goto l12_loop;
 l18:
-  i4 = i2*4;
+  i4 = i1*4;
+  i4 = (OOC_INT32)a+i4;
   i5 = i1>=i2;
-  i6 = i1*4;
-  i6 = (OOC_INT32)a+i6;
+  i6 = i2*4;
   if (i5) goto l24;
 l23:
-  i5 = *(OOC_INT32*)i6;
-  i6 = i2*4;
-  i6 = (OOC_INT32)a+i6;
+  i4 = *(OOC_INT32*)i4;
+  i5 = i2*4;
+  i5 = (OOC_INT32)a+i5;
   i7 = i1*4;
   i7 = (OOC_INT32)a+i7;
-  i4 = (OOC_INT32)a+i4;
-  i4 = *(OOC_INT32*)i4;
-  *(OOC_INT32*)i7 = i4;
-  *(OOC_INT32*)i6 = i5;
+  i6 = (OOC_INT32)a+i6;
+  i6 = *(OOC_INT32*)i6;
+  *(OOC_INT32*)i7 = i6;
+  *(OOC_INT32*)i5 = i4;
   
   goto l5_loop;
 l24:

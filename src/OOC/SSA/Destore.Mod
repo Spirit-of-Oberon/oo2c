@@ -283,8 +283,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         | Opcode.select:
           opnd := select. NthOpnd (pathNum*2+2);
           
-        | Opcode.selectExit:         (* place collect _before_ "exit" *)
-          opnd := select. NthOpnd (pathNum+1);
+        | Opcode.loopEnd:         (* place collect _before_ "exit" *)
+          opnd := select. NthOpnd (pathNum+2);
           ASSERT (opnd. arg. instr. opcode = Opcode.exit);
           opnd := opnd. arg. instr. opndList;
           
@@ -326,7 +326,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           CASE select. opcode OF
           | Opcode.select    : RETURN (select. SizeOpndList() DIV 2)
           | Opcode.loopStart : RETURN 2
-          | Opcode.selectExit: RETURN (select. SizeOpndList() - 1)
+          | Opcode.loopEnd   : RETURN (select. SizeOpndList() - 2)
           END;
         END NumberOfPaths;
       
@@ -342,7 +342,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           i := 0; noUnknownValue := TRUE; allTheSame := TRUE;
           CASE select. opcode OF
           | Opcode.select    : opnd := select. NthOpnd (2)
-          | Opcode.selectExit: opnd := select. NthOpnd (1)
+          | Opcode.loopEnd   : opnd := select. NthOpnd (2)
           END;
           WHILE (opnd # NIL) & noUnknownValue DO
             values[i] := GetValue (opnd. arg, get, loopTrace);
@@ -527,7 +527,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
            variable, or it is an undefined value *)        
         RETURN unknownValue;
         
-      | Opcode.select, Opcode.selectExit:
+      | Opcode.select, Opcode.loopEnd:
         RETURN GetSelectValue (instr);
         
       | Opcode.collect, Opcode.newObject, Opcode.copyParameter,
@@ -674,15 +674,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             RETURN ExternalVisibility (GetVar (set));
 
           | Opcode.exit:
-            i := instr. GetSelectExit();
+            i := instr. GetLoopEnd();
             RETURN VisibleEffect (i. GetResultStore(), set)
             
-          | Opcode.loopEnd:
-            (* loop is left through its "select-exit", control never
-               passes through "loop-end" *)
-            RETURN FALSE;
-            
-          | Opcode.loopStart, Opcode.selectExit, Opcode.collect,
+          | Opcode.loopStart, Opcode.loopEnd, Opcode.collect,
             Opcode.select, Opcode.newObject,
             Opcode.assert, Opcode.checkIndex:
             RETURN VisibleEffect (instr. GetResultStore(), set)
