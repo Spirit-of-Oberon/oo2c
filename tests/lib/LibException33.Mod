@@ -25,14 +25,14 @@ PROCEDURE Test*();
     Out.String(">>> start"); Out.Ln;
     TRY
       RAISE(NEW(Exception.Exception, one));
-    CATCH Exception.Exception:
-      Write(EXCEPTION.GetMessage());
+    CATCH Exception.Exception(e):
+      Write(e.GetMessage());
       TRY
         RAISE(NEW(Exception.Exception, two));
       CATCH Exception.Exception:
-        Write(EXCEPTION.GetMessage());
+        Write(e.GetMessage());
       END;
-      Write(EXCEPTION.GetMessage());
+      Write(e.GetMessage());
     END;
   END Test;
 

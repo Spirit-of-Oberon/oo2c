@@ -28,9 +28,9 @@ IMPORT
    @example
    TRY
      S
-   CATCH T1:
+   CATCH T1(t1):
      C1
-   CATCH T2:
+   CATCH T2(t2):
      C2
    END;
    @end example
@@ -54,8 +54,10 @@ IMPORT
    Exception.PopContext;
    temp := Exception.Current();
    WITH temp: T1 DO
+     t1 := temp;
      C1;
    | temp: T2 DO
+     t2 := temp;
      C2;
    ELSE
      Exception.ActivateContext;
@@ -70,9 +72,9 @@ IMPORT
    such a clause exist.  Otherwise, the exception is written to @var{stderr}
    and the program is aborted.
 
-   Within a @code{CATCH}, the predefined variable @code{EXCEPTION} holds the
-   value of @oproc{Current}.  Its type is the one given in the
-   @code{CATCH} clause.  The variable is read-only.
+   Within a @code{CATCH}, the optional name given in parenthesis refers to the
+   current exception that triggered the @code{CACTH}.  Its type is the one
+   from the @code{CATCH} clause.  The variable is read-only.
    
    An exception @var{E} must either be caught within a procedure, or the
    procedure must declare that it may pass an exception of type @var{E} up to
@@ -174,13 +176,13 @@ PROCEDURE Raise* [NO_RETURN](e: Exception) RAISES Exception;
 PROCEDURE Current*(): Exception;
 (**Return the pointer to the currently active exception.  This is @code{NIL} if
    no exception has been raised, or when a @code{CATCH} clause has been
-   completed successfully for the last exception.  Within a @code{CATCH} block,
-   the predefined read-only variable @samp{EXCEPTION} holds the same pointer
-   value.
+   completed successfully for the last exception.  Within a @code{CATCH} block
+   that includes a name in parenthesis, the name identifies a predefined
+   read-only variable holding the same pointer value.
 
    @emph{Note}: Within a @code{CATCH} block, this function's result becomes
    undefined at the start of the first @code{TRY} statement nested in the
-   @code{CATCH}.  @samp{EXCEPTION} is a defined value over the whole
+   @code{CATCH}.  Catching into a name defines the value over the whole
    @code{CATCH} block.  *)
   
 PROCEDURE Clear*;

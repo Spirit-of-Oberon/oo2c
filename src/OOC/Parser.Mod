@@ -1572,18 +1572,38 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             catchList: AST.NodeList;
             try, end: AST.Node;
             statmSeq: AST.NodeList;
+
+          PROCEDURE Catch(): AST.Node;
+            VAR
+              catch, type, lParen, ident, rParen, colon: AST.Node;
+              statmSeq: AST.NodeList;
+            BEGIN
+              catch := CheckSym(Symbol.catch);
+              type := Qualident();
+              IF (sym.id = Symbol.lParen) THEN
+                lParen := CheckSym(Symbol.lParen);
+                ident := CheckSym(Symbol.ident);
+                rParen := CheckSym(Symbol.rParen);
+              ELSE
+                lParen := NIL;
+                ident := NIL;
+                rParen := NIL;
+              END;
+              colon := CheckSym(Symbol.colon);
+              statmSeq := StatementSeq();
+              RETURN ast.Catch(catch, type, lParen, ident, rParen,
+                               colon, statmSeq);
+            END Catch;
+          
           BEGIN
             (*S: TryStatm = "TRY" StatementSeq
-                            {"CATCH" Qualident ":" StatementSeq}
+                            {"CATCH" Qualident["(" ident ")"]":" StatementSeq}
                             "END". *)
             try := CheckSym(Symbol.try);
             statmSeq := StatementSeq();
             catchList := ast.NewNodeList();
             WHILE (sym.id = Symbol.catch) DO
-              catchList.Append(CheckSym(Symbol.catch));
-              catchList.Append(Qualident());
-              catchList.Append(CheckSym(Symbol.colon));
-              catchList.Append(StatementSeq());
+              catchList.Append(Catch());
             END;
             end := CheckSym(Symbol.end);
             RETURN ast.TryStatm(try, statmSeq, catchList, end);

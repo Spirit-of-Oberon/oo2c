@@ -26,12 +26,12 @@ PROCEDURE P() RAISES Exception.Exception;
       Out.String("In P..."); Out.Ln;
       RAISE(NEW(E, 123));
       Out.String("Still in P..."); Out.Ln;
-    CATCH E:
+    CATCH E(e):
       Out.String("In CATCH of P...");
       Out.Ln;
-      Out.Int(EXCEPTION.x, 0);
+      Out.Int(e.x, 0);
       Out.Ln;
-      RAISE(EXCEPTION);      
+      RAISE(e);      
     CATCH Exception.Exception:
       ASSERT(FALSE);
     END;

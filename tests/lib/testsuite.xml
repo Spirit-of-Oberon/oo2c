@@ -665,13 +665,12 @@
     </test>
     <test id="lib_Exception29" type="run" file="LibException29.Mod"
       output="LibException29.Ref">
-      Within a <code>CATCH</code> block, the variable
-      <code>EXCEPTION</code> holds the value of
-      <code>Exception.Current()</code>.
+      Within a <code>CATCH</code> block, the name given in the clause
+      refers to the value of <code>Exception.Current()</code>.
     </test>
     <test id="lib_Exception30" type="run" file="LibException30.Mod"
       output="LibException30.Ref">
-      The type of <code>EXCEPTION</code> is the one from the guard of
+      The type of an exception variable is the one from the guard of
       the <code>CATCH</code> block.
     </test>
     <test id="lib_Exception31" type="reject" file="LibException31.Mod">
@@ -722,7 +721,7 @@
       msg="Exception `Exception.Exception' neither caught nor passed up"/>
     <reject-info id="lib_Exception25" pos="RAISE(%NewException"
       msg="Type is not an extension of `Exception.Exception'"/>
-    <reject-info id="lib_Exception31" pos="%EXCEPTION := "
+    <reject-info id="lib_Exception31" pos="%e := "
       msg="This must be a variable"/>
     <reject-info id="lib_Exception32" pos="e := %EXCEPTION"
       msg="Undeclared identifier"/>

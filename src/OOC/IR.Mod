@@ -1405,7 +1405,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 (* Guarded Variable Declaration
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitGuardedVar (gv: GuardedVar; var: Sym.VarDecl; type: Sym.Type);
+PROCEDURE InitGuardedVar (gv: GuardedVar; var: Sym.VarDecl; name: Sym.Name;
+                          type: Sym.Type);
   VAR
     exportMark: Sym.ExportMark;
   BEGIN
@@ -1413,18 +1414,19 @@ PROCEDURE InitGuardedVar (gv: GuardedVar; var: Sym.VarDecl; type: Sym.Type);
     IF (exportMark = Sym.nameNotExported) THEN
       exportMark := Sym.nameExportedRO;
     END;
-    Sym.InitDeclaration (gv, NIL, var.name, var.visibleFrom,
+    Sym.InitDeclaration (gv, NIL, name, var.visibleFrom,
                          exportMark, var.docString);
     gv.var := var;
     gv.type := type;
   END InitGuardedVar;
 
-PROCEDURE NewGuardedVar (var: Sym.VarDecl; type: Sym.Type): GuardedVar;
+PROCEDURE NewGuardedVar (var: Sym.VarDecl; name: Sym.Name;
+                         type: Sym.Type): GuardedVar;
   VAR
     gv: GuardedVar;
   BEGIN
     NEW (gv);
-    InitGuardedVar (gv, var, type);
+    InitGuardedVar (gv, var, name, type);
     RETURN gv;
   END NewGuardedVar;
 
@@ -5330,7 +5332,8 @@ PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest;
     IF (typeTest.expr IS Var) THEN
       var := typeTest. expr(Var). decl(Sym.VarDecl);
       NEW (da, 1);
-      da[0] := NewGuardedVar (var, typeTest. origType. decl(Sym.TypeDecl). type);
+      da[0] := NewGuardedVar (var, var.name,
+                              typeTest.origType.decl(Sym.TypeDecl).type);
       nested := Namespace.NewNested (da, 1);
       nested. SetEnclosingNamespace (namespace(Namespace.Nested));
       namespace := nested;
@@ -5352,6 +5355,7 @@ PROCEDURE (b: Builder) EndTypeGuard* (VAR namespace: Sym.Namespace);
   END EndTypeGuard;
 
 PROCEDURE (b: Builder) StartExceptionScope*(exceptionType: Expression;
+                                            varName: Symbol;
                                             VAR namespace: Sym.Namespace);
   VAR
     nested: Namespace.Nested;
@@ -5365,7 +5369,8 @@ PROCEDURE (b: Builder) StartExceptionScope*(exceptionType: Expression;
     END;
     
     NEW(da, 1);
-    da[0] := NewGuardedVar(CreateNamespace.exception, type);
+    da[0] := NewGuardedVar(CreateNamespace.exception,
+                           b.GetName(varName), type);
     nested := Namespace.NewNested(da, 1);
     nested.SetEnclosingNamespace(namespace(Namespace.Nested));
     namespace := nested;

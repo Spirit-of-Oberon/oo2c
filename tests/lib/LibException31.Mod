@@ -5,12 +5,12 @@ IMPORT
 
 PROCEDURE Test*();
   VAR
-    e: Exception.Exception;
+    bar: Exception.Exception;
   BEGIN
     TRY
       RAISE(NEW(Exception.Exception, "Jo!"));
-    CATCH Exception.Exception:
-      EXCEPTION := e;
+    CATCH Exception.Exception(e):
+      e := bar;
     END;
   END Test;
 

@@ -471,6 +471,19 @@ TYPE
   END;
 
 TYPE
+  Catch* = POINTER TO CatchDesc;
+  CatchDesc = RECORD
+    (NodeDesc)
+    catch-: Terminal;
+    type-: Node;
+    lParen-: AST.Node;  (* optional *)
+    ident-: Terminal;   (* optional *)
+    rParen-: AST.Node;  (* optional *)
+    colon-: AST.Node;
+    statmSeq-: NodeList;
+  END;
+
+TYPE
   TryStatm* = POINTER TO TryStatmDesc;
   TryStatmDesc = RECORD
     (NodeDesc)
@@ -479,8 +492,6 @@ TYPE
     catchList-: NodeList;
     end-: Terminal;
   END;
-
-
 
 TYPE
   FlagsDesc = RECORD
@@ -691,6 +702,9 @@ PROCEDURE (v: Visitor) VisitExitStatm* (exitStatm: ExitStatm);
 
 PROCEDURE (v: Visitor) VisitReturnStatm* (returnStatm: ReturnStatm);
   END VisitReturnStatm;
+
+PROCEDURE (v: Visitor) VisitCatch* (catch: Catch);
+  END VisitCatch;
 
 PROCEDURE (v: Visitor) VisitTryStatm* (tryStatm: TryStatm);
   END VisitTryStatm;
@@ -1587,6 +1601,31 @@ PROCEDURE (returnStatm: ReturnStatm) Accept* (v: Visitor);
     v. VisitReturnStatm (returnStatm)
   END Accept;
 
+
+PROCEDURE (b: Builder) Catch*(catch, type, lParen, ident, rParen,
+                              colon: AST.Node; statmSeq: AST.NodeList): Node;
+  VAR
+    c: Catch;
+  BEGIN
+    NEW(c);
+    c.catch := catch(Terminal);
+    c.type := type(Node);
+    c.lParen := lParen;
+    IF (ident = NIL) THEN
+      c.ident := NIL;
+    ELSE
+      c.ident := ident(Terminal);
+    END;
+    c.rParen := rParen;
+    c.colon := colon;
+    c.statmSeq := statmSeq(NodeList);
+    RETURN c;
+  END Catch;
+
+PROCEDURE (catch: Catch) Accept* (v: Visitor);
+  BEGIN
+    v. VisitCatch (catch)
+  END Accept;
 
 PROCEDURE (b: Builder) TryStatm* (try: AST.Node; statmSeq: AST.NodeList;
                                   catchList: AST.NodeList; end: AST.Node): Node;
