@@ -429,6 +429,9 @@
       Use <code>SYSTEM.VAL</code> to cast a <code>SET</code> to
       a <code>LONGINT</code>.
     </test>
+    <test id="val3" type="run" file="Val3.Mod" output="Val3.Ref">
+      Integer constants in hex notation.  Very basic ;-)
+    </test>
   </testcases>
   
     

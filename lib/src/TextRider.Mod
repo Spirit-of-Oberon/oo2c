@@ -677,6 +677,7 @@ PROCEDURE HexToInt (str: ARRAY OF CHAR; VAR lint: LONGINT): BOOLEAN;
     WHILE (str[epos] # 0X) DO
       INC (epos);
     END;
+    DEC (epos);
     
     (* skip leading zeros *)
     WHILE (str[spos] = "0") DO 
@@ -699,7 +700,7 @@ PROCEDURE HexToInt (str: ARRAY OF CHAR; VAR lint: LONGINT): BOOLEAN;
       END;
       (* ELSE: number is non-empty sequence of "0", keep lint=0 *)
     END;
-    RETURN TRUE;
+    RETURN (epos >= 0);
   END HexToInt;
 
 PROCEDURE (r: Reader) ReadLInt* (VAR lint: LONGINT);

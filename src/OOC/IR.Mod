@@ -1412,8 +1412,8 @@ PROCEDURE (b: Builder) NewIntConst16* (sym: Symbol): Expression;
   
   BEGIN
     (* FIXME... string conversion should probably put into Language.Integer *)
-    result := 0; spos := 0; epos := 0;
-    WHILE (sym. str[epos] # "H") DO
+    result := 0; spos := 0; epos := -1;
+    WHILE (sym. str[epos+1] # "H") DO
       INC (epos);
     END;
     
