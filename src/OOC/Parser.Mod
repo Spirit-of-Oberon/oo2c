@@ -22,7 +22,7 @@ MODULE OOC:Parser;
 
 IMPORT
   Msg, Strings,
-  OOC:Error, OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:AST,
+  OOC:Error, OOC:Scanner:Symbol, OOC:Scanner:BasicList, OOC:AST,
   OOC:Doc, OOC:Doc:Input:Texinfo;
 
 

@@ -3,7 +3,7 @@ MODULE OOC:Scanner:Pragma;
 IMPORT
   Msg, Strings, RT0,
   OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol, OOC:Scanner:Builder,
-  OOC:Scanner:Builder:BasicList, OOC:Config:Pragmas, OOC:Scanner:Integer,
+  OOC:Scanner:BasicList, OOC:Config:Pragmas, OOC:Scanner:Integer,
   
   ConfigValue := Config:Value,
   BooleanValue := Config:Value:Boolean,

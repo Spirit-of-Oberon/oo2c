@@ -22,7 +22,7 @@ MODULE OOC:Doc:Decoration;
 
 IMPORT
   Ascii, CharClass, Strings,
-  OOC:Scanner:InputBuffer, OOC:Scanner, OOC:Scanner:Builder:BasicList;
+  OOC:Scanner:InputBuffer, OOC:Scanner, OOC:Scanner:BasicList;
   
 
 TYPE

@@ -22,7 +22,7 @@ MODULE OOC:AST:ExtTree:CreateIR;
 
 IMPORT
   Log, Object:BigInt,
-  OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList,
+  OOC:Scanner:Symbol, OOC:Scanner:BasicList,
   OOC:AST:ExtTree, Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
   OOC:SymbolTable:Predef, OOC:IR;
 

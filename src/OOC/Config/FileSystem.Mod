@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Config:Repositories:FileSystem;
+MODULE OOC:Config:FileSystem;
 (*  Implements "file-system" element of XML repository configuration.
     Copyright (C) 2001  Michael van Acken
 
@@ -121,6 +121,6 @@ PROCEDURE (re: RepositoryEntry) ProcessElement* (
 
 BEGIN
   NEW (repositoriesContext);
-  Msg.InitContext (repositoriesContext, "OOC:Config:Repositories:FileSystem");
+  Msg.InitContext (repositoriesContext, "OOC:Config:FileSystem");
   Repositories.AddRepositoryEntry (NewRepositoryEntry())
-END OOC:Config:Repositories:FileSystem.
+END OOC:Config:FileSystem.

@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Scanner:Builder:Identity;
+MODULE OOC:Scanner:Identity;
 (*  Passes string representation of scanned symbols to output channel.
     Copyright (C) 2000  Michael van Acken
 
@@ -61,4 +61,4 @@ PROCEDURE (b: Builder) AddSymbol* (id: Symbol.Id;
     b. writer. WriteBytes (b. inputBuffer. chars^, cstart, cend-cstart)
   END AddSymbol;
 
-END OOC:Scanner:Builder:Identity.
+END OOC:Scanner:Identity.

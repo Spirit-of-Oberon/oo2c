@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Scanner:Builder:XML;
+MODULE OOC:Scanner:XML;
 (*  Creates XML document from a scanned symbol sequence.
     Copyright (C) 2000  Michael van Acken
 
@@ -133,4 +133,4 @@ PROCEDURE (b: Builder) AddSymbol* (id: Symbol.Id;
     END
   END AddSymbol;
 
-END OOC:Scanner:Builder:XML.
+END OOC:Scanner:XML.

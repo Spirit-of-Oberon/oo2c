@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Object, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc;
+  Object, OOC:Scanner:BasicList, OOC:AST, OOC:Doc;
 
 
 

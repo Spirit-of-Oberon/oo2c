@@ -4,7 +4,7 @@ IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Msg,
   Object, IO, IO:FileChannel, Std:=IO:StdChannels,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, 
-  OOC:Scanner, OOC:Scanner:Builder:BasicList, OOC:Parser, OOC:AST, 
+  OOC:Scanner, OOC:Scanner:BasicList, OOC:Parser, OOC:AST, 
   OOC:AST:ExtTree, OOC:AST:ExtTree:XML, OOC:AST:ExtTree:StupidPP;
   
 CONST

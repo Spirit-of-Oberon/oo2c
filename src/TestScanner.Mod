@@ -3,8 +3,8 @@ MODULE TestScanner;
 IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Object, IO, IO:FileChannel,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Builder,
-  OOC:Scanner, OOC:Scanner:Builder:XML, OOC:Scanner:Builder:Identity, 
-  OOC:Scanner:Builder:Statistics, BooleanValue := Config:Value:Boolean;
+  OOC:Scanner, OOC:Scanner:XML, OOC:Scanner:Identity, 
+  OOC:Scanner:Statistics, BooleanValue := Config:Value:Boolean;
 
 CONST
   modeXML = 0;

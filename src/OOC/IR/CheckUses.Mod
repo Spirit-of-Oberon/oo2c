@@ -23,10 +23,10 @@ MODULE OOC:IR:CheckUses;
 IMPORT
   Object, Object:Boxed, ADT:Dictionary, DictInt := ADT:Dictionary:IntValue,
   ADT:ArrayList, Config:Value, Config:Value:Boolean, Msg,
-  OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
+  OOC:Config:Pragmas, OOC:Config:StdPragmas,
   Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
   OOC:SymbolTable:Predef,
-  OOC:Error, OOC:Scanner:Builder:BasicList, OOC:IR, OOC:IR:VisitAll;
+  OOC:Error, OOC:Scanner:BasicList, OOC:IR, OOC:IR:VisitAll;
 
 
 (* Some notes on the dataflow analysis of this module:

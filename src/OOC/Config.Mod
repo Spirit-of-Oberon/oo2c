@@ -3,9 +3,9 @@ MODULE OOC:Config;
 IMPORT
   RT0, Msg, IO, Config:Value, Config:Value:String, Config:Source:CmdLine,
   Config:Section:Options, Config:Section:Arguments, Config:Simple,
-  OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas, OOC:Config:Autoconf,
+  OOC:Config:Pragmas, OOC:Config:StdPragmas, OOC:Config:Autoconf,
   OOC:Config:Repositories,
-  <*PUSH; Warnings:=FALSE*>OOC:Config:Repositories:FileSystem<*POP*>;
+  <*PUSH; Warnings:=FALSE*>OOC:Config:FileSystem<*POP*>;
 
 
 VAR

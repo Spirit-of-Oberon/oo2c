@@ -4,7 +4,7 @@ MODULE OOC:Doc:Input:Texinfo;
 IMPORT
   Ascii, CharClass, IntStr, Out, Msg, Channel, TextRider, StdChannels, Strings,
   OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner, 
-  OOC:Scanner:Builder:BasicList, OOC:Doc, OOC:Doc:Decoration,
+  OOC:Scanner:BasicList, OOC:Doc, OOC:Doc:Decoration,
   OOC:Doc:TextBuffer;
 
 

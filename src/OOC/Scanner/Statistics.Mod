@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:Scanner:Builder:Statistics;
+MODULE OOC:Scanner:Statistics;
 (*  Displays statistics about the symbols of a module.
     Copyright (C) 2000  Michael van Acken
 
@@ -131,4 +131,4 @@ PROCEDURE (b: Builder) AddSymbol* (id: Symbol.Id;
     END
   END AddSymbol;
 
-END OOC:Scanner:Builder:Statistics.
+END OOC:Scanner:Statistics.

@@ -22,7 +22,7 @@ MODULE OOC:AST:ExtTree:CreateSymTab;
 
 IMPORT
   Msg, Object, URI, ParserURI := URI:Parser,
-  OOC:Scanner:Symbol, OOC:AST, OOC:Scanner:Builder:BasicList, OOC:AST:ExtTree,
+  OOC:Scanner:Symbol, OOC:AST, OOC:Scanner:BasicList, OOC:AST:ExtTree,
   Sym := OOC:SymbolTable,
   SymTabBuilder := OOC:SymbolTable:Builder;
 

@@ -5,7 +5,7 @@ IMPORT
   OOC:Config, OOC:Config:Pragmas, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
-  OOC:Scanner, OOC:Scanner:Builder:BasicList,
+  OOC:Scanner, OOC:Scanner:BasicList,
   OOC:Parser, OOC:AST, OOC:AST:ExtTree,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Builder, OOC:SymbolTable:Uses,
   OOC:AST:ExtTree:CreateSymTab, OOC:SymbolTable:CreateNamespace,

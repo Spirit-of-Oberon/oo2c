@@ -2,7 +2,7 @@ MODULE TestTexinfo;
 
 IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Files, Msg, Std:=IO:StdChannels,
-  OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Builder:BasicList,
+  OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:BasicList,
   OOC:Doc, OOC:Doc:Input:Texinfo, OOC:Doc:Output:XML, OOC:Doc:Output:Text;
 
 CONST
