@@ -579,17 +579,49 @@ PROCEDURE (s: String16) ToString8*(replace: CHAR): String8;
   VAR
     data8: CharsLatin1;
     i: LONGINT;
+    s8: String8;
   BEGIN
-    NEW(data8, s.length);
-    FOR i := 0 TO s.length-1 DO
+    NEW(data8, s.length+1);
+    FOR i := 0 TO s.length DO
       IF (s.data[i] > 0FFX) THEN
+        (* FIXME... take surrogate pairs into account *)
         data8[i] := replace;
       ELSE
         data8[i] := SHORT(s.data[i]);
       END;
     END;
-    RETURN NewLatin1Region(data8^, 0, s.length);
+
+    NEW(s8);
+    s8.length := s.length;
+    s8.data := data8;
+    RETURN s8;
   END ToString8;
+
+PROCEDURE (s: String) [ABSTRACT] ToString16*(): String16;
+(**Identity operation returning @oparam{s} as an instance of @otype{String16}.  *)
+  END ToString16;
+
+PROCEDURE (s: String8) ToString16*(): String16;
+  VAR
+    data16: CharsUTF16;
+    i: LONGINT;
+    s16: String16;
+  BEGIN
+    NEW(data16, s.length+1);
+    FOR i := 0 TO s.length DO
+      data16[i] := s.data[i];
+    END;
+    
+    NEW(s16);
+    s16.length := s.length;
+    s16.data := data16;
+    RETURN s16;
+  END ToString16;
+
+PROCEDURE (s: String16) ToString16*(): String16;
+  BEGIN
+    RETURN s;
+  END ToString16;
 
 PROCEDURE (s: String) [ABSTRACT] Equals*(y: Object): BOOLEAN;
   END Equals;
