@@ -22,7 +22,8 @@ MODULE OOC:C:RuntimeData;
 
 
 IMPORT
-  IO:TextRider, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
+  IO:TextRider, ADT:ArrayList, ADT:StringBuffer,
+  OOC:Config, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, TR := OOC:SymbolTable:TypeRules,
   OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -267,6 +268,32 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
     VAR
       i: LONGINT;
 
+    PROCEDURE QualTypeName(t: Sym.Type): STRING;
+      VAR
+        sb: StringBuffer.StringBuffer;
+        i: LONGINT;
+        module: Sym.Module;
+      BEGIN
+        sb := NEW(StringBuffer.StringBuffer, 128);
+        WITH t: Sym.TypeClosure DO
+          sb.Append(QualTypeName(t.baseType));
+          sb.Append("(");
+          FOR i := 0 TO LEN(t.arguments^)-1 DO
+            IF (i # 0) THEN
+              sb.Append(",");
+            END;
+            sb.Append(QualTypeName(t.arguments[i].type));
+          END;
+          sb.Append(")");
+        ELSE
+          module := t.Module();
+          sb.AppendLatin1(module.name.str^);
+          sb.Append(".");
+          sb.AppendLatin1(t.namingDecl.name.str^);
+        END;
+        RETURN sb.ToString();
+      END QualTypeName;
+    
     PROCEDURE BaseTypes (record: Sym.Type; t: Sym.Type): LONGINT;
       VAR
         len: LONGINT;
@@ -292,6 +319,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         name: STRING;
         record: Sym.Record;
       BEGIN
+        tdNames.Append(qtd.name);       (* add to td list in module *)
+        
         w.WriteLn;
         w.WriteString("static ");
         w.WriteString(structTypeDesc);
@@ -305,18 +334,19 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           len := BaseTypes (qtd.type, qtd.type);
           w. WriteChar ("}");
           
-          CNli; w. WriteString ("(void*[]){");   (* tbProcs *)
+          CNli; w. WriteString ("(void*[]){"); (* tbProcs *)
           record := qtd.type.baseType(Sym.Record);
           TBProcs(record, record.tbProcCount);
           w. WriteChar ("}");
         ELSE  (* IS Sym.Pointer *)
+          len := 0;
           w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
           w.WriteString("&");
           name := Naming.NameOfTypeDescriptor(TR.PointerBaseType(qtd.type),
                                               qtdData);
           w.WriteObject(name);
           w. WriteChar ("}");
-          CNli; w.WriteString("NULL");    (* tbProcs *)
+          CNli; w.WriteString("NULL");   (* tbProcs *)
         END;
         
         CNli; w.WriteString("(RT0__Struct[]){"); (* typeArgs *)
@@ -327,10 +357,14 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         END;
         w.WriteString(", NULL}");
         
-        CNli; w.WriteString("&_mid");  (* module *)
-        CNli; w.WriteString("NULL");    (* name *)
+        CNli; w.WriteString("&_mid");    (* module *)
+        
+        CNli; w.WriteChar('"');          (* name *)
+        w.WriteObject(QualTypeName(qtd.type));
+        w.WriteChar('"');
+        
         CNli; w.WriteLInt(qtd.type.size, 0); (* size *)
-        CNli; w.WriteLInt(len, 0); (* len *)
+        CNli; w.WriteLInt(len, 0);       (* len *)
         CNli; WriteForm("strQualType");   (* form *)
         
         w.WriteString(" };");
