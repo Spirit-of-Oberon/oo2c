@@ -275,7 +275,7 @@ RAISES IO.Error;
                                                   errList, 
                                                   ConstFold.NewConstFold()));
       IF errList.NoErrors() THEN
-        CheckUses.CheckUses(module, pragmaHistory, errList);
+        CheckUses.CheckUses(module, symTab, pragmaHistory, errList);
       END;
       
       IF writeIR THEN
