@@ -4779,7 +4779,11 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     VAR
       ok: BOOLEAN;
     BEGIN
-      IF fpar. isVarParam THEN           (* variable parameter *)
+      IF fpar.permitArgumentNIL & TR.IsPredefType(arg.type, Predef.nil) THEN
+        (* the flag NIL_COMPATH is set for the formal parameter, and the
+           actual parameter is NIL: accept *)
+        
+      ELSIF fpar. isVarParam THEN        (* variable parameter *)
         b. AssertVar (arg);
 
         IF fpar. isReceiver & (arg. type IS Sym.Pointer) THEN
@@ -4810,6 +4814,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         ELSE                             (* not compatible *)
           b. ErrSym (notVarParCompatible, arg. sym);
         END;
+        
       ELSE                               (* value parameter *)
         IF TR.IsOpenArrayType (fpar. type) THEN
           ok := TR.IsArrayCompatible (arg. type, fpar. type) OR
@@ -4874,9 +4879,12 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         END;
         MakeParameterCompatible (b, arg. sym, arg, fpar);
         
-        IF fpar. isPassPerReference THEN
+        IF fpar.isPassPerReference &
+           ~TR.IsPredefType(arg.type, Predef.nil) THEN
           (* for argument passed by reference, add the address of the
-             designator to the argument list, not its value *)
+             designator to the argument list, not its value; if the argument is
+             NIL and teh formal parameter is NIL_COMPAT, then use the value
+             directly *)
           newArgs. Append (b. NewAdr (sym, arg));
         ELSE
           newArgs. Append (arg);

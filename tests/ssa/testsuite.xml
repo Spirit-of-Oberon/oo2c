@@ -10,7 +10,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; move1">-->
+  select ="&SetupTestCasesWithOut; nilCompat1 nilCompat2 nilCompat3
+           nilCompat4 nilCompat5">-->
 
   &TestSetupWithOut;
     
@@ -1181,6 +1182,23 @@
       <code>VAR</code> parameter.
     </test>
     -->
+
+    <test id="nilCompat1" type="reject" file="NilCompat1.Mod">
+      <code>NIL_COMPAT</code> is used for a variable.
+    </test>
+    <test id="nilCompat2" type="reject" file="NilCompat2.Mod">
+      <code>NIL_COMPAT</code> is used for pass by value parameter.
+    </test>
+    <test id="nilCompat3" type="accept" file="NilCompat3.Mod">
+      Setting <code>NIL_COMPAT</code> for a character array parameter.
+    </test>
+    <test id="nilCompat4" type="reject" file="NilCompat4.Mod">
+      Passing <code>NIL</code> to a standard character array parameter.
+    </test>
+    <test id="nilCompat5" type="accept" file="NilCompat5.Mod">
+      Passing <code>NIL</code> to a <code>NIL_COMPAT</code>
+      character array parameter.
+    </test>
   </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC">
@@ -1504,5 +1522,12 @@
     <reject-info id="noCopy6" pos="F(%a[0])"
         msg="This parameter is read-only"/>
     -->
+
+    <reject-info id="nilCompat1" pos="a[%NIL_COMPAT]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="nilCompat2" pos="a[%NIL_COMPAT]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="nilCompat4" pos="P1(%NIL)"
+        msg="Actual parameter not compatible with formal VAR parameter"/>
   </processor-info>
 </testsuite-ext>
