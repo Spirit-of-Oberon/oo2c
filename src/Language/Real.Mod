@@ -67,7 +67,7 @@ PROCEDURE (v : Value) ToString* () : String.String;
 VAR 
   str: ARRAY 128 OF CHAR;	(* FIXME! *)
 BEGIN
-  LRealStr.RealToFloat(v.value, 0, str);
+  LRealStr.RealToFloat(v.value, 17, str);
   RETURN String.New (str)
 END ToString;
 
