@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Scheme:Hierarchical;
 (*  Implementation of the generic hierarchical URI.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -456,7 +456,7 @@ PROCEDURE (uri: Generic) ResolveRelative* (baseURI: URI.HierarchicalURI);
       
       RemoveDot (uri. pathList);
       WHILE RemoveDotDot (uri. pathList) DO END;
-      uri. absolutePath := TRUE
+      uri. absolutePath := copy(Generic). absolutePath;
     END    
   END ResolveRelative;
 
