@@ -30,21 +30,39 @@ CONST
   (* note: ids must be unique across all predefined types; changing the
      id of a type breaks existing symbol files! *)
   boolean* = 0;
+  (**Predefined type @code{BOOLEAN}.  *)
   char* = 1;
+  (**Predefined type @code{CHAR}.  On all platforms supported by OOC this is 1
+     byte.  The character encoding is ISO Latin-1.  *)
   longchar* = 2;
+  (**Predefined type @code{LONGCHAR}.  An OOC extension.  A 2 byte Unicode
+     character value encoded as UCS-2.  (FIXME... is this the correct encoding
+     name?)  *)
   shortint* = 3;
+  (**Integer value, two's complement encoding, stored in one byte.  *)
   integer* = 4;
+  (**Integer value, two's complement encoding, stored in two bytes.  *)
   longint* = 5;
+  (**Integer value, two's complement encoding, stored in four bytes.  *)
   real* = 6;
+  (**Floating point value, IEEE-754 single precision, stored in four bytes.  *)
   longreal* = 7;
+  (**Floating point value, IEEE-754 single precision, stored in eight bytes. *)
   set* = 8;
+  (**A set of integer values in the range @samp{0 <= x < 32}.  Stored in
+     four bytes.  *)
   address* = 9;
   byte* = 10;
   ptr* = 11;
 
   charString* = 12;
+  (**A string value based on the predefined type @code{CHAR}.  This is a
+     sequence of arbitrary @oconst{char} constants.  In particular, the string
+     may contain the character code @code{0X}.  *)
   longcharString* = 13;
+  (**Like @oconst{charString}, but based on the type @code{LONGCHAR}.  *)
   void* = 14;
+  (**The return type of procedures, indicating that no result is produced.  *)
   
   lastId* = void;
   (**Id of last predefined type.  Typically used in client modules
