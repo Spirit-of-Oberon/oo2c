@@ -162,8 +162,12 @@ PROCEDURE NameOfType* (type: Sym.Type): STRING;
    @samp{type. namingDecl # NIL}
    @end precond *)
   BEGIN
-    ASSERT (type. namingDecl # NIL);
-    RETURN NameOfDeclaration (type. namingDecl);
+    WITH type: Sym.TypeVar DO
+      RETURN NameOfType(type.bound);
+    ELSE
+      ASSERT (type. namingDecl # NIL);
+      RETURN NameOfDeclaration (type. namingDecl);
+    END;
   END NameOfType;
 
 PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): STRING;

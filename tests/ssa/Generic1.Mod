@@ -14,7 +14,7 @@ TYPE
 TYPE
   B*<Base: A1> = POINTER TO BDesc<Base>;
   BDesc*<Base: A1> = RECORD 
-    (*x: Base;*)
+    x: Base;
   END;
 
 VAR
