@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE RealMath [INTERFACE "C"; LINK LIB "m" END];
 (*  Math functions for REAL.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002,2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -61,7 +61,7 @@ PROCEDURE ["(float)pow"] power*(base, exponent: REAL): REAL;
 (**Returns the value of the number base raised to the power exponent 
      for base > 0.  *)
 
-PROCEDURE ["(int)lrint"] round*(x: REAL): LONGINT;
+PROCEDURE ["ooc_round_real32"] round*(x: REAL): LONGINT;
 (**Returns the value of x rounded to the nearest integer.  *)
 
 PROCEDURE ["(float)sincos"] sincos* (x: REAL; VAR sin, cos: REAL);

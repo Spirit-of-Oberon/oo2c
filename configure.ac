@@ -28,6 +28,7 @@ else
 fi
 
 dnl checks for libraries
+AC_CHECK_LIB(m,sin)
 AC_CHECK_LIB(gc,GC_malloc)
 AC_CHECK_LIB(xnet,socket)
 if test $ac_cv_lib_xnet_socket = yes; then
@@ -63,6 +64,8 @@ dnl   BSD functions:
 AC_CHECK_FUNCS(gettimeofday settimeofday)
 dnl   GNU extensions:
 AC_CHECK_FUNCS(backtrace_symbols readdir_r)
+dnl   math functions:
+AC_CHECK_FUNCS(lrint)
 
 dnl checks for system services
 

@@ -21,8 +21,14 @@
 /* Define to 1 if you have the `gc' library (-lgc). */
 #undef HAVE_LIBGC
 
+/* Define to 1 if you have the `m' library (-lm). */
+#undef HAVE_LIBM
+
 /* Define to 1 if you have the `xnet' library (-lxnet). */
 #undef HAVE_LIBXNET
+
+/* Define to 1 if you have the `lrint' function. */
+#undef HAVE_LRINT
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H

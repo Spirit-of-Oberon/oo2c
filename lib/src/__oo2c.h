@@ -37,6 +37,14 @@
 #endif
 
 
+/* Use lrint() for round() in RealMath and LRealMath if it is available, 
+   otherwise use our own definitions in __oo2c.c.  The prototype for lrint()
+   is in __libc.h.  */
+#ifdef HAVE_LRINT
+#define ooc_round_real32(_x) (OOC_INT32)lrint(_x)
+#define ooc_round_real64(_x) (OOC_INT32)lrint(_x)
+#endif
+
 
 #define _check_index(index,length,utype,pos)              \
   ({ if ((utype)index >= (OOC_ULEN)length) {              \

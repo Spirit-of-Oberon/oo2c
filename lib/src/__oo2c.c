@@ -73,3 +73,20 @@ void _copy_32(const OOC_CHAR32* src, OOC_CHAR32* dest, OOC_LEN max_len) {
   while ((dest != max) && (*(dest++) = *(src++)));
   if (dest == max) *dest = '\000';
 }
+
+#ifndef HAVE_LRINT
+void ooc_round_real32(OOC_REAL32 x) {
+  if (x >= 0.0f) {
+    return (int)(x+0.5f);
+  } else {
+    return (int)(x-0.5f);
+  }
+}
+void ooc_round_real32(OOC_REAL64 x) {
+  if (x >= 0.0) {
+    return (int)(x+0.5);
+  } else {
+    return (int)(x-0.5);
+  }
+}
+#endif
