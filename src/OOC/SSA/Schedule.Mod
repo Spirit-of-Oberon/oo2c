@@ -824,9 +824,6 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
             ClearJump (b. branchTo);
           | b: SwitchBlock DO
             ASSERT (FALSE);
-            FOR i := 0 TO LEN (b. jump^)-1 DO
-              ClearJump (b. jump[i]);
-            END;
           | b: DeadEndBlock DO
             (* nothing *)
           END;
