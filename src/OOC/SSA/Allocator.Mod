@@ -24,7 +24,7 @@ MODULE OOC:SSA:Allocator;
 
 IMPORT
   Log,
-  <*IF DEBUG_ALLOCATOR THEN*>SYSTEM,Log,Err,<*END*>
+  <*IF DEBUG_ALLOCATOR THEN*>SYSTEM,Err,<*END*>
   IntStr, Strings, ADT:Object, ADT:ArrayList, ADT:Dictionary, ADT:String,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
   OOC:SSA:Schedule, OOC:SSA:IGraph, OOC:C:DeclWriter;
@@ -346,7 +346,6 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
     opnd: SSA.Opnd;
     loopBlock: Schedule.Block;
     i: LONGINT;
-    g: IGraph.Graph;
 
   PROCEDURE GetLoop (b: Schedule.Block; loopStart: SSA.Instr): Schedule.Block;
     VAR
@@ -383,7 +382,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       Err.Hex (SYSTEM.VAL (LONGINT, b), 8);
       Err.String ("  ");
       FOR i := 0 TO rf. resultList. size-1 DO
-        IF g. In (i, live) THEN
+        IF iGraph. In (i, live) THEN
           Err.Char (" ");
           WriteRes (rf. resultList. array[i](SSA.Result));
         END;
@@ -435,15 +434,21 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
         res := res. nextResult;
       END;
       
-      (* every argument of the instruction is checked whether it starts a
-         live range and is placed into the live vector if it does *)
+      (* Every argument of the instruction is checked whether it starts a live
+         range and is placed into the live vector if it does.
+
+         The first argument of "select" is skipped (by means of IsValueOpnd()),
+         because the select instruction appears after the selection expression
+         and the paths it selects, and the selection expression is only live at
+         the place at which control flow branches (read: at the end of
+         BranchBlock, or the beginning of SwitchBlock).  *)
       opnd := proxy. instr. opndList;
       WHILE (opnd # NIL) DO
         IF (opnd. arg. info = rf) & opnd. IsValueOpnd() THEN
           IF ~iGraph. In (opnd. arg. marker, live) THEN
-            (* the live range of the value passed to `opnd' interferes with all
-               live ranges currently active: calculate union between bit matrix
-               (row `opnd.arg.marker') and the live vector *)
+            (* the live range of the value passed to `opnd' interferes with
+               all live ranges currently active: calculate union between bit
+               matrix (row `opnd.arg.marker') and the live vector  *)
             iGraph. AddToLive (opnd. arg. marker, live)
           END
         END;
@@ -468,9 +473,8 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
     IF (loopEnd # NIL) THEN
       loopBlock := GetLoop (loopEnd. block. parent,
                             loopEnd. instr. GetLoopStart());
-      g := rf. iGraph;
       FOR i := 0 TO rf. resultList. size-1 DO
-        IF g. In (i, live) &
+        IF iGraph. In (i, live) &
            ~Schedule.Dominates (loopBlock, rf. blockList. array[i](Schedule.Block)) THEN
           AddToCollect (loopBlock, rf. resultList. array[i](SSA.Result));
         END;
@@ -692,7 +696,7 @@ PROCEDURE CollectCrossLoopResults (rf: RegisterFile;
       WHILE (proxy # NIL) DO
         opnd := proxy. instr. opndList;
         WHILE (opnd # NIL) DO
-          IF (opnd. arg. info = rf) THEN
+          IF (opnd. arg. info = rf) (*& opnd. IsValueOpnd() ... leads to endless loop in tests/lib??? FIXME *) THEN
             (* if the argument is from our current register file, and
                if it is defined outside of `loopHead', then it is live
                across the whole loop *)
