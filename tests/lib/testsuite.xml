@@ -7,7 +7,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_Strings_Insert1">-->
+  select ="prepare_out_module s">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -66,6 +66,18 @@
       Calls the <code>Insert</code> function to insert substrings
       before, after, and into another string.  The results fit into
       the destination array.
+    </test>
+    
+    <test id="lib_Strings_Insert2" type="run"
+      file="LibStringsInsert2.Mod" output="LibStringsInsert2.Ref">
+      <code>Insert</code> is a noop if <code>startPos</code> is 
+      larger than the string's length.
+    </test>
+    
+    <test id="lib_Strings_Insert3" type="run"
+      file="LibStringsInsert3.Mod" output="LibStringsInsert3.Ref">
+      Output string must be truncated by <code>Insert</code> if the
+      result is too long.
     </test>
   </testcases>
 </testsuite-ext>
