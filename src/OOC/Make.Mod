@@ -770,20 +770,25 @@ RAISES IO.Error;
     IF success THEN
       IF DerivedIsOlder(module, Rep.modInterfaceHTML, Rep.modInterfaceDescr) THEN
         exit := 0;
+        (* put file name of style sheet into str *)
         uri := GetSystemId (Config.repositories);
         uri(File.URI). GetPath (str);
-        Strings.Insert(" ", 0, str);
+                
+        (* put -o <file> option in front of style sheet  *)
+        Strings.Insert (" ", 0, str);
+        uri := module. GetURI (Rep.modInterfaceHTML, TRUE);
+        uri(File.URI). GetPath (path);
+        Strings.Insert (path, 0, str);
+        Strings.Insert (" -o ", 0, str);
+        
+        (* prefix option and style sheet argument with command name *)
         Strings.Insert(Config.xsltproc.value(StringValue.Value).string^,
                        0, str);
-        
+
+        (* append name of XML file *)
         uri := module. GetURI (Rep.modInterfaceDescr, TRUE);
         uri(File.URI). GetPath (path);
         Strings.Append (" ", str);
-        Strings.Append (path, str);
-        Strings.Append (" >", str);
-        
-        uri := module. GetURI (Rep.modInterfaceHTML, TRUE);
-        uri(File.URI). GetPath (path);
         Strings.Append (path, str);
         
         Path.dirname (path, path);
