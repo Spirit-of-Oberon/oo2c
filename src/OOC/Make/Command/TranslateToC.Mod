@@ -269,7 +269,17 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
 	| IR.arithMod:  w. WriteChar("%");
 	END;
         WriteExpr(w, expr. right);
-        
+
+      | expr: IR.SetOp DO
+        WriteExpr(w, expr.left);
+        CASE expr.variant OF
+        | IR.setUnion:  w. WriteChar("|");
+        | IR.setDiff:   w. WriteString("& ~");
+        | IR.setIntersect: w. WriteChar("&");
+        | IR.setSymDiff:   w. WriteChar("^");
+        END;
+        WriteExpr(w, expr.right);        
+
       | expr: IR.TypeConv DO
         WriteExpr(w, expr.expr);  (* FIXME! generate type casts if required *)
         

@@ -174,9 +174,29 @@ PROCEDURE (c: ConstFold) VisitSetConstruct* (sc: IR.SetConstruct);
     c.result := c.ValueConst(Set.New(result), sc);
   END VisitSetConstruct;
 
-PROCEDURE (c: ConstFold) VisitSetOp* (sf: IR.SetOp);
+PROCEDURE (c: ConstFold) VisitSetOp* (op: IR.SetOp);
+  VAR 
+    l, r : Language.Value; 
+    result : SET;
+    left, right : SET; 
   BEGIN
-    (* FIXME! *)
+    IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
+      left := l(Set.Value).value; 
+      right := r(Set.Value).value;
+    
+      CASE op.variant OF
+      | IR.setUnion:     result := left + right;
+      | IR.setDiff:      result := left - right;
+      | IR.setIntersect: result := left * right;
+      | IR.setSymDiff:   result := left / right;
+      ELSE
+        c.builder.ErrSym(IR.unknownOp, op.sym); 
+        c.result := NIL; RETURN
+      END;
+      c.result := c.ValueConst(Set.New(result), op);
+    ELSE
+      c.result := NIL;
+    END;
   END VisitSetOp;
 
 PROCEDURE (c: ConstFold) VisitSelectField* (sf: IR.SelectField);
