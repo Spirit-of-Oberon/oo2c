@@ -122,8 +122,14 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
 PROCEDURE NameOfModuleInit* (m: Repository.Module): String.String;
   VAR
     str: Buffer;
+    i: LONGINT;
   BEGIN
     COPY (m. name^, str);
+    i := 0;
+    WHILE (str[i] # 0X) DO
+      IF (str[i] = ":") THEN str[i] := "_" END;
+      INC (i)
+    END;
     Strings.Append ("_init", str);
     RETURN String.New (str)
   END NameOfModuleInit;
