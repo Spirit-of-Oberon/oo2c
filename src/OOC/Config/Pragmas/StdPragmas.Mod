@@ -26,8 +26,8 @@ IMPORT
 
 CONST
   defaultWarnings = FALSE;
-  
   defaultAssertions = TRUE;
+  
   defaultIndexCheck = TRUE;
   defaultDerefCheck = TRUE;
   defaultOverflowCheck = FALSE;
@@ -36,8 +36,7 @@ CONST
   defaultTypeGuard = TRUE;
   defaultConformantMode = FALSE;
 
-  (*defaultAssertions = FALSE;
-  defaultIndexCheck = FALSE;
+  (*defaultIndexCheck = FALSE;
   defaultDerefCheck = FALSE;
   defaultOverflowCheck = FALSE;
   defaultCaseSelectCheck = FALSE;
