@@ -6,7 +6,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard2 opTypeGuard3">-->
+  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard2 opTypeGuard3 opTypeGuard4 opTypeGuard5 opTypeGuard6">-->
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -937,9 +937,9 @@
     <reject-info id="opString4" pos=" c %:="
         msg="Type of expression is not compatible with variable type"/>
     <reject-info id="opTypeGuard2" pos=" a(%INTEGER)"
-        msg="Invalid type used as guard"/>
+        msg="Type must be an extension of the left operand's type"/>
     <reject-info id="opTypeGuard3" pos=" a(%C)"
-        msg="Guard type is not an extension of the designated type"/>
+        msg="Type must be an extension of the left operand's type"/>
 
   </processor-info>
 </testsuite-ext>
