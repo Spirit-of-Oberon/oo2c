@@ -200,11 +200,11 @@ behaviour is undefined in this case.
 
 REJECT:
 
-  1) an EXIT than is not part of a LOOP
+  1) an EXIT than is not part of a LOOP  [HOTLoop9]
 
 ACCEPT:
 
-  1) zero, one, or more EXIT or RETURN statements in seq
+  1) zero, one, or more EXIT or RETURN statements in seq  [various]
 
 WARN:
 

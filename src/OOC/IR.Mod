@@ -921,6 +921,7 @@ CONST
   notBoolean = 22;
   illegalFunctionOp = 23;
   incompatibleAssignment = 24;
+  exitOutsideLoop = 25;
     
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -985,6 +986,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expression must be of type BOOLEAN"
     | illegalFunctionOp:
       t := "Operator may not be applied to function result"
+    | exitOutsideLoop:
+      t := "EXIT outside of LOOP"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1088,7 +1091,7 @@ BEGIN
   RETURN (type IS Sym.PredefType) & (type(Sym.PredefType).id = id);
 END IsPredefType;
 
-PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
+PROCEDURE (b: Builder) CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
   VAR
     i: LONGINT;
 
@@ -1109,31 +1112,34 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
       | statm: CopyString DO
         (* nothing *)
       | statm: Exit DO
-        ASSERT (currentLoop # NIL);      (* FIXME... report error *)
-        statm. loop := currentLoop;
+        IF (currentLoop = NIL) THEN
+          b. ErrSym (exitOutsideLoop, statm. sym);
+        ELSE
+          statm. loop := currentLoop;
+        END;
       | statm: ForStatm DO
-        CheckExit (statm. body, currentLoop);
+        b. CheckExit (statm. body, currentLoop);
       | statm: IfStatm DO
-        CheckExit (statm. pathTrue, currentLoop);
-        CheckExit (statm. pathFalse, currentLoop);
+        b. CheckExit (statm. pathTrue, currentLoop);
+        b. CheckExit (statm. pathFalse, currentLoop);
       | statm: Case DO
-        CheckExit (statm. statmSeq, currentLoop);
+        b. CheckExit (statm. statmSeq, currentLoop);
       | statm: CaseStatm DO
         FOR i := 0 TO LEN (statm. caseList^)-1 DO
-          CheckExit (statm. caseList[i]. statmSeq, currentLoop);
+          b. CheckExit (statm. caseList[i]. statmSeq, currentLoop);
         END;
-        CheckExit (statm. default, currentLoop);
+        b. CheckExit (statm. default, currentLoop);
       | statm: LoopStatm DO
-        CheckExit (statm. body, statm);
+        b. CheckExit (statm. body, statm);
       | statm: RepeatStatm DO
-        CheckExit (statm. body, currentLoop);
+        b. CheckExit (statm. body, currentLoop);
       | statm: Return DO
         (* nothing *)
       | statm: WhileStatm DO
-        CheckExit (statm. body, currentLoop);
+        b. CheckExit (statm. body, currentLoop);
       | statm: WithStatm DO
-        CheckExit (statm. pathTrue, currentLoop);
-        CheckExit (statm. pathFalse, currentLoop);
+        b. CheckExit (statm. pathTrue, currentLoop);
+        b. CheckExit (statm. pathFalse, currentLoop);
       END;
     END CheckStatm;
   
@@ -3201,7 +3207,7 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     END AddSetupCode;
   
   BEGIN
-    CheckExit (statmSeq, NIL);
+    b. CheckExit (statmSeq, NIL);
     
     NEW (p);
     statmSeq := AddSetupCode (sym, decl, statmSeq);
@@ -3237,7 +3243,7 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
   VAR
     m: Module;
   BEGIN
-    CheckExit (statmSeq, NIL);
+    b. CheckExit (statmSeq, NIL);
     
     NEW (m);
     InitModule (m, sym, name, procList,

@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; if4 loop7 loop8" >-->
+  select ="&SetupTestCasesWithOut; loop9" >-->
 
   &TestSetupWithOut;
     
@@ -142,6 +142,10 @@
     
     <test id="loop8" type="reject" file="HOTLoop8.Mod">
       Termination criterion of <code>REPEAT</code> is not boolean.
+    </test>
+    
+    <test id="loop9" type="reject" file="HOTLoop9.Mod">
+      <code>EXIT</code> outside of of a <code>LOOP</code>.
     </test>
     
     <test id="case1" type="run" file="Case1.Mod" output="Case1.Ref">
@@ -629,6 +633,7 @@
     <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>
     <reject-info id="loop7" pos="WHILE str%[i] DO" msg="Expression must be of type BOOLEAN"/>
     <reject-info id="loop8" pos="UNTIL str%[i];" msg="Expression must be of type BOOLEAN"/>
+    <reject-info id="loop9" pos="%EXIT" msg="EXIT outside of LOOP"/>
     
     <reject-info id="len2" pos="Int (%LEN " msg="Wrong number of arguments"/>
     <reject-info id="len3" pos="Int (%LEN " msg="Wrong number of arguments"/>
