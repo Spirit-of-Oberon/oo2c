@@ -1142,12 +1142,14 @@ BEGIN
   RETURN name.ToString();
 END TypeName;
 
+<*PUSH; Warnings:=FALSE*>
 PROCEDURE LogTypeName(message : ARRAY OF CHAR; type : Sym.Type);
 VAR name : String.String;
 BEGIN
   name := TypeName(type);
   Log.String(message, name.array^);
 END LogTypeName;
+<*POP*>
 
 PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error.LString);
   VAR
@@ -4203,7 +4205,9 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
 
   BEGIN
     b. CheckExit (NIL, statmSeq, NIL);
-    UnusedDeclarations(decl);
+    IF b.errList.NoErrors() THEN
+      UnusedDeclarations(decl);
+    END;
     
     NEW (m);
     InitModule (m, sym, name, procList,
