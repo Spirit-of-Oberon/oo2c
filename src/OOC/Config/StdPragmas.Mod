@@ -21,8 +21,7 @@ MODULE OOC:Config:StdPragmas;
 *)
 
 IMPORT
-  Config:Value:Boolean, Config:Value:Integer, Config:Value:String,
-  OOC:Config:Autoconf, OOC:Config:Pragmas;
+  Config, OOC:Config:Autoconf, OOC:Config:Pragmas;
 
 
 CONST
@@ -81,31 +80,31 @@ VAR
 
 PROCEDURE CreateVariables* (s: Pragmas.Section);
   BEGIN
-    warnings := s. Set ("Warnings", Boolean.New (defaultWarnings));
-    assertions := s. Set ("Assertions", Boolean.New (defaultAssertions));
-    (*initialize := s. Set ("Initialize", Boolean.New (defaultInitialize));*)
-    stackCheck := s. Set ("StackCheck", Boolean.New (defaultStackCheck));
-    conformantMode := s. Set ("ConformantMode", Boolean.New (defaultConformantMode));
+    warnings := s. Set ("Warnings", Config.NewBooleanVar(defaultWarnings));
+    assertions := s. Set ("Assertions", Config.NewBooleanVar(defaultAssertions));
+    (*initialize := s. Set ("Initialize", Config.NewBooleanVar(defaultInitialize));*)
+    stackCheck := s. Set ("StackCheck", Config.NewBooleanVar(defaultStackCheck));
+    conformantMode := s. Set ("ConformantMode", Config.NewBooleanVar(defaultConformantMode));
     
-    indexCheck := s. Set ("IndexCheck", Boolean.New (defaultIndexCheck));
-    derefCheck := s. Set ("DerefCheck", Boolean.New (defaultDerefCheck));
-    overflowCheck := s. Set ("OverflowCheck", Boolean.New (defaultOverflowCheck));
-    caseSelectCheck := s. Set ("CaseSelectCheck", Boolean.New (defaultCaseSelectCheck));
-    functionResultCheck := s. Set ("FunctResult", Boolean.New (defaultFunctionResultCheck));
-    typeGuard := s. Set ("TypeGuard", Boolean.New (defaultTypeGuard));
-    rangeCheck := s. Set ("RangeCheck", Boolean.New (defaultRangeCheck));
+    indexCheck := s. Set ("IndexCheck", Config.NewBooleanVar(defaultIndexCheck));
+    derefCheck := s. Set ("DerefCheck", Config.NewBooleanVar(defaultDerefCheck));
+    overflowCheck := s. Set ("OverflowCheck", Config.NewBooleanVar(defaultOverflowCheck));
+    caseSelectCheck := s. Set ("CaseSelectCheck", Config.NewBooleanVar(defaultCaseSelectCheck));
+    functionResultCheck := s. Set ("FunctResult", Config.NewBooleanVar(defaultFunctionResultCheck));
+    typeGuard := s. Set ("TypeGuard", Config.NewBooleanVar(defaultTypeGuard));
+    rangeCheck := s. Set ("RangeCheck", Config.NewBooleanVar(defaultRangeCheck));
     
-    compiler := s. Set ("COMPILER", String.New (defaultCompiler));
-    compilerVersion := s. Set ("COMPILER_VERSION", String.New (defaultCompilerVersion));
-    compilerMajor := s. Set ("COMPILER_MAJOR", Integer.New (defaultCompilerMajor));
-    compilerMinor := s. Set ("COMPILER_MINOR", Integer.New (defaultCompilerMinor));
+    compiler := s. Set ("COMPILER", Config.NewStringVar(defaultCompiler));
+    compilerVersion := s. Set ("COMPILER_VERSION", Config.NewStringVar(defaultCompilerVersion));
+    compilerMajor := s. Set ("COMPILER_MAJOR", Config.NewIntegerVar(defaultCompilerMajor));
+    compilerMinor := s. Set ("COMPILER_MINOR", Config.NewIntegerVar(defaultCompilerMinor));
     
-    targetOS := s. Set ("TARGET_OS", String.New (defaultTargetOS));
-    targetArch := s. Set ("TARGET_ARCH", String.New (defaultTargetArch));
-    targetArchMinor := s. Set ("TARGET_ARCH_MINOR", String.New (defaultTargetArchMinor));
-    targetInteger := s. Set ("TARGET_INTEGER", Integer.New (defaultTargetInteger));
-    targetAddress := s. Set ("TARGET_ADDRESS", Integer.New (defaultTargetAddress));
-    targetByteOrder := s. Set ("TARGET_BYTE_ORDER", String.New ("unknown"));
+    targetOS := s. Set ("TARGET_OS", Config.NewStringVar(defaultTargetOS));
+    targetArch := s. Set ("TARGET_ARCH", Config.NewStringVar(defaultTargetArch));
+    targetArchMinor := s. Set ("TARGET_ARCH_MINOR", Config.NewStringVar(defaultTargetArchMinor));
+    targetInteger := s. Set ("TARGET_INTEGER", Config.NewIntegerVar(defaultTargetInteger));
+    targetAddress := s. Set ("TARGET_ADDRESS", Config.NewIntegerVar(defaultTargetAddress));
+    targetByteOrder := s. Set ("TARGET_BYTE_ORDER", Config.NewStringVar("unknown"));
   END CreateVariables;
 
 END OOC:Config:StdPragmas.

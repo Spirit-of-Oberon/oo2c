@@ -23,8 +23,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 IMPORT
 Log,
   Msg, Object, Object:Boxed, Object:BigInt, Strings,
-  ADT:ArrayList, ADT:StringBuffer,
-  Config:Value, BooleanValue := Config:Value:Boolean, 
+  ADT:ArrayList, ADT:StringBuffer, Config,
   Id := OOC:Scanner:Symbol, OOC:Scanner:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:StdPragmas,
   OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
@@ -1501,10 +1500,10 @@ PROCEDURE (b: Builder) SetNameToType(type: Sym.Type);
 
 PROCEDURE GetPragmaValue (b: Builder; pragma: Pragmas.Pragma; charPos: Pragmas.CharPos): BOOLEAN;
   VAR
-    value: Value.Value;
+    value: Config.Variable;
   BEGIN
     value := b.pragmaHistory.GetValue (pragma.name, charPos);
-    RETURN value(BooleanValue.Value). boolean
+    RETURN value(Config.BooleanVar). boolean
   END GetPragmaValue;
 
 PROCEDURE (b: Builder) WarnSym (code: Error.Code; sym: Symbol);

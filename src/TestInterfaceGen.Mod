@@ -1,9 +1,9 @@
 MODULE TestInterfaceGen;
 
 IMPORT
-  Object, StdChannels, Out, Err, ADT:Dictionary, ADT:ArrayList, OOC:Config, 
-  Config:Section:Options, BooleanValue := Config:Value:Boolean,
-  StringValue := Config:Value:String, OOC:SymbolTable:InterfaceDescr,
+  Object, StdChannels, Out, Err, ADT:Dictionary, ADT:ArrayList,
+  CfgData := Config, Config:Section:Options,
+  OOC:Config, OOC:SymbolTable:InterfaceDescr,
   OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable, OOC:Make;
   
 
@@ -26,9 +26,9 @@ VAR
 
 PROCEDURE NewConfig;
   BEGIN
-    buildHTML := Config.AddOption ("build-html", BooleanValue.New (FALSE));
-    closure := Config.AddOption ("closure", BooleanValue.New (FALSE));
-    errorStyle := Config.AddOption ("error-style", StringValue.New ("default"));
+    buildHTML := Config.AddOption ("build-html", CfgData.NewBooleanVar(FALSE));
+    closure := Config.AddOption ("closure", CfgData.NewBooleanVar(FALSE));
+    errorStyle := Config.AddOption ("error-style", CfgData.NewStringVar("default"));
     
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
@@ -107,10 +107,10 @@ BEGIN
     makeRules.SetErrOut(StdChannels.stderr);
     ok := TRUE;
     
-    IF errorStyle.value(StringValue.Value).string.Equals("oo2c") THEN
+    IF errorStyle.value(CfgData.StringVar).string.Equals("oo2c") THEN
       Error.style := Error.styleCharPos;
     END;
-    IF buildHTML. value(BooleanValue.Value). boolean THEN
+    IF buildHTML.value(CfgData.BooleanVar). boolean THEN
       mode := Rep.modInterfaceHTML
     ELSE
       mode := Rep.modInterfaceDescr

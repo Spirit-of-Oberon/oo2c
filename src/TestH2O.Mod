@@ -3,8 +3,7 @@ MODULE TestH2O;
 IMPORT 
   Out,
   H2O:Scanner, E := H2O:Error, H2O:Source, H2O:Process, H2O:Parser,
-  Config:Section:Options, BooleanValue := Config:Value:Boolean,
-  OOC:Config, OOC:Error;
+  CfgData := Config, Config:Section:Options, OOC:Config, OOC:Error;
 
 VAR
   cfgErrList: Error.List;
@@ -28,11 +27,11 @@ VAR
 
 PROCEDURE NewConfig;
   BEGIN
-    strictRedefine := Config.AddOption("strictRedefine", BooleanValue.New(FALSE));
-    strictUndefine := Config.AddOption("strictUndefine", BooleanValue.New(FALSE));
-    debugDefine := Config.AddOption("debugDefine", BooleanValue.New(FALSE));
-    text := Config.AddOption("text", BooleanValue.New(FALSE));
-    preprocess := Config.AddOption("preprocess", BooleanValue.New(FALSE)); 
+    strictRedefine := Config.AddOption("strictRedefine", CfgData.NewBooleanVar(FALSE));
+    strictUndefine := Config.AddOption("strictUndefine", CfgData.NewBooleanVar(FALSE));
+    debugDefine := Config.AddOption("debugDefine", CfgData.NewBooleanVar(FALSE));
+    text := Config.AddOption("text", CfgData.NewBooleanVar(FALSE));
+    preprocess := Config.AddOption("preprocess", CfgData.NewBooleanVar(FALSE)); 
 
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
@@ -64,13 +63,13 @@ BEGIN
     HALT (1)
   ELSE
     processOptions := {};
-    IF debugDefine.value(BooleanValue.Value).boolean THEN
+    IF debugDefine.value(CfgData.BooleanVar).boolean THEN
       INCL(processOptions, Process.debugDefine);
     END;
-    IF strictUndefine.value(BooleanValue.Value).boolean THEN
+    IF strictUndefine.value(CfgData.BooleanVar).boolean THEN
       INCL(processOptions, Process.strictUndefine);
     END;
-    IF strictRedefine.value(BooleanValue.Value).boolean THEN
+    IF strictRedefine.value(CfgData.BooleanVar).boolean THEN
       INCL(processOptions, Process.strictRedefine);
     END;
     Process.Init(processOptions);
@@ -93,9 +92,9 @@ BEGIN
     process := Process.New(scanner, parser, error);
     Parser.Init(process);
     tokenSource := process;
-    IF preprocess. value(BooleanValue.Value). boolean THEN
+    IF preprocess. value(CfgData.BooleanVar). boolean THEN
       token := Scanner.NewToken(Scanner.endFile);
-      IF text.value(BooleanValue.Value).boolean THEN
+      IF text.value(CfgData.BooleanVar).boolean THEN
         REPEAT
           tokenSource.GetToken(token, {Scanner.optComment, Scanner.optReturnWhiteSpace});
           token.Text(Out.writer);

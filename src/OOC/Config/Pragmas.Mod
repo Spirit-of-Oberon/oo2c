@@ -21,10 +21,7 @@ MODULE OOC:Config:Pragmas;
 *)
 
 IMPORT
-  Config:Value, Config:Parser, Config:Section:Options,
-  StringValue := Config:Value:String,
-  IntegerValue := Config:Value:Integer,
-  BooleanValue := Config:Value:Boolean;
+  Config, Config:Parser, Config:Section:Options;
 
 
 TYPE
@@ -39,7 +36,7 @@ TYPE
 TYPE
   CharPos* = LONGINT;
   Variable = POINTER TO VariableDesc;
-  ValueArray = POINTER TO ARRAY OF Value.Value;
+  ValueArray = POINTER TO ARRAY OF Config.Variable;
   CharPosArray = POINTER TO ARRAY OF CharPos;
   VariableDesc = RECORD
     next: Variable;
@@ -63,7 +60,7 @@ TYPE
 
 
 
-PROCEDURE Init (s: Section; id: Parser.String; prototypeMap: Value.PrototypeMap);
+PROCEDURE Init (s: Section; id: Parser.String; prototypeMap: Config.PrototypeMap);
   BEGIN
     Options.Init (s, id, prototypeMap)
   END Init;
@@ -73,13 +70,13 @@ PROCEDURE New*(): Section;
     sectionName = "pragmas";
   VAR
     s: Section;
-    prototypeMap: Value.PrototypeMap;
+    prototypeMap: Config.PrototypeMap;
   BEGIN
     NEW(s);
-    prototypeMap := NEW(Value.PrototypeMap);
-    Value.SetPrototype(prototypeMap, "boolean", BooleanValue.New(FALSE));
-    Value.SetPrototype(prototypeMap, "integer", IntegerValue.New(0));
-    Value.SetPrototype(prototypeMap, "string", StringValue.New(""));
+    prototypeMap := NEW(Config.PrototypeMap);
+    Config.SetPrototype(prototypeMap, "boolean", Config.NewBooleanVar(FALSE));
+    Config.SetPrototype(prototypeMap, "integer", Config.NewIntegerVar(0));
+    Config.SetPrototype(prototypeMap, "string", Config.NewStringVar(""));
     Init(s, sectionName, prototypeMap);
     RETURN s
   END New;
@@ -125,7 +122,7 @@ PROCEDURE NewHistory* (startVariables: Section): History;
   END NewHistory;
 
 PROCEDURE GetValue (h: History; var: Variable;
-                    charPos: CharPos): Value.Value;
+                    charPos: CharPos): Config.Variable;
   VAR
     l, r, m: LONGINT;
   BEGIN
@@ -152,7 +149,7 @@ PROCEDURE GetValue (h: History; var: Variable;
     END
   END GetValue;
 
-PROCEDURE (h: History) GetValue* (name: STRING; charPos: CharPos): Value.Value;
+PROCEDURE (h: History) GetValue* (name: STRING; charPos: CharPos): Config.Variable;
   VAR
     var: Variable;
   BEGIN
@@ -174,7 +171,7 @@ PROCEDURE LastCharPos (h: History; charPos: CharPos);
   END LastCharPos;
 
 PROCEDURE SetValue (var: Variable;charPos: CharPos;
-                    value: Value.Value);
+                    value: Config.Variable);
   CONST
     incrementSize = 4;
   
@@ -212,7 +209,7 @@ PROCEDURE SetValue (var: Variable;charPos: CharPos;
 
 PROCEDURE (h: History) SetValue* (name: STRING;
                                   charPos: CharPos;
-                                  value: Value.Value);
+                                  value: Config.Variable);
 (* @precond
    @oparam{charPos} is strict monotonically increasing.  That is, if first
    the value of variable @samp{A} is set, and then the value of variable
@@ -266,7 +263,7 @@ PROCEDURE (h: History) Pop* (charPos: CharPos);
   VAR
     pushPos: CharPos;
     var: Variable;
-    oldValue: Value.Value;
+    oldValue: Config.Variable;
   BEGIN
     LastCharPos (h, charPos);
     

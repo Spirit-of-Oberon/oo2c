@@ -1,7 +1,7 @@
 MODULE OOC:Config;
 
 IMPORT
-  RT0, Msg, IO, Config:Value, Config:Value:String, Config:Source:CmdLine,
+  RT0, Msg, IO, Config, Config:Source:CmdLine,
   Config:Section:Options, Config:Section:Arguments, Config:Simple,
   Object, OOC:Config:Pragmas, OOC:Config:StdPragmas, OOC:Config:Autoconf,
   OOC:Config:Repositories,
@@ -24,7 +24,7 @@ VAR
   config: Simple.Config;
   xsltproc-: Options.Option;
 
-PROCEDURE AddOption* (name: STRING; init: Value.Value): Options.Option;
+PROCEDURE AddOption* (name: STRING; init: Config.Variable): Options.Option;
 (**Add the program option @oparam{name} to the configuration parser.
    Its initial value is @oparam{init}.  The new option instance is
    returned.  *)
@@ -52,7 +52,7 @@ PROCEDURE InitConfig (defaultConfigFile: Object.String8);
     options := config. options;
 
     configFile := options. Set ("config-file",
-                                String.New (defaultConfigFile));
+                                Config.NewStringVar(defaultConfigFile));
     config. ConfigFileCmdLineOption (cmdLine. AddOptionTemplate (
        "--config", "<option><set name='config-file'>$1</set></option>"));
     config. ConfigFileEnvVar(config. envVars. AddVariableTemplate (
@@ -64,7 +64,7 @@ PROCEDURE InitConfig (defaultConfigFile: Object.String8);
     repositories := Repositories.New();
     config. sectionList. Add (repositories);
 
-    xsltproc := AddOption("xsltproc", String.New ("xsltproc"));
+    xsltproc := AddOption("xsltproc", Config.NewStringVar("xsltproc"));
     AddCmdLine ("--xsltproc",
                 "<options><set name='xsltproc'>$1</set></options>");
   END InitConfig;
@@ -76,7 +76,7 @@ PROCEDURE Read* (errList: Msg.MsgList) RAISES IO.Error;
 
 PROCEDURE HaveXsltProc*(): BOOLEAN;
   BEGIN
-    RETURN ~xsltproc.value(String.Value).string.Equals("no");
+    RETURN ~xsltproc.value(Config.StringVar).string.Equals("no");
   END HaveXsltProc;
 
 BEGIN

@@ -22,7 +22,7 @@ MODULE OOC:Make:LinkProgramC;
 
 IMPORT
   Out, Strings, IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
-  ADT:ArrayList, Config:Value, StringValue := Config:Value:String,
+  ADT:ArrayList, CfgData := Config,
   OS:ProcessManagement, OOC:Repository, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
@@ -95,11 +95,11 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
 
   PROCEDURE LookupValue(optionName: STRING): STRING;
     VAR
-      v: Value.Value;
+      v: CfgData.Variable;
     BEGIN
       v := Config.options.GetValue(optionName);
-      IF (v # NIL) & (v IS StringValue.Value) THEN
-        RETURN v(StringValue.Value).string;
+      IF (v # NIL) & (v IS CfgData.StringVar) THEN
+        RETURN v(CfgData.StringVar).string;
       ELSE
         RETURN empty;
       END;
@@ -246,7 +246,7 @@ RAISES IO.Error;
       Strings.Append (chars^, str);
     END;
     Strings.Append (" ", str);
-    str8 := CCompiler.libs.value(StringValue.Value).string.ToString8("_");
+    str8 := CCompiler.libs.value(CfgData.StringVar).string.ToString8("_");
     chars := str8.CharsLatin1();
     Strings.Append (chars^, str);
     

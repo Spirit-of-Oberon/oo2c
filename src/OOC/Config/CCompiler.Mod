@@ -22,8 +22,7 @@ MODULE OOC:Config:CCompiler;
 
 IMPORT
   Strings, Object, URI, URI:Scheme:File,
-  Config:Section:Options, StringValue := Config:Value:String,
-  OOC:Config, OOC:Repository;
+  CfgData := Config, Config:Section:Options, OOC:Config, OOC:Repository;
 
 VAR
   cc, cppflags, cflags, ldflags, libs-, libtool, libdir-: Options.Option;
@@ -32,7 +31,7 @@ VAR
 
 PROCEDURE HaveLibtool*(): BOOLEAN;
   BEGIN
-    RETURN ~libtool.value(StringValue.Value).string.Equals("no");
+    RETURN ~libtool.value(CfgData.StringVar).string.Equals("no");
   END HaveLibtool;
 
 PROCEDURE Append(str: STRING; VAR cmd: ARRAY OF CHAR);
@@ -48,14 +47,14 @@ PROCEDURE SetCommand(mode: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);
   BEGIN
     IF (mode # "") & HaveLibtool() THEN
       COPY("", cmd);
-      Append(libtool. value(StringValue.Value). string, cmd);
+      Append(libtool. value(CfgData.StringVar). string, cmd);
       Strings.Append (" --mode=", cmd);
       Strings.Append (mode, cmd);
       Strings.Append (" ", cmd);
     ELSE
       COPY("", cmd);
     END;
-    Append (cc. value(StringValue.Value). string, cmd);
+    Append (cc. value(CfgData.StringVar). string, cmd);
     Strings.Append (" ", cmd);
   END SetCommand;
 
@@ -88,9 +87,9 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
     ELSE
       SetCommand("", cmd);
     END;
-    Append (cflags. value(StringValue.Value). string, cmd);
+    Append (cflags. value(CfgData.StringVar). string, cmd);
     Strings.Append (" ", cmd);
-    Append (cppflags. value(StringValue.Value). string, cmd);
+    Append (cppflags. value(CfgData.StringVar). string, cmd);
     
     (* Add include path for the run-time header files.  In theory, this include
        directory should have the highest priority, but _only_ for run-time
@@ -128,16 +127,16 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
     Strings.Append (str, cmd);
     IF forLibrary & HaveLibtool() THEN
       Strings.Append (" -rpath ", cmd);
-      Append (libdir. value(StringValue.Value). string, cmd);
+      Append (libdir. value(CfgData.StringVar). string, cmd);
     END;
     Strings.Append (" ", cmd);
-    Append (ldflags. value(StringValue.Value). string, cmd);
+    Append (ldflags. value(CfgData.StringVar). string, cmd);
   END LinkProgramCmd;
 
 PROCEDURE InstallDirectoryCmd*(path: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);
   BEGIN
     COPY("", cmd);
-    Append(install.value(StringValue.Value).string, cmd);
+    Append(install.value(CfgData.StringVar).string, cmd);
     Strings.Append(" -d ", cmd);
     Strings.Append(path, cmd);
   END InstallDirectoryCmd;
@@ -149,19 +148,19 @@ PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
   BEGIN
     COPY("", cmd);
     IF HaveLibtool() THEN
-      Append(libtool.value(StringValue.Value).string, cmd);
+      Append(libtool.value(CfgData.StringVar).string, cmd);
       Strings.Append(" --mode=install ", cmd);
     END;
     
-    Append(installProgram.value(StringValue.Value).string, cmd);
+    Append(installProgram.value(CfgData.StringVar).string, cmd);
     Strings.Append(" ", cmd);
     file(File.URI).GetPath(str);
     Strings.Append(str, cmd);
     Strings.Append(" ", cmd);
     IF asLibrary THEN
-      Append (libdir.value(StringValue.Value).string, cmd);
+      Append (libdir.value(CfgData.StringVar).string, cmd);
     ELSE
-      Append (bindir.value(StringValue.Value).string, cmd);
+      Append (bindir.value(CfgData.StringVar).string, cmd);
     END;
   END InstallProgramCmd;
 
@@ -172,11 +171,11 @@ PROCEDURE UninstallProgramCmd*(path: STRING; asLibrary: BOOLEAN;
   BEGIN
     COPY("", cmd);
     IF HaveLibtool() THEN
-      Append(libtool.value(StringValue.Value).string, cmd);
+      Append(libtool.value(CfgData.StringVar).string, cmd);
       Strings.Append(" --mode=uninstall ", cmd);
     END;
     
-    Append(uninstall.value(StringValue.Value).string, cmd);
+    Append(uninstall.value(CfgData.StringVar).string, cmd);
     Strings.Append(" ", cmd);
     chars := path(Object.String8).CharsLatin1();
     Strings.Append(chars^, cmd);
@@ -184,11 +183,11 @@ PROCEDURE UninstallProgramCmd*(path: STRING; asLibrary: BOOLEAN;
 
 PROCEDURE RegisterConfig*;
   BEGIN
-    cc := Config.AddOption ("cc", StringValue.New ("gcc"));
-    cppflags := Config.AddOption ("cppflags", StringValue.New (""));
-    cflags := Config.AddOption ("cflags", StringValue.New ("-O2 -g"));
-    ldflags := Config.AddOption ("ldflags", StringValue.New (""));
-    libs := Config.AddOption ("libs", StringValue.New ("-lgc"));
+    cc := Config.AddOption ("cc", CfgData.NewStringVar("gcc"));
+    cppflags := Config.AddOption ("cppflags", CfgData.NewStringVar(""));
+    cflags := Config.AddOption ("cflags", CfgData.NewStringVar("-O2 -g"));
+    ldflags := Config.AddOption ("ldflags", CfgData.NewStringVar(""));
+    libs := Config.AddOption ("libs", CfgData.NewStringVar("-lgc"));
     Config.AddCmdLine ("--cc",
                        "<options><set name='cc'>$1</set></options>");
     Config.AddCmdLine ("--cppflags",
@@ -200,22 +199,22 @@ PROCEDURE RegisterConfig*;
     Config.AddCmdLine ("--libs",
                        "<options><set name='libs'>$1</set></options>");
     
-    libtool := Config.AddOption ("libtool", StringValue.New ("libtool"));
-    libdir := Config.AddOption ("libdir", StringValue.New ("libdir"));
+    libtool := Config.AddOption ("libtool", CfgData.NewStringVar("libtool"));
+    libdir := Config.AddOption ("libdir", CfgData.NewStringVar("libdir"));
     Config.AddCmdLine ("--libtool",
                        "<options><set name='libtool'>$1</set></options>");
     Config.AddCmdLine ("--libdir",
                        "<options><set name='libdir'>$1</set></options>");
 
-    install := Config.AddOption ("install", StringValue.New ("install -c"));
+    install := Config.AddOption ("install", CfgData.NewStringVar("install -c"));
     installProgram := Config.AddOption ("installProgram",
-                                        StringValue.New ("install -c"));
+                                        CfgData.NewStringVar("install -c"));
     installData := Config.AddOption ("installData",
-                                     StringValue.New ("install -c -m 644"));
+                                     CfgData.NewStringVar("install -c -m 644"));
     uninstall := Config.AddOption ("uninstall",
-                                   StringValue.New ("rm -f"));
-    bindir := Config.AddOption ("bindir", StringValue.New ("bindir"));
-    oocdir := Config.AddOption ("oocdir", StringValue.New ("oocdir"));
+                                   CfgData.NewStringVar("rm -f"));
+    bindir := Config.AddOption ("bindir", CfgData.NewStringVar("bindir"));
+    oocdir := Config.AddOption ("oocdir", CfgData.NewStringVar("oocdir"));
     Config.AddCmdLine ("--install",
                        "<options><set name='install'>$1</set></options>");
     Config.AddCmdLine ("--install-program",

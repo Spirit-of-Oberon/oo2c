@@ -3,7 +3,7 @@ MODULE Config:Section:Options;
 IMPORT
   Exception, Object, Msg, Channel, TextRider, LongStrings,
   XMLBuilder := XML:Builder, XML:DTD, XML:Locator,
-  Config:Value, Config:Parser, CS := Config:Section;
+  Config, Config:Parser, CS := Config:Section;
 
 
 TYPE
@@ -14,13 +14,13 @@ TYPE
   SectionDesc* = RECORD
     (CS.SectionDesc)
     optionList: Option;
-    typeMap-: Value.PrototypeMap;
+    typeMap-: Config.PrototypeMap;
   END;
   
   OptionDesc = RECORD
     next: Option;
     name-: STRING;
-    value-: Value.Value;
+    value-: Config.Variable;
   END;
 
 
@@ -73,14 +73,14 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Msg.Msg; VAR templ: Msg.LSt
   END GetTemplate;
 
 
-PROCEDURE Init* (s: Section; id: Parser.String; typeMap: Value.PrototypeMap);
+PROCEDURE Init* (s: Section; id: Parser.String; typeMap: Config.PrototypeMap);
   BEGIN
     CS.Init (s, id);
     s. optionList := NIL;
     s. typeMap := typeMap
   END Init;
 
-PROCEDURE New* (sectionName: Parser.String; typeMap: Value.PrototypeMap): Section;
+PROCEDURE New* (sectionName: Parser.String; typeMap: Config.PrototypeMap): Section;
   VAR
     s: Section;
   BEGIN
@@ -89,14 +89,14 @@ PROCEDURE New* (sectionName: Parser.String; typeMap: Value.PrototypeMap): Sectio
     RETURN s
   END New;
 
-PROCEDURE InitOption (opt: Option; name: STRING; value: Value.Value);
+PROCEDURE InitOption (opt: Option; name: STRING; value: Config.Variable);
   BEGIN
     opt. next := NIL;
     opt. name := name;
     opt. value := value;
   END InitOption;
 
-PROCEDURE NewOption (name: STRING; value: Value.Value): Option;
+PROCEDURE NewOption (name: STRING; value: Config.Variable): Option;
   VAR
     opt: Option;
   BEGIN
@@ -120,7 +120,7 @@ PROCEDURE Insert (VAR list: Option; opt: Option);
   END Insert;
 
 
-PROCEDURE (opt: Option) Set* (value: Value.Value);
+PROCEDURE (opt: Option) Set* (value: Config.Variable);
   BEGIN
     opt. value := value
   END Set;
@@ -136,7 +136,7 @@ PROCEDURE (s: Section) Get* (name: STRING): Option;
     RETURN opt
   END Get;
 
-PROCEDURE (s: Section) Set* (name: STRING; value: Value.Value): Option;
+PROCEDURE (s: Section) Set* (name: STRING; value: Config.Variable): Option;
   VAR
     opt: Option;
   BEGIN
@@ -150,7 +150,7 @@ PROCEDURE (s: Section) Set* (name: STRING; value: Value.Value): Option;
     RETURN opt
   END Set;
 
-PROCEDURE (s: Section) GetValue* (name: STRING): Value.Value;
+PROCEDURE (s: Section) GetValue* (name: STRING): Config.Variable;
   VAR
     opt: Option;
   BEGIN
@@ -193,7 +193,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     name, type: DTD.String;
     lastError: Msg.Msg;
     name8: STRING;
-    newValue: Value.Value;
+    newValue: Config.Variable;
     option: Option;
     i: LONGINT;
     
@@ -274,7 +274,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
               Err (optionAlreadyDefined, node);
               lastError. SetLStringAttrib ("name", Msg.GetLStringPtr (name^))
             ELSE
-              newValue := Value.GetClone(s.typeMap, Object.NewUCS2(type^));
+              newValue := Config.GetClone(s.typeMap, Object.NewUCS2(type^));
               IF (newValue = NIL) THEN
                 Err (unknownType, node);
                 lastError. SetLStringAttrib ("type", Msg.GetLStringPtr (type^))

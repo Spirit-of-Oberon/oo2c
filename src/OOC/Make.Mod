@@ -21,13 +21,13 @@ MODULE OOC:Make;
 *)
 
 IMPORT
-  Channel, Msg, Out, StdChannels, Strings, Time, IO,
+  Channel, Msg, Out, StdChannels, Strings, Time, IO, CfgData := Config,
 
   Object, ADT:ArrayList, ADT:Dictionary, StringSearch,
   StringSearch:NoMatch, OS:Path,
   OSFiles := OS:Files, OS:ProcessManagement, URI, URI:Scheme:File,
 
-  OOC:Logger, OOC:Error, OOC:Config, StringValue := Config:Value:String,
+  OOC:Logger, OOC:Error, OOC:Config,
   OOC:Config:Pragmas, OOC:Config:Repositories,
   OOC:Doc:ResolveRef, Rep := OOC:Repository, OOC:AST,
   Sym := OOC:SymbolTable, OOC:SymbolTable:CreateNamespace,
@@ -787,7 +787,7 @@ RAISES IO.Error;
         OSFiles.makedirs (path, OSFiles.defaultMode, res);
         
         (* prefix option and style sheet argument with command name *)
-        chars := Config.xsltproc.value(StringValue.Value).string(Object.String8).CharsLatin1();
+        chars := Config.xsltproc.value(CfgData.StringVar).string(Object.String8).CharsLatin1();
         Strings.Insert(chars^, 0, str);
 
         (* append name of XML file *)

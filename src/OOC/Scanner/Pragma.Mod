@@ -1,14 +1,9 @@
 MODULE OOC:Scanner:Pragma;
 
 IMPORT
-  Object, Msg, Strings, RT0,
+  Object, Msg, Strings, RT0, Config,
   OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol, OOC:Scanner:Builder,
-  OOC:Scanner:BasicList, OOC:Config:Pragmas, OOC:Scanner:Integer,
-  
-  ConfigValue := Config:Value,
-  BooleanValue := Config:Value:Boolean,
-  IntegerValue := Config:Value:Integer,
-  StringValue := Config:Value:String;
+  OOC:Scanner:BasicList, OOC:Config:Pragmas, OOC:Scanner:Integer;
 
 (* Added in oo2c-2.0.7:
 
@@ -181,7 +176,7 @@ PROCEDURE Init* (VAR state: State; builder: Builder.Builder;
 PROCEDURE ParsePragma (VAR state: State): InputMode;
   TYPE  
     Value = RECORD
-      value: ConfigValue.Value;          (* NIL means undefined value *)
+      value: Config.Variable;          (* NIL means undefined value *)
       sym: BasicList.Symbol;
     END;
     
@@ -217,11 +212,11 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
   
   PROCEDURE CheckBoolean (eval: BOOLEAN; VAR value: Value);
     BEGIN
-      IF (value. value # NIL) & ~(value. value IS BooleanValue.Value) THEN
+      IF (value. value # NIL) & ~(value. value IS Config.BooleanVar) THEN
         IF eval THEN
           Err (expectBooleanExpr, value. sym)
         END;
-        value. value := BooleanValue.New (FALSE)
+        value. value := Config.NewBooleanVar(FALSE)
       END
     END CheckBoolean;
   
@@ -251,8 +246,8 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
   
   PROCEDURE GetBool (value: Value): BOOLEAN;
     BEGIN
-      IF (value. value # NIL) & (value. value IS BooleanValue.Value) THEN
-        RETURN value. value(BooleanValue.Value). boolean
+      IF (value. value # NIL) & (value. value IS Config.BooleanVar) THEN
+        RETURN value. value(Config.BooleanVar). boolean
       ELSE
         RETURN FALSE
       END
@@ -260,12 +255,12 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
 
   PROCEDURE GetInt (value: Value): LONGINT;
     BEGIN
-      RETURN value. value(IntegerValue.Value). integer
+      RETURN value. value(Config.IntegerVar). integer
     END GetInt;
 
   PROCEDURE GetString (value: Value): STRING;
     BEGIN
-      RETURN value. value(StringValue.Value). string
+      RETURN value. value(Config.StringVar). string
     END GetString;
 
   PROCEDURE Expression (eval: BOOLEAN; VAR value: Value);
@@ -287,7 +282,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
           
         PROCEDURE Factor (eval: BOOLEAN; VAR value: Value);
           VAR
-            varValue: ConfigValue.Value;
+            varValue: Config.Variable;
             int: Integer.Integer;
           BEGIN
             value. value := NIL;
@@ -296,7 +291,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
             | Symbol.ident:
               IF (sym. str^ = "FALSE") OR (sym. str^ = "TRUE") THEN
                 (* boolean constant *)
-                value. value := BooleanValue.New (sym. str^ = "TRUE")
+                value. value := Config.NewBooleanVar (sym. str^ = "TRUE")
               ELSE                       (* variable *)
                 CheckName (sym);
                 varValue := state. variableHistory. GetValue
@@ -314,7 +309,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               IF (lastError # NIL) THEN
                 AppendErr (sym)
               END;
-              value. value := IntegerValue.New (int);
+              value. value := Config.NewIntegerVar(int);
               NextSym
               
             | Symbol.number16:           (* hexadecimal integer const *)
@@ -322,11 +317,11 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               IF (lastError # NIL) THEN
                 AppendErr (sym)
               END;
-              value. value := IntegerValue.New (int);
+              value. value := Config.NewIntegerVar(int);
               NextSym
               
             | Symbol.stringSingle, Symbol.stringDouble: (* string const *)
-              value.value := StringValue.New
+              value.value := Config.NewStringVar
                 (Object.NewLatin1Region(sym.str^, 1,
                                         Strings.Length(sym.str^)-1));
               NextSym
@@ -340,7 +335,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               NextSym;
               Expression (eval, value);
               CheckBoolean (eval, value);
-              value. value := BooleanValue.New (~GetBool (value))
+              value. value := Config.NewBooleanVar(~GetBool (value))
               
             ELSE
               Err (illegalFactor, sym);  (* factor starts with illegal sym *)
@@ -356,7 +351,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
             NextSym;
             Factor (eval & GetBool (value), right);
             CheckBoolean (eval & GetBool (value), right);
-            value. value := BooleanValue.New (GetBool(value) & GetBool(right))
+            value. value := Config.NewBooleanVar (GetBool(value) & GetBool(right))
           END
         END Term;
       
@@ -368,7 +363,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
           NextSym;
           Term (eval & ~GetBool (value), right);
           CheckBoolean (eval & ~GetBool (value), right);
-          value. value := BooleanValue.New (GetBool (value) OR GetBool (right))
+          value. value := Config.NewBooleanVar(GetBool (value) OR GetBool (right))
         END
       END SimpleExpr;
     
@@ -381,33 +376,33 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
         IF ~eval OR (value. value = NIL) OR (right. value = NIL) THEN
           (* ignore *)
         ELSIF (RT0.TypeOf (value. value) # RT0.TypeOf (right. value)) OR
-              (value. value IS BooleanValue.Value) & 
+              (value. value IS Config.BooleanVar) & 
                 (Symbol.lss <= op) & (op <= Symbol.geq) THEN
           Err (invalidOperands, pos)
         ELSIF eval THEN                  (* evaluate comparison *)
-          IF (value. value IS BooleanValue.Value) THEN
+          IF (value. value IS Config.BooleanVar) THEN
             CASE op OF
             | Symbol.eql: value. value := 
-                BooleanValue.New (GetBool (value) = GetBool (right))
+                Config.NewBooleanVar(GetBool (value) = GetBool (right))
             | Symbol.neq: value. value := 
-                BooleanValue.New (GetBool (value) # GetBool (right))
+                Config.NewBooleanVar(GetBool (value) # GetBool (right))
             END
-          ELSIF (value. value IS IntegerValue.Value) THEN
+          ELSIF (value. value IS Config.IntegerVar) THEN
             CASE op OF
             | Symbol.eql: value. value :=
-                BooleanValue.New (GetInt (value) = GetInt (right))
+                Config.NewBooleanVar(GetInt (value) = GetInt (right))
             | Symbol.neq: value. value :=
-                BooleanValue.New (GetInt (value) # GetInt (right))
+                Config.NewBooleanVar(GetInt (value) # GetInt (right))
             | Symbol.lss: value. value :=
-                BooleanValue.New (GetInt (value) < GetInt (right))
+                Config.NewBooleanVar(GetInt (value) < GetInt (right))
             | Symbol.leq: value. value :=
-                BooleanValue.New (GetInt (value) <= GetInt (right))
+                Config.NewBooleanVar(GetInt (value) <= GetInt (right))
             | Symbol.gtr: value. value :=
-                BooleanValue.New (GetInt (value) > GetInt (right))
+                Config.NewBooleanVar(GetInt (value) > GetInt (right))
             | Symbol.geq: value. value :=
-                BooleanValue.New (GetInt (value) >= GetInt (right))
+                Config.NewBooleanVar(GetInt (value) >= GetInt (right))
             END
-          ELSIF (value. value IS StringValue.Value) THEN
+          ELSIF (value. value IS Config.StringVar) THEN
             leftString := GetString (value);
             rightString := GetString (right);
             cmp := leftString.Compare(rightString);
@@ -425,7 +420,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
             | Symbol.geq:
               res := (cmp >= 0);
             END;
-            value.value := BooleanValue.New(res);
+            value.value := Config.NewBooleanVar(res);
           END
         END;
         value. sym := pos
@@ -480,7 +475,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
       name: BasicList.Symbol;
       value: Value;
       pos: BasicList.Symbol;
-      varValue: ConfigValue.Value;
+      varValue: Config.Variable;
     BEGIN
       IF (sym. id = Symbol.ident) THEN
         IF eval THEN
@@ -503,12 +498,12 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               state. variableHistory. SetValue
                   (Object.NewLatin1(name.str^), name. pos, value. value)
             ELSE
-              WITH varValue: BooleanValue.Value DO
-                err := ~(value. value IS BooleanValue.Value)
-              | varValue: IntegerValue.Value DO
-                err := ~(value. value IS IntegerValue.Value)
-              | varValue: StringValue.Value DO
-                err := ~(value. value IS StringValue.Value)
+              WITH varValue: Config.BooleanVar DO
+                err := ~(value. value IS Config.BooleanVar)
+              | varValue: Config.IntegerVar DO
+                err := ~(value. value IS Config.IntegerVar)
+              | varValue: Config.StringVar DO
+                err := ~(value. value IS Config.StringVar)
               END;
               state. variableHistory. SetValue
                   (Object.NewLatin1(name.str^), name. pos, value. value);

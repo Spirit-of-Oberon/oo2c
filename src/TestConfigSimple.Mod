@@ -3,7 +3,7 @@ MODULE TestConfigSimple;
 IMPORT
   RT0, Object, Out, Err, Msg,
   Config:Simple, Config:Source:Environment, Config:Source:CmdLine,
-  StringValue := Config:Value:String, Config:Section:Options;
+  Config, Config:Section:Options;
 
 VAR
   config: Simple.Config;
@@ -42,7 +42,7 @@ BEGIN
   ASSERT (dummy);
   config := Simple.New (Object.NewLatin1(fileName));
   
-  optionA := config. options. Set ("a", StringValue.New ("default"));
+  optionA := config. options. Set ("a", Config.NewStringVar("default"));
   
   vt := config. envVars. AddVariableTemplate ("CONFIG_FILE", "$1");
   config. ConfigFileEnvVar (vt);

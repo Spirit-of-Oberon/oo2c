@@ -5,9 +5,7 @@ IMPORT
   Exception, Object, ADT:ArrayList, ADT:StringBuffer, OSFiles := OS:Files,
   OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
-  Config:Parser, Config:Value, StringValue := Config:Value:String,
-  BooleanValue := Config:Value:Boolean, IntegerValue := Config:Value:Integer,
-  Config:Section:Options,
+  Config:Parser, CfgData := Config, Config:Section:Options,
   OOC:Logger, OOC:Config, OOC:Error, Rep := OOC:Repository;
 
 TYPE
@@ -70,7 +68,7 @@ TYPE
   KeyValueDesc = RECORD
     (Object.ObjectDesc)
     key-: STRING;
-    value-: Value.Value;
+    value-: CfgData.Variable;
   END;
 
 TYPE
@@ -245,7 +243,7 @@ PROCEDURE NewFile*(name, destName: STRING): File;
     RETURN file;
   END NewFile;
 
-PROCEDURE NewKeyValue*(key: STRING; value: Value.Value): KeyValue;
+PROCEDURE NewKeyValue*(key: STRING; value: CfgData.Variable): KeyValue;
   VAR
     kv: KeyValue;
   BEGIN
@@ -602,7 +600,7 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
       i: LONGINT;
       node: Parser.Node;
       name, type: STRING;
-      value: Value.Value;
+      value: CfgData.Variable;
       str: ARRAY 1024 OF CHAR;
       att: Builder.Attribute;
       stringBuffer: STRING;
@@ -641,7 +639,7 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
         END;
 
         chars := type(Object.String8).CharsLatin1();
-        value := Value.GetClone(options.typeMap, type);
+        value := CfgData.GetClone(options.typeMap, type);
         IF (value = NIL) THEN
           Err(unknownType, elem);
           lastError.SetStringAttrib("type", Msg.GetStringPtr(chars^))
@@ -1163,7 +1161,7 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
   VAR
     i: LONGINT;
     kv: KeyValue;
-    v: Value.Value;
+    v: CfgData.Variable;
     type: ARRAY 32 OF CHAR;
   BEGIN
     w.StartTagLatin1(tag, FALSE);
@@ -1172,11 +1170,11 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
       w.StartTag("define", TRUE);
       w.AttrObject("name", kv.key);
       v := kv.value;
-      WITH v: StringValue.Value DO
+      WITH v: CfgData.StringVar DO
         type := "string";
-      | v: BooleanValue.Value DO
+      | v: CfgData.BooleanVar DO
         type := "boolean";
-      | v: IntegerValue.Value DO
+      | v: CfgData.IntegerVar DO
         type := "integer";
       END;
       w.AttrStringLatin1("type", type);

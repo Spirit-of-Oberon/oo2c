@@ -1,9 +1,8 @@
 MODULE TestSymTab;
 
 IMPORT
-  Object, StdChannels, Out, Err, IO, URI, OOC:Config, 
-  Config:Section:Options, IntegerValue := Config:Value:Integer,
-  BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,
+  Object, StdChannels, Out, Err, IO, URI,
+  CfgData := Config, Config:Section:Options, OOC:Config, OOC:Config:Pragmas,
   OOC:Error, OOC:AST, Sym := OOC:SymbolTable, Rep := OOC:Repository,
   XML := OOC:SymbolTable:XML, OOC:Auxiliary:ParseModule, OOC:Make;
   
@@ -34,7 +33,7 @@ VAR
 PROCEDURE InitRules (r: Rules);
   BEGIN
     Make.InitRules(r);
-    r.resolve := mode.value(IntegerValue.Value).integer = modeResolveNamesXML;
+    r.resolve := mode.value(CfgData.IntegerVar).integer = modeResolveNamesXML;
     r.SetErrOut(StdChannels.stderr);
   END InitRules;
 
@@ -96,8 +95,8 @@ RAISES IO.Error;
 
 PROCEDURE NewConfig;
   BEGIN
-    mode := Config.AddOption ("mode", IntegerValue.New (modeResolveNamesXML));
-    oo2cStyleErrors := Config.AddOption ("oo2cStyleErrors", BooleanValue.New (FALSE));
+    mode := Config.AddOption ("mode", CfgData.NewIntegerVar(modeResolveNamesXML));
+    oo2cStyleErrors := Config.AddOption ("oo2cStyleErrors", CfgData.NewBooleanVar(FALSE));
     
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
@@ -125,7 +124,7 @@ BEGIN
     Out.String ("Usage: TestSymTab [--names-only-xml|--resolve-names-xml|--interface-xml] [--terse-errors] -r <repository> <file>"); Out.Ln;
     HALT (1)
   ELSE
-    IF oo2cStyleErrors. value(BooleanValue.Value). boolean THEN
+    IF oo2cStyleErrors.value(CfgData.BooleanVar). boolean THEN
       Error.style := Error.styleCharPos;
     END;
     
@@ -143,7 +142,7 @@ BEGIN
           Err.Ln;
           HALT (1)
         ELSE
-          CASE mode. value(IntegerValue.Value). integer OF
+          CASE mode. value(CfgData.IntegerVar). integer OF
           | modeNameOnlyXML, modeResolveNamesXML:
             ok := makeRules.Update(m, Rep.modSymbolTableXML) & ok;
           | modeInterfaceXML:

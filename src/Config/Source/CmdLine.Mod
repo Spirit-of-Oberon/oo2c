@@ -21,7 +21,7 @@ MODULE Config:Source:CmdLine;
 IMPORT
   Object, CharClass, Strings, LongStrings, Msg, Channel, TextRider,
   IO, Writer := IO:TextRider,
-  Config:Value, Config:Source, Config:Parser;
+  Config:Source, Config:Parser;
 
 CONST
   maxLenArgument = 2*1024;

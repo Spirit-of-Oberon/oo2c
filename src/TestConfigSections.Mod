@@ -2,20 +2,16 @@ MODULE TestConfigSections;
 
 IMPORT
   Object, ProgramArgs, StdChannels, TextRider, Out, Msg,
-  XMLBuilder := XML:Builder, XML:DTD, Config:Value, Config:Parser,
+  XMLBuilder := XML:Builder, XML:DTD, Config, Config:Parser,
   
   Config:Section,
   Config:Section:Options,
-  Config:Section:Arguments,
-  
-  StringValue := Config:Value:String,
-  IntegerValue := Config:Value:Integer,
-  BooleanValue := Config:Value:Boolean;
+  Config:Section:Arguments;
 
 
 VAR
   p: Parser.Parser;
-  typeMap: Value.PrototypeMap;
+  typeMap: Config.PrototypeMap;
   sl: Section.SectionList;
   argReader: TextRider.Reader;
   arg, configFile: ARRAY 1024 OF CHAR;
@@ -86,10 +82,10 @@ BEGIN  <*Warnings:=FALSE*>
     ASSERT (res = NIL);
     p. ParseDocument;
     
-    typeMap := NEW(Value.PrototypeMap);
-    Value.SetPrototype(typeMap, "string", StringValue.New(""));
-    Value.SetPrototype(typeMap, "integer", IntegerValue.New(0));
-    Value.SetPrototype(typeMap, "boolean", BooleanValue.New(FALSE));
+    typeMap := NEW(Config.PrototypeMap);
+    Config.SetPrototype(typeMap, "string", Config.NewStringVar(""));
+    Config.SetPrototype(typeMap, "integer", Config.NewIntegerVar(0));
+    Config.SetPrototype(typeMap, "boolean", Config.NewBooleanVar(FALSE));
     
     sl := Section.NewSectionList();
     sl. Add (Options.New ("options", typeMap));

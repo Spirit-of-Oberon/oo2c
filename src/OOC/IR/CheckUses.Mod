@@ -22,7 +22,7 @@ MODULE OOC:IR:CheckUses;
 
 IMPORT
   Object, Object:Boxed, ADT:Dictionary, DictInt := ADT:Dictionary:IntValue,
-  ADT:ArrayList, Config:Value, Config:Value:Boolean, Msg,
+  ADT:ArrayList, Config, Msg,
   OOC:Config:Pragmas, OOC:Config:StdPragmas,
   Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
   OOC:SymbolTable:Predef,
@@ -317,10 +317,10 @@ PROCEDURE WarnSymE(errList: Error.List; pragmaHistory: Pragmas.History;
                    sym: Symbol; code: Error.Code): Error.Msg;
   VAR
     e: Error.Msg;
-    value: Value.Value;
+    value: Config.Variable;
   BEGIN
     value := pragmaHistory.GetValue(StdPragmas.warnings.name, sym.pos);
-    IF value(Boolean.Value).boolean THEN
+    IF value(Config.BooleanVar).boolean THEN
       e := Error.New(checkUsesContext, code);
       e.SetIntAttrib("pos", sym.pos);
       e.SetIntAttrib("line", sym.line);

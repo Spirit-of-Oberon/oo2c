@@ -10,11 +10,6 @@ IMPORT
   Config:Source:Environment,
   Config:Source:CmdLine,
   
-  Config:Value,
-  StringValue := Config:Value:String,
-  IntegerValue := Config:Value:Integer,
-  BooleanValue := Config:Value:Boolean,
-  
   Config:Section,
   Config:Section:Options,
   Config:Section:Arguments;
@@ -33,7 +28,7 @@ TYPE
     envVars-: Environment.Environment;
     cmdLine-: CmdLine.CmdLine;
     
-    typeMap-: Value.PrototypeMap;
+    typeMap-: C.PrototypeMap;
     
     options-: Options.Section;
     arguments-: Arguments.Section;
@@ -58,10 +53,10 @@ PROCEDURE Init* (config: Config; defaultConfigFile: Object.String8);
     config. envVars := Environment.New();
     config. cmdLine := CmdLine.New();
     
-    config. typeMap := NEW(Value.PrototypeMap);
-    Value.SetPrototype(config.typeMap, "string", StringValue.New(""));
-    Value.SetPrototype(config.typeMap, "integer", IntegerValue.New(0));
-    Value.SetPrototype(config.typeMap, "boolean", BooleanValue.New(FALSE));
+    config. typeMap := NEW(C.PrototypeMap);
+    C.SetPrototype(config.typeMap, "string", C.NewStringVar(""));
+    C.SetPrototype(config.typeMap, "integer", C.NewIntegerVar(0));
+    C.SetPrototype(config.typeMap, "boolean", C.NewBooleanVar(FALSE));
     
     config. options := Options.New("options", config.typeMap);
     config. arguments := Arguments.New ("arguments");

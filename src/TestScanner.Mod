@@ -1,10 +1,10 @@
 MODULE TestScanner;
 
 IMPORT
-  StdChannels, ProgramArgs, TextRider, Out, Object, IO, IO:FileChannel,
+  StdChannels, ProgramArgs, TextRider, Out, Object, IO, IO:FileChannel, Config,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Builder,
   OOC:Scanner, OOC:Scanner:XML, OOC:Scanner:Identity, 
-  OOC:Scanner:Statistics, BooleanValue := Config:Value:Boolean;
+  OOC:Scanner:Statistics;
 
 CONST
   modeXML = 0;
@@ -47,8 +47,8 @@ BEGIN
         errList := Error.NewList (arg);
         inputBuffer := InputBuffer.New (file, errList);
         pragmaSection := Pragmas.New();
-        pv := pragmaSection. Set ("predef_true", BooleanValue.New (TRUE));
-        pv := pragmaSection. Set ("predef_false", BooleanValue.New (FALSE));
+        pv := pragmaSection. Set ("predef_true", Config.NewBooleanVar(TRUE));
+        pv := pragmaSection. Set ("predef_false", Config.NewBooleanVar(FALSE));
         
         CASE mode OF
         | modeXML:
