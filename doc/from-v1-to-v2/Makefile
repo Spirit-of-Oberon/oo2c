@@ -3,7 +3,8 @@ FILES=oo2c-v2
 # Note: This makefile requires GNU make
 DVIPS_OPTIONS="-D 600 -Z"
 
-OUTPUT_SUFFIX=.info .html .pdf .ps 
+OUTPUT_SUFFIX=.html .pdf
+#OUTPUT_SUFFIX=.info .html .pdf .ps 
 TMP_SUFFIX=.aux .cp .fn .ky .log .pg .toc .tp .vr .dvi
 .PHONY: all clean distclean %.all %.clean %.distclean
 
