@@ -14,8 +14,7 @@
   generic36 generic37 generic38 generic39 generic40 generic41">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic42 generic43
-  generic44">-->
+  select ="&SetupTestCasesWithOut; generic1 generic45">-->
 
   &TestSetupWithOut;
     
@@ -1469,6 +1468,10 @@
     </test>
     <test id="generic44" type="reject" file="Generic44.Mod">
       Calling constructor on a non-record pointer type.
+    </test>
+    <test id="generic45" type="run"
+          file="Generic45.Mod" output="Generic45.Ref">
+      Calling constructor with <code>INIT</code> procedure.
     </test>
   </testcases>
 
