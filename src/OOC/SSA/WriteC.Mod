@@ -1706,7 +1706,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     ConstProp.Transform (pb);
     Write ("constprop-post", "algebraic-pre");
     Algebraic.Transform (pb);
-    Write ("algebraic-post", "dce-pre");
+    Write ("algebraic-post", "cse-pre");
     DeadCodeElimination.Transform (pb);
     CSE.Transform (pb);
     Write ("cse-post", "final");
