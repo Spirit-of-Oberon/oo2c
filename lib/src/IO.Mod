@@ -207,12 +207,14 @@ PROCEDURE NewFormatError*(msg: STRING): FormatError;
     RETURN NEW(FormatError, msg);
   END NewFormatError;
 
-PROCEDURE RaiseFormatError*(msg: STRING) RAISES FormatError;
+PROCEDURE RaiseFormatError*(msg: STRING)
+RAISES FormatError;
   BEGIN
     RAISE(NewFormatError(msg));
   END RaiseFormatError;
 
-PROCEDURE RaiseNotImplemented*() RAISES NotImplemented;
+PROCEDURE RaiseNotImplemented*()
+RAISES NotImplemented;
   BEGIN
     RAISE(NEW(NotImplemented, NIL));
   END RaiseNotImplemented;
@@ -394,7 +396,8 @@ PROCEDURE (ch: Channel) KeyForSelector*(sel: Selector): SelectionKey;
     RETURN ch.keys[i];
   END KeyForSelector;
 
-PROCEDURE (ch: Channel) [ABSTRACT] SetBlocking*(block: BOOLEAN) RAISES Error;
+PROCEDURE (ch: Channel) [ABSTRACT] SetBlocking*(block: BOOLEAN)
+RAISES Error;
 (**Change the channel's blocking mode.  Channels typically default to
    blocking mode on creation.
 
@@ -403,7 +406,8 @@ PROCEDURE (ch: Channel) [ABSTRACT] SetBlocking*(block: BOOLEAN) RAISES Error;
    @omodule{*IO:TextRider} only work with blocking channels.  *)
   END SetBlocking;
 
-PROCEDURE (ch: Channel) Close*() RAISES Error;
+PROCEDURE (ch: Channel) Close*()
+RAISES Error;
 (**Cancel all selection keys registered for the channel @oparam{ch} and close
    the channel.  *)
   VAR
@@ -416,7 +420,8 @@ PROCEDURE (ch: Channel) Close*() RAISES Error;
     END;
   END Close;
 
-PROCEDURE (ch: Channel) CloseAndRegister*() RAISES Error;
+PROCEDURE (ch: Channel) CloseAndRegister*()
+RAISES Error;
 (**Like @oproc{Channel.Close}, but register the channel's target with its
    naming service once done.  Right now, only @omodule{*IO:FileChannel}
    supports this feature; see @oconst{*IO:FileChannel.tmpFile} for details.
@@ -430,14 +435,15 @@ PROCEDURE InitByteChannel*(ch: ByteChannel);
     InitChannel(ch);
   END InitByteChannel;
 
-PROCEDURE (ch: Channel) SetPos*(pos: LONGINT) RAISES Error;
+PROCEDURE (ch: Channel) SetPos*(pos: LONGINT)
+RAISES Error;
 (**Change the channels position to @oparam{pos}.  *)
   BEGIN
     RaiseNotImplemented();
   END SetPos;
 
 PROCEDURE (ch: ByteChannel) [ABSTRACT] Read*(VAR buffer: ARRAY OF SYSTEM.BYTE;
-                                               start, length: LONGINT): LONGINT
+                                             start, length: LONGINT): LONGINT
 RAISES Error;
 (**Read a sequence of bytes from the channel into the buffer.
 
@@ -463,7 +469,7 @@ RAISES Error;
   END Read;
 
 PROCEDURE (ch: ByteChannel) [ABSTRACT] Write*(buffer[NO_COPY]: ARRAY OF SYSTEM.BYTE;
-                                     start, length: LONGINT): LONGINT
+                                              start, length: LONGINT): LONGINT
 RAISES Error;
 (**Write a sequence of bytes to this channel from the buffer.
 
@@ -482,7 +488,8 @@ RAISES Error;
    @end precond  *)
   END Write;
 
-PROCEDURE (ch: ByteChannel) Flush*() RAISES Error;
+PROCEDURE (ch: ByteChannel) Flush*()
+RAISES Error;
 (**Flush all buffers associated with channel @oparam{ch}.  *)
   END Flush;
 
