@@ -68,6 +68,11 @@ TYPE  (* C string type, assignment compatible with character arrays and
 TYPE
   Proc* = PROCEDURE;
 
-PROCEDURE strtod* (string: address; VAR tailptr: address): double;
+(* Note: All C function declared here are provided for the convenience
+   of modules of the standard library.  They may be changed, moved, or
+   removed without prior notice.  *)
+   
+PROCEDURE strtod* (string: address;
+                   VAR tailptr: charPtr1d): double;
 
 END C.

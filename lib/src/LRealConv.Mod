@@ -41,7 +41,7 @@ TYPE
   ScanState* = ConvTypes.ScanState;
 
 CONST
-  SigFigs*=15;  (* Accuracy of LONGREALs.  Scrap this? ... FIXME *)
+  SigFigs*=15;  (* Accuracy of LONGREALs.  Probably wrong.  Scrap this? ... FIXME *)
   expChar = "E";
   maxValue = "17976931348623157";
   (* signifcant digits of the maximum value 1.7976931348623157D+308 *)
@@ -293,24 +293,23 @@ PROCEDURE FormatReal* (str: ARRAY OF CHAR): ConvResults;
   END FormatReal;
  
 PROCEDURE ValueReal*(str: ARRAY OF CHAR): LONGREAL;
+(* result is undefined if FormatReal(str) # strAllRight *)
   VAR
-    adr, tail: SYSTEM.ADDRESS;
+    tail: C.charPtr1d;
     i: LONGINT;
     value: LONGREAL;
   BEGIN
-    IF (FormatReal (str) = strAllRight) THEN
-      adr := SYSTEM.ADR (str);
-      i := 0;
-      WHILE CharClass.IsWhiteSpace(str[i]) DO
-        (* skip our definition of whitespace *)
-        INC (adr); INC (i);
-      END;
-      value := C.strtod (adr, tail);
-      IF (tail+1 = SYSTEM.ADR(str)+LEN(str)) THEN (* tail points to 0X *)
-        RETURN value
-      END;
+    i := 0;
+    WHILE CharClass.IsWhiteSpace(str[i]) DO
+      (* skip our definition of whitespace *)
+      INC (i);
     END;
-    RETURN 0;                            (* error *)
+    value := C.strtod (SYSTEM.ADR (str[i]), tail);
+    IF (tail[0] = 0X) THEN
+      RETURN value                       (* syntax is ok *)
+    ELSE
+      RETURN 0;                          (* error *)
+    END;
   END ValueReal;
 
 PROCEDURE LengthFloatReal*(real: LONGREAL; sigFigs: INTEGER): INTEGER;
