@@ -5,7 +5,7 @@ static void Cse2__F(Cse2__P p) {
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)p;
-  i1 = i0!=0;
+  i1 = i0!=(OOC_INT32)0;
   if (i1) goto l3;
   i1=OOC_FALSE;
   goto l5;
@@ -25,7 +25,7 @@ l7:
 
 void Cse2__Test() {
 
-  Cse2__F((Cse2__P)0);
+  Cse2__F((Cse2__P)(OOC_INT32)0);
   return;
   ;
 }
