@@ -107,7 +107,7 @@ CONST
   invalidAttribute = 3;
   junkAtEndOfElement = 4;
   requireNameAttribute = 5;
-  requireVersionElement = 6;
+  requireVersionChild = 6;
   requireCurrentAttribute = 7;
   requireRevisionAttribute = 8;
   requireMainModuleAttribute = 9;
@@ -147,7 +147,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Msg.Msg; VAR templ: Msg.LSt
       t := "Junk at end of element"
     | requireNameAttribute:
       t := "This element requires an attribute `name'"
-    | requireVersionElement:
+    | requireVersionChild:
       t := "Expected child element `version'"
     | requireCurrentAttribute:
       t := "This element requires an attribute `current'"
@@ -625,13 +625,13 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
         chars := type(Object.String8).CharsLatin1();
         value := options.typeList.GetClone(chars^);
         IF (value = NIL) THEN
-          Err(unknownType, node);
+          Err(unknownType, elem);
           lastError.SetStringAttrib("type", Msg.GetStringPtr(chars^))
         ELSE
           chars := stringBuffer(Object.String8).CharsLatin1();
           value.StringToValue(chars^, errMsg);
           IF (errMsg # NIL) THEN
-            Err(invalidValue,node);
+            Err(invalidValue, elem);
             lastError.SetMsgAttrib("reason", errMsg)
           END
         END;
@@ -810,7 +810,7 @@ PROCEDURE ProcessPackage (root: Parser.Element;
         node := node.nextNode;
         SkipWS(node);
       ELSE
-        Err(requireVersionElement, node);
+        Err(requireVersionChild, elem);
       END;
       IF (node # NIL) THEN
         Err(junkAtEndOfElement, node);
@@ -923,7 +923,7 @@ PROCEDURE ProcessPackage (root: Parser.Element;
       node := node.nextNode;
       SkipWS(node);
     ELSE
-      Err(requireVersionElement, node);
+      Err(requireVersionChild, root);
     END;
     
     WHILE AtElement(node, "requires") DO
