@@ -156,7 +156,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     VAR
       i, count: LONGINT;
       n: ExtTree.Node;
-      statmSeqIR: IR.StatementSeq;
+      statmSeqIR, copy: IR.StatementSeq;
       statm: IR.Statement;
 
     PROCEDURE ProcedureCall (call: ExtTree.ProcedureCall): IR.Statement;
@@ -311,6 +311,15 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         END
       END;
 
+      IF (count # LEN (statmSeqIR^)) THEN
+        (* some statements where dropped because of errors: created shortened
+           array *)
+        NEW (copy, count);
+        FOR i := 0 TO count-1 DO
+          copy[i] := statmSeqIR[i]
+        END;
+        statmSeqIR := copy
+      END;
       RETURN statmSeqIR
     END StatementSeq;
   
