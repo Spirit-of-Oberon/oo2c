@@ -141,12 +141,6 @@ IMPORT
   
   OOC:Auxiliary:ParseModule,
   
-  Language,
-  Language:Numeric,
-  Language:Integer,
-  Language:INTEGER,
-  Language:TypeConversion,
-  
 (* Test Programs
    ------------------------------------------------------------------------ *)
   TestScanner, TestParser, TestSymTab, TestConfigSections, TestConfigCmdLine,
