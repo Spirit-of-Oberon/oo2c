@@ -87,7 +87,8 @@ ACCEPT:
 
   1) x is REAL
   2) x is LONGREAL
-
+  3) rounding is to -inf, both for positive and negative x
+     
 REJECT:
 
   1) x is not a real type (eg. INTEGER)
