@@ -153,7 +153,7 @@ PROCEDURE HashCode (obj: Key): LONGINT;
 <*IF TARGET_ADDRESS = 64 THEN*>
     RETURN S.VAL (LONGINT,
       S.VAL (SET, SHORT (S.LSH (S.ROT (S.VAL (S.ADDRESS, obj), 32), -32))) /
-      S.VAL (SET, (S.LSH (S.VAL (S.ADDRESS, obj), -32))))
+      S.VAL (SET, SHORT (S.LSH (S.VAL (S.ADDRESS, obj), -32))))
 <*ELSE*>
     RETURN S.VAL (LONGINT, obj)
 <*END*>
