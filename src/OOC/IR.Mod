@@ -620,6 +620,18 @@ TYPE
   END;
   
 TYPE
+  CopyString* = POINTER TO CopyStringDesc;
+  CopyStringDesc = RECORD
+    (**Copies a character sequence to a character array.  Used for the
+       predefined procedure @samp{COPY}, and when assigning a string
+       constant to a character array.  *)
+    (StatementDesc)
+    source-: Expression;
+    dest-: Expression;
+    maxLength-: Expression;
+  END;
+  
+TYPE
   Exit* = POINTER TO ExitDesc;
   ExitDesc* = RECORD
     (**Exit statement.  *)
@@ -959,6 +971,8 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
         (* nothing *)
       | statm: CopyParameter DO
         (* nothing *)
+      | statm: CopyString DO
+        (* nothing *)
       | statm: Exit DO
         ASSERT (currentLoop # NIL);      (* FIXME... report error *)
         statm. loop := currentLoop;
@@ -994,6 +1008,8 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
   END CheckExit;
 
 PROCEDURE ^ (b : Builder) AssignType (type : Sym.Type; expr : Expression) : Expression;
+PROCEDURE ^ (b: Builder) NewCopyString* (sym: Symbol; source, dest, maxLength: Expression): CopyString;
+
 
 (* Expression Class: Expression
    ------------------------------------------------------------------------ *)
@@ -1909,13 +1925,20 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
   END InitAssignment;
 
 PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
-                                       variable, value: Expression): Assignment;
+                                       variable, value: Expression): Statement;
   VAR
     assignment: Assignment;
   BEGIN
-    NEW (assignment);
-    InitAssignment (assignment, sym, variable, value);
-    RETURN assignment
+    IF b. typeRules. IsStringConst (value. type) THEN
+      (* assigning a string constant: create CopyString opcode *)
+      (* FIXME... check assignment restrictions *)
+      RETURN b. NewCopyString (sym, value, variable,
+                               b. Fold (b. NewLen (sym, variable, 0)));
+    ELSE
+      NEW (assignment);
+      InitAssignment (assignment, sym, variable, value);
+      RETURN assignment
+    END;
   END NewAssignment;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitAssignment* (assignment: Assignment);
@@ -2003,6 +2026,36 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitCopyParameter* (cp: CopyParameter);
 PROCEDURE (cp: CopyParameter) Accept* (v: Visitor);
   BEGIN
     v. VisitCopyParameter (cp)
+  END Accept;
+
+(* Statement Class: CopyString
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitCopyString (cp: CopyString; sym: Symbol;
+                          source, dest, maxLength: Expression);
+  BEGIN
+    InitStatement (cp, sym);
+    cp. source := source;
+    cp. dest := dest;
+    cp. maxLength := maxLength;
+  END InitCopyString;
+
+PROCEDURE (b: Builder) NewCopyString* (sym: Symbol; 
+                                       source, dest, maxLength: Expression): CopyString;
+  VAR
+    cp: CopyString;
+  BEGIN
+    NEW (cp);
+    InitCopyString (cp, sym, source, dest, maxLength);
+    RETURN cp
+  END NewCopyString;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitCopyString* (cp: CopyString);
+  END VisitCopyString;
+
+PROCEDURE (cp: CopyString) Accept* (v: Visitor);
+  BEGIN
+    v. VisitCopyString (cp)
   END Accept;
 
 (* Statement Class: Exit
@@ -2935,7 +2988,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
                   ~GetPragmaValue(b, StdPragmas.assertions, design. sym. pos));
 
       | Predef.copy:
-        ASSERT (FALSE);
+        RETURN b. NewCopyString (design. sym, arguments[0], arguments[1],
+                                 b. NewLen (design. sym, arguments[1], 0));
         
       | Predef.new:
         ASSERT (arguments[0]. type IS Sym.Pointer);
