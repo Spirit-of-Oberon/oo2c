@@ -21,7 +21,8 @@ MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:String, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc;
+  ADT:String, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc,
+  OOC:SymbolTable:Item;
 
 
 
@@ -220,6 +221,17 @@ TYPE
   END;
 
 TYPE
+  Body* = POINTER TO BodyDesc;
+  BodyDesc = RECORD
+    (NodeDesc)
+    declSeq-: NodeList;
+    begin-: AST.Node;
+    statmSeq-: NodeList;  (* may be NIL *)
+    end-: AST.Node;
+    name-: AST.Node;
+  END;
+  
+TYPE
   ProcDecl* = POINTER TO ProcDeclDesc;
   ProcDeclDesc = RECORD
     (NodeDesc)
@@ -230,8 +242,10 @@ TYPE
     identDef-: IdentDef;
     formalPars-: AST.Node;
     semicolon1-: AST.Node;
-    body-: AST.Node;
+    body-: Body;  (* can be NIL *)
     semicolon2-: AST.Node;
+    
+    symTabEntry-: Item.ProcDecl;
   END;
 
 TYPE
@@ -244,17 +258,6 @@ TYPE
   END;
 
 TYPE
-  Body* = POINTER TO BodyDesc;
-  BodyDesc = RECORD
-    (NodeDesc)
-    declSeq-: AST.NodeList;
-    begin-: AST.Node;
-    statmSeq-: AST.NodeList;
-    end-: AST.Node;
-    name-: AST.Node;
-  END;
-  
-TYPE
   Module* = POINTER TO ModuleDesc;
   ModuleDesc* = RECORD
     (NodeDesc)
@@ -263,7 +266,7 @@ TYPE
     flags-: Flags;
     semicolon-: AST.Node;
     importList-: AST.Node;
-    body-: Body;
+    body-: Body;  (* can be NIL *)
     period-: AST.Node;
     
     moduleName-: AST.Name;
@@ -316,7 +319,7 @@ TYPE
   FunctionCall* = POINTER TO FunctionCallDesc;
   FunctionCallDesc = RECORD
     (NodeDesc)
-    design-: AST.Node;
+    design-: Node;
     lParen-: AST.Node;
     arguments-: AST.NodeList;
     rParen-: AST.Node;
@@ -1029,8 +1032,14 @@ PROCEDURE (b: Builder) ProcDecl* (proc, arrow, receiver,
     pd. identDef := identDef(IdentDef);
     pd. formalPars := formalPars;
     pd. semicolon1 := semicolon1;
-    pd. body := body;
+    IF (body = NIL) THEN
+      pd. body := NIL
+    ELSE
+      pd. body := body(Body)
+    END;
     pd. semicolon2 := semicolon2;
+    
+    pd. symTabEntry := NIL;
     RETURN pd
   END ProcDecl;
 
@@ -1038,6 +1047,11 @@ PROCEDURE (procDecl: ProcDecl) Accept* (v: Visitor);
   BEGIN
     v. VisitProcDecl (procDecl)
   END Accept;
+
+PROCEDURE (procDecl: ProcDecl) SetSymTabEntry* (item: Item.Item);
+  BEGIN
+    procDecl. symTabEntry := item(Item.ProcDecl)
+  END SetSymTabEntry;
 
 
 PROCEDURE (b: Builder) ImportList* (import: AST.Node;
@@ -1065,9 +1079,13 @@ PROCEDURE (b: Builder) Body* (declSeq: AST.NodeList;
     body: Body;
   BEGIN
     NEW (body);
-    body. declSeq := declSeq;
+    body. declSeq := declSeq(NodeList);
     body. begin := begin;
-    body. statmSeq := statmSeq;
+    IF (statmSeq = NIL) THEN
+      body. statmSeq := NIL;
+    ELSE
+      body. statmSeq := statmSeq(NodeList)
+    END;
     body. end := end;
     body. name := name;
     RETURN body
@@ -1187,7 +1205,7 @@ PROCEDURE (b: Builder) FunctionCall* (design, lParen: AST.Node; arguments: AST.N
     fc: FunctionCall;
   BEGIN
     NEW (fc);
-    fc. design := design;
+    fc. design := design(Node);
     fc. lParen := lParen;
     fc. arguments := arguments;
     fc. rParen := rParen;
