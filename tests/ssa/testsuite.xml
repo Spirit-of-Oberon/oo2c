@@ -4,9 +4,9 @@
 
 <testsuite-ext profile="Test Suite for Framework Testing">
 
-<!-- <testsuite-ext -->
-<!--   profile="Test Suite for Framework Testing" -->
-<!--   select ="&SetupTestCasesWithOut; with1 with2"> -->
+<!--<testsuite-ext
+  profile="Test Suite for Framework Testing"
+  select ="&SetupTestCasesWithOut; div1 div2 mod1 mod2">-->
   
   &TestSetupWithOut;
     
@@ -137,6 +137,24 @@
     
     <test id="cap1" type="run" file="Cap1.Mod" output="Cap1.Ref">
       Predefined function <code>CAP</code> for some ASCII characters.
+    </test>
+    
+    <test id="div1" type="run" file="Div1.Mod" output="Div1.Ref">
+      Checks that <code>DIV</code> performs rounding to negative
+      infinity.  The divisor is positive.
+    </test>
+    
+    <test id="div2" type="run" file="Div2.Mod" output="Div2.Ref">
+      Checks result of <code>DIV</code> if the divisor is negative.
+    </test>
+    
+    <test id="mod1" type="run" file="Mod1.Mod" output="Mod1.Ref">
+      Checks that <code>MOD</code> performs rounding to negative
+      infinity.  The divisor is positive.
+    </test>
+    
+    <test id="mod2" type="run" file="Mod2.Mod" output="Mod2.Ref">
+      Checks result of <code>MOD</code> if the divisor is negative.
     </test>
     
     <test id="len1" type="run" file="Len1.Mod" output="Len1.Ref">

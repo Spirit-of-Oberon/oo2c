@@ -476,6 +476,16 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteChar (";");
     END WriteDyadicOp;
   
+  PROCEDURE WriteDyadicFct (instr: SSA.Instr; fct: ARRAY OF CHAR);
+    BEGIN
+      w. WriteString (fct);
+      w. WriteChar ("(");
+      w. Ref (instr. opndList);
+      w. WriteChar (",");
+      w. Ref (instr. opndList. nextOpnd);
+      w. WriteString (");");
+    END WriteDyadicFct;
+  
   PROCEDURE WriteMonadicOp (instr: SSA.Instr; op, suffix: ARRAY OF CHAR);
     BEGIN
       w. WriteString (op);
@@ -841,9 +851,13 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.multiply:
         WriteDyadicOp (instr, "*");
       | Opcode.divide:
-        WriteDyadicOp (instr, "/");
+        IF (instr. subclass < Opcode.scUnsigned8) THEN
+          WriteDyadicFct (instr, "_div");
+        ELSE
+          WriteDyadicOp (instr, "/");
+        END;
       | Opcode.modulo:
-        WriteDyadicOp (instr, "%");
+        WriteDyadicFct (instr, "_mod");
 
       | Opcode.and:
         WriteDyadicOp (instr, "&&");
@@ -853,9 +867,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteMonadicOp (instr, "!", "");
 
       | Opcode.setMember:
-        w. WriteString ("_in(");
-        RefList (instr. opndList, Opnd.arg);
-        w. WriteString (");");
+        WriteDyadicFct (instr, "_in");
       | Opcode.cap:
         WriteMonadicOp (instr, "_cap(", ");");
         

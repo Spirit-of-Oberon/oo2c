@@ -46,6 +46,21 @@ extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN
 #define _cap(_c) ((96<_c && _c<123) || (224<=_c && _c<255 && _c!=247)) ? (_c-32) : _c
 #define _capl(_c) _cap(_c)
 
+/* DIV(integer, integer) -- note: macro uses gcc style expression statement */
+#define _div(_x,_y) ({                               \
+  typeof(_x) _quot = _x / _y, _rem = _x % _y;        \
+  if (_rem && ((_rem > 0) != (_y > 0))) _quot--;     \
+  _quot; })
+
+/* MOD(integer, integer) -- note: macro uses gcc style expression statement */
+#define _mod(_x,_y) ({                               \
+  typeof(_x) _rem = _x % _y;                         \
+  if (_rem && ((_rem > 0) != (_y > 0))) _rem += _y;  \
+  _rem; })
+
+
+/* i IN s */
+#define _in(_i,_s) (((_s)>>(_i))&1)
 
 /* run-time meta data: type tags, dynamic array length, type test */
 #define OOC_ARRAY_LENGTH(_adr,_dim) (((OOC_LEN*)(_adr))[-(_dim)-1])
