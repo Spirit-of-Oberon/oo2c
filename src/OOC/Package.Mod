@@ -79,8 +79,8 @@ TYPE
     (Rep.PkgInfoDesc)
     name-: STRING;
     version: Version;
-    library-: ArrayList.ArrayList;
-    executable-: ArrayList.ArrayList;
+    library-: ArrayList.ArrayList(Library);
+    executable-: ArrayList.ArrayList(Executable);
     
     fileSet-: FileSet;
     (**This is a reference to a file set with a source and destination
@@ -91,7 +91,7 @@ TYPE
   Repository* = POINTER TO RepositoryDesc;
   RepositoryDesc = RECORD
     (Rep.PkgInfoDesc)
-    installedPkgs-: ArrayList.ArrayList;  (* of STRING *)
+    installedPkgs-: ArrayList.ArrayList(STRING);
   END;
   
 CONST
@@ -282,8 +282,8 @@ PROCEDURE NewPackage(): Package;
     Rep.InitPkgInfo(p);
     p.name := NIL;
     p.version := NIL;
-    p.library := ArrayList.New(4);
-    p.executable := ArrayList.New(4);
+    p.library := NEW(ArrayList.ArrayList(Library), 4);
+    p.executable := NEW(ArrayList.ArrayList(Executable), 4);
     p.fileSet := NIL;
     RETURN p;
   END NewPackage;
@@ -294,7 +294,7 @@ PROCEDURE NewRepository(): Repository;
   BEGIN
     NEW(r);
     Rep.InitPkgInfo(r);
-    r.installedPkgs := ArrayList.New(4);
+    r.installedPkgs := NEW(ArrayList.ArrayList(STRING), 4);
     RETURN r;
   END NewRepository;
 
@@ -313,6 +313,18 @@ PROCEDURE (r: Repository) MergePackage(pkg: Package);
       r.pragmas.Append(kv);
     END;
   END MergePackage;
+
+PROCEDURE (r: Repository) PackageInstalled*(pkgName: STRING): BOOLEAN;
+  VAR
+    i: LONGINT;
+  BEGIN
+    FOR i := 0 TO r.installedPkgs.size-1 DO
+      IF r.installedPkgs.array[i].Equals(pkgName) THEN
+        RETURN TRUE;
+      END;
+    END;
+    RETURN FALSE;
+  END PackageInstalled;
 
 PROCEDURE Normalize*(fileSet: FileSet): FileSet;
 (**Converts a hierarchy of file sets and files into a flat list of files.
@@ -1259,10 +1271,10 @@ RAISES IO.Error;
     WriteKeyValue(w, "options", pkg.options);
     WriteKeyValue(w, "pragmas", pkg.pragmas);
     FOR i := 0 TO pkg.library.size-1 DO
-      WriteLibrary(w, pkg.library.array[i](Library));
+      WriteLibrary(w, pkg.library.array[i]);
     END;
     FOR i := 0 TO pkg.executable.size-1 DO
-      WriteExecutable(w, pkg.executable.array[i](Executable));
+      WriteExecutable(w, pkg.executable.array[i]);
     END;
     WriteFileSet(w, pkg.fileSet);
     w.EndTag();  (* package *)
@@ -1302,7 +1314,7 @@ RAISES IO.Error;
     
     w.StartTag("repository", FALSE);
     FOR i := 0 TO rep.installedPkgs.size-1 DO
-      WriteInstalledPkg(w, rep.installedPkgs.array[i](STRING));
+      WriteInstalledPkg(w, rep.installedPkgs.array[i]);
     END;
     WriteKeyValue(w, "options", rep.options);
     WriteKeyValue(w, "pragmas", rep.pragmas);
