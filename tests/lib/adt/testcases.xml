@@ -29,8 +29,10 @@
   </test>
 
 
-  <test id="libadt_ObjectStorage" type="run" file="LibAdtObjectStorage.Mod">
-    Imports <code>ADT:Object:Storage</code>.
+  <test id="libadt_ObjectStorage" type="run"
+        file="LibAdtObjectStorage.Mod" output="LibAdtObjectStorage.Ref">
+    Uses <code>ADT:Object:Storage</code> to dump and restore a cyclic
+    data structure containing strings and numbers.
   </test>
   
   
