@@ -21,15 +21,32 @@ MODULE OOC:Config:CCompiler;
 *)
 
 IMPORT
-  Strings, ADT:String, URI, URI:Scheme:File, Config:Section:Options,
-  OOC:Auxiliary:Config;
-  
+  Strings, ADT:String, URI, URI:Scheme:File,
+  Config:Section:Options, OOC:Repository, OOC:Auxiliary:Config;
+
 PROCEDURE CompileFileCmd* (config: Config.Config; in, out: URI.URI;
                            VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 2*1024 OF CHAR;
     include: String.StringArrayPtr;
     i: LONGINT;
+    f: File.URI;
+    
+  PROCEDURE GetURIofRT(): File.URI;
+    VAR
+      m: Repository.Module;
+      uri: URI.HierarchicalURI;
+      f: File.URI;
+    BEGIN
+      m := config. repositories. GetModule (Config.runtimeModule);
+      ASSERT (m # NIL);  (* ... if this fails, then we have no __oo2c.h *)
+      uri := m. GetURI (Repository.modModuleSource);
+      f := uri(File.URI);
+      f. StripSegments (1);
+      uri := f. MakeRelative (File.GetCwd());
+      RETURN uri(File.URI)
+    END GetURIofRT;
+  
   BEGIN
     COPY ("gcc -Wall -g -pipe", cmd);
     
@@ -38,6 +55,15 @@ PROCEDURE CompileFileCmd* (config: Config.Config; in, out: URI.URI;
       Strings.Append (" -I", cmd);
       Strings.Append (include[i]. array^, cmd)
     END;
+    
+    (* add include path for the run-time header files; in theory, this include
+       directory should have the highest priority, but _only_ for run-time
+       headers, not for everything else that might be located there; for this
+       reason, this particular include might be better searched last *)
+    f := GetURIofRT();
+    f. GetPath (str);
+    Strings.Append (" -I", cmd);
+    Strings.Append (str, cmd);
     
     Strings.Append (" -c ", cmd);
     in(File.URI). GetPath (str);
