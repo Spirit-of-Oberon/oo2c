@@ -389,29 +389,29 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
       res: Msg.Msg;
       remoteURI, relativeURI: URI.URI;
       baseURI: URI.HierarchicalURI;
+      keys: ArrayList.ArrayList;
     BEGIN
       thisModule := repositories. GetModule (module. name. str^);
       baseURI := thisModule. GetURI (Repository.modInterfaceHTML, res);
       ASSERT (res = NIL);
       
-      FOR i := 0 TO modList. sizeTable-1 DO
-        IF (modList. table[i]. key # NIL) THEN
-          remoteMod := modList. table[i]. key(Repository.Module);
-          
-          w. StartTag ("module-ref", FALSE);
-          w. AttrStringLatin1 ("name", remoteMod. name^);
-          
-          w. StartTag ("ref-target", FALSE);
-          w. AttrStringLatin1 ("type", "html");
-          remoteURI := remoteMod. GetURI (Repository.modInterfaceHTML, res);
-          ASSERT (res = NIL);
-          relativeURI := remoteURI. MakeRelative (baseURI);
-          relativeURI. GetString (str);
-          w. AttrStringLatin1 ("relative-uri", str);
-          w. EndTag;
-          
-          w. EndTag
-        END
+      keys := modList. Keys();
+      FOR i := 0 TO keys. len-1 DO
+        remoteMod := keys. array[i](Repository.Module);
+
+        w. StartTag ("module-ref", FALSE);
+        w. AttrStringLatin1 ("name", remoteMod. name^);
+
+        w. StartTag ("ref-target", FALSE);
+        w. AttrStringLatin1 ("type", "html");
+        remoteURI := remoteMod. GetURI (Repository.modInterfaceHTML, res);
+        ASSERT (res = NIL);
+        relativeURI := remoteURI. MakeRelative (baseURI);
+        relativeURI. GetString (str);
+        w. AttrStringLatin1 ("relative-uri", str);
+        w. EndTag;
+
+        w. EndTag
       END
     END WriteModuleRef;
   
