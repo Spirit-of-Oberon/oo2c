@@ -364,6 +364,7 @@ PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;
             IF tr. IsComponentOf (subType, field. type, arrayCompat) THEN
               RETURN TRUE
             END
+          ELSE  (* ignore entries for type-bound procedures *)
           END;
           field := field. nextNested
         END;
