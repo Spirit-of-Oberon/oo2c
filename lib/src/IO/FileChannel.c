@@ -137,7 +137,7 @@ IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String xfile,
   } else {
     IO_FileChannel__Channel ch =
       RT0__NewObject(OOC_TYPE_DESCR(IO_FileChannel,ChannelDesc));
-    IO__InitByteChannel((IO__ByteChannel)ch);
+    IO__ByteChannelDesc_INIT((IO__ByteChannel)ch);
     ch->fd = fd;
     ch->origName = xfile;
     ch->tmpName = tmpName;

@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE IO:Buffer;
 (*  Generic buffering channel.
-    Copyright (C) 2003  Michael van Acken
+    Copyright (C) 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -38,22 +38,18 @@ TYPE
     buffer: ARRAY sizeBuffer OF CHAR;
   END;
 
-PROCEDURE Init(ch: Channel; base: IO.ByteChannel);
+PROCEDURE (ch: Channel) INIT*(base: IO.ByteChannel);
   BEGIN
-    IO.InitByteChannel(ch);
+    ch.INIT^();
     ch.base := base;
     ch.reading := TRUE;
     ch.pos := 0;
     ch.endOfBuffer := 0;
-  END Init;
+  END INIT;
 
 PROCEDURE Open*(base: IO.ByteChannel): Channel;
-  VAR
-    ch: Channel;
   BEGIN
-    NEW(ch);
-    Init(ch, base);
-    RETURN ch;
+    RETURN NEW(Channel, base);
   END Open;
 
 PROCEDURE (ch: Channel) Flush*() RAISES IO.Error;

@@ -445,22 +445,18 @@ PROCEDURE (w: Writer) SetByteOrder* (order: SHORTINT);
    channels and at the current position for non-positionable channels.
  *)
 
-PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel; byteOrder: SHORTINT);
+PROCEDURE (r: Reader) INIT*(ch: IO.ByteChannel; byteOrder: SHORTINT);
   BEGIN
     r. byteOrder := byteOrder;
     r. channel := ch;
-  END InitReader;
+  END INIT;
 
 PROCEDURE ConnectReader*(ch: IO.ByteChannel): Reader;
 (**@precond
    @oparam{ch} is in blocking mode.
    @end precond *)
-  VAR
-    r: Reader;
   BEGIN
-    NEW (r);
-    InitReader (r, ch, littleEndian);
-    RETURN r
+    RETURN NEW(Reader, ch, littleEndian);
   END ConnectReader;
   
 (* Writer Procedures
@@ -471,22 +467,18 @@ PROCEDURE ConnectReader*(ch: IO.ByteChannel): Reader;
    The Writer is positioned at the beginning for positionable 
    channels and at the current position for non-positionable channels.
  *)
-PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel; byteOrder: SHORTINT);
+PROCEDURE (w: Writer) INIT*(ch: IO.ByteChannel; byteOrder: SHORTINT);
   BEGIN
     w.byteOrder := byteOrder;
     w.channel := ch;
-  END InitWriter;
+  END INIT;
 
 PROCEDURE ConnectWriter*(ch: IO.ByteChannel): Writer;
 (**@precond
    @oparam{ch} is in blocking mode.
    @end precond *)
-  VAR
-    w: Writer;
   BEGIN
-    NEW (w);
-    InitWriter (w, ch, littleEndian);
-    RETURN w;
+    RETURN NEW (Writer, ch, littleEndian);
   END ConnectWriter;
 
 PROCEDURE SetDefaultByteOrder(VAR x: ARRAY OF SYSTEM.BYTE);

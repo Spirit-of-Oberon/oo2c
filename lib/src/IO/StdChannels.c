@@ -51,8 +51,9 @@ void IO_StdChannels__IOError(Object__String suffix) {
   Exception__Raise(e);
 }
 
-void IO_StdChannels__Init(IO_StdChannels__Channel ch, IO__FileDescriptor fd) {
-  IO__InitByteChannel((IO__ByteChannel)ch);
+void IO_StdChannels__ChannelDesc_INIT(IO_StdChannels__Channel ch,
+				      IO__FileDescriptor fd) {
+  IO__ByteChannelDesc_INIT((IO__ByteChannel)ch);
   ch->fd = fd;
 }
 
@@ -98,7 +99,7 @@ OOC_INT32 IO_StdChannels__ChannelDesc_FileDescriptor(IO_StdChannels__Channel ch)
 
 static IO__ByteChannel stdchannel(int fd) {
   IO_StdChannels__Channel ch = RT0__NewObject(OOC_TYPE_DESCR(IO_StdChannels,ChannelDesc));
-  IO_StdChannels__Init(ch, fd);
+  IO_StdChannels__ChannelDesc_INIT(ch, fd);
   return (IO__ByteChannel)ch;
 }
 

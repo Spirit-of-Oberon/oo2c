@@ -1021,13 +1021,13 @@ TYPE
 PROCEDURE (w: Writer) INIT*(ch, chDoc: IO.ByteChannel);
   BEGIN
     ASSERT(chDoc # NIL);
-    Storage.InitWriter(w, ch);
+    w.INIT^(ch);
     w.docWriter := Storage.ConnectWriter(chDoc);
   END INIT;
 
 PROCEDURE (r: Reader) INIT*(ch, chDoc: IO.ByteChannel);
   BEGIN
-    Storage.InitReader(r, ch);
+    r.INIT^(ch);
     IF (chDoc = NIL) THEN
       r.docReader := NIL;
     ELSE
