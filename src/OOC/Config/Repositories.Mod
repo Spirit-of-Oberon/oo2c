@@ -1,9 +1,30 @@
+(* 	$Id$	 *)
 MODULE OOC:Config:Repositories [OOC_EXTENSIONS];
+(*  Management of a hierarchy of configured repositories.
+    Copyright (C) 2001  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
 
 IMPORT
-  Msg, Channel, TextRider, LongStrings, URI, URI:Scheme:File, 
-  XML:DTD, XML:Locator,
-  Config:Parser, CS := Config:Section, OOC:Repository;
+  Msg, Channel, TextRider, LongStrings,
+  ADT:String, URI, URIParser := URI:Parser, URI:Scheme:File, 
+  XML:DTD, XML:Locator, Config:Parser, CS := Config:Section,
+  OOC:Repository, OOC:Repository:FileSystem;
 
 
 TYPE
@@ -284,6 +305,46 @@ PROCEDURE (s: Section) GetResource* (package, path: ARRAY OF CHAR): URI.URI;
     UNTIL (uri # NIL) OR (topLevelRep = NIL);
     RETURN uri
   END GetResource;
+
+PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
+  VAR
+    rep: Repository.Repository;
+    c: LONGINT;
+    result: String.StringArrayPtr;
+    str, subdir: Repository.URIBuffer;
+    uri, relative: URI.URI;
+    res: Msg.Msg;
+    
+  PROCEDURE Select (rep: Repository.Repository): BOOLEAN;
+    BEGIN
+      RETURN (rep IS FileSystem.Repository)
+    END Select;
+  
+  BEGIN
+    c := 0;
+    rep := s. topLevelRep;
+    WHILE (rep # NIL) & Select (rep) DO
+      INC (c);
+      rep := rep. baseRep
+    END;
+    
+    NEW (result, c);
+    c := 0;
+    rep := s. topLevelRep;
+    WHILE (rep # NIL) & Select (rep) DO
+      IF Select (rep) THEN
+        rep. GetDefaultSubdir (Repository.modHeaderFileC, subdir);
+        uri := URIParser.NewURI (subdir, rep. baseURI, res);
+        relative := uri. MakeRelative (File.GetCwd());
+        relative(File.URI). GetPath (str);
+        
+        result[c] := String.New (str);
+        INC (c);
+      END;
+      rep := rep. baseRep
+    END;
+    RETURN result
+  END GetIncludePaths;
 
 BEGIN
   NEW (repositoriesContext);
