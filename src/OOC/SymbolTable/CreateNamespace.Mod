@@ -1007,7 +1007,11 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     
     (* nineth pass: check namespace restrictions imposed on extended
        records and assign indexes to type-bound procedures *)
-    CheckExtendedRecords (root, errList);
+    IF errList.NoErrors() THEN
+      (* if there are type names that could not be resolved, then this
+         function cannot operator properly; only run it if we are clean *)
+      CheckExtendedRecords (root, errList);
+    END;
     
     ResolveRef.Resolve (root, errList)
   END CreateNamespace;
