@@ -3,10 +3,12 @@
 
 use strict;
 use File::Find;
+use Cwd;
 
 my $output = "Makefile.ext";
 my $main = "obj/oo2c_";
 my $exec = "oo2c";
+my $startup_cwd = cwd();
 
 my %header = ();
 my %repository = ();
@@ -15,14 +17,29 @@ sub get_header() {
     my $header = "$File::Find::dir/$_";
     my ($rep, $file) = ($header =~ m:^(.*/)obj/(.*)\.h$:);
     my $module = $file;
-    $module =~ s#/#:#g;
-    $header{$module} = { repository => $rep,
-			 module => $module,
-			 source => "${rep}src/$file.Mod",
-			 header => $header,
-			 objfile => "${rep}obj/$file.o",
-		       };
-    push @{$repository{$rep}}, $header{$module};
+    my $source = "${rep}src/$file.Mod";
+    
+    my $interface_only = 0;
+    if (open F, "<$startup_cwd/$source") {
+      local $/ = undef;
+      my $lines = <F>;
+      close F;
+      
+      if ($lines =~ /MODULE .*INTERFACE/) {
+	$interface_only = ($lines !~ /INTERFACE .*LINK FILE/);
+      }
+    }
+    
+    if (!$interface_only) {
+      $module =~ s#/#:#g;
+      $header{$module} = { repository => $rep,
+			   module => $module,
+			   source => $source,
+			   header => $header,
+			   objfile => "${rep}obj/$file.o",
+			 };
+      push @{$repository{$rep}}, $header{$module};
+    }
   }
 }
 
