@@ -21,7 +21,8 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Out, Strings, Object:Boxed, ADT:Storable, ADT:Object:Storage, IO,
+  Out, Strings, Object, Object:Boxed, ADT:Storable, ADT:Object:Storage,
+  ADT:Dictionary, IO,
   OOC:Doc, OOC:AST, Sym := OOC:SymbolTable;
 
 
@@ -42,6 +43,15 @@ TYPE
        adjusted for this.  *)
   END;
 
+TYPE
+  Writer = POINTER TO WriterDesc;
+  WriterDesc = RECORD
+    (**This special writer maps all @otype{Sym.Name} instances with the same
+       value onto a single object in the symbol file.  *)
+    (Storage.WriterDesc)
+    names: Dictionary.Dictionary(STRING, Sym.Name);
+  END;
+  
 TYPE
   AutoImport* = POINTER TO AutoImportDesc;
   Name = POINTER TO ARRAY OF CHAR;
@@ -587,6 +597,50 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
     END;
   END Finalize;
 
+
+
+PROCEDURE ConnectWriter (ch: IO.ByteChannel): Writer;
+(**Creates a new writer instance operating on channel @oparam{ch}.  *)
+  VAR
+    w: Writer;
+  BEGIN
+    NEW (w);
+    Storage.InitWriter(w, ch);
+    w.names := NEW(Dictionary.Dictionary(STRING, Sym.Name));
+    IF (w.channel = NIL) THEN
+      RETURN NIL
+    ELSE
+      RETURN w
+    END
+  END ConnectWriter;
+
+PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object) RAISES IO.Error;
+  VAR
+    str: STRING;
+  BEGIN
+    IF (obj = NIL) THEN
+      w.WriteObject^(NIL);
+    ELSE
+      WITH obj: Sym.Name DO
+        str := Object.NewLatin1(obj.str^);
+        IF w.names.HasKey(str) THEN
+          w.WriteObject^(w.names.Get(str));
+        ELSE
+          w.WriteObject^(obj);
+          w.names.Set(str, obj);
+        END;
+      ELSE
+        w.WriteObject^(obj);
+      END;
+    END;
+  END WriteObject;
+
+PROCEDURE (w: Writer) Disconnect*;
+  BEGIN
+    w.Disconnect^;
+    w.names := NIL;
+  END Disconnect;
+
 PROCEDURE (b: Builder) WriteSymbolTable* (ch: IO.ByteChannel;
                                           symTab: Sym.Module)
 RAISES IO.Error;
@@ -596,7 +650,7 @@ RAISES IO.Error;
     (* Note: This method omits the magic number and the fingerprint value and
        is therefore not symmetric to ReadSymbolTable.  The two values are
        written by OOC:Auxiliary:WriteSymbolFile.WriteSymbolFile *)
-    writer := Storage.ConnectWriter (ch);
+    writer := ConnectWriter (ch);
     writer. WriteObject (symTab);
   END WriteSymbolTable;
 
