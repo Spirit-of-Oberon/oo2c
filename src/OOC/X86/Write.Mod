@@ -1040,7 +1040,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
       WITH instr: S.BranchInstr DO
         cmp := instr.opndList.arg.instr;
         IF instr.caseBranch THEN
-          Opc0("jmp");
+          Opc0("jmp *");
           opndWidth := S.address;
           Opnd(instr.opndList);
           NEW(block.caseBranches, LEN(instr.paths^));
