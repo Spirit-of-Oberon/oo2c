@@ -1,11 +1,11 @@
 MODULE H2O:Module;
 
 IMPORT
-  ADT:String, ADT:Storable, ADT:ArrayList, Err;
+  Language:=LanguageNew, ADT:String, ADT:ArrayList, Err;
 
 TYPE
   Module* = POINTER TO ModuleDesc;
-  ModuleDesc* = RECORD (Storable.ObjectDesc)
+  ModuleDesc* = RECORD (Language.ObjectDesc)
     imports- : ArrayList.ArrayList;
     name- : String.String;
     next- : Module;

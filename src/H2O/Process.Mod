@@ -2,7 +2,7 @@ MODULE H2O:Process;
 
 IMPORT
   Err, Language:=LanguageNew,
-  ADT:Storable, ADT:String, ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList,
+  ADT:String, ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList,
   H2O:Source, H2O:Error, H2O:Scanner, H2O:Module;
 
 CONST
@@ -116,7 +116,7 @@ VAR
   (* Get next symbol from input. If tokens are queued resulting from macro
      expansion, the first queued token is returned. Otherwise, the next token
      is read from the input scanner. *)
-  VAR o : Storable.Object;
+  VAR o : Language.Object;
   BEGIN
     IF p.expanded.Size() > 0 THEN
       o := p.expanded.RemoveFirst();
@@ -141,7 +141,7 @@ VAR
     i : INTEGER;
     result : LinkedList.LinkedList;
     iBody, iParam : LinkedList.Iterator;
-    o : Storable.Object;
+    o : Language.Object;
     s, t : Scanner.Token;
     
     PROCEDURE ScanParameter(list : LinkedList.LinkedList);
@@ -296,7 +296,7 @@ VAR
     PROCEDURE Define;
     VAR
       name : String.String;
-      object : Storable.Object;
+      object : Language.Object;
       m : Macro;
       t : Scanner.Token;
       param, lastParam : Param;

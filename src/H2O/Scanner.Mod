@@ -24,7 +24,7 @@ MODULE H2O:Scanner [OOC_EXTENSIONS];
 
 IMPORT
   Err, CharClass, TextRider,
-  ADT:String, ADT:StringBuffer, ADT:Storable,
+  Language:=LanguageNew, ADT:String, ADT:StringBuffer,
   H2O:Source, H2O:Error;
 
 CONST
@@ -110,7 +110,7 @@ CONST
 
 TYPE
   Token* = POINTER TO TokenDesc;
-  TokenDesc* = RECORD (Storable.ObjectDesc)
+  TokenDesc* = RECORD (Language.ObjectDesc)
     name- : String.String;
     sym- : INTEGER;
     len- : INTEGER;

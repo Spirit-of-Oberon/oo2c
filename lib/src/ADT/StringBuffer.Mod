@@ -454,8 +454,8 @@ BEGIN
   END
 END AppendBool;
 
-PROCEDURE (str : StringBuffer) AppendObject* (object : Storable.Object);
-(**Append the string representation of an @otype{Storable.Object} to the current
+PROCEDURE (str : StringBuffer) AppendObject* (object : Language.Object);
+(**Append the string representation of an @otype{Language.Object} to the current
    string. This procedure uses @oproc{Storable.Object.ToString} to obtain a
    textual description of the object. If @oproc{Storable.Object.ToString} does
    not return a @otype{String.String} (eg. the base method has not been
@@ -468,8 +468,8 @@ VAR
 BEGIN
   IF object = NIL THEN
     str.AppendString("NIL");
-  ELSE
-    res := object.ToString();
+  ELSIF (object IS Storable.Object) THEN
+    res := object(Storable.Object).ToString();
     IF (res # NIL) & (res IS String.String) THEN
       str.Append(res(String.String));
     ELSE
@@ -488,6 +488,8 @@ BEGIN
 <*END*>
       str.AppendChar("]");
     END
+  ELSE
+    str.AppendString("[some Language.Object]");
   END;
 END AppendObject;
  
@@ -499,7 +501,6 @@ END ToString;
 
 PROCEDURE (str: StringBuffer) Load* (r: Storable.Reader);
   BEGIN
-    str. Load^ (r);
     r. ReadNum (str. length);
     NEW (str. array, ArraySize (str. length));
     r. ReadBytes (str. array^, 0, str. length * SIZE(CHAR));
@@ -508,7 +509,6 @@ PROCEDURE (str: StringBuffer) Load* (r: Storable.Reader);
 
 PROCEDURE (str: StringBuffer) Store* (w: Storable.Writer);
   BEGIN
-    str. Store^ (w);
     w. WriteNum (str. length);
     w. WriteBytes (str. array^, 0, str. length * SIZE(CHAR))
   END Store;

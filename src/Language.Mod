@@ -9,7 +9,7 @@ IMPORT
 
 TYPE
   Type* = POINTER TO TypeDesc;
-  TypeDesc* = RECORD [ABSTRACT] (Storable.ObjectDesc)
+  TypeDesc* = RECORD [ABSTRACT] (LanguageNew.ObjectDesc)
     (** This is the base type for all Oberon-2 types. Sub-types of @otype{Type}
      * generally provide a function @otype{Value}, which converts a primitive
      * type to a @otype{Value}.  *) 
@@ -49,21 +49,16 @@ PROCEDURE (v: Value) [ABSTRACT] ToString*() : String.String;
 
 PROCEDURE (v: Value) Store* (w: Storable.Writer);
   BEGIN
-    w. WriteObject (v. type)
+    (*w. WriteObject (v. type)   FIXME... *)
   END Store;
 
 PROCEDURE (v: Value) Load* (r: Storable.Reader);
-  VAR
-    obj: Storable.Object;
   BEGIN
-    r. ReadObject (obj);
-    v. type := obj(Type)
+    v. type := NIL;  (* FIXME... *)
   END Load;
 
 
 PROCEDURE InitType* (t: Type);
-  BEGIN
-    Storable.Init (t)
   END InitType;
 
 PROCEDURE (t: Type) [ABSTRACT] ToString*() : String.String;

@@ -158,7 +158,7 @@ PROCEDURE (obj: Object) Destroy* ;
 (* Externalize/Internalize Methods
    ======================================================================== *)
    
-PROCEDURE (obj: Object) Store* (w: Writer);
+PROCEDURE (obj: Object) [ABSTRACT] Store* (w: Writer);
 (**Stores data of @oparam{obj} to @oparam{w}.  Nested record pointers are
    stored by calling the type-bound procedure @oproc{Writer.WriteObject}.  The
    procedure is not allowed to make any changes to the global state of the
@@ -172,10 +172,9 @@ PROCEDURE (obj: Object) Store* (w: Writer);
    This procedure is either activated by a super call, or from the procedure
    @oproc{Writer.WriteObject}.
    @end precond  *)
-  BEGIN
   END Store;
 
-PROCEDURE (obj: Object) Load* (r: Reader);
+PROCEDURE (obj: Object) [ABSTRACT] Load* (r: Reader);
 (**Loads data of @oparam{obj} from @oparam{r}.  Nested record pointers are
    loaded by calling the type-bound procecdure @oproc{Reader.ReadObject}.  This
    procedure must be symmetric to @oproc{Object.Store}, or data internalization
@@ -191,7 +190,6 @@ PROCEDURE (obj: Object) Load* (r: Reader);
    This procedure is either activated by a super call, or from the procedure
    @oproc{Reader.ReadObject}.
    @end precond  *)
-  BEGIN
   END Load;
 
 (* Methods for extended BinaryRider

@@ -19,7 +19,7 @@ MODULE StringSearch [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:Storable, ADT:String;
+  Language:=LanguageNew, ADT:String;
 
 (**This module specifies a common framework for string search algorithms.
    Examples for implementations are @omodule{*StringSearch:SubstringBF}, which
@@ -46,7 +46,7 @@ TYPE
     (**Factory for @otype{Matcher} objects.  An instance of @otype{Matcher} is
        created from a textual description of a search pattern by calling
        @oproc{Factory.Compile}.  *)
-    (Storable.ObjectDesc)
+    (Language.ObjectDesc)
   END;
 
 TYPE
@@ -54,7 +54,7 @@ TYPE
   MatcherDesc* = RECORD [ABSTRACT]
   (**A representation of a search pattern.  An instance of @otype{Matcher} is
      applied to a string by calling one of the match or search methods.  *)
-    (Storable.ObjectDesc)
+    (Language.ObjectDesc)
     pattern-: String.String;
     (**The pattern string from which the matcher object was compiled.  *)
     flags-: Flags;
@@ -69,7 +69,7 @@ TYPE
   MatchObject* = POINTER TO MatchObjectDesc;
   MatchObjectDesc* = RECORD [ABSTRACT]
   (**Represents the result of a successful match or search operation.  *)
-    (Storable.ObjectDesc)
+    (Language.ObjectDesc)
     pos-: LONGINT;
     (**The value of @var{pos} which was passed to a search or match function.
        This is the index into the string at which the matcher engine started
@@ -91,7 +91,6 @@ TYPE
 PROCEDURE InitMatchObject* (m: MatchObject; pos, endpos: LONGINT;
                             matcher: Matcher; string: String.String);
   BEGIN
-    Storable.Init (m);
     m. pos := pos;
     m. endpos := endpos;
     m. matcher := matcher;
@@ -100,7 +99,6 @@ PROCEDURE InitMatchObject* (m: MatchObject; pos, endpos: LONGINT;
 
 PROCEDURE (m: MatchObject) Destroy*;
   BEGIN
-    m. Destroy^;
     m. pos := 0;
     m. endpos := 0;
     m. matcher := NIL;
@@ -133,7 +131,6 @@ PROCEDURE (m: MatchObject) [ABSTRACT] End* (group: LONGINT): LONGINT;
 
 PROCEDURE InitMatcher* (matcher: Matcher; pattern: String.String; flags: Flags; groups: LONGINT);
   BEGIN
-    Storable.Init (matcher);
     matcher. pattern := pattern;
     matcher. flags := flags;
     matcher. groups := groups;
@@ -141,7 +138,6 @@ PROCEDURE InitMatcher* (matcher: Matcher; pattern: String.String; flags: Flags; 
 
 PROCEDURE (matcher: Matcher) Destroy*;
   BEGIN
-    matcher. Destroy^;
     matcher. pattern := NIL;
     matcher. flags := {};
     matcher. groups := 0;
@@ -196,12 +192,10 @@ PROCEDURE (matcher: Matcher) [ABSTRACT] Search* (string: String.String; pos, end
   
 PROCEDURE InitFactory* (f: Factory);
   BEGIN
-    Storable.Init (f)
   END InitFactory;
 
 PROCEDURE (f: Factory) Destroy*;
   BEGIN
-    f. Destroy^
   END Destroy;
 
 PROCEDURE (f: Factory) [ABSTRACT] Compile* (pattern: String.String;

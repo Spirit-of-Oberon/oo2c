@@ -1,7 +1,7 @@
 MODULE H2O:Type;
 
 IMPORT
-  O := ADT:Storable, ADT:String, ADT:StringBuffer, ADT:ArrayList,
+  Language:=LanguageNew, ADT:String, ADT:StringBuffer, ADT:ArrayList,
   H2O:Module;
 
 CONST 
@@ -37,7 +37,7 @@ CONST
   Type* = POINTER TO TypeDesc;
   Object* = POINTER TO ObjectDesc;
 
-  TypeDesc* = RECORD (O.ObjectDesc)
+  TypeDesc* = RECORD (Language.ObjectDesc)
     class* : SHORTINT;		(* see tXXX above *)
     size* : LONGINT;
     base* : Type;

@@ -24,7 +24,7 @@ Log,
   Language, Language:Boolean, Language:Char, Language:Set,
   LString := Language:String,
   Language:String8, Language:String16, Language:Integer, Language:Real,
-  ADT:Storable, ADT:ArrayList, ADT:String, ADT:StringBuffer,
+  LanguageNew, ADT:ArrayList, ADT:String, ADT:StringBuffer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
@@ -159,7 +159,7 @@ TYPE
 TYPE
   Node* = POINTER TO NodeDesc;
   NodeDesc = RECORD [ABSTRACT]
-    (Storable.ObjectDesc)
+    (LanguageNew.ObjectDesc)
     sym-: Symbol;
     (**This symbol's location is used to refer to the node when writing an
        error or warning message.  For constants or name, this symbol is the
@@ -1308,7 +1308,6 @@ PROCEDURE (gv: GuardedVar) Module*(): Sym.Module;
 
 PROCEDURE InitNode* (n: Node; sym: Symbol);
   BEGIN
-    Storable.Init (n);
     n. sym := sym;
   END InitNode;
 

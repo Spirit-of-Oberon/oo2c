@@ -23,7 +23,7 @@ MODULE OOC:SSA;
 
 IMPORT
   SYSTEM, Log, Language:=LanguageNew, LanguageOld := Language, 
-  Language:Integer, Language:Boolean, ADT:Storable, ADT:Dictionary,
+  Language:Integer, Language:Boolean, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
@@ -40,7 +40,7 @@ TYPE
 
 TYPE
   NodeDesc* = RECORD
-    (Storable.ObjectDesc)
+    (Language.ObjectDesc)
   END;
   
 TYPE
@@ -220,7 +220,6 @@ VAR
   
 PROCEDURE InitNode* (n: Node);
   BEGIN
-    Storable.Init (n);
   END InitNode;
 
   (* ---------------------------------------------------------------------- *)

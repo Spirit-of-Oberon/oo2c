@@ -476,7 +476,6 @@ PROCEDURE (str : String) Equals* (y: Language.Object): BOOLEAN;
 PROCEDURE (str: String) Load* (r: Storable.Reader);
   VAR length : LONGINT;
   BEGIN
-    str. Load^ (r);
     r. ReadNum (length);
     InitString(str, length);
     r. ReadBytes (str. array^, 0, str. length * SIZE(CHAR));
@@ -485,7 +484,6 @@ PROCEDURE (str: String) Load* (r: Storable.Reader);
 
 PROCEDURE (str: String) Store* (w: Storable.Writer);
   BEGIN
-    str. Store^ (w);
     w. WriteNum (str. length);
     w. WriteBytes (str. array^, 0, str. length * SIZE(CHAR))
   END Store;
