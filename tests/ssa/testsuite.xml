@@ -8,7 +8,10 @@
   select ="&SetupTestCasesWithOut; generic1 generic2 generic3 generic4
   generic5 generic6 generic7 generic8 generic9 generic10 generic11
   generic12 generic13 generic14 generic15 generic16 generic17
-  generic18 generic19 generic20">-->
+  generic18 generic19 generic20 generic21">-->
+
+<!--<testsuite-ext profile="Test Suite for Translation Patterns"
+  select ="&SetupTestCasesWithOut; generic1 generic21">-->
 
   &TestSetupWithOut;
     
@@ -1367,6 +1370,9 @@
     <test id="generic20" type="reject" file="Generic20.Mod">
       Cannot use <code>NEW</code> on a variable based on a type
       variable.
+    </test>
+
+    <test id="generic21" type="accept" file="Generic21.Mod">
     </test>
   </testcases>
 
