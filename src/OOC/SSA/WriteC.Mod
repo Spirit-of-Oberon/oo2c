@@ -215,7 +215,11 @@ PROCEDURE WriteLocalDecl (w: Writer;
       varDecl: Sym.VarDecl;
     BEGIN
       WITH instr: SSA.Address DO   (* copy-parameter is instance of Address *)
-        RETURN instr. decl(Sym.VarDecl)
+        IF (instr. decl IS Sym.VarDecl) THEN
+          RETURN instr. decl(Sym.VarDecl);
+        ELSE
+          RETURN NIL;
+        END;
       ELSE
         opnd := instr. opndList;
         WHILE (opnd # NIL) &
@@ -240,7 +244,8 @@ PROCEDURE WriteLocalDecl (w: Writer;
     WHILE (instr # NIL) DO
       IF (instr. opcode = Opcode.get) OR
          (instr. opcode = Opcode.set) OR
-         (instr. opcode = Opcode.copyParameter) THEN
+         (instr. opcode = Opcode.copyParameter) OR
+         (instr. opcode = Opcode.address) THEN
         decl := GetLocalDecl (instr);
         IF (decl # NIL) & ~declMap. HasKey (decl) THEN
           IF (instr. opcode = Opcode.copyParameter) THEN
