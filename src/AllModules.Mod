@@ -136,18 +136,27 @@ IMPORT
        replaces type names with the actual type.  Any error in a module's
        declarations are reported by this module.  *)
 
-
-
+  
   OOC:Repository,
+    (* Defines the repository data structure, and the operations on it to
+       locate a module's files and to create new files in it.  *)
   RepFileSystem := OOC:Repository:FileSystem,
+    (* A repository implementation using the local file system.  *)
   OOC:Repository:GetImports,
+    (* Given a module, add all modules that are imported by it to the
+       import list in the module's repository entry.  *)
   
   OOC:Config:Pragmas,
   OOC:Config:Pragmas:StdPragmas,
   
   OOC:Config:Repositories,
+    (* Holds the configuration for the set of repositories accessible
+       to the compiler.  Locates files in the configured repositories.  *)
   ConfigRepFileSystem := OOC:Config:Repositories:FileSystem,
-
+    (* Parses the data from the symbol file that describes a file
+       system based repository.  *)
+  
+  
   OOC:Make:Command:CompileFileC,
   OOC:Make:Command:CompileModule,
   OOC:Make:Command:InterfaceDescr,

@@ -13,13 +13,14 @@
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
   designator1 function6 loop1 loop2 loop3 loop4 varpar1
-  ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1
-  len1 len2 len3 len4 len5 len6 len7
+  record1 record2 record3 record4 record5 record6 record7 record8
+  record9
+  inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7
   array1 array2 array3 array4 array5 array6 array7 array8">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; array7 array8">-->
+  select ="&SetupTestCasesWithOut; record7 record8 record9">-->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -162,18 +163,48 @@
   </testcases>
   
   <testcases profile="OOC2 Development: Data Types" default-lang="O1 O2 AO">
-    <test id="ooc_record1" type="run" file="Record1.Mod" output="Record1.Ref">
+    <test id="record1" type="run" file="Record1.Mod" output="Record1.Ref">
       Assignments to the fields of a global record variable.
     </test>
     
-    <test id="ooc_record2" type="run" file="Record2.Mod" output="Record2.Ref">
+    <test id="record2" type="run" file="Record2.Mod" output="Record2.Ref">
       Assignments to the fields of a variable parameter of record type.
     </test>
     
-    <test id="ooc_record3" type="run" file="Record3.Mod" output="Record3.Ref">
+    <test id="record3" type="run" file="Record3.Mod" output="Record3.Ref">
       Assignments to the fields of a value parameter of record type.
     </test>
 
+    <test id="record4" type="run" file="Record4.Mod" output="Record4.Ref">
+      Similar to <code>record1</code>, but with part of the record's
+      fields taken from a base type.
+    </test>
+    
+    <test id="record5" type="run" file="Record5.Mod" output="Record5.Ref">
+      Similar to <code>record2</code>, but with part of the record's
+      fields taken from a base type.
+    </test>
+    
+    <test id="record6" type="run" file="Record6.Mod" output="Record6.Ref">
+      Similar to <code>record3</code>, but with part of the record's
+      fields taken from a base type.
+    </test>
+    
+    <test id="record7" type="run" file="Record7.Mod" output="Record7.Ref">
+      Similar to <code>record4</code>, but the variable is allocated
+      on the heap.
+    </test>
+
+    <test id="record8" type="run" file="Record8.Mod" output="Record8.Ref">
+      Similar to <code>record5</code>, but the variable is allocated
+      on the heap.
+    </test>
+
+    <test id="record9" type="run" file="Record9.Mod" output="Record9.Ref">
+      Similar to <code>record6</code>, but the variable is allocated
+      on the heap.
+    </test>
+    
     <test id="array1" type="run" file="Array1.Mod" output="Array1.Ref">
       Assignments to an <code>ARRAY 3 OF SHORTINT</code>, and a loop 
       summing up the elements.  The array is passed both as value and
