@@ -1,0 +1,65 @@
+Summary of results for:
+
+  Benchmark --all --normalise
+
+Code is compiled with ooc2 SSA/C output near 16/August 2002.
+These results are found to be repeatable (yes, even the G4 measurements ;-)
+
+Pentium-II / 400Mhz  (mva)
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                249.1   68.4%
+  QSORTC               364.1
+  BSORT                127.0   80.7%
+  BSORTC               157.4
+  FFT                 1401.4   32.5%
+  FFTC                4318.7
+  FFT2                2818.8   71.8%
+  FFT2C               3925.5
+  -------------------------- -------
+  
+Athlon XP / 1544Mhz (mva)
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                573.4   40.2%
+  QSORTC              1426.2
+  BSORT                430.0   56.8%
+  BSORTC               757.3
+  FFT                 7228.0   39.1%
+  FFTC               18501.2
+  FFT2               13524.4   77.6%
+  FFT2C              17439.1
+  -------------------------- -------
+
+PowerPC G3 / 700Mhz  (sg)
+gcc 2.95.2, -O2
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                377.4   86.1%
+  QSORTC               438.5
+  BSORT                153.7   99.9%
+  BSORTC               153.8
+  FFT                 2498.1   35.0%
+  FFTC                7137.1
+  FFT2                3188.8   58.2%
+  FFT2C               5475.0
+  -------------------------- -------
+
+PPC G4 / Dual 800Mhz (sg)
+gcc 2.95.2, -O2
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                502.5   99.3%
+  QSORTC               505.9
+  BSORT                198.5  124.7%
+  BSORTC               159.2
+  FFT                 2405.5   35.4%
+  FFTC                6802.9
+  FFT2                2924.9   58.5%
+  FFT2C               5000.5
+  -------------------------- -------
+
