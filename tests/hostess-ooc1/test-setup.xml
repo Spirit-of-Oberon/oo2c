@@ -8,7 +8,7 @@
 	     version="&OOC_VERSION;"
 	     command="&OOC;"
 	     config-file="./sample-oo2crc"
-	     flags="--config ../sample-oo2crc -Ow"
+	     flags="--config ./sample-oo2crc -Ow"
 	     working-dir="./wd" 
 	     filter-command="&OOEF;" 
 	     diff-command="&DIFF;"/>

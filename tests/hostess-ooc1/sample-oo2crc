@@ -21,15 +21,15 @@ END
 
 PATHS
 GET *.Mod FROM
-  ./mod;
+  wd/mod;
   /usr/lib/Oo2c/lib;  ##PATHS:OOC:LIB##
 GET *.Sym, *.Lib FROM
-  ./sym;
+  wd/sym;
   /usr/lib/Oo2c/sym;  ##PATHS:OOC:SYM##
 GET *.h, *.d, *.c, *.o FROM
-  ./obj;
+  wd/obj;
   /usr/lib/Oo2c/obj;  ##PATHS:OOC:OBJ##
   /usr/lib/Oo2c/lib;  ##PATHS:OOC:LIB##
 GET * FROM
-  ./exe;
+  wd/exe;
 END
