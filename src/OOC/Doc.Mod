@@ -94,6 +94,8 @@ CONST
   glyphMinus* = 2;
   glyphEmDash* = 3;
   glyphResult* = 4;
+  glyphLeftQuot* = 5;
+  glyphRightQuot* = 6;
   
 TYPE
   Glyph* = POINTER TO GlyphDesc;
@@ -517,6 +519,8 @@ PROCEDURE (glyph: Glyph) NodeName* (VAR name: ARRAY OF CHAR);
     | glyphMinus: COPY ("minus", name)
     | glyphEmDash: COPY ("em-dash", name)
     | glyphResult: COPY ("result", name)
+    | glyphLeftQuot: COPY ("left-quote", name)
+    | glyphRightQuot: COPY ("right-quote", name)
     END
   END NodeName;
 

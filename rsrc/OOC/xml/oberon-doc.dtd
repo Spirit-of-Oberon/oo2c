@@ -5,8 +5,10 @@
 <!ELEMENT minus EMPTY>
 <!ELEMENT em-dash EMPTY>
 <!ELEMENT result EMPTY>
+<!ELEMENT left-quote EMPTY>
+<!ELEMENT right-quote EMPTY>
 
-<!ENTITY % glyph 'bullet|dots|minus|em-dash|result'>
+<!ENTITY % glyph 'bullet|dots|minus|em-dash|result|left-quote|right-quote'>
 <!ENTITY % oberon-ref 'oberon-module|oberon-const|oberon-field|oberon-param
                       |oberon-proc|oberon-type|oberon-var'>
 <!ENTITY % inline-element '#PCDATA|asis|cite|code|dfn|emph|file|kbd|samp|strong

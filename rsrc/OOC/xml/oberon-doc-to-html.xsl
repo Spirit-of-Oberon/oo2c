@@ -23,6 +23,8 @@
 <xsl:template match='minus'>-</xsl:template>
 <xsl:template match='em-dash'>--</xsl:template>
 <xsl:template match='result'>==></xsl:template>
+<xsl:template match='left-quote'>"</xsl:template>
+<xsl:template match='right-quote'>"</xsl:template>
 
 
 <!-- block elements -->

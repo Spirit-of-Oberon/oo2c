@@ -79,12 +79,14 @@ CONST
   (* miscellaneous commands that do not start with @, but nevertheless
      have an effect on the output *)
   cmdUnknown = class4High+1;             (* used for unknown command names *)
-  cmdEmDash = class4High+2;
-  cmdText = class4High+3;
-  cmdOpeningBrace = class4High+4;
-  cmdClosingBrace = class4High+5;
-  cmdArgSeparator = class4High+6;
-  cmdEndOfText = class4High+7;
+  cmdEmDash = class4High+2;              (* --- *)
+  cmdLeftQuot = class4High+3;            (* `` *)
+  cmdRightQuot = class4High+4;           (* '' *)
+  cmdText = class4High+5;
+  cmdOpeningBrace = class4High+6;
+  cmdClosingBrace = class4High+7;
+  cmdArgSeparator = class4High+8;
+  cmdEndOfText = class4High+9;
 
 
 
@@ -244,10 +246,22 @@ PROCEDURE Tokenize (sym: BasicList.Symbol; str: Decoration.String;
       t. str[pos-startPos] := 0X
     END AddText;
   
-  PROCEDURE LookingAtEmDash(): BOOLEAN;
+  PROCEDURE LookingAt (pattern: ARRAY OF CHAR): BOOLEAN;
+    VAR
+      i: LONGINT;
     BEGIN
-      RETURN (str[pos] = "-") & (str[pos+1] = "-") & (str[pos+2] = "-")
-    END LookingAtEmDash;
+      i := 0;
+      WHILE (pattern[i] # 0X) & (str[pos+i] = pattern[i]) DO
+        INC (i)
+      END;
+      RETURN (pattern[i] = 0X)
+    END LookingAt;
+  
+  PROCEDURE OutOfBandCommand(): BOOLEAN;
+    BEGIN
+      RETURN LookingAt ("---") OR LookingAt ("``") OR LookingAt ("''")
+    END OutOfBandCommand;
+  
   
   PROCEDURE IsTextChar (): BOOLEAN;
     BEGIN
@@ -359,11 +373,17 @@ PROCEDURE Tokenize (sym: BasicList.Symbol; str: Decoration.String;
         INC (pos)
         
       ELSE                               (* some kind of text *)
-        IF LookingAtEmDash() THEN
+        IF LookingAt ("---") THEN
           AddToken (cmdEmDash);
           INC (pos, 3)
+        ELSIF LookingAt ("``") THEN
+          AddToken (cmdLeftQuot);
+          INC (pos, 2)
+        ELSIF LookingAt ("''") THEN
+          AddToken (cmdRightQuot);
+          INC (pos, 2)
         ELSE
-          WHILE (str[pos] # 0X) & IsTextChar() & ~LookingAtEmDash() DO
+          WHILE (str[pos] # 0X) & IsTextChar() & ~OutOfBandCommand() DO
             IF (str[pos] = Ascii.ht) THEN  (* horizontal tabulator *)
               i := pos-currLinePos+currLineTab;
               INC (currLineTab, Scanner.tabWidth-i MOD Scanner.tabWidth-1)
@@ -420,6 +440,8 @@ PROCEDURE WriteTokens (ch: Channel.Channel; t: Token);
       CASE t. id OF
       | cmdUnknown: w. WriteString ("#unknown")
       | cmdEmDash: w. WriteString ("#---")
+      | cmdLeftQuot: w. WriteString ("#``")
+      | cmdRightQuot: w. WriteString ("#''")
       | cmdText: w. WriteString ("#text")
       | cmdOpeningBrace: w. WriteString ("#{")
       | cmdClosingBrace: w. WriteString ("#}")
@@ -735,6 +757,14 @@ PROCEDURE Parse* (sym: BasicList.Symbol; removeDecoration: BOOLEAN;
             
           | cmdEmDash:
             AddInline (Doc.NewGlyph (Doc.glyphEmDash));
+            NextToken
+
+          | cmdLeftQuot:
+            AddInline (Doc.NewGlyph (Doc.glyphLeftQuot));
+            NextToken
+
+          | cmdRightQuot:
+            AddInline (Doc.NewGlyph (Doc.glyphRightQuot));
             NextToken
 
           | cmdText:

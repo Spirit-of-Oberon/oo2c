@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Doc:Output:Text;
 (*  Converts Texinfo text to plain ASCII file, similar to makeinfo.
-    Copyright (C) 1999, 2000  Michael van Acken
+    Copyright (C) 1999, 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -25,7 +25,7 @@ IMPORT
 
 
 VAR
-  replacements: ARRAY Doc.glyphResult+1 OF ARRAY 4 OF CHAR;
+  replacements: ARRAY Doc.glyphRightQuot+1 OF ARRAY 4 OF CHAR;
 
 
 PROCEDURE Convert* (document: Doc.Document;
@@ -265,4 +265,6 @@ BEGIN
   replacements[Doc.glyphMinus] := "-";
   replacements[Doc.glyphEmDash] := "--";
   replacements[Doc.glyphResult] := "=>";
+  replacements[Doc.glyphLeftQuot] := '"';
+  replacements[Doc.glyphRightQuot] := '"';
 END OOC:Doc:Output:Text.
