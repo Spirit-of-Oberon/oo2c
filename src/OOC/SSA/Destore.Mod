@@ -226,6 +226,15 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       RETURN varMap
     END IdentifyVars;
 
+  PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
+    BEGIN
+      CASE select. opcode OF
+      | Opcode.select    : RETURN (select. SizeOpndList() DIV 2)
+      | Opcode.loopStart : RETURN select. SizeOpndList()
+      | Opcode.selectExit: RETURN (select. SizeOpndList() - 1)
+      END;
+    END NumberOfPaths;
+  
   PROCEDURE TraceSetForward (numVars: LONGINT);
     VAR
       instr: SSA.Instr;
@@ -274,8 +283,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
         BEGIN
           CASE select. opcode OF
-          | Opcode.select   : RETURN (select. SizeOpndList() DIV 2)
-          | Opcode.loopStart: RETURN select. SizeOpndList()
+          | Opcode.select    : RETURN (select. SizeOpndList() DIV 2)
+          | Opcode.loopStart : RETURN select. SizeOpndList()
+          | Opcode.selectExit: RETURN (select. SizeOpndList() - 1)
           END;
         END NumberOfPaths;
 
@@ -285,6 +295,20 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           visible: BOOLEAN;
           storeOut: SSA.Result;
           alias: Aliasing.Id;
+
+        PROCEDURE GetSelectExit (exit: SSA.Instr): SSA.Instr;
+          VAR
+            res: SSA.Result;
+            opnd: SSA.Opnd;
+          BEGIN
+            res := instr. GetResultClass (Result.store);
+            opnd := res. useList;
+            WHILE (opnd. instr. opcode # Opcode.selectExit) DO
+              opnd := opnd. nextUse
+            END;
+            RETURN opnd. instr
+          END GetSelectExit;
+        
         BEGIN
           instr := use. instr;
           CASE instr. opcode OF
@@ -368,18 +392,46 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                 := lastDefinition;
             RETURN originMap. visible[origin. marker];
 
+          | Opcode.selectExit:
+            IF (instr. info = NIL) THEN
+              originMap := NewOriginMap (NumberOfPaths (instr), numVars);
+              instr. info := originMap
+            ELSE
+              originMap := instr. info(OriginMap);
+            END;
+            
+            IF ~originMap. varIsTraced[origin. marker] THEN
+              (* continue tracing the uses of this select; note: this is
+                 only done once for each variable, when we encounter the
+                 select for the first time *)
+              originMap. visible[origin. marker] :=
+                  TraceF (instr, instr. GetResultClass (Result.store));
+              originMap. varIsTraced[origin. marker] := TRUE;
+            END;
+            
+            (* set the instruction defining the store argument `use'
+               for the variable identified by `origin. marker' *)
+            originMap. def[origin. marker, use. OpndIndex()-1]
+                := lastDefinition;
+            RETURN originMap. visible[origin. marker];
+            
           | Opcode.loopEnd:
             RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
 
           | Opcode.collect: 
             RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
-            
+
           | Opcode.call:
             (* FIXME... detect when a call can modify our variable; for now
                be pessimistic: assume that this call may read and write
                the var *)
             RETURN TRUE;
             
+          | Opcode.exit:
+            (* the current definitions continues through the select-exit
+               to which this EXIT passes the flow of control *)
+            RETURN TraceF (lastDefinition, GetSelectExit (instr))
+
           | Opcode.return:
             (* we've reached the end of the procedure: we are done *)
             RETURN ExternalVisibility (GetVar (origin));
@@ -429,6 +481,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       BEGIN
         CASE select. opcode OF
         | Opcode.select: storeIn := select. NthArg (pathNum*2+2);
+        | Opcode.selectExit: storeIn := select. NthArg (pathNum+1);
         | Opcode.loopStart: storeIn := select. NthArg (pathNum);
         END;
         IF (storeIn. instr. opcode = Opcode.collect) THEN
@@ -628,7 +681,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
 
         | Opcode.loopEnd:
           RETURN TraceB (instr. GetArgClass (Opnd.store));
-              
+
+        | Opcode.selectExit:
+          RETURN TraceSelect (instr, get. marker, get. subclass);
+          
         | Opcode.call:
           (* FIXME... detect when a call can modify our variable; for now
              be pessimistic: the call rewrites our variable *)
@@ -651,7 +707,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         VAR
           i: LONGINT;
         BEGIN
-          FOR i := 0 TO 1 DO
+          FOR i := 0 TO NumberOfPaths (select)-1 DO
             KeepSetInstr (GetStoreOpnd (select, i));
           END;
         END TraceSelect;
@@ -675,6 +731,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             (* undefined value, nothing to do *)
             
           | Opcode.select:
+            TraceSelect (instr);
+
+          | Opcode.exit:
+            KeepSetInstr (instr. GetArgClass (Opnd.store));
+            
+          | Opcode.selectExit:
             TraceSelect (instr);
             
           | Opcode.collect:
@@ -753,7 +815,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
     (* second: for every "set" instruction, establish the visibility of the
        written value in memory *)
     TraceSetForward (varMap. Size());
-    (*w. Write (pb, FALSE);*)
+(*    w. WriteProcBody (pb, FALSE);*)
     
     (* third: for every "get" instruction, try to trace the store value back
        to the definition from which the "get" reads its result *)

@@ -26,6 +26,7 @@ IMPORT
   Sym := OOC:SymbolTable, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
+  OOC:SSA:Blocker,
   OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, OOC:C:IRtoC,
   OOC:Make:Command:TranslateToC;
 
@@ -836,34 +837,36 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
       nested: Schedule.Block;
       
     BEGIN
-      FixLastJump (b);
-      w. WriteInstrList (b, haveCopyParameter);
-      WITH b: Schedule.BranchBlock DO
-        w. Newline;
-        w. WriteString ("if (");
-        IF (b. DefaultTarget() = b. jump. dest) THEN
-          IF ~b. branchOnTrue THEN
-            w. WriteChar("!");
+      IF (b. degreeIn # 0) THEN
+        FixLastJump (b);
+        w. WriteInstrList (b, haveCopyParameter);
+        WITH b: Schedule.BranchBlock DO
+          w. Newline;
+          w. WriteString ("if (");
+          IF (b. DefaultTarget() = b. jump. dest) THEN
+            IF ~b. branchOnTrue THEN
+              w. WriteChar("!");
+            END;
+            w. Ref (b. predicate);
+            w. WriteString (") ");
+            WriteGoto (b. branchTo. dest);
+          ELSE
+            IF b. branchOnTrue THEN
+              w. WriteChar("!");
+            END;
+            w. Ref (b. predicate);
+            w. WriteString (") ");
+            WriteGoto (b. jump. dest);
           END;
-          w. Ref (b. predicate);
-          w. WriteString (") ");
-          WriteGoto (b. branchTo. dest);
-        ELSE
-          IF b. branchOnTrue THEN
-            w. WriteChar("!");
-          END;
-          w. Ref (b. predicate);
-          w. WriteString (") ");
-          WriteGoto (b. jump. dest);
+        ELSE (* standard block *)
         END;
-      ELSE (* standard block *)
-      END;
-      lastBlock := b;
-      
-      nested := b. domList;
-      WHILE (nested # NIL) DO
-        WriteBlock (nested);
-        nested := nested. nextDom
+        lastBlock := b;
+        
+        nested := b. domList;
+        WHILE (nested # NIL) DO
+          WriteBlock (nested);
+          nested := nested. nextDom
+        END;
       END;
     END WriteBlock;
   
@@ -914,6 +917,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
                            proc. statmSeq);
     pb. selectReturn. AddOpnd (s, Opnd.store);
 
+    Blocker.Write (StdChannels.stdout, pb);
+    
     (* code transformations *)
     Write ("initial", "dce-pre");
     DeadCodeElimination.Transform (pb);

@@ -504,8 +504,6 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     VAR
       start, end, select, oldSelect: SSA.Instr;
     BEGIN
-      RETURN;                            (* disabled for now... *)
-      
       start := pb. AddInstr (Opcode.loopStart, Opcode.scNone);
       start. AddOpnd (s, Opnd.store);
       s := start. AddResult (Result.store);

@@ -363,6 +363,7 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
   VAR
     bProxy: Blocker.Proxy;
     proxy: InstrProxy;
+    newBlock: JumpBlock;
 
   PROCEDURE TransferSelect (select: Blocker.Select; block: JumpBlock): JumpBlock;
     VAR
@@ -391,39 +392,54 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
   
   PROCEDURE TransferLoop (loop: Blocker.Loop; block: JumpBlock): JumpBlock;
     VAR
-      body, bodyEnd, backward, out: JumpBlock;
+      body, bodyEnd, backward, out, exit: JumpBlock;
       branch: BranchBlock;
-      predicate: SSA.Opnd;
-      loopStart: SSA.Instr;
+      predicate, opnd: SSA.Opnd;
+      loopStart, selectExit: SSA.Instr;
       backwardStore: SSA.Result;
     BEGIN
       (* transfer instructions of loop body *)
       body := NewJumpBlock (block);
       SetJump (block. jump, block, body);
       bodyEnd := TransferInstructions (loop, body);
-      
-      (* attach a branch block to the end of the loop body *)
-      predicate := loop. instr. NthOpnd (2);
-      branch := NewBranchBlock
-          (bodyEnd, predicate,
-           predicate. nextOpnd. arg. IsBooleanConst (FALSE));
-      SetJump (bodyEnd. jump, bodyEnd, branch);
 
-      (* install backward jump; the collect is moved from the loop body
-         into the backward path *)
-      backward := NewJumpBlock (branch);
-      SetJump (branch. branchTo, branch, backward);
-      SetJump (backward. jump, backward, body);
-      loopStart := loop. instr. GetLoopStart();
-      backwardStore := loopStart. opndList. nextOpnd. arg;
-      IF (backwardStore. instr. opcode = Opcode.collect) THEN
-        MoveProxy (backwardStore. instr. info(InstrProxy), backward);
+      predicate := loop. instr. NthOpnd (2);
+      IF (predicate. arg. instr. opcode = Opcode.selectExit) THEN
+        selectExit := predicate. arg. instr;
+        SetJump (bodyEnd. jump, bodyEnd, body);
+
+        (* fixup blocks with exit instructions to jump to the end of the
+           loop *)
+        out := NewJumpBlock (block);
+        opnd := selectExit. opndList. nextOpnd;
+        WHILE (opnd # NIL) DO
+          exit := opnd. arg. instr. info(InstrProxy). block(JumpBlock);
+          SetJump (exit. jump, exit, out);
+          opnd := opnd. nextOpnd;
+        END;
+      ELSE
+        (* attach a branch block to the end of the loop body *)
+        branch := NewBranchBlock
+            (bodyEnd, predicate,
+             predicate. nextOpnd. arg. IsBooleanConst (FALSE));
+        SetJump (bodyEnd. jump, bodyEnd, branch);
+        
+        (* install backward jump; the collect is moved from the loop body
+           into the backward path *)
+        backward := NewJumpBlock (branch);
+        SetJump (branch. branchTo, branch, backward);
+        SetJump (backward. jump, backward, body);
+        loopStart := loop. instr. GetLoopStart();
+        backwardStore := loopStart. opndList. nextOpnd. arg;
+        IF (backwardStore. instr. opcode = Opcode.collect) THEN
+          MoveProxy (backwardStore. instr. info(InstrProxy), backward);
+        END;
+        
+        (* install outgoing block *)
+        out := NewJumpBlock (branch);
+        SetJump (branch. jump, branch, out);
       END;
-      
-      (* install outgoing block *)
-      out := NewJumpBlock (branch);
-      SetJump (branch. jump, branch, out);
-      RETURN out
+      RETURN out;
     END TransferLoop;
   
   BEGIN
@@ -439,7 +455,16 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
       ELSE
         (* nothing to do *)
       END;
+      
       AppendProxy (block, proxy);
+      IF (proxy. instr. opcode = Opcode.exit) THEN
+        (* set block end with an EXIT instruction, and move the rest of
+           the instructions into a new block *)
+        newBlock := NewJumpBlock (block);
+        SetJump (block. jump, block, newBlock);
+        block := newBlock;
+      END;
+      
       bProxy := bProxy. nextProxy;
     END;
     RETURN block;
@@ -786,7 +811,8 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     ArrangeBlock (b);
 
     CheckCollects(b);
-    
+
+    b. degreeIn := 1;  (* the root block is reached by exactly one edge *)
     RETURN b
   END Schedule;
 
