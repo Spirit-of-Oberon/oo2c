@@ -20,6 +20,10 @@ TYPE
     systemModule-: Item.Module;
   END;
 
+CONST
+  runtimeModule* = "RT0";
+  (**Name of the pseudo module that pulls in the run-time system.  *)
+
 
 PROCEDURE InitConfig* (config: Config; defaultConfigFile: ARRAY OF CHAR);
   VAR
