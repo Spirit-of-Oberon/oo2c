@@ -1,5 +1,8 @@
 MODULE Driver [OOC_EXTENSIONS];
 
+CONST
+  nameLength* = 16;
+
 TYPE
   Driver* = POINTER TO DriverDesc;
   DriverDesc* = RECORD [ABSTRACT]
@@ -27,7 +30,7 @@ TYPE
     reference* : LONGINT;
 
     (** Short name for this test. *)
-    name* : ARRAY 16 OF CHAR;
+    name* : ARRAY nameLength OF CHAR;
 
     (** Description of this test. *)
     desc* : ARRAY 128 OF CHAR;

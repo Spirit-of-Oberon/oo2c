@@ -1,7 +1,7 @@
 MODULE Benchmark;
 
 IMPORT 
-  Channel, ProgramArgs, TextRider, Out, Err, Time,
+  Channel, ProgramArgs, TextRider, Out, Err, Time, Strings,
 
   Driver,
 
@@ -21,6 +21,11 @@ VAR
   schedule : ScheduleEntry;
   normalise : BOOLEAN;
   all : BOOLEAN;
+
+CONST
+  perfWidth = 6;
+  resultWidth = 10;
+  resultDigits = 1;
 
 PROCEDURE NewEntry(driver : Driver.Driver; id : LONGINT) : ScheduleEntry;
 VAR
@@ -109,7 +114,7 @@ BEGIN
   result := count / i.msecInt * 1000;
 
   Err.String(info.name); Err.String(": ");
-  Err.Real(result, 0, 0);
+  Err.RealFix(result, resultWidth, resultDigits);
   Err.String(" per second"); Err.Ln;
   Err.Ln;
   RETURN result;
@@ -155,14 +160,28 @@ BEGIN
   END;
 END RunSchedule;
 
-PROCEDURE StringWidth(name : ARRAY OF CHAR; len : LONGINT);
+PROCEDURE RepeatChar(ch : CHAR; width : LONGINT);
+BEGIN
+  WHILE width > 0 DO
+    Out.Char(ch);
+    DEC(width);
+  END;
+END RepeatChar;
+
+PROCEDURE StringWidth(name : ARRAY OF CHAR; width : LONGINT);
 (* Format a string with width @oparam{len}, padding with trailing spaces. *)
 VAR 
-  pos : LONGINT;
+  len, pos : LONGINT;
 BEGIN
   pos := 0;
-  WHILE name[pos] # 0X DO Out.Char(name[pos]); INC(pos) END;
-  WHILE pos < len DO Out.Char(" "); INC(pos) END;
+  len := Strings.Length(name);
+  IF width >= 0 THEN
+    width := width - len;
+    Out.String(name); RepeatChar(" ", width);
+  ELSE
+    width := -width - len;
+    RepeatChar(" ", width); Out.String(name);
+  END;
 END StringWidth;
 
 PROCEDURE ShowResults;
@@ -171,24 +190,42 @@ VAR
   s : ScheduleEntry;
   info : Driver.Info;
   refId : LONGINT; entry : ScheduleEntry;
+
+  PROCEDURE Divider;
+  BEGIN
+    RepeatChar("-", Driver.nameLength+resultWidth);
+    IF normalise THEN
+      Out.Char(" "); RepeatChar("-", perfWidth+1);
+    END;
+    Out.Ln;
+  END Divider;
+
 BEGIN
   s := schedule;
+  StringWidth("Test", Driver.nameLength);
+  StringWidth("tests/sec", -resultWidth);
+  IF normalise THEN
+    Out.String(" % optimal");
+  END;
+  Out.Ln;
+  Divider;
   WHILE s # NIL DO
     info := s.driver.GetInfo();
-    StringWidth(info[s.id].name, 16);
-    Out.Real(s.result, 0, 0);
+    StringWidth(info[s.id].name, Driver.nameLength);
+    Out.RealFix(s.result, resultWidth, resultDigits);
     IF normalise THEN
       refId := info[s.id].reference;
       entry := FindSchedule(s.driver, refId);
       IF entry # NIL THEN
-        Out.String("  (");
-        Out.Real(100.0 * s.result / entry.result, 0, 0);
-        Out.String(" %)");
+        Out.String(" ");
+        Out.RealFix(100.0 * s.result / entry.result, perfWidth, resultDigits);
+        Out.String("%");
       END;
     END;
     Out.Ln;
     s := s.next;
   END;
+  Divider;
 END ShowResults;
 
 PROCEDURE ShowTests;
