@@ -1,4 +1,4 @@
-include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
+include $(OOC_DEV_ROOT)/Makefile.config
 
 # Extra flags to GCC
 CCFLAGS = #-traditional-cpp

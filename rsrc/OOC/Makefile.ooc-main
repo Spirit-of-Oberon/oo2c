@@ -1,6 +1,6 @@
 # -*-mode: makefile-*-
 
-include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
+include $(OOC_DEV_ROOT)/Makefile.config
 
 # DOC_TARGETS: Lists the target names of all suported documentation formats.
 # For every name listed here, the corresponding output format is generated

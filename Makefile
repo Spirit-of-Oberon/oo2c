@@ -8,7 +8,7 @@ ifndef OOC_DEV_ROOT
 export OOC_DEV_ROOT=$(shell pwd)
 endif
 
-include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.config
+include $(OOC_DEV_ROOT)/Makefile.config
 
 # TEST_SUBDIRS: List of subdirectories with testcases.
 TEST_SUBDIRS=\
@@ -55,17 +55,10 @@ main-clean: doc-clean test-cleanall
 	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done
 	-rmdir ${top_builddir}/sym ${top_builddir}/obj
+	-cd stage0 && rm -f *.o */*.o */*/*.o */*/*/*.o
 	rm -Rf "$(DOC_DIR)" stage1 stage2 gmon.out
 	${MAKE} -C tests/hostess-ooc1 test-clean
 	${MAKE} -C tests/benchmark clean
-
-### `package-clean'
-###      Delete everything that should not appear in the tar ball produced
-###      by "make dist".
-package-clean: main-clean
-	rm -f ENV rsrc/OOC/Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
-	rm -f lib/src/__config.h config.log config.status
-	rm -Rf autom4te.cache
 
 ### `distclean'
 ###      Delete all files from the current directory that are created by
@@ -73,7 +66,14 @@ package-clean: main-clean
 ###      source and built the program without creating any other files,
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
-distclean: package-clean
+distclean: main-clean
+	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
+	rm -f lib/src/__config.h config.log config.status
+	rm -Rf autom4te.cache
+
+### `cvs-clean'
+###      Delete everything that should not appear in the CVS.
+cvsclean: distclean
 	rm -Rf stage0
 
 FRC:
@@ -124,7 +124,7 @@ dist: oo2c
 	./oo2c --make -r stage0/lib -r stage0 --cc true stage0/src/oo2c.Mod
 	rm -Rf stage0/sym/* stage0/lib/sym/*
 	cd stage0 && $(PERL) $(OOC_DEV_ROOT)/rsrc/OOC/makefilegen.pl >Makefile.ext
-	${MAKE} package-clean
+	${MAKE} distclean
 	cd .. && tar  -c -v -j --exclude CVS --exclude '*~' --exclude '.#*' -f ooc2-dist-`date +"%Y%m%d"`.tar.bz2 ooc2
 
 stage0/exe/oo2c:
@@ -144,13 +144,12 @@ stage1/exe/oo2c: stage0/exe/oo2c stage1/lib/src/RT0.Mod stage1/src/oo2c.Mod
 stage1/lib/obj/liboo2c.o: stage1/exe/oo2c
 	stage1/exe/oo2c --config rsrc/OOC/oo2crc.xml -r stage1/lib --make liboo2c
 	chmod -R a+rX,go-w stage1/lib lib/src
-	chmod 644 rsrc/OOC/oo2crc.xml
 
 install: stage1/lib/obj/liboo2c.o mkdir
 	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(libdir)/lib)
 	cd $(libdir)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
 	(umask 022; cp stage1/lib/src/*.h $(libdir)/lib/src)
-	(umask 022; cp rsrc/OOC/oo2crc.xml $(libdir))
+	${INSTALL} -m 644 rsrc/OOC/oo2crc.xml $(libdir)
 	${INSTALL_PROGRAM} stage1/exe/oo2c $(bindir)
 
 install-strip:
