@@ -470,6 +470,15 @@ PROCEDURE (tr: Rules) IsNilCompatible* (type: Sym.Type): BOOLEAN;
     END;
   END IsNilCompatible;
 
+PROCEDURE (tr: Rules) IsReadOnly* (usingModule: Sym.Module; decl: Sym.Declaration): BOOLEAN;
+(**Returns @code{TRUE}, iff the declaration @oparam{decl} is imported read-only
+   by module @oparam{usingModule}.  *)
+  BEGIN
+    RETURN (decl. exportMark = Sym.nameExportedRO) &
+        (decl. Module() # usingModule);
+  END IsReadOnly;
+
+
 PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
 (**This maps a type @oparam{type} onto the size and alignment constrains of the
    destination architecture.  That is, it sets size and aligment of

@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; assign1 assign2">-->
+  select ="&SetupTestCasesWithOut; assign1 assign2 assign_ro assign3 assign4">-->
 
   &TestSetupWithOut;
     
@@ -20,6 +20,15 @@
     </test>
     <test id="assign2" type="reject" file="Assign2.Mod">
       Left side of an assignment is a type-bound procedure.
+    </test>
+    <test id="assign_ro" type="accept" file="AssignRO.Mod">
+      Prepare exports for read-only tests.
+    </test>
+    <test id="assign3" type="reject" file="Assign3.Mod">
+      Assignment to a variable that is exported read-only.
+    </test>
+    <test id="assign4" type="reject" file="Assign4.Mod">
+      Assignment to a record field that is exported read-only.
     </test>
     
     <test id="return1" type="reject" file="Return1.Mod">
@@ -723,6 +732,8 @@
   <processor-info processor-name="TestCompile">
     <reject-info id="assign1" pos="%c :=" msg="This must be a variable"/>
     <reject-info id="assign2" pos="r%. TBProc :=" msg="This must be a variable"/>
+    <reject-info id="assign3" pos="AssignRO.%x :=" msg="This variable is read-only"/>
+    <reject-info id="assign4" pos="AssignRO.y. %a :=" msg="This variable is read-only"/>
         
     <reject-info id="return1" pos="RETURN %123" msg="RETURN must not provide a result value"/>
     <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>

@@ -428,6 +428,7 @@ TYPE
        @ofield{record}.  *)
     record- : Expression;
     field- : Sym.FieldDecl;
+    fieldSym-: Symbol;
   END;
 
 TYPE
@@ -447,6 +448,8 @@ TYPE
        in the source code.  The actual procedure being called may be this
        procedure, a redefinition of it, or (if this is a super call) its
        definition in one of the base types.  *)
+
+    tbProcSym-: Symbol;
     
     isStaticCall-: BOOLEAN;
     (**If @code{TRUE}, then this is a static call to the procedure indicated
@@ -856,6 +859,9 @@ TYPE
   Builder* = POINTER TO BuilderDesc;
   ConstFold* = POINTER TO ConstFoldDesc;
   BuilderDesc* = RECORD
+    module: Sym.Module;
+    (* The symbol table of the module that is being processed.  *)
+    
     pragmaHistory: Pragmas.History;
     errList: Error.List;
     constFold- : ConstFold;
@@ -932,6 +938,7 @@ CONST
   stepIsZero = 31;
   returnWithResult = 32;
   returnWithoutResult = 33;
+  importedReadOnly = 34;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1014,6 +1021,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "RETURN must not provide a result value"
     | returnWithoutResult:
       t := "RETURN must provide a result value"
+    | importedReadOnly:
+      t := "This variable is read-only"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1874,19 +1883,22 @@ PROCEDURE (odd: Odd) Accept* (v: Visitor);
 (* Operator Class: SelectField
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitSelectField (sf: SelectField; sym: Symbol; record: Expression; field: Sym.FieldDecl);
+PROCEDURE InitSelectField (sf: SelectField; sym: Symbol; record: Expression;
+                           field: Sym.FieldDecl; fieldSym: Symbol);
   BEGIN
     InitOperator (sf, sym, field. type);
     sf.record := record;
     sf.field := field;
+    sf.fieldSym := fieldSym;
   END InitSelectField;
 
-PROCEDURE (b: Builder) NewSelectField (sym: Symbol; record: Expression; field: Sym.FieldDecl): SelectField;
+PROCEDURE (b: Builder) NewSelectField (sym: Symbol; record: Expression;
+                                       field: Sym.FieldDecl; fieldSym: Symbol): SelectField;
   VAR
     i: SelectField;
   BEGIN
     NEW (i);
-    InitSelectField (i, sym, record, field);
+    InitSelectField (i, sym, record, field, fieldSym);
     RETURN i
   END NewSelectField;
 
@@ -1902,25 +1914,27 @@ PROCEDURE (sf: SelectField) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitSelectProc (sp: SelectProc; sym: Symbol; receiver: Expression;
-                          recordType: Sym.Record;
-                          tbProc: Sym.ProcDecl; isStaticCall: BOOLEAN);
+                          recordType: Sym.Record; tbProc: Sym.ProcDecl;
+                          tbProcSym: Symbol; isStaticCall: BOOLEAN);
   BEGIN
     InitOperator (sp, sym, tbProc. formalPars);
     sp. receiver := receiver;
     sp. recordType := recordType;
     sp. tbProc := tbProc;
+    sp. tbProcSym := tbProcSym;
     sp. isStaticCall := isStaticCall;
   END InitSelectProc;
 
 PROCEDURE (b: Builder) NewSelectProc (sym: Symbol; receiver: Expression;
                                       recordType: Sym.Record;
                                       tbProc: Sym.ProcDecl;
+                                      tbProcSym: Symbol;
                                       isStaticCall: BOOLEAN): SelectProc;
   VAR
     i: SelectProc;
   BEGIN
     NEW (i);
-    InitSelectProc (i, sym, receiver, recordType, tbProc, isStaticCall);
+    InitSelectProc (i, sym, receiver, recordType, tbProc, tbProcSym, isStaticCall);
     RETURN i
   END NewSelectProc;
 
@@ -2604,13 +2618,18 @@ PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
   PROCEDURE CheckVar (expr: Expression);
     BEGIN
       WITH expr: Var DO
-        (* we have a winner *)
+        IF b. typeRules. IsReadOnly (b. module, expr. decl) THEN
+          b. ErrSym (importedReadOnly, expr. sym);
+        END;
       | expr: Deref DO
         (* a pointer dereference is always a variable *)
       | expr: Index DO
         CheckVar (expr. array);     (* check that value is writable *)
       | expr: SelectField DO
         CheckVar (expr. record);    (* check that value is writable *)
+        IF b. typeRules. IsReadOnly (b. module, expr. field) THEN
+          b. ErrSym (importedReadOnly, expr. fieldSym);
+        END;
       ELSE
         b. ErrSym (notVariable, expr. sym);
       END;
@@ -3430,7 +3449,7 @@ END InitConstFold;
 (* Class: Builder
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitBuilder* (b: Builder;
+PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
                         pragmaHistory: Pragmas.History; errList: Error.List;
                         typeRules: TypeRules.Rules; fold : ConstFold);
   
@@ -3444,6 +3463,7 @@ PROCEDURE InitBuilder* (b: Builder;
     END NewTypeType;
   
   BEGIN
+    b. module := module;
     b. pragmaHistory := pragmaHistory;
     b. errList := errList;
     b. typeRules := typeRules;
@@ -3456,14 +3476,14 @@ PROCEDURE InitBuilder* (b: Builder;
     fold. builder := b;
   END InitBuilder;
 
-PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History;
+PROCEDURE NewBuilder* (module: Sym.Module; pragmaHistory: Pragmas.History;
                        errList: Error.List; typeRules : TypeRules.Rules;
                        constFold: ConstFold): Builder;
   VAR
     b: Builder;
   BEGIN
     NEW (b);
-    InitBuilder (b, pragmaHistory, errList, typeRules, constFold);
+    InitBuilder (b, module, pragmaHistory, errList, typeRules, constFold);
     RETURN b
   END NewBuilder;
 
@@ -3549,10 +3569,10 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
       IF decl = NIL THEN
         RETURN b.ErrExpr(undeclaredIdent, name);
       ELSIF (decl IS Sym.FieldDecl) THEN
-        RETURN b. NewSelectField (sym, varRef, decl(Sym.FieldDecl));
+        RETURN b. NewSelectField (sym, varRef, decl(Sym.FieldDecl), name);
       ELSIF (decl IS Sym.ProcDecl) THEN
         RETURN b. NewSelectProc (sym, var, varRef. type(Sym.Record),
-                                 decl(Sym.ProcDecl), FALSE);
+                                 decl(Sym.ProcDecl), name, FALSE);
       ELSE
         ASSERT (FALSE);
       END;
