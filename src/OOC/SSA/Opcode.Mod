@@ -52,7 +52,7 @@ CONST
   address* = 3;
   (**Denotes the address of a declared object, for example of a variable or a
      procedures.  Instance of @otype{*OOC:SSA.Address}.  Takes no SSA operands.
-     The object can be found in @ofield{*OOC:SSA.Address.decl}.  This
+     The object can be found in @ofield{*OOC:SSA.AddressDesc.decl}.  This
      instruction produces a value of type address.  *)
   
   enter* = 4;
