@@ -502,6 +502,14 @@ PROCEDURE (c: ConstFold) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
   END VisitIfStatm;
 
+PROCEDURE (c: ConstFold) VisitCase* (case: IR.Case);
+  BEGIN
+  END VisitCase;
+
+PROCEDURE (c: ConstFold) VisitCaseStatm* (caseStatm: IR.CaseStatm);
+  BEGIN
+  END VisitCaseStatm;
+
 PROCEDURE (c: ConstFold) VisitLoopStatm* (loopStatm: IR.LoopStatm);
   BEGIN
   END VisitLoopStatm;

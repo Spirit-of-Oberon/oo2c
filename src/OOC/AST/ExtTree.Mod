@@ -352,12 +352,12 @@ TYPE
   CaseStatm* = POINTER TO CaseStatmDesc;
   CaseStatmDesc = RECORD
     (NodeDesc)
-    case-: AST.Node;
-    expr-: AST.Node;
+    case-: Terminal;
+    expr-: Node;
     of-: AST.Node;
     caseList-: AST.NodeList;
     else-: AST.Node;
-    elseStatmSeq-: AST.NodeList;
+    elseStatmSeq-: NodeList;
     end-: AST.Node;
   END;
 
@@ -1278,12 +1278,16 @@ PROCEDURE (b: Builder) CaseStatm* (case, expr, of: AST.Node; caseList: AST.NodeL
     c: CaseStatm;
   BEGIN
     NEW (c);
-    c. case := case;
-    c. expr := expr;
+    c. case := case(Terminal);
+    c. expr := expr(Node);
     c. of := of;
     c. caseList := caseList;
     c. else := else;
-    c. elseStatmSeq := elseStatmSeq;
+    IF (elseStatmSeq = NIL) THEN
+      c. elseStatmSeq := NIL;
+    ELSE
+      c. elseStatmSeq := elseStatmSeq(NodeList);
+    END;
     c. end := end;
     RETURN c
   END CaseStatm;

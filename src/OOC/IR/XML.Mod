@@ -400,6 +400,46 @@ PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
     v. w. EndTag;  (* if-statm *)
   END VisitIfStatm;
 
+PROCEDURE (v: Visitor) VisitCase* (case: IR.Case);
+  VAR
+    i: LONGINT;
+  BEGIN
+    v. w. StartTag ("case", FALSE);
+    v. w. StartTag ("guard", FALSE);
+    FOR i := 0 TO LEN (case. labels^)-1 DO
+      v. w. StartTag ("label", FALSE);
+      case. labels[i]. Accept (v);
+      v. w. EndTag;  (* label *)
+    END;
+    v. w. EndTag;  (* guard *)
+    
+    v. w. StartTag ("statm-seq", FALSE);
+    VisitStatementSeq (v, case. statmSeq);
+    v. w. EndTag;  (* statm-seq *)
+    v. w. EndTag;  (* case *)
+  END VisitCase;
+
+PROCEDURE (v: Visitor) VisitCaseStatm* (caseStatm: IR.CaseStatm);
+  VAR
+    i: LONGINT;
+  BEGIN
+    v. w. StartTag ("case-statm", FALSE);
+    v. w. StartTag ("select", FALSE);
+    caseStatm. select. Accept (v);
+    v. w. EndTag;  (* select *)
+
+    FOR i := 0 TO LEN (caseStatm. caseList^)-1 DO
+      caseStatm. caseList[i]. Accept (v);
+    END;
+
+    IF (caseStatm. default # NIL) THEN
+      v. w. StartTag ("default-path", FALSE);
+      VisitStatementSeq (v, caseStatm. default);
+      v. w. EndTag;  (* default-path *)
+    END;
+    v. w. EndTag;  (* case-stamt *)
+  END VisitCaseStatm;
+
 PROCEDURE (v: Visitor) VisitLoopStatm* (loopStatm: IR.LoopStatm);
   BEGIN
     v. w. StartTag ("loop-statm", FALSE);

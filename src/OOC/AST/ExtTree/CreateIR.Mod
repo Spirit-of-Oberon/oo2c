@@ -264,6 +264,58 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         RETURN else
       END IfStatm;
   
+    PROCEDURE CaseStatm (caseStatm: ExtTree.CaseStatm): IR.Statement;
+      VAR
+        select: IR.Expression;
+        else: IR.Statement;
+        elseSeq: IR.StatementSeq;
+        i, count: LONGINT;
+        caseList: IR.CaseList;
+
+      PROCEDURE Labels (labels: ExtTree.NodeList): IR.CaseLabels;
+        VAR
+          i: LONGINT;
+          setRanges: IR.CaseLabels;
+        BEGIN
+          NEW (setRanges, (labels. len+1) DIV 2);
+          FOR i := 0 TO labels. len-1 BY 2 DO
+            setRanges[i DIV 2] := Range (labels. n[i](ExtTree.Node));
+          END;
+          RETURN setRanges;
+        END Labels;
+      
+      BEGIN
+        select := Expr (caseStatm. expr);
+
+        (* count non-empty branches *)
+        count := 0;
+        FOR i := 0 TO caseStatm. caseList. len-1 BY 4 DO
+          IF (caseStatm. caseList. n[i] # NIL) THEN
+            INC (count);
+          END;
+        END;
+
+        (* translate all non-empty branches *)
+        NEW (caseList, count);
+        count := 0;
+        FOR i := 0 TO caseStatm. caseList. len-1 BY 4 DO
+          IF (caseStatm. caseList. n[i] # NIL) THEN
+            caseList[count] := b. NewCase
+              (caseStatm. caseList. n[i+1](ExtTree.Terminal). sym,
+               Labels (caseStatm. caseList. n[i](ExtTree.NodeList)),
+               StatementSeq (caseStatm. caseList. n[i+2](ExtTree.NodeList)));
+            INC (count);
+          END;
+        END;
+        IF (caseStatm. else # NIL) THEN
+          elseSeq := StatementSeq (caseStatm. elseStatmSeq)
+        ELSE
+          elseSeq := NIL
+        END;
+        RETURN b. NewCaseStatm (caseStatm. case. sym,
+                                select, caseList, elseSeq);
+      END CaseStatm;
+  
     PROCEDURE RepeatStatm (repeatStatm: ExtTree.RepeatStatm): IR.Statement;
       BEGIN
         RETURN b. NewRepeatStatm (repeatStatm. repeat. sym,
@@ -330,6 +382,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           | n: ExtTree.IfStatm DO
             statm := IfStatm (n)
 
+          | n: ExtTree.CaseStatm DO
+            statm := CaseStatm (n)
+                
           | n: ExtTree.RepeatStatm DO
             statm := RepeatStatm (n)
               

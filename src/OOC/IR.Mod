@@ -638,6 +638,27 @@ TYPE
     pathTrue-: StatementSeq;
     pathFalse-: StatementSeq;  (* NIL if the IF statement has no ELSE *)
   END;
+
+TYPE
+  Case* = POINTER TO CaseDesc;
+  CaseLabels* = POINTER TO ARRAY OF Expression;
+  CaseDesc = RECORD
+    (StatementDesc)
+    labels-:  CaseLabels;
+    statmSeq-: StatementSeq;
+  END;
+  
+TYPE
+  CaseStatm* = POINTER TO CaseStatmDesc;
+  CaseList* = POINTER TO ARRAY OF Case;
+  CaseStatmDesc = RECORD
+    (**Holds a @code{CASE} statement.  If there is no @code{ELSE}, then
+       @ofield{default} is @code{NIL}.  *)
+    (StatementDesc)
+    select-: Expression;
+    caseList-: CaseList;
+    default-: StatementSeq;  (* NIL if the CASE statement has no ELSE *)
+  END;
   
 TYPE
   LoopStatmDesc = RECORD
@@ -901,6 +922,8 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
     i: LONGINT;
 
   PROCEDURE CheckStatm (statm: Statement);
+    VAR
+      i: LONGINT;
     BEGIN
       WITH statm: Assert DO
         (* nothing *)
@@ -918,6 +941,13 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
       | statm: IfStatm DO
         CheckExit (statm. pathTrue, currentLoop);
         CheckExit (statm. pathFalse, currentLoop);
+      | statm: Case DO
+        CheckExit (statm. statmSeq, currentLoop);
+      | statm: CaseStatm DO
+        FOR i := 0 TO LEN (statm. caseList^)-1 DO
+          CheckExit (statm. caseList[i]. statmSeq, currentLoop);
+        END;
+        CheckExit (statm. default, currentLoop);
       | statm: LoopStatm DO
         CheckExit (statm. body, statm);
       | statm: RepeatStatm DO
@@ -2010,6 +2040,65 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitIfStatm* (ifStatm: IfStatm);
 PROCEDURE (ifStatm: IfStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitIfStatm (ifStatm)
+  END Accept;
+
+(* Statement Class: Case
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitCase (case: Case; sym: Symbol; labels: CaseLabels;
+                    statmSeq: StatementSeq);
+  BEGIN
+    InitStatement (case, sym);
+    case. labels := labels;
+    case. statmSeq := statmSeq;
+  END InitCase;
+
+PROCEDURE (b: Builder) NewCase* (sym: Symbol; labels: CaseLabels;
+                                 statmSeq: StatementSeq): Case;
+  VAR
+    case: Case;
+  BEGIN
+    NEW (case);
+    InitCase (case, sym, labels, statmSeq);
+    RETURN case
+  END NewCase;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitCase* (case: Case);
+  END VisitCase;
+
+PROCEDURE (case: Case) Accept* (v: Visitor);
+  BEGIN
+    v. VisitCase (case)
+  END Accept;
+
+(* Statement Class: CaseStatm
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitCaseStatm (caseStatm: CaseStatm; sym: Symbol; select: Expression;
+                         caseList: CaseList; default: StatementSeq);
+  BEGIN
+    InitStatement (caseStatm, sym);
+    caseStatm. select := select;
+    caseStatm. caseList := caseList;
+    caseStatm. default := default;
+  END InitCaseStatm;
+
+PROCEDURE (b: Builder) NewCaseStatm* (sym: Symbol; select: Expression;
+                                      caseList: CaseList; default: StatementSeq): CaseStatm;
+  VAR
+    caseStatm: CaseStatm;
+  BEGIN
+    NEW (caseStatm);
+    InitCaseStatm (caseStatm, sym, select, caseList, default);
+    RETURN caseStatm
+  END NewCaseStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitCaseStatm* (caseStatm: CaseStatm);
+  END VisitCaseStatm;
+
+PROCEDURE (caseStatm: CaseStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitCaseStatm (caseStatm)
   END Accept;
 
 (* Statement Class: LoopStatm
