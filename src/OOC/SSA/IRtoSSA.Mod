@@ -267,6 +267,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       type: Sym.Type;
     BEGIN
       type := design.type.Deparam();
+      type := type.Bound();  (* for a type variable, continue with bound *)
       IF checkDerefOfNil & (type IS Sym.Pointer) THEN
         check := AddException (pb, derefSym,
                                Opcode.checkPointer, value. subclass);
