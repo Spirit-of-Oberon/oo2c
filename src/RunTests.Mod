@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE RunTests;
 (*  Applies a test schedule to an OOC compiler and produces an XML report.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -23,7 +23,7 @@ MODULE RunTests;
 
 IMPORT
   Channel, Err, Files, Msg, Out, ProgramArgs, LongStrings, TextRider, 
-  SysClock, Calendar,
+  Strings, SysClock, Calendar,
   URI,
   StdChannels, XMLError := XML:Error, XML:UnicodeCodec:Latin1,
   XML:Basic:Element, XMLWriter := XML:Writer, URI:Scheme:File,
@@ -152,9 +152,11 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     test: Testcases.Test;
     result, class: SHORTINT;
     timeStr, str: ARRAY 128 OF CHAR;
+    path: ARRAY 1024 OF CHAR;
     time: SysClock.DateTime;
     elem: Element.Element;
     processorInfo: Testcases.ProcessorInfo;
+    i: INTEGER;
     
   PROCEDURE In (pattern, string: ARRAY OF LONGCHAR): BOOLEAN;
     VAR
@@ -293,11 +295,20 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
             
           Out.String ("--> TEST RESULT: ");
           CASE class OF
-          | skipped: Out.String ("SKIPPED")
-          | failed: Out.String ("FAILED")
-          | passed: Out.String ("PASSED")
-          | tolerated: Out.String ("TOLERATED")
+          | skipped: Out.String ("SKIPPED ")
+          | failed: Out.String ("FAILED ")
+          | passed: Out.String ("PASSED ")
+          | tolerated: Out.String ("TOLERATED ")
           END;
+          Out.String (test. id);
+          Out.String (" / ");
+          test. file. GetString (path);
+          i := Strings.Length (path);
+          WHILE (i # 0) & (path[i] # "/") DO
+            DEC (i);
+          END;
+          Strings.Delete (path, 0, i+1);
+          Out.String (path);
           IF (test. relevance = Testcases.relevanceInformal) &
               (result # Processor.processCrash) THEN
             Out.String (" (informal test)")
