@@ -23,7 +23,7 @@ MODULE OOC:TestFramework:Processor;
 
 IMPORT
   C, Files, LongStrings, Msg, Out, Strings, TextRider,
-  Object, ADT:StringBuffer, OSFiles := OS:Files,
+  Object, ADT:StringBuffer, IO, OSFiles := OS:Files,
   OS:ProcessManagement, URI:Scheme:File, XMLWriter := XML:Writer,
   XML:Basic:Element,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases;
@@ -119,13 +119,12 @@ PROCEDURE New* (setup: TestSetup.TestSetup): Processor;
 
 PROCEDURE (proc: Processor) Setup*;
   PROCEDURE MakeDir (dir: STRING);
-    VAR
-      res: Msg.Msg;
-      chars: Object.CharsLatin1;
     BEGIN
-      chars := dir(Object.String8).CharsLatin1();
-      OSFiles.makedirs (chars^, 7*64, res);
-      ASSERT (res = NIL)
+      TRY
+        OSFiles.makedirs (dir, 7*64);
+      CATCH IO.Error:
+        ASSERT(FALSE);
+      END;
     END MakeDir;
   
   BEGIN

@@ -741,7 +741,6 @@ RAISES IO.Error;
   VAR
     sb: StringBuffer.StringBuffer;
     cmd: STRING;
-    res: Msg.Msg;
     success: BOOLEAN;
     path: Rep.URIBuffer;
     uri: URI.URI;
@@ -782,7 +781,7 @@ RAISES IO.Error;
 
         (* create directory for HTML file, if it does not exist *)
         Path.dirname (path, path);
-        OSFiles.makedirs (path, OSFiles.defaultMode, res);
+        OSFiles.makedirs (Object.NewLatin1(path), OSFiles.defaultMode);
         
         (* append file name of style sheet *)
         uri := GetSystemId (Config.repositories);
@@ -796,19 +795,12 @@ RAISES IO.Error;
         sb.Append(" ");
         sb.AppendLatin1(path);
         
-        IF (res = NIL) THEN
-          cmd := sb.ToString();
-          Logger.ShellCommand(cmd);
-          exit := ProcessManagement.system(cmd);
-        END;
+        cmd := sb.ToString();
+        Logger.ShellCommand(cmd);
+        exit := ProcessManagement.system(cmd);
         
         errList := NIL;
-        IF (res # NIL) THEN
-          errList := Error.NewList("");
-          errList. Append (res)
-        END;
-        
-        success :=  (res = NIL) & (exit = 0);
+        success := (exit = 0);
       END;
     END;
     RETURN success;

@@ -1,7 +1,7 @@
 MODULE OOC:Package;
 
 IMPORT
-  IntStr, LongStrings, Msg, Out, StdChannels, Strings, IO, IO:FileChannel,
+  IntStr, LongStrings, Msg, StdChannels, Strings, IO, IO:FileChannel,
   Exception, Object, ADT:ArrayList, ADT:StringBuffer, OSFiles := OS:Files,
   OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
@@ -1384,9 +1384,7 @@ PROCEDURE UpdateRepository*(targetDir: STRING): BOOLEAN
 RAISES IO.Error;
   VAR
     dirName, fileName: STRING;
-    chars: Object.CharsLatin1;
     files: OSFiles.NameArray;
-    res: Msg.Msg;
     i: LONGINT;
     errList: Error.List;
     pkg: Rep.PkgInfo;
@@ -1399,41 +1397,26 @@ RAISES IO.Error;
   
   BEGIN
     dirName := targetDir+pkgInfoSubdir;
-    dirName := dirName.ToString8("?");
-    chars := dirName(Object.String8).CharsLatin1();
     
-    files := OSFiles.listdir(chars^, res);
-    IF (res = NIL) THEN
-      repository := NewRepository();
-      FOR i := 0 TO LEN(files^)-1 DO
-        IF IsPkgInfo(files[i]) THEN
-          fileName := dirName+"/"+files[i];
-          
-          errList := Error.NewList(fileName);
-          pkg := ParseFile(fileName, TRUE, errList);
-          IF (errList.msgCount # 0) THEN
-            errList.Write(StdChannels.stdout);
-            RETURN FALSE;
-          ELSE
-            repository.MergePackage(pkg(Package));
-          END;
+    files := OSFiles.listdir(dirName);
+    repository := NewRepository();
+    FOR i := 0 TO LEN(files^)-1 DO
+      IF IsPkgInfo(files[i]) THEN
+        fileName := dirName+"/"+files[i];
+        
+        errList := Error.NewList(fileName);
+        pkg := ParseFile(fileName, TRUE, errList);
+        IF (errList.msgCount # 0) THEN
+          errList.Write(StdChannels.stdout);
+          RETURN FALSE;
+        ELSE
+          repository.MergePackage(pkg(Package));
         END;
       END;
-      
-      WriteRepository(repository, targetDir);
-      IF (res # NIL) THEN
-        Out.String("Error: Write error for ");
-        Out.Object(targetDir+pkgInfoFile);
-        Out.Ln;
-        RETURN FALSE;
-      END;
-      RETURN TRUE;
-    ELSE
-      Out.String("Error: No such directory ");
-      Out.Object(dirName);
-      Out.Ln;
-      RETURN FALSE;
     END;
+    
+    WriteRepository(repository, targetDir);
+    RETURN TRUE;
   END UpdateRepository;
 
 BEGIN

@@ -308,15 +308,11 @@ RAISES IO.Error;
   VAR
     path, str: Rep.URIBuffer;
     uri: URI.URI;
-    res: Msg.Msg;
   BEGIN
     uri := m. GetURI (fileId, TRUE);
     uri(FileURI.URI). GetPath (path);
     Path.dirname (path, str);
-    OSFiles.makedirs(str, OSFiles.defaultMode, res);
-    IF (res # NIL) THEN
-      RAISE(NEW(IO.Error, "Failed to create directory"));
-    END;
+    OSFiles.makedirs(Object.NewLatin1(str), OSFiles.defaultMode);
   END CreateOutputDir;
 
 PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId;
