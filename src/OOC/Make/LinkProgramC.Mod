@@ -22,9 +22,93 @@ MODULE OOC:Make:LinkProgramC;
 
 IMPORT
   Out, Strings, URI, URI:Scheme:File, ADT:Object, ADT:String, ADT:Dictionary,
-  ADT:ArrayList,
+  ADT:ArrayList, StringValue := Config:Value:String,
   OS:ProcessManagement, OOC:Error, OOC:Repository, OOC:Config:CCompiler,
   Sym := OOC:SymbolTable;
+
+PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module): String.StringArrayPtr;
+  VAR
+    i, j: LONGINT;
+    linkDirective: Sym.LinkDirective;
+    libDeps, visited: Dictionary.Dictionary;
+    depArray: ArrayList.ArrayList;
+    extLibs: String.StringArrayPtr;
+
+  PROCEDURE GetDepArray (libName: String.String): ArrayList.ArrayList;
+    VAR
+      obj: Object.Object;
+      list: ArrayList.ArrayList;
+    BEGIN
+      IF libDeps.HasKey(libName) THEN
+        obj := libDeps.Get(libName);
+        RETURN obj(ArrayList.ArrayList);
+      ELSE
+        list := ArrayList.New(4);
+        libDeps.Set(libName, list);
+        RETURN list;
+      END;
+    END GetDepArray;
+
+  PROCEDURE AddLibrary (libName: String.String; VAR pos: LONGINT);
+    VAR
+      depArray: ArrayList.ArrayList;
+      i: LONGINT;
+    BEGIN
+      IF ~visited.HasKey(libName) & libDeps.HasKey(libName) THEN
+        visited.Set(libName, NIL);
+        depArray := GetDepArray(libName);
+        FOR i := 0 TO depArray.size-1 DO
+          AddLibrary(depArray.array[i](String.String), pos);
+        END;
+        extLibs[pos] := libName;
+        INC (pos);
+      END;
+    END AddLibrary;
+  
+  BEGIN
+    (* In the a first pass over all object files, pick up any references
+       to external libraries.  Ignore any modules that have been put into
+       libraries themselves.  *)
+    libDeps := Dictionary.New();
+    FOR i := 0 TO LEN(moduleList)-1 DO
+      IF (moduleList[i].ifData.libraryName = NIL) THEN
+        (* note down any libraries that need to be linked in *)
+        linkDirective := moduleList[i].ifData.linkDirectives;
+        WHILE (linkDirective # NIL) DO
+          WITH linkDirective: Sym.LinkLib DO
+            depArray := GetDepArray(linkDirective.libraryName);
+            FOR j := 0 TO LEN(linkDirective.dependencies^)-1 DO
+              depArray.Append(linkDirective.dependencies[j]);
+            END;
+          ELSE                         (* ignore *)
+          END;
+          linkDirective := linkDirective. next
+        END;
+      END;
+    END;
+
+    (* Pick up library references, starting at the module at the bottom and
+       ending with the main module.  Ignore module from libraries.  Honor
+       library interdependencies by putting base libraries first.  *)
+    NEW(extLibs, libDeps.Size());
+    visited := Dictionary.New();
+    j := 0;
+    FOR i := 0 TO LEN(moduleList)-1 DO
+      IF (moduleList[i].ifData.libraryName = NIL) THEN
+        (* note down any libraries that need to be linked in *)
+        linkDirective := moduleList[i].ifData.linkDirectives;
+        WHILE (linkDirective # NIL) DO
+          WITH linkDirective: Sym.LinkLib DO
+            AddLibrary(linkDirective.libraryName, j);
+          ELSE                         (* ignore *)
+          END;
+          linkDirective := linkDirective. next
+        END;
+      END;
+    END;
+    ASSERT(j = LEN(extLibs^));
+    RETURN extLibs;
+  END GetExternalLibs;
 
 PROCEDURE Run*(module: Repository.Module;
                imports: ARRAY OF Repository.Module;
@@ -35,13 +119,12 @@ PROCEDURE Run*(module: Repository.Module;
     uri: URI.URI;
     exit, i: LONGINT;
     res: Error.Msg;
-    linkDirective: Sym.LinkDirective;
-    libsMap, importedLibs: Dictionary.Dictionary;
+    importedLibs: Dictionary.Dictionary;
     importedLibsList: ArrayList.ArrayList;
-    libs: Object.ObjectArrayPtr;
     objectFile, outputFile: Repository.FileId;
     libraryName: String.String;
     import: Repository.Module;
+    extLibs: String.StringArrayPtr;
   BEGIN
     exit := 0;
     IF (forLibrary # NIL) THEN
@@ -57,7 +140,6 @@ PROCEDURE Run*(module: Repository.Module;
       CCompiler.LinkProgramCmd
           (module. GetURI (outputFile, TRUE), (forLibrary # NIL), str);
 
-      libsMap := Dictionary.New();
       importedLibs := Dictionary.New();
       importedLibsList := ArrayList.New(4);
       FOR i := 0 TO LEN(imports)-1 DO
@@ -75,16 +157,6 @@ PROCEDURE Run*(module: Repository.Module;
           uri(File.URI). GetPath (path);
           Strings.Append (" ", str);
           Strings.Append (path, str);
-          
-          (* note down any libraries that need to be linked in *)
-          linkDirective := imports[i].ifData.linkDirectives;
-          WHILE (linkDirective # NIL) DO
-            WITH linkDirective: Sym.LinkLib DO
-              libsMap. Set (linkDirective. libraryName, NIL);
-            ELSE                         (* ignore *)
-            END;
-            linkDirective := linkDirective. next
-          END;
         END;
       END;
 
@@ -112,14 +184,15 @@ PROCEDURE Run*(module: Repository.Module;
         END;
       END;
       
-      (* add "-l" options for the external libraries *)
-      (* FIXME... honor interdependencies between libraries in order
-         of options *)
-      libs := libsMap. Keys();
-      FOR i := 0 TO LEN (libs^)-1 DO
+      (* add "-l" options for the external libraries, most specific library
+         first *)
+      extLibs := GetExternalLibs(imports);
+      FOR i := LEN (extLibs^)-1 TO 0 BY -1 DO
         Strings.Append (" -l", str);
-        Strings.Append (libs[i](String.String). array^, str);
+        Strings.Append (extLibs[i]. array^, str);
       END;
+      Strings.Append (" ", str);
+      Strings.Append (CCompiler.libs.value(StringValue.Value).string^, str);
     END;
     IF (res = NIL) THEN
       Out.String (str);
@@ -131,4 +204,3 @@ PROCEDURE Run*(module: Repository.Module;
   END Run;
 
 END OOC:Make:LinkProgramC.
-

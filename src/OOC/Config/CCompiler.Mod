@@ -26,7 +26,7 @@ IMPORT
   OOC:Config, OOC:Repository;
 
 VAR
-  cc, cppflags, cflags, ldflags, libs, libtool, libdir: Options.Option;
+  cc, cppflags, cflags, ldflags, libs-, libtool, libdir: Options.Option;
 
 PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
                            VAR cmd: ARRAY OF CHAR);
@@ -106,8 +106,6 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
     END;
     Strings.Append (" ", cmd);
     Strings.Append (ldflags. value(StringValue.Value). string^, cmd);
-    Strings.Append (" ", cmd);
-    Strings.Append (libs. value(StringValue.Value). string^, cmd);
   END LinkProgramCmd;
 
 PROCEDURE RegisterConfig*;
