@@ -103,7 +103,8 @@ TYPE
     res: SSA.Result;
     id: LONGINT;
     (* Unique id of the element, a non-negative number less than
-       @ofield{InductionCycle.cycleLength}.  *)
+       @ofield{InductionCycle.cycleLength}.  The cycle head has id `0',
+       the result at the end of the cycle `cycleLength-1'.  *)
   END;
   RewrittenCycle = POINTER TO RewrittenCycleDesc;
   RewrittenCycleDesc = RECORD
@@ -111,10 +112,10 @@ TYPE
     origin: Sum;
     a: SSA.Result;   (* factor applied to the induction head, or NIL *)
     b: SSA.Result;   (* loop-invariant but not constant offset, or NIL *)
-    newHead: SSA.Result;  (* induction head of the rewritten cycle *)
     replacements: POINTER TO ARRAY OF SSA.Result;
     (* Element at index @ofield{CycleElement.id} holds the replementent
        expression for the main cycle's element within this rewritten
+       cycle.  @samp{replacements[0]} holds the head of the new induction
        cycle.  *)
   END;
   InductionCycle = POINTER TO InductionCycleDesc;
@@ -335,15 +336,24 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
 
   PROCEDURE AddInductionValue(ic: InductionCycle; res: SSA.Result);
     VAR
-      ce: CycleElement;
+      ce, ptr: CycleElement;
     BEGIN
       res.LogId("AddInductionValue");
       NEW(ce);
-      ce.next := ic.cycleElements;
+      ce.next := NIL;
       ce.res := res;
       ce.id := ic.cycleLength;
-      ic.cycleElements := ce;
       INC(ic.cycleLength);
+
+      IF (ic.cycleElements = NIL) THEN
+        ic.cycleElements := ce;
+      ELSE
+        ptr := ic.cycleElements;
+        WHILE (ptr.next # NIL) DO
+          ptr := ptr.next;
+        END;
+        ptr.next := ce;
+      END;
     END AddInductionValue;
   
   PROCEDURE SearchCycle(res, head: SSA.Result; ic: InductionCycle;
@@ -387,12 +397,13 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
       IF (res.marker = forwardInductive) THEN
         ic := NewInductionCycle(res);
         ASSERT(loopEnd.opndList.nextOpnd.arg.instr.opcode = Opcode.collect);
+        AddInductionValue(ic, res);
+        
         opnd := loopEnd.opndList.nextOpnd.arg.instr.NthOpnd(count);
         cyclic := FALSE;
         SearchCycle(opnd.arg, res, ic, cyclic);
         IF cyclic THEN
           res.info := ic;
-          AddInductionValue(ic, res);
         END;
       END;
       res := res.nextResult;
@@ -740,18 +751,15 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       RETURN res;
     END Expr;
 
-  PROCEDURE RewriteCycle(rc: RewrittenCycle; ce: CycleElement): SSA.Result;
+  PROCEDURE RewriteCycle(rc: RewrittenCycle; ce: CycleElement);
     VAR
       ci, mult, instr, collect: SSA.Instr;
-      iv, ni, res, mres, hres: SSA.Result;
+      iv, ni, res, mres: SSA.Result;
       obj: Object.Object;
       resultIndex: LONGINT;
       opnd, next: SSA.Opnd;
     BEGIN
-      IF (ce = NIL) THEN
-        RETURN NIL;
-      ELSE
-        hres := RewriteCycle(rc, ce.next);
+      WHILE (ce # NIL) DO
         ce.res.LogId("RewriteCycle");
         
         ci := ce.res.instr;
@@ -805,11 +813,8 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
           res := ci.AddResultSubclass(Result.selectValue, sum.subclass);
         END;
         rc.replacements[ce.id] := res;
-        
-        IF (hres = NIL) THEN
-          hres := res;
-        END;
-        RETURN hres;
+
+        ce := ce.next;
       END;
     END RewriteCycle;
 
@@ -818,7 +823,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       res: SSA.Result;
       instr: SSA.Instr;
     BEGIN
-      res := rc.newHead;
+      res := rc.replacements[0];
 
       IF (sum.others # zero) THEN
         instr := pb.AddInstr(Opcode.add, sum.subclass);
@@ -919,22 +924,19 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       replacement := Dictionary.New();
       res := loopStart.AddResultSubclass(Result.selectValue, sum.subclass);
       replacement.Set(sum.head, res);
-      rc.newHead := res;
       NEW(rc.replacements, ic.cycleLength);
       FOR i := 0 TO ic.cycleLength-1 DO
         rc.replacements[i] := NIL;
       END;
-      rc.replacements[ic.cycleElements.id] := res;
+      rc.replacements[0] := res;
       
       (* rewrite all other elements in the induction cycle *)
-      IF (ic.cycleElements.next # NIL) THEN
-        res := RewriteCycle(rc, ic.cycleElements.next);
-      END;
+      RewriteCycle(rc, ic.cycleElements.next);
       
       (* add final value of the induction cycle to the back-edge collect *)
       loopEnd := loopStart.GetLoopEnd();
       collect := loopEnd.opndList.nextOpnd.arg.instr;
-      collect.AddOpnd(res, Opnd.arg);
+      collect.AddOpnd(rc.replacements[LEN(rc.replacements^)-1], Opnd.arg);
     END;
 
 
