@@ -2,11 +2,13 @@ MODULE OOC:X86:Register;
 
 IMPORT
   Object, ADT:ArrayList, ADT:Dictionary, S := OOC:X86:SSA,
-  M := OOC:X86:Machine, OOC:SSA:IGraph;
+  M := OOC:X86:Machine, OOC:SSA:IGraph, D := OOC:X86:Debug, Log;
   
 CONST
   gpRegisters = 0;
   (**Set of general purpose registers.  *)
+  fpRegisters = 1;
+  (**Set of floating point registers.  *)
   
 TYPE
   RegisterFile = POINTER TO RegisterFileDesc;
@@ -18,6 +20,7 @@ TYPE
     iGraph: IGraph.Graph;
     maxColor: IGraph.Color;
     prelocatedRep: ARRAY S.lastRegister+1 OF S.Result;
+    (* Note: Only applies to general purpose registers.  *)
   END;
   
 TYPE
@@ -89,6 +92,14 @@ PROCEDURE GetRegisterFiles (): RegisterFiles;
     rfs[S.unsigned16] := rf;
     rfs[S.unsigned32] := rf;
     rfs[S.address] := rf;
+
+    rf := NEW(RegisterFile, fpRegisters);
+    FOR i := 0 TO S.lastRegister DO
+      rf.prelocatedRep[i] := NIL;
+    END;
+    rfs[S.real32] := rf;
+    rfs[S.real64] := rf;
+    
     RETURN rfs
   END GetRegisterFiles;
 
