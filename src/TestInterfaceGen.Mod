@@ -4,6 +4,7 @@ IMPORT
   StdChannels, Out, Err, Make, Make:Command:Target, Make:Entity:Group,
   Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
+  StringValue := Config:Value:String,
   OOC:Make:Entity:ModuleFile,
   OOC:Make:Command:InterfaceDescr, OOC:Make:Command:InterfaceHTML,
   OOC:Make:Command:CompileModule, OOC:Error, Rep := OOC:Repository,
@@ -34,7 +35,8 @@ VAR
   
   buildHTML: Options.Option;
   closure: Options.Option;
-
+  errorStyle: Options.Option;
+  
 
 PROCEDURE InitContext (context: Context; config: Config.Config;
                        target: Make.Command);
@@ -85,6 +87,8 @@ PROCEDURE RegisterCmdLineOptions (config: Config.Config);
                  "<options><set name='build-html'>TRUE</set></options>");
     ot := config. cmdLine. AddOptionTemplate ("--closure",
                  "<options><set name='closure'>TRUE</set></options>");
+    ot := config. cmdLine. AddOptionTemplate ("--error-style",
+                 "<options><set name='error-style'>$1</set></options>");
   END RegisterCmdLineOptions;
 
 PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
@@ -96,13 +100,13 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
 
     buildHTML := config. options. Set ("build-html", BooleanValue.New (FALSE));
     closure := config. options. Set ("closure", BooleanValue.New (FALSE));
+    errorStyle := config. options. Set ("error-style", StringValue.New ("default"));
     
     RegisterCmdLineOptions (config);
     RETURN config
   END NewConfig;
 
 BEGIN
-  Error.oo2cStyleErrors := TRUE;
   cfgErrList := Error.NewList ("");
   config := NewConfig ("");
   config. Read (cfgErrList);
@@ -111,11 +115,14 @@ BEGIN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
   ELSIF (config. arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: TestInterfaceGen [--html][--closure] {-r <base-dir>} <file>"); Out.Ln;
+    Out.String ("Usage: TestInterfaceGen [--html][--closure][--error-style <style>] {-r <base-dir>} <file>"); Out.Ln;
     HALT (1)
   ELSE
     context := NewContext (config);
-    
+
+    IF (errorStyle. value(StringValue.Value). string^ = "oo2c") THEN
+      Error.oo2cStyleErrors := TRUE;
+    END;
     IF buildHTML. value(BooleanValue.Value). boolean THEN
       mode := Rep.modInterfaceHTML
     ELSE
