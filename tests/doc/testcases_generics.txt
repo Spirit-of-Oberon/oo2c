@@ -21,8 +21,9 @@ For a qualified type expression of the form `T<A1,A2,...,An>',
   b) it must have the same number of type arguments as there are type
       parameters, and
 
-  c) each actual type parameter Ai must be an extension of the
-     corresponding type bound Bi.
+  c) each actual type parameter Ai is either an extension of the
+     corresponding type bound Bi, or Ai is a type variable whose bound
+     is an extension of Bi.
 
 If T is a parametric type as defined above, then the type expression
 `T' is equivalent to the qualified type `T<B1,B2,...,Bn>', where each
@@ -57,9 +58,11 @@ ACCEPT
 
   1) Instance of record and types with arguments.  [Generic2 Generic3]
   2) Instance of parametric type without arguments.  [Generic3]
+  3) Argument is a type variable with matching bound.  [Generic1]
 
 REJECT
 
   1) T is not a parametric type.  [Generic8]
   2) Too few or too many type arguments.  [Generic9 Generic10]
   3) Type argument is not an extension of the type bound.  [Generic11]
+  4) Type argument's bound is not extension of parameter bound.  [Generic12]

@@ -6,7 +6,8 @@
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; generic1 generic2 generic3 generic4
-  generic5 generic6 generic7 generic8 generic9 generic10 generic11">-->
+  generic5 generic6 generic7 generic8 generic9 generic10 generic11
+  generic12 generic13">-->
 
   &TestSetupWithOut;
     
@@ -1333,6 +1334,13 @@
     <test id="generic11" type="reject" file="Generic11.Mod">
       Type argument is not an extension of the type bound.
     </test>
+    <test id="generic12" type="reject" file="Generic12.Mod">
+      Type argument is a type variable whose bound is not an extension
+      of the type bound.
+    </test>
+    <test id="generic13" type="reject" file="Generic13.Mod">
+      Pointer base type is a type variable.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -1858,6 +1866,10 @@
         msg="Too many type arguments"/>
     <reject-info id="generic11" pos="R&lt;%G.Object&gt;"
         msg="This is not an extension of the type bound"/>
+    <reject-info id="generic12" pos="R1&lt;%C&gt;"
+        msg="This is not an extension of the type bound"/>
+    <reject-info id="generic13" pos="POINTER TO %B"
+        msg="Illegal pointer base type"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>
