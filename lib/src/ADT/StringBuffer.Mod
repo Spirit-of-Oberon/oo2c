@@ -86,11 +86,6 @@ PROCEDURE (b: StringBuffer) Clear*;
     b.length := 0;
   END Clear;
 
-PROCEDURE (b: StringBuffer) CharsLatin1*(): CharsLatin1;
-  BEGIN
-    RETURN b.data8;
-  END CharsLatin1;
-
 PROCEDURE (b: StringBuffer) EnsureCapacity (cap: LONGINT);
   VAR
     newCap: LONGINT;
@@ -116,6 +111,26 @@ PROCEDURE (b: StringBuffer) EnsureCapacity (cap: LONGINT);
     END;
   END EnsureCapacity;
 
+PROCEDURE (b: StringBuffer) CharsLatin1*(): CharsLatin1;
+(**Return a reference to the character data of the string buffer.  It holds
+   valid character data in the index range @samp{0} to @samp{b.length-1}.  The
+   element at index @samp{b.length} is @samp{0X}.  Please note that the string
+   buffer may also contain @samp{0X} itself.
+
+   If wide characters have been added to @oparam{b}, then no
+   @otype{CharsLatin1} representation is available and result is @code{NIL}.
+
+   @emph{Important}: The reference only remains valid until the first operation
+   that modifies the buffer.  After such an operation, it may or may not
+   reflect the current buffer contents.  *)
+  BEGIN
+    IF (b.data8 # NIL) THEN
+      b.EnsureCapacity(b.length+1);
+      b.data8[b.length] := 0X;
+    END;
+    RETURN b.data8;
+  END CharsLatin1;
+
 PROCEDURE (b: StringBuffer) ConvertTo32;
   VAR
     i: LONGINT;
@@ -137,9 +152,11 @@ PROCEDURE (b: StringBuffer) AppendLatin1Region*(data[NO_COPY]: ARRAY OF CHAR;
     ASSERT(end <= LEN(data));
     
     len := end-start;
-    b.EnsureCapacity(b.length+len+1);
+    b.EnsureCapacity(b.length+len);
     IF (b.data8 # NIL) THEN
+<*PUSH; IndexCheck:=FALSE*>
       S.MOVE(S.ADR(data[start]), S.ADR(b.data8[b.length]), len*SIZE(CHAR));
+<*POP*>
     ELSE
       i := b.length;
       WHILE (start # end) DO
@@ -187,11 +204,13 @@ PROCEDURE (b: StringBuffer) AppendUCS4Region*(data[NO_COPY]: ARRAY OF UCS4CHAR;
     ASSERT(end <= LEN(data));
     
     len := end-start;
-    b.EnsureCapacity(b.length+len+1);
+    b.EnsureCapacity(b.length+len);
     IF (b.data32 = NIL) THEN
       b.ConvertTo32;
     END;
+<*PUSH; IndexCheck:=FALSE*>
     S.MOVE(S.ADR(data[start]), S.ADR(b.data32[b.length]), len*SIZE(UCS4CHAR));
+<*POP*>
     INC(b.length, len);
   END AppendUCS4Region;
 
@@ -228,6 +247,15 @@ PROCEDURE New*(str: STRING): StringBuffer;
     b.Append(str);
     RETURN b;
   END New;
+
+PROCEDURE NewLatin1*(str[NO_COPY]: ARRAY OF CHAR): StringBuffer;
+  VAR
+    b: StringBuffer;
+  BEGIN
+    b := NewCapacity(Length(str));
+    b.AppendLatin1(str);
+    RETURN b;
+  END NewLatin1;
 
 PROCEDURE (b: StringBuffer) AppendInt* (val: LONGINT);
 (**Append the string representation of @code{LONGINT} @oparam{val} to the
@@ -289,6 +317,57 @@ PROCEDURE (b: StringBuffer) AppendBool* (val: BOOLEAN);
       b.AppendLatin1("FALSE")
     END
   END AppendBool;
+
+PROCEDURE (b: StringBuffer) Insert*(obj: Object.Object; at: LONGINT);
+  VAR
+    s: STRING;
+    c8: Object.CharsLatin1;
+    c32: Object.CharsUCS4;
+    i: LONGINT;
+  BEGIN
+    IF (obj = NIL) THEN
+      b.Insert("NIL", at);
+    ELSE
+      WITH obj: STRING DO
+        s := obj;
+      ELSE
+        s := obj.ToString();
+      END;
+
+      b.EnsureCapacity(b.length+s.length);
+      WITH s: Object.String8 DO
+        c8 := s.CharsLatin1();
+        IF (b.data8 # NIL) THEN
+          FOR i := b.length-1 TO at BY -1 DO
+            b.data8[i+s.length] := b.data8[i];
+          END;
+          FOR i := 0 TO s.length-1 DO
+            b.data8[at+i] := c8[i];
+          END;
+        ELSE
+          FOR i := b.length-1 TO at BY -1 DO
+            b.data32[i+s.length] := b.data32[i];
+          END;
+          FOR i := 0 TO s.length-1 DO
+            b.data32[at+i] := c8[i];
+          END;
+        END;
+        
+      | s: Object.String32 DO
+        c32 := s.CharsUCS4();
+        IF (b.data32 = NIL) THEN
+          b.ConvertTo32;
+        END;
+        FOR i := b.length-1 TO at BY -1 DO
+          b.data32[i+s.length] := b.data32[i];
+        END;
+        FOR i := 0 TO s.length-1 DO
+          b.data32[at+i] := c32[i];
+        END;
+      END;
+      INC(b.length, s.length);
+    END;
+  END Insert;
 
 PROCEDURE (b: StringBuffer) Delete*(start, end: LONGINT);
   VAR
