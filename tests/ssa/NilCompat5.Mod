@@ -2,6 +2,9 @@ MODULE NilCompat5;
 
 IMPORT NilCompat3;
 
-BEGIN
-  NilCompat3.P2(NIL);
+PROCEDURE P();
+  BEGIN
+    NilCompat3.P2(NIL);
+  END P;
+
 END NilCompat5.
