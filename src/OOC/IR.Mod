@@ -2653,6 +2653,7 @@ VAR
   test : Expression;
 BEGIN
   guardType := ref. decl(Sym.TypeDecl). type;
+  b.CheckFunctionOp(design, sym);
   test := b.NewTypeTest(sym, design, ref);
   IF test IS TypeTest THEN
     NEW(guard);
