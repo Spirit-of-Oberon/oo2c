@@ -1,4 +1,4 @@
-	.arch athlon
+	.arch pentium4
 	.p2align 4,,15
 	.type C1__Sub, @function
 C1__Sub:

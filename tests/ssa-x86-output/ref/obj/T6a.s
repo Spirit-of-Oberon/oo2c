@@ -1,4 +1,4 @@
-	.arch athlon
+	.arch pentium4
 	.p2align 4,,15
 .global T6a__f
 	.type T6a__f, @function
