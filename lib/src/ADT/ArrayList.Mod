@@ -146,7 +146,7 @@ PROCEDURE (l: ArrayList(E)) Insert* (index: LONGINT; obj: E);
    indices).
 
    @precond
-   @samp{0 <= @oparam{index}} and @samp{@oparam{index} < @oproc{l.Size}()}
+   @samp{0 <= @oparam{index}} and @samp{@oparam{index} <= @oproc{l.Size}()}
    @end precond  *)
   VAR
     i: LONGINT;
@@ -155,7 +155,7 @@ PROCEDURE (l: ArrayList(E)) Insert* (index: LONGINT; obj: E);
     IF (l. size = LEN (l. array^)) THEN
       l. CreateArray (l. size*2, l)
     END;
-    FOR i := l. size-1 TO index DO
+    FOR i := l. size-1 TO index BY -1 DO
       l. array[i+1] := l. array[i]
     END;
     l. array[index] := obj;
