@@ -160,6 +160,19 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
     lastError: Error.Msg;
     visited: Dictionary.Dictionary;
     
+  PROCEDURE SetErrPos(err: Error.Msg; pos: Sym.Position);
+    VAR
+      i: LONGINT;
+    BEGIN
+      i := pos.pos;
+      IF (i < 0) THEN
+        i := 0;
+      END;
+      err. SetIntAttrib ("pos", i);
+      err. SetIntAttrib ("line", pos. line);
+      err. SetIntAttrib ("column", pos. column);
+    END SetErrPos;
+  
   PROCEDURE Err (code: Error.Code; tname: Sym.TypeName);
     VAR
       pos: Sym.Position;
@@ -173,27 +186,21 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
         pos := tname. position
       END;
       lastError := Error.New (createNamespaceContext, code);
-      lastError. SetIntAttrib ("pos", pos. pos);
-      lastError. SetIntAttrib ("line", pos. line);
-      lastError. SetIntAttrib ("column", pos. column);
+      SetErrPos(lastError, pos);
       errList. Append (lastError)
     END Err;
   
   PROCEDURE ErrType (code: Error.Code; type: Sym.Type);
     BEGIN
       lastError := Error.New (createNamespaceContext, code);
-      lastError. SetIntAttrib ("pos", type. position. pos);
-      lastError. SetIntAttrib ("line", type. position. line);
-      lastError. SetIntAttrib ("column", type. position. column);
+      SetErrPos(lastError, type.position);
       errList. Append (lastError)
     END ErrType;
   
   PROCEDURE ErrDecl (code: Error.Code; decl: Sym.Declaration; errList: Error.List);
     BEGIN
       lastError := Error.New (createNamespaceContext, code);
-      lastError. SetIntAttrib ("pos", decl. name. pos);
-      lastError. SetIntAttrib ("line", decl. name. line);
-      lastError. SetIntAttrib ("column", decl. name. column);
+      SetErrPos(lastError, decl.name);
       errList. Append (lastError)
     END ErrDecl;
 
