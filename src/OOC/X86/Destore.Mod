@@ -357,25 +357,36 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
       END;
     END AddDesignatorGatetoWorklist;
   
+  PROCEDURE ReplaceUses(old, new: S.Result; eliminateLoopEnd: BOOLEAN);
+    VAR
+      use: S.Opnd;
+    BEGIN
+      WHILE (old.useList # NIL) DO
+        use := old.useList;
+        (*D.Log("  replacing", use);*)
+        IF ((use.instr.opcode = S.designatorGate) OR
+            (use.instr.opcode = S.gate)) &
+           (use.instr # old.instr) THEN
+          AddToWorklist(use.instr);
+        END;
+        use.ReplaceArg(new);
+
+        IF eliminateLoopEnd &
+           use.instr.IsLoopEndGate() &
+           use.instr.AllOpndsSameValue() THEN
+          (* If we eliminate a gate that is part a loopStart, then we might
+             leave dangling gates in the loopEnd that were taking this gate as
+             input, and now take a single value from outside the loop.  Such
+             gates create artifical values representing in fact the original
+             input value.  So we eliminate such gates as well.  *)
+          ReplaceUses(use.instr.resultList, use.arg, FALSE);
+        END;
+      END;
+    END ReplaceUses;
+  
   PROCEDURE PromoteDesignatorGate(instr: S.GateInstr);
     VAR
       opnd: S.Opnd;
-
-    PROCEDURE ReplaceUses(old, new: S.Result);
-      VAR
-        use: S.Opnd;
-      BEGIN
-        WHILE (old.useList # NIL) DO
-          use := old.useList;
-          IF ((use.instr.opcode = S.designatorGate) OR
-              (use.instr.opcode = S.gate)) &
-             (use.instr # old.instr) THEN
-            AddToWorklist(use.instr);
-          END;
-          use.ReplaceArg(new);
-        END;
-      END ReplaceUses;
-    
     BEGIN            (* pre: instr.opcode in {designatorGate, gate} *)
       IF (instr.resultList = NIL) THEN
         (* unused; for a gate within a merge, this means that there is at least
@@ -384,7 +395,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
       ELSIF (instr.merge IS S.LoopStartInstr) THEN
         IF (instr.opndList.nextOpnd.arg = instr.resultList) THEN
           (* value not changed within loop *)
-          ReplaceUses(instr.resultList, instr.opndList.arg);
+          ReplaceUses(instr.resultList, instr.opndList.arg, TRUE);
           instr.Delete();
         ELSIF (instr.opcode = S.designatorGate) THEN
           instr.DesignatorGateToGate();
@@ -400,7 +411,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
           opnd := opnd.nextOpnd;
         END;
         IF (opnd.nextOpnd = NIL) THEN    (* all arguments are the same *)
-          ReplaceUses(instr.resultList, instr.opndList.arg);
+          ReplaceUses(instr.resultList, instr.opndList.arg, FALSE);
           instr.Delete();
         ELSIF (instr.opcode = S.designatorGate) THEN
           instr.DesignatorGateToGate();
@@ -475,7 +486,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
         ELSE
           (* value of variable is unknown at the end of the loop: discard
              loop gate *)
-          gate.resultList.ReplaceUses(gate.opndList.arg);
+          ReplaceUses(gate.resultList, gate.opndList.arg, TRUE);
           gate.Delete();
         END;
       | S.merge, S.guard:

@@ -1094,6 +1094,29 @@ PROCEDURE (instr: Instr) Unchecked*(): BOOLEAN;
     RETURN (instr.afterList = NIL);
   END Unchecked;
 
+PROCEDURE (instr: Instr) IsLoopEndGate*(): BOOLEAN;
+  BEGIN
+    RETURN (instr.opcode = gate) & (instr(GateInstr).merge.opcode = loopEnd);
+  END IsLoopEndGate;
+
+PROCEDURE (instr: Instr) AllOpndsSameValue*(): BOOLEAN;
+  VAR
+    opnd: Opnd;
+  BEGIN
+    IF (instr.opndList = NIL) THEN
+      RETURN TRUE;
+    ELSE
+      opnd := instr.opndList;
+      WHILE (opnd.nextOpnd # NIL) DO
+        IF (opnd.arg # opnd.nextOpnd.arg) THEN
+          RETURN FALSE;
+        END;
+        opnd := opnd.nextOpnd;
+      END;
+      RETURN TRUE;
+    END;
+  END AllOpndsSameValue;
+
 PROCEDURE (instr: Instr) SizeOpndList*(): LONGINT;
 (**Returns the number of operands of @oparam{instr}. *)
   VAR
