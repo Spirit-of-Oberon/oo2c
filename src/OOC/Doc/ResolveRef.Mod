@@ -292,7 +292,7 @@ PROCEDURE Resolve* (symTab: Item.Module;
              string as canonical name of the referenced declaration *)
           module := part(Doc.Text). string;
           
-          len := 0;
+          len := 1;
           ptr := part. nextInline;
           WHILE (ptr # NIL) DO
             INC (len, Strings.Length (ptr(Doc.Text). string^)+1);
