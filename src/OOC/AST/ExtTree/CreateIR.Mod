@@ -451,7 +451,11 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         statmSeq := StatementSeq(tryStatm.statmSeq);
         FOR i := 0 TO tryStatm.catchList.len-1 BY 4 DO
           guard := Expr(tryStatm.catchList.n[i+1](ExtTree.Node));
+          
+          b.StartExceptionScope(guard, currentNamespace);
           catchStatm := StatementSeq(tryStatm.catchList.n[i+3](ExtTree.NodeList));
+          b.EndExceptionScope(currentNamespace);
+          
           catchList[i DIV 4] := b.NewCatchClause(guard, catchStatm);
         END;
         RETURN b.NewTryStatm(tryStatm.try.sym, statmSeq, catchList);

@@ -143,6 +143,12 @@ PROCEDURE (v: Visitor) VisitConstructor* (cons: IR.Constructor);
     v. w. EndTag;  (* constructor *)
   END VisitConstructor;
 
+PROCEDURE (v: Visitor) VisitCurrentException*(ce: IR.CurrentException);
+  BEGIN
+    v. w. StartTag ("current-exception", FALSE);
+    v. w. EndTag;  (* current-exception *)
+  END VisitCurrentException;
+
 PROCEDURE (v: Visitor) VisitDeref* (deref: IR.Deref);
   BEGIN
     v. w. StartTag ("deref", FALSE);

@@ -13,11 +13,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module libxml libxml1">-->
-
-<!--<testsuite-ext
-  profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_Exception23 lib_Exception28">-->
+  select ="prepare_out_module lib_rt1 lib_Exception29 lib_Exception30 lib_Exception31">-->
   
   &TestSetupWithOut;
   
@@ -667,6 +663,14 @@
       output="LibException28.Ref">
       Re-raising an exception with a <code>CATCH</code> block.
     </test>
+    <test id="lib_Exception29" type="run" file="LibException29.Mod"
+      output="LibException29.Ref">
+    </test>
+    <test id="lib_Exception30" type="run" file="LibException30.Mod"
+      output="LibException30.Ref">
+    </test>
+    <test id="lib_Exception31" type="reject" file="LibException31.Mod">
+    </test>
     
     <test id="lib_BigInt1" type="run" file="LibBigInt1.Mod">
       Tests most of the functions of the <code>BigInt</code>
@@ -703,5 +707,7 @@
       msg="Exception `Exception.Exception' neither caught nor passed up"/>
     <reject-info id="lib_Exception25" pos="RAISE(%NewException"
       msg="Type is not an extension of `Exception.Exception'"/>
+    <reject-info id="lib_Exception31" pos="%EXCEPTION := "
+      msg="This must be a variable"/>
   </processor-info>
 </testsuite-ext>

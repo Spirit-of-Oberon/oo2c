@@ -27,11 +27,11 @@ IMPORT
 
    @example
    TRY
-   S
+     S
    CATCH T1:
-   C1
+     C1
    CATCH T2:
-   C2
+     C2
    END;
    @end example
 
@@ -54,11 +54,11 @@ IMPORT
    Exception.PopContext;
    temp := Exception.Current();
    WITH temp: T1 DO
-   C1;
+     C1;
    | temp: T2 DO
-   C2;
+     C2;
    ELSE
-   Exception.ActivateContext;
+     Exception.ActivateContext;
    END;
    Exception.Clear;
    @end example
@@ -70,6 +70,10 @@ IMPORT
    such a clause exist.  Otherwise, the exception is written to @var{stderr}
    and the program is aborted.
 
+   Within a @code{CATCH}, the predefined variable @code{EXCEPTION} holds the
+   value of @oproc{Current}.  Its type is the one given in the
+   @code{CATCH} clause.  The variable is read-only.
+   
    An exception @var{E} must either be caught within a procedure, or the
    procedure must declare that it may pass an exception of type @var{E} up to
    its caller.  For example,
@@ -155,8 +159,10 @@ PROCEDURE Raise* [NO_RETURN](e: Exception) RAISES Exception;
    @end precond  *)
 PROCEDURE Current*(): Exception;
 (**Pointer to the currently active exception.  This is @code{NIL}
-   if no exeception has been raised, or when a @code{CATCH} clause has been
-   completed successfully for the last exception.  *)
+   if no exception has been raised, or when a @code{CATCH} clause has been
+   completed successfully for the last exception.  Within a @code{CATCH}
+   block, the predefined read-only variable @samp{EXCEPTION} holds the
+   same pointer value.  *)
   
 PROCEDURE Clear*;
 (**Set the current exception marker to @code{NIL}.  This procedure should never

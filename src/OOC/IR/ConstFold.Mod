@@ -149,6 +149,10 @@ PROCEDURE (c: ConstFold) VisitConstructor* (cons: IR.Constructor);
   BEGIN
   END VisitConstructor;
 
+PROCEDURE (c: ConstFold) VisitCurrentException* (ce: IR.CurrentException);
+  BEGIN
+  END VisitCurrentException;
+
 PROCEDURE (c: ConstFold) VisitDeref* (deref: IR.Deref);
   BEGIN
     (* FIXME! *)

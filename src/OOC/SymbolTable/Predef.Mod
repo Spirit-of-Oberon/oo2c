@@ -173,6 +173,15 @@ PROCEDURE PredefType (stb: Builder.Builder;
     RETURN ptype
   END PredefType;
 
+PROCEDURE PredefVar(stb: Builder.Builder; module: Sym.Module;
+                    name: ARRAY OF CHAR; type: Sym.Type): Sym.VarDecl;
+  BEGIN
+    (* for starters, there is only one predefined, but usually invisible,
+       variable: EXCEPTION *)
+    RETURN stb.NewVarDecl(module, GetName(name), 0, Sym.nameNotExported, NIL,
+                          FALSE, FALSE, FALSE, type);
+  END PredefVar;
+
 PROCEDURE TypeAlias (stb: Builder.Builder;
                      module: Sym.Module;
                      name: ARRAY OF CHAR; baseType: Sym.PredefType);
@@ -192,7 +201,8 @@ PROCEDURE PredefProc (stb: Builder.Builder; module: Sym.Module;
     pproc := stb. NewPredefProc (module, GetName (name), id, minArgs, maxArgs);
   END PredefProc;
 
-PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
+PROCEDURE CreatePredef* (stb: Builder.Builder;
+                         VAR exception: Sym.VarDecl): Sym.Module;
 (**Creates the symbol table of the pseudo module that contains the predefined
    entities of the language, that can be used directly in a module without
    prefixing them with a module name.  It declares types like @samp{CHAR},
@@ -264,6 +274,8 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, void, "", 0, 1,
                          NIL, NIL);
 
+    exception := PredefVar(stb, module, "EXCEPTION", Sym.predefIdToType[nil]);
+    
     redir := stb. NewRedirect(module, GetName("STRING"),
                               nameStringModule, nameStringType);
     

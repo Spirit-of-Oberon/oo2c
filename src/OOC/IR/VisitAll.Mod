@@ -101,6 +101,10 @@ PROCEDURE (v: Visitor) VisitConstructor* (cons: IR.Constructor);
     END;
   END VisitConstructor;
 
+PROCEDURE (v: Visitor) VisitCurrentException*(ce: IR.CurrentException);
+  BEGIN
+  END VisitCurrentException;
+
 PROCEDURE (v: Visitor) VisitDeref* (deref: IR.Deref);
   BEGIN
     deref. pointer. Accept (v);

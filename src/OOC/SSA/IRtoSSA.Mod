@@ -735,6 +735,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN obj;
       END Constructor;
     
+    PROCEDURE CurrentException(expr: IR.CurrentException): SSA.Result;
+      VAR
+        instr: SSA.Instr;
+      BEGIN
+        instr := pb.AddInstr(Opcode.currentException, Opcode.scAddress);
+        instr.AddOpnd(s, Opnd.store);
+        RETURN instr;
+      END CurrentException;
+    
     BEGIN
       WITH expr: IR.Const DO
         IF (expr. value = NIL) THEN
@@ -979,6 +988,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | expr: IR.Constructor DO
         RETURN Constructor(expr);
+      | expr: IR.CurrentException DO
+        RETURN CurrentException(expr);
         
       ELSE
         Log.Type("++ Unknown type in Expression", expr);

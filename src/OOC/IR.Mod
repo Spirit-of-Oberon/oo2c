@@ -426,6 +426,14 @@ TYPE
        receiver argument of @code{NIL}.  The back-end must replace the receiver
        with the result of @ofield{alloc}.  *)
   END;
+
+TYPE
+  CurrentException* = POINTER TO CurrentExceptionDesc;
+  CurrentExceptionDesc = RECORD
+    (**Access to the current exception is modeled as an operator without
+       any operands.  *)
+    (OperatorDesc) 
+  END;
   
 TYPE
   Deref* = POINTER TO DerefDesc;
@@ -1396,11 +1404,17 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitGuardedVar (gv: GuardedVar; var: Sym.VarDecl; type: Sym.Type);
+  VAR
+    exportMark: Sym.ExportMark;
   BEGIN
-    Sym.InitDeclaration (gv, NIL, var. name, var. visibleFrom,
-                         var. exportMark, var. docString);
-    gv. var := var;
-    gv. type := type;
+    exportMark := var.exportMark;
+    IF (exportMark = Sym.nameNotExported) THEN
+      exportMark := Sym.nameExportedRO;
+    END;
+    Sym.InitDeclaration (gv, NIL, var.name, var.visibleFrom,
+                         exportMark, var.docString);
+    gv.var := var;
+    gv.type := type;
   END InitGuardedVar;
 
 PROCEDURE NewGuardedVar (var: Sym.VarDecl; type: Sym.Type): GuardedVar;
@@ -2407,6 +2421,33 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitConstructor* (cons: Constructor);
 PROCEDURE (cons: Constructor) Accept* (v: Visitor);
   BEGIN
     v. VisitConstructor (cons)
+  END Accept;
+
+(* Operator Class: CurrentException
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitCurrentException(ce: CurrentException;
+                               sym: Symbol; type: Sym.Type);
+  BEGIN
+    InitOperator(ce, sym, type);
+  END InitCurrentException;
+
+PROCEDURE (b: Builder) NewCurrentException*(sym: Symbol;
+                                            type: Sym.Type): Expression;
+  VAR
+    ce: CurrentException;
+  BEGIN
+    NEW(ce);
+    InitCurrentException(ce, sym, type);
+    RETURN ce;
+  END NewCurrentException;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitCurrentException*(ce: CurrentException);
+  END VisitCurrentException;
+
+PROCEDURE (ce: CurrentException) Accept* (v: Visitor);
+  BEGIN
+    v.VisitCurrentException (ce)
   END Accept;
 
 (* Operator Class: Deref
@@ -4599,6 +4640,8 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
         | expr: Constructor DO
           CheckExpr(expr.alloc);
           CheckExpr(expr.init);
+        | expr: CurrentException DO
+          (* nothing *)
         | expr: ChangeElement DO
           CheckExpr(expr.set);
           CheckExpr(expr.element);
@@ -5015,6 +5058,8 @@ PROCEDURE (m: Module) Destroy*;
             expr := n.init;
             E(expr);
             n.init := NIL;
+          | n: CurrentException DO
+            (* nothing *)
           | n: ChangeElement DO
             E(n.set);
             E(n.element);
@@ -5075,7 +5120,7 @@ PROCEDURE (m: Module) Destroy*;
             E(expr);
             n.test := NIL;
           ELSE
-            Log.Type("--- operator type: ", n);
+            Log.Type("--- operator type", n);
             ASSERT(FALSE);
           END;
         | n: Reference DO
@@ -5083,7 +5128,7 @@ PROCEDURE (m: Module) Destroy*;
         | n: Statement DO                (* function call *)
           S(n);
         ELSE
-          Log.Type("--- expression type: ", n);
+          Log.Type("--- expression type", n);
           ASSERT(FALSE);
         END;
         n := NIL;
@@ -5303,6 +5348,31 @@ PROCEDURE (b: Builder) EndTypeGuard* (VAR namespace: Sym.Namespace);
     namespace := namespace(Namespace.Nested). nestedIn;
   END EndTypeGuard;
 
+PROCEDURE (b: Builder) StartExceptionScope*(exceptionType: Expression;
+                                            VAR namespace: Sym.Namespace);
+  VAR
+    nested: Namespace.Nested;
+    da: Sym.DeclarationArray;
+    type: Sym.Type;
+  BEGIN
+    WITH exceptionType: TypeRef DO
+      type := exceptionType.qualType;
+    ELSE
+      type := b.errorExpr.type;
+    END;
+    
+    NEW(da, 1);
+    da[0] := NewGuardedVar(CreateNamespace.exception, type);
+    nested := Namespace.NewNested(da, 1);
+    nested.SetEnclosingNamespace(namespace(Namespace.Nested));
+    namespace := nested;
+  END StartExceptionScope;
+
+PROCEDURE (b: Builder) EndExceptionScope*(VAR namespace: Sym.Namespace);
+  BEGIN
+    namespace := namespace(Namespace.Nested).nestedIn;
+  END EndExceptionScope;
+
 PROCEDURE (b: Builder) NewIdentRef* (baseNS, ns: Sym.Namespace;
                                      context: Sym.Item; 
                                      name: Symbol): Expression;
@@ -5324,9 +5394,13 @@ PROCEDURE (b: Builder) NewIdentRef* (baseNS, ns: Sym.Namespace;
         | decl: Sym.VarDecl DO
           RETURN b. NewVar (name, decl)
         | decl: GuardedVar DO
-          varRef := b. NewVar (name, decl. var);
-          varRef. type := decl. type;
-          RETURN varRef;
+          IF (decl.var = CreateNamespace.exception) THEN
+            RETURN b.NewCurrentException(name, decl.type);
+          ELSE
+            varRef := b.NewVar(name, decl.var);
+            varRef.type := decl.type;
+            RETURN varRef;
+          END;
         | decl: Sym.TypeDecl DO
           RETURN b. NewTypeRef (name, decl)
         | decl: Sym.PredefProc DO

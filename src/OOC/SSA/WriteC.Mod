@@ -1286,6 +1286,7 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       Call (instr);
 
     | Opcode.currentException:
+      CastFromPtr(instr);
       w.WriteString("Exception__Current()");
       
     | Opcode.preloadedVar:

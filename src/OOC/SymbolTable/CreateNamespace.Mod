@@ -71,6 +71,9 @@ TYPE
 VAR
   createNamespaceContext: ErrorContext;
   predefModule: Sym.Module;
+  exception-: Sym.VarDecl;
+  (**Predefined pseudo variable @samp{EXCEPTION}, holding the current exception
+     within a @code{CATCH} block.  *)
   systemModule-: Sym.Module;
 
 PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error.LString);
@@ -1640,26 +1643,6 @@ RAISES IO.Error;
     END;
   END CreateNamespace;
 
-(*PROCEDURE CreateNamespaceRec*(root: Sym.Module;
-                              errList: Error.List);
-  VAR
-    ptr: Sym.Item;
-  BEGIN
-    IF (root.ns = NIL) THEN
-      ptr := root. nestedItems;
-      WHILE (ptr # NIL) & (errList.msgCount = 0) DO
-        WITH ptr: Sym.Import DO
-          CreateNamespaceRec(ptr.externalSymTab, errList);
-        ELSE
-        END;
-        ptr := ptr. nextNested
-      END;
-      IF (errList.msgCount = 0) THEN
-        CreateNamespace(root, errList);
-      END;
-    END;
-  END CreateNamespaceRec;*)
-    
 PROCEDURE Init* ();
   VAR
     stb: Builder.Builder;
@@ -1669,7 +1652,7 @@ PROCEDURE Init* ();
     systemModule := NIL;
     
     stb := Builder.New();
-    predef := Predef.CreatePredef (stb);
+    predef := Predef.CreatePredef (stb, exception);
     system := Predef.CreateSYSTEM (stb);
     TRY
       CreateNamespace (predef, NIL, Error.NewList (""));
