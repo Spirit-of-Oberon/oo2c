@@ -337,6 +337,11 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
         ELSIF (instr.opcode = S.designatorGate) THEN
           instr.DesignatorGateToGate();
         END;
+      ELSIF (instr.merge.opcode = S.loopEnd) THEN
+        (* gates that belong to a loopEnd are never eliminated; otherwise the
+           instruction blocker would get confused for uses of gate operands
+           _after_ the loop *)
+        instr.DesignatorGateToGate();
       ELSE                               (* no undefined arguments *)
         opnd := instr.opndList;
         WHILE (opnd.nextOpnd # NIL) & (opnd.nextOpnd.arg = opnd.arg) DO

@@ -70,7 +70,6 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       res, var: S.Result;
       controlTrue, memoryTrue, controlFalse, memoryFalse: S.Instr;
       loopStart: S.LoopStartInstr;
-      loopEnd: S.Instr;
       irExpr: IR.Expression;
       
     PROCEDURE SetCC(res: S.Result): S.Result;
@@ -236,6 +235,21 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         SplitValue();
       END SplitPaths;
     
+    PROCEDURE LoopEnd();
+      VAR
+        instr, loopEnd: S.Instr;
+      BEGIN
+        instr := b.AddLoopBackedge(loopStart);
+        instr.AddDep(S.depMemory, memoryCP);
+        instr.AddDep(S.depControl, controlCP);
+        loopStart.SetBackedge(instr);
+        
+        loopEnd := b.AddMerge(S.loopEnd, loopExits.Elements());
+        loopStart.SetEnd(loopEnd);
+        controlCP := loopEnd; memoryCP := loopEnd;
+        loopExits.Clear();
+      END LoopEnd;
+        
     PROCEDURE ^ Expression(expr: IR.Expression): S.Result;
       
     PROCEDURE Call(call: IR.Call): S.Result;
@@ -836,16 +850,55 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           loopStart := b.AddLoopStart();
           ControlCP(loopStart); MemoryCP(loopStart);
           StatmSeq(statm.body);
+          LoopEnd();
           
-          instr := b.AddLoopBackedge(loopStart);
-          instr.AddDep(S.depMemory, memoryCP);
-          instr.AddDep(S.depControl, controlCP);
-          loopStart.SetBackedge(instr);
+        | statm: IR.RepeatStatm DO
+          loopStart := b.AddLoopStart();
+          ControlCP(loopStart); MemoryCP(loopStart);
+          StatmSeq(statm.body);
           
-          loopEnd := b.AddMerge(S.loopEnd, loopExits.Elements());
-          loopStart.SetEnd(loopEnd);
-          controlCP := loopEnd; memoryCP := loopEnd;
-          loopExits.Clear();
+          res := Expression(statm.exitCondition);
+          SplitPaths(res, controlCP, memoryCP,
+                     controlTrue, memoryTrue,
+                     controlFalse, memoryFalse);
+          (* first, the "true" path *)
+          memoryCP := memoryTrue; controlCP := controlTrue;
+          instr := b.AddInstr0(S.loopExit);
+          ControlCP(instr); MemoryCP(instr);
+          loopExits.Append(instr);
+          endTrue := AddJump();
+          (* second, the "false" path;  *)
+          memoryCP := memoryFalse; controlCP := controlFalse;
+          endFalse := AddJump();
+          (* finally, pull all the strings together again *)
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          controlCP := merge; memoryCP := merge;
+          
+          LoopEnd();
+          
+        | statm: IR.WhileStatm DO  (* FIXME... change to if & repeat *)
+          loopStart := b.AddLoopStart();
+          ControlCP(loopStart); MemoryCP(loopStart);
+          
+          res := Expression(statm.guard);
+          SplitPaths(res, controlCP, memoryCP,
+                     controlTrue, memoryTrue,
+                     controlFalse, memoryFalse);
+          (* first, the "true" path *)
+          memoryCP := memoryTrue; controlCP := controlTrue;
+          endTrue := AddJump();
+          (* second, the "false" path;  *)
+          memoryCP := memoryFalse; controlCP := controlFalse;
+          instr := b.AddInstr0(S.loopExit);
+          ControlCP(instr); MemoryCP(instr);
+          loopExits.Append(instr);
+          endFalse := AddJump();
+          (* finally, pull all the strings together again *)
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          controlCP := merge; memoryCP := merge;
+          
+          StatmSeq(statm.body);
+          LoopEnd();
           
         | statm: IR.Exit DO
           instr := b.AddInstr0(S.loopExit);
