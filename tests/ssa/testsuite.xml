@@ -8,7 +8,7 @@
 
 <testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module
+  select ="&SetupTestCasesWithOut;
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
@@ -18,16 +18,9 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module loop4">-->
+  select ="&SetupTestCasesWithOut; loop4">-->
   
-  <testcases profile="Test Suite Setup" default-lang="O2">
-    <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
-      This is not a test case.  Rather, it prepares an Oakwood
-      compliant module <code>Out</code> to supersede OOC's differing
-      module of the same name.
-    </test>
-  </testcases>
-  
+  &TestSetupWithOut;
   &baseline-testcases;
   <!--&candidate-testcases;
   &hostess-testcases;-->
