@@ -485,6 +485,69 @@ PROCEDURE (s: String32) Equals*(y: Object): BOOLEAN;
     END;
   END Equals;
 
+PROCEDURE (s: String) [ABSTRACT] Compare*(y: Object): LONGINT;
+  END Compare;
+
+PROCEDURE (s: String8) Compare*(y: Object): LONGINT;
+  VAR
+    min, i: LONGINT;
+  BEGIN
+    min := s.length;
+    WITH y: String8 DO
+      IF (y.length < min) THEN min := y.length; END;
+      i := 0;
+      WHILE (i # min) & (s.data[i] = y.data[i]) DO
+        INC(i);
+      END;
+      IF (i = min) THEN
+        RETURN (s.length - y.length);
+      ELSE
+        RETURN (ORD(s.data[i]) - ORD(y.data[i]));
+      END;
+    | y: String32 DO
+      IF (y.length < min) THEN min := y.length; END;
+      i := 0;
+      WHILE (i # min) & (ORD(s.data[i]) = y.data[i]) DO
+        INC(i);
+      END;
+      IF (i = min) THEN
+        RETURN (s.length - y.length);
+      ELSE
+        RETURN (ORD(s.data[i]) - y.data[i]);
+      END;
+    END;
+  END Compare;
+
+PROCEDURE (s: String32) Compare*(y: Object): LONGINT;
+  VAR
+    min, i: LONGINT;
+  BEGIN
+    min := s.length;
+    WITH y: String8 DO
+      IF (y.length < min) THEN min := y.length; END;
+      i := 0;
+      WHILE (i # min) & (s.data[i] = ORD(y.data[i])) DO
+        INC(i);
+      END;
+      IF (i = min) THEN
+        RETURN (s.length - y.length);
+      ELSE
+        RETURN (s.data[i] - ORD(y.data[i]));
+      END;
+    | y: String32 DO
+      IF (y.length < min) THEN min := y.length; END;
+      i := 0;
+      WHILE (i # min) & (s.data[i] = y.data[i]) DO
+        INC(i);
+      END;
+      IF (i = min) THEN
+        RETURN (s.length - y.length);
+      ELSE
+        RETURN (s.data[i] - y.data[i]);
+      END;
+    END;
+  END Compare;
+
 PROCEDURE (s: String) [ABSTRACT] HashCode*(): Hash;
   END HashCode;
 
@@ -555,5 +618,39 @@ PROCEDURE (s: String32) Substring* (start, end: LONGINT): String;
   BEGIN
     RETURN NewString32(S.ADR(s. data[start]), end-start);
   END Substring;
+
+
+PROCEDURE (s: String) [ABSTRACT] IndexOf*(char: Char; pos: LONGINT): LONGINT;
+  END IndexOf;
+
+PROCEDURE (s: String8) IndexOf* (char: Char; pos: LONGINT): LONGINT;
+  VAR
+    endpos: LONGINT;
+  BEGIN
+    IF (char <= ORD(MAX(CHAR))) THEN
+      endpos := s.length;
+      WHILE (pos # endpos) DO
+        IF (s.data[pos] = CHR(char)) THEN
+          RETURN pos;
+        END;
+        INC (pos)
+      END;
+    END;
+    RETURN -1
+  END IndexOf;
+
+PROCEDURE (s: String32) IndexOf* (char: Char; pos: LONGINT): LONGINT;
+  VAR
+    endpos: LONGINT;
+  BEGIN
+    endpos := s.length;
+    WHILE (pos # endpos) DO
+      IF (s.data[pos] = char) THEN
+        RETURN pos;
+      END;
+      INC (pos)
+    END;
+    RETURN -1
+  END IndexOf;
 
 END Object.

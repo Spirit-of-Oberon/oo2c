@@ -1,5 +1,5 @@
 (*	$Id$	*)
-MODULE Language:BigInt [OOC_EXTENSIONS];
+MODULE Object:BigInt [OOC_EXTENSIONS];
 (*  Implements integer values of arbitrary magnitude.
     Copyright (C) 2002  Michael van Acken
 
@@ -25,7 +25,8 @@ MODULE Language:BigInt [OOC_EXTENSIONS];
    of course.  *)
    
 IMPORT
-  S := SYSTEM, CharClass, Strings, ADT:String;
+  S := SYSTEM, CharClass, Strings, Object, Object:Boxed, ADT:Storable,
+  ADT:String;
   
 TYPE
   Digit = INTEGER;
@@ -47,6 +48,7 @@ TYPE
        normalized number, @samp{@ofield{digit}[ABS(@ofield{size})-1]} (the most
        significant digit) is never zero.  For all valid @var{i}, @samp{0 <=
        @ofield{digit}[@var{i}] <= mask}.  *)
+    (Boxed.ObjectDesc)
     size: LONGINT;
     digit: DigitArray;
   END;
@@ -195,19 +197,21 @@ PROCEDURE (a: BigInt) Copy*(): BigInt;
     RETURN z;
   END Copy;
 
-PROCEDURE (a: BigInt) Equals* (b: BigInt): BOOLEAN;
+PROCEDURE (a: BigInt) Equals* (b: Object.Object): BOOLEAN;
   VAR
     i: LONGINT;
   BEGIN
-    IF (a.size # b.size) THEN
-      RETURN FALSE;
-    ELSE
-      FOR i := 0 TO ABS(a.size)-1 DO
-        IF (a.digit[i] # b.digit[i]) THEN
-          RETURN FALSE;
+    WITH b: BigInt DO
+      IF (a.size # b.size) THEN
+        RETURN FALSE;
+      ELSE
+        FOR i := 0 TO ABS(a.size)-1 DO
+          IF (a.digit[i] # b.digit[i]) THEN
+            RETURN FALSE;
+          END;
         END;
+        RETURN TRUE;
       END;
-      RETURN TRUE;
     END;
   END Equals;
 
@@ -247,30 +251,32 @@ PROCEDURE (a: BigInt) Sign*(): LONGINT;
     END;
   END Sign;
 
-PROCEDURE (a: BigInt) Cmp* (b: BigInt): LONGINT;
+PROCEDURE (a: BigInt) Cmp* (b: Object.Object): LONGINT;
   VAR
     i, res: LONGINT;
   BEGIN
-    IF (a.size < b.size) THEN
-      RETURN -1;
-    ELSIF (a.size > b.size) THEN
-      RETURN 1;
-    ELSE
-      i := ABS(a.size);
-      REPEAT
-        DEC(i);
-      UNTIL (i < 0) OR (a.digit[i] # b.digit[i]);
-      IF (i < 0) THEN
-        RETURN 0;
-      ELSIF (a.digit[i] < b.digit[i]) THEN
-        res := -1;
+    WITH b: BigInt DO
+      IF (a.size < b.size) THEN
+        RETURN -1;
+      ELSIF (a.size > b.size) THEN
+        RETURN 1;
       ELSE
-        res := 1;
-      END;
-      IF (a.size < 0) THEN
-        RETURN -res;
-      ELSE
-        RETURN res;
+        i := ABS(a.size);
+        REPEAT
+          DEC(i);
+        UNTIL (i < 0) OR (a.digit[i] # b.digit[i]);
+        IF (i < 0) THEN
+          RETURN 0;
+        ELSIF (a.digit[i] < b.digit[i]) THEN
+          res := -1;
+        ELSE
+          res := 1;
+        END;
+        IF (a.size < 0) THEN
+          RETURN -res;
+        ELSE
+          RETURN res;
+        END;
       END;
     END;
   END Cmp;
@@ -879,6 +885,27 @@ PROCEDURE (a: BigInt) RShift* (n: LONGINT): BigInt;
     END;
   END RShift;
 
+PROCEDURE (a: BigInt) Store*(w: Storable.Writer);
+  VAR
+    i: LONGINT;
+  BEGIN
+    w.WriteNum(a.size);
+    FOR i := 0 TO ABS(a.size)-1 DO
+      w.WriteInt(a.digit[i]);
+    END;
+  END Store;
+
+PROCEDURE (a: BigInt) Load*(r: Storable.Reader);
+  VAR
+    i: LONGINT;
+  BEGIN
+    r.ReadNum(a.size);
+    NEW(a.digit, ABS(a.size));
+    FOR i := 0 TO ABS(a.size)-1 DO
+      r.ReadInt(a.digit[i]);
+    END;
+  END Load;
+
 PROCEDURE Init ();
   VAR
     i: LONGINT;
@@ -898,4 +925,4 @@ PROCEDURE Init ();
 
 BEGIN
   Init;
-END Language:BigInt.
+END Object:BigInt.

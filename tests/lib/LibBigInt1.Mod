@@ -1,7 +1,7 @@
 MODULE LibBigInt1;
 
 IMPORT
-  RandomNumbers, Language:BigInt, ADT:String;
+  RandomNumbers, Object:BigInt, ADT:String;
 
 CONST
   shift = 15;
