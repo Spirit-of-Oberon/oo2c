@@ -972,6 +972,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
 
 PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
   BEGIN
+    type := type.Deparam();
     WITH type: Sym.PredefType DO
       CASE type. id OF
       | Predef.void: RETURN scNone
