@@ -21,9 +21,6 @@ TYPE
     repositories: Repositories.Section;
   END;
 
-VAR
-  repositories*: Repositories.Section;
-
   
 PROCEDURE NewServlet (repositories: Repositories.Section;
                       proc: IR.Procedure; root: Schedule.Block): Servlet;
@@ -486,11 +483,10 @@ PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
     w. EndOfText
   END DoGET;
 
-PROCEDURE Show* (proc: IR.Procedure; root: Schedule.Block);
+PROCEDURE Show* (repositories: Repositories.Section;
+                 proc: IR.Procedure; root: Schedule.Block);
   BEGIN
     HTTPServer.Run (NewServlet (repositories, proc, root))
   END Show;
 
-BEGIN
-  repositories := NIL;
 END OOC:SSA:Inspector.

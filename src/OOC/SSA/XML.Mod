@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:XML;
 (*  Produces a canonical representation of SSA code in XML.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -240,6 +240,7 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
     AssignId (pb. selectReturn);
     
     w. StartTag ("procedure-body", FALSE);
+    w. AttrStringLatin1 ("name", pb. procDecl. name. str^);
     TraverseInstr (pb. selectReturn);
 
     IF includeDeadCode THEN

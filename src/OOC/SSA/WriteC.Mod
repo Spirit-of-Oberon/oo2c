@@ -1,13 +1,13 @@
 MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 
 IMPORT
-  IntStr, StdChannels, Strings, TextRider, StringSearch,
-  ADT:Object, ADT:String, ADT:Dictionary,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules,
-  OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
+  IntStr, Out, StdChannels, Strings, StringSearch,
+  ADT:Object, ADT:String, ADT:Dictionary, OOC:Auxiliary:Config,
+  Sym := OOC:SymbolTable, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
-  OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter;
+  OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, OOC:C:IRtoC,
+  OOC:Make:Command:TranslateToC;
 
 
 TYPE
@@ -18,6 +18,15 @@ TYPE
   END;
   SwapArray = POINTER TO ARRAY OF RegisterSwap;
   
+TYPE
+  Translator* = POINTER TO TranslatorDesc;
+  TranslatorDesc = RECORD
+    (TranslateToC.TranslatorDesc)
+    config: Config.Config;
+    inspectProc: StringSearch.Matcher;
+    inspectStage: StringSearch.Matcher;
+  END;
+
 TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc = RECORD
@@ -321,7 +330,8 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
         obj := w. registerMap. Get (opnd. arg);
         w. WriteString (obj(String.String). array^)
       ELSE
-        w. WriteString ("/* undefined ref */")
+        w. WriteString ("/*internal error*/");
+(*        w. WriteString ("XXX undefined ref /*internal error*/");*)
       END
     END
   END Ref;
@@ -821,11 +831,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
     FixLastJump (NIL)
   END WriteBlocks;
 
-PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
-                     tr: TypeRules.Rules;
-                     procDecl: IR.Procedure;
-                     inspectProc: StringSearch.Matcher);
-  
+PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
   VAR
     pb: SSA.ProcBlock;
     enter: SSA.Instr;
@@ -833,44 +839,88 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     domRoot: Schedule.Block;
     registerMap: Dictionary.Dictionary;
     w: Writer;
-    haveCopyParameter: BOOLEAN;
+    haveCopyParameter, writeProc: BOOLEAN;
+
+  PROCEDURE Write (pre, post: ARRAY OF CHAR);
+    BEGIN
+      IF writeProc &
+         ((t. inspectStage. MatchChars (pre, 0, -1) # NIL) OR
+          (t. inspectStage. MatchChars (post, 0, -1) # NIL)) THEN
+        Out.String ("PROCEDURE ");
+        Out.String (pb. procDecl. name. str^);
+        Out.String ("/");
+        Out.String (pre);
+        Out.String ("/");
+        Out.String (post);
+        Out.String (":");
+        Out.Ln;
+        Out.Flush;
+        XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
+      END;
+    END Write;
+  
   BEGIN
-    (*Log.String ("procedure", procDecl. decl. name. str^);*)
-    
-    pb := SSA.NewProcBlock (procDecl. decl);
+    pb := SSA.NewProcBlock (proc. decl);
+    writeProc := (t. inspectProc. MatchChars (proc. decl. name. str^, 0, -1) # NIL);
     enter := pb. selectReturn. opndList. arg. instr;
     s := IRtoSSA.StatmSeq (pb, enter. nextResult,
-                           procDecl. statmSeq);
+                           proc. statmSeq);
     pb. selectReturn. AddOpnd (s, Opnd.store);
 
     (* code transformations *)
+    Write ("initial", "dce-pre");
     DeadCodeElimination.Transform (pb);
-    Destore.Transform (pb, tr);
+    Write ("dce-post", "destore-pre");
+    Destore.Transform (pb, t. config. typeRules);
+    Write ("destore-post", "dce-pre");
     DeadCodeElimination.Transform (pb);
+    Write ("dce-post", "final");
 
-    (* write SSA code to stdout, both in native and scheduled format *)
-    XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
     domRoot := Schedule.Schedule (pb);
-    XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
-
-    (* create a temporary web server displaying the SSA code *)
-    IF (inspectProc # NIL) &
-       (inspectProc. Match (String.New (procDecl. decl. name. str^), 0, -1) # NIL) THEN
-      Inspector.Show (procDecl, domRoot);
+    IF writeProc & (t. inspectStage. MatchChars ("schedule", 0, -1) # NIL) THEN
+      (* write schedule SSA code to stdout *)
+      XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
+    END;
+    IF (t. inspectStage. MatchChars ("schedule-html", 0, -1) # NIL) THEN
+      (* create a temporary web server displaying the SSA code *)
+      Inspector.Show (t. config. repositories, proc, domRoot);
     END;
     
     Fixup (pb);
-    registerMap := Allocator.AssignRegisters (pb, domRoot, cWriter);
-    w := NewWriter (cWriter, registerMap);
+    registerMap := Allocator.AssignRegisters (pb, domRoot, t. w);
+    w := NewWriter (t. w, registerMap);
     w. Indent (1);
     WriteLocalDecl (w, pb, haveCopyParameter);
     w. WriteLn;
     w. WriteBlocks (domRoot, haveCopyParameter);
     w. Indent (-1);
-  END ProcBody;
+  END WriteProcBody;
 
-PROCEDURE ModuleBody* (w: TextRider.Writer; procDecl: IR.Procedure);
+PROCEDURE (t: Translator) WriteModuleBody* (statmSeq: IR.StatementSeq);
   BEGIN
-  END ModuleBody;
+    IRtoC.WriteStatmSeq (t. w, statmSeq);
+    (* ... for now, we cheat by letting the other back-end do this
+       job for us FIXME *)
+  END WriteModuleBody;
+
+PROCEDURE InitTranslator* (t: Translator; 
+                           config: Config.Config;
+                           inspectProc, inspectStage: StringSearch.Matcher);
+  BEGIN
+    TranslateToC.InitTranslator (t);
+    t. config := config;
+    t. inspectProc := inspectProc;
+    t. inspectStage := inspectStage;
+  END InitTranslator;
+
+PROCEDURE NewTranslator* (config: Config.Config;
+                          inspectProc, inspectStage: StringSearch.Matcher): Translator;
+  VAR
+    t: Translator;
+  BEGIN
+    NEW (t);
+    InitTranslator (t, config, inspectProc, inspectStage);
+    RETURN t
+  END NewTranslator;
 
 END OOC:SSA:WriteC.
