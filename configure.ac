@@ -61,8 +61,10 @@ dnl checks for library functions
 AC_TYPE_SIGNAL
 dnl   ANSI functions:
 AC_CHECK_FUNCS(atexit raise)
+dnl   POSIX functions:
+AC_CHECK_FUNCS(ftruncate)
 dnl   BSD functions:
-AC_CHECK_FUNCS(gettimeofday settimeofday)
+AC_CHECK_FUNCS(gettimeofday settimeofday mkstemp)
 dnl   GNU extensions:
 AC_CHECK_FUNCS(backtrace_symbols readdir_r)
 dnl   math functions:

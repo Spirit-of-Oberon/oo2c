@@ -187,6 +187,8 @@ PROCEDURE Truncate* (w: Writer; newLength: LONGINT);
    are read as zeros.  The writer's position is not modified.  Note: On systems
    that do not support shortening files directly it is implemented as a partial
    file copy.  This procedure should always be called through
-   @oproc{*Files.Writer.Truncate}.  *)
+   @oproc{*Files.Writer.Truncate}.
+
+   Availability: Unix.  *)
 
 END PosixFileDescr.

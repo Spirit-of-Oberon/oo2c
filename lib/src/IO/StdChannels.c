@@ -100,7 +100,7 @@ void OOC_IO_StdChannels_init(void) {
  IO_StdChannels__stdin = stdchannel(STDIN_FILENO);
  IO_StdChannels__stdout = stdchannel(STDOUT_FILENO);
  IO_StdChannels__stderr = stdchannel(STDERR_FILENO);
-#ifdef __MINGW32__
+#ifdef O_BINARY
   /* set standard I/O channels to binary mode */
   setmode(fileno(stdin), O_BINARY);
   setmode(fileno(stdout), O_BINARY);
