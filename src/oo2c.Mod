@@ -14,6 +14,7 @@ CONST
   installPackage = -2;
   uninstallPackage = -3;
   updateRepository = -4;
+  getOption = -5;
   
 VAR
   cfgErrList, errList: Error.List;
@@ -25,7 +26,8 @@ VAR
   rep: Rep.Repository;
   pkg, pkgInfo: Package.Package;
   ok, forceUpdateRepository, doInstall: BOOLEAN;
-
+  option: Options.Option;
+  
 PROCEDURE NewConfig;
   BEGIN
     command := Config.AddOption("command", Integer.New(0));
@@ -43,6 +45,8 @@ PROCEDURE NewConfig;
                        "<options><set name='command'>4</set></options>");
     Config.AddCmdLine ("--update-repository",
                        "<options><set name='command'>5</set></options>");
+    Config.AddCmdLine ("--get-option",
+                       "<options><set name='command'>6</set></options>");
     Config.AddCmdLine ("--use-stderr",
                  "<options><set name='useStderr'>TRUE</set></options>");
     Config.AddCmdLine ("--no-rtc",
@@ -397,6 +401,8 @@ BEGIN
     mode := uninstallPackage;
   | 5:
     mode := updateRepository;
+  | 6:
+    mode := getOption; Logger.silence := TRUE;
   END;
   
   IF (cfgErrList. msgCount # 0) THEN
@@ -455,7 +461,16 @@ BEGIN
             UninstallPackage(pkg);
             forceUpdateRepository := TRUE;
           END;
-          
+
+
+        | getOption:
+          option := Config.options.Get(arg^);
+          IF (option = NIL) THEN
+            Out.String("(none)");
+          ELSE
+            Out.String(option.value(StringValue.Value).string^);
+          END;
+          Out.Ln;
         ELSE
           ok := makeRules.Update(GetModule(arg^), mode);
         END;
