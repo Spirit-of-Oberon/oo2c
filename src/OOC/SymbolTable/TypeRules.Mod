@@ -413,10 +413,11 @@ PROCEDURE EqualTypes* (a, b: Sym.Type): BOOLEAN;
   END EqualTypes;
 
 PROCEDURE IsPointer*(type: Sym.Type): BOOLEAN;
-(**Result is @code{TRUE} if @oparam{type} is a pointer type, or if it is a
-   parametric type derived from a pointer.  *)
+(**Result is @code{TRUE} if @oparam{type} is a pointer type, if it is a
+   parametric type derived from a pointer, or a type variable (and therefore a
+   record pointer).  *)
   BEGIN
-    RETURN (type.Deparam() IS Sym.Pointer);
+    RETURN (type.Deparam() IS Sym.Pointer) OR (type IS Sym.TypeVar);
   END IsPointer;
 
 PROCEDURE PointerBaseType*(pointer: Sym.Type): Sym.Type;
