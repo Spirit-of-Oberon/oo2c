@@ -53,6 +53,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE Chain (instr: SSA.Instr);
     BEGIN
       IF (instr. opcode = Opcode.set) OR
+         (instr. opcode = Opcode.get) OR
          (instr. opcode = Opcode.copyString) OR
          (instr. opcode = Opcode.newObject) THEN
         instr. opndList. ReplaceArg (s);
@@ -297,6 +298,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (address, Opnd.readAdr);
         instr. AddOpnd (pb. GetTypeRef (deref. pointer. type), Opnd.readDesign);
         instr. AddOpnd (address, Opnd.readDesign);
+        Chain (instr);
         RETURN instr
       END Deref;
 
@@ -361,7 +363,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           index := check;
         END;
         instr. opndList. ReplaceArg (s);
-        
+        s := instr. GetResultStore();
+            
         elementType := indexOp. type;
         scaledIndex := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
         scaledIndex. AddOpnd (index, Opnd.arg);
@@ -609,6 +612,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (s, Opnd.store);
         instr. AddOpnd (pb. GetAddress (expr. decl), Opnd.readAdr);
         instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.readDesign);
+        Chain (instr);
         RETURN instr
 
       | expr: IR.TypeRef DO
@@ -1283,5 +1287,22 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     END;
     RETURN s
   END StatmSeq;
+
+PROCEDURE DiscardGets* (pb: SSA.ProcBlock);
+  VAR
+    instr, next: SSA.Instr;
+    storeOut: SSA.Result;
+  BEGIN
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      next := instr. nextInstr;
+      IF (instr. opcode = Opcode.get) & (instr. useList = NIL) THEN
+        storeOut := instr. GetResultStore();
+        storeOut. ReplaceUses (instr. opndList. arg);
+        pb. DeleteInstr (instr);
+      END;
+      instr := next;
+    END;
+  END DiscardGets;
 
 END OOC:SSA:IRtoSSA.

@@ -1465,6 +1465,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     s := IRtoSSA.StatmSeq (pb, enter. nextResult,
                            proc. statmSeq);
     pb. selectReturn. AddOpnd (s, Opnd.store);
+    IRtoSSA.DiscardGets (pb);
 
     (*Blocker.Write (StdChannels.stdout, pb);*)
     

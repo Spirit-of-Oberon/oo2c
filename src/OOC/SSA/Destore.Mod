@@ -172,6 +172,19 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           ~LocalVarWithoutAdr (design);
     END AccessedByCall;
   
+  PROCEDURE SimpleDesignator (opnd: SSA.Opnd): BOOLEAN;
+  (* A simple designator is a designator that is entirely composed
+     of constant selectors, like variables or record fields.  *)
+    BEGIN
+      WHILE (opnd # NIL) & (opnd. class = Opnd.readDesign) DO
+        IF ~(opnd. arg IS SSA.DeclRef) THEN
+          RETURN FALSE;
+        END;
+        opnd := opnd. nextOpnd;
+      END;
+      RETURN TRUE;
+    END SimpleDesignator;
+  
   PROCEDURE GetValue (store: SSA.Result; get: SSA.Instr;
                       loopTrace: SSA.Instr): SSA.Result;
   (* Return the value from the @oparam{store} for the memory location (and
@@ -384,11 +397,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       VAR
         invariant, r: SSA.Result;
         entry: CacheEntry;
-        collect: SSA.Instr;
+        collect, newGet: SSA.Instr;
         
       PROCEDURE DuplicateGet (storeIn: SSA.Result): SSA.Instr;
-      (* takes the "get" instruction and
-         creates a duplicate whose "store" input parameter is `storeIn' *)
+      (* Takes the "get" instruction and creates a duplicate whose "store"
+         input parameter is `storeIn'.  No corresponding "store" output is
+         created.  *)
         VAR
           new: SSA.Instr;
           opnd: SSA.Opnd;
@@ -423,6 +437,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           ELSE
             RETURN r;
           END;
+
+        ELSIF ~SimpleDesignator (get. GetOpndClass (Opnd.readDesign)) THEN
+          (* if the designator has components that are loop variant, then
+             its end result cannot be moved into a register acroos the loop *)
+          RETURN unknownValue;
           
         ELSE
           invariant := GetValue (loopStart. GetBackwardFeed(), get, loopStart);
@@ -453,7 +472,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             r := GetValue (loopStart. opndList. arg, get, NIL);
             collect := GetCollect (loopStart, 0);
             IF (r = unknownValue) THEN
-              r := DuplicateGet (collect. opndList. arg);
+              newGet := DuplicateGet (collect. opndList. arg);
+              collect. opndList. ReplaceArg (newGet. AddResult (Result.store));
+              r := newGet;
             END;
             collect. AddOpnd (r, Opnd.arg);
           END;
@@ -481,6 +502,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
              `instr' *)
           RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace)
         END;
+
+      | Opcode.get:
+        RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
         
       | Opcode.copy, Opcode.copyString:
         alias := Aliasing.DesignatorAlias (get. GetOpndClass (Opnd.readDesign),
@@ -594,9 +618,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
               (* the "get" may read from memory changed by the store *)
               RETURN TRUE;
             ELSE
-              (* continue trace if the "get" instruction accesses a volatile
-                 variable *)
-              RETURN (storeOut # NIL) & VisibleEffect (storeOut, set);
+              RETURN VisibleEffect (storeOut, set);
             END;
             
           | Opcode.set:
@@ -733,10 +755,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     pb. SetMarkers (NIL, 0);
     instr := pb. instrList;
     WHILE (instr # NIL) DO
-      IF (instr. opcode = Opcode.get) & (instr. GetResultStore() = NIL) THEN
-        (* don't try to get rid of "get" instructions on volatile variables:
-           we must read from memory, because the value might have changed
-           behind our back *)
+      IF (instr. opcode = Opcode.get) THEN
         value := GetValue (instr. GetArgStore(), instr, NIL);
         IF (value # unknownValue) THEN
           instr. ReplaceUses (value);
@@ -752,9 +771,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       next := instr. nextInstr;
-      IF (instr. useList = NIL) &
-         (instr. opcode = Opcode.get) & (instr. GetResultStore() = NIL) THEN
-        ASSERT (instr. nextResult = NIL); (* no other result possible *)
+      IF (instr. opcode = Opcode.get) & (instr. useList = NIL)THEN
+        ASSERT (instr. nextResult # NIL);
+        ASSERT (instr. nextResult. nextResult = NIL);
+        instr. nextResult. ReplaceUses (instr. opndList. arg);
         pb. DeleteInstr (instr);
       END;
       instr := next;
