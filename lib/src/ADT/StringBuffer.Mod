@@ -230,14 +230,24 @@ PROCEDURE (b: StringBuffer) AppendUTF16Region*(data[NO_COPY]: ARRAY OF LONGCHAR;
     INC(b.length, len);
   END AppendUTF16Region;
 
-PROCEDURE (b: StringBuffer) AppendChar*(ch: LONGCHAR);
+PROCEDURE (b: StringBuffer) AppendChar*(ch: UCS4CHAR);
+  VAR
+    v: LONGINT;
   BEGIN
-    b.EnsureCapacity(b.length+1);
+    b.EnsureCapacity(b.length+2);
     IF (b.data16 = NIL) THEN
       b.ConvertTo16;
     END;
-    b.data16[b.length] := ch;
-    INC(b.length);
+    
+    IF (ch < Object.surrogateLimit) THEN
+      b.data16[b.length] := SHORT(ch);
+      INC(b.length);
+    ELSE
+      v := ORD(ch)-ORD(Object.surrogateLimit);
+      b.data16[b.length] := LONGCHR(ORD(Object.surrogateLow) + v DIV 1024);
+      b.data16[b.length+1] := LONGCHR(ORD(Object.surrogateHigh) + v MOD 1024);
+      INC(b.length, 2);
+    END;
   END AppendChar;
 
 PROCEDURE (b: StringBuffer) Append*(obj: Object.Object);
