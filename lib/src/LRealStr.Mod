@@ -36,7 +36,7 @@ PROCEDURE NormalizeFloat (VAR s: ARRAY OF CHAR);
   VAR
     i, d: INTEGER;
   BEGIN
-    (* massage the output of sprintf to match our requirement; note: this
+    (* massage the output of sprintf to match our requirements; note: this
        code should also handle "Inf", "Infinity", "NaN", etc., gracefully
        but this is untested *)
     IF (s[0] = "+") THEN d := 1; ELSE d := 0; END; (* erase "+" sign *)
@@ -159,8 +159,97 @@ PROCEDURE RealToEng* (real: LONGREAL; sigFigs: INTEGER;
 
 PROCEDURE RealToFixed* (real: LONGREAL; place: INTEGER;
                         VAR str: ARRAY OF CHAR);
+(**The call @samp{RealToFixed(real,place,str)} assigns to @oparam{str} the
+   possibly truncated string corresponding to the value of @oparam{real} in
+   fixed-point form.  A sign is included only for negative values.  At least
+   one digit is included in the whole number part.  The value is rounded to the
+   given value of @oparam{place} relative to the decimal point.  The decimal
+   point is suppressed if @oparam{place} is less than @samp{0}.  For example:
+
+   @example
+   value:    3923009         3.923009   0.0003923009
+   sigFigs
+   -5        3920000         0          0 
+   -2        3923010         0          0
+   -1        3923009         4          0 
+   0         3923009.        4.         0. 
+   1         3923009.0       3.9        0.0
+   4         3923009.0000    3.9230     0.0004       
+   @end example  *)
+  VAR
+    s: ARRAY 308+32 OF CHAR;
+    i, d, c, sigFigs, fract, point, suffix: INTEGER;
+
+  PROCEDURE NotZero (VAR s: ARRAY OF CHAR; pos: INTEGER): BOOLEAN;
+    BEGIN
+      WHILE (s[pos] # 0X) DO
+        IF (s[pos] # "0") & (s[pos] # ".") THEN
+          RETURN TRUE;
+        END;
+        INC (pos);
+      END;
+      RETURN FALSE;
+    END NotZero;
+  
   BEGIN
-    ASSERT(FALSE);
+    IF (place < 0) THEN sigFigs := 16+1; ELSE sigFigs := place END;
+    C.sprintf(s, "%-+#.*f", sigFigs, real);
+
+    IF (place < 0) THEN
+      (* locate position of decimal point in string *)
+      point := 1;
+      WHILE (s[point] # ".") DO INC (point); END;
+      
+      (* number of digits before point is `point-1'; position in string
+         of the first digit that will be converted to zero due to rounding:
+         `point+place+1'; rightmost digit that may be incremented because
+         of rounding: `point+place' *)
+      IF (point+place >= 0) THEN
+        suffix := point+place+1; IF (s[suffix] = ".") THEN INC (suffix); END;
+        IF (s[suffix] > "5") OR
+           (s[suffix] = "5") &
+            (NotZero (s, suffix+1) OR
+             (point+place # 0) & (ORD (s[point+place]) MOD 2 = 1)) THEN
+          (* we are rounding up *)
+          i := point+place;
+          WHILE (s[i] = "9") DO s[i] := "0"; DEC (i); END;
+          IF (i = 0) THEN                (* looking at sign *)
+            Strings.Insert ("1", 1, s); INC (point);
+          ELSE
+            s[i] := CHR (ORD (s[i])+1);  (* increment non-"9" digit by one *)
+          END;
+        END;
+        
+        (* zero everything after the digit at `place' *)
+        i := point+place+1;
+        IF (i = 1) THEN                  (* all zero *)
+          s[1] := "0"; s[2] := 0X;
+        ELSE
+          WHILE (s[i] # ".") DO s[i] := "0"; INC (i); END;
+        END;
+      ELSE                                 (* round to zero *)
+        s[1] := "0"; s[2] := 0X;
+      END;
+      s[point] := 0X;
+    END;
+
+    (* correct sign, and add trailing zeros if necessary *)
+    IF (s[0] = "+") THEN d := 1; ELSE d := 0; END; (* erase "+" sign *)
+    i := 1; fract := 0; c := 0;
+    WHILE (s[i] # 0X) DO
+      s[i-d] := s[i];
+      fract := fract+c;
+      IF (s[i] = ".") THEN
+        c := 1;
+      END;
+      INC (i);
+    END;
+    WHILE (fract < place) DO
+      s[i-d] := "0"; INC (fract); INC (i);
+    END;
+    s[i-d] := 0X;
+    
+    COPY (s, str);
   END RealToFixed;
 
 PROCEDURE RealToStr* (real: LONGREAL;

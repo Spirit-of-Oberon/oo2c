@@ -3,11 +3,11 @@
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" >
 
 <testsuite-ext
-  profile="Test Suite for OOC Core Library">-->
+  profile="Test Suite for OOC Core Library">
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_LRealStr_RealToEng1">-->
+  select ="prepare_out_module lib_LRealStr_RealToFixed1 lib_LRealStr_RealToFixed2">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -281,6 +281,22 @@
 	  output="LibLRealStrRealToEng1.Ref">
       Use <code>RealToEng</code> to convert <code>LONGREAL</code>
       values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_LRealStr_RealToFixed1" type="run"
+          file="LibLRealStrRealToFixed1.Mod"
+	  output="LibLRealStrRealToFixed1.Ref">
+      Use <code>RealToFixed</code> to convert <code>LONGREAL</code>
+      values to strings.  <code>place</code> is a non-negative number.
+      Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_LRealStr_RealToFixed2" type="run"
+          file="LibLRealStrRealToFixed2.Mod"
+	  output="LibLRealStrRealToFixed2.Ref">
+      Use <code>RealToFixed</code> to convert <code>LONGREAL</code>
+      values to strings.  <code>place</code> is a negative number.
+      Note: "Inf" and "NaN" are not tested.
     </test>
 
   </testcases>
