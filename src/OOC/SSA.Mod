@@ -22,7 +22,7 @@ MODULE OOC:SSA;
 
 
 IMPORT
-  Log,
+  Log, Out,
   Language, Language:Integer, Language:Boolean, ADT:Object, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
@@ -744,6 +744,10 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
     obj: Object.Object;
     const: Const;
   BEGIN
+    Out.String("");  (* FIXME... *)
+    (* this statm is for good luck; don't ask, I don't have an answer :-{
+       this occasional failed assert in Dictionary is driving me mad -- mva *)
+    
     IF pb. objMap. HasKey (value) THEN
       obj := pb. objMap. Get (value);
       RETURN obj(Const);
