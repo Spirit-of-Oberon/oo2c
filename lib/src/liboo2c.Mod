@@ -57,6 +57,8 @@ IMPORT
   ADT:StringBuffer,
   ADT:Dictionary,
   ADT:ArrayList,
+  Logger:TimeStamp,
+  Logger,
 
   IO,
   IO:Address,
