@@ -4,6 +4,7 @@
 #include <__oo2c.h>
 #include <OS/ProcessManagement.d>
 #ifdef __MINGW32__
+#include <windows.h>
 #  define WIFEXITED(x) (((x) & 0xffff0000) == 0)
 #  define WEXITSTATUS(x) ((x) & 0x0000ffff)
 #  define WTERMSIG(x) (x)
@@ -51,6 +52,39 @@ The following implementation appears to work, although it required a some
 trial and error to sort out the inconsistencies above.
 
 */
+
+/* The default system() used in the MS run-time appears to call the Windows
+ * shell, which has limitations on the length of the command line. This causes
+ * problems for oo2c which can generate long command-lines during linking.
+ *
+ * This replacement system() uses Kernel functions to manage the process.
+ */
+
+static int new_system(char * args) {
+  PROCESS_INFORMATION info;
+  STARTUPINFO si;
+  HANDLE handles[1];
+  DWORD res;
+
+  si.cb = sizeof(STARTUPINFO);
+  si.lpReserved = NULL;
+  si.lpDesktop = NULL;
+  si.lpTitle = NULL;
+  si.dwFlags = 0;
+  si.cbReserved2 = 0;
+  si.lpReserved2 = NULL;
+
+  if (CreateProcess(NULL, args, NULL, NULL, TRUE, 0, NULL, NULL, &si, &info)) {
+    handles[0] = info.hProcess;
+    res = WaitForMultipleObjects(1, handles, FALSE, INFINITE); 
+    if (res == WAIT_OBJECT_0) {
+      if (GetExitCodeProcess(info.hProcess, &res)) {
+        return res;
+      } 
+    }
+  }
+  return GetLastError();
+}
 
 char * prefix = "/bin/sh -c \"";
 
@@ -102,7 +136,7 @@ int OS_ProcessManagement__system(const OOC_CHAR8* command, OOC_LEN command_0d) {
 
   buffer[dest++] = '"';
   buffer[dest] = 0;
-  result = system((const char*)buffer);
+  result = new_system((const char*)buffer);
   free(buffer);
   return result;
 }
