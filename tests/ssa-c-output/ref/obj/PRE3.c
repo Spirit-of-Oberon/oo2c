@@ -24,10 +24,10 @@ l7:
   mf = (PRE3__ModuleFlags)i0;
   i1 = (OOC_INT32)*(OOC_INT32*)i0;
   _assert(((
-  _cmp8((const void*)i1,(const void*)"FOREIGN"))==0), 127, 530);
+  _cmp8((const void*)i1,(const void*)"FOREIGN"))==0), 127, 548);
   
 l8:
-  _assert((i0!=(OOC_INT32)0), 127, 573);
+  _assert((i0!=(OOC_INT32)0), 127, 591);
   return;
   ;
 }

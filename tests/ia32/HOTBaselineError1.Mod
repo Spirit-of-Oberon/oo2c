@@ -1,4 +1,5 @@
 MODULE HOTBaselineError1;  (* mva *)
+<*Assertions:=TRUE*>
 
 PROCEDURE Test*;
   BEGIN

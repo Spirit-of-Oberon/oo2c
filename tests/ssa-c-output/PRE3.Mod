@@ -1,5 +1,5 @@
 MODULE PRE3;
-<*DerefCheck:=FALSE; TypeGuard:=FALSE*>
+<*DerefCheck:=FALSE; TypeGuard:=FALSE; Assertions:=TRUE*>
 
 TYPE
   Node = POINTER TO NodeDesc;
