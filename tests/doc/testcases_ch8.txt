@@ -31,7 +31,7 @@ REJECT:
   1) a does not designate an array or a pointer to array [OpArray2]
   2) e is not an integer [OpArray3]
   3) e is constant and not in the range 0 <= e < LEN(a) [OpArray4 OpArray5]
-  4) a is the result of a function all [OpArray6]
+  4) a is the result of a function call [OpArray6]
 
 ERROR:
 
@@ -47,7 +47,7 @@ REJECT:
   2) a has less than n dimensions
   3) some e_i is not an integer
   4) e_i is constant not in the range 0 <= e_i < LEN(a,i)
-  5) a is the result of a function all
+  5) a is the result of a function call
 
 ERROR:
 
@@ -66,7 +66,7 @@ REJECT:
 
   1) r is not a record or a pointer to a record [OpRecord2]
   2) there is no field or procedure f bound to the static type of r [OpRecord3]
-  3) r is the result of a function all [OpRecord4]
+  3) r is the result of a function call [OpRecord4]
 
 ERROR:
 
@@ -85,7 +85,7 @@ REJECT:
   1) p is not a pointer or type-bound procedure [OpPointer1]
   2) p is a type-bound procedure, but does not exist in the base type 
      [OpPointer2]
-  3) p is the result of a function all [OpPointer4]
+  3) p is the result of a function call [OpPointer4]
   4) p is a super call (i.e., proc^^ is not allowed) [OpPointer5]
 
 ERROR:
@@ -100,7 +100,7 @@ ACCEPT:
   1) v is a pointer to a record type
   2) v is a variable parameter of record type
   3) v is a dereferenced pointer to a record type (like p^(R))
-  4) v is the result of a function all
+  4) v is the result of a function call
 
 REJECT:
 
