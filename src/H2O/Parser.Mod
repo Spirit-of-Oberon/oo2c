@@ -92,6 +92,7 @@ VAR
   options : SET;
   parser : Parser;
   depend : ArrayList.ArrayList(T.Module);
+  autoNameSeq : LONGINT;
 
   configOptions : Option.Options;
   parserOptions- : Option.Options;
@@ -154,6 +155,16 @@ PROCEDURE GetModule() : T.Module;
 BEGIN
   RETURN process.in.GetModule();
 END GetModule;
+
+PROCEDURE AnonName*(prefix : STRING) : STRING;
+VAR
+  b : StringBuffer.StringBuffer;
+BEGIN
+  b := StringBuffer.New(prefix);
+  b.AppendInt(autoNameSeq);
+  INC(autoNameSeq);
+  RETURN b.ToString();
+END AnonName;
 
 PROCEDURE MakeName(name : STRING; t : T.Type; mod : T.Module) : T.Type;
 VAR 
@@ -277,7 +288,7 @@ PROCEDURE TypeSpecifier() : T.Type;
 VAR
   sym, sign, size, type : INTEGER;
   qualifiers : SET;
-  s, t : T.Type;
+  s, t : T.Type; mod : T.Module;
 
   PROCEDURE EnumDecl() : T.Type;
 (*
@@ -309,6 +320,8 @@ VAR
     IF token.sym = Scanner.ident THEN
       tag := token.name;
       GetSym;
+    ELSE
+      tag := AnonName("AutoEnum");
     END;
     IF token.sym = Scanner.lbrace THEN
       t := NewNamedType(T.tEnum, tag);
@@ -648,6 +661,8 @@ BEGIN
   | arg: Value.LongReal DO
     r := arg.value;
     RETURN typeReal;
+  ELSE
+    RETURN typeInvalid;
   END;
 END TypeOf;
 
@@ -735,7 +750,10 @@ BEGIN
     | Scanner.bitAnd: ai := SetInt(IntSet(ai) * IntSet(bi));
     | Scanner.bitOr:  ai := SetInt(IntSet(ai) + IntSet(bi));
     | Scanner.xor:    ai := SetInt(IntSet(ai) / IntSet(bi));
-  
+ 
+    | Scanner.lsh:    ai := SYSTEM.LSH(ai, bi);
+    | Scanner.rsh:    ai := SYSTEM.LSH(ai, -bi); 
+
     | Scanner.and:    ai := BoolInt((bi # 0) & (ai # 0));
     | Scanner.or:     ai := BoolInt((bi # 0) OR (ai # 0));
     ELSE
@@ -885,7 +903,7 @@ VAR
       optPreprocessor = {Scanner.optDontExpand, Scanner.optReturnEndLine};
     VAR 
       t : T.Type; name : STRING;
-      result : Value.Object; 
+      result : Value.Object; mod : T.Module;
       size : LONGINT;
       needClose : BOOLEAN;
       t2 : Scanner.Token;
@@ -969,11 +987,10 @@ VAR
         (* sizeof: *)
         GetSym;
         Expect(Scanner.lbracket);
-        err.MsgParam("In sizeof, token=$0", token, NIL, NIL, FALSE);
         IF StartsTypeSpecifier() THEN
           name := NIL;
           t := Declarator(name, TypeSpecifier());
-          size := t.size;
+          size := t.Size();
           IF size <= 0 THEN
             size := 0;
             err.ErrorParam("Size of type `$0' is unknown", t, NIL, NIL);
@@ -989,13 +1006,14 @@ VAR
 		(* identifier is usually a defined symbol. However, if this expression
            is a clause in a preprocesor directive (eg. #if) undefined symbols
            are treated as false (ie. 0) constants. *)
-        (* P.EnumConst(Scanner.identName, result) THEN GetSym; ELSIF *) 
-        IF allowUndefined IN options THEN
+        IF T.FindConstant(token.name, result, mod) THEN
+          (* TODO: track module dependencies for expressions *)
+        ELSIF allowUndefined IN options THEN
+          result := Value.zeroLongInt;
           err.MsgParam("Treating undefined symbol '$0' as constant 0", token.name, NIL, NIL, FALSE);
         ELSE
           err.ErrorParam("Identifier `$0' is undefined", token.name, NIL, NIL);
         END;
-        result := Value.zeroLongInt;
         GetSym
       ELSE 
         err.UnexpectedToken(token);
@@ -1461,6 +1479,7 @@ BEGIN
   WHILE token.sym # Scanner.endFile DO
     EvalExpr(result);
     Expect(Scanner.semicolon);
+    Log.Object("", result);
   END;
 END Evaluate;
 
@@ -1626,6 +1645,7 @@ BEGIN
   InitOptions;
   NEW(parser);
   keyWords := NIL;
+  autoNameSeq := 0;
   AddKeyWords;
   AddConfigKeyWords;
   AddOperators;

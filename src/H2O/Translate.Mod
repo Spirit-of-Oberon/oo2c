@@ -34,6 +34,8 @@ VAR
   mapDoubleType : Option.String;
   mapLongDoubleType : Option.String;
   mapPointer : Option.String;
+  mapEnum : Option.String;
+  mapVoid : Option.String;
   moduleSuffix : Option.String;
   outputDirectory : Option.String;
   renameVariables : Option.Boolean;
@@ -374,8 +376,11 @@ BEGIN
     WriteType(e, t.base, mod, level);
   | Type.tArray:
     WriteArrayType(e, t, mod, level);
+  | Type.tEnum:
+    e.WriteObject(mapEnum.value);
+    e.WriteString(" (* enumerated type *)");
   | Type.tVoid:
-    e.WriteString("C_VOID");
+    e.WriteObject(mapVoid.value);
   ELSE
     e.WriteString("UNIMPLEMENTED TYPE: ");
     e.WriteObject(t);
@@ -558,6 +563,33 @@ VAR
     END;
   END EmitTypes;
 
+  PROCEDURE EmitEnums(o : Type.Object);
+  VAR t : Type.Type; elem : Type.Object;
+  BEGIN
+    WHILE o # NIL DO
+      t := o.type;
+      IF (t.class = Type.tEnum) & (t.link # NIL) THEN
+        e.DeclType(Emitter.dtConst);
+        e.Indent(1);
+        e.WriteString("(* Constants occurring in enumeration '");
+        e.WriteObject(o.name);
+        e.WriteString("' *)");
+        e.WriteLn;
+        elem := t.link;
+        WHILE elem # NIL DO
+          e.Indent(1);
+          e.WriteObject(elem.name);
+          e.WriteString("* = ");
+          e.WriteInt(elem.addr);
+          e.WriteString(";");
+          e.WriteLn;
+          elem := elem.next;
+        END;
+      END;
+      o := o.next;
+    END;
+  END EmitEnums;
+
 BEGIN
   name := outputDirectory.value + "/" + 
     m.outputName.value + "." + moduleSuffix.value;
@@ -591,6 +623,7 @@ TRY
   e.WriteChar(";");
   e.WriteLn;
   Parser.ParseMacros(e, m);
+  EmitEnums(m.types);
 
   EmitTypes(m.types);
   EmitTypes(m.typedefs);
@@ -664,6 +697,8 @@ BEGIN
   mapDoubleType := options.String("MapDouble", "LONGREAL");
   mapLongDoubleType := options.String("MapLongDouble", "LONGDOUBLE");
   mapPointer := options.String("MapPointer", "SYSTEM.PTR");
+  mapEnum := options.String("MapEnum", "LONGINT");
+  mapVoid := options.String("MapVoid", "C_VOID");
   outputDirectory := options.String("OutputDirectory", ".");
   renameVariables := options.Boolean("RenameVariables", FALSE);
   renameProcedures := options.Boolean("RenameProcedures", TRUE);
