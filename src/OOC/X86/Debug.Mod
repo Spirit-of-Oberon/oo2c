@@ -32,10 +32,10 @@ VAR
 
 CONST
   writeAllInstructions = FALSE;
-  resultPrefix = "";
-  resultSuffix = "";
-  instrPrefix = "";
-  instrSuffix = "";
+  resultPrefix = "(";
+  resultSuffix = ")";
+  instrPrefix = "{";
+  instrSuffix = "}";
   depPrefix = "   [";
   depSuffix = "]";
   
@@ -340,7 +340,7 @@ PROCEDURE (out: Output) WriteFunction*();
 
       WITH instr: S.MergeInstr DO
         IF (instr.jumps = NIL) THEN
-            w.WriteString(" [no jumps]");
+            w.WriteString(" [no incoming jumps]");
         ELSE
           FOR jump IN instr.jumps^ DO
             w.WriteString(" [");
