@@ -26,16 +26,12 @@ IMPORT
 
 PROCEDURE AssembleFileCmd* (in, out: URI.URI): STRING;
   VAR
-    str: ARRAY 2*1024 OF CHAR;
     sb: StringBuffer.StringBuffer;
   BEGIN
     sb := StringBuffer.New("as ");
-    
-    in(File.URI). GetPath (str);
-    sb.AppendLatin1(str);
+    sb.Append(in(File.URI).GetPath());
     sb.Append(" -o ");
-    out(File.URI). GetPath (str);
-    sb.AppendLatin1(str);
+    sb.Append(out(File.URI).GetPath());
     RETURN sb.ToString();
   END AssembleFileCmd;
 

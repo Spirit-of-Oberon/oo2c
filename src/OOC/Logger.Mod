@@ -16,16 +16,13 @@ VAR
 
 
 PROCEDURE WriteURI (uri: URI.URI);
-  VAR
-    str: ARRAY 1024 OF CHAR;
   BEGIN
-    WITH uri: File.URI DO
-      uri.GetPath(str);
-    ELSE
-      uri.GetString(str);
-    END;
     IF ~silence THEN
-      Out.String(str);
+      WITH uri: File.URI DO
+        Out.Object(uri.GetPath());
+      ELSE
+        Out.Object(uri.GetString());
+      END;
     END;
   END WriteURI;
 

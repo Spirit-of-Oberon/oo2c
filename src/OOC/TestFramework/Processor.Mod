@@ -23,7 +23,7 @@ MODULE OOC:TestFramework:Processor;
 
 IMPORT
   C, Files, LongStrings, Msg, Out, Strings, TextRider,
-  Object, ADT:StringBuffer, IO, OSFiles := OS:Files,
+  Object, ADT:StringBuffer, IO, OS:Path, OSFiles := OS:Files,
   OS:ProcessManagement, URI:Scheme:File, XMLWriter := XML:Writer,
   XML:Basic:Element,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases;
@@ -64,14 +64,14 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     
   PROCEDURE GetPath (subdir: ARRAY OF CHAR): STRING;
     VAR
-      path: FilePath;
+      path: STRING;
     BEGIN
-      setup. processor. workingDir(File.URI). GetPath (path);
+      path := setup.processor.workingDir(File.URI).GetPath();
       IF (subdir # "") THEN
-        Strings.Append ("/", path);
-        Strings.Append (subdir, path)
+        RETURN path+"/"+Object.NewLatin1(subdir);
+      ELSE
+        RETURN path;
       END;
-      RETURN Object.NewLatin1(path)
     END GetPath;
   
   BEGIN
@@ -242,12 +242,13 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
     END AttrFileRef;
 
   PROCEDURE CompileModule (moduleName: STRING;
-                           path: ARRAY OF CHAR; build: BOOLEAN;
+                           modulePath: ARRAY OF CHAR; build: BOOLEAN;
                            VAR status, signal: C.int);
     VAR
       exit: C.int;
       outFile, errFile, filterFile: FilePath;
       chars: Object.CharsLatin1;
+      path: ARRAY 4*1024 OF CHAR;
     
     PROCEDURE Copy (file: ARRAY OF CHAR);
       VAR
@@ -272,6 +273,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       END Copy;
     
     BEGIN
+      COPY(modulePath, path);
+      
       (* determine path for stdout and stderr output *)
       IF build THEN
         GetFileName (".build.out", outFile);
@@ -449,8 +452,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
     Out.Ln;
     
     moduleName := test. ModuleName();
-    test. file(File.URI). GetPath (path);
-    CompileModule (moduleName, path, FALSE, status, signal);
+    chars := Path.Encode(test.file(File.URI).GetPath());
+    CompileModule (moduleName, chars^, FALSE, status, signal);
     
     (* determine status of compilation *)
     result := processCrash;
@@ -538,10 +541,11 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
           IF (status = 0) & (signal = 0) THEN
             result := processSuccess;
             IF (test. type = Testcases.testOutput) THEN
-              test. output(File.URI). GetPath (path);
-              result := proc. CompareOutput (path, runOutFile);
+              chars := Path.Encode(test.output(File.URI).GetPath());
+              result := proc. CompareOutput (chars^, runOutFile);
               
               IF (result # processSuccess) THEN
+                COPY(chars^, path);
                 GetFileName (".run.diff", runDiffFile);
                 Strings.Insert (" '", 0, path);
                 chars := proc.diffCmd(Object.String8).CharsLatin1();

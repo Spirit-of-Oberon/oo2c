@@ -22,7 +22,7 @@ MODULE OOC:Repository:FileSystem;
 
 IMPORT
   Msg, Files, TextRider, Strings, Time, OSFiles := OS:Files, OS:Path,
-  Object, IO, URI, URIParser := URI:Parser, URIError := URI:Error,
+  Object, Exception, IO, URI, URIParser := URI:Parser, 
   FileURI := URI:Scheme:File,
   OOC:Logger, OOC:Error, OOC:Scanner:InputBuffer, Rep := OOC:Repository;
 
@@ -57,7 +57,7 @@ PROCEDURE New* (baseRep: Rep.Repository; baseDir: URI.HierarchicalURI): Reposito
     IF (relative.schemeId = NIL) &
        (relative IS FileURI.URI) &
        (relative(FileURI.URI). pathList # NIL) &
-       (relative(FileURI.URI). pathList. string^ # "..") THEN
+       ~relative(FileURI.URI). pathList. string.Equals("..") THEN
       rep.relativeBaseURI := relative(FileURI.URI);
     ELSE
       rep.relativeBaseURI := baseDir;
@@ -100,11 +100,10 @@ PROCEDURE (rep: Repository) GetModule* (moduleName: ARRAY OF CHAR;
                                  srcFileOverride: URI.HierarchicalURI): Module;
 (* result is NIL in case of error *)
   VAR
-    str: Rep.URIBuffer;
-    res: URIError.Msg;
     uri: URI.URI;
   
-  PROCEDURE GetURI (fileId: Rep.FileId; VAR res: URIError.Msg): URI.URI;
+  PROCEDURE GetURI (fileId: Rep.FileId): URI.URI
+  RAISES Exception.ParseError;
     VAR
       path, str: Rep.URIBuffer;
     BEGIN
@@ -118,34 +117,36 @@ PROCEDURE (rep: Repository) GetModule* (moduleName: ARRAY OF CHAR;
       Strings.Append (str, path);
       rep. GetDefaultSuffix (fileId, str);
       Strings.Append (str, path);
-      RETURN URIParser.NewURI (path, rep. baseURI, res);
+      RETURN URIParser.NewURI (path, rep. baseURI);
     END GetURI;
   
   BEGIN
-    uri := GetURI (Rep.modModuleSource, res);
+    TRY
+      uri := GetURI (Rep.modModuleSource);
+    CATCH Exception.ParseError:
+      RETURN NIL;
+    END;
     
-    IF (res # NIL) THEN
-      RETURN NIL
-    ELSIF (srcFileOverride # NIL) THEN
+    IF (srcFileOverride # NIL) THEN
       RETURN NewModule (rep, moduleName, srcFileOverride)
     ELSE
       (* check if the module's source code is located in this repository *)
-      uri(FileURI.URI). GetPath (str);
-      IF Files.Exists (str) THEN
+      ;
+      IF OSFiles.Exists (uri(FileURI.URI).GetPath()) THEN
         RETURN NewModule (rep, moduleName, srcFileOverride)
       ELSE
         (* cannot find source code, try to find symbol file *)
-        uri := GetURI (Rep.modSymbolFile, res);
-        IF (res # NIL) THEN
-          RETURN NIL
+        TRY
+          uri := GetURI(Rep.modSymbolFile);
+        CATCH Exception.ParseError:
+          RETURN NIL;
+        END;
+        
+        IF OSFiles.Exists(uri(FileURI.URI).GetPath()) THEN
+          RETURN NewModule (rep, moduleName, srcFileOverride)
         ELSE
-          uri(FileURI.URI). GetPath (str);
-          IF Files.Exists (str) THEN
-            RETURN NewModule (rep, moduleName, srcFileOverride)
-          ELSE
-            (* cannot find source code OR symbol file *)
-            RETURN NIL
-          END
+          (* cannot find source code OR symbol file *)
+          RETURN NIL
         END
       END
     END
@@ -153,8 +154,7 @@ PROCEDURE (rep: Repository) GetModule* (moduleName: ARRAY OF CHAR;
 
 PROCEDURE (rep: Repository) GetResource* (package, path: ARRAY OF CHAR): URI.URI;
   VAR
-    p, str: Rep.URIBuffer;
-    res: URIError.Msg;
+    p: Rep.URIBuffer;
     uri: URI.URI;
   BEGIN
     IF (package = "") THEN
@@ -172,27 +172,23 @@ PROCEDURE (rep: Repository) GetResource* (package, path: ARRAY OF CHAR): URI.URI
 
     (* can't use relative URI here, or the installation tarball of oo2c breaks
        when it tries to create a relative URI for it  *)
-    uri := URIParser.NewURI (p, rep. baseURI, res);
+    TRY
+      uri := URIParser.NewURI (p, rep. baseURI);
+    CATCH Exception.ParseError:
+      RETURN NIL;
+    END;
     
-    IF (res # NIL) THEN
-      RETURN NIL
+    IF OSFiles.Exists(uri(FileURI.URI).GetPath()) THEN
+      RETURN uri
     ELSE
-      uri(FileURI.URI). GetPath (str);
-      IF Files.Exists (str) THEN
-        RETURN uri
-      ELSE
-        RETURN NIL
-      END
+      RETURN NIL
     END
   END GetResource;
   
 PROCEDURE (rep: Repository) DumpContent* (w: TextRider.Writer);
-  VAR
-    str: Rep.URIBuffer;
   BEGIN
     w. WriteString ("  <file-system>");
-    rep. baseURI. GetString (str);
-    w. WriteString (str);
+    w. WriteObject (rep.baseURI.GetString());
     w. WriteString ("</file-system>");
     w. WriteLn
   END DumpContent;
@@ -232,7 +228,6 @@ PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId;
     path: Rep.URIBuffer;
     uri: URI.URI;
     huri: URI.HierarchicalURI;
-    res: Msg.Msg;
   BEGIN
     huri := m. GetURI^ (fileId, allowRelative);
     IF (huri = NIL) THEN
@@ -240,15 +235,16 @@ PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId;
         RETURN m. srcFileOverride
       ELSE
         m.origin.GetLocalPath(m, fileId, path);
-        IF allowRelative THEN
-          uri := URIParser.NewURI (path, m. origin(Repository). relativeBaseURI, res);
-        ELSE
-          uri := URIParser.NewURI (path, m. origin. baseURI, res);
+        TRY
+          IF allowRelative THEN
+            uri := URIParser.NewURI(path, m.origin(Repository).relativeBaseURI);
+          ELSE
+            uri := URIParser.NewURI(path, m.origin.baseURI);
+          END;
+        CATCH Exception.ParseError:
+          (* this should never trigger if subdir and suffix are ok *)
+          ASSERT (FALSE);
         END;
-        
-        ASSERT (res = NIL);
-        (* this should never trigger if subdir and suffix are ok *)
-        
         RETURN uri(URI.HierarchicalURI)
       END
     ELSE
@@ -259,12 +255,14 @@ PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId;
 PROCEDURE (m: Module) GetTimeStamp* (fileId: Rep.FileId; VAR ts: Time.TimeStamp);
   VAR
     uri: URI.URI;
-    path: Rep.URIBuffer;
+    path: STRING;
+    chars: Object.CharsLatin1;
     res: Msg.Msg;
   BEGIN
     uri := m. GetURI (fileId, FALSE);
-    uri(FileURI.URI). GetPath (path);
-    Files.GetModTime (path, ts, res);
+    path := uri(FileURI.URI).GetPath();
+    chars := Path.Encode(path);
+    Files.GetModTime(chars^, ts, res);
     IF (res # NIL) THEN
       Time.InitTimeStamp (ts, MAX (LONGINT), 0)
     END
@@ -273,11 +271,9 @@ PROCEDURE (m: Module) GetTimeStamp* (fileId: Rep.FileId; VAR ts: Time.TimeStamp)
 PROCEDURE (m: Module) FileExists* (fileId: Rep.FileId): BOOLEAN;
   VAR
     uri: URI.URI;
-    path: Rep.URIBuffer;
   BEGIN
-    uri := m. GetURI (fileId, FALSE);
-    uri(FileURI.URI). GetPath (path);
-    RETURN Files.Exists(path);
+    uri := m.GetURI(fileId, FALSE);
+    RETURN OSFiles.Exists(uri(FileURI.URI).GetPath());
   END FileExists;
 
 PROCEDURE (m: Module) GetInputBuffer* (): InputBuffer.Buffer
@@ -285,17 +281,17 @@ RAISES IO.Error;
   VAR
     file: IO.ByteChannel;
     errList: Error.List;
-    str: Rep.URIBuffer;
+    str: STRING;
     modURI: URI.URI;
   BEGIN
     (* create new error list for the source file *)
     modURI := m. GetURI (Rep.modModuleSource, TRUE);
     IF (modURI IS FileURI.URI) THEN
-      modURI(FileURI.URI).GetPath(str);
+      str := modURI(FileURI.URI).GetPath();
     ELSE
-      modURI.GetString(str);
+      str := modURI.GetString();
     END;
-    errList := Error.NewList (Object.NewLatin1(str));
+    errList := Error.NewList(str);
     
     (* open file for reading *)
     file := modURI. GetChannel (URI.channelOld);
@@ -306,12 +302,10 @@ RAISES IO.Error;
 PROCEDURE (m: Module) CreateOutputDir* (fileId: Rep.FileId)
 RAISES IO.Error;
   VAR
-    path: Rep.URIBuffer;
     uri: URI.URI;
   BEGIN
     uri := m. GetURI (fileId, TRUE);
-    uri(FileURI.URI). GetPath (path);
-    OSFiles.MakeDirs(Path.DirName(Object.NewLatin1(path)),
+    OSFiles.MakeDirs(Path.DirName(uri(FileURI.URI).GetPath()),
                      OSFiles.defaultMode);
   END CreateOutputDir;
 

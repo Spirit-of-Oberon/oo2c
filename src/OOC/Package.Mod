@@ -1126,14 +1126,12 @@ RAISES IO.Error;
     VAR
       uri: URI.URI;
       pkg: Rep.PkgInfo;
-      fileName: Rep.URIBuffer;
     BEGIN
       IF (rep # NIL) THEN
         IF Parse(rep.baseRep) THEN
           uri := rep.GetResource("", packageData);
           IF (uri # NIL) THEN
-            uri(FileURI.URI).GetPath(fileName);
-            pkg := ParseFile(Object.NewLatin1(fileName), FALSE, errList);
+            pkg := ParseFile(uri(FileURI.URI).GetPath(), FALSE, errList);
             rep.SetPackageInfo(pkg);
             IF (pkg # NIL) THEN
               MergeConfig(pkg, options, pragmas);

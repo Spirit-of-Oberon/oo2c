@@ -21,7 +21,7 @@ MODULE OOC:Config:FileSystem;
 *)
 
 IMPORT
-  Msg, LongStrings, Strings, URI, URIParser := URI:Parser,
+  Msg, LongStrings, Strings, Exception, URI, URIParser := URI:Parser,
   XML:DTD, XMLBuilder := XML:Builder, XML:Locator,
   Config:Parser, CS := Config:Section, 
   OOC:Config:Repositories, OOC:Repository,
@@ -84,7 +84,6 @@ PROCEDURE (re: RepositoryEntry) ProcessElement* (
     att: XMLBuilder.Attribute;
     lastError: Msg.Msg;
     uri: URI.URI;
-    res: Msg.Msg;
     str8: ARRAY 4*1024 OF CHAR;
     i: LONGINT;
     
@@ -108,12 +107,11 @@ PROCEDURE (re: RepositoryEntry) ProcessElement* (
       IF (str8 = "") OR (str8[Strings.Length (str8)-1] # "/") THEN
         Strings.Append ("/", str8)
       END;
-      uri := URIParser.NewURI (str8, FileSystemRepository.baseURI, res);
-      IF (res = NIL) THEN
-        RETURN FileSystemRepository.New (baseRep, uri(URI.HierarchicalURI))
-      ELSE
+      TRY
+        uri := URIParser.NewURI(str8, FileSystemRepository.baseURI);
+        RETURN FileSystemRepository.New (baseRep, uri(URI.HierarchicalURI));
+      CATCH Exception.ParseError:
         Err (invalidURI, node);
-        lastError. SetMsgAttrib ("uri_msg", res)
       END
     END;
     RETURN NIL

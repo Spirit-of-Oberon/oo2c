@@ -20,7 +20,7 @@ MODULE XML:Parser;
 
 
 IMPORT
-  Out, Ascii, Msg, LongStrings, IO, URI, URI:Scheme:File,
+  Out, Ascii, Msg, LongStrings, Object, IO, URI, URI:Scheme:File,
   Codec := XML:UnicodeCodec, XML:Locator, XML:EntityResolver,
   <*PUSH; Warnings:=FALSE*>XML:UnicodeCodec:UTF8,XML:UnicodeCodec:UTF16,<*POP*>
   Buffer := XML:UnicodeBuffer, XML:Error, XML:DTD, XML:Builder;
@@ -510,6 +510,18 @@ PROCEDURE IsEncNameChar (ch: Buffer.Char; first: BOOLEAN): BOOLEAN;
 
 (* ------------------------------------------------------------------------ *)
 
+PROCEDURE SetBaseURI(err: Error.Msg; name: ARRAY OF CHAR; uri: URI.URI);
+  VAR
+    str: STRING;
+    str8: Object.String8;
+    chars: Object.CharsLatin1;
+  BEGIN
+    str := uri.GetString();
+    str8 := str.ToString8("?");
+    chars := str8.CharsLatin1();
+    err.SetStringAttrib(name, Msg.GetStringPtr(chars^));
+  END SetBaseURI;
+
 PROCEDURE (el: ErrorListener) Error* (context: Error.Context; code: Error.Code;
                                       fatalError: BOOLEAN;
                                       pos: Locator.Position): Error.Msg;
@@ -522,7 +534,7 @@ PROCEDURE (el: ErrorListener) Error* (context: Error.Context; code: Error.Code;
     err. SetIntAttrib ("char", pos. charIndex+Error.errMsgCharPosBase);
     err. SetIntAttrib ("line", pos. line+Error.errMsgLineBase);
     err. SetIntAttrib ("column", pos. column+Error.errMsgColumnBase);
-    err. SetAttribute (URI.NewURIAttribute ("baseURI", p. fileEntity. baseURI));
+    SetBaseURI(err, "baseURI", p.fileEntity.baseURI);
     IF (pos. inInternalEntity # NIL) THEN
       err. SetLStringAttrib ("entity_name", 
                             Msg.GetLStringPtr (pos. inInternalEntity. name^))
@@ -645,7 +657,7 @@ PROCEDURE (p: Parser) ParseDocument*() RAISES IO.Error;
       p. lastError. SetIntAttrib ("char", pos. charIndex+Error.errMsgCharPosBase);
       p. lastError. SetIntAttrib ("line", pos. line+Error.errMsgLineBase);
       p. lastError. SetIntAttrib ("column", pos. column+Error.errMsgColumnBase);
-      p. lastError. SetAttribute (URI.NewURIAttribute ("baseURI", p. fileEntity. baseURI));
+      SetBaseURI(p.lastError, "baseURI", p.fileEntity.baseURI);
       IF (chars # p. in. chars) THEN
         i := p. lenPEStack-1;
         p. lastError. SetLStringAttrib ("entity_name", 
@@ -744,13 +756,10 @@ PROCEDURE (p: Parser) ParseDocument*() RAISES IO.Error;
     END GetBuffer;
   
   PROCEDURE CheckInvalidChars;
-    VAR
-      str: ARRAY 2*1024 OF CHAR;
     BEGIN
       IF (p. in. codec. invalidChars # 0) THEN
         Err (invalidCharacterEncodings);
-        p. fileEntity. baseURI. GetString (str);
-        p. lastError. SetStringAttrib ("uri", Msg.GetStringPtr (str));
+        SetBaseURI(p.lastError, "uri", p.fileEntity.baseURI);
         p. lastError. SetIntAttrib ("encodings", p. in. codec. invalidChars)
       END
     END CheckInvalidChars;

@@ -1,7 +1,7 @@
 MODULE XML:Basic:DataType;
 
 IMPORT
-  LongStrings, IntStr, Msg, URI, URI:Parser,
+  LongStrings, IntStr, Exception, URI, URI:Parser,
   XML:DTD, XML:EntityResolver, XML:Basic:Element;
 
 
@@ -44,16 +44,19 @@ PROCEDURE GetURIAttr* (value: Element.AttValue; baseURI: URI.URI;
   VAR
     str8: DTD.StringURI;
     v: Element.String;
-    res: Msg.Msg;
   BEGIN
     v := value. Flatten (NIL);
     str8 := EntityResolver.NormalizeURI (v);
-    IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
-      uri := Parser.NewURI (str8^, baseURI(URI.HierarchicalURI), res)
-    ELSE
-      uri := Parser.NewURI (str8^, NIL, res)
+    TRY
+      IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
+        uri := Parser.NewURI (str8^, baseURI(URI.HierarchicalURI))
+      ELSE
+        uri := Parser.NewURI (str8^, NIL)
+      END;
+      RETURN TRUE;
+    CATCH Exception.ParseError:
+      RETURN FALSE;
     END;
-    RETURN (res = NIL)
   END GetURIAttr;
   
 END XML:Basic:DataType.

@@ -1,7 +1,7 @@
 (*      $Id$   *)
 MODULE XML:Builder:Namespaces;
 (*  Provides namespace support for XML:Parser.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ MODULE XML:Builder:Namespaces;
 
 
 IMPORT
-  Msg, LongStrings, URI, URIParser := URI:Parser, URI:String, 
-  URI:Fragment:Unparsed,
+  Msg, LongStrings, Object, Exception,
+  URI, URIParser := URI:Parser, URI:Fragment:Unparsed,
   XML:Error, XML:DTD, XML:Locator, B := XML:Builder, XML:EntityResolver;
 
 
@@ -79,7 +79,7 @@ CONST  (* error codes *)
   malformedURIRef = 2;
   undeclaredPrefix = 3;
   nameClash = 4;
-  
+
 VAR
   namespacesContext: Error.Context;
 
@@ -182,15 +182,29 @@ PROCEDURE (b: Builder) Attribute* (namespaceDecl: DTD.NamespaceDeclaration;
       res: Msg.Msg;
       err: Error.Msg;
       fragm: Unparsed.Fragment;
+      e: Exception.Exception;
+      str0: STRING;
+      chars: Object.CharsLatin1;
     BEGIN
       str8 := EntityResolver.NormalizeURI (str);
       baseURI := b. parserLocator. entity. baseURI;
-      fragm := Unparsed.New (String.Copy (""));
-      IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
-        uriRef := URIParser.NewReference (str8^, baseURI(URI.HierarchicalURI), fragm, res)
-      ELSE
-        uriRef := URIParser.NewReference (str8^, NIL, fragm, res)
+      fragm := Unparsed.New("");
+
+      res := NIL;
+      TRY
+        IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
+          uriRef := URIParser.NewReference(str8^, baseURI(URI.HierarchicalURI), fragm)
+        ELSE
+          uriRef := URIParser.NewReference(str8^, NIL, fragm)
+        END;
+      CATCH Exception.ParseError:
+        res := Error.New(namespacesContext, malformedURIRef);
+        e := Exception.Current();
+        str0 := e.GetMessage();
+        chars := str0(Object.String8).CharsLatin1();
+        res.SetStringAttrib("reason", Msg.GetStringPtr(chars^));
       END;
+      
       IF (res # NIL) THEN
         err := b. errorListener. Error (namespacesContext, malformedURIRef,
                                         TRUE, b. parserLocator^);

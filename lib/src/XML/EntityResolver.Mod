@@ -1,7 +1,7 @@
 (*      $Id$   *)
 MODULE XML:EntityResolver;
 (*  Locates and opens external entities for the XML parser.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -19,14 +19,21 @@ MODULE XML:EntityResolver;
 *)
 
 IMPORT
-  LongStrings, Msg, Strings, URI, URI:Parser, URI:CharClass,
-  XML:DTD, Codec := XML:UnicodeCodec, XML:UnicodeCodec:UTF8;
+  LongStrings, Msg, Strings, Object, Exception,
+  URI, URI:Parser, URI:CharClass,
+  XML:Error, XML:DTD, Codec := XML:UnicodeCodec, XML:UnicodeCodec:UTF8;
 
 
 TYPE
   Resolver* = POINTER TO ResolverDesc;
   ResolverDesc* = RECORD
   END;
+
+CONST  (* error codes *)
+  invalidURI = 1;
+  
+VAR
+  resolverContext: Error.Context;
 
 
 PROCEDURE NormalizeURI* (uri: DTD.String): DTD.StringURI;
@@ -106,6 +113,10 @@ PROCEDURE (r: Resolver) GetURI* (public, system: DTD.String; baseURI: URI.URI;
    notation declarations.  *)
   VAR
     str8: DTD.StringURI;
+    err: Error.Msg;
+    e: Exception.Exception;
+    str: STRING;
+    chars: Object.CharsLatin1;
   BEGIN
     IF (system = NIL) THEN               (* notation declaration *)
       uri := NIL; res := NIL;
@@ -113,11 +124,21 @@ PROCEDURE (r: Resolver) GetURI* (public, system: DTD.String; baseURI: URI.URI;
     END;
     
     str8 := NormalizeURI (system);
-    IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
-      uri := Parser.NewURI (str8^, baseURI(URI.HierarchicalURI), res)
-    ELSE
-      uri := Parser.NewURI (str8^, NIL, res)
-    END
+    TRY
+      IF (baseURI # NIL) & (baseURI IS URI.HierarchicalURI) THEN
+        uri := Parser.NewURI(str8^, baseURI(URI.HierarchicalURI));
+      ELSE
+        uri := Parser.NewURI(str8^, NIL);
+      END;
+      res := NIL;
+    CATCH Exception.ParseError:
+      err := Error.New(resolverContext, invalidURI);
+      e := Exception.Current();
+      str := e.GetMessage();
+      chars := str(Object.String8).CharsLatin1();
+      err.SetStringAttrib("reason", Msg.GetStringPtr(chars^));
+      res := err;
+    END;
   END GetURI;
   
 PROCEDURE New* (): Resolver;
@@ -128,4 +149,7 @@ PROCEDURE New* (): Resolver;
     RETURN er
   END New;
 
+BEGIN
+  resolverContext := Error.NewContext("XML:EntityResolver");
+  resolverContext.SetString(invalidURI, "Invalid URI: ${reason}")
 END XML:EntityResolver.

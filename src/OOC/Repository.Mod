@@ -233,11 +233,7 @@ CONST
 
 
 PROCEDURE Init* (rep: Repository; baseRep: Repository; baseURI: URI.HierarchicalURI);
-  VAR
-    str: URIBuffer;
   BEGIN
-    baseURI. GetString (str);
-    ASSERT ((str # "") & (str[Strings.Length (str)-1] = "/"));
     rep. baseRep := baseRep;
     rep. baseURI := baseURI;
     rep. packageInfo := NIL;
@@ -417,13 +413,13 @@ PROCEDURE (m: Module) MatchesURI* (fileId: FileId; uri: URI.URI): BOOLEAN;
 (**Returns @code{TRUE} if the given @oparam{uri} matches the URI of the
    module's file.  *)
   VAR
-    a, b: URIBuffer;
+    a, b: STRING;
     muri: URI.HierarchicalURI;
   BEGIN
     muri := m. GetURI (fileId, FALSE);
-    muri. GetString (a);
-    uri. GetString (b);
-    RETURN (a = b)
+    a := muri.GetString();
+    b := uri.GetString();
+    RETURN a.Equals(b);
   END MatchesURI;
 
 PROCEDURE (m: Module) [ABSTRACT] GetTimeStamp* (fileId: FileId; VAR ts: Time.TimeStamp);
@@ -545,6 +541,7 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
     relURI: URI.URI;
     str, subdir: URIBuffer;
     s, ext: STRING;
+    s8: Object.String8;
     chars: Object.CharsLatin1;
     i: INTEGER;
     m: Module;
@@ -553,8 +550,7 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
     
     IF force THEN
       (* force: take basename of uri minus extension as module name *)
-      uri. GetString (str);
-      s := Path.BaseName(Object.NewLatin1(str));
+      s := Path.BaseName(uri.GetString());
       Path.SplitExt(s, s, ext);
       chars := s(Object.String8).CharsLatin1();
       IF ValidModuleName (chars^) THEN
@@ -564,7 +560,10 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
 
       relURI := uri. MakeRelative (rep. baseURI);
       IF (relURI. schemeId = NIL) THEN  (* uri is relative to baseURI *)
-        relURI. GetString (str);
+        s := relURI.GetString();
+        s8 := s.ToString8("?");
+        chars := s8.CharsLatin1();
+        COPY(chars^, str);
         rep. GetDefaultSubdir (modModuleSource, subdir);
 
         (* the string representation of the relative URI must begin with the

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE XML:Error;
 (*  Creates lists of error messages and converts them to text.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -21,7 +21,7 @@ MODULE XML:Error;
 
 IMPORT
   Ascii, Strings,Channel, TextRider, LongStrings, M := Msg,
-  URI, URI:Scheme:File;
+  Object, IO, OS:ProcessParameters, URI, URI:Scheme:File;
   
   
 TYPE
@@ -175,9 +175,10 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
     msg, prev: Msg;
     text: ARRAY 8*1024 OF CHAR;
     uriAttr: M.Attribute;
-    uri, prevURI: URI.URI;
+    uri, prevURI: M.StringPtr;
     repl1, repl2: ARRAY 1024 OF CHAR;
-    i: LONGINT;
+    len: LONGINT;
+    cwd: STRING;
 
   PROCEDURE Replace (VAR text: ARRAY OF CHAR; pattern, repl: ARRAY OF CHAR);
     VAR
@@ -212,13 +213,23 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
         END
       END
     END DistanceOk;
+
+  PROCEDURE Copy(s: STRING; VAR str: ARRAY OF CHAR);
+    VAR
+      s8: Object.String8;
+      chars: Object.CharsLatin1;
+    BEGIN
+      s8 := s.ToString8("?");
+      chars := s8.CharsLatin1();
+      COPY(chars^, str);
+    END Copy;
   
   BEGIN
     writer := TextRider.ConnectWriter (ch);
     ASSERT (writer # NIL);
-    
-    errList. cwdURI. GetString (repl1);
-    errList. cwdURI(File.URI). GetPath (repl2);
+
+    Copy(errList.cwdURI.GetString(), repl1);
+    Copy(errList.cwdURI(File.URI).GetPath(), repl2);
     Strings.Insert ("file_name=", 0, repl2);
     
     prev := NIL; prevURI := NIL;
@@ -226,24 +237,18 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
     WHILE (msg # NIL) DO
       IF DistanceOk (prev, msg) THEN
         uriAttr := msg. GetAttribute ("baseURI");
-        IF (uriAttr(URI.URIAttribute). uri # prevURI) THEN
-          uri := uriAttr(URI.URIAttribute). uri. MakeRelative (errList. cwdURI);
-          uri. GetString (text);
-          
-          i := 0;
-          WHILE (text[i] = ".") OR (text[i] = "/") DO
-            INC (i)
-          END;
-          IF (i > 6) THEN
-            (* string begins with ../../..; with this many steps back in the
-               directory hierarchy, a relative file name is pretty useless,
-               so we use the original absolue one *)
-            uri. GetString (text);
-            Strings.Extract (text, 0, 5, repl1);
-            Strings.Capitalize (repl1);
-            IF (repl1 = "FILE:") THEN
-              Strings.Delete (text, 0, 5)
+        IF (uriAttr(M.StringAttribute).string # prevURI) THEN
+          uri := uriAttr(M.StringAttribute).string;
+          COPY(uriAttr(M.StringAttribute).string^, text);
+          TRY
+            cwd := "file:"+ProcessParameters.GetCwd()+"/";
+            len := Strings.Length(text);
+            IF (cwd.length < len) &
+               cwd.Equals(Object.NewLatin1Region(text, 0, cwd.length)) THEN
+              Strings.Delete(text, 0, SHORT(cwd.length));
             END;
+          CATCH IO.Error:
+            (* ignore *)
           END;
           
           writer. WriteString ("In file ");
@@ -251,7 +256,7 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
           writer. WriteString (": ");
           writer. WriteLn
         END;
-        prevURI := uriAttr(URI.URIAttribute). uri;
+        prevURI := uriAttr(M.StringAttribute).string;
         
         msg. GetText (text);
         Replace (text, repl1, "file:");

@@ -480,7 +480,6 @@ RAISES IO.Error;
     VAR
       i: LONGINT;
       thisModule, remoteMod: Repository.Module;
-      str: ARRAY 2*1024 OF CHAR;
       remoteURI, relativeURI: URI.URI;
       baseURI: URI.HierarchicalURI;
       keys: Object.ObjectArrayPtr;
@@ -499,8 +498,7 @@ RAISES IO.Error;
         w. AttrStringLatin1 ("type", "html");
         remoteURI := remoteMod. GetURI (Repository.modInterfaceHTML, FALSE);
         relativeURI := remoteURI. MakeRelative (baseURI);
-        relativeURI. GetString (str);
-        w. AttrStringLatin1 ("relative-uri", str);
+        w. AttrObject ("relative-uri", relativeURI. GetString());
         w. EndTag;
 
         w. EndTag

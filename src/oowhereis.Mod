@@ -69,7 +69,6 @@ PROCEDURE Query(): BOOLEAN;
   VAR
     arg, ext: STRING;
     module: StringBuffer.StringBuffer;
-    file: Repository.URIBuffer;
     pos, extPos: LONGINT;
     fileId: Repository.FileId;
     m: Repository.Module;
@@ -111,8 +110,7 @@ PROCEDURE Query(): BOOLEAN;
     m := Config.repositories.GetModule(chars^);
     IF (m # NIL) THEN
       uri := m.GetURI(fileId, TRUE);
-      uri(File.URI).GetPath(file);
-      Out.String (file);
+      Out.Object (uri(File.URI).GetPath());
       Out.Ln;
       RETURN TRUE
     ELSE

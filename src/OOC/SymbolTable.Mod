@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Object, Object:Boxed, Msg, Strings, ADT:Dictionary:AddressKey,
+  Object, Object:Boxed, Exception, Strings, ADT:Dictionary:AddressKey,
   ADT:Dictionary, ADT:Storable, ADT:ArrayList, IO,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
@@ -1463,10 +1463,12 @@ PROCEDURE (l: LinkFile) Store* (w: Storable.Writer) RAISES IO.Error;
   PROCEDURE WriteURI (w: Storable.Writer; uri: URI.HierarchicalURI)
   RAISES IO.Error;
     VAR
-      b: ARRAY 1024 OF CHAR;
+      str8: Object.String8;
+      chars: Object.CharsLatin1;
     BEGIN
-      uri. GetString (b);
-      w. WriteString (b)
+      str8 := uri.GetString();
+      chars := str8.CharsLatin1();
+      w.WriteString(chars^);
     END WriteURI;
   
   BEGIN
@@ -1495,13 +1497,15 @@ PROCEDURE (l: LinkFile) Load* (r: Storable.Reader) RAISES IO.Error;
     VAR
       b: ARRAY 1024 OF CHAR;
       u: URI.URI;
-      res: Msg.Msg;
     BEGIN
       r. ReadString (b);
       (* use emptyBaseURI so that the URI parser doesn't report an error for
          the relative URI: *)
-      u := ParserURI.NewURI (b, emptyBaseURI, res);
-      ASSERT (res = NIL);
+      TRY
+        u := ParserURI.NewURI(b, emptyBaseURI);
+      CATCH Exception.ParseError:
+        ASSERT (FALSE);
+      END;
       (* eliminate emptyBaseURI, so that we get the original relative URI: *)
       u := u(URI.HierarchicalURI). MakeRelative (emptyBaseURI);
       uri := u(URI.HierarchicalURI);

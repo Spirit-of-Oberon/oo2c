@@ -240,14 +240,11 @@ PROCEDURE (w: Writer) WriteLatin1* (str[NO_COPY]: ARRAY OF CHAR);
   END WriteLatin1;
 
 PROCEDURE (w: Writer) WriteURI* (uri: URI.URI; absolute: BOOLEAN);
-  VAR
-    str: ARRAY 1024 OF CHAR;
   BEGIN
     IF ~absolute THEN
-      uri := uri. MakeRelative (w. baseURI)
+      uri := uri.MakeRelative(w.baseURI);
     END;
-    uri. GetString (str);
-    w. WriteLatin1 (str)
+    w.WriteObject(uri.GetString())
   END WriteURI;
 
 PROCEDURE (w: Writer) WriteLInt* (value: LONGINT);
@@ -427,15 +424,12 @@ PROCEDURE (w: Writer) AttrBool* (name[NO_COPY]: ARRAY OF Char; value: BOOLEAN);
 
 PROCEDURE (w: Writer) AttrURI* (name[NO_COPY]: ARRAY OF Char; uri: URI.URI;
                                 absolute: BOOLEAN);
-  VAR
-    str: ARRAY 1024 OF CHAR;
   BEGIN
     ASSERT (w. openStartTag);
     IF ~absolute THEN
       uri := uri. MakeRelative (w. baseURI)
     END;
-    uri. GetString (str);
-    w. AttrStringLatin1 (name, str)
+    w.AttrObject(name, uri.GetString());
   END AttrURI;
 
 

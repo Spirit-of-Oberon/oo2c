@@ -22,7 +22,7 @@ MODULE OOC:TestFramework:Testcases;
 
 
 IMPORT
-  LongStrings, Strings, Object, IO,
+  LongStrings, Strings, IO, OS:Path,
   URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
   XML:Basic:Parser, XML:Basic:DataType, XML:Writer,
   OOC:TestFramework:TestSetup;
@@ -319,29 +319,11 @@ PROCEDURE (test: Test) MissingChild* (): Element.String;
 
 PROCEDURE (test: Test) ModuleName* (): STRING;
   VAR
-    path: ARRAY 1024 OF CHAR;
-    i: INTEGER;
+    path, ext: STRING;
   BEGIN
     IF (test. moduleName = NIL) THEN
-      test. file. GetString (path);
-      
-      (* remove extension, if one exists *)
-      i := Strings.Length (path);
-      WHILE (path[i] # ".") & (path[i] # "/") DO
-        DEC (i)
-      END;
-      IF (path[i] = ".") THEN
-        Strings.Delete (path, i, Strings.Length (path)-i)
-      END;
-      
-      (* remove all but last path component *)
-      i := Strings.Length (path);
-      WHILE (path[i] # "/") DO
-        DEC (i)
-      END;
-      Strings.Delete (path, 0, i+1);
-      
-      test. moduleName := Object.NewLatin1(path);
+      path := Path.BaseName(test.file.GetString());
+      Path.SplitExt(path, test.moduleName, ext);
     END;
     RETURN test. moduleName
   END ModuleName;

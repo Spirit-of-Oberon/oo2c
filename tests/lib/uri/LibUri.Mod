@@ -1,7 +1,7 @@
 MODULE LibUri;
 
 IMPORT
-  TextRider, Out, StdChannels, Strings,
+  TextRider, Out, StdChannels, Strings, Exception,
   
   URI:Authority:RegistryBased,
   URI:Authority:ServerBased,
@@ -60,29 +60,28 @@ PROCEDURE WriteQuoted (w: TextRider.Writer; str: ARRAY OF CHAR);
 
 PROCEDURE Write* (str: ARRAY OF CHAR);
   VAR
-    res: Error.Msg;
-    msgText: ARRAY 1024 OF CHAR;
     uri: URI.URI;
     ref: URI.Reference;
     w: TextRider.Writer;
+    e: Exception.Exception;
   BEGIN
-    uri := Parser.NewURI (str, NIL, res);
-    IF (res = NIL) THEN
+    TRY
+      uri := Parser.NewURI (str, NIL);
+      
       w := TextRider.ConnectWriter (StdChannels.stdout);
       w. WriteString ("<test-parse-uri>");
       w. WriteString ("<uri-string>");
-      uri. GetString (str);
-      WriteQuoted (w, str);
+      w. WriteObject (uri.GetString ());
       w. WriteString ("</uri-string>");
       w. WriteLn;
       uri. WriteXML (w);
       w. WriteLn;
       w. WriteString ("</test-parse-uri>");
       w. WriteLn
-    ELSE
-      res. GetText (msgText);
+    CATCH Exception.ParseError:
+      e := Exception.Current();
       Out.String ("Error: ");
-      Out.String (msgText);
+      Out.Object (e.GetMessage());
       Out.Ln;
     END
   END Write;

@@ -311,11 +311,9 @@ PROCEDURE FingerprintMismatch (descendentModule: Rep.Module;
 PROCEDURE CreateErrList(module: Rep.Module): Error.List;
   VAR
     uri: URI.URI;
-    uriStr: Rep.URIBuffer;
   BEGIN
     uri := module.GetURI(Rep.modModuleSource, TRUE);
-    uri. GetString(uriStr);
-    RETURN Error.NewList(Object.NewLatin1(uriStr));
+    RETURN Error.NewList(uri.GetString());
   END CreateErrList;
 
 PROCEDURE (r: Rules) WriteErrList* (errList: Error.List);
@@ -740,9 +738,8 @@ PROCEDURE (r: Rules) UpdateInterfaceHTML(module: Rep.Module): BOOLEAN
 RAISES IO.Error;
   VAR
     sb: StringBuffer.StringBuffer;
-    cmd: STRING;
+    cmd, path: STRING;
     success: BOOLEAN;
-    path: Rep.URIBuffer;
     uri: URI.URI;
     exit: LONGINT;
     errList: Error.List;
@@ -776,24 +773,21 @@ RAISES IO.Error;
         (* put -o <file> option in front of style sheet  *)
         sb.Append(" -o ");
         uri := module. GetURI (Rep.modInterfaceHTML, TRUE);
-        uri(File.URI). GetPath (path);
-        sb.AppendLatin1(path);
+        path := uri(File.URI).GetPath();
+        sb.Append(path);
 
         (* create directory for HTML file, if it does not exist *)
-        OSFiles.MakeDirs (Path.DirName(Object.NewLatin1(path)),
-                          OSFiles.defaultMode);
+        OSFiles.MakeDirs (Path.DirName(path), OSFiles.defaultMode);
         
         (* append file name of style sheet *)
         uri := GetSystemId (Config.repositories);
-        uri(File.URI). GetPath (path);
         sb.Append(" ");
-        sb.AppendLatin1(path);        
+        sb.Append(uri(File.URI).GetPath());
         
         (* append name of XML file *)
         uri := module. GetURI (Rep.modInterfaceDescr, TRUE);
-        uri(File.URI). GetPath (path);
         sb.Append(" ");
-        sb.AppendLatin1(path);
+        sb.Append(uri(File.URI).GetPath());
         
         cmd := sb.ToString();
         Logger.ShellCommand(cmd);

@@ -22,9 +22,8 @@ MODULE RunTests;
 
 
 IMPORT
-  Err, Msg, Out, ProgramArgs, LongStrings, 
-  Strings, 
-  Object, IO, IO:FileChannel, IO:Buffer, TextRider, URI,
+  Err, Msg, Out, ProgramArgs, LongStrings,
+  Object, IO, IO:FileChannel, IO:Buffer, OS:Path, TextRider, URI,
   StdChannels, XMLError := XML:Error, XML:UnicodeCodec:Latin1,
   XML:Basic:Element, XMLWriter := XML:Writer, URI:Scheme:File,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases,
@@ -84,6 +83,7 @@ RAISES IO.Error;
     arg: ARRAY 1024 OF CHAR;
     elem: Element.Element;
     reportFile: Buffer.Channel;
+    uri: URI.URI;
     
   PROCEDURE ReadURI (uri: URI.URI; parser: SHORTINT): Element.Element
   RAISES IO.Error;
@@ -128,7 +128,8 @@ RAISES IO.Error;
         END;
       END;
       
-      elem := ReadURI (File.ToURI (arg), testSetup);
+      uri := File.ToURI (arg);
+      elem := ReadURI (uri, testSetup);
       setup := elem(TestSetup.TestSetup);
       elem := ReadURI (setup. testSuite. uri, testCases);
       suite := elem(Testcases.TestSuite);
@@ -153,11 +154,9 @@ RAISES IO.Error;
     test: Testcases.Test;
     result, class: SHORTINT;
     timeStr, str: ARRAY 128 OF CHAR;
-    path: ARRAY 1024 OF CHAR;
     (*time: SysClock.DateTime;*)
     elem: Element.Element;
     processorInfo: Testcases.ProcessorInfo;
-    i: INTEGER;
     
   PROCEDURE In (pattern, string: ARRAY OF LONGCHAR): BOOLEAN;
     VAR
@@ -309,13 +308,7 @@ RAISES IO.Error;
             END;
             Out.String (test. id);
             Out.String (" / ");
-            test. file. GetString (path);
-            i := Strings.Length (path);
-            WHILE (i # 0) & (path[i] # "/") DO
-              DEC (i);
-            END;
-            Strings.Delete (path, 0, i+1);
-            Out.String (path);
+            Out.Object (Path.BaseName(test.file.GetString()));
             IF (test. relevance = Testcases.relevanceInformal) &
                (result # Processor.processCrash) THEN
               Out.String (" (informal test)")

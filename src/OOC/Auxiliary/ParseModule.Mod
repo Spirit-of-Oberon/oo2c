@@ -1,7 +1,7 @@
 MODULE OOC:Auxiliary:ParseModule;
 
 IMPORT
-  IO, URI, Object,
+  IO, URI,
   OOC:Config, OOC:Config:Pragmas, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
@@ -45,7 +45,6 @@ RAISES IO.Error;
     astBuilder: ExtTree.Builder;
     stb: Builder.Builder;
     uri: URI.URI;
-    uriStr: Repository.URIBuffer;
     scannerFlags, parserFlags: SET;
   BEGIN
     inputBuffer := m. GetInputBuffer();
@@ -54,8 +53,7 @@ RAISES IO.Error;
       symTab := NIL;
       pragmaHistory := NIL;
       uri := m. GetURI (Repository.modModuleSource, TRUE);
-      uri. GetString (uriStr);
-      errList := Error.NewList(Object.NewLatin1(uriStr));
+      errList := Error.NewList(uri.GetString());
     ELSE
       errList := inputBuffer. errList;
       scannerBuilder := BasicList.New (inputBuffer, TRUE);
