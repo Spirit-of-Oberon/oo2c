@@ -1269,6 +1269,10 @@ PROCEDURE InitType* (type: Type; parent: Item; position: Position);
   END InitType;
 
 PROCEDURE (type: Type) PreciousTypePars*(): BOOLEAN;
+(**If @code{TRUE}, then the @ofield{type.typePars} are taken from the source
+   code, and not derived automatically by the compiler.  Such parameters must
+   be written to the symbol file, all others can be replaced with @code{NIL}.
+   *)
   BEGIN
     RETURN (type.typePars # NIL) & (type.typePars.nestedItems # NIL);
   END PreciousTypePars;
