@@ -263,7 +263,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
               (sym. id = Symbol.ident) THEN
           NextSym
         END;
-        RETURN NIL
+        RETURN ast. Terminal (sym);
       END;
       node := ast. Terminal (sym);
       NextSym;
@@ -769,7 +769,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
               factor := ast. Operator (NIL, op, right)
             ELSE
               Err (illegalFactor, sym);
-              factor := NIL
+              factor := ast. Terminal (sym); (* avoid NIL *)
             END;
             RETURN factor
           END Factor;
