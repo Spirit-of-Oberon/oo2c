@@ -739,17 +739,9 @@ PROCEDURE (p: Parser) ParseDocument*() RAISES IO.Error;
         RETURN NIL
       ELSE
         ch := entity. baseURI. GetChannel (URI.channelOld);
-        IF (ch = NIL) THEN
-          Err (accessError);
-          entity. baseURI. GetString (str);
-          p. lastError. SetStringAttrib ("uri", Msg.GetStringPtr (str));
-          p. lastError. SetMsgAttrib ("channel_error", res);
-          RETURN NIL
-        ELSE
-          in := Buffer.NewInput (ch, NIL, p. errList);
-          entity. SetCodecFactory (in. codecFactory);
-          RETURN in
-        END
+        in := Buffer.NewInput (ch, NIL, p. errList);
+        entity. SetCodecFactory (in. codecFactory);
+        RETURN in
       END
     END GetBuffer;
   
@@ -3247,11 +3239,7 @@ RAISES IO.Error;
     ch: IO.ByteChannel;
   BEGIN
     ch := uri. GetChannel (URI.channelOld);
-    IF (ch = NIL) THEN
-      RETURN NIL
-    ELSE
-      RETURN NewChannel (ch, uri, codecFactory, entityResolver, builder)
-    END
+    RETURN NewChannel (ch, uri, codecFactory, entityResolver, builder);
   END NewURI;
 
 PROCEDURE NewFile* (filePath: ARRAY OF CHAR; baseURI: URI.URI; 
