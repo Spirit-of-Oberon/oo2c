@@ -42,6 +42,7 @@ VAR
   c : ConstFold;
 BEGIN
   NEW (c);
+  InitConstFold (c);
   RETURN c
 END NewConstFold;
 
@@ -284,37 +285,3 @@ BEGIN
   zero := Integers.Long(0);
   minus1 := Integers.Long(-1);
 END OOC:IR:ConstFold.
-
-PROCEDURE (op : Compare) Evaluate* (VAR env : IR.Environment) : Language.Value;
-VAR 
-  l, r : Language.Value;
-
-  PROCEDURE IntegerOp () : Language.Value;
-  VAR
-    left, right : Integers.Integer; result : BOOLEAN;
-  BEGIN
-    left := l(Integer.Value).value; 
-    right := r(Integer.Value).value;
-    
-    CASE op.variant OF
-    | equal:        result := Integers.Compare(left, right) = 0;
-    | notEqual:     result := Integers.Compare(left, right) # 0;
-    | less:         result := Integers.Compare(left, right) < 0;
-    | lessEqual:    result := Integers.Compare(left, right) <= 0;
-    | greater:      result := Integers.Compare(left, right) > 0;
-    | greaterEqual: result := Integers.Compare(left, right) >= 0;
-    ELSE
-      env.Exception(statusInvalidOp, op, l, r);
-    END;
-    RETURN Boolean.type.Value(result);
-  END IntegerOp;
-
-BEGIN
-  (* Evaluate left and right operands. Propagate any errors. *)
-  l := op.left.Evaluate(env); IF env.Err() THEN RETURN NIL END;
-  r := op.right.Evaluate(env); IF env.Err() THEN RETURN NIL END;
-
-  (* for now, only support integers *)
-  RETURN IntegerOp();
-END Evaluate;
-
