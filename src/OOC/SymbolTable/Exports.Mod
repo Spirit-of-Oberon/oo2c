@@ -117,6 +117,8 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
             MarkType (item. srcCodeType)
           | item: Sym.TypeDecl DO
             MarkType (item. srcCodeType)
+          | item: Sym.Redirect DO
+            (* nothing -- for now *)
           ELSE
             Log.Type ("-- [OOC:SymbolTable:Exports]: Unknown type of `item'",
                       item);
