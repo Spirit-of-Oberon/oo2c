@@ -11,7 +11,6 @@ static OOC_INT16 Var3c__F(OOC_CHAR8 b) {
 l3:
   i0=1;
 l4:
-  i0 = i0+0;
   return i0;
 }
 

@@ -10,14 +10,12 @@ static void Cse2__F(Cse2__P p) {
   i1=OOC_FALSE;
   goto l5;
 l3:
-  i2 = i0+0;
-  i2 = *(OOC_INT16*)i2;
+  i2 = *(OOC_INT16*)i0;
   i2 = i2!=0;
   i1=i2;
 l5:
   if (!i1) goto l8;
-  i2 = i0+0;
-  i0 = *(OOC_INT16*)i2;
+  i0 = *(OOC_INT16*)i0;
   Out0__Int(i0, 0);
   Out0__Ln();
 l8:

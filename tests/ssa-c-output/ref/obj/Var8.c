@@ -10,8 +10,7 @@ static void Var8__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
   i2=0;
 l4_loop:
   i3 = _check_index(i2, str_0d, OOC_UINT32, 148);
-  i4 = i3*1;
-  i4 = (OOC_INT32)str+i4;
+  i4 = (OOC_INT32)str+i3;
   *(OOC_UINT8*)i4 = (OOC_CHAR8)'\000';
   i2 = i2+1;
   i3 = i2<=i0;
