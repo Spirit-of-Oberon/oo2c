@@ -3,8 +3,8 @@ MODULE TBProc1;
 IMPORT Out := Out0;
 
 TYPE
-  R = RECORD END;
-  P = POINTER TO R;
+  R* = RECORD END;
+  P* = POINTER TO R;
 
 PROCEDURE (p: P) Proc ();
   BEGIN

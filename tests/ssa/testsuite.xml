@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; with1 with2 with3 with4">-->
+  select ="&SetupTestCasesWithOut; tbproc1 tbproc8">-->
 
   &TestSetupWithOut;
     
@@ -588,34 +588,32 @@
     <test id="tbproc1" type="run" file="TBProc1.Mod" output="TBProc1.Ref">
       Calling a type-bound procedure of a pointer variable.
     </test>
-
     <test id="tbproc2" type="run" file="TBProc2.Mod" output="TBProc2.Ref">
       Calling a type-bound procedure of a record variable.
     </test>
-    
     <test id="tbproc3" type="run" file="TBProc3.Mod" output="TBProc3.Ref">
       Calling a type-bound procedure of a dereferenced pointer variable.
     </test>
-    
     <test id="tbproc4" type="run" file="TBProc4.Mod" output="TBProc4.Ref">
       Calling a type-bound procedure of an implictly dereferenced
       pointer variable.
     </test>
-    
     <test id="tbproc5" type="run" file="TBProc5.Mod" output="TBProc5.Ref">
       Calling a type-bound procedure of a pointer variable.  The
       procedure is redefined in an extension of the pointer's type.
     </test>
-    
     <test id="tbproc6" type="run" file="TBProc6.Mod" output="TBProc6.Ref">
       Calling a type-bound procedure of a pointer variable.  The
       procedure is inherited from the pointer's type.
     </test>
-
     <test id="tbproc7" type="run" file="TBProc7.Mod" output="TBProc7.Ref">
       Calling a type-bound procedure of a pointer variable.  The
       procedure is redefined in an extension of the pointer's type,
       and the redefinition does a super call.
+    </test>
+    <test id="tbproc8" type="reject" file="TBProc8.Mod">
+      The called type-bound procedure is not exported by
+      <code>TBProc1.Mod</code>.
     </test>
 
     
@@ -863,7 +861,9 @@
     <reject-info id="case7" pos="| %1(*second*):" msg="Label already in use"/>
     <reject-info id="case8" pos="| 1X, %1X:" msg="Label already in use"/>
     <reject-info id="case9" pos="| 0%..2:" msg="Label already in use"/>
-    
+
+    <reject-info id="tbproc8" pos="p. %Proc" msg="Undeclared identifier"/>
+        
     <reject-info id="len2" pos="Int (%LEN " msg="Wrong number of arguments"/>
     <reject-info id="len3" pos="Int (%LEN " msg="Wrong number of arguments"/>
     <reject-info id="len4" pos="LEN (%&quot;abc&quot;"
