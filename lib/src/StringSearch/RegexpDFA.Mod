@@ -347,6 +347,7 @@ PROCEDURE BuildDFA (regexp: Regexp.Group): Node;
     IF (regexp = NIL) THEN
       RETURN NIL
     ELSE
+      dummy := NIL;
       BuildGroup (regexp, initialState, dummy, NIL);
       Minimize (initialState);
       RETURN initialState
@@ -546,6 +547,7 @@ PROCEDURE Match (matcher: Matcher;
   BEGIN
     first := NIL;
     last := NIL;
+    deScanState := NIL;
     Put (scanState);
     deScanState := last;
     UnmarkNode (matcher. initialState);
