@@ -7,7 +7,7 @@ MODULE Object;
    are added on demand.  If it is not used, it has no place here.  *)
 
 IMPORT
-  S := SYSTEM;
+  S := SYSTEM, RT0;
   
 TYPE
   Hash* = LONGINT;
@@ -88,14 +88,65 @@ CONST
 
 VAR
   emptyString-: String;
-  
+
+PROCEDURE ^ NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR;
+                             start, end: LONGINT): String8;
+
 PROCEDURE (x: Object) ToString*(): String;
 (**Returns a string representation of the object.  Typically, the string is
    some form of ``natural'' representation of the value.  For complex objects,
    it should describe the type and essential attributes of the object.  The
    exact format of the returned value is intentionally left vague.  *)
+  CONST
+    nameCutoff = 128;
+  VAR
+    str: ARRAY 1+nameCutoff+1+nameCutoff+4+16+1+1 OF CHAR;
+    i: LONGINT;
+    struct: RT0.Struct;
+    
+  PROCEDURE Append(name: RT0.Name);
+    VAR
+      j: LONGINT;
+    BEGIN
+      j := 0;
+      WHILE (j # nameCutoff) & (name[j] # 0X) DO
+        str[i] := name[j]; INC(i); INC(j);
+      END;
+    END Append;
+
+  PROCEDURE AppendHex(x: LONGINT);
+    VAR
+      j, ch: LONGINT;
+    BEGIN
+      FOR j := 7 TO 0 BY -1 DO
+        ch := (x MOD 16)+ORD("0");
+        IF (ch > ORD("9")) THEN
+          INC(ch, ORD("a")-(ORD("9")+1));
+        END;
+        str[i+j] := CHR(ch);
+        x := x DIV 16;
+      END;
+      INC(i, 8);
+    END AppendHex;
+  
   BEGIN
-    RETURN NIL;  (* ... FIXME *)
+    str := "<"; i := 1;
+    struct := RT0.TypeOf(x);
+    Append(struct.module.name);
+    str[i] := "."; INC (i);
+    Append(struct.name);
+    str[i] := " "; INC(i);
+    str[i] := "a"; INC(i);
+    str[i] := "t"; INC(i);
+    str[i] := " "; INC(i);
+<* IF TARGET_ADDRESS = 64 THEN *>
+    AppendHex(SHORT(S.LSH(S.VAL(S.ADDRESS, x), -32)));
+    AppendHex(SHORT(S.LSH(S.LSH(S.VAL(S.ADDRESS, x), 32), -32)));
+<* ELSE *>
+    AppendHex(S.VAL(S.ADDRESS, x));
+<* END *>
+    str[i] := ">"; INC(i);
+    RETURN NewLatin1Region(str, 0, i);
   END ToString;
 
 PROCEDURE (x: Object) Equals*(y: Object): BOOLEAN;
