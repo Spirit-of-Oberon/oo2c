@@ -98,6 +98,15 @@ PROCEDURE RegisterConfig*;
     cflags := Config.AddOption ("cflags", StringValue.New ("-O2 -g"));
     ldflags := Config.AddOption ("ldflags", StringValue.New (""));
     libs := Config.AddOption ("libs", StringValue.New ("-lgc"));
+
+    Config.AddCmdLine ("--cc",
+                       "<options><set name='cc'>$1</set></options>");
+    Config.AddCmdLine ("--cflags",
+                       "<options><set name='cflags'>$1</set></options>");
+    Config.AddCmdLine ("--ldflags",
+                       "<options><set name='ldflags'>$1</set></options>");
+    Config.AddCmdLine ("--libs",
+                       "<options><set name='libs'>$1</set></options>");
   END RegisterConfig;
 
 END OOC:Config:CCompiler.
