@@ -652,10 +652,11 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
           PushBlock(s, s.instr(S.Block));
         END;
       ELSIF (s.block.opcode = S.merge) THEN
-        (* continue at the place of the merge in the merge's surrounding
-           block *)
-        s.instr := s.block;
-        s.block := s.block.block;
+        (* continue after the branch in the block that contains the
+           merge's branch instruction  *)
+        ASSERT(s.block.block.opcode = S.branch);
+        s.instr := s.block.block.nextInstr;
+        s.block := s.block.block.block;
         s.controlCP := s.instr;
         PushState(s);
       ELSE

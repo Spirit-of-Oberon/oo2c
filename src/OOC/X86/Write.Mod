@@ -1,6 +1,7 @@
 MODULE OOC:X86:Write;
 
 IMPORT
+  Log, D := OOC:X86:Debug,
   SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
@@ -283,6 +284,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     block, dummy: Block;
     opnd: S.Opnd;
     qtdData: Naming.QualTypeData;
+    merge: S.MergeInstr;
     
     opndWidth: S.Type;
     (* Operand/result size of the operation.  Defaults to the type of the
@@ -623,6 +625,19 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       dummy := w.WriteBlock(path2);
     END WriteBranch2;
 
+  PROCEDURE WriteMerge(instr: S.MergeInstr);
+    VAR
+      dummy: Block;
+    BEGIN
+      dummy := w.WriteBlock(instr);
+      
+      block := NEW(Block, NIL);
+      dummy.SetArc(dummy.jump, block, -1, S.jump);
+      sb := NEW(StringBuffer.StringBuffer, 1024);
+      block.instructions := sb;
+      w.blocks.Append(block);
+    END WriteMerge;
+  
   PROCEDURE MovMemReg(fromMemReg: S.Opnd; fromType: S.Type;
                       valueOpnd: BOOLEAN; toReg: S.Result);
   (* Move from memory or register to register.  If source type `fromType' and
@@ -833,17 +848,19 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         ELSE
           WriteBranch2(cmp, TRUE, instr.paths[0], instr.paths[1]);
         END;
+
+        merge := instr.instrTail(S.MergeInstr);
+        IF (merge.opcode = S.merge) THEN
+          WriteMerge(merge);
+        END;
       | instr: S.MergeInstr DO
-        dummy := w.WriteBlock(instr);
-        
-        block := NEW(Block, NIL);
-        dummy.SetArc(dummy.jump, block, -1, S.jump);
-        sb := NEW(StringBuffer.StringBuffer, 1024);
-        block.instructions := sb;
-        w.blocks.Append(block);
+        ASSERT(instr.opcode = S.loopEnd);
+        WriteMerge(instr);
       | instr: S.LoopStartInstr DO
         dummy := w.WriteBlock(instr);
       | instr: S.Block DO
+        Log.Type("instr", instr);
+        D.Log("instr", instr);
         ASSERT(FALSE);
       ELSE
         (* nothing *)

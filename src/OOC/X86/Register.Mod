@@ -21,6 +21,7 @@ TYPE
     maxColor: IGraph.Color;
     prelocatedRep: ARRAY S.lastRegister+1 OF S.Result;
     (* Note: Only applies to general purpose registers.  *)
+    doneBranches: Dictionary.Dictionary;
   END;
   
 TYPE
@@ -41,6 +42,7 @@ PROCEDURE (rf: RegisterFile) INIT*(registerType: SHORTINT);
     rf.resultList := NEW(ArrayList.ArrayList(S.Result), 16);
     rf.iGraph := NIL;
     rf.maxColor := -1;
+    rf.doneBranches := NEW(Dictionary.Dictionary);
   END INIT;
 
 PROCEDURE (ld: LiveData) INIT*(block: S.Block; position: S.Instr;
@@ -201,6 +203,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: S.Block; instr: S.Instr;
   BEGIN
     iGraph := rf.iGraph;
     (* write current set of live results
+    D.Log2("b", b, "instr", instr);
     FOR i := 0 TO rf.resultList.Size()-1 DO
       IF iGraph.In(i, live) THEN
         D.Log("   >>> in live", rf.resultList.array[i]);
@@ -216,6 +219,15 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: S.Block; instr: S.Instr;
       | S.loopStart:
         MarkOpndAsLive(live, instr.GateOperands());
       ELSE
+        IF (instr.opcode = S.branch) & ~rf.doneBranches.HasKey(instr) THEN
+          (* Instructions of type `branch' are seen twice.  First, when the
+             live set is propagated forward from the instruction following it.
+             In this case, the live set is moved to the branch's merge and
+             continues there.  Second, when the merge and guards inside the
+             branch have been swept and the live set continues at the place
+             of the branch.  *)
+          RETURN instr;
+        END;
         IF instr.IsLive() THEN
           (*out.Instr("current instr", instr);*)
           FOR res IN instr.Results() DO
@@ -319,6 +331,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
     ldReady: ArrayList.ArrayList(LiveData);
     ldWaiting: Dictionary.Dictionary(S.Block, LiveData);
     instr: S.Instr;
+    merge: S.MergeInstr;
     block, branchBlock: S.Block;
     addedCopies: LONGINT;
     
@@ -414,7 +427,12 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       END;
     END AssignRegisterNames;
 
-  PROCEDURE MergeJumps(merge: S.MergeInstr; ld: LiveData);
+  PROCEDURE AddToReady(ld: LiveData);
+    BEGIN
+      ldReady.Append(ld);
+    END AddToReady;
+  
+  PROCEDURE AddJumpsToReady(merge: S.MergeInstr; ld: LiveData);
     VAR
       jump, position: S.Instr;
       mergedBlock: S.Block;
@@ -434,9 +452,9 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
         FOR opnd IN jump.GateOperands() DO
           AddResToLive(opnd.arg, ldJump.live);
         END;
-        ldReady.Append(ldJump);
+        AddToReady(ldJump);
       END;
-    END MergeJumps;
+    END AddJumpsToReady;
 
 (*  PROCEDURE DumpMatrix(rf: RegisterFile);
     VAR
@@ -465,7 +483,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
        as interfering with all current elements of the set *)
     ld := NEW(LiveData, b, b.instrTail, 0, rf.iGraph.NewVector());
     ldReady := NEW(ArrayList.ArrayList(LiveData), 4);
-    ldReady.Append(ld);
+    AddToReady(ld);
     ldWaiting := NEW(Dictionary.Dictionary(S.Block, LiveData));
     WHILE (ldReady.size # 0) DO
       ld := ldReady.array[ldReady.size-1];
@@ -477,26 +495,26 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
         block := ld.block;
         CASE block.opcode OF
         | S.merge:
-          MergeJumps(block(S.MergeInstr), ld);
+          AddJumpsToReady(block(S.MergeInstr), ld);
           
         | S.loopEnd:
-          MergeJumps(block(S.MergeInstr), ld);
+          AddJumpsToReady(block(S.MergeInstr), ld);
           instr := block.prevInstr;
           ASSERT(instr(S.LoopStartInstr).end = block);
           ld := NEW(LiveData, instr(S.LoopStartInstr),
                     instr(S.LoopStartInstr).instrTail, 0,
                     rf.iGraph.NewVector());
           (* this ld stays empty until the loopBackedge instr fills it *)
-          ldReady.Append(ld);
+          AddToReady(ld);
           
         | S.branch, S.loopStart:
           ld.block := block.block;
           ld.position := block;
-          ldReady.Append(ld);
+          AddToReady(ld);
           
         | S.guard:
           IF (block(S.MergeInstr).jumps # NIL) THEN
-            MergeJumps(block(S.MergeInstr), ld);
+            AddJumpsToReady(block(S.MergeInstr), ld);
           END;
           
           branchBlock := block.block(S.BranchInstr);
@@ -505,14 +523,16 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
             rf.iGraph.MergeVector(ld.live, ldBranch.live);
             DEC(ldBranch.remainingInput);
             IF (ldBranch.remainingInput = 0) THEN
-              ldReady.Append(ldBranch);
+              AddToReady(ldBranch);
               ldWaiting.Delete(branchBlock);
+              rf.doneBranches.Set(branchBlock, NIL);
             END;
           ELSE
             ld := NEW(LiveData, branchBlock, NIL,
                       LEN(branchBlock(S.BranchInstr).paths^)-1, ld.live);
             IF (ld.remainingInput = 0) THEN
-              ldReady.Append(ld);
+              AddToReady(ld);
+              rf.doneBranches.Set(branchBlock, NIL);
             ELSE
               ldWaiting.Set(branchBlock, ld);
             END;
@@ -521,12 +541,17 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
         | S.function:
           (* we are done *)
         END;
+      ELSIF (instr.opcode = S.branch) THEN (* go into merge block *)
+        merge := instr.TopLevelMerge();
+        ld.block := merge;
+        ld.position := ld.block.instrTail;
+        AddToReady(ld);
       ELSIF (instr = ld.block) THEN
         (* discard *)
       ELSE       (* looking at merge instruction: sweep merge block *)
         ld.block := instr(S.Block);
         ld.position := ld.block.instrTail;
-        ldReady.Append(ld);
+        AddToReady(ld);
       END;
     END;
     ASSERT(ldWaiting.Size() = 0);
