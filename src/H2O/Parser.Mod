@@ -115,15 +115,16 @@ PROCEDURE Install* (VAR scope : T.Object; tag : STRING; name : STRING; new : T.T
 VAR 
   obj : T.Object;
 BEGIN
-  IF T.FindObject(scope, name, obj) THEN
+  IF T.FindObject(scope, name, obj) & ~T.AllowedRedefinition(new, obj.type) THEN
     err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type);
+    obj.type := new;
   ELSE
-    new.Depend(depend);
-    IF depend.size > 0 THEN ShowDepend(name, depend) END;
-    mod.AddImports(depend);
-    mod.AddDefinition();
     T.Bind(scope, name, 0, new, mod);
   END;
+  new.Depend(depend);
+  IF depend.size > 0 THEN ShowDepend(name, depend) END;
+  mod.AddImports(depend);
+  mod.AddDefinition();
 END Install;
 
 PROCEDURE InstallType(VAR types : T.Object; name : STRING; new : T.Type; mod : Module.Module);
@@ -1121,7 +1122,7 @@ VAR
     END;
     GetSym;
   END SkipBody;
-  
+
 BEGIN
   StorageClass(class);
   spec := TypeSpecifier();
@@ -1131,16 +1132,18 @@ BEGIN
     mod := process.in.GetModule();
     type := Declarator(name, spec);
     IF name = NIL THEN
-      err.Error("Declaration must specify a name");
-      name := Object.NewLatin1("error");
-    END;
-    IF class = T.scTypedef THEN
-      t := T.NewType(T.tName, type, type.size, {}); t.name := name;
-      InstallType(T.typedefs, name, t, mod);
+      IF T.TypeNeedsName(type) THEN
+        err.MsgString("Declaration should specify a name", FALSE);
+      END
     ELSE
-      Install(T.vars, "Object", name, type, mod);
+      IF class = T.scTypedef THEN
+        t := T.NewType(T.tName, type, type.size, {}); t.name := name;
+        InstallType(T.typedefs, name, t, mod);
+      ELSE
+        Install(T.vars, "Object", name, type, mod);
+      END;
+      ShowBinding(name, type)
     END;
-    ShowBinding(name, type);
     IF type.class = T.tFunction THEN
       IF token.sym = Scanner.lbrace THEN
         SkipBody;

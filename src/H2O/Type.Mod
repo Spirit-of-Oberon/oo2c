@@ -243,6 +243,28 @@ BEGIN
   RETURN t;
 END BaseType;
 
+(* In some situations a type may be redefined. In particular, this is allowed
+if a structure or union is defined as an opaque type, and is later redefined.
+*)
+
+PROCEDURE AllowedRedefinition* (new, old : Type) : BOOLEAN;
+BEGIN
+  RETURN (new.class = old.class) &
+    ((new.class = tStruct) OR (new.class = tUnion)) &
+    (old.link = NIL);
+END AllowedRedefinition;
+
+(* Some declarations are OK without defining a name. This is because they have
+   a type tag which generates a declaration as a side-effect. *)
+
+PROCEDURE TypeNeedsName* (t : Type) : BOOLEAN;
+VAR class : INTEGER;
+BEGIN
+  class := t.class;
+  RETURN ~
+  ((class = tStruct) OR (class = tUnion) OR (class = tEnum));
+END TypeNeedsName;
+
 BEGIN
   charType := BaseType(tInteger, 1, "char");  
   unsignedCharType := BaseType(tUnsigned, 1, "unsigned char");
