@@ -870,12 +870,15 @@ PROCEDURE (type: Type) Store* (w: Object.Writer);
   BEGIN
     type. Store^ (w);
     w. WriteObject (type. position);
-    w. WriteObject (type. namingDecl)
+    w. WriteObject (type. namingDecl);
+    w. WriteNum (type. size);
+    w. WriteNum (type. align);
   END Store;
 
 PROCEDURE (type: Type) Load* (r: Object.Reader);
   VAR
     obj: Object.Object;
+    i: LONGINT;
   BEGIN
     type. Load^ (r);
     r. ReadObject (obj);
@@ -886,8 +889,9 @@ PROCEDURE (type: Type) Load* (r: Object.Reader);
     ELSE
       type. namingDecl := obj(TypeDecl)
     END;
-    type. size := unknownSize;
-    type. align := 1;
+    r. ReadNum (type. size);
+    r. ReadNum (i);
+    type. align := SHORT (i);
   END Load;
 
 PROCEDURE (type: Type) SetNamingDecl* (namingDecl: TypeDecl);
@@ -1386,7 +1390,8 @@ PROCEDURE (fieldDecl: FieldDecl) Store* (w: Object.Writer);
   BEGIN
     fieldDecl. Store^ (w);
     (*w. WriteObject (fieldDecl. type);*)
-    w. WriteObject (fieldDecl. srcCodeType)
+    w. WriteObject (fieldDecl. srcCodeType);
+    w. WriteNum (fieldDecl. offset);
   END Store;
 
 PROCEDURE (fieldDecl: FieldDecl) Load* (r: Object.Reader);
@@ -1396,7 +1401,8 @@ PROCEDURE (fieldDecl: FieldDecl) Load* (r: Object.Reader);
     fieldDecl. Load^ (r);
     r. ReadObject (obj);
     fieldDecl. srcCodeType := obj(Type);
-    fieldDecl. type := fieldDecl. srcCodeType
+    fieldDecl. type := fieldDecl. srcCodeType;
+    r. ReadNum (fieldDecl. offset);
   END Load;
 
 PROCEDURE (fieldDecl: FieldDecl) SetOffset* (offset: LONGINT);
