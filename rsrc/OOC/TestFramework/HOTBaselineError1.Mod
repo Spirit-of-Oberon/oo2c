@@ -1,4 +1,4 @@
-MODULE HOTBaselineError1;
+MODULE HOTBaselineError1;  (* mva *)
 
 PROCEDURE Test*;
   BEGIN

@@ -1,4 +1,4 @@
-MODULE HOTBaselineOutput1;
+MODULE HOTBaselineOutput1;  (* mva *)
 
 IMPORT Out;
 
