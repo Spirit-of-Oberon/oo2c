@@ -21,7 +21,8 @@ MODULE OOC:SymbolTable:Exports;
 *)
 
 IMPORT
-  Log, ADT:Dictionary, Sym := OOC:SymbolTable, OOC:Doc;
+  Log, ADT:Dictionary, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder,
+  OOC:Doc;
 
 
 PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.Dictionary;
@@ -135,7 +136,9 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
         WITH ptr: Sym.Declaration DO
           IF (ptr. exportMark # Sym.nameNotExported) OR 
              (ptr IS Sym.VarDecl) & ptr(Sym.VarDecl). isParameter OR
-             (ptr IS Sym.Import) & (module.class # Sym.mcStandard) OR
+             (ptr IS Sym.Import) &
+               ((module.class # Sym.mcStandard) OR
+                (ptr.name.str[0] = Builder.prefixAutoImport)) OR
              forSymbolFile &
              ((ptr IS Sym.FieldDecl) OR
               (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isTypeBound) THEN
