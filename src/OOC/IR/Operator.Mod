@@ -18,6 +18,11 @@ TYPE
     (IR.VisitorDesc)
   END;
 
+TYPE
+  ArithOp2* = POINTER TO ArithOp2Desc;
+  ArithOp2Desc* = RECORD 
+    (IR.OperatorDesc)
+  END;
 
 TYPE
   Index* = POINTER TO IndexDesc;
@@ -50,7 +55,6 @@ TYPE
   NeqDesc = RECORD
     (IR.OperatorDesc) 
   END;
-  
 
 PROCEDURE InitVisitor* (v: Visitor);
   BEGIN
@@ -70,6 +74,30 @@ PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List): Bui
     InitBuilder (b, pragmaHistory, errList);
     RETURN b
   END NewBuilder;
+
+(* -------- *)
+
+PROCEDURE InitArithOp2 (op: ArithOp2; sym: IR.Symbol; left, right: IR.Expression);
+  BEGIN
+    IR.InitOperator (op, sym, left. type, left, right);
+  END InitArithOp2;
+
+PROCEDURE (b: Builder) NewArithOp2 (sym: IR.Symbol; left, right: IR.Expression): ArithOp2;
+  VAR
+    op: ArithOp2;
+  BEGIN
+    NEW (op);
+    InitArithOp2 (op, sym, left, right);
+    RETURN op
+  END NewArithOp2;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitArithOp2* (op: ArithOp2);
+  END VisitArithOp2;
+
+PROCEDURE (op: ArithOp2) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitArithOp2 (op)
+  END Accept;
 
 (* -------- *)
 

@@ -100,6 +100,11 @@ PROCEDURE VisitDyadicOp (v: Visitor; op: IR.Operator; name: ARRAY OF CHAR);
     v. w. EndTag;  (* name *)
   END VisitDyadicOp;
 
+PROCEDURE (v: Visitor) VisitArithOp2* (op: Operator.ArithOp2);
+  BEGIN
+    VisitDyadicOp (v, op, "arithop2");
+  END VisitArithOp2;
+
 PROCEDURE (v: Visitor) VisitAdd* (add: Operator.Add);
   BEGIN
     VisitDyadicOp (v, add, "add");

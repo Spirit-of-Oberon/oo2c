@@ -21,8 +21,7 @@ MODULE OOC:SymbolTable:TypeRules;
 *)
 
 IMPORT
-  Sym := OOC:SymbolTable;
-
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
 TYPE
   Rules* = POINTER TO RulesDesc;
@@ -54,6 +53,37 @@ PROCEDURE (tr: Rules) IsScalarType* (type: Sym.Type): BOOLEAN;
            (type IS Sym.FormalPars)
   END IsScalarType;
 
+PROCEDURE (tr : Rules) IsPredefClass* (type : Sym.Type; class : SET) : BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} is a a member of a class of
+   types. A class is represented by a SET of @oparam{Sym.PredefId} values.
+   These are defined by classXXX constants in @omodule{OOC:SymbolTable:Predef}.
+   *)
+  BEGIN
+    WITH type : Sym.PredefType DO
+      RETURN type.id IN class;
+    ELSE
+      RETURN FALSE
+    END;
+  END IsPredefClass;
+
+PROCEDURE (tr : Rules) IncludesType* (large, small: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE} iff type @oparam{large} includes type @oparam{small}.
+   The Oberon-2 report defines inclusion for numeric types: LONGREAL >= REAL >=
+   LONGINT >= INTEGER >= SHORTINT. In addition, we have: LONGCHAR >= CHAR. *)
+  VAR
+    largeId, smallId : Sym.PredefId;
+  BEGIN
+    IF (large IS Sym.PredefType) & (small IS Sym.PredefType) THEN
+      largeId := large(Sym.PredefType).id;
+      smallId := small(Sym.PredefType).id;
+      IF (largeId IN Predef.classNumeric) THEN
+        RETURN (smallId IN Predef.classNumeric) & (smallId <= largeId);
+      ELSIF (largeId IN Predef.classChar) THEN
+        RETURN (smallId IN Predef.classChar) & (smallId <= largeId);
+      END;
+    END;
+    RETURN FALSE;
+  END IncludesType;
 
 PROCEDURE (tr: Rules) IsOpenArrayType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} is an array, and its

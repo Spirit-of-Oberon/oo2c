@@ -608,6 +608,8 @@ PROCEDURE (b: Builder) [ABSTRACT] NewOperator* (op: Symbol; left, right: Express
 
 (* -------- *)
 
+(* -------- *)
+
 PROCEDURE InitStatement* (statm: Statement; sym: Symbol);
   BEGIN
     InitExpression (statm, sym, Predef.GetType (Predef.void));

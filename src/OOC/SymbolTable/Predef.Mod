@@ -46,11 +46,19 @@ CONST
   longcharString* = 13;
   void* = 14;
   lastId = void;
-  
+
+CONST
+  (* These represent set of types that may be treated similarly. *)
+
+  classChar* = {char, longchar};
+  classInteger* = {shortint, integer, longint};
+  classReal* = {real, longreal};
+  classNumeric* = classInteger + classReal;
+  classSet* = {set};
+
 CONST
   (* predefine procedures and functions *)
   assert* = 0;
-
 
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
   VAR
