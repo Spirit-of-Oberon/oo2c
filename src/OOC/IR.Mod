@@ -3356,25 +3356,29 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
 
 PROCEDURE (b: Builder) AssertVar (expr: Expression);
   BEGIN
-    WITH expr: Var DO
-      IF TR.IsReadOnly (b. module, expr. decl) THEN
-        b. ErrSym (importedReadOnly, expr. sym);
-      ELSIF (expr.decl IS Sym.VarDecl) & expr.decl(Sym.VarDecl).isReadOnly THEN
-        b.ErrSym(readOnlyParameter, expr.sym);
-      END;
-    | expr: Deref DO
-      (* a pointer dereference is always a variable *)
-    | expr: Index DO
-      b. AssertVar (expr. array);   (* check that value is writable *)
-    | expr: SelectField DO
-      b. AssertVar (expr. record);  (* check that value is writable *)
-      IF TR.IsReadOnly (b. module, expr. field) THEN
-        b. ErrSym (importedReadOnly, expr. fieldSym);
-      END;
-    | expr: TypeGuard DO
-      b. AssertVar(expr. test. expr);	(* check that value is writable *)
+    IF TR.IsReadOnlyType(b.module, expr.type) THEN
+      b. ErrSym (importedReadOnly, expr. sym);
     ELSE
-      b. ErrSym (notVariable, expr. sym);
+      WITH expr: Var DO
+        IF TR.IsReadOnly (b. module, expr. decl) THEN
+          b. ErrSym (importedReadOnly, expr. sym);
+        ELSIF (expr.decl IS Sym.VarDecl) & expr.decl(Sym.VarDecl).isReadOnly THEN
+          b.ErrSym(readOnlyParameter, expr.sym);
+        END;
+      | expr: Deref DO
+        (* a pointer dereference is always a variable *)
+      | expr: Index DO
+        b. AssertVar (expr. array);   (* check that value is writable *)
+      | expr: SelectField DO
+        b. AssertVar (expr. record);  (* check that value is writable *)
+        IF TR.IsReadOnly (b. module, expr. field) THEN
+          b. ErrSym (importedReadOnly, expr. fieldSym);
+        END;
+      | expr: TypeGuard DO
+        b. AssertVar(expr. test. expr);	(* check that value is writable *)
+      ELSE
+        b. ErrSym (notVariable, expr. sym);
+      END;
     END;
   END AssertVar;
 

@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; long4">-->
+  select ="&SetupTestCasesWithOut; array11 array12">-->
 
   &TestSetupWithOut;
     
@@ -770,7 +770,14 @@
       Assignment to a variable parameter of array type is visible
       outside procedure.
     </test>
-
+    <test id="array11" type="accept" file="Array11.Mod">
+      Define an array type with the <code>READ_ONLY</code> flag set.
+    </test>
+    <test id="array12" type="reject" file="Array12.Mod">
+      Trying to assign to an array element imported with
+      <code>READ_ONLY</code>.
+    </test>
+    
     <test id="procvar1" type="run" file="ProcVar1.Mod" output="ProcVar1.Ref">
       Call procedures through procedure variables.  The procedures
       have no arguments.
@@ -1347,6 +1354,9 @@
       msg="Multiple declaration of same name"/>
     <reject-info id="record14" pos="%x:"
       msg="This name is already defined in the record's base type"/>
+    
+    <reject-info id="array12" pos="p%[0]"
+      msg="This variable is read-only"/>
     
     <reject-info id="typetest5" pos="IS %LONGINT"
       msg="Type must be an extension of the left operand's type"/>

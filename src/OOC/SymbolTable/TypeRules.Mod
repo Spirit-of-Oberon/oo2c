@@ -535,6 +535,15 @@ PROCEDURE IsReadOnly* (usingModule: Sym.Module; decl: Sym.Declaration): BOOLEAN;
         (decl. Module() # usingModule);
   END IsReadOnly;
 
+PROCEDURE IsReadOnlyType* (usingModule: Sym.Module; type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} is imported read-only
+   by module @oparam{usingModule}.  *)
+  BEGIN
+    RETURN (type IS Sym.Array) &
+        type(Sym.Array).readOnlyExport &
+        (type.Module() # usingModule);
+  END IsReadOnlyType;
+
 
 PROCEDURE AllocateType* (type: Sym.Type);
 (**This maps a type @oparam{type} onto the size and alignment constrains of the

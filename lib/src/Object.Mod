@@ -47,11 +47,11 @@ TYPE
   END;
 
 TYPE
-  CharsLatin1* = POINTER TO ARRAY OF CHAR;
+  CharsLatin1* = POINTER TO ARRAY[READ_ONLY] OF CHAR;
   (**Note: The elements of this type should be considered read-only in
      importing modules, similar to read-only exported record fields.  This
      restriction may be enforced by the OOC2 compiler at a later stage.  *)
-  CharsUCS4* = POINTER TO ARRAY OF UCS4CHAR;
+  CharsUCS4* = POINTER TO ARRAY[READ_ONLY] OF UCS4CHAR;
   (**Note: The elements of this type should be considered read-only in
      importing modules, similar to read-only exported record fields.  This
      restriction may be enforced by the OOC2 compiler at a later stage.  *)

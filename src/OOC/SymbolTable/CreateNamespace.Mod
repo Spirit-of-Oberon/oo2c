@@ -844,6 +844,8 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
                 ELSE
                   SetFlag(item.hasLengthInfo, FALSE);
                 END;
+              | Sym.flagReadOnly:
+                SetFlag(item.readOnlyExport, TRUE);
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;

@@ -96,6 +96,7 @@ CONST
   flagCString* = 5;
   flagNilCompat* = 6;
   flagUnion* = 7;
+  flagReadOnly* = 8;
   
 CONST
   nameNotExported* = 0;
@@ -513,6 +514,9 @@ TYPE
     (**If @code{TRUE}, then the length of this array can be obtained
        during run-time.  Default is @code{TRUE} for non-
        @code{INTERFACE} modules.  *)
+    readOnlyExport*: BOOLEAN;
+    (**If @code{TRUE}, then importing modules have no write access to
+       this array, or to its elements.  Default is @code{FALSE}.  *)
     elementType*: Type;                  (*... make this read-only? *)
     (**The type of the array elements.  If this is initially a type name,
        it is replaced with a reference to the true type after
@@ -1001,6 +1005,8 @@ PROCEDURE (item: Item) AddFlag* (name: Name);
       id := flagNilCompat;
     ELSIF (name.str^ = "UNION") THEN
       id := flagUnion;
+    ELSIF (name.str^ = "READ_ONLY") THEN
+      id := flagReadOnly;
     ELSE
       id := flagUnknownName;
     END;
@@ -2001,6 +2007,7 @@ PROCEDURE InitArray* (array: Array; parent: Item; position: Position;
     InitType (array, parent, position);
     array. isOpenArray := isOpenArray;
     array. hasLengthInfo := TRUE;
+    array. readOnlyExport := FALSE;
     array. elementType := elementType;
     array. srcCodeElementType := elementType;
     array. length := -1;
@@ -2012,6 +2019,7 @@ PROCEDURE (array: Array) Store* (w: Storable.Writer);
     array. Store^ (w);
     w. WriteBool (array. isOpenArray);
     w. WriteBool (array. hasLengthInfo);
+    w. WriteBool (array. readOnlyExport);
     (*w. WriteObject (array. elementType);*)
     w. WriteObject (array. srcCodeElementType);
     w. WriteNum (array. length);    
@@ -2024,6 +2032,7 @@ PROCEDURE (array: Array) Load* (r: Storable.Reader);
     array. Load^ (r);
     r. ReadBool (array. isOpenArray);
     r. ReadBool (array. hasLengthInfo);
+    r. ReadBool (array. readOnlyExport);
     r. ReadObject (obj);
     array. srcCodeElementType := obj(Type);
     array. elementType := array. srcCodeElementType;
