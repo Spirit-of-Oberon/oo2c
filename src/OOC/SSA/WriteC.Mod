@@ -24,6 +24,29 @@ PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): WriteDecl.BasicTypeId
     END;
   END SubclassToBasicType;
 
+PROCEDURE Fixup (pb: SSA.ProcBlock);
+  VAR
+    instr: SSA.Instr;
+  BEGIN
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      CASE instr. opcode OF
+      | Opcode.call:
+        IF (instr. opndList. arg IS SSA.Address) THEN
+          (* if the function address of a call is taken from an address
+             instruction, then replace this operand with a `declref';
+             this way, the name of the called function is used directly,
+             without going through an intermediate address value *)
+          instr. opndList. ReplaceOpnd
+              (pb. GetDeclRef (instr. opndList. arg(SSA.Address). decl));
+        END;
+      ELSE (* nothing to do *)
+      END;
+      instr := instr. nextInstr
+    END;
+  END Fixup;
+
+
 PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.Dictionary;
 (**Assigns registers to values produced by SSA instructions.  For the moment,
    a very simple allocator is sufficient: every value gets its very own
@@ -69,7 +92,6 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
   VAR
     instr: SSA.Instr;
     opnd: SSA.Opnd;
-    str: ARRAY 32 OF CHAR;
     target: Object.Object;
     name: String.String;
 
@@ -81,8 +103,9 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
       obj: Object.Object;
     BEGIN
       arg := opnd. arg;
-      WITH arg: SSA.Address DO
-        (* shortcut to save the type cast when calling a procedure *)
+      WITH arg: SSA.DeclRef DO
+        (* insert name of the object; shortcut to save the type cast
+           when calling a procedure *)
         name := Naming.NameOfDeclaration (arg. decl);
         w. WriteString (name. array^)
       ELSE
@@ -136,11 +159,33 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
       w. WriteLn; w. WriteString ("  ");
     END Newline;
   
+  PROCEDURE WriteOpcode (instr: SSA.Instr);
+    VAR
+      i: LONGINT;
+      str: ARRAY 32 OF CHAR;
+    CONST
+      padWidth = 11;
+    BEGIN
+      w. WriteString ("/*");
+      instr. GetOpcodeName (str);
+      i := 0;
+      WHILE (str[i] # 0X) DO
+        INC (i);
+      END;
+      WHILE (i < padWidth) DO
+        str[i] := " "; INC (i)
+      END;
+      str[i] := 0X;
+      w. WriteString (str);
+      w. WriteString ("*/ ");
+    END WriteOpcode;
+  
   BEGIN
     ASSERT (pb. TopSort());
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       Newline;
+      WriteOpcode (instr);
 
       IF registerMap. HasKey (instr) THEN
         target := registerMap. Get (instr);
@@ -183,10 +228,6 @@ PROCEDURE WriteInstrList (w: TextRider.Writer; pb: SSA.ProcBlock;
         END;
         
       ELSE
-        w. WriteString ("/*");
-        instr. GetOpcodeName (str);
-        w. WriteString (str);
-        w. WriteString ("*/");
       END;
       
       instr := instr. nextInstr
@@ -209,7 +250,8 @@ PROCEDURE ProcBody* (w: TextRider.Writer; converter: ConvertDecl.Converter;
     pb. exit. AddOpnd (s, Opnd.store);
 
     XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
-    
+
+    Fixup (pb);
     registerMap := AssignRegisters (w, pb);
     WriteInstrList (w, pb, registerMap);
   END ProcBody;
