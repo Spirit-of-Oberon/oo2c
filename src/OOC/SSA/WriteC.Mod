@@ -23,6 +23,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 IMPORT
   IntStr, Out, StdChannels, Strings, StringSearch,
   ADT:Object, ADT:String, ADT:Dictionary, OOC:Auxiliary:Config,
+  LString := Language:String,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
@@ -491,7 +492,11 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       ELSIF (type IS Sym.Pointer) OR
             (type IS Sym.FormalPars) OR
             passByReference THEN
-        IF passByReference OR (type. namingDecl = NIL) THEN
+        IF (var IS SSA.Const) &
+           (var(SSA.Const). value # NIL) &
+           (var(SSA.Const). value IS LString.Value) THEN
+          (* omit cast on string constant *)
+        ELSIF passByReference OR (type. namingDecl = NIL) THEN
           w. WriteString ("(void*)");
         ELSE
           name := Naming.NameOfType (type);
