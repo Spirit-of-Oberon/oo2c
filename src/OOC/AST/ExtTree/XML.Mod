@@ -357,6 +357,14 @@ PROCEDURE Write* (cw: Channel.Writer; m: ExtTree.Module);
           Node (n. expr);
           w. EndTag
         
+        | n: ExtTree.TryStatm DO
+          w. StartTag ("try_statm", FALSE);
+          Node(n.try);
+          Node(n.statmSeq);
+          Node(n.catchList);
+          Node(n.end);
+          w. EndTag
+        
         
         
         | n: ExtTree.Flags DO

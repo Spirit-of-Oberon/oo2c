@@ -816,8 +816,8 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
   
   PROCEDURE FormalPars (): AST.Node;
     VAR
-      flags, lParen, rParen, colon, result, oldLastIdentDef: AST.Node;
-      fpSections: AST.NodeList;
+      flags, lParen, rParen, colon, result, raises, oldLastIdentDef: AST.Node;
+      fpSections, raisesList: AST.NodeList;
     
     PROCEDURE FPSection (): AST.Node;
       VAR
@@ -852,7 +852,8 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     BEGIN
       (*S: FormalPars = Flags 
         S:              [ "(" [FPSection {";" FPSection} [";" "..."] ] ")"
-        S:              [":" Qualident] ].  *)
+        S:                [":" Qualident]
+        S:                ["RAISES" Qualident {"," Qualident}] ].  *)
       oldLastIdentDef := lastIdentDef;
       flags := Flags (AST.flagsProcType);
       IF (sym. id = Symbol.lParen) THEN
@@ -883,16 +884,34 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
           colon := NIL;
           result := NIL
         END;
+
+        IF (sym.id = Symbol.raises) THEN
+          raises := CheckSym (Symbol.raises);
+          raisesList := ast. NewNodeList();
+          LOOP
+            raisesList. Append (Qualident());
+            IF (sym. id = Symbol.comma) THEN
+              raisesList. Append (CheckSym (Symbol.comma));
+            ELSE
+              EXIT;
+            END
+          END;
+        ELSE
+          raises := NIL; 
+          raisesList := NIL;
+        END;
       ELSE
         lParen := NIL;
         fpSections := NIL;
         rParen := NIL;
         colon := NIL;
-        result := NIL
+        result := NIL;
+        raisesList := NIL;
+        raises := NIL; 
       END;
       lastIdentDef := oldLastIdentDef;
       RETURN ast. FormalPars (flags, lParen, fpSections, rParen,
-                              colon, result)
+                              colon, result, raises, raisesList);
     END FormalPars;
   
   PROCEDURE Type (level: LONGINT): AST.Node;
@@ -1422,6 +1441,28 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             END;
             RETURN ast. ReturnStatm (return, expr)
           END ReturnStatm;
+
+        PROCEDURE TryStatm(): AST.Node;
+          VAR
+            catchList: AST.NodeList;
+            try, end: AST.Node;
+            statmSeq: AST.NodeList;
+          BEGIN
+            (*S: TryStatm = "TRY" StatementSeq
+                            {"CATCH" Qualident ":" StatementSeq}
+                            "END". *)
+            try := CheckSym(Symbol.try);
+            statmSeq := StatementSeq();
+            catchList := ast.NewNodeList();
+            WHILE (sym.id = Symbol.catch) DO
+              catchList.Append(CheckSym(Symbol.catch));
+              catchList.Append(Qualident());
+              catchList.Append(CheckSym(Symbol.colon));
+              catchList.Append(StatementSeq());
+            END;
+            end := CheckSym(Symbol.end);
+            RETURN ast.TryStatm(try, statmSeq, catchList, end);
+          END TryStatm;
         
         BEGIN
           (*S: Statement = [ ProcCallOrAssignment | IfStatm | CaseStatm |
@@ -1448,6 +1489,8 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             RETURN ExitStatm()
           | Symbol.return:
             RETURN ReturnStatm()
+          | Symbol.try:
+            RETURN TryStatm()
           ELSE
             RETURN NIL
           END

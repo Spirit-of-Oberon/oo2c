@@ -156,6 +156,8 @@ TYPE
     rParen-: AST.Node;
     colon-: AST.Node;
     result-: AST.Node;
+    raises-: AST.Node;
+    raisesList-: AST.NodeList;
   END;
 
 TYPE
@@ -433,6 +435,16 @@ TYPE
     expr-: AST.Node;
   END;
 
+TYPE
+  TryStatm* = POINTER TO TryStatmDesc;
+  TryStatmDesc = RECORD
+    (NodeDesc)
+    try-: Terminal;
+    statmSeq-: NodeList;
+    catchList-: NodeList;
+    end-: Terminal;
+  END;
+
 
 
 TYPE
@@ -634,6 +646,9 @@ PROCEDURE (v: Visitor) VisitExitStatm* (exitStatm: ExitStatm);
 
 PROCEDURE (v: Visitor) VisitReturnStatm* (returnStatm: ReturnStatm);
   END VisitReturnStatm;
+
+PROCEDURE (v: Visitor) VisitTryStatm* (tryStatm: TryStatm);
+  END VisitTryStatm;
 
 (* flags *)
 PROCEDURE (v: Visitor) VisitFlags* (flags: Flags);
@@ -882,7 +897,7 @@ PROCEDURE (fpSection: FPSection) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) FormalPars* (flags, lParen: AST.Node; fpSections: AST.NodeList; rParen, colon, result: AST.Node): Node;
+PROCEDURE (b: Builder) FormalPars* (flags, lParen: AST.Node; fpSections: AST.NodeList; rParen, colon, result, raises: AST.Node; raisesList: AST.NodeList): Node;
   VAR
     fp: FormalPars;
   BEGIN
@@ -897,6 +912,8 @@ PROCEDURE (b: Builder) FormalPars* (flags, lParen: AST.Node; fpSections: AST.Nod
     fp. rParen := rParen;
     fp. colon := colon;
     fp. result := result;
+    fp. raises := raises;
+    fp. raisesList := raisesList;
     RETURN fp
   END FormalPars;
   
@@ -1439,6 +1456,24 @@ PROCEDURE (returnStatm: ReturnStatm) Accept* (v: Visitor);
     v. VisitReturnStatm (returnStatm)
   END Accept;
 
+
+PROCEDURE (b: Builder) TryStatm* (try: AST.Node; statmSeq: AST.NodeList;
+                                  catchList: AST.NodeList; end: AST.Node): Node;
+  VAR
+    t: TryStatm;
+  BEGIN
+    NEW (t);
+    t.try := try(Terminal);
+    t.statmSeq := statmSeq(NodeList);
+    t.catchList := catchList(NodeList);
+    t.end := end(Terminal);
+    RETURN t;
+  END TryStatm;
+
+PROCEDURE (tryStatm: TryStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTryStatm (tryStatm)
+  END Accept;
 
 
 

@@ -230,8 +230,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           design := Designator (call. call);
           expr := b. NewCall (design, arguments, FALSE, design. sym);
         END;
-        WITH expr: IR.Statement DO
-          RETURN expr;
+        IF (expr # NIL) & (expr IS IR.Statement) THEN
+          RETURN expr(IR.Statement);
         ELSE
           RETURN NIL;  (* return NIL in case of error; skipped in StatmSeq *)
         END;
@@ -409,6 +409,23 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
                                 StatementSeq (loopStatm. statmSeq));
       END LoopStatm;
   
+    PROCEDURE TryStatm (tryStatm: ExtTree.TryStatm): IR.Statement;
+      VAR
+        statmSeq, catchStatm: IR.StatementSeq;
+        catchList: IR.CatchList;
+        guard: IR.Expression;
+        i: LONGINT;
+      BEGIN
+        NEW(catchList, tryStatm.catchList.len DIV 4);
+        statmSeq := StatementSeq(tryStatm.statmSeq);
+        FOR i := 0 TO tryStatm.catchList.len-1 BY 4 DO
+          guard := Expr(tryStatm.catchList.n[i+1](ExtTree.Node));
+          catchStatm := StatementSeq(tryStatm.catchList.n[i+3](ExtTree.NodeList));
+          catchList[i DIV 4] := b.NewCatchClause(guard, catchStatm);
+        END;
+        RETURN b.NewTryStatm(tryStatm.try.sym, statmSeq, catchList);
+      END TryStatm;
+  
     BEGIN
       (* count number of statements, allocate array to hold IR of sequence *)
       count := 0;
@@ -456,6 +473,10 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
 
           | n: ExtTree.ExitStatm DO
             statm := b. NewExit (n. exit. sym);
+
+          | n: ExtTree.TryStatm DO
+            statm := TryStatm(n);
+            
           ELSE
             Log.Type("++ Unknown type in StatementSeq", n);
             ASSERT (FALSE)

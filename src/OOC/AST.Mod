@@ -403,11 +403,14 @@ PROCEDURE (b: Builder) [ABSTRACT] FPSection* (var: Node; identList: NodeList; co
    @end table  *)
   END FPSection;
 
-PROCEDURE (b: Builder) [ABSTRACT] FormalPars* (flags, lParen: Node; fpSections: NodeList; rParen, colon, result: Node): Node;
+PROCEDURE (b: Builder) [ABSTRACT] FormalPars* (flags, lParen: Node;
+                                               fpSections: NodeList;
+                                               rParen, colon, result: Node;
+                                               raises: Node;
+                                               raisesList: NodeList): Node;
 (**Formal parameter definition.  Note: If the formal parameter list is 
    completely empty, that is, if it does not even contain a parenthesis
-   pair @samp{()}, the arguments @oparam{lParen}, @oparam{fpSections}, 
-   @oparam{rParen}, @oparam{colon}, and @oparam{result} are @code{NIL}.
+   pair @samp{()}, all arguments from @oparam{lParen} onward are @code{NIL}.
 
    @table @oparam
    @item flags
@@ -441,6 +444,23 @@ PROCEDURE (b: Builder) [ABSTRACT] FormalPars* (flags, lParen: Node; fpSections: 
    @item result
    A type reference or type constructor, or @code{NIL}
    if the formal parameter list defines a procedure type.
+
+   @item raises
+   The symbol @samp{RAISES}, result of @oproc{Builder.Terminal}, or @code{NIL}
+   if the formal parameters do not declare any exceptions.
+   
+   @item raisesList
+   A list of type names.  This argument is @code{NIL},
+   if the formal parameters do not declare any exceptions.
+   
+   @table @samp
+   @item raisesList MOD 2 == 0
+   A qualified identifier, result of @oproc{Builder.Operator} or
+   @oproc{Builder.Terminal}.
+   @item fpSections MOD 2 == 1
+   The symbol @samp{,}, result of @oproc{Builder.Terminal}.
+   @end table
+   
    @end table  *)
   END FormalPars;
   
@@ -1112,6 +1132,40 @@ PROCEDURE (b: Builder) [ABSTRACT] ReturnStatm* (return, expr: Node): Node;
    does not include a function result.
    @end table  *)
   END ReturnStatm;
+
+PROCEDURE (b: Builder) [ABSTRACT] TryStatm* (try: Node; statmSeq: NodeList;
+                                             catchList: NodeList; end: Node): Node;
+(**Exception handler statement.
+
+   @table @oparam
+   @item try
+   The keyword @samp{TRY}, result of @oproc{Builder.Terminal}.
+   
+   @item statmSeq
+   The statement sequence of the @samp{TRY}'s body.
+   
+   @item catchList
+   This is the list of all catch blocks.  It is a sequence of keywords,
+   type names, and statement sequences.
+   
+   @table @samp
+   @item catchList MOD 4 == 0
+   The keyword @samp{CATCH}.
+   
+   @item catchList MOD 4 == 1
+   A type name, matching the rule of @samp{Qualident}.
+   
+   @item catchList MOD 4 == 2
+   The terminal symbol @samp{:}.
+   
+   @item catchList MOD 4 == 3
+   The statement sequence of the catch block.
+   @end table
+
+   @item end
+   The keyword @samp{END}, result of @oproc{Builder.Terminal}
+   @end table  *)
+  END TryStatm;
 
 
 PROCEDURE (b: Builder) [ABSTRACT] Flags* (context: SHORTINT; lBrak: Node;
