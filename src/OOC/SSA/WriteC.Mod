@@ -1299,6 +1299,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
     str: ARRAY 32 OF CHAR;
     opnd: SSA.Opnd;
     obj: Object.Object;
+    fpars: Sym.FormalPars;
     
   PROCEDURE WriteCollect (collect, targetInstr: SSA.Instr);
     VAR
@@ -1468,14 +1469,17 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         | Opcode.selectReturn:
           IF ~AllPathsClosed (instr) THEN
             PrefixReturn;
-            IF (w. procBlock. procDecl. formalPars. resultType # NIL) THEN
+            fpars := w.procBlock.procDecl.formalPars;
+            IF (fpars.resultType # NIL) THEN
               IF w. procBlock. checkFunctionResult THEN
                 w. WriteString ("_failed_function(");
                 w. WriteLInt (w. procBlock. procDecl. name. pos, 0);
                 w. WriteString ("); ");
               END;
-              w. WriteString ("return 0;");
-            ELSE
+              IF ~fpars.noReturn THEN
+                w. WriteString ("return 0;");
+              END;
+            ELSIF ~fpars.noReturn THEN
               w. WriteString ("return;")
             END;
           END;
