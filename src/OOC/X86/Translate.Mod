@@ -238,7 +238,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
     
     PROCEDURE LoopEnd(loopStart: S.LoopStartInstr);
       VAR
-        instr, loopEnd: S.Instr;
+        instr: S.Instr;
+        loopEnd: S.MergeInstr;
       BEGIN
         instr := b.AddLoopBackedge(loopStart);
         instr.AddDep(S.depMemory, memoryCP);
@@ -246,6 +247,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         loopStart.SetBackedge(instr);
         
         loopEnd := b.AddMerge(S.loopEnd, loopExits.Elements());
+        loopEnd.AddDep(S.depControl, loopStart);
         loopStart.SetEnd(loopEnd);
         controlCP := loopEnd; memoryCP := loopEnd;
         loopExits.Clear();

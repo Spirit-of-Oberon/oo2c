@@ -586,7 +586,7 @@ TYPE
   LoopStartInstrDesc = RECORD
     (BlockDesc)
     backedge-: Instr;
-    end-: Instr;
+    end-: MergeInstr;
   END;
   LoopBackedgeInstr* = POINTER TO LoopBackedgeInstrDesc;
   LoopBackedgeInstrDesc = RECORD
@@ -2221,7 +2221,7 @@ PROCEDURE (instr: LoopStartInstr) SetBackedge*(backedge: Instr);
     instr.backedge := backedge;
   END SetBackedge;
 
-PROCEDURE (instr: LoopStartInstr) SetEnd*(end: Instr);
+PROCEDURE (instr: LoopStartInstr) SetEnd*(end: MergeInstr);
   BEGIN
     instr.end := end;
   END SetEnd;
