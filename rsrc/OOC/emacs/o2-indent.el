@@ -3,6 +3,8 @@
 ;; Based on Karl Landström's oberon-2.el version 1.0
 ;; Licensed under the GPL v2
 
+;; *pre-condition*: oberon2.el has been loaded
+
 (defcustom ob2-indent-level 2
   "*Number of blanks for each indent step.")
 
@@ -24,6 +26,7 @@
     ("\\<IMPORT\\>" . import)
     ("\\<LOOP\\>" . loop)
     ("\\<MODULE\\>" . module)
+    ("\\<RAISES\\>" . raises)
     ("\\<RECORD\\>" . record)
     ("\\<REPEAT\\>" . repeat)
     ("\\<TRY\\>" . try)
@@ -59,8 +62,8 @@ returned."
   (mapconcat 'identity
              (delq nil (mapcar (lambda (x) (ob2-get-indent-re x))
                                '(begin catch const-type-var else elsif end
-				       guard-sep import proc end-proc-or-module
-				       until proc-forward)))
+				       guard-sep import proc raises
+				       end-proc-or-module until proc-forward)))
              "\\|")
 "Regexp matching code that interrupt indentation of previous line.
 Indentation relative to the previous line is either incremented
@@ -96,27 +99,24 @@ Else return nil."
 ;; KEYMAP
 ;; ------
 
-(defvar oberon-2-mode-map nil
-  "Keymap used in Oberon-2 mode.")
+;; (defvar oberon-2-mode-map nil
+;;   "Keymap used in Oberon-2 mode.")
 
-(unless oberon-2-mode-map
-  (setq oberon-2-mode-map (make-sparse-keymap)))
+;; (unless oberon-2-mode-map
+;;   (setq oberon-2-mode-map (make-sparse-keymap))
+
+  (define-key o2-mode-map "\t" 'ob2-indent-or-hippie)
+  (define-key o2-mode-map [return] 'newline-and-indent)
+  (define-key o2-mode-map "\C-c\C-i" 'indent-region)
+
+(add-hook 'oberon-2-mode-hook 'ob2-enable-indent)
+
+
 
 
 ;; ------------------------
-;; SYNTAX TABLE AND PARSING
+;; PARSING
 ;; ------------------------
-
-(defvar oberon-2-mode-syntax-table
-  (let ((table (make-syntax-table)))
-    (modify-syntax-entry ?\' "\"" table)
-    (modify-syntax-entry ?( "()1n" table)
-    (modify-syntax-entry ?) ")(4n" table)
-    (modify-syntax-entry ?* ". 23n" table)
-;;     (modify-syntax-entry ?w "_" table)
-    table)
-  "Syntax table used in Oberon-2 mode.")
-
 
 (defsubst ob2-inside-string-p ()
   "Return non-nil if point is inside a string literal.
@@ -177,15 +177,20 @@ pair is not in the hash, then C is assumed to be zero.  One step equals
     ;; (puthash '(current . parent) delta table)
     (puthash '(begin . end-proc-or-module) -1 table)
     (puthash '(begin . proc) 1 table)
+    (puthash '(begin . raises) 1 table)
     (puthash '(const-type-var . end) -1 table)
     (puthash '(const-type-var . proc) 1 table)
+    (puthash '(const-type-var . raises) 1 table)
+    (puthash '(else . end) -1 table)
     (puthash '(elsif . end) -1 table)
     (puthash '(end . end) -1 table)
     (puthash '(end . until) -1 table)
     (puthash '(end-proc-or-module . end) -1 table)
     (puthash '(end-proc-or-module . end-proc-or-module) -1 table)
     (puthash '(end-proc-or-module . proc) 1 table)
+    (puthash '(end-proc-or-module . raises) 1 table)
     (puthash '(end-proc-or-module . until) -1 table)
+    (puthash '(guard-sep . end) -1 table)
     (puthash '(other . begin) 1 table)
     (puthash '(other . case) 1 table)
     (puthash '(other . catch) 1 table)
@@ -200,15 +205,15 @@ pair is not in the hash, then C is assumed to be zero.  One step equals
     (puthash '(other . record) 1 table)
     (puthash '(other . repeat) 1 table)
     (puthash '(other . proc) 1 table)
+    (puthash '(other . raises) 1 table)
     (puthash '(other . try) 1 table)
     (puthash '(other . while) 1 table)
     (puthash '(other . with) 1 table)
     (puthash '(proc . end-proc-or-module) -1 table)
     (puthash '(proc . proc) 1 table)
+    (puthash '(proc . raises) 1 table)
     (puthash '(proc-forward . proc) 1 table)
-    (puthash '(type . end) -1 table)
-    (puthash '(type . module) 1 table)
-    (puthash '(type . proc) 1 table)
+    (puthash '(proc-forward . raises) 1 table)
     (puthash '(until . end) -1 table)
     (puthash '(until . until) -1 table)
     table))
@@ -417,21 +422,13 @@ Else returns nil."
 
 ;;;;
 
-;;;###autoload
-(defun oberon-2-mode ()
-  (interactive)
-  (kill-all-local-variables)
+(defun ob2-indent-or-hippie (arg)
+  (interactive "P")
+  (if (<= (point) (save-excursion (back-to-indentation) (point)))
+      (ob2-indent-line)
+    (hippie-expand arg)))
 
-  ;; Mode map
-  (use-local-map oberon-2-mode-map)
-
-  ;; Syntax table and parsing
-  (set-syntax-table oberon-2-mode-syntax-table)
-;;   (set (make-local-variable 'beginning-of-defun-function)
-;;        'ob2-beginning-of-defun)
-;;   (set (make-local-variable 'end-of-defun-function)
-;;        'ob2-end-of-defun)
-
+(defun ob2-enable-indent ()
   ;; Indentation
   (set (make-local-variable 'indent-line-function) 'ob2-indent-line)
   (setq indent-tabs-mode nil)
@@ -440,15 +437,7 @@ Else returns nil."
   (require 'newcomment)
   (set (make-local-variable 'comment-start) "(*")
   (set (make-local-variable 'comment-end) "(*")
-  (comment-normalize-vars)
-
-  (setq case-fold-search nil)
-  (setq major-mode 'oberon-2-mode)
-  (setq mode-name "Oberon-2")
-  (run-hooks 'oberon-2-mode-hook))
-
-
-(provide 'oberon-2-mode)
+  (comment-normalize-vars))
 
 (defun ob2-indent-buffer-and-save (arg)
   (if (string-match "\\.Mod$" arg)
@@ -460,4 +449,5 @@ Else returns nil."
 			    ".indent")))))
 
 (defun ob2-indent-all-buffers ()
+  (load-file "oberon2.el")
   (mapcar 'ob2-indent-buffer-and-save command-line-args))
