@@ -161,23 +161,95 @@ IMPORT
   
   OOC:Auxiliary:ParseModule,
 
+  
+  (* Intermediate Code Representation (aka IR)
+     ---------------------------------------------------------------------- *)
+  OOC:IR,
+  (* High-level code intermediate representation.  This module defines classes
+     for the various statements and expressions in Oberon-2, together with a
+     builder class to create instances from them.  All semantic checks are done
+     in this module: once a module's IR code has been completely build without
+     any errors, further processing of the code must @emph{not} cause any error
+     message to be emitted by the compiler.  *)
+
+  OOC:IR:ConstFold,
+  (* Constant folding on IR expression.  For example, this module reduces
+     the expression on the right hand side of a constant declaration to a
+     single scalar value.  *)
+
+  IRXML := OOC:IR:XML,
+  (* Write an IR data structure as an XML document.  *)
+  
+
+  
+  (* SSA Back-end
+     ---------------------------------------------------------------------- *)
   OOC:SSA,
-  OOC:SSA:IRtoSSA,
+  (* Defines the SSA datastructure: results, instructions, operands, and the
+     like.  Also provides the basic operations that oeprate on the elements of
+     a procedure's SSA representation.  *)
+  
   OOC:SSA:Opcode,
+  (* Defines the opcodes of SSA instructions.  The documentation of the
+     opcodes can also be found here.  *)
+  
   OOC:SSA:Opnd,
+  (* Defines symbolic names for SSA operand classes.  *)
+
   OOC:SSA:Result,
+  (* Defines symbolic names for SSA result classes.  *)
+  
+  OOC:SSA:IRtoSSA,
+  (* Converts the IR of a procedure into (hopefully equivalent) SSA
+     representation.  *)
+
+  OOC:SSA:Aliasing,
+  (* Calculates aliasing between instructions.  That is, this module provides
+     the algorithms to determine if two instructions operate or potentially
+     operate on the same set of memory locations.  *)
+  
+  OOC:SSA:Destore,
+  (* The initial translation to SSA code turns all accesses to variables to
+     memory read and write.  This module inspects these reads and writes and
+     tries to avoid writing values to memory that can be passed through
+     registers in the final assembler code), and reading values from memory
+     that are available from registers.  (As far as SSA is concerned, scalar
+     values passed between instructions roughly correspond to values passed
+     through registers.)  *)
+
+  OOC:SSA:IGraph,
+  (* Manipulation of interference graph of values' life ranges.  Used by the
+     allocator module below.  *)
+  
+  OOC:SSA:Allocator,
+  (* A register allocator for the C back-end.  When writing C code, local
+     variables of a procedure are replaced with numbered @code{register}
+     variables as far as possible.  *)
+  
   OOC:SSA:WriteC,
+  (* Translates SSA instructions to C.  Input is the IR of a procedure body.
+     This is converted to SSA, any transformations are applied to the SSA
+     result, which, after scheduling of instructions and register allocation,
+     is written out as C  *)
+     
   SSAXML := OOC:SSA:XML,
+  (* Writes out the SSA representation of a procedure body as an XML
+     document.  *)
+
+  OOC:SSA:Inspector,
+  (* Similar to the XML module above, this module converts SSA code into a
+     human readable format: it renders SSA code as HTML and serves it through a
+     HTTP server.  *)
 
 
   (* Test Programs
      ---------------------------------------------------------------------- *)
-  TestScanner, TestParser, TestSymTab, TestConfigSections, TestConfigCmdLine,
-  TestConfigEnv, TestConfigSimple, TestInterfaceGen, TestTexinfo, TestMake,
-  TestCompile,
+  TestScanner, TestParser, TestSymTab, TestConfigSections,
+  TestConfigCmdLine, TestConfigEnv, TestConfigSimple, TestInterfaceGen,
+  TestTexinfo, TestMake, TestCompile,
   
   RunTests;
-  (* Implements the XML based test framework.  Used for language compliance
-     tests, and to check results of executables.  *)
-  
+  (* Implements the XML based test framework.  Used for language
+     compliance tests, and to check results of executables.  *)
+
 END AllModules.
