@@ -54,13 +54,6 @@
 #include "Files.d"
 
 
-/* the minimum number of temporary files supported by any system; GNU libc info
-   says this is 25 */
-#define TMP_MIN 25
-/* prepare for the worst and assume that really just TMP_MIN temporary names
-   are available; maintain a buffer of discarded names */
-static char *tmp_name[TMP_MIN];
-
 /* this is the currently active umask of the process; it is used by procedure
    Register */
 static mode_t active_umask;
@@ -248,18 +241,7 @@ static Files__Result file_error(const char *name, const char *new_name) {
 
 static void free_tmp_name (Files__File f) {
 /* pre: f->tmpName != NULL */
-  int i;
-  
-  /* try to find an unused slot in tmp_name */
-  i = 0;
-  while ((i < TMP_MIN) && tmp_name[i]) {
-    i++;
-  }
-  if (i < TMP_MIN) {		/* store name for later use */
-    tmp_name[i] = (char*)f->tmpName;
-  } else {			/* discard file name */
-    RT0__FreeBlock(f->tmpName);
-  }
+  RT0__FreeBlock(f->tmpName);
   f->tmpName = NULL;
   if(f->name) {
     RT0__FreeBlock(f->name);
@@ -498,6 +480,9 @@ static Files__File create_file(const OOC_CHAR8* name, OOC_UINT32 flags,
       fd = call_open((const OOC_CHAR8*)tname, flags, mode, &access_mode);
       count++;
     } while ((fd == -1) && (errno == EEXIST));
+  } else if (mode == MODE_TMP) {
+    strcpy(tname, "tmp_XXXXXX");
+    fd = mkstemp(tname);
   } else {
     fd = call_open(name, flags, mode, &access_mode);
   }
@@ -515,7 +500,7 @@ static Files__File create_file(const OOC_CHAR8* name, OOC_UINT32 flags,
     *res = Channel__done;
     PosixFileDescr__Init((PosixFileDescr__Channel)ch, fd, access_mode);
     ch->next = open_files;
-    if (mode == MODE_TMP_GEN_NAME) {
+    if ((mode == MODE_TMP_GEN_NAME) || (mode == MODE_TMP)) {
       ch->tmpName = local_strdup((const OOC_CHAR8*)tname);
     } else {
       ch->tmpName = NULL;
@@ -538,50 +523,28 @@ Files__File Files__Old(const OOC_CHAR8* file__ref, int file_0d, unsigned int fla
 
 Files__File Files__Tmp(const OOC_CHAR8* file__ref, int file_0d, unsigned int flags, Files__Result *res) {
   Files__File ch = NULL;
-  char new_name[L_tmpnam];
   char *tname;
-  int i, anonymous;
+  int anonymous;
   
   anonymous = (!file__ref[0]);
 
   if (anonymous) {
-    /* first check if we have an unused name in stock */
-    i = 0;
-    while ((i < TMP_MIN) && !tmp_name[i]) {
-      i++;
-    }
-    if (i < TMP_MIN) {
-      /* this is our lucky day, we found an unused name */
-      tname = tmp_name[i];
-      tmp_name[i] = NULL;
-    } else {
-      /* there aren't any discarded names available right now; try to 
-	 get a new one */
-      tname = tmpnam(new_name);
-      if (tname) tname = (char*)local_strdup((OOC_CHAR8*)tname);
-    }
+    tname = "";  /* let create_file find a name */
   } else {
     tname = (char*)file__ref;
   }
 
-  if (tname) {
-    /* create file with minimal permissions; the permissions are extended
-       upon registration if the umask allows it */
-    ch = create_file((const OOC_CHAR8*)tname, flags, 
-		     file__ref[0]?MODE_TMP_GEN_NAME:MODE_TMP, res);
-    if (ch) {
-      ch->anonymous = anonymous;
-      if (anonymous) {
-	ch->tmpName = (OOC_CHAR8*)tname;
-      } else {
-	ch->name = local_strdup(file__ref);
-      }
+  /* create file with minimal permissions; the permissions are extended
+     upon registration if the umask allows it */
+  ch = create_file((const OOC_CHAR8*)tname, flags, 
+		   anonymous?MODE_TMP:MODE_TMP_GEN_NAME, res);
+  if (ch) {
+    ch->anonymous = anonymous;
+    if (!anonymous) {
+      ch->name = local_strdup(file__ref);
     }
-    return ch;
-  } else {
-    *res = get_error(Channel__noTmpName, 0, ch);
-    return NULL;
   }
+  return ch;
 }
 
 /* define the day count of the Unix epoch (Jan 1 1970 00:00:00 GMT) for the
@@ -658,17 +621,12 @@ static void close_all_files (void) {
 }
 
 void Files_init(void) {
-  int i;
-
   Files__errorContext = RT0__NewObject(OOC_TYPE_DESCR(Files,ErrorContextDesc));
   Msg__InitContext((Msg__Context)Files__errorContext, 
 		   (const OOC_CHAR8*)"OOC:Core:Files", 15);
   
   active_umask = umask (0);
   umask (active_umask);
-  for(i=0; i<TMP_MIN; i++) {
-    tmp_name[i] = NULL;
-  }
   /* make sure that all files are closed upon program termination */
   Termination__RegisterProc (&close_all_files);
 }
