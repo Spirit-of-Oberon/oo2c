@@ -238,11 +238,25 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
     VAR
       ptr: Sym.Item;
       decl: DeclWriter.Declaration;
+
+    PROCEDURE ExportedVarDecl (ptr: Sym.Item): BOOLEAN;
+      BEGIN
+        WITH ptr: Sym.VarDecl DO
+          (* an exported variable appears both in the header file (as an
+             extern declaration) and in the data file (as a normal variable
+             declaration of storage class auto) *)
+          RETURN (ptr. exportMark # Sym.nameNotExported);
+        ELSE
+          RETURN FALSE;
+        END;
+      END ExportedVarDecl;
+    
     BEGIN
       ptr := root. nestedItems;
       WHILE (ptr # NIL) DO
         WITH ptr: Sym.Declaration DO
-          IF (exports. HasKey (ptr) = (mode = modeWriteExported)) THEN
+          IF (exports. HasKey (ptr) = (mode = modeWriteExported)) OR
+             ExportedVarDecl (ptr) THEN
             WITH ptr: Sym.Import DO
               decl := w. NewIncludeModule
                   (m. GetImport (ptr. moduleName. str^));
