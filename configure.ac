@@ -12,10 +12,18 @@ rm -f ./oo2c ./ooef ./oocn 2>/dev/null  # make sure no local files are found
 AC_PROG_INSTALL
 AC_PATH_PROG(OOC,oo2c,oo2c)
 AC_PATH_PROG(OOEF,ooef,ooef)
-AC_PATH_PROG(LIBTOOL,libtool,libtool)
 AC_PATH_PROG(DIFF,diff,diff)
 AC_PATH_PROG(XSLTPROC,xsltproc,no)
 AC_PATH_PROG(PERL,perl,perl)
+
+AC_ARG_ENABLE(libs, [  --disable-libs          don't build static/shared libraries with libtool],,enable_libs=yes)
+if test $enable_libs = yes; then
+  AC_PATH_PROG(LIBTOOL,libtool,no)
+else
+  LIBTOOL="no";
+  AC_MSG_CHECKING([for libtool])
+  AC_MSG_RESULT([disabled])
+fi
 
 dnl checks for libraries
 AC_CHECK_LIB(gc,GC_malloc)
