@@ -192,8 +192,6 @@ PROCEDURE Clear*;
    Note: This procedure does @emph{not} restore the value of @oproc{Current} to
    that of the beginning of a @code{TRY} statement.  That is, after a
    @code{TRY} @oproc{Current} is @code{NIL} if an exception was raised.  *)
-PROCEDURE ClearFixed*(VAR context: Context);
-(**FIXME... Eliminate this procedure again.  *)
 PROCEDURE PushContext*(VAR context: Context; jmpbuf: SYSTEM.PTR);
 (**Push @oparam{context} on the stack of exception handlers, and make it point
    to the execution context @oparam{jmpbuf}.  This procedure should never be

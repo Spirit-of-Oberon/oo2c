@@ -99,10 +99,6 @@ void Exception__Clear() {
   Exception__GetThreadState()->currentException = NULL;
 }
 
-void Exception__ClearFixed(struct Exception__Context *context) {
-  Exception__GetThreadState()->currentException = NULL;
-}
-
 void Exception__PushContext(struct Exception__Context *context,
 			    OOC_PTR jmpbuf) {
   Exception__ThreadStatePtr ts = Exception__GetThreadState();
