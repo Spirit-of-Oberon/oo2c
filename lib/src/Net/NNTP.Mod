@@ -10,7 +10,7 @@ IMPORT
   
 CONST
   textCapacity = 8*1024-32;
-  bufferCapacity = 8*1024;  (* most be larger than longest line *)
+  bufferCapacity = 8*1024;  (* must be larger than longest line *)
   maxLineLength = textCapacity-2;
   defaultPort* = 119;
   
