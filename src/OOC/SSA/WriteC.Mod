@@ -1808,9 +1808,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     (*Blocker.Write (StdChannels.stdout, pb);*)
     
     (* code transformations *)
-    Write ("initial", "dce-pre", FALSE);
     DeadCodeElimination.Transform (pb);
-    Write ("dce-post", "destore-pre", FALSE);
+    Write ("initial", "destore-pre", TRUE);
     destore := Destore.New (pb);
     destore. Transform();
     DeadCodeElimination.Transform (pb);
