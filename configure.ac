@@ -20,7 +20,7 @@ dnl checks for libraries
 
 dnl checks for header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(sys/time.h unistd.h io.h pwd.h)
+AC_CHECK_HEADERS(sys/time.h unistd.h io.h pwd.h utime.h)
 AC_HEADER_TIME
 
 dnl checks for types
