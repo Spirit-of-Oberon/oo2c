@@ -123,7 +123,8 @@ PROCEDURE (l: List) Append* (msg: Msg);
       ptr := l.msgList;
       WHILE (ptr # NIL) DO
         ptrPos := ptr.GetAttribute(posAttr);
-        IF (ABS(ptrPos(M.IntAttribute).int - msgPos(M.IntAttribute).int) < 
+        IF ~IsWarning(ptr) &
+           (ABS(ptrPos(M.IntAttribute).int - msgPos(M.IntAttribute).int) < 
             minErrorDistance) THEN
           RETURN;
         END;
