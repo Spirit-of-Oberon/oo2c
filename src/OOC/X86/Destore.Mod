@@ -96,7 +96,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
             | S.set:
               type := propInstr.opndList.nextOpnd.arg.type;
             END;
-            ASSERT(type# S.noType);
+            ASSERT(type # S.noType);
             gateToInstr.Set(gate, NEW(MemAccess, type, propInstr.designator,
                                       propInstr.opndList.arg));
           END;
@@ -216,7 +216,8 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
 
     PROCEDURE FixedDesignator(designator: S.Designator): BOOLEAN;
       BEGIN
-        RETURN (LEN(designator^) = 1) & (designator[0] IS S.Var);
+        RETURN (LEN(designator^) = 1) & (designator[0] IS S.Var) &
+            (S.MapType(designator[0](S.Var).decl.type) # S.noType);
       END FixedDesignator;
     
     BEGIN
