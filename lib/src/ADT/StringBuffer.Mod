@@ -19,7 +19,7 @@ MODULE ADT:StringBuffer [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  S := SYSTEM, IntStr, RealStr, Object;
+  S := SYSTEM, Ascii, IntStr, RealStr, Object;
 
 TYPE
   CharsLatin1* = POINTER TO ARRAY[READ_ONLY] OF CHAR;
@@ -209,6 +209,12 @@ PROCEDURE (b: StringBuffer) AppendLatin1Char*(ch: CHAR);
     END;
     INC(b.length);
   END AppendLatin1Char;
+
+PROCEDURE (b: StringBuffer) AppendLn*();
+(**Append a newline character @oconst{Ascii.lf} to the buffer.  *)
+  BEGIN
+    b.AppendLatin1Char(Ascii.lf);
+  END AppendLn;
 
 PROCEDURE (b: StringBuffer) AppendUTF16Region*(data[NO_COPY]: ARRAY OF LONGCHAR;
                                               start, end: LONGINT);
