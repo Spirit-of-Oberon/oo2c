@@ -1,10 +1,10 @@
 MODULE LibSTRING3;
 
 IMPORT
-  Out := Out0, String := LanguageNew;
+  Out := Out0, String := Object;
 
 (* This module checks that the predefined type STRING can be used as an
-   alias for LanguageNew.String.  *)
+   alias for Object.String.  *)
 
 PROCEDURE Write (s: STRING);
   VAR

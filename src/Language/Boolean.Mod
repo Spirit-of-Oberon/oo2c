@@ -1,7 +1,7 @@
 MODULE Language:Boolean;
 
 IMPORT 
-  ADT:Storable, ADT:String, L := Language, LanguageNew;
+  ADT:Storable, ADT:String, L := Language, Object;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -21,7 +21,7 @@ BEGIN
   RETURN v;
 END New;
 
-PROCEDURE (v: Value) Equals* (y: LanguageNew.Object): BOOLEAN;
+PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Value) & (v. value = y(Value). value)
   END Equals;

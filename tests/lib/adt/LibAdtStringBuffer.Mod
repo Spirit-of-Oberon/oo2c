@@ -1,14 +1,14 @@
 MODULE LibAdtStringBuffer;
 
 IMPORT 
-  Language:=LanguageNew,
+  Object,
   S := ADT:String,
   B := ADT:StringBuffer,
   Out := Out0;
 
 TYPE
   MyObject = POINTER TO MyObjectDesc;
-  MyObjectDesc = RECORD (Language.ObjectDesc)
+  MyObjectDesc = RECORD (Object.ObjectDesc)
   END;
 
 VAR

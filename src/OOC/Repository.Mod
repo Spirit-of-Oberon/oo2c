@@ -22,7 +22,7 @@ MODULE OOC:Repository [OOC_EXTENSIONS];
 
 IMPORT
   Msg, Channel, TextRider, Strings, Time,
-  Language := LanguageNew, ADT:ArrayList,
+  Object, ADT:ArrayList,
   URI, OS:Path, OOC:Logger,
   OOC:Scanner:InputBuffer, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
@@ -64,7 +64,7 @@ TYPE
     fingerprint-: LONGINT;
   END;
   ModuleDesc* = RECORD [ABSTRACT]
-    (Language.ObjectDesc)
+    (Object.ObjectDesc)
     (**Note: The function @oproc{*OOC:Config:Repositories.Section.GetModule} is
        used to retrieve module instances from repositories.  It ensures that
        for a given module name only one instance of @otype{Module} is created

@@ -1,7 +1,7 @@
 MODULE LibSTRING4;
 
 IMPORT
-  Out := Out0, String := LanguageNew;
+  Out := Out0, String := Object;
 
 PROCEDURE Write (s: STRING);
   VAR

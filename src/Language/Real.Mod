@@ -2,7 +2,7 @@ MODULE Language:Real [OOC_EXTENSIONS];
 
 IMPORT
   ADT:Storable, ADT:String, L := Language, RealStr, LRealStr, SYSTEM,
-  LanguageNew;
+  Object;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -83,7 +83,7 @@ PROCEDURE (v: Value) Load* (r: Storable.Reader);
     r. ReadLReal(v.value);
   END Load;
 
-PROCEDURE (v: Value) Equals* (y: LanguageNew.Object): BOOLEAN;
+PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Value) & (v.value = y(Value).value);
   END Equals;

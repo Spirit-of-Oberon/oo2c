@@ -1,4 +1,4 @@
-MODULE LanguageNew;
+MODULE Object;
 
 (**This module provides the definitions for a basic object type used in most of
    the ADT library, as well as ``boxed'' versions of the language's basic
@@ -556,4 +556,4 @@ PROCEDURE (s: String32) Substring* (start, end: LONGINT): String;
     RETURN NewString32(S.ADR(s. data[start]), end-start);
   END Substring;
 
-END LanguageNew.
+END Object.

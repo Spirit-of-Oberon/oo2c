@@ -57,8 +57,8 @@ TYPE
 
 CONST
   prefixAutoImport* = "-";
-  stringModule* = "LanguageNew";
-  stringModuleC* = "LanguageNew";
+  stringModule* = "Object";
+  stringModuleC* = "Object";
 
 CONST
   noAutoImport* = 0;

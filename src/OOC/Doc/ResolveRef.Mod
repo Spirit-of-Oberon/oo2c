@@ -1,7 +1,7 @@
 MODULE OOC:Doc:ResolveRef;
 
 IMPORT
-  Msg, Strings, Language:=LanguageNew, ADT:Dictionary,
+  Msg, Strings, Object, ADT:Dictionary,
   OOC:Error, OOC:Doc, Sym := OOC:SymbolTable, OOC:SymbolTable:Exports;
   
 CONST
@@ -263,7 +263,7 @@ PROCEDURE Resolve* (symTab: Sym.Module;
     PROCEDURE Exported (decl: Sym.Declaration): BOOLEAN;
       VAR
         module: Sym.Module;
-        obj: Language.Object;
+        obj: Object.Object;
         exports: Dictionary.Dictionary;
       BEGIN
         IF (decl IS Sym.Module) THEN

@@ -1,7 +1,7 @@
 MODULE Language:Integer [OOC_EXTENSIONS];
 
 IMPORT
-  Integers, ADT:Storable, ADT:String, L := Language, LanguageNew;
+  Integers, ADT:Storable, ADT:String, L := Language, Object;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -81,7 +81,7 @@ PROCEDURE (v: Value) Load* (r: Storable.Reader);
     END;
   END Load;
 
-PROCEDURE (v: Value) Equals* (y: LanguageNew.Object): BOOLEAN;
+PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Value) & (Integers.Compare(y(Value).value, v.value) = 0);
   END Equals;

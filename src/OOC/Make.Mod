@@ -24,7 +24,7 @@ IMPORT
   <*IF COMPILER_MAJOR>=2 THEN*>RT0,<*END*>
   Channel, Files, Msg, Out, StdChannels, Strings, Time,
 
-  Language:=LanguageNew, ADT:ArrayList, ADT:Dictionary, ADT:String, StringSearch,
+  Object, ADT:ArrayList, ADT:Dictionary, ADT:String, StringSearch,
   StringSearch:NoMatch, OS:Path,
   OSFiles := OS:Files, OS:ProcessManagement, URI, URI:Scheme:File,
 
@@ -45,7 +45,7 @@ TYPE
   ShellCommand* = ARRAY 4*1024 OF CHAR;
   ModuleInfo = POINTER TO ModuleInfoDesc;
   ModuleInfoDesc = RECORD
-    (Language.ObjectDesc)
+    (Object.ObjectDesc)
     updated: ARRAY Rep.maxFileId+1 OF BOOLEAN;
     updateResult: ARRAY Rep.maxFileId+1 OF BOOLEAN;
     compiled: BOOLEAN;
@@ -204,7 +204,7 @@ PROCEDURE (r: Rules) CheckAllImports(module: Rep.Module): BOOLEAN;
 PROCEDURE (r: Rules) GetModuleInfo* (module: Rep.Module): ModuleInfo;
   VAR
     i: LONGINT;
-    obj: Language.Object;
+    obj: Object.Object;
     mInfo: ModuleInfo;
   BEGIN
     IF r.mInfo.HasKey(module) THEN

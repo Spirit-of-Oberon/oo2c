@@ -19,7 +19,7 @@ MODULE ADT:String [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:Storable, Language:=LanguageNew, S := SYSTEM;
+  ADT:Storable, Object, S := SYSTEM;
 
 TYPE
   CharArray* = ARRAY OF CHAR;
@@ -454,7 +454,7 @@ PROCEDURE (str : String) HashCode* (): LONGINT;
     RETURN x
   END HashCode;
 
-PROCEDURE (str : String) Equals* (y: Language.Object): BOOLEAN;
+PROCEDURE (str : String) Equals* (y: Object.Object): BOOLEAN;
 (**Determines if the receiver and the parameter are equal strings.  That is, it
    returns @code{TRUE} if, and only if, @oparam{y} is an instance of
    @otype{String} with the same length and content as @oparam{str}.  *)

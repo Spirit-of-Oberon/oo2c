@@ -3,7 +3,7 @@ MODULE H2O:Error;
 IMPORT 
   Err,
   H2O:Source, Language:Char,
-  Language:=LanguageNew, ADT:String, ADT:StringBuffer;
+  Object, ADT:String, ADT:StringBuffer;
 
 TYPE 
   Error* = POINTER TO ErrorDesc;
@@ -11,7 +11,7 @@ TYPE
     in : Source.Input;
   END;
 
-PROCEDURE Format(format : String.String; p1, p2, p3 : Language.Object) : String.String;
+PROCEDURE Format(format : String.String; p1, p2, p3 : Object.Object) : String.String;
 VAR
   b : StringBuffer.StringBuffer;
   ch : CHAR; i : LONGINT;
@@ -55,12 +55,12 @@ BEGIN
   e.MsgString(String.New(msg), TRUE);
 END Error;
 
-PROCEDURE (e : Error) ErrorParam* (msg : ARRAY OF CHAR; p1, p2, p3 : Language.Object);
+PROCEDURE (e : Error) ErrorParam* (msg : ARRAY OF CHAR; p1, p2, p3 : Object.Object);
 BEGIN
   e.MsgString(Format(String.New(msg), p1, p2, p3), TRUE);
 END ErrorParam;
 
-PROCEDURE (e : Error) MsgParam* (msg : ARRAY OF CHAR; p1, p2, p3 : Language.Object; error : BOOLEAN);
+PROCEDURE (e : Error) MsgParam* (msg : ARRAY OF CHAR; p1, p2, p3 : Object.Object; error : BOOLEAN);
 BEGIN
   e.MsgString(Format(String.New(msg), p1, p2, p3), error);
 END MsgParam;
@@ -70,17 +70,17 @@ BEGIN
   e.ErrorParam("Unexpected character '$0'",Char.New(ORD(ch)),NIL,NIL);
 END UnexpectedCharacter;
 
-PROCEDURE (e : Error) ExpectedToken* (expected, found : Language.Object);
+PROCEDURE (e : Error) ExpectedToken* (expected, found : Object.Object);
 BEGIN
   e.ErrorParam("Expected token $0 but found token $1",expected,found,NIL);
 END ExpectedToken;
 
-PROCEDURE (e : Error) UnexpectedToken* (found : Language.Object);
+PROCEDURE (e : Error) UnexpectedToken* (found : Object.Object);
 BEGIN
   e.ErrorParam("Unexpected token $0",found,NIL,NIL);
 END UnexpectedToken;
 
-PROCEDURE (e : Error) ExpectedIdentifier* (found : Language.Object);
+PROCEDURE (e : Error) ExpectedIdentifier* (found : Object.Object);
 BEGIN
   e.ErrorParam("Expected Identifier but found token $0",found,NIL,NIL);
 END ExpectedIdentifier;

@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:InterfaceDescr;
 *)
 
 IMPORT
-  Channel, Strings, Language:=LanguageNew,
+  Channel, Strings, Object,
   ADT:String, ADT:Dictionary, ADT:ArrayList,
   URI, XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Repository,  OOC:Config:Repositories,
@@ -403,7 +403,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       str: ARRAY 2*1024 OF CHAR;
       remoteURI, relativeURI: URI.URI;
       baseURI: URI.HierarchicalURI;
-      keys: Language.ObjectArrayPtr;
+      keys: Object.ObjectArrayPtr;
     BEGIN
       thisModule := repositories. GetModule (module. name. str^);
       baseURI := thisModule. GetURI (Repository.modInterfaceHTML, FALSE);
@@ -494,10 +494,10 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       END
     END WriteBaseClasses;
   
-  PROCEDURE WriteKnownExtensions (type: Language.Object);
+  PROCEDURE WriteKnownExtensions (type: Object.Object);
     VAR
       i: LONGINT;
-      obj: Language.Object;
+      obj: Object.Object;
       list: ArrayList.ArrayList;
       item: Sym.Item;
     BEGIN

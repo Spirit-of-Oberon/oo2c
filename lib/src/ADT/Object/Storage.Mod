@@ -43,7 +43,7 @@ MODULE ADT:Object:Storage;
    embedded objects, but it does contain @code{NIL} pointers.  *)
 
 IMPORT
-  SYSTEM, RT0, Strings, Channel, BinaryRider, Msg, Language:=LanguageNew,
+  SYSTEM, RT0, Strings, Channel, BinaryRider, Msg, Object,
   ADT:Storable, Dictionary := ADT:Dictionary:AddressKey:IntValue;
 
 CONST
@@ -303,7 +303,7 @@ PROCEDURE (r: Reader) Disconnect*;
 
 
 
-PROCEDURE (w: Writer) WriteObject* (obj: Language.Object);
+PROCEDURE (w: Writer) WriteObject* (obj: Object.Object);
   VAR
     tref: LONGINT;
     type: RT0.Struct;

@@ -39,14 +39,14 @@ MODULE ADT:Dictionary:IntValue;
    @end itemize  *)
 
 IMPORT
-  S := SYSTEM, Language:=LanguageNew, ADT:Storable;
+  S := SYSTEM, Object, ADT:Storable;
 
 
 TYPE
   Hash = LONGINT;
   HSet = SET;
   Index = LONGINT;
-  Key* = Language.Object;
+  Key* = Object.Object;
   Value* = LONGINT;
   
 TYPE
@@ -92,7 +92,7 @@ TYPE
 
 TYPE
   Dummy = POINTER TO DummyDesc;
-  DummyDesc = RECORD (Language.ObjectDesc) END;
+  DummyDesc = RECORD (Object.ObjectDesc) END;
 
 VAR
   dummy: Dummy;
@@ -396,11 +396,11 @@ PROCEDURE (dict: Dictionary) Clear*;
   END Clear;
 
 
-PROCEDURE (dict: Dictionary) Keys* (): Language.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
 (**Returns the list of keys of the dictionary @oparam{dict}.  The keys are
    listed in no particular order.  *)
   VAR
-    list: Language.ObjectArrayPtr;
+    list: Object.ObjectArrayPtr;
     i, j: LONGINT;
   BEGIN
     NEW (list, dict. used);

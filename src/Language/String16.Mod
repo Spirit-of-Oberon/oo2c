@@ -2,7 +2,7 @@ MODULE Language:String16 [OOC_EXTENSIONS];
 
 IMPORT 
   S := SYSTEM, ADT:Storable, ADT:String, LongStrings,
-  L := Language, LString := Language:String, LanguageNew;
+  L := Language, LString := Language:String, Object;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -107,7 +107,7 @@ BEGIN
   RETURN New(res);
 END Concat;
 
-PROCEDURE (v: Value) Equals* (y: LanguageNew.Object): BOOLEAN;
+PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
   VAR
     i: LONGINT;
   BEGIN

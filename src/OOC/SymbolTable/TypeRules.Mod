@@ -83,7 +83,7 @@ PROCEDURE IsSTRING* (type: Sym.Type): BOOLEAN;
   BEGIN
     IF (type IS Sym.Pointer) &
        (type(Sym.Pointer).baseType IS Sym.Record) THEN
-      (* the second to last base type must be LanguageNew.StringDesc *)
+      (* the second to last base type must be Object.StringDesc *)
       r := type(Sym.Pointer).baseType(Sym.Record);
       WHILE (r.baseType # NIL) & (r.baseType(Sym.Record).baseType # NIL) DO
         r := r.baseType(Sym.Record);

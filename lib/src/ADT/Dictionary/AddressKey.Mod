@@ -39,16 +39,16 @@ MODULE ADT:Dictionary:AddressKey;
    @end itemize  *)
 
 IMPORT
-  S := SYSTEM, ADT:Storable, Language:=LanguageNew;
+  S := SYSTEM, ADT:Storable, Object;
 
 
 TYPE
   Hash = LONGINT;
   HSet = SET;
   Index = LONGINT;
-  Key* = Language.Object;
+  Key* = Object.Object;
   (**Type of key entries in the dictionary.  *)
-  Value* = Language.Object;
+  Value* = Object.Object;
   (**Type of value entries in the dictionary.  *)
   
 TYPE
@@ -98,7 +98,7 @@ TYPE
 
 TYPE
   Dummy = POINTER TO DummyDesc;
-  DummyDesc = RECORD (Language.ObjectDesc) END;
+  DummyDesc = RECORD (Object.ObjectDesc) END;
 
 VAR
   dummy: Dummy;
@@ -414,11 +414,11 @@ PROCEDURE (dict: Dictionary) Clear*;
   END Clear;
 
 
-PROCEDURE (dict: Dictionary) Keys* (): Language.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary) Keys* (): Object.ObjectArrayPtr;
 (**Returns the list of keys of the dictionary @oparam{dict}.  The keys are
    listed in no particular order.  *)
   VAR
-    list: Language.ObjectArrayPtr;
+    list: Object.ObjectArrayPtr;
     i, j: LONGINT;
   BEGIN
     NEW (list, dict. used);
@@ -433,11 +433,11 @@ PROCEDURE (dict: Dictionary) Keys* (): Language.ObjectArrayPtr;
     RETURN list
   END Keys;
 
-PROCEDURE (dict: Dictionary) Values* (): Language.ObjectArrayPtr;
+PROCEDURE (dict: Dictionary) Values* (): Object.ObjectArrayPtr;
 (**Returns the list of values of the dictionary @oparam{dict}.  The values are
    listed in no particular order.  *)
   VAR
-    list: Language.ObjectArrayPtr;
+    list: Object.ObjectArrayPtr;
     i, j: LONGINT;
   BEGIN
     NEW (list, dict. used);
@@ -453,7 +453,7 @@ PROCEDURE (dict: Dictionary) Values* (): Language.ObjectArrayPtr;
   END Values;
 
 
-PROCEDURE (dict: Dictionary) Equals* (obj: Language.Object): BOOLEAN;
+PROCEDURE (dict: Dictionary) Equals* (obj: Object.Object): BOOLEAN;
   BEGIN
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END Equals;

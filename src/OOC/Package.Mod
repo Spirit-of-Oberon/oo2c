@@ -2,7 +2,7 @@ MODULE OOC:Package;
 
 IMPORT
   Files, IntStr, LongStrings, Msg, Out, StdChannels, Strings,
-  Language:=LanguageNew, ADT:String, ADT:ArrayList, OSFiles := OS:Files,
+  Object, ADT:String, ADT:ArrayList, OSFiles := OS:Files,
   OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
   Config:Parser, Config:Value, StringValue := Config:Value:String,
@@ -29,14 +29,14 @@ TYPE
 TYPE
   Executable* = POINTER TO ExecutableDesc;
   ExecutableDesc = RECORD
-    (Language.ObjectDesc)
+    (Object.ObjectDesc)
     mainModule-: String.String; 
   END;
   
 TYPE
   Library* = POINTER TO LibraryDesc;
   LibraryDesc = RECORD
-    (Language.ObjectDesc)
+    (Object.ObjectDesc)
     name-: String.String;
     mainModule-: String.String;
     version-: Version;
@@ -68,7 +68,7 @@ TYPE
 TYPE
   KeyValue* = POINTER TO KeyValueDesc;
   KeyValueDesc = RECORD
-    (Language.ObjectDesc)
+    (Object.ObjectDesc)
     key-: String.String;
     value-: Value.Value;
   END;

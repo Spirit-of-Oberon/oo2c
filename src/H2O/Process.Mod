@@ -1,7 +1,7 @@
 MODULE H2O:Process;
 
 IMPORT
-  Err, Language:=LanguageNew,
+  Err, Object,
   ADT:String, ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList,
   H2O:Source, H2O:Error, H2O:Scanner, H2O:Module;
 
@@ -38,7 +38,7 @@ TYPE
   END;
 
   Macro* = POINTER TO MacroDesc;
-  MacroDesc* = RECORD (Language.ObjectDesc)
+  MacroDesc* = RECORD (Object.ObjectDesc)
     module- : Module.Module;		(* module for macro definition *)
     name- : String.String;		(* name of macro *)
     nParams : INTEGER;			(* number of formal parameters *)
@@ -64,7 +64,7 @@ VAR
 
 PROCEDURE PrintMacro(m : Macro);
 VAR
-  o : Language.Object;
+  o : Object.Object;
   p : Param;
   i : LinkedList.Iterator;
 BEGIN
@@ -92,7 +92,7 @@ BEGIN
 END PrintMacro;
 
 PROCEDURE (p : Process) FindMacro(name : String.String; VAR result : Macro) : BOOLEAN;
-VAR o : Language.Object;
+VAR o : Object.Object;
 BEGIN
   IF p.macro.HasKey(name) THEN
     o := p.macro.Get(name);
@@ -116,7 +116,7 @@ VAR
   (* Get next symbol from input. If tokens are queued resulting from macro
      expansion, the first queued token is returned. Otherwise, the next token
      is read from the input scanner. *)
-  VAR o : Language.Object;
+  VAR o : Object.Object;
   BEGIN
     IF p.expanded.Size() > 0 THEN
       o := p.expanded.RemoveFirst();
@@ -141,7 +141,7 @@ VAR
     i : INTEGER;
     result : LinkedList.LinkedList;
     iBody, iParam : LinkedList.Iterator;
-    o : Language.Object;
+    o : Object.Object;
     s, t : Scanner.Token;
     
     PROCEDURE ScanParameter(list : LinkedList.LinkedList);
@@ -296,7 +296,7 @@ VAR
     PROCEDURE Define;
     VAR
       name : String.String;
-      object : Language.Object;
+      object : Object.Object;
       m : Macro;
       t : Scanner.Token;
       param, lastParam : Param;

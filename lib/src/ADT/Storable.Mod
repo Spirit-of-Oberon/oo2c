@@ -19,7 +19,7 @@ MODULE ADT:Storable [OOC_EXTENSIONS];
 *)
  
 IMPORT
-  Channel, BinaryRider, Msg, Language:=LanguageNew;
+  Channel, BinaryRider, Msg, Obj := Object;
 
 
 (**This module defines the abstract type @otype{Object}, the root type of all
@@ -43,7 +43,7 @@ TYPE
   ObjectDesc* = RECORD [ABSTRACT]
   (**This class defines a protocol for object persistence using with
      @oproc{Object.Store} and @oproc{Object.Load}).  *)
-    (Language.ObjectDesc)
+    (Obj.ObjectDesc)
   END;
 
 TYPE  (* abstract types, used for persistence mechanism 
@@ -209,7 +209,7 @@ PROCEDURE InitReader* (r: Reader; ch: Channel.Channel);
     BinaryRider.InitReader (r, ch, BinaryRider.littleEndian)
   END InitReader;
 
-PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Language.Object);
+PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Obj.Object);
 (**Writes object to the channel underlying the writer @oparam{w}.  The
    externalization framework is provided by the concrete instance of writer
    @oparam{w}.  The object itself is required to provide the necessary

@@ -19,11 +19,11 @@ MODULE ADT:ArrayList;
 *)
 
 IMPORT
-  ADT:Storable, Language:=LanguageNew;
+  ADT:Storable, Object;
 
 
 TYPE
-  Array = POINTER TO ARRAY OF Language.Object;
+  Array = POINTER TO ARRAY OF Object.Object;
   ArrayList* = POINTER TO ArrayListDesc;
   ArrayListDesc* = RECORD
   (**Resizable-array implementation of a list.  *)
@@ -133,7 +133,7 @@ PROCEDURE (l: ArrayList) Clear*;
     l. size := 0
   END Clear;
 
-PROCEDURE (l: ArrayList) Append* (obj: Language.Object);
+PROCEDURE (l: ArrayList) Append* (obj: Object.Object);
 (**Appends the specified element @oparam{obj} to the end of this list.  *)
   BEGIN
     IF (l. size = LEN (l. array^)) THEN
@@ -143,7 +143,7 @@ PROCEDURE (l: ArrayList) Append* (obj: Language.Object);
     INC (l. size)
   END Append;
 
-PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Language.Object);
+PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Object.Object);
 (**Inserts the specified element @oparam{obj} at the specified position
    @oparam{index} in this list.  Shifts the element currently at that position
    (if any) and any subsequent elements to the right (adds one to their
@@ -166,7 +166,7 @@ PROCEDURE (l: ArrayList) Insert* (index: LONGINT; obj: Language.Object);
     INC (l. size)
   END Insert;
 
-PROCEDURE (l: ArrayList) Get* (index: LONGINT): Language.Object;
+PROCEDURE (l: ArrayList) Get* (index: LONGINT): Object.Object;
 (**Returns the element at the specified position @oparam{index} in this list.
 
    @precond
@@ -177,7 +177,7 @@ PROCEDURE (l: ArrayList) Get* (index: LONGINT): Language.Object;
     RETURN l. array[index]
   END Get;
 
-PROCEDURE (l: ArrayList) Set* (index: LONGINT; obj: Language.Object);
+PROCEDURE (l: ArrayList) Set* (index: LONGINT; obj: Object.Object);
 (**Replaces the element at the specified position @oparam{index} in this list
    with the specified element @oparam{obj}.
 
@@ -246,7 +246,7 @@ PROCEDURE (l: ArrayList) Size* (): LONGINT;
     RETURN l. size
   END Size;
 
-PROCEDURE (l: ArrayList) Contains* (obj: Language.Object): BOOLEAN;
+PROCEDURE (l: ArrayList) Contains* (obj: Object.Object): BOOLEAN;
 (**Returns @code{TRUE} if this list contains the specified element.  *)
   VAR
     i: LONGINT;
@@ -259,9 +259,9 @@ PROCEDURE (l: ArrayList) Contains* (obj: Language.Object): BOOLEAN;
     RETURN FALSE
   END Contains;
 
-PROCEDURE (l: ArrayList) IndexOf* (obj: Language.Object): LONGINT;
+PROCEDURE (l: ArrayList) IndexOf* (obj: Object.Object): LONGINT;
 (**Searches for the first occurence of the given argument, testing for equality
-   using the @oproc{Language.Object.Equals} method.  Returns @code{-1} if the
+   using the @oproc{Object.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
   VAR
     i: LONGINT;
@@ -274,9 +274,9 @@ PROCEDURE (l: ArrayList) IndexOf* (obj: Language.Object): LONGINT;
     RETURN -1
   END IndexOf;
 
-PROCEDURE (l: ArrayList) LastIndexOf* (obj: Language.Object): LONGINT;
+PROCEDURE (l: ArrayList) LastIndexOf* (obj: Object.Object): LONGINT;
 (**Searches for the last occurence of the given argument, testing for equality
-   using the @oproc{Language.Object.Equals} method.  Returns @code{-1} if the
+   using the @oproc{Object.Object.Equals} method.  Returns @code{-1} if the
    object is not found.  *)
   VAR
     i: LONGINT;
@@ -297,7 +297,7 @@ PROCEDURE (l: ArrayList) IsEmpty* (): BOOLEAN;
 
 
 
-PROCEDURE (l: ArrayList) Equals* (obj: Language.Object): BOOLEAN;
+PROCEDURE (l: ArrayList) Equals* (obj: Object.Object): BOOLEAN;
   BEGIN
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END Equals;

@@ -20,7 +20,7 @@ MODULE ADT:StringBuffer [OOC_EXTENSIONS];
 
 IMPORT
   S := SYSTEM, RT0, ADT:Storable, ADT:String, IntStr, RealStr,
-  Language:=LanguageNew;
+  Object;
 
 TYPE
   StringBuffer* = POINTER TO StringBufferDesc;
@@ -159,7 +159,7 @@ PROCEDURE (str: StringBuffer) IsEmpty* (): BOOLEAN;
     RETURN (str. length = 0)
   END IsEmpty;
 
-PROCEDURE (x: StringBuffer) Equals* (y: Language.Object): BOOLEAN;
+PROCEDURE (x: StringBuffer) Equals* (y: Object.Object): BOOLEAN;
 (**Determines if the receiver and the parameter are equal strings.  That is, it
    returns @code{TRUE} if, and only if, @oparam{y} is an instance of
    @otype{StringBuffer} with the same length and content as @oparam{x}.  *)
@@ -454,8 +454,8 @@ BEGIN
   END
 END AppendBool;
 
-PROCEDURE (str : StringBuffer) AppendObject* (object : Language.Object);
-(**Append the string representation of an @otype{Language.Object} to the current
+PROCEDURE (str : StringBuffer) AppendObject* (object : Object.Object);
+(**Append the string representation of an @otype{Object.Object} to the current
    string. This procedure uses @oproc{Storable.Object.ToString} to obtain a
    textual description of the object. If @oproc{Storable.Object.ToString} does
    not return a @otype{String.String} (eg. the base method has not been
@@ -489,7 +489,7 @@ BEGIN
       str.AppendChar("]");
     END
   ELSE
-    str.AppendString("[some Language.Object]");
+    str.AppendString("[some Object.Object]");
   END;
 END AppendObject;
  
