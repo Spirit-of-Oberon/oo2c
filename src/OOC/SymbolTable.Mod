@@ -650,8 +650,19 @@ TYPE
 
 TYPE
   TypeVarDesc = RECORD
-    (**Represents a type variable from the list of formal type parameters of
-       a type with @ofield{Type.typePars}.  *)
+    (**Represents a type variable from the list of formal type parameters of a
+       type with @ofield{Type.typePars}.  On the language level, they are
+       introduced by declarations like @samp{TYPE T(a: A, b: B) = @dots{}}.
+
+       Two situations must be distinguished for type variables.  First,
+       creating an instance of a parametric type defines concrete values for
+       the type variables.  The program then works with the concrete type that
+       was assigned to the variable.  Second, within a type-bound procedure,
+       type variables may appear in the formal parameter list and as types of
+       local variables.  Here, the concreate type is only known when the
+       type-bound procedure is called, but not during compilation time.
+       Therefore, the compiler must treat the type variable similar to (but not
+       like) the variable's type bound.  *)
     (TypeDesc)
     bound*: Type;
     (**Lower bound of the set of valid type arguments.  *)
@@ -673,8 +684,19 @@ TYPE
   END;
   TypeRefArray* = POINTER TO ARRAY OF TypeRef;
   QualTypeDesc = RECORD
-    (**An instance of a parametric type qualified by a set of type
-       arguments.  *)
+    (**An instance of a parametric type qualified by a set of type arguments.
+       On the language level, this corresponds to a type of the form
+       @samp{T(A,B)}, where @samp{T} is the name of a parametric type.
+       Implicit instances of @otype{QualType} are created by the compiler
+       wherever a type variable appears in a pointer, record, or array type.
+
+       As a consequence, almost every instance of @otype{Type} can appear as
+       the base type of a @otype{QualType} and there is no one-to-one relation
+       between the kind of type and the type of its symbol table
+       representation.  For example, checking the type like @samp{@var{type} IS
+       Pointer} is often insufficient to determine if @var{type} is a pointer
+       variable---use @oproc{Type.Deparam} or
+       @oproc{*OOC:SymbolTable:TypeRules.IsPointer} instead.  *)
     (TypeDesc)
     baseType*: Type;                     (*... make this read-only? *)
     (**Base type of the qualified type expression.  This is a reference to
