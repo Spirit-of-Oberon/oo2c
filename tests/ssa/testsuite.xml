@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; abs0">-->
+  select ="&SetupTestCasesWithOut; array4">-->
 
   &TestSetupWithOut;
     
