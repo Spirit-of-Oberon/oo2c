@@ -41,9 +41,17 @@ to such a variable.
 A type variable cannot be used on the right hand side of a type test
 or type guard.
 
+Two qualified types are considered to be the same type, if they have
+the same base type and if their corresponding type arguments are of
+the same type.
+
+`NIL' is assignment compatible with a parametric type if it is
+assignment compatible with the type's base type.
+
+
 Note: Some of the restrictions on type variables and qualified types
-follow the assumption that no type information for parametric types is
-available during run-time.
+follow from the assumption that no type information for parametric
+types is available during run-time.
 
 
 
@@ -60,6 +68,7 @@ ACCEPT
   4) T<> = RECORD END  [Generic3]
   5) Extension of a parametric record type.  [Generic4]
   6) T.t visible in type-bound procedure.  [Generic1]
+  7) Base type of the declaration is one of the type variables.  [Generic21]
 
 REJECT
 
@@ -79,6 +88,13 @@ ACCEPT
   1) Instance of record and types with arguments.  [Generic2 Generic3]
   2) Instance of parametric type without arguments.  [Generic3]
   3) Argument is a type variable with matching bound.  [Generic1]
+  4) Base type is a type variable.  [Generic21]
+  5) Formals parameters of a type-bound procedure may refer to type
+     variables of the base record.  [Generic24]
+  6) A receiver is implicitly quailified by the type parameters of the
+     base record.  [Generic24]
+  7) NIL is assignment compatbile with `x', if it is compatible with 
+     (unqualified) T.  [Generic24]
 
 REJECT
 
@@ -108,3 +124,21 @@ REJECT
 
   1) Assigning v a value of its type bound.  [Generic17]
   2) Type test or guard using a type variable.  [Generic18 Generic19]
+  3) NEW(v)  [Generic20]
+
+Designators
+===========
+
+ACCEPT/REJECT
+
+  1) Type argument is type of variable.  [Generic21 Generic22
+     Generic23]
+  2) Type argument is passed through field selector.  [Generic25
+     Generic26 Generic27 Generic28]
+  3) Type argument is passed through array index.  [Generic25
+     Generic26 Generic27 Generic28]
+  4) Type argument is passed through pointer deref.  [Generic25
+     Generic26 Generic27 Generic28]
+  5) Calling type-bound procedure on parametric type.  [Generic29 to
+     Generic34]
+  6) Same base and same arguments mean same qualified type.  [Generic24]

@@ -13,6 +13,7 @@ PROCEDURE (l: ArrayList) Copy1*(): ArrayList<ArrayListDesc.E>;
   VAR
     x: ArrayList<ArrayListDesc.E>;
   BEGIN
+    x := NIL;
     x := l;
     RETURN x;
   END Copy1;
