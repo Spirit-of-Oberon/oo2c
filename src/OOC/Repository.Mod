@@ -644,6 +644,9 @@ RAISES IO.Error;
       
       stb := Builder.New();
       symTab := stb. ReadSymbolTable (ch, chDoc);
+      IF (chDoc # NIL) THEN
+        chDoc.Close;
+      END;
       ch. Close;
       RETURN symTab;
     END;
