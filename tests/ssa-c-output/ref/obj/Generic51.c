@@ -19,7 +19,7 @@ void Generic51__Test(void) {
   i0 = (OOC_INT32)RT0__NewObject(_td_Generic51__Dictionary.baseTypes[0]);
   *(OOC_INT32*)(i0+4) = (OOC_INT32)0;
   i0 = (OOC_INT32)Generic51__DictionaryDesc_Resize((Generic51__Dictionary)i0);
-  _assert((i0==(OOC_INT32)0), 127, 868);
+  _assert((i0==(OOC_INT32)0), 127, 890);
   return;
   ;
 }

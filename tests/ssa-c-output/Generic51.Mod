@@ -1,4 +1,5 @@
 MODULE Generic51;
+<*DerefCheck:=FALSE*>
 
 TYPE
   Object* = POINTER TO ObjectDesc;
