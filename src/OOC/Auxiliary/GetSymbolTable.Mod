@@ -17,9 +17,7 @@ PROCEDURE GetSymbolTable* (module: Repository.Module;
       uri := module. GetURI (Repository.modSymbolFile);
       uri. GetString (uriStr);
       errList := Error.NewList (uriStr);
-      CreateNamespace.CreateNamespace (symTab,
-                                       Config.predefModule,
-                                       Config.systemModule, errList);
+      CreateNamespace.CreateNamespace (symTab, errList);
       ASSERT (errList. msgCount = 0)
     END;
     RETURN symTab

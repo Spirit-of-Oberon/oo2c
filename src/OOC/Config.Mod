@@ -14,8 +14,6 @@ VAR
   options-: Options.Section;
   pragmas-: Pragmas.Section;
   repositories-: Repositories.Section;
-  predefModule-: Sym.Module;
-  systemModule-: Sym.Module;
 
 CONST
   runtimeModule* = "RT0";
@@ -43,17 +41,6 @@ PROCEDURE Read* (errList: Msg.MsgList);
   BEGIN
     config. Read (errList);
   END Read;
-
-PROCEDURE SetPredefModules* (predef, system: Sym.Module);
-(**Sets @ovar{predefModule} and @ovar{systemModule}.  This procedure exists
-   so that these variable can be exported read-only.  The modules are
-   constructed in the module initialization of
-   @omodule{*OOC:SymbolTable:Predef}, and completed during the initialization
-   of @omodule{*OOC:SymbolTable:CreateNamespace}.  *)
-  BEGIN
-    predefModule := predef;
-    systemModule := system;
-  END SetPredefModules;
 
 BEGIN
   InitConfig (defaultConfigFile);

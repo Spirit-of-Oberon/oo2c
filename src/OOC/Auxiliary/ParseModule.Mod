@@ -67,9 +67,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
           (ast, stb, m. GetURI (Repository.modModuleSource));
         IF createNamespace THEN
           IF (errList. msgCount = 0) THEN
-            CreateNamespace.CreateNamespace (symTab,
-                                             Config.predefModule,
-                                             Config.systemModule, errList)
+            CreateNamespace.CreateNamespace (symTab, errList)
           END;
           IF (errList. msgCount = 0) & writeSymbolFile THEN
             (* no error in the declaration part of the module: write the
