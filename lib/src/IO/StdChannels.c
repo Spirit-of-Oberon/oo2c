@@ -9,6 +9,10 @@
 #include <limits.h>
 #include <string.h>
 
+#ifdef __MINGW32__
+typedef int ssize_t;
+#endif
+
 void IO_StdChannels__IOError(Object__String suffix) {
   RT0__Struct e_type;
   const int size_buffer = 1024;
@@ -96,4 +100,10 @@ void OOC_IO_StdChannels_init(void) {
  IO_StdChannels__stdin = stdchannel(STDIN_FILENO);
  IO_StdChannels__stdout = stdchannel(STDOUT_FILENO);
  IO_StdChannels__stderr = stdchannel(STDERR_FILENO);
+#ifdef __MINGW32__
+  /* set standard I/O channels to binary mode */
+  setmode(fileno(stdin), O_BINARY);
+  setmode(fileno(stdout), O_BINARY);
+  setmode(fileno(stderr), O_BINARY);
+#endif 
 }

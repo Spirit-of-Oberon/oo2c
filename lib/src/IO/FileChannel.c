@@ -9,6 +9,10 @@
 #include <limits.h>
 #include <string.h>
 
+#ifdef __MINGW32__
+typedef int ssize_t;
+#endif
+
 /* if the system imposes no limit on the length of a file name, choose an 
    arbitrary large value instead */
 #ifndef PATH_MAX
@@ -103,6 +107,9 @@ IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String8 file,
     flags |= O_APPEND;
   }
 
+#ifdef O_BINARY
+	flags |= O_BINARY;
+#endif
   if (mode & tmp_mask) {
     char tname[PATH_MAX+16];
     int count = 0;
