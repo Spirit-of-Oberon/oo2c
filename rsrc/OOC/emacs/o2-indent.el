@@ -398,13 +398,9 @@ row n (n > 1) of a procedure parameter list spanning several lines."
 
 Return the correct indentation of the current line when point is on
 the n:th line of a multi-line comment, where n > 1."
-  (let ((column (save-excursion
-                  (comment-beginning)
-                  (re-search-backward "(\\*")
-                  (current-column))))
-    (if (looking-at "\\*")
-        (1+ column)
-      (+ column 2))))
+  (save-excursion
+    (comment-beginning)
+    (current-column)))
 
 
 (defun ob2-looking-at-ref-param-p ()
@@ -440,6 +436,12 @@ Else returns nil."
   (set (make-local-variable 'indent-line-function) 'ob2-indent-line)
   (setq indent-tabs-mode nil)
   
+  ;; Comments
+  (require 'newcomment)
+  (set (make-local-variable 'comment-start) "(*")
+  (set (make-local-variable 'comment-end) "(*")
+  (comment-normalize-vars)
+
   (setq case-fold-search nil)
   (setq major-mode 'oberon-2-mode)
   (setq mode-name "Oberon-2")
