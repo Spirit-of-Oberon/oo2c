@@ -176,6 +176,7 @@ PROCEDURE (v: Visitor) VisitDeref* (deref: IR.Deref);
 PROCEDURE (v: Visitor) VisitIndex* (index: IR.Index);
   BEGIN
     v. w. StartTag ("index", FALSE);
+    v. w. AttrBool ("check-index", index. checkIndex);
     index. array. Accept (v);
     index. index. Accept (v);
     v. w. EndTag;  (* index *)

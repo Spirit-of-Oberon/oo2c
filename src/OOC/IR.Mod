@@ -360,6 +360,9 @@ TYPE
        the array variable @ofield{array}.  *)
     array- : Expression;
     index- : Expression;
+    checkIndex-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the index
+       is out of range.  *)
   END;
   
 TYPE
@@ -998,6 +1001,14 @@ PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
     b. lastError := e;
   END ErrSym;
 
+PROCEDURE GetPragmaValue (b: Builder; pragma: Pragmas.Pragma; charPos: Pragmas.CharPos): BOOLEAN;
+  VAR
+    value: Value.Value;
+  BEGIN
+    value := b. pragmaHistory. GetValue (pragma. name^, charPos);
+    RETURN value(BooleanValue.Value). boolean
+  END GetPragmaValue;
+
 PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Const;
   BEGIN
     b.ErrSym(code, sym);
@@ -1618,18 +1629,23 @@ PROCEDURE (entier: Entier) Accept* (v: Visitor);
 (* Operator Class: Index
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitIndex (i: Index; sym: Symbol; array, index: Expression);
+PROCEDURE InitIndex (i: Index; sym: Symbol; array, index: Expression;
+                     checkIndex: BOOLEAN);
   BEGIN
     InitOperator (i, sym, array. type(Sym.Array). elementType);
     i.array := array;
     i.index := index;
+    i.checkIndex := checkIndex;
   END InitIndex;
 
 PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expression;
   VAR
     i: Index;
     a : Sym.Array; idx : LONGINT;
+    checkIndex: BOOLEAN;
   BEGIN
+    checkIndex := GetPragmaValue (b, StdPragmas.indexCheck, sym. pos);
+    
     b.CheckFunctionOp(array, sym);
     IF (array. type IS Sym.Pointer) THEN
       array := b. NewDeref (sym, array);
@@ -1655,7 +1671,7 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expres
         END
       END;
       NEW (i);
-      InitIndex (i, sym, array, index);
+      InitIndex (i, sym, array, index, checkIndex);
       RETURN i
     END;
   END NewIndex;
@@ -2531,14 +2547,6 @@ PROCEDURE InitAssert (assert: Assert; sym: Symbol;
     assert. code := code;
     assert. disabled := disabled;
   END InitAssert;
-
-PROCEDURE GetPragmaValue (b: Builder; pragma: Pragmas.Pragma; charPos: Pragmas.CharPos): BOOLEAN;
-  VAR
-    value: Value.Value;
-  BEGIN
-    value := b. pragmaHistory. GetValue (pragma. name^, charPos);
-    RETURN value(BooleanValue.Value). boolean
-  END GetPragmaValue;
 
 PROCEDURE (b: Builder) NewAssert (sym: Symbol;
                          arguments: ExpressionList; disabled: BOOLEAN): Assert;
