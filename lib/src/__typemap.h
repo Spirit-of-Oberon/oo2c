@@ -29,13 +29,13 @@ typedef unsigned short int OOC_CHAR16;
 typedef signed char OOC_INT8;
 typedef signed short int OOC_INT16;
 typedef signed int OOC_INT32;
-typedef LOCAL_INT64_T OOC_INT64;
+typedef OOC_INT64_T OOC_INT64;
 typedef float OOC_REAL32;
 typedef double OOC_REAL64;
 typedef unsigned char OOC_UINT8;
 typedef unsigned short int OOC_UINT16;
 typedef unsigned int OOC_UINT32;
-typedef unsigned LOCAL_INT64_T OOC_UINT64;
+typedef unsigned OOC_INT64_T OOC_UINT64;
 typedef unsigned char OOC_BYTE;
 typedef void *OOC_PTR;
 

@@ -20,6 +20,10 @@
 #include "__oo2c.h"
 #include <stdio.h>
 
+/* --- stack for copies of array value parameters (see __dynvar.h): */
+void* _ooc_top_vs;
+void* _ooc_end_vs;
+
 /* --- functions to handle exceptions and failed run-time checks: */
 #define PREFIX "## "
 

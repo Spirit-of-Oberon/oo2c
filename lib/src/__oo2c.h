@@ -1,6 +1,6 @@
 /*      $Id$        */
 /*  Run-time system for C back-ends of OOC2
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -19,7 +19,10 @@
 #ifndef __oo2c__
 #define __oo2c__
 
+#include "__config.h"
 #include "__typemap.h"
+#include "__libc.h"
+#include "__dynvar.h"
 
 /* Define attributes that mark functions that won't return.  These attributes
    are only used in __oo2c.h and __oo2c.c: */

@@ -2,6 +2,7 @@ dnl Autoconf requirements
 AC_PREREQ(2.52)
 AC_INIT(OOC,0.1,mia@de.uu.net)
 AC_CONFIG_SRCDIR(src/OOC/Parser.Mod)
+AC_CONFIG_HEADER(lib/src/__config.h)
 AC_SUBST(OOC_DEV_ROOT,[`cd "$srcdir" && pwd`])
 
 dnl information on the package
@@ -20,6 +21,8 @@ dnl checks for libraries
 dnl checks for header files
 
 dnl checks for types
+OOC_CHECK_LONG_SIZE_T()
+OOC_CHECK_INT64_T()
 
 dnl checks for structures
 

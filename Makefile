@@ -62,7 +62,7 @@ main-clean: doc-clean test-cleanall
 ###      distribution.
 distclean: main-clean
 	rm -f ENV rsrc/OOC/Makefile.config rsrc/OOC/TestFramework/config.xml
-	rm -f config.log config.status
+	rm -f lib/src/__config.h config.log config.status
 
 FRC:
 
