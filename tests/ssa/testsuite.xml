@@ -413,27 +413,26 @@ opPointer1 opPointer2 opPointer3 opPointer4 opPointer5">-->
       Exercise array designators.
     </test>
 
-    <test id="opArray2" type="reject" relevance="informal" file="OpArray2.Mod">
+    <test id="opArray2" type="reject" file="OpArray2.Mod">
       Array designator applied to non-array.
     </test>
 
-    <test id="opArray3" type="reject" relevance="informal" file="OpArray3.Mod">
+    <test id="opArray3" type="reject" file="OpArray3.Mod">
       Array indexed by non-integer.
     </test>
 
-    <test id="opArray4" type="reject" relevance="informal" file="OpArray4.Mod">
+    <test id="opArray4" type="reject" file="OpArray4.Mod">
       Constant array index exceeds array length.
     </test>
 
-    <test id="opArray5" type="reject" relevance="informal" file="OpArray5.Mod">
+    <test id="opArray5" type="reject" file="OpArray5.Mod">
       Constant array index is negative.
     </test>
 
-    <test id="opArray6" type="reject" relevance="informal" file="OpArray6.Mod">
+    <test id="opArray6" type="reject" file="OpArray6.Mod">
       Array designator applied to function result.
     </test>
 
-<!--
     <test id="opRecord1" type="run" file="OpRecord1.Mod"
        output="OpRecord1.Ref">
       Excercise RECORD operators.
@@ -455,10 +454,12 @@ opPointer1 opPointer2 opPointer3 opPointer4 opPointer5">-->
       Dereference operator applied to non-pointer.
     </test>
 
-    <test id="opPointer2" type="reject" file="OpPointer2.Mod">
+<!--
+    <test id="opPointer2" type="reject" relevance="informal" file="OpPointer2.Mod">
       Dereference operator applied to type-bound procedure that does not exist
       in the base type.
     </test>
+-->
 
     <test id="opPointer3" type="run" file="OpPointer3.Mod"
     output="OpPointer3.Ref">
@@ -469,7 +470,8 @@ opPointer1 opPointer2 opPointer3 opPointer4 opPointer5">-->
       Dereference operator applied to function result.
     </test>
 
-    <test id="opPointer5" type="reject" file="OpPointer5.Mod">
+<!--
+    <test id="opPointer5" type="reject" relevance="informal" file="OpPointer5.Mod">
       More than one level of "super" call.
     </test>
 -->
@@ -488,5 +490,25 @@ opPointer1 opPointer2 opPointer3 opPointer4 opPointer5">-->
         msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
     <reject-info id="len7" pos="a, %d),"
         msg="Expression is not constant"/>
+    <reject-info id="opArray2" pos=" %i[0]"
+        msg="Expression must be an array value"/>
+    <reject-info id="opArray3" pos=" a[%c]"
+        msg="Expression must be of integer type"/>
+    <reject-info id="opArray4" pos=" a[%4]"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+    <reject-info id="opArray5" pos=" a[%-1]"
+        msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
+    <reject-info id="opArray6" pos="P()%[0]"
+        msg="Operator may not be applied to function result"/>
+    <reject-info id="opRecord2" pos=":= %i."
+        msg="Expression must be of record type"/>
+    <reject-info id="opRecord3" pos="p.%r :="
+        msg="Undeclared identifier"/>
+    <reject-info id="opRecord4" pos="New(1)%.i"
+        msg="Operator may not be applied to function result"/>
+    <reject-info id="opPointer1" pos=":= %i"
+        msg="Expression must be of pointer type"/>
+    <reject-info id="opPointer4" pos="New(1)%"
+        msg="Operator may not be applied to function result"/>
   </processor-info>
 </testsuite-ext>
