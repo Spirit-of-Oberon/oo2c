@@ -115,7 +115,7 @@ $(OOC_DEV_ROOT)/oo2crc-install.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
 
 dist: $(OOC_DEV_ROOT)/oo2crc-install.xml configure
 	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1 2>/dev/null
-	$(OOC) --make $(OFLAGS) oo2c
+	$(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml --make $(OFLAGS) oo2c
 	rm -Rf stage0
 	mkdir stage0 stage0/lib
 	ln -s ../src stage0/src
