@@ -30,7 +30,7 @@ TEST_CREATE_SUMMARY=$(XSLTPROC) -o $(TEST_SUMMARY) $(OOC_DEV_ROOT)/rsrc/OOC/Test
 .PHONY: test1-setup test1-process test1-report test1-clean
 
 test1-setup:
-	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1
 	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) $(TEST_DRIVER)
 ifdef TEST_PROCESSOR
 	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) $(TEST_PROCESSOR)

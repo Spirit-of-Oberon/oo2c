@@ -14,6 +14,12 @@ endif
 
 include $(OOC_DEV_ROOT)/Makefile.config
 
+# When build from a distribution tarball, then the bootstrap compiler is
+# the one build from the C sources in the tarball.  To be able to run
+# "make install" directly from the development environment, this variable
+# must point to an existing compiler executable.
+BOOTSTRAP_COMPILER=?stage0/oo2c
+
 # TEST_SUBDIRS: List of subdirectories with testcases.
 TEST_SUBDIRS=\
   $(addprefix tests/config/,sections cmdline environment simple) \
@@ -46,11 +52,10 @@ all: lib/obj/liboo2c.la exe/oo2c
 ###      by building, but normally aren't because the distribution comes
 ###      with them.
 main-clean: doc-clean test-cleanall
-	for i in sym obj; do rm -Rf ${top_builddir}/$$i/*; done
+	for i in sym obj sym-v1 obj-v1; do rm -Rf ${top_builddir}/$$i; done
 	for i in lib/sym lib/obj; do rm -Rf ${top_builddir}/$$i; done
 	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done
-	-rmdir ${top_builddir}/sym ${top_builddir}/obj
 	-cd stage0 && rm -f *.o */*.o */*/*.o */*/*/*.o
 	rm -Rf "$(DOC_DIR)" stage1 stage2 gmon.out
 	${MAKE} -C tests/hostess-ooc1 test-clean
@@ -88,7 +93,7 @@ test-hostess-ooc1:
 ###      Then, XML and HTML files are created under this directory.  Finally,
 ###      an index file $(OOC_DEV_ROOT)/oocdoc/index.html is generated.
 doc:
-	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1
 	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) TestInterfaceGen
 	rm -Rf $(DOC_DIR)
 	mkdir $(DOC_DIR) $(DOC_DIR)/ooc2 $(DOC_DIR)/lib
@@ -112,23 +117,23 @@ configure: configure.ac lib/src/__config.h.in
 ### Some variables are defined recursively by configure.  Expanding these
 ### variables is best done by the make utility itself.  This rule puts the
 ### expanded values into the OOC configuration file oo2crc.xml.
-rsrc/OOC/oo2crc.xml: rsrc/OOC/oo2crc.xml.mk Makefile.config
+$(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml.mk $(OOC_DEV_ROOT)/Makefile.config
 	sed -e 's:%libdir%:$(libdir):g' \
 	    -e 's:%oocdir%:$(oocdir):g' \
 	    -e 's:%bindir%:$(bindir):g' \
 	    -e 's:%INSTALL%:$(INSTALL):g' \
 	    -e 's:%INSTALL_PROGRAM%:$(INSTALL_PROGRAM):g' \
 	    -e 's:%INSTALL_DATA%:$(INSTALL_DATA):g' \
-		rsrc/OOC/oo2crc.xml.mk >rsrc/OOC/oo2crc.xml
+		$(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml.mk >$(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
 
 ### This configuration file is used to build and install the compiler and
 ### library from scratch.  It must not refer to any stale data that may
 ### be present on the target system.
-oo2crc-install.xml: rsrc/OOC/oo2crc.xml
-	sed -e 's:<file-system>:<!--:g' -e 's:</file-system>:-->:g' rsrc/OOC/oo2crc.xml >oo2crc-install.xml
+oo2crc-install.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
+	sed -e 's:<file-system>:<!--:g' -e 's:</file-system>:-->:g' $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml >oo2crc-install.xml
 
 dist: oo2crc-install.xml
-	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj 2>/dev/null
+	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1 2>/dev/null
 	$(OOC) --make -O $(OFLAGS) oo2c
 	rm -Rf stage0
 	mkdir stage0 stage0/lib
@@ -145,17 +150,17 @@ stage0/oo2c:
 	${MAKE} -C stage0 -f Makefile.ext oo2c
 
 ### Build library from core modules using the initial compiler executable.
-lib/obj/liboo2c.la: stage0/oo2c oo2crc-install.xml
-	stage0/oo2c --config oo2crc-install.xml -r lib $(OFLAGS) --build-package liboo2c
+lib/obj/liboo2c.la: $(BOOTSTRAP_COMPILER) oo2crc-install.xml
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib $(OFLAGS) --build-package liboo2c
 
 ### Build second compiler using the initial compiler executable and the
 ### library lib/obj/liboo2c.la.
-exe/oo2c: stage0/oo2c oo2crc-install.xml lib/obj/liboo2c.la
-	stage0/oo2c --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package oo2c
+exe/oo2c: $(BOOTSTRAP_COMPILER) oo2crc-install.xml lib/obj/liboo2c.la
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package oo2c
 
 install: lib/obj/liboo2c.la exe/oo2c
-	stage0/oo2c --config oo2crc-install.xml -r lib --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
-	stage0/oo2c --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
 	chmod a+x $(oocdir)/install-sh
 
 install-strip:

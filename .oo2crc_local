@@ -5,9 +5,9 @@ GET *.Mod [RCS] FROM
   ../libadt/src;
   ../gaf2/src;
 GET *.Sym, *.Lib FROM
-  sym; 
+  sym-v1; 
 GET *.h, *.d, *.c, *.o FROM
-  obj;
+  obj-v1;
 GET *.c FROM
   src; src/Codec; ../libxml/src;
 END
