@@ -164,10 +164,13 @@ install-man: uninstall-man
 	  $(INSTALL_DATA) man/$$i.1 $(mandir)/$$i$(manext); \
 	done
 
+### Install binaries and support files.  To place the files into a directory
+### different from the targets supplied during configuration, override the
+### parameters bindir, libdir, mandir, and oocdir.
 install: lib/obj/liboo2c.la bin/oo2c install-man
 	$(INSTALL) -d $(oocdir)/pkginfo
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml --bindir "$(bindir)" --libdir "$(libdir)" --oocdir "$(oocdir)" -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml --bindir "$(bindir)" --libdir "$(libdir)" --oocdir "$(oocdir)" -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
 	$(INSTALL_SCRIPT) rsrc/OOC/oobacktrace $(bindir)/oobacktrace
 	chmod a+x $(oocdir)/install-sh
 
