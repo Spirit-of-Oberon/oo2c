@@ -139,10 +139,10 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
       Instr("movl 12(%ebp),%eax");
       Instr("movl %eax,RT0__argv");
       
-      Instr("addl $-12,%esp");
+      (*Instr("addl $-12,%esp");  function has been removed
       Instr("pushl $262144");
-      Instr("call RT0__InitVParStack");
-      Instr("addl $16,%esp");
+      Instr("call RT0__InitVParStack");  
+      Instr("addl $16,%esp");*)
       
       WriteModules (w, Dictionary.New(), cmd. module, Ascii.ht+"call ", "_init0");
       Instr("xorl %eax,%eax");
