@@ -14,7 +14,9 @@
   generic36 generic37">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic35 generic36 generic37">-->
+  select ="&SetupTestCasesWithOut; deprecated1 deprecated2
+  deprecated3 deprecated4 deprecated5 deprecated6 deprecated7
+  deprecated8 deprecated9 deprecated10">-->
 
   &TestSetupWithOut;
     
@@ -1554,6 +1556,39 @@
       Analysis should show that <code>Q</code> cannot return, and that
       code after a call to it is unreachable.
     </test>
+
+    <test id="deprecated1" type="accept" file="Deprecated1.Mod">
+      Contains examples for all types of declarations that can have a
+      <code>DEPRECATED</code> flag.
+    </test>
+    <test id="deprecated2" type="accept" file="Deprecated2.Mod">
+      Defines a <code>DEPRECATED</code> module.
+    </test>
+    <test id="deprecated3" type="accept" file="Deprecated3.Mod">
+      Calling a <code>DEPRECATED</code> procedure.
+    </test>
+    <test id="deprecated4" type="accept" file="Deprecated4.Mod">
+      Using a variable from a <code>DEPRECATED</code> module.
+    </test>
+    <test id="deprecated5" type="accept" file="Deprecated5.Mod">
+      Using a <code>DEPRECATED</code> constant.
+    </test>
+    <test id="deprecated6" type="accept" file="Deprecated6.Mod">
+      Using a <code>DEPRECATED</code> variable.
+    </test>
+    <test id="deprecated7" type="accept" file="Deprecated7.Mod">
+      Using a <code>DEPRECATED</code> type.
+    </test>
+    <test id="deprecated8" type="accept" file="Deprecated8.Mod">
+      Using a <code>DEPRECATED</code> record field.
+    </test>
+    <test id="deprecated9" type="accept" file="Deprecated9.Mod">
+      Using a <code>DEPRECATED</code> type-bound procedure.
+    </test>
+    <test id="deprecated10" type="accept" file="Deprecated10.Mod">
+      Using a type-bound procedure that redefines a
+      <code>DEPRECATED</code> procedure.
+    </test>
   </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC O2">
@@ -2047,5 +2082,22 @@
         msg="Warning: Variable may be undefined"/>
     <warning-info id="undef27" pos="%RETURN"
         msg="Warning: Unreachable code"/>
+
+    <warning-info id="deprecated3" pos="D.%Proc"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated4" pos="%D.x"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated5" pos="D.%const"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated6" pos="D.%var"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated7" pos="D.%Record"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated8" pos="record.%field"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated9" pos="a.%TBProc"
+        msg="Warning: Use of deprecated object"/>
+    <warning-info id="deprecated10" pos="b.%TBProc"
+        msg="Warning: Use of deprecated object"/>
   </processor-info>
 </testsuite-ext>
