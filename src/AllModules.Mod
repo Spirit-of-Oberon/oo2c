@@ -188,7 +188,9 @@ IMPORT
 
   IRXML := OOC:IR:XML,
   (* Write an IR data structure as an XML document.  *)
-  
+
+  OOC:IR:VisitAll,
+  (* A vistor traversing the whole IR data structure.  *)
 
   
   (* SSA Back-end
