@@ -1,7 +1,7 @@
 MODULE OOC:Make:BuildCmd:InterfaceDescr;
 
 IMPORT
-  Channel, Files, Msg, ADT:Object:Dictionary, URI, 
+  Channel, Files, Msg, ADT:Dictionary, URI, 
   OOC:Make, OOC:Make:Node:ModuleOutput, OOC:Auxiliary:GetSymbolTable,
   OOC:Error, OOC:Repository, OOC:SymbolTable:Item, 
   OOC:SymbolTable:Item:InterfaceDescr,

@@ -1,7 +1,7 @@
 MODULE OOC:Make:Node:UsageData;
 
 IMPORT
-  Msg, Time, ADT:Object, ADT:Object:Dictionary, ADT:Object:ArrayList,
+  Msg, Time, ADT:Object, ADT:Dictionary, ADT:ArrayList,
   OOC:Make, OOC:Make:Node:ModuleOutput, OOC:Make:Edge:StaticDep,
   Rep := OOC:Repository, OOC:SymbolTable:Item, OOC:Auxiliary:GetSymbolTable;
 

@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:Item:InterfaceDescr;
 
 IMPORT
   Channel, Msg, Strings,
-  ADT:Object, ADT:Object:Dictionary, ADT:Object:ArrayList,
+  ADT:Object, ADT:Dictionary, ADT:ArrayList,
   URI, XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Repository,  OOC:Config:Repositories,
   OOC:SymbolTable:Item, OOC:SymbolTable:Item:GetClass, 
@@ -370,7 +370,12 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
     BEGIN
       WHILE (list # NIL) DO
         WITH list: Item.TypeDecl DO
-          itemClass := GetClass.GetClass (list. type)
+          IF (list. srcCodeType IS Item.TypeName) THEN
+            (* type aliases do not belong to any class *)
+            itemClass := NIL
+          ELSE
+            itemClass := GetClass.GetClass (list. type)
+          END
         ELSE
           itemClass := GetClass.GetClass (list)
         END;
@@ -396,7 +401,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
       ASSERT (res = NIL);
       
       keys := modList. Keys();
-      FOR i := 0 TO keys. len-1 DO
+      FOR i := 0 TO keys. size-1 DO
         remoteMod := keys. array[i](Repository.Module);
 
         w. StartTag ("module-ref", FALSE);
@@ -431,7 +436,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
         VAR
           i: LONGINT;
         BEGIN
-          FOR i := 0 TO omitMethod. len-1 DO
+          FOR i := 0 TO omitMethod. size-1 DO
             IF (omitMethod. array[i](Item.Declaration). name. str^ =
                 method. name. str^) THEN
               RETURN FALSE
@@ -492,7 +497,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
       IF extensionDict. HasKey (type) THEN
         obj := extensionDict. Get (type);
         list := obj(ArrayList.ArrayList);
-        FOR i := 0 TO list. len-1 DO
+        FOR i := 0 TO list. size-1 DO
           item := list. array[i](Item.Record). parent. nestedItems;
           WHILE ~((item IS Item.TypeDecl) &
                   (item(Item.TypeDecl). type = list. array[i])) DO

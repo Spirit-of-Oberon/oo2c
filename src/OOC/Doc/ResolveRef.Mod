@@ -1,7 +1,7 @@
 MODULE OOC:Doc:ResolveRef;
 
 IMPORT
-  Msg, Strings, ADT:Object, ADT:Object:Dictionary,
+  Msg, Strings, ADT:Object, ADT:Dictionary,
   OOC:Error, OOC:Doc, OOC:SymbolTable:Item, OOC:SymbolTable:Exports,
   OOC:Config:Repositories;
   

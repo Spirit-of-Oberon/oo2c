@@ -1,7 +1,7 @@
 MODULE OOC:Doc:Output:XML;
 
 IMPORT
-  Channel, Strings, ADT:Object, ADT:Object:Dictionary,
+  Channel, Strings, ADT:Object, ADT:Dictionary,
   XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Config:Repositories, OOC:Repository, OOC:Doc, OOC:SymbolTable:Item;
   

@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Item [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Strings, ADT:Object, ADT:Object:Dictionary, 
+  Strings, ADT:Object, ADT:Dictionary, 
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc;
 
 TYPE

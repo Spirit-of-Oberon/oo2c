@@ -1,7 +1,7 @@
 MODULE OOC:Doc [OOC_EXTENSIONS];
 
 IMPORT
-  CharClass, Strings, ADT:Object, ADT:Object:ArrayList,
+  CharClass, Strings, ADT:Object, ADT:ArrayList,
   OOC:Doc:Decoration, OOC:Scanner:InputBuffer;
 
 
@@ -1438,7 +1438,7 @@ PROCEDURE (d: Document) AddUsedImport* (importDecl: Object.Object);
     IF (d. usedImportsList = NIL) THEN
       d. usedImportsList := ArrayList.New (2)
     END;
-    FOR i := 0 TO d. usedImportsList. len-1 DO
+    FOR i := 0 TO d. usedImportsList. size-1 DO
       IF (d. usedImportsList. array[i] = importDecl) THEN
         RETURN
       END
