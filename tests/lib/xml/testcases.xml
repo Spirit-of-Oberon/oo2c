@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<testcases profile="OOC Core Library" default-lang="O2">
+  <test id="libxml" type="run" file="LibXml.Mod">
+    Imports all modules of <code>XML:*</code>.
+  </test>
+</testcases>

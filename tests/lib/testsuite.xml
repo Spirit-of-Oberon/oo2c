@@ -5,6 +5,7 @@
 <!ENTITY libos-testcases SYSTEM "os/testcases.xml">
 <!ENTITY libio-testcases SYSTEM "io/testcases.xml">
 <!ENTITY liburi-testcases SYSTEM "uri/testcases.xml">
+<!ENTITY libxml-testcases SYSTEM "xml/testcases.xml">
 ]>
 
 <testsuite-ext
@@ -516,4 +517,5 @@
   &libos-testcases;
   &libio-testcases;
   &liburi-testcases;
+  &libxml-testcases;
 </testsuite-ext>
