@@ -88,6 +88,7 @@ PROCEDURE CollectExtensions (moduleList: ARRAY OF Rep.Module): Sym.ExtensionDict
 
 BEGIN
   InterfaceDescr.absoluteDtdSystemId := FALSE;
+  Rep.readDocStrings := TRUE;
   
   cfgErrList := Error.NewList ("");
   NewConfig;

@@ -182,11 +182,11 @@ RAISES IO.Error;
     BEGIN
       installObjects := ~CCompiler.HaveLibtool();
       
-      (* For every symbol and header file, add an entry to the package's file
-         list.  The source and destination name is the file name relative to
-         the repository.  Upon installation, the former is interpreted relative
-         to the providing repository, and the latter relative to the
-         installation directory.  *)
+      (* For every symbol file, its doc string file, and the header file, add
+         an entry to the package's file list.  The source and destination name
+         is the file name relative to the repository.  Upon installation, the
+         former is interpreted relative to the providing repository, and the
+         latter relative to the installation directory.  *)
       FOR i := 0 TO LEN(makeRules.imports^)-1 DO
         m := makeRules.imports[i];
 
@@ -196,6 +196,7 @@ RAISES IO.Error;
           END;
           
           pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modSymbolFile), NIL));
+          pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modSymbolFileDoc), NIL));
           pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modHeaderFileC), NIL));
         END;
       END;
@@ -347,6 +348,7 @@ RAISES IO.Error;
     END BuildDocs;
   
   BEGIN
+    Rep.readDocStrings := TRUE;
     installObjects := ~CCompiler.HaveLibtool();
     ok := TRUE;
 
@@ -513,6 +515,7 @@ RAISES IO.Error;
     END BuildDocs;
   
   BEGIN
+    Rep.readDocStrings := TRUE;
     ok := TRUE;
 
     i := 0;

@@ -135,10 +135,13 @@ CONST
      dependency on this file is @oconst{modSymbolFile}.  *)
   modSymbolFile* = 1;
   (**A module's symbol file holds all information that is made available to
-     importing modules.  When compiling the module, then this file is always
-     the one with the oldest time stamp of all generated files.  This way,
-     within a make graph any other output file of the compiler can register a
-     dependency on this file, instead of @oconst{modModuleSource}.  *)
+     importing modules.  When compiling the module, this file is always the one
+     with the oldest time stamp of all generated files.  This way, within a
+     make graph any other output file of the compiler can register a dependency
+     on this file, instead of @oconst{modModuleSource}.
+
+     The documentation strings of a module are stored separately in a file
+     @oconst{modSymbolFileDoc}.  *)
   modSymbolTableXML* = 2;
   (**This is an XML representation of the internal symbol table built of the
      datatypes defined in @omodule{*OOC:SymbolTable}.  It is used for
@@ -217,10 +220,12 @@ CONST
      by the string @samp{lib}.  This means, that @oproc{Module.GetURI}
      return the same URI for all modules of the library.
      
-     [These statements should be general enough to bes true.  Since this topic
+     [These statements should be general enough to be true.  Since this topic
      is highly dependent on the operating system, I'm not willing to bet much
      on this, though.  As it is, it is the current working hypothesis ;-)]  *)
-  resourceFile* = 20;
+  modSymbolFileDoc* = 20;
+  (**Holds the documentation strings of a symbol file.  *)
+  resourceFile* = 21;
   (**A resource file is a non-Oberon file that accompanies a package.
      Resources are typically located in the @file{rsrc} subdirectory of a
      package or repository.  For example, XML DTD files and XSL stylesheets
@@ -231,6 +236,12 @@ CONST
      @oproc{*OOC:Config:Repositories.Section.GetResource}.  *)
   maxFileId* = resourceFile;
 
+
+VAR
+  readDocStrings*: BOOLEAN;
+  (**If @code{TRUE}, the doc strings of a module are read with its symbol file.
+     Otherwise, the doc strings are omitted and set to @code{NIL}.  The latter
+     is the default.  *)
 
 PROCEDURE Init* (rep: Repository; baseRep: Repository; baseURI: URI.HierarchicalURI);
   BEGIN
@@ -443,7 +454,7 @@ PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId): Object.String8;
     CASE id OF
     | modModuleSource:
       RETURN "src";
-    | modSymbolFile:
+    | modSymbolFile, modSymbolFileDoc:
       RETURN "sym";
     | modSymbolTableXML, modInterfaceXML, modInterfaceDescr, modOpTreeXML:
       RETURN "oocdoc/xml";
@@ -471,6 +482,8 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId): Object.String8;
       RETURN ".Mod";
     | modSymbolFile:
       RETURN ".Sym";
+    | modSymbolFileDoc:
+      RETURN ".Doc";
     | modSymbolTableXML:
       RETURN "_symtab.xml";
     | modInterfaceXML:
@@ -610,7 +623,7 @@ RAISES IO.Error;
    knows about the quality of the imported data.  *)
   VAR
     stb: Builder.Builder;
-    ch: IO.ByteChannel;
+    ch, chDoc: IO.ByteChannel;
     uri: URI.URI;
     symTab: Sym.Module;
   BEGIN
@@ -620,11 +633,22 @@ RAISES IO.Error;
       uri := m. GetURI (modSymbolFile, TRUE);
       ch := uri. GetChannel (URI.channelOld);
       Logger.ReadFile(uri);
+
+      IF readDocStrings THEN
+        uri := m. GetURI (modSymbolFileDoc, TRUE);
+        chDoc := uri. GetChannel (URI.channelOld);
+        Logger.ReadFile(uri);
+      ELSE
+        chDoc := NIL;
+      END;
+      
       stb := Builder.New();
-      symTab := stb. ReadSymbolTable (ch);
+      symTab := stb. ReadSymbolTable (ch, chDoc);
       ch. Close;
       RETURN symTab;
     END;
   END ReadSymbolFile;
 
+BEGIN
+  readDocStrings := FALSE;
 END OOC:Repository.

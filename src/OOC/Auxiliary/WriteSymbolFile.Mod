@@ -10,7 +10,7 @@ PROCEDURE WriteSymbolFile* (m: Repository.Module; symTab: Sym.Module;
                             errList: Error.List)
 RAISES IO.Error;
   VAR
-    ch: IO.ByteChannel;
+    ch, chDoc: IO.ByteChannel;
     stb: Builder.Builder;
     mem: Memory.Channel;
     w: BinaryRider.Writer;
@@ -18,9 +18,10 @@ RAISES IO.Error;
     mr: Sym.ModuleRef;
   BEGIN
     mem := Memory.Open();
+    chDoc := m.GetOutputChannel(Repository.modSymbolFileDoc, TRUE);
     Sym.Prune (symTab, Exports.GetExports (symTab, TRUE));
     stb := Builder.New();
-    stb. WriteSymbolTable (mem, symTab);
+    stb. WriteSymbolTable (mem, chDoc, symTab);
     mem.Fingerprint(fp, 0, mem.length);
 
     ch := m. GetOutputChannel (Repository.modSymbolFile, TRUE);
@@ -45,6 +46,7 @@ RAISES IO.Error;
     mem.SetPos(0);
     d := mem.TransferTo(mem.length, ch);
     ch.CloseAndRegister();
+    chDoc.CloseAndRegister();
   END WriteSymbolFile;
 
 END OOC:Auxiliary:WriteSymbolFile.

@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 
 IMPORT
   Object, Object:Boxed, Exception, Strings, ADT:Dictionary:AddressKey,
-  ADT:Dictionary, ADT:Storable, ADT:ArrayList, IO,
+  ADT:Dictionary, ADT:Storable, ADT:ArrayList, ADT:Object:Storage, IO,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
 
@@ -973,6 +973,38 @@ VAR
      is subsequently discarded *)
   
 
+TYPE
+  Writer* = POINTER TO WriterDesc;
+  WriterDesc* = RECORD
+    (Storage.WriterDesc)
+    docWriter: Storage.Writer;
+  END;
+  
+TYPE
+  Reader* = POINTER TO ReaderDesc;
+  ReaderDesc* = RECORD
+    (Storage.ReaderDesc)
+    docReader: Storage.Reader;
+  END;
+
+PROCEDURE (w: Writer) INIT*(ch, chDoc: IO.ByteChannel);
+  BEGIN
+    ASSERT(chDoc # NIL);
+    Storage.InitWriter(w, ch);
+    w.docWriter := Storage.ConnectWriter(chDoc);
+  END INIT;
+
+PROCEDURE (r: Reader) INIT*(ch, chDoc: IO.ByteChannel);
+  BEGIN
+    Storage.InitReader(r, ch);
+    IF (chDoc = NIL) THEN
+      r.docReader := NIL;
+    ELSE
+      r.docReader := Storage.ConnectReader(chDoc);
+    END;
+  END INIT;
+
+
 PROCEDURE InitNamespace* (ns: Namespace);
   BEGIN
   END InitNamespace;
@@ -1322,9 +1354,9 @@ PROCEDURE (decl: Declaration) Store* (w: Storable.Writer) RAISES IO.Error;
     (*w. WriteNum (decl. visibleFrom);*)
     w. WriteNum (decl. exportMark);
     IF (decl. exportMark # nameNotExported) THEN
-      w. WriteObject (decl. docString);  
+      w(Writer).docWriter.WriteObject(decl.docString);
     ELSE  
-      w. WriteObject (NIL);  
+      w(Writer).docWriter.WriteObject(NIL);
     END;
     w. WriteBool (decl.deprecated);
   END Store;
@@ -1345,12 +1377,19 @@ PROCEDURE (decl: Declaration) Load* (r: Storable.Reader) RAISES IO.Error;
        for formal parameter declarations; the latter are fixed in 
        @oproc{VarDecl.Load} *)
     r. ReadNum (i); decl. exportMark := SHORT (SHORT (i));
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN  
-      decl. docString := NIL  
-    ELSE  
-      decl. docString := obj(Doc.Document)  
+
+    (* doc strings are stored in a separate file, and only read on demand *)
+    IF (r(Reader).docReader # NIL) THEN
+      r(Reader).docReader.ReadObject(obj);
+      IF (obj = NIL) THEN  
+        decl.docString := NIL;
+      ELSE  
+        decl.docString := obj(Doc.Document);
+      END;
+    ELSE
+      decl.docString := NIL;
     END;
+    
     r. ReadBool (decl.deprecated);
     decl. cachedId := NIL;
     decl. usageCount := 0;

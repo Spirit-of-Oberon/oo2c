@@ -21,8 +21,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Out, Strings, Object, Object:Boxed, ADT:Storable, ADT:Object:Storage,
-  ADT:Dictionary, IO,
+  Out, Strings, Object, Object:Boxed, ADT:Storable, ADT:Dictionary, IO,
   OOC:Doc, OOC:AST, Sym := OOC:SymbolTable;
 
 
@@ -48,8 +47,14 @@ TYPE
   WriterDesc = RECORD
     (**This special writer maps all @otype{Sym.Name} instances with the same
        value onto a single object in the symbol file.  *)
-    (Storage.WriterDesc)
+    (Sym.WriterDesc)
     names: Dictionary.Dictionary(STRING, Sym.Name);
+  END;
+  
+TYPE
+  Reader = POINTER TO ReaderDesc;
+  ReaderDesc = RECORD
+    (Sym.ReaderDesc)
   END;
   
 TYPE
@@ -599,20 +604,11 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
 
 
 
-PROCEDURE ConnectWriter (ch: IO.ByteChannel): Writer;
-(**Creates a new writer instance operating on channel @oparam{ch}.  *)
-  VAR
-    w: Writer;
+PROCEDURE (w: Writer) INIT*(ch, chDoc: IO.ByteChannel);
   BEGIN
-    NEW (w);
-    Storage.InitWriter(w, ch);
+    w.INIT^(ch, chDoc);
     w.names := NEW(Dictionary.Dictionary(STRING, Sym.Name));
-    IF (w.channel = NIL) THEN
-      RETURN NIL
-    ELSE
-      RETURN w
-    END
-  END ConnectWriter;
+  END INIT;
 
 PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object) RAISES IO.Error;
   VAR
@@ -641,30 +637,30 @@ PROCEDURE (w: Writer) Disconnect*;
     w.names := NIL;
   END Disconnect;
 
-PROCEDURE (b: Builder) WriteSymbolTable* (ch: IO.ByteChannel;
+PROCEDURE (b: Builder) WriteSymbolTable* (ch, chDoc: IO.ByteChannel;
                                           symTab: Sym.Module)
 RAISES IO.Error;
   VAR
-    writer: Storage.Writer;
+    writer: Writer;
   BEGIN
     (* Note: This method omits the magic number and the fingerprint value and
        is therefore not symmetric to ReadSymbolTable.  The two values are
        written by OOC:Auxiliary:WriteSymbolFile.WriteSymbolFile *)
-    writer := ConnectWriter (ch);
+    writer := NEW(Writer, ch, chDoc);
     writer. WriteObject (symTab);
   END WriteSymbolTable;
 
-PROCEDURE (b: Builder) ReadSymbolTable* (ch: IO.ByteChannel): Sym.Module
+PROCEDURE (b: Builder) ReadSymbolTable* (ch, chDoc: IO.ByteChannel): Sym.Module
 RAISES IO.Error;
   VAR
     obj: Storable.Object;
-    reader: Storage.Reader;
+    reader: Reader;
     fp, i, fpi, len: LONGINT;
     mn: ARRAY magicNumberSize+1 OF CHAR;
     prunedImports: Sym.ModuleRefArray;
     str: Sym.NameString;
   BEGIN
-    reader := Storage.ConnectReader (ch);
+    reader := NEW(Reader, ch, chDoc);
     reader. ReadBytes(mn, 0, magicNumberSize);
     mn[magicNumberSize] := 0X;
     IF (mn # magicNumber) THEN
