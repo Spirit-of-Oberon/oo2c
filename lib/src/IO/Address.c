@@ -10,6 +10,10 @@
 #include <string.h>
 #ifdef HAVE_STDINT_H
 #  include <stdint.h>
+#else
+#  ifdef __CYGWIN__
+  typedef unsigned int uint32_t;
+#  endif
 #endif
 
 static IO_Address__Inet4 new_inet4(uint32_t addr) {
