@@ -4,18 +4,21 @@ IMPORT
   StdChannels, Out, Err,
   Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, Config:Value:String,
-  OOC:Config, OOC:Config:CCompiler,
+  OOC:Config, OOC:Config:CCompiler, OOC:Package,
   OOC:SymbolTable:Builder, OOC:Error, Rep := OOC:Repository, OOC:Make;
   
 
+CONST
+  buildPackage = -1;
+  
 VAR
   cfgErrList: Error.List;
   i: LONGINT;
   arg: Arguments.Argument;
-  m: Rep.Module;
   mode: SHORTINT;
   command, libraryName, libraryVersion, useStderr: Options.Option;
   makeRules: Make.Rules;
+  pkg: Package.Package;
   ok: BOOLEAN;
 
 PROCEDURE NewConfig;
@@ -33,6 +36,8 @@ PROCEDURE NewConfig;
                        "<options><set name='command'>2</set>"+
                        "<set name='libraryName'>$1</set>"+
                        "<set name='libraryVersion'>$2</set></options>");
+    Config.AddCmdLine ("--build-package",
+                       "<options><set name='command'>3</set></options>");
     Config.AddCmdLine ("--library",
                  "<options><set name='library'>TRUE</set></options>");
     Config.AddCmdLine ("--use-stderr",
@@ -40,6 +45,45 @@ PROCEDURE NewConfig;
     
     CCompiler.RegisterConfig;
   END NewConfig;
+
+PROCEDURE GetModule (moduleName: ARRAY OF CHAR): Rep.Module;
+  VAR
+    m: Rep.Module;
+  BEGIN
+    m := Config.repositories.GetModule(arg^);
+    IF (m = NIL) THEN
+      Err.String ("Error: Cannot locate module ");
+      Err.String (arg^);
+      Err.Ln;
+      HALT (1)
+    END;
+    RETURN m;
+  END GetModule;
+
+PROCEDURE BuildPackage (pkg: Package.Package): BOOLEAN;
+  VAR
+    ok: BOOLEAN;
+    i: LONGINT;
+    lib: Package.Library;
+    exec: Package.Executable;
+  BEGIN
+    ok := TRUE;
+    
+    FOR i := 0 TO pkg.library.size-1 DO
+      lib := pkg.library.array[i](Package.Library);
+      makeRules.SetLibraryName(lib.name^, lib.version.tuple);
+      ok := makeRules.Update(GetModule(lib.mainModule^), Rep.modLibrary)
+          & ok;
+    END;
+    
+    FOR i := 0 TO pkg.executable.size-1 DO
+      exec := pkg.executable.array[i](Package.Executable);
+      ok := makeRules.Update(GetModule(exec.mainModule^), Rep.modExecutable)
+          & ok;
+    END;
+    
+    RETURN ok;
+  END BuildPackage;
 
 BEGIN
   Error.oo2cStyleErrors := TRUE;
@@ -64,6 +108,8 @@ BEGIN
     mode := Rep.modLibrary;
     makeRules.SetLibraryName(libraryName.value(String.Value).string^,
                              libraryVersion.value(String.Value).string^);
+  | 3:
+    mode := buildPackage;
   END;
   
   IF (cfgErrList. msgCount # 0) THEN
@@ -78,15 +124,20 @@ BEGIN
     ok := TRUE;
     FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
       arg := Config.arguments. Get (i);
-      m := Config.repositories. GetModule (arg^);
-      IF (m = NIL) THEN
-        Err.String ("Error: Cannot locate module ");
-        Err.String (arg^);
-        Err.Ln;
-        HALT (1)
+      CASE mode OF
+      | buildPackage:
+        pkg := Config.repositories.GetPackage(arg^);
+        IF (pkg = NIL) THEN
+          Err.String ("Error: Cannot locate package ");
+          Err.String (arg^);
+          Err.Ln;
+          HALT (1)
+        ELSE
+          ok := BuildPackage(pkg) & ok;
+        END;
       ELSE
-        ok := makeRules.Update(m, mode) & ok;
-      END
+        ok := makeRules.Update(GetModule(arg^), mode) & ok;
+      END;
     END;
     
     IF ~ok THEN
