@@ -21,6 +21,10 @@ void Out__Real(OOC_REAL32 r, OOC_INT32 n) {
   fprintf(stdout, "%*f", n, r);
 }
 
+void Out__LongReal(OOC_REAL64 r, OOC_INT32 n) {
+  fprintf(stdout, "%*f", n, r);
+}
+
 void Out__Bool(OOC_BOOLEAN b) {
   fprintf(stdout, b ? "TRUE" : "FALSE");
 }
