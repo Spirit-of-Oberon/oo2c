@@ -319,6 +319,7 @@ PROCEDURE (v: Visitor) VisitIterateObjectStatm* (iterStatm: IR.IterateObjectStat
   BEGIN
     iterStatm. var. Accept (v);
     iterStatm. iteratorFactory. Accept (v);
+    iterStatm. stepperCall. Accept (v);
     VisitStatementSeq (v, iterStatm. body);
   END VisitIterateObjectStatm;
 
