@@ -153,6 +153,7 @@ PROCEDURE TypeToSubclass* (type: Item.Type): Subclass;
     WITH type: Item.PredefType DO
       CASE type. id OF
       | Predef.void: RETURN scNone
+      | Predef.char: RETURN scUnsigned8
       | Predef.boolean: RETURN scUnsigned8
       | Predef.shortint: RETURN scSigned8
       | Predef.integer: RETURN scSigned16
