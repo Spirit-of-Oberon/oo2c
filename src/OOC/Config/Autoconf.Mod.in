@@ -7,6 +7,9 @@ CONST
   configFile* = "@prefix@/lib/oo2c/oo2crc.xml";
   (**Default configuration file to be used if no --config is given and
      OO2CRC is not set.  *)
+  nameTargetOS* = "@TARGET_OS@";
+  (**Target operating system.  Currently either Unix or Win32.
+     Note: Cygwin is classified as "Unix".  *)
   bitsTargetInteger* = @ooc_target_integer@;
   (**Number of bits of the largest supported integer type for the target.  *)
   bitsTargetAddress* = @ooc_target_address@;

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Config:Pragmas:StdPragmas;
 (*  Creates standard pragma variables with default values.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -40,7 +40,8 @@ CONST
   defaultCompilerVersion* = Autoconf.compilerVersion;
   defaultCompilerMajor = Autoconf.compilerMajor;
   defaultCompilerMinor = Autoconf.compilerMinor;
-  
+
+  defaultTargetOS = Autoconf.nameTargetOS;
   defaultTargetInteger = Autoconf.bitsTargetInteger;
   defaultTargetAddress = Autoconf.bitsTargetAddress;
   
@@ -59,6 +60,7 @@ VAR
   compilerMajor-: Pragmas.Pragma;
   compilerMinor-: Pragmas.Pragma;
   
+  targetOS-: Pragmas.Pragma;
   targetInteger-: Pragmas.Pragma;
   targetAddress-: Pragmas.Pragma;
 
@@ -79,6 +81,7 @@ PROCEDURE CreateVariables* (s: Pragmas.Section);
     compilerMajor := s. Set ("COMPILER_MAJOR", Integer.New (defaultCompilerMajor));
     compilerMinor := s. Set ("COMPILER_MINOR", Integer.New (defaultCompilerMinor));
     
+    targetOS := s. Set ("TARGET_OS", String.New (defaultTargetOS));
     targetInteger := s. Set ("TARGET_INTEGER", Integer.New (defaultTargetInteger));
     targetAddress := s. Set ("TARGET_ADDRESS", Integer.New (defaultTargetAddress));
   END CreateVariables;
