@@ -616,7 +616,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
                 l := l. parentLoop;
               END;
               IF (l # NIL) THEN
-                instr. AddOpnd(l. instr, Opnd.antiDependency);
+                instr. AddUniqueOpnd(l. instr, Opnd.antiDependency);
               END;
             END;
             opnd := opnd. nextOpnd;
