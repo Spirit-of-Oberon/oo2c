@@ -18,7 +18,7 @@ include $(OOC_DEV_ROOT)/Makefile.config
 # the one build from the C sources in the tarball.  To be able to run
 # "make install" directly from the development environment, this variable
 # must point to an existing compiler executable.
-BOOTSTRAP_COMPILER=?stage0/oo2c
+BOOTSTRAP_COMPILER?=stage0/oo2c
 
 # TEST_SUBDIRS: List of subdirectories with testcases.
 TEST_SUBDIRS=\
