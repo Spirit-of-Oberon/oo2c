@@ -1,0 +1,21 @@
+MODULE Adr1;
+
+IMPORT SYSTEM;
+
+VAR
+  a: LONGINT;
+  
+PROCEDURE P (VAR b: LONGINT);
+  BEGIN
+    ASSERT(SYSTEM.ADR(a) = SYSTEM.ADR(b));
+  END P;
+
+PROCEDURE Test*;
+  VAR
+    c: SYSTEM.ADDRESS;
+  BEGIN
+    P(a);
+    c := SYSTEM.ADR("abc");    
+  END Test;
+
+END Adr1.

@@ -1,0 +1,9 @@
+MODULE Val5;
+
+IMPORT SYSTEM;
+  
+VAR
+  x, y: LONGINT; s: SET;
+BEGIN
+  x := SYSTEM.VAL(y,s);
+END Val5.

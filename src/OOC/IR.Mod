@@ -695,7 +695,6 @@ TYPE
 
 (* Statements
    ------------------------------------------------------------------------ *)
-
 TYPE
   Statement* = POINTER TO StatementDesc;
   LoopStatm* = POINTER TO LoopStatmDesc;
@@ -1068,6 +1067,8 @@ CONST
   notCharacterArray = 48;
   notSet = 49;
   notPointerVar = 50;
+  notAddressable = 51;
+  objectSizeMismatch = 52;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1234,6 +1235,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expression must be of set type"
     | notPointerVar:
       t := "This must be a pointer variable"
+    | notAddressable:
+      t := "This expression has no address"
+    | objectSizeMismatch:
+      t := "Size mismatch between type and expression"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1788,9 +1793,37 @@ PROCEDURE InitAdr (adr: Adr; sym: Symbol; design: Expression);
 PROCEDURE (b: Builder) NewAdr* (sym: Symbol; design: Expression): Adr;
   VAR
     adr: Adr;
+
+  PROCEDURE AssertAddressable (expr: Expression): Expression;
+    VAR
+      hasAddress, dummy: BOOLEAN;
+      e: Expression;
+    BEGIN
+      e := expr;
+      hasAddress := TRUE;
+      WITH e: Var DO
+      | e: Deref DO
+      | e: Index DO
+      | e: SelectField DO
+      | e: TypeGuard DO
+      | e: ProcedureRef DO
+      | e: Const DO
+        IF TR.IsCharType(expr.type) THEN
+          dummy := b.Widen(expr, TR.MatchingStringConst(expr.type));
+        END;
+        hasAddress := TR.IsStringConst(expr.type);
+      ELSE
+        hasAddress := FALSE;
+      END;
+      IF ~hasAddress THEN
+        b.ErrSym(notAddressable, expr.sym);
+      END;
+      RETURN expr;
+    END AssertAddressable;
+  
   BEGIN
     NEW (adr);
-    InitAdr (adr, sym, design);
+    InitAdr (adr, sym, AssertAddressable(design));
     RETURN adr
   END NewAdr;
 
@@ -2530,7 +2563,7 @@ PROCEDURE (range: SetRange) IntersectsWith* (range2: SetRange): BOOLEAN;
 PROCEDURE InitShift (shift: Shift; sym: Symbol; value, by: Expression;
                      rotate: BOOLEAN);
   BEGIN
-    InitOperator (shift, sym, Predef.GetType (Predef.longint));
+    InitOperator (shift, sym, value. type);
     shift. value := value;
     shift. by := by;
     shift. rotate := rotate;
@@ -2565,12 +2598,18 @@ PROCEDURE InitTypeCast (cast: TypeCast; sym: Symbol; type: Sym.Type;
   END InitTypeCast;
 
 PROCEDURE (b: Builder) NewTypeCast (sym: Symbol;
-                                    typeExpr, expr : Expression): TypeCast;
+                                    typeExpr, expr: Expression): TypeCast;
   VAR
     cast: TypeCast;
+    type: Sym.Type;
   BEGIN
+    type := b.AssertType(typeExpr);
+    IF (type.size < 0) OR (expr.type.size < 0) OR
+       (type.size # expr.type.size) THEN
+      b.ErrSym(objectSizeMismatch, expr.sym);
+    END;
     NEW (cast);
-    InitTypeCast (cast, sym, typeExpr(TypeRef). decl(Sym.TypeDecl). type, expr);
+    InitTypeCast (cast, sym, type, expr);
     RETURN cast
   END NewTypeCast;
 
@@ -4839,7 +4878,6 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         
       (* SYSTEM functions: *)
       | Predef.adr:
-        (* FIXME... check that argument has an address *)
         RETURN b. NewAdr (design. sym, arguments[0]);
 
       | Predef.lsh:

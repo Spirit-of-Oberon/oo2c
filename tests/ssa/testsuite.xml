@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; new1 new2 new3 new4 new5 new6 new7">-->
+  select ="&SetupTestCasesWithOut; val1 val2 val3 val4 val5 val6">-->
 
   &TestSetupWithOut;
     
@@ -655,19 +655,6 @@
     <test id="copy6" type="reject" file="Copy6.Mod">
       Trying to <code>COPY</code> an <code>ARRAY OF SHORTINT</code>.
     </test>
-    
-    <test id="val1" type="run" file="Val1.Mod" output="Val1.Ref">
-      Use <code>SYSTEM.VAL</code> to cast a <code>REAL</code> to
-      a <code>LONGINT</code>.  This requires some trickery in the C
-      back-end, because a type conversion must be prevented.
-    </test>
-    <test id="val2" type="run" file="Val2.Mod" output="Val2.Ref">
-      Use <code>SYSTEM.VAL</code> to cast a <code>SET</code> to
-      a <code>LONGINT</code>.
-    </test>
-    <test id="val3" type="run" file="Val3.Mod" output="Val3.Ref">
-      Integer constants in hex notation.  Very basic ;-)
-    </test>
   </testcases>
   
     
@@ -1103,7 +1090,43 @@
       Set range "{a..b}" with some combinations of <code>a</code> and
       <code>b</code>, both constant and variable.
     </test>
+  </testcases>
+
+  <testcases profile="Module SYSTEM" default-lang="O2">
+    <test id="adr1" type="run" file="Adr1.Mod">
+      Using <code>SYSTEM.ADR</code> to retrieve the address of
+      variables, variable parameters, and string constants.
+    </test>
+    <test id="adr2" type="reject" file="Adr2.Mod">
+      Calling <code>SYSTEM.ADR</code> with a scalar constant.
+    </test>
+    <test id="adr3" type="reject" file="Adr3.Mod">
+      Calling <code>SYSTEM.ADR</code> with a type name.
+    </test>
+
     
+    <test id="val1" type="run" file="Val1.Mod" output="Val1.Ref">
+      Use <code>SYSTEM.VAL</code> to cast a <code>REAL</code> to
+      a <code>LONGINT</code>.  This requires some trickery in the C
+      back-end, because a type conversion must be prevented.
+    </test>
+    <test id="val2" type="run" file="Val2.Mod" output="Val2.Ref">
+      Use <code>SYSTEM.VAL</code> to cast a <code>SET</code> to
+      a <code>LONGINT</code>.
+    </test>
+    <test id="val3" type="run" file="Val3.Mod" output="Val3.Ref">
+      Integer constants in hex notation.  Very basic ;-)
+    </test>
+    <test id="val4" type="run" file="Val4.Mod" output="Val4.Ref">
+      Casting between <code>REAL</code>, <code>SET</code>, and
+      <code>LONGINT</code> with <code>SYSTEM.VAL</code>.
+    </test>
+    <test id="val5" type="reject" file="Val5.Mod">
+      First argument of <code>SYSTEM.VAL</code> is not a type.
+    </test>
+    <test id="val6" type="reject" file="Val6.Mod">
+      Arguments of <code>SYSTEM.VAL</code> have different size.
+    </test>
   </testcases>
 
   <testcases profile="Declaration &amp; Type Modifier Flags" default-lang="O2">
@@ -1412,6 +1435,16 @@
     <reject-info id="opSet7" pos="%IN"
         msg="Incompatible types for operator"/>
 
+    <reject-info id="adr2" pos="ADR(%123)" 
+      msg="This expression has no address"/>
+    <reject-info id="adr3" pos="ADR(%INTEGER)" 
+      msg="This expression has no address"/>
+
+    <reject-info id="val5" pos="VAL(%y,"
+      msg="Type name expected"/>
+    <reject-info id="val6" pos="VAL(LONGINT,%y)"
+      msg="Size mismatch between type and expression"/>
+      
     <reject-info id="noCopy1" pos="a[%NO_COPY]"
         msg="Invalid modifier flag"/>
     <reject-info id="noCopy2" pos="a[%NO_COPY]"
