@@ -47,7 +47,14 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
     v: Boxed.Object;
     i1, i2: BigInt.BigInt;
   BEGIN
-    IF (instr. SizeOpndList() >= 2) &
+    IF (instr.opcode = Opcode.typeConv)  THEN
+      arg1 := instr. opndList. arg. info(SSA.Const);
+      IF (arg1.value IS BigInt.BigInt) &
+         (instr.subclass < Opcode.scReal32) THEN
+        (* FIXME... check for overflow *)
+        RETURN pb. GetConst(arg1.value, arg1.subclass, NIL);
+      END;
+    ELSIF (instr. SizeOpndList() >= 2) &
        (instr. opcode # Opcode.preloadedVar) &
        (instr. opcode # Opcode.setBit) &
        (instr. opcode # Opcode.clearBit) &
