@@ -186,12 +186,12 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
       Strings.Append (str, str2);
       RETURN String.New (str2);
     ELSE
-      name := tdPrefix. Concat (NameOfDeclaration (type. Module()));
       IF (type. namingDecl = NIL) THEN
+        name := tdPrefix. Concat (NameOfDeclaration (type. Module()));
         IntStr.IntToStr (type. position. pos, str);
         RETURN name. Concat (String.New (str));
       ELSE
-        RETURN name. Concat (NameOfType (type));
+        RETURN tdPrefix. Concat (NameOfType (type));
       END;
     END;
   END NameOfTypeDescriptor;
