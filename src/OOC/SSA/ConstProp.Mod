@@ -67,7 +67,7 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
       
       CASE arg1. subclass OF
       | Opcode.scSigned8 .. Opcode.scAddress:
-        IF (arg1.value IS BigInt.BigInt) & (arg1.value IS BigInt.BigInt) THEN
+        IF (arg1.value IS BigInt.BigInt) & (arg2.value IS BigInt.BigInt) THEN
           (* only dealing with integers for now; FIXME... add set values *)
           i1 := arg1. value(BigInt.BigInt);
           i2 := arg2. value(BigInt.BigInt);
