@@ -28,7 +28,7 @@ IMPORT
 CONST
   defaultWarnings = TRUE;
   defaultAssertions = TRUE;
-  defaultInitialize = FALSE;  (* not supported in v2 *)
+  (*defaultInitialize = FALSE;   not supported in v2 *)
   defaultStackCheck = FALSE;  (* no effect for gcc back-end *)
   defaultConformantMode = FALSE;
   
@@ -54,7 +54,7 @@ CONST
 VAR
   warnings-: Pragmas.Pragma;
   assertions-: Pragmas.Pragma;
-  initialize-: Pragmas.Pragma;
+  (*initialize-: Pragmas.Pragma;*)
   stackCheck-: Pragmas.Pragma;
   conformantMode-: Pragmas.Pragma;
 
@@ -83,7 +83,7 @@ PROCEDURE CreateVariables* (s: Pragmas.Section);
   BEGIN
     warnings := s. Set ("Warnings", Boolean.New (defaultWarnings));
     assertions := s. Set ("Assertions", Boolean.New (defaultAssertions));
-    initialize := s. Set ("Initialize", Boolean.New (defaultInitialize));
+    (*initialize := s. Set ("Initialize", Boolean.New (defaultInitialize));*)
     stackCheck := s. Set ("StackCheck", Boolean.New (defaultStackCheck));
     conformantMode := s. Set ("ConformantMode", Boolean.New (defaultConformantMode));
     
