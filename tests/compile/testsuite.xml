@@ -18,7 +18,13 @@
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
   function1 function2
-  constfold1 constfold2 constfold3 constfold4 constfold5 constfold6">
+  constfold1 constfold2 constfold3 constfold4 constfold5
+  constfold6 constfold7">
+
+<!--<testsuite-ext
+  profile="Test Suite for Framework Testing"
+  select ="prepare_out_module
+  constfold7"> -->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="src/Out.Mod">
@@ -79,6 +85,11 @@
       range error"
     </test>
 
+    <test id="constfold7" type="run" 
+      file="ConstFold7.Mod" output="ConstFold7.Ref">
+      Define an array type of fixed length, and write out the length
+      using the <code>LEN</code> function.
+    </test>
   </testcases>
   
   <processor-info processor-name="TestCompile">
