@@ -480,6 +480,13 @@ TYPE
   END;
 
 TYPE
+  Shift* = POINTER TO ShiftDesc;
+  ShiftDesc = RECORD
+    (OperatorDesc)
+    value-, by- :Expression;
+  END;
+
+TYPE
   TypeCast* = POINTER TO TypeCastDesc;
   TypeCastDesc = RECORD
     (**A type cast expression interprets the binary representation of a
@@ -1978,6 +1985,33 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitSetRange* (range: SetRange);
 PROCEDURE (range: SetRange) Accept* (v: Visitor);
   BEGIN
     v. VisitSetRange (range)
+  END Accept;
+
+(* Operator Class: Shift
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitShift (shift: Shift; sym: Symbol; value, by: Expression);
+  BEGIN
+    InitOperator (shift, sym, Predef.GetType (Predef.longint));
+    shift. value := value;
+    shift. by := by;
+  END InitShift;
+
+PROCEDURE (b: Builder) NewShift (sym: Symbol; value, by: Expression): Expression;
+  VAR
+    shift: Shift;
+  BEGIN
+    NEW (shift);
+    InitShift (shift, sym, value, by);
+    RETURN shift;
+  END NewShift;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitShift* (shift: Shift);
+  END VisitShift;
+
+PROCEDURE (shift: Shift) Accept* (v: Visitor);
+  BEGIN
+    v. VisitShift (shift)
   END Accept;
 
 (* Operator Class: TypeCast
@@ -3525,10 +3559,16 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         | Predef.longchar: targetType := Predef.longint;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
-        
+
+
+      (* SYSTEM functions: *)
       | Predef.adr:
         (* FIXME... check that argument has an address *)
         RETURN b. NewAdr (design. sym, arguments[0]);
+
+      | Predef.lsh:
+        RETURN b. NewShift (design. sym, arguments[0], arguments[1]);
+        
       | Predef.val:
         RETURN b. NewTypeCast (design. sym, arguments[0], arguments[1]);
       END;

@@ -262,6 +262,14 @@ PROCEDURE (v: Visitor) VisitOdd* (odd: IR.Odd);
     v. w. EndTag;  (* odd *)
   END VisitOdd;
 
+PROCEDURE (v: Visitor) VisitShift* (shift: IR.Shift);
+  BEGIN
+    v. w. StartTag ("logical-shift", FALSE);
+    shift. value. Accept (v);
+    shift. by. Accept (v);
+    v. w. EndTag;  (* logical-shift *)
+  END VisitShift;
+
 PROCEDURE VisitDyadicOp (v: Visitor; op: IR.Operator; variant : SHORTINT; left, right : IR.Expression; name: ARRAY OF CHAR);
   BEGIN
     v. w. StartTagLatin1 (name, FALSE);

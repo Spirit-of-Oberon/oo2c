@@ -112,7 +112,8 @@ CONST
   copy* = 17;                            (* COPY *)
 
   adr* = 18;                             (* SYSTEM.ADR *)
-  val* = 19;                             (* SYSTEM.VAL *)
+  lsh* = 19;                             (* SYSTEM.LSH *)
+  val* = 20;                             (* SYSTEM.VAL *)
   
 VAR
   i: LONGINT;
@@ -272,6 +273,7 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, ptr, "PTR", 4, 4, NIL, NIL);
 
     PredefProc (stb, module, adr, "ADR", 1, 1);
+    PredefProc (stb, module, lsh, "LSH", 2, 2);
     PredefProc (stb, module, val, "VAL", 2, 2);
     
     stb. Finalize (module);

@@ -420,15 +420,16 @@ CONST
   setRange* = 41;
   (**Set range.  Produces a set with the elements [from, to] inclusive.
      The range is empty if to<from.  *)
-  (* 42 unused *)
-  abs* = 43;
+  abs* = 42;
   (**Absolute value.  *)
-  ash* = 44;
+  ash* = 43;
   (**Arithmetic shift.  *)
-  cap* = 45;
+  cap* = 44;
   (**Capitalize character.  *)
-  entier* = 46;
+  entier* = 45;
   (**Floating point to integer, rounding to @samp{-inf}.  *)
+  lsh* = 46;
+  (**Arithmetic shift.  *)
   odd* = 47;
   (**Return @code{TRUE} for odd numbers.  *)
   
@@ -673,6 +674,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | ash: cstr := "ash";
     | cap: cstr := "cap";
     | entier: cstr := "entier";
+    | lsh: cstr := "lsh";
     | odd: cstr := "odd";
       
     | assert: cstr := "assert";

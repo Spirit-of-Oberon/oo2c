@@ -562,6 +562,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr;
             
+      | expr: IR.Shift DO
+        instr := pb. AddInstr (Opcode.lsh, Opcode.TypeToSubclass (expr. type));
+        instr. AddOpnd (Expression (expr. value), Opnd.arg);
+        instr. AddOpnd (Expression (expr. by), Opnd.arg);
+        RETURN instr;
+        
       | expr: IR.Odd DO
         instr := pb. AddInstr (Opcode.odd, Opcode.TypeToSubclass (expr. type));
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);

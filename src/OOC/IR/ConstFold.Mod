@@ -303,6 +303,10 @@ BEGIN
     (* FIXME! *)
 END VisitOdd;
 
+PROCEDURE (c: ConstFold) VisitShift* (op: IR.Shift);
+  BEGIN
+  END VisitShift;
+
 PROCEDURE (c: ConstFold) VisitBinaryArith* (op: IR.BinaryArith);
 VAR 
   l, r, result : Language.Value;

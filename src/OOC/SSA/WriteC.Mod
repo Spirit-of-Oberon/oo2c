@@ -775,6 +775,17 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (");");
     END CmpString;
   
+  PROCEDURE Shift (instr: SSA.Instr);
+    BEGIN
+      w. WriteString ("_lsh(");
+      w. WriteString (w. basicType[Allocator.SubclassToBasicType (instr. subclass)]. repr);
+      w. WriteString (", ");
+      w. Ref (instr. opndList);
+      w. WriteString (", ");
+      w. Ref (instr. opndList. nextOpnd);
+      w. WriteString (");");
+    END Shift;
+
   PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
   (* Returns TRUE if all paths into the "select-return" end with a
      "return" instruction.  *)
@@ -1047,6 +1058,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteMonadicOp (instr, "_cap(", ");");
       | Opcode.entier:
         WriteMonadicOp (instr, "_entier(", ");");
+      | Opcode.lsh:
+        Shift (instr);
       | Opcode.odd:
         WriteMonadicOp (instr, "_odd(", ");");
         
