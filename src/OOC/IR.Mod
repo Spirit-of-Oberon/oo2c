@@ -1353,7 +1353,8 @@ PROCEDURE (b: Builder) WarnName (code: Error.Code; name: Sym.Name);
   VAR
     e: Error.Msg;
   BEGIN
-    IF (name.str[0] # "-") THEN
+    IF (name.str[0] # "-") &
+       GetPragmaValue(b, StdPragmas.warnings, name.pos) THEN
       (* don't warn for declarations that were inserted by the compiler
          behind the user's back *)
       e := Error.New (irContext, code);
@@ -4186,9 +4187,8 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
            (item.exportMark = Sym.nameNotExported) &
            (~(item IS Sym.VarDecl) OR ~item(Sym.VarDecl).isParameter) &
            (~(item IS Sym.ProcDecl) OR
-            ~item(Sym.ProcDecl).isForwardDecl OR
-            ~item(Sym.ProcDecl).isTypeBound) &
-           GetPragmaValue(b, StdPragmas.warnings, item.name.pos) THEN
+            ~(item(Sym.ProcDecl).isForwardDecl OR
+              item(Sym.ProcDecl).isTypeBound)) THEN
           b.WarnName(unusedDeclaration, item.name);
         END;
       ELSE  (* ignore *)
