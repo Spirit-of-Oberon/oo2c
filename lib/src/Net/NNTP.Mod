@@ -40,9 +40,12 @@ IMPORT
    @end table  *)
   
 CONST
+  inputBufferCapacity = 4*1024;  (* must be larger than longest line *)
+  outputBufferCapacity = 4*1024; (* must be larger than 3 *)
   textCapacity = 8*1024-32;
-  bufferCapacity = 8*1024;  (* must be larger than longest line *)
-  maxLineLength = textCapacity-2;
+  maxLineLength = inputBufferCapacity-2;
+  (* To be precise, the maximum length of a line of input excluding the CRLF
+     suffix is min(textCapacity,inputBufferCapacity)-2.  *)
   defaultPort* = 119;
   
 TYPE
@@ -143,7 +146,8 @@ TYPE
     rText: Text;      (* if #NIL: rLine is in text part of a response *)
     sPos: LONGINT;    (* position of first unsend char in `waiting' *)
     sLen: LONGINT;    (* number of valid bytes in `s'; 0<=sLen<=LEN(s) *)
-    s, r: ARRAY bufferCapacity OF CHAR;
+    r: ARRAY inputBufferCapacity OF CHAR;
+    s: ARRAY outputBufferCapacity OF CHAR;
     waiting: Msg;
     (* List of messages or text fragments that have not been transferred into
        the output buffer @ofield{s} yet, and, by implication, have not been
