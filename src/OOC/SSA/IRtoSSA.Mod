@@ -23,7 +23,7 @@ MODULE OOC:SSA:IRtoSSA;
 IMPORT
   Log, Integers, Language:String8, Language:Integer,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, 
-  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Allocator;
 
 
 PROCEDURE AddStoreBackwardFeed (pb: SSA.ProcBlock;
@@ -314,6 +314,27 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END TypeTest;
     
+    PROCEDURE TypeConv (conv: IR.TypeConv): SSA.Result;
+      VAR
+        instr: SSA.Instr;
+        scSource, scDest: Opcode.Subclass;
+      BEGIN
+        scDest := Opcode.TypeToSubclass (conv. type);
+        scSource := Opcode.TypeToSubclass (conv. expr. type);
+        IF (Allocator.RegisterType (Allocator.SubclassToBasicType (scDest)) #
+            Allocator.RegisterType (Allocator.SubclassToBasicType (scSource))) THEN
+          (* only insert explicit type-conv instruction if the source and
+             the destination value are stored in different register sets;
+             not sure if this optimization should be done here, though, because
+             it makes type information in SSA less strict *)
+          instr := pb. AddInstr (Opcode.typeConv, scDest);
+          instr. AddOpnd (Expression (conv. expr), Opnd.arg);
+          RETURN instr;
+        ELSE
+          RETURN Expression (conv. expr);
+        END;
+      END TypeConv;
+    
     PROCEDURE SelectProc (selectOp: IR.SelectProc): SSA.Result;
       BEGIN
         IF selectOp. isStaticCall THEN   (* use static address *)
@@ -367,10 +388,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN SelectProc (expr);
         
       | expr: IR.TypeConv DO
-        (* FIXME... right now, we are simply passing through type converted
-           values *)
-        RETURN Expression (expr. expr);
-
+        RETURN TypeConv (expr);
       | expr: IR.TypeTag DO
         RETURN TypeTag (expr. design);
       | expr: IR.TypeTest DO

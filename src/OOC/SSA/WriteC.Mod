@@ -80,11 +80,6 @@ PROCEDURE SubclassToBasicType (res: SSA.Result): DeclWriter.BasicTypeId;
     END;
   END SubclassToBasicType;
 
-PROCEDURE RegisterType (ctype: DeclWriter.BasicTypeId): DeclWriter.BasicTypeId;
-  BEGIN
-    RETURN DeclWriter.int32
-  END RegisterType;
-
 
 PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
                      procBlock: SSA.ProcBlock;
@@ -179,7 +174,7 @@ PROCEDURE (w: Writer) IntroduceHelperVar (i: LONGINT);
     w. swapArray[i]. readCount := 0;
 
     w. WriteString ("{register ");
-    w. WriteString (w. basicType[RegisterType (w. swapArray[i]. ctype)]. repr);
+    w. WriteString (w. basicType[Allocator.RegisterType (w. swapArray[i]. ctype)]. repr);
     w. WriteString (" ");
     w. WriteString (h. array^);
     w. WriteChar ("=");
@@ -222,7 +217,7 @@ PROCEDURE WriteTypeCast (w: DeclWriter.Writer; ctype: DeclWriter.BasicTypeId);
   VAR
     rtype: DeclWriter.BasicTypeId;
   BEGIN
-    rtype := RegisterType (ctype);
+    rtype := Allocator.RegisterType (ctype);
     IF (rtype # ctype) THEN
       w. WriteChar ("(");
       w. WriteString (w. basicType[rtype]. repr);
@@ -841,6 +836,10 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         TypeTest (instr);
       | Opcode.tbProcAddress:
         TBProcAddress (instr);
+
+      | Opcode.typeConv:
+        w. Ref (instr. opndList);
+        w. WriteChar (";");
         
       | Opcode.add:
         WriteDyadicOp (instr, "+");
