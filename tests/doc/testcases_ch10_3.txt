@@ -1,0 +1,319 @@
+10.3 Predeclared Procedures
+---------------------------
+
+The test cases listed below ignore overflow at run-time.  If Overflow checking
+is to be implemented, these additional cases should be handled.
+
+  1) ABS(x:T), where x = MIN(T)
+  2) ASH(x, n) > MAX(LONGINT)
+  3) CHR(x), where x<0 or x>ORD(MAX(CHAR))
+  4) ENTIER(x), where ENTIER(x)<MIN(LONGINT) or ENTIER(x)>MAX(LONGINT)
+     [Note: This check is subject to rounding.  For example, with
+      round to nearest, all floating point values in the range
+      MIN(LONGINT)-0.5 < x <MIN(LONGINT)+0.5 are mapped to MIN(LONGINT)
+      and do not cause an overflow.]
+  5) DEC(v:T), where v = MIN(T)
+  6) DEC(v:T,n), where v-n < MIN(T)
+  7) INC(v:T), where v = MAX(T)
+  8) INC(v:T,n) where v+n > MAX(T)
+  9) INCL(v:T,n) where n<MIN(T) or n>MAX(T)
+ 10) EXCL(v:T,n) where n<MIN(T) or n>MAX(T)
+
+Function Procedures
+-------------------
+
+  ABS(x)
+
+ACCEPT:
+
+  1) x is a numeric type (eg. shortint, longreal).
+  2) x is a constant (should be folded)
+
+REJECT:
+
+  1) x is not numeric (eg. CHAR)
+
+
+  ASH(x, n)
+
+ACCEPT:
+
+  1) x and n are integer types
+  2) n >= size of x (eg. ASH(shortint, 8)). This verifies that the "shift" is
+  done using the result type, not the original type.
+  3) x and n are constant (should be folded)
+
+REJECT:
+
+  1) x is not an integer type
+  2) n is not an integer type
+  3) x and n are constant integers, result out of range of LONGINT
+
+WARN:
+
+  1) n is constant, ABS(n) >= width of LONGINT
+
+ 
+  CAP(x)
+  ORD(x)
+
+ACCEPT:
+
+  1) x is a CHAR variable
+  2) x is a CHAR constant (eg. CAP(40X))
+  3) x is a string constant (eg. CAP('a'))
+
+REJECT:
+
+  1) x is not a CHAR
+
+
+  CHR(x)
+
+ACCEPT:
+
+  1) x is an integer inside the range of CHAR
+  2) x is a constant (should be folded)
+
+REJECT:
+
+  1) x is not an integer type
+  2) x is a constant integer outside the range of CHAR
+
+
+  ENTIER(x)
+
+ACCEPT:
+
+  1) x is REAL
+  2) x is LONGREAL
+
+REJECT:
+
+  1) x is not a real type (eg. INTEGER)
+  2) x is constant and ENTIER(x) is outside the range of LONGINT
+
+
+  LEN(v, n)
+  LEN(v)
+
+ACCEPT:
+
+  1) v is a fixed length array
+  2) v is an open array (POINTER TO ARRAY ... )
+  3) v is an open array (passed as a VAR parameter)
+
+REJECT:
+
+  1) v is not an array designator
+  2) n is not an integer (eg. CHAR)
+  3) n is not constant (eg. INTEGER variable)
+  4) n is outside the range 0 <= n < number of array dimensions
+  5) v's dimension n is an array with no length information
+  6) v is a string constant (on the level of IR, LEN can be applied to 
+     strings, but this is forbidden on the level of the source code)
+
+
+  LONG(x)
+
+ACCEPT:
+
+  1) x is SHORTINT
+  2) x is INTEGER
+  3) x is REAL
+  4) x is constant
+
+REJECT:
+
+  1) x is LONGINT
+  2) x is LONGREAL
+  3) x is not a numeric type
+
+
+  SHORT(x)
+
+ACCEPT:
+
+  1) x is INTEGER
+  2) x is LONGINT
+  3) x is LONGREAL
+  4) is constant (eg. 0)
+
+REJECT:
+
+  1) x is SHORTINT
+  2) x is REAL
+  3) x is not a numeric type
+
+
+  MAX(T)
+  MIN(T)
+
+ACCEPT:
+
+  1) T is an integer type (eg. SHORTINT, LONGINT)
+  2) T is a real type (eg. REAL, LONGREAL)
+  3) T is a character type (eg. CHAR)
+  4) T is a SET type
+
+REJECT:
+
+  1) T is not a type (eg. a variable identifier)
+  2) T is not a basic type (eg. POINTER, RECORD)
+  3) T is BOOLEAN
+
+
+  ODD(x)
+
+ACCEPT:
+
+  1) x is an integer type (eg. SHORTINT, LONGINT)
+  2) x is constant (should be folded)
+
+REJECT:
+
+  1) x is not an integer type
+
+
+  SIZE(T)
+
+ACCEPT:
+
+  1) T is a basic type 
+  2) T is a POINTER, PROCEDURE, RECORD, or ARRAY type
+
+REJECT:
+
+  1) T is not a type
+  2) T is a type constructor eg. SIZE(ARRAY 2 OF INTEGER).
+  3) T is an open array type, for example ARRAY OF CHAR
+
+
+Proper Procedures
+-----------------
+
+  ASSERT(x)
+  ASSERT(x, n)
+
+ACCEPT:
+
+  1) x is BOOLEAN variable
+  2) x is TRUE
+  3) x is FALSE
+
+REJECT:
+
+  1) x is not BOOLEAN (eg. CHAR)
+  2) n is not integer (eg. CHAR)
+  3) n is not constant (eg. integer variable)
+  4) n is out of range (only a subset of all integers is supported by
+     the underlying OS)
+
+  COPY(x, v)
+
+ACCEPT:
+
+  1) x is a string constant
+  2) x is a character array containing terminating 0X
+  3) x is a string longer than LEN(v)-1. Verify that result is
+     truncated with terminating 0X.
+  4) verify that designator v is only evaluated once
+
+  Note: If x is a character array without terminating 0X, then the
+  result is undefined.
+
+REJECT:
+
+  1) v is not a character array
+  2) v is read-only
+  3) x is not a character array or string
+
+
+  DEC(v)
+  DEC(v, n)
+  INC(v)
+  INC(v, n)
+
+ACCEPT:
+
+  1) v is an integer variable
+  2) verify that designator is only evaluated once (eg. INC(a[P()])). This
+     causes problems with oo2c-1.5.7.
+
+REJECT:
+
+  1) v is not integer
+  2) v is not variable (eg. constant, function result)
+  3) v is read-only variable
+  4) n is outside the range of the type of v (that is, the type of v
+     does not include that of n)
+
+
+  EXCL(v, x)
+  INCL(v, x)
+
+ACCEPT:
+
+  1) v is a set variable
+  2) verify that designator is only evaluated once (see above).
+
+REJECT:
+
+  1) v is not SET
+  2) v is not variable (eg. constant, function result)
+  3) v is read-only variable
+  4) x is not integer
+  5) x is a constant with x<MIN(v) or x>MAX(v)
+
+  HALT(n)
+
+ACCEPT:
+
+  1) n is an integer constant
+
+REJECT:
+
+  1) n is not integer 
+  2) n is not constant
+  3) n is out of range (like ASSERT)
+
+
+  NEW(v)
+
+ACCEPT:
+
+  1) v is a pointer to record
+  2) v is a pointer to fixed-length array
+  
+REJECT:
+
+  1) v is not a pointer 
+  2) v is a pointer to open array
+  3) v is not a variable (eg. function result)
+  4) v is read-only
+
+
+  NEW(v, x_0, ..., x_n)
+
+ACCEPT:
+
+  1) v is a pointer to an open array
+
+REJECT:
+
+  1) v is not a pointer (eg. INTEGER)
+  2) v is a pointer to record
+  3) v is a pointer to a fixed-length array
+  4) v is not a variable (eg. function result)
+  5) v is read-only
+  6) x_i is not integer
+  7) x_i is constant and negative
+  8) number of supplied lengths too large
+  9) number of supplied lengths too small
+ 10) v is an open array VAR parameter
+
+ERROR:
+
+  1) x_i is negative
+
+

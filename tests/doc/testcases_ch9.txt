@@ -1,0 +1,260 @@
+I suggest to move all rules that deal with SYSTEM or OOC specific
+capabilities into separate documents.  For this list, the focus is
+"core O2".  Extensions add their own accept and reject rules to
+outline the differences to the core.
+
+
+9.1 Assignments
+---------------
+
+  var := expr
+
+REJECT:
+
+  1) var is not a variable designator
+  2) var is imported read-only
+
+REJECT (assignment compatible):
+
+  1) expr is not a value (e.g., is a type name)
+  2) Texpr and Tvar have same structure, but are not the same type
+  3) expr is NIL, but Tvar is not pointer or procedure
+  4) Tvar is ARRAY n OF CHAR, expr is too long string const
+  5) Texpr and Tvar are procedure type, but the number of arguments
+     do not match
+  6) Texpr and Tvar are procedure type, but the result type is
+     not the same
+  6) Texpr and Tvar are procedure type, but not all formal
+     parameters types are equal
+  7) Texpr and Tvar are procedure type, but the there is a mismatch
+     with VAR/value parameters
+
+ACCEPT (assignment compatible)
+
+  1) Texpr and Tvar are the same type
+  2) types are numeric and Tvar includes Texpr
+  3) both are records, and Texpr extends Tvar
+  4) both are record pointers, and Texpr extends Tvar
+  5) Tvar is pointer type, and expr is NIL
+  6) Tvar is procedure type, and expr is NIL
+  7) Tvar is ARRAY n OF CHAR, expr is "small enough" string const
+  8) Tvar is procedure, expr is name of procedure with matching 
+     formal parameters
+
+ERROR (assignment compatible)
+
+  1) var is a record whose dynamic and static type differ
+
+
+
+9.2 Procedure Calls
+-------------------
+
+  proc[(arg1, arg2, ...)]
+
+REJECT:
+
+  1) type of proc is not procedure
+  2) proc is a function procedure
+  3) too few or too many entries in argument list
+  4) argument not assignment compatbile to value parameter
+  5) argument to VAR parameter is not a variable designator
+  6) argument to VAR parameter is imported read-only
+  7) formal parameter type is an open array, but the argument is
+     not array compatible (wrong base type, different number of
+     dimensions)
+
+ACCEPT:
+  
+  1) accept "proc" and "proc()" if the formal parameter list
+     is empty
+  2) argument of basic type (value and VAR); assignment 
+     to value parameter are unvisible outside proc, while
+     assigning to VAR parameter is visible
+  3) argument of record type (value and VAR); dito
+  4) argument of array type (value and VAR); dito
+  5) formal parameter Tf is a VAR record, and the argument type is
+     an extension of Tf
+  6) formal parameter is ARRAY OF CHAR, argument is a string
+     constant
+
+
+
+9.3 Statement sequences
+-----------------------
+
+ACCEPT:
+
+  1) empty sequence
+  2) several semicolons ";" between statements
+  3) ";" before and after a sequence
+
+
+
+9.4 If statements
+------------------
+
+  IF expr1 THEN seq1 { ELSIF exprN THEN seqN } [ELSE seqE] END
+
+REJECT:
+
+  1) expr is not boolean
+
+ACCEPT:
+
+  1) first expr evaluating to TRUE wins
+  2) ELSE is executed if not guard is TRUE
+
+
+
+9.5 Case statements
+-------------------
+
+  CASE expr OF Case {| Case} [ELSE seq] END
+
+REJECT:
+
+  1) expr is neither integer nor CHAR
+  2) case labels is not a constant
+  3) case labels is not included in the type of expr
+  4) a constant is used multiple times as case label 
+
+ACCEPT:
+
+  1) expr is an integer type
+  2) expr is of type CHAR
+  3) first case with a matching label wins
+  4) ELSE seq is evaluated if no label matches
+  5) "|" before and after case list, multiple "|" between cases
+  6) labels with one element, with range, with empty range, and
+     comma separated list
+
+ERROR:
+
+  1) abort program if no label matches, and there is no ELSE
+
+
+
+9.6 While statements
+--------------------
+
+  WHILE expr DO seq END
+
+REJECT:
+
+  1) expr is not boolean
+
+ACCEPT:
+
+  1) expr is evaluated before loop body
+
+
+
+9.7 Repeat statements
+--------------------
+
+  REPEAT seq UNTIL expr
+
+REJECT:
+
+  1) expr is not boolean
+
+ACCEPT:
+
+  1) expr is evaluated after loop body
+
+
+
+9.8 For statements
+------------------
+
+  FOR var := begin TO end [ BY step ] DO seq END;
+
+REJECT:
+
+  1) var is not a variable
+  2) var is a composite designator (i.e., not a single ident)
+  3) var is not integer
+  4) begin is not assignment compatible to var
+  5) end is not assignment compatible to var
+  6) var does not include step
+  7) step is not constant
+  8) step is zero
+
+ACCEPT:
+
+  1) begin < end, no step: iterate end-begin+1 times
+  2) begin < end, positive step
+  3) begin > end, negative step
+
+NOTE: There are known problems with overflows and wrap around, for
+example with "FOR i := MIN(LONGINT) TO MAX (LONGINT) DO".  The
+behaviour is undefined in this case.
+
+
+
+9.9 Loop & Exit statements
+-------------------
+
+  LOOP seq END
+
+REJECT:
+
+  1) an EXIT than is not part of a LOOP
+
+ACCEPT:
+
+  1) zero, one, or more EXIT or RETURN statements in seq
+
+WARN:
+
+  1) a LOOP contains no EXIT or RETURN
+
+
+
+9.10 Return statements
+----------------------
+
+  RETURN [expr]
+
+REJECT:
+
+  1) RETURN of a non-function procedure has an expr
+  2) RETURN of a function procedure has no expr
+  3) expr is not assignment compatible to function result
+
+ERROR:
+
+  1) control reaches end of a function's body
+
+
+
+9.11 With statements
+--------------------
+
+  WITH guard1 DO seq1 {| guardN DO seqN} [ELSE seq] END
+  with guard being "var: type"
+
+REJECT:
+
+  1) var is no qualident
+  2) var is no variable parameter or record pointer
+  3) type is not an extensions of var's type
+
+ACCEPT:
+
+  1) within a guarded region, var is regarded as if it has
+     the indicated static type
+  2) the type guard on a parameter variable does not change the
+     signature of the parameter's procedure
+
+ERROR:
+
+  1) no guard evaluates to TRUE, and no ELSE exists
+
+WARN:
+
+  1) a guard is unreachable because a preceding guard tests the same
+     variable, but with a base type of the guard's type
+
+
