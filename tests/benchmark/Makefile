@@ -10,7 +10,7 @@ LIB = $(OOC_DEV_ROOT)/lib
 TEST_DRIVER = oo2c
 
 # command to compile benchmarks
-COMPILE = $(OOC_DEV_ROOT)/bin/$(TEST_DRIVER) -r $(OOC_DEV_ROOT)/lib -r wd
+COMPILE = $(OOC_DEV_ROOT)/bin/$(TEST_DRIVER) --config $(OOC_DEV_ROOT)/oo2crc-install.xml -r $(OOC_DEV_ROOT)/lib -r wd
 
 # command to generate assembley output from C
 CCC = gcc $(CCFLAGS) -O2 -S -I$(LIB)/src -I$(LIB)/obj -Iwd/obj
