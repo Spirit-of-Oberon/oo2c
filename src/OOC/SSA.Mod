@@ -592,6 +592,17 @@ PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
     AddOpnd (instr, NewOpnd (arg, class));
   END AddOpnd;
 
+PROCEDURE (instr: Instr) AddOpndFct* (arg: Result; class: OpndClass.Class): Opnd;
+(**Like @oproc{Instr.AddOpnd}, but return a reference to the new operand
+   object.  *)
+  VAR
+    opnd: Opnd;
+  BEGIN
+    opnd := NewOpnd (arg, class);
+    AddOpnd (instr, opnd);
+    RETURN opnd;
+  END AddOpndFct;
+
 PROCEDURE (instr: Instr) AddUniqueOpnd* (arg: Result; class: OpndClass.Class);
 (**Adds @oparam{arg} to the end of the operand list of instruction
    @oparam{instr}, unless an operand with the argument @oparam{arg} already
@@ -954,7 +965,7 @@ PROCEDURE (instr: Instr) UniqueResult*(): BOOLEAN;
    of a volatile variable, or a call to the predefined procedure @code{NEW}. *)
   BEGIN
     CASE instr. opcode OF
-    | Opcode.newObject, Opcode.exit, Opcode.return, Opcode.indexed:
+    | Opcode.newObject, Opcode.exit, Opcode.return(*, Opcode.indexed*):
       RETURN TRUE;
     ELSE
       RETURN FALSE;
