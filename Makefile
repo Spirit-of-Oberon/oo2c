@@ -4,7 +4,7 @@ OOCN=Oocn
 #OOCN=/home/ooc-devel/ooc/oocn --config /usr/lib/Oo2c/oo2crc
 
 
-test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestOpTree TestTexinfo TestMake AllModules RunTests
+test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestOpTree TestTexinfo TestMake TestCompile AllModules RunTests
 
 all:
 
