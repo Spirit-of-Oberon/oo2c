@@ -183,4 +183,10 @@ PROCEDURE (ch: Channel) Close*() RAISES IO.Error;
     ch.base.Close();
   END Close;
 
+PROCEDURE (ch: Channel) CloseAndRegister*() RAISES IO.Error;
+  BEGIN
+    ch.Flush();
+    ch.base.CloseAndRegister();
+  END CloseAndRegister;
+
 END IO:Buffer.

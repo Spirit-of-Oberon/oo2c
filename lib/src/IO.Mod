@@ -382,6 +382,14 @@ PROCEDURE (ch: Channel) Close*() RAISES Error;
     END;
   END Close;
 
+PROCEDURE (ch: Channel) CloseAndRegister*() RAISES Error;
+(**Like @oproc{Channel.Close}, but register the channel's target with its
+   naming service once done.  Right now, only @omodule{*IO:FileChannel}
+   supports this feature; see @oconst{*IO:FileChannel.tmpFile} for details.
+   By default, this method simply calls @oproc{Channel.Close}.  *)
+  BEGIN
+    ch.Close();
+  END CloseAndRegister;
 
 PROCEDURE InitByteChannel*(ch: ByteChannel);
   BEGIN

@@ -21,7 +21,7 @@ MODULE OOC:Make:WriteMainFileC;
 *)
 
 IMPORT
-  IO, IO:TextRider, IO:FileChannel, IO:Buffer, OOC:Config, OOC:Repository;
+  IO, IO:TextRider, OOC:Config, OOC:Repository;
 
   
 PROCEDURE WriteFile*(module: Repository.Module;
@@ -84,8 +84,7 @@ RAISES IO.Error;
     IF (w.error # NIL) THEN
       RAISE(w.error);
     END;
-    ch.Flush();
-    ch(Buffer.Channel).base(FileChannel.Channel).CloseAndRegister;
+    ch.CloseAndRegister();
   END WriteFile;
 
 END OOC:Make:WriteMainFileC.

@@ -1,7 +1,7 @@
 MODULE OOC:Auxiliary:WriteSymbolFile;
 
 IMPORT
-  Strings, IO, IO:BinaryRider, IO:Memory, IO:FileChannel, IO:Buffer,
+  Strings, IO, IO:BinaryRider, IO:Memory,
   OOC:Repository, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Exports;
   
@@ -47,8 +47,7 @@ RAISES IO.Error;
     
     mem.SetPosition(0);
     d := mem.TransferTo(mem.length, ch);
-    ch.Flush();  (* flush data, or the CloseAndRegister bypass will not work *)
-    ch(Buffer.Channel).base(FileChannel.Channel).CloseAndRegister;
+    ch.CloseAndRegister();
   END WriteSymbolFile;
 
 END OOC:Auxiliary:WriteSymbolFile.

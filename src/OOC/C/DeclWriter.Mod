@@ -21,7 +21,7 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, IntStr, Strings, IO, IO:TextRider, IO:FileChannel, IO:Buffer,
+  SYSTEM, IntStr, Strings, IO, IO:TextRider,
   Object, Object:Boxed, Object:BigInt, ADT:ArrayList, URI, 
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules;
@@ -389,21 +389,8 @@ PROCEDURE (w: Writer) WriteInclude* (includePath: ARRAY OF CHAR);
 PROCEDURE (w: Writer) Close* ()
 RAISES IO.Error;
 (**Closes the writer's output channel.  *)
-  VAR
-    ch: IO.ByteChannel;
   BEGIN
-    ch := w.ch;
-    
-    ch.Flush();
-    IF (ch IS Buffer.Channel) THEN
-      ch := ch(Buffer.Channel).base;
-    END;
-    
-    IF (ch IS FileChannel.Channel) THEN
-      ch(FileChannel.Channel). CloseAndRegister;
-    ELSE
-      ch. Close();
-    END;
+    w.ch.CloseAndRegister();
   END Close;
 
 PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
