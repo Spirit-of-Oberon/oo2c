@@ -26,6 +26,13 @@ setup:
 	mkdir wd wd/obj wd/sym wd/asm
 	ln -s ../src wd/src
 
+setup-ooc1:
+	rm -rf wd1
+	mkdir wd1 wd1/obj wd1/sym wd1/exe
+
+test-ooc1: setup-ooc1
+	oo2c --optimize -Mv Benchmark
+
 # Attempt to find the differences in assembled output
 # This is a quick hack, but probably as good as it will get
 
@@ -38,4 +45,4 @@ asm: test
 	done
 	
 clean:
-	rm -rf wd
+	rm -rf wd wd1

@@ -1,6 +1,4 @@
 
-#include "SortC.d"
-
 void QuickSort(int a[], int m, int n) {
 	int i, j, v, x;
 
@@ -33,5 +31,5 @@ void BubbleSort(int a[], int size) {
 			}
 }
 
-void SortC_init(void) { }
+void SortC_init0(void) { }
 
