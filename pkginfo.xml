@@ -7,5 +7,9 @@
   <file-set source-dir=".">
     <file name="install-sh" />
     <file name="rsrc/OOC/oo2crc.xml" dest-name="oo2crc.xml" />
+    <file-set source-dir="rsrc/OOC/emacs" dest-dir="emacs">
+      <file name="oberon2.el"/>
+      <file name="o2-default.el"/>
+    </file-set>
   </file-set>
 </package>
