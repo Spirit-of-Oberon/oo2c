@@ -17,6 +17,7 @@ TEST_SUBDIRS=\
   tests/oberon-doc \
   tests/compile \
   tests/ssa \
+  tests/lib \
   tests/ssa-c-output \
 
 DOC_DIR=$(OOC_DEV_ROOT)/oocdoc
@@ -81,7 +82,7 @@ test-hostess-ooc1:
 ###      an index file $(OOC_DEV_ROOT)/oocdoc/index.html is generated.
 doc:
 	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
-	cd $(OOC_DEV_ROOT) && $(OOC) -MOv TestInterfaceGen
+	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) TestInterfaceGen
 	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" Strings core
 	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" libadt libadt
 	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" libxml libxml

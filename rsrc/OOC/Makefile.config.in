@@ -4,6 +4,8 @@ export OOEF=@OOEF@
 export DIFF=@DIFF@
 export XSLTPROC=@XSLTPROC@
 
+OFLAGS=-v
+
 PRINT=@echo
 MKDIR=mkdir -p -m 755
 RM=rm -f

@@ -20,7 +20,7 @@ export DIFF
 
 test2-setup:
 	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
-	cd $(OOC_DEV_ROOT) && $(OOC) -MOv $(TEST_PROCESSOR)
+	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) $(TEST_PROCESSOR)
 	-cd $(TEST_WORKING_DIR) && $(RM_R) $(TEST_OUTPUT_DIRS)
 	$(RM_R) $(TEST_TEMP_DIR)
 	cd $(TEST_WORKING_DIR) && $(MKDIR) $(TEST_OUTPUT_DIRS)
