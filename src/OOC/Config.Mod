@@ -1,10 +1,11 @@
 MODULE OOC:Config;
 
 IMPORT
-  Msg, Config:Value, Config:Value:String, Config:Source:CmdLine,
+  RT0, Msg, Config:Value, Config:Value:String, Config:Source:CmdLine,
   Config:Section:Options, Config:Section:Arguments, Config:Simple,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas, OOC:Config:Autoconf,
-  OOC:Config:Repositories, OOC:Config:Repositories:FileSystem(*KEEP THIS!*);
+  OOC:Config:Repositories,
+  <*PUSH; Warnings:=FALSE*>OOC:Config:Repositories:FileSystem<*POP*>;
 
 
 VAR
@@ -80,4 +81,5 @@ PROCEDURE HaveXsltProc*(): BOOLEAN;
 
 BEGIN
   InitConfig (Autoconf.configFile);
+  RT0.poisonHeap := 055H;
 END OOC:Config.

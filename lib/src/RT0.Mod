@@ -21,16 +21,16 @@ MODULE RT0 [FOREIGN "C"; LINK FILE "RT0.c"; LIB "m" END];
 (**Proxy module for the run-time system.  This module is used to pull in the
    executable code of the run-time system, and to mark the place of the
    run-time system's header files.  This module's directory is added to the
-   include path of the C compiler, so that __oo2c.h, __typemap.h, and so on,
-   are picked up from here.
+   include path of the C compiler, so that @file{__oo2c.h}, @file{__typemap.h},
+   and so on, are picked up from here.
 
-   The compiler implicitly adds an import to this module when building an
-   executable.  A program may import this module directly, for example to gain
-   access to meta data embedded by the compiler into a module's object file.
-   Please note that this module should be considered a part of the compiler,
-   @emph{not} of the standard library.  As such, it may differ across different
-   compiler implementations, and for a given compiler its interface might
-   change without prior notice.
+   The compiler implicitly adds an import for this module to every module.  A
+   program may import this module directly, for example to gain access to meta
+   data embedded by the compiler into a module's object file.  Please note that
+   this module should be considered a part of the compiler, @emph{not} of the
+   standard library.  As such, it may differ across different compiler
+   implementations, and for a given compiler its interface might change without
+   prior notice.
 
    Note: The math library @samp{libm} is always linked in for the sake of the
    predefined function @code{ENTIER}.  *)
@@ -189,7 +189,12 @@ VAR
   argc-: LONGINT;
   argv-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF
                       POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
-
+  poisonHeap*: LONGINT;
+  (**If set to a non-negative value, then memory allocated through
+     @oproc{NewObject} and @oproc{NewBlock} is filled with this byte value.
+     Otherwise, the memory is left as provided by the used libc or libgc
+     library.  This is the default.  *)
+  
 PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
 (**Allocates a new array or record variable on the heap, using the type
    descriptor @oparam{td}.  For an open array object, the lengths of the
