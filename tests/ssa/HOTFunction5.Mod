@@ -1,6 +1,6 @@
 MODULE HOTFunction5;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE Inc (n: INTEGER): INTEGER;
   BEGIN

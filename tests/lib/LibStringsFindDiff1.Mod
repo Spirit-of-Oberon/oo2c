@@ -1,7 +1,7 @@
 MODULE LibStringsFindDiff1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Find (str1, str2: ARRAY OF CHAR);
   VAR

@@ -1,7 +1,7 @@
 MODULE LibRealConvScanReal3;
 
 IMPORT
-  Out, ConvTypes, RealConv;
+  Out := Out0, ConvTypes, RealConv;
 
 PROCEDURE Track (str: ARRAY OF CHAR);
   VAR

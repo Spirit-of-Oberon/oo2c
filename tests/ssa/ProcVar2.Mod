@@ -1,6 +1,6 @@
 MODULE ProcVar2;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   P = PROCEDURE (c: CHAR; VAR x: CHAR);

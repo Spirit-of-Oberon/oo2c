@@ -1,7 +1,7 @@
 MODULE LibMsg1;
 
 IMPORT
-  Out, Msg;
+  Out := Out0, Msg;
 
 TYPE
   Context* = POINTER TO ContextDesc;

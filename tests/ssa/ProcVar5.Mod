@@ -1,6 +1,6 @@
 MODULE ProcVar5;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   T = ARRAY 1 OF INTEGER;

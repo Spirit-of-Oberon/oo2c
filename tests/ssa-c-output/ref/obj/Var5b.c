@@ -29,17 +29,17 @@ void Var5b__Test() {
 
   Var5b__x = -1;
   i0 = Var5b__F(OOC_FALSE);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var5b__x;
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var5b__F(OOC_TRUE);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var5b__x;
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   return;
 }
 

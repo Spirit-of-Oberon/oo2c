@@ -1,7 +1,7 @@
 MODULE LibStringsAppend1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Append (source, dest: ARRAY OF CHAR);
   BEGIN

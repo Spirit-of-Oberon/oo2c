@@ -1,7 +1,7 @@
 MODULE LibRandomNumbers;
 
 IMPORT
-  Out, RandomNumbers;
+  Out := Out0, RandomNumbers;
 
 CONST
   mod = 2147483646;

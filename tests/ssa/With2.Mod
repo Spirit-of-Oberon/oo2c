@@ -1,6 +1,6 @@
 MODULE With2;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   R0 = RECORD      a: INTEGER; END;   P0 = POINTER TO R0;

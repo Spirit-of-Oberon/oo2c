@@ -1,6 +1,6 @@
 MODULE HOTLoop5;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE Test* ();
   VAR

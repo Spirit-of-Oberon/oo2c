@@ -1,7 +1,7 @@
 MODULE LibIntConvLengthInt1;
 
 IMPORT
-  Out, IntConv;
+  Out := Out0, IntConv;
 
 PROCEDURE Length (i: LONGINT);
   BEGIN

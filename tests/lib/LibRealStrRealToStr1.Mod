@@ -1,7 +1,7 @@
 MODULE LibRealStrRealToStr1;
 
 IMPORT
-  Out, RealStr;
+  Out := Out0, RealStr;
 
 PROCEDURE Value (real: REAL);
   VAR

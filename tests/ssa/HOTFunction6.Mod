@@ -1,6 +1,6 @@
 MODULE HOTFunction6;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE IsA (ch: CHAR): INTEGER;
   BEGIN

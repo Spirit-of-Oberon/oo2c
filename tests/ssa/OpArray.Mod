@@ -1,6 +1,6 @@
 MODULE OpArray1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE ArrayValue (a : ARRAY OF CHAR);
 BEGIN

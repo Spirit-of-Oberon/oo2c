@@ -1,6 +1,6 @@
 MODULE HOTFunction3;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE Identity (n: INTEGER): INTEGER;
   VAR

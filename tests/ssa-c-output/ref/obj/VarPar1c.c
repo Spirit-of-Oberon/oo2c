@@ -14,8 +14,8 @@ void VarPar1c__Test() {
   register OOC_INT32 i0;
 
   i0 = VarPar1c__F((void*)(OOC_INT32)&VarPar1c__a);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   return;
 }
 

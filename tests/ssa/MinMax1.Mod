@@ -1,6 +1,6 @@
 MODULE MinMax1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE Test* ();
   BEGIN

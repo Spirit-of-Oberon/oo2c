@@ -1,6 +1,6 @@
 MODULE TBProc3;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   R = RECORD END;

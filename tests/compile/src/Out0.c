@@ -1,19 +1,19 @@
 #include <stdio.h>
 
-#include "Out.d"
+#include "Out0.d"
 
-void Out__Open() {
+void Out0__Open() {
 }
 
-void Out__Char(OOC_CHAR8 ch) {
+void Out0__Char(OOC_CHAR8 ch) {
   putc(ch, stdout);
 }
 
-void Out__String(const OOC_CHAR8 s[], OOC_LEN s_0d) {
+void Out0__String(const OOC_CHAR8 s[], OOC_LEN s_0d) {
   fputs((const char*)s, stdout);
 }
 
-void Out__LString(const OOC_CHAR16 s[], OOC_LEN s_0d) {
+void Out0__LString(const OOC_CHAR16 s[], OOC_LEN s_0d) {
   const OOC_CHAR16* c = s;
   while (*c) {
     putc((*c < 256) ? (OOC_CHAR8)*c : '?', stdout);
@@ -21,23 +21,23 @@ void Out__LString(const OOC_CHAR16 s[], OOC_LEN s_0d) {
   }
 }
 
-void Out__Int(OOC_INT32 i, OOC_INT32 n) {
+void Out0__Int(OOC_INT32 i, OOC_INT32 n) {
   fprintf(stdout, "%*i", n, i);
 }
 
-void Out__Real(OOC_REAL32 r, OOC_INT32 n) {
+void Out0__Real(OOC_REAL32 r, OOC_INT32 n) {
   fprintf(stdout, "%.*E", n, r);
 }
 
-void Out__LongReal(OOC_REAL64 r, OOC_INT32 n) {
+void Out0__LongReal(OOC_REAL64 r, OOC_INT32 n) {
   fprintf(stdout, "%.*E", n, r);
 }
 
-void Out__Bool(OOC_BOOLEAN b) {
+void Out0__Bool(OOC_BOOLEAN b) {
   fprintf(stdout, b ? "TRUE" : "FALSE");
 }
 
-void Out__Set(OOC_UINT32 set) {
+void Out0__Set(OOC_UINT32 set) {
 #define MAXSET 31
   int bit, comma, begin;
 
@@ -62,9 +62,9 @@ void Out__Set(OOC_UINT32 set) {
   putc('}', stdout);
 }
 
-void Out__Ln() {
+void Out0__Ln() {
   fputc('\n', stdout);
 }
 
-void Out_init() {
+void Out0_init() {
 }

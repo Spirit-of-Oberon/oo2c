@@ -1,6 +1,6 @@
 MODULE HOTIf1;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE If (b: BOOLEAN);
   VAR

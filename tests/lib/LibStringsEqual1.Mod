@@ -1,7 +1,7 @@
 MODULE LibStringsEqual1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Equal (a, b: ARRAY OF CHAR);
   BEGIN

@@ -1,6 +1,6 @@
 MODULE NestedProc3;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE Test* ();
   VAR

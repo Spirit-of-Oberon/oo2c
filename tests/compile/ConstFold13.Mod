@@ -1,7 +1,7 @@
 MODULE ConstFold13;
 
 IMPORT
-  Out;
+  Out := Out0;
 
 CONST
   a = 1;

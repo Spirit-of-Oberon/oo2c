@@ -1,6 +1,6 @@
 MODULE Len2;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE Test* ();
   BEGIN

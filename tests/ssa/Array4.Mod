@@ -1,6 +1,6 @@
 MODULE Array4;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   I = INTEGER;

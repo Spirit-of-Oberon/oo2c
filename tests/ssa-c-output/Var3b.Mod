@@ -1,6 +1,6 @@
 MODULE Var3b;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE F (a, b: BOOLEAN): INTEGER;
   VAR

@@ -1,6 +1,6 @@
 MODULE Mod1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE Mod (i, j: INTEGER);
   BEGIN

@@ -1,7 +1,7 @@
 MODULE LibIntConvScanInt1;
 
 IMPORT
-  Out, ConvTypes, IntConv;
+  Out := Out0, ConvTypes, IntConv;
 
 PROCEDURE Track (str: ARRAY OF CHAR);
   VAR

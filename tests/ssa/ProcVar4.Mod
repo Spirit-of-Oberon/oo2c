@@ -1,6 +1,6 @@
 MODULE ProcVar4;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   T = RECORD a: INTEGER; END;

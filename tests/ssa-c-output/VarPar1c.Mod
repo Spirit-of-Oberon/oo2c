@@ -1,6 +1,6 @@
 MODULE VarPar1c;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 VAR
   a: INTEGER;

@@ -1,7 +1,7 @@
 MODULE LibStringsExtract3;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
   
 PROCEDURE Test* ();
   VAR

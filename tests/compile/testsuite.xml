@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
 <!DOCTYPE testsuite-ext
-          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
-
-<!ENTITY baseline-testcases
-         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases.xml">
-
-<!ENTITY candidate-testcases
-         SYSTEM "../../../hostess/hostess/oberon/candidate.xml">
-
-<!ENTITY hostess-testcases
-         SYSTEM "../../../hostess/hostess/oberon/testcases.xml">
-]>
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" >
 
 <testsuite-ext
   profile="Test Suite for Framework Testing"
   select ="&SetupTestCasesWithOut;
-  baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
-  baseline8 baseline10 baseline11
   function1 function2
   constfold1 constfold2 constfold3 constfold4 constfold5
   constfold6 constfold7 constfold8 constfold9 constfold10 constfold11
@@ -29,10 +17,7 @@
   constfold10 constfold11">-->
   
   &TestSetupWithOut;
-  &baseline-testcases;
-  <!--&candidate-testcases;
-  &hostess-testcases;-->
-  
+    
   <testcases profile="OOC2 Development" default-lang="O1 O2 AO">
     <test id="function1" type="run"
       file="HOTFunction1.Mod" output="HOTFunction1.Ref">
@@ -140,7 +125,6 @@
   </testcases>
   
   <processor-info processor-name="TestCompile">
-    <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
     <reject-info id="constfold3" pos="c=1%+" msg="Invalid type for operator"/>
     <reject-info id="constfold4" pos="c=%a" msg="Expression is not constant"/>
     <reject-info id="constfold6" pos="minLongInt%-offset" msg="Type of actual parameter is not compatible with formal type"/>

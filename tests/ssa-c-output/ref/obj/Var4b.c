@@ -29,29 +29,29 @@ void Var4b__Test() {
 
   Var4b__x = -1;
   i0 = Var4b__F(OOC_FALSE, OOC_FALSE);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var4b__x;
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var4b__F(OOC_FALSE, OOC_TRUE);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var4b__x;
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var4b__F(OOC_TRUE, OOC_FALSE);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var4b__x;
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var4b__F(OOC_TRUE, OOC_TRUE);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var4b__x;
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   return;
 }
 

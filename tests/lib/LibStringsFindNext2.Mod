@@ -1,7 +1,7 @@
 MODULE LibStringsFindNext2;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Find (pattern, string: ARRAY OF CHAR; startPos: INTEGER);
   VAR

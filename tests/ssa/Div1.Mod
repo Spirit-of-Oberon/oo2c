@@ -1,6 +1,6 @@
 MODULE Div1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE Div (i, j: INTEGER);
   BEGIN

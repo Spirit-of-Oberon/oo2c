@@ -1,6 +1,6 @@
 MODULE TBProc6;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   R0 = RECORD      END; P0 = POINTER TO R0;

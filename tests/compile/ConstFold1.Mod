@@ -1,6 +1,6 @@
 MODULE ConstFold1;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 CONST c=1;
 

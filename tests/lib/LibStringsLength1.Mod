@@ -1,7 +1,7 @@
 MODULE LibStringsLength1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
   
 PROCEDURE Test* ();
   BEGIN

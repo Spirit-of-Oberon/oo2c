@@ -1,7 +1,7 @@
 MODULE LibIntStrIntToStr1;
 
 IMPORT
-  Out, IntStr;
+  Out := Out0, IntStr;
 
 PROCEDURE Value (i: LONGINT);
   VAR

@@ -1,6 +1,6 @@
 MODULE Var7b;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 VAR
   i: INTEGER;

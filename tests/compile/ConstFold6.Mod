@@ -1,6 +1,6 @@
 MODULE ConstFold6;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 CONST
   maxShortInt = 127;

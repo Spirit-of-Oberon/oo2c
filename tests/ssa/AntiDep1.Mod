@@ -1,7 +1,7 @@
 MODULE AntiDep1;
 
 IMPORT
-  Out;
+  Out := Out0;
   
 VAR
   r: RECORD a: INTEGER; END;

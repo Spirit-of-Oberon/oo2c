@@ -1,7 +1,7 @@
 MODULE LibRealConvValueReal2;
 
 IMPORT
-  Out, ConvTypes, RealConv;
+  Out := Out0, ConvTypes, RealConv;
 
 PROCEDURE Value (str: ARRAY OF CHAR);
   CONST

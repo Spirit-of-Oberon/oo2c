@@ -11,6 +11,7 @@
 # tests exercising the SSA back-end are in tests/ssa.
 
 TEST_DRIVER=RunTests
+TEST_DRIVER_FLAGS=--out-module Out0
 TEST_PROCESSOR=TestCompile
 TEST_BASE=tests/compile
 

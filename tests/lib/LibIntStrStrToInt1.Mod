@@ -1,7 +1,7 @@
 MODULE LibIntStrStrToInt1;
 
 IMPORT
-  Out, IntStr;
+  Out := Out0, IntStr;
 
 PROCEDURE Value (str: ARRAY OF CHAR);
   VAR

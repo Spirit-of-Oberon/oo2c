@@ -1,6 +1,6 @@
 MODULE Var1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE F(x: INTEGER): INTEGER;
   VAR

@@ -1,5 +1,5 @@
 (*	$Id$	*)
-MODULE Out [FOREIGN "C"; LINK FILE "Out.c" END];
+MODULE Out0 [FOREIGN "C"; LINK FILE "Out0.c" END];
 <* Warnings := FALSE *>
 
 PROCEDURE Open*;
@@ -13,4 +13,4 @@ PROCEDURE Real* (x: REAL; n: LONGINT);
 PROCEDURE LongReal* (x: LONGREAL; n: LONGINT);
 PROCEDURE Ln*;
 
-END Out.
+END Out0.

@@ -29,11 +29,11 @@ void Var7__Test() {
   register OOC_INT32 i0;
 
   i0 = Var7__Len((void*)"", 1);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var7__Len((void*)"abc", 4);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   return;
 }
 

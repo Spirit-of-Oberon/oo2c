@@ -1,7 +1,7 @@
 MODULE LibStringsReplace1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Replace (source, dest: ARRAY OF CHAR; startPos: INTEGER);
   BEGIN

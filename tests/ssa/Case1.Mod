@@ -1,6 +1,6 @@
 MODULE Case1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE P (i: INTEGER);
   BEGIN

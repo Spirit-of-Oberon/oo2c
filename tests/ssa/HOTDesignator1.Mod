@@ -1,6 +1,6 @@
 MODULE HOTDesignator1;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE Get (str: ARRAY OF CHAR; n: INTEGER): CHAR;
   BEGIN

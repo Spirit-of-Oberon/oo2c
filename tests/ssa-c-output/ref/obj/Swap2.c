@@ -25,22 +25,22 @@ void Swap2__Test() {
   Swap2__y = 2;
   Swap2__Swap(OOC_FALSE);
   i0 = Swap2__x;
-  Out__Int(i0, 2);
+  Out0__Int(i0, 2);
   i0 = Swap2__y;
-  Out__Int(i0, 2);
-  Out__Ln();
+  Out0__Int(i0, 2);
+  Out0__Ln();
   Swap2__Swap(OOC_TRUE);
   i0 = Swap2__x;
-  Out__Int(i0, 2);
+  Out0__Int(i0, 2);
   i0 = Swap2__y;
-  Out__Int(i0, 2);
-  Out__Ln();
+  Out0__Int(i0, 2);
+  Out0__Ln();
   Swap2__Swap(OOC_TRUE);
   i0 = Swap2__x;
-  Out__Int(i0, 2);
+  Out0__Int(i0, 2);
   i0 = Swap2__y;
-  Out__Int(i0, 2);
-  Out__Ln();
+  Out0__Int(i0, 2);
+  Out0__Ln();
   return;
 }
 

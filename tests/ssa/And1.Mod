@@ -1,6 +1,6 @@
 MODULE And1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE P (c: CHAR; x: BOOLEAN): BOOLEAN;
   BEGIN

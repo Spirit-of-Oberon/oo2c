@@ -1,6 +1,6 @@
 MODULE ConstFold16;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 CONST
   MINSET = 0;

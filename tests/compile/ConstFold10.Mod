@@ -1,6 +1,6 @@
 MODULE ConstFold10;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 CONST
   c = SIZE(CHAR);

@@ -12,11 +12,11 @@ void Var2__Test() {
 
   Var2__x = 0;
   i0 = Var2__F();
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var2__x;
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   return;
 }
 

@@ -1,7 +1,7 @@
 MODULE LibRealConvFormatReal1;
 
 IMPORT
-  Out, ConvTypes, RealConv;
+  Out := Out0, ConvTypes, RealConv;
 
 PROCEDURE WriteFormat (str: ARRAY OF CHAR);
   VAR

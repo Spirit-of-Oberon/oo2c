@@ -1,7 +1,7 @@
 MODULE ConstFold12;
 
 IMPORT
-  Out;
+  Out := Out0;
 
 CONST
   andFF = FALSE & FALSE;

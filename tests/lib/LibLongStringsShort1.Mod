@@ -1,7 +1,7 @@
 MODULE LibLongStringsShort1;
 
 IMPORT
-  Out, LongStrings;
+  Out := Out0, LongStrings;
 
 PROCEDURE Write (x: ARRAY OF LONGCHAR);
   VAR

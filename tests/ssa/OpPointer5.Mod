@@ -1,6 +1,6 @@
 MODULE OpPointer5;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   A = POINTER TO ADesc;

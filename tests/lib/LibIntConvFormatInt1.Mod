@@ -1,7 +1,7 @@
 MODULE LibIntConvFormatInt1;
 
 IMPORT
-  Out, ConvTypes, IntConv;
+  Out := Out0, ConvTypes, IntConv;
 
 PROCEDURE WriteFormat (str: ARRAY OF CHAR);
   VAR

@@ -1,6 +1,6 @@
 MODULE HOTFunction4;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE Select (b: BOOLEAN): INTEGER;
   BEGIN

@@ -1,7 +1,7 @@
 MODULE LibTermination;
 
 IMPORT
-  Out, Termination;
+  Out := Out0, Termination;
 
 PROCEDURE Write ();
   BEGIN

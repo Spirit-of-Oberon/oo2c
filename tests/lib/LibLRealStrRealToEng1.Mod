@@ -1,7 +1,7 @@
 MODULE LibLRealStrRealToEng1;
 
 IMPORT
-  Out, LRealStr;
+  Out := Out0, LRealStr;
 
 PROCEDURE Value (real: LONGREAL; sigFigs: INTEGER);
   VAR

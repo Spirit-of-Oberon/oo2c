@@ -1,6 +1,6 @@
 MODULE HOTLoop4;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE Div10 (i: INTEGER): INTEGER;
   VAR

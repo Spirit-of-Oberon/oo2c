@@ -1,7 +1,7 @@
 MODULE OpRecord1;
 
 IMPORT
-  Out;
+  Out := Out0;
 
 TYPE
   T = SHORTINT;

@@ -12,11 +12,11 @@ void Var1__Test() {
   register OOC_INT32 i0;
 
   i0 = Var1__F(0);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var1__F(1);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   return;
 }
 

@@ -1,7 +1,7 @@
 MODULE LibStringsDelete1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Test1 (str: ARRAY OF CHAR);
   BEGIN

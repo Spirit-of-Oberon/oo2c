@@ -1,6 +1,6 @@
 MODULE Var7c;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE Len (str: ARRAY OF CHAR): INTEGER;
   VAR

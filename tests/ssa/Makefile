@@ -9,6 +9,7 @@
 # of the categories "accept" and "reject" belong into tests/compile/.
 
 TEST_DRIVER=RunTests
+TEST_DRIVER_FLAGS=--out-module Out0
 TEST_PROCESSOR=TestCompile
 TEST_BASE=tests/ssa
 

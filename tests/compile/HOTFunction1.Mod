@@ -1,6 +1,6 @@
 MODULE HOTFunction1;
 
-IMPORT Out;
+IMPORT Out := Out0;
   
 PROCEDURE OneTwoThree (): INTEGER;
   BEGIN

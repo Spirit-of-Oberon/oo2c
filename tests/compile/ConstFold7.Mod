@@ -1,6 +1,6 @@
 MODULE ConstFold7;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   A = ARRAY 16 OF CHAR;

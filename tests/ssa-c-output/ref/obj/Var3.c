@@ -18,11 +18,11 @@ void Var3__Test() {
   register OOC_INT32 i0;
 
   i0 = Var3__F(OOC_FALSE);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   i0 = Var3__F(OOC_TRUE);
-  Out__Int(i0, 0);
-  Out__Ln();
+  Out0__Int(i0, 0);
+  Out0__Ln();
   return;
 }
 

@@ -1,7 +1,7 @@
 MODULE LibRealStrRealToFloat1;
 
 IMPORT
-  Out, RealStr;
+  Out := Out0, RealStr;
 
 PROCEDURE Value (real: REAL; sigFigs: INTEGER);
   VAR

@@ -1,7 +1,7 @@
 MODULE LibStringsInsert1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Insert (source, dest: ARRAY OF CHAR; startPos: INTEGER);
   BEGIN

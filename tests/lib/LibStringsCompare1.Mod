@@ -1,7 +1,7 @@
 MODULE LibStringsCompare1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Compare (a, b: ARRAY OF CHAR);
   VAR

@@ -1,7 +1,7 @@
 MODULE LibStringsCapitalize1;
 
 IMPORT
-  Out, Strings;
+  Out := Out0, Strings;
 
 PROCEDURE Cap (str: ARRAY OF CHAR);
   BEGIN

@@ -1,6 +1,6 @@
 MODULE Array8;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   I = SHORTINT;

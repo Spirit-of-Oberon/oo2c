@@ -1,6 +1,6 @@
 MODULE Len5;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   A3 = ARRAY 3 OF INTEGER;

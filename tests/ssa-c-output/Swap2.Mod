@@ -1,6 +1,6 @@
 MODULE Swap2;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 VAR
   x, y: INTEGER;

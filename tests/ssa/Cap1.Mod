@@ -1,6 +1,6 @@
 MODULE Cap1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE Cap (ch, cap: CHAR);
   BEGIN

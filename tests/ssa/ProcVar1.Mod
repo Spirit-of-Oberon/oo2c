@@ -1,6 +1,6 @@
 MODULE ProcVar1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   P = PROCEDURE;

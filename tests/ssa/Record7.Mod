@@ -1,6 +1,6 @@
 MODULE Record7;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 TYPE
   R0 = RECORD
