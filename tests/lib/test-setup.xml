@@ -4,12 +4,12 @@
 <test-setup lang="O2">
   &test-env;
   
-  <processor name="TestCompile"
+  <processor name="oo2c"
 	     version="devel"
-	     command="../../TestCompile"
+	     command="../../oo2c"
 	     config-file=""
 	     working-dir="wd" 
-	     flags="-r ../resources -r ../../lib -r wd --use-ssa"
+	     flags="-r ../resources -r ../../lib -r wd"
 	     filter-command="&OOEF;" 
 	     diff-command="&DIFF;" 
 	     check-reject-command="&PERL; ../../rsrc/OOC/TestFramework/error-match.pl"

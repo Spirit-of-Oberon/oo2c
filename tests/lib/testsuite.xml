@@ -17,9 +17,14 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module libadt_ObjectStorage">-->
+  select ="prepare_out_module lib_rt1 lib_Ascii">-->
 
   &TestSetupWithOut;
+  
+  <testcases profile="OOC Core Library" default-lang="O2">
+    <test id="lib_rt1" type="run" file="LibRT1.Mod">
+    </test>
+  </testcases>
   
   <testcases profile="OOC Core Library" default-lang="O2">
     <test id="lib_Ascii" type="run" file="LibAscii.Mod">

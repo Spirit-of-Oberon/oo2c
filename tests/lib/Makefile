@@ -3,7 +3,7 @@
 
 TEST_DRIVER=RunTests
 TEST_DRIVER_FLAGS=--out-module Out0
-TEST_PROCESSOR=TestCompile
+TEST_PROCESSOR=oo2c
 TEST_BASE=tests/lib
 
 include $(OOC_DEV_ROOT)/rsrc/OOC/Makefile.tests-framework
