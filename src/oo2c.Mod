@@ -61,10 +61,10 @@ PROCEDURE GetModule (moduleName: ARRAY OF CHAR): Rep.Module;
   VAR
     m: Rep.Module;
   BEGIN
-    m := Config.repositories.GetModule(arg^);
+    m := Config.repositories.GetModule(moduleName);
     IF (m = NIL) THEN
       Err.String ("Error: Cannot locate module ");
-      Err.String (arg^);
+      Err.String (moduleName);
       Err.Ln;
       HALT (1)
     END;
