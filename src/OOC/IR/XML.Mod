@@ -368,7 +368,9 @@ PROCEDURE (v: Visitor) VisitAssert* (assert: IR.Assert);
     v. w. StartTag ("assert", FALSE);
     v. w. AttrBool ("disabled", assert. disabled);
     v. w. AttrInt ("code", assert. code);
-    assert. predicate. Accept (v);
+    IF (assert. predicate # NIL) THEN
+      assert. predicate. Accept (v);
+    END;
     v. w. EndTag;  (* assert *)
   END VisitAssert;
 

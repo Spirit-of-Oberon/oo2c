@@ -54,9 +54,10 @@
 #define _failed_function(pos) RT0__ErrorFailedFunction(&_mid,pos)
 
 
-/* ASSERT(p) and ASSERT(p,code) */
+/* ASSERT(p), ASSERT(p,code), and HALT(code) */
 #define _assert(p,code,pos) \
   if (!(p)) { RT0__ErrorAssertionFailed(&_mid,pos,code); }
+#define _halt(code) RT0__Halt(code);
 
 /* COPY(s,d) */
 #define _copy_8(_src,_dest,_max_len) {          \

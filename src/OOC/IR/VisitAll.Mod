@@ -221,7 +221,9 @@ PROCEDURE VisitStatementSeq (v: Visitor; statmSeq: IR.StatementSeq);
 
 PROCEDURE (v: Visitor) VisitAssert* (assert: IR.Assert);
   BEGIN
-    assert. predicate. Accept (v);
+    IF (assert. predicate # NIL) THEN
+      assert. predicate. Accept (v);
+    END;
   END VisitAssert;
 
 PROCEDURE (v: Visitor) VisitAssignment* (assignment: IR.Assignment);

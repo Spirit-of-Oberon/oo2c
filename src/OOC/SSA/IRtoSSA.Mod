@@ -749,10 +749,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       predicate: SSA.Result;
       instr: SSA.Instr;
     BEGIN
-      predicate := Expression (assert. predicate);
-      instr := AddException (pb, assert. sym, Opcode.assert, Opcode.scNone);
-      instr. AddOpnd (predicate, Opnd.arg);
-      instr. AddOpnd (pb. GetConstInt (assert. code), Opnd.arg);
+      IF (assert. predicate = NIL) THEN
+        instr := AddException (pb, assert. sym, Opcode.halt, Opcode.scNone);
+        instr. AddOpnd (pb. GetConstInt (assert. code), Opnd.arg);
+      ELSE
+        predicate := Expression (assert. predicate);
+        instr := AddException (pb, assert. sym, Opcode.assert, Opcode.scNone);
+        instr. AddOpnd (predicate, Opnd.arg);
+        instr. AddOpnd (pb. GetConstInt (assert. code), Opnd.arg);
+      END;
     END Assert;
   
   PROCEDURE Assignment (assignment: IR.Assignment): SSA.Instr;

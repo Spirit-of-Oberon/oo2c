@@ -644,9 +644,11 @@ TYPE
 TYPE
   Assert* = POINTER TO AssertDesc;
   AssertDesc = RECORD
-    (**Represents a call to the predefined procedure @code{ASSERT}.  *)
+    (**Represents a call to the predefined procedure @code{ASSERT} or
+       @code{HALT}.  *)
     (StatementDesc)
     predicate-: Expression;
+    (**If this is a @code{HALT}, then this field is @code{NIL}.  *)
     code-: LONGINT;
     disabled-: BOOLEAN;
   END;
@@ -2709,13 +2711,13 @@ PROCEDURE InitAssert (assert: Assert; sym: Symbol;
     assert. disabled := disabled;
   END InitAssert;
 
-PROCEDURE (b: Builder) NewAssert (sym: Symbol;
-                         arguments: ExpressionList; disabled: BOOLEAN): Assert;
+PROCEDURE (b: Builder) NewAssert (sym: Symbol; predicate, code: Expression;
+                                  disabled: BOOLEAN): Assert;
   VAR
     assert: Assert;
   BEGIN  (* ... FIXME: check arguments, add default arg *)
     NEW (assert);
-    InitAssert (assert, sym, arguments[0], defaultAssertCode, disabled);
+    InitAssert (assert, sym, predicate, defaultAssertCode, disabled);
     RETURN assert
   END NewAssert;
 
@@ -3969,7 +3971,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     dim: LONGINT;
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
-    receiver, delta: Expression;
+    receiver, delta, code: Expression;
     value: Language.Value;
  
   PROCEDURE MakeParameterCompatible (b: Builder; sym: Symbol;
@@ -4172,8 +4174,16 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       CASE design. decl(Sym.PredefProc). id OF
       (* predefined procedures *)
       | Predef.assert:
-        RETURN b. NewAssert (design. sym, arguments,
+        IF (LEN (arguments^) > 1) THEN
+          code := arguments[1];
+        ELSE
+          code := NIL;
+        END;
+        RETURN b. NewAssert (design. sym, arguments[0], code,
                   ~GetPragmaValue(b, StdPragmas.assertions, design. sym. pos));
+
+      | Predef.halt:
+        RETURN b. NewAssert (design. sym, NIL, arguments[0], FALSE);
 
       | Predef.copy:
         RETURN b. NewCopyString (design. sym, arguments[0], arguments[1],

@@ -93,30 +93,31 @@ VAR
 CONST
   (* predefined procedures and functions *)
   assert* = 0;                           (* ASSERT *)
-  len* = 1;                              (* LEN *)
-  size* = 2;                             (* SIZE *)
-  inc* = 3;                              (* INC *)
-  dec* = 4;                              (* DEC *)
-  incl* = 5;                             (* INCL *)
-  excl* = 6;                             (* EXCL *)
-  abs* = 7;                              (* ABS *)
-  ash* = 8;                              (* ASH *)
-  cap* = 9;                              (* CAP *)
-  long* = 10;                            (* LONG *)
-  short* = 11;                           (* SHORT *)
-  chr* = 12;                             (* CHR *)
-  entier* = 13;                          (* ENTIER *)
-  odd* = 14;                             (* ODD *)
-  ord* = 15;                             (* ORD *)
-  max* = 16;                             (* MAX *)
-  min* = 17;                             (* MIN *)
-  new* = 18;                             (* NEW *)
-  copy* = 19;                            (* COPY *)
+  halt* = 1;                             (* HALT *)
+  len* = 2;                              (* LEN *)
+  size* = 3;                             (* SIZE *)
+  inc* = 4;                              (* INC *)
+  dec* = 5;                              (* DEC *)
+  incl* = 6;                             (* INCL *)
+  excl* = 7;                             (* EXCL *)
+  abs* = 8;                              (* ABS *)
+  ash* = 9;                              (* ASH *)
+  cap* = 10;                             (* CAP *)
+  long* = 11;                            (* LONG *)
+  short* = 12;                           (* SHORT *)
+  chr* = 13;                             (* CHR *)
+  entier* = 14;                          (* ENTIER *)
+  odd* = 15;                             (* ODD *)
+  ord* = 16;                             (* ORD *)
+  max* = 17;                             (* MAX *)
+  min* = 18;                             (* MIN *)
+  new* = 19;                             (* NEW *)
+  copy* = 20;                            (* COPY *)
 
-  adr* = 20;                             (* SYSTEM.ADR *)
-  lsh* = 21;                             (* SYSTEM.LSH *)
-  move* = 22;                            (* SYSTEM.MOVE *)
-  val* = 23;                             (* SYSTEM.VAL *)
+  adr* = 21;                             (* SYSTEM.ADR *)
+  lsh* = 22;                             (* SYSTEM.LSH *)
+  move* = 23;                            (* SYSTEM.MOVE *)
+  val* = 24;                             (* SYSTEM.VAL *)
   
   
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
@@ -237,6 +238,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
                          NIL, NIL);
     
     PredefProc (stb, module, assert, "ASSERT", 1, 2);
+    PredefProc (stb, module, halt, "HALT", 1, 1);
     PredefProc (stb, module, len, "LEN", 1, 2);
     PredefProc (stb, module, size, "SIZE", 1, 1);
     PredefProc (stb, module, inc, "INC", 1, 2);

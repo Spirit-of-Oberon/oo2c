@@ -215,5 +215,6 @@ PROCEDURE ErrorFailedWith* (mid: Module; pos: LONGINT; typeTag: Struct);
 PROCEDURE ErrorFailedTypeAssert* (mid: Module; pos: LONGINT);
 PROCEDURE ErrorFailedFunction* (mid: Module; pos: LONGINT);
 PROCEDURE ErrorAssertionFailed* (mid: Module; pos: LONGINT; code: LONGINT);
+PROCEDURE Halt* (code: LONGINT);
 
 END RT0.

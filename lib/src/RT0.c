@@ -160,6 +160,10 @@ void RT0__ErrorAssertionFailed (RT0__Module mid, OOC_CHARPOS pos,
   _runtime_error(s, mid, pos);
 }
 
+void RT0__Halt (OOC_INT32 code) {
+  exit(code);
+}
+
 void RT0_init() {
   PS(RT0__boolean , "BOOLEAN",  RT0__strBoolean , sizeof(OOC_BOOLEAN));
   PS(RT0__char    , "CHAR",     RT0__strChar    , sizeof(OOC_CHAR8));

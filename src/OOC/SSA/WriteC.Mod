@@ -23,7 +23,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 IMPORT
   IntStr, Out, StdChannels, Strings, StringSearch,
   ADT:Object, ADT:String, ADT:Dictionary, 
-  LString := Language:String, OOC:Config, Sym := OOC:SymbolTable,
+  LString := Language:String, Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
@@ -835,8 +835,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     END CmpString;
   
   PROCEDURE MoveBlock (instr: SSA.Instr);
-    VAR
-      source, dest: LONGINT;
     BEGIN
       w. Newline;
       w. WriteString ("_move_block(");
@@ -1161,6 +1159,11 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         
       | Opcode.assert:
         Assert (instr);
+      | Opcode.halt:
+        w. Newline;
+        w. WriteString ("_halt(");
+        w. Ref (instr. opndList. nextOpnd);
+        w. WriteString (");")
       | Opcode.checkIndex:
         CheckIndex (instr);
       | Opcode.checkPointer:
