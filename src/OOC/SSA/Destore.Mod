@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:Destore;
 (*  Converts reads from/writes to memory into local values.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -757,25 +757,29 @@ PROCEDURE (s: State) Transform*;
         allTheSame := TRUE;
         haveUnknownValue := FALSE;
         opnd := dgate.NthOpnd(2);
-        firstValue := NormValue(opnd);
-        WHILE (opnd # NIL) DO
-          value := NormValue(opnd);
-          IF (value # firstValue) THEN
-            allTheSame := FALSE;
-          END;
-          IF UnknownValue(value) THEN
-            haveUnknownValue := TRUE;
-          END;
-          opnd := opnd.nextOpnd;
-        END;
-        
-        IF allTheSame THEN
-          RETURN firstValue;
-        ELSIF haveUnknownValue THEN
+        IF (opnd = NIL) THEN  (* LOOP without any exits *)
           RETURN select.GetResultStore();
         ELSE
-          (* pass through collected values *)          
-          RETURN dgate.GetResultClass(Result.dgatePlaceholder);
+          firstValue := NormValue(opnd);
+          WHILE (opnd # NIL) DO
+            value := NormValue(opnd);
+            IF (value # firstValue) THEN
+              allTheSame := FALSE;
+            END;
+            IF UnknownValue(value) THEN
+              haveUnknownValue := TRUE;
+            END;
+            opnd := opnd.nextOpnd;
+          END;
+          
+          IF allTheSame THEN
+            RETURN firstValue;
+          ELSIF haveUnknownValue THEN
+            RETURN select.GetResultStore();
+          ELSE
+            (* pass through collected values *)          
+            RETURN dgate.GetResultClass(Result.dgatePlaceholder);
+          END;
         END;
       END;
     END ComputeReplacement;

@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; procvar7">-->
+  select ="&SetupTestCasesWithOut; loop14">-->
 
   &TestSetupWithOut;
     
@@ -275,6 +275,11 @@
     <test id="loop13" type="accept" file="HOTLoop13.Mod">
       Empty <code>LOOP-END</code>.  This should not force the
       <em>compiler</em> into an endless loop ;-)
+    </test>
+    <test id="loop14" type="accept" file="HOTLoop14.Mod">
+      <code>LOOP</code> without <code>EXIT</code>, but with an
+      assignment that is referenced outside the loop.  This caused
+      <code>OOC:SSA:Destore</code> to crash.
     </test>
  
     
