@@ -15,7 +15,8 @@ DOC_SUBDIRS=$(subst -,/,$(DOC_TARGETS))
 TEST_SETUP=$(OOC_DEV_ROOT)/$(TEST_BASE)/test-setup.xml
 TEST_REPORT=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.xml
 TEST_SUMMARY=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.html
-TEST_WORKING_DIR=$(OOC_DEV_ROOT)/$(TEST_BASE)/wd
+TEST_WORKING_DIR=$(OOC_DEV_ROOT)/$(TEST_BASE)
+TEST_TEMP_DIR=$(TEST_WORKING_DIR)/wd
 
 # TEST_CREATE_SUMMARY: This command creates a HTML summary of a from an
 # XML report document.
@@ -79,12 +80,12 @@ doc:
 
 test1-setup:
 	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
-	$(OOC) -MOv $(TEST_DRIVER)
+	cd $(OOC_DEV_ROOT) && $(OOC) -MOv $(TEST_DRIVER)
 ifdef TEST_PROCESSOR
-	$(OOC) -MOv $(TEST_PROCESSOR)
+	cd $(OOC_DEV_ROOT) && $(OOC) -MOv $(TEST_PROCESSOR)
 endif
-	$(RM_R) $(TEST_WORKING_DIR)
-	$(MKDIR) $(TEST_WORKING_DIR)
+	$(RM_R) $(TEST_TEMP_DIR)
+	$(MKDIR) $(TEST_TEMP_DIR)
 
 test1-process: test1-setup
 	cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT)
@@ -101,7 +102,7 @@ ifdef TEST_PROCESSOR
 	$(RM) $(OOC_DEV_ROOT)/$(TEST_PROCESSOR)
 endif
 	$(RM) $(TEST_REPORT) $(TEST_SUMMARY)
-	$(RM_R) $(TEST_WORKING_DIR)
+	$(RM_R) $(TEST_TEMP_DIR)
 
 # Change ".test-clean" tag to "Makefile", thus call the test makefile which
 # in turn recalls this makefile with target test1-clean.
