@@ -1,7 +1,7 @@
 MODULE OOC:Auxiliary:ParseModule;
 
 IMPORT
-  Msg, IO, URI,
+  IO, URI,
   OOC:Config, OOC:Config:Pragmas, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
@@ -39,7 +39,6 @@ RAISES IO.Error;
    @end postcond
    *)
   VAR
-    res: Msg.Msg;
     inputBuffer: InputBuffer.Buffer;
     scannerBuilder: BasicList.Builder;
     astBuilder: ExtTree.Builder;
@@ -56,7 +55,6 @@ RAISES IO.Error;
       uri := m. GetURI (Repository.modModuleSource, TRUE);
       uri. GetString (uriStr);
       errList := Error.NewList (uriStr);
-      errList. Append (res)
     ELSE
       errList := inputBuffer. errList;
       scannerBuilder := BasicList.New (inputBuffer, TRUE);
