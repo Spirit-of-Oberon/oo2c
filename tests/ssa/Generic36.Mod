@@ -3,13 +3,13 @@ MODULE Generic36;
 IMPORT G:=Generic1;
 
 TYPE
-  A*<T: G.Object> = POINTER TO ADesc<T>;
-  ADesc*<T: G.Object> = RECORD
+  A*(T: G.Object) = POINTER TO ADesc(T);
+  ADesc*(T: G.Object) = RECORD
     x: T;
   END;
-  B*<T: G.Object> = POINTER TO BDesc<T>;
-  BDesc*<T: G.Object> = RECORD
-    (ADesc<T>)
+  B*(T: G.Object) = POINTER TO BDesc(T);
+  BDesc*(T: G.Object) = RECORD
+    (ADesc(T))
   END;
 
 VAR

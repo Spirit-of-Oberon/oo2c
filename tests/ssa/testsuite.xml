@@ -2030,15 +2030,15 @@
         msg="Undeclared identifier"/>
     <reject-info id="generic7" pos="x: %B"
         msg="Undeclared identifier"/>
-    <reject-info id="generic8" pos="%R&lt;&gt;"
+    <reject-info id="generic8" pos="%R()"
         msg="This is not a parametric type"/>
-    <reject-info id="generic9" pos="%R&lt;&gt;"
+    <reject-info id="generic9" pos="%R()"
         msg="Too few type arguments"/>
     <reject-info id="generic10" pos="G.Object, %G.Object"
         msg="Too many type arguments"/>
-    <reject-info id="generic11" pos="R&lt;%G.Object&gt;"
+    <reject-info id="generic11" pos="R(%G.Object)"
         msg="This is not an extension of the type bound"/>
-    <reject-info id="generic12" pos="R1&lt;%C&gt;"
+    <reject-info id="generic12" pos="R1(%C)"
         msg="This is not an extension of the type bound"/>
     <reject-info id="generic13" pos="POINTER TO %B"
         msg="Illegal pointer base type"/>

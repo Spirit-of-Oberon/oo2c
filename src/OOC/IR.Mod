@@ -6165,6 +6165,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
             (LEN(arguments^) = 1) & (arguments[0] IS TypeRef) THEN
         RETURN b.NewTypeGuard(arguments[0]. sym, design,
                               arguments[0](TypeRef));
+      ELSIF (design.type = b.typeType) THEN
+        RETURN b.NewQualType(design, arguments, endOfArgsSym);
       ELSIF ~(design.type.Deparam() IS Sym.FormalPars) THEN
         RETURN b. ErrExpr (notProcedure, design. sym);
       ELSE

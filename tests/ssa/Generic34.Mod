@@ -3,14 +3,14 @@ MODULE Generic34;
 IMPORT G:=Generic1;
 
 TYPE
-  A*<T: G.Object> = RECORD
+  A*(T: G.Object) = RECORD
   END;
-  B*<T: G.Object> = RECORD
-    (A<T>)
+  B*(T: G.Object) = RECORD
+    (A(T))
   END;
 
 VAR
-  br: B<G.A1>;
+  br: B(G.A1);
   
 PROCEDURE (VAR a: A) ProcA*(arg: A.T);
   BEGIN

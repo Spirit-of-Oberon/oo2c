@@ -3,15 +3,15 @@ MODULE Generic32;
 IMPORT G:=Generic1;
 
 TYPE
-  A*<T: G.Object> = RECORD
+  A*(T: G.Object) = RECORD
   END;
-  B*<T: G.Object> = RECORD
-    (A<T>)
+  B*(T: G.Object) = RECORD
+    (A(T))
   END;
 
 VAR
-  ar: A<G.Object>;
-  br: B<G.Object>;
+  ar: A(G.Object);
+  br: B(G.Object);
   
 PROCEDURE (VAR a: A) ProcA*(arg: A.T);
   BEGIN

@@ -3,9 +3,9 @@ MODULE Generic9;
 IMPORT G := Generic1;
   
 TYPE
-  R*<B: G.Object> = RECORD x-: B END;
+  R*(B: G.Object) = RECORD x-: B END;
 
 VAR
-  x*: R<>;
+  x*: R();
 
 END Generic9.

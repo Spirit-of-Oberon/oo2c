@@ -3,12 +3,12 @@ MODULE Generic30;
 IMPORT G:=Generic1;
 
 TYPE
-  A*<T: G.Object> = POINTER TO ADesc<T>;
-  ADesc*<T: G.Object> = RECORD
+  A*(T: G.Object) = POINTER TO ADesc(T);
+  ADesc*(T: G.Object) = RECORD
   END;
 
 VAR
-  ap: A<G.A1>;
+  ap: A(G.A1);
   
 PROCEDURE (a: A) ProcA*(arg: ADesc.T);
   BEGIN

@@ -19,15 +19,15 @@ TYPE
   END;
   
 TYPE
-  B*<Base: A1> = POINTER TO BDesc<Base>;
-  BDesc*<Base: A1> = RECORD 
+  B*(Base: A1) = POINTER TO BDesc(Base);
+  BDesc*(Base: A1) = RECORD 
     x: Base;
   END;
 
 VAR
   b0-: B;
-  b1-: B<A1>;
-  b2-: B<A2>;
+  b1-: B(A1);
+  b2-: B(A2);
 
 PROCEDURE (obj: Object) Id*(): LONGINT;
   BEGIN

@@ -4,6 +4,6 @@ TYPE
   R = RECORD END;
 
 VAR
-  x*: R<>;
+  x*: R();
 
 END Generic8.

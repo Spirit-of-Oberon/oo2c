@@ -3,10 +3,10 @@ MODULE Generic39;
 IMPORT G:=Generic1;
   
 TYPE
-  List*<E: G.Object> = POINTER TO ListDesc<E>;
-  ListDesc<E: G.Object> = RECORD
+  List*(E: G.Object) = POINTER TO ListDesc(E);
+  ListDesc(E: G.Object) = RECORD
     (G.ObjectDesc)
-    next: List<E>;
+    next: List(E);
     data: E;
   END;
 

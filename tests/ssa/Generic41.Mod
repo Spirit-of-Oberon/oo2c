@@ -3,14 +3,14 @@ MODULE Generic41;
 IMPORT G:=Generic1;
   
 TYPE
-  List*<E: G.Object> = POINTER TO ListDesc<E>;
-  ListDesc<E: G.Object> = RECORD
+  List*(E: G.Object) = POINTER TO ListDesc(E);
+  ListDesc(E: G.Object) = RECORD
     (G.ObjectDesc)
     x-: E;
   END;
-  AnotherList*<E: G.Object> = POINTER TO AnotherListDesc<E>;
-  AnotherListDesc<E: G.Object> = RECORD
-    (ListDesc<E>)
+  AnotherList*(E: G.Object) = POINTER TO AnotherListDesc(E);
+  AnotherListDesc(E: G.Object) = RECORD
+    (ListDesc(E))
   END;
 
 PROCEDURE (l: List) INIT*(a: INTEGER);
@@ -24,8 +24,8 @@ PROCEDURE (al: AnotherList) INIT*(a, b: INTEGER);
 
 PROCEDURE P*();
   VAR
-    l1: List<G.A1>;
-    l2: AnotherList<G.A1>;
+    l1: List(G.A1);
+    l2: AnotherList(G.A1);
   BEGIN
     NEW(l1);
     l1.INIT(12);

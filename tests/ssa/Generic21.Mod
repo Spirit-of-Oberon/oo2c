@@ -4,17 +4,17 @@ IMPORT G:=Generic1;
 
 TYPE
   A* = G.Object;
-  P1*<T: G.Object> = T;
-  B* = P1<G.Object>;
-  P2*<T: G.Object> = P1<T>;
-  C* = P2<G.Object>;
+  P1*(T: G.Object) = T;
+  B* = P1(G.Object);
+  P2*(T: G.Object) = P1(T);
+  C* = P2(G.Object);
 
 PROCEDURE P*(o1: G.Object; a1: G.A1);
   VAR
     o2: A;
-    o3: P1<G.Object>;
+    o3: P1(G.Object);
     o4: B;
-    o5: P2<G.Object>;
+    o5: P2(G.Object);
     o6: C;
   BEGIN
     o2 := o1;

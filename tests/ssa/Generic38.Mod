@@ -3,8 +3,8 @@ MODULE Generic38;
 IMPORT G:=Generic1;
   
 TYPE
-  List*<E: G.Object> = POINTER TO ListDesc<E>;
-  ListDesc<E: G.Object> = RECORD
+  List*(E: G.Object) = POINTER TO ListDesc(E);
+  ListDesc(E: G.Object) = RECORD
     (G.ObjectDesc)
   END;
 
@@ -13,7 +13,7 @@ PROCEDURE (l: List) Get(i: LONGINT): ListDesc.E;
     RETURN NIL;
   END Get;
 
-PROCEDURE P*(l1: List<G.A1>; l2: List<List<G.A1>>);
+PROCEDURE P*(l1: List(G.A1); l2: List(List(G.A1)));
   VAR
     a1: G.A1;
   BEGIN

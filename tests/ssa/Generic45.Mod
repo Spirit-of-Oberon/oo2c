@@ -3,21 +3,21 @@ MODULE Generic45;
 IMPORT Out:=Out0, G:=Generic1;
   
 TYPE
-  List*<E: G.Object> = POINTER TO ListDesc<E>;
-  ListDesc<E: G.Object> = RECORD
+  List*(E: G.Object) = POINTER TO ListDesc(E);
+  ListDesc(E: G.Object) = RECORD
     (G.ObjectDesc)
     x-: E;
     a: INTEGER;
   END;
-  AnotherList*<E: G.Object> = POINTER TO AnotherListDesc<E>;
-  AnotherListDesc<E: G.Object> = RECORD
-    (ListDesc<E>)
+  AnotherList*(E: G.Object) = POINTER TO AnotherListDesc(E);
+  AnotherListDesc(E: G.Object) = RECORD
+    (ListDesc(E))
     b: INTEGER;
   END;
 
 VAR
-  l1: List<G.A1>;
-  l2: AnotherList<G.Object>;
+  l1: List(G.A1);
+  l2: AnotherList(G.Object);
 
 PROCEDURE (l: List) INIT*(a: INTEGER);
   BEGIN
@@ -32,8 +32,8 @@ PROCEDURE (al: AnotherList) INIT*(a, b: INTEGER);
 
 PROCEDURE Test*();
   BEGIN
-    l1 := NEW(List<G.A1>, 123);
-    l2 := NEW(AnotherList<G.Object>, 456, 789);
+    l1 := NEW(List(G.A1), 123);
+    l2 := NEW(AnotherList(G.Object), 456, 789);
 
     Out.Int(l1.a, 0); Out.Ln;
     Out.Int(l2.a, 0); Out.Ln;

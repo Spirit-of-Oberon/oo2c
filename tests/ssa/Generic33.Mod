@@ -3,11 +3,11 @@ MODULE Generic33;
 IMPORT G:=Generic1;
 
 TYPE
-  A*<T: G.Object> = RECORD
+  A*(T: G.Object) = RECORD
   END;
 
 VAR
-  ar: A<G.A1>;
+  ar: A(G.A1);
   
 PROCEDURE (VAR a: A) ProcA*(arg: A.T);
   BEGIN
