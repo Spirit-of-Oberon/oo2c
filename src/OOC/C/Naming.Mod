@@ -48,6 +48,11 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
         RETURN FALSE;
       END;
     END IsReservedName;
+
+  PROCEDURE IsInterfaceModule (module: Sym.Module): BOOLEAN;
+    BEGIN
+      RETURN (module. class = Sym.mcInterface);
+    END IsInterfaceModule;
   
   BEGIN
     relativeName := FALSE;
@@ -63,6 +68,11 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
       (* use relative names for record fields, as long as there are no
          collisions between a local field and one inherited from a
          base type *)
+      relativeName := TRUE;
+
+    ELSIF (decl IS Sym.ProcDecl) & IsInterfaceModule (decl. Module()) THEN
+      (* names of procedures declared in interface modules are not mangled
+         by default *)
       relativeName := TRUE;
     END;
     
