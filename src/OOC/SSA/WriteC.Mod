@@ -30,7 +30,7 @@ IMPORT
   OOC:IR, OOC:IR:VisitAll, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:CSE, OOC:SSA:Algebraic,
-  OOC:SSA:ConstProp, OOC:SSA:LoopRewrite, OOC:SSA:Stats,
+  OOC:SSA:ConstProp, OOC:SSA:LoopRewrite, OOC:SSA:PRE, OOC:SSA:Stats,
   OOC:SSA:Allocator, OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
   OOC:Make:TranslateToC;
 
@@ -1716,10 +1716,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         Out.String (":");
         Out.Ln;
         Out.Flush;
-        TRY
-          XML.Write (StdChannels.stdout, pb, TRUE);
-        CATCH IO.Error:
-        END;
+        Blocker.Write(StdChannels.stderr, pb);
         Out.Flush;
       END;
 
@@ -1864,7 +1861,11 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     IF enableLoopRewriting THEN
       LoopRewrite.Transform(pb);
       DeadCodeElimination.Transform(pb);
-      Write("loop-post", "constprop2-pre", TRUE);
+      Write("loop-post", "pared-pre", TRUE);
+      
+      PRE.Transform(pb);
+      DeadCodeElimination.Transform(pb);
+      Write("pared-post", "constprop2-pre", TRUE);
       
       ConstProp.Transform(pb);
       DeadCodeElimination.Transform(pb);
@@ -1878,8 +1879,6 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       DeadCodeElimination.Transform(pb);
       Write("cse2-post", "final", TRUE);
     END;
-    
-    (*Blocker.Write (StdChannels.stdout, pb);*)
     
     Fixup (pb, jmpbufMap);
     domRoot := Schedule.Schedule (pb);

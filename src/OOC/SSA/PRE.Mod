@@ -1,0 +1,310 @@
+(* 	$Id$	 *)
+MODULE OOC:SSA:PRE;
+(*  Partial redundancy elimination.
+    Copyright (C) 2003  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
+
+(**Note: The algorithm implemented by this module is @emph{very} experimental
+   and incomplete in the sense that it hoists expressions only over one level
+   of "select".  That is, it is only detected if an expression is partially
+   redundant with respect to the immediately preceding "select" instruction.
+   Partial redundancies in nested "select"s are not found.  *)
+
+IMPORT
+  ADT:ArrayList, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
+  OOC:SSA:Blocker;
+
+PROCEDURE GetSelect(collect: SSA.Instr): SSA.Instr;
+  VAR
+    use: SSA.Opnd;
+  BEGIN
+    use := collect.nextResult.useList;
+    WHILE (use # NIL) & (use.instr.opcode # Opcode.select) DO
+      use := use.nextUse;
+    END;
+    IF (use = NIL) THEN
+      RETURN NIL;
+    ELSE
+      RETURN use.instr;
+    END;
+  END GetSelect;
+
+PROCEDURE Transform* (pb: SSA.ProcBlock);
+  VAR
+    worklist, equivList: ArrayList.ArrayList;
+    instr, select, enter, h: SSA.Instr;
+    opnd: SSA.Opnd;
+    dd: Blocker.DependenceData;
+    i: LONGINT;
+    
+  PROCEDURE MigrateCandidates(collectOpnd: SSA.Opnd;
+                              anchor, undefValue: SSA.Instr);
+    VAR
+      use, opnd: SSA.Opnd;
+      instr, collect, select, new, equiv, sameInstr: SSA.Instr;
+      res, selectResult: SSA.Result;
+      
+    PROCEDURE Dominates(res: SSA.Result; instr: SSA.Instr): BOOLEAN;
+      BEGIN
+        RETURN TRUE(*dd.Dominates(res.instr, instr)*);
+      END Dominates;
+    
+    PROCEDURE GetSelectResult(select, collect: SSA.Instr;
+                              arg: SSA.Result): SSA.Result;
+      VAR
+        opnd, use: SSA.Opnd;
+        res: SSA.Result;
+      BEGIN
+        opnd := collect.opndList.nextOpnd;
+        WHILE (opnd # NIL) & (opnd.arg # arg) DO
+          opnd := opnd.nextOpnd;
+        END;
+        IF (opnd = NIL) THEN
+          RETURN NIL;
+        ELSE
+          res := select.NthResult(opnd.OpndIndex()+1);
+          use := res.useList;
+          WHILE (use # NIL) DO
+            IF (use.instr.opcode = Opcode.equiv) & (use.instr.opndList = use) &
+               (use.instr.NthArg(2) = collect) THEN
+              (* if there is already an "equiv" entry for the result of the
+                 "select" instruction, then teturn the constructed instruction
+                 that is other side of the equivalence *)
+              RETURN use.instr.NthArg(1);
+            END;
+            use := use.nextUse;
+          END;
+          RETURN res;
+        END;
+      END GetSelectResult;
+    
+    BEGIN
+      collect := collectOpnd.instr;
+      select := GetSelect(collect);
+      
+      use := collectOpnd.arg.useList;
+      WHILE (use # NIL) DO
+        IF dd.SameRegion(collect, use.instr) &
+           (use.instr.opcode # Opcode.equiv) &
+           (use.instr.nextResult = NIL) &    (* only one result (no collect) *)
+           dd.Dominates(collect, use.instr) THEN  (* is in collect's region *)
+          instr := use.instr;
+
+          new := pb.AddInstr(instr.opcode, instr.subclass);
+          opnd := instr.opndList;
+          WHILE (opnd # NIL) DO
+            res := GetSelectResult(select, collect, opnd.arg);
+            IF (res # NIL) THEN
+              new.AddOpnd(res, opnd.class);
+              opnd := opnd.nextOpnd;
+            ELSIF ~Dominates(opnd.arg, select) THEN
+              ASSERT(new.useList = NIL);
+              pb.DeleteInstr(new);
+              new := NIL;
+              opnd := NIL;                 (* end loop *)
+            ELSE
+              new.AddOpnd(opnd.arg, opnd.class);
+              opnd := opnd.nextOpnd;
+            END;
+          END;
+          
+          IF (new # NIL) THEN
+            (* if we were able to create a to `instr' equivalent instruction
+               `new' after the select instruction: *)
+            sameInstr := dd.GetSameInstr(select, new);
+            IF (sameInstr # NIL) THEN  (* exists already, reuse old instr *)
+              ASSERT(new.useList = NIL);
+              pb.DeleteInstr(new);
+              new := sameInstr;
+            ELSE
+              dd.SetRegion(select, new);
+            END;
+            
+            selectResult := select.AddResultSubclass(Result.selectValue,
+                                                     instr.subclass);
+            opnd := select.opndList.nextOpnd;
+            WHILE (opnd # NIL) (*& (opnd.class = Opnd.arg)*) DO
+              opnd := opnd.nextOpnd;
+              ASSERT(opnd.arg.instr.opcode = Opcode.collect);
+              IF (opnd.arg.instr = collect) THEN
+                worklist.Append(collect.AddOpndFct(instr, Opnd.arg));
+              ELSE
+                opnd.arg.instr.AddOpnd(undefValue, Opnd.arg);
+              END;
+              opnd := opnd.nextOpnd;
+            END;
+            
+            equiv := pb.AddInstr(Opcode.equiv, Opcode.scNone);
+            equiv.AddOpnd(selectResult, Opnd.arg);
+            equiv.AddOpnd(new, Opnd.arg);
+            equiv.AddOpnd(collect, Opnd.arg);
+            dd.SetRegion(new, equiv);
+            anchor.AddOpnd(equiv, Opnd.arg);
+            
+            equivList.Append(equiv);
+          END;
+        END;
+        use := use.nextUse;
+      END;
+    END MigrateCandidates;
+
+  PROCEDURE ResolveEquiv(equiv: SSA.Instr);
+    VAR
+      collect, select, old, c, new, sameInstr: SSA.Instr;
+      arg, res: SSA.Result;
+      selOpnd, opnd, h: SSA.Opnd;
+      resultIndex: LONGINT;
+    BEGIN
+      ASSERT(equiv.opcode = Opcode.equiv);
+      ASSERT(equiv.useList.instr.opcode = Opcode.selectReturn);
+      
+      arg := equiv.NthArg(2);
+      collect := arg.instr;
+      select := GetSelect(collect);
+      res := equiv.opndList.nextOpnd.arg;
+      old := res.instr;
+      IF (old = select) THEN
+        (* the non-preferred value of the "equiv" has already been reduced
+           to a result of the "select": reuse this result, and discard our
+           own (by letting dead code elimination get rid of it) *)
+        equiv.opndList.arg.ReplaceUses(res);
+      ELSE
+        resultIndex := equiv.opndList.arg.ResultIndex();
+        
+        selOpnd := select.opndList.nextOpnd;
+        WHILE (selOpnd # NIL) DO
+          selOpnd := selOpnd.nextOpnd;
+          c := selOpnd.arg.instr;
+          ASSERT(c.opcode = Opcode.collect);
+          
+          IF (c # collect) THEN
+            new := pb.AddInstr(old.opcode, old.subclass);
+            opnd := old.opndList;
+            WHILE (opnd # NIL) DO
+              IF (opnd.arg.instr = select) THEN
+                h := c.NthOpnd(opnd.arg.ResultIndex()-1);
+                new.AddOpnd(h.arg, opnd.class);
+              ELSE
+                new.AddOpnd(opnd.arg, opnd.class);
+              END;
+              opnd := opnd.nextOpnd;
+            END;
+
+            sameInstr := dd.GetSameInstr(c, new);
+            IF (sameInstr # NIL) THEN  (* exists already, reuse old instr *)
+              ASSERT(new.useList = NIL);
+              pb.DeleteInstr(new);
+              new := sameInstr;
+            ELSE
+              dd.SetRegion(c, new);
+            END;
+            
+            opnd := c.NthOpnd(resultIndex-1);
+            opnd.ReplaceArg(new);
+          END;
+          
+          selOpnd := selOpnd.nextOpnd;
+        END;
+        
+        old.ReplaceUses(equiv.opndList.arg);
+      END;
+      ASSERT(equiv.useList.nextUse = NIL);
+      equiv.useList.DeleteOpnd();
+      ASSERT(equiv.useList = NIL);
+      pb.DeleteInstr(equiv);
+    END ResolveEquiv;
+
+  PROCEDURE OnlyUsedInEquiv(res: SSA.Result): BOOLEAN;
+    VAR
+      use: SSA.Opnd;
+    BEGIN
+      use := res.useList;
+      WHILE (use # NIL) DO
+        IF (use.instr.opcode # Opcode.equiv) THEN
+          RETURN FALSE;
+        END;
+        use := use.nextUse;
+      END;
+      RETURN TRUE;
+    END OnlyUsedInEquiv;
+  
+  BEGIN
+    dd := Blocker.GetDependenceData(pb);
+    Blocker.RemoveAntiDeps(pb);
+    
+    worklist := ArrayList.New(32);
+    equivList := ArrayList.New(32);
+    instr := pb.instrList;
+    WHILE (instr # NIL) DO
+      IF (instr.opcode = Opcode.collect) THEN
+        select := GetSelect(instr);
+        IF (select # NIL) THEN
+          opnd := instr.opndList.nextOpnd;
+          WHILE (opnd # NIL) DO
+            worklist.Append(opnd);
+            opnd := opnd.nextOpnd;
+          END;
+        END;
+      END;
+      instr := instr.nextInstr;
+    END;
+
+    enter := pb.GetEnter();
+    WHILE (worklist.size # 0) DO
+      opnd := worklist.array[worklist.size-1](SSA.Opnd);
+      worklist.Remove(worklist.size-1);
+      MigrateCandidates(opnd, pb.selectReturn, enter);
+    END;
+
+    (* There should be no need for a full fledged CSE here, because we try
+       above to fold instructions with same instructions as early as possible:
+       CSE.Transform(pb);  *)
+    
+    (* remove all "equiv" instructions where the newly added instruction has
+       not been merged by CSE with an existing one *)
+    FOR i := equivList.size-1 TO 0 BY -1 DO
+      instr := equivList.array[i](SSA.Instr);
+      h := instr.opndList.nextOpnd.arg.instr;
+      IF OnlyUsedInEquiv(h) THEN
+        (* get rid of the "equiv" as one of the last remaining uses of `h' *)
+        ASSERT(instr.useList.nextUse = NIL);
+        instr.useList.DeleteOpnd();
+        ASSERT(instr.useList = NIL);
+        pb.DeleteInstr(instr);
+
+        IF (h.useList = NIL) THEN
+          (* the instruction `h' we have put into the second operand has no use
+             beyond this "equiv" statement, so we can eliminate it again *)
+          pb.DeleteInstr(h);
+        END;
+        
+        equivList.Set(i, NIL);
+      END;
+    END;
+
+    (* resolve remaining "equiv" instructions *)
+    FOR i := 0 TO equivList.size-1 DO
+      IF (equivList.array[i] # NIL) THEN
+        (*Log.Msg("XXX ResolveEquiv");*)
+        ResolveEquiv(equivList.array[i](SSA.Instr));
+      END;
+    END;
+  END Transform;
+
+END OOC:SSA:PRE.
