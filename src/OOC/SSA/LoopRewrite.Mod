@@ -30,9 +30,13 @@ IMPORT
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 CONST
-  dangerous = TRUE;
-  (* Enable dangerous transformations that may change program behaviour.  *)
-
+  dangerous = FALSE;
+  (* Enable all dangerous transformations that may change program
+     behaviour.  *)
+  dangerousAdr = TRUE;
+  (* Enable all dangerous tranformations for address calculations only.  Has
+     no effect if `dangerous' is TRUE.  *)
+  
 (* Possible extension: Instead of Sum being a function of one
    induction variable, it could be extended to cover an arbitrary
    number of variables.  For this, (ce,ceFactor) needs to be
@@ -93,7 +97,7 @@ TYPE
        to the instruction that represents this value in the SSA form.  For all
        other values, this field is NIL.  *)
     id: LONGINT;
-    (* If `instr' is non-NIL, this is an unique identifier for the result.
+    (* If `atom' is non-NIL, this is an unique identifier for the result.
        It is used for normalization purposes.  *)
     replacementCandidate: BOOLEAN;
     (* If TRUE, then the instruction that corresponds to this sum is scheduled
@@ -203,7 +207,7 @@ PROCEDURE InitCycleElement(ce: CycleElement; ic: InductionCycle;
     ptr: CycleElement;
     i: LONGINT;
   BEGIN
-    InitSum(ce, res.subclass, NIL);
+    InitSum(ce, res.subclass, res);
 
     (* set sum to ce*1+0 *)
     ce.ce := ce;
@@ -706,12 +710,94 @@ PROCEDURE Flatten*(res: SSA.Result);
       END;
     END AddPLists;
   
+  
+  PROCEDURE MultProduct(a: Product; b: PList): PList;
+    VAR
+      i, j, la, lb, ia, ib: LONGINT;
+      p: PList;
+      f: Factors;
+    BEGIN
+      IF (b = zero) THEN
+        RETURN zero;
+      ELSIF (b = one) THEN
+        NEW(p);
+        p.size := 1;
+        NEW(p.prod, 1);
+        p.prod[0] := a;
+        RETURN p;
+      ELSE
+        NEW(p);
+        p.size := b.size;
+        NEW(p.prod, p.size);
+        FOR i := 0 TO p.size-1 DO
+          NEW(p.prod[i]);
+          
+          la := LEN(a.factors^);
+          lb := LEN(b.prod[i].factors^);
+          NEW(f, la+lb);
+          p.prod[i].factors := f;
+          p.prod[i].magnitude := b.prod[i].magnitude*a.magnitude;
+          
+          j := 0; ia := 0; ib := 0;
+          WHILE (ia # la) OR (ib # lb) DO
+            IF (ia # la) &
+               ((ib = lb) OR
+                (a.factors[ia].id <= b.prod[i].factors[ib].id)) THEN
+              f[j] := a.factors[ia]; INC(ia);
+            ELSE
+              f[j] := b.prod[i].factors[ib]; INC(ib);
+            END;
+            INC(j);
+          END;
+          ASSERT(j = LEN(f^));
+        END;
+        RETURN p;
+      END;
+    END MultProduct;
+  
   PROCEDURE AddSum(a, b: Sum; magnB: LONGINT): Sum;
   (* Calculate a+magnB*b.  Return NIL if a and b have different cycle
      heads.  *)
     VAR
       sum: Sum;
       subclass: Opcode.Subclass;
+
+    PROCEDURE UseCount(res: SSA.Result): LONGINT;
+      VAR
+        num: LONGINT;
+        use: SSA.Opnd;
+      BEGIN
+        num := 0;
+        use := res.useList;
+        WHILE (use # NIL) DO
+          INC(num);
+          use := use.nextUse;
+        END;
+        RETURN num;
+      END UseCount;
+
+    PROCEDURE MoveCE(a: Sum): Sum;
+      VAR
+        p: Product;
+        plist: PList;
+        b: Sum;
+      BEGIN
+        (* multiply `a.ce' with `a.ceFactor' *)
+        NEW(p);
+        p.magnitude := 1;
+        NEW(p.factors, 1);
+        p.factors[0] := a.ce;
+        plist := MultProduct(p, a.ceFactor);
+
+        (* add the product to `others' and zero `ceFactor' *)
+        NEW(b);
+        b^ := a^;
+        b.others := AddPLists(b.others, plist, 1);
+        b.ceFactor := zero;
+        b.ce := NIL;
+        RETURN b;
+      END MoveCE;
+    
     BEGIN
       ASSERT(a.subclass = b.subclass);
       subclass := a.subclass;
@@ -725,9 +811,11 @@ PROCEDURE Flatten*(res: SSA.Result);
       ELSIF (a.ce = b.ce) THEN
         sum.ce := a.ce;
       ELSE
-        (* oops, can't do this as long as `Sum' has only room for one
-           induction variable *)
-        RETURN NIL;
+        IF (UseCount(b.ce.res) > UseCount(a.ce.res)) THEN
+          RETURN AddSum(MoveCE(a), b, magnB);
+        ELSE
+          RETURN AddSum(a, MoveCE(b), magnB);
+        END;
       END;
       sum.ceFactor := AddPLists(a.ceFactor, b.ceFactor, magnB);
       sum.loopInvariant := AddPLists(a.loopInvariant, b.loopInvariant, magnB);
@@ -744,51 +832,6 @@ PROCEDURE Flatten*(res: SSA.Result);
       VAR
         i: LONGINT;
         sum: Sum;
-
-      PROCEDURE MultProduct(a: Product; b: PList): PList;
-        VAR
-          i, j, la, lb, ia, ib: LONGINT;
-          p: PList;
-          f: Factors;
-        BEGIN
-          IF (b = zero) THEN
-            RETURN zero;
-          ELSIF (b = one) THEN
-            NEW(p);
-            p.size := 1;
-            NEW(p.prod, 1);
-            p.prod[0] := a;
-            RETURN p;
-          ELSE
-            NEW(p);
-            p.size := b.size;
-            NEW(p.prod, p.size);
-            FOR i := 0 TO p.size-1 DO
-              NEW(p.prod[i]);
-              
-              la := LEN(a.factors^);
-              lb := LEN(b.prod[i].factors^);
-              NEW(f, la+lb);
-              p.prod[i].factors := f;
-              p.prod[i].magnitude := b.prod[i].magnitude*a.magnitude;
-
-              j := 0; ia := 0; ib := 0;
-              WHILE (ia # la) OR (ib # lb) DO
-                IF (ia # la) &
-                   ((ib = lb) OR
-                    (a.factors[ia].id <= b.prod[i].factors[ib].id)) THEN
-                  f[j] := a.factors[ia]; INC(ia);
-                ELSE
-                  f[j] := b.prod[i].factors[ib]; INC(ib);
-                END;
-                INC(j);
-              END;
-              ASSERT(j = LEN(f^));
-            END;
-            RETURN p;
-          END;
-        END MultProduct;
-      
       BEGIN
         NEW(sum);
         InitSum(sum, subclass, NIL);
@@ -1396,7 +1439,9 @@ PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
             END;
           END;
           
-          IF dangerous & (new # NIL) THEN
+          IF (dangerous OR
+              dangerousAdr & (rc.origin.subclass = Opcode.scAddress)) &
+             (new # NIL) THEN
             IF (instr.info = NIL) THEN
               instr.info := NewSum(rc.origin.subclass, NIL);
             END;
