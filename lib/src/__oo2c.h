@@ -160,7 +160,7 @@ extern OOC_INT32 _cmp32(const OOC_CHAR32* l, const OOC_CHAR32* r);
 
 /* SYSTEM.VAL */
 #define _type_cast(_destType, _sourceType, _x) \
-  ({ _sourceType _v = (_sourceType)_x; *(_destType*)&_v; })
+  ({ union {_sourceType s; _destType d;} _v; _v.s=_x; _v.d; })
 #define _type_cast_fast(_destType, _sourceType, _x) \
   (_destType)(_sourceType)_x
 
