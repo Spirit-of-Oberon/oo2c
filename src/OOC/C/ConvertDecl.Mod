@@ -34,6 +34,7 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
     fct: DeclWriter.Function;
     struct: DeclWriter.Struct;
     base: DeclWriter.Type;
+    name: String.String;
 
   PROCEDURE ConvertParam (fct: DeclWriter.Function; param: Sym.VarDecl);
     VAR
@@ -98,6 +99,9 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
       | type: Sym.TypeName DO
         WITH resolvedType: Sym.PredefType DO
           RETURN ConvertType (w, resolvedType, resolvedType);
+        | resolvedType: Sym.Record DO
+          RETURN w. NewTypeRef (DeclWriter.refStruct,
+                                Naming.NameOfType (resolvedType));
         ELSE
           RETURN w. NewTypeRef (DeclWriter.refTypedef,
                                 Naming.NameOfType (resolvedType));
@@ -135,8 +139,13 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
           
       | type: Sym.Record DO
         ASSERT (type. baseType = NIL);
-        
-        struct := w. NewStruct (type. isUnion);
+
+        IF (type. namingDecl = NIL) THEN
+          name := NIL;
+        ELSE
+          name := Naming.NameOfDeclaration (type. namingDecl);
+        END;
+        struct := w. NewStruct (type. isUnion, name);
         ptr := type. nestedItems;
         WHILE (ptr # NIL) DO
           WITH ptr: Sym.FieldDecl DO

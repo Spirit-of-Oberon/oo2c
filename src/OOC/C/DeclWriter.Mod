@@ -151,6 +151,7 @@ TYPE
   StructDesc = RECORD
     (TypeDesc)
     isUnion: BOOLEAN;
+    name: String.String;
     members: ArrayList.ArrayList;        (* of Declaration *)
   END;
 
@@ -727,18 +728,19 @@ PROCEDURE (fct: Function) WriteRight (w: Writer);
 
 (* -------- *)
 
-PROCEDURE InitStruct (struct: Struct; isUnion: BOOLEAN);
+PROCEDURE InitStruct (struct: Struct; isUnion: BOOLEAN; name: String.String);
   BEGIN
     struct. isUnion := isUnion;
     struct. members := ArrayList.New (4);
+    struct. name := name;
   END InitStruct;
 
-PROCEDURE (w: Writer) NewStruct* (isUnion: BOOLEAN): Struct;
+PROCEDURE (w: Writer) NewStruct* (isUnion: BOOLEAN; name: String.String): Struct;
   VAR
     struct: Struct;
   BEGIN
     NEW (struct);
-    InitStruct (struct, isUnion);
+    InitStruct (struct, isUnion, name);
     RETURN struct
   END NewStruct;
 
@@ -758,10 +760,15 @@ PROCEDURE (struct: Struct) WriteLeft (w: Writer);
     i: LONGINT;
   BEGIN
     IF struct. isUnion THEN
-      w. WriteString ("union {");
+      w. WriteString ("union");
     ELSE
-      w. WriteString ("struct {");
+      w. WriteString ("struct");
     END;
+    IF (struct. name # NIL) THEN
+      w. WriteString (" ");
+      w. WriteString (struct. name. array^);
+    END;
+    w. WriteString (" {");
     w. Indent (1);
     FOR i := 0 TO struct. members. Size()-1 DO
       w. Newline;
