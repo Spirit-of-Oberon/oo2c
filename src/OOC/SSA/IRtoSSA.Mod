@@ -156,9 +156,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       
       (* get type of the value we are interested in *)
       type := value.type;
-      WHILE (type IS Sym.Array) DO
-        type := type(Sym.Array).elementType;
+      WHILE TR.IsArrayType(type) DO
+        type := TR.ArrayElementType(type);
       END;
+      type := type.Deparam();
       
       size := pb.AddInstr (Opcode.multiply, Opcode.scAddress);
       size.AddOpnd(FixAddress(length), Opnd.arg);
