@@ -321,7 +321,7 @@ PROCEDURE FormatForEng* (VAR s: ARRAY OF CHAR);
   BEGIN
     (* find out how large the exponent is, and how many digits are in the
        fractional part *)
-    fract := 0; exp := 0;
+    fract := 0; exp := 0; posExp := 0;
     IF CharClass.IsNumeric (s[1]) THEN   (* skip for NaN, Inf *)
       i := 0; d := 0;
       WHILE (s[i] # "E") DO
@@ -338,7 +338,7 @@ PROCEDURE FormatForEng* (VAR s: ARRAY OF CHAR);
         INC (i);
       END;
     END;
-
+    
     offset := exp MOD 3;
     IF (offset # 0) THEN
       WHILE (fract < offset) DO        (* need more zeros before "E" *)

@@ -27,6 +27,8 @@ void OS_Files__ErrorContextDesc_GetTemplate(OS_Files__ErrorContext context, Msg_
     str = "File in use";
   } else if (res == OS_Files__noSuchFile) {
     str = "File does not exist";
+  } else {
+    str = "Unknown error code";
   }
 
   _copy_8to16(str, templ, templ_0d);

@@ -3038,6 +3038,7 @@ PROCEDURE (p: Parser) ParseDocument*;
         END;
         CheckChar (">");
         
+        externalSubset := NIL;
         IF (public # NIL) OR (system # NIL) THEN
           IF p. followExternalRef THEN
             externalSubset := dtd. NewExternalDTD (public, system, baseURI);
@@ -3055,8 +3056,6 @@ PROCEDURE (p: Parser) ParseDocument*;
           ELSE
             SkippedEntity (NIL)
           END
-        ELSE
-          externalSubset := NIL;
         END;
         
         (* for every attribute declaration, expand its default value *)
