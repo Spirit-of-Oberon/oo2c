@@ -945,7 +945,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       IF (assert. predicate = NIL) THEN
         instr := AddException (pb, assert. sym, Opcode.halt, Opcode.scNone);
         instr. AddOpnd (pb. GetConstInt (assert. code), Opnd.arg);
-      ELSE
+      ELSIF ~assert.disabled THEN
         predicate := Expression (assert. predicate);
         instr := AddException (pb, assert. sym, Opcode.assert, Opcode.scNone);
         instr. AddOpnd (predicate, Opnd.arg);
