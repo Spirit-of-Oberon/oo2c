@@ -48,7 +48,11 @@
 #include <unistd.h>
 #elif HAVE_IO_H
 #include <io.h>
+#endif
+
+#ifdef __MINGW32__
 typedef int ssize_t;
+#include <fcntl.h>
 #endif
 
 #ifndef SSIZE_MAX
@@ -289,6 +293,7 @@ int PosixFileDescr__ReaderDesc_Available(PosixFileDescr__Reader r) {
       return res;
     }
   } else {
+#ifndef __MINGW32__
     /* something else, like terminal or socket */
     fd_set set;
     struct timeval timeout;
@@ -306,6 +311,9 @@ int PosixFileDescr__ReaderDesc_Available(PosixFileDescr__Reader r) {
        res== 0: no input availbale
        res== 1: input available from channel */
     return res;
+#else
+    return 0;
+#endif
   }
 }
 
@@ -931,6 +939,10 @@ void PosixFileDescr__Init(PosixFileDescr__Channel ch, PosixFileDescr__FileDescri
 }
 
 void PosixFileDescr__Truncate(PosixFileDescr__Writer w, int newLength) {
+#ifdef __MINGW32__
+  /* ftruncate not in MINGW32 API. Return error. */
+  w->res = get_error(Channel__invalidChannel, 0);
+#else
   int res;
 
   if (w->res == Channel__done) {
@@ -957,10 +969,17 @@ void PosixFileDescr__Truncate(PosixFileDescr__Writer w, int newLength) {
       }
     }
   }
+#endif
 }
 
 void OOC_PosixFileDescr_init(void) {
   PosixFileDescr__errorContext = RT0__NewObject(OOC_TYPE_DESCR(PosixFileDescr,ErrorContextDesc));
   Msg__InitContext((Msg__Context)PosixFileDescr__errorContext, 
 		   (const OOC_CHAR8*)"OOC:Core:PosixFileDescr", 24);
+#ifdef __MINGW32__
+  /* set standard I/O channels to binary mode */
+  setmode(fileno(stdin), O_BINARY);
+  setmode(fileno(stdout), O_BINARY);
+  setmode(fileno(stderr), O_BINARY);
+#endif 
 }
