@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic71">-->
+  select ="&SetupTestCasesWithOut; assign15 assign16">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5 generic1 generic41 generic45">-->
@@ -70,6 +70,12 @@
     </test>
     <test id="assign14" type="reject" file="Assign14.Mod">
       Procedure assignment: number of arguments differ.
+    </test>
+    <test id="assign15" type="reject" file="Assign15.Mod">
+      Invalid assignment to module name.
+    </test>
+    <test id="assign16" type="reject" file="Assign16.Mod">
+      Invalid assignment to type name.
     </test>
     
     <test id="return1" type="reject" file="Return1.Mod">
@@ -1864,6 +1870,8 @@
     <reject-info id="assign12" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
     <reject-info id="assign13" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
     <reject-info id="assign14" pos='p %:= P;' msg="Expression not compatible with variable type `PROCEDURE'"/>
+    <reject-info id="assign15" pos='%Out :=' msg="This must be a variable"/>
+    <reject-info id="assign16" pos='%Alp :=' msg="This must be a variable"/>
         
     <reject-info id="return1" pos="RETURN %123" msg="RETURN must not provide a result value"/>
     <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>

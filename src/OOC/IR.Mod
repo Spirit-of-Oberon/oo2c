@@ -1517,6 +1517,8 @@ PROCEDURE (b: Builder) SetNameToType(type: Sym.Type);
         name := "TYPE_VAR";
       | type: Sym.PredefType DO
         name := "unknown";
+      ELSE  (* for example, a module or the type representing types *)
+        name := "unknown";
       END;
     END;
     b.lastError.SetStringAttrib("name", Msg.GetStringPtr(name));
