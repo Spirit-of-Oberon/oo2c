@@ -209,7 +209,7 @@ PROCEDURE RealToFixed* (real: LONGREAL; place: INTEGER;
         IF (s[suffix] > "5") OR
            (s[suffix] = "5") &
             (NotZero (s, suffix+1) OR
-             (point+place # 0) & (ORD (s[point+place]) MOD 2 = 1)) THEN
+             (point+place # 0) & ODD (ORD (s[point+place]))) THEN
           (* we are rounding up *)
           i := point+place;
           WHILE (s[i] = "9") DO s[i] := "0"; DEC (i); END;

@@ -93,13 +93,14 @@ CONST
   long* = 6;                             (* LONG *)
   short* = 7;                            (* SHORT *)
   chr* = 8;                              (* CHR *)
-  ord* = 9;                              (* ORD *)
-  max* = 10;                             (* MAX *)
-  min* = 11;                             (* MIN *)
-  new* = 12;                             (* NEW *)
-  copy* = 13;                            (* COPY *)
+  odd* = 9;                              (* ODD *)
+  ord* = 10;                             (* ORD *)
+  max* = 11;                             (* MAX *)
+  min* = 12;                             (* MIN *)
+  new* = 13;                             (* NEW *)
+  copy* = 14;                            (* COPY *)
 
-  adr* = 14;                             (* SYSTEM.ADR *)
+  adr* = 15;                             (* SYSTEM.ADR *)
   
 VAR
   i: LONGINT;
@@ -225,6 +226,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (stb, module, long, "LONG", 1, 1);
     PredefProc (stb, module, short, "SHORT", 1, 1);
     PredefProc (stb, module, chr, "CHR", 1, 1);
+    PredefProc (stb, module, odd, "ODD", 1, 1);
     PredefProc (stb, module, ord, "ORD", 1, 1);
     PredefProc (stb, module, max, "MAX", 1, 1);
     PredefProc (stb, module, min, "MIN", 1, 1);

@@ -226,12 +226,19 @@ PROCEDURE (v: Visitor) VisitNot* (neg: IR.Not);
     v. w. EndTag;  (* not *)
   END VisitNot;
 
-PROCEDURE (v: Visitor) VisitCap* (neg: IR.Cap);
+PROCEDURE (v: Visitor) VisitCap* (cap: IR.Cap);
   BEGIN
     v. w. StartTag ("cap", FALSE);
-    neg. operand. Accept (v);
+    cap. operand. Accept (v);
     v. w. EndTag;  (* cap *)
   END VisitCap;
+
+PROCEDURE (v: Visitor) VisitOdd* (odd: IR.Odd);
+  BEGIN
+    v. w. StartTag ("odd", FALSE);
+    odd. operand. Accept (v);
+    v. w. EndTag;  (* odd *)
+  END VisitOdd;
 
 PROCEDURE VisitDyadicOp (v: Visitor; op: IR.Operator; variant : SHORTINT; left, right : IR.Expression; name: ARRAY OF CHAR);
   BEGIN

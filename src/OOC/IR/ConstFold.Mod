@@ -304,6 +304,11 @@ BEGIN
   END;
 END VisitCap;
 
+PROCEDURE (c: ConstFold) VisitOdd* (op: IR.Odd);
+BEGIN
+    (* FIXME! *)
+END VisitOdd;
+
 PROCEDURE (c: ConstFold) VisitBinaryArith* (op: IR.BinaryArith);
 VAR 
   l, r, result : Language.Value;

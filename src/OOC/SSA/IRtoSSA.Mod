@@ -413,10 +413,14 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr;
         
       | expr: IR.Cap DO
-        instr := pb. AddInstr (Opcode.cap,
-                               Opcode.TypeToSubclass (expr. operand. type));
+        instr := pb. AddInstr (Opcode.cap, Opcode.TypeToSubclass (expr. type));
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
-        RETURN instr
+        RETURN instr;
+
+      | expr: IR.Odd DO
+        instr := pb. AddInstr (Opcode.odd, Opcode.TypeToSubclass (expr. type));
+        instr. AddOpnd (Expression (expr. operand), Opnd.arg);
+        RETURN instr;
             
       | expr: IR.BinaryArith DO
         CASE expr.variant OF
