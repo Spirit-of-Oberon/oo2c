@@ -56,8 +56,8 @@ TYPE
 
 
   (*
-     FIXME... get rid of empty partitions as soon as possible; don't try
-     to split partitions of size 1; see how the O(n log n) improvement can
+     FIXME... get rid of empty partitions as soon as possible;
+     see how the O(n log n) improvement can
      be incorporated; speed up the DependenceData predicates
      *)
   
@@ -214,7 +214,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       i, nextResultCount: LONGINT;
       res: SSA.Result;
       use: SSA.Opnd;
-      p, touched: Partition;
+      p, pUse, touched: Partition;
 
     PROCEDURE MarkUnchanged (worklist: Partition);
       BEGIN
@@ -243,9 +243,14 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
 
           use := res. useList;
           WHILE (use # NIL) DO
-            p := SplittedPartition (use. instr. info(Partition),
-                                    use. OpndIndex(), touched);
-            p. Add (use. instr);
+            pUse := use.instr.info(Partition);
+            IF (pUse.size > 1) OR (pUse.splitChildren[0] # NIL) THEN
+              (* don't move instructions out of a partition that starts out
+                 with a single instruction; intermediate partitions with a
+                 size of one are handled as before *)
+              p := SplittedPartition(pUse, use.OpndIndex(), touched);
+              p.Add(use.instr);
+            END;
             use := use. nextUse;
           END;
           
