@@ -33,6 +33,8 @@ static void check_error(int errorCode, int fatal) {
       str = "No such thread (ESRCH)";
     case EDEADLK:
       str = "Deadlock (EDEADLK)";
+    case EBUSY:
+      str = "Resource in use (EBUSY)";
     default:
       sprintf(buffer, "Unknown error code (%i)", errorCode);
       str = buffer;
@@ -101,6 +103,31 @@ void PThread__MutexDesc_Unlock(PThread__Mutex m) {
 void PThread__MutexDesc_Destroy(PThread__Mutex m) {
   check_error(pthread_mutex_destroy((pthread_mutex_t*)m->mutex), OOC_TRUE);
   m->mutex = NULL;
+}
+
+
+
+void PThread__ConditionDesc_INIT(PThread__Condition c) {
+  c->cond = RT0__NewBlock(sizeof(pthread_cond_t));
+  pthread_cond_init((pthread_cond_t*)c->cond, NULL);  /* always returns 0 */
+}
+
+void PThread__ConditionDesc_Signal(PThread__Condition c) {
+  pthread_cond_signal((pthread_cond_t*)c->cond);  /* always returns 0 */
+}
+
+void PThread__ConditionDesc_Broadcast(PThread__Condition c) {
+  pthread_cond_broadcast((pthread_cond_t*)c->cond);  /* always returns 0 */
+}
+
+void PThread__ConditionDesc_Wait(PThread__Condition c, PThread__Mutex m) {
+  pthread_cond_wait((pthread_cond_t*)c->cond, (pthread_mutex_t*)m->mutex);
+  /* always returns 0 */
+}
+
+void PThread__ConditionDesc_Destroy(PThread__Condition c) {
+  check_error(pthread_cond_destroy((pthread_cond_t*)c->cond), OOC_TRUE);
+  c->cond = NULL;
 }
 
 

@@ -15,7 +15,7 @@ TYPE
     (Exception.ExceptionDesc)
     errorCode-: LONGINT;
   END;
-  
+
 TYPE
   Thread* = POINTER TO ThreadDesc;
   ThreadDesc* = RECORD [ABSTRACT]
@@ -27,6 +27,13 @@ TYPE
   MutexDesc = RECORD
     mutex: SYSTEM.PTR;
   END;
+
+TYPE
+  Condition* = POINTER TO ConditionDesc;
+  ConditionDesc = RECORD
+    cond: SYSTEM.PTR; 
+  END;
+
 
 PROCEDURE (e: Error) INIT*(msg: STRING; errno: LONGINT);
 
@@ -50,6 +57,20 @@ PROCEDURE (m: Mutex) Lock*();
 
 PROCEDURE (m: Mutex) Unlock*();
 
-PROCEDURE (m: Mutex) Destroy*();
+PROCEDURE (m: Mutex) Destroy*()
+RAISES Error;
+
+(* ------------------------------------------------------------------------ *)
+
+PROCEDURE (c: Condition) INIT*();
+  
+PROCEDURE (c: Condition) Signal*();
+
+PROCEDURE (c: Condition) Broadcast*();
+
+PROCEDURE (c: Condition) Wait*(m: Mutex);
+
+PROCEDURE (c: Condition) Destroy*()
+RAISES Error;
 
 END PThread.

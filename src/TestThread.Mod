@@ -24,6 +24,11 @@ VAR
   array: ARRAY arraySize OF LONGINT;
   i: LONGINT;
   m: PThread.Mutex;
+
+VAR
+  count: LONGINT;
+  countMutex: PThread.Mutex;
+  countCondition: PThread.Condition;
   
 PROCEDURE (t: Thread) INIT*(str: STRING; id: LONGINT);
   BEGIN
@@ -35,12 +40,29 @@ PROCEDURE (t: Thread) INIT*(str: STRING; id: LONGINT);
     END;
   END INIT;
 
+PROCEDURE (t: Thread) Sync*();
+  BEGIN
+    countMutex.Lock();
+    INC(count);
+    IF (count = 2) THEN
+      Log.Object("Caught up with other thread", t.str);
+      countCondition.Signal();
+      count := 0;                        (* reset counter *)
+    ELSE
+      Log.Object("Delaying thread", t.str);
+      countCondition.Wait(countMutex);
+      Log.Object("Continuing after wait", t.str);
+    END;
+    countMutex.Unlock();
+  END Sync;
+
 PROCEDURE (t: Thread) Run*();
   VAR
     i, j: LONGINT;
     b: Block;
   BEGIN
     (* test mutex *)
+    Log.Object("Starting mutex test", t.str);
     FOR i := 1 TO iterations DO
       m.Lock;
       FOR j := 0 TO arraySize-1 DO
@@ -53,8 +75,10 @@ PROCEDURE (t: Thread) Run*();
       m.Unlock;
     END;
     Log.Object("Mutex test completed", t.str);
+    t.Sync();
     
     (* test memory *)
+    Log.Object("Starting heap test", t.str);
     FOR i := 1 TO 100000 DO
       b := t.blocks[i MOD blockCount];
       IF (b # NIL) THEN
@@ -74,6 +98,7 @@ PROCEDURE (t: Thread) Run*();
       t.blocks[i MOD blockCount] := b;
     END;
     Log.Object("Heap test completed", t.str);
+    t.Sync();
   END Run;
 
 BEGIN
@@ -81,7 +106,11 @@ BEGIN
     array[i] := 0;
   END;
   m := NEW(PThread.Mutex);
-      
+
+  count := 0;
+  countMutex := NEW(PThread.Mutex);
+  countCondition := NEW(PThread.Condition);
+  
   a := NEW(Thread, "a", 1);
   b := NEW(Thread, "b", 2);
   TRY
