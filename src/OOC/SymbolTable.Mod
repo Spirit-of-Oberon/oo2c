@@ -1203,7 +1203,7 @@ PROCEDURE (import: Import) IsInternalImport*(): BOOLEAN;
 (**Return @code{TRUE} if the imported module is pseudo module like
    @samp{SYSTEM}, which does not exist outside of the compiler itself.  *)
   BEGIN
-    RETURN (import. externalSymTab. class = mcInternal);
+    RETURN (import. name. str^ = "SYSTEM");
   END IsInternalImport;
 
 
