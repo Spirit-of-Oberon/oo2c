@@ -240,8 +240,8 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
                          BigInt.NewInt(MAX (LONGINT)));
     IF (Autoconf.bitsTargetInteger > 32) THEN
       ptype := PredefType (stb, module, hugeint, "HUGEINT", 8, 8,
-                           BigInt.NewString("-9223372036854775808", 10),
-                           BigInt.NewString("9223372036854775807", 10));
+                           BigInt.NewLatin1("-9223372036854775808", 10),
+                           BigInt.NewLatin1("9223372036854775807", 10));
     END;
     ptype := PredefType (stb, module, real, "REAL", 4, 4,
                          Boxed.NewLongReal(MIN (REAL)),
