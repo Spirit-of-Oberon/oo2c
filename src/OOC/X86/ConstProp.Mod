@@ -19,14 +19,15 @@ CONST
 VAR
   notConstant: S.Result;
 
-PROCEDURE ComputeConst (pb: S.FunctionBlock; instr: S.Instr): S.Result;
+PROCEDURE ComputeConst(pb: S.FunctionBlock; instr: S.Instr): S.Result;
   VAR
     arg1, arg2: S.Result;
     val1, val2, v: Object.Object;
     i1, i2: BigInt.BigInt;
   BEGIN
     IF (instr.opcode = S.typeConv) THEN
-      v := instr.opndList.arg.instr.designator[0](S.Const).value;
+      arg1 := instr.opndList.arg.info(S.Result);
+      v := arg1.instr.designator[0](S.Const).value;
       IF (v IS BigInt.BigInt) & (instr.resultList.type < S.real32) THEN
         (* FIXME... check for overflow *)
         RETURN pb.AddConstType(NEW(S.Const, v, -1), instr.resultList.type);
