@@ -167,6 +167,7 @@ void RT0_init() {
   PS(RT0__shortint, "SHORTINT", RT0__strShortint, sizeof(OOC_INT8));
   PS(RT0__integer , "INTEGER",  RT0__strInteger , sizeof(OOC_INT16));
   PS(RT0__longint , "LONGINT",  RT0__strLongint , sizeof(OOC_INT32));
+  PS(RT0__set32   , "SET",      RT0__strSet32   , sizeof(OOC_UINT32));
   PS(RT0__byte    , "BYTE",     RT0__strByte    , sizeof(OOC_BYTE));
   PS(RT0__ptr     , "PTR",      RT0__strPtr     , sizeof(OOC_PTR));
 }

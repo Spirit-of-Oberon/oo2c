@@ -231,7 +231,11 @@ CONST
 
   and* = 20;
   or* = 21;
- 
+
+  (* variants of SetElement *)
+  inclElement* = 22;
+  exclElement* = 23;
+  
 TYPE
   Expression* = POINTER TO ExpressionDesc;
   ExpressionList* = POINTER TO ARRAY OF Expression;
@@ -348,6 +352,18 @@ TYPE
     left-, right- : Expression;
   END;
 
+TYPE
+  ChangeElement* = POINTER TO ChangeElementDesc;
+  ChangeElementDesc = RECORD
+    (**Include or exclude a single set element.  Used for @code{INCL}
+       and code{EXCL}.  *)
+    (OperatorDesc)
+    variant-: Variant;
+    (**One of @oconst{inclElement} or @oconst{exclElement}.  *)
+    set-: Expression;
+    element-: Expression;
+  END;
+  
 TYPE
   Deref* = POINTER TO DerefDesc;
   DerefDesc = RECORD
@@ -473,7 +489,7 @@ TYPE
 TYPE 
   SetMember* = POINTER TO SetMemberDesc;
   SetMemberDesc = RECORD
-    (**This operator represents operations on SET values. *)
+    (**Set membership test. *)
     (OperatorDesc)
     element-, set- : Expression;
   END;
@@ -652,9 +668,9 @@ TYPE
     (AssignmentDesc)
     (**This operation is used to model calls to @code{INC}, @code{DEC},
        @code{INCL}, and @code{EXCL}.  The field @ofield{variable} equals the
-       left operand of the @otype{BinaryArith} instance in @ofield{value}.
-       Translation of this special assignment must take care to evaluate the
-       variable designator only once!  *)
+       left operand of the @otype{BinaryArith} or @otype{ChangeElement}
+       instance in @ofield{value}.  Translation of this special assignment must
+       take care to evaluate the variable designator only once!  *)
   END;
   
 TYPE
@@ -1624,6 +1640,36 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitCap* (cap: Cap);
 PROCEDURE (cap: Cap) Accept* (v: Visitor);
   BEGIN
     v. VisitCap (cap)
+  END Accept;
+
+(* Operator Class: ChangeElement
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitChangeElement (ch: ChangeElement; sym: Symbol; variant: Variant;
+                             set, element: Expression);
+  BEGIN
+    InitOperator (ch, sym, set. type);
+    ch. variant := variant;
+    ch. set := set;
+    ch. element := element;
+  END InitChangeElement;
+
+PROCEDURE (b: Builder) NewChangeElement* (sym: Symbol; variant: Variant;
+                                          set, element: Expression): Expression;
+  VAR
+    ch : ChangeElement;
+  BEGIN
+    NEW (ch);
+    InitChangeElement (ch, sym, variant, set, element);
+    RETURN ch;
+  END NewChangeElement;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitChangeElement* (ch: ChangeElement);
+  END VisitChangeElement;
+
+PROCEDURE (ch: ChangeElement) Accept* (v: Visitor);
+  BEGIN
+    v. VisitChangeElement (ch)
   END Accept;
 
 (* Operator Class: Compare
@@ -2744,9 +2790,13 @@ PROCEDURE (assignment: Assignment) Accept* (v: Visitor);
 (* Statement Class: AssignOp
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitAssignOp (ao: AssignOp; sym: Symbol; op: BinaryArith);
+PROCEDURE InitAssignOp (ao: AssignOp; sym: Symbol; op: Expression);
   BEGIN
-    InitAssignment (ao, sym, op. left, op);
+    WITH op: BinaryArith DO
+      InitAssignment (ao, sym, op. left, op);
+    | op: ChangeElement DO
+      InitAssignment (ao, sym, op. set, op);
+    END;
   END InitAssignOp;
 
 PROCEDURE (b: Builder) NewAssignOp (sym: Symbol; op: Expression): Expression;
@@ -2757,7 +2807,7 @@ PROCEDURE (b: Builder) NewAssignOp (sym: Symbol; op: Expression): Expression;
       RETURN b. errorExpr;               (* bail out, op is errorExpr *)
     ELSE
       NEW (i);
-      InitAssignOp (i, sym, op(BinaryArith));
+      InitAssignOp (i, sym, op);
       RETURN i;
     END;
   END NewAssignOp;
@@ -4173,6 +4223,15 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         RETURN b. NewAssignOp (design. sym,
                                b. NewBinaryArith
                                (design. sym, arithSub, arguments[0], delta));
+        
+      | Predef.incl:
+        RETURN b. NewAssignOp(design. sym,
+                              b. NewChangeElement(design. sym, inclElement,
+                                                  arguments[0], arguments[1]));
+      | Predef.excl:
+        RETURN b. NewAssignOp(design. sym,
+                              b. NewChangeElement(design. sym, exclElement,
+                                                  arguments[0], arguments[1]));
         
       (* predefined functions *)
       | Predef.len:

@@ -422,42 +422,43 @@ CONST
   logicalOr* = 35;
   logicalXor* = 36;
   logicalComplement* = 37;
+  setBit* = 38;
+  clearBit* = 39;
   
-  typeCast* = 38;
+  typeCast* = 40;
   (**Type cast.  Takes one argument, the value that should be
      casted.  The result type of the convertion is the instructions's
      subclass, the source type that of the first argument.  *)
-  typeConv* = 39;
+  typeConv* = 41;
   (**Type conversion operation.  Takes one argument, the value that should be
      converted.  The result type of the convertion is the instructions's
      subclass, the source type that of the first argument.  *)
-  setMember* = 40;
+  setMember* = 42;
   (**Set membership test.  First argument is an index, second is the
      set value.  *)
-  setRange* = 41;
+  setRange* = 43;
   (**Set range.  Produces a set with the elements [from, to] inclusive.
      The range is empty if to<from.  *)
-  abs* = 42;
+  abs* = 44;
   (**Absolute value.  *)
-  ash* = 43;
+  ash* = 45;
   (**Arithmetic shift.  *)
-  cap* = 44;
+  cap* = 46;
   (**Capitalize character.  *)
-  entier* = 45;
+  entier* = 47;
   (**Floating point to integer, rounding to @samp{-inf}.  *)
-  lsh* = 46;
+  lsh* = 48;
   (**Arithmetic shift.  *)
-  odd* = 47;
+  odd* = 49;
   (**Return @code{TRUE} for odd numbers.  *)
-
-  (* 48 is unused ... *)
   
-  call* = 49;
+  
+  call* = 50;
   (**Used to call a procedure or a function.  The first argument is the
      address of the procedure to be called, followed by the call's arguments.
      This opcode is used both for normal and type-bound procedures.  *)
   
-  getLength* = 50;
+  getLength* = 51;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -476,7 +477,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 51;
+  copyParameter* = 52;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -494,7 +495,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 52;
+  newObject* = 53;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -514,7 +515,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 53;
+  typeTag* = 54;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -525,7 +526,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 54;
+  typeTest* = 55;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -541,7 +542,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 55;
+  tbProcAddress* = 56;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -556,9 +557,9 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  assert* = 56;
+  assert* = 57;
   
-  checkIndex* = 57;
+  checkIndex* = 58;
   (**Ensures that an index is value with respect to a given array length.  An
      exception is raised if the index is negative, or less or equal to the
      array's length.
@@ -577,7 +578,7 @@ CONST
      The result of the instruction is the checked index.  One additional result
      is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  checkPointer* = 58;
+  checkPointer* = 59;
   (**Raise an exception if the pointer value is @code{NIL}.
 
      @table @oconst
@@ -592,15 +593,15 @@ CONST
      result is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
 
-  failedCase* = 59;
-  failedWith* = 60;
-  failedTypeAssert* = 61;
+  failedCase* = 60;
+  failedWith* = 61;
+  failedTypeAssert* = 62;
   
-  selectException* = 62;
+  selectException* = 63;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
   
-  labels* = 63;
+  labels* = 64;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -733,6 +734,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | logicalOr: cstr := "logical-or";
     | logicalXor: cstr := "logical-xor";
     | logicalComplement: cstr := "logical-complement";
+    | setBit: cstr := "set-bit";
+    | clearBit: cstr := "clear-bit";
       
     | typeCast: cstr := "type-cast";
     | typeConv: cstr := "type-conv";

@@ -46,6 +46,7 @@ CONST  (* predefined types, taken from `OOC:SymbolTable:Predef' *)
   strShortint* = 3;
   strInteger* = 4;
   strLongint* = 5;
+  strSet32* = 9;
   strByte* = 10;
   strPtr* = 11;
 
@@ -169,6 +170,7 @@ VAR
   shortint-: StructDesc;
   integer-: StructDesc;
   longint-: StructDesc;
+  set32-: StructDesc;
   byte-: StructDesc;
   ptr-: StructDesc;
 

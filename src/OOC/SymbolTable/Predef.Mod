@@ -97,24 +97,26 @@ CONST
   size* = 2;                             (* SIZE *)
   inc* = 3;                              (* INC *)
   dec* = 4;                              (* DEC *)
-  abs* = 5;                              (* ABS *)
-  ash* = 6;                              (* ASH *)
-  cap* = 7;                              (* CAP *)
-  long* = 8;                             (* LONG *)
-  short* = 9;                            (* SHORT *)
-  chr* = 10;                             (* CHR *)
-  entier* = 11;                          (* ENTIER *)
-  odd* = 12;                             (* ODD *)
-  ord* = 13;                             (* ORD *)
-  max* = 14;                             (* MAX *)
-  min* = 15;                             (* MIN *)
-  new* = 16;                             (* NEW *)
-  copy* = 17;                            (* COPY *)
+  incl* = 5;                             (* INCL *)
+  excl* = 6;                             (* EXCL *)
+  abs* = 7;                              (* ABS *)
+  ash* = 8;                              (* ASH *)
+  cap* = 9;                              (* CAP *)
+  long* = 10;                            (* LONG *)
+  short* = 11;                           (* SHORT *)
+  chr* = 12;                             (* CHR *)
+  entier* = 13;                          (* ENTIER *)
+  odd* = 14;                             (* ODD *)
+  ord* = 15;                             (* ORD *)
+  max* = 16;                             (* MAX *)
+  min* = 17;                             (* MIN *)
+  new* = 18;                             (* NEW *)
+  copy* = 19;                            (* COPY *)
 
-  adr* = 18;                             (* SYSTEM.ADR *)
-  lsh* = 19;                             (* SYSTEM.LSH *)
-  move* = 20;                            (* SYSTEM.MOVE *)
-  val* = 21;                             (* SYSTEM.VAL *)
+  adr* = 20;                             (* SYSTEM.ADR *)
+  lsh* = 21;                             (* SYSTEM.LSH *)
+  move* = 22;                            (* SYSTEM.MOVE *)
+  val* = 23;                             (* SYSTEM.VAL *)
   
   
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
@@ -239,6 +241,8 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (stb, module, size, "SIZE", 1, 1);
     PredefProc (stb, module, inc, "INC", 1, 2);
     PredefProc (stb, module, dec, "DEC", 1, 2);
+    PredefProc (stb, module, incl, "INCL", 2, 2);
+    PredefProc (stb, module, excl, "EXCL", 2, 2);
     PredefProc (stb, module, abs, "ABS", 1, 1);
     PredefProc (stb, module, ash, "ASH", 2, 2);
     PredefProc (stb, module, cap, "CAP", 1, 1);

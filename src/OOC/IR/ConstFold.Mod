@@ -214,6 +214,10 @@ PROCEDURE (c: ConstFold) VisitSetOp* (op: IR.SetOp);
     END;
   END VisitSetOp;
 
+PROCEDURE (c: ConstFold) VisitChangeElement* (op: IR.ChangeElement);
+  BEGIN
+  END VisitChangeElement;
+
 PROCEDURE (c: ConstFold) VisitSelectField* (sf: IR.SelectField);
   BEGIN
   END VisitSelectField;

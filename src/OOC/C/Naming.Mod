@@ -183,6 +183,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
       | Predef.shortint: str := "shortint"
       | Predef.integer : str := "integer"
       | Predef.longint : str := "longint"
+      | Predef.set     : str := "set32"
       | Predef.byte    : str := "byte"
       | Predef.ptr     : str := "ptr"
       END;

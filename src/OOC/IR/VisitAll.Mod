@@ -159,6 +159,12 @@ PROCEDURE (v: Visitor) VisitSetRange* (range: IR.SetRange);
     range. to. Accept (v);
   END VisitSetRange;
 
+PROCEDURE (v: Visitor) VisitChangeElement* (ch: IR.ChangeElement);
+  BEGIN
+    ch. set. Accept (v);
+    ch. element. Accept (v);
+  END VisitChangeElement;
+
 PROCEDURE (v: Visitor) VisitShift* (shift: IR.Shift);
   BEGIN
     shift. value. Accept (v);

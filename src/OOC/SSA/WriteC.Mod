@@ -1124,6 +1124,10 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteDyadicOp (instr, "^");
       | Opcode.logicalComplement:
         WriteMonadicOp (instr, "!", ";");
+      | Opcode.setBit:
+        WriteDyadicFct (instr, "_set_bit");
+      | Opcode.clearBit:
+        WriteDyadicFct (instr, "_clear_bit");
         
       | Opcode.setMember:
         WriteDyadicFct (instr, "_in");

@@ -697,6 +697,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. from), Opnd.arg);
         instr. AddOpnd (Expression (expr. to), Opnd.arg);
         RETURN instr;
+      | expr: IR.ChangeElement DO
+        CASE expr.variant OF
+        | IR.inclElement: opcode := Opcode.setBit;
+        | IR.exclElement: opcode := Opcode.clearBit;
+        END;
+        instr := pb. AddInstr (opcode, Opcode.TypeToSubclass (expr.set.type));
+        instr. AddOpnd (Expression (expr. set), Opnd.arg);
+        instr. AddOpnd (Expression (expr. element), Opnd.arg);
+        RETURN instr;
         
       | expr: IR.Compare DO
         CASE expr.variant OF
