@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST [OOC_EXTENSIONS];
 (*  Abstract builder class for parser output.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -125,7 +125,7 @@ procedure calls, and type guards).  Please note that type guards are
 mapped to functions calls on the syntax level, and that the designator
 implementation of the parser is less restrictive than the Oberon-2
 syntax, because of the limits of a recursive descent parser that
-does not use any semantic information.
+does not use any information from a symbol table.
 
 @item Set Constructor
 A set constructor is the result of a call to @oproc{Builder.Set}.  The
@@ -137,7 +137,7 @@ Integer, string, and character constants, and the keyword @code{NIL}
 are mapped to instances of @oproc{Builder.Terminal}.
 
 @item Parenthesis
-A parenthised expression is represented by @oproc{Builder.Factor}.
+An expression in parenthesis is represented by @oproc{Builder.Factor}.
 
 @item Operators
 All monadic and dyadic operators, like @samp{~}, @samp{*}, @samp{+},
@@ -682,7 +682,8 @@ PROCEDURE (b: Builder) [ABSTRACT] Module* (module, name,
    The name of the module, result of @oproc{Builder.ModuleIdent}.
    
    @item flags
-   ...
+   Either the result of @oproc{Builder.ModuleFlags} (for @samp{FOREIGN} and
+   @samp{INTERFACE} modules) or a list of flags.
    
    @item semicolon
    The symbol @samp{;}, result of @oproc{Builder.Terminal}.
@@ -1116,8 +1117,9 @@ PROCEDURE (b: Builder) [ABSTRACT] ProcIdFlag* (procId, equal, number: Node): Nod
 PROCEDURE (b: Builder) [ABSTRACT] LibraryFlag* (library, name, version, semicolon: Node): Node;
   END LibraryFlag;
 
-PROCEDURE (b: Builder) [ABSTRACT] ModuleFlags* (library, external, 
-                   callConv: Node; moduleFlags: NodeList; semicolon, link:Node;
+PROCEDURE (b: Builder) [ABSTRACT] ModuleFlags* (
+                   library, external, callConv: Node; moduleFlags: NodeList;
+                   semicolon, link:Node;
                    linkSections: NodeList; end: Node): Node;
   END ModuleFlags;
 
