@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; loop11">-->
+  select ="&SetupTestCasesWithOut; loop12">-->
 
   &TestSetupWithOut;
     
@@ -257,6 +257,11 @@
       a bug in the SSA back-end, where values which needed to be live
       across the whole loop body were clobbered in the last part of
       the body.
+    </test>
+    <test id="loop12" type="run" file="HOTLoop12.Mod" output="HOTLoop12.Ref">
+      A code snipped that caused the SSA back-end to misplace a
+      <code>select</code> statement in the middle of a block, instead
+      of the beginning.  The result was a clobbered register.
     </test>
  
     
