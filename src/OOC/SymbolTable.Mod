@@ -501,6 +501,12 @@ TYPE
     isVarParam-: BOOLEAN;
     (**@code{TRUE}, iff the variable is a formal variable parameter, that 
        is, a parameter with the @code{VAR} flag set.  *)
+    isPassPerReference-: BOOLEAN;
+    (**For a parameter declaration, this field indicates if arguments are
+       passed to the callee as references.  If it is @code{TRUE}, then the
+       procedure call passes the address of the argument to the called
+       procedure, instead of the arguments value.  @ofield{isVarParam} implies
+       @ofield{isPassPerReference}.  *)
   END;
 
 TYPE
@@ -1073,6 +1079,12 @@ PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
                         docString: Doc.Document;
                         isParameter, isReceiver, isVarParam: BOOLEAN;
                         type: Type);
+  
+  PROCEDURE PassPerReference (type: Type): BOOLEAN;
+    BEGIN
+      RETURN (type IS Array) OR (type IS Record)
+    END PassPerReference;
+  
   BEGIN
     InitDeclaration (varDecl, parent, name, visibleFrom, exportMark, docString);
     varDecl. type := type;
@@ -1080,7 +1092,8 @@ PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
     varDecl. isParameter := isParameter;
     varDecl. isReceiver := isReceiver;
     varDecl. isVarParam := isVarParam;
-    
+    varDecl. isPassPerReference :=
+        isParameter & (isVarParam OR PassPerReference (type));
     IF isReceiver THEN
       parent(FormalPars). receiver := varDecl
     END
@@ -1454,6 +1467,18 @@ PROCEDURE (array: Array) GetOpenDimensions* (): LONGINT;
     END;
     RETURN dim
   END GetOpenDimensions;
+
+PROCEDURE (array: Array) GetNonOpenElementType* (): Type;
+(**Returns the first element type of @oparam{array} that is not an open array.  *)
+  VAR
+    type: Type;
+  BEGIN
+    type := array;
+    WHILE (type IS Array) & type(Array). isOpenArray DO
+      type := type(Array). elementType
+    END;
+    RETURN type
+  END GetNonOpenElementType;
 
 
 PROCEDURE InitFormalPars* (formalPars: FormalPars; parent: Item;
