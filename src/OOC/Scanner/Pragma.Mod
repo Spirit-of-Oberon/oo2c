@@ -66,10 +66,10 @@ TYPE
        @oconst{Symbol.pragma}, that collects the pragma section and skipped
        text into a single multi-line symbol *)
     
-    variableHistory: Pragmas.History;
-    (* this object keeps track of the changes to pragma variables through
-       assignments and PUSH/POP operations; the initial values of the variables
-       are taken from @ofield{pragmas}  *)
+    variableHistory-: Pragmas.History;
+    (**This object keeps track of the changes to pragma variables through
+       assignments and @code{PUSH} and @code{POP} operations.  The initial
+       values of the variables are taken from @ofield{pragmas}  *)
   END;
 
 

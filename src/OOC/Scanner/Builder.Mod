@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Scanner:Builder [OOC_EXTENSIONS];
 (*  Builder interface for the scanner module.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:Scanner:Builder [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  OOC:Scanner:InputBuffer, OOC:Scanner:Symbol;
+  OOC:Scanner:InputBuffer, OOC:Scanner:Symbol, OOC:Config:Pragmas;
   
 (**
    A scanner builder is called from the scanner with information about symbols
@@ -65,6 +65,9 @@ TYPE
   Builder* = POINTER TO BuilderDesc;
   BuilderDesc* = RECORD [ABSTRACT]
     inputBuffer-: InputBuffer.Buffer;
+    pragmaHistory-: Pragmas.History;
+    (**The history data of assignments to pragma variables.  This field is
+       set with @oproc{Builder.SetPragmaHistory} when the scanner is done.  *)
   END;
   
 
@@ -73,7 +76,8 @@ PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer);
    @oparam{buffer}.The character intervals given to @oproc{Builder.AddSymbol}
    are mapped to strings from this buffer.  *)
   BEGIN
-    b. inputBuffer := buffer
+    b. inputBuffer := buffer;
+    b. pragmaHistory := NIL;
   END Init;
 
 PROCEDURE (b: Builder) [ABSTRACT] AddSymbol* (id: Symbol.Id;
@@ -89,5 +93,11 @@ PROCEDURE (b: Builder) [ABSTRACT] AddSymbol* (id: Symbol.Id;
    embedded control characters.  Otherwise, it may span multiple lines, and 
    can have arbitrary embedded characters.  *)
   END AddSymbol;
+
+PROCEDURE (b: Builder) SetPragmaHistory* (pragmaHistory: Pragmas.History);
+(**Sets @ofield{Builder.pragmaHistory}.  *)
+  BEGIN
+    b. pragmaHistory := pragmaHistory;
+  END SetPragmaHistory;
 
 END OOC:Scanner:Builder.
