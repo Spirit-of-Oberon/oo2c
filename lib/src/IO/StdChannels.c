@@ -29,6 +29,12 @@ void IO_StdChannels__IOError(Object__String suffix) {
   switch (errno) {
   case ENOENT:
     e_type = OOC_TYPE_DESCR(IO,FileNotFoundDesc); break;
+  case EACCES:
+    e_type = OOC_TYPE_DESCR(IO,AccessDeniedDesc); break;
+  case EEXIST:
+    e_type = OOC_TYPE_DESCR(IO,FileExistsDesc); break;
+  case EBUSY:
+    e_type = OOC_TYPE_DESCR(IO,FileBusyDesc); break;
   default:
     e_type = OOC_TYPE_DESCR(IO,ErrorDesc);
   }

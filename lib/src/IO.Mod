@@ -138,6 +138,23 @@ TYPE
   (**This exception is raised if a C function returns a @samp{ENOENT} error. *)
     (ErrorDesc)
   END;
+  AccessDenied* = POINTER TO AccessDeniedDesc;
+  AccessDeniedDesc = RECORD
+  (**This exception is raised if a C function returns a @samp{EACCES} error. *)
+    (ErrorDesc)
+  END;
+  FileExists* = POINTER TO FileExistsDesc;
+  FileExistsDesc = RECORD
+  (**This exception is raised if a C function returns a @samp{EEXIST} error. *)
+    (ErrorDesc)
+  END;
+  FileBusy* = POINTER TO FileBusyDesc;
+  FileBusyDesc = RECORD
+  (**This exception is raised if a C function returns a @samp{EBUSY} error. *)
+    (ErrorDesc)
+  END;
+
+TYPE
   NotImplemented* = POINTER TO NotImplementedDesc;
   NotImplementedDesc = RECORD
   (**Raised when a method is called that is not implemented for a particular
