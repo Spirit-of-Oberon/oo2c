@@ -629,7 +629,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             instr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(varDecl));
             adr := instr.AddResult(S.address);
             
-            IF (varDecl.type IS Sym.Array) OR varDecl.isVarParam THEN  (* indirect *)
+            IF varDecl.isPassPerReference THEN  (* indirect *)
               instr := b.AddInstr1(S.get, adr);
               (*MemoryCP(instr);*)
               adr := instr.AddResult(S.address);
@@ -852,6 +852,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           
         | statm: IR.Call DO
           res := Call(statm);
+
+        | statm: IR.CopyParameter DO
+          (* handled in FctProlog *)
         END;
       END;
     END StatmSeq;
@@ -881,6 +884,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       MemoryCP(localVars);
       sp := localVars.AddResultReg(S.address, S.sp);
       ASSERT(sp.register = S.sp);
+
+      (* FIXME... deal with CopyParameter *)
     END FctProlog;
   
   PROCEDURE FctEpilog(b: S.FunctionBlock);

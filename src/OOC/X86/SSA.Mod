@@ -2277,10 +2277,10 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
         IF (p = varDecl) THEN
           RETURN offset;
         ELSE
-          type := varDecl.type;
-          INC(offset, ArgumentSize(varDecl.type));
+          type := p.type;
+          INC(offset, ArgumentSize(type));
           WITH type: Sym.Record DO
-            IF varDecl.isVarParam & type.isExtensible THEN (* type tag *)
+            IF p.isVarParam & type.isExtensible THEN (* type tag *)
               INC(offset, sizeAddress);
             END;
           | type: Sym.Array DO           (* length for every open dimension *)
