@@ -249,6 +249,7 @@ PROCEDURE IsOpenArrayType* (type: Sym.Type): BOOLEAN;
    length is not known at compile time.  *)
   BEGIN
     ASSERT (~(type IS Sym.TypeName));
+    type := type.Deparam();
     RETURN (type IS Sym.Array) & type(Sym.Array). isOpenArray
   END IsOpenArrayType;
 
@@ -751,11 +752,11 @@ PROCEDURE IsArrayCompatible* (argType, fparType: Sym.Type): BOOLEAN;
    the implementation of this function differs from the @cite{Appendix A}
    of the language report.  *)
   BEGIN
-    WHILE IsOpenArrayType (fparType) & (argType IS Sym.Array) DO
-      argType := argType(Sym.Array). elementType;
-      fparType := fparType(Sym.Array). elementType
+    WHILE IsOpenArrayType(fparType) & IsArrayType(argType) DO
+      argType := ArrayElementType(argType);
+      fparType := ArrayElementType(fparType);
     END;
-    RETURN SameType (argType, fparType)
+    RETURN SameType(argType, fparType);
   END IsArrayCompatible;
 
 PROCEDURE IsComponentOf* (subType, superType: Sym.Type;
