@@ -3802,7 +3802,7 @@ PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList;
     resultType: Sym.Type;
   BEGIN
     InitStatement (call, design. sym);
-    resultType := TR.FunctionResultType(design.type);
+    resultType := Sym.Expand(TR.FunctionResultType(design.type));
     IF (resultType # NIL) THEN (* fix result type for function calls *)
       call.type := resultType;
     END;
