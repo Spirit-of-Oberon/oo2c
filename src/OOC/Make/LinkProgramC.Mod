@@ -252,7 +252,7 @@ RAISES IO.Error;
     
     Out.String (str);
     Out.Ln;
-    exit := ProcessManagement.system (str);
+    exit := ProcessManagement.system(Object.NewLatin1(str));
     RETURN (exit = 0)
   END Run;
 

@@ -8,9 +8,6 @@ IMPORT
   Config:Parser, CfgData := Config, Config:Section:Options,
   OOC:Logger, OOC:Config, OOC:Error, Rep := OOC:Repository;
 
-TYPE
-  URIBuffer = ARRAY 1024 OF CHAR;
-
 CONST
   rootPackage = "package";
   rootRepository = "repository";
@@ -1188,11 +1185,10 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: STRING)
 RAISES IO.Error;
   VAR
     b: StringBuffer.StringBuffer;
-    fileName: STRING;
+    fileName, cmd: STRING;
     f: IO.ByteChannel;
     w: Writer.Writer;
     i: LONGINT;
-    str: StringBuffer.CharsLatin1;
     
   PROCEDURE WriteVersion(w: Writer.Writer; version: Version);
     BEGIN
@@ -1282,18 +1278,15 @@ RAISES IO.Error;
     w.EndOfText();
     
     f.Close();
-    b.Insert("chmod 644 ", 0);
-    str := b.CharsLatin1();
-    Logger.ShellCommand(str^);
-    i := ProcessManagement.system(str^);
+    cmd := "chmod 644 "+fileName;
+    Logger.ShellCommand(cmd);
+    i := ProcessManagement.system(cmd);
   END WritePackage;
 
 PROCEDURE WriteRepository*(rep: Repository; targetDir: STRING)
 RAISES IO.Error;
   VAR
-    str: URIBuffer;
-    fileName: STRING;
-    chars: Object.CharsLatin1;
+    fileName, cmd: STRING;
     f: IO.ByteChannel;
     w: Writer.Writer;
     i: LONGINT;
@@ -1324,11 +1317,9 @@ RAISES IO.Error;
     w.EndOfText();
     f.Close();
 
-    chars := fileName(Object.String8).CharsLatin1();
-    COPY(chars^, str);
-    Strings.Insert("chmod 644 ", 0, str);
-    Logger.ShellCommand(str);
-    i := ProcessManagement.system(str);
+    cmd := "chmod 644 "+fileName;
+    Logger.ShellCommand(cmd);
+    i := ProcessManagement.system(cmd);
   END WriteRepository;
 
 PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: STRING;

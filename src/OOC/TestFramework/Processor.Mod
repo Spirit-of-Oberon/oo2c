@@ -305,7 +305,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       Out.String (path); Out.Ln;
       
       Out.Flush;
-      exit := ProcessManagement.system (path);
+      exit := ProcessManagement.system (Object.NewLatin1(path));
       signal := ProcessManagement.TermSignal(exit);
       status := ProcessManagement.ExitStatus(exit);
      
@@ -319,7 +319,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
         Strings.Append ("' >'", path);
         Strings.Append (filterFile, path);
         Strings.Append ("'", path);
-        exit := ProcessManagement.system (path)
+        exit := ProcessManagement.system (Object.NewLatin1(path))
       ELSE
         COPY ("", filterFile)
       END;
@@ -439,7 +439,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       Out.String (cmd);
       Out.Ln;
       Out.Flush;
-      RETURN (ProcessManagement.system (cmd) = 0)
+      RETURN (ProcessManagement.system (Object.NewLatin1(cmd)) = 0)
     END CheckReject;
   
   BEGIN
@@ -533,7 +533,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
           Out.String ("### executing:"); Out.Ln;
           Out.String (path); Out.Ln;
           Out.Flush;
-          exit := ProcessManagement.system (path);
+          exit := ProcessManagement.system (Object.NewLatin1(path));
           status := ProcessManagement.ExitStatus(exit);
           signal := ProcessManagement.TermSignal(exit);
           IF (status = 0) & (signal = 0) THEN
@@ -552,7 +552,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
                 Strings.Append ("' >'", path);
                 Strings.Append (runDiffFile, path);
                 Strings.Append ("'", path);
-                exit := ProcessManagement.system (path);
+                exit := ProcessManagement.system (Object.NewLatin1(path));
               END
             END
           ELSE

@@ -160,8 +160,8 @@ RAISES IO.Error;
       chars := path(Object.String8).CharsLatin1();
       
       CCompiler.InstallDirectoryCmd(chars^, cmd);
-      Logger.ShellCommand(cmd);
-      RETURN (ProcessManagement.system(cmd) = 0);
+      Logger.ShellCommand(Object.NewLatin1(cmd));
+      RETURN (ProcessManagement.system(Object.NewLatin1(cmd)) = 0);
     END InstallDirectory;
   
   PROCEDURE InstallLibrary(module: Rep.Module; makeRules: Make.Rules): BOOLEAN;
@@ -205,8 +205,8 @@ RAISES IO.Error;
       ELSIF InstallDirectory("", CCompiler.libdir.value(CfgData.StringVar).string) THEN
         uri := module.GetURI(Rep.modLibrary, TRUE);
         CCompiler.InstallProgramCmd(uri, TRUE, str);
-        Logger.ShellCommand(str);
-        RETURN (ProcessManagement.system(str) = 0);
+        Logger.ShellCommand(Object.NewLatin1(str));
+        RETURN (ProcessManagement.system(Object.NewLatin1(str)) = 0);
       ELSE
         RETURN FALSE;
       END;
@@ -221,8 +221,8 @@ RAISES IO.Error;
       IF InstallDirectory("", CCompiler.bindir.value(CfgData.StringVar).string) THEN
         uri := module.GetURI(Rep.modExecutable, TRUE);
         CCompiler.InstallProgramCmd(uri, FALSE, str);
-        Logger.ShellCommand(str);
-        RETURN (ProcessManagement.system(str) = 0);
+        Logger.ShellCommand(Object.NewLatin1(str));
+        RETURN (ProcessManagement.system(Object.NewLatin1(str)) = 0);
       ELSE
         RETURN FALSE;
       END;
@@ -231,13 +231,12 @@ RAISES IO.Error;
   PROCEDURE InstallFiles(list: Package.FileData): BOOLEAN;
     VAR
       end: Package.FileData;
-      dir: STRING;
+      dir, str: STRING;
       string: Object.String;
       sourcePrefix: Rep.URIBuffer;
       cmd: StringBuffer.StringBuffer;
       baseURI: URI.URI;
       chars: Object.CharsLatin1;
-      charsCmd: StringBuffer.CharsLatin1;
       
     PROCEDURE SameDirectory(a, b: Package.File): BOOLEAN;
       VAR
@@ -312,9 +311,9 @@ RAISES IO.Error;
           END;
           cmd.Append(dir);
 
-          charsCmd := cmd.CharsLatin1();
-          Logger.ShellCommand(charsCmd^);
-          IF (ProcessManagement.system(charsCmd^) # 0) THEN
+          str := cmd.ToString();
+          Logger.ShellCommand(str);
+          IF (ProcessManagement.system(str) # 0) THEN
             RETURN FALSE;
           END;
         ELSE
@@ -421,8 +420,8 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
       b.Append(library.name);
       b.Append(".la");
       CCompiler.UninstallProgramCmd(b.ToString(), TRUE, str);
-      Logger.ShellCommand(str);
-      ok := (ProcessManagement.system(str) = 0);
+      Logger.ShellCommand(Object.NewLatin1(str));
+      ok := (ProcessManagement.system(Object.NewLatin1(str)) = 0);
     END UninstallLibrary;
   
   PROCEDURE UninstallExecutable(executable: Package.Executable);
@@ -436,13 +435,13 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
       b.Append("/");
       b.Append(executable.mainModule);
       CCompiler.UninstallProgramCmd(b.ToString(), FALSE, str);
-      Logger.ShellCommand(str);
-      ok := (ProcessManagement.system(str) = 0);
+      Logger.ShellCommand(Object.NewLatin1(str));
+      ok := (ProcessManagement.system(Object.NewLatin1(str)) = 0);
     END UninstallExecutable;
 
   PROCEDURE UninstallFiles(list: Package.FileData);
     VAR
-      cmd: StringBuffer.CharsLatin1;
+      str: STRING;
       ok: BOOLEAN;
       b: StringBuffer.StringBuffer;
     BEGIN
@@ -453,9 +452,9 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
         b.Append("/");
         b.Append(list(Package.File).destName);
 
-        cmd := b.CharsLatin1();
-        Logger.ShellCommand(cmd^);
-        ok := (ProcessManagement.system(cmd^) = 0);
+        str := b.ToString();
+        Logger.ShellCommand(str);
+        ok := (ProcessManagement.system(str) = 0);
         list := list.nextFileData;
       END;
     END UninstallFiles;
@@ -470,8 +469,8 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
            CCompiler.oocdir.value(CfgData.StringVar).string,
            CCompiler.uninstall.value(CfgData.StringVar).string,
            cmd);
-        Logger.ShellCommand(cmd);
-        ok := (ProcessManagement.system(cmd) = 0);
+        Logger.ShellCommand(Object.NewLatin1(cmd));
+        ok := (ProcessManagement.system(Object.NewLatin1(cmd)) = 0);
     END UninstallPkgInfo;
   
   BEGIN

@@ -1,7 +1,7 @@
 MODULE OOC:Logger;
 
 IMPORT
-  Out, URI, URI:Scheme:File;
+  Out, OS:Path, URI, URI:Scheme:File;
 
 VAR
   cwd: File.URI;
@@ -43,7 +43,7 @@ PROCEDURE ReadFileName* (fileName: STRING);
   BEGIN
     IF ~silence THEN
       Out.String("- ");
-      Out.Object(fileName);
+      Out.Object(Path.Encode(fileName));
       Out.Ln;
       Out.Flush;
     END;
@@ -63,16 +63,16 @@ PROCEDURE WriteFileName* (fileName: STRING);
   BEGIN
     IF ~silence THEN
       Out.String("+ ");
-      Out.Object(fileName);
+      Out.Object(Path.Encode(fileName));
       Out.Ln;
       Out.Flush;
     END;
   END WriteFileName;
 
-PROCEDURE ShellCommand* (str: ARRAY OF CHAR);
+PROCEDURE ShellCommand* (str: STRING);
   BEGIN
     IF ~silence THEN
-      Out.String (str);
+      Out.Object(Path.Encode(str));
       Out.Ln;
       Out.Flush;
     END;

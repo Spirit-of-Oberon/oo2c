@@ -797,8 +797,8 @@ RAISES IO.Error;
         Strings.Append (path, str);
         
         IF (res = NIL) THEN
-          Logger.ShellCommand(str);
-          exit := ProcessManagement.system (str)
+          Logger.ShellCommand(Object.NewLatin1(str));
+          exit := ProcessManagement.system (Object.NewLatin1(str))
         END;
         
         errList := NIL;
@@ -921,8 +921,8 @@ RAISES IO.Error;
         module.CreateOutputDir (Rep.modObjectFile);
         Assembler.AssembleFileCmd(module.GetURI(Rep.modAssemblerFile, TRUE),
                                   module.GetURI(Rep.modObjectFile, TRUE), str);
-        Logger.ShellCommand(str);
-        success := (ProcessManagement.system (str) = 0);
+        Logger.ShellCommand(Object.NewLatin1(str));
+        success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
       END;
       
     ELSE
@@ -933,8 +933,8 @@ RAISES IO.Error;
         CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
                                  module.GetURI(Rep.modObjectFile, TRUE),
                                  FALSE, str);
-        Logger.ShellCommand(str);
-        success := (ProcessManagement.system (str) = 0);
+        Logger.ShellCommand(Object.NewLatin1(str));
+        success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
       END;
     END;
     RETURN success;
@@ -960,8 +960,8 @@ RAISES IO.Error;
       CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
                                module.GetURI(Rep.modObjectFileLib, TRUE),
                                TRUE, str);
-      Logger.ShellCommand(str);
-      success := (ProcessManagement.system (str) = 0);
+      Logger.ShellCommand(Object.NewLatin1(str));
+      success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
     END;
     RETURN success;
   END UpdateObjectFileLib;
@@ -1043,8 +1043,8 @@ RAISES IO.Error;
         module.CreateOutputDir (Rep.modMainObjectFile);
         Assembler.AssembleFileCmd(module.GetURI(Rep.modMainFileAssembler, TRUE),
                                   module.GetURI(Rep.modMainObjectFile, TRUE), str);
-        Logger.ShellCommand(str);
-        success := (ProcessManagement.system (str) = 0);
+        Logger.ShellCommand(Object.NewLatin1(str));
+        success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
       END;
       
     ELSE
@@ -1054,8 +1054,8 @@ RAISES IO.Error;
         CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC, TRUE),
                                  module.GetURI(Rep.modMainObjectFile, TRUE),
                                  FALSE, str);
-        Logger.ShellCommand(str);
-        success := (ProcessManagement.system (str) = 0);
+        Logger.ShellCommand(Object.NewLatin1(str));
+        success := (ProcessManagement.system (Object.NewLatin1(str)) = 0);
       END;
     END;
     RETURN success;
