@@ -163,7 +163,7 @@ PROCEDURE (v: Value) Store* (w: Object.Writer);
   BEGIN
     v. Store^ (w);
     w. WriteNum (LEN (v. array^)-1);
-    FOR i := 0 TO LEN (v.array^)-1 DO
+    FOR i := 0 TO LEN (v.array^)-2 DO
       w. WriteNum (ORD (v. array[i]));
     END;
   END Store;
@@ -181,6 +181,7 @@ PROCEDURE (v: Value) Load* (r: Object.Reader);
       array[i] := LONGCHR (j);
     END;
     array[len] := 0X;
+    v. array := array;
   END Load;
 
 
