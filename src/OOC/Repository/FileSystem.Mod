@@ -195,7 +195,7 @@ PROCEDURE (m: Module) GetInputBuffer* (VAR res: Msg.Msg): InputBuffer.Buffer;
     END
   END GetInputBuffer;
 
-PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId; makeTmp: BOOLEAN; VAR res: Msg.Msg): Channel.Channel;
+PROCEDURE (m: Module) CreateOutputDir* (fileId: Rep.FileId; VAR res: Msg.Msg);
   VAR
     path, str: Rep.URIBuffer;
     uri: URI.URI;
@@ -204,15 +204,21 @@ PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId; makeTmp: BOOLEAN; V
     IF (res = NIL) THEN
       uri(FileURI.URI). GetPath (path);
       Path.dirname (path, str);
-      OSFiles.makedirs(str, OSFiles.defaultMode, res);
-      IF (res = OSFiles.done) THEN
-        IF makeTmp THEN
-          RETURN uri. GetChannel (URI.channelTmp, res)
-        ELSE
-          RETURN uri. GetChannel (URI.channelNew, res)
-        END
+      OSFiles.makedirs(str, OSFiles.defaultMode, res)
+    END
+  END CreateOutputDir;
+
+PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId; makeTmp: BOOLEAN; VAR res: Msg.Msg): Channel.Channel;
+  VAR
+    uri: URI.URI;
+  BEGIN
+    m. CreateOutputDir (fileId, res);
+    IF (res = OSFiles.done) THEN
+      uri := m. GetURI (fileId, res);
+      IF makeTmp THEN
+        RETURN uri. GetChannel (URI.channelTmp, res)
       ELSE
-        RETURN NIL
+        RETURN uri. GetChannel (URI.channelNew, res)
       END
     ELSE
       RETURN NIL
