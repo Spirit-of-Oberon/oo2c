@@ -46,7 +46,7 @@ RAISES IO.Error;
     END;
     
     mem.SetPosition(0);
-    d := mem.TransferTo(mem.length, w.base);
+    d := mem.TransferTo(mem.length, w.channel);
     ch(FileChannel.Channel).CloseAndRegister;
   END WriteSymbolFile;
 

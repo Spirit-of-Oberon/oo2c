@@ -23,7 +23,7 @@ MODULE OOC:Make:LinkProgramC;
 IMPORT
   Out, Strings, IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
   ADT:ArrayList, Config:Value, StringValue := Config:Value:String,
-  OS:ProcessManagement, OOC:Error, OOC:Repository, OOC:Config,
+  OS:ProcessManagement, OOC:Repository, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
 VAR

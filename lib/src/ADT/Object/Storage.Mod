@@ -121,7 +121,7 @@ PROCEDURE ConnectReader* (ch: IO.ByteChannel): Reader;
   BEGIN
     NEW (r);
     InitReader (r, ch);
-    IF (r. base = NIL) THEN  (* initialization of BinaryRider.Reader failed *)
+    IF (r. channel = NIL) THEN  (* initialization of BinaryRider.Reader failed *)
       RETURN NIL
     ELSE
       RETURN r
@@ -135,7 +135,7 @@ PROCEDURE ConnectWriter* (ch: IO.ByteChannel): Writer;
   BEGIN
     NEW (w);
     InitWriter (w, ch);
-    IF (w. base = NIL) THEN  (* initialization of BinaryRider.Writer failed *)
+    IF (w. channel = NIL) THEN  (* initialization of BinaryRider.Writer failed *)
       RETURN NIL
     ELSE
       RETURN w

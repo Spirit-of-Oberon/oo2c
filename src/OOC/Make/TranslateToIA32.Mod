@@ -21,7 +21,7 @@ MODULE OOC:Make:TranslateToIA32 [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, Channel, Msg, IO, IO:PFD, ADT:Dictionary, 
+  Ascii, IO, IO:PFD, ADT:Dictionary, 
   OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, Rep := OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
@@ -148,7 +148,6 @@ RAISES IO.Error;
     moduleIR: IR.Module;
     pragmaHistory: Pragmas.History;
     w: Writer.Writer;
-    res: Msg.Msg;
 
   PROCEDURE CloseFile (w: Writer.Writer) RAISES IO.Error;
     BEGIN

@@ -36,7 +36,7 @@ TYPE
   ReaderDesc* = RECORD
     byteOrder-: SHORTINT;
     (**Endian settings for the reader.  *)
-    base-: IO.ByteChannel;
+    channel-: IO.ByteChannel;
     (**The channel on which this reader is operating.  *)
     error-: IO.Error;
     (**If any of the write methods encounters an error, then the corresponding
@@ -49,7 +49,7 @@ TYPE
   WriterDesc* = RECORD
     byteOrder-: SHORTINT;
     (**Endian settings for the writer.  *)
-    base-: IO.ByteChannel;
+    channel-: IO.ByteChannel;
     (**The channel on which this writer is operating.  *)
     error-: IO.Error;
     (**If any of the write methods encounters an error, then the corresponding
@@ -105,7 +105,7 @@ PROCEDURE (r: Reader) ReadBytes * (VAR x: ARRAY OF SYSTEM.BYTE;
 (**Read the bytes according to the native machine byte order.  *)
   BEGIN
     TRY
-      IF (r.base.Read(x, start, n) # n) THEN
+      IF (r.channel.Read(x, start, n) # n) THEN
         IO.RaiseFormatError("Short file");
       END;
     CATCH IO.Error:
@@ -120,7 +120,7 @@ PROCEDURE (r: Reader) ReadBytesOrdered (VAR x: ARRAY OF SYSTEM.BYTE);
   BEGIN
     IF (r.byteOrder=nativeEndian) OR (r.byteOrder=systemByteOrder) THEN
       TRY
-        d := r.base.Read(x, 0, LEN(x));
+        d := r.channel.Read(x, 0, LEN(x));
         IF (d # LEN(x)) THEN
           IO.RaiseFormatError("Short file");
         END;
@@ -130,7 +130,7 @@ PROCEDURE (r: Reader) ReadBytesOrdered (VAR x: ARRAY OF SYSTEM.BYTE);
     ELSE  (* swap bytes of value *)
       TRY
         FOR i:=LEN(x)-1 TO 0 BY -1 DO
-          IF (r.base.Read(x[i], 0, 1) # 1) THEN
+          IF (r.channel.Read(x[i], 0, 1) # 1) THEN
             IO.RaiseFormatError("Short file");
           END;
         END;
@@ -145,7 +145,7 @@ PROCEDURE (r: Reader) ReadBool*(VAR bool: BOOLEAN);
     byte: SHORTINT;
   BEGIN
     TRY
-      IF (r.base.Read(byte, 0, 1) # 1) THEN
+      IF (r.channel.Read(byte, 0, 1) # 1) THEN
         IO.RaiseFormatError("Short file");
       ELSIF (byte # 0) & (byte # 1) THEN
         IO.RaiseFormatError("Value out of range");
@@ -159,7 +159,7 @@ PROCEDURE (r: Reader) ReadBool*(VAR bool: BOOLEAN);
 PROCEDURE (r: Reader) ReadChar* (VAR ch: CHAR);
   BEGIN
     TRY
-      IF (r.base.Read(ch, 0, 1) # 1) THEN
+      IF (r.channel.Read(ch, 0, 1) # 1) THEN
         IO.RaiseFormatError("Short file");
       END;
     CATCH IO.Error:
@@ -356,7 +356,7 @@ PROCEDURE (w: Writer) WriteBytes * (x[NO_COPY]: ARRAY OF SYSTEM.BYTE;
     d: LONGINT;
   BEGIN
     TRY
-      d := w.base.Write(x, start, n);
+      d := w.channel.Write(x, start, n);
     CATCH IO.Error:
       SetWError(w);
     END;
@@ -369,9 +369,9 @@ PROCEDURE (w: Writer) WriteOrdered (VAR x: ARRAY OF SYSTEM.BYTE);
   BEGIN
     TRY
       IF (w.byteOrder=nativeEndian) OR (w.byteOrder=systemByteOrder) THEN
-        d := w.base.Write(x, 0, LEN(x)) 
+        d := w.channel.Write(x, 0, LEN(x)) 
       ELSE
-        FOR i:=LEN(x)-1 TO 0 BY -1 DO d := w.base.Write(x[i], 0, 1) END  
+        FOR i:=LEN(x)-1 TO 0 BY -1 DO d := w.channel.Write(x[i], 0, 1) END  
       END
     CATCH IO.Error:
       SetWError(w);
@@ -383,7 +383,7 @@ PROCEDURE (w: Writer) WriteChar*(ch: CHAR);
     d: LONGINT;
   BEGIN
     TRY
-      d := w. base. Write(ch, 0, 1);
+      d := w. channel. Write(ch, 0, 1);
     CATCH IO.Error:
       SetWError(w);
     END;
@@ -409,7 +409,7 @@ PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
     d: LONGINT;
   BEGIN
     TRY
-      d := w.base.Write (s, 0, Strings.Length (s)+1);
+      d := w.channel.Write (s, 0, Strings.Length (s)+1);
     CATCH IO.Error:
       SetWError(w);
     END;
@@ -432,7 +432,7 @@ PROCEDURE (w: Writer) WriteSInt*(sint: SHORTINT);
     d: LONGINT;
   BEGIN
     TRY
-      d := w.base.Write(sint, 0, 1);
+      d := w.channel.Write(sint, 0, 1);
     CATCH IO.Error:
       SetWError(w);
     END;
@@ -489,7 +489,7 @@ PROCEDURE (w: Writer) WriteStr*(s: Object.String);
         w.WriteNum(s.length+1);
         chars8 := s.CharsLatin1();
         TRY
-          d := w.base.Write(chars8^, 0, s.length);
+          d := w.channel.Write(chars8^, 0, s.length);
         CATCH IO.Error:
           SetWError(w);
         END;
@@ -522,7 +522,7 @@ PROCEDURE (w: Writer) SetByteOrder* (order: SHORTINT);
 PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel; byteOrder: SHORTINT);
   BEGIN
     r. byteOrder := byteOrder;
-    r. base := ch;
+    r. channel := ch;
     r. error := NIL;
   END InitReader;
 
@@ -546,7 +546,7 @@ PROCEDURE ConnectReader*(ch: IO.ByteChannel): Reader;
 PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel; byteOrder: SHORTINT);
   BEGIN
     w.byteOrder := byteOrder;
-    w.base := ch;
+    w.channel := ch;
     w.error := NIL;
   END InitWriter;
 

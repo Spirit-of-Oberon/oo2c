@@ -21,7 +21,7 @@ MODULE OOC:Make:TranslateToC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Channel, IO, IO:PFD, ADT:Dictionary, 
+  IO, IO:PFD, ADT:Dictionary, 
   OOC:Config, OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 

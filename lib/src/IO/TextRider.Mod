@@ -36,7 +36,7 @@ CONST
 TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc* = RECORD
-    base-: IO.ByteChannel;
+    channel-: IO.ByteChannel;
     (**The channel on which this writer is operating.  *)
 
     error-: IO.Error;
@@ -55,7 +55,7 @@ PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel);
   VAR
     i: INTEGER;
   BEGIN
-    w. base := ch;
+    w. channel := ch;
     w. error := NIL;
     w. eolLen := Strings.Length (CharClass.systemEol);
     FOR i := 0 TO w. eolLen-1 DO
@@ -119,7 +119,7 @@ PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
   BEGIN
     len := Strings.Length(s);
     TRY
-      d := w.base.Write(s, 0, len);
+      d := w.channel.Write(s, 0, len);
     CATCH IO.Error:
       SetError(w);
     END;
@@ -131,7 +131,7 @@ PROCEDURE (w: Writer) WriteStringRegion*(s[NO_COPY]: ARRAY OF CHAR;
     d: LONGINT;
   BEGIN
     TRY
-      d := w.base.Write(s, start, end-start);
+      d := w.channel.Write(s, start, end-start);
     CATCH IO.Error:
       SetError(w);
     END;
@@ -150,7 +150,7 @@ PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
       TRY
         WITH s: Object.String8 DO
           chars := s.CharsLatin1();
-          i := w.base.Write(chars^, 0, s.length);
+          i := w.channel.Write(chars^, 0, s.length);
         | s: Object.String32 DO
           w.WriteString("[TextRider.WriteObject: String32 not implemented]");
         END;
@@ -172,7 +172,7 @@ PROCEDURE (w: Writer) WriteChar*(ch: CHAR);
     d: LONGINT;
   BEGIN
     TRY
-      d := w.base.Write(ch, 0, 1);
+      d := w.channel.Write(ch, 0, 1);
     CATCH IO.Error:
       SetError(w);
     END;
