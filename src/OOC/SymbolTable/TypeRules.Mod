@@ -389,10 +389,11 @@ PROCEDURE (tr: Rules) IsByteCompatible* (type: Sym.Type): BOOLEAN;
 
 PROCEDURE (tr: Rules) IsNilCompatible* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the value @code{NIL} can be assigned to
-   variables of type @oparam{type}.  *)
+   variables of type @oparam{type}, or if @code{NIL} can be compared to
+   such variables.  *)
   BEGIN
     WITH type: Sym.PredefType DO
-      RETURN (type. id = Predef.ptr)
+      RETURN (type. id = Predef.ptr) OR (type. id = Predef.nil)
     | type: Sym.Pointer DO
       RETURN TRUE;
     | type: Sym.FormalPars DO
