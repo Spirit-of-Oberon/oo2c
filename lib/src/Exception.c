@@ -24,11 +24,11 @@ Exception__Exception Exception__Current() {
 }
 
 #define SIZE_BUFFER 1024
-void Exception__FatalError() {
-  RT0__Struct td = OOC_TYPE_TAG(current);
+void Exception__Abort(Exception__Exception e) {
+  RT0__Struct td = OOC_TYPE_TAG(e);
   Object__String msg =
     OOC_TBCALL(OOC_TBPROC_ADR(td,Exception__ExceptionDesc_GetMessage),
-	       Exception__ExceptionDesc_GetMessage)(current);
+	       Exception__ExceptionDesc_GetMessage)(e);
   /* if the type name ends with "Desc", then drop the last 4 characters */
   int len = strlen(td->name);
   if ((len >= 4) && (strcmp(td->name + (len-4), "Desc") == 0)) {
@@ -56,8 +56,12 @@ void Exception__FatalError() {
   }
   
   (void)fprintf(stderr, "\n\n");
-  Exception__ExceptionDesc_WriteBacktrace(current);
+  Exception__ExceptionDesc_WriteBacktrace(e);
   exit(EXCEPTION_EXIT_CODE);
+}
+
+void Exception__FatalError() {
+  Exception__Abort(current);
 }
 
 void Exception__ActivateContext() {
