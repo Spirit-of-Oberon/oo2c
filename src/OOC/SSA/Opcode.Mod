@@ -183,9 +183,7 @@ CONST
      @oconst{loopEnd} instruction.  *)
   
   
-  (* selectExit* = 10;  ... unused opcode *)
-  
-  loopStart* = 11;
+  loopStart* = 10;
   (**Marks the beginning of a loop construct.  It has a single operand:
 
      @table @oconst
@@ -204,7 +202,7 @@ CONST
 
      There is one result, the value of @var{store} as seen by the loop body
      when an iteration begins.  *)
-  loopEnd* = 12;
+  loopEnd* = 11;
   (**Marks the end of a loop construct.  The instruction has n+2
      arguments:
 
@@ -229,7 +227,7 @@ CONST
      There is one result of class @oconst{*OOC:SSA:Opnd.store}, the value of
      @var{store} as seen by the first instruction after the loop.  *)
   
-  get* = 13;
+  get* = 12;
   (**Retrieves the value of a variable.  Result is always a scalar value.  The
      operands of the instruction and their class ids are in this order:
 
@@ -252,7 +250,7 @@ CONST
      The instruction itself represents the result of the read operation.  If it
      accesses a volatile variable, then it has an additional result, the new
      value of @var{store} that is produced by this read operation.  *)
-  set* = 14;
+  set* = 13;
   (**Sets the value of a variable.  The source value is always of scalar type.
      The operand list resembles that of a @oconst{get} instruction, using the
      class ids @oconst{*OOC:SSA:Opnd.writeAdr} and
@@ -263,7 +261,7 @@ CONST
 
      The instruction has one result of class @oconst{*OOC:SSA:Result.store},
      representing the new value of store with the updated variable.  *)
-  copy* = 15;
+  copy* = 14;
   (**Copy a record or array value.  Used for assignment statements where the
      source and target are not scalar values.  The instruction is very similar
      to the @oconst{copyString} opcode below, with two differences:
@@ -277,7 +275,7 @@ CONST
      There is no length operand, because the size of the memory block to be
      copied is size of the first operand's type.
      @end itemize  *)  
-  copyString* = 16;
+  copyString* = 15;
   (**Copy a sequence of characters into a string variable.  This corresponds to
      the @samp{COPY} statement.
 
@@ -320,7 +318,7 @@ CONST
      @samp{0X}, or if the target as a length of zero characters.  The
      instruction has one result of class @oconst{*OOC:SSA:Result.store},
      representing the new value of store with the updated variable.  *)  
-  cmpString* = 17;
+  cmpString* = 16;
   (**Compare two string values and return the difference of the first
      characters that differ, or @samp{0} if both strings are equal.
      If the result is negative, then the left side is smaller than the
@@ -355,6 +353,8 @@ CONST
 
      The result is undefined if the strings are not terminated with
      @samp{0X}.  *)
+  concat* = 17;
+  (**Concatenate two or more instances of @code{STRING}.  *)
   
   moveBlock* = 18;
   (**Copy a memory block between two addresses in memory.  This corresponds to
@@ -745,6 +745,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | copy: cstr := "copy";
     | copyString: cstr := "copy-string";
     | cmpString: cstr := "cmp-string";
+    | concat: cstr := "concat";
     | moveBlock: cstr := "move-block";
       
     | getLengthHeap: cstr := "get-length-heap";

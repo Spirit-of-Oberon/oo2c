@@ -644,6 +644,18 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           RETURN instr;
         END;
       END SelectProc;
+
+    PROCEDURE Concat (expr: IR.Concat): SSA.Result;
+      VAR
+        i: LONGINT;
+        instr: SSA.Instr;
+      BEGIN
+        instr := pb. AddInstr(Opcode.concat, Opcode.scAddress);
+        FOR i := 0 TO LEN(expr.strings^)-1 DO
+          instr.AddOpnd(Expression(expr.strings[i]), Opnd.arg);
+        END;
+        RETURN instr;
+      END Concat;
     
     BEGIN
       WITH expr: IR.Const DO
@@ -822,6 +834,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. set), Opnd.arg);
         instr. AddOpnd (Expression (expr. element), Opnd.arg);
         RETURN instr;
+
+      | expr: IR.Concat DO
+        RETURN Concat(expr);
         
       | expr: IR.Compare DO
         CASE expr.variant OF

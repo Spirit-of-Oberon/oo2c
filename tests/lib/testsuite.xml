@@ -17,7 +17,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_STRING lib_STRING2 lib_STRING3">-->
+  select ="prepare_out_module lib_rt1 lib_STRING lib_STRING2
+  lib_STRING3 lib_STRING4 lib_STRING5">-->
 
   &TestSetupWithOut;
   
@@ -534,6 +535,16 @@
       constants and strings to <code>STRING</code> works.
     </test>
     
+    <test id="lib_STRING4" type="run"
+          file="LibSTRING4.Mod" output="LibSTRING4.Ref">
+      Tests concatenation of <code>STRING</code> values.
+    </test>
+    
+    <test id="lib_STRING5" type="run"
+          file="LibSTRING5.Mod" output="LibSTRING5.Ref">
+      Character constant <code>0X</code> is converted to a string of
+      length 1, holding the character <code>0X</code>.
+    </test>
   </testcases>
 
   &libadt-testcases;
