@@ -2,7 +2,7 @@
 <package name="liboo2c">
   <version current="0" revision="0" age="0"/>
   
-  <library name="foo" main-module="liboo2c">
+  <library name="oo2c" main-module="liboo2c">
     <version current="0" revision="0" age="0"/>
   </library>
 
