@@ -29,6 +29,13 @@ TYPE
   BranchBlock* = POINTER TO BranchBlockDesc;
 
 TYPE
+  Dependent = POINTER TO DependentDesc;
+  DependentDesc = RECORD
+    next: Dependent;
+    block: Block;
+  END;
+  
+TYPE
   BlockDesc = RECORD
     (Object.ObjectDesc)
     (**A basic block contains a sequence of instructions, with control flow
@@ -39,23 +46,33 @@ TYPE
        in this context.  *)
     nextDom-: Block;
     (**Link for list of @ofield{Block.domList}.  *)
-    
+
+    parent-: Block;
+    (**The block directory dominating this one.  For the root of the domitor
+       tree, this field is @code{NIL}.  *)
+       
     proxyList-, proxyTail: InstrProxy;
     (**List with all instructions in this block.  *)
 
     domList-: Block;
-    (**Lists all blocks directly dominated by this one.  *)
+    (**Lists all blocks directly dominated by this one.  The blocks are linked
+       by @ofield{nextDom}.  *)
 
     jump-: Block;
     (**Default target of control flow when leaving this block.  Only @code{NIL}
        if the block is last in a procedure.  *)
 
+    
+    dependentList: Dependent;
+    (* lists blocks that should be written after this one *)
+    depCount: LONGINT;
+    (* number of blocks that should be written before this one can be written*)
+    
     degreeIn-: LONGINT;
     (**The number of jumps or branches that have this block as target.  *)
 
-    isWritten*: BOOLEAN;
-    (**Auxiliary field for output procedure: if @code{TRUE}, then this
-       block has been written out already.  *)
+    isLoopHead-: BOOLEAN;
+    (**TRUE iff this block is the head of a loop *)
   END;
   
 TYPE
@@ -79,11 +96,14 @@ PROCEDURE InitBlock (b: Block; jump: Block);
     Object.Init (b);
     b. proxyList := NIL;
     b. proxyTail := NIL;
+    b. parent := NIL;
     b. nextDom := NIL;
     b. domList := NIL;
     b. jump := jump;
+    b. dependentList := NIL;
+    b. depCount := 0;
     b. degreeIn := 0;
-    b. isWritten := FALSE;
+    b. isLoopHead := FALSE;
   END InitBlock;
 
 PROCEDURE NewBlock (jump: Block): Block;
@@ -104,7 +124,8 @@ PROCEDURE ClearProxyList (b: Block);
 PROCEDURE Dominates (dominator, child: Block);
   BEGIN
     child. nextDom := dominator. domList;
-    dominator. domList := child
+    dominator. domList := child;
+    child. parent := dominator
   END Dominates;
 
 
@@ -588,6 +609,158 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       END;
     END CalculateDegree;
   
+  PROCEDURE ArrangeBlock (b: Block);
+  (* arrange children within each block in such way that loop branches have a
+     target earlier in the linear chain of blocks, and all other jumps and
+     branches a target later in the chain  *)
+    VAR
+      nested: Block;
+      
+    PROCEDURE LocateJumps (path: Block; b: Block);
+    (* find all jumps in or below `b' that have the parent of `path' as
+       target; for every jump, add a dependency from `path' to
+       the child of `path.parent' containg the jump target *)
+      VAR
+        nested: Block;
+        
+      PROCEDURE ProcessJump (target: Block);
+        PROCEDURE WriteBefore (VAR dependentList: Dependent; b: Block);
+          BEGIN
+            IF (dependentList = NIL) THEN
+              NEW (dependentList);
+              dependentList. block := b;
+              dependentList. next := NIL;
+              INC (b. depCount);
+            ELSIF (dependentList. block # b) THEN
+              WriteBefore (dependentList. next, b)
+            END;
+          END WriteBefore;
+        
+        BEGIN
+          IF (target = path. parent) THEN
+            path. parent. isLoopHead := TRUE
+          ELSE
+            WHILE (target # NIL) & (target. parent # path. parent) DO
+              target := target. parent
+            END;
+            IF (target # NIL) & (target # path) THEN
+              WriteBefore (path. dependentList, target)
+            END;
+          END;
+        END ProcessJump;
+      
+      BEGIN
+        WITH b: BranchBlock DO
+          ProcessJump (b. branchTo)
+        ELSE
+        END;
+        IF (b. jump # NIL) THEN
+          ProcessJump (b. jump);
+        END;
+
+        nested := b. domList;
+        WHILE (nested # NIL) DO
+          LocateJumps (path, nested);
+          nested := nested. nextDom
+        END;
+      END LocateJumps;
+
+    PROCEDURE AddToList (VAR list: Block; b: Block);
+      BEGIN
+        b. nextDom := list;
+        list := b
+      END AddToList;
+
+    PROCEDURE AppendToList (VAR list: Block; b: Block);
+      BEGIN
+        IF (list = NIL) THEN
+          b. nextDom := NIL;
+          list := b
+        ELSE
+          AppendToList (list. nextDom, b)
+        END;
+      END AppendToList;
+
+    PROCEDURE RemoveFromList (VAR list: Block; b: Block);
+      BEGIN
+        IF (list = b) THEN
+          list := list. nextDom
+        ELSE
+          RemoveFromList (list. nextDom, b)
+        END;
+      END RemoveFromList;
+
+    PROCEDURE SortBlocks (domBlock: Block);
+    (* sort nested blocks of `domBlock' topologically: if block A contains
+       a jump to block B, then place block A before block B *)
+      VAR
+        b, nested, next, ready, waiting, preferedBlock: Block;
+        dep: Dependent;
+      BEGIN
+        ready := NIL; waiting := NIL;
+        nested := domBlock. domList;
+        WHILE (nested # NIL) DO
+          next := nested. nextDom;
+          IF (nested. depCount = 0) THEN
+            AddToList (ready, nested)
+          ELSE
+            AddToList (waiting, nested)
+          END;
+          nested := next
+        END;
+        
+        domBlock. domList := NIL;
+        preferedBlock := domBlock. jump;
+        WHILE (ready # NIL) DO
+          IF (preferedBlock # NIL) &
+             (preferedBlock. parent = domBlock) &
+             (preferedBlock. depCount = 0) THEN
+            b := preferedBlock
+          ELSE
+            b := ready
+          END;
+          
+          RemoveFromList (ready, b);
+          AppendToList (domBlock. domList, b);
+          b. depCount := -1;
+          
+          dep := b. dependentList;
+          WHILE (dep # NIL) DO
+            DEC (dep. block. depCount);
+            IF (dep. block. depCount = 0) THEN
+              RemoveFromList (waiting, dep. block);
+              AddToList (ready, dep. block)
+            END;
+            dep := dep. next
+          END;
+          preferedBlock := b. jump
+        END;
+        ASSERT (waiting = NIL)
+      END SortBlocks;
+    
+    BEGIN
+      (* recursively process all nested blocks *)
+      nested := b. domList;
+      WHILE (nested # NIL) DO
+        ArrangeBlock (nested);
+        nested := nested. nextDom
+      END;
+
+      (* locate jump and branch instructions in our nested blocks *)
+      IF (b. jump = b) OR
+         (b IS BranchBlock) & (b(BranchBlock). branchTo = b)THEN
+        b. isLoopHead := TRUE
+      END;
+      nested := b. domList;
+      WHILE (nested # NIL) DO
+        LocateJumps (nested, nested);
+        nested := nested. nextDom
+      END;
+
+      (* sort nested blocks *)
+      SortBlocks (b);
+    END ArrangeBlock;
+  
   BEGIN
     (* first, put all instructions into a single block; instructions are
        sorted topological first, and this order is reversed when creating
@@ -612,6 +785,10 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     (* third, schedule instructions within each basic block *)
     SortBlocks (b);
 
+    (* fourth, arrange dominated blocks within each block in such way that
+       loop branches have a target earlier in the chain of blocks, and all
+       other jumps and branches a target later in the chain *)
+    ArrangeBlock (b);
     
     (* set the `degreeIn' fields to the number of blocks that jump or branch
        into the block *)
