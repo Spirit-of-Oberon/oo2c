@@ -20,7 +20,11 @@ MODULE OOC:SSA:Blocker;
     Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
+<*DEFINE DEBUG_BLOCKER:=FALSE*>
+
 IMPORT
+  <*IF DEBUG_BLOCKER THEN*>Log,OOC:SSA:Check,StdChannels,<*END*>
+  SYSTEM,
   Channel, TextRider, ADT:Object, ADT:String, ADT:Dictionary,
   IntDictionary := ADT:Dictionary:IntValue, Language:Integer,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination,
@@ -71,8 +75,6 @@ IMPORT
 *)
 
 
-<*DEFINE DEBUG_BLOCKER:=FALSE*>
-
 TYPE
   Proxy* = POINTER TO ProxyDesc;
   Region* = POINTER TO RegionDesc;
@@ -119,7 +121,25 @@ TYPE
     (**This field is used by @oproc{ArrangeInstructions.DiscoverLoopStructure}.  *)
 
     marker: LONGINT;
-    (**Use by @oproc{AntiDepViolation}.  *)
+    (**Use by @oproc{AntiDepViolation} and
+       @oproc{ArrangeInstructions.SortRegion.CalculateWeight}.  *)
+
+    
+    length: LONGINT;
+    (**Length of an instruction within the region.  For a nested region, this
+       is approximated by the number of instructions within the region.  For
+       all other instructions, this is @samp{1}.  If the length has not
+       been computed yet, then this field is negative.  *)
+
+    distance: LONGINT;
+    (**Distance of this instruction to the end of the region.  This is the
+       maximum of the distance of all local using instructions, plus the
+       instruction's @ofield{length}.  A value of zero means that the
+       instruction can be scheduled at the very end of the region.  *)
+
+    degreeDiff: LONGINT;
+    (**Number of produced register values minues the number of register values
+       taken as operands.  *)
   END;
   RegionDesc = RECORD
     (ProxyDesc)
@@ -191,6 +211,9 @@ PROCEDURE InitProxy (p: Proxy; instr: SSA.Instr);
     p. visitedResult := FALSE;
     p. discoveredForLoop := NIL;
     p. marker := 0;
+    p. length := -1;
+    p. distance := 0;
+    p. degreeDiff := 0;
   END InitProxy;
 
 PROCEDURE NewProxy (instr: SSA.Instr): Proxy;
@@ -423,7 +446,7 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region);
       res: SSA.Result;
       opnd: SSA.Opnd;
       str: ARRAY 64 OF CHAR;
-      i, resCount: LONGINT;
+      i, resCount, d: LONGINT;
       
     PROCEDURE WriteResultId (res: SSA.Result);
       VAR
@@ -481,7 +504,21 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region);
     BEGIN
       instr := p. instr;
       IF (instr = NIL) OR ~instr. IsConst() THEN
-        (*w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
+        w. WriteHex (SYSTEM.VAL (LONGINT, instr), 8);
+        w. WriteString ("  ");
+        (*IF (instr = NIL) THEN
+          d := 0;
+        ELSE
+          d := instr. info(Proxy). distance;
+        END;
+        w. WriteLInt (d, 3);
+        w. WriteString ("  ");*)
+        (*IF (instr = NIL) THEN
+          d := 0;
+        ELSE
+          d := instr. info(Proxy). degreeDiff;
+        END;
+        w. WriteLInt (d, 3);
         w. WriteString ("  ");*)
         (*w. WriteString ("L:");
         IF (p. loopAssoc # NIL) THEN
@@ -538,7 +575,9 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region);
             | Opnd.loopExternalDef:
               w. WriteString ("*led*");
             ELSE
-              (* omit class *)
+              Opnd.GetName (opnd. class, str);
+              w. WriteString (str);
+              w. WriteString (":");
             END;
             WriteResultId (opnd. arg);
             opnd := opnd. nextOpnd
@@ -1282,8 +1321,139 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
           Remove (list. nextProxy, proxy); 
         END;
       END Remove;
+
+    PROCEDURE GetLength (proxy: Proxy): LONGINT;
+      VAR
+        p: Proxy;
+        l: LONGINT;
+      BEGIN
+        IF (proxy. length < 0) THEN
+          WITH proxy: Region DO
+            l := 1;
+            p := proxy. first;
+            WHILE (p # NIL) DO
+              INC (l, GetLength (p));
+              p := p. nextProxy;
+            END;
+          ELSE
+            CASE proxy. instr. opcode OF
+            | Opcode.collect: l := 0;
+            ELSE
+              l := 1;
+            END;
+          END;
+          proxy. length := l;
+        END;
+        RETURN proxy. length;
+      END GetLength;
     
-    PROCEDURE CountLocalUses (VAR head, tail: Proxy);
+    PROCEDURE CalculateWeight (VAR list: Proxy);
+      VAR
+        proxy, defProxy, useProxy, ready, waiting: Proxy;
+        res: SSA.Result;
+        use, opnd: SSA.Opnd;
+        max, degreeDiff: LONGINT;
+
+      PROCEDURE CountAsRegister (arg: SSA.Result): BOOLEAN;
+        BEGIN
+          IF (arg. subclass = Opcode.scNone) THEN
+            RETURN FALSE;
+          ELSE
+            RETURN ~(arg IS SSA.Instr) OR ~arg(SSA.Instr). IsConst();
+          END;
+        END CountAsRegister;
+      
+      BEGIN
+        ready := NIL;
+        waiting := NIL;
+        WHILE (list # NIL) DO
+          proxy := list;
+          list := list. nextProxy;
+
+          
+          degreeDiff := 0;
+          useCount := 0;
+          IF (proxy. instr # NIL) THEN
+            (* count outgoing values minus incoming values *)
+            res := proxy. instr;
+            WHILE (res # NIL) DO
+              IF CountAsRegister (res) THEN
+                INC (degreeDiff);
+              END;
+              res := res. nextResult;
+            END;
+            opnd := proxy. instr. opndList;
+            WHILE (opnd # NIL) DO
+              IF opnd. IsValueOpnd() & CountAsRegister (opnd. arg) THEN
+                DEC (degreeDiff);
+              END;
+              opnd := opnd. nextOpnd;
+            END;
+            
+            (* count results that are used in the local region *)
+            res := proxy. instr;
+            WHILE (res # NIL) DO
+              use := res. useList;
+              WHILE (use # NIL) DO
+                IF (use. instr. info(Proxy). region = r) THEN
+                  INC (useCount);
+                END;
+                use := use. nextUse;
+              END;
+              res := res. nextResult;
+            END;
+          END;
+          proxy. degreeDiff := degreeDiff;
+          proxy. marker := useCount;
+          IF (useCount = 0) THEN
+            proxy. distance := proxy. length;
+            Add (ready, proxy);
+          ELSE
+            Add (waiting, proxy);
+          END;
+        END;
+
+        WHILE (ready # NIL) DO
+          proxy := ready;
+          Remove (ready, proxy);
+
+          max := 0;
+          IF (proxy. instr # NIL) THEN
+            res := proxy. instr;
+            WHILE (res # NIL) DO
+              use := res. useList;
+              WHILE (use # NIL) DO
+                useProxy := use. instr. info(Proxy);
+                IF (useProxy. region = r) & (useProxy. distance > max) THEN
+                  max := useProxy. distance;
+                END;
+                use := use. nextUse;
+              END;
+              res := res. nextResult;
+            END;
+                
+            opnd := proxy. instr. opndList;
+            WHILE (opnd # NIL) DO
+              defProxy := opnd. arg. instr. info(Proxy);
+              IF (defProxy. region = r) THEN
+                DEC (defProxy. marker);
+                IF (defProxy. marker = 0) THEN
+                  Remove (waiting, defProxy);
+                  Add (ready, defProxy);
+                END;
+              END;
+              opnd := opnd. nextOpnd;
+            END;
+          END;
+          proxy. distance := max+GetLength (proxy);
+
+          proxy. nextProxy := list;
+          list := proxy;
+        END;
+        ASSERT (waiting = NIL);
+      END CalculateWeight;
+    
+    PROCEDURE CountLocalUses (VAR head: Proxy);
       VAR
         proxy: Proxy;
         opndCount: LONGINT;
@@ -1292,7 +1462,9 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
         WHILE (head # NIL) DO
           proxy := head;
           head := head. nextProxy;
-          
+
+          (* count operands whose values are produced in the local region,
+             and store the number in proxy.instr.marker *)
           opndCount := 0;
           IF (proxy. instr # NIL) THEN
             opnd := proxy. instr. opndList;
@@ -1304,20 +1476,13 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
             END;
             proxy. instr. marker := opndCount;
           END;
-
           IF (opndCount = 0) THEN
             Add (ready, proxy);
           ELSE
             ASSERT (proxy.instr # NIL);
             Add (waiting, proxy);
           END;
-
-          WITH proxy: Region DO
-            SortRegion (proxy);
-          ELSE
-          END;
         END;
-        tail := NIL;
       END CountLocalUses;
     
     PROCEDURE UpdateUses (instr: SSA.Instr);
@@ -1344,21 +1509,38 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
         END;
       END UpdateUses;
 
+    PROCEDURE NextInstr (ready: Proxy): Proxy;
+      VAR
+        best: Proxy;
+      BEGIN
+        best := ready;
+        ready := ready. nextProxy;
+        WHILE (ready # NIL) DO
+          IF (ready. distance > best. distance) OR
+             (ready. distance = best. distance) &
+               (ready. degreeDiff < best. degreeDiff) THEN
+            best := ready;
+          END;
+          ready := ready. nextProxy;
+        END;
+        RETURN best;
+      END NextInstr;
+    
     BEGIN
       (* for every instruction, write the number of operands that refer to
-         result from the current region into its `marker' field; instructions
-         with no such operands are placed in `ready', the rest
-         is put into `waiting' *)
+         results from the current region into its `marker' field; instructions
+         with no such operands are placed in `ready', the rest is put into
+         `waiting'  *)
       ready := NIL;
       waiting := NIL;
-      CountLocalUses (r. first, r. last);
-      ASSERT (r. first = NIL);
-      ASSERT (r. last = NIL);
+      r. last := NIL;
+      CalculateWeight (r. first);
+      CountLocalUses (r. first);
       
       (* remove instructions whose definitions have been scheduled already from
          `ready' and schedule them  *)
       WHILE (ready # NIL) DO
-        proxy := ready;
+        proxy := NextInstr (ready);
         Remove (ready, proxy);
         UpdateUses (proxy. instr);
         ASSERT (proxy. region = r);
@@ -1366,6 +1548,14 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
         r. Append (proxy);
       END;
       ASSERT (waiting = NIL);
+
+      ready := r. first;
+      WHILE (ready # NIL) DO
+        IF (ready IS Region) THEN
+          SortRegion (ready(Region));
+        END;
+        ready := ready. nextProxy;
+      END;
     END SortRegion;
 
   PROCEDURE ClearRegion (r: Region);
