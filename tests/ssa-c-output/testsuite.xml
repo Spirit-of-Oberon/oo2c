@@ -5,10 +5,10 @@
 <testsuite-ext
   profile="Test Suite for Framework Testing"
   select ="prepare_out_module var1 var2 var3 var3b var3c var4 var4b 
-  var5 var5b var6 var6b var7 var7b var7c">
+  var5 var5b var6 var6b var7 var7b var7c swap1 swap2">
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module var3c var7c">-->
+  select ="prepare_out_module swap1 swap2">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -101,6 +101,18 @@
       life time of a local variable extends across an <code>IF</code>
       statement.  The variable's value should not be passed through
       the loop.
+    </test>
+
+
+    <test id="swap1" type="run" file="Swap1.Mod" output="Swap1.Ref">
+      Swapping to values.  The swap is done in memory.  Register
+      variables are used as temporary stores.
+    </test>
+    
+    <test id="swap2" type="run" file="Swap2.Mod" output="Swap2.Ref">
+      Swapping to values.  The swap is done in the register file.  A
+      temporary variable must be created to avoid clobbering a swapped
+      value.
     </test>
   </testcases>
 </testsuite-ext>

@@ -10,10 +10,21 @@ IMPORT
 
 
 TYPE
+  RegisterSwap = RECORD
+    source, dest: String.String;
+    readCount: LONGINT;  (* number of reads of `dest' *)
+  END;
+  SwapArray = POINTER TO ARRAY OF RegisterSwap;
+  
+TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc = RECORD
     (DeclWriter.WriterDesc)
     registerMap: Dictionary.Dictionary;
+    
+    swapArray: SwapArray;                (* used by WriteCollect *)
+    lengthSwapArray: LONGINT;            (* used by WriteCollect *)
+    swapHelperVars: LONGINT;
   END;
 
 PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
@@ -24,8 +35,102 @@ PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
     NEW (w);
     cWriter. CopyTo (w);
     w. registerMap := registerMap;
+    NEW (w. swapArray, 8);
+    w. lengthSwapArray := 0;
+    w. swapHelperVars := 0;
     RETURN w
   END NewWriter;
+
+PROCEDURE (w: Writer) ClearSwapData;
+  BEGIN
+    w. lengthSwapArray := 0;
+    w. swapHelperVars := 0;
+  END ClearSwapData;
+
+PROCEDURE (w: Writer) AddSwapData (source, dest: String.String);
+  VAR
+    new: SwapArray;
+    i: LONGINT;
+  BEGIN
+    IF (source. array^ # dest. array^) THEN (* suppress things like `i0=i0;' *)
+      IF (w. lengthSwapArray = LEN (w. swapArray^)) THEN
+        NEW (new, LEN (w. swapArray^)*2);
+        FOR i := 0 TO LEN (w. swapArray^)-1 DO
+          new[i] := w. swapArray[i]
+        END;
+        w. swapArray := new
+      END;
+      w. swapArray[w. lengthSwapArray]. source := source;
+      w. swapArray[w. lengthSwapArray]. dest := dest;
+      w. swapArray[w. lengthSwapArray]. readCount := 0;
+      INC (w. lengthSwapArray)
+    END;
+  END AddSwapData;
+
+PROCEDURE (w: Writer) CountReadsSwapData;
+  VAR
+    i, j, c: LONGINT;
+  BEGIN
+    FOR i := 0 TO w. lengthSwapArray-1 DO
+      c := 0;
+      FOR j := 0 TO w. lengthSwapArray-1 DO
+        IF (w. swapArray[j]. source. array^=w. swapArray[i]. dest. array^) THEN
+          INC (c)
+        END;
+      END;
+      w. swapArray[i]. readCount := c
+    END;
+  END CountReadsSwapData;
+
+PROCEDURE (w: Writer) RemoveSwapData (i: LONGINT);
+  VAR
+    j: LONGINT;
+  BEGIN
+    ASSERT (w. swapArray[i]. readCount = 0);
+    FOR j := 0 TO w. lengthSwapArray-1 DO
+      IF (w. swapArray[j]. dest. array^=w. swapArray[i]. source. array^) THEN
+        DEC (w. swapArray[j]. readCount)
+      END;
+    END;
+    w. swapArray[i] := w. swapArray[w. lengthSwapArray-1];
+    DEC (w. lengthSwapArray);
+  END RemoveSwapData;
+
+PROCEDURE (w: Writer) IntroduceHelperVar (i: LONGINT);
+  VAR
+    str: ARRAY 16 OF CHAR;
+    j: LONGINT;
+    h: String.String;
+  BEGIN
+    ASSERT (w. swapArray[i]. readCount # 0);
+    IntStr.IntToStr (w. swapHelperVars, str);
+    Strings.Insert ("h", 0, str);
+    h := String.New (str);
+    INC (w. swapHelperVars);
+    
+    FOR j := 0 TO w. lengthSwapArray-1 DO
+      IF (w. swapArray[j]. source. array^=w. swapArray[i]. dest. array^) THEN
+        w. swapArray[j]. source := h;
+      END;
+    END;
+    w. swapArray[i]. readCount := 0;
+
+    w. WriteString("{register typeof(");  (* FIXME...typeof() is a gcc-ism *)
+    w. WriteString (w. swapArray[i]. dest. array^);
+    w. WriteString (") ");
+    w. WriteString (h. array^);
+    w. WriteChar ("=");
+    w. WriteString (w. swapArray[i]. dest. array^);
+    w. WriteChar (";");
+  END IntroduceHelperVar;
+
+PROCEDURE (w: Writer) FixupHelperVars;
+  BEGIN
+    WHILE (w. swapHelperVars # 0) DO
+      w. WriteChar ("}");
+      DEC (w. swapHelperVars)
+    END;
+  END FixupHelperVars;
 
 PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): DeclWriter.BasicTypeId;
   BEGIN
@@ -277,17 +382,58 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
     VAR
       opnd: SSA.Opnd;
       res: SSA.Result;
-      targetVar: Object.Object;
+      targetVar, sourceVar: Object.Object;
+      i: LONGINT;
     BEGIN
+      (* first pass: collect all copy instructions transfering from a register
+         variable into another *)
+      w. ClearSwapData;
       opnd := collect. opndList;
       res := targetInstr. nextResult;
       WHILE (opnd # NIL) DO
         IF (opnd. class # Opnd.store) THEN
           targetVar := w. registerMap. Get (res);
-          w. WriteString (targetVar(String.String). array^);
+          IF w. registerMap. HasKey (opnd. arg) THEN
+            sourceVar := w. registerMap. Get (opnd. arg);
+            w. AddSwapData (sourceVar(String.String), targetVar(String.String))
+          END;
+        END;
+        opnd := opnd. nextOpnd; res := res. nextResult
+      END;
+
+      (* second pass: write out register transfers in an order that keeps
+         the number of helper variables down *)
+      w. CountReadsSwapData;
+      WHILE (w. lengthSwapArray # 0) DO
+        i := 0;
+        WHILE (i # w. lengthSwapArray) & (w. swapArray[i]. readCount # 0) DO
+          INC (i)
+        END;
+
+        IF (i = w. lengthSwapArray) THEN
+          w. IntroduceHelperVar (0)
+        ELSE                             (* can write out assignment *)
+          w. WriteString (w. swapArray[i]. dest. array^);
           w. WriteString ("=");
-          w. Ref (opnd);
+          w. WriteString (w. swapArray[i]. source. array^);
           w. WriteChar (";");
+          w. RemoveSwapData (i)
+        END;
+      END;
+      w. FixupHelperVars;
+      
+      (* final pass: write out anything that does not read from a register *)
+      opnd := collect. opndList;
+      res := targetInstr. nextResult;
+      WHILE (opnd # NIL) DO
+        IF (opnd. class # Opnd.store) THEN
+          targetVar := w. registerMap. Get (res);
+          IF ~w. registerMap. HasKey (opnd. arg) THEN
+            w. WriteString (targetVar(String.String). array^);
+            w. WriteString ("=");
+            w. Ref (opnd);
+            w. WriteChar (";");
+          END
         END;
         opnd := opnd. nextOpnd; res := res. nextResult
       END;
