@@ -120,7 +120,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           CNli; w. WriteString ("NULL"); (* tbProcs *)
           CNli; w. WriteString ("&_mid"); (* module *)
           WriteName (array);             (* name *)
-          CNli; w. WriteLInt (-1, 0);    (* size *)
+          ASSERT(base.size >= 0);
+          CNli; w. WriteLInt (base. size, 0); (* size *)
           CNli; w. WriteLInt (array. GetOpenDimensions(), 0); (* len *)
           CNli; WriteForm ("strOpenArray"); (* form *)
         ELSE

@@ -143,8 +143,9 @@ TYPE
     (**Type name.  @code{NIL} for anonymous types.  *)
 
     size-: LONGINT;
-    (**Size of the data type in bytes.  For an open array type, this field is
-       @samp{-1}.  *)
+    (**Size of the data type in bytes.  For an open array type, which has
+       no static size of its own, this field is size of the first element
+       type that is not an open array.  *)
     
     len-: LONGINT;
     (**Holds the length of an array, the number of open dimensions

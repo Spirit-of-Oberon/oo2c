@@ -112,7 +112,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     OOC_LEN *dim;
     
     /* calculate size of the block in bytes */
-    size = td->baseTypes[0]->size;
+    size = td->size;
     va_start(ap, td);
     for (i=0; i != td->len; i++) {
       OOC_LEN len = va_arg(ap, OOC_LEN);
