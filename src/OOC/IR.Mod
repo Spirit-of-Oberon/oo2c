@@ -1365,7 +1365,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     | noTypeTag:
       t := "This variable has no type tag"
     | cannotCreateInstance:
-      t := "Cannot create an instance an abstract type"
+      t := "Cannot create instance of abstract type"
     | abstractWithBegin:
       t := "Abstract procedure cannot have a BEGIN part"
     | abstractSuperCall:

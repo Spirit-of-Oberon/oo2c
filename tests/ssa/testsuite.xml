@@ -2181,13 +2181,13 @@
         msg="This type cannot be used as a record base type"/>
 
     <reject-info id="abstract1" pos="r: %R"
-        msg="Cannot create an instance an abstract type"/>
+        msg="Cannot create instance of abstract type"/>
     <reject-info id="abstract2" pos="r: %R"
-        msg="Cannot create an instance an abstract type"/>
+        msg="Cannot create instance of abstract type"/>
     <reject-info id="abstract3" pos="OF %R"
-        msg="Cannot create an instance an abstract type"/>
+        msg="Cannot create instance of abstract type"/>
     <reject-info id="abstract4" pos="NEW(%p)"
-        msg="Cannot create an instance an abstract type"/>
+        msg="Cannot create instance of abstract type"/>
     <reject-info id="abstract5" pos="[ABSTRACT] %P"
         msg="Receiver type is not abstract"/>
     <reject-info id="abstract6" pos="%PROCEDURE (p: P)"
@@ -2199,7 +2199,7 @@
     <reject-info id="abstract9" pos="R1 = %RECORD"
         msg="Inherited procedure `Proc' is still abstract"/>
     <reject-info id="abstract10" pos="NEW(%P)"
-        msg="Cannot create an instance an abstract type"/>
+        msg="Cannot create instance of abstract type"/>
 
     <reject-info id="generic5" pos="A: %Array"
         msg="Invalid type bound"/>

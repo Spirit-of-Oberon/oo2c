@@ -123,7 +123,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     | modifierFlagWithoutEffect:
       t := "This modifier flag has no effect here"
     | cannotCreateInstance:
-      t := "Cannot create an instance an abstract type"
+      t := "Cannot create instance of abstract type"
     | abstractProcForConcreteRecord:
       t := "Receiver type is not abstract"
     | abstractProcNotExported:
