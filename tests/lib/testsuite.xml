@@ -43,10 +43,10 @@
       that exceed the length of the source string.
     </test>
     
-<!--    <test id="lib_Strings_Extract3" type="run"
+    <test id="lib_Strings_Extract3" type="run"
       file="LibStringsExtract3.Mod" output="LibStringsExtract3.Ref">
       Tests the <code>Extract</code> function with a result 
       that must be truncated to fit into the destination string.
-    </test>-->
+    </test>
   </testcases>
 </testsuite-ext>
