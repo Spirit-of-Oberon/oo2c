@@ -1540,12 +1540,12 @@ PROCEDURE (b: Builder) GetOne (sym: Symbol; type: Sym.Type): Const;
 
 PROCEDURE (b : Builder) ValidSetElement(expr : Expression; set : Sym.Type) : Expression;
 (**Check if @oparam{expr} is a valid element of set type @oparam{set}. The
-   type of @oparam{expr} must be integer. If @oparam{oparam} is constant, it
-   must be included in the range @ocode{MIN(set)..MAX(set)}. 
+   type of @oparam{expr} must be integer. If @oparam{expr} is constant, it
+   must be included in the range @samp{MIN(set)..MAX(set)}. 
 
    This procedure always returns a valid element for @oparam{set}. The
    original expression is returned if it is valid. Otherwise, the value of
-   @ocode{MIN(set)} is returned. *)
+   @samp{MIN(set)} is returned. *)
 
   VAR
     val : Language.Value;
