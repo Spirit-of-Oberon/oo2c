@@ -1,8 +1,7 @@
 MODULE OOC:IR:Operator [OOC_EXTENSIONS];
 
 IMPORT
-  Integers, Log, ADT:ArrayList,
-  Language, Language:Boolean, Language:Integer, 
+  ADT:ArrayList,
   OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, Sym := OOC:SymbolTable,
   OOC:IR, OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef;
 
@@ -44,11 +43,15 @@ CONST
   (**@code{LEN()} on a variable length array parameter.  *)
   lenOpenArrayHeap* = 19;
   (**@code{LEN()} on a variable length array on the heap.  *)
-  
+ 
+TYPE 
+  ConstFold* = POINTER TO ConstFoldDesc;
+
 TYPE
   Builder* = POINTER TO BuilderDesc;
   BuilderDesc = RECORD
     (IR.BuilderDesc)
+    constFold- : ConstFold;
   END;
 
 TYPE
@@ -58,16 +61,10 @@ TYPE
   END;
 
 TYPE
-  TypeConv* = POINTER TO TypeConvDesc;
-  TypeConvDesc = RECORD
-    (**A TypeConv expression represents a type conversion of an expression
-       @ofield{expr} to a different type.  The source value is converted to an
-       equivalent or close value in the target domain.  Example: An integer
-       type representing the value @code{1} is converted to a floating point
-       value @code{1.0}.  Type conversions are also used to convert between
-       different integer types.  *)
-    (IR.OperatorDesc)
-    expr- : IR.Expression;
+  ConstFoldDesc* = RECORD [ABSTRACT]
+    (VisitorDesc)
+    builder- : Builder;
+    result* : IR.Expression;
   END;
 
 TYPE
@@ -131,7 +128,11 @@ TYPE
 
 VAR
   real : Sym.Type;
-  minus1, zero : Integers.Integer;
+
+PROCEDURE InitConstFold* (c : ConstFold; b : Builder);
+BEGIN
+  c.builder := b;
+END InitConstFold;
 
 PROCEDURE InitVisitor* (v: Visitor);
   BEGIN
@@ -143,69 +144,18 @@ PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Err
     IR.InitBuilder (b, pragmaHistory, errList, typeRules);
   END InitBuilder;
 
-PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List; typeRules : TypeRules.Rules): Builder;
+PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List; typeRules : TypeRules.Rules; fold : ConstFold): Builder;
   VAR
     b: Builder;
   BEGIN
     NEW (b);
     InitBuilder (b, pragmaHistory, errList, typeRules);
+    InitConstFold(fold, b);
+    b.constFold := fold;
     RETURN b
   END NewBuilder;
 
 (* -------- *)
-
-PROCEDURE (c : TypeConv) Evaluate* (VAR env : IR.Environment) : Language.Value;
-  VAR
-    value : Language.Value;
-  BEGIN
-    value := c.expr.Evaluate(env); IF env.Err() THEN RETURN NIL END;
-    (* FIXME. Convert value here. *)
-    RETURN value;
-  END Evaluate;
-
-PROCEDURE InitTypeConv (conv: TypeConv; sym: IR.Symbol; type: Sym.Type;
-                     expr: IR.Expression);
-  BEGIN
-    IR.InitOperator (conv, sym, type);
-    conv. expr := expr;
-  END InitTypeConv;
-
-PROCEDURE NewTypeConv (type: Sym.Type; expr : IR.Expression): TypeConv;
-  VAR
-    conv: TypeConv;
-  BEGIN
-    NEW (conv);
-    InitTypeConv (conv, expr.sym, type, expr);
-    RETURN conv
-  END NewTypeConv;
-
-PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeConv* (conv: TypeConv);
-  END VisitTypeConv;
-
-PROCEDURE (conv: TypeConv) Accept* (v: IR.Visitor);
-  BEGIN
-    v(Visitor). VisitTypeConv (conv)
-  END Accept;
-
-PROCEDURE (b : Builder) AssignType (type : Sym.Type; expr : IR.Expression) : IR.Expression;
-(**If necessary, transform @oparam{expr} to be compatible with @oparam{type}.
-   For scalar types, this involves returning an explicit type conversion
-   operator. Where types are already compatible (eg. extension of record
-   types), the original expression is returned without modification. If the
-   type of @oparam{expr} is not ccompatible with @oparam{type}, the function
-   returns NIL. *)
-VAR
-  tr : TypeRules.Rules;
-BEGIN
-  tr := b.typeRules;
-  IF tr.SameType(type, expr.type) OR tr.IsExtensionOf(type, expr.type) THEN
-    RETURN expr
-  ELSIF tr.IncludesType(type, expr.type) THEN
-    RETURN NewTypeConv(type, expr)
-  ELSE
-    RETURN NIL;
-  END;
-END AssignType;
 
 PROCEDURE (b : Builder) AdjustTypes (VAR left, right : IR.Expression; VAR type : Sym.Type) : BOOLEAN;
 (**AdjustTypes implements type checking for arguments of operands. Section 8.2.2
@@ -236,96 +186,20 @@ BEGIN
   END;
 END AdjustTypes;
 
-PROCEDURE (b : Builder) FoldBinary(op, left, right : IR.Expression) : IR.Expression;
-(**FoldBinary implements simple constant folding for binary operators. If
-   operator @oparam{op} has constant arguments @oparam{left} and
-   @oparam{right}, it is evaluated. If evaluation is successful, the constant
-   result is returned.  Otherwise, the original operator is returned. *)
-VAR 
-  value : Language.Value;
-  env : IR.Environment;
-BEGIN
-  IF (left IS IR.Const) & (right IS IR.Const) THEN
-    env.Init();
-    value := op.Evaluate(env);
-    IF env.Err() THEN
-      b.ErrSym(IR.evaluateConst, op.sym);
-      RETURN op;
-    ELSE
-      RETURN b.NewConst(op.sym, op.type, value);
-    END;
-  ELSE
-    RETURN op;
-  END;
-END FoldBinary;
+PROCEDURE (c : ConstFold) [ABSTRACT] Accept* (expr : IR.Expression);
+END Accept;
 
-PROCEDURE (b : Builder) FoldUnary(op, operand : IR.Expression) : IR.Expression;
-(**FoldUnary implements simple constant folding for unary operators. If
-   operator @oparam{op} has constant argument @oparam{operand} it is evaluated.
-   If evaluation is successful, the constant result is returned. Otherwise,
-   the original operator is returned. *)
-VAR 
-  value : Language.Value;
-  env : IR.Environment;
+PROCEDURE (b : Builder) Fold* (expr : IR.Expression) : IR.Expression;
 BEGIN
-  IF (operand IS IR.Const) THEN
-    env.Init();
-    value := op.Evaluate(env);
-    IF env.Err() THEN
-      b.ErrSym(IR.evaluateConst, op.sym);
-      RETURN op;
-    ELSE
-      RETURN b.NewConst(op.sym, op.type, value);
-    END;
+  b.constFold.Accept(expr);
+  IF b.constFold.result = NIL THEN
+    RETURN expr
   ELSE
-    RETURN op;
+    RETURN b.constFold.result;
   END;
-END FoldUnary;
+END Fold;
 
 (* -------- *)
-
-PROCEDURE (op : BinaryArith) Evaluate* (VAR env : IR.Environment) : Language.Value;
-VAR 
-  l, r : Language.Value;
-
-  PROCEDURE IntegerOp () : Language.Value;
-  VAR
-    result, left, right : Integers.Integer;
-  BEGIN
-    left := l(Integer.Value).value; 
-    right := r(Integer.Value).value;
-    
-    CASE op.variant OF
-      (* FIXME! Properly check for overflow. *)
-    | arithAdd:  result := Integers.Sum(left, right);
-    | arithSub:  result := Integers.Difference(left, right);
-    | arithMul:  result := Integers.Product(left, right);
-    | arithDivI: 
-      IF Integers.Compare(right, zero) = 0 THEN
-        env.Exception(IR.statusDivByZero, op, l, r); RETURN NIL;
-      ELSE
-        result := Integers.Quotient(left, right);
-      END;
-    | arithMod:
-      IF Integers.Compare(right, zero) = 0 THEN
-        env.Exception(IR.statusDivByZero, op, l, r); RETURN NIL;
-      ELSE
-        result := Integers.Remainder(left, right);
-      END;
-    ELSE
-      env.Exception(IR.statusInvalidOp, op, l, r); RETURN NIL;
-    END;
-    RETURN Integer.type.Value(result);
-  END IntegerOp;
-
-BEGIN
-  (* Evaluate left and right operands. Propagate any errors. *)
-  l := op.left.Evaluate(env); IF env.Err() THEN RETURN NIL END;
-  r := op.right.Evaluate(env); IF env.Err() THEN RETURN NIL END;
-
-  (* for now, only support integers *)
-  RETURN IntegerOp();
-END Evaluate;
 
 PROCEDURE InitBinaryArith (op: BinaryArith; sym: IR.Symbol; variant : Variant; left, right: IR.Expression; type : Sym.Type);
   BEGIN
@@ -382,7 +256,7 @@ PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; left, right: IR.Expressio
 
       NEW (op);
       InitBinaryArith (op, sym, variant, left, right, type);
-      RETURN b.FoldBinary(op, left, right);
+      RETURN op;
     ELSE
       RETURN b.ErrExpr(IR.invalidOpType, sym);
     END;
@@ -397,39 +271,6 @@ PROCEDURE (op: BinaryArith) Accept* (v: IR.Visitor);
   END Accept;
 
 (* -------- *)
-
-PROCEDURE (op : Compare) Evaluate* (VAR env : IR.Environment) : Language.Value;
-VAR 
-  l, r : Language.Value;
-
-  PROCEDURE IntegerOp () : Language.Value;
-  VAR
-    left, right : Integers.Integer; result : BOOLEAN;
-  BEGIN
-    left := l(Integer.Value).value; 
-    right := r(Integer.Value).value;
-    
-    CASE op.variant OF
-    | equal:        result := Integers.Compare(left, right) = 0;
-    | notEqual:     result := Integers.Compare(left, right) # 0;
-    | less:         result := Integers.Compare(left, right) < 0;
-    | lessEqual:    result := Integers.Compare(left, right) <= 0;
-    | greater:      result := Integers.Compare(left, right) > 0;
-    | greaterEqual: result := Integers.Compare(left, right) >= 0;
-    ELSE
-      env.Exception(IR.statusInvalidOp, op, l, r);
-    END;
-    RETURN Boolean.type.Value(result);
-  END IntegerOp;
-
-BEGIN
-  (* Evaluate left and right operands. Propagate any errors. *)
-  l := op.left.Evaluate(env); IF env.Err() THEN RETURN NIL END;
-  r := op.right.Evaluate(env); IF env.Err() THEN RETURN NIL END;
-
-  (* for now, only support integers *)
-  RETURN IntegerOp();
-END Evaluate;
 
 PROCEDURE InitCompare (op: Compare; sym: IR.Symbol; variant : Variant; left, right: IR.Expression);
   BEGIN
@@ -491,12 +332,6 @@ PROCEDURE (adr: Adr) Accept* (v: IR.Visitor);
     v(Visitor). VisitAdr (adr)
   END Accept;
 
-PROCEDURE (adr: Adr) Evaluate* (VAR env : IR.Environment): Language.Value;
-  BEGIN
-    ASSERT(FALSE);
-    RETURN NIL;
-  END Evaluate;
-
 (* -------- *)
 
 PROCEDURE InitLen (len: Len; sym: IR.Symbol; variant: Variant;
@@ -509,7 +344,7 @@ PROCEDURE InitLen (len: Len; sym: IR.Symbol; variant: Variant;
   END InitLen;
 
 PROCEDURE (b: Builder) NewLen* (sym: IR.Symbol;
-                                array: IR.Expression; dim: LONGINT): Len;
+                                array: IR.Expression; dim: LONGINT): IR.Expression;
   VAR
     len: Len;
     variant: Variant;
@@ -528,7 +363,7 @@ PROCEDURE (b: Builder) NewLen* (sym: IR.Symbol;
     END;
     
     InitLen (len, sym, variant, array, dim);
-    RETURN len
+    RETURN b.Fold(len);
   END NewLen;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitLen* (len: Len);
@@ -539,19 +374,7 @@ PROCEDURE (len: Len) Accept* (v: IR.Visitor);
     v(Visitor). VisitLen (len)
   END Accept;
 
-PROCEDURE (len: Len) Evaluate* (VAR env : IR.Environment): Language.Value;
-  BEGIN
-    ASSERT(FALSE);
-    RETURN NIL;
-  END Evaluate;
-
 (* -------- *)
-
-PROCEDURE (i : Index) Evaluate* (VAR env : IR.Environment) : Language.Value;
-BEGIN
-  env.Exception(IR.statusInvalidOp, i, NIL, NIL);
-  RETURN NIL;
-END Evaluate;
 
 PROCEDURE InitIndex (i: Index; sym: IR.Symbol; array, index: IR.Expression);
   BEGIN
@@ -579,27 +402,6 @@ PROCEDURE (index: Index) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
-PROCEDURE (op : Negate) Evaluate* (VAR env : IR.Environment) : Language.Value;
-VAR 
-  id : Sym.PredefId;
-  bool : BOOLEAN;
-  int : INTEGER;
-  set : SET;
-  value : Language.Value;
-BEGIN
-  value := op.operand.Evaluate(env); IF env.Err() THEN RETURN  NIL END;
-  id := op.operand.type(Sym.PredefType).id;
-  CASE id OF
-  | Predef.boolean:
-    RETURN Boolean.type.Value(~value(Boolean.Value).value);
-  | Predef.integer:
-    RETURN Integer.type.Value(Integers.Product(minus1, value(Integer.Value).value));
-  ELSE
-    env.Exception(IR.statusIncompatibleTypes, op, NIL, NIL);
-    RETURN NIL;
-  END;
-END Evaluate;
-
 PROCEDURE InitNegate (neg: Negate; sym: IR.Symbol; expr: IR.Expression);
   BEGIN
     IR.InitOperator (neg, sym, expr. type);
@@ -612,7 +414,7 @@ PROCEDURE (b: Builder) NewNegate (sym: IR.Symbol; expr: IR.Expression): IR.Expre
   BEGIN
     NEW (neg);
     InitNegate (neg, sym, expr);
-    RETURN b.FoldUnary(neg, expr);
+    RETURN neg;
   END NewNegate;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitNegate* (neg: Negate);
@@ -641,7 +443,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
   PROCEDURE SetOrNumeric () : IR.Expression;
   BEGIN
     IF isNumeric THEN
-      RETURN b.NewBinaryArith(sym, left, right)
+      RETURN b.Fold(b.NewBinaryArith(sym, left, right))
 (*    ELSIF isSet THEN
       RETURN b.NewSet(sym, left, right); *)
     ELSE
@@ -659,10 +461,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
       CASE sym.id OF
       | Symbol.minus:
         IF isNumeric THEN
-          RETURN b.NewNegate(sym, right);
+          RETURN b.Fold(b.NewNegate(sym, right));
         ELSIF isSet THEN
           (* for now, map set/numeric negation onto Negate operator *)
-          RETURN b.NewNegate(sym, right);
+          RETURN b.Fold(b.NewNegate(sym, right));
         ELSE
           RETURN b.ErrExpr(IR.invalidOpType, sym);
         END;
@@ -674,8 +476,9 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
 	END;
       | Symbol.not:
         (* for now, map logical negation onto Negate operator *)
-        RETURN b.NewNegate(sym, right);
+        RETURN b.Fold(b.NewNegate(sym, right));
       ELSE
+        RETURN b.ErrExpr(IR.unknownOp, sym);
       END;
     ELSE
       (* binary operator *)
@@ -683,15 +486,16 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
       | Symbol.plus, Symbol.minus, Symbol.times, Symbol.slash:
         RETURN SetOrNumeric();
       | Symbol.div, Symbol.mod:
-        RETURN b.NewBinaryArith(sym, left, right);
+        RETURN b.Fold(b.NewBinaryArith(sym, left, right));
       | Symbol.eql, Symbol.neq, Symbol.lss, Symbol.leq, Symbol.gtr, Symbol.geq:
-        RETURN b.NewCompare(sym, left, right);
+        RETURN b.Fold(b.NewCompare(sym, left, right));
 (*      | Symbol.and, Symbol.or:
         RETURN b.NewBoolean(sym, left, right); *)
       ELSE
+        RETURN b.ErrExpr(IR.unknownOp, sym);
       END;
     END;
-    RETURN b.ErrExpr(IR.unknownOp, sym);
+    RETURN b.ErrExpr(IR.unknownOp, sym);  (* shouldn't get here *)
   END NewOperator;
 
 (* -------- *)
@@ -818,6 +622,4 @@ PROCEDURE (b: Builder) AddSetupCode* (sym: IR.Symbol; decl: Sym.ProcDecl;
 
 BEGIN
   real := Predef.GetType(Predef.real);
-  zero := Integers.Long(0);
-  minus1 := Integers.Long(-1);
 END OOC:IR:Operator.

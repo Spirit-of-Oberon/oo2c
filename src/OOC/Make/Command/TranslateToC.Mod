@@ -27,7 +27,7 @@ IMPORT
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
-  OOC:IR, OOC:IR:Operator, IRtoXML := OOC:IR:XML,
+  OOC:IR, OOC:IR:Operator, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Predef,
   OOC:SymbolTable:TypeRules,
   OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:Naming,
@@ -208,7 +208,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
 	END;
         WriteExpr(w, expr. right);
         
-      | expr: Operator.TypeConv DO
+      | expr: IR.TypeConv DO
         WriteExpr(w, expr.expr);  (* FIXME! generate type casts if required *)
         
       | expr: IR.Call DO
@@ -385,20 +385,22 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         ASTtoXML.Write (StdChannels.stdout.NewWriter(), ast(ExtTree.Module));
       END;
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
-                                 Operator.NewBuilder (pragmaHistory, errList, config.typeRules));
+                                 Operator.NewBuilder (pragmaHistory, errList, config.typeRules, ConstFold.NewConstFold()));
       IF cmd. writeIR THEN
         IRtoXML.Write (StdChannels.stdout. NewWriter(), module);
       END;
       
       exports := Exports.GetExports (symTab);
       
-      WriteFile (Repository.modHeaderFileC);
-      WriteFile (Repository.modDeclFileC);
-      IF (symTab. class = Sym.mcStandard) THEN
-        WriteFile (Repository.modCodeFileC);
-      END;
-
       IF (errList. msgCount = 0) THEN
+        (* only attempt to produce output if program compiled without errors *)
+
+        WriteFile (Repository.modHeaderFileC);
+        WriteFile (Repository.modDeclFileC);
+        IF (symTab. class = Sym.mcStandard) THEN
+          WriteFile (Repository.modCodeFileC);
+        END;
+
         WriteSymbolFile.WriteSymbolFile (m, symTab, errList);
       END;
     END;

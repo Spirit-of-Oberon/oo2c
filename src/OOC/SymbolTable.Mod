@@ -1039,6 +1039,12 @@ PROCEDURE InitConstDecl* (constDecl: ConstDecl; parent: Item; name: Name;
     constDecl. type := type;
   END InitConstDecl;
 
+PROCEDURE (constDecl: ConstDecl) SetValueType* (value : Language.Value; type : PredefType);
+  BEGIN
+    constDecl.value := value;
+    constDecl.type := type;
+  END SetValueType;
+
 PROCEDURE (constDecl: ConstDecl) Store* (w: Object.Writer);
   BEGIN
     constDecl. Store^ (w);

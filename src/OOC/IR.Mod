@@ -165,6 +165,19 @@ TYPE
     (ExpressionDesc)
   END;
 
+TYPE
+  TypeConv* = POINTER TO TypeConvDesc;
+  TypeConvDesc = RECORD
+    (**A TypeConv expression represents a type conversion of an expression
+       @ofield{expr} to a different type.  The source value is converted to an
+       equivalent or close value in the target domain.  Example: An integer
+       type representing the value @code{1} is converted to a floating point
+       value @code{1.0}.  Type conversions are also used to convert between
+       different integer types.  *)
+    (OperatorDesc)
+    expr- : Expression;
+  END;
+
 (* Statements
    ------------------------------------------------------------------------ *)
 
@@ -269,43 +282,6 @@ TYPE
        open array, then this field is @code{NIL}.  *)
   END;
   
-TYPE
-  Status* = SHORTINT;
-  (** Description of exceptions that may occur during evaluation. *)
-  
-CONST
-  statusOk* = 0;
-  statusUnderflow* = 1;
-  statusOverflow* = 2;
-  statusDivByZero* = 3;
-  statusFormatError* = 4;
-  statusIncompatibleTypes* = 5;
-  statusInvalidOp* = 6;
-
-TYPE  
-  Exception* = POINTER TO ExceptionDesc;
-  ExceptionDesc* = RECORD
-  (* This type describes conditions that may occur during evaluation of
-     expressions. A list of Exceptions is maintained within the evaluation
-     environment (see @otype{Environment}). *)
-
-    code- : Status;                (** Exception code (see @otype{Status}) *)
-    expr- : Expression;            (** Expression in which exception occurred *)
-    val1-, val2- : Language.Value; (** Arguments to expression that caused exception *)
-    next- : Exception;      (** Next exception in list *)
-  END;
- 
-TYPE
-  Environment* = RECORD 
-  (* This type provides a context in which evaluations occur, keeping track
-     of exceptions and controlling any parameters of evaluation (eg. which
-     exceptions are enabled, and the state of variables if used as part of an
-     interpreter) *)
-
-    status- : Status;       (** Current exception status *)
-    exception- : Exception; (** List of exceptions that have not been handled *)
-  END;
-
 (* Modules and Procedures
    ------------------------------------------------------------------------ *)
 
@@ -366,8 +342,8 @@ CONST
   (** symbol is not an operator *)
   incompatibleTypes* = 7;
   (** types of operands are not equivalent as required by operator *)
-  evaluateConst* = 8;
-  (** error evaluating constant expression. FIXME! Temporary: replace with something more informative. *)
+  divideByZero* = 8;
+  exprNotConstant* = 9;
 
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -397,8 +373,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Unknown operator"
     | incompatibleTypes:
       t := "Incompatible types for operator"
-    | evaluateConst:
-      t := "Error evaluating constant expression"
+    | divideByZero:
+      t := "Divisor is zero"
+    | exprNotConstant:
+      t := "Expression is not constant"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -457,64 +435,7 @@ PROCEDURE InitReference (ref: Reference; name: Symbol; type: Sym.Type;
     ref. decl := decl;
   END InitReference;
 
-PROCEDURE (e : Expression) [ABSTRACT] Evaluate* (VAR env : Environment) : Language.Value;
-(**Return the result of evaluating this expression. @oparam{env} defines the
-   context of evaluation, and the result of the operation. If 
-   @code{env.status # statusOk}, an exception has occured and the returned
-   value may be NIL. Otherwise, a valid value will be returned. *)
-  END Evaluate;
-
-PROCEDURE (s : Statement) Evaluate* (VAR env : Environment) : Language.Value;
-(**Statements are treated as expressions with 'void' result type. They are
-   normally not evaluated by the compiler. If the entire IR is to be
-   interpretable, sub-types of Statement must implement Evaluate. For the
-   moment, it is sufficient that all statements to simply return NIL. *)
-  BEGIN
-    RETURN NIL;
-  END Evaluate;
-
-PROCEDURE (r : Reference) Evaluate* (VAR env : Environment) : Language.Value;
-(**References are not evaluated. *)
-  BEGIN
-    ASSERT(FALSE);
-  END Evaluate;
-
-PROCEDURE (VAR e : Environment) Init* ();
-(** Initialise environment to a clear state (ie. no exception). *)
-  BEGIN
-    e.status := statusOk;
-    e.exception := NIL;
-  END Init;
-  
-PROCEDURE (VAR e : Environment) Exception* (code : Status; expr : Expression; val1, val2 : Language.Value);
-(**Signal an exception with status @oparam{code}. @oparam{expr} indicates the
-   expression in which the exception occurred. @oparam{val1} and @oparam{val2}
-   may optionally define the values of arguments to the expression that caused
-   the error. *)
-  VAR x : Exception;
-  BEGIN
-    NEW(x);
-    x.code := code;
-    x.expr := expr;
-    x.val1 := val1;
-    x.val2 := val2;
-    x.next := e.exception;
-    e.exception := x;
-    e.status := code;
-  END Exception;
-
-PROCEDURE (VAR e : Environment) Err* () : BOOLEAN;
-(**Return true IFF the environment @oparam{e} indicates an exception. *)
-  BEGIN
-    RETURN e.status # statusOk;
-  END Err;
-
 (* -------- *)
-
-PROCEDURE (c : Const) Evaluate* (VAR env : Environment) : Language.Value;
-  BEGIN
-    RETURN c.value;
-  END Evaluate;
 
 PROCEDURE InitConst (const: Const; sym: Symbol; type: Sym.Type;
                      value: Language.Value);
@@ -791,6 +712,52 @@ PROCEDURE (assert: Assert) Accept* (v: Visitor);
   BEGIN
     v. VisitAssert (assert)
   END Accept;
+
+(* -------- *)
+
+PROCEDURE InitTypeConv (conv: TypeConv; sym: Symbol; type: Sym.Type;
+                     expr: Expression);
+  BEGIN
+    InitOperator (conv, sym, type);
+    conv. expr := expr;
+  END InitTypeConv;
+
+PROCEDURE NewTypeConv (type: Sym.Type; expr : Expression): TypeConv;
+  VAR
+    conv: TypeConv;
+  BEGIN
+    NEW (conv);
+    InitTypeConv (conv, expr.sym, type, expr);
+    RETURN conv
+  END NewTypeConv;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeConv* (conv: TypeConv);
+  END VisitTypeConv;
+
+PROCEDURE (conv: TypeConv) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTypeConv (conv)
+  END Accept;
+
+PROCEDURE (b : Builder) AssignType* (type : Sym.Type; expr : Expression) : Expression;
+(**If necessary, transform @oparam{expr} to be compatible with @oparam{type}.
+   For scalar types, this involves returning an explicit type conversion
+   operator. Where types are already compatible (eg. extension of record
+   types), the original expression is returned without modification. If the
+   type of @oparam{expr} is not ccompatible with @oparam{type}, the function
+   returns NIL. *)
+VAR
+  tr : TypeRules.Rules;
+BEGIN
+  tr := b.typeRules;
+  IF tr.SameType(type, expr.type) OR tr.IsExtensionOf(type, expr.type) THEN
+    RETURN expr
+  ELSIF tr.IncludesType(type, expr.type) THEN
+    RETURN NewTypeConv(type, expr)
+  ELSE
+    RETURN NIL;
+  END;
+END AssignType;
 
 (* -------- *)
 
@@ -1082,5 +1049,5 @@ PROCEDURE (m: Module) Accept* (v: Visitor);
 BEGIN
   NEW (irContext);
   Error.InitContext (irContext, "OOC:IR");
-  errorExpr := NewConst (NIL, NIL, Boolean.New (FALSE));
+  errorExpr := NewConst (NIL, Predef.GetType(Predef.void), Boolean.New (FALSE));
 END OOC:IR.

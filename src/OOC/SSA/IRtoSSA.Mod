@@ -110,7 +110,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: Operator.Index DO
         RETURN Index (expr);
 
-      | expr: Operator.TypeConv DO
+      | expr: IR.TypeConv DO
         (* FIXME... right now, we are simply passing through type converted
            values *)
         RETURN Expression (expr. expr);

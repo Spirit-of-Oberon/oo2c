@@ -186,6 +186,7 @@ TYPE
     equal-: AST.Node;
     expr-: AST.Node;
     semicolon-: AST.Node;
+    symTabEntry-: Sym.ConstDecl;
   END;
 
 TYPE
@@ -961,6 +962,11 @@ PROCEDURE (constDecl: ConstDecl) Accept* (v: Visitor);
   BEGIN
     v. VisitConstDecl (constDecl)
   END Accept;
+
+PROCEDURE (constDecl: ConstDecl) SetSymTabEntry* (item: Sym.Item);
+  BEGIN
+    constDecl. symTabEntry := item(Sym.ConstDecl)
+  END SetSymTabEntry;
 
 
 PROCEDURE (b: Builder) TypeDecl* (identDef, equal, type, semicolon: AST.Node): Node;

@@ -1,10 +1,8 @@
 MODULE OOC:IR:XML;
 
 IMPORT
-  Channel, ADT:String, XML:Writer, XML:UnicodeCodec:Latin1,
+  Channel, ADT:String, ADT:StringBuffer, XML:Writer, XML:UnicodeCodec:Latin1,
   Sym := OOC:SymbolTable, OOC:IR, OOC:IR:Operator;
-
-
 
 TYPE
   Visitor = POINTER TO VisitorDesc;
@@ -12,7 +10,6 @@ TYPE
     (Operator.VisitorDesc)
     w: Writer.Writer;
   END;
-
 
 PROCEDURE InitVisitor (v: Visitor; w: Writer.Writer);
   BEGIN
@@ -29,17 +26,57 @@ PROCEDURE NewVisitor (w: Writer.Writer): Visitor;
     RETURN v
   END NewVisitor;
 
+PROCEDURE AppendContext(buffer : StringBuffer.StringBuffer; item : Sym.Item);
+  BEGIN
+    WITH item : Sym.Declaration DO
+      IF item.parent # NIL THEN
+        AppendContext(buffer, item.parent);
+      END;
+      buffer.AppendString(item.name.str^);
+      buffer.AppendChar(".");
+     END;
+  END AppendContext;
+
+PROCEDURE TypeName(type : Sym.Type) : String.String;
+(**Return a string describing type @oparam{otype}. For named types, this will
+   be of the form "module.{proc.}type". If there is no name the name of the
+   type constructor is used (eg. RECORD, ARRAY). *)
+VAR
+  name : StringBuffer.StringBuffer;
+BEGIN
+  name := StringBuffer.New("");
+  IF type.parent # NIL THEN
+    AppendContext(name, type.parent);
+  END;
+  IF type.typeName # NIL THEN
+    name.AppendString(type.typeName.str^);
+  ELSE
+    WITH 
+      type : Sym.PredefType DO
+      (* probably doesn't happen since these should be named *)
+      name.AppendString("PredefType(");
+      name.AppendLongInt(type.id);
+      name.AppendString(")")
+    | type : Sym.Pointer DO
+      name.AppendString("POINTER")
+    | type : Sym.FormalPars DO
+      name.AppendString("PROCEDURE")
+    | type : Sym.Array DO
+      name.AppendString("ARRAY")
+    | type : Sym.Record DO
+      name.AppendString("RECORD")
+    END
+  END;
+  RETURN name.ToString();
+END TypeName;
 
 PROCEDURE (v: Visitor) VisitConst* (const: IR.Const);
   VAR
     type, value: String.String;
   BEGIN
     v. w. StartTag ("const", TRUE);
-    type := const. value. type. ToString();
+    type := TypeName(const. type);
     v. w. AttrStringLatin1 ("type", type. array^);
-    (* ... WRONG! The type above shoule be the logical type, not the
-           internal representation that happens to be used by the compiler *)
-    
     value := const. value. ToString();
     v. w. WriteLatin1 (value. array^);
     v. w. EndTag;  (* const *)
@@ -135,7 +172,7 @@ PROCEDURE (v : Visitor) VisitCompare* (op : Operator.Compare);
     VisitDyadicOp (v, op, op.variant, op.left, op.right, "compare");
   END VisitCompare;
 
-PROCEDURE (v : Visitor) VisitTypeConv* (op : Operator.TypeConv);
+PROCEDURE (v : Visitor) VisitTypeConv* (op : IR.TypeConv);
   BEGIN
     v. w. StartTag("typeConv", FALSE);
     (* FIXME! Write type. How? *)

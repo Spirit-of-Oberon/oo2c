@@ -293,7 +293,8 @@ PROCEDURE (v: Visitor) VisitConstDecl* (constDecl: ExtTree.ConstDecl);
         v. parent, GetName (constDecl. identDef. ident),
         constDecl. semicolon(ExtTree.Terminal). sym. pos,
         ExportMark (constDecl. identDef), constDecl. identDef. docString,
-        NIL, NIL)
+        NIL, NIL);
+    constDecl. SetSymTabEntry (const);
   END VisitConstDecl;
 
 PROCEDURE (v: Visitor) VisitTypeDecl* (typeDecl: ExtTree.TypeDecl);

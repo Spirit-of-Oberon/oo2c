@@ -270,7 +270,21 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN statmSeqIR
     END StatementSeq;
   
-  
+  PROCEDURE ConstDecl(constDecl : ExtTree.ConstDecl);
+  VAR
+    expr : IR.Expression;
+    sym : Sym.ConstDecl;
+  BEGIN
+    expr := b.Fold(Expr(constDecl.expr(ExtTree.Node)));
+    IF expr = IR.errorExpr THEN RETURN END;
+    WITH expr : IR.Const DO
+      sym := constDecl.symTabEntry;
+      sym.SetValueType(expr.value, expr.type(Sym.PredefType));
+    ELSE
+      b.ErrSym(IR.exprNotConstant, expr.sym);
+    END;
+  END ConstDecl;
+   
 <* PUSH; Warnings := FALSE *>
   PROCEDURE ProcDecl (procDecl: ExtTree.ProcDecl): IR.Procedure;
     VAR
@@ -327,7 +341,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         IF IsProc (n) THEN
           procList[count] := ProcDecl (n(ExtTree.ProcDecl));
           INC (count)
-        END
+        ELSIF n IS ExtTree.ConstDecl THEN
+	  ConstDecl(n(ExtTree.ConstDecl));
+	END;
       END;
       
       IF (module. body = NIL) OR (module. body. statmSeq = NIL) THEN
