@@ -3,6 +3,10 @@ capabilities into separate documents.  For this list, the focus is
 "core O2".  Extensions add their own accept and reject rules to
 outline the differences to the core.
 
+Missing Tests 2002/10/16: In calls, check that receiver and index in
+designators computed once.
+
+
 
 9.1 Assignments
 ---------------
@@ -78,7 +82,9 @@ ACCEPT:
      an extension of Tf  [Record5, Record8]
   6) formal parameter is ARRAY OF CHAR, argument is a string
      constant  [HOTDesignator1]
-
+  7) Check that a receiver designator is computed just once.
+  8) Check that an index of an argument designator is computed just
+     once. 
 
 
 9.3 Statement sequences

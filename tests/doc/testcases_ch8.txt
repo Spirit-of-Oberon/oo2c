@@ -1,6 +1,7 @@
 8. Expressions
 
-Missing Tests 2002/10/15: Literals, Division by Zero (compile-time, run-time)
+Missing Tests 2002/10/16: Literals, Division by Zero (compile-time,
+run-time), Index computed once.
 
 Literals
 --------
@@ -45,6 +46,11 @@ ERROR:
 
 (Only test for dimension related stuff, the above tests should cover
 the rest.)
+ACCEPT:
+
+  1) Check that every index value is computed once, even if index
+     checks are enabled.
+
 REJECT:
 
   1) a does not designate an array or pointer to array  [OpArray2]
