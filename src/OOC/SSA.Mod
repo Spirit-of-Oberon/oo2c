@@ -77,6 +77,15 @@ TYPE
     class-: ResultClass.Class;
     (**Identifies the function of the operand.  See @omodule{ResultClass}.  *)
     
+    subclass*: Opcode.Subclass;
+    (**Subclass id of the result.  For a non-instruction result, this value
+       identifies the type of the value that is produced by this result.  In
+       most cases, the result does not correspond to a piece of data that is
+       actually computed during run-time, and has therefore the value
+       @oconst{Opcode.scNone}.  For an instruction, interpretation depends on
+       the value of @ofield{Instr.opcode} for non-type subclasses.  See
+       @omodule{Opcode}.  *)
+    
     instr-: Instr;
     (**The instruction to which this result belongs.  *)
     
@@ -111,10 +120,6 @@ TYPE
     opcode*: Opcode.Class;
     (**Instruction opcode.  Symbolic names are defined in module
        @omodule{Opcode}.  *)
-
-    subclass*: Opcode.Subclass;
-    (**Subclass id of the instruction.  Interpretation depends on the value of
-       @ofield{opcode}.  See @omodule{Opcode}.  *)
   END;
 
 TYPE
@@ -271,25 +276,27 @@ PROCEDURE (opnd: Opnd) OpndIndex*(): LONGINT;
 
   (* ---------------------------------------------------------------------- *)
   
-PROCEDURE InitResult (res: Result; class: ResultClass.Class);
+PROCEDURE InitResult (res: Result; class: ResultClass.Class;
+                      subclass: Opcode.Subclass);
 (* Initializes result.  *)
   BEGIN
     InitNode (res);
     res. nextResult := NIL;
     res. instr := NIL;
     res. class := class;
+    res. subclass := subclass;
     res. info := NIL;
     res. marker := -1;
     res. useList := NIL;
   END InitResult;
 
-PROCEDURE NewResult (class: ResultClass.Class): Result;
+PROCEDURE NewResult (class: ResultClass.Class; subclass: Opcode.Subclass): Result;
 (* Creates a new result instance.  *)
   VAR
     res: Result;
   BEGIN
     NEW (res);
-    InitResult (res, class);
+    InitResult (res, class, subclass);
     RETURN res
   END NewResult;
   
@@ -361,7 +368,7 @@ PROCEDURE (result: Result) IsBooleanConst* (value: BOOLEAN): BOOLEAN;
 
 PROCEDURE InitInstr (instr: Instr; opcode: Opcode.Class; subclass: Opcode.Subclass);
   BEGIN
-    InitResult (instr, ResultClass.primary);
+    InitResult (instr, ResultClass.primary, subclass);
     instr. instr := instr; (* an instruction is a result that defines itself *)
     instr. opndList := NIL;
     instr. nextInstr := NIL;
@@ -399,13 +406,14 @@ PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
     END;
   END AddOpnd;
 
-PROCEDURE (instr: Instr) AddResult* (class: ResultClass.Class): Result;
+PROCEDURE (instr: Instr) AddResultSubclass* (class: ResultClass.Class;
+                                             subclass: Opcode.Subclass): Result;
 (**Adds a new result to the end of the result list of instruction
-   @oparam{instr}.  *)
+   @oparam{instr}.  Assign to it the subclass @oparam{subclass}.  *)
   VAR
     res, prev: Result;
   BEGIN
-    res := NewResult (class);
+    res := NewResult (class, subclass);
     res. instr := instr;
     IF (instr. nextResult = NIL) THEN
       instr. nextResult := res
@@ -417,6 +425,13 @@ PROCEDURE (instr: Instr) AddResult* (class: ResultClass.Class): Result;
       prev. nextResult := res
     END;
     RETURN res
+  END AddResultSubclass;
+
+PROCEDURE (instr: Instr) AddResult* (class: ResultClass.Class): Result;
+(**Adds a new result to the end of the result list of instruction
+   @oparam{instr}.  The subclass of the new result is @oconst{Opcode.scNone}.  *)
+  BEGIN
+    RETURN instr. AddResultSubclass (class, Opcode.scNone)
   END AddResult;
 
 PROCEDURE (instr: Instr) SizeOpndList*(): LONGINT;
@@ -567,6 +582,20 @@ PROCEDURE (instr: Instr) GetResultType* (): Opcode.Subclass;
       RETURN instr. subclass
     END;
   END GetResultType;
+
+PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
+(**For a collect instruction, return the target instruction into which it
+   feeds its result.  *)
+  VAR
+    storeOut: Result;
+  BEGIN
+    ASSERT (instr. opcode = Opcode.collect);
+    storeOut := instr. GetResultClass (ResultClass.store);
+    ASSERT (storeOut # NIL);
+    ASSERT (storeOut. useList # NIL);
+    ASSERT (storeOut. useList. nextUse = NIL);
+    RETURN storeOut. useList. instr
+  END GetCollectTarget;
 
   (* ---------------------------------------------------------------------- *)
 

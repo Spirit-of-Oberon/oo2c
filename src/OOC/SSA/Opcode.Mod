@@ -52,8 +52,9 @@ CONST
   
   enter* = 3;
   select* = 4;
+  collect* = 5;
   
-  return* = 5;
+  return* = 6;
   (**This instruction serves two purposes: it marks the place where control
      flow exists the procedure, and, for function procedures, it defines the
      scalar value that should be produced as the function's result. The
@@ -73,7 +74,7 @@ CONST
      @oconst{selectReturn} instruction.  [Note: Don't know if there will be
      more uses.  FIXME...]  *)
   
-  selectReturn* = 6;
+  selectReturn* = 7;
   (**Chooses the return statement that leaves the procedure or function.  The
      statement takes @var{n}+2 arguments, all defining values of @var{store} at
      the end of their corresponding branch of control flow.
@@ -102,7 +103,7 @@ CONST
      or procedure.
      @end table  *)
 
-  loopStart* = 7;
+  loopStart* = 8;
   (**Marks the beginning of a loop construct.
 
      @table @oconst
@@ -117,7 +118,7 @@ CONST
 
      There is one result, the value of @var{store} as seen by the loop
      body when an iteration begins.  *)
-  loopEnd* = 8;
+  loopEnd* = 9;
   (**Marks the end of a loop construct.  It has
 
      @table @oconst
@@ -140,7 +141,7 @@ CONST
      There is one result, the value of @var{store} as seen by the first
      instruction after the loop.  *)
   
-  get* = 9;
+  get* = 10;
   (**Retrieves the value of a variable.  The operands of the instruction and
      their class ids are in this order:
 
@@ -157,29 +158,29 @@ CONST
      non-heap variables, the first entry in the designator is a reference to
      the declaration of the accessed variable.
      @end table  *)
-  set* = 10;
-  copy* = 11;
+  set* = 11;
+  copy* = 12;
 
-  add* = 12;
+  add* = 13;
   (**Addition operator.  The two operands must be of the same type, which is at
      the same time the result of the operation.  There is one exception to this
      rule: if one of the operands is of type @oconst{scAddress}, then the other
      operand can be any integer type, signed or unsigned, and the result type
      is @oconst{scAddress}.  *)
-  subtract* = 13;
-  negate* = 14;
-  multiply* = 15;
-  divide* = 16;
+  subtract* = 14;
+  negate* = 15;
+  multiply* = 16;
+  divide* = 17;
 
-  eql* = 17;
-  neq* = 18;
-  lss* = 19;
-  leq* = 20;
-  gtr* = 21;
-  geq* = 22;
+  eql* = 18;
+  neq* = 19;
+  lss* = 20;
+  leq* = 21;
+  gtr* = 22;
+  geq* = 23;
   
-  assert* = 23;
-  call* = 24;
+  assert* = 24;
+  call* = 25;
 
 CONST
   scNone* = 0;
@@ -223,6 +224,26 @@ PROCEDURE IsUnsigned* (subclass: Subclass): BOOLEAN;
     RETURN (scUnsigned8 <= subclass) & (subclass <= scUnsigned64)
   END IsUnsigned;
 
+PROCEDURE GetSubclassName* (subclass: Subclass; VAR name: ARRAY OF CHAR);
+(**Retrieves the symbolic name of a subclass id.  *)
+  VAR
+    scstr: ARRAY 16 OF CHAR;
+  BEGIN
+    CASE subclass OF
+    | scNone      : scstr := "none"
+    | scSigned8   : scstr := "i8"
+    | scSigned16  : scstr := "i16"
+    | scSigned32  : scstr := "i32"
+    | scSigned64  : scstr := "i64"
+    | scUnsigned8 : scstr := "u8"
+    | scUnsigned16: scstr := "u16"
+    | scUnsigned32: scstr := "u32"
+    | scUnsigned64: scstr := "u64"
+    | scAddress   : scstr := "adr"
+    END;
+    COPY (scstr, name)
+  END GetSubclassName;
+
 PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of a (class, subclass) pair.  *)
   VAR
@@ -235,6 +256,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
 
     | enter: cstr := "enter";
     | select: cstr := "select";
+    | collect: cstr := "collect";
     | return: cstr := "return";
     | selectReturn: cstr := "select-return";
     | loopStart: cstr := "loop-start";
@@ -264,18 +286,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     
     COPY (cstr, name);
     IF (subclass # scNone) THEN
-      CASE subclass OF
-      (*| scNone      : scstr := "none"*)
-      | scSigned8   : scstr := "i8"
-      | scSigned16  : scstr := "i16"
-      | scSigned32  : scstr := "i32"
-      | scSigned64  : scstr := "i64"
-      | scUnsigned8 : scstr := "u8"
-      | scUnsigned16: scstr := "u16"
-      | scUnsigned32: scstr := "u32"
-      | scUnsigned64: scstr := "u64"
-      | scAddress   : scstr := "adr"
-      END;
+      GetSubclassName (subclass, scstr);
       Strings.Append ("-", name);
       Strings.Append (scstr, name)
     END;

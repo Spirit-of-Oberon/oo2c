@@ -73,8 +73,8 @@ PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.D
   VAR
     registerMap: Dictionary.Dictionary;
     instr: SSA.Instr;
+    res: SSA.Result;
     type: Opcode.Subclass;
-    ctype: WriteDecl.BasicTypeId;
     str: ARRAY 32 OF CHAR;
     count: LONGINT;
 
@@ -86,6 +86,23 @@ PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.D
         RETURN TRUE
       END;
     END StoredInRegister;
+
+  PROCEDURE AssignRegister (result: SSA.Result; ctype: WriteDecl.BasicTypeId);
+    BEGIN
+      (* create name for result *)
+      IntStr.IntToStr (count, str);
+      Strings.Insert ("i", 0, str);
+      registerMap. Set (result, String.New (str));
+      INC (count);
+      
+      (* emit declaration for variable *)
+      w. WriteLn;
+      w. WriteString ("  register ");
+      w. WriteString (WriteDecl.basicType[ctype]. repr);
+      w. WriteChar (" ");
+      w. WriteString (str);
+      w. WriteChar (";");
+    END AssignRegister;
   
   BEGIN
     count := 0;
@@ -94,21 +111,14 @@ PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.D
     WHILE (instr # NIL) DO
       type := instr. GetResultType();
       IF (type # Opcode.scNone) & StoredInRegister (instr) THEN
-        ctype := SubclassToBasicType (type);
-
-        (* create name for result *)
-        IntStr.IntToStr (count, str);
-        Strings.Insert ("i", 0, str);
-        registerMap. Set (instr, String.New (str));
-        INC (count);
-        
-        (* emit declaration for variable *)
-        w. WriteLn;
-        w. WriteString ("  register ");
-        w. WriteString (WriteDecl.basicType[ctype]. repr);
-        w. WriteChar (" ");
-        w. WriteString (str);
-        w. WriteChar (";");
+        AssignRegister (instr, SubclassToBasicType (type));
+      END;
+      res := instr. nextResult;
+      WHILE (res # NIL) DO
+        IF (res. subclass # Opcode.scNone) THEN
+          AssignRegister (res, SubclassToBasicType (res. subclass))
+        END;
+        res := res. nextResult
       END;
       instr := instr. nextInstr
     END;
@@ -311,6 +321,25 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       END
     END AllPathsClosed;
   
+  PROCEDURE WriteCollect (collect, targetInstr: SSA.Instr);
+    VAR
+      opnd: SSA.Opnd;
+      res: SSA.Result;
+      targetVar: Object.Object;
+    BEGIN
+      opnd := collect. opndList;
+      res := targetInstr. nextResult;
+      WHILE (opnd # NIL) DO
+        IF (opnd. class # Opnd.store) THEN
+          targetVar := w. registerMap. Get (res);
+          w. WriteString (targetVar(String.String). array^);
+          w. WriteString ("=");
+          w. Ref (opnd)
+        END;
+        opnd := opnd. nextOpnd; res := res. nextResult
+      END;
+    END WriteCollect;
+  
   BEGIN
     proxy := b. proxyList;
     WHILE (proxy # NIL) DO
@@ -347,6 +376,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       | Opcode.select:
         (* nothing *)
 
+      | Opcode.collect:
+        WriteCollect (instr, instr. GetCollectTarget());
+        
       | Opcode.loopStart:
         (* nothing *)
         

@@ -59,14 +59,21 @@ CONST
      result, then it has no side-effects.  This means it only returns a
      function result, but does not modify any nonlocal variables, nor does it
      initiate any I/O, nor can it throw an exception.  *)
-  
+
+  selectValue* = 14;
+  (**The result represents a value selected from the
+     @oconst{*OOC:SSA:Opcode.collect} operands that appear in the instruction's
+     argument list.  Also see @oconst{*OOC:SSA:Opcode.select}.  *)
+      
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of a result class.  *)
   BEGIN
     CASE class OF
+    | result: COPY ("result", name)
     | void: COPY ("void", name)
     | primary: COPY ("primary", name)
     | store: COPY ("store", name)
+    | selectValue: COPY ("select-value", name)
     END;
   END GetName;
   
