@@ -85,16 +85,7 @@ Installation
 
 3) `cd' to the directory containing the compiler source code.
 
-4) To bootstrap the compiler, OOC normally creates symbolic links to its
-   source code from its build directories. Symlinks are emulated under
-   Cygwin, but are not available under MSYS.
-   
-   FOR MINGW32/MSYS SYSTEMS:
-     cp -Rv lib/src stage0/lib
-	 cp -Rv src stage0
-   This step is not required for Cygwin systems.
-
-5) Configure the package.
+4) Configure the package.
 
     For Cygwin or stand-alone Mingw32:
 
@@ -105,13 +96,13 @@ Installation
 	  env CPPFLAGS=-mno-cygwin CFLAGS=-O2 LDFLAGS=-mno-cygwin \
 	    ./configure --disable-libs
 
-6) Type `make' to compile the package.
+5) Type `make' to compile the package.
 
-7) Type `make install' to install the programs and any data files and
+6) Type `make install' to install the programs and any data files and
    documentation.  `make install-strip' will additionally remove any 
    debug information from the installed executables.
 
-8) You can remove the program binaries and object files from the
+7) You can remove the program binaries and object files from the
    source code directory by typing `make clean'.  To also remove the
    files that `configure' created (so you can compile the package for
    a different kind of computer), type `make distclean'.  
@@ -126,6 +117,93 @@ Problems?
 
      c:/MinGW /mingw
      c:/usr/local /usr/local
+
+   Note that MSYS must be restarted for any changes to take effect.
+
+Platform-specific issues
+========================
+
+This section discusses features of OOC relevant to the Win32 platform.
+
+- Alignment. Many Win32 structure specify particular alignments. OOC
+  provides the following record flags to control the alignment of fields
+  within a record: ALIGN1 ALIGN2 ALIGN4 ALIGN8
+
+  Example:
+
+    tagMCI_WAVE_OPEN_PARMSA_struct* = RECORD [ALIGN1]
+      dwCallback* : DWORD;
+      wDeviceID* : MCIDEVICEID;
+      lpstrDeviceType* : LPCSTR;
+      lpstrElementName* : LPCSTR;
+      lpstrAlias* : LPCSTR;
+      dwBufferSeconds* : DWORD
+    END;
+
+- Calling Conventions. Most functions in the Win32 API are declared to use
+  "Pascal" (or "stdcall") calling convention. For Pascal calls, the callee
+  removes any parameters from the stack before returning from the
+  procedure.  In "C" calling convention (or "cdecl"), the caller removes
+  the parameters which permits the use of variable argument lists.
+
+  OOC allows calling convention to be specified in both Module declarations
+  and procedure declarations. For example, an interface module for a Win32
+  library is usually declared "Pascal":
+
+    MODULE WinApi [ INTERFACE "Pascal";
+      LINK LIB "kernel32"; LIB "user32"; LIB "gdi32" END];
+
+  Procedures or procedure types declared within the interface module will
+  inherit the specified calling convention. 
+
+    WNDPROC* = PROCEDURE (p0 : HWND; 
+	   p1 : UINT; p2 : WPARAM; p3 : LPARAM) : LRESULT;
+
+  In the above example, WinApi.WNDPROC inherits the "Pascal" convention
+  declared in the module header.  Exceptions from the module convention may
+  be declared per procedure. For example:
+
+    PROCEDURE wsprintfA* [ "C" ] (p0 : LPSTR; p1 : LPCSTR; ...) : LONGINT;
+ 
+  Regular Oberon-2 modules use the default calling convention, which is
+  compatible with "C". Oberon-2 functions to be used as Win32 call-backs
+  must therefore be explicitly declared "Pascal". For example:
+
+    IMPORT W := WinApi;
+
+    PROCEDURE MessageHandler ["Pascal"] (wnd : W.HWND; 
+      msg : W.UINT; wParam : W.WPARAM; lParam : W.LPARAM) : W.LRESULT;
+
+- C string assignment. Libraries written for the "C" language generally
+  represent text strings using the "char *" data type. The Oberon-2
+  equivalent is "POINTER TO ARRAY OF CHAR", which is not normally
+  compatible with Oberon strings types. The CSTRING pointer flag specifies
+  that "C"-style string assignments should be permitted. The following are
+  fragments from the Win32 API.
+
+    PCHAR* = POINTER [ CSTRING ] TO ARRAY OF CHAR;
+	...
+    LPCSTR* = PCHAR;
+	...
+    PROCEDURE MessageBoxA* (hWnd : HWND; 
+	  lpText : LPCSTR; lpCaption : LPCSTR; uType : UINT) : LONGINT;
+
+  The declaration of WinApi.MessageBoxA allows strings or character arrays
+  to be passed as the second and third parameters. For example:
+
+    IMPORT W := WinApi;
+
+    PROCEDURE TestMessage;
+    VAR result : LONGINT;
+    BEGIN
+      result := W.MessageBoxA(0, "Hello!", "This is a test Message", 0);
+    END TestMessage;
+
+    PROCEDURE MessageBox(title, message : ARRAY OF CHAR);
+	VAR result : LONGINT;
+	BEGIN
+	  result := W.MessageBoxA(0, title, message, 0);
+	END;  
 
 Implementation Issues
 =====================
