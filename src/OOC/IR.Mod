@@ -4376,10 +4376,11 @@ PROCEDURE (b: Builder) NewCatchClause*(guardType: Expression;
   BEGIN
     NEW(catch);
     type := b.AssertType(guardType);
+    InitCatchClause(catch, guardType.sym, type, statmSeq);
     IF ~TR.IsException(type) THEN
       b.ErrSym(notException, guardType.sym);
+      catch.triggered := TRUE;  (* prevent further warnings on this clause *)
     END;
-    InitCatchClause(catch, guardType.sym, type, statmSeq);
     RETURN catch;
   END NewCatchClause;
 
