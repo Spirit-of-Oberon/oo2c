@@ -21,14 +21,13 @@ MODULE OOC:IR:CheckUses;
 *)
 
 IMPORT
-  Object, Object:Boxed, ADT:Dictionary, Config:Value, Config:Value:Boolean,
+  Object, Object:Boxed, ADT:Dictionary, ADT:ArrayList,
+  Config:Value, Config:Value:Boolean,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
-  Sym := OOC:SymbolTable, OOC:Error,
+  Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules, OOC:Error,
   OOC:Scanner:Builder:BasicList, OOC:IR, OOC:IR:VisitAll;
 
 (* Extensions:
-
-   Discover unreachable branches in a WITH statement.
 
    Detect if variables are set or read by calls to local procedures.
 
@@ -68,6 +67,7 @@ CONST
   maybeUndefinedVar = 2;
   unreachableCode = 3;
   endOfFunction = 4;
+  deadTypeTest = 5;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -91,6 +91,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := Error.warningPrefix+"Unreachable code"
     | endOfFunction:
       t := Error.warningPrefix+"Control may reach end of function procedure"
+    | deadTypeTest:
+      t := Error.warningPrefix+"Type test made unreachable by preceeding guard"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -281,6 +283,38 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
         i: LONGINT;
         defIn, def2: Def;
         obj: Object.Object;
+
+      PROCEDURE CheckWith(def: Def; with: IR.WithStatm;
+                          prevGuards: ArrayList.ArrayList);
+        VAR
+          def2: Def;
+          localTest, test: IR.TypeTest;
+        BEGIN
+          localTest := with.guard(IR.TypeTest);
+          FOR i := 0 TO prevGuards.size-1 DO
+            test := prevGuards.array[i](IR.TypeTest);
+            IF (test.expr(IR.Var).decl = localTest.expr(IR.Var).decl) &
+               TR.IsExtensionOf(localTest.referenceType,
+                                test.referenceType) THEN
+              WarnSym(errList, pragmaHistory, localTest.sym, deadTypeTest);
+            END;
+          END;
+          
+          CheckExpr(with.guard);
+          def2 := def.Copy();
+          CheckStatmSeq(def, with.pathTrue);
+          IF (with.pathFalse # NIL) THEN
+            IF (LEN(with.pathFalse^) = 1) &
+               (with.pathFalse[0] IS IR.WithStatm) THEN
+              prevGuards.Append(with.guard(IR.TypeTest));
+              CheckWith(def2, with.pathFalse[0](IR.WithStatm), prevGuards);
+            ELSE
+              CheckStatmSeq(def2, with.pathFalse);
+            END;
+            def.Merge(def2);
+          END;
+        END CheckWith;
+      
       BEGIN
         WITH statm: IR.Assert DO
           IF (statm.predicate = NIL) (*OR
@@ -388,13 +422,7 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
           CheckStatmSeq(def, statm.body);
           
         | statm: IR.WithStatm DO
-          CheckExpr(statm.guard);
-          def2 := def.Copy();
-          CheckStatmSeq(def, statm.pathTrue);
-          IF (statm.pathFalse # NIL) THEN
-            CheckStatmSeq(def2, statm.pathFalse);
-            def.Merge(def2);
-          END;
+          CheckWith(def, statm, ArrayList.New(4));
         END;
       END CheckStatm;
     

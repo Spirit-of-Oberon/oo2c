@@ -1,0 +1,15 @@
+MODULE Undef15;
+
+TYPE
+  P1 = POINTER TO R1; R1 = RECORD END;
+  P2 = POINTER TO R2; R2 = RECORD (R1) END;
+  P3 = POINTER TO R3; R3 = RECORD (R2) END;
+  
+PROCEDURE Proc*(x: P1);
+  BEGIN
+    WITH x: P2 DO
+    | x: P3 DO
+    END;
+  END Proc;
+
+END Undef15.

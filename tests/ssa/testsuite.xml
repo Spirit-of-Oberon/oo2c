@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; undef11">-->
+  select ="&SetupTestCasesWithOut; undef15">-->
 
   &TestSetupWithOut;
     
@@ -1357,6 +1357,10 @@
       A <code>WITH</code> without an <code>ELSE</code> has no 
       default path.
     </test>
+    <test id="undef15" type="accept" file="Undef15.Mod">
+      Warn if a <code>WITH</code> guard makes a later guard
+      unreachable.
+    </test>
   </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC O2">
@@ -1777,5 +1781,7 @@
         msg="Warning: Control may reach end of function procedure"/>
     <warning-info id="undef14" pos="%P()"
         msg="Warning: Unreachable code"/>
+    <warning-info id="undef15" pos="x%: P3"
+        msg="Warning: Type test made unreachable by preceeding guard"/>
   </processor-info>
 </testsuite-ext>
