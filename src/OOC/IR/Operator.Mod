@@ -44,17 +44,17 @@ PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List): Bui
 
 (* -------- *)
 
-PROCEDURE InitNegate (neg: Negate; opnd: IR.Expression);
+PROCEDURE InitNegate (neg: Negate; sym: IR.Symbol; opnd: IR.Expression);
   BEGIN
-    IR.InitOperator (neg, opnd, NIL);
+    IR.InitOperator (neg, sym, opnd, NIL);
   END InitNegate;
 
-PROCEDURE NewNegate (opnd: IR.Expression): Negate;
+PROCEDURE NewNegate (sym: IR.Symbol; opnd: IR.Expression): Negate;
   VAR
     neg: Negate;
   BEGIN
     NEW (neg);
-    InitNegate (neg, opnd);
+    InitNegate (neg, sym, opnd);
     RETURN neg
   END NewNegate;
 
@@ -68,12 +68,12 @@ PROCEDURE (neg: Negate) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
-PROCEDURE (b: Builder) NewOperator* (id: Symbol.Id; left, right: IR.Expression): IR.Expression;
+PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
   BEGIN
-    CASE id OF
+    CASE sym. id OF
     | Symbol.minus:
       ASSERT (left = NIL);
-      RETURN NewNegate (right)
+      RETURN NewNegate (sym, right)
     END
   END NewOperator;
 

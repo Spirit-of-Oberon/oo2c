@@ -235,7 +235,7 @@ TYPE
   ProcDecl* = POINTER TO ProcDeclDesc;
   ProcDeclDesc = RECORD
     (NodeDesc)
-    proc-: AST.Node;
+    proc-: Terminal;
     arrow-: AST.Node;
     receiver-: AST.Node;
     flags-: AST.Node;
@@ -261,7 +261,7 @@ TYPE
   Module* = POINTER TO ModuleDesc;
   ModuleDesc* = RECORD
     (NodeDesc)
-    module-: AST.Node;
+    module-: Terminal;
     name-: ModuleIdent;
     flags-: Flags;
     semicolon-: AST.Node;
@@ -1026,7 +1026,7 @@ PROCEDURE (b: Builder) ProcDecl* (proc, arrow, receiver,
     pd: ProcDecl;
   BEGIN
     NEW (pd);
-    pd. proc := proc;
+    pd. proc := proc(Terminal);
     pd. arrow := arrow;
     pd. receiver := receiver;
     pd. flags := flags;
@@ -1105,7 +1105,11 @@ PROCEDURE (b: Builder) Module* (module, name: AST.Node;
     m: Module;
   BEGIN
     NEW (m);
-    m. module := module;
+    IF (module = NIL) THEN
+      m. module := NIL
+    ELSE
+      m. module := module(Terminal)
+    END;
     m. name := name(ModuleIdent);
     IF (flags # NIL) THEN
       m. flags := flags(Flags)

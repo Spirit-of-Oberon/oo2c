@@ -4,7 +4,7 @@ IMPORT
 Log,
   Language, Language:Boolean, Language:String8, Language:Integer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
-  OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
+  SymbolId := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:AST, OOC:SymbolTable:Item, OOC:SymbolTable:Predef;
 
@@ -50,10 +50,21 @@ Log,
 
 TYPE
   Name* = AST.Name;
-
+  Symbol* = BasicList.Symbol;
+  
 TYPE
   Node* = POINTER TO NodeDesc;
   NodeDesc = RECORD [ABSTRACT]
+    sym: Symbol;
+    (**This symbol's location is used to refer to the node when writing an
+       error or warning message.  For constants or name, this symbol is the
+       node's original representation.  For expressions or statements it refers
+       to a symbol that can serve as an---ideally unambiguous---identifier for
+       the construct.
+
+       The field is @code{NIL} if, and only if, the node is equal to
+       @ovar{errorExpr}.  In this case, no error or warning should be written,
+       because the node already triggered an error message.  *)
   END;
 
 
@@ -80,9 +91,6 @@ TYPE
      and operators, this declaration may be overloaded, but in all other cases
      the declaration uniquely identifies the referenced entity.  *)
     (ExpressionDesc)
-    name-: BasicList.Symbol;
-    (**The symbol that represents this reference to the declaration
-       @ofield{decl} in the source code.  *)
     decl-: Item.Declaration;
     (**The entity refered to.  *)
   END;
@@ -223,11 +231,13 @@ TYPE
 
 VAR
   errorExpr-: Expression;
-  (**This value is returned if there is no real value because of an error.
-     For example, if an identifier cannot be resolved, or if a designator
-     does not begin with an identifier, then this value is passed to the
-     caller.  Within the IR, no other value is used to indicate illegal
-     operations.  *)
+  (**This value is returned if there is no real value because of an error.  For
+     example, if an identifier cannot be resolved, or if a designator does not
+     begin with an identifier, then this value is passed to the caller.  Within
+     the IR, no other value is used to indicate illegal operations.
+
+     @strong{Note}: A function can @emph{only} return this value for a node, if
+     it also emits an error message.  *)
   
 CONST
   undeclaredIdent = 1;
@@ -270,7 +280,7 @@ PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Err
     b. errList := errList;
   END InitBuilder;
 
-PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: BasicList.Symbol);
+PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: Symbol);
   VAR
     lastError: Error.Msg;
   BEGIN
@@ -283,8 +293,9 @@ PROCEDURE (b: Builder) ErrSym* (code: Error.Code; sym: BasicList.Symbol);
 
 
 
-PROCEDURE InitNode* (n: Node);
+PROCEDURE InitNode* (n: Node; sym: Symbol);
   BEGIN
+    n. sym := sym;
   END InitNode;
 
 PROCEDURE (node: Node) [ABSTRACT] Accept* (v: Visitor);
@@ -292,33 +303,32 @@ PROCEDURE (node: Node) [ABSTRACT] Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitExpression* (expr: Expression);
+PROCEDURE InitExpression* (expr: Expression; sym: Symbol);
   BEGIN
-    InitNode (expr);
+    InitNode (expr, sym);
   END InitExpression;
 
-PROCEDURE InitReference (ref: Reference; name: BasicList.Symbol; decl: Item.Declaration);
+PROCEDURE InitReference (ref: Reference; name: Symbol; decl: Item.Declaration);
   BEGIN
-    InitNode (ref);
-    ref. name := name; 
+    InitNode (ref, name);
     ref. decl := decl;
   END InitReference;
 
 
 (* -------- *)
 
-PROCEDURE InitConst (const: Const; value: Language.Value);
+PROCEDURE InitConst (const: Const; sym: Symbol; value: Language.Value);
   BEGIN
-    InitExpression (const);
+    InitExpression (const, sym);
     const. value := value;
   END InitConst;
 
-PROCEDURE NewConst (value: Language.Value): Const;
+PROCEDURE NewConst (sym: Symbol; value: Language.Value): Const;
   VAR
     const: Const;
   BEGIN
     NEW (const);
-    InitConst (const, value);
+    InitConst (const, sym, value);
     RETURN const
   END NewConst;
 
@@ -330,12 +340,12 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
     v. VisitConst (const)
   END Accept;
 
-PROCEDURE (b: Builder) NewStringConst* (sym: BasicList.Symbol): Expression;
+PROCEDURE (b: Builder) NewStringConst* (sym: Symbol): Expression;
   BEGIN
-    RETURN NewConst (String8.type. ValueOf (sym. str^));
+    RETURN NewConst (sym, String8.type. ValueOf (sym. str^));
   END NewStringConst;
 
-PROCEDURE (b: Builder) NewIntConst10* (sym: BasicList.Symbol): Expression;
+PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
   VAR
     v: Language.Value;
   BEGIN
@@ -344,18 +354,18 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: BasicList.Symbol): Expression;
       b. ErrSym (numberOutOfRange, sym);
       RETURN errorExpr
     ELSE
-      RETURN NewConst (v)
+      RETURN NewConst (sym, v)
     END
   END NewIntConst10;
 
 (* -------- *)
 
-PROCEDURE InitVar (var: Var; name: BasicList.Symbol; decl: Item.VarDecl);
+PROCEDURE InitVar (var: Var; name: Symbol; decl: Item.VarDecl);
   BEGIN
     InitReference (var, name, decl);
   END InitVar;
 
-PROCEDURE NewVar (name: BasicList.Symbol; decl: Item.VarDecl): Var;
+PROCEDURE NewVar (name: Symbol; decl: Item.VarDecl): Var;
   VAR
     var: Var;
   BEGIN
@@ -374,12 +384,12 @@ PROCEDURE (var: Var) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitPredefProc (pproc: PredefProc; name: BasicList.Symbol; decl: Item.PredefProc);
+PROCEDURE InitPredefProc (pproc: PredefProc; name: Symbol; decl: Item.PredefProc);
   BEGIN
     InitReference (pproc, name, decl);
   END InitPredefProc;
 
-PROCEDURE NewPredefProc (name: BasicList.Symbol; decl: Item.PredefProc): PredefProc;
+PROCEDURE NewPredefProc (name: Symbol; decl: Item.PredefProc): PredefProc;
   VAR
     pproc: PredefProc;
   BEGIN
@@ -398,12 +408,12 @@ PROCEDURE (pproc: PredefProc) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitProcedureRef (procRef: ProcedureRef; name: BasicList.Symbol; decl: Item.ProcDecl);
+PROCEDURE InitProcedureRef (procRef: ProcedureRef; name: Symbol; decl: Item.ProcDecl);
   BEGIN
     InitReference (procRef, name, decl);
   END InitProcedureRef;
 
-PROCEDURE NewProcedureRef (name: BasicList.Symbol; decl: Item.ProcDecl): ProcedureRef;
+PROCEDURE NewProcedureRef (name: Symbol; decl: Item.ProcDecl): ProcedureRef;
   VAR
     procRef: ProcedureRef;
   BEGIN
@@ -422,12 +432,12 @@ PROCEDURE (procRef: ProcedureRef) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitModuleRef (modRef: ModuleRef; name: BasicList.Symbol; decl: Item.Module);
+PROCEDURE InitModuleRef (modRef: ModuleRef; name: Symbol; decl: Item.Module);
   BEGIN
     InitReference (modRef, name, decl);
   END InitModuleRef;
 
-PROCEDURE NewModuleRef (name: BasicList.Symbol; decl: Item.Module): ModuleRef;
+PROCEDURE NewModuleRef (name: Symbol; decl: Item.Module): ModuleRef;
   VAR
     modRef: ModuleRef;
   BEGIN
@@ -447,11 +457,11 @@ PROCEDURE (modRef: ModuleRef) Accept* (v: Visitor);
 (* -------- *)
 
 PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item; 
-                                     id: Symbol.Id; name: BasicList.Symbol): Expression;
+                                     name: Symbol): Expression;
   VAR
     decl: Item.Declaration;
   
-  PROCEDURE GetName (sym: BasicList.Symbol): Item.Name;
+  PROCEDURE GetName (sym: Symbol): Item.Name;
     VAR
       name: Item.Name;
     BEGIN
@@ -461,13 +471,13 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
     END GetName;
   
   BEGIN
-    IF (id = Symbol.ident) THEN
+    IF (name. id = SymbolId.ident) THEN
       decl := ns. Identify (context, GetName (name), FALSE);
       IF (decl = NIL) THEN
         b. ErrSym (undeclaredIdent, name)
       ELSE
         WITH decl: Item.ConstDecl DO
-          RETURN NewConst (decl. value)
+          RETURN NewConst (name, decl. value)
         | decl: Item.VarDecl DO
           RETURN NewVar (name, decl)
         | decl: Item.PredefProc DO
@@ -491,36 +501,36 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Item.Namespace; context: Item.Item;
   END NewIdentRef;
 
 PROCEDURE (b: Builder) NewQualident* (modref: ModuleRef; context: Item.Item; 
-                                   id: Symbol.Id; name: BasicList.Symbol): Expression;
+                                      name: Symbol): Expression;
   BEGIN
-    RETURN b. NewIdentRef (modref. decl(Item.Module). ns, context, id, name)
+    RETURN b. NewIdentRef (modref. decl(Item.Module). ns, context, name)
   END NewQualident;
 
 (* -------- *)
 
-PROCEDURE InitOperator* (op: Operator; opnd1, opnd2: Expression);
+PROCEDURE InitOperator* (op: Operator; sym: Symbol; opnd1, opnd2: Expression);
   BEGIN
-    InitExpression (op);
+    InitExpression (op, sym);
     op. opnd1 := opnd1;
     op. opnd2 := opnd2;
   END InitOperator;
 
-PROCEDURE (b: Builder) [ABSTRACT] NewOperator* (id: Symbol.Id; left, right: Expression): Expression;
+PROCEDURE (b: Builder) [ABSTRACT] NewOperator* (op: Symbol; left, right: Expression): Expression;
   END NewOperator;
 
 (* -------- *)
 
-PROCEDURE InitStatement* (statm: Statement);
+PROCEDURE InitStatement* (statm: Statement; sym: Symbol);
   BEGIN
-    InitExpression (statm);
+    InitExpression (statm, sym);
   END InitStatement;
 
 (* -------- *)
 
-PROCEDURE InitAssert (assert: Assert; predicate: Expression; code: LONGINT;
-                      disabled: BOOLEAN);
+PROCEDURE InitAssert (assert: Assert; sym: Symbol; 
+                      predicate: Expression; code: LONGINT; disabled: BOOLEAN);
   BEGIN
-    InitStatement (assert);
+    InitStatement (assert, sym);
     assert. predicate := predicate;
     assert. code := code;
     assert. disabled := disabled;
@@ -534,12 +544,13 @@ PROCEDURE GetPragmaValue (b: Builder; pragma: Pragmas.Pragma; charPos: Pragmas.C
     RETURN value(BooleanValue.Value). boolean
   END GetPragmaValue;
 
-PROCEDURE (b: Builder) NewAssert (arguments: ExpressionList; disabled: BOOLEAN): Assert;
+PROCEDURE (b: Builder) NewAssert (sym: Symbol;
+                         arguments: ExpressionList; disabled: BOOLEAN): Assert;
   VAR
     assert: Assert;
   BEGIN  (* ... FIXME: check arguments, add default arg *)
     NEW (assert);
-    InitAssert (assert, arguments[0], defaultAssertCode, disabled);
+    InitAssert (assert, sym, arguments[0], defaultAssertCode, disabled);
     RETURN assert
   END NewAssert;
 
@@ -555,7 +566,7 @@ PROCEDURE (assert: Assert) Accept* (v: Visitor);
 
 PROCEDURE InitCall* (call: Call; design: Expression; arguments: ExpressionList);
   BEGIN
-    InitNode (call);
+    InitNode (call, design. sym);
     call. design := design;
     call. arguments := arguments;
   END InitCall;
@@ -568,8 +579,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     WITH design: PredefProc DO
       CASE design. decl(Item.PredefProc). id OF
       | Predef.assert:
-        RETURN b. NewAssert (arguments,
-          GetPragmaValue (b, StdPragmas.assertions, design. name. pos))
+        RETURN b. NewAssert (design. sym, arguments,
+                   GetPragmaValue (b, StdPragmas.assertions, design. sym. pos))
       END
     ELSE
       InitCall (call, design, arguments)
@@ -587,19 +598,21 @@ PROCEDURE (call: Call) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitProcedure* (p: Procedure; decl: Item.ProcDecl; statmSeq: StatementSeq);
+PROCEDURE InitProcedure* (p: Procedure; sym: Symbol; 
+                          decl: Item.ProcDecl; statmSeq: StatementSeq);
   BEGIN
-    InitNode (p);
+    InitNode (p, sym);
     p. decl := decl;
     p. statmSeq := statmSeq;
   END InitProcedure;
 
-PROCEDURE (b: Builder) NewProcedure* (decl: Item.ProcDecl; statmSeq: StatementSeq): Procedure;
+PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
+                       decl: Item.ProcDecl; statmSeq: StatementSeq): Procedure;
   VAR
     p: Procedure;
   BEGIN
     NEW (p);
-    InitProcedure (p, decl, statmSeq);
+    InitProcedure (p, sym, decl, statmSeq);
     RETURN p
   END NewProcedure;
 
@@ -613,22 +626,24 @@ PROCEDURE (p: Procedure) Accept* (v: Visitor);
 
 (* -------- *)
 
-PROCEDURE InitModule* (m: Module; name: Name; procList: ProcedureList;
+PROCEDURE InitModule* (m: Module; sym: Symbol;
+                       name: Name; procList: ProcedureList;
                        statmSeq: StatementSeq);
   BEGIN
-    InitNode (m);
+    InitNode (m, sym);
     m. name := name;
     m. procList := procList;
     m. statmSeq := statmSeq;
   END InitModule;
 
-PROCEDURE (b: Builder) NewModule* (name: Name; procList: ProcedureList;
+PROCEDURE (b: Builder) NewModule* (sym: Symbol;
+                                   name: Name; procList: ProcedureList;
                                    statmSeq: StatementSeq): Module;
   VAR
     m: Module;
   BEGIN
     NEW (m);
-    InitModule (m, name, procList, statmSeq);
+    InitModule (m, sym, name, procList, statmSeq);
     RETURN m
   END NewModule;
 
@@ -643,5 +658,5 @@ PROCEDURE (m: Module) Accept* (v: Visitor);
 BEGIN
   NEW (irContext);
   Error.InitContext (irContext, "OOC:IR");
-  errorExpr := NewConst (Boolean.New (FALSE));
+  errorExpr := NewConst (NIL, Boolean.New (FALSE));
 END OOC:IR.

@@ -39,15 +39,14 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     BEGIN
       WITH design: ExtTree.Terminal DO
         RETURN b. NewIdentRef (currentNamespace, currentSourceContext,
-                               design. sym. id, design. sym)
+                               design. sym)
       | design: ExtTree.Operator DO
         (* we only do qualified identifiers for now: "module.ident" *)
         ASSERT (design. op. sym. id = Symbol.period);
         left := Designator (design. left);
         WITH left: IR.ModuleRef DO
           RETURN b. NewQualident (left, currentSourceContext, 
-                        design. right(ExtTree.Terminal). sym. id,
-                        design. right(ExtTree.Terminal). sym)
+                                  design. right(ExtTree.Terminal). sym)
         END
       END
     END Designator;
@@ -77,7 +76,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         ELSE
           right := NIL
         END;
-        RETURN b. NewOperator (expr. op. sym. id, left, right)
+        RETURN b. NewOperator (expr. op. sym, left, right)
       END
     END Expr;
   
@@ -161,7 +160,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       
       currentNamespace := oldNamespace;
       currentSourceContext := oldSourceContext;
-      RETURN b. NewProcedure (procDecl. symTabEntry, statmSeq)
+      RETURN b. NewProcedure (procDecl. proc. sym, 
+                              procDecl. symTabEntry, statmSeq)
     END ProcDecl;
 <* POP *>
   
@@ -205,7 +205,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         statmSeq := StatementSeq (module. body. statmSeq)
       END;
       
-      RETURN b. NewModule (module. moduleName, procList, statmSeq)
+      RETURN b. NewModule (module. module. sym, module. moduleName,
+                           procList, statmSeq)
     END Module;
   
   BEGIN
