@@ -17,13 +17,13 @@ l1_loop:
   i2 = (OOC_INT32)str+i2;
   i1 = *(OOC_UINT8*)i2;
   i1 = i1==(OOC_CHAR8)'\000';
-  i2 = i0+0;
   if (i1) goto l4;
   
   goto l1_loop;
 l4:
+  i0 = i0+0;
   OOC_POP_VPAR_STACK
-  return i2;
+  return i0;
 }
 
 void Var7c__Test() {

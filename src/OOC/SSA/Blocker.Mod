@@ -21,7 +21,6 @@ MODULE OOC:SSA:Blocker;
 *)
 
 IMPORT
-  Log,
   Channel, TextRider, ADT:String, Dictionary := ADT:Dictionary:IntValue,
   Language:Integer,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:DeadCodeElimination;
@@ -105,6 +104,26 @@ TYPE
     instr-: SSA.Instr;
     region: Region;
     loopAssoc: Loop;
+    (**Refers to the loop this instruction is part of.  An instruction is
+       considered to be part of a loop if
+
+       @itemize @bullet
+       @item
+       it takes one of its input parameters directly or indirectly from the
+       @oconst{Opcode.loopStart} instruction, @emph{and}
+
+       @item
+       one of it results is passed directly or indirectly to the
+       @oconst{Opnd.backwardFeed} operand or to the exit predicateof the
+       @oconst{Opcode.loopEnd} instruction.
+       @end itemize
+
+       The field is @code{NIL} for instructions that are outside of any loop.
+       By definition, dead code is not part of any loop.
+
+       This field is calculated by @oproc{ArrangeInstructions.AttachToLoop}.  *)
+    visitedForLoop: Loop;
+    visitedResult: BOOLEAN;
   END;
   RegionDesc = RECORD
     (ProxyDesc)
@@ -140,6 +159,8 @@ PROCEDURE InitProxy (p: Proxy; instr: SSA.Instr);
     p. instr := instr;
     p. region := NIL;
     p. loopAssoc := NIL;
+    p. visitedForLoop := NIL;
+    p. visitedResult := FALSE;
   END InitProxy;
 
 PROCEDURE NewProxy (instr: SSA.Instr): Proxy;
@@ -417,75 +438,119 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       END;
     END SortNestedLoops;
   
-  PROCEDURE AttachToLoop (loop: Loop);
+  PROCEDURE AttachToLoop(loop: Loop);
     VAR
-      loopStart: SSA.Instr;
-      p: Proxy;
+      dummy: BOOLEAN;
       
-    PROCEDURE MarkUses (loopStart, instr: SSA.Instr);
+    PROCEDURE PartOfLoop(loop: Loop; instr: SSA.Instr): BOOLEAN;
       VAR
         res: SSA.Result;
         use: SSA.Opnd;
-        p: Proxy;
-        loopEnd: SSA.Instr;
-        loopProxy: Loop;
-
-      PROCEDURE IsNestedLoop (child: SSA.Instr): BOOLEAN;
-      (* Return TRUE if `child' is one of the loops directly nested into
-         `loopStart'.  *)
-        BEGIN
-          child := child. GetLoopEnd();
-          RETURN (child. info(Loop). parentLoop = loopProxy);
-        END IsNestedLoop;
-      
+        inLoopUse: LONGINT;
+        instrProxy, useProxy: Proxy;
       BEGIN
-        loopEnd := loopStart. GetLoopEnd();
-        loopProxy := loopEnd. info(Loop);
-        
-        res := instr;
-        WHILE (res # NIL) DO
-          use := res. useList;
-          WHILE (use # NIL) DO
-            p := GetProxy(use. instr);
-            IF (p. instr. opcode = Opcode.loopStart) &
-               (p. instr # loopStart) THEN
-              (* we are looking at a nested loop: all the instructions within
-                 the loop have been marked as associates of the inner loop, but
-                 we must mark instructions following the loop as belonging to
-                 our current `loop' *)
-              loopEnd := p. instr. GetLoopEnd();
-              p := GetProxy(loopEnd);
-              p. loopAssoc := loop;
-              MarkUses (loopStart, loopEnd);
-              
-            ELSIF (p. loopAssoc = NIL) &
-                  (((p. instr. opcode # Opcode.selectExit) &
-                    (p. instr. opcode # Opcode.loopEnd)) OR
-                   IsNestedLoop (p. instr. GetLoopStart())) THEN
-              (* stop when we reach an instruction that has already been
-                 attached to another loop, and also when we reach a
-                 select-exit that belongs to the current loop *)
-              p. loopAssoc := loop;
-              MarkUses (loopStart, use. instr);
+        (* ... The performance of this function can improved by aborting the
+           depth first search altogether if one of the parents of `loop' is
+           encountered.
+
+           Until this approach has proven itself, though, simplicity is
+           king. ...  *)
+        instrProxy := GetProxy(instr);
+        IF (instrProxy. visitedForLoop = loop) THEN
+          (* been here before, this instruction is not part of `loop' *)
+          RETURN instrProxy. visitedResult;
+        ELSE
+          inLoopUse := 0;
+          res := instr;
+          WHILE (res # NIL) DO
+            use := res. useList;
+            WHILE (use # NIL) DO
+              useProxy := GetProxy(use. instr);
+              IF (useProxy = loop) &
+                 ((use. class = Opnd.backwardFeed) OR
+                  (use. OpndIndex() = 2)) OR
+                 PartOfLoop(loop, use. instr) THEN
+                INC (inLoopUse);
+              END;
+              use := use. nextUse;
             END;
-            use := use. nextUse;
+            res := res. nextResult;
           END;
-          res := res. nextResult;
+
+          instrProxy. visitedForLoop := loop;
+          instrProxy. visitedResult := (inLoopUse # 0);
+          IF instrProxy. visitedResult & (instrProxy. loopAssoc = NIL) THEN
+            (* only mark instruction as belonging to `loop' if it has not
+               been associated with one of the nested loops yet *)
+            instrProxy. loopAssoc := loop;
+          END;
+          RETURN instrProxy. visitedResult;
         END;
-      END MarkUses;
+      END PartOfLoop;
     
     BEGIN
       IF (loop # NIL) THEN
         AttachToLoop (loop. nextLoop);
         AttachToLoop (loop. nestedLoops);
         IF (loop. instr # NIL) THEN
-          loopStart := loop. instr. GetLoopStart();
-          p := GetProxy (loopStart);
-          p. loopAssoc := loop;
-          MarkUses (loopStart, loopStart);
+          dummy := PartOfLoop (loop, loop. instr. GetLoopStart());
         END;
       END;
     END AttachToLoop;
+
+  PROCEDURE AddLoopDeps (pb: SSA.ProcBlock; mainLoop: Loop);
+  (* Add additional operands that make the dependency of an instruction on a
+     value produced within a nested loop explicit.  The new operand refers to
+     the instruction that represents the loop region in question within the
+     region of the instruction.  That is, the additional operand always refer
+     to instructions within the region of the operand's instruction.  This
+     ensures that the depending instruction is placed after the loop body it
+     is dependent on.  *)
+    VAR
+      instr: SSA.Instr;
+      opnd: SSA.Opnd;
+      instrLoop, opndLoop, l: Loop;
+
+    PROCEDURE GetLoopProxy (instr: SSA.Instr): Loop;
+      VAR
+        p: Proxy;
+        loop: Loop;
+      BEGIN
+        p := GetProxy(instr);
+        loop := p. loopAssoc;
+        IF (loop = NIL) THEN
+          loop := mainLoop;
+        END;
+        RETURN loop;
+      END GetLoopProxy;
+    
+    BEGIN
+      instr := pb. instrList;
+      WHILE (instr # NIL) DO
+        IF (instr. opcode # Opcode.loopStart) &
+           (instr. opcode # Opcode.loopEnd) &
+           (instr. opcode # Opcode.selectExit) THEN
+          instrLoop := GetLoopProxy(instr);
+          
+          opnd := instr. opndList;
+          WHILE (opnd # NIL) & (opnd. class # Opnd.antiDependency) DO
+            opndLoop := GetLoopProxy(opnd. arg. instr);
+            
+            IF (opndLoop # instrLoop) THEN
+              l := opndLoop;
+              WHILE (l # NIL) & (l. parentLoop # instrLoop) DO
+                l := l. parentLoop;
+              END;
+              IF (l # NIL) THEN
+                instr. AddOpnd(l. instr, Opnd.antiDependency);
+              END;
+            END;
+            opnd := opnd. nextOpnd;
+          END;
+        END;
+        instr := instr. nextInstr;
+      END;
+    END AddLoopDeps;
   
   PROCEDURE IsWrite (instr: SSA.Instr): BOOLEAN;
     BEGIN
@@ -740,11 +805,11 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       n: Loop;
     BEGIN
       FOR i := 0 TO indent DO
-        Out.String ("    ");
+        Err.String ("    ");
       END;
-      Out.String ("loop: ");
-      Out.Hex (SYSTEM.VAL(LONGINT,l), 8);
-      Out.Ln;
+      Err.String ("loop: ");
+      Err.Hex (SYSTEM.VAL(LONGINT,l), 8);
+      Err.Ln;
       n := l. nestedLoops;
       WHILE (n # NIL) DO
         WriteLoops (n, indent+1);
@@ -766,7 +831,8 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     SortNestedLoops (mainLoop);
     (*WriteLoops (mainLoop, 0);*)
     AttachToLoop (mainLoop);
-
+    AddLoopDeps (pb, mainLoop);
+    
     (* for every instruction, write the number of uses into its `marker'
        field; instructions with no uses are placed in `ready', the rest
        is put into `waiting' *)
