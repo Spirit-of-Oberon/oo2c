@@ -4732,35 +4732,42 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     isNumeric, isSet, isBoolean : BOOLEAN;
     type : Sym.Type;
   BEGIN
-    type := right.type;
-    isNumeric := TR.IsNumericType(type);
-    isSet := TR.IsSetType(type);
-    isBoolean := IsPredefClass(type, {Predef.boolean});
-
-    CASE id OF
-    | Id.minus:
-      IF isNumeric THEN
-        RETURN b.NewNegate(sym, right);
-      ELSIF isSet THEN
-        (* for now, map set/numeric negation onto Negate operator *)
-        RETURN b.NewNegate(sym, right);
-      ELSE
-        RETURN b.ErrExpr(invalidOpType, sym);
-      END
-    | Id.plus:
-      IF isNumeric THEN 
-        RETURN right;
-      ELSE
-        RETURN b.ErrExpr(invalidOpType, sym);
-      END
-    | Id.not:
-      IF isBoolean THEN
-        RETURN b.NewNot(sym, right);
-      ELSE
-        RETURN b.ErrExpr(invalidOpType, sym);
-      END
+    IF (left = b.errorExpr) OR (right = b.errorExpr) THEN
+      (* The operands was already flagged as faulty.  Pass on
+         the error, instead of trying to cope with invalid input.  This
+         keeps followup errors in check.  *)
+      RETURN b.errorExpr;
     ELSE
-      RETURN b.ErrExpr(unknownOp, sym);
+      type := right.type;
+      isNumeric := TR.IsNumericType(type);
+      isSet := TR.IsSetType(type);
+      isBoolean := IsPredefClass(type, {Predef.boolean});
+      
+      CASE id OF
+      | Id.minus:
+        IF isNumeric THEN
+          RETURN b.NewNegate(sym, right);
+        ELSIF isSet THEN
+          (* for now, map set/numeric negation onto Negate operator *)
+          RETURN b.NewNegate(sym, right);
+        ELSE
+          RETURN b.ErrExpr(invalidOpType, sym);
+        END
+      | Id.plus:
+        IF isNumeric THEN 
+          RETURN right;
+        ELSE
+          RETURN b.ErrExpr(invalidOpType, sym);
+        END
+      | Id.not:
+        IF isBoolean THEN
+          RETURN b.NewNot(sym, right);
+        ELSE
+          RETURN b.ErrExpr(invalidOpType, sym);
+        END
+      ELSE
+        RETURN b.ErrExpr(unknownOp, sym);
+      END;
     END;
   END UnaryOperator;
 
@@ -4783,8 +4790,13 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     nil := Predef.GetType (Predef.nil);
     real := Predef.GetType (Predef.real);
     result := NIL;  (* FIXME. keep the compiler happy until ASSERTs are removed *)
-    
-    IF (id = Id.in) & TR.IsIntegerType(left.type)
+
+    IF (left = b.errorExpr) OR (right = b.errorExpr) THEN
+      (* One of the operands was already flagged as faulty.  Pass on
+         the error, instead of trying to cope with invalid input.  This
+         keeps followup errors in check.  *)
+      result := b.errorExpr;
+    ELSIF (id = Id.in) & TR.IsIntegerType(left.type)
        & TR.IsSetType(right.type) THEN
       result := b.NewSetMember(sym, left, right);
     ELSIF (id = Id.is) THEN
