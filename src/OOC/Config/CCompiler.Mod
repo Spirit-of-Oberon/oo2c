@@ -22,7 +22,11 @@ MODULE OOC:Config:CCompiler;
 
 IMPORT
   Strings, ADT:String, URI, URI:Scheme:File,
-  Config:Section:Options, OOC:Config, OOC:Repository;
+  Config:Section:Options, StringValue := Config:Value:String,
+  OOC:Config, OOC:Repository;
+
+VAR
+  cc, cflags, ldflags, libs: Options.Option;
 
 PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
   VAR
@@ -47,7 +51,9 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
     END GetURIofRT;
   
   BEGIN
-    COPY ("gcc -Wall -W -Wno-unused -Wno-format -Werror -O2 -Wno-uninitialized -g -pipe", cmd);
+    COPY (cc. value(StringValue.Value). string^, cmd);
+    Strings.Append (" ", cmd);
+    Strings.Append (cflags. value(StringValue.Value). string^, cmd);
     
     include := Config.repositories. GetIncludePaths();
     FOR i := 0 TO LEN (include^)-1 DO
@@ -76,10 +82,22 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    COPY ("gcc -g -pipe -o ", cmd);
+    COPY (cc. value(StringValue.Value). string^, cmd);
+    Strings.Append (" -o ", cmd);
     execFile(File.URI). GetPath (str);
     Strings.Append (str, cmd);
-    Strings.Append (" -lgc", cmd);
+    Strings.Append (" ", cmd);
+    Strings.Append (ldflags. value(StringValue.Value). string^, cmd);
+    Strings.Append (" ", cmd);
+    Strings.Append (libs. value(StringValue.Value). string^, cmd);
   END LinkProgramCmd;
+
+PROCEDURE RegisterConfig*;
+  BEGIN
+    cc := Config.AddOption ("cc", StringValue.New ("gcc"));
+    cflags := Config.AddOption ("cflags", StringValue.New ("-O2 -g"));
+    ldflags := Config.AddOption ("ldflags", StringValue.New (""));
+    libs := Config.AddOption ("libs", StringValue.New ("-lgc"));
+  END RegisterConfig;
 
 END OOC:Config:CCompiler.

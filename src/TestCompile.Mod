@@ -6,7 +6,7 @@ IMPORT
   Config:Section:Arguments, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, ADT:String, Sym := OOC:SymbolTable,
-  OOC:Config, OOC:Config:Assembler,
+  OOC:Config, OOC:Config:CCompiler, OOC:Config:Assembler,
   OOC:Repository, OOC:Repository:GetModuleClass, OOC:Make:Entity:ModuleFile,
   OOC:Make:Command:TranslateToC, OOC:Make:Command:TranslateToIA32,
   OOC:Make:Command:WriteMainFileC, OOC:Make:Command:CompileFileC,
@@ -184,6 +184,8 @@ PROCEDURE NewConfig;
                  "<options><set name='write-ir'>TRUE</set></options>");
     Config.AddCmdLine ("--inspect",
                  "<options><set name='inspect-proc'>$1</set><set name='inspect-stage'>$2</set></options>");
+
+    CCompiler.RegisterConfig;
   END NewConfig;
 
 BEGIN

@@ -1,7 +1,10 @@
 <!-- -*-mode: xml-*- -->
 <configuration>
-  <!--<options>
+  <options>
     <set name='cc'>@CC@</set>
     <set name='cflags'>@CFLAGS@</set>
-  </options>-->
+    <!-- for debugging: -Wall -W -Wno-unused -Wno-format -Werror -O2 -Wno-uninitialized -g -pipe -->
+    <set name='ldflags'>@LDFLAGS@</set>
+    <set name='libs'>@LIBS@</set>
+  </options>
 </configuration>
