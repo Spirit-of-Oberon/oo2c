@@ -214,6 +214,16 @@ PROCEDURE (b: StringBuffer) AppendUCS4Region*(data[NO_COPY]: ARRAY OF UCS4CHAR;
     INC(b.length, len);
   END AppendUCS4Region;
 
+PROCEDURE (b: StringBuffer) AppendChar*(ch: UCS4CHAR);
+  BEGIN
+    b.EnsureCapacity(b.length+1);
+    IF (b.data32 = NIL) THEN
+      b.ConvertTo32;
+    END;
+    b.data32[b.length] := ch;
+    INC(b.length);
+  END AppendChar;
+
 PROCEDURE (b: StringBuffer) Append*(obj: Object.Object);
   VAR
     s: STRING;
