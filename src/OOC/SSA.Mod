@@ -355,8 +355,11 @@ PROCEDURE (opnd: Opnd) IsScheduleOpnd*(): BOOLEAN;
 
 PROCEDURE (opnd: Opnd) IsValueOpnd*(): BOOLEAN;
 (**Return @code{TRUE} if operand takes a value that represents a true input
-   value of the instruction.  Otherwise, the operand represents meta data
+   value of the instruction, and that must be passed physically to this
+   instruction in the output.  Otherwise, the operand represents meta data
    that does should not appear in the emitted code.  *)
+  VAR
+    instr: Instr;
   BEGIN
     CASE opnd. class OF
     | OpndClass.antiDependency,
@@ -365,7 +368,12 @@ PROCEDURE (opnd: Opnd) IsValueOpnd*(): BOOLEAN;
       OpndClass.writeDesign:
       RETURN FALSE;
     ELSE
-      RETURN TRUE;
+      instr := opnd. instr;
+      (* Return TRUE if the operand is not the first operand of a "select".
+         The selecting expression is evaluated before even one of the
+         paths into the "select" is entered.  For this reason, it must
+         not be live at the place of the select instruction itself.  *)
+      RETURN (instr. opcode # Opcode.select) OR (instr. opndList # opnd);
     END;
   END IsValueOpnd;
 
