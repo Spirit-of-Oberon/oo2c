@@ -33,10 +33,15 @@ IMPORT
 
    @item Non-blocking Asynchronous Operation
    This is the most complicated usage scenario.  The client's socket is
-   switched to non-blocking mode and data is send to or received from the
-   server as availability allows.  This requires that the application runs a
+   switched to non-blocking mode and data is send to or retrieved from the
+   socket as availability allows.  This requires that the application runs a
    @otype{IO.Selector} loop that detects if data has arrived for reading on the
-   client's socket, or if more data can be written to the socket.  @dots{}
+   client's socket, or if more data can be written to the socket.  If only
+   incomplete data is available, then @oproc{Client.RetrieveResponse} and
+   @oproc{Client.RetrieveText} return @code{NIL}, the application must call
+   @oproc{Client.WriteData} to push bytes to the server, and
+   @oproc{Client.CanRead} and @oproc{Client.CanWrite} must be used to determine
+   if the NNTP client is expecting data or has pending output.
    @end table  *)
   
 CONST
@@ -107,6 +112,7 @@ TYPE
   Client* = POINTER TO ClientDesc;
   Connect = POINTER TO ConnectDesc;
   ClientDesc* = RECORD
+    (Object.ObjectDesc)
     serverAddr-: Address.SocketInet;
     
     async-: BOOLEAN;
@@ -122,9 +128,10 @@ TYPE
     blocking-: BOOLEAN;
     (**If @code{FALSE}, then the socket is switched to non-blocking mode.  If a
        @oproc{Client.RetrieveResponse} or @oproc{Client.RetrieveText} operation
-       discovers that no more input is available, or if an operation writes to
-       the socket and there is no more room in the kernel buffers, then it
-       returns immediately.  *)
+       discovers that no more input is available, or if
+       @oproc{Client.WriteData} writes to the socket and there is no more room
+       in the kernel buffers, then it returns immediately.  See also
+       @oproc{Client.CanRead} and @oproc{Client.CanWrite}.  *)
 
     welcome-: Object.String8;
     (**The text received from the server after connecting.  *)
@@ -135,10 +142,10 @@ TYPE
        In synchronous mode, this field is @code{NIL}.  *)
     
     postingAllowed-: BOOLEAN;
-    (**Set to @code{TRUE} if the server's welcome message indicates that
+    (**Set to @code{TRUE} if the server's welcome message indicated that
        it allows posting.  *)
     
-    channel: SocketChannel.Channel;
+    channel-: SocketChannel.Channel;
     
     rLen: LONGINT;    (* number of valid bytes in `r'; 0<=rLen<=LEN(r) *)
     rLine: LONGINT;   (* start of current line; 0<=rLine<=rLen *)
@@ -146,8 +153,6 @@ TYPE
     rText: Text;      (* if #NIL: rLine is in text part of a response *)
     sPos: LONGINT;    (* position of first unsend char in `waiting' *)
     sLen: LONGINT;    (* number of valid bytes in `s'; 0<=sLen<=LEN(s) *)
-    r: ARRAY inputBufferCapacity OF CHAR;
-    s: ARRAY outputBufferCapacity OF CHAR;
     waiting: Msg;
     (* List of messages or text fragments that have not been transferred into
        the output buffer @ofield{s} yet, and, by implication, have not been
@@ -163,6 +168,13 @@ TYPE
        has been read and parsed.  This field is initialized with a list
        containing a pseudo request whose response is the server's welcome
        message.  *)
+    pendingRequests: LONGINT;
+    (* Number of requests in the output buffer plus number of requests send
+       to the NNTP server for which no or only an incomplete response has been
+       read.  This is the number of entries in @ofield{sent}, plus one if
+       the text part of the last response is still in progress.  *)
+    r: ARRAY inputBufferCapacity OF CHAR;
+    s: ARRAY outputBufferCapacity OF CHAR;
   END;
 
 TYPE
@@ -340,6 +352,7 @@ PROCEDURE FillSBuffer(cl: Client);
           ptr := cl.waiting;
           cl.waiting := cl.waiting.nextMsg;
           Append(cl.sent, ptr);
+          INC(cl.pendingRequests);
           pos := 0;
           IF (cl.waiting = NIL) THEN
             EXIT;
@@ -352,7 +365,7 @@ PROCEDURE FillSBuffer(cl: Client);
     cl.sPos := pos; cl.sLen := len;
   END FillSBuffer;
 
-PROCEDURE SendMsg(cl: Client)
+PROCEDURE WriteMsg(cl: Client)
 RAISES IO.Error;
   VAR
     start, len: LONGINT;
@@ -368,13 +381,15 @@ RAISES IO.Error;
       END;
       cl.sLen := 0;
     END;
-  END SendMsg;
+  END WriteMsg;
 
 PROCEDURE (cl: Client) SendRequest(req: Request)
 RAISES IO.Error;
   BEGIN
     Append(cl.waiting, req);
-    SendMsg(cl);
+    IF cl.blocking THEN
+      WriteMsg(cl);
+    END;
   END SendRequest;
 
 PROCEDURE (cl: Client) SendText(text: Text);
@@ -541,6 +556,9 @@ RAISES IO.Error, ErrorResponse;
           req.ParseStatus(resp);
         END;
       END;
+      IF ~resp.long THEN
+        DEC(cl.pendingRequests);
+      END;
       RETURN resp;
     END;
   END RetrieveResponse;
@@ -562,39 +580,114 @@ RAISES IO.Error;
    @end precond  *)
   VAR
     msg: Msg;
+    text: Text;
   BEGIN
     msg := GetMsg(cl);
     IF (msg = NIL) THEN
       RETURN NIL;
     ELSE
-      RETURN msg(Text);
+      text := msg(Text);
+      IF text.last THEN
+        DEC(cl.pendingRequests);
+      END;
+      RETURN text;
     END;
   END RetrieveText;
 
-PROCEDURE (cl: Client) Connect*()
+PROCEDURE (cl: Client) Connect*(): BOOLEAN
 RAISES IO.Error, ErrorResponse;
 (**Initiate a connection to the NNTP server.  In synchronous mode, this method
    retrieves the server's welcome message before returning.  In asynchronous
    mode, it returns immediately and it is the task of the application to call
    @oproc{Client.RetrieveResponse} with @ofield{cl.connectRequest} as argument
-   to read the welcome message.  *)
+   to read the welcome message.
+
+   If the connection can be established, the result is @code{TRUE}, which is
+   guaranteed in blocking mode.  In non-blocking mode, the connection typically
+   is not established immediately, and the method returns @code{FALSE}.  In
+   this case, @oproc{cl.channel.FinishConnect} must be called on the client's
+   channel once the @otype{IO.Selector} signals that the connection can be
+   completed.  *)
   VAR
     resp: Response;
     connect: Connect;
+    done: BOOLEAN;
   BEGIN
-    cl.channel := SocketChannel.Connect(cl.serverAddr);
+    cl.channel := SocketChannel.Open();
+    cl.channel.SetBlocking(cl.blocking);
+    done := cl.channel.Connect(cl.serverAddr);
+    
     cl.sPos := 0; cl.sLen := 0;
     cl.rLine := 0; cl.rPos := 0; cl.rLen := 0; cl.rText := NIL;
     cl.waiting := NIL; cl.sent := NIL;
 
     connect := NEW(Connect, NIL, FALSE);
     cl.sent := connect;
+    cl.pendingRequests := 1;
     IF cl.async THEN
       cl.connectRequest := connect;
     ELSE
       resp := cl.RetrieveResponse(connect);
     END;
+    RETURN done;
   END Connect;
+
+PROCEDURE (cl: Client) CanWrite*(): BOOLEAN;
+(**Return @code{TRUE} if the client has data queued for writing to the NNTP
+   server.  In blocking mode, result is always @code{FALSE}.  *)
+  BEGIN
+    RETURN ((cl.sPos # cl.sLen) OR (cl.waiting # NIL)) & cl.channel.connected;
+  END CanWrite;
+
+PROCEDURE (cl: Client) CanRead*(): BOOLEAN;
+(**Return @code{TRUE} if the client is waiting for data from the NNTP
+   server.  *)
+  BEGIN
+    RETURN (cl.pendingRequests # 0) & cl.channel.connected;
+  END CanRead;
+
+PROCEDURE (cl: Client) WriteData*(): BOOLEAN
+RAISES IO.Error;
+(**Push request data to the NNTP server.  In non-blocking mode, none of the
+   methods that enqueue an NNTP request, like @oproc{cl.Group} or
+   @oproc{cl.Article}, actually send any bytes to the server.  They only add
+   the request to the list of waiting requests.  The application must call this
+   method to write data to the client's TCP connection.  The method returns the
+   value of @samp{@oproc{cl.CanWrite}()}.
+
+   @precond
+   @oproc{cl.CanWrite}() is @code{TRUE}.
+   @end precond  *)
+  VAR
+    w: LONGINT;
+  BEGIN
+    ASSERT(cl.CanWrite());
+    
+    IF (cl.sPos = cl.sLen) THEN
+      cl.sPos := 0;
+      cl.sLen := 0;
+      FillSBuffer(cl);
+    END;
+
+    REPEAT
+      w := cl.channel.Write(cl.s, cl.sPos, cl.sLen-cl.sPos);
+      INC(cl.sPos, w);
+    UNTIL (w = 0) OR (cl.sPos = cl.sLen);
+    
+    RETURN cl.CanWrite();
+  END WriteData;
+
+PROCEDURE (cl: Client) Register*(select: IO.Selector;
+                                 attachement: Object.Object): IO.SelectionKey;
+  VAR
+    interest: SET;
+  BEGIN
+    interest := {IO.opRead};
+    IF ~cl.channel.connected THEN
+      INCL(interest, IO.opConnect);
+    END;
+    RETURN cl.channel.RegisterWithSelector(select, interest, attachement);
+  END Register;
 
 PROCEDURE (cl: Client) Close*()
 RAISES IO.Error;
