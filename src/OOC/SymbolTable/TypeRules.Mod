@@ -910,7 +910,11 @@ PROCEDURE AllocateType* (type: Sym.Type);
         (* initialize size and alignment, take base type into account *)
         IF (type. baseType = NIL) THEN 
           align := 1;  (* this alignment is also used if the record is empty *)
-          size := 0
+          size := 0;
+          IF type.isVtable THEN
+            (* for VTABLE records, reserve space for the VTABLE pointer *)
+            size := Sym.predefIdToType[Predef.ptr].size;
+          END;
         ELSE
           AllocateType (type. baseType);
           align := type. baseType. align;

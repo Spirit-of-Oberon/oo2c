@@ -110,6 +110,7 @@ CONST
   flagAlign2* = 14;
   flagAlign4* = 15;
   flagAlign8* = 16;
+  flagVtable* = 17;
 
 CONST
   libTypeStandard* = 0;
@@ -668,6 +669,8 @@ TYPE
     (**If @code{TRUE}, then this type can serve as a base type for other
        records.  Default is @code{TRUE} for non-
        @code{INTERFACE} modules.  *)
+    isVtable*: BOOLEAN;
+    (**If @code{TRUE}, then this type has a C++ virtual method table. *)
     fieldAlign* : INTEGER;
     (**Alignment constraint on fields of this record. Normally, a field is
        placed at an address that is a multiple of its size.  For example, a
@@ -1320,6 +1323,8 @@ PROCEDURE (item: Item) AddFlag* (name: Name);
       id := flagAlign4;
     ELSIF (name.str^ = "ALIGN8") THEN
       id := flagAlign8;
+    ELSIF (name.str^ = "VTABLE") THEN
+      id := flagVtable;
     ELSE
       id := flagUnknownName;
     END;
@@ -2366,6 +2371,7 @@ PROCEDURE InitRecord* (record: Record; parent: Item; position: Position;
     record. isUnion := FALSE;
     record. isAbstract := FALSE;
     record. isExtensible := TRUE;
+    record. isVtable := FALSE;
     record. fieldAlign := 0;
     record. className := NIL
   END InitRecord;
@@ -2378,6 +2384,7 @@ PROCEDURE (record: Record) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteBool (record. isUnion);
     w. WriteBool (record. isAbstract);
     w. WriteBool (record. isExtensible);
+    w. WriteBool (record. isVtable);
     w. WriteInt (record. fieldAlign);
     w. WriteObject (record. className);
     (* ignore field `ns' *)
@@ -2394,6 +2401,7 @@ PROCEDURE (record: Record) Load* (r: Storable.Reader) RAISES IO.Error;
     r. ReadBool (record. isUnion);
     r. ReadBool (record. isAbstract);
     r. ReadBool (record. isExtensible);
+    r. ReadBool (record. isVtable);
     r. ReadInt (record. fieldAlign);
     r. ReadObject (obj);
     IF (obj = NIL) THEN

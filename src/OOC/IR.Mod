@@ -5373,7 +5373,7 @@ PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest;
       NEW (da, 1);
       da[0] := NewGuardedVar (var, var.name,
                               typeTest.origType.decl(Sym.TypeDecl).type);
-      nested := Namespace.NewNested (da, 1);
+      nested := Namespace.NewNested (da, 1, TRUE);
       nested. SetEnclosingNamespace (namespace(Namespace.Nested));
       namespace := nested;
       RETURN;
@@ -5383,7 +5383,7 @@ PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest;
 
     (* fall through: install empty namespace, so that EndTypeGuard works *)
     NEW (da, 0);
-    nested := Namespace.NewNested (da, 0);
+    nested := Namespace.NewNested (da, 0, TRUE);
     nested. SetEnclosingNamespace (namespace(Namespace.Nested));
     namespace := nested;
   END StartTypeGuard;
@@ -5410,7 +5410,7 @@ PROCEDURE (b: Builder) StartExceptionScope*(exceptionType: Expression;
     NEW(da, 1);
     da[0] := NewGuardedVar(CreateNamespace.exception,
                            b.GetName(varName), type);
-    nested := Namespace.NewNested(da, 1);
+    nested := Namespace.NewNested(da, 1, TRUE);
     nested.SetEnclosingNamespace(namespace(Namespace.Nested));
     namespace := nested;
   END StartExceptionScope;

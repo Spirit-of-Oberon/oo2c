@@ -61,6 +61,7 @@ CONST
   notExtensionOfBound = 31;
   tooFewTypeAliases = 32;
   cannotDefineTypeAliases = 33;
+  inconsistentVtable = 34;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -147,6 +148,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "The base record type has ${count} type parameter(s)"
     | cannotDefineTypeAliases:
       t := "The base record type has no type parameters"
+    | inconsistentVtable:
+      t := "VTABLE flag is inconsistent with base type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -277,7 +280,7 @@ RAISES IO.Error;
     VAR
       ptr: Sym.Item;
 
-    PROCEDURE Assemble (item: Sym.Item; nsType: SHORTINT): Sym.Namespace;
+    PROCEDURE Assemble (item: Sym.Item; nsType: SHORTINT; sort : BOOLEAN): Sym.Namespace;
       VAR
         ptr: Sym.Item;
         c: LONGINT;
@@ -372,12 +375,14 @@ RAISES IO.Error;
           END
         END;
 
-        (* sort array *)
-        Quicksort (da, 0, c-1);
+        IF sort THEN
+          (* sort array *)
+          Quicksort (da, 0, c-1)
+        END;
 
         CASE nsType OF
-        | namespaceNested  : RETURN Namespace.NewNested(da, c);
-        | namespaceExtended: RETURN Namespace.NewExtended(da, c);
+        | namespaceNested  : RETURN Namespace.NewNested(da, c, sort);
+        | namespaceExtended: RETURN Namespace.NewExtended(da, c, sort);
         END
       END Assemble;
 
@@ -390,16 +395,20 @@ RAISES IO.Error;
         END;
 
         WITH item: Sym.Module DO
-          item. SetNamespace (Assemble (item, namespaceNested))
+          item. SetNamespace (Assemble (item, namespaceNested, TRUE))
         | item: Sym.ProcDecl DO
-          item. SetNamespace (Assemble (item, namespaceNested))
+          item. SetNamespace (Assemble (item, namespaceNested, TRUE))
         | item: Sym.Record DO
-          item. SetNamespace (Assemble (item, namespaceExtended));
+(* For some record types (ie. VTABLE) it is essential that the declaration
+   order be preserved for type-bound procedures. Unfortunately, at the time
+   we invoke PopulateNamspace, we have not yet resolved modifier flags.
+   Otherwise, only records with isVtable need to be unsorted. *)
+          item. SetNamespace (Assemble (item, namespaceExtended, FALSE));
           privateRecords.Set(item, NIL);
         | item: Sym.TypePars DO
-          item. SetNamespace (Assemble (item, namespaceNested));
+          item. SetNamespace (Assemble (item, namespaceNested, TRUE));
         | item: Sym.FormalPars DO
-          item. SetNamespace (Assemble (item, namespaceNested));
+          item. SetNamespace (Assemble (item, namespaceNested, TRUE));
         ELSE  (* no other item is associated with a namespace *)
         END
       END
@@ -1066,14 +1075,19 @@ RAISES IO.Error;
       VAR
         i: LONGINT;
         proc: Sym.ProcDecl;
+        baseRecord : Sym.Record;
       BEGIN
         IF (record. tbProcCount = -1) THEN
           IF (record. baseType = NIL) OR 
              ~(record. baseType IS Sym.Record) THEN
             record. tbProcCount := 0
           ELSE
-            CheckRecord (record. baseType(Sym.Record));
-            record. tbProcCount := record. baseType(Sym.Record). tbProcCount
+            baseRecord := record. baseType(Sym.Record);
+            CheckRecord (baseRecord);
+            record. tbProcCount := baseRecord. tbProcCount;
+            IF record.isVtable # baseRecord.isVtable THEN
+              ErrType(inconsistentVtable, record);
+            END
           END;
           record.ns(Namespace.Extended).CheckRestrictions (record, uses,
                                                            errList);
@@ -1236,6 +1250,8 @@ RAISES IO.Error;
                 SetFlag(item.isExtensible, FALSE);
               | Sym.flagExtensible:
                 SetFlag(item.isExtensible, TRUE);
+              | Sym.flagVtable:
+                SetFlag(item.isVtable, TRUE);
               | Sym.flagUnion:
                 SetFlag(item.isUnion, TRUE);
               | Sym.flagAlign1:
