@@ -1,0 +1,4 @@
+OOC_DEV_ROOT="`pwd`"
+export OOC_DEV_ROOT
+MAIN_MAKEFILE="$OOC_DEV_ROOT/rsrc/OOC/Makefile.ooc-main"
+export MAIN_MAKEFILE

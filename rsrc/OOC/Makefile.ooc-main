@@ -1,0 +1,113 @@
+# -*-mode: makefile-*-
+OOC_HOME=/usr
+OOC_BIN_DIR=/usr/bin
+OOC=cd $(OOC_DEV_ROOT) && $(OOC_BIN_DIR)/Oo2c
+OOCN=cd $(OOC_DEV_ROOT) && $(OOC_BIN_DIR)/Oocn
+
+# DOC_TARGETS: Lists the target names of all suported documentation formats.
+# For every name listed here, the corresponding output format is generated
+# by "make doc".  The directories in DOC_SUBDIRS are removed when calling 
+# "make doc-clean".
+DOC_TARGETS=doc-txt doc-html doc-xref
+DOC_SUBDIRS=$(subst -,/,$(DOC_TARGETS))
+
+# TEST_SETUP: XML document listing all test cases.  TEST_REPORT: Output file
+# produced when running the test cases.  TEST_SUMMARY: Created from XML report
+# by means of an XSLT processor.
+TEST_SETUP=$(OOC_DEV_ROOT)/$(TEST_BASE)/test-setup.xml
+TEST_REPORT=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.xml
+TEST_SUMMARY=$(OOC_DEV_ROOT)/$(TEST_BASE)/report.html
+TEST_WORKING_DIR=$(OOC_DEV_ROOT)/$(TEST_BASE)/wd
+
+# TEST_CREATE_SUMMARY: This command creates a HTML summary of a from an
+# XML report document.
+TEST_CREATE_SUMMARY=java org.apache.xalan.xslt.Process -in $(TEST_REPORT) -xsl $(OOC_DEV_ROOT)/rsrc/OOC/TestFramework/test-report-to-html.xsl -out $(TEST_SUMMARY)
+
+# Commands
+PRINT=echo
+MKDIR=mkdir -p -m 755
+RM=rm -f
+RM_R=rm -Rf
+
+
+# ------------------------------------------------------------------------
+# Auxiliary Variables
+# ------------------------------------------------------------------------
+
+# Create list of all test directories.
+ifdef TEST_BASE
+TEST_LIST=$(TEST_BASE)
+else
+TEST_LIST=$(TEST_SUBDIRS)
+endif
+
+TEST_LIST_CLEAN=$(patsubst %,$(OOC_DEV_ROOT)/%/.test-clean,$(TEST_LIST))
+TEST_LIST_TEST=$(patsubst %,$(OOC_DEV_ROOT)/%/.test,$(TEST_LIST))
+
+
+# ------------------------------------------------------------------------
+# Documentation targets
+# ------------------------------------------------------------------------
+
+.PHONY: $(DOC_TARGETS) doc-clean doc-buildall doc
+
+doc-txt:
+	$(MKDIR) $(top_builddir)/doc/txt
+	$(OOCN) --def-txt -Cv -o $(top_builddir)/doc/txt $(DOC_ROOT_MODULES)
+
+doc-html:
+	$(MKDIR) $(top_builddir)/doc/html
+	$(OOCN) --def-html -Cv -o $(top_builddir)/doc/html $(DOC_ROOT_MODULES)
+
+doc-xref:
+	$(MKDIR) $(top_builddir)/doc/xref
+	$(OOCN) --xref -Cv -o $(top_builddir)/doc/xref $(DOC_ROOT_MODULES)
+
+doc-clean:
+	cd $(OOC_DEV_ROOT) && $(RM_R) $(DOC_SUBDIRS)
+
+doc-buildall: $(DOC_TARGETS)
+
+# Delegate to the "doc" makefile, calling the target "doc-buildall" above
+doc:
+	$(MAKE) -f $(OOC_DEV_ROOT)/doc/Makefile doc-buildall
+
+# ------------------------------------------------------------------------
+# Test targets
+# ------------------------------------------------------------------------
+
+.PHONY: test1-setup test1-xml test1-clean test-clean test-runall
+
+test1-setup:
+	$(OOC) -MOv $(TEST_DRIVER)
+ifdef TEST_PROCESSOR
+	$(OOC) -MOv $(TEST_PROCESSOR)
+endif
+	$(MKDIR) $(TEST_WORKING_DIR)
+
+test1-report: test1-setup
+	cd $(TEST_WORKING_DIR) && $(OOC_DEV_ROOT)/$(TEST_DRIVER) $(TEST_SETUP) $(TEST_REPORT)
+	$(TEST_CREATE_SUMMARY)
+
+test1-clean:
+ifdef TEST_PROCESSOR
+	$(RM) $(OOC_DEV_ROOT)/$(TEST_PROCESSOR)
+endif
+	$(RM) $(TEST_REPORT) $(TEST_SUMMARY)
+	$(RM_R) $(TEST_WORKING_DIR)
+
+# Change ".test-clean" tag to "Makefile", thus call the test makefile which
+# in turn recalls this makefile with target test1-clean.
+%.test-clean:
+	$(MAKE) -f $(subst .test-clean,Makefile,$@) test1-clean
+
+test-clean: $(TEST_LIST_CLEAN)
+	$(PRINT) Done clean.
+
+# Change ".test" tag to "Makefile", thus call the package makefile which
+# in turn recalls this makefile with target test1-report.
+%.test:
+	$(MAKE) -k -f $(subst .test,Makefile,$@) test1-report
+
+test-runall: $(TEST_LIST_TEST)
+	$(PRINT) Done test.

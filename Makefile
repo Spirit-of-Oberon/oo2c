@@ -1,8 +1,15 @@
-top_builddir=.
-subdirs=tests
-OOCN=Oocn
-#OOCN=/home/ooc-devel/ooc/oocn --config /usr/lib/Oo2c/oo2crc
+# NOTE: This makefile is slowly migrating towards a more centralized structure.
+# To use it, the environment variable OOC_DEV_ROOT and MAIN_MAKEFILE must be
+# set.  This is easiest done by cd-ing to the top-level directory of the
+# project and sourcing the file ENV there: `. ENV' (this assumes a Bourne
+# compatible shell)
 
+# TEST_SUBDIRS: List of subdirectories with testcases.
+TEST_SUBDIRS=tests/compile
+
+
+top_builddir=$(OOC_DEV_ROOT)
+subdirs=tests
 
 test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestOpTree TestTexinfo TestMake TestCompile AllModules RunTests
 
@@ -16,8 +23,8 @@ all:
 ###      we may be creating several layers of directories, we use mkinstalldirs
 ###      instead of mkdir.  Not all systems' mkdir programs have the `-p' flag.
 mkdir: FRC
-	(umask 022; for i in sym obj doc doc/txt doc/html doc/xref; do \
-	  ./mkinstalldirs ${top_builddir}/$$i; \
+	(umask 022; for i in sym obj; do \
+	  $(OOC_DEV_ROOT)/mkinstalldirs ${top_builddir}/$$i; \
 	done)
 
 ### `clean'
@@ -26,12 +33,12 @@ mkdir: FRC
 ###      record the configuration.  Also preserve files that could be made
 ###      by building, but normally aren't because the distribution comes
 ###      with them.
-clean: 
-	for i in sym obj doc; do rm -Rf ${top_builddir}/$$i/*; done
+clean: doc-clean test-clean
+	for i in sym obj; do rm -Rf ${top_builddir}/$$i/*; done
 	rm -f src/XML
 	for i in ${test_programs}; do rm -f $$i; done
 	for i in ${subdirs}; do cd $$i && ${MAKE} clean; done
-	-rmdir ${top_builddir}/sym ${top_builddir}/obj ${top_builddir}/doc
+	-rmdir ${top_builddir}/sym ${top_builddir}/obj
 
 ### `distclean'
 ###      Delete all files from the current directory that are created by
@@ -43,23 +50,10 @@ distclean: clean
 
 FRC:
 
-### `doc'
-###      Create documentation from module sources.
-doc:	mkdir
-	${OOCN} --def-txt -Cv -o ${top_builddir}/doc/txt AllModules
-	${OOCN} --def-html -Cv -o ${top_builddir}/doc/html AllModules
-	${OOCN} --xref -Cv -o ${top_builddir}/doc/xref AllModules
-
 ### `test'
 ###      Perform all available regression tests.
-test: mkdir
+test: mkdir test-runall
 	cd tests && ${MAKE} test
 
-### `run-hostess'
-###      Run set of ``Hostess'' tests.  Convert XML report into HTML summary.
-###      Note: This is only a template, hardcoded for a particular environment.
-###      In other words: it won't work for you as is!
-run-hostess: mkdir
-	${OOC} -MOv RunTests
-	./RunTests rsrc/OOC/TestFramework/test-setup.xml /tmp/hostess-report.xml
-	java org.apache.xalan.xslt.Process -IN /tmp/hostess-report.xml -XSL rsrc/OOC/TestFramework/test-report-to-html.xsl -OUT /tmp/hostess-report.html
+
+include $(MAIN_MAKEFILE)
