@@ -851,31 +851,58 @@ PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
   VAR
     use: SSA.Opnd;
     instr, new: SSA.Instr;
+    other, res: SSA.Result;
   BEGIN
     use := ce.res.useList;
     WHILE (use # NIL) DO
       instr := use.instr;
-      CASE instr.opcode OF
-      | Opcode.eql .. Opcode.geq:
+      IF (Opcode.eql <= instr.opcode) & (instr.opcode <= Opcode.geq) THEN
+        new := NIL;
         CASE use.OpndIndex() OF
         | 0:
-          new := pb.AddInstr(instr.opcode, rc.origin.subclass);
-          new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
-          new.AddOpnd(InitialValue(pb, rc, instr.NthArg(1)), Opnd.arg);
+          other := instr.NthArg(1);
+          IF (other.marker = loopInvariant) THEN
+            new := pb.AddInstr(instr.opcode, rc.origin.subclass);
+            new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
+            new.AddOpnd(InitialValue(pb, rc, other), Opnd.arg);
+          END;
         | 1:
-          new := pb.AddInstr(instr.opcode, rc.origin.subclass);
-          new.AddOpnd(InitialValue(pb, rc, instr.NthArg(0)), Opnd.arg);
-          new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
+          other := instr.NthArg(0);
+          IF (other.marker = loopInvariant) THEN
+            new := pb.AddInstr(instr.opcode, rc.origin.subclass);
+            new.AddOpnd(InitialValue(pb, rc, other), Opnd.arg);
+            new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
+          END;
         END;
 
-        IF dangerous THEN
+        IF dangerous & (new # NIL) THEN
           IF (instr.info = NIL) THEN
             instr.info := NewSum(rc.origin.subclass, NIL);
           END;
           instr.info(Sum).replacement := new;
           Log.Ptr("... RewriteUses", instr);
         END;
-      ELSE  (* ignore *)
+
+      ELSIF (instr.marker # loopInvariant) & (instr.info = NIL) THEN
+        (* using instruction is after the loop *)
+        res := rc.replacements[ce.id];
+
+        IF (rc.b # NIL) THEN
+          new := pb.AddInstr(Opcode.subtract, rc.origin.subclass);
+          new.AddOpnd(res, Opnd.arg);
+          new.AddOpnd(rc.b, Opnd.arg);
+          res := new;
+        END;
+
+        IF (rc.a # NIL) THEN
+          new := pb.AddInstr(Opcode.divide, rc.origin.subclass);
+          new.AddOpnd(res, Opnd.arg);
+          new.AddOpnd(rc.a, Opnd.arg);
+          res := new;
+        END;
+
+        Log.Ptr("... RewriteUses: after loop", instr);
+        use.ReplaceArg(pb.FixSubclass(res, ce.res.subclass));
       END;
       
       use := use.nextUse;
