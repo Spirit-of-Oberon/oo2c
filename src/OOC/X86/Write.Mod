@@ -26,6 +26,7 @@ TYPE
 TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc = RECORD
+    module: Sym.Module;
     w: TextRider.Writer;
     blocks: ArrayList.ArrayList(Block);
     blockMap: Dictionary.Dictionary(S.Block, Block);
@@ -157,8 +158,9 @@ PROCEDURE WriteArc(w: TextRider.Writer; arc: Arc);
     END;
   END WriteArc;
 
-PROCEDURE (w: Writer) INIT*(ch: IO.ByteChannel);
+PROCEDURE (w: Writer) INIT*(module: Sym.Module; ch: IO.ByteChannel);
   BEGIN
+    w.module := module;
     w.w := TextRider.ConnectWriter(ch);
     w.w.WriteString(tab+".arch athlon");
     w.blockCount := 0;
@@ -178,7 +180,17 @@ PROCEDURE (w: Writer) GetBlock(b: S.Block): Block;
   END GetBlock;
 
 PROCEDURE (w: Writer) EndFile*();
+  VAR
+    name0, name: STRING;
   BEGIN
+    name0 := Naming.NameOfModuleInit(w.module, TRUE);
+    name := Naming.NameOfModuleInit(w.module, FALSE);
+    w.w.WriteObject(nl+".global "+name0);
+    w.w.WriteObject(nlTab+".type "+name0+", @function");
+    w.w.WriteObject(nl+name0+":");
+    w.w.WriteObject(nlTab+"ret");
+    w.w.WriteObject(nlTab+".size "+name0+", .-"+name0);
+    
     w.w.WriteString(nl);
   END EndFile;
 
