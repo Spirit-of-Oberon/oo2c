@@ -46,7 +46,7 @@ TYPE
   END;
 
 CONST
-  packageData = "package.xml";
+  packageData = "pkginfo.xml";
   
 CONST
   invalidContent = 1;
