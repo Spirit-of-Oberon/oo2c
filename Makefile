@@ -22,6 +22,7 @@ TEST_SUBDIRS=\
   tests/symtab \
   tests/interface \
   tests/oberon-doc \
+  tests/h2o \
   tests/compile \
   tests/ssa \
   tests/lib \
@@ -31,7 +32,7 @@ DOC_DIR=$(OOC_DEV_ROOT)/oocdoc
 
 top_builddir=$(OOC_DEV_ROOT)
 
-test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile TestWebServer AllModules RunTests
+test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile TestH2O TestWebServer AllModules RunTests
 
 all:
 
