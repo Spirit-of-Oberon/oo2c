@@ -89,6 +89,10 @@
   while (_d != _max) { *(_d++) = *(_s++); }     \
 }
 
+/* copy memory block (SYSTEM.MOVE) */
+#define _move_block(_source,_dest,_size) \
+  memcpy((void*)_dest,(void*)_source,_size)
+
 /* string compare */
 extern OOC_INT32 _cmp8(const OOC_CHAR8* l, const OOC_CHAR8* r);
 extern OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r);

@@ -24,8 +24,7 @@ IMPORT
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules, Language, 
   Language:Integer, Language:Boolean, LString := Language:String,
-  Language:String8, Language:String16, Language:Set, Language:Real,
-  ADT:String;
+  Language:String8, Language:String16, Language:Set, Language:Real;
 
 TYPE
   ConstFold = POINTER TO ConstFoldDesc;
@@ -681,6 +680,10 @@ PROCEDURE (c: ConstFold) VisitCaseStatm* (caseStatm: IR.CaseStatm);
 PROCEDURE (c: ConstFold) VisitLoopStatm* (loopStatm: IR.LoopStatm);
   BEGIN
   END VisitLoopStatm;
+
+PROCEDURE (c: ConstFold) VisitMoveBlock* (move: IR.MoveBlock);
+  BEGIN
+  END VisitMoveBlock;
 
 PROCEDURE (c: ConstFold) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
   BEGIN

@@ -308,6 +308,13 @@ PROCEDURE (v: Visitor) VisitLoopStatm* (loopStatm: IR.LoopStatm);
     VisitStatementSeq (v, loopStatm. body);
   END VisitLoopStatm;
 
+PROCEDURE (v: Visitor) VisitMoveBlock* (move: IR.MoveBlock);
+  BEGIN
+    move. source. Accept (v);
+    move. dest. Accept (v);
+    move. size. Accept (v);
+  END VisitMoveBlock;
+
 PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
   BEGIN
     VisitStatementSeq (v, repeatStatm. body);

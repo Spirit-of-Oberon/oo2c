@@ -448,6 +448,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         (* FIXME... detect when a call can modify our variable; for now
            be pessimistic: the call rewrites our variable *)
         RETURN unknownValue;
+        
+      | Opcode.moveBlock:
+        (* assume that a SYSTEM.MOVE can interact with anything *)
+        RETURN unknownValue;
       END;
     END GetValue;
 

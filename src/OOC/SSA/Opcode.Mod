@@ -362,10 +362,27 @@ CONST
      @end table
 
      The result is undefined if the strings are not terminated with
-     @samp{0X}.  *)  
-  copyBytes* = 18;
+     @samp{0X}.  *)
+  
+  moveBlock* = 18;
   (**Copy a memory block between two addresses in memory.  This corresponds to
-     the @samp{SYSTEM.MOVE} statement.  Not implemented yet...  *)
+     the @samp{SYSTEM.MOVE} statement.
+     
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.readAdr
+     Source address.
+
+     @item *OOC:SSA:Opnd.writeAdr
+     Destination address.
+     
+     @item *OOC:SSA:Opnd.arg
+     Number of bytes.
+     
+     The result is undefined if source and destination overlap, or if
+     the size is negative.  *)
   
   add* = 19;
   (**Addition operator.  The two operands must be of the same type, which is at
@@ -686,7 +703,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | copy: cstr := "copy";
     | copyString: cstr := "copy-string";
     | cmpString: cstr := "cmp-string";
-    | copyBytes: cstr := "copy-bytes";
+    | moveBlock: cstr := "move-block";
       
     | getLength: cstr := "get-length";
     | copyParameter: cstr := "copy-parameter";

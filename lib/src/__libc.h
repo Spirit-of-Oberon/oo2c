@@ -20,5 +20,6 @@
 #define __oo2c_libc__
 
 extern double floor(double x);
+extern void* memcpy(void* dest, const void* src, __typeof__(sizeof(int)) n);
 
 #endif /* __oo2c_libc__ */

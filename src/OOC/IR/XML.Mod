@@ -504,6 +504,21 @@ PROCEDURE (v: Visitor) VisitLoopStatm* (loopStatm: IR.LoopStatm);
     v. w. EndTag;  (* loop-statm *)
   END VisitLoopStatm;
 
+PROCEDURE (v: Visitor) VisitMoveBlock* (move: IR.MoveBlock);
+  BEGIN
+    v. w. StartTag ("move", FALSE);
+    v. w. StartTag ("source", FALSE);
+    move. source. Accept (v);
+    v. w. EndTag;  (* source *)
+    v. w. StartTag ("dest", FALSE);
+    move. dest. Accept (v);
+    v. w. EndTag;  (* dest *)
+    v. w. StartTag ("size", FALSE);
+    move. size. Accept (v);
+    v. w. EndTag;  (* size *)
+    v. w. EndTag;  (* loop-statm *)
+  END VisitMoveBlock;
+
 PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
   BEGIN
     v. w. StartTag ("repeat-statm", FALSE);
