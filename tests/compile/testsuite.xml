@@ -3,18 +3,18 @@
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" >
 
 <testsuite-ext
-  profile="Test Suite for Framework Testing"
+  profile="Tests for Constant Folding"
   select ="&SetupTestCasesWithOut;
   function1 function2
   constfold1 constfold2 constfold3 constfold4 constfold5
   constfold6 constfold7 constfold8 constfold9 constfold10 constfold11
   constfold12 constfold13 constfold14 constfold15 constfold16
-  constfold17">
+  constfold17 constfold18">
 
 <!--<testsuite-ext
-  profile="Test Suite for Framework Testing"
+  profile="Tests for Constant Folding"
   select ="&SetupTestCasesWithOut;
-  constfold10 constfold11">-->
+  constfold13">-->
   
   &TestSetupWithOut;
     
@@ -121,6 +121,11 @@
     <test id="constfold17" type="run"
       file="ConstFold17.Mod" output="ConstFold17.Ref">
       Initial test for REAL.
+    </test>
+
+    <test id="constfold18" type="run"
+      file="ConstFold18.Mod" output="ConstFold18.Ref">
+      <code>ENTIER</code> should be folded as well.
     </test>
   </testcases>
   

@@ -316,9 +316,18 @@ BEGIN
 END VisitCap;
 
 PROCEDURE (c: ConstFold) VisitEntier* (op: IR.Entier);
-BEGIN
-    (* FIXME! *)
-END VisitEntier;
+  VAR
+    value: Boxed.Object;
+    i: LONGINT;
+  BEGIN
+    IF c.ValidEval(op.operand, value) THEN
+      i := ENTIER(value(Boxed.LongReal).value);
+      c.result := c.builder.NewConst(op.sym, Predef.GetType(Predef.longint), 
+                                     BigInt.NewInt(i));
+    ELSE
+      c.result := NIL;
+    END;
+  END VisitEntier;
 
 PROCEDURE (c: ConstFold) VisitOdd* (op: IR.Odd);
 BEGIN
