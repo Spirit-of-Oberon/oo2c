@@ -31,6 +31,7 @@ clean:
 	rm -f src/XML
 	for i in ${test_programs}; do rm -f $$i; done
 	for i in ${subdirs}; do cd $$i && ${MAKE} clean; done
+	rmdir ${top_builddir}/sym ${top_builddir}/obj ${top_builddir}/doc
 
 ### `distclean'
 ###      Delete all files from the current directory that are created by
@@ -39,7 +40,6 @@ clean:
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
 distclean: clean
-	rmdir ${top_builddir}/sym ${top_builddir}/obj ${top_builddir}/doc
 
 FRC:
 
@@ -52,5 +52,5 @@ doc:	mkdir
 
 ### `test'
 ###      Perform all available regression tests.
-test:
+test: mkdir
 	cd tests && ${MAKE} test

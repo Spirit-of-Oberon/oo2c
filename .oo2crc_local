@@ -1,14 +1,14 @@
 PATHS
 GET *.Mod [RCS] FROM
   src;
-  ../sourceforge/libxml/src;
-  ../sourceforge/libadt/src;
+  ../libxml/src;
+  ../libadt/src;
 GET *.Sym, *.Lib FROM
   sym; 
 GET *.h, *.d, *.c, *.o FROM
   obj;
 GET *.c FROM
-  src; ../sourceforge/libxml/src;
+  src; ../libxml/src;
 END
 
 PRAGMAS
