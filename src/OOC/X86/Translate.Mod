@@ -476,6 +476,37 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN instr.resultList;
         END SelectField;
       
+      PROCEDURE TypeTag (design: IR.Expression; value: S.Result;
+                         checkDerefOfNil: BOOLEAN;
+                         derefSym: IR.Symbol): S.Result;
+      (* `design' is the variable designator, `value' its translation to SSA  *)
+        VAR
+          instr: S.Instr;
+          type: Sym.Type;
+        BEGIN
+          type := design.type.Deparam();
+          type := type.Bound();  (* for a type variable, continue with bound *)
+          IF checkDerefOfNil & (type IS Sym.Pointer) THEN
+            (*FIXME... check := AddException (pb, derefSym,
+                                   S.checkPointer, value. subclass);
+            check. AddOpnd (value, Opnd.arg);
+            value := check;*)
+          END;
+          
+          IF (type IS Sym.Pointer) THEN
+            instr := b.AddInstr1(S.typeTag, value);
+            RETURN instr.AddResult(S.address);
+          ELSIF (design IS IR.Var) &
+                design(IR.Var).decl(Sym.VarDecl).isVarParam &
+                TR.IsRecord(design(IR.Var).decl(Sym.VarDecl).type) THEN
+            (* type tag of a VAR parameter *)
+            ASSERT(FALSE);
+            (*instr.AddOpnd(value.instr.GetArgClass(Opnd.readDesign), Opnd.arg);*)
+          ELSE                             (* static type tag *)
+            RETURN b.AddAdrTypeDescr(type);
+          END;
+        END TypeTag;
+      
       PROCEDURE TypeGuard(guard: IR.TypeGuard): S.Result;
         BEGIN  (* FIXME... *)
           RETURN Expression(guard.test.expr);
@@ -580,7 +611,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             instr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(varDecl));
             adr := instr.AddResult(S.address);
             
-            IF (varDecl.type IS Sym.Array) THEN  (* indirect *)
+            IF (varDecl.type IS Sym.Array) OR varDecl.isVarParam THEN  (* indirect *)
               instr := b.AddInstr1(S.get, adr);
               (*MemoryCP(instr);*)
               adr := instr.AddResult(S.address);
@@ -623,6 +654,20 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           ControlCP(instr);
           RETURN instr.AddResultExpr(expr.type);
           
+        | expr: IR.Adr DO
+          res := Expression(expr.design);
+          IF (res.instr.opcode = S.get) THEN
+            RETURN b.FixType(res.instr.opndList.arg, S.address);
+          ELSE
+            (* must be a string constant; currently, this is its own address
+               FIXME... we should probably introduce an address opcode here *)
+            RETURN res;
+          END;
+          
+        | expr: IR.TypeTag DO
+          RETURN TypeTag(expr.design, Expression(expr.design),
+                         FALSE, expr.sym);
+              
         | expr: IR.TypeGuard DO
           RETURN TypeGuard(expr);
               

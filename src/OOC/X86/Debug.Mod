@@ -120,6 +120,7 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.getLengthParam: str := "getLengthParam";
     | S.getLengthHeap: str := "getLengthHeap";
     | S.setStack: str := "setStack";
+    | S.typeTag: str := "typeTag";
 
       (* control flow *)
     | S.branch: str := "branch";

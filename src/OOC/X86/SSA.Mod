@@ -131,8 +131,9 @@ CONST  (* Instruction Opcodes: *)
      This instruction duplicates the memory dependencies of its call
      instruction, and the call in turn has memory dependencies on all its
      @oconst{setStack} instructions.  *)
+  typeTag* = opcodeMemory+9;
   
-  opcodeControlFlow = opcodeMemory+9;
+  opcodeControlFlow = opcodeMemory+10;
   branch* = opcodeControlFlow+0;
   guard* = opcodeControlFlow+1;
   merge* = opcodeControlFlow+2;
@@ -2208,10 +2209,12 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
    @oconst{alignStackTo}.  *)
   CONST
     sizeAddress = 4;
+    sizeLength = 4;
   VAR
     p: Sym.VarDecl;
     offset: LONGINT;
-
+    type: Sym.Type;
+    
   PROCEDURE ArgumentSize(type: Sym.Type): LONGINT;
     BEGIN
       RETURN 4;
@@ -2231,7 +2234,17 @@ PROCEDURE (b: FunctionBlock) Offset*(varDecl: Sym.VarDecl): LONGINT;
         IF (p = varDecl) THEN
           RETURN offset;
         ELSE
+          type := varDecl.type;
           INC(offset, ArgumentSize(varDecl.type));
+          WITH type: Sym.Record DO
+            IF varDecl.isVarParam & type.isExtensible THEN (* type tag *)
+              INC(offset, sizeAddress);
+            END;
+          | type: Sym.Array DO           (* length for every open dimension *)
+            INC(offset, type.GetOpenDimensions()*sizeLength);
+          ELSE
+            (* nothing *)
+          END;
         END;
       END;
       ASSERT(FALSE);

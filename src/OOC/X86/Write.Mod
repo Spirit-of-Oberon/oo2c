@@ -429,8 +429,12 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           argInstr2 := argInstr1.opndList.arg.instr;
           IF (argInstr2.opcode = S.const) THEN
             Literal(argInstr2);
-          ELSE
+          ELSIF argInstr1.opndList.immediate THEN
             Opnd(argInstr1.opndList);
+          ELSE
+            sb.AppendLatin1Char("(");
+            Opnd(argInstr1.opndList);
+            sb.AppendLatin1Char(")");
           END;
         END;
       ELSE
@@ -687,7 +691,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           IF instr.opndList.immediate THEN
             DirectOpnd(instr.opndList);
           ELSE
+            sb.Append("(");
             Opnd(instr.opndList);
+            sb.Append(")");
           END;
         | S.push:
           OpcR("push");
