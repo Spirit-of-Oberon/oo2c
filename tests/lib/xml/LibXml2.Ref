@@ -1,0 +1,6 @@
+<doc>&#10;  <elem><a></a><b></b></elem>&#10;  <elem><a></a><c></c></elem>&#10;</doc>
+In file xml/003.xml: 
+line=9, column=16
+185: Expected tags: c
+line=10, column=12
+205: Expected tags: b
