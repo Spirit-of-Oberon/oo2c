@@ -2374,6 +2374,11 @@ PROCEDURE (b: Builder) NewLen* (sym: Symbol; array: Expression;
     variant: Variant;
     arrayVariable: Expression;
   BEGIN
+    IF ~(array.type IS Sym.Array) & ~TR.IsStringConst(array.type) THEN
+      b.ErrSym(notArray, array.sym);
+      RETURN b.errorExpr;
+    END;
+    
     NEW (len);
 
     arrayVariable := array;
