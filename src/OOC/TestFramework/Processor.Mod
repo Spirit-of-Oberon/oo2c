@@ -70,10 +70,10 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
   BEGIN
     (* set up working directories and files *)
     proc. baseDir := GetPath ("");
-    proc. modDir := GetPath ("mod");
+    proc. modDir := GetPath ("src");
     proc. symDir := GetPath ("sym");
     proc. objDir := GetPath ("obj");
-    proc. binDir := GetPath ("bin");
+    proc. binDir := GetPath ("exe");
     proc. txtDir := GetPath ("txt");
     
     (* put together command string for compile/make *)

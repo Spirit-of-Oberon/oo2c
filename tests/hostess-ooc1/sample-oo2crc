@@ -31,5 +31,5 @@ GET *.h, *.d, *.c, *.o FROM
   /usr/lib/Oo2c/obj;  ##PATHS:OOC:OBJ##
   /usr/lib/Oo2c/lib;  ##PATHS:OOC:LIB##
 GET * FROM
-  ./bin;
+  ./exe;
 END
