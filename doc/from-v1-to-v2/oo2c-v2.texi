@@ -1,0 +1,490 @@
+%% -*- Mode: Texinfo -*-
+\input texinfo
+@c %**start of header (This is for running Texinfo on a region.)
+@setfilename oo2c-v2.info
+@settitle New Features of oo2c v2
+@setchapternewpage off
+@set xref-automatic-section-title
+
+@ignore
+@ifinfo
+@format
+START-INFO-DIR-ENTRY
+* New Features of oo2c v2: (oo2c-v2.info). 
+END-INFO-DIR-ENTRY
+@end format
+@end ifinfo
+@end ignore
+
+@finalout
+
+@titlepage
+@title New Features of oo2c v2
+@subtitle $Revision$ covering oo2c-2.0.12
+@author Michael van Acken @email{mva@@users.sf.net}
+@end titlepage
+@page
+
+@contents
+
+@ifinfo
+@node Top, Introduction, (dir), (dir)
+@top New Features of oo2c v2
+
+@end ifinfo
+
+@menu
+* Introduction::                
+* Programs::                    
+* Library Modules::             
+* Built-in Type STRING::        
+* Exceptions::                  
+* Parametric Types::            
+* Initialization Functions::    
+@end menu
+
+@node Introduction, Programs, Top, Top
+@chapter Introduction
+
+@code{oo2c} v2 is a complete rewrite of the compiler and associated
+tools.  Some highlights are
+
+@itemize @bullet
+@item
+Reduced internal complexity, at the expense of more computational
+overhead.  This goes hand in hand with the ability to add experimental
+language features to the compiler.
+@item
+A simplified internal SSA code representation that eliminates the need
+to keep track the block structure of nested statements.  This reduces
+the complexity of most code transformations.  On the other hand,
+producing the target code becomes more difficult.
+@item
+A broader range of code transformations, including loop rewriting and
+partial redundancy elimination on top of the existing ones (common
+subexpression elimination, loop invariant code motion, constant
+propagation, algebraic transformations, and dead code elimination).
+@item
+A large set of regression tests, increasing the reliability and
+stability of compiler releases.
+@item
+More built-in support for building and installing third party
+packages.
+@item
+Writing @code{FOREIGN} modules to interface with external libraries
+has become easier.  A simple @code{#include} pulls in all the run-time
+type and module meta data a module needs to provide to the run-time
+system.
+@end itemize
+
+The v2 compiler implements most, but not all, of the features of its
+predecessor.  Most programs should compile without changes, although
+some of the more esoteric features and library modules have been
+dropped.  The following sections summarize the omissions and
+additions.  For the most part, the language extensions are
+experimental in nature and should not be considered final.
+
+
+@node Programs, Library Modules, Introduction, Top
+@chapter Programs
+
+The biggest change to the behavior of the programs @code{oo2c},
+@code{oob}, @code{ooef}, and @code{oowhereis} is the introduction of
+so called repositories to structure source code, intermediate, and
+executable files.  A @dfn{repository} is a path to a directory
+@var{r} with @file{@var{r}/src/} holding the source code,
+@file{@var{r}/pkginfo.xml} any repository meta data,
+@file{@var{r}/sym/} the symbol files, and so on.  When looking for a
+particular module, all configured repositories are searched.  Output
+files for a particular module (symbol file, C files, objects files,
+and so on) are placed into the repository that holds the module's
+source code.
+
+The tool @code{oocn} is gone.  Part of its functionality have been
+moved into the compiler @code{oo2c}: converting a module's public
+interface and its documentation strings to HTML and listing all uses
+of a particular object.  Some of the command line options of
+@code{oo2c} have been replaced, and it has a whole new set of commands
+dealing with packages: build, install, uninstall, etc.  Packages allow
+to install a set of library modules, module documentation,
+executables, and auxiliary files from the meta data of a
+@file{pkginfo.xml} file.
+
+Please refer to the man page of @code{oo2c} for the details.
+
+
+@node Library Modules, Built-in Type STRING, Programs, Top
+@chapter Library Modules
+
+With the switch from oo2c v1 to v2 a number of highly specialized and
+rarely used library modules were dropped, while at the same time whole
+families of modules were included that were distributed separately in
+the past.
+
+Replaced by other modules: @code{Filenames} (use @code{OS:Path}
+instead), @code{Integers} (use @code{Object:BigInt}), @code{Kernel}
+and @code{Types} (functionality covered by @code{RT0}), and @code{Rts}
+(see @code{OS:ProcessManagement}).
+
+Removed without replacement: @code{ComplexMath}, @code{JulianDay},
+@code{LComplexMath}, @code{LocNumConv}, @code{LocNumStr},
+@code{LocStrings}, @code{LocText}, @code{LocTextRider},
+@code{Locales}, @code{LongInts}, @code{LowLReal}, @code{LowReal},
+@code{OakFiles}, @code{OakIn}, @code{OakMath}, @code{OakMathL},
+@code{OakStrings}, @code{Reals}, @code{Signal}, and @code{Strings2}.
+
+New modules:
+@table @code
+@item ADT:*
+A set of abstract data types, most importantly @code{ArrayList} and
+@code{Dictionary}.  Also provides a framework for serializing
+arbitrary graphs of objects.
+
+@item IO:*
+IO modules for files and sockets, providing an interface that is
+closer to the I/O capabilities provided by @code{libc}.  Also mappers
+based on the new classes, and an abstraction for the @samp{select()}
+function.
+
+@item OS:*
+Various low-level modules dealing with file systems, file names, and
+processes.
+@end table
+
+Preliminary modules (their interface might change significantly in the
+future, although their general functionality will continue to be part
+of the core distribution):
+@table @code
+@item URI:*
+Data types representing Uniform Resource Identifiers (both
+hierarchical and opaque), plus an URI parser.
+
+@item XML:*
+A call-back based XML 1.0 parser.  Also includes support for XML
+namespaces and validation.
+@end table
+
+
+@node Built-in Type STRING, Exceptions, Library Modules, Top
+@chapter Built-in Type STRING
+
+The predefined identifier @code{STRING} is an alias for the type
+@samp{Object.String}, which implements Unicode strings.  The semantics
+of this type are defined for the most part by the regular module
+@samp{Object}@footnote{The module @samp{Object} does not need to be
+imported to use @code{STRING}.  It is part of the run-time system and
+as such included into every program.}, with two exceptions: the
+compiler converts string constants to instances of @code{STRING}
+automatically, and the operator @samp{+} performs string
+concatenation.
+
+String constants are assignment compatible with variables of type
+@samp{Object.Object}.  Such an assignment automatically converts the
+constant into an instance of @code{STRING}.  That is, a string
+constant can be used instead of a @code{STRING} in an assignment, for
+a procedure argument passed to a value parameter, and as a function
+result.  The string object is created once, as part of the module's
+initialization code, @emph{not} each time its surrounding code is
+evaluated.
+
+The operator @samp{+} is defined for string operands and returns the
+concatenation of its operands.  The result is of type @code{STRING}.
+
+Please note that comparison of string values is done by means of the
+type-bound procedure @samp{String.Equals}.  The definition of the
+operators @samp{=} and @samp{#} has @emph{not} been changed.  That is,
+they test for object identity by comparing the strings' pointer
+values.
+
+@node Exceptions, Parametric Types, Built-in Type STRING, Top
+@chapter Exceptions
+
+There are four user visible parts to exceptions:
+
+@itemize @bullet
+@item
+The module @samp{Exception}, defining the type @samp{Exception} and
+implementing the required run-time support.
+@item
+A new statement, @code{TRY}, to transfer control to exception handlers
+if a statement sequence raises an exception.
+@item
+A new predefined procedure, @code{RAISE}, to raise an exception.
+@item
+An extended syntax for procedures and procedure types, to declare
+which checked exception can be raised by a procedure.
+@end itemize
+
+Exceptions behave pretty much like their counterparts in Python or
+Java.  The statement
+
+@example
+TRY
+  S
+CATCH T1(t1):
+  C1
+CATCH T2(t2):
+  C2
+END;
+@end example
+
+is roughly equivalent to
+
+@enumerate
+@item
+Push exception handler for this @code{TRY} block
+(@samp{Exception.PushContext}).
+
+@item
+Evaluate @var{S}, followed by @samp{Exception.PopContext}.  If there
+are any @code{RETURN} or @code{EXIT} statements within @var{S} that
+would cause control flow to leave the @code{TRY} statement, then they
+also do an implicit @samp{PopContext} as part of the non-local exit.
+
+@item
+If an exception is raised during @var{S}, then do
+
+@example
+Exception.PopContext;
+temp := Exception.Current();
+WITH temp: T1 DO
+  t1 := temp;
+  C1;
+| temp: T2 DO
+  t2 := temp;
+  C2;
+ELSE
+  Exception.ActivateContext;
+END;
+Exception.Clear;
+@end example
+@end enumerate
+
+An exception is raised by calling the predefined procedure @code{RAISE} with
+an instance of @samp{Exception}.  This passes control to the nearest
+@code{CATCH} clause whose type is an extension of the raised exception, if
+such a clause exist.  Otherwise, the exception is written to @var{stderr}
+and the program is aborted.
+
+Within a @code{CATCH}, the optional name given in parenthesis refers to the
+current exception that triggered the @code{CATCH}.  Its type is the one
+from the @code{CATCH} clause.  The variable is read-only.
+
+An exception @var{E} must either be caught within a procedure, or the
+procedure must declare that it may pass an exception of type @var{E} up to
+its caller.  For example,
+
+@example
+PROCEDURE P() RAISES E;
+@end example
+
+@noindent
+declares that evaluation of @samp{P} may raise an exception of type @var{E},
+or an extension thereof.
+
+Within the module body no exceptions can be passed up, because there is no
+caller.  As a consequence, any exception that is not caught explicitly is
+written to @var{stderr} and aborts the program.
+
+@emph{Implementation note}: A @code{TRY} block is mapped to C's
+@samp{setjmp()} function by @code{oo2c}.  The amount of data stored by
+this function depends on the target architecture and may differ by a
+factor of ten or more.  For example, on a @samp{ix86} processor, only
+72 bytes are stored, while on a @samp{PPC} this is 768 bytes.  As a
+consequence, the work done within a @code{TRY} should be large enough
+to amortize the costs of the @code{TRY} for all possible targets.
+
+On some systems@footnote{At the time of writing, this means all
+systems running with GNU @code{libc} and implementing the
+@samp{backtrace()} function.}, raising an exception also stores
+information about the top 20 activation frames on the call stack.
+This means that raising an exception can be moderately expensive as
+well.  Therefore they should only be used to report exceptional
+conditions that are rarely triggered.
+
+@emph{Possible changes}: At the time of writing, only checked
+exceptions are supported.  That is, exceptions must be explicitly
+declared or caught.  It is expected that unchecked exceptions are
+added in the future, where a procedure may raise any exception without
+announcing it to its callers.  Which of the two modes, checked or
+unchecked, becomes then the default behavior is open to discussions.
+
+
+@node Parametric Types, Initialization Functions, Exceptions, Top
+@chapter Parametric Types
+
+A parametric type can be seen as a type definition with a certain
+degree of freedom.  The freedom comes in form of type parameters
+acting as placeholders for type arguments that are provided when the
+parametric type is used in a particular context.  There are two
+restrictions on type parameters and type arguments: the parameter must
+be based on a record pointer, and the argument must be an extension of
+the parameter's base type.
+
+Take for example the type @samp{ArrayList}.  The element type of the
+list can be any type derived from @samp{Object}, like
+@samp{MyElementType}, which is provided when creating an
+@samp{ArrayList} variable:
+
+@example
+TYPE
+  ArrayList*(E: Object.Object) = POINTER TO ArrayListDesc(E);
+  ArrayListDesc*(E: Object.Object) = RECORD
+    @dots{}
+  END;
+@dots{}
+VAR myList: ArrayList(MyElementType);
+@end example
+
+@noindent
+The compiler statically detects any uses of @samp{myList} or of its
+methods that are incompatible with the declared element type
+@samp{MyElementType}.
+
+The implementation of parametric types extends the syntax in three
+places:
+
+@itemize @bullet
+@item
+A type declaration can have a list of type parameters.
+@item
+Usage of a parametric type can provide a list of type arguments.
+@item
+For a type-bound procedure of a parametric type, the receiver
+declaration must provide the names of local aliases for the type
+parameters of the base type.  These names act as type variables within
+the procedure.
+@end itemize
+@noindent
+(For the details, please refer to the EBNF grammar at the end of this
+section.)
+
+A type declared with a type parameter list like
+@samp{T(t1:B1,t2:B2,@dots{},tn:Bn)} is called a @dfn{parametric type}.
+The formal type @var{Bi} of a type parameter declaration is called
+its type bound.  The type bound must be a record pointer.  A type name
+@var{ti} is visible to the end of the type declaration.
+
+For a qualified type expression of the form
+@samp{T(A1,A2,@dots{},An)},
+
+@enumerate a
+@item
+the type @var{T} must be a parametric type,
+
+@item
+it must have the same number of type arguments as there are type
+parameters, and
+
+@item
+each actual type parameter @var{Ai} is either an extension of the
+corresponding type bound @var{Bi}, or @var{Ai} is a type variable
+whose bound is an extension of @var{Bi}.
+@end enumerate
+
+If @var{T} is a parametric type as defined above, then the type
+expression @samp{T} (without any type arguments) is equivalent to the
+qualified type `@samp{T(B1,B2,@dots{},Bn)}, where each type argument
+equals the corresponding type bound.  @var{Bi} and @samp{Ai} can be
+forward references to types that are defined later.
+
+A type-bound procedure of a parametric type must define a list of type
+names after its receiver type, for example
+
+@example
+PROCEDURE (r: P(T1,T2,@dots{})) TBProc(@dots{});
+@end example
+
+Each name is a type alias for the corresponding type parameter of the
+procedure's @emph{base record} type.  Within a type-bound procedure, a
+variable @samp{v: Ti}, with @var{Ti} declared with a type bound
+@samp{Ti: Bi}, can for the most part be used like it had been declared
+as @samp{v: Bi}.  The exceptions are that it can only be assigned
+values of type @var{Ti} (or @code{NIL}), and that @code{NEW} is not
+applicable to such a variable.
+
+A type variable cannot be used on the right hand side of a type test
+or type guard.
+
+Two qualified types are considered to be the same type, if they have
+the same base type and if their corresponding type arguments are of
+the same type.
+
+@code{NIL} is assignment compatible with a parametric type if it is
+assignment compatible with the type's base type.
+
+@samp{NEW()} is applicable to a variable of parametric type if its
+base type is a pointer.
+
+@noindent
+Syntax:
+@example
+TPSection  = ident @{"," ident@} ":" Qualident.
+TypePars   = "(" [TPSection @{";" TPSection@}] ")".
+TypeDecl   = IdentDef [TypePars] "=" Type ";".
+
+QualType   = Qualident ["(" [QualType @{"," QualType@}] ")"].
+Type       = QualType|ArrayType|RecordType|PointerType|ProcType.
+RecordType = "RECORD" ["("QualType")"] @dots{} "END".  
+FormalPars = ["(" [FPSection @{";" FPSection@}] ")" [":" QualType]].
+
+AliasList = "(" [ident @{"," ident@}] ")".
+Receiver = "(" ["VAR"] ident ":" ident  [AliasList] ")".
+@end example
+         
+@emph{Note}: Polymorphic procedures, where free type parameters are
+added to a formal parameter list to place an additional restriction on
+the acceptable argument lists of calls, are currently not supported.
+
+
+
+@node Initialization Functions,  , Parametric Types, Top
+@chapter Initialization Functions
+
+The compiler provides a common notation to define an initialization
+procedure for an object, to redefine the initialization procedure
+within an extended type, and to call this procedure automatically when
+creating an object.  For this, a class may provide a type-bound
+procedure @code{INIT}, like
+
+@example
+PROCEDURE (l: List) INIT*(initialSize: LONGINT);
+@end example
+
+Such a procedure has the special property that a call to it always
+binds to the procedure bound to the @emph{static} type of the
+receiver, @emph{not} the dynamic one.  In this it behaves like a call
+to a normal procedure, where the actual code to be evaluated is known
+at compile time.
+
+@code{INIT} must not return a result, and it must be exported.  Its
+formal parameters do not need to match the parameter list inherited
+from the base type, if one exists.  If the base type provides an
+@samp{INIT} procedure, but there is no super call like
+@samp{l.INIT^(@dots{})}, then the compiler produces a warning.
+
+As a shortcut to create an object is to use @samp{NEW()} as a
+function, passing the type of the the new object as its first
+argument.  @samp{v := NEW(T,a1,a2,@dots{})} is equivalent to
+
+@example
+VAR temp: T;
+@dots{}
+NEW(temp);
+temp.INIT(a1,a2,@dots{});
+v := temp;
+@end example
+
+The initialization call is omitted if @samp{T} does not define an
+@samp{INIT} procedure.
+
+@emph{Note}: The definition of @samp{NEW(v)} when called as a
+procedure has not changed.  That is, with this use of @samp{NEW} the
+@samp{INIT()} procedure is @emph{not} called implicitly for the new
+object.
+
+@emph{Possible changes}: Right now, the type argument of @samp{NEW()}
+must be a record pointer.  This might be relaxed to any pointer type
+in the future.
+
+@bye
