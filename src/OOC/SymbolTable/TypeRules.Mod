@@ -850,6 +850,58 @@ PROCEDURE IsReadOnlyType* (usingModule: Sym.Module; type: Sym.Type): BOOLEAN;
         (type.Module() # usingModule);
   END IsReadOnlyType;
 
+PROCEDURE IsAtomicType* (type : Sym.Type) : BOOLEAN;
+(**Returns @code{TRUE} iff the type @oparam{type} contains no pointers. In
+this context, a "pointer" is a type that may refer to a heap-allocated data
+structure. That is:
+
+@itemize @bullet
+
+@item
+Any type constucted using @code{POINTER TO}.
+
+@item
+Type variables.
+
+@item
+The type @otype{*SYSTEM.PTR}.
+
+@end itemize
+*)
+
+VAR
+  result : BOOLEAN;
+  nested: Sym.Item;
+BEGIN
+  type := type.Deparam();
+  WITH type : Sym.Pointer DO
+    result := FALSE;
+  | type: Sym.TypeVar DO
+    RETURN FALSE;
+  | type : Sym.PredefType DO
+    RETURN type. id # Predef.ptr;
+  | type : Sym.Array DO
+    result := IsAtomicType(type.elementType);
+  | type : Sym.Record DO
+    result := TRUE;
+    IF type.baseType # NIL THEN
+      result := IsAtomicType(type.baseType);
+    END;
+    nested := type. nestedItems;
+    WHILE result & (nested # NIL) DO
+      WITH nested: Sym.FieldDecl DO
+        IF ~IsAtomicType(nested.type) THEN
+          result := FALSE;
+        END;
+      ELSE  (* ignore *)
+      END;
+      nested := nested. nextNested
+    END;
+  ELSE
+    result := TRUE;
+  END;
+  RETURN result;
+END IsAtomicType;
 
 PROCEDURE AllocateType* (type: Sym.Type);
 (**This maps a type @oparam{type} onto the size and alignment constrains of the
@@ -969,6 +1021,13 @@ PROCEDURE AllocateType* (type: Sym.Type);
           type. SetSize (size, align)
         END;
 
+		(* If we read an isAtomic=TRUE from the symbol file, then we do not
+		   want to clobber it -- it might be set because the user marked the
+		   type with NO_TRACED_POINTERS.  *)
+
+        IF IsAtomicType(type) THEN
+          type.isAtomic := TRUE;
+        END;
       | type: Sym.TypeVar DO
         AllocateType(type.bound);
         type.SetSize(type.bound.size, type.bound.align);
