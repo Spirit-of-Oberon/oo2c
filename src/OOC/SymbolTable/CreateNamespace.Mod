@@ -1410,7 +1410,12 @@ RAISES IO.Error;
     (* here holds: any namespace (module, procedure, or record) can be
        searched and is guaranteed to deliver the correct results *)
     
-    (* nineth pass: check namespace restrictions imposed on extended
+    (* nineth pass: propagate type variables upward in the tree of
+       constructors, so that every type that has a type variable somewhere has
+       a non-NIL field `type.typePars'  *)
+    PropagateTypeVars(root);
+    
+    (* tenth pass: check namespace restrictions imposed on extended
        records and assign indexes to type-bound procedures; fix notRedefined
        for type-bound procedures that are redefined in the local module *)
     IF errList.NoErrors() THEN
@@ -1419,11 +1424,6 @@ RAISES IO.Error;
       CheckExtendedRecords (root, errList);
     END;
 
-    (* tenth pass: propagate type variables upward in the tree of constructors,
-       so that every type that has a type variable somewhere has a non-NIL
-       field `type.typePars' *)
-    PropagateTypeVars(root);
-    
     ResolveRef.Resolve (root, errList);
     
     IF (uses # NIL) & errList.NoErrors() THEN

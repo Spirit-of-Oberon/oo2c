@@ -20,12 +20,12 @@ MODULE OOC:SymbolTable:TypeRules;
     Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
-(**This module provides various predicate functions.  Every function
-   corresponds to one particular type rule of the language.  The
-   predicates implement the composition restrictions for types (for
-   example, an integer type cannot be a pointer base type), type
-   compatiblity (same type, equal type, and such like), matching of
-   formal parameters, and so on.  *)
+(**This module provides various predicates on types and other type manipulation
+   functions.  Most functions correspond to one particular type rule of the
+   language.  The predicates implement the composition restrictions for types
+   (for example, an integer type cannot be a pointer base type), type
+   compatiblity (same type, equal type, and such like), matching of formal
+   parameters, and so on.  *)
 
 IMPORT
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
@@ -81,6 +81,25 @@ PROCEDURE (typeClosure: TypeClosure) Closure*(subType: Sym.Type): Sym.Type;
     END;
   END Closure;
 
+(*PROCEDURE (typeClosure: TypeClosure) Log*();
+  VAR
+    i: LONGINT;
+  BEGIN
+    Log.Ln;
+    Log.Msg("TypeClosure");
+    FOR i := 0 TO LEN(typeClosure.params^)-1 DO
+      Log.LongInt("pos", i);
+      Log.Ptr("  param.adr", typeClosure.params[i]);
+      Log.LongInt("  param.pos", typeClosure.params[i].position.pos);
+      Log.Msg("  --->");
+      Log.Type("  arg.type", typeClosure.arguments[i].type);
+      Log.Ptr("  arg.adr", typeClosure.arguments[i].type);
+      IF (typeClosure.arguments[i].type IS Sym.TypeVar) THEN
+        Log.LongInt("  arg.pos", typeClosure.arguments[i].type.position.pos);
+      END;
+    END;
+  END Log;*)
+
 
 PROCEDURE Lookup(context: TypeClosure; tv: Sym.TypeVar): Sym.Type;
   VAR
@@ -113,7 +132,7 @@ PROCEDURE ExpandInContext(type: Sym.Type; context: TypeClosure): Sym.Type;
       RETURN Expand(type);
     ELSE
       WITH type: Sym.QualType DO
-        ASSERT(LEN(type.arguments^) = LEN(type.typePars.params^));
+        ASSERT(LEN(type.arguments^) = LEN(type.baseType.typePars.params^));
         NEW(args, LEN(type.baseType.typePars.params^));
         FOR i := 0 TO LEN(args^)-1 DO
           Sym.InitTypeRef(args[i], ExpandInContext(type.arguments[i].type,
@@ -496,7 +515,9 @@ PROCEDURE VariableInstance* (type: Sym.Type): BOOLEAN;
   END VariableInstance;
 
 
-PROCEDURE ^ FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
+PROCEDURE ^ FormalParamsMatch* (baseFParsClosure: Sym.Type;
+                                procFPars: Sym.FormalPars;
+                                allowExtendedResult: BOOLEAN): BOOLEAN;
 
 PROCEDURE SameType* (a, b: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{a} and @oparam{b} are the @dfn{same type},
@@ -613,27 +634,30 @@ PROCEDURE IsExtensionOfNoParams* (type, base: Sym.Type): BOOLEAN;
     RETURN FALSE
   END IsExtensionOfNoParams;
 
-PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowSpecialization: BOOLEAN): BOOLEAN;
+PROCEDURE FormalParamsMatch* (baseFParsClosure: Sym.Type;
+                              procFPars: Sym.FormalPars;
+                              allowSpecialization: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE}, iff the formal parameter lists described by
-   @oparam{baseFPars} and @oparam{procFPars} match.  The comparison includes
-   the formal parameters, the result type, and any rest parameter.  The
-   receiver of the formal parameter lists is ignored.
+   @oparam{baseFParsClosure} and @oparam{procFPars} match.  The comparison
+   includes the formal parameters, the result type, and any rest parameter.
+   The receiver of the formal parameter lists is ignored.
 
    If @oparam{allowSpecialization} is @code{TRUE}, then @oparam{procFPars} must
-   not be equal to @oparam{baseFPars}, but may be a specialized version of
-   @oparam{baseFPars} with a narrower signature.  In particular, its
+   not be equal to @oparam{baseFParsClosure}, but may be a specialized version
+   of @oparam{baseFParsClosure} with a narrower signature.  In particular, its
 
    @itemize @bullet
    @item
-   result type may be an extension of the result type of @oparam{baseFPars},
+   result type may be an extension of the result type of
+   @oparam{baseFParsClosure},
 
    @item
    its list of exception declarations may have less entries than that of
-   @oparam{baseFPars}, and
+   @oparam{baseFParsClosure}, and
 
    @item
    the exception declarations may be extensions of the ones on
-   @oparam{baseFPars}.
+   @oparam{baseFParsClosure}.
    @end itemize
 
    Without @oparam{allowSpecialization}, the result of both formal parameter
@@ -641,19 +665,29 @@ PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowSpecial
    must be a corresponding entry of the same type.  *)
   VAR
     i, j: LONGINT;
+    ptr, baseResult: Sym.Type;
+    baseFPars: Sym.FormalPars;
   BEGIN
+    ptr := baseFParsClosure.Deparam();
+    baseFPars := ptr(Sym.FormalPars);
+    IF (baseFPars.resultType = NIL) THEN
+      baseResult := NIL;
+    ELSE
+      baseResult := baseFParsClosure.Closure(baseFPars.resultType);
+    END;
+    
     IF (LEN (baseFPars. params^) # LEN (procFPars. params^)) THEN
       RETURN FALSE
-    ELSIF ((baseFPars. resultType = NIL) # (procFPars. resultType = NIL)) THEN
+    ELSIF ((baseResult = NIL) # (procFPars. resultType = NIL)) THEN
       RETURN FALSE
-    ELSIF (baseFPars. resultType # NIL) & 
+    ELSIF (baseResult # NIL) & 
           ~allowSpecialization &   
-          ~SameType (baseFPars. resultType, procFPars. resultType) THEN
+          ~SameType(baseResult, procFPars.resultType) THEN
       RETURN FALSE
-    ELSIF (baseFPars. resultType # NIL) & 
+    ELSIF (baseResult # NIL) & 
           allowSpecialization &
-          ~(SameType (baseFPars. resultType, procFPars. resultType) OR
-            IsExtensionOf (procFPars. resultType, baseFPars. resultType)) THEN
+          ~(SameType(baseResult, procFPars.resultType) OR
+            IsExtensionOf(procFPars.resultType, baseResult)) THEN
       RETURN FALSE
     ELSIF (baseFPars. anyRestParameters # procFPars. anyRestParameters) THEN
       RETURN FALSE
@@ -661,8 +695,8 @@ PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowSpecial
       FOR i := 0 TO LEN (baseFPars. params^)-1 DO
         IF (baseFPars. params[i]. isVarParam # 
             procFPars. params[i]. isVarParam) OR
-           ~EqualTypes (baseFPars. params[i]. type, 
-                            procFPars. params[i]. type) THEN
+           ~EqualTypes (baseFParsClosure.Closure(baseFPars.params[i].type), 
+                        procFPars.params[i].type) THEN
           RETURN FALSE
         END
       END;
@@ -712,13 +746,18 @@ PROCEDURE FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowSpecial
     END
   END FormalParamsMatch;
 
-PROCEDURE IsValidRedefinition* (baseFPars, procFPars: Sym.FormalPars): BOOLEAN;
+PROCEDURE IsValidRedefinition* (baseFParsClosure: Sym.Type;
+                                procFPars: Sym.FormalPars): BOOLEAN;
 (**Returns @code{TRUE}, iff @oparam{procFPars} is a valid redefinition of
-   the type-bound procedure @oparam{baseFPars}.  *)
+   the type-bound procedure @oparam{baseFParsClosure}.  *)
+  VAR
+    baseFPars: Sym.Type;
   BEGIN
+    baseFPars := baseFParsClosure.Deparam();
     RETURN
-      (baseFPars. receiver. isVarParam = procFPars. receiver. isVarParam) &
-      FormalParamsMatch (baseFPars, procFPars, TRUE)
+      (baseFPars(Sym.FormalPars).receiver.isVarParam =
+       procFPars.receiver.isVarParam) &
+      FormalParamsMatch(baseFParsClosure, procFPars, TRUE);
   END IsValidRedefinition;
 
 PROCEDURE IsValidForwardDecl* (forward, proc: Sym.FormalPars): BOOLEAN;

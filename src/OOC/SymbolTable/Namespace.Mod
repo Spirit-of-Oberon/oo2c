@@ -419,6 +419,9 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
     i: LONGINT;
     decl, base: Sym.Declaration;
     baseNotExported: BOOLEAN;
+    rec, ptr, baseFormalPars: Sym.Type;
+    args: Sym.TypeRefArray;
+    qualType: Sym.QualType;
   BEGIN
     FOR i := 0 TO ns. localCount-1 DO
       decl := ns. localDecl[i];
@@ -431,7 +434,8 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
           ELSE
             ErrDecl (definedForBaseType, decl, errList)
           END;
-        END
+        END;
+        
       | decl: Sym.ProcDecl DO
         baseNotExported := FALSE;
         IF (ns. extends = NIL) THEN
@@ -446,7 +450,30 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
             IF (decl. exportMark # base. exportMark) THEN
               ErrDecl (invalidTBProcExport, decl, errList)
             END;
-            IF TR.IsValidRedefinition (base. formalPars, decl. formalPars) THEN
+
+            rec := decl.Class();
+            IF (rec.typePars # NIL) THEN
+              (* calculate type closure for the record type of the original
+                 procedure definition *)
+              NEW(args, LEN(rec.typePars.params^));
+              FOR i := 0 TO LEN(args^)-1 DO
+                Sym.InitTypeRef(args[i], rec.typePars.params[i]);
+              END;
+              
+              NEW(qualType);
+              Sym.InitQualType(qualType, NIL, rec.position, rec, args);
+              rec := TR.Expand(qualType);
+
+              WHILE (rec.Deparam() # base.Class()) DO
+                ptr := rec.Deparam();
+                rec := rec.Closure(ptr(Sym.Record).baseType);
+              END;
+              baseFormalPars := rec.Closure(base.formalPars);
+            ELSE
+              baseFormalPars := base.formalPars;
+            END;
+            
+            IF TR.IsValidRedefinition(baseFormalPars, decl.formalPars) THEN
               IF base.notRedefined THEN
                 base.notRedefined := FALSE;
               END;
@@ -458,8 +485,9 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               Uses.Mark(base, uses, decl.name);
             ELSE
               ErrDecl (invalidRedefintion, decl, errList)
-            END
-          END
+            END;
+          END;
+          
         ELSE
           record. AssignTBProcIndex (decl)
         END
