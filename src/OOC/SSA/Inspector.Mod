@@ -23,7 +23,7 @@ MODULE OOC:SSA:Inspector;
 IMPORT
   Ascii, Channel, Files, IntStr, Log, Msg, Strings,
   ADT:Object, ADT:String, ADT:Dictionary,
-  Language, Language:Boolean, Language:String8,
+  Language, Language:Boolean, Language:String8, Language:String16,
   Language:Integer, Language:Set,
   URI, URI:Scheme:File, XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Config:Repositories, OOC:IR, OOC:SSA, OOC:SSA:Schedule,
@@ -96,6 +96,10 @@ PROCEDURE WriteBlock (s: Servlet; b: Schedule.Block);
           | value: String8.Value DO
             w. Write ('"');
             w. WriteLatin1 (value. value. array^);
+            w. Write ('"');
+          | value: String16.Value DO
+            w. Write ('"');
+            w. Write (value. array^);
             w. Write ('"');
           | value: Integer.Value DO
             str := value.ToString();
