@@ -45,11 +45,7 @@ exceptions are that it can only be assigned values of type `Ti' (or
 NIL), and that NEW is not applicable to such a variable.
 
 A type variable cannot be used on the right hand side of a type test
-or type guard.  For any type argument on the right of a type test or
-guard it must be possible to correlate it to an argument of the left
-side's type by an unbroken chain of applications of qualified type
-references.  For example, `v IS ArrayList(Node)' is invalid if the
-type of `v' has no parameters.
+or type guard.
 
 Two qualified types are considered to be the same type, if they have
 the same base type and if their corresponding type arguments are of
@@ -85,11 +81,6 @@ The second statement is omitted if `T' does not define an `INIT'
 procedure.  (Right now, `T' must be a record pointer.  This might be
 relaxed to any pointer type in the future.)
 
-
-
-Note: Some of the restrictions on type variables and qualified types
-follow from the assumption that no type information for parametric
-types is available during run-time.
 
 
 
