@@ -2795,8 +2795,12 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       (* FIXME... handle char array., string *)
       result := b.NewCompare(sym, left, right);
     ELSIF (id IN {Id.eql, Id.neq})
+      & (leftType IS Sym.Pointer) & (rightType IS Sym.Pointer) THEN
+      (* FIXME... deal with NIL, check types  *)
+      result := b.NewCompare(sym, left, right);
+    ELSIF (id IN {Id.eql, Id.neq})
       & ((leftIsBoolean & rightIsBoolean) OR (leftIsSet & rightIsSet)) THEN
-      (* FIXME... handle pointer types, procedure types *)
+      (* FIXME... procedure types *)
       result := b.NewCompare(sym, left, right);
     ELSIF (id = Id.in) & leftIsInteger & rightIsSet THEN
       result := b.NewSetMember(sym, left, right);
