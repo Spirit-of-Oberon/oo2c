@@ -29,7 +29,7 @@ IMPORT
 
   OOC:Logger, OOC:Error, OOC:Config,
   OOC:Config:Pragmas, OOC:Config:Repositories,
-  OOC:Doc:ResolveRef, Rep := OOC:Repository, OOC:AST,
+  OOC:Doc:ResolveRef, OOC:Package, Rep := OOC:Repository, OOC:AST,
   Sym := OOC:SymbolTable, OOC:SymbolTable:CreateNamespace,
   OOC:SymbolTable:InterfaceDescr, OOC:SymbolTable:InterfaceXML,
   OOC:SymbolTable:Uses, OOC:Auxiliary:ParseModule, OOC:Make:LinkProgramC,
@@ -55,11 +55,8 @@ TYPE
   Rules* = POINTER TO RulesDesc;
   RulesDesc* = RECORD
     backend: LONGINT;
-    libraryName: STRING;
+    library: Package.Library;
     (**If set, then all modules are compiled for this library.  *)
-    libraryVersion: STRING;
-    (**When building a library, then version used in the final link step
-       is taken from this field.  *)
     checkAllImportsModule: Rep.Module;
     (* If not NIL, then for all modules but this one the set of imported
        modules is only checked if they contribute to the module's symbol
@@ -147,8 +144,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 PROCEDURE InitRules* (r: Rules);
   BEGIN
     r.backend := backendSSAtoC;
-    r.libraryName := NIL;
-    r.libraryVersion := NIL;
+    r.library := NIL;
     r.checkAllImportsModule := NIL;
     
     r.localRepository := NIL;
@@ -176,13 +172,19 @@ PROCEDURE (r: Rules) SetBackend* (backend: LONGINT);
     r.backend := backend;
   END SetBackend;
 
-PROCEDURE (r: Rules) SetLibraryName* (name, version: STRING);
-(**Calling this method with empty string as @oparam{name} clears all
-   library specific data from @oparam{r}.  *)
+PROCEDURE (r: Rules) SetLibrary* (library: Package.Library);
   BEGIN
-    r.libraryName := name;
-    r.libraryVersion := version;
-  END SetLibraryName;
+    r.library := library;
+  END SetLibrary;
+
+PROCEDURE (r: Rules) LibraryName*(): STRING;
+  BEGIN
+    IF (r.library # NIL) THEN
+      RETURN r.library.name;
+    ELSE
+      RETURN NIL;
+    END;
+  END LibraryName;
 
 PROCEDURE (r: Rules) SetAllImportsModule*(module: Rep.Module);
   BEGIN
@@ -416,7 +418,7 @@ RAISES IO.Error;
       (* the symbol file does not exist, or the source file is more recent
          than the symbol file: extract information from source file *)
       ParseModule.ParseModule(module, FALSE, FALSE, FALSE, TRUE,
-                              r.libraryName, r.uses,
+                              r.LibraryName(), r.uses,
                               ast, symTab, pragmaHistory, errList);
       IF errList.NoErrors() THEN
         module.SetInterfaceData(symTab, Rep.importsOnly,
@@ -524,7 +526,7 @@ RAISES IO.Error;
     ELSE
       Logger.EnterMake("CompileModule", module.name^);
 
-      libraryName := r.libraryName;
+      libraryName := r.LibraryName();
       IF (libraryName # NIL) & (module.origin # r.localRepository) THEN
         (* only include modules from the repository of the top-level module
            in the library; alternatively, we might report this as a fatal
@@ -580,14 +582,14 @@ RAISES IO.Error;
       isUpToDate := ~sourceExists OR
           ~DerivedIsOlder(module, Rep.modSymbolFile, Rep.modModuleSource);
       
-      IF (r.libraryName # NIL) & (module.origin = r.localRepository) THEN
+      IF (r.LibraryName() # NIL) & (module.origin = r.localRepository) THEN
         IF (module.ifData.libraryName = NIL) THEN
           (* the symbol file does not exist, or it does not associate the
              module with any library: force compilation of module *)
           Logger.ExplainMake("module is not part of a library");
           isUpToDate := FALSE;
           
-        ELSIF ~module.ifData.libraryName.Equals(r.libraryName) THEN
+        ELSIF ~module.ifData.libraryName.Equals(r.LibraryName()) THEN
           (* the symbol file says the module is part of another library in
              the same repository; assume that this is not intended and
              report a fatal error *)
@@ -722,7 +724,7 @@ RAISES IO.Error;
         errList := CreateErrList(module);
 
         ParseModule.ParseModule(module, FALSE, TRUE, FALSE, FALSE,
-                                r.libraryName, r.uses,
+                                r.LibraryName(), r.uses,
                                 ast, symTab, pragmaHistory, errList);
         IF errList.NoErrors() THEN
           outputChannel := module.GetOutputChannel(Rep.modInterfaceXML, TRUE);
@@ -1169,7 +1171,7 @@ RAISES IO.Error;
    part of the library.
 
    @precond
-   @ofield{r.libraryName} and @ofield{r.libraryVersion} are set.
+   @ofield{r.library} is set.
    @end precond*)
   VAR
     success, isUpToDate: BOOLEAN;
@@ -1191,7 +1193,7 @@ RAISES IO.Error;
       isUpToDate := Exists(module, Rep.modLibrary);
       FOR i := 0 TO LEN(closure^)-1 DO
         importLibrary := closure[i].ifData.libraryName;
-        IF (importLibrary # NIL) & ~r.libraryName.Equals(importLibrary) THEN
+        IF (importLibrary # NIL) & ~importLibrary.Equals(r.LibraryName()) THEN
           (* skip, it is from another library *)
         ELSIF closure[i].ifData.NoObjectFile() THEN
           (* skip *)
@@ -1212,7 +1214,7 @@ RAISES IO.Error;
         
         (* Link library *)
         success := isUpToDate OR
-            LinkProgramC.Run(module, closure^, r.libraryName);
+            LinkProgramC.Run(module, closure^, r.library);
         
         (* Write library meta file containing OOC's information about the new
            library.  *)

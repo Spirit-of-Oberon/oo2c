@@ -362,8 +362,7 @@ RAISES IO.Error;
         ok := makeRules.Update(module, Rep.modExecutable)
             & (~install OR InstallLibrary(module, makeRules));
       ELSE
-        makeRules.SetLibraryName(lib.name,
-                                 Object.NewLatin1(lib.version.tuple));
+        makeRules.SetLibrary(lib);
         ok := makeRules.Update(module, Rep.modLibrary)
             & (~install OR InstallLibrary(module, makeRules));
       END;
@@ -373,7 +372,7 @@ RAISES IO.Error;
         ok := BuildDocs(module, makeRules, install);
       END;
       
-      makeRules.SetLibraryName(NIL, NIL);
+      makeRules.SetLibrary(NIL);
       INC(i);
     END;
 
