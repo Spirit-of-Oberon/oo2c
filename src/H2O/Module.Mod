@@ -23,8 +23,8 @@ BEGIN
     mod := list.array[i](Module);
     IF (m # mod) & ~m.imports.Contains(mod) THEN
       m.imports.Append(mod);
-      Err.String("MODULE "); Err.Str(m.name);
-      Err.String(" IMPORTS "); Err.Str(mod.name);
+      Err.String("MODULE "); Err.Object(m.name);
+      Err.String(" IMPORTS "); Err.Object(mod.name);
       Err.Ln;
     END;
   END;

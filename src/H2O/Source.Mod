@@ -38,7 +38,7 @@ BEGIN
     Err.String("  At positon "); Err.LongInt(s.pos, 0); 
     Err.String(" (line="); Err.LongInt(s.line+1, 0);
     Err.String(", col="); Err.LongInt(s.col, 0);
-    Err.String(") in file "); Err.Str(s.name); Err.Ln;
+    Err.String(") in file "); Err.Object(s.name); Err.Ln;
     s := s.next;
   END;
 END ShowContext;
@@ -140,7 +140,7 @@ BEGIN
   s.next := i.src;
   s.name := Object.NewLatin1(realFileName);
   i.src := s;
-  Err.String("<Processing "); Err.Str(s.name); Err.Char(">"); Err.Ln;
+  Err.String("<Processing "); Err.Object(s.name); Err.Char(">"); Err.Ln;
 
   moduleName := Module.ModuleName(realFileName);
   module := Module.FindModule(moduleName);
@@ -148,7 +148,7 @@ BEGIN
     Err.String("NEW ");
     module := Module.NewModule(moduleName);
   END;
-  Err.String("MODULE "); Err.Str(moduleName); 
+  Err.String("MODULE "); Err.Object(moduleName); 
   Err.String(" for "); Err.String(realFileName);
   Err.Ln;
   i.module := module;

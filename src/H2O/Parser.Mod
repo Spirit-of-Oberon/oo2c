@@ -89,7 +89,7 @@ BEGIN
     b.Append(depend.array[i](Module.Module).name);
   END;
   b.Append("]");
-  Out.Str(b.ToString()); Out.Ln;
+  Out.Object(b); Out.Ln;
 END ShowDepend;
 
 PROCEDURE Install* (VAR scope : T.Object; tag [NO_COPY] : ARRAY OF CHAR; name : Object.String8; new : T.Type);
@@ -863,7 +863,7 @@ VAR
     b.Append(name);
     b.Append("', Type: ");
     b.Append(type);
-    Out.Str(b.ToString()); Out.Ln;
+    Out.Object(b); Out.Ln;
   END ShowBinding;
   
   PROCEDURE SkipBody;

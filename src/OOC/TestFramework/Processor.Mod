@@ -359,7 +359,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       IF (res = NIL) THEN
         w := TextRider.ConnectWriter (f);
         w. WriteString ("MODULE x");
-        w. WriteStr (name);
+        w. WriteObject (name);
         w. WriteString (";");
         w. WriteLn;
         IF name.Equals(Object.NewLatin1(outModule)) THEN
@@ -369,18 +369,18 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
           w. WriteString ("IMPORT ");
           w. WriteString (outModule);
           w. WriteString (", ");
-          w. WriteStr (name);
+          w. WriteObject (name);
         END;
         w. WriteString (";");
         w. WriteLn;
         w. WriteString ("BEGIN ");
         w. WriteString (outModule);
         w. WriteString (".Open; ");
-        w. WriteStr (name);
+        w. WriteObject (name);
         w. WriteString (".Test;");
         w. WriteLn;
         w. WriteString ("END x");
-        w. WriteStr (name);
+        w. WriteObject (name);
         w. WriteString (".");
         w. WriteLn;
         

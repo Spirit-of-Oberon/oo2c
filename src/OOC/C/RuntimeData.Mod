@@ -72,7 +72,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       END;
       w. WriteString (structTypeDesc);
       w. WriteString (" ");
-      w. WriteStr (name);
+      w. WriteObject (name);
       IF writeHeader THEN
         w. WriteString (";");
       ELSE
@@ -100,7 +100,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       IF type.hasDescriptor THEN
         w.WriteString("&");
         name := Naming.NameOfTypeDescriptor(type);
-        w.WriteStr(name);
+        w.WriteObject(name);
       ELSE
         w.WriteString("NULL");
       END;
@@ -154,7 +154,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           len := BaseTypes (t(Sym.Record). baseType);
           name := Naming.NameOfTypeDescriptor (t);
           w. WriteChar ("&");
-          w. WriteStr(name);
+          w. WriteObject(name);
           IF (t # record) THEN
             w. WriteChar (",");
           END;
@@ -176,7 +176,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           ASSERT (proc # NIL);
           w. WriteString ("(void*)");
           name := Naming.NameOfDeclaration (proc);
-          w. WriteStr (name);
+          w. WriteObject (name);
         END;
       END TBProcs;
     
@@ -271,7 +271,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       Nli;
       FOR i := 0 TO tdNames. size-1 DO
         w. WriteString ("&");
-        w. WriteStr (tdNames. array[i](STRING));
+        w. WriteObject (tdNames. array[i](STRING));
         CNli;
       END;
       w. WriteString ("NULL } };");
@@ -286,7 +286,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       name := Naming.NameOfModuleInit (module, FALSE);
       w. WriteLn;
       w. WriteString ("extern void ");
-      w. WriteStr (name0);
+      w. WriteObject (name0);
       w. WriteString ("() {");
       IF (module. name. str^ # Config.runtimeModule) THEN
         (* cannot register the lowest level run-time module with itself *)
@@ -295,7 +295,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       END;
       w. WriteLn;
       w. WriteString ("  ");
-      w. WriteStr (name);
+      w. WriteObject (name);
       w. WriteString ("();");
       w. WriteLn;
       w. WriteString ("}");

@@ -299,8 +299,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     INC (t. lfeCount);
     
     w. Instr (".align 4");
-    w. Write (".globl "); w. WriteStr (name); w. Newline;
-    w. Write (Ascii.ht+".type "); w. WriteStr (name);
+    w. Write (".globl "); w. WriteObject (name); w. Newline;
+    w. Write (Ascii.ht+".type "); w. WriteObject (name);
     w. Write (",@function"); w. Newline;
     w. Label (name);
     w. Instr ("pushl %ebp");
@@ -313,8 +313,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     w. Instr ("leave");
     w. Instr ("ret");
     w. Label (Object.NewLatin1(lfe));
-    w. Write (Ascii.ht+".size "); w. WriteStr (name); w. Write (",");
-    w. Write (lfe); w. Write ("-"); w. WriteStr (name); w. Newline;
+    w. Write (Ascii.ht+".size "); w. WriteObject (name); w. Write (",");
+    w. Write (lfe); w. Write ("-"); w. WriteObject (name); w. Newline;
   END WriteProcBody;
 
 

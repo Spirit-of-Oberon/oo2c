@@ -19,7 +19,7 @@ MODULE Log [OOC_EXTENSIONS];
 *)
    
 IMPORT
-  S := SYSTEM, RT0, StdChannels, TextRider, Object;
+  S := SYSTEM, RT0, StdChannels, TextRider, Obj := Object;
 
 VAR
   writer-: TextRider.Writer;
@@ -99,13 +99,13 @@ PROCEDURE LString* (msg[NO_COPY]: ARRAY OF CHAR; s[NO_COPY]: ARRAY OF LONGCHAR);
     writer. WriteLn
   END LString;
 
-PROCEDURE Str* (msg[NO_COPY]: ARRAY OF CHAR; obj: Object.String);
+PROCEDURE Object* (msg[NO_COPY]: ARRAY OF CHAR; obj: Obj.Object);
   BEGIN
     writer. WriteString (msg);
     writer. WriteString (": ");
-    writer. WriteStr (obj);
+    writer. WriteObject (obj);
     writer. WriteLn
-  END Str;
+  END Object;
 
 PROCEDURE Bool* (msg[NO_COPY]: ARRAY OF CHAR; bool: BOOLEAN);
   BEGIN

@@ -166,7 +166,7 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     result, class: SHORTINT;
     timeStr, str: ARRAY 128 OF CHAR;
     path: ARRAY 1024 OF CHAR;
-    time: SysClock.DateTime;
+    (*time: SysClock.DateTime;*)
     elem: Element.Element;
     processorInfo: Testcases.ProcessorInfo;
     i: INTEGER;

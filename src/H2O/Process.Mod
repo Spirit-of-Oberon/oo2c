@@ -68,12 +68,12 @@ VAR
   p : Param;
   i : LinkedList.Iterator;
 BEGIN
-  Err.String("MACRO "); Err.Str(m.name);
+  Err.String("MACRO "); Err.Object(m.name);
   IF m.function THEN
     Err.String("(");
     p := m.params;
     WHILE p # NIL DO
-      Err.Str(p.name);
+      Err.Object(p.name);
       p := p.next;
       IF p # NIL THEN Err.Char(",") END;
     END;
@@ -87,7 +87,7 @@ BEGIN
     Err.String("  "); o(Scanner.Token).Write(Err.writer);
     Err.Ln;
   END;
-  Err.String("END "); Err.Str(m.name); Err.Ln;
+  Err.String("END "); Err.Object(m.name); Err.Ln;
   Err.Ln;
 END PrintMacro;
 
@@ -172,7 +172,7 @@ VAR
 
   BEGIN
     IF debugExpand IN moduleOptions THEN
-      Err.String("ExpandMacro("); Err.Str(m.name); Err.String(")");
+      Err.String("ExpandMacro("); Err.Object(m.name); Err.String(")");
     END;
     GetSym;
     params := NIL;

@@ -1190,10 +1190,8 @@ END TypeName;
 
 <*PUSH; Warnings:=FALSE*>
 PROCEDURE LogTypeName(message : ARRAY OF CHAR; type : Sym.Type);
-VAR name : STRING;
 BEGIN
-  name := TypeName(type);
-  Log.Str(message, name);
+  Log.Object(message, TypeName(type));
 END LogTypeName;
 <*POP*>
 

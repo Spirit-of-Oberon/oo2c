@@ -23,7 +23,7 @@ PROCEDURE Call (w : DeclWriter.Writer; statm: IR.Call);
     design := statm. design;
     WITH design: IR.ProcedureRef DO
       name := Naming.NameOfDeclaration (design. decl);
-      w. WriteStr (name)
+      w. WriteObject (name)
     END;
     w. WriteString ("(");
     FOR i := 0 TO LEN (statm. arguments^)-1 DO
@@ -71,7 +71,7 @@ PROCEDURE WriteExpr (w: DeclWriter.Writer;
           
     | expr: IR.Var DO
       name := Naming.NameOfDeclaration (expr. decl);
-      w. WriteStr (name);
+      w. WriteObject (name);
       
     | expr: IR.Adr DO
       (* FIXME... this is a workaround to get addresses of string constants

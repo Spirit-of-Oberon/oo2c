@@ -486,10 +486,8 @@ BEGIN
 END ToString;
 
 PROCEDURE (t : Token) Write* (wr : TextRider.Writer);
-VAR str : Object.String8;
 BEGIN
-  str := t.ToString();
-  wr.WriteStr(str);
+  wr.WriteObject(t);
 END Write;
 
 PROCEDURE (t : Token) Text* (wr : TextRider.Writer);
@@ -501,15 +499,15 @@ BEGIN
   | comment:
     IF t.value = 0 THEN
       wr.WriteString("/*");
-      wr.WriteStr(t.name);
+      wr.WriteObject(t.name);
       wr.WriteString("*/");
     ELSE
       wr.WriteString("//");
-      wr.WriteStr(t.name);
+      wr.WriteObject(t.name);
     END;
   ELSE
     IF t.name # NIL THEN
-      wr.WriteStr(t.name);
+      wr.WriteObject(t.name);
     ELSE
       t.Write(Err.writer); HALT(0);
     END;

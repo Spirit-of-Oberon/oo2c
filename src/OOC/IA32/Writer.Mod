@@ -65,14 +65,14 @@ PROCEDURE (w: Writer) Write* (str: ARRAY OF CHAR);
     w. textWriter. WriteString (str);
   END Write;
 
-PROCEDURE (w: Writer) WriteStr* (str: STRING);
+PROCEDURE (w: Writer) WriteObject* (str: STRING);
   BEGIN
-    w. textWriter. WriteStr (str);
-  END WriteStr;
+    w. textWriter. WriteObject (str);
+  END WriteObject;
 
 PROCEDURE (w: Writer) Label* (label: STRING);
   BEGIN
-    w. textWriter. WriteStr (label);
+    w. textWriter. WriteObject (label);
     w. textWriter. WriteChar (":");
     w. textWriter. WriteLn;
   END Label;

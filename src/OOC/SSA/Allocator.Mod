@@ -804,7 +804,7 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
           IF (i # 0) THEN
             w. WriteChar (",");
           END;
-          w. WriteStr (names[i]);
+          w. WriteObject (names[i]);
         END;
         w. WriteChar (";");
       END;

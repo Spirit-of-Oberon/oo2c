@@ -507,7 +507,7 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
       IF marker. HasKey (res) THEN
         obj := marker. Get (res);
         w. WriteChar ("[");
-        w. WriteStr (obj(STRING));
+        w. WriteObject (obj);
         w. WriteChar ("]");
       END;
       
@@ -518,7 +518,7 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
             w. WriteString ("NIL");
           ELSE
             value := instr. value. ToString();
-            w. WriteStr (value);
+            w. WriteObject (value);
           END;
         | instr: SSA.DeclRef DO
           w. WriteString (instr. decl. name. str^);

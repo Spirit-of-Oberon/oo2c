@@ -44,7 +44,7 @@ BEGIN
   ELSE
     Err.String("Warning: ");
   END;
-  Err.Str(msg);
+  Err.Object(msg);
   Err.Ln;
   Err.Flush;
   e.in.ShowContext();

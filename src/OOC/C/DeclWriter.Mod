@@ -340,10 +340,10 @@ PROCEDURE (w: Writer) WriteString* (str[NO_COPY]: ARRAY OF CHAR);
     w. textWriter. WriteString (str)
   END WriteString;
 
-PROCEDURE (w: Writer) WriteStr* (str: STRING);
+PROCEDURE (w: Writer) WriteObject* (obj: Object.Object);
   BEGIN
-    w.textWriter.WriteStr(str);
-  END WriteStr;
+    w.textWriter.WriteObject(obj);
+  END WriteObject;
 
 PROCEDURE (w: Writer) WriteChar* (ch: CHAR);
   BEGIN
@@ -514,7 +514,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
         END;
         
       | value: Boxed.LongReal DO
-        w. WriteStr(value.ToString());
+        w. WriteObject(value.ToString());
         IF TR.IsPredefType(type, Predef.real) THEN
           w. WriteString("f");
         END;
@@ -528,7 +528,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
           w. WriteLInt (MAX (LONGINT), 0);
           w. WriteString ("-1)");
         ELSE
-          w. WriteStr(value.ToString());
+          w. WriteObject(value.ToString());
         END;
         
       | value: Boxed.Set DO
@@ -847,7 +847,7 @@ PROCEDURE (struct: Struct) WriteLeft (w: Writer);
     END;
     IF (struct. name # NIL) THEN
       w. WriteString (" ");
-      w. WriteStr (struct. name);
+      w. WriteObject (struct. name);
     END;
     w. WriteString (" {");
     w. Indent (1);
@@ -900,7 +900,7 @@ PROCEDURE (typeRef: TypeRef) WriteLeft (w: Writer);
     | refStruct : w. WriteString ("struct ");
     | refUnion  : w. WriteString ("union ");
     END;
-    w. WriteStr (typeRef. name);
+    w. WriteObject (typeRef. name);
     w. WriteChar (" ");
   END WriteLeft;
 
@@ -967,7 +967,7 @@ PROCEDURE (d: Declaration) Write (w: Writer);
     END;
     WriteTypeQualifier (w, d. typeQualifier);
     WriteLeft (w, d. type, priDeclaration);
-    w. WriteStr (d. name);
+    w. WriteObject (d. name);
     WriteRight (w, d. type, priDeclaration)
   END Write;
 
@@ -1033,7 +1033,7 @@ PROCEDURE (w: Writer) NewDefine* (name: STRING;
 PROCEDURE (d: Define) Write (w: Writer);
   BEGIN
     w. WriteString ("#define ");
-    w. WriteStr (d. name);
+    w. WriteObject (d. name);
     w. WriteString (" ");
     IF (d. const = NIL) THEN
       w. WriteString (" 0");             (* NULL *)
