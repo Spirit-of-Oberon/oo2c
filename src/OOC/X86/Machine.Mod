@@ -17,59 +17,63 @@ PROCEDURE InOutOpnd*(instr: S.Instr): S.Opnd;
     END;
   END InOutOpnd;
 
-PROCEDURE ImmediateOpnd*(opnd: S.Opnd): BOOLEAN;
-(**If the operand's value can be encoded as an immediate operand of its
-   instruction, the return @code{TRUE}.  This function takes the instruction of
-   which @oparam{opnd} is part of and the instruction that computes the
-   argument of @oparam{opnd} into account.  Interdependencies with other
-   operands of the instruction are ignored, as are addressing modes
-   more complex than immediate operands.
-
-   @precond
-   @oparam{opnd} is a value operand.  That is @oproc{InOutOpnd} returns
-   @code{FALSE}.
-   @end precond  *)
+PROCEDURE ImmediateOpnd(instr: S.Instr): S.Opnd;
+(**If the instruction can take an immediate operand, and if the argument passed
+   to the operand is a suitable constant, then return the operand.  Otherwise,
+   result is @code{NIL}.  *)
   VAR
     n: LONGINT;
-    argOpcode, instrOpcode: S.Opcode;
+    opnd: S.Opnd;
   BEGIN
-    argOpcode := opnd.arg.instr.opcode;
-    instrOpcode := opnd.instr.opcode;
-    IF (argOpcode = S.get) THEN (* base + index *)
-      RETURN (instrOpcode # S.setStack);
-    ELSIF (argOpcode # S.const) THEN
-      RETURN FALSE;
-    ELSE                              (* constant is passed to opnd *)
-      n := opnd.OpndIndex();
-      IF (n = 0) THEN                    (* first operand *)
-        RETURN (instrOpcode = S.return) OR (instrOpcode = S.call);
-      ELSIF (n = 1) THEN                 (* second operand *)
-        CASE instrOpcode OF
-        | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq:
-          (* x86's cmp instruction is not symmetric with immediate opnd *)
-          RETURN TRUE;
-        | S.add, S.sub, S.allocateStack:
-          (* first opnd is in/out, second may be immediate *)
-          RETURN TRUE;
-        | S.setStack:
-          (* first opnd is value, second indicates stack offset *)
-          RETURN TRUE;
-        ELSE
-          RETURN FALSE;
-        END;
-      ELSE
-        RETURN FALSE;
-      END;
+    CASE instr.opcode OF
+    | S.return, S.call:
+      n := 0;
+    | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq,
+      (* x86's cmp instruction is not symmetric with immediate opnd *)
+      S.add, S.sub, S.allocateStack:
+      (* first opnd is in/out, second may be immediate *)
+      n := 1;
+    | S.setStack:
+      n := 2;
+    ELSE
+      RETURN NIL;
+    END;
+    opnd := instr.NthOpnd(n);
+    IF (opnd.arg.instr.opcode = S.const) THEN
+      RETURN opnd;
+    ELSE
+      RETURN NIL;
     END;
   END ImmediateOpnd;
+
+PROCEDURE MemOpnd(instr: S.Instr): S.Opnd;
+(**If the instruction can take a memory operand, then return the operand.
+   Otherwise, result is @code{NIL}.  *)
+  VAR
+    inout, opnd: S.Opnd;
+  BEGIN
+    IF (instr.opcode = S.setStack) THEN
+      RETURN NIL;
+    ELSE
+      inout := InOutOpnd(instr);
+      opnd := instr.opndList;
+      WHILE (opnd # NIL) DO
+        IF (opnd # inout) & (opnd.arg.instr.opcode = S.get) THEN
+          RETURN opnd;
+        END;
+        opnd := opnd.nextOpnd;
+      END;
+    END;
+    RETURN NIL;
+  END MemOpnd;
 
 PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
 (**Expand call instructions and enable the target architecture's addressing
    modes by setting ``immediate'' flags for operands.  *)
   VAR
     instr: S.Instr;
-    opnd, inout: S.Opnd;
-    memoryCount, maxSizeCallStack: LONGINT;
+    opnd, imm, mem: S.Opnd;
+    maxSizeCallStack: LONGINT;
     
   PROCEDURE IsOffset(instr: S.Instr): BOOLEAN;
     BEGIN
@@ -153,25 +157,20 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
           opnd.immediate := IsConst(opnd);
           opnd := opnd.nextOpnd;
         END;
-      ELSE
-        inout := InOutOpnd(instr);
-        memoryCount := 0;
-        opnd := instr.opndList;
-        WHILE (opnd # NIL) DO
-          IF (opnd # inout) & ImmediateOpnd(opnd) THEN
-            opnd.immediate := TRUE;
-            IF (opnd.arg.instr.opcode # S.const) THEN
-              INC(memoryCount);
-            END;
-          END;
-          opnd := opnd.nextOpnd;
+      | S.setStack:  (* offset is part of address; value may be immediate *)
+        instr.opndList.nextOpnd.immediate := TRUE;
+        imm := ImmediateOpnd(instr);
+        IF (imm # NIL) THEN
+          imm.immediate := TRUE;
         END;
-        
-        IF (memoryCount > 1) THEN
-          ASSERT(memoryCount = 2);
-          ASSERT(instr.opndList.nextOpnd.immediate);
-          ASSERT(instr.opndList.nextOpnd.arg.instr.opcode # S.const);
-          instr.opndList.nextOpnd.immediate := FALSE;
+      ELSE
+        imm := ImmediateOpnd(instr);
+        IF (imm # NIL) THEN
+          imm.immediate := TRUE;
+        END;
+        mem := MemOpnd(instr);
+        IF (mem # NIL) THEN
+          mem.immediate := TRUE;
         END;
       END;
     END;
