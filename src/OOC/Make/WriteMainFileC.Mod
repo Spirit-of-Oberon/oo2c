@@ -21,7 +21,7 @@ MODULE OOC:Make:WriteMainFileC;
 *)
 
 IMPORT
-  Channel, Files, TextRider, OOC:Error, OOC:Repository;
+  Channel, Files, TextRider, OOC:Error, OOC:Config, OOC:Repository;
 
   
 PROCEDURE WriteFile*(module: Repository.Module;
@@ -66,7 +66,8 @@ PROCEDURE WriteFile*(module: Repository.Module;
     ch := module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
     IF (res = Channel.done) THEN
       w := TextRider.ConnectWriter (ch);
-      w. WriteString ('#include "RT0'+Repository.headerSuffix+'"');
+      w. WriteString ('#include <'+Config.runtimeModule+
+                      Repository.headerSuffix+'>');
       w. WriteLn;
       WriteModules (w, "extern void OOC_", "_init0(void);");
       w. WriteLn;

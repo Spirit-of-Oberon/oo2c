@@ -155,12 +155,12 @@ PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
     
     (* __typemap definitions are required to parse definitions of the
        module header file *)
-    w. WriteString ('#include "__typemap.h"');
+    w. WriteString ('#include <__typemap.h>');
     w. WriteLn;
 
     (* pull in type definitions for the run-time meta data: module descriptor,
        type descriptor, and so on.  *)
-    w. WriteString ('#include "'+Config.runtimeModule+Repository.headerSuffix+'"');
+    w. WriteString ('#include <'+Config.runtimeModule+Repository.headerSuffix+'>');
     w. WriteLn;
     
     ConvertDecl.ConvertSymTab (w, m, symTab, exports, TRUE);
@@ -191,7 +191,7 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
     (* include full __oo2c.h only in generated C code files; this way,
        the .h and .d files can be used without pulling in all the 
        declarations of the run-time header file *)
-    w. WriteString ('#include "__oo2c.h"');
+    w. WriteString ('#include <__oo2c.h>');
     w. WriteLn;
     translator. SetDataWriter (wd);
     translator. SetProcedureList (moduleIR. procList);

@@ -377,12 +377,12 @@ PROCEDURE (w: Writer) Newline*;
   END Newline;
 
 PROCEDURE (w: Writer) WriteInclude* (includePath: ARRAY OF CHAR);
-(**Write an include statement @code{#include "@dots{}"} for the indicated
+(**Write an include statement @code{#include <@dots{}>} for the indicated
    file.  *)
   BEGIN
-    w. WriteString ('#include "');
+    w. WriteString ('#include <');
     w. WriteString (includePath);
-    w. WriteString ('"');
+    w. WriteString ('>');
     w. WriteLn
   END WriteInclude;
   
