@@ -1,6 +1,6 @@
 (* 	$Id$	 *)
-MODULE OOC:Scanner:BasicList;
-(*  Converts sequence of symbols to a list, removing any whitespace.
+MODULE OOC:Scanner:SymList;
+(*  Stores a list of text tokens (aka symbols).
     Copyright (C) 2000, 2002  Michael van Acken
 
     This file is part of OOC.
@@ -21,10 +21,15 @@ MODULE OOC:Scanner:BasicList;
 *)
 
 IMPORT
-  SYSTEM, Strings, OOC:Scanner:InputBuffer,
-  Sym := OOC:Scanner:Symbol, B := OOC:Scanner:Builder;
+  SYSTEM, Strings, OOC:Scanner:InputBuffer, Sym := OOC:Scanner:Symbol,
+  OOC:Config:Pragmas;
 
 
+TYPE
+  Pos* = InputBuffer.CharPos;
+  Line* = LONGINT;
+  Column* = LONGINT;
+  
 TYPE
   Symbol* = POINTER TO SymbolDesc;
   SymbolDesc* = RECORD
@@ -53,7 +58,11 @@ TYPE
 TYPE
   Builder* = POINTER TO BuilderDesc;
   BuilderDesc* = RECORD
-    (B.BuilderDesc)
+    inputBuffer-: InputBuffer.Buffer;
+    pragmaHistory-: Pragmas.History;
+    (**The history data of assignments to pragma variables.  This field is
+       set with @oproc{Builder.SetPragmaHistory} when the scanner is done.  *)
+    
     head-, tail-: Symbol;
     (**These fields refer to the first and last symbol of the module.  When the
        scanner is done, both are not @code{NIL} and @ofield{tail} refers to
@@ -61,12 +70,16 @@ TYPE
        
     includeDocComments: BOOLEAN;
   END;
-  
+
 
 PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer;
                  includeDocComments: BOOLEAN);
+(**Initialize builder object @oparam{b}.  The scanner will read its data from
+   @oparam{buffer}.  The character intervals given to @oproc{Builder.AddSymbol}
+   are mapped to strings from this buffer.  *)
   BEGIN
-    B.Init (b, buffer);
+    b. inputBuffer := buffer;
+    b. pragmaHistory := NIL;
     b. head := NIL;
     b. tail := NIL;
     b. includeDocComments := includeDocComments
@@ -119,8 +132,17 @@ PROCEDURE (b: Builder) Clear*;
   END Clear;
 
 PROCEDURE (b: Builder) AddSymbol* (id: Sym.Id;
-                                   cstart, cend: B.Pos;
+                                   cstart, cend: Pos;
                                    line, column: LONGINT);
+(**Append new symbol to the list of symbols.  The values @oparam{cstart} and
+   @oparam{cend} are character positions relative to 
+   @samp{b.inputBuffer.offsetFromPos0}, that is, they are indexes of characters
+   in @samp{b.inputBuffer.chars}.  @oparam{line} is the line number of
+   the symbol (counting from 0), and @oparam{column} the column of its first
+   character (counting from 0).  If the symbol is no whitespace, comment, 
+   pragma, or illegal, then it starts and ends on the same line, and it has no
+   embedded control characters.  Otherwise, it may span multiple lines, and 
+   can have arbitrary embedded characters.  *)
   VAR
     sym: Symbol;
     len: LONGINT;
@@ -149,4 +171,10 @@ PROCEDURE (b: Builder) AddSymbol* (id: Sym.Id;
     END
   END AddSymbol;
 
-END OOC:Scanner:BasicList.
+PROCEDURE (b: Builder) SetPragmaHistory* (pragmaHistory: Pragmas.History);
+(**Sets @ofield{Builder.pragmaHistory}.  *)
+  BEGIN
+    b. pragmaHistory := pragmaHistory;
+  END SetPragmaHistory;
+
+END OOC:Scanner:SymList.
