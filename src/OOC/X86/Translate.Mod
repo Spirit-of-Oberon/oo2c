@@ -629,7 +629,61 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             END;
           END;
         END TypeConv;
+
+      PROCEDURE Negate(arg: S.Result; type: Sym.Type): S.Result;
+        BEGIN
+          IF TR.IsRealType(type) THEN  (* convert to `0-x' *)
+            instr := b.AddInstr2(S.sub, b.AddConstZero(type), arg);
+          ELSE
+            instr := b.AddInstr1(S.neg, arg);
+          END;
+          RETURN instr.AddResult(arg.type);
+        END Negate;
       
+      PROCEDURE Abs(expr: IR.Abs): S.Result;
+        VAR
+          arg, valueTrue, valueFalse: S.Result;
+          branch: S.BranchInstr;
+          merge: S.MergeInstr;
+          gate: S.GateInstr;
+          cmp, endTrue, endFalse: S.Instr;
+          pathTrue, pathFalse: S.Block;
+        BEGIN
+          arg := Expression(expr.operand);
+
+          (* compare the argument to zero *)
+          cmp := b.AddInstr2(S.lss, arg, b.AddConstZero(expr.type));
+          branch := b.AddBranch(SetCC(cmp.AddResultReg(S.noType, S.cc)),
+                                FALSE);
+          branch.AddDep(S.depControl, controlCP);
+
+          (* first, the "true" path: x<0 *)
+          pathTrue := b.AddMerge0(S.guard, b.AddConstBool(TRUE));
+          pathTrue.AddDep(S.depControl, branch);
+          endTrue := b.AddInstr0(S.jump);
+          endTrue.AddDep(S.depMemory, memoryCP);
+          endTrue.AddDep(S.depControl, pathTrue);
+          valueTrue := Negate(arg, expr.type);
+          
+          (* second, the "false" path: x>=0  *)
+          pathFalse := b.AddMerge0(S.guard, b.AddConstBool(FALSE));
+          pathFalse.AddDep(S.depControl, branch);
+          endFalse := b.AddInstr0(S.jump);
+          endFalse.AddDep(S.depMemory, memoryCP);
+          endFalse.AddDep(S.depControl, pathFalse);
+          valueFalse := arg;
+          
+          (* finally, pull all the strings together again *)
+          branch.SetPaths2(pathTrue, pathFalse);
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          gate := merge.AddGate(S.gate);
+          gate.AddOpnd(valueTrue);
+          gate.AddOpnd(valueFalse);
+          controlCP := merge; memoryCP := merge;
+
+          RETURN gate.AddResult(arg.type);
+        END Abs;
+                      
       PROCEDURE NewObject (new: IR.NewObject): S.Result;
         VAR
           instr, get1, get2: S.Instr;
@@ -790,15 +844,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN instr.AddResultExpr(expr.type);
           
         | expr: IR.Negate DO
-          arg1 := Expression(expr.operand);
-          IF S.IsFloat(arg1.type) THEN  (* convert to `0-x' *)
-            instr := b.AddInstr2(S.sub,
-                                 b.AddConstReal(Boxed.zeroLongReal,
-                                                expr.type), arg1);
-          ELSE
-            instr := b.AddInstr1(S.neg, arg1);
-          END;
-          RETURN instr.AddResultExpr(expr.type);
+          RETURN Negate(Expression(expr.operand), expr.type);
 
         | expr: IR.Compare DO
           CASE expr.variant OF
@@ -845,6 +891,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           instr.AddOpnd(arg2);
           RETURN instr.AddResultExpr(expr.type);
 
+        | expr: IR.Abs DO
+          RETURN Abs(expr);
+          
         | expr: IR.Call DO
           RETURN Call(expr);
         | expr: IR.NewObject DO

@@ -1140,7 +1140,7 @@ PROCEDURE (w: Writer) WriteFunction*(b: S.FunctionBlock);
       INC(w.blockCount);
       FOR i := 1 TO w.blocks.size-1 DO
         block := w.blocks.array[i];
-        IF (block.incomingList = NIL) THEN
+        IF (block.incomingList = NIL) & block.IsEmpty() THEN
           ASSERT(block.branch = NIL);
           IF (block.jump # NIL) THEN
             ClearArc(block.jump);

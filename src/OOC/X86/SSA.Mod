@@ -2079,6 +2079,16 @@ PROCEDURE (b: Block) AddConstReal*(value: Boxed.LongReal;
     RETURN b.AddConst(NEW(Const, value, -1), type);
   END AddConstReal;
 
+PROCEDURE (b: Block) AddConstZero*(type: Sym.Type): Result;
+  BEGIN
+    IF TR.IsRealType(type) THEN
+      RETURN b.AddConstReal(Boxed.zeroLongReal, type);
+    ELSE
+      RETURN b.AddConstInt(BigInt.zero, type);
+    END;
+  END AddConstZero;
+
+
 PROCEDURE (b: Block) AddConstDim*(dim: LONGINT): Result;
   BEGIN
     RETURN b.AddConst(NEW(Const, BigInt.NewInt(dim), -1),
