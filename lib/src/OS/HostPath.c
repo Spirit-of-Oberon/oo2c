@@ -207,7 +207,7 @@ void OS_HostPath__Denormalize(OOC_CHAR8 path[], OOC_LEN path_0d, Msg__Msg *res) 
   *res = NULL;
   if ( (path[0] == '/') && isalpha(path[1]) && (path[2] == '$')) {
     path[2] = ':';
-    memmove(path, path+1, strlen(path));
+    memmove(path, path+3, strlen(path));
   }
 }
 
