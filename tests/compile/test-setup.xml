@@ -18,7 +18,7 @@
 	     command="../../../TestCompile"
 	     config-file=""
 	     working-dir="./wd" 
-	     flags="--make -r ."
+	     flags="--make -r ../../../lib -r ."
 	     filter-command="/usr/bin/Ooef" 
 	     diff-command="diff -u" />
 
