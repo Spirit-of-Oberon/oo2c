@@ -12,45 +12,46 @@ CONST
   unknownString8 = "unknown";
 
 TYPE
-  Machine = POINTER TO MachineDesc;
+  Machine* = POINTER TO MachineDesc;
   MachineDesc = RECORD
     (Element.ElementDesc)
-    model: String8;
-    cpu: String8;
-    ram: String8;
+    model-: String8;
+    cpu-: String8;
+    ram-: String8;
   END;
 
 TYPE
-  Component = POINTER TO ComponentDesc;
+  Component* = POINTER TO ComponentDesc;
   ComponentDesc = RECORD
     (Element.ElementDesc)
-    name: String8;
-    value: Element.StringBuffer;
+    name-: String8;
+    value-: Element.StringBuffer;
   END;
 
 TYPE
-  OperatingSystem = POINTER TO OperatingSystemDesc;
+  OperatingSystem* = POINTER TO OperatingSystemDesc;
   OperatingSystemDesc = RECORD
     (Element.ElementDesc)
-    name: String8;
-    version: String8;
-    components: Element.List;
+    name-: String8;
+    version-: String8;
+    components-: Element.List;
   END;
 
 TYPE
-  Processor = POINTER TO ProcessorDesc;
+  Processor* = POINTER TO ProcessorDesc;
   ProcessorDesc = RECORD
     (Element.ElementDesc)
     baseURI: URI.URI;
-    name: String8;
-    version: String8;
-    command: String8;
-    configFile: URI.URI;
-    flags: String8;
+    name-: String8;
+    version-: String8;
+    command-: String8;
+    configFile-: URI.URI;
+    flags-: String8;
+    workingDir-: URI.URI;
   END;
 
 TYPE
-  TestSuite = POINTER TO TestSuiteDesc;
+  TestSuite* = POINTER TO TestSuiteDesc;
   TestSuiteDesc = RECORD
     (Element.ElementDesc)
     baseURI: URI.URI;
@@ -61,9 +62,9 @@ TYPE
   TestSetup* = POINTER TO TestSetupDesc;
   TestSetupDesc = RECORD
     (Element.ElementDesc)
-    machine: Machine;
-    operatingSystem: OperatingSystem;
-    processor: Processor;
+    machine-: Machine;
+    operatingSystem-: OperatingSystem;
+    processor-: Processor;
     testSuite-: TestSuite;
   END;
 
@@ -244,6 +245,7 @@ PROCEDURE InitProcessor (processor: Processor);
     processor. command := unknownString8;
     processor. configFile := NIL;
     processor. flags := unknownString8;
+    processor. workingDir := NIL;
   END InitProcessor;
 
 PROCEDURE NewProcessor(): Element.Element;
@@ -266,7 +268,8 @@ PROCEDURE (processor: Processor) IsAttributeName* (localName: Element.String): B
            (localName^ = "version") OR
            (localName^ = "command") OR
            (localName^ = "config-file") OR
-           (localName^ = "flags")
+           (localName^ = "flags") OR
+           (localName^ = "working-dir")
   END IsAttributeName;
 
 PROCEDURE (processor: Processor) AddAttribute* (localName: Element.String;
@@ -282,6 +285,8 @@ PROCEDURE (processor: Processor) AddAttribute* (localName: Element.String;
       RETURN DataType.GetURIAttr (value, processor. baseURI, processor. configFile)
     ELSIF (localName^ = "flags") THEN
       RETURN DataType.GetStringLatin1Attr (value, processor. flags)
+    ELSIF (localName^ = "working-dir") THEN
+      RETURN DataType.GetURIAttr (value, processor. baseURI, processor. workingDir)
     ELSE
       RETURN FALSE
     END
@@ -297,6 +302,7 @@ PROCEDURE (processor: Processor) Write* (writer: Writer.Writer);
       writer. AttrURI ("config-file", processor. configFile, FALSE)
     END;
     writer. AttrStringLatin1 ("flags", processor. flags);
+    writer. AttrURI ("working-dir", processor. workingDir, FALSE);
     writer. EndTag
   END Write;
 

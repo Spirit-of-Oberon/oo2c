@@ -1,7 +1,8 @@
 MODULE OOC:TestFramework:Testcases;
 
 IMPORT
-  Ch := Channel, URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
+  Ch := Channel, Strings, ADT:String,
+  URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
   XML:Basic:Parser, XML:Basic:DataType, XML:Writer;
 
 
@@ -31,33 +32,34 @@ CONST
   relevanceInformal* = 1;
   
 TYPE
-  Test = POINTER TO TestDesc;
+  Test* = POINTER TO TestDesc;
   TestDesc = RECORD
     (InlineTextDesc)
-    baseURI: URI.URI;
-    id: ARRAY 64 OF CHAR;
-    type: SHORTINT;
-    relevance: SHORTINT;
-    file: URI.URI;
-    lang: Element.String;
-    output: URI.URI;
+    baseURI-: URI.URI;
+    id-: ARRAY 64 OF CHAR;
+    type-: SHORTINT;
+    relevance-: SHORTINT;
+    file-: URI.URI;
+    lang-: Element.String;
+    output-: URI.URI;
+    moduleName: String.String;
   END;
 
 TYPE
-  Testcases = POINTER TO TestcasesDesc;
+  Testcases* = POINTER TO TestcasesDesc;
   TestcasesDesc = RECORD
     (Element.ElementDesc)
-    profile: Element.String;             (* may be NIL *)
-    defaultLang: Element.String;
-    tests: Element.List;                 (* may be empty *)
+    profile-: Element.String;            (* may be NIL *)
+    defaultLang-: Element.String;
+    tests-: Element.List;                (* may be empty *)
   END;
 
 TYPE
   TestSuite* = POINTER TO TestSuiteDesc;
   TestSuiteDesc = RECORD
     (Element.ElementDesc)
-    profile: Element.String;             (* may be NIL *)
-    testcasesList: Element.List;         (* at least one element *)
+    profile-: Element.String;            (* may be NIL *)
+    testcasesList-: Element.List;        (* at least one element *)
   END;
 
 
@@ -172,6 +174,7 @@ PROCEDURE InitTest (test: Test);
     test. file := NIL;
     test. lang := NIL;
     test. output := NIL;
+    test. moduleName := NIL;
   END InitTest;
 
 PROCEDURE NewTest(): Element.Element;
@@ -241,6 +244,14 @@ PROCEDURE (test: Test) AddAttribute* (localName: Element.String;
     END
   END AddAttribute;
   
+PROCEDURE (test: Test) MissingAttribute* (): Element.String;
+  BEGIN
+    IF (test. type = testRun) & (test. output # NIL) THEN
+      test. type := testOutput
+    END;
+    RETURN NIL
+  END MissingAttribute;
+
 PROCEDURE (test: Test) MissingChild* (): Element.String;
   VAR
     elem: Element.Element;
@@ -256,6 +267,35 @@ PROCEDURE (test: Test) MissingChild* (): Element.String;
     END;
     RETURN NIL
   END MissingChild;
+
+PROCEDURE (test: Test) ModuleName* (): String.String;
+  VAR
+    path: ARRAY 1024 OF CHAR;
+    i: INTEGER;
+  BEGIN
+    IF (test. moduleName = NIL) THEN
+      test. file. GetString (path);
+      
+      (* remove extension, if one exists *)
+      i := Strings.Length (path);
+      WHILE (path[i] # ".") & (path[i] # "/") DO
+        DEC (i)
+      END;
+      IF (path[i] = ".") THEN
+        Strings.Delete (path, i, Strings.Length (path)-i)
+      END;
+      
+      (* remove all but last path component *)
+      i := Strings.Length (path);
+      WHILE (path[i] # "/") DO
+        DEC (i)
+      END;
+      Strings.Delete (path, 0, i+1);
+      
+      test. moduleName := String.New (path)
+    END;
+    RETURN test. moduleName
+  END ModuleName;
 
 PROCEDURE (test: Test) Write* (writer: Writer.Writer);
   VAR
