@@ -17,7 +17,8 @@
   select ="prepare_out_module
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
-  function1 function2">
+  function1 function2
+  constfold1 constfold2 constfold3 constfold4">
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="src/Out.Mod">
@@ -43,9 +44,30 @@
       Another very simple function: The input parameter is used as the
       function's return value, without any transformation.
     </test>
+
+    <test id="constfold1" type="run"
+      file="ConstFold1.Mod" output="ConstFold1.Ref">
+      Simple function involving a constant but no operators.
+    </test>
+
+    <test id="constfold2" type="run"
+      file="ConstFold2.Mod" output="ConstFold2.Ref">
+      A function involving a constant with an operator.
+    </test>
+
+    <test id="constfold3" type="reject" file="ConstFold3.Mod">
+      Incompatible types for operator.
+    </test>
+
+    <test id="constfold4" type="reject" file="ConstFold4.Mod">
+      CONST expression is not constant.
+    </test>
+
   </testcases>
   
   <processor-info processor-name="TestCompile">
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
+    <reject-info id="constfold3" pos="\A%\Z" msg="Invalid type for operator"/>
+    <reject-info id="constfold4" pos="\A%\Z" msg="Expression is not constant"/>
   </processor-info>
 </testsuite-ext>
