@@ -274,6 +274,8 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
       pos: BasicList.Symbol;
       op: Symbol.Id;
       leftString, rightString: StringValue.Type;
+      cmp: LONGINT;
+      res: BOOLEAN;
       
     PROCEDURE SimpleExpr (eval: BOOLEAN; VAR value: Value);
       VAR
@@ -324,10 +326,9 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               NextSym
               
             | Symbol.stringSingle, Symbol.stringDouble: (* string const *)
-              value. value := StringValue.New (sym. str^);
-              Strings.Delete (value. value(StringValue.Value). string^, 0, 1);
-              Strings.Delete (value. value(StringValue.Value). string^, 
-               Strings.Length (value. value(StringValue.Value). string^)-1, 1);
+              value.value := StringValue.New
+                (Object.NewLatin1Region(sym.str^, 1,
+                                        Strings.Length(sym.str^)-1));
               NextSym
               
             | Symbol.lParen:             (* parenthesis *)
@@ -409,20 +410,22 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
           ELSIF (value. value IS StringValue.Value) THEN
             leftString := GetString (value);
             rightString := GetString (right);
+            cmp := leftString.Compare(rightString);
             CASE op OF
-            | Symbol.eql: value. value :=
-                BooleanValue.New (leftString^ = rightString^)
-            | Symbol.neq: value. value :=
-                BooleanValue.New (leftString^ # rightString^)
-            | Symbol.lss: value. value :=
-                BooleanValue.New (leftString^ < rightString^)
-            | Symbol.leq: value. value :=
-                BooleanValue.New (leftString^ <= rightString^)
-            | Symbol.gtr: value. value :=
-                BooleanValue.New (leftString^ > rightString^)
-            | Symbol.geq: value. value :=
-                BooleanValue.New (leftString^ >= rightString^)
-            END
+            | Symbol.eql:
+              res := (cmp = 0);
+            | Symbol.neq:
+              res := (cmp # 0);
+            | Symbol.lss:
+              res := (cmp < 0);
+            | Symbol.leq:
+              res := (cmp <= 0);
+            | Symbol.gtr:
+              res := (cmp > 0);
+            | Symbol.geq:
+              res := (cmp >= 0);
+            END;
+            value.value := BooleanValue.New(res);
           END
         END;
         value. sym := pos

@@ -107,7 +107,7 @@ BEGIN
     makeRules.SetErrOut(StdChannels.stderr);
     ok := TRUE;
     
-    IF (errorStyle. value(StringValue.Value). string^ = "oo2c") THEN
+    IF errorStyle.value(StringValue.Value).string.Equals("oo2c") THEN
       Error.style := Error.styleCharPos;
     END;
     IF buildHTML. value(BooleanValue.Value). boolean THEN

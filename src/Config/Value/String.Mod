@@ -1,34 +1,37 @@
 MODULE Config:Value:String;
 
 IMPORT
-  ConfigValue := Config:Value;
+  Object, ConfigValue := Config:Value;
 
 
 TYPE
-  Type* = ConfigValue.StringPtr;
+  Type* = Object.String8;
   Value* = POINTER TO ValueDesc;
   ValueDesc = RECORD
     (ConfigValue.ValueDesc)
     string-: Type;
   END;
 
-PROCEDURE New* (str: ConfigValue.String): Value;
+PROCEDURE New* (str: Object.String8): Value;
   VAR
     s: Value;
   BEGIN
     NEW (s);
-    s. string := ConfigValue.GetStringPtr (str);
+    s.string := str;
     RETURN s
   END New;
 
 PROCEDURE (v: Value) StringToValue* (str: ConfigValue.String);
   BEGIN
-    v. string := ConfigValue.GetStringPtr (str);
+    v. string := Object.NewLatin1(str);
   END StringToValue;
 
 PROCEDURE (v: Value) ValueToString* (VAR str: ConfigValue.String);
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
-    COPY (v. string^, str)
+    chars := v.string.CharsLatin1();
+    COPY (chars^, str)
   END ValueToString;
 
 PROCEDURE (v: Value) Clone* (): Value;

@@ -99,7 +99,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
     BEGIN
       v := Config.options.GetValue(optionName);
       IF (v # NIL) & (v IS StringValue.Value) THEN
-        RETURN Object.NewLatin1(v(StringValue.Value).string^);
+        RETURN v(StringValue.Value).string;
       ELSE
         RETURN empty;
       END;
@@ -245,7 +245,8 @@ RAISES IO.Error;
       Strings.Append (chars^, str);
     END;
     Strings.Append (" ", str);
-    Strings.Append (CCompiler.libs.value(StringValue.Value).string^, str);
+    chars := CCompiler.libs.value(StringValue.Value).string.CharsLatin1();
+    Strings.Append (chars^, str);
     
     Out.String (str);
     Out.Ln;

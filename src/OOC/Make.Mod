@@ -200,7 +200,7 @@ PROCEDURE (r: Rules) SetForceUpdate*(forceUpdate: BOOLEAN);
     r.forceUpdate := forceUpdate;
   END SetForceUpdate;
 
-PROCEDURE (r: Rules) UsageTracking*(extIdent: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE (r: Rules) UsageTracking*(extIdent: Object.String8): BOOLEAN;
   VAR
     syntaxError: BOOLEAN;
   BEGIN
@@ -747,6 +747,7 @@ RAISES IO.Error;
     uri: URI.URI;
     exit: LONGINT;
     errList: Error.List;
+    chars: Object.CharsLatin1;
 
   PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
     BEGIN
@@ -786,8 +787,8 @@ RAISES IO.Error;
         OSFiles.makedirs (path, OSFiles.defaultMode, res);
         
         (* prefix option and style sheet argument with command name *)
-        Strings.Insert(Config.xsltproc.value(StringValue.Value).string^,
-                       0, str);
+        chars := Config.xsltproc.value(StringValue.Value).string.CharsLatin1();
+        Strings.Insert(chars^, 0, str);
 
         (* append name of XML file *)
         uri := module. GetURI (Rep.modInterfaceDescr, TRUE);

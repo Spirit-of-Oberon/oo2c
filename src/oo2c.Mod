@@ -21,7 +21,7 @@ MODULE oo2c;
 *)
 
 IMPORT
-  StdChannels, Strings, Out, Err, Object, URI, URI:Scheme:File,
+  StdChannels, Out, Err, Object, URI, URI:Scheme:File,
   ADT:StringBuffer, IO, OS:ProcessManagement, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
@@ -150,20 +150,21 @@ RAISES IO.Error;
     module: Rep.Module;
     installObjects: BOOLEAN;
 
-  PROCEDURE InstallDirectory(prefix, path: ARRAY OF CHAR): BOOLEAN;
+  PROCEDURE InstallDirectory(prefix, path: Object.String8): BOOLEAN;
     VAR
-      str: Make.ShellCommand;
+      cmd: Make.ShellCommand;
+      str: STRING;
+      chars: Object.CharsLatin1;
     BEGIN
-      IF (prefix = "") THEN
-        CCompiler.InstallDirectoryCmd(path, str);
-      ELSE
-        COPY(prefix, str);
-        Strings.Append("/", str);
-        Strings.Append(path, str);
-        CCompiler.InstallDirectoryCmd(str, str);
+      IF (prefix.length # 0) THEN
+        str := prefix+"/"+path;
+        path := str(Object.String8);
       END;
-      Logger.ShellCommand(str);
-      RETURN (ProcessManagement.system(str) = 0);
+      chars := path.CharsLatin1();
+      
+      CCompiler.InstallDirectoryCmd(chars^, cmd);
+      Logger.ShellCommand(cmd);
+      RETURN (ProcessManagement.system(cmd) = 0);
     END InstallDirectory;
   
   PROCEDURE InstallLibrary(module: Rep.Module; makeRules: Make.Rules): BOOLEAN;
@@ -204,7 +205,7 @@ RAISES IO.Error;
 
       IF installObjects THEN
         RETURN TRUE;
-      ELSIF InstallDirectory("", CCompiler.libdir.value(StringValue.Value).string^) THEN
+      ELSIF InstallDirectory("", CCompiler.libdir.value(StringValue.Value).string) THEN
         uri := module.GetURI(Rep.modLibrary, TRUE);
         CCompiler.InstallProgramCmd(uri, TRUE, str);
         Logger.ShellCommand(str);
@@ -220,7 +221,7 @@ RAISES IO.Error;
       uri: URI.URI;
       str: Make.ShellCommand;
     BEGIN
-      IF InstallDirectory("", CCompiler.bindir.value(StringValue.Value).string^) THEN
+      IF InstallDirectory("", CCompiler.bindir.value(StringValue.Value).string) THEN
         uri := module.GetURI(Rep.modExecutable, TRUE);
         CCompiler.InstallProgramCmd(uri, FALSE, str);
         Logger.ShellCommand(str);
@@ -297,9 +298,9 @@ RAISES IO.Error;
         dir := string(Object.String8);
 
         chars := dir(Object.String8).CharsLatin1();
-        IF InstallDirectory(CCompiler.oocdir.value(StringValue.Value).string^,
-                            chars^) THEN
-          cmd := StringBuffer.NewLatin1(CCompiler.installData.value(StringValue.Value).string^);
+        IF InstallDirectory(CCompiler.oocdir.value(StringValue.Value).string,
+                            dir(Object.String8)) THEN
+          cmd := StringBuffer.New(CCompiler.installData.value(StringValue.Value).string);
           WHILE (list # end) DO
             cmd.Append(" ");
             cmd.AppendLatin1(sourcePrefix);
@@ -308,8 +309,8 @@ RAISES IO.Error;
           END;
 
           cmd.Append(" ");
-          IF (CCompiler.oocdir.value(StringValue.Value).string^ # "") THEN
-            cmd.AppendLatin1(CCompiler.oocdir.value(StringValue.Value).string^);
+          IF (CCompiler.oocdir.value(StringValue.Value).string.length # 0) THEN
+            cmd.Append(CCompiler.oocdir.value(StringValue.Value).string);
             cmd.Append("/");
           END;
           cmd.Append(dir);
@@ -400,7 +401,7 @@ RAISES IO.Error;
 
     IF ok & install THEN
       Package.WritePackage(pkg,
-                           CCompiler.oocdir.value(StringValue.Value).string^);
+                           CCompiler.oocdir.value(StringValue.Value).string);
     END;
     
     RETURN ok;
@@ -417,7 +418,8 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
       ok: BOOLEAN;
       b: StringBuffer.StringBuffer;
     BEGIN
-      b := StringBuffer.NewLatin1(CCompiler.libdir.value(StringValue.Value).string^);
+      b := StringBuffer.NewLatin1("");
+      b.Append(CCompiler.libdir.value(StringValue.Value).string);
       b.Append("/lib");
       b.Append(library.name);
       b.Append(".la");
@@ -432,7 +434,8 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
       ok: BOOLEAN;
       b: StringBuffer.StringBuffer;
     BEGIN
-      b := StringBuffer.NewLatin1(CCompiler.bindir.value(StringValue.Value).string^);
+      b := StringBuffer.NewLatin1("");
+      b.Append(CCompiler.bindir.value(StringValue.Value).string);
       b.Append("/");
       b.Append(executable.mainModule);
       CCompiler.UninstallProgramCmd(b.ToString(), FALSE, str);
@@ -447,9 +450,9 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
       b: StringBuffer.StringBuffer;
     BEGIN
       WHILE (list # NIL) DO
-        b := StringBuffer.NewLatin1(CCompiler.uninstall.value(StringValue.Value).string^);
+        b := StringBuffer.New(CCompiler.uninstall.value(StringValue.Value).string);
         b.Append(" ");
-        b.AppendLatin1(CCompiler.oocdir.value(StringValue.Value).string^);
+        b.Append(CCompiler.oocdir.value(StringValue.Value).string);
         b.Append("/");
         b.Append(list(Package.File).destName);
 
@@ -467,8 +470,8 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
     BEGIN
       Package.RemovePkgInfoCmd
           (pkg,
-           CCompiler.oocdir.value(StringValue.Value).string^,
-           CCompiler.uninstall.value(StringValue.Value).string^,
+           CCompiler.oocdir.value(StringValue.Value).string,
+           CCompiler.uninstall.value(StringValue.Value).string,
            cmd);
         Logger.ShellCommand(cmd);
         ok := (ProcessManagement.system(cmd) = 0);
@@ -574,7 +577,7 @@ BEGIN  <*Warnings:=FALSE*>
     makeRules.SetErrOut(StdChannels.stderr);
   END;
   makeRules.SetForceUpdate(forceUpdate.value(Boolean.Value).boolean);
-  ok := makeRules.UsageTracking(listUses.value(StringValue.Value).string^);
+  ok := makeRules.UsageTracking(listUses.value(StringValue.Value).string);
   IF ~ok THEN
     Err.String ("Error: Invalid selector string for `--uses'");
     Err.Ln;
@@ -604,9 +607,9 @@ BEGIN  <*Warnings:=FALSE*>
   | 9:
     mode := listPackages; Logger.silence := TRUE;
   END;
-  IF (errorStyle.value(StringValue.Value).string^ = "file:line:column") THEN
+  IF errorStyle.value(StringValue.Value).string.Equals("file:line:column") THEN
     Error.style := Error.styleFileLineColumn;
-  ELSIF (errorStyle.value(StringValue.Value).string^ = "char-pos") THEN
+  ELSIF errorStyle.value(StringValue.Value).string.Equals("char-pos") THEN
     Error.style := Error.styleCharPos;
   END;
   
@@ -630,10 +633,10 @@ BEGIN  <*Warnings:=FALSE*>
     ok := TRUE;
 
     IF (mode = updateRepository) THEN
-      ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string^);
+      ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string);
 
     ELSIF (mode = listPackages) THEN
-      r := Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string^, errList);
+      r := Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string, errList);
       errList.Write(StdChannels.stderr);
       FOR i := 0 TO r.installedPkgs.size-1 DO
         Out.Object(r.installedPkgs.array[i]); Out.Ln;
@@ -659,7 +662,7 @@ BEGIN  <*Warnings:=FALSE*>
             HALT (1)
           ELSE
             IF doInstall THEN
-              pkgInfo := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg, errList);
+              pkgInfo := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string, arg, errList);
               IF (pkgInfo # NIL) & (errList.msgCount = 0) THEN
                 UninstallPackage(pkgInfo);
               END;
@@ -669,7 +672,7 @@ BEGIN  <*Warnings:=FALSE*>
           END;
           
         | uninstallPackage:
-          pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg, errList);
+          pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string, arg, errList);
           IF (errList.msgCount # 0) THEN
             errList.Write(StdChannels.stdout);
           END;
@@ -689,7 +692,7 @@ BEGIN  <*Warnings:=FALSE*>
           IF (option = NIL) THEN
             Out.String("(none)");
           ELSE
-            Out.String(option.value(StringValue.Value).string^);
+            Out.Object(option.value(StringValue.Value).string);
           END;
           Out.Ln;
           
@@ -705,7 +708,7 @@ BEGIN  <*Warnings:=FALSE*>
           END;
           
         | packageInstalled:
-          r := Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string^, errList);
+          r := Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string, errList);
           errList.Write(StdChannels.stderr);
           IF r.PackageInstalled(arg) THEN
             HALT(0);
@@ -725,7 +728,7 @@ BEGIN  <*Warnings:=FALSE*>
       END;
 
       IF ok & forceUpdateRepository THEN
-        ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string^);
+        ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string);
       END;
     END;
     

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Config:CCompiler;
 (*  Generates command lines for the C compiler and linker.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -32,20 +32,29 @@ VAR
 
 PROCEDURE HaveLibtool*(): BOOLEAN;
   BEGIN
-    RETURN (libtool.value(StringValue.Value).string^ # "no");
+    RETURN ~libtool.value(StringValue.Value).string.Equals("no");
   END HaveLibtool;
+
+PROCEDURE Append(str: Object.String8; VAR cmd: ARRAY OF CHAR);
+  VAR
+    chars: Object.CharsLatin1;
+  BEGIN
+    chars := str.CharsLatin1();
+    Strings.Append(chars^, cmd);
+  END Append;
 
 PROCEDURE SetCommand(mode: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);
   BEGIN
     IF (mode # "") & HaveLibtool() THEN
-      COPY (libtool. value(StringValue.Value). string^, cmd);
+      COPY("", cmd);
+      Append(libtool. value(StringValue.Value). string, cmd);
       Strings.Append (" --mode=", cmd);
       Strings.Append (mode, cmd);
       Strings.Append (" ", cmd);
     ELSE
       COPY("", cmd);
     END;
-    Strings.Append (cc. value(StringValue.Value). string^, cmd);
+    Append (cc. value(StringValue.Value). string, cmd);
     Strings.Append (" ", cmd);
   END SetCommand;
 
@@ -78,9 +87,9 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
     ELSE
       SetCommand("", cmd);
     END;
-    Strings.Append (cflags. value(StringValue.Value). string^, cmd);
+    Append (cflags. value(StringValue.Value). string, cmd);
     Strings.Append (" ", cmd);
-    Strings.Append (cppflags. value(StringValue.Value). string^, cmd);
+    Append (cppflags. value(StringValue.Value). string, cmd);
     
     (* Add include path for the run-time header files.  In theory, this include
        directory should have the highest priority, but _only_ for run-time
@@ -118,15 +127,16 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
     Strings.Append (str, cmd);
     IF forLibrary & HaveLibtool() THEN
       Strings.Append (" -rpath ", cmd);
-      Strings.Append (libdir. value(StringValue.Value). string^, cmd);
+      Append (libdir. value(StringValue.Value). string, cmd);
     END;
     Strings.Append (" ", cmd);
-    Strings.Append (ldflags. value(StringValue.Value). string^, cmd);
+    Append (ldflags. value(StringValue.Value). string, cmd);
   END LinkProgramCmd;
 
 PROCEDURE InstallDirectoryCmd*(path: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);
   BEGIN
-    COPY(install.value(StringValue.Value).string^, cmd);
+    COPY("", cmd);
+    Append(install.value(StringValue.Value).string, cmd);
     Strings.Append(" -d ", cmd);
     Strings.Append(path, cmd);
   END InstallDirectoryCmd;
@@ -136,22 +146,21 @@ PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN
+    COPY("", cmd);
     IF HaveLibtool() THEN
-      COPY (libtool.value(StringValue.Value).string^, cmd);
+      Append(libtool.value(StringValue.Value).string, cmd);
       Strings.Append(" --mode=install ", cmd);
-    ELSE
-      COPY("", cmd);
     END;
     
-    Strings.Append(installProgram.value(StringValue.Value).string^, cmd);
+    Append(installProgram.value(StringValue.Value).string, cmd);
     Strings.Append(" ", cmd);
     file(File.URI).GetPath(str);
     Strings.Append(str, cmd);
     Strings.Append(" ", cmd);
     IF asLibrary THEN
-      Strings.Append (libdir.value(StringValue.Value).string^, cmd);
+      Append (libdir.value(StringValue.Value).string, cmd);
     ELSE
-      Strings.Append (bindir.value(StringValue.Value).string^, cmd);
+      Append (bindir.value(StringValue.Value).string, cmd);
     END;
   END InstallProgramCmd;
 
@@ -160,14 +169,13 @@ PROCEDURE UninstallProgramCmd*(path: STRING; asLibrary: BOOLEAN;
   VAR
     chars: Object.CharsLatin1;
   BEGIN
+    COPY("", cmd);
     IF HaveLibtool() THEN
-      COPY (libtool.value(StringValue.Value).string^, cmd);
+      Append(libtool.value(StringValue.Value).string, cmd);
       Strings.Append(" --mode=uninstall ", cmd);
-    ELSE
-      COPY("", cmd);
     END;
     
-    Strings.Append(uninstall.value(StringValue.Value).string^, cmd);
+    Append(uninstall.value(StringValue.Value).string, cmd);
     Strings.Append(" ", cmd);
     chars := path(Object.String8).CharsLatin1();
     Strings.Append(chars^, cmd);

@@ -1,7 +1,7 @@
 MODULE Config:Parser;
 
 IMPORT
-  IO, LongStrings,
+  Object, IO, LongStrings,
   XML:EntityResolver, XMLBuilder := XML:Builder, XML:DTD, XML:Error,
   Locator := XML:Locator, XMLParser := XML:Parser,
   <*PUSH; Warnings:=FALSE*>XML:UnicodeCodec:Latin1<*POP*>;
@@ -231,14 +231,16 @@ PROCEDURE (b: Builder) Characters* (VAR chars: DTD.StringVar;
 
 
 
-PROCEDURE NewFile* (filePath: ARRAY OF CHAR): Parser
+PROCEDURE NewFile* (filePath: Object.String8): Parser
 RAISES IO.Error;
   VAR
     p: Parser;
+    chars: Object.CharsLatin1;
   BEGIN
     NEW (p);
     p. builder := NewBuilder();
-    p. xmlParser := XMLParser.NewFile (filePath, NIL, NIL, NIL,
+    chars := filePath.CharsLatin1();
+    p. xmlParser := XMLParser.NewFile (chars^, NIL, NIL, NIL,
                                        p. builder);
     RETURN p
   END NewFile;

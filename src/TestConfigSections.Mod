@@ -1,7 +1,7 @@
 MODULE TestConfigSections;
 
 IMPORT
-  ProgramArgs, StdChannels, TextRider, Out, Msg,
+  Object, ProgramArgs, StdChannels, TextRider, Out, Msg,
   XMLBuilder := XML:Builder, XML:DTD, Config:Value, Config:Parser,
   
   Config:Section,
@@ -82,7 +82,7 @@ BEGIN  <*Warnings:=FALSE*>
     argReader. ReadLine (arg);           (* skip command name *)
     argReader. ReadLine (configFile);
     
-    p := Parser.NewFile (configFile);
+    p := Parser.NewFile(Object.NewLatin1(configFile));
     ASSERT (res = NIL);
     p. ParseDocument;
     

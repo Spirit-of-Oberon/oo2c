@@ -19,7 +19,7 @@ MODULE Config:Source:CmdLine;
 *)
 
 IMPORT
-  CharClass, Strings, LongStrings, Msg, Channel, TextRider,
+  Object, CharClass, Strings, LongStrings, Msg, Channel, TextRider,
   IO, Writer := IO:TextRider,
   Config:Value, Config:Source, Config:Parser;
 
@@ -28,17 +28,17 @@ CONST
 
 TYPE
   OptionTemplate* = POINTER TO OptionTemplateDesc;
-  NameArray = POINTER TO ARRAY OF Value.StringPtr;
+  NameArray = POINTER TO ARRAY OF Object.String8;
   OptionTemplateDesc = RECORD
     next: OptionTemplate;
     names: NameArray;
     argNumber: LONGINT;
-    pattern: Value.StringPtr;
+    pattern: Object.String8;
   END;
 
 TYPE
   Command*= POINTER TO CommandDesc;
-  ArgList = POINTER TO ARRAY OF Value.StringPtr;
+  ArgList = POINTER TO ARRAY OF Object.String8;
   CommandDesc = RECORD
     (**A command corresponds to a single command line option and its arguments.
        It is converted into an XML text fragment, which describes the result
@@ -148,22 +148,26 @@ PROCEDURE ErrorReason (code: Msg.Code; reason: Msg.Msg): Msg.Msg;
     RETURN err
   END ErrorReason;
 
-PROCEDURE ErrorString (code: Msg.Code; string: Value.String): Msg.Msg;
+PROCEDURE ErrorString (code: Msg.Code; string: Object.String8): Msg.Msg;
   VAR
     err: Msg.Msg;
+    chars: Object.CharsLatin1;
   BEGIN
     err := Msg.New (cmdLineContext, code);
-    err. SetStringAttrib ("string", Msg.GetStringPtr (string));
+    chars := string.CharsLatin1();
+    err. SetStringAttrib ("string", Msg.GetStringPtr (chars^));
     RETURN err
   END ErrorString;
 
-PROCEDURE ErrorStringNum (code: Msg.Code; string: Value.String;
+PROCEDURE ErrorStringNum (code: Msg.Code; string: Object.String8;
                           number: LONGINT): Msg.Msg;
   VAR
     err: Msg.Msg;
+    chars: Object.CharsLatin1;
   BEGIN
     err := Msg.New (cmdLineContext, code);
-    err. SetStringAttrib ("string", Msg.GetStringPtr (string));
+    chars := string.CharsLatin1();
+    err. SetStringAttrib ("string", Msg.GetStringPtr (chars^));
     err. SetIntAttrib ("number", number);
     RETURN err
   END ErrorStringNum;
@@ -261,7 +265,7 @@ PROCEDURE (cmdLine: CmdLine) AddOptionTemplate* (names: ARRAY OF CHAR;
     opt. next := NIL;
     opt. names := NIL;
     opt. argNumber := 0;
-    opt. pattern := Value.GetStringPtr (transformation);
+    opt. pattern := Object.NewLatin1(transformation);
     
     (* find out how many parameters follow this option on the command line *)
     i := 0;
@@ -297,11 +301,11 @@ PROCEDURE (cmdLine: CmdLine) AddOptionTemplate* (names: ARRAY OF CHAR;
         INC (i)
       END;
       IF (names[i] = 0X) THEN
-        nameArray[num] := Value.GetStringPtr (names);
+        nameArray[num] := Object.NewLatin1(names);
         names[0] := 0X
       ELSE
         names[i] := 0X;
-        nameArray[num] := Value.GetStringPtr (names);
+        nameArray[num] := Object.NewLatin1(names);
         names[i] := ",";
         Strings.Delete (names, 0, i+1)
       END;
@@ -386,7 +390,8 @@ PROCEDURE (cmdLine: CmdLine) Parse* (ch: Channel.Channel): Msg.Msg;
     argString: ARRAY maxLenArgument OF CHAR;
     numArgs, i, j, restArg: LONGINT;
     argList: ArgList;
-    arg: Value.StringPtr;
+    arg, singleOption: Object.String8;
+    chars: Object.CharsLatin1;
     cmd: OptionTemplate;
     singleCharCmd: ARRAY 3 OF CHAR;
   
@@ -405,13 +410,12 @@ PROCEDURE (cmdLine: CmdLine) Parse* (ch: Channel.Channel): Msg.Msg;
         END;
         argList := newList
       END;
-      
-      NEW (argList[numArgs], Strings.Length (arg)+1);
-      COPY (arg, argList[numArgs]^);
+
+      argList[numArgs] := Object.NewLatin1(arg);
       INC (numArgs)
     END Append;
   
-  PROCEDURE FindOptionTemplate (VAR name: Value.String): OptionTemplate;
+  PROCEDURE FindOptionTemplate (name: Object.String8): OptionTemplate;
     VAR
       o: OptionTemplate;
       i: LONGINT;
@@ -419,7 +423,7 @@ PROCEDURE (cmdLine: CmdLine) Parse* (ch: Channel.Channel): Msg.Msg;
       o := cmdLine. optionTemplates;
       WHILE (o # NIL) DO
         FOR i := 0 TO LEN (o. names^)-1 DO
-          IF (o. names[i]^ = name) THEN
+          IF o.names[i].Equals(name) THEN
             RETURN o
           END
         END;
@@ -428,7 +432,7 @@ PROCEDURE (cmdLine: CmdLine) Parse* (ch: Channel.Channel): Msg.Msg;
       RETURN NIL
     END FindOptionTemplate;
   
-  PROCEDURE EvalOption (argString: Value.String;
+  PROCEDURE EvalOption (argString: Object.String8;
                         cmd: OptionTemplate; VAR optIndex: LONGINT): Msg.Msg;
     VAR
       i: LONGINT;
@@ -491,37 +495,39 @@ PROCEDURE (cmdLine: CmdLine) Parse* (ch: Channel.Channel): Msg.Msg;
       arg := argList[i];
       
       (* first try to find a perfect match with one command line option *)
-      cmd := FindOptionTemplate (arg^);
+      cmd := FindOptionTemplate (arg);
       IF (cmd # NIL) THEN
-        msg := EvalOption (arg^, cmd, i);
+        msg := EvalOption (arg, cmd, i);
         IF (msg # NIL) THEN
           RETURN msg
         END
-      ELSIF cmdLine. enableDashDash & (arg^ = "--") THEN  (* end of options *)
+      ELSIF cmdLine. enableDashDash & arg.Equals("--") THEN  (* end of options *)
         restArg := i+1
-      ELSIF cmdLine. expandToSingleChar & (arg[0] = "-") & (arg[1] # "-") THEN
+      ELSIF cmdLine. expandToSingleChar & (arg.CharAt(0) = "-") & (arg.CharAt(1) # "-") THEN
         (* interpret argument as multiple single character options without 
            any following parameters *)
         singleCharCmd := "-?";
+        chars := arg.CharsLatin1();
         j := 1;
-        WHILE (arg[j] # 0X) DO
-          singleCharCmd[1] := arg[j];
-          cmd := FindOptionTemplate (singleCharCmd);
+        WHILE (chars[j] # 0X) DO
+          singleCharCmd[1] := chars[j];
+          singleOption := Object.NewLatin1(singleCharCmd);
+          cmd := FindOptionTemplate(singleOption);
           IF (cmd = NIL) THEN
-            RETURN ErrorString (unknownOption, singleCharCmd)
+            RETURN ErrorString (unknownOption, singleOption)
           ELSIF (cmd. argNumber # 0) THEN
-            RETURN ErrorStringNum (singleCharWithArgs, singleCharCmd,
+            RETURN ErrorStringNum (singleCharWithArgs, singleOption,
                                    cmd. argNumber)
           ELSE
-            msg := EvalOption (singleCharCmd, cmd, i);
+            msg := EvalOption (singleOption, cmd, i);
             IF (msg # NIL) THEN
               RETURN msg
             END
           END;
           INC (j)
         END
-      ELSIF cmdLine. optionsStartWithDash & (arg[0] = "-") THEN
-        RETURN ErrorString (unknownOption, arg^)
+      ELSIF cmdLine. optionsStartWithDash & (arg.CharAt(0) = "-") THEN
+        RETURN ErrorString (unknownOption, arg)
       ELSE  (* unknown option: probably end of list *)
         restArg := i
       END;
@@ -593,25 +599,28 @@ RAISES IO.Error;
     w: Writer.Writer;
     i, j: LONGINT;
     command: Command;
-    pattern: Value.StringPtr;
+    pattern: Object.String8;
+    chars: Object.CharsLatin1;
     root8: ARRAY 1024 OF CHAR;
     
-  PROCEDURE WriteQuoted (w: Writer.Writer; VAR str: ARRAY OF CHAR);
+  PROCEDURE WriteQuoted (w: Writer.Writer; str: Object.String8);
     VAR
       s, e, last: LONGINT;
+      chars: Object.CharsLatin1;
     BEGIN
+      chars := str.CharsLatin1();
       s := 0;
-      e := Strings.Length (str);
+      e := str.length;
       WHILE (s # e) DO
         last := s;
-        WHILE (s # e) & (str[s] # "&") &
-              (str[s] # "<") & (str[s] # ">") &
-              (str[s] # "'") & (str[s] # '"') DO
+        WHILE (s # e) & (chars[s] # "&") &
+              (chars[s] # "<") & (chars[s] # ">") &
+              (chars[s] # "'") & (chars[s] # '"') DO
           INC (s)
         END;
-        w. WriteStringRegion (str, last, s);
+        w. WriteStringRegion (chars^, last, s);
         IF (s # e) THEN
-          CASE str[s] OF
+          CASE chars[s] OF
           | "&": w. WriteString ("&amp;")
           | "<": w. WriteString ("&lt;")
           | ">": w. WriteString ("&gt;")
@@ -641,24 +650,25 @@ RAISES IO.Error;
     WHILE (command # NIL) DO
       IF ~command. doNotWrite THEN
         pattern := command. template. pattern;
+        chars := pattern.CharsLatin1();
         i := 0;
-        WHILE (pattern[i] # 0X) DO
+        WHILE (chars[i] # 0X) DO
           j := i;
-          WHILE (pattern[i] # 0X) & (pattern[i] # "$") DO
+          WHILE (chars[i] # 0X) & (chars[i] # "$") DO
             INC (i)
           END;
 
-          IF (pattern[i] = "$") THEN
-            IF ("1" <= pattern[i+1]) & (pattern[i+1] <= "9") THEN
-              w. WriteStringRegion(pattern^, j, i);
-              WriteQuoted (w, command. argList[ORD (pattern[i+1])-ORD("1")]^);
+          IF (chars[i] = "$") THEN
+            IF ("1" <= chars[i+1]) & (chars[i+1] <= "9") THEN
+              w. WriteStringRegion(chars^, j, i);
+              WriteQuoted (w, command. argList[ORD (chars[i+1])-ORD("1")]);
               INC (i, 2)
             ELSE
               INC (i);
-              w. WriteStringRegion(pattern^, j, i)
+              w. WriteStringRegion(chars^, j, i)
             END
           ELSE
-            w. WriteStringRegion(pattern^, j, i)
+            w. WriteStringRegion(chars^, j, i)
           END
         END;
         w. WriteLn
@@ -671,7 +681,7 @@ RAISES IO.Error;
     IF (cmdLine. argumentList # NIL) THEN
       FOR i := 0 TO LEN (cmdLine. argumentList^)-1 DO
         w. WriteString ("  <arg>");
-        WriteQuoted (w, cmdLine. argumentList[i]^);
+        WriteQuoted (w, cmdLine. argumentList[i]);
         w. WriteString ("</arg>");
         w. WriteLn
       END

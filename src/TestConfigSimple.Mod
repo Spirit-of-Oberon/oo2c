@@ -1,7 +1,7 @@
 MODULE TestConfigSimple;
 
 IMPORT
-  RT0, Out, Err, Msg,
+  RT0, Object, Out, Err, Msg,
   Config:Simple, Config:Source:Environment, Config:Source:CmdLine,
   StringValue := Config:Value:String, Config:Section:Options;
 
@@ -43,7 +43,7 @@ PROCEDURE WriteArgument (i: LONGINT);
 BEGIN
   dummy := RT0.GetEnv ("DEFAULT_CFG_FILE", fileName);
   ASSERT (dummy);
-  config := Simple.New (fileName);
+  config := Simple.New (Object.NewLatin1(fileName));
   
   optionA := config. options. Set ("a", StringValue.New ("default"));
   

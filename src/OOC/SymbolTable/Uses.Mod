@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Uses;
 *)
 
 IMPORT
-  Err, Strings, OOC:Error, Sym := OOC:SymbolTable;
+  Object, Err, Strings, OOC:Error, Sym := OOC:SymbolTable;
   
 TYPE
   Uses* = POINTER TO UsesDesc;
@@ -84,13 +84,14 @@ PROCEDURE InitUses(u: Uses; selector: Selector);
     NEW(u.storedUses, 8);
   END InitUses;
 
-PROCEDURE New*(extIdent: ARRAY OF CHAR; VAR syntaxError: BOOLEAN): Uses;
+PROCEDURE New*(extIdent: Object.String8; VAR syntaxError: BOOLEAN): Uses;
 (**If @oparam{extIdent} is the empty string, then no usage tracking of a
    particular declaration is done.  In this case, this module only implements
    warnings for using occurences of deprecated declarations.  *)
   VAR
     u: Uses;
     selector: Selector;
+    chars: Object.CharsLatin1;
 
   PROCEDURE GetName(str: ARRAY OF CHAR): Sym.Name;
     VAR
@@ -149,11 +150,12 @@ PROCEDURE New*(extIdent: ARRAY OF CHAR; VAR syntaxError: BOOLEAN): Uses;
     END ParseIdent;
   
   BEGIN
-    IF (extIdent = "") THEN
+    IF (extIdent.length = 0) THEN
       selector := NIL;
       syntaxError := FALSE;
     ELSE
-      selector := ParseIdent(extIdent);
+      chars := extIdent.CharsLatin1();
+      selector := ParseIdent(chars^);
       syntaxError := (selector = NIL);
     END;
     

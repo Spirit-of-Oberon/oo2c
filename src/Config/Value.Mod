@@ -1,13 +1,12 @@
 MODULE Config:Value [OOC_EXTENSIONS];
 
 IMPORT
-  Exception, Object, Strings, ADT:Dictionary;
+  Exception, Object, ADT:Dictionary;
 
 
 TYPE
   Char* = CHAR;
   String* = ARRAY OF Char;
-  StringPtr* = POINTER TO String;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -36,15 +35,6 @@ PROCEDURE (v: Value) [ABSTRACT] Clone* (): Value;
 
 PROCEDURE (v: Value) [ABSTRACT] DefiningModule* (VAR str: String);
   END DefiningModule;
-
-PROCEDURE GetStringPtr* (VAR str: String): StringPtr;
-  VAR
-    s: StringPtr;
-  BEGIN
-    NEW (s, Strings.Length (str)+1);
-    COPY (str, s^);
-    RETURN s
-  END GetStringPtr;
 
 
 PROCEDURE SetPrototype*(map: PrototypeMap; name: STRING; prototype: Value);

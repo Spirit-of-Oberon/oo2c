@@ -1,16 +1,16 @@
 MODULE Config:Source:Environment;
 
 IMPORT
-  Msg, Strings, LongStrings, RT0, IO, Writer := IO:TextRider,
-  Config:Value, Config:Source, Config:Parser;
+  Object, Msg, LongStrings, RT0, IO, Writer := IO:TextRider,
+  Config:Source, Config:Parser;
 
 
 TYPE
   VariableTemplate* = POINTER TO VariableTemplateDesc;
   VariableTemplateDesc = RECORD
     next: VariableTemplate;
-    name: Value.StringPtr;
-    pattern: Value.StringPtr;
+    name: Object.String8;
+    pattern: Object.String8;
   END;
 
 TYPE
@@ -24,7 +24,7 @@ TYPE
     template-: VariableTemplate;
     (**Text template, that is used to create the XML fragment.  Any reference
        $1 is replaced with the value from @ofield{argument}.*)
-    argument-: Value.StringPtr;
+    argument-: Object.String8;
     (**Value of the environment variable.  *)
     doNotWrite-: BOOLEAN;
     (**During @oproc{Environment.Write}, do not include the command in the 
@@ -68,8 +68,7 @@ PROCEDURE (command: Command) DoNotWrite*;
   END DoNotWrite;
 
 
-PROCEDURE (env: Environment) AddVariableTemplate* (name: ARRAY OF CHAR;
-                               transformation: Value.String): VariableTemplate;
+PROCEDURE (env: Environment) AddVariableTemplate* (name, transformation: Object.String8): VariableTemplate;
 (**If a variable name is added multiple times, all rules associated with this
    name are evaluated if it appears in the program's environment.  *)
   VAR
@@ -87,8 +86,8 @@ PROCEDURE (env: Environment) AddVariableTemplate* (name: ARRAY OF CHAR;
   BEGIN
     NEW (t);
     t. next := NIL;
-    t. name := Value.GetStringPtr (name);
-    t. pattern := Value.GetStringPtr (transformation);
+    t. name := name;
+    t. pattern := transformation;
     Append (env. variableTemplates);
     RETURN t
   END AddVariableTemplate;
@@ -96,6 +95,7 @@ PROCEDURE (env: Environment) AddVariableTemplate* (name: ARRAY OF CHAR;
 PROCEDURE (env: Environment) Parse*(): Msg.Msg;
   VAR
     t: VariableTemplate;
+    chars: Object.CharsLatin1;
     cmd: Command;
     found: BOOLEAN;
     value: ARRAY 1024 OF CHAR;
@@ -112,12 +112,13 @@ PROCEDURE (env: Environment) Parse*(): Msg.Msg;
   BEGIN
     t := env. variableTemplates;
     WHILE (t # NIL) DO
-      found := RT0.GetEnv (t. name^, value);
+      chars := t.name.CharsLatin1();
+      found := RT0.GetEnv (chars^, value);
       IF found THEN
         NEW (cmd);
         cmd. nextCommand := NIL;
         cmd. template := t;
-        cmd. argument := Value.GetStringPtr (value);
+        cmd. argument := Object.NewLatin1(value);
         cmd. doNotWrite := FALSE;
         Append (env. commandList)
       END;
@@ -132,25 +133,28 @@ PROCEDURE (env: Environment) Write* (ch: IO.ByteChannel;
     w: Writer.Writer;
     i, j: LONGINT;
     command: Command;
-    pattern: Value.StringPtr;
+    pattern: Object.String8;
+    chars: Object.CharsLatin1;
     root8: ARRAY 1024 OF CHAR;
     
-  PROCEDURE WriteQuoted (w: Writer.Writer; VAR str: ARRAY OF CHAR);
+  PROCEDURE WriteQuoted (w: Writer.Writer; str: Object.String8);
     VAR
       s, e, last: LONGINT;
+      chars: Object.CharsLatin1;
     BEGIN
+      chars := str.CharsLatin1();
       s := 0;
-      e := Strings.Length (str);
+      e := str.length;
       WHILE (s # e) DO
         last := s;
-        WHILE (s # e) & (str[s] # "&") &
-              (str[s] # "<") & (str[s] # ">") &
-              (str[s] # "'") & (str[s] # '"') DO
+        WHILE (s # e) & (chars[s] # "&") &
+              (chars[s] # "<") & (chars[s] # ">") &
+              (chars[s] # "'") & (chars[s] # '"') DO
           INC (s)
         END;
-        w. WriteStringRegion (str, last, s);
+        w. WriteStringRegion (chars^, last, s);
         IF (s # e) THEN
-          CASE str[s] OF
+          CASE chars[s] OF
           | "&": w. WriteString ("&amp;")
           | "<": w. WriteString ("&lt;")
           | ">": w. WriteString ("&gt;")
@@ -180,19 +184,20 @@ PROCEDURE (env: Environment) Write* (ch: IO.ByteChannel;
     WHILE (command # NIL) DO
       IF ~command. doNotWrite THEN
         pattern := command. template. pattern;
+        chars := pattern.CharsLatin1();
         i := 0;
-        WHILE (pattern[i] # 0X) DO
+        WHILE (chars[i] # 0X) DO
           j := i;
-          WHILE (pattern[i] # 0X) & (pattern[i] # "$") DO
+          WHILE (chars[i] # 0X) & (chars[i] # "$") DO
             INC (i)
           END;
 
-          IF (pattern[i] = "$") & (pattern[i+1] = "1") THEN
-            w. WriteStringRegion (pattern^, j, i);
-            WriteQuoted (w, command. argument^);
+          IF (chars[i] = "$") & (chars[i+1] = "1") THEN
+            w. WriteStringRegion (chars^, j, i);
+            WriteQuoted (w, command. argument);
             INC (i, 2)
           ELSE
-            w. WriteStringRegion (pattern^, j, i)
+            w. WriteStringRegion (chars^, j, i)
           END
         END;
         w. WriteLn

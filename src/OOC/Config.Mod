@@ -3,7 +3,7 @@ MODULE OOC:Config;
 IMPORT
   RT0, Msg, IO, Config:Value, Config:Value:String, Config:Source:CmdLine,
   Config:Section:Options, Config:Section:Arguments, Config:Simple,
-  OOC:Config:Pragmas, OOC:Config:StdPragmas, OOC:Config:Autoconf,
+  Object, OOC:Config:Pragmas, OOC:Config:StdPragmas, OOC:Config:Autoconf,
   OOC:Config:Repositories,
   <*PUSH; Warnings:=FALSE*>OOC:Config:FileSystem<*POP*>;
 
@@ -42,7 +42,7 @@ PROCEDURE AddCmdLine* (options, template: ARRAY OF CHAR);
     ot := cmdLine. AddOptionTemplate (options, template);
   END AddCmdLine;
 
-PROCEDURE InitConfig (defaultConfigFile: ARRAY OF CHAR);
+PROCEDURE InitConfig (defaultConfigFile: Object.String8);
   VAR
     configFile: Options.Option;
   BEGIN
@@ -76,7 +76,7 @@ PROCEDURE Read* (errList: Msg.MsgList) RAISES IO.Error;
 
 PROCEDURE HaveXsltProc*(): BOOLEAN;
   BEGIN
-    RETURN (xsltproc.value(String.Value).string^ # "no");
+    RETURN ~xsltproc.value(String.Value).string.Equals("no");
   END HaveXsltProc;
 
 BEGIN

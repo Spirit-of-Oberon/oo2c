@@ -30,10 +30,8 @@ VAR
 PROCEDURE OptionToMatcher (option: Options.Option; cmdLineName: ARRAY OF CHAR): StringSearch.Matcher;
   VAR
     matcher: StringSearch.Matcher;
-    str: Object.String8;
   BEGIN
-    str := Object.NewLatin1 (option. value(StringValue.Value). string^);
-    matcher := RegexpDFA.factory. Compile (str, {});
+    matcher := RegexpDFA.factory.Compile(option.value(StringValue.Value).string, {});
     IF (matcher = NIL) THEN
       Err.String ("Warning: Cannot parse regular expression in ");
       Err.String (cmdLineName);
@@ -95,9 +93,9 @@ BEGIN
   ELSE
     mode := Rep.modCodeFileC
   END;
-  IF (errorStyle.value(StringValue.Value).string^ = "file:line:column") THEN
+  IF errorStyle.value(StringValue.Value).string.Equals("file:line:column") THEN
     Error.style := Error.styleFileLineColumn;
-  ELSIF (errorStyle.value(StringValue.Value).string^ = "char-pos") THEN
+  ELSIF errorStyle.value(StringValue.Value).string.Equals("char-pos") THEN
     Error.style := Error.styleCharPos;
   END;
   
