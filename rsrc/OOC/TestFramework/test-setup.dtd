@@ -33,7 +33,8 @@
           config-file %URI; #IMPLIED
           flags CDATA #REQUIRED 
           working-dir CDATA #REQUIRED
-          filter-command CDATA #IMPLIED >
+          filter-command CDATA #IMPLIED
+          diff-command CDATA #IMPLIED >
 
 <!ELEMENT test-suite EMPTY >
 <!ATTLIST test-suite

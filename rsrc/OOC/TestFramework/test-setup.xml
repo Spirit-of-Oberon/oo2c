@@ -19,7 +19,8 @@
 	     config-file="./sample-oo2crc"
 	     flags="-Ow"
 	     working-dir="/tmp/ooc-tests" 
-	     filter-command="/usr/bin/Ooef" />
+	     filter-command="/usr/bin/Ooef" 
+	     diff-command="diff -u" />
 
   <test-suite uri="testsuite.xml" />
 </test-setup>

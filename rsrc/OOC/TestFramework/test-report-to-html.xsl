@@ -257,6 +257,11 @@
 	  <a href="{@filtered}">filtered</a>
 	  <xsl:text>]</xsl:text>
 	</xsl:if>
+	<xsl:if test="@diff">
+	  <xsl:text> [</xsl:text>
+	  <a href="{@diff}">diff</a>
+	  <xsl:text>]</xsl:text>
+	</xsl:if>
       </li>
     </xsl:if>
   </xsl:template>
