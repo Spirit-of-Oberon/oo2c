@@ -62,7 +62,7 @@ PROCEDURE getcwd* (VAR buffer: Path; VAR res: Result);
 
 PROCEDURE getdcwd* (drive : C.int; VAR buffer: Path; VAR res: Result);
 (**Returns a string representing the current working directory on the
-indicated drive (0=current, 1=A, 2=B, etc).  *)
+indicated drive (0=current, 1=A, 2=B, etc).  Availability: Windows.  *)
 
 <* END *>
 
