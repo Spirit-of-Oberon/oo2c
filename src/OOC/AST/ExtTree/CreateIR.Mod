@@ -218,6 +218,13 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
                                   Expr (repeatStatm. expr));
       END RepeatStatm;
   
+    PROCEDURE WhileStatm (whileStatm: ExtTree.WhileStatm): IR.Statement;
+      BEGIN
+        RETURN b. NewWhileStatm (whileStatm. while. sym,
+                                 Expr (whileStatm. guard),
+                                 StatementSeq (whileStatm. statmSeq));
+      END WhileStatm;
+  
     BEGIN
       (* count number of statements, allocate array to hold IR of sequence *)
       count := 0;
@@ -247,6 +254,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
 
           | n: ExtTree.RepeatStatm DO
             statm := RepeatStatm (n)
+              
+          | n: ExtTree.WhileStatm DO
+            statm := WhileStatm (n)
               
           ELSE
             Log.Type("++ Unknown type in StatementSeq", n);

@@ -368,11 +368,11 @@ TYPE
   WhileStatm* = POINTER TO WhileStatmDesc;
   WhileStatmDesc = RECORD
     (NodeDesc)
-    while-: AST.Node;
-    guard-: AST.Node;
-    do-: AST.Node;
-    statmSeq-: AST.NodeList;
-    end-: AST.Node;
+    while-: Terminal;
+    guard-: Node;
+    do-: Terminal;
+    statmSeq-: NodeList;
+    end-: Terminal;
   END;
 
 TYPE
@@ -1309,11 +1309,11 @@ PROCEDURE (b: Builder) WhileStatm* (while, guard, do: AST.Node; statmSeq: AST.No
     w: WhileStatm;
   BEGIN
     NEW (w);
-    w. while := while;
-    w. guard := guard;
-    w. do := do;
-    w. statmSeq := statmSeq;
-    w. end := end;
+    w. while := while(Terminal);
+    w. guard := guard(Node);
+    w. do := do(Terminal);
+    w. statmSeq := statmSeq(NodeList);
+    w. end := end(Terminal);
     RETURN w
   END WhileStatm;
 

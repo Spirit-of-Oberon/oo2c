@@ -198,6 +198,18 @@ PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: IR.RepeatStatm);
     v. w. EndTag;  (* repeat-statm *)
   END VisitRepeatStatm;
 
+PROCEDURE (v: Visitor) VisitWhileStatm* (whileStatm: IR.WhileStatm);
+  BEGIN
+    v. w. StartTag ("while-statm", FALSE);
+    v. w. StartTag ("guard", FALSE);
+    whileStatm. guard. Accept (v);
+    v. w. EndTag;  (* guard *)
+    v. w. StartTag ("body", FALSE);
+    VisitStatementSeq (v, whileStatm. body);
+    v. w. EndTag;  (* body *)
+    v. w. EndTag;  (* while-statm *)
+  END VisitWhileStatm;
+
 
 PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);
   VAR

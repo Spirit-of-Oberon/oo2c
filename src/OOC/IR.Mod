@@ -216,7 +216,7 @@ TYPE
        a procedure.  *)
   END;
 
- TYPE
+TYPE
   IfStatm* = POINTER TO IfStatmDesc;
   IfStatmDesc = RECORD
     (**Holds an @code{IF-ELSE-END} statement.  If there is no @code{ELSE}, then
@@ -228,13 +228,22 @@ TYPE
     pathFalse-: StatementSeq;  (* NIL if the IF statement has no ELSE *)
   END;
   
- TYPE
+TYPE
   RepeatStatm* = POINTER TO RepeatStatmDesc;
   RepeatStatmDesc = RECORD
     (**Holds an @code{REPEAT-UNTIL} statement.  *)
     (StatementDesc)
     body-: StatementSeq;
     exitCondition-: Expression;
+  END;
+  
+TYPE
+  WhileStatm* = POINTER TO WhileStatmDesc;
+  WhileStatmDesc = RECORD
+    (**Holds an @code{WHILE-DO} statement.  *)
+    (StatementDesc)
+    guard-: Expression;
+    body-: StatementSeq;
   END;
   
 (* Modules and Procedures
@@ -749,6 +758,34 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitRepeatStatm* (repeatStatm: RepeatStatm);
 PROCEDURE (repeatStatm: RepeatStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitRepeatStatm (repeatStatm)
+  END Accept;
+
+(* -------- *)
+
+PROCEDURE InitWhileStatm (whileStatm: WhileStatm; sym: Symbol;
+                          guard: Expression; body: StatementSeq);
+  BEGIN
+    InitStatement (whileStatm, sym);
+    whileStatm. guard := guard;
+    whileStatm. body := body;
+  END InitWhileStatm;
+
+PROCEDURE (b: Builder) NewWhileStatm* (sym: Symbol; guard: Expression;
+                                       body: StatementSeq):WhileStatm;
+  VAR
+    whileStatm: WhileStatm;
+  BEGIN
+    NEW (whileStatm);
+    InitWhileStatm (whileStatm, sym, guard, body);
+    RETURN whileStatm
+  END NewWhileStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitWhileStatm* (whileStatm: WhileStatm);
+  END VisitWhileStatm;
+
+PROCEDURE (whileStatm: WhileStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitWhileStatm (whileStatm)
   END Accept;
 
 (* -------- *)

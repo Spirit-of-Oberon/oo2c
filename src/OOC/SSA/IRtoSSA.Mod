@@ -163,18 +163,22 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE IfStatm (ifStatm: IR.IfStatm);
     VAR
       select: SSA.Instr;
+      storeAfterGuard: SSA.Result;
     BEGIN
       select := pb. AddInstr (Opcode.select, Opcode.scNone);
       select. AddOpnd (Expression (ifStatm. guard), Opnd.arg);
+      storeAfterGuard := s;
       
       select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
-      select. AddOpnd (StatmSeq (pb, s, ifStatm. pathTrue), Opnd.arg);
+      select. AddOpnd (StatmSeq (pb, storeAfterGuard, ifStatm. pathTrue),
+                       Opnd.arg);
       
       select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       IF (ifStatm. pathFalse # NIL) THEN
-        select. AddOpnd (StatmSeq (pb, s, ifStatm. pathFalse), Opnd.arg);
+        select. AddOpnd (StatmSeq (pb, storeAfterGuard, ifStatm. pathFalse),
+                         Opnd.arg);
       ELSE
-        select. AddOpnd (s, Opnd.arg)
+        select. AddOpnd (storeAfterGuard, Opnd.arg)
       END;
 
       s := select. AddResult (Result.store)
@@ -206,6 +210,53 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := end. AddResult (Result.store)
     END RepeatStatm;
   
+  PROCEDURE WhileStatm (whileStatm: IR.WhileStatm);
+    VAR
+      start, end, select: SSA.Instr;
+      guard1, guard2, storeAfterGuard1: SSA.Result;
+    BEGIN
+      (* WHILE e DO s END
+
+         is translated to
+
+         IF e THEN
+           REPEAT
+             s
+           UNTIL ~e;
+         END  *)
+      guard1 := Expression (whileStatm. guard);
+      storeAfterGuard1 := s;
+
+      (* insert "loop-start" instruction *)
+      start := pb. AddInstr (Opcode.loopStart, Opcode.scNone);
+      start. AddOpnd (s, Opnd.store);
+      s := start. AddResult (Result.store);
+      
+      (* evaluate loop body, followed by the exit condition *)
+      s := StatmSeq (pb, s, whileStatm. body);
+      guard2 := Expression (whileStatm. guard);
+      
+      (* create "loop-end" instruction *)
+      end := pb. AddInstr (Opcode. loopEnd, Opcode.scNone);
+      end. AddOpnd (start, Opnd.arg);
+      end. AddOpnd (s, Opnd.store);
+      end. AddOpnd (guard2, Opnd.arg);
+      end. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      
+      (* add forward reference from "loop-start" to `store' at end of loop *)
+      start. AddOpnd (s, Opnd.forwardRef);
+
+      (* create the "select" for the IF statement around the loop *)
+      select := pb. AddInstr (Opcode.select, Opcode.scNone);
+      select. AddOpnd (guard1, Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
+      select. AddOpnd (end. AddResult (Result.store), Opnd.arg);
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      select. AddOpnd (storeAfterGuard1, Opnd.arg);
+
+      s := select. AddResult (Result.store)
+    END WhileStatm;
+  
   BEGIN
     FOR i := 0 TO LEN (statmSeq^)-1 DO
       statm := statmSeq[i];
@@ -228,6 +279,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | statm: IR.RepeatStatm DO
         RepeatStatm (statm)
+            
+      | statm: IR.WhileStatm DO
+        WhileStatm (statm)
             
       ELSE
         Log.Type("++ Unknown statement class in StatmSeq", statm);
