@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; assign1 assign2 assign_ro assign3 assign4">-->
+  select ="&SetupTestCasesWithOut; assign5 assign6 assign7 assign8 assign9">-->
 
   &TestSetupWithOut;
     
@@ -29,6 +29,22 @@
     </test>
     <test id="assign4" type="reject" file="Assign4.Mod">
       Assignment to a record field that is exported read-only.
+    </test>
+    <test id="assign5" type="reject" file="Assign5.Mod">
+      Right side of assignment is a type name.
+    </test>
+    <test id="assign6" type="reject" file="Assign6.Mod">
+      Right side of assignment is a module name.
+    </test>
+    <test id="assign7" type="reject" file="Assign7.Mod">
+      Left side of assignment is an open array variable.
+    </test>
+    <test id="assign8" type="reject" file="Assign8.Mod">
+      Trying to assign <code>NIL</code> to a <code>LONGINT</code>
+      variable.
+    </test>
+    <test id="assign9" type="reject" file="Assign9.Mod">
+      Trying to assign a string constant that is too long.
     </test>
     
     <test id="return1" type="reject" file="Return1.Mod">
@@ -734,6 +750,11 @@
     <reject-info id="assign2" pos="r%. TBProc :=" msg="This must be a variable"/>
     <reject-info id="assign3" pos="AssignRO.%x :=" msg="This variable is read-only"/>
     <reject-info id="assign4" pos="AssignRO.y. %a :=" msg="This variable is read-only"/>
+    <reject-info id="assign5" pos="x %:= INTEGER" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign6" pos="x %:= Out" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign7" pos="a %:= b" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign8" pos="x %:= NIL" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign9" pos='x %:= "123"' msg="Type of expression is not compatible with variable type"/>
         
     <reject-info id="return1" pos="RETURN %123" msg="RETURN must not provide a result value"/>
     <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>

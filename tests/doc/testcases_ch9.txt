@@ -16,10 +16,10 @@ REJECT:
 
 REJECT (assignment compatible):
 
-  1) expr is not a value (e.g., is a type name)
-  2) Texpr and Tvar have same structure, but are not the same type
-  3) expr is NIL, but Tvar is not pointer or procedure
-  4) Tvar is ARRAY n OF CHAR, expr is too long string const
+  1) expr is not a value (e.g., is a type name)  [Assign5, Assign6]
+  2) Texpr and Tvar have same structure, but are not the same type  [Assign7]
+  3) expr is NIL, but Tvar is not pointer or procedure  [Assign8]
+  4) Tvar is ARRAY n OF CHAR, expr is too long string const  [Assign9]
   5) Texpr and Tvar are procedure type, but the number of arguments
      do not match
   6) Texpr and Tvar are procedure type, but the result type is

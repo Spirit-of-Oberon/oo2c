@@ -856,6 +856,15 @@ TYPE
   END;
   
 TYPE
+  ModuleType* = POINTER TO ModuleTypeDesc;
+  ModuleTypeDesc = RECORD
+    (**This special type is assigned to expressions that designate a module.
+       For example, with a (bogus) expression @samp{x := Out}, the right side
+       used this type, assuming that @samp{Out} is an imported module.  *)
+    (Sym.TypeDesc)
+  END;
+  
+TYPE
   Builder* = POINTER TO BuilderDesc;
   ConstFold* = POINTER TO ConstFoldDesc;
   BuilderDesc* = RECORD
@@ -880,6 +889,8 @@ TYPE
 
     typeType-: TypeType;
     (**This type is assigned to expressions that produce a type value.  *)
+    moduleType-: ModuleType;
+    (**This type is assigned to expressions that designate a module.  *)
     
     lastError: Error.Msg;
     (* Holds the last error message produced by @oproc{Builder.ErrSym}.  *)
@@ -2436,17 +2447,18 @@ PROCEDURE InitReference (ref: Reference; name: Symbol; type: Sym.Type;
 (* Expression Class: ModuleRef
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitModuleRef (modRef: ModuleRef; name: Symbol; decl: Sym.Module);
+PROCEDURE InitModuleRef (modRef: ModuleRef; name: Symbol; type: Sym.Type;
+                         decl: Sym.Module);
   BEGIN
-    InitReference (modRef, name, NIL, decl);
+    InitReference (modRef, name, type, decl);
   END InitModuleRef;
 
-PROCEDURE NewModuleRef (name: Symbol; decl: Sym.Module): ModuleRef;
+PROCEDURE (b: Builder) NewModuleRef (name: Symbol; decl: Sym.Module): ModuleRef;
   VAR
     modRef: ModuleRef;
   BEGIN
     NEW (modRef);
-    InitModuleRef (modRef, name, decl);
+    InitModuleRef (modRef, name, b. moduleType, decl);
     RETURN modRef
   END NewModuleRef;
 
@@ -3462,6 +3474,15 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
       RETURN typeType;
     END NewTypeType;
   
+  PROCEDURE NewModuleType (parent: Sym.Item; position: Sym.Position): ModuleType;
+    VAR
+      moduleType: ModuleType;
+    BEGIN
+      NEW (moduleType);
+      Sym.InitType (moduleType, parent, position);
+      RETURN moduleType;
+    END NewModuleType;
+  
   BEGIN
     b. module := module;
     b. pragmaHistory := pragmaHistory;
@@ -3471,6 +3492,7 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
                               Predef.GetType(Predef.void),
                               Boolean.New (FALSE));
     b. typeType := NewTypeType (NIL, NIL);
+    b. moduleType := NewModuleType (NIL, NIL);
     b. lastError := NIL;
     b. constFold := fold;
     fold. builder := b;
@@ -3527,7 +3549,7 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
         | decl: Sym.ProcDecl DO
           RETURN NewProcedureRef (name, decl)
         | decl: Sym.Import DO
-          RETURN NewModuleRef (name, decl. externalSymTab)
+          RETURN b. NewModuleRef (name, decl. externalSymTab)
         ELSE
           Log.Type ("Unknown decl in NewIdentRef", decl);
           ASSERT (FALSE);
