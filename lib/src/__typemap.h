@@ -1,6 +1,6 @@
 /*      $Id$    */
 /*  Mapping of basic types to C types.
-    Copyright (C) 1997-2001  Michael van Acken
+    Copyright (C) 1997-2002  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -54,6 +54,6 @@ typedef OOC_INT32 OOC_CHARPOS;
 
 /* format string used by printf for OOC_INT32 (%i if it is equal to int,
    %li if it is long int) */
-#define INT32_FORMAT "%i"
+#define OOC_INT32_FORMAT "%i"
 
 #endif  /* __typemap__ */
