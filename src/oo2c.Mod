@@ -620,7 +620,7 @@ BEGIN  <*Warnings:=FALSE*>
           ELSE
             IF doInstall THEN
               pkgInfo := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
-              IF (errList.msgCount = 0) THEN
+              IF (pkgInfo # NIL) & (errList.msgCount = 0) THEN
                 UninstallPackage(pkgInfo);
               END;
             END;

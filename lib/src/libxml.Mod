@@ -17,11 +17,10 @@ IMPORT
   QueryUnparsed := URI:Query:Unparsed,
   URI:Scheme:CurrentDoc,
   URI:Scheme:File,
-  URI:Scheme:HTTP,
+  (*URI:Scheme:HTTP, defunct *)
   URI:Scheme:Hierarchical,
   URI:Scheme:MailTo,
   URI:Scheme:Opaque,
-  URI:Scheme:Memory,
   URI,
   XML:Builder:Canonical,
   XML:Builder:ParserProtocol,

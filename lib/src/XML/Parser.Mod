@@ -730,10 +730,8 @@ PROCEDURE (p: Parser) ParseDocument*() RAISES IO.Error;
   PROCEDURE GetBuffer (entity: DTD.ExternalEntity): Buffer.Input
   RAISES IO.Error;
     VAR
-      res: Msg.Msg;
       ch: IO.ByteChannel;
       in: Buffer.Input;
-      str: ARRAY 2*1024 OF CHAR;
     BEGIN
       IF (entity. baseURI = NIL) THEN
         RETURN NIL

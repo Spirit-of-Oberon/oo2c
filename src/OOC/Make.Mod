@@ -21,7 +21,6 @@ MODULE OOC:Make;
 *)
 
 IMPORT
-  Log,
   Channel, Msg, Out, StdChannels, Strings, Time, IO, IO:FileChannel,
 
   Object, ADT:ArrayList, ADT:Dictionary, StringSearch,
@@ -1109,7 +1108,6 @@ RAISES IO.Error;
            exists *)
         RETURN FALSE;
       END;
-      Log.Bool("isUpToDate", isUpToDate);
       isUpToDate := isUpToDate &
           ~DerivedIsOlder(module, Rep.modExecutable, Rep.modMainObjectFile);
       

@@ -1042,18 +1042,22 @@ RAISES IO.Error;
     p: Parser.Parser;
   BEGIN
     Logger.ReadFileName(fileName);
-    p := Parser.NewFile (fileName);
-    p.ParseDocument();
-    IF (p.errList.msgCount = 0) THEN
-      IF ~requirePackage & (p.root.name^ = rootRepository) THEN
-        RETURN ProcessRepository(p.root, p.errorListener, errList);
+    TRY
+      p := Parser.NewFile (fileName);
+      p.ParseDocument();
+      IF (p.errList.msgCount = 0) THEN
+        IF ~requirePackage & (p.root.name^ = rootRepository) THEN
+          RETURN ProcessRepository(p.root, p.errorListener, errList);
+        ELSE
+          RETURN ProcessPackage(p.root, p.errorListener, errList);
+        END;
       ELSE
-        RETURN ProcessPackage(p.root, p.errorListener, errList);
+        errList.AppendList(p.errList);
+        RETURN NIL;
       END;
-    ELSE
-      errList.AppendList(p.errList)
+    CATCH IO.FileNotFound:
+      RETURN NIL;
     END;
-    RETURN NIL;
   END ParseFile;
 
 PROCEDURE GetPackage* (pkgName: ARRAY OF CHAR;
@@ -1278,8 +1282,9 @@ RAISES IO.Error;
     WriteKeyValue(w, "pragmas", rep.pragmas);
     w.EndTag();  (* repository *)
     w.EndOfText();
-    
     f.Close();
+    
+    COPY(fileName, str);
     Strings.Insert("chmod 644 ", 0, str);
     Logger.ShellCommand(str);
     i := ProcessManagement.system(str);
