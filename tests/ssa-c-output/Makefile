@@ -10,6 +10,10 @@
 # optimization, or better translation techniques, which means that
 # differences are not always errors.  In such a case, the reference
 # file is adjusted to match the new situation.
+#
+# This directory holds only "run" and "error" test cases.  That is, each
+# test case produces an executable that is subsequently evaluated.  Tests
+# of the categories "accept" and "reject" belong into tests/compile/.
 
 TEST_DRIVER=RunTests
 TEST_PROCESSOR=TestCompile

@@ -43,19 +43,22 @@ Here is a list of subsystems:
   symbol table (OOC:SymbolTable:*)
   documentation (OOC:Doc:*)
   build engine (OOC:Make:*)
+  intermediate code representation (OOC:IR:*)
+  SSA back-end (OOC:SSA:*)
 
 Tests are located in the tests/ subdirectory.  The whole set of tests
-is run by doing "make test" in the top-level directory or within
-tests/.  To run tests selectively "cd" into the subdirectory and do
-"make test".  This requires that the environment variables "OOC" and
-"DIFF" are set.  The latter selects the diff command that is run when
-comparing files.
+is run by doing "make test" in the top-level directory.  Within each
+directory under tests/ with a Makefile, "make test" can be called to
+selectively run only the tests from this directory.
 
-For "make doc" to work, set the name for the oocn tool at the
-beginning of the Makefile.
+For "make doc" to work, the tool xsltproc (from the GNOME XML suite,
+libxslt, AFAIK) must be installed.
 
 "make clean" returns the file tree to a pristine state, removing all
 the files that were produced during compilation and testing.
+
+"make distclean" is more thorough than "make clean", getting rid of
+intermediate files that should not be checked into the CVS.
 
 
 -- Michael van Acken <mia@de.uu.net>
