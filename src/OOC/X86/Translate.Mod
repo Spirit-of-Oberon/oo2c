@@ -753,8 +753,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           CASE expr.variant OF
           | IR.arithAdd : opcode := S.add;
           | IR.arithSub : opcode := S.sub;
-            (*| IR.arithMul : opcode := S.multiply;
-                                                    | IR.arithMod : opcode := S.modulo;
+          | IR.arithMul : opcode := S.mul;
+          (*                                          | IR.arithMod : opcode := S.modulo;
                                                                                         | IR.arithDivI: opcode := S.divide;
                                                                                                                             | IR.arithDivR: opcode := S.divide;*)
           END;
