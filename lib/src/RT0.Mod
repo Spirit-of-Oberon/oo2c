@@ -42,6 +42,7 @@ IMPORT
 CONST  (* predefined types, taken from `OOC:SymbolTable:Predef' *)
   strBoolean* = 0;
   strChar* = 1;
+  strLongchar* = 2;
   strShortint* = 3;
   strInteger* = 4;
   strLongint* = 5;
@@ -150,6 +151,7 @@ TYPE
 VAR
   boolean-: StructDesc;
   char-: StructDesc;
+  longchar-: StructDesc;
   shortint-: StructDesc;
   integer-: StructDesc;
   longint-: StructDesc;

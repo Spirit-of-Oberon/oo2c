@@ -83,6 +83,7 @@ void RT0__InitVParStack(OOC_INT32 bytes) {
 void RT0_init() {
   PS(RT0__boolean , RT0__strBoolean , sizeof(OOC_BOOLEAN));
   PS(RT0__char    , RT0__strChar    , sizeof(OOC_CHAR8));
+  PS(RT0__longchar, RT0__strLongchar, sizeof(OOC_CHAR16));
   PS(RT0__shortint, RT0__strShortint, sizeof(OOC_INT8));
   PS(RT0__integer , RT0__strInteger , sizeof(OOC_INT16));
   PS(RT0__longint , RT0__strLongint , sizeof(OOC_INT32));

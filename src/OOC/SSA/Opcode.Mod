@@ -616,6 +616,7 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       CASE type. id OF
       | Predef.void: RETURN scNone
       | Predef.char: RETURN scUnsigned8
+      | Predef.longchar: RETURN scUnsigned16
       | Predef.boolean: RETURN scUnsigned8
       | Predef.shortint: RETURN scSigned8
       | Predef.integer: RETURN scSigned16

@@ -23,7 +23,7 @@ MODULE OOC:SymbolTable:Predef;
 
 IMPORT
   Strings, Language, Language:Boolean, Language:Integer, Language:String8,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
+  Language:Real, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
 CONST
@@ -202,9 +202,11 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
                          Integer.New (MIN (LONGINT)),
                          Integer.New (MAX (LONGINT)));
     ptype := PredefType (stb, module, real, "REAL", 4, 4,
-                         NIL, NIL);      (* FIXME... add MIN/MAX *)
+                         Real.New (MIN (REAL)),
+                         Real.New (MAX (REAL)));
     ptype := PredefType (stb, module, longreal, "LONGREAL", 8, 8,
-                         NIL, NIL);      (* FIXME... add MIN/MAX *)
+                         Real.New (MIN (LONGREAL)),
+                         Real.New (MAX (LONGREAL)));
     ptype := PredefType (stb, module, set, "SET", 4, 4,
                          Integer.New (MIN (SET)),
                          Integer.New (MAX (SET)));

@@ -3182,6 +3182,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.shortint: targetType := Predef.integer;
         | Predef.integer : targetType := Predef.longint;
+        | Predef.char    : targetType := Predef.longchar;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
         
@@ -3189,6 +3190,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         CASE arguments[0]. type(Sym.PredefType). id OF
         | Predef.integer: targetType := Predef.shortint;
         | Predef.longint: targetType := Predef.integer;
+        | Predef.longchar: targetType := Predef.char;
         END;
         RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
         

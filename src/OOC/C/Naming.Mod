@@ -174,6 +174,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
       CASE type. id OF
       | Predef.boolean : str := "boolean"
       | Predef.char    : str := "char"
+      | Predef.longchar: str := "longchar"
       | Predef.shortint: str := "shortint"
       | Predef.integer : str := "integer"
       | Predef.longint : str := "longint"
