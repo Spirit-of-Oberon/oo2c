@@ -26,7 +26,7 @@ MODULE Object;
    are added on demand.  If it is not used, it has no place here.  *)
 
 IMPORT
-  S := SYSTEM, RT0;
+  S := SYSTEM, RT0, HashCode;
   (* Because this module is implicitly imported by almost all other modules,
      normal modules cannot be added to this import list.  Before a module can
      be imported here, it must be added to the `exclude' list of the
@@ -37,8 +37,8 @@ TYPE
   (**The integer type used to store hash values.  *)
   
   Object* = POINTER TO ObjectDesc;
-  ObjectArray* = ARRAY OF Object;
-  ObjectArrayPtr* = POINTER TO ObjectArray;
+  ObjectArray*(E: Object) = ARRAY OF E;
+  ObjectArrayPtr*(E: Object) = POINTER TO ObjectArray(E);
   ObjectDesc* = RECORD [ABSTRACT]
   (**This class is the common base type of (almost) all classes defined in this
      module and the ADT library.  It provides the methods @oproc{Object.Equals}
@@ -260,13 +260,7 @@ PROCEDURE (x: Object) HashCode*(): Hash;
    of the object into an integer, but this implementation technique is not
    required.)  *)
   BEGIN
-<*IF TARGET_ADDRESS=64 THEN*>
-    RETURN S.VAL(Hash,
-                 S.VAL(SET, SHORT(S.LSH(S.LSH(S.VAL(S.ADDRESS,x), 32), -32))) /
-                 S.VAL(SET, SHORT(S.LSH(S.VAL(S.ADDRESS,x), -32))))
-<*ELSE*>
-    RETURN S.VAL(Hash, x)
-<*END*>
+    RETURN HashCode.Ptr(x);
   END HashCode;
 
 
@@ -805,45 +799,13 @@ PROCEDURE (s: String) [ABSTRACT] HashCode*(): Hash;
   END HashCode;
 
 PROCEDURE (s: String8) HashCode*(): Hash;
-  VAR
-    len, p: LONGINT;
-    x: Hash;
   BEGIN
-    (* this is intended as a reimplementation of the Python hash code on
-       strings; any errors are mine, of course *)
-    len := s.length;
-    x := ASH(LONG(ORD(s.data[0])), 7);
-    p := 0;
-    WHILE (p # len) DO
-      <* PUSH; OverflowCheck := FALSE *>
-      x := S.VAL(Hash, S.VAL(SET, 1000003*x) /
-                 S.VAL(SET, LONG(ORD(s.data[p]))));
-      <* POP *>
-      INC(p);
-    END;
-    x := S.VAL(Hash, S.VAL(SET,x) / S.VAL(SET,len));
-    RETURN x
+    RETURN HashCode.CharRegion(s.data^, 0, s.length);
   END HashCode;
 
 PROCEDURE (s: String16) HashCode*(): Hash;
-  VAR
-    len, p: LONGINT;
-    x: Hash;
   BEGIN
-    (* this is intended as a reimplementation of the Python hash code on
-       strings; any errors are mine, of course *)
-    len := s.length;
-    x := ASH(ORD(s.data[0]), 7);
-    p := 0;
-    WHILE (p # len) DO
-      <* PUSH; OverflowCheck := FALSE *>
-      x := S.VAL(Hash, S.VAL(SET, 1000003*x) /
-                 S.VAL(SET, LONG(s.data[p])));
-      <* POP *>
-      INC(p);
-    END;
-    x := S.VAL(Hash, S.VAL(SET,x) / S.VAL(SET,len));
-    RETURN x
+    RETURN HashCode.LongCharRegion(s.data^, 0, s.length);
   END HashCode;
 
 PROCEDURE (s: String) [ABSTRACT] CharAt*(index: LONGINT): UCS4CHAR;
