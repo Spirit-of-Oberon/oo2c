@@ -64,7 +64,7 @@ CONST
      result.  *)
   modSymbolFile* = 1;
   (**A module's symbol file holds all information that is made available to
-     importing module.  *)
+     importing modules.  *)
   modSymbolTableXML* = 2;
   (**This is an XML representation of the internal symbol table built of the
      datatypes defined in @omodule{*OOC:SymbolTable:Item}.  It is used for
