@@ -958,14 +958,17 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         jumps := NEW(ArrayList.ArrayList(S.Instr), 8);
         paths := NEW(ArrayList.ArrayList(S.Block), 8);
         FOR i := 0 TO LEN(statm.caseList^)-1 DO
-          guard := b.AddMerge0(S.guard, NIL);
-          guard.AddDep(S.depControl, branch);
-          Labels(guard, statm.caseList[i].labels);
-          paths.Append(guard);
-                 
-          controlCP := guard; memoryCP := branchMemory;
-          StatmSeq(statm.caseList[i].statmSeq);
-          jumps.Append(AddJump());
+          IF (LEN(statm.caseList[i].labels^) # 0) THEN
+            (* only default branch may have an empty argument list *)
+            guard := b.AddMerge0(S.guard, NIL);
+            guard.AddDep(S.depControl, branch);
+            Labels(guard, statm.caseList[i].labels);
+            paths.Append(guard);
+            
+            controlCP := guard; memoryCP := branchMemory;
+            StatmSeq(statm.caseList[i].statmSeq);
+            jumps.Append(AddJump());
+          END;
         END;
 
         IF (statm.default # NIL) THEN
