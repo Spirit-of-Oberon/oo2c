@@ -124,7 +124,7 @@ PROCEDURE (config: Config) Read* (errList: Msg.MsgList) RAISES IO.Error;
     BEGIN
       buffer := Memory.Open();
       source. Write (buffer, rootName);
-      buffer.SetPosition(0);
+      buffer.SetPos(0);
       
       (* create parser for `buffer' *)
       p := Parser.NewChannel (buffer);

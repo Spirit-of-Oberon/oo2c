@@ -366,7 +366,11 @@ PROCEDURE (ch: Channel) KeyForSelector*(sel: Selector): SelectionKey;
 
 PROCEDURE (ch: Channel) [ABSTRACT] SetBlocking*(block: BOOLEAN) RAISES Error;
 (**Change the channel's blocking mode.  Channels typically default to
-   blocking mode on creation.  *)
+   blocking mode on creation.
+
+   If a channel does not support non-blocking operation, then any call to this
+   method is ignored.  Rider implementations from @omodule{*IO:BinaryRider} and
+   @omodule{*IO:TextRider} only work with blocking channels.  *)
   END SetBlocking;
 
 PROCEDURE (ch: Channel) Close*() RAISES Error;
@@ -396,10 +400,11 @@ PROCEDURE InitByteChannel*(ch: ByteChannel);
     InitChannel(ch);
   END InitByteChannel;
 
-PROCEDURE (ch: Channel) SetPosition*(pos: LONGINT) RAISES Error;
+PROCEDURE (ch: Channel) SetPos*(pos: LONGINT) RAISES Error;
+(**Change the channels position to @oparam{pos}.  *)
   BEGIN
     RaiseNotImplemented();
-  END SetPosition;
+  END SetPos;
 
 PROCEDURE (ch: ByteChannel) [ABSTRACT] Read*(VAR buffer: ARRAY OF SYSTEM.BYTE;
                                                start, length: LONGINT): LONGINT
@@ -448,12 +453,14 @@ RAISES Error;
   END Write;
 
 PROCEDURE (ch: ByteChannel) Flush*() RAISES Error;
-  BEGIN
+(**Flush all buffers associated with channel @oparam{ch}.  *)
   END Flush;
 
 PROCEDURE (ch: ByteChannel) TransferTo*(length: LONGINT;
                                         target: ByteChannel): LONGINT
 RAISES Error;
+(**Transfer upto @oparam{length} bytes from channel @oparam{ch} to
+   @oparam{target}.  Result is the number of bytes actually copied.  *)
   CONST
     sizeBuffer = 8*1024;
   VAR
@@ -480,11 +487,5 @@ RAISES Error;
     END;
     RETURN i;
   END TransferTo;
-
-(*PROCEDURE (ch: ByteChannel) TransferFrom*(source: ByteChannel;
-                                      length: LONGINT): LONGINT;
-RAISES Error;
-  BEGIN
-  END TransferFrom;*)
 
 END IO.

@@ -7,8 +7,8 @@
   <test id="libio_Select" type="run" file="LibIoSelect.Mod">
     Imports module <code>IO:Select</code>.
   </test>
-  <test id="libio_PFD" type="run" file="LibIoPFD.Mod">
-    Imports module <code>IO:PFD</code>.
+  <test id="libio_StdChannels" type="run" file="LibIoStdChannels.Mod">
+    Imports module <code>IO:StdChannels</code>.
   </test>
   <test id="libio_Socket" type="run" file="LibIoSocket.Mod">
     Imports module <code>IO:Socket</code>.

@@ -74,11 +74,11 @@ PROCEDURE (ch: Channel) Flush*() RAISES IO.Error;
     END;
   END Flush;
 
-PROCEDURE (ch: Channel) SetPosition*(pos: LONGINT) RAISES IO.Error;
+PROCEDURE (ch: Channel) SetPos*(pos: LONGINT) RAISES IO.Error;
   BEGIN
     ch.Flush();
-    ch.base.SetPosition(pos);
-  END SetPosition;
+    ch.base.SetPos(pos);
+  END SetPos;
 
 PROCEDURE (ch: Channel) Read*(VAR buffer: ARRAY OF SYSTEM.BYTE;
                               start, length: LONGINT): LONGINT

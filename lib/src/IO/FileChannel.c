@@ -127,7 +127,7 @@ IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String8 file,
   }
   
   if (fd < 0) {
-    IO_PFD__IOError((Object__String)file);
+    IO_StdChannels__IOError((Object__String)file);
   } else {
     IO_FileChannel__Channel ch =
       RT0__NewObject(OOC_TYPE_DESCR(IO_FileChannel,ChannelDesc));
@@ -165,7 +165,7 @@ OOC_INT32 IO_FileChannel__ChannelDesc_Read(IO_FileChannel__Channel ch,
   } while ((res < 0) && (errno == EINTR));
   
   if (res < 0) {		/* check error condition */
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   } else if ((res == 0) && (length != 0)) {
     return -1;			/* end of file */
   }
@@ -182,7 +182,7 @@ OOC_INT32 IO_FileChannel__ChannelDesc_Write(IO_FileChannel__Channel ch,
   } while ((res < 0) && (errno == EINTR));
   
   if (res < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
   return res;
 }
@@ -202,7 +202,7 @@ void IO_FileChannel__ChannelDesc_Close(IO_FileChannel__Channel ch) {
   }
     
   if (res < 0) {
-    IO_PFD__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
+    IO_StdChannels__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
   }
 }
 
@@ -222,14 +222,14 @@ void IO_FileChannel__ChannelDesc_CloseAndRegister(IO_FileChannel__Channel ch) {
   }
   
   if (res < 0) {
-    IO_PFD__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
+    IO_StdChannels__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
   }
 }
 
-void IO_FileChannel__ChannelDesc_SetPosition(IO_FileChannel__Channel ch,
+void IO_FileChannel__ChannelDesc_SetPos(IO_FileChannel__Channel ch,
 					     OOC_INT32 pos) {
   if (lseek(ch->fd, (off_t)pos, SEEK_SET) < 0) {
-    IO_PFD__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
+    IO_StdChannels__IOError((Object__String)(ch->tmpIndex<0?ch->tmpName:ch->origName));
   }
 }
 

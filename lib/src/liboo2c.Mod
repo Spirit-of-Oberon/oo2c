@@ -46,6 +46,18 @@ IMPORT
   ADT:StringBuffer,
   ADT:Dictionary,
   ADT:ArrayList,
+
+  IO,
+  IO:Address,
+  IO:Socket,
+  IO:FileChannel,
+  IO:SocketChannel,
+  IO:Memory,
+  IO:Buffer,
+  IO:Select,
+  IO:TextRider,
+  IO:BinaryRider,
+  IO:PFD,
   
   libc,
   libadt,

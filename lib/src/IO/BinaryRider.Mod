@@ -58,21 +58,13 @@ VAR
 (*PROCEDURE (r: Reader) Pos* () : LONGINT;
   BEGIN
     RETURN r.byteReader.Pos() 
-  END Pos;
+  END Pos;*)
 
-PROCEDURE (r: Reader) SetPos* (newPos: LONGINT);
+PROCEDURE (r: Reader) SetPos* (newPos: LONGINT) RAISES IO.Error;
   BEGIN
-    IF (r. res = done) THEN
-      r.byteReader.SetPos(newPos);
-      r.res := r.byteReader.res
-    END
-  END SetPos;*)
+    r.channel.SetPos(newPos);
+  END SetPos;
   
-(*PROCEDURE (r: Reader) Available * () : LONGINT;
-  BEGIN
-    RETURN r.byteReader.Available()
-  END Available;  *)
-
 PROCEDURE (r: Reader) ReadBytes * (VAR x: ARRAY OF SYSTEM.BYTE;
                                    start, n: LONGINT)
 RAISES IO.Error;
@@ -285,15 +277,12 @@ PROCEDURE (r: Reader) SetByteOrder* (order: SHORTINT);
 (*PROCEDURE (w: Writer) Pos* () : LONGINT;
   BEGIN
     RETURN w.byteWriter.Pos()
-  END Pos;
+  END Pos;*)
 
-PROCEDURE (w: Writer) SetPos* (newPos: LONGINT);
+PROCEDURE (w: Writer) SetPos* (newPos: LONGINT) RAISES IO.Error;
   BEGIN
-    IF (w.res = done) THEN
-      w.byteWriter.SetPos(newPos);
-      w.res := w.byteWriter.res
-    END
-  END SetPos;*)
+    w.channel.SetPos(newPos);
+  END SetPos;
 
 PROCEDURE (w: Writer) WriteBytes * (x[NO_COPY]: ARRAY OF SYSTEM.BYTE;
                                     start, n: LONGINT)
@@ -463,6 +452,9 @@ PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel; byteOrder: SHORTINT);
   END InitReader;
 
 PROCEDURE ConnectReader*(ch: IO.ByteChannel): Reader;
+(**@precond
+   @oparam{ch} is in blocking mode.
+   @end precond *)
   VAR
     r: Reader;
   BEGIN
@@ -486,6 +478,9 @@ PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel; byteOrder: SHORTINT);
   END InitWriter;
 
 PROCEDURE ConnectWriter*(ch: IO.ByteChannel): Writer;
+(**@precond
+   @oparam{ch} is in blocking mode.
+   @end precond *)
   VAR
     w: Writer;
   BEGIN

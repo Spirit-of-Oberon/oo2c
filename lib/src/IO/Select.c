@@ -88,7 +88,7 @@ OOC_INT32 IO_Select__SelectorDesc_Select(IO_Select__Selector s,
        updated by the call to select() */
   } while ((res == -1) && (errno == EINTR));
   if (res < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   } else if (res == 0) {  /* timeout, no fd ready */
     return 0;
   }

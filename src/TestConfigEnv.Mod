@@ -1,7 +1,7 @@
 MODULE TestConfigEnv;
 
 IMPORT
-  Msg, Out, IO:PFD, Config:Source:Environment;
+  Msg, Out, IO:StdChannels, Config:Source:Environment;
 
 
 VAR
@@ -24,7 +24,7 @@ BEGIN
   
   err := env. Parse();
   IF (err = NIL) THEN
-    env. Write (PFD.stdout, "configuration")
+    env. Write (StdChannels.stdout, "configuration")
   END;
   IF (err # NIL) THEN
     err. GetText (errText);

@@ -42,7 +42,7 @@ RAISES IO.Error;
       w.WriteBytes(fp, 0, SIZE(LONGINT));
     END;
     
-    mem.SetPosition(0);
+    mem.SetPos(0);
     d := mem.TransferTo(mem.length, ch);
     ch.CloseAndRegister();
   END WriteSymbolFile;

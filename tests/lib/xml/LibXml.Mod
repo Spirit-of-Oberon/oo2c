@@ -1,7 +1,7 @@
 MODULE LibXml;
 
 IMPORT
-  StdChannels, Out, IO, IO:PFD,
+  StdChannels, Out, IO, Std:=IO:StdChannels,
   
   XML:Builder:Canonical,
   XML:Builder:ParserProtocol,
@@ -40,7 +40,7 @@ PROCEDURE CreateParser(file: ARRAY OF CHAR): Parser.Parser RAISES IO.Error;
     dontFollowEntityRefs := FALSE;
     format := Canonical.firstCanonicalForm;
     
-    builder := Canonical.New (PFD.stdout, UTF8.factory, format);
+    builder := Canonical.New (Std.stdout, UTF8.factory, format);
     outputBuilder := builder;
     IF validating THEN
       dontFollowEntityRefs := FALSE;

@@ -14,7 +14,7 @@ IO_Socket__Socket IO_Socket__New() {
     RT0__NewObject(OOC_TYPE_DESCR(IO_Socket,SocketDesc));
   s->fd = socket(PF_INET, SOCK_STREAM, 0);
   if (s->fd < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
   return s;
 }
@@ -22,7 +22,7 @@ IO_Socket__Socket IO_Socket__New() {
 void IO_Socket__SocketDesc_SetBlocking(IO_Socket__Socket s, OOC_CHAR8 block) {
   int delay_flag = fcntl(s->fd, F_GETFL, 0);
   if (delay_flag < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
   if (block) {
     delay_flag &= (~O_NDELAY);
@@ -30,7 +30,7 @@ void IO_Socket__SocketDesc_SetBlocking(IO_Socket__Socket s, OOC_CHAR8 block) {
     delay_flag |= O_NDELAY;
   }
   if (fcntl(s->fd, F_SETFL, delay_flag) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
 }
 
@@ -41,7 +41,7 @@ void IO_Socket__SocketDesc_Bind(IO_Socket__Socket s,
   addr = (struct sockaddr *)
     OOC_METHOD(bindPoint,IO_Address__SocketDesc_GetSockAddr)(bindPoint);
   if (bind(s->fd, addr, OOC_ARRAY_LENGTH(addr,0)) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
 }
 
@@ -52,7 +52,7 @@ void IO_Socket__SocketDesc_Connect(IO_Socket__Socket s,
   addr = (struct sockaddr *)
     OOC_METHOD(endPoint,IO_Address__SocketDesc_GetSockAddr)(endPoint);
   if (connect(s->fd, addr, OOC_ARRAY_LENGTH(addr,0)) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
 }
 
@@ -65,7 +65,7 @@ IO_Address__Socket IO_Socket__SocketDesc_RemoteAddress(IO_Socket__Socket s) {
     struct sockaddr_in clientname;
     int size = sizeof(clientname);
     if (getpeername(s->fd, (struct sockaddr*)&clientname, &size) < 0) {
-      IO_PFD__IOError(NULL);
+      IO_StdChannels__IOError(NULL);
     }
     
     inet4 = RT0__NewObject(OOC_TYPE_DESCR(IO_Address,Inet4Desc));
@@ -78,7 +78,7 @@ IO_Address__Socket IO_Socket__SocketDesc_RemoteAddress(IO_Socket__Socket s) {
 
 void IO_Socket__SocketDesc_Close(IO_Socket__Socket s) {
   if (close(s->fd) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
   s->fd = -1;
 }
@@ -95,14 +95,14 @@ IO_Socket__Server IO_Socket__NewServer() {
 void IO_Socket__ServerDesc_SetReuseAddress(IO_Socket__Server s, OOC_CHAR8 on) {
   int i = on?1:0;
   if (setsockopt(s->fd, SOL_SOCKET, SO_REUSEADDR, (void*)&i, sizeof(i)) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
 }
 
 void IO_Socket__ServerDesc_SetBlocking(IO_Socket__Server s, OOC_CHAR8 block) {
   int delay_flag = fcntl(s->fd, F_GETFL, 0);
   if (delay_flag < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
   if (block) {
     delay_flag &= (~O_NDELAY);
@@ -110,7 +110,7 @@ void IO_Socket__ServerDesc_SetBlocking(IO_Socket__Server s, OOC_CHAR8 block) {
     delay_flag |= O_NDELAY;
   }
   if (fcntl(s->fd, F_SETFL, delay_flag) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
 }
 
@@ -122,10 +122,10 @@ void IO_Socket__ServerDesc_Bind(IO_Socket__Server s,
   addr = (struct sockaddr *)
     OOC_METHOD(bindPoint,IO_Address__SocketDesc_GetSockAddr)(bindPoint);
   if (bind(s->fd, addr, OOC_ARRAY_LENGTH(addr,0)) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
   if (listen(s->fd, (unsigned int)queueSize) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
 }
 
@@ -140,7 +140,7 @@ IO_Socket__Socket IO_Socket__ServerDesc_Accept(IO_Socket__Server s) {
     if (errno == EWOULDBLOCK) {
       return NULL;
     } else {
-      IO_PFD__IOError(NULL);
+      IO_StdChannels__IOError(NULL);
     }
   }
   c->fd = fd;
@@ -149,7 +149,7 @@ IO_Socket__Socket IO_Socket__ServerDesc_Accept(IO_Socket__Server s) {
 
 void IO_Socket__ServerDesc_Close(IO_Socket__Server s) {
   if (close(s->fd) < 0) {
-    IO_PFD__IOError(NULL);
+    IO_StdChannels__IOError(NULL);
   }
   s->fd = -1;
 }
@@ -168,7 +168,7 @@ OOC_INT32 IO_Socket__Read(IO_Socket__Socket ch,
     if (errno == EWOULDBLOCK) {
       return 0;
     } else {
-      IO_PFD__IOError(NULL);
+      IO_StdChannels__IOError(NULL);
     }
   } else if ((res == 0) && (length != 0)) {
     return -1;			/* end of file */
@@ -189,7 +189,7 @@ OOC_INT32 IO_Socket__Write(IO_Socket__Socket ch,
     if (errno == EWOULDBLOCK) {
       return 0;
     } else {
-      IO_PFD__IOError(NULL);
+      IO_StdChannels__IOError(NULL);
     }
   }
   return res;

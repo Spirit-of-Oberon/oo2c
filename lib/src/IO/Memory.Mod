@@ -1,6 +1,6 @@
 (*	$Id$	*)
 MODULE IO:Memory;
-(*  Implementation of a simple file system in memory.
+(*  Memory backed byte channel.
     Copyright (C) 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
@@ -60,13 +60,13 @@ PROCEDURE (ch: Channel) FileDescriptor*(): IO.FileDescriptor;
     RETURN -1;
   END FileDescriptor;
 
-PROCEDURE (ch: Channel) SetPosition*(pos: LONGINT);
+PROCEDURE (ch: Channel) SetPos*(pos: LONGINT);
 (**@precond
    @samp{0 <= pos <= ch.length}
    @end precond *)
   BEGIN
     ch.pos := pos;
-  END SetPosition;
+  END SetPos;
 
 PROCEDURE (ch: Channel) Read*(VAR buffer: ARRAY OF SYSTEM.BYTE;
                               start, length: LONGINT): LONGINT;

@@ -2,7 +2,7 @@ MODULE TestParser;
 
 IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Msg,
-  Object, IO, IO:FileChannel, IO:PFD,
+  Object, IO, IO:FileChannel, Std:=IO:StdChannels,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList, OOC:Parser, OOC:AST, 
   OOC:AST:ExtTree, OOC:AST:ExtTree:XML, OOC:AST:ExtTree:StupidPP;
@@ -60,7 +60,7 @@ BEGIN
           
           CASE mode OF
           | modeXML:
-            XML.Write (PFD.stdout, ast(ExtTree.Module))
+            XML.Write (Std.stdout, ast(ExtTree.Module))
           | modeStupidPP:
             StupidPP.Write (TextRider.ConnectWriter (StdChannels.stdout),
                             ast(ExtTree.Module))

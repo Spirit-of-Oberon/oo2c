@@ -1,7 +1,7 @@
 MODULE TestConfigCmdLine;
 
 IMPORT
-  RT0, Msg, Out, ProgramArgs, IO:PFD, Config:Source:CmdLine;
+  RT0, Msg, Out, ProgramArgs, IO:StdChannels, Config:Source:CmdLine;
 
 
 VAR
@@ -39,7 +39,7 @@ BEGIN
   
   err := cmdLine. Parse (ProgramArgs.args);
   IF (err = NIL) THEN
-    cmdLine. Write (PFD.stdout, "configuration");
+    cmdLine. Write (StdChannels.stdout, "configuration");
   END;
   IF (err # NIL) THEN
     err. GetText (errText);

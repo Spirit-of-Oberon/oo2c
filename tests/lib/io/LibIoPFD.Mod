@@ -1,8 +1,0 @@
-MODULE LibIoPFD;
-
-IMPORT IO:PFD;
-
-PROCEDURE Test*;
-  END Test;
-
-END LibIoPFD.

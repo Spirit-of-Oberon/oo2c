@@ -21,7 +21,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  IntStr, Out, Strings, StringSearch, IO, IO:PFD,
+  IntStr, Out, Strings, StringSearch, IO, IO:StdChannels,
   Object, Object:Boxed, ADT:Dictionary, ADT:ArrayList,
   Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
@@ -1682,7 +1682,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         Out.Ln;
         Out.Flush;
         TRY
-          XML.Write (PFD.stdout, pb, TRUE);
+          XML.Write (StdChannels.stdout, pb, TRUE);
         CATCH IO.Error:
         END;
         Out.Flush;
@@ -1823,7 +1823,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       IF (t. inspectStage. MatchChars ("schedule", 0, -1) # NIL) THEN
         (* write schedule SSA code to stdout *)
         TRY
-          XML.WriteSchedule (PFD.stdout, domRoot);
+          XML.WriteSchedule (StdChannels.stdout, domRoot);
         CATCH IO.Error:
         END;
         Out.Flush
