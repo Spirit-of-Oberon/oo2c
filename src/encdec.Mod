@@ -2,7 +2,8 @@ MODULE encdec;
 
 IMPORT
   SYSTEM, Ascii, Channel, Files, Log, ProgramArgs, StdChannels, TextRider, 
-  String := Language:String0, Codec, Codec:UU, Codec:Twofish, Codec:Deflate;
+  String := Language:String0, Codec,
+  Codec:Latin1, Codec:UTF32, Codec:UU, Codec:Twofish, Codec:Deflate;
 
 TYPE
   State = PROCEDURE (VAR data: ARRAY OF CHAR; start, end: LONGINT): LONGINT;
@@ -258,9 +259,11 @@ PROCEDURE ParseArguments (r: TextRider.Reader);
   END ParseArguments;
 
 BEGIN
-  UU.Register;
-  Twofish.Register;
-  Deflate.Register;
+  Latin1.Register;                       (* unicode: latin1 *)
+  UTF32.Register;                        (* unicode: utf-32 *)
+  UU.Register;                           (* transport: uuencode *)
+  Twofish.Register;                      (* encryption: twofish *)
+  Deflate.Register;                      (* compression: zlib's deflate *)
   
   codecUU := UU.uu;
   key := NIL;

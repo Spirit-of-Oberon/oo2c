@@ -245,5 +245,5 @@ PROCEDURE Register*;
 BEGIN
   TwofishC.Twofish_initialise;           (* endless loop on error *)
   NEW (twofish);
-  String.InitCodec (twofish, Codec.encryption, "Twofish");
+  Codec.InitCodec (twofish, Codec.encryption, "Twofish");
 END Codec:Twofish.

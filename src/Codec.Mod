@@ -28,61 +28,231 @@ IMPORT
    when looking up a codec by its name.  *)
 
 TYPE
-  Codec* = String0.Codec;
-  CodecDesc* = String0.CodecDesc;
-  Class* = String0.CodecClass;
-  Encoder* = String0.Encoder;
-  EncoderDesc* = String0.EncoderDesc;
-  Decoder* = String0.Decoder;
-  DecoderDesc* = String0.DecoderDesc;
+  CodecClass* = SHORTINT;
+  
+TYPE
+  Codec* = POINTER TO CodecDesc;
+  CodecDesc* = RECORD [ABSTRACT]
+    (**A codec provides functions to convert a sequence of 8-bit characters
+       into the Unicode representation used by the @otype{String} class, and
+       vice versa.  There are two kinds of functions, for convient translation
+       of self contained entities, and for streaming encoding or decoding of
+       chunked data.
+
+       For the convenience functions, decoding and encoding starts at the
+       beginning of the passed entity in the default state, and it is an error
+       if codec does not reach a ``clean'' state at the end of the entity.
+       Errors should be signaled by something like an exception.  Right now,
+       this is approximated (badly) by a failed @code{ASSERT}.
+
+       For chunked encoding or decoding, separate functions are provided that
+       take a state ``token'', and update it as part of their work.  The token
+       typically
+
+       @itemize @bullet
+       @item
+       contains information on some internal state (for example, holding the
+       mode of operation if the encoding employs switches),
+
+       @item
+       holds partially decoded data (for example, if the previously decoded
+       chunk ended in an incomplete byte sequence),
+
+       @item
+       specifies how to react to error conditions (like replace, discard, or
+       abort),
+
+       @item
+       keeps track of any errors (for example, by counting the number of
+       discarded characters).
+       @end itemize  *)
+    (Object.ObjectDesc)
+    
+    class-: CodecClass;
+    (**The type of the code.  One of @oconst{*Codec.unicode},
+       @oconst{*Codec.transport}, @oconst{*Codec.encryption}, or
+       @oconst{*Codec.compression}.  *)
+    
+    preferredName-: String0.String;
+    (**The preferred name for this codec.  This is an ASCII string.  A codec
+       may be known under any number of names.  If the codec has a preferred
+       MIME name, then this value should be used here.  *)
+  END;
+  Decoder* = POINTER TO DecoderDesc;
+  DecoderDesc* = RECORD [ABSTRACT]
+  END;
+  Encoder* = POINTER TO EncoderDesc;
+  EncoderDesc* = RECORD [ABSTRACT]
+  END;
   
 CONST
-  unicode* = String0.codecUnicode;
+  unicode* = 0;
   (**A Unicode codec translates a sequence of 32-bit Unicode code points into
      an 8-bit character sequence, and vice versa.  *)
-  transport* = String0.codecTransport;
+  transport* = 1;
   (**A transport codec transforms an 8-bit character string into another 8-bit
      representation, typically escaping some character codes on the way.  *)
-  encryption* = String0.codecEncryption;
+  encryption* = 2;
   (**Encrypts an 8-bit character string into another 8-bit string.  Because
      encryption needs parameters like the encryption key and an initialization
      vector as input, the shorthand notations like
      @oproc{String0.Codec.DecodeRegion} and @oproc{String0.Codec.EncodeRegion}
      do not work.  *)
-  compression* = String0.codecCompression;
+  compression* = 3;
   (**A compression codec tries to translate an 8-bit character sequence into
      a short 8-bit representation.  *)
   
 TYPE
-  Wrapper = POINTER TO WrapperDesc;
-  WrapperDesc = RECORD
-    (Object.ObjectDesc)
-    codec: String0.Codec;
-  END;
-
-TYPE
   CryptoDecoder* = POINTER TO CryptoDecoderDesc;
   CryptoDecoderDesc* = RECORD [ABSTRACT]
-    (String0.DecoderDesc)
+    (DecoderDesc)
   END;
 
 TYPE
   CryptoEncoder* = POINTER TO CryptoEncoderDesc;
   CryptoEncoderDesc* = RECORD [ABSTRACT]
-    (String0.EncoderDesc)
+    (EncoderDesc)
   END;
 
 VAR
   reg: Dictionary.Dictionary;
 
+
+
+PROCEDURE InitDecoder* (dec: Decoder);
+  BEGIN
+  END InitDecoder;
+
+PROCEDURE InitEncoder* (enc: Encoder);
+  BEGIN
+  END InitEncoder;
+
+PROCEDURE (dec: Decoder) [ABSTRACT] DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
+                                                 start, end: LONGINT;
+                                                 b: String0.Buffer);
+(**Decode the 8-bit character sequence in @samp{data[start, end-1]} starting
+   with the decoder state @oparam{dec}.  The result is appended to the string
+   buffer @oparam{b}.  On completion, @oparam{state} is updated to reflect the
+   decoder's state after the last byte of the sequence has been processed.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{data})}.
+   @end precond  *)
+  END DecodeIncr;
+
+PROCEDURE (enc: Encoder) [ABSTRACT] EncodeIncr*(s: String0.String;
+                                                start, end: LONGINT;
+                                                b: String0.Buffer);
+(**Encode the 8-bit character sequence in @samp{s[start, end-1]} starting with
+   the encoder state @oparam{enc}.  The result is a string holding only code
+   points in the range @samp{[U+0000, U+00FF]}, which is appended to the string
+   buffer @oparam{b}.  On completion, @oparam{enc} is updated to reflect the
+   encoder's state after the last byte of the sequence has been processed.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= @oparam{s}.length}.  All code
+   points in @samp{data[start, end-1]} are valid.  That is, neither is out of
+   range nor from the surrogate areas.
+   @end precond  *)
+  END EncodeIncr;
+
+PROCEDURE (enc: Encoder) [ABSTRACT] Closure*(b: String0.Buffer);
+(**If the encoder still holds any partial data from previous calls to
+   @oproc{enc.EncodeIncr}, then flush this data to the buffer @oparam{b}.  This
+   method must be called at the end of the data stream for codecs that operate
+   on blocks of data, and for which the last and possibly incomplete block must
+   be handled specially.  *)
+  END Closure;
+
+PROCEDURE InitCodec* (codec: Codec; class: CodecClass;
+                      preferredName: ARRAY OF CHAR);
+  BEGIN
+    Object.Init (codec);
+    codec. class := class;
+    codec. preferredName := String0.NewLatin1(preferredName);
+  END InitCodec;
+
+PROCEDURE (codec: Codec) [ABSTRACT] NewDecoder*(): Decoder;
+(**Creates a decoder object for the codec @oparam{codec}.  Note: Some decoders,
+   like those implementing an decryption algorithm, require additional settings
+   before they can be used.  *)
+  END NewDecoder;
+
+PROCEDURE (codec: Codec) [ABSTRACT] NewEncoder*(): Encoder;
+(**Creates an encoder object for the codec @oparam{codec}.  Note: Some
+   encoders, like those implementing encryption algorithm, require additional
+   settings before they can be used.  *)
+  END NewEncoder;
+
+PROCEDURE (codec: Codec) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
+                                       start, end: LONGINT): String0.String;
+(**Decode the 8-bit character sequence in @samp{data[start, end-1]}.  For
+   succesul completion, the byte sequence @samp{data[start, end-1]} must be
+   well formed with respect to the decoder, and the resulting Unicode code
+   points must all be valid.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{data})}.
+   @end precond  *)
+  VAR
+    dec: Decoder;
+    b: String0.Buffer;
+  BEGIN
+    dec := codec. NewDecoder();
+    b := String0.NewBuffer(end-start);
+    dec. DecodeIncr (data, start, end, b);
+    RETURN b. ToString();
+  END DecodeRegion;
+
+PROCEDURE (codec: Codec) Decode*(data[NO_COPY]: ARRAY OF CHAR): String0.String;
+(**Equivalent to @samp{codec.Decode(data,0,String.Length(data))}.  *)
+  VAR
+    i: LONGINT;
+  BEGIN
+    i := 0;
+    WHILE(data[i] # 0X) DO
+      INC(i);
+    END;
+    RETURN codec. DecodeRegion (data, 0, i);
+  END Decode;
+
+PROCEDURE (codec: Codec) EncodeRegion*(s: String0.String;
+                                       start, end: LONGINT): String0.String8;
+(**Encode Unicode sequence in @samp{s[start, end-1]} into the 8-bit
+   character sequence.  The result is stored in a string holding only code
+   points in the range @samp{[U+0000, U+00FF]}.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= @oparam{s}.length}.  All code
+   points in @samp{data[start, end-1]} are valid.  That is, neither is out of
+   range nor from the surrogate areas.
+   @end precond  *)
+  VAR
+    enc: Encoder;
+    b: String0.Buffer;
+    s8: String0.String;
+  BEGIN
+    enc := codec. NewEncoder();
+    b := String0.NewBuffer (end-start);
+    enc. EncodeIncr (s, start, end, b);
+    s8 := b. ToString();
+    RETURN s8(String0.String8);
+  END EncodeRegion;
+
+PROCEDURE (codec: Codec) Encode*(s: String0.String): String0.String8;
+(**Equivalent to @samp{codec.Encode(s,0,s.length)}.  *)
+  BEGIN
+    RETURN codec.EncodeRegion(s, 0, s.length);
+  END Encode;
+
 PROCEDURE InitCryptoDecoder* (dec: CryptoDecoder);
   BEGIN
-    String0.InitDecoder (dec);
+    InitDecoder (dec);
   END InitCryptoDecoder;
 
 PROCEDURE InitCryptoEncoder* (enc: CryptoEncoder);
   BEGIN
-    String0.InitEncoder (enc);
+    InitEncoder (enc);
   END InitCryptoEncoder;
 
 PROCEDURE (dec: CryptoDecoder) [ABSTRACT] SetKey* (key: String0.String8);
@@ -92,17 +262,7 @@ PROCEDURE (enc: CryptoEncoder) [ABSTRACT] SetKey* (key: String0.String8);
   END SetKey;
 
 
-PROCEDURE NewWrapper (codec: String0.Codec): Wrapper;
-  VAR
-    w: Wrapper;
-  BEGIN
-    NEW (w);
-    Object.Init (w);
-    w. codec := codec;
-    RETURN w;
-  END NewWrapper;
-
-PROCEDURE Get* (name: ARRAY OF CHAR): String0.Codec;
+PROCEDURE Get* (name: ARRAY OF CHAR): Codec;
   VAR
     obj: Object.Object;
   BEGIN
@@ -111,36 +271,19 @@ PROCEDURE Get* (name: ARRAY OF CHAR): String0.Codec;
     IF (obj = NIL) THEN
       RETURN NIL;
     ELSE
-      RETURN obj(Wrapper). codec;
+      RETURN obj(Codec);
     END;
   END Get;
 
-PROCEDURE Register* (codec: String0.Codec; name: ARRAY OF CHAR);
+PROCEDURE Register* (codec: Codec; name: ARRAY OF CHAR);
 (**@precond
    @oparam{name} is an ASCII string.
    @end precond  *)
   BEGIN
     Strings.Capitalize (name);
-    reg. Set (String.New (name), NewWrapper (codec));
+    reg. Set (String.New (name), codec);
   END Register;
 
-PROCEDURE Init* ();
-  BEGIN
-    reg := Dictionary.New();
-    
-    Register (String0.latin1, "ISO_8859-1:1987");
-    Register (String0.latin1, "iso-ir-100");
-    Register (String0.latin1, "ISO_8859-1");
-    Register (String0.latin1, "ISO-8859-1");  (* preferred MIME name *)
-    Register (String0.latin1, "latin1");
-    Register (String0.latin1, "l1");
-    Register (String0.latin1, "IBM819");
-    Register (String0.latin1, "CP819");
-    Register (String0.latin1, "csISOLatin1y");
-
-    Register (String0.utf32, "UTF-32");
-  END Init;
-
 BEGIN
-  Init
+  reg := Dictionary.New();
 END Codec.
