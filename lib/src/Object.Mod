@@ -1,4 +1,22 @@
+(* 	$Id$	 *)
 MODULE Object;
+(*  Low-level object and string implementation.
+    Copyright (C) 2002  Michael van Acken
+
+    This module is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public License
+    as published by the Free Software Foundation; either version 2 of
+    the License, or (at your option) any later version.
+
+    This module is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with OOC. If not, write to the Free Software Foundation,
+    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
 
 (**This module provides the definitions for a basic object type used in most of
    the ADT library.
@@ -22,7 +40,7 @@ TYPE
      and @oproc{Object.HashCode}.
 
      It is an abstract class without any state of its own.  As such, it has no
-     initialization procedure or a cleanup method.  *)
+     initialization procedure or cleanup method.  *)
   END;
 
 TYPE
@@ -49,16 +67,15 @@ TYPE
 TYPE
   CharsLatin1* = POINTER TO ARRAY[READ_ONLY] OF CHAR;
   (**Note: The elements of this type should be considered read-only in
-     importing modules, similar to read-only exported record fields.  This
-     restriction may be enforced by the OOC2 compiler at a later stage.  *)
+     importing modules, similar to read-only exported record fields.  *)
   CharsUCS4* = POINTER TO ARRAY[READ_ONLY] OF UCS4CHAR;
   (**Note: The elements of this type should be considered read-only in
-     importing modules, similar to read-only exported record fields.  This
-     restriction may be enforced by the OOC2 compiler at a later stage.  *)
+     importing modules, similar to read-only exported record fields.  *)
   
 TYPE
   String8* = POINTER TO String8Desc;
   String8Desc = RECORD
+  (**Concrete class for 8-bit strings.  *)
     (StringDesc)
     data: CharsLatin1;
     (**Holds a sequence of Unicode code points in the range @samp{U+0000} to
@@ -69,6 +86,7 @@ TYPE
 TYPE
   String32* = POINTER TO String32Desc;
   String32Desc = RECORD
+  (**Concrete class for 32-bit strings.  *)
     (StringDesc) 
     data: CharsUCS4;
     (**Holds a sequence of Unicode code points in the range @samp{U+0000} to
@@ -79,7 +97,9 @@ TYPE
 
 VAR
   emptyString-: String;
-
+  (**Initialized with an instance of @otype{String8} holding the empty
+     string.  *)
+     
 PROCEDURE ^ NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR;
                              start, end: LONGINT): String8;
 
@@ -404,6 +424,11 @@ PROCEDURE NewUCS4*(str[NO_COPY]: ARRAY OF UCS4CHAR): String;
   END NewUCS4;
 
 PROCEDURE Concat2* (s1, s2: String): String;
+(**Concatenates two strings.
+
+   @precond
+   Neither @oparam{s1} nor @oparam{s2} is @code{NIL}.
+   @end precond *)
   VAR
     c8: String8;
     c32: String32;
@@ -464,21 +489,33 @@ PROCEDURE Concat2* (s1, s2: String): String;
   END Concat2;
 
 PROCEDURE (s: String) Concat*(t: String): String;
+(**Concatenates strings @oparam{s} and @oparam{t}.
+
+   @precond
+   @oparam{t} is not @code{NIL}.
+   @end precond *)
   BEGIN
     RETURN Concat2(s, t);
   END Concat;
 
 PROCEDURE (s: String8) CharsLatin1*(): CharsLatin1;
+(**Return a reference to the string's content.  The characters from the
+   index range @samp{[0, @ofield{s.length}[} hold valid data.  The character
+   at position @ofield{s.length} is @code{0X}.  *)
   BEGIN
     RETURN s.data;
   END CharsLatin1;
 
 PROCEDURE (s: String32) CharsUCS4*(): CharsUCS4;
+(**Return a reference to the string's content.  The characters from the
+   index range @samp{[0, @ofield{s.length}[} hold valid data.  The character
+   at position @ofield{s.length} is @code{0X}.  *)
   BEGIN
     RETURN s.data;
   END CharsUCS4;
 
 PROCEDURE (s: String) ToString*(): String;
+(**Identity operation returning @oparam{s}.  *)
   BEGIN
     RETURN s;
   END ToString;
@@ -533,6 +570,21 @@ PROCEDURE (s: String32) Equals*(y: Object): BOOLEAN;
   END Equals;
 
 PROCEDURE (s: String) [ABSTRACT] Compare*(y: Object): LONGINT;
+(**Compares the two strings @oparam{s} and @oparam{y}.  The sign of the result 
+   signals if @oparam{s} is less than, equal to, or greater than @oparam{y}:
+   
+   @table @asis
+   @item @oparam{s} < @oparam{y}
+   @result{} < 0
+   @item @oparam{s} = @oparam{y}
+   @result{} > 0
+   @item @oparam{s} > @oparam{y}
+   @result{} > 0
+   @end table
+
+   @precond
+   @oparam{y} is not @code{NIL}.
+   @end precond *)
   END Compare;
 
 PROCEDURE (s: String8) Compare*(y: Object): LONGINT;
@@ -641,6 +693,11 @@ PROCEDURE (s: String32) HashCode*(): Hash;
   END HashCode;
 
 PROCEDURE (s: String) [ABSTRACT] CharAt* (index: LONGINT): UCS4CHAR;
+(**Return the character at position @oparam{index}.
+
+   @precond
+   @samp{0 <= @oparam{index} < @ofield{s.length}}
+   @end precond *)
   END CharAt;
 
 PROCEDURE (s: String8) CharAt* (index: LONGINT): UCS4CHAR;
@@ -654,6 +711,13 @@ PROCEDURE (s: String32) CharAt* (index: LONGINT): UCS4CHAR;
   END CharAt;
 
 PROCEDURE (s: String) [ABSTRACT] Substring* (start, end: LONGINT): String;
+(**Return the substring of @oparam{s} starting at @oparam{start} (inclusive)
+   and ending at @oparam{end} (exclusive).  The length of the result is
+   @samp{end-start}.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= @ofield{s.length}}
+   @end precond *)
   END Substring;
 
 PROCEDURE (s: String8) Substring* (start, end: LONGINT): String;
@@ -668,6 +732,13 @@ PROCEDURE (s: String32) Substring* (start, end: LONGINT): String;
 
 
 PROCEDURE (s: String) [ABSTRACT] IndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT;
+(**Return the index of the first character matching @oparam{char}.  Search
+   starts at @oparam{pos} and progresses to the end of the string @oparam{s}.
+   If no matching character is found, result is @samp{-1}.
+   
+   @precond
+   @samp{0 <= @oparam{pos} <= @ofield{s.length}}
+   @end precond *)
   END IndexOf;
 
 PROCEDURE (s: String8) IndexOf* (char: UCS4CHAR; pos: LONGINT): LONGINT;
