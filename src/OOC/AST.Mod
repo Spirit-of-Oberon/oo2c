@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST [OOC_EXTENSIONS];
 (*  Abstract builder class for parser output.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -31,6 +31,7 @@ TYPE
   Node* = POINTER TO NodeDesc;
   NodeDesc* = RECORD [ABSTRACT]
     (**Base type of all nodes that make up the abstract syntax tree.  *)
+    (Sym.TempNodeDesc)
   END;
 
 TYPE
