@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; tbproc1 tbproc13">-->
+  select ="&SetupTestCasesWithOut; assign17">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; generic72">-->
@@ -76,6 +76,10 @@
     </test>
     <test id="assign16" type="reject" file="Assign16.Mod">
       Invalid assignment to type name.
+    </test>
+    <test id="assign17" type="run" file="Assign17.Mod" output="Assign17.Ref">
+      Right hand of assignment is a type guard applied to a
+      dereferenced record pointer.
     </test>
     
     <test id="return1" type="reject" file="Return1.Mod">
