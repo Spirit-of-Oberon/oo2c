@@ -432,7 +432,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
   
   BEGIN
     IF (value = NIL) THEN
-      w. WriteString ("NULL");
+      w. WriteString ("0");
     ELSE
       WITH value: Boolean.Value DO
         IF value. value THEN
