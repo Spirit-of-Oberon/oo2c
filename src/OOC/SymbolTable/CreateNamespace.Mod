@@ -468,6 +468,7 @@ RAISES IO.Error;
       i, typeDeclCount: LONGINT;
       receiver: Sym.VarDecl;
       typePars: Sym.TypePars;
+      class: Sym.Record;
       
     PROCEDURE GetTypeByName (typeName: Sym.Type; contextOfUse: Sym.Item; 
                       extendedSearch: BOOLEAN; errList: Error.List): Sym.Type;
@@ -652,7 +653,9 @@ RAISES IO.Error;
             receiver := item.formalPars.receiver;
             receiver.SetType(GetTypeByName(receiver.type,
                                            contextOfUse, FALSE, errList));
-            item.formalPars.SetTypePars(receiver.type.typePars);
+            class := item.Class();
+            item.formalPars.SetTypePars(class.typePars);
+            (*item.formalPars.SetTypePars(receiver.type.typePars);*)
           END;
           contextOfUse := item
         | item: Sym.TypePars DO
@@ -856,17 +859,15 @@ RAISES IO.Error;
   PROCEDURE InsertTypeBoundProcs (module: Sym.Module; errList: Error.List);
   (* Adds type-bound procedures to the namespace of their record base type.  *)
     VAR
-      ptr, record: Sym.Item;
+      ptr: Sym.Item;
+      record: Sym.Record;
     BEGIN
       ptr := root. nestedItems;
       WHILE (ptr # NIL) DO
         WITH ptr: Sym.ProcDecl DO
           IF ptr. isTypeBound & ~ptr. isForwardDecl THEN
-            record := ptr. formalPars. receiver. type;
-            IF (record IS Sym.Pointer) THEN
-              record := record(Sym.Pointer). baseType
-            END;
-            WITH record: Sym.Record DO
+            record := ptr.Class();
+            IF (record # NIL) THEN
               record. ns(Namespace.Extended). InsertTBProc (ptr, errList);
               IF (ptr.name.pos >= 0) &  (* don't overwrite imported flag *)
                  ((ptr.exportMark = Sym.nameNotExported) OR
@@ -878,7 +879,6 @@ RAISES IO.Error;
                    local module *)
                 ptr.notRedefined := TRUE;
               END;
-            ELSE  (* receiver is malformed in some way *)
             END
           END
         ELSE
@@ -1262,9 +1262,9 @@ RAISES IO.Error;
             Merge(type, type.baseType);
 
           | type: Sym.FormalPars DO
-            IF (type.receiver # NIL) THEN
-              MergeVarDecl(type, type.receiver);
-            END;
+            (* do not propagate unbound variables from the receiver type: they
+               are of no interest in the "outside" view, and always qualified
+               in the "inside" view *)
             FOR i := 0 TO LEN(type.params^)-1 DO
               MergeVarDecl(type, type.params[i]);
             END;
@@ -1290,7 +1290,7 @@ RAISES IO.Error;
             END;
 
           | type: Sym.QualType DO
-            (* no variables are propagted out of the unqualified base type *)
+            (* no variables are propagated out of the unqualified base type *)
             FOR i := 0 TO LEN(type.arguments^)-1 DO
               Propagate(type.arguments[i].type, type.arguments[i].srcCodeType);
               Merge(type, type.arguments[i].type);
@@ -1305,6 +1305,10 @@ RAISES IO.Error;
     BEGIN
       WITH item: Sym.TypeDecl DO
         Propagate(item.type, item.srcCodeType);
+      | item: Sym.ProcDecl DO
+        IF item.isTypeBound THEN
+          Propagate(item.formalPars, item.formalPars);
+        END;
       ELSE
         (* ignore *)
       END;
