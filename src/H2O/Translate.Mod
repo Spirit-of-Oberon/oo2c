@@ -15,20 +15,10 @@ TYPE
   RewriteProceduresDesc = RECORD (Type.VisitorDesc)
   END;
 
-  RewriteAliases = POINTER TO RewriteAliasesDesc;
-  RewriteAliasesDesc = RECORD (Type.VisitorDesc)
-  END;
-
-  ApplyDefaultVariants = POINTER TO ApplyDefaultVariantsDesc;
-  ApplyDefaultVariantsDesc = RECORD (Type.VisitorDesc)
-  END;
-
 VAR
   seq : LONGINT;
   e : Emitter.Emitter;
   rewriteProcedures : RewriteProcedures;
-  rewriteAliases : RewriteAliases;
-  applyDefaultVariants : ApplyDefaultVariants;
 
   options- : Option.Options;
 
@@ -46,6 +36,9 @@ VAR
   mapPointer : Option.String;
   moduleSuffix : Option.String;
   outputDirectory : Option.String;
+  renameVariables : Option.Boolean;
+  renameProcedures : Option.Boolean;
+  tagSuffix : Option.String;
 
 (*
 Elimination of type constructors:
@@ -70,6 +63,16 @@ ARRAY OF T (parameter)
             3, 5
 *)
 
+PROCEDURE GetName(t : Type.Type) : STRING;
+BEGIN
+  ASSERT(Type.IsNamedType(t));
+  IF Type.IsTaggedType(t) THEN
+    RETURN t.name + tagSuffix.value
+  ELSE
+    RETURN t.name;
+  END;
+END GetName;
+
 PROCEDURE DeclareType(VAR t : Type.Type; mod : Type.Module);
 VAR 
   alias, base : Type.Type;
@@ -80,24 +83,17 @@ BEGIN
     CASE t.class OF
     | Type.tPointer:
       IF Variant.array IN t.variant THEN 
-        Log.Set("Variant", t.variant);
-        Log.Object("PointerToArray", t);
         t.class := Type.tArray;
         t.size := -1
       END;
     | Type.tArray:
       IF Variant.pointer IN t.variant THEN 
-        Log.Object("ArrayToPointer", t);
         t.class := Type.tPointer 
       END;
     ELSE
     END;
-    Log.Object("DeclareType", t);
-    Log.Object("InModule", mod.name);
-    alias := Type.FindAliasTypeModule(mod, t);
-    Log.Object("FoundAlias", alias);
+    alias := Type.FindAliasTypeModule(mod, t, FALSE);
     IF alias # NIL THEN
-    Log.Object("InModule", alias.module.name);
       t := alias;
     ELSE
       base := t.base;
@@ -109,7 +105,7 @@ BEGIN
       | Type.tEnum:     buf.Append("Enum");
       END;
       IF Type.IsNamedType(base) THEN
-        buf.Append(base.name)
+        buf.Append(GetName(base))
       ELSE
         buf.AppendInt(seq); INC(seq);
       END;
@@ -127,13 +123,21 @@ PROCEDURE EliminateConstructors(VAR t : Type.Type; o : Type.Object; mod : Type.M
 BEGIN
   IF Type.IsTypeConstructor(t) THEN
     IF (o # NIL) THEN
-      IF (t.class = Type.tPointer) 
-       & (Variant.var IN o.variant) 
-       & ~Type.IsPointerBaseType(t.base) THEN
-        DeclareType(t.base, mod)
+      IF (t.class = Type.tPointer) THEN
+        IF ~(Variant.defined IN o.variant)
+          & ~Type.IsPointerBaseType(t.base.Base())
+          & mod.defaultVar.value THEN
+          o.variant := o.variant + {Variant.defined, Variant.var};
+        END;
+        IF (Variant.var IN o.variant)
+          & ~Type.IsPointerBaseType(t.base) THEN
+          DeclareType(t.base, mod)
+        ELSE
+          DeclareType(t, mod)
+        END
       ELSE
         DeclareType(t, mod)
-      END;
+      END
     ELSE
       DeclareType(t, mod)
     END;
@@ -158,41 +162,18 @@ BEGIN
   v.type := { Type.post};
 END INIT;
 
-PROCEDURE ApplyDefaultVariant(VAR t : Type.Type; param : BOOLEAN; mod : Type.Module);
-BEGIN
-  IF t.variant = {} THEN
-  END;
-END ApplyDefaultVariant;
-
-PROCEDURE (v : ApplyDefaultVariants) AcceptPost* (VAR t : Type.Type; mod : Type.Module); 
-VAR o : Type.Object;
-BEGIN
-  IF t.class = Type.tFunction THEN
-    ApplyDefaultVariant(t.base, FALSE, mod);
-    o := t.link;
-    WHILE o # NIL DO
-      ApplyDefaultVariant(o.type, TRUE, mod);
-      o := o.next;
-    END;
-  END;
-END AcceptPost;
-
-PROCEDURE (v : ApplyDefaultVariants) INIT*;
-BEGIN
-  v.type := { Type.post};
-END INIT;
-
 PROCEDURE EliminateAliases(VAR t : Type.Type; mod : Type.Module);
 VAR
   alias : Type.Type;
 BEGIN
-  alias := Type.FindAliasTypeModule(mod, t);
+  alias := Type.FindAliasTypeModule(mod, t, FALSE);
   IF alias # NIL THEN
     t := alias;
   ELSE
   END;
 END EliminateAliases;
 
+(*
 PROCEDURE (v : RewriteAliases) AcceptPost* (VAR t : Type.Type; mod : Type.Module);
 BEGIN
   EliminateAliases(t, mod);
@@ -202,6 +183,48 @@ PROCEDURE (v : RewriteAliases) INIT*;
 BEGIN
   v.type := { Type.post};
 END INIT;
+*)
+
+PROCEDURE ^RewriteAliases(VAR t : Type.Type; mod : Type.Module);
+
+PROCEDURE RewriteAliasesObjects(o : Type.Object; mod : Type.Module; par : BOOLEAN);
+BEGIN
+  WHILE o # NIL DO
+    IF par & (Variant.var IN o.variant) THEN
+      RewriteAliases(o.type.base, mod);
+    ELSE
+      RewriteAliases(o.type, mod);
+    END;
+    o := o.next;
+  END;
+END RewriteAliasesObjects;
+
+PROCEDURE RewriteAliases(VAR t : Type.Type; mod : Type.Module);
+BEGIN
+  IF t.module # mod THEN RETURN END;
+
+  IF t.class IN { Type.tFunction, Type.tStruct, Type.tUnion } THEN
+    RewriteAliasesObjects(t.link, mod, t.class = Type.tFunction)
+  END;
+  IF t.class = Type.tPointer THEN
+    IF ~Type.IsNamedType(t.base (* .Base() *)) THEN
+      RewriteAliases(t.base, mod);
+    END;
+  ELSIF t.class IN { Type.tFunction, Type.tArray, Type.tQualifier } THEN
+    RewriteAliases(t.base, mod);
+  END;
+  EliminateAliases(t, mod);
+END RewriteAliases;
+
+PROCEDURE RewriteAliasesList(o : Type.Object; mod : Type.Module);
+BEGIN
+  WHILE o # NIL DO
+    IF o.type.class = Type.tName THEN
+      RewriteAliases(o.type.base, mod);
+    END;
+    o := o.next;
+  END;
+END RewriteAliasesList;
 
 PROCEDURE MapNumber(e : Emitter.Emitter;
   size : LONGINT; m1, m2, m4, m8 : Option.String);
@@ -225,7 +248,6 @@ VAR
   base : Type.Type;
   var : BOOLEAN;
 BEGIN
-  Log.Object("WriteParams", t);
   e.WriteChar("(");
   obj := t.link;
   pos := 0;
@@ -253,7 +275,7 @@ BEGIN
     INC(pos);
   END;
   e.WriteString(")");
-  IF t.base # Type.voidType THEN
+  IF t.base.Base() # Type.voidType THEN
     e.WriteString(" : ");
     WriteType(e, t.base, mod, level);
   END;
@@ -279,7 +301,11 @@ BEGIN
     e.WriteString("POINTER TO ");
     WriteType(e, t.base, mod, level);
   ELSE
-    e.WriteString("POINTER TO ARRAY OF ");
+    e.WriteString("POINTER ");
+    IF Variant.cstring IN t.variant THEN
+      e.WriteString("[CSTRING] ");
+    END;
+    e.WriteString("TO ARRAY OF ");
     WriteType(e, t.base, mod, level);
   END;
 END WritePointerType;
@@ -331,8 +357,8 @@ BEGIN
   | Type.tReal:
     MapNumber(e, t.size, NIL, NIL, mapFloatType, mapDoubleType);
   | Type.tStruct, Type.tUnion:
-    IF t.name # NIL THEN
-      e.WriteObject(t.name);
+    IF (t.name # NIL) & (Variant.emitted IN t.variant) THEN
+      e.WriteObject(GetName(t))
     ELSE
       WriteRecordType(e, t, mod, level);
     END;
@@ -362,13 +388,17 @@ BEGIN
   e.WriteObject("* = ");
 END DeclName;
 
-PROCEDURE TranslateType(obj : Type.Object; e : Emitter.Emitter);
-VAR 
-  type : Type.Type;
+PROCEDURE EmitTypeDeclaration* (name : STRING; type : Type.Type; mod : Type.Module; e : Emitter.Emitter);
+VAR
   base : Type.Type;
   canConvert : BOOLEAN;
 BEGIN
-  type := obj.type;;
+  IF Type.IsNamedType(type) THEN
+    IF Variant.emitted IN type.variant THEN
+      RETURN
+    END;
+  END;
+
   base := type.Base();
   canConvert := ~((base.class = Type.tVoid) OR (base.class = Type.tFunction));
 
@@ -377,24 +407,29 @@ BEGIN
     e.WriteString("(* ");
   END;
   e.Indent(1);
-  DeclName(e, obj.name, obj.module);
+  DeclName(e, name, mod);
   (* always dereference "Name" types *)
   IF type.class = Type.tName THEN
-    WriteType(e, type.base, obj.module, 1);
+    WriteType(e, type.base, mod, 1);
   ELSE
-    WriteType(e, obj.type, obj.module, 1);
+    WriteType(e, type, mod, 1);
   END;
   e.WriteChar(";");
   IF ~canConvert THEN
     e.WriteString("*)");
   END;
   e.WriteLn;
-END TranslateType;
+  INCL(type.variant, Variant.emitted)
+END EmitTypeDeclaration;
 
-PROCEDURE DeclNameFlags(e : Emitter.Emitter; name : STRING; mod : Type.Module; flagsBeforeName : BOOLEAN);
+PROCEDURE DeclNameFlags(e : Emitter.Emitter; name : STRING; mod : Type.Module; flagsBeforeName : BOOLEAN; doMapNames : BOOLEAN);
 VAR mapName : STRING;
 BEGIN
-  mapName := mod.MapName(name);
+  IF doMapNames THEN
+    mapName := mod.MapName(name);
+  ELSE
+    mapName := name;
+  END;
   IF ~flagsBeforeName THEN 
     e.WriteObject(mapName); e.WriteString("* ") 
   END;
@@ -416,7 +451,7 @@ BEGIN
   IF t.class # Type.tFunction THEN
     e.DeclType(Emitter.dtVar);
     e.Indent(1);
-    DeclNameFlags(e, obj.name, obj.module, FALSE);
+    DeclNameFlags(e, obj.name, obj.module, FALSE, renameVariables.value);
     e.WriteString(": ");
     WriteType(e, t, obj.module, 1);
     e.WriteChar(";");
@@ -432,7 +467,7 @@ BEGIN
   IF t.class = Type.tFunction THEN
      e.Indent(1);
      e.WriteString("PROCEDURE ");
-     DeclNameFlags(e, obj.name, obj.module, TRUE);
+     DeclNameFlags(e, obj.name, obj.module, TRUE, renameProcedures.value);
      WriteParams(e, obj.type, obj.module, 1);
      e.WriteChar(";");
      e.WriteLn;
@@ -463,6 +498,7 @@ VAR
   writer : TextRider.Writer;
   name : STRING;
   depCount : INTEGER;
+  o : Type.Object;
 
   PROCEDURE ListDependencies(VAR count : INTEGER; type : STRING; list : Option.StringList);
   BEGIN
@@ -478,11 +514,55 @@ VAR
     END;
   END ListDependencies;
 
+  PROCEDURE ^EmitReferencedObjects(o : Type.Object);
+
+  PROCEDURE EmitReferencedTypes(t : Type.Type);
+  VAR base : Type.Type;
+  BEGIN
+    IF t.class IN { Type.tFunction, Type.tStruct, Type.tUnion} THEN
+      EmitReferencedObjects(t.link);
+    END;
+    IF t.class = Type.tPointer THEN
+      base := t.base.Base();
+      IF base.class IN {Type.tStruct, Type.tUnion} THEN
+      ELSE
+        EmitReferencedTypes(t.base);
+      END;
+    ELSIF t.class IN {Type.tFunction, Type.tArray, Type.tQualifier} THEN
+      EmitReferencedTypes(t.base);
+    ELSIF Type.IsNamedType(t) THEN
+      IF (t.module = m) THEN
+        EmitTypeDeclaration(GetName(t), t, t.module, e);
+      END;
+    END;
+  END EmitReferencedTypes;
+
+  PROCEDURE EmitReferencedObjects(o : Type.Object);
+  BEGIN
+    WHILE o # NIL DO
+      EmitReferencedTypes(o.type);
+      o := o.next;
+    END;
+  END EmitReferencedObjects;
+
+  PROCEDURE EmitTypes(o : Type.Object);
+  BEGIN
+    WHILE o # NIL DO
+      IF o.type.class = Type.tName THEN
+        EmitReferencedTypes(o.type.base);
+      ELSE
+        EmitReferencedTypes(o.type);
+      END;
+      EmitTypeDeclaration(o.name, o.type, o.module, e);
+      o := o.next;
+    END;
+  END EmitTypes;
+
 BEGIN
   name := outputDirectory.value + "/" + 
     m.outputName.value + "." + moduleSuffix.value;
 TRY
-  file := FileChannel.OpenUnbuffered(name, {FileChannel.write, FileChannel.create});
+  file := FileChannel.OpenUnbuffered(name, {FileChannel.write, FileChannel.create, FileChannel.truncate});
   writer := TextRider.ConnectWriter(file);
   e := NEW(Emitter.Emitter, writer);
   e.WriteString("MODULE ");
@@ -512,8 +592,8 @@ TRY
   e.WriteLn;
   Parser.ParseMacros(e, m);
 
-  Enum(m.types, e, TranslateType);
-  Enum(m.typedefs, e, TranslateType);
+  EmitTypes(m.types);
+  EmitTypes(m.typedefs);
   Enum(m.vars, e, TranslateVar);
   Enum(m.vars, e, TranslateProc);
   
@@ -527,32 +607,44 @@ CATCH E.Exception(e):
 END;
 END TranslateModule;
 
+PROCEDURE ProcessModule(m : Type.Module);
+
+  PROCEDURE TranslateImportedModules;
+  VAR i : LONGINT; mod : Type.Module;
+  BEGIN
+    FOR i := 0 TO m.imports.Size() -1 DO
+      mod := m.imports.Get(i);
+      IF ~mod.visited THEN
+        ProcessModule(mod);
+      END;
+    END;
+  END TranslateImportedModules;
+
+BEGIN
+  TranslateImportedModules;
+  m.visited := TRUE;
+  Log.Object("Processing", m.name);
+
+  seq := 0;
+  ApplyRules(m.types);
+  ApplyRules(m.typedefs);
+  ApplyRules(m.vars);
+  Type.TraverseTypes(m, rewriteProcedures);
+  RewriteAliasesList(m.types, m);
+  RewriteAliasesList(m.typedefs, m);
+  RewriteAliasesList(m.vars, m);
+  (* Type.TraverseTypes(m, rewriteAliases); *)
+  IF m.definitions > 0 THEN
+    TranslateModule(m);
+  END;
+END ProcessModule;
+
 PROCEDURE Translate* ();
 VAR m : Type.Module;
 BEGIN
   m := Type.modules;
   WHILE m # NIL DO
-    Parser.ShowDepend(m.name, m.imports);
-    m := m.next;
-  END;
-
-  m := Type.modules;
-  seq := 0;
-  WHILE m # NIL DO
-    ApplyRules(m.types);
-    ApplyRules(m.typedefs);
-    ApplyRules(m.vars);
-    (* Type.TraverseTypes(m, applyDefaultRules); *)
-    Type.TraverseTypes(m, rewriteProcedures);
-    (* Type.TraverseTypes(m, rewriteAliases); *)
-    m := m.next;
-  END; 
-
-  m := Type.modules;
-  WHILE m # NIL DO
-    IF m.definitions > 0 THEN
-      TranslateModule(m);
-    END;
+    IF ~m.visited THEN ProcessModule(m) END;
     m := m.next;
   END;
 END Translate;
@@ -573,6 +665,9 @@ BEGIN
   mapLongDoubleType := options.String("MapLongDouble", "LONGDOUBLE");
   mapPointer := options.String("MapPointer", "SYSTEM.PTR");
   outputDirectory := options.String("OutputDirectory", ".");
+  renameVariables := options.Boolean("RenameVariables", FALSE);
+  renameProcedures := options.Boolean("RenameProcedures", TRUE);
+  tagSuffix := options.String("TagSuffix", "_tag");
 
   moduleSuffix := options.String("ModuleSuffix", "Mod");
 END InitOptions;
@@ -580,5 +675,5 @@ END InitOptions;
 BEGIN
   InitOptions;
   rewriteProcedures := NEW(RewriteProcedures);
-  rewriteAliases := NEW(RewriteAliases);
+  (* rewriteAliases := NEW(RewriteAliases); *)
 END H2O:Translate.
