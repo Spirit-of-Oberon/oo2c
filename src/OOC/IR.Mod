@@ -5607,7 +5607,7 @@ PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest;
       var := typeTest. expr(Var). decl(Sym.VarDecl);
       NEW (da, 1);
       da[0] := NewGuardedVar (var, var.name,
-                              typeTest.origType.decl(Sym.TypeDecl).type);
+                              Sym.Expand(typeTest.origType.qualType));
       nested := Namespace.NewNested (da, 1);
       nested. SetEnclosingNamespace (namespace(Namespace.Nested));
       namespace := nested;
