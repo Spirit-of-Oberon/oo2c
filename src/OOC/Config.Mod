@@ -8,7 +8,7 @@ IMPORT
 
 
 VAR
-  options: Options.Section;
+  options-: Options.Section;
   cmdLine: CmdLine.CmdLine;
   arguments-: Arguments.Section;
   pragmas-: Pragmas.Section;
