@@ -22,10 +22,13 @@ MODULE OOC:SymbolTable:Predef;
 
 
 IMPORT
-  Strings, OOC:SymbolTable:Item, OOC:SymbolTable:Builder;
+  Strings, Language, Language:Boolean,
+  OOC:SymbolTable:Item, OOC:SymbolTable:Builder;
 
 
-CONST  (* note: ids must be unique across all predefined types *)
+CONST
+  (* note: ids must be unique across all predefined types; this includes
+     the ones defined in `System.Mod' *)
   boolean* = 0;
   char* = 1;
   longchar* = 2;
@@ -35,6 +38,10 @@ CONST  (* note: ids must be unique across all predefined types *)
   real* = 6;
   longreal* = 7;
   set* = 8;
+
+CONST
+  (* predefine procedures and functions *)
+  assert* = 0;
 
 
 PROCEDURE CreateModule* (stb: Builder.Builder): Item.Module;
@@ -68,22 +75,38 @@ PROCEDURE CreateModule* (stb: Builder.Builder): Item.Module;
                                  Item.nameExported, NIL, ptype)
     END PredefType;
   
+  PROCEDURE PredefProc (id: Item.PredefId; name: ARRAY OF CHAR);
+    VAR
+      pproc: Item.PredefProc;
+    BEGIN
+      pproc := stb. NewPredefProc (module, GetName (name), id);
+    END PredefProc;
+  
+  PROCEDURE PredefConst (name: ARRAY OF CHAR; value: Language.Value);
+    VAR
+      cdecl: Item.ConstDecl;
+    BEGIN
+      cdecl := stb. NewConstDecl (module, GetName (name), 0, Item.nameExported,
+                                  NIL, value)
+    END PredefConst;
+  
   BEGIN
     module := stb. NewModule (GetName ("#predef"), NIL, Item.mcInternal, Item.callConvInternal);
     
     PredefType (boolean, "BOOLEAN");
-    
     PredefType (char, "CHAR");
     PredefType (longchar, "LONGCHAR");
-    
     PredefType (shortint, "SHORTINT");
     PredefType (integer, "INTEGER");
     PredefType (longint, "LONGINT");
-    
     PredefType (real, "REAL");
     PredefType (longreal, "LONGREAL");
-    
     PredefType (set, "SET");
+    
+    PredefProc (assert, "ASSERT");
+    
+    PredefConst ("FALSE", Boolean.New (FALSE));
+    PredefConst ("TRUE", Boolean.New (TRUE));
     
     stb. Finalize (module);
     RETURN module

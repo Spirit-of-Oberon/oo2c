@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Strings, Channel, ADT:Object, ADT:Object:Storage,
+  Strings, Channel, Language, ADT:Object, ADT:Object:Storage,
   OOC:Doc, OOC:SymbolTable:Item;
 
 
@@ -77,12 +77,16 @@ PROCEDURE (b: Builder) NewImport* (parent: Item.Item; name: Item.Name;
 PROCEDURE (b: Builder) NewConstDecl* (parent: Item.Item; name: Item.Name;
                                   visibleFrom: Item.ModulePos;
                                   exportMark: Item.ExportMark;
-                                  docString: Doc.Document): Item.ConstDecl;
+                                  docString: Doc.Document;
+                                  value: Language.Value): Item.ConstDecl;
+(**Note: If the value and type of the constant are not known yet, 
+   then @oparam{value} is @code{NIL}.  *)
   VAR
     const: Item.ConstDecl;
   BEGIN
     NEW (const);
-    Item.InitConstDecl (const, parent, name, visibleFrom, exportMark, docString);
+    Item.InitConstDecl (const, parent, name, visibleFrom, exportMark,
+                        docString, value);
     RETURN const
   END NewConstDecl;
 
@@ -129,6 +133,15 @@ PROCEDURE (b: Builder) NewFieldDecl* (parent: Item.Item; name: Item.Name;
     Item.InitFieldDecl (field, parent, name, visibleFrom, exportMark, docString, type);
     RETURN field
   END NewFieldDecl;
+
+PROCEDURE (b: Builder) NewPredefProc* (parent: Item.Item; name: Item.Name; id: Item.PredefId): Item.PredefProc;
+  VAR
+    pproc: Item.PredefProc;
+  BEGIN
+    NEW (pproc);
+    Item.InitPredefProc (pproc, parent, name, id);
+    RETURN pproc
+  END NewPredefProc;
 
 PROCEDURE (b: Builder) NewProcDecl* (parent: Item.Item; name: Item.Name;
                            visibleFrom: Item.ModulePos;

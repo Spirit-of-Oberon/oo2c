@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Item [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Msg, Strings, ADT:Object, ADT:String, ADT:Dictionary,
+  Language, Msg, Strings, ADT:Object, ADT:String, ADT:Dictionary,
   URI, ParserURI := URI:Parser,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc;
 
@@ -298,6 +298,8 @@ TYPE
 
 TYPE
   PredefId* = INTEGER;
+  (**Numeric code assigned to predefined types and procedures.  Within their
+     separate classes, ids uniquely identify a named entity.  *)
   PredefType* = POINTER TO PredefTypeDesc;
   PredefTypeDesc = RECORD
     (**Predefined types (like @code{INTEGER}, @code{SET}, the string types,
@@ -461,10 +463,19 @@ TYPE
   END;
 
 TYPE
+  PredefProc* = POINTER TO PredefProcDesc;
+  PredefProcDesc = RECORD
+    (**Predefined functions and procedures are mapped to this type.  *)
+    (DeclarationDesc)
+    id-: PredefId;
+  END;
+
+TYPE
   ConstDecl* = POINTER TO ConstDeclDesc;
   ConstDeclDesc = RECORD
     (DeclarationDesc)
     (**This class represents constant declarations.  *)
+    value-: Language.Value;
   END;
 
 TYPE
@@ -879,7 +890,7 @@ PROCEDURE (mod: Module) Load* (r: Object.Reader);
 PROCEDURE (mod: Module) SetNamespace* (ns: Namespace);
 (**Sets the field @ofield{Module.ns} of @oparam{mod} to @oparam{ns}.  *)
   BEGIN
-    mod. ns := ns
+    mod. ns := ns;
   END SetNamespace;
 
 PROCEDURE (mod: Module) ClassToString*(): String.String;
@@ -959,6 +970,7 @@ PROCEDURE StringToCallConv*(str: ARRAY OF CHAR): CallConv;
   END StringToCallConv;
 
 
+
 PROCEDURE InitImport* (import: Import; parent: Item; name: Name;
                        visibleFrom: ModulePos; docString: Doc.Document; 
                        moduleName: Name);
@@ -992,19 +1004,30 @@ PROCEDURE (import: Import) Load* (r: Object.Reader);
 
 PROCEDURE InitConstDecl* (constDecl: ConstDecl; parent: Item; name: Name;
                           visibleFrom: ModulePos; exportMark: ExportMark;
-                          docString: Doc.Document);
+                          docString: Doc.Document; value: Language.Value);
   BEGIN
-    InitDeclaration (constDecl, parent, name, visibleFrom, exportMark, docString)
+    InitDeclaration (constDecl, parent, name, visibleFrom, exportMark,
+                     docString);
+    constDecl. value := value
   END InitConstDecl;
 
 PROCEDURE (constDecl: ConstDecl) Store* (w: Object.Writer);
   BEGIN
-    constDecl. Store^ (w)
+    constDecl. Store^ (w);
+    w. WriteObject (constDecl. value);
   END Store;
 
 PROCEDURE (constDecl: ConstDecl) Load* (r: Object.Reader);
+  VAR
+    obj: Object.Object;
   BEGIN
-    constDecl. Load^ (r)
+    constDecl. Load^ (r);
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      constDecl. value := NIL
+    ELSE
+      constDecl. value := obj(Language.Value)
+    END
   END Load;
 
 
@@ -1109,9 +1132,28 @@ PROCEDURE (fieldDecl: FieldDecl) Load* (r: Object.Reader);
   END Load;
 
 
+PROCEDURE InitPredefProc* (proc: PredefProc; parent: Item; name: Name;
+                           id: PredefId);
+  BEGIN
+    InitDeclaration (proc, parent, name, 0, nameExported, NIL);
+    proc. id := id;
+  END InitPredefProc;
+
+PROCEDURE (proc: PredefProc) Store* (w: Object.Writer);
+  BEGIN
+    ASSERT (FALSE)
+  END Store;
+
+PROCEDURE (proc: PredefProc) Load* (r: Object.Reader);
+  BEGIN
+    ASSERT (FALSE)
+  END Load;
+
+
 PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
                          visibleFrom: ModulePos; exportMark: ExportMark;
-                         docString: Doc.Document; isTypeBound, isForwardDecl: BOOLEAN);
+                         docString: Doc.Document;
+                         isTypeBound, isForwardDecl: BOOLEAN);
   BEGIN
     InitDeclaration (procDecl, parent, name, visibleFrom, exportMark, docString);
     procDecl. isTypeBound := isTypeBound;
@@ -1151,7 +1193,7 @@ PROCEDURE (procDecl: ProcDecl) Load* (r: Object.Reader);
 PROCEDURE (procDecl: ProcDecl) SetNamespace* (ns: Namespace);
 (**Sets the field @ofield{ProcDecl.ns} of @oparam{procDecl} to @oparam{ns}.  *)
   BEGIN
-    procDecl. ns := ns
+    procDecl. ns := ns;
   END SetNamespace;
 
 PROCEDURE (procDecl: ProcDecl) CopyTBProcIndex* (redefinition: ProcDecl);
@@ -1293,7 +1335,7 @@ PROCEDURE (record: Record) Load* (r: Object.Reader);
 PROCEDURE (record: Record) SetNamespace* (ns: Namespace);
 (**Sets the field @ofield{Record.ns} of @oparam{record} to @oparam{ns}.  *)
   BEGIN
-    record. ns := ns
+    record. ns := ns;
   END SetNamespace;
 
 PROCEDURE (record: Record) AssignTBProcIndex* (procDecl: ProcDecl);
@@ -1619,6 +1661,8 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
     | decl: ProcDecl DO
       RETURN decl. ns
     | decl: ConstDecl DO
+      RETURN NIL
+    | decl: PredefProc DO
       RETURN NIL
     | decl: VarDecl DO
       RETURN NamespaceOfType (decl. type, decl. srcCodeType)
