@@ -25,7 +25,13 @@ Typical installation is quite simple:
   ./configure --prefix ~/mydir
   make install
 
+For a fast and small installation, you can do
+
+  env OFLAGS="--no-rtc" CFLAGS="-O2 -pipe" ./configure  --prefix ~/mydir
+  make install-strip
+
 More information is available in INSTALL.
+
 
 Building programs is simple as well:
 
