@@ -55,12 +55,12 @@ PROCEDURE NewContext (config: Config.Config): Context;
 PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
   BEGIN
     WITH entity: UsageData.Entity DO
-      RETURN UsageData.NewCommand (entity)
+      RETURN UsageData.NewCommand (context, entity)
     | entity: ModuleFile.Entity DO
       CASE entity. fileId OF
-      | Rep.modSymbolFile    : RETURN CompileModule.New (entity. module)
-      | Rep.modInterfaceDescr: RETURN InterfaceDescr.New (entity)
-      | Rep.modInterfaceHTML : RETURN InterfaceHTML.New (entity. module)
+      | Rep.modSymbolFile    : RETURN CompileModule.New (context, entity. module)
+      | Rep.modInterfaceDescr: RETURN InterfaceDescr.New (context, entity)
+      | Rep.modInterfaceHTML : RETURN InterfaceHTML.New (context, entity. module)
       END
     END
   END GetCommand;
@@ -121,8 +121,7 @@ BEGIN
       mode := Rep.modInterfaceDescr
     END;
     IF closure. value(BooleanValue.Value). boolean THEN
-      closureGroup := Group.New();
-      context. AddNode (closureGroup);
+      closureGroup := Group.New (context);
       context. target. AddAncestor (closureGroup);
     ELSE
       closureGroup := NIL

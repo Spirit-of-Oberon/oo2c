@@ -1,4 +1,40 @@
+(* 	$Id$	 *)
 MODULE Make [OOC_EXTENSIONS];
+(*  Framework for discovering and building interdependend resources.
+    Copyright (C) 2001  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
+
+(**This module provides a framework to identify and execute the commands
+   necessary to bring a given set of targets up to date.  For each target, it
+   identifies the resources required to determine if the target is up to date.
+   If the target is invalid, because it does not exist, or one of the ancestor
+   resources indicates that it must be rebuild, a command is executed to create
+   a new version of the target resource.  Once added to the process, ancestor
+   resources become intermediate targets themselves, and are resolved in a
+   similar way.
+
+   Resources are represented by instances of @otype{Entity}, and commands by
+   @otype{Command}.  Both are derived from @otype{Node}.  Dependencies between
+   entities and commands are modeled by added instances of @otype{Edge} to the
+   graph.  @otype{Context} defines the set of targets, indicates which
+   configuration data applies to commands, and serves as a container for all
+   nodes and edges.  *)
 
 IMPORT
   Channel, Config, Log, Strings, ADT:Object, ADT:String;
@@ -8,6 +44,8 @@ CONST
 
 TYPE
   EntityState* = LONGINT;
+  (**Holds the current state of an instance of @otype{Entity}: undicovered,
+     valid, invalid, ready to build.  *)
   
 CONST
   entityBuild* = -3;
@@ -28,11 +66,16 @@ CONST
 
 TYPE
   CommandState* = LONGINT;
-  
+  (**Holds the current state of an instance of @otype{Command}: undicovered,
+     completed successfully, failed to complete, invalid, or ready to be
+     scheduled.  *)
+
 CONST
   commandInvalid* = -4;
   (**The command cannot be scheduled for execution, because at least one of its
-     ancestors is in an invalid state.  *)
+     ancestors is in an invalid state.  This state is similar to
+     @oconst{commandFailed}, although no attempt is made to actually run the
+     command.  *)
   commandSchedule* = -3;
   (**The command is scheduled for execution.  *)
   commandSuccessful* = -2;
@@ -41,19 +84,22 @@ CONST
   (**The command has been executed, but it failed.  *)
   commandUndiscovered* = 0;
   (**The command's state has not been determined yet.  The framework treats all
-     values @samp{>=@oconst{entityUndiscovered}}.  *)
-  
-  
+     values @samp{>=@oconst{entityUndiscovered}} the same.  *)
+
+
 TYPE
   Node* = POINTER TO NodeDesc;
   Context* = POINTER TO ContextDesc;
   Edge* = POINTER TO EdgeDesc;
   NodeDesc* = RECORD [ABSTRACT]
+  (**The common ancestor of all entities and commands.  This class procides the
+     infrastructure to manage a graph of dependencies.  *)
     (Object.ObjectDesc)
     nextNode-: Node;
-    (**Linked list of all nodes in the @otype{Context}. *)
+    (**Linked list of all nodes, both entities and commands, in the
+       @otype{Context}.  *)
     context-: Context;
-    (**The node's context after it has been added with @oproc{Context.AddNode}.  *)
+    (**The node's context for which it has been created.  *)
     descendentList-: Edge;
     (**List of edges enumerating the descendents of a node.  The edges are
        linked with @ofield{Edge.nextDescendent}.  *)
@@ -73,10 +119,20 @@ TYPE
 TYPE
   EdgeDesc* = RECORD
   (**An instance of @otype{Edge} represents a directed connection of two nodes
-     of the dependency graph.  The edges begins at the descendent node, and
-     ends with the ancestor node.  The edges are directed in the mathematical
-     senses, and they can be traversed in both directions.  It is possible to
-     enumerate all edges from a decendant to an ancestor, and vice versa.  *)
+     of the dependency graph.  The edge begins at the descendent node, and ends
+     with the ancestor node.  It is directed in the mathematical senses, and
+     can be traversed in both directions.  It is possible to enumerate all
+     edges from a decendant to its ancestor, and vice versa.
+
+     An edge orignating from an instance of @otype{Entity} designates a ``must
+     be evaluated before'' relationship.  That is, the ancestor of the edge
+     must have a known state (valid or invalid) before the state of the
+     descendent can be determined.
+
+     On the other hand, an edge originating at a @otype{Command} indicates the
+     the descendent of this edge is created when running the command.  A
+     command can have multiple descendents.  There are no edges between two
+     instances of @otype{Command}.  *)
     descendent-: Node;
     (**The (virtual) starting node of the edge.  It designates the descendent
        of the ancestor/descendent relationship represented by the edge.  *)
@@ -96,13 +152,15 @@ TYPE
   Command* = POINTER TO CommandDesc;
   CommandDesc* = RECORD [ABSTRACT]
   (**A command creates or updates resources represented by entities.  Before a
-     command is activated, all its @emph{in} entities are guaranteed to exist
-     and to be in a valid state.  When a command finishes successfully, all its
-     @emph{out} entities must exist and be in a valid state.  A failed command
-     leaves all its @emph{out} entities in an invalid state.  *)
+     command is activated, the state of all its ancestor entities is known.
+     Typically, all ancestors are required to be valid in this case.  When a
+     command finishes successfully, all its descendent entities must exist and
+     be in a valid state.  A failed command leaves all its descendents in an
+     invalid state (with the exception of those that were valid beforehand).  *)
     (NodeDesc)
     state-: CommandState;
-    (* One of @oconst{commandSuccessful}, @oconst{commandFailed}, or >=
+    (* One of @oconst{commandInvalid}, @oconst{commandSchedule},
+       @oconst{commandSuccessful}, @oconst{commandFailed}, or >=
        @oconst{commandUndiscovered}.  *)
   END;
 
@@ -117,21 +175,26 @@ TYPE
 
      @itemize @bullet
      @item
-     Input entity of a command invocation.  Before the command is executed, all
-     its input entities must be in a valid state.
+     Input entity of a command invocation (ancestor of a command).  Before the
+     command is executed, all its input entities must be in a valid state.
 
      @item
-     Output entity of a command.  Upon successful completion, all output
-     entities of a command are in a valid state.
+     Output entity of a command (descendent of a command).  Upon successful
+     completion, all output entities of a command are in a valid state.
      @end itemize
 
      Entities are the ``glue'' between commands: the information passed into a
      command and all relevant results generated by a command are described by a
-     set of entities.  *)
+     set of entities.
+
+     Sometimes, evaluation of an entity depends on other entities.  For
+     example, a file @var{foo} including another file @var{bar} can only be
+     used if both files are present.  This is modeled by making the entity of
+     @var{bar} a direct ancestor of @var{foo}.  *)
     (NodeDesc)
     state-: EntityState;
-    (**One of @oconst{entityInvalid}, @oconst{entityValid}, or >=
-       @oconst{entityUndiscovered}.  *)
+    (**One of @oconst{entityBuild}, @oconst{entityInvalid},
+       @oconst{entityValid}, or >= @oconst{entityUndiscovered}.  *)
     command-: Command;
     (**If the entity switched to state @oconst{entityBuild}, the build command
        is retrieved via @oproc{Context.GetCommand} and stored here.  *)
@@ -141,8 +204,8 @@ TYPE
   ContextDesc* = RECORD [ABSTRACT]
   (**All entities and commands exist within a context.  A build process is
      started by evaluating the @ofield{target} command of the context.  Upon
-     completion of this command, all entities that have been added to the
-     target's ancestor list are up to date, or the build failed.  *)
+     completion of this command, all entities in the target's ancestor list are
+     up to date, or the build failed.  *)
     nodeList-: Node;
     (**List of all nodes, @otype{Entity} or @otype{Command}, that exist within
        the context.  The nodes are linked via @ofield{Node.nextNode}.  *)
@@ -161,6 +224,8 @@ TYPE
    ------------------------------------------------------------------------ *)
 
 PROCEDURE (n: Node) [ABSTRACT] Id* (): String.String;
+(**Returns a string that identifies the node.  Only used for debugging
+   purposes.  Should not return @code{NIL}.  *)
   END Id;
 
 PROCEDURE WriteLog (node: Node; msg: ARRAY OF CHAR);
@@ -192,10 +257,14 @@ PROCEDURE MarkNodeTransitive (n: Node);
   END MarkNodeTransitive;
 
 PROCEDURE InitEdge* (edge: Edge; descendent, ancestor: Node);
-(**@precond
-   Either @oparam{descendent} or @oparam{ancestor} is an @otype{Entity}.
+(**Initializes a new edge instance.s
+
+   @precond
+   Both nodes are part of the same context.  Either @oparam{descendent} or
+   @oparam{ancestor} is an @otype{Entity}.
    @end precond  *)
   BEGIN
+    ASSERT (descendent. context = ancestor. context);
     ASSERT ((descendent IS Entity) OR (ancestor IS Entity));
     edge. descendent := descendent;
     edge. ancestor := ancestor;
@@ -207,14 +276,21 @@ PROCEDURE NewEdge (descendent, ancestor: Node): Edge;
   VAR
     edge: Edge;
   BEGIN
-    ASSERT (descendent # NIL);
-    ASSERT (ancestor # NIL);
     NEW (edge);
     InitEdge (edge, descendent, ancestor);
     RETURN edge
   END NewEdge;
 
 PROCEDURE (edge: Edge) IsInvalid* (): BOOLEAN;
+(**Returns @code{TRUE} if the descendent of the given edge is invalid with
+   respect to the edge'e ancestor.  See @oproc{*Make:Edge:TimeDep.Edge.Invalid}
+   for an example.
+
+   The default implementation always returns @code{FALSE}.
+   
+   @precond
+   The edge's ancestor is marked as ``valid''.
+   @end precond  *)
   BEGIN
     RETURN FALSE
   END IsInvalid;
@@ -248,7 +324,17 @@ PROCEDURE AddDependence (edge: Edge);
 (* Node (common base type of both Entity and Command)
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitNode* (n: Node);
+PROCEDURE AddNode (context: Context; n: Node);
+  BEGIN
+    n. nextNode := context. nodeList;
+    context. nodeList := n;
+    n. context := context
+  END AddNode;
+
+PROCEDURE InitNode* (n: Node; context: Context);
+(**Intializes the given node @oparam{n} and adds it to the @oparam{context}.
+   If @oparam{context} is @code{NIL}, then the node can only be used as the
+   target of @oproc{InitContext}.  *)
   BEGIN
     Object.Init (n);
     n. nextNode := NIL;
@@ -257,9 +343,15 @@ PROCEDURE InitNode* (n: Node);
     n. ancestorList := NIL;
     n. blockingEntities := 0;
     n. ancestorOfTarget := FALSE;
+    IF (context # NIL) THEN
+      AddNode (context, n)
+    END
   END InitNode;
 
 PROCEDURE (n: Node) HasInvalidAncestor*(): BOOLEAN;
+(**Returns @code{TRUE} if @oparam{n} has an ancestor entity with a state of
+   @oconst{entityInvalid}.  Ancestors that are derived from @otype{Command} are
+   ignored.  *)
   VAR
     aEdge: Edge;
   BEGIN
@@ -275,6 +367,8 @@ PROCEDURE (n: Node) HasInvalidAncestor*(): BOOLEAN;
   END HasInvalidAncestor;
 
 PROCEDURE (n: Node) HasInvalidAncestorEdge*(): BOOLEAN;
+(**Is @code{TRUE} if any of the ancestor edges of @oparam{n} reports
+   @samp{@oproc{Edge.IsInvalid}()=@code{TRUE}}.  *)
   VAR
     aEdge: Edge;
   BEGIN
@@ -289,6 +383,7 @@ PROCEDURE (n: Node) HasInvalidAncestorEdge*(): BOOLEAN;
   END HasInvalidAncestorEdge;
 
 PROCEDURE (n: Node) IsDescendentOf* (parent: Node): BOOLEAN;
+(**Is @code{TRUE} if @oparam{n} is a direct descendent of @oparam{parent}.  *)
   VAR
     aEdge: Edge;
   BEGIN
@@ -303,17 +398,20 @@ PROCEDURE (n: Node) IsDescendentOf* (parent: Node): BOOLEAN;
   END IsDescendentOf;
 
 PROCEDURE (n: Node) AddAncestor* (ancestor: Node);
+(**Adds a new edge between @oparam{ancestor} and @oparam{n} (the descendent).  *)
   BEGIN
     AddDependence (NewEdge (n, ancestor))
   END AddAncestor;
 
 PROCEDURE (n: Node) AddDescendent* (descendent: Node);
+(**Adds a new edge between @oparam{n} (the ancestor) and @oparam{descendent}.  *)
   BEGIN
     AddDependence (NewEdge (descendent, n))
   END AddDescendent;
 
 PROCEDURE (n: Node) AddAncestors* (source: Node);
-(**Adds edges to non-command ancestors of @oparam{source} to @oparam{n}.  *)
+(**Adds edges to all entity ancestors of @oparam{source} to @oparam{n}.
+   Command ancestors are ignored.  *)
   VAR
     aEdge: Edge;
   BEGIN
@@ -330,9 +428,10 @@ PROCEDURE (n: Node) AddAncestors* (source: Node);
 (* Entities
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitEntity* (entity: Entity);
+PROCEDURE InitEntity* (entity: Entity; context: Context);
+(**Initializes the entity and adds it to @oparam{context}.  *)
   BEGIN
-    InitNode (entity);
+    InitNode (entity, context);
     entity. state := entityUndiscovered;
     entity. command := NIL;
   END InitEntity;
@@ -371,7 +470,7 @@ PROCEDURE (entity: Entity) [ABSTRACT] Discover*(): EntityState;
    >=@oconst{entityUndiscovered}.  It will be called again once the newly added
    ancestors have been given their final classification, ``valid'' or
    ``invalid''.
-   
+
    @item
    Set the final state of the entity.  In this case, the function result is
    either@oconst{entityValid} or @oconst{entityInvalid}.
@@ -382,10 +481,31 @@ PROCEDURE (entity: Entity) [ABSTRACT] Discover*(): EntityState;
    @oconst{entityBuild}.
    @end itemize
 
+   A typical implementation of this procedure looks like this:
+
+   @example
+   IF (entity. state = Make.entityUndiscovered) THEN
+     (* add all resources on which `entity'
+        depends to its ancestor list ... *)
+     RETURN entity. state+1
+   ELSE
+     IF entity. HasInvalidAncestor() THEN
+       (* fail if an ancestor resource is unavailable *)
+       RETURN Make.entityInvalid
+     ELSIF entity. HasInvalidAncestorEdge() THEN
+       (* entity is invalid with respect to its ancestors *)
+       RETURN Make.entityBuild
+     ELSE
+       (* entity is still valid; no need to rebuild *)
+       RETURN Make.entityValid
+     END
+   END
+   @end example
+
    @precond
    @oparam{entity} is ancestor of the context's target and
-   @samp{@ofield{entity.state} >= @oconst{entityUndiscovered}} and
-   all ancestors of @oparam{entity} have a state of @oconst{entityValid} or
+   @samp{@ofield{entity.state} >= @oconst{entityUndiscovered}} and all
+   ancestors of @oparam{entity} have a state of @oconst{entityValid} or
    @oconst{entityInvalid}.
    @end precond  *)
   END Discover;
@@ -394,9 +514,10 @@ PROCEDURE (entity: Entity) [ABSTRACT] Discover*(): EntityState;
 (* Commands
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitCommand* (cmd: Command);
+PROCEDURE InitCommand* (cmd: Command; context: Context);
+(**Initializes the command and adds it to @oparam{context}.  *)
   BEGIN
-    InitNode (cmd);
+    InitNode (cmd, context);
     cmd. state := commandUndiscovered
   END InitCommand;
 
@@ -419,7 +540,7 @@ PROCEDURE (cmd: Command) [ABSTRACT] Discover*(): CommandState;
    >=@oconst{commandUndiscovered}.  It will be called again once the newly
    added ancestors have been given their final classification, ``valid'' or
    ``invalid''.
-   
+
    @item
    Decide that the command cannot be executed, typically because a required
    ancestor entity is invalid.  Result is @oconst{commandInvalid}.
@@ -429,18 +550,34 @@ PROCEDURE (cmd: Command) [ABSTRACT] Discover*(): CommandState;
    method's result is @oconst{commandSchedule}.
    @end itemize
 
+   Assuming that the command produces a single entity, and this entity (which
+   triggered the creation of this build command) already determined that all
+   pre-conditions of the command are fulfilled, a typical implementation of
+   this procedure looks like this:
+
+   @example
+   entity := (determine output entity...);
+   cmd. AddAncestors (entity);
+   RETURN Make.commandSchedule
+   @end example
+
    @precond
    @oparam{cmd} is ancestor of the context's target and
-   @samp{@ofield{cmd.state} >= @oconst{commandUndiscovered}} and
-   all ancestors of @oparam{cmd} have a state of @oconst{entityValid} or
+   @samp{@ofield{cmd.state} >= @oconst{commandUndiscovered}} and all ancestors
+   of @oparam{cmd} have a state of @oconst{entityValid} or
    @oconst{entityInvalid}.
    @end precond  *)
   END Discover;
 
 PROCEDURE (cmd: Command) [ABSTRACT] Run*(): BOOLEAN;
+(**Tries to run the command @oparam{cmd}.  Result is @code{TRUE} after
+   successful completion, and @code{FALSE} otherwise.  To support concurrent
+   evaluation of commands, the command should buffer its output and only write
+   it out when @oproc{Command.ProduceOutput} is called.  *)
   END Run;
 
 PROCEDURE (cmd: Command) [ABSTRACT] ProduceOutput* (stdout, stderr: Channel.Channel);
+(**Retrieves the output produced by running the command @oparam{cmd}.  *)
   END ProduceOutput;
 
 (* Context
@@ -455,19 +592,17 @@ PROCEDURE (context: Context) [ABSTRACT] GetCommand* (entity: Entity): Command;
    call to @oproc{Command.Discover}.
 
    @postcond
-   The context of the returned command is @code{NIL} or equal to
-   @oparam{context}.
+   The context of the returned command is equal to @oparam{context}.
    @end postcond  *)
   END GetCommand;
 
-PROCEDURE (context: Context) AddNode* (n: Node);
-  BEGIN
-    n. nextNode := context. nodeList;
-    context. nodeList := n;
-    n. context := context
-  END AddNode;
-
 PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
+(**Attempts to bring all entities registered as ancestors of
+   @ofield{context.target} up to date.  If necessary, resources are build or
+   rebuild as part of the process.  Output of commands is written to
+   @oparam{stdout} and @oparam{stderr}.  Result is @code{TRUE} if all entities
+   in the target set are up to date upon completion, and @code{FALSE}
+   otherwise.  *)
   PROCEDURE MarkDescendentsInvalid (node: Node);
     VAR
       dEdge: Edge;
@@ -515,11 +650,6 @@ PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
             IF (node. state = entityBuild) & (node. command = NIL) THEN
               WriteLog (node, "adding build command");
               node. command := context. GetCommand (node);
-              IF (node. command. context = NIL) THEN
-                context. AddNode (node. command)
-              ELSE
-                ASSERT (node. command. context = context)
-              END;
               WriteLog (node. command, "new build command");
               IF ~node. IsDescendentOf (node. command) THEN
                 node. command. AddDescendent (node)
@@ -579,31 +709,30 @@ PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
   END Solve;
 
 PROCEDURE (context: Context) AddDependence* (edge: Edge);
+(**Adds a new @oparam{edge} to the context's dependence graph.  *)
   BEGIN
     AddDependence (edge)
   END AddDependence;
 
-PROCEDURE (context: Context) Exists* (n: Node): BOOLEAN;
-  VAR
-    node: Node;
-  BEGIN
-    node := context. nodeList;
-    WHILE (node # NIL) & (node # n) DO
-      node := node. nextNode
-    END;
-    RETURN (node # NIL)
-  END Exists;
-
 PROCEDURE (context: Context) GetNamedEntity* (name: ARRAY OF CHAR): Entity;
+(**Returns an entity of the @oparam{context} identified by name.  If no such
+   entity exists, result is @code{NIL}.  *)
   BEGIN
     RETURN NIL
   END GetNamedEntity;
   
 PROCEDURE InitContext* (context: Context; config: Config.Config; target: Command);
+(**Intializes a new, empty context.  Usually, @oparam{target} is an instance of
+   @otype{*Make:Command:Target.Target}.
+
+   @precond
+   @code{@ofield{target.context}=@code{NIL}}
+   @end precond  *)
   BEGIN
+    ASSERT (target. context = NIL);
     context. nodeList := NIL;
     context. config := config;
-    context. AddNode (target);
+    AddNode (context, target);
     MarkNodeTransitive (target);
     context. target := target
   END InitContext;

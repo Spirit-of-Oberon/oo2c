@@ -44,19 +44,19 @@ VAR
   context: Context;
 
 
-PROCEDURE InitCommand (cmd: Command; module: Rep.Module);
+PROCEDURE InitCommand (cmd: Command; context: Context; module: Rep.Module);
   BEGIN
-    Make.InitCommand (cmd);
+    Make.InitCommand (cmd, context);
     cmd. module := module;
     cmd. errList := NIL;
   END InitCommand;
 
-PROCEDURE NewCommand (module: Rep.Module): Command;
+PROCEDURE NewCommand (context: Context; module: Rep.Module): Command;
   VAR
     cmd: Command;
   BEGIN
     NEW (cmd);
-    InitCommand (cmd, module);
+    InitCommand (cmd, context, module);
     RETURN cmd
   END NewCommand;
 
@@ -137,9 +137,9 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
   BEGIN
     e := entity(ModuleFile.Entity);
     CASE e. fileId OF
-    | Rep.modSymbolFile    : RETURN CompileModule.New (e. module)
-    | Rep.modSymbolTableXML: RETURN NewCommand (e. module)
-    | Rep.modInterfaceXML  : RETURN InterfaceXML.New (e. module)
+    | Rep.modSymbolFile    : RETURN CompileModule.New (context, e. module)
+    | Rep.modSymbolTableXML: RETURN NewCommand (context, e. module)
+    | Rep.modInterfaceXML  : RETURN InterfaceXML.New (context, e. module)
     END
   END GetCommand;
   

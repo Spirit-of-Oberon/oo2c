@@ -1,4 +1,24 @@
+(* 	$Id$	 *)
 MODULE OOC:Make:Entity:UsageData;
+(*  Implements pseudo `Make' entity to collect usage date of declarations.
+    Copyright (C) 2001  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
 
 IMPORT
   Channel, Msg, ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
@@ -23,12 +43,12 @@ TYPE
   END;
 
 
-PROCEDURE NewCommand* (usageData: Entity): Command;
+PROCEDURE NewCommand* (context: Make.Context; usageData: Entity): Command;
   VAR
     cmd: Command;
   BEGIN
     NEW (cmd);
-    Make.InitCommand (cmd);
+    Make.InitCommand (cmd, context);
     cmd. usageData := usageData;
     RETURN cmd
   END NewCommand;
@@ -96,9 +116,9 @@ PROCEDURE (cmd: Command) ProduceOutput* (stdout, stderr: Channel.Channel);
 
 (* ------------------------------------------------------------------------ *)
 
-PROCEDURE InitEntity (entity: Entity);
+PROCEDURE InitEntity (entity: Entity; context: Make.Context);
   BEGIN
-    Make.InitEntity (entity);
+    Make.InitEntity (entity, context);
     entity. extensionDict := NIL;
   END InitEntity;
 
@@ -107,8 +127,7 @@ PROCEDURE NewEntity* (context: Make.Context): Entity;
     entity: Entity;
   BEGIN
     NEW (entity);
-    InitEntity (entity);
-    context. AddNode (entity);
+    InitEntity (entity, context);
     RETURN entity
   END NewEntity;
 

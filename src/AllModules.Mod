@@ -126,14 +126,12 @@ IMPORT
   OOC:Config:Repositories,
   ConfigRepFileSystem := OOC:Config:Repositories:FileSystem,
   
-  (* there is no code to handle operator trees yet, these modules are 
-     completely defunct... *)
-  OOC:OpTree,
-  OOC:OpTree:Operator,
-  OOC:OpTree:Value,
-  OOC:OpTree:StdOpTree,
-
-  OOC:Make,
+  Make,
+  Make:Command:Target,
+  Make:Edge:TimeDep,
+  Make:Entity:Group,
+  Make:Entity:Resource,
+  
   OOC:Make:Command:CompileModule,
   OOC:Make:Command:InterfaceDescr,
   OOC:Make:Command:InterfaceHTML,
@@ -146,6 +144,6 @@ IMPORT
 (* Test Programs
    ------------------------------------------------------------------------ *)
   TestScanner, TestParser, TestSymTab, TestConfigSections, TestConfigCmdLine,
-  TestConfigEnv, TestConfigSimple, TestInterfaceGen, TestTexinfo;
+  TestConfigEnv, TestConfigSimple, TestInterfaceGen, TestTexinfo, TestMake;
   
 END AllModules.

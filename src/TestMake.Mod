@@ -38,7 +38,7 @@ TYPE
 VAR
   r: TextRider.Reader;
   arg: ARRAY 1024 OF CHAR;
-  context: Make.Context;
+  context: Context;
   entities: ARRAY 256 OF Entity;
   commands: ARRAY 256 OF Command;
   i: LONGINT;
@@ -47,7 +47,7 @@ VAR
 
 PROCEDURE InitTarget* (target: Target);
   BEGIN
-    Make.InitCommand (target);
+    Make.InitCommand (target, NIL);
   END InitTarget;
 
 PROCEDURE NewTarget* (): Target;
@@ -78,28 +78,28 @@ PROCEDURE (target: Target) Run*(): BOOLEAN;
 
 (* ------------------------------------------------------------------------ *)
 
-PROCEDURE InitEntity (entity: Entity; id: CHAR; discover: ARRAY OF CHAR);
+PROCEDURE InitEntity (entity: Entity; context: Make.Context;
+                      id: CHAR; discover: ARRAY OF CHAR);
   BEGIN
-    Make.InitEntity (entity);
+    Make.InitEntity (entity, context);
     entity. id[0] := id;
     entity. id[1] := 0X;
     COPY (discover, entity. discover)
   END InitEntity;
 
-PROCEDURE NewEntity (id: CHAR; discover: ARRAY OF CHAR): Entity;
+PROCEDURE NewEntity (context: Context; id: CHAR; discover: ARRAY OF CHAR): Entity;
   VAR
     entity: Entity;
   BEGIN
     NEW (entity);
-    InitEntity (entity, id, discover);
+    InitEntity (entity, context, id, discover);
     RETURN entity
   END NewEntity;
 
-PROCEDURE CreateEntity (id: CHAR; discover: ARRAY OF CHAR): Entity;
+PROCEDURE CreateEntity (context: Context; id: CHAR; discover: ARRAY OF CHAR): Entity;
   BEGIN
     IF (entities[ORD (id)] = NIL) THEN
-      entities[ORD (id)] := NewEntity (id, discover);
-      context. AddNode (entities[ORD (id)])
+      entities[ORD (id)] := NewEntity (context, id, discover)
     END;
     RETURN entities[ORD (id)]
   END CreateEntity;
@@ -162,29 +162,29 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
 
 (* ------------------------------------------------------------------------ *)
 
-PROCEDURE InitCommand (command: Command; id: CHAR; discoverIn, discoverOut: ARRAY OF CHAR);
+PROCEDURE InitCommand (command: Command; context: Context;
+                       id: CHAR; discoverIn, discoverOut: ARRAY OF CHAR);
   BEGIN
-    Make.InitCommand (command);
+    Make.InitCommand (command, context);
     command. id[0] := id;
     command. id[1] := 0X;
     COPY (discoverIn, command. discoverIn);
     COPY (discoverOut, command. discoverOut)
   END InitCommand;
 
-PROCEDURE NewCommand (id: CHAR; discoverIn, discoverOut: ARRAY OF CHAR): Command;
+PROCEDURE NewCommand (context: Context; id: CHAR; discoverIn, discoverOut: ARRAY OF CHAR): Command;
   VAR
     command: Command;
   BEGIN
     NEW (command);
-    InitCommand (command, id, discoverIn, discoverOut);
+    InitCommand (command, context, id, discoverIn, discoverOut);
     RETURN command
   END NewCommand;
 
-PROCEDURE CreateCommand (id: CHAR; discoverIn, discoverOut: ARRAY OF CHAR): Command;
+PROCEDURE CreateCommand (context: Context; id: CHAR; discoverIn, discoverOut: ARRAY OF CHAR): Command;
   BEGIN
     IF (commands[ORD (id)] = NIL) THEN
-      commands[ORD (id)] := NewCommand (id, discoverIn, discoverOut);
-      context. AddNode (commands[ORD (id)])
+      commands[ORD (id)] := NewCommand (context, id, discoverIn, discoverOut)
     END;
     RETURN commands[ORD (id)]
   END CreateCommand;
@@ -313,12 +313,8 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
 (* ------------------------------------------------------------------------ *)
 
 PROCEDURE SetupA;
-  VAR
-    target: Make.Command;
   BEGIN
     (* except for the target, the context is empty *)
-    target := NewTarget();
-    context := NewContext (target)
   END SetupA;
 
 PROCEDURE SetupB;
@@ -327,7 +323,7 @@ PROCEDURE SetupB;
   BEGIN
     (* the target depends on a single valid entity *)
     SetupA();
-    entity := CreateEntity ("a", "");
+    entity := CreateEntity (context, "a", "");
     context. target. AddAncestor (entity)
   END SetupB;
 
@@ -338,9 +334,9 @@ PROCEDURE SetupC;
     (* the target depends on two other entities, the entities themselves 
        are also linked by a dependence *)
     SetupA();
-    entity := CreateEntity ("c", "");
-    entity := CreateEntity ("b", "c");
-    entity := CreateEntity ("a", "bc");
+    entity := CreateEntity (context, "c", "");
+    entity := CreateEntity (context, "b", "c");
+    entity := CreateEntity (context, "a", "bc");
     context. target. AddAncestor (entity)
   END SetupC;
 
@@ -352,9 +348,9 @@ PROCEDURE SetupD;
        are also linked by a dependence; permutation of SetupC: same result,
        although the nodes may be evaluated in a different order *)
     SetupA();
-    entity := CreateEntity ("a", "bc");
-    dummy := CreateEntity ("b", "c");
-    dummy := CreateEntity ("c", "");
+    entity := CreateEntity (context, "a", "bc");
+    dummy := CreateEntity (context, "b", "c");
+    dummy := CreateEntity (context, "c", "");
     context. target. AddAncestor (entity)
   END SetupD;
 
@@ -364,9 +360,9 @@ PROCEDURE SetupE;
   BEGIN
     (* no ancestor of target, so there is nothing to do *)
     SetupA();
-    entity := CreateEntity ("c", "");
-    entity := CreateEntity ("b", "c");
-    entity := CreateEntity ("a", "bc");
+    entity := CreateEntity (context, "c", "");
+    entity := CreateEntity (context, "b", "c");
+    entity := CreateEntity (context, "a", "bc");
   END SetupE;
 
 PROCEDURE SetupInvalid1;
@@ -375,7 +371,7 @@ PROCEDURE SetupInvalid1;
   BEGIN
     (* the target depends on a single invalid entity *)
     SetupA();
-    entity := CreateEntity ("a", "-");
+    entity := CreateEntity (context, "a", "-");
     context. target. AddAncestor (entity)
   END SetupInvalid1;
 
@@ -386,9 +382,9 @@ PROCEDURE SetupInvalid2;
     (* the target depends on two other entities, the entities themselves 
        are also linked by a dependence, the "lowest" entity is invalid *)
     SetupA();
-    entity := CreateEntity ("c", "-");
-    entity := CreateEntity ("b", "c");
-    entity := CreateEntity ("a", "bc");
+    entity := CreateEntity (context, "c", "-");
+    entity := CreateEntity (context, "b", "c");
+    entity := CreateEntity (context, "a", "bc");
     context. target. AddAncestor (entity)
   END SetupInvalid2;
 
@@ -400,9 +396,9 @@ PROCEDURE SetupInvalid3;
        are also linked by a dependence, the "middle" entity becomes
        invalid after discovering the "lowest" *)
     SetupA();
-    entity := CreateEntity ("c", "");
-    entity := CreateEntity ("b", "c-");
-    entity := CreateEntity ("a", "bc");
+    entity := CreateEntity (context, "c", "");
+    entity := CreateEntity (context, "b", "c-");
+    entity := CreateEntity (context, "a", "bc");
     context. target. AddAncestor (entity)
   END SetupInvalid3;
 
@@ -414,8 +410,8 @@ PROCEDURE SetupBuild1;
     (* the target depends on one entity that must be build; the build does
        not require any other entity, and is immediately successful *)
     SetupA();
-    command := CreateCommand ("A", "", "a");
-    entity := CreateEntity ("a", "@A");
+    command := CreateCommand (context, "A", "", "a");
+    entity := CreateEntity (context, "a", "@A");
     context. target. AddAncestor (entity)
   END SetupBuild1;
 
@@ -427,9 +423,9 @@ PROCEDURE SetupBuild2;
     (* the target depends on one entity that must be build; the build
        requires other valid entity *)
     SetupA();
-    entity := CreateEntity ("b", "");
-    command := CreateCommand ("A", "b", "a");
-    entity := CreateEntity ("a", "@A");
+    entity := CreateEntity (context, "b", "");
+    command := CreateCommand (context, "A", "b", "a");
+    entity := CreateEntity (context, "a", "@A");
     context. target. AddAncestor (entity)
   END SetupBuild2;
 
@@ -441,9 +437,9 @@ PROCEDURE SetupBuild3;
     (* the target depends on one entity that must be build; the build
        requires other invalid entity *)
     SetupA();
-    entity := CreateEntity ("b", "-");
-    command := CreateCommand ("A", "b", "a");
-    entity := CreateEntity ("a", "@A");
+    entity := CreateEntity (context, "b", "-");
+    command := CreateCommand (context, "A", "b", "a");
+    entity := CreateEntity (context, "a", "@A");
     context. target. AddAncestor (entity)
   END SetupBuild3;
 
@@ -455,6 +451,8 @@ BEGIN
   r := TextRider.ConnectReader (ProgramArgs.args);
   r. ReadLine (arg);
   r. ReadLine (arg);
+
+  context := NewContext (NewTarget());
   IF (arg = "simple1") THEN
     SetupA
   ELSIF (arg = "simple2") THEN

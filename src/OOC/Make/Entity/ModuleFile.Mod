@@ -1,4 +1,25 @@
+(* 	$Id$	 *)
 MODULE OOC:Make:Entity:ModuleFile;
+(*  Implements `Make' entities for various files associated with modules.
+    Copyright (C) 2001  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
+
 
 IMPORT
   Strings, Files, Msg, Time, ADT:String, URI, URI:Scheme:File,
@@ -17,20 +38,21 @@ TYPE
   END;
 
 
-PROCEDURE InitEntity (entity: Entity; 
-                    module: Repository.Module; fileId: Repository.FileId);
+PROCEDURE InitEntity (entity: Entity; context: Make.Context;
+                      module: Repository.Module; fileId: Repository.FileId);
   BEGIN
-    Resource.Init (entity);
+    Resource.Init (entity, context);
     entity. module := module;
     entity. fileId := fileId
   END InitEntity;
 
-PROCEDURE NewEntity (module: Repository.Module; fileId: Repository.FileId): Entity;
+PROCEDURE NewEntity (context: Make.Context; module: Repository.Module;
+                     fileId: Repository.FileId): Entity;
   VAR
     entity: Entity;
   BEGIN
     NEW (entity);
-    InitEntity (entity, module, fileId);
+    InitEntity (entity, context, module, fileId);
     RETURN entity
   END NewEntity;
 
@@ -77,8 +99,7 @@ PROCEDURE GetEntity* (context: Make.Context; module: Repository.Module;
     END;
     
     (* create new node *)
-    entity := NewEntity (module, fileId);
-    context. AddNode (entity);
+    entity := NewEntity (context, module, fileId);
     RETURN entity
   END GetEntity;
 
