@@ -19,7 +19,7 @@ MODULE ADT:ArrayList;
 *)
 
 IMPORT
-  SYSTEM, ADT:Storable, Object, IO;
+  SYSTEM, ADT:Storable, ADT:Comparator, Object, IO;
 
 
 TYPE
@@ -330,5 +330,62 @@ PROCEDURE (l: ArrayList(E)) Load* (r: Storable.Reader) RAISES IO.Error;
     END;
     l. size := size
   END Load;
+
+PROCEDURE (a: ArrayList(E)) Sort*(fromIndex, toIndex: LONGINT;
+                                  cmp: Comparator.Comparator);
+(**Sort array interval @samp{@ofield{a.array}[@oparam{fromIndex},
+   @oparam{toIndex}[} according to the comparator function @oparam{cmp}.  *)
+   
+  PROCEDURE Quicksort (l, r: LONGINT);
+    VAR
+      t, v: E;
+      i, j, m: LONGINT;
+    BEGIN
+      IF (r > l) THEN
+        m := (r+l) DIV 2;
+        IF (cmp.Compare(a.array[l], a.array[r]) > 0) THEN
+          t := a.array[l]; a.array[l] := a.array[r]; a.array[r] := t
+        END;
+        IF (cmp.Compare(a.array[l], a.array[m]) > 0) THEN
+          t := a.array[l]; a.array[l] := a.array[m]; a.array[m] := t
+        END;
+        IF (cmp.Compare(a.array[r], a.array[m]) > 0) THEN
+          t := a.array[r]; a.array[r] := a.array[m]; a.array[m] := t
+        END;
+        
+        v := a.array[r]; i := l-1; j := r;
+        LOOP
+          REPEAT
+            INC (i);
+          UNTIL (cmp.Compare(a.array[i], v) >= 0);
+          REPEAT
+            DEC (j);
+          UNTIL (j < 0) OR (cmp.Compare(a.array[j], v) <= 0);
+          IF (i >= j) THEN
+            EXIT;
+          END;
+          t := a.array[i]; a.array[i] := a.array[j]; a.array[j] := t
+        END;
+        t := a.array[i]; a.array[i] := a.array[r]; a.array[r] := t;
+        Quicksort(l, i-1);
+        Quicksort(i+1, r);
+      END
+    END Quicksort;
+
+  BEGIN
+    Quicksort(fromIndex, toIndex-1);
+  END Sort;
+
+PROCEDURE (l: ArrayList(E)) Elements*(): Object.ObjectArrayPtr(E);
+  VAR
+    a: Object.ObjectArrayPtr(E);
+    i: LONGINT;
+  BEGIN
+    NEW(a, l.size);
+    FOR i := 0 TO l.size-1 DO
+      a[i] := l.array[i];
+    END;
+    RETURN a;
+  END Elements;
 
 END ADT:ArrayList.
