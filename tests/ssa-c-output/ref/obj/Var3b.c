@@ -2,18 +2,16 @@
 #include "__oo2c.h"
 
 static OOC_INT16 Var3b__F(OOC_CHAR8 a, OOC_CHAR8 b) {
-  register OOC_INT32 i0,i1;
+  register OOC_INT32 i0;
 
   i0 = a;
   if (i0) goto l7;
-  i1 = b;
-  if (i1) goto l5;
-  i1=0;
-  goto l6;
+  i0 = b;
+  if (i0) goto l5;
+  i0=0;
+  goto l8;
 l5:
-  i1=1;
-l6:
-  i0=i1;
+  i0=1;
   goto l8;
 l7:
   i0=2;

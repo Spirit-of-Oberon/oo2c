@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; quicksort1">-->
+  select ="&SetupTestCasesWithOut; alloc1">-->
   
   &TestSetupWithOut;
     
@@ -162,6 +162,14 @@
     <test id="cse3" type="run" file="Cse3.Mod" output="Cse3.Ref">
       Check that common expressions are detected properly if a value
       contributes multiple times to an instruction.
+    </test>
+
+    <test id="alloc1" type="run" file="Alloc1.Mod" output="Alloc1.Ref">
+      There should only be one conflict in the life ranges of the
+      expressions, between the <code>get</code> on the parameter and
+      the <code>IF</code> statement's guard.  In particular, the
+      expressions within the guarded commands conflict with no other
+      live ranges.
     </test>
   </testcases>
 </testsuite-ext>

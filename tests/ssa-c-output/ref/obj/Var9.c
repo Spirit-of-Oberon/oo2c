@@ -2,15 +2,15 @@
 #include "__oo2c.h"
 
 static void Var9__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
-  register OOC_INT32 i0,i1,i2;
+  register OOC_INT32 i0,i1;
 
   i0=0;
 l1_loop:
   i1 = i0!=str_0d;
   if (!i1) goto l6;
-  i2 = _check_index(i0, str_0d, OOC_UINT16, 169);
-  i2 = (OOC_INT32)str+i2;
-  *(OOC_UINT8*)i2 = (OOC_CHAR8)'\000';
+  i1 = _check_index(i0, str_0d, OOC_UINT16, 169);
+  i1 = (OOC_INT32)str+i1;
+  *(OOC_UINT8*)i1 = (OOC_CHAR8)'\000';
   i0 = i0+1;
   
   goto l1_loop;
