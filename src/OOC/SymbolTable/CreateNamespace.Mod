@@ -567,7 +567,12 @@ RAISES IO.Error;
               Err (notTypeName, typeName);
               RETURN typeName
             ELSE
-              type := item(Sym.TypeDecl).type;
+              (* the right hand side of a type declaration might be another
+                 type name *)
+              type := GetTypeByName(item(Sym.TypeDecl).type, contextOfUse,
+                                    extendedSearch, addQualTypeDefaults,
+                                    errList);
+              
               IF addQualTypeDefaults & (type.typePars # NIL) &
                  ~(type IS Sym.TypeVar) THEN
                 NEW(qt);
