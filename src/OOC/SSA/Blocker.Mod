@@ -21,7 +21,7 @@ MODULE OOC:SSA:Blocker;
 *)
 
 IMPORT
-  Channel, TextRider, Dictionary := ADT:Dictionary:IntValue,
+  Channel, TextRider, ADT:String, Dictionary := ADT:Dictionary:IntValue,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result;
   
 (**
@@ -737,7 +737,7 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
       ELSE
       END;
 
-      IF (p. instr # NIL) THEN
+      IF (p. instr # NIL) & ~p. instr. IsConst() THEN
         idMap. Set (p. instr, instrCount);
         INC (instrCount);
       END;
@@ -755,73 +755,89 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
       VAR
         id, count: LONGINT;
         ptr: SSA.Result;
+        value: String.String;
       BEGIN
-        id := idMap. Get (res. instr);
-        w. WriteChar ("(");
-        w. WriteLInt (id, 0);
-        IF (res. instr # res) THEN
-          count := 1;
-          ptr := res. instr. nextResult;
-          WHILE (ptr # res) DO
-            INC (count);
-            ptr := ptr. nextResult;
+        instr := res. instr;
+        IF instr. IsConst() THEN
+          WITH instr: SSA.Const DO
+            value := instr. value. ToString();
+            w. WriteString (value. array^);
+          | instr: SSA.DeclRef DO
+            w. WriteString (instr. decl. name. str^);
+          | instr: SSA.Address DO
+            w. WriteChar ("&");
+            w. WriteString (instr. decl. name. str^);
+          END
+        ELSE
+          id := idMap. Get (res. instr);
+          w. WriteChar ("(");
+          w. WriteLInt (id, 0);
+          IF (res. instr # res) THEN
+            count := 1;
+            ptr := res. instr. nextResult;
+            WHILE (ptr # res) DO
+              INC (count);
+              ptr := ptr. nextResult;
+            END;
+            w. WriteChar (".");
+            w. WriteLInt (count, 0);
           END;
-          w. WriteChar (".");
-          w. WriteLInt (count, 0);
+          w. WriteChar (")");
         END;
-        w. WriteChar (")")
       END WriteResultId;
     
     BEGIN
-      (*w. WriteString ("L:");
-      IF (p. loopAssoc # NIL) THEN
-        WriteResultId (p. loopAssoc. instr);
-      ELSE
-        w. WriteString ("NIL");
-      END;
-      w. WriteString (09X);*)
-      
-      IF (p. region # NIL) THEN
-        FOR i := 1 TO p. region. nestingDepth DO
-          w. WriteString ("  ");
-        END;
-      END;
-
       instr := p. instr;
-      IF (instr = NIL) THEN
-        w. WriteString ("----");
-      ELSE
-        resCount := 0;
-        res := instr;
-        WHILE (res # NIL) DO
-          IF (res. useList # NIL) OR (instr. opcode = Opcode.selectReturn) THEN
-            IF (resCount # 0) THEN
+      IF (instr = NIL) OR ~instr. IsConst() THEN
+        (*w. WriteString ("L:");
+        IF (p. loopAssoc # NIL) THEN
+          WriteResultId (p. loopAssoc. instr);
+        ELSE
+          w. WriteString ("NIL");
+        END;
+        w. WriteString (09X);*)
+        
+        IF (p. region # NIL) THEN
+          FOR i := 1 TO p. region. nestingDepth DO
+            w. WriteString ("  ");
+          END;
+        END;
+        
+        IF (instr = NIL) THEN
+          w. WriteString ("----");
+        ELSE
+          resCount := 0;
+          res := instr;
+          WHILE (res # NIL) DO
+            IF (res. useList # NIL) OR (instr. opcode = Opcode.selectReturn) THEN
+              IF (resCount # 0) THEN
+                w. WriteChar (",");
+              END;
+              WriteResultId (res);
+              INC (resCount);
+            END;
+            res := res. nextResult;
+          END;
+          IF (resCount = 0) THEN
+            w. WriteString ("(--)");
+          END;
+          
+          w. WriteString (" := ");
+          Opcode.GetName (instr. opcode, instr. subclass, str);
+          w. WriteString (str);
+          w. WriteChar (" ");
+          
+          opnd := instr. opndList;
+          WHILE (opnd # NIL) DO
+            IF (opnd # instr. opndList) THEN
               w. WriteChar (",");
             END;
-            WriteResultId (res);
-            INC (resCount);
+            WriteResultId (opnd. arg);
+            opnd := opnd. nextOpnd
           END;
-          res := res. nextResult;
         END;
-        IF (resCount = 0) THEN
-          w. WriteString ("(--)");
-        END;
-        
-        w. WriteString (" := ");
-        Opcode.GetName (instr. opcode, instr. subclass, str);
-        w. WriteString (str);
-        w. WriteChar (" ");
-        
-        opnd := instr. opndList;
-        WHILE (opnd # NIL) DO
-          IF (opnd # instr. opndList) THEN
-            w. WriteChar (",");
-          END;
-          WriteResultId (opnd. arg);
-          opnd := opnd. nextOpnd
-        END;
+        w. WriteLn;
       END;
-      w. WriteLn;
     END WriteInstr;
 
   PROCEDURE WriteRegion (r: Region);
