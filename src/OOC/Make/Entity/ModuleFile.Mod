@@ -22,7 +22,7 @@ MODULE OOC:Make:Entity:ModuleFile;
 
 
 IMPORT
-  Strings, Files, Time, ADT:String, ADT:StringBuffer, 
+  Err, Strings, Files, Time, ADT:String, ADT:StringBuffer, 
   URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
   ConfigOOC := OOC:Auxiliary:Config, OOC:Error,
@@ -114,14 +114,19 @@ PROCEDURE (entity: Entity) GetURI* (): URI.URI;
     RETURN entity. module. GetURI (entity. fileId);
   END GetURI;
 
-PROCEDURE (entity: Entity) Exists* (): BOOLEAN;
+PROCEDURE Exists (entity: Entity; fileId: Repository.FileId): BOOLEAN;
   VAR
     uri: URI.URI;
     path: Repository.URIBuffer;
   BEGIN
-    uri := entity. module. GetURI (entity. fileId);
+    uri := entity. module. GetURI (fileId);
     uri(File.URI). GetPath (path);
     RETURN Files.Exists (path)
+  END Exists;
+
+PROCEDURE (entity: Entity) Exists* (): BOOLEAN;
+  BEGIN
+    RETURN Exists (entity, entity. fileId)
   END Exists;
 
 PROCEDURE (entity: Entity) GetTimeStamp* (VAR ts: Time.TimeStamp);
@@ -317,6 +322,19 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       END
     END AncestorState;
   
+  PROCEDURE MissingFile (entity: Entity);
+    VAR
+      uri: URI.URI;
+      s: ARRAY 1024 OF CHAR;
+    BEGIN
+      (* ... FIXME error messages should use the errList mechanism *)
+      Err.String ("Error: File does not exist ");
+      uri := entity. GetURI();
+      uri. GetString (s);
+      Err.String (s);
+      Err.Ln;
+    END MissingFile;
+  
   BEGIN
     CASE entity. fileId OF
     | Repository.modModuleSource:
@@ -326,6 +344,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       IF entity. Exists() THEN
         RETURN Make.entityValid
       ELSE
+        MissingFile (entity);
         RETURN Make.entityInvalid
       END
       
@@ -349,6 +368,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
           (* we don't want to rebuild the symbol file after checking with the
              source file, but the symbol file does not exist; no chance to fix
              this, this entity is invalid *)
+          MissingFile (entity);
           RETURN Make.entityInvalid
         ELSE
           (* the symbol file exists, and it is more recent than the
@@ -504,10 +524,17 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
          fails if the C compiler leaves incomplete files behind if
          interruped.  *)
       IF (entity. state = Make.entityUndiscovered) THEN
-        srcEntity := GetEntity (entity. context, entity. module,
-                                Repository.modCodeFileC);
-        AddTimeDep (entity. context, entity, srcEntity);
-        RETURN entity. state+1
+        IF entity. Exists() & ~Exists (entity, Repository.modModuleSource) THEN
+          (* we have an object file, but no source file; because we cannot
+             build a new one, shortcut the validation logic and assume the
+             the object file is up to date *)
+          RETURN Make.entityValid
+        ELSE
+          srcEntity := GetEntity (entity. context, entity. module,
+                                  Repository.modCodeFileC);
+          AddTimeDep (entity. context, entity, srcEntity);
+          RETURN entity. state+1
+        END
       ELSE
         RETURN AncestorState (entity, -1)
       END
@@ -536,7 +563,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
                                   Repository.modMainObjectFile);
           AddTimeDep (entity. context, entity, srcEntity);
           
-          (* add run-time module OO2CRT to dependencies; note: this is 
+          (* add run-time module RT0 to dependencies; note: this may 
              not the right place to do this if other back-ends are 
              supported ... *)
           srcEntity := GetEntity (entity. context, 
