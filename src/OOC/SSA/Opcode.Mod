@@ -390,6 +390,9 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
+  labels* = 39;
+  (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
+  
   
 CONST
   scNone* = 0;
@@ -469,6 +472,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | enter: cstr := "enter";
     | select: cstr := "select";
     | collect: cstr := "collect";
+    | labels: cstr := "labels";
     | return: cstr := "return";
     | selectReturn: cstr := "select-return";
     | exit: cstr := "exit";

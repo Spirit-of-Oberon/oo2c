@@ -95,6 +95,8 @@ PROCEDURE GetBlockList (enterBlock, exitBlock: Schedule.Block): BlockList;
     i: LONGINT;
 
   PROCEDURE ScanBlock (b: Schedule.Block);
+    VAR
+      i: LONGINT;
     BEGIN
       IF (b # NIL) & (b. info # mark) THEN
         b. info := mark;
@@ -109,6 +111,10 @@ PROCEDURE GetBlockList (enterBlock, exitBlock: Schedule.Block): BlockList;
             ScanBlock (b. jump. dest);
           | b: Schedule.DeadEndBlock DO
             (* nowhere to go *)
+          | b: Schedule.SwitchBlock DO
+            FOR i := 0 TO LEN (b. jump^)-1 DO
+              ScanBlock (b. jump[i]. dest);
+            END;
           END;
         END;
       END;
@@ -577,6 +583,14 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
 
         | b: Schedule.DeadEndBlock DO
           outgoingJumps := 0;
+
+        | b: Schedule.SwitchBlock DO
+          outgoingJumps := LEN (b. jump^);
+          FOR i := 0 TO LEN (b. jump^)-1 DO
+            IF BackedgeJump (b. jump[i]) THEN
+              DEC (outgoingJumps);
+            END;
+          END;
         END;
 
         IF (outgoingJumps = 0) THEN

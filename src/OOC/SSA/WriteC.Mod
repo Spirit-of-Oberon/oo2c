@@ -765,8 +765,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
 
       | Opcode.enter:
         (* nothing *)
-        
       | Opcode.select:
+        (* nothing *)
+      | Opcode.labels:
         (* nothing *)
 
       | Opcode.collect:
@@ -974,8 +975,44 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
   
   PROCEDURE WriteBlock (b: Schedule.Block);
     VAR
+      i: LONGINT;
       nested: Schedule.Block;
       
+    PROCEDURE WriteNested (nested: Schedule.Block);
+      BEGIN
+        WHILE (nested # NIL) DO
+          WriteBlock (nested);
+          nested := nested. nextDom
+        END;
+      END WriteNested;
+
+    PROCEDURE WriteCases (instr: SSA.Instr);
+      VAR
+        opnd, lower, upper: SSA.Opnd;
+      BEGIN
+        IF (instr. opcode = Opcode.labels) THEN
+          opnd := instr. opndList;
+          WHILE (opnd # NIL) DO
+            lower := opnd;
+            opnd := opnd. nextOpnd;
+            upper := opnd;
+            opnd := opnd. nextOpnd;
+            
+            w. Newline;
+            w. WriteString ("case ");
+            w. Ref (lower);
+            IF (lower. arg # upper. arg) THEN
+              w. WriteString (" ... "); (* this is a gcc specialty *)
+              w. Ref (upper);
+            END;
+            w. WriteString (":");
+          END;
+        ELSE
+          w. Newline;
+          w. WriteString ("default:");
+        END;
+      END WriteCases;
+    
     BEGIN
       IF (b. degreeIn # 0) THEN
         FixLastJump (b);
@@ -998,14 +1035,37 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
             w. WriteString (") ");
             WriteGoto (b. jump. dest);
           END;
+          lastBlock := b;
+          WriteNested (b. domList);
+
+        | b: Schedule.SwitchBlock DO
+          w. Newline;
+          w. WriteString ("switch (");
+          w. Ref (b. expr);
+          w. WriteString (") {");
+          
+          nested := b. domList; i := 0;
+          WHILE (nested # NIL) & (i # LEN (b. jump^)) DO
+            ASSERT (nested = b. jump[i]. dest);
+            WriteCases (b. caseValues[i]. arg. instr);
+            
+            lastBlock := NIL;
+            w. Indent (1);
+            WriteBlock (b. jump[i]. dest);
+            w. Newline;
+            (*w. WriteString ("break;");*)
+            WriteGoto (lastBlock(Schedule.JumpBlock). jump. dest);
+            w. Indent (-1);
+            nested := nested. nextDom; INC (i);
+          END;
+          w. Newline;
+          w. WriteString ("}");
+          lastBlock := NIL;
+          WriteNested (nested);
+          
         ELSE (* standard block *)
-        END;
-        lastBlock := b;
-        
-        nested := b. domList;
-        WHILE (nested # NIL) DO
-          WriteBlock (nested);
-          nested := nested. nextDom
+          lastBlock := b;
+          WriteNested (b. domList);
         END;
       END;
     END WriteBlock;

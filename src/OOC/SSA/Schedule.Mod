@@ -21,7 +21,7 @@ MODULE OOC:SSA:Schedule [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Blocker;
+  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Blocker;
 
 TYPE
   Block* = POINTER TO BlockDesc;
@@ -29,7 +29,8 @@ TYPE
   BranchBlock* = POINTER TO BranchBlockDesc;
   JumpBlock* = POINTER TO JumpBlockDesc;
   DeadEndBlock* = POINTER TO DeadEndBlockDesc;
-
+  SwitchBlock* = POINTER TO SwitchBlockDesc;
+  
 TYPE
   Info* = POINTER TO InfoDesc;
   InfoDesc* = RECORD
@@ -129,6 +130,16 @@ TYPE
     (**A block at the very end of the control flow of a procedure.  There is
        no branch or jump instruction at the end of this block.  *)
     (BlockDesc)
+  END;
+
+TYPE
+  SwitchBlockDesc = RECORD
+    (**This block is translated into C's @code{switch} statement.  *)
+    (BlockDesc)
+    expr-: SSA.Opnd;
+    jump-: POINTER TO ARRAY OF Jump;
+    path: POINTER TO ARRAY OF JumpBlock;
+    caseValues-: POINTER TO ARRAY OF SSA.Opnd;
   END;
   
 TYPE
@@ -303,6 +314,37 @@ PROCEDURE (b: DeadEndBlock) DefaultTarget*(): Block;
   END DefaultTarget;
 
 
+PROCEDURE InitSwitchBlock (b: SwitchBlock; dominator: Block;
+                           expr: SSA.Opnd; paths: LONGINT);
+  VAR
+    i: LONGINT;
+  BEGIN
+    InitBlock (b, dominator);
+    b. expr := expr;
+    NEW (b. jump, paths);
+    NEW (b. path, paths);
+    NEW (b. caseValues, paths);
+    FOR i := 0 TO paths-1 DO
+      b. jump[i] := NIL; b. path[i] := NIL; b. caseValues[i] := NIL;
+    END;
+  END InitSwitchBlock;
+
+PROCEDURE NewSwitchBlock (dominator: Block; expr: SSA.Opnd;
+                          paths: LONGINT): SwitchBlock;
+  VAR
+    b: SwitchBlock;
+  BEGIN
+    NEW (b);
+    InitSwitchBlock (b, dominator, expr, paths);
+    RETURN b
+  END NewSwitchBlock;
+
+PROCEDURE (b: SwitchBlock) DefaultTarget*(): Block;
+  BEGIN
+    RETURN NIL;
+  END DefaultTarget;
+
+
 
 PROCEDURE InitInstrProxy (proxy: InstrProxy; instr: SSA.Instr);
   BEGIN
@@ -368,26 +410,53 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
   PROCEDURE TransferSelect (select: Blocker.Select; block: JumpBlock): JumpBlock;
     VAR
       branch: BranchBlock;
+      switch: SwitchBlock;
       path1, path2, out: JumpBlock;
+      paths, i: LONGINT;
+      opnd: SSA.Opnd;
     BEGIN
-      branch := NewBranchBlock
-          (block,
-           select. instr. opndList,
-           select. instr. opndList. nextOpnd. arg. IsBooleanConst (TRUE));
-      SetJump (block. jump, block, branch);
-      
-      path1 := NewJumpBlock (branch);
-      SetJump (branch. branchTo, branch, path1);
-      path1 := TransferInstructions (select. paths[0], path1);
-      
-      path2 := NewJumpBlock (branch);
-      SetJump (branch. jump, branch, path2);
-      path2 := TransferInstructions (select. paths[1], path2);
-      
-      out := NewJumpBlock (branch);
-      SetJump (path1. jump, path1, out);
-      SetJump (path2. jump, path2, out);
-      RETURN out
+      IF (select. instr. GetOpndClass (Opnd.labels) # NIL) THEN
+        (* this select represents a CASE statement *)
+        paths := select. instr. CountOpndClass (Opnd.labels);
+        switch := NewSwitchBlock (block, select. instr. opndList, paths);
+        SetJump (block. jump, block, switch);
+
+        opnd := select. instr. opndList. nextOpnd;
+        FOR i := 0 TO paths-1 DO
+          switch. caseValues[i] := opnd;
+          
+          switch. path[i] := NewJumpBlock (switch);
+          SetJump (switch. jump[i], switch, switch. path[i]);
+          switch. path[i] := TransferInstructions (select. paths[i],
+                                                   switch. path[i]);
+          opnd := opnd. nextOpnd. nextOpnd;
+        END;
+
+        out := NewJumpBlock (switch);
+        FOR i := 0 TO paths-1 DO
+          SetJump (switch. path[i]. jump, switch. path[i], out);
+        END;
+        RETURN out
+      ELSE                               (* a "normal" IF statement *)
+        branch := NewBranchBlock
+            (block,
+             select. instr. opndList,
+             select. instr. opndList. nextOpnd. arg. IsBooleanConst (TRUE));
+        SetJump (block. jump, block, branch);
+        
+        path1 := NewJumpBlock (branch);
+        SetJump (branch. branchTo, branch, path1);
+        path1 := TransferInstructions (select. paths[0], path1);
+        
+        path2 := NewJumpBlock (branch);
+        SetJump (branch. jump, branch, path2);
+        path2 := TransferInstructions (select. paths[1], path2);
+        
+        out := NewJumpBlock (branch);
+        SetJump (path1. jump, path1, out);
+        SetJump (path2. jump, path2, out);
+        RETURN out
+      END;
     END TransferSelect;
   
   PROCEDURE TransferLoop (loop: Blocker.Loop; block: JumpBlock): JumpBlock;
@@ -603,6 +672,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
        the child of `path.parent' containg the jump target *)
       VAR
         nested: Block;
+        i: LONGINT;
         
       PROCEDURE ProcessJump (target: Block);
         PROCEDURE WriteBefore (VAR dependentList: Dependent; b: Block);
@@ -638,6 +708,10 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
           ProcessJump (b. jump. dest);
         | b: DeadEndBlock DO
           (* nowhere to go *)
+        | b: SwitchBlock DO
+          FOR i := 0 TO LEN (b. jump^)-1 DO
+            ProcessJump (b. jump[i]. dest);
+          END;
         END;
         
         nested := b. domList;
@@ -746,6 +820,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
   PROCEDURE MarkBackedges (b: Block);
     VAR
       nested: Block;
+      i: LONGINT;
 
     PROCEDURE Check (jump: Jump);
       BEGIN
@@ -760,6 +835,10 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         Check (b. jump)
       | b: DeadEndBlock DO
         (* nowhere to go *)
+      | b: SwitchBlock DO
+        FOR i := 0 TO LEN (b. jump^)-1 DO
+          Check (b. jump[i]);
+        END;
       END;
 
       nested := b. domList;
@@ -783,6 +862,12 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
           proxy := proxy. nextProxy
         END;
       | b: DeadEndBlock DO
+      | b: SwitchBlock DO
+        proxy := b. proxyList;
+        WHILE (proxy # NIL) DO
+          ASSERT (proxy. instr. opcode # Opcode.collect);
+          proxy := proxy. nextProxy
+        END;
       END;
 
       nested := b. domList;

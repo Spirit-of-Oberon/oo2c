@@ -520,6 +520,24 @@ PROCEDURE (instr: Instr) SizeOpndList*(): LONGINT;
     RETURN num;
   END SizeOpndList;
 
+PROCEDURE (instr: Instr) CountOpndClass* (class: OpndClass.Class): LONGINT;
+(**Returns the number of operands of @oparam{instr} with a class of
+   @oparam{class}. *)
+  VAR
+    num: LONGINT;
+    opnd: Opnd;
+  BEGIN
+    num := 0;
+    opnd := instr. opndList;
+    WHILE (opnd # NIL) DO
+      IF (opnd. class = class) THEN
+        INC (num);
+      END;
+      opnd := opnd. nextOpnd;
+    END;
+    RETURN num;
+  END CountOpndClass;
+
 PROCEDURE (instr: Instr) SizeResultList*(): LONGINT;
 (**Returns the number of results of @oparam{instr}.  Because the instruction is
    an result by itself, the number is always greater or equal to @code{1}.  *)

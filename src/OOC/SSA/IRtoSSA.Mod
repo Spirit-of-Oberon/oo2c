@@ -546,6 +546,58 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := select. AddResult (Result.store)
     END IfStatm;
 
+  PROCEDURE CaseStatm (caseStatm: IR.CaseStatm);
+    VAR
+      select: SSA.Instr;
+      storeAfterSelect: SSA.Result;
+      i: LONGINT;
+
+    PROCEDURE Labels (labels: IR.CaseLabels): SSA.Instr;
+      VAR
+        i: LONGINT;
+        instr: SSA.Instr;
+        value: SSA.Result;
+        l: IR.Expression;
+      BEGIN
+        instr := pb. AddInstr (Opcode.labels, Opcode.scNone);
+        FOR i := 0 TO LEN (labels^)-1 DO
+          l := labels[i];
+          WITH l: IR.SetRange DO
+            instr. AddOpnd (Expression (l. from), Opnd.arg);
+            instr. AddOpnd (Expression (l. to), Opnd.arg);
+          ELSE
+            value := Expression (l);
+            instr. AddOpnd (value, Opnd.arg);
+            instr. AddOpnd (value, Opnd.arg);
+          END;
+        END;
+        RETURN instr
+      END Labels;
+    
+    BEGIN
+      select := pb. AddInstr (Opcode.select, Opcode.scNone);
+      select. AddOpnd (Expression (caseStatm. select), Opnd.arg);
+      storeAfterSelect := s;
+
+      FOR i := 0 TO LEN (caseStatm. caseList^)-1 DO
+        select. AddOpnd (Labels (caseStatm. caseList[i]. labels),
+                         Opnd.labels);
+        select. AddOpnd (StatmSeq (pb, storeAfterSelect,
+                                   caseStatm. caseList[i]. statmSeq),
+                         Opnd.arg);
+      END;
+      
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+      IF (caseStatm. default # NIL) THEN
+        select. AddOpnd (StatmSeq (pb, storeAfterSelect, caseStatm. default),
+                         Opnd.labels);
+      ELSE
+        select. AddOpnd (storeAfterSelect, Opnd.labels)
+      END;
+
+      s := select. AddResult (Result.store)
+    END CaseStatm;
+  
   PROCEDURE RepeatStatm (repeatStatm: IR.RepeatStatm);
     VAR
       start, end: SSA.Instr;
@@ -762,7 +814,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         Chain (Assert (statm));
 
       | statm: IR.Assignment DO
-        Chain (Assignment (statm))
+        Chain (Assignment (statm));
             
       | statm: IR.Call DO
         Chain (Call (statm));
@@ -770,13 +822,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | statm: IR.Return DO
         (* lets pretend for a moment that a RETURN is not a control flow
            construct... FIXME *)
-        Return (statm)
+        Return (statm);
 
       | statm: IR.IfStatm DO
-        IfStatm (statm)
+        IfStatm (statm);
 
+      | statm: IR.CaseStatm DO
+        CaseStatm (statm);
+            
       | statm: IR.RepeatStatm DO
-        RepeatStatm (statm)
+        RepeatStatm (statm);
             
       | statm: IR.WhileStatm DO
         WhileStatm (statm);
@@ -791,7 +846,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         Exit (statm);
         
       | statm: IR.CopyParameter DO
-        CopyParameter (statm)
+        CopyParameter (statm);
             
       ELSE
         Log.Type("++ Unknown statement class in StatmSeq", statm);

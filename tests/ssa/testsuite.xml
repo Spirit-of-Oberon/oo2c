@@ -12,7 +12,7 @@
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
-  designator1 function6 loop1 loop2 loop3 loop4 and1 or1 varpar1
+  designator1 function6 loop1 loop2 loop3 loop4 case1 and1 or1 varpar1
   record1 record2 record3 record4 record5 record6 record7 record8
   record9 procvar1 procvar2 procvar3 procvar4 procvar5
   inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7 antidep1
@@ -23,7 +23,7 @@
 
 <!-- <testsuite-ext -->
 <!--   profile="Test Suite for Framework Testing" -->
-<!--   select ="&SetupTestCasesWithOut; nestedproc1 nestedproc2 nestedproc3"> -->
+<!--   select ="&SetupTestCasesWithOut; case1"> -->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -113,6 +113,12 @@
       file="HOTLoop4.Mod" output="HOTLoop4.Ref">
       Loop variant <code>LOOP-EXIT-EXIT-END</code>: Calculate <code>x
       DIV 10</code> in a rather silly way for <code>0 &lt;= x &lt; 20</code>.
+    </test>
+    
+    <test id="case1" type="run" file="Case1.Mod" output="Case1.Ref">
+      <code>CASE</code> statement using branches with one label, two
+      labels, a range as a label, and an <code>ELSE</code> part.
+      The selector is an integer value.
     </test>
     
     <test id="and1" type="run" file="And1.Mod" output="And1.Ref">
