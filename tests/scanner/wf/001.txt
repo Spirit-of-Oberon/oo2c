@@ -68,5 +68,8 @@ IMPORT
 MODULE
 ...
 (* comment *)
+TRY
+CATCH
+RAISES
 
 

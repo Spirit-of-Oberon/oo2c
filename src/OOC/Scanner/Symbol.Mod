@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Scanner:Symbol;
 (*  Symbolic names for symbols known to the scanner.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -33,25 +33,25 @@ CONST
   neq*=10; lss*=11; leq*=12; gtr*=13; geq*=14;
   in*=15; is*=16; arrow*=17; period*=18; comma*=19;
   colon*=20; upto*=21; rParen*=22; rBrak*=23; rBrace*=24;
-  of*=25; then*=26; do*=27; to*=28; by*=29; lParen*=30;
-  lBrak*=31; lBrace*=32; not*=33; becomes*=34;
-  number10*=35; number16*=36; number16X*=37;
-  numberExpE*=38; numberExpD*=39;
-  nil*=40; stringSingle*=41; stringDouble*=42; 
-  ident*=43; semicolon*=44;
-  bar*=45; end*=46; else*=47; elsif*=48; until*=49;
-  if*=50; case*=51; while*=52; repeat*=53; loop*=54;
-  for*=55; with*=56; exit*=57; return*=58;
-  array*=59; record*=60; pointer*=61; begin*=62; const*=63;
-  type*=64; var*=65; procedure*=66;
-  import*=67; module*=68; endOfFile*=69;
+  of*=25; catch*=26; raises*=27; then*=28; do*=29; to*=30; by*=31;
+  lParen*=32; lBrak*=33; lBrace*=34; not*=35; becomes*=36;
+  number10*=37; number16*=38; number16X*=39;
+  numberExpE*=40; numberExpD*=41;
+  nil*=42; stringSingle*=43; stringDouble*=44; 
+  ident*=45; semicolon*=46;
+  bar*=47; end*=48; else*=49; elsif*=50; until*=51;
+  if*=52; case*=53; while*=54; repeat*=55; loop*=56;
+  for*=57; with*=58; try*=59; exit*=60; return*=61;
+  array*=62; record*=63; pointer*=64; begin*=65; const*=66;
+  type*=67; var*=68; procedure*=69;
+  import*=70; module*=71; endOfFile*=72;
   
   (* nonstandard symbols & symbols normally mapped to whitespace; use the
      predicate @oproc{IsWhitespace} to test for whitespace *)
-  invalid*=70; pragmaStart*=71; pragmaEnd*=72;
-  threeDots*=73; comment*=74; docComment* = 75; pragma*=76; whitespace*=77;
+  invalid*=73; pragmaStart*=74; pragmaEnd*=75;
+  threeDots*=76; comment*=77; docComment* = 78; pragma*=79; whitespace*=80;
   
-  addOnSymbols=78;
+  addOnSymbols=81;
   (* if you want to tinker with the language, put additional symbol ids here;
      do _not_ insert them into the symbol ids above, because the parser 
      uses ranges of ids, like "(a<=id) & (id<=b)", for its tests *)
@@ -107,6 +107,8 @@ BEGIN
   name[rBrak] := "rBrak"; representation[rBrak] := "]";
   name[rBrace] := "rBrace"; representation[rBrace] := "}";
   name[of] := "of"; representation[of] := "OF";
+  name[catch] := "catch"; representation[catch] := "CATCH";
+  name[raises] := "raises"; representation[raises] := "RAISES";
   name[then] := "then"; representation[then] := "THEN";
   name[do] := "do"; representation[do] := "DO";
   name[to] := "to"; representation[to] := "TO";
@@ -138,6 +140,7 @@ BEGIN
   name[loop] := "loop"; representation[loop] := "LOOP";
   name[for] := "for"; representation[for] := "FOR";
   name[with] := "with"; representation[with] := "WITH";
+  name[try] := "try"; representation[try] := "TRY";
   name[exit] := "exit"; representation[exit] := "EXIT";
   name[return] := "return"; representation[return] := "RETURN";
   name[array] := "array"; representation[array] := "ARRAY";

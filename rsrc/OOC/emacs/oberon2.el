@@ -1872,8 +1872,8 @@ procedure is part of the region."
 
 (let 
     ((o2-keywords
-      ;; keyword list before make-regexp: "RECORD\\|ARRAY\\|OF\\|POINTER\\|TO\\|BEGIN\\|END\\|FOR\\|BY\\|IF\\|THEN\\|ELSE\\|ELSIF\\|CASE\\|WHILE\\|DO\\|MODULE\\|FROM\\|RETURN\\|IMPORT\\|VAR\\|LOOP\\|UNTIL\\|OR\\|DIV\\|MOD\\|EXIT\\|IN\\|IS\\|REPEAT\\|WITH\\|CONST\\|TYPE\\|PROCEDURE"
-      "ARRAY\\|B\\(EGIN\\|Y\\)\\|C\\(ASE\\|ONST\\)\\|D\\(IV\\|O\\)\\|E\\(LS\\(E\\|IF\\)\\|ND\\|XIT\\)\\|F\\(OR\\|ROM\\)\\|I\\([FNS]\\|MPORT\\)\\|LOOP\\|MOD\\(\\|ULE\\)\\|O[FR]\\|P\\(OINTER\\|ROCEDURE\\)\\|RE\\(CORD\\|PEAT\\|TURN\\)\\|T\\(HEN\\|O\\|YPE\\)\\|UNTIL\\|VAR\\|W\\(HILE\\|ITH\\)")
+      ;; keyword list before make-regexp: "RECORD\\|ARRAY\\|OF\\|POINTER\\|TO\\|BEGIN\\|END\\|FOR\\|BY\\|IF\\|THEN\\|ELSE\\|ELSIF\\|CASE\\|WHILE\\|DO\\|MODULE\\|FROM\\|RETURN\\|IMPORT\\|VAR\\|LOOP\\|UNTIL\\|OR\\|DIV\\|MOD\\|EXIT\\|IN\\|IS\\|REPEAT\\|WITH\\|TRY\\|CATCH\\|RAISES\\|CONST\\|TYPE\\|PROCEDURE"
+      "ARRAY\\|B\\(EGIN\\|Y\\)\\|C\\(ASE\\|ONST\\|ATCH\\)\\|D\\(IV\\|O\\)\\|E\\(LS\\(E\\|IF\\)\\|ND\\|XIT\\)\\|F\\(OR\\|ROM\\)\\|I\\([FNS]\\|MPORT\\)\\|LOOP\\|MOD\\(\\|ULE\\)\\|O[FR]\\|P\\(OINTER\\|ROCEDURE\\)\\|R\\(AISES\\|E\\(CORD\\|PEAT\\|TURN\\)\\)\\|T\\(HEN\\|O\\|RY\\|YPE\\)\\|UNTIL\\|VAR\\|W\\(HILE\\|ITH\\)")
      (o2-proc-header
       "\\<\\(PROCEDURE\\)\\s-*\\((\\([a-zA-Z0-9 	:]+\\))\\s-*\\)?\\(\\[.*\\]\\)?\\s-*\\(\\<[a-zA-Z_][a-zA-Z_0-9]*\\>\\>\\)")
      (o2-module-header

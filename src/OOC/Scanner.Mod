@@ -60,7 +60,7 @@ CONST
   (**Enables all available add-on symbols.  *)
   
 CONST
-  sizeKWTable = 128;                     
+  sizeKWTable = 256;
   (* size of keyword hash table *)
 
 VAR
@@ -712,7 +712,10 @@ PROCEDURE InitKeywords;
     KW ("UNTIL", Symbol.until);
     KW ("VAR", Symbol.var);
     KW ("WHILE", Symbol.while); 
-    KW ("WITH", Symbol.with)
+    KW ("WITH", Symbol.with);
+    KW ("TRY", Symbol.try);
+    KW ("CATCH", Symbol.catch);
+    KW ("RAISES", Symbol.raises);
   END InitKeywords;
 
 BEGIN

@@ -151,6 +151,12 @@
 <symbol id='threeDots' pos='292' line='68' column='0'>...</symbol>
 <symbol id='whitespace' pos='295' line='68' column='3'>&#10;</symbol>
 <symbol id='comment' pos='296' line='69' column='0'>(* comment *)</symbol>
-<symbol id='whitespace' pos='309' line='69' column='13'>&#10;&#10;&#10;</symbol>
-<symbol id='endOfFile' pos='312' line='72' column='0'></symbol>
+<symbol id='whitespace' pos='309' line='69' column='13'>&#10;</symbol>
+<symbol id='try' pos='310' line='70' column='0'>TRY</symbol>
+<symbol id='whitespace' pos='313' line='70' column='3'>&#10;</symbol>
+<symbol id='catch' pos='314' line='71' column='0'>CATCH</symbol>
+<symbol id='whitespace' pos='319' line='71' column='5'>&#10;</symbol>
+<symbol id='raises' pos='320' line='72' column='0'>RAISES</symbol>
+<symbol id='whitespace' pos='326' line='72' column='6'>&#10;&#10;&#10;</symbol>
+<symbol id='endOfFile' pos='329' line='75' column='0'></symbol>
 </document>
