@@ -1650,7 +1650,7 @@ PROCEDURE (b : Builder) CheckFunctionOp(expr : Expression; op : Symbol);
    @oparam{expr} that is a function result. This restriction is applied to
    Deref, Index, and Select operators. *)
 BEGIN
-  IF (expr IS PredefProc) OR (expr IS Call) THEN
+  IF (expr IS PredefProc) OR (expr IS Call) OR (expr IS Constructor) THEN
     b.ErrSym(illegalFunctionOp, op);
   END;
 END CheckFunctionOp;

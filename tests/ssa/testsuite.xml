@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic66 generic67 generic68 generic69">-->
+  select ="&SetupTestCasesWithOut; new8">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5 generic1 generic41 generic45">-->
@@ -451,6 +451,9 @@
     </test>
     <test id="new7" type="error" file="New7.Mod">
       Calling <code>NEW</code> with a negative length.
+    </test>
+    <test id="new8" type="reject" file="New8.Mod">
+      Applying a field selector to the result of <code>NEW</code>.
     </test>
     
     <test id="abs1" type="run" file="Abs1.Mod" output="Abs1.Ref">
@@ -1952,6 +1955,8 @@
       msg="Wrong number of arguments"/>
     <reject-info id="new6" pos="NEW(%p)"
       msg="This must be a pointer variable"/>
+    <reject-info id="new8" pos="%.GetVal"
+      msg="Operator may not be applied to function result"/>
     
     <reject-info id="abs2" pos="ABS(%0X)" msg="Expression must be numeric"/>
     <reject-info id="abs3" pos="%ABS(-1)" msg="This is a function procedure"/>
