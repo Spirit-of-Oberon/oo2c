@@ -63,7 +63,7 @@ TYPE
 VAR
   createNamespaceContext: ErrorContext;
   predefModule: Sym.Module;
-  systemModule: Sym.Module;
+  systemModule-: Sym.Module;
 
 PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error.LString);
   VAR
