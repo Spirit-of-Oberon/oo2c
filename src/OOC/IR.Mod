@@ -23,7 +23,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 IMPORT
 Log,
   Language, Language:Boolean, Language:Char, Language:String8,
-  Language:Integer, Language:Real,
+  Language:String16, Language:Integer, Language:Real,
   ADT:Object, ADT:ArrayList, ADT:String,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
@@ -1128,7 +1128,6 @@ PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expressi
 PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
   VAR
     v: Language.Value;
-    str: ARRAY 2 OF CHAR;
   BEGIN
     v := Char.type. ValueOf (sym. str^);
     IF (v = NIL) THEN
@@ -1136,11 +1135,13 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
       RETURN b. errorExpr
     ELSE
       WITH v: Char.Value DO
-        ASSERT (v. value < 256);
-        str[0] := CHR (v. value);
-        str[1] := 0X;
-        RETURN NewConst (sym, Predef.GetType (Predef.char),
-                         String8.NewString (str));
+        IF (v. value <= ORD (Predef.maxChar)) THEN
+          RETURN NewConst (sym, Predef.GetType (Predef.char),
+                           String8.NewChar (CHR (v. value)));
+        ELSE
+          RETURN NewConst (sym, Predef.GetType (Predef.longchar),
+                           String16.NewChar (LONGCHR (v. value)));
+        END;
       END;
     END
   END NewCharConst16;
