@@ -125,7 +125,12 @@ PROCEDURE NewPrototype*(): URI;
 PROCEDURE GetCwd*(): URI;
 (**Creates an absolute file URI for the current working directory.  If the
    current working directory cannot be determined, the value @code{NIL} is
-   returned.  *)
+   returned.
+
+   @precond
+   The URL scheme ``file'' must have been registered with
+   @oproc{*URI.RegisterScheme}.
+   @end precond  *)
   VAR
     uri: URI0.URI;
     uriString: StringBuffer.StringBuffer;
