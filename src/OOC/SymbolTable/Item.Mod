@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Item [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,14 +21,16 @@ MODULE OOC:SymbolTable:Item [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Strings, ADT:Object, ADT:Dictionary, 
+  Msg, Strings, ADT:Object, ADT:String, ADT:Dictionary,
+  URI, ParserURI := URI:Parser,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc;
 
 TYPE
   NameString* = InputBuffer.CharArray;
   (**This type is used to store names as character arrays.  The string is
      always terminated by a @code{0X} character.  In the future, the base
-     character of the string maybe something different than @code{CHAR}.  *)
+     character of the string may change to something different than
+     @code{CHAR}.  *)
   ModulePos* = InputBuffer.CharPos;
   (**Values of this type store a source position as an integer type.  The
      very character of the source filex has position 0.  *)
@@ -191,6 +193,66 @@ TYPE
    ------------------------------------------------------------------------ *)
 
 TYPE
+  ModuleClass* = SHORTINT;
+
+CONST
+  mcStandard* = 0;
+  (**Indicates a standard module.  *)
+  mcInternal* = 1;
+  (**Indicates an internal module, for example the pseudo module that defines
+     predefined entities, or @code{SYSTEM}.  *)
+  mcForeign* = 2;
+  (**Indicates a @code{FOREIGN} module.  Such a module has all the outward
+     appearance of a standard module, although the actual implementation is
+     done in a different programming language.  *)
+  mcInterface* = 3;
+  (**Indicates an @code{INTERFACE} module.  An @code{INTERFACE} does not
+     provide any executable code of its own.  Instead, it describes how to link
+     to a another piece of code, typically a shared library, and how to access
+     its functions and variables.  *)
+
+TYPE
+  CallConv* = SHORTINT;
+
+CONST
+  callConvInvalid* = -1;
+  (**Error return code, indicating that a given calling convention identifier
+     is not known to the compiler.  *)
+  callConvDefault* = 0;
+  (**This value is used if no explicit calling convention is stated.  On the
+     module level it only applies to standard modules, because @code{INTERFACE}
+     and @code{FOREIGN} modules require an explicit calling convention.  On the
+     procedure level, this value signals that the procedure should take its
+     calling convention from the module's default calling convention.  *)
+  callConvInternal* = 1;
+  (**This id is used for procedure and functions that are predefined or are
+     derived from a pseudo module like @code{SYSTEM}.  Because calls to such
+     procedures are not mapped to regular procedure calls, normal calling
+     conventions do not apply.  In particular, internal procedures cannot be
+     assigned to procedure variables.  *)
+  callConvC* = 2;
+  (**`C' calling convention.  Here the caller removes arguments, permitting
+     the usage of the ellipsis parameter in C functions.  *)
+  callConvPascal* = 3;
+  (**`Pascal' calling convention.  The callee removes arguments.  This is 
+     the default calling convention under Win32.  *)  
+
+TYPE
+  LinkDirective* = POINTER TO LinkDirectiveDesc;
+  LinkDirectiveDesc = RECORD
+    (Object.ObjectDesc)
+    next: LinkDirective;
+  END;
+
+TYPE
+  LinkFile* = POINTER TO LinkFileDesc;
+  LinkFileDesc = RECORD
+    (LinkDirectiveDesc)
+    file: URI.HierarchicalURI;
+    prefixOption, suffixOption: String.String;
+  END;
+
+TYPE
   Module* = POINTER TO ModuleDesc;
   ModuleDesc = RECORD
     (**This class represents the top-level module object.  It is the root
@@ -198,8 +260,19 @@ TYPE
     (DeclarationDesc)
     ns-: Namespace;
     (**A reference to the global module namespace.  Note that the namespace
-       does not exist before @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}
-       has been run.  *)
+       does not exist before
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace} has been run.  *)
+
+    class-: ModuleClass;
+    (**Identifies the class of the module.  It is one of @oconst{mtStandard},
+       @oconst{mtForeign}, or @oconst{mtInterface}.  *)
+    callConv-: CallConv;
+    (**The default calling convention to be used for all procedures in the
+       module.  If this is @oconst{callConvDefault}, then the final choice
+       is up to the compiler back-end.  *)
+    linkDirectives: LinkDirective;
+    (**List of @samp{FILE}, @samp{OBJ}, and @samp{LIB} link directives from
+       the module header.  *)
   END;
 
 TYPE
@@ -224,6 +297,7 @@ TYPE
    ------------------------------------------------------------------------ *)
 
 TYPE
+  PredefId* = INTEGER;
   PredefType* = POINTER TO PredefTypeDesc;
   PredefTypeDesc = RECORD
     (**Predefined types (like @code{INTEGER}, @code{SET}, the string types,
@@ -231,6 +305,7 @@ TYPE
        class.  The @omodule{*OOC:SymbolTable:Predef} defines the predefined
        entities.  *)
     (TypeDesc)
+    id-: PredefId;
   END;
 
 TYPE
@@ -691,22 +766,114 @@ PROCEDURE (type: Type) SetTypeName* (name: Name);
   END SetTypeName;
 
 
-PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document);
+PROCEDURE InitLinkDirective (l: LinkDirective);
+  BEGIN
+    Object.Init (l);
+    l. next := NIL;
+  END InitLinkDirective;
+
+PROCEDURE (l: LinkDirective) Store* (w: Object.Writer);
+  BEGIN
+    l. Store^ (w);
+    w. WriteObject (l. next)
+  END Store;
+
+PROCEDURE (l: LinkDirective) Load* (r: Object.Reader);
+  VAR
+    obj: Object.Object;
+  BEGIN
+    l. Load^ (r);
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      l. next := NIL
+    ELSE
+      l. next := obj(LinkDirective)
+    END
+  END Load;
+
+PROCEDURE (l: LinkFile) Store* (w: Object.Writer);
+  PROCEDURE WriteURI (w: Object.Writer; uri: URI.HierarchicalURI);
+    VAR
+      b: ARRAY 1024 OF CHAR;
+    BEGIN
+      uri. GetString (b);
+      w. WriteString (b)
+    END WriteURI;
+  
+  BEGIN
+    l. Store^ (w);
+    WriteURI (w, l. file);
+    w. WriteObject (l. prefixOption);
+    w. WriteObject (l. suffixOption);
+  END Store;
+
+PROCEDURE (l: LinkFile) Load* (r: Object.Reader);
+  VAR
+    obj: Object.Object;
+    
+  PROCEDURE ReadURI (r: Object.Reader; VAR uri: URI.HierarchicalURI);
+    VAR
+      b: ARRAY 1024 OF CHAR;
+      u: URI.URI;
+      res: Msg.Msg;
+    BEGIN
+      r. ReadString (b);
+      u := ParserURI.NewURI (b, NIL, res);
+      ASSERT (res = NIL);
+      uri := u(URI.HierarchicalURI);
+    END ReadURI;
+  
+  BEGIN
+    l. Load^ (r);
+    ReadURI (r, l. file);
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      l. prefixOption := NIL
+    ELSE
+      l. prefixOption := obj(String.String)
+    END;
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      l. suffixOption := NIL
+    ELSE
+      l. suffixOption := obj(String.String)
+    END
+  END Load;
+
+
+PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
+                       class: ModuleClass; callConv: CallConv);
   BEGIN
     InitDeclaration (mod, NIL, name, 0, nameNotExported, docString);
-    mod. ns := NIL
+    mod. ns := NIL;
+    mod. class := class;
+    mod. callConv := callConv;
+    mod. linkDirectives := NIL;
   END InitModule;
 
 PROCEDURE (mod: Module) Store* (w: Object.Writer);
   BEGIN
     mod. Store^ (w);
     (* ignore field `ns' *)
+    w. WriteSInt (mod. class);
+    w. WriteSInt (mod. callConv);
+    w. WriteObject (mod. linkDirectives)
   END Store;
 
 PROCEDURE (mod: Module) Load* (r: Object.Reader);
+  VAR
+    obj: Object.Object;
   BEGIN
     mod. Load^ (r);
-    mod. ns := NIL
+    mod. ns := NIL;
+    r. ReadSInt (mod. class);
+    r. ReadSInt (mod. callConv);
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      mod. linkDirectives := NIL
+    ELSE
+      mod. linkDirectives := obj(LinkDirective)
+    END
   END Load;
 
 PROCEDURE (mod: Module) SetNamespace* (ns: Namespace);
@@ -714,6 +881,82 @@ PROCEDURE (mod: Module) SetNamespace* (ns: Namespace);
   BEGIN
     mod. ns := ns
   END SetNamespace;
+
+PROCEDURE (mod: Module) ClassToString*(): String.String;
+  BEGIN
+    CASE mod. class OF
+    | mcStandard : RETURN String.New ("standard")
+    | mcInternal : RETURN String.New ("internal")
+    | mcForeign  : RETURN String.New ("foreign")
+    | mcInterface: RETURN String.New ("interface")
+    END
+  END ClassToString;
+
+PROCEDURE (mod: Module) CallConvToString*(): String.String;
+  BEGIN
+    CASE mod. callConv OF
+    | callConvInvalid : RETURN String.New ("--invalid--")
+    | callConvDefault : RETURN String.New ("default")
+    | callConvInternal: RETURN String.New ("internal")
+    | callConvC       : RETURN String.New ("C")
+    | callConvPascal  : RETURN String.New ("Pascal")
+    END
+  END CallConvToString;
+
+PROCEDURE NewLinkFile (file: URI.HierarchicalURI;
+                       prefixOption, suffixOption: String.String): LinkFile;
+  VAR
+    l: LinkFile;
+  BEGIN
+    NEW (l);
+    InitLinkDirective (l);
+    l. file := file;
+    l. prefixOption := prefixOption;
+    l. suffixOption := suffixOption;
+    RETURN l
+  END NewLinkFile;
+
+PROCEDURE AddLinkDirective (VAR list: LinkDirective; l: LinkDirective);
+  BEGIN
+    IF (list = NIL) THEN
+      list := l
+    ELSE
+      AddLinkDirective (list. next, l)
+    END
+  END AddLinkDirective;
+
+PROCEDURE (mod: Module) AddLinkFile* (file: URI.HierarchicalURI;
+                                    prefixOption, suffixOption: String.String);
+  BEGIN
+    ASSERT (file # NIL);
+    AddLinkDirective (mod. linkDirectives,
+                      NewLinkFile (file, prefixOption, suffixOption))
+  END AddLinkFile;
+
+
+PROCEDURE (mod: Module) GetExternalSource* (): URI.HierarchicalURI;
+  VAR
+    l: LinkDirective;
+  BEGIN
+    ASSERT (mod. class = mcForeign);
+    l := mod. linkDirectives;
+    WHILE (l # NIL) & ~(l IS LinkFile) DO
+      l := l. next
+    END;
+    ASSERT (l(LinkFile). file # NIL);
+    RETURN l(LinkFile). file
+  END GetExternalSource;
+
+PROCEDURE StringToCallConv*(str: ARRAY OF CHAR): CallConv;
+  BEGIN
+    IF (str = "C") THEN
+      RETURN callConvC
+    ELSIF (str = "Pascal") THEN
+      RETURN callConvPascal
+    ELSE
+      RETURN callConvInvalid
+    END
+  END StringToCallConv;
 
 
 PROCEDURE InitImport* (import: Import; parent: Item; name: Name;
@@ -946,9 +1189,10 @@ PROCEDURE (procDecl: ProcDecl) RegisterForwardDecl* (forward: ProcDecl);
 
 
 
-PROCEDURE InitPredefType* (ptype: PredefType; parent: Item);
+PROCEDURE InitPredefType* (ptype: PredefType; parent: Item; id: PredefId);
   BEGIN
-    InitType (ptype, parent, NIL)
+    InitType (ptype, parent, NIL);
+    ptype. id := id;
   END InitPredefType;
 
 PROCEDURE (tname: PredefType) Store* (w: Object.Writer);

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Predef;
 (*  Defines symbol table of pseudo module with predefined entities.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -25,6 +25,18 @@ IMPORT
   Strings, OOC:SymbolTable:Item, OOC:SymbolTable:Builder;
 
 
+CONST  (* note: ids must be unique across all predefined types *)
+  boolean* = 0;
+  char* = 1;
+  longchar* = 2;
+  shortint* = 3;
+  integer* = 4;
+  longint* = 5;
+  real* = 6;
+  longreal* = 7;
+  set* = 8;
+
+
 PROCEDURE CreateModule* (stb: Builder.Builder): Item.Module;
 (**Creates the symbol table of the pseudo module that contains the predefined
    entities of the language, that can be used directly in a module without
@@ -46,32 +58,32 @@ PROCEDURE CreateModule* (stb: Builder.Builder): Item.Module;
       RETURN n
     END GetName;
 
-  PROCEDURE PredefType (name: ARRAY OF CHAR);
+  PROCEDURE PredefType (id: Item.PredefId; name: ARRAY OF CHAR);
     VAR
       ptype: Item.PredefType;
       tdecl: Item.TypeDecl;
     BEGIN
-      ptype := stb. NewPredefType (module);
+      ptype := stb. NewPredefType (module, id);
       tdecl := stb. NewTypeDecl (module, GetName (name), 0,
                                  Item.nameExported, NIL, ptype)
     END PredefType;
   
   BEGIN
-    module := stb. NewModule (GetName ("#predef"), NIL);
+    module := stb. NewModule (GetName ("#predef"), NIL, Item.mcInternal, Item.callConvInternal);
     
-    PredefType ("BOOLEAN");
+    PredefType (boolean, "BOOLEAN");
     
-    PredefType ("CHAR");
-    PredefType ("LONGCHAR");
+    PredefType (char, "CHAR");
+    PredefType (longchar, "LONGCHAR");
     
-    PredefType ("SHORTINT");
-    PredefType ("INTEGER");
-    PredefType ("LONGINT");
+    PredefType (shortint, "SHORTINT");
+    PredefType (integer, "INTEGER");
+    PredefType (longint, "LONGINT");
     
-    PredefType ("REAL");
-    PredefType ("LONGREAL");
+    PredefType (real, "REAL");
+    PredefType (longreal, "LONGREAL");
     
-    PredefType ("SET");
+    PredefType (set, "SET");
     
     stb. Finalize (module);
     RETURN module

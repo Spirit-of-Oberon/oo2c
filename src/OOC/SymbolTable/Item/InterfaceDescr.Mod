@@ -21,8 +21,8 @@ MODULE OOC:SymbolTable:Item:InterfaceDescr;
 *)
 
 IMPORT
-  Channel, Msg, Strings,
-  ADT:Object, ADT:Dictionary, ADT:ArrayList,
+  Channel, Strings,
+  ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
   URI, XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Repository,  OOC:Config:Repositories,
   OOC:SymbolTable:Item, OOC:SymbolTable:Item:GetClass, 
@@ -173,6 +173,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       i: Item.Item;
       element: ARRAY 32 OF CHAR;
       moduleRepository: Repository.Module;
+      str: String.String;
     
     PROCEDURE StartDecl (tag: ARRAY OF CHAR; decl: Item.Declaration);
       BEGIN
@@ -297,6 +298,14 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       IF (item # NIL) THEN
         WITH item: Item.Module DO
           StartDecl ("module-interface", item);
+          str := item. ClassToString();
+          (*IF (str. array^ # "standard") THEN*)
+            w. AttrStringLatin1 ("class", str. array^);
+          (*END;*)
+          str := item. CallConvToString();
+          (*IF (str. array^ # "default") THEN*)
+            w. AttrStringLatin1 ("call-conv", str. array^);
+          (*END;*)
           moduleRepository := repositories. GetModule (item. name. str^);
           
           i := item. nestedItems;
@@ -382,14 +391,12 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       i: LONGINT;
       thisModule, remoteMod: Repository.Module;
       str: ARRAY 2*1024 OF CHAR;
-      res: Msg.Msg;
       remoteURI, relativeURI: URI.URI;
       baseURI: URI.HierarchicalURI;
       keys: Object.ObjectArrayPtr;
     BEGIN
       thisModule := repositories. GetModule (module. name. str^);
-      baseURI := thisModule. GetURI (Repository.modInterfaceHTML, res);
-      ASSERT (res = NIL);
+      baseURI := thisModule. GetURI (Repository.modInterfaceHTML);
       
       keys := modList. Keys();
       FOR i := 0 TO LEN (keys^)-1 DO
@@ -400,8 +407,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
 
         w. StartTag ("ref-target", FALSE);
         w. AttrStringLatin1 ("type", "html");
-        remoteURI := remoteMod. GetURI (Repository.modInterfaceHTML, res);
-        ASSERT (res = NIL);
+        remoteURI := remoteMod. GetURI (Repository.modInterfaceHTML);
         relativeURI := remoteURI. MakeRelative (baseURI);
         relativeURI. GetString (str);
         w. AttrStringLatin1 ("relative-uri", str);

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 (*  Defines a builder class with factory methods for symbol table entries.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -51,12 +51,14 @@ PROCEDURE New* (): Builder;
   END New;
 
 
-PROCEDURE (b: Builder) NewModule* (name: Item.Name; docString: Doc.Document): Item.Module;
+PROCEDURE (b: Builder) NewModule* (name: Item.Name; docString: Doc.Document;
+                                   class: Item.ModuleClass;
+                                   callConv: Item.CallConv): Item.Module;
   VAR
     mod: Item.Module;
   BEGIN
     NEW (mod);
-    Item.InitModule (mod, name, docString);
+    Item.InitModule (mod, name, docString, class, callConv);
     RETURN mod
   END NewModule;
 
@@ -144,12 +146,12 @@ PROCEDURE (b: Builder) NewProcDecl* (parent: Item.Item; name: Item.Name;
 
 
 
-PROCEDURE (b: Builder) NewPredefType* (parent: Item.Item): Item.PredefType;
+PROCEDURE (b: Builder) NewPredefType* (parent: Item.Item; id: Item.PredefId): Item.PredefType;
   VAR
     ptype: Item.PredefType;
   BEGIN
     NEW (ptype);
-    Item.InitPredefType (ptype, parent);
+    Item.InitPredefType (ptype, parent, id);
     RETURN ptype
   END NewPredefType;
 
