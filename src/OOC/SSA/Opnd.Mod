@@ -89,9 +89,9 @@ CONST
      within a loop at the place of an @code{EXIT}.  *)
 
   type* = 12;
-  (**Type operand of a @oconst{*OOC:SSA:Opcode.newArray} instruction.  Like
-     constants and declarations, this is an immutable value as far as SSA is
-     concerned.  *)
+  (**Type operand of a @oconst{*OOC:SSA:Opcode.newArray} or
+     @oconst{*OOC:SSA:Opcode.copyString} instruction.  Like constants and
+     declarations, this is an immutable value as far as SSA is concerned.  *)
 
   backwardFeed* = 13;
   (**Operand holds the value of @var{store} that is fed back to the beginning
