@@ -71,7 +71,7 @@ OOC_INT32 IO_Select__SelectorDesc_Select(IO_Select__Selector s,
     /* only select() on read/write if the key's interest mask has bits set
        that are not in the current ready mask */
     OOC_UINT32 ops = k->interestOps & ~k->channel->readyOps;
-    readyUponCall |= k->channel->readyOps;
+    readyUponCall |= (k->interestOps & k->channel->readyOps);
     if (ops & read_mask) {
       FD_SET(k->fd,&fds->read);
     }
