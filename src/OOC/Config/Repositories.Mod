@@ -293,6 +293,21 @@ PROCEDURE (s: Section) GetModule* (moduleRef: ARRAY OF CHAR): Repository.Module;
     END
   END GetModule;
 
+PROCEDURE (s: Section) GetPackage* (pkgName: ARRAY OF CHAR): Package.Package;
+  VAR
+    rep: Repository.Repository;
+  BEGIN
+    (* module not found in cache: traverse repositories *)
+    rep := s. topLevelRep;
+    WHILE (rep # NIL) DO
+      IF (rep.packageInfo # NIL) & (rep.packageInfo.name^ = pkgName) THEN
+        RETURN rep.packageInfo;
+      END;
+      rep := rep.baseRep;
+    END;
+    RETURN NIL;
+  END GetPackage;
+
 PROCEDURE (s: Section) GetResource* (package, path: ARRAY OF CHAR): URI.URI;
 (**Tries to locate the resource file @oparam{path} under the package
    directory @oparam{package} in the configured repositories.  On success, an
@@ -360,7 +375,7 @@ PROCEDURE (s: Section) ParseMetaData*(): BOOLEAN;
     WHILE (rep # NIL) DO
       uri := rep.GetResource("", packageData);
       IF (uri # NIL) THEN
-        Package.ParseFile(uri, errList);
+        rep.SetPackageInfo(Package.ParseFile(uri, errList));
       END;
       rep := rep. baseRep
     END;
