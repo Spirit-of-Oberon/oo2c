@@ -117,9 +117,8 @@ while (1) {
     } else {
       die "$0: have not seen a reference to the source file\n";
     }
-  } else {
-    die "$0: invalid line in compiler output: `$_'\n";
   }
+  # ignore invalid lines in compiler output, they may be debug messages
 }
 close F;
 print "$0: no match\n";
