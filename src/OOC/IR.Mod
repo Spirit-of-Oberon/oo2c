@@ -1503,7 +1503,7 @@ PROCEDURE GetPragmaValue (b: Builder; pragma: Pragmas.Pragma; charPos: Pragmas.C
   VAR
     value: Value.Value;
   BEGIN
-    value := b. pragmaHistory. GetValue (pragma. name^, charPos);
+    value := b.pragmaHistory.GetValue (pragma.name, charPos);
     RETURN value(BooleanValue.Value). boolean
   END GetPragmaValue;
 

@@ -1,7 +1,7 @@
 MODULE OOC:Scanner:Pragma;
 
 IMPORT
-  Msg, Strings, RT0,
+  Object, Msg, Strings, RT0,
   OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol, OOC:Scanner:Builder,
   OOC:Scanner:BasicList, OOC:Config:Pragmas, OOC:Scanner:Integer,
   
@@ -297,7 +297,8 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
                 value. value := BooleanValue.New (sym. str^ = "TRUE")
               ELSE                       (* variable *)
                 CheckName (sym);
-                varValue := state. variableHistory. GetValue (sym. str^, sym. pos);
+                varValue := state. variableHistory. GetValue
+                    (Object.NewLatin1(sym.str^), sym. pos);
                 IF (varValue # NIL) THEN
                   value. value := varValue
                 ELSIF eval THEN
@@ -480,7 +481,8 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
     BEGIN
       IF (sym. id = Symbol.ident) THEN
         IF eval THEN
-          varValue := state. variableHistory. GetValue (sym. str^, sym. pos);
+          varValue := state. variableHistory. GetValue
+              (Object.NewLatin1(sym. str^), sym. pos);
           pos := sym;
           CheckName (sym);
           name := sym;
@@ -495,7 +497,8 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
           
           IF (value. value # NIL) THEN
             IF (varValue = NIL) THEN
-              state. variableHistory. SetValue (name. str^, name. pos, value. value)
+              state. variableHistory. SetValue
+                  (Object.NewLatin1(name.str^), name. pos, value. value)
             ELSE
               WITH varValue: BooleanValue.Value DO
                 err := ~(value. value IS BooleanValue.Value)
@@ -504,7 +507,8 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
               | varValue: StringValue.Value DO
                 err := ~(value. value IS StringValue.Value)
               END;
-              state. variableHistory. SetValue (name. str^, name. pos, value. value);
+              state. variableHistory. SetValue
+                  (Object.NewLatin1(name.str^), name. pos, value. value);
               IF err THEN
                 Err (notAssignmentCompatible, value. sym)
               END

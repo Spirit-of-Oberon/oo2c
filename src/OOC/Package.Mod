@@ -260,17 +260,14 @@ PROCEDURE MergeConfig(pkg: Rep.PkgInfo; options, pragmas: Options.Section);
     i: LONGINT;
     kv: KeyValue;
     o: Options.Option;
-    chars: Object.CharsLatin1;
   BEGIN
     FOR i := 0 TO pkg.options.size-1 DO
       kv := pkg.options.array[i](KeyValue);
-      chars := kv.key(Object.String8).CharsLatin1();
-      o := options.Set(chars^, kv.value);
+      o := options.Set(kv.key, kv.value);
     END;
     FOR i := 0 TO pkg.pragmas.size-1 DO
       kv := pkg.pragmas.array[i](KeyValue);
-      chars := kv.key(Object.String8).CharsLatin1();
-      o := pragmas.Set(chars^, kv.value);
+      o := pragmas.Set(kv.key, kv.value);
     END;
   END MergeConfig;
 

@@ -319,7 +319,7 @@ PROCEDURE WarnSymE(errList: Error.List; pragmaHistory: Pragmas.History;
     e: Error.Msg;
     value: Value.Value;
   BEGIN
-    value := pragmaHistory. GetValue (StdPragmas.warnings.name^, sym.pos);
+    value := pragmaHistory.GetValue(StdPragmas.warnings.name, sym.pos);
     IF value(Boolean.Value).boolean THEN
       e := Error.New(checkUsesContext, code);
       e.SetIntAttrib("pos", sym.pos);

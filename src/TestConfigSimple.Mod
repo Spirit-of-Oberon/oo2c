@@ -25,7 +25,7 @@ PROCEDURE WriteOption (opt: Options.Option);
     str: ARRAY 1024 OF CHAR;
   BEGIN
     Out.String ("option:");
-    Out.String (opt. name^);
+    Out.Object (opt. name);
     Out.String (" --> ");
     opt. value. ValueToString (str);
     Out.String (str);

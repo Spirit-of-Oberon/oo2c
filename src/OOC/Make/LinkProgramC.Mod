@@ -96,10 +96,8 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
   PROCEDURE LookupValue(optionName: STRING): STRING;
     VAR
       v: Value.Value;
-      chars: Object.CharsLatin1;
     BEGIN
-      chars := optionName(Object.String8).CharsLatin1();
-      v := Config.options.GetValue(chars^);
+      v := Config.options.GetValue(optionName);
       IF (v # NIL) & (v IS StringValue.Value) THEN
         RETURN Object.NewLatin1(v(StringValue.Value).string^);
       ELSE

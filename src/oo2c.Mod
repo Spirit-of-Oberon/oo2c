@@ -684,7 +684,7 @@ BEGIN  <*Warnings:=FALSE*>
 
 
         | getOption:
-          option := Config.options.Get(arg^);
+          option := Config.options.Get(Object.NewLatin1(arg^));
           IF (option = NIL) THEN
             Out.String("(none)");
           ELSE

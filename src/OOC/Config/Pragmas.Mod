@@ -43,7 +43,7 @@ TYPE
   CharPosArray = POINTER TO ARRAY OF CharPos;
   VariableDesc = RECORD
     next: Variable;
-    name: Value.StringPtr;
+    name: STRING;
     
     values: ValueArray;
     valuePos: CharPosArray;
@@ -134,7 +134,7 @@ PROCEDURE GetValue (h: History; var: Variable;
       (* if the given character position is before the very first assignment,
          then take the variable's value from the list inherited from the file's
          environment *)
-      RETURN h. startVariables. GetValue (var. name^)
+      RETURN h. startVariables. GetValue (var. name)
     ELSE
       l := 0; r := var. numValues;
       WHILE (l+1 # r) DO
@@ -152,13 +152,12 @@ PROCEDURE GetValue (h: History; var: Variable;
     END
   END GetValue;
 
-PROCEDURE (h: History) GetValue* (name: Value.String;
-                                  charPos: CharPos): Value.Value;
+PROCEDURE (h: History) GetValue* (name: STRING; charPos: CharPos): Value.Value;
   VAR
     var: Variable;
   BEGIN
     var := h. varList;
-    WHILE (var # NIL) & (var. name^ # name) DO
+    WHILE (var # NIL) & ~var.name.Equals(name) DO
       var := var. next
     END;
     IF (var = NIL) THEN
@@ -211,7 +210,7 @@ PROCEDURE SetValue (var: Variable;charPos: CharPos;
     INC (var. numValues)
   END SetValue;
 
-PROCEDURE (h: History) SetValue* (name: Value.String;
+PROCEDURE (h: History) SetValue* (name: STRING;
                                   charPos: CharPos;
                                   value: Value.Value);
 (* @precond
@@ -227,7 +226,7 @@ PROCEDURE (h: History) SetValue* (name: Value.String;
     LastCharPos (h, charPos);
     
     var := h. varList;
-    WHILE (var # NIL) & (var. name^ # name) DO
+    WHILE (var # NIL) & ~var.name.Equals(name) DO
       var := var. next
     END;
     
@@ -236,7 +235,7 @@ PROCEDURE (h: History) SetValue* (name: Value.String;
          initialize it *)
       NEW (var);
       var. next := h. varList;
-      var. name := Value.GetStringPtr (name);
+      var. name := name;
       NEW (var. values, initialSize);
       NEW (var. valuePos, initialSize);
       var. numValues := 0;

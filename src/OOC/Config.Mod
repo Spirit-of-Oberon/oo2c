@@ -24,7 +24,7 @@ VAR
   config: Simple.Config;
   xsltproc-: Options.Option;
 
-PROCEDURE AddOption* (name: ARRAY OF CHAR; init: Value.Value): Options.Option;
+PROCEDURE AddOption* (name: STRING; init: Value.Value): Options.Option;
 (**Add the program option @oparam{name} to the configuration parser.
    Its initial value is @oparam{init}.  The new option instance is
    returned.  *)

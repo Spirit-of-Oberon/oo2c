@@ -19,7 +19,7 @@ TYPE
   
   OptionDesc = RECORD
     next: Option;
-    name-: Value.StringPtr;
+    name-: STRING;
     value-: Value.Value;
   END;
 
@@ -89,14 +89,14 @@ PROCEDURE New* (sectionName: Parser.String; typeMap: Value.PrototypeMap): Sectio
     RETURN s
   END New;
 
-PROCEDURE InitOption (opt: Option; VAR name: Value.String; value: Value.Value);
+PROCEDURE InitOption (opt: Option; name: STRING; value: Value.Value);
   BEGIN
     opt. next := NIL;
-    opt. name := Value.GetStringPtr (name);
+    opt. name := name;
     opt. value := value;
   END InitOption;
 
-PROCEDURE NewOption (VAR name: Value.String; value: Value.Value): Option;
+PROCEDURE NewOption (name: STRING; value: Value.Value): Option;
   VAR
     opt: Option;
   BEGIN
@@ -111,7 +111,7 @@ PROCEDURE Insert (VAR list: Option; opt: Option);
     IF (list = NIL) THEN
       opt. next := NIL;
       list := opt
-    ELSIF (list. name^ < opt. name^) THEN
+    ELSIF (list.name.Compare(opt.name) < 0) THEN
       Insert (list. next, opt)
     ELSE
       opt. next := list;
@@ -125,18 +125,18 @@ PROCEDURE (opt: Option) Set* (value: Value.Value);
     opt. value := value
   END Set;
 
-PROCEDURE (s: Section) Get* (name: Value.String): Option;
+PROCEDURE (s: Section) Get* (name: STRING): Option;
   VAR
     opt: Option;
   BEGIN
     opt := s. optionList;
-    WHILE (opt # NIL) & (opt. name^ # name) DO
+    WHILE (opt # NIL) & ~opt.name.Equals(name) DO
       opt := opt. next
     END;
     RETURN opt
   END Get;
 
-PROCEDURE (s: Section) Set* (name: Value.String; value: Value.Value): Option;
+PROCEDURE (s: Section) Set* (name: STRING; value: Value.Value): Option;
   VAR
     opt: Option;
   BEGIN
@@ -150,7 +150,7 @@ PROCEDURE (s: Section) Set* (name: Value.String; value: Value.Value): Option;
     RETURN opt
   END Set;
 
-PROCEDURE (s: Section) GetValue* (name: Value.String): Value.Value;
+PROCEDURE (s: Section) GetValue* (name: STRING): Value.Value;
   VAR
     opt: Option;
   BEGIN
@@ -169,7 +169,7 @@ PROCEDURE (s: Section) Copy* (dest: Section);
     Init (dest, s. name^, s. typeMap);
     opt := s. optionList;
     WHILE (opt # NIL) DO
-      newOpt := dest. Set (opt. name^, opt. value. Clone());
+      newOpt := dest. Set (opt. name, opt. value. Clone());
       opt := opt. next
     END
   END Copy;
@@ -192,7 +192,8 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     att: XMLBuilder.Attribute;
     name, type: DTD.String;
     lastError: Msg.Msg;
-    name8, valueString: ARRAY 1024 OF CHAR;
+    name8: STRING;
+    valueString: ARRAY 1024 OF CHAR;
     newValue: Value.Value;
     option: Option;
     i: LONGINT;
@@ -233,8 +234,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
           ELSIF ~node. HasNoElementContent() THEN
             Err (requireCharDataContent, node)
           ELSE
-            LongStrings.Short (name^, "?", name8);
-            option := s. Get (name8);
+            option := s. Get (Object.NewUCS2(name^));
             IF (option = NIL) THEN
               Err (optionNotDefined, node);
               lastError. SetLStringAttrib ("name", Msg.GetLStringPtr (name^))
@@ -273,7 +273,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
           ELSIF ~node. HasNoElementContent() THEN
             Err (requireCharDataContent, node)
           ELSE
-            LongStrings.Short (name^, "?", name8);
+            name8 := Object.NewUCS2(name^);
             IF (s. Get (name8) # NIL) THEN
               Err (optionAlreadyDefined, node);
               lastError. SetLStringAttrib ("name", Msg.GetLStringPtr (name^))
@@ -326,7 +326,7 @@ PROCEDURE (s: Section) DumpContent* (ch: Channel.Channel);
     opt := s. optionList;
     WHILE (opt # NIL) DO
       w. WriteString ("  <value name='");
-      w. WriteString (opt. name^);
+      w. WriteObject (opt. name);
       w. WriteString ("' defining_module='");
       opt. value. DefiningModule (str8);
       w. WriteString (str8);
