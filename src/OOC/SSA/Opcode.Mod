@@ -262,6 +262,10 @@ CONST
   subtract* = 16;
   negate* = 17;
   multiply* = 18;
+  (**Multiplication.  The two operands must be of the same type, which is
+     also the result of the operation.  There is one exception: when
+     multiplying an index with the size of the element, then the result is
+     a value of type @oconst{scAddress}.  *)
   divide* = 19;
 
   eql* = 20;

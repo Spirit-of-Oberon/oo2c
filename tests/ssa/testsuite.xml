@@ -4,12 +4,6 @@
 
 <!ENTITY baseline-testcases
          SYSTEM "../../../hostess/hostess/oberon/baseline-testcases.xml">
-
-<!ENTITY candidate-testcases
-         SYSTEM "../../../hostess/hostess/oberon/candidate.xml">
-
-<!ENTITY hostess-testcases
-         SYSTEM "../../../hostess/hostess/oberon/testcases.xml">
 ]>
 
 <testsuite-ext
@@ -19,7 +13,7 @@
   baseline8 baseline10 baseline11
   function1 function2 function3 if1 if2 if3 function4 function5
   designator1 function6 loop1 loop2 loop3 loop4 varpar1
-  ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1">
+  ooc_record1 ooc_record2 ooc_record3 inc1 dec1 cap1 array1 array2">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -127,6 +121,20 @@
       Accessing a global variable through a <code>VAR</code> parameter.
     </test>
     
+    <test id="inc1" type="run" file="Inc1.Mod" output="Inc1.Ref">
+      Performing <code>INC</code> with default delta on global variable.
+    </test>
+    
+    <test id="dec1" type="run" file="Dec1.Mod" output="Dec1.Ref">
+      Performing <code>DEC</code> with default delta on global variable.
+    </test>
+    
+    <test id="cap1" type="run" file="Cap1.Mod" output="Cap1.Ref">
+      Predefined function <code>CAP</code> for some ASCII characters.
+    </test>
+  </testcases>
+  
+  <testcases profile="OOC2 Development: Data Types" default-lang="O1 O2 AO">
     <test id="ooc_record1" type="run" file="Record1.Mod" output="Record1.Ref">
       Assignments to the fields of a global record variable.
     </test>
@@ -139,16 +147,15 @@
       Assignments to the fields of a value parameter of record type.
     </test>
 
-    <test id="inc1" type="run" file="Inc1.Mod" output="Inc1.Ref">
-      Performing <code>INC</code> with default delta on global variable.
+    <test id="array1" type="run" file="Array1.Mod" output="Array1.Ref">
+      Assignments to an <code>ARRAY 3 OF SHORTINT</code>, and a loop 
+      summing up the elements.  The array is passed both as value and
+      variable parameter to the summation function.
     </test>
     
-    <test id="dec1" type="run" file="Dec1.Mod" output="Dec1.Ref">
-      Performing <code>DEC</code> with default delta on global variable.
-    </test>
-    
-    <test id="cap1" type="run" file="Cap1.Mod" output="Cap1.Ref">
-      Predefined function <code>CAP</code> for some ASCII characters.
+    <test id="array2" type="run" file="Array2.Mod" output="Array2.Ref">
+      As <code>array1</code>, but with <code>INTEGER</code> as element
+      type.
     </test>
   </testcases>
   

@@ -12,7 +12,8 @@ static OOC_INT16 Var7c__Len(OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
   i0=-1;
 l1_loop:
   i0 = i0+1;
-  i1 = (OOC_INT32)str+i0;
+  i1 = i0*1;
+  i1 = (OOC_INT32)str+i1;
   i1 = *(OOC_UINT8*)i1;
   i1 = i1=='\000';
   i2 = i0+0;

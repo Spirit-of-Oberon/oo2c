@@ -12,7 +12,8 @@ l1_loop:
   if (i2) goto l5;
   goto l7;
 l5:
-  i4 = (OOC_INT32)str+i1;
+  i4 = i1*1;
+  i4 = (OOC_INT32)str+i4;
   *(OOC_UINT8*)i4 = '\000';
 l6:
   i1=i3;

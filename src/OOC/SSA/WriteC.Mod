@@ -690,19 +690,17 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         
       | Opcode.add:
         WriteDyadicOp (instr, "+");
-        
       | Opcode.subtract:
         WriteDyadicOp (instr, "-");
-        
       | Opcode.negate:
         WriteMonadicOp (instr, "-", ";");
+      | Opcode.multiply:
+        WriteDyadicOp (instr, "*");
 
       | Opcode.and:
         WriteDyadicOp (instr, "&&");
-        
       | Opcode.or:
         WriteDyadicOp (instr, "||");
-        
       | Opcode.not:
         WriteMonadicOp (instr, "!", "");
         
