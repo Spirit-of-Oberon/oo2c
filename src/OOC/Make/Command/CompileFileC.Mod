@@ -21,7 +21,7 @@ MODULE OOC:Make:Command:CompileFileC;
 *)
 
 IMPORT
-  Channel, Make, Msg, Out, ADT:String, OS:ProcessManagment, URI,
+  Channel, Make, Msg, Out, ADT:String, OS:ProcessManagement, URI,
   OOC:Make:Entity:ModuleFile, OOC:Error, OOC:Repository, 
   Sym := OOC:SymbolTable, OOC:Config:CCompiler;
 
@@ -118,7 +118,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       Out.String (str);
       Out.Ln;
       Out.Flush;
-      exit := ProcessManagment.system (str)
+      exit := ProcessManagement.system (str)
     END;
     
     RETURN (res = NIL) & (exit = 0)

@@ -23,7 +23,7 @@ MODULE OOC:Make:Command:InterfaceHTML;
 
 IMPORT
   Channel, Err, Out, Strings, Make, Msg, ADT:String, 
-  URI, URI:Scheme:File, OS:Path, OS:Files, OS:ProcessManagment,
+  URI, URI:Scheme:File, OS:Path, OS:Files, OS:ProcessManagement,
   OOC:Error, OOC:Make:Entity:ModuleFile, OOC:Repository,
   OOC:Config:Repositories, OOC:Config;
 
@@ -117,7 +117,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
       Out.String ("make: ");
       Out.String (str);
       Out.Ln;
-      exit := ProcessManagment.system (str)
+      exit := ProcessManagement.system (str)
     END;
     
     errList := NIL;
