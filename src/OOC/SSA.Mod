@@ -664,6 +664,7 @@ PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
    feeds its result.  *)
   VAR
     storeOut: Result;
+    use: Opnd;
   BEGIN
     ASSERT (instr. opcode = Opcode.collect);
     storeOut := instr. GetResultClass (ResultClass.store);
@@ -674,6 +675,15 @@ PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
       (* logically, a collect feeding into a loop-end's `backwardFeed'
          passes its data to the loop's loop-start instruction *)
       RETURN storeOut. useList. instr. GetLoopStart();
+    ELSIF (storeOut. useList. instr. opcode = Opcode.exit) THEN
+      (* logically, a collect feeding into an "exit" instruction
+         passes its data to the "select-exit" instruction *)
+      storeOut := storeOut. useList. instr. GetResultClass (ResultClass.store);
+      use := storeOut. useList;
+      WHILE (use. instr. opcode # Opcode.selectExit) DO
+        use := use. nextUse;
+      END;
+      RETURN use. instr;
     ELSE
       RETURN storeOut. useList. instr;
     END;
