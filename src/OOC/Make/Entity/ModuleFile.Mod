@@ -665,14 +665,6 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
                                   Repository.modMainObjectFile);
           AddTimeDep (entity. context, entity, srcEntity);
           
-          (* add run-time module RT0 to dependencies; note: this may 
-             not the right place to do this if other back-ends are 
-             supported ... *)
-          srcEntity := GetEntity (entity. context, 
-            Config.repositories. GetModule (Config.runtimeModule),
-            Repository.modObjectFile);
-          entity. AddAncestor (srcEntity);
-          
           AncestorClosure (entity, GetEntity (entity. context, entity. module,
                           Repository.modObjectFile), Repository.modObjectFile);
           RETURN entity. state+1
