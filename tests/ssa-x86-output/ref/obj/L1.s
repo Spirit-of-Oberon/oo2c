@@ -59,6 +59,23 @@ OOC_L1_init0:
 	.size OOC_L1_init0, .-OOC_L1_init0
 	.data
 	.align 4
+	.type _td_L1__34_base_types, @object
+	.size _td_L1__34_base_types, 4
+_td_L1__34_base_types:
+	.long RT0__char
+	.type _td_L1__34, @object
+	.size _td_L1__34, 36
+_td_L1__34:
+	.long _td_L1__34_base_types
+	.long 0
+	.long 0
+	.long _mid
+	.long 0
+	.long 1
+	.long 1
+	.long 1
+	.byte -2
+	.zero 3
 	.type _mid_name, @object
 	.size _mid_name, 3
 _mid_name:
