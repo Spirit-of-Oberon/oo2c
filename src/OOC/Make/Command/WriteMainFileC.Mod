@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:Command:WriteMainFileC;
 (*  Generates the main file of a program.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -69,6 +69,7 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
   VAR
     ch: Channel.Channel;
     w: TextRider.Writer;
+    sizeVParStack: LONGINT;
   
   PROCEDURE WriteModuleName (w: TextRider.Writer; 
                              prefix: ARRAY OF CHAR;
@@ -108,14 +109,24 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
     END WriteModules;
   
   BEGIN
+    sizeVParStack := 64*1024;  (* should come from config data *)
+    
     ch := cmd. module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
     IF (res = Channel.done) THEN
       w := TextRider.ConnectWriter (ch);
+      w. WriteString ('#include "__oo2c.h"');
+      w. WriteLn;
       WriteModules (w, Dictionary.New(), cmd. module,
                     "extern void ", "_init(void);");
       w. WriteLn;
       
       w. WriteString ("int main (int argc, char *argv[]) {");
+      IF (sizeVParStack >= 0) THEN
+        w. WriteLn;
+        w. WriteString ("  OOC_INIT_VPAR_STACK(");
+        w. WriteLInt (sizeVParStack, 0);
+        w. WriteString (")");
+      END;
       w. WriteLn;
       WriteModules (w, Dictionary.New(), cmd. module, "  ", "_init();");
       w. WriteString ("  return 0;  /* _program_exit_code */");
