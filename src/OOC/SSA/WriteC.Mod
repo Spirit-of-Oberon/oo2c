@@ -406,6 +406,8 @@ PROCEDURE (w: Writer) LengthExpr (instr: SSA.Instr);
     END;
   END LengthExpr;
 
+PROCEDURE ^ WriteExpr (w: Writer; instr: SSA.Instr);
+
 PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
   VAR
     arg: SSA.Result;
@@ -451,7 +453,13 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
       instr := opnd. arg. instr;
       IF w. registerMap. HasKey (opnd. arg) THEN
         obj := w. registerMap. Get (opnd. arg);
-        w. WriteString (obj(String.String). array^);
+        IF (obj = Allocator.markInPlace) THEN
+          w. WriteChar ("(");
+          WriteExpr (w, opnd. arg. instr);
+          w. WriteChar (")");
+        ELSE
+          w. WriteString (obj(String.String). array^);
+        END;
 
       ELSIF (instr. opcode = Opcode.getLength) THEN
         w. LengthExpr (instr);
@@ -538,45 +546,40 @@ PROCEDURE (w: Writer) EmptyBlock (b: Schedule.Block): BOOLEAN;
     END;
   END EmptyBlock;
 
-PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
-                                      haveCopyParameter: BOOLEAN);
+PROCEDURE CastToPtr (w: Writer; var: SSA.Result; type: Sym.Type;
+                     passByReference: BOOLEAN);
   VAR
-    proxy: Schedule.InstrProxy;
-    instr: SSA.Instr;
+    name: String.String;
+  BEGIN
+    IF (var. instr. opcode = Opcode.typeTag) THEN
+      w. WriteString ("(RT0__Struct)");
+    ELSIF (type IS Sym.Pointer) OR
+          (type IS Sym.FormalPars) OR
+          passByReference OR
+          TR.IsPredefType (type, Predef.ptr) THEN
+      IF (var IS SSA.Const) &
+         (var(SSA.Const). value IS LString.Value) THEN
+        (* omit cast on string constant *)
+      ELSIF passByReference OR
+            (type. namingDecl = NIL) OR
+            TR.IsPredefType (type, Predef.ptr) THEN
+        w. WriteString ("(void*)");
+      ELSE
+        name := Naming.NameOfType (type);
+        w. WriteString ("(");
+        w. WriteString (name. array^);
+        w. WriteString (")");
+      END;
+    END;
+  END CastToPtr;
+
+PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
+  VAR
     opnd: SSA.Opnd;
-    target: Object.Object;
-    str: ARRAY 32 OF CHAR;
     var: SSA.Result;
 
   PROCEDURE ^ Call (call: SSA.Instr);
     
-  PROCEDURE CastToPtr (var: SSA.Result; type: Sym.Type;
-                       passByReference: BOOLEAN);
-    VAR
-      name: String.String;
-    BEGIN
-      IF (var. instr. opcode = Opcode.typeTag) THEN
-        w. WriteString ("(RT0__Struct)");
-      ELSIF (type IS Sym.Pointer) OR
-            (type IS Sym.FormalPars) OR
-            passByReference OR
-            TR.IsPredefType (type, Predef.ptr) THEN
-        IF (var IS SSA.Const) &
-           (var(SSA.Const). value IS LString.Value) THEN
-          (* omit cast on string constant *)
-        ELSIF passByReference OR
-              (type. namingDecl = NIL) OR
-              TR.IsPredefType (type, Predef.ptr) THEN
-          w. WriteString ("(void*)");
-        ELSE
-          name := Naming.NameOfType (type);
-          w. WriteString ("(");
-          w. WriteString (name. array^);
-          w. WriteString (")");
-        END;
-      END;
-    END CastToPtr;
-  
   PROCEDURE RefList (start: SSA.Opnd; class: Opnd.Class);
     VAR
       opnd: SSA.Opnd;
@@ -590,7 +593,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
             w. WriteString (", ")
           END;
           IF (opnd IS SSA.TypedOpnd) THEN
-            CastToPtr (opnd. arg,
+            CastToPtr (w, opnd. arg,
                        opnd(SSA.TypedOpnd). type,
                        opnd(SSA.TypedOpnd). passByReference);
           END;
@@ -608,7 +611,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       RefList (assert. opndList. nextOpnd, Opnd.arg);
       w. WriteString (", ");
       w. WriteLInt (assert. pos, 0);
-      w. WriteString (");")
+      w. WriteString (")")
     END Assert;
   
   PROCEDURE CheckIndex (checkIndex: SSA.Instr);
@@ -622,7 +625,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (w. basicType[bt]. repr);
       w. WriteString (", ");
       w. WriteLInt (checkIndex. pos, 0);
-      w. WriteString (");")
+      w. WriteString (")")
     END CheckIndex;
 
   PROCEDURE CheckPointer (checkPointer: SSA.Instr);
@@ -631,7 +634,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. Ref (checkPointer. opndList. nextOpnd);
       w. WriteString (", ");
       w. WriteLInt (checkPointer. pos, 0);
-      w. WriteString (");")
+      w. WriteString (")")
     END CheckPointer;
 
   PROCEDURE TypeGuard (typeGuard: SSA.Instr);
@@ -647,7 +650,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (name. array^);
       w. WriteString (", ");
       w. WriteLInt (typeGuard. pos, 0);
-      w. WriteString (");")
+      w. WriteString (")")
     END TypeGuard;
 
   PROCEDURE FailedCheck (instr: SSA.Instr; fct: ARRAY OF CHAR; opnd: SSA.Opnd);
@@ -660,7 +663,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. WriteString (", ");
       END;
       w. WriteLInt (instr. pos, 0);
-      w. WriteString (");");
+      w. WriteString (")");
     END FailedCheck;
   
   PROCEDURE Call (call: SSA.Instr);
@@ -700,7 +703,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. Ref (instr. opndList);
       w. WriteString (op);
       w. Ref (instr. opndList. nextOpnd);
-      w. WriteChar (";");
     END WriteDyadicOp;
   
   PROCEDURE WriteDyadicFct (instr: SSA.Instr; fct: ARRAY OF CHAR);
@@ -710,7 +712,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. Ref (instr. opndList);
       w. WriteChar (",");
       w. Ref (instr. opndList. nextOpnd);
-      w. WriteString (");");
+      w. WriteString (")");
     END WriteDyadicFct;
   
   PROCEDURE WriteMonadicOp (instr: SSA.Instr; op, suffix: ARRAY OF CHAR);
@@ -747,7 +749,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. Ref (opnd);
         opnd := opnd. nextOpnd;
       END;
-      w. WriteString (");");
+      w. WriteString (")");
     END NewObject;
   
   PROCEDURE TypeCast (instr: SSA.Instr);
@@ -767,8 +769,19 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (w. basicType[sourceType]. repr);
       w. WriteString (", ");
       w. Ref (instr. opndList);
-      w. WriteString (");");
+      w. WriteString (")");
     END TypeCast;
+
+  PROCEDURE TypeConv (instr: SSA.Instr);
+    VAR
+      destType: Opcode.Subclass;
+    BEGIN
+      destType := Allocator.SubclassToBasicType (instr. subclass);
+      w. WriteString ("(");
+      w. WriteString (w. basicType[destType]. repr);
+      w. WriteString (")");
+      w. Ref (instr. opndList);
+    END TypeConv;
 
   PROCEDURE TypeTag (instr: SSA.Instr);
     VAR
@@ -787,7 +800,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. Ref (instr. opndList);
         w. WriteChar (")");
       END;
-      w. WriteChar (";");
     END TypeTag;
   
   PROCEDURE TypeTest (instr: SSA.Instr);
@@ -801,7 +813,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       opnd := instr. opndList. nextOpnd;
       name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
       w. WriteString (name. array^);
-      w. WriteString (");");
+      w. WriteString (")");
     END TypeTest;
 
   PROCEDURE TBProcAddress (instr: SSA.Instr);
@@ -814,7 +826,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (", ");
       name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. arg(SSA.DeclRef). decl);
       w. WriteString (name. array^);
-      w. WriteString (");");
+      w. WriteString (")");
     END TBProcAddress;
   
   PROCEDURE CopyParameter (instr: SSA.Address);
@@ -866,7 +878,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. Ref (instr. GetOpndClass (Opnd.writeAdr));
       w. WriteChar (",");
       w. WriteLInt (type. size, 0);
-      w. WriteString (");");
+      w. WriteString (")");
     END Copy;
   
   PROCEDURE TypeId (res: SSA.Result): LONGINT;
@@ -894,7 +906,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. Ref (instr. GetOpndClass (Opnd.writeAdr));
       w. WriteChar (",");
       w. Ref (instr. GetOpndClass (Opnd.arg));
-      w. WriteString (");");
+      w. WriteString (")");
     END CopyString;
   
   PROCEDURE CmpString (instr: SSA.Instr);
@@ -916,7 +928,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         opnd := opnd. nextOpnd;
       UNTIL (opnd. class = Opnd.readAdr);
       w. Ref (opnd);
-      w. WriteString (");");
+      w. WriteString (")");
     END CmpString;
   
   PROCEDURE MoveBlock (instr: SSA.Instr);
@@ -928,7 +940,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. Ref (instr. GetOpndClass (Opnd.writeAdr));
       w. WriteChar (",");
       w. Ref (instr. GetOpndClass (Opnd.arg));
-      w. WriteString (");");
+      w. WriteString (")");
     END MoveBlock;
   
   PROCEDURE Shift (instr: SSA.Instr; rotate: BOOLEAN);
@@ -943,25 +955,205 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. Ref (instr. opndList);
       w. WriteString (", ");
       w. Ref (instr. opndList. nextOpnd);
-      w. WriteString (");");
+      w. WriteString (")");
     END Shift;
 
-  PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
-  (* Returns TRUE if all paths into the "select-return" end with a "return"
-     instruction.  The current approximation only checks if the function ends
-     with a RETURN statement.  A more sophisticated version could traverse the
-     final store backward and see if all paths end at a RETURN or at a
-     procedure call that cannot return.  *)
+  PROCEDURE SimpleVarAccess (instr: SSA.Instr; adrClass: Opnd.Class): BOOLEAN;
     VAR
-      opnd: SSA.Opnd;
+      adr: SSA.Result;
+      opnd, design: SSA.Opnd;
     BEGIN
-      opnd := selectReturn. opndList. nextOpnd;
-      WHILE (opnd. nextOpnd # NIL) DO
-        opnd := opnd. nextOpnd;
+      opnd := instr. GetOpndClass (adrClass);
+      adr := opnd. arg;
+      design := opnd. nextOpnd;
+      IF (adr IS SSA.Address) &
+         ((design. nextOpnd = NIL) OR
+          (design. nextOpnd. class # design. class)) THEN
+        (* if this is an access to a variable without any additional selectors
+           or a type cast, then return TRUE *)
+        RETURN TRUE
+      ELSE
+        RETURN FALSE
       END;
-      RETURN (opnd. arg. instr. opcode = Opcode.return);
-    END AllPathsClosed;
-  
+    END SimpleVarAccess;
+
+  BEGIN
+    CASE instr. opcode OF
+    | Opcode.get:
+      CastFromPtr (instr);
+      IF SimpleVarAccess (instr, Opnd.readAdr) THEN
+        w. Ref (instr. GetOpndClass (Opnd.readDesign))
+      ELSE
+        w. WriteString ("*(");
+        w. WriteString (w. basicType
+                        [SubclassToBasicType (instr)]. repr);
+        w. WriteString ("*)");
+        w. Ref (instr. opndList. nextOpnd);
+      END;
+      
+    | Opcode.set:
+      w. Newline;
+      IF SimpleVarAccess (instr, Opnd.writeAdr) THEN
+        w. Ref (instr. GetOpndClass (Opnd.writeDesign));
+        var := instr. GetArgClass (Opnd.writeDesign);
+        w. WriteString (" = ");
+        CastToPtr (w, var, var(SSA.DeclRef). decl(Sym.VarDecl). type, FALSE);
+      ELSE
+        w. WriteString ("*(");
+        w. WriteString (w. basicType
+                        [SubclassToBasicType (instr)]. repr);
+        w. WriteString ("*)");
+        w. Ref (instr. opndList. nextOpnd);
+        w. WriteString (" = ");
+      END;
+      w. Ref (instr. GetOpndClass (Opnd.sourceValue));
+      
+    | Opcode.copy:
+      Copy (instr);
+    | Opcode.copyString:
+      CopyString (instr);
+    | Opcode.cmpString:
+      CmpString (instr);
+    | Opcode.moveBlock:
+      MoveBlock (instr);
+      
+    | Opcode.getLength:
+      IF ~instr. IsConst() THEN
+        (* don't write statement for length of open array parameter *)
+        w. LengthExpr (instr);
+      END;
+      
+    | Opcode.copyParameter:
+      CopyParameter (instr(SSA.Address));
+      
+    | Opcode.newObject:
+      NewObject (instr);
+    | Opcode.typeTag:
+      TypeTag (instr);
+    | Opcode.typeTest:
+      TypeTest (instr);
+    | Opcode.tbProcAddress:
+      TBProcAddress (instr);
+      
+    | Opcode.typeCast:
+      TypeCast (instr);
+    | Opcode.typeConv:
+      TypeConv (instr);
+      
+    | Opcode.add:
+      WriteDyadicOp (instr, "+");
+    | Opcode.subtract:
+      WriteDyadicOp (instr, "-");
+    | Opcode.negate:
+      WriteMonadicOp (instr, "-", "");
+    | Opcode.multiply:
+      WriteDyadicOp (instr, "*");
+    | Opcode.divide:
+      IF (instr. subclass < Opcode.scUnsigned8) THEN
+        WriteDyadicFct (instr, "_div");
+      ELSE
+        WriteDyadicOp (instr, "/");
+      END;
+    | Opcode.modulo:
+      WriteDyadicFct (instr, "_mod");
+      
+    | Opcode.and:
+      WriteDyadicOp (instr, "&&");
+    | Opcode.or:
+      WriteDyadicOp (instr, "||");
+    | Opcode.not:
+      WriteMonadicOp (instr, "!", "");
+    | Opcode.logicalAnd:
+      WriteDyadicOp (instr, "&");
+    | Opcode.logicalOr:
+      WriteDyadicOp (instr, "|");
+    | Opcode.logicalXor:
+      WriteDyadicOp (instr, "^");
+    | Opcode.logicalSubtr:
+      WriteDyadicFct (instr, "_logical_subtr");
+    | Opcode.logicalComplement:
+      WriteMonadicOp (instr, "~", "");
+    | Opcode.setBit:
+      WriteDyadicFct (instr, "_set_bit");
+    | Opcode.clearBit:
+      WriteDyadicFct (instr, "_clear_bit");
+      
+    | Opcode.setMember:
+      WriteDyadicFct (instr, "_in");
+    | Opcode.setRange:
+      WriteDyadicFct (instr, "_bit_range");
+    | Opcode.abs:
+      WriteMonadicOp (instr, "_abs(", ")");
+    | Opcode.shiftLeft:
+      WriteDyadicOp (instr, "<<");
+    | Opcode.shiftRight:
+      WriteDyadicOp (instr, ">>");
+    | Opcode.ash:
+      WriteDyadicFct (instr, "_ash");
+    | Opcode.cap:
+      WriteMonadicOp (instr, "_cap(", ")");
+    | Opcode.entier:
+      WriteMonadicOp (instr, "_entier(", ")");
+    | Opcode.lsh:
+      Shift (instr, FALSE);
+    | Opcode.rot:
+      Shift (instr, TRUE);
+    | Opcode.odd:
+      WriteMonadicOp (instr, "_odd(", ")");
+      
+    | Opcode.eql:
+      WriteDyadicOp (instr, "==");
+    | Opcode.neq:
+      WriteDyadicOp (instr, "!=");
+    | Opcode.lss:
+      WriteDyadicOp (instr, "<");
+    | Opcode.leq:
+      WriteDyadicOp (instr, "<=");
+    | Opcode.gtr:
+      WriteDyadicOp (instr, ">");
+    | Opcode.geq:
+      WriteDyadicOp (instr, ">=");
+      
+    | Opcode.assert:
+      Assert (instr);
+    | Opcode.halt:
+      w. Newline;
+      w. WriteString ("_halt(");
+      w. Ref (instr. opndList. nextOpnd);
+      w. WriteString (")")
+    | Opcode.checkIndex:
+      CheckIndex (instr);
+    | Opcode.checkPointer:
+      CheckPointer (instr);
+    | Opcode.typeGuard:
+      TypeGuard (instr);
+    | Opcode.failedCase:
+      FailedCheck (instr, "_failed_case", instr. opndList. nextOpnd);
+    | Opcode.failedWith:
+      FailedCheck (instr, "_failed_with", instr. opndList. nextOpnd);
+    | Opcode.failedTypeAssert:
+      FailedCheck (instr, "_failed_type_assert", NIL);
+      
+    | Opcode.call:
+      IF ~w. registerMap. HasKey (instr) THEN
+        w. Newline;
+      ELSE
+        CastFromPtr (instr);
+      END;
+      Call (instr);
+      
+    END;
+  END WriteExpr;
+
+PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
+                                      haveCopyParameter: BOOLEAN);
+  VAR
+    proxy: Schedule.InstrProxy;
+    instr: SSA.Instr;
+    target: Object.Object;
+    str: ARRAY 32 OF CHAR;
+    opnd: SSA.Opnd;
+    
   PROCEDURE WriteCollect (collect, targetInstr: SSA.Instr);
     VAR
       opnd: SSA.Opnd;
@@ -1027,26 +1219,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       END;
     END WriteCollect;
 
-  PROCEDURE SimpleVarAccess (instr: SSA.Instr; adrClass: Opnd.Class): BOOLEAN;
-    VAR
-      adr: SSA.Result;
-      opnd, design: SSA.Opnd;
-    BEGIN
-      opnd := instr. GetOpndClass (adrClass);
-      adr := opnd. arg;
-      design := opnd. nextOpnd;
-      IF (adr IS SSA.Address) &
-         ((design. nextOpnd = NIL) OR
-          (design. nextOpnd. class # design. class)) THEN
-        (* if this is an access to a variable without any additional selectors
-           or a type cast, then return TRUE *)
-        RETURN TRUE
-      ELSE
-        RETURN FALSE
-      END;
-    END SimpleVarAccess;
-
-  PROCEDURE PrefixReturn ();
+  PROCEDURE PrefixReturn;
   (**Called before every "return" instruction.  *)
     BEGIN
       w. Newline;
@@ -1055,6 +1228,22 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. Newline
       END;
     END PrefixReturn;
+  
+  PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
+  (* Returns TRUE if all paths into the "select-return" end with a "return"
+     instruction.  The current approximation only checks if the function ends
+     with a RETURN statement.  A more sophisticated version could traverse the
+     final store backward and see if all paths end at a RETURN or at a
+     procedure call that cannot return.  *)
+    VAR
+      opnd: SSA.Opnd;
+    BEGIN
+      opnd := selectReturn. opndList. nextOpnd;
+      WHILE (opnd. nextOpnd # NIL) DO
+        opnd := opnd. nextOpnd;
+      END;
+      RETURN (opnd. arg. instr. opcode = Opcode.return);
+    END AllPathsClosed;
   
   BEGIN
     proxy := b. proxyList;
@@ -1068,237 +1257,89 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. WriteString (str);
         w. WriteString (": */ ");
       END;
-      
+
+      target := NIL;
       IF w. registerMap. HasKey (instr) THEN
-        w. Newline;
-        (*w. WriteString ("/* ");
-        w. textWriter. WriteHex (SYSTEM.VAL(LONGINT,instr),8);
-        w. WriteString ("*/ ");*)
         target := w. registerMap. Get (instr);
-        w. WriteString (target(String.String). array^);
-        w. WriteString (" = ");
-      END;
-      
-      CASE instr. opcode OF
-      | Opcode.const:
-        (* nothing, handled in `Ref' *)
-
-      | Opcode.declRef:
-        (* nothing, handled in `Ref' *)
-        
-      | Opcode.typeRef:
-        (* nothing, handled in `Ref' *)
-        
-      | Opcode.address:
-        (* nothing, handled in `Ref' *)
-
-      | Opcode.enter:
-        (* nothing *)
-      | Opcode.select:
-        (* nothing *)
-      | Opcode.labels:
-        (* nothing *)
-
-      | Opcode.collect:
-        WriteCollect (instr, instr. GetCollectTarget());
-        
-      | Opcode.loopStart:
-        (* nothing *)
-        
-      | Opcode.loopEnd:
-        (* nothing *)
-
-      | Opcode.exit:
-        (* nothing, the immediately following jump does all the work *)
-
-      | Opcode.get:
-        CastFromPtr (instr);
-        IF SimpleVarAccess (instr, Opnd.readAdr) THEN
-          w. Ref (instr. GetOpndClass (Opnd.readDesign))
-        ELSE
-          w. WriteString ("*(");
-          w. WriteString (w. basicType
-                          [SubclassToBasicType (instr)]. repr);
-          w. WriteString ("*)");
-          w. Ref (instr. opndList. nextOpnd);
-        END;
-        w. WriteChar (";");
-        
-      | Opcode.set:
-        w. Newline;
-        IF SimpleVarAccess (instr, Opnd.writeAdr) THEN
-          w. Ref (instr. GetOpndClass (Opnd.writeDesign));
-          var := instr. GetArgClass (Opnd.writeDesign);
-          w. WriteString (" = ");
-          CastToPtr (var, var(SSA.DeclRef). decl(Sym.VarDecl). type, FALSE);
-        ELSE
-          w. WriteString ("*(");
-          w. WriteString (w. basicType
-                          [SubclassToBasicType (instr)]. repr);
-          w. WriteString ("*)");
-          w. Ref (instr. opndList. nextOpnd);
-          w. WriteString (" = ");
-        END;
-        w. Ref (instr. GetOpndClass (Opnd.sourceValue));
-        w. WriteChar (";");
-
-      | Opcode.copy:
-        Copy (instr);
-      | Opcode.copyString:
-        CopyString (instr);
-      | Opcode.cmpString:
-        CmpString (instr);
-      | Opcode.moveBlock:
-        MoveBlock (instr);
-        
-      | Opcode.getLength:
-        IF ~instr. IsConst() THEN
-          (* don't write statement for length of open array parameter *)
-          w. LengthExpr (instr);
-          w. WriteChar (";");
-        END;
-        
-      | Opcode.copyParameter:
-        CopyParameter (instr(SSA.Address));
-
-      | Opcode.newObject:
-        NewObject (instr);
-      | Opcode.typeTag:
-        TypeTag (instr);
-      | Opcode.typeTest:
-        TypeTest (instr);
-      | Opcode.tbProcAddress:
-        TBProcAddress (instr);
-
-      | Opcode.typeCast:
-        TypeCast (instr);
-      | Opcode.typeConv:
-        w. Ref (instr. opndList);
-        w. WriteChar (";");
-        
-      | Opcode.add:
-        WriteDyadicOp (instr, "+");
-      | Opcode.subtract:
-        WriteDyadicOp (instr, "-");
-      | Opcode.negate:
-        WriteMonadicOp (instr, "-", ";");
-      | Opcode.multiply:
-        WriteDyadicOp (instr, "*");
-      | Opcode.divide:
-        IF (instr. subclass < Opcode.scUnsigned8) THEN
-          WriteDyadicFct (instr, "_div");
-        ELSE
-          WriteDyadicOp (instr, "/");
-        END;
-      | Opcode.modulo:
-        WriteDyadicFct (instr, "_mod");
-
-      | Opcode.and:
-        WriteDyadicOp (instr, "&&");
-      | Opcode.or:
-        WriteDyadicOp (instr, "||");
-      | Opcode.not:
-        WriteMonadicOp (instr, "!", ";");
-      | Opcode.logicalAnd:
-        WriteDyadicOp (instr, "&");
-      | Opcode.logicalOr:
-        WriteDyadicOp (instr, "|");
-      | Opcode.logicalXor:
-        WriteDyadicOp (instr, "^");
-      | Opcode.logicalSubtr:
-        WriteDyadicFct (instr, "_logical_subtr");
-      | Opcode.logicalComplement:
-        WriteMonadicOp (instr, "~", ";");
-      | Opcode.setBit:
-        WriteDyadicFct (instr, "_set_bit");
-      | Opcode.clearBit:
-        WriteDyadicFct (instr, "_clear_bit");
-        
-      | Opcode.setMember:
-        WriteDyadicFct (instr, "_in");
-      | Opcode.setRange:
-        WriteDyadicFct (instr, "_bit_range");
-      | Opcode.abs:
-        WriteMonadicOp (instr, "_abs(", ");");
-      | Opcode.ash:
-        WriteDyadicFct (instr, "_ash");
-      | Opcode.cap:
-        WriteMonadicOp (instr, "_cap(", ");");
-      | Opcode.entier:
-        WriteMonadicOp (instr, "_entier(", ");");
-      | Opcode.lsh:
-        Shift (instr, FALSE);
-      | Opcode.rot:
-        Shift (instr, TRUE);
-      | Opcode.odd:
-        WriteMonadicOp (instr, "_odd(", ");");
-        
-      | Opcode.eql:
-        WriteDyadicOp (instr, "==");
-      | Opcode.neq:
-        WriteDyadicOp (instr, "!=");
-      | Opcode.lss:
-        WriteDyadicOp (instr, "<");
-      | Opcode.leq:
-        WriteDyadicOp (instr, "<=");
-      | Opcode.gtr:
-        WriteDyadicOp (instr, ">");
-      | Opcode.geq:
-        WriteDyadicOp (instr, ">=");
-        
-      | Opcode.assert:
-        Assert (instr);
-      | Opcode.halt:
-        w. Newline;
-        w. WriteString ("_halt(");
-        w. Ref (instr. opndList. nextOpnd);
-        w. WriteString (");")
-      | Opcode.checkIndex:
-        CheckIndex (instr);
-      | Opcode.checkPointer:
-        CheckPointer (instr);
-      | Opcode.typeGuard:
-        TypeGuard (instr);
-      | Opcode.failedCase:
-        FailedCheck (instr, "_failed_case", instr. opndList. nextOpnd);
-      | Opcode.failedWith:
-        FailedCheck (instr, "_failed_with", instr. opndList. nextOpnd);
-      | Opcode.failedTypeAssert:
-        FailedCheck (instr, "_failed_type_assert", NIL);
-        
-      | Opcode.call:
-        IF ~w. registerMap. HasKey (instr) THEN
+        IF (target # Allocator.markInPlace) THEN
           w. Newline;
-        ELSE
-          CastFromPtr (instr);
+          (*w. WriteString ("/* ");
+             w. textWriter. WriteHex (SYSTEM.VAL(LONGINT,instr),8);
+             w. WriteString ("*/ ");*)
+          w. WriteString (target(String.String). array^);
+          w. WriteString (" = ");
         END;
-        Call (instr);
-        w. WriteChar (";");
-            
-      | Opcode.return:
-        PrefixReturn;
-        opnd := instr. GetOpndClass (Opnd.functionResult);
-        IF (opnd # NIL) THEN
-          w. WriteString ("return ");
-          CastToPtr (opnd. arg, w. procBlock. procDecl. formalPars. resultType, FALSE);
-          w. Ref (opnd);
-          w. WriteChar (";");
-        ELSE
-          w. WriteString ("return;")
-        END;
-        
-      | Opcode.selectReturn:
-        IF ~AllPathsClosed (instr) THEN
+      END;
+
+      (*w. WriteString("/*");
+      Opcode.GetName (instr. opcode, instr. subclass, str);
+      w. WriteString(str);
+      w. WriteString("*/");*)
+      IF (target # Allocator.markInPlace) THEN
+        CASE instr. opcode OF
+        | Opcode.const:
+          (* nothing, handled in `Ref' *)
+          
+        | Opcode.declRef:
+          (* nothing, handled in `Ref' *)
+          
+        | Opcode.typeRef:
+          (* nothing, handled in `Ref' *)
+          
+        | Opcode.address:
+          (* nothing, handled in `Ref' *)
+          
+        | Opcode.enter:
+          (* nothing *)
+        | Opcode.select:
+          (* nothing *)
+        | Opcode.labels:
+          (* nothing *)
+          
+        | Opcode.loopStart:
+          (* nothing *)
+          
+        | Opcode.loopEnd:
+          (* nothing *)
+          
+        | Opcode.exit:
+          (* nothing, the immediately following jump does all the work *)
+          
+        | Opcode.collect:
+          WriteCollect (instr, instr. GetCollectTarget());
+
+        | Opcode.return:
           PrefixReturn;
-          IF (w. procBlock. procDecl. formalPars. resultType # NIL) THEN
-            IF w. procBlock. checkFunctionResult THEN
-              w. WriteString ("_failed_function(");
-              w. WriteLInt (w. procBlock. procDecl. name. pos, 0);
-              w. WriteString ("); ");
-            END;
-            w. WriteString ("return 0;");
+          opnd := instr. GetOpndClass (Opnd.functionResult);
+          IF (opnd # NIL) THEN
+            w. WriteString ("return ");
+            CastToPtr (w, opnd. arg,
+                       w. procBlock. procDecl. formalPars. resultType, FALSE);
+            w. Ref (opnd);
           ELSE
-            w. WriteString ("return;")
+            w. WriteString ("return")
+          END;
+          w. WriteChar (";")
+          
+        | Opcode.selectReturn:
+          IF ~AllPathsClosed (instr) THEN
+            PrefixReturn;
+            IF (w. procBlock. procDecl. formalPars. resultType # NIL) THEN
+              IF w. procBlock. checkFunctionResult THEN
+                w. WriteString ("_failed_function(");
+                w. WriteLInt (w. procBlock. procDecl. name. pos, 0);
+                w. WriteString ("); ");
+              END;
+              w. WriteString ("return 0;");
+            ELSE
+              w. WriteString ("return;")
+            END;
+          END;
+          
+        ELSE
+          WriteExpr (w, instr);
+          IF ~instr. IsConst() THEN  (* FIXME... omit ; for some getLength *)
+            w. WriteChar (";");
           END;
         END;
       END;

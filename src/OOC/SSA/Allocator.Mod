@@ -94,6 +94,8 @@ TYPE
     marker: LONGINT;
   END;
   
+VAR
+  markInPlace-: SSA.Result;
   
 PROCEDURE NewRegisterFile (registerType: DeclWriter.BasicTypeId): RegisterFile;
   VAR
@@ -230,7 +232,8 @@ PROCEDURE GetRegisterFiles (): RegisterFiles;
     RETURN rfs
   END GetRegisterFiles;
 
-PROCEDURE IdentifyResults (blockList: BlockList): RegisterFiles;
+PROCEDURE IdentifyResults (blockList: BlockList;
+                           inPlaceEval: Dictionary.Dictionary): RegisterFiles;
 (**Identifies all results of instructions from @oparam{blockList} that are
    stored in registers.  These results are added to the
    @ofield{RegisterFile.resultList}, their containing block to
@@ -277,8 +280,13 @@ PROCEDURE IdentifyResults (blockList: BlockList): RegisterFiles;
       WHILE (proxy # NIL) DO
         instr := proxy. instr;
         type := instr. GetResultType();
-        IF (type # Opcode.scNone) & PassedThroughRegister (instr) THEN
-          RegisterResult (instr, SubclassToBasicType (type));
+        IF (type # Opcode.scNone) &
+           PassedThroughRegister (instr) THEN
+          IF inPlaceEval. HasKey (instr)  THEN
+            instr. info := markInPlace;
+          ELSE
+            RegisterResult (instr, SubclassToBasicType (type));
+          END;
         END;
         res := instr. nextResult;
         WHILE (res # NIL) DO
@@ -343,7 +351,6 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
     iGraph: IGraph.Graph;
     proxy, loopEnd: Schedule.InstrProxy;
     res: SSA.Result;
-    opnd: SSA.Opnd;
     loopBlock: Schedule.Block;
     i: LONGINT;
 
@@ -371,6 +378,35 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       END;
     END GetLoop;
 
+  PROCEDURE MarkOpndAsLive (instr: SSA.Instr; live: IGraph.Vector);
+    VAR
+      opnd: SSA.Opnd;
+    BEGIN
+      opnd := instr. opndList;
+      WHILE (opnd # NIL) DO
+        IF (opnd. arg. info = markInPlace) THEN
+          MarkOpndAsLive (opnd. arg. instr, live);
+        ELSIF (opnd. arg. info = rf) & opnd. IsValueOpndHere() THEN
+          IF ~iGraph. In (opnd. arg. marker, live) THEN
+            (* the live range of the value passed to `opnd' interferes with
+               all live ranges currently active: calculate union between bit
+               matrix (row `opnd.arg.marker') and the live vector  *)
+            iGraph. AddToLive (opnd. arg. marker, live)
+          END
+        END;
+        opnd := opnd. nextOpnd
+      END;
+    END MarkOpndAsLive;
+
+  PROCEDURE AddResToLive (res: SSA.Result; live: IGraph.Vector);
+    BEGIN
+      IF (res. info = markInPlace) THEN
+        MarkOpndAsLive (res. instr, live);
+      ELSIF (res. info = rf) & ~iGraph. In (res. marker, live) THEN
+        iGraph. AddToLive (res. marker, live);
+      END;
+    END AddResToLive;
+  
   <*IF DEBUG_ALLOCATOR THEN*>
   PROCEDURE WriteLive (b: Schedule.Block; msg: ARRAY OF CHAR;
                        live: IGraph.Vector);
@@ -398,10 +434,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
     WITH b: Schedule.BranchBlock DO
       (* the predicate that is evaluated at the end of a branch block must
          be live at the end of the block *)
-      res := b. predicate. arg;
-      IF (res. info = rf) & ~iGraph. In (res. marker, live) THEN
-        iGraph. AddToLive (res. marker, live);
-      END;
+      AddResToLive (b. predicate. arg, live);
     ELSE  (* nothing to do *)
     END;
 
@@ -413,46 +446,37 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       END;
       
       res := proxy. instr;
-      WHILE (res # NIL) DO
-        IF (res. info = rf) & (res. useList = NIL) THEN
-          (* this is a pathological case: the instruction leaves a result in
-             a register, but its value is never used; in effect this 
-             corresponds to an empty live range that interferes with nothing;
-             but since a register is overwritten here, it _does_ interfere with
-             everything live at this point in practice *)
-          iGraph. AddToLive (res. marker, live);
+      IF (res. info # markInPlace) THEN
+        WHILE (res # NIL) DO
+          IF (res. info = rf) & (res. useList = NIL) THEN
+            (* this is a pathological case: the instruction leaves a result in
+               a register, but its value is never used; in effect this
+               corresponds to an empty live range that interferes with nothing;
+               but since a register is overwritten here, it _does_ interfere
+               with everything live at this point in practice  *)
+            iGraph. AddToLive (res. marker, live);
+          END;
+          res := res. nextResult;
         END;
-        res := res. nextResult;
-      END;
+        
+        (* remove all results produced by this instruction from our live set *)
+        res := proxy. instr;
+        WHILE (res # NIL) DO
+          IF (res. info = rf) THEN
+            iGraph. RemoveFromLive (res. marker, live);
+          END;
+          res := res. nextResult;
+        END;
+        
+        (* Every argument of the instruction is checked whether it starts a
+           live range and is placed into the live vector if it does.
 
-      (* remove all results produced by this instruction from our live set *)
-      res := proxy. instr;
-      WHILE (res # NIL) DO
-        IF (res. info = rf) THEN
-          iGraph. RemoveFromLive (res. marker, live);
-        END;
-        res := res. nextResult;
-      END;
-      
-      (* Every argument of the instruction is checked whether it starts a live
-         range and is placed into the live vector if it does.
-
-         The first argument of "select" is skipped (by means of IsValueOpnd()),
-         because the select instruction appears after the selection expression
-         and the paths it selects, and the selection expression is only live at
-         the place at which control flow branches (read: at the end of
-         BranchBlock, or the beginning of SwitchBlock).  *)
-      opnd := proxy. instr. opndList;
-      WHILE (opnd # NIL) DO
-        IF (opnd. arg. info = rf) & opnd. IsValueOpndHere() THEN
-          IF ~iGraph. In (opnd. arg. marker, live) THEN
-            (* the live range of the value passed to `opnd' interferes with
-               all live ranges currently active: calculate union between bit
-               matrix (row `opnd.arg.marker') and the live vector  *)
-            iGraph. AddToLive (opnd. arg. marker, live)
-          END
-        END;
-        opnd := opnd. nextOpnd
+           The first argument of "select" is skipped (by means of
+           IsValueOpnd()), because the select instruction appears after the
+           selection expression and the paths it selects, and the selection
+           expression is only live at the place at which control flow branches
+           (read: at the end of BranchBlock, or the beginning of SwitchBlock).  *)
+        MarkOpndAsLive (proxy. instr, live);
       END;
       
       proxy := proxy. prevProxy
@@ -461,10 +485,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
     WITH b: Schedule.SwitchBlock DO
       (* the select expression that is evaluated at the beginning
          switch must be live at the beginning of the block *)
-      res := b. expr. arg;
-      IF (res. info = rf) & ~iGraph. In (res. marker, live) THEN
-        iGraph. AddToLive (res. marker, live);
-      END;
+      AddResToLive (b. expr. arg, live);
     ELSE  (* nothing to do *)
     END;
 
@@ -739,7 +760,8 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
     blockList: BlockList;
     rfs: RegisterFiles;
     i: LONGINT;
-    registerMap: Dictionary.Dictionary;
+    registerMap, inPlaceEval: Dictionary.Dictionary;
+    keys: Object.ObjectArrayPtr;
 
   PROCEDURE WriteNames (w: DeclWriter.Writer;
                         registerType: DeclWriter.BasicTypeId;
@@ -849,7 +871,6 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
       VAR
         proxy: Schedule.InstrProxy;
         collect: SSA.Instr;
-        opnd: SSA.Opnd;
         res: SSA.Result;
         b: Schedule.Block;
         i: LONGINT;
@@ -942,6 +963,8 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
           END;
         END UpdateTarget;
 
+      PROCEDURE ^ CheckOpndList (instr: SSA.Instr);
+        
       PROCEDURE CheckOpnd (opnd: SSA.Opnd);
         VAR
           obj: Object.Object;
@@ -952,22 +975,48 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
             (* the variable that holds the result `opnd.arg' must be known
                at this point *)
             obj := registerMap. Get (opnd. arg);
-            defVar := obj(String.String);
-            ASSERT (state. HasKey (defVar));
-            
-            (* the current value of the variable must be the expected
-               result *)
-            obj := state. Get (defVar);
-            currentValue := obj(SSA.Result);
-            IF currentValue # opnd. arg THEN
-              opnd. instr. LogId ("using instruction");
-              Log.LongInt ("  operand index", opnd. OpndIndex());
-              opnd. arg. LogId ("  expected value");
-              currentValue. LogId ("  actual value");
-              ASSERT (FALSE);
+            IF (obj = markInPlace) THEN
+              CheckOpndList (opnd. arg. instr);
+            ELSE
+              defVar := obj(String.String);
+              ASSERT (state. HasKey (defVar));
+              
+              (* the current value of the variable must be the expected
+                 result *)
+              obj := state. Get (defVar);
+              currentValue := obj(SSA.Result);
+              IF currentValue # opnd. arg THEN
+                opnd. instr. LogId ("using instruction");
+                Log.LongInt ("  operand index", opnd. OpndIndex());
+                opnd. arg. LogId ("  expected value");
+                currentValue. LogId ("  actual value");
+                ASSERT (FALSE);
+              END;
             END;
           END;
         END CheckOpnd;
+
+      PROCEDURE CheckOpndList (instr: SSA.Instr);
+        VAR
+          opnd: SSA.Opnd;
+        BEGIN
+          (* for every operand that takes its value from a register variable,
+             check that the value of the expected result is still stored in the
+             register variable at the place of use *)
+          opnd := instr. opndList;
+          IF (instr. opcode = Opcode.select) THEN
+            (* the first argument of a "select" is actually used elsewhere:
+               for a SwitchBlock at the beginning of the block, and in a
+               BranchBlock at the end *)
+            opnd := opnd. nextOpnd;
+          END;
+          WHILE (opnd # NIL) DO
+            IF opnd. IsValueOpndHere() THEN
+              CheckOpnd (opnd);
+            END;
+            opnd := opnd. nextOpnd;
+          END;
+        END CheckOpndList;
       
       BEGIN
         collect := NIL;
@@ -986,35 +1035,22 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
           ELSIF (proxy. instr. opcode = Opcode.select) THEN
             ASSERT (proxy = b. proxyList);
           END;
-          
-          (* for every operand that takes its value from a register variable,
-             check that the value of the expected result is still stored in the
-             register variable at the place of use *)
-          opnd := proxy. instr. opndList;
-          IF (proxy. instr. opcode = Opcode.select) THEN
-            (* the first argument of a "select" is actually used elsewhere:
-               for a SwitchBlock at the beginning of the block, and in a
-               BranchBlock at the end *)
-            opnd := opnd. nextOpnd;
-          END;
-          WHILE (opnd # NIL) DO
-            IF opnd. IsValueOpndHere() THEN
-              CheckOpnd (opnd);
-            END;
-            opnd := opnd. nextOpnd;
-          END;
-          
-          res := proxy. instr;
-          WHILE (res # NIL) DO
-            (* for every result that is written to a register variable, update
-               the state to map the register variable to this result *)
-            IF registerMap. HasKey (res) THEN
-              state. Set (registerMap. Get (res), res);
-            END;
-            
-            res := res. nextResult;
-          END;
 
+          IF (proxy. instr. info # markInPlace) THEN
+            CheckOpndList (proxy. instr);
+            
+            res := proxy. instr;
+            WHILE (res # NIL) DO
+              (* for every result that is written to a register variable, update
+                 the state to map the register variable to this result *)
+              IF registerMap. HasKey (res) THEN
+                state. Set (registerMap. Get (res), res);
+              END;
+              
+              res := res. nextResult;
+            END;
+          END;
+          
           proxy := proxy. nextProxy;
         END;
         
@@ -1051,6 +1087,64 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
         CheckBlock (current, current. initState);
       END;
     END CheckRegisters;
+
+  PROCEDURE InPlaceEval (pb: SSA.ProcBlock): Dictionary.Dictionary;
+    VAR
+      instr, useInstr: SSA.Instr;
+      use: SSA.Opnd;
+      inPlaceEval: Dictionary.Dictionary;
+      insideUse, outsideUse: LONGINT;
+      instrBlock: Schedule.Block;
+
+    PROCEDURE FoldedOpcode (opcode: Opcode.Class): BOOLEAN;
+      BEGIN
+       CASE opcode OF
+        | Opcode.call, Opcode.get, Opcode.copyParameter,
+          Opcode.const, Opcode.address, Opcode.getLength:
+          RETURN FALSE;
+        ELSE
+          RETURN TRUE;
+        END;
+      END FoldedOpcode;
+    
+    BEGIN
+      inPlaceEval := Dictionary.New();
+      
+      instr := pb. instrList;
+      WHILE (instr # NIL) DO
+        IF (instr. subclass # Opcode.scNone) &
+           (instr. info # NIL) &
+           FoldedOpcode (instr. opcode) THEN
+          instrBlock := instr. info(Schedule.InstrProxy). block;
+
+          insideUse := 0; outsideUse := 0;
+          use := instr. useList;
+          WHILE (use # NIL) DO
+            IF use. IsValueOpndHere() THEN
+              useInstr := use. instr;
+              IF (useInstr. opcode # Opcode.collect) &
+                 (useInstr. info(Schedule.InstrProxy). block = instrBlock) THEN
+                INC (insideUse);
+              ELSE
+                INC (outsideUse);
+              END;
+            END;
+            use := use. nextUse;
+          END;
+          IF (instrBlock IS Schedule.BranchBlock) &
+             (instrBlock(Schedule.BranchBlock). predicate. arg = instr) THEN
+            INC (insideUse);
+          END;
+          
+          IF (outsideUse = 0) & (insideUse = 1) THEN
+            inPlaceEval. Set (instr, NIL);
+          END;
+        END;
+        instr := instr. nextInstr;
+      END;
+
+      RETURN inPlaceEval;
+    END InPlaceEval;
   
   <*IF DEBUG_ALLOCATOR THEN*>
   PROCEDURE WriteBlock (b: Schedule.Block; indent: LONGINT);
@@ -1152,6 +1246,10 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
     Log.Ln;
     Log.String ("### allocating registers", pb. procDecl. name. str^);
     <*END*>
+    (* for the C back-end, mark results that are not stored in register
+       variables, but are computed at the place where they are used *)
+    inPlaceEval := InPlaceEval (pb);
+    
     exitBlock := pb. selectReturn. info(Schedule.InstrProxy). block;
     enterBlock := domRoot;
     pb. SetMarkers (NIL, -1);
@@ -1160,7 +1258,7 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
     (* calculate for each register set the results that are mapped to this
        set *)
     blockList := GetBlockList (enterBlock, exitBlock);
-    rfs := IdentifyResults (blockList);
+    rfs := IdentifyResults (blockList, inPlaceEval);
 
     (* for each loop, add all values (which are stored in registers) that are
        used within the loop, but are defined outside the loop, to the argument
@@ -1183,7 +1281,11 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
         WriteNames (w, rfs[i]. registerType, rfs[i]. names);
       END;
     END;
-
+    keys := inPlaceEval. Keys();
+    FOR i := 0 TO LEN (keys^)-1 DO
+      registerMap. Set (keys[i], markInPlace);
+    END;
+    
     (* Sanity check: Traverse instructions from the beginning to the end of
        the procedure, keeping track which register variable is in use, and
        which value it holds.  Complain if the usage of a variable does not
@@ -1194,4 +1296,6 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
     RETURN registerMap
   END AssignRegisters;
 
+BEGIN
+  markInPlace := SSA.NewResult(NIL, -1, -1);
 END OOC:SSA:Allocator.
