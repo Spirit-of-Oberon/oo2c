@@ -17,7 +17,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_STRING lib_STRING2">-->
+  select ="prepare_out_module lib_rt1 lib_STRING lib_STRING2 lib_STRING3">-->
 
   &TestSetupWithOut;
   
@@ -527,6 +527,13 @@
       Cannot pass a constant to a <code>VAR</code> parameter of type
       <code>STRING</code>.
     </test>
+    
+    <test id="lib_STRING3" type="run"
+          file="LibSTRING3.Mod" output="LibSTRING3.Ref">
+      Check that conversion of <code>LONGCHAR</code> character
+      constants and strings to <code>STRING</code> works.
+    </test>
+    
   </testcases>
 
   &libadt-testcases;
