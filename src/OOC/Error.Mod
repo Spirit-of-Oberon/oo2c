@@ -232,7 +232,9 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
         END;
         msg. GetText (text);
 
-        writer. WriteString (errList. fileName);
+        IF (attrLine # NIL) & (attrColumn # NIL) THEN
+          writer. WriteString (errList. fileName);
+        END;
       END;
       writer. WriteString (text);
       writer. WriteLn;
