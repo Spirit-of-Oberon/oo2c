@@ -515,6 +515,9 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
         
       | value: Boxed.LongReal DO
         w. WriteStr(value.ToString());
+        IF TR.IsPredefType(type, Predef.real) THEN
+          w. WriteString("f");
+        END;
         
       | value: BigInt.BigInt DO
         IF (value. ToLongInt() = MIN (LONGINT)) THEN
