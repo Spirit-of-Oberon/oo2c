@@ -71,6 +71,11 @@ procedure is *included* in the regexp \\<END\\>.")
   "Regexp matching code that is used to determine if point is in a
 statement sequence or a list of declarations.")
 
+(defconst ob2-record-re
+  (mapconcat (lambda (x) (ob2-get-indent-re x))
+	     '(record end) "\\|")
+  "Regexp matching code that starts or ends a record definition.")
+
 (defsubst ob2-inside-statement-sequence-p ()
   "Return non-nil if point is inside a statement sequence.
 Else return nil."
@@ -254,31 +259,31 @@ WITH statement starts on a line.  Else returns nil."
                  1)))))
 
 
-(defsubst ob2-re-search-backward-code-no-ref-param (regexp)
-  "Locate first preceeding word matching REGEXP that is not matching
-ob2-looking-at-ref-param-p.  Result is nil if there is no match."
+(defun ob2-re-search-backward-code-2 (regexp)
+  "Locate first preceeding word matching REGEXP that is not a reference
+parameter or within an ended record definition.  Result is nil if there
+is no match."
   (let ((foundp (ob2-re-search-backward-code regexp)))
-    (while (and foundp (ob2-looking-at-ref-param-p))
-      (setq foundp (ob2-re-search-backward-code regexp)))
-    foundp))
-
+    (cond ((not foundp)			;no match
+	   nil)
+	  ((ob2-looking-at-ref-param-p)	;skip reference parameter
+	   (ob2-re-search-backward-code-2 regexp))
+	  ((and (looking-at (ob2-get-indent-re 'end)) ;skip record-end
+		(not (ob2-inside-statement-sequence-p)))
+	   (ob2-re-search-backward-code-2 ob2-record-re)
+	   (ob2-re-search-backward-code-2 regexp))
+	  (t				;default: return search result
+	   foundp))))
 
 (defun ob2-calc-indent-normal ()
   "Return correct indentation for current line (*normal* cases)."
   (let ((saved-word)
         (saved-column))
+    (message "---> point=%s" (point))
     (save-excursion
-      (when (ob2-re-search-backward-code-no-ref-param ob2-indent-re)
+      (when (ob2-re-search-backward-code-2 ob2-indent-re)
         (setq saved-word (ob2-get-indent-symbol
                           (match-string-no-properties 0)))
-
-	;; special case with end of record
-	(when (and (eq saved-word 'end)
-		   (not (ob2-inside-statement-sequence-p)))
-	  (ob2-re-search-backward-code-no-ref-param
-	   (ob2-get-indent-re 'const-type-var))
-	  (setq saved-word 'const-type-var))
-
         (setq saved-column (current-indentation))))
     
     ;;(message "save-column=%s, saved-word=%s" saved-column saved-word)
