@@ -8,6 +8,10 @@
 #include "__config.h"
 
 #if defined(HAVE_LIBGC) && defined(HAVE_GC_GC_H)
+#define USE_BOEHM_GC
+#endif
+
+#ifdef USE_BOEHM_GC
 #include <gc/gc.h>
 #else
 #define GC_malloc malloc
@@ -246,6 +250,17 @@ OOC_BOOLEAN RT0__GetEnv(const OOC_CHAR8 name[], OOC_LEN name_0d, OOC_CHAR8 value
 
 
 void RT0_init() {
+#ifdef USE_BOEHM_GC
+  GC_INIT();
+  /* tell GC to accept pointers with an offset of 8/16/24 as references to
+     a given object; this is necessary if the GC was built without the
+     ALL_INTERIOR_POINTERS option; the offsets cover records and open 
+     arrays with upto 5 free dimensions on 32 bit architectures */
+  GC_register_displacement(8);
+  GC_register_displacement(16);
+  GC_register_displacement(24);
+#endif
+  
   modules = RT0__NewBlock(sizeModules*sizeof(RT0__Module));
   
   PS(RT0__boolean , "BOOLEAN",  RT0__strBoolean , sizeof(OOC_BOOLEAN));
