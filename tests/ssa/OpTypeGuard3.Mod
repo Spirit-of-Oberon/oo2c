@@ -1,4 +1,4 @@
-MODULE OpTypeGuard1;
+MODULE OpTypeGuard3;
 
 IMPORT Out := Out0;
 
@@ -30,8 +30,8 @@ BEGIN
   a := b;
 
   a.Do;
-  a(B).Do;
+  a(C).Do;
 END Test;
 
-END OpTypeGuard1.
+END OpTypeGuard3.
 

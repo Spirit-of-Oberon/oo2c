@@ -6,7 +6,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opString1 opString2 opString3 opString4 opString5 opString6">-->
+  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard2 opTypeGuard3">-->
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -714,11 +714,18 @@
       Dereferencing a <code>NIL</code> pointer.
     </test>
 
-<!--
-    <test id="opTypeGuard1" type="run" relevance="informal" file="OpTypeGuard1.Mod"
+    <test id="opTypeGuard1" type="run" file="OpTypeGuard1.Mod"
       output="OpTypeGuard1.Ref">
       Excercise type guards.
-    </test> -->
+    </test>
+
+    <test id="opTypeGuard2" type="reject" file="OpTypeGuard2.Mod">
+      Guard type is not a valid RECORD type.
+    </test>
+
+    <test id="opTypeGuard3" type="reject" file="OpTypeGuard3.Mod">
+      Guard type is not extension of designator type.
+    </test>
 
     <test id="opExprCompat1" type="run" relevance="informal" file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
@@ -922,6 +929,10 @@
         msg="Type of expression is not compatible with variable type"/>
     <reject-info id="opString4" pos=" c %:="
         msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="opTypeGuard2" pos=" a(%INTEGER)"
+        msg="Invalid type used as guard"/>
+    <reject-info id="opTypeGuard3" pos=" a(%C)"
+        msg="Guard type is not an extension of the designated type"/>
 
   </processor-info>
 </testsuite-ext>
