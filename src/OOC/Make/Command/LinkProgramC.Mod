@@ -66,7 +66,7 @@ PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
 
 PROCEDURE (cmd: Command) Run*(): BOOLEAN;
   VAR
-    str: ARRAY 4*1024 OF CHAR;
+    str: ARRAY 16*1024 OF CHAR;        (* link commands can get _very_ long *)
     path: Repository.URIBuffer;
     uri: URI.URI;
     exit, i: LONGINT;
