@@ -635,7 +635,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN Boxed.NewLongInt(ai);
+    RETURN NEW(Boxed.LongInt, ai);
   ELSE
     RETURN TypeError(op);
   END;
@@ -678,7 +678,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN Boxed.NewLongInt(ai);
+    RETURN NEW(Boxed.LongInt, ai);
 
   | typeReal:
     CASE op.sym OF
@@ -696,7 +696,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN Boxed.NewLongReal(ar);
+    RETURN NEW(Boxed.LongReal, ar);
 
   ELSE
     RETURN TypeError(op);
@@ -723,7 +723,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN Boxed.NewLongInt(ai);
+    RETURN NEW(Boxed.LongInt, ai);
 
   | typeReal:
     CASE op.sym OF
@@ -732,7 +732,7 @@ BEGIN
     ELSE
       RETURN TypeError(op);
     END;
-    RETURN Boxed.NewLongReal(ar);
+    RETURN NEW(Boxed.LongReal, ar);
 
   ELSE
     RETURN TypeError(op);
@@ -851,15 +851,15 @@ VAR
 
       ELSIF token.sym = Scanner.number THEN
         (* constant integer *)
-        result := Boxed.NewLongInt(token.value); GetSym;
+        result := NEW(Boxed.LongInt, token.value); GetSym;
 
       ELSIF token.sym = Scanner.realNumber THEN
         (* constant real *)
-        result := Boxed.NewLongReal(token.rvalue); GetSym;
+        result := NEW(Boxed.LongReal, token.rvalue); GetSym;
 
       ELSIF (token.sym = Scanner.string) & (token.name.length = 3) THEN
         (* constant character *)
-        result := Boxed.NewLongInt(ORD(token.name.CharAt(1))); GetSym;
+        result := NEW(Boxed.LongInt, ORD(token.name.CharAt(1))); GetSym;
 
       ELSIF token.sym = Scanner.lbracket THEN
         (* bracket indicates either a nested expression OR a type cast *)
@@ -886,7 +886,7 @@ VAR
           needClose := FALSE
         END;
         IF token.sym = Scanner.ident THEN
-          result := Boxed.NewLongInt(BoolInt(process.IsDefined(token.name)));
+          result := NEW(Boxed.LongInt, BoolInt(process.IsDefined(token.name)));
         ELSE 
           err.MsgParam("Warning: defined() applied to non-identifier '$0'. Returning 0", token.name, NIL, NIL, FALSE);
           result := Boxed.zeroLongInt
@@ -907,7 +907,7 @@ VAR
             size := 0;
             err.ErrorParam("Size of type `$0' is unknown", t, NIL, NIL);
           END;
-          result := Boxed.NewLongInt(size)
+          result := NEW(Boxed.LongInt, size)
         ELSE
           err.ErrorParam("Token `$0' is not a type specifier", token.name, NIL, NIL);
           result := Boxed.zeroLongInt

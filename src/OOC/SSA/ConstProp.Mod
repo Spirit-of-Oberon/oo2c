@@ -77,12 +77,12 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
           | Opcode.subtract: v := i1.Sub(i2);
           | Opcode.multiply: v := i1.Mul(i2);
             
-          | Opcode.eql: v := Boxed.NewBoolean(i1.Cmp(i2)  = 0);
-          | Opcode.neq: v := Boxed.NewBoolean(i1.Cmp(i2)  # 0);
-          | Opcode.leq: v := Boxed.NewBoolean(i1.Cmp(i2) <= 0);
-          | Opcode.lss: v := Boxed.NewBoolean(i1.Cmp(i2) <  0);
-          | Opcode.geq: v := Boxed.NewBoolean(i1.Cmp(i2) >= 0);
-          | Opcode.gtr: v := Boxed.NewBoolean(i1.Cmp(i2) >  0);
+          | Opcode.eql: v := NEW(Boxed.Boolean, i1.Cmp(i2)  = 0);
+          | Opcode.neq: v := NEW(Boxed.Boolean, i1.Cmp(i2)  # 0);
+          | Opcode.leq: v := NEW(Boxed.Boolean, i1.Cmp(i2) <= 0);
+          | Opcode.lss: v := NEW(Boxed.Boolean, i1.Cmp(i2) <  0);
+          | Opcode.geq: v := NEW(Boxed.Boolean, i1.Cmp(i2) >= 0);
+          | Opcode.gtr: v := NEW(Boxed.Boolean, i1.Cmp(i2) >  0);
           ELSE                             (* not supported *)
             (*instr. LogOpcode ("not folding (unsupported opcode)");
                instr. opndList. arg. instr. LogOpcode ("arg1");

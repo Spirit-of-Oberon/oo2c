@@ -67,7 +67,7 @@ END MsgParam;
 PROCEDURE (e : Error) UnexpectedCharacter* (ch : CHAR);
 BEGIN
   e.ErrorParam("Unexpected character '$0'",
-               Boxed.NewString(Object.NewLatin1Char(ch)),NIL,NIL);
+               NEW(Boxed.String, Object.NewLatin1Char(ch)),NIL,NIL);
 END UnexpectedCharacter;
 
 PROCEDURE (e : Error) ExpectedToken* (expected, found : Object.Object);

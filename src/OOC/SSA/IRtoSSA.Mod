@@ -686,7 +686,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           | Predef.stringUCS4Char:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS4Region");
           END;
-          instr.AddOpnd(pb.GetConst(Boxed.NewString(fct), Opcode.scAddress,
+          instr.AddOpnd(pb.GetConst(NEW(Boxed.String, fct), Opcode.scAddress,
                                     Predef.GetType(Predef.stringChar)),
                         Opnd.arg);
           instr.AddOpnd(const, Opnd.arg);

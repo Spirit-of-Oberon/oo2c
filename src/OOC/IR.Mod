@@ -1855,7 +1855,7 @@ PROCEDURE (b: Builder) AssertReal(expr: Expression): Expression;
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notReal, expr.sym);
       END;
-      v := Boxed.NewLongReal(1);
+      v := NEW(Boxed.LongReal, 1);
       RETURN NewConst(expr.sym, Predef.GetType(Predef.real), v);
     END;
     RETURN expr;
@@ -1888,7 +1888,7 @@ PROCEDURE (b: Builder) AssertChar(expr: Expression): Expression;
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notCharacter, expr.sym);
       END;
-      v := Boxed.NewString("a");
+      v := NEW(Boxed.String, "a");
       RETURN NewConst(expr.sym, Predef.GetType(Predef.char), v);
     END;
     RETURN expr;
@@ -1904,7 +1904,7 @@ PROCEDURE (b: Builder) AssertSet(expr: Expression): Expression;
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notSet, expr.sym);
       END;
-      v := Boxed.NewSet({});
+      v := NEW(Boxed.Set, {});
       RETURN NewConst(expr.sym, Predef.GetType(Predef.set), v);
     END;
     RETURN expr;
@@ -1998,7 +1998,7 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
         type := Predef.ucs4char;
         str := Object.NewUCS4Char(UCS4CHR(v));
       END;
-      RETURN NewConst(sym, Predef.GetType(type), Boxed.NewString(str));
+      RETURN NewConst(sym, Predef.GetType(type), NEW(Boxed.String, str));
     END
   END NewCharConst16;
 
@@ -3040,7 +3040,7 @@ PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; type, from, to: Expression;
       END;
     END;
     IF (from = NIL) & (to = NIL) THEN  (* empty set *)
-      RETURN b. NewConst (sym, set, Boxed.NewSet({}));
+      RETURN b. NewConst (sym, set, NEW(Boxed.Set, {}));
     ELSE
       (* only do semantic checks for SETs and not for labels *)
       IF isSet THEN
