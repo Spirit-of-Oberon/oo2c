@@ -48,6 +48,13 @@ static NORETURN void _out_of_memory(int size) {
   exit(EXIT_CODE);
 }
 
+static NORETURN void _negative_length(OOC_LEN len) {
+  (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
+		"NewObject: Negative array length %i\n" PREFIX "\n",
+		len);
+  exit(EXIT_CODE);
+}
+
 
 OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   void *var, *ptr;
@@ -84,7 +91,11 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     size = td->baseTypes[0]->size;
     va_start(ap, td);
     for (i=0; i != td->len; i++) {
-      size *= va_arg(ap, OOC_LEN);
+      OOC_LEN len = va_arg(ap, OOC_LEN);
+      if (len < 0) {
+	_negative_length(len);
+      }
+      size *= len;
     }
     va_end(ap);
     if (size == 0) size++;
