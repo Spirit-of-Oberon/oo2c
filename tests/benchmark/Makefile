@@ -20,7 +20,7 @@ CCC1 = gcc $(CCFLAGS) -O2 -S -I/usr/local/lib/oo2c/lib -I/usr/local/lib/oo2c/obj
 BENCHMARKS = FFT Sort Array
 
 test: compile
-	wd/exe/Benchmark --all --normalise
+	wd/bin/Benchmark --all --normalise
 
 compile: setup
 	$(COMPILE) --make Benchmark
@@ -34,13 +34,13 @@ setup:
 
 setup-ooc1:
 	rm -rf wd1
-	mkdir wd1 wd1/obj wd1/sym wd1/asm wd1/exe
+	mkdir wd1 wd1/obj wd1/sym wd1/asm wd1/bin
 
 compile-ooc1: setup-ooc1
 	$(OOC) --optimize -Mv --cflags "-O2" Benchmark
 
 test-ooc1: compile-ooc1
-	wd1/exe/Benchmark --all --normalise
+	wd1/bin/Benchmark --all --normalise
 
 # Attempt to find the differences in assembled output
 # This is a quick hack, but probably as good as it will get

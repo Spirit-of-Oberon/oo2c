@@ -78,7 +78,7 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     proc. modDir := GetPath ("src");
     proc. symDir := GetPath ("sym");
     proc. objDir := GetPath ("obj");
-    proc. binDir := GetPath ("exe");
+    proc. binDir := GetPath ("bin");
     proc. txtDir := GetPath ("txt");
     
     (* put together command string for compile/make *)

@@ -41,7 +41,7 @@ top_builddir=$(OOC_DEV_ROOT)
 
 test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestCompile TestH2O TestWebServer TestCodec encdec AllModules RunTests
 
-all: lib/obj/liboo2c.la exe/oo2c
+all: lib/obj/liboo2c.la bin/oo2c
 
 .PHONY: clean distclean test main-clean oo2c install intall-strip
 
@@ -70,7 +70,7 @@ main-clean: doc-clean test-cleanall
 distclean: main-clean
 	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
 	rm -f lib/src/__config.h config.log config.status
-	rm -Rf autom4te.cache stage0/exe exe
+	rm -Rf autom4te.cache stage0/bin bin
 
 ### `cvs-clean'
 ###      Delete everything that should not appear in the CVS.
@@ -156,10 +156,10 @@ lib/obj/liboo2c.la: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml
 
 ### Build second compiler using the initial compiler executable and the
 ### library lib/obj/liboo2c.la.
-exe/oo2c: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml lib/obj/liboo2c.la
+bin/oo2c: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml lib/obj/liboo2c.la
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package oo2c
 
-install: lib/obj/liboo2c.la exe/oo2c
+install: lib/obj/liboo2c.la bin/oo2c
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
 	chmod a+x $(oocdir)/install-sh

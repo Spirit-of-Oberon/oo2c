@@ -419,7 +419,7 @@ PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF 
     | modObjectFileLib:
       COPY ("obj", subdir)
     | modExecutable:
-      COPY ("exe", subdir)
+      COPY ("bin", subdir)
     | modLibrary:
       COPY ("obj", subdir)
     | resourceFile:
