@@ -115,7 +115,7 @@ void IO_Socket__ErrorContextDesc_GetTemplate(IO_Socket__ErrorContext context, Ms
   _copy_8to16(str, templ, templ_0d);
   if (msg->attribList) {
     Msg__Attribute attr;
-    OOC_CHAR16 eol[2] = {(OOC_CHAR16)CharClass__eol, (OOC_CHAR16)0};
+    OOC_CHAR16 eol[2] = {(OOC_CHAR16)CharClass__eol[0], (OOC_CHAR16)0};
     OOC_CHAR16 str16[Msg__sizeAttrName+1];
 
     attr = msg->attribList;

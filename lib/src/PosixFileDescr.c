@@ -84,7 +84,7 @@ void PosixFileDescr__ErrorContextDesc_GetTemplate(PosixFileDescr__ErrorContext c
   
   if (msg->attribList) {
     Msg__Attribute attr;
-    OOC_CHAR16 eol[2] = {(OOC_CHAR16)CharClass__eol, (OOC_CHAR16)0};
+    OOC_CHAR16 eol[2] = {(OOC_CHAR16)CharClass__eol[0], (OOC_CHAR16)0};
     OOC_CHAR16 str16[Msg__sizeAttrName+1];
     
     /*LongStrings__Append(eol, 2, templ, templ_0d);*/
