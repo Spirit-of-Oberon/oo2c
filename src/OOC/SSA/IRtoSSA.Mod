@@ -26,18 +26,18 @@ IMPORT
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 
-PROCEDURE AddStoreForwardRef (pb: SSA.ProcBlock;
-                              instr: SSA.Instr; storeArg: SSA.Result);
+PROCEDURE AddStoreBackwardFeed (pb: SSA.ProcBlock;
+                                loopEnd: SSA.Instr; storeArg: SSA.Result);
   VAR
     collect: SSA.Instr;
   BEGIN
     (* install a pass-through collect instruction between `storeArg'
-       and the use in `instr'; the allocator code uses this instruction
+       and the use in `loopEnd'; the allocator code uses this instruction
        to mark some values as live across the whole loop *)
     collect := pb. AddInstr (Opcode.collect, Opcode.scNone);
     collect. AddOpnd (storeArg, Opnd.store);
-    instr. AddOpnd (collect. AddResult (Result.store), Opnd.forwardRef);
-  END AddStoreForwardRef;
+    loopEnd. AddOpnd (collect. AddResult (Result.store), Opnd.backwardFeed);
+  END AddStoreBackwardFeed;
 
 PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
                      statmSeq: IR.StatementSeq): SSA.Result;
@@ -363,8 +363,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       end. AddOpnd (exit, Opnd.arg);
       end. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
 
-      (* add forward reference from "loop-start" to `store' at end of loop *)
-      AddStoreForwardRef (pb, start, s);
+      (* add backward feed of `store' to "loop-end" *)
+      AddStoreBackwardFeed (pb, end, s);
       
       s := end. AddResult (Result.store)
     END RepeatStatm;
@@ -402,8 +402,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       end. AddOpnd (guard2, Opnd.arg);
       end. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       
-      (* add forward reference from "loop-start" to `store' at end of loop *)
-      AddStoreForwardRef (pb, start, s);
+      (* add backward feed of `store' to "loop-end" *)
+      AddStoreBackwardFeed (pb, end, s);
       
       (* create the "select" for the IF statement around the loop *)
       select := pb. AddInstr (Opcode.select, Opcode.scNone);
@@ -486,8 +486,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       end. AddOpnd (guard2, Opnd.arg);
       end. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       
-      (* add forward reference from "loop-start" to `store' at end of loop *)
-      AddStoreForwardRef (pb, start, s);
+      (* add backward feed of `store' to "loop-end" *)
+      AddStoreBackwardFeed (pb, end, s);
       
       (* create the "select" for the IF statement around the loop *)
       select := pb. AddInstr (Opcode.select, Opcode.scNone);
@@ -522,8 +522,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       end. AddOpnd (select, Opnd.arg);
       end. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
       
-      (* add forward reference from "loop-start" to `store' at end of loop *)
-      AddStoreForwardRef (pb, start, s);
+      (* add backward feed of `store' to "loop-end" *)
+      AddStoreBackwardFeed (pb, end, s);
 
       s := end. AddResult (Result.store);
       select := pb. SetSelectExit (oldSelect);

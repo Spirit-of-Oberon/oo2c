@@ -173,6 +173,15 @@ PROCEDURE GetVar (instr: SSA.Instr): Sym.VarDecl;
     END;
   END GetVar;
 
+PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
+  BEGIN
+    CASE select. opcode OF
+    | Opcode.select    : RETURN (select. SizeOpndList() DIV 2)
+    | Opcode.loopStart : RETURN 2
+    | Opcode.selectExit: RETURN (select. SizeOpndList() - 1)
+    END;
+  END NumberOfPaths;
+
 
 PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
   VAR
@@ -226,15 +235,6 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
       RETURN varMap
     END IdentifyVars;
 
-  PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
-    BEGIN
-      CASE select. opcode OF
-      | Opcode.select    : RETURN (select. SizeOpndList() DIV 2)
-      | Opcode.loopStart : RETURN select. SizeOpndList()
-      | Opcode.selectExit: RETURN (select. SizeOpndList() - 1)
-      END;
-    END NumberOfPaths;
-  
   PROCEDURE TraceSetForward (numVars: LONGINT);
     VAR
       instr: SSA.Instr;
@@ -280,15 +280,6 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           RETURN var. isVarParam OR (var. Procedure() # pb. procDecl)
         END ExternalVisibility;
 
-      PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
-        BEGIN
-          CASE select. opcode OF
-          | Opcode.select    : RETURN (select. SizeOpndList() DIV 2)
-          | Opcode.loopStart : RETURN select. SizeOpndList()
-          | Opcode.selectExit: RETURN (select. SizeOpndList() - 1)
-          END;
-        END NumberOfPaths;
-
       PROCEDURE TraceUse (use: SSA.Opnd): BOOLEAN;
         VAR
           originMap: OriginMap;
@@ -308,6 +299,34 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             END;
             RETURN opnd. instr
           END GetSelectExit;
+
+        PROCEDURE TraceLoopStart (instr: SSA.Instr;
+                                  opndIndex: LONGINT): OriginMap;
+          VAR
+            originMap: OriginMap;
+            visible: BOOLEAN;
+          BEGIN
+            IF (instr. info = NIL) THEN
+              originMap := NewOriginMap (NumberOfPaths (instr), numVars);
+              instr. info := originMap;
+              
+              (* continue tracing the uses of this loop-start; note: this is
+                 only done once for each variable, when we encounter the
+                 loop-start for the first time *)
+              (* note: originMap. visible[origin. marker] defaults to FALSE *)
+              visible := TraceF (instr, instr. GetResultClass (Result.store));
+              originMap. visible[origin. marker] := visible;
+            ELSE
+              originMap := instr. info(OriginMap);
+            END;
+            
+            (* set the instruction defining the store argument `use'
+               for the variable identified by `origin. marker' *)
+            originMap. def[origin. marker, opndIndex]
+                := lastDefinition;
+            
+            RETURN originMap
+          END TraceLoopStart;
         
         BEGIN
           instr := use. instr;
@@ -372,24 +391,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             RETURN originMap. visible[origin. marker];
 
           | Opcode.loopStart:
-            IF (instr. info = NIL) THEN
-              originMap := NewOriginMap (NumberOfPaths (instr), numVars);
-              instr. info := originMap;
-              
-              (* continue tracing the uses of this loop-start; note: this is
-                 only done once for each variable, when we encounter the
-                 loop-start for the first time *)
-              (* note: originMap. visible[origin. marker] defaults to FALSE *)
-              visible := TraceF (instr, instr. GetResultClass (Result.store));
-              originMap. visible[origin. marker] := visible;
-            ELSE
-              originMap := instr. info(OriginMap);
-            END;
-            
-            (* set the instruction defining the store argument `use'
-               for the variable identified by `origin. marker' *)
-            originMap. def[origin. marker, use. OpndIndex()]
-                := lastDefinition;
+            originMap := TraceLoopStart (instr, use. OpndIndex());
             RETURN originMap. visible[origin. marker];
 
           | Opcode.selectExit:
@@ -416,10 +418,18 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             RETURN originMap. visible[origin. marker];
             
           | Opcode.loopEnd:
-            RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
-
-          | Opcode.collect: 
-            RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
+            IF (use. class = Opnd.backwardFeed) THEN
+              (* the backward feed is a honorary member of the loop-start
+                 operand list, because it passes values back into the loop *)
+              originMap := TraceLoopStart (instr. GetLoopStart(), 1);
+              RETURN originMap. visible[origin. marker];
+            ELSE
+              RETURN TraceF (lastDefinition,
+                             instr. GetResultClass (Result.store));
+            END;
+            
+          | Opcode.collect:
+              RETURN TraceF (lastDefinition, instr. GetResultClass (Result.store))
 
           | Opcode.call:
             (* FIXME... detect when a call can modify our variable; for now
@@ -482,7 +492,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         CASE select. opcode OF
         | Opcode.select: storeIn := select. NthArg (pathNum*2+2);
         | Opcode.selectExit: storeIn := select. NthArg (pathNum+1);
-        | Opcode.loopStart: storeIn := select. NthArg (pathNum);
+        | Opcode.loopStart:
+          IF (pathNum = 0) THEN
+            storeIn := select. NthArg (pathNum);
+          ELSE
+            storeIn := select. GetBackwardFeed();
+          END;
         END;
         IF (storeIn. instr. opcode = Opcode.collect) THEN
           storeIn := storeIn. instr. GetArgClass (Opnd.store)
@@ -510,12 +525,20 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         PROCEDURE GetCollect (select: SSA.Instr; pathNum: LONGINT): SSA.Instr;
           VAR
             opnd: SSA.Opnd;
-            collect: SSA.Instr;
+            collect, loopEnd: SSA.Instr;
             oldStore: SSA.Result;
           BEGIN
             CASE select. opcode OF
-            | Opcode.select   : opnd := select. NthOpnd (pathNum*2+2);
-            | Opcode.loopStart: opnd := select. NthOpnd (pathNum);
+            | Opcode.select:
+              opnd := select. NthOpnd (pathNum*2+2);
+              
+            | Opcode.loopStart:
+              IF (pathNum = 0) THEN
+                opnd := select. NthOpnd (pathNum);
+              ELSE
+                loopEnd := select. GetLoopEnd();
+                opnd := loopEnd. GetOpndClass (Opnd.backwardFeed);
+              END;
             END;
             IF (opnd. arg. instr. opcode = Opcode.collect) THEN
               RETURN opnd. arg.instr
@@ -609,6 +632,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                 ELSE
                   FOR i := 0 TO LEN (origin. def^, 1)-1 DO
                     collect := GetCollect (select, i);
+                    ASSERT (GetValue (origin. def[var,i]) # NIL);
                     collect. AddOpnd (GetValue (origin. def[var,i]), Opnd.arg);
                   END;
                   origin. selectOut[var] :=
@@ -634,6 +658,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                     value := GetValue (origin. def[var, i]);
                   END;
                   collect := GetCollect (select, i);
+                  ASSERT (value # NIL);
                   collect. AddOpnd (value, Opnd.arg);
                 END;
                 origin. selectOut[var] :=

@@ -603,20 +603,6 @@ PROCEDURE (instr: Instr) GetResultType* (): Opcode.Subclass;
     END;
   END GetResultType;
 
-PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
-(**For a collect instruction, return the target instruction into which it
-   feeds its result.  *)
-  VAR
-    storeOut: Result;
-  BEGIN
-    ASSERT (instr. opcode = Opcode.collect);
-    storeOut := instr. GetResultClass (ResultClass.store);
-    ASSERT (storeOut # NIL);
-    ASSERT (storeOut. useList # NIL);
-    ASSERT (storeOut. useList. nextUse = NIL);
-    RETURN storeOut. useList. instr
-  END GetCollectTarget;
-
 PROCEDURE (instr: Instr) GetLoopEnd* (): Instr;
 (**Given a @oconst{Opcode.loopStart} instruction, returns the corresponding
    @oconst{Opcode.loopEnd}.  *)
@@ -631,6 +617,18 @@ PROCEDURE (instr: Instr) GetLoopEnd* (): Instr;
     RETURN use. instr;
   END GetLoopEnd;
 
+PROCEDURE (instr: Instr) GetBackwardFeed*(): Result;
+(**Given a @oconst{Opcode.loopStart} or @oconst{Opcode.loopEnd} instruction,
+   returns the @var{store} value that is passed back from the end of the loop
+   to the beginning.  *)
+  BEGIN
+    IF (instr. opcode = Opcode.loopStart) THEN
+      instr := instr. GetLoopEnd();
+    END;
+    ASSERT (instr. opcode = Opcode.loopEnd);
+    RETURN instr. GetArgClass (OpndClass.backwardFeed);
+  END GetBackwardFeed;
+
 PROCEDURE (instr: Instr) GetLoopStart* (): Instr;
 (**Given a @oconst{Opcode.loopEnd} instruction, returns the corresponding
    @oconst{Opcode.loopStart}.  *)
@@ -638,6 +636,26 @@ PROCEDURE (instr: Instr) GetLoopStart* (): Instr;
     ASSERT (instr. opcode = Opcode.loopEnd);
     RETURN instr. opndList. arg(Instr);
   END GetLoopStart;
+
+PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
+(**For a collect instruction, return the target instruction into which it
+   feeds its result.  *)
+  VAR
+    storeOut: Result;
+  BEGIN
+    ASSERT (instr. opcode = Opcode.collect);
+    storeOut := instr. GetResultClass (ResultClass.store);
+    ASSERT (storeOut # NIL);
+    ASSERT (storeOut. useList # NIL);
+    ASSERT (storeOut. useList. nextUse = NIL);
+    IF (storeOut. useList. class = OpndClass.backwardFeed) THEN
+      (* logically, a collect feeding into a loop-end's `backwardFeed'
+         passes its data to the loop's loop-start instruction *)
+      RETURN storeOut. useList. instr. GetLoopStart();
+    ELSE
+      RETURN storeOut. useList. instr;
+    END;
+  END GetCollectTarget;
 
 PROCEDURE (instr: Instr) LogOpcode* (msg: ARRAY OF CHAR);
   VAR
@@ -1008,7 +1026,7 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
     instr, next: Instr;
     ready, waiting: Instr;
     res: Result;
-    use, opnd: Opnd;
+    use: Opnd;
     opndCount: LONGINT;
   BEGIN
     ready := NIL;
@@ -1018,21 +1036,7 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
     WHILE (instr # NIL) DO
       next := instr. nextInstr;
 
-      IF instr. IsLoopEndWithExits() THEN
-        (* insert a temporary operand pointing from the loop-end instruction
-           to the originating instruction of the back edge of the loop *)
-        instr. AddOpnd (instr. opndList. arg(Instr). GetArgClass (OpndClass.forwardRef), OpndClass.tempOpnd)
-      END;
-      
-      opndCount := 0;
-      opnd := instr. opndList;
-      WHILE (opnd # NIL) DO
-        IF (opnd. class # OpndClass.forwardRef) THEN
-          INC (opndCount)
-        END;
-        opnd := opnd. nextOpnd;
-      END;
-      
+      opndCount := instr. SizeOpndList();
       instr. marker := opndCount;
       IF (opndCount = 0) THEN
         Add (ready, instr)
@@ -1048,12 +1052,6 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
       instr := ready;
       Remove (ready, instr);
       AppendInstr (pb, instr);
-
-      IF instr. IsLoopEndWithExits() THEN
-        (* get rid of the temporary operand *)
-        opnd := instr. GetOpndClass (OpndClass.tempOpnd);
-        opnd. DeleteOpnd;
-      END;
       
       (* decrement marker (=count of blocking results) for all uses of all
          results of `instr' *)
@@ -1061,12 +1059,10 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
       WHILE (res # NIL) DO
         use := res. useList;
         WHILE (use # NIL) DO
-          IF (use. class # OpndClass.forwardRef) THEN
-            DEC (use. instr. marker);
-            IF (use. instr. marker = 0) THEN
-              Remove (waiting, use. instr);
-              Add (ready, use. instr)
-            END;
+          DEC (use. instr. marker);
+          IF (use. instr. marker = 0) THEN
+            Remove (waiting, use. instr);
+            Add (ready, use. instr)
           END;
           use := use. nextUse
         END;

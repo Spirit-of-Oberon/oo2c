@@ -91,12 +91,12 @@ CONST
   (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the value
      of @var{store} after a @code{RETURN} statement.  *)
 
-  forwardRef* = 13;
-  (**Operand is a forward reference to a value that depends on the current
-     instruction.  That is, this operand introduces a cycle in the graph
-     representing the data flow, and must be treated specially in some
-     algorithms.  Forward references are used to model loops.  See
-     @oconst{*OOC:SSA:Opcode.loopStart}.  *)
+  backwardFeed* = 13;
+  (**Operand holds the value of @var{store} that is fed back to the beginning
+     of a loop once the loop's end is reached.  Conceptually, this operand
+     introduces a cycle in the graph representing the data flow.  To avoid
+     special cases in some algorithms, it is part of the operand list of
+     @oconst{*OOC:SSA:loopEnd}, @emph{not} @oconst{*OOC:SSA:loopStart}.  *)
 
   dimension* = 15;
   (**Dimension identifier of a @oconst{*OOC:SSA:Opcode.getLength} instruction.
@@ -114,10 +114,10 @@ CONST
      live across the whole loop, instead of being clobbered somewhere between
      the loop start and end.  *)
 
-  tempOpnd* = 18;
+(*  tempOpnd* = 18;   ... currently unused
   (**This class is used for operands that are inserted into the SSA instruction
      list during the course of a particular algorithm.  They must be removed
-     once the calculation is done.  *)
+     once the calculation is done.  *)*)
   
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)
@@ -134,11 +134,11 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | functionResult: COPY ("function-result", name)
     | storeEnter: COPY("store-enter", name)
     | storeExit: COPY("store-exit", name)
-    | forwardRef: COPY ("forward-ref", name)
+    | backwardFeed: COPY ("backward-feed", name)
     | dimension: COPY ("dimension", name)
     | argPointer: COPY ("arg-pointer", name)
     | loopExternalDef: COPY ("loop-external-def", name);
-    | tempOpnd: COPY ("temp-opnd", name);
+    (*| tempOpnd: COPY ("temp-opnd", name); ... currently unused *)
     END;
   END GetName;
   

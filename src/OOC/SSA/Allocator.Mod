@@ -472,12 +472,14 @@ PROCEDURE CollectCrossLoopResults (rf: RegisterFile;
       loopStart: Schedule.InstrProxy;
       collect: SSA.Instr;
       opnd: SSA.Opnd;
+      backwardFeed: SSA.Result;
     BEGIN
       loopStart := loopHead. proxyList;
       WHILE (loopStart. instr. opcode # Opcode.loopStart) DO
         loopStart := loopStart. nextProxy
       END;
-      collect := loopStart. instr. opndList. nextOpnd. arg. instr;
+      backwardFeed := loopStart. instr. GetBackwardFeed();
+      collect := backwardFeed. instr;
       opnd := collect. opndList;
       WHILE (opnd # NIL) & (opnd. arg # res) DO
         opnd := opnd. nextOpnd;

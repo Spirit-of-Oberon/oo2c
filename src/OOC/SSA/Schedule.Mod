@@ -21,7 +21,7 @@ MODULE OOC:SSA:Schedule [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Blocker;
+  ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Blocker;
 
 TYPE
   Block* = POINTER TO BlockDesc;
@@ -430,7 +430,7 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
         SetJump (branch. branchTo, branch, backward);
         SetJump (backward. jump, backward, body);
         loopStart := loop. instr. GetLoopStart();
-        backwardStore := loopStart. opndList. nextOpnd. arg;
+        backwardStore := loopStart. GetBackwardFeed();
         IF (backwardStore. instr. opcode = Opcode.collect) THEN
           MoveProxy (backwardStore. instr. info(InstrProxy), backward);
         END;
@@ -514,8 +514,7 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
       opndCount := 0;
       opnd := proxy. instr. opndList;
       WHILE (opnd # NIL) DO
-        IF (opnd. class # Opnd.forwardRef) &
-           (opnd. arg. instr. info(InstrProxy). block = b) THEN
+        IF (opnd. arg. instr. info(InstrProxy). block = b) THEN
           INC (opndCount)
         END;
         opnd := opnd. nextOpnd;
@@ -550,8 +549,7 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
       WHILE (res # NIL) DO
         use := res. useList;
         WHILE (use # NIL) DO
-          IF (use. instr. info(InstrProxy). block = b) &
-             (use. class # Opnd.forwardRef) THEN
+          IF (use. instr. info(InstrProxy). block = b) THEN
             DEC (use. instr. marker);
             IF (use. instr. marker = 0) THEN
               Remove (waiting, use. instr. info(InstrProxy));

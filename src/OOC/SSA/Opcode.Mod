@@ -56,10 +56,11 @@ CONST
   (**A @oconst{collect} instruction temporarily merges local values into the
      global @var{store} state.  This result is subsequently fed into an
      instruction that joins multiple paths of control flow, for example a
-     @oconst{select} or a @oconst{loopStart}.  The local values resurface in
-     the joining instruction as its results.  The first argument of a
-     @oconst{collect} corresponds to the first (non-instruction) result, the
-     second argument to the second result, and so on.
+     @oconst{select} or a @oconst{loopEnd} (as a stand-in for
+     @oconst{loopStart}).  The local values resurface in the joining
+     instruction as its results.  The first argument of a @oconst{collect}
+     corresponds to the first (non-instruction) result, the second argument to
+     the second result, and so on.
 
      Collects are a little unusual in that they describe an effect that, when
      expressed in terms of basic blocks and jumps, happens as part of a jump
@@ -146,7 +147,8 @@ CONST
      @table @oconst
      @item *OOC:SSA:Opnd.store
      The current value of the @var{store}.
-
+     @end table
+     
      The instruction has one result of class @oconst{*OOC:SSA:Result.store}.
      There is one use of this result, as operand of the loop's
      @oconst{selectExit} instruction.  *)
@@ -171,22 +173,24 @@ CONST
      @end table  *)
 
   loopStart* = 10;
-  (**Marks the beginning of a loop construct.
+  (**Marks the beginning of a loop construct.  It has a single operand:
 
      @table @oconst
      @item *OOC:SSA:Opnd.store
      The value of @var{store} before the loop.  This is the input value for the
      first iteration of the loop.
-
-     @item *OOC:SSA:Opnd.forwardRef
-     The value of store at the end of the loop.  If the loop is evaluted again,
-     then it serves as the input value for the next iteration.  This is the
-     same value as the second operand of @oconst{loopEnd} for @code{WHILE},
-     @code{REPEAT}, and @code{FOR} loops.
      @end table
 
-     There is one result, the value of @var{store} as seen by the loop
-     body when an iteration begins.  *)
+     Implicitly, the instruction has a second input parameter: the
+     @oconst{*OOC:SSA:Opnd.backwardFeed} argument of its corresponding
+     @oconst{loopEnd}.  This is the value of store at the end of the loop.  If
+     the loop is evaluted again, then it serves as the input value for the next
+     iteration.  This input has been moved from @oconst{loopStart} to
+     @oconst{loopEnd} so that the directed graph of definitions and uses is
+     acyclic.
+
+     There is one result, the value of @var{store} as seen by the loop body
+     when an iteration begins.  *)
   loopEnd* = 11;
   (**Marks the end of a loop construct.  It has four arguments:
 
@@ -208,6 +212,11 @@ CONST
      preceding argument equals this value, then the loop is exited.  Otherwise,
      its body is evaluted again, using the second argument of
      @oconst{loopStart} as its current @var{store}.
+
+     @item *OOC:SSA:Opnd.backwardFeed
+     The input value of @var{store} for the second, third, and so on, iteration
+     of the loop.  This is actually a virtual argument to the corresponding
+     @oconst{loopStart} instruction.
      @end table
 
      There is one result, the value of @var{store} as seen by the first

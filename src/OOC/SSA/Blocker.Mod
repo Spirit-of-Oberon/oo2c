@@ -22,7 +22,7 @@ MODULE OOC:SSA:Blocker;
 
 IMPORT
   Channel, TextRider, Dictionary := ADT:Dictionary:IntValue,
-  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Result;
   
 (**
 
@@ -325,7 +325,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         use := storeIn. useList;
         WHILE (use # NIL) DO
           instr := use. instr;
-          IF (instr # endOfSearch) & (use. class # Opnd.forwardRef) THEN
+          IF (instr # endOfSearch) THEN
             IF (instr. opcode = Opcode.loopStart) THEN
               loopEnd := instr. GetLoopEnd();
               p := GetProxy (loopEnd);
@@ -343,10 +343,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
                 DiscoverLoopStructure (loop,
                                        loopEnd. GetResultClass (Result.store),
                                        endOfSearch, loopProxy);
-                
-                (* add temporary operand to loop-end so that the loop's
-                   store back-edge feeds into this instruction *)
-                loopEnd. AddOpnd (instr. opndList. nextOpnd. arg, Opnd.tempOpnd);
               END;
             ELSE
               DiscoverLoopStructure (loop,
@@ -412,12 +408,10 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         WHILE (res # NIL) DO
           use := res. useList;
           WHILE (use # NIL) DO
-            IF (use. class # Opnd.forwardRef) THEN
-              p := GetProxy(use. instr);
-              IF (p. loopAssoc = NIL) THEN
-                p. loopAssoc := loop;
-                MarkUses (use. instr);
-              END;
+            p := GetProxy(use. instr);
+            IF (p. loopAssoc = NIL) THEN
+              p. loopAssoc := loop;
+              MarkUses (use. instr);
             END;
             use := use. nextUse;
           END;
@@ -441,7 +435,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
   PROCEDURE IgnoredUse (use: SSA.Opnd): BOOLEAN;
     BEGIN
       RETURN
-          (use. class = Opnd.forwardRef) OR
           (use. instr. opcode = Opcode.selectReturn) OR
           (use. instr. opcode = Opcode.selectExit)
     END IgnoredUse;
@@ -608,21 +601,6 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       RETURN MoveLoopInvariants (CorrectForLoop (region));
     END GetRegion;
 
-  PROCEDURE RemoveTempOpnd (loop: Loop);
-    VAR
-      opnd: SSA.Opnd;
-    BEGIN
-      IF (loop # NIL) THEN
-        RemoveTempOpnd (loop. nestedLoops);
-        RemoveTempOpnd (loop. nextLoop);
-        IF (loop. instr # NIL) THEN
-          ASSERT (loop. instr. opcode = Opcode.loopEnd);
-          opnd := loop. instr. GetOpndClass (Opnd.tempOpnd);
-          opnd. DeleteOpnd;
-        END;
-      END;
-    END RemoveTempOpnd;
-
   (*PROCEDURE WriteLoops (l: Loop; indent: INTEGER);
     VAR
       i: INTEGER;
@@ -701,8 +679,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       region. Insert (p);
     END;
     ASSERT (waiting. first = NIL);
-
-    RemoveTempOpnd (mainLoop);
+    
     RETURN root
   END ArrangeInstructions;
 
