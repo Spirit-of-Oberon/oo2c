@@ -1,7 +1,7 @@
 1. Prerequisites
 
   gcc (oo2c v2 uses gcc language extensions, an ANSI compiler won't do)
-  oo2c 1.5.7.1 (patch at http://pweb.de/vanacken.do/ooc/oo2c-patches/)
+  oo2c 1.5.7.2 (patch at http://pweb.de/vanacken.do/ooc/oo2c-patches/)
   libadt (from the CVS repository)
   libxml (from the CVS repository)
   gaf2 (from the CVS repository)
