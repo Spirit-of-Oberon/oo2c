@@ -15,7 +15,7 @@ For a more information on the ``Hostess'' project, please refer to
 <!--
     The root element of the whole collection is "testsuite".
 -->
-<!ELEMENT testsuite (testcases+)>
+<!ELEMENT testsuite (testcases+, processor-info*)>
 <!ATTLIST testsuite 
           profile	CDATA		#IMPLIED >
 

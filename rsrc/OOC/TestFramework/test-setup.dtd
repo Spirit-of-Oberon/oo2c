@@ -34,7 +34,8 @@
           flags CDATA #REQUIRED 
           working-dir CDATA #REQUIRED
           filter-command CDATA #IMPLIED
-          diff-command CDATA #IMPLIED >
+          diff-command CDATA #IMPLIED 
+          check-reject-command CDATA #IMPLIED >
 
 <!ELEMENT test-suite EMPTY >
 <!ATTLIST test-suite

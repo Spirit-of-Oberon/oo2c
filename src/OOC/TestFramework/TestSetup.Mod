@@ -27,7 +27,7 @@ IMPORT
 
 
 TYPE
-  String8 = ARRAY 256 OF CHAR;
+  String8* = ARRAY 256 OF CHAR;
 
 CONST
   unknownString8 = "unknown";
@@ -71,6 +71,7 @@ TYPE
     workingDir-: URI.URI;
     filterCommand-: String8;
     diffCommand-: String8;
+    checkRejectCommand-: String8;
   END;
 
 TYPE
@@ -272,6 +273,7 @@ PROCEDURE InitProcessor (processor: Processor);
     processor. workingDir := NIL;
     processor. filterCommand := "";
     processor. diffCommand := "";
+    processor. checkRejectCommand := "";
   END InitProcessor;
 
 PROCEDURE NewProcessor(): Element.Element;
@@ -297,7 +299,8 @@ PROCEDURE (processor: Processor) IsAttributeName* (localName: Element.String): B
            (localName^ = "flags") OR
            (localName^ = "working-dir") OR
            (localName^ = "filter-command") OR
-           (localName^ = "diff-command")
+           (localName^ = "diff-command") OR
+           (localName^ = "check-reject-command")
   END IsAttributeName;
 
 PROCEDURE (processor: Processor) AddAttribute* (localName: Element.String;
@@ -319,6 +322,8 @@ PROCEDURE (processor: Processor) AddAttribute* (localName: Element.String;
       RETURN DataType.GetStringLatin1Attr (value, processor. filterCommand)
     ELSIF (localName^ = "diff-command") THEN
       RETURN DataType.GetStringLatin1Attr (value, processor. diffCommand)
+    ELSIF (localName^ = "check-reject-command") THEN
+      RETURN DataType.GetStringLatin1Attr (value, processor. checkRejectCommand)
     ELSE
       RETURN FALSE
     END
@@ -340,6 +345,9 @@ PROCEDURE (processor: Processor) Write* (writer: Writer.Writer);
     END;
     IF (processor. diffCommand # "") THEN
       writer. AttrStringLatin1 ("diff-command", processor. diffCommand)
+    END;
+    IF (processor. checkRejectCommand # "") THEN
+      writer. AttrStringLatin1 ("check-reject-command", processor. checkRejectCommand)
     END;
     writer. EndTag
   END Write;

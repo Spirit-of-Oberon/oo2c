@@ -20,7 +20,9 @@
 	     working-dir="./wd" 
 	     flags="-r ../../../lib -r ."
 	     filter-command="/usr/bin/Ooef" 
-	     diff-command="diff -u" />
+	     diff-command="diff -u" 
+	     check-reject-command="../../../rsrc/OOC/TestFramework/error-match.pl"
+	     />
 
   <test-suite uri="testsuite.xml" />
 </test-setup>

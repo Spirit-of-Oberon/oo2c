@@ -153,7 +153,9 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     result, class: SHORTINT;
     timeStr, str: ARRAY 128 OF CHAR;
     time: SysClock.DateTime;
-  
+    elem: Element.Element;
+    processorInfo: Testcases.ProcessorInfo;
+    
   PROCEDURE In (pattern, string: ARRAY OF LONGCHAR): BOOLEAN;
     VAR
       pos, posOfPattern: INTEGER;
@@ -190,6 +192,17 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     END ResultMatches;
 
   BEGIN
+    processorInfo := NIL;
+    elem := testSuite. processorInfoList. head;
+    WHILE (elem # NIL) DO
+      WITH elem: Testcases.ProcessorInfo DO
+        IF (elem. processorName = testSetup. processor. name) THEN
+          processorInfo := elem
+        END
+      END;
+      elem := elem. next
+    END;
+        
     reportWriter. StartTag ("test-report", FALSE);
     SysClock.GetClock (time);
     Calendar.TimeToStr (time, "%c", timeStr);
@@ -209,7 +222,7 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
             result := Processor.processSkipped;
             class := skipped
           ELSE 
-            proc. Process (test, reportWriter, result);
+            proc. Process (test, processorInfo, reportWriter, result);
             
             IF (result = Processor.processCrash) THEN
               (* processor crashed *)
@@ -219,6 +232,9 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
                 (result = Processor.processCompareFailed) THEN
               (* some error while processing the test that cannot be
                  attributed to the processor *)
+              class := failed
+            ELSIF (result = Processor.processRejectMismatch) THEN
+              (* file was rejected fine, but for the wrong reasons *)
               class := failed
             ELSE
               IF In (testSetup. lang^, test. lang^) THEN
@@ -247,6 +263,8 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
             str := "compiler crashed"
           | Processor.processReject:
             str := "rejected by compiler"
+          | Processor.processRejectMismatch:
+            str := "rejected by compiler, but error messages do not match"
           | Processor.processAccept:
             str := "accepted by compiler"
           | Processor.processMainModuleError:
@@ -310,59 +328,59 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     reportWriter. EndOfText
   END RunTests;
     
-    BEGIN
-      IF (ProgramArgs.args. ArgNumber() # 2) THEN
-        Err.String ("Usage: RunTests <test-setup> <report-file>"); Err.Ln; HALT (1)
-      ELSE
-        (* make error message values "line" and "character position" Emacs
-           compatible be having them start at line 1, point 1 for the XML
-           parser *)
-            XMLError.errMsgLineBase := 1;
-        XMLError.errMsgCharPosBase := 1;
-        
-        ReadConfig (testSetup, testSuite)
-      END;
-      
-      proc := Processor.New (testSetup);
-      proc. Setup;
-      results[passed] := 0; results[failed] := 0;
-      results[tolerated] := 0; results[skipped] := 0;
-      RunTests (testSetup, testSuite, proc, reportWriter, results);
-      proc. Cleanup;
-      
-      Out.Ln; Out.Ln;
-      Out.String ("OUTCOME"); Out.Ln;
-      Out.String ("passed: "); Out.LongInt (results[passed], 0);
-      Out.String (", failed: "); Out.LongInt (results[failed], 0);
-      Out.String (", tolerated: "); Out.LongInt (results[tolerated], 0);
-      Out.String (", skipped: "); Out.LongInt (results[skipped], 0); Out.Ln;
-      Out.String ("--> ");
-      exitError := FALSE;
-      IF (results[failed] # 0) THEN
-        Out.String ("Processor incompatible to ");
-        exitError := TRUE;
-      ELSIF (results[tolerated] # 0) THEN
-        Out.String ("Processor accepts ")
-      ELSE
-        Out.String ("Processor is compliant to ")
-      END;
-      LongStrings.Short (testSetup. lang^, "?", str);
-      Out.String (str); Out.Ln;
-      
-      (*  writer := Writer.New (StdChannels.stdout. NewWriter(),
-                                Latin1.factory, TRUE, 4);
-         testSetup. Write (writer);
-         writer. EndOfText;
-         
-         writer := Writer.New (StdChannels.stdout. NewWriter(),
-                               Latin1.factory, TRUE, 4);
-         testSuite. Write (writer);
-         writer. EndOfText*)
-          
-      IF exitError THEN
-        HALT (1)
-      ELSE
-        HALT (0)
-      END
-    END RunTests.
+BEGIN
+  IF (ProgramArgs.args. ArgNumber() # 2) THEN
+    Err.String ("Usage: RunTests <test-setup> <report-file>"); Err.Ln; HALT (1)
+  ELSE
+    (* make error message values "line" and "character position" Emacs
+       compatible be having them start at line 1, point 1 for the XML
+       parser *)
+    XMLError.errMsgLineBase := 1;
+    XMLError.errMsgCharPosBase := 1;
+    
+    ReadConfig (testSetup, testSuite)
+  END;
+  
+  proc := Processor.New (testSetup);
+  proc. Setup;
+  results[passed] := 0; results[failed] := 0;
+  results[tolerated] := 0; results[skipped] := 0;
+  RunTests (testSetup, testSuite, proc, reportWriter, results);
+  proc. Cleanup;
+  
+  Out.Ln; Out.Ln;
+  Out.String ("OUTCOME"); Out.Ln;
+  Out.String ("passed: "); Out.LongInt (results[passed], 0);
+  Out.String (", failed: "); Out.LongInt (results[failed], 0);
+  Out.String (", tolerated: "); Out.LongInt (results[tolerated], 0);
+  Out.String (", skipped: "); Out.LongInt (results[skipped], 0); Out.Ln;
+  Out.String ("--> ");
+  exitError := FALSE;
+  IF (results[failed] # 0) THEN
+    Out.String ("Processor incompatible to ");
+    exitError := TRUE;
+  ELSIF (results[tolerated] # 0) THEN
+    Out.String ("Processor accepts ")
+  ELSE
+    Out.String ("Processor is compliant to ")
+  END;
+  LongStrings.Short (testSetup. lang^, "?", str);
+  Out.String (str); Out.Ln;
+  
+  (*  writer := Writer.New (StdChannels.stdout. NewWriter(),
+                            Latin1.factory, TRUE, 4);
+     testSetup. Write (writer);
+     writer. EndOfText;
+     
+     writer := Writer.New (StdChannels.stdout. NewWriter(),
+                           Latin1.factory, TRUE, 4);
+     testSuite. Write (writer);
+     writer. EndOfText*)
+  
+  IF exitError THEN
+    HALT (1)
+  ELSE
+    HALT (0)
+  END
+END RunTests.
           

@@ -25,4 +25,8 @@
   &baseline-testcases;
   <!--&candidate-testcases;-->
   <!--&hostess-testcases;-->
+
+  <processor-info processor-name="TestCompile">
+    <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
+  </processor-info>
 </testsuite>

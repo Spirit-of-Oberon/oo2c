@@ -24,7 +24,8 @@ MODULE OOC:TestFramework:Testcases;
 IMPORT
   Ch := Channel, LongStrings, Strings, ADT:String,
   URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
-  XML:Basic:Parser, XML:Basic:DataType, XML:Writer;
+  XML:Basic:Parser, XML:Basic:DataType, XML:Writer,
+  OOC:TestFramework:TestSetup;
 
 
 CONST
@@ -77,12 +78,30 @@ TYPE
   END;
 
 TYPE
+  RejectInfo* = POINTER TO RejectInfoDesc;
+  RejectInfoDesc = RECORD
+    (Element.ElementDesc)
+    id-: ARRAY sizeId OF CHAR;
+    pos-: Element.String;
+    msg-: Element.String;
+  END;
+
+TYPE
+  ProcessorInfo* = POINTER TO ProcessorInfoDesc;
+  ProcessorInfoDesc = RECORD
+    (Element.ElementDesc)
+    processorName-: TestSetup.String8;
+    rejectInfoList-: Element.List;       (* may be empty *)
+  END;
+  
+TYPE
   TestSuite* = POINTER TO TestSuiteDesc;
   TestSuiteDesc = RECORD
     (Element.ElementDesc)
     profile-: Element.String;            (* may be NIL *)
     select-: Element.String;             (* may be NIL *)
     testcasesList-: Element.List;        (* at least one element *)
+    processorInfoList-: Element.List;    (* may be empty *)
   END;
 
 
@@ -434,12 +453,143 @@ PROCEDURE (testcases: Testcases) Write* (writer: Writer.Writer);
 
 
 
+PROCEDURE InitRejectInfo (rejInfo: RejectInfo);
+  BEGIN
+    Element.InitElement (rejInfo);
+    rejInfo. id := "";
+    rejInfo. pos := NIL;
+    rejInfo. msg := NIL;
+  END InitRejectInfo;
+
+PROCEDURE NewRejectInfo(): Element.Element;
+  VAR
+    rejInfo: RejectInfo;
+  BEGIN
+    NEW (rejInfo);
+    InitRejectInfo (rejInfo);
+    RETURN rejInfo
+  END NewRejectInfo;
+
+PROCEDURE (rejInfo: RejectInfo) IsAttributeName* (localName: Element.String): BOOLEAN;
+  BEGIN
+    RETURN (localName^ = "id") OR
+           (localName^ = "pos") OR
+           (localName^ = "msg")
+  END IsAttributeName;
+
+PROCEDURE (rejInfo: RejectInfo) AddAttribute* (localName: Element.String;
+                                      value: Element.AttValue): BOOLEAN;
+  BEGIN
+    IF (localName^ = "id") THEN
+      RETURN DataType.GetStringLatin1Attr (value, rejInfo. id)
+    ELSIF (localName^ = "pos") THEN
+      rejInfo. pos := value. Flatten (NIL);
+      RETURN TRUE
+    ELSIF (localName^ = "msg") THEN
+      rejInfo. msg := value. Flatten (NIL);
+      RETURN TRUE
+    ELSE
+      RETURN FALSE
+    END
+  END AddAttribute;
+  
+PROCEDURE (rejInfo: RejectInfo) MissingAttribute* (): Element.String;
+  BEGIN
+    RETURN NIL
+  END MissingAttribute;
+
+PROCEDURE (rejInfo: RejectInfo) MissingChild* (): Element.String;
+  BEGIN
+    RETURN NIL
+  END MissingChild;
+
+PROCEDURE (rejInfo: RejectInfo) Write* (writer: Writer.Writer);
+  BEGIN
+    writer. StartTag ("reject-info", FALSE);
+    writer. AttrStringLatin1 ("id", rejInfo. id);
+    writer. AttrString ("pos", rejInfo. pos^);
+    writer. AttrString ("msg", rejInfo. msg^);
+    writer. EndTag
+  END Write;
+
+
+
+PROCEDURE InitProcessorInfo (processorInfo: ProcessorInfo);
+  BEGIN
+    Element.InitElement (processorInfo);
+    processorInfo. processorName := "";
+    processorInfo. rejectInfoList := Element.NewList();
+  END InitProcessorInfo;
+
+PROCEDURE NewProcessorInfo(): Element.Element;
+  VAR
+    processorInfo: ProcessorInfo;
+  BEGIN
+    NEW (processorInfo);
+    InitProcessorInfo (processorInfo);
+    RETURN processorInfo
+  END NewProcessorInfo;
+
+PROCEDURE (processorInfo: ProcessorInfo) IsAttributeName* (localName: Element.String): BOOLEAN;
+  BEGIN
+    RETURN (localName^ = "processor-name")
+  END IsAttributeName;
+
+PROCEDURE (processorInfo: ProcessorInfo) AddAttribute* (localName: Element.String;
+                                            value: Element.AttValue): BOOLEAN;
+  BEGIN
+    IF (localName^ = "processor-name") THEN
+      RETURN DataType.GetStringLatin1Attr (value, processorInfo. processorName)
+    ELSE
+      RETURN FALSE
+    END
+  END AddAttribute;
+  
+PROCEDURE (processorInfo: ProcessorInfo) MissingAttribute* (): Element.String;
+  BEGIN
+    IF (processorInfo. processorName = "") THEN
+      RETURN Element.NewString ("processor-name")
+    ELSE
+      RETURN NIL
+    END
+  END MissingAttribute;
+
+PROCEDURE (processorInfo: ProcessorInfo) IsChildName* (localName: Element.String): BOOLEAN;
+  BEGIN
+    RETURN (localName^ = "reject-info")
+  END IsChildName;
+
+PROCEDURE (processorInfo: ProcessorInfo) NewChild* (localName: Element.String): Element.Element;
+  BEGIN
+    IF (localName^ = "reject-info") THEN
+      RETURN NewRejectInfo()
+    ELSE
+      RETURN NIL
+    END
+  END NewChild;
+  
+PROCEDURE (processorInfo: ProcessorInfo) AddChild* (child: Element.Element);
+  BEGIN
+    processorInfo. rejectInfoList. Append (child)
+  END AddChild;
+
+PROCEDURE (processorInfo: ProcessorInfo) Write* (writer: Writer.Writer);
+  BEGIN
+    writer. StartTag ("processorInfo", FALSE);
+    writer. AttrStringLatin1 ("processor-name", processorInfo. processorName);
+    processorInfo. rejectInfoList. Write (writer);
+    writer. EndTag
+  END Write;
+
+
+
 PROCEDURE InitTestSuite (testSuite: TestSuite);
   BEGIN
     Element.InitElement (testSuite);
     testSuite. profile := NIL;
     testSuite. select := NIL;
     testSuite. testcasesList := Element.NewList();
+    testSuite. processorInfoList := Element.NewList();
   END InitTestSuite;
 
 PROCEDURE NewTestSuite(): Element.Element;
@@ -472,13 +622,15 @@ PROCEDURE (testSuite: TestSuite) AddAttribute* (localName: Element.String;
   
 PROCEDURE (testSuite: TestSuite) IsChildName* (localName: Element.String): BOOLEAN;
   BEGIN
-    RETURN (localName^ = "testcases")
+    RETURN (localName^ = "testcases") OR (localName^ = "processor-info")
   END IsChildName;
 
 PROCEDURE (testSuite: TestSuite) NewChild* (localName: Element.String): Element.Element;
   BEGIN
     IF (localName^ = "testcases") THEN
       RETURN NewTestcases()
+    ELSIF (localName^ = "processor-info") THEN
+      RETURN NewProcessorInfo()
     ELSE
       RETURN NIL
     END
@@ -486,7 +638,11 @@ PROCEDURE (testSuite: TestSuite) NewChild* (localName: Element.String): Element.
   
 PROCEDURE (testSuite: TestSuite) AddChild* (child: Element.Element);
   BEGIN
-    testSuite. testcasesList. Append (child)
+    WITH child: Testcases DO
+      testSuite. testcasesList. Append (child)
+    | child: ProcessorInfo DO
+      testSuite. processorInfoList. Append (child)
+    END;
   END AddChild;
 
 PROCEDURE (testSuite: TestSuite) MissingChild* (): Element.String;
@@ -505,6 +661,7 @@ PROCEDURE (testSuite: TestSuite) Write* (writer: Writer.Writer);
       writer. AttrString ("profile", testSuite. profile^)
     END;
     testSuite. testcasesList. Write (writer);
+    testSuite. processorInfoList. Write (writer);
     writer. EndTag
   END Write;
 
