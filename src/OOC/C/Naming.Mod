@@ -56,18 +56,16 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
   BEGIN
     relativeName := FALSE;
     
-    IF (decl IS Sym.VarDecl) & (decl(Sym.VarDecl). isParameter) THEN
-      (* use relative names for parameters for procedure types and for
-         global procedures *)
-      relativeName :=
-        ~(decl. parent. parent IS Sym.ProcDecl) OR
-        (decl. parent. parent. parent IS Sym.Module)
-
+    IF (decl IS Sym.VarDecl) &
+       (decl(Sym.VarDecl). isParameter OR ~(decl. parent IS Sym.Module)) THEN
+      (* use relative names for parameters and for variables of procedures *)
+      relativeName := TRUE;
+      
     ELSIF (decl IS Sym.FieldDecl) THEN
       (* use relative names for record fields, as long as there are no
          collisions between a local field and one inherited from a
          base type *)
-      relativeName := TRUE;
+      relativeName := TRUE;  (* FIXME... check for collision *)
 
     ELSIF (decl IS Sym.ProcDecl) & (decl(Sym.ProcDecl). linkName # NIL) THEN
       (* the declaration defines its own linkage name: immediately, return it

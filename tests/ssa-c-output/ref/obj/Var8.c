@@ -26,9 +26,9 @@ l8:
 }
 
 void Var8__Test() {
-  OOC_CHAR8 Var8__Test_s4[4];
+  OOC_CHAR8 s4[4];
 
-  Var8__Zero((void*)(OOC_INT32)Var8__Test_s4, 4);
+  Var8__Zero((void*)(OOC_INT32)s4, 4);
   return;
 }
 
