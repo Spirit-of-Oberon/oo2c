@@ -1242,7 +1242,10 @@ PROCEDURE ^ (type: Type) Deparam*(): Type;
 PROCEDURE (item: Item) Module*(): Module;
 (**Returns the item, that is the root of the hierarchy that includes
    @oparam{item}.  The returned item is never @code{NIL}, because even
-   predefined items are nested in pseudo modules.  *)
+   predefined items are nested in pseudo modules.
+
+   @emph{Note}: Currently, this function fails for the automatically generated
+   pseudo procedure @oconst{declModuleBody} representing the module body.  *)
   BEGIN
     IF (item.parent = NIL) & (item IS Type) THEN
       item := item(Type).Deparam();  (* fix up "orphaned" type closure *)
@@ -1256,6 +1259,20 @@ PROCEDURE (item: Item) Module*(): Module;
     RETURN item(Module)
   END Module;
 
+PROCEDURE (item: Item) InStandardModule*(): BOOLEAN;
+(**Return @code{TRUE} if @oparam{item} is part of a normal module.  Result is
+   false for internal, @samp{INTERFACE}, or @samp{FOREIGN} modules.  *)
+  VAR
+    module: Module;
+  BEGIN
+    IF (item.parent = NIL) THEN  (* for module body "procedure" *)
+      RETURN TRUE;
+    ELSE
+      module := item.Module();
+      RETURN (module.class = mcStandard);
+    END;
+  END InStandardModule;
+  
 PROCEDURE (item: Item) Procedure*(): ProcDecl;
 (**Returns the procedure item in which @oparam{item} is nested.  The result is
    @code{NIL}, if @oparam{item} is not part of a procedure.  *)
