@@ -2,6 +2,8 @@ Still missing: General overflow tests for constant folding (arguments
 in legal range, result in legal range) -- best done in ConstFold, I
 believe.  "Evaluate just once checks" are missing for COPY, INC, DEC,
 INCL, EXCL.  Check for constant element in range for INCL, EXCL, IN.
+Check for constant negative length in NEW.
+
 
 
 10.3 Predeclared Procedures ---------------------------
@@ -301,42 +303,29 @@ REJECT:
   3) n is out of range (like ASSERT)  [Halt4]
 
 
-  NEW(v)
+
+### NEW(v)
+### NEW(v, x_0, ..., x_n)
 
 ACCEPT:
 
-  1) v is a pointer to record
-  2) v is a pointer to fixed-length array
-  
-REJECT:
-
-  1) v is not a pointer 
-  2) v is a pointer to open array
-  3) v is not a variable (eg. function result)
-  4) v is read-only
-
-
-  NEW(v, x_0, ..., x_n)
-
-ACCEPT:
-
-  1) v is a pointer to an open array
+  1) v is a pointer to record  [With*]
+  2) v is a pointer to fixed-length array  [Array6]
+  3) v is a pointer to an open array  [Array7 Array8]
 
 REJECT:
 
-  1) v is not a pointer (eg. INTEGER)
-  2) v is a pointer to record
-  3) v is a pointer to a fixed-length array
-  4) v is not a variable (eg. function result)
-  5) v is read-only
-  6) x_i is not integer
-  7) x_i is constant and negative
-  8) number of supplied lengths too large
-  9) number of supplied lengths too small
- 10) v is an open array VAR parameter
+  1) v is not a pointer (eg. SYSTEM.PTR)  [New1]
+  2) v is not a variable (eg. function result)  [New2]
+  3) v is read-only  [same code as New2]
+  4) x_i is not integer  [New3]
+  5) x_i is constant and negative
+  6) number of supplied lengths too large  [New5]
+  7) number of supplied lengths too small  [New4]
+  8) v is an open array VAR parameter  [New6]
 
 ERROR:
 
-  1) x_i is negative
+  1) x_i is negative  [New7]
 
 

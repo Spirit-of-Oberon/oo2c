@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; incl1 incl2 incl3 incl4">-->
+  select ="&SetupTestCasesWithOut; new1 new2 new3 new4 new5 new6 new7">-->
 
   &TestSetupWithOut;
     
@@ -416,6 +416,28 @@
       Second argument of <code>INCL</code> is a character.
     </test>
     
+    <test id="new1" type="reject" file="New1.Mod">
+      Calling <code>NEW</code> for a variable of type
+      <code>SYSTEM.PTR</code>.
+    </test>
+    <test id="new2" type="reject" file="New2.Mod">
+      Calling <code>NEW</code> for a function result.
+    </test>
+    <test id="new3" type="reject" file="New3.Mod">
+      Calling <code>NEW</code> with a non-integer length.
+    </test>
+    <test id="new4" type="reject" file="New4.Mod">
+      Calling <code>NEW</code> with a too many length arguments.
+    </test>
+    <test id="new5" type="reject" file="New5.Mod">
+      Calling <code>NEW</code> with a too few length arguments.
+    </test>
+    <test id="new6" type="reject" file="New6.Mod">
+      Calling <code>NEW</code> with an open array parameter.
+    </test>
+    <test id="new7" type="error" file="New7.Mod">
+      Calling <code>NEW</code> with a negative length.
+    </test>
     
     <test id="abs1" type="run" file="Abs1.Mod" output="Abs1.Ref">
       Predefined function <code>ABS</code> for some integers and reals.
@@ -1199,6 +1221,19 @@
     <reject-info id="incl3" pos="INCL(%x" msg="This must be a variable"/>
     <reject-info id="incl4" pos="INCL(x,%1X)"
       msg="Expression must be of integer type"/>
+    
+    <reject-info id="new1" pos="NEW(%p)"
+      msg="This must be a pointer variable"/>
+    <reject-info id="new2" pos="NEW(%F())"
+      msg="This must be a variable"/>
+    <reject-info id="new3" pos="NEW(p, %1X)"
+      msg="Expression must be of integer type"/>
+    <reject-info id="new4" pos="%NEW(p, 2, 3)"
+      msg="Wrong number of arguments"/>
+    <reject-info id="new5" pos="%NEW(p)"
+      msg="Wrong number of arguments"/>
+    <reject-info id="new6" pos="NEW(%p)"
+      msg="This must be a pointer variable"/>
     
     <reject-info id="abs2" pos="ABS(%0X)" msg="Expression must be numeric"/>
 
