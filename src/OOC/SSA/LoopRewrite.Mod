@@ -26,6 +26,10 @@ IMPORT
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 CONST
+  dangerous = TRUE;
+  (* Enable dangerous transformations that may change program behaviour.  *)
+     
+CONST
   notVisited = 0;
   visited = 1;
 
@@ -89,6 +93,9 @@ TYPE
   CycleElementDesc = RECORD
     next: CycleElement;
     res: SSA.Result;
+    id: LONGINT;
+    (* Unique id of the element, a non-negative number less than
+       @ofield{InductionCycle.cycleLength}.  *)
   END;
   RewrittenCycle = POINTER TO RewrittenCycleDesc;
   RewrittenCycleDesc = RECORD
@@ -97,6 +104,10 @@ TYPE
     a: SSA.Instr;   (* factor applied to the induction head, or NIL *)
     b: SSA.Instr;   (* loop-invariant but not constant offset, or NIL *)
     newHead: SSA.Result;  (* induction head of the rewritten cycle *)
+    replacements: POINTER TO ARRAY OF SSA.Result;
+    (* Element at index @ofield{CycleElement.id} holds the replementent
+       expression for the main cycle's element within this rewritten
+       cycle.  *)
   END;
   InductionCycle = POINTER TO InductionCycleDesc;
   InductionCycleDesc = RECORD
@@ -105,6 +116,7 @@ TYPE
     (* List of instructions that make up the cycle.  First entry is the
        induction head, followed by instructions that depend on it.  In general,
        a definition precedes any uses of it in the cycle.  *)
+    cycleLength: LONGINT;
     rewrittenCycles: RewrittenCycle;
   END;
   
@@ -267,6 +279,7 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
       ic.head := head;
       ic.headFactor := one;
       ic.cycleElements := NIL;
+      ic.cycleLength := 0;
       ic.rewrittenCycles := NIL;
       RETURN ic;
     END NewInductionCycle;
@@ -278,7 +291,9 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
       NEW(ce);
       ce.next := ic.cycleElements;
       ce.res := res;
+      ce.id := ic.cycleLength;
       ic.cycleElements := ce;
+      INC(ic.cycleLength);
     END AddInductionValue;
   
   PROCEDURE SearchCycle(res, head: SSA.Result; ic: InductionCycle;
@@ -344,26 +359,26 @@ PROCEDURE Cmp(a, b: Product): LONGINT;
     END;
   END Cmp;
 
+PROCEDURE NewSum(subclass: Opcode.Subclass; instr: SSA.Instr): Sum;
+  VAR
+    sum: Sum;
+  BEGIN
+    NEW(sum);
+    IF (instr # NIL) THEN
+      InitSum(sum, subclass, instr, idCount);
+      INC(idCount);
+    ELSE
+      InitSum(sum, subclass, NIL, 0);
+    END;
+    RETURN sum;
+  END NewSum;
+
 PROCEDURE Flatten*(res: SSA.Result);
   VAR
     instr: SSA.Instr;
     sum: Sum;
     opnd: SSA.Opnd;
     
-  PROCEDURE NewSum(subclass: Opcode.Subclass; instr: SSA.Instr): Sum;
-    VAR
-      sum: Sum;
-    BEGIN
-      NEW(sum);
-      IF (instr # NIL) THEN
-        InitSum(sum, subclass, instr, idCount);
-        INC(idCount);
-      ELSE
-        InitSum(sum, subclass, NIL, 0);
-      END;
-      RETURN sum;
-    END NewSum;
-
   PROCEDURE AddPLists(a, b: PList; magnB: LONGINT): PList;
     VAR
       p: PList;
@@ -586,6 +601,33 @@ PROCEDURE Flatten*(res: SSA.Result);
     END;
   END Flatten;
 
+PROCEDURE InitialValue(pb: SSA.ProcBlock;
+                       rc: RewrittenCycle; initOld: SSA.Result): SSA.Result;
+  VAR
+    res: SSA.Result;
+    instr: SSA.Instr;
+    subclass: Opcode.Subclass;
+  BEGIN
+    subclass := rc.origin.subclass;
+    res := pb.FixSubclass(initOld, subclass);
+    
+    IF (rc.a # NIL) THEN
+      instr := pb.AddInstr(Opcode.multiply, subclass);
+      instr.AddOpnd(rc.a, Opnd.arg);
+      instr.AddOpnd(res, Opnd.arg);
+      res := instr;
+    END;
+    
+    IF (rc.b # NIL) THEN
+      instr := pb.AddInstr(Opcode.add, subclass);
+      instr.AddOpnd(rc.b, Opnd.arg);
+      instr.AddOpnd(res, Opnd.arg);
+      res := instr;
+    END;
+    
+    RETURN res;
+  END InitialValue;
+
 PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
   VAR
     ic: InductionCycle;
@@ -593,6 +635,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
     loopStart, loopEnd, collect: SSA.Instr;
     res: SSA.Result;
     replacement: Dictionary.Dictionary;
+    i: LONGINT;
 
   PROCEDURE Expr(plist: PList; subclass: Opcode.Subclass): SSA.Instr;
     VAR
@@ -633,30 +676,6 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       RETURN res;
     END Expr;
 
-  PROCEDURE InitialValue(rc: RewrittenCycle; initOld: SSA.Result): SSA.Result;
-    VAR
-      res: SSA.Result;
-      instr: SSA.Instr;
-    BEGIN
-      res := pb.FixSubclass(initOld, sum.subclass);
-
-      IF (rc.a # NIL) THEN
-        instr := pb.AddInstr(Opcode.multiply, sum.subclass);
-        instr.AddOpnd(rc.a, Opnd.arg);
-        instr.AddOpnd(res, Opnd.arg);
-        res := instr;
-      END;
-
-      IF (rc.b # NIL) THEN
-        instr := pb.AddInstr(Opcode.add, sum.subclass);
-        instr.AddOpnd(rc.b, Opnd.arg);
-        instr.AddOpnd(res, Opnd.arg);
-        res := instr;
-      END;
-
-      RETURN res;
-    END InitialValue;
-
   PROCEDURE RewriteCycle(rc: RewrittenCycle; ce: CycleElement): SSA.Result;
     VAR
       ci, mult, instr: SSA.Instr;
@@ -691,6 +710,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
         res := instr;
         replacement.Set(ce.res, res);
       END;
+      rc.replacements[ce.id] := res;
       
       IF (ce.next # NIL) THEN
         res := RewriteCycle(rc, ce.next);
@@ -796,7 +816,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
          collect instruction in front of the loop *)
       loopStart := sum.head.instr;
       collect := loopStart.opndList.arg.instr;
-      res := InitialValue(rc, collect.NthArg(sum.head.ResultIndex()-1));
+      res := InitialValue(pb, rc, collect.NthArg(sum.head.ResultIndex()-1));
       collect.AddOpnd(res, Opnd.arg);
       
       (* add result as gate output to loopStart, and register it in the
@@ -805,6 +825,11 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       res := loopStart.AddResultSubclass(Result.selectValue, sum.subclass);
       replacement.Set(sum.head, res);
       rc.newHead := res;
+      NEW(rc.replacements, ic.cycleLength);
+      FOR i := 0 TO ic.cycleLength-1 DO
+        rc.replacements[i] := NIL;
+      END;
+      rc.replacements[ic.cycleElements.id] := res;
       
       (* rewrite all other elements in the induction cycle *)
       IF (ic.cycleElements.next # NIL) THEN
@@ -821,6 +846,41 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
     (* compute replacement for `origInstr', and register it with `sum' *)
     sum.replacement := ComputeReplacement(rc, sum);
   END Rewrite;
+
+PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
+  VAR
+    use: SSA.Opnd;
+    instr, new: SSA.Instr;
+  BEGIN
+    use := ce.res.useList;
+    WHILE (use # NIL) DO
+      instr := use.instr;
+      CASE instr.opcode OF
+      | Opcode.eql .. Opcode.geq:
+        CASE use.OpndIndex() OF
+        | 0:
+          new := pb.AddInstr(instr.opcode, rc.origin.subclass);
+          new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
+          new.AddOpnd(InitialValue(pb, rc, instr.NthArg(1)), Opnd.arg);
+        | 1:
+          new := pb.AddInstr(instr.opcode, rc.origin.subclass);
+          new.AddOpnd(InitialValue(pb, rc, instr.NthArg(0)), Opnd.arg);
+          new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
+        END;
+
+        IF dangerous THEN
+          IF (instr.info = NIL) THEN
+            instr.info := NewSum(rc.origin.subclass, NIL);
+          END;
+          instr.info(Sum).replacement := new;
+          Log.Ptr("... RewriteUses", instr);
+        END;
+      ELSE  (* ignore *)
+      END;
+      
+      use := use.nextUse;
+    END;
+  END RewriteUses;
 
 PROCEDURE DumpSums(pb: SSA.ProcBlock);
   VAR
@@ -904,6 +964,8 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
     opnd: SSA.Opnd;
     i: LONGINT;
     res: SSA.Result;
+    ic: InductionCycle;
+    ce: CycleElement;
     
   PROCEDURE EnumerateLoops(storeOut: SSA.Result; firstInstr: SSA.Instr);
     VAR
@@ -999,7 +1061,7 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
       (* traverse all elements of the induction cycles and see if the are
          used in comparison instructions; if possible, rewrite the comparisons
          to use the rewritten induction cycle *)
-      (*... res := loopStart;
+      res := loopStart;
       WHILE (res # NIL) DO
         IF (res.info # NIL) &
            (res.info IS InductionCycle) &
@@ -1007,12 +1069,13 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
           ic := res.info(InductionCycle);
           ce := ic.cycleElements;
           WHILE (ce # NIL) DO
-            RewriteComparisons(ce.res, );
+            Log.Ptr("### looking at uses of res", ce.res);
+            RewriteUses(pb, ic.rewrittenCycles, ce);
             ce := ce.next;
           END;
         END;
         res := res.nextResult;
-      END;*)
+      END;
       
       (* replace instructions with their tediously computed equivalents *)
       instr := pb.instrList;
