@@ -924,8 +924,9 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       ELSE (* (source = Predef.char) & (dest = Predef.longchar) *)
         w. WriteString ("_copy_8to16(");
       END;
+      w. WriteString ("(void*)");
       w. Ref (instr. GetOpndClass (Opnd.readAdr));
-      w. WriteChar (",");
+      w. WriteString (",(void*)");
       w. Ref (instr. GetOpndClass (Opnd.writeAdr));
       w. WriteChar (",");
       w. Ref (instr. GetOpndClass (Opnd.arg));

@@ -65,27 +65,9 @@
 #define _halt(code) RT0__Halt(code);
 
 /* COPY(s,d) */
-#define _copy_8(_src,_dest,_max_len) {          \
-  char* _d=(char*)_dest;                        \
-  const char* _s=(const char*)_src;             \
-  char* _max=_d+_max_len-1;                     \
-  while ((_d != _max) && (*(_d++) = *(_s++)));  \
-  if (_d == _max) *_d = '\000';                 \
-}
-#define _copy_16(_src,_dest,_max_len) {         \
-  OOC_CHAR16* _d=(OOC_CHAR16*)_dest;            \
-  const OOC_CHAR16* _s=(const OOC_CHAR16*)_src; \
-  OOC_CHAR16* _max=_d+_max_len-1;               \
-  while ((_d != _max) && (*(_d++) = *(_s++)));  \
-  if (_d == _max) *_d = '\000';                 \
-}
-#define _copy_8to16(_src,_dest,_max_len) {      \
-  OOC_CHAR16* _d=(OOC_CHAR16*)_dest;            \
-  const OOC_CHAR8* _s=(const OOC_CHAR8*)_src;   \
-  OOC_CHAR16* _max=_d+_max_len-1;               \
-  while ((_d != _max) && (*(_d++) = *(_s++)));  \
-  if (_d == _max) *_d = '\000';                 \
-}
+extern void _copy_8(const OOC_CHAR8* src, OOC_CHAR8* dest, OOC_LEN max_len);
+extern void _copy_16(const OOC_CHAR16* src, OOC_CHAR16* dest, OOC_LEN max_len);
+extern void _copy_8to16(const OOC_CHAR8* src, OOC_CHAR16* dest, OOC_LEN max_len);
 
 /* copy record or array value */
 #define _copy_block(_src,_dest,_len) \
@@ -164,7 +146,7 @@ extern OOC_INT32 _cmp16(const OOC_CHAR16* l, const OOC_CHAR16* r);
 /* i IN s */
 #define _in(_i,_s) (((_s)>>(_i))&1)
 
-/* set different */
+/* set difference */
 #define _logical_subtr(_a,_b) (_a & ~(_b))
 
 /* INCL, EXCL */
