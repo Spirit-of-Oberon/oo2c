@@ -369,16 +369,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
       itemClass: Item.Name;
     BEGIN
       WHILE (list # NIL) DO
-        WITH list: Item.TypeDecl DO
-          IF (list. srcCodeType IS Item.TypeName) THEN
-            (* type aliases do not belong to any class *)
-            itemClass := NIL
-          ELSE
-            itemClass := GetClass.GetClass (list. type)
-          END
-        ELSE
-          itemClass := GetClass.GetClass (list)
-        END;
+        itemClass := GetClass.GetClass (list);
         IF (itemClass = className) THEN
           WriteItem (list)
         END;

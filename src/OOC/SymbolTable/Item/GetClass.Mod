@@ -16,7 +16,8 @@ PROCEDURE GetClass* (item: Item.Item): Item.Name;
    defined in the same module as the pointer type.
    
    @item Item.TypeDecl
-   The class of a type declaration is that of the declared type.
+   The class of a type declaration is that of the declared type, if the type
+   on the right hand side is from the same module.
    
    @item Item.FieldDecl
    The class of a record field is that of the record.
@@ -76,7 +77,11 @@ PROCEDURE GetClass* (item: Item.Item): Item.Name;
       END
     
     | item: Item.TypeDecl DO
-      RETURN GetClass (item. type)
+      IF SameModule (item, item. type) THEN
+        RETURN GetClass (item. type)
+      ELSE  (* alias for a type from another module *)
+        RETURN NIL
+      END
       
     | item: Item.FieldDecl DO
       RETURN item. parent(Item.Record). className
