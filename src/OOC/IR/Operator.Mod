@@ -38,6 +38,18 @@ TYPE
     (IR.OperatorDesc) 
   END;
   
+TYPE
+  Eql* = POINTER TO EqlDesc;
+  EqlDesc = RECORD
+    (IR.OperatorDesc) 
+  END;
+  
+TYPE
+  Neq* = POINTER TO NeqDesc;
+  NeqDesc = RECORD
+    (IR.OperatorDesc) 
+  END;
+  
 
 PROCEDURE InitVisitor* (v: Visitor);
   BEGIN
@@ -133,6 +145,54 @@ PROCEDURE (add: Add) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
+PROCEDURE InitEql (eql: Eql; sym: IR.Symbol; left, right: IR.Expression);
+  BEGIN
+    IR.InitOperator (eql, sym, left. type, left, right);
+  END InitEql;
+
+PROCEDURE (b: Builder) NewEql (sym: IR.Symbol; left, right: IR.Expression): Eql;
+  VAR
+    eql: Eql;
+  BEGIN
+    NEW (eql);
+    InitEql (eql, sym, left, right);
+    RETURN eql
+  END NewEql;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitEql* (eql: Eql);
+  END VisitEql;
+
+PROCEDURE (eql: Eql) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitEql (eql)
+  END Accept;
+
+(* -------- *)
+
+PROCEDURE InitNeq (neq: Neq; sym: IR.Symbol; left, right: IR.Expression);
+  BEGIN
+    IR.InitOperator (neq, sym, left. type, left, right);
+  END InitNeq;
+
+PROCEDURE (b: Builder) NewNeq (sym: IR.Symbol; left, right: IR.Expression): Neq;
+  VAR
+    neq: Neq;
+  BEGIN
+    NEW (neq);
+    InitNeq (neq, sym, left, right);
+    RETURN neq
+  END NewNeq;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitNeq* (neq: Neq);
+  END VisitNeq;
+
+PROCEDURE (neq: Neq) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitNeq (neq)
+  END Accept;
+
+(* -------- *)
+
 PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
   BEGIN
     CASE sym. id OF
@@ -143,6 +203,15 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
     | Symbol.plus:
       ASSERT (left. type = right. type);
       RETURN b. NewAdd (sym, left, right)
+
+    | Symbol.eql:
+      ASSERT (left. type = right. type);
+      RETURN b. NewEql (sym, left, right);
+      
+    | Symbol.neq:
+      ASSERT (left. type = right. type);
+      RETURN b. NewNeq (sym, left, right);
+      
     END
   END NewOperator;
 

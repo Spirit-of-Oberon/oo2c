@@ -262,6 +262,14 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       w. WriteString (str);
       w. WriteString ("*/ ");
     END WriteOpcode;
+
+  PROCEDURE WriteDyadicOp (instr: SSA.Instr; op: ARRAY OF CHAR);
+    BEGIN
+      w. Ref (instr. opndList);
+      w. WriteString (op);
+      w. Ref (instr. opndList. nextOpnd);
+    END WriteDyadicOp;
+  
   
   PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
   (* Returns TRUE if all paths into the "select-return" end with a
@@ -300,6 +308,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       | Opcode.const:
         WriteConst.Write (w. w, instr(SSA.Const). value);
 
+      | Opcode.declRef:
+        (* nothing *)
+        
       | Opcode.address:
         name := Naming.NameOfDeclaration (instr(SSA.Address). decl);
         IF ~(instr(SSA.Address). decl IS Item.VarDecl) OR
@@ -310,6 +321,12 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         END;
         w. WriteString (name. array^);
 
+      | Opcode.enter:
+        (* nothing *)
+        
+      | Opcode.select:
+        (* nothing *)
+        
       | Opcode.get:
         w. WriteString ("*(");
         w. WriteString (WriteDecl.basicType
@@ -327,13 +344,16 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
 
       | Opcode.add:
-        w. Ref (instr. opndList);
-        w. WriteChar ("+");
-        w. Ref (instr. opndList. nextOpnd);
+        WriteDyadicOp (instr, "+");
         
       | Opcode.negate:
         w. WriteChar ("-");
         w. Ref (instr. opndList);
+        
+      | Opcode.eql:
+        WriteDyadicOp (instr, "==");
+      | Opcode.neq:
+        WriteDyadicOp (instr, "!=");
         
       | Opcode.assert:
         Assert (instr)
@@ -354,7 +374,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         IF ~AllPathsClosed (instr) THEN
           w. WriteString ("return")
         END;
-      ELSE
       END;
       w. WriteChar (";");
       

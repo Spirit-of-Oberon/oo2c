@@ -131,9 +131,16 @@ CONST
   negate* = 12;
   multiply* = 13;
   divide* = 14;
+
+  eql* = 15;
+  neq* = 16;
+  lss* = 17;
+  leq* = 18;
+  gtr* = 19;
+  geq* = 20;
   
-  assert* = 15;
-  call* = 16;
+  assert* = 21;
+  call* = 22;
 
 CONST
   scNone* = 0;
@@ -156,6 +163,8 @@ CONST
   (**Designates an unsigned 64 bit result or operands.  *)
   scAddress* = 9;
   (**Designates an address or pointer result or operands.  *)
+  scBoolean* = scUnsigned8;
+  (**Maps to the integer type that is used to store boolean values.  *)
 
   scMerge* = 10;
   (**Subclass of a @const{select} instruction.  *)
@@ -194,6 +203,13 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | negate: cstr := "negate";
     | multiply: cstr := "multiply";
     | divide: cstr := "divide";
+
+    | eql: cstr := "eql";
+    | neq: cstr := "neq";
+    | lss: cstr := "lss";
+    | leq: cstr := "leq";
+    | gtr: cstr := "gtr";
+    | geq: cstr := "geq";
       
     | enter: cstr := "enter";
     | select: cstr := "select";

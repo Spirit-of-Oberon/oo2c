@@ -59,6 +59,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END Index;
     
+    PROCEDURE AddCompareOp (op: IR.Operator; class: Opcode.Class): SSA.Instr;
+      VAR
+        instr: SSA.Instr;
+      BEGIN
+        instr := pb. AddInstr (class, Opcode.scBoolean);
+        instr. AddOpnd (Expression (op. opnd1), Opnd.arg);
+        instr. AddOpnd (Expression (op. opnd2), Opnd.arg);
+        RETURN instr
+      END AddCompareOp;
+    
     BEGIN
       WITH expr: IR.Const DO
         RETURN pb. GetConst (expr. value, expr. type)
@@ -88,6 +98,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. opnd1), Opnd.arg);
         instr. AddOpnd (Expression (expr. opnd2), Opnd.arg);
         RETURN instr
+
+      | expr: Operator.Eql DO
+        RETURN AddCompareOp (expr, Opcode.eql);
+      | expr: Operator.Neq DO
+        RETURN AddCompareOp (expr, Opcode.neq);
             
       | expr: IR.Call DO
         RETURN Call (expr)

@@ -290,9 +290,9 @@ TYPE
   Factor* = POINTER TO FactorDesc;
   FactorDesc = RECORD
     (NodeDesc)
-    lParen-: AST.Node;
-    expr-: AST.Node;
-    rParen-: AST.Node;
+    lParen-: Terminal;
+    expr-: Node;
+    rParen-: Terminal;
   END;
 
 TYPE
@@ -1165,9 +1165,9 @@ PROCEDURE (b: Builder) Factor* (lParen, expr, rParen: AST.Node): Node;
     f: Factor;
   BEGIN
     NEW (f);
-    f. lParen := lParen;
-    f. expr := expr;
-    f. rParen := rParen;
+    f. lParen := lParen(Terminal);
+    f. expr := expr(Node);
+    f. rParen := rParen(Terminal);
     RETURN f
   END Factor;
 

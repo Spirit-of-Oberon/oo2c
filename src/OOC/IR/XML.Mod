@@ -92,13 +92,28 @@ PROCEDURE (v: Visitor) VisitNegate* (neg: Operator.Negate);
     v. w. EndTag;  (* negate *)
   END VisitNegate;
 
+PROCEDURE VisitDyadicOp (v: Visitor; op: IR.Operator; name: ARRAY OF CHAR);
+  BEGIN
+    v. w. StartTagLatin1 (name, FALSE);
+    op. opnd1. Accept (v);
+    op. opnd2. Accept (v);
+    v. w. EndTag;  (* name *)
+  END VisitDyadicOp;
+
 PROCEDURE (v: Visitor) VisitAdd* (add: Operator.Add);
   BEGIN
-    v. w. StartTag ("add", FALSE);
-    add. opnd1. Accept (v);
-    add. opnd2. Accept (v);
-    v. w. EndTag;  (* add *)
+    VisitDyadicOp (v, add, "add");
   END VisitAdd;
+
+PROCEDURE (v: Visitor) VisitEql* (eql: Operator.Eql);
+  BEGIN
+    VisitDyadicOp (v, eql, "eql");
+  END VisitEql;
+
+PROCEDURE (v: Visitor) VisitNeq* (neq: Operator.Neq);
+  BEGIN
+    VisitDyadicOp (v, neq, "neq");
+  END VisitNeq;
 
 
 PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);

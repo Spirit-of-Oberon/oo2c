@@ -100,6 +100,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           RETURN b. NewIntConst10 (expr. sym)
         END
 
+      | expr: ExtTree.Factor DO
+        RETURN Expr (expr. expr)
+            
       | expr: ExtTree.ArrayIndex DO      (* part of designator *)
         RETURN Designator (expr)
         
