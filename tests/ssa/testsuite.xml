@@ -14,7 +14,8 @@
   generic36 generic37 generic38 generic39 generic40 generic41">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic41">-->
+  select ="&SetupTestCasesWithOut; generic1 generic42 generic43
+  generic44">-->
 
   &TestSetupWithOut;
     
@@ -1458,6 +1459,17 @@
       parameters from the base type, and the procedure must be
       exported.
     </test>
+    <test id="generic42" type="accept" file="Generic42.Mod">
+      Calling constructor on a record pointer type without an
+      <code>INIT</code> procedure.
+    </test>
+    <test id="generic43" type="reject" file="Generic43.Mod">
+      Calling constructor on a record pointer type without an
+      <code>INIT</code> procedure with a non-empty argument list.
+    </test>
+    <test id="generic44" type="reject" file="Generic44.Mod">
+      Calling constructor on a non-record pointer type.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2058,6 +2070,10 @@
         msg="Argument not compatible with formal type `Generic1.A1'"/>
     <warning-info id="generic40" pos="l3(%List"
         msg="Warning: Redundant type test"/>
+    <reject-info id="generic43" pos="(%123)"
+        msg="Too many arguments"/>
+    <reject-info id="generic44" pos=":= %List"
+        msg="Not a record pointer type"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>

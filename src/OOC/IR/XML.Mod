@@ -129,6 +129,20 @@ PROCEDURE (v: Visitor) VisitLen* (len: IR.Len);
     v. w. EndTag;  (* len *)
   END VisitLen;
 
+PROCEDURE (v: Visitor) VisitConstructor* (cons: IR.Constructor);
+  BEGIN
+    v. w. StartTag ("constructor", FALSE);
+    v. w. StartTag ("alloc", FALSE);
+    cons. alloc. Accept(v);
+    v. w. EndTag;  (* alloc *)
+    IF (cons.init # NIL) THEN
+      v. w. StartTag ("init", FALSE);
+      cons. init. Accept(v);
+      v. w. EndTag;  (* init *)
+    END;
+    v. w. EndTag;  (* constructor *)
+  END VisitConstructor;
+
 PROCEDURE (v: Visitor) VisitDeref* (deref: IR.Deref);
   BEGIN
     v. w. StartTag ("deref", FALSE);

@@ -718,6 +718,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
         RETURN instr;
       END Concat;
+
+    PROCEDURE Constructor(expr: IR.Constructor): SSA.Result;
+      BEGIN
+        RETURN NewObject(expr.alloc);
+      END Constructor;
     
     BEGIN
       WITH expr: IR.Const DO
@@ -959,7 +964,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (s, Opnd.store);
         s := instr. AddResult (Result.store);
         RETURN instr
-            
+
+      | expr: IR.Constructor DO
+        RETURN Constructor(expr);
+        
       ELSE
         Log.Type("++ Unknown type in Expression", expr);
         ASSERT (FALSE)

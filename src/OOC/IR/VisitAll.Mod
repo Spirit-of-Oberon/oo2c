@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:IR:VisitAll;
 (*  A visitor traversing the whole IR data structure.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -92,6 +92,14 @@ PROCEDURE (v: Visitor) VisitCompare* (op: IR.Compare);
     op. left. Accept (v);
     op. right. Accept (v);
   END VisitCompare;
+
+PROCEDURE (v: Visitor) VisitConstructor* (cons: IR.Constructor);
+  BEGIN
+    cons.alloc.Accept(v);
+    IF (cons.init # NIL) THEN
+      cons.init.Accept(v);
+    END;
+  END VisitConstructor;
 
 PROCEDURE (v: Visitor) VisitDeref* (deref: IR.Deref);
   BEGIN

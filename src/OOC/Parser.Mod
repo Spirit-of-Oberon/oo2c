@@ -722,6 +722,25 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     VAR
       x, y, op, left, right: AST.Node;
       list: AST.NodeList;
+
+    PROCEDURE Call(design: AST.Node): AST.Node;
+      VAR
+        left, right: AST.Node;
+        list: AST.NodeList;
+      BEGIN
+        left := CheckSym (Symbol.lParen);
+        list := ast. NewNodeList();
+        IF (sym. id # Symbol.rParen) THEN
+          list. Append (Expr());
+          WHILE (sym. id = Symbol.comma) DO
+            list. Append (CheckSym (Symbol.comma));
+            list. Append (Expr())
+          END
+        END;
+        right := CheckSym (Symbol.rParen);
+        RETURN ast. FunctionCall (design, left, list, right)
+      END Call;
+    
     BEGIN
       (*S: Designator = ident { "." ident | "^" | 
         S:                      "[" Expr {"," Expr} "]" | 
@@ -736,7 +755,10 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         lots of ambiguity: x(a<b,c>(x+y)).  Maybe switch from `<...>' to the
         standard `(...)'?  In any case -- FIXME... *)
       IF (LookingAtQualType(sym, TRUE) # NIL) THEN
-        RETURN QualType();
+        x := QualType();
+        IF (sym.id = Symbol.lParen) THEN
+          x := Call(x);
+        END;
       ELSE
         x := CheckSym (Symbol.ident);
         LOOP
@@ -759,23 +781,13 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             right := CheckSym (Symbol.rBrak);
             x := ast. ArrayIndex (x, left, list, right)
           | Symbol.lParen:
-            left := CheckSym (Symbol.lParen);
-            list := ast. NewNodeList();
-            IF (sym. id # Symbol.rParen) THEN
-              list. Append (Expr());
-              WHILE (sym. id = Symbol.comma) DO
-                list. Append (CheckSym (Symbol.comma));
-                list. Append (Expr())
-              END
-            END;
-            right := CheckSym (Symbol.rParen);
-            x := ast. FunctionCall (x, left, list, right)
+            x := Call(x);
           ELSE
             EXIT
           END
         END;
-        RETURN x
       END;
+      RETURN x;
     END Designator;
   
   PROCEDURE Expr (): AST.Node;

@@ -596,6 +596,12 @@ PROCEDURE RecordBaseType*(record: Sym.Type): Sym.Type;
     END;
   END RecordBaseType;
 
+PROCEDURE IsRecordPointer*(type: Sym.Type): BOOLEAN;
+(**Result is @code{TRUE} if @oparam{type} is a pointer to record type.  *)
+  BEGIN
+    RETURN IsPointer(type) & IsRecord(PointerBaseType(type));
+  END IsRecordPointer;
+
 PROCEDURE IsExtensionOf* (type, base: Sym.Type): BOOLEAN;
 (* Result is TRUE iff the type @oparam{type} is an extension of the type
    @oparam{base}.  See Oberon-2 report, Appendix A.

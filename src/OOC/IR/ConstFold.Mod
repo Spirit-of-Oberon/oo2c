@@ -145,6 +145,10 @@ PROCEDURE (c: ConstFold) VisitLen* (len: IR.Len);
       BigInt.NewInt(length));
   END VisitLen;
 
+PROCEDURE (c: ConstFold) VisitConstructor* (cons: IR.Constructor);
+  BEGIN
+  END VisitConstructor;
+
 PROCEDURE (c: ConstFold) VisitDeref* (deref: IR.Deref);
   BEGIN
     (* FIXME! *)

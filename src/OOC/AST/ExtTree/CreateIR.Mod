@@ -40,6 +40,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
   PROCEDURE ^ FunctionCall (call: ExtTree.FunctionCall;
                             isProcCall: BOOLEAN): IR.Expression;
     
+  PROCEDURE ^ QualType(qualType: ExtTree.QualType): IR.Expression;
+    
   PROCEDURE Designator (design: ExtTree.Node): IR.Expression;
     VAR
       left: IR.Expression;
@@ -99,6 +101,10 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
 
       | design: ExtTree.FunctionCall DO
         RETURN FunctionCall (design, FALSE);
+
+      | design: ExtTree.QualType DO
+        RETURN QualType(design);
+        
       ELSE
         Log.Type("++ Unknown type in Designator", design);
         ASSERT (FALSE)
@@ -234,7 +240,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       FOR i := 0 TO LEN (arguments^)-1 DO
         arguments[i] := Expr (call. arguments. n[i*2](ExtTree.Node))
       END;
-      RETURN b. NewCall (design, arguments, ~isProcCall, call. rParen. sym);
+      RETURN b.NewCall(design, arguments, ~isProcCall, currentSourceContext,
+                       call.rParen.sym);
     END FunctionCall;
 
   PROCEDURE StatementSeq (statmSeq: ExtTree.NodeList): IR.StatementSeq;
@@ -255,7 +262,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           (* create procedure call from lonely designator *)
           NEW (arguments, 0);
           design := Designator (call. call);
-          expr := b. NewCall (design, arguments, FALSE, design. sym);
+          expr := b.NewCall(design, arguments, FALSE, currentSourceContext,
+                            design.sym);
         END;
         IF (expr # NIL) & (expr IS IR.Statement) THEN
           RETURN expr(IR.Statement);

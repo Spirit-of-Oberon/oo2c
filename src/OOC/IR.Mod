@@ -410,6 +410,16 @@ TYPE
   END;
   
 TYPE
+  Constructor* = POINTER TO ConstructorDesc;
+  NewObject* = POINTER TO NewObjectDesc;
+  Call* = POINTER TO CallDesc;
+  ConstructorDesc = RECORD
+    (OperatorDesc)
+    alloc-: NewObject;
+    init-: Call;
+  END;
+  
+TYPE
   Deref* = POINTER TO DerefDesc;
   DerefDesc = RECORD
     (OperatorDesc)
@@ -481,7 +491,6 @@ TYPE
   END;
 
 TYPE
-  NewObject* = POINTER TO NewObjectDesc;
   NewObjectDesc = RECORD
     (**Allocates a new object on the heap and returns a pointer to it.
        The type of the new pointer value is stored in @ofield{type}.  *)
@@ -771,7 +780,6 @@ TYPE
   END;
   
 TYPE
-  Call* = POINTER TO CallDesc;
   CallDesc = RECORD
     (**Calls to normal functions and procedures are mapped to this class.  It
        is not used to represent calls to type-bound procedures, nor to
@@ -1158,6 +1166,7 @@ CONST
   tooFewTypeArgs = 70;              (* used as in CreateNamespace *)
   tooManyTypeArgs = 71;             (* used as in CreateNamespace *)
   notExtensionOfBound = 72;         (* used as in CreateNamespace *)
+  notRecordPointerType = 73;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1368,6 +1377,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Too many type arguments"
     | notExtensionOfBound:
       t := "This is not an extension of the type bound"
+    | notRecordPointerType:
+      t := "Not a record pointer type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1537,6 +1548,19 @@ PROCEDURE (b: Builder) GetName* (sym: Symbol): Sym.Name;
     RETURN name
   END GetName;
 
+PROCEDURE (b: Builder) GetName2* (sym: Symbol; str: ARRAY OF CHAR): Sym.Name;
+  VAR
+    name: Sym.Name;
+    s: Sym.NameString;
+  BEGIN
+    NEW(s, Strings.Length(str)+1);
+    COPY(str, s^);
+    
+    NEW (name);
+    Sym.InitName (name, s, sym. pos, sym. line, sym. column);
+    RETURN name
+  END GetName2;
+
 PROCEDURE (b: Builder) AssertType* (expr: Expression): Sym.Type;
 (**Generates an error if @oparam{expr} is not a type name.  In this case,
    result is @code{NIL}.  Otherwise, the type to which the expression refers is
@@ -1579,8 +1603,12 @@ PROCEDURE ^ (b: Builder) NewCopyString* (sym: Symbol; source, dest, maxLength: E
 PROCEDURE ^ (b: Builder) NewCall* (design: Expression;
                                    arguments: ExpressionList;
                                    isFunctionCall: BOOLEAN;
+                                   context: Sym.Item;
                                    endOfArgsSym: Symbol): Expression;
 
+PROCEDURE ^ (b: Builder) NewNewObject (sym: Symbol; type: Sym.Type;
+                                       args: ExpressionList): NewObject;
+  
 PROCEDURE ^ (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
 
 PROCEDURE (b : Builder) CheckFunctionOp(expr : Expression; op : Symbol);
@@ -2300,6 +2328,58 @@ PROCEDURE (op: Concat) Accept* (v: Visitor);
     v. VisitConcat (op)
   END Accept;
 
+(* Operator Class: Constructor
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitConstructor (cons: Constructor; sym: Symbol;
+                           alloc: NewObject; init: Call);
+  BEGIN
+    InitOperator(cons, sym, alloc.type);
+    cons.alloc := alloc;
+    cons.init := init;
+  END InitConstructor;
+
+PROCEDURE (b: Builder) NewConstructor* (sym: Symbol; type: Expression;
+                                        arguments: ExpressionList;
+                                        context: Sym.Item): Expression;
+  VAR
+    cons: Constructor;
+    consType, ptr: Sym.Type;
+    consClass: Sym.Record;
+    n: Sym.Name;
+    initDecl: Sym.Declaration;
+  BEGIN
+    (* determine class instance *)
+    IF ~(type IS TypeRef) OR ~TR.IsRecordPointer(type(TypeRef).qualType) THEN
+      RETURN b.ErrExpr(notRecordPointerType, type.sym);
+    END;
+    consType := type(TypeRef).qualType;
+    ptr := TR.PointerBaseType(consType);
+    ptr := ptr.Deparam();
+    consClass := ptr(Sym.Record);
+
+    (* find out if an INIT method exists *)
+    n := b.GetName2(sym, Predef.initMethod);
+    initDecl := consClass.ns.Identify(context, n, FALSE);
+    Uses.Mark(initDecl, b.uses, n);
+    IF (initDecl = NIL) & (LEN(arguments^) # 0) THEN
+      RETURN b.ErrExpr(tooManyArguments, arguments[0].sym);
+    END;
+         
+    NEW (cons);
+    InitConstructor (cons, sym, b.NewNewObject(sym, TR.Expand(consType), NIL),
+                     NIL);
+    RETURN cons;
+  END NewConstructor;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitConstructor* (cons: Constructor);
+  END VisitConstructor;
+
+PROCEDURE (cons: Constructor) Accept* (v: Visitor);
+  BEGIN
+    v. VisitConstructor (cons)
+  END Accept;
+
 (* Operator Class: Deref
    ------------------------------------------------------------------------ *)
 
@@ -2580,7 +2660,7 @@ PROCEDURE InitNewObject (new: NewObject; sym: Symbol; type: Sym.Type;
   END InitNewObject;
 
 PROCEDURE (b: Builder) NewNewObject (sym: Symbol; type: Sym.Type;
-                                     args: ExpressionList): Expression;
+                                     args: ExpressionList): NewObject;
   VAR
     new: NewObject;
     length: ExpressionList;
@@ -4474,6 +4554,9 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           FOR i := 0 TO LEN(expr.strings^)-1 DO
             CheckExpr(expr.strings[i]);
           END;
+        | expr: Constructor DO
+          CheckExpr(expr.alloc);
+          CheckExpr(expr.init);
         | expr: ChangeElement DO
           CheckExpr(expr.set);
           CheckExpr(expr.element);
@@ -4882,6 +4965,13 @@ PROCEDURE (m: Module) Destroy*;
             E(n.right);
           | n: Concat DO
             EList(n.strings);
+          | n: Constructor DO
+            expr := n.alloc;
+            E(expr);
+            n.alloc := NIL;
+            expr := n.init;
+            E(expr);
+            n.init := NIL;
           | n: ChangeElement DO
             E(n.set);
             E(n.element);
@@ -5525,6 +5615,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 PROCEDURE (b: Builder) NewCall* (design: Expression;
                                  arguments: ExpressionList;
                                  isFunctionCall: BOOLEAN;
+                                 context: Sym.Item;
                                  endOfArgsSym: Symbol): Expression;
   VAR
     call: Call;
@@ -6029,6 +6120,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
             (LEN(arguments^) = 1) & (arguments[0] IS TypeRef) THEN
         RETURN b.NewTypeGuard(arguments[0]. sym, design,
                               arguments[0](TypeRef));
+      ELSIF (design.type = b.typeType) THEN
+        RETURN b.NewConstructor(design.sym, design, arguments, context);
       ELSIF ~(design.type.Deparam() IS Sym.FormalPars) THEN
         RETURN b. ErrExpr (notProcedure, design. sym);
       ELSE
