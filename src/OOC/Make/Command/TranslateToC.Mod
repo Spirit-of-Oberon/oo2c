@@ -22,14 +22,14 @@ MODULE OOC:Make:Command:TranslateToC;
 
 IMPORT
   Log,
-  Channel, Files, Make, StdChannels, TextRider, ADT:String, ADT:Dictionary,
-  URI, OOC:Make:Entity:ModuleFile,
+  Channel, Make, StdChannels, ADT:String, ADT:Dictionary,
+  OOC:Make:Entity:ModuleFile,
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
   OOC:IR, OOC:IR:Operator, IRtoXML := OOC:IR:XML,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports,
-  OOC:C:WriteConst, OOC:C:WriteDecl, OOC:C:ConvertDecl, OOC:C:Naming,
+  OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:Naming,
   WriteSSA := OOC:SSA:WriteC;
 
 TYPE
@@ -116,30 +116,11 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
                      converter: ConvertDecl.Converter;
                      moduleIR: IR.Module; useSSA: BOOLEAN);
   VAR
-    ch: Channel.Channel;
-    baseURI: URI.HierarchicalURI;
     res: Error.Msg;
-    w: TextRider.Writer;
+    w: DeclWriter.Writer;
     import: Repository.Import;
   
-  PROCEDURE WriteInclude (w: TextRider.Writer;
-                          includeURI: URI.HierarchicalURI);
-    VAR
-      relativeURI: URI.URI;
-      str: ARRAY 1024 OF CHAR;
-    BEGIN
-      relativeURI := includeURI. MakeRelative (baseURI);
-      relativeURI. GetString (str);
-      w. WriteString ('#include "');
-      IF (str[0] # "/") & (str[0] # ".") THEN
-        w. WriteString ("./")
-      END;
-      w. WriteString (str);
-      w. WriteString ('"');
-      w. WriteLn
-    END WriteInclude;
-  
-  PROCEDURE WriteModuleName (w: TextRider.Writer; 
+  PROCEDURE WriteModuleName (w: DeclWriter.Writer; 
                              prefix: ARRAY OF CHAR;
                              module: Repository.Module;
                              suffix: ARRAY OF CHAR;
@@ -162,27 +143,24 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       END
     END WriteModuleName;
   
-  PROCEDURE WriteDeclarations (w: TextRider.Writer;
+  PROCEDURE WriteDeclarations (w: DeclWriter.Writer;
                                converter: ConvertDecl.Converter;
                                writeExported: BOOLEAN);
-    VAR
-      b: WriteDecl.Block;
     BEGIN
-      b := WriteDecl.NewBlock();
-      converter. ConvertSymTab (b, writeExported);
-      b. Write (w)
+      converter. ConvertSymTab (w, writeExported);
+      w. WriteDeclarationList
     END WriteDeclarations;
   
   PROCEDURE ^ Call (statm: IR.Call);
     
-  PROCEDURE WriteExpr (w: TextRider.Writer;
+  PROCEDURE WriteExpr (w: DeclWriter.Writer;
                        converter: ConvertDecl.Converter;
                        expr: IR.Expression);
     VAR
       name: String.String;
     BEGIN
       WITH expr: IR.Const DO
-        WriteConst.Write (w, expr. value)
+        w. WriteConst (expr. value)
         
       | expr: IR.Var DO
         name := Naming.NameOfDeclaration (expr. decl);
@@ -224,7 +202,7 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       w. WriteString (")");
     END Call;
   
-  PROCEDURE WriteStatmSeq (w: TextRider.Writer;
+  PROCEDURE WriteStatmSeq (w: DeclWriter.Writer;
                            converter: ConvertDecl.Converter;
                            statmSeq: IR.StatementSeq);
     VAR
@@ -277,19 +255,17 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       END
     END WriteStatmSeq;
   
-  PROCEDURE WriteProcedures (w: TextRider.Writer;
+  PROCEDURE WriteProcedures (w: DeclWriter.Writer;
                              converter: ConvertDecl.Converter;
                              procList: IR.ProcedureList);
     VAR
-      b: WriteDecl.Block;
-      d: WriteDecl.Declaration;
+      d: DeclWriter.Declaration;
       i: LONGINT;
     BEGIN
-      b := WriteDecl.NewBlock();
       FOR i := 0 TO LEN (procList^)-1 DO
-        d := converter. ConvertProc (b, procList[i]. decl);
+        d := converter. ConvertProc (w, procList[i]. decl);
         w. WriteLn;
-        d. Write (w);
+        w. WriteDeclaration (d);
         w. WriteString (" {");
         IF useSSA THEN
           WriteSSA.ProcBody (w, converter, procList[i]);
@@ -303,11 +279,9 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
     END WriteProcedures;
   
   BEGIN
-    ch := m. GetOutputChannel (fileId, TRUE, res);
+    w := DeclWriter.NewWriter (m. GetOutputChannel (fileId, TRUE, res),
+                               m. GetURI (fileId));
     IF (res = Channel.done) THEN
-      baseURI := m. GetURI (fileId);
-      w := TextRider.ConnectWriter (ch);
-      
       CASE fileId OF
       | Repository.modHeaderFileC:
         WriteModuleName (w, "#ifndef _MODULE_", m, "_", TRUE);
@@ -320,8 +294,7 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         w. WriteLn;
         import := m. importList;
         WHILE (import # NIL) DO
-          WriteInclude (w, import. imported.
-            GetURI (Repository.modHeaderFileC));
+          w. WriteInclude (import.imported.GetURI (Repository.modHeaderFileC));
           import := import. nextImport
         END;
         w. WriteLn;
@@ -333,11 +306,11 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         
         
       | Repository.modDeclFileC:
-        WriteInclude (w, m. GetURI (Repository.modHeaderFileC));
+        w. WriteInclude (m. GetURI (Repository.modHeaderFileC));
         WriteDeclarations (w, converter, FALSE);
           
       | Repository.modCodeFileC:
-         WriteInclude (w, m. GetURI (Repository.modDeclFileC));
+         w. WriteInclude (m. GetURI (Repository.modDeclFileC));
 
         (* include full __oo2c.h only in generated C code files; this way,
            the .h and .d files can be used without pulling in all the 
@@ -352,12 +325,8 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
          w. WriteString ("}");
          w. WriteLn
       END;
-      
-      res := w. res;
-      ch(Files.File). Register;
-      IF (ch. res # NIL) & (res = NIL) THEN
-        res := ch. res
-      END
+
+      w. Close (res);
     END;
     
     IF (res # NIL) THEN

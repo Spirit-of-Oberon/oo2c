@@ -6,40 +6,40 @@ IMPORT
   Sym := OOC:SymbolTable, OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore,
-  OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:WriteConst, OOC:C:WriteDecl;
+  OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter;
 
 
 TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc = RECORD
-    w: TextRider.Writer;
+    w: DeclWriter.Writer;
     registerMap: Dictionary.Dictionary;
   END;
 
-PROCEDURE NewWriter (textWriter: TextRider.Writer;
+PROCEDURE NewWriter (cWriter: DeclWriter.Writer;
                      registerMap: Dictionary.Dictionary): Writer;
   VAR
     w: Writer;
   BEGIN
     NEW (w);
-    w. w := textWriter;
+    w. w := cWriter;
     w. registerMap := registerMap;
     RETURN w
   END NewWriter;
 
-PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): WriteDecl.BasicTypeId;
+PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): DeclWriter.BasicTypeId;
   BEGIN
     CASE subclass OF
-    | Opcode.scNone: RETURN WriteDecl.void
-    | Opcode.scAddress: RETURN WriteDecl.ptr
-    | Opcode.scUnsigned8: RETURN WriteDecl.uint8
-    | Opcode.scUnsigned16: RETURN WriteDecl.uint16
-    | Opcode.scUnsigned32: RETURN WriteDecl.uint32
-    | Opcode.scUnsigned64: RETURN WriteDecl.uint64
-    | Opcode.scSigned8: RETURN WriteDecl.int8
-    | Opcode.scSigned16: RETURN WriteDecl.int16
-    | Opcode.scSigned32: RETURN WriteDecl.int32
-    | Opcode.scSigned64: RETURN WriteDecl.int64
+    | Opcode.scNone: RETURN DeclWriter.void
+    | Opcode.scAddress: RETURN DeclWriter.ptr
+    | Opcode.scUnsigned8: RETURN DeclWriter.uint8
+    | Opcode.scUnsigned16: RETURN DeclWriter.uint16
+    | Opcode.scUnsigned32: RETURN DeclWriter.uint32
+    | Opcode.scUnsigned64: RETURN DeclWriter.uint64
+    | Opcode.scSigned8: RETURN DeclWriter.int8
+    | Opcode.scSigned16: RETURN DeclWriter.int16
+    | Opcode.scSigned32: RETURN DeclWriter.int32
+    | Opcode.scSigned64: RETURN DeclWriter.int64
     END;
   END SubclassToBasicType;
 
@@ -66,7 +66,7 @@ PROCEDURE Fixup (pb: SSA.ProcBlock);
   END Fixup;
 
 
-PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.Dictionary;
+PROCEDURE AssignRegisters (w: DeclWriter.Writer; pb: SSA.ProcBlock): Dictionary.Dictionary;
 (**Assigns registers to values produced by SSA instructions.  For the moment,
    a very simple allocator is sufficient: every value gets its very own
    variable.  The C compiler will have to deal with this ;-) *)
@@ -87,7 +87,7 @@ PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.D
       END;
     END StoredInRegister;
 
-  PROCEDURE AssignRegister (result: SSA.Result; ctype: WriteDecl.BasicTypeId);
+  PROCEDURE AssignRegister (result: SSA.Result; ctype: DeclWriter.BasicTypeId);
     BEGIN
       (* create name for result *)
       IntStr.IntToStr (count, str);
@@ -98,7 +98,7 @@ PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.D
       (* emit declaration for variable *)
       w. WriteLn;
       w. WriteString ("  register ");
-      w. WriteString (WriteDecl.basicType[ctype]. repr);
+      w. WriteString (w. basicType[ctype]. repr);
       w. WriteChar (" ");
       w. WriteString (str);
       w. WriteChar (";");
@@ -126,7 +126,7 @@ PROCEDURE AssignRegisters (w: TextRider.Writer; pb: SSA.ProcBlock): Dictionary.D
     RETURN registerMap;
   END AssignRegisters;
 
-PROCEDURE WriteLocalDecl (w: TextRider.Writer;
+PROCEDURE WriteLocalDecl (w: DeclWriter.Writer;
                           converter: ConvertDecl.Converter;
                           pb: SSA.ProcBlock);
 (**Writes local declarations of the procedure, most of all local variables.  *)
@@ -134,9 +134,8 @@ PROCEDURE WriteLocalDecl (w: TextRider.Writer;
     declMap: Dictionary.Dictionary;
     instr: SSA.Instr;
     decl: Sym.VarDecl;
-    cDecl: WriteDecl.Declaration;
-    block: WriteDecl.Block;
-
+    cDecl: DeclWriter.Declaration;
+    
   PROCEDURE GetLocalDecl (instr: SSA.Instr): Sym.VarDecl;
     VAR
       opnd: SSA.Opnd;
@@ -158,8 +157,6 @@ PROCEDURE WriteLocalDecl (w: TextRider.Writer;
     END GetLocalDecl;
   
   BEGIN
-    block := WriteDecl.NewBlock ();
-    
     declMap := Dictionary.New();
     instr := pb. instrList;
     WHILE (instr # NIL) DO
@@ -167,10 +164,10 @@ PROCEDURE WriteLocalDecl (w: TextRider.Writer;
         decl := GetLocalDecl (instr);
         IF (decl # NIL) & ~declMap. HasKey (decl) &
            ~decl. isParameter THEN
-          cDecl := converter. ConvertDecl (block, decl);
+          cDecl := converter. ConvertDecl (w, decl);
           w. WriteLn;
           w. WriteString ("  ");
-          cDecl. Write (w);
+          w. WriteDeclaration (cDecl);
           w. WriteChar (";");
           declMap. Set (decl, NIL)
         END;
@@ -213,8 +210,9 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
 
     | arg: SSA.Const DO
       (* write constant values directly, without going through an
-         intermediate register; kind of unnatural for C code *)
-      WriteConst.Write (w. w, arg. value);
+         intermediate register; the roundabout route is kind of unnatural
+         for C code *)
+      w. w. WriteConst (arg. value);
       
     ELSE
       IF w. registerMap. HasKey (opnd. arg) THEN
@@ -388,14 +386,14 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         
       | Opcode.get:
         w. WriteString ("*(");
-        w. WriteString (WriteDecl.basicType
+        w. WriteString (w. w. basicType
                         [SubclassToBasicType (instr. subclass)]. repr);
         w. WriteString ("*)");
         w. Ref (instr. opndList. nextOpnd);
         
       | Opcode.set:
         w. WriteString ("*(");
-        w. WriteString (WriteDecl.basicType
+        w. WriteString (w. w. basicType
                         [SubclassToBasicType (instr. subclass)]. repr);
         w. WriteString ("*)");
         w. Ref (instr. opndList. nextOpnd);
@@ -545,7 +543,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
     FixLastJump (NIL)
   END WriteBlocks;
 
-PROCEDURE ProcBody* (textWriter: TextRider.Writer;
+PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
                      converter: ConvertDecl.Converter;
                      procDecl: IR.Procedure);
   
@@ -573,8 +571,8 @@ PROCEDURE ProcBody* (textWriter: TextRider.Writer;
     XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
     
     Fixup (pb);
-    WriteLocalDecl (textWriter, converter, pb);
-    w := NewWriter (textWriter, AssignRegisters (textWriter, pb));
+    WriteLocalDecl (cWriter, converter, pb);
+    w := NewWriter (cWriter, AssignRegisters (cWriter, pb));
     w. WriteBlocks (domRoot);
   END ProcBody;
 
