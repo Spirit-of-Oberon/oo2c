@@ -30,14 +30,18 @@ IMPORT
 TYPE
   Writer* = POINTER TO WriterDesc;
   WriterDesc* = RECORD
-    w-: WriterXML.Writer;
+    (WriterXML.WriterDesc)
     sb: StringBuffer.StringBuffer;
+    
+    idMap: Dictionary.Dictionary;
+    (* maps instructions to their numeric id; a negative value means that
+       the instruction has not been scheduled for writing yet *)
   END;
   
 PROCEDURE InitWriter* (w: Writer; cw: Channel.Writer);
   BEGIN
+    WriterXML.Init (w, cw, Latin1.factory, TRUE, 2);
     w. sb := StringBuffer.New("");
-    w. w := WriterXML.New (cw, Latin1.factory, TRUE, 2);
   END InitWriter;
 
 PROCEDURE NewWriter* (cw: Channel.Writer): Writer;
@@ -49,31 +53,81 @@ PROCEDURE NewWriter* (cw: Channel.Writer): Writer;
     RETURN w
   END NewWriter;
 
-PROCEDURE (writer: Writer) WriteInstrAttr* (instr: SSA.Instr);
+PROCEDURE (w: Writer) WriteInstrAttr* (instr: SSA.Instr);
   BEGIN
   END WriteInstrAttr;
 
-PROCEDURE (writer: Writer) WriteInstrChildren* (instr: SSA.Instr);
+PROCEDURE (w: Writer) WriteInstrChildren* (instr: SSA.Instr);
   BEGIN
   END WriteInstrChildren;
 
-PROCEDURE (writer: Writer) WriteInstr (instr: SSA.Instr;
-                                       idMap: Dictionary.Dictionary);
+PROCEDURE (w: Writer) GetId (result: SSA.Result): LONGINT;
+  BEGIN
+    IF w. idMap. HasKey (result) THEN
+      RETURN ABS (w. idMap. Get (result))
+    ELSE
+      RETURN -1
+    END;
+  END GetId;
+
+PROCEDURE (w: Writer) AttrId* (name: ARRAY OF LONGCHAR; result: SSA.Result);
   VAR
-    w: WriterXML.Writer;
+    str: ARRAY 64 OF CHAR;
+    res: SSA.Result;
+    countSameId, posSameId: LONGINT;
+  BEGIN
+    w. sb. Delete (0, w. sb. length);
+    w. sb. AppendLongInt (w. GetId (result. instr));
+    IF (result # result. instr) THEN
+      w. sb. AppendChar (".");
+      Result.GetName (result. class, str);
+      w. sb. AppendString (str);
+      
+      countSameId := 0; posSameId := 0;
+      res := result. instr. nextResult;
+      REPEAT
+        IF (res = result) THEN
+          posSameId := countSameId;
+        END;
+        IF (res. class = result. class) THEN
+          INC (countSameId)
+        END;
+        res := res. nextResult
+      UNTIL (res = NIL);
+      IF (countSameId # 1) THEN
+        w. sb. AppendChar (".");
+        w. sb. AppendLongInt (posSameId);
+      END;
+    END;
+    w. AttrStringLatin1 (name, w. sb. array^);
+  END AttrId;
+
+PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
+  VAR
+    value: String.String;
+  BEGIN
+    IF (res = NIL) THEN
+      w. AttrString ("argref", "NIL");
+    ELSE
+      WITH res: SSA.Const DO
+        value := res. value. ToString();
+        w. AttrStringLatin1 ("const-value", value. array^);
+      | res: SSA.DeclRef DO
+        w. AttrStringLatin1 ("declref", res. decl. name. str^);
+      | res: SSA.Address DO
+        w. AttrStringLatin1 ("address-of", res. decl. name. str^);
+      ELSE
+        w. AttrId ("argref", res);
+      END;
+    END;
+  END AttrRef;
+
+PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
+  VAR
     value: String.String;
     res: SSA.Result;
     opnd: SSA.Opnd;
     
-  PROCEDURE GetId (idMap: Dictionary.Dictionary; result: SSA.Result): LONGINT;
-    BEGIN
-      IF idMap. HasKey (result) THEN
-        RETURN ABS (idMap. Get (result))
-      ELSE
-        RETURN -1
-      END;
-    END GetId;
-  
   PROCEDURE StartTagInstr (w: WriterXML.Writer; instr: SSA.Instr);
     VAR
       str: ARRAY 64 OF CHAR;
@@ -82,45 +136,13 @@ PROCEDURE (writer: Writer) WriteInstr (instr: SSA.Instr;
       w. StartTagLatin1 (str, FALSE);
     END StartTagInstr;
   
-  PROCEDURE AttrId (name: ARRAY OF LONGCHAR; result: SSA.Result);
-    VAR
-      str: ARRAY 64 OF CHAR;
-      res: SSA.Result;
-      countSameId, posSameId: LONGINT;
-    BEGIN
-      writer. sb. Delete (0, writer. sb. length);
-      writer. sb. AppendLongInt (GetId (idMap, result. instr));
-      IF (result # result. instr) THEN
-        writer. sb. AppendChar (".");
-        Result.GetName (result. class, str);
-        writer. sb. AppendString (str);
-        
-        countSameId := 0; posSameId := 0;
-        res := result. instr. nextResult;
-        REPEAT
-          IF (res = result) THEN
-            posSameId := countSameId;
-          END;
-          IF (res. class = result. class) THEN
-            INC (countSameId)
-          END;
-          res := res. nextResult
-        UNTIL (res = NIL);
-        IF (countSameId # 1) THEN
-          writer. sb. AppendChar (".");
-          writer. sb. AppendLongInt (posSameId);
-        END;
-      END;
-      w. AttrStringLatin1 (name, writer. sb. array^);
-    END AttrId;
-  
   PROCEDURE WriteResult (res: SSA.Result);
     VAR
       str: ARRAY 64 OF CHAR;
     BEGIN
       w. StartTag ("res", FALSE);
       
-      AttrId ("id", res);
+      w. AttrId ("id", res);
       
       Result.GetName (res. class, str);
       w. AttrStringLatin1 ("class", str);
@@ -135,42 +157,28 @@ PROCEDURE (writer: Writer) WriteInstr (instr: SSA.Instr;
   
   PROCEDURE WriteOpnd (opnd: SSA.Opnd);
     VAR
-      arg: SSA.Result;
       str: ARRAY 64 OF CHAR;
     BEGIN
       w. StartTag ("opnd", FALSE);
       
       Opnd.GetName (opnd. class, str);
       w. AttrStringLatin1 ("class", str);
-      
-      arg := opnd. arg;
-      WITH arg: SSA.Const DO
-        value := arg. value. ToString();
-        w. AttrStringLatin1 ("const-value", value. array^);
-      | arg: SSA.DeclRef DO
-        w. AttrStringLatin1 ("declref", arg. decl. name. str^);
-      | arg: SSA.Address DO
-        w. AttrStringLatin1 ("address-of", arg. decl. name. str^);
-      ELSE
-        AttrId ("argref", opnd. arg);
-      END;
+      w. AttrRef (opnd. arg);
       w. EndTag;  (* opnd *)
     END WriteOpnd;
   
   BEGIN
-    w := writer. w;
-    
-    IF (instr IS SSA.Const) OR
+(*    IF (instr IS SSA.Const) OR
        (instr IS SSA.DeclRef) OR
        (instr IS SSA.Address) THEN
       (* these kinds of instructions are written in a shorthand form:
          their actual value is indicated in the "opnd" tag, and the
          instructions themselves are omitted *)
       RETURN
-    END;
+    END;*)
     
     StartTagInstr (w, instr);
-    w. AttrInt ("id", GetId (idMap, instr));
+    w. AttrInt ("id", w. GetId (instr));
     
     WITH instr: SSA.Const DO
       value := instr. value. ToString();
@@ -180,7 +188,7 @@ PROCEDURE (writer: Writer) WriteInstr (instr: SSA.Instr;
       w. AttrStringLatin1 ("address-of", instr. decl. name. str^);
     ELSE
     END;
-    writer. WriteInstrAttr (instr);
+    w. WriteInstrAttr (instr);
     
     opnd := instr. opndList;
     WHILE (opnd # NIL) DO
@@ -194,26 +202,21 @@ PROCEDURE (writer: Writer) WriteInstr (instr: SSA.Instr;
       res := res. nextResult
     END;
     
-    writer. WriteInstrChildren (instr);
+    w. WriteInstrChildren (instr);
     w. EndTag;  (* instr *)
   END WriteInstr;
 
-PROCEDURE (writer: Writer) Write* (pb: SSA.ProcBlock;
-                                   includeDeadCode: BOOLEAN);
+PROCEDURE (w: Writer) WriteProcBody* (pb: SSA.ProcBlock;
+                                      includeDeadCode: BOOLEAN);
   VAR
-    w: WriterXML.Writer;
     instr: SSA.Instr;
-    
-    idMap: Dictionary.Dictionary;
-    (* maps instructions to their numeric id; a negative value means that
-       the instruction has not been scheduled for writing yet *)
     instrCount: LONGINT;
     
   PROCEDURE AssignId (instr: SSA.Instr);
     VAR
       opnd: SSA.Opnd;
     BEGIN
-      IF ~idMap. HasKey (instr) THEN
+      IF ~w. idMap. HasKey (instr) THEN
         (* assign ids to all instructions that are referenced in the
            operand list *)
         opnd := instr. opndList;
@@ -224,7 +227,7 @@ PROCEDURE (writer: Writer) Write* (pb: SSA.ProcBlock;
           opnd := opnd. nextOpnd
         END;
         
-        idMap. Set (instr, -instrCount);
+        w. idMap. Set (instr, -instrCount);
         INC (instrCount);
 
         opnd := instr. opndList;
@@ -242,9 +245,9 @@ PROCEDURE (writer: Writer) Write* (pb: SSA.ProcBlock;
       opnd: SSA.Opnd;
       id: LONGINT;
     BEGIN
-      id := idMap. Get (instr);
+      id := w. idMap. Get (instr);
       IF (id < 0) THEN                   (* not yet scheduled? *)
-        idMap. Set (instr, -id);         (* mark as scheduled *)
+        w. idMap. Set (instr, -id); (* mark as scheduled *)
         
         (* schedule all operands for writing _before_ this instruction *)
         opnd := instr. opndList;
@@ -252,17 +255,16 @@ PROCEDURE (writer: Writer) Write* (pb: SSA.ProcBlock;
           TraverseInstr (opnd. arg. instr);
           opnd := opnd. nextOpnd
         END;
-        writer. WriteInstr (instr, idMap);
+        w. WriteInstr (instr);
       END;
     END TraverseInstr;
   
   BEGIN
-    w := writer. w;
     w. WriteTextDecl ("1.0", "no");
 
     (* first pass: assign ids to all instructions reachable from the
        exit instruction; this step skips dead code *)
-    idMap := Dictionary.New();
+    w. idMap := Dictionary.New();
     instrCount := 1;
     AssignId (pb. selectReturn);
     
@@ -275,7 +277,7 @@ PROCEDURE (writer: Writer) Write* (pb: SSA.ProcBlock;
          after the `exit' *)
       instr := pb. instrList;
       WHILE (instr # NIL) DO
-        IF ~idMap. HasKey (instr) THEN
+        IF ~w. idMap. HasKey (instr) THEN
           AssignId (instr);
           TraverseInstr (instr);
         END;
@@ -284,7 +286,7 @@ PROCEDURE (writer: Writer) Write* (pb: SSA.ProcBlock;
     END;
     w. EndTag;  (* procedure-body *)
     w. EndOfText
-  END Write;
+  END WriteProcBody;
 
 PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
                   includeDeadCode: BOOLEAN);
@@ -293,16 +295,14 @@ PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
    blocks instruction list.  Consequently, it is no longer canonical and may
    differ for otherwise equivalent SSA sequences.  *)
   VAR
-    writer: Writer;
+    w: Writer;
   BEGIN
-    writer := NewWriter (cw);
-    writer. Write (pb, includeDeadCode);
+    w := NewWriter (cw);
+    w. WriteProcBody (pb, includeDeadCode);
   END Write;
 
-PROCEDURE (writer: Writer) WriteSchedule* (domRoot: Schedule.Block);
+PROCEDURE (w: Writer) WriteSchedule* (domRoot: Schedule.Block);
   VAR
-    w: WriterXML.Writer;
-    idMap: Dictionary.Dictionary;
     instrCount: LONGINT;
     
   PROCEDURE WriteBlock (b: Schedule.Block);
@@ -318,7 +318,7 @@ PROCEDURE (writer: Writer) WriteSchedule* (domRoot: Schedule.Block);
       
       proxy := b. proxyList;
       WHILE (proxy # NIL) DO
-        writer. WriteInstr (proxy. instr, idMap);
+        w. WriteInstr (proxy. instr);
         proxy := proxy. nextProxy
       END;
 
@@ -338,7 +338,7 @@ PROCEDURE (writer: Writer) WriteSchedule* (domRoot: Schedule.Block);
     BEGIN
       proxy := b. proxyList;
       WHILE (proxy # NIL) DO
-        idMap. Set (proxy. instr, instrCount);
+        w. idMap. Set (proxy. instr, instrCount);
         INC (instrCount);
         proxy := proxy. nextProxy
       END;
@@ -351,10 +351,9 @@ PROCEDURE (writer: Writer) WriteSchedule* (domRoot: Schedule.Block);
     END AssignIds;
   
   BEGIN
-    w := writer. w;
     w. WriteTextDecl ("1.0", "no");
 
-    idMap := Dictionary.New();
+    w. idMap := Dictionary.New();
     instrCount := 1;
     AssignIds (domRoot);
     
@@ -366,10 +365,10 @@ PROCEDURE (writer: Writer) WriteSchedule* (domRoot: Schedule.Block);
 
 PROCEDURE WriteSchedule* (cw: Channel.Writer; domRoot: Schedule.Block);
   VAR
-    writer: Writer;
+    w: Writer;
   BEGIN
-    writer := NewWriter (cw);
-    writer. WriteSchedule (domRoot);
+    w := NewWriter (cw);
+    w. WriteSchedule (domRoot);
   END WriteSchedule;
 
 END OOC:SSA:XML.
