@@ -21,11 +21,9 @@ l6_loop:
   if (i5) goto l6_loop;
 l11:
   i3 = i3+a_1d;
-  i4 = i3!=i1;
-  if (!i4) goto l16;
   i0 = i0+a_1d;
-  
-  goto l3_loop;
+  i4 = i3!=i1;
+  if (i4) goto l3_loop;
 l16:
   return;
   ;
@@ -51,11 +49,9 @@ l6_loop:
   if (i6) goto l6_loop;
 l11:
   i4 = i4+i0;
-  i5 = i4!=i2;
-  if (!i5) goto l16;
   i1 = i1+i0;
-  
-  goto l3_loop;
+  i5 = i4!=i2;
+  if (i5) goto l3_loop;
 l16:
   return;
   ;

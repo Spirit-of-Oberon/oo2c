@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; dead1">-->
+  select ="&SetupTestCasesWithOut; rewrite7">-->
   
   &TestSetupWithOut;
     
@@ -240,6 +240,10 @@
       Zeroing an array on the heap.  CSE should have merged the two
       pointer deref operations, so that only one induction cycle needs
       to be maintained.
+    </test>
+    <test id="rewrite7" type="accept" file="LoopRewrite7.Mod">
+      The scheduler should be smart enough to have just one jump
+      within the loop, the one going backwards to its beginning.
     </test>
     
     <test id="noCopy7" type="accept" file="NoCopy7.Mod">

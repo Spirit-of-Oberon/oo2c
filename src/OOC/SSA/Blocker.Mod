@@ -1393,17 +1393,50 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock;
 
     PROCEDURE GetLength (proxy: Proxy): LONGINT;
       VAR
-        p: Proxy;
         l: LONGINT;
+
+      PROCEDURE RegionLength(region: Region): LONGINT;
+        VAR
+          p: Proxy;
+          l: LONGINT;
+        BEGIN
+          l := 1;
+          p := region. first;
+          WHILE (p # NIL) DO
+            INC (l, GetLength (p));
+            p := p. nextProxy;
+          END;
+          RETURN l;
+        END RegionLength;
+
+      PROCEDURE IsEmpty(region: Region): BOOLEAN;
+        BEGIN
+          RETURN (region.first = NIL);
+        END IsEmpty;
+      
+      PROCEDURE IsExit(region: Region): BOOLEAN;
+        BEGIN
+          RETURN (region.first # NIL) &
+              (region.first.nextProxy = NIL) &
+              (region.first.instr.opcode = Opcode.exit);
+        END IsExit;
+      
       BEGIN
         IF (proxy. length < 0) THEN
-          WITH proxy: Region DO
-            l := 1;
-            p := proxy. first;
-            WHILE (p # NIL) DO
-              INC (l, GetLength (p));
-              p := p. nextProxy;
+          WITH proxy: Select DO
+            IF (LEN(proxy.paths^) = 2) &
+               ((IsEmpty(proxy.paths[0]) & IsExit(proxy.paths[1])) OR
+                (IsEmpty(proxy.paths[1]) & IsExit(proxy.paths[0]))) THEN
+              (* treat two way select containing only a single exit in one of
+                 its branches specially; the idea is to move such a select,
+                 which appears at the end of a WHILE or REPEAT, pretty much
+                 to the end of the block *)
+              l := 0;
+            ELSE
+              l := RegionLength(proxy);
             END;
+          | proxy: Region DO
+            l := RegionLength(proxy);
           ELSE
             CASE proxy. instr. opcode OF
             | Opcode.collect: l := -1;
