@@ -759,6 +759,34 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       w. Ref (instr. opndList. nextOpnd);
     END WriteDyadicOp;
   
+  PROCEDURE WriteDyadicOpU (instr: SSA.Instr; op: ARRAY OF CHAR);
+  (* Like WriteDyadicOp, but if first argument is unsigned, then cast both
+     arguments to the unsigned type.  *)
+    VAR
+      type: DeclWriter.BasicTypeId;
+      subclass: Opcode.Subclass;
+    BEGIN
+      subclass := instr.opndList.arg.subclass;
+      IF (Opcode.scUnsigned8 <= subclass) & (subclass <= Opcode.scAddress) THEN
+        type := Allocator.SubclassToBasicType(subclass);
+        IF (type < DeclWriter.uint8) THEN  (* force unsigned for address *)
+          INC(type, DeclWriter.uint8-DeclWriter.int8);
+        END;
+        
+        w. WriteChar ("(");
+        w. WriteString (w. basicType[type]. repr);
+        w. WriteChar (")");
+        w. Ref (instr. opndList);
+        w. WriteString (op);
+        w. WriteChar ("(");
+        w. WriteString (w. basicType[type]. repr);
+        w. WriteChar (")");
+        w. Ref (instr. opndList. nextOpnd);
+      ELSE
+        WriteDyadicOp(instr, op);
+      END;
+    END WriteDyadicOpU;
+  
   PROCEDURE WriteDyadicFct (instr: SSA.Instr; fct: ARRAY OF CHAR);
     BEGIN
       w. WriteString (fct);
@@ -1203,13 +1231,13 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
     | Opcode.neq:
       WriteDyadicOp (instr, "!=");
     | Opcode.lss:
-      WriteDyadicOp (instr, "<");
+      WriteDyadicOpU (instr, "<");
     | Opcode.leq:
-      WriteDyadicOp (instr, "<=");
+      WriteDyadicOpU (instr, "<=");
     | Opcode.gtr:
-      WriteDyadicOp (instr, ">");
+      WriteDyadicOpU (instr, ">");
     | Opcode.geq:
-      WriteDyadicOp (instr, ">=");
+      WriteDyadicOpU (instr, ">=");
       
     | Opcode.assert:
       Assert (instr);
