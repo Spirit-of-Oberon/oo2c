@@ -503,6 +503,19 @@ PROCEDURE (result: Result) ResultIndex*(): LONGINT;
     RETURN i;    
   END ResultIndex;
 
+PROCEDURE (calledAdr: Result) CalledProc*(): Sym.ProcDecl;
+(**Given the first argument of a @oconst{Opcode.call} instruction, return the
+   called procedure iff the call is static.  Otherwise, return @code{NIL}.  *)
+  BEGIN
+    IF (calledAdr.instr.opcode = Opcode.address) THEN
+      RETURN calledAdr.instr(Address).decl(Sym.ProcDecl);
+    ELSIF (calledAdr.instr.opcode = Opcode.declRef) THEN
+      RETURN calledAdr.instr(DeclRef).decl(Sym.ProcDecl);
+    ELSE
+      RETURN NIL;
+    END;
+  END CalledProc;
+
 PROCEDURE (result: Result) IsBooleanConst* (value: BOOLEAN): BOOLEAN;
 (**Returns @code{TRUE} if the result is an instruction of type @otype{Const}
    with a boolean value of @oparam{value}.
