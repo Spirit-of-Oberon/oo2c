@@ -96,8 +96,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           Replace (instr, instr. opndList. nextOpnd);
         ELSIF Equals (instr. opndList. nextOpnd, intOne) THEN (* x*1 = x *)
           Replace (instr, instr. opndList);
-          (*IF Equals (instr. opndList, intZero) THEN (* 0*x = 0 *)*)
-          (*ELSIF Equals (instr. opndList. nextOpnd, intOne) THEN (* x*0 = 0 *)*)
+        ELSIF Equals (instr. opndList, intZero) THEN (* 0*x = 0 *)
+          Replace (instr, instr. opndList);
+        ELSIF Equals (instr. opndList. nextOpnd, intZero) THEN (* x*0 = 0 *)
+          Replace (instr, instr. opndList. nextOpnd);
         END;
         
       ELSE  (* ignore any other instructions *)
