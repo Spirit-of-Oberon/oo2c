@@ -995,7 +995,11 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
       Builder's Finalize method *)
 
     (* eighth pass: resolve forward declarations of procedures *)
-    ResolveForwardDecl (root, errList);
+    IF errList.NoErrors() THEN
+      (* if there are type names that could not be resolved, then this
+         function cannot operator properly; only run it if we are clean *)
+      ResolveForwardDecl (root, errList);
+    END;
 
 
     (* here holds: any namespace (module, procedure, or record) can be
