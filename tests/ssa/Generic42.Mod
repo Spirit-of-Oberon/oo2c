@@ -18,8 +18,8 @@ PROCEDURE P*();
     l1: List<G.A1>;
     l2: AnotherList<G.A1>;
   BEGIN
-    l1 := List<G.A1>();
-    l2 := AnotherList<G.A1>();
+    l1 := NEW(List<G.A1>);
+    l2 := NEW(AnotherList<G.A1>);
   END P;
 
 END Generic42.

@@ -11,7 +11,8 @@
   generic18 generic19 generic20 generic21 generic22 generic23
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
-  generic36 generic37 generic38 generic39 generic40 generic41">-->
+  generic36 generic37 generic38 generic39 generic40 generic41
+  generic42 generic43 generic44 generic45">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; generic1 generic45">-->
@@ -2073,9 +2074,9 @@
         msg="Argument not compatible with formal type `Generic1.A1'"/>
     <warning-info id="generic40" pos="l3(%List"
         msg="Warning: Redundant type test"/>
-    <reject-info id="generic43" pos="(%123)"
+    <reject-info id="generic43" pos=", %123)"
         msg="Too many arguments"/>
-    <reject-info id="generic44" pos=":= %List"
+    <reject-info id="generic44" pos=":= NEW(%List"
         msg="Not a record pointer type"/>
 
     <warning-info id="undef1" pos="x := %y;"

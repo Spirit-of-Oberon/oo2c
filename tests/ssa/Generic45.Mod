@@ -32,8 +32,8 @@ PROCEDURE (al: AnotherList) INIT*(a, b: INTEGER);
 
 PROCEDURE Test*();
   BEGIN
-    l1 := List<G.A1>(123);
-    l2 := AnotherList<G.Object>(456, 789);
+    l1 := NEW(List<G.A1>, 123);
+    l2 := NEW(AnotherList<G.Object>, 456, 789);
 
     Out.Int(l1.a, 0); Out.Ln;
     Out.Int(l2.a, 0); Out.Ln;

@@ -13,7 +13,7 @@ PROCEDURE P*();
   VAR
     l1: List<G.A1>;
   BEGIN
-    l1 := List<G.A1>(123);
+    l1 := NEW(List<G.A1>, 123);
   END P;
 
 END Generic43.
