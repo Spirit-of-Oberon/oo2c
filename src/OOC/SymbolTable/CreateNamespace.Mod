@@ -162,7 +162,7 @@ RAISES IO.Error;
    the module's source code.  *)
   VAR
     lastError: Error.Msg;
-    visited: Dictionary.Dictionary;
+    visited, privateRecords: Dictionary.Dictionary;
     
   PROCEDURE SetErrPos(err: Error.Msg; pos: Sym.Position);
     VAR
@@ -241,7 +241,9 @@ RAISES IO.Error;
      identifiers to declarations.
      
      Note: Type-bound procedures and forward declarations of procedures are
-     @emph{not} included in the namespace mapping.  *)
+     @emph{not} included in the namespace mapping.
+
+     This procedure also adds all record types to @ovar{privateRecords}.  *)
     VAR
       ptr: Sym.Item;
 
@@ -352,7 +354,8 @@ RAISES IO.Error;
         | item: Sym.ProcDecl DO
           item. SetNamespace (Assemble (item, TRUE))
         | item: Sym.Record DO
-          item. SetNamespace (Assemble (item, FALSE))
+          item. SetNamespace (Assemble (item, FALSE));
+          privateRecords.Set(item, NIL);
         ELSE  (* no other item is associated with a namespace *)
         END
       END
@@ -677,7 +680,17 @@ RAISES IO.Error;
               record := record(Sym.Pointer). baseType
             END;
             WITH record: Sym.Record DO
-              record. ns(Namespace.Extended). InsertTBProc (ptr, errList)
+              record. ns(Namespace.Extended). InsertTBProc (ptr, errList);
+              IF (ptr.name.pos >= 0) &  (* don't overwrite imported flag *)
+                 ((ptr.exportMark = Sym.nameNotExported) OR
+                  privateRecords.HasKey(record)) THEN
+                (* if procedure is not exported or if the record type is not
+                   visible outside this module, then client modules cannot
+                   redefine this procedure; the procedure CheckRestrictions
+                   in module Namespace will detect redefinitions within the
+                   local module *)
+                ptr.notRedefined := TRUE;
+              END;
             ELSE  (* receiver is malformed in some way *)
             END
           END
@@ -793,6 +806,9 @@ RAISES IO.Error;
     END CheckExtendedRecords;
   
   PROCEDURE ResolveModifierFlags (item: Sym.Item; errList: Error.List);
+  (* As a side-effect, this procedure removes a record from
+     @ovar{privateRecords} if one of its names or one of the names of its
+     exensions is exported.  *)
     VAR
       ptr: Sym.Item;
       type: Sym.Type;
@@ -938,6 +954,16 @@ RAISES IO.Error;
               item.supplementArgs := FALSE;
             END;
           END;
+
+        | item: Sym.TypeDecl DO
+          IF (item.exportMark # Sym.nameNotExported) &
+             (item.type IS Sym.Record) THEN
+            type := item.type;
+            WHILE (type # NIL) & privateRecords.HasKey(type) DO
+              privateRecords.Delete(type);
+              type := type(Sym.Record).baseType;
+            END;
+          END;
         ELSE  (* ignore *)
         END;
         
@@ -992,6 +1018,7 @@ RAISES IO.Error;
     (* first pass: create namespace objects for module, procedures, and
        records (excluding any type-bound procedures and procedure 
        forward declarations) *)
+    privateRecords := Dictionary.New();
     PopulateNamespace (root);
     
     (* second pass: check local uniqueness constraint for module, procedure, 
@@ -1018,7 +1045,8 @@ RAISES IO.Error;
       
     (* fourth and a half pass: resolve modifier flags that may be attached to
        declarations and types; this must be done before dealing with any
-       restrictions imposed on data type *)
+       restrictions imposed on data type; this call also eliminates all
+       non-private records from privateRecords *)
     visited := Dictionary.New();
     ResolveModifierFlags (root, errList);
     
@@ -1026,7 +1054,8 @@ RAISES IO.Error;
     CheckTypeRestrictions (root, errList);
 
     (* sixth pass: traverse list of type-bound procedures and insert them
-       into the corresponding record namespace *)
+       into the corresponding record namespace; also set notRedefined flag
+       for type-bound procedures that cannot be redefined outside the module *)
     InsertTypeBoundProcs (root, errList);
 
     (* seventh pass: fixup formal parameter types, so that the type has
@@ -1046,7 +1075,8 @@ RAISES IO.Error;
        searched and is guaranteed to deliver the correct results *)
     
     (* nineth pass: check namespace restrictions imposed on extended
-       records and assign indexes to type-bound procedures *)
+       records and assign indexes to type-bound procedures; fix notRedefined
+       for type-bound procedures that are redefined in the local module *)
     IF errList.NoErrors() THEN
       (* if there are type names that could not be resolved, then this
          function cannot operate properly; only run it if we are clean *)

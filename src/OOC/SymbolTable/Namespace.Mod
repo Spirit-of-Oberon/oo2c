@@ -440,6 +440,9 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               ErrDecl (invalidTBProcExport, decl, errList)
             END;
             IF TR.IsValidRedefinition (base. formalPars, decl. formalPars) THEN
+              IF base.notRedefined THEN
+                base.notRedefined := FALSE;
+              END;
               base. CopyTBProcIndex (decl);
               IF (decl. name. pos < base. visibleFrom) THEN
                 ErrDecl (redefinitionBeforeBase, decl, errList)
