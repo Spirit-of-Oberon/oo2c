@@ -660,11 +660,19 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     END NewObject;
   
   PROCEDURE TypeCast (instr: SSA.Instr);
+    VAR
+      destType, sourceType: Opcode.Subclass;
     BEGIN
-      w. WriteString ("_type_cast(");
-      w. WriteString (w. basicType[Allocator.SubclassToBasicType (instr. subclass)]. repr);
+      destType := Allocator.SubclassToBasicType (instr. subclass);
+      sourceType := Allocator.SubclassToBasicType (instr. opndList. arg. instr. subclass);
+      IF Opcode.ConvDiffersFromCast (sourceType, destType) THEN
+        w. WriteString ("_type_cast(");
+      ELSE
+        w. WriteString ("_type_cast_fast(");
+      END;
+      w. WriteString (w. basicType[destType]. repr);
       w. WriteString (", ");
-      w. WriteString (w. basicType[Allocator.SubclassToBasicType (instr. opndList. arg. instr. subclass)]. repr);
+      w. WriteString (w. basicType[sourceType]. repr);
       w. WriteString (", ");
       w. Ref (instr. opndList);
       w. WriteString (");");

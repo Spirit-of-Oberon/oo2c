@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; record11" >-->
+  select ="&SetupTestCasesWithOut; val1 val2" >-->
 
   &TestSetupWithOut;
     
@@ -223,6 +223,17 @@
 
     <test id="minmax1" type="run" file="MinMax1.Mod" output="MinMax1.Ref">
       <code>MIN</code> and <code>MAX</code> of the integer types.
+    </test>
+
+    <test id="val1" type="run" file="Val1.Mod" output="Val1.Ref">
+      Use <code>SYSTEM.VAL</code> to cast a <code>REAL</code> to
+      a <code>LONGINT</code>.  This requires some trickery in the C
+      back-end, because a type conversion must be prevented.
+    </test>
+    
+    <test id="val2" type="run" file="Val2.Mod" output="Val2.Ref">
+      Use <code>SYSTEM.VAL</code> to cast a <code>SET</code> to
+      a <code>LONGINT</code>.
     </test>
   </testcases>
   

@@ -629,6 +629,13 @@ PROCEDURE IsUnsigned* (subclass: Subclass): BOOLEAN;
     RETURN (scUnsigned8 <= subclass) & (subclass <= scUnsigned64)
   END IsUnsigned;
 
+PROCEDURE ConvDiffersFromCast* (from, to: Subclass): BOOLEAN;
+(**Returns @code{TRUE}, if a C type cast expression would do a type conversion,
+   instead of merely reinterpreting the bit pattern of the source value.  *)
+  BEGIN
+    RETURN (from < scReal32) # (to < scReal32);
+  END ConvDiffersFromCast;
+
 PROCEDURE GetSubclassName* (subclass: Subclass; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of a subclass id.  *)
   VAR
