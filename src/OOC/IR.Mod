@@ -2371,6 +2371,7 @@ PROCEDURE (b: Builder) NewConstructor* (sym: Symbol; type: Expression;
       RETURN b.ErrExpr(notRecordPointerType, type.sym);
     END;
     consType := type(TypeRef).qualType;
+    consType := Sym.Expand(consType);
     ptr := TR.PointerBaseType(consType);
     qualRecord := consType.Closure(ptr);
     ptr := ptr.Deparam();
@@ -3149,7 +3150,7 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
       (* Case 4: NIL < procedure value *)
       RETURN TRUE;
       
-    ELSIF TR.IsPointer(expr.type) & TR.IsPredefType(type, Predef.ptr) THEN
+    ELSIF TR.IsPredefType(type, Predef.ptr) & TR.IsPtrCompatible(expr.type) THEN
       (* Case 5: pointer value < SYSTEM.PTR *)
       RETURN TRUE;
       
@@ -5692,11 +5693,13 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
         IF TR.SameType (fparType, argType) OR
            IsPredefType (fparType, Predef.byte) &
              TR.IsByteCompatible (argType) OR
+           IsPredefType (fparType, Predef.ptr) &
+             TR.IsPtrCompatible (argType) OR
            TR.IsOpenArrayType (fparType) &
              IsPredefType (fparType(Sym.Array).elementType, Predef.byte) THEN
-          (* same type, or passing a CHAR or SHORTINT to a BYTE, or passing
-             anything to an ARRAY OF BYTE: argument is compatible to formal
-             parameter *)
+          (* same type, or passing a CHAR or SHORTINT to a BYTE, or passing a
+             pointer to a PTR, or passing anything to an ARRAY OF BYTE:
+             argument is compatible to formal parameter  *)
         ELSIF (fparType IS Sym.Record) THEN
           IF ~TR.IsExtensionOfNoParams(argType, fparType) THEN
             (* formal parameter is record, and the argument type is not

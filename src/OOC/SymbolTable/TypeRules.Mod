@@ -787,6 +787,13 @@ PROCEDURE IsByteCompatible* (type: Sym.Type): BOOLEAN;
     END;
   END IsByteCompatible;
 
+PROCEDURE IsPtrCompatible* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} can be assigned to
+   a @samp{PTR} variable.  *)
+  BEGIN
+    RETURN IsPointer(type);
+  END IsPtrCompatible;
+
 PROCEDURE IsNilCompatible* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the value @code{NIL} can be assigned to
    variables of type @oparam{type}, or if @code{NIL} can be compared to
