@@ -1,0 +1,29 @@
+NewRegion: 12
+NewRegion: 0123456, Length: 8
+Testing String
+Compare(ABC,BCD)=-1
+Compare(ABC,ABC)=0
+Compare(BCD,ABC)=1
+Compare(ABC,AB)=1
+Compare(AB,ABC)=-1
+Equals: TRUE
+GetChars: abcde
+GetChars: abc
+GetChar: d
+Extract: bcd
+StartsWith: TRUE
+StartsWith: FALSE
+EndsWith: FALSE
+EndsWith: TRUE
+Concat: abcdeABCDE
+FindFirst: 4
+FindFirst: -1
+FindLast: 4
+FindLast: 1
+FindLast: -1
+CompareRegion: 0
+CompareRegionArray: 0
+CompareRegionArray: -1
+CompareRegionArray: 1
+Map: -abcab-
+Map: .BCDBC.
