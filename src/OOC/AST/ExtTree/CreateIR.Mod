@@ -139,6 +139,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           res := b. NewIntConst10 (expr. sym)
         | Symbol.number16X:
           res := b. NewCharConst16 (expr. sym)
+        | Symbol.nil:
+          res := b. NewNil (expr. sym)
         END
 
       | expr: ExtTree.Factor DO
