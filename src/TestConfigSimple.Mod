@@ -18,6 +18,7 @@ VAR
   errList: Msg.MsgList;
   msg: Msg.Msg;
   i: LONGINT;
+  dummy: BOOLEAN;
   
 PROCEDURE WriteOption (opt: Options.Option);
   VAR
@@ -44,7 +45,8 @@ PROCEDURE WriteArgument (i: LONGINT);
   END WriteArgument;
 
 BEGIN
-  ASSERT (RT0.GetEnv ("DEFAULT_CFG_FILE", fileName));
+  dummy := RT0.GetEnv ("DEFAULT_CFG_FILE", fileName);
+  ASSERT (dummy);
   config := Simple.New (fileName);
   
   optionA := config. options. Set ("a", StringValue.New ("default"));
