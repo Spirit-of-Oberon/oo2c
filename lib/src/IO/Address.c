@@ -36,7 +36,7 @@ IO_Address__Inet IO_Address__GetByName(Object__String8 host) {
     if (hostinfo == NULL) {
       Exception__Exception e =
 	RT0__NewObject(OOC_TYPE_DESCR(IO_Address,UnknownHostExceptionDesc));
-      IO__ErrorDesc_INIT(e, (Object__String)host);
+      IO__ErrorDesc_INIT((IO__Error)e, (Object__String)host);
       Exception__Raise(e);
     } else {
       return (IO_Address__Inet)new_inet4(ntohl(*(uint32_t*)hostinfo->h_addr));
