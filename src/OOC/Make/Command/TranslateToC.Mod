@@ -21,10 +21,12 @@ MODULE OOC:Make:Command:TranslateToC;
 *)
 
 IMPORT
-  Channel, Files, Make, TextRider, ADT:String, URI, OOC:Make:Entity:ModuleFile,
+  Channel, Files, Make, TextRider, ADT:String, ADT:Dictionary,
+  URI, OOC:Make:Entity:ModuleFile,
   OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Error, OOC:Repository, OOC:AST, 
-  OOC:SymbolTable:Item;
+  OOC:SymbolTable:Item, OOC:SymbolTable:Exports,
+  OOC:C:WriteDecl, OOC:C:ConvertDecl;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -99,13 +101,14 @@ PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
   END Discover;
 
 PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
-                     ast: AST.Node; symTab: Item.Module; errList: Error.List);
+                     ast: AST.Node; symTab: Item.Module;
+                     exports: Dictionary.Dictionary;
+                     errList: Error.List);
   VAR
     ch: Channel.Channel;
     baseURI: URI.HierarchicalURI;
     res: Error.Msg;
     w: TextRider.Writer;
-    import: Repository.Import;
   
   PROCEDURE WriteInclude (w: TextRider.Writer;
                           includeURI: URI.HierarchicalURI);
@@ -144,6 +147,15 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
       w. WriteLn;
     END WriteModuleName;
   
+  PROCEDURE WriteDeclarations (w: TextRider.Writer; writeExported: BOOLEAN);
+    VAR
+      f: WriteDecl.Block;
+    BEGIN
+      f := WriteDecl.NewBlock();
+      ConvertDecl.Convert (m, symTab, f, exports, writeExported);
+      f. Write (w)
+    END WriteDeclarations;
+  
   BEGIN
     ch := m. GetOutputChannel (fileId, TRUE, res);
     IF (res = Channel.done) THEN
@@ -155,20 +167,24 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         WriteModuleName (w, "#ifndef _MODULE_", m, "_");
         WriteModuleName (w, "#define _MODULE_", m, "_");
         w. WriteLn;
+        
         (*w. WriteString ('#include "_oo2c.h"'); w. WriteLn;*)
-        import := m. importList;
+(*        import := m. importList;
         WHILE (import # NIL) DO
           WriteInclude (w, import. imported.
             GetURI (Repository.modHeaderFileC));
           import := import. nextImport
-        END;
-        WriteModuleName (w, "extern void ", m, "(void);");
+        END;*)
+        
+        WriteDeclarations (w, TRUE);
         w. WriteLn;
+        
         WriteModuleName (w, "#endif /* ", m, " */");
         
         
       | Repository.modDeclFileC:
-         WriteInclude (w, m. GetURI (Repository.modHeaderFileC))
+        WriteInclude (w, m. GetURI (Repository.modHeaderFileC));
+        WriteDeclarations (w, FALSE);
           
       | Repository.modCodeFileC:
          WriteInclude (w, m. GetURI (Repository.modDeclFileC));
@@ -199,6 +215,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     errList: Error.List;
     m: Repository.Module;
     config: Config.Config;
+    exports: Dictionary.Dictionary;
   BEGIN
     m := cmd. module;
     config := cmd. context. config(Config.Config);
@@ -206,9 +223,12 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     (* symbol file is written by the `ParseModule' function *)
     
     (* ... not much to do right now *)
-    WriteFile (m, Repository.modHeaderFileC, ast, symTab, errList);
-    WriteFile (m, Repository.modDeclFileC, ast, symTab, errList);
-    WriteFile (m, Repository.modCodeFileC, ast, symTab, errList);
+    exports := Exports.GetExports (symTab);
+    WriteFile (m, Repository.modHeaderFileC, ast, symTab, exports, errList);
+    WriteFile (m, Repository.modDeclFileC, ast, symTab, exports, errList);
+    IF (symTab. class = Item.mcStandard) THEN
+      WriteFile (m, Repository.modCodeFileC, ast, symTab, exports, errList)
+    END;
     
     cmd. errList := errList;
     RETURN (errList. msgCount = 0)
