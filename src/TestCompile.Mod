@@ -30,7 +30,7 @@ PROCEDURE OptionToMatcher (option: Options.Option; cmdLineName: ARRAY OF CHAR): 
   VAR
     matcher: StringSearch.Matcher;
   BEGIN
-    matcher := RegexpDFA.factory.Compile(option.value(CfgData.StringVar).string(Object.String8), {});
+    matcher := RegexpDFA.factory.Compile(option.value(CfgData.StringVar).string.ToString8("_"), {});
     IF (matcher = NIL) THEN
       Err.String ("Warning: Cannot parse regular expression in ");
       Err.String (cmdLineName);
