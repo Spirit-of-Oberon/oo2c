@@ -37,6 +37,6 @@
 /* ASSERT(p) and ASSERT(p,code) */
 extern void NORETURN _assertion_failed(OOC_INT32 code, OOC_CHARPOS pos) NORETURN2;
 #define _assert(p,code,pos) \
-  if (!(p)) { _assertion_failed(code, pos) NORETURN2; }
+  if (!(p)) { _assertion_failed(code, pos); }
 
 #endif /* __oo2c__ */
