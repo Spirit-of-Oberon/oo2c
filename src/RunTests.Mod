@@ -305,34 +305,38 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
           reportWriter. AttrStringLatin1 ("class", str);
           reportWriter. EndTag;          (* outcome *)
           reportWriter. EndTag;          (* test-result *)
-            
-          Out.String ("--> TEST RESULT: ");
-          CASE class OF
-          | skipped: Out.String ("SKIPPED ")
-          | failed: Out.String ("FAILED ")
-          | passed: Out.String ("PASSED ")
-          | tolerated: Out.String ("TOLERATED ")
-          END;
-          Out.String (test. id);
-          Out.String (" / ");
-          test. file. GetString (path);
-          i := Strings.Length (path);
-          WHILE (i # 0) & (path[i] # "/") DO
-            DEC (i);
-          END;
-          Strings.Delete (path, 0, i+1);
-          Out.String (path);
-          IF (test. relevance = Testcases.relevanceInformal) &
-              (result # Processor.processCrash) THEN
-            Out.String (" (informal test)")
+
+          IF (class = skipped) THEN
+            INC (results[class]);
           ELSE
-            IF (class = failed) & stopOnError THEN
-              Out.Ln; Out.String ("Aborting..."); Out.Ln; HALT (2)
+            Out.String ("--> TEST RESULT: ");
+            CASE class OF
+            | skipped: Out.String ("SKIPPED ")
+            | failed: Out.String ("FAILED ")
+            | passed: Out.String ("PASSED ")
+            | tolerated: Out.String ("TOLERATED ")
             END;
-            
-            INC (results[class])
+            Out.String (test. id);
+            Out.String (" / ");
+            test. file. GetString (path);
+            i := Strings.Length (path);
+            WHILE (i # 0) & (path[i] # "/") DO
+              DEC (i);
+            END;
+            Strings.Delete (path, 0, i+1);
+            Out.String (path);
+            IF (test. relevance = Testcases.relevanceInformal) &
+               (result # Processor.processCrash) THEN
+              Out.String (" (informal test)")
+            ELSE
+              IF (class = failed) & stopOnError THEN
+                Out.Ln; Out.String ("Aborting..."); Out.Ln; HALT (2)
+              END;
+              
+              INC (results[class])
+            END;
+            Out.Ln;
           END;
-          Out.Ln;
           
           IF (test. next # NIL) THEN
             test := test. next(Testcases.Test)
