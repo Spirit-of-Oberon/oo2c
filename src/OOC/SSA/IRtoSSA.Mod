@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:IRtoSSA;
 (*  Converts the IR of a procedure into its SSA representation.
-    Copyright (C) 2001-2003  Michael van Acken
+    Copyright (C) 2001-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -589,7 +589,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     PROCEDURE TypeGuard (guard: IR.TypeGuard): SSA.Result;
       VAR
         design: SSA.Result;
-        tag: SSA.Instr;
+        tag, instr, adr: SSA.Instr;
 
       PROCEDURE NewTypeGuard (adr, tag: SSA.Result): SSA.Instr;
         VAR
@@ -618,6 +618,19 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
             design. instr. opndList. nextOpnd. ReplaceArg
                 (NewTypeGuard (design. instr. opndList. nextOpnd. arg, tag));
             RETURN design;
+          ELSIF (guard.test.origExpr IS IR.Deref) THEN
+            (* need to dereference the tested pointer, because TypeTest
+               dropped this *)
+            adr := NewTypeGuard (design, tag);
+            instr := pb.AddInstr(Opcode.get,
+                                 Opcode.TypeToSubclass(guard.type));
+            instr.AddOpnd(s, Opnd.store);
+            instr.AddOpnd(adr, Opnd.readAdr);
+            instr.AddOpnd(pb.GetTypeRef(guard.test.expr.type),
+                          Opnd.readDesign);
+            instr.AddOpnd(adr, Opnd.readDesign);
+            Chain (instr);
+            RETURN instr;
           ELSE
             RETURN NewTypeGuard (design, tag);
           END;
