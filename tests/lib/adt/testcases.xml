@@ -10,4 +10,7 @@
   <test id="libadt_StringBuffer" type="run" file="LibAdtStringBuffer.Mod">
     Imports the module <code>ADT:StringBuffer</code>.
   </test>
+  <test id="libadt_Dictionary" type="run" file="LibAdtDictionary.Mod">
+    Imports the various variants of module <code>ADT:Dictionary</code>.
+  </test>
 </testcases>
