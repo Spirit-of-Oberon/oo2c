@@ -122,7 +122,6 @@ PROCEDURE (t : Type) ToString* () : STRING;
 VAR
   b : StringBuffer.StringBuffer;
   o : Object;
-  str: Obj.String;
 BEGIN
   b := StringBuffer.New("");
   CASE t.class OF
