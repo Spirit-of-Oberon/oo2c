@@ -1,7 +1,7 @@
 MODULE LibAdtObjectStorage;
 
 IMPORT
-  Files, Msg, Out, ADT:Storable, ADT:Object:Storage;
+  Out, IO, IO:FileChannel, ADT:Storable, ADT:Object:Storage;
 
 TYPE
   Data = POINTER TO DataDesc;
@@ -76,10 +76,9 @@ PROCEDURE GenData(): Data;
     RETURN d1;
   END GenData;
 
-PROCEDURE Test* ();
+PROCEDURE Test* () RAISES IO.Error;
   VAR
-    f: Files.File;
-    res: Msg.Msg;
+    f: FileChannel.Channel;
     w: Storage.Writer;
     r: Storage.Reader;
     data1, data2: Data;
@@ -90,14 +89,12 @@ PROCEDURE Test* ();
     data1 := GenData();
     Write(data1);
     
-    f := Files.New(dumpFile, {Files.write}, res);
-    ASSERT(res = Files.done);
+    f := FileChannel.Open(dumpFile, {FileChannel.write, FileChannel.create});
     w := Storage.ConnectWriter(f);
     w. WriteObject (data1);
     f.Close;
 
-    f := Files.Old(dumpFile, {Files.read}, res);
-    ASSERT(res = Files.done);
+    f := FileChannel.Open(dumpFile, {FileChannel.read});
     r := Storage.ConnectReader(f);
     r. ReadObject (obj);
     data2 := obj(Data);
