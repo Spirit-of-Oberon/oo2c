@@ -553,6 +553,9 @@ TYPE
        to the @ofield{receiver} designator.  *)
     receiver-: Expression;
     (**The receiver designator of the call.  *)
+    recordType-: Sym.Type;
+    (**The static record type (aka class) on which the type-bound procedure
+       is called.  *)
     checkPointer-: BOOLEAN;
     (**If @code{TRUE}, then a run-time error should be reported if the
        receiver value is @code{NIL}.  *)
@@ -1179,7 +1182,6 @@ CONST
   unreachableGuard = 65;
   untriggeredCatch = 66;
   notTypeInstance = 67;
-  crossProcSuperCall = 68;
   notParametricType = 69;           (* used as in CreateNamespace *)
   tooFewTypeArgs = 70;              (* used as in CreateNamespace *)
   tooManyTypeArgs = 71;             (* used as in CreateNamespace *)
@@ -1385,8 +1387,6 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := Error.warningPrefix+"Type matches none of the raised exceptions"
     | notTypeInstance:
       t := "Type test requires static type instance"
-    | crossProcSuperCall:
-      t := "Cross procedure super call"
     | notParametricType:
       t := "This is not a parametric type"
     | tooFewTypeArgs:
@@ -2480,7 +2480,8 @@ PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
     class: Sym.Record;
   BEGIN
     WITH design: SelectProc DO (* super call of type-bound procedure *)
-      class := design.tbProc.Class();
+      type := design.recordType.Deparam();
+      class := type(Sym.Record);
       design. tbProc := class.ns(Namespace.Extended).
           GetSuperProcByIndex(design.tbProc.tbProcIndex);
       IF design.isSuperCall THEN
@@ -2866,6 +2867,8 @@ PROCEDURE InitSelectProc (sp: SelectProc; sym: Symbol; receiver: Expression;
   VAR
     baseRecord, class, ptr: Sym.Type;
   BEGIN
+    sp.recordType := recordType;
+    
     (* determine the record type that defines `tbProc' *)
     class := tbProc.Class();
     baseRecord := recordType;
@@ -4678,10 +4681,6 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
         | expr: SelectField DO
           CheckExpr(expr.record);
         | expr: SelectProc DO
-          IF expr.isSuperCall &
-             (expr.tbProc.name.str^ # procDecl.name.str^) THEN
-            b.ErrSym(crossProcSuperCall, expr.tbProcSym);
-          END;
           CheckExpr(expr.receiver);
         | expr: SetMember DO
           CheckExpr(expr.element);

@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic62 generic63">-->
+  select ="&SetupTestCasesWithOut; tbproc9 tbproc10 tbproc11 tbproc12">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
@@ -905,8 +905,20 @@
       The called type-bound procedure is not exported by
       <code>TBProc1.Mod</code>.
     </test>
-    <test id="tbproc9" type="reject" file="TBProc9.Mod">
+    <test id="tbproc9" type="run" file="TBProc9.Mod" output="TBProc9.Ref">
       Super call to a different procedure.
+    </test>
+    <test id="tbproc10" type="run" file="TBProc10.Mod" output="TBProc10.Ref">
+      Super call to a different procedure, with the procedure
+      redefinition placed after the call.
+    </test>
+    <test id="tbproc11" type="run" file="TBProc11.Mod" output="TBProc11.Ref">
+      Super call to a different procedure, with the called procedure
+      defined after the call.
+    </test>
+    <test id="tbproc12" type="run" file="TBProc12.Mod" output="TBProc12.Ref">
+      Super call to a different procedure, with the called procedure
+      and the redefinition placed after the call.
     </test>
 
     
@@ -1856,7 +1868,6 @@
       msg="This variable has no dynamic type"/>
     
     <reject-info id="tbproc8" pos="p. %Proc" msg="Undeclared identifier"/>
-    <reject-info id="tbproc9" pos="p.%Proc" msg="Cross procedure super call"/>
 
     <reject-info id="inc2" pos="INC(%x,1)"
       msg="Expression must be of integer type"/>

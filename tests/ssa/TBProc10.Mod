@@ -1,4 +1,4 @@
-MODULE TBProc9;
+MODULE TBProc10;
 
 IMPORT
   Out:=Out0;
@@ -12,15 +12,15 @@ PROCEDURE (p: P0) Proc ();
     Out.String("P0.Proc");
   END Proc;
 
-PROCEDURE (p: P1) Proc ();
-  BEGIN
-    Out.String("P1.Proc");
-  END Proc;
-
 PROCEDURE (p: P1) ProcX ();
   BEGIN
     p.Proc^; Out.Ln;
   END ProcX;
+
+PROCEDURE (p: P1) Proc ();
+  BEGIN
+    Out.String("P1.Proc");
+  END Proc;
 
 PROCEDURE Test*();
   VAR
@@ -30,4 +30,4 @@ PROCEDURE Test*();
     p.ProcX();
   END Test;
 
-END TBProc9.
+END TBProc10.
