@@ -1257,7 +1257,7 @@ RAISES IO.Error;
     b.Append(".xml");
     fileName := b.ToString();
     
-    f := FileChannel.Open(fileName(Object.String8),
+    f := FileChannel.Open(fileName,
                           {FileChannel.write, FileChannel.create,
                            FileChannel.truncate});
     w := Writer.New(f, Latin1.factory, TRUE, 2);
@@ -1302,7 +1302,7 @@ RAISES IO.Error;
     fileName := targetDir+pkgInfoFile;
     
     Logger.WriteFileName(fileName);
-    f := FileChannel.Open(fileName(Object.String8),
+    f := FileChannel.Open(fileName,
                           {FileChannel.write, FileChannel.create,
                            FileChannel.truncate});
     w := Writer.New(f, Latin1.factory, TRUE, 2);
