@@ -524,6 +524,7 @@ TYPE
   
 TYPE
   Call* = POINTER TO CallDesc;
+  BooleanArray* = POINTER TO ARRAY OF BOOLEAN;
   CallDesc = RECORD
     (**Calls to normal functions and procedures are mapped to this class.  It
        is not used to represent calls to type-bound procedures, nor to
@@ -536,6 +537,10 @@ TYPE
     (StatementDesc)
     design-: Expression;
     arguments-: ExpressionList;
+    passByReference-: BooleanArray;
+    (**If @samp{passByReference[i]} is @code{TRUE}, then the corresponding
+       value from @ofield{arguments} is the address of the actual argument,
+       not its value.  *)
   END;
 
 TYPE
@@ -1703,7 +1708,8 @@ PROCEDURE (ao: AssignOp) Accept* (v: Visitor);
 (* Expression Class: Call
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList);
+PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList;
+                    passByReference: BooleanArray);
   BEGIN
     InitStatement (call, design. sym);
     IF (design. type(Sym.FormalPars). resultType # NIL) THEN
@@ -1712,6 +1718,7 @@ PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList);
     END;
     call. design := design;
     call. arguments := arguments;
+    call. passByReference := passByReference;
   END InitCall;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitCall* (call: Call);
@@ -2411,6 +2418,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     targetType: Sym.PredefId;
     dim: LONGINT;
     type: Sym.Type;
+    passByReference: BooleanArray;
 
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
                                       expr: Expression;
@@ -2455,7 +2463,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
   
   PROCEDURE TransformArgs (sym: Symbol;
                            formalPars: Sym.VarDeclArray;
-                           arguments: ExpressionList): ExpressionList;
+                           arguments: ExpressionList;
+                           VAR passByReference: BooleanArray): ExpressionList;
   (**Takes the argument list from the parser and rewrites it to match the
      formal parameters of the called procedure.  The translation includes
      changes to the argument expressions (for example, type conversion to a
@@ -2469,6 +2478,22 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       fpar: Sym.VarDecl;
       arg: Expression;
       exprList: ExpressionList;
+      pbr: ARRAY 32 OF SET;  (* max of 1024 arguments *)
+    CONST
+      sizeSet = MAX (SET)+1;
+      
+    PROCEDURE PassByReference (ref: BOOLEAN);
+      VAR
+        i: LONGINT;
+      BEGIN
+        i := newArgs. size;
+        IF ref THEN
+          INCL (pbr[i DIV sizeSet], i MOD sizeSet);
+        ELSE
+          EXCL (pbr[i DIV sizeSet], i MOD sizeSet);
+        END;
+      END PassByReference;
+    
     BEGIN
       newArgs := ArrayList.New (LEN (arguments^));
       
@@ -2481,16 +2506,19 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         arg := MakeParameterCompatible (b, arg. sym, arg, fpar);
         
         IF fpar. isPassPerReference THEN
-          (* for argument passed by reference, add the address of the designator
-             to the argument list, not its value *)
+          (* for argument passed by reference, add the address of the
+             designator to the argument list, not its value *)
+          PassByReference (TRUE);
           newArgs. Append (b. NewAdr (sym, arg));
         ELSE
+          PassByReference (FALSE);
           newArgs. Append (arg);
         END;
         
         fparType := formalPars[fparIndex]. type;
         WITH fparType: Sym.Array DO
           FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
+            PassByReference (FALSE);
             newArgs. Append (b. Fold (b. NewLen (sym, arg, i)))
           END;
         ELSE  (* nothing to do *)
@@ -2501,8 +2529,10 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       END;
       
       NEW (exprList, newArgs. size);
+      NEW (passByReference, newArgs. size);
       FOR i := 0 TO newArgs. size-1 DO
-        exprList[i] := newArgs. array[i](Expression)
+        exprList[i] := newArgs. array[i](Expression);
+        passByReference[i] := (i MOD sizeSet) IN pbr[i DIV sizeSet];
       END;
       RETURN exprList
     END TransformArgs;
@@ -2610,8 +2640,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         NEW (call);
         arguments := TransformArgs (design. sym,
                                     design. type(Sym.FormalPars). params,
-                                    arguments);
-        InitCall (call, design, arguments);
+                                    arguments, passByReference);
+        InitCall (call, design, arguments, passByReference);
         RETURN call;
       END;
     END
@@ -2675,6 +2705,13 @@ BEGIN
                              expr(Const). value);
       END;
     ELSE
+    END;
+
+  ELSIF (expr. type IS Sym.FormalPars) THEN
+    IF (type IS Sym.FormalPars) &
+       tr. FormalParamsMatch (type(Sym.FormalPars),
+                              expr. type(Sym.FormalPars), FALSE) THEN
+      result := expr;
     END;
   END;
   RETURN result;

@@ -509,7 +509,9 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
 
     | type: Sym.Pointer DO
       RETURN scAddress;
-      
+
+    | type: Sym.FormalPars DO
+      RETURN scAddress;
     ELSE
       Log.Type ("++ Unknown type in TypeToSubclass", type);
       ASSERT (FALSE);

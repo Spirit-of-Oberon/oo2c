@@ -166,7 +166,12 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
           END;
           ptr := ptr. nextNested
         END;
-        RETURN fct;
+
+        (* declarations differ for function declarations and the definition
+           of function types: the latter is a pointer type, the former is
+           not; for simplicity, always add the pointer on top of the function
+           definition, and remove it later where appropriate *)
+        RETURN w. NewPointer (DeclWriter.tqNone, fct);
         
       | type: Sym.Array DO
         IF type. isOpenArray THEN
@@ -195,6 +200,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
     sc: DeclWriter.StorageClass;
     name: String.String;
     ctype: DeclWriter.Type;
+    fpars: DeclWriter.Type;
   BEGIN
     WITH item: Sym.ProcDecl DO
       CASE mode OF
@@ -209,9 +215,10 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
           sc := DeclWriter.scAuto
         END
       END;
+      fpars := ConvertType (w, item. formalPars, item. formalPars);
       RETURN w. NewDeclaration
         (Naming.NameOfDeclaration (item), DeclWriter.tqNone, sc,
-         ConvertType (w, item. formalPars, item. formalPars));
+         fpars(DeclWriter.Pointer). base);
 
     | item: Sym.ConstDecl DO
       IF (item. value # NIL) THEN

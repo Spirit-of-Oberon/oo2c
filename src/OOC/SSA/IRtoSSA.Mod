@@ -390,26 +390,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     VAR
       instr: SSA.Instr;
       i: LONGINT;
-      opndClass: Opnd.Class;
-
-    PROCEDURE IsPointer (type: Sym.Type): BOOLEAN;
-      BEGIN
-        RETURN
-            (type IS Sym.Pointer) OR
-            ((type IS Sym.PredefType) &
-             (type(Sym.PredefType). id = Predef.address))
-      END IsPointer;
-    
     BEGIN
       instr := pb. AddInstr (Opcode.call, Opcode.TypeToSubclass (call. type));
-      instr. AddOpnd (Expression (call. design), Opnd.procAdr);
+      instr. AddTypedOpnd (Expression (call. design), Opnd.procAdr,
+                           call. design. type, FALSE);
       FOR i := 0 TO LEN (call. arguments^)-1 DO
-        IF IsPointer (call. arguments[i]. type) THEN
-          opndClass := Opnd.argPointer
-        ELSE
-          opndClass := Opnd.arg
-        END;
-        instr. AddOpnd (Expression (call. arguments[i]), opndClass);
+        instr. AddTypedOpnd (Expression (call. arguments[i]),
+                             Opnd.arg,
+                             call. arguments[i]. type,
+                             call. passByReference[i]);
       END;
       RETURN instr
     END Call;

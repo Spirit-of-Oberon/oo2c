@@ -14,13 +14,13 @@
   function1 function2 function3 if1 if2 if3 function4 function5
   designator1 function6 loop1 loop2 loop3 loop4 varpar1
   record1 record2 record3 record4 record5 record6 record7 record8
-  record9
+  record9 procvar1 procvar2 procvar3 procvar4 procvar5
   inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7
   array1 array2 array3 array4 array5 array6 array7 array8">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; record7 record8 record9">-->
+  select ="&SetupTestCasesWithOut; procvar5">-->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -245,6 +245,32 @@
     <test id="array8" type="run" file="Array8.Mod" output="Array8.Ref">
       Like <code>array5</code>, but the variable is a 2-dimensional
       open array allocated on the heap.
+    </test>
+
+    <test id="procvar1" type="run" file="ProcVar1.Mod" output="ProcVar1.Ref">
+      Call procedures through procedure variables.  The procedures
+      have no arguments.
+    </test>
+    
+    <test id="procvar2" type="run" file="ProcVar2.Mod" output="ProcVar2.Ref">
+      Call procedures through procedure variables.  The procedures
+      have a value and a <code>VAR</code> argument.
+    </test>
+    
+    <test id="procvar3" type="run" file="ProcVar3.Mod" output="ProcVar3.Ref">
+      Call function procedures through procedure variables.
+    </test>
+    
+    <test id="procvar4" type="run" file="ProcVar4.Mod" output="ProcVar4.Ref">
+      Call procedure through procedure variables.  The procedures
+      have a value and a <code>VAR</code> argument of type
+      <code>RECORD</code>.
+    </test>
+    
+    <test id="procvar5" type="run" file="ProcVar5.Mod" output="ProcVar5.Ref">
+      Call procedure through procedure variables.  The procedures
+      have a value and a <code>VAR</code> argument of type
+      <code>ARRAY</code>.
     </test>
   </testcases>
   

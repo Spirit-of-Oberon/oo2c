@@ -381,7 +381,26 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
 
   PROCEDURE ^ Call (call: SSA.Instr);
     
-  PROCEDURE RefList (start: SSA.Opnd; class, castClass: Opnd.Class);
+  PROCEDURE CastToPtr (var: SSA.Result; type: Sym.Type;
+                       passByReference: BOOLEAN);
+    VAR
+      name: String.String;
+    BEGIN
+      IF (type IS Sym.Pointer) OR
+         (type IS Sym.FormalPars) OR
+         passByReference THEN
+        IF passByReference OR (type. namingDecl = NIL) THEN
+          w. WriteString ("(void*)");
+        ELSE
+          name := Naming.NameOfType (type);
+          w. WriteString ("(");
+          w. WriteString (name. array^);
+          w. WriteString (")");
+        END;
+      END;
+    END CastToPtr;
+  
+  PROCEDURE RefList (start: SSA.Opnd; class: Opnd.Class);
     VAR
       opnd: SSA.Opnd;
       count: LONGINT;
@@ -389,12 +408,14 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       count := 0;
       opnd := start;
       WHILE (opnd # NIL) DO
-        IF (opnd. class = class) OR (opnd. class = castClass) THEN
+        IF (opnd. class = class) THEN
           IF (count # 0) THEN
             w. WriteString (", ")
           END;
-          IF (opnd. class = castClass) THEN
-            w. WriteString ("(void*)")
+          IF (opnd IS SSA.TypedOpnd) THEN
+            CastToPtr (opnd. arg,
+                       opnd(SSA.TypedOpnd). type,
+                       opnd(SSA.TypedOpnd). passByReference);
           END;
           w. Ref (opnd);
           INC (count)
@@ -407,7 +428,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     BEGIN
       w. Newline;
       w. WriteString ("_assert(");
-      RefList (assert. opndList, Opnd.arg, -1);
+      RefList (assert. opndList, Opnd.arg);
       w. WriteString (", ");
       w. WriteString ("0");  (* ... file position missing *)
       w. WriteString (");")
@@ -415,9 +436,18 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
   
   PROCEDURE Call (call: SSA.Instr);
     BEGIN
-      w. Ref (call. opndList);
+      IF ~(call. opndList. arg IS SSA.DeclRef) THEN
+        (* calling through variable: cast address to function type *)
+        w. WriteChar ("(");
+        CastToPtr (call. opndList. arg,
+                   call. opndList(SSA.TypedOpnd). type, FALSE);
+        w. Ref (call. opndList);
+        w. WriteChar (")");
+      ELSE
+        w. Ref (call. opndList);
+      END;
       w. WriteString ("(");
-      RefList (call. opndList, Opnd.arg, Opnd.argPointer);
+      RefList (call. opndList, Opnd.arg);
       w. WriteString (")")
     END Call;
   
@@ -444,8 +474,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       design := instr. GetArgClass (Opnd.readDesign);
       WITH design: SSA.DeclRef DO        (* length parameter *)
         name := Naming.NameOfLengthParam
-            (design(SSA.DeclRef). decl(Sym.VarDecl),
-             instr. opndList. GetIntConst());
+            (design. decl(Sym.VarDecl), instr. opndList. GetIntConst());
         w. WriteString (name. array^);
         w. WriteChar (";");
 
@@ -465,26 +494,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. WriteString (")");
       END;
     END CastFromPtr;
-  
-  PROCEDURE CastToPtr (var: SSA.Result);
-    VAR
-      type: Sym.Type;
-      name: String.String;
-    BEGIN
-      IF (var # NIL) THEN
-        type := var(SSA.DeclRef). decl(Sym.VarDecl). type;
-        IF (type IS Sym.Pointer) THEN
-          IF (type. namingDecl = NIL) THEN
-            w. WriteString ("(OOC_PTR)");
-          ELSE
-            name := Naming.NameOfType (type);
-            w. WriteString ("(");
-            w. WriteString (name. array^);
-            w. WriteString (")");
-          END;
-        END;
-      END;
-    END CastToPtr;
   
   PROCEDURE NewArray (instr: SSA.Instr);
     VAR
@@ -743,16 +752,16 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         IF SimpleVarAccess (instr, Opnd.writeAdr) THEN
           w. Ref (instr. GetOpndClass (Opnd.writeDesign));
           var := instr. GetArgClass (Opnd.writeDesign);
+          w. WriteString (" = ");
+          CastToPtr (var, var(SSA.DeclRef). decl(Sym.VarDecl). type, FALSE);
         ELSE
           w. WriteString ("*(");
           w. WriteString (w. basicType
                           [SubclassToBasicType (instr)]. repr);
           w. WriteString ("*)");
           w. Ref (instr. opndList. nextOpnd);
-          var := NIL;
+          w. WriteString (" = ");
         END;
-        w. WriteString (" = ");
-        CastToPtr (var);
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
         w. WriteChar (";");
 

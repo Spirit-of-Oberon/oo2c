@@ -126,7 +126,7 @@ TYPE
     (**Represents pointer types.  See @oproc{Writer.NewPointer}.  *)
     (TypeDesc)
     typeQualifier: TypeQualifier;
-    base: Type;
+    base-: Type;
   END;
 
 TYPE

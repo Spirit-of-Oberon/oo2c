@@ -67,6 +67,14 @@ TYPE
   END;
 
 TYPE
+  TypedOpnd* = POINTER TO TypedOpndDesc;
+  TypedOpndDesc = RECORD 
+    (OpndDesc)
+    type-: Sym.Type;
+    passByReference-: BOOLEAN;
+  END;
+  
+TYPE
   ResultDesc = RECORD 
     (NodeDesc)
     nextResult-: Result;
@@ -248,6 +256,24 @@ PROCEDURE NewOpnd (arg: Result; class: OpndClass.Class): Opnd;
     RETURN opnd
   END NewOpnd;
   
+PROCEDURE InitTypedOpnd (opnd: TypedOpnd; arg: Result; class: OpndClass.Class;
+                         type: Sym.Type; passByReference: BOOLEAN);
+  BEGIN
+    InitOpnd (opnd, arg, class);
+    opnd. type := type;
+    opnd. passByReference := passByReference;
+  END InitTypedOpnd;
+
+PROCEDURE NewTypedOpnd (arg: Result; class: OpndClass.Class;
+                        type: Sym.Type; passByReference: BOOLEAN): Opnd;
+  VAR
+    opnd: TypedOpnd;
+  BEGIN
+    NEW (opnd);
+    InitTypedOpnd (opnd, arg, class, type, passByReference);
+    RETURN opnd
+  END NewTypedOpnd;
+  
 PROCEDURE (opnd: Opnd) DeleteOpnd*;
 (**Removes the operand @oparam{opnd} from the operand list of instruction
    @ofield{opnd.instr}.  *)
@@ -411,17 +437,12 @@ PROCEDURE (instr: Instr) SetSubclass* (subclass: Opcode.Subclass);
     instr. subclass := subclass;
   END SetSubclass;
 
-PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
+PROCEDURE AddOpnd (instr: Instr; opnd: Opnd);
 (**Adds @oparam{arg} to the end of the operand list of instruction
-   @oparam{instr}.
-
-   @precond
-   @samp{arg # @code{NIL}}
-   @end precond  *)
+   @oparam{instr}.  *)
   VAR
-    opnd, prev: Opnd;
+    prev: Opnd;
   BEGIN
-    opnd := NewOpnd (arg, class);
     opnd. instr := instr;
     IF (instr. opndList = NIL) THEN
       instr. opndList := opnd
@@ -433,6 +454,29 @@ PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
       prev. nextOpnd := opnd
     END;
   END AddOpnd;
+
+PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
+(**Adds @oparam{arg} to the end of the operand list of instruction
+   @oparam{instr}.
+
+   @precond
+   @samp{arg # @code{NIL}}
+   @end precond  *)
+  BEGIN
+    AddOpnd (instr, NewOpnd (arg, class));
+  END AddOpnd;
+
+PROCEDURE (instr: Instr) AddTypedOpnd* (arg: Result; class: OpndClass.Class;
+                                        type: Sym.Type; passByReference: BOOLEAN);
+(**Adds @oparam{arg} to the end of the operand list of instruction
+   @oparam{instr}.
+
+   @precond
+   @samp{arg # @code{NIL}}
+   @end precond  *)
+  BEGIN
+    AddOpnd (instr, NewTypedOpnd (arg, class, type, passByReference));
+  END AddTypedOpnd;
 
 PROCEDURE (instr: Instr) AddResultSubclass* (class: ResultClass.Class;
                                              subclass: Opcode.Subclass): Result;
