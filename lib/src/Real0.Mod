@@ -301,7 +301,7 @@ PROCEDURE NormalizeFloat* (VAR s: ARRAY OF CHAR);
     WHILE (s[i] # 0X) DO
       IF (s[i] = ".") & (s[i+1] = expChar) THEN
         INC (d);             (* eliminate "." if no digits follow *)
-      ELSIF (s[i] = "0") & IsSign (s[i-d-1]) THEN
+      ELSIF (s[i] = "0") & (i-d-1 >= 0) & IsSign (s[i-d-1]) THEN
         INC (d);           (* eliminate zeros after exponent sign *)
       ELSE
         s[i-d] := s[i];
