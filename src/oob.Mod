@@ -252,7 +252,14 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
           Out.String(": ");
           Type(type.resultType, type.srcCodeResultType);
         END;
-
+        FOR i := 0 TO LEN(type.raises^)-1 DO
+          IF (i = 0) THEN
+            Out.String(" RAISES ");
+          ELSE
+            Out.String(", ");
+          END;
+          Type(type.raises[i].type, type.raises[i].srcCodeType);
+        END;
       | type: Sym.Array DO
         IF type.isOpenArray THEN
           Out.String("ARRAY OF ");
