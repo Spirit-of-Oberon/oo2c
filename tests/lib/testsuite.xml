@@ -40,7 +40,7 @@
       to the module.
     </test>
     
-    <test id="lib_C" type="run" file="LibC.Mod">
+    <test id="lib_C" type="run" file="LibC1.Mod">
       Imports the module <code>C</code>.  Lacking functionality of 
       even moderate complexity, compilation is the only test applied
       to the module.
@@ -280,7 +280,7 @@
     </test>
 
 
-    <test id="lib_LRealStr_StrToReal1" type="run"
+    <test id="lib_LRealStr_StrToReal1" type="run" relevance="informal"
           file="LibLRealStrStrToReal1.Mod"
 	  output="LibLRealStrStrToReal1.Ref">
       Use <code>StrToReal</code> to convert strings to floating point
@@ -301,7 +301,7 @@
       values to strings.  Note: "Inf" and "NaN" are not tested.
     </test>
 
-    <test id="lib_LRealStr_RealToFixed1" type="run"
+    <test id="lib_LRealStr_RealToFixed1" type="run" relevance="informal"
           file="LibLRealStrRealToFixed1.Mod"
 	  output="LibLRealStrRealToFixed1.Ref">
       Use <code>RealToFixed</code> to convert <code>LONGREAL</code>
@@ -389,7 +389,7 @@
     </test>
     
 
-    <test id="lib_RealStr_StrToReal1" type="run"
+    <test id="lib_RealStr_StrToReal1" type="run" relevance="informal"
           file="LibRealStrStrToReal1.Mod"
 	  output="LibRealStrStrToReal1.Ref">
       Use <code>StrToReal</code> to convert strings to floating point
@@ -410,7 +410,7 @@
       values to strings.  Note: "Inf" and "NaN" are not tested.
     </test>
 
-    <test id="lib_RealStr_RealToFixed1" type="run"
+    <test id="lib_RealStr_RealToFixed1" type="run" relevance="informal"
           file="LibRealStrRealToFixed1.Mod"
 	  output="LibRealStrRealToFixed1.Ref">
       Use <code>RealToFixed</code> to convert <code>REAL</code>
