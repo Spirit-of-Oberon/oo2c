@@ -1905,7 +1905,7 @@ procedure is part of the region."
     oberon-2-font-lock-keywords-2
     ;; Fontify exported identifiers as bold text
     (list
-     '("\\(\\<[a-zA-Z_][a-zA-Z_0-9]*\\)\\s-*[-*]\\s-*[<=:,]"
+     '("\\(\\<[a-zA-Z_][a-zA-Z_0-9]*\\)\\s-*[-*]\\s-*[(=:,]"
        1 o2-font-lock-export-face prepend)
      '("PROCEDURE.*\\(\\<[a-zA-Z_][a-zA-Z_0-9]*\\)\\s-*\\*\\s-*[(;[]"
        1 o2-font-lock-export-face prepend)))))
