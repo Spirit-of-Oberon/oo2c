@@ -1477,6 +1477,66 @@ PROCEDURE (pb: ProcBlock) GetEnter*(): Instr;
     RETURN instr
   END GetEnter;
 
+PROCEDURE (pb: ProcBlock) Destroy*;
+(**Zaps the whole data structure.  This should help the conservative gc to
+   classify its components as garbage.  *)
+  VAR
+    instr, nextInstr: Instr;
+    res, nextResult: Result;
+    opnd, nextOpnd: Opnd;
+    i: LONGINT;
+  BEGIN
+    instr := pb.instrList;
+    WHILE (instr # NIL) DO
+      nextInstr := instr.nextInstr;
+
+      opnd := instr.opndList;
+      WHILE (opnd # NIL) DO
+        nextOpnd := opnd.nextOpnd;
+        opnd.arg := NIL;
+        opnd.nextOpnd := NIL;
+        opnd.instr := NIL;
+        opnd.nextUse := NIL;
+        opnd := nextOpnd;
+      END;
+
+      res := instr;
+      WHILE (res # NIL) DO
+        nextResult := res.nextResult;
+        res.nextResult := NIL;
+        res.instr := NIL;
+        res.useList := NIL;
+        res.info := NIL;
+        res.marker := 0;
+        res := nextResult;
+      END;
+
+      instr.opndList := NIL;
+      instr.nextInstr := NIL;
+      instr.prevInstr := NIL;
+      instr.pos := 0;
+      
+      instr := nextInstr;
+    END;
+    
+    pb.selectReturn := NIL;
+    pb.loopContext := NIL;
+    pb.instrList := NIL;
+    pb.instrTail := NIL;
+    pb.procDecl := NIL;
+    FOR i := 0 TO LEN(pb.constMap)-1 DO
+      IF (pb.constMap[i] # NIL) THEN
+        pb.constMap[i].Destroy(); pb.constMap[i] := NIL;
+      END;
+    END;
+    IF (pb.objMap # NIL) THEN
+      pb.objMap.Destroy(); pb.objMap := NIL;
+    END;
+    IF (pb.adrMap # NIL) THEN
+      pb.adrMap.Destroy(); pb.adrMap := NIL;
+    END;
+  END Destroy;
+
 BEGIN
   nil := Integer.NewDistinct(0);
 END OOC:SSA.

@@ -4095,6 +4095,225 @@ PROCEDURE (m: Module) Accept* (v: Visitor);
     v. VisitModule (m)
   END Accept;
 
+PROCEDURE (m: Module) Destroy*;
+(**Zaps the whole data structure.  This should help the conservative gc to
+   classify its components as garbage.  *)
+  VAR
+    i: LONGINT;
+    
+  PROCEDURE ^ E (VAR n: Expression);
+  PROCEDURE ^ S (VAR n: Statement);
+    
+  PROCEDURE EList (VAR e: ExpressionList);
+    VAR
+      i: LONGINT;
+    BEGIN
+      IF (e # NIL) THEN
+        FOR i := 0 TO LEN(e^)-1 DO
+          E(e[i]);
+        END;
+        e := NIL;
+      END;
+    END EList;
+  
+  PROCEDURE E (VAR n: Expression);
+    VAR
+      expr: Expression;
+    BEGIN
+      IF (n # NIL) THEN
+        n.type := NIL;
+        WITH n: Const DO
+          n.value := NIL;
+        | n: Operator DO
+          WITH n: Abs DO
+            E(n.operand);
+          | n: Adr DO
+            E(n.design);
+          | n: Ash DO
+            E(n.value);
+            E(n.exp);
+          | n: BinaryArith DO
+            E(n.left);
+            E(n.right);
+          | n: BooleanOp DO
+            E(n.left);
+            E(n.right);
+          | n: Cap DO
+            E(n.operand);
+          | n: Compare DO
+            E(n.left);
+            E(n.right);
+          | n: Concat DO
+            EList(n.strings);
+          | n: ChangeElement DO
+            E(n.set);
+            E(n.element);
+          | n: Deref DO
+            E(n.pointer);
+            n.derefType := NIL;
+          | n: Entier DO
+            E(n.operand);
+          | n: Index DO
+            E(n.array);
+            E(n.index);
+          | n: Len DO
+            E(n.array);
+            E(n.arrayVariable);
+            n.dim := 0;
+          | n: Negate DO
+            E(n.operand);
+          | n: NewObject DO
+            EList(n.length);
+          | n: Not DO
+            E(n.operand);
+          | n: Odd DO
+            E(n.operand);
+          | n: SelectField DO
+            E(n.record);
+            n.field := NIL;
+            n.fieldSym := NIL;
+          | n: SelectProc DO
+            E(n.receiver);
+            n.recordType := NIL;
+            n.tbProc := NIL;
+            n.tbProcSym := NIL;
+          | n: SetMember DO
+            E(n.element);
+            E(n.set);
+          | n: SetOp DO
+            E(n.left);
+            E(n.right);
+          | n: SetRange DO
+            E(n.from);
+            E(n.to);
+          | n: Shift DO
+            E(n.value);
+            E(n.by);
+          | n: TypeCast DO
+            E(n.expr);
+          | n: TypeConv DO
+            E(n.expr);
+          | n: TypeTag DO
+            E(n.design);
+          | n: TypeTest DO
+            E(n.expr);
+            n.referenceType := NIL;
+            E(n.origExpr);
+            n.origType := NIL;
+          | n: TypeGuard DO
+            expr := n.test;
+            E(expr);
+            n.test := NIL;
+          ELSE
+            Log.Type("--- operator type: ", n);
+            ASSERT(FALSE);
+          END;
+        | n: Reference DO
+          n.decl := NIL;
+        | n: Statement DO                (* function call *)
+          S(n);
+        ELSE
+          Log.Type("--- expression type: ", n);
+          ASSERT(FALSE);
+        END;
+        n := NIL;
+      END;
+    END E;
+
+  PROCEDURE SSeq (VAR n: StatementSeq);
+    VAR
+      i: LONGINT;
+    BEGIN
+      IF (n # NIL) THEN
+        FOR i := 0 TO LEN(n^)-1 DO
+          S(n[i]);
+        END;
+      END;
+    END SSeq;
+  
+  PROCEDURE S (VAR n: Statement);
+    VAR
+      i: LONGINT;
+    BEGIN
+      IF (n # NIL) THEN
+        WITH n: Assert DO
+          E(n.predicate);
+          n.code := 0;
+        | n: Assignment DO
+          E(n.variable);
+          E(n.value);
+        | n: Call DO
+          E(n.design);
+          EList(n.arguments);
+          n.formalPars := NIL;
+        | n: Copy DO
+          E(n.source);
+          E(n.dest);
+        | n: CopyParameter DO
+          n.param := NIL;
+        | n: CopyString DO
+          E(n.source);
+          E(n.dest);
+          E(n.maxLength);
+        | n: Exit DO
+          n.loop := NIL;
+        | n: ForStatm DO
+          E(n.var);
+          E(n.start);
+          E(n.end);
+          E(n.step);
+          SSeq(n.body);
+        | n: IfStatm DO
+          E(n.guard);
+          SSeq(n.pathTrue);
+          SSeq(n.pathFalse);
+        | n: CaseStatm DO
+          E(n.select);
+          FOR i := 0 TO LEN(n.caseList^)-1 DO
+            n.caseList[i].labels := NIL;
+            SSeq(n.caseList[i].statmSeq);
+            n.caseList[i] := NIL;
+          END;
+          n.caseList := NIL;
+          SSeq(n.default);
+        | n: LoopStatm DO
+          SSeq(n.body);
+        | n: MoveBlock DO
+          E(n.source);
+          E(n.dest);
+          E(n.size);
+        | n: RepeatStatm DO
+          SSeq(n.body);
+          E(n.exitCondition);
+        | n: Return DO
+          E(n.result);
+        | n: WhileStatm DO
+          E(n.guard);
+          SSeq(n.body);
+        | n: WithStatm DO
+          E(n.guard);
+          SSeq(n.pathTrue);
+          SSeq(n.pathFalse);
+        END;
+        n := NIL;
+      END;
+    END S;
+  
+  BEGIN
+    m.name := NIL;
+    FOR i := 0 TO LEN(m.procList^)-1 DO
+      m.procList[i].decl := NIL;
+      SSeq(m.procList[i].statmSeq);
+      m.procList[i] := NIL;
+    END;
+    m.procList := NIL;
+
+    m.moduleBody.decl := NIL;
+    SSeq(m.moduleBody.statmSeq);
+    m.moduleBody := NIL;
+
+    m := NIL;
+  END Destroy;
 
 
 (* Class: Visitor

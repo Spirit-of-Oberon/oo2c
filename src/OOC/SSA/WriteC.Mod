@@ -1745,6 +1745,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
        label at end of compound statement'  *)
     w. WriteString (";");
     t. w. Indent (-1);
+
+    pb.Destroy();                        (* cleanup for the sake of the gc *)
   END WriteProcBody;
 
 

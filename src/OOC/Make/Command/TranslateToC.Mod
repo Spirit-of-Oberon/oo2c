@@ -387,6 +387,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         CloseFile (wd);
         CloseFile (wc);
       END;
+      module.Destroy;                    (* cleanup for the sake of the gc *)
     END;
     
     cmd. errList := errList;
