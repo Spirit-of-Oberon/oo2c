@@ -1498,7 +1498,9 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
 
     PROCEDURE Chain (VAR jump: Schedule.Jump);
       BEGIN
-        WHILE w. EmptyBlock (jump. dest) & (jump. dest # jump. src) DO
+        WHILE ~jump. dest. isLoopHead &
+              w. EmptyBlock (jump. dest) &
+              (jump. dest # jump. src) DO
           Schedule.ChangeJumpTarget (jump, 
                                      jump.dest(Schedule.JumpBlock).jump.dest);
         END;
