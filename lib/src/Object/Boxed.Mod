@@ -48,7 +48,7 @@ TYPE
 
 VAR
   true-, false-: Boolean;
-  trueString, falseString: Obj.String;
+  trueString, falseString: STRING;
   
 TYPE
   LongInt* = POINTER TO LongIntDesc;
@@ -81,7 +81,7 @@ TYPE
   String* = POINTER TO StringDesc;
   StringDesc* = RECORD
     (ObjectDesc)
-    value-: Obj.String;
+    value-: STRING;
   END;
 
 VAR
@@ -91,7 +91,7 @@ VAR
 (* Object
    ------------------------------------------------------------------------ *)
 
-PROCEDURE (v: Object) [ABSTRACT] ToString*(): Obj.String;
+PROCEDURE (v: Object) [ABSTRACT] ToString*(): STRING;
   END ToString;
 
 PROCEDURE (v: Object) [ABSTRACT] Cmp*(y: Obj.Object): LONGINT;
@@ -147,7 +147,7 @@ PROCEDURE (v: Boolean) HashCode*(): Obj.Hash;
     RETURN HashCode.Boolean(v.value);
   END HashCode;
   
-PROCEDURE (v: Boolean) ToString*(): Obj.String;
+PROCEDURE (v: Boolean) ToString*(): STRING;
   BEGIN
     IF v.value THEN
       RETURN trueString;
@@ -229,7 +229,7 @@ PROCEDURE (v: LongInt) HashCode*(): Obj.Hash;
     RETURN v.value;
   END HashCode;
 
-PROCEDURE (v: LongInt) ToString*(): Obj.String;
+PROCEDURE (v: LongInt) ToString*(): STRING;
   VAR 
     str: ARRAY 10 OF CHAR;
   BEGIN
@@ -373,7 +373,7 @@ PROCEDURE (v: LongReal) HashCode*(): Obj.Hash;
     RETURN HashCode.LongReal(v.value);
   END HashCode;
 
-PROCEDURE (v: LongReal) ToString*(): Obj.String;
+PROCEDURE (v: LongReal) ToString*(): STRING;
   VAR 
     str: ARRAY 128 OF CHAR;
   BEGIN
@@ -471,7 +471,7 @@ PROCEDURE (v: Set) HashCode*(): Obj.Hash;
     RETURN HashCode.Set(v.value);
   END HashCode;
 
-PROCEDURE (v: Set) ToString*(): Obj.String;
+PROCEDURE (v: Set) ToString*(): STRING;
   VAR
     str: ARRAY 32*4+3 OF CHAR;
     val: SET;
@@ -524,7 +524,7 @@ PROCEDURE (v: Set) Load*(r: Storable.Reader) RAISES IO.Error;
 (* String
    ------------------------------------------------------------------------ *)
 
-PROCEDURE NewString*(value: Obj.String): String;
+PROCEDURE NewString*(value: STRING): String;
   VAR
     v: String;
   BEGIN
@@ -552,7 +552,7 @@ PROCEDURE (v: String) HashCode*(): Obj.Hash;
     RETURN v.value.HashCode();
   END HashCode;
   
-PROCEDURE (v: String) ToString*(): Obj.String;
+PROCEDURE (v: String) ToString*(): STRING;
   VAR
     i: LONGINT;
     delim: ARRAY 2 OF CHAR;
