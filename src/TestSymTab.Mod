@@ -1,7 +1,7 @@
 MODULE TestSymTab;
 
 IMPORT
-  StdChannels, Out, Err, Msg, IO, URI,
+  StdChannels, Out, Err, IO, URI,
   Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,
@@ -71,7 +71,6 @@ RAISES IO.Error;
     ast: AST.Node;
     symTab: Sym.Module;
     errList: Error.List;
-    res: Msg.Msg;
     outputChannel: IO.ByteChannel;
     outputURI: URI.HierarchicalURI;
     pragmaHistory: Pragmas.History;
@@ -82,12 +81,8 @@ RAISES IO.Error;
       IF (errList. msgCount = 0) THEN
         outputURI := m. GetURI (Rep.modSymbolTableXML, FALSE);
         outputChannel := m. GetOutputChannel (Rep.modSymbolTableXML, FALSE);
-        IF (outputChannel = NIL) THEN
-          errList. Append (res)
-        ELSE
-          XML.Write (outputChannel, symTab);
-          outputChannel. Close;
-        END
+        XML.Write (outputChannel, symTab);
+        outputChannel. Close;
       END;
       IF (errList.msgCount # 0) THEN
         errList.Write(StdChannels.stderr);      
