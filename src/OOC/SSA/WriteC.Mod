@@ -1,7 +1,7 @@
 MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 
 IMPORT
-  IntStr, StdChannels, Strings, TextRider,
+  IntStr, StdChannels, Strings, TextRider, StringSearch,
   ADT:Object, ADT:String, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules,
   OOC:IR, OOC:SSA:Opcode, OOC:SSA:Opnd,
@@ -823,7 +823,8 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
 
 PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
                      tr: TypeRules.Rules;
-                     procDecl: IR.Procedure);
+                     procDecl: IR.Procedure;
+                     inspectProc: StringSearch.Matcher);
   
   VAR
     pb: SSA.ProcBlock;
@@ -852,10 +853,11 @@ PROCEDURE ProcBody* (cWriter: DeclWriter.Writer;
     domRoot := Schedule.Schedule (pb);
     XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
 
-(*    (* create a temporary web server displaying the SSA code *)
-    IF (procDecl. decl. name. str^ = "Length") THEN
+    (* create a temporary web server displaying the SSA code *)
+    IF (inspectProc # NIL) &
+       (inspectProc. Match (String.New (procDecl. decl. name. str^), 0, -1) # NIL) THEN
       Inspector.Show (procDecl, domRoot);
-    END;*)
+    END;
     
     Fixup (pb);
     registerMap := Allocator.AssignRegisters (pb, domRoot, cWriter);

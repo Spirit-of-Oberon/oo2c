@@ -1,9 +1,10 @@
 MODULE TestCompile;
 
 IMPORT
-  StdChannels, Out, Err, Make, Make:Command:Target, 
+  StdChannels, Out, Err, Make, Make:Command:Target, StringSearch:RegexpDFA,
   Config:Source:CmdLine, Config:Section:Arguments, OOC:Auxiliary:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
+  StringValue := Config:Value:String, ADT:String,
   OOC:Make:Entity:ModuleFile, OOC:Make:Command:TranslateToC,
   OOC:Make:Command:WriteMainFileC, OOC:Make:Command:CompileFileC,
   OOC:Make:Command:LinkProgramC,
@@ -34,7 +35,9 @@ VAR
   writeAST: Options.Option;
   writeIR: Options.Option;
   useSSA: Options.Option;
-
+  inspectProc: Options.Option;
+  inspectMatcher: RegexpDFA.Matcher;
+  
   
 PROCEDURE InitContext (context: Context; config: Config.Config;
                        target: Make.Command);
@@ -60,7 +63,8 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
         RETURN TranslateToC.New (context, entity. module,
                                  writeAST. value(BooleanValue.Value). boolean,
                                  writeIR. value(BooleanValue.Value). boolean,
-                                 useSSA. value(BooleanValue.Value). boolean)
+                                 useSSA. value(BooleanValue.Value). boolean,
+                                 inspectMatcher)
       | Rep.modMainFileC:
         RETURN WriteMainFileC.New (context, entity. module)
       | Rep.modObjectFile, Rep.modMainObjectFile:
@@ -84,6 +88,8 @@ PROCEDURE RegisterCmdLineOptions (config: Config.Config);
                  "<options><set name='use-ssa'>TRUE</set></options>");
     ot := config. cmdLine. AddOptionTemplate ("--write-ir",
                  "<options><set name='write-ir'>TRUE</set></options>");
+    ot := config. cmdLine. AddOptionTemplate ("--inspect-proc",
+                 "<options><set name='inspect-proc'>$1</set></options>");
   END RegisterCmdLineOptions;
 
 PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
@@ -97,6 +103,7 @@ PROCEDURE NewConfig (defaultConfigFile: ARRAY OF CHAR): Config.Config;
     writeAST := config. options. Set ("write-ast", BooleanValue.New (FALSE));
     writeIR := config. options. Set ("write-ir", BooleanValue.New (FALSE));
     useSSA := config. options. Set ("use-ssa", BooleanValue.New (FALSE));
+    inspectProc := config. options. Set ("inspect-proc", StringValue.New (""));
     
     RegisterCmdLineOptions (config);
     RETURN config
@@ -113,12 +120,21 @@ BEGIN
   ELSE
     mode := Rep.modObjectFile
   END;
+  inspectMatcher := NIL;
+  IF (inspectProc. value(StringValue.Value). string^ # "") THEN
+    inspectMatcher := RegexpDFA.factory. Compile
+        (String.New (inspectProc. value(StringValue.Value). string^), {});
+    IF (inspectMatcher = NIL) THEN
+      Err.String ("Warning: Cannot parse regular expression in --inspect-proc, ignoring it");
+      Err.Ln;
+    END;
+  END;
   
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
   ELSIF (config. arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: TestCompile {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa] <file>"); Out.Ln;
+    Out.String ("Usage: TestCompile {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa][--inspect-proc <regexp>] <file>"); Out.Ln;
     HALT (1)
   ELSE
     context := NewContext (config);

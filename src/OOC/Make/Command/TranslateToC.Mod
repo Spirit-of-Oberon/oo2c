@@ -23,7 +23,7 @@ MODULE OOC:Make:Command:TranslateToC;
 IMPORT
   Log,
   Channel, Make, StdChannels, ADT:String, ADT:Dictionary, Language:String8,
-  OOC:Make:Entity:ModuleFile,
+  StringSearch, OOC:Make:Entity:ModuleFile,
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
@@ -42,10 +42,12 @@ TYPE
     writeAST: BOOLEAN;
     writeIR: BOOLEAN;
     useSSA: BOOLEAN;
+    inspectProc: StringSearch.Matcher;
   END;
 
 PROCEDURE New* (context: Make.Context; module: Repository.Module;
-                writeAST, writeIR, useSSA: BOOLEAN): Command;
+                writeAST, writeIR, useSSA: BOOLEAN;
+                inspectProc: StringSearch.Matcher): Command;
   VAR
     cmd: Command;
   BEGIN
@@ -56,6 +58,7 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
     cmd. writeAST := writeAST;
     cmd. writeIR := writeIR;
     cmd. useSSA := useSSA;
+    cmd. inspectProc := inspectProc;
     RETURN cmd
   END New;
 
@@ -171,7 +174,8 @@ PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
 
 PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
                          moduleIR: IR.Module;
-                         tr: TypeRules.Rules; useSSA: BOOLEAN);
+                         tr: TypeRules.Rules;
+                         useSSA: BOOLEAN; inspectProc: StringSearch.Matcher);
   PROCEDURE ^ WriteExpr (w : DeclWriter.Writer; expr : IR.Expression);
     
   PROCEDURE Call (statm: IR.Call);
@@ -348,7 +352,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
         w. WriteDeclaration (d);
         w. WriteString (" {");
         IF useSSA THEN
-          WriteSSA.ProcBody (w, tr, procList[i]);
+          WriteSSA.ProcBody (w, tr, procList[i], inspectProc);
         ELSE
           WriteStatmSeq (w, procList[i]. statmSeq);
         END;
@@ -402,7 +406,8 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         | Repository.modDeclFileC:
           WriteDeclFile (w, m, symTab, exports);
         | Repository.modCodeFileC:
-          WriteCodeFile (w, m, module, config. typeRules, cmd. useSSA);
+          WriteCodeFile (w, m, module, config. typeRules,
+                         cmd. useSSA, cmd. inspectProc);
         END;
         w. Close (res);
       END;
