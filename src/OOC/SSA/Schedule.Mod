@@ -99,7 +99,12 @@ TYPE
     degreeIn-: LONGINT;
     (**The number of jumps or branches that have this block as target.  This is
        equivalent to the length of the list in @ofield{targetUseList}.  *)
-    
+
+    id-: LONGINT;
+    (**The unique id of the block, starting at @samp{0}.  Blocks are numbered
+       in the order in which they are written out.  That is, a block with
+       a higher number is written further down in the output stream.  *)
+       
     info*: Info;
     (**Field free for private use within algorithms operating on blocks.
        See @oproc{Block.SetInfo}.  *)
@@ -108,19 +113,19 @@ TYPE
 TYPE
   BranchBlockDesc = RECORD
     (BlockDesc)
-    jump-: Jump;
+    jump*: Jump;                     (* export rw for jump chaining *)
     (**Default target of control flow when leaving this block.
        This field is never @code{NIL}.  *)
 
     predicate-: SSA.Opnd;
-    branchOnTrue-: BOOLEAN;
-    branchTo-: Jump;
+    branchOnTrue*: BOOLEAN;             (* export rw for jump fixup *)
+    branchTo*: Jump;                 (* export rw for jump chaining *)
   END;
   
 TYPE
   JumpBlockDesc = RECORD
     (BlockDesc)
-    jump-: Jump;
+    jump*: Jump;                     (* export rw for jump chaining *)
     (**Target of control flow when leaving this block.
        This field is never @code{NIL}.  *)
   END;
@@ -173,6 +178,7 @@ PROCEDURE InitBlock (b: Block; dominator: Block);
     b. targetUseList := NIL;
     b. degreeIn := 0;
     b. isLoopHead := FALSE;
+    b. id := -1;
     b. info := NIL;
   END InitBlock;
 
@@ -196,7 +202,7 @@ PROCEDURE (b: Block) DefaultTarget*(): Block;
     RETURN NIL
   END DefaultTarget;
 
-PROCEDURE SetJump (VAR reference: Jump; src, dest: Block);
+PROCEDURE SetJump* (VAR reference: Jump; src, dest: Block);
   PROCEDURE NewJump (src, dest: Block; nextTargetUse: Jump): Jump;
     VAR
       j: Jump;
@@ -205,6 +211,7 @@ PROCEDURE SetJump (VAR reference: Jump; src, dest: Block);
       j. src := src;
       j. dest := dest;
       j. nextTargetUse := nextTargetUse;
+      j. isLoopBackedge := (reference # NIL) & reference. isLoopBackedge;
       RETURN j
     END NewJump;
 
@@ -674,6 +681,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     b, lastBlock: JumpBlock;
     root: Blocker.Region;
     proxy: InstrProxy;
+    count: LONGINT;
     
   PROCEDURE ArrangeBlock (b: Block);
   (* arrange children within each block in such way that loop branches have a
@@ -863,6 +871,20 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         nested := nested. nextDom
       END;
     END MarkBackedges;
+
+  PROCEDURE NumberBlocks (b: Block; VAR count: LONGINT);
+    VAR
+      nested: Block;
+    BEGIN
+      b. id := count;
+      INC (count);
+      
+      nested := b. domList;
+      WHILE (nested # NIL) DO
+        NumberBlocks (nested, count);
+        nested := nested. nextDom
+      END;
+    END NumberBlocks;
   
   PROCEDURE CheckCollects (b: Block);
   (* Sanity check: `collect' instructions may not appear in a branch block.  *)
@@ -923,6 +945,11 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
        loop branches have a target earlier in the chain of blocks, and all
        other jumps and branches a target later in the chain *)
     ArrangeBlock (b);
+
+    (* assign unique ids to the blocks; the ids reflect the ordering
+       of the blocks when written out *)
+    count := 0;
+    NumberBlocks (b, count);
 
     (* remove anti-dependency pseudo operands *)
     Blocker.RemoveAntiDeps (pb);

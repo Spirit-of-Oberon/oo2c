@@ -471,6 +471,73 @@ PROCEDURE (w: Writer) TypeRef (type: Sym.Type);
   END TypeRef;
 
 
+PROCEDURE (w: Writer) Noop (instr: SSA.Instr): BOOLEAN;
+  VAR
+    targetInstr: SSA.Instr;
+    opnd: SSA.Opnd;
+    res: SSA.Result;
+    targetVar, sourceVar: Object.Object;
+  BEGIN
+    CASE instr. opcode OF
+    | Opcode.const,
+      Opcode.declRef,
+      Opcode.typeRef,
+      Opcode.address,
+      Opcode.enter,
+      Opcode.select,
+      Opcode.labels,
+      Opcode.loopStart,
+      Opcode.loopEnd,
+      Opcode.exit,
+      Opcode.selectExit:
+      RETURN TRUE;
+      
+    | Opcode.collect:
+      targetInstr := instr. GetCollectTarget();
+      opnd := instr. opndList;
+      res := targetInstr. nextResult;
+      WHILE (opnd # NIL) & (opnd. class # Opnd.loopExternalDef) DO
+        IF (opnd. class # Opnd.store) THEN
+          targetVar := w. registerMap. Get (res);
+          IF w. registerMap. HasKey (opnd. arg) THEN
+            sourceVar := w. registerMap. Get (opnd. arg);
+            IF (sourceVar(String.String). array^ #
+                targetVar(String.String). array^) THEN
+              RETURN FALSE;              (* source and target differ *)
+            END;
+          ELSE
+            RETURN FALSE;                (* source not from register *)
+          END;
+        END;
+        opnd := opnd. nextOpnd; res := res. nextResult
+      END;
+      RETURN TRUE;
+      
+    ELSE
+      RETURN FALSE;
+    END;
+  END Noop;
+
+PROCEDURE (w: Writer) EmptyBlock (b: Schedule.Block): BOOLEAN;
+(* Return TRUE if the block is empty.  This means it must be a JumpBlock, and
+   all of its instructions are noops.  *)
+  VAR
+    proxy: Schedule.InstrProxy;
+  BEGIN
+    WITH b: Schedule.JumpBlock DO
+      proxy := b. proxyList;
+      WHILE (proxy # NIL) DO
+        IF ~w. Noop (proxy. instr) THEN
+          RETURN FALSE;
+        END;
+        proxy := proxy. nextProxy;
+      END;
+      RETURN TRUE;
+    ELSE
+      RETURN FALSE;
+    END;
+  END EmptyBlock;
+
 PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
                                       haveCopyParameter: BOOLEAN);
   VAR
@@ -1247,42 +1314,21 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
 PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
                                    haveCopyParameter: BOOLEAN);
   VAR
-    lastBlock: Schedule.Block;
-    blockCount: LONGINT;
-    blockMap: Dictionary.Dictionary;
-    
-  PROCEDURE AssignIds (b: Schedule.Block);
-  (* assign block ids in the same order as they are written by `WriteBlock' *)
-    VAR
-      str: ARRAY 24 OF CHAR;
-      obj: Object.Object;
-      nested: Schedule.Block;
-    BEGIN
-      IntStr.IntToStr (blockCount, str);
-      Strings.Insert ("l", 0, str);
-      IF b. isLoopHead THEN
-        Strings.Append ("_loop", str);
-      END;
-      obj := String.New (str);
-      blockMap. Set (b, obj);
-      INC (blockCount);
-      
-      nested := b. domList;
-      WHILE (nested # NIL) DO
-        AssignIds (nested);
-        nested := nested. nextDom
-      END;
-    END AssignIds;
-  
+    registeredGoto: Schedule.Block;
+    (* this is the goto that would have been written at the end of the
+       last block; we actually write it only if the next block starts
+       with a different label *)
+
   PROCEDURE WriteBlockId (b: Schedule.Block);
-    VAR
-      obj: Object.Object;
     BEGIN
       IF (b = NIL) THEN
         w. WriteString ("XXX WriteBlockId(NIL)");
       ELSE
-        obj := blockMap. Get (b);
-        w. WriteString (obj(String.String). array^);
+        w. WriteString ("l");
+        w. WriteLInt (b. id, 0);
+        IF b. isLoopHead THEN
+          w. WriteString ("_loop");
+        END;
       END;
     END WriteBlockId;
   
@@ -1297,34 +1343,9 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
       END;
     END WriteGoto;
   
-  PROCEDURE FixLastJump (currentBlock: Schedule.Block);
-    VAR
-      d: LONGINT;
-      
-    PROCEDURE WriteLabel (b: Schedule.Block);
-      BEGIN
-        w. WriteLn;
-        WriteBlockId (b);
-        w. WriteChar (":");
-      END WriteLabel;
-    
-    BEGIN
-      IF (lastBlock # NIL) &
-         (lastBlock. DefaultTarget() # currentBlock) THEN
-        w. Newline;
-        WriteGoto (lastBlock. DefaultTarget());
-        d := 0;
-      ELSE
-        d := 1
-      END;
-      IF (currentBlock # NIL) & (currentBlock. degreeIn > d) THEN
-        WriteLabel (currentBlock)
-      END;
-    END FixLastJump;
-  
   PROCEDURE WriteBlock (b: Schedule.Block);
     VAR
-      i: LONGINT;
+      i, d: LONGINT;
       nested: Schedule.Block;
       
     PROCEDURE WriteNested (nested: Schedule.Block);
@@ -1363,69 +1384,85 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
       END WriteCases;
     
     BEGIN
-      IF (b. degreeIn # 0) THEN
-        FixLastJump (b);
-        w. WriteInstrList (b, haveCopyParameter);
-        WITH b: Schedule.BranchBlock DO
+      IF (b. degreeIn # 0) OR ~(b IS Schedule.JumpBlock) THEN
+        IF (registeredGoto # NIL) & (registeredGoto # b) THEN
           w. Newline;
-          w. WriteString ("if (");
-          IF (b. DefaultTarget() = b. jump. dest) THEN
-            IF ~b. branchOnTrue THEN
-              w. WriteChar("!");
-            END;
-            w. Ref (b. predicate);
-            w. WriteString (") ");
-            WriteGoto (b. branchTo. dest);
-          ELSE
-            IF b. branchOnTrue THEN
-              w. WriteChar("!");
-            END;
-            w. Ref (b. predicate);
-            w. WriteString (") ");
-            WriteGoto (b. jump. dest);
-          END;
-          lastBlock := b;
-          WriteNested (b. domList);
-
-        | b: Schedule.SwitchBlock DO
-          w. Newline;
-          w. WriteString ("switch (");
-          w. Ref (b. expr);
-          w. WriteString (") {");
-          
-          nested := b. domList; i := 0;
-          WHILE (nested # NIL) & (i # LEN (b. jump^)) DO
-            ASSERT (nested = b. jump[i]. dest);
-            WriteCases (b. caseValues[i]. arg. instr);
-            
-            lastBlock := NIL;
-            w. Indent (1);
-            WriteBlock (b. jump[i]. dest);
-            w. Newline;
-            WriteGoto (lastBlock(Schedule.JumpBlock). jump. dest);
-            w. Indent (-1);
-            nested := nested. nextDom; INC (i);
-          END;
-          w. Newline;
-          w. WriteString ("}");
-          lastBlock := b;
-          WriteNested (nested);
-          
-        ELSE (* standard block *)
-          lastBlock := b;
-          WriteNested (b. domList);
+          WriteGoto (registeredGoto);
+          registeredGoto := NIL;
         END;
+
+        d := b. degreeIn;
+        IF (b = registeredGoto) THEN
+          DEC (d);
+        END;
+        IF (d # 0) THEN
+          w. WriteLn;
+          WriteBlockId (b);
+          w. WriteChar (":");
+        END;
+        w. WriteInstrList (b, haveCopyParameter);
+      END;
+      
+      WITH b: Schedule.BranchBlock DO
+        w. Newline;
+        w. WriteString ("if (");
+        IF (b. DefaultTarget() = b. jump. dest) THEN
+          IF ~b. branchOnTrue THEN
+            w. WriteChar("!");
+          END;
+          w. Ref (b. predicate);
+          w. WriteString (") ");
+          WriteGoto (b. branchTo. dest);
+          registeredGoto := b. jump. dest;
+        ELSE
+          IF b. branchOnTrue THEN
+            w. WriteChar("!");
+          END;
+          w. Ref (b. predicate);
+          w. WriteString (") ");
+          WriteGoto (b. jump. dest);
+          registeredGoto := b. branchTo. dest;
+        END;
+        WriteNested (b. domList);
+        
+      | b: Schedule.SwitchBlock DO
+        w. Newline;
+        w. WriteString ("switch (");
+        w. Ref (b. expr);
+        w. WriteString (") {");
+          
+        nested := b. domList; i := 0;
+        WHILE (nested # NIL) & (i # LEN (b. jump^)) DO
+          ASSERT (nested = b. jump[i]. dest);
+          WriteCases (b. caseValues[i]. arg. instr);
+          
+          w. Indent (1);
+          registeredGoto := b. jump[i]. dest;
+          WriteBlock (b. jump[i]. dest);
+          w. Newline;
+          WriteGoto (registeredGoto);
+          w. Indent (-1);
+          nested := nested. nextDom; INC (i);
+        END;
+        w. Newline;
+        w. WriteString ("}");
+        registeredGoto := NIL;
+        WriteNested (nested);
+        
+      | b: Schedule.JumpBlock DO
+        IF (b. degreeIn # 0) THEN (* no need for goto if block is unused *)
+          registeredGoto := b. jump. dest;
+        END;
+        WriteNested (b. domList);
+
+      | b: Schedule.DeadEndBlock DO
+        WriteNested (b. domList);
       END;
     END WriteBlock;
   
   BEGIN
-    blockCount := 0;
-    blockMap := Dictionary.New();
-    lastBlock := NIL;
-
-    AssignIds (domRoot);
+    registeredGoto := domRoot;
     WriteBlock (domRoot);
-    FixLastJump (NIL)
   END WriteBlocks;
 
 PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
@@ -1456,6 +1493,74 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         Out.Flush;
       END;
     END Write;
+
+  PROCEDURE JumpChaining (b: Schedule.Block);
+    VAR
+      nested: Schedule.Block;
+
+    PROCEDURE Chain (VAR jump: Schedule.Jump);
+      BEGIN
+        WHILE w. EmptyBlock (jump. dest) & (jump. dest # jump. src) DO
+          Schedule.SetJump (jump, jump. src,
+                            jump. dest(Schedule.JumpBlock). jump. dest);
+        END;
+      END Chain;
+    
+    BEGIN
+      WITH b: Schedule.BranchBlock DO
+        Chain (b. jump);
+        Chain (b. branchTo);
+        
+      | b: Schedule.SwitchBlock DO
+        (* the data in b.jump[] remains unchanged *)
+
+      | b: Schedule.JumpBlock DO
+        Chain (b. jump);
+
+      | b: Schedule.DeadEndBlock DO
+        (* nothing to do *)
+      END;
+
+      nested := b. domList;
+      WHILE (nested # NIL) DO
+        JumpChaining (nested);
+        nested := nested. nextDom
+      END;
+    END JumpChaining;
+  
+  PROCEDURE FixCrossJumps (b: Schedule.Block);
+    VAR
+      nested: Schedule.Block;
+
+    PROCEDURE Switch (VAR negate: BOOLEAN; VAR j1, j2: Schedule.Jump);
+      VAR
+        j3: Schedule.Jump;
+      BEGIN
+        negate := ~negate;
+        j3 := j1; j1 := j2; j2 := j3
+      END Switch;
+    
+    BEGIN
+      WITH b: Schedule.BranchBlock DO
+        IF (b. branchTo. dest. id > b. id) &
+           (b. jump. dest. id <= b. id) THEN
+          (* if() jumps to later block, goto() to earlier *)
+          Switch (b. branchOnTrue, b. branchTo, b. jump);
+        ELSIF (b. id < b. branchTo. dest. id) &
+              (b. branchTo. dest. id < b. jump. dest. id) THEN
+          (* if() jumps over destination of goto() *)
+          Switch (b. branchOnTrue, b. branchTo, b. jump);
+        END;
+      ELSE
+        (* ignore *)
+      END;
+      
+      nested := b. domList;
+      WHILE (nested # NIL) DO
+        FixCrossJumps (nested);
+        nested := nested. nextDom
+      END;
+    END FixCrossJumps;
   
   BEGIN
     (*Log.String ("procedure",proc. decl. name. str^);*)
@@ -1499,6 +1604,9 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     w := NewWriter (t. w, pb, registerMap);
     WriteLocalDecl (t, w, pb, haveCopyParameter);
     t. WriteNestedProcedures();          (* up call *)
+    
+    JumpChaining (domRoot);
+    FixCrossJumps (domRoot);
     w. WriteLn;
     w. WriteBlocks (domRoot, haveCopyParameter);
     t. w. Indent (-1);

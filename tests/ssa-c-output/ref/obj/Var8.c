@@ -6,9 +6,7 @@ static void Var8__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
 
   i0 = str_0d-1;
   i1 = 0<=i0;
-  if (i1) goto l3;
-  goto l8;
-l3:
+  if (!i1) goto l8;
   i2=0;
 l4_loop:
   i3 = _check_index(i2, str_0d, OOC_UINT32, 148);
@@ -17,10 +15,7 @@ l4_loop:
   *(OOC_UINT8*)i4 = (OOC_CHAR8)'\000';
   i2 = i2+1;
   i3 = i2<=i0;
-  if (!i3) goto l7;
-  
-  goto l4_loop;
-l7:
+  if (i3) goto l4_loop;
 l8:
   return;
 }
