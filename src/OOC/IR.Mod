@@ -2226,7 +2226,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         fparType := formalPars[fparIndex]. type;
         WITH fparType: Sym.Array DO
           FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
-            newArgs. Append (b. NewLen (sym, arg, i))
+            newArgs. Append (b. Fold (b. NewLen (sym, arg, i)))
           END;
         ELSE  (* nothing to do *)
         END;
