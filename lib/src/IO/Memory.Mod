@@ -22,13 +22,13 @@ IMPORT
   SYSTEM, IO;
 
 TYPE
-  Data = POINTER TO ARRAY OF CHAR;
+  Data = POINTER TO ARRAY [READ_ONLY] OF CHAR;
   Channel* = POINTER TO ChannelDesc;
   ChannelDesc = RECORD
     (IO.ByteChannelDesc)
     pos: LONGINT;
     length-: LONGINT;
-    data: Data;
+    data-: Data;
   END;
 
 CONST
