@@ -6,7 +6,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opString1 opString2 opString3 opString4">-->
+  select ="&SetupTestCasesWithOut; opString1 opString2 opString3 opString4 opString5 opString6">-->
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -557,6 +557,13 @@
       array types.
     </test>
 
+    <test id="opString5" type="run" file="OpString5.Mod" output="OpString5.Ref">
+      Test comparison operators for character strings.
+    </test>
+
+    <test id="opString6" type="run" file="OpString6.Mod" output="OpString5.Ref">
+      Test comparison operators for long character strings.
+    </test>
   </testcases>
     
   <processor-info processor-name="TestCompile">
