@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:AST:ExtTree:CreateIR;
+MODULE OOC:AST:CreateIR;
 (*  Creates an IR representation from the abstract syntax tree.
     Copyright (C) 2001-2003  Michael van Acken
 
@@ -23,56 +23,56 @@ MODULE OOC:AST:ExtTree:CreateIR;
 IMPORT
   Log, Object:BigInt,
   OOC:Scanner:Symbol, OOC:Scanner:SymList,
-  OOC:AST:ExtTree, Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
+  OOC:AST, Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
   OOC:SymbolTable:Predef, OOC:IR;
 
 
 
-PROCEDURE CreateIR* (module: ExtTree.Module;
+PROCEDURE CreateIR* (module: AST.Module;
                      symTab: Sym.Module;
                      b: IR.Builder): IR.Module;
   VAR
     currentNamespace: Sym.Namespace;
     currentSourceContext: Sym.Item;
     
-  PROCEDURE ^ Expr (expr: ExtTree.Node): IR.Expression;
+  PROCEDURE ^ Expr (expr: AST.Node): IR.Expression;
     
-  PROCEDURE ^ FunctionCall (call: ExtTree.FunctionCall;
+  PROCEDURE ^ FunctionCall (call: AST.FunctionCall;
                             isProcCall: BOOLEAN): IR.Expression;
     
-  PROCEDURE ^ QualType(qualType: ExtTree.QualType): IR.Expression;
+  PROCEDURE ^ QualType(qualType: AST.QualType): IR.Expression;
     
-  PROCEDURE Designator (design: ExtTree.Node): IR.Expression;
+  PROCEDURE Designator (design: AST.Node): IR.Expression;
     VAR
       left: IR.Expression;
       sym: SymList.Symbol;
       i: LONGINT;
 
-    PROCEDURE Select(design: ExtTree.Operator): IR.Expression;
+    PROCEDURE Select(design: AST.Operator): IR.Expression;
       VAR
         left: IR.Expression;
       BEGIN
         left := Designator (design. left);
         WITH left: IR.ModuleRef DO
           RETURN b. NewQualident (currentNamespace, left, currentSourceContext,
-                                  design. right(ExtTree.Terminal). sym);
+                                  design. right(AST.Terminal). sym);
 
         ELSE                             (* field or tb procedure selector *)
           IF (left = b.errorExpr) THEN
             RETURN b. errorExpr;           (* left side has errors *)
           ELSE
             RETURN b. NewSelect (design. op. sym, left, currentSourceContext,
-                                 design. right(ExtTree.Terminal). sym);
+                                 design. right(AST.Terminal). sym);
           END;
         END
       END Select;
     
     BEGIN
-      WITH design: ExtTree.Terminal DO
+      WITH design: AST.Terminal DO
         RETURN b. NewIdentRef (currentNamespace, currentNamespace,
                                currentSourceContext, design. sym)
             
-      | design: ExtTree.ArrayIndex DO
+      | design: AST.ArrayIndex DO
         left := Designator (design. design);
         sym := design. lBrak. sym;
         i := 0;
@@ -81,13 +81,13 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
                                Expr (design. indices. n[i]));
           INC (i);
           IF (i < design. indices. len) THEN
-            sym := design. indices. n[i](ExtTree.Terminal). sym;
+            sym := design. indices. n[i](AST.Terminal). sym;
           END;
           INC (i)
         END;
         RETURN left
             
-      | design: ExtTree.Operator DO
+      | design: AST.Operator DO
         IF (design. op. sym. id = Symbol.period) THEN
           RETURN Select (design);
         ELSE
@@ -95,10 +95,10 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           RETURN b. NewDeref (design. op. sym, Designator (design. left));
         END;
 
-      | design: ExtTree.FunctionCall DO
+      | design: AST.FunctionCall DO
         RETURN FunctionCall (design, FALSE);
 
-      | design: ExtTree.QualType DO
+      | design: AST.QualType DO
         RETURN QualType(design);
         
       ELSE
@@ -107,11 +107,11 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       END
     END Designator;
  
-  PROCEDURE Range(expr : ExtTree.Node; isSet : BOOLEAN) : IR.Expression; 
+  PROCEDURE Range(expr : AST.Node; isSet : BOOLEAN) : IR.Expression; 
   (* Check for an upto operator ".." or a normal expression. *)
   VAR e : IR.Expression;
   BEGIN
-    WITH expr : ExtTree.Operator DO
+    WITH expr : AST.Operator DO
       IF (expr. op. sym. id = Symbol.upto) THEN
         RETURN b.NewSetRange(expr.op.sym, Expr(expr.left), Expr(expr.right), isSet);
       END;
@@ -121,7 +121,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     RETURN b.NewSetRange(e.sym, e, e, isSet);
   END Range;
 
-  PROCEDURE SetConstruct(sc : ExtTree.Set) : IR.Expression;
+  PROCEDURE SetConstruct(sc : AST.Set) : IR.Expression;
   VAR
     i, len : LONGINT;
     result : IR.Expression;
@@ -138,18 +138,18 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     END;
   END SetConstruct;
 
-  PROCEDURE QualType(qualType: ExtTree.QualType): IR.Expression;
+  PROCEDURE QualType(qualType: AST.QualType): IR.Expression;
     VAR
       type: IR.Expression;
       arguments: IR.ExpressionList;
       i: LONGINT;
-      n: ExtTree.Node;
+      n: AST.Node;
     BEGIN
       type := Designator(qualType.qualident);
       NEW(arguments, (qualType.arguments.len+1) DIV 2);
       FOR i := 0 TO LEN(arguments^)-1 DO
         n := qualType.arguments.n[i*2];
-        WITH n: ExtTree.QualType DO
+        WITH n: AST.QualType DO
           arguments[i] := QualType(n);
         ELSE
           arguments[i] := Designator(n);  (* actually Qualident *)
@@ -158,12 +158,12 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN b.NewQualType(type, arguments, qualType.rParen.sym);
     END QualType;
   
-  PROCEDURE Expr (expr: ExtTree.Node): IR.Expression;
+  PROCEDURE Expr (expr: AST.Node): IR.Expression;
     VAR
       left, right, res: IR.Expression;
 
     BEGIN
-      WITH expr: ExtTree.Terminal DO
+      WITH expr: AST.Terminal DO
         CASE expr. sym. id OF
         | Symbol.ident:
           res := Designator (expr)
@@ -183,13 +183,13 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           res := b. NewNil (expr. sym)
         END
 
-      | expr: ExtTree.Factor DO
+      | expr: AST.Factor DO
         res := Expr (expr. expr)
             
-      | expr: ExtTree.ArrayIndex DO      (* part of designator *)
+      | expr: AST.ArrayIndex DO      (* part of designator *)
         res := Designator (expr)
        
-      | expr: ExtTree.Operator DO
+      | expr: AST.Operator DO
         IF (expr. op. sym. id = Symbol.period) OR
            (expr. op. sym. id = Symbol.arrow) THEN
           (* handled as part of designator *)
@@ -208,13 +208,13 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           res := b. NewOperator (expr. op. sym, left, right);
         END;
 
-      | expr: ExtTree.Set DO
+      | expr: AST.Set DO
         res := SetConstruct(expr);
 
-      | expr: ExtTree.FunctionCall DO
+      | expr: AST.FunctionCall DO
         res := FunctionCall (expr, FALSE);
 
-      | expr: ExtTree.QualType DO
+      | expr: AST.QualType DO
         res := QualType(expr);
         
       ELSE
@@ -224,7 +224,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN b. Fold (res)
     END Expr;
   
-  PROCEDURE FunctionCall (call: ExtTree.FunctionCall;
+  PROCEDURE FunctionCall (call: AST.FunctionCall;
                           isProcCall: BOOLEAN): IR.Expression;
     VAR
       design: IR.Expression;
@@ -240,20 +240,20 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
                        call.rParen.sym);
     END FunctionCall;
 
-  PROCEDURE StatementSeq (statmSeq: ExtTree.NodeList): IR.StatementSeq;
+  PROCEDURE StatementSeq (statmSeq: AST.NodeList): IR.StatementSeq;
     VAR
       i, count: LONGINT;
-      n: ExtTree.Node;
+      n: AST.Node;
       statmSeqIR, copy: IR.StatementSeq;
       statm: IR.Statement;
 
-    PROCEDURE ProcedureCall (call: ExtTree.ProcedureCall): IR.Statement;
+    PROCEDURE ProcedureCall (call: AST.ProcedureCall): IR.Statement;
       VAR
         expr, design: IR.Expression;
         arguments: IR.ExpressionList;
       BEGIN
-        IF (call. call IS ExtTree.FunctionCall) THEN
-          expr := FunctionCall (call. call(ExtTree.FunctionCall), TRUE);
+        IF (call. call IS AST.FunctionCall) THEN
+          expr := FunctionCall (call. call(AST.FunctionCall), TRUE);
         ELSE
           (* create procedure call from lonely designator *)
           NEW (arguments, 0);
@@ -268,7 +268,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         END;
       END ProcedureCall;
   
-    PROCEDURE Return (return: ExtTree.ReturnStatm): IR.Statement;
+    PROCEDURE Return (return: AST.ReturnStatm): IR.Statement;
       BEGIN
         IF (return. expr = NIL) THEN
           RETURN b. NewReturn (return. return. sym, NIL)
@@ -278,16 +278,16 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         END;
       END Return;
 
-    PROCEDURE Assignment (design, op, value: ExtTree.Node): IR.Statement;
+    PROCEDURE Assignment (design, op, value: AST.Node): IR.Statement;
       VAR
         variable, valueExpr: IR.Expression;
       BEGIN
         variable := Designator (design);
         valueExpr := Expr (value);
-        RETURN b. NewAssignment (op(ExtTree.Terminal). sym, variable, valueExpr)
+        RETURN b. NewAssignment (op(AST.Terminal). sym, variable, valueExpr)
       END Assignment;
     
-    PROCEDURE IfStatm (ifStatm: ExtTree.IfStatm): IR.Statement;
+    PROCEDURE IfStatm (ifStatm: AST.IfStatm): IR.Statement;
       VAR
         else: IR.Statement;
         elseSeq: IR.StatementSeq;
@@ -301,9 +301,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         i := ifStatm. guardList. len-4;
         REPEAT
           else := b. NewIfStatm
-              (ifStatm. guardList. n[i](ExtTree.Terminal). sym,
+              (ifStatm. guardList. n[i](AST.Terminal). sym,
                Expr (ifStatm. guardList. n[i+1]),
-               StatementSeq (ifStatm. guardList. n[i+3](ExtTree.NodeList)),
+               StatementSeq (ifStatm. guardList. n[i+3](AST.NodeList)),
                elseSeq);
           NEW (elseSeq, 1);
           elseSeq[0] := else;
@@ -312,14 +312,14 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         RETURN else
       END IfStatm;
   
-    PROCEDURE CaseStatm (caseStatm: ExtTree.CaseStatm): IR.Statement;
+    PROCEDURE CaseStatm (caseStatm: AST.CaseStatm): IR.Statement;
       VAR
         select: IR.Expression;
         elseSeq: IR.StatementSeq;
         i, count: LONGINT;
         caseList: IR.CaseList;
 
-      PROCEDURE Labels (labels: ExtTree.NodeList): IR.CaseLabels;
+      PROCEDURE Labels (labels: AST.NodeList): IR.CaseLabels;
         VAR
           i: LONGINT;
           setRanges: IR.CaseLabels;
@@ -348,9 +348,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         FOR i := 0 TO caseStatm. caseList. len-1 BY 4 DO
           IF (caseStatm. caseList. n[i] # NIL) THEN
             caseList[count] := b. NewCase
-              (caseStatm. caseList. n[i+1](ExtTree.Terminal). sym,
-               Labels (caseStatm. caseList. n[i](ExtTree.NodeList)),
-               StatementSeq (caseStatm. caseList. n[i+2](ExtTree.NodeList)));
+              (caseStatm. caseList. n[i+1](AST.Terminal). sym,
+               Labels (caseStatm. caseList. n[i](AST.NodeList)),
+               StatementSeq (caseStatm. caseList. n[i+2](AST.NodeList)));
             INC (count);
           END;
         END;
@@ -363,28 +363,28 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
                                 select, caseList, elseSeq);
       END CaseStatm;
   
-    PROCEDURE RepeatStatm (repeatStatm: ExtTree.RepeatStatm): IR.Statement;
+    PROCEDURE RepeatStatm (repeatStatm: AST.RepeatStatm): IR.Statement;
       BEGIN
         RETURN b. NewRepeatStatm (repeatStatm. repeat. sym,
                                   StatementSeq (repeatStatm. statmSeq),
                                   Expr (repeatStatm. expr));
       END RepeatStatm;
   
-    PROCEDURE WhileStatm (whileStatm: ExtTree.WhileStatm): IR.Statement;
+    PROCEDURE WhileStatm (whileStatm: AST.WhileStatm): IR.Statement;
       BEGIN
         RETURN b. NewWhileStatm (whileStatm. while. sym,
                                  Expr (whileStatm. guard),
                                  StatementSeq (whileStatm. statmSeq));
       END WhileStatm;
   
-    PROCEDURE WithStatm (withStatm: ExtTree.WithStatm): IR.Statement;
+    PROCEDURE WithStatm (withStatm: AST.WithStatm): IR.Statement;
       VAR
         else: IR.Statement;
         elseSeq, region: IR.StatementSeq;
         i: LONGINT;
         guard: IR.Expression;
 
-      PROCEDURE TypeTestExpr (op: ExtTree.Operator): IR.Expression;
+      PROCEDURE TypeTestExpr (op: AST.Operator): IR.Expression;
         BEGIN
           RETURN b. NewTypeTest (op.op.sym, Expr (op. left), Expr (op. right));
         END TypeTestExpr;
@@ -398,14 +398,14 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         else := NIL;
         i := withStatm. guardList. len-4;
         REPEAT
-          guard := TypeTestExpr(withStatm.guardList.n[i+1](ExtTree.Operator));
+          guard := TypeTestExpr(withStatm.guardList.n[i+1](AST.Operator));
           IF (guard IS IR.TypeTest) THEN   (* otherwise we have an error *)
             b. StartTypeGuard (guard(IR.TypeTest), currentNamespace);
-            region := StatementSeq(withStatm.guardList.n[i+3](ExtTree.NodeList));
+            region := StatementSeq(withStatm.guardList.n[i+3](AST.NodeList));
             b. EndTypeGuard (currentNamespace);
             
             else := b. NewWithStatm
-                (withStatm. guardList. n[i](ExtTree.Terminal). sym,
+                (withStatm. guardList. n[i](AST.Terminal). sym,
                  guard, region, elseSeq);
             NEW (elseSeq, 1);
             elseSeq[0] := else;
@@ -415,7 +415,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         RETURN else
       END WithStatm;
   
-    PROCEDURE ForStatm (forStatm: ExtTree.ForStatm): IR.Statement;
+    PROCEDURE ForStatm (forStatm: AST.ForStatm): IR.Statement;
       PROCEDURE Step (): IR.Expression;
         BEGIN
           IF (forStatm. step # NIL) THEN
@@ -434,24 +434,24 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
                                StatementSeq (forStatm. statmSeq));
       END ForStatm;
   
-    PROCEDURE LoopStatm (loopStatm: ExtTree.LoopStatm): IR.Statement;
+    PROCEDURE LoopStatm (loopStatm: AST.LoopStatm): IR.Statement;
       BEGIN
         RETURN b. NewLoopStatm (loopStatm. loop. sym,
                                 StatementSeq (loopStatm. statmSeq));
       END LoopStatm;
   
-    PROCEDURE TryStatm (tryStatm: ExtTree.TryStatm): IR.Statement;
+    PROCEDURE TryStatm (tryStatm: AST.TryStatm): IR.Statement;
       VAR
         statmSeq, catchStatm: IR.StatementSeq;
         catchList: IR.CatchList;
-        catch: ExtTree.Catch;
+        catch: AST.Catch;
         guard: IR.Expression;
         i: LONGINT;
       BEGIN
         NEW(catchList, tryStatm.catchList.len);
         statmSeq := StatementSeq(tryStatm.statmSeq);
         FOR i := 0 TO tryStatm.catchList.len-1 DO
-          catch := tryStatm.catchList.n[i](ExtTree.Catch);
+          catch := tryStatm.catchList.n[i](AST.Catch);
           guard := Expr(catch.type);
 
           IF (catch.ident = NIL) THEN
@@ -480,42 +480,42 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       FOR i := 0 TO statmSeq. len-1 BY 2 DO
         IF (statmSeq. n[i] # NIL) THEN
           n := statmSeq. n[i];
-          WITH n: ExtTree.ProcedureCall DO
+          WITH n: AST.ProcedureCall DO
             statm := ProcedureCall (n);
             
-          | n: ExtTree.ReturnStatm DO
+          | n: AST.ReturnStatm DO
             statm := Return (n);
 
-          | n: ExtTree.Assignment DO
+          | n: AST.Assignment DO
             statm := Assignment (n. assignment. left,
                                  n. assignment. op,
                                  n. assignment. right)
 
-          | n: ExtTree.IfStatm DO
+          | n: AST.IfStatm DO
             statm := IfStatm (n)
 
-          | n: ExtTree.CaseStatm DO
+          | n: AST.CaseStatm DO
             statm := CaseStatm (n)
                 
-          | n: ExtTree.WithStatm DO
+          | n: AST.WithStatm DO
             statm := WithStatm (n)
 
-          | n: ExtTree.RepeatStatm DO
+          | n: AST.RepeatStatm DO
             statm := RepeatStatm (n)
               
-          | n: ExtTree.WhileStatm DO
+          | n: AST.WhileStatm DO
             statm := WhileStatm (n)
 
-          | n: ExtTree.ForStatm DO
+          | n: AST.ForStatm DO
             statm := ForStatm (n);
 
-          | n: ExtTree.LoopStatm DO
+          | n: AST.LoopStatm DO
             statm := LoopStatm (n);
 
-          | n: ExtTree.ExitStatm DO
+          | n: AST.ExitStatm DO
             statm := b. NewExit (n. exit. sym);
 
-          | n: ExtTree.TryStatm DO
+          | n: AST.TryStatm DO
             statm := TryStatm(n);
             
           ELSE
@@ -542,7 +542,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN statmSeqIR
     END StatementSeq;
   
-  PROCEDURE ConstDecl(constDecl: Sym.ConstDecl; constExpr : ExtTree.Node);
+  PROCEDURE ConstDecl(constDecl: Sym.ConstDecl; constExpr : AST.Node);
   VAR
     expr : IR.Expression;
   BEGIN
@@ -552,7 +552,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
    
 <* PUSH; Warnings := FALSE *>
   PROCEDURE ProcDecl (procDecl: Sym.ProcDecl;
-                      procCode: ExtTree.ProcDecl): IR.Procedure;
+                      procCode: AST.ProcDecl): IR.Procedure;
     VAR
       statmSeq: IR.StatementSeq;
       oldNamespace: Sym.Namespace;
@@ -585,9 +585,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
 <* POP *>
   
   PROCEDURE Module (moduleDecl: Sym.Module;
-                    moduleAST: ExtTree.Module): IR.Module;
+                    moduleAST: AST.Module): IR.Module;
     VAR
-      declSeq: ExtTree.NodeList;
+      declSeq: AST.NodeList;
       count: LONGINT;
       procList: IR.ProcedureList;
       statmSeq: IR.StatementSeq;
@@ -622,7 +622,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       BEGIN
         WITH item: Sym.ProcDecl DO
           IF IsProc (item) THEN
-            procList[count] := ProcDecl (item, item.procAST(ExtTree.ProcDecl));
+            procList[count] := ProcDecl (item, item.procAST(AST.ProcDecl));
             INC (count)
           END;
         ELSE                             (* ignore *)
@@ -730,5 +730,5 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     RETURN Module (symTab, module)
   END CreateIR;
 
-END OOC:AST:ExtTree:CreateIR.
+END OOC:AST:CreateIR.
 

@@ -26,7 +26,7 @@ Log,
   ADT:ArrayList, ADT:StringBuffer, Config,
   Id := OOC:Scanner:Symbol, OOC:Scanner:SymList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:StdPragmas,
-  OOC:AST:ExtTree, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Namespace,
   OOC:SymbolTable:CreateNamespace, OOC:SymbolTable:Uses;
 
@@ -151,7 +151,7 @@ Log,
 
 
 TYPE
-  Name* = ExtTree.Name;
+  Name* = AST.Name;
   Symbol* = SymList.Symbol;
   
 TYPE

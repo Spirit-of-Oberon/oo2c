@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:AST:ExtTree:XML;
+MODULE OOC:AST:XML;
 (*  Writes an abstract syntax tree into an XML document.
     Copyright (C) 2000, 2001, 2002, 2003  Michael van Acken
 
@@ -21,11 +21,11 @@ MODULE OOC:AST:ExtTree:XML;
 *)
 
 IMPORT
-  IO, OOC:Scanner:Symbol, OOC:AST:ExtTree, XML:Writer,
+  IO, OOC:Scanner:Symbol, OOC:AST, XML:Writer,
   XML:UnicodeCodec:Latin1, OOC:Doc, DocXML := OOC:Doc:Output:XML;
 
 
-PROCEDURE Write* (cw: IO.ByteChannel; m: ExtTree.Module)
+PROCEDURE Write* (cw: IO.ByteChannel; m: AST.Module)
 RAISES IO.Error;
 (**Writes the abstract syntax tree @oparam{m} to the output writer 
    @oparam{cw}.  The result is an XML document that describes the
@@ -55,7 +55,7 @@ RAISES IO.Error;
   VAR
     w: Writer.Writer;
   
-  PROCEDURE Node (n: ExtTree.Node);
+  PROCEDURE Node (n: AST.Node);
     VAR
       i: LONGINT;
 
@@ -68,33 +68,33 @@ RAISES IO.Error;
     
     BEGIN
       IF (n # NIL) THEN
-        WITH n: ExtTree.NodeList DO
+        WITH n: AST.NodeList DO
           w. StartTag ("node_list", FALSE);
           FOR i := 0 TO n. len-1 DO
             Node (n. n[i])
           END;
           w. EndTag
           
-        | n: ExtTree.Terminal DO
+        | n: AST.Terminal DO
           w. StartTag ("symbol", TRUE);
           w. AttrStringLatin1 ("id", Symbol.name[n. sym. id]);
           w. WriteLatin1I (n. sym. str^, 0, n. sym. len);
           w. EndTag
         
-        | n: ExtTree.IdentDef DO
+        | n: AST.IdentDef DO
           w. StartTag ("ident_def", FALSE);
           Node (n. ident);
           Node (n. mark);
           NodeDocString (n. docString);
           w. EndTag
         
-        | n: ExtTree.ModuleIdent DO
+        | n: AST.ModuleIdent DO
           w. StartTag ("module_ident", FALSE);
           Node (n. nameList);
           NodeDocString (n. docString);
           w. EndTag
           
-        | n: ExtTree.ArrayType DO
+        | n: AST.ArrayType DO
           w. StartTag ("array_type", FALSE);
           Node (n. array);
           Node (n. flags);
@@ -103,14 +103,14 @@ RAISES IO.Error;
           Node (n. type);
           w. EndTag
         
-        | n: ExtTree.FieldList DO
+        | n: AST.FieldList DO
           w. StartTag ("field_list", FALSE);
           Node (n. identList);
           Node (n. colon);
           Node (n. type);
           w. EndTag
         
-        | n: ExtTree.RecordType DO
+        | n: AST.RecordType DO
           w. StartTag ("record_type", FALSE);
           Node (n. record);
           Node (n. flags);
@@ -121,7 +121,7 @@ RAISES IO.Error;
           Node (n. end);
           w. EndTag
         
-        | n: ExtTree.PointerType DO
+        | n: AST.PointerType DO
           w. StartTag ("pointer_type", FALSE);
           Node (n. pointer);
           Node (n. flags);
@@ -129,7 +129,7 @@ RAISES IO.Error;
           Node (n. type);
           w. EndTag
         
-        | n: ExtTree.FPSection DO
+        | n: AST.FPSection DO
           w. StartTag ("fp_section", FALSE);
           Node (n. var);
           Node (n. identList);
@@ -137,7 +137,7 @@ RAISES IO.Error;
           Node (n. type);
           w. EndTag
         
-        | n: ExtTree.FormalPars DO
+        | n: AST.FormalPars DO
           w. StartTag ("formal_pars", FALSE);
           Node (n. flags);
           Node (n. lParen);
@@ -149,27 +149,27 @@ RAISES IO.Error;
           Node (n. raisesList);
           w. EndTag
           
-        | n: ExtTree.ProcType DO
+        | n: AST.ProcType DO
           w. StartTag ("proc_type", FALSE);
           Node (n. procedure);
           Node (n. formalPars);
           w. EndTag
           
-        | n: ExtTree.TPSection DO
+        | n: AST.TPSection DO
           w. StartTag ("tp_section", FALSE);
           Node (n. identList);
           Node (n. colon);
           Node (n. type);
           w. EndTag
         
-        | n: ExtTree.TypePars DO
+        | n: AST.TypePars DO
           w. StartTag ("type_pars", FALSE);
           Node (n. lParen);
           Node (n. tpSections);
           Node (n. rParen);
           w. EndTag
           
-        | n: ExtTree.QualType DO
+        | n: AST.QualType DO
           w. StartTag ("qual_type", FALSE);
           Node (n. qualident);
           Node (n. lParen);
@@ -177,14 +177,14 @@ RAISES IO.Error;
           Node (n. rParen);
           w. EndTag
           
-        | n: ExtTree.ImportDecl DO
+        | n: AST.ImportDecl DO
           w. StartTag ("import_decl", FALSE);
           Node (n. alias);
           Node (n. becomes);
           Node (n. module);
           w. EndTag
           
-        | n: ExtTree.ConstDecl DO
+        | n: AST.ConstDecl DO
           w. StartTag ("const_decl", FALSE);
           Node (n. identDef);
           Node (n. equal);
@@ -192,7 +192,7 @@ RAISES IO.Error;
           Node (n. semicolon);
           w. EndTag
           
-        | n: ExtTree.TypeDecl DO
+        | n: AST.TypeDecl DO
           w. StartTag ("type_decl", FALSE);
           Node (n. identDef);
           Node (n. typePars);
@@ -201,7 +201,7 @@ RAISES IO.Error;
           Node (n. semicolon);
           w. EndTag
           
-        | n: ExtTree.VarDecl DO
+        | n: AST.VarDecl DO
           w. StartTag ("var_decl", FALSE);
           Node (n. identList);
           Node (n. colon);
@@ -209,7 +209,7 @@ RAISES IO.Error;
           Node (n. semicolon);
           w. EndTag
         
-        | n: ExtTree.Receiver DO
+        | n: AST.Receiver DO
           w. StartTag ("receiver", FALSE);
           Node (n. lParen);
           Node (n. var);
@@ -219,7 +219,7 @@ RAISES IO.Error;
           Node (n. rParen);
           w. EndTag
           
-        | n: ExtTree.ProcDecl DO
+        | n: AST.ProcDecl DO
           w. StartTag ("proc_decl", FALSE);
           Node (n. proc);
           Node (n. arrow);
@@ -232,14 +232,14 @@ RAISES IO.Error;
           Node (n. semicolon2);
           w. EndTag
         
-        | n: ExtTree.ImportList DO
+        | n: AST.ImportList DO
           w. StartTag ("import_list", FALSE);
           Node (n. import);
           Node (n. imports);
           Node (n. semicolon);
           w. EndTag
           
-        | n: ExtTree.Body DO
+        | n: AST.Body DO
           w. StartTag ("body", FALSE);
           Node (n. declSeq);
           Node (n. begin);
@@ -248,7 +248,7 @@ RAISES IO.Error;
           Node (n. name);
           w. EndTag
           
-        | n: ExtTree.Module DO
+        | n: AST.Module DO
           w. StartTag ("module", FALSE);
           Node (n. module);
           Node (n. name);
@@ -259,21 +259,21 @@ RAISES IO.Error;
           Node (n. period);
           w. EndTag
         
-        | n: ExtTree.Operator DO
+        | n: AST.Operator DO
           w. StartTag ("operator", FALSE);
           Node (n. left);
           Node (n. op);
           Node (n. right);
           w. EndTag
         
-        | n: ExtTree.Factor DO
+        | n: AST.Factor DO
           w. StartTag ("factor", FALSE);
           Node (n. lParen);
           Node (n. expr);
           Node (n. rParen);
           w. EndTag
         
-        | n: ExtTree.Set DO
+        | n: AST.Set DO
           w. StartTag ("set", FALSE);
           Node (n. type);
           Node (n. lBrace);
@@ -281,7 +281,7 @@ RAISES IO.Error;
           Node (n. rBrace);
           w. EndTag
         
-        | n: ExtTree.ArrayIndex DO
+        | n: AST.ArrayIndex DO
           w. StartTag ("array_index", FALSE);
           Node (n. design);
           Node (n. lBrak);
@@ -289,7 +289,7 @@ RAISES IO.Error;
           Node (n. rBrak);
           w. EndTag
         
-        | n: ExtTree.FunctionCall DO
+        | n: AST.FunctionCall DO
           w. StartTag ("function_call", FALSE);
           Node (n. design);
           Node (n. lParen);
@@ -298,15 +298,15 @@ RAISES IO.Error;
           w. EndTag
         
         
-        | n: ExtTree.Assignment DO
+        | n: AST.Assignment DO
           Node (n. assignment)
           
-        | n: ExtTree.ProcedureCall DO
+        | n: AST.ProcedureCall DO
           w. StartTag ("procedure_call", FALSE);
           Node (n. call);
           w. EndTag
           
-        | n: ExtTree.IfStatm DO
+        | n: AST.IfStatm DO
           w. StartTag ("if_statm", FALSE);
           Node (n. guardList);
           Node (n. else);
@@ -314,7 +314,7 @@ RAISES IO.Error;
           Node (n. end);
           w. EndTag
         
-        | n: ExtTree.CaseStatm DO
+        | n: AST.CaseStatm DO
           w. StartTag ("case_statm", FALSE);
           Node (n. case);
           Node (n. expr);
@@ -325,7 +325,7 @@ RAISES IO.Error;
           Node (n. end);
           w. EndTag
         
-        | n: ExtTree.WhileStatm DO
+        | n: AST.WhileStatm DO
           w. StartTag ("while_statm", FALSE);
           Node (n. while);
           Node (n. guard);
@@ -334,7 +334,7 @@ RAISES IO.Error;
           Node (n. end);
           w. EndTag
         
-        | n: ExtTree.RepeatStatm DO
+        | n: AST.RepeatStatm DO
           w. StartTag ("repeat_statm", FALSE);
           Node (n. repeat);
           Node (n. statmSeq);
@@ -342,7 +342,7 @@ RAISES IO.Error;
           Node (n. expr);
           w. EndTag
         
-        | n: ExtTree.ForStatm DO
+        | n: AST.ForStatm DO
           w. StartTag ("for_statm", FALSE);
           Node (n. for);
           Node (n. ident);
@@ -357,14 +357,14 @@ RAISES IO.Error;
           Node (n. end);
           w. EndTag
         
-        | n: ExtTree.LoopStatm DO
+        | n: AST.LoopStatm DO
           w. StartTag ("loop_statm", FALSE);
           Node (n. loop);
           Node (n. statmSeq);
           Node (n. end);
           w. EndTag
         
-        | n: ExtTree.WithStatm DO
+        | n: AST.WithStatm DO
           w. StartTag ("with_statm", FALSE);
           Node (n. guardList);
           Node (n. else);
@@ -372,18 +372,18 @@ RAISES IO.Error;
           Node (n. end);
           w. EndTag
         
-        | n: ExtTree.ExitStatm DO
+        | n: AST.ExitStatm DO
           w. StartTag ("exit_statm", FALSE);
           Node (n. exit);
           w. EndTag
         
-        | n: ExtTree.ReturnStatm DO
+        | n: AST.ReturnStatm DO
           w. StartTag ("return_statm", FALSE);
           Node (n. return);
           Node (n. expr);
           w. EndTag
         
-        | n: ExtTree.TryStatm DO
+        | n: AST.TryStatm DO
           w. StartTag ("try_statm", FALSE);
           Node(n.try);
           Node(n.statmSeq);
@@ -393,21 +393,21 @@ RAISES IO.Error;
         
         
         
-        | n: ExtTree.Flags DO
+        | n: AST.Flags DO
           w. StartTag ("flags", FALSE);
           Node (n. lBrak);
           Node (n. flagList);
           Node (n. rBrak);
           w. EndTag
         
-        | n: ExtTree.ProcIdFlag DO
+        | n: AST.ProcIdFlag DO
           w. StartTag ("proc_id_flag", FALSE);
           Node (n. procId);
           Node (n. equal);
           Node (n. number);
           w. EndTag
         
-        | n: ExtTree.ModuleFlags DO
+        | n: AST.ModuleFlags DO
           w. StartTag ("module_flags", FALSE);
           Node (n. external);
           Node (n. callConv);
@@ -418,7 +418,7 @@ RAISES IO.Error;
           Node (n. end);
           w. EndTag
         
-        | n: ExtTree.LinkFileFlag DO
+        | n: AST.LinkFileFlag DO
           w. StartTag ("link_file_flag", FALSE);
           Node (n. file);
           Node (n. fileName);
@@ -428,13 +428,13 @@ RAISES IO.Error;
           Node (n. suffixOpt);
           w. EndTag
         
-        | n: ExtTree.LinkObjFlag DO
+        | n: AST.LinkObjFlag DO
           w. StartTag ("link_obj_flag", FALSE);
           Node (n. obj);
           Node (n. fileName);
           w. EndTag
         
-        | n: ExtTree.LinkLibFlag DO
+        | n: AST.LinkLibFlag DO
           w. StartTag ("link_lib_flag", FALSE);
           Node (n. lib);
           Node (n. libName);
@@ -457,4 +457,4 @@ RAISES IO.Error;
     w. EndOfText
   END Write;
 
-END OOC:AST:ExtTree:XML.
+END OOC:AST:XML.

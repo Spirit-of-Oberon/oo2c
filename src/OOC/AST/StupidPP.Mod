@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:AST:ExtTree:StupidPP;
+MODULE OOC:AST:StupidPP;
 (*  A simple pretty printer: it writes the syntax tree, omitting any comments.
     Copyright (C) 2000-2003  Michael van Acken
 
@@ -22,9 +22,9 @@ MODULE OOC:AST:ExtTree:StupidPP;
 
 
 IMPORT
-  Log, TextRider, OOC:Scanner:Symbol, OOC:AST:ExtTree;
+  Log, TextRider, OOC:Scanner:Symbol, OOC:AST;
   
-PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
+PROCEDURE Write* (w: TextRider.Writer; m: AST.Module);
 (**Writes the abstract syntax tree @oparam{m} to the output writer
    @oparam{w}.  The result is the content of the source module, with a
    very rigid formatting and minus any embedded comments or pragmas.  *)
@@ -41,30 +41,30 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
       END
     END NewLine;
 
-  PROCEDURE Node (n: ExtTree.Node);
+  PROCEDURE Node (n: AST.Node);
     VAR
       i, j: LONGINT;
 
     BEGIN
       IF (n # NIL) THEN
-        WITH n: ExtTree.NodeList DO
+        WITH n: AST.NodeList DO
           FOR i := 0 TO n. len-1 DO
             Node (n. n[i])
           END
          
-        | n: ExtTree.Terminal DO
+        | n: AST.Terminal DO
           w. byteWriter. WriteBytes (n. sym. str^, 0, n. sym. len)
         
-        | n: ExtTree.IdentDef DO
+        | n: AST.IdentDef DO
           Node (n. ident);
           IF (n. mark # NIL) THEN
             Node (n. mark)
           END
         
-        | n: ExtTree.ModuleIdent DO
+        | n: AST.ModuleIdent DO
           Node (n. nameList)
           
-        | n: ExtTree.ArrayType DO
+        | n: AST.ArrayType DO
           w. WriteString ("ARRAY");
           Node (n. flags);
           i := 0;
@@ -80,7 +80,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (" OF ");
           Node (n. type)
         
-        | n: ExtTree.FieldList DO
+        | n: AST.FieldList DO
           i := 0;
           WHILE (i < n. identList. len) DO
             IF (i # 0) THEN
@@ -92,7 +92,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (": ");
           Node (n. type)
         
-        | n: ExtTree.RecordType DO
+        | n: AST.RecordType DO
           w. WriteString ("RECORD");
           Node (n. flags);
           INC (indent);
@@ -106,7 +106,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           WHILE (i < n. fieldLists. len) DO
             IF (n. fieldLists. n[i] = NIL) THEN
               (* emtpy field list *)
-            ELSIF (n. fieldLists. n[i] IS ExtTree.Terminal) THEN
+            ELSIF (n. fieldLists. n[i] IS AST.Terminal) THEN
               w. WriteString (";")
             ELSE
               NewLine;
@@ -118,13 +118,13 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           NewLine;
           w. WriteString ("END")
         
-        | n: ExtTree.PointerType DO
+        | n: AST.PointerType DO
           w. WriteString ("POINTER ");
           Node (n. flags);
           w. WriteString ("TO ");
           Node (n. type)
         
-        | n: ExtTree.FPSection DO
+        | n: AST.FPSection DO
           IF (n. var # NIL) THEN
             w. WriteString ("VAR ")
           END;
@@ -140,7 +140,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (": ");
           Node (n. type)
         
-        | n: ExtTree.FormalPars DO
+        | n: AST.FormalPars DO
           Node (n. flags);
           IF (n. fpSections # NIL) THEN
             w. WriteString (" (");
@@ -159,18 +159,18 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
             END
           END
         
-        | n: ExtTree.ProcType DO
+        | n: AST.ProcType DO
           w. WriteString ("PROCEDURE ");
           Node (n. formalPars)
           
-        | n: ExtTree.ImportDecl DO
+        | n: AST.ImportDecl DO
           IF (n. alias # NIL) THEN
             Node (n. alias);
             w. WriteString (" := ")
           END;
           Node (n. module)
           
-        | n: ExtTree.ConstDecl DO
+        | n: AST.ConstDecl DO
           INC (indent);
           NewLine;
           Node (n. identDef);
@@ -179,7 +179,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (";");
           DEC (indent)
           
-        | n: ExtTree.TypeDecl DO
+        | n: AST.TypeDecl DO
           INC (indent);
           NewLine;
           Node (n. identDef);
@@ -188,7 +188,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (";");
           DEC (indent)
           
-        | n: ExtTree.VarDecl DO
+        | n: AST.VarDecl DO
           INC (indent);
           NewLine;
           Node (n. identList. n[0]);
@@ -205,7 +205,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (";");
           DEC (indent)
           
-        | n: ExtTree.Receiver DO
+        | n: AST.Receiver DO
           w. WriteString ("(");
           IF (n. var # NIL) THEN
             w. WriteString ("VAR ")
@@ -215,7 +215,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           Node (n. type);
           w. WriteString (") ")
           
-        | n: ExtTree.ProcDecl DO
+        | n: AST.ProcDecl DO
           NewLine; NewLine;
           w. WriteString ("PROCEDURE ");
           IF (n. arrow # NIL) THEN
@@ -233,7 +233,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
             w. WriteString (";")
           END
         
-        | n: ExtTree.ImportList DO
+        | n: AST.ImportList DO
           NewLine;
           NewLine;
           w. WriteString ("IMPORT");
@@ -249,9 +249,9 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (";");
           DEC (indent);
         
-        | n: ExtTree.Body DO
+        | n: AST.Body DO
           FOR i := 0 TO n. declSeq. len-1 DO
-            IF (n. declSeq. n[i] IS ExtTree.Terminal) THEN
+            IF (n. declSeq. n[i] IS AST.Terminal) THEN
               NewLine; NewLine
             END;
             Node (n. declSeq. n[i])
@@ -267,7 +267,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString ("END ");
           Node (n. name)
           
-        | n: ExtTree.Module DO
+        | n: AST.Module DO
           w. WriteString ("MODULE ");
           Node (n. name);
           Node (n. flags);
@@ -277,7 +277,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (".");
           w. WriteLn
         
-        | n: ExtTree.Operator DO
+        | n: AST.Operator DO
           IF (n. op. sym. id = Symbol.becomes) THEN
             NewLine
           END;
@@ -291,13 +291,13 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           END;
           Node (n. right)
         
-        | n: ExtTree.Factor DO
+        | n: AST.Factor DO
           w. WriteString ("(");
           Node (n. expr);
           w. WriteString (")")
           
         
-        | n: ExtTree.Set DO
+        | n: AST.Set DO
           IF (n. type # NIL) THEN
             Node (n. type)
           END;
@@ -312,7 +312,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           END;
           w. WriteString ("}")
         
-        | n: ExtTree.ArrayIndex DO
+        | n: AST.ArrayIndex DO
           Node (n. design);
           w. WriteString ("[");
           i := 0;
@@ -325,7 +325,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           END;
           w. WriteString ("]");
         
-        | n: ExtTree.FunctionCall DO
+        | n: AST.FunctionCall DO
           Node (n. design);
           w. WriteString ("(");
           i := 0;
@@ -339,15 +339,15 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString (")");
         
         
-        | n: ExtTree.Assignment DO
+        | n: AST.Assignment DO
           NewLine;
           Node (n. assignment)
           
-        | n: ExtTree.ProcedureCall DO
+        | n: AST.ProcedureCall DO
           NewLine;
           Node (n. call)
           
-        | n: ExtTree.IfStatm DO
+        | n: AST.IfStatm DO
           i := 0;
           WHILE (i < n. guardList. len) DO
             NewLine;
@@ -373,7 +373,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           NewLine;
           w. WriteString ("END")
         
-        | n: ExtTree.CaseStatm DO
+        | n: AST.CaseStatm DO
           NewLine;
           w. WriteString ("CASE ");
           Node (n. expr);
@@ -385,11 +385,11 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
               NewLine;
               w. WriteString ("| ");
               j := 0;
-              WHILE (j < n. caseList. n[i](ExtTree.NodeList). len) DO
+              WHILE (j < n. caseList. n[i](AST.NodeList). len) DO
                 IF (j # 0) THEN
                   w. WriteString (", ")
                 END;
-                Node (n. caseList. n[i](ExtTree.NodeList). n[j]);
+                Node (n. caseList. n[i](AST.NodeList). n[j]);
                 INC (j, 2)
               END;
               w. WriteString (": ");
@@ -409,7 +409,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           NewLine;
           w. WriteString ("END")
         
-        | n: ExtTree.WhileStatm DO
+        | n: AST.WhileStatm DO
           NewLine;
           w. WriteString ("WHILE ");
           Node (n. guard);
@@ -420,7 +420,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           NewLine;
           w. WriteString ("END")
         
-        | n: ExtTree.RepeatStatm DO
+        | n: AST.RepeatStatm DO
           NewLine;
           w. WriteString ("REPEAT");
           INC (indent);
@@ -430,7 +430,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           w. WriteString ("UNTIL ");
           Node (n. expr)
         
-        | n: ExtTree.ForStatm DO
+        | n: AST.ForStatm DO
           NewLine;
           w. WriteString ("FOR ");
           Node (n. ident);
@@ -449,7 +449,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           NewLine;
           w. WriteString ("END")
           
-        | n: ExtTree.LoopStatm DO
+        | n: AST.LoopStatm DO
           NewLine;
           w. WriteString ("LOOP");
           INC (indent);
@@ -458,7 +458,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           NewLine;
           w. WriteString ("END")
         
-        | n: ExtTree.WithStatm DO
+        | n: AST.WithStatm DO
           i := 0;
           WHILE (i < n. guardList. len) DO
             NewLine;
@@ -484,11 +484,11 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
           NewLine;
           w. WriteString ("END")
         
-        | n: ExtTree.ExitStatm DO
+        | n: AST.ExitStatm DO
           NewLine;
           w. WriteString ("EXIT")
         
-        | n: ExtTree.ReturnStatm DO
+        | n: AST.ReturnStatm DO
           NewLine;
           w. WriteString ("RETURN");
           IF (n. expr # NIL) THEN
@@ -498,16 +498,16 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
         
         
         
-        | n: ExtTree.Flags DO
+        | n: AST.Flags DO
           w. WriteString (" [");
           Node (n. flagList);
           w. WriteString ("]")
         
-        | n: ExtTree.ProcIdFlag DO
+        | n: AST.ProcIdFlag DO
           w. WriteString ("PROC_ID=");
           Node (n. number)
         
-        | n: ExtTree.ModuleFlags DO
+        | n: AST.ModuleFlags DO
           Node (n. external);
           w. WriteString (" ");
           Node (n. callConv);
@@ -530,7 +530,7 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
             w. WriteString (" END")
           END
         
-        | n: ExtTree.LinkFileFlag DO
+        | n: AST.LinkFileFlag DO
           w. WriteString ("FILE ");
           Node (n. fileName);
           IF (n. addOption # NIL) THEN
@@ -542,11 +542,11 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
             END
           END
         
-        | n: ExtTree.LinkObjFlag DO
+        | n: AST.LinkObjFlag DO
           w. WriteString ("OBJ ");
           Node (n. fileName)
         
-        | n: ExtTree.LinkLibFlag DO
+        | n: AST.LinkLibFlag DO
           w. WriteString ("LIB ");
           Node (n. libName);
           IF (n. lParen # NIL) THEN
@@ -581,4 +581,4 @@ PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
     Node (m)
   END Write;
 
-END OOC:AST:ExtTree:StupidPP.
+END OOC:AST:StupidPP.

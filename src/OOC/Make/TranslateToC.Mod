@@ -23,8 +23,8 @@ MODULE OOC:Make:TranslateToC [OOC_EXTENSIONS];
 IMPORT
   IO, IO:StdChannels,
   OOC:Config, OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
-  OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST:ExtTree,
-  OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
+  OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
+  OOC:AST:CreateIR, ASTtoXML := OOC:AST:XML, 
   OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold, OOC:IR:CheckUses,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Uses,
   OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:RuntimeData, OOC:C:Naming;
@@ -225,7 +225,7 @@ PROCEDURE Run*(m: Repository.Module; libraryName: STRING;
 RAISES IO.Error;
 (**Compiles a module, creating the symbol file and all relevant C files.  *)
   VAR
-    ast: ExtTree.Node;
+    ast: AST.Node;
     symTab: Sym.Module;
     errList: Error.List;
     exports: Sym.Exports;
@@ -273,9 +273,9 @@ RAISES IO.Error;
     
     IF errList.NoErrors() THEN
       IF writeAST THEN
-        ASTtoXML.Write (StdChannels.stdout, ast(ExtTree.Module));
+        ASTtoXML.Write (StdChannels.stdout, ast(AST.Module));
       END;
-      module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
+      module := CreateIR.CreateIR (ast(AST.Module), symTab, 
                                    IR.NewBuilder (symTab, uses, pragmaHistory,
                                                   errList, 
                                                   ConstFold.NewConstFold()));

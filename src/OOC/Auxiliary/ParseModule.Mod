@@ -6,9 +6,9 @@ IMPORT
   
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:SymList,
-  OOC:Parser, OOC:AST:ExtTree,
+  OOC:Parser, OOC:AST,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Builder, OOC:SymbolTable:Uses,
-  OOC:AST:ExtTree:CreateSymTab, OOC:SymbolTable:CreateNamespace,
+  OOC:AST:CreateSymTab, OOC:SymbolTable:CreateNamespace,
   OOC:Auxiliary:WriteSymbolFile;
   
 
@@ -18,7 +18,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
                         writeSymbolFile, abortAfterImport: BOOLEAN;
                         libraryName: STRING;
                         uses: Uses.Uses;
-                        VAR ast: ExtTree.Node;
+                        VAR ast: AST.Node;
                         VAR symTab: Sym.Module;
                         VAR pragmaHistory: Pragmas.History;
                         VAR errList: Error.List)
@@ -42,7 +42,7 @@ RAISES IO.Error;
   VAR
     inputBuffer: InputBuffer.Buffer;
     scannerBuilder: SymList.Builder;
-    astBuilder: ExtTree.Builder;
+    astBuilder: AST.Builder;
     stb: Builder.Builder;
     uri: URI.URI;
     scannerFlags, parserFlags: SET;
@@ -67,7 +67,7 @@ RAISES IO.Error;
       
       ast := NIL;
       IF errList.NoErrors() THEN
-        astBuilder := ExtTree.New();
+        astBuilder := AST.New();
         IF checkModuleName THEN
           astBuilder. SetModuleName (m. name^)
         END;

@@ -5,7 +5,7 @@ IMPORT
   Object, IO, IO:FileChannel, Std:=IO:StdChannels,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:SymList, OOC:Parser, 
-  OOC:AST:ExtTree, OOC:AST:ExtTree:XML, OOC:AST:ExtTree:StupidPP;
+  OOC:AST, OOC:AST:XML, OOC:AST:StupidPP;
   
 CONST
   modeXML = 0;
@@ -20,8 +20,8 @@ VAR
   inputBuffer: InputBuffer.Buffer;
   pragmaSection: Pragmas.Section;
   scannerBuilder: SymList.Builder;
-  astBuilder: ExtTree.Builder;
-  ast: ExtTree.Node;
+  astBuilder: AST.Builder;
+  ast: AST.Node;
   mode: INTEGER;
 BEGIN
   IF (ProgramArgs.args. ArgNumber() = 0) THEN
@@ -54,16 +54,16 @@ BEGIN
           pragmaSection := Pragmas.New();
           scannerBuilder := SymList.New (inputBuffer, TRUE);
           Scanner.ScanInput (scannerBuilder, pragmaSection, Scanner.enableAll);
-          astBuilder := ExtTree.New();
+          astBuilder := AST.New();
           ast := Parser.Module (scannerBuilder. head, 
                                 astBuilder, errList, Parser.enableAll);
           
           CASE mode OF
           | modeXML:
-            XML.Write (Std.stdout, ast(ExtTree.Module))
+            XML.Write (Std.stdout, ast(AST.Module))
           | modeStupidPP:
             StupidPP.Write (TextRider.ConnectWriter (StdChannels.stdout),
-                            ast(ExtTree.Module))
+                            ast(AST.Module))
           END;
           IF (errList. msgCount # 0) THEN
             errList. Write (StdChannels.stderr);

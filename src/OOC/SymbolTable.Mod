@@ -24,7 +24,7 @@ IMPORT
   Object, Object:Boxed, Exception, Strings, ADT:Dictionary:AddressKey,
   ADT:Dictionary, ADT:Storable, ADT:ArrayList, ADT:Object:Storage, IO,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
-  OOC:Scanner:InputBuffer, SB := OOC:Scanner:SymList, OOC:Doc, OOC:AST:ExtTree;
+  OOC:Scanner:InputBuffer, SB := OOC:Scanner:SymList, OOC:Doc, OOC:AST;
 
 TYPE
   NameString* = InputBuffer.CharArray;
@@ -438,9 +438,9 @@ TYPE
     prunedImports*: ModuleRefArray;
     (**List of import entries removed by the @oproc{Prune} function.  This
        field is not part of the fingerprinted area of the symbol file.  *)
-    moduleAST-: ExtTree.Node;
+    moduleAST-: AST.Node;
     (**Refers to the abstract syntax tree of the module, for example an
-       instance of @otype{*OOC:AST:ExtTree.Module}.  *)
+       instance of @otype{*OOC:AST.Module}.  *)
     bodyDecl-: ProcDecl;
     (**This pseudo declaration is used to turn the statement sequence in the
        module body into a fully fledged procedure declaration.  It's name
@@ -627,7 +627,7 @@ TYPE
        translated to IR.  Until then, this field holds a negative value.
        (It's probably a good idea to change this field to `Integer' at
        some later time.)  *)
-    lengthExpr-: ExtTree.Node;
+    lengthExpr-: AST.Node;
     (**The part of the abstract syntax tree that defines the length of the
        array.  For an open array type, this field is @code{NIL}.  *)
   END;
@@ -823,9 +823,9 @@ TYPE
     (**If the name of the procedure differs between the source code and the
        low-level binary representation, then this field holds the name of
        the procedure on the link level.  Otherwise, it is @code{NIL}.  *)
-    procAST-: ExtTree.Node;
+    procAST-: AST.Node;
     (**Refers to the abstract syntax tree of the procedure, for example an
-       instance of @otype{*OOC:AST:ExtTree.ProcDecl}.  For the pseudo procedure
+       instance of @otype{*OOC:AST.ProcDecl}.  For the pseudo procedure
        representing the module body, this field is @code{NIL}.  In this case,
        the field @ofield{parent} is also @code{NIL}.  *)
     hasTryStatm*: BOOLEAN;
@@ -861,7 +861,7 @@ TYPE
     (**The value of the constant.  For the special value @samp{NIL}, this
        field is @code{NIL}.  *)
     type-: PredefType;
-    constExpr-: ExtTree.Node;
+    constExpr-: AST.Node;
     (**The part of the abstract syntax tree that defines the value of the
        constant.  *)
   END;
@@ -1650,7 +1650,7 @@ PROCEDURE (l: LinkLib) Load* (r: Storable.Reader) RAISES IO.Error;
 
 PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
                        class: ModuleClass; callConv: CallConv;
-                       moduleAST: ExtTree.Node; bodyDecl: ProcDecl);
+                       moduleAST: AST.Node; bodyDecl: ProcDecl);
   BEGIN
     InitDeclaration (mod, NIL, name, 0, nameExported, docString);
     mod. ns := NIL;
@@ -1885,7 +1885,7 @@ PROCEDURE InitConstDecl* (constDecl: ConstDecl; parent: Item; name: Name;
                           visibleFrom: ModulePos; exportMark: ExportMark;
                           docString: Doc.Document;
                           value: Boxed.Object; type: PredefType;
-                          constExpr: ExtTree.Node);
+                          constExpr: AST.Node);
   BEGIN
     InitDeclaration (constDecl, parent, name, visibleFrom, exportMark,
                      docString);
@@ -2173,7 +2173,7 @@ PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
                          visibleFrom: ModulePos; exportMark: ExportMark;
                          docString: Doc.Document;
                          procClass: SHORTINT; isForwardDecl: BOOLEAN;
-                         procAST: ExtTree.Node);
+                         procAST: AST.Node);
   BEGIN
     InitDeclaration (procDecl, parent, name, visibleFrom, exportMark, docString);
     procDecl. procClass := procClass;
@@ -2574,7 +2574,7 @@ PROCEDURE (pointer: Pointer) Load* (r: Storable.Reader) RAISES IO.Error;
 
 PROCEDURE InitArray* (array: Array; parent: Item; position: Position; 
                       isOpenArray: BOOLEAN; elementType: Type;
-                      lengthExpr: ExtTree.Node);
+                      lengthExpr: AST.Node);
   BEGIN
     InitType (array, parent, position);
     array. isOpenArray := isOpenArray;

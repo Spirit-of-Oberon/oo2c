@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
+MODULE OOC:AST [OOC_EXTENSIONS];
 (*  Creates extended abstract syntax tree from the parser output.
     Copyright (C) 2000-2003  Michael van Acken
 
@@ -2906,4 +2906,4 @@ PROCEDURE (linkLibFlag: LinkLibFlag) Accept* (v: Visitor);
     v. VisitLinkLibFlag (linkLibFlag)
   END Accept;
 
-END OOC:AST:ExtTree.
+END OOC:AST.

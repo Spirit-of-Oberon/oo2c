@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 
 IMPORT
   Out, Strings, Object, Object:Boxed, ADT:Dictionary, IO,
-  OOC:Doc, OOC:AST:ExtTree, Sym := OOC:SymbolTable;
+  OOC:Doc, OOC:AST, Sym := OOC:SymbolTable;
 
 
 TYPE
@@ -133,7 +133,7 @@ PROCEDURE (b: Builder) NewConstDecl* (parent: Sym.Item; name: Sym.Name;
                                       docString: Doc.Document;
                                       value: Boxed.Object;
                                       type: Sym.PredefType;
-                                      constExpr: ExtTree.Node): Sym.ConstDecl;
+                                      constExpr: AST.Node): Sym.ConstDecl;
 (**Note: If the value and type of the constant are not known yet, then
    @oparam{value} and @oparam{type} are @code{NIL}.  When creating the symbol
    table from source code, then this information is not available initially and
@@ -239,7 +239,7 @@ PROCEDURE (b: Builder) NewProcDecl* (parent: Sym.Item; name: Sym.Name;
                                      docString: Doc.Document;
                                      procClass: SHORTINT;
                                      isForwardDecl: BOOLEAN;
-                                     procAST: ExtTree.Node): Sym.ProcDecl;
+                                     procAST: AST.Node): Sym.ProcDecl;
   VAR
     procDecl: Sym.ProcDecl;
   BEGIN
@@ -304,7 +304,7 @@ PROCEDURE (b: Builder) NewRecord* (parent: Sym.Item;
 PROCEDURE (b: Builder) NewArray* (parent: Sym.Item; 
                                   position: Sym.Position;
                                   isOpenArray: BOOLEAN;
-                                  lengthExpr: ExtTree.Node;
+                                  lengthExpr: AST.Node;
                                   elementType: Sym.Type): Sym.Array;
   VAR
     array: Sym.Array;
@@ -374,7 +374,7 @@ PROCEDURE (b: Builder) NewFormalPars* (parent: Sym.Item;
 PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
                                    class: Sym.ModuleClass;
                                    callConv: Sym.CallConv;
-                                   moduleAST: ExtTree.Node): Sym.Module;
+                                   moduleAST: AST.Node): Sym.Module;
   VAR
     mod: Sym.Module;
     bodyDecl: Sym.ProcDecl;

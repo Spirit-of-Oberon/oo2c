@@ -29,7 +29,7 @@ IMPORT
 
   OOC:Logger, OOC:Error, OOC:Config,
   OOC:Config:Pragmas, OOC:Config:Repositories,
-  OOC:Doc:ResolveRef, Rep := OOC:Repository, OOC:AST:ExtTree,
+  OOC:Doc:ResolveRef, Rep := OOC:Repository, OOC:AST,
   Sym := OOC:SymbolTable, OOC:SymbolTable:CreateNamespace,
   OOC:SymbolTable:InterfaceDescr, OOC:SymbolTable:InterfaceXML,
   OOC:SymbolTable:Uses, OOC:Auxiliary:ParseModule, OOC:Make:LinkProgramC,
@@ -365,7 +365,7 @@ RAISES IO.Error;
    Note: This function only looks at the given module.  It does not descend to
    other modules that are imported by it.  *)
   VAR
-    ast: ExtTree.Node;
+    ast: AST.Node;
     symTab: Sym.Module;
     pragmaHistory: Pragmas.History;
     errList: Error.List;
@@ -476,7 +476,7 @@ RAISES IO.Error;
   PROCEDURE DoEmptyBackend(libraryName: STRING): Error.List
   RAISES IO.Error;
     VAR
-      ast: ExtTree.Node;
+      ast: AST.Node;
       symTab: Sym.Module;
       errList: Error.List;
       pragmaHistory: Pragmas.History;
@@ -707,7 +707,7 @@ RAISES IO.Error;
     success: BOOLEAN;
     outputChannel: IO.ByteChannel;
     errList: Error.List;
-    ast: ExtTree.Node;
+    ast: AST.Node;
     symTab: Sym.Module;
     pragmaHistory: Pragmas.History;
   BEGIN

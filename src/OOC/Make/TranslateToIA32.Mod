@@ -24,7 +24,7 @@ IMPORT
   Ascii, IO, IO:StdChannels,
   OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, Rep := OOC:Repository,
-  OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
+  OOC:AST, OOC:AST:CreateIR, ASTtoXML := OOC:AST:XML, 
   OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Uses,
   OOC:IA32:Writer, OOC:IA32:RuntimeData;
@@ -141,7 +141,7 @@ PROCEDURE Run*(m: Rep.Module; libraryName: STRING; uses: Uses.Uses;
 RAISES IO.Error;
 (**Compiles a module, creating the symbol file and the assembler file.  *)
   VAR
-    ast: ExtTree.Node;
+    ast: AST.Node;
     symTab: Sym.Module;
     errList: Error.List;
     exports: Sym.Exports;
@@ -166,9 +166,9 @@ RAISES IO.Error;
     
     IF errList.NoErrors() THEN
       IF writeAST THEN
-        ASTtoXML.Write (StdChannels.stdout, ast(ExtTree.Module));
+        ASTtoXML.Write (StdChannels.stdout, ast(AST.Module));
       END;
-      moduleIR := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
+      moduleIR := CreateIR.CreateIR (ast(AST.Module), symTab, 
                                      IR.NewBuilder (symTab, uses,
                                                     pragmaHistory, errList,
                                                     ConstFold.NewConstFold()));

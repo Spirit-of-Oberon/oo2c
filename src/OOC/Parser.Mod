@@ -22,7 +22,7 @@ MODULE OOC:Parser;
 
 IMPORT
   Msg, Strings,
-  OOC:Error, OOC:Scanner:Symbol, OOC:Scanner:SymList, OOC:AST:ExtTree,
+  OOC:Error, OOC:Scanner:Symbol, OOC:Scanner:SymList, OOC:AST,
   OOC:Doc, OOC:Doc:Input:Texinfo;
 
 
@@ -42,8 +42,8 @@ CONST
      last entry of a formal parameter list.  Otherwise, a syntax error is
      signalled if such a parameter is used.  *)
   enableDocComment* = 3;
-  (**If set, call @oproc{ExtTree.Node.AttachDocString} on the name 
-     (@oproc{ExtTree.Builder.IdentDef}, or @oproc{ExtTree.Builder.ModuleIdent})
+  (**If set, call @oproc{AST.Node.AttachDocString} on the name 
+     (@oproc{AST.Builder.IdentDef}, or @oproc{AST.Builder.ModuleIdent})
      of the preceding declaration for any documentation comment
      encountered in the symbol list.  *)
   enableTypeParams* = 4;
@@ -132,15 +132,15 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
   END GetTemplate;
 
 
-PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
-                   errList: Error.List; parseOptions: SET): ExtTree.Node;
+PROCEDURE Module* (sym: SymList.Symbol; ast: AST.Builder;
+                   errList: Error.List; parseOptions: SET): AST.Node;
 (**This procedure implements a recursive descent parser for a slightly modified
    Oberon-2 syntax.  It takes a sequences of tokens in @oparam{sym} and creates
    an abstract syntax tree by calling the builder procedures from @oparam{ast}.
    Syntax errors are reported by appending messages to @oparam{errList}.  The
    result of this procedure is the root of the abstract syntax tree.  It
    describes the whole module and is created by calling
-   @oproc{ExtTree.Builder.Module}.
+   @oproc{AST.Builder.Module}.
    
    The accepted syntax is less restrictive than the syntax given in the 
    Oberon-2 language report, because this parser performs its task without
@@ -160,13 +160,13 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
   VAR
     prevSym, nameSym: SymList.Symbol;
     lastError: Error.Msg;
-    body: ExtTree.Body;
-    module: ExtTree.Terminal;
-    moduleFlags: ExtTree.Flags;
-    name, scolon, import, period, eof: ExtTree.Node;
-    headName: ExtTree.Name;
+    body: AST.Body;
+    module: AST.Terminal;
+    moduleFlags: AST.Flags;
+    name, scolon, import, period, eof: AST.Node;
+    headName: AST.Name;
     
-    lastIdentDef: ExtTree.Node;
+    lastIdentDef: AST.Node;
     (* node with name of last declaration; if a doc comment is found, the
        comment is attached to this node *)
     
@@ -223,15 +223,15 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       END
     END NextSym;
   
-  PROCEDURE CheckSym (symId: Symbol.Id): ExtTree.Terminal;
+  PROCEDURE CheckSym (symId: Symbol.Id): AST.Terminal;
   (**Compares with current symbol @oparam{sym} with the required symbol (or
      symbol class) in @oparam{symId}.  If there is a mismatch, an error message
      is emitted and the function returns @code{NIL}.  Otherwise, it creates an
-     instance from the current symbol using @oproc{ExtTree.Builder.Terminal}, moves
+     instance from the current symbol using @oproc{AST.Builder.Terminal}, moves
      the current symbol forward by one step, and returns the newly created
      node.  *)
     VAR
-      node: ExtTree.Terminal;
+      node: AST.Terminal;
     BEGIN
       IF (sym. id # symId) THEN
         IF Symbol.IsKeyword (symId) THEN
@@ -273,18 +273,18 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       RETURN node
     END CheckSym;
 
-  PROCEDURE MultiPartIdent (VAR name: ExtTree.Name): ExtTree.Node;
+  PROCEDURE MultiPartIdent (VAR name: AST.Name): AST.Node;
   (* Reads multi-part identifier, if these are enabled, and a simple identifer
      otherwise.  In any case, the result is an instance of
-     @otype{ExtTree.NodeList}, with the array elements with an even index being
+     @otype{AST.NodeList}, with the array elements with an even index being
      the identifiers, and the odd elements being colons.  Both kinds of nodes
-     are instances of @otype{ExtTree.Terminal}.  *)
+     are instances of @otype{AST.Terminal}.  *)
     VAR
-      nl: ExtTree.NodeList;
+      nl: AST.NodeList;
     
-    PROCEDURE Append (node: ExtTree.Node);
+    PROCEDURE Append (node: AST.Node);
       VAR
-        new: ExtTree.Name;
+        new: AST.Name;
       BEGIN
         NEW (new, Strings.Length (name^)+sym. len+1);
         COPY (name^, new^);
@@ -292,9 +292,9 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
         nl. Append (node)
       END Append;
     
-    PROCEDURE AppendString (prefix, suffix: ExtTree.Name): ExtTree.Name;
+    PROCEDURE AppendString (prefix, suffix: AST.Name): AST.Name;
       VAR
-        s: ExtTree.Name;
+        s: AST.Name;
         len: LONGINT;
       BEGIN
         len := Strings.Length (prefix^)+Strings.Length (suffix^)+2;
@@ -321,32 +321,32 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       RETURN ast. ModuleIdent (nl)
     END MultiPartIdent;
   
-  PROCEDURE Flags (context: SHORTINT): ExtTree.Flags;
+  PROCEDURE Flags (context: SHORTINT): AST.Flags;
   (* Reads a list of system flags.  *)
     VAR
       counter: LONGINT;
-      lBrak, rBrak: ExtTree.Node;
-      flagList: ExtTree.NodeList;
+      lBrak, rBrak: AST.Node;
+      flagList: AST.NodeList;
     
     PROCEDURE Ident (name: ARRAY OF CHAR): BOOLEAN;
       BEGIN
         RETURN (sym. id = Symbol.ident) & (sym. str^ = name)
       END Ident;
     
-    PROCEDURE Flag(): ExtTree.Node;
+    PROCEDURE Flag(): AST.Node;
       VAR
-        procId, eql, number: ExtTree.Node;
+        procId, eql, number: AST.Node;
       BEGIN
         (* S: Flag = "PROC_ID" "=" number10 | string | ident. *)
-        IF (context = ExtTree.flagsProcedure) & Ident ("PROC_ID") THEN
+        IF (context = AST.flagsProcedure) & Ident ("PROC_ID") THEN
           (* procedure declaration: non-standard procedure *)
           procId := CheckSym (Symbol.ident);
           eql := CheckSym (Symbol.eql);
           number := CheckSym (Symbol.number10);
           RETURN ast. ProcIdFlag (procId, eql, number)
-        ELSIF ((context = ExtTree.flagsProcType) OR
-               (context = ExtTree.flagsProcedure) OR
-               (context = ExtTree.flagsVariable)) & 
+        ELSIF ((context = AST.flagsProcType) OR
+               (context = AST.flagsProcedure) OR
+               (context = AST.flagsVariable)) & 
               ((sym. id = Symbol.stringSingle) OR
                (sym. id = Symbol.stringDouble)) THEN
           (* procedure type: string defines the calling convention, or
@@ -361,12 +361,12 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
         END
       END Flag;
     
-    PROCEDURE ModuleFlags(): ExtTree.Node;
+    PROCEDURE ModuleFlags(): AST.Node;
       VAR
-        external, callConv, semicolon, link, end: ExtTree.Node;
-        moduleFlags, linkSections: ExtTree.NodeList;
+        external, callConv, semicolon, link, end: AST.Node;
+        moduleFlags, linkSections: AST.NodeList;
         
-      PROCEDURE CheckString (): ExtTree.Node;
+      PROCEDURE CheckString (): AST.Node;
         BEGIN
           IF (sym. id = Symbol.stringSingle) THEN
             RETURN CheckSym (Symbol.stringSingle)
@@ -375,11 +375,11 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
           END
         END CheckString;
       
-      PROCEDURE LinkSection (): ExtTree.Node;
+      PROCEDURE LinkSection (): AST.Node;
         VAR
-          kw, string, lParen, rParen: ExtTree.Node;
-          addOptions, addIdent1, addComma, addIdent2: ExtTree.Node;
-          dependences: ExtTree.NodeList;
+          kw, string, lParen, rParen: AST.Node;
+          addOptions, addIdent1, addComma, addIdent2: AST.Node;
+          dependences: AST.NodeList;
           
         PROCEDURE Options;
           BEGIN
@@ -521,7 +521,7 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
           lBrak := CheckSym (Symbol.lBrak);
           flagList := ast. NewNodeList();
           CASE context OF
-          | ExtTree.flagsModule:
+          | AST.flagsModule:
             flagList. Append (ModuleFlags())
           ELSE
             LOOP
@@ -552,17 +552,17 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
      
      As soon as a procedure has finished parsing its production, it calls the 
      corresponding type-bound procedure of @oparam{ast}, which is a concrete
-     implementation of the abstract class @otype{ExtTree.Builder}.  The type-bound
+     implementation of the abstract class @otype{AST.Builder}.  The type-bound
      procedures takes all the parts of the production as arguments, and creates
-     an instance of @otype{ExtTree.Node} to store the results of this parsing
+     an instance of @otype{AST.Node} to store the results of this parsing
      step.  The newly created instance is then the result of the parser's
      procedure and is passed upward in the recursive descent parser.  *)
      
   PROCEDURE IdentDef (level: LONGINT; noReadOnly, noMark: BOOLEAN;
-                      VAR name: ExtTree.Name): ExtTree.IdentDef;
+                      VAR name: AST.Name): AST.IdentDef;
     VAR
-      ident, mark: ExtTree.Terminal;
-      identDef: ExtTree.IdentDef;
+      ident, mark: AST.Terminal;
+      identDef: AST.IdentDef;
     BEGIN
       (*S: IdentDef = ident ["*" | "-"].  *)
       name := sym. str;
@@ -582,15 +582,15 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       RETURN identDef
     END IdentDef;
 
-  PROCEDURE ImportList (moduleName: ExtTree.Name): ExtTree.Node;
+  PROCEDURE ImportList (moduleName: AST.Name): AST.Node;
     VAR
-      import, scolon: ExtTree.Node;
-      imports: ExtTree.NodeList;
+      import, scolon: AST.Node;
+      imports: AST.NodeList;
     
-    PROCEDURE ImportDecl (): ExtTree.Node;
+    PROCEDURE ImportDecl (): AST.Node;
       VAR
-        alias, becomes, module: ExtTree.Node;
-        name: ExtTree.Name;
+        alias, becomes, module: AST.Node;
+        name: AST.Name;
         ptr: SymList.Symbol;
       BEGIN
         (*S: ImportDecl = [ident ":="] mp_ident.  *)
@@ -626,11 +626,11 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       RETURN ast. ImportList (import, imports, scolon);
     END ImportList;
   
-  PROCEDURE ^ Expr (): ExtTree.Node;
+  PROCEDURE ^ Expr (): AST.Node;
   
-  PROCEDURE Qualident (): ExtTree.Node;
+  PROCEDURE Qualident (): AST.Node;
     VAR
-      module, period, ident: ExtTree.Node;
+      module, period, ident: AST.Node;
     BEGIN
       (*S: Qualident = ident ["." ident].  *)
       module := CheckSym (Symbol.ident);
@@ -643,10 +643,10 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       END
     END Qualident;
   
-  PROCEDURE QualType(): ExtTree.Node;
+  PROCEDURE QualType(): AST.Node;
     VAR
-      type, left, right: ExtTree.Node;
-      list: ExtTree.NodeList;
+      type, left, right: AST.Node;
+      list: AST.NodeList;
     BEGIN
       (*S: QualType = Qualident ["(" [QualType {"," QualType}] ")"] *)
       type :=  Qualident();
@@ -667,15 +667,15 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       END;
     END QualType;
   
-  PROCEDURE Designator (): ExtTree.Node;
+  PROCEDURE Designator (): AST.Node;
     VAR
-      x, y, op, left, right: ExtTree.Node;
-      list: ExtTree.NodeList;
+      x, y, op, left, right: AST.Node;
+      list: AST.NodeList;
 
-    PROCEDURE Call(design: ExtTree.Node): ExtTree.Node;
+    PROCEDURE Call(design: AST.Node): AST.Node;
       VAR
-        left, right: ExtTree.Node;
-        list: ExtTree.NodeList;
+        left, right: AST.Node;
+        list: AST.NodeList;
       BEGIN
         left := CheckSym (Symbol.lParen);
         list := ast. NewNodeList();
@@ -723,30 +723,30 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       RETURN x;
     END Designator;
   
-  PROCEDURE Expr (): ExtTree.Node;
+  PROCEDURE Expr (): AST.Node;
     VAR
-      x, y, op: ExtTree.Node;
+      x, y, op: AST.Node;
 
-    PROCEDURE SimpleExpr (): ExtTree.Node;
+    PROCEDURE SimpleExpr (): AST.Node;
       VAR
-        x, y, op: ExtTree.Node;
+        x, y, op: AST.Node;
 
-      PROCEDURE Term (): ExtTree.Node;
+      PROCEDURE Term (): AST.Node;
         VAR
-          x, y, op: ExtTree.Node;
+          x, y, op: AST.Node;
           
-        PROCEDURE Factor (): ExtTree.Node;
+        PROCEDURE Factor (): AST.Node;
           VAR
-            factor, lParen, expr, rParen, op, right: ExtTree.Node;
+            factor, lParen, expr, rParen, op, right: AST.Node;
             
-          PROCEDURE Set (type: ExtTree.Node): ExtTree.Node;
+          PROCEDURE Set (type: AST.Node): AST.Node;
             VAR
-              lBrace, rBrace: ExtTree.Node;
-              elementList: ExtTree.NodeList;
+              lBrace, rBrace: AST.Node;
+              elementList: AST.NodeList;
               
-            PROCEDURE Element (): ExtTree.Node;
+            PROCEDURE Element (): AST.Node;
               VAR
-                lExpr, upto, rExpr: ExtTree.Node;
+                lExpr, upto, rExpr: AST.Node;
               BEGIN
                 lExpr := Expr();
                 IF (sym. id = Symbol.upto) THEN
@@ -851,19 +851,19 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       RETURN x
     END Expr;
 
-  PROCEDURE ^ Type (level: LONGINT): ExtTree.Node;
+  PROCEDURE ^ Type (level: LONGINT): AST.Node;
   
-  PROCEDURE FormalPars (): ExtTree.Node;
+  PROCEDURE FormalPars (): AST.Node;
     VAR
-      flags: ExtTree.Flags;
-      lParen, rParen, colon, result, raises, oldLastIdentDef: ExtTree.Node;
-      fpSections, raisesList: ExtTree.NodeList;
+      flags: AST.Flags;
+      lParen, rParen, colon, result, raises, oldLastIdentDef: AST.Node;
+      fpSections, raisesList: AST.NodeList;
     
-    PROCEDURE FPSection (): ExtTree.Node;
+    PROCEDURE FPSection (): AST.Node;
       VAR
-        var, colon, type, ident: ExtTree.Node;
-        fpList: ExtTree.NodeList;
-        dummy: ExtTree.Name;
+        var, colon, type, ident: AST.Node;
+        fpList: AST.NodeList;
+        dummy: AST.Name;
       BEGIN
         (*S: FormalPars = ["VAR"] ident Flags 
           S:              {"," ident Flags} ":" Type.  *)
@@ -877,7 +877,7 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
           ident := IdentDef (0, FALSE, TRUE, dummy);
           lastIdentDef := ident;
           fpList. Append (ident);
-          fpList. Append (Flags (ExtTree.flagsParameter));
+          fpList. Append (Flags (AST.flagsParameter));
           IF (sym. id = Symbol.comma) THEN
             fpList. Append (CheckSym (Symbol.comma))
           ELSE
@@ -895,7 +895,7 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
         S:                [":" QualType]
         S:                ["RAISES" Qualident {"," Qualident}] ].  *)
       oldLastIdentDef := lastIdentDef;
-      flags := Flags (ExtTree.flagsProcType);
+      flags := Flags (AST.flagsProcType);
       IF (sym. id = Symbol.lParen) THEN
         lParen := CheckSym (Symbol.lParen);
         fpSections := ast. NewNodeList();
@@ -954,16 +954,16 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
                               colon, result, raises, raisesList);
     END FormalPars;
   
-  PROCEDURE TypePars(): ExtTree.TypePars;
+  PROCEDURE TypePars(): AST.TypePars;
     VAR
-      lParen, rParen, oldLastIdentDef: ExtTree.Node;
-      tpSections: ExtTree.NodeList;
+      lParen, rParen, oldLastIdentDef: AST.Node;
+      tpSections: AST.NodeList;
     
-    PROCEDURE TPSection (): ExtTree.Node;
+    PROCEDURE TPSection (): AST.Node;
       VAR
-        colon, type, ident: ExtTree.Node;
-        tpList: ExtTree.NodeList;
-        dummy: ExtTree.Name;
+        colon, type, ident: AST.Node;
+        tpList: AST.NodeList;
+        dummy: AST.Name;
       BEGIN
         (*S: TPSection = ident {"," ident} ":" Qualident.  *)
         tpList := ast.NewNodeList();
@@ -1003,19 +1003,19 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       RETURN ast.TypePars(lParen, tpSections, rParen);
     END TypePars;
   
-  PROCEDURE Type (level: LONGINT): ExtTree.Node;
+  PROCEDURE Type (level: LONGINT): AST.Node;
     VAR
-      type: ExtTree.Node;
+      type: AST.Node;
     
-    PROCEDURE ArrayType (): ExtTree.Node;
+    PROCEDURE ArrayType (): AST.Node;
       VAR
-        array, of, type: ExtTree.Node;
-        flags: ExtTree.Flags;
-        exprList: ExtTree.NodeList;
+        array, of, type: AST.Node;
+        flags: AST.Flags;
+        exprList: AST.NodeList;
       BEGIN
         (*S: ArrayType = "ARRAY" Flags [Expr {"," Expr}] "OF" Type.  *)
         array := CheckSym (Symbol.array);
-        flags := Flags (ExtTree.flagsArrayType);
+        flags := Flags (AST.flagsArrayType);
         exprList := ast. NewNodeList();
         IF (sym. id # Symbol.of) THEN
           LOOP
@@ -1032,23 +1032,23 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
         RETURN ast. ArrayType (array, flags, exprList, of, type)
       END ArrayType;
     
-    PROCEDURE RecordType (): ExtTree.Node;
+    PROCEDURE RecordType (): AST.Node;
       VAR
-        flags: ExtTree.Flags;
-        record, lParen, qualident, rParen, end: ExtTree.Node;
-        fieldLists: ExtTree.NodeList;
+        flags: AST.Flags;
+        record, lParen, qualident, rParen, end: AST.Node;
+        fieldLists: AST.NodeList;
       
-      PROCEDURE FieldList (): ExtTree.Node;
+      PROCEDURE FieldList (): AST.Node;
         VAR
-          colon, type: ExtTree.Node;
-          identList: ExtTree.NodeList;
-          dummy: ExtTree.Name;
+          colon, type: AST.Node;
+          identList: AST.NodeList;
+          dummy: AST.Name;
         BEGIN  (* pre: sym. id = Symbol.ident *)
           (*S: FieldList = IdentDef Flags {"," IdentDef Flags } ":" Type.  *)
           identList := ast. NewNodeList();
           LOOP
             identList. Append (IdentDef (level, FALSE, FALSE, dummy));
-            identList. Append (Flags (ExtTree.flagsField));
+            identList. Append (Flags (AST.flagsField));
             IF (sym. id = Symbol.comma) THEN
               identList. Append (CheckSym (Symbol.comma))
             ELSE
@@ -1064,7 +1064,7 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
         (*S: RecordType = "RECORD" Flags ["("QualType")"] 
           S:              [FieldList] {";" [FieldList]} "END".  *)
         record := CheckSym (Symbol.record);
-        flags := Flags (ExtTree.flagsRecordType);
+        flags := Flags (AST.flagsRecordType);
         IF (sym. id = Symbol.lParen) THEN
           lParen := CheckSym (Symbol.lParen);
           qualident := QualType();
@@ -1092,22 +1092,22 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
                                 fieldLists, end)
       END RecordType;
     
-    PROCEDURE PointerType (): ExtTree.Node;
+    PROCEDURE PointerType (): AST.Node;
       VAR
-        flags: ExtTree.Flags;
-        pointer, to, type: ExtTree.Node;
+        flags: AST.Flags;
+        pointer, to, type: AST.Node;
       BEGIN
         (*S: PointerType =  "POINTER" Flags "TO" Type.  *)
         pointer := CheckSym (Symbol.pointer);
-        flags := Flags (ExtTree.flagsPointerType);
+        flags := Flags (AST.flagsPointerType);
         to := CheckSym (Symbol.to);
         type := Type (level);
         RETURN ast. PointerType (pointer, flags, to, type)
       END PointerType;
     
-    PROCEDURE ProcType (): ExtTree.Node;
+    PROCEDURE ProcType (): AST.Node;
       VAR
-        procedure, formalPars: ExtTree.Node;
+        procedure, formalPars: AST.Node;
       BEGIN
         (*S: ProcType = "PROCEDURE" FormalPars.  *)
         procedure := CheckSym (Symbol.procedure);
@@ -1145,43 +1145,43 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
       RETURN type
     END Type;
 
-  PROCEDURE Body (level: LONGINT; headName: ExtTree.Name): ExtTree.Body;
+  PROCEDURE Body (level: LONGINT; headName: AST.Name): AST.Body;
   (* level=0: module; level>0: nested in this many procedures *)
     VAR
-      begin, end, name: ExtTree.Node;
-      declSeq, statmSeq: ExtTree.NodeList;
+      begin, end, name: AST.Node;
+      declSeq, statmSeq: AST.NodeList;
       ptr: SymList.Symbol;
-      tailName: ExtTree.Name;
+      tailName: AST.Name;
     
-    PROCEDURE DeclSeq(): ExtTree.NodeList;
+    PROCEDURE DeclSeq(): AST.NodeList;
       VAR
-        nl: ExtTree.NodeList;
+        nl: AST.NodeList;
         
-      PROCEDURE ConstDecl(): ExtTree.Node;
+      PROCEDURE ConstDecl(): AST.Node;
         VAR
-          flags: ExtTree.Flags;
-          identDef, equal, expr, scolon: ExtTree.Node;
-          dummy: ExtTree.Name;
+          flags: AST.Flags;
+          identDef, equal, expr, scolon: AST.Node;
+          dummy: AST.Name;
         BEGIN  (* pre: (sym. id = Symbol.ident) *)
           (*S: ConstDecl = IdentDef Flags "=" Expr ";".  *)
           identDef := IdentDef (level, TRUE, FALSE, dummy);
-          flags := Flags(ExtTree.flagsConstDecl);
+          flags := Flags(AST.flagsConstDecl);
           equal := CheckSym (Symbol.eql);
           expr := Expr();
           scolon := CheckSym (Symbol.semicolon);
           RETURN ast. ConstDecl (identDef, flags, equal, expr, scolon)
         END ConstDecl;
 
-      PROCEDURE TypeDecl (): ExtTree.Node;
+      PROCEDURE TypeDecl (): AST.Node;
         VAR
-          flags: ExtTree.Flags;
-          typePars: ExtTree.TypePars;
-          identDef, equal, type, scolon: ExtTree.Node;
-          dummy: ExtTree.Name;
+          flags: AST.Flags;
+          typePars: AST.TypePars;
+          identDef, equal, type, scolon: AST.Node;
+          dummy: AST.Name;
         BEGIN  (* pre: (sym. id = Symbol.ident) *)
           (*S: TypeDecl = IdentDef Flags [TypePars] "=" Type ";".  *)
           identDef := IdentDef (level, TRUE, FALSE, dummy);
-          flags := Flags(ExtTree.flagsTypeDecl);
+          flags := Flags(AST.flagsTypeDecl);
           IF (sym.id = Symbol.lParen) & (enableTypeParams IN parseOptions) THEN
             typePars := TypePars();
           ELSE
@@ -1193,18 +1193,18 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
           RETURN ast. TypeDecl (identDef, flags, typePars, equal, type, scolon)
         END TypeDecl;
 
-      PROCEDURE VarDecl (): ExtTree.Node;
+      PROCEDURE VarDecl (): AST.Node;
         VAR
-          identList: ExtTree.NodeList;
-          colon, type, scolon: ExtTree.Node;
-          dummy: ExtTree.Name;
+          identList: AST.NodeList;
+          colon, type, scolon: AST.Node;
+          dummy: AST.Name;
         BEGIN  (* pre: (sym. id = Symbol.ident) *)
           (*S: VarDecl = IdentDef Flags 
             S:             {"," IdentDef Flags} ":" Type.  *)
           identList := ast. NewNodeList();
           LOOP
             identList. Append (IdentDef (level, FALSE, FALSE, dummy));
-            identList. Append (Flags (ExtTree.flagsVariable));
+            identList. Append (Flags (AST.flagsVariable));
             IF (sym. id = Symbol.comma) THEN
               identList. Append (CheckSym (Symbol.comma))
             ELSIF (sym. id = Symbol.ident) THEN
@@ -1219,25 +1219,25 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
           RETURN ast. VarDecl (identList, colon, type, scolon)
         END VarDecl;
 
-      PROCEDURE ProcDecl (): ExtTree.Node;
+      PROCEDURE ProcDecl (): AST.Node;
         VAR
-          flags: ExtTree.Flags;
-          body: ExtTree.Body;
+          flags: AST.Flags;
+          body: AST.Body;
           proc, arrow, receiver, identDef, formalPars, semicolon1,
-              semicolon2: ExtTree.Node;
-          procName: ExtTree.Name;
+              semicolon2: AST.Node;
+          procName: AST.Name;
         
-        PROCEDURE Receiver (): ExtTree.Node;
+        PROCEDURE Receiver (): AST.Node;
           VAR
-            ident: ExtTree.IdentDef;
-            lParenAlias, rParenAlias: ExtTree.Terminal;
-            lParen, var, colon, type, rParen: ExtTree.Node;
-            aliasList: ExtTree.NodeList;
-            dummy: ExtTree.Name;
+            ident: AST.IdentDef;
+            lParenAlias, rParenAlias: AST.Terminal;
+            lParen, var, colon, type, rParen: AST.Node;
+            aliasList: AST.NodeList;
+            dummy: AST.Name;
 
-          PROCEDURE AliasList(VAR lParen: ExtTree.Terminal;
-                              VAR aliasList: ExtTree.NodeList;
-                              VAR rParen: ExtTree.Terminal);
+          PROCEDURE AliasList(VAR lParen: AST.Terminal;
+                              VAR aliasList: AST.NodeList;
+                              VAR rParen: AST.Terminal);
             BEGIN  (* pre: sym.id=lParen *)
               lParen := CheckSym (Symbol.lParen);
               aliasList := ast.NewNodeList();
@@ -1295,7 +1295,7 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
           ELSE
             receiver := NIL
           END;
-          flags := Flags (ExtTree.flagsProcedure);
+          flags := Flags (AST.flagsProcedure);
           identDef := IdentDef (level, TRUE, FALSE, procName);
           formalPars := FormalPars();
           semicolon1 := CheckSym (Symbol.semicolon);
@@ -1343,14 +1343,14 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
         RETURN nl
       END DeclSeq;
 
-    PROCEDURE StatementSeq(): ExtTree.NodeList;
+    PROCEDURE StatementSeq(): AST.NodeList;
       VAR
-        list: ExtTree.NodeList;
+        list: AST.NodeList;
       
-      PROCEDURE Statement (): ExtTree.Node;
-        PROCEDURE ProcCallOrAssignment (): ExtTree.Node;
+      PROCEDURE Statement (): AST.Node;
+        PROCEDURE ProcCallOrAssignment (): AST.Node;
           VAR
-            design, becomes, value: ExtTree.Node;
+            design, becomes, value: AST.Node;
           BEGIN
             (*S: ProcCallOrAssignment = Designator [":=" Expr].  *)
             design := Designator();
@@ -1363,10 +1363,10 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
             END
           END ProcCallOrAssignment;
         
-        PROCEDURE IfStatm (): ExtTree.Node;
+        PROCEDURE IfStatm (): AST.Node;
           VAR
-            else: ExtTree.Node;
-            guardList, elseStatmSeq: ExtTree.NodeList;
+            else: AST.Node;
+            guardList, elseStatmSeq: AST.NodeList;
           BEGIN
             (*S: IfStatm = "IF" Expr "THEN" StatementSeq
               S:           {"ELSIF" Expr "THEN" StatementSeq}
@@ -1394,15 +1394,15 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
             RETURN ast. IfStatm (guardList, else, elseStatmSeq, end)
           END IfStatm;
         
-        PROCEDURE CaseStatm (): ExtTree.Node;
+        PROCEDURE CaseStatm (): AST.Node;
           VAR
-            case, expr, of, else, end: ExtTree.Node;
-            caseList, elseStatmSeq: ExtTree.NodeList;
+            case, expr, of, else, end: AST.Node;
+            caseList, elseStatmSeq: AST.NodeList;
             
-          PROCEDURE Case (caseList: ExtTree.NodeList);
+          PROCEDURE Case (caseList: AST.NodeList);
             VAR
-              labels: ExtTree.NodeList;
-              startValue, upto, endValue: ExtTree.Node;
+              labels: AST.NodeList;
+              startValue, upto, endValue: AST.Node;
             BEGIN
               (*S: Case = [CaseLabels {"," CaseLabels} ":" StatementSeq].
                 S: CaseLabels = Expr [".." Expr].  *)
@@ -1457,10 +1457,10 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
                                    else, elseStatmSeq, end)
           END CaseStatm;
         
-        PROCEDURE WhileStatm (): ExtTree.Node;
+        PROCEDURE WhileStatm (): AST.Node;
           VAR
-            while, guard, do, end: ExtTree.Node;
-            statmSeq: ExtTree.NodeList;
+            while, guard, do, end: AST.Node;
+            statmSeq: AST.NodeList;
           BEGIN
             (*S: WhileStatm = "WHILE" Expr "DO" StatementSeq "END".  *)
             while := CheckSym (Symbol.while);
@@ -1471,10 +1471,10 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
             RETURN ast. WhileStatm (while, guard, do, statmSeq, end)
           END WhileStatm;
         
-        PROCEDURE RepeatStatm (): ExtTree.Node;
+        PROCEDURE RepeatStatm (): AST.Node;
           VAR
-            repeat, until, expr: ExtTree.Node;
-            statmSeq: ExtTree.NodeList;
+            repeat, until, expr: AST.Node;
+            statmSeq: AST.NodeList;
           BEGIN
             (*S: RepeatStatm = "REPEAT" StatementSeq "UNTIL" Expr.  *)
             repeat := CheckSym (Symbol.repeat);
@@ -1484,11 +1484,11 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
             RETURN ast. RepeatStatm (repeat, statmSeq, until, expr)
           END RepeatStatm;
         
-        PROCEDURE ForStatm (): ExtTree.Node;
+        PROCEDURE ForStatm (): AST.Node;
           VAR
             for, ident, becomes, startValue, to, endValue, 
-            by, step, do, end: ExtTree.Node;
-            statmSeq: ExtTree.NodeList;
+            by, step, do, end: AST.Node;
+            statmSeq: AST.NodeList;
           BEGIN
             (*S: ForStatm = "FOR" ident ":=" Expr "TO" Expr ["BY" Expr] 
               S:            "DO" StatementSeq "END".  *)
@@ -1512,10 +1512,10 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
                                   endValue, by, step, do, statmSeq, end)
           END ForStatm;
         
-        PROCEDURE LoopStatm (): ExtTree.Node;
+        PROCEDURE LoopStatm (): AST.Node;
           VAR
-            loop, end: ExtTree.Node;
-            statmSeq: ExtTree.NodeList;
+            loop, end: AST.Node;
+            statmSeq: AST.NodeList;
           BEGIN
             (*S: LoopStatm = "LOOP" StatementSeq "END".  *)
             loop := CheckSym (Symbol.loop);
@@ -1524,10 +1524,10 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
             RETURN ast. LoopStatm (loop, statmSeq, end)
           END LoopStatm;
         
-        PROCEDURE WithStatm (): ExtTree.Node;
+        PROCEDURE WithStatm (): AST.Node;
           VAR
-            else, end, var, colon, type: ExtTree.Node;
-            guardList, elseStatmSeq: ExtTree.NodeList;
+            else, end, var, colon, type: AST.Node;
+            guardList, elseStatmSeq: AST.NodeList;
           BEGIN
             (*S: WithStatm = "WITH" Guard "DO" StatementSeq 
               S:             {"|" Guard "DO" StatementSeq}
@@ -1558,18 +1558,18 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
             RETURN ast. WithStatm (guardList, else, elseStatmSeq, end)
           END WithStatm;
         
-        PROCEDURE ExitStatm (): ExtTree.Node;
+        PROCEDURE ExitStatm (): AST.Node;
           VAR
-            exit: ExtTree.Node;
+            exit: AST.Node;
           BEGIN
             (*S: ExitStatm = "EXIT".  *)
             exit := CheckSym (Symbol.exit);
             RETURN ast. ExitStatm (exit)
           END ExitStatm;
         
-        PROCEDURE ReturnStatm (): ExtTree.Node;
+        PROCEDURE ReturnStatm (): AST.Node;
           VAR
-            return, expr: ExtTree.Node;
+            return, expr: AST.Node;
           BEGIN
             (*S: ReturnStatm = "RETURN" [Expr].  *)
             return := CheckSym (Symbol.return);
@@ -1581,16 +1581,16 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
             RETURN ast. ReturnStatm (return, expr)
           END ReturnStatm;
 
-        PROCEDURE TryStatm(): ExtTree.Node;
+        PROCEDURE TryStatm(): AST.Node;
           VAR
-            catchList: ExtTree.NodeList;
-            try, end: ExtTree.Node;
-            statmSeq: ExtTree.NodeList;
+            catchList: AST.NodeList;
+            try, end: AST.Node;
+            statmSeq: AST.NodeList;
 
-          PROCEDURE Catch(): ExtTree.Node;
+          PROCEDURE Catch(): AST.Node;
             VAR
-              catch, type, lParen, ident, rParen, colon: ExtTree.Node;
-              statmSeq: ExtTree.NodeList;
+              catch, type, lParen, ident, rParen, colon: AST.Node;
+              statmSeq: AST.NodeList;
             BEGIN
               catch := CheckSym(Symbol.catch);
               type := Qualident();
@@ -1666,7 +1666,7 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
         RETURN list
       END StatementSeq;
     
-    PROCEDURE CheckName (sym: SymList.Symbol; head, tail: ExtTree.Name);
+    PROCEDURE CheckName (sym: SymList.Symbol; head, tail: AST.Name);
       BEGIN
         IF (errList. msgCount = 0) & (head^ # tail^) THEN
           Err (nameMismatch, sym);
@@ -1710,7 +1710,7 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: ExtTree.Builder;
     END;
     
     lastIdentDef := name;
-    moduleFlags := Flags (ExtTree.flagsModule);
+    moduleFlags := Flags (AST.flagsModule);
     scolon := CheckSym (Symbol.semicolon);
     IF (sym. id = Symbol.import) THEN
       import := ImportList (headName)
