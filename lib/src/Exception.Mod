@@ -27,11 +27,11 @@ IMPORT
 
    @example
    TRY
-     S
+   S
    CATCH T1:
-     C1
+   C1
    CATCH T2:
-     C2
+   C2
    END;
    @end example
 
@@ -54,11 +54,11 @@ IMPORT
    Exception.PopContext;
    temp := Exception.Current();
    WITH temp: T1 DO
-     C1;
+   C1;
    | temp: T2 DO
-     C2;
+   C2;
    ELSE
-     Exception.ActivateContext;
+   Exception.ActivateContext;
    END;
    Exception.Clear;
    @end example
@@ -84,7 +84,15 @@ IMPORT
 
    Within the module body no exceptions can be passed up, because there is no
    caller.  As a consequence, any exception that is not caught explicity is
-   written to @var{stderr} and aborts the program.  *)
+   written to @var{stderr} and aborts the program.
+
+   @emph{Note}: A @code{TRY} block is mapped to C's @samp{setjmp()} function by
+   @code{oo2c}.  The amount of data stored by this function depends on the
+   target architecture and may differ by a factor of ten or more.  For example,
+   on a @samp{ix86} processor, only 72 bytes are stored, while on a @samp{PPC}
+   this is 768 bytes.  As a consequence, the work done within a @code{TRY}
+   should be large enough to amortize the costs of the @code{TRY} for all
+   possible targets.  *)
 
 (*
    Each @code{TRY} block pushes an exception handler on a stack managed as a
