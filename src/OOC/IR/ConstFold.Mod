@@ -132,12 +132,7 @@ PROCEDURE (c: ConstFold) VisitLen* (len: IR.Len);
   BEGIN
     CASE len. variant OF
     | IR.lenStringConst:
-      IF len.array(IR.Const).value IS LString.Value THEN
-        length := len.array(IR.Const).value(LString.Value). Length()+1;
-      ELSE
-      c.builder.ErrSym(22, len.sym);
-      c.result := NIL; RETURN;
-      END;
+      length := len.array(IR.Const).value(LString.Value). Length()+1;
       
     | IR.lenFixedArray:
       type := len. arrayVariable. type(Sym.Array). GetNthElementType (len.dim);
