@@ -142,7 +142,8 @@ PROCEDURE GetImports* (m: Rep.Module;
         END;
         item := item. nextNested
       END;
-      AppendRuntimeModule
+      AppendRuntimeModule;
+      m. AddImport (NIL)  (* mark module with "import scanned" *)
     ELSE                                 (* take imports from source file *)
       
       inputBuffer := m. GetInputBuffer (res);
