@@ -809,9 +809,9 @@ PROCEDURE (item: Item) Procedure*(): ProcDecl;
 (**Returns the procedure item in which @oparam{item} is nested.  The result is
    @code{NIL}, if @oparam{item} is not part of a procedure.  *)
   BEGIN
-    WHILE (item # NIL) & ~(item IS ProcDecl) DO
+    REPEAT
       item := item. parent
-    END;
+    UNTIL (item = NIL) OR (item IS ProcDecl);
     IF (item = NIL) THEN
       RETURN NIL
     ELSE
