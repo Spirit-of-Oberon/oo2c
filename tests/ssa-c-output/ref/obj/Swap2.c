@@ -1,4 +1,4 @@
-#include "./Swap2.d"
+#include "Swap2.d"
 #include "__oo2c.h"
 
 static void Swap2__Swap(OOC_CHAR8 swap) {

@@ -1,4 +1,4 @@
-#include "./VarPar1.d"
+#include "VarPar1.d"
 #include "__oo2c.h"
 
 static OOC_INT16 VarPar1__F(OOC_INT16 *p) {

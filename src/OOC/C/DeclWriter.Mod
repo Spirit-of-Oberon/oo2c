@@ -23,7 +23,7 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 IMPORT
   Channel, Err, Files, IntStr, Msg, Strings, TextRider,
   ADT:Object, ADT:String, ADT:ArrayList,
-  URI, FileURI := URI:Scheme:File, IO:Memory, 
+  URI, IO:Memory, 
   Language, Language:Boolean, Language:String8, Language:String16,
   Language:Integer, Language:Set, Language:Real,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
@@ -248,9 +248,6 @@ TYPE
     includes: ArrayList.ArrayList;
     declarations: ArrayList.ArrayList;
     
-    relativeIncludePaths: BOOLEAN;
-    (**If TRUE, then include paths are written relative to @ofield{baseURI};
-       otherwise, they are written as absolute paths.  *)
     indentation: LONGINT;
     (**Current indentation level.  Used by @oproc{Writer.Newline}.  *)
     
@@ -286,7 +283,6 @@ PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
     w. baseURI := baseURI;
     w. indentation := 0;
     
-    w. relativeIncludePaths := (baseURI # NIL);
     w. textWriter := TextRider.ConnectWriter (ch);
     w. includes := ArrayList.New (4);
     w. declarations := ArrayList.New (16);
@@ -333,7 +329,6 @@ PROCEDURE (w: Writer) CopyTo* (dest: Writer);
     dest. includes := w. includes;
     dest. declarations := w. declarations;
     dest. indentation := w. indentation;
-    dest. relativeIncludePaths := w. relativeIncludePaths;
     dest. basicType := w. basicType;
   END CopyTo;
 
@@ -373,27 +368,12 @@ PROCEDURE (w: Writer) Newline*;
     END;
   END Newline;
 
-PROCEDURE (w: Writer) WriteInclude* (includeURI: URI.HierarchicalURI);
-(**Write an include statement @code{#include "@dots{}"} for the indicated file.
-
-   @precond
-   @samp{@oparam{includeURI} IS @otype{FileURI.URI}}
-   @end precond *)
-  VAR
-    relativeURI: URI.URI;
-    str: ARRAY 1024 OF CHAR;
+PROCEDURE (w: Writer) WriteInclude* (includePath: ARRAY OF CHAR);
+(**Write an include statement @code{#include "@dots{}"} for the indicated
+   file.  *)
   BEGIN
-    IF w. relativeIncludePaths THEN
-      relativeURI := includeURI. MakeRelative (w. baseURI);
-      relativeURI. GetString (str);
-    ELSE
-      includeURI(FileURI.URI). GetPath (str)
-    END;
     w. WriteString ('#include "');
-    IF (str[0] # "/") & (str[0] # ".") THEN
-      w. WriteString ("./")
-    END;
-    w. WriteString (str);
+    w. WriteString (includePath);
     w. WriteString ('"');
     w. WriteLn
   END WriteInclude;
@@ -978,9 +958,27 @@ PROCEDURE (w: Writer) NewIncludeModule* (module: Repository.Module): IncludeModu
     RETURN d
   END NewIncludeModule;
 
+PROCEDURE (w: Writer) WriteModuleInclude*(m: Repository.Module;
+                                          fileId: Repository.FileId);
+  VAR
+    path: Repository.URIBuffer;
+    i: LONGINT;
+  BEGIN
+    m.origin.GetDefaultSuffix(fileId, path);
+    Strings.Insert(m.name^, 0, path);
+    i := 0;
+    WHILE (path[i] # 0X) DO
+      IF (path[i] = ":") THEN
+        path[i] := "/";
+      END;
+      INC(i);
+    END;
+    w. WriteInclude (path)
+  END WriteModuleInclude;
+
 PROCEDURE (d: IncludeModule) Write (w: Writer);
   BEGIN
-    w. WriteInclude (d. module. GetURI (Repository.modHeaderFileC, FALSE))
+    w.WriteModuleInclude(d.module, Repository.modHeaderFileC);
   END Write;
 
 

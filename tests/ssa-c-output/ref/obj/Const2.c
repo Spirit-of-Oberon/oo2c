@@ -1,4 +1,4 @@
-#include "./Const2.d"
+#include "Const2.d"
 #include "__oo2c.h"
 
 void Const2__Test() {

@@ -1,4 +1,4 @@
-#include "./NoLengthInfo1.d"
+#include "NoLengthInfo1.d"
 #include "__oo2c.h"
 
 void OOC_NoLengthInfo1_init(void) {

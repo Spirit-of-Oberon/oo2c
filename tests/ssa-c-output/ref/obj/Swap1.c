@@ -1,4 +1,4 @@
-#include "./Swap1.d"
+#include "Swap1.d"
 #include "__oo2c.h"
 
 static void Swap1__Swap() {

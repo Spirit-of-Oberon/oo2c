@@ -1,4 +1,4 @@
-#include "./Var7c.d"
+#include "Var7c.d"
 #include "__oo2c.h"
 
 static OOC_INT16 Var7c__Len(const OOC_CHAR8 str__ref[], OOC_LEN str_0d) {

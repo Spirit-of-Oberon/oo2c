@@ -21,7 +21,7 @@ MODULE OOC:Make:TranslateToC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Channel, Out, StdChannels, ADT:String, ADT:Dictionary, 
+  Channel, StdChannels, ADT:String, ADT:Dictionary, 
   OOC:Config, OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
@@ -84,7 +84,8 @@ PROCEDURE (t: Translator) WriteProcedure (procIndex: LONGINT);
   BEGIN
     oldProcIndex := t. currentProc;
     t. currentProc := procIndex;
-    
+
+    (*Log.String("procedure", t. procList[procIndex]. decl. name. str^);*)
     w := t. w;
     d := ConvertDecl.GetProc (w, t. procList[procIndex]. decl, FALSE);
     w. Newline;
@@ -172,8 +173,8 @@ PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
 PROCEDURE WriteDeclFile (w: DeclWriter.Writer; m: Repository.Module;
                          symTab: Sym.Module; exports: Dictionary.Dictionary);
   BEGIN
-    w. WriteInclude (m. GetURI (Repository.modHeaderFileC, FALSE));
-
+    w.WriteModuleInclude(m, Repository.modHeaderFileC);
+    
     ConvertDecl.ConvertSymTab (w, m, symTab, exports, FALSE);
     w. WriteDeclarationList;
     RuntimeData.Write (w, symTab, FALSE);
@@ -184,7 +185,7 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
   VAR
     i: LONGINT;
   BEGIN
-    w. WriteInclude (m. GetURI (Repository.modDeclFileC, FALSE));
+    w.WriteModuleInclude(m, Repository.modDeclFileC);
     translator. SetWriter (w);
     
     (* include full __oo2c.h only in generated C code files; this way,

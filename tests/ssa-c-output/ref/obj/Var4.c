@@ -1,4 +1,4 @@
-#include "./Var4.d"
+#include "Var4.d"
 #include "__oo2c.h"
 
 static OOC_INT16 Var4__F(OOC_CHAR8 b) {

@@ -1,4 +1,4 @@
-#include "./Var5.d"
+#include "Var5.d"
 #include "__oo2c.h"
 
 static void Var5__Set(OOC_INT16 y) {

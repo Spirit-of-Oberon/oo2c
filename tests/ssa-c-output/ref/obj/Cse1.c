@@ -1,4 +1,4 @@
-#include "./Cse1.d"
+#include "Cse1.d"
 #include "__oo2c.h"
 
 void Cse1__Test() {

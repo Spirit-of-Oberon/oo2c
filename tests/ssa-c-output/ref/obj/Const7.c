@@ -1,4 +1,4 @@
-#include "./Const7.d"
+#include "Const7.d"
 #include "__oo2c.h"
 
 static void Const7__P(OOC_CHAR8 b) {

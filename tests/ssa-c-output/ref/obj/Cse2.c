@@ -1,4 +1,4 @@
-#include "./Cse2.d"
+#include "Cse2.d"
 #include "__oo2c.h"
 
 static void Cse2__F(Cse2__P p) {

@@ -1,4 +1,4 @@
-#include "./Cse3.d"
+#include "Cse3.d"
 #include "__oo2c.h"
 
 static OOC_INT16 Cse3__F(OOC_INT16 x) {

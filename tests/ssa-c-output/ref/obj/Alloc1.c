@@ -1,4 +1,4 @@
-#include "./Alloc1.d"
+#include "Alloc1.d"
 #include "__oo2c.h"
 
 static void Alloc1__F(OOC_INT16 a) {

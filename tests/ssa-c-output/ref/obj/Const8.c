@@ -1,4 +1,4 @@
-#include "./Const8.d"
+#include "Const8.d"
 #include "__oo2c.h"
 
 static void Const8__Tand(OOC_CHAR8 b) {
