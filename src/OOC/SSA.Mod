@@ -127,6 +127,7 @@ TYPE
   ConstDesc = RECORD
     (InstrDesc)
     value-: Language.Value;
+    type-: Sym.Type;
   END;
   
 TYPE
@@ -620,10 +621,11 @@ PROCEDURE (instr: Instr) LogOpcode* (msg: ARRAY OF CHAR);
   (* ---------------------------------------------------------------------- *)
 
 PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
-                     value: Language.Value);
+                     value: Language.Value; type: Sym.Type);
   BEGIN
     InitInstr (const, Opcode.const, subclass);
     const. value := value;
+    const. type := type;
   END InitConst;
 
 PROCEDURE InitDeclRef (declRef: DeclRef; decl: Sym.Declaration);
@@ -747,7 +749,7 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
       RETURN obj(Const);
     ELSE
       NEW (const);
-      InitConst (const, Opcode.TypeToSubclass (type), value);
+      InitConst (const, Opcode.TypeToSubclass (type), value, type);
       AppendInstr (pb, const);
       pb. objMap. Set (value, const);
       RETURN const

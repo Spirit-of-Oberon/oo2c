@@ -1,7 +1,7 @@
 MODULE OOC:IR:Operator [OOC_EXTENSIONS];
 
 IMPORT
-  ADT:ArrayList, Language:Integer,
+  ADT:ArrayList, Language:Integer, Language:String8,
   OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, Sym := OOC:SymbolTable,
   OOC:IR, OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef;
 
@@ -676,6 +676,26 @@ PROCEDURE (b: Builder) NewCall* (design: IR.Expression; arguments: IR.Expression
 
 (* -------- *)
 
+PROCEDURE MakeAssignmentCompatible (b: Builder; sym: IR.Symbol;
+                                    expr: IR.Expression;
+                                    type: Sym.Type): IR.Expression;
+(**Takes an expression and a type, and tries to make the expression's value
+   assignment compatible to the type.  If this is not possible, and error
+   is reported.  *)
+  BEGIN
+    (* ... FIXME, this is _very_ incomplete :-)  *)
+    IF (type IS Sym.PredefType) &
+       (type(Sym.PredefType). id = Predef.char) &
+       (expr. type IS Sym.PredefType) &
+       (expr. type(Sym.PredefType). id = Predef.charString) THEN
+      (* create character constant from string constant *)
+      ASSERT (expr(IR.Const). value(String8.Value). value. length = 1);
+      RETURN b. NewConst (sym, type, expr(IR.Const). value)
+    ELSE
+      RETURN expr
+    END;
+  END MakeAssignmentCompatible;
+
 PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;
                                        formalPars: Sym.VarDeclArray;
                                        arguments: IR.ExpressionList): IR.ExpressionList;
@@ -685,6 +705,7 @@ PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;
     i, fparIndex, argIndex: LONGINT;
     fparType: Sym.Type;
     fpar: Sym.VarDecl;
+    arg: IR.Expression;
     exprList: IR.ExpressionList;
   BEGIN
     newArgs := ArrayList.New (LEN (arguments^));
@@ -696,18 +717,25 @@ PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;
       (* FIXME... need to check formal and actual type, insert type conversion,
          and so on  *)
       fpar := formalPars[fparIndex];
+      arg := arguments[argIndex];
+      IF fpar. isVarParam THEN           (* variable parameter *)
+        (* ... nothing for now *)
+      ELSE                               (* value parameter *)
+        arg := MakeAssignmentCompatible (b, sym, arg, fpar. type);
+      END;
+           
       IF fpar. isPassPerReference THEN
         (* for argument passed by reference, add the address of the designator
            to the argument list, not its value *)
-        newArgs. Append (b. NewAdr (sym, arguments[argIndex]));
+        newArgs. Append (b. NewAdr (sym, arg));
       ELSE
-        newArgs. Append (arguments[argIndex]);
+        newArgs. Append (arg);
       END;
       
       fparType := formalPars[fparIndex]. type;
       WITH fparType: Sym.Array DO
         FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
-          newArgs. Append (b. NewLen (sym, arguments[argIndex], i))
+          newArgs. Append (b. NewLen (sym, arg, i))
         END;
       ELSE  (* nothing to do *)
       END;

@@ -294,7 +294,7 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
       (* write constant values directly, without going through an
          intermediate register; the roundabout route is kind of unnatural
          for C code *)
-      w. WriteConst (arg. value);
+      w. WriteConst (arg. value, arg. type);
 
     | arg: SSA.Address DO
       name := Naming.NameOfDeclaration (arg. decl);

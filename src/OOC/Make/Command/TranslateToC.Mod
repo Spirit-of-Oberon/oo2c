@@ -180,7 +180,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
       name: String.String;
     BEGIN
       WITH expr: IR.Const DO
-        w. WriteConst (expr. value)
+        w. WriteConst (expr. value, expr. type)
         
       | expr: IR.Var DO
         name := Naming.NameOfDeclaration (expr. decl);

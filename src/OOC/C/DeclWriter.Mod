@@ -23,9 +23,9 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 IMPORT
   Channel, Err, Files, Msg, TextRider, ADT:Object, ADT:String, ADT:ArrayList,
   URI, FileURI := URI:Scheme:File, IO:Memory, 
-  Language, Language:Boolean, Language:Char8, Language:String8,
+  Language, Language:Boolean, Language:String8,
   Language:Integer,
-  OOC:Repository;
+  OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
   
 
 
@@ -405,15 +405,15 @@ PROCEDURE (w: Writer) Close* (VAR res: Msg.Msg);
     END;
   END Close;
 
-PROCEDURE (w: Writer) WriteConst* (value: Language.Value);
-  (**Writes the C representation of the constant value @oparam{value} to
-     @oparam{w}.  This procedure handles all necessary translations to get a
-     faithful representation of the value in the language of C.  *)
+PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
+(**Writes the C representation of the constant value @oparam{value} to
+   @oparam{w}.  This procedure handles all necessary translations to get a
+   faithful representation of the value in the language of C.  *)
   CONST
     delim = '"';
     quotedDelim = '\"';
   VAR
-    i, len: LONGINT;
+    i, len, charValue: LONGINT;
     str : String.String;
 
   PROCEDURE WriteOct (ch: LONGINT);
@@ -429,25 +429,19 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value);
         w. WriteString("OOC_FALSE")
       END
       
-    | value: Char8.Value DO
-      w. WriteChar ("'");
-      IF (value. value < ORD (" ")) OR (value. value >= 127) OR
-         (value. value = ORD ("'")) OR (value. value = ORD ("\")(*"*)) THEN
-        w. WriteChar ("\")(*"*); 
-        WriteOct (value. value DIV 64);
-        WriteOct (value. value DIV 8 MOD 8);
-        WriteOct (value. value MOD 8);
-      ELSE
-        w. WriteChar (CHR (value. value));
-      END;
-      w. WriteChar ("'");
-      
     | value: String8.Value DO
-      IF (value. value. length = 1) THEN
-        (* yaqh (yet another quick hack) to get HOTBaselineOutput5 
-           to compile... FIXME, need character constants *)
+      IF (type(Sym.PredefType). id = Predef.char) THEN
+        charValue := ORD (value. value. array[0]);
         w. WriteChar ("'");
-        w. WriteChar (value. value. array[0]);
+        IF (charValue < ORD (" ")) OR (charValue >= 127) OR
+           (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
+          w. WriteChar ("\")(*"*); 
+          WriteOct (charValue DIV 64);
+          WriteOct (charValue DIV 8 MOD 8);
+          WriteOct (charValue MOD 8);
+        ELSE
+          w. WriteChar (CHR (charValue));
+        END;
         w. WriteChar ("'");
       ELSE
         w. WriteChar (delim);
@@ -460,9 +454,9 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value);
           END;
           INC (i)
         END;
-        w. WriteChar (delim)
-      END
-    
+        w. WriteChar (delim);
+      END;
+      
     | value: Integer.Value DO
       IF (value. ToLInt() = MIN (LONGINT)) THEN
         (* this assumes that MIN(LONGINT) is also the smallest value of
@@ -911,7 +905,7 @@ PROCEDURE (d: Define) Write (w: Writer);
     w. WriteString ("#define ");
     w. WriteString (d. name. array^);
     w. WriteString (" ");
-    w. WriteConst (d. const);
+    w. WriteConst (d. const, Predef.GetType (Predef.charString));
   END Write;
 
 

@@ -525,13 +525,20 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
 PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
   VAR
     v: Language.Value;
+    str: ARRAY 2 OF CHAR;
   BEGIN
     v := Char8.type. ValueOf (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (characterOutOfRange, sym);
       RETURN b. errorExpr
     ELSE
-      RETURN NewConst (sym, Predef.GetType (Predef.char), v)
+      WITH v: Char8.Value DO
+        ASSERT (v. value < 256);
+        str[0] := CHR (v. value);
+        str[1] := 0X;
+        RETURN NewConst (sym, Predef.GetType (Predef.char),
+                         String8.NewString (str));
+      END;
     END
   END NewCharConst16;
 
