@@ -62,7 +62,19 @@ Problems?
 
 1) While linking, the compiler complains about undefined GC_pthread_sigmask?
    Make sure that you specify "-DGC_DARWIN_THREADS" in CPPFLAGS when
-   configuring ooc.
+   configuring OOC.
+
+2) You installed programs or libraries with "Fink", but OOC cannot find them?
+   Fink does not install its components in the regular places (eg. /usr/local)
+   so the default searches will not work. As documented by Fink, you should
+   set the symbols CFLAGS, CXXFLAGS, CPPFLAGS and LDFLAGS to point to your
+   Fink installation. Normally, this is done in .cshrc using:
+     setenv CFLAGS -I/sw/include
+     setenv LDFLAGS -L/sw/lib
+     setenv CXXFLAGS $CFLAGS
+     setenv CPPFLAGS $CXXFLAGS
+     source /sw/bin/init.csh
 
 -- Stewart Greenhill <sgreenhill@users.sf.net>
+
 
