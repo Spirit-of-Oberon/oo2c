@@ -10,14 +10,7 @@ TYPE
     value : LONGREAL;
   END;
 
-  Type* = POINTER TO TypeDesc;
-  TypeDesc* = RECORD (L.TypeDesc) 
-  END;
-
 VAR
-  type- : Type;
-  typeName : String.String;
-
   zero- : Value;
 
 PROCEDURE New* (val : LONGREAL) : Value;
@@ -26,10 +19,57 @@ VAR
   v : Value;
 BEGIN
   NEW(v);
-  L.InitValue (v, type);
+  L.InitValue (v);
   v.value := val;
   RETURN v;
 END New;
+
+PROCEDURE ValueOf* (s : ARRAY OF CHAR) : Value;
+VAR 
+  real : LONGREAL;
+  res : LRealStr.ConvResults;
+BEGIN
+  LRealStr.StrToReal(s, real, res);
+  IF res = LRealStr.strAllRight THEN
+    RETURN New(real);
+  ELSE
+    RETURN NIL;
+  END;
+END ValueOf;
+
+PROCEDURE ValueOfLiteral* (s : ARRAY OF CHAR) : Value;
+(**Like @oproc{ValueOf}, but the character of the exponent decides
+   whether the value should be treated as a @code{REAL} or @code{LONGREAL}
+   literal.  *)
+VAR 
+  real : REAL;
+  longreal : LONGREAL;
+  res : LRealStr.ConvResults;
+  v: Value;
+  i: LONGINT;
+BEGIN
+  (* check if the number has a "D" exponent, which would make it LONGREAL;
+     this influences the rounding for the resulting real value *)
+  i := 0;
+  WHILE (s[i] # 0X) & (s[i] # "D") DO
+    INC (i);
+  END;
+
+  v := NIL;
+  IF (s[i] = "D") THEN
+    s[i] := "E";
+    LRealStr.StrToReal(s, longreal, res);
+    IF res = LRealStr.strAllRight THEN
+      v := New(longreal);
+    END;
+  ELSE
+    RealStr.StrToReal(s, real, res);
+    IF res = LRealStr.strAllRight THEN
+      v := New(real);
+    END;
+  END;
+  RETURN v;
+END ValueOfLiteral;
 
 PROCEDURE (v: Value) Store* (w: Storable.Writer);
   BEGIN
@@ -118,68 +158,7 @@ BEGIN
   RETURN New(-v.value);
 END Negate;
 
-PROCEDURE (t : Type) Value* (val : LONGREAL) : Value;
 BEGIN
-  RETURN New(val);
-END Value;
-
-PROCEDURE (t : Type) ValueOf* (s : ARRAY OF CHAR) : Value;
-VAR 
-  real : LONGREAL;
-  res : LRealStr.ConvResults;
-BEGIN
-  LRealStr.StrToReal(s, real, res);
-  IF res = LRealStr.strAllRight THEN
-    RETURN New(real);
-  ELSE
-    RETURN NIL;
-  END;
-END ValueOf;
-
-PROCEDURE (t : Type) ValueOfLiteral* (s : ARRAY OF CHAR) : Value;
-(**Like @oproc{Type.ValueOf}, but the character of the exponent decides
-   whether the value should be treated as a @code{REAL} or @code{LONGREAL}
-   literal.  *)
-VAR 
-  real : REAL;
-  longreal : LONGREAL;
-  res : LRealStr.ConvResults;
-  v: Value;
-  i: LONGINT;
-BEGIN
-  (* check if the number has a "D" exponent, which would make it LONGREAL;
-     this influences the rounding for the resulting real value *)
-  i := 0;
-  WHILE (s[i] # 0X) & (s[i] # "D") DO
-    INC (i);
-  END;
-
-  v := NIL;
-  IF (s[i] = "D") THEN
-    s[i] := "E";
-    LRealStr.StrToReal(s, longreal, res);
-    IF res = LRealStr.strAllRight THEN
-      v := New(longreal);
-    END;
-  ELSE
-    RealStr.StrToReal(s, real, res);
-    IF res = LRealStr.strAllRight THEN
-      v := New(real);
-    END;
-  END;
-  RETURN v;
-END ValueOfLiteral;
-
-PROCEDURE (t : Type) ToString* () : String.String;
-BEGIN
-  RETURN typeName
-END ToString;
-
-BEGIN
-  NEW(type);
-  L.InitType(type);
-  typeName := String.New("Real");
-
   zero := New(0.0);
 END Language:Real.
 

@@ -9,9 +9,9 @@ TYPE
     (L.ValueDesc)
   END;
 
-PROCEDURE Init* (v: Value; type: L.Type);
+PROCEDURE Init* (v: Value);
   BEGIN
-    L.InitValue (v, type);
+    L.InitValue (v);
   END Init;
 
 PROCEDURE (v: Value) [ABSTRACT] Length*(): LONGINT;

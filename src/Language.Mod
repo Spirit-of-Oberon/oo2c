@@ -8,31 +8,17 @@ IMPORT
   ADT:Storable, ADT:String, LanguageNew;
 
 TYPE
-  Type* = POINTER TO TypeDesc;
-  TypeDesc* = RECORD [ABSTRACT] (LanguageNew.ObjectDesc)
-    (** This is the base type for all Oberon-2 types. Sub-types of @otype{Type}
-     * generally provide a function @otype{Value}, which converts a primitive
-     * type to a @otype{Value}.  *) 
-  END;
-
   Value* = POINTER TO ValueDesc;
   ValueDesc* = RECORD [ABSTRACT] (Storable.ObjectDesc)
-    (**This is the base type for all Oberon-2 values. Each value has an *
-       associtated type (the @ofield{type} field). A @otype{Value} may be *
-       converted to a @otype{String.String}, but otherwise its main function is
-       to * expose a read-only field @ofield{type} via which expressions may do
-       * their work.  *)
-
-    type-: Type;            
-    (** The type of this value. *)
+    (**This is the base type for all Oberon-2 values.  A @otype{Value} may be
+       converted to a @otype{String.String}.  *)
   END;
 
 
 
-PROCEDURE InitValue* (v: Value; type: Type);
+PROCEDURE InitValue* (v: Value);
   BEGIN
     Storable.Init (v);
-    v. type := type
   END InitValue;
 
 PROCEDURE (v: Value) [ABSTRACT] Equals* (y: LanguageNew.Object): BOOLEAN;
@@ -49,28 +35,11 @@ PROCEDURE (v: Value) [ABSTRACT] ToString*() : String.String;
 
 PROCEDURE (v: Value) Store* (w: Storable.Writer);
   BEGIN
-    (*w. WriteObject (v. type)   FIXME... *)
   END Store;
 
 PROCEDURE (v: Value) Load* (r: Storable.Reader);
   BEGIN
-    v. type := NIL;  (* FIXME... *)
   END Load;
-
-
-PROCEDURE InitType* (t: Type);
-  END InitType;
-
-PROCEDURE (t: Type) [ABSTRACT] ToString*() : String.String;
-END ToString;
-
-PROCEDURE (t: Type) [ABSTRACT] ValueOf* (s : ARRAY OF CHAR): Value;
-(** Return a value described by the string @oparam{s}. The result may be NIL if
- * the string has the wrong format (perhaps should return Status code to
- * indicate this) *)
-END ValueOf;
-
-
 
 END Language.
 

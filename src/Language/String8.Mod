@@ -5,11 +5,6 @@ IMPORT
   L := Language, LString := Language:String, LanguageNew;
 
 TYPE
-  Type* = POINTER TO TypeDesc;
-  TypeDesc* = RECORD (L.TypeDesc)
-  END;
-
-TYPE
   Value* = POINTER TO ValueDesc;
   ValueDesc* = RECORD
     (LString.ValueDesc)
@@ -17,13 +12,11 @@ TYPE
   END;
 
 VAR
-  type-: Type;
-  typeName: String.String;
   empty: Value;
 
 PROCEDURE Init (v: Value; value: String.String);
   BEGIN
-    L.InitValue (v, type);
+    L.InitValue (v);
     v.value := value;
   END Init;
 
@@ -128,14 +121,7 @@ PROCEDURE (v: Value) Load* (r: Storable.Reader);
     v. value := obj(String.String);
   END Load;
 
-
-
-PROCEDURE (t: Type) Value* (value: String.String): Value;
-  BEGIN
-    RETURN New(value);
-  END Value;
-
-PROCEDURE (t: Type) ValueOf* (str[NO_COPY]: ARRAY OF CHAR): Value;
+PROCEDURE ValueOf* (str[NO_COPY]: ARRAY OF CHAR): Value;
   VAR
     i: LONGINT;
   BEGIN
@@ -150,16 +136,7 @@ PROCEDURE (t: Type) ValueOf* (str[NO_COPY]: ARRAY OF CHAR): Value;
     END
   END ValueOf;
 
-PROCEDURE (t: Type) ToString* (): String.String;
-  BEGIN
-    RETURN typeName
-  END ToString;
-
 BEGIN
-  NEW(type);
-  L.InitType (type);
-  typeName := String.New ("String8");
-
   NEW (empty);
   Init (empty, String.New (""));
 END Language:String8.

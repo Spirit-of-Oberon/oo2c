@@ -9,23 +9,16 @@ TYPE
     value : Integers.Integer;
   END;
 
-  Type* = POINTER TO TypeDesc;
-  TypeDesc* = RECORD (L.TypeDesc) 
-  END;
-
 VAR
-  type- : Type;
-  typeName : String.String;
-
   minus1, zero-, one : Value;
 
 PROCEDURE NewInt (val : Integers.Integer) : Value;
-(** Return a @otype{Value} for integer @oparam{val} with type @ovar{type}. *)
+(** Return a @otype{Value} for integer @oparam{val}. *)
 VAR 
   v : Value;
 BEGIN
   NEW(v);
-  L.InitValue (v, type);
+  L.InitValue (v);
   v.value := val;
   RETURN v;
 END NewInt;
@@ -56,6 +49,14 @@ PROCEDURE NewString* (str: ARRAY OF CHAR): Value;
     Integers.ConvertFromString (str, i);
     RETURN NewInt(i);
   END NewString;
+
+PROCEDURE ValueOf* (s : ARRAY OF CHAR) : Value;
+VAR
+  val : Integers.Integer;
+BEGIN
+  Integers.ConvertFromString(s, val);
+  RETURN NewInt(val);
+END ValueOf;
 
 PROCEDURE (v: Value) Store* (w: Storable.Writer);
   VAR
@@ -156,29 +157,7 @@ BEGIN
   RETURN v.Product(minus1);
 END Negate;
 
-PROCEDURE (t : Type) Value* (val : LONGINT) : Value;
 BEGIN
-  RETURN New(val);
-END Value;
-
-PROCEDURE (t : Type) ValueOf* (s : ARRAY OF CHAR) : Value;
-VAR
-  val : Integers.Integer;
-BEGIN
-  Integers.ConvertFromString(s, val);
-  RETURN NewInt(val);
-END ValueOf;
-
-PROCEDURE (t : Type) ToString* () : String.String;
-BEGIN
-  RETURN typeName
-END ToString;
-
-BEGIN
-  NEW(type);
-  L.InitType(type);
-  typeName := String.New("Integer");
-
   zero := NewDistinct(0);
   one := NewDistinct(1);
   minus1 := NewDistinct(-1);

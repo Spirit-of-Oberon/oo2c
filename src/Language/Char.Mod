@@ -4,11 +4,6 @@ IMPORT
   Ascii, ADT:Storable, ADT:String, L := Language, LanguageNew;
 
 TYPE
-  Type* = POINTER TO TypeDesc;
-  TypeDesc* = RECORD (L.TypeDesc)
-  END;
-
-TYPE
   Value* = POINTER TO ValueDesc;
   ValueDesc* = RECORD (L.ValueDesc)
     value-: LONGINT;
@@ -19,14 +14,12 @@ CONST
   max = 0FFFFH;                          (* MAX(LONGCHAR) *)
   
 VAR
-  type-: Type;
-  typeName: String.String;
   zero: Value;
 
   
 PROCEDURE Init (v: Value; value: LONGINT);
   BEGIN
-    L.InitValue (v, type);
+    L.InitValue (v);
     v.value := value;
   END Init;
 
@@ -42,6 +35,57 @@ PROCEDURE New* (value: LONGINT): Value;
       RETURN v
     END;
   END New;
+
+PROCEDURE ValueOf* (str[NO_COPY]: ARRAY OF CHAR): Value;
+  VAR
+    i, hexCount, ord: LONGINT;
+    
+  PROCEDURE HexDigit (ch: CHAR): LONGINT;
+    BEGIN
+      ch := CAP (ch);
+      CASE ch OF
+      | "0".."9": RETURN ORD(ch)-ORD("0")
+      | "A".."F": RETURN ORD(ch)+(10-ORD("A"))
+      ELSE
+        RETURN -1
+      END;
+    END HexDigit;
+    
+  PROCEDURE HexToInt (str: ARRAY OF CHAR; end: CHAR; VAR result: LONGINT): BOOLEAN;
+    BEGIN
+      result := 0; i := 0;
+      WHILE (str[i] # end) DO
+        IF ((MAX (LONGINT)-HexDigit (str[i])) DIV 16 < result) THEN
+          RETURN FALSE
+        END;
+        result := result*16+HexDigit (str[i]);
+        INC (i)
+      END;
+      RETURN TRUE
+    END HexToInt;
+  
+  BEGIN
+    i := 0; hexCount := 0;
+    WHILE (str[i] # 0X) DO
+      IF (HexDigit (str[i]) >= 0) THEN
+        INC (hexCount)
+      END;
+      INC (i)
+    END;
+    IF (i = 3) & (str[0] = str[i-1]) & ((str[0] = '"') OR (str[0] = "'")) THEN
+      (* single character, written as '...' or "..." *)
+      RETURN New (ORD (str[1]))
+    ELSIF (i >= 2) & (str[i-1] = "X") & (hexCount+1 = i) THEN
+      (* character written has hexadecimal constant nnX *)
+      IF HexToInt (str, "X", ord) & (min <= ord) & (ord <= max) THEN
+        RETURN New (ord)
+      ELSE  (* overflow *)
+        RETURN NIL
+      END
+    ELSE  (* string is not delimited properly, nor is in hex notation *)
+      RETURN NIL
+    END
+  END ValueOf;
 
 PROCEDURE (v: Value) Equals* (y: LanguageNew.Object): BOOLEAN;
   BEGIN
@@ -118,74 +162,7 @@ PROCEDURE (v: Value) Load* (r: Storable.Reader);
     r. ReadNum (v. value);
   END Load;
 
-
-
-PROCEDURE (t: Type) Value* (value: LONGINT): Value;
-  BEGIN
-    RETURN New(value);
-  END Value;
-
-PROCEDURE (t: Type) ValueOf* (str[NO_COPY]: ARRAY OF CHAR): Value;
-  VAR
-    i, hexCount, ord: LONGINT;
-    
-  PROCEDURE HexDigit (ch: CHAR): LONGINT;
-    BEGIN
-      ch := CAP (ch);
-      CASE ch OF
-      | "0".."9": RETURN ORD(ch)-ORD("0")
-      | "A".."F": RETURN ORD(ch)+(10-ORD("A"))
-      ELSE
-        RETURN -1
-      END;
-    END HexDigit;
-    
-  PROCEDURE HexToInt (str: ARRAY OF CHAR; end: CHAR; VAR result: LONGINT): BOOLEAN;
-    BEGIN
-      result := 0; i := 0;
-      WHILE (str[i] # end) DO
-        IF ((MAX (LONGINT)-HexDigit (str[i])) DIV 16 < result) THEN
-          RETURN FALSE
-        END;
-        result := result*16+HexDigit (str[i]);
-        INC (i)
-      END;
-      RETURN TRUE
-    END HexToInt;
-  
-  BEGIN
-    i := 0; hexCount := 0;
-    WHILE (str[i] # 0X) DO
-      IF (HexDigit (str[i]) >= 0) THEN
-        INC (hexCount)
-      END;
-      INC (i)
-    END;
-    IF (i = 3) & (str[0] = str[i-1]) & ((str[0] = '"') OR (str[0] = "'")) THEN
-      (* single character, written as '...' or "..." *)
-      RETURN New (ORD (str[1]))
-    ELSIF (i >= 2) & (str[i-1] = "X") & (hexCount+1 = i) THEN
-      (* character written has hexadecimal constant nnX *)
-      IF HexToInt (str, "X", ord) & (min <= ord) & (ord <= max) THEN
-        RETURN New (ord)
-      ELSE  (* overflow *)
-        RETURN NIL
-      END
-    ELSE  (* string is not delimited properly, nor is in hex notation *)
-      RETURN NIL
-    END
-  END ValueOf;
-
-PROCEDURE (t: Type) ToString* (): String.String;
-  BEGIN
-    RETURN typeName
-  END ToString;
-
 BEGIN
-  NEW(type);
-  L.InitType (type);
-  typeName := String.New ("Char");
-
   NEW (zero);
   Init (zero, 0);
 END Language:Char.
