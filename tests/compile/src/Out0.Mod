@@ -2,6 +2,8 @@
 MODULE Out0 [FOREIGN "C"; LINK FILE "Out0.c" END];
 <* Warnings := FALSE *>
 
+IMPORT RT0;
+
 PROCEDURE Open*;
 PROCEDURE Char* (ch: CHAR);
 PROCEDURE String* (s: ARRAY OF CHAR);
