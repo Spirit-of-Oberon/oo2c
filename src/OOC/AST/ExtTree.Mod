@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 (*  Creates extended abstract syntax tree from the parser output.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -186,7 +186,13 @@ TYPE
     equal-: AST.Node;
     expr-: AST.Node;
     semicolon-: AST.Node;
+    
     symTabEntry-: Sym.ConstDecl;
+    (**Refers to the symbol table entry corresponding to this constant
+       declaration.  This field is @code{NIL} until the symbol table is
+       constructed.  It is used to transfer information that is derived
+       from the AST by evaluating the constantion expression to the
+       declaration object.  *)
   END;
 
 TYPE
@@ -247,6 +253,11 @@ TYPE
     semicolon2-: AST.Node;
     
     symTabEntry-: Sym.ProcDecl;
+    (**Refers to the symbol table entry corresponding to this procedure
+       declaration.  This field is @code{NIL} until the symbol table is
+       constructed.  It is used to transfer information that is derived
+       from the AST when translating the procedure body to the
+       declaration object.  *)
   END;
 
 TYPE
@@ -955,6 +966,8 @@ PROCEDURE (b: Builder) ConstDecl* (identDef, equal, expr, semicolon: AST.Node): 
     cd. equal := equal;
     cd. expr := expr;
     cd. semicolon := semicolon;
+
+    cd. symTabEntry := NIL;
     RETURN cd
   END ConstDecl;
 

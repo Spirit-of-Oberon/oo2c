@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 (*  Defines a builder class with factory methods for symbol table entries.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -80,8 +80,11 @@ PROCEDURE (b: Builder) NewConstDecl* (parent: Sym.Item; name: Sym.Name;
                                       docString: Doc.Document;
                                       value: Language.Value;
                                       type: Sym.PredefType): Sym.ConstDecl;
-(**Note: If the value and type of the constant are not known yet, 
-   then @oparam{value} is @code{NIL}.  *)
+(**Note: If the value and type of the constant are not known yet, then
+   @oparam{value} and @oparam{type} are @code{NIL}.  When creating the symbol
+   table from source code, then this information is not available initially and
+   only set later when translating constant expressions during the creation of
+   the IR data structure.  *)
   VAR
     const: Sym.ConstDecl;
   BEGIN
