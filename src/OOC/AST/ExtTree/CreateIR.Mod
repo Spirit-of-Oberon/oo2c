@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree:CreateIR;
 (*  Creates an IR representation from the abstract syntax tree.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -326,6 +326,18 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     BEGIN
       declSeq := module. body. declSeq;
 
+      (* fixup the parts of the symbol table that could not be handled when
+         creating the symbol table; as long as forward references to constant
+         declarations are not allowed, we can simply resolve declarations in
+         the same order as the appear in the source code *)
+      FOR i := 0 TO declSeq. len-1 DO
+        n := declSeq. n[i](ExtTree.Node);
+        WITH n: ExtTree.ConstDecl DO
+	  ConstDecl(n);
+        ELSE  (* nothing to do *)
+        END;
+      END;
+      
       (* count number of procedures, allocate array to hold IR of procs *)
       count := 0;
       FOR i := 0 TO declSeq. len-1 DO
