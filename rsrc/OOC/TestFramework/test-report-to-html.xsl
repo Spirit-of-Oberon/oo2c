@@ -183,6 +183,7 @@
 	    <xsl:when test="../outcome/@class = 'failed'">#FF0000</xsl:when>
 	    <xsl:when test="../outcome/@class = 'passed'">#00FF00</xsl:when>
 	    <xsl:when test="../outcome/@class = 'tolerated'">#FFFF00</xsl:when>
+	    <xsl:when test="../outcome/@class = 'skipped'">#AAAAAA</xsl:when>
 	  </xsl:choose>
 	</xsl:attribute>
 	<strong>ID</strong>
