@@ -381,11 +381,34 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
   END WriteLocalDecl;
 
 
+PROCEDURE ^ (w: Writer) Ref (opnd: SSA.Opnd);
+
+PROCEDURE (w: Writer) LengthExpr (instr: SSA.Instr);
+  VAR
+    design: SSA.Result;
+    name: String.String;
+  BEGIN
+    design := instr. GetArgClass (Opnd.readDesign);
+    WITH design: SSA.DeclRef DO        (* length parameter *)
+      name := Naming.NameOfLengthParam
+          (design. decl(Sym.VarDecl), instr. opndList. GetIntConst());
+      w. WriteString (name. array^);
+      
+    ELSE                               (* length from type tag *)
+      w. WriteString ("OOC_ARRAY_LENGTH(");
+      w. Ref (instr. opndList. nextOpnd);
+      w. WriteString (", ");
+      w. Ref (instr. opndList);
+      w. WriteString (")");
+    END;
+  END LengthExpr;
+
 PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
   VAR
     arg: SSA.Result;
     obj: Object.Object;
     name: String.String;
+    instr: SSA.Instr;
   BEGIN
     arg := opnd. arg;
     WITH arg: SSA.DeclRef DO
@@ -422,9 +445,14 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
       w. WriteString (name. array^);
       
     ELSE
+      instr := opnd. arg. instr;
       IF w. registerMap. HasKey (opnd. arg) THEN
         obj := w. registerMap. Get (opnd. arg);
-        w. WriteString (obj(String.String). array^)
+        w. WriteString (obj(String.String). array^);
+
+      ELSIF (instr. opcode = Opcode.getLength) THEN
+        w. LengthExpr (instr);
+        
       ELSE
         (* provoke an C error if this value is used: *)
         w. WriteString ("XXX undefined ref /*internal error*/");
@@ -579,26 +607,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (suffix);
     END WriteMonadicOp;
   
-  PROCEDURE GetLength (instr: SSA.Instr);
-    VAR
-      design: SSA.Result;
-      name: String.String;
-    BEGIN
-      design := instr. GetArgClass (Opnd.readDesign);
-      WITH design: SSA.DeclRef DO        (* length parameter *)
-        name := Naming.NameOfLengthParam
-            (design. decl(Sym.VarDecl), instr. opndList. GetIntConst());
-        w. WriteString (name. array^);
-        w. WriteChar (";");
-
-      ELSE                               (* length from type tag *)
-        w. WriteString ("OOC_ARRAY_LENGTH(");
-        w.Ref (instr. opndList. nextOpnd);
-        w. WriteString (", ");
-        w.Ref (instr. opndList);
-        w. WriteString (");");      END;
-    END GetLength;
-
   PROCEDURE CastFromPtr (res: SSA.Result);
     BEGIN
       IF (res. subclass = Opcode.scAddress) THEN
@@ -1008,7 +1016,11 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         CmpString (instr);
         
       | Opcode.getLength:
-        GetLength (instr);
+        IF ~instr. IsConst() THEN
+          (* don't write statement for length of open array parameter *)
+          w. LengthExpr (instr);
+          w. WriteChar (";");
+        END;
         
       | Opcode.copyParameter:
         CopyParameter (instr(SSA.Address));

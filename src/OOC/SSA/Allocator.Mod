@@ -215,13 +215,7 @@ PROCEDURE IdentifyResults (blockList: BlockList): RegisterFiles;
        a register to all uses of this value.  Note: Non-instruction results
        that produce tangible values are _always_ passed through registers.  *)
       BEGIN
-        WITH instr: SSA.Const DO
-          RETURN FALSE
-        | instr: SSA.Address DO
-          RETURN FALSE
-        ELSE
-          RETURN TRUE
-        END;
+        RETURN ~instr. IsConst();
       END PassedThroughRegister;
 
     PROCEDURE RegisterResult (result: SSA.Result;

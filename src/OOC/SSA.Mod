@@ -818,11 +818,17 @@ PROCEDURE (instr: Instr) IsLoopEndWithExits (): BOOLEAN;
 
 PROCEDURE (instr: Instr) IsConst*(): BOOLEAN;
 (**Returns @code{TRUE} if @oparam{instr} represents a constant value.  Such
-   instructions have no operands, and within a given procedure block two
-   instructions represent the same value iff they are identical.  *)
+   instructions have no non-constant operands that constribute to the returned
+   value, and within a given procedure block two instructions represent the
+   same value iff they are identical.  *)
   BEGIN
-    RETURN (instr IS Const) OR (instr IS DeclRef) OR
-           (instr IS TypeRef) OR (instr IS Address);
+    IF (instr. opcode = Opcode.getLength) THEN
+      (* length of an open array parameter *)
+      RETURN (instr. GetArgClass (OpndClass.readDesign) IS DeclRef);
+    ELSE
+      RETURN (instr IS Const) OR (instr IS DeclRef) OR
+          (instr IS TypeRef) OR (instr IS Address);
+    END;
   END IsConst;
 
 
@@ -1148,21 +1154,62 @@ PROCEDURE (pb: ProcBlock) AddGetLengthInstr* (get: Instr; dim: LONGINT;
    instruction that returns the length of the variable for @oparam{dim}.
    @oparam{dimType} is the array type of dimension @oparam{dim}.  *)
   VAR
-    getLength: Instr;
+    getLength, dimension: Instr;
     opnd: Opnd;
-    i: LONGINT;
+    
+  PROCEDURE VarParamArray (get: Instr): DeclRef;
+  (* If the get accesses a parameter without any further selectors, then
+     return its declaration.  Otherwise, return NIL.  *)
+    VAR
+      opnd: Opnd;
+    BEGIN
+      opnd := get. GetOpndClass (OpndClass.readDesign);
+      IF ((opnd. nextOpnd = NIL) OR
+          (opnd. nextOpnd. class # OpndClass.readDesign)) &
+         (opnd. arg IS DeclRef) &
+         opnd. arg(DeclRef). decl(Sym.VarDecl). isParameter THEN
+        RETURN opnd. arg(DeclRef);
+      ELSE
+        RETURN NIL;
+      END;
+    END VarParamArray;
+
+  PROCEDURE ExistingGetLength (varParam, dimension: Instr): Instr;
+  (* If a "get-length" instruction for the variable parameter and dimension
+     exists within the procedure, then return this instruction.  *)
+    VAR
+      use: Opnd;
+    BEGIN
+      IF (varParam # NIL) THEN
+        use := varParam. useList;
+        WHILE (use # NIL) DO
+          IF (use. instr. opcode = Opcode.getLength) &
+             (use. class = OpndClass.readDesign) &
+             (use. instr. opndList. arg = dimension) THEN
+            RETURN use. instr;
+          END;
+          use := use. nextUse;
+        END;
+      END;
+      RETURN NIL;
+    END ExistingGetLength;
+  
   BEGIN
     ASSERT (get. instr. opcode = Opcode.get);
     IF dimType. isOpenArray THEN
-      getLength := pb. AddInstr (Opcode.getLength, Opcode.scLength);
-      opnd := get. opndList;
-      WHILE (opnd # NIL) DO
-        IF (opnd. class = OpndClass.store) THEN
-          getLength. AddOpnd (pb. GetConstInt (dim), OpndClass.dimension)
-        ELSE
-          getLength. AddOpnd (opnd. arg, opnd. class);
+      dimension := pb. GetConstInt (dim);
+      getLength := ExistingGetLength (VarParamArray (get), dimension);
+      IF (getLength = NIL) THEN
+        getLength := pb. AddInstr (Opcode.getLength, Opcode.scLength);
+        opnd := get. opndList;
+        WHILE (opnd # NIL) DO
+          IF (opnd. class = OpndClass.store) THEN
+            getLength. AddOpnd (dimension, OpndClass.dimension)
+          ELSE
+            getLength. AddOpnd (opnd. arg, opnd. class);
+          END;
+          opnd := opnd. nextOpnd
         END;
-        opnd := opnd. nextOpnd
       END;
       RETURN getLength;
 
