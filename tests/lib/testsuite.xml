@@ -250,8 +250,16 @@
           file="LibLRealConvValueReal1.Mod"
 	  output="LibLRealConvValueReal1.Ref">
       Use <code>ValueReal</code> to convert strings to
-      <code>LONGREAL</code>. 
+      <code>LONGREAL</code>.  Only values that can be represented as
+      normalized numbers.
     </test>
-    
+
+    <test id="lib_LRealConv_ValueReal2" type="run"
+          file="LibLRealConvValueReal2.Mod"
+	  output="LibLRealConvValueReal2.Ref">
+      Use <code>ValueReal</code> to convert strings to
+      <code>LONGREAL</code>.  Only values that can be represented as
+      denormalized numbers.
+    </test>
   </testcases>
 </testsuite-ext>
