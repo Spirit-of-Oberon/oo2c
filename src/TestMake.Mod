@@ -196,7 +196,7 @@ PROCEDURE (command: Command) Id* (): String.String;
 
 PROCEDURE (command: Command) Discover*(): Make.CommandState;
   VAR
-    ancestor, descendent: Entity;
+    ancestor, descendant: Entity;
     i: LONGINT;
     
   PROCEDURE Msg (result: ARRAY OF CHAR);
@@ -220,8 +220,8 @@ PROCEDURE (command: Command) Discover*(): Make.CommandState;
       END;
       i := 0;
       WHILE (command. discoverOut[i] # 0X) DO
-        descendent := entities[ORD (command. discoverOut[i])];
-        command. AddDescendent (descendent);
+        descendant := entities[ORD (command. discoverOut[i])];
+        command. AddDescendant (descendant);
         INC (i)
       END;
       

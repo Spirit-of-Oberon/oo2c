@@ -28,44 +28,44 @@ IMPORT
 TYPE
   Edge* = POINTER TO EdgeDesc;
   EdgeDesc = RECORD
-    (**The descendent of such an edge is invalid if it does not exist, or if
+    (**The descendant of such an edge is invalid if it does not exist, or if
        the ancestor is more recent.  *)
     (Make.EdgeDesc)
   END;
 
-PROCEDURE Init* (edge: Edge; descendent, ancestor: Resource.Entity);
+PROCEDURE Init* (edge: Edge; descendant, ancestor: Resource.Entity);
   BEGIN
-    Make.InitEdge (edge, descendent, ancestor)
+    Make.InitEdge (edge, descendant, ancestor)
   END Init;
 
-PROCEDURE New* (descendent, ancestor: Resource.Entity): Edge;
+PROCEDURE New* (descendant, ancestor: Resource.Entity): Edge;
 (**Creates a new instance of @otype{Edge}.  *)
   VAR
     edge: Edge;
   BEGIN
     NEW (edge);
-    Init (edge, descendent, ancestor);
+    Init (edge, descendant, ancestor);
     RETURN edge
   END New;
 
 PROCEDURE (edge: Edge) IsInvalid*(): BOOLEAN;
-(**Returns @code{TRUE} if the entity @ofield{edge.descendent} does not exist,
-   of it the ancestor's time stamp is more recent than that of the descendent.
+(**Returns @code{TRUE} if the entity @ofield{edge.descendant} does not exist,
+   of it the ancestor's time stamp is more recent than that of the descendant.
    Note: If both have the same time stamp (which usually has only a resolution
-   of one second), the descendent is assumed to be valid and result is
+   of one second), the descendant is assumed to be valid and result is
    @code{FALSE}.
 
    @precond
    The edge's ancestor is marked as ``valid''.
    @end precond  *)
   VAR
-    tsDescendent, tsAncestor: Time.TimeStamp;
+    tsDescendant, tsAncestor: Time.TimeStamp;
   BEGIN
     ASSERT (edge. ancestor(Resource.Entity). state = Make.entityValid);
-    IF edge. descendent(Resource.Entity). Exists() THEN
-      edge. descendent(Resource.Entity). GetTimeStamp (tsDescendent);
+    IF edge. descendant(Resource.Entity). Exists() THEN
+      edge. descendant(Resource.Entity). GetTimeStamp (tsDescendant);
       edge. ancestor(Resource.Entity). GetTimeStamp (tsAncestor);
-      RETURN (tsAncestor. Cmp (tsDescendent) > 0)
+      RETURN (tsAncestor. Cmp (tsDescendant) > 0)
     ELSE
       RETURN TRUE
     END

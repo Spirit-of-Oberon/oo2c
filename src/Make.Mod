@@ -100,9 +100,9 @@ TYPE
        @otype{Context}.  *)
     context-: Context;
     (**The node's context for which it has been created.  *)
-    descendentList-: Edge;
-    (**List of edges enumerating the descendents of a node.  The edges are
-       linked with @ofield{Edge.nextDescendent}.  *)
+    descendantList-: Edge;
+    (**List of edges enumerating the descendants of a node.  The edges are
+       linked with @ofield{Edge.nextDescendant}.  *)
     ancestorList-: Edge; 
     (**List of edges enumerating the ancestors of a node.  The edges are
        linked with @ofield{Edge.nextAncestor}.  *)
@@ -119,7 +119,7 @@ TYPE
 TYPE
   EdgeDesc* = RECORD
   (**An instance of @otype{Edge} represents a directed connection of two nodes
-     of the dependency graph.  The edge begins at the descendent node, and ends
+     of the dependency graph.  The edge begins at the descendant node, and ends
      with the ancestor node.  It is directed in the mathematical senses, and
      can be traversed in both directions.  It is possible to enumerate all
      edges from a decendant to its ancestor, and vice versa.
@@ -127,24 +127,24 @@ TYPE
      An edge orignating from an instance of @otype{Entity} designates a ``must
      be evaluated before'' relationship.  That is, the ancestor of the edge
      must have a known state (valid or invalid) before the state of the
-     descendent can be determined.
+     descendant can be determined.
 
      On the other hand, an edge originating at a @otype{Command} indicates the
-     the descendent of this edge is created when running the command.  A
-     command can have multiple descendents.  There are no edges between two
+     the descendant of this edge is created when running the command.  A
+     command can have multiple descendants.  There are no edges between two
      instances of @otype{Command}.  *)
-    descendent-: Node;
-    (**The (virtual) starting node of the edge.  It designates the descendent
-       of the ancestor/descendent relationship represented by the edge.  *)
+    descendant-: Node;
+    (**The (virtual) starting node of the edge.  It designates the descendant
+       of the ancestor/descendant relationship represented by the edge.  *)
     ancestor-: Node;
     (**The (virtual) ending node of the edge.  It designates the ancestor
-       of the ancestor/descendent relationship represented by the edge.  *)
-    nextDescendent-: Edge;
+       of the ancestor/descendant relationship represented by the edge.  *)
+    nextDescendant-: Edge;
     (**The next edge in the list of edges anchored in
-       @samp{Edge.ancestor.descendentList}.  *)
+       @samp{Edge.ancestor.descendantList}.  *)
     nextAncestor-: Edge;
     (**The next edge in the list of edges anchored in
-       @samp{Edge.descendent.ancestorList}.  *)
+       @samp{Edge.descendant.ancestorList}.  *)
   END;
 
 
@@ -154,8 +154,8 @@ TYPE
   (**A command creates or updates resources represented by entities.  Before a
      command is activated, the state of all its ancestor entities is known.
      Typically, all ancestors are required to be valid in this case.  When a
-     command finishes successfully, all its descendent entities must exist and
-     be in a valid state.  A failed command leaves all its descendents in an
+     command finishes successfully, all its descendant entities must exist and
+     be in a valid state.  A failed command leaves all its descendants in an
      invalid state (with the exception of those that were valid beforehand).  *)
     (NodeDesc)
     state-: CommandState;
@@ -179,7 +179,7 @@ TYPE
      command is executed, all its input entities must be in a valid state.
 
      @item
-     Output entity of a command (descendent of a command).  Upon successful
+     Output entity of a command (descendant of a command).  Upon successful
      completion, all output entities of a command are in a valid state.
      @end itemize
 
@@ -256,33 +256,33 @@ PROCEDURE MarkNodeTransitive (n: Node);
     END
   END MarkNodeTransitive;
 
-PROCEDURE InitEdge* (edge: Edge; descendent, ancestor: Node);
+PROCEDURE InitEdge* (edge: Edge; descendant, ancestor: Node);
 (**Initializes a new edge instance.s
 
    @precond
-   Both nodes are part of the same context.  Either @oparam{descendent} or
+   Both nodes are part of the same context.  Either @oparam{descendant} or
    @oparam{ancestor} is an @otype{Entity}.
    @end precond  *)
   BEGIN
-    ASSERT (descendent. context = ancestor. context);
-    ASSERT ((descendent IS Entity) OR (ancestor IS Entity));
-    edge. descendent := descendent;
+    ASSERT (descendant. context = ancestor. context);
+    ASSERT ((descendant IS Entity) OR (ancestor IS Entity));
+    edge. descendant := descendant;
     edge. ancestor := ancestor;
-    edge. nextDescendent := NIL;
+    edge. nextDescendant := NIL;
     edge. nextAncestor := NIL;
   END InitEdge;
 
-PROCEDURE NewEdge (descendent, ancestor: Node): Edge;
+PROCEDURE NewEdge (descendant, ancestor: Node): Edge;
   VAR
     edge: Edge;
   BEGIN
     NEW (edge);
-    InitEdge (edge, descendent, ancestor);
+    InitEdge (edge, descendant, ancestor);
     RETURN edge
   END NewEdge;
 
 PROCEDURE (edge: Edge) IsInvalid* (): BOOLEAN;
-(**Returns @code{TRUE} if the descendent of the given edge is invalid with
+(**Returns @code{TRUE} if the descendant of the given edge is invalid with
    respect to the edge'e ancestor.  See @oproc{*Make:Edge:TimeDep.Edge.Invalid}
    for an example.
 
@@ -298,17 +298,17 @@ PROCEDURE (edge: Edge) IsInvalid* (): BOOLEAN;
 PROCEDURE AddDependence (edge: Edge);
   BEGIN
     ASSERT (edge. ancestor. context # NIL);
-    ASSERT (edge. descendent. context # NIL);
-    ASSERT (edge. descendent. context = edge. ancestor. context);
-    edge. nextDescendent := edge. ancestor. descendentList;
-    edge. nextAncestor := edge. descendent. ancestorList;
-    edge. ancestor. descendentList := edge;
-    edge. descendent. ancestorList := edge;
+    ASSERT (edge. descendant. context # NIL);
+    ASSERT (edge. descendant. context = edge. ancestor. context);
+    edge. nextDescendant := edge. ancestor. descendantList;
+    edge. nextAncestor := edge. descendant. ancestorList;
+    edge. ancestor. descendantList := edge;
+    edge. descendant. ancestorList := edge;
     
     (* if the edge connects an ancestor of `target' with a node that
        is no ancestor yet, then mark transitively mark ancestor as
        `ancestorOfTarget' *)
-    IF edge. descendent. ancestorOfTarget &
+    IF edge. descendant. ancestorOfTarget &
        ~edge. ancestor. ancestorOfTarget THEN
       MarkNodeTransitive (edge. ancestor)
     END;
@@ -316,7 +316,7 @@ PROCEDURE AddDependence (edge: Edge);
     IF ((edge. ancestor IS Entity) &
         (edge. ancestor(Entity). state # entityValid) &
         (edge. ancestor(Entity). state # entityInvalid)) THEN
-      INC (edge. descendent. blockingEntities)
+      INC (edge. descendant. blockingEntities)
     END
   END AddDependence;
 
@@ -339,7 +339,7 @@ PROCEDURE InitNode* (n: Node; context: Context);
     Object.Init (n);
     n. nextNode := NIL;
     n. context := NIL;
-    n. descendentList := NIL;
+    n. descendantList := NIL;
     n. ancestorList := NIL;
     n. blockingEntities := 0;
     n. ancestorOfTarget := FALSE;
@@ -382,8 +382,8 @@ PROCEDURE (n: Node) HasInvalidAncestorEdge*(): BOOLEAN;
     RETURN FALSE
   END HasInvalidAncestorEdge;
 
-PROCEDURE (n: Node) IsDescendentOf* (parent: Node): BOOLEAN;
-(**Is @code{TRUE} if @oparam{n} is a direct descendent of @oparam{parent}.  *)
+PROCEDURE (n: Node) IsDescendantOf* (parent: Node): BOOLEAN;
+(**Is @code{TRUE} if @oparam{n} is a direct descendant of @oparam{parent}.  *)
   VAR
     aEdge: Edge;
   BEGIN
@@ -395,19 +395,19 @@ PROCEDURE (n: Node) IsDescendentOf* (parent: Node): BOOLEAN;
       aEdge := aEdge. nextAncestor
     END;
     RETURN FALSE
-  END IsDescendentOf;
+  END IsDescendantOf;
 
 PROCEDURE (n: Node) AddAncestor* (ancestor: Node);
-(**Adds a new edge between @oparam{ancestor} and @oparam{n} (the descendent).  *)
+(**Adds a new edge between @oparam{ancestor} and @oparam{n} (the descendant).  *)
   BEGIN
     AddDependence (NewEdge (n, ancestor))
   END AddAncestor;
 
-PROCEDURE (n: Node) AddDescendent* (descendent: Node);
-(**Adds a new edge between @oparam{n} (the ancestor) and @oparam{descendent}.  *)
+PROCEDURE (n: Node) AddDescendant* (descendant: Node);
+(**Adds a new edge between @oparam{n} (the ancestor) and @oparam{descendant}.  *)
   BEGIN
-    AddDependence (NewEdge (descendent, n))
-  END AddDescendent;
+    AddDependence (NewEdge (descendant, n))
+  END AddDescendant;
 
 PROCEDURE (n: Node) AddAncestors* (source: Node);
 (**Adds edges to all entity ancestors of @oparam{source} to @oparam{n}.
@@ -448,10 +448,10 @@ PROCEDURE (entity: Entity) SetState (newState: EntityState);
             (entity. state # entityInvalid));
     entity. state := newState;
     IF (newState = entityValid) OR (newState = entityInvalid) THEN
-      dEdge := entity. descendentList;
+      dEdge := entity. descendantList;
       WHILE (dEdge # NIL) DO
-        DEC (dEdge. descendent. blockingEntities);
-        dEdge := dEdge. nextDescendent
+        DEC (dEdge. descendant. blockingEntities);
+        dEdge := dEdge. nextDescendant
       END
     END
   END SetState;
@@ -587,8 +587,8 @@ PROCEDURE (context: Context) [ABSTRACT] GetCommand* (entity: Entity): Command;
 (**Called after node @oparam{entity} switched to the state
    @oconst{entityBuild}.  Result is a command that produces @oparam{entity} as
    one of its output entities.  The entity @oparam{entity} is automatically
-   added to the command's descendents.  If the command has additional
-   descendents, it is expected to add them to its ancestor list with its first
+   added to the command's descendants.  If the command has additional
+   descendants, it is expected to add them to its ancestor list with its first
    call to @oproc{Command.Discover}.
 
    @postcond
@@ -603,34 +603,34 @@ PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
    @oparam{stdout} and @oparam{stderr}.  Result is @code{TRUE} if all entities
    in the target set are up to date upon completion, and @code{FALSE}
    otherwise.  *)
-  PROCEDURE MarkDescendentsInvalid (node: Node);
+  PROCEDURE MarkDescendantsInvalid (node: Node);
     VAR
       dEdge: Edge;
     BEGIN
-      dEdge := node. descendentList;
+      dEdge := node. descendantList;
       WHILE (dEdge # NIL) DO
-        IF (dEdge. descendent(Entity). state # entityValid) &
-           (dEdge. descendent(Entity). state # entityInvalid) THEN
-          dEdge. descendent(Entity). SetState (entityInvalid)
+        IF (dEdge. descendant(Entity). state # entityValid) &
+           (dEdge. descendant(Entity). state # entityInvalid) THEN
+          dEdge. descendant(Entity). SetState (entityInvalid)
         END;
-        dEdge := dEdge. nextDescendent
+        dEdge := dEdge. nextDescendant
       END
-    END MarkDescendentsInvalid;
+    END MarkDescendantsInvalid;
   
-  PROCEDURE MarkDescendentsValid (node: Node);
+  PROCEDURE MarkDescendantsValid (node: Node);
     VAR
       dEdge: Edge;
     BEGIN
-      dEdge := node. descendentList;
+      dEdge := node. descendantList;
       WHILE (dEdge # NIL) DO
-        IF (dEdge. descendent(Entity). state # entityValid) THEN
-          (* descendent cannot be invalid, because it is derived from
+        IF (dEdge. descendant(Entity). state # entityValid) THEN
+          (* descendant cannot be invalid, because it is derived from
              a build command *)
-          dEdge. descendent(Entity). SetState (entityValid)
+          dEdge. descendant(Entity). SetState (entityValid)
         END;
-        dEdge := dEdge. nextDescendent
+        dEdge := dEdge. nextDescendant
       END
-    END MarkDescendentsValid;
+    END MarkDescendantsValid;
   
   PROCEDURE DiscoverNodes(): BOOLEAN;
     VAR
@@ -651,8 +651,8 @@ PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
               WriteLog (node, "adding build command");
               node. command := context. GetCommand (node);
               WriteLog (node. command, "new build command");
-              IF ~node. IsDescendentOf (node. command) THEN
-                node. command. AddDescendent (node)
+              IF ~node. IsDescendantOf (node. command) THEN
+                node. command. AddDescendant (node)
               END;
               didDiscover := TRUE
             END
@@ -683,11 +683,11 @@ PROCEDURE (context: Context) Solve* (stdout, stderr: Channel.Channel): BOOLEAN;
             IF node. Run () THEN
               WriteLog (node, "completed successfully");
               node. SetState (commandSuccessful);
-              MarkDescendentsValid (node);
+              MarkDescendantsValid (node);
             ELSE
               WriteLog (node, "completed with error");
               node. SetState (commandFailed);
-              MarkDescendentsInvalid (node)
+              MarkDescendantsInvalid (node)
             END;
             node. ProduceOutput (stdout, stderr)
           END

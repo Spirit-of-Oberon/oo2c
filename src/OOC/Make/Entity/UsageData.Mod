@@ -153,7 +153,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
         IF (ptr IS ModuleFile.Entity) THEN
           symFile := ModuleFile.GetEntity (entity. context,
                             ptr(ModuleFile.Entity). module, Rep.modSymbolFile);
-          IF ~entity. IsDescendentOf (symFile) THEN
+          IF ~entity. IsDescendantOf (symFile) THEN
             entity. AddAncestor (symFile)
           END
         END;
