@@ -124,7 +124,7 @@ PROCEDURE (c: ConstFold) VisitLen* (len: Operator.Len);
     | Operator.lenStringConst:
       length := len.array(IR.Const).value(String8.Value).value.length+1;
     | Operator.lenFixedArray:
-      c.result := NIL; RETURN;
+      length := len.array.type(Sym.Array).length;
     | Operator.lenOpenArrayParam, Operator.lenOpenArrayHeap:
       c.result := NIL; RETURN;
     END;
