@@ -38,6 +38,11 @@ MODULE ProgramArgs;
    For the given example @oproc{args.ArgNumber} would return @samp{2}.  *)
 <* ConformantMode := FALSE *>  (* for NewReader/NewWriter *)
 
+(* FIXME! Remove when array descriptors are implemented. This avoids generating
+   an index check on RT0.argv. *)
+
+<* IndexCheck := FALSE *>   
+
 IMPORT
   SYSTEM, RT0, Ch := Channel, PosixFileDescr, CharClass, Time, Msg;
 
