@@ -21,7 +21,10 @@ the module interfaces.  Similarly, the "class" stuff should go.  -->
 
 <!ATTLIST module-interface name CDATA #REQUIRED
                            export (yes|no|read-only) #REQUIRED
-                           repository-base CDATA #IMPLIED>
+                           repository-base CDATA #IMPLIED
+                           class (standard|internal|
+                                  foreign|interface) #REQUIRED
+                           call-conv (default|internal|C|Pascal) #REQUIRED>
 
 <!ELEMENT import-decl (oberon-doc?)>
 <!ATTLIST import-decl name CDATA #REQUIRED
