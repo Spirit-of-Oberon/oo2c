@@ -47,6 +47,7 @@ AC_SUBST(ooc_have_lib_gc)
 
 OOC_CHECK_LIB(xnet,socket)
 OOC_CHECK_LIB(rt,sem_init)
+OOC_CHECK_LIB(posix4,sem_init)
 if test $TARGET_OS = Win32; then
   ooc_have_lib_m=FALSE
   OOC_CHECK_LIB(mingwex,main)
