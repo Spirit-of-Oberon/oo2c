@@ -7,6 +7,11 @@
 #include "__oo2c.c"
 #include "__config.h"
 
+#if HAVE_BACKTRACE_SYMBOLS
+#  include <execinfo.h>
+#endif
+#define MAX_BACKTRACE_LEVELS 20  /* max number of backtraced procedure calls */
+
 #if defined(HAVE_LIBGC) && defined(HAVE_GC_GC_H)
 #define USE_BOEHM_GC
 #endif
@@ -18,6 +23,7 @@
 #define GC_malloc_atomic malloc
 #define GC_free free
 #endif
+
 
 static RT0__Module* modules = NULL;
 static int moduleCount = 0, sizeModules = 32;
@@ -31,6 +37,21 @@ static int moduleCount = 0, sizeModules = 32;
   _str.size = _size; _str.len = -1; _str.form = _form;
   
 
+static void write_backtrace () {
+#if HAVE_BACKTRACE_SYMBOLS
+#define BACKTRACE_OFFSET 1
+  void* farray[MAX_BACKTRACE_LEVELS+BACKTRACE_OFFSET];
+  int i, size;
+  char** names;
+  
+  size = backtrace(farray, MAX_BACKTRACE_LEVELS+BACKTRACE_OFFSET);
+  names = backtrace_symbols(farray, size);
+  for (i=0; i<size; i++) {
+    (void)fprintf(stderr, "%d: %s\n", i, names[i]);
+  }
+#endif
+}
+
 #define PREFIX "## "
 #define EXIT_CODE 127
 void NORETURN _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) {
@@ -38,6 +59,7 @@ void NORETURN _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) {
 		"Runtime error in module %s at pos " OOC_INT32_FORMAT
 		"\n" PREFIX "%s\n" PREFIX "\n",
 		mid->name, pos, msg);
+  write_backtrace();
   exit(EXIT_CODE);
 }
 
@@ -45,6 +67,7 @@ static NORETURN void _out_of_memory(int size) {
   (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
 		"Out of memory, failed to allocate %i bytes\n" PREFIX "\n",
 		size);
+  write_backtrace();
   exit(EXIT_CODE);
 }
 
@@ -52,6 +75,7 @@ static NORETURN void _negative_length(OOC_LEN len) {
   (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
 		"NewObject: Negative array length %i\n" PREFIX "\n",
 		len);
+  write_backtrace();
   exit(EXIT_CODE);
 }
 

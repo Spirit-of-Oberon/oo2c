@@ -3,6 +3,9 @@
 /* Define to 1 if you have the `atexit' function. */
 #undef HAVE_ATEXIT
 
+/* Define to 1 if you have the `backtrace_symbols' function. */
+#undef HAVE_BACKTRACE_SYMBOLS
+
 /* Define to 1 if you have the <gc/gc.h> header file. */
 #undef HAVE_GC_GC_H
 

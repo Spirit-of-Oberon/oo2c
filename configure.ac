@@ -39,6 +39,8 @@ dnl   ANSI functions:
 AC_CHECK_FUNCS(atexit raise)
 dnl   BSD functions:
 AC_CHECK_FUNCS(gettimeofday settimeofday)
+dnl   GNU extensions:
+AC_CHECK_FUNCS(backtrace_symbols)
 
 dnl checks for system services
 
