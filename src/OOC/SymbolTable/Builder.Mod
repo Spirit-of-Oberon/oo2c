@@ -79,7 +79,8 @@ PROCEDURE (b: Builder) NewConstDecl* (parent: Sym.Item; name: Sym.Name;
                                       exportMark: Sym.ExportMark;
                                       docString: Doc.Document;
                                       value: Language.Value;
-                                      type: Sym.PredefType): Sym.ConstDecl;
+                                      type: Sym.PredefType;
+                                      constExpr: Sym.TempNode): Sym.ConstDecl;
 (**Note: If the value and type of the constant are not known yet, then
    @oparam{value} and @oparam{type} are @code{NIL}.  When creating the symbol
    table from source code, then this information is not available initially and
@@ -90,7 +91,7 @@ PROCEDURE (b: Builder) NewConstDecl* (parent: Sym.Item; name: Sym.Name;
   BEGIN
     NEW (const);
     Sym.InitConstDecl (const, parent, name, visibleFrom, exportMark,
-                        docString, value, type);
+                       docString, value, type, constExpr);
     RETURN const
   END NewConstDecl;
 

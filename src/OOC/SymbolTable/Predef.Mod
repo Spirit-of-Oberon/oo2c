@@ -119,7 +119,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
       cdecl: Sym.ConstDecl;
     BEGIN
       cdecl := stb. NewConstDecl (module, GetName (name), 0, Sym.nameExported,
-                                  NIL, value, type)
+                                  NIL, value, type, NIL)
     END PredefConst;
   
   BEGIN

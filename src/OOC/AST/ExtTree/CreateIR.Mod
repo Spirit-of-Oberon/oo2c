@@ -271,16 +271,14 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       RETURN statmSeqIR
     END StatementSeq;
   
-  PROCEDURE ConstDecl(constDecl : ExtTree.ConstDecl);
+  PROCEDURE ConstDecl(constDecl: Sym.ConstDecl; constExpr : ExtTree.Node);
   VAR
     expr : IR.Expression;
-    sym : Sym.ConstDecl;
   BEGIN
-    expr := Expr(constDecl.expr(ExtTree.Node));
+    expr := Expr(constExpr);
     IF expr = IR.errorExpr THEN RETURN END;
     WITH expr : IR.Const DO
-      sym := constDecl.symTabEntry;
-      sym.SetValueType(expr.value, expr.type(Sym.PredefType));
+      constDecl.SetValueType(expr.value, expr.type(Sym.PredefType));
     ELSE
       b.ErrSym(IR.exprNotConstant, expr.sym);
     END;
@@ -327,7 +325,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     BEGIN
       declSeq := module. body. declSeq;
 
-      (* fixup the parts of the symbol table that could not be handled when
+(*      (* fixup the parts of the symbol table that could not be handled when
          creating the symbol table; as long as forward references to constant
          declarations are not allowed, we can simply resolve declarations in
          the same order as the appear in the source code *)
@@ -337,7 +335,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
 	  ConstDecl(n);
         ELSE  (* nothing to do *)
         END;
-      END;
+      END;*)
       
       (* count number of procedures, allocate array to hold IR of procs *)
       count := 0;
@@ -354,8 +352,6 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         IF IsProc (n) THEN
           procList[count] := ProcDecl (n(ExtTree.ProcDecl));
           INC (count)
-        ELSIF n IS ExtTree.ConstDecl THEN
-	  ConstDecl(n(ExtTree.ConstDecl));
 	END;
       END;
       
@@ -384,6 +380,10 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           expr := Expr (item. lengthExpr(ExtTree.Node));
           item. SetLength (expr(IR.Const). value(Integer.Value). ToLInt());
         END;
+
+      | item: Sym.ConstDecl DO
+        ConstDecl (item, item. constExpr(ExtTree.Node));
+        
       ELSE  (* ignore *)
       END;
       

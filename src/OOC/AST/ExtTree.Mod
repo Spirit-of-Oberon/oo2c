@@ -186,13 +186,6 @@ TYPE
     equal-: AST.Node;
     expr-: AST.Node;
     semicolon-: AST.Node;
-    
-    symTabEntry-: Sym.ConstDecl;
-    (**Refers to the symbol table entry corresponding to this constant
-       declaration.  This field is @code{NIL} until the symbol table is
-       constructed.  It is used to transfer information that is derived
-       from the AST by evaluating the constantion expression to the
-       declaration object.  *)
   END;
 
 TYPE
@@ -966,8 +959,6 @@ PROCEDURE (b: Builder) ConstDecl* (identDef, equal, expr, semicolon: AST.Node): 
     cd. equal := equal;
     cd. expr := expr;
     cd. semicolon := semicolon;
-
-    cd. symTabEntry := NIL;
     RETURN cd
   END ConstDecl;
 
@@ -975,11 +966,6 @@ PROCEDURE (constDecl: ConstDecl) Accept* (v: Visitor);
   BEGIN
     v. VisitConstDecl (constDecl)
   END Accept;
-
-PROCEDURE (constDecl: ConstDecl) SetSymTabEntry* (item: Sym.Item);
-  BEGIN
-    constDecl. symTabEntry := item(Sym.ConstDecl)
-  END SetSymTabEntry;
 
 
 PROCEDURE (b: Builder) TypeDecl* (identDef, equal, type, semicolon: AST.Node): Node;

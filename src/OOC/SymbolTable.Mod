@@ -494,6 +494,9 @@ TYPE
     (**This class represents constant declarations.  *)
     value-: Language.Value;
     type-: PredefType;
+    constExpr-: TempNode;
+    (**The part of the abstract syntax tree that defines the value of the
+       constant.  *)
   END;
 
 TYPE
@@ -1048,12 +1051,14 @@ PROCEDURE (import: Import) Load* (r: Object.Reader);
 PROCEDURE InitConstDecl* (constDecl: ConstDecl; parent: Item; name: Name;
                           visibleFrom: ModulePos; exportMark: ExportMark;
                           docString: Doc.Document;
-                          value: Language.Value; type: PredefType);
+                          value: Language.Value; type: PredefType;
+                          constExpr: TempNode);
   BEGIN
     InitDeclaration (constDecl, parent, name, visibleFrom, exportMark,
                      docString);
     constDecl. value := value;
     constDecl. type := type;
+    constDecl. constExpr := constExpr;
   END InitConstDecl;
 
 PROCEDURE (constDecl: ConstDecl) SetValueType* (value : Language.Value; type : PredefType);
