@@ -1,0 +1,15 @@
+str='3.40282346E+38', format=all right
+str='3.40282347E+38', format=all right
+str='-3.40282347E+38', format=all right
+str='3.40282347000E+38', format=all right
+str='0.340282347000E+39', format=all right
+str='0.0340282347000E+40', format=all right
+str='34.0282347E+37', format=all right
+str='+0.000E9999999999', format=all right
+str='3.40282348E-38', format=all right
+str='3.40282347E-39', format=all right
+str='3.40282347001E+38', format=out of range
+str='0.340282347001E+39', format=out of range
+str='0.0340282347001E+40', format=out of range
+str='34.0282347001E+37', format=out of range
+str='3.40282348E+38', format=out of range

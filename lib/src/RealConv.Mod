@@ -1,6 +1,6 @@
 (* 	$Id$	 *)
-MODULE LRealConv;
-(*  String to LONGREAL conversion functions.
+MODULE RealConv;
+(*  String to REAL conversion functions.
     Copyright (C) 2002  Michael van Acken
 
     This module is free software; you can redistribute it and/or
@@ -45,9 +45,9 @@ CONST
   (**The given string is empty.  *)
 
 CONST
-  maxValue = "17976931348623157";
-  (* signifcant digits of the maximum value 1.7976931348623157D+308 *)
-  maxExp = 308;
+  maxValue = "340282347";
+  (* signifcant digits of the maximum value 3.40282347E+38 *)
+  maxExp = 38;
   (* maxium positive exponent of a normalized number *)
   
 PROCEDURE ScanReal*(inputCh: CHAR;
@@ -62,19 +62,19 @@ PROCEDURE FormatReal* (str: ARRAY OF CHAR): ConvResults;
     RETURN Real0.FormatReal (str, maxExp, maxValue);
   END FormatReal;
  
-PROCEDURE ValueReal*(str: ARRAY OF CHAR): LONGREAL;
+PROCEDURE ValueReal*(str: ARRAY OF CHAR): REAL;
 (* result is undefined if FormatReal(str) # strAllRight *)
   VAR
     tail: C.charPtr1d;
     i: LONGINT;
-    value: LONGREAL;
+    value: REAL;
   BEGIN
     i := 0;
     WHILE CharClass.IsWhiteSpace(str[i]) DO
       (* skip our definition of whitespace *)
       INC (i);
     END;
-    value := C.strtod (SYSTEM.ADR (str[i]), tail);
+    value := C.strtof (SYSTEM.ADR (str[i]), tail);
     IF (tail[0] = 0X) THEN
       RETURN value                       (* syntax is ok *)
     ELSE
@@ -82,19 +82,19 @@ PROCEDURE ValueReal*(str: ARRAY OF CHAR): LONGREAL;
     END;
   END ValueReal;
 
-PROCEDURE LengthFloatReal*(real: LONGREAL; sigFigs: INTEGER): INTEGER;
+PROCEDURE LengthFloatReal*(real: REAL; sigFigs: INTEGER): INTEGER;
   BEGIN
     ASSERT (FALSE); RETURN -1;  (* FIXME... *)
   END LengthFloatReal;
  
-PROCEDURE LengthEngReal*(real: LONGREAL; sigFigs: INTEGER): INTEGER;
+PROCEDURE LengthEngReal*(real: REAL; sigFigs: INTEGER): INTEGER;
   BEGIN
     ASSERT (FALSE); RETURN -1;  (* FIXME... *)
   END LengthEngReal;
  
-PROCEDURE LengthFixedReal*(real: LONGREAL; place: INTEGER): INTEGER;
+PROCEDURE LengthFixedReal*(real: REAL; place: INTEGER): INTEGER;
   BEGIN
     ASSERT (FALSE); RETURN -1;  (* FIXME... *)
   END LengthFixedReal;
 
-END LRealConv.
+END RealConv.

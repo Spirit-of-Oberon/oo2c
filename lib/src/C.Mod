@@ -74,6 +74,8 @@ TYPE
    
 PROCEDURE strtod* (string: address;
                    VAR tailptr: charPtr1d): double;
+PROCEDURE strtof* (string: address;
+                   VAR tailptr: charPtr1d): float;
 PROCEDURE sprintf* (VAR s: ARRAY OF CHAR; template: ARRAY OF CHAR; ...);
                         
 END C.

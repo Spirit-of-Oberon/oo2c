@@ -39,20 +39,6 @@ CONST
   strEmpty*=Conv.strEmpty;
   (**The given string is empty.  *)
 
-CONST
-  padding*=Conv.padding;
-  (**A leading or padding character at this point in the scan---ignore it. *)
-  valid*=Conv.valid;
-  (**A valid character at this point in the scan---accept it.  *)
-  invalid*=Conv.invalid;
-  (*An invalid character at this point in the scan---reject it *)
-  terminator*=Conv.terminator;
-  (**A terminating character at this point in the scan (not part of token).  *)
-
-TYPE
-  ScanClass* = Conv.ScanClass;
-  ScanState* = Conv.ScanState;
-
 
 VAR
   W, S, SI: Conv.ScanState;

@@ -1,6 +1,6 @@
 (* 	$Id$	 *)
-MODULE LRealStr;
-(*  LONGREAL to string conversion and vice versa.
+MODULE RealStr;
+(*  REAL to string conversion and vice versa.
     Copyright (C) 2002  Michael van Acken
 
     This module is free software; you can redistribute it and/or
@@ -19,7 +19,7 @@ MODULE LRealStr;
 *)
 
 IMPORT
-  C, ConvTypes, LRealConv, Real0, Strings;
+  C, ConvTypes, RealConv, Real0, Strings;
   
 TYPE
   ConvResults* = ConvTypes.ConvResults;
@@ -37,18 +37,18 @@ CONST
   (**The given string is empty.  *)
 
 CONST
-  prec = 17;
+  prec = 9;
   
 PROCEDURE StrToReal*(str: ARRAY OF CHAR;
-                     VAR real: LONGREAL; VAR res: ConvResults);
+                     VAR real: REAL; VAR res: ConvResults);
   BEGIN
-    res := LRealConv.FormatReal (str);
+    res := RealConv.FormatReal (str);
     IF (res IN {strAllRight, strOutOfRange}) THEN
-      real := LRealConv.ValueReal (str);
+      real := RealConv.ValueReal (str);
     END;
   END StrToReal;
 
-PROCEDURE RealToFloat* (real: LONGREAL; sigFigs: INTEGER;
+PROCEDURE RealToFloat* (real: REAL; sigFigs: INTEGER;
                         VAR str: ARRAY OF CHAR);
 (**Assign to @oparam{str} the possibly truncated string corresponding to the
    value of @oparam{real} in floating-point form.  A sign is included only for
@@ -78,7 +78,7 @@ PROCEDURE RealToFloat* (real: LONGREAL; sigFigs: INTEGER;
     COPY (s, str);
   END RealToFloat;
 
-PROCEDURE RealToEng* (real: LONGREAL; sigFigs: INTEGER;
+PROCEDURE RealToEng* (real: REAL; sigFigs: INTEGER;
                       VAR str: ARRAY OF CHAR);
 (**Converts the value of @oparam{real} to floating-point string form, with
    @oparam{sigFigs} significant figures, and copies the possibly truncated
@@ -102,7 +102,7 @@ PROCEDURE RealToEng* (real: LONGREAL; sigFigs: INTEGER;
     COPY(s, str);
   END RealToEng;
 
-PROCEDURE RealToFixed* (real: LONGREAL; place: INTEGER;
+PROCEDURE RealToFixed* (real: REAL; place: INTEGER;
                         VAR str: ARRAY OF CHAR);
 (**The call @samp{RealToFixed(real,place,str)} assigns to @oparam{str} the
    possibly truncated string corresponding to the value of @oparam{real} in
@@ -122,7 +122,7 @@ PROCEDURE RealToFixed* (real: LONGREAL; place: INTEGER;
    4         3923009.0000    3.9230     0.0004       
    @end example  *)
   VAR
-    s: ARRAY 308+32 OF CHAR;
+    s: ARRAY 38+32 OF CHAR;
     sigFigs: INTEGER;
   BEGIN
     IF (place < 0) THEN sigFigs := prec; ELSE sigFigs := place END;
@@ -131,7 +131,7 @@ PROCEDURE RealToFixed* (real: LONGREAL; place: INTEGER;
     COPY (s, str);
   END RealToFixed;
 
-PROCEDURE RealToStr* (real: LONGREAL;
+PROCEDURE RealToStr* (real: REAL;
                       VAR str: ARRAY OF CHAR);
 (**If the sign and magnitude of @oparam{real} can be shown within the capacity
    of @oparam{str}, the call @samp{RealToStr(real,str)} behaves as the call
@@ -142,7 +142,7 @@ PROCEDURE RealToStr* (real: LONGREAL;
    significant digits that can be included together with the sign and exponent
    part in @oparam{str}.  *)
   VAR
-    s: ARRAY 308+32 OF CHAR;
+    s: ARRAY 38+32 OF CHAR;
     d, sigFigs: LONGINT;
   BEGIN
     (* use a trial and error approach; this may not be fast, nor unambiguous,
@@ -165,4 +165,4 @@ PROCEDURE RealToStr* (real: LONGREAL;
     COPY (s, str);
   END RealToStr;
 
-END LRealStr.
+END RealStr.

@@ -307,7 +307,108 @@
     </test>
 
     <test id="lib_LRealMath" type="run" file="LibLRealMath.Mod">
-      Imports the module <code>CharClass</code>.  This module is a
+      Imports the module <code>LRealMath</code>.  This module is a
+      wrapper around the equivalent functions from the C math library.
+      The test module checks that the names of the math functions
+      can be resolved by the linker.
+    </test>
+
+    <test id="lib_RealConv_ScanReal1" type="run"
+          file="LibRealConvScanReal1.Mod" output="LibRealConvScanReal1.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers without 
+      fractional part or exponent.
+    </test>
+     
+    <test id="lib_RealConv_ScanReal2" type="run"
+          file="LibRealConvScanReal2.Mod" output="LibRealConvScanReal2.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers with
+      fractional parts.
+    </test>
+     
+    <test id="lib_RealConv_ScanReal3" type="run"
+          file="LibRealConvScanReal3.Mod" output="LibRealConvScanReal3.Ref">
+      List the character classes of a few traces through the
+      <code>ScanReal</code> state machine for numbers with exponents.
+    </test>
+
+    <test id="lib_RealConv_FormatReal1" type="run"
+          file="LibRealConvFormatReal1.Mod"
+	  output="LibRealConvFormatReal1.Ref">
+      Use <code>FormatReal</code> to classify a number of strings.
+      Only syntax is tested, not overflow errors.
+    </test>
+
+    <test id="lib_RealConv_FormatReal2" type="run"
+          file="LibRealConvFormatReal2.Mod"
+	  output="LibRealConvFormatReal2.Ref">
+      Use <code>FormatReal</code> to classify a number of strings.
+      The tests check that out of range numbers are classified correctly.
+    </test>    
+    
+    <test id="lib_RealConv_ValueReal1" type="run"
+          file="LibRealConvValueReal1.Mod"
+	  output="LibRealConvValueReal1.Ref">
+      Use <code>ValueReal</code> to convert strings to
+      <code>REAL</code>.  Only values that can be represented as
+      normalized numbers.
+    </test>
+
+    <test id="lib_RealConv_ValueReal2" type="run"
+          file="LibRealConvValueReal2.Mod"
+	  output="LibRealConvValueReal2.Ref">
+      Use <code>ValueReal</code> to convert strings to
+      <code>REAL</code>.  Only values that can be represented as
+      denormalized numbers.
+    </test>
+
+    <test id="lib_RealStr_StrToReal1" type="run"
+          file="LibRealStrStrToReal1.Mod"
+	  output="LibRealStrStrToReal1.Ref">
+      Use <code>StrToReal</code> to convert strings to floating point
+      numbers.
+    </test>
+ 
+    <test id="lib_RealStr_RealToFloat1" type="run"
+          file="LibRealStrRealToFloat1.Mod"
+	  output="LibRealStrRealToFloat1.Ref">
+      Use <code>RealToFloat</code> to convert <code>REAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+      
+    <test id="lib_RealStr_RealToEng1" type="run"
+          file="LibRealStrRealToEng1.Mod"
+	  output="LibRealStrRealToEng1.Ref">
+      Use <code>RealToEng</code> to convert <code>REAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_RealStr_RealToFixed1" type="run"
+          file="LibRealStrRealToFixed1.Mod"
+	  output="LibRealStrRealToFixed1.Ref">
+      Use <code>RealToFixed</code> to convert <code>REAL</code>
+      values to strings.  <code>place</code> is a non-negative number.
+      Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_RealStr_RealToFixed2" type="run"
+          file="LibRealStrRealToFixed2.Mod"
+	  output="LibRealStrRealToFixed2.Ref">
+      Use <code>RealToFixed</code> to convert <code>REAL</code>
+      values to strings.  <code>place</code> is a negative number.
+      Note: "Inf" and "NaN" are not tested.
+    </test>
+
+    <test id="lib_RealStr_RealToStr1" type="run"
+          file="LibRealStrRealToStr1.Mod"
+	  output="LibRealStrRealToStr1.Ref">
+      Use <code>RealToStr</code> to convert <code>REAL</code>
+      values to strings.  Note: "Inf" and "NaN" are not tested.
+    </test>
+    
+    <test id="lib_RealMath" type="run" file="LibRealMath.Mod">
+      Imports the module <code>LRealMath</code>.  This module is a
       wrapper around the equivalent functions from the C math library.
       The test module checks that the names of the math functions
       can be resolved by the linker.
