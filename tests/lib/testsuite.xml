@@ -7,7 +7,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_LongStrings_Short1">-->
+  select ="prepare_out_module lib_LongStrings_Long1">-->
 
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -434,6 +434,12 @@
           file="LibLongStringsShort1.Mod" output="LibLongStringsShort1.Ref">
       Use <code>Short</code> to convert array of <code>LONGCHAR</code> 
       to <code>CHAR</code>.
+    </test>
+    
+    <test id="lib_LongStrings_Long1" type="run"
+          file="LibLongStringsLong1.Mod" output="LibLongStringsLong1.Ref">
+      Use <code>Long</code> to convert array of <code>CHAR</code> 
+      to <code>LONGCHAR</code>.
     </test>
     
   </testcases>
