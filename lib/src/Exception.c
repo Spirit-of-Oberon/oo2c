@@ -24,43 +24,47 @@ Exception__Exception Exception__Current() {
 }
 
 #define SIZE_BUFFER 1024
+void Exception__FatalError() {
+  RT0__Struct td = OOC_TYPE_TAG(current);
+  Object__String msg =
+    OOC_TBCALL(OOC_TBPROC_ADR(td,Exception__ExceptionDesc_GetMessage),
+	       Exception__ExceptionDesc_GetMessage)(current);
+  /* if the type name ends with "Desc", then drop the last 4 characters */
+  int len = strlen(td->name);
+  if ((len >= 4) && (strcmp(td->name + (len-4), "Desc") == 0)) {
+    len -= 4;
+  }
+  fprintf(stderr, "## Exception: %s.%.*s", td->module->name, len, td->name);
+  
+  if (msg) {
+    char buffer[SIZE_BUFFER];
+    int i, j = 4;
+    _TBP_Object__StringDesc_CharAt charAt =
+      OOC_TBPROC_ADR(OOC_TYPE_TAG(msg), Object__StringDesc_CharAt);
+      
+    strcpy(buffer, "\n## ");
+    for (i=0; i != msg->length; i++) {
+      OOC_INT32 c = OOC_TBCALL(charAt,Object__StringDesc_CharAt)(msg,i);
+      buffer[j] = (c>0xff) ? '?' : (char)c;
+      j++;
+      if (j == SIZE_BUFFER) {
+	fwrite(buffer, sizeof(char), SIZE_BUFFER, stderr);
+	j = 0;
+      }
+    }
+    fwrite(buffer, sizeof(char), j, stderr);
+  }
+  
+  (void)fprintf(stderr, "\n\n");
+  Exception__ExceptionDesc_WriteBacktrace(current);
+  exit(EXCEPTION_EXIT_CODE);
+}
+
 void Exception__ActivateContext() {
   if (contextStack) {
     longjmp(*(jmp_buf*)contextStack->jmpbuf, 1);
   } else {
-    RT0__Struct td = OOC_TYPE_TAG(current);
-    Object__String msg =
-      OOC_TBCALL(OOC_TBPROC_ADR(td,Exception__ExceptionDesc_GetMessage),
-		 Exception__ExceptionDesc_GetMessage)(current);
-    /* if the type name ends with "Desc", then drop the last 4 characters */
-    int len = strlen(td->name);
-    if ((len >= 4) && (strcmp(td->name + (len-4), "Desc") == 0)) {
-      len -= 4;
-    }
-    fprintf(stderr, "## Exception: %s.%.*s", td->module->name, len, td->name);
-    
-    if (msg) {
-      char buffer[SIZE_BUFFER];
-      int i, j = 4;
-      _TBP_Object__StringDesc_CharAt charAt =
-	OOC_TBPROC_ADR(OOC_TYPE_TAG(msg), Object__StringDesc_CharAt);
-      
-      strcpy(buffer, "\n## ");
-      for (i=0; i != msg->length; i++) {
-	OOC_INT32 c = OOC_TBCALL(charAt,Object__StringDesc_CharAt)(msg,i);
-	buffer[j] = (c>0xff) ? '?' : (char)c;
-	j++;
-	if (j == SIZE_BUFFER) {
-	  fwrite(buffer, sizeof(char), SIZE_BUFFER, stderr);
-	  j = 0;
-	}
-      }
-      fwrite(buffer, sizeof(char), j, stderr);
-    }
-    
-    (void)fprintf(stderr, "\n\n");
-    Exception__ExceptionDesc_WriteBacktrace(current);
-    exit(EXCEPTION_EXIT_CODE);
+    Exception__FatalError();
   }
 }
 

@@ -189,4 +189,9 @@ PROCEDURE (e: Exception) WriteBacktrace*;
 
 PROCEDURE (e: ParseError) INIT*(msg: STRING; offset: LONGINT);
   
+PROCEDURE FatalError*[NO_RETURN]();
+(**Write data of current exception to @var{stderr} and abort program.  It is
+   an error to call this procedure outside a @code{CATCH} block of a @code{TRY}
+   statement.  *)
+  
 END Exception.
