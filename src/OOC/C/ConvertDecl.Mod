@@ -268,7 +268,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       
     | item: Sym.ConstDecl DO
       RETURN w. NewDefine (Naming.NameOfDeclaration (item),
-                           item. value);
+                           item. value, item. type);
       
     | item: Sym.VarDecl DO
       tq := DeclWriter.tqNone;
@@ -365,7 +365,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
         d: DeclWriter.Declaration;
       BEGIN
         d := w. NewDefine (Naming.NameOfTypeBoundIndex (proc),
-                           BigInt.NewInt(proc. tbProcIndex));
+                           BigInt.NewInt(proc. tbProcIndex), NIL);
         w. AddDeclaration (d);
 
         d := w. NewDeclaration (Naming.NameOfTypeBoundSignature (proc),

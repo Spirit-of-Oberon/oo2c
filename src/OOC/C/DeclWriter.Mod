@@ -235,6 +235,7 @@ TYPE
        declaring a symbolic name for a constant.  *)
     (DeclarationDesc)
     const: Boxed.Object;
+    oocType: Sym.Type;
   END;
   
 TYPE
@@ -1213,19 +1214,21 @@ PROCEDURE (d: IncludeModule) Write (w: Writer);
 
 
 PROCEDURE InitDefine (d: Define; name: STRING;
-                      const: Boxed.Object);
+                      const: Boxed.Object; oocType: Sym.Type);
   BEGIN
     InitDeclaration (d, name, tqNone, scAuto, NIL);
     d. const := const;
+    d. oocType := oocType;
   END InitDefine;
 
 PROCEDURE (w: Writer) NewDefine* (name: STRING;
-                                  const: Boxed.Object): Define;
+                                  const: Boxed.Object;
+                                  oocType: Sym.Type): Define;
   VAR
     d: Define;
   BEGIN
     NEW (d);
-    InitDefine (d, name, const);
+    InitDefine (d, name, const, oocType);
     RETURN d
   END NewDefine;
 
@@ -1236,8 +1239,10 @@ PROCEDURE (d: Define) Write (w: Writer);
     w. WriteString (" ");
     IF (d. const = NIL) THEN
       w. WriteString (" 0");             (* NULL *)
-    ELSE
+    ELSIF (d. oocType = NIL) THEN
       w. WriteConst (d. const, Predef.GetType (Predef.stringChar));
+    ELSE
+      w. WriteConst (d. const, d. oocType);
     END;
   END Write;
 

@@ -88,7 +88,7 @@ void PosixFileDescr__ErrorContextDesc_GetTemplate(PosixFileDescr__ErrorContext c
   
   if (msg->attribList) {
     Msg__Attribute attr;
-    OOC_CHAR16 eol[2] = {(OOC_CHAR16)CharClass__eol[0], (OOC_CHAR16)0};
+    OOC_CHAR16 eol[2] = {(OOC_CHAR16)CharClass__eol, (OOC_CHAR16)0};
     OOC_CHAR16 str16[Msg__sizeAttrName+1];
     
     /*LongStrings__Append(eol, 2, templ, templ_0d);*/
@@ -586,7 +586,7 @@ void PosixFileDescr__WriterDesc_WriteByte(PosixFileDescr__Writer w, OOC_BYTE x) 
       w->bytesWritten = 1;
 
       if ((ch->buffering == PosixFileDescr__lineBuffer) &&
-          ((OOC_CHAR8)x == CharClass__eol[0])) {
+          ((OOC_CHAR8)x == CharClass__eol)) {
         res = flush_buffer(ch);
         if (res) {
           w->res = res;
@@ -604,7 +604,7 @@ static PosixFileDescr__Result flush_lines (PosixFileDescr__Channel ch,
   OOC_INT32 i;
 
   i = start;
-  while ((i < end) && (ch->buf[i] != CharClass__eol[0])) {
+  while ((i < end) && (ch->buf[i] != CharClass__eol)) {
     i++;
   }
   if (i != end) {
