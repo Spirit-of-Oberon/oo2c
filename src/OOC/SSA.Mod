@@ -354,6 +354,12 @@ PROCEDURE InitInstr (instr: Instr; opcode: Opcode.Class; subclass: Opcode.Subcla
     instr. subclass := subclass;
   END InitInstr;
 
+PROCEDURE (instr: Instr) SetSubclass* (subclass: Opcode.Subclass);
+(**Change the subclass id of @oparam{instr} to @oparam{subclass}.  *)
+  BEGIN
+    instr. subclass := subclass;
+  END SetSubclass;
+
 PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
 (**Adds @oparam{arg} to the end of the operand list of instruction
    @oparam{instr}.
