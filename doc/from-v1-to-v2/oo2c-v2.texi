@@ -20,7 +20,7 @@ END-INFO-DIR-ENTRY
 
 @titlepage
 @title New Features of oo2c v2
-@subtitle $Revision$ covering oo2c-2.0.12
+@subtitle $Revision$ covering oo2c-2.0.15
 @author Michael van Acken @email{mva@@users.sf.net}
 @end titlepage
 @page
@@ -43,6 +43,7 @@ END-INFO-DIR-ENTRY
 * Parametric Types::            
 * Initialization Functions::    
 * Example Module::              
+* Document History::            
 @end menu
 
 @node Introduction, Programs, Top, Top
@@ -364,8 +365,9 @@ There are four user visible parts to exceptions:
 
 @itemize @bullet
 @item
-The module @samp{Exception}, defining the type @samp{Exception} and
-implementing the required run-time support.
+The module @samp{Exception}, defining the types @samp{Exception},
+@samp{Checked}, and @samp{Unchecked} and implementing the required
+run-time support.
 @item
 A new statement, @code{TRY}, to transfer control to exception handlers
 if a statement sequence raises an exception.
@@ -373,8 +375,17 @@ if a statement sequence raises an exception.
 A new predefined procedure, @code{RAISE}, to raise an exception.
 @item
 An extended syntax for procedures and procedure types, to declare
-which checked exception can be raised by a procedure.
+which checked (or unchecked) exception can be raised by a procedure.
 @end itemize
+
+@menu
+* TRY and RAISE ::              
+* Checked vs Unchecked Exceptions::  
+* Implementation Notes::        
+@end menu
+
+@node TRY and RAISE , Checked vs Unchecked Exceptions, Exceptions, Exceptions
+@section @code{TRY} and @code{RAISE}
 
 Exceptions behave pretty much like their counterparts in Python or
 Java.  The statement
@@ -431,9 +442,23 @@ Within a @code{CATCH}, the optional name given in parenthesis refers to the
 current exception that triggered the @code{CATCH}.  Its type is the one
 from the @code{CATCH} clause.  The variable is read-only.
 
-An exception @var{E} must either be caught within a procedure, or the
-procedure must declare that it may pass an exception of type @var{E} up to
-its caller.  For example,
+Within the module body no exceptions can be passed up, because there
+is no caller.  As a consequence, any exception that is not caught
+explicitly is written to @var{stderr} and aborts the program.  For
+checked exceptions, the compiler emits a warning if they are not caught
+in the module body.
+
+@node Checked vs Unchecked Exceptions, Implementation Notes, TRY and RAISE , Exceptions
+@section Checked vs Unchecked Exceptions
+
+There are two kinds of exceptions, checked and unchecked.  The
+compiler enforces a stricter set of restrictions on the usage of
+checked exceptions.  During program run-time, there is no difference
+between the two.
+
+A @dfn{checked} exception @var{E} must either be caught within a
+procedure, or the procedure must declare that it may pass an exception
+of type @var{E} up to its caller.  For example,
 
 @example
 PROCEDURE P() RAISES E;
@@ -443,17 +468,36 @@ PROCEDURE P() RAISES E;
 declares that evaluation of @samp{P} may raise an exception of type @var{E},
 or an extension thereof.
 
-Within the module body no exceptions can be passed up, because there is no
-caller.  As a consequence, any exception that is not caught explicitly is
-written to @var{stderr} and aborts the program.
+An exception is of the ``checked'' variant if it is an extension of
+the class @samp{Exception.Checked}.  The base class
+@samp{Exception.Exception} is also treated as ``checked''.
 
-@emph{Implementation note}: A @code{TRY} block is mapped to C's
-@samp{setjmp()} function by @code{oo2c}.  The amount of data stored by
-this function depends on the target architecture and may differ by a
-factor of ten or more.  For example, on a @samp{ix86} processor, only
-72 bytes are stored, while on a @samp{PPC} this is 768 bytes.  As a
-consequence, the work done within a @code{TRY} should be large enough
-to amortize the costs of the @code{TRY} for all possible targets.
+On the other hand, an @dfn{unchecked} exception can be raised anytime,
+without the need to declare or catch it.  It is possible to add an
+unchecked exception to the @samp{RAISES} list of a procedure
+declaration for documentation purposes.  In this case, it is
+@emph{not} a compile time error if the caller does not catch this
+exception, and does not declare to pass it on.  An exception is
+``unchecked'' if it is an extension of the class
+@samp{Exception.Unchecked}.
+
+Please note that the record type of the exception class,
+@samp{Exception.ExceptionDesc}, is no longer exported.  This means
+that it is not possible to extend it directly.  Applications must use
+either @samp{Exception.CheckedDesc} or @samp{Exception.UncheckedDesc}
+to create specialized exception classes.
+
+
+@node Implementation Notes,  , Checked vs Unchecked Exceptions, Exceptions
+@section Implementation Notes
+
+A @code{TRY} block is mapped to C's @samp{setjmp()} function by
+@code{oo2c}.  The amount of data stored by this function depends on
+the target architecture and may differ by a factor of ten or more.
+For example, on a @samp{ix86} processor, only 72 bytes are stored,
+while on a @samp{PPC} this is 768 bytes.  As a consequence, the work
+done by the program within a @code{TRY} should be large enough to
+amortize the costs of the @code{TRY} for all possible targets.
 
 On some systems@footnote{At the time of writing, this means all
 systems running with GNU @code{libc} and implementing the
@@ -462,13 +506,6 @@ information about the top 20 activation frames on the call stack.
 This means that raising an exception can be moderately expensive as
 well.  Therefore they should only be used to report exceptional
 conditions that are rarely triggered.
-
-@emph{Possible changes}: At the time of writing, only checked
-exceptions are supported.  That is, exceptions must be explicitly
-declared or caught.  It is expected that unchecked exceptions are
-added in the future, where a procedure may raise any exception without
-announcing it to its callers.  Which of the two modes, checked or
-unchecked, becomes then the default behavior is open to discussions.
 
 
 @node Parametric Types, Initialization Functions, Exceptions, Top
@@ -650,7 +687,7 @@ in the future.
 
 
 
-@node Example Module,  , Initialization Functions, Top
+@node Example Module, Document History, Initialization Functions, Top
 @appendix Example Module
 
 The modules below exercise most of the features described above:
@@ -760,5 +797,19 @@ BEGIN
   Test;
 END TestMap.
 @end smallexample
+
+
+@node Document History,  , Example Module, Top
+@appendix Document History
+
+@table @emph
+@item 1.5
+Adds information regarding ``checked'' vs ``unchecked'' exceptions,
+which were introduced with @code{oo2c-2.0.13}.  Covers
+@code{oo2c-2.0.15}.
+
+@item 1.4
+First release.  Covers @code{oo2c-2.0.12}.
+@end table
 
 @bye
