@@ -880,6 +880,9 @@ CONST
   notExtensionOfLHS = 17;
   noMinMax = 18;
   notInteger = 19;
+  notRecord = 20;
+  notPointer = 21;
+  illegalFunctionOp = 22;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -934,6 +937,12 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "MIN/MAX is not applicable to this type"
     | notInteger:
       t := "Expression must be of integer type"
+    | notRecord:
+      t := "Expression must be of record type"
+    | notPointer:
+      t := "Expression must be of pointer type"
+    | illegalFunctionOp:
+      t := "Operator may not be applied to function result"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1077,6 +1086,16 @@ PROCEDURE ^ (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
 PROCEDURE ^ (b: Builder) NewCopyString* (sym: Symbol; source, dest, maxLength: Expression): CopyString;
 
 
+PROCEDURE (b : Builder) CheckFunctionOp(expr : Expression; op : Symbol);
+(**Check that the operator @oparam{op} is not applied to an expression
+   @oparam{expr} that is a function result. This restriction is applied to
+   Deref, Index, and Select operators. *)
+BEGIN
+  IF (expr IS PredefProc) OR (expr IS Call) THEN
+    b.ErrSym(illegalFunctionOp, op);
+  END;
+END CheckFunctionOp;
+
 (* Expression Class: Expression
    ------------------------------------------------------------------------ *)
 
@@ -1214,6 +1233,48 @@ PROCEDURE (b: Builder) NewIntConst16* (sym: Symbol): Expression;
     v := Integer.New (result);
     RETURN NewConst (sym, Predef.SmallestIntType (v), v)
   END NewIntConst16;
+
+PROCEDURE (b: Builder) AssertConst* (expr: Expression): Const;
+(**Generates an error if @oparam{expr} is not a constant.  In this case, result
+   is @ofield{b.errorExpr}.  Otherwise, @oparam{expr} is returned.  In any
+   case, the returned value is an instance of @otype{Const}.  *)
+  BEGIN
+    WITH expr: Const DO
+      RETURN expr;
+    ELSE  (* not a constant: report error *)
+      RETURN b. ErrExpr (exprNotConstant, expr. sym);
+    END;
+  END AssertConst;
+
+PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): LONGINT;
+(* Generates an error if `expr' is not an integer constant on the range
+   `start <= expr < end'.  On success, the value of the constant is returned,
+   and `start' otherwise.
+
+   Note: If `start >= end', the error message is discarded, because it would
+   be meaningless.  In this case, it is assumed that something else went wrong
+   and that the caller handles this case.  *)
+  VAR
+    v: LONGINT;
+    const: Const;
+  BEGIN
+    const := b. AssertConst (expr);
+    IF (const # b. errorExpr) THEN
+      IF b. typeRules. IsIntegerType (const. type) THEN
+        v := const. value(Integer.Value). ToInt();
+        IF (start <= v) & (v < end) THEN
+          RETURN v;
+        END;
+      END;
+      
+      IF (start < end) THEN  (* only write error if it makes sense ;-) *)
+        b. ErrSym (invalidIntegerConst, const. sym);
+        b. lastError. SetIntAttrib ("start", start);
+        b. lastError. SetIntAttrib ("end", end);
+      END;
+    END;
+    RETURN start;
+  END AssertIntConst;
 
 PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expression;
   VAR
@@ -1501,9 +1562,14 @@ PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
       design. isStaticCall := TRUE;
       RETURN design;
     ELSE
-      NEW (i);
-      InitDeref (i, sym, design);
-      RETURN i
+      b.CheckFunctionOp(design, sym);
+      IF ~(design.type IS Sym.Pointer) THEN
+        RETURN b.ErrExpr(notPointer, design.sym);
+      ELSE
+        NEW (i);
+        InitDeref (i, sym, design);
+        RETURN i
+      END
     END;
   END NewDeref;
 
@@ -1554,7 +1620,9 @@ PROCEDURE InitIndex (i: Index; sym: Symbol; array, index: Expression);
 PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expression;
   VAR
     i: Index;
+    a : Sym.Array; idx : LONGINT;
   BEGIN
+    b.CheckFunctionOp(array, sym);
     IF (array. type IS Sym.Pointer) THEN
       array := b. NewDeref (sym, array);
     END;
@@ -1565,8 +1633,19 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expres
         b. ErrSym (notInteger, index. sym);
         index := b. NewConst (index. sym, Predef.GetType (Predef.shortint),
                               Integer.New (0));
+      ELSE
+        IF index IS Const THEN
+          a := array.type (Sym.Array);
+          IF a.isOpenArray THEN
+	    (* FIXME: For open arrays, we simply need to verify that the
+	    constant index is not negative. MAX(LONGINT) should be a legal
+	    index. *)
+            idx := b.AssertIntConst(index, 0, MAX(LONGINT));
+          ELSE
+            idx := b.AssertIntConst(index, 0, a.length);
+          END
+        END
       END;
-      
       NEW (i);
       InitIndex (i, sym, array, index);
       RETURN i
@@ -2900,24 +2979,30 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
     varRef: Expression;
     decl: Sym.Declaration;
   BEGIN
+    b.CheckFunctionOp(var, sym);
     IF (var. type IS Sym.Pointer) THEN
       varRef := b. NewDeref (sym, var);
     ELSE
       varRef := var;
     END;
-    ASSERT (varRef. type IS Sym.Record);
-    decl := varRef. type(Sym.Record). ns. Identify
-        (context, b. GetName (name), FALSE);
-    (* FIXME... add error checks *)
-    IF (decl IS Sym.FieldDecl) THEN
-      RETURN b. NewSelectField (sym, varRef, decl(Sym.FieldDecl));
-    ELSIF (decl IS Sym.ProcDecl) THEN
-      RETURN b. NewSelectProc (sym, var, varRef. type(Sym.Record),
-                               decl(Sym.ProcDecl), FALSE);
+   
+    IF varRef. type IS Sym.Record THEN
+      decl := varRef. type(Sym.Record). ns. Identify
+          (context, b. GetName (name), FALSE);
+      IF decl = NIL THEN
+        RETURN b.ErrExpr(undeclaredIdent, name);
+      ELSIF (decl IS Sym.FieldDecl) THEN
+        RETURN b. NewSelectField (sym, varRef, decl(Sym.FieldDecl));
+      ELSIF (decl IS Sym.ProcDecl) THEN
+        RETURN b. NewSelectProc (sym, var, varRef. type(Sym.Record),
+                                 decl(Sym.ProcDecl), FALSE);
+      ELSE
+        ASSERT (FALSE);
+      END;
     ELSE
-      ASSERT (FALSE);
-    END;
-  END NewSelect;
+      RETURN b.ErrExpr(notRecord, varRef.sym);
+    END
+    END NewSelect;
 
 PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expression;
 (**Return an IR expression for the given symbol and left/right expressions.
@@ -3126,48 +3211,6 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       RETURN BinaryOperator();
     END;
   END NewOperator;
-
-PROCEDURE (b: Builder) AssertConst* (expr: Expression): Const;
-(**Generates an error if @oparam{expr} is not a constant.  In this case, result
-   is @ofield{b.errorExpr}.  Otherwise, @oparam{expr} is returned.  In any
-   case, the returned value is an instance of @otype{Const}.  *)
-  BEGIN
-    WITH expr: Const DO
-      RETURN expr;
-    ELSE  (* not a constant: report error *)
-      RETURN b. ErrExpr (exprNotConstant, expr. sym);
-    END;
-  END AssertConst;
-
-PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): LONGINT;
-(* Generates an error if `expr' is not an integer constant on the range
-   `start <= expr < end'.  On success, the value of the constant is returned,
-   and `start' otherwise.
-
-   Note: If `start >= end', the error message is discarded, because it would
-   be meaningless.  In this case, it is assumed that something else went wrong
-   and that the caller handles this case.  *)
-  VAR
-    v: LONGINT;
-    const: Const;
-  BEGIN
-    const := b. AssertConst (expr);
-    IF (const # b. errorExpr) THEN
-      IF b. typeRules. IsIntegerType (const. type) THEN
-        v := const. value(Integer.Value). ToInt();
-        IF (start <= v) & (v < end) THEN
-          RETURN v;
-        END;
-      END;
-      
-      IF (start < end) THEN  (* only write error if it makes sense ;-) *)
-        b. ErrSym (invalidIntegerConst, const. sym);
-        b. lastError. SetIntAttrib ("start", start);
-        b. lastError. SetIntAttrib ("end", end);
-      END;
-    END;
-    RETURN start;
-  END AssertIntConst;
 
 PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList): Expression;
   VAR
