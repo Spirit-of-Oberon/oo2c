@@ -2864,10 +2864,10 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
       RETURN b. Widen(expr, TR.MatchingStringConst(type(Sym.Array). elementType));
 
     ELSIF (expr IS Const) &
-          (type = b. stringType) &
+          TR.IsObject(type) &
           (TR.BaseCharType(expr. type) # NIL) THEN
-      (* Case 8: char const and string const < STRING *)
-      expr := b. NewTypeConv (type, expr);
+      (* Case 8: char const and string const < Object.Object *)
+      expr := b. NewTypeConv (b.stringType, expr);
       RETURN TRUE;
       
     ELSE

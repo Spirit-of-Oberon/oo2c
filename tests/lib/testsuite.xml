@@ -17,7 +17,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_BigInt1">-->
+  select ="prepare_out_module lib_rt1 lib_STRING6 lib_STRING7">-->
 
   &TestSetupWithOut;
   
@@ -539,6 +539,16 @@
           file="LibSTRING5.Mod" output="LibSTRING5.Ref">
       Character constant <code>0X</code> is converted to a string of
       length 1, holding the character <code>0X</code>.
+    </test>
+    <test id="lib_STRING6" type="run"
+          file="LibSTRING6.Mod" output="LibSTRING6.Ref">
+      Conversion of string constant to <code>STRING</code> also works
+      with <code>RETURN</code>.
+    </test>
+    <test id="lib_STRING7" type="run"
+          file="LibSTRING7.Mod" output="LibSTRING7.Ref">
+      Conversion is done if source is a string constant, and target
+      an instance of <code>Object.Object</code>.
     </test>
     
     <test id="lib_BigInt1" type="run" file="LibBigInt1.Mod">

@@ -75,6 +75,27 @@ PROCEDURE IsStringConst* (type: Sym.Type): BOOLEAN;
     END;
   END IsStringConst;
 
+PROCEDURE IsObject*(type: Sym.Type): BOOLEAN;
+(**Return @code{TRUE} if @oparam{type} is the library type
+   @otype{*Object.Object}, or an extension of this type.  *)
+  VAR
+    r: Sym.Record;
+  BEGIN
+    IF (type IS Sym.Pointer) &
+       (type(Sym.Pointer).baseType IS Sym.Record) THEN
+      r := type(Sym.Pointer).baseType(Sym.Record);
+      WHILE (r.baseType # NIL) DO
+        r := r.baseType(Sym.Record);
+      END;
+      RETURN (r.namingDecl # NIL) & 
+        (r.namingDecl.name.str^ = "ObjectDesc") & 
+        (r.namingDecl.parent IS Sym.Module) & 
+        (r.namingDecl.parent(Sym.Module).name.str^ = "Object");
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsObject;
+
 PROCEDURE IsSTRING* (type: Sym.Type): BOOLEAN;
 (**Return @code{TRUE} if @oparam{type} is the predefined type @code{STRING},
    or an extension of this type.  *)
