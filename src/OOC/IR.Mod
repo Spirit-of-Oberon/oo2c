@@ -957,8 +957,6 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
 
-
-
 (* Helper Procedures
    ------------------------------------------------------------------------ *)
 
@@ -1091,7 +1089,6 @@ PROCEDURE CheckExit (statmSeq: StatementSeq; currentLoop: LoopStatm);
     END;
   END CheckExit;
 
-PROCEDURE ^ (b : Builder) AssignType (type : Sym.Type; expr : Expression) : Expression;
 PROCEDURE ^ (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
 PROCEDURE ^ (b: Builder) NewCopyString* (sym: Symbol; source, dest, maxLength: Expression): CopyString;
 
@@ -2052,10 +2049,14 @@ PROCEDURE InitTypeConv (conv: TypeConv; sym: Symbol; type: Sym.Type;
     conv. expr := expr;
   END InitTypeConv;
 
-PROCEDURE NewTypeConv (type: Sym.Type; expr : Expression): TypeConv;
+PROCEDURE (b : Builder) NewTypeConv (type: Sym.Type; expr : Expression): TypeConv;
   VAR
     conv: TypeConv;
   BEGIN
+    IF (expr IS TypeConv) & b.typeRules.IncludesType(type, expr.type) THEN
+      (* handle transitivity *)
+      expr := expr(TypeConv).expr;
+    END;
     NEW (conv);
     InitTypeConv (conv, expr.sym, type, expr);
     RETURN conv
@@ -2068,6 +2069,38 @@ PROCEDURE (conv: TypeConv) Accept* (v: Visitor);
   BEGIN
     v. VisitTypeConv (conv)
   END Accept;
+
+PROCEDURE (b : Builder) WidenType(VAR expr : Expression; type : Sym.Type) : BOOLEAN;
+(**Determine if expression @oparam{expr} may be assigned to an object of type
+   @oparam{type}. If the assignment is allowed, the function returns
+   @ocode{TRUE} and updates @oparam{expr} accordingly.
+*)
+VAR
+  convert : BOOLEAN; valueType : Sym.Type; value : Language.Value;
+  tr : TypeRules.Rules;
+BEGIN
+  tr := b.typeRules;
+
+  IF (expr IS Const) THEN
+    valueType := expr.type; value := expr(Const).value;
+    IF tr.IsAssignableValue(value, valueType, type) THEN
+      expr := NewConst(expr.sym, valueType, value);
+      RETURN TRUE;
+    END;
+  END;
+  IF tr.IsAssignableType(expr.type, type, convert) THEN
+    IF convert THEN
+      expr := b.NewTypeConv(type, expr);
+    END;
+    RETURN TRUE;
+  END;
+  RETURN FALSE;
+END WidenType;
+
+PROCEDURE (b : Builder) Widen(VAR expr : Expression; var : Expression) : BOOLEAN;
+BEGIN
+  RETURN b. WidenType(expr, var.type);
+END Widen;
 
 (* Operator Class: TypeTag
    ------------------------------------------------------------------------ *)
@@ -2340,7 +2373,6 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
 PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
                                        variable, value: Expression): Statement;
   VAR
-    expr : Expression;
     assignment: Assignment;
   BEGIN
     IF b. typeRules. IsStringConst (value. type) THEN
@@ -2353,13 +2385,11 @@ PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
       (* FIXME... check assignment restrictions *)
       RETURN b. NewCopy (sym, value, variable);
     ELSE
-      expr := b.AssignType(variable.type, value);
-      IF expr = NIL THEN
+      IF ~b.Widen(value, variable) THEN
         b.ErrSym(incompatibleAssignment, sym);
-        expr := value;
       END;
       NEW (assignment);
-      InitAssignment (assignment, sym, variable, expr);
+      InitAssignment (assignment, sym, variable, value);
       RETURN assignment
     END;
   END NewAssignment;
@@ -3114,87 +3144,63 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 
   PROCEDURE BinaryOperator() : Expression;
   VAR 
+    leftType, rightType, real, nil : Sym.Type;
     result : Expression;
     variant : Variant;
-    leftType, rightType, nil : Sym.Type;
-    leftIsNumeric, leftIsSet, leftIsInteger, leftIsBoolean, 
-    leftIsChar, leftIsString : BOOLEAN;
-    rightIsNumeric, rightIsSet, rightIsInteger, rightIsBoolean, 
-    rightIsChar, rightIsString : BOOLEAN;
+    isNumeric, isSet, isInteger, isBoolean, isChar : BOOLEAN;
 
-    PROCEDURE WidenType();
-    (**This procedure adjusts the expressions to that they have the smallest
-       type that includes both types. A type conversion operator is used where
-       required.
-
-       PRE: types of left and right are the same, or one includes the other. 
-       POST: types of left and right are the same *)
-    BEGIN
-      IF tr.SameType(leftType, rightType) THEN
-        (* do nothing *)
-      ELSIF tr.IncludesType(leftType, rightType) THEN
-        right := NewTypeConv(leftType, right);
-      ELSIF tr.IncludesType(rightType, leftType) THEN
-        left := NewTypeConv(rightType, left);
-      ELSE
-        ASSERT(FALSE);   (* we made a mistake in BinaryOperator *)
-      END;
-    END WidenType;
+  PROCEDURE IsString(type : Sym.Type) : BOOLEAN;
+  BEGIN
+    RETURN
+      tr.IsStringConst(type) OR 
+        (type IS Sym.Array) & tr.IsCharType (type(Sym.Array). elementType);
+  END IsString;
 
   BEGIN
     nil := Predef.GetType (Predef.nil);
-    leftType := left.type; 
-    leftIsNumeric := tr.IsNumericType(leftType);
-    leftIsInteger := tr.IsIntegerType(leftType);
-    leftIsSet := tr.IsSetType(leftType);
-    leftIsBoolean := IsPredefClass(leftType, {Predef.boolean});
-    leftIsChar := tr.IsCharType(leftType);
-    leftIsString := tr.IsStringConst(leftType) OR
-        (leftType IS Sym.Array) & tr.IsCharType (leftType(Sym.Array). elementType);
-
-    rightType := right.type; 
-    rightIsNumeric := tr.IsNumericType(rightType);
-    rightIsInteger := tr.IsIntegerType(rightType);
-    rightIsSet := tr.IsSetType(rightType);
-    rightIsBoolean := IsPredefClass(rightType, {Predef.boolean});
-    rightIsChar := tr.IsCharType(rightType);
-    rightIsString := tr.IsStringConst(rightType) OR
-        (rightType IS Sym.Array) & tr.IsCharType (rightType(Sym.Array). elementType);
-
+    real := Predef.GetType (Predef.real);
     result := NIL;  (* FIXME. keep the compiler happy until ASSERTs are removed *)
+
+    IF (id = Id.in) & tr.IsIntegerType(left.type)
+      & tr.IsSetType(right.type) THEN
+      result := b.NewSetMember(sym, left, right);
+    ELSIF (id = Id.is) THEN
+      result := b.NewTypeTest(sym, left, right);
+    ELSIF b.Widen(left, right) OR b.Widen(right, left) THEN
+      leftType := left.type; rightType := right.type;
+
+      isNumeric := tr.IsNumericType(leftType);
+      isInteger := tr.IsIntegerType(leftType);
+      isSet := tr.IsSetType(leftType);
+      isBoolean := IsPredefClass(leftType, {Predef.boolean});
+      isChar := tr.IsCharType(leftType);
     
-    IF (id IN {Id.plus, Id.minus, Id.times})
-      & leftIsNumeric & rightIsNumeric THEN
+    IF (id IN {Id.plus, Id.minus, Id.times}) & isNumeric THEN
       (* ---- arithmetic operator ---- *)
       CASE id OF
       | Id.plus: variant := arithAdd;
       | Id.minus: variant := arithSub;
       | Id.times: variant := arithMul;
       END;
-      WidenType();
       result := b.NewBinaryArith(sym, variant, left, right);
 
-    ELSIF (id IN {Id.slash }) & leftIsNumeric & rightIsNumeric THEN
+    ELSIF (id IN {Id.slash }) & isNumeric THEN
       (* ---- arithmetic real division ---- *)
-      IF leftIsInteger & rightIsInteger THEN
-        left := NewTypeConv(Predef.GetType(Predef.real), left);
-        right := NewTypeConv(Predef.GetType(Predef.real), right);
-      ELSE
-        WidenType();
+      IF isInteger THEN
+        ASSERT(b.WidenType(left, real) & b.WidenType(right, real));
       END;
       result := b.NewBinaryArith(sym, arithDivR, left, right);
 
-    ELSIF (id IN {Id.div, Id.mod}) & leftIsInteger & rightIsInteger THEN
+
+    ELSIF (id IN {Id.div, Id.mod}) & isInteger THEN
       (* ---- arithmetic integer division/modulus ---- *)
       CASE id OF
       | Id.div: variant := arithDivI;
       | Id.mod: variant := arithMod;
       END;
-      WidenType();
       result := b.NewBinaryArith(sym, variant, left, right)
 
-    ELSIF (id IN {Id.plus, Id.minus, Id.times, Id.slash})
-      & leftIsSet & rightIsSet THEN
+    ELSIF (id IN {Id.plus, Id.minus, Id.times, Id.slash}) & isSet THEN
       (* ---- set operator ---- *)
       CASE id OF
       | Id.plus: variant := setUnion;
@@ -3202,40 +3208,39 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       | Id.times: variant := setIntersect;
       | Id.slash: variant := setSymDiff
       END;
-      WidenType();
       RETURN b.NewSetOp(sym, variant, left, right);
 
-    ELSIF (id IN {Id.and, Id.or}) & leftIsBoolean & rightIsBoolean THEN
+    ELSIF (id IN {Id.and, Id.or}) & isBoolean THEN
       CASE id OF
       | Id.and: variant := and;
       | Id.or: variant := or;
       END;
       result := b.NewBooleanOp(sym, variant, left, right);
 
-    ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
-      & ((leftIsNumeric & rightIsNumeric) OR (leftIsChar & rightIsChar)) THEN
-      WidenType();
-      result := b.NewCompare(sym, left, right);
+    ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq}) 
+      & IsString(left.type) & IsString(right.type) THEN
+        result := b.NewCompare(sym, left, right);
 
     ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
-      & (leftIsString & rightIsString) THEN
-      (* FIXME... handle char array., string *)
+      & (isNumeric OR isChar) THEN
       result := b.NewCompare(sym, left, right);
+
     ELSIF (id IN {Id.eql, Id.neq})
-      & ((leftIsBoolean & rightIsBoolean) OR (leftIsSet & rightIsSet) OR
-         (leftType = nil) & tr. IsNilCompatible (rightType) OR
-         (rightType = nil) & tr. IsNilCompatible (leftType) OR
-         (leftType IS Sym.Pointer) & (rightType IS Sym.Pointer) &
-            (tr.IsExtensionOf(leftType, rightType) OR 
-             tr.IsExtensionOf(rightType, leftType))) THEN
-      (* FIXME... procedure types *)
+      & (isBoolean OR isSet OR (leftType = nil) OR (right.type = nil)
+        OR (leftType IS Sym.Pointer) OR (leftType IS Sym.FormalPars)) THEN
       result := b.NewCompare(sym, left, right);
-    ELSIF (id = Id.in) & leftIsInteger & rightIsSet THEN
-      result := b.NewSetMember(sym, left, right);
-    ELSIF (id = Id.is) THEN
-      result := b.NewTypeTest(sym, left, right);
     ELSE
       result := b.ErrExpr(invalidOpType, sym);
+    END;
+
+    ELSIF IsString(left.type) & IsString(right.type) THEN 
+      IF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq}) THEN
+        result := b.NewCompare(sym, left, right);
+      ELSE
+        result := b.ErrExpr(invalidOpType, sym);
+      END;
+    ELSE
+      result := b.ErrExpr(incompatibleTypes, sym);
     END;
     RETURN result;
   END BinaryOperator;
@@ -3269,8 +3274,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
      assignment compatible to the type.  If this is not possible, an error
      is reported.  *)
     BEGIN
-      expr := b.AssignType(type, expr);
-      IF expr = NIL THEN
+      IF ~b.WidenType(expr, type) THEN
         RETURN b.ErrExpr(incompatibleActualParam, sym);
       ELSE
         RETURN expr
@@ -3289,8 +3293,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       ELSE                               (* value parameter *)
         IF b. typeRules. IsOpenArrayType (fpar. type) THEN
           IF b. typeRules. IsArrayOfChar (fpar. type) & (arg IS Const) THEN
-            arg := b. AssignType (fpar. type, arg);
-            IF (arg = NIL) THEN
+            IF ~b.WidenType(arg, fpar.type) THEN
               arg := b.ErrExpr(incompatibleActualParam, sym);
             END;
           ELSIF ~b. typeRules. IsArrayCompatible (arg. type, fpar. type) THEN
@@ -3460,7 +3463,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           delta := arguments[1];
         END;
         IF (delta. type # arguments[0]. type) THEN
-          delta := NewTypeConv (arguments[0]. type, delta);
+          delta := b.NewTypeConv (arguments[0]. type, delta);
         END;
         RETURN b. NewAssignOp (design. sym,
                                b. NewBinaryArith
@@ -3473,7 +3476,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           delta := arguments[1];
         END;
         IF (delta. type # arguments[0]. type) THEN
-          delta := NewTypeConv (arguments[0]. type, delta);
+          delta := b.NewTypeConv (arguments[0]. type, delta);
         END;
         RETURN b. NewAssignOp (design. sym,
                                b. NewBinaryArith
@@ -3530,7 +3533,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         | Predef.real    : targetType := Predef.longreal;
         | Predef.char    : targetType := Predef.longchar;
         END;
-        RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
         
       | Predef.short:
         CASE arguments[0]. type(Sym.PredefType). id OF
@@ -3540,10 +3543,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         | Predef.longreal: targetType := Predef.real;
         | Predef.longchar: targetType := Predef.char;
         END;
-        RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
         
       | Predef.chr:
-        RETURN NewTypeConv (Predef.GetType (Predef.char), arguments[0]);
+        RETURN b.NewTypeConv (Predef.GetType (Predef.char), arguments[0]);
         
       | Predef.entier:
         (* FIXME... argument must be real *)
@@ -3558,9 +3561,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         | Predef.char: targetType := Predef.integer;
         | Predef.longchar: targetType := Predef.longint;
         END;
-        RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
-
-
+        RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        
       (* SYSTEM functions: *)
       | Predef.adr:
         (* FIXME... check that argument has an address *)
@@ -3590,97 +3592,6 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       END;
     END
   END NewCall;
-
-PROCEDURE (b : Builder) AssignType (type : Sym.Type; expr : Expression) : Expression;
-(**If necessary, transform @oparam{expr} to be compatible with @oparam{type}.
-   For scalar types, this involves returning an explicit type conversion
-   operator. Where types are already compatible (eg. extension of record
-   types), the original expression is returned without modification. If the
-   type of @oparam{expr} is not compatible with @oparam{type}, the function
-   returns NIL.
-
-   To summarize, we return:
-     NIL        assignment IS NOT allowed
-     expr       assignment IS allowed without modification
-     otherwise  expression IS allowed with modification (eg. type conversion)
-*)
-VAR
-  tr : TypeRules.Rules;
-  exprType : Sym.Type;
-  result : Expression;
-  length : LONGINT;
-  str8: String8.Value;
-BEGIN
-  tr := b.typeRules;
-  exprType := expr.type;
-  result := NIL;
-
-  IF tr.SameType(type, exprType) OR tr.IsExtensionOf(type, exprType) THEN
-    (* same types *)
-    result := expr
-  ELSIF IsPredefType (type, Predef.byte) & tr.IsByteCompatible (exprType) THEN
-    result := expr;
-  ELSIF IsPredefType (exprType, Predef.nil) & tr.IsNilCompatible (type) THEN
-    result := expr;
-  ELSIF tr.IncludesType(type, exprType) THEN
-    result := NewTypeConv(type, expr)
-  ELSIF IsPredefType(exprType, Predef.charString) THEN
-    (* expression is constant string *)
-    str8 := expr(Const). value(String8.Value);
-    length := expr(Const). value(String8.Value). Length();
-    IF IsPredefType(type, Predef.char) & (length = 1) THEN
-      (* string of length 1 converts to char *)
-      result := b.NewConst(expr.sym, type, str8);
-    ELSE 
-      (* string may be assigned to ARRAY OF CHAR with sufficient length *)
-      (* FIXME: can assign a string constant to an "array of char" _only_
-         if the array belongs to a formal parameter... (same with char
-         const below) *)
-      WITH type : Sym.Array DO
-        IF b. typeRules. IsCharType (type. elementType) &
-          (type.isOpenArray OR (length < type.length)) THEN
-          IF (type. elementType(Sym.PredefType). id = Predef.longchar) THEN
-            result := b.NewConst (expr. sym,
-                                  Predef.GetType (Predef.longcharString),
-                                  String16.NewRegion8(str8. value. array^, 0, length));
-          ELSE
-            result := expr;
-          END;
-        END;
-      ELSE
-      END;
-    END;
-  ELSIF b. typeRules. IsCharType (exprType) & (expr IS Const) THEN
-    (* expression is constant character *)
-    WITH type : Sym.Array DO
-      IF b. typeRules. IncludesType (type. elementType, exprType) &
-         (type.isOpenArray OR (type.length > 1)) THEN
-        (* char may be assigned to ARRAY OF char with sufficient length *)
-        IF (type. elementType(Sym.PredefType). id = Predef.char) THEN
-          result := b.NewConst(expr.sym, Predef.GetType (Predef.charString),
-                               expr(Const). value);
-        ELSE
-          str8 := expr(Const). value(String8.Value);
-          result := b.NewConst(expr.sym,
-                               Predef.GetType (Predef.longcharString),
-                               String16.NewRegion8(str8. value. array^, 0, 1));
-        END;
-      END;
-    ELSE
-    END;
-
-  ELSIF (expr. type IS Sym.FormalPars) THEN
-    IF (type IS Sym.FormalPars) &
-       tr. FormalParamsMatch (type(Sym.FormalPars),
-                              expr. type(Sym.FormalPars), FALSE) THEN
-      result := expr;
-    END;
-
-  ELSIF (expr. type IS Sym.Pointer) & tr. IsExtensionOf (expr. type, type) THEN
-    result := expr;
-  END;
-  RETURN result;
-END AssignType;
 
 BEGIN
   NEW (irContext);

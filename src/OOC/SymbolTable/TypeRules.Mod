@@ -21,7 +21,9 @@ MODULE OOC:SymbolTable:TypeRules;
 *)
 
 IMPORT
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, 
+  Language,  
+  Language:String, Language:String8, Language:String16;
 
 TYPE
   Rules* = POINTER TO RulesDesc;
@@ -76,6 +78,19 @@ PROCEDURE (tr: Rules) IsStringConst* (type: Sym.Type): BOOLEAN;
       RETURN FALSE
     END;
   END IsStringConst;
+
+PROCEDURE (tr : Rules) StringBase* (type : Sym.Type) : Sym.Type;
+(**Return the base type for a string constant *)
+BEGIN
+  WITH type : Sym.PredefType DO
+    CASE type.id OF
+    | Predef.charString:
+      RETURN Predef.GetType(Predef.char);
+    | Predef.longcharString:
+      RETURN Predef.GetType(Predef.longchar);
+    END;
+  END;
+END StringBase;
 
 PROCEDURE (tr: Rules) IsIntegerType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is an integer type.  *)
@@ -403,6 +418,133 @@ PROCEDURE (tr: Rules) IsNilCompatible* (type: Sym.Type): BOOLEAN;
     END;
   END IsNilCompatible;
 
+PROCEDURE IsPredefType(type : Sym.Type; id : Sym.PredefId) : BOOLEAN;
+BEGIN
+  RETURN (type IS Sym.PredefType) & (type(Sym.PredefType).id = id);
+END IsPredefType;
+
+PROCEDURE (tr : Rules) IsAssignableType* (exprType, varType: Sym.Type; VAR convert : BOOLEAN) : BOOLEAN;
+(**Determine if expression @oparam{exprType} may be "assigned to" an object of
+   type @oparam{varType}. This function returns @ocode{TRUE} iff such an
+   assignment is allowed. If the asssignement requires a type conversion of
+   @oparam{exprType}, the result @oparam{convert} is set @ocode{TRUE}.
+
+   Note that this function only deals with "variable" expressions. The rules
+   for constants (eg. characters, strings) are handled by function
+   IsAssignableValue.
+*)
+BEGIN
+  convert := FALSE;
+
+  (* Case 0a: a < b if a and b are the same type. *)
+  IF tr.SameType(varType, exprType) THEN (* Case 0a *)
+    RETURN TRUE;
+
+  (* Case 0b: a < b if a and b are procedures with matching parameter lists *)
+  ELSIF (exprType IS Sym.FormalPars) THEN (* Case 0b *)
+    RETURN (varType IS Sym.FormalPars) &
+       tr. FormalParamsMatch (varType(Sym.FormalPars),
+                              exprType(Sym.FormalPars), FALSE);
+
+  (* Case 1: a < b if the type of 'b' includes the type of 'a'. This handles
+  numeric and character inclusion. *)
+  ELSIF tr.IncludesType(varType, exprType) THEN
+    convert := TRUE; RETURN TRUE;
+
+  (* Case 2: a < b if the type of 'b' is an extension of the type of 'a' *)
+  ELSIF tr.IsExtensionOf(exprType, varType) THEN
+    RETURN TRUE;
+
+  (* Case 3: NIL < pointer value *)
+  (* Case 4: NIL < procedure value *)
+  ELSIF IsPredefType (exprType, Predef.nil) & tr.IsNilCompatible (varType) THEN
+    RETURN TRUE;
+
+  (* Case 5: {SHORTINT, CHAR} < BYTE *)
+  ELSIF IsPredefType (varType, Predef.byte) & tr.IsByteCompatible (exprType) THEN
+    RETURN TRUE;
+  END;
+
+  RETURN FALSE;
+END IsAssignableType;
+
+PROCEDURE (tr : Rules) IsAssignableValue* (VAR value : Language.Value; VAR valueType : Sym.Type; varType : Sym.Type) : BOOLEAN;
+(**Determine if value @oparam{value} of type @oparam{valueType} may be
+   "assigned to" an object of type @oparam{varType}. If the assignment is
+   allowed, the function returns @ocode{TRUE}, and updates @oparam{value} and
+   @oparam{valueType} accordingly.
+
+   Note that some conversions require the value to be converted. For example,
+   CHAR to LONGCHAR requires value to be converted from String8 to String16.
+
+   In most cases the resultant type @oparam{valueType} is the same as the
+   variable type @{varType}, but this is not always true. For example,
+   charString may be assigned to ARRAY OF LONGCHAR but the resultant type is
+   longcharString.
+*)
+VAR 
+  equiv : INTEGER;
+
+  PROCEDURE ToString16(value : Language.Value) : String.Value;
+  BEGIN
+    WITH value : String8.Value DO
+      RETURN String16.NewRegion8(value.value.array^,0,value.Length());
+    | value : String16.Value DO
+      RETURN value;
+    END;
+  END ToString16;
+
+BEGIN
+  IF tr.SameType(varType, valueType) THEN
+    RETURN TRUE;
+
+  (* CHAR < LONGCHAR *)
+  ELSIF IsPredefType(varType, Predef.longchar) & IsPredefType(valueType, Predef.char) THEN
+    valueType := varType; value := ToString16(value); RETURN TRUE;
+
+  (* charString of length 1 < CHAR *)
+  ELSIF IsPredefType(varType, Predef.char) 
+    & IsPredefType(valueType, Predef.charString)
+    & (value(String.Value).Length() = 1) THEN
+    valueType := varType; RETURN TRUE;
+
+  (* {charString, longcharString} of length 1 < LONGCHAR *)
+  ELSIF IsPredefType(varType, Predef.longchar)
+   & tr.IsStringConst(valueType)
+   & (value(String.Value).Length() = 1) THEN
+    valueType := varType; RETURN TRUE;
+
+  (* CHAR < charString *)
+  ELSIF IsPredefType(varType, Predef.charString)
+    & IsPredefType(valueType, Predef.char) THEN
+    valueType := varType; RETURN TRUE;
+
+  (* {CHAR, LONGCHAR} < longCharString. charString < longCharString *)
+  ELSIF IsPredefType(varType, Predef.longcharString) THEN
+    IF tr.IsCharType(valueType) OR tr.IsStringConst(valueType) THEN
+      valueType := varType; value := ToString16(value); RETURN TRUE;
+    END;
+
+  (* a < b  if 'a' is a string constant and 'b' is an array of on the same
+     character type, either an open variant, or of sufficient length. *)
+  ELSE 
+    WITH varType : Sym.Array DO
+      IF tr.IsCharType(varType.elementType) THEN 
+        IF IsPredefType(varType.elementType, Predef.char) THEN
+	  equiv := Predef.charString;
+	ELSE
+	  equiv := Predef.longcharString;
+	END;
+        IF tr.IsAssignableValue(value, valueType, Predef.GetType(equiv)) THEN
+          RETURN varType.isOpenArray OR 
+            (value(String.Value).Length() < varType.length);
+        END
+      END
+    ELSE
+    END
+  END;
+  RETURN FALSE;
+END IsAssignableValue;
 
 PROCEDURE (tr: Rules) AllocateType* (type: Sym.Type);
 (**This maps a type @oparam{type} onto the size and alignment constrains of the
