@@ -51,11 +51,11 @@ PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
         IF (ptr IS Item.Record) & (ptr(Item.Record). baseType # NIL) THEN
           base := ptr(Item.Record). baseType;
           IF extensionDict. HasKey (base) THEN
-            obj := extensionDict. GetValue (base);
+            obj := extensionDict. Get (base);
             list := obj(ArrayList.ArrayList)
           ELSE
             list := ArrayList.New (4);
-            extensionDict. SetValue (base, list)
+            extensionDict. Set (base, list)
           END;
           list. Append (ptr)
         END;

@@ -41,7 +41,7 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
         IF (moduleDict # NIL) & (repositories # NIL) THEN
           repModule := repositories. GetModule (module^);
           IF (repModule # NIL) THEN
-            moduleDict. SetValue (repModule, NIL)
+            moduleDict. Set (repModule, NIL)
           END
         END;
         COPY (module^, str)
@@ -95,7 +95,7 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
           IF (inline. target # NIL) THEN
             IF (rewriteMap # NIL) & rewriteMap. HasKey (inline. target) THEN
               (* rewrite reference to another declaration *)
-              rewrittenTo := rewriteMap. GetValue (inline. target);
+              rewrittenTo := rewriteMap. Get (inline. target);
               AttrHref (rewrittenTo(Item.Declaration))
             ELSE
               AttrHref (inline. target(Item.Declaration))

@@ -39,6 +39,7 @@ PROCEDURE CreateVariables* (s: Pragmas.Section);
     dummy := s. Set ("LIB_HAVE_LIBTIFF", Boolean.New (TRUE));
     dummy := s. Set ("LIB_HAVE_LIBPNG", Boolean.New (TRUE));
     dummy := s. Set ("LIB_HAVE_LIBGIF", Boolean.New (TRUE));
+    dummy := s. Set ("LIB_HAVE_LIBXNET", Boolean.New (FALSE));
   END CreateVariables;
 
 END OOC:Config:Pragmas:StdPragmas.

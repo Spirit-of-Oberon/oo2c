@@ -274,9 +274,9 @@ PROCEDURE Resolve* (symTab: Item.Module;
         ELSE
           module := decl. Module();
           IF ~interfaceCache. HasKey (module) THEN
-            interfaceCache. SetValue (module, Exports.GetExports (module))
+            interfaceCache. Set (module, Exports.GetExports (module))
           END;
-          obj := interfaceCache. GetValue (module);
+          obj := interfaceCache. Get (module);
           exports := obj(Dictionary.Dictionary);
           RETURN exports. HasKey (decl)
         END

@@ -41,7 +41,7 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
         (* mark all import statements that appear in the documentation
            string *)
         FOR i := 0 TO doc. usedImportsList. len-1 DO
-          dict. SetValue (doc. usedImportsList. array[i](Item.Import), NIL)
+          dict. Set (doc. usedImportsList. array[i](Item.Import), NIL)
         END
       END
     END MarkReferencedImports;
@@ -56,7 +56,7 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
           decl: Item.Declaration;
         BEGIN
           IF ~dict. HasKey (type) THEN
-            dict. SetValue (type, NIL);
+            dict. Set (type, NIL);
             
             WITH type: Item.PredefType DO
               (* nothing *)
@@ -95,7 +95,7 @@ PROCEDURE GetExports* (module: Item.Module): Dictionary.Dictionary;
 
       BEGIN
         IF ~dict. HasKey (item) THEN
-          dict. SetValue (item, NIL);
+          dict. Set (item, NIL);
           
           MarkReferencedImports (item. docString);
           

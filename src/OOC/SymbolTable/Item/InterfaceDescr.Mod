@@ -93,7 +93,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
       IF (module # baseModule) THEN
         repModule := repositories. GetModule (baseModule. name. str^);
         IF (repModule # NIL) THEN
-          moduleDict. SetValue (repModule, NIL)
+          moduleDict. Set (repModule, NIL)
         END
       END
     END WriteReference;
@@ -139,11 +139,11 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
           WriteReference ("doc-inherited-from", baseDef);
           
           rewriteMap := Dictionary.New();
-          rewriteMap. SetValue (baseDef. formalPars. receiver,
-                                decl(Item.ProcDecl). formalPars. receiver);
+          rewriteMap. Set (baseDef. formalPars. receiver,
+                           decl(Item.ProcDecl). formalPars. receiver);
           FOR i := 0 TO LEN (baseDef. formalPars. params^)-1 DO
-            rewriteMap. SetValue (baseDef. formalPars. params[i],
-                                  decl(Item.ProcDecl). formalPars. params[i])
+            rewriteMap. Set (baseDef. formalPars. params[i],
+                             decl(Item.ProcDecl). formalPars. params[i])
           END;
           
           DocXML.WriteOberonDoc (w, baseDef. docString, module, rewriteMap,
@@ -164,7 +164,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
            XML output both within the declaration of "x" and of "y" *)
         id := decl. GetId();
         w. AttrStringLatin1 ("id", id^);
-        declDict. SetValue (decl, NIL);
+        declDict. Set (decl, NIL);
       END
     END DeclAttr;
   
@@ -220,7 +220,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
               COPY (import. externalSymTab. name. str^, href);
               repModule := repositories. GetModule (import. externalSymTab. name. str^);
               IF (repModule # NIL) THEN
-                moduleDict. SetValue (repModule, NIL)
+                moduleDict. Set (repModule, NIL)
               END
             ELSE
               COPY ("", href);
@@ -490,7 +490,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
       item: Item.Item;
     BEGIN
       IF extensionDict. HasKey (type) THEN
-        obj := extensionDict. GetValue (type);
+        obj := extensionDict. Get (type);
         list := obj(ArrayList.ArrayList);
         FOR i := 0 TO list. len-1 DO
           item := list. array[i](Item.Record). parent. nestedItems;
