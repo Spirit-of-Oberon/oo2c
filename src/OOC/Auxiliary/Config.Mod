@@ -38,6 +38,8 @@ PROCEDURE InitConfig* (config: Config; defaultConfigFile: ARRAY OF CHAR);
     (* create module containing the predefined constants, types, 
        procedures, and function *)
     NEW (config. typeRules);
+    TypeRules.Init (config. typeRules);
+    
     stb := Builder.New();
     config. predefModule := Predef.CreatePredef (stb);
     CreateNamespace.CreateNamespace (config. predefModule, NIL, NIL,
