@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+<oberon-doc>
+  <summary>Enumeration starting at 3.</summary>
+  <p pad-after='yes' no-indent='yes'>Enumeration starting at 3.</p>
+  <enumerate pad-after='yes' mode='number' start='3'>
+    <item pad-after='yes'>
+      <p pad-after='no' no-indent='yes'>Three.  Some longer paragraph, enough to fill more than a line.  Just to see how the line break is handled.  The lines should line up, shouldn't they?</p>
+    </item>
+    <item pad-after='no'>
+      <p pad-after='no' no-indent='yes'>Four.</p>
+    </item>
+  </enumerate>
+  <p pad-after='yes' no-indent='no'>THE END</p>
+</oberon-doc>

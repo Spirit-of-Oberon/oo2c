@@ -1,5 +1,5 @@
 The list of text markup includes these commands: cite (`sample'), code
-(`sample'), dfn ("sample"), emph (_sample_), file (`sample'), kbd
-(`sample'), samp (`sample'), strong (*sample*), var (SAMPLE), url
-(<sample>), asis (sample).
+(`sample'), command (`sample'), dfn ("sample"), emph (_sample_), file
+(`sample'), kbd (`sample'), samp (`sample'), strong (*sample*), var
+(SAMPLE), url (<sample>), asis (sample).
 

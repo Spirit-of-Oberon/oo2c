@@ -2,7 +2,7 @@ MODULE OOC:Doc:Input:Texinfo;
 <* Warnings := FALSE *>
 
 IMPORT
-  Ascii, CharClass, Out, Msg, Channel, TextRider, StdChannels, Strings,
+  Ascii, CharClass, IntStr, Out, Msg, Channel, TextRider, StdChannels, Strings,
   OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner, 
   OOC:Scanner:Builder:BasicList, OOC:Doc, OOC:Doc:Decoration,
   OOC:Doc:TextBuffer;
@@ -37,23 +37,24 @@ CONST
   cmdAsIs = class3Low+0;
   cmdCite = class3Low+1;
   cmdCode = class3Low+2;
-  cmdDfn = class3Low+3;
-  cmdEmph = class3Low+4;
-  cmdFile = class3Low+5;
-  cmdKbd = class3Low+6;
-  cmdSamp = class3Low+7;
-  cmdStrong = class3Low+8;
-  cmdUrl = class3Low+9;
-  cmdVar = class3Low+10;
-  cmdOberonModule = class3Low+11;
-  cmdOberonConst = class3Low+12;
-  cmdOberonField = class3Low+13;
-  cmdOberonParam = class3Low+14;
-  cmdOberonProc = class3Low+15;
-  cmdOberonType = class3Low+16;
-  cmdOberonVar = class3Low+17;
-  cmdEmail = class3Low+18;
-  cmdUref = class3Low+19;
+  cmdCommand = class3Low+3;
+  cmdDfn = class3Low+4;
+  cmdEmph = class3Low+5;
+  cmdFile = class3Low+6;
+  cmdKbd = class3Low+7;
+  cmdSamp = class3Low+8;
+  cmdStrong = class3Low+9;
+  cmdUrl = class3Low+10;
+  cmdVar = class3Low+11;
+  cmdOberonModule = class3Low+12;
+  cmdOberonConst = class3Low+13;
+  cmdOberonField = class3Low+14;
+  cmdOberonParam = class3Low+15;
+  cmdOberonProc = class3Low+16;
+  cmdOberonType = class3Low+17;
+  cmdOberonVar = class3Low+18;
+  cmdEmail = class3Low+19;
+  cmdUref = class3Low+20;
   class3High = cmdUref;
   class3Args = cmdEmail;  (* marks the beginning of multi argument commands *)
   
@@ -66,14 +67,15 @@ CONST
   class4Low = class3High+1;
   cmdExample = class4Low+0;
   cmdItemize = class4Low+1;
-  cmdNoIndent = class4Low+2;
-  cmdPreCond = class4Low+3;
-  cmdPostCond = class4Low+4;
-  cmdTable = class4Low+5;
+  cmdEnumerate = class4Low+2;
+  cmdNoIndent = class4Low+3;
+  cmdPreCond = class4Low+4;
+  cmdPostCond = class4Low+5;
+  cmdTable = class4Low+6;
   (* the following commands are only valid _inside_ certain blocks: *)
-  cmdEnd = class4Low+6;
-  cmdItem = class4Low+7;
-  cmdItemX = class4Low+8;
+  cmdEnd = class4Low+7;
+  cmdItem = class4Low+8;
+  cmdItemX = class4Low+9;
   class4High = cmdItemX;
   
   (* miscellaneous commands that do not start with @, but nevertheless
@@ -130,6 +132,7 @@ CONST
   lonelyRightBrace = 10;
   wrongNumberOfArgs = 11;
   expectedMarkupCommand = 12;
+  invalidEnumStart = 13;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -170,6 +173,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Command `@${name}' requires ${minimum} arguments"
     | expectedMarkupCommand:
       t := "Require markup command after `@table'"
+    | invalidEnumStart:
+      t := "Invalid start index for enumeration"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -572,6 +577,7 @@ PROCEDURE Parse* (sym: BasicList.Symbol; removeDecoration: BOOLEAN;
       | cmdAsIs: RETURN Doc.markAsIs
       | cmdCite: RETURN Doc.markCite
       | cmdCode: RETURN Doc.markCode
+      | cmdCommand: RETURN Doc.markCommand
       | cmdDfn: RETURN Doc.markDfn
       | cmdEmph: RETURN Doc.markEmph
       | cmdFile: RETURN Doc.markFile
@@ -901,6 +907,74 @@ PROCEDURE Parse* (sym: BasicList.Symbol; removeDecoration: BOOLEAN;
         RETURN Doc.NewItemize (AtEmptyLine(), mark, textItem, itemList. head)
       END Itemize;
     
+    PROCEDURE Enumerate (): Doc.Enumerate;
+      VAR
+        mode: SHORTINT;
+        start, whitespace: LONGINT;
+        text, itemText: Doc.BlockElement;
+        itemList: Doc.BlockList;
+        textItem: Doc.Item;
+        str2: ARRAY 2 OF CHAR;
+        padAfter: BOOLEAN;
+        pos: Doc.Position;
+        res: IntStr.ConvResults;
+      BEGIN  (* pre: token. id = cmdEnumerate *)
+        NextToken;
+        SkipWhitespace;
+        IF token. bol THEN  (* no start index, use default *)
+          mode := Doc.enumNumber; start := 1;
+        ELSE
+          mode := -1;
+          Doc.SetPosition (pos, token. pos, token. line, token. column);
+          IF (token. id = cmdText) THEN
+            whitespace := 0;
+            WHILE (token.str[whitespace] # 0X) &
+                  (token.str[whitespace] <= " ") DO
+              INC(whitespace);
+            END;
+            IntStr.StrToInt(token.str^, start, res);
+            IF (res = IntStr.strAllRight) THEN
+              mode := Doc.enumNumber;
+            ELSIF (Strings.Length(token.str^)-whitespace = 1) THEN
+              CASE token.str[whitespace] OF
+              | "a" .. "z":
+                mode := Doc.enumLowercase;
+                start := ORD(token.str[whitespace])-(ORD("a")-1);
+              | "A" .. "Z":
+                mode := Doc.enumUppercase;
+                start := ORD(token.str[whitespace])-(ORD("A")-1);
+              ELSE  (* error *)
+              END;
+            END;
+          END;
+          IF (mode < 0) THEN
+            Err (invalidEnumStart);
+            mode := Doc.enumNumber; start := 1;
+          END;
+          NextToken;
+          IF ~token. bol THEN
+            Err (junkAtEndOfLine)
+          END
+        END;
+        
+        text := ParseBlockList();
+        IF (text # NIL) THEN
+          textItem := Doc.NewItem (AtEmptyLine(), text)
+        ELSE
+          textItem := NIL
+        END;
+        
+        itemList := Doc.NewBlockList();
+        WHILE (token. id = cmdItem) DO
+          NextToken;
+          itemText := ParseBlockList();
+          itemList. Append (Doc.NewItem (AtEmptyLine(), itemText))
+        END;
+        CheckEnd (cmdEnumerate);
+        RETURN Doc.NewEnumerate (AtEmptyLine(), mode, start,
+                                 textItem, itemList. head)
+      END Enumerate;
+    
     PROCEDURE Example (): Doc.Example;
       VAR
         inlineText: Doc.InlineElement;
@@ -1006,6 +1080,9 @@ PROCEDURE Parse* (sym: BasicList.Symbol; removeDecoration: BOOLEAN;
           
         | cmdItemize:
           list. Append (Itemize())
+        
+        | cmdEnumerate:
+          list. Append (Enumerate())
         
         | cmdExample:
           list. Append (Example())
@@ -1127,6 +1204,7 @@ PROCEDURE Init;
     Register (cmdAsIs , "asis");
     Register (cmdCite, "cite");
     Register (cmdCode, "code");
+    Register (cmdCommand, "command");
     Register (cmdDfn , "dfn");
     Register (cmdEmail, "email"); RegisterArgs (cmdEmail, 1, 2);
     Register (cmdEmph, "emph");
@@ -1146,6 +1224,7 @@ PROCEDURE Init;
     Register (cmdVar, "var");
     (* class 4 *)
     Register (cmdEnd, "end");
+    Register (cmdEnumerate, "enumerate");
     Register (cmdExample, "example");
     Register (cmdItem, "item");
     Register (cmdItemize, "itemize");

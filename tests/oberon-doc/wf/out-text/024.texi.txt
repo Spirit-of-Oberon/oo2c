@@ -1,0 +1,10 @@
+Enumeration starting at 3.
+
+  3. Three.  Some longer paragraph, enough to fill more than a line.
+     Just to see how the line break is handled.  The lines should line
+     up, shouldn't they?
+
+  4. Four.
+
+   THE END
+

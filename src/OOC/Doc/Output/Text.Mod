@@ -21,7 +21,7 @@ MODULE OOC:Doc:Output:Text;
 *)
 
 IMPORT
-  OOC:Doc, OOC:Doc:TextBuffer, OOC:Doc:Decoration;
+  IntStr, Strings, OOC:Doc, OOC:Doc:TextBuffer, OOC:Doc:Decoration;
 
 
 VAR
@@ -53,8 +53,8 @@ PROCEDURE Convert* (document: Doc.Document;
           CASE mi. mark OF
           | Doc.markAsIs:
             InlineList (mi. inlineText)
-          | Doc.markCite, Doc.markCode, Doc.markFile, Doc.markKbd,
-            Doc.markSamp, 
+          | Doc.markCite, Doc.markCode, Doc.markCommand, Doc.markFile,
+            Doc.markKbd, Doc.markSamp, 
             Doc.markOberonModule, Doc.markOberonConst, Doc.markOberonProc,
             Doc.markOberonType, Doc.markOberonVar, Doc.markOberonField:
             currBlock. Append ("`");
@@ -129,7 +129,7 @@ PROCEDURE Convert* (document: Doc.Document;
     PROCEDURE Block (block: Doc.BlockElement; indent, offsetFirst: LONGINT);
       VAR
         item, firstColumn: Doc.BlockElement;
-        len: LONGINT;
+        len, index: LONGINT;
         
       PROCEDURE ItemPrefix (prefix: Doc.InlineElement): LONGINT;
         VAR
@@ -140,6 +140,27 @@ PROCEDURE Convert* (document: Doc.Document;
           currBlock. Append (" ");
           RETURN currBlock. len-start
         END ItemPrefix;
+
+      PROCEDURE EnumPrefix (mode: SHORTINT; index: LONGINT): LONGINT;
+        VAR
+          start: LONGINT;
+          str: ARRAY 16 OF CHAR;
+        BEGIN
+          start := currBlock. len;
+          CASE mode OF
+          | Doc.enumNumber:
+            IntStr.IntToStr(index, str);
+          | Doc.enumUppercase:
+            str[0] := CHR(ORD("A")-1+index);
+            str[1] := 0X;
+          | Doc.enumLowercase:
+            str[0] := CHR(ORD("a")-1+index);
+            str[1] := 0X;
+          END;
+          Strings.Append(". ", str);
+          currBlock.Append(str);
+          RETURN currBlock. len-start
+        END EnumPrefix;
 
       BEGIN
         WITH block: Doc.Paragraph DO
@@ -188,6 +209,33 @@ PROCEDURE Convert* (document: Doc.Document;
             IF item. padAfter THEN
               b. AppendEOL
             END;
+            item := item. nextBlock
+          END
+        
+        | block: Doc.Enumerate DO
+          INC (indent, 5);
+          IF (block. text # NIL) THEN
+            BlockList (block. text. blockList, indent, 0);
+            IF block. text. padAfter THEN
+              b. AppendEOL
+            END
+          END;
+          index := block.start;
+          item := block. itemList;
+          WHILE (item # NIL) DO
+            IF (offsetFirst < 0) THEN
+              b. AppendSpaces (2);
+              len := EnumPrefix (block.mode, index);
+              BlockList (item(Doc.Item). blockList, indent, offsetFirst-2)
+            ELSE
+              b. AppendSpaces (indent-3);
+              len := EnumPrefix (block.mode, index);
+              BlockList (item(Doc.Item). blockList, indent, -(indent-3))
+            END;
+            IF item. padAfter THEN
+              b. AppendEOL
+            END;
+            INC(index);
             item := item. nextBlock
           END
         

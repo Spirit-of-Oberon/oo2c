@@ -136,21 +136,22 @@ CONST
   markAsIs* = 0;
   markCite* = 1;
   markCode* = 2;
-  markDfn* = 3;
-  markEmph* = 4;
-  markFile* = 5;
-  markKbd* = 6;
-  markSamp* = 7;
-  markStrong* = 8;
-  markVar* = 9;
-  markUrl* = 10;
-  markOberonModule* = 11;
-  markOberonConst* = 12;
-  markOberonField* = 13;
-  markOberonParam* = 14;
-  markOberonProc* = 15;
-  markOberonType* = 16;
-  markOberonVar* = 17;
+  markCommand* = 3;
+  markDfn* = 4;
+  markEmph* = 5;
+  markFile* = 6;
+  markKbd* = 7;
+  markSamp* = 8;
+  markStrong* = 9;
+  markVar* = 10;
+  markUrl* = 11;
+  markOberonModule* = 12;
+  markOberonConst* = 13;
+  markOberonField* = 14;
+  markOberonParam* = 15;
+  markOberonProc* = 16;
+  markOberonType* = 17;
+  markOberonVar* = 18;
   
 TYPE
   MarkedInline* = POINTER TO MarkedInlineDesc;
@@ -232,6 +233,21 @@ TYPE
   ItemizeDesc = RECORD
     (BlockElementDesc)
     mark-: InlineElement;
+    text-: Item;
+    itemList-: BlockElement;
+  END;
+
+CONST
+  enumNumber* = 0;
+  enumLowercase* = 1;
+  enumUppercase* = 2;
+  
+TYPE
+  Enumerate* = POINTER TO EnumerateDesc;
+  EnumerateDesc = RECORD
+    (BlockElementDesc)
+    mode-: SHORTINT;
+    start-: LONGINT;
     text-: Item;
     itemList-: BlockElement;
   END;
@@ -701,6 +717,7 @@ PROCEDURE (mi: MarkedInline) NodeName* (VAR name: ARRAY OF CHAR);
     | markAsIs: COPY ("asis", name)
     | markCite: COPY ("cite", name)
     | markCode: COPY ("code", name)
+    | markCommand: COPY ("command", name)
     | markDfn: COPY ("dfn", name)
     | markEmph: COPY ("emph", name)
     | markFile: COPY ("file", name)
@@ -1216,6 +1233,72 @@ PROCEDURE (i: Itemize) Load* (r: Storable.Reader);
       i. itemList := NIL
     ELSE
       i. itemList := obj(BlockElement)
+    END;
+  END Load;
+
+
+PROCEDURE InitEnumerate (e: Enumerate; padAfter: BOOLEAN;
+                         mode: SHORTINT; start: LONGINT;
+                         text: Item; itemList: BlockElement);
+  BEGIN
+    InitBlockElement (e, padAfter);
+    e. mode := mode;
+    e. start := start;
+    e. text := text;
+    e. itemList := itemList
+  END InitEnumerate;
+
+PROCEDURE NewEnumerate* (padAfter: BOOLEAN; mode: SHORTINT; start: LONGINT;
+                         text: Item; itemList: BlockElement): Enumerate;
+  VAR
+    e: Enumerate;
+  BEGIN
+    NEW (e);
+    InitEnumerate (e, padAfter, mode, start, text, itemList);
+    RETURN e;
+  END NewEnumerate;
+
+PROCEDURE (e: Enumerate) NodeName* (VAR name : ARRAY OF CHAR);
+  BEGIN
+    COPY ("enumerate", name)
+  END NodeName;
+
+PROCEDURE (e: Enumerate) Normalize*;
+  BEGIN
+    IF (e. text # NIL) THEN
+      e. text. Normalize
+    END;
+    NormalizeBlockList (e. itemList);
+    NoPadLastElement (e. itemList)
+  END Normalize;
+
+PROCEDURE (e: Enumerate) Store* (w: Storable.Writer);
+  BEGIN
+    e. Store^ (w);
+    w. WriteSInt (e. mode);
+    w. WriteNum (e. start);
+    w. WriteObject (e. text);
+    w. WriteObject (e. itemList)
+  END Store;
+
+PROCEDURE (e: Enumerate) Load* (r: Storable.Reader);
+  VAR
+    obj: Storable.Object;
+  BEGIN
+    e. Load^ (r);
+    r. ReadSInt (e. mode);
+    r. ReadNum (e. start);
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      e. text := NIL
+    ELSE
+      e. text := obj(Item)
+    END;
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      e. itemList := NIL
+    ELSE
+      e. itemList := obj(BlockElement)
     END;
   END Load;
 

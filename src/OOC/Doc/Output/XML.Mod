@@ -194,6 +194,20 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
           END;
           BlockList (block. itemList)
 
+        | block: Doc.Enumerate DO
+          CASE block.mode OF
+          | Doc.enumNumber   : w.AttrString("mode", "number");
+          | Doc.enumLowercase: w.AttrString("mode", "lowercase");
+          | Doc.enumUppercase: w.AttrString("mode", "uppercase");
+          END;
+          w. AttrInt ("start", block. start);
+          IF (block. text # NIL) THEN
+            w. StartTag ("enumerate-text", FALSE);
+            BlockList (block. text. blockList);
+            w. EndTag
+          END;
+          BlockList (block. itemList)
+
         | block: Doc.FirstColumn DO
           InlineList (block. inlineText)
 
