@@ -429,14 +429,13 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
       END NormalizeFile;
     
     BEGIN
-      sourcePrefix := sourcePrefix.Concat(fileSet.sourceDir);
-      sourcePrefix := sourcePrefix.Concat(Object.NewLatin1("/"));
+      sourcePrefix := sourcePrefix+fileSet.sourceDir+"/";
       IF (fileSet.destDir # NIL) THEN
-        destPrefix := destPrefix.Concat(fileSet.destDir);
+        destPrefix := destPrefix+fileSet.destDir;
       ELSE
-        destPrefix := destPrefix.Concat(fileSet.sourceDir);
+        destPrefix := destPrefix+fileSet.sourceDir;
       END;
-      destPrefix := destPrefix.Concat(Object.NewLatin1("/"));
+      destPrefix := destPrefix+"/";
       
       ptr := fileSet.head;
       WHILE (ptr # NIL) DO
@@ -509,10 +508,10 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
   BEGIN
     buffer := NIL;
     norm := NewFileSet();
-    norm.sourceDir := Object.NewLatin1(".");
+    norm.sourceDir := ".";
     norm.destDir := norm.sourceDir;
 
-    NormalizeFileSet(fileSet, Object.NewLatin1(""), Object.NewLatin1(""));
+    NormalizeFileSet(fileSet, "", "");
     norm.head := MergeSort(norm.head);
     norm.tail := norm.head;
     IF (norm.tail # NIL) THEN
@@ -611,7 +610,7 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
         Err(requireNameAttribute, elem);
         RETURN NIL;
       ELSE
-        stringBuffer := Object.NewLatin1("");
+        stringBuffer := "";
         node := elem.content;
         WHILE (node # NIL) DO
           WITH node: Parser.CharData DO
@@ -958,8 +957,8 @@ PROCEDURE ProcessPackage (root: Parser.Element;
     END;
 
     pkg.fileSet := NewFileSet();
-    pkg.fileSet.sourceDir := Object.NewLatin1(".");
-    pkg.fileSet.destDir := Object.NewLatin1(".");
+    pkg.fileSet.sourceDir := ".";
+    pkg.fileSet.destDir := ".";
     WHILE AtElement(node, "file-set") DO
       pkg.fileSet.Append(ParseFileSet(node(Parser.Element)));
       node := node.nextNode;
@@ -1397,7 +1396,7 @@ PROCEDURE UpdateRepository*(targetDir: ARRAY OF CHAR): BOOLEAN;
   END UpdateRepository;
 
 BEGIN
-  stringType := Object.NewLatin1("string");
+  stringType := "string";
   NEW (packageContext);
   Msg.InitContext (packageContext, "OOC:Package");
 END OOC:Package.

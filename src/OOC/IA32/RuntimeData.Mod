@@ -31,10 +31,10 @@ PROCEDURE Write* (w: Writer.Writer; symTab: Sym.Module);
       w. Instr (".align 4");
       w. Instr (".type _mid,@object");
       w. Instr (".size _mid,4");
-      w. Label (Object.NewLatin1("_mid"));
+      w. Label ("_mid");
       w. Instr (".long .LC0");
       w. Section (".section .rodata");
-      w. Label (Object.NewLatin1(".LC0"));
+      w. Label (".LC0");
       w. StringLiteral (symTab. name. str^);
     END ModuleDescr;
   

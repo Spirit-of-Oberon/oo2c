@@ -88,8 +88,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
         obj := option.Get(libraryName);
         RETURN obj(STRING);
       ELSE
-        str := Object.NewLatin1(" -l");
-        str := str.Concat(libraryName);
+        str := " -l"+libraryName;
         option.Set(libraryName, str);
         RETURN str;
       END;
@@ -262,5 +261,5 @@ PROCEDURE Run*(module: Repository.Module;
 
 BEGIN
   empty := Object.emptyString;
-  space := Object.NewLatin1(" ");
+  space := " ";
 END OOC:Make:LinkProgramC.

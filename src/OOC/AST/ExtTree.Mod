@@ -700,7 +700,7 @@ PROCEDURE (terminal: Terminal) Accept* (v: Visitor);
     v. VisitTerminal (terminal)
   END Accept;
 
-PROCEDURE (terminal: Terminal) GetString* (stripQuotes: BOOLEAN): Object.String8;
+PROCEDURE (terminal: Terminal) GetString* (stripQuotes: BOOLEAN): STRING;
   BEGIN
     IF stripQuotes THEN
       RETURN Object.NewLatin1Region (terminal. sym. str^,

@@ -500,14 +500,14 @@ PROCEDURE WriteBlocks (c: Channel.Channel; pb: SSA.ProcBlock; root: Region;
     VAR
       id, count: LONGINT;
       ptr: SSA.Result;
-      value: Object.String;
+      value: STRING;
       instr: SSA.Instr;
       obj: Object.Object;
     BEGIN
       IF marker. HasKey (res) THEN
         obj := marker. Get (res);
         w. WriteChar ("[");
-        w. WriteStr (obj(Object.String));
+        w. WriteStr (obj(STRING));
         w. WriteChar ("]");
       END;
       

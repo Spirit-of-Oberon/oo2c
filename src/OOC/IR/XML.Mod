@@ -55,7 +55,7 @@ PROCEDURE TypeAttr (w : Writer.Writer; type : Sym.Type);
 
 PROCEDURE (v: Visitor) VisitConst* (const: IR.Const);
   VAR
-    value: Object.String;
+    value: STRING;
     chars: Object.CharsLatin1;
   BEGIN
     v. w. StartTag ("const", TRUE);

@@ -624,7 +624,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         const: SSA.Result;
         scSource, scDest: Opcode.Subclass;
         len: LONGINT;
-        fct: Object.String;
+        fct: STRING;
       BEGIN
         IF TR.IsSTRING(conv.type) THEN
           (* converting a character or string constant to STRING *)

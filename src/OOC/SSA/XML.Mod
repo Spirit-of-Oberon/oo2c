@@ -111,7 +111,7 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
     ELSE
       WITH res: SSA.Const DO
         IF (res. value = SSA.nil) THEN
-          value := Object.NewLatin1("NIL");
+          value := "NIL";
         ELSE
           value := res. value. ToString();
         END;
@@ -189,7 +189,7 @@ PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
     
     WITH instr: SSA.Const DO
       IF (instr. value = SSA.nil) THEN
-        value := Object.NewLatin1("NIL");
+        value := "NIL";
       ELSE
         value := instr. value. ToString();        
       END;

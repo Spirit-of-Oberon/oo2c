@@ -1,7 +1,7 @@
 MODULE OOC:C:IRtoC;
 
 IMPORT
-  Log, Object, Object:Boxed, 
+  Log, Object:Boxed, 
   OOC:IR,  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:DeclWriter, OOC:C:Naming, OOC:Make:TranslateToC;
 
@@ -18,7 +18,7 @@ PROCEDURE Call (w : DeclWriter.Writer; statm: IR.Call);
   VAR
     i: LONGINT;
     design: IR.Expression;
-    name: Object.String;
+    name: STRING;
   BEGIN
     design := statm. design;
     WITH design: IR.ProcedureRef DO
@@ -41,7 +41,7 @@ PROCEDURE Call (w : DeclWriter.Writer; statm: IR.Call);
 PROCEDURE WriteExpr (w: DeclWriter.Writer;
                      expr: IR.Expression);
   VAR
-    name: Object.String;
+    name: STRING;
 
   PROCEDURE SetRange(expr : IR.SetRange);
     

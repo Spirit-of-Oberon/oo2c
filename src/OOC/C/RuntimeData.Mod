@@ -22,7 +22,7 @@ MODULE OOC:C:RuntimeData;
 
 
 IMPORT
-  TextRider, Object, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
+  TextRider, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
@@ -59,7 +59,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
   
   PROCEDURE WriteDescrVariable (type: Sym.Type);
     VAR
-      name: Object.String;
+      name: STRING;
     BEGIN
       name := Naming.NameOfTypeDescriptor (type);
       
@@ -95,7 +95,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
 
   PROCEDURE WriteTDRef(type: Sym.Type);
     VAR
-      name: Object.String;
+      name: STRING;
     BEGIN
       IF type.hasDescriptor THEN
         w.WriteString("&");
@@ -146,7 +146,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     PROCEDURE BaseTypes (t: Sym.Type): LONGINT;
       VAR
         len: LONGINT;
-        name: Object.String;
+        name: STRING;
       BEGIN
         IF (t = NIL) THEN
           RETURN -1;
@@ -166,7 +166,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       VAR
         i: LONGINT;
         proc: Sym.ProcDecl;
-        name: Object.String;
+        name: STRING;
       BEGIN
         FOR i := 0 TO tbProcCount-1 DO
           IF (i # 0) THEN
@@ -271,7 +271,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       Nli;
       FOR i := 0 TO tdNames. size-1 DO
         w. WriteString ("&");
-        w. WriteStr (tdNames. array[i](Object.String));
+        w. WriteStr (tdNames. array[i](STRING));
         CNli;
       END;
       w. WriteString ("NULL } };");
@@ -280,7 +280,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
 
   PROCEDURE ModuleInit (module: Sym.Module);
     VAR
-      name0, name: Object.String;
+      name0, name: STRING;
     BEGIN
       name0 := Naming.NameOfModuleInit (module, TRUE);
       name := Naming.NameOfModuleInit (module, FALSE);

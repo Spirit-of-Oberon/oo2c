@@ -235,7 +235,7 @@ PROCEDURE Write* (cw: Channel.Writer; module: Sym.Module);
           
           WITH item: Sym.Module DO
             str := item. ClassToString();
-            IF ~str.Equals(Object.NewLatin1("standard")) THEN
+            IF ~str.Equals("standard") THEN
               chars := str(Object.String8).CharsLatin1();
               AttribString ("", "class", chars^)
             END;
@@ -244,7 +244,7 @@ PROCEDURE Write* (cw: Channel.Writer; module: Sym.Module);
               AttribString("", "library_name", chars^);
             END;
             str := item. CallConvToString();
-            IF ~str.Equals(Object.NewLatin1("default")) THEN
+            IF ~str.Equals("default") THEN
               chars := str(Object.String8).CharsLatin1();
               AttribString ("", "call_conv", chars^)
             END

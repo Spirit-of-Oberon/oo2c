@@ -158,7 +158,7 @@ TYPE
   StructDesc = RECORD
     (TypeDesc)
     isUnion: BOOLEAN;
-    name: Object.String;
+    name: STRING;
     members: ArrayList.ArrayList;        (* of Declaration *)
   END;
 
@@ -175,7 +175,7 @@ TYPE
   TypeRefDesc = RECORD
     (TypeDesc)
     class: TypeRefClass;
-    name: Object.String;
+    name: STRING;
   END;
   
 TYPE
@@ -215,7 +215,7 @@ TYPE
     typeQualifier: TypeQualifier;
     storageClass: StorageClass;
     type: Type;
-    name-: Object.String;
+    name-: STRING;
   END;
 
 TYPE
@@ -271,7 +271,7 @@ CONST
 
 PROCEDURE ^ NewBasicType (id: BasicTypeId; repr: ARRAY OF CHAR): BasicType;
 PROCEDURE ^ (d: Declaration) Write (w: Writer);
-PROCEDURE ^ (w: Writer) NewDeclaration* (name: Object.String; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
+PROCEDURE ^ (w: Writer) NewDeclaration* (name: STRING; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
 
 PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
                       baseURI: URI.HierarchicalURI);
@@ -340,7 +340,7 @@ PROCEDURE (w: Writer) WriteString* (str[NO_COPY]: ARRAY OF CHAR);
     w. textWriter. WriteString (str)
   END WriteString;
 
-PROCEDURE (w: Writer) WriteStr* (str: Object.String);
+PROCEDURE (w: Writer) WriteStr* (str: STRING);
   BEGIN
     w.textWriter.WriteStr(str);
   END WriteStr;
@@ -413,7 +413,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
     quotedDelim = '\"';
   VAR
     i, len, charValue: LONGINT;
-    s: Object.String;
+    s: STRING;
     
   PROCEDURE WriteOct (ch: LONGINT);
     BEGIN
@@ -784,14 +784,14 @@ PROCEDURE (fct: Function) WriteRight (w: Writer);
 
 (* -------- *)
 
-PROCEDURE InitStruct (struct: Struct; isUnion: BOOLEAN; name: Object.String);
+PROCEDURE InitStruct (struct: Struct; isUnion: BOOLEAN; name: STRING);
   BEGIN
     struct. isUnion := isUnion;
     struct. members := ArrayList.New (4);
     struct. name := name;
   END InitStruct;
 
-PROCEDURE (w: Writer) NewStruct* (isUnion: BOOLEAN; name: Object.String): Struct;
+PROCEDURE (w: Writer) NewStruct* (isUnion: BOOLEAN; name: STRING): Struct;
   VAR
     struct: Struct;
   BEGIN
@@ -857,13 +857,13 @@ PROCEDURE (struct: Struct) WriteRight (w: Writer);
 
 (* -------- *)
 
-PROCEDURE InitTypeRef (typeRef: TypeRef; class: TypeRefClass; name: Object.String);
+PROCEDURE InitTypeRef (typeRef: TypeRef; class: TypeRefClass; name: STRING);
   BEGIN
     typeRef. class := class;
     typeRef. name := name;
   END InitTypeRef;
 
-PROCEDURE (w: Writer) NewTypeRef* (class: TypeRefClass; name: Object.String): TypeRef;
+PROCEDURE (w: Writer) NewTypeRef* (class: TypeRefClass; name: STRING): TypeRef;
   VAR
     typeRef: TypeRef;
   BEGIN
@@ -905,7 +905,7 @@ PROCEDURE (w: Writer) WriteType* (t: Type);
 (* Declarations
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitDeclaration (d: Declaration; name: Object.String;
+PROCEDURE InitDeclaration (d: Declaration; name: STRING;
                            typeQualifier: TypeQualifier;
                            storageClass: StorageClass; type: Type);
   BEGIN
@@ -915,7 +915,7 @@ PROCEDURE InitDeclaration (d: Declaration; name: Object.String;
     d. type := type
   END InitDeclaration;
 
-PROCEDURE (w: Writer) NewDeclaration* (name: Object.String; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
+PROCEDURE (w: Writer) NewDeclaration* (name: STRING; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
   VAR
     d: Declaration;
   BEGIN
@@ -992,14 +992,14 @@ PROCEDURE (d: IncludeModule) Write (w: Writer);
   END Write;
 
 
-PROCEDURE InitDefine (d: Define; name: Object.String;
+PROCEDURE InitDefine (d: Define; name: STRING;
                       const: Boxed.Object);
   BEGIN
     InitDeclaration (d, name, tqNone, scAuto, NIL);
     d. const := const;
   END InitDefine;
 
-PROCEDURE (w: Writer) NewDefine* (name: Object.String;
+PROCEDURE (w: Writer) NewDefine* (name: STRING;
                                   const: Boxed.Object): Define;
   VAR
     d: Define;
@@ -1044,7 +1044,7 @@ PROCEDURE Test;
     VAR
       result: ARRAY 4*1024 OF CHAR;
     BEGIN
-      w. WriteDeclaration (w. NewDeclaration (Object.NewLatin1("x"), tqNone, scAuto, t));
+      w. WriteDeclaration (w. NewDeclaration ("x", tqNone, scAuto, t));
       w. WriteLn;
       
       r. ReadLine (result);

@@ -34,7 +34,7 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
     fct: DeclWriter.Function;
     struct: DeclWriter.Struct;
     trefClass: DeclWriter.TypeRefClass;
-    name: Object.String;
+    name: STRING;
     baseType, srcCodeBaseType: Sym.Type;
     dummy: LONGINT;
 
@@ -219,7 +219,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
   VAR
     sc: DeclWriter.StorageClass;
     tq: DeclWriter.TypeQualifier;
-    name: Object.String;
+    name: STRING;
     ctype: DeclWriter.Type;
     fpars: DeclWriter.Type;
   BEGIN

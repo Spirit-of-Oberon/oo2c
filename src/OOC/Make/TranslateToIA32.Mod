@@ -115,7 +115,7 @@ PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
     translator. SetWriter (w, symTab);
 
     w. Section (".text");
-    w. Label (Object.NewLatin1(".Ltext0"));
+    w. Label (".Ltext0");
     RuntimeData.Write (w, symTab);
                        
     w. Section (".text");
@@ -130,7 +130,7 @@ PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
 
     w. WriteStringData();
     
-    w. Label (Object.NewLatin1(".Letext"));
+    w. Label (".Letext");
     w. Directive (".ident"+Ascii.ht+'"OOC: 0.1"');
   END WriteCodeFile;
 

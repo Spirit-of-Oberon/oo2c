@@ -1509,7 +1509,7 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
 PROCEDURE (const: Const) ToString*(): STRING;
   BEGIN
     IF (const. value = NIL) THEN
-      RETURN Object.NewLatin1("NIL");
+      RETURN "NIL";
     ELSE
       RETURN const. value. ToString();
     END;
@@ -1662,7 +1662,7 @@ PROCEDURE (b: Builder) AssertChar(expr: Expression): Expression;
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notCharacter, expr.sym);
       END;
-      v := Boxed.NewString(Object.NewLatin1("a"));
+      v := Boxed.NewString("a");
       RETURN NewConst(expr.sym, Predef.GetType(Predef.char), v);
     END;
     RETURN expr;

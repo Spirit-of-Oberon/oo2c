@@ -202,7 +202,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     callConv: Sym.CallConv;
     mf: ExtTree.ModuleFlags;
     uri: URI.URI;
-    str, prefixOption, suffixOption: Object.String8;
+    str, prefixOption, suffixOption: STRING;
     res: Msg.Msg;
     i, j: LONGINT;
     n: AST.Node;
@@ -237,7 +237,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
         n := mf. linkSections. n[i];
         WITH n: ExtTree.LinkFileFlag DO
           str := n. fileName. GetString (TRUE);
-          chars := str.CharsLatin1();
+          chars := str(Object.String8).CharsLatin1();
           uri := ParserURI.NewURI (chars^, v. baseURI, res);
           ASSERT (res = NIL);
           ASSERT (uri # NIL);

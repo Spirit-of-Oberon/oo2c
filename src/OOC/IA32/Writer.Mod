@@ -65,12 +65,12 @@ PROCEDURE (w: Writer) Write* (str: ARRAY OF CHAR);
     w. textWriter. WriteString (str);
   END Write;
 
-PROCEDURE (w: Writer) WriteStr* (str: Object.String);
+PROCEDURE (w: Writer) WriteStr* (str: STRING);
   BEGIN
     w. textWriter. WriteStr (str);
   END WriteStr;
 
-PROCEDURE (w: Writer) Label* (label: Object.String);
+PROCEDURE (w: Writer) Label* (label: STRING);
   BEGIN
     w. textWriter. WriteStr (label);
     w. textWriter. WriteChar (":");
@@ -106,15 +106,15 @@ PROCEDURE (w: Writer) StringLiteral* (str: ARRAY OF CHAR);
     w. textWriter. WriteLn;
   END StringLiteral;
 
-PROCEDURE (w: Writer) GetStringLabel* (value: Boxed.String): Object.String8;
+PROCEDURE (w: Writer) GetStringLabel* (value: Boxed.String): STRING;
   VAR
     obj: Object.Object;
-    s: Object.String8;
+    s: STRING;
     label: ARRAY 32 OF CHAR;
   BEGIN
     IF w. stringData. HasKey (value) THEN
       obj := w. stringData. Get (value);
-      RETURN obj(Object.String8);
+      RETURN obj(STRING);
     ELSE
       IntStr.IntToStr (w. stringDataCount, label);
       INC (w. stringDataCount);
@@ -159,7 +159,7 @@ PROCEDURE (w: Writer) WriteStringData* ();
     strings := w. stringData. Keys();
     FOR i := 0 TO LEN (strings^)-1 DO
       label := w. stringData. Get (strings[i]);
-      w. Label (label(Object.String8));
+      w. Label (label(STRING));
       chars := strings[i](Boxed.String).value(Object.String8).CharsLatin1();
       w. StringLiteral (chars^);
     END;

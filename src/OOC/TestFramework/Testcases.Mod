@@ -65,7 +65,7 @@ TYPE
     file-: URI.URI;
     lang-: Element.String;
     output-: URI.URI;
-    moduleName: Object.String8;
+    moduleName: STRING;
   END;
 
 TYPE
@@ -310,7 +310,7 @@ PROCEDURE (test: Test) MissingChild* (): Element.String;
     RETURN NIL
   END MissingChild;
 
-PROCEDURE (test: Test) ModuleName* (): Object.String8;
+PROCEDURE (test: Test) ModuleName* (): STRING;
   VAR
     path: ARRAY 1024 OF CHAR;
     i: INTEGER;

@@ -17,9 +17,9 @@ CONST
 VAR
   keywords: Dictionary.Dictionary;
   (* maps C/C++ keywords to a safer counterpart *)
-  rwPrefix: Object.String;
+  rwPrefix: STRING;
   (* prefix string used to mangle reserved names *)
-  tdPrefix: Object.String;
+  tdPrefix: STRING;
   (* prefix of the type descriptor namespace *)
 
 PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): STRING;
@@ -29,8 +29,8 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): STRING;
     i: LONGINT;
     m: Sym.Item;
     relativeName: BOOLEAN;
-    name: Object.String8;
-    string: Object.String;
+    name: STRING;
+    string: STRING;
     obj: Object.Object;
 
   PROCEDURE IsReservedName (VAR str: ARRAY OF CHAR): BOOLEAN;
@@ -168,7 +168,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): STRING;
    @samp{type. namingDecl # NIL}
    @end precond *)
   VAR
-    string: Object.String;
+    string: STRING;
     str, str2: ARRAY 32 OF CHAR;
   BEGIN
     WITH type: Sym.PredefType DO
@@ -220,7 +220,7 @@ PROCEDURE NameOfTypeBoundSignature* (proc: Sym.ProcDecl): STRING;
 PROCEDURE Init ();
   PROCEDURE RW (str: ARRAY OF CHAR);
     VAR
-      name: Object.String;
+      name: STRING;
     BEGIN
       name := Object.NewLatin1(str);
       keywords. Set (name, rwPrefix. Concat (name));
@@ -228,8 +228,8 @@ PROCEDURE Init ();
   
   BEGIN
     keywords := Dictionary.New();
-    rwPrefix := Object.NewLatin1("_");
-    tdPrefix := Object.NewLatin1("_td_");
+    rwPrefix := "_";
+    tdPrefix := "_td_";
     
     (* reserved words of ANSI-C *)
     RW ("auto"); RW ("break"); RW ("case"); RW ("char"); RW ("const"); 
