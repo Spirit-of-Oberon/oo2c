@@ -60,8 +60,7 @@ TYPE
 
   (*
      FIXME... get rid of empty partitions as soon as possible;
-     see how the O(n log n) improvement can
-     be incorporated; speed up the DependenceData predicates
+     speed up the DependenceData predicates
      *)
   
 PROCEDURE InitPartition (p: Partition);
