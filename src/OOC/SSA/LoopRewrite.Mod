@@ -567,6 +567,9 @@ PROCEDURE FindInductiveCycles(loopStart: SSA.Instr);
             opnd := opnd.nextOpnd;
           END;
 
+        | Opcode.typeConv:
+          onCycle := SearchCycle(res.instr.opndList.arg, head, ic);
+          
         | Opcode.loopStart:
           (* we reached the beginning of the loop, but did not end up with
              our current head *)
