@@ -300,8 +300,10 @@ PROCEDURE (s: Section) GetPackage* (pkgName: ARRAY OF CHAR;
     (* module not found in cache: traverse repositories *)
     rep := s. topLevelRep;
     WHILE (rep # NIL) DO
-      IF (rep.packageInfo # NIL) & (rep.packageInfo.name.array^ = pkgName) THEN
-        RETURN rep.packageInfo;
+      IF (rep.packageInfo # NIL) &
+         (rep.packageInfo IS Package.Package) &
+         (rep.packageInfo(Package.Package).name.array^ = pkgName) THEN
+        RETURN rep.packageInfo(Package.Package);
       END;
       rep := rep.baseRep;
     END;
@@ -367,31 +369,36 @@ PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
 PROCEDURE (s: Section) ParseMetaData*(options, pragmas: Options.Section): BOOLEAN;
   VAR
     errList: Error.List;
-
-  PROCEDURE Parse(rep: Repository.Repository);
+    dummy: BOOLEAN;
+    
+  PROCEDURE Parse(rep: Repository.Repository): BOOLEAN;
     VAR
       uri: URI.URI;
-      pkg: Package.Package;
+      pkg: Package.PkgInfo;
       fileName: Repository.URIBuffer;
     BEGIN
       IF (rep # NIL) THEN
-        Parse(rep.baseRep);
-        
-        uri := rep.GetResource("", packageData);
-        IF (uri # NIL) THEN
-          uri(File.URI).GetPath(fileName);
-          pkg := Package.ParseFile(fileName, errList);
-          rep.SetPackageInfo(pkg);
-          IF (pkg # NIL) THEN
-            pkg.MergeConfig(options, pragmas);
+        IF Parse(rep.baseRep) THEN
+          uri := rep.GetResource("", packageData);
+          IF (uri # NIL) THEN
+            uri(File.URI).GetPath(fileName);
+            pkg := Package.ParseFile(fileName, FALSE, errList);
+            rep.SetPackageInfo(pkg);
+            IF (pkg # NIL) THEN
+              pkg.MergeConfig(options, pragmas);
+            END;
+            IF (errList.msgCount # 0) THEN
+              RETURN FALSE;
+            END;
           END;
         END;
       END;
+      RETURN TRUE;
     END Parse;
   
   BEGIN
     errList := Error.NewList("");
-    Parse(s.topLevelRep);
+    dummy := Parse(s.topLevelRep);
     errList.Write(StdChannels.stdout);
     RETURN errList.NoErrors();
   END ParseMetaData;
