@@ -31,8 +31,8 @@ PROCEDURE NewConfig;
                  "<options><set name='command'>1</set></options>");
     Config.AddCmdLine ("--make-lib",
                        "<options><set name='command'>2</set>"+
-                       "<set name='library-name'>$1</set>"+
-                       "<set name='library-version'>$2</set></options>");
+                       "<set name='libraryName'>$1</set>"+
+                       "<set name='libraryVersion'>$2</set></options>");
     Config.AddCmdLine ("--library",
                  "<options><set name='library'>TRUE</set></options>");
     Config.AddCmdLine ("--use-stderr",
