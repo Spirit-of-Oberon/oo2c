@@ -131,15 +131,17 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
       FOR i := 0 TO LEN(makeRules.imports^)-1 DO
         m := makeRules.imports[i];
 
-        IF installObjects & ~m.ifData.NoObjectFile() THEN
-          m.origin.GetLocalPath(m, Rep.modObjectFile, path);
+        IF (m.origin = module.origin) THEN
+          IF installObjects & ~m.ifData.NoObjectFile() THEN
+            m.origin.GetLocalPath(m, Rep.modObjectFile, path);
+            pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+          END;
+          
+          m.origin.GetLocalPath(m, Rep.modSymbolFile, path);
+          pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+          m.origin.GetLocalPath(m, Rep.modHeaderFileC, path);
           pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
         END;
-        
-        m.origin.GetLocalPath(m, Rep.modSymbolFile, path);
-        pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
-        m.origin.GetLocalPath(m, Rep.modHeaderFileC, path);
-        pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
       END;
 
       IF installObjects THEN
@@ -273,10 +275,12 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
         WHILE ok & (i #  LEN(makeRules.imports^)) DO
           m := makeRules.imports[i];
           IF install THEN
-            m.origin.GetLocalPath(m, Rep.modInterfaceDescr, path);
-            pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
-            m.origin.GetLocalPath(m, Rep.modInterfaceHTML, path);
-            pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+            IF (m.origin = module.origin) THEN
+              m.origin.GetLocalPath(m, Rep.modInterfaceDescr, path);
+              pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+              m.origin.GetLocalPath(m, Rep.modInterfaceHTML, path);
+              pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+            END;
           ELSE
             ok := makeRules.Update(m, Rep.modInterfaceHTML);
           END;
