@@ -38,7 +38,7 @@ Installation:
 
 - Install the developer tools from developer.apple.com. Download is free for
   ADC (Apple Developer Connection) members. Free membership of ADC is
-  avaialble. Developer tools are also available on CD.
+  available. Developer tools are also available on CD.
 
 - Install version 6.2 (or later) of the GC. Specify "-DGC_DARWIN_THREADS" if
   using threads.
