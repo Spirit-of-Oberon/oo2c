@@ -48,3 +48,9 @@ dnl checks for system services
 AC_CONFIG_FILES([ENV Makefile.config rsrc/OOC/oo2crc.xml
 		 src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml])
 AC_OUTPUT
+
+
+dnl replace unexpanded libdir variable
+mv rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.temp
+sed -e "s:@libdir_expanded@:`make write-libdir`:g" rsrc/OOC/oo2crc.xml.temp >rsrc/OOC/oo2crc.xml
+rm -f rsrc/OOC/oo2crc.xml.temp

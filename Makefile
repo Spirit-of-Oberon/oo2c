@@ -44,7 +44,7 @@ all: stage1/lib/obj/liboo2c.o
 ###      we may be creating several layers of directories, we use mkinstalldirs
 ###      instead of mkdir.  Not all systems' mkdir programs have the `-p' flag.
 mkdir: FRC
-	(umask 022; $(OOC_DEV_ROOT)/mkinstalldirs ${bindir} ${libdir}/lib/src)
+	(umask 022; $(OOC_DEV_ROOT)/mkinstalldirs ${bindir} ${libdir_oo2c}/lib/src)
 
 ### `clean'
 ###      Delete all files from the current directory that are normally
@@ -70,7 +70,7 @@ main-clean: doc-clean test-cleanall
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
 distclean: main-clean
-	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
+	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.temp rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
 	rm -f lib/src/__config.h config.log config.status
 	rm -Rf autom4te.cache
 
@@ -115,6 +115,9 @@ configure: configure.ac lib/src/__config.h.in
 	autoconf
 
 
+write-libdir: FRC
+	@echo ${libdir}
+
 oo2c:
 	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj 2>/dev/null
 	$(OOC) --make -O $(OFLAGS) oo2c
@@ -149,10 +152,10 @@ stage1/lib/obj/liboo2c.o: stage1/exe/oo2c
 	chmod -R a+rX,go-w stage1/lib
 
 install: stage1/lib/obj/liboo2c.o mkdir
-	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(libdir)/lib)
-	cd $(libdir)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
-	${INSTALL_DATA} stage1/lib/src/*.h $(libdir)/lib/src
-	${INSTALL_DATA} rsrc/OOC/oo2crc.xml $(libdir)
+	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(libdir_oo2c)/lib)
+	cd $(libdir_oo2c)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
+	${INSTALL_DATA} stage1/lib/src/*.h $(libdir_oo2c)/lib/src
+	${INSTALL_DATA} rsrc/OOC/oo2crc.xml $(libdir_oo2c)
 	${INSTALL_PROGRAM} stage1/exe/oo2c $(bindir)
 
 install-strip:

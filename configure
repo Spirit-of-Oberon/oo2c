@@ -5140,3 +5140,8 @@ if test "$no_create" != yes; then
   $ac_cs_success || { (exit 1); exit 1; }
 fi
 
+
+
+mv rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.temp
+sed -e "s:@libdir_expanded@:`make write-libdir`:g" rsrc/OOC/oo2crc.xml.temp >rsrc/OOC/oo2crc.xml
+rm -f rsrc/OOC/oo2crc.xml.temp

@@ -13,8 +13,12 @@ exec_prefix=@exec_prefix@
 # run directly.
 bindir=@bindir@
 
-# Where to install library and other files to run oo2c.
-libdir=@libdir@/oo2c
+# Where to install shared and static library files.  This directory
+# should be in the linker's search path.
+libdir=@libdir@
+
+# Where to install other files needed to run oo2c, like symbol files.
+libdir_oo2c=@libdir@/oo2c
 
 # ==================== Utility Programs for the Build ====================
 
