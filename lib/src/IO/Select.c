@@ -5,6 +5,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <errno.h>
+#ifdef __MINGW32__
+#include <winsock.h>
+#endif
 
 struct fdsets {
   fd_set read;
