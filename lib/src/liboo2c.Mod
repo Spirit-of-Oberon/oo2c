@@ -54,10 +54,10 @@ IMPORT
   IO:SocketChannel,
   IO:Memory,
   IO:Buffer,
+  IO:StdChannels,
   IO:Select,
   IO:TextRider,
   IO:BinaryRider,
-  IO:PFD,
   
   libc,
   libadt,
