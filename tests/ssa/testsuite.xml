@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; rot4">-->
+  select ="&SetupTestCasesWithOut; generic66 generic67 generic68">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5 generic1 generic41 generic45">-->
@@ -1585,6 +1585,17 @@
           output="Generic65.Ref">
       Type test where the right hand side is a qualified type.
     </test>
+    <test id="generic66" type="reject" file="Generic66.Mod">
+      Using an undefined name as a type argument.
+    </test>
+    <test id="generic67" type="reject" file="Generic67.Mod">
+      Using an undefined parametric type in the receiver of a
+      type-bound procedure.
+    </test>
+    <test id="generic68" type="run" file="Generic68.Mod">
+      Regression test for <code>oo2c</code>: Don't reference the
+      record type before it has been declared.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2263,6 +2274,10 @@
         msg="The base record type has no type parameters"/>
     <reject-info id="generic59" pos="r: %R(T)"
         msg="The base record type has no type parameters"/>
+    <reject-info id="generic66" pos="%Karamba"
+        msg="Undeclared identifier"/>
+    <reject-info id="generic67" pos="%Karamba"
+        msg="Undeclared identifier"/>
 
     <reject-info id="align2" pos=", %ALIGN2"
         msg="This modifier flag has no effect here"/>
