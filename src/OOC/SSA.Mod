@@ -22,6 +22,7 @@ MODULE OOC:SSA;
 
 
 IMPORT
+  Log,
   Language, Language:Integer, Language:Boolean, ADT:Object, ADT:Dictionary,
   OOC:SymbolTable:Item, OOC:SymbolTable:Predef,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
@@ -596,6 +597,14 @@ PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
     ASSERT (storeOut. useList. nextUse = NIL);
     RETURN storeOut. useList. instr
   END GetCollectTarget;
+
+PROCEDURE (instr: Instr) LogOpcode* (msg: ARRAY OF CHAR);
+  VAR
+    name: ARRAY 64 OF CHAR;
+  BEGIN
+    instr. GetOpcodeName (name);
+    Log.String (msg, name)
+  END LogOpcode;
 
   (* ---------------------------------------------------------------------- *)
 
