@@ -86,27 +86,29 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
  
   PROCEDURE Range(expr : ExtTree.Node) : IR.Expression; 
   (* Check for an upto operator ".." or a normal expression. *)
+  VAR e : IR.Expression;
   BEGIN
     WITH expr : ExtTree.Operator DO
       IF (expr. op. sym. id = Symbol.upto) THEN
-        RETURN b.NewRange(expr.op.sym, Expr(expr.left), Expr(expr.right));
+        RETURN b.NewSetRange(expr.op.sym, Expr(expr.left), Expr(expr.right));
       END;
     ELSE
     END;
-    RETURN Expr(expr);
+    e := Expr(expr);
+    RETURN b.NewSetRange(e.sym, e, e);
   END Range;
 
   PROCEDURE SetConstruct(sc : ExtTree.Set) : IR.Expression;
   VAR
-    elements: IR.ExpressionList;
     i, len : LONGINT;
+    result : IR.Expression;
   BEGIN
     len := (sc.elementList.len+1) DIV 2; 
-    NEW (elements, len);
-    FOR i := 0 TO len-1 DO
-      elements[i] := Range(sc. elementList. n[i*2](ExtTree.Node));
+    result := Range(sc.elementList.n[0](ExtTree.Node));
+    FOR i := 1 TO len-1 DO
+      result := b.NewSetOp(NIL, IR.setUnion, result, Range(sc.elementList.n[i*2](ExtTree.Node)));
     END;
-    RETURN b. NewSetConstruct(sc. lBrace(ExtTree.Terminal). sym, elements);
+    RETURN result;
   END SetConstruct;
 
   PROCEDURE ^ FunctionCall (call: ExtTree.FunctionCall;

@@ -148,31 +148,19 @@ PROCEDURE (c: ConstFold) VisitIndex* (index: IR.Index);
     index. index. Accept (c); *)
   END VisitIndex;
 
-PROCEDURE (c: ConstFold) VisitSetConstruct* (sc: IR.SetConstruct);
+PROCEDURE (c: ConstFold) VisitSetRange* (sr: IR.SetRange);
   VAR 
-    i, j : LONGINT; expr : IR.Expression;
+    i, left, right : LONGINT;
     l, r : Language.Value;
-    result : SET; 
-    const : BOOLEAN;
   BEGIN
-    result := {};
-    FOR i := 0 TO LEN(sc.elements^)-1 DO
-      expr := sc.elements[i];
-      WITH expr : IR.Range DO
-        const := c.ValidEval(expr.from, l) & c.ValidEval(expr.to, r);
-      ELSE
-        const := c.ValidEval(expr, l); r := l;
-      END;
-      IF const THEN
-        FOR j := l(Integer.Value).ToLInt() TO r(Integer.Value).ToLInt() DO
-	  INCL(result, j);
-	END;
-      ELSE
-        c.result := NIL; RETURN;
-      END;
-    END;    
-    c.result := c.ValueConst(Set.New(result), sc);
-  END VisitSetConstruct;
+    IF c.ValidEval(sr.from, l) & c.ValidEval(sr.to, r) THEN
+      left := l(Integer.Value).ToLInt();
+      right := r(Integer.Value).ToLInt();
+      c.result := c.ValueConst(Set.New({left..right}), sr);
+    ELSE
+      c.result := NIL;
+    END;
+  END VisitSetRange;
 
 PROCEDURE (c: ConstFold) VisitSetOp* (op: IR.SetOp);
   VAR 
@@ -212,13 +200,13 @@ BEGIN
     id := op.operand.type(Sym.PredefType).id;
     CASE id OF
     | Predef.boolean:
-(*      c.result := c.builder.NewConst(op.sym, Predef.GetType(Predef.boolean), 
-        Boolean.type.Value(~value(Boolean.Value).value)); *)
         c.result := c.BooleanConst(~value(Boolean.Value).value, op);
     | Predef.integer:
-      value := Integer.type.Value(Integers.Product(minus1, value(Integer.Value).value));
+      value := Integer.New(Integers.Product(minus1, value(Integer.Value).value));
 
       c.result := c.ValueConst(value, op);
+    | Predef.set:
+      c.result := c.ValueConst(Set.New(-value(Set.Value).value), op);
     ELSE
       c.builder.ErrSym(IR.incompatibleTypes, op.sym);
       c.result := NIL;
@@ -424,10 +412,6 @@ PROCEDURE (c: ConstFold) VisitCall* (call: IR.Call);
 PROCEDURE (c: ConstFold) VisitAssert* (assert: IR.Assert);
   BEGIN
   END VisitAssert;
-
-PROCEDURE (c: ConstFold) VisitRange* (return: IR.Range);
-  BEGIN
-  END VisitRange;
 
 PROCEDURE (c: ConstFold) VisitReturn* (return: IR.Return);
   BEGIN

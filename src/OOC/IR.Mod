@@ -337,20 +337,6 @@ TYPE
   END;
   
 TYPE
-  SetConstruct* = POINTER TO SetConstructDesc;
-  SetConstructDesc = RECORD
-    (**This operator constructs a set from a sequence of elements. The language
-    specifies that:
-      Set = { [Element { "," Element}] }
-      Element = Expr [ ".." Expr ]
-    Component Elements are stored in @ofield{elements}. If there are
-    @code{n} Elements in the Set, @ofield{elements} consists of an array of
-    @code{n} expressions. If an element is a range, the corresponding
-    expression will be a Range operator. *)
-    (OperatorDesc)
-    elements- : ExpressionList;
-  END;
-
   SetOp* = POINTER TO SetOpDesc;
   SetOpDesc = RECORD
     (**This operator represents operations on SET values. *)
@@ -381,17 +367,13 @@ TYPE
   END;
 
 TYPE
-  Range* = POINTER TO RangeDesc;
-  RangeDesc = RECORD 
-  (**A Range represents a sub-range of an ordinal type. These occur in SET
-     constructors and CASE label lists. A range consists of a @ofield{from} and
-     @ofield{to} expression which must have the same type. If both values are
-     constant, then @ofield{from} must not be greater than @ofield{to}.
+  SetRange* = POINTER TO SetRangeDesc;
+  SetRangeDesc = RECORD 
+  (**A SetRange represents a sub-range SET constructor.  A range consists of a
+     @ofield{from} and @ofield{to} expression which must have the same type. If
+     both values are constant, then @ofield{from} must not be greater than
+     @ofield{to}. *)
 
-     Technically, Range does not need to be an expression, but having it so
-     allows ranges to be included in ExpressionLists. If Range were not an
-     expression, we would need another way of representing lists that include
-     ranges. *)
     (OperatorDesc)
     from-, to- : Expression;
   END;
@@ -1150,32 +1132,6 @@ PROCEDURE (sf: SelectField) Accept* (v: Visitor);
     v. VisitSelectField (sf)
   END Accept;
 
-(* Operator Class: SetConstruct
-   ------------------------------------------------------------------------ *)
-
-PROCEDURE InitSetConstruct (sc : SetConstruct; elements: ExpressionList; sym: Symbol);
-  BEGIN
-    InitOperator (sc, sym, Predef.GetType(Predef.set));
-    sc.elements := elements;
-  END InitSetConstruct;
-
-PROCEDURE (b: Builder) NewSetConstruct* (sym: Symbol; elements: ExpressionList): SetConstruct;
-  VAR
-    sc : SetConstruct;
-  BEGIN
-    NEW (sc);
-    InitSetConstruct (sc, elements, sym);
-    RETURN sc
-  END NewSetConstruct;
-
-PROCEDURE (v: Visitor) [ABSTRACT] VisitSetConstruct* (sc: SetConstruct);
-  END VisitSetConstruct;
-
-PROCEDURE (sf: SetConstruct) Accept* (v: Visitor);
-  BEGIN
-    v. VisitSetConstruct (sf)
-  END Accept;
-
 (* Operator Class: SetOp
    ------------------------------------------------------------------------ *)
 
@@ -1187,7 +1143,7 @@ PROCEDURE InitSetOp (op: SetOp; sym: Symbol; variant : Variant; left, right: Exp
     op.right := right;
   END InitSetOp;
 
-PROCEDURE (b: Builder) NewSetOp (sym: Symbol; variant: Variant; left, right: Expression): Expression;
+PROCEDURE (b: Builder) NewSetOp* (sym: Symbol; variant: Variant; left, right: Expression): Expression;
   VAR
     op : SetOp;
   BEGIN
@@ -1621,32 +1577,32 @@ PROCEDURE (loopStatm: LoopStatm) Accept* (v: Visitor);
     v. VisitLoopStatm (loopStatm)
   END Accept;
 
-(* Statement Class: Range
+(* Statement Class: SetRange
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitRange (range: Range; sym: Symbol;
+PROCEDURE InitSetRange (range: SetRange; sym: Symbol;
                            from, to : Expression);
   BEGIN
     InitOperator (range, sym, from.type);
     range.from := from;
     range.to := to;
-  END InitRange;
+  END InitSetRange;
 
-PROCEDURE (b: Builder) NewRange* (sym: Symbol; from, to : Expression) : Range;
+PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to : Expression) : SetRange;
   VAR
-    range: Range;
+    range: SetRange;
   BEGIN
     NEW (range);
-    InitRange (range, sym, from, to);
+    InitSetRange (range, sym, from, to);
     RETURN range
-  END NewRange;
+  END NewSetRange;
 
-PROCEDURE (v: Visitor) [ABSTRACT] VisitRange* (range: Range);
-  END VisitRange;
+PROCEDURE (v: Visitor) [ABSTRACT] VisitSetRange* (range: SetRange);
+  END VisitSetRange;
 
-PROCEDURE (range: Range) Accept* (v: Visitor);
+PROCEDURE (range: SetRange) Accept* (v: Visitor);
   BEGIN
-    v. VisitRange (range)
+    v. VisitSetRange (range)
   END Accept;
 
 (* Statement Class: RepeatStatm

@@ -153,18 +153,6 @@ PROCEDURE (v: Visitor) VisitIndex* (index: IR.Index);
     v. w. EndTag;  (* index *)
   END VisitIndex;
 
-PROCEDURE (v: Visitor) VisitSetConstruct* (sc: IR.SetConstruct);
-  VAR first, second : IR.Expression; i : LONGINT;
-  BEGIN
-    v. w. StartTag ("set-construct", FALSE);
-    FOR i := 0 TO LEN (sc. elements^) -1 DO
-      v. w. StartTag("element", FALSE);
-      sc. elements[i].Accept(v);
-      v. w. EndTag;
-    END;
-    v. w. EndTag;
-  END VisitSetConstruct;
-
 PROCEDURE (v: Visitor) VisitSelectField* (sf: IR.SelectField);
   BEGIN
     v. w. StartTag ("select-field", FALSE);
@@ -259,13 +247,13 @@ PROCEDURE (v: Visitor) VisitAssert* (assert: IR.Assert);
     v. w. EndTag;  (* assert *)
   END VisitAssert;
 
-PROCEDURE (v: Visitor) VisitRange* (range: IR.Range);
+PROCEDURE (v: Visitor) VisitSetRange* (range: IR.SetRange);
   BEGIN
-    v. w. StartTag ("range", FALSE);
+    v. w. StartTag ("setrange", FALSE);
     range.from.Accept(v);
     range.to.Accept(v);
     v. w. EndTag;  (* range *)
-  END VisitRange;
+  END VisitSetRange;
 
 PROCEDURE (v: Visitor) VisitReturn* (return: IR.Return);
   BEGIN
