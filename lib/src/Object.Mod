@@ -764,7 +764,7 @@ PROCEDURE (s: String) [ABSTRACT] Compare*(y: Object): LONGINT;
    @item @oparam{s} < @oparam{y}
    @result{} < 0
    @item @oparam{s} = @oparam{y}
-   @result{} > 0
+   @result{} = 0
    @item @oparam{s} > @oparam{y}
    @result{} > 0
    @end table
