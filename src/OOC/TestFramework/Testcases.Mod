@@ -715,4 +715,5 @@ PROCEDURE Write* (writer: Writer.Writer; testSuite: TestSuite);
 BEGIN
   suiteRoot := Element.NewRootFactory();
   suiteRoot. AddFactory ("testsuite", NewTestSuite);
+  suiteRoot. AddFactory ("testsuite-ext", NewTestSuite);
 END OOC:TestFramework:Testcases.

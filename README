@@ -10,6 +10,10 @@
 
 Make sure that libxml/src/ and libadt/src/ is in the search path for
 *.Mod and *.c (for example, by editing and including .oo2crc_local).
+For the language specific tests, the Hostess test files are expected
+to reside at `../hostess/hostess/oberon/testcases.xml', as seen from
+the ooc2 top-level directory.
+
 Then, do
 
   ./configure

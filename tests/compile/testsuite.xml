@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
-<!DOCTYPE testsuite
+<!DOCTYPE testsuite-ext
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
 
 <!ENTITY baseline-testcases
-         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases-ooc2.xml">
+         SYSTEM "../../../hostess/hostess/oberon/baseline-testcases.xml">
 
 <!ENTITY candidate-testcases
          SYSTEM "../../../hostess/hostess/oberon/candidate.xml">
@@ -12,7 +12,12 @@
          SYSTEM "../../../hostess/hostess/oberon/testcases.xml">
 ]>
 
-<testsuite profile="Test Suite for Framework Testing">
+<testsuite-ext
+  profile="Test Suite for Framework Testing"
+  select ="prepare_out_module
+           baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
+           baseline8 baseline10 baseline11">
+
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="src/Out.Mod">
@@ -23,10 +28,10 @@
   </testcases>
   
   &baseline-testcases;
-  <!--&candidate-testcases;-->
-  <!--&hostess-testcases;-->
+  <!--&candidate-testcases;
+  &hostess-testcases;-->
 
   <processor-info processor-name="TestCompile">
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
   </processor-info>
-</testsuite>
+</testsuite-ext>
