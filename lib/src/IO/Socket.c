@@ -7,6 +7,7 @@
 #include <winsock.h>
 typedef int ssize_t;
 #define EWOULDBLOCK WSAEWOULDBLOCK
+#define EINPROGRESS WSAEINPROGRESS
 #else
 #include <sys/socket.h>
 #include <unistd.h>
