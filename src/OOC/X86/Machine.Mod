@@ -10,7 +10,7 @@ PROCEDURE InOutOpnd*(instr: S.Instr): S.Opnd;
    result is @code{NIL}.  *)
   BEGIN
     CASE instr.opcode OF
-    | S.add, S.sub, S.mul, S.div, S.neg:
+    | S.add, S.sub, S.mul, S.div, S.neg, S.bitTestAndSet, S.bitTestAndClear:
       RETURN instr.opndList;
     ELSE
       RETURN NIL;
@@ -30,7 +30,7 @@ PROCEDURE ImmediateOpnd(instr: S.Instr): S.Opnd;
       n := 0;
     | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq,
       (* x86's cmp instruction is not symmetric with immediate opnd *)
-      S.add, S.sub, S.allocateStack:
+      S.add, S.sub, S.bitTestAndSet, S.bitTestAndClear, S.allocateStack:
       (* first opnd is in/out, second may be immediate *)
       n := 1;
     | S.set:        (* first opnd is memory, second may be immediate *)

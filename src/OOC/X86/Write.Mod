@@ -756,6 +756,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           str := "set"+OpcodeCC(cmp.opndList.arg.type, cmp.opcode)+" ";
           sb.Append(str);
           Opnd(instr.opndList);
+        | S.bitTestAndSet:
+          Opc("bts");
+          Opnd(instr.opndList.nextOpnd);
+          Comma();
+          Result(instr.resultList);
+          AssertResultMatch(instr.opndList);
+        | S.bitTestAndClear:
+          Opc("btr");
+          Opnd(instr.opndList.nextOpnd);
+          Comma();
+          Result(instr.resultList);
+          AssertResultMatch(instr.opndList);
           
           (* function framing *)
         | S.enter:

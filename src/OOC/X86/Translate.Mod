@@ -779,6 +779,16 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           instr := b.AddInstr2(opcode, arg1, arg2);
           RETURN instr.AddResultExpr(expr.type);
           
+        | expr: IR.ChangeElement DO
+          CASE expr.variant OF
+          | IR.inclElement: opcode := S.bitTestAndSet;
+          | IR.exclElement: opcode := S.bitTestAndClear;
+          END;
+          arg1 := Expression(expr.set);
+          arg2 := Expression(expr.element);
+          instr := b.AddInstr2(opcode, arg1, arg2);
+          RETURN instr.AddResultExpr(expr.type);
+          
         | expr: IR.Negate DO
           instr := b.AddInstr1(S.neg, Expression(expr.operand));
           RETURN instr.AddResultExpr(expr.type);

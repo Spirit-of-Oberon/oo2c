@@ -107,6 +107,8 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.gtr: str := "gtr";
     | S.geq: str := "geq";
     | S.setBool: str := "setBool";
+    | S.bitTestAndSet: str := "bitTestAndSet";
+    | S.bitTestAndClear: str := "bitTestAndClear";
     | S.typeConv: str := "typeConv";
 
       (* function framing *)

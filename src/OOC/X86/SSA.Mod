@@ -68,9 +68,11 @@ CONST  (* Instruction Opcodes: *)
   setBool* = opcodeArithmetic+15;
   (**Set byte to @code{0} or @code{1}, depending on the current state of the
      condition codes.  *)
-  typeConv* = opcodeArithmetic+16;
+  bitTestAndSet* = opcodeArithmetic+16;
+  bitTestAndClear* = opcodeArithmetic+17;
+  typeConv* = opcodeArithmetic+18;
   
-  opcodeFunctionFraming = opcodeArithmetic+17;
+  opcodeFunctionFraming = opcodeArithmetic+19;
   enter* = opcodeFunctionFraming+0;
   (**An ``enter'' instruction represents the state of the processor immediately
      after control has passed from the caller to the current function.  Its
