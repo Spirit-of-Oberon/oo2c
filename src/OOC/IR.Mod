@@ -4104,11 +4104,14 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
     BEGIN
       WITH item: Sym.Declaration DO
         (* emit a warning for declarations that are not exported and have
-           a usage count of zero; parameters are ignored *)
+           a usage count of zero; parameters are ignored, as are procedure
+           forward declarations and type-bound procedures *)
         IF (item.usageCount = 0) &
            (item.exportMark = Sym.nameNotExported) &
            (~(item IS Sym.VarDecl) OR ~item(Sym.VarDecl).isParameter) &
-           (~(item IS Sym.ProcDecl) OR ~item(Sym.ProcDecl).isForwardDecl) &
+           (~(item IS Sym.ProcDecl) OR
+            ~item(Sym.ProcDecl).isForwardDecl OR
+            ~item(Sym.ProcDecl).isTypeBound) &
            GetPragmaValue(b, StdPragmas.warnings, item.name.pos) THEN
           b.WarnName(unusedDeclaration, item.name);
         END;
