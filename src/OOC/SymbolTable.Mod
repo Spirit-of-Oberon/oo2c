@@ -379,6 +379,12 @@ CONST
   callConvPascal* = 3;
   (**`Pascal' calling convention.  The callee removes arguments.  This is 
      the default calling convention under Win32.  *)  
+  callConvFastcall* = 4;
+  (**The Microsoft `Fastcall' calling convention for x86. Arguments to
+	functions are passed in registers "whenever possible". The first two
+	LONGINT or smaller arguments are passed in the ECX and EDX registers; all
+	other arguments are passed right to left on the stack. The callee removes
+	arguments from the stack. *)
 
 TYPE
   LinkDirective* = POINTER TO LinkDirectiveDesc;
@@ -1780,6 +1786,7 @@ PROCEDURE (mod: Module) CallConvToString*(): STRING;
     | callConvInternal: RETURN "internal"
     | callConvC       : RETURN "C"
     | callConvPascal  : RETURN "Pascal"
+    | callConvFastcall  : RETURN "Fastcall"
     END
   END CallConvToString;
 
@@ -1891,7 +1898,9 @@ PROCEDURE StringToCallConv*(str: STRING): CallConv;
       RETURN callConvC
     ELSIF str.Equals("Pascal") THEN
       RETURN callConvPascal
-    ELSE
+    ELSIF str.Equals("Fastcall") THEN
+      RETURN callConvFastcall
+	ELSE
       RETURN callConvInvalid
     END
   END StringToCallConv;

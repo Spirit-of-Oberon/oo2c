@@ -975,6 +975,8 @@ PROCEDURE (fct: Function) WriteLeft (w: Writer);
       (* w.WriteString("__attribute__ ((cdecl)) "); *)
     | Sym.callConvPascal:
       w.WriteString("__attribute__ ((stdcall)) ");
+    | Sym.callConvFastcall:
+      w.WriteString("__attribute__ ((fastcall)) ");
     ELSE
     END;
   END WriteLeft;
