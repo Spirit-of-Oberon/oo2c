@@ -56,7 +56,7 @@ MODULE Logger;
    @end table  *)
 
 IMPORT
-  IO, IO:TextRider, IO:StdChannels, Object:Boxed, Logger:TimeStamp;
+  Object, IO, IO:TextRider, IO:StdChannels, Object:Boxed, Logger:TimeStamp;
   
 TYPE
   Target* = POINTER TO TargetDesc;
@@ -226,6 +226,18 @@ PROCEDURE (lh: Handle) Report*(msg: STRING);
       END;
     END;
   END Report;
+
+PROCEDURE (lh: Handle) ReportObject*(msg: STRING; x: Object.Object);
+  VAR
+    str: STRING;
+  BEGIN
+    IF (x = NIL) THEN
+      str := "<NIL>";
+    ELSE
+      str := x.ToString();
+    END;
+    lh.Report(msg+": "+str);
+  END ReportObject;
 
 PROCEDURE (lh: Handle) ReportInt*(msg: STRING; x: LONGINT);
   BEGIN
