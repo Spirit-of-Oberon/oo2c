@@ -19,7 +19,7 @@ MODULE IO:Buffer;
 *)
 
 IMPORT
-  SYSTEM, IO;
+  SYSTEM, Ascii, Object, ADT:StringBuffer, IO;
 
 CONST
   sizeBuffer = 8*1024;
@@ -35,7 +35,7 @@ TYPE
     base-: IO.ByteChannel;
     reading: BOOLEAN;
     pos, endOfBuffer: LONGINT;
-    buffer: ARRAY sizeBuffer OF SYSTEM.BYTE;
+    buffer: ARRAY sizeBuffer OF CHAR;
   END;
 
 PROCEDURE Init(ch: Channel; base: IO.ByteChannel);
@@ -142,6 +142,68 @@ RAISES IO.Error;
       RETURN i;
     END;
   END Read;
+
+PROCEDURE (ch: Channel) ReadLineLF*(): Object.String8
+RAISES IO.Error;
+(**Read one entire line from the channel.  The line after the first line-feed
+   character (@oconst{Ascii.lf}; that is, a trailing line-feed is kept in the
+   string.  If the channel ends with an incomplete line, then the line-feed
+   character is absent from the last line.  @code{NIL} is returned after the
+   last line of the channel has been read.
+
+   Note: The returned string contains null characters (@samp{0X}) if they
+   occurred in the input.  *)
+  VAR
+    i, d: LONGINT;
+    sb: StringBuffer.StringBuffer;
+    str: STRING;
+    str8: Object.String8;
+  BEGIN
+    IF ~ch.reading THEN
+      ch.Flush();
+    END;
+
+    i := ch.pos;
+    WHILE (i # ch.endOfBuffer) DO
+      IF (ch.buffer[i] = Ascii.lf) THEN  (* found complete line in buffer *)
+        str8 := Object.NewLatin1Region(ch.buffer, ch.pos, i+1);
+        ch.pos := i+1;
+        RETURN str8;
+      END;
+      INC(i);
+    END;
+
+    (* add text fragments to string buffer until a whole line is assembled,
+       or until the end of the file has been reached *)
+    sb := StringBuffer.NewLatin1Region(ch.buffer, ch.pos, ch.endOfBuffer);
+    LOOP
+      d := ch.base.Read(ch.buffer, 0, sizeBuffer);
+      IF (d < 0) THEN                    (* end of file *)
+        IF (sb.length = 0) THEN
+          RETURN NIL;                    (* ch.pos = ch.endOfBuffer *)
+        ELSE                             (* incomplete line *)
+          ch.pos := 0;
+          ch.endOfBuffer := 0;
+          EXIT;
+        END;
+      ELSE
+        i := 0;
+        WHILE (i # d) & (ch.buffer[i] # Ascii.lf) DO
+          INC(i);
+        END;
+        IF (i = d) THEN                  (* no end of line in buffer *)
+          sb.AppendLatin1Region(ch.buffer, 0, d);
+        ELSE                             (* line ends with buffer[i] *)
+          sb.AppendLatin1Region(ch.buffer, 0, i+1);
+          ch.pos := i+1;
+          ch.endOfBuffer := d;
+          EXIT;
+        END;
+      END;
+    END;
+    str := sb.ToString();
+    RETURN str(Object.String8);
+  END ReadLineLF;
 
 PROCEDURE (ch: Channel) Write*(buffer[NO_COPY]: ARRAY OF SYSTEM.BYTE;
                                start, length: LONGINT): LONGINT
