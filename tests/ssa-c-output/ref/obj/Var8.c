@@ -2,7 +2,7 @@
 #include "__oo2c.h"
 
 static void Var8__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
-  register OOC_INT32 i0,i1,i2,i3,i4;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5;
 
   i0 = str_0d-1;
   i1 = 0<=i0;
@@ -11,10 +11,10 @@ static void Var8__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
 l4_loop:
   i3 = _check_index(i2, str_0d, OOC_UINT32, 148);
   i4 = (OOC_INT32)str+i3;
-  *(OOC_UINT8*)i4 = (OOC_CHAR8)'\000';
   i2 = i2+1;
-  i3 = i2<=i0;
-  if (i3) goto l4_loop;
+  i5 = i2<=i0;
+  *(OOC_UINT8*)i4 = (OOC_CHAR8)'\000';
+  if (i5) goto l4_loop;
 l11:
   return;
 }

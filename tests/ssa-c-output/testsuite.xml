@@ -2,10 +2,10 @@
 <!DOCTYPE testsuite-ext
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd">
 
-<testsuite-ext profile="Test Suite for Framework Testing">
+<testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
-  profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; antidep1">-->
+  profile="Tests code emitted by SSA/C back-end"
+  select ="&SetupTestCasesWithOut; quicksort1">-->
   
   &TestSetupWithOut;
     
