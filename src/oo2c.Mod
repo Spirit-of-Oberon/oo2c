@@ -434,7 +434,7 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
 BEGIN
   Error.oo2cStyleErrors := TRUE;
   Error.minErrorDistance := 16;
-  Builder.doAutoImport := TRUE;
+  Builder.doAutoImport := Builder.fullAutoImport;
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);

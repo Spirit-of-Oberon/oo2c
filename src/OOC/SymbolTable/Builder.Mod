@@ -55,13 +55,19 @@ TYPE
        must include the value of @ofield{module}.  *)
   END;
 
+CONST
+  noAutoImport* = 0;
+  (**Don't do any automatical import in the symbol table or in the repository's
+     @oproc{*OOC:Repository:GetImports.GetImports}.  *)
+  autoImportRT0* = 1;
+  (**Add @samp{RT0} to every import list, but no other modules.  *)
+  fullAutoImport* = 2;
+  (**Add all listed modules to the import list.  *)
+  
 VAR
   autoImport-: POINTER TO ARRAY OF AutoImport;
-  doAutoImport*: BOOLEAN;
-  (**If @code{FALSE} (the default), don't do any automatical import in the
-     symbol table or the the repository's
-     @oproc{*OOC:Repository:GetImports.GetImports}.  Right now, only the
-     program @code{oo2c} sets this to @code{TRUE}.  *)
+  doAutoImport*: SHORTINT;
+  (**Enables or disables automatic adding of modules to the import list.  *)
 
 CONST
   magicNumberSize* = 4;
@@ -475,7 +481,7 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
       END
     END SetClassName;
 
-  PROCEDURE AddAutoImports (module: Sym.Module);
+  PROCEDURE AddAutoImports (module: Sym.Module; len: LONGINT);
     VAR
       a, e: LONGINT;
       import: Sym.Import;
@@ -496,7 +502,7 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
       END GetName;
     
     BEGIN
-      FOR a := 0 TO LEN(autoImport^)-1 DO
+      FOR a := 0 TO len-1 DO
         e := LEN(autoImport[a].exclude^)-1;
         WHILE (e >= 0) & (autoImport[a].exclude[e]^ # module. name. str^) DO
           DEC (e);
@@ -513,8 +519,12 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
   BEGIN
     CollectFormalPars (module);
     SetClassName (module);
-    IF doAutoImport THEN
-      AddAutoImports (module);
+    IF (module.class = Sym.mcInternal) THEN
+      (* no auto imports at all *)
+    ELSIF (doAutoImport = fullAutoImport) THEN
+      AddAutoImports (module, LEN(autoImport^));
+    ELSIF (doAutoImport = autoImportRT0) THEN
+      AddAutoImports (module, 1);
     END;
   END Finalize;
 
@@ -538,8 +548,10 @@ PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel;
   VAR
     obj: Object.Object;
     reader: Storage.Reader;
-    fp: LONGINT;
+    fp, i, fpi, len: LONGINT;
     mn: ARRAY magicNumberSize+1 OF CHAR;
+    prunedImports: Sym.ModuleRefArray;
+    str: Sym.NameString;
   BEGIN
     reader := Storage.ConnectReader (ch);
     reader. ReadBytes(mn, 0, magicNumberSize);
@@ -550,12 +562,28 @@ PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel;
       HALT(1);
     END;
     reader. ReadBytes(fp, 0, SIZE(LONGINT));
+    
+    reader.ReadNum(len);
+    NEW(prunedImports, len);
+    FOR i := 0 TO LEN(prunedImports^)-1 DO
+      reader.ReadNum(len);
+      NEW(str, len+1);
+      reader.ReadBytes(str^, 0, len);
+      str[len] := 0X;
+      reader.ReadBytes(fpi, 0, SIZE(LONGINT));
+      
+      NEW(prunedImports[i]);
+      prunedImports[i].name := str;
+      prunedImports[i].fingerprint := fpi;
+    END;
+    
     reader. ReadObject (obj);
     res := reader. res;
     IF (obj = NIL) THEN
       RETURN NIL
     ELSE
       obj(Sym.Module).fingerprint := fp;
+      obj(Sym.Module).prunedImports := prunedImports;
       RETURN obj(Sym.Module)
     END
   END ReadSymbolTable;
@@ -573,7 +601,7 @@ PROCEDURE N (str: ARRAY OF CHAR): Name;
   END N;
 
 BEGIN
-  doAutoImport := FALSE;
+  doAutoImport := noAutoImport;
   magicNumber := "OOC2";
   
   NEW(autoImport, 2);

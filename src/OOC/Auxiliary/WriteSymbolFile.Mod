@@ -1,7 +1,7 @@
 MODULE OOC:Auxiliary:WriteSymbolFile;
 
 IMPORT
-  Channel, Files, Msg, IO:Memory,
+  BinaryRider, Channel, Files, Msg, Strings, IO:Memory,
   OOC:Repository, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Exports;
   
@@ -13,8 +13,9 @@ PROCEDURE WriteSymbolFile* (m: Repository.Module; symTab: Sym.Module;
     ch: Channel.Channel;
     stb: Builder.Builder;
     mem: Memory.Channel;
-    w: Channel.Writer;
-    fp: LONGINT;
+    w: BinaryRider.Writer;
+    fp, i, len: LONGINT;
+    mr: Sym.ModuleRef;
   BEGIN
     mem := Memory.Tmp("", {Memory.read, Memory.write}, res);
     IF (res = NIL) THEN
@@ -26,10 +27,25 @@ PROCEDURE WriteSymbolFile* (m: Repository.Module; symTab: Sym.Module;
       IF (res = NIL) THEN
         ch := m. GetOutputChannel (Repository.modSymbolFile, TRUE, res);
         IF (res = NIL) THEN
-          w := ch.NewWriter();
+          w := BinaryRider.ConnectWriter(ch);
           w.WriteBytes(Builder.magicNumber, 0, Builder.magicNumberSize);
           w.WriteBytes(fp, 0, SIZE(LONGINT));
-          mem.CopyToWriter(w);
+          
+          (* Write list of all imported module names, in the order in which
+             they appear in the source file.  This list is not part of the
+             fingerprinted file area.  Any changes to this list do not
+             invalidate the symbol file's fingerprint value.  *)
+          w.WriteNum(LEN(symTab.prunedImports^));
+          FOR i := 0 TO LEN(symTab.prunedImports^)-1 DO
+            mr := symTab.prunedImports[i];
+            len := Strings.Length(mr.name^);
+            w.WriteNum(len);
+            w.WriteBytes(mr.name^, 0, len);
+            fp := mr.fingerprint;
+            w.WriteBytes(fp, 0, SIZE(LONGINT));
+          END;
+          
+          mem.CopyToWriter(w.byteWriter);
           ch(Files.File). Register;
           ch.Close;
           

@@ -2,7 +2,6 @@
 <!DOCTYPE interface-description SYSTEM '../../../../../rsrc/OOC/xml/interface-description.dtd'>
 <interface-description name='M017' id=''>
   <import-decl name='E' id='E' export='no' module='E'/>
-  <import-decl name='F' id='F' export='no' module='F'/>
   <class name='ExtClass'>
     <type-decl name='ExtClass' id='ExtClass' export='yes'>
       <type>

@@ -6,7 +6,7 @@ IMPORT
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, ADT:String,
   OOC:Config, OOC:Config:CCompiler, OOC:Config:Assembler,
-  OOC:Error, Rep := OOC:Repository, OOC:Make;
+  OOC:SymbolTable:Builder, OOC:Error, Rep := OOC:Repository, OOC:Make;
 
 VAR
   cfgErrList: Error.List;
@@ -73,6 +73,7 @@ PROCEDURE NewConfig;
 
 BEGIN
   Error.oo2cStyleErrors := TRUE;
+  Builder.doAutoImport := Builder.autoImportRT0;
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);

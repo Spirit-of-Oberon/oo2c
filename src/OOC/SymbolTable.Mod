@@ -21,7 +21,8 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Language, Msg, Strings, ADT:Object, ADT:String, ADT:Dictionary,
+  Language, Msg, Strings,
+  ADT:Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
 
@@ -341,6 +342,12 @@ CONST
   
 TYPE
   Module* = POINTER TO ModuleDesc;
+  ModuleRef* = POINTER TO ModuleRefDesc;
+  ModuleRefDesc = RECORD
+    name*: NameString;
+    fingerprint*: LONGINT;
+  END;
+  ModuleRefArray* = POINTER TO ARRAY OF ModuleRef;
   ProcDecl* = POINTER TO ProcDeclDesc;
   ModuleDesc = RECORD
     (**This class represents the top-level module object.  It is the root
@@ -369,7 +376,10 @@ TYPE
     fingerprint*: LONGINT;
     (**The fingerprint value of the module's symbol file.  This field is
        only valid if the @otype{Module} object has been read from file.  *)
-    
+
+    prunedImports*: ModuleRefArray;
+    (**List of import entries removed by the @oproc{Prune} function.  This
+       field is not part of the fingerprinted area of the symbol file.  *)
     moduleAST-: AST.Node;
     (**Refers to the abstract syntax tree of the module, for example an
        instance of @otype{*OOC:AST:ExtTree.Module}.  *)
@@ -1278,6 +1288,7 @@ PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
     mod. callConv := callConv;
     mod. linkDirectives := NIL;
     mod. fingerprint := 0;
+    mod. prunedImports := NIL;
     mod. moduleAST := moduleAST;
     mod. bodyDecl := bodyDecl;
   END InitModule;
@@ -1312,6 +1323,7 @@ PROCEDURE (mod: Module) Load* (r: Object.Reader);
     ELSE
       mod. linkDirectives := obj(LinkDirective)
     END;
+    mod. prunedImports := NIL;
     mod. moduleAST := NIL;
   END Load;
 
@@ -2206,8 +2218,14 @@ PROCEDURE (item: Record) Namespace* (): Namespace;
 
 PROCEDURE Prune* (root: Module; keep: Dictionary.Dictionary);
 (**Eliminates all items from the symbol table @oparam{root}, that do not
-   appear as a key in @oparam{keep}.  *)
-  
+   appear as a key in @oparam{keep}.  Pruned imports are added to
+   @ofield{root.prunedImports}.  *)
+  VAR
+    prunedImports: ArrayList.ArrayList;
+    mr: ModuleRef;
+    import: Import;
+    i: LONGINT;
+    
   PROCEDURE PruneList (VAR list: Item);
     BEGIN
       IF (list # NIL) THEN
@@ -2215,13 +2233,25 @@ PROCEDURE Prune* (root: Module; keep: Dictionary.Dictionary);
         IF keep. HasKey (list) THEN
           PruneList (list. nestedItems)
         ELSE
-          list := list. nextNested
+          IF (list IS Import) & ~list(Import).IsInternalImport() THEN
+            prunedImports.Append(list);
+          END;
+          list := list. nextNested;
         END
       END
     END PruneList;
   
   BEGIN
-    PruneList (root. nestedItems)
+    prunedImports := ArrayList.New(8);
+    PruneList (root. nestedItems);
+    NEW(root.prunedImports, prunedImports.size);
+    FOR i := 0 TO prunedImports.size-1 DO
+      import := prunedImports.array[i](Import);
+      NEW(mr);
+      mr.name := import.moduleName.str;
+      mr.fingerprint := import.fingerprint;
+      root.prunedImports[i] := mr;
+    END;
   END Prune;
 
 PROCEDURE (decl: Declaration) GetId*(): NameString;

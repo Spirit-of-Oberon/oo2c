@@ -302,9 +302,11 @@ PROCEDURE (rep: Repository) [ABSTRACT] DumpContent* (w: TextRider.Writer);
 
 PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT);
   VAR
-    count: LONGINT;
+    count, i: LONGINT;
     item: Sym.Item;
     oldIfData: Sym.Module;
+    mr: Sym.ModuleRef;
+    name: Sym.Name;
   BEGIN
     oldIfData := m.ifData;
     m.ifData := ifData;
@@ -322,6 +324,9 @@ PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT)
         END;
         item := item.nextNested;
       END;
+      IF (ifData.prunedImports # NIL) THEN
+        INC(count, LEN(ifData.prunedImports^));
+      END;
       
       NEW(m.ifImportList, count);
       count := 0;
@@ -336,6 +341,19 @@ PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT)
         ELSE
         END;
         item := item.nextNested;
+      END;
+
+      IF (ifData.prunedImports # NIL) THEN
+        FOR i := 0 TO LEN(ifData.prunedImports^)-1 DO
+          mr := ifData.prunedImports[i];
+          NEW(name);
+          Sym.InitName(name, mr.name, 0, 0, 0);
+          m.ifImportList[count].name := name;
+          m.ifImportList[count].module := NIL;
+          m.ifImportList[count].internal := FALSE;
+          m.ifImportList[count].fingerprint := mr.fingerprint;
+          INC(count);
+        END;
       END;
     END;
   END SetInterfaceData;
