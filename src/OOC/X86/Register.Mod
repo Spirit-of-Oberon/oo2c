@@ -565,7 +565,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
     IF (addedCopies = 0) THEN
       (* calculate a coloring for the resulting graph; use the coloring to
          assign register ids to results *)
-      AssignRegisterNames(rf, rf.iGraph.ColorGraphSimple());
+      AssignRegisterNames(rf, rf.iGraph.ColorGraphCombinatorial());
     END;
 
     RETURN addedCopies;
