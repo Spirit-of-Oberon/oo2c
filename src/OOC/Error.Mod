@@ -186,7 +186,7 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
       msg := errList. msgList;
       WHILE (msg # NIL) DO
         pos := msg.GetAttribute(posAttr);
-        IF (pos(M.IntAttribute).int >= lastPos) &
+        IF (pos # NIL) & (pos(M.IntAttribute).int >= lastPos) &
            ((best = NIL) OR (pos(M.IntAttribute).int < bestPos)) THEN
           best := msg;
           bestPos := pos(M.IntAttribute).int;
@@ -208,6 +208,17 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
       writer. WriteLn
     END;
 
+    (* first, write out all errors that have no position attribute *)
+    msg := errList. msgList;
+    WHILE (msg # NIL) DO
+      attrPos := msg.GetAttribute(posAttr);
+      IF (attrPos = NIL) THEN
+        WriteMsg (msg);
+      END;
+      msg := msg. nextMsg
+    END;
+    
+    (* second, write sorted list of all errors withs position *)
     lastPos := -1;
     LOOP
       msg := GetNext(lastPos);
