@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE Object:Boxed;
 (*  Implements object representations for predefined types.
-    Copyright (C) 2002, 2003  Michael van Acken
+    Copyright (C) 2002-2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -120,6 +120,16 @@ PROCEDURE ParseBoolean*(str[NO_COPY]: ARRAY OF CHAR): Boolean;
     END;
   END ParseBoolean;
 
+PROCEDURE BooleanToString*(value: BOOLEAN): STRING;
+(**Equivalent to calling @oproc{NewBoolean} with @oparam{value}, and then
+   @oproc{Object.ToString} on the result.  *)
+  VAR
+    v: Boolean;
+  BEGIN
+    v := NewBoolean(value);
+    RETURN v.ToString();
+  END BooleanToString;
+
 PROCEDURE (v: Boolean) Equals*(y: Obj.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Boolean) & (v.value = y(Boolean).value)
@@ -163,7 +173,7 @@ PROCEDURE (v: Boolean) Load*(r: Storable.Reader) RAISES IO.Error;
     v.value := (si # 0);
   END Load;
 
-(* LongReal
+(* LongInt
    ------------------------------------------------------------------------ *)
 
 PROCEDURE NewLongInt*(val: LONGINT): LongInt;
@@ -188,6 +198,16 @@ PROCEDURE ParseLongInt*(s: ARRAY OF CHAR): LongInt;
       RETURN NIL;
     END;
   END ParseLongInt;
+
+PROCEDURE IntToString*(value: LONGINT): STRING;
+(**Equivalent to calling @oproc{NewLongInt} with @oparam{value}, and then
+   @oproc{Object.ToString} on the result.  *)
+  VAR
+    v: LongInt;
+  BEGIN
+    v := NewLongInt(value);
+    RETURN v.ToString();
+  END IntToString;
 
 PROCEDURE (v: LongInt) Store*(w: Storable.Writer) RAISES IO.Error;
   BEGIN
@@ -288,6 +308,16 @@ PROCEDURE ParseLongReal*(s: ARRAY OF CHAR): LongReal;
       RETURN NIL;
     END;
   END ParseLongReal;
+
+PROCEDURE LongRealToString*(value: LONGREAL): STRING;
+(**Equivalent to calling @oproc{NewLongReal} with @oparam{value}, and then
+   @oproc{Object.ToString} on the result.  *)
+  VAR
+    v: LongReal;
+  BEGIN
+    v := NewLongReal(value);
+    RETURN v.ToString();
+  END LongRealToString;
 
 PROCEDURE ParseLongRealLiteral*(s: ARRAY OF CHAR): LongReal;
 (**Like @oproc{ParseLongReal}, but the character of the exponent decides
@@ -410,6 +440,16 @@ PROCEDURE NewSet*(value: SET): Set;
     RETURN v;
   END NewSet;
 
+PROCEDURE SetToString*(value: SET): STRING;
+(**Equivalent to calling @oproc{NewSet} with @oparam{value}, and then
+   @oproc{Object.ToString} on the result.  *)
+  VAR
+    v: Set;
+  BEGIN
+    v := NewSet(value);
+    RETURN v.ToString();
+  END SetToString;
+
 PROCEDURE (v: Set) Equals*(y: Obj.Object): BOOLEAN;
 BEGIN
   WITH y: Set DO
@@ -431,12 +471,16 @@ PROCEDURE (v: Set) HashCode*(): Obj.Hash;
     RETURN HashCode.Set(v.value);
   END HashCode;
 
-PROCEDURE SetToString(val: SET; VAR str: ARRAY OF CHAR);
+PROCEDURE (v: Set) ToString*(): Obj.String;
   VAR
+    str: ARRAY 32*4+3 OF CHAR;
+    val: SET;
     begin, i: SHORTINT;
     comma: BOOLEAN;
     num: ARRAY 8 OF CHAR;
   BEGIN
+    val := v.value;
+    
     COPY("{", str);
     comma := FALSE;
     i := MIN(SET);
@@ -463,13 +507,7 @@ PROCEDURE SetToString(val: SET; VAR str: ARRAY OF CHAR);
       INC(i)
     END; 
     Strings.Append("}", str);
-  END SetToString;
-
-PROCEDURE (v: Set) ToString*(): Obj.String;
-  VAR
-    str: ARRAY 32*4+3 OF CHAR;
-  BEGIN
-    SetToString(v.value, str);
+    
     RETURN Obj.NewLatin1(str);
   END ToString;
 
