@@ -1,7 +1,7 @@
 (*	$Id$	*)
 MODULE ADT:Comparator [OOC_EXTENSIONS];
 (*  Abstract base type for comparison function for objects.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -31,11 +31,13 @@ TYPE
     (Object.ObjectDesc)
   END;
 
-PROCEDURE Init* (cmp: Comparator);
-  BEGIN
-  END Init;
+TYPE
+  String* = POINTER TO StringDesc;
+  StringDesc = RECORD
+    (ComparatorDesc) 
+  END;
 
-PROCEDURE (cmpd: Comparator) [ABSTRACT] Compare* (o1, o2: Object.Object): LONGINT;
+PROCEDURE (cmp: Comparator) [ABSTRACT] Compare* (o1, o2: Object.Object): LONGINT;
 (**Compares its two arguments for order.  Returns a negative integer, zero, or
    a positive integer as the first argument is less than, equal to, or greater
    than the second.
@@ -57,6 +59,11 @@ PROCEDURE (cmpd: Comparator) [ABSTRACT] Compare* (o1, o2: Object.Object): LONGIN
    this condition should clearly indicate this fact.  The recommended language
    is "Note: this comparator imposes orderings that are inconsistent with
    @samp{Equals()}."  *)
+  END Compare;
+
+PROCEDURE (cmp: String) Compare* (o1, o2: Object.Object): LONGINT;
+  BEGIN
+    RETURN o1(Object.String).Compare(o2(Object.String));
   END Compare;
 
 END ADT:Comparator.
