@@ -23,10 +23,20 @@ Then, do
   . ENV
   make test
 
-If this produces an error, mail me.  (Note: The ". ENV" assumes a
-Bourne compabtible shell.  This command sets the environment variables
-OOC_DEV_ROOT and MAIN_MAKEFILE.  If you are running a different shell,
-you need to do something equivalent.)
+If this produces an error other than the one described below, mail me.
+(Note: The ". ENV" assumes a Bourne compabtible shell.  This command
+sets the environment variables OOC_DEV_ROOT and MAIN_MAKEFILE.  If you
+are running a different shell, you need to do something equivalent.)
+
+There is one known problem that may cause "make test" to fail after
+the sources have been checked out.  If the tests in tests/compile/
+produce an "100 Value out of range" for the test case `baseline8', do
+
+  touch src/Integer.Mod
+
+and repeat "make test".  This way, the `Integers' module from the CVS
+repository is used instead of the broken one distributed with oo2c,
+which should fix the problem.
 
 --------
 
