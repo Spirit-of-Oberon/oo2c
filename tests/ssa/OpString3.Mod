@@ -1,7 +1,7 @@
 MODULE OpString3;
 
 CONST
-  str = 'X';
+  str = 40X;
 
 PROCEDURE Test*;
 VAR 
