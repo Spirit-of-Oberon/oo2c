@@ -1091,6 +1091,7 @@ CONST
   abstractSuperCall = 58;
   notDefinedInBaseType = 59;
   duplicateSuperCall = 60;
+  redundantTypeTest = 61;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1281,6 +1282,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Called procedure not defined in base type"
     | duplicateSuperCall:
       t := "Super call can only apply to the direct base type"
+    | redundantTypeTest:
+      t := Error.warningPrefix+"Redundant type test"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1358,6 +1361,20 @@ PROCEDURE GetPragmaValue (b: Builder; pragma: Pragmas.Pragma; charPos: Pragmas.C
     value := b. pragmaHistory. GetValue (pragma. name^, charPos);
     RETURN value(BooleanValue.Value). boolean
   END GetPragmaValue;
+
+PROCEDURE (b: Builder) WarnSym (code: Error.Code; sym: Symbol);
+  VAR
+    e: Error.Msg;
+  BEGIN
+    IF GetPragmaValue(b, StdPragmas.warnings, sym.pos) THEN
+      e := Error.New (irContext, code);
+      e. SetIntAttrib ("pos", sym. pos);
+      e. SetIntAttrib ("line", sym. line);
+      e. SetIntAttrib ("column", sym. column);
+      b. errList. Append (e);
+      b. lastError := e;
+    END;
+  END WarnSym;
 
 PROCEDURE (b: Builder) WarnName (code: Error.Code; name: Sym.Name);
   VAR
@@ -3057,6 +3074,10 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
          a dynamic type that can differ from its static one.  *)
       RETURN b. ErrExpr (noDynamicType, expr.sym);
     ELSE
+      IF TR.SameType(refType, expr.type) THEN
+        b.WarnSym(redundantTypeTest, referenceType.sym);
+      END;
+      
       origExpr := expr;
       checkPointer := GetPragmaValue (b, StdPragmas.derefCheck, sym. pos);
       IF (expr IS Deref) THEN
