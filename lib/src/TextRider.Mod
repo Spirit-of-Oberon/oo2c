@@ -703,10 +703,9 @@ PROCEDURE HexToInt (str: ARRAY OF CHAR; VAR lint: LONGINT): BOOLEAN;
   END HexToInt;
 
 PROCEDURE (r: Reader) ReadLInt* (VAR lint: LONGINT);
-(* Returns the long integer constant n at the current position according to the
-   format:
-           IntConst = [whitespace] ["+"|"-"] digit {digit}        
-*)
+(**Returns the long integer constant @oparam{lint} at the current position
+   according to the format: @samp{IntConst = [whitespace] ["+"|"-"] digit
+   @{digit@}}.  *)
   CONST
     (* 2^31 has 11 digits, plus sign, plus 0, plus 0X = 14 *)
     buffer = 14;
@@ -774,15 +773,14 @@ PROCEDURE (r: Reader) ReadLInt* (VAR lint: LONGINT);
   END ReadLInt;
   
 PROCEDURE (r: Reader) ReadHex* (VAR lint: LONGINT);
-(* Returns the long integer constant n at the current position according to the
-   format:
-     IntConst = [whitespace] digit {hexdigit}
-                where hexDigit = "0".."9" | "A".."F" 
-   Note: Numbers in the range 80000000H-FFFFFFFFH are read in as negative
-   numbers.  If numbers like 80H-FFH are to be interpreted as negatives for
-   SHORTINTs then neg = lint-100H or 8000H-FFFFH are to be interpreted as 
-   negatives for INTEGERs then neg = lint-10000H.
-*)
+(* Returns the long integer constant @oparam{lint} at the current position
+   according to the format @samp{IntConst = [whitespace] digit @{hexdigit@}}
+   where @samp{hexDigit = "0".."9" | "A".."F"}.  Note: Numbers in the range
+   @samp{80000000H} to @samp{FFFFFFFFH} are read in as negative numbers.  If
+   numbers like @samp{80H} to @samp{FFH} are to be interpreted as negatives for
+   @code{SHORTINT}s then @samp{neg = lint-100H}.  Similar, to map the range
+   @samp{8000H} to @samp{FFFFH} to negative @code{INTEGER}s, do @samp{neg =
+   lint-10000H}.  *)
   CONST
     (* 2^32 has 8 digits, plus two digits, plus 0X = 11 *)
     buffer = 11;
@@ -835,7 +833,7 @@ PROCEDURE (r: Reader) ReadHex* (VAR lint: LONGINT);
   END ReadHex;
 
 PROCEDURE (r: Reader) ReadInt * (VAR int: INTEGER);
-(* as ReadLInt *)
+(**As @oproc{Reader.ReadLInt}.  *)
   VAR
     lint: LONGINT;
   BEGIN
@@ -848,7 +846,7 @@ PROCEDURE (r: Reader) ReadInt * (VAR int: INTEGER);
   END ReadInt;
 
 PROCEDURE (r: Reader) ReadSInt * (VAR sint: SHORTINT);
-(* as ReadLInt *)
+(**As @oproc{Reader.ReadLInt}.  *)
   VAR
     lint: LONGINT;
   BEGIN
@@ -861,14 +859,13 @@ PROCEDURE (r: Reader) ReadSInt * (VAR sint: SHORTINT);
   END ReadSInt;
 
 PROCEDURE (r: Reader) ReadLReal* (VAR lreal: LONGREAL);
-(* Returns the long real constant `lreal' at the current position according to the 
-   format:
-     LongRealConst = [whitespace] ["+" | "-"] digit {digit} ["." {digit} [exponent]]
-   where exponent = ("E" | "D") ("+" | "-") digit {digit}
-   
-   Note: Because of implementation restrictions, a real representation with 
-   more than 1023 characters causes an `invalidFormat' error.
-*)
+(**Returns the long real constant @oparam{lreal} at the current position
+   according to the format @samp{LongRealConst = [whitespace] ["+" | "-"] digit
+   @{digit@} ["."  @{digit@} [exponent]]} where @samp{exponent = ("E" | "D")
+   ("+" | "-") digit @{digit@}}.
+
+   Note: Because of implementation restrictions, a real representation with
+   more than 1023 characters causes an @oconst{invalidFormat} error.  *)
   CONST
     buffer = 1024;
   VAR
@@ -929,7 +926,7 @@ PROCEDURE (r: Reader) ReadLReal* (VAR lreal: LONGREAL);
   END ReadLReal;
 
 PROCEDURE (r: Reader) ReadReal* (VAR real: REAL);
-(* as ReadLReal *) 
+(**As @oproc{Reader.ReadLReal}.  *) 
   VAR
     n: LONGREAL;
     
@@ -956,9 +953,7 @@ PROCEDURE (r: Reader) ReadReal* (VAR real: REAL);
   END ReadReal;
 
 PROCEDURE (r: Reader) ReadSet* (VAR s: SET);
-(* Read a set described in mathematical set notation into 's'.
-   Pre: "{Element, ..., Element}"; Post: s={Element, ..., Element}
-   where Element = number [".." number] and 0 <= number <= 31 *)
+(**Read a set described in Oberon-2 set notation into @oparam{s}.  *)
   VAR
     ch: CHAR;
 
@@ -1056,7 +1051,7 @@ PROCEDURE SkipSpaces (s: Scanner);
   END SkipSpaces;
 
 PROCEDURE (s: Scanner) Pos* () : LONGINT;
-(* Position of the look-ahead character *)
+(**Return position of the look-ahead character.  *)
   BEGIN
     RETURN s.r.Pos()
   END Pos;
@@ -1069,7 +1064,6 @@ PROCEDURE (s: Scanner) ClearError*;
   END ClearError;
 
 PROCEDURE (s: Scanner) Available* () : LONGINT;
-(* Position of the look-ahead character *)
   BEGIN
     RETURN s.r.Available()
   END Available;
@@ -1301,18 +1295,21 @@ PROCEDURE (w: Writer) ClearError*;
   END ClearError;
 
 PROCEDURE (w: Writer) SetOpts* (opts: SET);
-(* Set the writer options `w.opt' which are defined above. *)
+(**Set the writer options @ofield{w.opt}.  *)
   BEGIN
     w.opt:=opts
   END SetOpts;
 
 PROCEDURE (w: Writer) SetEol* (marker: ARRAY OF CHAR; markerLen: INTEGER);
-(* Sets new end of line marker.  If the passed string marker does not fit into
-   the field `eol', then `w.res' is set to `invalidFormat'.  The empty
-   marker is permitted.  The default value for newly created writer is 
-   `CharClass.systemEol'.
-   pre: (w.res = done) & (0 <= markerLen < LEN (marker)) &
-        (markerLen <= maxLengthEol)  *)
+(**Sets new end of line marker.  If the passed string marker does not fit into
+   the writer's field @samp{w.eol}, then @ofield{w.res} is set to
+   @oconst{invalidFormat}.  The empty marker is permitted.  The default value
+   for newly created writer is @ovar{CharClass.systemEol}.
+
+   @precond
+   (w.res = done) & (0 <= markerLen < LEN (marker)) & (markerLen <=
+   maxLengthEol)
+   @end precond  *)
   VAR
     i: INTEGER;
   BEGIN
@@ -1424,27 +1421,8 @@ PROCEDURE (w: Writer) WriteHex* (lint: LONGINT; d: LONGINT);
   END WriteHex;
 
 PROCEDURE (w: Writer) WriteLReal*(lreal: LONGREAL; n, k: LONGINT);
- (* The call to WriteLongReal(lreal, n, k) shall write to the underlying
-    channel a formatted string corresponding to the value of `lreal' in
-    floating-point form.  A sign shall be included only for negative
-    values.  One significant digit shall be included in the whole number
-    part.  The signed exponent part shall be included only if the exponent
-    value is not 0.  If the value of `k' is greater than 0, that
-    number of significant digits shall be included, otherwise an
-    implementation-defined number of significant digits shall be
-    included.  The decimal point shall not be included if there are no
-    significant digits in the fractional part.  The complete formatted
-    number will be right-justified in a field of width `n'.  If 'n' is 
-    too small it will be extended.
-    
-    For example: (n=9)
-    
-    value:     3923009     39.23009     0.0003923009
-      k
-      1             4E+6        4E+1         4E-4 
-      2           3.9E+6      3.9E+1       3.9E-4
-      5        3.9230E+6   3.9230E+1    3.9230E-4
- *)
+(**Writes the value @oparam{lreal} in the format produced by
+   @oproc{LRealStr.RealToFloat}.  *)
   VAR
     val: ARRAY 128 OF CHAR;
   BEGIN
@@ -1459,7 +1437,7 @@ PROCEDURE (w: Writer) WriteLReal*(lreal: LONGREAL; n, k: LONGINT);
   END WriteLReal;
 
 PROCEDURE (w: Writer) WriteReal*(real: REAL; n, k: LONGINT);
-(* As WriteLReal *)
+(**As @oproc{Writer.WriteLReal}.  *)
   VAR
     val: ARRAY 128 OF CHAR;
   BEGIN
@@ -1474,27 +1452,8 @@ PROCEDURE (w: Writer) WriteReal*(real: REAL; n, k: LONGINT);
   END WriteReal;
 
 PROCEDURE (w: Writer) WriteLRealFix*(VAR lreal: LONGREAL; n, k: LONGINT);
- (* 
-    The call WriteLRealFix(lreal, n, k) shall output to the underlying
-    channel the formatted string corresponding to the value of `lreal' in
-    fixed-point form.  A sign shall be included only for negative values.
-    At least one digit shall be included in the whole number part.  The
-    value shall be rounded to the given value of `k' relative to the
-    decimal point.  The decimal point shall be suppressed if `k' is
-    less than 0. The complete formatted number will be right-justified 
-    in a field of width `n'.  If 'n' is too small it will be extended.
-    
-    For example: (n=12)
-    
-    value:        3923009         3.923009   0.0003923009
-      k
-     -5             3920000             0          0 
-     -2             3923010             0          0
-     -1             3923009             4          0 
-      0            3923009.            4.         0. 
-      1           3923009.0           3.9        0.0
-      4        3923009.0000        3.9230     0.0004       
- *)
+(**Writes the value @oparam{lreal} in the format produced by
+   @oproc{LRealStr.RealToFixed}.  *)
   VAR
     val: ARRAY 128 OF CHAR;
   BEGIN
@@ -1509,7 +1468,7 @@ PROCEDURE (w: Writer) WriteLRealFix*(VAR lreal: LONGREAL; n, k: LONGINT);
   END WriteLRealFix;
 
 PROCEDURE (w: Writer) WriteRealFix*(real: REAL; n, k: LONGINT);
-(* As WriteLongRealFix *)
+(**As @oproc{Writer.WriteLRealFix}.  *)
   VAR
     val: ARRAY 128 OF CHAR;
   BEGIN
@@ -1524,22 +1483,8 @@ PROCEDURE (w: Writer) WriteRealFix*(real: REAL; n, k: LONGINT);
   END WriteRealFix;
 
 PROCEDURE (w: Writer) WriteLRealEng*(VAR lreal: LONGREAL; n, k: LONGINT);
- (* 
-    Converts the value of real to floating-point string form, with 
-    `k' significant figures, and writes the resultant value,
-    right-justified in a field of width `n' to the underlying channel.
-    If 'n' is too small it will be extended. The number is scaled with 
-    one to three digits in the whole number part and with an exponent 
-    that is a multiple of three.
-     
-    For example: n=9
-    
-    value:     3923009     39.23009   0.0003923009
-      k
-      1             4E+6        40         400E-6 
-      2           3.9E+6        39         390E-6
-      5        3.9230E+6    39.230      392.30E-6     
-  *)
+(**Writes the value @oparam{lreal} in the format produced by
+   @oproc{LRealStr.RealToEng}.  *)
   VAR
     val: ARRAY 128 OF CHAR;
   BEGIN
@@ -1554,7 +1499,7 @@ PROCEDURE (w: Writer) WriteLRealEng*(VAR lreal: LONGREAL; n, k: LONGINT);
   END WriteLRealEng;
 
 PROCEDURE (w: Writer) WriteRealEng*(real: REAL; n, k: LONGINT);
-(* As WriteLRealEng *)
+(**As @oproc{Writer.WriteLRealEng}.  *)
   VAR
     val: ARRAY 128 OF CHAR;
   BEGIN
@@ -1569,9 +1514,7 @@ PROCEDURE (w: Writer) WriteRealEng*(real: REAL; n, k: LONGINT);
   END WriteRealEng;
   
 PROCEDURE (w: Writer) WriteSet*(s: SET);
-(* Write 's' in mathematical set notation.
-   Pre: x = {Element, ..., Element}; Post: write "{Element, ..., Element}" 
-   where Element = number [".." number] and 0 <= number <= 31 *)
+(**Write @oparam{s} in Oberon-2 set notation.  *)
   VAR
     bit, lo: SHORTINT; addComma: BOOLEAN;
   BEGIN
@@ -1594,7 +1537,7 @@ PROCEDURE (w: Writer) WriteSet*(s: SET);
   END WriteSet;
  
 PROCEDURE (w: Writer) WriteLn*;
-(* Write a newline *)
+(**Write a newline.  *)
   VAR
     i: INTEGER;
   BEGIN
