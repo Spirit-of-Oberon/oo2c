@@ -271,19 +271,21 @@
 
 <!-- Import List -->
 <xsl:template name="ImportList">
-  <xsl:if test='import-decl'>
+  <xsl:if test='module-ref'>
     <h3>Import List</h3>
     <pre>
       <xsl:text>&#xA;</xsl:text>
       <xsl:for-each select='import-decl'>
         <xsl:sort select="@module"/>
         <xsl:variable name="module" select="@module"/>
-        <xsl:text>    </xsl:text>
-        <a href="{../module-ref[@name=$module]/
-                     ref-target[@type='html']/@relative-uri}">
-          <xsl:value-of select="@module"/>
-        </a>
-        <xsl:text>&#xA;</xsl:text>
+	<xsl:if test='../module-ref[@name=$module]'>
+          <xsl:text>    </xsl:text>
+          <a href="{../module-ref[@name=$module]/
+                       ref-target[@type='html']/@relative-uri}">
+            <xsl:value-of select="@module"/>
+          </a>
+          <xsl:text>&#xA;</xsl:text>
+        </xsl:if>
       </xsl:for-each>
     </pre>
     <xsl:call-template name="InsertSpace"/>
