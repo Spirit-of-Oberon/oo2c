@@ -13,7 +13,7 @@
   generic30 generic31 generic32 generic33 generic34">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; tbproc4">-->
+  select ="&SetupTestCasesWithOut; tbproc9">-->
 
   &TestSetupWithOut;
     
@@ -891,6 +891,9 @@
       The called type-bound procedure is not exported by
       <code>TBProc1.Mod</code>.
     </test>
+    <test id="tbproc9" type="reject" file="TBProc9.Mod">
+      Super call to a different procedure.
+    </test>
 
     
     <test id="nestedproc1" type="run"
@@ -1651,6 +1654,7 @@
       msg="This variable has no dynamic type"/>
     
     <reject-info id="tbproc8" pos="p. %Proc" msg="Undeclared identifier"/>
+    <reject-info id="tbproc9" pos="p.%Proc" msg="Cross procedure super call"/>
 
     <reject-info id="inc2" pos="INC(%x,1)"
       msg="Expression must be of integer type"/>
