@@ -85,7 +85,7 @@ static Msg__Msg get_error(const OS_Files__Path path) {
 
 
 static void extend_result(OS_Files__NameArray *result, int *result_len,
-			  OS_Files__Name buffer[], int buffer_len) {
+			  Object__String8 buffer[], int buffer_len) {
   int len=*result_len+buffer_len;
   char* ptr;
   int i;
@@ -112,7 +112,7 @@ OS_Files__NameArray OS_Files__listdir(const OS_Files__Path path__ref,
 
   dir = opendir(path__ref);
   if (dir != NULL) {
-    OS_Files__Name buffer[DIRENT_BUFFER];
+    Object__String8 buffer[DIRENT_BUFFER];
     OS_Files__NameArray result = NULL;
     int result_len = 0;
     struct dirent *de;
@@ -143,8 +143,7 @@ OS_Files__NameArray OS_Files__listdir(const OS_Files__Path path__ref,
 	  i = 0;
 	}
 	len = strlen(de->d_name);
-	buffer[i] = RT0__NewObject(OOC_PTRBASE_DESCR(OS_Files,Name), len+1);
-	strcpy(buffer[i], de->d_name);
+	buffer[i] = Object__NewLatin1(de->d_name, len);
 	i++;
       }
     }
