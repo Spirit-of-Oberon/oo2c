@@ -53,7 +53,7 @@ all: lib/obj/liboo2c.la bin/oo2c
 ###      by building, but normally aren't because the distribution comes
 ###      with them.
 main-clean: doc-clean test-cleanall
-	for i in sym obj sym-v1 obj-v1; do rm -Rf ${top_builddir}/$$i; done
+	for i in sym obj bin sym-v1 obj-v1; do rm -Rf ${top_builddir}/$$i; done
 	for i in lib/sym lib/obj; do rm -Rf ${top_builddir}/$$i; done
 	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done

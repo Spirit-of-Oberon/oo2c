@@ -6,7 +6,7 @@
   
   <processor name="oo2c"
 	     version="devel"
-	     command="../../oo2c"
+	     command="../../bin/oo2c"
 	     config-file=""
 	     working-dir="wd" 
 	     flags="--use-stderr -r ../resources -r ../../lib -r wd"

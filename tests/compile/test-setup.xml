@@ -6,7 +6,7 @@
   
   <processor name="TestCompile"
 	     version="devel"
-	     command="../../TestCompile"
+	     command="../../bin/TestCompile"
 	     config-file=""
 	     working-dir="wd" 
 	     flags="-r ../lib-TestCompile -r wd --write-ir"

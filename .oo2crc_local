@@ -10,6 +10,8 @@ GET *.h, *.d, *.c, *.o FROM
   obj-v1;
 GET *.c FROM
   src; src/Codec; ../libxml/src;
+GET * FROM
+  bin;
 END
 
 PRAGMAS
