@@ -39,3 +39,14 @@ need to add "-traditional-cpp" to the gcc options, like
     CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib -ldl" ./configure
 
   [hints from Richard Theil]
+
+----
+
+(IRIX 5.3): IRIX uses a slightly different signature of readdir_r (two
+arguments instead of three, returning the same value as readdir).
+This means that line 70 in lib/src/OS/Files.c 
+    while (readdir_r(dir, &u.d, &de) == 0) {
+needs to be replaced with
+    while (1) {
+      de = readdir_r(dir, &u.d);
+[I would appreciate if someone could provide an autoconf test for this.]
