@@ -47,7 +47,7 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
     END GetURIofRT;
   
   BEGIN
-    COPY ("gcc -Wall -W -Wno-unused -Wno-format -Werror -g -pipe", cmd);
+    COPY ("gcc -Wall -W -Wno-unused -Wno-format -Werror -O2 -Wno-uninitialized -g -pipe", cmd);
     
     include := Config.repositories. GetIncludePaths();
     FOR i := 0 TO LEN (include^)-1 DO
