@@ -343,6 +343,7 @@ PROCEDURE (s: Section) GetIncludePaths*(): Object.StringArrayPtr;
   END GetIncludePaths;
 
 BEGIN
+  URI.RegisterScheme(File.NewPrototype());
   NEW (repositoriesContext);
   Msg.InitContext (repositoriesContext, "OOC:Config:Repositories");
   repositoryEntries := NIL

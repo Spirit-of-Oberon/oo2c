@@ -91,8 +91,4 @@ PROCEDURE NewPrototype* (scheme: ARRAY OF CHAR): URI;
     RETURN New (String.Copy (scheme), NIL, NIL)
   END NewPrototype;
 
-BEGIN
-  URI0.RegisterScheme (NewPrototype("nntp"));
-  URI0.RegisterScheme (NewPrototype("news"));
-  URI0.RegisterScheme (NewPrototype("snews"));
 END URI:Scheme:NNTP.

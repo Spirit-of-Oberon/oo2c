@@ -26,7 +26,8 @@ BEGIN
     argReader := TextRider.ConnectReader(ProgramArgs.args);
     argReader.ReadLine (buffer);        (* skip command name *)
     argReader.ReadLine (buffer);        (* get argument *)
-    
+
+    URI.RegisterScheme(HTTP.NewPrototype());
     uri := Parser.NewURI(buffer, NIL);  (* parse URI *)
     ch := uri.GetChannel(URI.channelOld); (* get channel for URI *)
 

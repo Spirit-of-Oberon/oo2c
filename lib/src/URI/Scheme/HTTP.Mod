@@ -19,11 +19,8 @@ MODULE URI:Scheme:HTTP;
 *)
 
 IMPORT
-  Log,
-  Ascii, IntStr, Object, ADT:StringBuffer,
-  IO, IO:Address, IO:SocketChannel, IO:Buffer,
-  URI0 := URI,
-  URI:Scheme:Hierarchical, URI:Authority:ServerBased,
+  Ascii, IntStr, Object, ADT:StringBuffer, IO, IO:Address, IO:SocketChannel,
+  IO:Buffer, URI0 := URI, URI:Scheme:Hierarchical, URI:Authority:ServerBased,
   Query := URI:Query:Unparsed;
 
 TYPE
@@ -152,7 +149,6 @@ RAISES IO.Error;
        HTTP/0.9 responses are not accepted *)
     ch := Buffer.Open(sock);
     str8 := ch.ReadLineLF();
-    Log.Object("LINE", str8);
     IF (str8 # NIL) THEN
       resp := str8.CharsLatin1();
       i := 0;
@@ -191,7 +187,6 @@ RAISES IO.Error;
     (* skip header lines; empty line contains only 2 characters: CR+LF *)
     WHILE (str8 # NIL) & (str8.length > 2) DO
       str8 := ch.ReadLineLF();
-      Log.Object("LINE", str8);
     END;
     
     RETURN ch;
@@ -202,6 +197,4 @@ PROCEDURE NewPrototype*(): URI;
     RETURN New ("http", NIL, NIL)
   END NewPrototype;
 
-BEGIN
-  URI0.RegisterScheme (NewPrototype());
 END URI:Scheme:HTTP.

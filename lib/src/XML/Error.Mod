@@ -270,5 +270,6 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
   END Write;
 
 BEGIN
+  URI.RegisterScheme(File.NewPrototype());
   errMsgLineBase := 0; errMsgColumnBase := 0; errMsgCharPosBase := 0;
 END XML:Error.

@@ -186,6 +186,4 @@ PROCEDURE ToURI* (filePath: ARRAY OF CHAR): URI;
     END;
   END ToURI;
 
-BEGIN
-  URI0.RegisterScheme (NewPrototype())
 END URI:Scheme:File.

@@ -3140,6 +3140,8 @@ PROCEDURE Init();
     params: TypeVarArray;
     arguments: TypeRefArray;
   BEGIN
+    URI.RegisterScheme(File.NewPrototype());
+    
     predefIdToType := NIL;
     emptyBaseURI := File.ToURI("/");
     NEW (importPosition);

@@ -60,6 +60,4 @@ PROCEDURE NewPrototype*(): URI;
     RETURN New("mailto", "");
   END NewPrototype;
 
-BEGIN
-  URI0.RegisterScheme (NewPrototype())
 END URI:Scheme:MailTo.
