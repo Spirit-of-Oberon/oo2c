@@ -271,7 +271,7 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       (* the predicate that is evaluated at the end of a branch block must
          be live at the end of the block *)
       res := b. predicate. arg;
-      IF (res. info = rf) & ~iGraph. In (res. marker, live)THEN
+      IF (res. info = rf) & ~iGraph. In (res. marker, live) THEN
         iGraph. AddToLive (res. marker, live);
       END;
     ELSE  (* nothing to do *)
@@ -317,6 +317,16 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       END;
       
       proxy := proxy. prevProxy
+    END;
+
+    WITH b: Schedule.SwitchBlock DO
+      (* the select expression that is evaluated at the beginning
+         switch must be live at the beginning of the block *)
+      res := b. expr. arg;
+      IF (res. info = rf) & ~iGraph. In (res. marker, live) THEN
+        iGraph. AddToLive (res. marker, live);
+      END;
+    ELSE  (* nothing to do *)
     END;
   END SweepLiveSet;
 
@@ -443,6 +453,27 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
       END;
     END TraverseBlocks;
 
+  (*PROCEDURE WriteConflicts (rf: RegisterFile);
+    VAR
+      i, j: LONGINT;
+      res: SSA.Result;
+    BEGIN
+      FOR i := 0 TO rf. resultList. size-1 DO
+        res := rf. resultList. array[i](SSA.Result);
+        Err.LongInt (i, 0);
+        Err.String ("/");
+        Err.Hex (SYSTEM.VAL(LONGINT,res), 8);
+        Err.String (":");
+        FOR j := 0 TO rf. resultList. size-1 DO
+          IF rf. iGraph. Conflicts (i, j) THEN
+            Err.Char (" ");
+            Err.LongInt (j, 0);
+          END;
+        END;
+        Err.Ln;
+      END;
+    END WriteConflicts;*)
+  
   BEGIN
     rf. iGraph := IGraph.NewGraph (rf. resultList. size);
     
@@ -455,6 +486,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
       TraverseBlocks (rf, deadEnds. array[i](Schedule.Block), live);
     END;
     rf. iGraph. SymmetricMatrix;
+    (*WriteConflicts (rf);*)
 
     (* calculate a coloring for the resulting graph; use the coloring to
        assign register ids to results *)
