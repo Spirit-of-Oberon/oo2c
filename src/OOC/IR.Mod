@@ -1,3 +1,4 @@
+(* 	$Id$	 *)
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
     Copyright (C) 2001-2003  Michael van Acken, Stewart Greenhill
@@ -992,6 +993,8 @@ TYPE
     (**If @code{TRUE}, then a run-time error should be reported if the end
        of the function body is reached without encountering any @code{RETURN}.
        *)
+    endOfProc-: Symbol;
+    (**The @code{END} at the end of the procedure, or @code{NIL}.  *)
   END;
 
 TYPE
@@ -4486,17 +4489,20 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
 
 PROCEDURE InitProcedure* (p: Procedure; sym: Symbol; 
                           decl: Sym.ProcDecl; statmSeq: StatementSeq;
+                          endOfProc: Symbol;
                           checkFunctionResult: BOOLEAN);
   BEGIN
     InitNode (p, sym);
     p. decl := decl;
     p. statmSeq := statmSeq;
+    p. endOfProc := endOfProc;
     p. checkFunctionResult := checkFunctionResult;
   END InitProcedure;
 
 PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
                                       decl: Sym.ProcDecl;
                                       statmSeq: StatementSeq;
+                                      endOfProc: Symbol;
                                       hasBegin: BOOLEAN): Procedure;
   VAR
     p: Procedure;
@@ -4565,7 +4571,7 @@ PROCEDURE (b: Builder) NewProcedure* (sym: Symbol;
     
     NEW (p);
     statmSeq := AddSetupCode (sym, decl, statmSeq);
-    InitProcedure (p, sym, decl, statmSeq,
+    InitProcedure (p, sym, decl, statmSeq, endOfProc,
                    GetPragmaValue (b, StdPragmas.functionResultCheck,
                                    decl. name. pos));
     RETURN p
@@ -4593,7 +4599,8 @@ PROCEDURE InitModule* (m: Module; sym: Symbol; name: Name;
 
 PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
                                    procList: ProcedureList;
-                                   statmSeq: StatementSeq): Module;
+                                   statmSeq: StatementSeq;
+                                   endOfModule: Symbol): Module;
   VAR
     m: Module;
     
@@ -4626,7 +4633,8 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
   BEGIN
     NEW (m);
     InitModule (m, sym, name, procList,
-                b. NewProcedure (sym, decl. bodyDecl, statmSeq, TRUE));
+                b. NewProcedure (sym, decl. bodyDecl, statmSeq,
+                                 endOfModule, TRUE));
     IF b.errList.NoErrors() THEN
       UnusedDeclarations(decl);
     END;

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree:CreateIR;
 (*  Creates an IR representation from the abstract syntax tree.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -516,6 +516,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       statmSeq: IR.StatementSeq;
       oldNamespace: Sym.Namespace;
       oldSourceContext: Sym.Item;
+      endOfBody: BasicList.Symbol;
     BEGIN
       oldNamespace := currentNamespace;
       oldSourceContext := currentSourceContext;
@@ -527,11 +528,17 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       ELSE
         statmSeq := StatementSeq (procCode. body. statmSeq)
       END;
+      IF (procCode.body = NIL) THEN
+        endOfBody := NIL;
+      ELSE
+        endOfBody := procCode. body. end. sym;
+      END;
       
       currentNamespace := oldNamespace;
       currentSourceContext := oldSourceContext;
       RETURN b. NewProcedure (procCode. proc. sym, procDecl, statmSeq,
-                              (procCode.body # NIL) &
+                              endOfBody,
+                              (procCode.body # NIL) & 
                               (procCode.body.begin # NIL))
     END ProcDecl;
 <* POP *>
@@ -601,7 +608,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       END;
       
       RETURN b. NewModule (moduleAST. module. sym, moduleAST. moduleName,
-                           moduleDecl, procList, statmSeq)
+                           moduleDecl, procList, statmSeq,
+                           moduleAST. body. end. sym)
     END Module;
 
   PROCEDURE TranslateEmbeddedExpr (item: Sym.Item);
