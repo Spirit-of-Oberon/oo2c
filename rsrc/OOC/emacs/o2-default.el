@@ -40,16 +40,16 @@
 
 ;; put compilation buffers in upper right corner of the display; note: this
 ;; does not work correctly under Emacs 20.2
-(if window-system
-    (let ((o2-frame-params '((height . 10)
-			     (unsplittable . t) (menu-bar-lines . 0)
-			     (left . (- 0)) (top . 0) (user-position . t)
-			     (font . "5x7") (width . 60) (auto-raise . t) 
-			     (vertical-scroll-bars . nil) (auto-lower . t)
-			     (name . "o2-compilation"))))
-      (setq special-display-regexps
-	    `(("^\\*o2-compile.*\\*$" . ,o2-frame-params)
-	      ("^\\*o2-make.*\\*$" . ,o2-frame-params)))))
+;; (if window-system
+;;     (let ((o2-frame-params '((height . 10)
+;; 			     (unsplittable . t) (menu-bar-lines . 0)
+;; 			     (left . (- 0)) (top . 0) (user-position . t)
+;; 			     (font . "5x7") (width . 60) (auto-raise . t) 
+;; 			     (vertical-scroll-bars . nil) (auto-lower . t)
+;; 			     (name . "o2-compilation"))))
+;;       (setq special-display-regexps
+;; 	    `(("^\\*o2-compile.*\\*$" . ,o2-frame-params)
+;; 	      ("^\\*o2-make.*\\*$" . ,o2-frame-params)))))
 
 
 ;; add menubar item with an index of the procedures, type-bound procedures,
@@ -65,6 +65,6 @@
 (add-hook 
  'oberon-2-mode-hook 
  (lambda ()
-   (local-set-key [f8] 'o2-next-error)
+   (local-set-key [f8] 'next-error)
    (local-set-key [f9] 'o2-find-def-under-cursor)
    (local-set-key [f12] (lambda () (interactive) (o2-make o2-make-command)))))

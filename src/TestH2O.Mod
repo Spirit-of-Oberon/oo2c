@@ -3,7 +3,7 @@ MODULE TestH2O;
 IMPORT 
   StdChannels, Out,
   H2O:Scanner, E := H2O:Error, H2O:Source, H2O:Process, H2O:Parser,
-  Config:Source:CmdLine, OOC:Config, Config:Section:Arguments,
+  OOC:Config, Config:Section:Arguments,
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   OOC:Error;
 
@@ -50,7 +50,7 @@ PROCEDURE NewConfig;
   END NewConfig;
 
 BEGIN
-  Error.oo2cStyleErrors := TRUE;
+  Error.style := Error.styleCharPos;
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);

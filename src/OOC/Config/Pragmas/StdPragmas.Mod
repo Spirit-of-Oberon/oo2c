@@ -68,8 +68,6 @@ VAR
 
 
 PROCEDURE CreateVariables* (s: Pragmas.Section);
-  VAR
-    dummy: Pragmas.Pragma;
   BEGIN
     warnings := s. Set ("Warnings", Boolean.New (defaultWarnings));
     assertions := s. Set ("Assertions", Boolean.New (defaultAssertions));

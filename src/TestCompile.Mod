@@ -5,7 +5,7 @@ IMPORT
   Config:Section:Arguments,
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, ADT:String,
-  OOC:Config, OOC:Config:CCompiler, OOC:Config:Assembler,
+  OOC:Config, OOC:Config:CCompiler,
   OOC:SymbolTable:Builder, OOC:Error, Rep := OOC:Repository, OOC:Make;
 
 VAR
@@ -18,6 +18,7 @@ VAR
   ok: BOOLEAN;
   
   make: Options.Option;
+  errorStyle: Options.Option;
   writeAST: Options.Option;
   writeIR: Options.Option;
   useSSA: Options.Option;
@@ -45,6 +46,9 @@ PROCEDURE OptionToMatcher (option: Options.Option; cmdLineName: ARRAY OF CHAR): 
 
 PROCEDURE NewConfig;
   BEGIN
+    errorStyle := Config.AddOption("errorStyle",
+                                   StringValue.New("file:line:column"));
+    
     make := Config.AddOption ("make", BooleanValue.New (FALSE));
     writeAST := Config.AddOption ("write-ast", BooleanValue.New (FALSE));
     writeIR := Config.AddOption ("write-ir", BooleanValue.New (FALSE));
@@ -55,6 +59,8 @@ PROCEDURE NewConfig;
     
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
+    Config.AddCmdLine ("--error-style",
+                       "<options><set name='errorStyle'>$1</set></options>");
     Config.AddCmdLine ("--make",
                  "<options><set name='make'>TRUE</set></options>");
     Config.AddCmdLine ("--use-ssa",
@@ -72,7 +78,6 @@ PROCEDURE NewConfig;
   END NewConfig;
 
 BEGIN
-  Error.oo2cStyleErrors := TRUE;
   Builder.doAutoImport := Builder.autoImportRT0;
   cfgErrList := Error.NewList ("");
   NewConfig;
@@ -84,6 +89,11 @@ BEGIN
     mode := Rep.modObjectFile;
   ELSE
     mode := Rep.modCodeFileC
+  END;
+  IF (errorStyle.value(StringValue.Value).string^ = "file:line:column") THEN
+    Error.style := Error.styleFileLineColumn;
+  ELSIF (errorStyle.value(StringValue.Value).string^ = "char-pos") THEN
+    Error.style := Error.styleCharPos;
   END;
   
   Make.writeAST := writeAST.value(BooleanValue.Value).boolean;

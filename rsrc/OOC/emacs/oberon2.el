@@ -2,9 +2,7 @@
 
 ;; Copyright (C) 1995-2002  Michael van Acken  <acken@informatik.uni-kl.de>
 ;; 
-;; Version: 1.16, requires Emacs 19.28
-;; You can ignore the "free variable o2-source-for-errors" errors when 
-;; byte-compiling this file.
+;; Version: 2.0, requires Emacs 21.2
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -169,8 +167,8 @@ from its source code.")
     (define-key map "\M-c" 'o2-compile)
     (define-key map "\M-\C-c" 'o2-make)
     (define-key map "\C-cu" 'o2-list-uses)
-    (define-key map "\C-c`" 'o2-next-error)
-    (define-key map "\C-c'" 'o2-next-error)
+    (define-key map "\C-c`" 'next-error)
+    (define-key map "\C-c'" 'next-error)
     (define-key map "\C-cg" 'o2-goto-error)
 
     (define-key imap [o2-insert-record] '("RECORD" . o2-insert-record))
@@ -208,8 +206,8 @@ from its source code.")
     (define-key map [menu-bar o2 separator-eval2] '("--"))
     (define-key map [menu-bar o2 o2-goto-error] 
       '("Goto Error..." . o2-goto-error))
-    (define-key map [menu-bar o2 o2-next-error] 
-      '("Next Error" . o2-next-error))
+    (define-key map [menu-bar o2 next-error] 
+      '("Next Error" . next-error))
     (define-key map [menu-bar o2 o2-make] '("Make..." . o2-make))
     (define-key map [menu-bar o2 o2-compile] '("Compile" . o2-compile))
     (define-key map [menu-bar o2 separator-eval1] '("--"))
@@ -287,7 +285,7 @@ Managing source code:
 \\[o2-find-typebound-procedure]		display (same window) a procedure bound to a given type
 \\[o2-find-typebound-procedure-other-window]		display (other window) a procedure bound to a given type
 \\[o2-find-typebound-procedure-other-frame]		display (other frame) a procedure bound to a given type
-\\[o2-list-uses]		step through all uses of a declaration with \\[o2-next-error]
+\\[o2-list-uses]		step through all uses of a declaration with \\[next-error]
 All the above functions accept a module's alias name (as declared in the 
 current buffers IMPORT list) instead of the real module name. For further
 information on '\\[o2-find-definition]' or '\\[o2-find-typebound-procedure]' use \\[describe-key].
@@ -304,7 +302,7 @@ Compiling:
 \\[o2-compile]		compile current buffer
 C-u \\[o2-compile]		prompt for compile command and compile current buffer
 \\[o2-make]		run a make on a module
-\\[o2-next-error]		display the next error
+\\[next-error]		display the next error
 \\[o2-goto-error]		prompt for module and error position, goto position
 
 Searches will distinct cases. Delete converts tabs to spaces as it moves back. 
@@ -338,8 +336,6 @@ mouse button) since GNU Emacs 19.29."
   (setq case-fold-search nil)
 
   ; prepare compilation package to work with oo2c
-  (set (make-local-variable 'compilation-parse-errors-function)
-       'o2-compilation-parse-errors)
   (add-hook 'compilation-mode-hook 'o2-compilation-mode-hook)
 
   ; add fontifying rules for font-lock-mode
@@ -368,12 +364,8 @@ mouse button) since GNU Emacs 19.29."
 ;; variables are only set if the variable o2-running-compile is not void, i.e.
 ;; if o2-compile or o2-make are running.
   (cond ((boundp 'o2-running-compile)
-	 (set (make-local-variable 'o2-source-for-errors) "")
 	 (set (make-local-variable 'compilation-finish-function)
-	      (lambda (buffer exit) (o2-fit-to-window buffer)))
-	 (set (make-local-variable 'compilation-parse-errors-function)
-	      'o2-compilation-parse-errors))))
-
+	      (lambda (buffer exit) (o2-fit-to-window buffer))))))
 
 
 (defun o2-interactive-strings (strings &optional barf-if-read-only)
@@ -1520,7 +1512,7 @@ given."
 is set, read the compilation command from the minibuffer.
 Runs the shell command 'o2-compile-command MODULE', in a separate process 
 asynchronously with output going to the buffer *o2-compile:MODULE*.
-Use the command \\[o2-next-error] to get the next error message
+Use the command \\[next-error] to get the next error message
 and to move to the source code position that caused it."
   (interactive 
    (list (o2-curr-module-name)
@@ -1538,7 +1530,7 @@ and to move to the source code position that caused it."
   "Make a given module respectively command.
 Prompts for a command to be run in a separate process asynchronously with 
 output going to the buffer *o2-make:COMMAND*.
-You can then use the command \\[o2-next-error] to get the next error message
+You can then use the command \\[next-error] to get the next error message
 and move to the source code position that caused it."
   (interactive (list (read-from-minibuffer "Make command: " o2-make-command
 					   nil nil 'o2-make-history)))
@@ -1555,7 +1547,7 @@ and move to the source code position that caused it."
   "List all uses of the given declaration in the specified module set.
 Prompts for a command to be run in a separate process asynchronously with 
 output going to the buffer *o2-search:COMMAND*.
-You can then use the command \\[o2-next-error] to get the use position
+You can then use the command \\[next-error] to get the use position
 and move to the source code position that caused it."
   (interactive (list (read-from-minibuffer "Search command: " o2-list-uses-command
 					   nil nil 'o2-list-uses-history)))
@@ -1567,149 +1559,6 @@ and move to the source code position that caused it."
     (o2-compile-internal command (if o2-concurrent-compilation
 				     (concat "o2-search:" search-command)
 				   "o2-search"))))
-
-;;; The functions o2-compilation-parse-errors, o2-compilation-goto-locus, and
-;;; o2-next-error are closely related to the corresponding functions in 
-;;; Roland McGrath's compile.el package.  They are slightly modified to deal
-;;; with a different error format generated by the compiler and to display
-;;; errors in the message area instead of a separate buffer.
-
-(defun o2-compilation-parse-errors (limit-search find-at-least)
-  "Parse the current buffer as oo2c error messages.
-See variable `compilation-parse-errors-function' for the interface it uses.
-The value of find-at-least is ignored and taken to be nil."
-  (setq find-at-least nil)
-  (setq compilation-error-list nil)
-  (message "Parsing error messages...")
-  (let (regexp error-group file-group
-	(found-desired nil)
-	(compilation-num-errors-found 0))
-
-    ;; Don't reparse messages already seen at last parse.
-    (goto-char compilation-parsing-end)
-    
-    ;; Compile all the regexps we want to search for into one.
-    (setq regexp "^\\(In file \\([^:]+\\): \\| *\\([0-9]+\\):\\(.*\\)\\)$"
-	  file-group 2
-	  error-group 3)
-
-    (while (and (not found-desired)
-		;; We don't just pass LIMIT-SEARCH to re-search-forward
-		;; because we want to find matches containing LIMIT-SEARCH
-		;; but which extend past it.
-		(re-search-forward regexp nil t))
-
-      ;; Figure out which constituent regexp matched.
-      (cond ((and limit-search (>= (point) limit-search)
-		  ;; The user wanted a specific error, and we're past it.
-		  ;; We do this check here (and in the leave-group case)
-		  ;; rather than at the end of the loop because if the last
-		  ;; thing seen is an error message, we must carefully
-		  ;; discard the last error when it is the first in a new
-		  ;; file (see below in the error-group case).
-		  (setq found-desired t)))
-
-	    ((match-beginning file-group)
-	     ;; The match is the file name that the following error
-	     ;; messages are referring to.
-	     ;; The variable o2-source-for-errors is created by 
-	     ;; o2-compilation-mode-hook as local variable to this buffer.
-	     (setq o2-source-for-errors 
-		   (find-file-noselect
-		    (let ((file-name 
-			   (buffer-substring (match-beginning file-group)
-					     (match-end file-group))))
-		      (if (eq (aref file-name 0) ?/)
-			  file-name
-			(concat o2-cwd file-name))))))
-	    
-	    ((match-beginning error-group)
-	     ;; Extract the file position from the error message.
-	     (let ((beginning-of-match (match-beginning 0)) ;looking-at nukes
-		   (filepos (1+ (string-to-int
-				 (buffer-substring
-				  (match-beginning error-group)
-				  (match-end error-group))))))
-
-	       ;; Locate the erring file position.
-	       ;; Cons a new elt onto compilation-error-list,
-	       ;; giving a marker for the current compilation buffer
-	       ;; location, and a marker for the error.
-	       (save-excursion
-		 (beginning-of-line 1)
-		 (let ((this (cons (point-marker)
-				   (set-marker (make-marker)
-					       filepos 
-					       o2-source-for-errors))))
-		   (setq compilation-error-list
-			 (cons this
-			       compilation-error-list))
-		   (setq compilation-num-errors-found
-			 (1+ compilation-num-errors-found))))
-	       (if (or (and find-at-least (> compilation-num-errors-found
-					     find-at-least))
-		       (and limit-search (>= (point) limit-search)))
-		   (setq found-desired t)))))
-      
-      (message "Parsing error messages...%d (%.0f%% of buffer)"
-	       compilation-num-errors-found
-	       ;; Use floating-point because (* 100 (point)) frequently
-	       ;; exceeds the range of Emacs Lisp integers.
-	       (/ (* 100.0 (point)) (point-max)))
-      
-      (and limit-search (>= (point) limit-search)
-	   ;; The user wanted a specific error, and we're past it.
-	   (setq found-desired t)))
-    (setq compilation-parsing-end (if found-desired
-				      (point)
-				    ;; We have searched the whole buffer.
-				    (point-max))))
-  (setq compilation-error-list (nreverse compilation-error-list))
-  (message "Parsing error messages...done"))
-
-(defun o2-compilation-goto-locus (next-error)
-  "Jump to an error locus returned by `compilation-next-error-locus'.
-Takes one argument, a cons (ERROR . SOURCE) of two markers.
-Selects a window with point at SOURCE, and display a message containing the 
-error text."
-  (if (and (window-dedicated-p (selected-window))
-	   (eq (selected-window) (frame-root-window)))
-      (switch-to-buffer-other-frame (marker-buffer (cdr next-error)))
-    (switch-to-buffer (marker-buffer (cdr next-error))))
-  (goto-char (cdr next-error))
-  ;; If narrowing got in the way of
-  ;; going to the right place, widen.
-  (or (= (point) (marker-position (cdr next-error)))
-      (progn
-	(widen)
-	(goto-char (cdr next-error))))
-
-  ;; Show error text in message area
-  (save-excursion
-    (set-buffer (marker-buffer (car next-error)))
-    (goto-char (marker-position (car next-error)))
-    (if (looking-at "^ *[0-9]+:\\(.*\\)$")
-	(message (buffer-substring (match-beginning 1) (match-end 1)))
-      (error "Cannot extract error message"))))
-
-(defun o2-next-error (&optional argp)
-  "See function next-error in the standard compile.el package for the general
-functionality. This specific function will close all compilation windows and
-display the error in the message area."
-  (interactive "P")
-  ; close compilation windows
-  (let ((buffer (compilation-find-buffer))
-	 window)
-    (while (and (setq window (get-buffer-window buffer))
-		(not (one-window-p 'no-mini)))
-      (delete-window window))
-    (setq compilation-last-buffer buffer))
-  (o2-compilation-goto-locus (compilation-next-error-locus
-			      ;; We want to pass a number here only if
-			      ;; we got a numeric prefix arg, not just C-u.
-			      (and (not (consp argp))
-				   (prefix-numeric-value argp))
-			      (consp argp))))
 
 ;;;#########################################################################
 ;;; functions added Jan 02 1998:

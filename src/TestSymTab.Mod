@@ -128,7 +128,9 @@ BEGIN
     Out.String ("Usage: TestSymTab [--names-only-xml|--resolve-names-xml|--interface-xml] [--terse-errors] -r <repository> <file>"); Out.Ln;
     HALT (1)
   ELSE
-    Error.oo2cStyleErrors := oo2cStyleErrors. value(BooleanValue.Value). boolean;
+    IF oo2cStyleErrors. value(BooleanValue.Value). boolean THEN
+      Error.style := Error.styleCharPos;
+    END;
     
     makeRules := NewRules();
     ok := TRUE;

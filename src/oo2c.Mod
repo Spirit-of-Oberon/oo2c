@@ -22,7 +22,7 @@ VAR
   i: LONGINT;
   arg: Arguments.Argument;
   mode: SHORTINT;
-  command, useStderr: Options.Option;
+  command, useStderr, errorStyle: Options.Option;
   makeRules: Make.Rules;
   rep: Rep.Repository;
   pkg, pkgInfo: Package.Package;
@@ -34,6 +34,8 @@ PROCEDURE NewConfig;
   BEGIN
     command := Config.AddOption("command", Integer.New(0));
     useStderr := Config.AddOption("useStderr", Boolean.New(FALSE));
+    errorStyle := Config.AddOption("errorStyle",
+                                   StringValue.New("file:line:column"));
     
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
@@ -51,8 +53,6 @@ PROCEDURE NewConfig;
                        "<options><set name='command'>6</set></options>");
     Config.AddCmdLine ("--build-pkg-doc",
                        "<options><set name='command'>7</set></options>");
-    Config.AddCmdLine ("--use-stderr",
-                 "<options><set name='useStderr'>TRUE</set></options>");
     Config.AddCmdLine ("--no-rtc",
                        "<pragmas>"+
                        "  <set name='Assertions'>FALSE</set>"+
@@ -66,6 +66,10 @@ PROCEDURE NewConfig;
     Config.AddCmdLine ("--verbose,-v", "");  (* ignored for now *)
     Config.AddCmdLine ("--warnings,-w", ""); (* ignored for now *)
     
+    Config.AddCmdLine ("--error-style",
+                       "<options><set name='errorStyle'>$1</set></options>");
+    Config.AddCmdLine ("--use-stderr",
+                       "<options><set name='useStderr'>TRUE</set></options>");
     CCompiler.RegisterConfig;
   END NewConfig;
 
@@ -482,7 +486,6 @@ PROCEDURE BuildPackageDoc(pkg: Package.Package): BOOLEAN;
   END BuildPackageDoc;
 
 BEGIN
-  Error.oo2cStyleErrors := TRUE;
   Error.minErrorDistance := 16;
   Builder.doAutoImport := Builder.fullAutoImport;
   cfgErrList := Error.NewList ("");
@@ -511,6 +514,11 @@ BEGIN
     mode := getOption; Logger.silence := TRUE;
   | 7:
     mode := buildPackageDoc;
+  END;
+  IF (errorStyle.value(StringValue.Value).string^ = "file:line:column") THEN
+    Error.style := Error.styleFileLineColumn;
+  ELSIF (errorStyle.value(StringValue.Value).string^ = "char-pos") THEN
+    Error.style := Error.styleCharPos;
   END;
   
   IF (cfgErrList. msgCount # 0) THEN

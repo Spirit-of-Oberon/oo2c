@@ -55,8 +55,13 @@ TYPE
     (* if TRUE, then the list is either empty or contains only warnings *)
   END;
 
+CONST
+  styleFileLineColumn* = 0;
+  styleCharPos* = 1;
+  styleAttributes* = 2;
+  
 VAR
-  oo2cStyleErrors*: BOOLEAN;
+  style*: SHORTINT;
   minErrorDistance*: LONGINT;
   (**If an error message's position is less than this number of characters
      before or after an existing error message, then it is silently discarded.
@@ -65,12 +70,14 @@ VAR
      
 CONST
   posAttr = "pos";
+  columnAttr = "column";
   lineAttr = "line";
   warningPrefix* = "Warning: ";
   (**All error messages using this prefix are considered warnings.  They do not
      influence compilation, nor do they cause the compiler to terminate with a
      non-zero exit code.  The test for warnings is a bit crude right now,
-     because it checks if @samp{"100 "+warningPrefix} appears somewhere in the
+     because it checks if @samp{"100 "+warningPrefix} or
+     @samp{": "+warningPrefix} appears somewhere in the
      error message's template string.  *)
   
 PROCEDURE InitContext* (c: Context; id: M.String);
@@ -103,7 +110,10 @@ PROCEDURE IsWarning (msg: Msg): BOOLEAN;
     template: ARRAY 128 OF LONGCHAR;
   BEGIN
     msg.context.GetTemplate(msg, template);
-    LongStrings.FindNext("100 "+warningPrefix, template, 0, found, pos);
+    LongStrings.FindNext(": "+warningPrefix, template, 0, found, pos);
+    IF ~found THEN
+      LongStrings.FindNext("100 "+warningPrefix, template, 0, found, pos);
+    END;
     RETURN found;
   END IsWarning;
 
@@ -150,9 +160,12 @@ PROCEDURE (c: Context) BaseTemplate* (msg: Msg; text: LString; VAR templ: LStrin
     attr: M.Attribute;
     repl: ARRAY 8*1024 OF M.LChar;
   BEGIN
-    IF oo2cStyleErrors THEN
+    IF (style = styleCharPos) THEN
       COPY ("${pos}:100 ", templ);
-      LongStrings.Append (text, templ)
+      LongStrings.Append (text, templ);
+    ELSIF (style = styleFileLineColumn) THEN
+      COPY (":${line}:${column}: ", templ);
+      LongStrings.Append (text, templ);
     ELSE
       COPY (text, templ);
       COPY (CharClass.eol, repl);
@@ -189,7 +202,7 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
     writer: TextRider.Writer;
     msg: Msg;
     text: ARRAY 8*1024 OF CHAR;
-    attrPos, attrLine: M.Attribute;
+    attrPos, attrLine, attrColumn: M.Attribute;
     lastPos: LONGINT;
     
   PROCEDURE WriteMsg (msg: Msg);
@@ -205,6 +218,21 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
           msg. GetText (text);
           msg. SetIntAttrib (posAttr, attrPos(M.IntAttribute). int)
         END
+      END;
+      IF (style = styleFileLineColumn) THEN
+        (* Increment line and column number by one.  That is, the first
+           character of the file is (1,1).  *)
+        attrLine := msg. GetAttribute (lineAttr);
+        IF (attrLine # NIL) THEN
+          msg. SetIntAttrib (lineAttr, attrLine(M.IntAttribute). int+1);
+        END;
+        attrColumn := msg. GetAttribute (columnAttr);
+        IF (attrColumn # NIL) & (attrLine # NIL) THEN
+          msg. SetIntAttrib (columnAttr, attrColumn(M.IntAttribute). int+1);
+        END;
+        msg. GetText (text);
+
+        writer. WriteString (errList. fileName);
       END;
       writer. WriteString (text);
       writer. WriteLn;
@@ -236,7 +264,7 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
     writer := TextRider.ConnectWriter (ch);
     ASSERT (writer # NIL);
     
-    IF (errList. fileName # "") THEN
+    IF (errList. fileName # "") & (style # styleFileLineColumn) THEN
       writer. WriteString ("In file ");
       writer. WriteString (errList. fileName);
       writer. WriteString (": ");
@@ -267,6 +295,6 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
   END Write;
 
 BEGIN
-  oo2cStyleErrors := FALSE;
+  style := styleAttributes;
   minErrorDistance := 0;
 END OOC:Error.

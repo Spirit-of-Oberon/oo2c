@@ -106,7 +106,7 @@ BEGIN
     ok := TRUE;
     
     IF (errorStyle. value(StringValue.Value). string^ = "oo2c") THEN
-      Error.oo2cStyleErrors := TRUE;
+      Error.style := Error.styleCharPos;
     END;
     IF buildHTML. value(BooleanValue.Value). boolean THEN
       mode := Rep.modInterfaceHTML

@@ -3,7 +3,8 @@
 .SH NAME
 ooef \- OOC error filter
 .SH SYNOPSIS
-.B oo2c 
+.B oo2c
+.I --error-style char-pos
 .I ... 
 |
 .B ooef
@@ -31,6 +32,14 @@ Error messages are rewritten, and the rest of the input is echoed.
 If a file name and a character position are passed as arguments,
 appropriate output is generated to designate the given position
 in the module's source text.
+
+.B NOTE:
+This tool has not been updated to work with
+.BR oo2c 's 
+default error style.  It only parses the old v1 style error format,
+which can be selected with
+.I --error-style
+.IR char-pos .
 .SH OPTIONS
 .TP
 .B --context, -c

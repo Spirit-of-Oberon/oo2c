@@ -182,6 +182,16 @@ disables HTML documentation.
 .TP
 .B --config <file>
 Use given file name for the configuration file.
+.TP
+.B --error-style <string>
+Selects the format of emitted error messages.  The default setting is 
+.IR file:line:column ,
+which generates messages like "src/Foo.Mod:2:15: Some horrible
+error".  The setting
+.I char-pos
+selects the error format of oo2c v1, "4212: 123 Some horrible error",
+where the first number is the character position in the file.  The
+file name itself is given in a separate line.
 .SH CONFIGURATION FILES
 The compilers configuration is determined by the file
 .I <prefix>/lib/oo2c/oo2crc.xml
@@ -226,14 +236,18 @@ are written to
 .I stdout
 like this:
 
-  In file foo.Mod:
-  <pos>: <num> <error message>
+  src/foo.Mod:<line>:<column>: <error message>
 
-The integer <pos> refers to the position of the error in the file (the
-first character has position 0).  The integer <num> is the error
-number.  The rest of the line is a plain text error message.  The
-message format can be changed with the filter program
-.BR ooef .
+The integer <line> refers to a line in the file (the first line is 1),
+and <column> to a column within that line (the first column being 1).
+The rest of the line is a plain text error message.  The message
+format can be changed with the option
+.IR --error-style ,
+and in connection with 
+.I --error-style char-pos, 
+the filter program
+.BR ooef
+can also be used.
 .SH ENVIRONMENT
 .I OO2CRC
 overrides the name of the configuration file.
