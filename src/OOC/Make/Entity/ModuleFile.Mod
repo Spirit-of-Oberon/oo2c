@@ -22,7 +22,8 @@ MODULE OOC:Make:Entity:ModuleFile;
 
 
 IMPORT
-  Strings, Files, Msg, Time, ADT:String, URI, URI:Scheme:File,
+  Strings, Files, Msg, Time, ADT:String, ADT:StringBuffer, 
+  URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
   ConfigOOC := OOC:Auxiliary:Config, OOC:Error,
   OOC:Repository, OOC:Repository:GetImports;
@@ -165,11 +166,11 @@ PROCEDURE (entity: Entity) GetTimeStamp* (VAR ts: Time.TimeStamp);
 
 PROCEDURE (entity: Entity) Id* (): String.String;
   VAR
-    str: String.String;
+    str: StringBuffer.StringBuffer;
     uri: URI.URI;
     s: ARRAY 1024 OF CHAR;
   BEGIN
-    str := String.New ("[OOC:Make:Entity:ModuleFile(");
+    str := StringBuffer.New ("[OOC:Make:Entity:ModuleFile(");
     CASE entity. fileId OF
     | Repository.modSymbolFile:
       str. AppendString ("modSymbolFile")
@@ -202,7 +203,7 @@ PROCEDURE (entity: Entity) Id* (): String.String;
     uri := entity. GetURI();
     uri. GetString (s);
     str. AppendString (s);
-    RETURN str
+    RETURN str.ToString()
   END Id;
 
 
