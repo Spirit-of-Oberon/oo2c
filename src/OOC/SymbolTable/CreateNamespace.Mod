@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 (*  Creates namespaces for module, and resolves type names in declarations.
-    Copyright (C) 2000-2003  Michael van Acken
+    Copyright (C) 2000-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -879,7 +879,10 @@ RAISES IO.Error;
           IF item. isParameter THEN
             IF ~(type IS Sym.TypeName) & ~TR.IsValidParameterType (type) THEN
               ErrType (invalidParameterType, item. srcCodeType)
-            END
+            END;
+            IF ~item.isVarParam THEN
+              CheckInstance(item.type, item.srcCodeType);
+            END;
           ELSE
             CheckOpenArray (item. type, item. srcCodeType);
             CheckInstance(item.type, item.srcCodeType);

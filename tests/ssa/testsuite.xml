@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; assign17">-->
+  select ="&SetupTestCasesWithOut; abstract11 abstract12">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; generic72">-->
@@ -1355,6 +1355,14 @@
       Trying to call the function variant of <code>NEW</code> with an
       <code>ABSTRACT</code> record base type.
     </test>
+    <test id="abstract11" type="reject" file="Abstract11.Mod">
+      Trying to define a formal value parameter whose type is an
+      <code>ABSTRACT</code> record.
+    </test>
+    <test id="abstract12" type="accept" file="Abstract12.Mod">
+      Defining a formal <code>VAR</code> parameter whose type is an
+      <code>ABSTRACT</code> record.
+    </test>
   </testcases>
   
   <testcases profile="OOC2 Development: Generics Extension"
@@ -2251,6 +2259,8 @@
     <reject-info id="abstract9" pos="R1 = %RECORD"
         msg="Inherited procedure `Proc' is still abstract"/>
     <reject-info id="abstract10" pos="NEW(%P)"
+        msg="Cannot create instance of abstract type"/>
+    <reject-info id="abstract11" pos="(r: %R)"
         msg="Cannot create instance of abstract type"/>
 
     <reject-info id="generic5" pos="A: %Array"

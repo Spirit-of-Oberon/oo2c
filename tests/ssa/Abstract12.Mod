@@ -1,0 +1,10 @@
+MODULE Abstract12;
+
+TYPE
+  R = RECORD [ABSTRACT] END;
+
+PROCEDURE P*(VAR r: R);
+  BEGIN
+  END P;
+
+END Abstract12.
