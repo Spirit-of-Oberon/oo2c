@@ -1,6 +1,6 @@
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
-    Copyright (C) 2001, 2002  Michael van Acken, Stewart Greenhill
+    Copyright (C) 2001-2003  Michael van Acken, Stewart Greenhill
 
     This file is part of OOC.
 
@@ -1414,13 +1414,17 @@ PROCEDURE (b: Builder) WarnSym (code: Error.Code; sym: Symbol);
   VAR
     e: Error.Msg;
   BEGIN
+    e := Error.New (irContext, code);
+    e. SetIntAttrib ("pos", sym. pos);
+    e. SetIntAttrib ("line", sym. line);
+    e. SetIntAttrib ("column", sym. column);
+
+    (* set lastError even if the warning is discard, so that attributes
+       can be added to it without any precautions *)
+    b. lastError := e;
+    
     IF GetPragmaValue(b, StdPragmas.warnings, sym.pos) THEN
-      e := Error.New (irContext, code);
-      e. SetIntAttrib ("pos", sym. pos);
-      e. SetIntAttrib ("line", sym. line);
-      e. SetIntAttrib ("column", sym. column);
       b. errList. Append (e);
-      b. lastError := e;
     END;
   END WarnSym;
 
