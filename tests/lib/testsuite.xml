@@ -517,7 +517,8 @@
     </test>
     
 
-    <test id="lib_STRING" type="run" file="LibSTRING.Mod">
+    <test id="lib_STRING" type="run"
+          file="LibSTRING.Mod" output="LibSTRING.Ref">
       Tests integration of the string module with the predefined
       type <code>STRING</code>.
     </test>
