@@ -1,0 +1,2 @@
+void C_init() {
+}

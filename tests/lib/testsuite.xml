@@ -30,6 +30,12 @@
       to the module.
     </test>
     
+    <test id="lib_C" type="run" file="LibC.Mod">
+      Imports the module <code>C</code>.  Lacking functionality of 
+      even moderate complexity, compilation is the only test applied
+      to the module.
+    </test>
+    
     <test id="lib_Strings_Length1" type="run"
       file="LibStringsLength1.Mod" output="LibStringsLength1.Ref">
       Tests the <code>Length</code> function with <code>0X</code>
