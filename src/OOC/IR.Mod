@@ -29,7 +29,8 @@ Log,
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   OOC:AST, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
-  TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Namespace;
+  TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Namespace,
+  OOC:SymbolTable:CreateNamespace;
 
 (**Some rules regarding the intermediate representation (short ``IR''):
 
@@ -553,9 +554,18 @@ TYPE
        @noindent
        Type conversion nodes are produced in different contexts:
        @itemize @bullet
-       @item implicit type conversion of operands of numeric operators
-       @item explicit type conversion using @code{SHORT} or @code{LONG}
-       @item @dots{}
+       @item
+       implicit type conversion of operands of numeric operators
+       
+       @item
+       explicit type conversion using @code{SHORT} or @code{LONG}
+       
+       @item
+       when assigning a character or string constant to a variable
+       of type @code{STRING}
+       
+       @item
+       @dots{}
        @end itemize  *)
     (OperatorDesc)
     expr- : Expression;
@@ -951,6 +961,9 @@ TYPE
     (**This type is assigned to expressions that produce a type value.  *)
     moduleType-: ModuleType;
     (**This type is assigned to expressions that designate a module.  *)
+    stringType-: Sym.Type;
+    (**Type definition for the predefined type @code{STRING}.  If this field
+       is @code{NIL}, then the module cannot use this type.  *)
     
     lastError: Error.Msg;
     (* Holds the last error message produced by @oproc{Builder.ErrSym}.  *)
@@ -1298,6 +1311,10 @@ END IsPredefType;
 PROCEDURE ^ (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
 PROCEDURE ^ (b: Builder) NewCopyString* (sym: Symbol; source, dest, maxLength: Expression): CopyString;
 
+PROCEDURE ^ (b: Builder) NewCall* (design: Expression;
+                                   arguments: ExpressionList;
+                                   isFunctionCall: BOOLEAN;
+                                   endOfArgsSym: Symbol): Expression;
 
 PROCEDURE (b : Builder) CheckFunctionOp(expr : Expression; op : Symbol);
 (**Check that the operator @oparam{op} is not applied to an expression
@@ -2501,6 +2518,13 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
       (* Case 7: string const < ARRAY [n] OF char *)
       RETURN b. Widen(expr, TR.MatchingStringConst(type(Sym.Array). elementType));
 
+    ELSIF (expr IS Const) &
+          (type = b. stringType) &
+          (TR.BaseCharType(expr. type) # NIL) THEN
+      (* Case 8: char const and string const < STRING *)
+      expr := b. NewTypeConv (type, expr);
+      RETURN TRUE;
+      
     ELSE
       RETURN FALSE;
     END;
@@ -3801,7 +3825,9 @@ END InitConstFold;
 PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
                         pragmaHistory: Pragmas.History; errList: Error.List;
                         fold : ConstFold);
-  
+  VAR
+    string: Sym.Item;
+    
   PROCEDURE NewTypeType (parent: Sym.Item; position: Sym.Position): TypeType;
     VAR
       typeType: TypeType;
@@ -3832,6 +3858,15 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
     b. lastError := NIL;
     b. constFold := fold;
     fold. builder := b;
+
+    string := CreateNamespace.ResolveQualident(module.ns, module,
+                                               Predef.nameStringModule,
+                                               Predef.nameStringType);
+    IF (string = NIL) THEN
+      b. stringType := NIL;
+    ELSE
+      b. stringType := string(Sym.TypeDecl).type;
+    END;
   END InitBuilder;
 
 PROCEDURE NewBuilder* (module: Sym.Module; pragmaHistory: Pragmas.History;
