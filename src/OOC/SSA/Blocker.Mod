@@ -133,6 +133,9 @@ TYPE
        zero.  *)
   END;
   SelectDesc = RECORD
+    (**This region is corresponds to a @oconst{Opcode.select} instruction.  It
+       contains one region for every path leading to the
+       @oconst{Opcode.select}, but no other instructions.  *)
     (RegionDesc)
     paths-: POINTER TO ARRAY OF Region;
   END;
@@ -807,6 +810,8 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         
         IF (region = NIL) THEN
           region := root;
+        ELSIF (region IS Select) THEN (* no instructions into select *)
+          region := region. region;
         END;
       END;
 
