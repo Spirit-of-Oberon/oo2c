@@ -22,8 +22,8 @@ MODULE OOC:Make:Entity:ModuleFile;
 
 
 IMPORT
-  Msg, Out, Strings, Files, Time, ADT:String, ADT:StringBuffer, 
-  URI, URI:Scheme:File,
+  S := SYSTEM, Msg, Out, Strings, Files, Time,
+  ADT:Object, ADT:String, ADT:StringBuffer, URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
   OOC:Config, OOC:Config:Assembler, OOC:Error,
   OOC:Repository, OOC:Repository:GetImports, OOC:Repository:GetModuleClass,
@@ -45,11 +45,11 @@ TYPE
 PROCEDURE InitEntity (entity: Entity; context: Make.Context;
                       module: Repository.Module; fileId: Repository.FileId);
   BEGIN
-    Resource.Init (entity, context);
     entity. module := module;
     entity. fileId := fileId;
     entity. maxTimeStampKnown := FALSE;
     Time.InitTimeStamp (entity. maxTimeStamp, 0, 0);
+    Resource.Init (entity, context);
   END InitEntity;
 
 PROCEDURE NewEntity (context: Make.Context; module: Repository.Module;
@@ -61,6 +61,36 @@ PROCEDURE NewEntity (context: Make.Context; module: Repository.Module;
     InitEntity (entity, context, module, fileId);
     RETURN entity
   END NewEntity;
+
+PROCEDURE (entity: Entity) Equals* (obj: Object.Object): BOOLEAN;
+  BEGIN
+    WITH obj: Entity DO
+      RETURN (entity.fileId = obj.fileId) &
+          (entity.module.name^ = obj.module.name^);
+    ELSE
+      RETURN FALSE;
+    END;
+  END Equals;
+
+PROCEDURE (entity: Entity) HashCode*(): LONGINT;
+  VAR
+    len, x, p: LONGINT;
+    name: Repository.ModuleNamePtr;
+  BEGIN
+    name := entity.module.name;
+    len := Strings.Length(name^);
+    x := ASH (LONG (ORD (name[0])+entity.fileId), 7);
+    p := 0;
+    WHILE (p # len) DO
+      <* PUSH; OverflowCheck := FALSE *>
+      x := S.VAL (LONGINT, S.VAL (SET, 1000003*x) /
+                           S.VAL (SET, LONG (ORD (name[p]))));
+      <* POP *>
+      INC (p)
+    END;
+    x := S.VAL (LONGINT, S.VAL (SET, x) / S.VAL (SET, len));
+    RETURN x
+  END HashCode;
 
 
 PROCEDURE (entity: Entity) GetId (VAR id: ARRAY OF CHAR);
@@ -90,23 +120,15 @@ PROCEDURE (entity: Entity) GetId (VAR id: ARRAY OF CHAR);
 PROCEDURE GetEntity* (context: Make.Context; module: Repository.Module;
                       fileId: Repository.FileId): Entity;
   VAR
-    node: Make.Node;
-    entity: Entity;
+    pattern, obj: Object.Object;
   BEGIN
-    (* if this node already exists in the graph, reuse this node *)
-    node := context. nodeList;
-    WHILE (node # NIL) DO
-      IF (node IS Entity) &
-         (node(Entity). module = module) &
-         (node(Entity). fileId = fileId) THEN
-        RETURN node(Entity)
-      END;
-      node := node. nextNode
+    pattern := NewEntity(NIL, module, fileId);
+    IF context.nodes.HasKey(pattern) THEN
+      obj := context.nodes.Get(pattern);
+    ELSE
+      obj := NewEntity (context, module, fileId);
     END;
-    
-    (* create new node *)
-    entity := NewEntity (context, module, fileId);
-    RETURN entity
+    RETURN obj(Entity);
   END GetEntity;
 
 

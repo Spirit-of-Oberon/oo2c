@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE Make [OOC_EXTENSIONS];
 (*  Framework for discovering and building interdependend resources.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -37,7 +37,7 @@ MODULE Make [OOC_EXTENSIONS];
    nodes and edges.  *)
 
 IMPORT
-  Channel, Config, Log, Strings, ADT:Object, ADT:String;
+  Channel, Config, Log, Strings, ADT:Object, ADT:String, ADT:Dictionary;
 
 CONST
   writeLog = FALSE;
@@ -209,6 +209,9 @@ TYPE
     nodeList-: Node;
     (**List of all nodes, @otype{Entity} or @otype{Command}, that exist within
        the context.  The nodes are linked via @ofield{Node.nextNode}.  *)
+    nodes-: Dictionary.Dictionary;
+    (**Dictionary holding all nodes from @ofield{nodeList}.  Key and value
+       of each entry are references to the node object.  *)
     target-: Command;
     (**This is the target that @oproc{Context.Solve} tries to solve.  Entities
        or commands that are not direct or indirect ancestors of this command
@@ -334,7 +337,8 @@ PROCEDURE AddNode (context: Context; n: Node);
   BEGIN
     n. nextNode := context. nodeList;
     context. nodeList := n;
-    n. context := context
+    n. context := context;
+    context. nodes. Set(n, n);
   END AddNode;
 
 PROCEDURE InitNode* (n: Node; context: Context);
@@ -745,6 +749,7 @@ PROCEDURE InitContext* (context: Context; config: Config.Config; target: Command
   BEGIN
     ASSERT (target. context = NIL);
     context. nodeList := NIL;
+    context. nodes := Dictionary.New();
     context. config := config;
     AddNode (context, target);
     MarkNodeTransitive (target);
