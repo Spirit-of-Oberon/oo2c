@@ -147,7 +147,7 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
 
   PROCEDURE CompatiblePointers (a, b: Sym.Type): BOOLEAN;
     BEGIN
-      IF (a = b) THEN
+      IF TR.SameType(a, b) THEN
         RETURN TRUE;
       ELSE
         a := a.Bound(); b := b.Bound();

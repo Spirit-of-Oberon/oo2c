@@ -276,7 +276,15 @@ TYPE
     (**Common base type of all type definitions.  As far as the symbol table is
        concerned, a type is either a type reference (that is, an instance of
        @otype{TypeName}), or a type constructor defining a new record, array,
-       pointer, or procedure type.  *)
+       pointer, or procedure type.
+
+       @emph{Note}: Prior to the introduction of parametric types, two type
+       instances were considered to be of the same type if, and only if, their
+       pointers were equal.  With parametric types, this decision is not that
+       simple any more: two types involving type arguments may be represented
+       by different objects, but still are of the same type. The predicate
+       @oproc{*OOC:SymbolTable:TypeRules.SameType} must be used to get the
+       correct result.  *)
     (ItemDesc)
     position-: Position;
     (**Position of the type name or type constructor.  This field is mostly
