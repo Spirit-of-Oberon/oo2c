@@ -342,6 +342,36 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
         rf.iGraph.AddToLive(res.marker, live);
       END;
     END AddResToLive;
+
+  PROCEDURE AddIncomingResults(loop: S.LoopStartInstr; live: IGraph.Vector);
+    PROCEDURE InspectBlock(b: S.Block);
+      VAR
+        instr: S.Instr;
+        opnd: S.Opnd;
+      BEGIN
+        (* FIXME... this kind of dependency may be readily available
+           from the instruction sorting in module Block *)
+        instr := b.instrList;
+        WHILE (instr # NIL) DO
+          IF instr.IsLive() THEN
+            FOR opnd IN instr.Operands() DO
+              IF ~loop.Dominates(opnd.arg.instr.block) THEN
+                AddResToLive(opnd.arg, live);
+              END;
+            END;
+            
+            WITH instr: S.Block DO
+              InspectBlock(instr);
+            ELSE
+            END;
+          END;
+          instr := instr.nextInstr;
+        END;
+      END InspectBlock;
+    
+    BEGIN
+      InspectBlock(loop);
+    END AddIncomingResults;
   
   PROCEDURE AssignRegisterNames (rf: RegisterFile; colors: IGraph.ColorArray);
     VAR
@@ -502,10 +532,12 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
           AddJumpsToReady(block(S.MergeInstr), ld);
           instr := block.prevInstr;
           ASSERT(instr(S.LoopStartInstr).end = block);
+          (* all ranges live after the loop must not be clobbered by it *)
           ld := NEW(LiveData, instr(S.LoopStartInstr),
                     instr(S.LoopStartInstr).instrTail, 0,
                     rf.iGraph.CopyVector(ld.live));
-          (* all ranges live after the loop must not be clobbered by it *)
+          (* as well as any outside results used within the loop *)
+          AddIncomingResults(instr(S.LoopStartInstr), ld.live);
           AddToReady(ld);
           
         | S.branch, S.loopStart:
