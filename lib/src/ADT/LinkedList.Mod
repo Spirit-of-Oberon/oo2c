@@ -421,8 +421,6 @@ the result. Otherwise (@oparam{i} is NIL), a new iterator is allocated. *)
 BEGIN
   IF i = NIL THEN
     NEW(i);
-  ELSE
-    ASSERT(i IS Iterator);
   END;
 
   i.list := l;
