@@ -25,6 +25,7 @@ IMPORT
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,
   OOC:SymbolTable:Namespace, OOC:SymbolTable:CreateNamespace,
+  OOC:SymbolTable:Builder,
   <*PUSH; Warnings:=FALSE*>Object:Boxed, Object:BigInt;<*POP*>
 
 
@@ -356,8 +357,10 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
     WHILE (item # NIL) DO
       IF WriteTopLevel(item) THEN
         WITH item: Sym.Import DO
-          SetSection(import);
-          Import(item);
+          IF (item.name.str[0] # Builder.prefixAutoImport) THEN
+            SetSection(import);
+            Import(item);
+          END;
         | item: Sym.ConstDecl DO
           SetSection(constDecl);
           ConstDecl(item);
