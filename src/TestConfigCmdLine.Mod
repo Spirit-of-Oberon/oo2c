@@ -1,8 +1,7 @@
 MODULE TestConfigCmdLine;
 
 IMPORT
-  <*IF COMPILER_MAJOR=1 THEN*>Rts,<*ELSE*>RT0,<*END*>
-  Msg, Out, ProgramArgs, StdChannels, Config:Source:CmdLine;
+  RT0, Msg, Out, ProgramArgs, StdChannels, Config:Source:CmdLine;
 
 
 VAR
@@ -16,17 +15,6 @@ BEGIN
   
   cmdLine := CmdLine.New();
 
-<*IF COMPILER_MAJOR=1 THEN*>
-  IF Rts.GetEnv (errText, "DISABLE_DASH_DASH") THEN
-    cmdLine. EnableDashDash (FALSE)
-  END;
-  IF Rts.GetEnv (errText, "DISABLE_EXPAND_SINGLE") THEN
-    cmdLine. EnableExpandToSingleChar (FALSE)
-  END;
-  IF Rts.GetEnv (errText, "DISABLE_START_WITH_DASH") THEN
-    cmdLine. OptionsStartWithDash (FALSE)
-  END;
-<*ELSE*>
   IF RT0.GetEnv ("DISABLE_DASH_DASH", errText) THEN
     cmdLine. EnableDashDash (FALSE)
   END;
@@ -36,7 +24,6 @@ BEGIN
   IF RT0.GetEnv ("DISABLE_START_WITH_DASH", errText) THEN
     cmdLine. OptionsStartWithDash (FALSE)
   END;
-<*END*>
   
   t := cmdLine. AddOptionTemplate ("-o,-1,--flag-one",
                          "<options><set name='flag_one'>TRUE</set></options>");

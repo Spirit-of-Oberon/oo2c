@@ -22,7 +22,6 @@ MODULE RunTests;
 
 
 IMPORT
-  <*IF COMPILER_MAJOR=1 THEN*>Calendar,<*END*>
   Channel, Err, Files, Msg, Out, ProgramArgs, LongStrings, TextRider, 
   Strings, SysClock,
   URI,
@@ -220,12 +219,9 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     END;
         
     reportWriter. StartTag ("test-report", FALSE);
-<*IF COMPILER_MAJOR=1 THEN*>
-    SysClock.GetClock (time);
-    Calendar.TimeToStr (time, "%c", timeStr);
-<*ELSE*>
+    (*SysClock.GetClock (time);
+    Calendar.TimeToStr (time, "%c", timeStr);*)
     COPY("unknown", timeStr);
-<*END*>
     reportWriter. AttrStringLatin1 ("time", timeStr);
     testSetup. Write (reportWriter);
     

@@ -1,9 +1,7 @@
 MODULE OOC:Scanner:Pragma;
 
 IMPORT
-  Msg, Strings,
-  <*IF COMPILER_MAJOR=1 THEN*>Types,<*ELSE*>RT0,<*END*>
-
+  Msg, Strings, RT0,
   OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol, OOC:Scanner:Builder,
   OOC:Scanner:Builder:BasicList, OOC:Config:Pragmas, OOC:Scanner:Integer,
   
@@ -360,11 +358,7 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
         SimpleExpr (eval, right);
         IF ~eval OR (value. value = NIL) OR (right. value = NIL) THEN
           (* ignore *)
-<*IF COMPILER_MAJOR=1 THEN*>
-        ELSIF (Types.TypeOf (value. value) # Types.TypeOf (right. value)) OR
-<*ELSE*>
         ELSIF (RT0.TypeOf (value. value) # RT0.TypeOf (right. value)) OR
-<*END*>
               (value. value IS BooleanValue.Value) & 
                 (Symbol.lss <= op) & (op <= Symbol.geq) THEN
           Err (invalidOperands, pos)
