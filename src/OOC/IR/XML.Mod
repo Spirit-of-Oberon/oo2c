@@ -47,56 +47,12 @@ PROCEDURE NewVisitor (w: Writer.Writer): Visitor;
     RETURN v
   END NewVisitor;
 
-PROCEDURE AppendContext(buffer : StringBuffer.StringBuffer; item : Sym.Item);
-  BEGIN
-    WITH item : Sym.Declaration DO
-      IF item.parent # NIL THEN
-        AppendContext(buffer, item.parent);
-      END;
-      buffer.AppendString(item.name.str^);
-      buffer.AppendChar(".");
-     END;
-  END AppendContext;
-
-PROCEDURE TypeName(type : Sym.Type) : String.String;
-(**Return a string describing type @oparam{type}. For named types, this will
-   be of the form "module.@{proc.@}type". If there is no name the name of the
-   type constructor is used (eg. RECORD, ARRAY). *)
-VAR
-  name : StringBuffer.StringBuffer;
-BEGIN
-  name := StringBuffer.New("");
-  IF type.parent # NIL THEN
-    AppendContext(name, type.parent);
-  END;
-  IF type.namingDecl # NIL THEN
-    name.AppendString(type.namingDecl.name.str^);
-  ELSE
-    WITH 
-      type : Sym.PredefType DO
-      (* probably doesn't happen since these should be named *)
-      name.AppendString("PredefType(");
-      name.AppendLongInt(type.id);
-      name.AppendString(")")
-    | type : Sym.Pointer DO
-      name.AppendString("POINTER")
-    | type : Sym.FormalPars DO
-      name.AppendString("PROCEDURE")
-    | type : Sym.Array DO
-      name.AppendString("ARRAY")
-    | type : Sym.Record DO
-      name.AppendString("RECORD")
-    END
-  END;
-  RETURN name.ToString();
-END TypeName;
-
 PROCEDURE TypeAttr (w : Writer.Writer; type : Sym.Type);
 (** Output the name of @oparam{type} as attribute "Type" of the current tag. *)
   VAR
     name : String.String;
   BEGIN
-    name := TypeName(type);
+    name := IR.TypeName(type);
     w. AttrStringLatin1("Type", name.array^);
   END TypeAttr;
 

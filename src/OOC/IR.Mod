@@ -25,7 +25,7 @@ Log,
   Language, Language:Boolean, Language:Char, Language:Set,
   LString := Language:String,
   Language:String8, Language:String16, Language:Integer, Language:Real,
-  ADT:Object, ADT:ArrayList, ADT:String,
+  ADT:Object, ADT:ArrayList, ADT:String, ADT:StringBuffer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
@@ -1016,8 +1016,6 @@ CONST
   tooFewArguments = 38;
   tooManyArguments = 39;
   notVarParCompatible = 40;
-  invalidTypeGuard = 41;
-  guardNotExtension = 42;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1028,7 +1026,57 @@ TYPE
 VAR
   irContext: ErrorContext;
 
-  
+PROCEDURE AppendContext(buffer : StringBuffer.StringBuffer; item : Sym.Item);
+  BEGIN
+    WITH item : Sym.Declaration DO
+      IF item.parent # NIL THEN
+        AppendContext(buffer, item.parent);
+      END;
+      buffer.AppendString(item.name.str^);
+      buffer.AppendChar(".");
+     END;
+  END AppendContext;
+
+PROCEDURE TypeName* (type : Sym.Type) : String.String;
+(**Return a string describing type @oparam{type}. For named types, this will
+   be of the form "module.@{proc.@}type". If there is no name the name of the
+   type constructor is used (eg. RECORD, ARRAY). *)
+VAR
+  name : StringBuffer.StringBuffer;
+BEGIN
+  name := StringBuffer.New("");
+  IF type.parent # NIL THEN
+    AppendContext(name, type.parent);
+  END;
+  IF type.namingDecl # NIL THEN
+    name.AppendString(type.namingDecl.name.str^);
+  ELSE
+    WITH 
+      type : Sym.PredefType DO
+      (* probably doesn't happen since these should be named *)
+      name.AppendString("PredefType(");
+      name.AppendLongInt(type.id);
+      name.AppendString(")")
+    | type : Sym.Pointer DO
+      name.AppendString("POINTER")
+    | type : Sym.FormalPars DO
+      name.AppendString("PROCEDURE")
+    | type : Sym.Array DO
+      name.AppendString("ARRAY")
+    | type : Sym.Record DO
+      name.AppendString("RECORD")
+    END
+  END;
+  RETURN name.ToString();
+END TypeName;
+
+PROCEDURE LogTypeName(message : ARRAY OF CHAR; type : Sym.Type);
+VAR name : String.String;
+BEGIN
+  name := TypeName(type);
+  Log.String(message, name.array^);
+END LogTypeName;
+
 PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error.LString);
   VAR
     t: ARRAY 128 OF Error.LChar;
@@ -1114,10 +1162,6 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Too many arguments"
     | notVarParCompatible:
       t := "Actual parameter not compatible with formal VAR parameter"
-    | invalidTypeGuard:
-      t := "Invalid type used as guard"
-    | guardNotExtension:
-      t := "Guard type is not an extension of the designated type"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2605,19 +2649,15 @@ VAR
   test : Expression;
 BEGIN
   guardType := ref. decl(Sym.TypeDecl). type;
-  IF TR.IsValidReceiverType(guardType) THEN
-    IF TR.IsExtensionOf(guardType, design.type) THEN
-      NEW(guard);
-      test := b.NewTypeTest(sym, design, ref);
-      InitTypeGuard(guard, sym, guardType, test(TypeTest),
-                    GetPragmaValue (b, StdPragmas.derefCheck, sym. pos),
-                    GetPragmaValue (b, StdPragmas.typeGuard, sym. pos));
-      RETURN guard;
-    ELSE
-      RETURN b.ErrExpr(guardNotExtension, ref.sym);
-    END;
+  test := b.NewTypeTest(sym, design, ref);
+  IF test IS TypeTest THEN
+    NEW(guard);
+    InitTypeGuard(guard, sym, guardType, test(TypeTest),
+                GetPragmaValue (b, StdPragmas.derefCheck, sym. pos),
+                GetPragmaValue (b, StdPragmas.typeGuard, sym. pos));
+    RETURN guard;
   ELSE
-    RETURN b.ErrExpr(invalidTypeGuard, ref.sym);
+    RETURN test;
   END;
 END NewTypeGuard;
 
@@ -2833,6 +2873,8 @@ PROCEDURE (b: Builder) AssertVar (expr: Expression);
       IF TR.IsReadOnly (b. module, expr. field) THEN
         b. ErrSym (importedReadOnly, expr. fieldSym);
       END;
+    | expr: TypeGuard DO
+      b. AssertVar(expr. test. expr);	(* check that value is writable *)
     ELSE
       b. ErrSym (notVariable, expr. sym);
     END;
