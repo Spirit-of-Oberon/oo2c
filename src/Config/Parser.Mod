@@ -127,7 +127,9 @@ PROCEDURE InitCharData (charData: CharData; parent: Element;
   VAR
     pos: Locator.Position;
   BEGIN
+<*PUSH; Warnings:=FALSE*>
     InitNode (charData, parent, l, pos);
+<*POP*>    
     charData. string := str
   END InitCharData;
 
