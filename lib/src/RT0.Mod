@@ -77,7 +77,17 @@ CONST
   strQualType* = -5;
   (**A qualified type, specifying type arguments for a parametric type's
      parameter list.  *)
-  
+
+CONST
+  flagAtomic* = 0;
+  (**Inidicates that this record type does not contain any references that
+     need to be considered by the garbage collector. It may be allocated inside
+     an atomic object. *)
+
+  flagVTable* = 1;
+  (**Indicates that this record type has a vtable entry which should be
+     initialised when objects are created. *)
+
 TYPE
   Name* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
   Module* = POINTER TO ModuleDesc;
@@ -189,8 +199,17 @@ TYPE
     (**Holds the length of an array, the number of open dimensions
        of an open array, or the extension level of a record.  *)
     
+    flags-: SET;
+    (**Holds attributes that control the way the run-time deals with values of
+       this type (eg. see @oconst{flagAtomic}, @oconst{flagVTable}). *)
+
     form-: SHORTINT;
     (**Identifies which kind of type constructor variant is used.  *)
+
+	(* Careful: fields declared after here will be after any padding generated
+	   to align @ofield{form}. This means that initialisers might not do the
+       right thing unless values are also emitted for the pad fields. *)
+
   END;
 
 (*TYPE

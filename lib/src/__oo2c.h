@@ -202,6 +202,8 @@ extern OOC_INT32 _cmp32(const OOC_CHAR32* l, const OOC_CHAR32* r);
 
 #define OOC_TBPROC_ADR(_tag,_name) (((RT0__Struct)(_tag))->tbProcs[_TBN_##_name])
 
+#define OOC_VTABLEPROC_ADR(_adr,_name) (((OOC_PTR **) _adr)[0][_TBN_##_name])
+
 #define OOC_TBCALL(_adr,_name) ((_TBP_##_name)(_adr))
 
 #define OOC_METHOD(_obj,_name) \

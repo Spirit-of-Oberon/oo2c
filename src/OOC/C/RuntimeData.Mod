@@ -25,7 +25,7 @@ IMPORT
   IO:TextRider, ADT:ArrayList, ADT:StringBuffer,
   OOC:Config, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, TR := OOC:SymbolTable:TypeRules,
-  OOC:C:Naming, OOC:C:DeclWriter;
+  OOC:C:Naming, OOC:C:DeclWriter, RT0;
 
 CONST
   structTypeDesc = Config.runtimeModule+"__StructDesc";
@@ -127,6 +127,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           ASSERT(base.size >= 0);
           CNli; w. WriteLInt (base. size, 0); (* size *)
           CNli; w. WriteLInt (array. GetOpenDimensions(), 0); (* len *)
+          CNli; w. WriteLInt (0, 0); (* flags *)
           CNli; WriteForm ("strOpenArray"); (* form *)
         ELSE
           w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
@@ -138,6 +139,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           WriteName (array);             (* name *)
           CNli; w.WriteLInt (array. size, 0); (* size *)
           CNli; w. WriteLInt (array. length, 0); (* len *)
+          CNli; w. WriteLInt (0, 0); ; (* flags *)
           CNli; WriteForm ("strArray");  (* form *)
         END;
         w. WriteString (" };");
@@ -165,6 +167,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
   PROCEDURE RecordTypeDescr (record: Sym.Record);
     VAR
       len: LONGINT;
+      flags : LONGINT;
 
     PROCEDURE BaseTypes (t: Sym.Type): LONGINT;
       VAR
@@ -200,6 +203,17 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         WriteName (record);              (* name *)
         CNli; w. WriteLInt (record. size, 0); (* size *)
         CNli; w. WriteLInt (len, 0);     (* len *)
+
+        flags := 0;
+        IF record.isVtable THEN
+          INC(flags, ASH(1, RT0.flagVTable));
+        END;
+(*
+      IF record.isAtomic THEN
+          INC(flags, ASH(1, RT0.flagAtomic));
+        END;
+*)
+        CNli; w. WriteLInt (flags, 0); ; (* flags *)
         CNli; WriteForm ("strRecord");   (* form *)
         w. WriteString (" };");
       END;
@@ -218,6 +232,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         WriteName (pointer);             (* name *)
         CNli; w. WriteLInt (pointer. size, 0); (* size *)
         CNli; w. WriteLInt (-1, 0);      (* len *)
+        CNli; w. WriteLInt (0, 0); ; (* flags *)
         CNli; WriteForm ("strPointer");  (* form *)
         w. WriteString (" };");
       END;
@@ -365,8 +380,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         
         CNli; w.WriteLInt(qtd.type.size, 0); (* size *)
         CNli; w.WriteLInt(len, 0);       (* len *)
+        CNli; w. WriteLInt (0, 0); ; (* flags *)
         CNli; WriteForm("strQualType");   (* form *)
-        
         w.WriteString(" };");
       END WriteQualTypeDescr;
     

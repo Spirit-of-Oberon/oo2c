@@ -92,20 +92,30 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   }
   
   if (form == RT0__strRecord) { /* record */
+    int allocate;
     int prefix;
     int size = td->size;
+    int flags = td->flags;
+
     if (size == 0) size++;
     prefix = ROUND_SIZE(sizeof(RT0__Struct));
-    
-    ptr = GC_MALLOC(prefix+size);
+
+    allocate = prefix + size;
+    if (flags & (1<<RT0__flagAtomic)) { 
+      ptr = GC_MALLOC_ATOMIC(allocate);
+    } else {
+      ptr = GC_MALLOC(allocate);
+    }
     if (ptr == NULL) {
-      _out_of_memory(prefix+size);
+      _out_of_memory(allocate);
     } else if (RT0__poisonHeap >= 0) {
-      memset(ptr, RT0__poisonHeap, prefix+size);
+      memset(ptr, RT0__poisonHeap, allocate);
     }
     var = (char*)ptr+prefix;
     OOC_TYPE_TAG(var) = td;
-    
+    if (flags & (1<<RT0__flagVTable)) {
+      ((void **) var)[0] = td->tbProcs;
+    }
   } else if (form == RT0__strArray) { /* fixed size array */
     int size = td->size;
     if (size == 0) size++;
