@@ -3059,7 +3059,16 @@ PROCEDURE (b: Builder) NewCopyString* (sym: Symbol;
                                        source, dest, maxLength: Expression): CopyString;
   VAR
     cp: CopyString;
+    baseChar: Sym.Type;
+    ok: BOOLEAN;
   BEGIN
+    IF (source IS Const) THEN
+      (* make sure that any character constant source is converted into
+         its equivalent string constant form; this way, the copy operation
+         doesn't need to deal with single characters *)
+      baseChar := TR.BaseCharType (dest. type);
+      ok := b. Widen (source, TR.MatchingStringConst (baseChar));
+    END;
     NEW (cp);
     InitCopyString (cp, sym, source, dest, b. Fold (maxLength));
     RETURN cp
