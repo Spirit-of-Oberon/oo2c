@@ -1,6 +1,70 @@
+/* lib/src/__config.h.in.  Generated automatically from configure.ac by autoheader.  */
 /* Define to type of 64 bit int, or to some int type if it does not exist.  */
 #undef OOC_INT64_T
 
 /* Define to type of size_t on the target system.  */
 #undef OOC_SIZE_T
 
+
+/* Define if you have the `atexit' function. */
+#undef HAVE_ATEXIT
+
+/* Define if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define if you have the <io.h> header file. */
+#undef HAVE_IO_H
+
+/* Define if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define if you have the <pwd.h> header file. */
+#undef HAVE_PWD_H
+
+/* Define if you have the `raise' function. */
+#undef HAVE_RAISE
+
+/* Define if you have the `settimeofday' function. */
+#undef HAVE_SETTIMEOFDAY
+
+/* Define if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define as the return type of signal handlers (`int' or `void'). */
+#undef RETSIGTYPE
+
+/* The size of a `long int', as computed by sizeof. */
+#undef SIZEOF_LONG_INT
+
+/* The size of a `long long int', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG_INT
+
+/* Define if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME

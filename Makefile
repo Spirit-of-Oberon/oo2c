@@ -101,4 +101,11 @@ doc:
 	cd $(DOC_DIR) && $(OOC_DEV_ROOT)/rsrc/OOC/make-index.sh
 	$(PRINT) "Done.  Index file is $(DOC_DIR)/index.html"
 
+
+lib/src/__config.h.in: acconfig.h configure.ac
+	autoheader
+
+configure: configure.ac lib/src/__config.h.in
+	autoconf
+
 include $(MAIN_MAKEFILE)
