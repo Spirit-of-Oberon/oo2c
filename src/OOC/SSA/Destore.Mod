@@ -530,7 +530,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       | Opcode.select, Opcode.selectExit:
         RETURN GetSelectValue (instr);
         
-      | Opcode.collect, Opcode.newObject, Opcode.copyParameter, Opcode.loopEnd,
+      | Opcode.collect, Opcode.newObject, Opcode.copyParameter,
         Opcode.exit, Opcode.return,
         Opcode.halt, Opcode.assert, Opcode.checkIndex, Opcode.checkPointer,
         Opcode.typeGuard, Opcode.failedTypeAssert,
@@ -678,14 +678,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             RETURN VisibleEffect (i. GetResultStore(), set)
             
           | Opcode.loopEnd:
-            storeOut := instr. GetResultStore();
-            IF (storeOut = NIL) THEN
-              (* loop is left through its "select-exit", control never
-                 passes through "loop-end" *)
-              RETURN FALSE;
-            ELSE
-              RETURN VisibleEffect (storeOut, set);
-            END;
+            (* loop is left through its "select-exit", control never
+               passes through "loop-end" *)
+            RETURN FALSE;
             
           | Opcode.loopStart, Opcode.selectExit, Opcode.collect,
             Opcode.select, Opcode.newObject,
