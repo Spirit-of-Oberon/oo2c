@@ -451,5 +451,9 @@
       Imports the module <code>Channel</code>.  No further tests.
     </test>
     
+    <test id="lib_PosixFileDescr" type="run" file="LibPosixFileDescr.Mod">
+      Imports the module <code>PosixFileDescr</code>.  No further tests.
+    </test>
+    
   </testcases>
 </testsuite-ext>
