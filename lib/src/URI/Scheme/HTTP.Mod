@@ -178,7 +178,7 @@ RAISES IO.Error;
         IF (i = -1) THEN
           RAISE(NEW(IO.FormatError, "Malformed status line in response"));
         ELSIF (resp[i-4] # "2") THEN  (* non-success response *)
-          RAISE(NEW(IO.NegativeReply,
+          RAISE(NEW(IO.ErrorResponse,
                     "HTTP request failed: "+str8.Substring(i-4, str8.length)));
         END;
       END;
