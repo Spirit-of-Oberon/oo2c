@@ -877,20 +877,33 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
       END;
     END CallersToWorklist;
 
-  PROCEDURE SetWriteFlags(pd: ProcData; def: Def);
+  PROCEDURE SetWriteFlags(localProc: Sym.ProcDecl; pd: ProcData; def: Def);
     VAR
       k: Object.ObjectArrayPtr;
       i: LONGINT;
+      item: Object.Object;
     BEGIN
+      k := pd.inout.Keys();
+      FOR i := 0 TO LEN(k^)-1 DO
+        IF ~def.class.HasKey(k[i]) THEN  (* is undefined *)
+          pd.SetWriteFlag(k[i](Sym.VarDecl), doesNotWrite);
+        END;
+      END;
+      
       k := def.class.Keys();
       FOR i := 0 TO LEN(k^)-1 DO
-        CASE def.class.Get(k[i]) OF
-        | undefined:
-          pd.SetWriteFlag(k[i](Sym.VarDecl), doesNotWrite);
-        | maybeUndefined:
-          pd.SetWriteFlag(k[i](Sym.VarDecl), mayWrite);
-        | defined:
-          pd.SetWriteFlag(k[i](Sym.VarDecl), doesWrite);
+        item := k[i];
+        WITH item: Sym.VarDecl DO
+          IF NonlocalVar(localProc, item) THEN
+            CASE def.class.Get(item) OF
+            | undefined:
+              pd.SetWriteFlag(item, doesNotWrite);
+            | maybeUndefined:
+              pd.SetWriteFlag(item, mayWrite);
+            | defined:
+              pd.SetWriteFlag(item, doesWrite);
+            END;
+          END;
         END;
       END;
     END SetWriteFlags;
@@ -983,7 +996,7 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
           def := NewDef();
           CheckStatmSeq(def, proc.statmSeq);
           v.procExit.Merge(def);
-          SetWriteFlags(v.localProcData, v.procExit);
+          SetWriteFlags(v.localProc, v.localProcData, v.procExit);
           
           IF v.localProcData.updatedInOut THEN
             CallersToWorklist(pd(ProcData).callers);
