@@ -35,6 +35,7 @@ TYPE
   Instr* = POINTER TO InstrDesc;
   Const* = POINTER TO ConstDesc;
   DeclRef* = POINTER TO DeclRefDesc;
+  TypeRef* = POINTER TO TypeRefDesc;
   Address* = POINTER TO AddressDesc;
 
 TYPE
@@ -137,6 +138,12 @@ TYPE
   END;
   
 TYPE
+  TypeRefDesc = RECORD
+    (InstrDesc)
+    type-: Sym.Type;
+  END;
+  
+TYPE
   AddressDesc = RECORD
     (**Designates the address of a declared variable.  Instances of this
        class use the opcode @oconst{Opcode.address} or
@@ -172,11 +179,11 @@ TYPE
     
     constMap: ARRAY Predef.lastId+1 OF Dictionary.Dictionary;
     (**Maps constant values onto @code{const} instructions.  See
-       @oproc{ProcBlock.GetConst} and @oproc{ProcBlock.GetDeclRef}.  *)
+       @oproc{ProcBlock.GetConst}.  *)
     
     objMap: Dictionary.Dictionary;
-    (**Maps declarations
-       from the symbol table onto @code{declref} instructions.  See
+    (**Maps declarations and type definitions from the symbol table onto
+       @code{declref} and @code{typeref} instructions.  See
        @oproc{ProcBlock.GetDeclRef}.  *)
     
     adrMap: Dictionary.Dictionary;
@@ -726,7 +733,8 @@ PROCEDURE (instr: Instr) IsConst*(): BOOLEAN;
    instructions have no operands, and within a given procedure block two
    instructions represent the same value iff they are identical.  *)
   BEGIN
-    RETURN (instr IS Const) OR (instr IS DeclRef) OR (instr IS Address);
+    RETURN (instr IS Const) OR (instr IS DeclRef) OR
+           (instr IS TypeRef) OR (instr IS Address);
   END IsConst;
 
 
@@ -745,6 +753,12 @@ PROCEDURE InitDeclRef (declRef: DeclRef; decl: Sym.Declaration);
     InitInstr (declRef, Opcode.declRef, Opcode.scNone);
     declRef. decl := decl;
   END InitDeclRef;
+
+PROCEDURE InitTypeRef (typeRef: TypeRef; type: Sym.Type);
+  BEGIN
+    InitInstr (typeRef, Opcode.typeRef, Opcode.scNone);
+    typeRef. type := type;
+  END InitTypeRef;
 
 PROCEDURE InitAddress (address: Address; opcode: Opcode.Class;
                        decl: Sym.Declaration);
@@ -918,6 +932,25 @@ PROCEDURE (pb: ProcBlock) GetDeclRef* (decl: Sym.Declaration): DeclRef;
       RETURN declRef
     END;
   END GetDeclRef;
+
+PROCEDURE (pb: ProcBlock) GetTypeRef* (type: Sym.Type): TypeRef;
+(**Returns the @code{typeref} instruction for the type @oparam{type}.
+   Equal types are mapped to the same unique instruction.  *)
+  VAR
+    obj: Object.Object;
+    typeRef: TypeRef;
+  BEGIN
+    IF pb. objMap. HasKey (type) THEN
+      obj := pb. objMap. Get (type);
+      RETURN obj(TypeRef);
+    ELSE
+      NEW (typeRef);
+      InitTypeRef (typeRef, type);
+      AppendInstr (pb, typeRef);
+      pb. objMap. Set (type, typeRef);
+      RETURN typeRef
+    END;
+  END GetTypeRef;
 
 PROCEDURE (pb: ProcBlock) SetAddress (decl: Sym.Declaration;
                                       address: Address);

@@ -165,6 +165,13 @@ PROCEDURE (c: ConstFold) VisitLen* (len: IR.Len);
       Integer.NewLInt(length));
   END VisitLen;
 
+PROCEDURE (c: ConstFold) VisitDeref* (deref: IR.Deref);
+  BEGIN
+    (* FIXME! *)
+    (* index. array. Accept (c);
+    index. index. Accept (c); *)
+  END VisitDeref;
+
 PROCEDURE (c: ConstFold) VisitIndex* (index: IR.Index);
   BEGIN
     (* FIXME! *)
@@ -253,6 +260,10 @@ BEGIN
     c.result := NIL;
   END;
 END VisitNegate;
+
+PROCEDURE (c: ConstFold) VisitNewArray* (new: IR.NewArray);
+  BEGIN
+  END VisitNewArray;
 
 PROCEDURE (c: ConstFold) VisitCap* (op: IR.Cap);
 VAR 

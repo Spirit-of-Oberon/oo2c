@@ -27,7 +27,7 @@ IMPORT
   OOC:SSA, OOC:SSA:IRtoSSA, OOC:SSA:Schedule, OOC:SSA:XML, OOC:SSA:Inspector,
   OOC:SSA:DeadCodeElimination, OOC:SSA:Destore, OOC:SSA:Allocator,
   OOC:SSA:Blocker,
-  OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, OOC:C:IRtoC,
+  OOC:C:ConvertDecl, OOC:C:Naming, OOC:C:DeclWriter, 
   OOC:Make:Command:TranslateToC;
 
 
@@ -64,11 +64,11 @@ CONST
   enableDebugOutput = FALSE;
   
 
-PROCEDURE SubclassToBasicType (subclass: Opcode.Subclass): DeclWriter.BasicTypeId;
+PROCEDURE SubclassToBasicType (res: SSA.Result): DeclWriter.BasicTypeId;
   BEGIN
-    CASE subclass OF
+    CASE res. subclass OF
     | Opcode.scNone: RETURN DeclWriter.void
-    | Opcode.scAddress: RETURN DeclWriter.ptr
+    | Opcode.scAddress: RETURN DeclWriter.int32(*DeclWriter.ptr*)
     | Opcode.scUnsigned8: RETURN DeclWriter.uint8
     | Opcode.scUnsigned16: RETURN DeclWriter.uint16
     | Opcode.scUnsigned32: RETURN DeclWriter.uint32
@@ -377,6 +377,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     opnd: SSA.Opnd;
     target: Object.Object;
     str: ARRAY 32 OF CHAR;
+    var: SSA.Result;
 
   PROCEDURE ^ Call (call: SSA.Instr);
     
@@ -449,6 +450,51 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteChar (";");
     END GetLength;
 
+  PROCEDURE CastFromPtr (res: SSA.Result);
+    BEGIN
+      IF (res. subclass = Opcode.scAddress) THEN
+        w. WriteString ("(");
+        w. WriteString (w. basicType[SubclassToBasicType (instr)]. repr);
+        w. WriteString (")");
+      END;
+    END CastFromPtr;
+  
+  PROCEDURE CastToPtr (var: SSA.Result);
+    VAR
+      type: Sym.Type;
+      name: String.String;
+    BEGIN
+      IF (var # NIL) THEN
+        type := var(SSA.DeclRef). decl(Sym.VarDecl). type;
+        IF (type IS Sym.Pointer) THEN
+          name := Naming.NameOfType (type);
+          w. WriteString ("(");
+          w. WriteString (name. array^);
+          w. WriteString (")");
+        END;
+      END;
+    END CastToPtr;
+  
+  PROCEDURE NewArray (instr: SSA.Instr);
+    VAR
+      name: String.String;
+      opnd: SSA.Opnd;
+    BEGIN
+      CastFromPtr (instr);
+      w. WriteString ("RT0__NewArray(");
+      opnd := instr. GetOpndClass (Opnd.type);
+      name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
+      w. WriteString (name. array^);
+      w. WriteString (".base");
+
+      opnd := opnd. nextOpnd;
+      WHILE (opnd # NIL) & (opnd. class = Opnd.arg) DO
+        w. WriteString (", ");
+        w. Ref (opnd);
+      END;
+      w. WriteString (");");
+    END NewArray;
+  
   PROCEDURE CopyParameter (instr: SSA.Address);
     VAR
       varDecl: Sym.VarDecl;
@@ -527,7 +573,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
             sourceVar := w. registerMap. Get (opnd. arg);
             w. AddSwapData (sourceVar(String.String),
                             targetVar(String.String),
-                            SubclassToBasicType (res. subclass))
+                            SubclassToBasicType (res))
           END;
         END;
         opnd := opnd. nextOpnd; res := res. nextResult
@@ -627,6 +673,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.declRef:
         (* nothing, handled in `Ref' *)
         
+      | Opcode.typeRef:
+        (* nothing, handled in `Ref' *)
+        
       | Opcode.address:
         (* nothing, handled in `Ref' *)
 
@@ -652,12 +701,13 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         (* nothing *)
         
       | Opcode.get:
+        CastFromPtr (instr);
         IF SimpleVarAccess (instr, Opnd.readAdr) THEN
           w. Ref (instr. GetOpndClass (Opnd.readDesign))
         ELSE
           w. WriteString ("*(");
           w. WriteString (w. basicType
-                          [SubclassToBasicType (instr. subclass)]. repr);
+                          [SubclassToBasicType (instr)]. repr);
           w. WriteString ("*)");
           w. Ref (instr. opndList. nextOpnd);
         END;
@@ -666,15 +716,18 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.set:
         w. Newline;
         IF SimpleVarAccess (instr, Opnd.writeAdr) THEN
-          w. Ref (instr. GetOpndClass (Opnd.writeDesign))
+          w. Ref (instr. GetOpndClass (Opnd.writeDesign));
+          var := instr. GetArgClass (Opnd.writeDesign);
         ELSE
           w. WriteString ("*(");
           w. WriteString (w. basicType
-                          [SubclassToBasicType (instr. subclass)]. repr);
+                          [SubclassToBasicType (instr)]. repr);
           w. WriteString ("*)");
           w. Ref (instr. opndList. nextOpnd);
+          var := NIL;
         END;
         w. WriteString (" = ");
+        CastToPtr (var);
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
         w. WriteChar (";");
 
@@ -683,6 +736,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         
       | Opcode.copyParameter:
         CopyParameter (instr(SSA.Address));
+
+      | Opcode.newArray:
+        NewArray (instr);
         
       | Opcode.add:
         WriteDyadicOp (instr, "+");

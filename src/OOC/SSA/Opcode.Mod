@@ -21,7 +21,7 @@ MODULE OOC:SSA:Opcode;
 *)
 
 IMPORT
-  Strings, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+  Log, Strings, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
   
 TYPE
@@ -44,15 +44,20 @@ CONST
      procedures.  Instance of @otype{*OOC:SSA.DeclRef}.  Takes no SSA operands.
      The declaration can be found in @ofield{*OOC:SSA.DeclRef.decl}.  This
      instruction produces no storable value.  *)
-  address* = 2;
+  typeRef* = 2;
+  (**Wrapper instruction for references to type definitions, like pointer or
+     array types.  Instance of @otype{*OOC:SSA.TypeRef}.  Takes no SSA
+     operands.  The type can be found in @ofield{*OOC:SSA.TypeRef.type}.  This
+     instruction produces no storable value.  *)
+  address* = 3;
   (**Denotes the address of a declared object, for example of a variable or a
      procedures.  Instance of @otype{*OOC:SSA.Address}.  Takes no SSA operands.
      The object can be found in @ofield{*OOC:SSA.Address.decl}.  This
      instruction produces a value of type address.  *)
   
-  enter* = 3;
-  select* = 4;
-  collect* = 5;
+  enter* = 4;
+  select* = 5;
+  collect* = 6;
   (**A @oconst{collect} instruction temporarily merges local values into the
      global @var{store} state.  This result is subsequently fed into an
      instruction that joins multiple paths of control flow, for example a
@@ -91,7 +96,7 @@ CONST
      @omodule{*OOC:SSA:Destore} adds further collects, and typically adds more
      values to the argument lists.  *)
   
-  return* = 6;
+  return* = 7;
   (**This instruction serves two purposes: it marks the place where control
      flow exists the procedure, and, for function procedures, it defines the
      scalar value that should be produced as the function's result. The
@@ -111,7 +116,7 @@ CONST
      @oconst{selectReturn} instruction.  [Note: Don't know if there will be
      more uses.  FIXME...]  *)
   
-  selectReturn* = 7;
+  selectReturn* = 8;
   (**Chooses the return statement that leaves the procedure or function.  The
      statement takes @var{n}+2 arguments, all defining values of @var{store} at
      the end of their corresponding branch of control flow.
@@ -140,7 +145,7 @@ CONST
      or procedure.
      @end table  *)
 
-  exit* = 8;
+  exit* = 9;
   (**This instruction marks the place where control flow exists the
      @code{LOOP}.  The instruction has one operand:
 
@@ -154,7 +159,7 @@ CONST
      @oconst{selectExit} instruction.  *)
   
   
-  selectExit* = 9;
+  selectExit* = 10;
   (**Chooses the @code{EXIT} statement that leaves a @code{LOOP}.  The
      statement takes @var{n}+1 arguments.  All but the first one define values
      of @var{store} at the end of their corresponding branch of control flow,
@@ -170,7 +175,7 @@ CONST
      statement in the source code.
      @end table  *)
 
-  loopStart* = 10;
+  loopStart* = 11;
   (**Marks the beginning of a loop construct.  It has a single operand:
 
      @table @oconst
@@ -189,7 +194,7 @@ CONST
 
      There is one result, the value of @var{store} as seen by the loop body
      when an iteration begins.  *)
-  loopEnd* = 11;
+  loopEnd* = 12;
   (**Marks the end of a loop construct.  It has four arguments:
 
      @table @oconst
@@ -219,7 +224,7 @@ CONST
      There is one result, the value of @var{store} as seen by the first
      instruction after the loop.  *)
   
-  get* = 12;
+  get* = 13;
   (**Retrieves the value of a variable.  Result is always a scalar value.  The
      operands of the instruction and their class ids are in this order:
 
@@ -234,13 +239,15 @@ CONST
      The symbolic representation of the variable's designator.  Depending on
      the designator, several successive operands can share this class.  For
      non-heap variables, the first entry in the designator is a reference to
-     the declaration of the accessed variable.
+     the declaration of the accessed variable.  For variables on the heap,
+     the designator begins with the address, that is, it duplicates the
+     second argument @oconst{*OOC:SSA:Opnd.readAdr}.
      @end table
 
      The instruction itself represents the result of the read operation.  If it
      accesses a volatile variable, then it has an additional result, the new
      value of @var{store} that is produced by this read operation.  *)
-  set* = 13;
+  set* = 14;
   (**Sets the value of a variable.  The source value is always of scalar type.
      The operand list resembles that of a @oconst{get} instruction, using the
      class ids @oconst{*OOC:SSA:Opnd.writeAdr} and
@@ -251,40 +258,40 @@ CONST
 
      The instruction has one result of class @oconst{*OOC:SSA:Result.store},
      representing the new value of store with the updated variable.  *)
-  copy* = 14;
+  copy* = 15;
 
-  add* = 15;
+  add* = 16;
   (**Addition operator.  The two operands must be of the same type, which is at
      the same time the result of the operation.  There is one exception to this
      rule: if one of the operands is of type @oconst{scAddress}, then the other
      operand can be any integer type, signed or unsigned, and the result type
      is @oconst{scAddress}.  *)
-  subtract* = 16;
-  negate* = 17;
-  multiply* = 18;
+  subtract* = 17;
+  negate* = 18;
+  multiply* = 19;
   (**Multiplication.  The two operands must be of the same type, which is
      also the result of the operation.  There is one exception: when
      multiplying an index with the size of the element, then the result is
      a value of type @oconst{scAddress}.  *)
-  divide* = 19;
+  divide* = 20;
 
-  eql* = 20;
-  neq* = 21;
-  lss* = 22;
-  leq* = 23;
-  gtr* = 24;
-  geq* = 25;
+  eql* = 21;
+  neq* = 22;
+  lss* = 23;
+  leq* = 24;
+  gtr* = 25;
+  geq* = 26;
 
-  and* = 26;
-  or* = 27;
-  not* = 28;
+  and* = 27;
+  or* = 28;
+  not* = 29;
   
-  cap* = 29;
+  cap* = 30;
   
-  assert* = 30;
-  call* = 31;
+  assert* = 31;
+  call* = 32;
   
-  getLength* = 32;
+  getLength* = 33;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -306,7 +313,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 33;
+  copyParameter* = 34;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -322,6 +329,26 @@ CONST
      @end table
 
      The result of the instruction is the address of the new copy.  An
+     additional result is the new value of @var{store}.  *)
+
+  newArray* = 35;
+  (**Allocates space for an array object on the heap.  This opcode is used for
+     both fixed size arrays and arrays with open dimensions.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.type
+     The type of the pointer to which the new object will be assigned.
+
+     @item *OOC:SSA.Opnd.arg
+     For every open dimension of the array type, one argument with the length
+     of the dimension.  For a fixed size array, no arguments of this class
+     exist.
+     @end table
+
+     The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
 CONST
@@ -396,6 +423,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     CASE class OF
     | const: cstr := "const";
     | declRef: cstr := "declref";
+    | typeRef: cstr := "typeref";
     | address: cstr := "address";
 
     | enter: cstr := "enter";
@@ -414,6 +442,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | copy: cstr := "copy";
     | getLength: cstr := "get-length";
     | copyParameter: cstr := "copy-parameter";
+    | newArray: cstr := "new-array";
 
     | add: cstr := "add";
     | subtract: cstr := "subtract";
@@ -465,6 +494,13 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
 
     | type: Sym.Record DO
       RETURN scNone;
+
+    | type: Sym.Pointer DO
+      RETURN scAddress;
+      
+    ELSE
+      Log.Type ("++ Unknown type in TypeToSubclass", type);
+      ASSERT (FALSE);
     END;
   END TypeToSubclass;
 

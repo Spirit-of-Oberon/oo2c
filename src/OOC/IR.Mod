@@ -314,6 +314,16 @@ TYPE
   END;
 
 TYPE
+  Deref* = POINTER TO DerefDesc;
+  DerefDesc = RECORD
+    (OperatorDesc)
+    (**The deref operator takes a pointer value and returns the referenced
+       value.  *)
+    pointer-: Expression;
+    derefType-: Sym.Type;
+  END;
+  
+TYPE
   Index* = POINTER TO IndexDesc;
   IndexDesc = RECORD
     (OperatorDesc)
@@ -347,6 +357,14 @@ TYPE
   NegateDesc = RECORD
     (OperatorDesc)
     operand- : Expression;
+  END;
+
+TYPE
+  NewArray* = POINTER TO NewArrayDesc;
+  NewArrayDesc = RECORD
+    (OperatorDesc)
+    arrayType-: Sym.Array;
+    length-: ExpressionList;
   END;
 
 TYPE
@@ -655,6 +673,9 @@ TYPE
   END;
 
 
+CONST
+  unlimited = MAX (LONGINT);
+  
 VAR
   real : Sym.Type;
 
@@ -677,7 +698,7 @@ CONST
   wrongNumberOfArguments = 13;
   invalidIntegerConst = 14;
   notArray = 15;
-  
+
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -1098,6 +1119,34 @@ PROCEDURE (op: Compare) Accept* (v: Visitor);
     v. VisitCompare (op)
   END Accept;
 
+(* Operator Class: Deref
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitDeref (d: Deref; sym: Symbol; pointer: Expression);
+  BEGIN
+    InitOperator (d, sym, pointer. type(Sym.Pointer). baseType);
+    d. pointer := pointer;
+    d. derefType := pointer. type(Sym.Pointer). baseType;
+    ASSERT ((d. derefType IS Sym.Record) OR (d. derefType IS Sym.Array));
+  END InitDeref;
+
+PROCEDURE (b: Builder) NewDeref* (sym: Symbol; pointer: Expression): Deref;
+  VAR
+    i: Deref;
+  BEGIN
+    NEW (i);
+    InitDeref (i, sym, pointer);
+    RETURN i
+  END NewDeref;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitDeref* (index: Deref);
+  END VisitDeref;
+
+PROCEDURE (index: Deref) Accept* (v: Visitor);
+  BEGIN
+    v. VisitDeref (index)
+  END Accept;
+
 (* Operator Class: Index
    ------------------------------------------------------------------------ *)
 
@@ -1112,6 +1161,10 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Index;
   VAR
     i: Index;
   BEGIN
+    IF (array. type IS Sym.Pointer) THEN
+      array := b. NewDeref (sym, array);
+    END;
+    
     NEW (i);
     InitIndex (i, sym, array, index);
     RETURN i
@@ -1202,6 +1255,41 @@ PROCEDURE (neg: Negate) Accept* (v: Visitor);
     v. VisitNegate (neg)
   END Accept;
 
+(* Operator Class: NewArray
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitNewArray (new: NewArray; sym: Symbol; type: Sym.Type;
+                        length: ExpressionList);
+  BEGIN
+    InitOperator (new, sym, type);
+    new. arrayType := type(Sym.Pointer). baseType(Sym.Array);
+    new. length := length;
+  END InitNewArray;
+
+PROCEDURE (b: Builder) NewNewArray (sym: Symbol; args: ExpressionList): Expression;
+  VAR
+    new: NewArray;
+    length: ExpressionList;
+    i: LONGINT;
+  BEGIN
+    NEW (length, LEN (args^)-1);
+    FOR i := 0 TO LEN (length^)-1 DO
+      length[i] := args[i+1];
+    END;
+    
+    NEW (new);
+    InitNewArray (new, sym, args[0]. type, length);
+    RETURN new;
+  END NewNewArray;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitNewArray* (new: NewArray);
+  END VisitNewArray;
+
+PROCEDURE (new: NewArray) Accept* (v: Visitor);
+  BEGIN
+    v. VisitNewArray (new)
+  END Accept;
+
 (* Operator Class: SelectField
    ------------------------------------------------------------------------ *)
 
@@ -1285,11 +1373,11 @@ PROCEDURE (op: SetOp) Accept* (v: Visitor);
     v. VisitSetOp (op)
   END Accept;
 
-(* Statement Class: SetRange
+(* Operator Class: SetRange
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitSetRange (range: SetRange; sym: Symbol;
-                           from, to : Expression);
+                        from, to : Expression);
   BEGIN
     InitOperator (range, sym, from.type);
     range.from := from;
@@ -2398,6 +2486,19 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         RETURN b. NewAssert (design. sym, arguments,
                   ~GetPragmaValue(b, StdPragmas.assertions, design. sym. pos));
 
+      | Predef.new:
+        IF CheckNumberOfArguments (1, unlimited) THEN
+          ASSERT (arguments[0]. type IS Sym.Pointer);
+          ASSERT (arguments[0]. type(Sym.Pointer). baseType IS Sym.Array);
+          IF CheckNumberOfArguments (1, 1+arguments[0]. type(Sym.Pointer). baseType(Sym.Array). GetOpenDimensions()) THEN
+            (* FIXME... check argument type here or in NewNewArray() *)
+            RETURN b. NewAssignment (design. sym,
+                                     arguments[0],
+                                     b. NewNewArray (design. sym, arguments));
+          END;
+        END;
+        RETURN b. errorExpr;
+        
       (* predefined functions *)
       | Predef.len:
         IF CheckNumberOfArguments (1, 2) THEN

@@ -41,6 +41,26 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       left: IR.Expression;
       sym: BasicList.Symbol;
       i: LONGINT;
+
+    PROCEDURE Select(design: ExtTree.Operator): IR.Expression;
+      VAR
+        left: IR.Expression;
+      BEGIN
+        left := Designator (design. left);
+        WITH left: IR.ModuleRef DO
+          RETURN b. NewQualident (left, currentSourceContext, 
+                                  design. right(ExtTree.Terminal). sym);
+          
+        | left: IR.Const DO
+          ASSERT (left = b. errorExpr);
+          RETURN b. errorExpr;           (* left side has errors *)
+
+        ELSE                             (* field or tb procedure selector *)
+          RETURN b. NewSelect (design. op. sym, left, currentSourceContext,
+                               design. right(ExtTree.Terminal). sym);
+        END
+      END Select;
+    
     BEGIN
       WITH design: ExtTree.Terminal DO
         RETURN b. NewIdentRef (currentNamespace, currentSourceContext,
@@ -62,21 +82,12 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         RETURN left
             
       | design: ExtTree.Operator DO
-        ASSERT (design. op. sym. id = Symbol.period);
-        left := Designator (design. left);
-        WITH left: IR.ModuleRef DO
-          RETURN b. NewQualident (left, currentSourceContext, 
-                                  design. right(ExtTree.Terminal). sym);
-          
-        | left: IR.Const DO
-          ASSERT (left = b. errorExpr);
-          RETURN b. errorExpr;           (* left side has errors *)
-
-        ELSE                             (* field or tb procedure selector *)
-          RETURN b. NewSelect (design. op. sym, left, currentSourceContext,
-                               design. right(ExtTree.Terminal). sym);
-        END
-            
+        IF (design. op. sym. id = Symbol.period) THEN
+          RETURN Select (design);
+        ELSE
+          ASSERT (design. op. sym. id = Symbol.arrow);
+          RETURN b. NewDeref (design. op. sym, Designator (design. left));
+        END;
       ELSE
         Log.Type("++ Unknown type in Designator", design);
         ASSERT (FALSE)
@@ -137,7 +148,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         res := Designator (expr)
        
       | expr: ExtTree.Operator DO
-        IF (expr. op. sym. id = Symbol.period) THEN
+        IF (expr. op. sym. id = Symbol.period) OR
+           (expr. op. sym. id = Symbol.arrow) THEN
           (* handled as part of designator *)
           res := Designator (expr);
         ELSE

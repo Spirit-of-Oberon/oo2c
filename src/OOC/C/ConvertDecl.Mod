@@ -35,6 +35,7 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
     struct: DeclWriter.Struct;
     base: DeclWriter.Type;
     name: String.String;
+    baseType, srcCodeBaseType: Sym.Type;
 
   PROCEDURE ConvertParam (fct: DeclWriter.Function; param: Sym.VarDecl);
     VAR
@@ -108,12 +109,14 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
         END;
         
       | type: Sym.Pointer DO
-        base := ConvertType (w, type. baseType, type. srcCodeBaseType);
-        IF (type. baseType IS Sym.Array) THEN
-          RETURN base;
-        ELSE
-          RETURN w. NewPointer (DeclWriter.tqNone, base);
+        baseType := type. baseType;
+        srcCodeBaseType := type. srcCodeBaseType;
+        WHILE (baseType IS Sym.Array) DO
+          srcCodeBaseType := baseType(Sym.Array). srcCodeElementType;
+          baseType := baseType(Sym.Array). elementType;
         END;
+        RETURN w. NewPointer (DeclWriter.tqNone,
+                              ConvertType (w, baseType, srcCodeBaseType));
         
       | type: Sym.FormalPars DO
         fct := w. NewFunction

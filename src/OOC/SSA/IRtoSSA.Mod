@@ -52,7 +52,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
   PROCEDURE Chain (instr: SSA.Instr);
     BEGIN
-      IF (instr. opcode = Opcode.set) THEN
+      IF (instr. opcode = Opcode.set) OR (instr. opcode = Opcode.newArray) THEN
         instr. opndList. ReplaceArg (s);
       ELSE
         instr. AddOpnd (s, Opnd.store);
@@ -134,6 +134,22 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       instr: SSA.Instr;
       res: SSA.Result;
 
+    PROCEDURE Deref (deref: IR.Deref): SSA.Result;
+      VAR
+        instr: SSA.Instr;
+        address: SSA.Result;
+      BEGIN
+        (* take the value of the pointer and use it to start a new "get"
+           instruction *)
+        address := Expression (deref. pointer);
+        instr := pb. AddInstr (Opcode.get, 
+                               Opcode.TypeToSubclass (deref. derefType));
+        instr. AddOpnd (s, Opnd.store);
+        instr. AddOpnd (address, Opnd.readAdr);
+        instr. AddOpnd (address, Opnd.readDesign);
+        RETURN instr
+      END Deref;
+    
     PROCEDURE Index (indexOp: IR.Index): SSA.Result;
       VAR
         instr, elementAdr, scaledIndex: SSA.Instr;
@@ -225,6 +241,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: IR.Len DO
         RETURN RetrieveLength (pb, expr. variant,
                                expr. arrayVariable, expr. dim);
+
+      | expr: IR.Deref DO
+        RETURN Deref (expr);
         
       | expr: IR.Index DO
         RETURN Index (expr);
@@ -304,6 +323,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           Log.Type("++ Unknown variant of Compare in Expression", expr);
           ASSERT (FALSE);
         END;
+
+      | expr: IR.NewArray DO
+        instr := pb. AddInstr (Opcode.newArray, Opcode.scAddress);
+        instr. AddOpnd (s, Opnd.store);
+        instr. AddOpnd (pb. GetTypeRef (expr. type), Opnd.type);
+        FOR i := 0 TO LEN (expr. length^)-1 DO
+          instr. AddOpnd (Expression (expr. length[i]), Opnd.arg);
+        END;
+        Chain (instr);
+        RETURN instr;
         
       | expr: IR.Call DO
         instr := Call (expr);

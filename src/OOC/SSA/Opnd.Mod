@@ -87,9 +87,11 @@ CONST
      @var{store} within the procedure at the place of a @code{RETURN}, or
      @oconst{*OOC:SSA:Opcode.selectExit} taking the final value of @var{store}
      within a loop at the place of an @code{EXIT}.  *)
-(*  storeReturn* = 12;  ... currently unused
-  (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the value
-     of @var{store} after a @code{RETURN} statement.  *)*)
+
+  type* = 12;
+  (**Type operand of a @oconst{*OOC:SSA:Opcode.newArray} instruction.  Like
+     constants and declarations, this is an immutable value as far as SSA is
+     concerned.  *)
 
   backwardFeed* = 13;
   (**Operand holds the value of @var{store} that is fed back to the beginning
@@ -136,6 +138,7 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | functionResult: COPY ("function-result", name)
     | storeEnter: COPY("store-enter", name)
     | storeExit: COPY("store-exit", name)
+    | type: COPY("type", name)
     | backwardFeed: COPY ("backward-feed", name)
     | dimension: COPY ("dimension", name)
     | argPointer: COPY ("arg-pointer", name)
