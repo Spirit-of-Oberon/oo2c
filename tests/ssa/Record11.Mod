@@ -12,6 +12,7 @@ PROCEDURE Set(VAR r: R0);
     r0: R0;
   BEGIN
     r0. x := 123;
+    <*TypeGuard:=TRUE*>
     r := r0;                   (* dynamic type of r must be checked *)
   END Set;
 

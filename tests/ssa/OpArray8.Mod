@@ -2,6 +2,7 @@ MODULE OpArray8;
 
 PROCEDURE P(VAR x: ARRAY OF INTEGER; n: INTEGER): INTEGER;
   BEGIN
+    <*IndexCheck:=TRUE*>
     RETURN x[n];
   END P;
 

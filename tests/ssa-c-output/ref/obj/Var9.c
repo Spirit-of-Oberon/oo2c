@@ -11,7 +11,7 @@ l1_loop:
   goto l7;
 l5:
   i2 = i0+1;
-  i0 = _check_index(i0, str_0d, OOC_UINT16, 147);
+  i0 = _check_index(i0, str_0d, OOC_UINT16, 169);
   i3 = i0*1;
   i3 = (OOC_INT32)str+i3;
   *(OOC_UINT8*)i3 = (OOC_CHAR8)'\000';

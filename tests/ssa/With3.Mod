@@ -6,6 +6,7 @@ TYPE
 
 PROCEDURE Write (p: P0);
   BEGIN
+    <*TypeGuard:=TRUE*>
     WITH p: P1 DO
       (* nothing *)
     END;

@@ -23,6 +23,7 @@ VAR
 BEGIN
   NEW(a);
   a.Do;
+  <*TypeGuard:=TRUE*>
   a(B).Do;
 END Test;
 

@@ -1,6 +1,8 @@
 MODULE Var7b;
 
 IMPORT Out := Out0;
+
+<*IndexCheck:=TRUE*>
   
 VAR
   i: INTEGER;

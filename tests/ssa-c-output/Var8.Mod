@@ -1,5 +1,7 @@
 MODULE Var8;
 
+<*IndexCheck:=TRUE*>
+
 PROCEDURE Zero (VAR str: ARRAY OF CHAR);
   VAR
     i: LONGINT;

@@ -1,5 +1,7 @@
 MODULE Var9;
 
+<*IndexCheck:=TRUE*>
+
 PROCEDURE Zero (VAR str: ARRAY OF CHAR);
   VAR
     i: INTEGER;

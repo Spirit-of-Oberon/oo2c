@@ -2,6 +2,7 @@ MODULE Case2;
 
 PROCEDURE P (i: INTEGER);
   BEGIN
+    <*CaseSelectCheck:=TRUE*>
     CASE i OF
     | 1: (* nothing *)
     END;

@@ -1,7 +1,9 @@
 MODULE Var7c;
 
 IMPORT Out := Out0;
-  
+
+<*IndexCheck:=TRUE*>
+
 PROCEDURE Len (str: ARRAY OF CHAR): INTEGER;
   VAR
     i, y: INTEGER;

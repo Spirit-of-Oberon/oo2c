@@ -1,7 +1,8 @@
 MODULE HOTFunction7;
 
 IMPORT Out := Out0;
-  
+
+<*FunctResult:=TRUE*>
 PROCEDURE IsA (ch: CHAR): INTEGER;
   BEGIN
   END IsA;
