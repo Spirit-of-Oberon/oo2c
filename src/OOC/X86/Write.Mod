@@ -340,6 +340,15 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       OpcT(opc, InstrType(), -1);
      END OpcR;
 
+  PROCEDURE OpcR2(opc[NO_COPY]: ARRAY OF CHAR);
+    BEGIN
+      IF (instr.resultList.adrMode = S.register) THEN
+        OpcT(opc, S.signed32, -1);
+      ELSE
+        OpcT(opc, InstrType(), -1);
+      END;
+     END OpcR2;
+
   PROCEDURE OpcRReg(opc[NO_COPY]: ARRAY OF CHAR);
     BEGIN  (* zero or sign extend from instruction type to register type *)
       OpcT(opc, InstrType(), S.signed32);
@@ -645,7 +654,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Result(instr.resultList);
         | S.add:
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
-            OpcR("inc");
+            OpcR2("inc");
           ELSE
             OpcR("add");
             Opnd(instr.opndList.nextOpnd);
@@ -660,9 +669,13 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
             sb.AppendLatin1(nlTab+"pushl %ebx");
             w.allocatedStack := instr.opndList.nextOpnd;
           END;
-          OpcR("sub");
-          Opnd(instr.opndList.nextOpnd);
-          Comma();
+          IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
+            OpcR2("dec");
+          ELSE
+            OpcR("sub");
+            Opnd(instr.opndList.nextOpnd);
+            Comma();
+          END;
           Result(instr.resultList);
           AssertResultMatch(instr.opndList);
 
@@ -756,7 +769,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Opnd(instr.opndList.nextOpnd);
         | S.setStack:
           opnd := instr.NthOpnd(2);
-          OpcT("mov", opnd.arg.type, -1);
+          Opc("movl");
           Opnd(opnd);
           sb.Append(", ");
           Literal(instr.opndList.nextOpnd.arg.instr);
