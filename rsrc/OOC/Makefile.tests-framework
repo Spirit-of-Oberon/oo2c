@@ -35,7 +35,7 @@ test1-setup:
 ifdef TEST_PROCESSOR
 	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) $(TEST_PROCESSOR)
 endif
-	$(RM_R) $(TEST_TEMP_DIR)
+	$(RM_R) $(TEST_TEMP_DIR) $(OOC_DEV_ROOT)/lib/obj $(OOC_DEV_ROOT)/lib/sym
 	$(MKDIR) $(TEST_TEMP_DIR)
 
 test1-process: test1-setup
