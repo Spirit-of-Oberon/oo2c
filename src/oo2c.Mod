@@ -1,7 +1,7 @@
 MODULE oo2c;
 
 IMPORT
-  StdChannels, Strings, Out, Err, ADT:String, URI, URI:Scheme:File,
+  Msg, StdChannels, Strings, Out, Err, ADT:String, URI, URI:Scheme:File,
   OS:ProcessManagement, Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
@@ -77,6 +77,8 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
     exec: Package.Executable;
     normSet: Package.FileSet;
     module: Rep.Module;
+    res: Msg.Msg;
+    str: ARRAY 256 OF CHAR;
 
   PROCEDURE InstallDirectory(prefix, path: ARRAY OF CHAR): BOOLEAN;
     VAR
@@ -116,7 +118,7 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
         m := makeRules.imports[i];
         m.origin.GetLocalPath(m, Rep.modSymbolFile, path);
         name := String.New(path);
-        pkg.fileSet.Append(Package.NewFile(name, name));
+        pkg.fileSet.Append(Package.NewFile(name, NIL));
       END;
       
       IF InstallDirectory("", CCompiler.libdir.value(StringValue.Value).string^) THEN
@@ -259,6 +261,17 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
     IF ok & install THEN
       normSet := Package.Normalize(pkg.fileSet);
       ok := InstallFiles(normSet.head);
+    END;
+
+    IF ok & install THEN
+      Package.WritePackage(pkg,
+                           CCompiler.oocdir.value(StringValue.Value).string^,
+                           res);
+      IF (res # NIL) THEN
+        res.GetText(str);
+        Out.String(str); Out.Ln;
+        ok := FALSE;
+      END;
     END;
     
     RETURN ok;

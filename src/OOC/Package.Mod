@@ -1,17 +1,20 @@
 MODULE OOC:Package;
 
 IMPORT
-  IntStr, LongStrings, Msg, Strings, ADT:Object, ADT:String, ADT:ArrayList,
-  URI, FileURI := URI:Scheme:File,
-  XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder,
-  Config:Parser, OOC:Logger, OOC:Error;
+  Files, IntStr, LongStrings, Msg, Strings,
+  ADT:Object, ADT:String, ADT:ArrayList, OSFiles := OS:Files,
+  URI, FileURI := URI:Scheme:File, XML:UnicodeCodec:Latin1,
+  XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
+  Config:Parser,
+  OOC:Logger, OOC:Error;
 
 TYPE
   URIBuffer = ARRAY 1024 OF CHAR;
 
 CONST
   rootPackage = "package";
-
+  pkgInfoSubdir = "/pkginfo";
+  
 TYPE
   Version = POINTER TO VersionDesc;
   VersionDesc = RECORD
@@ -764,6 +767,108 @@ PROCEDURE ParseFile* (fileName: URI.URI; VAR errList: Error.List): Package;
     END;
     RETURN NIL;
   END ParseFile;
+
+PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
+                        VAR res: Msg.Msg);
+  VAR
+    fileName: URIBuffer;
+    f: Files.File;
+    w: Writer.Writer;
+    i: LONGINT;
+
+  PROCEDURE WriteVersion(w: Writer.Writer; version: Version);
+    BEGIN
+      w.StartTag("version", FALSE);
+      w.AttrInt("current", version.current);
+      IF (version.age > 0) THEN
+        w.AttrInt("age", version.age)
+      END;
+      w.AttrInt("revision", version.revision);
+      w.EndTag();  (* version *)
+    END WriteVersion;
+
+  PROCEDURE WriteLibrary(w: Writer.Writer; library: Library);
+    BEGIN
+      w.StartTag("library", FALSE);
+      w.AttrStringLatin1("name", library.name.array^);
+      w.AttrStringLatin1("main-module", library.mainModule.array^);
+      WriteVersion(w, library.version);
+      w.EndTag();  (* library *)
+    END WriteLibrary;
+
+  PROCEDURE WriteExecutable(w: Writer.Writer; executable: Executable);
+    BEGIN
+      w.StartTag("executable", FALSE);
+      w.AttrStringLatin1("main-module", executable.mainModule.array^);
+      w.EndTag();  (* executable *)
+    END WriteExecutable;
+
+  PROCEDURE WriteFileSet(w: Writer.Writer; fileSet: FileSet);
+    VAR
+      ptr: FileData;
+
+    PROCEDURE WriteFile(w: Writer.Writer; file: File);
+      BEGIN
+        w.StartTag("file", FALSE);
+        w.AttrStringLatin1("name", file.name.array^);
+        IF (file.destName # NIL) THEN
+          w.AttrStringLatin1("destName", file.destName.array^);
+        END;
+        w.EndTag();  (* file *)
+      END WriteFile;
+    
+    BEGIN
+      w.StartTag("file-set", FALSE);
+      w.AttrStringLatin1("source-dir", fileSet.sourceDir.array^);
+      IF (fileSet.destDir # NIL) THEN
+        w.AttrStringLatin1("dest-dir", fileSet.destDir.array^);
+      END;
+      ptr := fileSet.head;
+      WHILE (ptr # NIL) DO
+        WITH ptr: FileSet DO
+          WriteFileSet(w, ptr);
+        | ptr: File DO
+          WriteFile(w, ptr);
+        END;
+        ptr := ptr.nextFileData;
+      END;
+      w.EndTag();  (* file-set *)
+    END WriteFileSet;
+  
+  BEGIN
+    COPY(targetDir, fileName);
+    Strings.Append(pkgInfoSubdir, fileName);
+    OSFiles.makedirs(fileName, OSFiles.defaultMode, res);
+    IF (res = NIL) THEN
+      Strings.Append("/", fileName);
+      Strings.Append(pkg.name.array^, fileName);
+      Strings.Append(".xml", fileName);
+      
+      f := Files.New(fileName, {Files.write}, res);
+      IF (res = NIL) THEN
+        w := Writer.New(f.NewWriter(), Latin1.factory, TRUE, 2);
+                          
+        w.StartTag("package", FALSE);
+        w.AttrStringLatin1("name", pkg.name.array^);
+        WriteVersion(w, pkg.version);
+        FOR i := 0 TO pkg.library.size-1 DO
+          WriteLibrary(w, pkg.library.array[i](Library));
+        END;
+        FOR i := 0 TO pkg.executable.size-1 DO
+          WriteExecutable(w, pkg.executable.array[i](Executable));
+        END;
+        WriteFileSet(w, pkg.fileSet);
+        w.EndTag();  (* package *)
+        w.EndOfText();
+        
+        res := w.writer.res;
+      END;
+      f.Close();
+      IF (res = NIL) THEN
+        res := f.res;
+      END;
+    END;
+  END WritePackage;
 
 BEGIN
   NEW (packageContext);
