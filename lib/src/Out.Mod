@@ -44,7 +44,7 @@ PROCEDURE ClearError*;
 
 
 PROCEDURE SetWriter* (w: TextRider.Writer);
-(* Changes the rider @ovar{writer}.  All following calls to output procedures
+(**Changes the rider @ovar{writer}.  All following calls to output procedures
    will write to @oparam{w}.  The preferred method of connecting to the
    standard output channel is to call @samp{SetWriter(NIL)}.  @emph{Note}: If
    interactive input is desired, ensure that the writer output buffering is

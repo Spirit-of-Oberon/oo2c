@@ -26,12 +26,12 @@ IMPORT
     
 VAR
   reader-: TextRider.Reader;
-  (* This is the rider used by the input procedures.  Initialized to hold a
-     text reader on the `StdChannels.stdin' channel.  Can be changed by 
-     calling SetReader.  *)
+  (**This is the rider used by the input procedures.  It is initialized to
+     hold a text reader on the channel @ovar{StdChannels.stdin}.  This can be
+     changed by calling @oproc{SetReader}.  *)
 
 PROCEDURE Done* () : BOOLEAN;
-(* Returns TRUE if the last operation was successful.  *)
+(**Returns @code{TRUE} if the last operation was successful.  *)
   BEGIN
     RETURN (reader. res = TextRider.done)
   END Done;
@@ -43,8 +43,9 @@ PROCEDURE ClearError*;
 
 
 PROCEDURE SetReader* (r: TextRider.Reader);
-(* Changes the rider `reader'.  All following calls to input procedures will 
-   write to `r'.  *)
+(**Changes the rider @ovar{reader}.  All following calls to input procedures
+   will read from @oparam{r}.  The preferred method of connecting to the
+   standard input channel is to call @samp{SetReader(NIL)}.  *)
   BEGIN
     IF r=NIL THEN reader:=TextRider.ConnectReader(StdChannels.stdin)
     ELSE reader := r
