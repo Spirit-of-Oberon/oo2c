@@ -2,7 +2,7 @@ MODULE OOC:SSA:IRtoSSA;
 
 IMPORT
   Log, Language:String8,
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, OOC:IR:Operator,
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR, 
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 
@@ -34,7 +34,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       instr: SSA.Instr;
       res: SSA.Result;
 
-    PROCEDURE Index (indexOp: Operator.Index): SSA.Result;
+    PROCEDURE Index (indexOp: IR.Index): SSA.Result;
       VAR
         instr, elementAdr: SSA.Instr;
         baseResult, index: SSA.Result;
@@ -61,7 +61,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END Index;
     
-    PROCEDURE SelectField (selectOp: Operator.SelectField): SSA.Result;
+    PROCEDURE SelectField (selectOp: IR.SelectField): SSA.Result;
       VAR
         instr, fieldAdr: SSA.Instr;
         baseResult: SSA.Result;
@@ -85,7 +85,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END SelectField;
     
-    PROCEDURE AddCompareOp (op: Operator.Compare; class: Opcode.Class): SSA.Instr;
+    PROCEDURE AddCompareOp (op: IR.Compare; class: Opcode.Class): SSA.Instr;
       VAR
         instr: SSA.Instr;
       BEGIN
@@ -109,7 +109,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.readDesign);
         RETURN instr
 
-      | expr: Operator.Adr DO
+      | expr: IR.Adr DO
         res := Expression (expr. design);
         IF (res. instr. opcode = Opcode.get) THEN
           RETURN res. instr. GetArgClass (Opnd.readAdr);
@@ -119,48 +119,48 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           RETURN res
         END;
         
-      | expr: Operator.Len DO
+      | expr: IR.Len DO
         CASE expr. variant OF
-        | Operator.lenStringConst:
+        | IR.lenStringConst:
           ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
           RETURN pb. GetConstInt (expr. array(IR.Const). value(String8.Value). value. length+1);
 
-        | Operator.lenOpenArrayParam:
+        | IR.lenOpenArrayParam:
           res := Expression (expr. array);
           RETURN pb. AddGetLengthInstr (res(SSA.Instr),
                                         pb. GetConstInt (expr. dim));
         END;
         
-      | expr: Operator.Index DO
+      | expr: IR.Index DO
         RETURN Index (expr);
 
-      | expr: Operator.SelectField DO
+      | expr: IR.SelectField DO
         RETURN SelectField (expr);
         
-      | expr: Operator.TypeConv DO
+      | expr: IR.TypeConv DO
         (* FIXME... right now, we are simply passing through type converted
            values *)
         RETURN Expression (expr. expr);
             
-      | expr: Operator.Negate DO
+      | expr: IR.Negate DO
         instr := pb. AddInstr (Opcode.negate,
                                Opcode.TypeToSubclass (expr. operand. type));
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr
             
-      | expr: Operator.Cap DO
+      | expr: IR.Cap DO
         instr := pb. AddInstr (Opcode.cap,
                                Opcode.TypeToSubclass (expr. operand. type));
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr
             
-      | expr: Operator.BinaryArith DO
+      | expr: IR.BinaryArith DO
         CASE expr.variant OF
-        | Operator.arithAdd:
+        | IR.arithAdd:
           instr := pb. AddInstr (Opcode.add,
                                  Opcode.TypeToSubclass (expr. left. type));
 
-        | Operator.arithSub:
+        | IR.arithSub:
           instr := pb. AddInstr (Opcode.subtract,
                                  Opcode.TypeToSubclass (expr. left. type));
           
@@ -172,11 +172,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (Expression (expr. right), Opnd.arg);
         RETURN instr
 
-      | expr: Operator.Compare DO
+      | expr: IR.Compare DO
         CASE expr.variant OF
-        | Operator.equal:
+        | IR.equal:
           RETURN AddCompareOp (expr, Opcode.eql);
-        | Operator.notEqual:
+        | IR.notEqual:
           RETURN AddCompareOp (expr, Opcode.neq);
         ELSE
           Log.Type("++ Unknown variant of Compare in Expression", expr);

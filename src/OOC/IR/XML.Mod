@@ -2,18 +2,18 @@ MODULE OOC:IR:XML;
 
 IMPORT
   Channel, ADT:String, ADT:StringBuffer, XML:Writer, XML:UnicodeCodec:Latin1,
-  Sym := OOC:SymbolTable, OOC:IR, OOC:IR:Operator;
+  Sym := OOC:SymbolTable, OOC:IR;
 
 TYPE
   Visitor = POINTER TO VisitorDesc;
   VisitorDesc = RECORD
-    (Operator.VisitorDesc)
+    (IR.VisitorDesc)
     w: Writer.Writer;
   END;
 
 PROCEDURE InitVisitor (v: Visitor; w: Writer.Writer);
   BEGIN
-    Operator.InitVisitor (v);
+    IR.InitVisitor (v);
     v. w := w;
   END InitVisitor;
 
@@ -121,31 +121,31 @@ PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
     v. w. EndTag;  (* module-reference *)
   END VisitModuleRef;
 
-PROCEDURE (v: Visitor) VisitAdr* (adr: Operator.Adr);
+PROCEDURE (v: Visitor) VisitAdr* (adr: IR.Adr);
   BEGIN
     v. w. StartTag ("adr", FALSE);
     adr. design. Accept (v);
     v. w. EndTag;  (* adr *)
   END VisitAdr;
 
-PROCEDURE (v: Visitor) VisitLen* (len: Operator.Len);
+PROCEDURE (v: Visitor) VisitLen* (len: IR.Len);
   VAR
     str: ARRAY 32 OF CHAR;
   BEGIN
     v. w. StartTag ("len", FALSE);
     v. w. AttrInt ("dim", len. dim);
     CASE len. variant OF
-    | Operator.lenStringConst: str := "string-const"
-    | Operator.lenFixedArray: str := "fixed-array"
-    | Operator.lenOpenArrayParam: str := "open-array-param"
-    | Operator.lenOpenArrayHeap: str := "open-array-heap"
+    | IR.lenStringConst: str := "string-const"
+    | IR.lenFixedArray: str := "fixed-array"
+    | IR.lenOpenArrayParam: str := "open-array-param"
+    | IR.lenOpenArrayHeap: str := "open-array-heap"
     END;
     v. w. AttrStringLatin1 ("variant", str);
     len. array. Accept (v);
     v. w. EndTag;  (* len *)
   END VisitLen;
 
-PROCEDURE (v: Visitor) VisitIndex* (index: Operator.Index);
+PROCEDURE (v: Visitor) VisitIndex* (index: IR.Index);
   BEGIN
     v. w. StartTag ("index", FALSE);
     index. array. Accept (v);
@@ -153,7 +153,7 @@ PROCEDURE (v: Visitor) VisitIndex* (index: Operator.Index);
     v. w. EndTag;  (* index *)
   END VisitIndex;
 
-PROCEDURE (v: Visitor) VisitSelectField* (sf: Operator.SelectField);
+PROCEDURE (v: Visitor) VisitSelectField* (sf: IR.SelectField);
   BEGIN
     v. w. StartTag ("select-field", FALSE);
     v. w. AttrStringLatin1 ("field", sf. field. name. str^);
@@ -161,14 +161,14 @@ PROCEDURE (v: Visitor) VisitSelectField* (sf: Operator.SelectField);
     v. w. EndTag;  (* select-field *)
   END VisitSelectField;
 
-PROCEDURE (v: Visitor) VisitNegate* (neg: Operator.Negate);
+PROCEDURE (v: Visitor) VisitNegate* (neg: IR.Negate);
   BEGIN
     v. w. StartTag ("negate", FALSE);
     neg. operand. Accept (v);
     v. w. EndTag;  (* negate *)
   END VisitNegate;
 
-PROCEDURE (v: Visitor) VisitCap* (neg: Operator.Cap);
+PROCEDURE (v: Visitor) VisitCap* (neg: IR.Cap);
   BEGIN
     v. w. StartTag ("cap", FALSE);
     neg. operand. Accept (v);
@@ -184,17 +184,17 @@ PROCEDURE VisitDyadicOp (v: Visitor; op: IR.Operator; variant : SHORTINT; left, 
     v. w. EndTag;  (* name *)
   END VisitDyadicOp;
 
-PROCEDURE (v: Visitor) VisitBinaryArith* (op: Operator.BinaryArith);
+PROCEDURE (v: Visitor) VisitBinaryArith* (op: IR.BinaryArith);
   BEGIN
     VisitDyadicOp (v, op, op.variant, op.left, op.right, "binaryArith");
   END VisitBinaryArith;
 
-PROCEDURE (v : Visitor) VisitCompare* (op : Operator.Compare);
+PROCEDURE (v : Visitor) VisitCompare* (op : IR.Compare);
   BEGIN
     VisitDyadicOp (v, op, op.variant, op.left, op.right, "compare");
   END VisitCompare;
 
-PROCEDURE (v : Visitor) VisitTypeConv* (op : Operator.TypeConv);
+PROCEDURE (v : Visitor) VisitTypeConv* (op : IR.TypeConv);
   BEGIN
     v. w. StartTag("typeConv", FALSE);
     (* FIXME! Write type. How? *)
@@ -244,7 +244,7 @@ PROCEDURE (v: Visitor) VisitAssignment* (assignment: IR.Assignment);
     v. w. EndTag;  (* assignment *)
   END VisitAssignment;
 
-PROCEDURE (v: Visitor) VisitAssignOp* (assignOp: Operator.AssignOp);
+PROCEDURE (v: Visitor) VisitAssignOp* (assignOp: IR.AssignOp);
   BEGIN
     v. w. StartTag ("assign-operation", FALSE);
     assignOp. variable. Accept (v);

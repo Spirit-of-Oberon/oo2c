@@ -27,7 +27,7 @@ IMPORT
   OOC:Config:Pragmas, OOC:Auxiliary:Config, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
-  OOC:IR, OOC:IR:Operator, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
+  OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, OOC:SymbolTable:Predef,
   OOC:SymbolTable:TypeRules,
   OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:Naming,
@@ -186,34 +186,34 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
         name := Naming.NameOfDeclaration (expr. decl);
         w. WriteString (name. array^);
         
-      | expr: Operator.Adr DO
+      | expr: IR.Adr DO
         (* FIXME... this is a workaround to get addresses of string constants
            translated properly; breaks horribly for all other cases *)
         WriteExpr (w, expr. design);
         
-      | expr: Operator.Len DO
+      | expr: IR.Len DO
         (* FIXME... there are a lot more variants to LEN than the length
            of a string constant *)
         ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
         w. WriteLInt (expr. array(IR.Const). value(String8.Value). value. length+1, 0);
                       
-      | expr: Operator.Negate DO
+      | expr: IR.Negate DO
         w. WriteChar ("-");
         WriteExpr (w, expr. operand);
 
-      | expr: Operator.BinaryArith DO
+      | expr: IR.BinaryArith DO
         WriteExpr(w, expr. left);
 	CASE expr.variant OF
-        | Operator.arithAdd:  w. WriteChar("+");
-	| Operator.arithSub:  w. WriteChar("-");
-	| Operator.arithDivI: w. WriteChar("/");
-	| Operator.arithDivR: w. WriteChar("/");
-	| Operator.arithMul:  w. WriteChar("*");
-	| Operator.arithMod:  w. WriteChar("%");
+        | IR.arithAdd:  w. WriteChar("+");
+	| IR.arithSub:  w. WriteChar("-");
+	| IR.arithDivI: w. WriteChar("/");
+	| IR.arithDivR: w. WriteChar("/");
+	| IR.arithMul:  w. WriteChar("*");
+	| IR.arithMod:  w. WriteChar("%");
 	END;
         WriteExpr(w, expr. right);
         
-      | expr: Operator.TypeConv DO
+      | expr: IR.TypeConv DO
         WriteExpr(w, expr.expr);  (* FIXME! generate type casts if required *)
         
       | expr: IR.Call DO
@@ -390,7 +390,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
         ASTtoXML.Write (StdChannels.stdout.NewWriter(), ast(ExtTree.Module));
       END;
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
-                                 Operator.NewBuilder (pragmaHistory, errList, config.typeRules, ConstFold.NewConstFold()));
+                                 IR.NewBuilder (pragmaHistory, errList, config.typeRules, ConstFold.NewConstFold()));
       IF cmd. writeIR THEN
         IRtoXML.Write (StdChannels.stdout. NewWriter(), module);
       END;

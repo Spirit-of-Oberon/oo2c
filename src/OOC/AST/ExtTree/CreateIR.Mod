@@ -23,13 +23,13 @@ MODULE OOC:AST:ExtTree:CreateIR;
 IMPORT
   Log, Language:Integer,
   OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList,
-  OOC:AST:ExtTree, Sym := OOC:SymbolTable, OOC:IR, OOC:IR:Operator;
+  OOC:AST:ExtTree, Sym := OOC:SymbolTable, OOC:IR;
 
 
 
 PROCEDURE CreateIR* (module: ExtTree.Module;
                      symTab: Sym.Module;
-                     b: Operator.Builder): IR.Module;
+                     b: IR.Builder): IR.Module;
   VAR
     currentNamespace: Sym.Namespace;
     currentSourceContext: Sym.Item;

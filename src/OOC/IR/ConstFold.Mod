@@ -1,13 +1,13 @@
 MODULE OOC:IR:ConstFold;
 
 IMPORT 
-  Sym := OOC:SymbolTable, OOC:IR, OOC:IR:Operator, OOC:SymbolTable:Predef,
+  Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
   Language, Language:Integer, Language:Boolean, Language:String8, Integers;
 
 TYPE
   ConstFold = POINTER TO ConstFoldDesc;
   ConstFoldDesc = RECORD
-    (Operator.ConstFoldDesc)
+    (IR.ConstFoldDesc)
   END;
 
 CONST
@@ -34,7 +34,7 @@ END AddIntegerType;
 
 PROCEDURE InitConstFold (c : ConstFold);
 BEGIN
-  Operator.InitConstFold (c, NIL);
+  IR.InitConstFold (c, NIL);
 END InitConstFold;
 
 PROCEDURE NewConstFold* (): ConstFold;
@@ -73,12 +73,6 @@ BEGIN
   END
 END ValueConst;
 
-PROCEDURE (c : ConstFold) Accept* (expr : IR.Expression);
-BEGIN
-  c.result := NIL;
-  expr.Accept(c);
-END Accept;
-
 PROCEDURE (c : ConstFold) ValidEval (expr : IR.Expression; VAR result : Language.Value) : BOOLEAN;
 BEGIN
   c.result := NIL;
@@ -116,38 +110,38 @@ PROCEDURE (c: ConstFold) VisitModuleRef* (modRef: IR.ModuleRef);
   BEGIN
   END VisitModuleRef;
 
-PROCEDURE (c: ConstFold) VisitAdr* (adr: Operator.Adr);
+PROCEDURE (c: ConstFold) VisitAdr* (adr: IR.Adr);
   BEGIN
   END VisitAdr;
 
-PROCEDURE (c: ConstFold) VisitLen* (len: Operator.Len);
+PROCEDURE (c: ConstFold) VisitLen* (len: IR.Len);
   VAR length : LONGINT;
   BEGIN
     (* FIXME! Implement lenFixedArray, but how do we get its length? . *)
     CASE len. variant OF
-    | Operator.lenStringConst:
+    | IR.lenStringConst:
       length := len.array(IR.Const).value(String8.Value).value.length+1;
-    | Operator.lenFixedArray:
+    | IR.lenFixedArray:
       length := len.array.type(Sym.Array).length;
-    | Operator.lenOpenArrayParam, Operator.lenOpenArrayHeap:
+    | IR.lenOpenArrayParam, IR.lenOpenArrayHeap:
       c.result := NIL; RETURN;
     END;
     c.result := c.builder.NewConst(len.sym, Predef.GetType(Predef.lengthType), 
       Integer.NewLInt(length));
   END VisitLen;
 
-PROCEDURE (c: ConstFold) VisitIndex* (index: Operator.Index);
+PROCEDURE (c: ConstFold) VisitIndex* (index: IR.Index);
   BEGIN
     (* FIXME! *)
     (* index. array. Accept (c);
     index. index. Accept (c); *)
   END VisitIndex;
 
-PROCEDURE (c: ConstFold) VisitSelectField* (sf: Operator.SelectField);
+PROCEDURE (c: ConstFold) VisitSelectField* (sf: IR.SelectField);
   BEGIN
   END VisitSelectField;
 
-PROCEDURE (c: ConstFold) VisitNegate* (op: Operator.Negate);
+PROCEDURE (c: ConstFold) VisitNegate* (op: IR.Negate);
 VAR 
   id : Sym.PredefId;
   value : Language.Value;
@@ -171,7 +165,7 @@ BEGIN
   END;
 END VisitNegate;
 
-PROCEDURE (c: ConstFold) VisitCap* (op: Operator.Cap);
+PROCEDURE (c: ConstFold) VisitCap* (op: IR.Cap);
 VAR 
   value : Language.Value;
   str: ARRAY 2 OF CHAR;
@@ -186,7 +180,7 @@ BEGIN
   END;
 END VisitCap;
 
-PROCEDURE (c: ConstFold) VisitBinaryArith* (op: Operator.BinaryArith);
+PROCEDURE (c: ConstFold) VisitBinaryArith* (op: IR.BinaryArith);
 VAR 
   l, r, result : Language.Value;
 
@@ -199,16 +193,16 @@ VAR
     
     CASE op.variant OF
       (* FIXME! Properly check for overflow. *)
-    | Operator.arithAdd:  result := Integers.Sum(left, right);
-    | Operator.arithSub:  result := Integers.Difference(left, right);
-    | Operator.arithMul:  result := Integers.Product(left, right);
-    | Operator.arithDivI: 
+    | IR.arithAdd:  result := Integers.Sum(left, right);
+    | IR.arithSub:  result := Integers.Difference(left, right);
+    | IR.arithMul:  result := Integers.Product(left, right);
+    | IR.arithDivI: 
       IF Integers.Compare(right, zero) = 0 THEN
         c.builder.ErrSym(IR.divideByZero, op.sym); RETURN NIL;
       ELSE
         result := Integers.Quotient(left, right);
       END;
-    | Operator.arithMod:
+    | IR.arithMod:
       IF Integers.Compare(right, zero) = 0 THEN
         c.builder.ErrSym(IR.divideByZero, op.sym); RETURN NIL;
       ELSE
@@ -234,12 +228,12 @@ BEGIN
   c.result := NIL;
 END VisitBinaryArith;
 
-PROCEDURE (c: ConstFold) VisitCompare* (op : Operator.Compare);
+PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
   BEGIN
     (* FIXME! *)
   END VisitCompare;
 
-PROCEDURE (c: ConstFold) VisitTypeConv* (op : Operator.TypeConv);
+PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
   VAR
     value : Language.Value;
   BEGIN
@@ -266,7 +260,7 @@ PROCEDURE (c: ConstFold) VisitAssignment* (assignment: IR.Assignment);
   BEGIN
   END VisitAssignment;
 
-PROCEDURE (c: ConstFold) VisitAssignOp* (assignOp: Operator.AssignOp);
+PROCEDURE (c: ConstFold) VisitAssignOp* (assignOp: IR.AssignOp);
   BEGIN
   END VisitAssignOp;
 
