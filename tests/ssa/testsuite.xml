@@ -20,7 +20,7 @@
   select ="&SetupTestCasesWithOut; bugDeclC1">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; align1 align2">-->
+  select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
 
   &TestSetupWithOut;
     
@@ -1708,11 +1708,27 @@
   </testcases>
   
   <testcases profile="C language Interface" default-lang="O2">
-    <test id="align1" type="run" file="Align1.Mod">
+    <test id="align1" type="run" file="Align1.Mod" output="Align1.Ref">
       Check that alignment produces correct field offsets for a number of 
       alignment options.
     </test>
     <test id="align2" type="reject" file="Align2.Mod">
+	  Reject case with more than one alignment specified
+    </test>
+	<test id="callconv1" type = "accept" file="CallConv1.Mod">
+	  Accept calling conventions flags on procedures and procedure types.
+    </test>
+	<test id="callconv2" type = "accept" file="CallConv2.Mod">
+	  Accept assignment of procedure variables with correct calling convention.
+    </test>
+	<test id="callconv3" type = "accept" file="CallConv3.Mod">
+	  Accept assignment to procedure type from "C" type.
+    </test>
+	<test id="callconv4" type = "reject" file="CallConv4.Mod">
+	  Reject assignment to procedure type from "Pascal" type.
+    </test>
+	<test id="cstring1" type = "run" file="CString1.Mod" output="CString1.Ref">
+	  Accept various kinds of strings as POINTER [CSTRING].
     </test>
   </testcases>
 
@@ -2156,6 +2172,10 @@
 
     <reject-info id="align2" pos=", %ALIGN2"
         msg="This modifier flag has no effect here"/>
+
+    <reject-info id="callconv4" pos="%:="
+        msg="Expression not compatible with variable type `CallConv1.Proc'"/>
+
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>
