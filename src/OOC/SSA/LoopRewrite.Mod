@@ -279,7 +279,6 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
       ce.next := ic.cycleElements;
       ce.res := res;
       ic.cycleElements := ce;
-      Log.Ptr("AddInductionValue", res.instr);
     END AddInductionValue;
   
   PROCEDURE SearchCycle(res, head: SSA.Result; ic: InductionCycle;
@@ -365,43 +364,43 @@ PROCEDURE Flatten*(res: SSA.Result);
       RETURN sum;
     END NewSum;
 
+  PROCEDURE AddPLists(a, b: PList; magnB: LONGINT): PList;
+    VAR
+      p: PList;
+      i, ia, ib: LONGINT;
+    BEGIN
+      IF (a = zero) THEN
+        RETURN b;
+      ELSIF (b = zero) THEN
+        RETURN a;
+      ELSE
+        NEW(p);
+        NEW(p.prod, a.size+b.size);
+        i := 0; ia := 0; ib := 0;
+        WHILE (ia # a.size) OR (ib # b.size) DO
+          IF (ia # a.size) &
+             ((ib = b.size) OR (Cmp(a.prod[ia], b.prod[ib]) < 0)) THEN
+            p.prod[i] := a.prod[ia];
+            INC(i); INC(ia);
+          ELSIF (ia = a.size) OR (Cmp(a.prod[ia], b.prod[ib]) > 0) THEN
+            p.prod[i] := b.prod[ib];
+            p.prod[i].magnitude := p.prod[i].magnitude * magnB;
+            INC(i); INC(ib);
+          ELSE  (* Cmp() = 0 *)
+            p.prod[i] := a.prod[ia];
+            INC(p.prod[i].magnitude, b.prod[ib].magnitude * magnB);
+            INC(i); INC(ia); INC(ib);
+          END;
+        END;
+        p.size := i;
+        RETURN p;
+      END;
+    END AddPLists;
+  
   PROCEDURE AddSum(a, b: Sum; magnB: LONGINT): Sum;
     VAR
       sum: Sum;
       subclass: Opcode.Subclass;
-
-    PROCEDURE AddPLists(a, b: PList): PList;
-      VAR
-        p: PList;
-        i, ia, ib: LONGINT;
-      BEGIN
-        IF (a = zero) THEN
-          RETURN b;
-        ELSIF (b = zero) THEN
-          RETURN a;
-        ELSE
-          NEW(p);
-          NEW(p.prod, a.size+b.size);
-          i := 0; ia := 0; ib := 0;
-          WHILE (ia # a.size) OR (ib # b.size) DO
-            IF (ib = b.size) OR (Cmp(a.prod[ia], b.prod[ib]) < 0) THEN
-              p.prod[i] := a.prod[ia];
-              INC(i); INC(ia);
-            ELSIF (ia = a.size) OR (Cmp(a.prod[ia], b.prod[ib]) > 0) THEN
-              p.prod[i] := b.prod[ib];
-              p.prod[i].magnitude := p.prod[i].magnitude * magnB;
-              INC(i); INC(ib);
-            ELSE  (* Cmp() = 0 *)
-              p.prod[i] := a.prod[ia];
-              INC(p.prod[i].magnitude, b.prod[ib].magnitude * magnB);
-              INC(i); INC(ia); INC(ib);
-            END;
-          END;
-          p.size := i;
-          RETURN p;
-        END;
-      END AddPLists;
-    
     BEGIN
       (* ideally, the subclasses of both sides are the same; until then... *)
       ASSERT(a.subclass = b.subclass);
@@ -421,14 +420,108 @@ PROCEDURE Flatten*(res: SSA.Result);
       ELSE
         ASSERT(a.head = b.head);
         sum.head := a.head;
-        sum.headFactor := AddPLists(a.headFactor, b.headFactor);
+        sum.headFactor := AddPLists(a.headFactor, b.headFactor, magnB);
       END;
-      sum.loopInvariant := AddPLists(a.loopInvariant, b.loopInvariant);
-      sum.constant := AddPLists(a.constant, b.constant);
-      sum.others := AddPLists(a.others, b.others);
+      sum.loopInvariant := AddPLists(a.loopInvariant, b.loopInvariant, magnB);
+      sum.constant := AddPLists(a.constant, b.constant, magnB);
+      sum.others := AddPLists(a.others, b.others, magnB);
       RETURN sum;
     END AddSum;
 
+  PROCEDURE MultSum(a, b: Sum): Sum;
+    VAR
+      h: Sum;
+
+    PROCEDURE MultPList(a: PList; b: Sum; subclass: Opcode.Subclass): Sum;
+      VAR
+        i: LONGINT;
+        sum: Sum;
+
+      PROCEDURE MultProduct(a: Product; b: PList): PList;
+        VAR
+          i, j, la, lb, ia, ib: LONGINT;
+          p: PList;
+          f: Factors;
+        BEGIN
+          IF (b = zero) THEN
+            RETURN zero;
+          ELSIF (b = one) THEN
+            NEW(p);
+            p.size := 1;
+            NEW(p.prod, 1);
+            p.prod[0] := a;
+            RETURN p;
+          ELSE
+            NEW(p);
+            p.size := b.size;
+            NEW(p.prod, p.size);
+            FOR i := 0 TO p.size-1 DO
+              NEW(p.prod[i]);
+              
+              la := LEN(a.factors^);
+              lb := LEN(b.prod[i].factors^);
+              NEW(f, la+lb);
+              p.prod[i].factors := f;
+              p.prod[i].magnitude := b.prod[i].magnitude*a.magnitude;
+
+              j := 0; ia := 0; ib := 0;
+              WHILE (ia # la) OR (ib # lb) DO
+                IF (ia # la) &
+                   ((ib = lb) OR
+                    (a.factors[ia].id <= b.prod[i].factors[ib].id)) THEN
+                  f[j] := a.factors[ia]; INC(ia);
+                ELSE
+                  f[j] := b.prod[i].factors[ib]; INC(ib);
+                END;
+                INC(j);
+              END;
+              ASSERT(j = LEN(f^));
+            END;
+            RETURN p;
+          END;
+        END MultProduct;
+      
+      BEGIN
+        NEW(sum);
+        InitSum(sum, subclass, NIL, 0);
+        
+        IF (a = zero) THEN
+          RETURN sum;
+        ELSIF (a = one) THEN
+          RETURN b;
+        ELSE
+          sum.head := b.head;
+          FOR i := 0 TO a.size-1 DO
+            sum.headFactor := AddPLists
+                (sum.headFactor, MultProduct(a.prod[i], b.headFactor), 1);
+            sum.constant := AddPLists
+                (sum.constant, MultProduct(a.prod[i], b.constant), 1);
+            sum.loopInvariant := AddPLists
+                (sum.loopInvariant, MultProduct(a.prod[i],b.loopInvariant), 1);
+            sum.others := AddPLists
+                (sum.others, MultProduct(a.prod[i], b.others), 1);
+          END;
+          RETURN sum;
+        END;
+      END MultPList;
+    
+    BEGIN
+      ASSERT(a.subclass = b.subclass);
+      
+      IF (b.headFactor = zero) &
+         (b.loopInvariant = zero) &
+         (b.others = zero) THEN
+        h := a; a := b; b := h;
+      END;
+      IF (a.headFactor # zero) OR
+         (a.loopInvariant # zero) OR
+         (a.others # zero) THEN
+        RETURN NIL;
+      END;
+
+      RETURN MultPList(a.constant, b, a.subclass);
+    END MultSum;
+  
   PROCEDURE NewPList(factor: Sum): PList;
     VAR
       plist: PList;
@@ -474,6 +567,9 @@ PROCEDURE Flatten*(res: SSA.Result);
         | Opcode.subtract:
           instr.info := AddSum(instr.opndList.arg.info(Sum),
                                instr.opndList.nextOpnd.arg.info(Sum), -1);
+        | Opcode.multiply:
+          instr.info := MultSum(instr.opndList.arg.info(Sum),
+                                instr.opndList.nextOpnd.arg.info(Sum));
         | Opcode.typeConv:  (* copy sum and adjust type *)
           NEW(sum);
           sum^ := instr.opndList.arg.info(Sum)^;
@@ -545,7 +641,6 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       res := pb.FixSubclass(initOld, sum.subclass);
 
       IF (rc.a # NIL) THEN
-        Log.Msg("... rc.a#NIL");
         instr := pb.AddInstr(Opcode.multiply, sum.subclass);
         instr.AddOpnd(rc.a, Opnd.arg);
         instr.AddOpnd(res, Opnd.arg);
@@ -553,7 +648,6 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       END;
 
       IF (rc.b # NIL) THEN
-        Log.Msg("... rc.b#NIL");
         instr := pb.AddInstr(Opcode.add, sum.subclass);
         instr.AddOpnd(rc.b, Opnd.arg);
         instr.AddOpnd(res, Opnd.arg);
@@ -702,12 +796,7 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
          collect instruction in front of the loop *)
       loopStart := sum.head.instr;
       collect := loopStart.opndList.arg.instr;
-      Log.Ptr("head", sum.head.instr);
-      Log.LongInt("index", sum.head.ResultIndex()-1);
-      Log.Ptr("collect", collect);
       res := InitialValue(rc, collect.NthArg(sum.head.ResultIndex()-1));
-      Log.Ptr("new initial", res);
-      res.instr.LogOpcode("opc");
       collect.AddOpnd(res, Opnd.arg);
       
       (* add result as gate output to loopStart, and register it in the
@@ -771,6 +860,7 @@ PROCEDURE DumpSums(pb: SSA.ProcBlock);
           END;
           FOR j := 0 TO LEN(plist.prod[i].factors^)-1 DO
             instr := plist.prod[i].factors[j].instr;
+            IF (j # 0) THEN Err.Char("*") END;
             WITH instr: SSA.Const DO
               Err.Object(instr.value.ToString());
             ELSE
@@ -813,6 +903,7 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
     loopStart, loopEnd, instr: SSA.Instr;
     opnd: SSA.Opnd;
     i: LONGINT;
+    res: SSA.Result;
     
   PROCEDURE EnumerateLoops(storeOut: SSA.Result; firstInstr: SSA.Instr);
     VAR
@@ -880,7 +971,9 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
       FindInductiveCycles(loopStart);
 
       (* calculate alternative representations of addition, subtraction, and
-         multiplication instructions *)
+         multiplication instructions; as a side-effect, all instructions
+         contributing to the arguments of the "loop-end" that are not
+         loop-invariant have a non-NIL info field on completion  *)
       loopEnd := loopStart.GetLoopEnd();
       opnd := loopEnd.opndList;
       WHILE (opnd # NIL) DO
@@ -889,7 +982,8 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
       END;
 
       (* find all instructions that are computed through a sum involving the
-         head of an induction cycle *)
+         head of an induction cycle and insert replacement instructions for
+         them *)
       instr := pb.instrList;
       WHILE (instr # NIL) DO
         (* since we are traversing instructions, we do not hit on the induction
@@ -901,6 +995,24 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
         END;
         instr := instr.nextInstr;
       END;
+
+      (* traverse all elements of the induction cycles and see if the are
+         used in comparison instructions; if possible, rewrite the comparisons
+         to use the rewritten induction cycle *)
+      (*... res := loopStart;
+      WHILE (res # NIL) DO
+        IF (res.info # NIL) &
+           (res.info IS InductionCycle) &
+           (res.info(InductionCycle).rewrittenCycles # NIL) THEN
+          ic := res.info(InductionCycle);
+          ce := ic.cycleElements;
+          WHILE (ce # NIL) DO
+            RewriteComparisons(ce.res, );
+            ce := ce.next;
+          END;
+        END;
+        res := res.nextResult;
+      END;*)
       
       (* replace instructions with their tediously computed equivalents *)
       instr := pb.instrList;
