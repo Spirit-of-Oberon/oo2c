@@ -13,6 +13,7 @@ l4:
   Swap2__x = i0;
   Swap2__y = i1;
   return;
+  ;
 }
 
 void Swap2__Test() {
@@ -39,11 +40,13 @@ void Swap2__Test() {
   Out0__Int(i0, 2);
   Out0__Ln();
   return;
+  ;
 }
 
 void Swap2_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

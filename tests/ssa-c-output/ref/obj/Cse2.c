@@ -20,17 +20,20 @@ l5:
   Out0__Ln();
 l7:
   return;
+  ;
 }
 
 void Cse2__Test() {
 
   Cse2__F((Cse2__P)0);
   return;
+  ;
 }
 
 void Cse2_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

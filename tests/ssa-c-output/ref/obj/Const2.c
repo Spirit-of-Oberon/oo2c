@@ -6,11 +6,13 @@ void Const2__Test() {
   Out0__String("bar", 4);
   Out0__Ln();
   return;
+  ;
 }
 
 void Const2_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

@@ -7,6 +7,7 @@ static OOC_INT16 Cse3__F(OOC_INT16 x) {
   i0 = x;
   i0 = i0+i0;
   return (i0+i0);
+  ;
 }
 
 void Cse3__Test() {
@@ -16,11 +17,13 @@ void Cse3__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Cse3_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

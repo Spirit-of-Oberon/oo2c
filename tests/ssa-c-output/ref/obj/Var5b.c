@@ -7,6 +7,7 @@ static void Var5b__Set(OOC_INT16 y) {
   i0 = y;
   Var5b__x = i0;
   return;
+  ;
 }
 
 static OOC_INT16 Var5b__F(OOC_CHAR8 b) {
@@ -22,6 +23,7 @@ l3:
 l4:
   i0 = Var5b__x;
   return i0;
+  ;
 }
 
 void Var5b__Test() {
@@ -41,11 +43,13 @@ void Var5b__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Var5b_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

@@ -12,18 +12,21 @@ l3:
   Out0__String("TRUE ", 6);
 l4:
   return;
+  ;
 }
 
 static void Const8__Fand(OOC_CHAR8 b) {
 
   Out0__String("FALSE ", 7);
   return;
+  ;
 }
 
 static void Const8__Tor(OOC_CHAR8 b) {
 
   Out0__String("TRUE ", 6);
   return;
+  ;
 }
 
 static void Const8__For(OOC_CHAR8 b) {
@@ -37,6 +40,7 @@ l3:
   Out0__String("TRUE ", 6);
 l4:
   return;
+  ;
 }
 
 void Const8__Test() {
@@ -54,11 +58,13 @@ void Const8__Test() {
   Const8__For(OOC_FALSE);
   Out0__Ln();
   return;
+  ;
 }
 
 void Const8_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

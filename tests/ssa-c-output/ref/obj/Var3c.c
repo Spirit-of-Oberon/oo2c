@@ -12,6 +12,7 @@ l3:
   i0=1;
 l4:
   return i0;
+  ;
 }
 
 void Var3c__Test() {
@@ -24,11 +25,13 @@ void Var3c__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Var3c_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

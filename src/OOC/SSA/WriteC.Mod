@@ -1667,6 +1667,10 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     FixCrossJumps (domRoot);
     w. WriteLn;
     w. WriteBlocks (domRoot, haveCopyParameter);
+    w. Newline;
+    (* add empty statement to avoid gcc's warning `deprecated use of
+       label at end of compound statement'  *)
+    w. WriteString (";");
     t. w. Indent (-1);
   END WriteProcBody;
 

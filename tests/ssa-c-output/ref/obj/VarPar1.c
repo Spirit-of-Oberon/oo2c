@@ -5,6 +5,7 @@ static OOC_INT16 VarPar1__F(OOC_INT16 *p) {
 
   *p = 2;
   return 3;
+  ;
 }
 
 void VarPar1__Test() {
@@ -14,11 +15,13 @@ void VarPar1__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void VarPar1_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

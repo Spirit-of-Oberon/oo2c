@@ -7,6 +7,7 @@ l1_loop:
   
   goto l1_loop;
 l3:
+  ;
 }
 
 void Const7__Test() {
@@ -14,11 +15,13 @@ void Const7__Test() {
   Const7__P(OOC_TRUE);
   Out0__Ln();
   return;
+  ;
 }
 
 void Const7_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

@@ -5,6 +5,7 @@ static OOC_INT16 Var2__F() {
 
   Var2__x = 2;
   return 2;
+  ;
 }
 
 void Var2__Test() {
@@ -18,11 +19,13 @@ void Var2__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Var2_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

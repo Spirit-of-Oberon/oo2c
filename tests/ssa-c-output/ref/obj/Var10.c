@@ -9,6 +9,7 @@ l1_loop:
   if (!i0) goto l1_loop;
 l5:
   return 1;
+  ;
 }
 
 void Var10__Test() {
@@ -18,11 +19,13 @@ void Var10__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Var10_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

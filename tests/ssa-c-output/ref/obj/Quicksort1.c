@@ -41,6 +41,7 @@ l17:
   Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, (i2+1), i0);
 l18:
   return;
+  ;
 }
 
 void Quicksort1__Test() {
@@ -68,11 +69,13 @@ l6_loop:
 l10:
   Out0__Ln();
   return;
+  ;
 }
 
 void Quicksort1_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

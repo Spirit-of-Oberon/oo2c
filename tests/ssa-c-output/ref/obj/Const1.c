@@ -4,6 +4,7 @@
 static OOC_INT16 Const1__F() {
 
   return 12;
+  ;
 }
 
 void Const1__Test() {
@@ -13,11 +14,13 @@ void Const1__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Const1_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

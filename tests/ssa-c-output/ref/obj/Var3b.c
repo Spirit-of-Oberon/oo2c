@@ -17,6 +17,7 @@ l7:
   i0=2;
 l8:
   return i0;
+  ;
 }
 
 void Var3b__Test() {
@@ -35,11 +36,13 @@ void Var3b__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Var3b_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

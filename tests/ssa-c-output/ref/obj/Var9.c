@@ -14,6 +14,7 @@ l1_loop:
   goto l1_loop;
 l6:
   return;
+  ;
 }
 
 void Var9__Test() {
@@ -21,11 +22,13 @@ void Var9__Test() {
 
   Var9__Zero((void*)(OOC_INT32)s4, 4);
   return;
+  ;
 }
 
 void Var9_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

@@ -14,6 +14,7 @@ l3:
   i0=1;
 l4:
   return i0;
+  ;
 }
 
 void Var4__Test() {
@@ -33,11 +34,13 @@ void Var4__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Var4_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

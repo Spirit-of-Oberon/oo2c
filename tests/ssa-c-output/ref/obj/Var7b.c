@@ -18,6 +18,7 @@ l1_loop:
 l5:
   OOC_POP_VPAR_STACK
   return i0;
+  ;
 }
 
 void Var7b__Test() {
@@ -30,11 +31,13 @@ void Var7b__Test() {
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
+  ;
 }
 
 void Var7b_init(void) {
 
   return;
+  ;
 }
 
 /* --- */

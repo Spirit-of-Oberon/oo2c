@@ -14,6 +14,7 @@ l3:
 l4:
   Out0__Ln();
   return;
+  ;
 }
 
 void Alloc1__Test() {
@@ -21,11 +22,13 @@ void Alloc1__Test() {
   Alloc1__F(-1);
   Alloc1__F(1);
   return;
+  ;
 }
 
 void Alloc1_init(void) {
 
   return;
+  ;
 }
 
 /* --- */
