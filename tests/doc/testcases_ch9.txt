@@ -21,25 +21,26 @@ REJECT (assignment compatible):
   3) expr is NIL, but Tvar is not pointer or procedure  [Assign8]
   4) Tvar is ARRAY n OF CHAR, expr is too long string const  [Assign9]
   5) Texpr and Tvar are procedure type, but the number of arguments
-     do not match
+     do not match  [Assign10, Assign14]
   6) Texpr and Tvar are procedure type, but the result type is
-     not the same
+     not the same  [Assign11]
   6) Texpr and Tvar are procedure type, but not all formal
-     parameters types are equal
+     parameters types are equal  [Assign12]
   7) Texpr and Tvar are procedure type, but the there is a mismatch
-     with VAR/value parameters
+     with VAR/value parameters  [Assign13]
 
 ACCEPT (assignment compatible)
 
-  1) Texpr and Tvar are the same type
-  2) types are numeric and Tvar includes Texpr
-  3) both are records, and Texpr extends Tvar
-  4) both are record pointers, and Texpr extends Tvar
-  5) Tvar is pointer type, and expr is NIL
-  6) Tvar is procedure type, and expr is NIL
+  1) Texpr and Tvar are the same type  [HOTLoop1]
+  2) types are numeric and Tvar includes Texpr  [Array1]
+  3) both are records, and Texpr extends Tvar  [Record11]
+  4) both are record pointers, and Texpr extends Tvar  [With2]
+  5) Tvar is pointer type, and expr is NIL  [OpExprCompat1]
+  6) Tvar is procedure type, and expr is NIL  [ProcVar6]
   7) Tvar is ARRAY n OF CHAR, expr is "small enough" string const
+     [OpExprCompat1]
   8) Tvar is procedure, expr is name of procedure with matching 
-     formal parameters
+     formal parameters  [ProcVar1]
 
 ERROR (assignment compatible)
 

@@ -1,0 +1,12 @@
+MODULE Assign11;
+
+VAR
+  p: PROCEDURE (x: INTEGER; VAR y: INTEGER): INTEGER;
+
+PROCEDURE P (x: INTEGER; VAR y: INTEGER): SHORTINT;
+  BEGIN
+  END P;
+       
+BEGIN
+  p := P;
+END Assign11.

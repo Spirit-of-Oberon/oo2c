@@ -10,7 +10,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; assign5 assign6 assign7 assign8 assign9">-->
+  select ="&SetupTestCasesWithOut; assign10 assign11 assign12 assign13
+  assign14 procvar6">-->
 
   &TestSetupWithOut;
     
@@ -45,6 +46,21 @@
     </test>
     <test id="assign9" type="reject" file="Assign9.Mod">
       Trying to assign a string constant that is too long.
+    </test>
+    <test id="assign10" type="reject" file="Assign10.Mod">
+      Procedure assignment: number of arguments differ.
+    </test>
+    <test id="assign11" type="reject" file="Assign11.Mod">
+      Procedure assignment: result type differs.
+    </test>
+    <test id="assign12" type="reject" file="Assign12.Mod">
+      Procedure assignment: type of parameter differs.
+    </test>
+    <test id="assign13" type="reject" file="Assign13.Mod">
+      Procedure assignment: parameter differs in variable/value mode.
+    </test>
+    <test id="assign14" type="reject" file="Assign14.Mod">
+      Procedure assignment: number of arguments differ.
     </test>
     
     <test id="return1" type="reject" file="Return1.Mod">
@@ -409,7 +425,7 @@
     </test>
     
     <test id="record7" type="run" file="Record7.Mod" output="Record7.Ref">
-      Similar to <code>record4</code>, but the variable is allocated
+     Similar to <code>record4</code>, but the variable is allocated
       on the heap.
     </test>
 
@@ -480,26 +496,25 @@
       Call procedures through procedure variables.  The procedures
       have no arguments.
     </test>
-    
     <test id="procvar2" type="run" file="ProcVar2.Mod" output="ProcVar2.Ref">
       Call procedures through procedure variables.  The procedures
       have a value and a <code>VAR</code> argument.
     </test>
-    
     <test id="procvar3" type="run" file="ProcVar3.Mod" output="ProcVar3.Ref">
       Call function procedures through procedure variables.
     </test>
-    
     <test id="procvar4" type="run" file="ProcVar4.Mod" output="ProcVar4.Ref">
       Call procedure through procedure variables.  The procedures
       have a value and a <code>VAR</code> argument of type
       <code>RECORD</code>.
     </test>
-    
     <test id="procvar5" type="run" file="ProcVar5.Mod" output="ProcVar5.Ref">
       Call procedure through procedure variables.  The procedures
       have a value and a <code>VAR</code> argument of type
       <code>ARRAY</code>.
+    </test>
+    <test id="procvar6" type="accept" file="ProcVar6.Mod">
+      Assign <code>NIL</code> to a procedure variable.
     </test>
 
     
@@ -755,6 +770,11 @@
     <reject-info id="assign7" pos="a %:= b" msg="Type of expression is not compatible with variable type"/>
     <reject-info id="assign8" pos="x %:= NIL" msg="Type of expression is not compatible with variable type"/>
     <reject-info id="assign9" pos='x %:= "123"' msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign10" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign11" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign12" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign13" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="assign14" pos='p %:= P;' msg="Type of expression is not compatible with variable type"/>
         
     <reject-info id="return1" pos="RETURN %123" msg="RETURN must not provide a result value"/>
     <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>
