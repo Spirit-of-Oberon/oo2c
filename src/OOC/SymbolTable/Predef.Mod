@@ -45,13 +45,16 @@ CONST
   (**Integer value, two's complement encoding, stored in two bytes.  *)
   longint* = 5;
   (**Integer value, two's complement encoding, stored in four bytes.  *)
-  real* = 6;
+  hugeint* = 6;
+  (**Integer value, two's complement encoding, stored in eight bytes.  *)
+  real* = 7;
   (**Floating point value, IEEE-754 single precision, stored in four bytes.  *)
-  longreal* = 7;
+  longreal* = 8;
   (**Floating point value, IEEE-754 single precision, stored in eight bytes. *)
-  set* = 8;
+  set* = 9;
   (**A set of integer values in the range @samp{0 <= x < 32}.  Stored in
      four bytes.  *)
+  
   address* = longint;
   byte* = 10;
   ptr* = 11;
@@ -208,6 +211,9 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     ptype := PredefType (stb, module, longint, "LONGINT", 4, 4,
                          Integer.New (MIN (LONGINT)),
                          Integer.New (MAX (LONGINT)));
+    ptype := PredefType (stb, module, hugeint, "HUGEINT", 4, 4,
+                         Integer.NewString ("-9223372036854775808"),
+                         Integer.NewString ("9223372036854775807"));
     ptype := PredefType (stb, module, real, "REAL", 4, 4,
                          Real.New (MIN (REAL)),
                          Real.New (MAX (REAL)));
@@ -290,6 +296,20 @@ PROCEDURE GetMax* (type: Sym.Type): Language.Value;
       RETURN NIL;
     END;
   END GetMax;
+
+PROCEDURE SmallestIntType* (value: Integer.Value): Sym.Type;
+(**Return the smallest integer type that can represent @oparam{value}. *)
+  VAR
+    i: INTEGER;
+  BEGIN
+    FOR i := shortint TO real-1 DO
+      IF (value.Compare(minConst[i](Integer.Value)) >= 0) &
+         (value.Compare(maxConst[i](Integer.Value)) <= 0) THEN
+        RETURN GetType(i);
+      END;
+    END;
+    RETURN NIL;
+  END SmallestIntType;
 
 BEGIN
   NEW (Sym.predefIdToType, lastId+1);
