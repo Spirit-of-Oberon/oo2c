@@ -35,6 +35,8 @@ TYPE
 TYPE
   Rules* = POINTER TO RulesDesc;
   RulesDesc* = RECORD
+    backend: LONGINT;
+    
     imports: POINTER TO ARRAY OF Rep.Module;
     mInfo: Dictionary.Dictionary;
     
@@ -63,9 +65,16 @@ VAR
   fileIdNames: ARRAY Rep.maxFileId+1 OF ARRAY 24 OF CHAR;
   scriptSystemId: URI.URI;
   inspectProc*, inspectStage*: StringSearch.Matcher;
-  backend*: LONGINT;
+  (**Debug options, not supported by all back-ends.  The matcher
+     @ovar{inspectProc} is applied to procedure names.  On success, the
+     back-end writes out additional information for the procedure, where the
+     granularity can be further reduced by restricting the output to stages
+     matching @ovar{inspectStage}.  *)
   writeAST*: BOOLEAN;
+  (**If @code{TRUE}, write out the abstract syntax tree for modules.  *)
   writeIR*: BOOLEAN;
+  (**If @code{TRUE}, write out the intermediate code representation that
+     has been derived from the AST.  *)
   
 CONST
   noSuchModule = 1;
@@ -93,6 +102,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 PROCEDURE InitRules* (r: Rules);
   BEGIN
+    r.backend := backendSSAtoC;
     r.imports := NIL;
     r.mInfo := Dictionary.New();
     r.extensionDict := NIL;
@@ -108,6 +118,11 @@ PROCEDURE NewRules*(): Rules;
     InitRules(r);
     RETURN r;
   END NewRules;
+
+PROCEDURE (r: Rules) SetBackend* (backend: LONGINT);
+  BEGIN
+    r.backend := backend;
+  END SetBackend;
 
 PROCEDURE (r: Rules) SetErrOut* (ch: Channel.Channel);
   BEGIN
@@ -376,7 +391,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
     ELSE
       Logger.EnterMake("CompileModule", module.name^);
 
-      CASE backend OF
+      CASE r.backend OF
       | backendNone:
         errList := DoEmptyBackend();
       | backendSSAtoC:
@@ -713,7 +728,7 @@ PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
     str: ShellCommand;
     success: BOOLEAN;
   BEGIN
-    IF (backend = backendSSAtoIA32) THEN
+    IF (r.backend = backendSSAtoIA32) THEN
       success := r.Update(module, Rep.modAssemblerFile);
       IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modAssemblerFile) THEN
         module.CreateOutputDir (Rep.modObjectFile, res);
@@ -823,7 +838,7 @@ PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
     str: ShellCommand;
     success: BOOLEAN;
   BEGIN
-    IF (backend = backendSSAtoIA32) THEN
+    IF (r.backend = backendSSAtoIA32) THEN
       success := r.Update(module, Rep.modMainFileAssembler);
       IF DerivedIsOlder(module, Rep.modMainObjectFile,
                         Rep.modMainFileAssembler) THEN
@@ -964,7 +979,6 @@ PROCEDURE (r: Rules) Update*(module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
   END Update;
 
 BEGIN
-  backend := backendSSAtoC;
   inspectProc := NoMatch.matcher;
   inspectStage := NoMatch.matcher;
   writeAST := FALSE;

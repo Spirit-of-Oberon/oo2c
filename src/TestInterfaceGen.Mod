@@ -92,7 +92,6 @@ BEGIN
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);
-  Make.backend := Make.backendNone;
   
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stderr);
@@ -102,6 +101,7 @@ BEGIN
     HALT (1)
   ELSE
     makeRules := Make.NewRules();
+    makeRules.SetBackend(Make.backendNone);
     makeRules.SetErrOut(StdChannels.stderr);
     ok := TRUE;
     

@@ -86,13 +86,6 @@ BEGIN
   END;
   Assembler.useAssembler := translateIA32. value(BooleanValue.Value). boolean;
 
-  IF useSSA.value(BooleanValue.Value).boolean THEN
-    Make.backend := Make.backendSSAtoC;
-  ELSIF translateIA32.value(BooleanValue.Value).boolean THEN
-    Make.backend := Make.backendSSAtoIA32;
-  ELSE
-    Make.backend := Make.backendIRtoC;
-  END;
   Make.writeAST := writeAST.value(BooleanValue.Value).boolean;
   Make.writeIR := writeIR.value(BooleanValue.Value).boolean;
   Make.inspectProc := OptionToMatcher(inspectProc, "--inspect.1");
@@ -106,6 +99,13 @@ BEGIN
     HALT (1)
   ELSE
     makeRules := Make.NewRules();
+    IF useSSA.value(BooleanValue.Value).boolean THEN
+      makeRules.SetBackend(Make.backendSSAtoC);
+    ELSIF translateIA32.value(BooleanValue.Value).boolean THEN
+      makeRules.SetBackend(Make.backendSSAtoIA32);
+    ELSE
+      makeRules.SetBackend(Make.backendIRtoC);
+    END;
     makeRules.SetErrOut(StdChannels.stderr);
     
     ok := TRUE;
