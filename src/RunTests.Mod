@@ -22,8 +22,9 @@ MODULE RunTests;
 
 
 IMPORT
+  <*IF COMPILER_MAJOR=1 THEN*>Calendar,<*END*>
   Channel, Err, Files, Msg, Out, ProgramArgs, LongStrings, TextRider, 
-  Strings, SysClock, Calendar,
+  Strings, SysClock,
   URI,
   StdChannels, XMLError := XML:Error, XML:UnicodeCodec:Latin1,
   XML:Basic:Element, XMLWriter := XML:Writer, URI:Scheme:File,
@@ -219,8 +220,12 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
     END;
         
     reportWriter. StartTag ("test-report", FALSE);
+<*IF COMPILER_MAJOR=1 THEN*>
     SysClock.GetClock (time);
     Calendar.TimeToStr (time, "%c", timeStr);
+<*ELSE*>
+    COPY("unknown", timeStr);
+<*END*>
     reportWriter. AttrStringLatin1 ("time", timeStr);
     testSetup. Write (reportWriter);
     
