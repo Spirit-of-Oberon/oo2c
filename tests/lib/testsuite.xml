@@ -79,5 +79,42 @@
       Output string must be truncated by <code>Insert</code> if the
       result is too long.
     </test>
+
+    <test id="lib_Strings_Replace1" type="run"
+      file="LibStringsReplace1.Mod" output="LibStringsReplace1.Ref">
+      Calls the <code>Replace</code> function to replace parts
+      within a string.  No truncation.
+    </test>
+    
+    <test id="lib_Strings_Replace2" type="run"
+      file="LibStringsReplace2.Mod" output="LibStringsReplace2.Ref">
+      <code>Replace</code> is a noop if <code>startPos</code> is 
+      larger or equal to the string's length.
+    </test>
+    
+    <test id="lib_Strings_Replace3" type="run"
+      file="LibStringsReplace3.Mod" output="LibStringsReplace3.Ref">
+      <code>Replace</code> never increased the length of th output string.
+    </test>
+    
+    <test id="lib_Strings_Append1" type="run"
+      file="LibStringsAppend1.Mod" output="LibStringsAppend1.Ref">
+      Some calls to <code>Append</code>.
+    </test>
+
+    <test id="lib_Strings_Concat1" type="run"
+      file="LibStringsConcat1.Mod" output="LibStringsConcat1.Ref">
+      Some calls to <code>Concat</code>.
+    </test>
+    
+    <test id="lib_Strings_Compare1" type="run"
+      file="LibStringsCompare1.Mod" output="LibStringsCompare1.Ref">
+      Some calls to <code>Compare</code>.
+    </test>
+
+    <test id="lib_Strings_Equal1" type="run"
+      file="LibStringsEqual1.Mod" output="LibStringsEqual1.Ref">
+      Some calls to <code>Equal</code>.
+    </test>
   </testcases>
 </testsuite-ext>

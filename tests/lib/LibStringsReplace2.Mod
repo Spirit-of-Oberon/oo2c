@@ -1,4 +1,4 @@
-MODULE LibStringsInsert2;
+MODULE LibStringsReplace2;
 
 IMPORT
   Out, Strings;
@@ -8,10 +8,12 @@ PROCEDURE Test* ();
     dest4: ARRAY 4 OF CHAR;
   BEGIN
     dest4[0] := "a"; dest4[1] := 0X;
-    Strings.Insert ("b", 2, dest4);
+    Strings.Replace ("b", 1, dest4);
     Out.String (dest4); Out.Ln;
-    Strings.Insert ("b", 16, dest4);
+    Strings.Replace ("b", 2, dest4);
+    Out.String (dest4); Out.Ln;
+    Strings.Replace ("b", 16, dest4);
     Out.String (dest4); Out.Ln;
   END Test;
 
-END LibStringsInsert2.
+END LibStringsReplace2.
