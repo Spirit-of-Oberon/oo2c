@@ -1,6 +1,6 @@
 MODULE OpExprCompat1;
 
-IMPORT Out;
+IMPORT Out := Out0;
 
 PROCEDURE Test*;
 VAR
@@ -33,7 +33,7 @@ BEGIN
 
   p := NIL;
 
-  Out.LongInt(li,0); Out.Ln;
+  Out.Int(li,0); Out.Ln;
   Out.Int(i,0); Out.Ln;
   Out.Real(r,0,0); Out.Ln;
   Out.String(a2); Out.Ln;
