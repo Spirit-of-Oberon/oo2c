@@ -545,13 +545,10 @@ PROCEDURE NewConfig;
                       "<options><set name='errorFormat'>1</set></options>");
     Config.AddCmdLine("--linecol,-L",
                       "<options><set name='errorFormat'>2</set></options>");
-  
     
     Config.AddCmdLine("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
-    Config.AddCmdLine("--make,-M",
-                 "<options><set name='command'>1</set></options>");
-
+    
     help := Config.AddOption("help", Boolean.New(FALSE));
     Config.AddCmdLine("-h,--help",
                       "<options><set name='help'>TRUE</set></options>");
