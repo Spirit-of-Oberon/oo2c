@@ -70,6 +70,11 @@ paths. For OOC and gcc to play nicely together:
 
 Keep this in mind when installing the system.
 
+Note that OOC uses an absolute path to name the "install" program. This means
+that the path detected by "configure" may not be usable by the generated
+compiler under mingw. To remedy this problem, specify the absolute path using
+the INSTALL environment variable.
+
 Installation
 ============
 
@@ -87,14 +92,22 @@ Installation
 
 4) Configure the package.
 
-    For Cygwin or stand-alone Mingw32:
+    For Cygwin:
 
-	  env CFLAGS=-O2 ./configure --disable-libs
+      env CFLAGS=-O2 ./configure --disable-libs
+
+      
+    For stand-alone Mingw32 (adjust path to "install.exe"):
+
+	  env "INSTALL=c:/msys/1.0/bin/install.exe" CFLAGS=-O2 \
+        ./configure --disable-libs
 
     For Mingw32 under Cygwin:
 
 	  env CPPFLAGS=-mno-cygwin CFLAGS=-O2 LDFLAGS=-mno-cygwin \
 	    ./configure --disable-libs
+
+      (depending on path settings, INSTALL path may be required as above)
 
 5) Type `make' to compile the package.
 
@@ -119,6 +132,13 @@ Problems?
      c:/usr/local /usr/local
 
    Note that MSYS must be restarted for any changes to take effect.
+
+2) OOC couldn't find "install" during "make install"? Depending on path 
+   settings, the detected path to "install" may not be valid for mingw
+   executables. See the explanation in "Path Virtualisation" and try setting
+   the INSTALL path before running "configure". For a quick fix, manually
+   adjust the "install" entries in the generated "rsrc/OOC/oo2crc.xml" and
+   re-run "make install".
 
 Platform-specific issues
 ========================
