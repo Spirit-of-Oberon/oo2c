@@ -237,9 +237,7 @@ PROCEDURE AncestorClosure* (descendant: Entity; entity: Entity;
     IF ~descendant. IsDescendantOf (entity) THEN
       descendant. AddAncestor (entity);
       
-      GetImports.GetImports (entity. module,
-                             Config.pragmas,
-                             dummyErrList);
+      GetImports.GetImports (entity. module, dummyErrList);
       (* ignore any errors when scanning the imports; for dependency scanning,
          malformed modules are of no importance *)
       import := entity. module. importList;
@@ -259,7 +257,7 @@ PROCEDURE DiscoverCompile* (command: Make.Command; module: Repository.Module);
   BEGIN
     ASSERT (command. state = Make.commandUndiscovered);
     
-    GetImports.GetImports (module, Config.pragmas, dummyErrList);
+    GetImports.GetImports (module, dummyErrList);
     (* ignore any errors when scanning the imports; for dependency scanning,
        malformed modules are of no importance *)
     import := module. importList;
@@ -285,7 +283,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       dummyErrList: Error.List;
       import: Repository.Import;
     BEGIN
-      GetImports.GetImports (entity. module, Config.pragmas, dummyErrList);
+      GetImports.GetImports (entity. module, dummyErrList);
       (* ignore any errors when scanning the imports; for dependency scanning,
          malformed modules are of no importance *)
       import := entity. module. importList;
@@ -603,8 +601,7 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
         IF Assembler.useAssembler &
            ((entity. module. symbolTable # NIL) &
             (entity. module. symbolTable. class = Sym.mcStandard) OR
-            (GetModuleClass.GetModuleClass (entity. module,
-                                            Config.pragmas) = Sym.mcStandard)) THEN
+            (GetModuleClass.GetModuleClass (entity. module) = Sym.mcStandard)) THEN
           srcEntity := GetEntity (entity. context, entity. module,
                                   Repository.modAssemblerFile);
         ELSE
@@ -683,9 +680,7 @@ PROCEDURE CreateClosure* (closureGroup: Make.Entity; entity: Entity);
       (* add `entity' to the group *)
       closureGroup. AddAncestor (entity);
       
-      GetImports.GetImports (entity. module,
-                             Config.pragmas,
-                             dummyErrList);
+      GetImports.GetImports (entity. module, dummyErrList);
       (* ignore any errors when scanning the imports; for dependency scanning,
          malformed modules are of no importance *)
       import := entity. module. importList;

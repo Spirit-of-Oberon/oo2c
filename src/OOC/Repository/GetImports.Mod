@@ -56,9 +56,7 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 
 
-PROCEDURE GetImports* (m: Rep.Module;
-                       pragmas: Pragmas.Section;
-                       VAR errList: Error.List);
+PROCEDURE GetImports* (m: Rep.Module; VAR errList: Error.List);
   VAR
     res: Msg.Msg;
     inputBuffer: InputBuffer.Buffer;
@@ -155,7 +153,7 @@ PROCEDURE GetImports* (m: Rep.Module;
       ELSE
         errList := inputBuffer. errList;
         scannerBuilder := BasicList.New (inputBuffer, TRUE);
-        Scanner.ScanInput (scannerBuilder, pragmas, Scanner.enableAll);
+        Scanner.ScanInput (scannerBuilder, Config.pragmas, Scanner.enableAll);
         inputBuffer. Close;
         
         ast := NIL;

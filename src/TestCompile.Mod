@@ -135,8 +135,7 @@ PROCEDURE (context: Context) GetCommand* (entity: Make.Entity): Make.Command;
 
       | Rep.modSymbolFile:
         IF translateIA32. value(BooleanValue.Value). boolean &
-           (GetModuleClass.GetModuleClass (entity. module,
-                                           Config.pragmas) = Sym.mcStandard) THEN
+           (GetModuleClass.GetModuleClass (entity. module) = Sym.mcStandard) THEN
           RETURN CompileToAssembler (entity);
         ELSE
           RETURN CompileToC (entity);

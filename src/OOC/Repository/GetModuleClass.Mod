@@ -22,16 +22,14 @@ MODULE OOC:Repository:GetModuleClass;
 
 
 IMPORT
-  Msg, Rep := OOC:Repository,
-  OOC:Config:Repositories, OOC:Config:Pragmas, 
-  
-  OOC:Error, OOC:Scanner:InputBuffer, 
+  Msg,
+  OOC:Config, Rep := OOC:Repository, OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,
   OOC:Parser, OOC:AST, OOC:AST:ExtTree, Sym := OOC:SymbolTable;
   
 
 
-PROCEDURE GetModuleClass* (m: Rep.Module; pragmas: Pragmas.Section): Sym.ModuleClass;
+PROCEDURE GetModuleClass* (m: Rep.Module): Sym.ModuleClass;
   VAR
     res: Msg.Msg;
     inputBuffer: InputBuffer.Buffer;
@@ -39,16 +37,13 @@ PROCEDURE GetModuleClass* (m: Rep.Module; pragmas: Pragmas.Section): Sym.ModuleC
     astBuilder: ExtTree.Builder;
     ast: AST.Node;
     errList: Error.List;
-    flagList: ExtTree.NodeList;
-    i: LONGINT;
-    node: AST.Node;
     external: ExtTree.Terminal;
   BEGIN
     inputBuffer := m. GetInputBuffer (res);
     IF (inputBuffer # NIL) THEN
       errList := inputBuffer. errList;
       scannerBuilder := BasicList.New (inputBuffer, TRUE);
-      Scanner.ScanInput (scannerBuilder, pragmas, Scanner.enableAll);
+      Scanner.ScanInput (scannerBuilder, Config.pragmas, Scanner.enableAll);
       inputBuffer. Close;
       
       ast := NIL;
