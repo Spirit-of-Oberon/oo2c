@@ -20,7 +20,7 @@ MODULE URI:Scheme:File;
 
 
 IMPORT
-  Msg, Strings, OS:ProcessParameters, Object, IO, IO:FileChannel,
+  Msg, Strings, OS:ProcessParameters, OS:HostPath, Object, IO, IO:FileChannel,
   URI0 := URI, URI:CharClass, URI:String, 
   URI:Scheme:Hierarchical, URI:Authority:ServerBased, URI:Parser;
 
@@ -70,105 +70,12 @@ PROCEDURE (file: URI) Clone* (): URI;
     RETURN copy
   END Clone;
 
-<* IF TARGET_OS="Win32" THEN *>
-
-(* "Normalisation" of windows file paths:
- * - backslash is converted to forward slash
- * - drive identifier "C:" is converted to "/C$"
- * - drive-relative paths (eg. c:test) are converted to absolute paths
- *
- * The normalised path can be used within a URI, and obeys the unix convention
- * that a leading "/" indicates an absolute path. 
- * 
- * "Denormalisation" of windows paths:
- * - backslashes cause problems in many contexts. Windows usually treats
- *   forward and back slashes equivalently, so we retain only forward slashes.
- * - (HACK) OOC treats paths like "c:/.." as relative, erroneously applying 
- *   transformations on repository paths. For now, we treat all absolute paths
- *   as relative to the CURRENT drive.
- *)
-
-PROCEDURE NormalisePath(VAR path : ARRAY OF CHAR; VAR res : Msg.Msg);
-VAR
-  drive : CHAR;
-  pos, id : INTEGER;
-  cwd : ARRAY 1024 * 4 OF CHAR;
-
-  PROCEDURE EndsWithSeparator(VAR string : ARRAY OF CHAR) : BOOLEAN;
-  VAR 
-    lenString : INTEGER; ch : CHAR;
-  BEGIN
-    lenString := Strings.Length(string);
-    IF lenString = 0 THEN RETURN FALSE END;
-    ch := string[lenString-1];
-    RETURN (ch = '\') OR (ch = '/');
-  END EndsWithSeparator;
-
-BEGIN
-  res := ProcessParameters.done;
-  IF CharClass.IsAlpha(path[0]) & (path[1] = ':') THEN
-    (* leading drive identifier *)
-    IF (path[2] # '\') & (path[2] # '/') THEN
-      (* drive identifier with relative path. Use working directory on that
-         drive.  *)
-      drive := path[0];
-      IF (drive >= 'A') & (drive <= 'Z') THEN
-        id := ORD(drive) - ORD('A') + 1;
-      ELSE
-        id := ORD(drive) - ORD('a') + 1;
-      END;
-      ProcessParameters.getdcwd (id, cwd, res);
-      IF (res # ProcessParameters.done) THEN RETURN END;
-      IF ~EndsWithSeparator(cwd) THEN
-        Strings.Append("/", cwd)
-      END;
-      Strings.Delete(path, 0, 2);
-      Strings.Insert(cwd, 0, path);
-    END;
-    path[1] := '$';
-    Strings.Insert("/", 0, path);
-  END;
-(* Replace '\' with '/' *)
-  pos := 0;
-  WHILE path[pos] # 0X DO
-    IF path[pos] = '\' THEN
-      path[pos] := '/';
-    END;
-    INC(pos)
-  END;
-END NormalisePath;
-
-PROCEDURE DenormalisePath(VAR path : ARRAY OF CHAR);
-VAR pos : INTEGER;
-BEGIN
-  IF (path[0] = '/') & CharClass.IsAlpha(path[1]) & (path[2] = '$') THEN
-    path[2] := ':';
-    (* Strings.Delete(path, 0, 1); *)
-    (* HACK: OOC treats paths like "c:/.." as relative, erroneously applying 
-       transformations on repository paths. For now, we treat all absolute
-       paths as relative to the CURRENT drive. *)
-    Strings.Delete(path, 0, 3);
-  END;
-END DenormalisePath;
-
-<* ELSE *>
-
-PROCEDURE NormalisePath(VAR path : ARRAY OF CHAR; VAR res : Msg.Msg);
-BEGIN
-  res := NIL;
-END NormalisePath;
-
-PROCEDURE DenormalisePath(VAR path : ARRAY OF CHAR);
-BEGIN
-END DenormalisePath;
-
-<* END *>
-
 PROCEDURE (file: URI) GetPath* (VAR filePath: ARRAY OF CHAR);
 (**Returns the file path associated with the URI @oparam{file}.  On a Unix 
    system, this is identical to the URI's path component.  *)
   VAR
     segm: Hierarchical.Segment;
+    res : Msg.Msg;
   BEGIN
     COPY ("", filePath);
     segm := file. pathList;
@@ -179,7 +86,7 @@ PROCEDURE (file: URI) GetPath* (VAR filePath: ARRAY OF CHAR);
       Strings.Append (segm. string^, filePath);
       segm := segm. next
     END;
-    DenormalisePath(filePath);
+    HostPath.Denormalize(filePath, res);
   END GetPath;
 
 PROCEDURE (file: URI) GetChannel* (mode: URI0.ChannelMode): IO.ByteChannel
@@ -220,7 +127,7 @@ PROCEDURE GetCwd*(): URI;
   BEGIN
     ProcessParameters.getcwd (path, res);
     IF (res = NIL) THEN 
-      NormalisePath(path, res) 
+      HostPath.Normalize(path, res) 
     END;
     IF (res = NIL) THEN
       uriString := "file:";
@@ -244,7 +151,7 @@ PROCEDURE ToURI* (filePath: ARRAY OF CHAR): URI;
     res: Msg.Msg;
   BEGIN
     COPY(filePath, normPath);
-    NormalisePath(normPath, res);
+    HostPath.Normalize(normPath, res);
     IF res # NIL THEN RETURN NIL END;
     IF (normPath[0] = "/") THEN
       uriString := "file:";
