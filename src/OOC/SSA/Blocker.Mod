@@ -124,6 +124,7 @@ TYPE
        This field is calculated by @oproc{ArrangeInstructions.AttachToLoop}.  *)
     visitedForLoop: Loop;
     visitedResult: BOOLEAN;
+    discoveredForLoop: Loop;
   END;
   RegionDesc = RECORD
     (ProxyDesc)
@@ -161,6 +162,7 @@ PROCEDURE InitProxy (p: Proxy; instr: SSA.Instr);
     p. loopAssoc := NIL;
     p. visitedForLoop := NIL;
     p. visitedResult := FALSE;
+    p. discoveredForLoop := NIL;
   END InitProxy;
 
 PROCEDURE NewProxy (instr: SSA.Instr): Proxy;
@@ -390,9 +392,13 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
                                        endOfSearch, loopProxy);
               END;
             ELSE
-              DiscoverLoopStructure (loop,
-                                     instr. GetResultStore(),
-                                     endOfSearch, preceedingLoop);
+              p := GetProxy (instr);
+              IF (p. discoveredForLoop # loop) THEN
+                p. discoveredForLoop := loop;
+                DiscoverLoopStructure (loop,
+                                       instr. GetResultStore(),
+                                       endOfSearch, preceedingLoop);
+              END;
             END;
           END;
           use := use. nextUse;
