@@ -197,16 +197,21 @@ CONST
      There is one result, the value of @var{store} as seen by the loop body
      when an iteration begins.  *)
   loopEnd* = 12;
-  (**Marks the end of a loop construct.  It has four arguments:
+  (**Marks the end of a loop construct.  Such an instruction appears in two
+     variants, with and without a corresponding @oconst{selectExit}.  The
+     variants differ in the way the loop is exited.  The instruction has five
+     arguments:
 
      @table @oconst
      @item *OOC:SSA:Opnd.arg
      Reference to the corresponding @oconst{loopStart} instruction.
 
      @item *OOC:SSA:Opnd.store
-     Value of @var{store} once evaluation of the loop is done.  If the
-     loop has been completed, the instructions after the loop see the
-     global state represented by this value.
+     Value of @var{store} once evaluation of the loop is done.  If the loop has
+     been completed, the instructions after the loop see the global state
+     represented by this value.  Note: In the variant with @oconst{selectExit},
+     then this @var{store} at the end of the loop body, but instructions after
+     the loop see only the @var{store} produced by the @oconst{selectExit}.
 
      @item *OOC:SSA:Opnd.arg
      The exit predicate of the loop.  A boolean value.
@@ -220,11 +225,17 @@ CONST
      @item *OOC:SSA:Opnd.backwardFeed
      The input value of @var{store} for the second, third, and so on, iteration
      of the loop.  This is actually a virtual argument to the corresponding
-     @oconst{loopStart} instruction.
+     @oconst{loopStart} instruction.  It is placed with the end of the loop to
+     avoid cycles in the instruction graph.  Some algorithms need to treat this
+     argument specially, treat it is if it is any argument of the
+     @oconst{loopStart}.
      @end table
 
-     There is one result, the value of @var{store} as seen by the first
-     instruction after the loop.  *)
+     If the instruction is not attached to a @oconst{selectExit}, then there is
+     one result of class @oconst{*OOC:SSA:Opnd.arg}, the value of @var{store}
+     as seen by the first instruction after the loop.  With a
+     @oconst{selectExit}, there is no additional result and the instruction
+     itself appears as the first argument of the @oconst{selectExit}.  *)
   
   get* = 13;
   (**Retrieves the value of a variable.  Result is always a scalar value.  The
@@ -433,7 +444,7 @@ CONST
 
      @item *OOC:SSA:Opnd.type
      The type of which the first operand must be an extension of.  The argument
-     is an instance of @otype{OOC:SSA.TypeRef}.  This type is either equal to
+     is an instance of @otype{*OOC:SSA.TypeRef}.  This type is either equal to
      the one of the first operand, or an extension of it.
      @end table
 

@@ -546,12 +546,13 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             RETURN VisibleEffect (i. GetResultStore(), set)
             
           | Opcode.loopEnd:
-            (* FIXME... should loop-end always have a "store" result? *)
-            IF (instr. useList # NIL) THEN (* feeding into select-exit *)
-              ASSERT (instr. useList. instr. opcode = Opcode.selectExit);
-              RETURN VisibleEffect (instr, set)
+            storeOut := instr. GetResultStore();
+            IF (storeOut = NIL) THEN
+              (* loop is left through its "select-exit", control never
+                 passes through "loop-end" *)
+              RETURN FALSE;
             ELSE
-              RETURN VisibleEffect (instr. GetResultStore(), set)
+              RETURN VisibleEffect (storeOut, set);
             END;
             
           | Opcode.loopStart, Opcode.selectExit, Opcode.collect,

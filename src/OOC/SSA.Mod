@@ -440,7 +440,7 @@ PROCEDURE (instr: Instr) SetSubclass* (subclass: Opcode.Subclass);
   END SetSubclass;
 
 PROCEDURE AddOpnd (instr: Instr; opnd: Opnd);
-(**Adds @oparam{arg} to the end of the operand list of instruction
+(**Adds @oparam{opnd} to the end of the operand list of instruction
    @oparam{instr}.  *)
   VAR
     prev: Opnd;

@@ -99,13 +99,12 @@ PROCEDURE (t: Translator) WriteProcedure (procIndex: LONGINT);
   END WriteProcedure;
 
 PROCEDURE (t: Translator) WriteNestedProcedures*;
-(**The implementation of @oproc{Translator.ProcBody} may call this procedure to
-   write out all procedures that are nested into the procedure for which it was
-   called.  The translator instance keeps track of which procedure that was,
-   and which of the other procedures are part of it.
+(**The implementation of @oproc{Translator.WriteProcBody} may call this
+   procedure to write out all procedures that are nested into the procedure for
+   which it was called.  The translator instance keeps track of which procedure
+   that was, and which of the other procedures are part of it.
 
-   Note: ANSI-C does not support nested functions.  This is a feature
-   of gcc.  *)
+   Note: ANSI-C does not support nested functions.  This is a feature of gcc.  *)
   VAR
     currentDecl: Sym.ProcDecl;
     i: LONGINT;
