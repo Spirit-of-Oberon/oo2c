@@ -177,6 +177,10 @@ CONST  (* Instruction Opcodes: *)
   loopEnd* = opcodeControlFlow+7;
   loopExit* = opcodeControlFlow+8;
   loopBackedge* = opcodeControlFlow+9;
+  (**From this instruction control passes back to the loop's start.  This means
+     that there is an implicit control and memory dependency from
+     @oconst{loopStart} onto this instruction.  This dependency is @emph{not}
+     made explicit to avoid cyclic instruction dependencies.  *)
   
 CONST  (* Operand and Result Types: *)
   noType* = 0;
@@ -1826,6 +1830,17 @@ PROCEDURE (b: Block) NestingDepth*(): LONGINT;
     END;
     RETURN i;
   END NestingDepth;
+
+PROCEDURE (b: Block) Dominates*(x: Block): BOOLEAN;
+  BEGIN
+    WHILE (x # NIL) DO
+      IF (x = b) THEN
+        RETURN TRUE;
+      END;
+      x := x.block;
+    END;
+    RETURN FALSE;
+  END Dominates;
 
 PROCEDURE (b: Block) Count*(opcode: Opcode): LONGINT;
   VAR
