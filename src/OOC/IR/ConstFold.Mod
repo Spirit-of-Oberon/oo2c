@@ -24,7 +24,7 @@ IMPORT
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
   Language, 
   Language:Integer, Language:Boolean, Language:String8, 
-  Language:Set,
+  Language:Set, Language:Real,
   ADT:String;
 
 TYPE
@@ -35,6 +35,11 @@ TYPE
 
 CONST
   maxIntegerTypes = 5;
+
+  (* To enable constant folding for REAL expressions, set foldReals TRUE. Even
+  better, allow it to be enabled/disabled at run-time *)
+
+  foldReals = FALSE;
 
 TYPE
   IntegerType = RECORD
@@ -79,7 +84,10 @@ BEGIN
         RETURN Predef.GetType(integerType[i].id)
       END;
     END;
-    RETURN NIL; 
+    RETURN NIL;
+  | value : Real.Value DO
+    (* FIXME! Figure out the appropriate REAL type *)
+    RETURN Predef.GetType(Predef.real);
   | value : Set.Value DO
     (* FIXME! Figure out the appropriate SET type *)
     RETURN Predef.GetType(Predef.set);
@@ -253,6 +261,12 @@ BEGIN
       c.result := c.ValueConst(value(Integer.Value).Negate(), op);
     | Predef.set:
       c.result := c.ValueConst(Set.New(-value(Set.Value).value), op);
+    | Predef.real, Predef.longreal:
+      IF foldReals THEN
+        c.result := c.ValueConst(value(Real.Value).Negate(), op);
+      ELSE
+        c.result := NIL;
+      END;
     ELSE
       c.builder.ErrSym(IR.incompatibleTypes, op.sym);
       c.result := NIL;
@@ -316,8 +330,25 @@ VAR
   END IntegerOp;
 
   PROCEDURE RealOp () : Language.Value;
+  VAR
+    left, right : Real.Value;
   BEGIN
-    (* for now, don't evaulate real operators. - sg *)
+    left := l(Real.Value);
+    right := r(Real.Value);
+    
+    CASE op.variant OF
+    | IR.arithAdd:  RETURN left.Sum(right);
+    | IR.arithSub:  RETURN left.Difference(right);
+    | IR.arithMul:  RETURN left.Product(right);
+    | IR.arithDivR: 
+      IF right.Sign() = 0 THEN
+        c.builder.ErrSym(IR.divideByZero, op.sym);
+      ELSE
+        RETURN left.Quotient(right);
+      END;
+    ELSE
+      c.builder.ErrSym(IR.unknownOp, op.sym);
+    END;
     RETURN NIL;
   END RealOp;
 
@@ -329,7 +360,11 @@ BEGIN
     | Predef.shortint, Predef.integer, Predef.longint:
       result := IntegerOp();
     | Predef.real, Predef.longreal:
-      result := RealOp();
+      IF foldReals THEN
+        result := RealOp();
+      ELSE
+        result := NIL;
+      END;
     END;
     IF result # NIL THEN
       c.result := c.ValueConst(result, op);
@@ -399,6 +434,26 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     RETURN Boolean.New(result);
   END IntegerOp;
 
+  PROCEDURE RealOp () : Boolean.Value;
+  VAR
+    left, right : Real.Value; result : BOOLEAN;
+  BEGIN
+    left := l(Real.Value); 
+    right := r(Real.Value);
+    
+    CASE op.variant OF
+    | IR.equal:        result := left.Compare(right) = 0;
+    | IR.notEqual:     result := left.Compare(right) # 0;
+    | IR.less:         result := left.Compare(right) < 0;
+    | IR.lessEqual:    result := left.Compare(right) <= 0;
+    | IR.greater:      result := left.Compare(right) > 0;
+    | IR.greaterEqual: result := left.Compare(right) >= 0;
+    ELSE
+      c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+    END;
+    RETURN Boolean.New(result);
+  END RealOp;
+
   PROCEDURE CharOp () : Boolean.Value;
   VAR
     left, right : CHAR; result : BOOLEAN;
@@ -435,19 +490,17 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     RETURN Boolean.New(result);
   END BooleanOp;
 
-  PROCEDURE RealOp () : Boolean.Value;
-  BEGIN
-    (* FIXME. For now, don't evaulate real comparisons - sg *)
-    RETURN NIL;
-  END RealOp;
-
   BEGIN
     IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
       CASE op.left.type(Sym.PredefType).id OF
       | Predef.shortint, Predef.integer, Predef.longint:
         result := IntegerOp();
       | Predef.real, Predef.longreal:
-        result := RealOp();
+        IF foldReals THEN
+          result := RealOp();
+        ELSE
+          result := NIL;
+        END;
       | Predef.char:
         result := CharOp();
       | Predef.charString:
