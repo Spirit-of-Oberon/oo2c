@@ -3367,9 +3367,28 @@ PROCEDURE InitVar (var: Var; name: Symbol; type: Sym.Type;
 PROCEDURE (b: Builder) NewVar* (name: Symbol; decl: Sym.VarDecl): Var;
   VAR
     var: Var;
+    type: Sym.Type;
+    args: Sym.TypeRefArray;
+    qualType: Sym.QualType;
+    i: LONGINT;
   BEGIN
     NEW (var);
-    InitVar (var, name, TR.Expand(decl.type), decl);
+    IF decl.isReceiver & (decl.type.typePars # NIL) THEN
+      (* when accessing the receiver variable of a type-bound procedure, then
+         this variable is implicitly qualified by the type parameters of the
+         class type, _not_ by the bounds of the type variables *)
+      NEW(args, LEN(decl.type.typePars.params^));
+      FOR i := 0 TO LEN(args^)-1 DO
+        Sym.InitTypeRef(args[i], decl.type.typePars.params[i]);
+      END;
+      
+      NEW(qualType);
+      Sym.InitQualType(qualType, NIL, decl.type.position, decl.type, args);
+      type := qualType;
+    ELSE
+      type := decl.type;
+    END;
+    InitVar (var, name, TR.Expand(type), decl);
     RETURN var
   END NewVar;
 
@@ -4465,7 +4484,7 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
               b. ErrSym (returnWithoutResult, statm. sym);
             ELSE
               MakeAssignmentCompatible (b, statm. result. sym, statm. result,
-                                        procDecl. formalPars. resultType);
+                                        TR.Expand(procDecl.formalPars.resultType));
             END;
           END;
           statm. popExceptionContext := enclosingTry;
