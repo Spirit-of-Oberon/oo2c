@@ -4,7 +4,7 @@ IMPORT
   O := ADT:Object,
   S := ADT:String,
   B := ADT:StringBuffer,
-  Out;
+  Out := Out0;
 
 TYPE
   MyObject = POINTER TO MyObjectDesc;
