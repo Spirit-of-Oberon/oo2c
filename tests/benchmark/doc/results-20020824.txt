@@ -93,10 +93,34 @@ appears to be slightly slower but still good (99.7 percent). FFT2
 performance exceeds the C version on the G4.
 
 Pentium-II / 400Mhz  (mva)
+gcc-2.95.4, -O2
 
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                248.5   68.3%
+  QSORTC               364.0
+  BSORT                 87.8   55.8%
+  BSORTC               157.4
+  FFT                 3757.2   87.0%
+  FFTC                4318.7
+  FFT2                2752.5   70.1%
+  FFT2C               3929.0
+  -------------------------- -------
 
-Athlon XP / 1544Mhz (mva)
+Athlon XP / 1533Mhz (mva)
+gcc-2.95.4, -O2
 
+  Test             tests/sec % optimal
+  -------------------------- -------
+  QSORT                917.3   64.9%
+  QSORTC              1414.4
+  BSORT                374.4   49.7%
+  BSORTC               753.6
+  FFT                14876.8   80.6%
+  FFTC               18466.0
+  FFT2               12698.3   72.7%
+  FFT2C              17470.4
+  -------------------------- -------
 
 PowerPC G3 / 700Mhz  (sg)
 gcc 2.95.2, -O2
