@@ -167,11 +167,13 @@ CONST  (* ids for the various invocations of Flags(): *)
   flagsArrayType* = 1;
   flagsRecordType* = 2;
   flagsPointerType* = 3;
-  flagsVariable* = 4;
-  flagsParameter* = 5;
-  flagsProcedure* = 6;
-  flagsModule* = 7;
-  
+  flagsConstDecl* = 4;
+  flagsTypeDecl* = 5;
+  flagsVariable* = 6;
+  flagsField* = 7;
+  flagsParameter* = 8;
+  flagsProcedure* = 9;
+  flagsModule* = 10;
 
 PROCEDURE InitNodeList* (nl: NodeList);
 (**Initializes a node list of length zero.  *)
@@ -299,12 +301,14 @@ PROCEDURE (b: Builder) [ABSTRACT] FieldList* (identList: NodeList; colon, type: 
 
    @table @oparam
    @item identList
-   A list of identifiers, separated by commas.
+   A list of identifiers and optional flags, separated by commas.
    
    @table @samp
-   @item identList MOD 2 == 0
+   @item identList MOD 3 == 0
    A field name, result of @oproc{Builder.IdentDef}.
-   @item identList MOD 2 == 1
+   @item identList MOD 3 == 1
+   Flags (optional).
+   @item identList MOD 3 == 2
    The symbol @samp{,}, result of @oproc{Builder.Terminal}.
    @end table
    
@@ -578,13 +582,16 @@ PROCEDURE (b: Builder) [ABSTRACT] ImportDecl* (alias, becomes, module: Node;
    @end table  *)
   END ImportDecl;
 
-PROCEDURE (b: Builder) [ABSTRACT] ConstDecl* (identDef, equal, expr, semicolon: Node): Node;
+PROCEDURE (b: Builder) [ABSTRACT] ConstDecl* (identDef, flags, equal, expr, semicolon: Node): Node;
 (**Constant declaration.
 
    @table @oparam
    @item identDef
    The identifier, optionally followed by an export mark.  Result 
    of @oproc{Builder.IdentDef}.
+
+   @item flags
+   Declaration flags.
    
    @item equal
    The symbol @samp{=}, result of @oproc{Builder.Terminal}.
@@ -598,7 +605,7 @@ PROCEDURE (b: Builder) [ABSTRACT] ConstDecl* (identDef, equal, expr, semicolon: 
    @end table  *)
   END ConstDecl;
 
-PROCEDURE (b: Builder) [ABSTRACT] TypeDecl* (identDef, typePars, equal,
+PROCEDURE (b: Builder) [ABSTRACT] TypeDecl* (identDef, flags, typePars, equal,
                                              type, semicolon: Node): Node;
 (**Type declaration.
 
@@ -607,6 +614,9 @@ PROCEDURE (b: Builder) [ABSTRACT] TypeDecl* (identDef, typePars, equal,
    The identifier, optionally followed by an export mark.  Result of
    @oproc{Builder.IdentDef}.
 
+   @item flags
+   Declaration flags.
+   
    @item typePars
    For a parameterized type, this is the list of type parameters (a result of
    @oproc{Builder.TypePars}).  Otherwise, it is @code{NIL}.

@@ -209,7 +209,7 @@ PROCEDURE (v: Visitor) VisitNodeList* (nl: ExtTree.NodeList);
 PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
   VAR
     moduleDecl: Sym.Module;
-    moduleName: Sym.Name;
+    moduleName, name: Sym.Name;
     class: Sym.ModuleClass;
     callConv: Sym.CallConv;
     mf: ExtTree.ModuleFlags;
@@ -228,22 +228,43 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     mf := NIL;
     class := Sym.mcStandard;
     callConv := Sym.callConvDefault;
-    IF (module. flags # NIL) & 
-       (module. flags. flagList. n[0] IS ExtTree.ModuleFlags) THEN
-      mf := module. flags. flagList. n[0](ExtTree.ModuleFlags);
-      IF (mf. external. sym. str^ = "FOREIGN") THEN
-        class := Sym.mcForeign
-      ELSIF (mf. external. sym. str^ = "INTERFACE") THEN
-        class := Sym.mcInterface
+    IF (module. flags # NIL) THEN
+      FOR i := 0 TO module.flags.flagList.len-1 DO
+        n := module. flags. flagList. n[i];
+        WITH n: ExtTree.ModuleFlags DO
+          mf := n;
+          IF (mf. external. sym. str^ = "FOREIGN") THEN
+            class := Sym.mcForeign
+          ELSIF (mf. external. sym. str^ = "INTERFACE") THEN
+            class := Sym.mcInterface
+          END;
+          str := mf. callConv. GetString (TRUE);
+          callConv := Sym.StringToCallConv (str);
+          
+          v. stb. SetClass (class);
+          
+        | n: ExtTree.Terminal DO
+          (* skip *)
+        END;
       END;
-      str := mf. callConv. GetString (TRUE);
-      callConv := Sym.StringToCallConv (str);
-
-      v. stb. SetClass (class);
     END;
     
     moduleDecl := v. stb. NewModule (moduleName, module. name. docString,
                                      class, callConv, module);
+    IF (module. flags # NIL) THEN  (* process list of flag names *)
+      FOR i := 0 TO module.flags.flagList.len-1 DO
+        n := module. flags. flagList. n[i];
+        WITH n: ExtTree.Terminal DO
+          name := GetName(n);
+          IF ("A" <= CAP(name.str[0])) & (CAP(name.str[0]) <= "Z") THEN
+            (* only add flag names, and skip things like ";" *)
+            moduleDecl.AddFlag(GetName(n));
+          END;
+        ELSE
+          (* ignore *)
+        END;
+      END;
+    END;
     IF (mf # NIL) & (mf. linkSections # NIL) THEN
       FOR i := 0 TO mf. linkSections. len-1 DO
         n := mf. linkSections. n[i];
@@ -359,6 +380,9 @@ PROCEDURE (v: Visitor) VisitConstDecl* (constDecl: ExtTree.ConstDecl);
         constDecl. semicolon(ExtTree.Terminal). sym. pos,
         ExportMark (constDecl. identDef), constDecl. identDef. docString,
         NIL, NIL, constDecl. expr);
+    IF (constDecl.flags # NIL) THEN
+      AddFlags(const, constDecl.flags);
+    END;
   END VisitConstDecl;
 
 PROCEDURE (v: Visitor) VisitTPSection* (tpSection: ExtTree.TPSection);
@@ -398,6 +422,9 @@ PROCEDURE (v: Visitor) VisitTypeDecl* (typeDecl: ExtTree.TypeDecl);
         (v.parent, GetName(typeDecl.identDef.ident),
          EndOfType(typeDecl.type), ExportMark(typeDecl.identDef), 
          typeDecl.identDef.docString, base, FALSE);
+    IF (typeDecl.flags # NIL) THEN
+      AddFlags(type, typeDecl.flags);
+    END;
   END VisitTypeDecl;
 
 PROCEDURE (v: Visitor) VisitVarDecl* (varDecl: ExtTree.VarDecl);
@@ -549,15 +576,20 @@ PROCEDURE (v: Visitor) VisitFieldList* (fieldList: ExtTree.FieldList);
     field: Sym.FieldDecl;
     type: Sym.Type;
     i: LONGINT;
+    flags: AST.Node;
   BEGIN
     type := GetType (v, fieldList. type);
-    FOR i := 0 TO fieldList. identList. len-1 BY 2 DO
+    FOR i := 0 TO fieldList. identList. len-1 BY 3 DO
       field := v. stb. NewFieldDecl (v. parent,
         GetName (fieldList. identList. n[i](ExtTree.IdentDef). ident),
         EndOfType (fieldList. type),
         ExportMark (fieldList. identList. n[i](ExtTree.IdentDef)), 
         fieldList. identList. n[i](ExtTree.IdentDef). docString,
-        type)
+        type);
+      flags := fieldList. identList. n[i+1];
+      IF (flags # NIL) THEN
+        AddFlags(field, flags(ExtTree.Flags));
+      END;
     END
   END VisitFieldList;
 

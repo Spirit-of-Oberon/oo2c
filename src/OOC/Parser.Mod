@@ -319,7 +319,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     END MultiPartIdent;
   
   PROCEDURE Flags (context: SHORTINT): AST.Node;
-  (* Reads a list of system flags.  Currently defunct. ... *)
+  (* Reads a list of system flags.  *)
     VAR
       counter: LONGINT;
       lBrak, rBrak: AST.Node;
@@ -439,10 +439,13 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         END LinkSection;
       
       BEGIN
-        (*S: ModuleFlags = "OOC_EXTENSIONS" |
+        (*S: ModuleFlags = "OOC_EXTENSIONS" | "DEPRECATED" |
           S:   ("INTERFACE"|"FOREIGN") string {"," ident}
           S:   [";" "LINK" LinkSection {";" LinkSection} "END".  *)
         IF Ident ("OOC_EXTENSIONS") THEN
+          RETURN CheckSym (Symbol.ident)
+        ELSIF Ident("DEPRECATED") THEN
+          (* FIXME... this approach works only if a single flag is present *)
           RETURN CheckSym (Symbol.ident)
         ELSE
           IF ~Ident("INTERFACE") & ~Ident("FOREIGN") THEN
@@ -1025,10 +1028,11 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
           identList: AST.NodeList;
           dummy: AST.Name;
         BEGIN  (* pre: sym. id = Symbol.ident *)
-          (*S: FieldList = IdentDef {"," IdentDef} ":" Type.  *)
+          (*S: FieldList = IdentDef Flags {"," IdentDef Flags } ":" Type.  *)
           identList := ast. NewNodeList();
           LOOP
             identList. Append (IdentDef (level, FALSE, FALSE, dummy));
+            identList. Append (Flags (AST.flagsField));
             IF (sym. id = Symbol.comma) THEN
               identList. Append (CheckSym (Symbol.comma))
             ELSE
@@ -1135,27 +1139,29 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     PROCEDURE DeclSeq(): AST.NodeList;
       VAR
         nl: AST.NodeList;
-
+        
       PROCEDURE ConstDecl(): AST.Node;
         VAR
-          identDef, equal, expr, scolon: AST.Node;
+          identDef, flags, equal, expr, scolon: AST.Node;
           dummy: AST.Name;
         BEGIN  (* pre: (sym. id = Symbol.ident) *)
-          (*S: ConstDecl = IdentDef "=" Expr ";".  *)
+          (*S: ConstDecl = IdentDef Flags "=" Expr ";".  *)
           identDef := IdentDef (level, TRUE, FALSE, dummy);
+          flags := Flags(AST.flagsConstDecl);
           equal := CheckSym (Symbol.eql);
           expr := Expr();
           scolon := CheckSym (Symbol.semicolon);
-          RETURN ast. ConstDecl (identDef, equal, expr, scolon)
+          RETURN ast. ConstDecl (identDef, flags, equal, expr, scolon)
         END ConstDecl;
 
       PROCEDURE TypeDecl (): AST.Node;
         VAR
-          identDef, typePars, equal, type, scolon: AST.Node;
+          identDef, flags, typePars, equal, type, scolon: AST.Node;
           dummy: AST.Name;
         BEGIN  (* pre: (sym. id = Symbol.ident) *)
-          (*S: TypeDecl = IdentDef [TypePars] "=" Type ";".  *)
+          (*S: TypeDecl = IdentDef Flags [TypePars] "=" Type ";".  *)
           identDef := IdentDef (level, TRUE, FALSE, dummy);
+          flags := Flags(AST.flagsTypeDecl);
           IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
             typePars := TypePars();
           ELSE
@@ -1164,7 +1170,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
           equal := CheckSym (Symbol.eql);
           type := Type (level);
           scolon := CheckSym (Symbol.semicolon);
-          RETURN ast. TypeDecl (identDef, typePars, equal, type, scolon)
+          RETURN ast. TypeDecl (identDef, flags, typePars, equal, type, scolon)
         END TypeDecl;
 
       PROCEDURE VarDecl (): AST.Node;

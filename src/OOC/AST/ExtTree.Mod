@@ -213,6 +213,7 @@ TYPE
   ConstDeclDesc = RECORD
     (NodeDesc)
     identDef-: IdentDef;
+    flags-: Flags;
     equal-: AST.Node;
     expr-: AST.Node;
     semicolon-: AST.Node;
@@ -223,6 +224,7 @@ TYPE
   TypeDeclDesc = RECORD
     (NodeDesc)
     identDef-: IdentDef;
+    flags-: Flags;
     typePars-: TypePars;
     equal-: AST.Node;
     type-: AST.Node;
@@ -1057,12 +1059,18 @@ PROCEDURE (importDecl: ImportDecl) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) ConstDecl* (identDef, equal, expr, semicolon: AST.Node): Node;
+PROCEDURE (b: Builder) ConstDecl* (identDef, flags, equal,
+                                   expr, semicolon: AST.Node): Node;
   VAR
     cd: ConstDecl;
   BEGIN
     NEW (cd);
     cd. identDef := identDef(IdentDef);
+    IF (flags = NIL) THEN
+      cd. flags := NIL;
+    ELSE
+      cd. flags := flags(Flags);
+    END;
     cd. equal := equal;
     cd. expr := expr;
     cd. semicolon := semicolon;
@@ -1075,13 +1083,18 @@ PROCEDURE (constDecl: ConstDecl) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) TypeDecl* (identDef, typePars, equal,
+PROCEDURE (b: Builder) TypeDecl* (identDef, flags, typePars, equal,
                                   type, semicolon: AST.Node): Node;
   VAR
     td: TypeDecl;
   BEGIN
     NEW (td);
     td. identDef := identDef(IdentDef);
+    IF (flags = NIL) THEN
+      td. flags := NIL;
+    ELSE
+      td. flags := flags(Flags);
+    END;
     IF (typePars = NIL) THEN
       td. typePars := NIL;
     ELSE

@@ -1055,7 +1055,35 @@ RAISES IO.Error;
           
           flag := item.flagList;
           WHILE (flag # NIL) DO
-            WITH item: Sym.VarDecl DO
+            WITH item: Sym.Module DO
+              CASE flag.id OF
+              | Sym.flagOOCExtensions:
+                (* has no effect *)
+              | Sym.flagDeprecated:
+                SetFlag(item.deprecated, TRUE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.ProcDecl DO
+              CASE flag.id OF
+              | Sym.flagAbstract:
+                SetFlag(item.isAbstract, TRUE);
+              | Sym.flagDeprecated:
+                SetFlag(item.deprecated, TRUE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.ConstDecl DO
+              CASE flag.id OF
+              | Sym.flagDeprecated:
+                SetFlag(item.deprecated, TRUE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.VarDecl DO
               CASE flag.id OF
               | Sym.flagNoCopy:
                 IF ~item.isParameter OR
@@ -1075,6 +1103,24 @@ RAISES IO.Error;
                 ELSE
                   SetFlag(item.permitArgumentNIL, TRUE);
                 END;
+              | Sym.flagDeprecated:
+                SetFlag(item.deprecated, TRUE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.FieldDecl DO
+              CASE flag.id OF
+              | Sym.flagDeprecated:
+                SetFlag(item.deprecated, TRUE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.TypeDecl DO
+              CASE flag.id OF
+              | Sym.flagDeprecated:
+                SetFlag(item.deprecated, TRUE);
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;
@@ -1122,14 +1168,6 @@ RAISES IO.Error;
               CASE flag.id OF
               | Sym.flagNoReturn:
                 SetFlag(item.noReturn, TRUE);
-              ELSE
-                InvalidFlag(flag, invalidModifierFlag);
-              END;
-              
-            | item: Sym.ProcDecl DO
-              CASE flag.id OF
-              | Sym.flagAbstract:
-                SetFlag(item.isAbstract, TRUE);
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;
