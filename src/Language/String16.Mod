@@ -20,6 +20,7 @@ TYPE
 VAR
   type-: Type;
   typeName: String.String;
+  emptyArray: CharArray;
   empty: Value;
 
 PROCEDURE Init (v: Value; value: CharArray);
@@ -216,5 +217,8 @@ BEGIN
   L.InitType (type);
   typeName := String.New ("String16");
 
-  empty := NewString ("");
+  NEW (emptyArray, 1);
+  emptyArray[0] := 0X;
+  NEW (empty);
+  Init (empty, emptyArray);
 END Language:String16.
