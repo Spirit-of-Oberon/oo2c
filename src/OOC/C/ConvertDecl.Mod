@@ -219,9 +219,15 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       | modeWriteExported:
         sc := DeclWriter.scExtern
       | modeWritePrivate:
-        sc := DeclWriter.scStatic
+        IF (item. parent IS Sym.ProcDecl) THEN
+          sc := DeclWriter.scForceAuto; (* prototype for nested function *)
+        ELSE
+          sc := DeclWriter.scStatic;
+        END;
       | modeWriteFctDef:
-        IF (item. exportMark = Sym.nameNotExported) THEN
+        IF (item. parent IS Sym.ProcDecl) THEN
+          sc := DeclWriter.scAuto; (* definition of nested function *)
+        ELSIF (item. exportMark = Sym.nameNotExported) THEN
           sc := DeclWriter.scStatic
         ELSE
           sc := DeclWriter.scAuto
@@ -383,13 +389,17 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
     END;
   END ConvertSymTab;
 
-PROCEDURE GetProc* (w: DeclWriter.Writer;
-                    procDecl: Sym.ProcDecl): DeclWriter.Declaration;
+PROCEDURE GetProc* (w: DeclWriter.Writer; procDecl: Sym.ProcDecl;
+                    nestedPrototype: BOOLEAN): DeclWriter.Declaration;
 (**Creates the header of a C function definition matching the procedure
    declaration @oparam{procDecl}.  The declaration instance is created using
    the factory methods of @oparam{w}.  *)
   BEGIN
-    RETURN ConvertDecl (w, procDecl, modeWriteFctDef)
+    IF nestedPrototype THEN
+      RETURN ConvertDecl (w, procDecl, modeWritePrivate);
+    ELSE
+      RETURN ConvertDecl (w, procDecl, modeWriteFctDef);
+    END;
   END GetProc;
 
 PROCEDURE GetDecl* (w: DeclWriter.Writer;
