@@ -224,9 +224,13 @@ PROCEDURE ParsePragma (VAR state: State): InputMode;
           Err (expectSymbol, sym)
         END;
         lastError. SetStringAttrib ("sym_name", 
-                               Msg.GetStringPtr (Symbol.representation[symId]))
+                               Msg.GetStringPtr(Symbol.representation[symId]));
+        IF (sym.next # NIL) THEN
+          NextSym;
+        END;
+      ELSE
+        NextSym
       END;
-      NextSym
     END CheckSym;
   
   PROCEDURE GetBool (value: Value): BOOLEAN;
