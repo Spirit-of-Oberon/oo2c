@@ -74,6 +74,9 @@ IMPORT
 <*IF HAVE_LIB_PTHREAD THEN*>
   Thread:PThread,
 <*END*>
+<*IF HAVE_LIB_RT OR HAVE_LIB_POSIX4 THEN*>
+  Thread:Semaphore,
+<*END*>
   
   libc,
   libadt,
