@@ -46,6 +46,7 @@ CONST  (* predefined types, taken from `OOC:SymbolTable:Predef' *)
   strShortint* = 3;
   strInteger* = 4;
   strLongint* = 5;
+  strByte* = 10;
   strPtr* = 11;
 
 CONST
@@ -155,6 +156,7 @@ VAR
   shortint-: StructDesc;
   integer-: StructDesc;
   longint-: StructDesc;
+  byte-: StructDesc;
   ptr-: StructDesc;
 
 PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
