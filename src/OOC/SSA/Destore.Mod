@@ -525,16 +525,23 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             alias := Aliasing.DesignatorAlias (tr,
                                                set. GetOpndClass (Opnd.writeDesign),
                                                instr. GetOpndClass (Opnd.writeDesign));
-            IF (alias # Aliasing.noAliasing) THEN
+            IF (alias >= Aliasing.partiallyCovered) THEN
               (* this string copy does not overwrite completely the original
                  set, or no static aliasing calculation can be done: we must
-                 keep the write operation alive, but its static visibility ends
-                 here *)
+                 keep the write operation alive *)
               RETURN TRUE;
             ELSE
-              (* this "set" and "origin" work on different variables, and cannot
-                 interfere with each other: continue trace through `instr' *)
-              RETURN VisibleEffect (instr. GetResultStore(), set);
+              alias := Aliasing.DesignatorAlias (tr,
+                                                 set. GetOpndClass (Opnd.writeDesign),
+                                                 instr. GetOpndClass (Opnd.readDesign));
+              IF (alias # Aliasing.noAliasing) THEN
+                (* this string copy may read the value that is being written *)
+                RETURN TRUE;
+              ELSE
+                (* "set" and "copy" work on different variables, and cannot
+                   interfere with each other: continue trace through `instr' *)
+                RETURN VisibleEffect (instr. GetResultStore(), set);
+              END
             END;
             
           | Opcode.return, Opcode.selectReturn:
