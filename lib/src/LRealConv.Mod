@@ -19,7 +19,7 @@ MODULE LRealConv;
 *)
 
 IMPORT
-  SYSTEM, C, CharClass, ConvTypes, Real0;
+  SYSTEM, libc, C, CharClass, ConvTypes, Real0;
 
 (**
 
@@ -74,7 +74,7 @@ PROCEDURE ValueReal*(str: ARRAY OF CHAR): LONGREAL;
       (* skip our definition of whitespace *)
       INC (i);
     END;
-    value := C.strtod (SYSTEM.ADR (str[i]), tail);
+    value := libc.strtod (SYSTEM.ADR (str[i]), tail);
     IF (tail[0] = 0X) THEN
       RETURN value                       (* syntax is ok *)
     ELSE

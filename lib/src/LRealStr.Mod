@@ -19,7 +19,7 @@ MODULE LRealStr;
 *)
 
 IMPORT
-  C, ConvTypes, LRealConv, Real0, Strings;
+  libc, C, ConvTypes, LRealConv, Real0, Strings;
   
 TYPE
   ConvResults* = ConvTypes.ConvResults;
@@ -73,7 +73,7 @@ PROCEDURE RealToFloat* (real: LONGREAL; sigFigs: INTEGER;
     i, d: INTEGER;
   BEGIN
     IF (sigFigs < 1) OR (sigFigs > prec) THEN sigFigs := prec; END;
-    C.sprintf(s, "%-+#.*E", sigFigs-1, real);
+    libc.sprintf(s, "%-+#.*E", sigFigs-1, real);
     Real0.NormalizeFloat (s);
     COPY (s, str);
   END RealToFloat;
@@ -97,7 +97,7 @@ PROCEDURE RealToEng* (real: LONGREAL; sigFigs: INTEGER;
     s: ARRAY 32 OF CHAR;
   BEGIN
     IF (sigFigs < 1) OR (sigFigs > prec) THEN sigFigs := prec; END;
-    C.sprintf(s, "%-+#.*E", sigFigs-1, real);
+    libc.sprintf(s, "%-+#.*E", sigFigs-1, real);
     Real0.FormatForEng(s);
     COPY(s, str);
   END RealToEng;
@@ -126,7 +126,7 @@ PROCEDURE RealToFixed* (real: LONGREAL; place: INTEGER;
     sigFigs: INTEGER;
   BEGIN
     IF (place < 0) THEN sigFigs := prec; ELSE sigFigs := place END;
-    C.sprintf(s, "%-+#.*f", sigFigs, real);
+    libc.sprintf(s, "%-+#.*f", sigFigs, real);
     Real0.FormatForFixed(s, place);
     COPY (s, str);
   END RealToFixed;
