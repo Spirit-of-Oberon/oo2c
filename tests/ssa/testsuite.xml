@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; val7">-->
+  select ="&SetupTestCasesWithOut; real1 real2 real3">-->
 
   &TestSetupWithOut;
     
@@ -264,6 +264,16 @@
       function's return value.
     </test>
     
+    <test id="real1" type="run" file="Real1.Mod" output="Real1.Ref">
+      Passing <code>REAL</code> constant to procedure parameter.
+    </test>
+    <test id="real2" type="run" file="Real2.Mod" output="Real2.Ref">
+      Passing non-constant <code>REAL</code> value to procedure parameter.
+    </test>
+    <test id="real3" type="run" file="Real3.Mod" output="Real3.Ref">
+      Returning <code>REAL</code> constant from function.
+    </test>
+      
     <test id="if1" type="run"
       file="HOTIf1.Mod" output="HOTIf1.Ref">
       A simple <code>IF-ELSE-END</code> statement, using a

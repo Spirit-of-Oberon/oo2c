@@ -26,7 +26,7 @@ TYPE
   
 TYPE
   Writer* = POINTER TO WriterDesc;
-  StringToLabel = Dictionary.Dictionary(STRING, STRING);
+  ObjectToLabel = Dictionary.Dictionary(Object.Object, STRING);
   WriterDesc = RECORD
     module: Sym.Module;
     w: TextRider.Writer;
@@ -34,8 +34,8 @@ TYPE
     blockMap: Dictionary.Dictionary(S.Block, Block);
     blockCount: LONGINT;
 
-    strings: ARRAY 3 OF StringToLabel;
-    stringList: ARRAY 3 OF ArrayList.ArrayList(STRING);
+    constants: ARRAY Predef.lastId+1 OF ObjectToLabel;
+    constantList: ARRAY Predef.lastId+1 OF ArrayList.ArrayList;
     
     (* current function: *)
     fctBlock: S.FunctionBlock;
@@ -170,12 +170,12 @@ PROCEDURE (w: Writer) INIT*(module: Sym.Module; ch: IO.ByteChannel);
   BEGIN
     w.module := module;
     w.w := TextRider.ConnectWriter(ch);
-    w.w.WriteString(tab+".arch athlon");
+    w.w.WriteString(tab+".arch pentium4"); (* no arch k8 *)
     w.blockCount := 0;
 
-    FOR i := 0 TO 2 DO
-      w.strings[i] := NEW(StringToLabel);
-      w.stringList[i] := NEW(ArrayList.ArrayList(STRING), 8);
+    FOR i := 0 TO Predef.lastId DO
+      w.constants[i] := NEW(ObjectToLabel);
+      w.constantList[i] := NEW(ArrayList.ArrayList, 8);
     END;
   END INIT;
 
@@ -222,36 +222,63 @@ PROCEDURE (w: Writer) ModuleVariables();
     END;
   END ModuleVariables;
 
-PROCEDURE (w: Writer) StringSymbol(value: STRING; type: Sym.PredefId): STRING;
+PROCEDURE (w: Writer) ConstSymbol(value: Object.Object;
+                                  type: Sym.PredefId): STRING;
   VAR
-    dict: StringToLabel;
-    array: ArrayList.ArrayList(STRING);
+    dict: ObjectToLabel;
+    array: ArrayList.ArrayList;
   BEGIN
-    ASSERT(type = Predef.stringChar);
-    dict := w.strings[type-Predef.stringChar];
-    array := w.stringList[type-Predef.stringChar];
+    dict := w.constants[type];
+    array := w.constantList[type];
     IF ~dict.HasKey(value) THEN
-      dict.Set(value, ".LS"+Boxed.IntToString(array.size));
+      dict.Set(value, ".LC"+Boxed.IntToString(array.size));
       array.Append(value);
     END;
     RETURN dict.Get(value);
-  END StringSymbol;
+  END ConstSymbol;
 
-PROCEDURE (w: Writer) StringConstants();
+PROCEDURE ToHex(n: LONGINT; digits: LONGINT): STRING;
+  CONST
+    BASE=16;
   VAR
-    s, i: LONGINT;
-    value, label: STRING;
+    dig, shift, i: LONGINT;
+    str: ARRAY 16 OF CHAR;
   BEGIN
-    FOR s := 0 TO 2 DO
-      FOR i := 0 TO w.stringList[s].size-1 DO
-        ASSERT(s = 0);
-        value := w.stringList[s].array[i];
-        label := w.strings[s].Get(value);
-        w.w.WriteObject(nl+label+":");
-        w.w.WriteObject(nlTab+'.string "'+value+'"'); (* FIXME... needs to be quoted *)
+    shift := -4*digits;
+    FOR i := 0 TO digits-1 DO
+      INC(shift, 4);
+      dig := ASH(n, shift) MOD BASE;
+      IF (dig <= 9) THEN
+        str[i] := CHR(ORD("0") + dig);
+      ELSE
+        str[i] := CHR(ORD("A") - 10 + dig);
       END;
     END;
-  END StringConstants;
+    RETURN Object.NewLatin1Region(str, 0, digits);
+  END ToHex;
+
+PROCEDURE (w: Writer) Constants();
+  VAR
+    s, i: LONGINT;
+    label: STRING;
+    value: Object.Object;
+  BEGIN
+    FOR s := 0 TO Predef.lastId DO
+      FOR i := 0 TO w.constantList[s].size-1 DO
+        value := w.constantList[s].array[i];
+        label := w.constants[s].Get(value);
+        w.w.WriteObject(nl+label+":");
+        WITH value: STRING DO
+          ASSERT(s = Predef.stringChar);
+          w.w.WriteObject(nlTab+'.string "'+value+'"'); (* FIXME... needs to be quoted *)
+        | value: Boxed.LongReal DO
+          ASSERT(s = Predef.real);
+          w.w.WriteObject(nlTab+'.long 0x'+
+                          ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+        END;
+      END;
+    END;
+  END Constants;
 
 PROCEDURE (w: Writer) EndFile*();
   VAR
@@ -269,7 +296,7 @@ PROCEDURE (w: Writer) EndFile*();
 
     w.RuntimeData();
     w.ModuleVariables();
-    w.StringConstants();
+    w.Constants();
     
     w.w.WriteString(nl);
   END EndFile;
@@ -284,6 +311,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     opnd: S.Opnd;
     qtdData: Naming.QualTypeData;
     merge: S.MergeInstr;
+    omitStackArg: BOOLEAN;
     
     opndWidth: S.Type;
     (* Operand/result size of the operation.  Defaults to the type of the
@@ -305,10 +333,14 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           RETURN "b";
         | S.signed16, S.unsigned16:
           RETURN "w";
-        | S.signed32, S.unsigned32, S.real32, S.address:
+        | S.signed32, S.unsigned32, S.address:
           RETURN "l";
         | S.signed64, S.unsigned64:
           RETURN "q";
+        | S.real32:
+          RETURN "s";
+        | S.real64:
+          RETURN "d";
         END;
       END Type;
     
@@ -360,7 +392,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.gp4: str := "%si";
         | S.gp5: str := "%di";
         END;
-      | S.signed32, S.unsigned32, S.real32, S.address:
+      | S.signed32, S.unsigned32, S.address:
         CASE reg OF
         | S.sp: str := "%esp";
         | S.fp: str := "%ebp";
@@ -370,6 +402,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.gp3: str := "%ebx";
         | S.gp4: str := "%esi";
         | S.gp5: str := "%edi";
+        END;
+      | S.real32, S.real64:
+        CASE reg OF
+        | S.st0: str := "%st";
+        | S.fp0: str := "%xmm0";
+        | S.fp1: str := "%xmm1";
+        | S.fp2: str := "%xmm2";
+        | S.fp3: str := "%xmm3";
+        | S.fp4: str := "%xmm4";
+        | S.fp5: str := "%xmm5";
+        | S.fp6: str := "%xmm6";
+        | S.fp7: str := "%xmm7";
         END;
       END;
       sb.AppendLatin1(str);
@@ -397,27 +441,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       s: S.Selector;
       value: Boxed.Object;
       i: LONGINT;
-
-    PROCEDURE ToHex(n: LONGINT; digits: LONGINT): STRING;
-      CONST
-        BASE=16;
-      VAR
-        dig, shift, i: LONGINT;
-        str: ARRAY 16 OF CHAR;
-      BEGIN
-        shift := -4*digits;
-        FOR i := 0 TO digits-1 DO
-          INC(shift, 4);
-          dig := ASH(n, shift) MOD BASE;
-          IF (dig <= 9) THEN
-            str[i] := CHR(ORD("0") + dig);
-          ELSE
-            str[i] := CHR(ORD("A") - 10 + dig);
-          END;
-        END;
-        RETURN Object.NewLatin1Region(str, 0, digits);
-      END ToHex;
-    
+      predefId: Sym.PredefId;
     BEGIN
       FOR i := 0 TO LEN(instr.designator^)-1 DO
         IF (i # 0) THEN
@@ -429,7 +453,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           value := s.value;
           type := instr.resultList.type;
           IF (s.type >= 0) THEN          (* string constant *)
-            sb.Append(w.StringSymbol(value(Boxed.String).value, s.type));
+            sb.Append(w.ConstSymbol(value(Boxed.String).value, s.type));
           ELSIF (value = NIL) THEN
             sb.Append("0");
           ELSE
@@ -438,8 +462,17 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
             | value: Boxed.Set DO
               sb.AppendInt(value.ToLongInt());
             | value: Boxed.LongReal DO
+              CASE type OF  (* FIXME... seems a kind of silly reconstruction *)
+              | S.real32:
+                predefId := Predef.real;
+              | S.real64:
+                predefId := Predef.longreal;
+              END;
+              sb.Append(w.ConstSymbol(value, predefId));
+              (*
               sb.Append("0x");
               sb.Append(ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+              *)
             ELSE
               sb.Append(s.value);
             END;
@@ -504,7 +537,12 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         argInstr1 := opnd.arg.instr;
         CASE argInstr1.opcode OF
         | S.const:
-          sb.AppendLatin1Char("$");
+          CASE argInstr1.resultList.type OF
+          | S.real32, S.real64:
+            (* take from memory *)
+          ELSE
+            sb.AppendLatin1Char("$");
+          END;
           Literal(argInstr1);
         | S.add:           (* address is register plus displacement *)
           Offset(argInstr1.opndList.arg,
@@ -665,7 +703,12 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           RETURN;                        (* copy register onto itself *)
         END;
         fromType := toType;  (* for down conversion *)
-        OpcTT("mov", fromType, S.noType);
+        CASE fromType OF
+        | S.real32, S.real64:
+          OpcTT("movs", fromType, S.noType);
+        ELSE
+          OpcTT("mov", fromType, S.noType);
+        END;
       ELSIF (toType < S.unsigned8) THEN  (* to signed type *)
         OpcTT("movs", fromType, toType);
       ELSE                               (* to unsigned type *)
@@ -708,11 +751,24 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           (* arithmetic *)
         | S.const:
           type := instr.resultList.type;
-          Opc("mov");
-          sb.AppendLatin1Char("$");
-          Literal(instr);
-          Comma();
-          Result(instr.resultList);
+          CASE type OF
+          | S.real32, S.real64:
+            IF (instr.resultList.register = S.st0) THEN (* load %st0 *)
+              Opc("fld");
+              Literal(instr);
+            ELSE                         (* load %xmmN *)
+              Opc("movs");
+              Literal(instr);
+              Comma();
+              Result(instr.resultList);
+            END;
+          ELSE                           (* load some gp register *)
+            Opc("mov");
+            sb.AppendLatin1Char("$");
+            Literal(instr);
+            Comma();
+            Result(instr.resultList);
+          END;
         | S.add:
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
             Opc("inc");
@@ -831,9 +887,22 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.setStack:
           opnd := instr.NthOpnd(2);
           opndWidth := opnd.arg.type;
-          Opc("mov");
-          Opnd(opnd);
-          sb.Append(", ");
+          omitStackArg := FALSE;
+          CASE opnd.arg.type OF
+          | S.real32, S.real64:
+            IF (opnd.arg.register = S.st0) THEN
+              Opc("fstp");
+              omitStackArg := TRUE;
+            ELSE
+              Opc("movs");
+            END;
+          ELSE
+            Opc("mov");
+          END;
+          IF ~omitStackArg THEN
+            Opnd(opnd);
+            sb.Append(", ");
+          END;
           Literal(instr.opndList.nextOpnd.arg.instr);
           sb.Append("(%esp)");
         | S.typeTag:

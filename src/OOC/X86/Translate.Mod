@@ -965,7 +965,11 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           controlCP := merge; memoryCP := merge;
           
         | statm: IR.Return DO
-          IF S.IsUnsigned(S.MapType(statm.result.type)) THEN
+          type := S.MapType(statm.result.type);
+          CASE type OF
+          | S.real32, S.real64:
+            (* keep original type *)
+          | S.unsigned8 .. S.unsigned64:
             type := S.unsigned32;
           ELSE
             type := S.signed32;
@@ -975,7 +979,11 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           ControlCP(instr); MemoryCP(instr);
           res := instr.AddResult(type);
           res.adrMode := S.register;
-          res.register := S.resultRegister;
+          IF (type >= S.real32) THEN
+            res.register := S.resultRegisterFp;
+          ELSE
+            res.register := S.resultRegister;
+          END;
           returns.Append(instr);
 
         | statm: IR.LoopStatm DO

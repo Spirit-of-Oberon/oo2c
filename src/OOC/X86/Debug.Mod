@@ -110,6 +110,8 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.bitTestAndSet: str := "bitTestAndSet";
     | S.bitTestAndClear: str := "bitTestAndClear";
     | S.typeConv: str := "typeConv";
+    | S.fpLoad: str := "fpLoad";
+    | S.fpStorePop: str := "fpStorePop";
 
       (* function framing *)
     | S.enter: str := "enter";
@@ -173,6 +175,15 @@ PROCEDURE Register*(reg: S.Register): STRING;
     | S.gp3: RETURN "gp3";
     | S.gp4: RETURN "gp4";
     | S.gp5: RETURN "gp5";
+    | S.st0: RETURN "st0";
+    | S.fp0: RETURN "fp0";
+    | S.fp1: RETURN "fp1";
+    | S.fp2: RETURN "fp2";
+    | S.fp3: RETURN "fp3";
+    | S.fp4: RETURN "fp4";
+    | S.fp5: RETURN "fp5";
+    | S.fp6: RETURN "fp6";
+    | S.fp7: RETURN "fp7";
     END;
   END Register;
 

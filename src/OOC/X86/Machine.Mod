@@ -24,6 +24,12 @@ PROCEDURE ImmediateOpnd(instr: S.Instr): S.Opnd;
   VAR
     n: LONGINT;
     opnd: S.Opnd;
+
+  PROCEDURE ImmediateValue(type: S.Type): BOOLEAN;
+    BEGIN
+      RETURN (type # S.real32) & (type # S.real64);
+    END ImmediateValue;
+  
   BEGIN
     CASE instr.opcode OF
     | S.return, S.call, S.guard:
@@ -41,7 +47,8 @@ PROCEDURE ImmediateOpnd(instr: S.Instr): S.Opnd;
       RETURN NIL;
     END;
     opnd := instr.NthOpnd(n);
-    IF (opnd.arg.instr.opcode = S.const) THEN
+    IF (opnd.arg.instr.opcode = S.const) &
+       ImmediateValue (opnd.arg.type) THEN
       RETURN opnd;
     ELSE
       RETURN NIL;
@@ -140,7 +147,12 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
         res := call.AddResult(S.gpRegisterType);
       END;
       call.resultList.adrMode := S.register;
-      call.resultList.register := S.gp0;
+      IF (call.resultList.type >= S.real32) THEN
+        call.resultList.register := S.st0;
+        res := call.AddResultReg(S.gpRegisterType, S.gp0);
+      ELSE
+        call.resultList.register := S.gp0;
+      END;
       FOR reg := S.gp1 TO S.gp2 DO
         res := call.AddResultReg(S.gpRegisterType, reg);
       END;

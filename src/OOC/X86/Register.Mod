@@ -378,7 +378,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       i, j: LONGINT;
       c, maxColor: IGraph.Color;
       colorToRegister: ARRAY S.lastRegister+1 OF S.Register;
-      reg: S.Register;
+      reg, first, last: S.Register;
       res: S.Result;
 
     PROCEDURE IsFreeRegister(reg: S.Register): BOOLEAN;
@@ -428,6 +428,12 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       END;*)
       
       (* create mapping of color to register id *)
+      CASE rf.registerType OF
+      | gpRegisters:
+        first := S.gp0; last := S.gp5;
+      | fpRegisters:
+        first := S.fp0; last := S.fp7;
+      END;
       FOR i := 0 TO S.lastRegister DO
         colorToRegister[i] := -1;
       END;
@@ -437,7 +443,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
               rf.prelocatedRep[i].register;
         END;
       END;
-      reg := S.gp0-1;
+      reg := first-1;
       FOR i := 0 TO maxColor DO
         IF (colorToRegister[i] < 0) THEN
           REPEAT

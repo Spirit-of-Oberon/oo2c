@@ -21,10 +21,20 @@ CONST  (* Register Names: *)
   gp3* = 6;                              (* ebx *)
   gp4* = 7;                              (* esi, not byte addressable *)
   gp5* = 8;                              (* edi, not byte addressable *)
+  st0* = 9;                              (* x87 register st(0) *)
+  fp0* = 10;                             (* xmm0 *)
+  fp1* = 11;                             (* xmm1 *)
+  fp2* = 12;                             (* xmm2 *)
+  fp3* = 13;                             (* xmm3 *)
+  fp4* = 14;                             (* xmm4 *)
+  fp5* = 15;                             (* xmm5 *)
+  fp6* = 16;                             (* xmm6 *)
+  fp7* = 17;                             (* xmm7 *)
   resultRegister* = gp0;                 (* register for function results *)
-  lastRegister* = gp5;                   (* maximum of all register ids *)
+  resultRegisterFp* = st0;               (* register for fp function results *)
+  lastRegister* = fp7;                   (* maximum of all register ids *)
 
-  callerSaved* = {gp0, gp1, gp2};
+  callerSaved* = {gp0, gp1, gp2, st0, fp0..fp7};
   calleeSaved* = {sp, fp, gp3, gp4, gp5};
 
   lastFpRegister* = 7;
@@ -71,8 +81,10 @@ CONST  (* Instruction Opcodes: *)
   bitTestAndSet* = opcodeArithmetic+16;
   bitTestAndClear* = opcodeArithmetic+17;
   typeConv* = opcodeArithmetic+18;
+  fpLoad* = opcodeArithmetic+19;
+  fpStorePop* = opcodeArithmetic+20;
   
-  opcodeFunctionFraming = opcodeArithmetic+19;
+  opcodeFunctionFraming = opcodeArithmetic+21;
   enter* = opcodeFunctionFraming+0;
   (**An ``enter'' instruction represents the state of the processor immediately
      after control has passed from the caller to the current function.  Its
