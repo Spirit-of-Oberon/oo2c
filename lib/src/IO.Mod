@@ -439,7 +439,7 @@ RAISES Error;
    @end precond  *)
   END Write;
 
-PROCEDURE (ch: ByteChannel) Flush*();
+PROCEDURE (ch: ByteChannel) Flush*() RAISES Error;
   BEGIN
   END Flush;
 

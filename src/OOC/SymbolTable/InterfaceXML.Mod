@@ -48,7 +48,8 @@ PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
 
 PROCEDURE Write* (cw: IO.ByteChannel; baseURI: URI.HierarchicalURI;
                   module: Sym.Module;
-                  repositories: Repositories.Section);
+                  repositories: Repositories.Section)
+RAISES IO.Error;
 (**Writes the exported parts of the symbol table with root @oparam{module}
    to the output writer @oparam{cw}.  The result is an XML document that
    describes the public interface of the module.

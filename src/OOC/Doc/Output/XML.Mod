@@ -238,7 +238,8 @@ PROCEDURE Write* (cw: IO.ByteChannel; document: Doc.Document;
                   localModule: Sym.Module;
                   rewriteMap: Dictionary.Dictionary;
                   repositories: Repositories.Section;
-                  moduleDict: Dictionary.Dictionary);
+                  moduleDict: Dictionary.Dictionary)
+RAISES IO.Error;
   VAR
     w: Writer.Writer;
   BEGIN

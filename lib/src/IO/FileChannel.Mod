@@ -2,7 +2,7 @@ MODULE IO:FileChannel [FOREIGN "C"; LINK FILE "FileChannel.c" END];
 <*Warnings:=FALSE*>
 
 IMPORT
-  SYSTEM, RT0, Object, Termination, IO, IO:PFD;
+  SYSTEM, RT0, Object, Termination, IO, IO:PFD, IO:Buffer;
   
 TYPE
   Channel* = POINTER TO ChannelDesc;
@@ -42,11 +42,21 @@ CONST
      @oproc{Channel.Close}, then the temporary file is removed.  If the program
      terminates, an attempt is made to close and remove all @oconst{tmpFile}
      files that are still open.  *)
-     
-PROCEDURE Open*(file: Object.String8; mode: SET): Channel
-(**@precond
+
+PROCEDURE OpenUnbuffered*(file: Object.String8; mode: SET): Channel
+(**Return a file channel for the name @oparam{file}.
+
+   @precond
    @oparam{file} is a non-empty string.
-   @end precond *)
+   @end precond  *)
+  RAISES IO.Error;
+
+PROCEDURE Open*(file: Object.String8; mode: SET): Buffer.Channel
+(**Return a buffered channel for @oparam{file}.
+
+   @precond
+   @oparam{file} is a non-empty string.
+   @end precond  *)
   RAISES IO.Error;
 
 PROCEDURE (ch: Channel) SetBlocking*(block: BOOLEAN) RAISES IO.Error;

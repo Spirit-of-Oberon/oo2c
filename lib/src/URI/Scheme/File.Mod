@@ -87,7 +87,7 @@ PROCEDURE (file: URI) GetPath* (VAR filePath: ARRAY OF CHAR);
     END
   END GetPath;
 
-PROCEDURE (file: URI) GetChannel* (mode: URI0.ChannelMode): FileChannel.Channel
+PROCEDURE (file: URI) GetChannel* (mode: URI0.ChannelMode): IO.ByteChannel
 RAISES IO.Error;
   VAR
     filePath: ARRAY 2*1024 OF CHAR;

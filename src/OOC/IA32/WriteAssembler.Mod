@@ -29,7 +29,7 @@ MODULE OOC:IA32:WriteAssembler [OOC_EXTENSIONS];
    into the OOC build framework.  *)
 
 IMPORT
-  Ascii, IntStr, Log, Out, Strings, StringSearch, IO:PFD,
+  Ascii, IntStr, Log, Out, Strings, StringSearch, IO, IO:PFD,
   Object, Object:Boxed, Object:BigInt, 
   Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,OOC:SymbolTable:Predef,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Schedule, 
@@ -252,7 +252,10 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         Out.String (":");
         Out.Ln;
         Out.Flush;
-        XML.Write (PFD.stdout, pb, TRUE);
+        TRY
+          XML.Write (PFD.stdout, pb, TRUE);
+        CATCH IO.Error:
+        END;
         Out.Flush;
       END;
     END Write;
@@ -282,7 +285,10 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     IF writeProc THEN
       IF (t. inspectStage. MatchChars ("schedule", 0, -1) # NIL) THEN
         (* write schedule SSA code to stdout *)
-        XML.WriteSchedule (PFD.stdout, domRoot);
+        TRY
+          XML.WriteSchedule (PFD.stdout, domRoot);
+        CATCH IO.Error:
+        END;
         Out.Flush
       END;
     END;

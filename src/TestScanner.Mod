@@ -1,7 +1,7 @@
 MODULE TestScanner;
 
 IMPORT
-  StdChannels, ProgramArgs, TextRider, Out, Object, IO:FileChannel,
+  StdChannels, ProgramArgs, TextRider, Out, Object, IO, IO:FileChannel,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Builder,
   OOC:Scanner, OOC:Scanner:Builder:XML, OOC:Scanner:Builder:Identity, 
   OOC:Scanner:Builder:Statistics, BooleanValue := Config:Value:Boolean;
@@ -13,7 +13,7 @@ CONST
   
 VAR
   argReader: TextRider.Reader;
-  file: FileChannel.Channel;
+  file: IO.ByteChannel;
   arg: ARRAY 1024 OF CHAR;
   errList: Error.List;
   inputBuffer: InputBuffer.Buffer;

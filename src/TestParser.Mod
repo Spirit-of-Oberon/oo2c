@@ -2,7 +2,7 @@ MODULE TestParser;
 
 IMPORT
   StdChannels, ProgramArgs, TextRider, Out, Msg,
-  Object, IO:FileChannel, IO:PFD,
+  Object, IO, IO:FileChannel, IO:PFD,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList, OOC:Parser, OOC:AST, 
   OOC:AST:ExtTree, OOC:AST:ExtTree:XML, OOC:AST:ExtTree:StupidPP;
@@ -13,7 +13,7 @@ CONST
   
 VAR
   argReader: TextRider.Reader;
-  file: FileChannel.Channel;
+  file: IO.ByteChannel;
   arg, msgText: ARRAY 1024 OF CHAR;
   res: Msg.Msg;
   errList: Error.List;

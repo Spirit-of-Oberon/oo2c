@@ -652,7 +652,8 @@ PROCEDURE (v: Visitor) VisitModule* (module: IR.Module);
   END VisitModule;
 
 
-PROCEDURE Write* (cw: IO.ByteChannel; module: IR.Module);
+PROCEDURE Write* (cw: IO.ByteChannel; module: IR.Module)
+RAISES IO.Error;
   VAR
     w: Writer.Writer;
     v: Visitor;

@@ -21,7 +21,7 @@ MODULE OOC:Make:WriteMainFileAssembler;
 *)
 
 IMPORT
-  Ascii, IO, IO:TextRider, IO:FileChannel, OOC:Repository;
+  Ascii, IO, IO:TextRider, IO:FileChannel, IO:Buffer, OOC:Repository;
 
 PROCEDURE WriteFile*(module: Repository.Module;
                      imports: ARRAY OF Repository.Module)
@@ -107,8 +107,9 @@ RAISES IO.Error;
     Instr(".text");
     Directive("Letext:");
     Instr(".ident"+Ascii.ht+'"OOC: 0.1"');
-    
-    ch(FileChannel.Channel). CloseAndRegister;
+
+    ch.Flush();
+    ch(Buffer.Channel).base(FileChannel.Channel).CloseAndRegister;
   END WriteFile;
 
 END OOC:Make:WriteMainFileAssembler.

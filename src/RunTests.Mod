@@ -24,7 +24,7 @@ MODULE RunTests;
 IMPORT
   Err, Msg, Out, ProgramArgs, LongStrings, 
   Strings, 
-  Object, IO, IO:FileChannel, TextRider, URI,
+  Object, IO, IO:FileChannel, IO:Buffer, TextRider, URI,
   StdChannels, XMLError := XML:Error, XML:UnicodeCodec:Latin1,
   XML:Basic:Element, XMLWriter := XML:Writer, URI:Scheme:File,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases,
@@ -83,7 +83,7 @@ RAISES IO.Error;
     r: TextRider.Reader;
     arg: ARRAY 1024 OF CHAR;
     elem: Element.Element;
-    reportFile: FileChannel.Channel;
+    reportFile: Buffer.Channel;
     
   PROCEDURE ReadURI (uri: URI.URI; parser: SHORTINT): Element.Element
   RAISES IO.Error;
@@ -146,7 +146,8 @@ PROCEDURE RunTests (testSetup: TestSetup.TestSetup;
                     testSuite: Testcases.TestSuite;
                     proc: Processor.Processor;
                     reportWriter: XMLWriter.Writer;
-                    VAR results: Results);
+                    VAR results: Results)
+RAISES IO.Error;
   VAR
     testCases: Testcases.Testcases;
     test: Testcases.Test;

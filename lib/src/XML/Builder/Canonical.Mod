@@ -1,7 +1,7 @@
 (*      $Id$   *)
 MODULE XML:Builder:Canonical [OOC_EXTENSIONS];
 (*  Translates XML document to canonical XML.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -160,9 +160,12 @@ PROCEDURE WriteDTD (b: Builder; root: DTD.String);
 PROCEDURE (b: Builder) StartDocument* (documentEntity: DTD.ExternalEntity);
   END StartDocument;
 
-PROCEDURE (b: Builder) EndDocument*;
+PROCEDURE (b: Builder) EndDocument*();
   BEGIN
-    b. out. Flush
+    TRY
+      b. out. Flush;
+    CATCH IO.Error:
+    END;
   END EndDocument;
 
 PROCEDURE (b: Builder) StartElement* (namespaceDecl: DTD.NamespaceDeclaration;

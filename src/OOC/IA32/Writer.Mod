@@ -21,7 +21,7 @@ MODULE OOC:IA32:Writer [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, IntStr, Strings, IO, IO:TextRider, IO:FileChannel,
+  Ascii, IntStr, Strings, IO, IO:TextRider, IO:FileChannel, IO:Buffer,
   Object, Object:Boxed, ADT:Dictionary;
 
 TYPE
@@ -167,14 +167,23 @@ PROCEDURE (w: Writer) WriteStringData* ();
 
 PROCEDURE (w: Writer) Close* () RAISES IO.Error;
 (**Closes the writer's output channel.  *)
+  VAR
+    ch: IO.ByteChannel;
   BEGIN
     IF (w.textWriter.error # NIL) THEN
       RAISE(w.textWriter.error);
     END;
-    IF (w. ch IS FileChannel.Channel) THEN
-      w. ch(FileChannel.Channel). CloseAndRegister;
+
+    ch := w.textWriter.channel;
+    ch.Flush();
+    IF (ch IS Buffer.Channel) THEN
+      ch := ch(Buffer.Channel).base;
+    END;
+    
+    IF (ch IS FileChannel.Channel) THEN
+      ch(FileChannel.Channel). CloseAndRegister;
     ELSE
-      w. ch. Close();
+      ch. Close();
     END;
   END Close;
 

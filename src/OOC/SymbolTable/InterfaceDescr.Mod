@@ -48,7 +48,8 @@ PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
 
 PROCEDURE Write* (cw: IO.ByteChannel; baseURI: URI.HierarchicalURI;
                   module: Sym.Module; repositories: Repositories.Section;
-                  extensionDict: Dictionary.Dictionary);
+                  extensionDict: Dictionary.Dictionary)
+RAISES IO.Error;
 (**Writes the exported parts of the symbol table with root @oparam{module} as
    XML to the output writer @oparam{cw}.  Includes descriptions for
    declarations, cross-references, information about class and base classes,

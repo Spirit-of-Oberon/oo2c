@@ -179,7 +179,10 @@ PROCEDURE (b: Builder) EndDocument*;
     WritePos (b);
     b. w. EndTag;
     b. w. EndTag;
-    b. w. EndOfText
+    TRY
+      b. w. EndOfText
+    CATCH IO.Error:
+    END;
   END EndDocument;
 
 

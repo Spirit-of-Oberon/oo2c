@@ -1,7 +1,7 @@
 MODULE TestSymTab;
 
 IMPORT
-  StdChannels, Out, Err, Msg, Channel, IO, URI,
+  StdChannels, Out, Err, Msg, IO, URI,
   Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,

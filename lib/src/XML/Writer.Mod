@@ -428,7 +428,11 @@ PROCEDURE (w: Writer) AttrURI* (name[NO_COPY]: ARRAY OF Char; uri: URI.URI;
 PROCEDURE (w: Writer) EndTag*;
   BEGIN
     IF (w. lenElementStack <= 0) THEN
-      w. Flush; ASSERT (FALSE)
+      TRY
+        w. Flush;
+      CATCH IO.Error:
+      END;
+      ASSERT (FALSE)
     END;
     
     IF w. doIndent THEN
@@ -463,7 +467,7 @@ PROCEDURE (w: Writer) EndTag*;
     END
   END EndTag;
 
-PROCEDURE (w: Writer) EndOfText*;
+PROCEDURE (w: Writer) EndOfText*() RAISES IO.Error;
 (**Adds final newline to text and flushes all buffers.  *)
   BEGIN
     IF w. openStartTag THEN w. CloseStartTag END;

@@ -481,7 +481,7 @@ PROCEDURE (out: Output) Write8* (str[NO_COPY]: ARRAY OF CHAR);
     out. Write8I (str, 0, Strings.Length (str))
   END Write8;
 
-PROCEDURE (out: Output) Flush*;
+PROCEDURE (out: Output) Flush*() RAISES IO.Error;
 (**Flushes the contents of the output buffer to the channel.  Then, flush is
    called on the channel itself.  *)
   BEGIN

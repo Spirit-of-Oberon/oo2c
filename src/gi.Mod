@@ -794,9 +794,8 @@ RAISES NIO.Error;
     LogMsg("Reading history file "+fileName);
     TRY
       ch := FileChannel.Open(fileName,
-                             {FileChannel.read,
-                             FileChannel.write,
-                             FileChannel.append});
+                             {FileChannel.read, FileChannel.write,
+                              FileChannel.append, FileChannel.unbuffered});
     CATCH NIO.FileNotFound:
       Error("File does not exist.  Do `touch "+fileName+"' first.");
     END;

@@ -26,7 +26,8 @@ IMPORT
   DocXML := OOC:Doc:Output:XML;
 
 
-PROCEDURE Write* (cw: IO.ByteChannel; module: Sym.Module);
+PROCEDURE Write* (cw: IO.ByteChannel; module: Sym.Module)
+RAISES IO.Error;
 (**Writes the symbol table with root @oparam{module} to the output writer 
    @oparam{cw}.  The result is an XML document that describes the
    structure of the symbol table.  Here is an example of the output for the

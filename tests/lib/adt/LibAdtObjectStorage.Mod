@@ -78,7 +78,7 @@ PROCEDURE GenData(): Data;
 
 PROCEDURE Test* () RAISES IO.Error;
   VAR
-    f: FileChannel.Channel;
+    f: IO.ByteChannel;
     w: Storage.Writer;
     r: Storage.Reader;
     data1, data2: Data;

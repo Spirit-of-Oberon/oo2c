@@ -78,8 +78,8 @@ static void cleanup_tmp_files() {
 }
 
 
-IO_FileChannel__Channel IO_FileChannel__Open(Object__String8 file,
-					       OOC_UINT32 mode) {
+IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String8 file,
+						       OOC_UINT32 mode) {
   int flags = 0;
   char* fname = (char*)OOC_METHOD(file,Object__String8Desc_CharsLatin1)(file);
   int fd;
@@ -142,6 +142,12 @@ IO_FileChannel__Channel IO_FileChannel__Open(Object__String8 file,
     }
     return ch;
   }
+}
+
+IO_Buffer__Channel IO_FileChannel__Open(Object__String8 file,
+					OOC_UINT32 mode) {
+  return IO_Buffer__Open
+    ((IO__ByteChannel)IO_FileChannel__OpenUnbuffered(file, mode));
 }
 
 void IO_FileChannel__ChannelDesc_SetBlocking(IO_FileChannel__Channel ch,

@@ -218,7 +218,8 @@ PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
   END WriteInstr;
 
 PROCEDURE (w: Writer) WriteProcBody* (pb: SSA.ProcBlock;
-                                      includeDeadCode: BOOLEAN);
+                                      includeDeadCode: BOOLEAN)
+RAISES IO.Error;
   VAR
     instr: SSA.Instr;
     instrCount: LONGINT;
@@ -311,7 +312,8 @@ PROCEDURE (w: Writer) WriteProcBody* (pb: SSA.ProcBlock;
   END WriteProcBody;
 
 PROCEDURE Write* (cw: IO.ByteChannel; pb: SSA.ProcBlock;
-                  includeDeadCode: BOOLEAN);
+                  includeDeadCode: BOOLEAN)
+RAISES IO.Error;
 (**Note: If @oparam{includeDeadCode} is set and the block contains instructions
    that are dead, then the output depends on the order of instructions in the
    blocks instruction list.  Consequently, it is no longer canonical and may
@@ -323,7 +325,8 @@ PROCEDURE Write* (cw: IO.ByteChannel; pb: SSA.ProcBlock;
     w. WriteProcBody (pb, includeDeadCode);
   END Write;
 
-PROCEDURE (w: Writer) WriteSchedule* (domRoot: Schedule.Block);
+PROCEDURE (w: Writer) WriteSchedule* (domRoot: Schedule.Block)
+RAISES IO.Error;
   VAR
     instrCount: LONGINT;
     
@@ -387,7 +390,8 @@ PROCEDURE (w: Writer) WriteSchedule* (domRoot: Schedule.Block);
     w. EndOfText
   END WriteSchedule;
 
-PROCEDURE WriteSchedule* (cw: IO.ByteChannel; domRoot: Schedule.Block);
+PROCEDURE WriteSchedule* (cw: IO.ByteChannel; domRoot: Schedule.Block)
+RAISES IO.Error;
   VAR
     w: Writer;
   BEGIN

@@ -25,7 +25,8 @@ IMPORT
   XML:UnicodeCodec:Latin1, OOC:Doc, DocXML := OOC:Doc:Output:XML;
 
 
-PROCEDURE Write* (cw: IO.ByteChannel; m: ExtTree.Module);
+PROCEDURE Write* (cw: IO.ByteChannel; m: ExtTree.Module)
+RAISES IO.Error;
 (**Writes the abstract syntax tree @oparam{m} to the output writer 
    @oparam{cw}.  The result is an XML document that describes the
    structure of the syntax tree.  The only information lost is formatting,

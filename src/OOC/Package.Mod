@@ -1150,7 +1150,7 @@ RAISES IO.Error;
   VAR
     b: StringBuffer.StringBuffer;
     fileName: STRING;
-    f: FileChannel.Channel;
+    f: IO.ByteChannel;
     w: Writer.Writer;
     i: LONGINT;
     str: StringBuffer.CharsLatin1;
@@ -1253,7 +1253,7 @@ PROCEDURE WriteRepository*(rep: Repository; targetDir: ARRAY OF CHAR)
 RAISES IO.Error;
   VAR
     str, fileName: URIBuffer;
-    f: FileChannel.Channel;
+    f: IO.ByteChannel;
     w: Writer.Writer;
     i: LONGINT;
 

@@ -21,7 +21,7 @@ MODULE OOC:Make;
 *)
 
 IMPORT
-  Channel, Msg, Out, StdChannels, Strings, Time, IO, IO:FileChannel,
+  Channel, Msg, Out, StdChannels, Strings, Time, IO, IO:FileChannel, IO:Buffer,
 
   Object, ADT:ArrayList, ADT:Dictionary, StringSearch,
   StringSearch:NoMatch, OS:Path,
@@ -650,7 +650,8 @@ RAISES IO.Error;
                               module.GetURI (Rep.modInterfaceDescr, FALSE),
                               module.ifData,
                               Config.repositories, r.extensionDict);
-        outputChannel(FileChannel.Channel).CloseAndRegister;
+        outputChannel.Flush();  (* flush for CloseAndRegister() *)
+        outputChannel(Buffer.Channel).base(FileChannel.Channel).CloseAndRegister;
         
         r.WriteErrList(errList);
         success := errList.NoErrors();
