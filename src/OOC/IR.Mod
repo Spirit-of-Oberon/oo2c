@@ -1454,7 +1454,7 @@ PROCEDURE (b: Builder) SetNameToType(type: Sym.Type);
       | type: Sym.TypeVar DO
         name := "TYPE_VAR";
       | type: Sym.PredefType DO
-        name := "#predef";
+        name := "unknown";
       END;
     END;
     b.lastError.SetStringAttrib("name", Msg.GetStringPtr(name));
@@ -2287,19 +2287,23 @@ PROCEDURE (op: Concat) Accept* (v: Visitor);
 PROCEDURE InitDeref (d: Deref; sym: Symbol; pointer: Expression;
                      checkPointer: BOOLEAN);
   VAR
-    type: Sym.Type;
+    baseType: Sym.Type;
   BEGIN
-    type := pointer.type.Bound();
-    InitOperator (d, sym, type(Sym.Pointer).baseType);
+    (* determine pointer base type *)
+    baseType := pointer.type.Deparam();
+    baseType := baseType.Bound();
+    baseType := baseType(Sym.Pointer).baseType;
+    
+    InitOperator (d, sym, pointer.type.Closure(baseType));
     d. pointer := pointer;
-    d. derefType := type(Sym.Pointer).baseType;
+    d. derefType := baseType;
     d. checkPointer := checkPointer;
-    ASSERT ((d. derefType IS Sym.Record) OR (d. derefType IS Sym.Array));
   END InitDeref;
 
 PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
   VAR
     i: Deref;
+    type: Sym.Type;
   BEGIN
     WITH design: SelectProc DO (* super call of type-bound procedure *)
       design. tbProc := design. recordType. ns(Namespace.Extended).
@@ -2320,7 +2324,8 @@ PROCEDURE (b: Builder) NewDeref* (sym: Symbol; design: Expression): Expression;
 
     ELSE
       b.CheckFunctionOp(design, sym);
-      IF ~(design.type.Bound() IS Sym.Pointer) THEN
+      type := design.type.Deparam();
+      IF ~(type.Bound() IS Sym.Pointer) THEN
         RETURN b.ErrExpr(notPointer, design.sym);
       ELSE
         NEW (i);
@@ -2370,8 +2375,14 @@ PROCEDURE (entier: Entier) Accept* (v: Visitor);
 
 PROCEDURE InitIndex (i: Index; sym: Symbol; array, index: Expression;
                      checkIndex: BOOLEAN);
+  VAR
+    elementType: Sym.Type;
   BEGIN
-    InitOperator (i, sym, array. type(Sym.Array). elementType);
+    (* determine pointer base type *)
+    elementType := array.type.Deparam();
+    elementType := elementType(Sym.Array).elementType;
+    
+    InitOperator (i, sym, array.type.Closure(elementType));
     i.array := array;
     i.index := index;
     i.checkIndex := checkIndex;
@@ -2380,19 +2391,23 @@ PROCEDURE InitIndex (i: Index; sym: Symbol; array, index: Expression;
 PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expression;
   VAR
     i: Index;
-    a : Sym.Array; idx : LONGINT;
+    a: Sym.Array;
+    idx: LONGINT;
     checkIndex: BOOLEAN;
+    type: Sym.Type;
   BEGIN
     checkIndex := GetPragmaValue (b, StdPragmas.indexCheck, sym. pos);
     
     b.CheckFunctionOp(array, sym);
-    IF (array. type IS Sym.Pointer) THEN
+    type := array.type.Deparam();
+    IF (type IS Sym.Pointer) THEN
       array := b. NewDeref (sym, array);
+      type := array.type;
     END;
-    IF ~(array. type IS Sym.Array) THEN
+    IF ~(type IS Sym.Array) THEN
       RETURN b. ErrExpr (notArray, sym);
     ELSE
-      a := array.type(Sym.Array);
+      a := type(Sym.Array);
       checkIndex := checkIndex & a.hasLengthInfo;
       index := b.AssertInteger(index);
       IF index IS Const THEN
@@ -2630,8 +2645,17 @@ PROCEDURE (odd: Odd) Accept* (v: Visitor);
 
 PROCEDURE InitSelectField (sf: SelectField; sym: Symbol; record: Expression;
                            field: Sym.FieldDecl; fieldSym: Symbol);
+  VAR
+    recordType, ptr: Sym.Type;
   BEGIN
-    InitOperator (sf, sym, field. type);
+    (* determine the record type that defines `field' *)
+    recordType := record.type;
+    WHILE (recordType.Deparam() # field.parent) DO
+      ptr := recordType.Deparam();
+      recordType := recordType.Closure(ptr(Sym.Record).baseType);
+    END;
+    
+    InitOperator (sf, sym, recordType.Closure(field.type));
     sf.record := record;
     sf.field := field;
     sf.fieldSym := fieldSym;
@@ -5165,10 +5189,10 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
       varRef := var;
     END;
 
-    type := varRef.type.Bound();
+    type := varRef.type.Deparam();
     IF type IS Sym.Record THEN
       n := b.GetName(name);
-      decl := varRef.type(Sym.Record).ns.Identify(context, n, FALSE);
+      decl := type(Sym.Record).ns.Identify(context, n, FALSE);
       Uses.Mark(decl, b.uses, n);
       
       IF decl = NIL THEN

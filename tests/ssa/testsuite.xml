@@ -11,8 +11,8 @@
   generic18 generic19 generic20 generic21 generic22 generic23 generic24">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic21 generic22
-  generic23 generic4">-->
+  select ="&SetupTestCasesWithOut; generic1 generic25
+  generic26 generic27 generic28">-->
 
   &TestSetupWithOut;
     
@@ -1391,6 +1391,19 @@
       <em>not</em> their bounds.  <code>NIL</code> is compatible with
       a qualified type if it is compatible with its base type.
     </test>
+    <test id="generic25" type="accept" file="Generic25.Mod">
+      Traversing a field select, a pointer deref, and an array index
+      operation to get to a variable that uses a type parameter.
+    </test>
+    <test id="generic26" type="reject" file="Generic26.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic27" type="reject" file="Generic27.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
+    <test id="generic28" type="reject" file="Generic28.Mod">
+      Invalid assignment to qualified type variable.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -1940,6 +1953,12 @@
     <reject-info id="generic22" pos="o3 %:= o1"
         msg="Expression not compatible with variable type `Generic1.A1'"/>
     <reject-info id="generic23" pos="o3 %:= o1"
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
+    <reject-info id="generic26" pos=" %:= o1"
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
+    <reject-info id="generic27" pos=" %:= o1"
+        msg="Expression not compatible with variable type `Generic1.A1'"/>
+    <reject-info id="generic28" pos=" %:= o1"
         msg="Expression not compatible with variable type `Generic1.A1'"/>
 
     <warning-info id="undef1" pos="x := %y;"

@@ -1327,6 +1327,15 @@ PROCEDURE (type: Type) Bound*(): Type;
     RETURN type;
   END Bound;
 
+PROCEDURE (type: Type) Closure*(subType: Type): Type;
+(**If @oparam{type} is a closure and @oparam{subType} a parametric type, then
+   apply the bindings of @oparam{type} to the parameters of @oparam{subType}
+   and return the resulting type.  Otherwise, return @oparam{subType}
+   unchanged.  *)
+  BEGIN
+    RETURN subType;
+  END Closure;
+
 
 PROCEDURE InitLinkDirective (l: LinkDirective);
   BEGIN

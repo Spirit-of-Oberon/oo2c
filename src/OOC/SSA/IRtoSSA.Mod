@@ -132,6 +132,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       (* get type of the value we are interested in *)
       type := value. type;
       FOR i := 0 TO dim DO
+        type := type.Deparam();
         type := type(Sym.Array). elementType;
       END;
       
@@ -386,10 +387,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr, elementAdr, scaledIndex, newSize, check: SSA.Instr;
         baseResult, length, index: SSA.Result;
         adrOpnd: SSA.Opnd;
-        elementType: Sym.Type;
+        elementType, arrayType: Sym.Type;
       BEGIN
+        arrayType := indexOp.array.type.Deparam();
         length := pb. AddGetLengthInstr (baseArray(SSA.Instr), dim,
-                                         indexOp. array. type(Sym.Array));
+                                         arrayType(Sym.Array));
         newSize := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
         newSize. AddOpnd (elementSize, Opnd.arg);
         newSize. AddOpnd (FixAddress(length), Opnd.arg);

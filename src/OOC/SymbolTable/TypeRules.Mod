@@ -67,6 +67,19 @@ PROCEDURE (typeClosure: TypeClosure) Deparam*(): Sym.Type;
     RETURN typeClosure.baseType;
   END Deparam;
 
+PROCEDURE ^ ExpandTypeClosure(typeClosure: TypeClosure): Sym.Type;
+
+PROCEDURE (typeClosure: TypeClosure) Closure*(subType: Sym.Type): Sym.Type;
+  BEGIN
+    IF (subType.typePars # NIL) THEN
+      RETURN ExpandTypeClosure(NewTypeClosure(subType.position, subType,
+                                              typeClosure.params,
+                                              typeClosure.arguments));
+    ELSE
+      RETURN subType;
+    END;
+  END Closure;
+
 
 PROCEDURE Lookup(context: TypeClosure; tv: Sym.TypeVar): Sym.Type;
   VAR
@@ -87,7 +100,6 @@ PROCEDURE Lookup(context: TypeClosure; tv: Sym.TypeVar): Sym.Type;
   END Lookup;
 
 PROCEDURE ^ Expand*(type: Sym.Type): Sym.Type;
-PROCEDURE ^ ExpandTypeClosure(typeClosure: TypeClosure): Sym.Type;
 
 PROCEDURE ExpandInContext(type: Sym.Type; context: TypeClosure): Sym.Type;
   VAR
