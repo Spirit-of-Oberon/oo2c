@@ -270,7 +270,7 @@ PROCEDURE Run*(m: Repository.Module; libraryName: String.String;
        data in `symTab' to the view of client modules: declarations private to
        the module are stripped when writing the symbol file  *)
     
-    IF (errList. msgCount = 0) THEN
+    IF errList.NoErrors() THEN
       IF writeAST THEN
         ASTtoXML.Write (StdChannels.stdout.NewWriter(), ast(ExtTree.Module));
       END;
@@ -284,7 +284,7 @@ PROCEDURE Run*(m: Repository.Module; libraryName: String.String;
       
       exports := Exports.GetExports (symTab, TRUE);
       
-      IF (errList. msgCount = 0) THEN
+      IF errList.NoErrors() THEN
         (* only attempt to produce output if program compiled without errors *)
 
         wh := WriteFile (Repository.modHeaderFileC);

@@ -111,17 +111,22 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 
 PROCEDURE ResolveQualident* (ns: Sym.Namespace; contextOfUse: Sym.Item;
-                             module, ident: Sym.Name): Sym.Item;
+                             module, ident: Sym.Name): Sym.Declaration;
   VAR
-    m: Sym.Item;
+    m, decl: Sym.Declaration;
   BEGIN
     m := ns.Identify(contextOfUse, module, FALSE);
     IF (m = NIL) OR ~(m IS Sym.Import) THEN
       RETURN NIL;
     ELSE
+      m.IncrUsageCount();
       ns := m(Sym.Import).externalSymTab.ns;
     END;
-    RETURN ns.Identify(contextOfUse, ident, FALSE);
+    decl := ns.Identify(contextOfUse, ident, FALSE);
+    IF (decl # NIL) THEN
+      decl.IncrUsageCount();
+    END;
+    RETURN decl;
   END ResolveQualident;
 
 PROCEDURE CreateNamespace* (root: Sym.Module;
@@ -182,7 +187,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
       ptr: Sym.Item;
     BEGIN
       ImportModules.ImportModules (systemModule, root, errList);
-      IF (errList. msgCount = 0) THEN
+      IF errList.NoErrors() THEN
         ptr := root. nestedItems;
         WHILE (ptr # NIL) DO
           WITH ptr: Sym.Import DO
@@ -410,7 +415,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
        declarations.  This is used to resolve names used as pointer base
        types.  *)
       VAR
-        item, itemRedir: Sym.Item;
+        item, itemRedir: Sym.Declaration;
         ns: Sym.Namespace;
       BEGIN
         WITH typeName: Sym.TypeName DO
@@ -418,6 +423,9 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           IF (typeName. module # NIL) THEN
             (* resolve module name to get to external namespace *)
             item := ns. Identify (contextOfUse, typeName. module, FALSE);
+            IF (item # NIL) THEN
+              item.IncrUsageCount();
+            END;
             IF (item = NIL) THEN
               Err (undeclaredModule, typeName);
               RETURN typeName
@@ -440,6 +448,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
           ELSE
             (* if the type name refers to a name redirection, then resolve the
                redirection and continue with the resulting symbol table entry  *)
+            item.IncrUsageCount();
             itemRedir := item;
             WITH itemRedir: Sym.Redirect DO
               item := ResolveQualident(contextOfUse.Namespace(), contextOfUse,
@@ -831,7 +840,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
        of the previous sub-tasks, and providing the foundation for further
        processing.  *)
     ImportAllModules (root);
-    IF (errList. msgCount # 0) THEN
+    IF ~errList.NoErrors() THEN
       (* bail out if there are any errors during import; this saves a lot
          of checks later on, because otherwise we would have to assume that
          any reference to an imported object is broken *)

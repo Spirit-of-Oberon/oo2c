@@ -51,6 +51,8 @@ TYPE
        writing the list of error messages to the output channel.  *)
     adjustCharPos: BOOLEAN;
     (* if TRUE, then subtract the line number from the character position *)
+    noError: BOOLEAN;
+    (* if TRUE, then the list is either empty or contains only warnings *)
   END;
 
 VAR
@@ -64,6 +66,12 @@ VAR
 CONST
   posAttr = "pos";
   lineAttr = "line";
+  warningPrefix* = "Warning: ";
+  (**All error messages using this prefix are considered warnings.  They do not
+     influence compilation, nor do they cause the compiler to terminate with a
+     non-zero exit code.  The test for warnings is a bit crude right now,
+     because it checks if @samp{"100 "+warningPrefix} appears somewhere in the
+     error message's template string.  *)
   
 PROCEDURE InitContext* (c: Context; id: M.String);
   BEGIN
@@ -84,6 +92,7 @@ PROCEDURE NewList* (fileName: ARRAY OF CHAR): List;
     M.InitMsgList (list);
     COPY (fileName, list. fileName);
     list. adjustCharPos := FALSE;
+    list. noError := TRUE;
     RETURN list
   END NewList;
 
@@ -91,7 +100,18 @@ PROCEDURE (l: List) Append* (msg: Msg);
   VAR
     ptr: M.Msg;
     msgPos, ptrPos: M.Attribute;
+    found: BOOLEAN;
+    pos: INTEGER;
+    template: ARRAY 128 OF LONGCHAR;
   BEGIN
+    IF l.noError THEN
+      msg.context.GetTemplate(msg, template);
+      LongStrings.FindNext("100 "+warningPrefix, template, 0, found, pos);
+      IF ~found THEN
+        l.noError := FALSE;
+      END;
+    END;
+    
     msgPos := msg.GetAttribute(posAttr);
     ptr := l.msgList;
     WHILE (ptr # NIL) DO
@@ -104,6 +124,11 @@ PROCEDURE (l: List) Append* (msg: Msg);
     END;
     l.Append^(msg);
   END Append;
+
+PROCEDURE (l: List) NoErrors*(): BOOLEAN;
+  BEGIN
+    RETURN l.noError;
+  END NoErrors;
 
 PROCEDURE (c: Context) BaseTemplate* (msg: Msg; text: LString; VAR templ: LString);
 (**Creates the default error description for message @oparam{msg}.  The

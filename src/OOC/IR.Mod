@@ -1069,7 +1069,8 @@ CONST
   notPointerVar = 50;
   notAddressable = 51;
   objectSizeMismatch = 52;
-
+  unusedDeclaration = 53;
+  
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -1239,6 +1240,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "This expression has no address"
     | objectSizeMismatch:
       t := "Size mismatch between type and expression"
+    | unusedDeclaration:
+      t := Error.warningPrefix+"Unused object"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1317,6 +1320,18 @@ PROCEDURE GetPragmaValue (b: Builder; pragma: Pragmas.Pragma; charPos: Pragmas.C
     value := b. pragmaHistory. GetValue (pragma. name^, charPos);
     RETURN value(BooleanValue.Value). boolean
   END GetPragmaValue;
+
+PROCEDURE (b: Builder) WarnName (code: Error.Code; name: Sym.Name);
+  VAR
+    e: Error.Msg;
+  BEGIN
+    e := Error.New (irContext, code);
+    e. SetIntAttrib ("pos", name. pos);
+    e. SetIntAttrib ("line", name. line);
+    e. SetIntAttrib ("column", name. column);
+    b. errList. Append (e);
+    b. lastError := e;
+  END WarnName;
 
 PROCEDURE (b : Builder) ErrExpr* (code : Error.Code; sym : Symbol) : Const;
   BEGIN
@@ -4078,8 +4093,33 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
                                    statmSeq: StatementSeq): Module;
   VAR
     m: Module;
+    
+  PROCEDURE UnusedDeclarations (item: Sym.Item);
+    VAR
+      nested: Sym.Item;
+    BEGIN
+      WITH item: Sym.Declaration DO
+        (* emit a warning for declarations that are not exported and have
+           a usage count of zero; parameters are ignored *)
+        IF (item.usageCount = 0) &
+           (item.exportMark = Sym.nameNotExported) &
+           (~(item IS Sym.VarDecl) OR ~item(Sym.VarDecl).isParameter) &
+           GetPragmaValue(b, StdPragmas.warnings, item.name.pos) THEN
+          b.WarnName(unusedDeclaration, item.name);
+        END;
+      ELSE  (* ignore *)
+      END;
+      
+      nested := item.nestedItems;
+      WHILE (nested # NIL) DO
+        UnusedDeclarations(nested);
+        nested := nested.nextNested;
+      END;
+    END UnusedDeclarations;
+
   BEGIN
     b. CheckExit (NIL, statmSeq, NIL);
+    UnusedDeclarations(decl);
     
     NEW (m);
     InitModule (m, sym, name, procList,
@@ -4435,6 +4475,7 @@ PROCEDURE (b: Builder) NewIdentRef* (baseNS, ns: Sym.Namespace;
       IF (decl = NIL) THEN
         b. ErrSym (undeclaredIdent, name)
       ELSE
+        decl.IncrUsageCount();
         WITH decl: Sym.ConstDecl DO
           RETURN NewConst (name, decl. type, decl. value)
         | decl: Sym.VarDecl DO
@@ -4499,6 +4540,10 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
     IF varRef. type IS Sym.Record THEN
       decl := varRef. type(Sym.Record). ns. Identify
           (context, b. GetName (name), FALSE);
+      IF (decl # NIL) THEN
+        decl.IncrUsageCount();
+      END;
+      
       IF decl = NIL THEN
         RETURN b.ErrExpr(undeclaredIdent, name);
       ELSIF (decl IS Sym.FieldDecl) THEN

@@ -347,7 +347,7 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
       ParseModule.ParseModule(module, FALSE, FALSE, FALSE, TRUE,
                               r.libraryName,
                               ast, symTab, pragmaHistory, errList);
-      IF (errList.msgCount = 0) THEN
+      IF errList.NoErrors() THEN
         module.SetInterfaceData(symTab, Rep.importsOnly);
       END;
       
@@ -364,17 +364,12 @@ PROCEDURE (r: Rules) GetImports(module: Rep.Module): BOOLEAN;
       END;
     END;
 
-    IF (errList.msgCount = 0) THEN
+    IF errList.NoErrors() THEN
       ResolveNames();
     END;
     
-    IF (errList.msgCount # 0) THEN
-      r.WriteErrList(errList);
-      RETURN Logger.ExitMake("GetImports", module.name^, FALSE);
-    ELSE
-(*      WriteImports(module);*)
-      RETURN Logger.ExitMake("GetImports", module.name^, TRUE);
-    END;
+    r.WriteErrList(errList);
+    RETURN Logger.ExitMake("GetImports", module.name^, errList.NoErrors());
   END GetImports;
 
 
@@ -452,7 +447,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
         errList := DoSSAtoIA32(libraryName);
       END;
 
-      success := (errList = NIL) OR (errList.msgCount = 0);
+      success := (errList = NIL) OR errList.NoErrors();
       IF success THEN
         (* read symbol file that we have just written *)
         module.SetInterfaceData(NIL, Rep.noInterfaceData);
@@ -594,10 +589,8 @@ PROCEDURE (r: Rules) UpdateInterfaceDescr (module: Rep.Module): BOOLEAN;
           END
         END;
 
-        IF (errList.msgCount # 0) THEN
-          r.WriteErrList(errList);
-        END;
-        success := (errList.msgCount = 0);
+        r.WriteErrList(errList);
+        success := errList.NoErrors();
       END;
     END;
     RETURN success;
@@ -625,7 +618,7 @@ PROCEDURE (r: Rules) UpdateInterfaceXML (module: Rep.Module): BOOLEAN;
         ParseModule.ParseModule(module, FALSE, TRUE, FALSE, FALSE,
                                 r.libraryName,
                                 ast, symTab, pragmaHistory, errList);
-        IF (errList.msgCount = 0) THEN
+        IF errList.NoErrors() THEN
           outputChannel := module.GetOutputChannel(Rep.modInterfaceXML, TRUE, res);
           IF (outputChannel = NIL) THEN
             errList.Append(res)
@@ -641,10 +634,8 @@ PROCEDURE (r: Rules) UpdateInterfaceXML (module: Rep.Module): BOOLEAN;
           END
         END;
 
-        IF (errList.msgCount # 0) THEN
-          r.WriteErrList(errList);
-        END;
-        success := (errList.msgCount = 0);
+        r.WriteErrList(errList);
+        success := errList.NoErrors();
       END;
     END;
     RETURN success;

@@ -68,7 +68,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
       pragmaHistory := scannerBuilder. pragmaHistory;
       
       ast := NIL;
-      IF (errList. msgCount = 0) THEN
+      IF errList.NoErrors() THEN
         astBuilder := ExtTree.New();
         IF checkModuleName THEN
           astBuilder. SetModuleName (m. name^)
@@ -83,16 +83,16 @@ PROCEDURE ParseModule* (m: Repository.Module;
       END;
 
       symTab := NIL;
-      IF (errList. msgCount = 0) THEN
+      IF errList.NoErrors() THEN
         stb := Builder.New();
         symTab := CreateSymTab.CreateSymTab
           (ast, stb, libraryName, m. GetURI (Repository.modModuleSource, FALSE),
            m. origin. baseURI);
         IF createNamespace THEN
-          IF (errList. msgCount = 0) THEN
+          IF errList.NoErrors() THEN
             CreateNamespace.CreateNamespace (symTab, errList)
           END;
-          IF (errList. msgCount = 0) & writeSymbolFile THEN
+          IF errList.NoErrors() & writeSymbolFile THEN
             (* no error in the declaration part of the module: write the
                symbol table to file, skipping any external references and
                strictly local information on the way *)

@@ -4,7 +4,7 @@ IMPORT
   StdChannels, Out, Err,
   Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, Config:Value:String,
-  OOC:Config, OOC:Config:CCompiler, OOC:Config:Assembler,
+  OOC:Config, OOC:Config:CCompiler,
   OOC:SymbolTable:Builder, OOC:Error, Rep := OOC:Repository, OOC:Make;
   
 
@@ -67,6 +67,8 @@ BEGIN
   
   IF (cfgErrList. msgCount # 0) THEN
     cfgErrList. Write (StdChannels.stdout);
+  END;
+  IF ~cfgErrList.NoErrors() THEN
     HALT (1)
   ELSIF (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: oo2c [--config <cfg-file>] {-r <base-dir>} [--make] <file>"); Out.Ln;
