@@ -1,9 +1,19 @@
 #include "RT0.d"
 
-#include "__oo2c.c"
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "__oo2c.c"
+#include "__config.h"
+
+#if defined(HAVE_LIBGC) && defined(HAVE_GC_GC_H)
+#include <gc/gc.h>
+#else
+#define GC_malloc malloc
+#define GC_malloc_atomic malloc
+#define GC_free free
+#endif
 
 static RT0__Module* modules = NULL;
 static int moduleCount = 0, sizeModules = 32;
@@ -44,7 +54,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     if (size == 0) size++;
     prefix = ROUND_SIZE(sizeof(RT0__Struct));
     
-    ptr = malloc(prefix+size);
+    ptr = GC_malloc(prefix+size);
     if (ptr == NULL) {
       _out_of_memory(prefix+size);
     }
@@ -54,8 +64,8 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   } else if (td->form == RT0__strArray) { /* fixed size array */
     int size = td->size;
     if (size == 0) size++;
-    var = malloc(size);
-    if (ptr == NULL) {
+    var = GC_malloc(size);
+    if (var == NULL) {
       _out_of_memory(size);
     }
     
@@ -79,7 +89,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
        of any basic type */
     prefix = ROUND_SIZE(td->len*sizeof(OOC_LEN));
     
-    ptr = malloc(prefix+size);
+    ptr = GC_malloc(prefix+size);
     if (ptr == NULL) {
       _out_of_memory(prefix+size);
     }
@@ -104,7 +114,7 @@ RT0__Struct RT0__TypeOf(OOC_PTR ptr) {
 OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
   void *ptr;
   
-  ptr = malloc(bytes);		/* GC_malloc_atomic */
+  ptr = GC_malloc_atomic(bytes);
   if (ptr == NULL) {
     _out_of_memory(bytes);
   }
@@ -112,11 +122,11 @@ OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
 }
 
 void RT0__FreeBlock(OOC_PTR ptr) {
-  free(ptr);			/* inverse to RT0__NewBlock */
+  GC_free(ptr);			/* inverse to RT0__NewBlock */
 }
 
 void RT0__InitVParStack(OOC_INT32 bytes) {
-  _ooc_top_vs = (void*)malloc(bytes); /* not GC_malloc_atomic!!! */
+  _ooc_top_vs = (void*)GC_malloc(bytes);
   _ooc_end_vs = (char*)_ooc_top_vs+(bytes);
 }
 

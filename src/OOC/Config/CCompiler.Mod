@@ -78,7 +78,8 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; VAR cmd: ARRAY OF CHAR);
   BEGIN
     COPY ("gcc -g -pipe -o ", cmd);
     execFile(File.URI). GetPath (str);
-    Strings.Append (str, cmd)
+    Strings.Append (str, cmd);
+    Strings.Append (" -lgc", cmd);
   END LinkProgramCmd;
 
 END OOC:Config:CCompiler.

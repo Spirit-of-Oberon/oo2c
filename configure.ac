@@ -17,10 +17,11 @@ AC_PATH_PROG(XSLTPROC,xsltproc,xsltproc)
 AC_PATH_PROG(PERL,perl,perl)
 
 dnl checks for libraries
+AC_CHECK_LIB(gc,GC_malloc)
 
 dnl checks for header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(sys/time.h unistd.h io.h pwd.h utime.h)
+AC_CHECK_HEADERS(sys/time.h unistd.h io.h pwd.h utime.h gc/gc.h)
 AC_HEADER_TIME
 
 dnl checks for types

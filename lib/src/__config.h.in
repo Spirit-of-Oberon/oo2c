@@ -9,6 +9,9 @@
 /* Define if you have the `atexit' function. */
 #undef HAVE_ATEXIT
 
+/* Define if you have the <gc/gc.h> header file. */
+#undef HAVE_GC_GC_H
+
 /* Define if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
@@ -17,6 +20,9 @@
 
 /* Define if you have the <io.h> header file. */
 #undef HAVE_IO_H
+
+/* Define if you have the `gc' library (-lgc). */
+#undef HAVE_LIBGC
 
 /* Define if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
