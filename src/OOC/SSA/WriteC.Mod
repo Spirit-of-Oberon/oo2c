@@ -114,7 +114,11 @@ PROCEDURE SubclassToBasicType (res: SSA.Result): DeclWriter.BasicTypeId;
   BEGIN
     CASE res. subclass OF
     | Opcode.scNone: RETURN DeclWriter.void
-    | Opcode.scAddress: RETURN DeclWriter.int32(*DeclWriter.ptr*)
+    | Opcode.scAddress:
+      CASE Predef.address OF
+      | Predef.hugeint: RETURN DeclWriter.int64;
+      | Predef.longint: RETURN DeclWriter.int32;
+      END;
     | Opcode.scUnsigned8: RETURN DeclWriter.uint8
     | Opcode.scUnsigned16: RETURN DeclWriter.uint16
     | Opcode.scUnsigned32: RETURN DeclWriter.uint32
