@@ -13,6 +13,7 @@ CONST
   buildPackage = -1;
   installPackage = -2;
   uninstallPackage = -3;
+  updateRepository = -4;
   
 VAR
   cfgErrList, errList: Error.List;
@@ -22,8 +23,8 @@ VAR
   command, useStderr: Options.Option;
   makeRules: Make.Rules;
   rep: Rep.Repository;
-  pkg: Package.Package;
-  ok: BOOLEAN;
+  pkg, pkgInfo: Package.Package;
+  ok, forceUpdateRepository, doInstall: BOOLEAN;
 
 PROCEDURE NewConfig;
   BEGIN
@@ -40,6 +41,8 @@ PROCEDURE NewConfig;
                        "<options><set name='command'>3</set></options>");
     Config.AddCmdLine ("--uninstall-package",
                        "<options><set name='command'>4</set></options>");
+    Config.AddCmdLine ("--update-repository",
+                       "<options><set name='command'>5</set></options>");
     Config.AddCmdLine ("--use-stderr",
                  "<options><set name='useStderr'>TRUE</set></options>");
     Config.AddCmdLine ("--no-rtc",
@@ -375,9 +378,6 @@ BEGIN
   cfgErrList := Error.NewList ("");
   NewConfig;
   Config.Read (cfgErrList);
-  IF ~Config.repositories.ParseMetaData(Config.options, Config.pragmas) THEN
-    HALT(1);
-  END;
   
   makeRules := Make.NewRules();
   IF useStderr.value(Boolean.Value).boolean THEN
@@ -395,6 +395,8 @@ BEGIN
     mode := installPackage;
   | 4:
     mode := uninstallPackage;
+  | 5:
+    mode := updateRepository;
   END;
   
   IF (cfgErrList. msgCount # 0) THEN
@@ -402,44 +404,67 @@ BEGIN
   END;
   IF ~cfgErrList.NoErrors() THEN
     HALT (1)
-  ELSIF (Config.arguments. ArgNumber() = 0) THEN
+  ELSIF (mode = updateRepository) # (Config.arguments. ArgNumber() = 0) THEN
     Out.String ("Usage: oo2c [--config <cfg-file>] {-r <base-dir>} [--make] <file>"); Out.Ln;
     HALT (1)
   ELSE
     ok := TRUE;
-    i := 0;
-    WHILE ok & (i # Config.arguments. ArgNumber()) DO
-      arg := Config.arguments. Get (i);
-      CASE mode OF
-      | buildPackage, installPackage:
-        pkg := Config.repositories.GetPackage(arg^, rep);
-        IF (pkg = NIL) THEN
-          Err.String ("Error: Cannot locate package ");
-          Err.String (arg^);
-          Err.Ln;
-          HALT (1)
-        ELSE
-          ok := BuildPackage(pkg, rep, (mode = installPackage));
-        END;
 
-      | uninstallPackage:
-        pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
-        IF (errList.msgCount # 0) THEN
-          errList.Write(StdChannels.stdout);
-        END;
-        IF (pkg = NIL) THEN
-          Err.String ("Error: Cannot locate package ");
-          Err.String (arg^);
-          Err.Ln;
-          HALT (1)
-        ELSE
-          UninstallPackage(pkg);
-        END;
-        
-      ELSE
-        ok := makeRules.Update(GetModule(arg^), mode);
+    IF (mode = updateRepository) THEN
+      ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string^);
+    ELSE
+      IF ~Config.repositories.ParseMetaData(Config.options, Config.pragmas) THEN
+        HALT(1);
       END;
-      INC(i);
+      
+      forceUpdateRepository := FALSE;
+      i := 0;
+      WHILE ok & (i # Config.arguments. ArgNumber()) DO
+        arg := Config.arguments. Get (i);
+        CASE mode OF
+        | buildPackage, installPackage:
+          doInstall := (mode = installPackage);
+          pkg := Config.repositories.GetPackage(arg^, rep);
+          IF (pkg = NIL) THEN
+            Err.String ("Error: Cannot locate package ");
+            Err.String (arg^);
+            Err.Ln;
+            HALT (1)
+          ELSE
+            IF doInstall THEN
+              pkgInfo := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
+              IF (errList.msgCount = 0) THEN
+                UninstallPackage(pkgInfo);
+              END;
+            END;
+            ok := BuildPackage(pkg, rep, doInstall);
+            forceUpdateRepository := doInstall;
+          END;
+          
+        | uninstallPackage:
+          pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
+          IF (errList.msgCount # 0) THEN
+            errList.Write(StdChannels.stdout);
+          END;
+          IF (pkg = NIL) THEN
+            Err.String ("Error: Cannot locate package ");
+            Err.String (arg^);
+            Err.Ln;
+            HALT (1)
+          ELSE
+            UninstallPackage(pkg);
+            forceUpdateRepository := TRUE;
+          END;
+          
+        ELSE
+          ok := makeRules.Update(GetModule(arg^), mode);
+        END;
+        INC(i);
+      END;
+
+      IF ok & forceUpdateRepository THEN
+        ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string^);
+      END;
     END;
     
     IF ~ok THEN
