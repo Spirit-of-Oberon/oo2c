@@ -23,6 +23,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 IMPORT
 Log,
   Language, Language:Boolean, Language:Char, Language:Set,
+  LString := Language:String,
   Language:String8, Language:String16, Language:Integer, Language:Real,
   ADT:Object, ADT:ArrayList, ADT:String,
   Config:Value, BooleanValue := Config:Value:Boolean, 
@@ -2049,17 +2050,47 @@ PROCEDURE InitTypeConv (conv: TypeConv; sym: Symbol; type: Sym.Type;
     conv. expr := expr;
   END InitTypeConv;
 
-PROCEDURE (b : Builder) NewTypeConv (type: Sym.Type; expr : Expression): TypeConv;
+PROCEDURE (b : Builder) NewTypeConv (type: Sym.Type; expr: Expression): Expression;
   VAR
     conv: TypeConv;
+    str: LString.Value;
+
+  PROCEDURE BaseChar (type: Sym.PredefType): Sym.PredefId;
+    BEGIN
+      CASE type. id OF
+      | Predef.char, Predef.charString:
+        RETURN Predef.char
+      | Predef.longchar, Predef.longcharString:
+        RETURN Predef.longchar
+      END;
+    END BaseChar;
+  
   BEGIN
-    IF (expr IS TypeConv) & b.typeRules.IncludesType(type, expr.type) THEN
-      (* handle transitivity *)
-      expr := expr(TypeConv).expr;
+    IF (expr. type = type) THEN
+      RETURN expr;                       (* no conversion necessary *)
+      
+    ELSIF b. typeRules. IsStringConst (type) THEN
+      (* handle conversion of character and string constants to string
+         constants *)
+      ASSERT (b. typeRules. IsStringConst (expr. type) OR
+              (expr IS Const) & b. typeRules. IsCharType (expr. type));
+      str := expr(Const). value(LString.Value);
+      IF (BaseChar (expr. type(Sym.PredefType)) <
+          BaseChar (type(Sym.PredefType))) THEN
+        str := String16.NewRegion8 (str(String8.Value). value. array^,
+                                    0, str. Length())
+      END;
+      RETURN b. NewConst (expr. sym, type, str);
+      
+    ELSE
+      IF (expr IS TypeConv) & b.typeRules.IncludesType(type, expr.type) THEN
+        (* handle transitivity *)
+        expr := expr(TypeConv).expr;
+      END;
+      NEW (conv);
+      InitTypeConv (conv, expr.sym, type, expr);
+      RETURN conv
     END;
-    NEW (conv);
-    InitTypeConv (conv, expr.sym, type, expr);
-    RETURN conv
   END NewTypeConv;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeConv* (conv: TypeConv);
@@ -2070,37 +2101,142 @@ PROCEDURE (conv: TypeConv) Accept* (v: Visitor);
     v. VisitTypeConv (conv)
   END Accept;
 
-PROCEDURE (b : Builder) WidenType(VAR expr : Expression; type : Sym.Type) : BOOLEAN;
-(**Determine if expression @oparam{expr} may be assigned to an object of type
-   @oparam{type}. If the assignment is allowed, the function returns
-   @ocode{TRUE} and updates @oparam{expr} accordingly.
-*)
-VAR
-  convert : BOOLEAN; valueType : Sym.Type; value : Language.Value;
-  tr : TypeRules.Rules;
-BEGIN
-  tr := b.typeRules;
+PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE} if the expression @oparam{expr} is structurally
+   compatible to @oparam{type}, or can be made to be compatible.  In the latter
+   case, @oparam{expr} is replaced with a new constant value or a type
+   conversion operator.  There is no loss of information if type conversion is
+   applied.  That is, @oparam{expr} is always converted to a ``wider'' type or
+   value.
 
-  IF (expr IS Const) THEN
-    valueType := expr.type; value := expr(Const).value;
-    IF tr.IsAssignableValue(value, valueType, type) THEN
-      expr := NewConst(expr.sym, valueType, value);
+   For the most part, a positive result indicates that
+
+   @itemize @bullet
+   @item
+   @oparam{expr} can be assigned to a variable with type @oparam{type},
+   @item
+   @oparam{expr} can be used in an operation @samp{``expr.type'' op ``type''},
+   and
+   @item
+   @oparam{expr} can be passed to a formal value parameter of type
+   @oparam{type}.
+   @end itemize
+
+   If the @oparam{type} is an open array, result is generally @code{FALSE}.
+   The exception to this rule deals with character arrays and character or
+   string constants: the constant is promoted to a string constant whose base
+   character type matches that of the array.
+
+   Please note that this function does not implement fully either of the rules
+   of assignment compatibility or expression compatibility.  Instead, it
+   implements @emph{all} rules where an explicit type conversion must be added,
+   and a large part of the common subset of the above notion of compatibility.  *)
+  VAR
+    tr: TypeRules.Rules;
+    
+  PROCEDURE MatchingStringConst (type: Sym.Type): Sym.Type;
+    VAR
+      id: Sym.PredefId;
+    BEGIN
+      CASE type(Sym.PredefType). id OF
+      | Predef.char: id := Predef.charString
+      | Predef.longchar:  id := Predef.longcharString
+      END;
+      RETURN Predef.GetType (id);
+    END MatchingStringConst;
+
+  BEGIN
+    ASSERT (expr.type # NIL);
+    ASSERT (type # NIL);
+    tr := b.typeRules;
+
+    IF tr.SameType(type, expr. type) THEN (* Case 0a *)
+      (* Case 0a: a < b if a and b are the same type. *)
       RETURN TRUE;
-    END;
-  END;
-  IF tr.IsAssignableType(expr.type, type, convert) THEN
-    IF convert THEN
-      expr := b.NewTypeConv(type, expr);
-    END;
-    RETURN TRUE;
-  END;
-  RETURN FALSE;
-END WidenType;
+      
+    ELSIF (expr. type IS Sym.FormalPars) THEN (* Case 0b *)
+      (* Case 0b: a < b if a and b are procedures with matching parameter
+         lists *)
+      RETURN (type IS Sym.FormalPars) &
+          tr. FormalParamsMatch (type(Sym.FormalPars),
+                                 expr. type(Sym.FormalPars), FALSE);
+      
+    ELSIF tr.IncludesType(type, expr. type) THEN
+      (* Case 1: a < b if the type of 'b' includes the type of 'a'. This
+         handles numeric and character inclusion. *)
+      expr := b. NewTypeConv (type, expr);
+      RETURN TRUE;
+      
+    ELSIF tr.IsExtensionOf(expr. type, type) THEN
+      (* Case 2: a < b if the type of 'b' is an extension of the type of
+         'a' *)
+      RETURN TRUE;
+      
+    ELSIF IsPredefType (expr. type, Predef.nil) & tr.IsNilCompatible (type) THEN
+      (* Case 3: NIL < pointer value *)
+      (* Case 4: NIL < procedure value *)
+      RETURN TRUE;
+      
+    ELSIF (expr IS Const) &
+          tr. IsStringConst (type) &
+          (tr. BaseCharType (expr. type) # NIL) &
+          tr. IncludesType(tr. BaseCharType (type),
+                           tr. BaseCharType (expr. type)) THEN
+      (* Case 5: char const and string const < string const *)
+      expr := b. NewTypeConv (type, expr);
+      RETURN TRUE;
 
-PROCEDURE (b : Builder) Widen(VAR expr : Expression; var : Expression) : BOOLEAN;
-BEGIN
-  RETURN b. WidenType(expr, var.type);
-END Widen;
+    ELSIF (expr IS Const) &
+          (tr. BaseCharType (expr. type) # NIL) &
+          (type IS Sym.Array) &
+          tr. IsCharType (type(Sym.Array). elementType) THEN
+      (* Case 6: string const < ARRAY [n] OF char *)
+      RETURN b. Widen(expr, MatchingStringConst(type(Sym.Array). elementType));
+
+    ELSE
+      RETURN FALSE;
+    END;
+  END Widen;
+
+PROCEDURE (b: Builder) WidenForAssign (VAR expr: Expression;
+                                       type: Sym.Type): BOOLEAN;
+(**Takes an expression and a type, and tries to make the expression's value
+   assignment compatible to the type.  Returns TRUE on success.
+
+   @precond
+   If @oparam{expr} is an argument passed to a formal parameter, then
+   @oparam{type} is not an open array type.
+   @end precond
+   *)
+  VAR
+    oldExpr: Expression;
+    
+  PROCEDURE LengthOk (): BOOLEAN;
+    BEGIN
+      IF b. typeRules. IsStringConst (expr. type) THEN
+        IF type(Sym.Array). isOpenArray THEN
+          RETURN FALSE;
+        ELSE
+          RETURN (expr(Const). value(LString.Value). Length() <
+                  type(Sym.Array). length);
+        END;
+      ELSE
+        RETURN TRUE;
+      END;
+    END LengthOk;
+  
+  BEGIN
+    oldExpr := expr;
+    IF IsPredefType (type, Predef.byte) &
+         b. typeRules. IsByteCompatible (expr. type) OR
+       b. Widen (expr, type) & LengthOk () THEN
+      RETURN TRUE;
+    ELSE
+      expr := oldExpr;
+      RETURN FALSE;
+    END;
+  END WidenForAssign;
+
 
 (* Operator Class: TypeTag
    ------------------------------------------------------------------------ *)
@@ -2370,24 +2506,32 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
     assignment. value := value;
   END InitAssignment;
 
+PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
+                                    VAR expr: Expression;
+                                    type: Sym.Type);
+(**Takes an expression and a type, and tries to make the expression's value
+   assignment compatible to the type.  If this is not possible, an error
+   is reported.  *)
+  BEGIN
+    IF ~b. WidenForAssign (expr, type) THEN
+      b.ErrSym(incompatibleAssignment, sym);
+    END;
+  END MakeAssignmentCompatible;
+
 PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
                                        variable, value: Expression): Statement;
   VAR
     assignment: Assignment;
   BEGIN
+    MakeAssignmentCompatible (b, sym, value, variable. type);
     IF b. typeRules. IsStringConst (value. type) THEN
       (* assigning a string constant: create CopyString opcode *)
-      (* FIXME... check assignment restrictions *)
       RETURN b. NewCopyString (sym, value, variable,
                                b. Fold (b. NewLen (sym, variable, 0)));
     ELSIF (value. type IS Sym.Array) OR (value. type IS Sym.Record) THEN
       (* assigning a structured value: create Copy opcode *)
-      (* FIXME... check assignment restrictions *)
       RETURN b. NewCopy (sym, value, variable);
     ELSE
-      IF ~b.Widen(value, variable) THEN
-        b.ErrSym(incompatibleAssignment, sym);
-      END;
       NEW (assignment);
       InitAssignment (assignment, sym, variable, value);
       RETURN assignment
@@ -3166,7 +3310,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       result := b.NewSetMember(sym, left, right);
     ELSIF (id = Id.is) THEN
       result := b.NewTypeTest(sym, left, right);
-    ELSIF b.Widen(left, right) OR b.Widen(right, left) THEN
+    ELSIF b.Widen(left, right.type) OR b.Widen(right, left.type) THEN
       leftType := left.type; rightType := right.type;
       
       isNumeric := tr.IsNumericType(leftType);
@@ -3186,8 +3330,9 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         
       ELSIF (id IN {Id.slash }) & isNumeric THEN
         (* ---- arithmetic real division ---- *)
-        IF isInteger THEN
-          ASSERT(b.WidenType(left, real) & b.WidenType(right, real));
+        IF isInteger & b.Widen(left, real) & b.Widen(right, real) THEN
+          (* the guard above does all the work: it promotes integers
+             operands to REAL *)
         END;
         result := b.NewBinaryArith(sym, arithDivR, left, right);
         
@@ -3267,43 +3412,28 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     receiver, delta: Expression;
     value: Language.Value;
  
-  PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
-                                      expr: Expression;
-                                      type: Sym.Type): Expression;
-  (**Takes an expression and a type, and tries to make the expression's value
-     assignment compatible to the type.  If this is not possible, an error
-     is reported.  *)
-    BEGIN
-      IF ~b.WidenType(expr, type) THEN
-        RETURN b.ErrExpr(incompatibleActualParam, sym);
-      ELSE
-        RETURN expr
-      END;
-    END MakeAssignmentCompatible;
-
   PROCEDURE MakeParameterCompatible (b: Builder; sym: Symbol;
-                                     arg: Expression;
-                                     fpar: Sym.VarDecl): Expression;
+                                     VAR arg: Expression;
+                                     fpar: Sym.VarDecl);
   (**Takes an expression @oparam{arg} and a formal parameter declaration
      @oparam{fpar}, and tries to make the expression's value compatible to the
      formal parameter.  If this is not possible, an error is reported.  *)
+    VAR
+      ok: BOOLEAN;
     BEGIN
       IF fpar. isVarParam THEN           (* variable parameter *)
         (* ... nothing for now *)
       ELSE                               (* value parameter *)
         IF b. typeRules. IsOpenArrayType (fpar. type) THEN
-          IF b. typeRules. IsArrayOfChar (fpar. type) & (arg IS Const) THEN
-            IF ~b.WidenType(arg, fpar.type) THEN
-              arg := b.ErrExpr(incompatibleActualParam, sym);
-            END;
-          ELSIF ~b. typeRules. IsArrayCompatible (arg. type, fpar. type) THEN
-            RETURN b.ErrExpr(incompatibleActualParam, sym);
-          END;
+          ok := b. typeRules. IsArrayCompatible (arg. type, fpar. type) OR
+              b. Widen (arg, fpar. type);  (* do string promotion *)
         ELSE
-          arg := MakeAssignmentCompatible (b, arg. sym, arg, fpar. type);
+          ok := b. WidenForAssign (arg, fpar. type);
+        END;
+        IF ~ok THEN
+          b.ErrSym(incompatibleActualParam, arg. sym);
         END;
       END;
-      RETURN arg
     END MakeParameterCompatible;
   
   PROCEDURE TransformArgs (sym: Symbol;
@@ -3343,7 +3473,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           fpar := formalPars. params[fparIndex];
           arg := arguments[argIndex];
         END;
-        arg := MakeParameterCompatible (b, arg. sym, arg, fpar);
+        MakeParameterCompatible (b, arg. sym, arg, fpar);
         
         IF fpar. isPassPerReference THEN
           (* for argument passed by reference, add the address of the
