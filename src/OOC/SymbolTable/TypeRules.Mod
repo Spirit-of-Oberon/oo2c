@@ -125,6 +125,17 @@ BEGIN
   END;
 END StringBase;
 
+PROCEDURE (tr : Rules) MatchingStringConst* (type: Sym.Type): Sym.Type;
+VAR
+  id: Sym.PredefId;
+BEGIN
+  CASE type(Sym.PredefType). id OF
+  | Predef.char: id := Predef.charString
+  | Predef.longchar:  id := Predef.longcharString
+  END;
+  RETURN Predef.GetType (id);
+END MatchingStringConst;
+
 PROCEDURE (tr: Rules) IsIntegerType* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is an integer type.  *)
   BEGIN

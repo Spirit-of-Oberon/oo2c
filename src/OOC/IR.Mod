@@ -2159,17 +2159,6 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
   VAR
     tr: TypeRules.Rules;
     
-  PROCEDURE MatchingStringConst (type: Sym.Type): Sym.Type;
-    VAR
-      id: Sym.PredefId;
-    BEGIN
-      CASE type(Sym.PredefType). id OF
-      | Predef.char: id := Predef.charString
-      | Predef.longchar:  id := Predef.longcharString
-      END;
-      RETURN Predef.GetType (id);
-    END MatchingStringConst;
-
   BEGIN
     ASSERT (expr.type # NIL);
     ASSERT (type # NIL);
@@ -2216,7 +2205,7 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
           (type IS Sym.Array) &
           tr. IsCharType (type(Sym.Array). elementType) THEN
       (* Case 6: string const < ARRAY [n] OF char *)
-      RETURN b. Widen(expr, MatchingStringConst(type(Sym.Array). elementType));
+      RETURN b. Widen(expr, tr.MatchingStringConst(type(Sym.Array). elementType));
 
     ELSE
       RETURN FALSE;
@@ -2262,6 +2251,55 @@ PROCEDURE (b: Builder) WidenForAssign (VAR expr: Expression;
     END;
   END WidenForAssign;
 
+PROCEDURE (b : Builder) WidenToCommon(VAR left, right : Expression) : BOOLEAN;
+(**Returns true if expressions @oparam{left} and @oparam{right} can be made
+   compatible.  If one operand has ``wider'' type than the other, the smaller
+   operand is adjusted to have the type of the larger operand and the function
+   will return @ocode{TRUE}. 
+   
+   A special rule applies to constants of character or string type. If there is
+   a common type that is ``wider'' than each of the operands, both operands
+   will be widened to that common type. *)
+
+VAR
+  base : Sym.Type;
+
+  PROCEDURE CommonBase(t1, t2 : Sym.Type) : Sym.Type;
+  (* Find a common type to which types @oparam{t1} and @oparam{t2} may be
+  widened. 
+  
+  PRE: ~ ( (t1 < t2) OR (t2 < t1) ) 
+  *)
+  VAR 
+    base1, base2 : Sym.Type;
+    tr : TypeRules.Rules;
+  BEGIN
+    tr := b.typeRules;
+    base1 := tr.BaseCharType(t1);
+    base2 := tr.BaseCharType(t2);
+    IF (base1 # NIL) & (base2 # NIL) THEN
+      IF tr.IncludesType(base2, base1) THEN
+        base1 := base2;
+      END;
+      RETURN tr.MatchingStringConst(base1);
+    ELSE
+      RETURN NIL;
+    END;
+  END CommonBase;
+
+BEGIN
+  IF b.Widen(left, right.type) OR b.Widen(right, left.type) THEN
+    RETURN TRUE;
+  ELSIF (left IS Const) & (right IS Const) THEN
+    base := CommonBase(left.type, right.type);
+    IF base # NIL THEN
+      (* Widen both operands to the common base type *)
+      ASSERT(b.Widen(left, base) & b.Widen(right, base));
+      RETURN TRUE;
+    END;
+  END;
+  RETURN FALSE
+END WidenToCommon;
 
 (* Operator Class: TypeTag
    ------------------------------------------------------------------------ *)
@@ -3335,7 +3373,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       result := b.NewSetMember(sym, left, right);
     ELSIF (id = Id.is) THEN
       result := b.NewTypeTest(sym, left, right);
-    ELSIF b.Widen(left, right.type) OR b.Widen(right, left.type) THEN
+    ELSIF b.WidenToCommon(left, right) THEN
       leftType := left.type; rightType := right.type;
       
       isNumeric := tr.IsNumericType(leftType);
