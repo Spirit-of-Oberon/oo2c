@@ -40,6 +40,10 @@ TYPE
     arguments: Sym.TypeRefArray;
   END;
 
+VAR
+  emptyClosure: TypeClosure;
+
+
 PROCEDURE InitTypeClosure(tc: TypeClosure; position: Sym.Position;
                           baseType: Sym.Type;
                           params: Sym.TypeVarArray;
@@ -52,9 +56,9 @@ PROCEDURE InitTypeClosure(tc: TypeClosure; position: Sym.Position;
     tc.arguments := arguments;
   END InitTypeClosure;
 
-PROCEDURE NewTypeClosure(position: Sym.Position; baseType: Sym.Type;
-                         params: Sym.TypeVarArray;
-                         arguments: Sym.TypeRefArray): TypeClosure;
+PROCEDURE NewTypeClosure*(position: Sym.Position; baseType: Sym.Type;
+                          params: Sym.TypeVarArray;
+                          arguments: Sym.TypeRefArray): TypeClosure;
   VAR
     tc: TypeClosure;
   BEGIN
@@ -68,17 +72,69 @@ PROCEDURE (typeClosure: TypeClosure) Deparam*(): Sym.Type;
     RETURN typeClosure.baseType;
   END Deparam;
 
-PROCEDURE ^ ExpandTypeClosure(typeClosure: TypeClosure): Sym.Type;
-
-PROCEDURE (typeClosure: TypeClosure) Closure*(subType: Sym.Type): Sym.Type;
+PROCEDURE Lookup(context: TypeClosure; tv, default: Sym.TypeVar): Sym.Type;
+(**If @oparam{tv} is bound in @oparam{context}, then return the value it
+   is bound to.  Otherwise, return @oparam{default}.  *)
+  VAR
+    i: LONGINT;
   BEGIN
-    IF (subType # NIL) & (subType.typePars # NIL) THEN
-      RETURN ExpandTypeClosure(NewTypeClosure(subType.position, subType,
-                                              typeClosure.params,
-                                              typeClosure.arguments));
-    ELSE
-      RETURN subType;
+    ASSERT(LEN(context.params^) = LEN(context.arguments^));
+    i := 0;
+    WHILE (i # LEN(context.params^)) & (context.params[i] # tv)  DO
+      INC(i);
     END;
+    IF (i = LEN(context.params^)) THEN
+      (* variable is unbound in the given context, for example because it is
+         a variable of the class definition appearing in a variable declaration
+         of a method of the class *)
+      RETURN default;
+    ELSE
+      RETURN context.arguments[i].type;
+    END;
+  END Lookup;
+
+PROCEDURE (closure: TypeClosure) Closure*(type: Sym.Type): Sym.Type;
+  VAR
+    i: LONGINT;
+    args: Sym.TypeRefArray;
+    nextType: Sym.Type;
+  BEGIN
+    IF (type = NIL) THEN
+      (* pathological closure used for void function, record base types, etc *)
+      RETURN NIL;
+    END;
+    
+    LOOP
+      WITH type: Sym.QualType DO
+        ASSERT(LEN(type.arguments^) = LEN(type.baseType.typePars.params^));
+        NEW(args, LEN(type.baseType.typePars.params^));
+        FOR i := 0 TO LEN(args^)-1 DO
+          Sym.InitTypeRef(args[i], closure.Closure(type.arguments[i].type));
+        END;
+        closure := NewTypeClosure(type.position, NIL,
+                                  type.baseType.typePars.params, args);
+        nextType := type.baseType;
+        
+      | type: Sym.TypeVar DO
+        nextType := Lookup(closure, type, NIL);
+        IF (nextType = NIL) THEN
+          RETURN type;
+        ELSE
+          closure := emptyClosure;
+        END;
+        
+      ELSE
+        IF (type.typePars = NIL) THEN
+          (* no type variables in this type, and it is not a qualified type *)
+          RETURN type;
+        ELSE
+          EXIT;
+        END;
+      END;
+      type := nextType;
+    END;
+    RETURN NewTypeClosure(closure.position, type,
+                          closure.params, closure.arguments);
   END Closure;
 
 (*PROCEDURE (typeClosure: TypeClosure) Log*();
@@ -100,71 +156,6 @@ PROCEDURE (typeClosure: TypeClosure) Closure*(subType: Sym.Type): Sym.Type;
     END;
   END Log;*)
 
-
-PROCEDURE Lookup(context: TypeClosure; tv: Sym.TypeVar): Sym.Type;
-  VAR
-    i: LONGINT;
-  BEGIN
-    ASSERT(LEN(context.params^) = LEN(context.arguments^));
-    i := 0;
-    WHILE (i # LEN(context.params^)) & (context.params[i] # tv)  DO
-      INC(i);
-    END;
-    IF (i = LEN(context.params^)) THEN
-      (* variable is unbound in the given context, for example because it is
-         a variable of the class definition appearing in a variable declaration
-         of a method of the class *)
-      RETURN tv;
-    ELSE
-      RETURN context.arguments[i].type;
-    END;
-  END Lookup;
-
-PROCEDURE ^ Expand*(type: Sym.Type): Sym.Type;
-
-PROCEDURE ExpandInContext(type: Sym.Type; context: TypeClosure): Sym.Type;
-  VAR
-    i: LONGINT;
-    args: Sym.TypeRefArray;
-  BEGIN
-    IF (type.typePars = NIL) THEN
-      (* no type variables in this type *)
-      RETURN Expand(type);
-    ELSE
-      WITH type: Sym.QualType DO
-        ASSERT(LEN(type.arguments^) = LEN(type.baseType.typePars.params^));
-        NEW(args, LEN(type.baseType.typePars.params^));
-        FOR i := 0 TO LEN(args^)-1 DO
-          Sym.InitTypeRef(args[i], ExpandInContext(type.arguments[i].type,
-                                                   context));
-        END;
-        RETURN ExpandTypeClosure(NewTypeClosure(type.position, type.baseType,
-                                                type.baseType.typePars.params,
-                                                args));
-        
-      | type: Sym.TypeVar DO
-        RETURN Expand(Lookup(context, type));
-
-      ELSE
-        RETURN type;
-      END;
-    END;
-  END ExpandInContext;
-
-PROCEDURE ExpandTypeClosure(typeClosure: TypeClosure): Sym.Type;
-(* Recursivly expand the base type of @oparam{typeClosure}.  *)
-  VAR
-    type: Sym.Type;
-  BEGIN
-    type := ExpandInContext(typeClosure.baseType, typeClosure);
-    IF (type # typeClosure.baseType) THEN
-      ASSERT(~(type IS Sym.QualType));
-      RETURN type;
-    ELSE
-      RETURN typeClosure;
-    END;
-  END ExpandTypeClosure;
-
 PROCEDURE Expand*(type: Sym.Type): Sym.Type;
 (**@precond
    The type @oparam{type} contains unbound type variables that need to be bound
@@ -176,18 +167,8 @@ PROCEDURE Expand*(type: Sym.Type): Sym.Type;
    @samp{TypeClosure}, then this statement holds for the expression's base
    type.
    @end postcond  *)
-  VAR
-    ptr: Sym.Type;
   BEGIN
-    WITH type: Sym.QualType DO
-      ptr := ExpandTypeClosure(NewTypeClosure(type.position, type.baseType,
-                                              type.baseType.typePars.params,
-                                              type.arguments));
-      ASSERT(~(ptr IS Sym.QualType));
-      RETURN ptr;
-    ELSE
-      RETURN type;
-    END;
+    RETURN emptyClosure.Closure(type);
   END Expand;
 
 
@@ -548,8 +529,8 @@ PROCEDURE SameType* (a, b: Sym.Type): BOOLEAN;
         ASSERT(baseA.typePars = baseB.typePars);
         FOR i := 0 TO LEN(baseA.typePars.params^)-1 DO
           tv := baseA.typePars.params[i];
-          IF ~SameType(Lookup(a(TypeClosure), tv),
-                       Lookup(b(TypeClosure), tv)) THEN
+          IF ~SameType(Lookup(a(TypeClosure), tv, tv),
+                       Lookup(b(TypeClosure), tv, tv)) THEN
             RETURN FALSE;
           END;
         END;
@@ -1069,4 +1050,17 @@ PROCEDURE AllocateType* (type: Sym.Type);
     END;
   END AllocateType;
 
+PROCEDURE Init();
+  VAR
+    params: Sym.TypeVarArray;
+    arguments: Sym.TypeRefArray;
+  BEGIN
+    NEW(params, 0);
+    NEW(arguments, 0);
+    NEW(emptyClosure);
+    InitTypeClosure(emptyClosure, NIL, NIL, params, arguments);
+  END Init;
+
+BEGIN
+  Init;
 END OOC:SymbolTable:TypeRules.
