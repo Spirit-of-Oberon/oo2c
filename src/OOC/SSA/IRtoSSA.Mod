@@ -34,7 +34,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       | expr: IR.Var DO
         instr := pb. AddInstr (Opcode.get, Opcode.scNone);
         instr. AddOpnd (s, Opnd.store);
-        instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.arg);
+        instr. AddOpnd (pb. GetAddress (expr. decl), Opnd.readAdr);
+        instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.readDesign);
         RETURN instr
             
       | expr: Operator.Negate DO

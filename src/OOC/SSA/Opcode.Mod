@@ -27,14 +27,42 @@ TYPE
 
 CONST
   const* = 0;
+  (**Wrapper instruction for constant values.  Instance of
+     @otype{*OOC:SSA.Const}.  Takes no SSA operands.  Result is the constant
+     value @ofield{*OOC:SSA.Const.value}.  *)
   declRef* = 1;
+  (**Wrapper instruction for references to declared objects, like variables or
+     procedures.  Instance of @otype{*OOC:SSA.DeclRef}.  Takes no SSA operands.
+     The declaration can be found in @ofield{*OOC:SSA.DeclRef.decl}.  This
+     instruction produces no storable value.  *)
   address* = 2;
+  (**Denotes the address of a declared object, for example of a variable or a
+     procedures.  Instance of @otype{*OOC:SSA.Address}.  Takes no SSA operands.
+     The object can be found in @ofield{*OOC:SSA.Address.decl}.  This
+     instruction produces a value of type address.  *)
   
   enter* = 3;
   exit* = 4;
+  
   get* = 5;
+  (**Retrieves the value of a variable.  The operands of the instruction and
+     their class ids are in this order:
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.readAdr
+     The address from which the value is read.
+
+     @item *OOC:SSA:Opnd.readDesign@dots{}
+     The symbolic representation of the variable's designator.  For non-heap
+     variables, the first entry in the designator is a reference to the
+     declaration of the accessed variable.
+     @end table  *)
   set* = 6;
   copy* = 7;
+  
   assert* = 8;
   call* = 9;
 

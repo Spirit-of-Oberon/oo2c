@@ -26,7 +26,7 @@ PROCEDURE Ref (w: TextRider.Writer; opnd: SSA.Opnd);
 
     | arg: SSA.Instr DO
       ASSERT (arg. opcode = Opcode.get); (* another drastic shortcut... *)
-      Ref (w, arg. opndList. nextOpnd);
+      Ref (w, arg. opndList. nextOpnd. nextOpnd);
       
     ELSE
       Log.Type("++ Unknown argument type in Ref", arg);
