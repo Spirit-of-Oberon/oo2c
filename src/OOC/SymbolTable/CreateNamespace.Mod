@@ -1196,6 +1196,8 @@ RAISES IO.Error;
                 SetFlag(item.hasDescriptor, FALSE);
               | Sym.flagNotExtensible:
                 SetFlag(item.isExtensible, FALSE);
+              | Sym.flagExtensible:
+                SetFlag(item.isExtensible, TRUE);
               | Sym.flagUnion:
                 SetFlag(item.isUnion, TRUE);
               ELSE
