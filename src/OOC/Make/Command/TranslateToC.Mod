@@ -188,6 +188,19 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
         w. WriteChar ("-");
         WriteExpr (w, expr. operand);
 
+      | expr: Operator.BinaryArith DO
+        WriteExpr(w, expr. left);
+	CASE expr.variant OF
+        | Operator.arithAdd:  w. WriteChar("+");
+	| Operator.arithSub:  w. WriteChar("-");
+	| Operator.arithDivI: w. WriteChar("/");
+	| Operator.arithDivR: w. WriteChar("/");
+	| Operator.arithMul:  w. WriteChar("*");
+	| Operator.arithMod:  w. WriteChar("%");
+	END;
+        WriteExpr(w, expr. right);
+      | expr: Operator.TypeConv DO
+        WriteExpr(w, expr.expr);  (* FIXME! generate type casts if required *)
       | expr: IR.Call DO
         Call (expr)
       ELSE
