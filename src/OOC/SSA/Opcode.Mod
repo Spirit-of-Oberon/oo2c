@@ -223,7 +223,9 @@ CONST
      @end table
 
      There is one result of class @oconst{*OOC:SSA:Opnd.store}, the value of
-     @var{store} as seen by the first instruction after the loop.  *)
+     @var{store} as seen by the first instruction after the loop.  Like for
+     @oconst{select}, there are additional results if @oconst{collect}
+     instructions feed distinct values into this instruction.  *)
   
   get* = 12;
   (**Retrieves the value of a variable.  Result is always a scalar value.  The
