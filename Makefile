@@ -125,6 +125,7 @@ $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml.mk $(OO
 	    -e 's:%INSTALL_PROGRAM%:$(INSTALL_PROGRAM):g' \
 	    -e 's:%INSTALL_DATA%:$(INSTALL_DATA):g' \
 		$(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml.mk >$(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
+rsrc/OOC/oo2crc.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
 
 ### This configuration file is used to build and install the compiler and
 ### library from scratch.  It must not refer to any stale data that may
@@ -165,6 +166,9 @@ install: lib/obj/liboo2c.la exe/oo2c
 
 install-strip:
 	${MAKE} INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
+
+uninstall: FRC
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml --uninstall-package oo2c liboo2c
 
 ifdef MAIN_MAKEFILE
 include $(MAIN_MAKEFILE)

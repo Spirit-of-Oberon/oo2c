@@ -367,6 +367,7 @@ PROCEDURE (s: Section) ParseMetaData*(): BOOLEAN;
   VAR
     rep: Repository.Repository;
     uri: URI.URI;
+    fileName: Repository.URIBuffer;
     errList: Error.List;
   BEGIN
     errList := Error.NewList("");
@@ -374,7 +375,8 @@ PROCEDURE (s: Section) ParseMetaData*(): BOOLEAN;
     WHILE (rep # NIL) DO
       uri := rep.GetResource("", packageData);
       IF (uri # NIL) THEN
-        rep.SetPackageInfo(Package.ParseFile(uri, errList));
+        uri(File.URI).GetPath(fileName);
+        rep.SetPackageInfo(Package.ParseFile(fileName, errList));
       END;
       rep := rep. baseRep
     END;

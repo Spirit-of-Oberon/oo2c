@@ -743,18 +743,20 @@ PROCEDURE ProcessPackage (root: Parser.Element;
     IF (node # NIL) THEN
       Err(junkAtEndOfElement, node);
     END;
+    IF (errList.msgCount # 0) THEN
+      pkg := NIL;
+    END;
     RETURN pkg;
   END ProcessPackage;
 
-PROCEDURE ParseFile* (fileName: URI.URI; VAR errList: Error.List): Package;
+PROCEDURE ParseFile* (fileName: ARRAY OF CHAR; VAR errList: Error.List): Package;
   VAR
     p: Parser.Parser;
     res: Msg.Msg;
     path: URIBuffer;
   BEGIN
-    Logger.ReadFile(fileName);
-    fileName(FileURI.URI).GetPath(path);
-    p := Parser.NewFile (path, res);
+    Logger.ReadFileName(fileName);
+    p := Parser.NewFile (fileName, res);
     IF (res # NIL) THEN
       errList.Append (res)
     ELSE
@@ -812,7 +814,7 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
         w.StartTag("file", FALSE);
         w.AttrStringLatin1("name", file.name.array^);
         IF (file.destName # NIL) THEN
-          w.AttrStringLatin1("destName", file.destName.array^);
+          w.AttrStringLatin1("dest-name", file.destName.array^);
         END;
         w.EndTag();  (* file *)
       END WriteFile;
@@ -869,6 +871,34 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
       END;
     END;
   END WritePackage;
+
+PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: ARRAY OF CHAR;
+                            VAR cmd: ARRAY OF CHAR);
+  BEGIN
+    COPY(uninstall, cmd);
+    Strings.Append(" ", cmd);
+    Strings.Append(targetDir, cmd);
+    Strings.Append(pkgInfoSubdir, cmd);
+    Strings.Append("/", cmd);
+    Strings.Append(pkg.name.array^, cmd);
+    Strings.Append(".xml", cmd);
+  END RemovePkgInfoCmd;
+
+PROCEDURE GetPkgInfo*(targetDir, pkgName: ARRAY OF CHAR;
+                      VAR errList: Error.List): Package;
+  VAR
+    fileName: URIBuffer;
+  BEGIN
+    errList := Error.NewList(fileName);
+    
+    COPY(targetDir, fileName);
+    Strings.Append(pkgInfoSubdir, fileName);
+    Strings.Append("/", fileName);
+    Strings.Append(pkgName, fileName);
+    Strings.Append(".xml", fileName);
+
+    RETURN ParseFile(fileName, errList);
+  END GetPkgInfo;
 
 BEGIN
   NEW (packageContext);

@@ -27,7 +27,8 @@ IMPORT
 
 VAR
   cc, cppflags, cflags, ldflags, libs-, libtool, libdir-: Options.Option;
-  install-, installProgram, installData-, bindir-, oocdir-: Options.Option;
+  install-, installProgram, installData-, uninstall-: Options.Option;
+  bindir-, oocdir-: Options.Option;
   
 PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
                            VAR cmd: ARRAY OF CHAR);
@@ -136,6 +137,19 @@ PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
     END;
   END InstallProgramCmd;
 
+PROCEDURE UninstallProgramCmd*(path: ARRAY OF CHAR; asLibrary: BOOLEAN;
+                               VAR cmd: ARRAY OF CHAR);
+  VAR
+    str: ARRAY 1024 OF CHAR;
+  BEGIN
+    COPY (libtool.value(StringValue.Value).string^, cmd);
+    Strings.Append(" --mode=uninstall ", cmd);
+    
+    Strings.Append(uninstall.value(StringValue.Value).string^, cmd);
+    Strings.Append(" ", cmd);
+    Strings.Append(path, cmd);
+  END UninstallProgramCmd;
+
 PROCEDURE RegisterConfig*;
   BEGIN
     cc := Config.AddOption ("cc", StringValue.New ("gcc"));
@@ -166,6 +180,8 @@ PROCEDURE RegisterConfig*;
                                         StringValue.New ("install -c"));
     installData := Config.AddOption ("installData",
                                      StringValue.New ("install -c -m 644"));
+    uninstall := Config.AddOption ("uninstall",
+                                   StringValue.New ("rm -f"));
     bindir := Config.AddOption ("bindir", StringValue.New ("bindir"));
     oocdir := Config.AddOption ("oocdir", StringValue.New ("oocdir"));
     Config.AddCmdLine ("--install",
@@ -174,6 +190,8 @@ PROCEDURE RegisterConfig*;
                        "<options><set name='installProgram'>$1</set></options>");
     Config.AddCmdLine ("--install-data",
                        "<options><set name='installData'>$1</set></options>");
+    Config.AddCmdLine ("--uninstall",
+                       "<options><set name='uninstall'>$1</set></options>");
     Config.AddCmdLine ("--bindir",
                        "<options><set name='bindir'>$1</set></options>");
     Config.AddCmdLine ("--oocdir",

@@ -12,9 +12,10 @@ IMPORT
 CONST
   buildPackage = -1;
   installPackage = -2;
+  uninstallPackage = -3;
   
 VAR
-  cfgErrList: Error.List;
+  cfgErrList, errList: Error.List;
   i: LONGINT;
   arg: Arguments.Argument;
   mode: SHORTINT;
@@ -37,6 +38,8 @@ PROCEDURE NewConfig;
                        "<options><set name='command'>2</set></options>");
     Config.AddCmdLine ("--install-package",
                        "<options><set name='command'>3</set></options>");
+    Config.AddCmdLine ("--uninstall-package",
+                       "<options><set name='command'>4</set></options>");
     Config.AddCmdLine ("--use-stderr",
                  "<options><set name='useStderr'>TRUE</set></options>");
     Config.AddCmdLine ("--no-rtc",
@@ -277,6 +280,92 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
     RETURN ok;
   END BuildPackage;
 
+PROCEDURE UninstallPackage(pkg: Package.Package);
+  VAR
+    i: LONGINT;
+    normSet: Package.FileSet;
+    
+  PROCEDURE UninstallLibrary(library: Package.Library);
+    VAR
+      str: Make.ShellCommand;
+      path: Rep.URIBuffer;
+      ok: BOOLEAN;
+    BEGIN
+      COPY(CCompiler.libdir.value(StringValue.Value).string^, path);
+      Strings.Append("/lib", path);
+      Strings.Append(library.name.array^, path);
+      Strings.Append(".la", path);
+      CCompiler.UninstallProgramCmd(path, TRUE, str);
+      Logger.ShellCommand(str);
+      ok := (ProcessManagement.system(str) = 0);
+    END UninstallLibrary;
+  
+  PROCEDURE UninstallExecutable(executable: Package.Executable);
+    VAR
+      str: Make.ShellCommand;
+      path: Rep.URIBuffer;
+      ok: BOOLEAN;
+    BEGIN
+      COPY(CCompiler.bindir.value(StringValue.Value).string^, path);
+      Strings.Append("/", path);
+      Strings.Append(executable.mainModule.array^, path);
+      CCompiler.UninstallProgramCmd(path, FALSE, str);
+      Logger.ShellCommand(str);
+      ok := (ProcessManagement.system(str) = 0);
+    END UninstallExecutable;
+
+  PROCEDURE UninstallFiles(list: Package.FileData);
+    VAR
+      cmd: Make.ShellCommand;
+      ok: BOOLEAN;
+    BEGIN
+      WHILE (list # NIL) DO
+        COPY(CCompiler.uninstall.value(StringValue.Value).string^, cmd);
+        Strings.Append(" ", cmd);
+        Strings.Append(CCompiler.oocdir.value(StringValue.Value).string^,
+                       cmd);
+        Strings.Append("/", cmd);
+        Strings.Append(list(Package.File).destName.array^, cmd);
+        
+        Logger.ShellCommand(cmd);
+        ok := (ProcessManagement.system(cmd) = 0);
+        list := list.nextFileData;
+      END;
+    END UninstallFiles;
+
+  PROCEDURE UninstallPkgInfo(pkg: Package.Package);
+    VAR
+      cmd: Make.ShellCommand;
+      ok: BOOLEAN;
+    BEGIN
+      Package.RemovePkgInfoCmd
+          (pkg,
+           CCompiler.oocdir.value(StringValue.Value).string^,
+           CCompiler.uninstall.value(StringValue.Value).string^,
+           cmd);
+        Logger.ShellCommand(cmd);
+        ok := (ProcessManagement.system(cmd) = 0);
+    END UninstallPkgInfo;
+  
+  BEGIN
+    i := 0;
+    WHILE (i # pkg.library.size) DO
+      UninstallLibrary(pkg.library.array[i](Package.Library));
+      INC(i);
+    END;
+
+    i := 0;
+    WHILE (i # pkg.executable.size) DO
+      UninstallExecutable(pkg.executable.array[i](Package.Executable));
+      INC(i);
+    END;
+    
+    normSet := Package.Normalize(pkg.fileSet);
+    UninstallFiles(normSet.head);
+
+    UninstallPkgInfo(pkg);
+  END UninstallPackage;
+
 BEGIN
   Error.oo2cStyleErrors := TRUE;
   Error.minErrorDistance := 16;
@@ -300,6 +389,8 @@ BEGIN
     mode := buildPackage;
   | 3:
     mode := installPackage;
+  | 4:
+    mode := uninstallPackage;
   END;
   
   IF (cfgErrList. msgCount # 0) THEN
@@ -326,6 +417,21 @@ BEGIN
         ELSE
           ok := BuildPackage(pkg, rep, (mode = installPackage));
         END;
+
+      | uninstallPackage:
+        pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
+        IF (errList.msgCount # 0) THEN
+          errList.Write(StdChannels.stdout);
+        END;
+        IF (pkg = NIL) THEN
+          Err.String ("Error: Cannot locate package ");
+          Err.String (arg^);
+          Err.Ln;
+          HALT (1)
+        ELSE
+          UninstallPackage(pkg);
+        END;
+        
       ELSE
         ok := makeRules.Update(GetModule(arg^), mode);
       END;

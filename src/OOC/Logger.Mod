@@ -29,6 +29,13 @@ PROCEDURE ReadFile* (uri: URI.URI);
     Out.Ln;
   END ReadFile;
 
+PROCEDURE ReadFileName* (fileName: ARRAY OF CHAR);
+  BEGIN
+    Out.String("- ");
+    Out.String(fileName);
+    Out.Ln;
+  END ReadFileName;
+
 PROCEDURE WriteFile* (uri: URI.URI);
   BEGIN
     Out.String("+ ");
