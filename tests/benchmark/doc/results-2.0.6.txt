@@ -75,3 +75,39 @@ gcc-3.2.2, -march=athlon-xp -O2, Athlon XP 1800, 1.5GHz (mva)
   FFT2               16659.9   90.2%
   FFT2C              18472.6
   -------------------------- -------
+
+gcc-3.1, -O2, PPC G3, 700MHz (sg)
+
+  Test             tests/sec % optimal
+  -------------------------- -------
+  ZeroArray1         23005.2   81.8%
+  ZeroArray2         29637.5   94.6%
+  ZeroArray4         37743.0  106.8%
+  CopyArray1         15963.9   87.7%
+  CopyArray2         18818.7   99.9%
+  CopyArray4         19490.3  103.6%
+  CopyArrayMove      24621.4   99.8%
+  AddArray1           9139.0  114.9%
+  AddArray2          10338.5  100.0%
+  AddArray4          10965.6  102.0%
+  ZeroArray1C        28136.1
+  ZeroArray2C        31313.9
+  ZeroArray4C        35324.6
+  ZeroArrayBlockC    45881.5
+  CopyArray1C        18200.7
+  CopyArray2C        18829.5
+  CopyArray4C        18818.7
+  CopyArrayBlockC    24658.5
+  AddArray1C          7955.8
+  AddArray2C         10340.2
+  AddArray4C         10750.7
+  QSORT                268.5   60.7%
+  QSORTC               442.7
+  BSORT                153.4   99.9%
+  BSORTC               153.5
+  FFT                 6702.4  102.9%
+  FFTC                6516.5
+  FFT2                5580.4   98.5%
+  FFT2C               5667.2
+  -------------------------- -------
+
