@@ -177,9 +177,6 @@ PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
               (prefixClass = mayAlias));
       IF (selInstr = NIL) THEN
         (* no further selectors for our designator *)
-        ASSERT (selReference = NIL);
-        ASSERT (selInstr = NIL);
-        
         IF (selReference = NIL) THEN
           (* reference designator also ends here *)
           RETURN prefixClass
