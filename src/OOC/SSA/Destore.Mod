@@ -343,11 +343,12 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         ELSIF InCache (loopStart, r) THEN
           (* a previous call to this function already computed the result
              for the designator of this "get" *)
-          IF (r = loopStart) THEN
+          IF (r # unknownValue) &
+             (r IS SSA.Instr) &
+             (r(SSA.Instr). opcode = Opcode.loopStart) THEN
             (* don't return the bogus cache line added by the code below;
                we know that the "get" is invariant with regard to this loop,
                so we can simply return the value from before the loop *)
-            ASSERT (loopTrace # NIL);
             RETURN GetValue (loopStart. opndList. arg, get, loopTrace);
           ELSE
             RETURN r;
