@@ -334,6 +334,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
     merge: S.MergeInstr;
     block, branchBlock: S.Block;
     addedCopies: LONGINT;
+    coloring: IGraph.ColorArray;
     
   PROCEDURE AddResToLive (res: S.Result; live: IGraph.Vector);
     BEGIN
@@ -456,7 +457,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       END;
     END AddJumpsToReady;
 
-(*  PROCEDURE DumpMatrix(rf: RegisterFile);
+(*  PROCEDURE DumpMatrix();
     VAR
       i, j: LONGINT;
     BEGIN
@@ -503,8 +504,8 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
           ASSERT(instr(S.LoopStartInstr).end = block);
           ld := NEW(LiveData, instr(S.LoopStartInstr),
                     instr(S.LoopStartInstr).instrTail, 0,
-                    rf.iGraph.NewVector());
-          (* this ld stays empty until the loopBackedge instr fills it *)
+                    rf.iGraph.CopyVector(ld.live));
+          (* all ranges live after the loop must not be clobbered by it *)
           AddToReady(ld);
           
         | S.branch, S.loopStart:
@@ -565,7 +566,11 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
     IF (addedCopies = 0) THEN
       (* calculate a coloring for the resulting graph; use the coloring to
          assign register ids to results *)
-      AssignRegisterNames(rf, rf.iGraph.ColorGraphCombinatorial());
+      coloring := rf.iGraph.ColorGraphCombinatorial();
+      IF (coloring = NIL) THEN
+        coloring := rf.iGraph.ColorGraphSimple();
+      END;
+      AssignRegisterNames(rf, coloring);
     END;
 
     RETURN addedCopies;
