@@ -85,7 +85,11 @@ CONST  (* Instruction Opcodes: *)
   (**Corresponds to a function's @code{RETURN} instruction.  Its is a kind of
      copy instruction, transferring the returned value into the appropriate
      processor register.  It has one argument, the value that should be
-     returned, and one result, whose location is that of the result register.  *)
+     returned, and one result, whose location is that of the result register.
+
+     The argument matches the type of the target register.  If necessary, a
+     type conversion instruction is insert to extend the argument to a 32 bit
+     value.  *)
   call* = opcodeFunctionFraming+3;
   (**First operand is the called address, and the second the current stack
      pointer.  The rest of the operand list are the actual function parameters.  *)
@@ -582,6 +586,11 @@ TYPE
 
 CONST
   alignStackTo* = 4;
+
+PROCEDURE IsUnsigned*(type: Type): BOOLEAN;
+  BEGIN
+    RETURN (unsigned8 <= type) & (type <= unsigned64);
+  END IsUnsigned;
 
 PROCEDURE ^ (b: Block) AddInstr1*(opcode: Opcode; arg1: Result): Instr;
 

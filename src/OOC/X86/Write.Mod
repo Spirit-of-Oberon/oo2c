@@ -284,14 +284,21 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     opnd: S.Opnd;
     qtdData: Naming.QualTypeData;
     
-  PROCEDURE OpcT(opc[NO_COPY]: ARRAY OF CHAR; type1, type2: S.Type);
+    opndWidth: S.Type;
+    (* Operand/result size of the operation.  Defaults to the type of the
+       operation's result.  Operations that produce no result, or whose operand
+       width differs from the result's size override the default.  This value
+       is used as type by @oproc{Opc} and @oproc{Reg}.  *)
+    
+  PROCEDURE OpcTT(opc[NO_COPY]: ARRAY OF CHAR; type1, type2: S.Type);
+  (* Opcode with zero, one, or two type suffixes.  *)
     VAR
       suffix: ARRAY 3 OF CHAR;
 
     PROCEDURE Type(type: S.Type): CHAR;
       BEGIN
         CASE type OF
-        | -1:
+        | S.noType:
           RETURN 0X;
         | S.signed8, S.unsigned8:
           RETURN "b";
@@ -312,84 +319,72 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       suffix[2] := 0X;
       sb.AppendLatin1(suffix);
       sb.AppendLatin1(" ");
-    END OpcT;
+    END OpcTT;
+
+  PROCEDURE Opc0(opc[NO_COPY]: ARRAY OF CHAR);
+  (* Opcode without any (or any additional) type suffix.  *)
+    BEGIN
+      OpcTT(opc, S.noType, S.noType);
+    END Opc0;
 
   PROCEDURE Opc(opc[NO_COPY]: ARRAY OF CHAR);
+  (* Opcode with type suffix taken from @ovar{opndWidth}.  *)
     BEGIN
-      OpcT(opc, -1, -1);
+      OpcTT(opc, opndWidth, S.noType);
     END Opc;
 
-  PROCEDURE InstrType(): S.Type;
+  PROCEDURE RegT(reg: S.Register; type: S.Type);
     VAR
-      type: S.Type;
+      str: ARRAY 8 OF CHAR;
     BEGIN
-      type := instr.resultList.type;
-      IF (type = S.noType) THEN
-        IF instr.opndList.immediate THEN
-          type := instr.opndList.arg.type;
-        ELSE
-          type := S.signed32;
+      CASE type OF
+      | S.signed8, S.unsigned8:
+        (* note: some register's low-level byte cannot be addressed *)
+        CASE reg OF
+        | S.gp0: str := "%al";
+        | S.gp1: str := "%cl";
+        | S.gp2: str := "%dl";
+        | S.gp3: str := "%bl";
+        END;
+      | S.signed16, S.unsigned16:
+        CASE reg OF
+        | S.sp: str := "%sp";
+        | S.fp: str := "%bp";
+        | S.gp0: str := "%ax";
+        | S.gp1: str := "%cx";
+        | S.gp2: str := "%dx";
+        | S.gp3: str := "%bx";
+        END;
+      | S.signed32, S.unsigned32, S.real32, S.address:
+        CASE reg OF
+        | S.sp: str := "%esp";
+        | S.fp: str := "%ebp";
+        | S.gp0: str := "%eax";
+        | S.gp1: str := "%ecx";
+        | S.gp2: str := "%edx";
+        | S.gp3: str := "%ebx";
         END;
       END;
-      RETURN type;
-    END InstrType;
+      sb.AppendLatin1(str);
+    END RegT;
+
+  PROCEDURE RegAdr(reg: S.Register);
+  (* Register reference with address size.  *)
+    BEGIN
+      RegT(reg, S.address);
+    END RegAdr;
   
-  PROCEDURE ArgType(opnd: S.Opnd): S.Type;
-    VAR
-      type: S.Type;
+  PROCEDURE Reg(reg: S.Register);
+  (* Register reference with size `opndWidth'.  *)
     BEGIN
-      IF opnd.immediate THEN
-        type := opnd.arg.type;
-      ELSE
-        type := S.signed32;
-      END;
-      RETURN type;
-    END ArgType;
+      RegT(reg, opndWidth);
+    END Reg;
   
-  PROCEDURE OpcR(opc[NO_COPY]: ARRAY OF CHAR);
-    BEGIN
-      OpcT(opc, InstrType(), -1);
-     END OpcR;
-
-  PROCEDURE OpcR2(opc[NO_COPY]: ARRAY OF CHAR);
-    BEGIN
-      IF (instr.resultList.adrMode = S.register) THEN
-        OpcT(opc, S.signed32, -1);
-      ELSE
-        OpcT(opc, InstrType(), -1);
-      END;
-     END OpcR2;
-
-  PROCEDURE OpcRReg(opc[NO_COPY]: ARRAY OF CHAR);
-    BEGIN  (* zero or sign extend from instruction type to register type *)
-      OpcT(opc, InstrType(), S.signed32);
-    END OpcRReg;
-
-  PROCEDURE OpcArgReg(opc[NO_COPY]: ARRAY OF CHAR);
-    BEGIN  (* zero or sign extend from arg type to register type *)
-      OpcT(opc, instr.opndList.arg.type, S.signed32);
-    END OpcArgReg;
-
   PROCEDURE Comma();
     BEGIN
       sb.AppendLatin1(", ");
     END Comma;
   
-  PROCEDURE Reg(reg: S.Register);
-    VAR
-      str: ARRAY 8 OF CHAR;
-    BEGIN
-      CASE reg OF
-      | S.sp: str := "%esp";
-      | S.fp: str := "%ebp";
-      | S.gp0: str := "%eax";
-      | S.gp1: str := "%ecx";
-      | S.gp2: str := "%edx";
-      | S.gp3: str := "%ebx";
-      END;
-      sb.AppendLatin1(str);
-    END Reg;
-
   PROCEDURE Literal(instr: S.Instr);
     VAR
       s: S.Selector;
@@ -468,6 +463,13 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       END;
     END Result;
 
+  PROCEDURE OpndMem(opnd: S.Opnd);
+    BEGIN
+      sb.AppendLatin1Char("(");
+      RegAdr(opnd.arg.register);
+      sb.AppendLatin1Char(")");
+    END OpndMem;
+
   PROCEDURE Opnd(opnd: S.Opnd);
     VAR
       argInstr1, argInstr2: S.Instr;
@@ -477,15 +479,15 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         IF (arg2.instr.opcode = S.const) THEN
           Literal(arg2.instr);
           sb.AppendLatin1Char("(");
-          Result(arg1);
+          RegAdr(arg1.register);
           sb.AppendLatin1Char(")");
         ELSIF (arg1.instr.opcode = S.const)  THEN
           Offset(arg2, arg1);
         ELSE
           sb.AppendLatin1Char("(");
-          Result(arg1);
+          RegAdr(arg1.register);
           sb.AppendLatin1Char(",");
-          Result(arg2);
+          RegAdr(arg2.register);
           sb.AppendLatin1Char(")");
         END;
       END Offset;
@@ -507,9 +509,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           ELSIF argInstr1.opndList.immediate THEN
             Opnd(argInstr1.opndList);
           ELSE
-            sb.AppendLatin1Char("(");
-            Opnd(argInstr1.opndList);
-            sb.AppendLatin1Char(")");
+            OpndMem(argInstr1.opndList);
           END;
         END;
       ELSE
@@ -534,29 +534,6 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       ASSERT(opnd.instr.resultList.SameLocation(opnd.arg));
     END AssertResultMatch;
 
-  PROCEDURE SignExtend(type: S.Type): BOOLEAN;
-    BEGIN
-      RETURN (type = S.signed8) OR (type = S.signed16);
-    END SignExtend;
-  
-  PROCEDURE ZeroExtend(type: S.Type): BOOLEAN;
-    BEGIN
-      RETURN (type = S.unsigned8) OR (type = S.unsigned16);
-    END ZeroExtend;
-
-  PROCEDURE SameLocation(src, dest: S.Result): BOOLEAN;
-    BEGIN
-      RETURN (src.adrMode = dest.adrMode) &
-          (src.register = dest.register) &
-          (src.displacement = dest.displacement);
-    END SameLocation;
-  
-  PROCEDURE RegisterToRegister(src, dest: S.Result): BOOLEAN;
-    BEGIN
-      RETURN (dest.adrMode = S.register) &
-          ((src.adrMode = S.register) OR (src.instr.opcode = S.const));
-    END RegisterToRegister;
-  
   PROCEDURE FixGatedValues(jump: S.Instr);
     TYPE
       IO = RECORD in: S.Opnd; out: S.Result END;
@@ -596,6 +573,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         END;
         IF (j = len) THEN  (* can clobber old value of location *)
           (* FIXME... mem/mem does not work *)
+          opndWidth := io[i].out.type;
           Opc("mov");
           Opnd(io[i].in);
           Comma();
@@ -615,7 +593,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
            with multiple permutations*)
         (* FIXME... mem/mem does not work *)
         (* FIXME... only use xchg for reg/reg to avoid LOCK *)
-        OpcT("xchg", io[0].out.type, -1);
+        opndWidth := io[0].out.type;
+        Opc("xchg");
         Opnd(io[0].in);
         Comma();
         Result(io[0].out);
@@ -643,6 +622,43 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       dummy := w.WriteBlock(path1);
       dummy := w.WriteBlock(path2);
     END WriteBranch2;
+
+  PROCEDURE MovMemReg(fromMemReg: S.Opnd; fromType: S.Type;
+                      valueOpnd: BOOLEAN; toReg: S.Result);
+  (* Move from memory or register to register.  If source type `fromType' and
+     destinataion type differ, then extend the value accordingly.
+
+     If `valueOpnd' is TRUE, then `fromMemReg' does designate a value, instead
+     of a memory address.  In this case, it may be a register or immediate
+     operand, and the value is copied into the output register.  *)
+    VAR
+      toType: S.Type;
+    BEGIN
+      toType := toReg.type;
+      IF (fromType = toType) THEN
+        IF valueOpnd & (toReg.register = fromMemReg.arg.register) THEN
+          RETURN;                        (* copy register onto itself *)
+        END;
+        OpcTT("mov", fromType, S.noType);
+      ELSIF (toType < S.unsigned8) THEN  (* to signed type *)
+        OpcTT("movs", fromType, toType);
+      ELSE                               (* to unsigned type *)
+        OpcTT("movz", fromType, toType);
+      END;
+      
+      opndWidth := fromType;
+      IF valueOpnd THEN
+        Opnd(instr.opndList);
+      ELSE
+        IF fromMemReg.immediate THEN
+          DirectOpnd(fromMemReg);
+        ELSE
+          OpndMem(fromMemReg);
+        END;
+      END;
+      Comma();
+      RegT(toReg.register, toType);
+    END MovMemReg;
   
   BEGIN
     qtdData := NIL;
@@ -655,7 +671,13 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     WHILE (instr # NIL) DO
       nextInstr := instr.nextInstr;
       IF instr.IsLive() THEN
-        (*sb.Append(nl+"! "+D.Label(instr));*)
+        (*sb.Append(nl+"# "+D.Label(instr));*)
+        IF (instr.resultList # NIL) THEN
+          opndWidth := instr.resultList.type;
+        ELSE
+          opndWidth := S.noType;
+        END;
+        
         CASE instr.opcode OF
           (* arithmetic *)
         | S.const:
@@ -667,9 +689,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Result(instr.resultList);
         | S.add:
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
-            OpcR2("inc");
+            Opc("inc");
           ELSE
-            OpcR("add");
+            Opc("add");
             Opnd(instr.opndList.nextOpnd);
             Comma();
           END;
@@ -682,9 +704,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
             sb.AppendLatin1(nlTab+"pushl %ebx");
           END;
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
-            OpcR2("dec");
+            Opc("dec");
           ELSE
-            OpcR("sub");
+            Opc("sub");
             Opnd(instr.opndList.nextOpnd);
             Comma();
           END;
@@ -692,17 +714,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           AssertResultMatch(instr.opndList);
 
         | S.mul:
-          OpcR("imul");
+          Opc("imul");
           Opnd(instr.opndList.nextOpnd);
           Comma();
           Result(instr.resultList);
           AssertResultMatch(instr.opndList);
         | S.neg:
-          OpcR("neg");
+          Opc("neg");
           Opnd(instr.opndList);
           AssertResultMatch(instr.opndList);
         | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq:
-          OpcT("cmp", ArgType(instr.opndList.nextOpnd), -1);
+          opndWidth := instr.opndList.arg.type;
+          Opc("cmp");
           Opnd(instr.opndList.nextOpnd);
           Comma();
           Opnd(instr.opndList);
@@ -716,9 +739,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.enter:
           (* nothing *)
         | S.exit:
-          Opc("ret");
+          Opc0("ret");
         | S.call:
-          Opc("call");
+          Opc0("call");
           DirectOpnd(instr.opndList);
         | S.leave:
           (* undo local variables and call arguments: *)
@@ -727,73 +750,56 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           sb.AppendLatin1(nlTab+"popl %ebx");
           sb.AppendLatin1(nlTab+"popl %esi");
           sb.AppendLatin1(nlTab+"popl %edi");
-          Opc("leave");
+          Opc0("leave");
           
           (* memory *)
-        | S.copy, S.typeConv, S.return:
-          IF ~SameLocation(instr.opndList.arg, instr.resultList) THEN
+        | S.copy, S.typeConv:
+          (* prevent zero or sign extension when switching between integer
+             and address type *)
+          IF (instr.resultList.type = S.address) &
+             ((instr.opndList.arg.type = S.signed32) OR
+              (instr.opndList.arg.type = S.unsigned32)) THEN
+            type := S.address;
+          ELSIF (instr.opndList.arg.type = S.address) &
+                ((instr.resultList.type = S.signed32) OR
+                 (instr.resultList.type = S.unsigned32)) THEN
+            type := instr.resultList.type;
+          ELSE
             type := instr.opndList.arg.type;
-            IF RegisterToRegister(instr.opndList.arg, instr.resultList) THEN
-              Opc("movl");
-            ELSIF SignExtend(type) THEN
-              OpcArgReg("movs");
-            ELSIF ZeroExtend(type) THEN
-              OpcArgReg("movz");
-            ELSE
-              OpcR("mov");
-            END;
-            Opnd(instr.opndList);
-            Comma();
-            Result(instr.resultList);
           END;
-          IF (instr.opcode = S.return) THEN
-            Opc("jmp");
-            sb.Append(w.labelExit);
-          END;
+          MovMemReg(instr.opndList, type, TRUE, instr.resultList);
+        | S.return:
+          MovMemReg(instr.opndList, instr.opndList.arg.type, TRUE,
+                    instr.resultList);
+          Opc0("jmp");
+          sb.Append(w.labelExit);
         | S.get:
-          type := instr.resultList.type;
-          IF RegisterToRegister(instr.opndList.arg, instr.resultList) THEN
-            Opc("movl");
-          ELSIF SignExtend(type) THEN
-            OpcRReg("movs");
-          ELSIF ZeroExtend(type) THEN
-            OpcRReg("movz");
-          ELSE
-            OpcR("mov");
-          END;
-          IF instr.opndList.immediate THEN
-            DirectOpnd(instr.opndList);
-          ELSE
-            sb.Append("(");
-            Opnd(instr.opndList);
-            sb.Append(")");
-          END;
-          Comma();
-          Result(instr.resultList);
+          MovMemReg(instr.opndList, instr.resultList.type, FALSE,
+                    instr.resultList);
         | S.set:
-          type := instr.opndList.nextOpnd.arg.type;
-          OpcT("mov", type, -1);
+          opndWidth := instr.opndList.nextOpnd.arg.type;
+          Opc("mov");
           Opnd(instr.opndList.nextOpnd);
           Comma();
           IF instr.opndList.immediate THEN
             DirectOpnd(instr.opndList);
           ELSE
-            sb.Append("(");
-            Opnd(instr.opndList);
-            sb.Append(")");
+            OpndMem(instr.opndList);
           END;
         | S.push:
-          OpcR("push");
+          opndWidth := instr.opndList.nextOpnd.arg.type;
+          Opc("push");
           Opnd(instr.opndList.nextOpnd);
         | S.setStack:
           opnd := instr.NthOpnd(2);
-          Opc("movl");
+          opndWidth := opnd.arg.type;
+          Opc("mov");
           Opnd(opnd);
           sb.Append(", ");
           Literal(instr.opndList.nextOpnd.arg.instr);
           sb.Append("(%esp)");
         | S.typeTag:
-          Opc("movl");
+          Opc("mov");
           sb.Append("-4(");
           Opnd(instr.opndList);
           sb.Append(")");

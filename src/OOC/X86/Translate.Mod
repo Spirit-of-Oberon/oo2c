@@ -71,6 +71,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       controlTrue, memoryTrue, controlFalse, memoryFalse: S.Instr;
       loopStart: S.LoopStartInstr;
       irExpr: IR.Expression;
+      type: S.Type;
       
     PROCEDURE SetCC(res: S.Result): S.Result;
       VAR
@@ -872,9 +873,15 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           controlCP := merge; memoryCP := merge;
           
         | statm: IR.Return DO
-          instr := b.AddInstr1(S.return, Expression(statm.result));
+          IF S.IsUnsigned(S.MapType(statm.result.type)) THEN
+            type := S.unsigned32;
+          ELSE
+            type := S.signed32;
+          END;
+          res := b.FixType(Expression(statm.result), type);
+          instr := b.AddInstr1(S.return, res);
           ControlCP(instr); MemoryCP(instr);
-          res := instr.AddResultExpr(statm.result.type);
+          res := instr.AddResult(type);
           res.adrMode := S.register;
           res.register := S.resultRegister;
           returns.Append(instr);
