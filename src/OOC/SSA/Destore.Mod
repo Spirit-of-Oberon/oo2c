@@ -208,7 +208,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
 
       PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
         BEGIN
-          RETURN (select. SizeOpndList() DIV 2)
+          CASE select. opcode OF
+          | Opcode.select   : RETURN (select. SizeOpndList() DIV 2)
+          | Opcode.loopStart: RETURN select. SizeOpndList()
+          END;
+          
         END NumberOfPaths;
 
       PROCEDURE TraceUse (use: SSA.Opnd): BOOLEAN;
@@ -257,6 +261,32 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             originMap. def[origin. marker, use. OpndIndex() DIV 2-1]
                 := lastDefinition;
             RETURN originMap. visible[origin. marker];
+
+          | Opcode.loopStart:
+            IF (instr. info = NIL) THEN
+              originMap := NewOriginMap (NumberOfPaths (instr), numVars);
+              instr. info := originMap;
+              
+              (* continue tracing the uses of this loop-start; note: this is
+                 only done once for each variable, when we encounter the
+                 loop-start for the first time *)
+              (* note: originMap. visible[origin. marker] defaults to FALSE *)
+              visible := Trace (origin, instr,
+                                instr. GetResultClass (Result.store));
+              originMap. visible[origin. marker] := visible;
+            ELSE
+              originMap := instr. info(OriginMap);
+            END;
+            
+            (* set the instruction defining the store argument `use'
+               for the variable identified by `origin. marker' *)
+            originMap. def[origin. marker, use. OpndIndex()]
+                := lastDefinition;
+            RETURN originMap. visible[origin. marker];
+
+          | Opcode.loopEnd:
+            RETURN Trace (origin, lastDefinition,
+                          instr. GetResultClass (Result.store))
             
           | Opcode.call:
             (* FIXME... detect when a call can modify our variable; for now
@@ -310,9 +340,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
        of the original "get" instruction.  *)
       VAR
         instr: SSA.Instr;
-
+        
       PROCEDURE TraceSelect (select: SSA.Instr; var: LONGINT;
                              subclass: Opcode.Subclass): SSA.Result;
+      (* pre: `select' has opcode "select" or "loopStart" *)
         VAR
           origin: OriginMap;
           i, memoryCount, registerCount: LONGINT;
@@ -322,14 +353,19 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           VAR
             opnd: SSA.Opnd;
             collect: SSA.Instr;
+            oldStore: SSA.Result;
           BEGIN
-            opnd := select. NthOpnd (pathNum*2+2);
+            CASE select. opcode OF
+            | Opcode.select   : opnd := select. NthOpnd (pathNum*2+2);
+            | Opcode.loopStart: opnd := select. NthOpnd (pathNum);
+            END;
             IF (opnd. arg. instr. opcode = Opcode.collect) THEN
               RETURN opnd. arg.instr
             ELSE
               collect := pb. AddInstr (Opcode.collect, Opcode.scNone);
-              collect. AddOpnd (opnd. arg, Opnd.store);
+              oldStore := opnd. arg;
               opnd. ReplaceOpnd (collect. AddResult (Result.store));
+              collect. AddOpnd (oldStore, Opnd.store);
               RETURN collect
             END;
           END GetCollect;
@@ -340,6 +376,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             | Opcode.set:
               RETURN source. GetArgClass (Opnd.sourceValue)
             | Opcode.select:
+              RETURN TraceSelect (source, var, subclass)
+            | Opcode.loopStart:
               RETURN TraceSelect (source, var, subclass)
             END;
           END GetValue;
@@ -368,7 +406,10 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
           VAR
             storeIn: SSA.Result;
           BEGIN
-            storeIn := select. NthArg (pathNum*2+2);
+            CASE select. opcode OF
+            | Opcode.select: storeIn := select. NthArg (pathNum*2+2);
+            | Opcode.loopStart: storeIn := select. NthArg (pathNum);
+            END;
             IF (storeIn. instr. opcode = Opcode.collect) THEN
               storeIn := storeIn. instr. GetArgClass (Opnd.store)
             END;
@@ -452,6 +493,15 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         | Opcode.select:
           RETURN TraceSelect (instr, get. marker, get. subclass);
 
+        | Opcode.collect:
+          RETURN Trace (get, instr. GetArgClass (Opnd.store));
+              
+        | Opcode.loopStart:
+          RETURN TraceSelect (instr, get. marker, get. subclass);
+
+        | Opcode.loopEnd:
+          RETURN Trace (get, instr. GetArgClass (Opnd.store));
+              
         | Opcode.call:
           (* FIXME... detect when a call can modify our variable; for now
              be pessimistic: the call rewrites our variable *)
