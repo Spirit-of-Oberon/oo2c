@@ -1,0 +1,115 @@
+[This is a short description of documentation string, embedded
+ Texinfo, and how to use the existing ooc2 codebase to create
+ formatted and cross-referenced HTM documentation.  -- mva 2001/05/06 ]
+
+
+1. Documentation Strings and Embedded Texinfo
+---------------------------------------------
+
+Documentation strings are a special form of command.  The starting
+delimiter is `(**'.  They refer to the nearest non-parameter
+identifier declaration in front of them.  Syntax and semantics of
+embedded tags are taken from Texinfo (please refer to the Texinfo
+documentation for details).  For examples, take a look at the
+documentation in `libxml/src/URI.Mod'.  In `ooc2/src/OOC/Doc.Mod' you
+find a checklist what to do when adding new commands.
+
+The following tables list the commands that are currently implemented:
+
+Glyphs: @@, @{, @}, @bullet, @dots, @minus, @result, ---
+
+Font and style commands:
+
+   @asis   -- as is
+   @cite   -- name of a book (with no cross reference link available)
+   @code   -- syntactic tokens
+   @dfn    -- introductory or defining use of a technical term
+   @emph   -- emphasis; produces *italics* in printout
+   @file   -- file name
+   @kbd    -- input to be typed by users
+   @samp   -- literal example or sequence of characters
+   @strong -- stronger emphasis than @emph; produces *bold* in printout
+   @var    -- metasyntactic variables (e.g., formal procedure parameters)
+
+Lists and tables:
+
+   @enumerate -- enumerated lists, using numbers or letters
+   @itemize   -- itemized lists with and without bullets
+   @table     -- two-column tables with highlighting
+
+   @item      -- used with the above lists and tables for each entry
+   @asis      -- used with @table for entries without added highlighting
+   @bullet    -- used with @itemize
+
+Paragraph formatting:
+
+   @example   -- example that is not part of the running text (fixed font)
+   @quotation -- excerpt from another (real or hypothetical) printed work
+   @noindent  -- prevents paragraph indentation
+   @table     -- two column table (sort of)
+
+Cross reference:
+
+   @email -- email address
+   @url   -- indicate a uniform resource locator (URL)
+   @uref  -- reference to a uniform resource locator (URL)
+
+Extensions for OOC
+   @omodule, @oconst, @ofield, @oparam, @oproc, @otype, @ovar --
+     inline command, reference to named Oberon-2 entity; names can be
+     relative to the current position (procedure, record) [example:
+     @oparam{p1}, @otype{Node}]; if the name cannot be resolved, it is
+     reported as an error, _unless_ the name is prefixed with an
+     asterisk `*'.  With this prefix, it is assumed to be an external
+     name, beginning with a module name [example:
+     @otype{XML:Parser.Parser}].
+
+   @precond, @postcond --
+     block command, indicates pre-condition or post-condition of 
+     a procedure
+
+
+
+2. Producing HTML Documentation
+-------------------------------
+
+Producing HTML texts from embedded documentation strings is quite
+easy, although it requires an ooc2 program that expects a certain
+directory layout.  Please keep in mind that the program in question,
+TestInterfaceGen, is actually a test program and lacks the polish of
+an application destined for end users.
+
+It is assumed that you have some XSLT processor installed (for example
+Xalan from apache.org).
+
+Download the ooc2 and libadt sources from the SourceForge project OOC
+(http://sourceforge.net/projects/ooc).  Adjust the script
+`ooc2/rsrc/OOC/xml/gen-interface-description' so that it calls your
+XSLT processor.  Build the program `TestInterfaceGen' (ooc2/src and
+libadt/src should be in your path, libxml should be installed).
+
+Create a new, empty working directory and cd into it.  Using VO as an
+example, and assuming that its files only depend on the core library
+and X11, the following commands create the expected file layout and
+call TestInterfaceGen:
+
+  mkdir core
+  ln -s /usr/lib/oo2c/lib/ core/src
+  mkdir libxml
+  ln -s ../../libxml/src libxml/src
+  mkdir ooc2
+  ln -s ../../ooc2/src/ ooc2/src
+  ln -s ../../ooc2/rsrc/ ooc2/rsrc
+  mkdir X11
+  ln -s ../../X11/src/ X11/src
+  mkdir VO
+  ln -s ../../VO/src/ VO/src
+  TestInterfaceGen --html --closure -r core -r ooc2 -r libxml -r X11 -r VO VisualOberonLib
+
+The target path in the link statement (`/usr/lib/oo2c/lib/',
+`../../ooc2/src/', and so on in the above example) will differ for
+your system.  Please note that all the repositories listed above
+(core, libxml, ooc2, X11, and VO) are required.  On completion, the
+directory `VO/doc/' holds the generated XML and HTML files.
+
+
