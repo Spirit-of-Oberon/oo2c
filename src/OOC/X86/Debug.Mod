@@ -279,6 +279,7 @@ PROCEDURE (out: Output) WriteFunction*();
       opnd: S.Opnd;
       s: S.Selector;
       i: LONGINT;
+      jump: S.Instr;
     BEGIN
       w.WriteString("(");
       IF FALSE & (instr.designator # NIL) THEN
@@ -336,6 +337,20 @@ PROCEDURE (out: Output) WriteFunction*();
       ELSE
         (* nothing *)
       END;
+
+      WITH instr: S.MergeInstr DO
+        IF (instr.jumps = NIL) THEN
+            w.WriteString(" [no jumps]");
+        ELSE
+          FOR jump IN instr.jumps^ DO
+            w.WriteString(" [");
+            w.WriteObject(out.Label(jump));
+            w.WriteChar("]");
+          END;
+        END;
+      ELSE
+        (* nothing *)
+      END;
       w.WriteString(")");
     END Expr;
 
@@ -376,6 +391,7 @@ PROCEDURE (out: Output) WriteFunction*();
               CASE dep.type OF
               | S.depControl: w.WriteString("c:");
               | S.depMemory: w.WriteString("m:");
+              | S.depRegion: w.WriteString("r:");
               END;
               w.WriteObject(out.Label(dep.before));
             END;

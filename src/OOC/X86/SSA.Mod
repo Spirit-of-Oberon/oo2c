@@ -393,8 +393,13 @@ CONST
      dependencies at all.  Instead, the jump instructions pointing to the merge
      have a memory dependency designating the state of global storage just
      before control is passed to the merge via the jump.  *)
+  depRegion* = 2;
+  (**Instruction depends on a particular region, because it requires some
+     result that is computed somewhere within the region.  Introduced by
+     @omodule{*OOC:X86:Block}.  *)
   depAny* = -1;
   (**Any of the above.  *)
+  anySet = {depControl, depMemory, depRegion};
   
 TYPE
   Dep* = POINTER TO DepDesc;
@@ -1546,7 +1551,7 @@ PROCEDURE (instr: Instr) BeforeList*(type: Type): IterInstrBeforeList;
     NEW(iter);
     iter.next := instr.beforeList;
     IF (type = depAny) THEN
-      iter.types := {depControl, depMemory};
+      iter.types := anySet;
     ELSE
       iter.types := {type};
     END;
@@ -1574,7 +1579,7 @@ PROCEDURE (instr: Instr) AfterList*(type: Type): IterInstrAfterList;
     NEW(iter);
     iter.next := instr.afterList;
     IF (type = depAny) THEN
-      iter.types := {depControl, depMemory};
+      iter.types := anySet;
     ELSE
       iter.types := {type};
     END;
