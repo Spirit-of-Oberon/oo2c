@@ -11,7 +11,6 @@ ifndef OOC_DEV_ROOT
 export OOC_DEV_ROOT=$(shell pwd)
 export MAIN_MAKEFILE=$(OOC_DEV_ROOT)/rsrc/OOC/Makefile.ooc-main
 endif
-export OO2CRC=$(OOC_DEV_ROOT)/oo2crc-install.xml
 
 include $(OOC_DEV_ROOT)/Makefile.config
 

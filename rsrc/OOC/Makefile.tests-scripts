@@ -8,7 +8,7 @@ TEST_TEMP_DIR=$(TEST_WORKING_DIR)/test-output
 
 
 TEST_LIST_SCRIPTS=$(patsubst %,%.run-script,$(TEST_SCRIPTS))
-export TEST_PROG=$(OOC_DEV_ROOT)/bin/$(TEST_PROCESSOR)
+export TEST_PROG=$(OOC_DEV_ROOT)/bin/$(TEST_PROCESSOR) $(TEST_OPTIONS)
 export DIFF
 
 
@@ -31,7 +31,7 @@ test2-setup: $(OOC_DEV_ROOT)/oo2crc-install.xml
 test-runall: test2-setup $(TEST_LIST_SCRIPTS)
 
 test-clean:
-	$(RM) $(OOC_DEV_ROOT)/$(TEST_PROG)
+#	$(RM) $(OOC_DEV_ROOT)/$(TEST_PROG)
 	-cd $(TEST_WORKING_DIR) && $(RM_R) $(TEST_OUTPUT_DIRS)
 	$(RM_R) $(TEST_TEMP_DIR)
 

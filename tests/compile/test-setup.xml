@@ -9,7 +9,7 @@
 	     command="../../bin/TestCompile"
 	     config-file=""
 	     working-dir="wd" 
-	     flags="-r ../lib-TestCompile -r wd --write-ir"
+	     flags="--config $OOC_DEV_ROOT/oo2crc-install.xml -r ../lib-TestCompile -r wd --write-ir"
 	     filter-command="&OOEF;" 
 	     diff-command="&DIFF;" 
 	     check-reject-command="&PERL; ../../rsrc/OOC/TestFramework/error-match.pl"
