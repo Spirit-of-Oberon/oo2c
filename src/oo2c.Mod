@@ -419,7 +419,7 @@ BEGIN
     IF (mode = updateRepository) THEN
       ok := Package.UpdateRepository(CCompiler.oocdir.value(StringValue.Value).string^);
     ELSE
-      IF ~Config.repositories.ParseMetaData(Config.options, Config.pragmas) THEN
+      IF ~Package.ParseMetaData(Config.options, Config.pragmas) THEN
         HALT(1);
       END;
       
@@ -430,7 +430,7 @@ BEGIN
         CASE mode OF
         | buildPackage, installPackage:
           doInstall := (mode = installPackage);
-          pkg := Config.repositories.GetPackage(arg^, rep);
+          pkg := Package.GetPackage(arg^, rep);
           IF (pkg = NIL) THEN
             Err.String ("Error: Cannot locate package ");
             Err.String (arg^);

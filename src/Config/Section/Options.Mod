@@ -14,7 +14,7 @@ TYPE
   SectionDesc* = RECORD
     (CS.SectionDesc)
     optionList: Option;
-    typeList: Value.PrototypeList;
+    typeList-: Value.PrototypeList;
   END;
   
   OptionDesc = RECORD

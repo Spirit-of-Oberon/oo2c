@@ -25,7 +25,7 @@ IMPORT
   ADT:String, URI, URIParser := URI:Parser, URI:Scheme:File, 
   XML:DTD, XML:Locator, Config:Parser, CS := Config:Section,
   Config:Section:Options,
-  OOC:Error, OOC:Repository, OOC:Repository:FileSystem, OOC:Package;
+  OOC:Error, OOC:Repository, OOC:Repository:FileSystem;
 
 
 TYPE
@@ -45,9 +45,6 @@ TYPE
     name: ARRAY 32 OF DTD.Char;
   END;
 
-CONST
-  packageData = "pkginfo.xml";
-  
 CONST
   invalidContent = 1;
   invalidAttribute = 2;
@@ -294,22 +291,6 @@ PROCEDURE (s: Section) GetModule* (moduleRef: ARRAY OF CHAR): Repository.Module;
     END
   END GetModule;
 
-PROCEDURE (s: Section) GetPackage* (pkgName: ARRAY OF CHAR;
-                                    VAR rep: Repository.Repository): Package.Package;
-  BEGIN
-    (* module not found in cache: traverse repositories *)
-    rep := s. topLevelRep;
-    WHILE (rep # NIL) DO
-      IF (rep.packageInfo # NIL) &
-         (rep.packageInfo IS Package.Package) &
-         (rep.packageInfo(Package.Package).name.array^ = pkgName) THEN
-        RETURN rep.packageInfo(Package.Package);
-      END;
-      rep := rep.baseRep;
-    END;
-    RETURN NIL;
-  END GetPackage;
-
 PROCEDURE (s: Section) GetResource* (package, path: ARRAY OF CHAR): URI.URI;
 (**Tries to locate the resource file @oparam{path} under the package
    directory @oparam{package} in the configured repositories.  On success, an
@@ -365,43 +346,6 @@ PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
     END;
     RETURN result
   END GetIncludePaths;
-
-PROCEDURE (s: Section) ParseMetaData*(options, pragmas: Options.Section): BOOLEAN;
-  VAR
-    errList: Error.List;
-    dummy: BOOLEAN;
-    
-  PROCEDURE Parse(rep: Repository.Repository): BOOLEAN;
-    VAR
-      uri: URI.URI;
-      pkg: Package.PkgInfo;
-      fileName: Repository.URIBuffer;
-    BEGIN
-      IF (rep # NIL) THEN
-        IF Parse(rep.baseRep) THEN
-          uri := rep.GetResource("", packageData);
-          IF (uri # NIL) THEN
-            uri(File.URI).GetPath(fileName);
-            pkg := Package.ParseFile(fileName, FALSE, errList);
-            rep.SetPackageInfo(pkg);
-            IF (pkg # NIL) THEN
-              pkg.MergeConfig(options, pragmas);
-            END;
-            IF (errList.msgCount # 0) THEN
-              RETURN FALSE;
-            END;
-          END;
-        END;
-      END;
-      RETURN TRUE;
-    END Parse;
-  
-  BEGIN
-    errList := Error.NewList("");
-    dummy := Parse(s.topLevelRep);
-    errList.Write(StdChannels.stdout);
-    RETURN errList.NoErrors();
-  END ParseMetaData;
 
 BEGIN
   NEW (repositoriesContext);
