@@ -11,7 +11,7 @@ outline the differences to the core.
 
 REJECT:
 
-  1) var is not a variable designator
+  1) var is not a variable designator  [Assign1, Assign2]
   2) var is imported read-only
 
 REJECT (assignment compatible):

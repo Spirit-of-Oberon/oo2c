@@ -2600,7 +2600,24 @@ PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
                                        variable, value: Expression): Statement;
   VAR
     assignment: Assignment;
+
+  PROCEDURE CheckVar (expr: Expression);
+    BEGIN
+      WITH expr: Var DO
+        (* we have a winner *)
+      | expr: Deref DO
+        (* a pointer dereference is always a variable *)
+      | expr: Index DO
+        CheckVar (expr. array);     (* check that value is writable *)
+      | expr: SelectField DO
+        CheckVar (expr. record);    (* check that value is writable *)
+      ELSE
+        b. ErrSym (notVariable, expr. sym);
+      END;
+    END CheckVar;
+  
   BEGIN
+    CheckVar (variable);
     MakeAssignmentCompatible (b, sym, value, variable. type);
     IF b. typeRules. IsStringConst (value. type) THEN
       (* assigning a string constant: create CopyString opcode *)
