@@ -1,0 +1,9 @@
+MODULE New1;
+
+IMPORT SYSTEM;
+  
+VAR
+  p: SYSTEM.PTR;
+BEGIN
+  NEW(p);
+END New1.

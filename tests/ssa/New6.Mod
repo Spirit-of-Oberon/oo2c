@@ -1,0 +1,8 @@
+MODULE New6;
+
+PROCEDURE P (p: ARRAY OF CHAR);
+  BEGIN
+    NEW(p);
+  END P;
+
+END New6.
