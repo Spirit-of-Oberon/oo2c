@@ -39,7 +39,7 @@ PROCEDURE GetImports* (m: Rep.Module;
                        repositories: Repositories.Section;
                        VAR errList: Error.List);
   VAR
-    res, res2: Msg.Msg;
+    res: Msg.Msg;
     inputBuffer: InputBuffer.Buffer;
     scannerBuilder: BasicList.Builder;
     astBuilder: ExtTree.Builder;
@@ -86,12 +86,8 @@ PROCEDURE GetImports* (m: Rep.Module;
     inputBuffer := m. GetInputBuffer (res);
     IF (inputBuffer = NIL) THEN
       ast := NIL;
-      uri := m. GetURI (Rep.modModuleSource, res2);
-      IF (uri = NIL) THEN
-        uriStr := "[unknown URI]"
-      ELSE
-        uri. GetString (uriStr)
-      END;
+      uri := m. GetURI (Rep.modModuleSource);
+      uri. GetString (uriStr);
       errList := Error.NewList (uriStr);
       errList. Append (res)
     ELSE

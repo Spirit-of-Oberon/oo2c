@@ -92,7 +92,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
 
     ParseModule.ParseModule (m, config, resolve, FALSE, ast, symTab, errList);
     IF (errList. msgCount = 0) THEN
-      outputURI := m. GetURI (Rep.modSymbolTableXML, res);
+      outputURI := m. GetURI (Rep.modSymbolTableXML);
       outputChannel := m. GetOutputChannel (Rep.modSymbolTableXML, FALSE, res);
       IF (outputChannel = NIL) THEN
         errList. Append (res)

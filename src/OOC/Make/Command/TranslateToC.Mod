@@ -147,7 +147,7 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
   BEGIN
     ch := m. GetOutputChannel (fileId, TRUE, res);
     IF (res = Channel.done) THEN
-      baseURI := m. GetURI (fileId, res);
+      baseURI := m. GetURI (fileId);
       w := TextRider.ConnectWriter (ch);
       
       CASE fileId OF
@@ -159,7 +159,7 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         import := m. importList;
         WHILE (import # NIL) DO
           WriteInclude (w, import. imported.
-            GetURI (Repository.modHeaderFileC, res));
+            GetURI (Repository.modHeaderFileC));
           import := import. nextImport
         END;
         WriteModuleName (w, "extern void ", m, "(void);");
@@ -168,10 +168,10 @@ PROCEDURE WriteFile (m: Repository.Module; fileId: Repository.FileId;
         
         
       | Repository.modDeclFileC:
-         WriteInclude (w, m. GetURI (Repository.modHeaderFileC, res))
+         WriteInclude (w, m. GetURI (Repository.modHeaderFileC))
           
       | Repository.modCodeFileC:
-         WriteInclude (w, m. GetURI (Repository.modDeclFileC, res));
+         WriteInclude (w, m. GetURI (Repository.modDeclFileC));
          w. WriteLn;
          WriteModuleName (w, "void ", m, "_init(void) {");
          w. WriteString ("}");

@@ -22,7 +22,7 @@ MODULE OOC:Make:Entity:ModuleFile;
 
 
 IMPORT
-  Strings, Files, Msg, Time, ADT:String, ADT:StringBuffer, 
+  Strings, Files, Time, ADT:String, ADT:StringBuffer, 
   URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
   ConfigOOC := OOC:Auxiliary:Config, OOC:Error,
@@ -110,25 +110,18 @@ PROCEDURE GetEntity* (context: Make.Context; module: Repository.Module;
 
 
 PROCEDURE (entity: Entity) GetURI* (): URI.URI;
-  VAR
-    res: Msg.Msg;
   BEGIN
-    RETURN entity. module. GetURI (entity. fileId, res);
+    RETURN entity. module. GetURI (entity. fileId);
   END GetURI;
 
 PROCEDURE (entity: Entity) Exists* (): BOOLEAN;
   VAR
     uri: URI.URI;
     path: Repository.URIBuffer;
-    res: Msg.Msg;
   BEGIN
-    uri := entity. module. GetURI (entity. fileId, res);
-    IF (res = NIL) THEN
-      uri(File.URI). GetPath (path);
-      RETURN Files.Exists (path)
-    ELSE
-      RETURN FALSE
-    END
+    uri := entity. module. GetURI (entity. fileId);
+    uri(File.URI). GetPath (path);
+    RETURN Files.Exists (path)
   END Exists;
 
 PROCEDURE (entity: Entity) GetTimeStamp* (VAR ts: Time.TimeStamp);

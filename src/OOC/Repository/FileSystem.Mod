@@ -138,13 +138,13 @@ PROCEDURE (rep: Repository) DumpContent* (w: TextRider.Writer);
     w. WriteLn
   END DumpContent;
 
-PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId; VAR res: Msg.Msg): URI.HierarchicalURI;
+PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId): URI.HierarchicalURI;
   VAR
     subdir, suffix, path, str: Rep.URIBuffer;
     uri: URI.URI;
+    res: Msg.Msg;
   BEGIN
     IF (fileId = Rep.modModuleSource) & (m. srcFileOverride # NIL) THEN
-      res := NIL;
       RETURN m. srcFileOverride
     ELSE
       m. origin. GetDefaultSubdir (fileId, subdir);
@@ -159,11 +159,11 @@ PROCEDURE (m: Module) GetURI* (fileId: Rep.FileId; VAR res: Msg.Msg): URI.Hierar
       Strings.Append (str, path);
       Strings.Append (suffix, path);
       uri := URIParser.NewURI (path, m. origin. baseURI, res);
-      IF (res # NIL) THEN
-        RETURN NIL
-      ELSE
-        RETURN uri(URI.HierarchicalURI)
-      END
+      
+      ASSERT (res = NIL);
+      (* this should never trigger if subdir and suffix are ok *)
+      
+      RETURN uri(URI.HierarchicalURI)
     END
   END GetURI;
 
@@ -173,11 +173,9 @@ PROCEDURE (m: Module) GetTimeStamp* (fileId: Rep.FileId; VAR ts: Time.TimeStamp)
     path: Rep.URIBuffer;
     res: Msg.Msg;
   BEGIN
-    uri := m. GetURI (fileId, res);
-    IF (res = NIL) THEN
-      uri(FileURI.URI). GetPath (path);
-      Files.GetModTime (path, ts, res)
-    END;
+    uri := m. GetURI (fileId);
+    uri(FileURI.URI). GetPath (path);
+    Files.GetModTime (path, ts, res);
     IF (res # NIL) THEN
       Time.InitTimeStamp (ts, MAX (LONGINT), 0)
     END
@@ -191,7 +189,7 @@ PROCEDURE (m: Module) GetInputBuffer* (VAR res: Msg.Msg): InputBuffer.Buffer;
     modURI, relative: URI.URI;
   BEGIN
     (* create new error list for the source file *)
-    modURI := m. GetURI (Rep.modModuleSource, res);
+    modURI := m. GetURI (Rep.modModuleSource);
     relative := modURI. MakeRelative (baseURI);
     relative. GetString (str);
     errList := Error.NewList (str);
@@ -210,12 +208,10 @@ PROCEDURE (m: Module) CreateOutputDir* (fileId: Rep.FileId; VAR res: Msg.Msg);
     path, str: Rep.URIBuffer;
     uri: URI.URI;
   BEGIN
-    uri := m. GetURI (fileId, res);
-    IF (res = NIL) THEN
-      uri(FileURI.URI). GetPath (path);
-      Path.dirname (path, str);
-      OSFiles.makedirs(str, OSFiles.defaultMode, res)
-    END
+    uri := m. GetURI (fileId);
+    uri(FileURI.URI). GetPath (path);
+    Path.dirname (path, str);
+    OSFiles.makedirs(str, OSFiles.defaultMode, res)
   END CreateOutputDir;
 
 PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId; makeTmp: BOOLEAN; VAR res: Msg.Msg): Channel.Channel;
@@ -224,7 +220,7 @@ PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId; makeTmp: BOOLEAN; V
   BEGIN
     m. CreateOutputDir (fileId, res);
     IF (res = OSFiles.done) THEN
-      uri := m. GetURI (fileId, res);
+      uri := m. GetURI (fileId);
       IF makeTmp THEN
         RETURN uri. GetChannel (URI.channelTmp, res)
       ELSE

@@ -80,13 +80,13 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     cmd. module. CreateOutputDir (Repository.modExecutable, res);
     IF (res = NIL) THEN
       CCompiler.LinkProgramCmd (config. options, 
-                     cmd. module. GetURI (Repository.modExecutable, res), str);
+                     cmd. module. GetURI (Repository.modExecutable), str);
       aEdge := cmd. ancestorList;
       WHILE (aEdge # NIL) DO
         fileId := aEdge. ancestor(ModuleFile.Entity). fileId;
         IF (fileId # Repository.modSymbolFile) THEN
           ancestor := aEdge. ancestor(ModuleFile.Entity). module;
-          uri := ancestor. GetURI (fileId, res);
+          uri := ancestor. GetURI (fileId);
           uri(File.URI). GetPath (path);
           Strings.Append (" ", str);
           Strings.Append (path, str)

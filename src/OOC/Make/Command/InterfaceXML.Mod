@@ -75,7 +75,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     config := cmd. context. config(Config.Config);
     ParseModule.ParseModule (m, config, TRUE, FALSE, ast, symTab, errList);
     IF (errList. msgCount = 0) THEN
-      outputURI := m. GetURI (Repository.modInterfaceXML, res);
+      outputURI := m. GetURI (Repository.modInterfaceXML);
       outputChannel := m. GetOutputChannel (Repository.modInterfaceXML, TRUE, res);
       IF (outputChannel = NIL) THEN
         errList. Append (res)

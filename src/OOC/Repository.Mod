@@ -226,7 +226,7 @@ PROCEDURE (m: Module) [ABSTRACT] GetInputBuffer* (VAR msg: Msg.Msg): InputBuffer
 (* result is NIL in case of error, with msg holding the error message *)
   END GetInputBuffer;
 
-PROCEDURE (m: Module) [ABSTRACT] GetURI* (fileId: FileId; VAR res: Msg.Msg): URI.HierarchicalURI;
+PROCEDURE (m: Module) [ABSTRACT] GetURI* (fileId: FileId): URI.HierarchicalURI;
   END GetURI;
 
 PROCEDURE (m: Module) MatchesURI* (fileId: FileId; uri: URI.URI): BOOLEAN;
@@ -235,16 +235,11 @@ PROCEDURE (m: Module) MatchesURI* (fileId: FileId; uri: URI.URI): BOOLEAN;
   VAR
     a, b: URIBuffer;
     muri: URI.HierarchicalURI;
-    res: Msg.Msg;
   BEGIN
-    muri := m. GetURI (fileId, res);
-    IF (res = NIL) THEN
-      muri. GetString (a);
-      uri. GetString (b);
-      RETURN (a = b)
-    ELSE
-      RETURN FALSE
-    END
+    muri := m. GetURI (fileId);
+    muri. GetString (a);
+    uri. GetString (b);
+    RETURN (a = b)
   END MatchesURI;
 
 PROCEDURE (m: Module) [ABSTRACT] GetTimeStamp* (fileId: FileId; VAR ts: Time.TimeStamp);
@@ -417,17 +412,15 @@ PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Item.Module;
       res := NIL;
       RETURN m. symbolTable              (* return cached entry *)
     ELSE
-      uri := m. GetURI (modSymbolFile, res);
+      uri := m. GetURI (modSymbolFile);
+      ch := uri. GetChannel (URI.channelOld, res);
       IF (res = NIL) THEN
-        ch := uri. GetChannel (URI.channelOld, res);
+        stb := Builder.New();
+        symTab := stb. ReadSymbolTable (ch, res);
+        ch. Close;
         IF (res = NIL) THEN
-          stb := Builder.New();
-          symTab := stb. ReadSymbolTable (ch, res);
-          ch. Close;
-          IF (res = NIL) THEN
-            m. symbolTable := symTab;    (* cache for later use *)
-            RETURN symTab
-          END
+          m. symbolTable := symTab;    (* cache for later use *)
+          RETURN symTab
         END
       END;
       RETURN NIL

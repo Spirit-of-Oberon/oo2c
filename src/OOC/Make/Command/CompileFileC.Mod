@@ -87,10 +87,8 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     cmd. module. CreateOutputDir (cmd. fileId, res);
     IF (res = NIL) THEN
       CCompiler.CompileFileCmd (config. options, 
-                            cmd. module. GetURI (cmd. sourceId, res),
-                            cmd. module. GetURI (cmd. fileId, res), str)
-    END;
-    IF (res = NIL) THEN
+                            cmd. module. GetURI (cmd. sourceId),
+                            cmd. module. GetURI (cmd. fileId), str);
       Out.String (str);
       Out.Ln;
       exit := ProcessManagment.system (str)

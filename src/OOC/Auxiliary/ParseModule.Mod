@@ -23,7 +23,7 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
    @omodule{*OOC:Make} would get confused, because it assumes that the time
    of the symbol file designates the time of the last compilation.  *)
   VAR
-    res, res2: Msg.Msg;
+    res: Msg.Msg;
     inputBuffer: InputBuffer.Buffer;
     scannerBuilder: BasicList.Builder;
     astBuilder: ExtTree.Builder;
@@ -36,12 +36,8 @@ PROCEDURE ParseModule* (m: Repository.Module; config: Config.Config;
     IF (inputBuffer = NIL) THEN
       ast := NIL;
       symTab := NIL;
-      uri := m. GetURI (Repository.modModuleSource, res2);
-      IF (uri = NIL) THEN
-        uriStr := "[unknown URI]"
-      ELSE
-        uri. GetString (uriStr)
-      END;
+      uri := m. GetURI (Repository.modModuleSource);
+      uri. GetString (uriStr);
       errList := Error.NewList (uriStr);
       errList. Append (res)
     ELSE
