@@ -20,7 +20,7 @@ MODULE URI:Scheme:MailTo;
 
 
 IMPORT
-  URI0 := URI, URI:Scheme:Opaque;
+  URI:Scheme:Opaque;
 
 
 TYPE
