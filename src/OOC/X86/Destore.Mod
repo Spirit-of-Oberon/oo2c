@@ -1,7 +1,7 @@
 MODULE OOC:X86:Destore;
 
 IMPORT
-  Object, ADT:Dictionary,
+  Object, ADT:Dictionary, (*D := OOC:X86:Debug,*)
   Sym := OOC:SymbolTable, S := OOC:X86:SSA, OOC:X86:Aliasing;
 
 TYPE
@@ -431,6 +431,10 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
         FOR dep IN instr.AfterList(S.depControl) DO
           AddToWorklist(dep.instr);
         END;
+      ELSIF (instr.opcode = S.loopBackedge) THEN
+        (* continue after loop; there is no direct dependency of the loopEnd
+           on this loopBackedge, so we need to do this manually *)
+        AddToWorklist(instr(S.LoopBackedgeInstr).start.end);
       END;
     END AddMemoryDeps;
 
@@ -490,7 +494,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
           ReplaceUses(gate.resultList, gate.opndList.arg, TRUE);
           gate.Delete();
         END;
-      | S.merge, S.guard:
+      | S.merge, S.guard, S.loopEnd:
         ASSERT(gate.resultList = NIL);
         gate.Delete();
       END;
