@@ -69,6 +69,8 @@ TYPE
     outputName- : Option.String;
     interfaceType- : Option.String;
     prolog- : Option.String;
+    linkFramework- : Option.StringList;
+    linkLib- : Option.StringList;
   END;
 
   TypeDesc* = RECORD (Obj.ObjectDesc)
@@ -620,6 +622,8 @@ BEGIN
   m.outputName := m.options.String("OutputName", m.name);
   m.interfaceType := m.options.String("InterfaceType", "C");
   m.prolog := m.options.String("Prolog", "");
+  m.linkFramework := m.options.StringList("LinkFramework");
+  m.linkLib := m.options.StringList("LinkLib");
   m.vars := NIL;
   m.types := NIL;
   m.typedefs := NIL;

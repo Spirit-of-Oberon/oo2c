@@ -462,6 +462,22 @@ VAR
   file : IO.ByteChannel;
   writer : TextRider.Writer;
   name : STRING;
+  depCount : INTEGER;
+
+  PROCEDURE ListDependencies(VAR count : INTEGER; type : STRING; list : Option.StringList);
+  BEGIN
+    FOR i := 0 TO list.value.size - 1 DO
+      IF count > 0 THEN
+        e.WriteString("; ");
+      END;
+      e.WriteObject(type);
+      e.WriteString(' "');
+      e.WriteObject(list.value.Get(i));
+      e.WriteString('"');
+      INC(count);
+    END;
+  END ListDependencies;
+
 BEGIN
   name := outputDirectory.value + "/" + 
     m.outputName.value + "." + moduleSuffix.value;
@@ -473,8 +489,15 @@ TRY
   e.WriteObject(m.outputName.value);
   e.WriteString(' [ INTERFACE "');
   e.WriteObject(m.interfaceType.value);
-  e.WriteString('" ]');
-  e.WriteString(";");
+  e.WriteString('"');
+  IF (m.linkFramework.value.size > 0) OR (m.linkLib.value.size > 0) THEN
+    e.WriteString("; LINK ");
+    depCount := 0;
+    ListDependencies(depCount, "FRAMEWORK", m.linkFramework);
+    ListDependencies(depCount, "LIB", m.linkLib);
+    e.WriteString(" END");
+  END;
+  e.WriteString(" ];");
   e.WriteLn;
   e.WriteLn;
   e.WriteString("IMPORT SYSTEM");
