@@ -651,7 +651,7 @@ TYPE
        Initially, the field holds the value @code{-1}.  As part of
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}, this is
        changed to reflect the number of type-bound procedures that are part of
-       the record method table.  *)
+       the record's method table.  *)
     ns-: Namespace;
     (**A reference to the record's namespace.  Note that the namespace
        does not exist before
