@@ -50,10 +50,9 @@ PROCEDURE OmitInstr (instr: SSA.Instr): BOOLEAN;
     END;
   END OmitInstr;
 
-PROCEDURE WriteBlocks (s: Servlet; b: Schedule.Block);
+PROCEDURE WriteBlock (s: Servlet; b: Schedule.Block);
   VAR
     w: Writer.Writer;
-    child: Schedule.Block;
     id: Object.Object;
     count: LONGINT;
 
@@ -172,11 +171,12 @@ PROCEDURE WriteBlocks (s: Servlet; b: Schedule.Block);
             w. EndTag;  (* span *)
             res := res. nextResult;
           END;
-          w. Write8 (" &larr; ");
           w. EndTag;  (* td *)
           
           w. StartTag ("td", TRUE);
           w. AttrStringLatin1 ("class", "ssaInstr");
+          w. CloseStartTag;
+          w. Write8 (" &larr; ");
           w. StartTag ("b", TRUE);
           instr. GetOpcodeName (str);
           w. WriteLatin1 (str);
@@ -267,13 +267,59 @@ PROCEDURE WriteBlocks (s: Servlet; b: Schedule.Block);
     END;
     w. EndTag;  (* td *)
     w. EndTag;  (* tr *)
+  END WriteBlock;
+
+PROCEDURE WriteBlockList (s: Servlet; b: Schedule.Block);
+  PROCEDURE WriteBlocks (b: Schedule.Block);
+    VAR
+      child: Schedule.Block;
+    BEGIN
+      WriteBlock (s, b);
+      child := b. domList;
+      WHILE (child # NIL) DO
+        WriteBlocks (child);
+        child := child. nextDom
+      END;
+    END WriteBlocks;
+  
+  BEGIN
+    s. w. StartTag ("table", FALSE);
+    s. w. AttrString ("class", "ssaCode");
+    WriteBlocks (b);
+    s. w. EndTag;  (* table *)
+  END WriteBlockList;
+
+PROCEDURE WriteNestedBlocks (s: Servlet; b: Schedule.Block);
+  VAR
+    w: Writer.Writer;
     
-    child := b. domList;
-    WHILE (child # NIL) DO
-      WriteBlocks (s, child);
-      child := child. nextDom
-    END;
-  END WriteBlocks;
+  PROCEDURE WriteBlocks (b: Schedule.Block);
+    VAR
+      child: Schedule.Block;
+    BEGIN
+      w. StartTag ("table", FALSE);
+      w. AttrString ("class", "ssaCode");
+      WriteBlock (s, b);
+      child := b. domList;
+      WHILE (child # NIL) DO
+        w. StartTag ("tr", FALSE);
+        w. StartTag ("td", FALSE);
+        w. AttrString ("class", "filler");
+        w. Write ("");
+        w. EndTag;  (* td *)
+        w. StartTag ("td", FALSE);
+        WriteBlocks (child);
+        w. EndTag;  (* td *)
+        w. EndTag;  (* tr *)
+        child := child. nextDom
+      END;
+      w. EndTag;  (* table *)
+    END WriteBlocks;
+  
+  BEGIN
+    w := s. w;
+    WriteBlocks (b);
+  END WriteNestedBlocks;
 
 PROCEDURE AssignNames (dict: Dictionary.Dictionary; b: Schedule.Block;
                        VAR count, blockCount: LONGINT);
@@ -357,11 +403,13 @@ PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
     w. Write ("td.ssaInstr { text-align: left; }");
     w. Write ("td.ssaJump { border: 0 dashed; border-top-width: thin; }");
     w. Write ("td.ssaBranch { border: 0 dashed; border-top-width: thin; }");
+    w. Write ("td.filler { border: thin dotted black }");
     w. Write ("tr.normal0 { background-color:#E0FFE0 }");
     w. Write ("tr.normal1 { background-color:#D0D0FF }");
     w. Write (".highlight { background-color:#FF9999 }");
     w. Write ("a.resRef:hover { background-color:#FF9999 }");
     w. Write ("a.blockRef { color: black }");
+    w. Write ("td table { width: 100% }");
     w. EndTag;  (* style *)
     w. StartTag ("script", TRUE);
     w. AttrString ("type", "text/javascript");
@@ -385,20 +433,28 @@ PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
       s. SetExitFlag;
       w. EndTag;  (* p *)
     ELSE
-      w. StartTag ("p", TRUE);
-      w. WriteLatin1 (s. proc. decl. name. str^);
-      w. WriteLatin1 (" [");
-      w. StartTag ("a", TRUE);
-      w. AttrString ("href", "/exit");
-      w. WriteLatin1 ("exit");
-      w. EndTag;  (* a *)
-      w. WriteLatin1 ("]");
-      w. EndTag;  (* p *)
-
-      w. StartTag ("table", FALSE);
-      w. AttrString ("class", "ssaCode");
-      WriteBlocks (s, s. root);
-      w. EndTag;  (* table *)
+      IF (uriString = "http:/ssa-dom-tree") THEN
+        WriteNestedBlocks (s, s. root);
+      ELSIF (uriString = "http:/ssa-list") THEN
+        WriteBlockList (s, s. root);
+      ELSE
+        w. WriteLatin1 (s. proc. decl. name. str^);
+        w. Write (": ");
+        w. StartTag ("a", TRUE);
+        w. AttrString ("href", "ssa-list");
+        w. Write ("Block List");
+        w. EndTag;  (* a *)
+        w. Write (" || ");
+        w. StartTag ("a", TRUE);
+        w. AttrString ("href", "ssa-dom-tree");
+        w. Write ("Dominator Tree");
+        w. EndTag;  (* a *)
+        w. Write (" || ");
+        w. StartTag ("a", TRUE);
+        w. AttrString ("href", "exit");
+        w. WriteLatin1 ("exit");
+        w. EndTag;  (* a *)
+      END;
     END;
     
     w. EndTag;  (* body *)
