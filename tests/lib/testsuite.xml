@@ -17,7 +17,19 @@
     </test>
   </testcases>
   
-  <testcases profile="OOC Core Library" default-lang="O2 AO">
+  <testcases profile="OOC Core Library" default-lang="O2">
+    <test id="lib_Ascii" type="run" file="LibAscii.Mod">
+      Imports the module <code>Ascii</code>.  Lacking functionality of 
+      even moderate complexity, compilation is the only test applied
+      to the module.
+    </test>
+    
+    <test id="lib_CharClass" type="run" file="LibCharClass.Mod">
+      Imports the module <code>CharClass</code>.  Lacking functionality of 
+      even moderate complexity, compilation is the only test applied
+      to the module.
+    </test>
+    
     <test id="lib_Strings_Length1" type="run"
       file="LibStringsLength1.Mod" output="LibStringsLength1.Ref">
       Tests the <code>Length</code> function with <code>0X</code>
