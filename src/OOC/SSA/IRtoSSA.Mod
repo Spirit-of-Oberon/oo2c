@@ -105,7 +105,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN AddCompareOp (expr, Opcode.neq);
             
       | expr: IR.Call DO
-        RETURN Call (expr)
+        instr := Call (expr);
+        (* the pessimistic assumption is that a function call can have
+           arbitrary side effects; it's up to later transformations to reduce
+           the impact of this  *)
+        instr. AddOpnd (s, Opnd.store);
+        s := instr. AddResult (Result.store);
+        RETURN instr
       ELSE
         Log.Type("++ Unknown type in Expression", expr);
         ASSERT (FALSE)
