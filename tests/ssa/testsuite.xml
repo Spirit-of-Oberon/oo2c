@@ -11,10 +11,10 @@
   generic18 generic19 generic20 generic21 generic22 generic23
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
-  generic36 generic37 generic38">-->
+  generic36 generic37 generic38 generic39">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic38">-->
+  select ="&SetupTestCasesWithOut; generic1 generic24 generic39">-->
 
   &TestSetupWithOut;
     
@@ -1442,6 +1442,10 @@
     <test id="generic38" type="accept" file="Generic38.Mod">
       The argument of a qualified type can be another qualified type.
       Qualified types can be used as part of formal parameters.
+    </test>
+    <test id="generic39" type="accept" file="Generic39.Mod">
+      Retrieving a generic value from the generic receiver parameter
+      and returning it.
     </test>
   </testcases>
 
