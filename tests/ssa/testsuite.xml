@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; loop14">-->
+  select ="&SetupTestCasesWithOut; case12">-->
 
   &TestSetupWithOut;
     
@@ -324,52 +324,47 @@
       labels, a range as a label, and an <code>ELSE</code> part.
       The selector is an integer value.
     </test>
-    
     <test id="case2" type="error" file="Case2.Mod">
       Check that a run-time error is reported if none of the labels
       matches, and the <code>CASE</code> has no <code>ELSE</code>
       part.
     </test>
-    
     <test id="case3" type="reject" file="Case3.Mod">
       Boolean value is not a valid <code>CASE</code> selector.
     </test>
-    
     <test id="case4" type="reject" file="Case4.Mod">
       Case label is not constant.
     </test>
-    
     <test id="case5" type="reject" file="Case5.Mod">
       Integer case label is not included in the select expression's
       type.
     </test>
-    
     <test id="case6" type="reject" file="Case6.Mod">
       Character case label is not included in the select expression's
       type.
     </test>
-    
     <test id="case7" type="reject" file="Case7.Mod">
       Duplicate label: earlier branch use same value.
     </test>
-    
     <test id="case8" type="reject" file="Case8.Mod">
       Duplicate label: value appears twice in branch.
     </test>
-    
     <test id="case9" type="reject" file="Case9.Mod">
       Duplicate label: range intersects with previous label.
     </test>
-    
     <test id="case10" type="run" file="Case10.Mod" output="Case10.Ref">
       <code>CASE</code> statement with a branch whose labels evaluate
       to the empty set.
     </test>
-    
     <test id="case11" type="run" file="Case11.Mod" output="Case11.Ref">
       <code>CASE</code> statement using a character expression, 
       and empty branches.
     </test>
+    <test id="case12" type="accept" file="Case12.Mod">
+      This <code>CASE</code> statement exposed a wrong OOC operand
+      class for the default path.
+    </test>
+    
     
     <test id="and1" type="run" file="And1.Mod" output="And1.Ref">
       Testing shortcut evaluation of operator `<code>&amp;</code>'.
