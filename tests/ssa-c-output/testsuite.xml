@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; const4 const5 const6 const7">-->
+  select ="&SetupTestCasesWithOut; const8">-->
   
   &TestSetupWithOut;
     
@@ -192,6 +192,10 @@
     <test id="const7" type="accept" file="Const7.Mod">
       Like <code>const4</code>, but using a <code>CASE</code>
       statement with a constant selector.
+    </test>
+    <test id="const8" type="run" file="Const8.Mod" output="Const8.Ref">
+      Tests conditional operators <code>&amp;</code> and <code>OR</code>
+      with a constant left hand side.
     </test>
 
     <test id="alloc1" type="run" file="Alloc1.Mod" output="Alloc1.Ref">
