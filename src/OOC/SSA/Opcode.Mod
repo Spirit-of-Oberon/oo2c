@@ -257,7 +257,11 @@ CONST
 
      The instruction itself represents the result of the read operation.  If it
      accesses a volatile variable, then it has an additional result, the new
-     value of @var{store} that is produced by this read operation.  *)
+     value of @var{store} that is produced by this read operation.
+
+     Note: Once @oproc{*OOC:SSA:DeadCodeElimination.RemoveDesignators} has been
+     run, most @samp{readDesign} and @samp{writeDesign} operands are not
+     longer available.  *)
   set* = 13;
   (**Sets the value of a variable.  The source value is always of scalar type.
      The operand list resembles that of a @oconst{get} instruction, using the
@@ -268,7 +272,11 @@ CONST
      to memory.
 
      The instruction has one result of class @oconst{*OOC:SSA:Result.store},
-     representing the new value of store with the updated variable.  *)
+     representing the new value of store with the updated variable.
+
+     Note: Once @oproc{*OOC:SSA:DeadCodeElimination.RemoveDesignators} has been
+     run, most @samp{readDesign} and @samp{writeDesign} operands are not
+     longer available.  *)
   copy* = 14;
   (**Copy a record or array value.  Used for assignment statements where the
      source and target are not scalar values.  The instruction is very similar
@@ -282,7 +290,11 @@ CONST
      @item
      There is no length operand, because the size of the memory block to be
      copied is size of the first operand's type.
-     @end itemize  *)  
+     @end itemize
+
+     Note: Once @oproc{*OOC:SSA:DeadCodeElimination.RemoveDesignators} has been
+     run, most @samp{readDesign} and @samp{writeDesign} operands are not
+     longer available.  *)  
   copyString* = 15;
   (**Copy a sequence of characters into a string variable.  This corresponds to
      the @samp{COPY} statement.
@@ -323,7 +335,11 @@ CONST
      The result is undefined if the source value is not terminated with
      @samp{0X}, or if the target as a length of zero characters.  The
      instruction has one result of class @oconst{*OOC:SSA:Result.store},
-     representing the new value of store with the updated variable.  *)  
+     representing the new value of store with the updated variable.
+
+     Note: Once @oproc{*OOC:SSA:DeadCodeElimination.RemoveDesignators} has been
+     run, most @samp{readDesign} and @samp{writeDesign} operands are not
+     longer available.  *)
   cmpString* = 16;
   (**Compare two string values and return the difference of the first
      characters that differ, or @samp{0} if both strings are equal.
@@ -357,7 +373,11 @@ CONST
      @end table
 
      The result is undefined if the strings are not terminated with
-     @samp{0X}.  *)
+     @samp{0X}.
+
+     Note: Once @oproc{*OOC:SSA:DeadCodeElimination.RemoveDesignators} has been
+     run, most @samp{readDesign} and @samp{writeDesign} operands are not
+     longer available.  *)
   concat* = 17;
   (**Concatenate two or more instances of @code{STRING}.  *)
   
@@ -734,7 +754,15 @@ CONST
      for this path.  This is either a @var{store}, a reference to a
      @oconst{dgate}, or a valid value.
      @end table  *)
-
+  
+  designStandin* = 83;
+  (**@oproc{*OOC:SSA:DeadCodeElimination.RemoveDesignators} replaces computed
+     @samp{readDesign} and @samp{writeDesign} operands with a reference to
+     this instruction.  Only a single instruction with this opcode exists in
+     a procedure, so that CSE can still discover equivalent computations.  *)
+  
+  lastOpcode* = designStandin;
+  
 CONST
   scNone* = 0;
   (**The operation has no variants.  *)
@@ -907,6 +935,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | activateContext: cstr := "activate-context";
       
     | dgate: cstr := "dgate";
+    | designStandin: cstr := "design-standin";
     END;
     
     COPY (cstr, name);

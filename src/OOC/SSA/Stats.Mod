@@ -4,7 +4,7 @@ IMPORT
   Out, Strings, Object, ADT:ArrayList, ADT:Dictionary, OOC:SSA, OOC:SSA:Opcode;
 
 CONST
-  maxOpcode = Opcode.dgate;
+  maxOpcode = Opcode.lastOpcode;
   subclassCount = Opcode.scReal64+1;
   variantCount = (maxOpcode+1)*subclassCount;
   

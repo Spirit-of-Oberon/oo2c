@@ -1393,6 +1393,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
           (* nothing *)
         | Opcode.labels:
           (* nothing *)
+        | Opcode.designStandin:
+          (* nothing *)
           
         | Opcode.loopStart:
           (* nothing *)
@@ -1812,6 +1814,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Write ("initial", "destore-pre", TRUE);
     destore := Destore.New (pb);
     destore. Transform();
+    DeadCodeElimination.RemoveDesignators(pb);
     DeadCodeElimination.Transform (pb);
     Write ("destore-post", "constprop-pre", TRUE);
     ConstProp.Transform (pb);

@@ -141,7 +141,7 @@ PROCEDURE (p: Partition) Add (instr: SSA.Instr);
 
 PROCEDURE Transform* (pb: SSA.ProcBlock);
   CONST
-    numOpcodes = Opcode.labels+1;
+    numOpcodes = Opcode.lastOpcode+1;
     numSubclasses = Opcode.scReal64+1;
   VAR
     pList, worklist: Partition;
