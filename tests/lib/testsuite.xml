@@ -17,8 +17,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_STRING lib_STRING2
-  lib_STRING3 lib_STRING4 lib_STRING5">-->
+  select ="prepare_out_module lib_rt1 lib_BigInt1">-->
 
   &TestSetupWithOut;
   
@@ -523,28 +522,30 @@
       Tests integration of the string module with the predefined
       type <code>STRING</code>.
     </test>
-    
     <test id="lib_STRING2" type="reject" file="LibSTRING2.Mod">
       Cannot pass a constant to a <code>VAR</code> parameter of type
       <code>STRING</code>.
     </test>
-    
     <test id="lib_STRING3" type="run"
           file="LibSTRING3.Mod" output="LibSTRING3.Ref">
       Check that conversion of <code>LONGCHAR</code> character
       constants and strings to <code>STRING</code> works.
     </test>
-    
     <test id="lib_STRING4" type="run"
           file="LibSTRING4.Mod" output="LibSTRING4.Ref">
       Tests concatenation of <code>STRING</code> values.
     </test>
-    
     <test id="lib_STRING5" type="run"
           file="LibSTRING5.Mod" output="LibSTRING5.Ref">
       Character constant <code>0X</code> is converted to a string of
       length 1, holding the character <code>0X</code>.
     </test>
+    
+    <test id="lib_BigInt1" type="run" file="LibBigInt1.Mod">
+      Tests most of the functions of the <code>BigInt</code>
+      implementation.
+    </test>
+    
   </testcases>
 
   &libadt-testcases;
