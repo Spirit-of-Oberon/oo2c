@@ -48,7 +48,7 @@ CONST
   defaultTargetOS = Autoconf.nameTargetOS;
   defaultTargetInteger = Autoconf.bitsTargetInteger;
   defaultTargetAddress = Autoconf.bitsTargetAddress;
-  defaultTargetArch = "gcc";
+  defaultTargetArch* = "gcc";
   defaultTargetArchMinor = "";
   
 VAR

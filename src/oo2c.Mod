@@ -582,7 +582,9 @@ BEGIN  <*Warnings:=FALSE*>
     cfgErrList. Write (StdChannels.stderr);
     HALT(1);
   ELSIF showVersion.value(Boolean.Value).boolean THEN
-    Out.String("oo2c/gcc ");
+    Out.String("oo2c/");
+    Out.String(StdPragmas.defaultTargetArch);
+    Out.String(" ");
     Out.String(StdPragmas.defaultCompilerVersion);
     Out.Ln;
     HALT(0);
