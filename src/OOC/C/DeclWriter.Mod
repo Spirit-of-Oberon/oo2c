@@ -431,7 +431,20 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
     BEGIN
       w. WriteChar (CHR (ch+ORD("0")));
     END WriteOct;
-  
+ 
+  PROCEDURE WriteChar (charValue : LONGINT);
+  BEGIN
+    IF (charValue < ORD (" ")) OR (charValue >= 127) OR
+      (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
+      w. WriteChar ("\")(*"*); 
+      WriteOct (charValue DIV 64);
+      WriteOct (charValue DIV 8 MOD 8);
+      WriteOct (charValue MOD 8);
+    ELSE
+      w. WriteChar (CHR (charValue));
+    END;
+  END WriteChar;
+ 
   BEGIN
     IF (value = NIL) THEN
       w. WriteString ("0");
@@ -450,15 +463,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
               by default; that is, '\377' is _not_ -1 *)
           charValue := ORD (value. value. array[0]);
           w. WriteString ("(OOC_CHAR8)'");
-          IF (charValue < ORD (" ")) OR (charValue >= 127) OR
-             (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
-            w. WriteChar ("\")(*"*); 
-            WriteOct (charValue DIV 64);
-            WriteOct (charValue DIV 8 MOD 8);
-            WriteOct (charValue MOD 8);
-          ELSE
-            w. WriteChar (CHR (charValue));
-          END;
+          WriteChar(charValue);
           w. WriteChar ("'");
         ELSE
           w. WriteChar (delim);
@@ -467,7 +472,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
             IF (value. value. array[i] = delim) THEN
               w. WriteString (quotedDelim)
             ELSE  (* note: this is a tidbit slow for large strings *)
-              w. WriteChar (value. value. array[i])
+              WriteChar(ORD(value. value. array[i]))
             END;
             INC (i)
           END;
