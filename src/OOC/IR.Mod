@@ -136,6 +136,12 @@ TYPE
   END;
 
 TYPE
+  TypeRef* = POINTER TO TypeRefDesc;
+  TypeRefDesc = RECORD
+    (ReferenceDesc)
+  END;
+
+TYPE
   ModuleRef* = POINTER TO ModuleRefDesc;
   ModuleRefDesc = RECORD
     (ReferenceDesc)
@@ -611,6 +617,30 @@ PROCEDURE (modRef: ModuleRef) Accept* (v: Visitor);
 
 (* -------- *)
 
+PROCEDURE InitTypeRef (typeRef: TypeRef; name: Symbol; decl: Sym.TypeDecl);
+  BEGIN
+    InitReference (typeRef, name, NIL, decl);
+  END InitTypeRef;
+
+PROCEDURE NewTypeRef (name: Symbol; decl: Sym.TypeDecl): TypeRef;
+  VAR
+    typeRef: TypeRef;
+  BEGIN
+    NEW (typeRef);
+    InitTypeRef (typeRef, name, decl);
+    RETURN typeRef
+  END NewTypeRef;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitTypeRef* (typeRef: TypeRef);
+  END VisitTypeRef;
+
+PROCEDURE (typeRef: TypeRef) Accept* (v: Visitor);
+  BEGIN
+    v. VisitTypeRef (typeRef)
+  END Accept;
+
+(* -------- *)
+
 PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item; 
                                      name: Symbol): Expression;
   VAR
@@ -635,6 +665,8 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
           RETURN NewConst (name, decl. type, decl. value)
         | decl: Sym.VarDecl DO
           RETURN b. NewVar (name, decl)
+        | decl: Sym.TypeDecl DO
+          RETURN NewTypeRef (name, decl)
         | decl: Sym.PredefProc DO
           RETURN NewPredefProc (name, decl)
         | decl: Sym.ProcDecl DO
@@ -970,9 +1002,9 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       arguments := b. TransformArgs (design. sym,
                                      design. type(Sym.FormalPars). params,
                                      arguments);
-      InitCall (call, design, arguments)
+      InitCall (call, design, arguments);
+      RETURN call;
     END;
-    RETURN call
   END NewCall;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitCall* (call: Call);
