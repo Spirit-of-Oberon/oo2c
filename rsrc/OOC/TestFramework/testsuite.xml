@@ -8,7 +8,7 @@
          SYSTEM "../../../../hostess/hostess/oberon/candidate-testcases.xml">
 
 <!ENTITY hostess-testcases
-         SYSTEM "../../../../hostess/hostess/oberon/testsuite.xml">
+         SYSTEM "../../../../hostess/hostess/oberon/testcases.xml">
 ]>
 
 <testsuite profile="Test Suite for Framework Testing">
@@ -22,5 +22,5 @@
   
   <!--&baseline-testcases;-->
   &candidate-testcases;
-  &hostess-testcases;
+  <!--&hostess-testcases;-->
 </testsuite>
