@@ -119,6 +119,14 @@ CONST
   (**This class is used for operands that are inserted into the SSA instruction
      list during the course of a the data dependency analysis.  See
      @omodule{*OOC:SSA:Blocker}.  *)
+
+  scheduleDependency* = 20;
+  (**An operand of this class signals that the instruction must be scheduled
+     after the instruction producing the argument.  Unlike a normal data
+     dependency, the result of the dependent instruction is independent of the
+     outcome of the earlier instruction.  That is, if two instructions have the
+     same opcode and the same non-@oconst{scheduleDependency} arguments, then
+     they compute the same result.  *)
   
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)
@@ -141,6 +149,7 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | labels: COPY ("labels", name)
     | loopExternalDef: COPY ("loop-external-def", name);
     | antiDependency: COPY ("anti-dependency", name);
+    | scheduleDependency: COPY ("schedule-dependency", name);
     END;
   END GetName;
   
