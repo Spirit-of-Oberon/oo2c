@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; const1 quicksort1 const2 const3 const4">-->
+  select ="&SetupTestCasesWithOut; const4 const5 const6 const7">-->
   
   &TestSetupWithOut;
     
@@ -180,6 +180,18 @@
       eliminated.  After the <code>EXIT</code> is removed, <em>no</em>
       other <code>EXIT</code> remains, making the loop an infinite
       one.
+    </test>
+    <test id="const5" type="run" file="Const5.Mod" output="Const5.Ref">
+      Like <code>const2</code>, but using a <code>CASE</code>
+      statement with a constant selector.
+    </test>
+    <test id="const6" type="run" file="Const6.Mod" output="Const6.Ref">
+      Like <code>const3</code>, but using a <code>CASE</code>
+      statement with a constant selector.
+    </test>
+    <test id="const7" type="accept" file="Const7.Mod">
+      Like <code>const4</code>, but using a <code>CASE</code>
+      statement with a constant selector.
     </test>
 
     <test id="alloc1" type="run" file="Alloc1.Mod" output="Alloc1.Ref">
