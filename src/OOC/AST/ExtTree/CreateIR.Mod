@@ -22,8 +22,7 @@ MODULE OOC:AST:ExtTree:CreateIR;
 
 IMPORT
 OOC:AST:ExtTree:XML, StdChannels,
-  OOC:Scanner:Symbol, OOC:AST:ExtTree, OOC:AST:ExtTree:CreateSymTab,
-  OOC:SymbolTable:Item, OOC:IR;
+  OOC:Scanner:Symbol, OOC:AST:ExtTree, OOC:SymbolTable:Item, OOC:IR;
 
 
 
@@ -34,19 +33,13 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     currentNamespace: Item.Namespace;
     currentSourceContext: Item.Item;
     
-  PROCEDURE GetName (identDef: ExtTree.IdentDef): IR.Name;
-  (* Returns the name embedded in an instance of @otype{ExtTree.IdentDef}.  *)
-    BEGIN
-      RETURN identDef. ident. sym. str
-    END GetName;
-  
   PROCEDURE Designator (design: ExtTree.Node): IR.Expression;
     VAR
       left: IR.Expression;
     BEGIN
       WITH design: ExtTree.Terminal DO
         RETURN b. NewIdentRef (currentNamespace, currentSourceContext,
-                               design. sym. id, CreateSymTab.GetName (design))
+                               design. sym. id, design. sym)
       | design: ExtTree.Operator DO
         (* we only do qualified identifiers for now: "module.ident" *)
         ASSERT (design. op. sym. id = Symbol.period);
@@ -54,7 +47,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         WITH left: IR.ModuleRef DO
           RETURN b. NewQualident (left, currentSourceContext, 
                         design. right(ExtTree.Terminal). sym. id,
-                        CreateSymTab.GetName (design. right(ExtTree.Terminal)))
+                        design. right(ExtTree.Terminal). sym)
         END
       END
     END Designator;
