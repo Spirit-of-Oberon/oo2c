@@ -38,6 +38,9 @@ typedef unsigned int OOC_UINT32;
 typedef unsigned OOC_INT64_T OOC_UINT64;
 typedef unsigned char OOC_BYTE;
 typedef void *OOC_PTR;
+typedef unsigned int OOC_SET32;
+typedef unsigned short int OOC_SET16;
+typedef unsigned char OOC_SET8;
 
 /* type used to store length of array types: */
 typedef OOC_INT32 OOC_LEN;
