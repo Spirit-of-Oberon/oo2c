@@ -2080,6 +2080,10 @@
       Regression test: Flatten modified operand of sum when adding two
       flattened summations.
     </test>
+    <test id="bugUnreachable1" type="accept" file="BugUnreachable1.Mod">
+      Regression test: Unreachable code after a loop should not cause
+      checks in the Allocator module to fail.
+    </test>
 
     <test id="bugDeclC1" type="run" file="BugDeclC1.Mod">
       Declaring a pointer to a type alias of a record type might cause

@@ -880,7 +880,8 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
             bi. initState := Dictionary.New();
           ELSE
             ASSERT ((b. domList = NIL) OR
-                    (b. domList IS Schedule.DeadEndBlock));
+                    (b. domList IS Schedule.DeadEndBlock) OR
+                    (b. domList IS Schedule.BranchBlock)); (*of infinite loop*)
           END;
         ELSE
           (* Note: Due to the presence of unreachable blocks, it is possible
