@@ -1,6 +1,6 @@
 /*      $Id$        */
 /*  Run-time system for C back-ends of OOC2
-    Copyright (C) 1997-2001  Michael van Acken
+    Copyright (C) 2001  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
