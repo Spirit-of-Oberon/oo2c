@@ -406,27 +406,6 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
             END;
             ptr := ptr. nextNested
           END;
-
-        | item: Sym.TypePars DO
-          c := 0;
-          ptr := item. nestedItems;
-          WHILE (ptr # NIL) DO
-            IF (ptr IS Sym.TypeDecl) THEN
-              INC (c)
-            END;
-            ptr := ptr. nextNested
-          END;
-          
-          NEW (item. params, c);
-          c := 0;
-          ptr := item. nestedItems;
-          WHILE (ptr # NIL) DO
-            IF (ptr IS Sym.TypeDecl) THEN
-              item. params[c] := ptr(Sym.TypeDecl);
-              INC (c)
-            END;
-            ptr := ptr. nextNested
-          END;
         ELSE
         END;
         

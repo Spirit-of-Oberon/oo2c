@@ -465,7 +465,7 @@ RAISES IO.Error;
      type of a record are checked.  *)
     VAR
       ptr: Sym.Item;
-      i: LONGINT;
+      i, typeDeclCount: LONGINT;
       receiver: Sym.VarDecl;
       
     PROCEDURE GetTypeByName (typeName: Sym.Type; contextOfUse: Sym.Item; 
@@ -618,11 +618,32 @@ RAISES IO.Error;
         END;
         
         (* decend into nested objects *)
+        typeDeclCount := 0;
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
           ResolveTypeNames (ptr, contextOfUse, errList);
+          IF (ptr IS Sym.TypeDecl) THEN
+            INC(typeDeclCount);
+          END;
           ptr := ptr. nextNested
-        END
+        END;
+
+        (* with the children completed, we can do some post processing *)
+        WITH item: Sym.TypePars DO
+          (* create and initialize TypePars.params *)
+          NEW(item.params, typeDeclCount);
+          typeDeclCount := 0;
+          ptr := item.nestedItems;
+          WHILE (ptr # NIL) DO
+            IF (ptr IS Sym.TypeDecl) THEN
+              item.params[typeDeclCount] := ptr(Sym.TypeDecl).type(Sym.TypeVar);
+              INC(typeDeclCount);
+            END;
+            ptr := ptr.nextNested;
+          END;
+        ELSE
+          (* ignore *)
+        END;
       END
     END ResolveTypeNames;
   
@@ -653,13 +674,18 @@ RAISES IO.Error;
 
     PROCEDURE CheckTypePars(typePars: Sym.TypePars);
       VAR
-        i: LONGINT;
+        ptr: Sym.Item;
       BEGIN
-        FOR i := 0 TO LEN(typePars.params^)-1 DO
-          IF ~TR.IsValidTypeBound
-             (typePars.params[i].type(Sym.TypeVar).bound) THEN
-            ErrType(invalidTypeBound, typePars.params[i].srcCodeType);
+        ptr := typePars.nestedItems;
+        WHILE (ptr # NIL) DO
+          WITH ptr: Sym.TypeDecl DO
+            IF ~TR.IsValidTypeBound(ptr.type(Sym.TypeVar).bound) THEN
+              ErrType(invalidTypeBound, ptr.srcCodeType);
+            END;
+          ELSE
+            (* ignore *)
           END;
+          ptr := ptr.nextNested;
         END;
       END CheckTypePars;
     
@@ -759,8 +785,7 @@ RAISES IO.Error;
               IF (type IS Sym.TypeVar) THEN
                 type := type(Sym.TypeVar).bound;
               END;
-              IF ~TR.IsExtensionOf
-                     (type, typePars.params[i].type(Sym.TypeVar).bound) THEN
+              IF ~TR.IsExtensionOf(type, typePars.params[i].bound) THEN
                 ErrType(notExtensionOfBound, item.arguments[i].srcCodeType);
               END;
             END;

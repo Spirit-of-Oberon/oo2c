@@ -210,18 +210,20 @@ TYPE
   END;
 
 TYPE
-  TypeDecl* = POINTER TO TypeDeclDesc;
-  TypeDeclArray* = POINTER TO ARRAY OF TypeDecl;
   TypePars* = POINTER TO TypeParsDesc;
+  TypeVar* = POINTER TO TypeVarDesc;
+  TypeVarArray* = POINTER TO ARRAY OF TypeVar;
   TypeParsDesc = RECORD
     (**This is a formal parameter list of a parameterized type.  All parameters
        are nested in this item, as well as all items that make up the base
        type.  *)
     (ItemDesc)
-    params*: TypeDeclArray;
+    params*: TypeVarArray;
     (**The list of formal type parameters.  @samp{LEN(params^)} is the number
        of parameters.  If there are no parameters at all, this is a reference
-       to an array of length zero.  *)
+       to an array of length zero.  This field is set during
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}, and remains
+       @code{NIL} until then.  *)
     ns-: Namespace;
     (**A reference to the record's namespace.  Note that the namespace
        does not exist before
@@ -239,6 +241,7 @@ CONST
   
 TYPE
   Type* = POINTER TO TypeDesc;
+  TypeDecl* = POINTER TO TypeDeclDesc;
   TypeDesc* = RECORD [ABSTRACT]
     (**Common base type of all type definitions.  As far as the symbol table is
        concerned, a type is either a type reference (that is, an instance of
@@ -637,7 +640,6 @@ TYPE
   END;
 
 TYPE
-  TypeVar* = POINTER TO TypeVarDesc;
   TypeVarDesc = RECORD
     (**Represents a type variable from the list of formal type parameters of
        a type with @ofield{Type.typePars}.  *)
@@ -2231,37 +2233,15 @@ PROCEDURE InitTypePars* (typePars: TypePars; parent: Item);
   END InitTypePars;
 
 PROCEDURE (typePars: TypePars) Store* (w: Storable.Writer) RAISES IO.Error;
-  VAR
-    i: LONGINT;
   BEGIN
     typePars.Store^(w);
-    IF (typePars.params = NIL) THEN
-      w.WriteNum(-1);
-    ELSE
-      w.WriteNum(LEN(typePars.params^));
-      FOR i := 0 TO LEN(typePars.params^)-1 DO
-        w.WriteObject(typePars.params[i]);
-      END
-    END;
-    (* ignore field `ns' *)
+    (* ignore field `params' and `ns' *)
   END Store;
 
 PROCEDURE (typePars: TypePars) Load* (r: Storable.Reader) RAISES IO.Error;
-  VAR
-    obj: Storable.Object;
-    i, len: LONGINT;
   BEGIN
     typePars.Load^(r);
-    r.ReadNum(len);
-    IF (len < 0) THEN
-      typePars.params := NIL;
-    ELSE
-      NEW(typePars.params, len);
-      FOR i := 0 TO len-1 DO
-        r.ReadObject(obj);
-        typePars.params[i] := obj(TypeDecl);
-      END
-    END;
+    typePars.params := NIL;
     typePars.ns := NIL;
   END Load;
 
