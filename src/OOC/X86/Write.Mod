@@ -860,6 +860,12 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
         | S.call:
           Opc0("call");
           DirectOpnd(instr.opndList);
+        | S.bounceResult:
+          Opc("fstp");
+          sb.AppendLatin1("(%esp)");
+          Opc("movs");
+          sb.AppendLatin1("(%esp), ");
+          Result(instr.resultList);
         | S.leave:
           (* undo local variables and call arguments: *)
           sb.Append(nl+w.labelExit+":");

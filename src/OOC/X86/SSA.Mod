@@ -109,11 +109,14 @@ CONST  (* Instruction Opcodes: *)
   call* = opcodeFunctionFraming+3;
   (**First operand is the called address, and the second the current stack
      pointer.  The rest of the operand list are the actual function parameters.  *)
-  function* = opcodeFunctionFraming+4;
+  bounceResult* = opcodeFunctionFraming+4;
+  (**Copies a floating point value from register @samp{st0} into one of the
+     SSE2 registers @samp{xmm}.  *)
+  function* = opcodeFunctionFraming+5;
   (**This is the block that represents the whole function.  *)
-  allocateStack* = opcodeFunctionFraming+5;
+  allocateStack* = opcodeFunctionFraming+6;
   (**Allocate space for local variables on stack.  *)
-  standin* = opcodeFunctionFraming+6;
+  standin* = opcodeFunctionFraming+7;
   (**A ``standin'' instruction is a foothold of non-instruction data on a value
      that is part of the function's code.  The instruction has a single
      operand, holding the value of interest to the external data structure; it
@@ -128,7 +131,7 @@ CONST  (* Instruction Opcodes: *)
      have the same argument.  A standin instruction can only be deleted by the
      data that holds the reference to it.  *)
   
-  opcodeMemory = opcodeFunctionFraming+7;
+  opcodeMemory = opcodeFunctionFraming+8;
   get* = opcodeMemory+0;
   (**@code{get} @var{address} *)
   set* = opcodeMemory+1;
@@ -985,6 +988,22 @@ PROCEDURE (res: Result) ReplaceUses* (with: Result);
       use := nextUse;
     END
   END ReplaceUses;
+
+PROCEDURE (res: Result) ReplaceUsesExcept* (with: Result; except: Opnd);
+(**Replaces all uses of @oparam{res} with @oparam{with}.  *)
+  VAR
+    use, nextUse: Opnd;
+  BEGIN
+    use := res.useList;
+    WHILE (use # NIL) DO
+      nextUse := use.nextUse;
+      IF (use # except) THEN
+        DeleteUse(use);
+        SetUse(with, use);
+      END;
+      use := nextUse;
+    END
+  END ReplaceUsesExcept;
 
 PROCEDURE (calledAdr: Result) CalledProc*(): Sym.ProcDecl;
 (**Given the first argument of a @oconst{call} instruction, return the

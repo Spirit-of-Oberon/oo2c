@@ -120,6 +120,7 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
       reg: S.Register;
       clobbered: SET;
       type: S.Type;
+      dep: S.Dep;
 
     PROCEDURE ArgSize(arg: S.Result): LONGINT;
       VAR
@@ -158,8 +159,23 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
         (* leave enough room on stack to bounce the result of the called
            procedure via the stack into a xmm register  *)
         type := call.resultList.type;
-        IF S.IsFloat(type) & (S.TypeSize(type) > maxSizeCallStack) THEN
-          maxSizeCallStack := S.TypeSize(type);
+        IF S.IsFloat(type) THEN
+          IF (S.TypeSize(type) > maxSizeCallStack) THEN
+            maxSizeCallStack := S.TypeSize(type);
+          END;
+
+          (* add bounce instruction for function result; add memory dependency
+             from bounce to original call, and move all memory dependencies
+             on the call to the bounce instruction *)
+          instr := b.AddInstr2(S.bounceResult, sp, call.resultList);
+          res := instr.AddResult(type);
+          call.resultList.ReplaceUsesExcept(res, instr.opndList.nextOpnd);
+
+          FOR dep IN call.AfterList(S.depMemory) DO
+            dep.instr.AddDep(S.depMemory, instr);
+            dep.DeleteDep();
+          END;
+          instr.AddDep(S.depMemory, call);
         END;
       END;
 

@@ -118,6 +118,7 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.exit: str := "exit";
     | S.return: str := "return";
     | S.call: str := "call";
+    | S.bounceResult: str := "bounceResult";
     | S.function: str := "function";
     | S.allocateStack: str := "allocateStack";
     | S.standin: str := "standin";
@@ -184,6 +185,8 @@ PROCEDURE Register*(reg: S.Register): STRING;
     | S.fp5: RETURN "fp5";
     | S.fp6: RETURN "fp6";
     | S.fp7: RETURN "fp7";
+    ELSE
+      RETURN "???";
     END;
   END Register;
 
