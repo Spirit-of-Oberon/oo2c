@@ -323,7 +323,7 @@ TYPE
   LinkLibDesc = RECORD
     (LinkDirectiveDesc)
     libraryName-: String.String;
-    dependencies: String.StringArrayPtr;
+    dependencies-: String.StringArrayPtr;
     prefixOption, suffixOption: String.String;
   END;
 
