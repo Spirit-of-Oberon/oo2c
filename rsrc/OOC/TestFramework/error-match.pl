@@ -10,7 +10,7 @@ use strict;
 my $mark = "%";
 
 # only these strings are meta characters:
-my @meta = ("\\$mark", '\\A', '\\Z', '\\n', '\\\\', '^', '$');
+my @meta = ("\\$mark", '\\A', '\\Z', '\\n', '\\\\', '\\^', '^', '\\$', '$');
 my $meta_re = "(".join("|", map {quotemeta($_)} @meta).")";
 
 
