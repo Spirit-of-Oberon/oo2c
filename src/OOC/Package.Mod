@@ -3,7 +3,8 @@ MODULE OOC:Package;
 IMPORT
   IntStr, LongStrings, Msg, Strings, IO, IO:FileChannel, IO:StdChannels, 
   Exception, Object, ADT:ArrayList, ADT:StringBuffer, OSFiles := OS:Files,
-  OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
+  OS:ProcessManagement, OS:Path,
+  URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
   Config:Parser, CfgData := Config, Config:Section:Options,
   OOC:Logger, OOC:Config, OOC:Error, Rep := OOC:Repository;
@@ -1278,7 +1279,7 @@ RAISES IO.Error;
     w.EndOfText();
     
     f.Close();
-    cmd := "chmod 644 "+fileName;
+    cmd := "chmod 644 "+Path.QuoteForShell(fileName);
     Logger.ShellCommand(cmd);
     i := ProcessManagement.system(cmd);
   END WritePackage;
@@ -1317,7 +1318,7 @@ RAISES IO.Error;
     w.EndOfText();
     f.Close();
 
-    cmd := "chmod 644 "+fileName;
+    cmd := "chmod 644 "+Path.QuoteForShell(fileName);
     Logger.ShellCommand(cmd);
     i := ProcessManagement.system(cmd);
   END WriteRepository;

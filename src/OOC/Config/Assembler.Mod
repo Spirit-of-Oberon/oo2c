@@ -21,7 +21,7 @@ MODULE OOC:Config:Assembler;
 *)
 
 IMPORT
-  ADT:StringBuffer, URI, URI:Scheme:File;
+  ADT:StringBuffer, URI, URI:Scheme:File, OS:Path;
 
 
 PROCEDURE AssembleFileCmd* (in, out: URI.URI): STRING;
@@ -29,9 +29,9 @@ PROCEDURE AssembleFileCmd* (in, out: URI.URI): STRING;
     sb: StringBuffer.StringBuffer;
   BEGIN
     sb := StringBuffer.New("as ");
-    sb.Append(in(File.URI).GetPath());
+    sb.Append(Path.QuoteForShell(in(File.URI).GetPath()));
     sb.Append(" -o ");
-    sb.Append(out(File.URI).GetPath());
+    sb.Append(Path.QuoteForShell(out(File.URI).GetPath()));
     RETURN sb.ToString();
   END AssembleFileCmd;
 

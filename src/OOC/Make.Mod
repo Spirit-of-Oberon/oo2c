@@ -763,7 +763,7 @@ RAISES IO.Error;
         sb.Append(" -o ");
         uri := module. GetURI (Rep.modInterfaceHTML, TRUE);
         path := uri(File.URI).GetPath();
-        sb.Append(path);
+        sb.Append(Path.QuoteForShell(path));
 
         (* create directory for HTML file, if it does not exist *)
         OSFiles.MakeDirs (Path.DirName(path), OSFiles.defaultMode);
@@ -771,12 +771,12 @@ RAISES IO.Error;
         (* append file name of style sheet *)
         uri := GetSystemId (Config.repositories);
         sb.Append(" ");
-        sb.Append(uri(File.URI).GetPath());
+        sb.Append(Path.QuoteForShell(uri(File.URI).GetPath()));
         
         (* append name of XML file *)
         uri := module. GetURI (Rep.modInterfaceDescr, TRUE);
         sb.Append(" ");
-        sb.Append(uri(File.URI).GetPath());
+        sb.Append(Path.QuoteForShell(uri(File.URI).GetPath()));
         
         cmd := sb.ToString();
         Logger.ShellCommand(cmd);

@@ -23,7 +23,8 @@ MODULE OOC:Make:LinkProgramC;
 IMPORT
   IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
   ADT:ArrayList, ADT:StringBuffer, CfgData := Config,
-  OS:ProcessManagement, OOC:Package, OOC:Repository, OOC:Logger, OOC:Config,
+  OS:ProcessManagement, OS:Path,
+  OOC:Package, OOC:Repository, OOC:Logger, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
 VAR
@@ -213,7 +214,7 @@ RAISES IO.Error;
       ELSIF ~imports[i].ifData.NoObjectFile() THEN
         uri := imports[i]. GetURI (objectFile, TRUE);
         sb.Append(" ");
-        sb.Append(uri(File.URI).GetPath());
+        sb.Append(Path.QuoteForShell(uri(File.URI).GetPath()));
       END;
     END;
 
@@ -221,7 +222,7 @@ RAISES IO.Error;
       (* add file with function main() *)
       uri := module. GetURI (Repository.modMainObjectFile, TRUE);
       sb.Append(" ");
-      sb.Append(uri(File.URI).GetPath());
+      sb.Append(Path.QuoteForShell(uri(File.URI).GetPath()));
     END;
 
     FOR i := 0 TO importedLibsList.size-1 DO
@@ -230,7 +231,7 @@ RAISES IO.Error;
         (* looks like an uninstalled library *)
         uri := import.GetURI(Repository.modLibrary, TRUE);
         sb.Append(" ");
-        sb.Append(uri(File.URI).GetPath());
+        sb.Append(Path.QuoteForShell(uri(File.URI).GetPath()));
       ELSE
         (* we don't have a .la file, so assume that it's a regularly
            installed libtool library  *)
