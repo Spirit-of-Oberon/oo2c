@@ -19,7 +19,8 @@ MODULE Object;
 *)
 
 (**This module provides the definitions for a basic object type used in most of
-   the ADT library.
+   the ADT library, and the implementation of the predefined type
+   @code{STRING}.
 
    Note: This module is a construction site.  New type definitions and features
    are added on demand.  If it is not used, it has no place here.  *)
@@ -40,7 +41,15 @@ TYPE
      and @oproc{Object.HashCode}.
 
      It is an abstract class without any state of its own.  As such, it has no
-     initialization procedure or cleanup method.  *)
+     initialization procedure or cleanup method.
+
+     String constants are assignment compatbile with variables of type
+     @otype{Object}.  Such an assignment automatically converts the constant
+     into an instance of @otype{String}.  That is, in an assignment, for a
+     procedure argument passed to a value parameter, and as a function result,
+     a string constant can be used instead of a @otype{String}.  The string
+     object is created once, as part of the module's initialization code,
+     @emph{not} each time its surrounding code is evaluated.  *)
   END;
 
 TYPE
@@ -57,7 +66,10 @@ TYPE
 
      A @otype{String} can hold any Oberon-2 string, but the reverse is not
      true, even if the character range is restricted: @samp{U+0000} can appear
-     in a @otype{String}, but not in an Oberon-2 string.  *)
+     in a @otype{String}, but not in an Oberon-2 string.
+
+     @emph{Note}: The predefined type name @code{STRING} is an alias for
+     @otype{String}.  *)
     (ObjectDesc)
     length-: LONGINT;
     (**Number of code points in the sequence.  Because surrogate pairs
