@@ -1,6 +1,6 @@
 MODULE oowhereis;
 (*  File finder.
-    Copyright (C) 1996-1999, 2002  Michael van Acken
+    Copyright (C) 1996-1999, 2002, 2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -123,6 +123,7 @@ PROCEDURE Query(): BOOLEAN;
 
 PROCEDURE NewConfig;
   BEGIN
+    Config.AddRepositoryListEnv();
     Config.AddCmdLine("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     

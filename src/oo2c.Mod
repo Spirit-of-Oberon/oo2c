@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE oo2c;
 (*  Main module for the Oberon-2 to C translator.
-    Copyright (C) 2002,2003  Michael van Acken
+    Copyright (C) 2002-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -66,6 +66,7 @@ PROCEDURE NewConfig;
     showHelp := Config.AddOption("showHelp", CfgData.NewBooleanVar(FALSE));
     showVersion := Config.AddOption("showVersion", CfgData.NewBooleanVar(FALSE));
     
+    Config.AddRepositoryListEnv();
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     Config.AddCmdLine ("--make,-M",
