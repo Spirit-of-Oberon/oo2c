@@ -3,7 +3,8 @@ MODULE Config:Parser;
 IMPORT
   Channel, Msg, LongStrings,
   XML:EntityResolver, XMLBuilder := XML:Builder, XML:DTD, XML:Error,
-  Locator := XML:Locator, XMLParser := XML:Parser, XML:UnicodeCodec:Latin1;
+  Locator := XML:Locator, XMLParser := XML:Parser,
+  <*PUSH; Warnings:=FALSE*>XML:UnicodeCodec:Latin1<*POP*>;
   (*note: the `Latin1' module is imported to add the codec to the program *)
 
 
