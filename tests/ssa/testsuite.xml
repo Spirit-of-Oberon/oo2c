@@ -10,7 +10,14 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; undef15">-->
+  select ="&SetupTestCasesWithOut; undef16 undef17 undef18 undef19
+  undef20 undef21 undef22 undef23 undef24">-->
+<!--<testsuite-ext
+  profile="Test Suite for Translation Patterns"
+  select ="&SetupTestCasesWithOut; undef1 undef2 undef3 undef4 undef5
+  undef6 undef7 undef8 undef9 undef10 undef11 undef12 undef13 
+  undef14 undef15 undef16 undef17 undef18 undef19
+  undef20 undef21 undef22 undef23 undef24">-->
 
   &TestSetupWithOut;
     
@@ -1361,6 +1368,45 @@
       Warn if a <code>WITH</code> guard makes a later guard
       unreachable.
     </test>
+    <test id="undef16" type="accept" file="Undef16.Mod">
+      Called nested procedure reads a local variable that is not
+      defined at the place of the call.
+    </test>
+    <test id="undef17" type="accept" file="Undef17.Mod">
+      Called nested procedure only partially defines a local variable.
+    </test>
+    <test id="undef18" type="accept" file="Undef18.Mod">
+      Variation of <code>undef16</code>, using a variable parameter.
+    </test>
+    <test id="undef19" type="accept" file="Undef19.Mod">
+      Variation of <code>undef17</code>, using a variable parameter.
+    </test>
+    <test id="undef20" type="accept" file="Undef20.Mod">
+      Variation of <code>undef16</code>, putting an additional
+      procedure level between the declaration and the use of the
+      variable.
+    </test>
+    <test id="undef21" type="accept" file="Undef21.Mod">
+      Variation of <code>undef17</code>, putting an additional
+      procedure level between the declaration and the use of the
+      variable.
+    </test>
+    <test id="undef22" type="accept" file="Undef22.Mod">
+      Variation of <code>undef18</code>, putting an additional
+      procedure level between the declaration and the use of the
+      variable.
+    </test>
+    <test id="undef23" type="accept" file="Undef23.Mod">
+      Variation of <code>undef19</code>, putting an additional
+      procedure level between the declaration and the use of the
+      variable.
+    </test>
+    <test id="undef24" type="accept" file="Undef24.Mod">
+      The assignment and the recursive nature of the called procedure 
+      should prevent warning.
+      (Note: There is currently no way to check that warning is
+      <em>not</em> produced.)
+    </test>
   </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC O2">
@@ -1783,5 +1829,21 @@
         msg="Warning: Unreachable code"/>
     <warning-info id="undef15" pos="x%: P3"
         msg="Warning: Type test made unreachable by preceeding guard"/>
+    <warning-info id="undef16" pos="y := %N()"
+        msg="Warning: Callee may read undefined variable `x'"/>
+    <warning-info id="undef17" pos="RETURN %x"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef18" pos="N(%x)"
+        msg="Warning: Undefined variable"/>
+    <warning-info id="undef19" pos="RETURN %x"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef20" pos="y := %Q()"
+        msg="Warning: Callee may read undefined variable `x'"/>
+    <warning-info id="undef21" pos="RETURN %x"
+        msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef22" pos="%Q()"
+        msg="Warning: Callee may read undefined variable `x'"/>
+    <warning-info id="undef23" pos="RETURN %x"
+        msg="Warning: Variable may be undefined"/>
   </processor-info>
 </testsuite-ext>
