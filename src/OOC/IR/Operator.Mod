@@ -86,6 +86,9 @@ TYPE
     operand- : IR.Expression;
   END;
 
+VAR
+  real : Sym.Type;
+
 PROCEDURE InitVisitor* (v: Visitor);
   BEGIN
     IR.InitVisitor (v);
@@ -140,6 +143,101 @@ PROCEDURE (conv: TypeConv) Accept* (v: IR.Visitor);
     v(Visitor). VisitTypeConv (conv)
   END Accept;
 
+PROCEDURE (b : Builder) AssignType (type : Sym.Type; expr : IR.Expression) : IR.Expression;
+(**If necessary, transform @oparam{expr} to be compatible with @oparam{type}.
+   For scalar types, this involves returning an explicit type conversion
+   operator. Where types are already compatible (eg. extension of record
+   types), the original expression is returned without modification. If the
+   type of @oparam{expr} is not ccompatible with @oparam{type}, the function
+   returns NIL. *)
+VAR
+  tr : TypeRules.Rules;
+BEGIN
+  tr := b.typeRules;
+  IF tr.SameType(type, expr.type) OR tr.IsExtensionOf(type, expr.type) THEN
+    RETURN expr
+  ELSIF tr.IncludesType(type, expr.type) THEN
+    RETURN NewTypeConv(type, expr)
+  ELSE
+    RETURN NIL;
+  END;
+END AssignType;
+
+PROCEDURE (b : Builder) AdjustTypes (VAR left, right : IR.Expression; VAR type : Sym.Type) : BOOLEAN;
+(**AdjustTypes implements type checking for arguments of operands. Section 8.2.2
+   of the language report states "The type of the result is the type of that
+   operand which includes the type of the other operand ...". Where required,
+   this procedure modifies left or right expressions with an explicit type
+   conversion operator so that the two expressions have compatible types. The
+   broadest type of the two operands is returned in @oparam{type}. *)
+VAR
+  expr : IR.Expression;
+  tr : TypeRules.Rules;
+BEGIN
+  tr := b.typeRules;
+  IF tr.SameType(left.type, right.type) THEN
+    type := left.type; RETURN TRUE;
+  ELSE
+    expr := b.AssignType(left.type, right);
+    IF expr = NIL THEN
+      expr := b.AssignType(right.type, left);
+      IF expr = NIL THEN
+        RETURN FALSE;
+      ELSE
+        left := expr; type := right.type; RETURN TRUE;
+      END;
+    ELSE
+      right := expr; type := left.type; RETURN TRUE;
+    END;
+  END;
+END AdjustTypes;
+
+PROCEDURE (b : Builder) FoldBinary(op, left, right : IR.Expression) : IR.Expression;
+(**FoldBinary implements simple constant folding for binary operators. If
+   operator @oparam{op} has constant arguments @oparam{left} and
+   @oparam{right}, it is evaluated. If evaluation is successful, the constant
+   result is returned.  Otherwise, the original operator is returned. *)
+VAR 
+  value : Language.Value;
+  env : IR.Environment;
+BEGIN
+  IF (left IS IR.Const) & (right IS IR.Const) THEN
+    env.Init();
+    value := op.Evaluate(env);
+    IF env.Err() THEN
+      b.ErrSym(IR.evaluateConst, op.sym);
+      RETURN op;
+    ELSE
+      RETURN b.NewConst(op.sym, op.type, value);
+    END;
+  ELSE
+    RETURN op;
+  END;
+END FoldBinary;
+
+PROCEDURE (b : Builder) FoldUnary(op, operand : IR.Expression) : IR.Expression;
+(**FoldBinary implements simple constant folding for binary operators. If
+   operator @oparam{op} has constant argument @oparam{operand} it is evaluated.
+   If evaluation is successful, the constant result is returned. Otherwise,
+   the original operator is returned. *)
+VAR 
+  value : Language.Value;
+  env : IR.Environment;
+BEGIN
+  IF (operand IS IR.Const) THEN
+    env.Init();
+    value := op.Evaluate(env);
+    IF env.Err() THEN
+      b.ErrSym(IR.evaluateConst, op.sym);
+      RETURN op;
+    ELSE
+      RETURN b.NewConst(op.sym, op.type, value);
+    END;
+  ELSE
+    RETURN op;
+  END;
+END FoldUnary;
+
 (* -------- *)
 
 PROCEDURE (op : BinaryArith) Evaluate* (VAR env : IR.Environment) : Language.Value;
@@ -159,11 +257,17 @@ VAR
     | arithAdd:  result := left + right;
     | arithSub:  result := left - right;
     | arithMul:  result := left * right;
-    | arithDivR: 
+    | arithDivI: 
       IF right = 0 THEN
         env.Exception(IR.statusDivByZero, op, l, r); RETURN NIL;
       ELSE
         result := left DIV right;
+      END;
+    | arithMod:
+      IF right = 0 THEN
+        env.Exception(IR.statusDivByZero, op, l, r); RETURN NIL;
+      ELSE
+        result := left MOD right;
       END;
     ELSE
       env.Exception(IR.statusInvalidOp, op, l, r); RETURN NIL;
@@ -180,30 +284,65 @@ BEGIN
   RETURN IntegerOp();
 END Evaluate;
 
-PROCEDURE InitBinaryArith (op: BinaryArith; sym: IR.Symbol; variant : Variant; left, right: IR.Expression);
+PROCEDURE InitBinaryArith (op: BinaryArith; sym: IR.Symbol; variant : Variant; left, right: IR.Expression; type : Sym.Type);
   BEGIN
-    IR.InitOperator (op, sym, left. type);
+    IR.InitOperator (op, sym, type);
     op.variant := variant;
     op.left := left;
     op.right := right;
   END InitBinaryArith;
 
-PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; left, right: IR.Expression): BinaryArith;
+PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
   VAR
-    op: BinaryArith; variant : Variant;
+    op: BinaryArith;  ok : BOOLEAN;
+    variant : Variant; type : Sym.Type;
+    tr : TypeRules.Rules;
   BEGIN
-    (* FIXME! Check types of left and right operands *)
+    tr := b.typeRules;
+
     CASE sym.id OF
-    | Symbol.plus:
-      variant := arithAdd;
-    | Symbol.minus:
-      variant := arithSub;
-    | Symbol.times:
-      variant := arithMul;
+    | Symbol.plus, Symbol.minus, Symbol.times:
+      (* require two eqivalent numeric types *)
+      ok := b.AdjustTypes(left, right, type) & 
+            tr.IsPredefClass(type, Predef.classNumeric);
+    | Symbol.div, Symbol.mod:
+      (* require two equivalent integer types *)
+      ok := b.AdjustTypes(left, right, type) &
+            tr.IsPredefClass(type, Predef.classInteger);
+    | Symbol.slash:
+      (* require two real operands *)
+      IF tr.IsPredefClass(left.type, Predef.classReal) OR tr.IsPredefClass(right.type, Predef.classReal) THEN
+        (* one operand is already real *)
+        ok := b.AdjustTypes(left, right, type);
+      ELSE
+        (* Neither operand is real, so try to convert both to real. This
+        special case avoids the possibility of generating two TypeConv
+        operators (eg. to widen an integer, the to widen integer to real. *)
+
+        left := b.AssignType(real, left); right := b.AssignType(real, right);
+        type := real;
+        ok := (left # NIL) & (right # NIL)
+      END;
+    ELSE
+      RETURN b.ErrExpr(IR.invalidOpType, sym);
     END;
-    NEW (op);
-    InitBinaryArith (op, sym, arithAdd, left, right);
-    RETURN op
+
+    IF ok THEN
+      CASE sym.id OF
+      | Symbol.plus:   variant := arithAdd;
+      | Symbol.minus:  variant := arithSub;
+      | Symbol.times:  variant := arithMul;
+      | Symbol.slash:  variant := arithDivR;
+      | Symbol.div:    variant := arithDivI;
+      | Symbol.mod:    variant := arithMod;
+      END;
+
+      NEW (op);
+      InitBinaryArith (op, sym, variant, left, right, type);
+      RETURN b.FoldBinary(op, left, right);
+    ELSE
+      RETURN b.ErrExpr(IR.invalidOpType, sym);
+    END;
   END NewBinaryArith;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitBinaryArith* (op: BinaryArith);
@@ -345,13 +484,13 @@ PROCEDURE InitNegate (neg: Negate; sym: IR.Symbol; expr: IR.Expression);
     neg.operand := expr;
   END InitNegate;
 
-PROCEDURE (b: Builder) NewNegate (sym: IR.Symbol; expr: IR.Expression): Negate;
+PROCEDURE (b: Builder) NewNegate (sym: IR.Symbol; expr: IR.Expression): IR.Expression;
   VAR
     neg: Negate;
   BEGIN
     NEW (neg);
     InitNegate (neg, sym, expr);
-    RETURN neg
+    RETURN b.FoldUnary(neg, expr);
   END NewNegate;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitNegate* (neg: Negate);
@@ -363,20 +502,6 @@ PROCEDURE (neg: Negate) Accept* (v: IR.Visitor);
   END Accept;
 
 (* -------- *)
-
-PROCEDURE (b : Builder) WidenExpr (type : Sym.Type; expr : IR.Expression) : IR.Expression;
-VAR
-  tr : TypeRules.Rules;
-BEGIN
-  tr := b.typeRules;
-  IF tr.SameType(type, expr.type) OR tr.IsExtensionOf(type, expr.type) THEN
-    RETURN expr
-  ELSIF tr.IncludesType(type, expr.type) THEN
-    RETURN NewTypeConv(type, expr)
-  ELSE
-    RETURN NIL;
-  END;
-END WidenExpr;
 
 PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
 (**Return an IR expression for the given symbol and left/right expressions.
@@ -419,6 +544,12 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
         ELSE
           RETURN b.ErrExpr(IR.invalidOpType, sym);
         END;
+      | Symbol.plus:
+        IF isNumeric THEN 
+	  RETURN right;
+	ELSE
+	  RETURN b.ErrExpr(IR.invalidOpType, sym);
+	END;
       | Symbol.not:
         (* for now, map logical negation onto Negate operator *)
         RETURN b.NewNegate(sym, right);
@@ -443,4 +574,6 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
 
 (* -------- *)
 
+BEGIN
+  real := Predef.GetType(Predef.real);
 END OOC:IR:Operator.

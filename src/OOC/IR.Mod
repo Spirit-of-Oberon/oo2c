@@ -335,8 +335,14 @@ CONST
   numberOutOfRange* = 3;
   characterOutOfRange* = 4;
   invalidOpType* = 5;
+  (** types of operands are not allowed for this operator *)
   unknownOp* = 6;
-  
+  (** symbol is not an operator *)
+  incompatibleTypes* = 7;
+  (** types of operands are not equivalent as required by operator *)
+  evaluateConst* = 8;
+  (** error evaluating constant expression. FIXME! Temporary: replace with something more informative. *)
+
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -363,6 +369,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Invalid type for operator"
     | unknownOp:
       t := "Unknown operator"
+    | incompatibleTypes:
+      t := "Incompatible types for operator"
+    | evaluateConst:
+      t := "Error evaluating constant expression"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -503,6 +513,12 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
   BEGIN
     v. VisitConst (const)
   END Accept;
+
+PROCEDURE (b : Builder) NewConst* (sym: Symbol; type: Sym.Type;
+                    value: Language.Value): Const;
+  BEGIN
+    RETURN NewConst(sym, type, value);
+  END NewConst;
 
 PROCEDURE (b: Builder) NewStringConst* (sym: Symbol): Expression;
   BEGIN
