@@ -437,28 +437,48 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             RETURN ExternalVisibility (GetVar (origin));
           END;
         END TraceUse;
+
+      PROCEDURE UnreachableUse (definition: SSA.Instr; use: SSA.Opnd): BOOLEAN;
+        BEGIN
+          IF (definition. opcode = Opcode.return) THEN
+            RETURN (use. instr. opcode # Opcode.selectReturn)
+          ELSE  (* (definition. opcode = Opcode.exit) *)
+            RETURN (use. instr. opcode # Opcode.selectExit)
+          END;
+        END UnreachableUse;
       
       BEGIN
         visible := FALSE;
+
         use := storeOut. useList;
-        WHILE (use # NIL) DO
-          IF (storeOut. instr. opcode # Opcode.exit) OR
-             (use. instr. opcode = Opcode.selectExit) THEN
-            (* normal use *)
+        IF (storeOut. instr. opcode # Opcode.exit) &
+           (storeOut. instr. opcode # Opcode.return) THEN
+          (* the defining instruction is neither an "exit" nor a "return",
+             which means we are dealing with a normal flow of control here *)
+          WHILE (use # NIL) DO
             IF TraceUse (use) THEN
               visible := TRUE
             END;
-          ELSE
-            (* the result is produced by an "exit" instruction, and we are
-               not in the corresponding "select-exit": this path of control
-               is unreachable, and the special value "pb.selectReturn" is
-               used to mark this *)
-            oldLastDefinition := lastDefinition;
-            lastDefinition := pb. selectReturn;
-            dummy := TraceUse (use);
-            lastDefinition := oldLastDefinition;
+            use := use. nextUse
           END;
-          use := use. nextUse
+        ELSE
+          WHILE (use # NIL) DO
+            IF UnreachableUse (storeOut. instr, use) THEN
+              (* the result is produced by an "exit" or "return" instruction,
+                 and we are not in the corresponding "select-*": this path of
+                 control is unreachable, and the special value
+                 "pb.selectReturn" is used to mark this  *)
+              oldLastDefinition := lastDefinition;
+              lastDefinition := pb. selectReturn;
+              dummy := TraceUse (use);
+              lastDefinition := oldLastDefinition;
+            ELSE  (* normal use *)
+              IF TraceUse (use) THEN
+                visible := TRUE
+              END;
+            END;
+            use := use. nextUse
+          END;
         END;
         RETURN visible
       END TraceF;
