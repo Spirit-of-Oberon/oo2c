@@ -3323,7 +3323,7 @@ PROCEDURE (b: Builder) NewCaseStatm* (sym: Symbol; select: Expression;
       END;
     END;
     InitCaseStatm (caseStatm, sym, select, caseList, default,
-                   GetPragmaValue (b, StdPragmas.indexCheck, sym. pos));
+                   GetPragmaValue (b, StdPragmas.caseSelectCheck, sym. pos));
     RETURN caseStatm
   END NewCaseStatm;
 
