@@ -5,10 +5,11 @@
 <testsuite-ext
   profile="Test Suite for Framework Testing"
   select ="prepare_out_module var1 var2 var3 var3b var3c var4 var4b 
-  var5 var5b var6 var6b var7 var7b var7c swap1 swap2">
+  var5 var5b var6 var6b var7 var7b var7c swap1 swap2
+  varpar1 varpar1b varpar1c">
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module swap1 swap2">-->
+  select ="prepare_out_module varpar1 varpar1b varpar1c">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -113,6 +114,27 @@
       Swapping to values.  The swap is done in the register file.  A
       temporary variable must be created to avoid clobbering a swapped
       value.
+    </test>
+
+
+    <test id="varpar1" type="run" file="VarPar1.Mod" output="VarPar1.Ref">
+      Assignment to <code>VAR</code> parameter does not alias with
+      local variable.  This means there is no need to retrieve either
+      the local variable nor the variable parameter from memory.
+    </test>
+    
+    <test id="varpar1b" type="run" file="VarPar1b.Mod" output="VarPar1b.Ref">
+      Assignment to <code>VAR</code> parameter may alias with a global
+      variable.  This means that the global variable needs to be
+      retrieved from memory after an assignment to the
+      <code>VAR</code> parameter.
+    </test>
+    
+    <test id="varpar1c" type="run" file="VarPar1c.Mod" output="VarPar1c.Ref">
+      Assignment to <code>VAR</code> parameter that cannot alias with
+      a global variable because of its different type.  This means
+      there is no need to retrieve either the global variable nor the
+      variable parameter from memory.
     </test>
   </testcases>
 </testsuite-ext>

@@ -21,7 +21,7 @@ MODULE OOC:SSA:Aliasing;
 *)
 
 IMPORT
-  Sym := OOC:SymbolTable, OOC:SSA;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:TypeRules, OOC:SSA;
   
 (**
 
@@ -94,8 +94,10 @@ CONST
      @oconst{noAliasing}, @oconst{completelyCovered}, or
      @oconst{partiallyCovered} may be true during run-time.  *)
 
-  
-PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
+
+
+PROCEDURE DesignatorAlias* (tr: TypeRules.Rules;
+                            instr, reference: SSA.Opnd): Id;
 (**Determines the aliasing status of the designator @oparam{design} with
    respect to the designator @oparam{reference}.  A designator is described by
    a list of operands of class @oconst{Opnd.readDesign} or
@@ -105,7 +107,9 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
    Note: The current state of this procedure reflects the progress of the
    SSA back-end, an only deals with a subset of all possible designators.
    *)
-
+  VAR
+    typeInstr, typeRef: Sym.Type;
+    
   PROCEDURE NextPart (opnd: SSA.Opnd): SSA.Opnd;
     BEGIN
       IF (opnd. nextOpnd = NIL) OR (opnd. nextOpnd. class # opnd. class) THEN
@@ -123,6 +127,15 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
           (opnd. arg(SSA.DeclRef). decl IS Sym.VarDecl) &
           ~opnd. arg(SSA.DeclRef). decl(Sym.VarDecl). isVarParam
     END IsVariable;
+
+  PROCEDURE IsVarParam (opnd: SSA.Opnd): BOOLEAN;
+  (* TRUE iff `opnd' refers to a VAR parameter *)
+    BEGIN
+      RETURN
+          (opnd. arg IS SSA.DeclRef) &
+          (opnd. arg(SSA.DeclRef). decl IS Sym.VarDecl) &
+          opnd. arg(SSA.DeclRef). decl(Sym.VarDecl). isVarParam
+    END IsVarParam;
 
   PROCEDURE CheckSelectors (selInstr, selReference: SSA.Opnd;
                             prefixClass: Id): Id;
@@ -157,7 +170,9 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
         END;
 
       ELSIF (selReference = NIL) THEN
-        (* the reference designator ends before our designator *)
+        (* the reference designator ends before our designator, which means
+           our designator works on something that is completely included in
+           the other designator *)
         RETURN prefixClass;
         
       ELSE  (* everything else has to be an array index *)
@@ -172,11 +187,35 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
         END;
       END;
     END CheckSelectors;
+
+  PROCEDURE NotHigherLevel (varParam, variable: Sym.Declaration): BOOLEAN;
+  (* Returns TRUE if `varParam' is declared in the same procedure as
+     `variable', or in a procedure that encloses that of `variable'.  *)
+    VAR
+      pVarParam, pVariable: Sym.Item;
+    BEGIN
+      pVariable := variable. Procedure();
+      IF (pVariable = NIL) THEN
+        (* variable is declared globally; this means it is declared by
+           definition on a higher level than any parameter *)
+        RETURN FALSE
+      ELSE
+        pVarParam := varParam. Procedure();
+        REPEAT
+          pVarParam := pVarParam. parent
+        UNTIL (pVarParam = NIL) OR (pVarParam = pVariable);
+        RETURN (pVarParam = NIL)
+      END;
+    END NotHigherLevel;
   
   BEGIN
     IF IsVariable (instr) & IsVariable (reference) THEN
+      (* both designators begin with a variable name (this excludes variable
+         parameters, but includes value parameters); this is probably one
+         of the most common cases, and a very simply one *)
       IF (instr. arg(SSA.DeclRef). decl =
           reference. arg(SSA.DeclRef). decl) THEN
+        (* both designators begin with the same variable: inspect selectors *)
         RETURN CheckSelectors (NextPart (instr), NextPart (reference),
                                completelyCovered)
       ELSE
@@ -185,11 +224,54 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
            possibly access the same memory *)
         RETURN noAliasing
       END;
+
+    ELSIF IsVarParam (instr) THEN
+      IF IsVarParam (reference) &
+         (instr.arg(SSA.DeclRef).decl = reference.arg(SSA.DeclRef).decl) THEN
+        (* both designators begin with one and the same variable parameter:
+           inspect selectors *)
+        RETURN CheckSelectors (NextPart (instr), NextPart (reference),
+                               completelyCovered);
+      ELSIF IsVariable (reference) &
+         NotHigherLevel (instr. arg(SSA.DeclRef). decl,
+                         reference. arg(SSA.DeclRef). decl) THEN
+        (* the variable parameter is declared on the same, or on a lower level
+           than the variable: there is no way that it may refer to the
+           variable *)
+        RETURN noAliasing;
+      ELSE
+        (* for all other cases: inspect the types of the designators and
+           try to find out if the variable parameter can point anywhere into
+           the other variable; because of the strict type rules of Oberon-2,
+           a static type analysis can rule out many potential aliases *)
+        typeInstr := instr. arg(SSA.DeclRef). decl(Sym.VarDecl). type;
+        IF (instr. arg IS (SSA.DeclRef)) THEN
+          typeRef := reference. arg(SSA.DeclRef). decl(Sym.VarDecl). type;
+        ELSE
+          typeRef := NIL; ASSERT (FALSE);
+        END;
+
+        IF tr. IsComponentOf (typeInstr, typeRef, TRUE) OR
+           (IsVarParam (reference) &
+            tr. IsComponentOf (typeRef, typeInstr, TRUE)) THEN
+          RETURN mayAlias
+        ELSE
+          RETURN noAliasing
+        END;
+      END;
+      
+    ELSIF IsVarParam (reference) THEN
+      (* if one of the inspected designators is a variable parameter, then the
+         result is other `noAliasing' or `mayAlias', because the other classes
+         make no sense in the context of a var param that may point anywhere;
+         this means that this function is symmetric in the presence of variable
+         parameters, and we can save half the work by normalizing the arguments
+         so that `instr' is the variable parameter *)
+      RETURN DesignatorAlias (tr, reference, instr);
     END;
     
     (* default: assume the worst *)
     RETURN mayAlias
   END DesignatorAlias;
 
-BEGIN
 END OOC:SSA:Aliasing.
