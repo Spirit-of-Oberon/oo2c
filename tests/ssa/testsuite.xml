@@ -1373,6 +1373,9 @@
     </test>
 
     <test id="generic21" type="accept" file="Generic21.Mod">
+      Pathological parametric type: the base type is the type variable
+      itself.  Not sure if this makes much sense, but it is certainly
+      a border case.
     </test>
   </testcases>
 
