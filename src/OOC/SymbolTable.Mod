@@ -888,15 +888,14 @@ PROCEDURE (name: Name) Load* (r: Storable.Reader);
 
 
 PROCEDURE InitItem* (item: Item; parent: Item);
-  PROCEDURE Append (VAR l: Item);
+  PROCEDURE Append (l: Item);
     BEGIN
-      IF (l = NIL) THEN
-        l := item
-      ELSE
-        Append (l. nextNested)
-      END
+      WHILE l.nextNested # NIL DO
+        l := l.nextNested
+      END;
+      l.nextNested := item;
     END Append;
-  
+ 
   BEGIN
     Storable.Init (item);
     item. nextNested := NIL;
@@ -908,15 +907,48 @@ PROCEDURE InitItem* (item: Item; parent: Item);
                (parent IS ProcDecl) OR
                (parent IS Record) OR
                (parent IS FormalPars) );
-      Append (parent. nestedItems)
+      IF parent.nestedItems = NIL THEN
+        parent.nestedItems := item;
+      ELSE
+        Append(parent.nestedItems);
+      END
     END
   END InitItem;
 
+PROCEDURE WriteItemList(w: Storable.Writer; item : Item);
+  BEGIN
+    WHILE item # NIL DO
+      w. WriteObject(item);
+      item := item.nextNested;
+    END;
+    w.WriteObject(NIL);
+  END WriteItemList;
+  
+PROCEDURE ReadItemList(r : Storable.Reader) : Item;
+  VAR
+    last, list : Item;
+    obj : Storable.Object;
+  BEGIN
+    list := NIL; last := NIL;
+    r. ReadObject(obj);
+    WHILE obj # NIL DO
+      WITH obj : Item DO
+        IF last # NIL THEN
+          last.nextNested := obj
+        ELSE
+          list := obj
+        END;
+        last := obj
+      END;
+      r.ReadObject(obj)
+    END;
+    RETURN list
+  END ReadItemList;
+
 PROCEDURE (item: Item) Store* (w: Storable.Writer);
   BEGIN
-    w. WriteObject (item. nextNested);
+    WriteItemList(w, item.nestedItems);
     w. WriteObject (item. parent);
-    w. WriteObject (item. nestedItems);
     (* item.flagList is not store *)
   END Store;
 
@@ -924,23 +956,13 @@ PROCEDURE (item: Item) Load* (r: Storable.Reader);
   VAR
     obj: Storable.Object;
   BEGIN
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      item. nextNested := NIL
-    ELSE
-      item. nextNested := obj(Item)
-    END;
+    item. nextNested := NIL;
+    item. nestedItems := ReadItemList(r);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
       item. parent := NIL
     ELSE
       item. parent := obj(Item)
-    END;
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      item. nestedItems := NIL
-    ELSE
-      item. nestedItems := obj(Item)
     END;
     item. flagList := NIL;
   END Load;
@@ -2205,18 +2227,29 @@ PROCEDURE Prune* (root: Module; keep: Dictionary.Dictionary);
     i: LONGINT;
     
   PROCEDURE PruneList (VAR list: Item);
+    VAR
+      this, last : Item;
     BEGIN
-      IF (list # NIL) THEN
-        PruneList (list. nextNested);
-        IF keep. HasKey (list) THEN
-          PruneList (list. nestedItems)
-        ELSE
-          IF (list IS Import) & ~list(Import).IsInternalImport() THEN
-            prunedImports.Append(list);
+      this := list; last := NIL; list := NIL;
+      WHILE this # NIL DO
+        IF keep. HasKey (this) THEN
+          PruneList (this. nestedItems);
+          (* append "this" to end of "list" *)
+          IF last = NIL THEN
+            list := this;
+          ELSE
+            last.nextNested := this;
           END;
-          list := list. nextNested;
-        END
-      END
+          last := this;
+        ELSE
+          IF (this IS Import) & ~this(Import).IsInternalImport() THEN
+            prunedImports.Append(this);
+          END;
+        END;
+        this := this.nextNested;
+      END;
+      (* terminate the list *)
+      IF last # NIL THEN last.nextNested := NIL END;
     END PruneList;
   
   BEGIN
