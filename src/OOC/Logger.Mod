@@ -9,7 +9,12 @@ VAR
 
 CONST
   logMake = FALSE;
-      
+
+VAR
+  silence*: BOOLEAN;
+  (**If @code{TRUE}, then this module does not produce any output.  *)
+
+
 PROCEDURE WriteURI (uri: URI.URI);
   VAR
     str: ARRAY 1024 OF CHAR;
@@ -19,42 +24,54 @@ PROCEDURE WriteURI (uri: URI.URI);
     ELSE
       uri.GetString(str);
     END;
-    Out.String(str);
+    IF ~silence THEN
+      Out.String(str);
+    END;
   END WriteURI;
 
 PROCEDURE ReadFile* (uri: URI.URI);
   BEGIN
-    Out.String("- ");
-    WriteURI(uri);
-    Out.Ln;
+    IF ~silence THEN
+      Out.String("- ");
+      WriteURI(uri);
+      Out.Ln;
+    END;
   END ReadFile;
 
 PROCEDURE ReadFileName* (fileName: ARRAY OF CHAR);
   BEGIN
-    Out.String("- ");
-    Out.String(fileName);
-    Out.Ln;
+    IF ~silence THEN
+      Out.String("- ");
+      Out.String(fileName);
+      Out.Ln;
+    END;
   END ReadFileName;
 
 PROCEDURE WriteFile* (uri: URI.URI);
   BEGIN
-    Out.String("+ ");
-    WriteURI(uri);
-    Out.Ln;
+    IF ~silence THEN
+      Out.String("+ ");
+      WriteURI(uri);
+      Out.Ln;
+    END;
   END WriteFile;
 
 PROCEDURE WriteFileName* (fileName: ARRAY OF CHAR);
   BEGIN
-    Out.String("+ ");
-    Out.String(fileName);
-    Out.Ln;
+    IF ~silence THEN
+      Out.String("+ ");
+      Out.String(fileName);
+      Out.Ln;
+    END;
   END WriteFileName;
 
 PROCEDURE ShellCommand* (str: ARRAY OF CHAR);
   BEGIN
-    Out.String (str);
-    Out.Ln;
-    Out.Flush;
+    IF ~silence THEN
+      Out.String (str);
+      Out.Ln;
+      Out.Flush;
+    END;
   END ShellCommand;
 
 PROCEDURE IndentMake;
@@ -69,7 +86,7 @@ PROCEDURE IndentMake;
 
 PROCEDURE EnterMake*(rule, module: ARRAY OF CHAR);
   BEGIN
-    IF logMake THEN
+    IF ~silence & logMake THEN
       IndentMake;
       Out.String("enter ");
       Out.String(rule);
@@ -82,7 +99,7 @@ PROCEDURE EnterMake*(rule, module: ARRAY OF CHAR);
 
 PROCEDURE ExitMake*(rule, module: ARRAY OF CHAR; success: BOOLEAN): BOOLEAN;
   BEGIN
-    IF logMake THEN
+    IF ~silence & logMake THEN
       DEC(indentMake);
       IndentMake;
       Out.String("leave ");
@@ -101,7 +118,7 @@ PROCEDURE ExitMake*(rule, module: ARRAY OF CHAR; success: BOOLEAN): BOOLEAN;
 
 PROCEDURE CachedMake*(rule, module: ARRAY OF CHAR; success: BOOLEAN): BOOLEAN;
   BEGIN
-    IF logMake THEN
+    IF ~silence & logMake THEN
       IndentMake;
       Out.String("cached result: ");
       Out.String(rule);
@@ -119,7 +136,7 @@ PROCEDURE CachedMake*(rule, module: ARRAY OF CHAR; success: BOOLEAN): BOOLEAN;
 
 PROCEDURE ExplainMake*(s1: ARRAY OF CHAR);
   BEGIN
-    IF logMake THEN
+    IF ~silence & logMake THEN
       IndentMake;
       Out.String(s1);
       Out.Ln;
@@ -129,7 +146,7 @@ PROCEDURE ExplainMake*(s1: ARRAY OF CHAR);
 PROCEDURE ExplainFileMake*(s1: ARRAY OF CHAR; uri1: URI.URI;
                            s2: ARRAY OF CHAR);
   BEGIN
-    IF logMake THEN
+    IF ~silence & logMake THEN
       IndentMake;
       Out.String(s1);
       WriteURI(uri1);
@@ -142,7 +159,7 @@ PROCEDURE ExplainFilesMake*(s1: ARRAY OF CHAR; uri1: URI.URI;
                             s2: ARRAY OF CHAR; uri2: URI.URI;
                             s3: ARRAY OF CHAR);
   BEGIN
-    IF logMake THEN
+    IF ~silence & logMake THEN
       IndentMake;
       Out.String(s1);
       WriteURI(uri1);
@@ -156,4 +173,5 @@ PROCEDURE ExplainFilesMake*(s1: ARRAY OF CHAR; uri1: URI.URI;
 BEGIN
   cwd := File.GetCwd();
   indentMake := 0;
+  silence := FALSE;
 END OOC:Logger.
