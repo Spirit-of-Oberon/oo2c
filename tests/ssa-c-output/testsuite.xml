@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; noCopy7 noCopy8">-->
+  select ="&SetupTestCasesWithOut; noLengthInfo1">-->
   
   &TestSetupWithOut;
     
@@ -214,6 +214,12 @@
     <test id="noCopy8" type="accept" file="NoCopy8.Mod">
       The callee should not create a local copy of the
       <code>NO_COPY</code> record parameter.
-    </test>    
+    </test>
+    
+    <test id="noLengthInfo1" type="accept" file="NoLengthInfo1.Mod">
+      Declares a pointer variable whose array lacks length information
+      and writes to the pointer element.  Even with index checks
+      enabled, this particular index access must not be checked.
+    </test>
   </testcases>
 </testsuite-ext>

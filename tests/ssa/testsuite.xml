@@ -10,8 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; nilCompat1 nilCompat2 nilCompat3
-           nilCompat4 nilCompat5">-->
+  select ="&SetupTestCasesWithOut; noLengthInfo2 noLengthInfo3">-->
 
   &TestSetupWithOut;
     
@@ -1199,6 +1198,15 @@
       Passing <code>NIL</code> to a <code>NIL_COMPAT</code>
       character array parameter.
     </test>
+
+    <!-- noLengthInfo1 is in tests/ssa-c-output/ -->
+    <test id="noLengthInfo2" type="reject" file="NoLengthInfo2.Mod">
+      <code>NO_LENGTH_INFO</code> is used for a fixed size array.
+    </test>
+    <test id="noLengthInfo3" type="reject" file="NoLengthInfo3.Mod">
+      <code>NO_LENGTH_INFO</code> is used for an array whose
+      element type is another open array.
+    </test>
   </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC">
@@ -1529,5 +1537,10 @@
         msg="Invalid modifier flag"/>
     <reject-info id="nilCompat4" pos="P1(%NIL)"
         msg="Actual parameter not compatible with formal VAR parameter"/>
+
+    <reject-info id="noLengthInfo2" pos="ARRAY[%NO_LENGTH_INFO]"
+        msg="Invalid modifier flag"/>
+    <reject-info id="noLengthInfo3" pos="ARRAY[%NO_LENGTH_INFO]"
+        msg="Invalid modifier flag"/>
   </processor-info>
 </testsuite-ext>

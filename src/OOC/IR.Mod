@@ -2201,9 +2201,10 @@ PROCEDURE (b: Builder) NewIndex* (sym: Symbol; array, index: Expression): Expres
     IF ~(array. type IS Sym.Array) THEN
       RETURN b. ErrExpr (notArray, sym);
     ELSE
+      a := array.type(Sym.Array);
+      checkIndex := checkIndex & a.hasLengthInfo;
       index := b.AssertInteger(index);
       IF index IS Const THEN
-        a := array.type (Sym.Array);
         IF a.isOpenArray THEN
 	  (* FIXME: For open arrays, we simply need to verify that the
 	     constant index is not negative. MAX(LONGINT) should be a legal

@@ -787,7 +787,12 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
               | Sym.flagNoDescriptor:
                 SetFlag(item.hasDescriptor, FALSE);
               | Sym.flagNoLengthInfo:
-                SetFlag(item.hasLengthInfo, FALSE);
+                IF ~item.isOpenArray OR
+                   TR.IsOpenArrayType(item.elementType) THEN
+                  InvalidFlag(flag, invalidModifierFlag);
+                ELSE
+                  SetFlag(item.hasLengthInfo, FALSE);
+                END;
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;

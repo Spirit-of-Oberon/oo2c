@@ -569,7 +569,8 @@ PROCEDURE (v: Visitor) VisitArrayType* (arrayType: ExtTree.ArrayType);
       array := baseType(Sym.Array)
     ELSE
       array := v. stb. NewArray (v. parent, GetPosition (arrayType. array),
-                                 TRUE, NIL, GetType (v, arrayType. type))
+                                 TRUE, NIL, GetType (v, arrayType. type));
+      AddFlags(array, arrayType.flags);
     END;
     v. type := array
   END VisitArrayType;
