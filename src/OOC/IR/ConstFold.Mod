@@ -33,7 +33,7 @@ TYPE
 CONST
   (* To enable constant folding for REAL expressions, set foldReals TRUE. Even
   better, allow it to be enabled/disabled at run-time *)
-  foldReals = FALSE;
+  foldReals = TRUE;
 
 PROCEDURE InitConstFold (c : ConstFold);
 BEGIN
@@ -371,7 +371,7 @@ VAR
     | IR.arithSub:  RETURN left.Sub(right);
     | IR.arithMul:  RETURN left.Mul(right);
     | IR.arithDivR: 
-      IF right.Sign() = 0 THEN
+      IF (right.value = 0) THEN
         c.builder.ErrSym(IR.divideByZero, op.sym);
       ELSE
         RETURN left.Div(right);

@@ -279,6 +279,8 @@ PROCEDURE (v: LongReal) Cmp*(right: Obj.Object): LONGINT;
 
 PROCEDURE (v: LongReal) Sign*(): LONGINT;
   BEGIN
+    (* If I remember correctly, IEEE 754's has both a positive and a negative
+       zero.  This means that the sign() function never return 0.  CHECKME...*)
     RETURN v.Cmp(zeroLongReal);
   END Sign;
 
