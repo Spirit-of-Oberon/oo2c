@@ -579,10 +579,8 @@ BEGIN  <*Warnings:=FALSE*>
   END;
   
   IF (cfgErrList. msgCount # 0) THEN
-    cfgErrList. Write (StdChannels.stdout);
-  END;
-  IF ~cfgErrList.NoErrors() THEN
-    HALT (1)
+    cfgErrList. Write (StdChannels.stderr);
+    HALT(1);
   ELSIF showVersion.value(Boolean.Value).boolean THEN
     Out.String("oo2c/gcc ");
     Out.String(StdPragmas.defaultCompilerVersion);
