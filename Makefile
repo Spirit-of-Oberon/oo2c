@@ -19,6 +19,8 @@ TEST_SUBDIRS=\
   tests/ssa \
   tests/ssa-c-output \
 
+DOC_DIR=$(OOC_DEV_ROOT)/oocdoc
+
 top_builddir=$(OOC_DEV_ROOT)
 
 test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestMake TestCompile AllModules RunTests
@@ -49,6 +51,7 @@ main-clean: doc-clean test-cleanall
 	rm -f src/XML
 	for i in ${test_programs}; do rm -f $$i; done
 	-rmdir ${top_builddir}/sym ${top_builddir}/obj
+	rm -Rf "$(DOC_DIR)"
 	${MAKE} -C tests/hostess-ooc1 test-clean
 
 ### `distclean'
@@ -63,12 +66,29 @@ distclean: main-clean
 
 FRC:
 
-### `test'
-###      Perform all available regression tests.
-#test: mkdir test-runall
-#	cd tests && ${MAKE} test
 
 test-hostess-ooc1:
 	${MAKE} -C tests/hostess-ooc1 test-runall
+
+
+
+### `doc'
+###      Use the OOC2 infrastructure to generate HTML files from documentation
+###      comments embedded in the source code.  Because this requires access
+###      to source code from the oo2c core library, libadt, and libxml, we
+###      first create a directory that simulates repositories for these files.
+###      Then, XML and HTML files are created under this directory.  Finally,
+###      an index file $(OOC_DEV_ROOT)/oocdoc/index.html is generated.
+doc:
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
+	cd $(OOC_DEV_ROOT) && $(OOC) -MOv TestInterfaceGen
+	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" Strings core
+	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" libadt libadt
+	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" libxml libxml
+	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" AllModules ooc2
+	-$(LN_S) $(OOC_DEV_ROOT)/rsrc $(DOC_DIR)/ooc2/rsrc
+	$(OOC_DEV_ROOT)/TestInterfaceGen --html --closure -r "$(DOC_DIR)/core" -r "$(DOC_DIR)/libadt" -r "$(DOC_DIR)/libxml" -r "$(DOC_DIR)/ooc2" AllModules
+	cd $(DOC_DIR) && $(OOC_DEV_ROOT)/rsrc/OOC/make-index.sh
+	$(PRINT) "Done.  Index file is $(DOC_DIR)/index.html"
 
 include $(MAIN_MAKEFILE)

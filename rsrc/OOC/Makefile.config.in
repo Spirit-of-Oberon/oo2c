@@ -8,3 +8,4 @@ PRINT=@echo
 MKDIR=mkdir -p -m 755
 RM=rm -f
 RM_R=rm -Rf
+LN_S=ln -s

@@ -35,25 +35,25 @@ TEST_LIST_TEST=$(patsubst %,$(OOC_DEV_ROOT)/%/.test,$(TEST_LIST))
 
 .PHONY: $(DOC_TARGETS) doc-clean doc-buildall doc
 
-doc-txt:
+doc1-txt:
 	$(MKDIR) $(top_builddir)/doc/txt
 	$(OOCN) --def-txt -Cv -o $(top_builddir)/doc/txt $(DOC_ROOT_MODULES)
 
-doc-html:
+doc1-html:
 	$(MKDIR) $(top_builddir)/doc/html
 	$(OOCN) --def-html -Cv -o $(top_builddir)/doc/html $(DOC_ROOT_MODULES)
 
-doc-xref:
+doc1-xref:
 	$(MKDIR) $(top_builddir)/doc/xref
 	$(OOCN) --xref -Cv -o $(top_builddir)/doc/xref $(DOC_ROOT_MODULES)
 
-doc-clean:
+doc1-clean:
 	cd $(OOC_DEV_ROOT) && $(RM_R) $(DOC_SUBDIRS)
 
-doc-buildall: $(DOC_TARGETS)
+doc1-buildall: $(DOC_TARGETS)
 
-# Delegate to the "doc" makefile, calling the target "doc-buildall" above
-doc:
+# Delegate to the "doc" makefile, calling the target "doc1-buildall" above
+doc1:
 	$(MAKE) -f $(OOC_DEV_ROOT)/doc/Makefile doc-buildall
 
 
