@@ -270,7 +270,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
           ELSE
             NEW (depList, n. dependencies. len DIV 2+1);
             FOR i := 0 TO n. dependencies. len-1 BY 2 DO
-              depList[i DIV 2] := n. dependencies. n[i](ExtTree.Terminal). GetString (FALSE);
+              depList[i DIV 2] := n. dependencies. n[i](ExtTree.Terminal). GetString (TRUE);
             END;
           END;
           moduleDecl. AddLinkLib (str, depList, prefixOption, suffixOption);
