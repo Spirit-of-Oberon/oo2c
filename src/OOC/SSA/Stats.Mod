@@ -102,6 +102,18 @@ PROCEDURE Write*();
           END;
           RETURN FALSE;
         END Larger;
+
+      PROCEDURE AllZero(a: LONGINT): BOOLEAN;
+        VAR
+          j: LONGINT;
+        BEGIN
+          FOR j := 0 TO LEN(stList^)-1 DO
+            IF (stList[j].count[a] # 0) THEN
+              RETURN FALSE;
+            END;
+          END;
+          RETURN TRUE;
+        END AllZero;
       
       BEGIN
         best := start;
@@ -110,7 +122,7 @@ PROCEDURE Write*();
             best := i;
           END;
         END;
-        IF (LEN(stList^) = 0) OR (stList[0].count[o[best]] = 0) THEN
+        IF (LEN(stList^) = 0) OR AllZero(o[best]) THEN
           RETURN -1;
         ELSE
           RETURN best;
