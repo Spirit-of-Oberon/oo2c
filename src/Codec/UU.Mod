@@ -21,7 +21,7 @@ MODULE Codec:UU [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, Ascii, Codec, Strings, String := Language:String0;
+  SYSTEM, Ascii, Codec, String := Language:String0;
 
 CONST
   lineLength = 45;  (* number of bytes per line when encoding *)
@@ -108,6 +108,24 @@ PROCEDURE IsEOL* (ch: CHAR): BOOLEAN;
     RETURN (ch = Ascii.lf) OR (ch = Ascii.cr);
   END IsEOL;
 
+PROCEDURE Extract* (source[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
+                    VAR destination: ARRAY OF CHAR);
+  VAR
+    i: INTEGER;
+  BEGIN
+    IF (end-start >= LEN (destination)) THEN
+      end := start+LEN (destination)-1;
+    END;
+    
+    i := 0;
+    WHILE (start # end) DO
+      destination[i] := source[start];
+      INC (i);
+      INC (start);
+    END;
+    destination[i] := 0X
+  END Extract;
+  
 PROCEDURE DecodeByte (ch: CHAR): LONGINT;
   BEGIN
     IF (ch <= 20X) OR (ch > 60X) THEN
@@ -120,7 +138,7 @@ PROCEDURE DecodeByte (ch: CHAR): LONGINT;
 PROCEDURE LineBegin* (data[NO_COPY]: ARRAY OF CHAR;
                       start, end: LONGINT; VAR header: Header): LONGINT;
 (**If the text starting a @samp{data[start]} holds a valid @samp{begin} of a
-   uuencode file, then return the index of the first eol character of the
+   uuencoded file, then return the index of the first eol character of the
    @samp{begin} line.  In this case, @samp{data[start, result-1]} is the
    complete line, without the eol character that ends it.
 
@@ -171,8 +189,7 @@ PROCEDURE LineBegin* (data[NO_COPY]: ARRAY OF CHAR;
             DEC (endFileName);
           END;
           header. fileMode := mode;
-          Strings.Extract (data, SHORT(fileName), SHORT(endFileName-fileName),
-                           header. fileName);
+          Extract (data, fileName, endFileName, header.fileName);
           RETURN start;
         END;
       END;
@@ -182,9 +199,9 @@ PROCEDURE LineBegin* (data[NO_COPY]: ARRAY OF CHAR;
 
 PROCEDURE LineData* (data[NO_COPY]: ARRAY OF CHAR;
                      start, end: LONGINT): LONGINT;
-(**If the text starting a @samp{data[start]} holds complete text line with
+(**If the text starting a @samp{data[start]} holds a complete text line with
    uuencoded data, then return the index of the first eol character of the
-   @samp{begin} line.  In this case, @samp{data[start, result-1]} is the
+   line.  In this case, @samp{data[start, result-1]} is the
    complete line, without the eol character that ends it.
 
    If there is no match, then result @samp{-1}.  If the indicated region of
