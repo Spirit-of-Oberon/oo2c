@@ -57,6 +57,7 @@ VAR
   dataDir: STRING;
   serverAddr: Address.SocketInet;
   nntpClient: Client;
+  connected: BOOLEAN;
   group: STRING;
   selectSubjects, excludeSubjects: StringSearch.Matcher;
   forceIncomplete: BOOLEAN;
@@ -843,7 +844,7 @@ BEGIN  <*Warnings:=FALSE*>
   historyChannel := ReadHistory(history);
   
   nntpClient := NewClient(serverAddr, FALSE);
-  nntpClient.Connect();
+  connected := nntpClient.Connect();
 
   reqGroup := nntpClient.Group(group);
   removed := ReduceGroupData(gd, reqGroup.first, reqGroup.last);
