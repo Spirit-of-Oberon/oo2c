@@ -731,7 +731,7 @@ PROCEDURE (s: State) Transform*;
               RETURN VisibleEffect (instr. GetResultStore(), set);
             END;
             
-          | Opcode.copyString:
+          | Opcode.copyString, Opcode.copy:
             alias := Aliasing.DesignatorAlias (set. GetOpndClass (Opnd.writeDesign),
                                                instr. GetOpndClass (Opnd.writeDesign));
             IF (alias >= Aliasing.partiallyCovered) THEN
