@@ -6,7 +6,7 @@ void OOC_NoLengthInfo1_init(void) {
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)NoLengthInfo1__a;
-  *(OOC_UINT8*)(_check_pointer(i0, 108)) = 0u;
+  *(OOC_UINT8*)i0 = 0u;
   return;
   ;
 }
