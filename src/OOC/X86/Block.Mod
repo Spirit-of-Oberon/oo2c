@@ -310,6 +310,16 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
         ELSE
           IF (instr.opcode = S.gate) OR (instr.opcode = S.enter) THEN
             instr.MoveToFront();
+          ELSIF (b.opcode = S.branch) &
+                ((instr.opcode # S.guard) & (instr.opcode # S.merge)) THEN
+            (* If an unexpected instruction ends up within a branch, which can
+               happen for an instruction if it is used in several guards of the
+               branch, then move the instruction in front of the branch.  *)
+            b.Remove(instr);
+            b.block.AddInFront(instr);
+            IF (b.prevInstr # instr) THEN
+              b.block.MoveBehind(b.prevInstr, instr);
+            END;
           END;
         END;
       END;
