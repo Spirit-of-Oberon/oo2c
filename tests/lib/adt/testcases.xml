@@ -13,8 +13,10 @@
         file="LibAdtDictionary.Mod" output="LibAdtDictionary.Ref">
     Imports the various variants of module <code>ADT:Dictionary</code>.
   </test>
-  <test id="libadt_ArrayList" type="run" file="LibAdtArrayList.Mod">
-    Imports <code>ADT:ArrayList</code>.
+  <test id="libadt_ArrayList" type="run" file="LibAdtArrayList.Mod"
+        output="LibAdtArrayList.Ref">
+    Imports <code>ADT:ArrayList</code> and excercises
+    <code>Append()</code> and <code>IterElements()</code>.
   </test>
   <test id="libadt_LinkedList" type="run" file="LibAdtLinkedList.Mod">
     Imports <code>ADT:LinkedList</code>.
