@@ -68,24 +68,7 @@ TYPE
        produce an inconsistent state in a repository.  It is included primarily
        to support test setups where the source code is not organized in
        repositories.  *)
-       
-    importListScanned-: BOOLEAN;
-    (**If @code{TRUE}, then the module's import list has been scanned and can
-       be accessed through the field @ofield{Module.importList}.  Imported
-       modules are added to the list through @oproc{Module.AddImport}.  *)
-    importList-: Import;
-    (**Lists all modules imported by this module.  The list does not contain
-       pseudo modules like @code{SYSTEM}.  On the other hand, modules that are
-       implicitly imported by all modules, like the one representing the
-       run-time system, are always part of this list.
-
-       Note: This field only holds valid data if
-       @samp{@ofield{importListScanned}=@code{TRUE}}.  The list is produced by
-       @oproc{*OOC:Repository:GetImports.GetImports}.  *)
-    symbolTable-: Sym.Module;
-    (**After the module's symbol file has been read, this field refers to
-       its symbol table.  *)
-
+    
     ifData-: Sym.Module;
     (**Interface data of this module.  This includes both its imports and
        its exports.  Depending on @ofield{ifQuality}, only part of the
@@ -231,13 +214,11 @@ PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName;
     Object.Init (m);
     m. origin := origin;
     m. name := Msg.GetStringPtr (name);
-    m. importListScanned := FALSE;
-    m. importList := NIL;
-    m. symbolTable := NIL;
     m. srcFileOverride := srcFileOverride;
     
     m. ifQuality := noInterfaceData;
     m. ifData := NIL;
+    m. ifImportList := NIL;
   END InitModule;
 
 
@@ -311,50 +292,6 @@ PROCEDURE (m: Module) SetInterfaceData*(ifData: Sym.Module; ifQuality: SHORTINT)
     END;
   END SetInterfaceData;
 
-PROCEDURE (m: Module) AddImport* (imported: Module);
-(**Adds a new module @oparam{imported} to the import list of @oparam{m}.
-   If @oparam{imported} is @code{NIL}, then import list is completed and
-   the flag @ofield{m.importListScanned} is set to @code{TRUE}.
-   
-   @precond
-   @ofield{m.importListScanned} is not @code{TRUE}.
-   @end precond *)
-  PROCEDURE Append (VAR list: Import);
-    BEGIN
-      IF (list = NIL) THEN
-        NEW (list);
-        list. nextImport := NIL;
-        list. imported := imported
-      ELSE
-        Append (list. nextImport)
-      END
-    END Append;
-  
-  BEGIN
-    ASSERT (~m. importListScanned);
-    IF (imported = NIL) THEN
-      m. importListScanned := TRUE
-    ELSE
-      Append (m. importList)
-    END
-  END AddImport;
-
-PROCEDURE (m: Module) GetImport* (name: ARRAY OF CHAR): Module;
-  VAR
-    import: Import;
-  BEGIN
-    import := m. importList;
-    WHILE (import # NIL) & (import. imported. name^ # name) DO
-      import := import. nextImport
-    END;
-    IF (import = NIL) THEN
-      RETURN NIL
-    ELSE
-      ASSERT(import.imported # NIL);
-      RETURN import. imported
-    END
-  END GetImport;
-
 PROCEDURE (m: Module) GetImportedModule*(name: ARRAY OF CHAR): Module;
   VAR
     i: LONGINT;
@@ -380,9 +317,9 @@ PROCEDURE (m: Module) GetURI* (fileId: FileId): URI.HierarchicalURI;
   BEGIN
     (* check if the module provides its own .c file; in this case, return
        the given name, instead of the automatically generated one *)
-    IF (fileId = modCodeFileC) & (m. symbolTable # NIL) &
-       (m. symbolTable. class # Sym.mcStandard) THEN
-      RETURN m. symbolTable. GetExternalSource (m. origin. baseURI);
+    IF (fileId = modCodeFileC) & (m. ifData # NIL) &
+       (m. ifData. class # Sym.mcStandard) THEN
+      RETURN m. ifData. GetExternalSource (m. origin. baseURI);
     ELSE
       RETURN NIL;
     END;
@@ -565,43 +502,16 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
     RETURN m
   END GetModuleByURI;
 
-
-PROCEDURE (m: Module) GetSymbolTable* (VAR res: Msg.Msg): Sym.Module;
-(**Locates and reads the symbol table of module @oparam{m}.  In general, any
-   type references in the returned symbol table are @emph{not} resolved.  Use
-   @oproc{*OOC:Auxiliary:GetSymbolTable.GetSymbolTable} to get such a symbol
-   table.  *)
-  VAR
-    stb: Builder.Builder;
-    ch: Channel.Channel;
-    uri: URI.URI;
-    symTab: Sym.Module;
-  BEGIN
-    IF (m. symbolTable # NIL) THEN
-      res := NIL;
-      RETURN m. symbolTable              (* return cached entry *)
-    ELSE
-      uri := m. GetURI (modSymbolFile);
-      ch := uri. GetChannel (URI.channelOld, res);
-      IF (res = NIL) THEN
-        Logger.ReadFile(uri);
-        stb := Builder.New();
-        symTab := stb. ReadSymbolTable (ch, res);
-        ch. Close;
-        IF (res = NIL) THEN
-          m. symbolTable := symTab;    (* cache for later use *)
-          RETURN symTab
-        END
-      END;
-      RETURN NIL
-    END
-  END GetSymbolTable;
-
 PROCEDURE (m: Module) ReadSymbolFile*(VAR res: Msg.Msg): Sym.Module;
 (**Locates and reads the symbol table of module @oparam{m}.  In general, any
-   type references in the returned symbol table are @emph{not} resolved.  Use
-   @oproc{*OOC:Auxiliary:GetSymbolTable.GetSymbolTable} to get such a symbol
-   table.  *)
+   type references in the returned symbol table are @emph{not} resolved.  This
+   must be done manually by calling
+   @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.
+
+   If available and @oconst{completeInterface}, the cached symbol table
+   @ofield{m.ifData} is returned.  If the symbol file is read from disk,
+   it is @emph{not} stored in @ofield{m.ifData}, because only the calling
+   function knows about the quality of the imported data.  *)
   VAR
     stb: Builder.Builder;
     ch: Channel.Channel;
@@ -620,7 +530,6 @@ PROCEDURE (m: Module) ReadSymbolFile*(VAR res: Msg.Msg): Sym.Module;
         symTab := stb. ReadSymbolTable (ch, res);
         ch. Close;
         IF (res = NIL) THEN
-          m. symbolTable := symTab;    (* cache for later use *)
           RETURN symTab
         END
       END;
