@@ -51,18 +51,6 @@ PROCEDURE New* (): Builder;
   END New;
 
 
-PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
-                                   class: Sym.ModuleClass;
-                                   callConv: Sym.CallConv;
-                                   moduleAST: AST.Node): Sym.Module;
-  VAR
-    mod: Sym.Module;
-  BEGIN
-    NEW (mod);
-    Sym.InitModule (mod, name, docString, class, callConv, moduleAST);
-    RETURN mod
-  END NewModule;
-
 PROCEDURE (b: Builder) NewImport* (parent: Sym.Item; name: Sym.Name;
                                    visibleFrom: Sym.ModulePos;
                                    docString: Doc.Document;
@@ -232,6 +220,34 @@ PROCEDURE (b: Builder) NewFormalPars* (parent: Sym.Item;
     Sym.InitFormalPars (fpars, parent, position, resultType);
     RETURN fpars
   END NewFormalPars;
+
+PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
+                                   class: Sym.ModuleClass;
+                                   callConv: Sym.CallConv;
+                                   moduleAST: AST.Node): Sym.Module;
+  VAR
+    mod: Sym.Module;
+    bodyDecl: Sym.ProcDecl;
+    bodyName: Sym.Name;
+    str: Sym.NameString;
+  BEGIN
+    (* create an empty procedure declaration with no parameters and no
+       result; this declaration is later used as a wrapper for the
+       module body's statement sequence *)
+    NEW (bodyName);
+    NEW (str, 32);
+    COPY (Sym.declModuleBody, str^);
+    Sym.InitName (bodyName, str, -1, -1, -1);
+    bodyDecl := b. NewProcDecl (NIL, bodyName, 0, Sym.nameNotExported,
+                                NIL, FALSE, FALSE, NIL);
+    bodyDecl. formalPars := b. NewFormalPars(bodyDecl, name, NIL);
+    NEW (bodyDecl. formalPars. params, 0);
+    
+    NEW (mod);
+    Sym.InitModule (mod, name, docString, class, callConv, moduleAST,
+                    bodyDecl);
+    RETURN mod
+  END NewModule;
 
 
 PROCEDURE (b: Builder) Finalize* (module: Sym.Module);

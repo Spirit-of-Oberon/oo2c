@@ -458,7 +458,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       END;
       
       RETURN b. NewModule (moduleAST. module. sym, moduleAST. moduleName,
-                           procList, statmSeq)
+                           moduleDecl, procList, statmSeq)
     END Module;
 
   PROCEDURE TranslateEmbeddedExpr (item: Sym.Item);

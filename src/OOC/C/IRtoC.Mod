@@ -197,9 +197,9 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     WriteStatmSeq (t. w, proc. statmSeq);
   END WriteProcBody;
 
-PROCEDURE (t: Translator) WriteModuleBody* (statmSeq: IR.StatementSeq);
+PROCEDURE (t: Translator) WriteModuleBody* (body: IR.Procedure);
   BEGIN
-    WriteStatmSeq (t. w, statmSeq);
+    WriteStatmSeq (t. w, body. statmSeq);
   END WriteModuleBody;
 
 END OOC:C:IRtoC.

@@ -61,7 +61,7 @@ PROCEDURE (t: Translator) SetWriter* (w: DeclWriter.Writer);
 PROCEDURE (t: Translator) [ABSTRACT] WriteProcBody* (proc: IR.Procedure);
   END WriteProcBody;
 
-PROCEDURE (t: Translator) [ABSTRACT] WriteModuleBody* (statmSeq: IR.StatementSeq);
+PROCEDURE (t: Translator) [ABSTRACT] WriteModuleBody* (body: IR.Procedure);
   END WriteModuleBody;
 
 
@@ -222,7 +222,7 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
     WriteProcedures (w, moduleIR. procList);
     w. WriteLn;
     WriteModuleName (w, "void ", m, "_init(void) {", FALSE);
-    translator. WriteModuleBody (moduleIR. statmSeq);
+    translator. WriteModuleBody (moduleIR. moduleBody);
     w. WriteLn;
     w. WriteString ("}");
     w. WriteLn;

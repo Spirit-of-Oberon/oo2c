@@ -424,7 +424,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: IR.Module);
     v. w. AttrStringLatin1 ("name", module. name^);
     VisitProcedureList (v, module. procList);
     v. w. StartTag ("init-code", FALSE);
-    VisitStatementSeq (v, module. statmSeq);
+    VisitStatementSeq (v, module. moduleBody. statmSeq);
     v. w. EndTag;  (* init-code *)
     v. w. EndTag;  (* module *)
   END VisitModule;

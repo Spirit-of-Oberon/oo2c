@@ -615,7 +615,7 @@ TYPE
     (NodeDesc)
     name-: Name;
     procList-: ProcedureList;
-    statmSeq-: StatementSeq;             (* statements in body, never NIL *)
+    moduleBody-: Procedure;  (* holds statements in body, never NIL *)
   END;
 
 TYPE
@@ -1924,18 +1924,17 @@ PROCEDURE (p: Procedure) Accept* (v: Visitor);
 (* Class: Module
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitModule* (m: Module; sym: Symbol;
-                       name: Name; procList: ProcedureList;
-                       statmSeq: StatementSeq);
+PROCEDURE InitModule* (m: Module; sym: Symbol; name: Name;
+                       procList: ProcedureList; moduleBody: Procedure);
   BEGIN
     InitNode (m, sym);
     m. name := name;
     m. procList := procList;
-    m. statmSeq := statmSeq;
+    m. moduleBody := moduleBody;
   END InitModule;
 
-PROCEDURE (b: Builder) NewModule* (sym: Symbol;
-                                   name: Name; procList: ProcedureList;
+PROCEDURE (b: Builder) NewModule* (sym: Symbol; name: Name; decl: Sym.Module;
+                                   procList: ProcedureList;
                                    statmSeq: StatementSeq): Module;
   VAR
     m: Module;
@@ -1943,7 +1942,8 @@ PROCEDURE (b: Builder) NewModule* (sym: Symbol;
     CheckExit (statmSeq, NIL);
     
     NEW (m);
-    InitModule (m, sym, name, procList, statmSeq);
+    InitModule (m, sym, name, procList,
+                b. NewProcedure (sym, decl. bodyDecl, statmSeq));
     RETURN m
   END NewModule;
 

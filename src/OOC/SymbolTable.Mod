@@ -283,8 +283,12 @@ TYPE
     prefixOption, suffixOption: String.String;
   END;
 
+CONST
+  declModuleBody* = "_MODULE_BODY";
+  
 TYPE
   Module* = POINTER TO ModuleDesc;
+  ProcDecl* = POINTER TO ProcDeclDesc;
   ModuleDesc = RECORD
     (**This class represents the top-level module object.  It is the root
        of the symbol table, that is defined by a module's source file.  *)
@@ -308,6 +312,10 @@ TYPE
     moduleAST-: AST.Node;
     (**Refers to the abstract syntax tree of the module, for example an
        instance of @otype{*OOC:AST:ExtTree.Module}.  *)
+    bodyDecl-: ProcDecl;
+    (**This pseudo declaration is used to turn the statement sequence in the
+       module body into a fully fledged procedure declaration.  It's name
+       is @oconst{declModuleBody}.  *)
   END;
 
 TYPE
@@ -484,7 +492,6 @@ TYPE
    ------------------------------------------------------------------------ *)
 
 TYPE
-  ProcDecl* = POINTER TO ProcDeclDesc;
   ProcDeclDesc = RECORD
     (**Procedure declarations and forward declarations of procedures are
        mapped to objects of this class.  *)
@@ -709,9 +716,7 @@ PROCEDURE InitItem* (item: Item; parent: Item);
     item. nextNested := NIL;
     item. nestedItems := NIL;
     item. parent := parent;
-    IF (parent = NIL) THEN
-      ASSERT (item IS Module)
-    ELSE
+    IF (parent # NIL) THEN
       ASSERT ( (parent IS Module) OR
                (parent IS ProcDecl) OR
                (parent IS Record) OR
@@ -949,7 +954,7 @@ PROCEDURE (l: LinkFile) Load* (r: Object.Reader);
 
 PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
                        class: ModuleClass; callConv: CallConv;
-                       moduleAST: AST.Node);
+                       moduleAST: AST.Node; bodyDecl: ProcDecl);
   BEGIN
     InitDeclaration (mod, NIL, name, 0, nameNotExported, docString);
     mod. ns := NIL;
@@ -957,6 +962,7 @@ PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
     mod. callConv := callConv;
     mod. linkDirectives := NIL;
     mod. moduleAST := moduleAST;
+    mod. bodyDecl := bodyDecl;
   END InitModule;
 
 PROCEDURE (mod: Module) Store* (w: Object.Writer);
