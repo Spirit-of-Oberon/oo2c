@@ -175,6 +175,12 @@ TYPE
 TYPE
   GuardedVar* = POINTER TO GuardedVarDesc;
   GuardedVarDesc = RECORD
+    (**Used to indicate that for a region of code the the static type of
+       @ofield{var} should be considered to by @ofield{type}.  This is used
+       for the @code{WITH} statement to change the type of the guarded
+       variable without touching the symbol table: within a guarded branch,
+       a temporary namespace is installed, which maps @samp{var.name} onto
+       an instance of this pseudo declaration.  *)
     (Sym.DeclarationDesc)
     var-: Sym.VarDecl;
     type-: Sym.Type;
