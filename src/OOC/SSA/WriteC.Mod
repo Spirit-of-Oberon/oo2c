@@ -115,24 +115,7 @@ PROCEDURE (v: Visitor) VisitVar* (var: IR.Var);
 
 PROCEDURE SubclassToBasicType (res: SSA.Result): DeclWriter.BasicTypeId;
   BEGIN
-    CASE res. subclass OF
-    | Opcode.scNone: RETURN DeclWriter.void
-    | Opcode.scAddress:
-      CASE Predef.address OF
-      | Predef.hugeint: RETURN DeclWriter.int64;
-      | Predef.longint: RETURN DeclWriter.int32;
-      END;
-    | Opcode.scUnsigned8: RETURN DeclWriter.uint8
-    | Opcode.scUnsigned16: RETURN DeclWriter.uint16
-    | Opcode.scUnsigned32: RETURN DeclWriter.uint32
-    | Opcode.scUnsigned64: RETURN DeclWriter.uint64
-    | Opcode.scSigned8: RETURN DeclWriter.int8
-    | Opcode.scSigned16: RETURN DeclWriter.int16
-    | Opcode.scSigned32: RETURN DeclWriter.int32
-    | Opcode.scSigned64: RETURN DeclWriter.int64
-    | Opcode.scReal32: RETURN DeclWriter.real32
-    | Opcode.scReal64: RETURN DeclWriter.real64
-    END;
+    RETURN Allocator.SubclassToBasicType(res.subclass);
   END SubclassToBasicType;
 
 
@@ -250,12 +233,14 @@ PROCEDURE (w: Writer) FixupHelperVars;
 
 PROCEDURE Fixup (pb: SSA.ProcBlock; VAR jmpbufMap: Dictionary.Dictionary);
   VAR
-    instr: SSA.Instr;
+    instr, next: SSA.Instr;
     num: ARRAY 16 OF CHAR;
+    regDest, regSource: DeclWriter.BasicTypeId;
   BEGIN
     jmpbufMap := NIL;
     instr := pb. instrList;
     WHILE (instr # NIL) DO
+      next := instr.nextInstr;
       CASE instr. opcode OF
       | Opcode.call:
         IF (instr. opndList. arg IS SSA.Address) THEN
@@ -273,9 +258,20 @@ PROCEDURE Fixup (pb: SSA.ProcBlock; VAR jmpbufMap: Dictionary.Dictionary);
         END;
         IntStr.IntToStr(jmpbufMap.Size(), num);
         jmpbufMap.Set(instr, Object.NewLatin1(num));
+
+      | Opcode.typeConv:
+        regDest := Allocator.RegisterType
+            (Allocator.SubclassToBasicType(instr.subclass));
+        regSource := Allocator.RegisterType
+            (Allocator.SubclassToBasicType(instr.opndList.arg.subclass));
+        IF (regDest = regSource) THEN
+          ASSERT(instr.nextResult = NIL);
+          instr.ReplaceUses(instr.opndList.arg);
+          pb.DeleteInstr(instr);
+        END;
       ELSE (* nothing to do *)
       END;
-      instr := instr. nextInstr
+      instr := next;
     END;
   END Fixup;
 
@@ -1832,6 +1828,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
 
     (*Blocker.Write (StdChannels.stdout, pb);*)
     
+    Fixup (pb, jmpbufMap);
     domRoot := Schedule.Schedule (pb);
     IF writeProc THEN
       IF (t. inspectStage. MatchChars ("schedule", 0, -1) # NIL) THEN
@@ -1844,7 +1841,6 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       END;
     END;
     
-    Fixup (pb, jmpbufMap);
     t. w. Indent (1);
     registerMap := Allocator.AssignRegisters (pb, domRoot, t. w);
     w := NewWriter (t, t. w, pb, registerMap, jmpbufMap);
