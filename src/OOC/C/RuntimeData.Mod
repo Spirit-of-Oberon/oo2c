@@ -77,7 +77,6 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
     VAR 
       decl : Sym.Declaration;   (* method declaration *)
       root : Sym.Type;          (* root class for @oparam{t} *)
-      base : Sym.Type;
       impl : Sym.Type;          (* implementing class for Finalize method *)
     BEGIN
       decl := t.ns.Identify(t, GetName(name), TRUE);
