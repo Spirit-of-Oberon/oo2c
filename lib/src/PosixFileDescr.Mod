@@ -162,7 +162,7 @@ PROCEDURE (r: Reader) ReadBytes* (VAR x: ARRAY OF SYSTEM.BYTE;
 PROCEDURE (w: Writer) Pos*(): LONGINT;
 PROCEDURE (w: Writer) SetPos* (newPos: LONGINT);
 PROCEDURE (w: Writer) WriteByte* (x: SYSTEM.BYTE);
-PROCEDURE (w: Writer) WriteBytes* (VAR x: ARRAY OF SYSTEM.BYTE; start, n: LONGINT);
+PROCEDURE (w: Writer) WriteBytes* (x: ARRAY OF SYSTEM.BYTE; start, n: LONGINT);
 
 (* Channel methods 
    ------------------------------------------------------------------------ *)

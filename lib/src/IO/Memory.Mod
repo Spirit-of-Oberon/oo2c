@@ -358,7 +358,7 @@ PROCEDURE (w: Writer) WriteByte* (x: SYSTEM.BYTE);
     END
   END WriteByte;
   
-PROCEDURE (w: Writer) WriteBytes* (VAR x: ARRAY OF SYSTEM.BYTE; 
+PROCEDURE (w: Writer) WriteBytes* (x[NO_COPY]: ARRAY OF SYSTEM.BYTE; 
                                    start: LONGINT; n: LONGINT);
   VAR
     b: File;

@@ -1,5 +1,5 @@
 (*	$Id$	*)
-MODULE StdChannels;
+MODULE StdChannels [OOC_EXTENSIONS];
 (*  Defines the standard I/O channels.
     Copyright (C) 1997-1999  Michael van Acken
 
@@ -94,7 +94,7 @@ PROCEDURE (w: Writer) WriteByte* (x: SYSTEM.BYTE);
     w. bytesWritten := 1
   END WriteByte;
   
-PROCEDURE (w: Writer) WriteBytes* (VAR x: ARRAY OF SYSTEM.BYTE; start, n: LONGINT);
+PROCEDURE (w: Writer) WriteBytes* (x[NO_COPY]: ARRAY OF SYSTEM.BYTE; start, n: LONGINT);
   BEGIN
     w. bytesWritten := n
   END WriteBytes;

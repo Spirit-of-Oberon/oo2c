@@ -474,7 +474,7 @@ PROCEDURE (w: Writer) [ABSTRACT] WriteByte* (x: SYSTEM.BYTE);
     *)
   END WriteByte;
   
-PROCEDURE (w: Writer) [ABSTRACT] WriteBytes* (VAR x: ARRAY OF SYSTEM.BYTE; 
+PROCEDURE (w: Writer) [ABSTRACT] WriteBytes* (x: ARRAY OF SYSTEM.BYTE;
                                               start, n: LONGINT);
 (**Writes @oparam{n} bytes from @oparam{x}, starting at position
    @oparam{start}, to the channel @ofield{w.base} at the writing position

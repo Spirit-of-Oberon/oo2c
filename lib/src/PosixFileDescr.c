@@ -187,7 +187,7 @@ static Msg__Msg read_bytes(PosixFileDescr__Channel ch, OOC_INT32 pos, OOC_INT32 
 }
 
 static Msg__Msg write_bytes(PosixFileDescr__Channel ch, OOC_INT32 pos, OOC_INT32 n,
-                            OOC_BYTE *x, OOC_INT32 *bytes_written) {
+                            const OOC_BYTE *x, OOC_INT32 *bytes_written) {
   size_t size, acc;
   ssize_t res;
   
@@ -606,7 +606,7 @@ static PosixFileDescr__Result flush_lines (PosixFileDescr__Channel ch,
   }
 }
 
-void PosixFileDescr__WriterDesc_WriteBytes(PosixFileDescr__Writer w, OOC_BYTE* x, int x_0d, OOC_INT32 start, OOC_INT32 n) {
+void PosixFileDescr__WriterDesc_WriteBytes(PosixFileDescr__Writer w, const OOC_BYTE* x, int x_0d, OOC_INT32 start, OOC_INT32 n) {
   PosixFileDescr__Result res;
   OOC_INT32 size, s, e;
   PosixFileDescr__Channel ch = (PosixFileDescr__Channel)w->base;

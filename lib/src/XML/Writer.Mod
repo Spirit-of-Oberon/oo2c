@@ -254,7 +254,7 @@ PROCEDURE (w: Writer) WriteRealFix* (real: REAL; k: LONGINT);
     w. WriteLatin1 (val)
   END WriteRealFix;
 
-PROCEDURE GetString (VAR str: ARRAY OF Char): String;
+PROCEDURE GetString (str[NO_COPY]: ARRAY OF Char): String;
   VAR
     s: String;
   BEGIN

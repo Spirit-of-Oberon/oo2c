@@ -194,7 +194,7 @@ PROCEDURE (w: Writer) WriteByte* (x: SYSTEM.BYTE);
    `w.bytesWritten' will be 1 on success and 0 on failure.
    Calls to this procedure while `w.res # done' will be ignored.  *)
   
-PROCEDURE (w: Writer) WriteBytes* (VAR x: ARRAY OF SYSTEM.BYTE; start, n: LONGINT);
+PROCEDURE (w: Writer) WriteBytes* (x: ARRAY OF SYSTEM.BYTE; start, n: LONGINT);
 (* Writes `n' bytes from `x', starting at position `start', to the channel 
    `w.base' at the writing position associated with `w'.  The writing position
    is moved forward by `n' bytes on success, otherwise `w.res' is changed to 
