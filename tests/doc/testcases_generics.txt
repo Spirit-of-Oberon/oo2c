@@ -7,7 +7,8 @@ Syntax:
   QualType   = Qualident ["<" [QualType {"," QualType}] ">"].
   Type       = QualType|ArrayType|RecordType|PointerType|ProcType.
   RecordType = "RECORD" ["("QualType")"] ... "END".  
-
+  FormalPars = [ "(" [FPSection {";" FPSection}] ")" [":" QualType] ].
+         
 A type declared with a type parameter list like
 `T<t1:B1,t2:B2,...,tn:Bn>' is called a `parametric type'.  The formal
 type Bi of a type parameter declaration is called a type bound.  It

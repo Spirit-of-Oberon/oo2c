@@ -62,6 +62,11 @@ PROCEDURE NewTypeClosure(position: Sym.Position; baseType: Sym.Type;
     RETURN tc;
   END NewTypeClosure;
 
+PROCEDURE (typeClosure: TypeClosure) Deparam*(): Sym.Type;
+  BEGIN
+    RETURN typeClosure.baseType;
+  END Deparam;
+
 
 PROCEDURE Lookup(context: TypeClosure; tv: Sym.TypeVar): Sym.Type;
   VAR
@@ -421,7 +426,7 @@ PROCEDURE IsValidResultType* (type: Sym.Type): BOOLEAN;
    result type of a formal parameter definition.  This function also 
    return @code{TRUE}, if @oparam{type} is @code{NIL}.  *)
   BEGIN
-    RETURN (type = NIL) OR IsScalarType(type);
+    RETURN (type = NIL) OR IsScalarType(type.Deparam());
   END IsValidResultType;
 
 PROCEDURE IsValidPointerBaseType* (type: Sym.Type): BOOLEAN;
@@ -755,6 +760,7 @@ PROCEDURE IsNilCompatible* (type: Sym.Type): BOOLEAN;
    variables of type @oparam{type}, or if @code{NIL} can be compared to
    such variables.  *)
   BEGIN
+    type := type.Deparam();
     WITH type: Sym.PredefType DO
       RETURN (type. id = Predef.ptr) OR (type. id = Predef.nil)
     | type: Sym.Pointer DO

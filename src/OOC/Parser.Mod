@@ -813,6 +813,30 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
   
   PROCEDURE ^ Type (level: LONGINT): AST.Node;
   
+  PROCEDURE QualType(): AST.Node;
+    VAR
+      type, left, right: AST.Node;
+      list: AST.NodeList;
+    BEGIN
+      (*S: QualType = Qualident ["<" [QualType {"," QualType}] ">"] *)
+      type :=  Qualident();
+      IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
+        left := CheckSym(Symbol.lss);
+        list := ast.NewNodeList();
+        IF (sym.id # Symbol.gtr) THEN
+          list.Append(QualType());
+          WHILE (sym.id = Symbol.comma) DO
+            list.Append(CheckSym(Symbol.comma));
+            list.Append(QualType());
+          END
+        END;
+        right := CheckSym(Symbol.gtr);
+        RETURN ast.QualType(type, left, list, right);
+      ELSE
+        RETURN type;
+      END;
+    END QualType;
+  
   PROCEDURE FormalPars (): AST.Node;
     VAR
       flags, lParen, rParen, colon, result, raises, oldLastIdentDef: AST.Node;
@@ -851,7 +875,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     BEGIN
       (*S: FormalPars = Flags 
         S:              [ "(" [FPSection {";" FPSection} [";" "..."] ] ")"
-        S:                [":" Qualident]
+        S:                [":" QualType]
         S:                ["RAISES" Qualident {"," Qualident}] ].  *)
       oldLastIdentDef := lastIdentDef;
       flags := Flags (AST.flagsProcType);
@@ -878,7 +902,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         rParen := CheckSym (Symbol.rParen);
         IF (sym. id = Symbol.colon) THEN
           colon := CheckSym (Symbol.colon);
-          result := Qualident()
+          result := QualType()
         ELSE
           colon := NIL;
           result := NIL
@@ -965,30 +989,6 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
   PROCEDURE Type (level: LONGINT): AST.Node;
     VAR
       type: AST.Node;
-    
-    PROCEDURE QualType(): AST.Node;
-      VAR
-        type, left, right: AST.Node;
-        list: AST.NodeList;
-      BEGIN
-        (*S: QualType = Qualident ["<" [QualType {"," QualType}] ">"] *)
-        type :=  Qualident();
-        IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
-          left := CheckSym(Symbol.lss);
-          list := ast.NewNodeList();
-          IF (sym.id # Symbol.gtr) THEN
-            list.Append(QualType());
-            WHILE (sym.id = Symbol.comma) DO
-              list.Append(CheckSym(Symbol.comma));
-              list.Append(QualType());
-            END
-          END;
-          right := CheckSym(Symbol.gtr);
-          RETURN ast.QualType(type, left, list, right);
-        ELSE
-          RETURN type;
-        END;
-      END QualType;
     
     PROCEDURE ArrayType (): AST.Node;
       VAR

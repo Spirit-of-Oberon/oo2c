@@ -11,7 +11,7 @@
   generic18 generic19 generic20 generic21">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic21">-->
+  select ="&SetupTestCasesWithOut; generic1 generic21 generic22">-->
 
   &TestSetupWithOut;
     
@@ -1376,6 +1376,13 @@
       Pathological parametric type: the base type is the type variable
       itself.  Not sure if this makes much sense, but it is certainly
       a border case.
+    </test>
+    <test id="generic22" type="accept" file="Generic22.Mod">
+      Function result of a type-bound procedure may refer to a type
+      parameter of the class.  A receiver variable's type is
+      implicitly qualified by the type parameters of the class,
+      <em>not</em> their bounds.  <code>NIL</code> is compatible with
+      a qualified type if it is compatible with its base type.
     </test>
   </testcases>
 
