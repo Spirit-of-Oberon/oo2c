@@ -22,8 +22,8 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Language:Boolean, Language:Char, Language:String8,
-  Language:String16, Language:Integer, Language:Real,
+  Language, Language:Boolean, Language:Char, LString := Language:String,
+  Language:String8, Language:String16, Language:Integer, Language:Real,
   ADT:Object, ADT:ArrayList, ADT:String,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
@@ -3266,6 +3266,7 @@ VAR
   exprType : Sym.Type;
   result : Expression;
   length : LONGINT;
+  str8: String8.Value;
 BEGIN
   tr := b.typeRules;
   exprType := expr.type;
@@ -3278,32 +3279,44 @@ BEGIN
     result := NewTypeConv(type, expr)
   ELSIF IsPredefType(exprType, Predef.charString) THEN
     (* expression is constant string *)
-    length := expr(Const). value(String8.Value). value. length;
+    str8 := expr(Const). value(String8.Value);
+    length := expr(Const). value(String8.Value). Length();
     IF IsPredefType(type, Predef.char) & (length = 1) THEN
       (* string of length 1 converts to char *)
-      result := b.NewConst(expr.sym, type, expr(Const). value);
+      result := b.NewConst(expr.sym, type, str8);
     ELSE 
       (* string may be assigned to ARRAY OF CHAR with sufficient length *)
       (* FIXME: can assign a string constant to an "array of char" _only_
          if the array belongs to a formal parameter... (same with char
          const below) *)
       WITH type : Sym.Array DO
-        IF IsPredefType(type. elementType, Predef.char) &
+        IF b. typeRules. IsCharType (type. elementType) &
           (type.isOpenArray OR (length < type.length)) THEN
-          result := expr;
+          IF (type. elementType(Sym.PredefType). id = Predef.longchar) THEN
+            result := b.NewConst (expr. sym,
+                                  Predef.GetType (Predef.longcharString),
+                                  String16.NewRegion8(str8. value. array^, 0, length));
+          ELSE
+            result := expr;
+          END;
         END;
       ELSE
       END;
     END;
-  ELSIF IsPredefType(exprType, Predef.char) & (expr IS Const) THEN
+  ELSIF b. typeRules. IsCharType (exprType) & (expr IS Const) THEN
     (* expression is constant character *)
-    length := expr(Const). value(String8.Value). value. length;
+    length := expr(Const). value(LString.Value). Length();
     WITH type : Sym.Array DO
-      IF IsPredefType(type. elementType, Predef.char) &
+      IF b. typeRules. IncludesType (type. elementType, exprType) &
          (type.isOpenArray OR (type.length > 1)) THEN
-        (* char may be assigned to ARRAY OF CHAR with sufficient length *)
-        result := b.NewConst(expr.sym, Predef.GetType (Predef.charString),
-                             expr(Const). value);
+        (* char may be assigned to ARRAY OF char with sufficient length *)
+        IF (type. elementType(Sym.PredefType). id = Predef.char) THEN
+          result := b.NewConst(expr.sym, Predef.GetType (Predef.charString),
+                               expr(Const). value);
+        ELSE
+          result := b.NewConst(expr.sym, Predef.GetType (Predef.longcharString),
+                               expr(Const). value);
+        END;
       END;
     ELSE
     END;
