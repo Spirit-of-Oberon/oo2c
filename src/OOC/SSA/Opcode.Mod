@@ -784,8 +784,7 @@ CONST
 
      @table @oconst
      @item *OOC:SSA.Opnd.arg
-	 This is a @oconst{typeRef} denoting a record type, or a pointer
-     value.
+	 A pointer to a VTABLE record.
 
      @item *OOC:SSA.Opnd.arg
      The static procedure declaration that is used by the call in the source
