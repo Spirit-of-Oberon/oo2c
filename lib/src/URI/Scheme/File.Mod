@@ -112,7 +112,7 @@ BEGIN
       (* drive identifier with relative path. Use working directory on that
          drive.  *)
       drive := path[0];
-      IF (drive >= 'A') & (drive < 'Z') THEN
+      IF (drive >= 'A') & (drive <= 'Z') THEN
         id := ORD(drive) - ORD('A') + 1;
       ELSE
         id := ORD(drive) - ORD('a') + 1;
