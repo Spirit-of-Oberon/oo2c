@@ -57,6 +57,12 @@
         successfully.  This is a variant of "accept", with a more
         restricted success criterion.
 
+    The attribute "relevance" determines if the test covers a feature
+    that is part of the language definition ("standard", the default),
+    or "informal".  An "informal" test case tests a feature that is
+    not derived from a language specification, but can be found in
+    existing processor implementations.
+
     Tests apply to one or more particular languages "lang".  If the
     attribute "lang" is not provided, the test framework takes the
     value from the "default-lang" attribute of the enclosing
@@ -80,6 +86,7 @@
 <!ATTLIST test
           id		ID		#REQUIRED
 	  type		%TESTTYPE;	#REQUIRED
+          relevance     (standard|informal) "standard"
 	  file		%URI;		#REQUIRED
 	  lang		%LANGUAGES;	#IMPLIED
 	  output	%URI;		#IMPLIED >

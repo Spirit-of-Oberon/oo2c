@@ -25,6 +25,10 @@ CONST
   testError* = 2;
   testRun* = 3;
   testOutput* = 4;
+
+CONST
+  relevanceStandard* = 0;
+  relevanceInformal* = 1;
   
 TYPE
   Test = POINTER TO TestDesc;
@@ -33,6 +37,7 @@ TYPE
     baseURI: URI.URI;
     id: ARRAY 64 OF CHAR;
     type: SHORTINT;
+    relevance: SHORTINT;
     file: URI.URI;
     lang: Element.String;
     output: URI.URI;
@@ -163,6 +168,7 @@ PROCEDURE InitTest (test: Test);
     test. baseURI := NIL;
     test. id := "";
     test. type := testReject;
+    test. relevance := relevanceStandard;
     test. file := NIL;
     test. lang := NIL;
     test. output := NIL;
@@ -186,6 +192,7 @@ PROCEDURE (test: Test) IsAttributeName* (localName: Element.String): BOOLEAN;
   BEGIN
     RETURN (localName^ = "id") OR
            (localName^ = "type") OR
+           (localName^ = "relevance") OR
            (localName^ = "file") OR
            (localName^ = "lang") OR
            (localName^ = "output")
@@ -208,6 +215,16 @@ PROCEDURE (test: Test) AddAttribute* (localName: Element.String;
         test. type := testError
       ELSIF (v^ = "run") THEN
         test. type := testRun
+      ELSE
+        RETURN FALSE
+      END;
+      RETURN TRUE
+    ELSIF (localName^ = "relevance") THEN
+      v := value. Flatten (NIL);
+      IF (v^ = "standard") THEN
+        test. relevance := relevanceStandard
+      ELSIF (v^ = "informal") THEN
+        test. relevance := relevanceInformal
       ELSE
         RETURN FALSE
       END;
@@ -242,7 +259,7 @@ PROCEDURE (test: Test) MissingChild* (): Element.String;
 
 PROCEDURE (test: Test) Write* (writer: Writer.Writer);
   VAR
-    value: ARRAY 8 OF CHAR;
+    value: ARRAY 16 OF CHAR;
   BEGIN
     writer. StartTag ("test", TRUE);
     writer. AttrStringLatin1 ("id", test. id);
@@ -253,6 +270,11 @@ PROCEDURE (test: Test) Write* (writer: Writer.Writer);
     | testRun, testOutput: value := "run"
     END;
     writer. AttrStringLatin1 ("type", value);
+    CASE test. relevance OF
+    | relevanceStandard: value := "standard"
+    | relevanceInformal: value := "informal"
+    END;
+    writer. AttrStringLatin1 ("relevance", value);
     writer. AttrURI ("file", test. file, FALSE);
     IF (test. lang # NIL) THEN
       writer. AttrString ("lang", test. lang^)
