@@ -49,7 +49,7 @@ TYPE
   END;
 
 
-PROCEDURE GetName (node: AST.Node): Item.Name;
+PROCEDURE GetName* (node: AST.Node): Item.Name;
   VAR
     sym: BasicList.Symbol;
     name: Item.Name;
@@ -292,7 +292,7 @@ PROCEDURE (v: Visitor) VisitConstDecl* (constDecl: ExtTree.ConstDecl);
     const := v. stb. NewConstDecl (v. parent, 
       GetName (constDecl. identDef. ident),
       constDecl. semicolon(ExtTree.Terminal). sym. pos,
-      ExportMark (constDecl. identDef), constDecl. identDef. docString)
+      ExportMark (constDecl. identDef), constDecl. identDef. docString, NIL)
   END VisitConstDecl;
 
 PROCEDURE (v: Visitor) VisitTypeDecl* (typeDecl: ExtTree.TypeDecl);
@@ -369,7 +369,8 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
       ExportMark (procDecl. identDef),
       procDecl. identDef. docString,
       procDecl. receiver # NIL, procDecl. arrow # NIL);
-
+    procDecl. SetSymTabEntry (proc);
+    
     IF (procDecl. formalPars # NIL) &
        (procDecl. formalPars(ExtTree.FormalPars). result # NIL) THEN
       type := GetType (v, procDecl. formalPars(ExtTree.FormalPars). result)
