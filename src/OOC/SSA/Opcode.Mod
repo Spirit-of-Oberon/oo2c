@@ -178,7 +178,7 @@ CONST
      @end table  *)
 
   exit* = 9;
-  (**This instruction marks the place where control flow exists the
+  (**This instruction marks the place where control flow exits the
      @code{LOOP}.  The instruction has one operand:
 
      @table @oconst
