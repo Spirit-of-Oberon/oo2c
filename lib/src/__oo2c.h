@@ -185,6 +185,9 @@ extern OOC_INT32 _cmp16(const OOC_CHAR16* l, const OOC_CHAR16* r);
 
 #define OOC_TYPE_DESCR(_module,_type_name) &_td_##_module##__##_type_name
 
+#define OOC_PTRBASE_DESCR(_module,_type_name) \
+  (_td_##_module##__##_type_name.baseTypes[0])
+
 #define OOC_TYPE_TAG(_adr) (((RT0__Struct*)(_adr))[-1])
 
 #define OOC_TYPE_TEST(_tag,_td) \

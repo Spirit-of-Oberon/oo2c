@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OS:Files [FOREIGN "C"; LINK FILE "Files.c" END];
 (*  Manipulation of file and directory entries.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2002  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -32,6 +32,8 @@ TYPE
   Path* = ARRAY OF CHAR;
   Mode* = LONGINT;
   (**File creation mask.  *)
+  Name* = POINTER TO ARRAY OF CHAR;
+  NameArray* = POINTER TO ARRAY OF Name;
   
 CONST
   done* = NIL;
@@ -72,6 +74,11 @@ VAR
 
 PROCEDURE (context: ErrorContext) GetTemplate* (msg: Msg.Msg; VAR templ: Msg.LString);
 
+PROCEDURE listdir* (path: Path; VAR res: Result): NameArray;
+(**Return a list containing the names of the entries in the directory.  The
+   list is in arbitrary order.  It does not include the special entries
+   @samp{.} and @samp{..}, even if they are present in the directory.  *)
+  
 PROCEDURE mkdir* (path: Path; mode: Mode; VAR res: Result);
 (**Creates directory @oparam{path} in the local file system with numeric mode
    @oparam{mode}.  On some systems, @oparam{mode} is ignored. Where it is used,
