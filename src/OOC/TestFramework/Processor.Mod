@@ -78,10 +78,11 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     
     (* put together command string for compile/make *)
     sb := StringBuffer.New (setup. processor. command);
-    sb. AppendString (" --config '");
+    (*sb. AppendString (" --config '");
     setup. processor. configFile(File.URI). GetPath (path);
     sb. AppendString (path);
-    sb. AppendString ("' ");
+    sb. AppendString ("' ");*)
+    sb. AppendString (" ");
     sb. AppendString (setup. processor. flags);
     sb. AppendString (" ");
     proc. processCmd := sb. ToString();
