@@ -673,6 +673,14 @@ PROCEDURE AntiDepViolation (pb: SSA.ProcBlock; root: Region): BOOLEAN;
           Log.Ptr ("  adding forward anti-dep to", proxy. instr);
           Check.All (pb);
 <*END*>
+
+          (* stop with the first instruction that may clobber the value we
+             desire; since this instruction aliases with our variable, any
+             instruction further down the road that aliases with the variable
+             must also alias with the instruction; by construction, all these
+             instruction must be data-dependent on the current one, and do
+             not need to be marked explicitly *)
+          RETURN;
         END;
         proxy := proxy. nextProxy;
       END;
