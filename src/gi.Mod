@@ -5,7 +5,7 @@ IMPORT
   RT0, Object, Exception, ADT:ArrayList, ADT:Dictionary, ADT:StringBuffer,
   ADT:Arrays, ADT:Comparator, OS:Path, OS:Files,
   StringSearch, StringSearch:RegexpDFA, StringSearch:NoMatch,
-  NIO, NIO:Address, NIO:FileChannel,
+  IO, IO:Address, IO:FileChannel,
   Net:NNTP;
 
 TYPE
@@ -61,7 +61,7 @@ VAR
   selectSubjects, excludeSubjects: StringSearch.Matcher;
   forceIncomplete: BOOLEAN;
   dumpTarget: Channel.Writer;
-  historyChannel: FileChannel.Channel;
+  historyChannel: IO.ByteChannel;
   history: Dictionary.Dictionary;
   
   reqGroup: NNTP.Group;
@@ -231,12 +231,12 @@ PROCEDURE Normalize(VAR b: ARRAY OF CHAR; start, end: LONGINT): String;
   END Normalize;
 
 PROCEDURE ReadGroupData(group: STRING): GroupData
-RAISES NIO.Error;
+RAISES IO.Error;
   CONST
     sizeBuffer = 8*1024;
   VAR
     fileName: STRING;
-    ch: FileChannel.Channel;
+    ch: IO.ByteChannel;
     b: ARRAY sizeBuffer OF CHAR;
     r, pos, start, end, i, lastId: LONGINT;
     gd: GroupData;
@@ -381,13 +381,13 @@ RAISES NIO.Error;
     RETURN gd;
   END ReadGroupData;
 
-PROCEDURE WriteGroupData(gd: GroupData) RAISES NIO.Error;
+PROCEDURE WriteGroupData(gd: GroupData) RAISES IO.Error;
   CONST
     sizeBuffer = 8*1024;
     maxIntLength = 12;
   VAR
     fileName: STRING;
-    ch: FileChannel.Channel;
+    ch: IO.ByteChannel;
     b: ARRAY sizeBuffer OF CHAR;
     pos, i: LONGINT;
     header: Header;
@@ -418,7 +418,7 @@ PROCEDURE WriteGroupData(gd: GroupData) RAISES NIO.Error;
       INC(pos, str.length);
     END AppendString;
 
-  PROCEDURE Flush() RAISES NIO.Error;
+  PROCEDURE Flush() RAISES IO.Error;
     VAR
       start: LONGINT;
     BEGIN
@@ -495,7 +495,7 @@ PROCEDURE ReduceGroupData(gd: GroupData; first, last: LONGINT): LONGINT;
   END ReduceGroupData;
 
 PROCEDURE AppendXHdr(gd: GroupData; req: NNTP.XHdr; last: LONGINT)
-RAISES NIO.Error, NNTP.ProtocolError;
+RAISES IO.Error, NNTP.ProtocolError;
   VAR
     text: NNTP.Text;
     headers: ArrayList.ArrayList;
@@ -716,7 +716,7 @@ PROCEDURE CreateFiles(gd: GroupData): FileList;
     RETURN fileList;
   END CreateFiles;
 
-PROCEDURE AddToHistory(file: File) RAISES NIO.Error;
+PROCEDURE AddToHistory(file: File) RAISES IO.Error;
   VAR
     b: StringBuffer.StringBuffer;
     c: StringBuffer.CharsLatin1;
@@ -736,7 +736,7 @@ PROCEDURE AddToHistory(file: File) RAISES NIO.Error;
   END AddToHistory;
 
 PROCEDURE DownloadFiles(fileList: FileList)
-RAISES NIO.Error, NNTP.ProtocolError, NNTP.ErrorResponse;
+RAISES IO.Error, NNTP.ProtocolError, NNTP.ErrorResponse;
   VAR
     i, j, status: LONGINT;
     file: File;
@@ -779,13 +779,13 @@ RAISES NIO.Error, NNTP.ProtocolError, NNTP.ErrorResponse;
     END;
   END DownloadFiles;
 
-PROCEDURE ReadHistory(VAR history: Dictionary.Dictionary): FileChannel.Channel
-RAISES NIO.Error;
+PROCEDURE ReadHistory(VAR history: Dictionary.Dictionary): IO.ByteChannel
+RAISES IO.Error;
   CONST
     sizeBuffer = 8*1024;
   VAR
     fileName: String;
-    ch: FileChannel.Channel;
+    ch: IO.ByteChannel;
     b: ARRAY sizeBuffer OF CHAR;
     end, pos, start, sep, r, i: LONGINT;
     str: String;
@@ -793,10 +793,10 @@ RAISES NIO.Error;
     fileName := "__download_history__";
     LogMsg("Reading history file "+fileName);
     TRY
-      ch := FileChannel.Open(fileName,
-                             {FileChannel.read, FileChannel.write,
-                              FileChannel.append, FileChannel.unbuffered});
-    CATCH NIO.FileNotFound:
+      ch := FileChannel.OpenUnbuffered(fileName,
+                                       {FileChannel.read, FileChannel.write,
+                                        FileChannel.append});
+    CATCH IO.FileNotFound:
       Error("File does not exist.  Do `touch "+fileName+"' first.");
     END;
     
