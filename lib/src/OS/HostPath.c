@@ -119,44 +119,89 @@ static int endsWithSeparator(char * path) {
   return (path[len] == '/') || (path[len] == '\\');
 }
 
-void OS_HostPath__Normalize(OOC_CHAR8 path[], OOC_LEN path_0d, Msg__Msg *res) {
+Object__CharsLatin1 StringToChars(Object__String str) {
+  register OOC_INT32 i0;
+
+  i0 = (OOC_INT32)str;
+  i0 = (OOC_INT32)Object__String8Desc_CharsLatin1((Object__String8)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 118)))), &_td_Object__String8Desc, 118)));
+  return (Object__CharsLatin1)i0;
+  ;
+}
+
+Object__String CharsToString(Object__CharsLatin1 chars) {
+  register OOC_INT32 i0,i1;
+
+  i0 = (OOC_INT32)chars;
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 263)), 0);
+  i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i0, 263)), i1);
+  return (Object__String)i0;
+  ;
+}
+
+Object__String OS_HostPath__Normalize(Object__String pathString) {
   char newpath [4096]; 
   int drive, pos;
-  *res = NULL;
+  char * path;
+  char * result;
+  Object__String resultString;
+
+  path = StringToChars(pathString);
+
   if (isalpha(path[0]) && (path[1] == ':')) {
     /* leading drive identifier */
     if ((path[2] != '\\') && (path[2] != '/')) {
       /* drive identifier with relative path. */
       drive = tolower(path[0]) - 'a' + 1;
       if (_getdcwd(drive, newpath, sizeof(newpath))) {
+        result = (char *) malloc (strlen(newpath)+strlen(path)+3);
         if (!endsWithSeparator(newpath)) {
-          strcat(newpath, "/");
+          strcat(result, "/");
         }
-        strcat(newpath, path+2);
-        strcpy(path, newpath);
+        strcat(result, path+2);
       } else {
 	IO_StdChannels__IOError(NULL);
       }
+    } else {
+      /* drive identifier with absolute path */
+      result = (char *) malloc(strlen(path)+3);
+      strcpy(result, path);
     }
-    path[1] = '$';
-    memmove(path+1, path, strlen(path)+1);
-    path[0] = '/';
+    result[1] = '$';
+    memmove(result+1, result, strlen(result)+1);
+    result[0] = '/';
+  } else {
+    result = (char *) malloc(strlen(path)+1);
+    strcpy(result, path);
   }
   pos = 0;
-  while (path[pos]) {
-    if (path[pos] == '\\') {
-      path[pos] = '/';
+  while (result[pos]) {
+    if (result[pos] == '\\') {
+      result[pos] = '/';
     }
     ++pos;
   }
+  resultString = CharsToString((Object__CharsLatin1) result);
+  free(result);
+  return resultString;
 }
 
-void OS_HostPath__Denormalize(OOC_CHAR8 path[], OOC_LEN path_0d, Msg__Msg *res) {
-  *res = NULL;
+Object__String OS_HostPath__Denormalize(Object__String pathString) {
+  char * path;
+  char * result;
+  Object__String resultString;
+
+  path = StringToChars(pathString);
+  result = (char *) malloc (strlen(path)+1);
+
   if ( (path[0] == '/') && isalpha(path[1]) && (path[2] == '$')) {
-    path[2] = ':';
-    memmove(path, path+3, strlen(path));
+    /* path[2] = ':'; */
+    memmove(result, path+3, strlen(path+3)+1);
+  } else {
+    strcpy(result, path);
   }
+  resultString = CharsToString((Object__CharsLatin1) result);
+  free(result);
+  return resultString;
 }
 
 #else
