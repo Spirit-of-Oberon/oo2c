@@ -169,7 +169,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
       | type: Sym.PredefType DO
         CASE type. id OF
-        | Predef.charString, Predef.longcharString:
+        | Predef.charString, Predef.longCharString:
           RETURN Predef.GetType (type. id-Predef.charString+Predef.char);
         ELSE
           RETURN NIL;
@@ -639,7 +639,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewLatin1Region");
           | Predef.longchar:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS2Char");
-          | Predef.longcharString:
+          | Predef.longCharString:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS2Region");
           END;
           instr.AddOpnd(pb.GetConst(Boxed.NewString(fct),

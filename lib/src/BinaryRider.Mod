@@ -315,13 +315,13 @@ PROCEDURE (r: Reader) ReadStr* (VAR s: Object.String);
           FOR i := 0 TO len-1 DO
             r.ReadNum(buffer32[i]);
           END;
-          s := Object.NewUTF32Region(buffer32, 0, len);
+          s := Object.NewUCS4Region(buffer32, 0, len);
         ELSE
           NEW(dynBuffer32, len);
           FOR i := 0 TO len-1 DO
             r.ReadNum(buffer32[i]);
           END;
-          s := Object.NewUTF32Region(dynBuffer32^, 0, len);
+          s := Object.NewUCS4Region(dynBuffer32^, 0, len);
         END;
       END;
     END;
@@ -499,7 +499,7 @@ PROCEDURE (w: Writer) WriteSet*(s: SET);
 PROCEDURE (w: Writer) WriteStr*(s: Object.String);
   VAR
     chars8: Object.CharsLatin1;
-    chars32: Object.CharsUTF32;
+    chars32: Object.CharsUCS4;
     i: LONGINT;
   BEGIN
     IF (s = NIL) THEN
@@ -512,7 +512,7 @@ PROCEDURE (w: Writer) WriteStr*(s: Object.String);
         
       | s: Object.String32 DO            (* FIXME... use UTF8 codec *)
         w.WriteNum(-s.length-1);
-        chars32 := s.CharsUTF32();
+        chars32 := s.CharsUCS4();
         FOR i := 0 TO s.length-1 DO
           w.WriteNum(chars32[i]);
         END;

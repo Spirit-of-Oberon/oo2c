@@ -367,7 +367,7 @@ TYPE
        @item
        If an operand is a character constant of type @code{LONGCHAR}, or a
        string constant based on @code{LONGCHAR}, then the result is a
-       @code{LONGCHAR} string constant @oconst{Predef.longcharString}.
+       @code{LONGCHAR} string constant @oconst{Predef.longCharString}.
 
        @item
        Otherweise, result is a @code{CHAR} string constant
@@ -377,7 +377,7 @@ TYPE
     strings-: ExpressionList;
     (**List of string values that are to be concatenated together.  The entries
        are restricted to values of type @oconst{Predef.charString},
-       @oconst{Predef.longcharString}, and @ofield{Builder.stringType}.  All
+       @oconst{Predef.longCharString}, and @ofield{Builder.stringType}.  All
        entries are of the same type, @ofield{type}.
 
        Right now, this list is always 2 elements long, but this is likely to
@@ -1739,8 +1739,8 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
       ELSIF (i >= 2) & (str[i-1] = "X") & (hexCount+1 = i) THEN
         (* character written has hexadecimal constant nnX *)
         IF HexToInt (str, "X", ord) &
-           (ORD(Predef.minLongchar) <= ord) &
-           (ord <= ORD(Predef.maxLongchar)) THEN
+           (ORD(Predef.minLongChar) <= ord) &
+           (ord <= ORD(Predef.maxLongChar)) THEN
           RETURN ord;
         ELSE  (* overflow *)
           RETURN -1;
@@ -5278,8 +5278,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
           (* FIXME... this kind of overflow checking should be done in
              ConstFold, for the argument and the result of each computation *)
           dummy := b.AssertIntConst(arguments[0],
-                                    ORD(Predef.minLongchar),
-                                    ORD(Predef.maxLongchar)+1);
+                                    ORD(Predef.minLongChar),
+                                    ORD(Predef.maxLongChar)+1);
         END;
         RETURN b.NewTypeConv (Predef.GetType (Predef.longchar), arguments[0]);
         

@@ -108,7 +108,7 @@ PROCEDURE WriteChars ();
     Log.Msg ("  writing data");
     w := BinaryRider.ConnectWriter (StdChannels.stdout);
     b := String0.NewBuffer(4*1024);
-    s := String0.NewUTF32Region(data32^, 0, totalChars);
+    s := String0.NewUCS4Region(data32^, 0, totalChars);
     enc := codec1. NewEncoder();
     FOR repeat := 1 TO repeatCount DO
       start := 0;

@@ -71,7 +71,7 @@ PROCEDURE (c: UTF32) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
               ((d[i] < surrogateStart) OR (d[i] >= surrogateEnd)),
               String.invalidChar);
     END;
-    RETURN String.NewUTF32Region(d^, 0, LEN(d^));
+    RETURN String.NewUCS4Region(d^, 0, LEN(d^));
   END DecodeRegion;
 
 PROCEDURE (dec: Decoder) Decode* (data[NO_COPY]: ARRAY OF CHAR;
@@ -120,12 +120,12 @@ PROCEDURE (c: UTF32) EncodeRegion*(s: String.String;
   VAR
     i, len: LONGINT;
     d8: String.CharsLatin1;
-    d, d32: String.CharsUTF32;
+    d, d32: String.CharsUCS4;
     e: POINTER TO ARRAY OF CHAR;
   BEGIN
     WITH s: String.String32 DO
       NEW (e, (end-start)*SIZE(String.Char));
-      d32 := s.CharsUTF32();
+      d32 := s.CharsUCS4();
       SYSTEM.MOVE(SYSTEM.ADR(d32^), SYSTEM.ADR(e^), LEN(e^));
       
     | s: String.String8 DO
@@ -151,7 +151,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
     d8: String.BufferLatin1;
     d32: String.BufferUTF32;
     s8: String.CharsLatin1;
-    s32: String.CharsUTF32;
+    s32: String.CharsUCS4;
     len, i: LONGINT;
   BEGIN
     WITH s: String.String8 DO
@@ -168,7 +168,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
       END;
       
     | s: String.String32 DO
-      s32 := s.CharsUTF32();
+      s32 := s.CharsUCS4();
       WHILE (start # end) DO
         len := SIZE(String.BufferLatin1) DIV SIZE(String.Char);
         IF (len > end-start) THEN len := end-start; END;

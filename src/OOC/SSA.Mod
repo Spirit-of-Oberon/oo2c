@@ -215,6 +215,8 @@ TYPE
 
 VAR
   nil-: BigInt.BigInt;
+  (**A unique value representing @code{NIL}.  Note: Strange things may
+     happen if the same object is also used with a different meaning.  *)
 
   
 PROCEDURE InitNode* (n: Node);

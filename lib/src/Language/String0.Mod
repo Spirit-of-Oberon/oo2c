@@ -93,7 +93,7 @@ TYPE
   (**Note: The elements of this type should be considered read-only in
      importing modules, similar to read-only exported record fields.  This
      restriction may be enforced by the OOC2 compiler at a later stage.  *)
-  CharsUTF32* = POINTER TO ARRAY OF Char;
+  CharsUCS4* = POINTER TO ARRAY OF Char;
   (**Note: The elements of this type should be considered read-only in
      importing modules, similar to read-only exported record fields.  This
      restriction may be enforced by the OOC2 compiler at a later stage.  *)
@@ -106,7 +106,7 @@ TYPE
     (* As long as 8-bit characters are added to a buffer, its internal storage
        is based on CHAR.  The first @otype{Char} value switches it to 32-bit
        storage.  *)
-    data32: CharsUTF32;
+    data32: CharsUCS4;
   END;
   
 TYPE
@@ -125,7 +125,7 @@ TYPE
   BufferUTF32* = ARRAY SIZE(BufferLatin1) DIV SIZE(Char) OF Char;
   String32Desc = RECORD
     (StringDesc) 
-    data: CharsUTF32;
+    data: CharsUCS4;
     (**Holds a sequence of Unicode code points in the range @samp{U+0000} to
        @samp{U+10FFFF}, excluding the surrogate area @samp{[U+DC00, U+DFFFF]}.
        The array is of length @samp{@ofield{length}+1}, with
@@ -158,7 +158,7 @@ PROCEDURE NewString8(source: SYSTEM.ADDRESS; length: LONGINT): String8;
 PROCEDURE NewString32(source: SYSTEM.ADDRESS; length: LONGINT): String32;
   VAR
     s: String32;
-    d: CharsUTF32;
+    d: CharsUCS4;
   BEGIN
     NEW(s);
     NEW(d, length+1);
@@ -211,7 +211,7 @@ PROCEDURE (b: Buffer) EnsureCapacity (cap: LONGINT);
   VAR
     newCap: LONGINT;
     new8: CharsLatin1;
-    new32: CharsUTF32;
+    new32: CharsUCS4;
   BEGIN
     IF (b. capacity < cap) THEN
       newCap := b. capacity;
@@ -356,7 +356,7 @@ PROCEDURE NewUCS2*(str[NO_COPY]: ARRAY OF LONGCHAR): String;
   VAR
     i, j: LONGINT;
     s: String32;
-    d: CharsUTF32;
+    d: CharsUCS4;
   BEGIN
     i := 0;
     WHILE(str[i] # 0X) DO
@@ -385,7 +385,7 @@ PROCEDURE NewUCS2Region*(str[NO_COPY]: ARRAY OF LONGCHAR; start, end: LONGINT): 
   VAR
     i, j: LONGINT;
     s: String32;
-    d: CharsUTF32;
+    d: CharsUCS4;
   BEGIN
     i := end-start;
     NEW(s);
@@ -408,7 +408,7 @@ PROCEDURE NewUCS2Char*(ch: LONGCHAR): String;
    @end precond  *)
   VAR
     s: String32;
-    d: CharsUTF32;
+    d: CharsUCS4;
   BEGIN
     NEW(s);
     NEW(d, 2);
@@ -419,7 +419,7 @@ PROCEDURE NewUCS2Char*(ch: LONGCHAR): String;
     RETURN s;
   END NewUCS2Char;
 
-PROCEDURE NewUTF32Region*(str[NO_COPY]: ARRAY OF Char;
+PROCEDURE NewUCS4Region*(str[NO_COPY]: ARRAY OF Char;
                           start, end: LONGINT): String;
 (**Create a string value from @samp{str[start, end]} without any translation.
 
@@ -429,9 +429,9 @@ PROCEDURE NewUTF32Region*(str[NO_COPY]: ARRAY OF Char;
    @end precond  *)
   BEGIN
     RETURN NewString32 (SYSTEM.ADR(str[start]), end-start);
-  END NewUTF32Region;
+  END NewUCS4Region;
 
-PROCEDURE NewUTF32Char*(ch: Char): String;
+PROCEDURE NewUCS4Char*(ch: Char): String;
 (**Create a string value of length 1 from @samp{ch} without any translation.
 
    @precond
@@ -439,9 +439,9 @@ PROCEDURE NewUTF32Char*(ch: Char): String;
    @end precond  *)
   BEGIN
     RETURN NewString32(SYSTEM.ADR(ch), 1);
-  END NewUTF32Char;
+  END NewUCS4Char;
 
-PROCEDURE NewUTF32*(str[NO_COPY]: ARRAY OF Char): String;
+PROCEDURE NewUCS4*(str[NO_COPY]: ARRAY OF Char): String;
 (**Create a string value from @oparam{str} without any translation.
 
    @precond
@@ -456,7 +456,7 @@ PROCEDURE NewUTF32*(str[NO_COPY]: ARRAY OF Char): String;
       INC(i);
     END;
     RETURN NewString32 (SYSTEM.ADR(str), i);
-  END NewUTF32;
+  END NewUCS4;
 
 PROCEDURE Concat2* (s1, s2: String): String;
   VAR
@@ -523,10 +523,10 @@ PROCEDURE (s: String8) CharsLatin1*(): CharsLatin1;
     RETURN s. data;
   END CharsLatin1;
 
-PROCEDURE (s: String32) CharsUTF32*(): CharsUTF32;
+PROCEDURE (s: String32) CharsUCS4*(): CharsUCS4;
   BEGIN
     RETURN s. data;
-  END CharsUTF32;
+  END CharsUCS4;
 
 PROCEDURE (s: String) [ABSTRACT] CharAt* (index: LONGINT): Char;
   END CharAt;

@@ -547,7 +547,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
         END;
       | Predef.char:
         result := CharOp();
-      | Predef.charString, Predef.longcharString:
+      | Predef.charString, Predef.longCharString:
         result := StringOp(); 
       | Predef.boolean:
         result := BooleanOp();

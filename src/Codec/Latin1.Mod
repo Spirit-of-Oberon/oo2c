@@ -66,14 +66,14 @@ PROCEDURE (c: Latin1) EncodeRegion*(s: String.String;
     i, len: LONGINT;
     d: POINTER TO ARRAY OF CHAR;
     d8: String.CharsLatin1;
-    d32: String.CharsUTF32;
+    d32: String.CharsUCS4;
   BEGIN
     WITH s: String.String8 DO
       d8 := s.CharsLatin1();
       RETURN String.NewLatin1Region(d8^, start, end);
       
     | s: String.String32 DO
-      d32 := s.CharsUTF32();
+      d32 := s.CharsUCS4();
       len := end-start;
       NEW (d, len+1);
       i := 0;
@@ -93,7 +93,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
   VAR
     d: String.BufferLatin1;
     d8: String.CharsLatin1;
-    d32: String.CharsUTF32;
+    d32: String.CharsUCS4;
     i: LONGINT;
   BEGIN
     WITH s: String.String8 DO
@@ -101,7 +101,7 @@ PROCEDURE (enc: Encoder) Encode*(s: String.String;
       b. AppendLatin1Region (d8^, 0, s. length);
       
     | s: String.String32 DO
-      d32 := s.CharsUTF32();
+      d32 := s.CharsUCS4();
       i := 0;
       WHILE (start # end) DO
         ASSERT (d32[start] < 256, String.invalidChar);

@@ -69,7 +69,7 @@ PROCEDURE IsStringConst* (type: Sym.Type): BOOLEAN;
 (**Result is @code{TRUE} iff @oparam{type} is a string constant.  *)
   BEGIN
     WITH type: Sym.PredefType DO
-      RETURN (type. id IN {Predef.charString, Predef.longcharString})
+      RETURN (type. id IN {Predef.charString, Predef.longCharString})
     ELSE
       RETURN FALSE
     END;
@@ -137,7 +137,7 @@ PROCEDURE BaseCharType* (type: Sym.Type): Sym.PredefType;
       CASE type. id OF
       | Predef.char, Predef.charString:
         RETURN Predef.GetType (Predef.char);
-      | Predef.longchar, Predef.longcharString:
+      | Predef.longchar, Predef.longCharString:
         RETURN Predef.GetType (Predef.longchar);
       ELSE
         RETURN NIL;
@@ -160,7 +160,7 @@ BEGIN
     CASE type.id OF
     | Predef.charString:
       RETURN Predef.GetType(Predef.char);
-    | Predef.longcharString:
+    | Predef.longCharString:
       RETURN Predef.GetType(Predef.longchar);
     END;
   END;
@@ -172,7 +172,7 @@ VAR
 BEGIN
   CASE type(Sym.PredefType). id OF
   | Predef.char: id := Predef.charString
-  | Predef.longchar:  id := Predef.longcharString
+  | Predef.longchar:  id := Predef.longCharString
   END;
   RETURN Predef.GetType (id);
 END MatchingStringConst;

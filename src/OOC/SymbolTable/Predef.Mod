@@ -62,7 +62,7 @@ CONST
   (**A string value based on the predefined type @code{CHAR}.  This is a
      sequence of arbitrary @oconst{char} constants.  In particular, the string
      may contain the character code @code{0X}.  *)
-  longcharString* = 13;
+  longCharString* = 13;
   (**Like @oconst{charString}, but based on the type @code{LONGCHAR}.  *)
   nil* = 14;
   (**The type of the constant @code{NIL}.  *)
@@ -81,7 +81,7 @@ CONST
 
 CONST
   minChar* = MIN(CHAR);         maxChar* = MAX(CHAR);
-  minLongchar* = MIN(LONGCHAR); maxLongchar* = MAX(LONGCHAR);
+  minLongChar* = MIN(LONGCHAR); maxLongChar* = MAX(LONGCHAR);
   
 VAR
   minConst, maxConst: ARRAY lastId+1 OF Boxed.Object;
@@ -215,8 +215,8 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
                          Boxed.NewString(Object.NewLatin1Char(minChar)),
                          Boxed.NewString(Object.NewLatin1Char(maxChar)));
     ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2,
-                         Boxed.NewString(Object.NewUCS2Char(minLongchar)),
-                         Boxed.NewString(Object.NewUCS2Char(maxLongchar)));
+                         Boxed.NewString(Object.NewUCS2Char(minLongChar)),
+                         Boxed.NewString(Object.NewUCS2Char(maxLongChar)));
     ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1,
                          BigInt.NewInt(MIN (SHORTINT)),
                          BigInt.NewInt(MAX (SHORTINT)));
@@ -243,7 +243,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     
     ptype := PredefType (stb, module, charString, "", Sym.dynamicSize, 1,
                          NIL, NIL);
-    ptype := PredefType (stb, module, longcharString, "", Sym.dynamicSize, 2,
+    ptype := PredefType (stb, module, longCharString, "", Sym.dynamicSize, 2,
                          NIL, NIL);
     ptype := PredefType (stb, module, nil, "", 4, 4,
                          NIL, NIL);

@@ -883,7 +883,7 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       | Predef.byte: RETURN scUnsigned8
       | Predef.ptr: RETURN scAddress
       | Predef.charString: RETURN scAddress
-      | Predef.longcharString: RETURN scAddress
+      | Predef.longCharString: RETURN scAddress
       | Predef.nil: RETURN scAddress
       END;
       
