@@ -1063,6 +1063,8 @@ CONST
   redirectFailed = 41;
   readOnlyParameter = 42;
   noDynamicType = 43;
+  notNumeric = 44;
+  notCharacter = 45;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1215,6 +1217,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "This parameter is read-only"
     | noDynamicType:
       t := "This variable has no dynamic type"
+    | notNumeric:
+      t := "Expression must be numeric"
+    | notCharacter:
+      t := "Expression must be a character"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -1545,6 +1551,39 @@ PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): L
     RETURN start;
   END AssertIntConst;
 
+PROCEDURE (b: Builder) AssertNumeric (expr: Expression): Expression;
+(* Generates an error if `expr' is not an integer or real value.  On success,
+   `expr' is returned, and otherwise an integer constant with a value of `1'.*)
+  VAR
+    v: Integer.Value;
+  BEGIN
+    IF (expr # b.errorExpr) THEN
+      IF ~TR.IsNumericType(expr.type) THEN
+        b.ErrSym(notNumeric, expr.sym);
+        v := Integer.New(1);
+        RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
+      END;
+    END;
+    RETURN expr;
+  END AssertNumeric;
+
+PROCEDURE (b: Builder) AssertChar(expr: Expression): Expression;
+(* Generates an error if `expr' is not a character.  On success,
+   `expr' is returned, and otherwise an character constant with a value of
+   "?".*)
+  VAR
+    v: String8.Value;
+  BEGIN
+    IF (expr # b.errorExpr) THEN
+      IF ~TR.IsCharType(expr.type) THEN
+        b.ErrSym(notCharacter, expr.sym);
+        v := String8.NewString("a");
+        RETURN NewConst(expr.sym, Predef.GetType(Predef.char), v);
+      END;
+    END;
+    RETURN expr;
+  END AssertChar;
+
 PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expression;
   VAR
     v: Language.Value;
@@ -1660,7 +1699,7 @@ PROCEDURE (b: Builder) NewAbs (sym: Symbol; operand: Expression): Expression;
     abs: Abs;
   BEGIN
     NEW (abs);
-    InitAbs (abs, sym, operand);
+    InitAbs (abs, sym, b.AssertNumeric(operand));
     RETURN abs;
   END NewAbs;
 
@@ -1798,7 +1837,7 @@ PROCEDURE (b: Builder) NewCap (sym: Symbol; expr: Expression): Expression;
     cap: Cap;
   BEGIN
     NEW (cap);
-    InitCap (cap, sym, expr);
+    InitCap (cap, sym, b.AssertChar(expr));
     RETURN cap;
   END NewCap;
 
@@ -4627,7 +4666,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         RETURN b. NewAsh (design. sym, arguments[0], arguments[1]);
         
       | Predef.cap:
-        RETURN b. NewCap (design. sym, arguments[0]);
+        RETURN b. NewCap (design. sym, b.AssertChar(arguments[0]));
 
       | Predef.long:
         CASE arguments[0]. type(Sym.PredefType). id OF
@@ -4663,11 +4702,14 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         RETURN b. NewOdd (design. sym, arguments[0]);
         
       | Predef.ord:
-        CASE arguments[0]. type(Sym.PredefType). id OF
-        | Predef.char: targetType := Predef.integer;
-        | Predef.longchar: targetType := Predef.longint;
+        IF (arguments[0].type IS Sym.PredefType) &
+           (arguments[0].type(Sym.PredefType).id = Predef.longchar) THEN
+          targetType := Predef.longint;
+        ELSE  (* for CHAR and in case of error *)
+          targetType := Predef.integer;
         END;
-        RETURN b.NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        RETURN b.NewTypeConv(Predef.GetType(targetType),
+                             b.AssertChar(arguments[0]));
         
       (* SYSTEM procedures: *)
       | Predef.move:

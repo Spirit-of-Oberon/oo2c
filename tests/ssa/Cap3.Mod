@@ -1,0 +1,8 @@
+MODULE Cap3;
+
+PROCEDURE F(): CHAR;
+  BEGIN
+    RETURN CAP(97);
+  END F;
+
+END Cap3.

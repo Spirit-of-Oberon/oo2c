@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; opTypeGuard10">-->
+  select ="&SetupTestCasesWithOut; cap3 cap4">-->
 
   &TestSetupWithOut;
     
@@ -387,11 +387,24 @@
       Performing <code>DEC</code> with default delta on global variable.
     </test>
     
+    <test id="abs1" type="run" file="Abs1.Mod" output="Abs1.Ref">
+      Predefined function <code>ABS</code> for some integers and reals.
+    </test>
+    <test id="abs2" type="reject" file="Abs2.Mod">
+      Calling <code>ABS</code> for a character value.
+    </test>
+    
     <test id="cap1" type="run" file="Cap1.Mod" output="Cap1.Ref">
       Predefined function <code>CAP</code> for some ASCII characters.
     </test>
     <test id="cap2" type="run" file="Cap2.Mod" output="Cap2.Ref">
       Code snipped using <code>CAP</code> to decode hex digits.
+    </test>
+    <test id="cap3" type="reject" file="Cap3.Mod">
+      Calling <code>CAP</code> with an integer value.
+    </test>
+    <test id="cap4" type="reject" file="Cap4.Mod">
+      Calling <code>ORD</code> with an integer value.
     </test>
     
     <test id="div1" type="run" file="Div1.Mod" output="Div1.Ref">
@@ -411,7 +424,6 @@
       Checks that <code>MOD</code> performs rounding to negative
       infinity.  The divisor is positive.
     </test>
-    
     <test id="mod2" type="run" relevance="informal"
           file="Mod2.Mod" output="Mod2.Ref">
       Checks result of <code>MOD</code> if the divisor is negative.
@@ -424,29 +436,26 @@
       kinds of array variables are used: global array variable, open
       array parameter, and partially open array parameter.
     </test>
-    
     <test id="len2" type="reject" file="Len2.Mod">
       Calling <code>LEN</code> without arguments.
     </test>
-    
     <test id="len3" type="reject" file="Len3.Mod">
       Calling <code>LEN</code> with too many arguments.
     </test>
-    
     <test id="len4" type="reject" file="Len4.Mod">
       Calling <code>LEN</code> with non-array argument.
     </test>
-    
     <test id="len5" type="reject" file="Len5.Mod">
       Calling <code>LEN</code> with an out of range dimension number.
     </test>
-    
     <test id="len6" type="reject" file="Len6.Mod">
       Calling <code>LEN</code> with a non-integer dimension number.
     </test>
-    
     <test id="len7" type="reject" file="Len7.Mod">
       Calling <code>LEN</code> with an integer variable as dimension number.
+    </test>
+    <test id="len8" type="reject" file="Len8.Mod">
+      Calling <code>LEN</code> for a record value.
     </test>
 
     <test id="minmax1" type="run" file="MinMax1.Mod" output="MinMax1.Ref">
@@ -458,7 +467,6 @@
       a <code>LONGINT</code>.  This requires some trickery in the C
       back-end, because a type conversion must be prevented.
     </test>
-    
     <test id="val2" type="run" file="Val2.Mod" output="Val2.Ref">
       Use <code>SYSTEM.VAL</code> to cast a <code>SET</code> to
       a <code>LONGINT</code>.
@@ -1004,6 +1012,13 @@
       msg="This variable has no dynamic type"/>
     
     <reject-info id="tbproc8" pos="p. %Proc" msg="Undeclared identifier"/>
+
+    <reject-info id="abs2" pos="ABS(%0X)" msg="Expression must be numeric"/>
+
+    <reject-info id="cap3" pos="CAP(%97)"
+      msg="Expression must be a character"/>
+    <reject-info id="cap4" pos="ORD(%97)"
+      msg="Expression must be a character"/>
         
     <reject-info id="len2" pos="Int (%LEN " msg="Wrong number of arguments"/>
     <reject-info id="len3" pos="Int (%LEN " msg="Wrong number of arguments"/>
@@ -1015,6 +1030,8 @@
         msg="Integer constant in the range `0 &lt;= x &lt; 2' required"/>
     <reject-info id="len7" pos="a, %d),"
         msg="Expression is not constant"/>
+    <reject-info id="len8" pos="LEN(%r)"
+        msg="Expression must be an array value"/>
     
     <reject-info id="opArray2" pos=" i%[0]"
         msg="Expression must be an array value"/>

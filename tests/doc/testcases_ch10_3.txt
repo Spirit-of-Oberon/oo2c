@@ -1,7 +1,7 @@
 10.3 Predeclared Procedures
 ---------------------------
 
-The test cases listed below ignore overflow at run-time.  If Overflow checking
+The test cases listed below ignore overflow at run-time.  If overflow checking
 is to be implemented, these additional cases should be handled.
 
   1) ABS(x:T), where x = MIN(T)
@@ -19,19 +19,27 @@ is to be implemented, these additional cases should be handled.
   9) INCL(v:T,n) where n<MIN(T) or n>MAX(T)
  10) EXCL(v:T,n) where n<MIN(T) or n>MAX(T)
 
+Most of the predefined functions should be folded to constants during
+compilation, given suitable arguments.  Otherwise, they cannot appear
+in CONST definitions.  Their testcases usually do not explicitly check
+that folding happens, but they do check that _if_ constant folding is
+done, _then_ the result is correct.
+
+
+
 Function Procedures
 -------------------
 
-  ABS(x)
+### ABS(x)
 
 ACCEPT:
 
-  1) x is a numeric type (eg. shortint, longreal).
-  2) x is a constant (should be folded)
+  1) x is a numeric type (eg. shortint, longreal).  [Abs1]
+  2) x is a constant (should be folded)  [Abs1]
 
 REJECT:
 
-  1) x is not numeric (eg. CHAR)
+  1) x is not numeric (eg. CHAR)  [Abs2]
 
 
   ASH(x, n)
@@ -54,18 +62,18 @@ WARN:
   1) n is constant, ABS(n) >= width of LONGINT
 
  
-  CAP(x)
-  ORD(x)
+### CAP(x)
+### ORD(x)
 
 ACCEPT:
 
-  1) x is a CHAR variable
-  2) x is a CHAR constant (eg. CAP(40X))
-  3) x is a string constant (eg. CAP('a'))
+  1) x is a CHAR variable  [Cap1 Cap2]
+  2) x is a CHAR constant (eg. CAP(40X))  [Cap1]
+  3) x is a string constant (eg. CAP('a'))  [Cap1]
 
 REJECT:
 
-  1) x is not a CHAR
+  1) x is not a CHAR  [Cap3 Cap4]
 
 
   CHR(x)
@@ -95,24 +103,23 @@ REJECT:
   2) x is constant and ENTIER(x) is outside the range of LONGINT
 
 
-  LEN(v, n)
-  LEN(v)
+### LEN(v, n)
+### LEN(v)
 
 ACCEPT:
 
-  1) v is a fixed length array
-  2) v is an open array (POINTER TO ARRAY ... )
-  3) v is an open array (passed as a VAR parameter)
+  1) v is a fixed length array  [Len1]
+  2) v is an open array (POINTER TO ARRAY ... )  [Array6 Array7]
+  3) v is an open array (passed as a VAR parameter)  [Array1-7]
 
 REJECT:
 
-  1) v is not an array designator
-  2) n is not an integer (eg. CHAR)
-  3) n is not constant (eg. INTEGER variable)
-  4) n is outside the range 0 <= n < number of array dimensions
-  5) v's dimension n is an array with no length information
-  6) v is a string constant (on the level of IR, LEN can be applied to 
-     strings, but this is forbidden on the level of the source code)
+  1) v is not an array designator  [Len8]
+  2) n is not an integer (eg. CHAR)  [Len6]
+  3) n is not constant (eg. INTEGER variable)  [Len7]
+  4) n is outside the range 0 <= n < number of array dimensions  [Len5]
+  5) v is a string constant (on the level of IR, LEN can be applied to 
+     strings, but this is forbidden on the level of the source code)  [Len4]
 
 
   LONG(x)

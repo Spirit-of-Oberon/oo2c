@@ -14,7 +14,7 @@ PROCEDURE Cap (ch, cap: CHAR);
 PROCEDURE Test* ();
   BEGIN
     Cap ("a", CAP ("a"));
-    Cap ("z", CAP ("z"));
+    Cap ("z", CAP (7AX));
     Cap ("0", CAP ("0"));
   END Test;
 

@@ -1,0 +1,13 @@
+MODULE Len8;
+
+TYPE
+  R = RECORD END;
+
+PROCEDURE F(): LONGINT;
+  VAR
+    r: R;
+  BEGIN
+    RETURN LEN(r);
+  END F;
+
+END Len8.
