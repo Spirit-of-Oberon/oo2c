@@ -88,25 +88,25 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     
   PROCEDURE Expr (expr: ExtTree.Node): IR.Expression;
     VAR
-      left, right: IR.Expression;
+      left, right, res: IR.Expression;
     BEGIN
       WITH expr: ExtTree.Terminal DO
         CASE expr. sym. id OF
         | Symbol.ident:
-          RETURN Designator (expr)
+          res := Designator (expr)
         | Symbol.stringSingle, Symbol.stringDouble:
-          RETURN b. NewStringConst (expr. sym)
+          res := b. NewStringConst (expr. sym)
         | Symbol.number10:
-          RETURN b. NewIntConst10 (expr. sym)
+          res := b. NewIntConst10 (expr. sym)
         | Symbol.number16X:
-          RETURN b. NewCharConst16 (expr. sym)
+          res := b. NewCharConst16 (expr. sym)
         END
 
       | expr: ExtTree.Factor DO
-        RETURN Expr (expr. expr)
+        res := Expr (expr. expr)
             
       | expr: ExtTree.ArrayIndex DO      (* part of designator *)
-        RETURN Designator (expr)
+        res := Designator (expr)
         
       | expr: ExtTree.Operator DO
         IF (expr. left # NIL) THEN
@@ -119,15 +119,16 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         ELSE
           right := NIL
         END;
-        RETURN b. NewOperator (expr. op. sym, left, right)
+        res := b. NewOperator (expr. op. sym, left, right)
 
       | expr: ExtTree.FunctionCall DO
-        RETURN FunctionCall (expr, FALSE)
+        res := FunctionCall (expr, FALSE)
             
       ELSE
         Log.Type("++ Unknown expression class in Expr", expr);
         ASSERT (FALSE)
-      END
+      END;
+      RETURN b. Fold (res)
     END Expr;
   
   PROCEDURE FunctionCall (call: ExtTree.FunctionCall;
@@ -275,7 +276,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     expr : IR.Expression;
     sym : Sym.ConstDecl;
   BEGIN
-    expr := b.Fold(Expr(constDecl.expr(ExtTree.Node)));
+    expr := Expr(constDecl.expr(ExtTree.Node));
     IF expr = IR.errorExpr THEN RETURN END;
     WITH expr : IR.Const DO
       sym := constDecl.symTabEntry;

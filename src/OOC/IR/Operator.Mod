@@ -354,7 +354,7 @@ PROCEDURE (b: Builder) NewLen* (sym: IR.Symbol;
     END;
     
     InitLen (len, sym, variant, array, dim);
-    RETURN b.Fold(len);
+    RETURN len;
   END NewLen;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitLen* (len: Len);
@@ -445,7 +445,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
       | Symbol.mod:    variant := arithMod;
       END;
 
-      RETURN b.Fold(b.NewBinaryArith(sym, variant, left, right))
+      RETURN b.NewBinaryArith(sym, variant, left, right)
 (*    ELSIF isSet THEN
       RETURN b.NewSet(sym, left, right); *)
     ELSE
@@ -463,10 +463,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
       CASE sym.id OF
       | Symbol.minus:
         IF isNumeric THEN
-          RETURN b.Fold(b.NewNegate(sym, right));
+          RETURN b.NewNegate(sym, right);
         ELSIF isSet THEN
           (* for now, map set/numeric negation onto Negate operator *)
-          RETURN b.Fold(b.NewNegate(sym, right));
+          RETURN b.NewNegate(sym, right);
         ELSE
           RETURN b.ErrExpr(IR.invalidOpType, sym);
         END;
@@ -478,7 +478,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
 	END;
       | Symbol.not:
         (* for now, map logical negation onto Negate operator *)
-        RETURN b.Fold(b.NewNegate(sym, right));
+        RETURN b.NewNegate(sym, right);
       ELSE
         RETURN b.ErrExpr(IR.unknownOp, sym);
       END;
@@ -488,11 +488,11 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
       | Symbol.plus, Symbol.minus, Symbol.times, Symbol.slash:
         RETURN SetOrNumeric();
       | Symbol.div:
-        RETURN b.Fold(b.NewBinaryArith(sym, arithDivI, left, right));
+        RETURN b.NewBinaryArith(sym, arithDivI, left, right);
       | Symbol.mod:
-        RETURN b.Fold(b.NewBinaryArith(sym, arithMod, left, right));
+        RETURN b.NewBinaryArith(sym, arithMod, left, right);
       | Symbol.eql, Symbol.neq, Symbol.lss, Symbol.leq, Symbol.gtr, Symbol.geq:
-        RETURN b.Fold(b.NewCompare(sym, left, right));
+        RETURN b.NewCompare(sym, left, right);
 (*      | Symbol.and, Symbol.or:
         RETURN b.NewBoolean(sym, left, right); *)
       ELSE
