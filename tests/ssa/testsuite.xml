@@ -1413,6 +1413,10 @@
       (Note: There is currently no way to check that warning is
       <em>not</em> produced.)
     </test>
+    <test id="undef27" type="accept" file="Undef27.Mod">
+      Analysis should show that <code>Q</code> cannot return, and that
+      code after a call to it is unreachable.
+    </test>
   </testcases>
   
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC O2">
@@ -1851,5 +1855,7 @@
         msg="Warning: Callee may read undefined variable `x'"/>
     <warning-info id="undef23" pos="RETURN %x"
         msg="Warning: Variable may be undefined"/>
+    <warning-info id="undef27" pos="%RETURN"
+        msg="Warning: Unreachable code"/>
   </processor-info>
 </testsuite-ext>

@@ -732,7 +732,8 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
             test := prevGuards.array[i](IR.TypeTest);
             IF (test.expr(IR.Var).decl = localTest.expr(IR.Var).decl) &
                TR.IsExtensionOf(localTest.referenceType,
-                                test.referenceType) THEN
+                                test.referenceType) &
+               (v.pass = passEmitWarnings) THEN
               WarnSym(errList, pragmaHistory, localTest.sym, deadTypeTest);
             END;
           END;
@@ -897,7 +898,7 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
           CheckStatm(statmSeq[i]);
           INC(i);
         END;
-        IF (i # LEN(statmSeq^)) THEN
+        IF (i # LEN(statmSeq^)) & (v.pass = passEmitWarnings) THEN
           WarnSym(errList, pragmaHistory, statmSeq[i].sym, unreachableCode);
         END;
       END;
@@ -956,6 +957,14 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
           nonlocalWrites := TRUE;
           pd.SetWriteFlag(item, doesWrite);
         END;
+      END;
+
+      IF def.unreachable &                 (* no path to end of proc *)
+         ~localProc.formalPars.noReturn &  (* not marked as NO_RETURN *)
+         (~localProc.isTypeBound OR        (* normal procedure *)
+          localProc.notRedefined) THEN 
+        localProc.formalPars.noReturn := TRUE;
+        pd.updatedInOut := TRUE;
       END;
     END SetWriteFlags;
 
