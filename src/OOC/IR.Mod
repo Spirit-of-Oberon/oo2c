@@ -3039,7 +3039,7 @@ PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
    assignment compatible to the type.  If this is not possible, an error
    is reported.  *)
   BEGIN
-    IF ~b. WidenForAssign (expr, type) THEN
+    IF ~b. WidenForAssign (expr, type) & (expr # b.errorExpr) THEN
       b.ErrSym(incompatibleAssignment, sym);
     END;
   END MakeAssignmentCompatible;
