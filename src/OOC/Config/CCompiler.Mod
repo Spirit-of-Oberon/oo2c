@@ -81,20 +81,21 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
     Strings.Append (" ", cmd);
     Strings.Append (cppflags. value(StringValue.Value). string^, cmd);
     
+    (* Add include path for the run-time header files.  In theory, this include
+       directory should have the highest priority, but _only_ for run-time
+       headers, not for everything else that might be located there.  Since
+       currently no .h files except for the run-time data are installed in the
+       src/ directory, putting this first should be safe.   *)
+    f := GetURIofRT();
+    f. GetPath (str);
+    Strings.Append (" -I", cmd);
+    Strings.Append (str, cmd);
+    
     include := Config.repositories. GetIncludePaths();
     FOR i := 0 TO LEN (include^)-1 DO
       Strings.Append (" -I", cmd);
       Strings.Append (include[i]. array^, cmd)
     END;
-    
-    (* add include path for the run-time header files; in theory, this include
-       directory should have the highest priority, but _only_ for run-time
-       headers, not for everything else that might be located there; for this
-       reason, this particular include might be better searched last *)
-    f := GetURIofRT();
-    f. GetPath (str);
-    Strings.Append (" -I", cmd);
-    Strings.Append (str, cmd);
     
     Strings.Append (" -c ", cmd);
     in(File.URI). GetPath (str);
