@@ -968,7 +968,14 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
           END;
         | item: Sym.Type DO
           nonlocalWrites := TRUE;
-          pd.SetWriteFlag(item, doesWrite);
+          IF (item # any) THEN
+            (* For item=any (aka Predef.void), the assertion oldFlag>newFlag in
+               SetWriteFlag() may fail.  I don't know if it the right action to
+               simply skip it.  Given that `any' seems to be used as a target
+               that is never read, and therefore might be complete redundant,
+               this change should do no harm.  *)
+            pd.SetWriteFlag(item, doesWrite);
+          END;
         END;
       END;
 
