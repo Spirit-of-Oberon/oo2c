@@ -145,7 +145,11 @@ TYPE
     value-: Boxed.Object;
     (**For a constant representing a @code{NIL} value, this field refers to
        @ovar{nil}.  *)
-    type-: Sym.Type;
+    stringType-: Sym.Type;
+    (**For a string constant, the instructions @ofield{subclass} is
+       @oconst{Opcode.scAddress}, and this field is used to disambiguate the
+       string's base character type.  For all other constants, this field
+       is @code{NIL}.  *)
   END;
   
 TYPE
@@ -199,7 +203,7 @@ TYPE
        of the function body is reached without encountering any @code{RETURN}.
        *)
     
-    constMap: ARRAY Predef.lastId+1 OF Dictionary.Dictionary;
+    constMap: ARRAY Opcode.lastSubclass+1 OF Dictionary.Dictionary;
     (**Maps constant values onto @code{const} instructions.  See
        @oproc{ProcBlock.GetConst}.  *)
     
@@ -970,12 +974,12 @@ PROCEDURE (instr: Instr) IsSwitchStatm*(): BOOLEAN;
 (* ---------------------------------------------------------------------- *)
 
 PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
-                     value: Boxed.Object; type: Sym.Type);
+                     value: Boxed.Object; stringType: Sym.Type);
   BEGIN
     InitInstr (const, Opcode.const, subclass);
     ASSERT (value # NIL);
     const. value := value;
-    const. type := type;
+    const. stringType := stringType;
   END InitConst;
 
 PROCEDURE InitDeclRef (declRef: DeclRef; decl: Sym.Declaration);
@@ -1030,7 +1034,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl;
     pb. selectReturn. AddOpnd (initialStore, OpndClass.storeEnter);
     
     pb. loopContext := NIL;
-    FOR i := 0 TO Predef.lastId DO
+    FOR i := 0 TO LEN(pb.constMap)-1 DO
       pb. constMap[i] := NIL;
     END;
     pb. objMap := Dictionary.New();
@@ -1073,15 +1077,6 @@ PROCEDURE (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
     RETURN instr
   END AddInstr;
   
-PROCEDURE ConstBucket (type: Sym.Type): LONGINT;
-  BEGIN
-    WITH type: Sym.PredefType DO
-      RETURN type. id;
-    ELSE
-      RETURN Predef.void;
-    END;
-  END ConstBucket;
-
 PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
 (**Removes @oparam{instr} from list of instructions of @oparam{pb}.  All
    operands are removed.  @emph{Note}: The use lists of the instruction itself
@@ -1096,7 +1091,9 @@ PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
     WITH instr: Address DO
       pb. adrMap. Delete (instr. decl);
     | instr: Const DO
-      pb. constMap[ConstBucket (instr. type)]. Delete (instr. value);
+      IF (instr.stringType = NIL) THEN
+        pb.constMap[instr.subclass].Delete(instr.value);
+      END;
     | instr: DeclRef DO
       pb. objMap. Delete (instr. decl);
     | instr: TypeRef DO
@@ -1125,44 +1122,62 @@ PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
   END DeleteInstr;
   
 PROCEDURE (pb: ProcBlock) GetConst* (value: Boxed.Object;
-                                     type: Sym.Type): Const;
+                                     subclass: Opcode.Subclass;
+                                     stringType: Sym.Type): Const;
 (**Returns the @code{const} instruction for the value @oparam{value}.  Equal
-   values are mapped to the same unique instruction.  *)
+   values are mapped to the same unique instruction.  For string constants,
+   @oparam{stringType} is not @code{NIL} and identifies the strings exact type.
+   For all other constants, @oparam{stringType} must be @code{NIL}.  *)
   VAR
     obj: Object.Object;
     const: Const;
-    bucket: LONGINT;
   BEGIN
-    bucket := ConstBucket (type);
-    IF (pb. constMap[bucket] = NIL) THEN
-      pb. constMap[bucket] := Dictionary.New();
+    IF (stringType # NIL) THEN
+      ASSERT(subclass = Opcode.scAddress);
     END;
-
-    IF pb. constMap[bucket]. HasKey (value) THEN
-      obj := pb. constMap[bucket]. Get (value);
+    
+    IF (pb. constMap[subclass] = NIL) THEN
+      pb. constMap[subclass] := Dictionary.New();
+    END;
+    
+    IF pb.constMap[subclass].HasKey(value) THEN
+      obj := pb. constMap[subclass]. Get (value);
       RETURN obj(Const);
     ELSE
       NEW (const);
-      InitConst (const, Opcode.TypeToSubclass (type), value, type);
+      InitConst (const, subclass, value, stringType);
       AppendInstr (pb, const);
-      pb. constMap[bucket]. Set (value, const);
+      IF (stringType = NIL) THEN
+        (* only cash constants of basic type, since the hash key does not
+           include type information *)
+        pb. constMap[subclass]. Set (value, const);
+      END;
       RETURN const
     END;
   END GetConst;
 
 PROCEDURE (pb: ProcBlock) GetConstInt* (int: LONGINT): Const;
+  VAR
+    x: BigInt.BigInt;
+    subclass: Opcode.Subclass;
   BEGIN
-    RETURN pb.GetConst(BigInt.NewInt(int), Predef.GetType(Predef.integer));
+    x := BigInt.NewInt(int);
+    subclass := Opcode.TypeToSubclass(Predef.SmallestIntType(x));
+    RETURN pb.GetConst(x, subclass, NIL);
   END GetConstInt;
 
 PROCEDURE (pb: ProcBlock) GetConstBool* (b: BOOLEAN): Const;
   BEGIN
-    RETURN pb.GetConst(Boxed.NewBoolean(b), Predef.GetType(Predef.boolean));
+    RETURN pb.GetConst(Boxed.NewBoolean(b),
+                       Opcode.TypeToSubclass(Predef.GetType(Predef.boolean)),
+                       NIL);
   END GetConstBool;
 
 PROCEDURE (pb: ProcBlock) GetConstNil*(): Const;
   BEGIN
-    RETURN pb.GetConst(nil, Predef.GetType(Predef.nil))
+    RETURN pb.GetConst(nil,
+                       Opcode.TypeToSubclass(Predef.GetType(Predef.nil)),
+                       NIL);
   END GetConstNil;
 
 

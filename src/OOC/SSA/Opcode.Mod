@@ -794,6 +794,7 @@ CONST
   scReal64* = 11;
   (**Double precision IEEE-754 floating point number.  *)
 
+  lastSubclass* = scReal64;
   
 PROCEDURE IsSigned* (subclass: Subclass): BOOLEAN;
   BEGIN

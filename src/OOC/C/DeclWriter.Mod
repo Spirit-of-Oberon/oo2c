@@ -396,7 +396,11 @@ RAISES IO.Error;
 PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
 (**Writes the C representation of the constant value @oparam{value} to
    @oparam{w}.  This procedure handles all necessary translations to get a
-   faithful representation of the value in the language of C.  *)
+   faithful representation of the value in the language of C.
+
+   @strong{NOTE}: This method is deprecated.  Use
+   @oproc{Writer.WriteBasicConst} or @oproc{Writer.WriteStringConst}
+   instead.  *)
   CONST
     delim = '"';
     quotedDelim = '\"';
@@ -525,6 +529,170 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
       END;
     END;
   END WriteConst;
+
+PROCEDURE (w: Writer) WriteBasicConst* (value: Boxed.Object;
+                                        type: BasicTypeId);
+(**Writes the C representation of the constant value @oparam{value} to
+   @oparam{w}.  This procedure handles all necessary translations to get a
+   faithful representation of the value in the language of C.  The exact
+   variant used is based on the dynamic type of @oparam{value} and the
+   type id in @oparam{type}.  *)
+  VAR
+    charValue: LONGINT;
+    s: STRING;
+    
+  PROCEDURE WriteOct (ch: LONGINT);
+    BEGIN
+      w. WriteChar (CHR (ch+ORD("0")));
+    END WriteOct;
+ 
+  PROCEDURE WriteChar (charValue : LONGINT);
+  BEGIN
+    IF (charValue < ORD (" ")) OR (charValue >= 127) OR
+      (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
+      w. WriteChar ("\")(*"*); 
+      WriteOct (charValue DIV 64);
+      WriteOct (charValue DIV 8 MOD 8);
+      WriteOct (charValue MOD 8);
+    ELSE
+      w. WriteChar (CHR (charValue));
+    END;
+  END WriteChar;
+ 
+  BEGIN
+    IF (value = NIL) THEN
+      w. WriteString ("0");
+    ELSE
+      WITH value: Boxed.Boolean DO
+        IF value. value THEN
+          w. WriteString("OOC_TRUE")
+        ELSE
+          w. WriteString("OOC_FALSE")
+        END
+            
+      | value: Boxed.String DO
+        s := value.value;
+        IF (type = char8) OR (type = uint8) THEN
+          (* note: the character value is cast to OOC_CHAR8 to avoid
+             any problems if characters are interpreted as signed values
+             by default; that is, '\377' is _not_ -1 *)
+          charValue := ORD(s.CharAt(0));
+          w. WriteString ("(OOC_CHAR8)'");
+          WriteChar(charValue);
+          w. WriteChar ("'");
+        ELSE
+          CASE type OF
+          | uint16, char16:
+            w. WriteString ("(OOC_CHAR16)");
+          | uint32, char32:
+            w. WriteString ("(OOC_CHAR32)");
+          END;
+          charValue := ORD(s.CharAt(0));
+          IF (charValue < ORD (" ")) OR (charValue >= 127) OR
+             (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
+            w. textWriter. WriteLInt (charValue, 0);
+          ELSE
+            w. WriteChar ("'");
+            w. WriteChar (CHR (charValue));
+            w. WriteChar ("'");
+          END;
+        END;
+        
+      | value: Boxed.LongReal DO
+        w. WriteObject(value.ToString());
+        IF (type = real32) THEN
+          w. WriteString("f");
+        END;
+        
+      | value: BigInt.BigInt DO
+        IF (value. ToLongInt() = MIN (LONGINT)) THEN
+          (* this assumes that MIN(LONGINT) is also the smallest value of
+             the C type "int"; to avoid overflow errors, we must rewrite
+             the value slightly *)
+          w. WriteString ("(-");
+          w. WriteLInt (MAX (LONGINT), 0);
+          w. WriteString ("-1)");
+        ELSE
+          w. WriteObject(value.ToString());
+        END;
+        
+      | value: Boxed.Set DO
+        w.WriteBasicConst(BigInt.NewInt(SYSTEM.VAL(LONGINT, value.value)),
+                          type);
+      END;
+    END;
+  END WriteBasicConst;
+
+PROCEDURE (w: Writer) WriteStringConst* (value: Boxed.Object; type: Sym.Type);
+(**Writes the C representation of the constant value @oparam{value} to
+   @oparam{w}.  This procedure handles all necessary translations to get a
+   faithful representation of the value in the language of C.  *)
+  CONST
+    delim = '"';
+    quotedDelim = '\"';
+  VAR
+    i, len: LONGINT;
+    s: STRING;
+    
+  PROCEDURE WriteOct (ch: LONGINT);
+    BEGIN
+      w. WriteChar (CHR (ch+ORD("0")));
+    END WriteOct;
+ 
+  PROCEDURE WriteChar (charValue : LONGINT);
+  BEGIN
+    IF (charValue < ORD (" ")) OR (charValue >= 127) OR
+      (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
+      w. WriteChar ("\")(*"*); 
+      WriteOct (charValue DIV 64);
+      WriteOct (charValue DIV 8 MOD 8);
+      WriteOct (charValue MOD 8);
+    ELSE
+      w. WriteChar (CHR (charValue));
+    END;
+  END WriteChar;
+ 
+  BEGIN
+    s := value(Boxed.String).value;
+    IF TR.IsPredefType(TR.BaseCharType(type), Predef.char) THEN
+      w. WriteChar (delim);
+      i := 0; len := s. length;
+      WHILE (i # len) DO
+        IF (s.CharAt(i) = delim) THEN
+          w. WriteString (quotedDelim)
+        ELSE  (* note: this is a tidbit slow for large strings *)
+          WriteChar(ORD(s.CharAt(i)))
+        END;
+        INC (i)
+      END;
+      w. WriteChar (delim);
+      
+    ELSE
+      (* Interesting bit of C knowledge: An expression like `(T){1,2}'
+         cannot be passed to a cpp macro, because the preprocessor
+         interprets the `,' as its argument separator.  On the other
+         hand, `((T){1,2})' works.  *)
+      CASE type(Sym.PredefType).id OF
+      | Predef.stringLongChar:
+        w. WriteString ("((OOC_CHAR16[]){");
+      | Predef.stringUCS4Char:
+        w. WriteString ("((OOC_CHAR32[]){");
+      END;
+      i := 0; len := s.length;
+      WHILE (i # len) DO
+        IF (i # 0) THEN
+          w. WriteChar (",");
+        END;
+        w. textWriter. WriteLInt (ORD(s.CharAt(i)), 0);
+        INC (i)
+      END;
+      IF (i # 0) THEN
+        w. WriteChar (",");
+      END;
+      w. textWriter. WriteLInt (0, 0);
+      w. WriteString ("})");
+    END;
+  END WriteStringConst;
 
 PROCEDURE (w: Writer) WriteDeclaration* (d: Declaration);
 (**Writes the declaration @oparam{d} to @oparam{w}.  *)

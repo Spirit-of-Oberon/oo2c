@@ -645,7 +645,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           | Predef.stringUCS4Char:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS4Region");
           END;
-          instr.AddOpnd(pb.GetConst(Boxed.NewString(fct),
+          instr.AddOpnd(pb.GetConst(Boxed.NewString(fct), Opcode.scAddress,
                                     Predef.GetType(Predef.stringChar)),
                         Opnd.arg);
           instr.AddOpnd(const, Opnd.arg);
@@ -712,9 +712,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     BEGIN
       WITH expr: IR.Const DO
         IF (expr. value = NIL) THEN
-          RETURN pb. GetConst (SSA.nil, expr. type)
+          RETURN pb.GetConst(SSA.nil, Opcode.scAddress, NIL);
+        ELSIF TR.IsStringConst(expr.type) THEN
+          RETURN pb.GetConst(expr.value, Opcode.scAddress, expr.type);
         ELSE
-          RETURN pb. GetConst (expr. value, expr. type)
+          RETURN pb.GetConst(expr.value,
+                             Opcode.TypeToSubclass(expr.type), NIL);
         END;
             
       | expr: IR.ProcedureRef DO

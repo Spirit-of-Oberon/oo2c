@@ -479,9 +479,12 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
         w. WriteString ("(");
         w. WriteString (w. basicType[bt]. repr);
         w. WriteString (")");
-         w.WriteString("0");
+        w.WriteString("0");
+      ELSIF (arg.stringType # NIL) THEN
+        w.WriteStringConst(arg.value, arg.stringType);
       ELSE
-        w. WriteConst (arg. value, arg. type);
+        w.WriteBasicConst(arg.value,
+                          Allocator.SubclassToBasicType(arg.subclass));
       END;
 
     | arg: SSA.Address DO
@@ -1461,8 +1464,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         | Opcode.popExceptionContext:
           w.Newline;
           w.WriteString("Exception__PopContext(");
-          w.WriteConst(instr.opndList.nextOpnd.arg(SSA.Const).value,
-                       Predef.GetType(Predef.longint));
+          w.WriteBasicConst(instr.opndList.nextOpnd.arg(SSA.Const).value,
+                            DeclWriter.int32);
           w.WriteString(");");
         | Opcode.clearException:
           w.Newline;

@@ -91,9 +91,9 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
 
       IF (v # NIL) THEN
         IF (v IS Boxed.Boolean) THEN
-          RETURN pb. GetConstBool (v(Boxed.Boolean). value);
+          RETURN pb. GetConstBool(v(Boxed.Boolean). value);
         ELSE
-          RETURN pb. GetConst (v, arg1. type);
+          RETURN pb. GetConst(v, arg1.subclass, NIL);
         END;
       END;
     END;

@@ -31,7 +31,7 @@ MODULE OOC:IA32:WriteAssembler [OOC_EXTENSIONS];
 IMPORT
   Ascii, IntStr, Log, Out, Strings, StringSearch, IO, IO:StdChannels,
   Object, Object:Boxed, Object:BigInt, 
-  Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,OOC:SymbolTable:Predef,
+  Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Schedule, 
   OOC:C:Naming, OOC:IA32:Writer, OOC:Make:TranslateToIA32,
   OOC:SSA:IRtoSSA, OOC:SSA:XML,
@@ -61,7 +61,7 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
       s: STRING;
       chars: Object.CharsLatin1;
       
-    PROCEDURE Const (value: Boxed.Object; type: Sym.Type);
+    PROCEDURE Const (value: Boxed.Object; stringType: Sym.Type);
       VAR
         s: STRING;
         string: STRING;
@@ -77,7 +77,7 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
               COPY ("$0", str);
             END
           | value: Boxed.String DO
-            IF (type(Sym.PredefType). id = Predef.char) THEN
+            IF (stringType = NIL) THEN
               IntStr.IntToStr(ORD(value.value.CharAt(0)), str);
             ELSE
               s := w. GetStringLabel (value);
@@ -101,7 +101,7 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
     BEGIN
       arg := opnd. arg;
       WITH arg: SSA.Const DO
-        Const (arg. value, arg. type);
+        Const (arg. value, arg. stringType);
         
       | arg: SSA.Address DO
         s := Naming.NameOfDeclaration (arg. decl);
