@@ -305,7 +305,7 @@ PROCEDURE Normalize(fileSet: FileSet): FileSet;
           WHILE (i # 0) & (buffer[i-1] = "/") DO
             DEC(i);
           END;
-          buffer[i] = 0X;
+          buffer[i] := 0X;
           
           IF (i # path.length) THEN
             RETURN String.NewRegion(buffer^, 0, i);
