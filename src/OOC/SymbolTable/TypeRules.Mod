@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:TypeRules;
 (*  Defines the type rules of the language.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -28,7 +28,7 @@ MODULE OOC:SymbolTable:TypeRules;
    formal parameters, and so on.  *)
 
 IMPORT
-  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:SymbolTable:Builder;
+  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
 PROCEDURE IsNamedType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be accessed through
@@ -77,18 +77,19 @@ PROCEDURE IsStringConst* (type: Sym.Type): BOOLEAN;
 
 PROCEDURE ExtendsLibType(type: Sym.Type; module, recordName: ARRAY OF CHAR): BOOLEAN;
   VAR
-    r: Sym.Record;
+    r: Sym.Type;
   BEGIN
     IF (type IS Sym.Pointer) &
        (type(Sym.Pointer).baseType IS Sym.Record) THEN
-      r := type(Sym.Pointer).baseType(Sym.Record);
-      WHILE (r.baseType # NIL) DO
-        r := r.baseType(Sym.Record);
+      r := type(Sym.Pointer).baseType;
+      WHILE (r # NIL) &
+            ~((r.namingDecl # NIL) & 
+              (r.namingDecl.name.str^ = recordName) & 
+              (r.namingDecl.parent IS Sym.Module) & 
+              (r.namingDecl.parent(Sym.Module).name.str^ = module)) DO
+        r := r(Sym.Record).baseType;
       END;
-      RETURN (r.namingDecl # NIL) & 
-        (r.namingDecl.name.str^ = recordName) & 
-        (r.namingDecl.parent IS Sym.Module) & 
-        (r.namingDecl.parent(Sym.Module).name.str^ = module);
+      RETURN (r # NIL);
     ELSE
       RETURN FALSE;
     END;
@@ -111,23 +112,8 @@ PROCEDURE IsException*(type: Sym.Type): BOOLEAN;
 PROCEDURE IsSTRING* (type: Sym.Type): BOOLEAN;
 (**Return @code{TRUE} if @oparam{type} is the predefined type @code{STRING},
    or an extension of this type.  *)
-  VAR
-    r: Sym.Record;
   BEGIN
-    IF (type IS Sym.Pointer) &
-       (type(Sym.Pointer).baseType IS Sym.Record) THEN
-      (* the second to last base type must be Object.StringDesc *)
-      r := type(Sym.Pointer).baseType(Sym.Record);
-      WHILE (r.baseType # NIL) & (r.baseType(Sym.Record).baseType # NIL) DO
-        r := r.baseType(Sym.Record);
-      END;
-      RETURN (r.namingDecl # NIL) & 
-        (r.namingDecl.name.str^ = "StringDesc") & 
-        (r.namingDecl.parent IS Sym.Module) & 
-        (r.namingDecl.parent(Sym.Module).name.str^ = Builder.stringModule);
-    ELSE
-      RETURN FALSE;
-    END;
+    RETURN ExtendsLibType(type, "Object", "StringDesc");
   END IsSTRING;
 
 PROCEDURE BaseCharType* (type: Sym.Type): Sym.PredefType;
