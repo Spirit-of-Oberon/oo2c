@@ -1,11 +1,14 @@
 dnl Autoconf requirements
 AC_PREREQ(2.53)
-AC_INIT(OOC,0.1,mia@de.uu.net)
+AC_INIT(OOC,2.0.0,mia@de.uu.net)
 AC_CONFIG_SRCDIR(src/OOC/Parser.Mod)
 AC_CONFIG_HEADER(lib/src/__config.h)
-AC_SUBST(OOC_DEV_ROOT,[`cd "$srcdir" && pwd`])
 
 dnl information on the package
+AC_SUBST(OOC_DEV_ROOT,[`cd "$srcdir" && pwd`])
+AC_SUBST(COMPILER_VERSION,[$PACKAGE_VERSION])
+AC_SUBST(COMPILER_MAJOR,[`echo $COMPILER_VERSION|sed -e 's:\..*$::'`])
+AC_SUBST(COMPILER_MINOR,[`echo $COMPILER_VERSION|sed -e 's:^[[^.]]*\.::' -e 's:\..*$::'`])
 
 dnl checks for programs
 AC_PROG_INSTALL

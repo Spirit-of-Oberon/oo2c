@@ -5,7 +5,7 @@ IMPORT
   OS:ProcessManagement, Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
-  OOC:SymbolTable:Builder, OOC:Error,
+  OOC:SymbolTable:Builder, OOC:Config:Pragmas:StdPragmas, OOC:Error,
   Rep := OOC:Repository, OOC:Repository:FileSystem, OOC:Make;
   
 
@@ -22,7 +22,7 @@ VAR
   i: LONGINT;
   arg: Arguments.Argument;
   mode: SHORTINT;
-  command, useStderr, errorStyle: Options.Option;
+  command, useStderr, errorStyle, showHelp, showVersion: Options.Option;
   makeRules: Make.Rules;
   rep: Rep.Repository;
   pkg, pkgInfo: Package.Package;
@@ -36,6 +36,8 @@ PROCEDURE NewConfig;
     useStderr := Config.AddOption("useStderr", Boolean.New(FALSE));
     errorStyle := Config.AddOption("errorStyle",
                                    StringValue.New("file:line:column"));
+    showHelp := Config.AddOption("showHelp", Boolean.New(FALSE));
+    showVersion := Config.AddOption("showVersion", Boolean.New(FALSE));
     
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
@@ -53,6 +55,11 @@ PROCEDURE NewConfig;
                        "<options><set name='command'>6</set></options>");
     Config.AddCmdLine ("--build-pkg-doc",
                        "<options><set name='command'>7</set></options>");
+
+    Config.AddCmdLine ("-h,--help",
+                       "<options><set name='showHelp'>TRUE</set></options>");
+    Config.AddCmdLine ("--version",
+                       "<options><set name='showVersion'>TRUE</set></options>");
     Config.AddCmdLine ("--no-rtc",
                        "<pragmas>"+
                        "  <set name='Assertions'>FALSE</set>"+
@@ -485,6 +492,22 @@ PROCEDURE BuildPackageDoc(pkg: Package.Package): BOOLEAN;
     RETURN ok;
   END BuildPackageDoc;
 
+PROCEDURE WriteHelp();
+  BEGIN
+    Out.String("Usage:"); Out.Ln;
+    Out.String("  oo2c [options] <module>..."); Out.Ln;
+    Out.String("  oo2c (--make|-M) [options] <module>"); Out.Ln;
+    Out.String("  oo2c --build-package [options] <package>"); Out.Ln;
+    Out.String("  oo2c --install-package [options] <package>"); Out.Ln;
+    Out.String("  oo2c --uninstall-package [options] <package>"); Out.Ln;
+    Out.String("  oo2c --build-pkg-doc [options] <package>"); Out.Ln;
+    Out.String("Options:"); Out.Ln;
+    Out.String("  --config <file>"); Out.Ln;
+    Out.String("  --repository <directory>, -r <directory>"); Out.Ln;
+    Out.String("  --no-rtc"); Out.Ln;
+    Out.String("  --error-style <string>"); Out.Ln;
+  END WriteHelp;
+
 BEGIN
   Error.minErrorDistance := 16;
   Builder.doAutoImport := Builder.fullAutoImport;
@@ -526,8 +549,15 @@ BEGIN
   END;
   IF ~cfgErrList.NoErrors() THEN
     HALT (1)
+  ELSIF showVersion.value(Boolean.Value).boolean THEN
+    Out.String("oo2c/gcc ");
+    Out.String(StdPragmas.defaultCompilerVersion);
+    Out.Ln;
+    HALT(0);
+  ELSIF showHelp.value(Boolean.Value).boolean THEN
+    WriteHelp;
   ELSIF (mode = updateRepository) # (Config.arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: oo2c [--config <cfg-file>] {-r <base-dir>} [--make] <file>"); Out.Ln;
+    WriteHelp;
     HALT (1)
   ELSE
     ok := TRUE;

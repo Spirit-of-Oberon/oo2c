@@ -12,6 +12,11 @@ CONST
   bitsTargetAddress* = @ooc_target_address@;
   (**Number of bits of address type for the target.  *)
 
+  (* Version numbers, taken from configure.ac: *)
+  compilerVersion* = "@COMPILER_VERSION@";
+  compilerMajor* = @COMPILER_MAJOR@;
+  compilerMinor* = @COMPILER_MINOR@;
+  
   (* Define address type for OOC:SymbolTable:Predef: *)
   longint* = 5;
   hugeint* = 6;

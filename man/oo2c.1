@@ -31,6 +31,10 @@ oo2c \- Oberon-2 compiler
 .I --build-pkg-doc
 .RI [ options ]
 .I <package>
+.br
+.B oo2c
+.I --update-repository
+.RI [ options ]
 .SH NOTE
 This document is a subset of corresponding chapter of the 
 .B OOC2 Reference 
@@ -86,6 +90,18 @@ creates HTML documentation for all modules used by the libraries and
 executables of the given package.  After successful completion, the
 files can be found under
 .IR <repository>/oocdoc/html .
+
+The command
+.I --update-repository
+updates the file
+.I <oocdir>/pkginfo.xml
+from on the meta information of all packages that have been installed
+into the repository
+.IR <oocdir> .
+This is also done automatically after every
+.I --install-package
+and
+.IR --uninstall-package .
 .SH OPTIONS
 .TP
 .B --repository <directory>, -r <directory>
@@ -104,9 +120,6 @@ precedence of entries in the compiler's configuration file.  By
 default, the current working directory is part of the list of
 repositories.
 .TP
-.B --optimize, -O
-Currently no effect.
-.TP
 .B --no-rtc
 Remove all run-time checks from the generated code.  Typically, this
 produces a large speedup.
@@ -115,9 +128,6 @@ produces a large speedup.
 Currently no effect.
 .TP
 .B --warnings, -w
-Currently no effect.
-.TP
-.B --all, -A
 Currently no effect.
 .TP
 .B --cc <string>
