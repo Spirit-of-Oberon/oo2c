@@ -52,8 +52,8 @@ TYPE
     size: LONGINT;
     (**Logically, the matrix @ofield{m} is @ofield{size}x@ofield{size}.  The
        size is the number of nodes of the graph, and also the number of columns
-       and rows in the matrix.  It holds: @samp{LEN(@ofield{m^},0) =
-       @ofield{size}} and @samp{LEN(@ofield{m^},1) =
+       and rows in the matrix.  It holds: @samp{LEN(@ofield{m},0) =
+       @ofield{size}} and @samp{LEN(@ofield{m},1) =
        (@ofield{size}+bitsPerSet-1) DIV bitsPerSet}.  *)
   END;
 
@@ -161,7 +161,7 @@ PROCEDURE (g: Graph) MergeVector* (source, dest: Vector);
   END MergeVector;
 
 PROCEDURE (g: Graph) SymmetricMatrix*;
-(**Turns @ofield{g.m} into a symmetric matrix by mirroring elements at the
+(**Makes the bit matrix of @oparam{g} symmetric by mirroring elements at the
    matrix diagonal.  This is necessary because the algorithm creating the
    matrix does not ensure the property that @var{i} interfering with @var{j}
    implies @var{j} interfering with @var{i} (``m[i,j] implies m[j,i]'').  *)

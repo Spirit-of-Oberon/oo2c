@@ -47,8 +47,12 @@ TYPE
 TYPE
   TypeConv* = POINTER TO TypeConvDesc;
   TypeConvDesc = RECORD
-  (**A TypeConv expression represents a conversion of expression @ofield{expr}
-     from type @ofield{from} to type @ofield{to}. *)
+    (**A TypeConv expression represents a type conversion of an expression
+       @ofield{expr} to a different type.  The source value is converted to an
+       equivalent or close value in the target domain.  Example: An integer
+       type representing the value @code{1} is converted to a floating point
+       value @code{1.0}.  Type conversions are also used to convert between
+       different integer types.  *)
     (IR.OperatorDesc)
     expr- : IR.Expression;
   END;
