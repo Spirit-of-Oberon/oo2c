@@ -2029,10 +2029,10 @@ BEGIN
     CASE base.id OF
     | Predef.char:
       RETURN b.NewConst(sym, left.type, 
-        String8.New(l(String8.Value).value.Concat(r(String8.Value).value)));
+        l(String8.Value).Concat(r(String8.Value)));
     | Predef.longchar:
-      (* FIXME! Implement longstring concatenation *)
-      ASSERT(FALSE);
+      RETURN b.NewConst(sym, left.type, 
+        l(String16.Value).Concat(r(String16.Value)));
     END
   END
 END NewStringAppend;

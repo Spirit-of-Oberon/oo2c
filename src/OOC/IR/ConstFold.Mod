@@ -24,7 +24,7 @@ IMPORT
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
   Language, 
   Language:Integer, Language:Boolean, LString := Language:String,
-  Language:String8, 
+  Language:String8, Language:String16,
   Language:Set, Language:Real,
   ADT:String;
 
@@ -411,12 +411,12 @@ PROCEDURE (c: ConstFold) VisitBooleanOp* (op: IR.BooleanOp);
 PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
   VAR l, r : Language.Value; result : Boolean.Value;
 
-  PROCEDURE StringOp () : Boolean.Value;
+  PROCEDURE StringOp8 () : Boolean.Value;
   VAR
-    left, right : String.String; result : BOOLEAN;
+    left, right : String8.Value; result : BOOLEAN;
   BEGIN
-    left := l(String8.Value).value; 
-    right := r(String8.Value).value;
+    left := l(String8.Value);
+    right := r(String8.Value);
     CASE op.variant OF
     | IR.equal:        result := left.Compare(right) = 0;
     | IR.notEqual:     result := left.Compare(right) # 0;
@@ -428,7 +428,26 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
     RETURN Boolean.New(result);
-  END StringOp;
+  END StringOp8;
+
+  PROCEDURE StringOp16 () : Boolean.Value;
+  VAR
+    left, right : String16.Value; result : BOOLEAN;
+  BEGIN
+    left := l(String16.Value);
+    right := r(String16.Value);
+    CASE op.variant OF
+    | IR.equal:        result := left.Compare(right) = 0;
+    | IR.notEqual:     result := left.Compare(right) # 0;
+    | IR.less:         result := left.Compare(right) < 0;
+    | IR.lessEqual:    result := left.Compare(right) <= 0;
+    | IR.greater:      result := left.Compare(right) > 0;
+    | IR.greaterEqual: result := left.Compare(right) >= 0;
+    ELSE
+      c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+    END;
+    RETURN Boolean.New(result);
+  END StringOp16;
 
   PROCEDURE IntegerOp () : Boolean.Value;
   VAR
@@ -520,7 +539,9 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
       | Predef.char:
         result := CharOp();
       | Predef.charString:
-        result := StringOp(); 
+        result := StringOp8(); 
+      | Predef.longcharString:
+        result := StringOp16(); 
       | Predef.boolean:
         result := BooleanOp();
       END;
