@@ -1440,6 +1440,7 @@ PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
     InitDeclaration (mod, NIL, name, 0, nameExported, docString);
     mod. ns := NIL;
     mod. class := class;
+    mod. libraryName := NIL;
     mod. callConv := callConv;
     mod. linkDirectives := NIL;
     mod. fingerprint := 0;
