@@ -69,7 +69,7 @@ TYPE
 TYPE
   Client* = POINTER TO ClientDesc;
   ClientDesc* = RECORD
-    serverAddr: Address.SocketInet;
+    serverAddr-: Address.SocketInet;
     
     async-: BOOLEAN;
     (**If @code{FALSE}, connects and requests are processed synchronously.  A
@@ -172,12 +172,8 @@ PROCEDURE (cl: Client) LogResponse*(statusLine: Object.String8);
   END LogResponse;
 
 PROCEDURE RaiseProtocolError(msg: STRING) RAISES ProtocolError;
-  VAR
-    e: ProtocolError;
   BEGIN
-    NEW(e);
-    Exception.Init(e, msg);
-    RAISE(e);
+    RAISE(NEW(ProtocolError, msg));
   END RaiseProtocolError;
 
 PROCEDURE InitMsg(msg: Msg);
@@ -353,7 +349,6 @@ RAISES ProtocolError;
     ELSE
       RaiseProtocolError("No status code: "+
                          Object.NewLatin1Region(cl.r, start, end));
-      RETURN NIL;
     END;
   END GetResponse;
 
@@ -459,7 +454,7 @@ RAISES IO.Error, ProtocolError, ErrorResponse;
       cl.sent := cl.sent.nextMsg;
       IF (resp.status >= 300) THEN       (* negative response *)
         NEW(e);
-        Exception.Init(e, resp.statusLine);
+        e.INIT(resp.statusLine);
         e.request := req;
         RAISE(e);
       ELSIF (req IS Connect) THEN        (* special case: welcome message *)
