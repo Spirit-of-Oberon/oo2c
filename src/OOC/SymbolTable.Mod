@@ -876,6 +876,20 @@ PROCEDURE (type: Type) SetSize* (size: LONGINT; align: INTEGER);
     type. align := align;
   END SetSize;
 
+PROCEDURE (type: Type) ArrayDimensions*(): LONGINT;
+(**Returns the number of dimensions of the type @oparam{type}.  Result
+   is zero if @oparam{type} is no array.  *)
+  VAR
+    dim: LONGINT;
+  BEGIN
+    dim := 0;
+    WHILE (type IS Array) DO
+      INC (dim);
+      type := type(Array). elementType
+    END;
+    RETURN dim
+  END ArrayDimensions;
+
 
 PROCEDURE InitLinkDirective (l: LinkDirective);
   BEGIN
@@ -1603,6 +1617,20 @@ PROCEDURE (array: Array) GetNonOpenElementType* (): Type;
     END;
     RETURN type
   END GetNonOpenElementType;
+
+PROCEDURE (array: Array) GetNthElementType* (dim: LONGINT): Type;
+(**Returns the element type of @oparam{array} for dimension @oparam{dim}.
+   With @samp{dim=0}, the array type itself is returned.  *)
+  VAR
+    type: Type;
+  BEGIN
+    type := array;
+    WHILE (dim > 0) DO
+      type := type(Array). elementType;
+      DEC (dim);
+    END;
+    RETURN type;
+  END GetNthElementType;
 
 
 PROCEDURE InitFormalPars* (formalPars: FormalPars; parent: Item;
