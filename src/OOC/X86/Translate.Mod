@@ -315,41 +315,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         RETURN resultOfGet.instr.opndList.arg;
       END Designator2Address;
     
-    PROCEDURE Copy(copy: IR.Copy);
-      VAR
-        size, from, to: S.Result;
-      BEGIN
-        size := b.AddConstLength(copy.dest.type.size);
-        from := Designator2Address(Expression(copy.source));
-        to := Designator2Address(Expression(copy.dest));
-        
-        IF copy.checkDynamicType THEN
-          (* FIXME... *)
-        END;
-        Memcpy(from, to, size);
-      END Copy;
-
-    PROCEDURE MoveBlock(move: IR.MoveBlock);
-      VAR
-        size, from, to: S.Result;
-        instr: S.Instr;
-      BEGIN
-        size := Expression(move.size);
-        from := Expression(move.source);
-        to := Expression(move.dest);
-        
-        instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
-        instr.AddOpnd(to);
-        instr.AddOpnd(from);
-        instr.AddOpnd(size);
-        
-        MemoryCP(instr);
-        ControlCP(instr);
-      END MoveBlock;
-
-    PROCEDURE TypeTag (design: IR.Expression; 
-                       checkDerefOfNil: BOOLEAN;
-                       derefSym: IR.Symbol): S.Result;
+    PROCEDURE TypeTag(design: IR.Expression; 
+                      checkDerefOfNil: BOOLEAN;
+                      derefSym: IR.Symbol): S.Result;
     (* `design' is the variable designator *)
       VAR
         instr: S.Instr;
@@ -376,14 +344,75 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
               design(IR.Var).decl(Sym.VarDecl).isVarParam &
               TR.IsRecord(design(IR.Var).decl(Sym.VarDecl).type) THEN
           (* type tag of a VAR parameter *)
-          ASSERT(FALSE);
-          (*instr.AddOpnd(value.instr.GetArgClass(Opnd.readDesign), Opnd.arg);*)
+          value := Designator2Address(value);
+          RETURN b.AddGetParamTypeTag(design(IR.Var).decl(Sym.VarDecl), fp);
         ELSE  (* static type tag; need to get rid of "get" on record *)
           value := Designator2Address(value);
           RETURN b.AddAdrTypeDescr(type);
         END;
       END TypeTag;
     
+    PROCEDURE Copy(copy: IR.Copy);
+      VAR
+        size, from, to, dynTag, staticTag: S.Result;
+        eql, endTrue, endFalse: S.Instr;
+        branch: S.BranchInstr;
+        pathTrue, pathFalse: S.Block;
+        merge: S.MergeInstr;
+      BEGIN
+        size := b.AddConstLength(copy.dest.type.size);
+        from := Designator2Address(Expression(copy.source));
+        to := Designator2Address(Expression(copy.dest));
+        
+        IF copy.checkDynamicType THEN
+          dynTag := TypeTag(copy.dest, FALSE, NIL);
+          staticTag := b.AddAdrTypeDescr(copy.dest.type);
+          
+          eql := b.AddInstr2(S.eql, staticTag, dynTag);
+          branch := b.AddBranch(SetCC(eql.AddResultReg(S.noType, S.cc)),
+                                FALSE);
+          branch.AddDep(S.depControl, controlCP);
+          
+          (* first, the "true" path: static and dynamic type match *)
+          pathTrue := b.AddMerge0(S.guard, b.AddConstBool(TRUE));
+          pathTrue.AddDep(S.depControl, branch);
+          endTrue := b.AddInstr0(S.jump);
+          endTrue.AddDep(S.depMemory, memoryCP);
+          endTrue.AddDep(S.depControl, pathTrue);
+          
+          (* second, the "false" path: type mismatch *)
+          pathFalse := b.AddMerge0(S.guard, b.AddConstBool(FALSE));
+          pathFalse.AddDep(S.depControl, branch);
+          controlCP := pathFalse;
+          FailedCheck("RT0__ErrorFailedTypeAssert", copy.sym.pos, NIL);
+          endFalse := AddJump();
+          
+          (* finally, pull all the strings together again *)
+          branch.SetPaths2(pathTrue, pathFalse);
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          controlCP := merge; memoryCP := merge;
+        END;
+        Memcpy(from, to, size);
+      END Copy;
+
+    PROCEDURE MoveBlock(move: IR.MoveBlock);
+      VAR
+        size, from, to: S.Result;
+        instr: S.Instr;
+      BEGIN
+        size := Expression(move.size);
+        from := Expression(move.source);
+        to := Expression(move.dest);
+        
+        instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
+        instr.AddOpnd(to);
+        instr.AddOpnd(from);
+        instr.AddOpnd(size);
+        
+        MemoryCP(instr);
+        ControlCP(instr);
+      END MoveBlock;
+
     PROCEDURE Expression(expr: IR.Expression): S.Result;
       VAR
         instr: S.Instr;
@@ -694,7 +723,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           xNegate := Negate(x, xType);
           valueTrue := Op(ifNeg, xNegate);
           
-          (* second, the "false" path: x>=0  *)
+          (* second, the "false" path: x>=0 *)
           pathFalse := b.AddMerge0(S.guard, b.AddConstBool(FALSE));
           pathFalse.AddDep(S.depControl, branch);
           endFalse := b.AddInstr0(S.jump);

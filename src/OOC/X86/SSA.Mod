@@ -2597,6 +2597,20 @@ PROCEDURE (b: FunctionBlock) AddGetLengthInstr* (getInstr: Instr; dim: LONGINT;
     END;
   END AddGetLengthInstr;
 
+PROCEDURE (b: FunctionBlock) AddGetParamTypeTag*(parameter: Sym.VarDecl;
+                                                 fp: Result): Result;
+(**Return the type tag of the record parameter.  *)
+  VAR
+    getInstr, paramAdr: Instr;
+    offset: Result;
+  BEGIN
+    offset := b.AddFramePointerOffset(parameter);
+    offset.instr.designator[0](Var).dim := 0;
+    paramAdr := b.AddInstr2(add, fp, offset);
+    getInstr := b.AddInstr1(get, paramAdr.AddResult(address));
+    RETURN getInstr.AddResult(address);
+  END AddGetParamTypeTag;
+
 PROCEDURE (fctBlock: FunctionBlock) DeadCodeElimination*();
   CONST
     dead = 0;
