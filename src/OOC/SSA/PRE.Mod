@@ -27,7 +27,6 @@ MODULE OOC:SSA:PRE;
    instruction.  Partial redundancies in nested "select"s are not found.  *)
 
 IMPORT
-  Log,
   Object, ADT:ArrayList, ADT:Dictionary, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA:Result, OOC:SSA:Blocker, OOC:SSA:CSE;
 
