@@ -643,6 +643,15 @@ TYPE
   END;
 
 TYPE
+  TypeType* = POINTER TO TypeTypeDesc;
+  TypeTypeDesc = RECORD
+    (**This special type is assigned to expressions that evaluate to a type.
+       For example, the type of the right hand side of @samp{x IS T} is an
+       instance of this class.  *)
+    (Sym.TypeDesc)
+  END;
+  
+TYPE
   Builder* = POINTER TO BuilderDesc;
   ConstFold* = POINTER TO ConstFoldDesc;
   BuilderDesc* = RECORD
@@ -662,6 +671,9 @@ TYPE
        @strong{Note}: A function can @emph{only} return this value for a node,
        if it also emits an error message.  *)
 
+    typeType-: TypeType;
+    (**This type is assigned to expressions that produce a type value.  *)
+    
     lastError: Error.Msg;
     (* Holds the last error message produced by @oproc{Builder.ErrSym}.  *)
   END;
@@ -1530,17 +1542,18 @@ PROCEDURE (procRef: ProcedureRef) Accept* (v: Visitor);
 (* Expression Class: TypeRef
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitTypeRef (typeRef: TypeRef; name: Symbol; decl: Sym.TypeDecl);
+PROCEDURE InitTypeRef (typeRef: TypeRef; name: Symbol; type: Sym.Type;
+                       decl: Sym.TypeDecl);
   BEGIN
-    InitReference (typeRef, name, NIL, decl);
+    InitReference (typeRef, name, type, decl);
   END InitTypeRef;
 
-PROCEDURE NewTypeRef (name: Symbol; decl: Sym.TypeDecl): TypeRef;
+PROCEDURE (b: Builder) NewTypeRef (name: Symbol; decl: Sym.TypeDecl): TypeRef;
   VAR
     typeRef: TypeRef;
   BEGIN
     NEW (typeRef);
-    InitTypeRef (typeRef, name, decl);
+    InitTypeRef (typeRef, name, b. typeType, decl);
     RETURN typeRef
   END NewTypeRef;
 
@@ -2083,6 +2096,16 @@ END InitConstFold;
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Error.List; typeRules : TypeRules.Rules; fold : ConstFold);
+  
+  PROCEDURE NewTypeType (parent: Sym.Item; position: Sym.Position): TypeType;
+    VAR
+      typeType: TypeType;
+    BEGIN
+      NEW (typeType);
+      Sym.InitType (typeType, parent, position);
+      RETURN typeType;
+    END NewTypeType;
+  
   BEGIN
     b. pragmaHistory := pragmaHistory;
     b. errList := errList;
@@ -2090,6 +2113,7 @@ PROCEDURE InitBuilder* (b: Builder; pragmaHistory: Pragmas.History; errList: Err
     b. errorExpr := NewConst (BasicList.NewSymbol (NIL, -1),
                               Predef.GetType(Predef.void),
                               Boolean.New (FALSE));
+    b. typeType := NewTypeType (NIL, NIL);
     b. lastError := NIL;
     b. constFold := fold;
     fold. builder := b;
@@ -2120,7 +2144,7 @@ PROCEDURE (b: Builder) NewIdentRef* (ns: Sym.Namespace; context: Sym.Item;
         | decl: Sym.VarDecl DO
           RETURN b. NewVar (name, decl)
         | decl: Sym.TypeDecl DO
-          RETURN NewTypeRef (name, decl)
+          RETURN b. NewTypeRef (name, decl)
         | decl: Sym.PredefProc DO
           RETURN NewPredefProc (name, decl)
         | decl: Sym.ProcDecl DO
@@ -2690,6 +2714,9 @@ BEGIN
                               expr. type(Sym.FormalPars), FALSE) THEN
       result := expr;
     END;
+
+  ELSIF (expr. type IS Sym.Pointer) & tr. IsExtensionOf (expr. type, type) THEN
+    result := expr;
   END;
   RETURN result;
 END AssignType;
