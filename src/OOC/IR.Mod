@@ -3656,13 +3656,12 @@ PROCEDURE (ao: AssignOp) Accept* (v: Visitor);
 PROCEDURE InitCall (call: Call; design: Expression; arguments: ExpressionList;
                     formalPars: Sym.VarDeclArray);
   VAR
-    fpars: Sym.Type;
+    resultType: Sym.Type;
   BEGIN
     InitStatement (call, design. sym);
-    fpars := design.type.Deparam();
-    IF (fpars(Sym.FormalPars).resultType # NIL) THEN
-      (* fix result type for function calls *)
-      call.type := design.type.Closure(fpars(Sym.FormalPars).resultType);
+    resultType := TR.FunctionResultType(design.type);
+    IF (resultType # NIL) THEN (* fix result type for function calls *)
+      call.type := resultType;
     END;
     call. design := design;
     call. arguments := arguments;
