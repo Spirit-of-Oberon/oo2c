@@ -4195,77 +4195,177 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
     enclosingTryLastLoop: LONGINT;
     (* Number of enclosing TRY statements of the nearest LOOP.  *)
     
+  PROCEDURE CheckException(exception: Sym.Type; sym: Symbol);
+    VAR
+      try: TryStatm;
+      i: LONGINT;
+      module: Sym.Module;
+      raises: Sym.ExceptionNameArray;
+    BEGIN
+      try := currentTry;
+      WHILE (try # NIL) DO
+        FOR i := 0 TO LEN(try.catchList^)-1 DO
+          IF TR.IsExtensionOf(try.catchList[i].exceptionType,
+                              exception) THEN
+            try.catchList[i].triggered := TRUE;
+          END;
+          IF TR.IsExtensionOf(exception,
+                              try.catchList[i].exceptionType) THEN
+            try.catchList[i].triggered := TRUE;
+            RETURN;
+          END;
+	END;
+        try := try.enclosingTry;
+      END;
+      
+      IF (procDecl # NIL) THEN
+        raises := procDecl.formalPars.raises;
+        FOR i := 0 TO LEN(raises^)-1 DO
+          IF TR.IsExtensionOf(exception, raises[i].type) THEN
+            RETURN;
+          END;
+        END;
+      END;
+      
+      IF (procDecl = NIL) OR
+         (procDecl.parent = NIL) THEN (* in module body *)
+        b.WarnSym(moduleUnhandledException, sym);
+      ELSE
+        b.ErrSym(unhandledException, sym);
+      END;
+      module := exception.Module();
+      b.lastError.SetStringAttrib("module", Msg.GetStringPtr(module.name.str^));
+      b.lastError.SetStringAttrib("name", Msg.GetStringPtr(exception.namingDecl.name.str^));
+    END CheckException;
+  
   PROCEDURE CheckStatmSeq (statmSeq: StatementSeq);
     VAR
       i: LONGINT;
       
+    PROCEDURE ^ CheckStatm (statm: Statement);
+
+    PROCEDURE CheckExpr (expr: Expression);
+      VAR
+        i: LONGINT;
+      BEGIN
+        IF (expr = NIL) THEN
+          RETURN;
+        END;
+        
+        WITH expr: Const DO
+          (* nothing *)
+        | expr: Abs DO
+          CheckExpr(expr.operand);
+        | expr: Adr DO
+          CheckExpr(expr.design);
+        | expr: Ash DO
+          CheckExpr(expr.value);
+          CheckExpr(expr.exp);
+        | expr: BinaryArith DO
+          CheckExpr(expr.left);
+          CheckExpr(expr.right);
+        | expr: BooleanOp DO
+          CheckExpr(expr.left);
+          CheckExpr(expr.right);
+        | expr: Cap DO
+          CheckExpr(expr.operand);
+        | expr: Compare DO
+          CheckExpr(expr.left);
+          CheckExpr(expr.right);
+        | expr: Concat DO
+          FOR i := 0 TO LEN(expr.strings^)-1 DO
+            CheckExpr(expr.strings[i]);
+          END;
+        | expr: ChangeElement DO
+          CheckExpr(expr.set);
+          CheckExpr(expr.element);
+        | expr: Deref DO
+          CheckExpr(expr.pointer);
+        | expr: Entier DO
+          CheckExpr(expr.operand);
+        | expr: Index DO
+          CheckExpr(expr.array);
+          CheckExpr(expr.index);
+        | expr: Len DO
+          CheckExpr(expr.array);
+        | expr: Negate DO
+          CheckExpr(expr.operand);
+        | expr: NewBlock DO
+          CheckExpr(expr.size);
+        | expr: NewObject DO
+          IF (expr.length # NIL) THEN
+            FOR i := 0 TO LEN(expr.length^)-1 DO
+              CheckExpr(expr.length[i]);
+            END;
+          END;
+        | expr: Not DO
+          CheckExpr(expr.operand);
+        | expr: Odd DO
+          CheckExpr(expr.operand);
+        | expr: Reference DO
+          (* nothing *)
+        | expr: SelectField DO
+          CheckExpr(expr.record);
+        | expr: SelectProc DO
+          CheckExpr(expr.receiver);
+        | expr: SetMember DO
+          CheckExpr(expr.element);
+          CheckExpr(expr.set);
+        | expr: SetOp DO
+          CheckExpr(expr.left);
+          CheckExpr(expr.right);
+        | expr: SetRange DO
+          CheckExpr(expr.from);
+          CheckExpr(expr.to);
+        | expr: Shift DO
+          CheckExpr(expr.value);
+          CheckExpr(expr.by);
+        | expr: TypeCast DO
+          CheckExpr(expr.expr);
+        | expr: TypeConv DO
+          CheckExpr(expr.expr);
+        | expr: TypeTag DO
+          CheckExpr(expr.design);
+        | expr: TypeTest DO
+          CheckExpr(expr.expr);
+        | expr: TypeGuard DO
+          CheckExpr(expr.test);
+          
+        | expr: Call DO
+          CheckStatm(expr);
+        END;
+      END CheckExpr;
+    
     PROCEDURE CheckStatm (statm: Statement);
       VAR
         i: LONGINT;
         oldLoop: LoopStatm;
         oldEnclTryLastLoop: LONGINT;
         fpars: Sym.FormalPars;
-        
-      PROCEDURE CheckException(exception: Sym.Type; sym: Symbol);
-        VAR
-          try: TryStatm;
-          i: LONGINT;
-          module: Sym.Module;
-          raises: Sym.ExceptionNameArray;
-        BEGIN
-          try := currentTry;
-          WHILE (try # NIL) DO
-            FOR i := 0 TO LEN(try.catchList^)-1 DO
-              IF TR.IsExtensionOf(try.catchList[i].exceptionType,
-                                  exception) THEN
-                try.catchList[i].triggered := TRUE;
-              END;
-              IF TR.IsExtensionOf(exception,
-                                  try.catchList[i].exceptionType) THEN
-                try.catchList[i].triggered := TRUE;
-                RETURN;
-              END;
-	    END;
-            try := try.enclosingTry;
-          END;
-
-          IF (procDecl # NIL) THEN
-            raises := procDecl.formalPars.raises;
-            FOR i := 0 TO LEN(raises^)-1 DO
-              IF TR.IsExtensionOf(exception, raises[i].type) THEN
-                RETURN;
-              END;
-            END;
-          END;
-
-          IF (procDecl = NIL) OR
-             (procDecl.parent = NIL) THEN (* in module body *)
-            b.WarnSym(moduleUnhandledException, sym);
-          ELSE
-            b.ErrSym(unhandledException, sym);
-          END;
-          module := exception.Module();
-          b.lastError.SetStringAttrib("module", Msg.GetStringPtr(module.name.str^));
-          b.lastError.SetStringAttrib("name", Msg.GetStringPtr(exception.namingDecl.name.str^));
-        END CheckException;
-      
       BEGIN
         WITH statm: Assert DO
-          (* nothing *)
+          CheckExpr(statm.predicate);
         | statm: Assignment DO             (* this includes AssignOp *)
-          (* nothing *)
+          CheckExpr(statm.variable);
+          CheckExpr(statm.value)
         | statm: Call DO
+          CheckExpr(statm.design);
+          FOR i := 0 TO LEN(statm.arguments^)-1 DO
+            CheckExpr(statm.arguments[i]);
+          END;
+          
           fpars := statm.design.type(Sym.FormalPars);
           FOR i := 0 TO LEN(fpars.raises^)-1 DO
             CheckException(fpars.raises[i].type, statm.sym);
           END;
-          (* nothing *)
         | statm: Copy DO
-          (* nothing *)
+          CheckExpr(statm.source);
+          CheckExpr(statm.dest);
         | statm: CopyParameter DO
           (* nothing *)
         | statm: CopyString DO
-          (* nothing *)
+          CheckExpr(statm.source);
+          CheckExpr(statm.dest);
         | statm: Exit DO
           IF (currentLoop = NIL) THEN
             b. ErrSym (exitOutsideLoop, statm. sym);
@@ -4274,13 +4374,19 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           END;
           statm. popExceptionContext := enclosingTry-enclosingTryLastLoop;
         | statm: ForStatm DO
+          CheckExpr(statm.var);
+          CheckExpr(statm.start);
+          CheckExpr(statm.end);
+          CheckExpr(statm.step);
           CheckStatmSeq (statm. body);
         | statm: IfStatm DO
+          CheckExpr(statm.guard);
           CheckStatmSeq (statm. pathTrue);
           CheckStatmSeq (statm. pathFalse);
         | statm: Case DO
           CheckStatmSeq (statm. statmSeq);
         | statm: CaseStatm DO
+          CheckExpr(statm.select);
           FOR i := 0 TO LEN (statm. caseList^)-1 DO
             CheckStatmSeq (statm. caseList[i]. statmSeq);
           END;
@@ -4294,12 +4400,16 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           enclosingTryLastLoop := oldEnclTryLastLoop;
           currentLoop := oldLoop;
         | statm: MoveBlock DO
-          (* nothing *)
+          CheckExpr(statm.source);
+          CheckExpr(statm.dest);
         | statm: Raise DO
+          CheckExpr(statm.exception);
           CheckException(statm.exception.type, statm.sym);
         | statm: RepeatStatm DO
           CheckStatmSeq (statm. body);
+          CheckExpr(statm.exitCondition);
         | statm: Return DO
+          CheckExpr(statm.result);
           IF (procDecl = NIL) OR
              (procDecl. formalPars. resultType = NIL) THEN
             (* module body or non-function procedure *)
@@ -4331,8 +4441,10 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
             CheckStatmSeq(statm.catchList[i].statmSeq);
           END;
         | statm: WhileStatm DO
+          CheckExpr(statm.guard);
           CheckStatmSeq (statm. body);
         | statm: WithStatm DO
+          CheckExpr(statm.guard);
           CheckStatmSeq (statm. pathTrue);
           CheckStatmSeq (statm. pathFalse);
         END;
