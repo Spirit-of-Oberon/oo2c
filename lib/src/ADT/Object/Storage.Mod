@@ -62,6 +62,7 @@ TYPE
     typeName: RT0.Name;
   END;
   
+  CharBuffer = ARRAY 256 OF CHAR;  (* 256 should suffice, but ... *)
   Reader* = POINTER TO ReaderDesc;
   ReaderDesc* = RECORD
   (**A reader for serialized object data.  *)
@@ -71,7 +72,7 @@ TYPE
     typeCounter: LONGINT;
     typeTab: TypeArray;
     
-    name: ARRAY 256 OF CHAR;  (* 256 should suffice, but ... *)
+    name: CharBuffer;
   END;
   
   Writer* = POINTER TO WriterDesc;
@@ -86,6 +87,8 @@ TYPE
        here *)
     typeRefSize: LONGINT;
     objHash: Dictionary.Dictionary;
+    
+    charBuffer: CharBuffer;
   END;
 
 CONST
@@ -360,8 +363,10 @@ PROCEDURE (w: Writer) WriteObject* (obj: Object.Object);
         tref := LookupType (w, type. module. name, type. name);
         w. WriteNum (tref);
         IF (tref > 0) THEN
-          w. WriteString (type. module. name^);
-          w. WriteString (type. name^)
+          COPY (type. module. name^, w. charBuffer);
+          w. WriteString (w. charBuffer);
+          COPY (type. name^, w. charBuffer);
+          w. WriteString (w. charBuffer);
         END;
         obj. Store (w)
       END
