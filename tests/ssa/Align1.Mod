@@ -5,7 +5,7 @@ IMPORT SYSTEM, Out;
 TYPE
   T = RECORD 
     a : CHAR;
-	b : LONGREAL;
+    b : LONGREAL;
   END;
 
   TUnion = RECORD [UNION]
@@ -15,22 +15,22 @@ TYPE
 
   T1 = RECORD [ALIGN1]
     a : CHAR;
-	b : LONGREAL;
+    b : LONGREAL;
   END;
 
   T2 = RECORD [ALIGN2]
     a : CHAR;
-	b : LONGREAL;
+    b : LONGREAL;
   END;
 
   T4 = RECORD [ALIGN4]
     a : CHAR;
-	b : LONGREAL;
+    b : LONGREAL;
   END;
 
   T8 = RECORD [ALIGN8]
     a : CHAR;
-	b : LONGREAL;
+    b : LONGREAL;
   END;
 
 PROCEDURE Test*;
