@@ -134,7 +134,7 @@ dist: oo2crc-install.xml
 	mkdir stage0 stage0/lib
 	ln -s ../src stage0/src
 	ln -s ../../lib/src stage0/lib/src
-	./oo2c --config oo2crc-install.xml --make -r stage0/lib -r stage0 --cc true stage0/src/oo2c.Mod
+	./oo2c --config oo2crc-install.xml --make -r stage0/lib -r stage0 --cc true $(OFLAGS) stage0/src/oo2c.Mod
 	rm -Rf stage0/sym/* stage0/lib/sym/*
 	cd stage0 && $(PERL) $(OOC_DEV_ROOT)/rsrc/OOC/makefilegen.pl >Makefile.ext
 	${MAKE} distclean
@@ -146,15 +146,16 @@ stage0/oo2c:
 
 ### Build library from core modules using the initial compiler executable.
 lib/obj/liboo2c.la: stage0/oo2c oo2crc-install.xml
-	stage0/oo2c --config oo2crc-install.xml -r lib --build-package liboo2c
+	stage0/oo2c --config oo2crc-install.xml -r lib $(OFLAGS) --build-package liboo2c
 
 ### Build second compiler using the initial compiler executable and the
 ### library lib/obj/liboo2c.la.
 exe/oo2c: stage0/oo2c oo2crc-install.xml lib/obj/liboo2c.la
+	stage0/oo2c --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package oo2c
 
 install: lib/obj/liboo2c.la exe/oo2c
-	stage0/oo2c --config oo2crc-install.xml -r lib --install-program "$(INSTALL_PROGRAM)" --install-package liboo2c
-	stage0/oo2c --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" --install-package oo2c
+	stage0/oo2c --config oo2crc-install.xml -r lib --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
+	stage0/oo2c --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
 	chmod a+x $(oocdir)/install-sh
 
 install-strip:
