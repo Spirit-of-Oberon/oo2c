@@ -36,8 +36,6 @@ TEST_SUBDIRS=\
   tests/ia32 \
   tests/ssa-c-output \
 
-DOC_DIR=$(OOC_DEV_ROOT)/oocdoc
-
 top_builddir=$(OOC_DEV_ROOT)
 
 test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestCompile TestH2O TestWebServer TestCodec encdec AllModules RunTests
@@ -54,11 +52,11 @@ all: lib/obj/liboo2c.la bin/oo2c
 ###      with them.
 main-clean: test-cleanall
 	for i in sym obj bin sym-v1 obj-v1; do rm -Rf ${top_builddir}/$$i; done
-	for i in lib/sym lib/obj lib/bin lib/doc; do rm -Rf ${top_builddir}/$$i; done
+	for i in lib/sym lib/obj lib/bin lib/oocdoc; do rm -Rf ${top_builddir}/$$i; done
 	rm -f src/XML oo2c
 	for i in ${test_programs}; do rm -f $$i; done
 	-cd stage0 && rm -f *.o */*.o */*/*.o */*/*/*.o
-	rm -Rf "$(DOC_DIR)" stage1 stage2 tests/lib-TestCompile tests/lib-oo2c gmon.out
+	rm -Rf stage1 stage2 tests/lib-TestCompile tests/lib-oo2c gmon.out
 	${MAKE} -C tests/hostess-ooc1 test-clean
 	${MAKE} -C tests/benchmark clean
 
@@ -84,27 +82,6 @@ FRC:
 test-hostess-ooc1:
 	${MAKE} -C tests/hostess-ooc1 test-runall
 
-
-
-### `doc'
-###      Use the OOC2 infrastructure to generate HTML files from documentation
-###      comments embedded in the source code.  Because this requires access
-###      to source code from the oo2c core library, libadt, and libxml, we
-###      first create a directory that simulates repositories for these files.
-###      Then, XML and HTML files are created under this directory.  Finally,
-###      an index file $(OOC_DEV_ROOT)/oocdoc/index.html is generated.
-doc:
-	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/sym-v1 $(OOC_DEV_ROOT)/obj-v1
-	cd $(OOC_DEV_ROOT) && $(OOC) -M $(OFLAGS) TestInterfaceGen
-	rm -Rf $(DOC_DIR)
-	mkdir $(DOC_DIR) $(DOC_DIR)/ooc2 $(DOC_DIR)/lib
-	$(OOC_DEV_ROOT)/rsrc/OOC/make-pseudo-rep.sh --basedir "$(DOC_DIR)" Rts oldlib
-	ln -s $(OOC_DEV_ROOT)/src $(DOC_DIR)/ooc2/src
-	ln -s $(OOC_DEV_ROOT)/rsrc $(DOC_DIR)/ooc2/rsrc
-	ln -s $(OOC_DEV_ROOT)/lib/src $(DOC_DIR)/lib/src
-	$(OOC_DEV_ROOT)/TestInterfaceGen --error-style oo2c --html --closure -r "$(DOC_DIR)/oldlib" -r "$(DOC_DIR)/lib" -r "$(DOC_DIR)/ooc2" AllModules
-	cd $(DOC_DIR) && $(OOC_DEV_ROOT)/rsrc/OOC/make-index.sh
-	$(PRINT) "Done.  Index file is $(DOC_DIR)/index.html"
 
 
 ### Create header file that is used as input for GNU autoconf.

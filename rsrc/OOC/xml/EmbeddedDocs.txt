@@ -1,6 +1,6 @@
 [This is a short description of documentation string, embedded
  Texinfo, and how to use the existing ooc2 codebase to create
- formatted and cross-referenced HTM documentation.  -- mva 2001/05/06 ]
+ formatted and cross-referenced HTM documentation.  -- mva 2002/12/05 ]
 
 
 1. Documentation Strings and Embedded Texinfo
@@ -73,43 +73,5 @@ Extensions for OOC
 2. Producing HTML Documentation
 -------------------------------
 
-Producing HTML texts from embedded documentation strings is quite
-easy, although it requires an ooc2 program that expects a certain
-directory layout.  Please keep in mind that the program in question,
-TestInterfaceGen, is actually a test program and lacks the polish of
-an application destined for end users.
-
-It is assumed that you have some XSLT processor installed (for example
-Xalan from apache.org or xsltproc from the GNOME libxslt).
-
-Download the ooc2 and libadt sources from the SourceForge project OOC
-(http://sourceforge.net/projects/ooc).  Adjust the script
-`ooc2/rsrc/OOC/xml/gen-interface-description' so that it calls your
-XSLT processor.  Build the program `TestInterfaceGen' (ooc2/src and
-libadt/src should be in your path, libxml should be installed).
-
-Create a new, empty working directory and cd into it.  Using VO as an
-example, and assuming that its files only depend on the core library
-and X11, the following commands create the expected file layout and
-call TestInterfaceGen:
-
-  mkdir core
-  ln -s /usr/lib/oo2c/lib/ core/src
-  mkdir libxml
-  ln -s ../../libxml/src libxml/src
-  mkdir ooc2
-  ln -s ../../ooc2/src/ ooc2/src
-  ln -s ../../ooc2/rsrc/ ooc2/rsrc
-  mkdir X11
-  ln -s ../../X11/src/ X11/src
-  mkdir VO
-  ln -s ../../VO/src/ VO/src
-  TestInterfaceGen --html --closure -r core -r ooc2 -r libxml -r X11 -r VO VisualOberonLib
-
-The target path in the link statement (`/usr/lib/oo2c/lib/',
-`../../ooc2/src/', and so on in the above example) will differ for
-your system.  Please note that all the repositories listed above
-(core, libxml, ooc2, X11, and VO) are required.  On completion, the
-directory `VO/doc/' holds the generated XML and HTML files.
-
-
+Done automtically by the oo2c command `--build-package'.  HTML files
+end up in <repository>/oocdoc/html.

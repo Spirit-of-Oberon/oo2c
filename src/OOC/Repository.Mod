@@ -423,9 +423,9 @@ PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF 
     | modSymbolFile:
       COPY ("sym", subdir)
     | modSymbolTableXML, modInterfaceXML, modInterfaceDescr, modOpTreeXML:
-      COPY ("doc/xml", subdir)
+      COPY ("oocdoc/xml", subdir)
     | modInterfaceHTML:
-      COPY ("doc/html", subdir)
+      COPY ("oocdoc/html", subdir)
     | modObjectFile, modCodeFileC, modDeclFileC, modHeaderFileC,
       modAssemblerFile, modObjectFileDynamicLoad,
       modMainFileC, modMainFileAssembler, modMainObjectFile:

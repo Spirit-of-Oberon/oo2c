@@ -4,10 +4,10 @@ f="index.html"
 
 echo "<body bgcolor='white'>" >$f
 old_package=""
-files=`find */doc/html -type f -name "*.html" | sort`
+files=`find */oocdoc/html -type f -name "*.html" | sort`
 for i in $files; do
   package=`echo $i | sed -e "s:/.*$::g"`
-  module=`echo $i | sed -e "s:^.*/doc/html/::g" -e "s#/#:#g" -e "s:.html$::g"`
+  module=`echo $i | sed -e "s:^.*/oocdoc/html/::g" -e "s#/#:#g" -e "s:.html$::g"`
   if test "$package" != "$old_package"; then
     if test -n "$old_package"; then
       echo "</table>" >>$f
