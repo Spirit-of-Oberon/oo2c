@@ -50,6 +50,15 @@
   </xsl:apply-templates>
   <xsl:apply-templates select="result-type" mode="type-detail"/>
   <xsl:if test="not(result-type)">)</xsl:if>
+
+  <xsl:if test="exceptions">
+    <xsl:text>&#xA;  RAISES </xsl:text>
+    <xsl:for-each select="exceptions/type-name">
+	<xsl:apply-templates select="." mode="type-detail" />
+        <xsl:if test="position() != last()">, </xsl:if>
+    </xsl:for-each>
+    <xsl:text>;</xsl:text>
+  </xsl:if>
 </xsl:template>
 
 
