@@ -11,6 +11,7 @@ alternative configuration:
 <configuration>
   <options>
     <set name='cc'>gcc</set>
+    <set name='cppflags'></set>
     <set name='cflags'>-Wall -W -Wno-unused -Wno-format -Werror -O2 -Wno-uninitialized -g -pipe</set>
     <set name='ldflags'></set>
     <set name='libs'>-lgc </set>

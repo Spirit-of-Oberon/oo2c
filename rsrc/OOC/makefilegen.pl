@@ -60,7 +60,7 @@ print "all: $exec\n\n";
 my $flags = "-Ilib/src ".join(" ", map { "-I${_}obj" } keys %repository);
 for my $m (@modules) {
   print "$header{$m}{objfile}:\n";
-  print "\t\$(CC) \$(CFLAGS) $flags -c $header{$m}{cfile} -o $header{$m}{objfile}\n\n";
+  print "\t\$(CC) \$(CFLAGS) \$(CPPFLAGS) $flags -c $header{$m}{cfile} -o $header{$m}{objfile}\n\n";
 }
 
 print "$main.o:\n";

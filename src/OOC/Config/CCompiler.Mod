@@ -26,7 +26,7 @@ IMPORT
   OOC:Config, OOC:Repository;
 
 VAR
-  cc, cflags, ldflags, libs: Options.Option;
+  cc, cppflags, cflags, ldflags, libs: Options.Option;
 
 PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
   VAR
@@ -54,6 +54,8 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
     COPY (cc. value(StringValue.Value). string^, cmd);
     Strings.Append (" ", cmd);
     Strings.Append (cflags. value(StringValue.Value). string^, cmd);
+    Strings.Append (" ", cmd);
+    Strings.Append (cppflags. value(StringValue.Value). string^, cmd);
     
     include := Config.repositories. GetIncludePaths();
     FOR i := 0 TO LEN (include^)-1 DO
@@ -95,12 +97,15 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; VAR cmd: ARRAY OF CHAR);
 PROCEDURE RegisterConfig*;
   BEGIN
     cc := Config.AddOption ("cc", StringValue.New ("gcc"));
+    cppflags := Config.AddOption ("cppflags", StringValue.New (""));
     cflags := Config.AddOption ("cflags", StringValue.New ("-O2 -g"));
     ldflags := Config.AddOption ("ldflags", StringValue.New (""));
     libs := Config.AddOption ("libs", StringValue.New ("-lgc"));
 
     Config.AddCmdLine ("--cc",
                        "<options><set name='cc'>$1</set></options>");
+    Config.AddCmdLine ("--cppflags",
+                       "<options><set name='cppflags'>$1</set></options>");
     Config.AddCmdLine ("--cflags",
                        "<options><set name='cflags'>$1</set></options>");
     Config.AddCmdLine ("--ldflags",
