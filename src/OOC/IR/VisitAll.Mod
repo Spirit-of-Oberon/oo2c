@@ -315,6 +315,13 @@ PROCEDURE (v: Visitor) VisitIterateArrayStatm* (iterStatm: IR.IterateArrayStatm)
     VisitStatementSeq (v, iterStatm. body);
   END VisitIterateArrayStatm;
 
+PROCEDURE (v: Visitor) VisitIterateObjectStatm* (iterStatm: IR.IterateObjectStatm);
+  BEGIN
+    iterStatm. var. Accept (v);
+    iterStatm. iteratorFactory. Accept (v);
+    VisitStatementSeq (v, iterStatm. body);
+  END VisitIterateObjectStatm;
+
 PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
     ifStatm. guard. Accept (v);

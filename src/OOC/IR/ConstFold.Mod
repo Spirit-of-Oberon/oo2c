@@ -682,6 +682,10 @@ PROCEDURE (c: ConstFold) VisitIterateArrayStatm* (iterStatm: IR.IterateArrayStat
   BEGIN
   END VisitIterateArrayStatm;
 
+PROCEDURE (c: ConstFold) VisitIterateObjectStatm* (iterStatm: IR.IterateObjectStatm);
+  BEGIN
+  END VisitIterateObjectStatm;
+
 PROCEDURE (c: ConstFold) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
   END VisitIfStatm;

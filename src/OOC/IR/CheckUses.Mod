@@ -807,6 +807,11 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
           CheckDesign(statm.var, write);
           CheckStatmSeq(def, statm.body);
           
+        | statm: IR.IterateObjectStatm DO
+          CheckExpr(statm.iteratorFactory);
+          CheckDesign(statm.var, write);
+          CheckStatmSeq(def, statm.body);
+          
         | statm: IR.IfStatm DO
           CheckExpr(statm.guard);
           def2 := def.Copy();

@@ -468,6 +468,24 @@ PROCEDURE (v: Visitor) VisitIterateArrayStatm* (iterStatm: IR.IterateArrayStatm)
     v. w. EndTag;  (* iterate-array-statm *)
   END VisitIterateArrayStatm;
 
+PROCEDURE (v: Visitor) VisitIterateObjectStatm* (iterStatm: IR.IterateObjectStatm);
+  BEGIN
+    v. w. StartTag ("iterate-object-statm", FALSE);
+    v. w. StartTag ("variable", FALSE);
+    iterStatm. var. Accept (v);
+    v. w. EndTag;  (* variable *)
+    v. w. StartTag ("iterator-factory", FALSE);
+    iterStatm. iteratorFactory. Accept (v);
+    v. w. EndTag;  (* iterator-factory *)
+    v. w. StartTag ("stepper-call", TRUE);
+    iterStatm. stepperCall. Accept (v);
+    v. w. EndTag;  (* stepper-call *)
+    v. w. StartTag ("body", FALSE);
+    VisitStatementSeq (v, iterStatm. body);
+    v. w. EndTag;  (* body *)
+    v. w. EndTag;  (* iterate-array-statm *)
+  END VisitIterateObjectStatm;
+
 PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
     v. w. StartTag ("if-statm", FALSE);

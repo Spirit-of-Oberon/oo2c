@@ -5,7 +5,9 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; iterator1 iterator2 iterator3 iterator4">-->
+  select ="&SetupTestCasesWithOut; iterator1 iterator2 iterator3
+  iterator4 iterator5 iterator6 iterator7 iterator8 iterator9
+  iterator10 iterator11">-->
 
   &TestSetupWithOut;
     
@@ -1661,6 +1663,33 @@
     <test id="iterator4" type="reject" file="Iterator4.Mod">
       Array elements not assignment compatible to variable.
     </test>
+    <test id="iterator5" type="run" file="Iterator5.Mod"
+          output="Iterator5.Ref">
+      Iterating over an iterator's <code>Next()</code> method.
+    </test>
+    <test id="iterator6" type="run" file="Iterator6.Mod"
+          output="Iterator6.Ref">
+      Like <code>iterator5</code>, but the first call to
+      <code>Next()</code> returns <code>NIL</code>,
+    </test>
+    <test id="iterator7" type="reject" file="Iterator7.Mod">
+      Iterator factory expression produces a record value.
+    </test>
+    <test id="iterator8" type="reject" file="Iterator8.Mod">
+      Iterator's <code>Next()</code> method defines a value parameter.
+    </test>
+    <test id="iterator9" type="reject" file="Iterator9.Mod">
+      Iterator's <code>Next()</code> method does not return
+      <code>BOOLEAN</code>.
+    </test>
+    <test id="iterator10" type="reject" file="Iterator10.Mod">
+      Iterator's <code>Next()</code> method has more than one
+      parameter.
+    </test>
+    <test id="iterator11" type="reject" file="Iterator11.Mod">
+      Type of variable does not match that of the <code>Next()</code>
+      method's variable parameter.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2371,6 +2400,16 @@
         msg="Iterator requires array elements of scalar type"/>
     <reject-info id="iterator4" pos="IN %x"
         msg="Expression not compatible with variable type `CHAR'"/>
+    <reject-info id="iterator7" pos="IN %iter"
+        msg="This expression must produce an iterator object"/>
+    <reject-info id="iterator8" pos="IN %iter"
+        msg="The iterator object has no Next() method with a valid signature"/>
+    <reject-info id="iterator9" pos="IN %iter"
+        msg="The iterator object has no Next() method with a valid signature"/>
+    <reject-info id="iterator10" pos="IN %iter"
+        msg="The iterator object has no Next() method with a valid signature"/>
+    <reject-info id="iterator11" pos="FOR %c IN"
+        msg="Argument not compatible with formal VAR parameter `CHAR'"/>
 
     <reject-info id="align2" pos=", %ALIGN2"
         msg="This modifier flag has no effect here"/>

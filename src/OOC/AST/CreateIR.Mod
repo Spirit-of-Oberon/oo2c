@@ -436,10 +436,10 @@ PROCEDURE CreateIR* (module: AST.Module;
   
     PROCEDURE IterateStatm (iterStatm: AST.IterateStatm): IR.Statement;
       BEGIN
-        RETURN b. NewIterateArrayStatm (iterStatm. for. sym,
-                               Designator (iterStatm. ident),
-                               Expr (iterStatm. range),
-                               StatementSeq (iterStatm. statmSeq));
+        RETURN b. NewIterateStatm (iterStatm. for. sym, currentSourceContext,
+                                   Designator (iterStatm. ident),
+                                   Expr (iterStatm. range),
+                                   StatementSeq (iterStatm. statmSeq));
       END IterateStatm;
   
     PROCEDURE LoopStatm (loopStatm: AST.LoopStatm): IR.Statement;

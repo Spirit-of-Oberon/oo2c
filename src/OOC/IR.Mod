@@ -899,6 +899,18 @@ TYPE
   END;
   
 TYPE
+  IterateObjectStatm* = POINTER TO IterateObjectStatmDesc;
+  IterateObjectStatmDesc = RECORD
+    (**Holds an @code{FOR-BY} iterator statement using a dedicated
+       iterator object.  *)
+    (StatementDesc)
+    var-: Expression;
+    iteratorFactory-: Expression;
+    stepperCall-: Call;
+    body-: StatementSeq;
+  END;
+  
+TYPE
   IfStatm* = POINTER TO IfStatmDesc;
   IfStatmDesc = RECORD
     (**Holds an @code{IF-ELSE-END} statement.  If there is no @code{ELSE}, then
@@ -1200,6 +1212,8 @@ CONST
   initWithoutSuperCall = 74;
   forwardReferenceToInit = 75;
   notArrayIteratorRange = 76;
+  notIteratorObject = 77;
+  noNextMethod = 78;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1416,6 +1430,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "The type's INIT procedure must be defined before its use";
     | notArrayIteratorRange:
       t := "Iterator requires array elements of scalar type";
+    | notIteratorObject:
+      t := "This expression must produce an iterator object";
+    | noNextMethod:
+      t := "The iterator object has no Next() method with a valid signature";
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -4112,7 +4130,7 @@ PROCEDURE (forStatm: ForStatm) Accept* (v: Visitor);
     v. VisitForStatm (forStatm)
   END Accept;
 
-(* Statement Class: ForStatm
+(* Statement Class: IterateArrayStatm
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitIterateArrayStatm (iterStatm: IterateArrayStatm; sym: Symbol;
@@ -4125,30 +4143,6 @@ PROCEDURE InitIterateArrayStatm (iterStatm: IterateArrayStatm; sym: Symbol;
     iterStatm. body := body;
   END InitIterateArrayStatm;
 
-PROCEDURE (b: Builder) NewIterateArrayStatm* (sym: Symbol;
-                                              var, range: Expression;
-                                              body: StatementSeq): IterateArrayStatm;
-  VAR
-    iterStatm: IterateArrayStatm;
-    v: BigInt.BigInt;
-    elem: Expression;
-  BEGIN
-    IF ~(var IS Var) THEN
-      b.ErrSym(notVariable, var.sym);
-    ELSIF ~TR.IsValidArrayIteratorRange(range.type) THEN
-      b.ErrSym(notArrayIteratorRange, range.sym);
-    ELSE  (* array element assignment compatible to variable? *)
-      v := BigInt.NewInt(0);
-      elem := b.NewIndex(sym, range,
-                         NewConst(sym, Predef.SmallestIntType(v), v));
-      MakeAssignmentCompatible(b, range.sym, elem, var.type);
-    END;
-    
-    NEW (iterStatm);
-    InitIterateArrayStatm(iterStatm, sym, var, range, body);
-    RETURN iterStatm;
-  END NewIterateArrayStatm;
-
 PROCEDURE (v: Visitor) [ABSTRACT] VisitIterateArrayStatm* (iterStatm: IterateArrayStatm);
   END VisitIterateArrayStatm;
 
@@ -4156,6 +4150,115 @@ PROCEDURE (iterStatm: IterateArrayStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitIterateArrayStatm (iterStatm)
   END Accept;
+
+(* Statement Class: IterateObjectStatm
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitIterateObjectStatm (iterStatm: IterateObjectStatm; sym: Symbol;
+                                  var, iteratorFactory: Expression;
+                                  stepperCall: Call; body: StatementSeq);
+  BEGIN
+    InitStatement (iterStatm, sym);
+    iterStatm. var := var;
+    iterStatm. iteratorFactory := iteratorFactory;
+    iterStatm. stepperCall := stepperCall;
+    iterStatm. body := body;
+  END InitIterateObjectStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitIterateObjectStatm* (iterStatm: IterateObjectStatm);
+  END VisitIterateObjectStatm;
+
+PROCEDURE (iterStatm: IterateObjectStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitIterateObjectStatm (iterStatm)
+  END Accept;
+
+PROCEDURE (b: Builder) NewIterateStatm* (sym: Symbol; context: Sym.Item;
+                                         var, sequence: Expression;
+                                         body: StatementSeq): Statement;
+  VAR
+    iterArrayStatm: IterateArrayStatm;
+    iterObjectStatm: IterateObjectStatm;
+    v: BigInt.BigInt;
+    elem, pseudoDesign, expr: Expression;
+    stepperCall: Call;
+    stepper: Sym.ProcDecl;
+    class: Sym.Record;
+    arguments: ExpressionList;
+    
+  PROCEDURE GetStepper(type: Sym.Type; VAR class: Sym.Record): Sym.ProcDecl;
+    VAR
+      decl: Sym.Declaration;
+      n: Sym.Name;
+      fp: Sym.FormalPars;
+    BEGIN
+      IF TR.IsPointer(type) THEN
+        type := TR.PointerBaseType(type);
+      END;
+      type := type.Deparam();
+      class := type(Sym.Record);
+      n := b.GetName2(sequence.sym, "Next");
+      decl := class.ns.Identify(context, n, FALSE);
+      WITH decl: Sym.ProcDecl DO
+        fp := decl.formalPars;
+        IF (fp.resultType = Predef.GetType(Predef.boolean)) &
+           (LEN(fp.params^) = 1) &
+           fp.params[0].isVarParam THEN
+          RETURN decl;
+        END;
+      ELSE  (* miss *)
+      END;
+      RETURN NIL;
+    END GetStepper;
+  
+  BEGIN
+    IF ~(var IS Var) THEN
+      b.ErrSym(notVariable, var.sym);
+    ELSIF TR.IsArray(sequence.type) THEN (* array iterator *)
+      sequence := sequence;
+      IF ~TR.IsValidArrayIteratorRange(sequence.type) THEN
+        b.ErrSym(notArrayIteratorRange, sequence.sym);
+      ELSE  (* array element assignment compatible to variable? *)
+        v := BigInt.NewInt(0);
+        elem := b.NewIndex(sym, sequence,
+                           NewConst(sym, Predef.SmallestIntType(v), v));
+        MakeAssignmentCompatible(b, sequence.sym, elem, var.type);
+      END;
+      
+      NEW (iterArrayStatm);
+      InitIterateArrayStatm(iterArrayStatm, sym, var, sequence, body);
+      RETURN iterArrayStatm;
+    ELSE                                 (* dedicated iterator object *)
+      IF ~TR.IsRecordPointer(sequence.type) THEN
+        b.ErrSym(notIteratorObject, sequence.sym);
+      ELSE
+        stepper := GetStepper(sequence.type, class);
+        IF (stepper = NIL) THEN
+          b.ErrSym(noNextMethod, sequence.sym);
+        ELSE
+          pseudoDesign := b.NewNil(sym);
+          pseudoDesign := b.NewSelectProc(sym, pseudoDesign, class,
+                                          stepper, sequence.sym, FALSE);
+          NEW(arguments, 1);
+          arguments[0] := var;
+          expr := b.NewCall(pseudoDesign, arguments, TRUE,
+                            context, sequence.sym);
+          IF (expr IS Call) THEN
+            stepperCall := expr(Call);
+          ELSE
+            stepperCall := NIL;
+          END;
+          
+          NEW (iterObjectStatm);
+          InitIterateObjectStatm(iterObjectStatm, sym, var, sequence,
+                                 stepperCall, body);
+          RETURN iterObjectStatm;
+        END;
+      END;
+    END;
+    RETURN NIL;
+  END NewIterateStatm;
+
 
 (* Statement Class: IfStatm
    ------------------------------------------------------------------------ *)
@@ -4862,6 +4965,10 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           CheckExpr(statm.var);
           CheckExpr(statm.range);
           CheckStatmSeq (statm. body);
+        | statm: IterateObjectStatm DO
+          CheckExpr(statm.var);
+          CheckExpr(statm.iteratorFactory);
+          CheckStatmSeq (statm. body);
         | statm: IfStatm DO
           CheckExpr(statm.guard);
           CheckStatmSeq (statm. pathTrue);
@@ -5307,6 +5414,10 @@ PROCEDURE (m: Module) Destroy*;
         | n: IterateArrayStatm DO
           E(n.var);
           E(n.range);
+          SSeq(n.body);
+        | n: IterateObjectStatm DO
+          E(n.var);
+          E(n.iteratorFactory);
           SSeq(n.body);
         | n: IfStatm DO
           E(n.guard);

@@ -1522,6 +1522,82 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := select.AddResult(Result.store);
     END IterateArrayStatm;
   
+  PROCEDURE IterateObjectStatm (iterStatm: IR.IterateObjectStatm);
+    VAR
+      loopStart, loopEnd, select, exit: SSA.Instr;
+      iterator, guard1, guard2, storeAfterGuard1: SSA.Result;
+
+    PROCEDURE Guard(): SSA.Instr;
+      VAR
+        res: SSA.Result;
+        instr, typeTag: SSA.Instr;
+      BEGIN
+        res := Expression(iterStatm.stepperCall);
+        instr := res(SSA.Instr);
+        typeTag := instr.opndList.arg(SSA.Instr).opndList.arg(SSA.Instr);
+        typeTag.opndList.ReplaceArg(iterator);
+        instr.opndList.nextOpnd.ReplaceArg(iterator);
+        RETURN instr;
+      END Guard;
+
+    BEGIN
+      (* FOR v IN obj.Iterator() DO s END;
+
+         is translated to
+
+         temp := obj.Iterator();
+         IF temp.Next(v) THEN
+           REPEAT
+             s;
+           UNTIL ~temp.Next(v);
+         END *)
+      iterator := Expression(iterStatm.iteratorFactory);
+      
+      (* only if the first call to Next() is successful we enter the loop *)
+      guard1 := Guard();
+      storeAfterGuard1 := s;
+
+      (* insert "loop-start" instruction *)
+      loopStart := pb.AddInstr(Opcode.loopStart, Opcode.scNone);
+      loopStart.AddOpnd(s, Opnd.store);
+      s := loopStart.AddResult(Result.store);
+
+      (* evaluate loop body *)
+      s := StatmSeq(pb, s, iterStatm.body);
+
+      (* next call to Next() *)
+      guard2 := Guard();
+      
+      (* create "select" with "exit" *)
+      exit := pb.AddInstr(Opcode.exit, Opcode.scNone);
+      exit.AddOpnd(s, Opnd.store);
+      select := pb.AddInstr(Opcode.select, Opcode.scNone);
+      select.AddOpnd(guard2, Opnd.arg);
+      select.AddOpnd(pb.GetConstBool(TRUE), Opnd.arg);
+      select.AddOpnd(s, Opnd.arg);
+      select.AddOpnd(pb.GetConstBool(FALSE), Opnd.arg);
+      select.AddOpnd(exit.AddResult(Result.store), Opnd.arg);
+      s := select.AddResult(Result.store);
+      
+      (* create "loop-end" instruction *)
+      loopEnd := pb.AddInstr(Opcode. loopEnd, Opcode.scNone);
+      loopEnd.AddOpnd(loopStart, Opnd.arg);
+      (* add backward feed of `store' to "loop-end" *)
+      loopEnd.AddOpnd(s, Opnd.backwardFeed);
+      (* link "exit" to "loop-end" *)
+      loopEnd.AddOpnd(exit.nextResult, Opnd.storeExit);
+      
+      (* create the "select" for the IF statement around the loop *)
+      select := pb.AddInstr(Opcode.select, Opcode.scNone);
+      select.AddOpnd(guard1, Opnd.arg);
+      select.AddOpnd(pb.GetConstBool(TRUE), Opnd.arg);
+      select.AddOpnd(loopEnd.AddResult(Result.store), Opnd.arg);
+      select.AddOpnd(pb.GetConstBool(FALSE), Opnd.arg);
+      select.AddOpnd(storeAfterGuard1, Opnd.arg);
+
+      s := select.AddResult(Result.store);
+    END IterateObjectStatm;
+  
   PROCEDURE LoopStatm (loopStatm: IR.LoopStatm);
     VAR
       start, end, oldSelect: SSA.Instr;
@@ -1710,6 +1786,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       | statm: IR.IterateArrayStatm DO
         IterateArrayStatm (statm);
+
+      | statm: IR.IterateObjectStatm DO
+        IterateObjectStatm (statm);
 
       | statm: IR.LoopStatm DO
         LoopStatm (statm);
