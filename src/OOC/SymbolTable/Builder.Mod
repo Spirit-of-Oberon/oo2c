@@ -252,7 +252,7 @@ PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
 
 PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
   PROCEDURE CollectFormalPars (item: Sym.Item);
-  (* Sets the field @ofield{Sym := OOC:SymbolTable.FormalPars.params} for
+  (* Sets the field @ofield{Sym.FormalPars.params} for
      all formal parameter definitions under @oparam{item}.  *)
     VAR
       ptr: Sym.Item;
