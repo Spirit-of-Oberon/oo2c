@@ -18,13 +18,12 @@ MODULE URI:Scheme:HTTP;
     59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
-
+(* defunct... 
 IMPORT
-  Ascii, Channel, IntStr, Msg, Strings, TextRider, IO:Socket,
+  Ascii, Channel, IntStr, Msg, Strings, TextRider, IO:SocketChannel,
   URI0 := URI, URI:Error, URI:String,
   URI:Scheme:Hierarchical, URI:Authority:ServerBased,
   Query := URI:Query:Unparsed;
-
 
 TYPE
   URI* = POINTER TO URIDesc;
@@ -82,16 +81,14 @@ PROCEDURE (http: URI) Clone* (): URI;
   END Clone;
 
 
-PROCEDURE (uri: URI) GetChannel* (mode: URI0.ChannelMode;
-                                  VAR res: Error.Msg): Channel.Channel;
+PROCEDURE (uri: URI) GetChannel* (mode: URI0.ChannelMode): SocketChannel.Channel;
 (**@precond
    @oparam{uri} is an absoulte URI of the schema @samp{http}.
    @end precond  *)
   CONST
     crlf = Ascii.cr+Ascii.lf;
   VAR
-    sock: Socket.Socket;
-    addr: Socket.sockaddr_in;
+    sock: SocketChannel.Channel;
     auth: ServerBased.Authority;
     req: ARRAY 4*1024 OF CHAR;
     number: ARRAY 32 OF CHAR;
@@ -99,11 +96,6 @@ PROCEDURE (uri: URI) GetChannel* (mode: URI0.ChannelMode;
     writer: Channel.Writer;
     textReader: TextRider.Reader;
     i, j: LONGINT;
-  
-  PROCEDURE Err (code: Error.Code);
-    BEGIN
-      res := Msg.New (httpContext, code)
-    END Err;
   
   PROCEDURE LookingAt (str: ARRAY OF CHAR): BOOLEAN;
     VAR
@@ -128,7 +120,7 @@ PROCEDURE (uri: URI) GetChannel* (mode: URI0.ChannelMode;
   
   BEGIN
     ch := NIL;
-    sock := Socket.New (Socket.AF_INET, Socket.SOCK_STREAM, 0, res);
+    sock := SocketChannel.Open();
     
     IF (res = Socket.done) THEN
       IF (uri. authority = NIL) THEN
@@ -241,5 +233,5 @@ BEGIN
   httpContext. SetString (malformedStatus,
     "Malformed status line in response");
   httpContext. SetString (responseError,
-    "HTTP request failed: ${status}");
+    "HTTP request failed: ${status}"); *)
 END URI:Scheme:HTTP.

@@ -17,6 +17,7 @@ MODULE Net:HTTP:Server [OOC_EXTENSIONS];
     59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
+(* defunct...
 IMPORT
   Ascii, Channel, IntStr, Msg, Strings, (*SysClock,*)
   Object, ADT:StringBuffer, ADT:ArrayList, 
@@ -668,5 +669,5 @@ PROCEDURE (tf: ServerFactory) NewTransfer*(): Server;
   END NewTransfer;
 
 BEGIN
-  httpURI := HttpURI.NewPrototype()
+  httpURI := HttpURI.NewPrototype() *)
 END Net:HTTP:Server.
