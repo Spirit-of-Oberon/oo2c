@@ -436,19 +436,19 @@ PROCEDURE Init;
   
   BEGIN
     CreateBasicType (void, "void");
-    CreateBasicType (ptr, "void*");
-    CreateBasicType (int8, "signed char");
-    CreateBasicType (int16, "short int");
-    CreateBasicType (int32, "int");
-    CreateBasicType (int64, "long long int");
-    CreateBasicType (uint8, "unsigned char");
-    CreateBasicType (uint16, "unsigned short int");
-    CreateBasicType (uint32, "unsigned int");
-    CreateBasicType (uint64, "unsigned long long int");
-    CreateBasicType (char8, "unsigned char");
-    CreateBasicType (char16, "unsigned short int");
-    CreateBasicType (real32, "float");
-    CreateBasicType (real64, "double");
+    CreateBasicType (ptr, "OOC_PTR");
+    CreateBasicType (int8, "OOC_INT8");
+    CreateBasicType (int16, "OOC_INT16");
+    CreateBasicType (int32, "OOC_INT32");
+    CreateBasicType (int64, "OOC_INT64");
+    CreateBasicType (uint8, "OOC_UINT8");
+    CreateBasicType (uint16, "OOC_UINT16");
+    CreateBasicType (uint32, "OOC_UINT32");
+    CreateBasicType (uint64, "OOC_UINT64");
+    CreateBasicType (char8, "OOC_CHAR8");
+    CreateBasicType (char16, "OOC_CHAR16");
+    CreateBasicType (real32, "OOC_REAL32");
+    CreateBasicType (real64, "OOC_REAL64");
   END Init;
 
 PROCEDURE Test;
