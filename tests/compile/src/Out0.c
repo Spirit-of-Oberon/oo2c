@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "Out0.d"
+#define BUFFER 1024
 
 void Out0__Open() {
 }
@@ -25,12 +26,26 @@ void Out0__Int(OOC_INT32 i, OOC_INT32 n) {
   fprintf(stdout, "%*i", n, i);
 }
 
-void Out0__Real(OOC_REAL32 r, OOC_INT32 n) {
-  fprintf(stdout, "%.*E", n, r);
+void Out0__LongReal(OOC_REAL64 r, OOC_INT32 n) {
+  char s[BUFFER];
+  char* c;
+  
+  if (n >= BUFFER) { n = BUFFER-1; }
+  sprintf(s, "%.*E", n, r);
+  /* convert all characters to upper case, so we get "INF" instead of "Inf" 
+     on all systems */
+  c = s;
+  while (*c) {
+    if (('a' <= *c) && (*c <= 'z')) {
+      *c -= '\040';
+    }
+    c++;
+  }
+  fputs(s, stdout);
 }
 
-void Out0__LongReal(OOC_REAL64 r, OOC_INT32 n) {
-  fprintf(stdout, "%.*E", n, r);
+void Out0__Real(OOC_REAL32 r, OOC_INT32 n) {
+  Out0__LongReal(r, n);
 }
 
 void Out0__Bool(OOC_BOOLEAN b) {
