@@ -198,6 +198,12 @@ TYPE
   END;
   
 TYPE
+  AuthInfo* = POINTER TO AuthInfoDesc;
+  AuthInfoDesc = RECORD
+    (RequestDesc)
+  END;
+  
+TYPE
   Group* = POINTER TO GroupDesc;
   GroupDesc = RECORD
     (RequestDesc)
@@ -284,6 +290,11 @@ PROCEDURE NewResponse(VAR b: ARRAY OF CHAR; start, end: LONGINT;
     RETURN NEW(Response, b, start, end, status, long);
   END NewResponse;
 
+PROCEDURE (resp: Response) Success*(): BOOLEAN;
+  BEGIN
+    RETURN (200 <= resp.status) & (resp.status < 300);
+  END Success;
+
 PROCEDURE (cl: Client) INIT*(serverAddr: Address.SocketInet;
                              async, blocking: BOOLEAN);
   BEGIN
@@ -295,12 +306,6 @@ PROCEDURE (cl: Client) INIT*(serverAddr: Address.SocketInet;
     cl.postingAllowed := FALSE;
     cl.channel := NIL;
   END INIT;
-
-PROCEDURE NewClient*(serverAddr: Address.SocketInet;
-                     async, blocking: BOOLEAN): Client;
-  BEGIN
-    RETURN NEW(Client, serverAddr, async, blocking);
-  END NewClient;
 
 PROCEDURE Append(VAR list: Msg; msg: Msg);
   VAR
@@ -770,6 +775,19 @@ PROCEDURE GetString(params: Object.CharsLatin1; VAR pos: LONGINT): Object.String
 
 (* Commands
    ------------------------------------------------------------------------ *)
+
+PROCEDURE (cl: Client) AuthInfo*(id, data: STRING): AuthInfo
+RAISES IO.Error, ErrorResponse;
+  VAR
+    req: AuthInfo;
+    cmd: STRING;
+  BEGIN
+    cmd := "authinfo "+id+" "+data;
+    req := NEW(AuthInfo, cmd(Object.String8), FALSE);
+    ShortRequest(cl, req);
+    RETURN req;
+  END AuthInfo;
+
 
 PROCEDURE (req: Group) ParseStatus(resp: Response)
 RAISES IO.ProtocolError;
