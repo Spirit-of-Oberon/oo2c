@@ -265,6 +265,17 @@ PROCEDURE (s: State) ClobberedBy* (readDesign: SSA.Opnd; instr: SSA.Instr): BOOL
     END;
   END ClobberedBy;
 
+(*PROCEDURE ValidValue (msg: ARRAY OF CHAR; res: SSA.Result);
+  BEGIN
+    IF (res IS SSA.Instr) & (res(SSA.Instr).opcode = Opcode.select) THEN
+      Log.String("Invalid argument value (select)", msg);
+      ASSERT(FALSE);
+    ELSIF (res IS SSA.Instr) & (res(SSA.Instr).opcode = Opcode.loopEnd) THEN
+      Log.String("Invalid argument value (loopEnd)", msg);
+      ASSERT(FALSE);
+    END;
+  END ValidValue;*)
+
 PROCEDURE (s: State) Transform*;
   VAR
     pb: SSA.ProcBlock;
@@ -301,7 +312,9 @@ PROCEDURE (s: State) Transform*;
      Any other result indicates that it is not invariant, and the value is not
      in @var{store}.  If this is the outcome for the whole loop, then the
      @oparam{get} is replaced with a gated result of the ``loop-start''
-     instruction.
+     instruction.  @emph{Important}: In this case, the returned value must
+     @emph{not} be used as an argument of an instruction, because it may
+     be a placeholder value like a reference to a select instruction.
      @end itemize  *)
     VAR
       alias: Aliasing.Id;
@@ -450,6 +463,7 @@ PROCEDURE (s: State) Transform*;
           IF allTheSame THEN
             (* for all input paths the same value is passed to "get" *)
             IF (LEN (values^) = 0) THEN
+              ASSERT(FALSE);             (* wrong? better return store?*)
               RETURN select;
             ELSE
               IF (loopTrace = NIL) THEN
@@ -535,12 +549,20 @@ PROCEDURE (s: State) Transform*;
         ELSE
           invariant := GetValue (loopStart. GetBackwardFeed(), get, loopStart);
           IF (invariant = loopStart) THEN (* designator is invariant to loop *)
-            (* within the loop, all "get" see the value of the designator
-               before the loop; in case of nested loops, we may end up
-               analysing this loop again; to prevent infinite looping, add a
-               preliminary result to the cache *)
-            entry := AddToCache (loopStart, loopStart);
-            entry. value := GetValue (loopStart. opndList. arg, get, loopTrace)
+            IF (loopTrace = NIL) THEN
+              (* within the loop, all "get" see the value of the designator
+                 before the loop; in case of nested loops, we may end up
+                 analysing this loop again; to prevent infinite looping, add a
+                 preliminary result to the cache *)
+              entry := AddToCache (loopStart, loopStart);
+              entry. value := GetValue (loopStart. opndList. arg, get, loopTrace)
+            ELSE
+              (* we are within a loop trace, which means that the value
+                 returned by the GetValue() in the other branch may be
+                 a placeholde (read: a reference to a select instruction);
+                 so don't try to cache the value *)
+              RETURN GetValue (loopStart. opndList. arg, get, loopTrace);
+            END;
                 
           ELSIF UnknownValue (invariant) THEN (* in memory at end of loop *)
             (* "store" of designator is not loop invariant *)
