@@ -1,0 +1,9 @@
+MODULE Case3;
+
+PROCEDURE P (i: BOOLEAN);
+  BEGIN
+    CASE i OF
+    END;
+  END P;
+
+END Case3.

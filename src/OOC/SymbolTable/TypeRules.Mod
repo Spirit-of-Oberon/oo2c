@@ -269,6 +269,13 @@ PROCEDURE (tr: Rules) IsValidArrayElementType* (type: Sym.Type; isOpenArray: BOO
     END
   END IsValidArrayElementType;
 
+PROCEDURE (tr: Rules) IsValidCaseSelector* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
+   select expression of a @code{CASE} statement.  *)
+  BEGIN
+    RETURN tr. IsIntegerType (type) OR tr. IsCharType (type);
+  END IsValidCaseSelector;
+
 PROCEDURE ^ (tr: Rules) FormalParamsMatch* (baseFPars, procFPars: Sym.FormalPars; allowExtendedResult: BOOLEAN): BOOLEAN;
 
 PROCEDURE (tr: Rules) SameType* (a, b: Sym.Type): BOOLEAN;

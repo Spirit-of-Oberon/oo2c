@@ -746,6 +746,8 @@ TYPE
   CaseDesc = RECORD
     (StatementDesc)
     labels-:  CaseLabels;
+    (**Labels of the case branch.  If this array is of length zero, then all
+       label ranges evaluated to the empty set.  *)
     statmSeq-: StatementSeq;
   END;
   
@@ -922,7 +924,10 @@ CONST
   illegalFunctionOp = 23;
   incompatibleAssignment = 24;
   exitOutsideLoop = 25;
-    
+  invalidCaseSelector = 26;
+  labelNotInSelect = 27;
+  duplicateLabel = 28;
+  
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc = RECORD  (* stateless *)
@@ -988,6 +993,12 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Operator may not be applied to function result"
     | exitOutsideLoop:
       t := "EXIT outside of LOOP"
+    | invalidCaseSelector:
+      t := "Select expression must be integer or character"
+    | labelNotInSelect:
+      t := "Label not in type of select expression"
+    | duplicateLabel:
+      t := "Label already in use"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2054,6 +2065,20 @@ PROCEDURE (range: SetRange) Accept* (v: Visitor);
     v. VisitSetRange (range)
   END Accept;
 
+PROCEDURE (range: SetRange) IsEmpty*(): BOOLEAN;
+  BEGIN  (* pre: both `from' and `to' are constants *)
+    RETURN (range. from(Const). value. Compare (range. to(Const). value) > 0);
+  END IsEmpty;
+
+PROCEDURE (range: SetRange) IntersectsWith* (range2: SetRange): BOOLEAN;
+  BEGIN
+    (* pre: all `from' and `to' are constants, neither of the
+       ranges is empty *)
+    RETURN
+        ~((range.to(Const).value. Compare (range2.from(Const).value) < 0) OR
+          (range.from(Const).value. Compare (range2.to(Const).value) > 0))
+  END IntersectsWith;
+
 (* Operator Class: Shift
    ------------------------------------------------------------------------ *)
 
@@ -2754,8 +2779,7 @@ PROCEDURE (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
   
   BEGIN
     checkDynamicType :=
-        (dest. type IS Sym.Record) &
-        
+        HasDynamicType (dest) &
         GetPragmaValue (b, StdPragmas.typeGuard, sym. pos);
     
     NEW (cp);
@@ -2936,7 +2960,15 @@ PROCEDURE (b: Builder) NewCase* (sym: Symbol; labels: CaseLabels;
                                  statmSeq: StatementSeq): Case;
   VAR
     case: Case;
+    range: SetRange;
+    i: LONGINT;
   BEGIN
+    FOR i := 0 TO LEN (labels^)-1 DO
+      range := labels[i](SetRange);
+      range.from := b. AssertConst (range. from);
+      range.to := b. AssertConst (range. to);
+    END;
+    
     NEW (case);
     InitCase (case, sym, labels, statmSeq);
     RETURN case
@@ -2949,6 +2981,69 @@ PROCEDURE (case: Case) Accept* (v: Visitor);
   BEGIN
     v. VisitCase (case)
   END Accept;
+
+PROCEDURE (case: Case) CheckLabels (b: Builder; type: Sym.Type;
+                                    caseList: CaseList);
+  VAR
+    range: SetRange;
+    i, j, deleted: LONGINT;
+    new: CaseLabels;
+    inUse: BOOLEAN;
+
+  PROCEDURE IntersectsWith (range: SetRange; list: CaseLabels;
+                            end: LONGINT): BOOLEAN;
+    VAR
+      i: LONGINT;
+    BEGIN
+      i := 0;
+      WHILE (i # end) DO
+        IF (list[i] # NIL) & range. IntersectsWith (list[i](SetRange)) THEN
+          RETURN TRUE;
+        END;
+        INC (i);
+      END;
+      RETURN FALSE;
+    END IntersectsWith;
+  
+  BEGIN
+    deleted := 0;
+    FOR i := 0 TO LEN (case. labels^)-1 DO
+      range := case. labels[i](SetRange);
+      IF ~b. typeRules. IncludesType (type, range. from. type) THEN
+        b. ErrSym (labelNotInSelect, range. from. sym);
+      ELSIF ~b. typeRules. IncludesType (type, range. to. type) THEN
+        b. ErrSym (labelNotInSelect, range. to. sym);
+      ELSIF range. IsEmpty() THEN
+        (* `from' is larger than `to': eliminate entry *)
+        case. labels[i] := NIL;
+        INC (deleted);
+      ELSE
+        inUse := FALSE;
+        j := 0;
+        WHILE (caseList[j] # case) & ~inUse DO
+          inUse := IntersectsWith (range, caseList[j]. labels,
+                                   LEN (caseList[j]. labels^));
+          INC (j);
+        END;
+        inUse := inUse OR IntersectsWith (range, case. labels, i);
+        IF inUse THEN
+          b. ErrSym (duplicateLabel, range. sym);
+        END;
+      END;
+    END;
+
+    IF (deleted # 0) THEN
+      NEW (new, LEN (case. labels^)-deleted);
+      j := -1;
+      FOR i := 0 TO LEN (new^)-1 DO
+        REPEAT
+          INC (j);
+        UNTIL (case. labels[j] # NIL);
+        new[i] := case. labels[j];
+      END;
+      case. labels := new;
+    END;
+  END CheckLabels;
 
 (* Statement Class: CaseStatm
    ------------------------------------------------------------------------ *)
@@ -2968,8 +3063,16 @@ PROCEDURE (b: Builder) NewCaseStatm* (sym: Symbol; select: Expression;
                                       caseList: CaseList; default: StatementSeq): CaseStatm;
   VAR
     caseStatm: CaseStatm;
+    i: LONGINT;
   BEGIN
     NEW (caseStatm);
+    IF ~b. typeRules. IsValidCaseSelector (select. type) THEN
+      b. ErrSym (invalidCaseSelector, select. sym);
+    ELSE
+      FOR i := 0 TO LEN (caseList^)-1 DO
+        caseList[i]. CheckLabels (b, select. type, caseList);
+      END;
+    END;
     InitCaseStatm (caseStatm, sym, select, caseList, default,
                    GetPragmaValue (b, StdPragmas.indexCheck, sym. pos));
     RETURN caseStatm

@@ -1268,6 +1268,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
     VAR
       i: LONGINT;
       nested: Schedule.Block;
+      default: BOOLEAN;
       
     PROCEDURE WriteNested (nested: Schedule.Block);
       BEGIN
@@ -1277,7 +1278,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
         END;
       END WriteNested;
 
-    PROCEDURE WriteCases (instr: SSA.Instr);
+    PROCEDURE WriteCases (instr: SSA.Instr): BOOLEAN;
       VAR
         opnd, lower, upper: SSA.Opnd;
       BEGIN
@@ -1298,9 +1299,11 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
             END;
             w. WriteString (":");
           END;
+          RETURN FALSE;
         ELSE
           w. Newline;
           w. WriteString ("default:");
+          RETURN TRUE;
         END;
       END WriteCases;
     
@@ -1338,14 +1341,16 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
           nested := b. domList; i := 0;
           WHILE (nested # NIL) & (i # LEN (b. jump^)) DO
             ASSERT (nested = b. jump[i]. dest);
-            WriteCases (b. caseValues[i]. arg. instr);
+            default := WriteCases (b. caseValues[i]. arg. instr);
             
             lastBlock := NIL;
             w. Indent (1);
             WriteBlock (b. jump[i]. dest);
             w. Newline;
-            (*w. WriteString ("break;");*)
-            WriteGoto (lastBlock(Schedule.JumpBlock). jump. dest);
+            IF ~default THEN
+              (*w. WriteString ("break;");*)
+              WriteGoto (lastBlock(Schedule.JumpBlock). jump. dest);
+            END;
             w. Indent (-1);
             nested := nested. nextDom; INC (i);
           END;

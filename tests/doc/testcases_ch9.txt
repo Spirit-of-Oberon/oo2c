@@ -85,9 +85,9 @@ ACCEPT:
 
 ACCEPT:
 
-  1) empty sequence
-  2) several semicolons ";" between statements
-  3) ";" before and after a sequence
+  1) empty sequence  [HOTLoop6]
+  2) several semicolons ";" between statements  [HOTIf1]
+  3) ";" before and after a sequence  [HOTIf1]
 
 
 
@@ -114,20 +114,20 @@ ACCEPT:
 
 REJECT:
 
-  1) expr is neither integer nor CHAR
-  2) case labels is not a constant
-  3) case labels is not included in the type of expr
-  4) a constant is used multiple times as case label 
+  1) expr is neither integer nor CHAR  [Case3]
+  2) case label is not a constant  [Case4]
+  3) case labels is not included in the type of expr  [Case5, Case6]
+  4) a constant is used multiple times as case label [Case7, Case8, Case9]
 
 ACCEPT:
 
-  1) expr is an integer type
-  2) expr is of type CHAR
-  3) first case with a matching label wins
-  4) ELSE seq is evaluated if no label matches
-  5) "|" before and after case list, multiple "|" between cases
+  1) expr is an integer type  [Case1]
+  2) expr is of type CHAR  [Case11]
+  3) first case with a matching label wins  [Case1]
+  4) ELSE seq is evaluated if no label matches  [Case1]
+  5) "|" before and after case list, multiple "|" between cases  [Case11]
   6) labels with one element, with range, with empty range, and
-     comma separated list
+     comma separated list  [Case1, Case10]
 
 ERROR:
 
