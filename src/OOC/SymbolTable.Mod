@@ -69,6 +69,33 @@ TYPE
     (PositionDesc)
     str-: NameString;
   END;
+
+TYPE
+  Flag* = POINTER TO FlagDesc;
+  FlagDesc = RECORD
+    (**Modifier flags are registered by the parser for declarations and types.
+       For example, a parameter flag @samp{[NO_COPY]} is mapped to an instance
+       of this type with a @ofield{id} of @oconst{flagNoCopy}.  Flags are
+       processed after the symbol table has be calculated.  In this pass, their
+       data is incorporated into the various instances of @otype{Item}.  *)
+    nextFlag-: Flag;
+    id-: INTEGER;
+    (**Symbolic id for the flag.  *)
+    pos-: Position;
+    (**Error messages for the flag should refer to this module position.  *)
+(*    value: Language.Value;
+    (**For flags that include an argument, this field holds the argument's
+       value.  Normally, it is @code{NIL}.  *)*)
+  END;
+
+CONST
+  flagUnknownName* = -1;
+  flagNoCopy* = 0;
+  flagAbstract* = 1;
+  flagNoLengthInfo* = 2;
+  flagNoDescriptor* = 3;
+  flagNotExtensible* = 4;
+  flagCString* = 5;
   
 CONST
   nameNotExported* = 0;
@@ -112,6 +139,9 @@ TYPE
        the current item.  The descendants are linked using the field
        @ofield{nextNested}.  For an item that is not an inner node of an
        item hierarchy, this field is always @code{NIL}.  *)
+    flagList-: Flag;
+    (**List of modifier flags for this declaration or type.  This list is
+       never written to the symbol file.  *)
   END;
 
 CONST
@@ -397,6 +427,12 @@ TYPE
        is an instance of @otype{TypeName}, it is @emph{not} touched 
        by @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}, and it will
        forever stay a type name.  *)
+    doCArrayAssignment*: BOOLEAN;
+    (**Setting this flag for an array pointer type enables C-style array
+       assignment semantics for variables derived from this type.  Assigning an
+       array or string constant to such a pointer variable is legal, and
+       assigns the @emph{address} (but not the @emph{contents}) of the array or
+       string to the variable.  *)
   END;
 
 TYPE
@@ -438,6 +474,12 @@ TYPE
     (TypeDesc)
     isOpenArray-: BOOLEAN;
     (**TRUE, iff the array type is defined as @samp{ARRAY OF Foo}.  *)
+    hasDescriptor*: BOOLEAN;
+    (**If @code{TRUE}, then instances of this array have an associated
+       type descriptor.  *)
+    hasLengthInfo*: BOOLEAN;
+    (**If @code{TRUE}, then the length of this array can be obtained
+       during run-time.  *)
     elementType*: Type;                  (*... make this read-only? *)
     (**The type of the array elements.  If this is initially a type name,
        it is replaced with a reference to the true type after
@@ -487,7 +529,15 @@ TYPE
     isUnion-: BOOLEAN;
     (**If @code{TRUE}, then the record is treated like a C-style @code{union}
        type.  *)
-       
+    isAbstract*: BOOLEAN;
+    (**If @code{TRUE}, then the record defines an abstract class.  *)
+    hasDescriptor*: BOOLEAN;
+    (**If @code{TRUE}, then instances of this record have an associated
+       type descriptor.  *)
+    isExtensible*: BOOLEAN;
+    (**If @code{TRUE}, then this type can serve as a base type for other
+       records.  *)
+    
     className*: Name;                    (* ... make this read-only? *)
     (**If the record has been classified as being part of a @emph{class}
        definition, then this field is not @code{NIL}.  In this case, it
@@ -514,6 +564,8 @@ TYPE
     isForwardDecl-: BOOLEAN;
     (**@code{TRUE}, iff the procedure declaration is a forward declaration
        of another procedure.  *)
+    isAbstract*: BOOLEAN;
+    (**If @code{TRUE}, then the type-bound procedure is an abstract method.  *)
     tbProcIndex-: LONGINT;
     (**For type-bound procedures, this is the index of the procedure in the
        method table of its base record.  The first type-bound procedure has the
@@ -762,6 +814,7 @@ PROCEDURE InitItem* (item: Item; parent: Item);
     item. nextNested := NIL;
     item. nestedItems := NIL;
     item. parent := parent;
+    item. flagList := NIL;
     IF (parent # NIL) THEN
       ASSERT ( (parent IS Module) OR
                (parent IS ProcDecl) OR
@@ -776,7 +829,8 @@ PROCEDURE (item: Item) Store* (w: Object.Writer);
     item. Store^ (w);
     w. WriteObject (item. nextNested);
     w. WriteObject (item. parent);
-    w. WriteObject (item. nestedItems)
+    w. WriteObject (item. nestedItems);
+    (* item.flagList is not store *)
   END Store;
 
 PROCEDURE (item: Item) Load* (r: Object.Reader);
@@ -801,7 +855,8 @@ PROCEDURE (item: Item) Load* (r: Object.Reader);
       item. nestedItems := NIL
     ELSE
       item. nestedItems := obj(Item)
-    END
+    END;
+    item. flagList := NIL;
   END Load;
 
 PROCEDURE (item: Item) Module*(): Module;
@@ -829,6 +884,46 @@ PROCEDURE (item: Item) Procedure*(): ProcDecl;
     END;
   END Procedure;
 
+PROCEDURE (item: Item) AddFlag* (name: Name);
+(**Add modifier flag @oparam{name} to @oparam{item}.  Errors for invalid
+   names are reported while creating the namespace, @emph{not} by this
+   procedure.  *)
+  VAR
+    fl: Flag;
+    id: INTEGER;
+    
+  PROCEDURE Append (VAR list: Flag);
+    BEGIN
+      IF (list = NIL) THEN
+        fl.nextFlag := NIL;
+        list := fl;
+      ELSE
+        Append(list.nextFlag);
+      END;
+    END Append;
+  
+  BEGIN
+    IF (name.str^ = "NO_COPY") THEN
+      id := flagNoCopy;
+    ELSIF (name.str^ = "ABSTRACT") THEN
+      id := flagAbstract;
+    ELSIF (name.str^ = "NO_LENGTH_INFO") THEN
+      id := flagNoLengthInfo;
+    ELSIF (name.str^ = "NO_DESCRIPTOR") THEN
+      id := flagNoDescriptor;
+    ELSIF (name.str^ = "NOT_EXTENSIBLE") THEN
+      id := flagNotExtensible;
+    ELSIF (name.str^ = "CSTRING") THEN
+      id := flagCString;
+    ELSE
+      id := flagUnknownName;
+    END;
+
+    NEW(fl);
+    fl.id := id;
+    fl.pos := name;
+    Append(item.flagList);
+  END AddFlag;
 
 PROCEDURE InitDeclaration* (decl: Declaration; parent: Item; name: Name;
                             visibleFrom: ModulePos; exportMark: ExportMark;
@@ -1513,6 +1608,7 @@ PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
     InitDeclaration (procDecl, parent, name, visibleFrom, exportMark, docString);
     procDecl. isTypeBound := isTypeBound;
     procDecl. isForwardDecl := isForwardDecl;
+    procDecl. isAbstract := FALSE;
     procDecl. tbProcIndex := -1;
     procDecl. ns := NIL;
     procDecl. formalPars := NIL;
@@ -1525,6 +1621,7 @@ PROCEDURE (procDecl: ProcDecl) Store* (w: Object.Writer);
     procDecl. Store^ (w);
     w. WriteBool (procDecl. isTypeBound);
     w. WriteBool (procDecl. isForwardDecl);
+    w. WriteBool (procDecl. isAbstract);
     w. WriteNum (procDecl. tbProcIndex);
     w. WriteObject (procDecl. formalPars);
     w. WriteObject (procDecl. linkName);
@@ -1538,6 +1635,7 @@ PROCEDURE (procDecl: ProcDecl) Load* (r: Object.Reader);
     procDecl. Load^ (r);
     r. ReadBool (procDecl. isTypeBound);
     r. ReadBool (procDecl. isForwardDecl);
+    r. ReadBool (procDecl. isAbstract);
     r. ReadNum (procDecl. tbProcIndex);
     procDecl. ns := NIL;
     r. ReadObject (obj);
@@ -1674,6 +1772,9 @@ PROCEDURE InitRecord* (record: Record; parent: Item; position: Position;
     record. tbProcCount := -1;           (* initialize to "unknown number" *)
     record. ns := NIL;
     record. isUnion := FALSE;
+    record. isAbstract := FALSE;
+    record. hasDescriptor := TRUE;
+    record. isExtensible := TRUE;
     record. className := NIL
   END InitRecord;
 
@@ -1684,6 +1785,9 @@ PROCEDURE (record: Record) Store* (w: Object.Writer);
     w. WriteObject (record. srcCodeBaseType);
     w. WriteNum (record. tbProcCount);
     w. WriteBool (record. isUnion);
+    w. WriteBool (record. isAbstract);
+    w. WriteBool (record. hasDescriptor);
+    w. WriteBool (record. isExtensible);
     w. WriteObject (record. className);
     (* ignore field `ns' *)
   END Store;
@@ -1703,6 +1807,9 @@ PROCEDURE (record: Record) Load* (r: Object.Reader);
     r. ReadNum (record. tbProcCount);
     record. ns := NIL;
     r. ReadBool (record. isUnion);
+    r. ReadBool (record. isAbstract);
+    r. ReadBool (record. hasDescriptor);
+    r. ReadBool (record. isExtensible);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
       record. className := NIL
@@ -1732,14 +1839,16 @@ PROCEDURE InitPointer* (pointer: Pointer; parent: Item; position: Position;
   BEGIN
     InitType (pointer, parent, position);
     pointer. baseType := baseType;
-    pointer. srcCodeBaseType := baseType
+    pointer. srcCodeBaseType := baseType;
+    pointer. doCArrayAssignment := FALSE;
   END InitPointer;
 
 PROCEDURE (pointer: Pointer) Store* (w: Object.Writer);
   BEGIN
     pointer. Store^ (w);
     (*w. WriteObject (pointer. baseType);*)
-    w. WriteObject (pointer. srcCodeBaseType)
+    w. WriteObject (pointer. srcCodeBaseType);
+    w. WriteBool (pointer. doCArrayAssignment);
   END Store;
 
 PROCEDURE (pointer: Pointer) Load* (r: Object.Reader);
@@ -1750,6 +1859,7 @@ PROCEDURE (pointer: Pointer) Load* (r: Object.Reader);
     r. ReadObject (obj);
     pointer. srcCodeBaseType := obj(Type);
     pointer. baseType := pointer. srcCodeBaseType;
+    r. ReadBool (pointer. doCArrayAssignment);
   END Load;
 
 
@@ -1759,6 +1869,8 @@ PROCEDURE InitArray* (array: Array; parent: Item; position: Position;
   BEGIN
     InitType (array, parent, position);
     array. isOpenArray := isOpenArray;
+    array. hasDescriptor := TRUE;
+    array. hasLengthInfo := TRUE;
     array. elementType := elementType;
     array. srcCodeElementType := elementType;
     array. length := -1;
@@ -1769,9 +1881,11 @@ PROCEDURE (array: Array) Store* (w: Object.Writer);
   BEGIN
     array. Store^ (w);
     w. WriteBool (array. isOpenArray);
+    w. WriteBool (array. hasDescriptor);
+    w. WriteBool (array. hasLengthInfo);
     (*w. WriteObject (array. elementType);*)
     w. WriteObject (array. srcCodeElementType);
-    w. WriteNum (array. length);
+    w. WriteNum (array. length);    
   END Store;
 
 PROCEDURE (array: Array) Load* (r: Object.Reader);
@@ -1780,6 +1894,8 @@ PROCEDURE (array: Array) Load* (r: Object.Reader);
   BEGIN
     array. Load^ (r);
     r. ReadBool (array. isOpenArray);
+    r. ReadBool (array. hasDescriptor);
+    r. ReadBool (array. hasLengthInfo);
     r. ReadObject (obj);
     array. srcCodeElementType := obj(Type);
     array. elementType := array. srcCodeElementType;

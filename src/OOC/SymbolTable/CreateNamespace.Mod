@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
+  ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
   OOC:SymbolTable:Predef, OOC:SymbolTable:ImportModules, OOC:Doc:ResolveRef;
 
@@ -45,6 +45,8 @@ CONST
   forwardMismatchFPars = 16;
   undeclaredModule = 17;
   notModule = 18;
+  invalidModifierFlag = 19;
+  modifierFlagWithoutEffect = 20;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -99,6 +101,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Undeclared module name"
     | notModule:
       t := "This is not a module name"
+    | invalidModifierFlag:
+      t := "Invalid modifier flag"
+    | modifierFlagWithoutEffect:
+      t := "This modifier flag has no effect here"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -132,6 +138,7 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
    the module's source code.  *)
   VAR
     lastError: Error.Msg;
+    visited: Dictionary.Dictionary;
     
   PROCEDURE Err (code: Error.Code; tname: Sym.TypeName);
     VAR
@@ -694,6 +701,108 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
       END
     END CheckExtendedRecords;
   
+  PROCEDURE ResolveModifierFlags (item: Sym.Item; errList: Error.List);
+  (* Performs semantic checks on the field and type-bound procedure of 
+     records.  Also, this procedure sets the fields
+     @ofield{Sym := OOC:SymbolTable.ProcDecl.tbProcIndex}, and
+     @ofield{Sym := OOC:SymbolTable.Record.tbProcCount}.  *)
+    VAR
+      ptr: Sym.Item;
+      
+    PROCEDURE ResolveFlags (item: Sym.Item);
+      VAR
+        flag: Sym.Flag;
+
+      PROCEDURE InvalidFlag (flag: Sym.Flag; code: INTEGER);
+        BEGIN
+          lastError := Error.New (createNamespaceContext, code);
+          lastError. SetIntAttrib ("pos", flag.pos.pos);
+          lastError. SetIntAttrib ("line", flag.pos.line);
+          lastError. SetIntAttrib ("column", flag.pos.column);
+          errList. Append (lastError)
+        END InvalidFlag;
+
+      PROCEDURE SetFlag (VAR flagAttribute: BOOLEAN; newValue: BOOLEAN);
+        BEGIN
+          IF (flagAttribute # newValue) THEN
+            flagAttribute := newValue;
+          ELSE
+            InvalidFlag(flag, modifierFlagWithoutEffect);
+          END;
+        END SetFlag;
+      
+      BEGIN
+        IF ~visited.HasKey(item) THEN
+          visited.Set(item, NIL);
+          
+          flag := item.flagList;
+          WHILE (flag # NIL) DO
+            WITH item: Sym.VarDecl DO
+              CASE flag.id OF
+                (*| Sym.flagNoCopy:*)
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.Record DO
+              CASE flag.id OF
+              | Sym.flagAbstract:
+                SetFlag(item.isAbstract, TRUE);
+              | Sym.flagNoDescriptor:
+                SetFlag(item.hasDescriptor, FALSE);
+              | Sym.flagNotExtensible:
+                SetFlag(item.isExtensible, FALSE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.Array DO
+              CASE flag.id OF
+              | Sym.flagNoDescriptor:
+                SetFlag(item.hasDescriptor, FALSE);
+              | Sym.flagNoLengthInfo:
+                SetFlag(item.hasLengthInfo, FALSE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.Pointer DO
+              CASE flag.id OF
+              | Sym.flagCString:
+                SetFlag(item.doCArrayAssignment, TRUE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            | item: Sym.ProcDecl DO
+              CASE flag.id OF
+              | Sym.flagAbstract:
+                SetFlag(item.isAbstract, TRUE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+              
+            ELSE
+              InvalidFlag(flag, invalidModifierFlag);
+            END;
+            flag := flag.nextFlag;
+          END;
+        END;
+      END ResolveFlags;
+    
+    BEGIN
+      IF (item # NIL) THEN
+        ResolveFlags(item);
+        
+        (* decend into nested objects *)
+        ptr := item. nestedItems;
+        WHILE (ptr # NIL) DO
+          ResolveModifierFlags (ptr, errList);
+          ptr := ptr. nextNested
+        END
+      END
+    END ResolveModifierFlags;
+  
   BEGIN
     ASSERT (errList # NIL);
 
@@ -763,6 +872,10 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
        records and assign indexes to type-bound procedures *)
     CheckExtendedRecords (root, errList);
     
+    (* last pass(?): resolve modifier flags that may be attached to
+       declarations and types *)
+    visited := Dictionary.New();
+    ResolveModifierFlags (root, errList);
     
     ResolveRef.Resolve (root, errList)
   END CreateNamespace;

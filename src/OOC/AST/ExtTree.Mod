@@ -97,7 +97,7 @@ TYPE
   ArrayTypeDesc = RECORD
     (TypeDesc)
     array-: AST.Node;
-    flags-: AST.Node;
+    flags-: Flags;
     exprList-: AST.NodeList;
     of-: AST.Node;
     type-: AST.Node;
@@ -117,7 +117,7 @@ TYPE
   RecordTypeDesc = RECORD
     (TypeDesc)
     record-: AST.Node;
-    flags-: AST.Node;
+    flags-: Flags;
     lParen-: AST.Node;
     baseType-: AST.Node;
     rParen-: AST.Node;
@@ -130,7 +130,7 @@ TYPE
   PointerTypeDesc = RECORD
     (TypeDesc)
     pointer-: AST.Node;
-    flags-: AST.Node;
+    flags-: Flags;
     to-: AST.Node;
     type-: AST.Node;
   END;
@@ -150,7 +150,7 @@ TYPE
   FormalPars* = POINTER TO FormalParsDesc;
   FormalParsDesc = RECORD
     (NodeDesc)
-    flags-: AST.Node;
+    flags-: Flags;
     lParen-: AST.Node;
     fpSections-: AST.NodeList;           (* optional *)
     rParen-: AST.Node;
@@ -237,7 +237,7 @@ TYPE
     proc-: Terminal;
     arrow-: AST.Node;
     receiver-: AST.Node;
-    flags-: AST.Node;
+    flags-: Flags;
     identDef-: IdentDef;
     formalPars-: AST.Node;
     semicolon1-: AST.Node;
@@ -700,7 +700,6 @@ PROCEDURE (nl: NodeList) Accept* (v: Visitor);
   END Accept;
 
 
-
 PROCEDURE (b: Builder) Terminal* (sym: BasicList.Symbol): Node;
   VAR
     t: Terminal;
@@ -796,7 +795,11 @@ PROCEDURE (b: Builder) ArrayType* (array, flags: AST.Node; exprList: AST.NodeLis
     NEW (at);
     InitType (at);
     at. array := array;
-    at. flags := flags;
+    IF (flags # NIL) THEN
+      at. flags := flags(Flags);
+    ELSE
+      at. flags := NIL;
+    END;
     at. exprList := exprList;
     at. of := of;
     at. type := type;
@@ -833,7 +836,11 @@ PROCEDURE (b: Builder) RecordType* (record, flags, lParen, baseType, rParen: AST
     NEW (rt);
     InitType (rt);
     rt. record := record;
-    rt. flags := flags;
+    IF (flags # NIL) THEN
+      rt. flags := flags(Flags);
+    ELSE
+      rt. flags := NIL;
+    END;
     rt. lParen := lParen;
     rt. baseType := baseType;
     rt. rParen := rParen;
@@ -855,7 +862,11 @@ PROCEDURE (b: Builder) PointerType* (pointer, flags, to, type: AST.Node): Node;
     NEW (pt);
     InitType (pt);
     pt. pointer := pointer;
-    pt. flags := flags;
+    IF (flags # NIL) THEN
+      pt. flags := flags(Flags);
+    ELSE
+      pt. flags := NIL;
+    END;
     pt. to := to;
     pt. type := type;
     RETURN pt
@@ -890,7 +901,11 @@ PROCEDURE (b: Builder) FormalPars* (flags, lParen: AST.Node; fpSections: AST.Nod
     fp: FormalPars;
   BEGIN
     NEW (fp);
-    fp. flags := flags;
+    IF (flags # NIL) THEN
+      fp. flags := flags(Flags);
+    ELSE
+      fp. flags := NIL;
+    END;
     fp. lParen := lParen;
     fp. fpSections := fpSections;
     fp. rParen := rParen;
@@ -1026,7 +1041,11 @@ PROCEDURE (b: Builder) ProcDecl* (proc, arrow, receiver,
     pd. proc := proc(Terminal);
     pd. arrow := arrow;
     pd. receiver := receiver;
-    pd. flags := flags;
+    IF (flags # NIL) THEN
+      pd. flags := flags(Flags);
+    ELSE
+      pd. flags := NIL;
+    END;
     pd. identDef := identDef(IdentDef);
     pd. formalPars := formalPars;
     pd. semicolon1 := semicolon1;
