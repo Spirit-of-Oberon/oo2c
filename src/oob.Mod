@@ -291,6 +291,17 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         DEC(indent);
         Newline;
         Out.String("END");
+
+      | type: Sym.QualType DO
+        Type(type.baseType, type.srcCodeBaseType);
+        Out.String("(");
+        FOR i := 0 TO LEN(type.arguments^)-1 DO
+          IF (i # 0) THEN
+            Out.String(", ");
+          END;
+          Type(type.arguments[i].type, type.arguments[i].srcCodeType);
+        END;
+        Out.String(")");
       END;
     END Type;
 
@@ -338,10 +349,39 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
     END ConstDecl;
   
   PROCEDURE TypeDecl(typeDecl: Sym.TypeDecl);
+    VAR
+      ptr: Sym.Item;
+      first: BOOLEAN;
     BEGIN
       IdentDef(typeDecl);
-      Out.String (" = ");
-      Type(typeDecl.type, typeDecl.srcCodeType);
+      IF (typeDecl.type IS Sym.TypeVar) THEN
+        Out.String(": ");
+        Type(typeDecl.type(Sym.TypeVar).bound,
+             typeDecl.type(Sym.TypeVar).srcCodeBound);
+      ELSE
+        IF typeDecl.HasTypeParameters() THEN
+          Out.String("(");
+          first := TRUE;
+          ptr := typeDecl.type.parent(Sym.TypePars).nestedItems;
+          WHILE (ptr # NIL) DO
+            WITH ptr: Sym.TypeDecl DO
+              IF first THEN
+                first := FALSE;
+              ELSE
+                Out.String("; ");
+              END;
+              TypeDecl(ptr);
+            ELSE
+              (* ignore *)
+            END;
+            ptr := ptr.nextNested;
+          END;
+          Out.String(")");
+        END;
+        
+        Out.String (" = ");
+        Type(typeDecl.type, typeDecl.srcCodeType);
+      END;
     END TypeDecl;
 
   PROCEDURE VarDecl(varDecl: Sym.VarDecl);
