@@ -75,7 +75,66 @@ that the path detected by "configure" may not be usable by the generated
 compiler under mingw. To remedy this problem, specify the absolute path using
 the INSTALL environment variable.
 
-Installation
+Installing the GC
+=================
+
+To do any serious work with OOC, you will need to install a garbage collector.
+This is a separate library used by the compiler and OOC applications for
+memory management. OOC uses Hans Boehm's GC, available here:
+  http://www.hpl.hp.com/personal/Hans_Boehm/gc/
+
+Follow the installation instructions for the GC. The following discussion 
+applies for modern releases. It is recommended to use at least version
+6.3alpha2.
+
+1) Build the GC library.
+
+  ./configure
+  make
+
+2) Ensure that the GC is working correctly.
+
+  Under Cygwin:
+    make gctest
+    ./gctest
+
+  Under MingW32, the test application is a Win32 application and writes its
+  output to a file "gc.log" rather than standard output.
+    make gctest.exe
+    ./gctest
+    cat gc.log
+
+3) Install the GC library
+
+  make install
+
+4) Review possible configuration settings for OOC
+
+Path issues:
+
+  Unless you specify another location to "configure" via the --prefix option,
+  the libraries will be installed in /usr/local/{lib,include}. Depending on
+  your local settings, this may not be the C compiler's search path. To ensure
+  that OOC finds the GC, you may need to use these settings:
+    CPPFLAGS=-I/usr/local/include
+    LDFLAGS=-L/usr/local/lib
+  It appears that these are necessary for MingW32/MSYS.
+
+Threading issues:
+
+  Versions of the GC differ in how threads are handled under Win32.
+
+  For modern releases of the GC, "configure" builds a threaded GC under
+  MingW32. This requires locks to be statically allocated by the GC. Under
+  Win32, this only works correctly if client code defines the symbol:
+    GC_WIN32_THREADS
+
+In summary, for MingW32/MSYS the following options are likely to be required
+by the GC in order to build OOC:
+	"CPPFLAGS=-I/usr/local/include -DGC_WIN32_THREADS \
+	LDFLAGS=-L/usr/local/lib 
+
+Installation 
 ============
 
 1) Make a directory `c:\usr\local\src', and extract the oo2c files here.
@@ -99,7 +158,11 @@ Installation
       
     For stand-alone Mingw32 (adjust path to "install.exe"):
 
-	  env "INSTALL=c:/msys/1.0/bin/install.exe" CFLAGS=-O2 \
+	  env \
+	    "INSTALL=c:/msys/1.0/bin/install.exe" \
+	    LDFLAGS=-L/usr/local/lib \
+	    CFLAGS=-O2 \
+		"CPPFLAGS=-I/usr/local/include -DGC_WIN32_THREADS \
         ./configure --disable-libs
 
     For Mingw32 under Cygwin:
@@ -139,6 +202,17 @@ Problems?
    the INSTALL path before running "configure". For a quick fix, manually
    adjust the "install" entries in the generated "rsrc/OOC/oo2crc.xml" and
    re-run "make install".
+
+3) While building OOC under MingW32, stage0/oo2c crashes abruptly? Most likely
+   you have a threaded GC, and have not defined "-DGC_WIN32_THREADS" during
+   configure. The crash is due to an uninitialised mutex in the GC. See
+   the section "Installing the GC".
+
+4) You installed the GC under MingW32, but OOC did not find it? By default
+   mingw32/MSYS does not search in /usr/local/{lib,include} where the GC is
+   normally installed. You will need to explicitly specify these locations
+   to the compiler via the LDPATH and CPPFLAGS environment variables. See
+   the section "Installing the GC".
 
 Platform-specific issues
 ========================
