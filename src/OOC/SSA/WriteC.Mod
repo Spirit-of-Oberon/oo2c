@@ -215,7 +215,8 @@ PROCEDURE WriteLocalDecl (w: Writer;
       varDecl: Sym.VarDecl;
     BEGIN
       WITH instr: SSA.Address DO   (* copy-parameter is instance of Address *)
-        IF (instr. decl IS Sym.VarDecl) THEN
+        IF (instr. decl IS Sym.VarDecl) &
+           (instr. decl(Sym.VarDecl). Procedure() = pb. procDecl) THEN
           RETURN instr. decl(Sym.VarDecl);
         ELSE
           RETURN NIL;
