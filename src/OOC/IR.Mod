@@ -340,11 +340,19 @@ TYPE
   TypeConv* = POINTER TO TypeConvDesc;
   TypeConvDesc = RECORD
     (**A TypeConv expression represents a type conversion of an expression
-       @ofield{expr} to a different type.  The source value is converted to an
-       equivalent or close value in the target domain.  Example: An integer
-       type representing the value @code{1} is converted to a floating point
-       value @code{1.0}.  Type conversions are also used to convert between
-       different integer types.  *)
+       @ofield{expr} to a different type.  The source value of type
+       @ofield{expr.type} is converted to an equivalent or close value in the
+       target domain @ofield{type}.  Example: An integer type representing the
+       value @code{1} is converted to a floating point value @code{1.0}.  Type
+       conversions are also used to convert between different integer types.
+
+       @noindent
+       Type conversion nodes are produced in different contexts:
+       @itemize @bullet
+       @item implicit type conversion of operands of numeric operators
+       @item explicit type conversion using @code{SHORT} or @code{LONG}
+       @item @dots{}
+       @end itemize  *)
     (OperatorDesc)
     expr- : Expression;
   END;
@@ -2022,6 +2030,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList): Expression;
   VAR
     call: Call;
+    targetType: Sym.PredefId;
 
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
                                       expr: Expression;
@@ -2151,6 +2160,22 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
       | Predef.cap:
         ASSERT (LEN (arguments^) = 1);
         RETURN b. NewCap (design. sym, arguments[0]);
+
+      | Predef.long:
+        ASSERT (LEN (arguments^) = 1);
+        CASE arguments[0]. type(Sym.PredefType). id OF
+        | Predef.shortint: targetType := Predef.integer;
+        | Predef.integer : targetType := Predef.longint;
+        END;
+        RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
+        
+      | Predef.short:
+        ASSERT (LEN (arguments^) = 1);
+        CASE arguments[0]. type(Sym.PredefType). id OF
+        | Predef.integer: targetType := Predef.shortint;
+        | Predef.longint: targetType := Predef.integer;
+        END;
+        RETURN NewTypeConv (Predef.GetType (targetType), arguments[0]);
       END;
 
     ELSE
