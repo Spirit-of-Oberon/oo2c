@@ -3424,12 +3424,12 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
     END HasDynamicType;
   
   BEGIN
-    refType := b. AssertType (referenceType);
+    refType := Sym.Expand(b.AssertType(referenceType));
     IF (refType = NIL) THEN
       RETURN b. errorExpr;
     ELSIF (refType IS Sym.TypeVar) THEN
       RETURN b.ErrExpr(notTypeInstance, referenceType.sym);
-    ELSIF ~TR.IsExtensionOf(Sym.Expand(refType), expr.type) THEN
+    ELSIF ~TR.IsExtensionOf(refType, expr.type) THEN
       RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
     ELSIF ~HasDynamicType(expr) THEN
       (* The test for TR.IsExtensionOf restricts the type of the variable to
@@ -3437,7 +3437,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
          a dynamic type that can differ from its static one.  *)
       RETURN b. ErrExpr (noDynamicType, expr.sym);
     ELSE
-      IF TR.SameType(Sym.Expand(refType), expr.type) THEN
+      IF TR.SameType(refType, expr.type) THEN
         b.WarnSym(redundantTypeTest, referenceType.sym);
       END;
       
@@ -3446,7 +3446,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       IF (expr IS Deref) THEN
         expr := expr(Deref). pointer;
       ELSIF (expr.type IS Sym.Pointer) OR (expr.type IS Sym.TypeVar) THEN
-        refType := TR.PointerBaseType(Sym.Expand(refType));
+        refType := TR.PointerBaseType(refType);
       END;
       NEW (test);
       IF (referenceType IS TypeRef) THEN
