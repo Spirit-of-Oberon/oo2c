@@ -338,6 +338,7 @@ PROCEDURE Resolve* (symTab: Sym.Module;
           END;
 
           IF (decl = NIL) THEN
+            lastError := NIL;  (* silence wrong warning *)
             Err (unresolvedIdent);
             lastError. SetStringAttrib ("ident", 
                                     Msg.GetStringPtr (part(Doc.Text). string^))

@@ -603,6 +603,7 @@ RAISES IO.Error;
       | ",":
         sym := Symbol.comma; INC (cpos)
       ELSE
+        sym := Symbol.invalid;  (* silence wrong warning *)
         Err (illegalSymbol);
         NEW (strPtr, 2);
         strPtr[0] := chars[cpos]; strPtr[1] := 0X;

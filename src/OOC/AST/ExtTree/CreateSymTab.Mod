@@ -90,9 +90,8 @@ PROCEDURE ExportMark (id: AST.Node): Sym.ExportMark;
         RETURN Sym.nameNotExported
       ELSIF (id. mark. sym. str^ = "*") THEN
         RETURN Sym.nameExported
-      ELSIF (id. mark. sym. str^ = "-") THEN
+      ELSE (* (id. mark. sym. str^ = "-") *)
         RETURN Sym.nameExportedRO
-      ELSE
       END
     END
   END ExportMark;

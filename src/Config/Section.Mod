@@ -137,6 +137,7 @@ PROCEDURE (sl: SectionList) ProcessElements* (root: Parser.Element;
     END Err;
   
   BEGIN
+    lastError := NIL;  (* silence wrong warning *)
     IF (root. name^ # rootElementName) THEN
       Err (invalidRootName, root);
       lastError. SetLStringAttrib ("name", Msg.GetLStringPtr (rootElementName))

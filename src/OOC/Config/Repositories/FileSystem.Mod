@@ -94,6 +94,7 @@ PROCEDURE (re: RepositoryEntry) ProcessElement* (
     END Err;
   
   BEGIN
+    lastError := NIL;  (* silence wrong warning *)
     FOR i := 0 TO node. attrList. len-1 DO
       att := node. attrList. attr[i];
       Err (invalidAttribute, node);

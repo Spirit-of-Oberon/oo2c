@@ -74,7 +74,9 @@ PROCEDURE ValueReal*(str: ARRAY OF CHAR): REAL;
       INC (i);
     END;
     IF libc.sscanf(SYSTEM.ADR(str[i]), "%f", SYSTEM.ADR(value)) = 1 THEN
+      <*PUSH; Warnings:=FALSE*>
       RETURN value                       (* syntax is ok *)
+      <*POP*>
     ELSE
       RETURN 0;                          (* error *)
     END;

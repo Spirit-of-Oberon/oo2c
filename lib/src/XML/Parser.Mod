@@ -3104,6 +3104,7 @@ PROCEDURE (p: Parser) ParseDocument*() RAISES IO.Error;
   
   BEGIN
     SetFileEntity (p. documentEntity);
+    cpos := 0;  (* prevent wrong warning for reference below *)
     ResetLocator;
     chars := p. in. chars;
     dtd := p. dtd;

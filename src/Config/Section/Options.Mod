@@ -203,6 +203,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     END Err;
   
   BEGIN
+    lastError := NIL;  (* silence wrong warning *)
     node := sectionRoot. content;
     WHILE (node # NIL) DO
       WITH node: Parser.Element DO

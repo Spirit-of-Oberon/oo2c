@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Config:Repositories [OOC_EXTENSIONS];
 (*  Management of a hierarchy of configured repositories.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -130,6 +130,7 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     END Err;
   
   BEGIN
+    lastError := NIL;  (* silence wrong warning *)
     node := sectionRoot. content;
     WHILE (node # NIL) DO
       WITH node: Parser.Element DO

@@ -87,7 +87,7 @@ PROCEDURE Convert16* (str: InputBuffer.CharArray; VAR int: Integer): Msg.Msg;
            the negative number that matches the two's complement bit pattern *)
         RETURN Error.New (integerContext, negativeHexConst);
         (* ... fixme: the above should be a warning *)
-        DEC (int, 10H)
+        (*DEC (int, 10H)   map to negative number *)
       END;
       WHILE (spos <= epos) DO
         int := int*10H + GetDigit (str[spos]);

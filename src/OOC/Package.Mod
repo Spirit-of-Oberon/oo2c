@@ -641,6 +641,8 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
     END ParseDefine;
   
   BEGIN
+    lastError := NIL;  (* silence wrong warning *)
+    
     IF (elem.attrList.len # 0) THEN
       Err(invalidAttribute, elem);
       lastError.SetLStringAttrib("name", Msg.GetLStringPtr(elem.attrList.attr[0].localName^));
@@ -897,6 +899,8 @@ PROCEDURE ProcessPackage (root: Parser.Element;
     END ParseFileSet;
 
   BEGIN
+    lastError := NIL;  (* silence wrong warning *)
+    
     IF (root.name^ # rootPackage) THEN
       Err (invalidRootName, root);
       lastError.SetLStringAttrib("name", Msg.GetLStringPtr(rootPackage));
@@ -999,6 +1003,8 @@ PROCEDURE ProcessRepository (root: Parser.Element;
     END SkipWS;
 
   BEGIN
+    lastError := NIL;  (* silence wrong warning *)
+    
     IF (root.name^ # rootRepository) THEN
       Err (invalidRootName, root);
       lastError.SetLStringAttrib("name", Msg.GetLStringPtr(rootRepository));
