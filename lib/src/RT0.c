@@ -14,19 +14,15 @@
 #define MAX_BACKTRACE_LEVELS 20  /* max number of backtraced procedure calls */
 
 #if defined(HAVE_LIBGC) && defined(HAVE_GC_GC_H)
-#define USE_BOEHM_GC
-#endif
-
-#ifdef USE_BOEHM_GC
-#include <gc/gc.h>
+#  define USE_BOEHM_GC
+#  include <gc/gc.h>
 #else
-#define GC_malloc malloc
-#define GC_malloc_atomic malloc
-#define GC_free free
+#  define GC_MALLOC malloc
+#  define GC_MALLOC_ATOMIC malloc
+#  define GC_FREE free
 #endif
 
-
-OOC_INT32 RT0__poisonHeap = -1;
+OOC_INT32 RT0__poisonHeap = -1;  /* default: disabled */
 static RT0__Module* modules = NULL;
 static int moduleCount = 0, sizeModules = 32;
 
@@ -91,7 +87,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     if (size == 0) size++;
     prefix = ROUND_SIZE(sizeof(RT0__Struct));
     
-    ptr = GC_malloc(prefix+size);
+    ptr = GC_MALLOC(prefix+size);
     if (ptr == NULL) {
       _out_of_memory(prefix+size);
     } else if (RT0__poisonHeap >= 0) {
@@ -103,7 +99,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   } else if (td->form == RT0__strArray) { /* fixed size array */
     int size = td->size;
     if (size == 0) size++;
-    var = GC_malloc(size);
+    var = GC_MALLOC(size);
     if (var == NULL) {
       _out_of_memory(size);
     } else if (RT0__poisonHeap >= 0) {
@@ -134,7 +130,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
        of any basic type */
     prefix = ROUND_SIZE(td->len*sizeof(OOC_LEN));
     
-    ptr = GC_malloc(prefix+size);
+    ptr = GC_MALLOC(prefix+size);
     if (ptr == NULL) {
       _out_of_memory(prefix+size);
     } else if (RT0__poisonHeap >= 0) {
@@ -161,7 +157,7 @@ RT0__Struct RT0__TypeOf(OOC_PTR ptr) {
 OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
   void *ptr;
   
-  ptr = GC_malloc_atomic(bytes);
+  ptr = GC_MALLOC_ATOMIC(bytes);
   if (ptr == NULL) {
     _out_of_memory(bytes);
   } else if (RT0__poisonHeap >= 0) {
@@ -171,7 +167,7 @@ OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
 }
 
 void RT0__FreeBlock(OOC_PTR ptr) {
-  GC_free(ptr);			/* inverse to RT0__NewBlock */
+  GC_FREE(ptr);			/* inverse to RT0__NewBlock */
 }
 
 void RT0__CollectGarbage() {
@@ -300,12 +296,12 @@ void OOC_RT0_init() {
   GC_all_interior_pointers = 0;
   GC_INIT();
   /* tell GC to accept pointers with an offset of 8/16/24 as references to
-     a given object; this is necessary if the GC is runnung with the
+     a given object; this is necessary if the GC is running with the
      ALL_INTERIOR_POINTERS option; the offsets cover records and open 
-     arrays with upto 5 free dimensions on 32 bit architectures */
-  GC_register_displacement(8);
-  GC_register_displacement(16);
-  GC_register_displacement(24);
+     arrays with up to 5 free dimensions on 32 bit architectures */
+  GC_REGISTER_DISPLACEMENT(8);
+  GC_REGISTER_DISPLACEMENT(16);
+  GC_REGISTER_DISPLACEMENT(24);
 #endif
   
   modules = RT0__NewBlock(sizeModules*sizeof(RT0__Module));
