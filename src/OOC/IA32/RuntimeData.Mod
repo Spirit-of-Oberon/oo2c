@@ -22,7 +22,7 @@ MODULE OOC:IA32:RuntimeData;
 
 
 IMPORT
-  Object, Sym := OOC:SymbolTable, OOC:IA32:Writer;
+  Sym := OOC:SymbolTable, OOC:IA32:Writer;
 
 PROCEDURE Write* (w: Writer.Writer; symTab: Sym.Module);
   PROCEDURE ModuleDescr (module: Sym.Module);

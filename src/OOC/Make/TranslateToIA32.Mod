@@ -21,7 +21,7 @@ MODULE OOC:Make:TranslateToIA32 [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, Channel, Msg, StdChannels, Object, ADT:Dictionary, 
+  Ascii, Channel, Msg, StdChannels, ADT:Dictionary, 
   OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, Rep := OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
