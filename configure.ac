@@ -1,6 +1,6 @@
 dnl Autoconf requirements
 AC_PREREQ(2.53)
-AC_INIT(OOC,2.0.13,mva@users.sf.net)
+AC_INIT(OOC,2.0.13.1,mva@users.sf.net)
 AC_CONFIG_SRCDIR(src/OOC/Parser.Mod)
 AC_CONFIG_HEADER(lib/src/__config.h)
 
@@ -37,14 +37,8 @@ dnl optional packages
 OOC_ARG_ENABLE_PTHREADS()
 
 dnl checks for libraries
-AC_CHECK_LIB(gc,GC_malloc)
-if test $ac_cv_lib_gc_GC_malloc=yes; then
-  ooc_have_lib_gc=TRUE
-else
-  ooc_have_lib_gc=FALSE
-fi
-AC_SUBST(ooc_have_lib_gc)
-
+OOC_CHECK_LIB(dl,dlopen)
+OOC_CHECK_LIB(gc,GC_malloc)
 OOC_CHECK_LIB(xnet,socket)
 OOC_CHECK_LIB(rt,sem_init)
 OOC_CHECK_LIB(posix4,sem_init)

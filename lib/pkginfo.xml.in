@@ -3,6 +3,7 @@
   <version current="0" revision="0" age="0"/>
   
   <pragmas>
+    <define name="HAVE_LIB_DL" type="boolean">@ooc_have_lib_dl@</define>
     <define name="HAVE_LIB_GC" type="boolean">@ooc_have_lib_gc@</define>
     <define name="HAVE_LIB_XNET" type="boolean">@ooc_have_lib_xnet@</define>
     <define name="HAVE_LIB_RT" type="boolean">@ooc_have_lib_rt@</define>
