@@ -36,6 +36,9 @@
 #define NORETURN2
 #endif
 
+/* Testing for __builtin_strcmp is not as easy as expected, so we
+   hardcode it here.  */
+#define HAVE_BUILTIN_STRCMP 1
 
 /* Use lrint() for round() in RealMath and LRealMath if it is available, 
    otherwise use our own definitions in __oo2c.c.  The prototype for lrint()
@@ -89,7 +92,11 @@ extern void _copy_32(const OOC_CHAR32* src, OOC_CHAR32* dest, OOC_LEN max_len);
   memcpy((void*)_dest,(void*)_source,_size)
 
 /* string compare */
+#ifdef HAVE_BUILTIN_STRCMP
+#define _cmp8(a,b) ((OOC_INT32)__builtin_strcmp((a),(b)))
+#else
 extern OOC_INT32 _cmp8(const OOC_CHAR8* l, const OOC_CHAR8* r);
+#endif
 extern OOC_INT32 _cmp16(const OOC_CHAR16* l, const OOC_CHAR16* r);
 extern OOC_INT32 _cmp32(const OOC_CHAR32* l, const OOC_CHAR32* r);
 
