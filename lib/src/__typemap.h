@@ -71,5 +71,14 @@ typedef OOC_INT32 OOC_CHARPOS;
 #define NORETURN2
 #endif
 
+/* Certain library modules assume that size parameters are defined using the
+ * `ssize_t' type. Some environments use `int' for size parameters and do not
+ * define the `ssize_t' type. Here is a fix for such environments. Currently,
+ * this seems to be required for mingw32 versions prior to 3.1.
+ */
+
+#ifndef HAVE_SSIZE_T
+typedef int ssize_t;
+#endif
 
 #endif  /* __typemap__ */
