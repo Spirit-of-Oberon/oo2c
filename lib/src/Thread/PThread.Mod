@@ -103,6 +103,11 @@ PROCEDURE (c: Condition) Broadcast*();
 
 PROCEDURE (c: Condition) Wait*(m: Mutex);
 
+PROCEDURE (c: Condition) TimedWait*(m: Mutex; absTime: LONGREAL): BOOLEAN;
+(**Return @code{TRUE} if the condition is signaled before time
+   @oparam{absTime} is reached.  @oparam{absTime} is the number of seconds
+   since Jan 01 1970 00:00 GMT.  *)
+
 PROCEDURE (c: Condition) Destroy*();
 
 END Thread:PThread.

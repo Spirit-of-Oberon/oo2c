@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <signal.h>
+#include <math.h>
 
 #if defined(HAVE_LIBGC) && defined(HAVE_GC_GC_H)
 #  include <gc/gc.h>
@@ -141,6 +142,32 @@ void Thread_PThread__ConditionDesc_Broadcast(Thread_PThread__Condition c) {
 void Thread_PThread__ConditionDesc_Wait(Thread_PThread__Condition c, Thread_PThread__Mutex m) {
   pthread_cond_wait((pthread_cond_t*)c->cond, (pthread_mutex_t*)m->mutex);
   /* always returns 0 */
+}
+
+OOC_BOOLEAN Thread_PThread__ConditionDesc_TimedWait(Thread_PThread__Condition c, Thread_PThread__Mutex m, OOC_REAL64 absTime) {
+  double sec;
+  double frac = modf(absTime, &sec);
+  struct timespec t;
+  int rc;
+  
+  t.tv_sec = (long int)sec;
+  t.tv_nsec = (long int)frac*1e9;
+  
+  /*{
+    struct tm tt;
+    char str[1024];
+    time_t time = t.tv_sec;
+    
+    strftime(str, 1024, "%a, %d %b %Y %H:%M:%S %z", localtime_r(&time, &tt));
+    printf("time: %s, nsec=%li\n", str, t.tv_nsec);
+  }*/
+  
+  do {
+    rc = pthread_cond_timedwait((pthread_cond_t*)c->cond,
+				(pthread_mutex_t*)m->mutex,
+				&t);
+  } while (rc == EINTR);
+  return (rc != ETIMEDOUT);
 }
 
 void Thread_PThread__ConditionDesc_Destroy(Thread_PThread__Condition c) {
