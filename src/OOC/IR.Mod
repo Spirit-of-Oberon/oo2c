@@ -3175,7 +3175,18 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
       (* Case 8: char const and string const < Object.Object *)
       expr := b. NewTypeConv (b.stringType, expr);
       RETURN TRUE;
-      
+  
+    ELSIF (type IS Sym.Pointer) &
+          TR.IsArrayOfChar(TR.PointerBaseType(type), FALSE) &
+          type(Sym.Pointer).doCArrayAssignment &
+          (b.Widen(expr, TR.PointerBaseType(type)) OR
+           TR.IsArrayCompatible(expr.type, TR.PointerBaseType(type))) THEN
+      (* Case 9: For C arrays, assign address of expression to pointer
+        string const < POINTER [CSTRING] TO ARRAY OF CHAR
+        array of char < POINTER [CSTRING] TO ARRAY OF CHAR *)
+      expr := b. NewAdr(expr.sym, expr);
+      RETURN TRUE;
+
     ELSE
       RETURN FALSE;
     END;
