@@ -24,7 +24,13 @@
     at all.
   </test>
   
-  <test id="baseline5" type="run" file="HOTBaselineOutput1.Mod"
+  <test id="baseline5" type="run" file="HOTBaselineOutput0.Mod"
+	output="HOTBaselineOutput0.Ref">
+    Module produces no output, and <code>HOTBaselineOutput0.Ref</code>
+    is empty.
+  </test>
+  
+  <test id="baseline6" type="run" file="HOTBaselineOutput1.Mod"
 	output="HOTBaselineOutput1.Ref">
     Evaluation of the procedure <code>Test</code> prints the famous
     <code>Hello World!</code>, followed by a single newline character.
@@ -32,4 +38,28 @@
     match the content of file <code>HOTBaselineOutput1.Ref</code>
     (with the exception of a possibly different newline character).
   </test>
+  
+  <test id="baseline7" type="run" file="HOTBaselineOutput2.Mod"
+	output="HOTBaselineOutput2.Ref">
+    Tests integer output for <code>SHORTINT</code>:
+    padding, sign, alignment.
+  </test>
+  
+  <test id="baseline8" type="run" file="HOTBaselineOutput2.Mod"
+	output="HOTBaselineOutput2.Ref">
+    Tests integer output for <code>INTEGER</code>:
+    padding, sign, alignment.
+  </test>
+  
+  <test id="baseline9" type="run" file="HOTBaselineOutput2.Mod"
+	output="HOTBaselineOutput2.Ref">
+    Tests integer output for <code>LONGINT</code>:
+    padding, sign, alignment.
+  </test>
+  
+  <test id="baseline10" type="run" file="HOTBaselineOutput5.Mod"
+	output="HOTBaselineOutput5.Ref">
+    Tests character output.  Not much to test, though.
+  </test>
+  
 </testcases>
