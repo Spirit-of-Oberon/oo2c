@@ -5,7 +5,7 @@ IMPORT
   
   OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList,
-  OOC:Parser, OOC:AST, OOC:AST:ExtTree;
+  OOC:Parser, OOC:AST, OOC:AST:ExtTree, Sym := OOC:SymbolTable;
   
 
 
@@ -46,6 +46,8 @@ PROCEDURE GetImports* (m: Rep.Module;
     ast: AST.Node;
     uri: URI.URI;
     uriStr: Rep.URIBuffer;
+    item: Sym.Item;
+    import: Rep.Module;
   
   PROCEDURE StoreImports (m: Rep.Module; imports: AST.NodeList);
     VAR
@@ -77,37 +79,54 @@ PROCEDURE GetImports* (m: Rep.Module;
         INC (i, 2)
       END
     END StoreImports;
-  
+
   BEGIN
-    IF m. importListScanned THEN
+    IF m. importListScanned THEN         (* imports are already known *)
       RETURN
-    END;
-    
-    inputBuffer := m. GetInputBuffer (res);
-    IF (inputBuffer = NIL) THEN
-      ast := NIL;
-      uri := m. GetURI (Rep.modModuleSource);
-      uri. GetString (uriStr);
-      errList := Error.NewList (uriStr);
-      errList. Append (res)
-    ELSE
-      errList := inputBuffer. errList;
-      scannerBuilder := BasicList.New (inputBuffer, TRUE);
-      Scanner.ScanInput (scannerBuilder, pragmas, Scanner.enableAll);
-      inputBuffer. Close;
-      
-      ast := NIL;
-      IF (errList. msgCount = 0) THEN
-        astBuilder := ExtTree.New();
-        ast := Parser.Module (scannerBuilder. head, 
-                              astBuilder, errList,
-                              Parser.enableAll+{Parser.onlyParseImport})
+          
+    ELSIF (m. symbolTable # NIL) THEN    (* take imports from symbol file *)
+      (* FIXME... check if there is a situation where we must ignore
+         the contents of the symbol file *)
+      item := m. symbolTable. nestedItems;
+      WHILE (item # NIL) DO
+        WITH item: Sym.Import DO
+          import := repositories. GetModule (item. moduleName. str^);
+          ASSERT (import # NIL);
+          m. AddImport (import);
+        ELSE                             (* ignore *)
+        END;
+        item := item. nextNested
       END;
-      IF (errList. msgCount = 0) & (ast(ExtTree.Module). importList # NIL) THEN
-        StoreImports (m, ast(ExtTree.Module). importList(ExtTree.ImportList). imports);
-        m. AddImport (NIL)  (* mark module with "import scanned" *)
+    ELSE                                 (* take imports from source file *)
+      
+      inputBuffer := m. GetInputBuffer (res);
+      IF (inputBuffer = NIL) THEN
+        ast := NIL;
+        uri := m. GetURI (Rep.modModuleSource);
+        uri. GetString (uriStr);
+        errList := Error.NewList (uriStr);
+        errList. Append (res)
+      ELSE
+        errList := inputBuffer. errList;
+        scannerBuilder := BasicList.New (inputBuffer, TRUE);
+        Scanner.ScanInput (scannerBuilder, pragmas, Scanner.enableAll);
+        inputBuffer. Close;
+        
+        ast := NIL;
+        IF (errList. msgCount = 0) THEN
+          astBuilder := ExtTree.New();
+          ast := Parser.Module (scannerBuilder. head, 
+                                astBuilder, errList,
+                                Parser.enableAll+{Parser.onlyParseImport})
+        END;
+        IF (errList. msgCount = 0) &
+           (ast(ExtTree.Module). importList # NIL) THEN
+          StoreImports (m, ast(ExtTree.Module).
+                        importList(ExtTree.ImportList). imports);
+          m. AddImport (NIL)  (* mark module with "import scanned" *)
+        END
       END
-    END
+    END;
   END GetImports;
 
 BEGIN
