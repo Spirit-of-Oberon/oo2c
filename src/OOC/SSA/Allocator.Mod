@@ -994,7 +994,9 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
             opnd := opnd. nextOpnd;
           END;
           WHILE (opnd # NIL) DO
-            CheckOpnd (opnd);
+            IF opnd. IsValueOpnd() THEN
+              CheckOpnd (opnd);
+            END;
             opnd := opnd. nextOpnd;
           END;
           
