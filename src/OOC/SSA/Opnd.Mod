@@ -84,9 +84,17 @@ CONST
      of @var{store} within the procedure.  *)
   storeExit* = 11;
   (**Operand of @oconst{*OOC:SSA:Opcode.selectReturn} taking the final value of
-     @var{store} within the procedure at the place of a @code{RETURN}, or
+     @var{store} within the procedure at the place of a @code{RETURN}, or of
      @oconst{*OOC:SSA:Opcode.loopEnd} taking the final value of @var{store}
-     within a loop at the place of an @code{EXIT}.  *)
+     within a loop at the place of an @code{EXIT}.
+
+     Due to its special function as a non-local exit from within a structured
+     flow of control, operands of this type are handled specially when
+     converting the SSA graph into a hierarchy of regions, and when eliminating
+     dead code.  A using occurence of a value in a @oconst{storeExit}
+     instruction is disregarded when placing the defining instruction during
+     scheduling.  Likewise, an instruction that is only used in
+     @oconst{storeExit} operands is considered dead.  *)
 
   type* = 12;
   (**Type operand of a @oconst{*OOC:SSA:Opcode.newArray} or
