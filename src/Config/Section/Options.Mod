@@ -322,7 +322,7 @@ PROCEDURE (s: Section) DumpContent* (ch: Channel.Channel);
       w. WriteObject (opt. name);
       w. WriteString ("'>");
       
-      w. WriteObject(opt.value.ValueToString());
+      w. WriteObject(opt.value);
       
       w. WriteString ("</value>");
       w. WriteLn;

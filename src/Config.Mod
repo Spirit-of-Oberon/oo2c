@@ -53,8 +53,8 @@ PROCEDURE (v: Variable) [ABSTRACT] StringToValue*(str: STRING)
 RAISES Exception.ParseError;
   END StringToValue;
 
-PROCEDURE (v: Variable) [ABSTRACT] ValueToString*(): STRING;
-  END ValueToString;
+PROCEDURE (v: Variable) [ABSTRACT] ToString*(): STRING;
+  END ToString;
 
 PROCEDURE (v: Variable) [ABSTRACT] Clone*(): Variable;
   END Clone;
@@ -99,14 +99,14 @@ RAISES Exception.ParseError;
     END
   END StringToValue;
 
-PROCEDURE (v: BooleanVar) ValueToString*(): STRING;
+PROCEDURE (v: BooleanVar) ToString*(): STRING;
   BEGIN
     IF v.boolean THEN
       RETURN "TRUE";
     ELSE
       RETURN "FALSE";
     END
-  END ValueToString;
+  END ToString;
 
 PROCEDURE (v: BooleanVar) Clone* (): BooleanVar;
   VAR
@@ -167,13 +167,13 @@ RAISES Exception.ParseError;
     END;
   END StringToValue;
 
-PROCEDURE (v: IntegerVar) ValueToString*(): STRING;
+PROCEDURE (v: IntegerVar) ToString*(): STRING;
   VAR
     str: ARRAY 16 OF CHAR;
   BEGIN
     IntStr.IntToStr(v.integer, str);
     RETURN Object.NewLatin1(str);
-  END ValueToString;
+  END ToString;
 
 PROCEDURE (v: IntegerVar) Clone* (): IntegerVar;
   VAR
@@ -199,10 +199,10 @@ PROCEDURE (v: StringVar) StringToValue* (str: STRING);
     v.string := str;
   END StringToValue;
 
-PROCEDURE (v: StringVar) ValueToString*(): STRING;
+PROCEDURE (v: StringVar) ToString*(): STRING;
   BEGIN
     RETURN v.string;
-  END ValueToString;
+  END ToString;
 
 PROCEDURE (v: StringVar) Clone* (): StringVar;
   VAR
