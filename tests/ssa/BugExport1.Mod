@@ -1,0 +1,10 @@
+MODULE BugExport1;
+
+TYPE
+  CHAR* = CHAR;
+
+PROCEDURE P*(x: CHAR);
+  BEGIN
+  END P;
+
+END BugExport1.

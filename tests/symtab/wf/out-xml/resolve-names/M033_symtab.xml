@@ -2,7 +2,7 @@
 <module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
   <procedure_decl id='1' name='P' pos='21' line='2' column='10' visible_from='41' export='no' is_type_bound='no' is_forward_decl='no'>
     <procedure_type id='2' pos='11' line='2' column='0' resultType='#none'>
-      <type_name id='3' pos='36' line='2' column='25' ident_name='CHAR' ident_pos='36' ident_line='2' ident_column='25'/>
+      <type_name id='3' pos='36' line='2' column='25' module_name='' module_pos='0' module_line='0' module_column='0' ident_name='CHAR' ident_pos='36' ident_line='2' ident_column='25'/>
       <array_type id='4' pos='27' line='2' column='16' is_open_array='yes' element_type_id='#predef.CHAR'/>
       <var_decl id='5' name='a' pos='24' line='2' column='13' visible_from='40' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='no' type_id='4'/>
     </procedure_type>

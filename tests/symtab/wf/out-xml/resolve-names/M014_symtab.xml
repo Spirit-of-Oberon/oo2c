@@ -4,7 +4,7 @@
   <type_decl id='2' name='R' pos='16' line='2' column='5' visible_from='30' export='no' type_id='1'/>
   <type_name id='3' pos='44' line='2' column='33' ident_name='R' ident_pos='44' ident_line='2' ident_column='33'/>
   <record_type id='4' pos='36' line='2' column='25' class='S' base_type_id='1' tb_proc_count='0'>
-    <type_name id='5' pos='50' line='2' column='39' ident_name='INTEGER' ident_pos='50' ident_line='2' ident_column='39'/>
+    <type_name id='5' pos='50' line='2' column='39' module_name='' module_pos='0' module_line='0' module_column='0' ident_name='INTEGER' ident_pos='50' ident_line='2' ident_column='39'/>
     <field_decl id='6' name='a' pos='47' line='2' column='36' class='S' visible_from='57' export='no' type_id='#predef.INTEGER'/>
   </record_type>
   <type_decl id='7' name='S' pos='32' line='2' column='21' class='S' visible_from='61' export='no' type_id='4'/>

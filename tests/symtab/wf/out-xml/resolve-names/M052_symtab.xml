@@ -6,7 +6,7 @@
       <p pad-after='yes' no-indent='yes'>Doc for procedure `P'.</p>
     </oberon-doc>
     <procedure_type id='2' pos='10' line='1' column='0' resultType='#none'>
-      <type_name id='3' pos='26' line='1' column='16' ident_name='INTEGER' ident_pos='26' ident_line='1' ident_column='16'/>
+      <type_name id='3' pos='26' line='1' column='16' module_name='' module_pos='0' module_line='0' module_column='0' ident_name='INTEGER' ident_pos='26' ident_line='1' ident_column='16'/>
       <var_decl id='4' name='a' pos='23' line='1' column='13' visible_from='33' export='no' is_parameter='yes' is_receiver='no' is_var_parameter='no' type_id='#predef.INTEGER'/>
     </procedure_type>
   </procedure_decl>

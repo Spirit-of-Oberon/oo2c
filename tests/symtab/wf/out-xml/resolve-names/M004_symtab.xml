@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
 <module id='0' name='M' pos='7' line='0' column='7' visible_from='0' export='yes'>
-  <type_name id='1' pos='18' line='2' column='7' ident_name='INTEGER' ident_pos='18' ident_line='2' ident_column='7'/>
+  <type_name id='1' pos='18' line='2' column='7' module_name='' module_pos='0' module_line='0' module_column='0' ident_name='INTEGER' ident_pos='18' ident_line='2' ident_column='7'/>
   <type_decl id='2' name='T' pos='16' line='2' column='5' visible_from='25' export='no' type_id='#predef.INTEGER'/>
 </module>

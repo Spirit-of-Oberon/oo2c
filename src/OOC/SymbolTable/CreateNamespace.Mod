@@ -519,19 +519,23 @@ RAISES IO.Error;
         WITH typeName: Sym.TypeName DO
           ns := contextOfUse. Namespace();
           IF (typeName. module # NIL) THEN
-            (* resolve module name to get to external namespace *)
-            item := ns. Identify (contextOfUse, typeName. module, FALSE);
-            Uses.Mark(item, uses, typeName.module);
-            IF (item = NIL) THEN
-              Err (undeclaredModule, typeName);
-              RETURN typeName
-            ELSIF ~(item IS Sym.Import) THEN
-              Err (notModule, typeName);
-              RETURN typeName
+            IF typeName.IsPredefReference() THEN
+              ns := predefModule.ns;
             ELSE
-              ns := item(Sym.Import). externalSymTab. ns;
-              ASSERT (ns # NIL)
-            END
+              (* resolve module name to get to external namespace *)
+              item := ns. Identify (contextOfUse, typeName. module, FALSE);
+              Uses.Mark(item, uses, typeName.module);
+              IF (item = NIL) THEN
+                Err (undeclaredModule, typeName);
+                RETURN typeName
+              ELSIF ~(item IS Sym.Import) THEN
+                Err (notModule, typeName);
+                RETURN typeName
+              ELSE
+                ns := item(Sym.Import). externalSymTab. ns;
+                ASSERT (ns # NIL)
+              END
+            END;
           END;
           item := ns. Identify (contextOfUse, typeName. ident, FALSE);
           IF (item = NIL) & extendedSearch THEN
@@ -549,6 +553,12 @@ RAISES IO.Error;
             Err (undeclaredIdent, typeName);
             RETURN typeName
           ELSE
+            IF (typeName.module = NIL) &
+               (item IS Sym.TypeDecl) & (item.parent = predefModule) THEN
+              (* mark type name as predefined type *)
+              typeName.MarkAsPredefReference();
+            END;
+            
             (* if the type name refers to a name redirection, then resolve the
                redirection and continue with the resulting symbol table entry  *)
             Uses.Mark(item, uses, typeName.ident);

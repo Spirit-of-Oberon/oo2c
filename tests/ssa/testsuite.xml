@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic59">-->
+  select ="&SetupTestCasesWithOut; bugExport1 bugExport2">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
@@ -1716,6 +1716,16 @@
     <test id="bugDeclC1" type="run" file="BugDeclC1.Mod">
       Declaring a pointer to a type alias of a record type might cause
       problems.
+    </test>
+    <test id="bugExport1" type="accept" file="BugExport1.Mod">
+      Regression test: Create an alias for a predefined type name and
+      export it.  Import of this type name should not crash the
+      compiler.
+    </test>
+    <test id="bugExport2" type="accept" file="BugExport2.Mod">
+      Regression test: Create an alias for a predefined type name and
+      export it.  Import of this type name should not crash the
+      compiler.
     </test>
   </testcases>
   
