@@ -358,7 +358,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
     BEGIN
       Newline;
       Out.String("PROCEDURE ");
-      IF procDecl.isTypeBound THEN
+      IF procDecl.IsTypeBound() THEN
         Out.String("(");
         VarDecl(procDecl.formalPars.receiver);
         Out.String(") ");
@@ -372,7 +372,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
       (* non-declarations are skipped on the top level, and type-bound
          procedures are written as part of their records *)
       RETURN (item IS Sym.Declaration) &
-          (~(item IS Sym.ProcDecl) OR ~item(Sym.ProcDecl).isTypeBound);
+          (~(item IS Sym.ProcDecl) OR ~item(Sym.ProcDecl).IsTypeBound());
     END WriteTopLevel;
   
   BEGIN
