@@ -979,8 +979,14 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           controlCP := guard; memoryCP := branchMemory;
           StatmSeq(statm.default);
           jumps.Append(AddJump());
-        ELSIF statm. checkMatch THEN
-          (* FIXME... *)
+        ELSIF statm.checkMatch THEN
+          guard := b.AddMerge0(S.guard, NIL);
+          guard.AddDep(S.depControl, branch);
+          paths.Append(guard);
+                 
+          controlCP := guard; memoryCP := branchMemory;
+          FailedCheck("RT0__ErrorFailedCase", statm.sym.pos, select);
+          jumps.Append(AddJump());
         END;
         
         (* finally, pull all the strings together again *)
