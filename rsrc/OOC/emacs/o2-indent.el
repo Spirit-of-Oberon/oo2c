@@ -281,21 +281,21 @@ is no match."
     ;;(message "save-column=%s, saved-word=%s" saved-column saved-word)
     (if (null saved-word)
         0
-      (let ((factor)
-	    (new-column))
-        (if (looking-at ob2-indent-interrupt-re)
-            (save-excursion               ;place re in match-string
-              (ob2-re-search-forward-code ob2-indent-re)
-              (setq factor
-                    (ob2-get-indent-increment (ob2-get-match-symbol)
-                                              saved-word)))
-          (setq factor (ob2-get-indent-increment 'other saved-word)))
-	  (if (null factor)
-	      0
-	    (setq new-column (+ saved-column (* factor ob2-indent-level)))
-	    (if (< new-column 0)
-		0
-	      new-column))))))
+      (let ((factor))
+	(cond ((looking-at ob2-indent-interrupt-re)
+	       (save-excursion		;place re in match-string
+		 (ob2-re-search-forward-code ob2-indent-re)
+		 (setq factor
+		       (ob2-get-indent-increment (ob2-get-match-symbol)
+						 saved-word))))
+	      ((and (eq saved-word 'proc) ;comment after procedure
+		    (looking-at "(\\*"))
+	       (setq factor 0))
+	      (t
+	       (setq factor (ob2-get-indent-increment 'other saved-word))))
+	(if (null factor)
+	    0
+	  (max 0 (+ saved-column (* factor ob2-indent-level))))))))
 
 
 (defun ob2-inside-param-list-p ()
