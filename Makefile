@@ -95,12 +95,12 @@ configure: configure.ac lib/src/__config.h.in
 ### variables is best done by the make utility itself.  This rule puts the
 ### expanded values into the OOC configuration file oo2crc.xml.
 $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml.mk $(OOC_DEV_ROOT)/Makefile.config
-	sed -e 's:%libdir%:$(libdir):g' \
-	    -e 's:%oocdir%:$(oocdir):g' \
-	    -e 's:%bindir%:$(bindir):g' \
-	    -e 's:%INSTALL%:$(INSTALL):g' \
-	    -e 's:%INSTALL_PROGRAM%:$(INSTALL_PROGRAM):g' \
-	    -e 's:%INSTALL_DATA%:$(INSTALL_DATA):g' \
+	sed -e 's?%libdir%?$(libdir)?g' \
+	    -e 's?%oocdir%?$(oocdir)?g' \
+	    -e 's?%bindir%?$(bindir)?g' \
+	    -e 's?%INSTALL%?$(INSTALL)?g' \
+	    -e 's?%INSTALL_PROGRAM%?$(INSTALL_PROGRAM)?g' \
+	    -e 's?%INSTALL_DATA%?$(INSTALL_DATA)?g' \
 		$(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml.mk >$(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
 rsrc/OOC/oo2crc.xml: $(OOC_DEV_ROOT)/rsrc/OOC/oo2crc.xml
 
