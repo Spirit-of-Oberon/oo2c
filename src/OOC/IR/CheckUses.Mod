@@ -229,7 +229,9 @@ PROCEDURE (v: Visitor) VisitAdr* (adr: IR.Adr);
 PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
   VAR
     i: LONGINT;
+    oldMode: SHORTINT;
   BEGIN
+    oldMode := v.mode;
     call.design.Accept(v);
     FOR i := 0 TO LEN(call.arguments^)-1 DO
       IF (call.formalPars[i] # NIL) & call.formalPars[i].isVarParam THEN
@@ -239,6 +241,10 @@ PROCEDURE (v: Visitor) VisitCall* (call: IR.Call);
         v.mode := read;
         call.arguments[i].Accept(v);
       END;
+    END;
+    v.mode := oldMode;
+    IF call.design.type(Sym.FormalPars).noReturn THEN
+      v.def.Unreachable();
     END;
   END VisitCall;
 
