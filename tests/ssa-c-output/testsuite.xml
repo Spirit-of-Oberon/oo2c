@@ -159,5 +159,9 @@
       Common subexpression elimination must not merge move the memory
       access <code>p.x</code> over the guard <code>x#NIL</code>.
     </test>
+    <test id="cse3" type="run" file="Cse3.Mod" output="Cse3.Ref">
+      Check that common expressions are detected properly if a value
+      contributes multiple times to an instruction.
+    </test>
   </testcases>
 </testsuite-ext>
