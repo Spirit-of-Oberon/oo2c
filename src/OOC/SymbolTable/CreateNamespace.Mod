@@ -1079,6 +1079,7 @@ RAISES IO.Error;
         i: LONGINT;
         proc: Sym.ProcDecl;
         baseRecord : Sym.Record;
+        type: Sym.Type;
 
       PROCEDURE AllocateTBProcIndices(record: Sym.Record);
       (* When this procedure is done, all type-bound procedures of the record
@@ -1115,11 +1116,11 @@ RAISES IO.Error;
       
       BEGIN
         IF (record. tbProcCount = -1) THEN
-          IF (record. baseType = NIL) OR 
-             ~(record. baseType IS Sym.Record) THEN
+          IF (record. baseType = NIL) OR ~TR.IsRecord(record.baseType) THEN
             record. tbProcCount := 0
           ELSE
-            baseRecord := record. baseType(Sym.Record);
+            type := record.baseType.Deparam();
+            baseRecord := type(Sym.Record);
             CheckRecord (baseRecord);
             record. tbProcCount := baseRecord. tbProcCount;
             IF record. isVtable # baseRecord. isVtable THEN
@@ -1383,10 +1384,11 @@ RAISES IO.Error;
           END;
 
         | item: Sym.Record DO
-          IF (item.baseType # NIL) &
-             (item.baseType IS Sym.Record) &
-             item.baseType(Sym.Record).isUncheckedException THEN
-            item.isUncheckedException := TRUE;
+          IF (item.baseType # NIL) & TR.IsRecord(item.baseType) THEN
+            type := item.baseType.Deparam();
+            IF type(Sym.Record).isUncheckedException THEN
+              item.isUncheckedException := TRUE;
+            END;
           END;
           
         | item: Sym.VarDecl DO
