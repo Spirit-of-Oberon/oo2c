@@ -482,7 +482,11 @@ static Files__File create_file(const OOC_CHAR8* name, OOC_UINT32 flags,
     } while ((fd == -1) && (errno == EEXIST));
   } else if (mode == MODE_TMP) {
     strcpy(tname, "tmp_XXXXXX");
+#ifdef __MINGW32__
+    fd = call_open(mktemp(tname), flags, mode, &access_mode);
+#else
     fd = mkstemp(tname);
+#endif
   } else {
     fd = call_open(name, flags, mode, &access_mode);
   }
