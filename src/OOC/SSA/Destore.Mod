@@ -683,7 +683,6 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
                 origin. selectOut[var] := NIL;
                 
               ELSE
-                ASSERT (registerCount+memoryCount = 2);
                 (* we have the value we need partially in memory, partially as
                    value; convert this situation into an "all memory" or "all
                    value" scenario; on the assumption that a reads are cheaper
