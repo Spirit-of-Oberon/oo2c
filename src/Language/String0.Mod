@@ -20,7 +20,7 @@ MODULE Language:String0 [OOC_EXTENSIONS];
     Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
-(* NOTE: This module is itended to become Language:String eventually.
+(* NOTE: This module is intended to become Language:String eventually.
    It will replace the current Language:String, Language:String8, and
    Language:String16 modules.
    
@@ -166,7 +166,7 @@ TYPE
   END;
   
 TYPE
-  String8 = POINTER TO String8Desc;
+  String8* = POINTER TO String8Desc;
   BufferLatin1 = ARRAY 8*1024 OF CHAR;
   String8Desc = RECORD
     (StringDesc)
@@ -219,10 +219,10 @@ TYPE
   END;
   
 CONST
-  invalidChar = 100;
+  invalidChar* = 100;
   (**The character cannot be mapped into the character range of the target
      encoding.  *)
-  invalidData = 101;
+  invalidData* = 101;
   (**The input data of an operation is malformed.  For example, a decode
      instruction operating on 32-bit values is called with a number of bytes
      that is not a multiple of 4.  *)
@@ -410,6 +410,19 @@ PROCEDURE NewLatin1*(str[NO_COPY]: ARRAY OF CHAR): String;
     RETURN NewString8(SYSTEM.ADR(str), i);
   END NewLatin1;
 
+PROCEDURE NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT): String;
+(**Create a string value from @samp{str[start, end-1]} without any translation.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{data})}.
+   The characters in @oparam{str} are Latin-1 code points.
+   @end precond  *)
+  VAR
+    i: LONGINT;
+  BEGIN
+    RETURN NewString8(SYSTEM.ADR(str[start]), end-start);
+  END NewLatin1Region;
+
 PROCEDURE NewUCS2*(str[NO_COPY]: ARRAY OF LONGCHAR): String;
 (**Create a string value from @oparam{str} without any translation.
 
@@ -465,6 +478,11 @@ PROCEDURE NewUTF32*(str[NO_COPY]: ARRAY OF Char): String;
     END;
     RETURN NewString32 (SYSTEM.ADR(str), i);
   END NewUTF32;
+
+PROCEDURE (s: String8) CharsLatin1*(): CharsLatin1;
+  BEGIN
+    RETURN s. data;
+  END CharsLatin1;
 
 PROCEDURE (s: String) [ABSTRACT] CharAt* (index: LONGINT): Char;
   END CharAt;
@@ -529,6 +547,14 @@ PROCEDURE (enc: Encoder) [ABSTRACT] EncodeIncr*(s: String;
    range nor from the surrogate areas.
    @end precond  *)
   END EncodeIncr;
+
+PROCEDURE (enc: Encoder) [ABSTRACT] Closure*(b: Buffer);
+(**If the encoder still holds any partial data from previous calls to
+   @oproc{enc.EncodeIncr}, then flush this data to the buffer @oparam{b}.  This
+   method must be called at the end of the data stream for codecs that operate
+   on blocks of data, and for which the last and possibly incomplete block must
+   be handled specially.  *)
+  END Closure;
 
 PROCEDURE InitCodec* (codec: Codec; class: CodecClass;
                       preferredName: ARRAY OF CHAR);
@@ -706,6 +732,9 @@ PROCEDURE (enc: EncoderLatin1) EncodeIncr*(s: String;
     END;
   END EncodeIncr;
 
+PROCEDURE (enc: EncoderLatin1) Closure*(b: Buffer);
+  END Closure;
+
 (* Codec: UTF-32 (undefined byte order)
    ------------------------------------------------------------------------ *)
 
@@ -835,6 +864,9 @@ PROCEDURE (enc: EncoderUTF32) EncodeIncr*(s: String;
       END;
     END;
   END EncodeIncr;
+
+PROCEDURE (enc: EncoderUTF32) Closure*(b: Buffer);
+  END Closure;
 
 BEGIN
   NEW (latin1);
