@@ -55,10 +55,10 @@ ERROR (assignment compatible)
 
 REJECT:
 
-  1) type of proc is not procedure
-  2) proc is a function procedure
+  1) type of proc is not procedure  [Proc1]
+  2) proc is a function procedure  [Proc2, HOTFunction8]
   3) too few or too many entries in argument list
-  4) argument not assignment compatbile to value parameter
+  4) argument not assignment compatible to value parameter
   5) argument to VAR parameter is not a variable designator
   6) argument to VAR parameter is imported read-only
   7) formal parameter type is an open array, but the argument is

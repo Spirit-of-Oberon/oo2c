@@ -1,0 +1,9 @@
+MODULE Proc2;
+
+PROCEDURE P (a, b: INTEGER): INTEGER;
+  BEGIN
+  END P;
+
+BEGIN
+  P(123, 456);
+END Proc2.

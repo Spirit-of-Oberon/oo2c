@@ -10,8 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; assign10 assign11 assign12 assign13
-  assign14 procvar6">-->
+  select ="&SetupTestCasesWithOut; proc1 proc2 function8">-->
 
   &TestSetupWithOut;
     
@@ -77,25 +76,31 @@
       <code>RETURN</code> in the module body has an expression.
     </test>
     
+    <test id="proc1" type="reject" file="Proc1.Mod">
+      Procedure call syntax, but the designator in front of the
+      argument list is an integer variable.
+    </test>
+    <test id="proc2" type="reject" file="Proc2.Mod">
+      Calling a function procedure in a statement.
+    </test>
+    
     <test id="function1" type="run"
       file="../compile/HOTFunction1.Mod" output="../compile/HOTFunction1.Ref">
       A very simple function: No input arguments, and a return
       statement with a constant expression.
     </test>
-    
     <test id="function2" type="run"
       file="../compile/HOTFunction2.Mod" output="../compile/HOTFunction2.Ref">
       Another very simple function: The input parameter is used as the
       function's return value, without any transformation.
     </test>
-    
     <test id="function3" type="run"
       file="HOTFunction3.Mod" output="HOTFunction3.Ref">
       Another very simple function: The input parameter is copied to 
       a local variable, which is subsequently used as the
       function's return value.
     </test>
-
+    
     <test id="if1" type="run"
       file="HOTIf1.Mod" output="HOTIf1.Ref">
       A simple <code>IF-ELSE-END</code> statement, using a
@@ -162,10 +167,12 @@
       Simple functions: Compare character parameter with constant
       character and return different integer values depending on the result.
     </test>
-
     <test id="function7" type="error" file="HOTFunction7.Mod">
       An error should be signaled if control reaches the end of a
       function.
+    </test>
+    <test id="function8" type="reject" file="HOTFunction8.Mod">
+      Calling a normal procedure as a function.
     </test>
 
     <test id="loop1" type="run"
@@ -780,6 +787,10 @@
     <reject-info id="return2" pos="%RETURN" msg="RETURN must provide a result value"/>
     <reject-info id="return3" pos="RETURN %128;" msg="Type of expression is not compatible with variable type"/>
     <reject-info id="return4" pos="RETURN %123" msg="RETURN must not provide a result value"/>
+
+    <reject-info id="proc1" pos="%x(" msg="This must be a procedure designator"/>
+    <reject-info id="proc2" pos="%P(" msg="This is a function procedure"/>
+    <reject-info id="function8" pos=":= %P(" msg="This is not a function procedure"/>
 
     <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>
     <reject-info id="loop7" pos="WHILE str%[i] DO" msg="Expression must be of type BOOLEAN"/>
