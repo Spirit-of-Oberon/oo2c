@@ -343,11 +343,31 @@ PROCEDURE (opnd: Opnd) GetIntConst*(): LONGINT;
 
 PROCEDURE (opnd: Opnd) IsScheduleOpnd*(): BOOLEAN;
   BEGIN
-    RETURN
-        (opnd. class = OpndClass.loopExternalDef) OR
-        (opnd. class = OpndClass.antiDependency) OR
-        (opnd. class = OpndClass.regionDependency);
+    CASE opnd. class OF
+    | OpndClass.loopExternalDef,
+      OpndClass.antiDependency,
+      OpndClass.regionDependency:
+      RETURN TRUE;
+    ELSE
+      RETURN FALSE;
+    END;
   END IsScheduleOpnd;
+
+PROCEDURE (opnd: Opnd) IsValueOpnd*(): BOOLEAN;
+(**Return @code{TRUE} if operand takes a value that represents a true input
+   value of the instruction.  Otherwise, the operand represents meta data
+   that does should not appear in the emitted code.  *)
+  BEGIN
+    CASE opnd. class OF
+    | OpndClass.antiDependency,
+      OpndClass.regionDependency(*,  FIXME... this breaks bootstrap test with rtc disabled ...
+      OpndClass.readDesign,
+      OpndClass.writeDesign*):
+      RETURN FALSE;
+    ELSE
+      RETURN TRUE;
+    END;
+  END IsValueOpnd;
 
   (* ---------------------------------------------------------------------- *)
   

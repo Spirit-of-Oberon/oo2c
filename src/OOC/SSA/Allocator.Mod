@@ -319,13 +319,6 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       END;
     END GetLoop;
 
-  PROCEDURE IsDataOpnd (opnd: SSA.Opnd): BOOLEAN;
-    BEGIN
-      RETURN
-          (opnd. class # Opnd.antiDependency) &
-          (opnd. class # Opnd.regionDependency);
-    END IsDataOpnd;
-  
   <*IF DEBUG_ALLOCATOR THEN*>
   PROCEDURE WriteLive (b: Schedule.Block; msg: ARRAY OF CHAR;
                        g: IGraph.Graph; live: IGraph.Vector);
@@ -393,8 +386,8 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
       (* every argument of the instruction is checked whether it starts a
          live range and is placed into the live vector if it does *)
       opnd := proxy. instr. opndList;
-      WHILE (opnd # NIL) & IsDataOpnd (opnd) DO
-        IF (opnd. arg. info = rf) THEN
+      WHILE (opnd # NIL) DO
+        IF (opnd. arg. info = rf) & opnd. IsValueOpnd() THEN
           IF ~iGraph. In (opnd. arg. marker, live) THEN
             (* the live range of the value passed to `opnd' interferes with all
                live ranges currently active: calculate union between bit matrix
@@ -571,6 +564,13 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
     END TraverseBlocks;
 
   <*IF DEBUG_ALLOCATOR THEN*>
+  PROCEDURE WriteRes (res: SSA.Result);
+    BEGIN
+      Err.Hex (SYSTEM.VAL(LONGINT,res.instr), 8);
+      Err.Char (".");
+      Err.LongInt (res. ResultIndex(), 0);
+    END WriteRes;
+                             
   PROCEDURE WriteConflicts (rf: RegisterFile);
     VAR
       i, j: LONGINT;
@@ -580,7 +580,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
         res := rf. resultList. array[i](SSA.Result);
         Err.LongInt (i, 0);
         Err.String ("/");
-        Err.Hex (SYSTEM.VAL(LONGINT,res), 8);
+        WriteRes (res);
         Err.String (":");
         FOR j := 0 TO rf. resultList. size-1 DO
           IF rf. iGraph. Conflicts (i, j) THEN
