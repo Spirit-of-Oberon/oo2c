@@ -92,12 +92,11 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    IF forLibrary THEN
-      COPY (libtool. value(StringValue.Value). string^, cmd);
-      Strings.Append (" ", cmd);
-    ELSE
-      COPY("", cmd);
-    END;
+    (* always use the libtool wrapper, so that we can add .la files to
+       the linker argument line *)
+    COPY (libtool. value(StringValue.Value). string^, cmd);
+    Strings.Append (" ", cmd);
+    
     Strings.Append (cc. value(StringValue.Value). string^, cmd);
     Strings.Append (" -o ", cmd);
     execFile(File.URI). GetPath (str);
