@@ -215,9 +215,9 @@ ERROR (Character arrays):
 
 REJECT (SET IN operation):
 
-  1) a is not integer
-  2) b is not SET
-  3) a is constant and out of the range 0 <= a < size of b
+  1) a is not integer [OpSet6]
+  2) b is not SET [OpSet7]
+  3) a is constant and out of the range 0 <= a < size of b [OpSet5]
 
 ERROR:
 
@@ -230,10 +230,10 @@ ERROR:
 
 REJECT (SET constructor):
 
-  1) a is not an integer 
-  2) b is not an integer
-  3) a is negative, or larger than the size of the largest set type
-  4) b is negative, or larger than the size of the largest set type
+  1) a is not an integer [OpSet1 OpSet3]
+  2) b is not an integer [OpSet2 OpSet3]
+  3) a is negative, or larger than the size of the largest set type [OpSet4]
+  4) b is negative, or larger than the size of the largest set type [OpSet4]
 
 ACCEPT (SET constructor):
 
