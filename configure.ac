@@ -1,6 +1,6 @@
 dnl Autoconf requirements
 AC_PREREQ(2.53)
-AC_INIT(OOC,2.0.10,mva@users.sf.net)
+AC_INIT(OOC,2.0.10.2,mva@users.sf.net)
 AC_CONFIG_SRCDIR(src/OOC/Parser.Mod)
 AC_CONFIG_HEADER(lib/src/__config.h)
 
@@ -32,6 +32,9 @@ else
   AC_MSG_CHECKING([for libtool])
   AC_MSG_RESULT([disabled])
 fi
+
+dnl optional packages
+OOC_ARG_ENABLE_PTHREADS()
 
 dnl checks for libraries
 AC_CHECK_LIB(gc,GC_malloc)

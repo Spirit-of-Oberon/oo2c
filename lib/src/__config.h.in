@@ -1,5 +1,8 @@
 /* lib/src/__config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* signal garbage collector to use pthreads */
+#undef GC_PTHREADS
+
 /* Define to 1 if you have the `atexit' function. */
 #undef HAVE_ATEXIT
 
@@ -29,6 +32,9 @@
 
 /* Define to 1 if you have the `mingwex' library (-lmingwex). */
 #undef HAVE_LIBMINGWEX
+
+/* compiler was configured with --enable-threads=pthreads */
+#undef HAVE_LIBPTHREAD
 
 /* Define to 1 if you have the `wsock32' library (-lwsock32). */
 #undef HAVE_LIBWSOCK32

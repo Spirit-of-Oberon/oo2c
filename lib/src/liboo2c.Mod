@@ -59,6 +59,11 @@ IMPORT
   IO:Select,
   IOTextRider := IO:TextRider,
   IOBinaryRider := IO:BinaryRider,
+
+  (* optional stuff: *)
+<*IF HAVE_LIB_PTHREAD THEN*>
+  PThread,
+<*END*>
   
   libc,
   libadt,

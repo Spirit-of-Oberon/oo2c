@@ -45,3 +45,19 @@ else
    ooc_have_lib_$1=FALSE
 fi
 AC_SUBST(ooc_have_lib_$1)])
+
+
+AC_DEFUN(OOC_ARG_ENABLE_PTHREADS,
+[AC_ARG_ENABLE(threads,[  --enable-threads=pthreads include pthreads support],
+  [if test "$enableval" = pthreads; then
+     AC_DEFINE(HAVE_LIBPTHREAD,1,
+               [compiler was configured with --enable-threads=pthreads])
+     AC_DEFINE(GC_PTHREADS,1,
+               [signal garbage collector to use pthreads])
+     CPPFLAGS="$CPPFLAGS -D_REENTRANT"
+     ooc_have_lib_pthread=TRUE
+   else
+     ooc_have_lib_pthread=FALSE
+   fi],
+  [ooc_have_lib_pthread=FALSE])
+AC_SUBST(ooc_have_lib_pthread)])
