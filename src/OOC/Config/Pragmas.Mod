@@ -21,8 +21,7 @@ MODULE OOC:Config:Pragmas;
 *)
 
 IMPORT
-  Config:Value, ScannerBuilder := OOC:Scanner:Builder, Config:Parser,
-  Config:Section:Options,
+  Config:Value, Config:Parser, Config:Section:Options,
   StringValue := Config:Value:String,
   IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean;
@@ -38,9 +37,10 @@ TYPE
   END;
 
 TYPE
+  CharPos* = LONGINT;
   Variable = POINTER TO VariableDesc;
   ValueArray = POINTER TO ARRAY OF Value.Value;
-  CharPosArray = POINTER TO ARRAY OF ScannerBuilder.Pos;
+  CharPosArray = POINTER TO ARRAY OF CharPos;
   VariableDesc = RECORD
     next: Variable;
     name: Value.StringPtr;
@@ -55,7 +55,7 @@ TYPE
   HistoryDesc = RECORD
     startVariables: Section;
     varList: Variable;
-    lastCharPos: ScannerBuilder.Pos;
+    lastCharPos: CharPos;
     
     pushes: CharPosArray;
     numPushes-: LONGINT;
@@ -125,7 +125,7 @@ PROCEDURE NewHistory* (startVariables: Section): History;
   END NewHistory;
 
 PROCEDURE GetValue (h: History; var: Variable;
-                    charPos: ScannerBuilder.Pos): Value.Value;
+                    charPos: CharPos): Value.Value;
   VAR
     l, r, m: LONGINT;
   BEGIN
@@ -153,7 +153,7 @@ PROCEDURE GetValue (h: History; var: Variable;
   END GetValue;
 
 PROCEDURE (h: History) GetValue* (name: Value.String;
-                                  charPos: ScannerBuilder.Pos): Value.Value;
+                                  charPos: CharPos): Value.Value;
   VAR
     var: Variable;
   BEGIN
@@ -168,13 +168,13 @@ PROCEDURE (h: History) GetValue* (name: Value.String;
     END
   END GetValue;
 
-PROCEDURE LastCharPos (h: History; charPos: ScannerBuilder.Pos);
+PROCEDURE LastCharPos (h: History; charPos: CharPos);
   BEGIN
     ASSERT (charPos > h. lastCharPos);
     h. lastCharPos := charPos
   END LastCharPos;
 
-PROCEDURE SetValue (var: Variable;charPos: ScannerBuilder.Pos;
+PROCEDURE SetValue (var: Variable;charPos: CharPos;
                     value: Value.Value);
   CONST
     incrementSize = 4;
@@ -212,7 +212,7 @@ PROCEDURE SetValue (var: Variable;charPos: ScannerBuilder.Pos;
   END SetValue;
 
 PROCEDURE (h: History) SetValue* (name: Value.String;
-                                  charPos: ScannerBuilder.Pos;
+                                  charPos: CharPos;
                                   value: Value.Value);
 (* @precond
    @oparam{charPos} is strict monotonically increasing.  That is, if first
@@ -263,9 +263,9 @@ PROCEDURE (h: History) Push*;
     INC (h. numPushes)
   END Push;
 
-PROCEDURE (h: History) Pop* (charPos: ScannerBuilder.Pos);
+PROCEDURE (h: History) Pop* (charPos: CharPos);
   VAR
-    pushPos: ScannerBuilder.Pos;
+    pushPos: CharPos;
     var: Variable;
     oldValue: Value.Value;
   BEGIN
