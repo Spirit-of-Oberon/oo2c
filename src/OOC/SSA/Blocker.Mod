@@ -426,14 +426,27 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         res: SSA.Result;
         use: SSA.Opnd;
         p: Proxy;
+        loopEnd: SSA.Instr;
       BEGIN
         res := instr;
         WHILE (res # NIL) DO
           use := res. useList;
           WHILE (use # NIL) DO
             p := GetProxy(use. instr);
-            IF (p. loopAssoc = NIL) &
-               ((p. instr. opcode # Opcode.selectExit) OR
+            IF (p. instr. opcode = Opcode.loopStart) &
+               (p. instr # loopStart) THEN
+              (* we are looking at a nested loop: all the instructions within
+                 the loop have been marked as associates of the inner loop, but
+                 we must mark instructions following the loop as belonging to
+                 our current `loop' *)
+              loopEnd := p. instr. GetLoopEnd();
+              p := GetProxy(loopEnd);
+              p. loopAssoc := loop;
+              MarkUses (loopStart, loopEnd);
+              
+            ELSIF (p. loopAssoc = NIL) &
+               (((p. instr. opcode # Opcode.selectExit) &
+                 (p. instr. opcode # Opcode.loopEnd)) OR
                 (p. instr. GetLoopStart() # loopStart)) THEN
               (* stop when we reach an instruction that has already been
                  attached to another loop, and also when we reach a
