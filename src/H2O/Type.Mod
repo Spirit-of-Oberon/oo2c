@@ -86,6 +86,7 @@ TYPE
     qualifiers* : SET;
     variant* : SET;
     module* : Module;
+    visited* : BOOLEAN;
   END;
 
   ObjectDesc* = RECORD 
@@ -113,6 +114,9 @@ VAR
 
   modules- : Module;
   reserved- : ArrayList.ArrayList(STRING);
+
+  options* : Option.Options;
+  allowRedefinedProc : Option.Boolean;
 
 CONST
   pointerSize* = 4;
@@ -175,7 +179,7 @@ BEGIN
   END;
 END Size;
 
-PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module));
+PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module); src : Module);
 
   PROCEDURE Accumulate(module : Module);
   BEGIN
@@ -187,7 +191,10 @@ PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module));
   PROCEDURE Visit(t : Type);
   VAR o : Object;
   BEGIN
-    IF t.module # NIL THEN
+    IF t.visited THEN RETURN END;
+    t.visited := TRUE;
+
+    IF t.module # src THEN
       Accumulate(t.module);
     ELSE
       CASE t.class OF
@@ -205,7 +212,8 @@ PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module));
         END
       ELSE
       END
-    END
+    END;
+    t.visited := FALSE;
   END Visit;
 
 BEGIN
@@ -406,6 +414,7 @@ BEGIN
   t.qualifiers := qual;
   t.module := NIL;
   t.variant := {};
+  t.visited := FALSE;
 
   RETURN t;
 END NewType;
@@ -417,17 +426,6 @@ BEGIN
   t.name := Obj.NewLatin1(name);
   RETURN t;
 END BaseType;
-
-(* In some situations a type may be redefined. In particular, this is allowed
-if a structure or union is defined as an opaque type, and is later redefined.
-*)
-
-PROCEDURE AllowedRedefinition* (new, old : Type) : BOOLEAN;
-BEGIN
-  RETURN (new.class = old.class) &
-    ((new.class = tStruct) OR (new.class = tUnion)) &
-    (old.link = NIL);
-END AllowedRedefinition;
 
 (* Some declarations are OK without defining a name. This is because they have
    a type tag which generates a declaration as a side-effect. *)
@@ -488,6 +486,18 @@ BEGIN
   END;
 END SameTypes;
 
+(* In some situations a type may be redefined. In particular, this is allowed
+if a structure or union is defined as an opaque type, and is later redefined.
+*)
+
+PROCEDURE AllowedRedefinition* (new, old : Type) : BOOLEAN;
+BEGIN
+  RETURN 
+    (new.class = old.class) & (
+       ((new.class IN {tStruct, tUnion}) & (old.link = NIL))
+    OR ((new.class = tFunction) & allowRedefinedProc.value & SameTypes(new, old, FALSE)));
+END AllowedRedefinition;
+
 (* Determine if a name is a valid output symbol *)
 
 PROCEDURE IsLetter* (c : UCS4CHAR) : BOOLEAN;
@@ -513,11 +523,39 @@ BEGIN
   RETURN FALSE
 END ValidOutputSymbol;
 
+PROCEDURE IsValidParameterType(t : Type) : BOOLEAN;
+BEGIN
+  RETURN ~ (t.class IN { tStruct, tUnion, tFunction });
+END IsValidParameterType;
+
+PROCEDURE IsValidResultType(t : Type) : BOOLEAN;
+BEGIN
+  RETURN ~ (t.class IN { tStruct, tUnion, tFunction, tArray });
+END IsValidResultType;
+
+PROCEDURE IsValidProcedureType* (t : Type) : BOOLEAN;
+VAR o : Object;
+BEGIN
+  ASSERT(t.class = tFunction);
+  IF IsValidResultType(t.base.Base()) THEN
+    o := t.link;
+    WHILE o # NIL DO
+      IF ~IsValidParameterType(o.type.Base()) THEN
+        RETURN FALSE
+      END;
+      o := o.next;
+    END;
+    RETURN TRUE;
+  ELSE
+    RETURN FALSE;
+  END;
+END IsValidProcedureType;
+
 (* Determine if a type is OK as a pointer base type *)
 
 PROCEDURE IsPointerBaseType* (t : Type) : BOOLEAN;
 BEGIN
-  RETURN t.class IN { tArray, tStruct, tUnion};
+  RETURN t.class IN { tArray, tStruct, tUnion };
 END IsPointerBaseType;
 
 (* Determine if a type is a type constructor *)
@@ -779,5 +817,7 @@ BEGIN
   longDoubleType := BaseType(tReal, 8, "long double");
   voidType := BaseType(tVoid, 0, "void");
 
+  options := NEW(Option.Options);
+  allowRedefinedProc := options.Boolean("AllowRedefinedProc", FALSE);
 END H2O:Type.
 
