@@ -153,13 +153,22 @@ TYPE
        computation; initialized to NIL, not stored in a symbol file *)
   END;
   DeclarationArray* = POINTER TO ARRAY OF Declaration;
+
+CONST
+  dynamicSize* = -1;
+  (**The size of a variable of this type depends on the concrete instance that
+     it holds, and therefore cannot be computed statically.  Examples for this
+     or open array heap objects, or string constants.  *)
+  unknownSize* = -2;
+  (**The size of the type has not been computed yet.  *)
   
 TYPE
   Type* = POINTER TO TypeDesc;
   TypeDesc = RECORD [ABSTRACT]
-    (**As far as the symbol table is concerned, a type is either a type
-       reference (that is, an instance of @otype{TypeName}), or a type
-       constructor defining a new record, array, pointer, or procedure type. *)
+    (**Common base type of all type definitions.  As far as the symbol table is
+       concerned, a type is either a type reference (that is, an instance of
+       @otype{TypeName}), or a type constructor defining a new record, array,
+       pointer, or procedure type.  *)
     (ItemDesc)
     position-: Position;
     (**Position of the type name or type constructor.  This field is mostly
@@ -171,6 +180,28 @@ TYPE
        appear on the right side of a type declaration.  If multiple aliases
        are defined for a type, this field refers to the name of the original
        declaration.  *)
+    size-: LONGINT;                      (* FIXME... make this `Integer'? *)
+    (**Size in bytes of the memory that needs to be allocated to hold a value
+       of this type.  For most types, this is a non-negative value.  It is zero
+       for empty record types, and for array types with length of zero.  For
+       types whose size is computed at run-time (like open array parameters and
+       open array heap objects) or whose size is a function of the actual value
+       (as for string constants), this field is @oconst{dynamicSize}.  It field
+       is initialized to @oconst{unknownSize}, and changed to its final value
+       after
+
+       @itemize @bullet
+       @item
+       its symbol file has been read in completely, or
+
+       @item
+       while completing the information on declarations of the currently parsed
+       module.
+       @end itemize  *)
+    align-: INTEGER;
+    (**Minimum alignment of this type.  A variable holding a value of this type
+       must be allocated at a memory address that is a multiple of this number.
+       The field is initialized to @samp{1}, the minimum possible alignment.  *)
   END;
 
 
@@ -305,7 +336,7 @@ TYPE
   (**Numeric code assigned to predefined types and procedures.  Within their
      separate classes, ids uniquely identify a named entity.  *)
   PredefType* = POINTER TO PredefTypeDesc;
-  PredefTypeDesc = RECORD
+  PredefTypeDesc* = RECORD
     (**Predefined types (like @code{INTEGER}, @code{SET}, the string types,
        and so on) of the language are represented by instances of this
        class.  The @omodule{*OOC:SymbolTable:Predef} defines the predefined
@@ -431,6 +462,10 @@ TYPE
        does not exist before
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}
        has been run.  *)
+
+    isUnion-: BOOLEAN;
+    (**If @code{TRUE}, then the record is treated like a C-style @code{union}
+       type.  *)
        
     className*: Name;                    (* ... make this read-only? *)
     (**If the record has been classified as being part of a @emph{class}
@@ -542,6 +577,10 @@ TYPE
     (**Similar to @ofield{type}, but it is not changed to a reference to
        the true type after
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
+    offset-: LONGINT;                      (* FIXME... make this `Integer'? *)
+    (**Offset in bytes of this field with respect to the record variable's
+       base address.  This field is initially @samp{-1}, and changed to its
+       final value when calculating size and alignment of the record type.  *)
   END;
 
 TYPE
@@ -791,7 +830,9 @@ PROCEDURE InitType* (type: Type; parent: Item; position: Position);
   BEGIN
     InitItem (type, parent);
     type. position := position;
-    type. typeName := NIL
+    type. typeName := NIL;
+    type. size := unknownSize;
+    type. align := 1;
   END InitType;
 
 PROCEDURE (type: Type) Store* (w: Object.Writer);
@@ -813,7 +854,9 @@ PROCEDURE (type: Type) Load* (r: Object.Reader);
       type. typeName := NIL
     ELSE
       type. typeName := obj(Name)
-    END
+    END;
+    type. size := unknownSize;
+    type. align := 1;
   END Load;
 
 PROCEDURE (type: Type) SetTypeName* (name: Name);
@@ -821,6 +864,12 @@ PROCEDURE (type: Type) SetTypeName* (name: Name);
   BEGIN
     type. typeName := name
   END SetTypeName;
+
+PROCEDURE (type: Type) SetSize* (size: LONGINT; align: INTEGER);
+  BEGIN
+    type. size := size;
+    type. align := align;
+  END SetSize;
 
 
 PROCEDURE InitLinkDirective (l: LinkDirective);
@@ -1193,7 +1242,8 @@ PROCEDURE InitFieldDecl* (fieldDecl: FieldDecl; parent: Item; name: Name;
   BEGIN
     InitDeclaration (fieldDecl, parent, name, visibleFrom, exportMark, docString);
     fieldDecl. type := type;
-    fieldDecl. srcCodeType := type
+    fieldDecl. srcCodeType := type;
+    fieldDecl. offset := -1;
   END InitFieldDecl;
 
 PROCEDURE (fieldDecl: FieldDecl) Store* (w: Object.Writer);
@@ -1212,6 +1262,11 @@ PROCEDURE (fieldDecl: FieldDecl) Load* (r: Object.Reader);
     fieldDecl. srcCodeType := obj(Type);
     fieldDecl. type := fieldDecl. srcCodeType
   END Load;
+
+PROCEDURE (fieldDecl: FieldDecl) SetOffset* (offset: LONGINT);
+  BEGIN
+    fieldDecl. offset := offset;
+  END SetOffset;
 
 
 PROCEDURE InitPredefProc* (proc: PredefProc; parent: Item; name: Name;
@@ -1382,6 +1437,7 @@ PROCEDURE InitRecord* (record: Record; parent: Item; position: Position;
     record. srcCodeBaseType := baseType;
     record. tbProcCount := -1;           (* initialize to "unknown number" *)
     record. ns := NIL;
+    record. isUnion := FALSE;
     record. className := NIL
   END InitRecord;
 
@@ -1391,6 +1447,7 @@ PROCEDURE (record: Record) Store* (w: Object.Writer);
     (*w. WriteObject (record. baseType);*)
     w. WriteObject (record. srcCodeBaseType);
     w. WriteNum (record. tbProcCount);
+    w. WriteBool (record. isUnion);
     w. WriteObject (record. className);
     (* ignore field `ns' *)
   END Store;
@@ -1409,6 +1466,7 @@ PROCEDURE (record: Record) Load* (r: Object.Reader);
     record. baseType := record. srcCodeBaseType;
     r. ReadNum (record. tbProcCount);
     record. ns := NIL;
+    r. ReadBool (record. isUnion);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
       record. className := NIL
