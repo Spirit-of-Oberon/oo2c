@@ -66,7 +66,7 @@ main-clean: test-cleanall
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
 distclean: main-clean
-	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml lib/pkginfo.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
+	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml lib/pkginfo.xml rsrc/OOC/TestFramework/config.xml rsrc/OOC/oobacktrace src/OOC/Config/Autoconf.Mod
 	rm -f lib/src/__config.h config.log config.status config.status64
 	rm -Rf autom4te.cache stage0/bin bin
 
@@ -164,6 +164,7 @@ install: lib/obj/liboo2c.la bin/oo2c install-man
 	$(INSTALL) -d $(oocdir)/pkginfo
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
+	$(INSTALL_SCRIPT) rsrc/OOC/oobacktrace $(bindir)/oobacktrace
 	chmod a+x $(oocdir)/install-sh
 
 install-strip:
@@ -171,7 +172,7 @@ install-strip:
 
 uninstall: uninstall-man FRC
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml $(OFLAGS) --uninstall-package oo2c liboo2c
-	rm -f $(oocdir)/pkginfo.xml
+	rm -f $(bindir)/oobacktrace $(oocdir)/pkginfo.xml
 
 ifdef MAIN_MAKEFILE
 include $(MAIN_MAKEFILE)

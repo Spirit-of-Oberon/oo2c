@@ -11,10 +11,9 @@ dnl checks for programs
 AC_PROG_INSTALL
 AC_PATH_PROG(OOC,oo2c,[bin/oo2c --config oo2crc-install.xml])
 AC_PATH_PROG(OOEF,ooef,[bin/ooef])
-AC_PATH_PROG(OOEF,ooef,bin/ooef)
 AC_PATH_PROG(DIFF,diff,diff)
 AC_PATH_PROG(XSLTPROC,xsltproc,no)
-AC_PATH_PROG(PERL,perl,perl)
+AC_PATH_PROG(PERL,perl,/usr/bin/perl)
 
 AC_ARG_ENABLE(libs, [  --disable-libs          don't build static/shared libraries with libtool],,enable_libs=yes)
 if test $enable_libs = yes; then
@@ -65,5 +64,6 @@ AC_CHECK_FUNCS(backtrace_symbols readdir_r)
 dnl checks for system services
 
 AC_CONFIG_FILES([ENV Makefile.config rsrc/OOC/oo2crc.xml.mk lib/pkginfo.xml 
-		 src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml])
+		 src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml
+		 rsrc/OOC/oobacktrace])
 AC_OUTPUT
