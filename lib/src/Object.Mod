@@ -39,7 +39,7 @@ TYPE
   Object* = POINTER TO ObjectDesc;
   ObjectArray*(E: Object) = ARRAY OF E;
   ObjectArrayPtr*(E: Object) = POINTER TO ObjectArray(E);
-  ObjectDesc* = RECORD [ABSTRACT]
+  ObjectDesc* = RECORD [ABSTRACT] (RT0.ObjectDesc)
   (**This class is the common base type of (almost) all classes defined in this
      module and the ADT library.  It provides the methods @oproc{Object.Equals}
      and @oproc{Object.HashCode}.

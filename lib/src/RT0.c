@@ -82,6 +82,14 @@ static void _negative_length(OOC_LEN len) {
   exit(EXIT_CODE);
 }
 
+#ifdef USE_BOEHM_GC
+void HandleFinalize(GC_PTR ptr, GC_PTR client_data) {
+  int prefix = ROUND_SIZE(sizeof(RT0__Struct));
+  RT0__Object obj = (RT0__Object) (ptr + prefix);
+
+  DYN_TBCALL(RT0,ObjectDesc,Finalize,(RT0__Object)obj,(obj));
+}
+#endif
 
 OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   void *var, *ptr;
@@ -116,6 +124,12 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     if (flags & (1<<RT0__flagVTable)) {
       ((void **) var)[0] = td->tbProcs;
     }
+#ifdef USE_BOEHM_GC
+    if (flags & (1<<RT0__flagFinalize)) { 
+      GC_register_finalizer(ptr, 
+        HandleFinalize, 0, (GC_finalization_proc *) 0, (GC_PTR *) 0);
+    }
+#endif
   } else if (form == RT0__strArray) { /* fixed size array */
     int size = td->size;
     if (size == 0) size++;
@@ -217,6 +231,19 @@ void RT0__CollectGarbage() {
 #endif
 }
 
+void RT0__RegisterDisappearingLink(OOC_PTR * ptr) {
+#ifdef USE_BOEHM_GC
+/* CHECKME: What if ptr is not in a heap object? */
+  GC_general_register_disappearing_link(ptr, GC_base(*ptr));
+#endif
+}
+
+void RT0__UnregisterDisappearingLink(OOC_PTR * ptr) {
+#ifdef USE_BOEHM_GC
+/* CHECKME: What if ptr is not in a heap object? */
+  GC_unregister_disappearing_link(ptr);
+#endif
+}
 
 void RT0__ErrorIndexOutOfRange (RT0__Module mid, OOC_CHARPOS pos,
 				OOC_LEN index, OOC_LEN length) {
@@ -338,6 +365,9 @@ RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN 
   return NULL;
 }
 
+void RT0__ObjectDesc_Finalize(RT0__Object o) {
+  (void)fprintf(stderr, "RT0.ObjectDesc.Finalize(%p)\n", o);
+}
 
 void OOC_RT0_init() {
 #ifdef USE_BOEHM_GC

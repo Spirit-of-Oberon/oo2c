@@ -95,7 +95,17 @@ CONST
   (**Indicates that this record type has a vtable entry which must be
      initialised by @oproc{NewObject}. *)
 
+  flagFinalize* = 2;
+  (**Indicates that this record type has a Finalize procedure which should be
+	 called by the run-time system upon collection by the GC. This flag is set
+	 by the compiler for record types that override the method
+	 @oproc{ObjectDesc.Finalize}. *)
+
 TYPE
+  Object* = POINTER TO ObjectDesc;
+  ObjectDesc* = RECORD
+  END;
+
   Name* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
   Module* = POINTER TO ModuleDesc;
   Struct* = POINTER TO StructDesc;
@@ -259,7 +269,21 @@ VAR
      @oproc{NewObject} and @oproc{NewBlock} is filled with this byte value.
      Otherwise, the memory is left as provided by the used libc or libgc
      library.  This is the default.  *)
-  
+
+PROCEDURE (o : Object) Finalize*;
+(**This procedure is called by the run-time system immediately before an
+   object is collected by the garbage collector. This procedure may be used to
+   reclaim any system resources (other than GC-managed memory) associated with
+   this object (eg. OS handles). Any type that overrides this method is
+   automatically registered for finalization by the run-time system.
+   
+   The Boehm GC finalizes objects in @emph{topological order}. That is, if
+   @var{A} points to @var{B}, and both are registered for finalization, it is
+   guaranteed the @var{A} will be finalized first. This usually guarantees
+   that finalization procedures see only unfinalized objects. For more details
+   on finalization, see:
+   @url{http://www.hpl.hp.com/personal/Hans_Boehm/gc/finalization.html}. *)
+
 PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
 (**Allocates a new array or record variable on the heap, using the type
    descriptor @oparam{td}.  For an open array object, the lengths of the
@@ -296,6 +320,16 @@ PROCEDURE FreeBlock* (ptr: SYSTEM.PTR);
 PROCEDURE CollectGarbage*;
 (**Explicitly trigger a full, world-stop garbage collection.  *)
 
+PROCEDURE RegisterDisappearingLink* (VAR ptr : SYSTEM.PTR);
+(**Register the pointer @oparam{ptr} to be cleared when the object that it
+   references is collected by the garbage collector. Note: it is only safe
+   to register pointers from heap objects, or global module variables. NEVER
+   use this procedure for a pointer allocated on the stack (ie. a local
+   variable or procedure parameter). *)
+
+PROCEDURE UnregisterDisappearingLink* (VAR ptr : SYSTEM.PTR);
+(**Undoes a registration of pointer @oparam{ptr} created by
+   @oproc{RegisterDisappearingLink}. *)
 
 PROCEDURE ErrorIndexOutOfRange* [NO_RETURN](mid: Module; pos: LONGINT;
                                  index, length: LONGINT);
