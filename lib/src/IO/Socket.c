@@ -15,7 +15,7 @@ typedef int ssize_t;
 #include <fcntl.h>
 #include <errno.h>
 
-int GetError() {
+static int GetError() {
 #ifdef __MINGW32__
 /* Store WinSock error code in "errno" so that it is available to 
    StdChannels:IOError() */
@@ -34,7 +34,7 @@ IO_Socket__Socket IO_Socket__New() {
   return s;
 }
 
-void SetBlocking(int fd, OOC_CHAR8 block) {
+static void SetBlocking(int fd, OOC_CHAR8 block) {
 #ifdef __MINGW32__
   u_long args;
   if (block) {
@@ -220,7 +220,7 @@ OOC_INT32 IO_Socket__Write(IO_Socket__Socket ch,
 }
 
 #ifdef __MINGW32__
-void StartNet(void) {
+static void StartNet(void) {
   WSADATA data;
   int err;
 
@@ -230,7 +230,7 @@ void StartNet(void) {
   }
 }
 
-void StopNet(void) {
+static void StopNet(void) {
   int err;
   err = WSACleanup();
   if (err != 0) {
