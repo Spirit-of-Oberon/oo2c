@@ -508,6 +508,18 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (");")
     END Assert;
   
+  PROCEDURE CheckIndex (checkIndex: SSA.Instr);
+    VAR
+      bt: DeclWriter.BasicTypeId;
+    BEGIN
+      w. WriteString ("_check_index(");
+      RefList (checkIndex. opndList, Opnd.arg);
+      w. WriteString (", ");
+      bt := SubclassToBasicType (instr)+(DeclWriter.uint8-DeclWriter.int8);
+      w. WriteString (w. basicType[bt]. repr);
+      w. WriteString (");")
+    END CheckIndex;
+  
   PROCEDURE Call (call: SSA.Instr);
     VAR
       adr: SSA.Instr;
@@ -1077,8 +1089,10 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteDyadicOp (instr, ">=");
         
       | Opcode.assert:
-        Assert (instr)
-            
+        Assert (instr);
+      | Opcode.checkIndex:
+        CheckIndex (instr);
+        
       | Opcode.call:
         IF ~w. registerMap. HasKey (instr) THEN
           w. Newline;

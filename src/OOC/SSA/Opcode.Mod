@@ -539,7 +539,27 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  labels* = 56;
+  checkIndex* = 56;
+  (**Ensures that an index is value with respect to a given array length.  An
+     exception is raised if the index is negative, or less or equal to the
+     array's length.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA.Opnd.arg
+     The index value.
+
+     @item *OOC:SSA.Opnd.arg
+     The length of the array.
+     @end table
+
+     The result of the instruction is the checked index.  One additional result
+     is the new value of @var{store}, another one is of class
+     @oconst{*OOC:SSA:Result.exception}.  *)
+  
+  labels* = 57;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -679,6 +699,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
       
     | assert: cstr := "assert";
     | call: cstr := "call";
+
+    | checkIndex: cstr := "check-index";
     END;
     
     COPY (cstr, name);

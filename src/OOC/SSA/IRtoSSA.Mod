@@ -65,36 +65,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE ^ Call (call: IR.Call): SSA.Instr;
   PROCEDURE ^ Expression (expr: IR.Expression): SSA.Result;
     
-  PROCEDURE RetrieveLength (pb: SSA.ProcBlock; variant: IR.Variant;
-                            arrayVariable: IR.Expression; dim: LONGINT): SSA.Instr;
-    VAR
-      res: SSA.Result;
-    BEGIN
-      IF (variant = -1) THEN
-        IF (arrayVariable IS IR.Var) THEN
-          variant := IR.lenOpenArrayParam;
-        ELSE
-          variant := IR.lenOpenArrayHeap;
-        END;
-      END;
-      
-      CASE variant OF
-      | IR.lenStringConst:
-        ASSERT (arrayVariable. type(Sym.PredefType). id = Predef.charString);
-        RETURN pb. GetConstInt (arrayVariable(IR.Const). value(String8.Value). value. length+1);
-        
-      | IR.lenOpenArrayParam, IR.lenOpenArrayHeap:
-        res := Expression (arrayVariable);
-        RETURN pb. AddGetLengthInstr (res(SSA.Instr), pb. GetConstInt (dim));
-      END;
-    END RetrieveLength;
-  
   PROCEDURE CalculateSize (pb: SSA.ProcBlock; value: IR.Expression;
-                           dim: LONGINT): SSA.Instr;
+                           dim: LONGINT; baseArray: SSA.Result): SSA.Instr;
   (* Calculate the size of the variable @oparam{value} or of one of its
      elements.  With @oparam{dim=-1}, return the size of the whole variable.
      With @oparam{dim>=0}, return the size of an array element of dimension
-     @oparam{dim}.  *)
+     @oparam{dim}.  @oparam{baseArray} holds the (virtual, and dead)
+     @oconst{Opcode.get} instruction on the array variable.  *)
     VAR
       type: Sym.Type;
       i: LONGINT;
@@ -105,7 +82,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       BEGIN
         IF (type IS Sym.Array) & type(Sym.Array). isOpenArray THEN
           size := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
-          size. AddOpnd (RetrieveLength (pb, -1, value, dim+1), Opnd.arg);
+          size. AddOpnd (pb. AddGetLengthInstr (baseArray(SSA.Instr),
+                                                dim+1, type(Sym.Array)),
+                         Opnd.arg);
           size. AddOpnd (RecursiveGetSize (type(Sym.Array). elementType,
                                            dim+1), Opnd.arg);
           RETURN size;
@@ -229,8 +208,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE Expression (expr: IR.Expression): SSA.Result;
     VAR
       instr: SSA.Instr;
-      res: SSA.Result;
+      res, baseArray: SSA.Result;
       opcode: Opcode.Class;
+      dim: LONGINT;
+      type: Sym.Type;
 
     PROCEDURE Deref (deref: IR.Deref): SSA.Result;
       VAR
@@ -248,25 +229,78 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (address, Opnd.readDesign);
         RETURN instr
       END Deref;
-    
-    PROCEDURE Index (indexOp: IR.Index): SSA.Result;
+
+    PROCEDURE GetIndexBaseArray (indexOp: IR.Expression; VAR dim: LONGINT): SSA.Result;
       VAR
-        instr, elementAdr, scaledIndex: SSA.Instr;
-        baseResult, index: SSA.Result;
+        res: SSA.Result;
+      BEGIN
+        WITH indexOp: IR.Index DO
+          res := GetIndexBaseArray (indexOp. array, dim);
+          INC (dim);
+          RETURN res;
+        ELSE
+          dim := -1;
+          RETURN Expression (indexOp);
+        END;
+      END GetIndexBaseArray;
+
+    PROCEDURE AddException (pb: SSA.ProcBlock; opcode: Opcode.Class;
+                            subclass: Opcode.Subclass): SSA.Instr;
+      VAR
+        instr: SSA.Instr;
+      BEGIN
+        instr := pb. AddInstr (opcode, subclass);
+        Chain (instr);
+        RETURN instr;
+      END AddException;
+    
+    PROCEDURE Index (indexOp: IR.Index;
+                     baseArray: SSA.Result;
+                     elementSize: SSA.Result;
+                     dim: LONGINT): SSA.Result;
+    (* Handles a sequence of index operations on an array.  @oapram{indexOp} is
+       the index operation that is to be translated.  @oparam{baseArray} holds
+       the (virtual) @oconst{Opcode.get} operation on the array variable at the
+       very start of the index sequence.  @oparam{elementSize} is the size in
+       bytes of the value produced by this index operation.  @oparam{dim} is
+       the dimension of @oparam{baseArray} on which @oparam{indexOp} operates.  *)
+      VAR
+        instr, elementAdr, scaledIndex, newSize, check: SSA.Instr;
+        baseResult, length, index: SSA.Result;
         adrOpnd: SSA.Opnd;
         elementType: Sym.Type;
       BEGIN
+        length := pb. AddGetLengthInstr (baseArray(SSA.Instr), dim,
+                                         indexOp. array. type(Sym.Array));
+        newSize := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
+        newSize. AddOpnd (elementSize, Opnd.arg);
+        newSize. AddOpnd (length, Opnd.arg);
+        
+        IF (indexOp. array IS IR.Index) THEN
+          baseResult := Index (indexOp. array(IR.Index), baseArray,
+                               newSize, dim-1);
+        ELSE
+          baseResult := baseArray;
+          ASSERT (dim = 0);
+        END;
+        INC (dim);
+        ASSERT (baseResult. instr. opcode = Opcode.get);
+        
         (* take the "get" instruction of the array's designator and
            change it into a "get" for the array element *)
-        baseResult := Expression (indexOp. array);
-        ASSERT (baseResult. instr. opcode = Opcode.get);
         instr := baseResult. instr;
         index := Expression (indexOp. index);
-
+        IF FALSE & indexOp. checkIndex THEN
+          check := AddException (pb, Opcode.checkIndex, index. subclass);
+          check. AddOpnd (index, Opnd.arg);
+          check. AddOpnd (length, Opnd. arg);
+          index := check;
+        END;
+        
         elementType := indexOp. type;
         scaledIndex := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
         scaledIndex. AddOpnd (index, Opnd.arg);
-        scaledIndex. AddOpnd (CalculateSize (pb, indexOp, -1), Opnd.arg);
+        scaledIndex. AddOpnd (elementSize, Opnd.arg);
         
         adrOpnd := instr. opndList. nextOpnd;
         elementAdr := pb. AddInstr (Opcode.add, Opcode.scAddress);
@@ -501,14 +535,21 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
         
       | expr: IR.Len DO
-        RETURN RetrieveLength (pb, expr. variant,
-                               expr. arrayVariable, expr. dim);
+        IF (expr. variant = IR.lenStringConst) THEN
+          RETURN pb. GetConstInt (expr. arrayVariable(IR.Const). value(String8.Value). value. length+1);
+        ELSE
+          baseArray := Expression (expr. arrayVariable);
+          type := expr. arrayVariable. type(Sym.Array). GetNthElementType (expr. dim);
+          RETURN pb. AddGetLengthInstr (baseArray(SSA.Instr), expr. dim,
+                                        type(Sym.Array));
+        END;
 
       | expr: IR.Deref DO
         RETURN Deref (expr);
         
       | expr: IR.Index DO
-        RETURN Index (expr);
+        baseArray := GetIndexBaseArray (expr, dim);
+        RETURN Index (expr, baseArray, CalculateSize (pb, expr, -1, baseArray), dim);
 
       | expr: IR.SelectField DO
         RETURN SelectField (expr);
@@ -1005,7 +1046,8 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       instr: SSA.Instr;
     BEGIN
       instr := pb. AddCopyParameter
-          (cp. param. decl(Sym.VarDecl), s, CalculateSize (pb, cp. param, -1));
+          (cp. param. decl(Sym.VarDecl), s,
+           CalculateSize (pb, cp. param, -1, Expression (cp. param)));
       s := instr. AddResult (Result.store);
     END CopyParameter;
   

@@ -439,7 +439,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         RETURN GetSelectValue (instr);
         
       | Opcode.collect, Opcode.newObject, Opcode.copyParameter, Opcode.loopEnd,
-        Opcode.exit, Opcode.return, Opcode.assert:
+        Opcode.exit, Opcode.return,
+        Opcode.assert, Opcode.checkIndex:
         RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
 
       | Opcode.loopStart:
@@ -587,7 +588,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
             END;
             
           | Opcode.loopStart, Opcode.selectExit, Opcode.collect,
-            Opcode.select, Opcode.newObject:
+            Opcode.select, Opcode.newObject(*,
+            Opcode.assert, Opcode.checkIndex*):
             RETURN VisibleEffect (instr. GetResultStore(), set)
             
           ELSE
