@@ -31,8 +31,7 @@ MODULE OOC:IA32:WriteAssembler [OOC_EXTENSIONS];
 IMPORT
   Ascii, IntStr, Log, Out, StdChannels, Strings, StringSearch, 
   ADT:String,
-  OOC:Config, Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,
-  OOC:SymbolTable:Predef,
+  Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,OOC:SymbolTable:Predef,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Schedule, 
   OOC:C:Naming, OOC:IA32:Writer, OOC:Make:Command:TranslateToIA32,
   OOC:SSA:IRtoSSA, OOC:SSA:XML, OOC:SSA:Inspector,
@@ -284,7 +283,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
 
     w := t. w;
     IF (proc. decl. parent = NIL) THEN
-      name := Naming.NameOfModuleInit (t. module);
+      name := Naming.NameOfModuleInit (t. symTab, TRUE);
     ELSE      
       name := Naming.NameOfDeclaration (proc. decl);
     END;

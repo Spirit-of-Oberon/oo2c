@@ -161,6 +161,12 @@ TYPE
 TYPE
   ModuleDesc = RECORD
     name-: Name;
+    (**Name of the module.  *)
+
+    typeDescriptors-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF Struct;
+    (**All type descriptors of this module that correspond to named types
+       defined on the top level.  Descriptors are listed in no particular
+       order.  The last element of the array has the value @code{NIL}.  *)
   END;
   
 VAR
@@ -216,5 +222,16 @@ PROCEDURE ErrorFailedTypeAssert* (mid: Module; pos: LONGINT);
 PROCEDURE ErrorFailedFunction* (mid: Module; pos: LONGINT);
 PROCEDURE ErrorAssertionFailed* (mid: Module; pos: LONGINT; code: LONGINT);
 PROCEDURE Halt* (code: LONGINT);
+
+PROCEDURE RegisterModule* (mid: Module);
+(**Registers the module descriptor with the run-time system.  *)
+
+PROCEDURE ThisModule* (name: ARRAY OF CHAR): Module;
+(**Returns the module descriptor for the module @oparam{name}.  Result is
+   @code{NIL} if no module of this name has been registered.  *)
+  
+PROCEDURE ThisType* (mid: Module; name: ARRAY OF CHAR): Struct;
+(**Returns the type descriptor for the type @oparam{name} of module
+   @oparam{mid}.  Result is @code{NIL} if there is not such type descriptor.  *)
 
 END RT0.

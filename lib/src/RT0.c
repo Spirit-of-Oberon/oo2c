@@ -3,6 +3,11 @@
 #include "__oo2c.c"
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
+
+static RT0__Module* modules = NULL;
+static int moduleCount = 0, sizeModules = 32;
+
 
 #define ROUND_SIZE(s) ((s+7) & ~((size_t)7))
 
@@ -164,7 +169,52 @@ void RT0__Halt (OOC_INT32 code) {
   exit(code);
 }
 
+
+
+void RT0__RegisterModule(RT0__Module mid) {
+  if (moduleCount == sizeModules) {
+    RT0__Module* newModules;
+    int i;
+    
+    sizeModules = sizeModules*2;
+    newModules = RT0__NewBlock(sizeModules*sizeof(RT0__Module));
+    for (i=0; i != moduleCount; i++) {
+      newModules[i] = modules[i];
+    }
+    RT0__FreeBlock(modules);
+    modules = newModules;
+  }
+  
+  modules[moduleCount] = mid;
+  moduleCount++;
+}
+
+RT0__Module RT0__ThisModule(const OOC_CHAR8 name__ref[], OOC_LEN name_0d) {
+  int i=0;
+  while ((i != moduleCount) && strcmp(name__ref, modules[i]->name)) {
+    i++;
+  }
+  if (i == moduleCount) {
+    return NULL;
+  } else {
+    return modules[i];
+  }
+}
+
+RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN name_0d) {
+  RT0__Struct* td;
+  
+  td = mid->typeDescriptors;
+  while (*td && strcmp(name__ref, (*td)->name)) {
+    td++;
+  }
+  return *td;
+}
+
+
 void RT0_init() {
+  modules = RT0__NewBlock(sizeModules*sizeof(RT0__Module));
+  
   PS(RT0__boolean , "BOOLEAN",  RT0__strBoolean , sizeof(OOC_BOOLEAN));
   PS(RT0__char    , "CHAR",     RT0__strChar    , sizeof(OOC_CHAR8));
   PS(RT0__longchar, "LONGCHAR", RT0__strLongchar, sizeof(OOC_CHAR16));

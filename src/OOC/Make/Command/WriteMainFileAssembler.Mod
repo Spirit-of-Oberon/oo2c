@@ -144,7 +144,7 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
       Instr("call RT0__InitVParStack");
       Instr("addl $16,%esp");
       
-      WriteModules (w, Dictionary.New(), cmd. module, Ascii.ht+"call ", "_init");
+      WriteModules (w, Dictionary.New(), cmd. module, Ascii.ht+"call ", "_init0");
       Instr("xorl %eax,%eax");
       Instr("leave");
       Instr("ret");

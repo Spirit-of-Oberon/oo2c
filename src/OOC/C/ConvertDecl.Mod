@@ -414,7 +414,13 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
     IF writeExported THEN
       w. AddDeclaration
           (w. NewDeclaration
-           (Naming.NameOfModuleInit (m),
+           (Naming.NameOfModuleInit (symTab, FALSE),
+            DeclWriter.tqNone,
+            DeclWriter.scExtern, 
+            w. NewFunction (w. basicType[DeclWriter.void], FALSE)));
+      w. AddDeclaration
+          (w. NewDeclaration
+           (Naming.NameOfModuleInit (symTab, TRUE),
             DeclWriter.tqNone,
             DeclWriter.scExtern, 
             w. NewFunction (w. basicType[DeclWriter.void], FALSE)));

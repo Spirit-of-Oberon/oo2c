@@ -119,18 +119,22 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
     END;
   END NameOfDeclaration;
 
-PROCEDURE NameOfModuleInit* (m: Repository.Module): String.String;
+PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): String.String;
   VAR
     str: Buffer;
     i: LONGINT;
   BEGIN
-    COPY (m. name^, str);
+    COPY (m. name. str^, str);
     i := 0;
     WHILE (str[i] # 0X) DO
       IF (str[i] = ":") THEN str[i] := "_" END;
       INC (i)
     END;
-    Strings.Append ("_init", str);
+    IF rtWrapper THEN
+      Strings.Append ("_init0", str);
+    ELSE      
+      Strings.Append ("_init", str);
+    END;
     RETURN String.New (str)
   END NameOfModuleInit;
 

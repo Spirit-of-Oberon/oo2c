@@ -22,7 +22,7 @@ MODULE OOC:C:RuntimeData;
 
 
 IMPORT
-  TextRider, ADT:String, OOC:Config, Sym := OOC:SymbolTable,
+  TextRider, ADT:String, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
@@ -32,7 +32,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
                   symTab: Sym.Module; writeHeader: BOOLEAN);
   VAR
     w: TextRider.Writer;
-
+    tdNames: ArrayList.ArrayList;
+    
   PROCEDURE Nli ();                      (* new line and indent *)
     BEGIN
       (*w. WriteLn;
@@ -65,6 +66,9 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       w. WriteLn;
       IF writeHeader THEN
         w. WriteString ("extern ");
+      ELSIF (type. namingDecl # NIL) &
+            (type. namingDecl. parent IS Sym.Module) THEN
+        tdNames.Append (name);
       END;
       w. WriteString (structTypeDesc);
       w. WriteString (" ");
@@ -243,25 +247,65 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       END;
     END Traverse;
 
-  PROCEDURE ModuleDescr (module: Sym.Module);
+  PROCEDURE ModuleDescr (module: Sym.Module; tdNames: ArrayList.ArrayList);
+    VAR
+      i: LONGINT;
     BEGIN
       w. WriteLn;
       w. WriteString ("static RT0__ModuleDesc _mid = {");
       Nli;
       w. WriteString ('(OOC_CHAR8*)"');
       w. WriteString (module. name. str^);
-      w. WriteString ('" };');
+      w. WriteString ('"');
+      CNli;
+      w. WriteString ("(RT0__Struct[]) {");
+      Nli;
+      FOR i := 0 TO tdNames. size-1 DO
+        w. WriteString ("&");
+        w. WriteString (tdNames. array[i](String.String). array^);
+        CNli;
+      END;
+      w. WriteString ("NULL } };");
       w. WriteLn;
     END ModuleDescr;
+
+  PROCEDURE ModuleInit (module: Sym.Module);
+    VAR
+      name0, name: String.String;
+    BEGIN
+      name0 := Naming.NameOfModuleInit (module, TRUE);
+      name := Naming.NameOfModuleInit (module, FALSE);
+      w. WriteLn;
+      w. WriteString ("extern void ");
+      w. WriteString (name0. array^);
+      w. WriteString ("() {");
+      IF (module. name. str^ # Config.runtimeModule) THEN
+        (* cannot register the lowest level run-time module with itself *)
+        w. WriteLn;
+        w. WriteString ("  RT0__RegisterModule(&_mid);");
+      END;
+      w. WriteLn;
+      w. WriteString ("  ");
+      w. WriteString (name. array^);
+      w. WriteString ("();");
+      w. WriteLn;
+      w. WriteString ("}");
+    END ModuleInit;
   
   BEGIN
     w := declWriter. textWriter;
+    tdNames := ArrayList.New (16);
     w. WriteLn;
     w. WriteString ("/* run-time meta data */");
     IF ~writeHeader THEN
-      ModuleDescr (symTab);
+      w. WriteLn;
+      w. WriteString ("static RT0__ModuleDesc _mid;"); (* make _mid known *)
     END;
     Traverse (symTab, NIL);
+    IF ~writeHeader THEN
+      ModuleDescr (symTab, tdNames);     (* define _mid *)
+      ModuleInit (symTab);
+    END;
     w. WriteLn;
   END Write;
 

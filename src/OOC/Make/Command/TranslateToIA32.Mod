@@ -36,6 +36,7 @@ TYPE
     w-: Writer.Writer;
 
     module-: Rep.Module;
+    symTab-: Sym.Module;
     
     procList: IR.ProcedureList;
     (* List of all procedures in this module.  *)
@@ -64,11 +65,13 @@ PROCEDURE InitTranslator* (t: Translator; module: Rep.Module);
     t. procList := NIL;
     t. currentProc := -1;
     t. module := module;
+    t. symTab := NIL;
   END InitTranslator;
 
-PROCEDURE (t: Translator) SetWriter* (w: Writer.Writer);
+PROCEDURE (t: Translator) SetWriter* (w: Writer.Writer; symTab: Sym.Module);
   BEGIN
     t. w := w;
+    t. symTab := symTab;
   END SetWriter;
 
 PROCEDURE (t: Translator) SetProcedureList* (procList: IR.ProcedureList);
@@ -188,7 +191,7 @@ PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
   VAR
     i: LONGINT;
   BEGIN
-    translator. SetWriter (w);
+    translator. SetWriter (w, symTab);
 
     w. Section (".text");
     w. Label (".Ltext0");
