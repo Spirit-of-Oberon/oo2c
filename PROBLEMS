@@ -11,7 +11,8 @@ can also be caused by a broken -lfoo entry in LDFLAGS.
 
 (gcc) There are reports of installation problems with gcc 3.2.x (gcc
 crashes with an internal compiler error).  Suggested workaround:
-remove the "-g" flag by calling configure with CFLAGS="-O2".
+remove the "-g" flag by calling configure with CFLAGS="-O2", or
+upgrade to gcc 3.3.
 
 ----
 

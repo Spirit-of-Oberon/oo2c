@@ -5,7 +5,8 @@ Alpha CPUs.  Pick the one matching the platform you are using.
 
 Requirements:
 
-  GNU C compiler gcc (2.95 or later, 3.2 in known to work)
+  GNU C compiler gcc (2.95 or later, but there are reports of
+    installation failures with 3.2.x)
   GNU make
 
 Additional requirements for "make test":
