@@ -1,7 +1,7 @@
 MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
-Log,
+Log, Out,
   Language, Language:Boolean, Language:Char8, Language:String8,
   Language:Integer, ADT:Object, ADT:ArrayList,
   Config:Value, BooleanValue := Config:Value:Boolean, 
@@ -1896,8 +1896,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     result : Expression;
     variant : Variant;
     leftType, rightType : Sym.Type;
-    leftIsNumeric, leftIsSet, leftIsInteger, leftIsBoolean, leftIsChar : BOOLEAN;
-    rightIsNumeric, rightIsSet, rightIsInteger, rightIsBoolean, rightIsChar : BOOLEAN;
+    leftIsNumeric, leftIsSet, leftIsInteger, leftIsBoolean, 
+    leftIsChar, leftIsString : BOOLEAN;
+    rightIsNumeric, rightIsSet, rightIsInteger, rightIsBoolean, 
+    rightIsChar, rightIsString : BOOLEAN;
 
     PROCEDURE WidenType();
     (**This procedure adjusts the expressions to that they have the smallest
@@ -1925,6 +1927,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     leftIsSet := tr.IsSetType(leftType);
     leftIsBoolean := IsPredefClass(leftType, {Predef.boolean});
     leftIsChar := tr.IsCharType(leftType);
+    leftIsString := IsPredefClass(leftType, {Predef.charString});
 
     rightType := right.type; 
     rightIsNumeric := tr.IsNumericType(rightType);
@@ -1932,6 +1935,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     rightIsSet := tr.IsSetType(rightType);
     rightIsBoolean := IsPredefClass(rightType, {Predef.boolean});
     rightIsChar := tr.IsCharType(rightType);
+    rightIsString := IsPredefClass(rightType, {Predef.charString});
 
     result := NIL;  (* FIXME. keep the compiler happy until ASSERTs are removed *)
     IF (id IN {Id.plus, Id.minus, Id.times})
@@ -1985,9 +1989,13 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 
     ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
       & ((leftIsNumeric & rightIsNumeric) OR (leftIsChar & rightIsChar)) THEN
-      (* FIXME... handle char array., string *)
+      WidenType();
       result := b.NewCompare(sym, left, right);
 
+    ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
+      & (leftIsString & rightIsString) THEN
+      (* FIXME... handle char array., string *)
+      result := b.NewCompare(sym, left, right);
     ELSIF (id IN {Id.eql, Id.neq})
       & ((leftIsBoolean & rightIsBoolean) OR (leftIsSet & rightIsSet)) THEN
       (* FIXME... handle pointer types, procedure types *)
@@ -2181,7 +2189,9 @@ BEGIN
   exprType := expr.type;
   result := NIL;
 
-  IF tr.SameType(type, exprType) OR tr.IsExtensionOf(type, exprType) THEN
+  IF expr.type = NIL THEN
+    (* expression may not have type, due to semantic error *)
+  ELSIF tr.SameType(type, exprType) OR tr.IsExtensionOf(type, exprType) THEN
     (* same types *)
     result := expr
   ELSIF tr.IncludesType(type, exprType) THEN

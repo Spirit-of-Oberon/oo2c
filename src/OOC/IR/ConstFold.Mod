@@ -2,7 +2,10 @@ MODULE OOC:IR:ConstFold;
 
 IMPORT 
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
-  Language, Language:Integer, Language:Boolean, Language:String8, Integers;
+  Language, 
+  Out,
+  Language:Integer, Language:Boolean, Language:String8, Language:Char8,
+  ADT:String, Integers;
 
 TYPE
   ConstFold = POINTER TO ConstFoldDesc;
@@ -57,7 +60,7 @@ BEGIN
         RETURN Predef.GetType(integerType[i].id)
       END;
     END;
-     RETURN NIL; 
+    RETURN NIL; 
   END;
 END SmallestType;
 
@@ -72,6 +75,11 @@ BEGIN
     RETURN c.builder.NewConst(op.sym, type, value)
   END
 END ValueConst;
+
+PROCEDURE (c : ConstFold) BooleanConst(value : BOOLEAN; op : IR.Operator) : IR.Const;
+BEGIN
+  RETURN c.builder.NewConst(op.sym, Predef.GetType(Predef.boolean), Boolean.New(value));
+END BooleanConst;
 
 PROCEDURE (c : ConstFold) ValidEval (expr : IR.Expression; VAR result : Language.Value) : BOOLEAN;
 BEGIN
@@ -150,8 +158,9 @@ BEGIN
     id := op.operand.type(Sym.PredefType).id;
     CASE id OF
     | Predef.boolean:
-      c.result := c.builder.NewConst(op.sym, Predef.GetType(Predef.boolean), 
-        Boolean.type.Value(~value(Boolean.Value).value));
+(*      c.result := c.builder.NewConst(op.sym, Predef.GetType(Predef.boolean), 
+        Boolean.type.Value(~value(Boolean.Value).value)); *)
+        c.result := c.BooleanConst(~value(Boolean.Value).value, op);
     | Predef.integer:
       value := Integer.type.Value(Integers.Product(minus1, value(Integer.Value).value));
 
@@ -229,13 +238,120 @@ BEGIN
 END VisitBinaryArith;
 
 PROCEDURE (c: ConstFold) VisitBooleanOp* (op: IR.BooleanOp);
+  VAR 
+    l, r : Language.Value;
+    left, right, result : BOOLEAN;
   BEGIN
-    (* FIXME! *)
+    IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
+      left := l(Boolean.Value).value;
+      right := r(Boolean.Value).value;
+      CASE op.variant OF
+      | IR.and:  result := left & right;
+      | IR.or:   result := left OR right;
+      END;
+      c.result := c.BooleanConst(result, op);
+    ELSE
+      c.result := NIL;
+    END;
   END VisitBooleanOp;
 
 PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
+  VAR l, r : Language.Value; result : Boolean.Value;
+
+  PROCEDURE StringOp () : Boolean.Value;
+  VAR
+    left, right : String.String; result : BOOLEAN;
   BEGIN
-    (* FIXME! *)
+    left := l(String8.Value).value; 
+    right := r(String8.Value).value;
+    Out.String("StringOp("); Out.ShortInt(op.variant, 0); Out.Char(","); Out.String(left.array^); Out.Char(","); Out.String(right.array^); Out.Char(")"); Out.Ln;
+    CASE op.variant OF
+    | IR.equal:        result := left.Compare(right) = 0;
+    | IR.notEqual:     result := left.Compare(right) # 0;
+    | IR.less:         result := left.Compare(right) < 0;
+    | IR.lessEqual:    result := left.Compare(right) <= 0;
+    | IR.greater:      result := left.Compare(right) > 0;
+    | IR.greaterEqual: result := left.Compare(right) >= 0;
+    ELSE
+      c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+    END;
+    RETURN Boolean.New(result);
+  END StringOp;
+
+  PROCEDURE IntegerOp () : Boolean.Value;
+  VAR
+    left, right : Integers.Integer; result : BOOLEAN;
+  BEGIN
+    left := l(Integer.Value).value; 
+    right := r(Integer.Value).value;
+    
+    CASE op.variant OF
+    | IR.equal:        result := Integers.Compare(left, right) = 0;
+    | IR.notEqual:     result := Integers.Compare(left, right) # 0;
+    | IR.less:         result := Integers.Compare(left, right) < 0;
+    | IR.lessEqual:    result := Integers.Compare(left, right) <= 0;
+    | IR.greater:      result := Integers.Compare(left, right) > 0;
+    | IR.greaterEqual: result := Integers.Compare(left, right) >= 0;
+    ELSE
+      c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+    END;
+    RETURN Boolean.New(result);
+  END IntegerOp;
+
+  PROCEDURE CharOp () : Boolean.Value;
+  VAR
+    left, right : LONGINT; result : BOOLEAN;
+  BEGIN
+    left := l(Char8.Value).value;
+    right := r(Char8.Value).value;
+
+    CASE op.variant OF
+    | IR.equal:        result := left = right;
+    | IR.notEqual:     result := left # right;
+    | IR.less:         result := left < right;
+    | IR.lessEqual:    result := left <= right;
+    | IR.greater:      result := left > right;
+    | IR.greaterEqual: result := left >= right;
+    ELSE
+      c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+    END;
+    RETURN Boolean.New(result);
+  END CharOp;
+
+  PROCEDURE BooleanOp () : Boolean.Value;
+  VAR
+    left, right : BOOLEAN; result : BOOLEAN;
+  BEGIN
+    left := l(Boolean.Value).value;
+    right := r(Boolean.Value).value;
+
+    CASE op.variant OF
+    | IR.equal:        result := left = right;
+    | IR.notEqual:     result := left # right;
+    ELSE
+      c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+    END;
+    RETURN Boolean.New(result);
+  END BooleanOp;
+
+  BEGIN
+    Out.String("VisitCompare("); Out.ShortInt(op.variant,0); Out.String(")"); Out.Ln; Out.Flush;
+    IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
+      CASE op.left.type(Sym.PredefType).id OF
+      | Predef.shortint, Predef.integer, Predef.longint:
+                             result := IntegerOp();
+      | Predef.char:         result := CharOp();
+      | Predef.charString:   result := StringOp(); 
+      | Predef.boolean:      result := BooleanOp();
+      END;
+      IF result = NIL THEN 
+        c.result := NIL
+      ELSE
+        c.result := c.BooleanConst(result.value, op);
+      END;
+    ELSE
+      c.result := NIL
+    END
   END VisitCompare;
 
 PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
