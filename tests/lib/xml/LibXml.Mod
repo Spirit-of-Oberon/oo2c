@@ -1,7 +1,7 @@
 MODULE LibXml;
 
 IMPORT
-  StdChannels, Msg, Out,
+  StdChannels, Out, IO, IO:PFD,
   
   XML:Builder:Canonical,
   XML:Builder:ParserProtocol,
@@ -27,21 +27,20 @@ IMPORT
   BasicParser := XML:Basic:Parser,
   BasicDataType := XML:Basic:DataType;
 
-PROCEDURE CreateParser(file: ARRAY OF CHAR): Parser.Parser;
+PROCEDURE CreateParser(file: ARRAY OF CHAR): Parser.Parser RAISES IO.Error;
   VAR
     namespaceSupport, validating, dontFollowEntityRefs: BOOLEAN;
     format: SHORTINT;
     builder, outputBuilder: Builder.Builder;
     p: Parser.Parser;
     namespaceBuilder, validatingBuilder: Builder.Builder;
-    res: Msg.Msg;
   BEGIN
     namespaceSupport := FALSE;
     validating := TRUE;
     dontFollowEntityRefs := FALSE;
     format := Canonical.firstCanonicalForm;
     
-    builder := Canonical.New (StdChannels.stdout, UTF8.factory, format);
+    builder := Canonical.New (PFD.stdout, UTF8.factory, format);
     outputBuilder := builder;
     IF validating THEN
       dontFollowEntityRefs := FALSE;
@@ -53,15 +52,14 @@ PROCEDURE CreateParser(file: ARRAY OF CHAR): Parser.Parser;
       builder := namespaceBuilder
     END;
     
-    p := Parser.NewFile (file, NIL, NIL, NIL, builder, res);
-    ASSERT (res = NIL);
+    p := Parser.NewFile (file, NIL, NIL, NIL, builder);
     p. followExternalRef := ~dontFollowEntityRefs;
     p. enforceQNames := namespaceSupport; (* enable QName and NCName checks *)
     p. validating := validating;          (* enable parser-level validation *)
     RETURN p
   END CreateParser;
 
-PROCEDURE Parse* (file: ARRAY OF CHAR);
+PROCEDURE Parse* (file: ARRAY OF CHAR) RAISES IO.Error;
   VAR
     canon: Parser.Parser;
   BEGIN

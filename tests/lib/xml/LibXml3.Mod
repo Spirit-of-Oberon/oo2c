@@ -1,8 +1,8 @@
 MODULE LibXml3;
 
-IMPORT LibXml;
+IMPORT LibXml, IO;
 
-PROCEDURE Test*;
+PROCEDURE Test*() RAISES IO.Error;
   BEGIN
     LibXml.Parse("xml/003b.xml");
   END Test;
