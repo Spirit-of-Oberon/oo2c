@@ -435,6 +435,7 @@ Else returns nil."
   
   ;; Comments
   (require 'newcomment)
+  (require 'cc-mode)			;for c-comment-indent
   (set (make-local-variable 'comment-start) "(*")
   (set (make-local-variable 'comment-end) "*)")
   (comment-normalize-vars))
