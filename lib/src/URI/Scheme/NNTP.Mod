@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE URI:Scheme:NNTP;
-(*  Implementation of the "file" URI scheme.
-    Copyright (C) 2001  Michael van Acken
+(*  Implementation of the "nntp" URI scheme.
+    Copyright (C) 2001, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,7 +20,7 @@ MODULE URI:Scheme:NNTP;
 
 
 IMPORT
-  URI0 := URI, URI:String, URI:Scheme:Hierarchical, URI:Authority:ServerBased,
+  URI0 := URI, URI:Scheme:Hierarchical, URI:Authority:ServerBased,
   Query := URI:Query:Unparsed;
 
 
@@ -43,20 +43,20 @@ TYPE
      scheme       = "news" | "snews" | "nntp"
      news-server  = "//" server "/"
      refbygroup   = group [ "/" messageno [ "-" messageno ] ]
-     message      = local-part "@" domain
+     message      = local-part "@@" domain
      @end example  *)
     (Hierarchical.GenericDesc)
   END;
 
 
 
-PROCEDURE Init* (http: URI; schemeId: URI0.StringPtr;
+PROCEDURE Init* (http: URI; schemeId: STRING;
                  authority: URI0.Authority; query: URI0.Query);
   BEGIN
     Hierarchical.Init (http, schemeId, authority, query)
   END Init;
 
-PROCEDURE New* (schemeId: URI0.StringPtr;
+PROCEDURE New* (schemeId: STRING;
                 authority: URI0.Authority; query: URI0.Query): URI;
   VAR
     http: URI;
@@ -68,12 +68,12 @@ PROCEDURE New* (schemeId: URI0.StringPtr;
 
 PROCEDURE (http: URI) NewAuthority* (): URI0.Authority;
   BEGIN
-    RETURN ServerBased.New (NIL, String.Copy (""), -1, 119)
+    RETURN ServerBased.New (NIL, "", -1, 119)
   END NewAuthority;
 
 PROCEDURE (http: URI) NewQuery* (): URI0.Query;
   BEGIN
-    RETURN Query.New (String.Copy (""))
+    RETURN Query.New ("")
   END NewQuery;
 
 PROCEDURE (http: URI) Clone* (): URI;
@@ -86,9 +86,9 @@ PROCEDURE (http: URI) Clone* (): URI;
   END Clone;
 
 
-PROCEDURE NewPrototype* (scheme: ARRAY OF CHAR): URI;
+PROCEDURE NewPrototype* (scheme: STRING): URI;
   BEGIN
-    RETURN New (String.Copy (scheme), NIL, NIL)
+    RETURN New (scheme, NIL, NIL)
   END NewPrototype;
 
 END URI:Scheme:NNTP.

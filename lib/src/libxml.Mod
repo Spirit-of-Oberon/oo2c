@@ -21,6 +21,7 @@ IMPORT
   URI:Scheme:HTTP,
   URI:Scheme:Hierarchical,
   URI:Scheme:MailTo,
+  URI:Scheme:NNTP,
   URI:Scheme:Opaque,
   URI,
   XML:Builder:Canonical,
