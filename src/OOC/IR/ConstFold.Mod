@@ -264,11 +264,13 @@ END VisitNot;
 
 PROCEDURE (c: ConstFold) VisitAsh* (op: IR.Ash);
   VAR
-    v, e: Integer.Value;
+    v, e: Language.Value;
   BEGIN
-    v := op. value(IR.Const). value(Integer.Value);
-    e := op. exp(IR.Const). value(Integer.Value);
-    c. result := c. ValueConst (v. Ash (e), op);
+    IF c.ValidEval(op.value, v) & c.ValidEval(op.exp, e) THEN
+      c.result := c. ValueConst (v(Integer.Value). Ash (e(Integer.Value)), op);
+    ELSE
+      c.result := NIL;
+    END;
   END VisitAsh;
 
 PROCEDURE (c: ConstFold) VisitCap* (op: IR.Cap);
