@@ -58,6 +58,7 @@ main-clean: test-cleanall
 	rm -Rf stage1 stage2 tests/lib-TestCompile tests/lib-oo2c gmon.out
 	${MAKE} -C tests/hostess-ooc1 test-clean
 	${MAKE} -C tests/benchmark clean
+	${MAKE} -C rsrc/OOC/emacs clean
 
 ### `distclean'
 ###      Delete all files from the current directory that are created by
