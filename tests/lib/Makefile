@@ -2,6 +2,7 @@
 # All tests are either "run" or "error".
 
 TEST_DRIVER=RunTests
+#TEST_DRIVER_FLAGS=--stop-on-error
 TEST_PROCESSOR=TestCompile
 TEST_BASE=tests/lib
 
