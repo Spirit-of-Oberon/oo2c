@@ -3,8 +3,7 @@ MODULE TestConfigSimple;
 IMPORT
   RT0, Out, Err, Msg,
   Config:Simple, Config:Source:Environment, Config:Source:CmdLine,
-  StringValue := Config:Value:String, Config:Section:Options,
-  Config:Section:Arguments;
+  StringValue := Config:Value:String, Config:Section:Options;
 
 VAR
   config: Simple.Config;
@@ -33,14 +32,11 @@ PROCEDURE WriteOption (opt: Options.Option);
   END WriteOption;
 
 PROCEDURE WriteArgument (i: LONGINT);
-  VAR
-    arg: Arguments.Argument;
   BEGIN
     Out.String ("argument:");
     Out.LongInt (i, 0);
     Out.String (" --> ");
-    arg := config. arguments. Get (i);
-    Out.String (arg^);
+    Out.Object (config.arguments.Get(i));
     Out.Ln
   END WriteArgument;
 

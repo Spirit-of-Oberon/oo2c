@@ -2,7 +2,6 @@ MODULE TestCompile;
 
 IMPORT
   StdChannels, Out, Err, Object, StringSearch, StringSearch:RegexpDFA,
-  Config:Section:Arguments,
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, 
   OOC:Config, OOC:Config:Pragmas, OOC:Config:CCompiler, OOC:Config:Autoconf,
@@ -11,7 +10,8 @@ IMPORT
 VAR
   cfgErrList: Error.List;
   i: LONGINT;
-  arg: Arguments.Argument;
+  arg: STRING;
+  chars: Object.CharsLatin1;
   m: Rep.Module;
   mode: SHORTINT;
   makeRules: Make.Rules;
@@ -128,11 +128,13 @@ BEGIN
     
     ok := TRUE;
     FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
-      arg := Config.arguments. Get (i);
-      m := Config.repositories. GetModule (arg^);
+      arg := Config.arguments.Get(i);
+      arg := arg.ToString8("?");
+      chars := arg(Object.String8).CharsLatin1();
+      m := Config.repositories. GetModule (chars^);
       IF (m = NIL) THEN
         Err.String ("Error: Cannot locate module ");
-        Err.String (arg^);
+        Err.Object (arg);
         Err.Ln;
         HALT (1)
       ELSE

@@ -1,8 +1,7 @@
 MODULE TestInterfaceGen;
 
 IMPORT
-  StdChannels, Out, Err, ADT:Dictionary, ADT:ArrayList,
-  Config:Section:Arguments, OOC:Config, 
+  Object, StdChannels, Out, Err, ADT:Dictionary, ADT:ArrayList, OOC:Config, 
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, OOC:SymbolTable:InterfaceDescr,
   OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable, OOC:Make;
@@ -12,7 +11,8 @@ IMPORT
 VAR
   cfgErrList: Error.List;
   i: LONGINT;
-  arg: Arguments.Argument;
+  arg: STRING;
+  chars: Object.CharsLatin1;
   m: Rep.Module;
   mode: SHORTINT;
   makeRules: Make.Rules;
@@ -118,12 +118,14 @@ BEGIN
 
     NEW(moduleList, Config.arguments.ArgNumber());
     FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
-      arg := Config.arguments. Get (i);
-      IF Rep.ValidModuleName (arg^) THEN
-        m := Config.repositories. GetModule (arg^);
+      arg := Config.arguments.Get(i);
+      arg := arg.ToString8("?");
+      chars := arg(Object.String8).CharsLatin1();
+      IF Rep.ValidModuleName (chars^) THEN
+        m := Config.repositories. GetModule (chars^);
         IF (m = NIL) THEN
           Err.String ("Error: Cannot locate module ");
-          Err.String (arg^);
+          Err.Object (arg);
           Err.Ln;
           HALT (1)
         ELSE
@@ -131,7 +133,7 @@ BEGIN
         END
       ELSE
         Err.String ("Error: Invalid module name ");
-        Err.String (arg^);
+        Err.Object (arg);
         Err.Ln;
         HALT (1)
       END

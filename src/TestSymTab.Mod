@@ -1,8 +1,7 @@
 MODULE TestSymTab;
 
 IMPORT
-  StdChannels, Out, Err, IO, URI,
-  Config:Section:Arguments, OOC:Config, 
+  Object, StdChannels, Out, Err, IO, URI, OOC:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,
   OOC:Error, OOC:AST, Sym := OOC:SymbolTable, Rep := OOC:Repository,
@@ -23,7 +22,8 @@ TYPE
 VAR
   cfgErrList: Error.List;
   i: LONGINT;
-  arg: Arguments.Argument;
+  arg: STRING;
+  chars: Object.CharsLatin1;
   m: Rep.Module;
 
   mode: Options.Option;
@@ -132,12 +132,14 @@ BEGIN
     makeRules := NewRules();
     ok := TRUE;
     FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
-      arg := Config.arguments. Get (i);
-      IF Rep.ValidModuleName (arg^) THEN
-        m := Config.repositories. GetModule (arg^);
+      arg := Config.arguments.Get(i);
+      arg := arg.ToString8("?");
+      chars := arg(Object.String8).CharsLatin1();
+      IF Rep.ValidModuleName(chars^) THEN
+        m := Config.repositories.GetModule(chars^);
         IF (m = NIL) THEN
           Err.String ("Error: Cannot locate module ");
-          Err.String (arg^);
+          Err.Object (arg);
           Err.Ln;
           HALT (1)
         ELSE
@@ -150,7 +152,7 @@ BEGIN
         END
       ELSE
         Err.String ("Error: Invalid module name ");
-        Err.String (arg^);
+        Err.Object (arg);
         Err.Ln;
         HALT (1)
       END

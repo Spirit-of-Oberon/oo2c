@@ -1,15 +1,14 @@
 MODULE TestH2O;
 
 IMPORT 
-  StdChannels, Out,
+  Out,
   H2O:Scanner, E := H2O:Error, H2O:Source, H2O:Process, H2O:Parser,
-  OOC:Config, Config:Section:Arguments, Object,
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
-  OOC:Error;
+  OOC:Config, OOC:Error;
 
 VAR
   cfgErrList: Error.List;
-  arg: Arguments.Argument;
+  arg: STRING;
   tokenSource : Scanner.TokenSource;
   token : Scanner.Token;
 
@@ -86,7 +85,7 @@ BEGIN
 
     source := Source.New(); 
     source.AppendPath(".");
-	source.Include(Object.NewLatin1(arg^), FALSE);
+	source.Include(arg, FALSE);
     error := E.New(source);
     scanner := Scanner.New(source, error);
 

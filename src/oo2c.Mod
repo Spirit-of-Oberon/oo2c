@@ -22,8 +22,7 @@ MODULE oo2c;
 
 IMPORT
   StdChannels, Strings, Out, Err, Object, URI, URI:Scheme:File,
-  ADT:StringBuffer, IO,
-  OS:ProcessManagement, Config:Section:Arguments, Config:Section:Options,
+  ADT:StringBuffer, IO, OS:ProcessManagement, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
   OOC:SymbolTable:Builder, OOC:Config:StdPragmas, OOC:Error,
@@ -43,7 +42,7 @@ CONST
 VAR
   cfgErrList, errList: Error.List;
   i: LONGINT;
-  arg: Arguments.Argument;
+  arg: STRING;
   mode: SHORTINT;
   command, forceUpdate, listUses, useStderr, writeStats,
       errorStyle, showHelp, showVersion: Options.Option;
@@ -125,8 +124,10 @@ PROCEDURE GetModule (moduleName: STRING): Rep.Module;
   VAR
     m: Rep.Module;
     chars: Object.CharsLatin1;
+    str: Object.String8;
   BEGIN
-    chars := moduleName(Object.String8).CharsLatin1();
+    str := moduleName.ToString8("?");
+    chars := str.CharsLatin1();
     m := Config.repositories.GetModule(chars^);
     IF (m = NIL) THEN
       Err.String ("Error: Cannot locate module ");
@@ -650,15 +651,15 @@ BEGIN  <*Warnings:=FALSE*>
         CASE mode OF
         | buildPackage, installPackage:
           doInstall := (mode = installPackage);
-          pkg := Package.GetPackage(arg^, rep);
+          pkg := Package.GetPackage(arg, rep);
           IF (pkg = NIL) THEN
             Err.String ("Error: Cannot locate package ");
-            Err.String (arg^);
+            Err.Object (arg);
             Err.Ln;
             HALT (1)
           ELSE
             IF doInstall THEN
-              pkgInfo := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
+              pkgInfo := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg, errList);
               IF (pkgInfo # NIL) & (errList.msgCount = 0) THEN
                 UninstallPackage(pkgInfo);
               END;
@@ -668,13 +669,13 @@ BEGIN  <*Warnings:=FALSE*>
           END;
           
         | uninstallPackage:
-          pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg^, errList);
+          pkg := Package.GetPkgInfo(CCompiler.oocdir.value(StringValue.Value).string^, arg, errList);
           IF (errList.msgCount # 0) THEN
             errList.Write(StdChannels.stdout);
           END;
           IF (pkg = NIL) THEN
             Err.String ("Error: Cannot locate package ");
-            Err.String (arg^);
+            Err.Object (arg);
             Err.Ln;
             HALT (1)
           ELSE
@@ -684,7 +685,7 @@ BEGIN  <*Warnings:=FALSE*>
 
 
         | getOption:
-          option := Config.options.Get(Object.NewLatin1(arg^));
+          option := Config.options.Get(arg);
           IF (option = NIL) THEN
             Out.String("(none)");
           ELSE
@@ -693,10 +694,10 @@ BEGIN  <*Warnings:=FALSE*>
           Out.Ln;
           
         | buildPackageDoc:
-          pkg := Package.GetPackage(arg^, rep);
+          pkg := Package.GetPackage(arg, rep);
           IF (pkg = NIL) THEN
             Err.String ("Error: Cannot locate package ");
-            Err.String (arg^);
+            Err.Object (arg);
             Err.Ln;
             HALT (1)
           ELSE
@@ -706,14 +707,14 @@ BEGIN  <*Warnings:=FALSE*>
         | packageInstalled:
           r := Package.GetRepository(CCompiler.oocdir.value(StringValue.Value).string^, errList);
           errList.Write(StdChannels.stderr);
-          IF r.PackageInstalled(Object.NewLatin1(arg^)) THEN
+          IF r.PackageInstalled(arg) THEN
             HALT(0);
           ELSE
             HALT(1);
           END;
 
         ELSE
-          module := GetModule(Object.NewLatin1(arg^));
+          module := GetModule(arg);
           IF (mode = Rep.modCodeFileC) THEN
             makeRules.SetAllImportsModule(module);
           END;

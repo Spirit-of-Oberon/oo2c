@@ -1,16 +1,14 @@
 MODULE Config:Section:Arguments;
 
 IMPORT
-  Msg, Channel, TextRider, LongStrings, XMLBuilder := XML:Builder, XML:Locator,
-  Config:Value, Config:Parser, CS := Config:Section;
+  Object, Msg, Channel, TextRider, LongStrings,
+  XMLBuilder := XML:Builder, XML:Locator,
+  Config:Parser, CS := Config:Section;
 
 
-TYPE
-  Argument* = Value.StringPtr;
-  ArgumentArray = POINTER TO ARRAY OF Argument;
-  
 TYPE
   Section* = POINTER TO SectionDesc;
+  ArgumentArray = POINTER TO ARRAY OF STRING;
   SectionDesc = RECORD
     (CS.SectionDesc)
     args: ArgumentArray;
@@ -73,10 +71,10 @@ PROCEDURE (s: Section) ArgNumber* (): LONGINT;
     RETURN s. argNumber
   END ArgNumber;
 
-PROCEDURE (s: Section) Get* (position: LONGINT): Argument;
+PROCEDURE (s: Section) Get* (position: LONGINT): STRING;
   BEGIN
     IF (0 <= position) & (position < s. argNumber) THEN
-      RETURN s. args[position]
+      RETURN s.args[position];
     ELSE
       RETURN NIL
     END
@@ -92,7 +90,6 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
     i: LONGINT;
     att: XMLBuilder.Attribute;
     lastError: Msg.Msg;
-    valueString: ARRAY 1024 OF CHAR;
     
   PROCEDURE Err (code: Msg.Code; xmlNode: Parser.Node);
     BEGIN
@@ -121,9 +118,8 @@ PROCEDURE (s: Section) ProcessElements* (sectionRoot: Parser.Element;
               s. args := newArgs
             END;
             parserString := node. GetCharDataContent();
-            LongStrings.Short (parserString^, "?", valueString);  (* ... *)
-            s. args[s. argNumber] := Value.GetStringPtr (valueString);
-            INC (s. argNumber)
+            s.args[s.argNumber] := Object.NewUCS2(parserString^);
+            INC (s.argNumber)
           END
           
         ELSE
@@ -153,9 +149,7 @@ PROCEDURE (s: Section) DumpContent* (ch: Channel.Channel);
     w. WriteString (">"); w. WriteLn;
     FOR i := 0 TO s. argNumber-1 DO
       w. WriteString ("  <arg>");
-      (*LongStrings.Short (s. args[i]^, "?", str8);
-      w. WriteString (str8);*)
-      w. WriteString (s. args[i]^);
+      w. WriteObject (s. args[i]);
       w. WriteString ("</arg>");
       w. WriteLn
     END;

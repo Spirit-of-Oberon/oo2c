@@ -1105,15 +1105,14 @@ RAISES IO.Error;
     END;
   END ParseFile;
 
-PROCEDURE GetPackage* (pkgName: ARRAY OF CHAR;
-                       VAR rep: Rep.Repository): Package;
+PROCEDURE GetPackage* (pkgName: STRING; VAR rep: Rep.Repository): Package;
   BEGIN
     (* module not found in cache: traverse repositories *)
     rep := Config.repositories.topLevelRep;
     WHILE (rep # NIL) DO
       IF (rep.packageInfo # NIL) &
          (rep.packageInfo IS Package) &
-         rep.packageInfo(Package).name.Equals(Object.NewLatin1(pkgName)) THEN
+         rep.packageInfo(Package).name.Equals(pkgName) THEN
         RETURN rep.packageInfo(Package);
       END;
       rep := rep.baseRep;
@@ -1352,21 +1351,24 @@ PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: ARRAY OF CHAR;
     COPY(chars^, cmd);
   END RemovePkgInfoCmd;
 
-PROCEDURE GetPkgInfo*(targetDir, pkgName: ARRAY OF CHAR;
+PROCEDURE GetPkgInfo*(targetDir: ARRAY OF CHAR; pkgName: STRING;
                       VAR errList: Error.List): Package
 RAISES IO.Error;
   VAR
-    fileName: URIBuffer;
     pkgInfo: Rep.PkgInfo;
+    sb: StringBuffer.StringBuffer;
+    chars: StringBuffer.CharsLatin1;
   BEGIN
-    COPY(targetDir, fileName);
-    Strings.Append(pkgInfoSubdir, fileName);
-    Strings.Append("/", fileName);
-    Strings.Append(pkgName, fileName);
-    Strings.Append(".xml", fileName);
-    
-    errList := Error.NewList(fileName);
-    pkgInfo := ParseFile(fileName, TRUE, errList);
+    sb := StringBuffer.NewCapacity(256);
+    sb.AppendLatin1(targetDir);
+    sb.Append(pkgInfoSubdir);
+    sb.Append("/");
+    sb.Append(pkgName.ToString8("?"));
+    sb.Append(".xml");
+
+    chars := sb.CharsLatin1();
+    errList := Error.NewList(chars^);
+    pkgInfo := ParseFile(chars^, TRUE, errList);
     IF (pkgInfo # NIL) THEN
       RETURN pkgInfo(Package);
     ELSE

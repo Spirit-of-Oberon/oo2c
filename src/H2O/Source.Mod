@@ -134,7 +134,6 @@ VAR
   module : Module.Module;
   s : Source;
   channel : IO.ByteChannel;
-  chars : Object.CharsLatin1;
 BEGIN
   TRY
     IF search THEN
@@ -146,7 +145,7 @@ BEGIN
       END;    
     ELSE
       realFileName := fileName;
-      channel := FileChannel.Open(fileName(Object.String8), {FileChannel.read});
+      channel := FileChannel.Open(fileName.ToString8("?"), {FileChannel.read});
     END;
   CATCH IO.Error:
 	i.Exception(Exception.Current());
