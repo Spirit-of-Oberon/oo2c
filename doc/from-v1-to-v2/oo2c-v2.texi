@@ -254,14 +254,15 @@ Designators can contain arbitrary @samp{.member} parts, referring to
 members of modules, procedures, or records.  For example,
 @samp{@@oparam@{MyModule.MyPointer.MyProc.param@}} would refer to the
 parameter @samp{param} of the type-bound procedure @samp{MyProc} from
-module @samp{MyModule} that has @samp{MyPointer} as its receiver
-type.  Unless prefixed by a @samp{*}, names and designators must refer
-to existing declarations and the class of the indicated object must
-match the command name.  If the designator is prefixed with a
-@samp{*}, then the designator is not checked by the compiler.  In this
-case, it must begin with a fully qualified module name.  This variant
-should only be used to refer to an object from another module if the
-module is not part of the @code{IMPORT} list.
+module @samp{MyModule} that has @samp{MyPointer} as its receiver type.
+Unless prefixed by a @samp{*}, names and designators must refer to
+existing declarations and the class of the indicated object must match
+the command name.  If the designator is prefixed with a @samp{*}, then
+the designator is not checked by the compiler.  In this case, it must
+begin with a fully qualified module name and use the canonical
+designator for the indicated object.  This variant should only be used
+to refer to an object from another module if the module is not part of
+the @code{IMPORT} list.
 
 @node Block Commands, Glyphs, Inline Commands, Doc Comments
 @section Block Commands
