@@ -494,6 +494,10 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
             w. textWriter. WriteLInt (ORD (value. CharAt (i)), 0);
             INC (i)
           END;
+          IF (i # 0) THEN
+            w. WriteChar (",");
+          END;
+          w. textWriter. WriteLInt (0, 0);
           w. WriteChar ("}");
         END;
         
