@@ -354,20 +354,6 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       END;
     END Result;
 
-  PROCEDURE ^ Opnd(opnd: S.Opnd);
-    
-  PROCEDURE DirectOpnd(opnd: S.Opnd);
-    VAR
-      argInstr: S.Instr;
-    BEGIN
-      argInstr := opnd.arg.instr;
-      IF (argInstr.opcode = S.const) THEN
-        Literal(argInstr);
-      ELSE
-        Opnd(opnd);
-      END;
-    END DirectOpnd;
-  
   PROCEDURE Opnd(opnd: S.Opnd);
     VAR
       argInstr: S.Instr;
@@ -408,6 +394,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       END;
     END Opnd;
 
+  PROCEDURE DirectOpnd(opnd: S.Opnd);
+    VAR
+      argInstr: S.Instr;
+    BEGIN
+      argInstr := opnd.arg.instr;
+      IF (argInstr.opcode = S.const) THEN
+        Literal(argInstr);
+      ELSE
+        Opnd(opnd);
+      END;
+    END DirectOpnd;
+  
   PROCEDURE AssertResultMatch(opnd: S.Opnd);
     BEGIN
       ASSERT(opnd.instr.resultList.SameLocation(opnd.arg));
@@ -628,12 +626,12 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           ELSE
             OpcR("mov");
           END;
-          IF ~instr.opndList.immediate THEN
+          IF instr.opndList.immediate THEN
+            DirectOpnd(instr.opndList);
+          ELSE
             sb.Append("(");
             Opnd(instr.opndList);
             sb.Append(")");
-          ELSE
-            DirectOpnd(instr.opndList);
           END;
           Comma();
           Result(instr.resultList);
@@ -642,7 +640,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           OpcT("mov", type, -1);
           Opnd(instr.opndList.nextOpnd);
           Comma();
-          Opnd(instr.opndList);
+          IF instr.opndList.immediate THEN
+            DirectOpnd(instr.opndList);
+          ELSE
+            Opnd(instr.opndList);
+          END;
         | S.push:
           OpcR("push");
           Opnd(instr.opndList.nextOpnd);
