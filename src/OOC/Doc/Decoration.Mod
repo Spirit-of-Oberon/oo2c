@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Doc:Decoration;
 (*  Abstraction layer dealing with comment decorations.
-    Copyright (C) 1999, 2000  Michael van Acken
+    Copyright (C) 1999, 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -46,6 +46,12 @@ TYPE
     startOffset: LONGINT;
   END;
   
+TYPE
+  DotLineIndent = POINTER TO DotLineIndentDesc;
+  DotLineIndentDesc = RECORD
+    (PlainIndentDesc)
+  END;
+  
 PROCEDURE Remove* (sym: BasicList.Symbol; VAR deco: Decoration): String;
 (* Remove any decoration and the comment delimiters from the string `sym',
    and replace CR+LF or CR end of line characters with `CharClass.eol'.  
@@ -83,7 +89,7 @@ PROCEDURE Remove* (sym: BasicList.Symbol; VAR deco: Decoration): String;
       RETURN noIndent                    (* line is composed of whitespace *)
     END GetIndent;
   
-  PROCEDURE GetPlainIndent (str: String): Decoration;
+  PROCEDURE GetPlainIndent (str: String): PlainIndent;
   (* Determine parameters for decoration, and remove any decoration from the
      string.  *)
     VAR
@@ -160,6 +166,60 @@ PROCEDURE Remove* (sym: BasicList.Symbol; VAR deco: Decoration): String;
       RETURN plainIndent
     END GetPlainIndent;
   
+  PROCEDURE IsDotLine (str: String): BOOLEAN;
+  (* Returns TRUE if every line in the string after the very first begins 
+     with whitespace followed by at least one "*" character.  *)
+    VAR
+      i: LONGINT;
+      dot: BOOLEAN;
+    BEGIN
+      dot := TRUE;
+      i := 0;
+      WHILE (str[i] # 0X) DO
+        IF (str[i] = CharClass.eol) THEN
+          INC (i);
+          WHILE (str[i] # 0X) & (str[i] # CharClass.eol) & (str[i] <= " ") DO
+            INC (i)
+          END;
+          dot := dot & (str[i] = "*")
+        ELSE
+          INC (i)
+        END
+      END;
+      RETURN dot
+    END IsDotLine;
+  
+  PROCEDURE GetDotLineIndent (str: String): Decoration;
+    VAR
+      i: LONGINT;
+      plainIndent: PlainIndent;
+      dotLineIndent: DotLineIndent;
+    BEGIN
+      plainIndent := GetPlainIndent (str);
+      
+      i := 0;
+      WHILE (str[i] # 0X) DO
+        IF (str[i] = CharClass.eol) THEN
+          INC (i);
+          WHILE (str[i] <= " ") DO
+            INC (i)
+          END;
+          WHILE (str[i] = "*") DO
+            str[i] := " ";
+            INC (i)
+          END
+        ELSE
+          INC (i)
+        END
+      END;
+      
+      NEW (dotLineIndent);
+      dotLineIndent. indent := plainIndent. indent;
+      dotLineIndent. scrWidth := plainIndent. scrWidth;
+      dotLineIndent. startOffset := plainIndent. startOffset;
+      RETURN dotLineIndent
+    END GetDotLineIndent;
+  
   BEGIN
     NEW (str, Strings.Length (sym. str^)+1);
     COPY (sym. str^, str^);
@@ -184,7 +244,9 @@ PROCEDURE Remove* (sym: BasicList.Symbol; VAR deco: Decoration): String;
 
     (* check if this comment's string matches any know decoration *)
     deco := NIL;
-    (* [... none yet] *)
+    IF IsDotLine (str) THEN
+      deco := GetDotLineIndent (str)
+    END;
     
     (* if there is no decoration match, use the fallback decoration *)
     IF (deco = NIL) THEN
