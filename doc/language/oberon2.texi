@@ -8,10 +8,9 @@
 
 @titlepage
 @title The Programming Language Oberon-2
-@author
-H. Mossenbock, N. Wirth
-@c Institut für Computersysteme, ETH Zürich
-@c March 1995
+@author H. Mossenbock, N. Wirth
+@author Institut fur Computersysteme, ETH Zurich
+@author March 1995
 @end titlepage
 
 @contents
@@ -50,8 +49,8 @@ Oberon-2: Alternatives are separated by |. Brackets [ and ] denote optionality
 of the enclosed expression, and braces @{ and @} denote its repetition
 (possibly 0 times). Non-terminal symbols start with an upper-case letter (e.g.
 Statement). Terminal symbols either start with a lower-case letter (e.g.
-ident), or are written all in upper-case letters (e.g. BEGIN), or are denoted
-by strings (e.g. ":=").
+ident), or are written all in upper-case letters (e.g. @code{BEGIN}), or are
+denoted by strings (e.g. @code{":="}).
 
 @c 3. Vocabulary and Representation
 @chapter Vocabulary and Representation
@@ -66,7 +65,7 @@ consecutive symbols. Capital and lower-case letters are considered as distinct.
 @enumerate
 
 @item
-@emph{Identifiers} are sequences of letters and digits. The first character
+@dfn{Identifiers} are sequences of letters and digits. The first character
 must be a letter.
 
 @smallexample
@@ -79,15 +78,15 @@ x     Scan     Oberon2     GetSymbol     firstLetter
 @end smallexample
 
 @item
-@emph{Numbers} are (unsigned) integer or real constants. The type of an integer
-constant is the minimal type to which the constant value belongs (see 6.1). If
-the constant is specified with the suffix H, the representation is hexadecimal
-otherwise the representation is decimal.
+@dfn{Numbers} are (unsigned) integer or real constants. The type of an integer
+constant is the minimal type to which the constant value belongs (@pxref{Basic
+types}). If the constant is specified with the suffix @code{H}, the
+representation is hexadecimal otherwise the representation is decimal.
 
 A real number always contains a decimal point. Optionally it may also contain a
-decimal scale factor. The letter E (or D) means "times ten to the power of". A
-real number is of type REAL, unless it has a scale factor containing the letter
-D. In this case it is of type LONGREAL.
+decimal scale factor. The letter @code{E} (or @code{D}) means "times ten to the
+power of". A real number is of type @code{REAL}, unless it has a scale factor
+containing the letter @code{D}. In this case it is of type @code{LONGREAL}.
 
 @smallexample
 number      = integer | real.
@@ -108,19 +107,19 @@ Examples:
 @end smallexample
 
 @item
-@emph{Character} constants are denoted by the ordinal number of the character
-in hexadecimal notation followed by the letter X.
+@dfn{Character} constants are denoted by the ordinal number of the character
+in hexadecimal notation followed by the letter @code{X}.
 
 @smallexample
 character  = digit @{hexDigit@} "X".
 @end smallexample
 
 @item
-@emph{Strings} are sequences of characters enclosed in single (') or double (")
-quote marks. The opening quote must be the same as the closing quote and must
-not occur within the string. The number of characters in a string is called its
-@emph{length}. A string of length 1 can be used wherever a character constant
-is allowed and vice versa.
+@dfn{Strings} are sequences of characters enclosed in single (@code{'}) or
+double (@code{"}) quote marks. The opening quote must be the same as the
+closing quote and must not occur within the string. The number of characters in
+a string is called its @dfn{length}. A string of length 1 can be used wherever
+a character constant is allowed and vice versa.
 
 @smallexample
 string  = ' " ' @{char@} ' " ' | " ' " @{char@} " ' ".
@@ -131,30 +130,31 @@ Examples:
 @end smallexample
 
 @item
-@emph{Operators} and @emph{delimiters} are the special characters, character
+@dfn{Operators} and @dfn{delimiters} are the special characters, character
 pairs, or reserved words listed below. The reserved words consist exclusively
 of capital letters and cannot be used as identifiers.
 
 @smallexample
 +  :=  ARRAY  IMPORT  RETURN
--  ^  BEGIN  IN  THEN
-*  =  BY  IS  TO
-/  #  CASE  LOOP  TYPE
-~  <  CONST  MOD  UNTIL
-&  >  DIV  MODULE  VAR
-.  <=  DO  NIL  WHILE
-,  >=  ELSE  OF  WITH
+-  ^   BEGIN  IN      THEN
+*  =   BY     IS      TO
+/  #   CASE   LOOP    TYPE
+~  <   CONST  MOD     UNTIL
+&  >   DIV    MODULE  VAR
+.  <=  DO     NIL     WHILE
+,  >=  ELSE   OF      WITH
 ;  ..  ELSIF  OR
-|  :  END  POINTER
-(  )  EXIT  PROCEDURE
-[  ]  FOR  RECORD
-@{  @}  IF  REPEAT
+|  :   END    POINTER
+(  )   EXIT   PROCEDURE
+[  ]   FOR    RECORD
+@{  @}   IF     REPEAT
 @end smallexample
 
 @item
-@emph{Comments} may be inserted between any two symbols in a program. They are
-arbitrary character sequences opened by the bracket (* and closed by *).
-Comments may be nested. They do not affect the meaning of a program.
+@dfn{Comments} may be inserted between any two symbols in a program. They are
+arbitrary character sequences opened by the bracket @code{(*} and closed by
+@code{*)}.  Comments may be nested. They do not affect the meaning of a
+program.
 
 @end enumerate
 
@@ -168,9 +168,9 @@ permanent properties of an object, such as whether it is a constant, a type, a
 variable, or a procedure. The identifier is then used to refer to the
 associated object.  
 
-The @emph{scope} of an object @var{x} extends textually from the point of its
+The @dfn{scope} of an object @var{x} extends textually from the point of its
 declaration to the end of the block (module, procedure, or record) to which the
-declaration belongs and hence to which the object is @emph{local}. It excludes
+declaration belongs and hence to which the object is @dfn{local}. It excludes
 the scopes of equally named objects which are declared in nested blocks. The
 scope rules are:
 
@@ -184,23 +184,23 @@ identifier may be declared twice in a block);
 An object may only be referenced within its scope;
 
 @item
-A type @var{T} of the form POINTER TO @var{T1} (see 6.4) can be declared at a
-point where @var{T1} is still unknown. The declaration of @var{T1} must
-follow in the same block to which @var{T} is local;
+A type @var{T} of the form @code{POINTER TO} @var{T1} (@pxref{Pointer types})
+can be declared at a point where @var{T1} is still unknown. The declaration of
+@var{T1} must follow in the same block to which @var{T} is local;
 
 @item
-Identifiers denoting record fields (see 6.3) or type-bound procedures (see
-10.2) are valid in record designators only.
+Identifiers denoting record fields (@pxref{Record types}) or type-bound
+procedures (@pxref{Type-bound procedures}) are valid in record designators only.
 
 @end enumerate
 
 An identifier declared in a module block may be followed by an export mark ("
 * " or " - ") in its declaration to indicate that it is exported.
 An identifier @var{x} exported by a module @var{M} may be used in other
-modules, if they import @var{M} (see Ch.11). The identifier is then denoted as
-@var{M.x} in these modules and is called a @emph{qualified identifier}.
-Identifiers marked with " - " in their declaration are @emph{read-only} in
-importing modules.
+modules, if they import @var{M} (@pxref{Modules}). The identifier is then
+denoted as @var{M.x} in these modules and is called a @dfn{qualified
+identifier}.  Identifiers marked with " - " in their declaration are
+@dfn{read-only} in importing modules.
 
 @smallexample
 Qualident = [ident "."] ident.
@@ -210,22 +210,26 @@ IdentDef  = ident [" * " | " - "].
 The following identifiers are predeclared; their meaning is defined in the
 indicated sections:
 
+@c It looks like there is not a good way to do this table in texinfo.
+@c Ideally, the section numbers should be cross-references, but texinfo
+@c references are too verbose to make this work. Only real alternative
+@c might be a two-column table with keyword and cross-reference.
 @smallexample
-ABS  (10.3)  LEN  (10.3)
-ASH  (10.3)  LONG  (10.3)
-BOOLEAN  (6.1)  LONGINT  (6.1)
-CAP  (10.3)  LONGREAL  (6.1)
-CHAR  (6.1)  MAX  (10.3)
-CHR  (10.3)  MIN  (10.3)
-COPY  (10.3)  NEW  (10.3)
-DEC  (10.3)  ODD  (10.3)
-ENTIER  (10.3)  ORD  (10.3)
-EXCL  (10.3)  REAL  (6.1)
-FALSE  (6.1)  SET  (6.1)
-HALT  (10.3)  SHORT  (10.3)
-INC  (10.3)  SHORTINT  (6.1)
-INCL  (10.3)  SIZE  (10.3)
-INTEGER  (6.1)  TRUE  (6.1)
+ABS     (10.3)    LEN      (10.3)
+ASH     (10.3)    LONG     (10.3)
+BOOLEAN (6.1)     LONGINT  (6.1)
+CAP     (10.3)    LONGREAL (6.1)
+CHAR    (6.1)     MAX      (10.3)
+CHR     (10.3)    MIN      (10.3)
+COPY    (10.3)    NEW      (10.3)
+DEC     (10.3)    ODD      (10.3)
+ENTIER  (10.3)    ORD      (10.3)
+EXCL    (10.3)    REAL     (6.1)
+FALSE   (6.1)     SET      (6.1)
+HALT    (10.3)    SHORT    (10.3)
+INC     (10.3)    SHORTINT (6.1)
+INCL    (10.3)    SIZE     (10.3)
+INTEGER (6.1)     TRUE     (6.1)
 @end smallexample
 
 @c 5. Constant declarations
@@ -240,13 +244,13 @@ ConstExpression      = Expression.
 
 A constant expression is an expression that can be evaluated by a mere textual
 scan without actually executing the program. Its operands are constants
-(@xref{Expressions}) or predeclared functions (Ch.10.3) that can be evaluated
-at compile time.  Examples of constant declarations are:
+(@pxref{Expressions}) or predeclared functions (@pxref{Predeclared procedures})
+that can be evaluated at compile time.  Examples of constant declarations are:
 
 @smallexample
 N = 100
 limit = 2*N - 1
-fullSet = {MIN(SET) .. MAX(SET)}
+fullSet = @{MIN(SET) .. MAX(SET)@}
 @end smallexample
 
 @c 6. Type declarations
@@ -281,11 +285,13 @@ Function = PROCEDURE(x: INTEGER): INTEGER
 @end smallexample
 
 @c 6.1 Basic types
+@node Basic types
 @section Basic types
 
 The basic types are denoted by predeclared identifiers. The associated
-operators are defined in 8.2 and the predeclared function procedures in 10.3.
-The values of the given basic types are the following:
+operators are defined in @ref{Operators} and the predeclared function
+procedures in @ref{Predeclared procedures}.  The values of the given basic
+types are the following:
 
 @enumerate
 @item
@@ -314,9 +320,9 @@ The values of the given basic types are the following:
 
 @end enumerate
 
-Types 3 to 5 are @emph{integer types}, types 6 and 7 are @emph{real types}, and
-together they are called @emph{numeric types}. They form a hierarchy; the
-larger type @emph{includes} (the values of) the smaller type:
+Types 3 to 5 are @dfn{integer types}, types 6 and 7 are @dfn{real types}, and
+together they are called @dfn{numeric types}. They form a hierarchy; the
+larger type @dfn{includes} (the values of) the smaller type:
 
 @smallexample
 LONGREAL  >=  REAL  >=  LONGINT  >=  INTEGER  >=  SHORTINT
@@ -326,12 +332,12 @@ LONGREAL  >=  REAL  >=  LONGINT  >=  INTEGER  >=  SHORTINT
 @section Array types
 
 An array is a structure consisting of a number of elements which are all of the
-same type, called the @emph{element type}. The number of elements of an array
-is called its @emph{length}. The elements of the array are designated by
+same type, called the @dfn{element type}. The number of elements of an array
+is called its @dfn{length}. The elements of the array are designated by
 indices, which are integers between 0 and the length minus 1.
 
 @smallexample
-ArrayType  = ARRAY [Length {"," Length}] OF Type.
+ArrayType  = ARRAY [Length @{"," Length@}] OF Type.
 Length     = ConstExpression.
 @end smallexample
 
@@ -350,9 +356,9 @@ ARRAY L0 OF
     ARRAY Ln OF T
 @end smallexample
 
-Arrays declared without length are called @emph{open arrays}. They are
-restricted to pointer base types (see 6.4), element types of open array types,
-and formal parameter types (see 10.1). Examples:
+Arrays declared without length are called @dfn{open arrays}. They are
+restricted to pointer base types (@pxref{Pointer types}), element types of open
+array types, and formal parameter types (@pxref{Formal parameters}). Examples:
 
 @smallexample
 ARRAY 10, N OF INTEGER
@@ -360,19 +366,20 @@ ARRAY OF CHAR
 @end smallexample
 
 @c 6.3 Record types
+@node Record types
 @section Record types
 
 A record type is a structure consisting of a fixed number of elements, called
-@emph{fields}, with possibly different types. The record type declaration
+@dfn{fields}, with possibly different types. The record type declaration
 specifies the name and type of each field. The scope of the field identifiers
 extends from the point of their declaration to the end of the record type, but
 they are also visible within designators referring to elements of record
-variables (see 8.1). If a record type is exported, field identifiers that are
-to be visible outside the declaring module must be marked. They are called
-@emph{public fields}; unmarked elements are called @emph{private fields}.
+variables (@pxref{Operands}). If a record type is exported, field identifiers
+that are to be visible outside the declaring module must be marked. They are
+called @dfn{public fields}; unmarked elements are called @dfn{private fields}.
 
 @smallexample
-RecordType  = RECORD ["("BaseType")"] FieldList {";" FieldList} END.
+RecordType  = RECORD ["("BaseType")"] FieldList @{";" FieldList@} END.
 BaseType    = Qualident.
 FieldList   = [IdentList ":" Type ].
 @end smallexample
@@ -385,11 +392,11 @@ T0 = RECORD x: INTEGER END
 T1 = RECORD (T0) y: REAL END
 @end smallexample
 
-@var{T1} is a (direct) @emph{extension} of @var{T0} and @var{T0} is the
-(direct) @emph{base type} of @var{T1} (see App. A). An extended type @var{T1}
-consists of the fields of its base type and of the fields which are declared in
-@var{T1}. All identifiers declared in the extended record must be different
-from the identifiers declared in its base type record(s).
+@var{T1} is a (direct) @dfn{extension} of @var{T0} and @var{T0} is the
+(direct) @dfn{base type} of @var{T1} (@pxref{Definition of terms}). An extended
+type @var{T1} consists of the fields of its base type and of the fields which
+are declared in @var{T1}. All identifiers declared in the extended record must
+be different from the identifiers declared in its base type record(s).
 
 Examples of record type declarations:
 
@@ -406,39 +413,41 @@ END
 @end smallexample
 
 @c 6.4 Pointer types
+@node Pointer types
 @section Pointer types
 
 Variables of a pointer type @var{P} assume as values pointers to variables of
 some type @var{T}. @var{T} is called the pointer base type of @var{P} and
 must be a record or array type. Pointer types adopt the extension relation of
 their pointer base types: if a type @var{T1} is an extension of @var{T}, and
-@var{P1} is of type POINTER TO @var{T1}, then @var{P1} is also an extension
-of @var{P}.
+@var{P1} is of type @code{POINTER TO} @var{T1}, then @var{P1} is also an
+extension of @var{P}.
 
 @smallexample
 PointerType = POINTER TO Type.
 @end smallexample
 
-If @var{p} is a variable of type @var{P} = POINTER TO @var{T}, a call of the
-predeclared procedure @var{NEW(p)} (see 10.3) allocates a variable of type
-@var{T} in free storage. If @var{T} is a record type or an array type with
-fixed length, the allocation has to be done with @var{NEW(p)}; if @var{T} is
-an n-dimensional open array type the allocation has to be done with
-@var{NEW(p, e0, ..., en-1)} where @var{T} is allocated with lengths given by
-the expressions @var{e0, ..., en-1}. In either case a pointer to the allocated
-variable is assigned to @var{p}. @var{p} is of type @var{P}. The
-@emph{referenced} variable @var{p^} (pronounced as @emph{p-referenced}) is of type
-@var{T}. Any pointer variable may assume the value NIL, which points to no
-variable at all.
+If @var{p} is a variable of type @var{P} = @code{POINTER TO} @var{T}, a call of
+the predeclared procedure @code{NEW(@var{p})} (@pxref{Predeclared procedures})
+allocates a variable of type @var{T} in free storage. If @var{T} is a record
+type or an array type with fixed length, the allocation has to be done with
+@code{NEW(@var{p})}; if @var{T} is an n-dimensional open array type the
+allocation has to be done with @code{NEW(@var{p}, @var{e0}, @var{...},
+@var{en-1})} where @var{T} is allocated with lengths given by the expressions
+@var{e0, ..., en-1}. In either case a pointer to the allocated variable is
+assigned to @var{p}. @var{p} is of type @var{P}.  The @dfn{referenced} variable
+@code{@var{p}^} (pronounced as @emph{p-referenced}) is of type @var{T}. Any
+pointer variable may assume the value @code{NIL}, which points to no variable
+at all.
 
 @c 6.5 Procedure types
 @section Procedure types
 
-Variables of a procedure type @var{T} have a procedure (or NIL) as value. If a
-procedure @var{P} is assigned to a variable of type @var{T}, the formal
-parameter lists (see Ch. 10.1) of @var{P} and @var{T} must @emph{match} (see
-App. A). @var{P} must not be a predeclared or type-bound procedure nor may it
-be local to another procedure.
+Variables of a procedure type @var{T} have a procedure (or @code{NIL}) as
+value. If a procedure @var{P} is assigned to a variable of type @var{T}, the
+formal parameter lists (@pxref{Formal parameters}) of @var{P} and @var{T} must
+@dfn{match} (@pxref{Definition of terms}). @var{P} must not be a predeclared or
+type-bound procedure nor may it be local to another procedure.
 
 @smallexample
 ProcedureType = PROCEDURE [FormalParameters].
@@ -455,12 +464,12 @@ type for them.
 VariableDeclaration = IdentList ":" Type.
 @end smallexample
 
-Record and pointer variables have both a @emph{static type} (the type with
-which they are declared - simply called their type) and a @emph{dynamic type}
+Record and pointer variables have both a @dfn{static type} (the type with
+which they are declared - simply called their type) and a @dfn{dynamic type}
 (the type of their value at run time). For pointers and variable parameters of
 record type the dynamic type may be an extension of their static type. The
 static type determines which fields of a record are accessible. The dynamic
-type is used to call type-bound procedures (see 10.2).
+type is used to call type-bound procedures (@pxref{Type-bound procedures}).
 
 Examples of variable declarations (refer to examples in 
 @ref{Type declarations}):
@@ -490,14 +499,15 @@ operands and operators. Parentheses may be used to express specific
 associations of operators and operands.
 
 @c 8.1 Operands
+@node Operands
 @section Operands
 
 With the exception of set constructors and literal constants (numbers,
-character constants, or strings), operands are denoted by @emph{designators}. A
+character constants, or strings), operands are denoted by @dfn{designators}. A
 designator consists of an identifier referring to a constant, variable, or
 procedure. This identifier may possibly be qualified by a module identifier
-(see @ref{Declarations and scope rules} and 11) and may be followed by
-@emph{selectors} if the designated object is an element of a structure.
+(see @ref{Declarations and scope rules} and @ref{Modules}) and may be followed
+by @dfn{selectors} if the designated object is an element of a structure.
 
 @smallexample
 Designator      = Qualident @{"." ident | "[" ExpressionList "]" | "^" | "(" Qualident ")"@}.
@@ -508,18 +518,19 @@ If @var{a} designates an array, then @var{a[e]} denotes that element of a
 whose index is the current value of the expression @var{e}. The type of
 @var{e} must be an integer type. A designator of the form @var{a[e0, e1, ...,
 en]} stands for @var{a[e0][e1]...[en]}. If @var{r} designates a record, then
-@var{r.f} denotes the field @var{f} of @var{r} or the procedure @var{f}
-bound to the dynamic type of @var{r} (Ch. 10.2). If @var{p} designates a
-pointer, @var{p^} denotes the variable which is referenced by @var{p}. The
-designators @var{p^.f} and @var{p^[e]} may be abbreviated as @var{p.f} and
-@var{p[e]}, i.e. record and array selectors imply dereferencing. If @var{a}
-or @var{r} are read-only, then also @var{a[e]} and @var{r.f} are read-only.
+@var{r.f} denotes the field @var{f} of @var{r} or the procedure @var{f} bound
+to the dynamic type of @var{r} (@pxref{Type-bound procedures}). If @var{p}
+designates a pointer, @var{p^} denotes the variable which is referenced by
+@var{p}. The designators @var{p^.f} and @var{p^[e]} may be abbreviated as
+@var{p.f} and @var{p[e]}, i.e. record and array selectors imply dereferencing.
+If @var{a} or @var{r} are read-only, then also @var{a[e]} and @var{r.f} are
+read-only.
 
-A @emph{type guard} @var{v(T)} asserts that the dynamic type of @var{v} is
-@var{T} (or an extension of @var{T}), i.e. program execution is aborted, if
-the dynamic type of @var{v} is not @var{T} (or an extension of @var{T}).
-Within the designator, @var{v} is then regarded as having the static type
-@var{T}.  The guard is applicable, if
+A @dfn{type guard} @var{v(T)} asserts that the dynamic type of @var{v} is
+@var{T} (or an extension of @var{T}), i.e. program execution is aborted, if the
+dynamic type of @var{v} is not @var{T} (or an extension of @var{T}).  Within
+the designator, @var{v} is then regarded as having the static type @var{T}.
+The guard is applicable, if
 
 @enumerate
 
@@ -536,9 +547,9 @@ refers to its current value. If it is a procedure, the designator refers to
 that procedure unless it is followed by a (possibly empty) parameter list in
 which case it implies an activation of that procedure and stands for the value
 resulting from its execution. The actual parameters must correspond to the
-formal parameters as in proper procedure calls (see 10.1).
+formal parameters as in proper procedure calls (@pxref{Formal parameters}).
 
-Examples of designators (refer to examples in Ch.7):
+Examples of designators (refer to examples in @ref{Variable declarations}):
 
 @smallexample
 i                      (INTEGER)
@@ -549,6 +560,7 @@ t(CenterTree).subnode  (Tree)
 @end smallexample
 
 @c 8.2 Operators
+@node Operators
 @section Operators
 
 Four classes of operators with different precedences (binding strengths) are
@@ -562,20 +574,21 @@ Expression        = SimpleExpression [Relation SimpleExpression].
 SimpleExpression  = ["+" | "-"] Term @{AddOperator Term@}.
 Term              = Factor @{MulOperator Factor@}.
 Factor            = Designator [ActualParameters] | 
-                    number | character | string | NIL | Set | "(" Expression ")" | "~" Factor.
-Set   = "@{" [Element @{"," Element@}] "@}".
-Element   = Expression [".." Expression].
-ActualParameters   = "(" [ExpressionList] ")".
-Relation   = "=" | "#" | "<" | "<=" | ">" | ">=" | IN | IS.
-AddOperator   = "+" | "-" | OR.
-MulOperator   = "*" | "/" | DIV | MOD | "&".
+                    number | character | string | NIL | Set | 
+                    "(" Expression ")" | "~" Factor.
+Set               = "@{" [Element @{"," Element@}] "@}".
+Element           = Expression [".." Expression].
+ActualParameters  = "(" [ExpressionList] ")".
+Relation          = "=" | "#" | "<" | "<=" | ">" | ">=" | IN | IS.
+AddOperator       = "+" | "-" | OR.
+MulOperator       = "*" | "/" | DIV | MOD | "&".
 @end smallexample
 
 The available operators are listed in the following tables. Some operators are
 applicable to operands of various types, denoting different operations. In
 these cases, the actual operation is identified by the type of the operands.
-The operands must be @emph{expression compatible} with respect to the operator
-(see App. A).
+The operands must be @dfn{expression compatible} with respect to the operator
+(@pxref{Definition of terms}).
 
 @c 8.2.1 Logical operators
 @subsection Logical operators
@@ -586,7 +599,8 @@ OR  logical disjunction   p OR q   "if p then TRUE, else q"
 ~   negation              ~ p      "not p"
 @end smallexample
 
-These operators apply to BOOLEAN operands and yield a BOOLEAN result.
+These operators apply to @code{BOOLEAN} operands and yield a @code{BOOLEAN}
+result.
 
 @c 8.2.2 Arithmetic operators
 @subsection Arithmetic operators
@@ -606,13 +620,14 @@ integer quotient
 modulus
 @end table
 
-The operators +, -, *, and / apply to operands of numeric types. The type of
-the result is the type of that operand which includes the type of the other
-operand, except for division (/), where the result is the smallest real type
-which includes both operand types. When used as monadic operators, - denotes
-sign inversion and + denotes the identity operation. The operators DIV and MOD
-apply to integer operands only. They are related by the following formulas
-defined for any x and positive divisors y:
+The operators @code{+}, @code{-}, @code{*}, and @code{/} apply to operands of
+numeric types. The type of the result is the type of that operand which
+includes the type of the other operand, except for division (@code{/}), where
+the result is the smallest real type which includes both operand types. When
+used as monadic operators, @code{-} denotes sign inversion and @code{+} denotes
+the identity operation. The operators @code{DIV} and @code{MOD} apply to
+integer operands only. They are related by the following formulas defined for
+any @var{x} and positive divisors @var{y}:
 
 @smallexample
 x = (x DIV y) * y + (x MOD y)
@@ -640,14 +655,15 @@ intersection
 symmetric set difference (x / y = (x-y) + (y-x))
 @end table
 
-Set operators apply to operands of type SET and yield a result of type SET. The
-monadic minus sign denotes the complement of x, i.e. -x denotes the set of
-integers between 0 and MAX(SET) which are not elements of x. Set operators are
-not associative ((a+b)-c # a+(b-c)).
+Set operators apply to operands of type @code{SET} and yield a result of type
+@code{SET}. The monadic minus sign denotes the complement of @var{x}, i.e.
+@code{-@var{x}} denotes the set of integers between 0 and @code{MAX(SET)} which
+are not elements of @var{x}. Set operators are not associative @code{((a+b)-c #
+a+(b-c))}.
 
 A set constructor defines the value of a set by listing its elements between
-curly brackets. The elements must be integers in the range 0..MAX(SET). A range
-@var{a..b} denotes all integers in the interval @var{[a, b]}.
+curly brackets. The elements must be integers in the range 0..@code{MAX(SET)}.
+A range @var{a..b} denotes all integers in the interval @var{[a, b]}.
 
 @c 8.2.4 Relations
 @subsection Relations
@@ -671,14 +687,16 @@ set membership
 type test
 @end table
 
-Relations yield a BOOLEAN result. The relations =, #, <, <=, >, and >= apply
-to the numeric types, CHAR, strings, and character arrays containing 0X as a
-terminator. The relations = and # also apply to BOOLEAN and SET, as well as to
-pointer and procedure types (including the value NIL). @var{x IN s} stands for
-"@var{x} is an element of @var{s}". @var{x} must be of an integer type, and
-@var{s} of type SET. @var{v IS T} stands for "the dynamic type of @var{v} is
-@var{T} (or an extension of @var{T})" and is called a @emph{type test}. It is
-applicable if
+Relations yield a @code{BOOLEAN} result. The relations @code{=}, @code{#},
+@code{<}, @code{<=}, @code{>}, and @code{>=} apply to the numeric types,
+@code{CHAR}, strings, and character arrays containing 0X as a terminator. The
+relations @code{=} and @code{#} also apply to @code{BOOLEAN} and @code{SET}, as
+well as to pointer and procedure types (including the value @code{NIL}).
+@code{@var{x} IN @var{s}} stands for "@var{x} is an element of @var{s}".
+@var{x} must be of an integer type, and @var{s} of type @code{SET}.
+@code{@var{v} IS @var{T}} stands for "the dynamic type of @var{v} is @var{T}
+(or an extension of @var{T})" and is called a @dfn{type test}. It is applicable
+if
 
 @enumerate
 
@@ -690,18 +708,18 @@ applicable if
 
 @end enumerate
 
-Examples of expressions (refer to examples in Ch.7):
+Examples of expressions (refer to examples in @ref{Variable declarations}):
 @smallexample
 1991                 INTEGER
 i DIV 3              INTEGER
 ~p OR q              BOOLEAN
 (i+j) * (i-j)        INTEGER
-s - {8, 9, 13}       SET
+s - @{8, 9, 13@}       SET
 i + x                REAL
 a[i+j] * a[i-j]      REAL
 (0<=i) & (i<100)     BOOLEAN
 t.key = 0            BOOLEAN
-k IN {i..j-1}        BOOLEAN
+k IN @{i..j-1@}        BOOLEAN
 w[i].name <= "John"  BOOLEAN
 t IS CenterTree      BOOLEAN
 @end smallexample
@@ -722,15 +740,16 @@ punctuation rules in statement sequences.
 @smallexample
 Statement =
   [ Assignment | ProcedureCall | IfStatement | CaseStatement | WhileStatement | 
-    RepeatStatement | ForStatement | LoopStatement | WithStatement | EXIT | RETURN [Expression] ].
+    RepeatStatement | ForStatement | LoopStatement | WithStatement | 
+    EXIT | RETURN [Expression] ].
 @end smallexample
 
 @section Assignments
 
 Assignments replace the current value of a variable by a new value specified
-by an expression. The expression must be @emph{assignment compatible} with the
-variable (see App. A). The assignment operator is written as ":=" and
-pronounced as @emph{becomes}.
+by an expression. The expression must be @dfn{assignment compatible} with the
+variable (@pxref{Definition of terms}). The assignment operator is written as
+"@code{:=}" and pronounced as @emph{becomes}.
 
 @smallexample
 Assignment = Designator ":=" Expression.
@@ -743,7 +762,7 @@ type @var{Tv}, the following happens:
 
 @item
 if @var{Tv} and @var{Te} are record types, only those fields of @var{Te} are
-assigned which also belong to @var{Tv} (@emph{projection}); the dynamic type
+assigned which also belong to @var{Tv} (@dfn{projection}); the dynamic type
 of @var{v}  must be the same as the static type of @var{v} and  is not changed
 by the assignment;
 
@@ -752,9 +771,9 @@ if @var{Tv} and @var{Te} are pointer types, the dynamic type of @var{v}
 becomes the dynamic type of @var{e};
 
 @item
-if @var{Tv} is ARRAY n OF CHAR and @var{e} is a string of length @var{m<n},
-@var{v[i]} becomes @var{ei} for @var{i} = 0..@var{m-1} and @var{v[m]} becomes
-0X.
+if @var{Tv} is @code{ARRAY @var{n} OF CHAR} and @var{e} is a string of length
+@var{m<n}, @var{v[i]} becomes @var{ei} for @var{i} = 0..@var{m-1} and
+@var{v[m]} becomes @code{0X}.
 
 @end enumerate
 
@@ -765,8 +784,8 @@ i := 0
 p := i = j
 x := i + 1
 k := log2(i+j)
-F := log2    (* see 10.1 *)
-s := {2, 3, 5, 7, 11, 13}
+F := log2    (* @xref{Formal parameters} *)
+s := @{2, 3, 5, 7, 11, 13@}
 a[i] := (x+y) * (x-y)
 t.key := i
 w[i+1].name := "John"
@@ -778,9 +797,10 @@ t := c
 
 A procedure call activates a procedure. It may contain a list of actual
 parameters which replace the corresponding formal parameters defined in the
-procedure declaration (see Ch. 10). The correspondence is established by the
-positions of the parameters in the actual and formal parameter lists. There
-are two kinds of parameters: @emph{variable} and @emph{value} parameters.
+procedure declaration (@pxref{Procedure declarations}). The correspondence is
+established by the positions of the parameters in the actual and formal
+parameter lists. There are two kinds of parameters: @dfn{variable} and
+@dfn{value} parameters.
 
 If a formal parameter is a variable parameter, the corresponding actual
 parameter must be a designator denoting a variable. If it denotes an element
@@ -789,7 +809,7 @@ formal/actual parameter substitution takes place, i.e. before the execution of
 the procedure. If a formal parameter is a value parameter, the corresponding
 actual parameter must be an expression. This expression is evaluated before
 the procedure activation, and the resulting value is assigned to the formal
-parameter (see also 10.1).
+parameter (@pxref{Formal parameters}).
 
 @smallexample
 ProcedureCall = Designator [ActualParameters].
@@ -797,9 +817,9 @@ ProcedureCall = Designator [ActualParameters].
 
 Examples:
 @smallexample
-WriteInt(i*2+1)  (* see 10.1 *)
+WriteInt(i*2+1)  (* @xref{Formal parameters} *)
 INC(w[k].count)
-t.Insert("John")  (* see 11 *)
+t.Insert("John")  (* @xref{Modules} *)
 @end smallexample
 
 @c 9.3 Statement sequences
@@ -809,7 +829,7 @@ Statement sequences denote the sequence of actions specified by the component
 statements which are separated by semicolons.
 
 @smallexample
-StatementSequence = Statement {";" Statement}.
+StatementSequence = Statement @{";" Statement@}.
 @end smallexample
 
 @c 9.4 If statements
@@ -818,17 +838,17 @@ StatementSequence = Statement {";" Statement}.
 @smallexample
 IfStatement = 
   IF Expression THEN StatementSequence
-  {ELSIF Expression THEN StatementSequence}
+  @{ELSIF Expression THEN StatementSequence@}
   [ELSE StatementSequence]
   END.
 @end smallexample
 
 If statements specify the conditional execution of guarded statement
 sequences. The Boolean expression preceding a statement sequence is called its
-@emph{guard}. The guards are evaluated in sequence of occurrence, until one
-evaluates to TRUE, whereafter its associated statement sequence is executed.
-If no guard is satisfied, the statement sequence following the symbol ELSE is
-executed, if there is one.
+@dfn{guard}. The guards are evaluated in sequence of occurrence, until one
+evaluates to @code{TRUE}, whereafter its associated statement sequence is
+executed.  If no guard is satisfied, the statement sequence following the
+symbol @code{ELSE} is executed, if there is one.
 
 Example:
 @smallexample
@@ -846,18 +866,18 @@ Case statements specify the selection and execution of a statement sequence
 according to the value of an expression. First the case expression is
 evaluated, then that statement sequence is executed whose case label list
 contains the obtained value. The case expression must either be of an
-@emph{integer type} that @emph{includes} the types of all case labels, or both
-the case expression and the case labels must be of type CHAR. Case labels are
-constants, and no value must occur more than once. If the value of the
-expression does not occur as a label of any case, the statement sequence
-following the symbol ELSE is selected, if there is one, otherwise the program
-is aborted.
+@dfn{integer type} that @dfn{includes} the types of all case labels, or both
+the case expression and the case labels must be of type @code{CHAR}. Case
+labels are constants, and no value must occur more than once. If the value of
+the expression does not occur as a label of any case, the statement sequence
+following the symbol @code{ELSE} is selected, if there is one, otherwise the
+program is aborted.
 
 @smallexample
-CaseStatement   = CASE Expression OF Case {"|" Case} [ELSE StatementSequence] END.
-Case   = [CaseLabelList ":" StatementSequence].
-CaseLabelList   = CaseLabels {"," CaseLabels}.
-CaseLabels   = ConstExpression [".." ConstExpression].
+CaseStatement   = CASE Expression OF Case @{"|" Case@} [ELSE StatementSequence] END.
+Case            = [CaseLabelList ":" StatementSequence].
+CaseLabelList   = CaseLabels @{"," CaseLabels@}.
+CaseLabels      = ConstExpression [".." ConstExpression].
 @end smallexample
 
 Example:
@@ -874,8 +894,8 @@ END
 @section While statements
 
 While statements specify the repeated execution of a statement sequence while
-the Boolean expression (its @emph{guard}) yields TRUE. The guard is checked
-before every execution of the statement sequence.
+the Boolean expression (its @dfn{guard}) yields @code{TRUE}. The guard is
+checked before every execution of the statement sequence.
 
 @smallexample
 WhileStatement = WHILE Expression DO StatementSequence END.
@@ -903,7 +923,7 @@ RepeatStatement = REPEAT StatementSequence UNTIL Expression.
 
 A for statement specifies the repeated execution of a statement sequence while
 a progression of values is assigned to an integer variable called the
-@emph{control variable} of the for statement.
+@dfn{control variable} of the for statement.
 
 @smallexample
 ForStatement = FOR ident ":=" Expression TO Expression [BY ConstExpression] DO StatementSequence END.
@@ -935,8 +955,8 @@ FOR i := 79 TO 1 BY -1 DO a[i] := a[i-1] END
 @section Loop statements
 
 A loop statement specifies the repeated execution of a statement sequence. It
-is terminated upon execution of an exit statement within that sequence (see
-9.10).
+is terminated upon execution of an exit statement within that sequence
+(@pxref{Return and exit statements}).
 
 @smallexample
 LoopStatement = LOOP StatementSequence END.
@@ -956,21 +976,24 @@ cases where the exit condition is in the middle of the repeated statement
 sequence.
 
 @c 9.10 Return and exit statements
+@node Return and exit statements
 @section Return and exit statements
 
 A return statement indicates the termination of a procedure. It is denoted by
-the symbol RETURN, followed by an expression if the procedure is a function
-procedure. The type of the expression must be @emph{assignment compatible}
-(see App.  A) with the result type specified in the procedure heading (see
-Ch.10).
+the symbol @code{RETURN}, followed by an expression if the procedure is a
+function procedure. The type of the expression must be @dfn{assignment
+compatible} (@pxref{Definition of terms}) with the result type specified in the
+procedure heading (@pxref{Procedure declarations}).
 
-Function procedures must be left via a return statement indicating the result value. In proper procedures, a return statement is implied by the end of the procedure body. Any explicit return statement therefore appears as an additional (probably exceptional) termination point.
+Function procedures must be left via a return statement indicating the result
+value. In proper procedures, a return statement is implied by the end of the
+procedure body. Any explicit return statement therefore appears as an
+additional (probably exceptional) termination point.
 
-An exit statement is denoted by the symbol EXIT. It specifies termination of
-the enclosing loop statement and continuation with the statement following
-that loop statement. Exit statements are contextually, although not
+An exit statement is denoted by the symbol @code{EXIT}. It specifies
+termination of the enclosing loop statement and continuation with the statement
+following that loop statement. Exit statements are contextually, although not
 syntactically associated with the loop statement which contains them.
-
 
 @c 9.11 With statements
 @section With statements
@@ -980,7 +1003,7 @@ test and apply a type guard to every occurrence of the tested variable within
 this statement sequence.
 
 @smallexample
-WithStatement = WITH Guard DO StatementSequence {"|" Guard DO StatementSequence}
+WithStatement = WITH Guard DO StatementSequence @{"|" Guard DO StatementSequence@}
   [ELSE StatementSequence] END.
 Guard  = Qualident ":" Qualident.
 @end smallexample
@@ -1005,37 +1028,88 @@ Example:
 WITH t: CenterTree DO i := t.width; c := t.subnode END
 @end smallexample
 
-@bye
-10. Procedure declarations
+@c 10. Procedure declarations
+@node Procedure declarations
+@chapter Procedure declarations
 
-A procedure declaration consists of a procedure heading and a procedure body. The heading specifies the procedure identifier and the formal parameters. For type-bound procedures it also specifies the receiver parameter. The body contains declarations and statements. The procedure identifier is repeated at the end of the procedure declaration.
-  There are two kinds of procedures: proper procedures and function procedures. The latter are activated by a function designator as a constituent of an expression and yield a result that is an operand of the expression. Proper procedures are activated by a procedure call. A procedure is a function procedure if its formal parameters specify a result type. The body of a function procedure must contain a return statement which defines its result.
-  All constants, variables, types, and procedures declared within a procedure body are local to the procedure. Since procedures may be declared as local objects too, procedure declarations may be nested. The call of a procedure within its declaration implies recursive activation.
-  Objects declared in the environment of the procedure are also visible in those parts of the procedure in which they are not concealed by a locally declared object with the same name.
+A procedure declaration consists of a @dfn{procedure heading} and a
+@dfn{procedure body}.  The heading specifies the procedure identifier and the
+@dfn{formal parameters}. For type-bound procedures it also specifies the
+receiver parameter. The body contains declarations and statements. The
+procedure identifier is repeated at the end of the procedure declaration.
 
+There are two kinds of procedures: @dfn{proper procedures} and @dfn{function
+procedures}.  The latter are activated by a function designator as a
+constituent of an expression and yield a result that is an operand of the
+expression. Proper procedures are activated by a procedure call. A procedure is
+a function procedure if its formal parameters specify a result type. The body
+of a function procedure must contain a return statement which defines its
+result.
+
+All constants, variables, types, and procedures declared within a procedure
+body are @dfn{local} to the procedure. Since procedures may be declared as
+local objects too, procedure declarations may be nested. The call of a
+procedure within its declaration implies recursive activation.
+
+Objects declared in the environment of the procedure are also visible in those
+parts of the procedure in which they are not concealed by a locally declared
+object with the same name.
+
+@smallexample
 ProcedureDeclaration  = ProcedureHeading ";" ProcedureBody ident.
-ProcedureHeading   = PROCEDURE [Receiver] IdentDef [FormalParameters].
-ProcedureBody   = DeclarationSequence [BEGIN StatementSequence] END.
-DeclarationSequence   = 
-  {CONST {ConstantDeclaration ";"} | TYPE {TypeDeclaration ";"} | VAR {VariableDeclaration ";"} }
-  {ProcedureDeclaration ";" | ForwardDeclaration ";"}.
-ForwardDeclaration   = PROCEDURE " ^ " [Receiver] IdentDef [FormalParameters].
+ProcedureHeading      = PROCEDURE [Receiver] IdentDef [FormalParameters].
+ProcedureBody         = DeclarationSequence [BEGIN StatementSequence] END.
+DeclarationSequence   = @{CONST @{ConstantDeclaration ";"@} 
+  | TYPE @{TypeDeclaration ";"@} 
+  | VAR @{VariableDeclaration ";"@} @}
+  @{ProcedureDeclaration ";" | ForwardDeclaration ";"@}.
+ForwardDeclaration    = PROCEDURE " ^ " [Receiver] IdentDef [FormalParameters].
+@end smallexample
 
-If a procedure declaration specifies a receiver parameter, the procedure is considered to be bound to a type (see 10.2). A forward declaration serves to allow forward references to a procedure whose actual declaration appears later in the text. The formal parameter lists of the forward declaration and the actual declaration must match (see App. A).
+If a procedure declaration specifies a @dfn{receiver} parameter, the procedure
+is considered to be bound to a type (@pxref{Type-bound procedures}). A
+@dfn{forward declaration} serves to allow forward references to a procedure
+whose actual declaration appears later in the text. The formal parameter lists
+of the forward declaration and the actual declaration must @dfn{match}
+(@pxref{Definition of terms}).
 
+@c 10.1 Formal parameters
+@node Formal parameters
+@section Formal parameters
 
-10.1 Formal parameters
+Formal parameters are identifiers declared in the formal parameter list of a
+procedure. They correspond to actual parameters specified in the procedure
+call. The correspondence between formal and actual parameters is established
+when the procedure is called. There are two kinds of parameters, @dfn{value}
+and @var{variable parameters}, indicated in the formal parameter list by the
+absence or presence of the keyword @var{VAR}. Value parameters are local
+variables to which the value of the corresponding actual parameter is assigned
+as an initial value.  Variable parameters correspond to actual parameters that
+are variables, and they stand for these variables. The scope of a formal
+parameter extends from its declaration to the end of the procedure block in
+which it is declared.  A function procedure without parameters must have an
+empty parameter list. It must be called by a function designator whose actual
+parameter list is empty too. The result type of a procedure can be neither a
+record nor an array.
 
-Formal parameters are identifiers declared in the formal parameter list of a procedure. They correspond to actual parameters specified in the procedure call. The correspondence between formal and actual parameters is established when the procedure is called. There are two kinds of parameters, value and variable parameters, indicated in the formal parameter list by the absence or presence of the keyword VAR. Value parameters are local variables to which the value of the corresponding actual parameter is assigned as an initial value. Variable parameters correspond to actual parameters that are variables, and they stand for these variables. The scope of a formal parameter extends from its declaration to the end of the procedure block in which it is declared. A function procedure without parameters must have an empty parameter list. It must be called by a function designator whose actual parameter list is empty too. The result type of a procedure can be neither a record nor an array.
+@smallexample
+FormalParameters  = "(" [FPSection @{";" FPSection@}] ")" [":" Qualident].
+FPSection   = [VAR] ident @{"," ident@} ":" Type.
+@end smallexample
 
-FormalParameters  = "(" [FPSection {";" FPSection}] ")" [":" Qualident].
-FPSection   = [VAR] ident {"," ident} ":" Type.
+Let @var{Tf} be the type of a formal parameter @var{f} (not an open array) and
+@var{Ta} the type of the corresponding actual parameter @var{a}. For variable
+parameters, @var{Ta} must be the same as @var{Tf}, or @var{Tf} must be a record
+type and @var{Ta} an extension of @var{Tf}. For value parameters, a must be
+@dfn{assignment compatible} with @var{f} (@pxref{Definition of terms}).
 
-Let Tf be the type of a formal parameter f (not an open array) and Ta the type of the corresponding actual parameter a. For variable parameters, Ta must be the same as Tf, or Tf must be a record type and Ta an extension of Tf. For value parameters, a must be assignment compatible with f (see App. A).
-  If Tf is an open array , then a must be array compatible with f (see App. A). The lengths of f are taken from a.
+If @var{Tf} is an open array, then a must be @dfn{array compatible} with
+@var{f} (@pxref{Definition of terms}). The lengths of @var{f} are taken from
+@var{a}.
 
 Examples of procedure declarations:
 
+@smallexample
 PROCEDURE ReadInt(VAR x: INTEGER);
   VAR i: INTEGER; ch: CHAR;
 BEGIN i := 0; Read(ch);
@@ -1065,22 +1139,51 @@ BEGIN
   y := 0; WHILE x > 1 DO x := x DIV 2; INC(y) END;
   RETURN y
 END log2
+@end smallexample
 
+@c 10.2 Type-bound procedures
+@node Type-bound procedures
+@section Type-bound procedures
 
-10.2 Type-bound procedures
+Globally declared procedures may be associated with a record type declared in
+the same module. The procedures are said to be @dfn{bound} to the record type.
+The binding is expressed by the type of the @dfn{receiver} in the heading of a
+procedure declaration.  The receiver may be either a variable parameter of
+record type @var{T} or a value parameter of type @code{POINTER TO @var{T}}
+(where @var{T} is a record type). The procedure is bound to the type @var{T}
+and is considered local to it.
 
-Globally declared procedures may be associated with a record type declared in the same module. The procedures are said to be bound to the record type. The binding is expressed by the type of the receiver in the heading of a procedure declaration.  The receiver may be either a variable parameter of record type T or a value parameter of type POINTER TO T (where T is a record type). The procedure is bound to the type T and is considered local to it.
-
+@smallexample
 ProcedureHeading  = PROCEDURE [Receiver] IdentDef [FormalParameters].
 Receiver   = "(" [VAR] ident ":" ident ")".
+@end smallexample
 
-If a procedure P is bound to a type T0, it is implicitly also bound to any type T1 which is an extension of T0. However, a procedure P' (with the same name as P) may be explicitly bound to T1 in which case it overrides the binding of P. P' is considered a redefinition of P for T1. The formal parameters of P and P' must match (see App. A). If P and T1 are exported (see Chapter 4) P' must be exported too.
-  If v is a designator and P is a type-bound procedure, then v.P denotes that procedure P which is bound to the dynamic type of v. Note, that this may be a different procedure than the one bound to the static type of v. v is passed to P's receiver according to the parameter passing rules specified in Chapter 10.1.
-  If r is a receiver parameter declared with type T, r.P^ denotes the (redefined) procedure P bound to the base type of T.
-In a forward declaration of a type-bound procedure the receiver parameter must be of the same type as in the actual procedure declaration. The formal parameter lists of both declarations must match (App. A).
+If a procedure @var{P} is bound to a type @var{T0}, it is implicitly also bound
+to any type @var{T1} which is an extension of @var{T0}. However, a procedure
+@var{P'} (with the same name as @var{P}) may be explicitly bound to @var{T1} in
+which case it overrides the binding of @var{P}. @var{P'} is considered a
+@dfn{redefinition} of @var{P} for @var{T1}. The formal parameters of @var{P}
+and @var{P'} must @dfn{match} (@pxref{Definition of terms}). If @var{P} and
+@var{T1} are exported (@pxref{Declarations and scope rules}) @var{P'} must be
+exported too.
+
+If @var{v} is a designator and @var{P} is a type-bound procedure, then
+@var{v.P} denotes that procedure @var{P} which is bound to the dynamic type of
+@var{v}. Note, that this may be a different procedure than the one bound to the
+static type of @var{v}. @var{v} is passed to @var{P}'s receiver according to
+the parameter passing rules specified in @ref{Formal parameters}.
+
+If @var{r} is a receiver parameter declared with type @var{T}, @var{r.P^}
+denotes the (redefined) procedure @var{P} bound to the base type of @var{T}.
+
+In a forward declaration of a type-bound procedure the receiver parameter must
+be of the @dfn{same} type as in the actual procedure declaration. The formal
+parameter lists of both declarations must @dfn{match} 
+(@pxref{Definition of terms}).
 
 Examples:
 
+@smallexample
 PROCEDURE (t: Tree) Insert (node: Tree);
   VAR p, father: Tree;
 BEGIN p := t;
@@ -1097,69 +1200,103 @@ BEGIN
   WriteInt(node(CenterTree).width);
   t.Insert^ (node)  (* calls the Insert procedure bound to Tree *)
 END Insert;
+@end smallexample
 
+@c 10.3 Predeclared procedures
+@node Predeclared procedures
+@section Predeclared procedures
 
-10.3 Predeclared procedures
+The following table lists the predeclared procedures. Some are generic
+procedures, i.e. they apply to several types of operands. @var{v} stands for a
+variable, @var{x} and @var{n} for expressions, and @var{T} for a type.
 
-The following table lists the predeclared procedures. Some are generic procedures, i.e. they apply to several types of operands. v stands for a variable, x and n for expressions, and T for a type.
-
+@smallexample
 Function procedures
+Name       Argument type         Result type     Function
+----       -------------         -----------     --------
+ABS(x)     numeric type          type of x       absolute value
+ASH(x, n)  x, n: integer type    LONGINT         arithmetic shift (x * 2n)
+CAP(x)     CHAR                  CHAR            x is letter: corresponding capital letter
+CHR(x)     integer type          CHAR            character with ordinal number x
+ENTIER(x)  real type             LONGINT         largest integer not greater than x
+LEN(v, n)  v: array;             LONGINT         length of v in dimension n 
+           n: integer const.                     (first dimension = 0)
+LEN(v)     v: array              LONGINT         equivalent to LEN(v, 0)
+LONG(x)    SHORTINT              INTEGER         identity
+           INTEGER               LONGINT
+           REAL                  LONGREAL
+MAX(T)     T = basic type        T               maximum value of type T
+           T = SET               INTEGER         maximum element of a set
+MIN(T)     T = basic type        T               minimum value of type T
+           T = SET               INTEGER         0
+ODD(x)     integer type          BOOLEAN         x MOD 2 = 1
+ORD(x)     CHAR                  INTEGER         ordinal number of x
+SHORT(x)   LONGINT               INTEGER         identity
+           INTEGER               SHORTINT        identity
+           LONGREAL              REAL            identity (truncation possible)
+SIZE(T)    any type              integer type    number of bytes required by T
+@end smallexample
 
-Name  Argument type  Result type  Function
-
-ABS(x)  numeric type  type of x  absolute value
-ASH(x, n)  x, n: integer type  LONGINT  arithmetic shift (x * 2n)
-CAP(x)  CHAR  CHAR  x is letter: corresponding capital letter
-CHR(x)  integer type  CHAR  character with ordinal number x
-ENTIER(x)  real type  LONGINT  largest integer not greater than x
-LEN(v, n)  v: array; n: integer const.  LONGINT  length of v in dimension n (first dimension = 0)
-LEN(v)  v: array  LONGINT  equivalent to LEN(v, 0)
-LONG(x)  SHORTINT  INTEGER  identity
-  INTEGER  LONGINT
-  REAL  LONGREAL
-MAX(T)  T = basic type  T  maximum value of type T
-  T = SET  INTEGER  maximum element of a set
-MIN(T)  T = basic type  T  minimum value of type T
-  T = SET  INTEGER  0
-ODD(x)  integer type  BOOLEAN  x MOD 2 = 1
-ORD(x)  CHAR  INTEGER  ordinal number of x
-SHORT(x)  LONGINT  INTEGER  identity
-  INTEGER  SHORTINT  identity
-  LONGREAL  REAL  identity (truncation possible)
-SIZE(T)  any type  integer type  number of bytes required by T
-
+@smallexample
 Proper procedures
+Name           Argument types                    Function
+----           --------------                    --------
+ASSERT(x)      x: Boolean expression             terminate program execution if not x
+ASSERT(x, n)   x: Boolean expression;            terminate program execution if not x
+               n: integer constant
+COPY(x, v)     x: character array, string; 
+               v: character array                v := x
+DEC(v)         integer type                      v := v - 1
+DEC(v, n)      v, n: integer type                v := v - n
+EXCL(v, x)     v: SET; x: integer type           v := v - @{x@}
+HALT(n)        integer constant                  terminate program execution
+INC(v)         integer type                      v := v + 1
+INC(v, n)      v, n: integer type                v := v + n
+INCL(v, x)     v: SET; x: integer type           v := v + @{x@}
+NEW(v)         pointer to record or fixed array  allocate v ^
+NEW(v, x0, ..., xn) 
+               v: pointer to open array; 
+               xi: integer type                  allocate v ^ with lengths x0.. xn
+@end smallexample
 
-Name  Argument types  Function
+@code{COPY} allows the assignment of a string or a character array containing a
+terminating @code{0X} to another character array. If necessary, the assigned
+value is truncated to the target length minus one. The target will always
+contain @code{0X} as a terminator. In @code{ASSERT(@var{x}, @var{n})} and
+@code{HALT(@var{n})}, the interpretation of @var{n} is left to the underlying
+system implementation.
 
-ASSERT(x)  x: Boolean expression  terminate program execution if not x
-ASSERT(x, n)   x: Boolean expression; n: integer constant  terminate program execution if not x
-COPY(x, v)  x: character array, string; v: character array  v := x
-DEC(v)  integer type  v := v - 1
-DEC(v, n)  v, n: integer type  v := v - n
-EXCL(v, x)  v: SET; x: integer type  v := v - {x}
-HALT(n)  integer constant  terminate program execution
-INC(v)  integer type  v := v + 1
-INC(v, n)  v, n: integer type  v := v + n
-INCL(v, x)  v: SET; x: integer type  v := v + {x}
-NEW(v)  pointer to record or fixed array  allocate v ^
-NEW(v, x0, ..., xn) v: pointer to open array; xi: integer type  allocate v ^ with lengths x0.. xn
+@c 11. Modules
+@node Modules
+@chapter Modules
 
-COPY allows the assignment of a string or a character array containing a terminating 0X to another character array. If necessary, the assigned value is truncated to the target length minus one. The target will always contain 0X as a terminator. In ASSERT(x, n) and HALT(n), the interpretation of n is left to the underlying system implementation.
+A module is a collection of declarations of constants, types, variables, and
+procedures, together with a sequence of statements for the purpose of assigning
+initial values to the variables. A module constitutes a text that is compilable
+as a unit.
 
-
-11. Modules
-
-A module is a collection of declarations of constants, types, variables, and procedures, together with a sequence of statements for the purpose of assigning initial values to the variables. A module constitutes a text that is compilable as a unit.
-
+@smallexample
 Module   = MODULE ident ";" [ImportList] DeclarationSequence 
       [BEGIN StatementSequence] END ident ".".
-ImportList   = IMPORT Import {"," Import} ";".
+ImportList   = IMPORT Import @{"," Import@} ";".
 Import   = [ident ":="] ident.
+@end smallexample
 
-The import list specifies the names of the imported modules. If a module A is imported by a module M and A exports an identifier x, then x is referred to as A.x within M. If A is imported as B := A, the object x must be referenced as B.x. This allows short alias names in qualified identifiers. A module must not import itself. Identifiers that are to be exported (i.e. that are to be visible in client modules) must be marked by an export mark in their declaration (see Chapter 4).
-  The statement sequence following the symbol BEGIN is executed when the module is added to a system (loaded), which is done after the imported modules have been loaded. It follows that cyclic import of modules is illegal. Individual (parameterless and exported) procedures can be activated from the system, and these procedures serve as commands (see Appendix D1).
+The import list specifies the names of the imported modules. If a module
+@var{A} is imported by a module @var{M} and @var{A} exports an identifier
+@var{x}, then @var{x} is referred to as @var{A.x} within @var{M}. If @var{A} is
+imported as @var{B := A}, the object @var{x} must be referenced as @var{B.x}.
+This allows short alias names in qualified identifiers. A module must not
+import itself. Identifiers that are to be exported (i.e. that are to be visible
+in client modules) must be marked by an export mark in their declaration
+(@pxref{Declarations and scope rules}).  The statement sequence following the
+symbol @code{BEGIN} is executed when the module is added to a system (loaded),
+which is done after the imported modules have been loaded. It follows that
+cyclic import of modules is illegal.  Individual (parameterless and exported)
+procedures can be activated from the system, and these procedures serve as
+@dfn{commands} (@pxref{Commands}).
 
+@smallexample
 MODULE Trees;   (* exports: Tree, Node, Insert, Search, Write, Init *)
   IMPORT Texts, Oberon;  (* exports read-only: Node.name *)
 
@@ -1204,188 +1341,315 @@ MODULE Trees;   (* exports: Tree, Node, Insert, Search, Write, Init *)
 
 BEGIN Texts.OpenWriter(w)
 END Trees.
+@end smallexample
 
-Appendix A: Definition of terms
+@c Appendix A: Definition of terms
+@c Consider replacing @heading with @appendixsec. That would allow definitions to
+@c be indexed, and references to definitions to be more precisely targetted.
+@page
+@node Definition of terms
+@appendix Definition of terms
 
+@heading Integer types
 
-Integer types  SHORTINT, INTEGER, LONGINT
-Real types  REAL, LONGREAL
-Numeric types  integer types, real types
+  @code{SHORTINT}, @code{INTEGER}, @code{LONGINT}
 
+@heading Real types  
 
-Same types
-Two variables a and b with types Ta and Tb are of the same type if
-1.  Ta and Tb are both denoted by the same type identifier, or
-2.  Ta is declared to equal Tb in a type declaration of the form Ta = Tb, or
-3.  a and b appear in the same identifier list in a variable, record field, or formal parameter declaration
-  and are not open arrays.
+  @code{REAL}, @code{LONGREAL}
 
+@heading Numeric types  
 
-Equal types
-Two types Ta and Tb are equal if
-1.  Ta and Tb are the same type,  or
-2.  Ta and Tb are open array types with equal element types, or
-3.  Ta and Tb are procedure types whose formal parameter lists match.
+  integer types, real types
 
+@heading Same types
 
-Type inclusion
-Numeric types include (the values of) smaller numeric types according to the following hierarchy:
-  LONGREAL >= REAL >= LONGINT >= INTEGER >= SHORTINT
+Two variables @var{a} and @var{b} with types @var{Ta} and @var{Tb} are of the
+@dfn{same} type if
 
+@enumerate
+@item
+@var{Ta} and @var{Tb} are both denoted by the same type identifier, or
 
-Type extension (base type)
-Given a type declaration Tb = RECORD (Ta) ... END, Tb is a direct extension of Ta, and Ta is a direct base type of Tb. A type Tb is an extension of a type Ta (Ta is a base type of Tb) if
-1.  Ta and Tb are the same types, or
-2.  Tb is a direct extension of an extension of Ta
-If Pa = POINTER TO Ta and Pb = POINTER TO Tb, Pb is an extension of Pa (Pa is a base type of Pb) if Tb is an extension of Ta.
+@item
+@var{Ta} is declared to equal @var{Tb} in a type declaration of the form
+@var{Ta} = Tb, or
 
+@item
+@var{a} and @var{b} appear in the same identifier list in a variable, record
+field, or formal parameter declaration and are not open arrays.
+@end enumerate
 
-Assignment compatible
-An expression e of type Te is assignment compatible with a variable v of type Tv if one of the following conditions hold:
-1.  Te and Tv are the same type;
-2.  Te and Tv are numeric types and Tv includes Te;
-3.  Te and Tv are record types and Te is an extension of Tv and the dynamic type of v is Tv ;
-4.  Te and Tv are pointer types and Te is an extension of Tv;
-5.  Tv is a pointer or a procedure type and e is NIL;
-6.  Tv is ARRAY n OF CHAR, e is a string constant with m characters, and m < n;
-7.  Tv is a procedure type and e is the name of a procedure whose formal parameters match those of Tv.
+@heading Equal types
 
+Two types @var{Ta} and @var{Tb} are @dfn{equal} if
+@enumerate
+@item
+@var{Ta} and @var{Tb} are the @dfn{same} type,  or
+@item
+@var{Ta} and @var{Tb} are open array types with @dfn{equal} element types, or
+@item
+@var{Ta} and @var{Tb} are procedure types whose formal parameter lists
+@dfn{match}.
+@end enumerate
 
-Array compatible
-An actual parameter a of type Ta is array compatible with a formal parameter f of type Tf if
-1.  Tf and Ta are the same type, or
-2.  Tf is an open array, Ta is any array, and their element types are array compatible, or
-3.  f is a value parameter of type ARRAY OF CHAR and a is a string.
+@heading Type inclusion
 
+Numeric types @dfn{include} (the values of) smaller numeric types according to
+the following hierarchy:
 
-Expression compatible
-For a given operator, the types of its operands are expression compatible if they conform to the following table (which shows also the result type of the expression). Character arrays that are to be compared must contain 0X as a terminator. Type T1 must be an extension of type T0:
+  @code{LONGREAL} >= @code{REAL} >= @code{LONGINT} >= @code{INTEGER} >= @code{SHORTINT}
 
+@heading Type extension (base type)
+
+Given a type declaration @var{Tb} = @code{RECORD (@var{Ta}) ... END}, @var{Tb}
+is a @dfn{direct extension} of @var{Ta}, and @var{Ta} is a @dfn{direct base
+type} of @var{Tb}. A type @var{Tb} is an @dfn{extension} of a type @var{Ta}
+(@var{Ta} is a @dfn{base type} of @var{Tb}) if
+
+@enumerate
+@item
+@var{Ta} and @var{Tb} are the @dfn{same} types, or
+@item
+@var{Tb} is a @dfn{direct extension} of an @dfn{extension} of @var{Ta}
+@end enumerate
+If @var{Pa} = @code{POINTER TO @var{Ta}} and @var{Pb} = @code{POINTER TO
+@var{Tb}}, @var{Pb} is an @dfn{extension} of @var{Pa} (@var{Pa} is a @dfn{base
+type} of @var{Pb}) if @var{Tb} is an @dfn{extension} of @var{Ta}.
+
+@heading Assignment compatible
+
+An expression @var{e} of type @var{Te} is assignment compatible with a variable
+@var{v} of type @var{Tv} if one of the following conditions hold:
+@enumerate
+@item
+@var{Te} and @var{Tv} are the @dfn{same} type;
+@item
+@var{Te} and @var{Tv} are numeric types and @var{Tv} @dfn{includes} @var{Te};
+@item
+@var{Te} and @var{Tv} are record types and @var{Te} is an @dfn{extension} of
+@var{Tv} and the dynamic type of @var{v} is @var{Tv} ;
+@item
+@var{Te} and @var{Tv} are pointer types and @var{Te} is an @dfn{extension} of
+@var{Tv};
+@item
+@var{Tv} is a pointer or a procedure type and @var{e} is @code{NIL};
+@item
+@var{Tv} is @code{ARRAY @var{n} OF CHAR}, @var{e} is a string constant with
+@var{m} characters, and @var{m < n};
+@item
+@var{Tv} is a procedure type and @var{e} is the name of a procedure whose
+formal parameters @dfn{match} those of @var{Tv}.
+@end enumerate
+
+@heading Array compatible
+An actual parameter @var{a} of type @var{Ta} is @dfn{array compatible} with a
+formal parameter @var{f} of type @var{Tf} if
+@enumerate
+@item
+@var{Tf} and @var{Ta} are the @dfn{same} type, or
+@item
+@var{Tf} is an open array, @var{Ta} is any array, and their element types are
+@dfn{array compatible}, or
+@item
+@var{f} is a value parameter of type @code{ARRAY OF CHAR} and @var{a} is a
+string.
+@end enumerate
+
+@heading Expression compatible
+
+For a given operator, the types of its operands are @dfn{expression compatible}
+if they conform to the following table (which shows also the result type of the
+expression). Character arrays that are to be compared must contain 0X as a
+terminator. Type @var{T1} must be an extension of type @var{T0}:
+
+@smallexample
 operator   first operand  second operand   result type
-+ - *  numeric  numeric  smallest numeric type including both operands
-/  numeric  numeric  smallest real type including both operands
-+ - * /  SET  SET  SET
-DIV MOD  integer  integer  smallest integer type including both operands
-OR & ~  BOOLEAN  BOOLEAN  BOOLEAN
-= # < <= > >=  numeric  numeric  BOOLEAN
-  CHAR  CHAR  BOOLEAN
-  character array, string  character array, string  BOOLEAN
-= #  BOOLEAN  BOOLEAN  BOOLEAN
-  SET  SET  BOOLEAN
-  NIL, pointer type T0 or T1  NIL, pointer type T0 or T1  BOOLEAN
-  procedure type T, NIL  procedure type T, NIL  BOOLEAN
-IN  integer  SET  BOOLEAN
-IS  type T0  type T1  BOOLEAN
+--------   -------------  --------------   -----------
++ - *      numeric        numeric          smallest numeric type including both operands
+/          numeric        numeric          smallest real type including both operands
++ - * /    SET            SET              SET
+DIV MOD    integer        integer          smallest integer type including both operands
+OR & ~     BOOLEAN        BOOLEAN          BOOLEAN
+= # 
+< <= > >=  numeric        numeric          BOOLEAN
+           CHAR           CHAR             BOOLEAN
+           character array, string  character array, string  BOOLEAN
+= #        BOOLEAN        BOOLEAN          BOOLEAN
+           SET            SET              BOOLEAN
+           NIL, pointer type T0 or T1  NIL, pointer type T0 or T1  BOOLEAN
+           procedure type T, NIL  procedure type T, NIL  BOOLEAN
+IN         integer        SET              BOOLEAN
+IS         type T0        type T1          BOOLEAN
+@end smallexample
 
+@heading Matching formal parameter lists
+Two formal parameter lists @dfn{match} if
+@enumerate
+@item
+they have the same number of parameters, and
+@item
+they have either the @dfn{same} function result type or none, and
+@item
+parameters at corresponding positions have @dfn{equal} types, and
+@item
+parameters at corresponding positions are both either value or variable parameters.
+@end enumerate
 
-Matching formal parameter lists
-Two formal parameter lists match if
-1.  they have the same number of parameters, and
-2.  they have either the same function result type or none, and
-3.  parameters at corresponding positions have equal types, and
-4.  parameters at corresponding positions are both either value or variable parameters.
+@c Appendix B. Syntax of Oberon-2
+@page
+@appendix Syntax of Oberon-2
 
-
-Appendix B: Syntax of Oberon-2
-
-
-Module   =   MODULE ident ";" [ImportList] DeclSeq  [BEGIN StatementSeq] END ident ".".
-ImportList   =   IMPORT [ident ":="] ident {"," [ident ":="] ident} ";".
-DeclSeq   =   { CONST {ConstDecl ";" } | TYPE {TypeDecl ";"} | VAR {VarDecl ";"}} {ProcDecl ";" | ForwardDecl ";"}.
-ConstDecl  =   IdentDef "=" ConstExpr.
-TypeDecl  =   IdentDef "=" Type.
-VarDecl  =   IdentList ":" Type.
-ProcDecl   =   PROCEDURE [Receiver] IdentDef [FormalPars] ";" DeclSeq [BEGIN StatementSeq] END ident.
-ForwardDecl  =   PROCEDURE "^" [Receiver] IdentDef [FormalPars].
-FormalPars   =   "(" [FPSection {";" FPSection}] ")" [":" Qualident].
-FPSection   =   [VAR] ident {"," ident} ":" Type.
-Receiver  =   "(" [VAR] ident ":" ident ")".
-Type   =   Qualident
-  |   ARRAY [ConstExpr {"," ConstExpr}] OF Type 
-  |   RECORD ["("Qualident")"] FieldList {";" FieldList} END
-  |   POINTER TO Type
-  |   PROCEDURE [FormalPars].
+@smallexample
+Module      =   MODULE ident ";" [ImportList] DeclSeq  [BEGIN StatementSeq] END ident ".".
+ImportList  =   IMPORT [ident ":="] ident @{"," [ident ":="] ident@} ";".
+DeclSeq     =   @{ CONST @{ConstDecl ";" @} | TYPE @{TypeDecl ";"@} | VAR @{VarDecl ";"@} @} 
+                @{ ProcDecl ";" | ForwardDecl ";" @}.
+ConstDecl   =   IdentDef "=" ConstExpr.
+TypeDecl    =   IdentDef "=" Type.
+VarDecl     =   IdentList ":" Type.
+ProcDecl    =   PROCEDURE [Receiver] IdentDef [FormalPars] ";" DeclSeq 
+                [BEGIN StatementSeq] END ident.
+ForwardDecl =   PROCEDURE "^" [Receiver] IdentDef [FormalPars].
+FormalPars  =   "(" [FPSection @{";" FPSection@}] ")" [":" Qualident].
+FPSection   =   [VAR] ident @{"," ident@} ":" Type.
+Receiver    =   "(" [VAR] ident ":" ident ")".
+Type        =   Qualident
+            |   ARRAY [ConstExpr @{"," ConstExpr@}] OF Type 
+            |   RECORD ["("Qualident")"] FieldList @{";" FieldList@} END
+            |   POINTER TO Type
+            |   PROCEDURE [FormalPars].
 FieldList   =   [IdentList ":" Type].
-StatementSeq  =   Statement {";" Statement}.
-Statement   =  [  Designator ":=" Expr 
-  |    Designator ["(" [ExprList] ")"] 
-  |    IF Expr THEN StatementSeq {ELSIF Expr THEN StatementSeq} [ELSE StatementSeq] END 
-  |    CASE Expr OF Case {"|" Case} [ELSE StatementSeq] END 
-  |    WHILE Expr DO StatementSeq END 
-  |    REPEAT StatementSeq UNTIL Expr 
-  |    FOR ident ":=" Expr TO Expr [BY ConstExpr] DO StatementSeq END 
-  |    LOOP StatementSeq END
-  |    WITH Guard DO StatementSeq {"|" Guard DO StatementSeq} [ELSE StatementSeq] END
-  |    EXIT 
-  |    RETURN [Expr]
-      ].
-Case   =   [CaseLabels {"," CaseLabels} ":" StatementSeq].
-CaseLabels   =   ConstExpr [".." ConstExpr].
-Guard  =   Qualident ":" Qualident.
-ConstExpr  =   Expr.
-Expr   =   SimpleExpr [Relation SimpleExpr].
-SimpleExpr  =   ["+" | "-"] Term {AddOp Term}.
-Term   =   Factor {MulOp Factor}.
-Factor   =   Designator ["(" [ExprList] ")"] | number | character | string | NIL | Set | "(" Expr ")" | " ~ " Factor.
-Set  =   "{" [Element {"," Element}] "}".
-Element   =   Expr [".." Expr].
-Relation   =   "=" | "#" | "<" | "<=" | ">" | ">=" | IN | IS.
-AddOp   =   "+" | "-" | OR.
-MulOp   =   " * " | "/" | DIV | MOD | "&".
-Designator   =   Qualident {"." ident | "[" ExprList "]" | " ^ " | "(" Qualident ")"}.
-ExprList   =   Expr {"," Expr}.
-IdentList   =   IdentDef {"," IdentDef}.
+StatementSeq =  Statement @{";" Statement@}.
+Statement   =   [   Designator ":=" Expr 
+            |   Designator ["(" [ExprList] ")"] 
+            |   IF Expr THEN StatementSeq @{ELSIF Expr THEN StatementSeq@} 
+                [ELSE StatementSeq] END 
+            |   CASE Expr OF Case @{"|" Case@} [ELSE StatementSeq] END 
+            |   WHILE Expr DO StatementSeq END 
+            |   REPEAT StatementSeq UNTIL Expr 
+            |   FOR ident ":=" Expr TO Expr [BY ConstExpr] DO StatementSeq END 
+            |   LOOP StatementSeq END
+            |   WITH Guard DO StatementSeq @{"|" Guard DO StatementSeq@} 
+                [ELSE StatementSeq] END
+            |   EXIT 
+            |   RETURN [Expr]
+                ].
+Case        =   [CaseLabels @{"," CaseLabels@} ":" StatementSeq].
+CaseLabels  =   ConstExpr [".." ConstExpr].
+Guard       =   Qualident ":" Qualident.
+ConstExpr   =   Expr.
+Expr        =   SimpleExpr [Relation SimpleExpr].
+SimpleExpr  =   ["+" | "-"] Term @{AddOp Term@}.
+Term        =   Factor @{MulOp Factor@}.
+Factor      =   Designator ["(" [ExprList] ")"]
+            | number | character | string | NIL | Set | "(" Expr ")" | " ~ " Factor.
+Set         =   "@{" [Element @{"," Element@}] "@}".
+Element     =   Expr [".." Expr].
+Relation    =   "=" | "#" | "<" | "<=" | ">" | ">=" | IN | IS.
+AddOp       =   "+" | "-" | OR.
+MulOp       =   " * " | "/" | DIV | MOD | "&".
+Designator  =   Qualident @{"." ident | "[" ExprList "]" | " ^ " | "(" Qualident ")"@}.
+ExprList    =   Expr @{"," Expr@}.
+IdentList   =   IdentDef @{"," IdentDef@}.
 Qualident   =   [ident "."] ident.
-IdentDef   =   ident [" * " | "-"].
+IdentDef    =   ident [" * " | "-"].
+@end smallexample
 
+@c Appendix C: The module SYSTEM
+@page
+@appendix The module SYSTEM
 
-Appendix C: The module SYSTEM
+The module SYSTEM contains certain types and procedures that are necessary to
+implement @dfn{low-level} operations particular to a given computer and/or
+implementation. These include for example facilities for accessing devices that
+are controlled by the computer, and facilities to break the type compatibility
+rules otherwise imposed by the language definition. It is strongly recommended
+to restrict their use to specific modules (called @dfn{low-level} modules).
+Such modules are inherently non-portable, but easily recognized due to the
+identifier SYSTEM appearing in their import list. The following specifications
+hold for the implementation of Oberon-2 on the Ceres computer.
 
-The module SYSTEM contains certain types and procedures that are necessary to implement low-level operations particular to a given computer and/or implementation. These include for example facilities for accessing devices that are controlled by the computer, and facilities to break the type compatibility rules otherwise imposed by the language definition. It is strongly recommended to restrict their use to specific modules (called low-level modules). Such modules are inherently non-portable, but easily recognized due to the identifier SYSTEM appearing in their import list. The following specifications hold for the implementation of Oberon-2 on the Ceres computer.
-  Module SYSTEM exports a type BYTE with the following characteristics: Variables of type CHAR or SHORTINT can be assigned to variables of type BYTE. If a formal variable parameter is of type ARRAY OF BYTE then the corresponding actual parameter may be of any type.
-  Another type exported by module SYSTEM is the type PTR. Variables of any pointer type may be assigned to variables of type PTR. If a formal variable parameter is of type PTR, the actual parameter may be of any pointer type.
-  The procedures contained in module SYSTEM are listed in the following tables. Most of them correspond to single instructions compiled as in-line code. For details, the reader is referred to the processor manual. v stands for a variable, x, y, a, and n for expressions, and T for a type.
+Module SYSTEM exports a type BYTE with the following characteristics: Variables
+of type @code{CHAR} or @code{SHORTINT} can be assigned to variables of type
+BYTE. If a formal variable parameter is of type @code{ARRAY OF BYTE} then the
+corresponding actual parameter may be of any type.
 
+Another type exported by module SYSTEM is the type PTR. Variables of any
+pointer type may be assigned to variables of type PTR. If a formal variable
+parameter is of type PTR, the actual parameter may be of any pointer type.
+
+The procedures contained in module SYSTEM are listed in the following tables.
+Most of them correspond to single instructions compiled as in-line code. For
+details, the reader is referred to the processor manual. @var{v} stands for a
+variable, @var{x}, @var{y}, @var{a}, and @var{n} for expressions, and @var{T}
+for a type.
+
+@smallexample
 Function procedures
 
-Name  Argument types  Result type  Function
+Name       Argument types          Result type  Function
+----       --------------          -----------  --------
+ADR(v)     any                     LONGINT      address of variable v
+BIT(a, n)  a: LONGINT              BOOLEAN      bit n of Mem[a]
+           n: integer
+CC(n)      integer constant        BOOLEAN      condition n (0 <= n <= 15)
+LSH(x, n)  x: integer, CHAR, BYTE  type of x    logical shift
+           n: integer
+ROT(x, n)  x: integer, CHAR, BYTE  type of x    rotation
+           n: integer
+VAL(T, x)  T, x: any type          T            x interpreted as of type T
+@end smallexample
 
-ADR(v)  any  LONGINT  address of variable v
-BIT(a, n)  a: LONGINT  BOOLEAN  bit n of Mem[a]
-  n: integer
-CC(n)  integer constant  BOOLEAN  condition n (0 <= n <= 15)
-LSH(x, n)  x: integer, CHAR, BYTE  type of x  logical shift
-  n: integer
-ROT(x, n)  x: integer, CHAR, BYTE  type of x  rotation
-  n: integer
-VAL(T, x)  T, x: any type  T  x interpreted as of type T
-
+@smallexample
 Proper procedures
 
-Name  Argument types  Function
+Name             Argument types                       Function
+----             --------------                       --------
+GET(a, v)        a: LONGINT; v: any basic             v := Mem[a]
+                 type, pointer, procedure type
+PUT(a, x)        a: LONGINT; x: any basic             Mem[a] := x
+                 type, pointer, procedure type
+GETREG(n, v)     n: integer constant; v: any          v := Register n 
+                 basic type, pointer, procedure type
+PUTREG(n, x)     n: integer constant; x: any          Register n := x
+                 basic type, pointer, procedure type
+MOVE(a0, a1, n)  a0, a1: LONGINT; n: integer          Mem[a1.. a1+n-1] := Mem[a0.. a0+n-1]
+NEW(v, n)        v: any pointer; n: integer           allocate storage block of n bytes
+                                                      assign its address to v
+@end smallexample
 
-GET(a, v)  a: LONGINT; v: any basic type,  v := Mem[a]
-  pointer, procedure type
-PUT(a, x)  a: LONGINT; x: any basic type,  Mem[a] := x
-  pointer, procedure type
-GETREG(n, v)  n: integer constant; v: any basic type,  v := Register n
-  pointer, procedure type
-PUTREG(n, x)  n: integer constant; x: any basic type,  Register n := x
-  pointer, procedure type
-MOVE(a0, a1, n)  a0, a1: LONGINT; n: integer  Mem[a1.. a1+n-1] := Mem[a0.. a0+n-1]
-NEW(v, n)  v: any pointer; n: integer  allocate storage block of n bytes
-    assign its address to v
+@c Appendix D: The Oberon Environment
+@page
+@appendix The Oberon Environment
 
-Appendix D: The Oberon Environment
+Oberon-2 programs usually run in an environment that provides @dfn{command
+activation}, @dfn{garbage collection}, @dfn{dynamic loading of modules}, and
+certain @dfn{run time data structures}. Although not part of the language, this
+environment contributes to the power of Oberon-2 and is to some degree implied
+by the language definition. Appendix D describes the essential features of a
+typical Oberon environment and provides implementation hints. More details can
+be found in [1], [2], and [3].
 
-Oberon-2 programs usually run in an environment that provides command activation, garbage collection, dynamic loading of modules, and certain run time data structures. Although not part of the language, this environment contributes to the power of Oberon-2 and is to some degree implied by the language definition. Appendix D describes the essential features of a typical Oberon environment and provides implementation hints. More details can be found in [1], [2], and [3].
+@c D1. Commands
+@node Commands
+@appendixsec Commands
 
+A command is any parameterless procedure @var{P} that is exported from a module
+@var{M}. It is denoted by @var{M.P} and can be activated under this name from
+the shell of the operating system. In Oberon, a user invokes commands instead
+of programs or modules. This gives him a finer grain of control and allows
+modules with multiple entry points. When a command @var{M.P} is invoked, the
+module @var{M} is dynamically loaded unless it is already in memory (see D2)
+and the procedure @var{P} is executed. When @var{P} terminates, @var{M} remains
+loaded. All global variables and data structures that can be reached from
+global pointer variables in @var{M} retain their values. When @var{P} (or
+another command of @var{M}) is invoked again, it may continue to use these
+values.  The following module demonstrates the use of commands. It implements
+an abstract data structure @var{Counter} that encapsulates a counter variable
+and provides commands to increment and print its value.
 
-D1. Commands
-
-A command is any parameterless procedure P that is exported from a module M. It is denoted by M.P and can be activated under this name from the shell of the operating system. In Oberon, a user invokes commands instead of programs or modules. This gives him a finer grain of control and allows modules with multiple entry points. When a command M.P is invoked, the module M is dynamically loaded unless it is already in memory (see D2) and the procedure P is executed. When P terminates, M remains loaded. All global variables and data structures that can be reached from global pointer variables in M retain their values. When P (or another command of M) is invoked again, it may continue to use these values.
-  The following module demonstrates the use of commands. It implements an abstract data structure Counter that encapsulates a counter variable and provides commands to increment and print its value.
-
+@smallexample
 MODULE Counter;
   IMPORT Texts, Oberon;
 
@@ -1409,33 +1673,70 @@ MODULE Counter;
 
 BEGIN counter := 0; Texts.OpenWriter(w)
 END Counter.
+@end smallexample
 
 The user may execute the following two commands:
 
+@smallexample
 Counter.Add   n   adds the value n to the variable counter
-Counter.Write   writes the current value of counter to the screen
+Counter.Write     writes the current value of counter to the screen
+@end smallexample
 
-Since commands are parameterless they have to get their arguments from the operating system. In general, commands are free to take arguments from everywhere (e.g. from the text following the command, from the most recent selection, or from a marked viewer). The command Add uses a scanner (a data type provided by the Oberon system) to read the value that follows it on the command line.
-  When Counter.Add is invoked for the first time, the module Counter is loaded and its body is executed. Every call of Counter.Add n increments the variable counter by n. Every call of Counter.Write writes the current value of counter to the screen.
-  Since a module remains loaded after the execution of its commands, there must be an explicit way to unload it (e.g. when the user wants to substitute the loaded version by a recompiled version.) The Oberon system provides a command to do that.
+Since commands are parameterless they have to get their arguments from the
+operating system. In general, commands are free to take arguments from
+everywhere (e.g. from the text following the command, from the most recent
+selection, or from a marked viewer). The command @var{Add} uses a scanner (a
+data type provided by the Oberon system) to read the value that follows it on
+the command line.
 
+When @var{Counter.Add} is invoked for the first time, the module
+@var{Counter} is loaded and its body is executed. Every call of
+@var{Counter.Add n} increments the variable counter by @var{n}. Every call of
+@var{Counter.Write} writes the current value of counter to the screen.
 
-D2. Dynamic Loading of Modules
+Since a module remains loaded after the execution of its commands, there must
+be an explicit way to unload it (e.g. when the user wants to substitute the
+loaded version by a recompiled version.) The Oberon system provides a command
+to do that.
 
-A loaded module may invoke a command of a still unloaded module by specifying its name as a string. The specified module is then dynamically loaded and the designated command is executed. Dynamic loading allows the user to start a program as a small set of basic modules and to extend it by adding further modules at run time as the need becomes evident.
-  A module M0 may cause the dynamic loading of a module M1 without importing it. M1 may of course import and use M0, but M0 need not know about the existence of M1. M1 can be a module that is designed and implemented long after M0.
+@c D2. Dynamic Loading of Modules
+@appendixsec Dynamic Loading of Modules
 
+A loaded module may invoke a command of a still unloaded module by specifying
+its name as a string. The specified module is then dynamically loaded and the
+designated command is executed. Dynamic loading allows the user to start a
+program as a small set of basic modules and to extend it by adding further
+modules at run time as the need becomes evident.
 
-D3. Garbage Collection
+A module @var{M0} may cause the dynamic loading of a module @var{M1} without
+importing it. @var{M1} may of course import and use @var{M0}, but @var{M0} need
+not know about the existence of @var{M1}. @var{M1} can be a module that is
+designed and implemented long after @var{M0}.
 
-In Oberon-2, the predeclared procedure NEW is used to allocate data blocks in free memory. There is, however, no way to explicitly dispose an allocated block. Rather, the Oberon environment uses a garbage collector to find the blocks that are not used any more and to make them available for allocation again. A block is in use as long as it can be reached from a global pointer variable via a pointer chain. Cutting this chain (e.g., setting a pointer to NIL) makes the block collectable. 
-  A garbage collector frees a programmer from the non-trivial task of deallocating data structures correctly and thus helps to avoid errors. However, it requires information about dynamic data at run time (see D5).
+@c D3. Garbage Collection
+@appendixsec Garbage Collection
 
+In Oberon-2, the predeclared procedure @code{NEW} is used to allocate data
+blocks in free memory. There is, however, no way to explicitly dispose an
+allocated block. Rather, the Oberon environment uses a @dfn{garbage collector}
+to find the blocks that are not used any more and to make them available for
+allocation again. A block is in use as long as it can be reached from a global
+pointer variable via a pointer chain. Cutting this chain (e.g., setting a
+pointer to @code{NIL}) makes the block collectable. 
 
-D4. Browser
+A garbage collector frees a programmer from the non-trivial task of
+deallocating data structures correctly and thus helps to avoid errors. However,
+it requires information about dynamic data at run time (see D5).
 
-The interface of a module (the declaration of the exported objects) is extracted from the module by a so-called browser which is a separate tool of the Oberon environment. For example, the browser produces the following interface of the module Trees from Ch. 11.
+@c D4. Browser
+@appendixsec Browser
 
+The interface of a module (the declaration of the exported objects) is
+extracted from the module by a so-called @dfn{browser} which is a separate tool
+of the Oberon environment. For example, the browser produces the following
+interface of the module @var{Trees} from @ref{Modules}.
+
+@smallexample
 DEFINITION Trees; 
   TYPE
     Tree = POINTER TO Node;
@@ -1447,25 +1748,54 @@ DEFINITION Trees;
     END;
   PROCEDURE Init (VAR t: Tree);
 END Trees.
+@end smallexample
+For a record type, the browser also collects all procedures bound to this type
+and shows their declaration in the record type declaration. 
 
-For a record type, the browser also collects all procedures bound to this type and shows their declaration in the record type declaration. 
+@c D5. Run Time Data Structures
+@appendixsec Run Time Data Structures
 
+Certain information about records has to be available at run time: The dynamic
+type of records is needed for type tests and type guards. A table with the
+addresses of the procedures bound to a record is needed for calling them.
+Finally, the garbage collector needs information about the location of pointers
+in dynamically allocated records. All that information is stored in so-called
+@dfn{type descriptors} of which there is one for every record type at run time.
+The following paragraphs show a possible implementation of type descriptors.
 
-D5. Run Time Data Structures
+The dynamic type of a record corresponds to the address of its type descriptor.
+For dynamically allocated records this address is stored in a so-called
+@dfn{type tag} which precedes the actual record data and which is invisible for
+the programmer. If @var{t} is a variable of type @var{CenterTree} (see example
+in @ref{Type declarations}) Figure D5.1 shows one possible implementation of
+the run time data structures.
 
-Certain information about records has to be available at run time: The dynamic type of records is needed for type tests and type guards. A table with the addresses of the procedures bound to a record is needed for calling them. Finally, the garbage collector needs information about the location of pointers in dynamically allocated records. All that information is stored in so-called type descriptors of which there is one for every record type at run time. The following paragraphs show a possible implementation of type descriptors.
-  The dynamic type of a record corresponds to the address of its type descriptor. For dynamically allocated records this address is stored in a so-called type tag which precedes the actual record data and which is invisible for the programmer. If t is a variable of type CenterTree (see example in Ch. 6) Figure D5.1 shows one possible implementation of the run time data structures.
+<Insert Figure D5.1>
 
+Fig. D5.1  A variable @var{t} of type @var{CenterTree}, the record @var{t^} it
+points to, and its type descriptor
 
+Since both the table of procedure addresses and the table of pointer offsets
+must have a fixed offset from the type descriptor address, and since both may
+grow when the type is extended and further procedures and pointers are added,
+the tables are located at the opposite ends of the type descriptor and grow in
+different directions.
 
-Fig. D5.1  A variable t of type CenterTree, the record t^ it points to, and its type descriptor
+A type-bound procedure @var{t.P} is called as @var{t^.tag^.ProcTab[IndexP]}.
+The procedure table index of every type-bound procedure is known at compile
+time. A type test @var{v IS T} is translated into
+@var{v^.tag^.BaseTypes[ExtensionLevelT] = TypeDescrAdrT}.  Both the extension
+level of a record type and the address of its type descriptor are known at
+compile time. For example, the extension level of @var{Node} is 0 (it has no
+base type), and the extension level of @var{CenterNode} is 1.
 
-Since both the table of procedure addresses and the table of pointer offsets must have a fixed offset from the type descriptor address, and since both may grow when the type is extended and further procedures and pointers are added, the tables are located at the opposite ends of the type descriptor and grow in different directions.
-  A type-bound procedure t.P is called as t^.tag^.ProcTab[IndexP]. The procedure table index of every type-bound procedure is known at compile time. A type test v IS T is translated into v^.tag^.BaseTypes[ExtensionLevelT] = TypeDescrAdrT. Both the extension level of a record type and the address of its type descriptor are known at compile time. For example, the extension level of Node is 0 (it has no base type), and the extension level of CenterNode is 1.
+[1]  N.Wirth, J.Gutknecht: The Oberon System. Software Practice and Experience
+19, 9, Sept. 1989 @*
 
+[2]  M.Reiser: The Oberon System. User Guide and Programming Manual.
+Addison-Wesley, 1991 @*
 
-[1]  N.Wirth, J.Gutknecht: The Oberon System. Software Practice and Experience 19, 9, Sept. 1989
-[2]  M.Reiser: The Oberon System. User Guide and Programming Manual. Addison-Wesley, 1991
-[3]  C.Pfister, B.Heeb, J.Templ: Oberon Technical Notes. Report 156, ETH Zürich, March 1991
+[3]  C.Pfister, B.Heeb, J.Templ: Oberon Technical Notes. Report 156, ETH
+Zurich, March 1991 @*
 
-Edit.Print lp *\m b 200 150 1650 2500 \p n ~
+@bye
