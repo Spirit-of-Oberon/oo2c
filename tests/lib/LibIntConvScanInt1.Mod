@@ -27,6 +27,7 @@ PROCEDURE Test* ();
     Track ("+1");
     Track ("-1");
     Track ("1");
+    Track ("1 ");
     Track ("+-1");
     Track ("123");
     Track ("");
