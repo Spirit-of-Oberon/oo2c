@@ -391,6 +391,7 @@ PROCEDURE (v: Visitor) VisitTypeDecl* (typeDecl: ExtTree.TypeDecl);
         AcceptParent(v, typeDecl.typePars.tpSections.n[i], typePars);
       END;
       base := GetTypeParent(v, typeDecl.type, typePars);
+      ASSERT(base.namingDecl = NIL);
       base.SetTypePars(typePars);
     END;
     type := v. stb. NewTypeDecl
@@ -687,7 +688,7 @@ PROCEDURE (v: Visitor) VisitQualType* (qualType: ExtTree.QualType);
   BEGIN
     baseType := GetType(v, qualType.qualident);
     NEW(arguments, (qualType.arguments.len+1) DIV 2);
-    FOR i := 0 TO LEN(arguments^) BY 2 DO
+    FOR i := 0 TO qualType.arguments.len-1 BY 2 DO
       Sym.InitTypeRef(arguments[i DIV 2],
                       GetType(v, qualType.arguments.n[i]));
     END;
