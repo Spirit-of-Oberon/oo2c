@@ -49,7 +49,7 @@
      }                                  \
      adr; })
 #define _failed_case(select,pos) RT0__ErrorFailedCase(&_mid,pos,select)
-#define _failed_with(pos) RT0__ErrorFailedWith(&_mid,pos)
+#define _failed_with(type_tag,pos) RT0__ErrorFailedWith(&_mid,pos,(RT0__Struct)type_tag)
 #define _failed_type_assert(pos) RT0__ErrorFailedTypeAssert(&_mid,pos)
 #define _failed_function(pos) RT0__ErrorFailedFunction(&_mid,pos)
 

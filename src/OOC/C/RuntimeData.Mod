@@ -26,7 +26,6 @@ IMPORT
   OOC:Auxiliary:Config, OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
-  structType = Config.runtimeModule+"__Struct";
   structTypeDesc = Config.runtimeModule+"__StructDesc";
   
 PROCEDURE Write* (declWriter: DeclWriter.Writer;
@@ -77,6 +76,18 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         Nli;
       END;
     END WriteDescrVariable;
+
+  PROCEDURE WriteName (type: Sym.Type);
+    BEGIN
+      CNli;
+      IF (type. namingDecl = NIL) THEN
+        w. WriteString ("NULL");
+      ELSE
+        w. WriteChar ('"');
+        w. WriteString (type. namingDecl. name. str^);
+        w. WriteChar ('"');
+      END;
+    END WriteName;
   
   PROCEDURE ArrayTypeDescr (array: Sym.Array);
     VAR
@@ -92,6 +103,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           w. WriteString (name. array^);
           w. WriteChar ("}");
           CNli; w. WriteString ("NULL"); (* tbProcs *)
+          CNli; w. WriteString ("&_mid"); (* module *)
+          WriteName (array);             (* name *)
           CNli; w. WriteLInt (-1, 0);    (* size *)
           CNli; w. WriteLInt (array. GetOpenDimensions(), 0); (* len *)
           CNli; WriteForm ("strOpenArray"); (* form *)
@@ -101,6 +114,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           w. WriteString (name. array^);
           w. WriteChar ("}");
           CNli; w. WriteString ("NULL"); (* tbProcs *)
+          CNli; w. WriteString ("&_mid"); (* module *)
+          WriteName (array);             (* name *)
           CNli; w.WriteLInt (array. size, 0); (* size *)
           CNli; w. WriteLInt (array. length, 0); (* len *)
           CNli; WriteForm ("strArray");  (* form *)
@@ -111,8 +126,6 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
   
   PROCEDURE RecordTypeDescr (record: Sym.Record);
     VAR
-      name: String.String;
-      base: Sym.Type;
       len: LONGINT;
 
     PROCEDURE BaseTypes (t: Sym.Type): LONGINT;
@@ -160,9 +173,11 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         CNli; w. WriteString ("(void*[]){");   (* tbProcs *)
         TBProcs (record. tbProcCount);
         w. WriteChar ("}");
+        CNli; w. WriteString ("&_mid");  (* module *)
+        WriteName (record);              (* name *)
         CNli; w. WriteLInt (record. size, 0); (* size *)
-        CNli; w. WriteLInt (len, 0); (* len *)
-        CNli; WriteForm ("strRecord"); (* form *)
+        CNli; w. WriteLInt (len, 0);     (* len *)
+        CNli; WriteForm ("strRecord");   (* form *)
         w. WriteString (" };");
       END;
     END RecordTypeDescr;
@@ -170,7 +185,6 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
   PROCEDURE PointerTypeDescr (pointer: Sym.Pointer);
     VAR
       name: String.String;
-      base: Sym.Type;
     BEGIN
       WriteDescrVariable (pointer);
       IF ~writeHeader THEN
@@ -179,9 +193,11 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         w. WriteString (name. array^);
         w. WriteChar ("}");
         CNli; w. WriteString ("NULL");   (* tbProcs *)
+        CNli; w. WriteString ("&_mid");  (* module *)
+        WriteName (pointer);             (* name *)
         CNli; w. WriteLInt (pointer. size, 0); (* size *)
-        CNli; w. WriteLInt (-1, 0); (* len *)
-        CNli; WriteForm ("strPointer"); (* form *)
+        CNli; w. WriteLInt (-1, 0);      (* len *)
+        CNli; WriteForm ("strPointer");  (* form *)
         w. WriteString (" };");
       END;
     END PointerTypeDescr;
@@ -238,10 +254,10 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     w := declWriter. textWriter;
     w. WriteLn;
     w. WriteString ("/* run-time meta data */");
-    Traverse (symTab, NIL);
     IF ~writeHeader THEN
       ModuleDescr (symTab);
     END;
+    Traverse (symTab, NIL);
     w. WriteLn;
   END Write;
 

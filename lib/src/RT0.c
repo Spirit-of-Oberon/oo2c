@@ -6,9 +6,11 @@
 
 #define ROUND_SIZE(s) ((s+7) & ~((size_t)7))
 
-#define PS(_str,_form,_size) \
+#define PS(_str,_name,_form,_size) \
   _str.baseTypes = NULL; _str.tbProcs = NULL; \
-  _str.size = _size; _str.len = -1; _str.form = _form
+  _str.module = &_mid; _str.name = (OOC_CHAR8*)_name; \
+  _str.size = _size; _str.len = -1; _str.form = _form;
+  
 
 #define PREFIX "## "
 #define EXIT_CODE 127
@@ -129,8 +131,14 @@ void RT0__ErrorFailedCase (RT0__Module mid, OOC_CHARPOS pos, OOC_INT32 select) {
   _runtime_error(s, mid, pos);
 }
 
-void RT0__ErrorFailedWith (RT0__Module mid, OOC_CHARPOS pos) {
-  _runtime_error("WITH error, none of the guards matches", mid, pos);
+void RT0__ErrorFailedWith (RT0__Module mid, OOC_CHARPOS pos,
+			   RT0__Struct typeTag) {
+  char s[1024];
+  
+  (void)sprintf(s, "No WITH guard matches, last type is %s.%s",
+		(const char*)typeTag->module->name,
+		(const char*)typeTag->name);
+  _runtime_error(s, mid, pos);
 }
 
 void RT0__ErrorFailedTypeAssert (RT0__Module mid, OOC_CHARPOS pos) {
@@ -149,12 +157,12 @@ void RT0__ErrorAssertionFailed (RT0__Module mid, OOC_CHARPOS pos,
 }
 
 void RT0_init() {
-  PS(RT0__boolean , RT0__strBoolean , sizeof(OOC_BOOLEAN));
-  PS(RT0__char    , RT0__strChar    , sizeof(OOC_CHAR8));
-  PS(RT0__longchar, RT0__strLongchar, sizeof(OOC_CHAR16));
-  PS(RT0__shortint, RT0__strShortint, sizeof(OOC_INT8));
-  PS(RT0__integer , RT0__strInteger , sizeof(OOC_INT16));
-  PS(RT0__longint , RT0__strLongint , sizeof(OOC_INT32));
-  PS(RT0__byte    , RT0__strByte    , sizeof(OOC_BYTE));
-  PS(RT0__ptr     , RT0__strPtr     , sizeof(OOC_PTR));
+  PS(RT0__boolean , "BOOLEAN",  RT0__strBoolean , sizeof(OOC_BOOLEAN));
+  PS(RT0__char    , "CHAR",     RT0__strChar    , sizeof(OOC_CHAR8));
+  PS(RT0__longchar, "LONGCHAR", RT0__strLongchar, sizeof(OOC_CHAR16));
+  PS(RT0__shortint, "SHORTINT", RT0__strShortint, sizeof(OOC_INT8));
+  PS(RT0__integer , "INTEGER",  RT0__strInteger , sizeof(OOC_INT16));
+  PS(RT0__longint , "LONGINT",  RT0__strLongint , sizeof(OOC_INT32));
+  PS(RT0__byte    , "BYTE",     RT0__strByte    , sizeof(OOC_BYTE));
+  PS(RT0__ptr     , "PTR",      RT0__strPtr     , sizeof(OOC_PTR));
 }

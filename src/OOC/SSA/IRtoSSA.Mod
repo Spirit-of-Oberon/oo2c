@@ -190,6 +190,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     END CopyString;
   
   PROCEDURE TypeTag (design: IR.Expression; value: SSA.Result): SSA.Instr;
+  (* `design' is the variable designator, `value' its translation to SSA *)
     VAR
       instr: SSA.Instr;
     BEGIN
@@ -825,8 +826,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
   PROCEDURE WithStatm (withStatm: IR.WithStatm);
     VAR
-      select, instr: SSA.Instr;
+      select, instr, typeTag: SSA.Instr;
       storeAfterGuard: SSA.Result;
+      var: IR.Expression;
     BEGIN
       select := pb. AddInstr (Opcode.select, Opcode.scNone);
       select. AddOpnd (Expression (withStatm. guard), Opnd.arg);
@@ -843,10 +845,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         
       ELSIF withStatm. checkMatch THEN
         s := storeAfterGuard;
+        var := withStatm. guard(IR.TypeTest). expr;
+        typeTag := TypeTag (var, Expression (var));
         instr := AddException (pb, withStatm. sym,
                                Opcode.failedWith, Opcode.scNone);
+        instr. AddOpnd (typeTag, Opnd.arg);
         select. AddOpnd (s, Opnd.arg);
-            
+                        
       ELSE
         select. AddOpnd (storeAfterGuard, Opnd.arg)
       END;

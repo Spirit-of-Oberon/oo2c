@@ -65,6 +65,8 @@ CONST
   (**A pointer definition of the form @samp{POINTER TO T}.  *)
   
 TYPE
+  Name* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
+  Module* = POINTER TO ModuleDesc;
   Struct* = POINTER TO StructDesc;
   StructDesc = RECORD [NO_DESCRIPTOR, NOT_EXTENSIBLE]
     (**A type description.
@@ -129,7 +131,14 @@ TYPE
     tbProcs-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF SYSTEM.PTR;
     (**Table of type-bound procedures of a record type.  This field is
        @code{NIL} for all other types.  *)
-    
+
+    module-: Module;
+    (**The module that defines this type descriptor.  For predefined types,
+       this is a reference to module @samp{RT0}.  *)
+
+    name-: Name;
+    (**Type name.  @code{NIL} for anonymous types.  *)
+
     size-: LONGINT;
     (**Size of the data type in bytes.  For an open array type, this field is
        @samp{-1}.  *)
@@ -143,14 +152,12 @@ TYPE
   END;
 
 TYPE
-  Name* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
   Object* = POINTER TO ObjectDesc;
   ObjectDesc = RECORD [NO_DESCRIPTOR, NOT_EXTENSIBLE]
     (**A named object defined in a declaration.  *)
   END;
 
 TYPE
-  Module* = POINTER TO ModuleDesc;
   ModuleDesc = RECORD
     name-: Name;
   END;
@@ -191,7 +198,7 @@ PROCEDURE ErrorIndexOutOfRange* (mid: Module; pos: LONGINT;
                                  index, length: LONGINT);
 PROCEDURE ErrorDerefOfNil* (mid: Module; pos: LONGINT);
 PROCEDURE ErrorFailedCase* (mid: Module; pos: LONGINT; select: LONGINT);
-PROCEDURE ErrorFailedWith* (mid: Module; pos: LONGINT);
+PROCEDURE ErrorFailedWith* (mid: Module; pos: LONGINT; typeTag: Struct);
 PROCEDURE ErrorFailedTypeAssert* (mid: Module; pos: LONGINT);
 PROCEDURE ErrorFailedFunction* (mid: Module; pos: LONGINT);
 PROCEDURE ErrorAssertionFailed* (mid: Module; pos: LONGINT; code: LONGINT);

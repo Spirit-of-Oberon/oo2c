@@ -1141,7 +1141,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.failedCase:
         FailedCheck (instr, "_failed_case", instr. opndList. nextOpnd);
       | Opcode.failedWith:
-        FailedCheck (instr, "_failed_with", NIL);
+        FailedCheck (instr, "_failed_with", instr. opndList. nextOpnd);
       | Opcode.failedTypeAssert:
         FailedCheck (instr, "_failed_type_assert", NIL);
         
