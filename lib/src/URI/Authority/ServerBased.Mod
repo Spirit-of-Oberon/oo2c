@@ -210,6 +210,11 @@ RAISES Exception.ParseError;
     host: Object.String8;
     port: LONGINT;
   BEGIN
+    CASE str[0] OF
+    | "/", "?", "#", 0X: RETURN;       (* "server" expands to empty *)
+    ELSE                               (* continue *)
+    END;
+    
     i := 0;
     WHILE (str[i] # 0X) & (str[i] # "@") DO
       INC (i)
