@@ -1,7 +1,7 @@
 MODULE oo2c;
 
 IMPORT
-  Msg, StdChannels, Strings, Out, Err, ADT:String, URI, URI:Scheme:File,
+  Msg, StdChannels, Strings, Out, Err, Object, URI, URI:Scheme:File,
   OS:ProcessManagement, Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
@@ -80,19 +80,29 @@ PROCEDURE NewConfig;
     CCompiler.RegisterConfig;
   END NewConfig;
 
-PROCEDURE GetModule (moduleName: ARRAY OF CHAR): Rep.Module;
+PROCEDURE GetModule (moduleName: Object.String8): Rep.Module;
   VAR
     m: Rep.Module;
+    chars: Object.CharsLatin1;
   BEGIN
-    m := Config.repositories.GetModule(moduleName);
+    chars := moduleName.CharsLatin1();
+    m := Config.repositories.GetModule(chars^);
     IF (m = NIL) THEN
       Err.String ("Error: Cannot locate module ");
-      Err.String (moduleName);
+      Err.String (chars^);
       Err.Ln;
       HALT (1)
     END;
     RETURN m;
   END GetModule;
+
+PROCEDURE AppendStr(s: Object.String8; VAR str: ARRAY OF CHAR);
+  VAR
+    chars: Object.CharsLatin1;
+  BEGIN
+    chars := s.CharsLatin1();
+    Strings.Append(chars^, str);
+  END AppendStr;
 
 PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
                        install: BOOLEAN): BOOLEAN;
@@ -149,13 +159,13 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
         IF (m.origin = module.origin) THEN
           IF installObjects & ~m.ifData.NoObjectFile() THEN
             m.origin.GetLocalPath(m, Rep.modObjectFile, path);
-            pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+            pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
           END;
           
           m.origin.GetLocalPath(m, Rep.modSymbolFile, path);
-          pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+          pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
           m.origin.GetLocalPath(m, Rep.modHeaderFileC, path);
-          pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+          pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
         END;
       END;
 
@@ -190,36 +200,40 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
   PROCEDURE InstallFiles(list: Package.FileData): BOOLEAN;
     VAR
       end: Package.FileData;
-      dir: String.String;
+      dir: Object.String8;
+      string: Object.String;
       sourcePrefix: Rep.URIBuffer;
       cmd: Make.ShellCommand;
       baseURI: URI.URI;
+      chars: Object.CharsLatin1;
       
     PROCEDURE SameDirectory(a, b: Package.File): BOOLEAN;
       VAR
-        sa, sb: String.String;
+        sa, sb: Object.String8;
         i, j: LONGINT;
       BEGIN
         sa := a.destName; sb := b.destName;
         i := 0;
         WHILE (i # sa.length) & (i # sb.length) &
-              (sa.array[i] = sb.array[i]) DO
+              (sa.CharAt(i) = sb.CharAt(i)) DO
           INC(i);
         END;
-        WHILE (i # 0) & (sa.array[i-1] # "/") DO
+        WHILE (i # 0) & (sa.CharAt(i-1) # ORD("/")) DO
           DEC(i);
         END;
         
-        IF (i = 0) OR (sa.array[i-1] = "/") & (sb.array[i-1] = "/") THEN
+        IF (i = 0) OR
+           ((sa.CharAt(i-1) = ORD("/")) &
+            (sb.CharAt(i-1) = ORD("/"))) THEN
           (* sa and sb have the same prefix ending with a "/"; check that both
              have no "/" in the rest of their path *)
           j := i;
-          WHILE (j # sa.length) & (sa.array[j] # "/") DO
+          WHILE (j # sa.length) & (sa.CharAt(j) # ORD("/")) DO
             INC (j);
           END;
           IF (j = sa.length) THEN
             j := i;
-            WHILE (j # sb.length) & (sb.array[j] # "/") DO
+            WHILE (j # sb.length) & (sb.CharAt(j) # ORD("/")) DO
               INC (j);
             END;
             RETURN (j = sb.length)
@@ -242,18 +256,20 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
         (* extract name of target directory *)
         dir := list(Package.File).destName;
         i := dir.length;
-        WHILE (i # 0) & (dir.array[i-1] # "/") DO
+        WHILE (i # 0) & (dir.CharAt(i-1) # ORD("/")) DO
           DEC(i);
         END;
-        dir := dir.Extract(0, i);
-        
+        string := dir.Substring(0, i);
+        dir := string(Object.String8);
+
+        chars := dir.CharsLatin1();
         IF InstallDirectory(CCompiler.oocdir.value(StringValue.Value).string^,
-                            dir.array^) THEN
+                            chars^) THEN
           COPY(CCompiler.installData.value(StringValue.Value).string^, cmd);
           WHILE (list # end) DO
             Strings.Append(" ", cmd);
             Strings.Append(sourcePrefix, cmd);
-            Strings.Append(list(Package.File).name.array^, cmd);
+            AppendStr(list(Package.File).name, cmd);
             list := list.nextFileData;
           END;
 
@@ -263,7 +279,7 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
                            cmd);
             Strings.Append("/", cmd);
           END;
-          Strings.Append(dir.array^, cmd);
+          AppendStr(dir, cmd);
 
           Logger.ShellCommand(cmd);
           IF (ProcessManagement.system(cmd) # 0) THEN
@@ -292,9 +308,9 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
           IF install THEN
             IF (m.origin = module.origin) THEN
               m.origin.GetLocalPath(m, Rep.modInterfaceDescr, path);
-              pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+              pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
               m.origin.GetLocalPath(m, Rep.modInterfaceHTML, path);
-              pkg.fileSet.Append(Package.NewFile(String.New(path), NIL));
+              pkg.fileSet.Append(Package.NewFile(Object.NewLatin1(path), NIL));
             END;
           ELSE
             ok := makeRules.Update(m, Rep.modInterfaceHTML);
@@ -313,12 +329,13 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
     WHILE ok & (i # pkg.library.size) DO
       lib := pkg.library.array[i](Package.Library);
 
-      module := GetModule(lib.mainModule.array^);
+      module := GetModule(lib.mainModule);
       IF installObjects THEN
         ok := makeRules.Update(module, Rep.modExecutable)
             & (~install OR InstallLibrary(module, makeRules));
       ELSE
-        makeRules.SetLibraryName(lib.name.array^, lib.version.tuple);
+        makeRules.SetLibraryName(lib.name,
+                                 Object.NewLatin1(lib.version.tuple));
         ok := makeRules.Update(module, Rep.modLibrary)
             & (~install OR InstallLibrary(module, makeRules));
       END;
@@ -328,14 +345,14 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
         ok := BuildDocs(module, makeRules, install);
       END;
       
-      makeRules.SetLibraryName("", "");
+      makeRules.SetLibraryName(NIL, NIL);
       INC(i);
     END;
 
     i := 0;
     WHILE ok & (i # pkg.executable.size) DO
       exec := pkg.executable.array[i](Package.Executable);
-      module := GetModule(exec.mainModule.array^);
+      module := GetModule(exec.mainModule);
       ok := makeRules.Update(module, Rep.modExecutable)
           & (~install OR InstallExecutable(module));
       INC(i);
@@ -373,7 +390,7 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
     BEGIN
       COPY(CCompiler.libdir.value(StringValue.Value).string^, path);
       Strings.Append("/lib", path);
-      Strings.Append(library.name.array^, path);
+      AppendStr(library.name, path);
       Strings.Append(".la", path);
       CCompiler.UninstallProgramCmd(path, TRUE, str);
       Logger.ShellCommand(str);
@@ -388,7 +405,7 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
     BEGIN
       COPY(CCompiler.bindir.value(StringValue.Value).string^, path);
       Strings.Append("/", path);
-      Strings.Append(executable.mainModule.array^, path);
+      AppendStr(executable.mainModule, path);
       CCompiler.UninstallProgramCmd(path, FALSE, str);
       Logger.ShellCommand(str);
       ok := (ProcessManagement.system(str) = 0);
@@ -405,7 +422,7 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
         Strings.Append(CCompiler.oocdir.value(StringValue.Value).string^,
                        cmd);
         Strings.Append("/", cmd);
-        Strings.Append(list(Package.File).destName.array^, cmd);
+        AppendStr(list(Package.File).destName, cmd);
         
         Logger.ShellCommand(cmd);
         ok := (ProcessManagement.system(cmd) = 0);
@@ -478,14 +495,14 @@ PROCEDURE BuildPackageDoc(pkg: Package.Package): BOOLEAN;
     i := 0;
     WHILE ok & (i # pkg.library.size) DO
       lib := pkg.library.array[i](Package.Library);
-      ok := BuildDocs(GetModule(lib.mainModule.array^));
+      ok := BuildDocs(GetModule(lib.mainModule));
       INC(i);
     END;
 
     i := 0;
     WHILE ok & (i # pkg.executable.size) DO
       exec := pkg.executable.array[i](Package.Executable);
-      ok := BuildDocs(GetModule(exec.mainModule.array^));
+      ok := BuildDocs(GetModule(exec.mainModule));
       INC(i);
     END;
     
@@ -630,7 +647,7 @@ BEGIN
           END;
           
         ELSE
-          module := GetModule(arg^);
+          module := GetModule(Object.NewLatin1(arg^));
           IF (mode = Rep.modCodeFileC) THEN
             makeRules.SetAllImportsModule(module);
           END;

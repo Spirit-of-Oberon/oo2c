@@ -3,7 +3,7 @@ MODULE BinaryRider [OOC_EXTENSIONS];
 
 (*
     BinaryRider - Binary-level input/output of Oberon variables.       
-    Copyright (C) 1998, 1999  Michael van Acken
+    Copyright (C) 1998, 1999, 2002  Michael van Acken
     Copyright (C) 1997  Michael Griebling
  
     This module is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ MODULE BinaryRider [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Strings, Channel, SYSTEM, Msg;
+  Strings, Channel, Object, SYSTEM, Msg;
 
 CONST
   (* result codes *)
@@ -281,6 +281,52 @@ PROCEDURE (r: Reader) ReadSet*(VAR s: SET);
     END
   END ReadSet;
 
+PROCEDURE (r: Reader) ReadStr* (VAR s: Object.String);
+  CONST
+    sizeBuffer8 = 1024;
+    sizeBuffer32 = 512;
+  VAR
+    len: LONGINT;
+    buffer8: ARRAY sizeBuffer8 OF CHAR;
+    dynBuffer8: POINTER TO ARRAY OF CHAR;
+    buffer32: ARRAY sizeBuffer32 OF Object.Char;
+    dynBuffer32: POINTER TO ARRAY OF Object.Char;
+    i: LONGINT;
+  BEGIN
+    IF (r.res = done) THEN
+      r.ReadNum(len);
+      IF (len = 0) THEN
+        s := NIL;
+        
+      ELSIF (len > 0) THEN
+        DEC(len);
+        IF (len < sizeBuffer8) THEN
+          r.ReadBytes(buffer8, 0, len);
+          s := Object.NewLatin1Region(buffer8, 0, len);
+        ELSE
+          NEW(dynBuffer8, len);
+          r.ReadBytes(dynBuffer8^, 0, len);
+          s := Object.NewLatin1Region(dynBuffer8^, 0, len);
+        END;
+        
+      ELSE  (* this is quite slow; FIXME... use the UTF8 codec instead *)
+        len := -len-1;
+        IF (len < sizeBuffer32) THEN
+          FOR i := 0 TO len-1 DO
+            r.ReadNum(buffer32[i]);
+          END;
+          s := Object.NewUTF32Region(buffer32, 0, len);
+        ELSE
+          NEW(dynBuffer32, len);
+          FOR i := 0 TO len-1 DO
+            r.ReadNum(buffer32[i]);
+          END;
+          s := Object.NewUTF32Region(dynBuffer32^, 0, len);
+        END;
+      END;
+    END;
+  END ReadStr;
+
 PROCEDURE (r: Reader) SetByteOrder* (order: SHORTINT);
   BEGIN
     ASSERT((order>=nativeEndian) & (order<=bigEndian));
@@ -449,7 +495,31 @@ PROCEDURE (w: Writer) WriteSet*(s: SET);
       w.res := w.byteWriter.res
     END
   END WriteSet;
-  
+
+PROCEDURE (w: Writer) WriteStr*(s: Object.String);
+  VAR
+    chars8: Object.CharsLatin1;
+    chars32: Object.CharsUTF32;
+    i: LONGINT;
+  BEGIN
+    IF (s = NIL) THEN
+      w.WriteNum(0);
+    ELSE
+      WITH s: Object.String8 DO
+        w.WriteNum(s.length+1);
+        chars8 := s.CharsLatin1();
+        w.WriteBytes(chars8^, 0, s.length);
+        
+      | s: Object.String32 DO            (* FIXME... use UTF8 codec *)
+        w.WriteNum(-s.length-1);
+        chars32 := s.CharsUTF32();
+        FOR i := 0 TO s.length-1 DO
+          w.WriteNum(chars32[i]);
+        END;
+      END;
+    END;
+  END WriteStr;
+
 PROCEDURE (w: Writer) SetByteOrder* (order: SHORTINT);
   BEGIN
     ASSERT((order>=nativeEndian) & (order<=bigEndian));

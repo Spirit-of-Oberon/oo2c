@@ -22,7 +22,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 
 IMPORT
   IntStr, Out, StdChannels, Strings, StringSearch,
-  Object, Object:Boxed, ADT:String, ADT:Dictionary, ADT:ArrayList,
+  Object, Object:Boxed, ADT:Dictionary, ADT:ArrayList,
   Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
   OOC:SymbolTable:Builder,
@@ -36,7 +36,7 @@ IMPORT
 
 TYPE
   RegisterSwap = RECORD
-    source, dest: String.String;
+    source, dest: Object.String;
     readCount: LONGINT;                (* number of reads of `dest' *)
     ctype: DeclWriter.BasicTypeId;     (* type of transfered value *)
   END;
@@ -158,13 +158,13 @@ PROCEDURE (w: Writer) ClearSwapData;
     w. swapHelperVars := 0;
   END ClearSwapData;
 
-PROCEDURE (w: Writer) AddSwapData (source, dest: String.String;
+PROCEDURE (w: Writer) AddSwapData (source, dest: Object.String;
                                    ctype: DeclWriter.BasicTypeId);
   VAR
     new: SwapArray;
     i: LONGINT;
   BEGIN
-    IF (source. array^ # dest. array^) THEN (* suppress things like `i0=i0;' *)
+    IF ~source.Equals(dest) THEN (* suppress things like `i0=i0;' *)
       IF (w. lengthSwapArray = LEN (w. swapArray^)) THEN
         NEW (new, LEN (w. swapArray^)*2);
         FOR i := 0 TO LEN (w. swapArray^)-1 DO
@@ -187,7 +187,7 @@ PROCEDURE (w: Writer) CountReadsSwapData;
     FOR i := 0 TO w. lengthSwapArray-1 DO
       c := 0;
       FOR j := 0 TO w. lengthSwapArray-1 DO
-        IF (w. swapArray[j]. source. array^=w. swapArray[i]. dest. array^) THEN
+        IF w. swapArray[j]. source. Equals(w. swapArray[i]. dest) THEN
           INC (c)
         END;
       END;
@@ -201,7 +201,7 @@ PROCEDURE (w: Writer) RemoveSwapData (i: LONGINT);
   BEGIN
     ASSERT (w. swapArray[i]. readCount = 0);
     FOR j := 0 TO w. lengthSwapArray-1 DO
-      IF (w. swapArray[j]. dest. array^=w. swapArray[i]. source. array^) THEN
+      IF w. swapArray[j]. dest. Equals(w. swapArray[i]. source) THEN
         DEC (w. swapArray[j]. readCount)
       END;
     END;
@@ -213,16 +213,16 @@ PROCEDURE (w: Writer) IntroduceHelperVar (i: LONGINT);
   VAR
     str: ARRAY 16 OF CHAR;
     j: LONGINT;
-    h: String.String;
+    h: Object.String;
   BEGIN
     ASSERT (w. swapArray[i]. readCount # 0);
     IntStr.IntToStr (w. swapHelperVars, str);
     Strings.Insert ("h", 0, str);
-    h := String.New (str);
+    h := Object.NewLatin1(str);
     INC (w. swapHelperVars);
     
     FOR j := 0 TO w. lengthSwapArray-1 DO
-      IF (w. swapArray[j]. source. array^=w. swapArray[i]. dest. array^) THEN
+      IF w. swapArray[j]. source. Equals(w. swapArray[i]. dest) THEN
         w. swapArray[j]. source := h;
       END;
     END;
@@ -231,9 +231,9 @@ PROCEDURE (w: Writer) IntroduceHelperVar (i: LONGINT);
     w. WriteString ("{register ");
     w. WriteString (w. basicType[Allocator.RegisterType (w. swapArray[i]. ctype)]. repr);
     w. WriteString (" ");
-    w. WriteString (h. array^);
+    w. WriteStr (h);
     w. WriteChar ("=");
-    w. WriteString (w. swapArray[i]. dest. array^);
+    w. WriteStr (w. swapArray[i]. dest);
     w. WriteChar (";");
   END IntroduceHelperVar;
 
@@ -312,7 +312,7 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
     decl: Sym.VarDecl;
     cDecl: DeclWriter.Declaration;
     item: Sym.Item;
-    name: String.String;
+    name: Object.String;
     
   PROCEDURE GetLocalDecl (instr: SSA.Instr): Sym.VarDecl;
     VAR
@@ -357,7 +357,7 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
             name := Naming.NameOfDeclaration(decl);
             w. Newline;
             w. WriteString ("OOC_ALLOCATE_VPAR(");
-            w. WriteString (name. array^);
+            w. WriteStr (name);
             WriteTypeAndLength(w, instr, decl, FALSE);
           ELSIF ~decl. isParameter THEN
             cDecl := ConvertDecl.GetDecl (w, decl);
@@ -420,12 +420,12 @@ PROCEDURE (w: Writer) LengthExprHeap (instr: SSA.Instr);
 PROCEDURE (w: Writer) LengthExprParam (instr: SSA.Instr);
   VAR
     design: SSA.Result;
-    name: String.String;
+    name: Object.String;
   BEGIN
     design := instr. GetArgClass (Opnd.readDesign);
     name := Naming.NameOfLengthParam
         (design(SSA.DeclRef). decl(Sym.VarDecl), instr. opndList. GetIntConst());
-    w. WriteString (name. array^);
+    w. WriteStr (name);
   END LengthExprParam;
 
 PROCEDURE ^ WriteExpr (w: Writer; instr: SSA.Instr);
@@ -434,7 +434,7 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
   VAR
     arg: SSA.Result;
     obj: Object.Object;
-    name: String.String;
+    name: Object.String;
     instr: SSA.Instr;
     bt: DeclWriter.BasicTypeId;
   BEGIN
@@ -450,7 +450,7 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
            happens to be an array *)
         w. WriteString ("*")
       END;
-      w. WriteString (name. array^)
+      w. WriteStr (name)
 
     | arg: SSA.Const DO
       (* write constant values directly, without going through an
@@ -481,7 +481,7 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
            a pass by reference parameter *)
         w. WriteChar ("&");
       END;
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       
     ELSE
       instr := opnd. arg. instr;
@@ -492,7 +492,7 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
           WriteExpr (w, opnd. arg. instr);
           w. WriteChar (")");
         ELSE
-          w. WriteString (obj(String.String). array^);
+          w. WriteStr (obj(Object.String));
         END;
 
       ELSIF (instr. opcode = Opcode.getLengthParam) THEN
@@ -543,8 +543,7 @@ PROCEDURE (w: Writer) Noop (instr: SSA.Instr): BOOLEAN;
           targetVar := w. registerMap. Get (res);
           IF w. registerMap. HasKey (opnd. arg) THEN
             sourceVar := w. registerMap. Get (opnd. arg);
-            IF (sourceVar(String.String). array^ #
-                targetVar(String.String). array^) THEN
+            IF ~sourceVar.Equals(targetVar) THEN
               RETURN FALSE;              (* source and target differ *)
             END;
           ELSE
@@ -583,7 +582,7 @@ PROCEDURE (w: Writer) EmptyBlock (b: Schedule.Block): BOOLEAN;
 PROCEDURE CastToPtr (w: Writer; var: SSA.Result; type: Sym.Type;
                      passByReference: BOOLEAN);
   VAR
-    name: String.String;
+    name: Object.String;
   BEGIN
     IF (var. instr. opcode = Opcode.typeTag) THEN
       w. WriteString ("(RT0__Struct)");
@@ -601,7 +600,7 @@ PROCEDURE CastToPtr (w: Writer; var: SSA.Result; type: Sym.Type;
       ELSE
         name := Naming.NameOfType (type);
         w. WriteString ("(");
-        w. WriteString (name. array^);
+        w. WriteStr (name);
         w. WriteString (")");
       END;
     END;
@@ -673,7 +672,7 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
 
   PROCEDURE TypeGuard (typeGuard: SSA.Instr);
     VAR
-      name: String.String;
+      name: Object.String;
       opnd: SSA.Opnd;
     BEGIN
       w. WriteString ("_type_guard(");
@@ -681,7 +680,7 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       w. WriteString (", &");
       opnd := typeGuard. GetOpndClass (Opnd.type);
       name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       w. WriteString (", ");
       w. WriteLInt (typeGuard. pos, 0);
       w. WriteString (")")
@@ -704,7 +703,7 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
     VAR
       adr: SSA.Instr;
       decl: Sym.Declaration;
-      name: String.String;
+      name: Object.String;
       procType: Sym.FormalPars;
     BEGIN
       IF (call. opndList. arg. instr. opcode = Opcode.tbProcAddress) THEN
@@ -715,7 +714,7 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
         w. Ref (call. opndList);
         w. WriteChar (",");
         name := Naming.NameOfDeclaration (decl);
-        w. WriteString (name. array^);
+        w. WriteStr (name);
         w. WriteChar (")");
       ELSIF ~(call. opndList. arg IS SSA.DeclRef) THEN
         (* calling through variable: cast address to function type *)
@@ -767,14 +766,14 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
   
   PROCEDURE NewObject (instr: SSA.Instr);
     VAR
-      name: String.String;
+      name: Object.String;
       opnd: SSA.Opnd;
     BEGIN
       CastFromPtr (instr);
       w. WriteString ("RT0__NewObject(");
       opnd := instr. GetOpndClass (Opnd.type);
       name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       w. WriteString (".baseTypes[0]");
 
       opnd := opnd. nextOpnd;
@@ -830,16 +829,16 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
 
   PROCEDURE TypeTag (instr: SSA.Instr);
     VAR
-      name: String.String;
+      name: Object.String;
     BEGIN
       CastFromPtr (instr);
       IF (instr. opndList. arg IS SSA.DeclRef) THEN
         name := Naming.NameOfTypeTagParam (instr. opndList. arg(SSA.DeclRef). decl(Sym.VarDecl));
-        w. WriteString (name. array^);
+        w. WriteStr (name);
       ELSIF (instr. opndList. arg IS SSA.TypeRef) THEN
         w. WriteChar ("&");
         name := Naming.NameOfTypeDescriptor (instr. opndList. arg(SSA.TypeRef). type);
-        w. WriteString (name. array^);
+        w. WriteStr (name);
       ELSE
         w. WriteString ("OOC_TYPE_TAG(");
         w. Ref (instr. opndList);
@@ -849,7 +848,7 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
   
   PROCEDURE TypeTest (instr: SSA.Instr);
     VAR
-      name: String.String;
+      name: Object.String;
       opnd: SSA.Opnd;
     BEGIN
       w. WriteString ("OOC_TYPE_TEST(");
@@ -857,36 +856,36 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       w. WriteString (", &");
       opnd := instr. opndList. nextOpnd;
       name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       w. WriteString (")");
     END TypeTest;
 
   PROCEDURE TBProcAddress (instr: SSA.Instr);
     VAR
-      name: String.String;
+      name: Object.String;
     BEGIN
       CastFromPtr (instr);
       w. WriteString ("OOC_TBPROC_ADR(");
       w. Ref (instr. opndList);
       w. WriteString (", ");
       name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. arg(SSA.DeclRef). decl);
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       w. WriteString (")");
     END TBProcAddress;
   
   PROCEDURE CopyParameter (instr: SSA.Address);
     VAR
       varDecl: Sym.VarDecl;
-      name: String.String;
+      name: Object.String;
     BEGIN
       varDecl := instr. decl(Sym.VarDecl);
       name := Naming.NameOfDeclaration (varDecl);
       
       w. Newline;
       w. WriteString ("OOC_INITIALIZE_VPAR(");
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       w. WriteString (Naming.suffixPassPerRef+",");
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       WriteTypeAndLength(w, instr, varDecl, TRUE);
     END CopyParameter;
   
@@ -1246,8 +1245,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
           targetVar := w. registerMap. Get (res);
           IF w. registerMap. HasKey (opnd. arg) THEN
             sourceVar := w. registerMap. Get (opnd. arg);
-            w. AddSwapData (sourceVar(String.String),
-                            targetVar(String.String),
+            w. AddSwapData (sourceVar(Object.String),
+                            targetVar(Object.String),
                             SubclassToBasicType (res))
           END;
         END;
@@ -1266,9 +1265,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         IF (i = w. lengthSwapArray) THEN
           w. IntroduceHelperVar (0)
         ELSE                             (* can write out assignment *)
-          w. WriteString (w. swapArray[i]. dest. array^);
+          w. WriteStr (w. swapArray[i]. dest);
           w. WriteString ("=");
-          w. WriteString (w. swapArray[i]. source. array^);
+          w. WriteStr (w. swapArray[i]. source);
           w. WriteChar (";");
           w. RemoveSwapData (i)
         END;
@@ -1282,7 +1281,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         IF (opnd. class # Opnd.store) THEN
           targetVar := w. registerMap. Get (res);
           IF ~w. registerMap. HasKey (opnd. arg) THEN
-            w. WriteString (targetVar(String.String). array^);
+            w. WriteStr (targetVar(Object.String));
             w. WriteString ("=");
             w. Ref (opnd);
             w. WriteChar (";");
@@ -1335,7 +1334,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
           (*w. WriteString ("/* ");
              w. textWriter. WriteHex (SYSTEM.VAL(LONGINT,instr),8);
              w. WriteString ("*/ ");*)
-          w. WriteString (target(String.String). array^);
+          w. WriteStr (target(Object.String));
           w. WriteString (" = ");
         END;
       END;

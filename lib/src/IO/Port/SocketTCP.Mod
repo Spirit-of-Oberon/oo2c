@@ -20,7 +20,7 @@ MODULE IO:Port:SocketTCP;
 <* DEFINE DUMP_BYTES := FALSE *>
 IMPORT
 <*IF DUMP_BYTES THEN*>Log,Err,<*END*>
-  Msg, ADT:String, IO:Socket, Port0 := IO:Port, IO:Port:Streaming;
+  Msg, Object, IO:Socket, Port0 := IO:Port, IO:Port:Streaming;
 
 
 CONST
@@ -30,7 +30,7 @@ TYPE
   Port* = POINTER TO PortDesc;
   PortDesc = RECORD
     (Streaming.PortDesc)
-    hostname-: String.String;
+    hostname-: Object.String8;
     portNumber-: LONGINT;
     socket: Socket.Socket;
     pendingConnect: BOOLEAN;
@@ -40,7 +40,7 @@ TYPE
 
 
 PROCEDURE InitPort* (p: Port; group: Port0.Group;
-                     hostname: String.String; portNumber: LONGINT);
+                     hostname: Object.String8; portNumber: LONGINT);
   BEGIN
     Streaming.InitPort (p, group);
     p. hostname := hostname;
@@ -50,7 +50,7 @@ PROCEDURE InitPort* (p: Port; group: Port0.Group;
   END InitPort;
 
 PROCEDURE NewPort* (group: Port0.Group;
-                    hostname: String.String; portNumber: LONGINT;
+                    hostname: Object.String8; portNumber: LONGINT;
                     blocking: BOOLEAN): Port;
   VAR
     p: Port;
@@ -95,12 +95,15 @@ PROCEDURE NewAccept* (group: Port0.Group;
 
 
 PROCEDURE (p: Port) Open* (VAR res: Msg.Msg);
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     ASSERT (~p. isOpen);
     
     p. socket := Socket.New (Socket.AF_INET, Socket.SOCK_STREAM, 0, res);
     IF (res = Socket.done) THEN
-      Socket.InitSockAddrINET (p. addr, p. hostname. array^, p. portNumber);
+      chars := p.hostname.CharsLatin1();
+      Socket.InitSockAddrINET (p. addr, chars^, p. portNumber);
       p. socket. SetBlocking (FALSE);
       p. socket. Connect (p. addr, SIZE (Socket.sockaddr_in));
       p. pendingConnect := 

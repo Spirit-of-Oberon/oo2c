@@ -19,8 +19,7 @@ MODULE StringSearch:SubstringBM [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  StringSearch, StringSearch:SubstringBF, StringSearch:RegexpParser,
-  ADT:String;
+  Object, StringSearch, StringSearch:SubstringBF, StringSearch:RegexpParser;
 
 CONST
   ignoreCase* = StringSearch.ignoreCase;
@@ -62,14 +61,14 @@ VAR
 
 
 PROCEDURE InitMatchObject (m: MatchObject; pos, endpos: LONGINT;
-                           matcher: Matcher; string: String.String;
+                           matcher: Matcher; string: Object.String8;
                            start, end: LONGINT);
   BEGIN
     SubstringBF.InitMatchObject (m, pos, endpos, matcher, string, start, end);
   END InitMatchObject;
 
 PROCEDURE NewMatchObject (pos, endpos: LONGINT;
-                          matcher: Matcher; string: String.String;
+                          matcher: Matcher; string: Object.String8;
                           start, end: LONGINT): MatchObject;
   VAR
     m: MatchObject;
@@ -85,11 +84,12 @@ PROCEDURE (m: MatchObject) End* (group: LONGINT): LONGINT;
 *)
 
 
-PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSearch.Flags; groups: LONGINT);
+PROCEDURE InitMatcher (matcher: Matcher; pattern: Object.String8; flags: StringSearch.Flags; groups: LONGINT);
   VAR
     i, j, m, m1, maxGap: LONGINT;
     a, b: CHAR;
     len: POINTER TO ARRAY OF LONGINT;
+    array: Object.CharsLatin1;
   BEGIN
     SubstringBF.InitMatcher (matcher, pattern, flags, groups);
     
@@ -98,15 +98,16 @@ PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSe
     FOR i := 0 TO sizeChar-1 DO
       matcher. skip[i] := m
     END;
+    array := pattern.CharsLatin1();
     IF (StringSearch.ignoreCase IN flags) THEN
       FOR i := 0 TO m1 DO
-        RegexpParser.UpperLower (pattern. array[i], a, b);
+        RegexpParser.UpperLower (array[i], a, b);
         matcher. skip[ORD (a)] := m1-i;
         matcher. skip[ORD (b)] := m1-i
       END
     ELSE
       FOR i := 0 TO m1 DO
-        matcher. skip[ORD (pattern. array[i])] := m1-i
+        matcher. skip[ORD (array[i])] := m1-i
       END
     END;
     
@@ -118,12 +119,12 @@ PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSe
       j := 0;
       IF (StringSearch.ignoreCase IN flags) THEN
         WHILE (j < m) & (m1-i-j >= 0) &
-              (CAP (pattern. array[m1-j]) = CAP (pattern. array[m1-i-j])) DO
+              (CAP (array[m1-j]) = CAP (array[m1-i-j])) DO
           INC (j)
         END
       ELSE
         WHILE (j < m) & (m1-i-j >= 0) &
-              (pattern. array[m1-j] = pattern. array[m1-i-j]) DO
+              (array[m1-j] = array[m1-i-j]) DO
           INC (j)
         END
       END;
@@ -149,7 +150,7 @@ PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSe
     END
   END InitMatcher;
 
-PROCEDURE NewMatcher (pattern: String.String; flags: StringSearch.Flags; groups: LONGINT): Matcher;
+PROCEDURE NewMatcher (pattern: Object.String8; flags: StringSearch.Flags; groups: LONGINT): Matcher;
   VAR
     matcher: Matcher;
   BEGIN
@@ -160,7 +161,7 @@ PROCEDURE NewMatcher (pattern: String.String; flags: StringSearch.Flags; groups:
 
 (* procedures inherited from SubstringBF:
 PROCEDURE (matcher: Matcher) MatchChars* (string[NO_COPY]: ARRAY OF CHAR; pos, endpos: LONGINT): MatchObject;
-PROCEDURE (matcher: Matcher) Match* (string: String.String; pos, endpos: LONGINT): MatchObject;
+PROCEDURE (matcher: Matcher) Match* (string: Object.String8; pos, endpos: LONGINT): MatchObject;
 *)
 
 PROCEDURE SearchStart* (matcher: Matcher;
@@ -169,16 +170,18 @@ PROCEDURE SearchStart* (matcher: Matcher;
 (**PRIVATE.  Used by module RegexpDFA.  *)
   VAR
     i, rightEnd, sh, sk, m1: LONGINT;
-    p: String.String;
+    p: Object.String8;
+    array: Object.CharsLatin1;
   BEGIN
     p := matcher. pattern;
     m1 := p.length-1;
-    
+
+    array := p.CharsLatin1();
     rightEnd := pos+m1;
     IF (ignoreCase IN matcher. flags) THEN
       WHILE (rightEnd < endpos) DO
         i := 0;
-        WHILE (i <= m1) & (CAP (string[rightEnd-i]) = CAP (p. array[m1-i])) DO
+        WHILE (i <= m1) & (CAP (string[rightEnd-i]) = CAP (array[m1-i])) DO
           INC (i)
         END;
 
@@ -197,7 +200,7 @@ PROCEDURE SearchStart* (matcher: Matcher;
     ELSE
       WHILE (rightEnd < endpos) DO
         i := 0;
-        WHILE (i <= m1) & (string[rightEnd-i] = p. array[m1-i]) DO
+        WHILE (i <= m1) & (string[rightEnd-i] = array[m1-i]) DO
           INC (i)
         END;
 
@@ -219,10 +222,11 @@ PROCEDURE SearchStart* (matcher: Matcher;
 
 PROCEDURE Search (matcher: Matcher;
                   string[NO_COPY]: ARRAY OF CHAR; len: LONGINT;
-                  pos, endpos: LONGINT; s: String.String): MatchObject;
+                  pos, endpos: LONGINT; s: Object.String8): MatchObject;
   VAR
     i, rightEnd, sh, sk, m1: LONGINT;
-    p: String.String;
+    p: Object.String8;
+    array: Object.CharsLatin1;
   
   PROCEDURE Match(): MatchObject;
     BEGIN
@@ -233,7 +237,7 @@ PROCEDURE Search (matcher: Matcher;
             INC (len)
           END
         END;
-        s := String.NewRegion (string, 0, len)
+        s := Object.NewLatin1Region(string, 0, len)
       END;
       RETURN NewMatchObject (pos, endpos, matcher, s, rightEnd-m1, rightEnd-m1+p. length)
     END Match;
@@ -241,12 +245,13 @@ PROCEDURE Search (matcher: Matcher;
   BEGIN
     p := matcher. pattern;
     m1 := p.length-1;
-    
+
+    array := p.CharsLatin1();
     rightEnd := pos+m1;
     IF (ignoreCase IN matcher. flags) THEN
       WHILE (rightEnd < endpos) DO
         i := 0;
-        WHILE (i <= m1) & (CAP (string[rightEnd-i]) = CAP (p. array[m1-i])) DO
+        WHILE (i <= m1) & (CAP (string[rightEnd-i]) = CAP (array[m1-i])) DO
           INC (i)
         END;
 
@@ -265,7 +270,7 @@ PROCEDURE Search (matcher: Matcher;
     ELSE
       WHILE (rightEnd < endpos) DO
         i := 0;
-        WHILE (i <= m1) & (string[rightEnd-i] = p. array[m1-i]) DO
+        WHILE (i <= m1) & (string[rightEnd-i] = array[m1-i]) DO
           INC (i)
         END;
 
@@ -295,12 +300,15 @@ PROCEDURE (matcher: Matcher) SearchChars* (string[NO_COPY]: ARRAY OF CHAR; pos, 
     RETURN Search (matcher, string, -1, pos, endpos, NIL)
   END SearchChars;
 
-PROCEDURE (matcher: Matcher) Search* (string: String.String; pos, endpos: LONGINT): MatchObject;
+PROCEDURE (matcher: Matcher) Search* (string: Object.String8; pos, endpos: LONGINT): MatchObject;
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     IF (endpos = -1) THEN
       endpos := string. length
     END;
-    RETURN Search (matcher, string. array^, string. length, pos, endpos, string)
+    chars := string.CharsLatin1();
+    RETURN Search (matcher, chars^, string. length, pos, endpos, string)
   END Search;
 
 
@@ -318,7 +326,7 @@ PROCEDURE NewFactory (): Factory;
     RETURN f
   END NewFactory;
 
-PROCEDURE (f: Factory) Compile* (pattern: String.String;
+PROCEDURE (f: Factory) Compile* (pattern: Object.String8;
                                  flags: StringSearch.Flags): Matcher;
   BEGIN
     RETURN NewMatcher (pattern, flags, 0)

@@ -19,7 +19,7 @@ MODULE Net:HTTP:Server [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, Channel, IntStr, Msg, Strings, (*SysClock,*)
-  Object, ADT:String, ADT:StringBuffer, ADT:ArrayList, 
+  Object, ADT:StringBuffer, ADT:ArrayList, 
   URI, URIParser := URI:Parser, HttpURI := URI:Scheme:HTTP, 
   StringURI := URI:String, URI:Query:Unparsed, URI:Query:WWWForm,
   IO:Port, IO:Port:Streaming, IO:Memory, Net:HTTP;
@@ -42,12 +42,12 @@ TYPE
 
 TYPE
   Request* = POINTER TO RequestDesc;
-  StringArrayPtr* = POINTER TO ARRAY OF String.String;
+  StringArrayPtr* = POINTER TO ARRAY OF Object.String8;
   RequestDesc = RECORD
     state: SHORTINT;
     buffer: StringBuffer.StringBuffer;
     uri-: HttpURI.URI;
-    methodString, version: String.String;
+    methodString, version: Object.String8;
     method-: HTTP.MethodCode;
     headers: HeaderList;
     contentLength: LONGINT;
@@ -97,10 +97,12 @@ PROCEDURE InitHeaderList (VAR hl: HeaderList);
     hl. values := ArrayList.New(8);
   END InitHeaderList;
 
-PROCEDURE IsEqual (VAR a, b: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE IsEqual (stra, strb: Object.String8): BOOLEAN;
   VAR
     i: LONGINT;
+    a, b: Object.CharsLatin1;
   BEGIN
+    a := stra.CharsLatin1(); b := strb.CharsLatin1();
     i := 0;
     WHILE (a[i] # 0X) & (CAP (a[i]) = CAP (b[i])) DO
       INC (i)
@@ -109,42 +111,42 @@ PROCEDURE IsEqual (VAR a, b: ARRAY OF CHAR): BOOLEAN;
   END IsEqual;
 
 
-PROCEDURE HasHeader (VAR hl: HeaderList; name: String.String): BOOLEAN;
+PROCEDURE HasHeader (VAR hl: HeaderList; name: Object.String8): BOOLEAN;
   VAR
     n: ArrayList.ArrayList;
     i: LONGINT;
   BEGIN
     n := hl. names;
     FOR i := 0 TO hl. names. size-1 DO
-      IF IsEqual (n. array[i](String.String). array^, name. array^) THEN
+      IF IsEqual (n. array[i](Object.String8), name) THEN
         RETURN TRUE
       END
     END;
     RETURN FALSE
   END HasHeader;
 
-PROCEDURE GetHeader (VAR hl: HeaderList; name: String.String): String.String;
+PROCEDURE GetHeader (VAR hl: HeaderList; name: Object.String8): Object.String8;
   VAR
     n: ArrayList.ArrayList;
     i: LONGINT;
   BEGIN
     n := hl. names;
     FOR i := 0 TO hl. names. size-1 DO
-      IF IsEqual (n. array[i](String.String). array^, name. array^) THEN
-        RETURN hl. values. array[i](String.String)
+      IF IsEqual (n. array[i](Object.String8), name) THEN
+        RETURN hl. values. array[i](Object.String8)
       END
     END;
     RETURN NIL
   END GetHeader;
 
-PROCEDURE SetHeader (VAR hl: HeaderList; name, value: String.String);
+PROCEDURE SetHeader (VAR hl: HeaderList; name, value: Object.String8);
   VAR
     n: ArrayList.ArrayList;
     i: LONGINT;
   BEGIN
     n := hl. names;
     FOR i := 0 TO hl. names. size-1 DO
-      IF IsEqual (n. array[i](String.String). array^, name. array^) THEN
+      IF IsEqual (n. array[i](Object.String8), name) THEN
         hl. values. Set (i, value)
       END
     END;
@@ -259,21 +261,23 @@ PROCEDURE (s: Server) OutputNotification* (capacity: LONGINT);
 
 
 
-PROCEDURE (req: Request) GetHeader* (name: String.String): String.String;
+PROCEDURE (req: Request) GetHeader* (name: Object.String8): Object.String8;
   BEGIN
     RETURN GetHeader (req. headers, name)
   END GetHeader;
 
-PROCEDURE (req: Request) GetIntHeader* (name: String.String): LONGINT;
+PROCEDURE (req: Request) GetIntHeader* (name: Object.String8): LONGINT;
   VAR
     i: LONGINT;
-    str: String.String;
+    str: Object.String8;
+    chars: Object.CharsLatin1;
     res: IntStr.ConvResults;
   BEGIN
     str := GetHeader (req. headers, name);
     i := -1;
     IF (str # NIL) THEN
-      IntStr.StrToInt (str. array^, i, res);
+      chars := str.CharsLatin1();
+      IntStr.StrToInt (chars^, i, res);
       IF (res # IntStr.strAllRight) OR (i < 0) THEN
         i := -1
       END
@@ -281,19 +285,19 @@ PROCEDURE (req: Request) GetIntHeader* (name: String.String): LONGINT;
     RETURN i
   END GetIntHeader;
 
-PROCEDURE (req: Request) GetParameter* (name: String.String): String.String;
+PROCEDURE (req: Request) GetParameter* (name: Object.String8): Object.String8;
   VAR
     obj: Object.Object;
   BEGIN
     IF req. params. dict. HasKey (name) THEN
       obj := req. params. dict. Get (name);
-      RETURN obj(ArrayList.ArrayList). array[0](String.String)
+      RETURN obj(ArrayList.ArrayList). array[0](Object.String8)
     ELSE
       RETURN NIL
     END
   END GetParameter;
 
-PROCEDURE (req: Request) GetParameterValues* (name: String.String): StringArrayPtr;
+PROCEDURE (req: Request) GetParameterValues* (name: Object.String8): StringArrayPtr;
   VAR
     obj: Object.Object;
     s: StringArrayPtr;
@@ -303,7 +307,7 @@ PROCEDURE (req: Request) GetParameterValues* (name: String.String): StringArrayP
       obj := req. params. dict. Get (name);
       NEW (s, obj(ArrayList.ArrayList). size);
       FOR i := 0 TO obj(ArrayList.ArrayList). size-1 DO
-        s[i] := obj(ArrayList.ArrayList). array[i](String.String)
+        s[i] := obj(ArrayList.ArrayList). array[i](Object.String8)
       END;
       RETURN s
     ELSE
@@ -312,7 +316,7 @@ PROCEDURE (req: Request) GetParameterValues* (name: String.String): StringArrayP
   END GetParameterValues;
 
 
-PROCEDURE (resp: Response) SetHeader* (name, value: String.String);
+PROCEDURE (resp: Response) SetHeader* (name, value: Object.String8);
   BEGIN
     SetHeader (resp. headers, name, value)
   END SetHeader;
@@ -322,7 +326,7 @@ PROCEDURE (resp: Response) SetStatus* (status: HTTP.ResponseCode);
     resp. status := status
   END SetStatus;
 
-PROCEDURE (resp: Response) HasHeader* (name: String.String): BOOLEAN;
+PROCEDURE (resp: Response) HasHeader* (name: Object.String8): BOOLEAN;
   BEGIN
     RETURN HasHeader (resp. headers, name)
   END HasHeader;
@@ -368,9 +372,9 @@ PROCEDURE SendResponse (resp: Response; port: Streaming.Port);
     
     names := resp. headers. names;
     FOR i := 0 TO names. size-1 DO
-      b. Append (names. array[i](String.String));
+      b. Append (names. array[i](Object.String8));
       b. AppendString (": ");
-      b. Append (resp. headers. values. array[i](String.String));
+      b. Append (resp. headers. values. array[i](Object.String8));
       b. AppendString (crlf);
     END;
     b. AppendString (crlf);
@@ -379,9 +383,11 @@ PROCEDURE SendResponse (resp: Response; port: Streaming.Port);
   END SendResponse;
 
 PROCEDURE (resp: Response) SendError* (code: HTTP.ResponseCode;
-                                       msg, insert: ARRAY OF CHAR);
+                                       msg: ARRAY OF CHAR;
+                                       insert: Object.String8);
   VAR
     str, explain: ARRAY 512 OF CHAR;
+    chars: Object.CharsLatin1;
     i: INTEGER;
     b: StringBuffer.StringBuffer;
     w: Channel.Writer;
@@ -397,7 +403,8 @@ PROCEDURE (resp: Response) SendError* (code: HTTP.ResponseCode;
       END;
       IF (str[i] # 0X) THEN
         Strings.Delete (str, i, 2);
-        Strings.Insert (insert, i, str)
+        chars := insert.CharsLatin1();
+        Strings.Insert (chars^, i, str)
       END;
     END;
     
@@ -424,13 +431,13 @@ PROCEDURE InitServlet* (servlet: Servlet);
 PROCEDURE (servlet: Servlet) DoGET* (req: Request; resp: Response);
   BEGIN
     resp. SendError (HTTP.scNotImplemented,
-                     "Unsupported method (%s)", req. methodString. array^)
+                     "Unsupported method (%s)", req. methodString)
   END DoGET;
 
 PROCEDURE (servlet: Servlet) DoPOST* (req: Request; resp: Response);
   BEGIN
     resp. SendError (HTTP.scNotImplemented,
-                     "Unsupported method (%s)", req. methodString. array^)
+                     "Unsupported method (%s)", req. methodString)
   END DoPOST;
 
 
@@ -438,13 +445,14 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
                                start, end: LONGINT; VAR msg: Msg.Msg): LONGINT;
   VAR
     pos, i, j: LONGINT;
-    name, uriString: String.String;
+    name, uriString: Object.String8;
     req: Request;
     res: Msg.Msg;
     baseURI: URI.URI;
     str: ARRAY 512 OF CHAR;
+    chars: Object.CharsLatin1;
   
-  PROCEDURE Str(): String.String;
+  PROCEDURE Str(): Object.String8;
     VAR
       start: LONGINT;
     BEGIN  (* any char in 32..126 *)
@@ -452,7 +460,7 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
       WHILE (" " < b[pos]) & (b[pos] < Ascii.del) DO
         INC (pos)
       END;
-      RETURN String.NewRegion (b^, start, pos)
+      RETURN Object.NewLatin1Region(b^, start, pos);
     END Str;
   
   PROCEDURE SkipSP;
@@ -476,14 +484,14 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
       
       IF (s. req. uri = NIL) THEN
         s. resp. SendError (HTTP.scNotFound,
-                            "Not found (%s)", uriString. array^)
+                            "Not found (%s)", uriString)
       ELSIF (s. req. method = HTTP.methodGET) THEN
         s. servlet. DoGET (s. req, s. resp);
         SendResponse (s. resp, s. port)
       ELSIF (s. req. method = HTTP.methodPOST) THEN
-        s. req. contentLength := s. req. GetIntHeader (String.New ("Content-length"));
+        s. req. contentLength := s. req. GetIntHeader (Object.NewLatin1 ("Content-length"));
         IF (s. req. contentLength < 0) THEN
-          s. resp. SendError (HTTP.scLengthRequired, "", "")
+          s. resp. SendError (HTTP.scLengthRequired, "", Object.NewLatin1(""))
         ELSE
           s. req. file := Memory.Tmp("", {Memory.read, Memory.write}, res);
           ASSERT (res = Memory.done);
@@ -491,7 +499,7 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
         END
       ELSE
         s. resp. SendError (HTTP.scNotImplemented,
-                            "Unsupported method (%s)", s. req. methodString. array^)
+                            "Unsupported method (%s)", s. req. methodString)
       END;
     END EndOfHeaders;
   
@@ -506,7 +514,7 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
         SendResponse (s. resp, s. port)
       ELSE
         s. resp. SendError (HTTP.scNotImplemented,
-                            "Unsupported method (%s)", s. req. methodString. array^)
+                            "Unsupported method (%s)", s. req. methodString)
       END;
     END EndOfBody;
   
@@ -527,10 +535,11 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
           RETURN end-pos
         ELSE                             (* parse complete request line *)
           req. methodString := Str();
-          req. method := HTTP.GetMethodCode (req. methodString. array^);
+          req. method := HTTP.GetMethodCode (req. methodString);
           SkipSP;
           uriString := Str();
-          baseURI := URIParser.NewURI (uriString. array^, httpURI, res);
+          chars := uriString.CharsLatin1();
+          baseURI := URIParser.NewURI (chars^, httpURI, res);
           IF (baseURI # NIL) &
              (baseURI IS HttpURI.URI) &
              baseURI(HttpURI.URI). absolutePath THEN
@@ -539,7 +548,7 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
           END;
           SkipSP;
           IF (b[pos] < " ") THEN         (* looks like HTTP/0.9 request *)
-            req. version := String.New ("HTTP/0.9")
+            req. version := Object.NewLatin1 ("HTTP/0.9")
           ELSE
             req. version := Str()
           END;
@@ -579,7 +588,7 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
             WHILE (pos # i) & (b[pos] # ":") DO
               INC (pos)
             END;
-            name := String.NewRegion (b^, j, pos);
+            name := Object.NewLatin1Region (b^, j, pos);
 
             (* skip ":" character and following LWS *)
             IF (pos # i) THEN INC (pos) END;
@@ -604,7 +613,7 @@ PROCEDURE (s: Server) IncomingData* (b: Port.Buffer;
               req. buffer. Delete (req. buffer. length-1, 1)
             END;
             INC (pos);
-            SetHeader (req. headers, name, req. buffer. ToString())
+            SetHeader (req. headers, name, req. buffer. ToString8())
           END
         END
       

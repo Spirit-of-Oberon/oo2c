@@ -20,7 +20,7 @@ MODULE oob;
 *)
 
 IMPORT
-  Err, Msg, Out, StdChannels, Strings, ADT:String,
+  Err, Msg, Out, StdChannels, Strings, 
   Config:Section:Options, Config:Section:Arguments, Config:Value:Boolean,
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,
@@ -298,16 +298,13 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
     END Import;
   
   PROCEDURE ConstDecl(constDecl: Sym.ConstDecl);
-    VAR
-      str: String.String;
     BEGIN
       IdentDef(constDecl);
       Out.String (" = ");
       IF (constDecl.value = NIL) THEN
         Out.String("NIL");
       ELSE
-        str := constDecl.value.ToString();
-        Out.String(str.array^);
+        Out.Str(constDecl.value.ToString());
       END;
     END ConstDecl;
   

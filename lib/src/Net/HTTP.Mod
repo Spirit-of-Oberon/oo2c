@@ -17,6 +17,9 @@ MODULE Net:HTTP;
     59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
+IMPORT
+  Object;
+  
 TYPE
   ResponseCode* = INTEGER;
   
@@ -171,11 +174,11 @@ PROCEDURE GetMessage* (code: ResponseCode; VAR short, long: ARRAY OF CHAR);
     END
   END GetMessage;
 
-PROCEDURE GetMethodCode* (method: ARRAY OF CHAR): MethodCode;
+PROCEDURE GetMethodCode* (method: Object.String): MethodCode;
   BEGIN
-    IF (method = "GET") THEN
+    IF method.Equals(Object.NewLatin1("GET")) THEN
       RETURN methodGET
-    ELSIF (method = "POST") THEN
+    ELSIF method.Equals(Object.NewLatin1("POST")) THEN
       RETURN methodPOST
     ELSE
       RETURN methodUnknown

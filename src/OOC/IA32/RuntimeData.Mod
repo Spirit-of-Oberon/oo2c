@@ -22,7 +22,7 @@ MODULE OOC:IA32:RuntimeData;
 
 
 IMPORT
-  Sym := OOC:SymbolTable, OOC:IA32:Writer;
+  Object, Sym := OOC:SymbolTable, OOC:IA32:Writer;
 
 PROCEDURE Write* (w: Writer.Writer; symTab: Sym.Module);
   PROCEDURE ModuleDescr (module: Sym.Module);
@@ -31,10 +31,10 @@ PROCEDURE Write* (w: Writer.Writer; symTab: Sym.Module);
       w. Instr (".align 4");
       w. Instr (".type _mid,@object");
       w. Instr (".size _mid,4");
-      w. Label ("_mid");
+      w. Label (Object.NewLatin1("_mid"));
       w. Instr (".long .LC0");
       w. Section (".section .rodata");
-      w. Label (".LC0");
+      w. Label (Object.NewLatin1(".LC0"));
       w. StringLiteral (symTab. name. str^);
     END ModuleDescr;
   

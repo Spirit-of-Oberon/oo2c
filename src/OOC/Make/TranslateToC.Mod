@@ -21,7 +21,7 @@ MODULE OOC:Make:TranslateToC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Channel, StdChannels, ADT:String, ADT:Dictionary, 
+  Channel, StdChannels, Object, ADT:Dictionary, 
   OOC:Config, OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
@@ -211,7 +211,7 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
   END WriteCodeFile;
 
 
-PROCEDURE Run*(m: Repository.Module; libraryName: String.String;
+PROCEDURE Run*(m: Repository.Module; libraryName: Object.String8;
                writeAST: BOOLEAN; writeIR: BOOLEAN;
                translator: Translator): Error.List;
 (**Compiles a module, creating the symbol file and all relevant C files.  *)

@@ -22,7 +22,7 @@ MODULE OOC:C:RuntimeData;
 
 
 IMPORT
-  TextRider, ADT:String, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
+  TextRider, Object, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
@@ -59,7 +59,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
   
   PROCEDURE WriteDescrVariable (type: Sym.Type);
     VAR
-      name: String.String;
+      name: Object.String;
     BEGIN
       name := Naming.NameOfTypeDescriptor (type);
       
@@ -72,7 +72,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       END;
       w. WriteString (structTypeDesc);
       w. WriteString (" ");
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       IF writeHeader THEN
         w. WriteString (";");
       ELSE
@@ -95,12 +95,12 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
 
   PROCEDURE WriteTDRef(type: Sym.Type);
     VAR
-      name: String.String;
+      name: Object.String;
     BEGIN
       IF type.hasDescriptor THEN
         w.WriteString("&");
         name := Naming.NameOfTypeDescriptor(type);
-        w.WriteString(name.array^);
+        w.WriteStr(name);
       ELSE
         w.WriteString("NULL");
       END;
@@ -146,7 +146,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     PROCEDURE BaseTypes (t: Sym.Type): LONGINT;
       VAR
         len: LONGINT;
-        name: String.String;
+        name: Object.String;
       BEGIN
         IF (t = NIL) THEN
           RETURN -1;
@@ -154,7 +154,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           len := BaseTypes (t(Sym.Record). baseType);
           name := Naming.NameOfTypeDescriptor (t);
           w. WriteChar ("&");
-          w. WriteString (name. array^);
+          w. WriteStr(name);
           IF (t # record) THEN
             w. WriteChar (",");
           END;
@@ -166,7 +166,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       VAR
         i: LONGINT;
         proc: Sym.ProcDecl;
-        name: String.String;
+        name: Object.String;
       BEGIN
         FOR i := 0 TO tbProcCount-1 DO
           IF (i # 0) THEN
@@ -176,7 +176,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           ASSERT (proc # NIL);
           w. WriteString ("(void*)");
           name := Naming.NameOfDeclaration (proc);
-          w. WriteString (name. array^);
+          w. WriteStr (name);
         END;
       END TBProcs;
     
@@ -271,7 +271,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       Nli;
       FOR i := 0 TO tdNames. size-1 DO
         w. WriteString ("&");
-        w. WriteString (tdNames. array[i](String.String). array^);
+        w. WriteStr (tdNames. array[i](Object.String));
         CNli;
       END;
       w. WriteString ("NULL } };");
@@ -280,13 +280,13 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
 
   PROCEDURE ModuleInit (module: Sym.Module);
     VAR
-      name0, name: String.String;
+      name0, name: Object.String;
     BEGIN
       name0 := Naming.NameOfModuleInit (module, TRUE);
       name := Naming.NameOfModuleInit (module, FALSE);
       w. WriteLn;
       w. WriteString ("extern void ");
-      w. WriteString (name0. array^);
+      w. WriteStr (name0);
       w. WriteString ("() {");
       IF (module. name. str^ # Config.runtimeModule) THEN
         (* cannot register the lowest level run-time module with itself *)
@@ -295,7 +295,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       END;
       w. WriteLn;
       w. WriteString ("  ");
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       w. WriteString ("();");
       w. WriteLn;
       w. WriteString ("}");

@@ -1,7 +1,7 @@
 MODULE OOC:C:Naming;
 
 IMPORT
-  IntStr, Strings, Object, ADT:String, ADT:Dictionary,
+  IntStr, Strings, Object, ADT:Dictionary,
   OOC:Config, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
 TYPE
@@ -17,19 +17,20 @@ CONST
 VAR
   keywords: Dictionary.Dictionary;
   (* maps C/C++ keywords to a safer counterpart *)
-  rwPrefix: String.String;
+  rwPrefix: Object.String;
   (* prefix string used to mangle reserved names *)
-  tdPrefix: String.String;
+  tdPrefix: Object.String;
   (* prefix of the type descriptor namespace *)
 
-PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
+PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): Object.String8;
   VAR
     relativeId: Sym.NameString;
     str: Buffer;
     i: LONGINT;
     m: Sym.Item;
     relativeName: BOOLEAN;
-    name: String.String;
+    name: Object.String8;
+    string: Object.String;
     obj: Object.Object;
 
   PROCEDURE IsReservedName (VAR str: ARRAY OF CHAR): BOOLEAN;
@@ -108,18 +109,19 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
       END
     END;
 
-    name := String.New (str);
+    name := Object.NewLatin1(str);
     IF keywords. HasKey (name) THEN
       obj := keywords. Get (name);
-      RETURN obj(String.String);
+      RETURN obj(Object.String8);
     ELSIF IsReservedName (str) THEN
-      RETURN rwPrefix. Concat (name);
+      string := rwPrefix. Concat (name);
+      RETURN string(Object.String8);
     ELSE
       RETURN name;
     END;
   END NameOfDeclaration;
 
-PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): String.String;
+PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): Object.String8;
   VAR
     str: Buffer;
     i: LONGINT;
@@ -136,34 +138,34 @@ PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): String.String;
     ELSE      
       Strings.Append ("_init", str);
     END;
-    RETURN String.New (str)
+    RETURN Object.NewLatin1(str)
   END NameOfModuleInit;
 
-PROCEDURE NameOfLengthParam* (param: Sym.VarDecl; dim: LONGINT): String.String;
+PROCEDURE NameOfLengthParam* (param: Sym.VarDecl; dim: LONGINT): Object.String8;
   VAR
     str: Buffer;
-    name: String.String;
+    name: Object.String8;
+    chars: Object.CharsLatin1;
   BEGIN
     name := NameOfDeclaration (param);
     IntStr.IntToStr (dim, str);
     Strings.Insert ("_", 0, str);
     Strings.Append ("d", str);
-    Strings.Insert (name. array^, 0, str);
-    RETURN String.New (str)
+    chars := name.CharsLatin1();
+    Strings.Insert (chars^, 0, str);
+    RETURN Object.NewLatin1(str)
   END NameOfLengthParam;
 
-PROCEDURE NameOfTypeTagParam* (param: Sym.VarDecl): String.String;
+PROCEDURE NameOfTypeTagParam* (param: Sym.VarDecl): Object.String8;
   VAR
-    str: Buffer;
-    name: String.String;
+    name: Object.String;
   BEGIN
-    name := NameOfDeclaration (param);
-    COPY (name. array^, str);
-    Strings.Append ("__tag", str);
-    RETURN String.New (str)
+    name := NameOfDeclaration(param);
+    name := name.Concat(Object.NewLatin1("__tag"));
+    RETURN name(Object.String8);
   END NameOfTypeTagParam;
 
-PROCEDURE NameOfType* (type: Sym.Type): String.String;
+PROCEDURE NameOfType* (type: Sym.Type): Object.String8;
 (**@precond
    @samp{type. namingDecl # NIL}
    @end precond *)
@@ -172,12 +174,12 @@ PROCEDURE NameOfType* (type: Sym.Type): String.String;
     RETURN NameOfDeclaration (type. namingDecl);
   END NameOfType;
 
-PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
+PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): Object.String8;
 (**@precond
    @samp{type. namingDecl # NIL}
    @end precond *)
   VAR
-    name: String.String;
+    string: Object.String;
     str, str2: ARRAY 32 OF CHAR;
   BEGIN
     WITH type: Sym.PredefType DO
@@ -197,51 +199,55 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
       str2 := Config.runtimeModule;
       Strings.Append ("__", str2);
       Strings.Append (str, str2);
-      RETURN String.New (str2);
+      RETURN Object.NewLatin1(str2);
     ELSE
       IF (type. namingDecl = NIL) THEN
-        name := tdPrefix. Concat (NameOfDeclaration (type. Module()));
+        string := tdPrefix. Concat (NameOfDeclaration (type. Module()));
         IntStr.IntToStr (type. position. pos, str);
-        RETURN name. Concat (String.New (str));
+        string := string. Concat (Object.NewLatin1(str));
+        RETURN string(Object.String8);
       ELSE
-        RETURN tdPrefix. Concat (NameOfType (type));
+        string := tdPrefix. Concat (NameOfType (type));
+        RETURN string(Object.String8);
       END;
     END;
   END NameOfTypeDescriptor;
 
-PROCEDURE NameOfTypeBoundIndex* (proc: Sym.ProcDecl): String.String;
+PROCEDURE NameOfTypeBoundIndex* (proc: Sym.ProcDecl): Object.String8;
 (**Return the name of the C #define that holds the index of this
    type-bound procedure.  *)
   VAR
-    name: String.String;
+    name: Object.String;
   BEGIN
-    name := String.New ("_TBN_");
-    RETURN name. Concat (NameOfDeclaration (proc));
+    name := Object.NewLatin1("_TBN_");
+    name := name. Concat (NameOfDeclaration (proc));
+    RETURN name(Object.String8);
   END NameOfTypeBoundIndex;
 
-PROCEDURE NameOfTypeBoundSignature* (proc: Sym.ProcDecl): String.String;
+PROCEDURE NameOfTypeBoundSignature* (proc: Sym.ProcDecl): Object.String8;
 (**Return the name of the C typedef that defines the signature of this
    type-bound procedure.  *)
   VAR
-    name: String.String;
+    name: Object.String;
   BEGIN
-    name := String.New ("_TBP_");
-    RETURN name. Concat (NameOfDeclaration (proc));
+    name := Object.NewLatin1("_TBP_");
+    name := name. Concat (NameOfDeclaration (proc));
+    RETURN name(Object.String8);
   END NameOfTypeBoundSignature;
 
 PROCEDURE Init ();
   PROCEDURE RW (str: ARRAY OF CHAR);
     VAR
-      name: String.String;
+      name: Object.String;
     BEGIN
-      name := String.New (str);
+      name := Object.NewLatin1(str);
       keywords. Set (name, rwPrefix. Concat (name));
     END RW;
   
   BEGIN
     keywords := Dictionary.New();
-    rwPrefix := String.New ("_");
-    tdPrefix := String.New ("_td_");
+    rwPrefix := Object.NewLatin1("_");
+    tdPrefix := Object.NewLatin1("_td_");
     
     (* reserved words of ANSI-C *)
     RW ("auto"); RW ("break"); RW ("case"); RW ("char"); RW ("const"); 

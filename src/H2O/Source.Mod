@@ -1,9 +1,8 @@
 MODULE H2O:Source [OOC_EXTENSIONS];
 
 IMPORT
-  ADT:String,
   H2O:Module,
-  TextRider, Channel, Err, Msg, Files, Strings,
+  Object, TextRider, Channel, Err, Msg, Files, Strings,
   OOC:Config, OOC:Repository, URI;
 
 CONST
@@ -17,7 +16,7 @@ CONST
 TYPE
   Source* = POINTER TO SourceDesc;
   SourceDesc = RECORD
-    name : String.String;
+    name : Object.String8;
     pos, line, col : LONGINT;
     rd: TextRider.Reader;
     next : Source;
@@ -39,7 +38,7 @@ BEGIN
     Err.String("  At positon "); Err.LongInt(s.pos, 0); 
     Err.String(" (line="); Err.LongInt(s.line+1, 0);
     Err.String(", col="); Err.LongInt(s.col, 0);
-    Err.String(") in file "); Err.String(s.name.array^); Err.Ln;
+    Err.String(") in file "); Err.Str(s.name); Err.Ln;
     s := s.next;
   END;
 END ShowContext;
@@ -105,7 +104,7 @@ END NoFile;
 PROCEDURE (i : Input) Include* (fileName : ARRAY OF CHAR; search : BOOLEAN);
 VAR
   realFileName : ARRAY 256 OF CHAR;
-  moduleName : String.String;
+  moduleName : Object.String8;
   module : Module.Module;
   s : Source;
   m : Repository.Module;
@@ -139,9 +138,9 @@ BEGIN
   s.line := 0;
   s.col := 0;
   s.next := i.src;
-  s.name := String.New(realFileName);
+  s.name := Object.NewLatin1(realFileName);
   i.src := s;
-  Err.String("<Processing "); Err.String(s.name.array^); Err.Char(">"); Err.Ln;
+  Err.String("<Processing "); Err.Str(s.name); Err.Char(">"); Err.Ln;
 
   moduleName := Module.ModuleName(realFileName);
   module := Module.FindModule(moduleName);
@@ -149,7 +148,7 @@ BEGIN
     Err.String("NEW ");
     module := Module.NewModule(moduleName);
   END;
-  Err.String("MODULE "); Err.String(moduleName.array^); 
+  Err.String("MODULE "); Err.Str(moduleName); 
   Err.String(" for "); Err.String(realFileName);
   Err.Ln;
   i.module := module;

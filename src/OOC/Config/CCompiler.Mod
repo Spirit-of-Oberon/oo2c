@@ -21,7 +21,7 @@ MODULE OOC:Config:CCompiler;
 *)
 
 IMPORT
-  Strings, ADT:String, URI, URI:Scheme:File,
+  Strings, Object, URI, URI:Scheme:File,
   Config:Section:Options, StringValue := Config:Value:String,
   OOC:Config, OOC:Repository;
 
@@ -53,9 +53,10 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
                            VAR cmd: ARRAY OF CHAR);
   VAR
     str: ARRAY 2*1024 OF CHAR;
-    include: String.StringArrayPtr;
+    include: Object.StringArrayPtr;
     i: LONGINT;
     f: File.URI;
+    chars: Object.CharsLatin1;
     
   PROCEDURE GetURIofRT(): File.URI;
     VAR
@@ -94,7 +95,8 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
     include := Config.repositories. GetIncludePaths();
     FOR i := 0 TO LEN (include^)-1 DO
       Strings.Append (" -I", cmd);
-      Strings.Append (include[i]. array^, cmd)
+      chars := include[i](Object.String8).CharsLatin1();
+      Strings.Append (chars^, cmd)
     END;
     
     Strings.Append (" -c ", cmd);

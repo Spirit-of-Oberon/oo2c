@@ -22,8 +22,8 @@ MODULE OOC:SSA:XML;
 
 
 IMPORT
-  Channel, Dictionary := ADT:Dictionary:IntValue, 
-  ADT:String, ADT:StringBuffer, WriterXML := XML:Writer, XML:UnicodeCodec:Latin1,
+  Channel, Object, Dictionary := ADT:Dictionary:IntValue, 
+  ADT:StringBuffer, WriterXML := XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd, OOC:SSA, OOC:SSA:Schedule;
 
 
@@ -104,18 +104,18 @@ PROCEDURE (w: Writer) AttrId* (name: ARRAY OF LONGCHAR; result: SSA.Result);
 
 PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
   VAR
-    value: String.String;
+    value: Object.String;
   BEGIN
     IF (res = NIL) THEN
       w. AttrString ("argref", "NIL");
     ELSE
       WITH res: SSA.Const DO
         IF (res. value = SSA.nil) THEN
-          value := String.New ("NIL");
+          value := Object.NewLatin1("NIL");
         ELSE
           value := res. value. ToString();
         END;
-        w. AttrStringLatin1 ("const-value", value. array^);
+        w. AttrStr ("const-value", value(Object.String8));
       | res: SSA.DeclRef DO
         w. AttrStringLatin1 ("declref", res. decl. name. str^);
       | res: SSA.Address DO
@@ -133,7 +133,7 @@ PROCEDURE Omit (instr: SSA.Instr): BOOLEAN;
 
 PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
   VAR
-    value: String.String;
+    value: Object.String;
     res: SSA.Result;
     opnd: SSA.Opnd;
     
@@ -189,11 +189,11 @@ PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
     
     WITH instr: SSA.Const DO
       IF (instr. value = SSA.nil) THEN
-        value := String.New ("NIL");
+        value := Object.NewLatin1("NIL");
       ELSE
         value := instr. value. ToString();        
       END;
-      w. AttrStringLatin1 ("value", value. array^);
+      w. AttrStr ("value", value(Object.String8));
 
     | instr: SSA.Address DO
       w. AttrStringLatin1 ("address-of", instr. decl. name. str^);

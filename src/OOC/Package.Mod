@@ -2,7 +2,7 @@ MODULE OOC:Package;
 
 IMPORT
   Files, IntStr, LongStrings, Msg, Out, StdChannels, Strings,
-  Object, ADT:String, ADT:ArrayList, OSFiles := OS:Files,
+  Object, ADT:ArrayList, OSFiles := OS:Files,
   OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
   Config:Parser, Config:Value, StringValue := Config:Value:String,
@@ -30,15 +30,15 @@ TYPE
   Executable* = POINTER TO ExecutableDesc;
   ExecutableDesc = RECORD
     (Object.ObjectDesc)
-    mainModule-: String.String; 
+    mainModule-: Object.String8; 
   END;
   
 TYPE
   Library* = POINTER TO LibraryDesc;
   LibraryDesc = RECORD
     (Object.ObjectDesc)
-    name-: String.String;
-    mainModule-: String.String;
+    name-: Object.String8;
+    mainModule-: Object.String8;
     version-: Version;
   END;
 
@@ -52,16 +52,16 @@ TYPE
   File* = POINTER TO FileDesc;
   FileDesc = RECORD
     (FileDataDesc)
-    name-: String.String;
-    destName-: String.String;
+    name-: Object.String8;
+    destName-: Object.String8;
   END;
 
 TYPE
   FileSet* = POINTER TO FileSetDesc;
   FileSetDesc = RECORD
     (FileDataDesc)
-    sourceDir: String.String;
-    destDir: String.String;
+    sourceDir: Object.String8;
+    destDir: Object.String8;
     head-, tail: FileData;
   END;
 
@@ -69,7 +69,7 @@ TYPE
   KeyValue* = POINTER TO KeyValueDesc;
   KeyValueDesc = RECORD
     (Object.ObjectDesc)
-    key-: String.String;
+    key-: Object.String8;
     value-: Value.Value;
   END;
 
@@ -77,7 +77,7 @@ TYPE
   Package* = POINTER TO PackageDesc;
   PackageDesc = RECORD
     (Rep.PkgInfoDesc)
-    name-: String.String;
+    name-: Object.String8;
     version: Version;
     library-: ArrayList.ArrayList;
     executable-: ArrayList.ArrayList;
@@ -91,14 +91,14 @@ TYPE
   Repository* = POINTER TO RepositoryDesc;
   RepositoryDesc = RECORD
     (Rep.PkgInfoDesc)
-    installedPkgs-: ArrayList.ArrayList;  (* of String.String *)
+    installedPkgs-: ArrayList.ArrayList;  (* of Object.String8 *)
   END;
   
 CONST
   packageData = "pkginfo.xml";
 
 VAR
-  stringType: String.String;
+  stringType: Object.String8;
   
 CONST
   invalidContent = 0;
@@ -234,7 +234,7 @@ PROCEDURE (fileSet: FileSet) Append*(fdata: FileData);
     fileSet.tail := fdata;
   END Append;
 
-PROCEDURE NewFile*(name, destName: String.String): File;
+PROCEDURE NewFile*(name, destName: Object.String8): File;
   VAR
     file: File;
   BEGIN
@@ -245,7 +245,7 @@ PROCEDURE NewFile*(name, destName: String.String): File;
     RETURN file;
   END NewFile;
 
-PROCEDURE NewKeyValue*(key: String.String; value: Value.Value): KeyValue;
+PROCEDURE NewKeyValue*(key: Object.String8; value: Value.Value): KeyValue;
   VAR
     kv: KeyValue;
   BEGIN
@@ -260,14 +260,17 @@ PROCEDURE MergeConfig(pkg: Rep.PkgInfo; options, pragmas: Options.Section);
     i: LONGINT;
     kv: KeyValue;
     o: Options.Option;
+    chars: Object.CharsLatin1;
   BEGIN
     FOR i := 0 TO pkg.options.size-1 DO
       kv := pkg.options.array[i](KeyValue);
-      o := options.Set(kv.key.array^, kv.value);
+      chars := kv.key.CharsLatin1();
+      o := options.Set(chars^, kv.value);
     END;
     FOR i := 0 TO pkg.pragmas.size-1 DO
       kv := pkg.pragmas.array[i](KeyValue);
-      o := pragmas.Set(kv.key.array^, kv.value);
+      chars := kv.key.CharsLatin1();
+      o := pragmas.Set(chars^, kv.value);
     END;
   END MergeConfig;
 
@@ -345,23 +348,27 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
     buffer: POINTER TO ARRAY OF CHAR;
     
   PROCEDURE NormalizeFileSet(fileSet: FileSet;
-                             sourcePrefix, destPrefix: String.String);
+                             sourcePrefix, destPrefix: Object.String);
     VAR
       ptr: FileData;
 
     PROCEDURE NormalizeFile(file: File);
       VAR
         nFile: File;
-        name, destName: String.String;
+        name, destName: Object.String8;
 
-      PROCEDURE NormalizePath(path: String.String): String.String;
+      PROCEDURE NormalizePath(path: Object.String): Object.String8;
         VAR
+          path8: Object.String8;
           i, j: INTEGER;
+          chars: Object.CharsLatin1;
         BEGIN
-          IF (buffer = NIL) OR (path.length >= LEN(buffer^)) THEN
-            NEW(buffer, path.length+1);
+          path8 := path(Object.String8);
+          IF (buffer = NIL) OR (path8.length >= LEN(buffer^)) THEN
+            NEW(buffer, path8.length+1);
           END;
-          COPY(path.array^, buffer^);
+          chars := path8.CharsLatin1();
+          COPY(chars^, buffer^);
 
           i := 0;
           WHILE (buffer[i] # 0X) DO
@@ -405,10 +412,10 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
           END;
           buffer[i] := 0X;
           
-          IF (i # path.length) THEN
-            RETURN String.NewRegion(buffer^, 0, i);
+          IF (i # path8.length) THEN
+            RETURN Object.NewLatin1Region(buffer^, 0, i);
           ELSE  (* no changes, reuse old string *)
-            RETURN path;
+            RETURN path8;
           END;
         END NormalizePath;
       
@@ -425,13 +432,13 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
     
     BEGIN
       sourcePrefix := sourcePrefix.Concat(fileSet.sourceDir);
-      sourcePrefix := sourcePrefix.Concat(String.New("/"));
+      sourcePrefix := sourcePrefix.Concat(Object.NewLatin1("/"));
       IF (fileSet.destDir # NIL) THEN
         destPrefix := destPrefix.Concat(fileSet.destDir);
       ELSE
         destPrefix := destPrefix.Concat(fileSet.sourceDir);
       END;
-      destPrefix := destPrefix.Concat(String.New("/"));
+      destPrefix := destPrefix.Concat(Object.NewLatin1("/"));
       
       ptr := fileSet.head;
       WHILE (ptr # NIL) DO
@@ -504,10 +511,10 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
   BEGIN
     buffer := NIL;
     norm := NewFileSet();
-    norm.sourceDir := String.New(".");
+    norm.sourceDir := Object.NewLatin1(".");
     norm.destDir := norm.sourceDir;
 
-    NormalizeFileSet(fileSet, String.New(""), String.New(""));
+    NormalizeFileSet(fileSet, Object.NewLatin1(""), Object.NewLatin1(""));
     norm.head := MergeSort(norm.head);
     norm.tail := norm.head;
     IF (norm.tail # NIL) THEN
@@ -526,7 +533,7 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
     RETURN norm;
   END Normalize;
 
-PROCEDURE StringAttr(att: Builder.Attribute): String.String;
+PROCEDURE StringAttr(att: Builder.Attribute): Object.String8;
   VAR
     str: DTD.String;
     buffer: POINTER TO ARRAY OF CHAR;
@@ -534,7 +541,7 @@ PROCEDURE StringAttr(att: Builder.Attribute): String.String;
     str := att.value.Flatten(att.attrDecl);
     NEW(buffer, LEN(str^));
     LongStrings.Short(str^, "?", buffer^);
-    RETURN String.New(buffer^);
+    RETURN Object.NewLatin1(buffer^);
   END StringAttr;
 
 PROCEDURE AtElement(node: Parser.Node;
@@ -548,7 +555,7 @@ PROCEDURE AtElement(node: Parser.Node;
 PROCEDURE ParseKeyValue(elem: Parser.Element;
                         list: ArrayList.ArrayList;
                         options: Options.Section;
-                        defaultType: String.String;
+                        defaultType: Object.String8;
                         errorListener: Locator.ErrorListener;
                         errList: Error.List);
 (* pre: element.name="options" or "pragmas" *)
@@ -578,12 +585,13 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
     VAR
       i: LONGINT;
       node: Parser.Node;
-      name, type: String.String;
+      name, type: Object.String8;
       value: Value.Value;
       str: ARRAY 1024 OF CHAR;
       att: Builder.Attribute;
-      stringBuffer: String.String;
+      stringBuffer: Object.String;
       errMsg: Msg.Msg;
+      chars: Object.CharsLatin1;
     BEGIN
       name := NIL;
       type := defaultType;
@@ -605,24 +613,26 @@ PROCEDURE ParseKeyValue(elem: Parser.Element;
         Err(requireNameAttribute, elem);
         RETURN NIL;
       ELSE
-        stringBuffer := String.New("");
+        stringBuffer := Object.NewLatin1("");
         node := elem.content;
         WHILE (node # NIL) DO
           WITH node: Parser.CharData DO
             LongStrings.Short(node.string^, "?", str);
-            stringBuffer := stringBuffer.Concat(String.New(str));
+            stringBuffer := stringBuffer.Concat(Object.NewLatin1(str));
           ELSE
             Err(requireCharacterData, node);
           END;
           node := node.nextNode;
         END;
-        
-        value := options.typeList.GetClone(type.array^);
+
+        chars := type.CharsLatin1();
+        value := options.typeList.GetClone(chars^);
         IF (value = NIL) THEN
           Err(unknownType, node);
-          lastError.SetStringAttrib("type", Msg.GetStringPtr(type.array^))
+          lastError.SetStringAttrib("type", Msg.GetStringPtr(chars^))
         ELSE
-          value.StringToValue(stringBuffer.array^, errMsg);
+          chars := stringBuffer(Object.String8).CharsLatin1();
+          value.StringToValue(chars^, errMsg);
           IF (errMsg # NIL) THEN
             Err(invalidValue,node);
             lastError.SetMsgAttrib("reason", errMsg)
@@ -825,7 +835,7 @@ PROCEDURE ProcessPackage (root: Parser.Element;
       VAR
         i: LONGINT;
         node: Parser.Node;
-        name, destName: String.String;
+        name, destName: Object.String8;
         att: Builder.Attribute;
       BEGIN
         name := NIL;
@@ -950,8 +960,8 @@ PROCEDURE ProcessPackage (root: Parser.Element;
     END;
 
     pkg.fileSet := NewFileSet();
-    pkg.fileSet.sourceDir := String.New(".");
-    pkg.fileSet.destDir := String.New(".");
+    pkg.fileSet.sourceDir := Object.NewLatin1(".");
+    pkg.fileSet.destDir := Object.NewLatin1(".");
     WHILE AtElement(node, "file-set") DO
       pkg.fileSet.Append(ParseFileSet(node(Parser.Element)));
       node := node.nextNode;
@@ -1061,7 +1071,7 @@ PROCEDURE GetPackage* (pkgName: ARRAY OF CHAR;
     WHILE (rep # NIL) DO
       IF (rep.packageInfo # NIL) &
          (rep.packageInfo IS Package) &
-         (rep.packageInfo(Package).name.array^ = pkgName) THEN
+         rep.packageInfo(Package).name.Equals(Object.NewLatin1(pkgName)) THEN
         RETURN rep.packageInfo(Package);
       END;
       rep := rep.baseRep;
@@ -1119,7 +1129,7 @@ PROCEDURE WriteKeyValue(w: Writer.Writer;
     FOR i := 0 TO list.size-1 DO
       kv := list.array[i](KeyValue);
       w.StartTag("define", TRUE);
-      w.AttrStringLatin1("name", kv.key.array^);
+      w.AttrStr("name", kv.key);
       v := kv.value;
       WITH v: StringValue.Value DO
         type := "string";
@@ -1143,6 +1153,7 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
     f: Files.File;
     w: Writer.Writer;
     i: LONGINT;
+    chars: Object.CharsLatin1;
 
   PROCEDURE WriteVersion(w: Writer.Writer; version: Version);
     BEGIN
@@ -1158,8 +1169,8 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
   PROCEDURE WriteLibrary(w: Writer.Writer; library: Library);
     BEGIN
       w.StartTag("library", FALSE);
-      w.AttrStringLatin1("name", library.name.array^);
-      w.AttrStringLatin1("main-module", library.mainModule.array^);
+      w.AttrStr("name", library.name);
+      w.AttrStr("main-module", library.mainModule);
       WriteVersion(w, library.version);
       w.EndTag();  (* library *)
     END WriteLibrary;
@@ -1167,7 +1178,7 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
   PROCEDURE WriteExecutable(w: Writer.Writer; executable: Executable);
     BEGIN
       w.StartTag("executable", FALSE);
-      w.AttrStringLatin1("main-module", executable.mainModule.array^);
+      w.AttrStr("main-module", executable.mainModule);
       w.EndTag();  (* executable *)
     END WriteExecutable;
 
@@ -1178,18 +1189,18 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
     PROCEDURE WriteFile(w: Writer.Writer; file: File);
       BEGIN
         w.StartTag("file", FALSE);
-        w.AttrStringLatin1("name", file.name.array^);
+        w.AttrStr("name", file.name);
         IF (file.destName # NIL) THEN
-          w.AttrStringLatin1("dest-name", file.destName.array^);
+          w.AttrStr("dest-name", file.destName);
         END;
         w.EndTag();  (* file *)
       END WriteFile;
     
     BEGIN
       w.StartTag("file-set", FALSE);
-      w.AttrStringLatin1("source-dir", fileSet.sourceDir.array^);
+      w.AttrStr("source-dir", fileSet.sourceDir);
       IF (fileSet.destDir # NIL) THEN
-        w.AttrStringLatin1("dest-dir", fileSet.destDir.array^);
+        w.AttrStr("dest-dir", fileSet.destDir);
       END;
       ptr := fileSet.head;
       WHILE (ptr # NIL) DO
@@ -1207,7 +1218,8 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
     COPY(targetDir, fileName);
     Strings.Append(pkgInfoSubdir, fileName);
     Strings.Append("/", fileName);
-    Strings.Append(pkg.name.array^, fileName);
+    chars := pkg.name.CharsLatin1();
+    Strings.Append(chars^, fileName);
     Strings.Append(".xml", fileName);
     
     f := Files.New(fileName, {Files.write}, res);
@@ -1215,7 +1227,7 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
       w := Writer.New(f.NewWriter(), Latin1.factory, TRUE, 2);
       
       w.StartTag("package", FALSE);
-      w.AttrStringLatin1("name", pkg.name.array^);
+      w.AttrStr("name", pkg.name);
       WriteVersion(w, pkg.version);
       WriteKeyValue(w, "options", pkg.options);
       WriteKeyValue(w, "pragmas", pkg.pragmas);
@@ -1250,10 +1262,10 @@ PROCEDURE WriteRepository*(rep: Repository; targetDir: ARRAY OF CHAR;
     w: Writer.Writer;
     i: LONGINT;
 
-  PROCEDURE WriteInstalledPkg(w: Writer.Writer; pkgName: String.String);
+  PROCEDURE WriteInstalledPkg(w: Writer.Writer; pkgName: Object.String8);
     BEGIN
       w.StartTag("installed", FALSE);
-      w.AttrStringLatin1("package", pkgName.array^);
+      w.AttrStr("package", pkgName);
       w.EndTag();  (* pkgName *)
     END WriteInstalledPkg;
 
@@ -1268,7 +1280,7 @@ PROCEDURE WriteRepository*(rep: Repository; targetDir: ARRAY OF CHAR;
       
       w.StartTag("repository", FALSE);
       FOR i := 0 TO rep.installedPkgs.size-1 DO
-        WriteInstalledPkg(w, rep.installedPkgs.array[i](String.String));
+        WriteInstalledPkg(w, rep.installedPkgs.array[i](Object.String8));
       END;
       WriteKeyValue(w, "options", rep.options);
       WriteKeyValue(w, "pragmas", rep.pragmas);
@@ -1290,13 +1302,16 @@ PROCEDURE WriteRepository*(rep: Repository; targetDir: ARRAY OF CHAR;
 
 PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: ARRAY OF CHAR;
                             VAR cmd: ARRAY OF CHAR);
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     COPY(uninstall, cmd);
     Strings.Append(" ", cmd);
     Strings.Append(targetDir, cmd);
     Strings.Append(pkgInfoSubdir, cmd);
     Strings.Append("/", cmd);
-    Strings.Append(pkg.name.array^, cmd);
+    chars := pkg.name.CharsLatin1();
+    Strings.Append(chars^, cmd);
     Strings.Append(".xml", cmd);
   END RemovePkgInfoCmd;
 
@@ -1381,7 +1396,7 @@ PROCEDURE UpdateRepository*(targetDir: ARRAY OF CHAR): BOOLEAN;
   END UpdateRepository;
 
 BEGIN
-  stringType := String.New("string");
+  stringType := Object.NewLatin1("string");
   NEW (packageContext);
   Msg.InitContext (packageContext, "OOC:Package");
 END OOC:Package.

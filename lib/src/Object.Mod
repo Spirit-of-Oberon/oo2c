@@ -34,6 +34,8 @@ TYPE
      [Note: If we introduce a 32-bit character type, then it may make sense to
      change the base type.]  *)
   String* = POINTER TO StringDesc;
+  StringArray* = ARRAY OF String;
+  StringArrayPtr* = POINTER TO StringArray;
   StringDesc = RECORD [ABSTRACT]
   (**A string holds a sequence of @otype{Char}.  A @otype{String} can hold any
      Oberon-2 string, but the reverse is not true, even if the character range
@@ -91,14 +93,14 @@ CONST
 VAR
   emptyString-: String;
   
-PROCEDURE (x: Object) ToStringN*(): String;
+PROCEDURE (x: Object) ToString*(): String;
 (**Returns a string representation of the object.  Typically, the string is
    some form of ``natural'' representation of the value.  For complex objects,
    it should describe the type and essential attributes of the object.  The
    exact format of the returned value is intentionally left vague.  *)
   BEGIN
     RETURN NIL;  (* ... FIXME *)
-  END ToStringN;
+  END ToString;
 
 PROCEDURE (x: Object) Equals*(y: Object): BOOLEAN;
 (**Indicates whether some other object is "equal to" this one.
@@ -437,6 +439,11 @@ PROCEDURE (s: String32) CharsUTF32*(): CharsUTF32;
   BEGIN
     RETURN s.data;
   END CharsUTF32;
+
+PROCEDURE (s: String) ToString*(): String;
+  BEGIN
+    RETURN s;
+  END ToString;
 
 PROCEDURE (s: String) [ABSTRACT] Equals*(y: Object): BOOLEAN;
   END Equals;

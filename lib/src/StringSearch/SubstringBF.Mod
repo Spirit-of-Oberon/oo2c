@@ -20,7 +20,7 @@ MODULE StringSearch:SubstringBF [OOC_EXTENSIONS];
 
 
 IMPORT
-  StringSearch, ADT:String;
+  Object, StringSearch;
 
 CONST
   ignoreCase* = StringSearch.ignoreCase;
@@ -56,7 +56,7 @@ VAR
 
 
 PROCEDURE InitMatchObject* (m: MatchObject; pos, endpos: LONGINT;
-                            matcher: Matcher; string: String.String;
+                            matcher: Matcher; string: Object.String8;
                             start, end: LONGINT);
   BEGIN
     StringSearch.InitMatchObject (m, pos, endpos, matcher, string);
@@ -65,7 +65,7 @@ PROCEDURE InitMatchObject* (m: MatchObject; pos, endpos: LONGINT;
   END InitMatchObject;
 
 PROCEDURE NewMatchObject (pos, endpos: LONGINT;
-                          matcher: Matcher; string: String.String;
+                          matcher: Matcher; string: Object.String8;
                           start, end: LONGINT): MatchObject;
   VAR
     m: MatchObject;
@@ -89,12 +89,12 @@ PROCEDURE (m: MatchObject) End* (group: LONGINT): LONGINT;
 
 
 
-PROCEDURE InitMatcher* (matcher: Matcher; pattern: String.String; flags: StringSearch.Flags; groups: LONGINT);
+PROCEDURE InitMatcher* (matcher: Matcher; pattern: Object.String8; flags: StringSearch.Flags; groups: LONGINT);
   BEGIN
     StringSearch.InitMatcher (matcher, pattern, flags, groups)
   END InitMatcher;
 
-PROCEDURE NewMatcher (pattern: String.String; flags: StringSearch.Flags; groups: LONGINT): Matcher;
+PROCEDURE NewMatcher (pattern: Object.String8; flags: StringSearch.Flags; groups: LONGINT): Matcher;
   VAR
     matcher: Matcher;
   BEGIN
@@ -105,20 +105,22 @@ PROCEDURE NewMatcher (pattern: String.String; flags: StringSearch.Flags; groups:
 
 PROCEDURE Match (matcher: Matcher;
                  string[NO_COPY]: ARRAY OF CHAR; len: LONGINT;
-                 pos, endpos: LONGINT; s: String.String): MatchObject;
+                 pos, endpos: LONGINT; s: Object.String8): MatchObject;
   VAR
     ppos, spos: LONGINT;
+    array: Object.CharsLatin1;
   BEGIN
     spos := pos;
     ppos := 0;
+    array := matcher.pattern.CharsLatin1();
     IF (ignoreCase IN matcher. flags) THEN
       WHILE (ppos # matcher. pattern. length) & (spos # endpos) &
-            (CAP(string[spos]) = CAP(matcher. pattern. array[ppos])) DO
+            (CAP(string[spos]) = CAP(array[ppos])) DO
         INC (spos); INC (ppos)
       END
     ELSE
       WHILE (ppos # matcher. pattern. length) & (spos # endpos) &
-            (string[spos] = matcher. pattern. array[ppos]) DO
+            (string[spos] = array[ppos]) DO
         INC (spos); INC (ppos)
       END
     END;
@@ -131,7 +133,7 @@ PROCEDURE Match (matcher: Matcher;
             INC (len)
           END
         END;
-        s := String.NewRegion (string, 0, len)
+        s := Object.NewLatin1Region (string, 0, len)
       END;
       RETURN NewMatchObject (pos, endpos, matcher, s, pos, spos)
     ELSE
@@ -149,26 +151,31 @@ PROCEDURE (matcher: Matcher) MatchChars* (string[NO_COPY]: ARRAY OF CHAR; pos, e
     RETURN Match (matcher, string, -1, pos, endpos, NIL)
   END MatchChars;
 
-PROCEDURE (matcher: Matcher) Match* (string: String.String; pos, endpos: LONGINT): MatchObject;
+PROCEDURE (matcher: Matcher) Match* (string: Object.String8; pos, endpos: LONGINT): MatchObject;
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     IF (endpos = -1) THEN
       endpos := string. length
     END;
-    RETURN Match (matcher, string. array^, string. length, pos, endpos, string)
+    chars := string.CharsLatin1();
+    RETURN Match (matcher, chars^, string. length, pos, endpos, string)
   END Match;
 
 
 PROCEDURE Search (matcher: Matcher;
                   string[NO_COPY]: ARRAY OF CHAR; len: LONGINT;
-                  pos, endpos: LONGINT; s: String.String): MatchObject;
+                  pos, endpos: LONGINT; s: Object.String8): MatchObject;
   VAR
     ppos, spos: LONGINT;
+    array: Object.CharsLatin1;
   BEGIN
     spos := pos;
     ppos := 0;
+    array := matcher.pattern.CharsLatin1();
     IF (ignoreCase IN matcher. flags) THEN
       WHILE (ppos # matcher. pattern. length) & (spos # endpos) DO
-        IF (CAP (string[spos]) = CAP (matcher. pattern. array[ppos])) THEN
+        IF (CAP (string[spos]) = CAP (array[ppos])) THEN
           INC (spos); INC (ppos)
         ELSE (* difference found: reset indices and restart *)
           spos := spos-ppos+1; ppos := 0
@@ -176,7 +183,7 @@ PROCEDURE Search (matcher: Matcher;
       END
     ELSE
       WHILE (ppos # matcher. pattern. length) & (spos # endpos) DO
-        IF (string[spos] = matcher. pattern. array[ppos]) THEN
+        IF (string[spos] = array[ppos]) THEN
           INC (spos); INC (ppos)
         ELSE (* difference found: reset indices and restart *)
           spos := spos-ppos+1; ppos := 0
@@ -192,7 +199,7 @@ PROCEDURE Search (matcher: Matcher;
             INC (len)
           END
         END;
-        s := String.NewRegion (string, 0, len)
+        s := Object.NewLatin1Region (string, 0, len)
       END;
       RETURN NewMatchObject (pos, endpos, matcher, s,
                              spos-matcher. pattern. length, spos)
@@ -211,12 +218,15 @@ PROCEDURE (matcher: Matcher) SearchChars* (string[NO_COPY]: ARRAY OF CHAR; pos, 
     RETURN Search (matcher, string, -1, pos, endpos, NIL)
   END SearchChars;
 
-PROCEDURE (matcher: Matcher) Search* (string: String.String; pos, endpos: LONGINT): MatchObject;
+PROCEDURE (matcher: Matcher) Search* (string: Object.String8; pos, endpos: LONGINT): MatchObject;
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     IF (endpos = -1) THEN
       endpos := string. length
     END;
-    RETURN Search (matcher, string. array^, string. length, pos, endpos, string)
+    chars := string.CharsLatin1();
+    RETURN Search (matcher, chars^, string. length, pos, endpos, string)
   END Search;
 
 
@@ -234,7 +244,7 @@ PROCEDURE NewFactory (): Factory;
     RETURN f
   END NewFactory;
 
-PROCEDURE (f: Factory) Compile* (pattern: String.String;
+PROCEDURE (f: Factory) Compile* (pattern: Object.String8;
                                  flags: StringSearch.Flags): Matcher;
   BEGIN
     RETURN NewMatcher (pattern, flags, 0)

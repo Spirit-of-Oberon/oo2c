@@ -11,7 +11,7 @@ MODULE Object:Boxed;
 
 IMPORT
   SYSTEM, IntStr, RealStr, LRealStr, Strings,
-  Obj := Object, ADT:Storable, Str := ADT:String, ADT:StringBuffer;
+  Obj := Object, ADT:Storable, ADT:StringBuffer;
 
 TYPE
   Object* = POINTER TO ObjectDesc;
@@ -30,7 +30,7 @@ TYPE
 
 VAR
   true-, false-: Boolean;
-  trueString, falseString: Str.String;
+  trueString, falseString: Obj.String;
   
 TYPE
   LongReal* = POINTER TO LongRealDesc;
@@ -63,7 +63,7 @@ VAR
 (* Object
    ------------------------------------------------------------------------ *)
 
-PROCEDURE (v: Object) [ABSTRACT] ToString*(): Str.String;
+PROCEDURE (v: Object) [ABSTRACT] ToString*(): Obj.String;
   END ToString;
 
 PROCEDURE (v: Object) [ABSTRACT] Cmp*(y: Obj.Object): LONGINT;
@@ -112,7 +112,7 @@ PROCEDURE (v: Boolean) HashCode*(): Obj.Hash;
     END;
   END HashCode;
   
-PROCEDURE (v: Boolean) ToString*(): Str.String;
+PROCEDURE (v: Boolean) ToString*(): Obj.String;
   BEGIN
     IF v.value THEN
       RETURN trueString;
@@ -229,12 +229,12 @@ PROCEDURE (v: LongReal) HashCode*(): Obj.Hash;
     RETURN SYSTEM.VAL(Obj.Hash, hash);
   END HashCode;
 
-PROCEDURE (v: LongReal) ToString*(): Str.String;
+PROCEDURE (v: LongReal) ToString*(): Obj.String;
   VAR 
     str: ARRAY 128 OF CHAR;
   BEGIN
     LRealStr.RealToFloat(v.value, 17, str);
-    RETURN Str.New (str)
+    RETURN Obj.NewLatin1(str);
   END ToString;
 
 PROCEDURE (v: LongReal) ToLongReal*(): LONGREAL;
@@ -348,12 +348,12 @@ PROCEDURE SetToString(val: SET; VAR str: ARRAY OF CHAR);
     Strings.Append("}", str);
   END SetToString;
 
-PROCEDURE (v: Set) ToString*(): Str.String;
+PROCEDURE (v: Set) ToString*(): Obj.String;
   VAR
     str: ARRAY 32*4+3 OF CHAR;
   BEGIN
     SetToString(v.value, str);
-    RETURN Str.New(str);
+    RETURN Obj.NewLatin1(str);
   END ToString;
 
 PROCEDURE (v: Set) ToLInt*(): LONGINT;
@@ -402,7 +402,7 @@ PROCEDURE (v: String) HashCode*(): Obj.Hash;
     RETURN v. value. HashCode();
   END HashCode;
   
-PROCEDURE (v: String) ToString*(): Str.String;
+PROCEDURE (v: String) ToString*(): Obj.String;
   VAR
     i: LONGINT;
     delim: ARRAY 2 OF CHAR;
@@ -423,65 +423,13 @@ PROCEDURE (v: String) ToString*(): Str.String;
   END ToString;
 
 PROCEDURE (v: String) Store*(w: Storable.Writer);
-  VAR
-    value: Obj.String;
-    chars8: Obj.CharsLatin1;
-    chars32: Obj.CharsUTF32;
-    i: LONGINT;
   BEGIN
-    value := v.value;
-    WITH value: Obj.String8 DO
-      w.WriteNum(value.length);
-      chars8 := value.CharsLatin1();
-      w.WriteBytes(chars8^, 0, value.length);
-      
-    | value: Obj.String32 DO             (* FIXME... use UTF8 codec *)
-      w.WriteNum(-value.length-1);
-      chars32 := value.CharsUTF32();
-      FOR i := 0 TO value.length-1 DO
-        w.WriteNum(chars32[i]);
-      END;
-    END;
+    w.WriteStr(v.value);
   END Store;
 
 PROCEDURE (v: String) Load*(r: Storable.Reader);
-  CONST
-    sizeBuffer8 = 1024;
-    sizeBuffer32 = 512;
-  VAR
-    len: LONGINT;
-    buffer8: ARRAY sizeBuffer8 OF CHAR;
-    dynBuffer8: POINTER TO ARRAY OF CHAR;
-    buffer32: ARRAY sizeBuffer32 OF Obj.Char;
-    dynBuffer32: POINTER TO ARRAY OF Obj.Char;
-    i: LONGINT;
   BEGIN
-    r.ReadNum(len);
-    IF (len >= 0) THEN
-      IF (len < sizeBuffer8) THEN
-        r.ReadBytes(buffer8, 0, len);
-        v.value := Obj.NewLatin1Region(buffer8, 0, len);
-      ELSE
-        NEW(dynBuffer8, len);
-        r.ReadBytes(dynBuffer8^, 0, len);
-        v.value := Obj.NewLatin1Region(dynBuffer8^, 0, len);
-      END;
-      
-    ELSE  (* this is quite slow; FIXME... use the UTF8 codec instead *)
-      len := -len-1;
-      IF (len < sizeBuffer32) THEN
-        FOR i := 0 TO len-1 DO
-          r.ReadNum(buffer32[i]);
-        END;
-        v.value := Obj.NewUTF32Region(buffer32, 0, len);
-      ELSE
-        NEW(dynBuffer32, len);
-        FOR i := 0 TO len-1 DO
-          r.ReadNum(buffer32[i]);
-        END;
-        v.value := Obj.NewUTF32Region(dynBuffer32^, 0, len);
-      END;
-    END;
+    r.ReadStr(v.value);
   END Load;
 
 PROCEDURE ParseString*(str[NO_COPY]: ARRAY OF CHAR): String;
@@ -500,8 +448,8 @@ PROCEDURE ParseString*(str[NO_COPY]: ARRAY OF CHAR): String;
   END ParseString;
 
 BEGIN
-  true := NewBoolean(TRUE); trueString := Str.New("TRUE");
-  false := NewBoolean(FALSE); falseString := Str.New("FALSE");
+  true := NewBoolean(TRUE); trueString := Obj.NewLatin1("TRUE");
+  false := NewBoolean(FALSE); falseString := Obj.NewLatin1("FALSE");
   
   zeroLongReal := NewLongReal(0.0);
 

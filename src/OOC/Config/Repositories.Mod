@@ -22,7 +22,7 @@ MODULE OOC:Config:Repositories [OOC_EXTENSIONS];
 
 IMPORT
   Msg, Channel, Strings, TextRider, LongStrings,
-  ADT:String, URI, URI:Scheme:File, 
+  Object, URI, URI:Scheme:File, 
   XML:DTD, XML:Locator, Config:Parser, CS := Config:Section,
   OOC:Repository, OOC:Repository:FileSystem;
 
@@ -306,11 +306,11 @@ PROCEDURE (s: Section) GetResource* (package, path: ARRAY OF CHAR): URI.URI;
     RETURN uri
   END GetResource;
 
-PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
+PROCEDURE (s: Section) GetIncludePaths*(): Object.StringArrayPtr;
   VAR
     rep: Repository.Repository;
     c: LONGINT;
-    result: String.StringArrayPtr;
+    result: Object.StringArrayPtr;
     str, subdir: Repository.URIBuffer;
     
   PROCEDURE Select (rep: Repository.Repository): BOOLEAN;
@@ -335,7 +335,7 @@ PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
         rep. GetDefaultSubdir(Repository.modHeaderFileC, subdir);
         Strings.Append(subdir, str);
         
-        result[c] := String.New (str);
+        result[c] := Object.NewLatin1(str);
         INC (c);
       END;
       rep := rep. baseRep

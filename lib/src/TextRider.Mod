@@ -24,7 +24,7 @@ MODULE TextRider [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, Channel, CharClass, Strings, LRealStr, RealStr, IntStr, 
-  LRealConv, ConvTypes, Msg;
+  LRealConv, ConvTypes, Msg, Object;
 
 CONST
   done* = Channel.done;
@@ -1338,6 +1338,27 @@ PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
       END
     END
   END WriteString;
+
+PROCEDURE (w: Writer) WriteStr*(s: Object.String);
+  VAR
+    chars: Object.CharsLatin1;
+  BEGIN  (* FIXME... add codec to writer, and use it for output *)
+    IF (s = NIL) THEN
+      w.WriteString("<NIL>");
+    ELSIF (w. res = done) THEN
+      WITH s: Object.String8 DO
+        chars := s.CharsLatin1();
+        w. byteWriter. WriteBytes (chars^, 0, s.length);
+        w. res := w. byteWriter. res;
+        IF (noBuffering IN w.opt) & (w. res = done) THEN
+          w. base. Flush;
+          w. res := w. base. res
+        END
+      | s: Object.String32 DO
+        w.WriteString("[TextRider.WriteStr: String32 not implemented]");
+      END;
+    END
+  END WriteStr;
 
 PROCEDURE (w: Writer) WriteBool*(bool: BOOLEAN);
   BEGIN

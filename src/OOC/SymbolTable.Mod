@@ -21,8 +21,8 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Object:Boxed, Msg, Strings,
-  ADT:Storable, ADT:String, ADT:Dictionary, ADT:ArrayList,
+  Object, Object:Boxed, Msg, Strings,
+  ADT:Storable, ADT:Dictionary, ADT:ArrayList,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
 
@@ -322,16 +322,16 @@ TYPE
   LinkFileDesc = RECORD
     (LinkDirectiveDesc)
     file: URI.HierarchicalURI;
-    prefixOption, suffixOption: String.String;
+    prefixOption, suffixOption: Object.String8;
   END;
 
 TYPE
   LinkLib* = POINTER TO LinkLibDesc;
   LinkLibDesc = RECORD
     (LinkDirectiveDesc)
-    libraryName-: String.String;
-    dependencies-: String.StringArrayPtr;
-    prefixOption-, suffixOption-: String.String;
+    libraryName-: Object.String8;
+    dependencies-: Object.StringArrayPtr;
+    prefixOption-, suffixOption-: Object.String8;
   END;
 
 CONST
@@ -358,7 +358,7 @@ TYPE
     class-: ModuleClass;
     (**Identifies the class of the module.  It is one of @oconst{mcStandard},
        @oconst{mcInternal}, @oconst{mcForeign}, or @oconst{mcInterface}.  *)
-    libraryName-: String.String;
+    libraryName-: Object.String8;
     (**If the module is compiled to be part of a (static or shared) library,
        then this field holds the name of the target library.  For a module that
        is compiled to a standalone object file, @ofield{libraryName} is
@@ -613,7 +613,7 @@ TYPE
     formalPars*: FormalPars;             (*... make this read-only? *)
     (**The formal parameters of the procedure.  This is also the type of
        the procedure.  *)
-    linkName*: String.String;
+    linkName*: Object.String8;
     (**If the name of the procedure differs between the source code and the
        low-level binary representation, then this field holds the name of
        the procedure on the link level.  Otherwise, it is @code{NIL}.  *)
@@ -1186,14 +1186,23 @@ PROCEDURE (l: LinkFile) Store* (w: Storable.Writer);
   BEGIN
     l. Store^ (w);
     WriteURI (w, l. file);
-    w. WriteObject (l. prefixOption);
-    w. WriteObject (l. suffixOption);
+    w. WriteStr (l. prefixOption);
+    w. WriteStr (l. suffixOption);
   END Store;
 
-PROCEDURE (l: LinkFile) Load* (r: Storable.Reader);
+PROCEDURE ReadString8(r: Storable.Reader): Object.String8;
   VAR
-    obj: Storable.Object;
-    
+    str: Object.String;
+  BEGIN
+    r.ReadStr(str);
+    IF (str = NIL) THEN
+      RETURN NIL;
+    ELSE
+      RETURN str(Object.String8);
+    END;
+  END ReadString8;
+
+PROCEDURE (l: LinkFile) Load* (r: Storable.Reader);
   PROCEDURE ReadURI (r: Storable.Reader; VAR uri: URI.HierarchicalURI);
     VAR
       b: ARRAY 1024 OF CHAR;
@@ -1213,18 +1222,8 @@ PROCEDURE (l: LinkFile) Load* (r: Storable.Reader);
   BEGIN
     l. Load^ (r);
     ReadURI (r, l. file);
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      l. prefixOption := NIL
-    ELSE
-      l. prefixOption := obj(String.String)
-    END;
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      l. suffixOption := NIL
-    ELSE
-      l. suffixOption := obj(String.String)
-    END
+    l.prefixOption := ReadString8(r);
+    l.suffixOption := ReadString8(r);
   END Load;
 
 
@@ -1233,40 +1232,27 @@ PROCEDURE (l: LinkLib) Store* (w: Storable.Writer);
     i: LONGINT;
   BEGIN
     l. Store^ (w);
-    w. WriteObject (l. libraryName);
-    w. WriteObject (l. prefixOption);
-    w. WriteObject (l. suffixOption);
+    w. WriteStr (l. libraryName);
+    w. WriteStr (l. prefixOption);
+    w. WriteStr (l. suffixOption);
     w. WriteNum (LEN (l. dependencies^));
     FOR i := 0 TO LEN (l. dependencies^)-1 DO
-      w. WriteObject (l. dependencies[i]);
+      w. WriteStr (l. dependencies[i]);
     END;
   END Store;
 
 PROCEDURE (l: LinkLib) Load* (r: Storable.Reader);
   VAR
-    obj: Storable.Object;
     len, i: LONGINT;
   BEGIN
-    l. Load^ (r);
-    r. ReadObject (obj);
-    l. libraryName := obj(String.String);
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      l. prefixOption := NIL
-    ELSE
-      l. prefixOption := obj(String.String)
-    END;
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      l. suffixOption := NIL
-    ELSE
-      l. suffixOption := obj(String.String)
-    END;
+    l.Load^(r);
+    l.libraryName := ReadString8(r);
+    l.prefixOption := ReadString8(r);
+    l.suffixOption := ReadString8(r);
     r. ReadNum (len);
     NEW (l. dependencies, len);
     FOR i := 0 TO len-1 DO
-      r. ReadObject (obj);
-      l. dependencies[i] := obj(String.String);
+      l. dependencies[i] := ReadString8(r);
     END;
   END Load;
 
@@ -1291,7 +1277,7 @@ PROCEDURE (mod: Module) Store* (w: Storable.Writer);
     mod. Store^ (w);
     (* ignore field `ns' *)
     w. WriteSInt (mod. class);
-    w. WriteObject (mod.libraryName);
+    w. WriteStr (mod.libraryName);
     w. WriteSInt (mod. callConv);
     w. WriteObject (mod. linkDirectives)
   END Store;
@@ -1303,12 +1289,7 @@ PROCEDURE (mod: Module) Load* (r: Storable.Reader);
     mod. Load^ (r);
     mod. ns := NIL;
     r. ReadSInt (mod. class);
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      mod. libraryName := NIL;
-    ELSE
-      mod. libraryName := obj(String.String);
-    END;
+    mod.libraryName := ReadString8(r);
     r. ReadSInt (mod. callConv);
     r. ReadObject (obj);
     IF (obj = NIL) THEN
@@ -1326,34 +1307,34 @@ PROCEDURE (mod: Module) SetNamespace* (ns: Namespace);
     mod. ns := ns;
   END SetNamespace;
 
-PROCEDURE (mod: Module) SetLibraryName* (name: String.String);
+PROCEDURE (mod: Module) SetLibraryName* (name: Object.String8);
   BEGIN
     mod.libraryName := name;
   END SetLibraryName;
 
-PROCEDURE (mod: Module) ClassToString*(): String.String;
+PROCEDURE (mod: Module) ClassToString*(): Object.String8;
   BEGIN
     CASE mod. class OF
-    | mcStandard : RETURN String.New ("standard")
-    | mcInternal : RETURN String.New ("internal")
-    | mcForeign  : RETURN String.New ("foreign")
-    | mcInterface: RETURN String.New ("interface")
+    | mcStandard : RETURN Object.NewLatin1("standard")
+    | mcInternal : RETURN Object.NewLatin1("internal")
+    | mcForeign  : RETURN Object.NewLatin1("foreign")
+    | mcInterface: RETURN Object.NewLatin1("interface")
     END
   END ClassToString;
 
-PROCEDURE (mod: Module) CallConvToString*(): String.String;
+PROCEDURE (mod: Module) CallConvToString*(): Object.String8;
   BEGIN
     CASE mod. callConv OF
-    | callConvInvalid : RETURN String.New ("--invalid--")
-    | callConvDefault : RETURN String.New ("default")
-    | callConvInternal: RETURN String.New ("internal")
-    | callConvC       : RETURN String.New ("C")
-    | callConvPascal  : RETURN String.New ("Pascal")
+    | callConvInvalid : RETURN Object.NewLatin1("--invalid--")
+    | callConvDefault : RETURN Object.NewLatin1("default")
+    | callConvInternal: RETURN Object.NewLatin1("internal")
+    | callConvC       : RETURN Object.NewLatin1("C")
+    | callConvPascal  : RETURN Object.NewLatin1("Pascal")
     END
   END CallConvToString;
 
 PROCEDURE NewLinkFile (file: URI.HierarchicalURI;
-                       prefixOption, suffixOption: String.String): LinkFile;
+                       prefixOption, suffixOption: Object.String8): LinkFile;
   VAR
     l: LinkFile;
   BEGIN
@@ -1365,9 +1346,9 @@ PROCEDURE NewLinkFile (file: URI.HierarchicalURI;
     RETURN l
   END NewLinkFile;
 
-PROCEDURE NewLinkLib (libraryName: String.String;
-                      dependencies: String.StringArrayPtr;
-                      prefixOption, suffixOption: String.String): LinkLib;
+PROCEDURE NewLinkLib (libraryName: Object.String8;
+                      dependencies: Object.StringArrayPtr;
+                      prefixOption, suffixOption: Object.String8): LinkLib;
   VAR
     l: LinkLib;
   BEGIN
@@ -1391,16 +1372,16 @@ PROCEDURE AddLinkDirective (VAR list: LinkDirective; l: LinkDirective);
   END AddLinkDirective;
 
 PROCEDURE (mod: Module) AddLinkFile* (file: URI.HierarchicalURI;
-                                    prefixOption, suffixOption: String.String);
+                                    prefixOption, suffixOption: Object.String8);
   BEGIN
     ASSERT (file # NIL);
     AddLinkDirective (mod. linkDirectives,
                       NewLinkFile (file, prefixOption, suffixOption))
   END AddLinkFile;
 
-PROCEDURE (mod: Module) AddLinkLib* (libraryName: String.String;
-                                     dependencies: String.StringArrayPtr;
-                                     prefixOption, suffixOption: String.String);
+PROCEDURE (mod: Module) AddLinkLib* (libraryName: Object.String8;
+                                     dependencies: Object.StringArrayPtr;
+                                     prefixOption, suffixOption: Object.String8);
   BEGIN
     ASSERT (libraryName # NIL);
     AddLinkDirective (mod. linkDirectives,
@@ -1451,11 +1432,11 @@ PROCEDURE (mod: Module) GetExternalSource* (rootURI: URI.HierarchicalURI): URI.H
     END;
   END GetExternalSource;
 
-PROCEDURE StringToCallConv*(str: ARRAY OF CHAR): CallConv;
+PROCEDURE StringToCallConv*(str: Object.String): CallConv;
   BEGIN
-    IF (str = "C") THEN
+    IF str.Equals(Object.NewLatin1("C")) THEN
       RETURN callConvC
-    ELSIF (str = "Pascal") THEN
+    ELSIF str.Equals(Object.NewLatin1("Pascal")) THEN
       RETURN callConvPascal
     ELSE
       RETURN callConvInvalid
@@ -1776,7 +1757,7 @@ PROCEDURE (procDecl: ProcDecl) Store* (w: Storable.Writer);
     w. WriteBool (procDecl. isAbstract);
     w. WriteNum (procDecl. tbProcIndex);
     w. WriteObject (procDecl. formalPars);
-    w. WriteObject (procDecl. linkName);
+    w. WriteStr (procDecl. linkName);
     (* ignore field `ns' & `procAST' *)
   END Store;
 
@@ -1796,12 +1777,7 @@ PROCEDURE (procDecl: ProcDecl) Load* (r: Storable.Reader);
     ELSE
       procDecl. formalPars := obj(FormalPars)
     END;
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      procDecl. linkName := NIL
-    ELSE
-      procDecl. linkName := obj(String.String)
-    END;
+    procDecl.linkName := ReadString8(r);
     procDecl. procAST := NIL;
   END Load;
 
@@ -1811,7 +1787,7 @@ PROCEDURE (procDecl: ProcDecl) SetNamespace* (ns: Namespace);
     procDecl. ns := ns;
   END SetNamespace;
 
-PROCEDURE (procDecl: ProcDecl) SetLinkName* (name: String.String);
+PROCEDURE (procDecl: ProcDecl) SetLinkName* (name: Object.String8);
   BEGIN
     procDecl. linkName := name;
   END SetLinkName;

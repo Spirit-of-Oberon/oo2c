@@ -22,7 +22,7 @@ MODULE OOC:IA32:Writer [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, Channel, Files, IntStr, Msg, Strings, TextRider,
-  Object, Object:Boxed, ADT:String, ADT:Dictionary;
+  Object, Object:Boxed, ADT:Dictionary;
 
 TYPE
   Writer* = POINTER TO WriterDesc;
@@ -65,9 +65,14 @@ PROCEDURE (w: Writer) Write* (str: ARRAY OF CHAR);
     w. textWriter. WriteString (str);
   END Write;
 
-PROCEDURE (w: Writer) Label* (label: ARRAY OF CHAR);
+PROCEDURE (w: Writer) WriteStr* (str: Object.String);
   BEGIN
-    w. textWriter. WriteString (label);
+    w. textWriter. WriteStr (str);
+  END WriteStr;
+
+PROCEDURE (w: Writer) Label* (label: Object.String);
+  BEGIN
+    w. textWriter. WriteStr (label);
     w. textWriter. WriteChar (":");
     w. textWriter. WriteLn;
   END Label;
@@ -101,20 +106,20 @@ PROCEDURE (w: Writer) StringLiteral* (str: ARRAY OF CHAR);
     w. textWriter. WriteLn;
   END StringLiteral;
 
-PROCEDURE (w: Writer) GetStringLabel* (value: Boxed.String): String.String;
+PROCEDURE (w: Writer) GetStringLabel* (value: Boxed.String): Object.String8;
   VAR
     obj: Object.Object;
-    s: String.String;
+    s: Object.String8;
     label: ARRAY 32 OF CHAR;
   BEGIN
     IF w. stringData. HasKey (value) THEN
       obj := w. stringData. Get (value);
-      RETURN obj(String.String);
+      RETURN obj(Object.String8);
     ELSE
       IntStr.IntToStr (w. stringDataCount, label);
       INC (w. stringDataCount);
       Strings.Insert (".LC", 0, label);
-      s := String.New (label);
+      s := Object.NewLatin1(label);
       w. stringData. Set (value, s);
       RETURN s;
     END;
@@ -154,7 +159,7 @@ PROCEDURE (w: Writer) WriteStringData* ();
     strings := w. stringData. Keys();
     FOR i := 0 TO LEN (strings^)-1 DO
       label := w. stringData. Get (strings[i]);
-      w. Label (label(String.String). array^);
+      w. Label (label(Object.String8));
       chars := strings[i](Boxed.String).value(Object.String8).CharsLatin1();
       w. StringLiteral (chars^);
     END;

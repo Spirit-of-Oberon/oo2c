@@ -20,7 +20,7 @@ MODULE StringSearch:NoMatch [OOC_EXTENSIONS];
 
 
 IMPORT
-  StringSearch, ADT:String;
+  Object, StringSearch;
 
 TYPE
   Factory* = POINTER TO FactoryDesc;
@@ -41,12 +41,12 @@ VAR
   matcher-: Matcher;
 
 
-PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSearch.Flags; groups: LONGINT);
+PROCEDURE InitMatcher (matcher: Matcher; pattern: Object.String8; flags: StringSearch.Flags; groups: LONGINT);
   BEGIN
     StringSearch.InitMatcher (matcher, pattern, flags, groups)
   END InitMatcher;
 
-PROCEDURE NewMatcher (pattern: String.String; flags: StringSearch.Flags; groups: LONGINT): Matcher;
+PROCEDURE NewMatcher (pattern: Object.String8; flags: StringSearch.Flags; groups: LONGINT): Matcher;
   VAR
     matcher: Matcher;
   BEGIN
@@ -60,7 +60,7 @@ PROCEDURE (matcher: Matcher) MatchChars* (string[NO_COPY]: ARRAY OF CHAR; pos, e
     RETURN NIL;
   END MatchChars;
 
-PROCEDURE (matcher: Matcher) Match* (string: String.String; pos, endpos: LONGINT): StringSearch.MatchObject;
+PROCEDURE (matcher: Matcher) Match* (string: Object.String8; pos, endpos: LONGINT): StringSearch.MatchObject;
   BEGIN
     RETURN NIL;
   END Match;
@@ -71,7 +71,7 @@ PROCEDURE (matcher: Matcher) SearchChars* (string[NO_COPY]: ARRAY OF CHAR; pos, 
     RETURN NIL;
   END SearchChars;
 
-PROCEDURE (matcher: Matcher) Search* (string: String.String; pos, endpos: LONGINT): StringSearch.MatchObject;
+PROCEDURE (matcher: Matcher) Search* (string: Object.String8; pos, endpos: LONGINT): StringSearch.MatchObject;
   BEGIN
     RETURN NIL;
   END Search;
@@ -91,7 +91,7 @@ PROCEDURE NewFactory (): Factory;
     RETURN f
   END NewFactory;
 
-PROCEDURE (f: Factory) Compile* (pattern: String.String;
+PROCEDURE (f: Factory) Compile* (pattern: Object.String8;
                                  flags: StringSearch.Flags): Matcher;
   BEGIN
     RETURN matcher
@@ -99,5 +99,5 @@ PROCEDURE (f: Factory) Compile* (pattern: String.String;
 
 BEGIN
   factory := NewFactory();
-  matcher := NewMatcher(String.New(""), {}, 0);
+  matcher := NewMatcher(Object.NewLatin1(""), {}, 0);
 END StringSearch:NoMatch.

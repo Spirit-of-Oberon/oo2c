@@ -24,7 +24,7 @@ IMPORT
   <*IF COMPILER_MAJOR>=2 THEN*>RT0,<*END*>
   Channel, Files, Msg, Out, StdChannels, Strings, Time,
 
-  Object, ADT:ArrayList, ADT:Dictionary, ADT:String, StringSearch,
+  Object, ADT:ArrayList, ADT:Dictionary, StringSearch,
   StringSearch:NoMatch, OS:Path,
   OSFiles := OS:Files, OS:ProcessManagement, URI, URI:Scheme:File,
 
@@ -57,9 +57,9 @@ TYPE
   Rules* = POINTER TO RulesDesc;
   RulesDesc* = RECORD
     backend: LONGINT;
-    libraryName: String.String;
+    libraryName: Object.String8;
     (**If set, then all modules are compiled for this library.  *)
-    libraryVersion: String.String;
+    libraryVersion: Object.String8;
     (**When building a library, then version used in the final link step
        is taken from this field.  *)
     checkAllImportsModule: Rep.Module;
@@ -164,17 +164,12 @@ PROCEDURE (r: Rules) SetBackend* (backend: LONGINT);
     r.backend := backend;
   END SetBackend;
 
-PROCEDURE (r: Rules) SetLibraryName* (name, version: ARRAY OF CHAR);
+PROCEDURE (r: Rules) SetLibraryName* (name, version: Object.String8);
 (**Calling this method with empty string as @oparam{name} clears all
    library specific data from @oparam{r}.  *)
   BEGIN
-    IF (name = "") THEN
-      r.libraryName := NIL;
-      r.libraryVersion := NIL;
-    ELSE
-      r.libraryName := String.New(name);
-      r.libraryVersion := String.New(version);
-    END;
+    r.libraryName := name;
+    r.libraryVersion := version;
   END SetLibraryName;
 
 PROCEDURE (r: Rules) SetAllImportsModule*(module: Rep.Module);
@@ -451,9 +446,9 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
     success: BOOLEAN;
     mInfo: ModuleInfo;
     errList: Error.List;
-    libraryName: String.String;
+    libraryName: Object.String8;
     
-  PROCEDURE DoEmptyBackend(libraryName: String.String): Error.List;
+  PROCEDURE DoEmptyBackend(libraryName: Object.String8): Error.List;
     VAR
       ast: AST.Node;
       symTab: Sym.Module;
@@ -465,7 +460,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       RETURN errList;
     END DoEmptyBackend;
   
-  PROCEDURE DoSSAtoC(libraryName: String.String): Error.List;
+  PROCEDURE DoSSAtoC(libraryName: Object.String8): Error.List;
     VAR
       t: TranslateToC.Translator;
     BEGIN
@@ -473,7 +468,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
     END DoSSAtoC;
   
-  PROCEDURE DoIRtoC(libraryName: String.String): Error.List;
+  PROCEDURE DoIRtoC(libraryName: Object.String8): Error.List;
     VAR
       t: TranslateToC.Translator;
     BEGIN
@@ -481,7 +476,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
     END DoIRtoC;
   
-  PROCEDURE DoSSAtoIA32(libraryName: String.String): Error.List;
+  PROCEDURE DoSSAtoIA32(libraryName: Object.String8): Error.List;
     VAR
       t: TranslateToIA32.Translator;
     BEGIN
@@ -544,6 +539,7 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
     isUpToDate: BOOLEAN;
     errList: Error.List;
     err: Error.Msg;
+    chars: Object.CharsLatin1;
   BEGIN
     IF (module.ifQuality = Rep.completeInterface) THEN
       (* we have the results cached *)
@@ -566,8 +562,8 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
              the same repository; assume that this is not intended and
              report a fatal error *)
           err := Error.New (makeContext, partOfAnotherLibrary);
-          err. SetStringAttrib ("name", Msg.GetStringPtr
-                                (module.ifData.libraryName.array^));
+          chars := module.ifData.libraryName.CharsLatin1();
+          err. SetStringAttrib ("name", Msg.GetStringPtr(chars^));
           r.WriteError(module, err);
           RETURN FALSE;
         END;
@@ -1054,7 +1050,7 @@ PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
     RETURN success;
   END UpdateMainObjectFile;
 
-PROCEDURE ModuleClosure*(module: Rep.Module; restrictToLibrary: String.String): ModuleList;
+PROCEDURE ModuleClosure*(module: Rep.Module; restrictToLibrary: Object.String8): ModuleList;
   VAR
     i: LONGINT;
     dict: Dictionary.Dictionary;

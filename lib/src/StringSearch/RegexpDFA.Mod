@@ -24,8 +24,8 @@ IMPORT
   <*IF DEBUG THEN*>
   Out, ADT:Storable, ADT:Dictionary:IntValue,
   <*END*>
-  Ascii, StringSearch, StringSearch:SubstringBM,
-  Regexp := StringSearch:RegexpParser, ADT:String;
+  Ascii, Object, StringSearch, StringSearch:SubstringBM,
+  Regexp := StringSearch:RegexpParser;
 
 
 (**This module implements a DFA based regular expression pattern matcher.  In
@@ -356,7 +356,7 @@ PROCEDURE BuildDFA (regexp: Regexp.Group): Node;
 
 
 PROCEDURE InitMatchObject (m: MatchObject; pos, endpos: LONGINT;
-                           matcher: Matcher; string: String.String;
+                           matcher: Matcher; string: Object.String8;
                            start, end: LONGINT);
   BEGIN
     StringSearch.InitMatchObject (m, pos, endpos, matcher, string);
@@ -365,7 +365,7 @@ PROCEDURE InitMatchObject (m: MatchObject; pos, endpos: LONGINT;
   END InitMatchObject;
 
 PROCEDURE NewMatchObject (pos, endpos: LONGINT;
-                          matcher: Matcher; string: String.String;
+                          matcher: Matcher; string: Object.String8;
                           start, end: LONGINT): MatchObject;
   VAR
     m: MatchObject;
@@ -388,7 +388,7 @@ PROCEDURE (m: MatchObject) End* (group: LONGINT): LONGINT;
   END End;
 
 
-PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSearch.Flags; groups: LONGINT; initialState: Node);
+PROCEDURE InitMatcher (matcher: Matcher; pattern: Object.String8; flags: StringSearch.Flags; groups: LONGINT; initialState: Node);
   CONST
     maxPrefixLength = 1024;
   VAR
@@ -396,7 +396,7 @@ PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSe
     type: SHORTINT;
     ptr: Node;
     str: ARRAY maxPrefixLength OF CHAR;
-    prefixPattern: String.String;
+    prefixPattern: Object.String8;
   BEGIN
     StringSearch.InitMatcher (matcher, pattern, flags, groups);
     matcher. initialState := initialState;
@@ -419,7 +419,7 @@ PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSe
         FOR i := 0 TO prefixLength-1 DO
           str[i] := ptr. ch; ptr := ptr. suc
         END;
-        prefixPattern := String.NewRegion (str, 0, prefixLength);
+        prefixPattern := Object.NewLatin1Region (str, 0, prefixLength);
         IF (type = matchChar) THEN
           flags := {}
         ELSE
@@ -431,7 +431,7 @@ PROCEDURE InitMatcher (matcher: Matcher; pattern: String.String; flags: StringSe
     END;
   END InitMatcher;
 
-PROCEDURE NewMatcher (pattern: String.String; flags: StringSearch.Flags; groups: LONGINT; initialState: Node): Matcher;
+PROCEDURE NewMatcher (pattern: Object.String8; flags: StringSearch.Flags; groups: LONGINT; initialState: Node): Matcher;
   VAR
     matcher: Matcher;
   BEGIN
@@ -443,7 +443,7 @@ PROCEDURE NewMatcher (pattern: String.String; flags: StringSearch.Flags; groups:
 PROCEDURE Match (matcher: Matcher;
                  string[NO_COPY]: ARRAY OF CHAR; len: LONGINT;
                  startpos, pos, endpos: LONGINT;
-                 s: String.String): MatchObject;
+                 s: Object.String8): MatchObject;
   TYPE
     DequeEntry = POINTER TO DequeEntryDesc;
     DequeEntryDesc = RECORD
@@ -627,7 +627,7 @@ PROCEDURE Match (matcher: Matcher;
             INC (len)
           END
         END;
-        s := String.NewRegion (string, 0, len)
+        s := Object.NewLatin1Region (string, 0, len)
       END;
       RETURN NewMatchObject (startpos, endpos, matcher, s, pos, endOfMatch)
     ELSE
@@ -645,17 +645,20 @@ PROCEDURE (matcher: Matcher) MatchChars* (string[NO_COPY]: ARRAY OF CHAR; pos, e
     RETURN Match (matcher, string, -1, pos, pos, endpos, NIL)
   END MatchChars;
 
-PROCEDURE (matcher: Matcher) Match* (string: String.String; pos, endpos: LONGINT): MatchObject;
+PROCEDURE (matcher: Matcher) Match* (string: Object.String8; pos, endpos: LONGINT): MatchObject;
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     IF (endpos = -1) THEN
       endpos := string. length
     END;
-    RETURN Match (matcher, string. array^, string. length, pos, pos, endpos, string)
+    chars := string.CharsLatin1();
+    RETURN Match (matcher, chars^, string. length, pos, pos, endpos, string)
   END Match;
 
 PROCEDURE Search (matcher: Matcher;
                   string[NO_COPY]: ARRAY OF CHAR; len: LONGINT;
-                  pos, endpos: LONGINT; s: String.String): MatchObject;
+                  pos, endpos: LONGINT; s: Object.String8): MatchObject;
   VAR
     m: MatchObject;
     startpos, startPrefix: LONGINT;
@@ -699,12 +702,15 @@ PROCEDURE (matcher: Matcher) SearchChars* (string[NO_COPY]: ARRAY OF CHAR; pos, 
     RETURN Search (matcher, string, -1, pos, endpos, NIL)
   END SearchChars;
 
-PROCEDURE (matcher: Matcher) Search* (string: String.String; pos, endpos: LONGINT): MatchObject;
+PROCEDURE (matcher: Matcher) Search* (string: Object.String8; pos, endpos: LONGINT): MatchObject;
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     IF (endpos = -1) THEN
       endpos := string. length
     END;
-    RETURN Search (matcher, string. array^, string. length, pos, endpos, string)
+    chars := string.CharsLatin1();
+    RETURN Search (matcher, chars^, string. length, pos, endpos, string)
   END Search;
 
 
@@ -839,7 +845,7 @@ PROCEDURE Test (pattern: ARRAY OF CHAR);
     matcher: StringSearch.Matcher;
   BEGIN
     Out.Ln; Out.String ("pattern="); Out.String (pattern); Out.Ln;
-    matcher := factory. Compile (String.New (pattern), {});
+    matcher := factory. Compile (Object.NewLatin1 (pattern), {});
     IF (matcher = NIL) THEN
       Out.String ("ERROR"); Out.Ln;
     ELSE
@@ -922,7 +928,7 @@ PROCEDURE RunTests*;
 <*END*>
 
 
-PROCEDURE (f: Factory) Compile* (pattern: String.String;
+PROCEDURE (f: Factory) Compile* (pattern: Object.String8;
                                  flags: StringSearch.Flags): Matcher;
   VAR
     initialState: Node;

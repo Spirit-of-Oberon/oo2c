@@ -1,7 +1,7 @@
 MODULE OOC:C:IRtoC;
 
 IMPORT
-  Log, Object:Boxed, ADT:String,
+  Log, Object, Object:Boxed, 
   OOC:IR,  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:DeclWriter, OOC:C:Naming, OOC:Make:TranslateToC;
 
@@ -18,12 +18,12 @@ PROCEDURE Call (w : DeclWriter.Writer; statm: IR.Call);
   VAR
     i: LONGINT;
     design: IR.Expression;
-    name: String.String;
+    name: Object.String;
   BEGIN
     design := statm. design;
     WITH design: IR.ProcedureRef DO
       name := Naming.NameOfDeclaration (design. decl);
-      w. WriteString (name. array^)
+      w. WriteStr (name)
     END;
     w. WriteString ("(");
     FOR i := 0 TO LEN (statm. arguments^)-1 DO
@@ -41,7 +41,7 @@ PROCEDURE Call (w : DeclWriter.Writer; statm: IR.Call);
 PROCEDURE WriteExpr (w: DeclWriter.Writer;
                      expr: IR.Expression);
   VAR
-    name: String.String;
+    name: Object.String;
 
   PROCEDURE SetRange(expr : IR.SetRange);
     
@@ -71,7 +71,7 @@ PROCEDURE WriteExpr (w: DeclWriter.Writer;
           
     | expr: IR.Var DO
       name := Naming.NameOfDeclaration (expr. decl);
-      w. WriteString (name. array^);
+      w. WriteStr (name);
       
     | expr: IR.Adr DO
       (* FIXME... this is a workaround to get addresses of string constants

@@ -30,7 +30,7 @@ MODULE OOC:IA32:WriteAssembler [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, IntStr, Log, Out, StdChannels, Strings, StringSearch, 
-  Object:Boxed, Object:BigInt, ADT:String,
+  Object, Object:Boxed, Object:BigInt, 
   Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,OOC:SymbolTable:Predef,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Schedule, 
   OOC:C:Naming, OOC:IA32:Writer, OOC:Make:TranslateToIA32,
@@ -58,11 +58,14 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
   PROCEDURE Value (opnd: SSA.Opnd; VAR str: ARRAY OF CHAR);
     VAR
       arg: SSA.Result;
-      s: String.String;
+      s: Object.String8;
+      chars: Object.CharsLatin1;
       
     PROCEDURE Const (value: Boxed.Object; type: Sym.Type);
       VAR
-        s: String.String;
+        s: Object.String8;
+        string: Object.String;
+        chars: Object.CharsLatin1;
       BEGIN
         IF (value = NIL) THEN
           COPY ("$0", str);
@@ -78,14 +81,16 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
               IntStr.IntToStr (value. value. CharAt(0), str);
             ELSE
               s := w. GetStringLabel (value);
-              s. GetChars (str);
+              chars := s.CharsLatin1();
+              COPY(chars^, str);
             END;
             Strings.Insert ("$", 0, str);
           | value: Boxed.LongReal DO
             ASSERT (FALSE);
           | value: BigInt.BigInt DO
-            s := value.ToString();
-            s. GetChars (str);
+            string := value.ToString();
+            chars := string(Object.String8).CharsLatin1();
+            COPY(chars^, str);
             Strings.Insert ("$", 0, str);
           | value: Boxed.Set DO
             ASSERT (FALSE);
@@ -100,7 +105,8 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
         
       | arg: SSA.Address DO
         s := Naming.NameOfDeclaration (arg. decl);
-        s. GetChars (str);
+        chars := s.CharsLatin1();
+        COPY(chars^, str);
 
       ELSE
         CASE arg. instr. opcode OF
@@ -223,7 +229,7 @@ PROCEDURE WriteBlocks (w: Writer.Writer; domRoot: Schedule.Block);
 PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
   VAR
     w: Writer.Writer;
-    name: String.String;
+    name: Object.String;
     lfe: ARRAY 32 OF CHAR;
     pb: SSA.ProcBlock;
     enter: SSA.Instr;
@@ -293,10 +299,10 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     INC (t. lfeCount);
     
     w. Instr (".align 4");
-    w. Write (".globl "); w. Write (name. array^); w. Newline;
-    w. Write (Ascii.ht+".type "); w. Write (name. array^);
+    w. Write (".globl "); w. WriteStr (name); w. Newline;
+    w. Write (Ascii.ht+".type "); w. WriteStr (name);
     w. Write (",@function"); w. Newline;
-    w. Label (name. array^);
+    w. Label (name);
     w. Instr ("pushl %ebp");
     w. Instr ("movl %esp,%ebp");
     w. Instr ("pushl %ebx");             (* save register *)
@@ -306,9 +312,9 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     w. Instr ("pop %ebx");               (* restore register *)
     w. Instr ("leave");
     w. Instr ("ret");
-    w. Label (lfe);
-    w. Write (Ascii.ht+".size "); w. Write (name. array^); w. Write (",");
-    w. Write (lfe); w. Write ("-"); w. Write (name. array^); w. Newline;
+    w. Label (Object.NewLatin1(lfe));
+    w. Write (Ascii.ht+".size "); w. WriteStr (name); w. Write (",");
+    w. Write (lfe); w. Write ("-"); w. WriteStr (name); w. Newline;
   END WriteProcBody;
 
 

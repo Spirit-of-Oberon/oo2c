@@ -1,7 +1,7 @@
 MODULE H2O:Type;
 
 IMPORT
-  Obj := Object, ADT:String, ADT:StringBuffer, ADT:ArrayList,
+  Obj := Object, ADT:StringBuffer, ADT:ArrayList,
   H2O:Module;
 
 CONST 
@@ -42,13 +42,13 @@ CONST
     size* : LONGINT;
     base* : Type;
     link* : Object;
-    name* : String.String;
+    name* : Obj.String8;
     qualifiers* : SET;
     module* : Module.Module;
   END;
 
   ObjectDesc* = RECORD 
-    name* : String.String;
+    name* : Obj.String8;
     addr* : LONGINT;
     type* : Type;
     qualifiers* : SET;
@@ -118,10 +118,11 @@ BEGIN
   Visit(t);
 END Depend;
 
-PROCEDURE (t : Type) ToString* () : String.String;
+PROCEDURE (t : Type) ToString* () : Obj.String8;
 VAR
   b : StringBuffer.StringBuffer;
   o : Object;
+  str: Obj.String;
 BEGIN
   b := StringBuffer.New("");
   CASE t.class OF
@@ -163,10 +164,11 @@ BEGIN
   ELSE
     IF t.name # NIL THEN b.Append(t.name) ELSE b.AppendString("?TYPE?") END;
   END;
-  RETURN b.ToString();
+  str := b.ToString();
+  RETURN str(Obj.String8);
 END ToString;
 
-PROCEDURE FindObject* (s : Object; name : String.String; VAR result : Object) : BOOLEAN;
+PROCEDURE FindObject* (s : Object; name : Obj.String8; VAR result : Object) : BOOLEAN;
 BEGIN
   WHILE s # NIL DO
     IF name.Equals(s.name) THEN
@@ -191,7 +193,7 @@ BEGIN
   END;
 END AppendObject;
 
-PROCEDURE NewObject* (name : String.String; addr : LONGINT; type : Type) : Object;
+PROCEDURE NewObject* (name : Obj.String8; addr : LONGINT; type : Type) : Object;
 VAR o : Object;
 BEGIN
   NEW(o);
@@ -203,7 +205,7 @@ BEGIN
   RETURN o;
 END NewObject;
 
-PROCEDURE Bind* (VAR s : Object; name : String.String; addr : LONGINT; type : Type);
+PROCEDURE Bind* (VAR s : Object; name : Obj.String8; addr : LONGINT; type : Type);
 BEGIN
   AppendObject(s, NewObject(name, addr, type));
 END Bind;
@@ -227,7 +229,7 @@ PROCEDURE BaseType* (class : SHORTINT; size : LONGINT; name : ARRAY OF CHAR) : T
 VAR t : Type;
 BEGIN
   t := NewType(class, NIL, size, {});
-  t.name := String.New(name);
+  t.name := Obj.NewLatin1(name);
   RETURN t;
 END BaseType;
 

@@ -22,7 +22,7 @@ MODULE OOC:TestFramework:Testcases;
 
 
 IMPORT
-  Ch := Channel, LongStrings, Strings, ADT:String,
+  Ch := Channel, LongStrings, Strings, Object,
   URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
   XML:Basic:Parser, XML:Basic:DataType, XML:Writer,
   OOC:TestFramework:TestSetup;
@@ -65,7 +65,7 @@ TYPE
     file-: URI.URI;
     lang-: Element.String;
     output-: URI.URI;
-    moduleName: String.String;
+    moduleName: Object.String8;
   END;
 
 TYPE
@@ -310,7 +310,7 @@ PROCEDURE (test: Test) MissingChild* (): Element.String;
     RETURN NIL
   END MissingChild;
 
-PROCEDURE (test: Test) ModuleName* (): String.String;
+PROCEDURE (test: Test) ModuleName* (): Object.String8;
   VAR
     path: ARRAY 1024 OF CHAR;
     i: INTEGER;
@@ -334,7 +334,7 @@ PROCEDURE (test: Test) ModuleName* (): String.String;
       END;
       Strings.Delete (path, 0, i+1);
       
-      test. moduleName := String.New (path)
+      test. moduleName := Object.NewLatin1(path);
     END;
     RETURN test. moduleName
   END ModuleName;

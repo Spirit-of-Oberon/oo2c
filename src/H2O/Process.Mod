@@ -2,7 +2,7 @@ MODULE H2O:Process;
 
 IMPORT
   Err, Object,
-  ADT:String, ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList,
+  ADT:StringBuffer, ADT:Dictionary, ADT:LinkedList,
   H2O:Source, H2O:Error, H2O:Scanner, H2O:Module;
 
 CONST
@@ -34,13 +34,13 @@ TYPE
   ParamDesc = RECORD
     next : Param;			(* next parameter in linear list *)
     id : INTEGER;			(* parameter identifier *)
-    name : String.String;		(* parameter name *)
+    name : Object.String8;		(* parameter name *)
   END;
 
   Macro* = POINTER TO MacroDesc;
   MacroDesc* = RECORD (Object.ObjectDesc)
     module- : Module.Module;		(* module for macro definition *)
-    name- : String.String;		(* name of macro *)
+    name- : Object.String8;		(* name of macro *)
     nParams : INTEGER;			(* number of formal parameters *)
     params : Param;			(* list of parameter names *)
     body : LinkedList.LinkedList;	(* linked list of tokens *)
@@ -68,12 +68,12 @@ VAR
   p : Param;
   i : LinkedList.Iterator;
 BEGIN
-  Err.String("MACRO "); Err.String(m.name.array^);
+  Err.String("MACRO "); Err.Str(m.name);
   IF m.function THEN
     Err.String("(");
     p := m.params;
     WHILE p # NIL DO
-      Err.String(p.name.array^);
+      Err.Str(p.name);
       p := p.next;
       IF p # NIL THEN Err.Char(",") END;
     END;
@@ -87,11 +87,11 @@ BEGIN
     Err.String("  "); o(Scanner.Token).Write(Err.writer);
     Err.Ln;
   END;
-  Err.String("END "); Err.String(m.name.array^); Err.Ln;
+  Err.String("END "); Err.Str(m.name); Err.Ln;
   Err.Ln;
 END PrintMacro;
 
-PROCEDURE (p : Process) FindMacro(name : String.String; VAR result : Macro) : BOOLEAN;
+PROCEDURE (p : Process) FindMacro(name : Object.String8; VAR result : Macro) : BOOLEAN;
 VAR o : Object.Object;
 BEGIN
   IF p.macro.HasKey(name) THEN
@@ -103,7 +103,7 @@ BEGIN
   END;
 END FindMacro;
 
-PROCEDURE (p : Process) IsDefined*(name : String.String) : BOOLEAN;
+PROCEDURE (p : Process) IsDefined*(name : Object.String8) : BOOLEAN;
 BEGIN
   RETURN p.macro.HasKey(name);
 END IsDefined;
@@ -172,7 +172,7 @@ VAR
 
   BEGIN
     IF debugExpand IN moduleOptions THEN
-      Err.String("ExpandMacro("); Err.String(m.name.array^); Err.String(")");
+      Err.String("ExpandMacro("); Err.Str(m.name); Err.String(")");
     END;
     GetSym;
     params := NIL;
@@ -260,12 +260,15 @@ VAR
     PROCEDURE Include;
     VAR 
       search : BOOLEAN;
-      name : String.String;
+      name : Object.String8;
       buffer : StringBuffer.StringBuffer;
+      str: Object.String;
+      chars: Object.CharsLatin1;
     BEGIN
       GetSymP;
       IF token.sym = Scanner.string THEN
-        name := token.name.Extract(1, token.name.length-2); search := FALSE;
+        str := token.name.Substring(1, token.name.length-2);
+        name := str(Object.String8); search := FALSE;
       ELSIF token.sym = Scanner.lt THEN
         buffer := StringBuffer.New("");
         WHILE p.scanner.ch # ">" DO
@@ -274,13 +277,15 @@ VAR
         END;
         GetSymP;
         ASSERT(token.sym = Scanner.gt);
-        name := buffer.ToString(); search := TRUE;
+        str := buffer.ToString();
+        name := str(Object.String8); search := TRUE;
       ELSE
         p.err.Error("Invalid include specification"); RETURN;
       END;
       p.scanner.GetToken(token, {Scanner.optReturnEndLine,Scanner.optDontReadAhead});
-      IF token.sym = Scanner.endLine THEN 
-        p.scanner.in.Include(name.array^, search);
+      IF token.sym = Scanner.endLine THEN
+        chars := name.CharsLatin1();
+        p.scanner.in.Include(chars^, search);
         (* Re-read endLine symbol *)
         GetSymP; ASSERT(token.sym = Scanner.endLine);
         (* Now get next symbol from input *)
@@ -295,7 +300,7 @@ VAR
 
     PROCEDURE Define;
     VAR
-      name : String.String;
+      name : Object.String8;
       object : Object.Object;
       m : Macro;
       t : Scanner.Token;
@@ -321,7 +326,7 @@ VAR
         GetSymP;
       END AddParameter;
     
-      PROCEDURE FindParam(name : String.String; VAR result : Param) : BOOLEAN;
+      PROCEDURE FindParam(name : Object.String8; VAR result : Param) : BOOLEAN;
       VAR param : Param;
       BEGIN
         param := m.params;

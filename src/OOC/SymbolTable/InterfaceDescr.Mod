@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:InterfaceDescr;
 
 IMPORT
   Channel, Strings, Object,
-  ADT:String, ADT:Dictionary, ADT:ArrayList,
+  ADT:Dictionary, ADT:ArrayList,
   URI, XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Repository,  OOC:Config:Repositories,
   Sym := OOC:SymbolTable, OOC:SymbolTable:GetClass, 
@@ -173,7 +173,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       i: Sym.Item;
       element: ARRAY 32 OF CHAR;
       moduleRepository: Repository.Module;
-      str: String.String;
+      str: Object.String8;
     
     PROCEDURE StartDecl (tag: ARRAY OF CHAR; decl: Sym.Declaration);
       BEGIN
@@ -300,16 +300,16 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
           StartDecl ("module-interface", item);
           str := item. ClassToString();
           (*IF (str. array^ # "standard") THEN*)
-            w. AttrStringLatin1 ("class", str. array^);
+            w. AttrStr ("class", str);
           (*END;*)
           
           IF (item.libraryName # NIL) THEN
-            w. AttrStringLatin1("library-name", item.libraryName.array^);
+            w. AttrStr("library-name", item.libraryName);
           END;
           
           str := item. CallConvToString();
           (*IF (str. array^ # "default") THEN*)
-            w. AttrStringLatin1 ("call-conv", str. array^);
+            w. AttrStr ("call-conv", str);
           (*END;*)
           moduleRepository := repositories. GetModule (item. name. str^);
           

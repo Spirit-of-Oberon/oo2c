@@ -22,7 +22,7 @@ MODULE OOC:Repository:FileSystem;
 
 IMPORT
   Msg, Channel, Files, TextRider, Strings, Time, OSFiles := OS:Files, OS:Path,
-  URI, URIParser := URI:Parser, URIError := URI:Error,
+  Object, URI, URIParser := URI:Parser, URIError := URI:Error,
   FileURI := URI:Scheme:File,
   OOC:Logger, OOC:Error, OOC:Scanner:InputBuffer, Rep := OOC:Repository;
 
@@ -201,6 +201,7 @@ PROCEDURE (rep: Repository) GetLocalPath*(m: Rep.Module; fileId: Rep.FileId;
                                           VAR path: ARRAY OF CHAR);
   VAR
     subdir, suffix, str: Rep.URIBuffer;
+    chars: Object.CharsLatin1;
   BEGIN
     rep. GetDefaultSubdir (fileId, subdir);
     rep. GetDefaultSuffix (fileId, suffix);
@@ -215,7 +216,8 @@ PROCEDURE (rep: Repository) GetLocalPath*(m: Rep.Module; fileId: Rep.FileId;
     IF (fileId = Rep.modLibrary) THEN
       ASSERT(m.ifQuality = Rep.completeInterface);
       Strings.Append("lib", path);
-      COPY(m.ifData.libraryName.array^, str);
+      chars := m.ifData.libraryName.CharsLatin1();
+      COPY(chars^, str);
     ELSE
       ModuleToFileName (str);
     END;

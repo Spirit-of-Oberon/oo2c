@@ -1,13 +1,13 @@
 MODULE H2O:Module;
 
 IMPORT
-  Object, ADT:String, ADT:ArrayList, Err;
+  Object, ADT:ArrayList, Err;
 
 TYPE
   Module* = POINTER TO ModuleDesc;
   ModuleDesc* = RECORD (Object.ObjectDesc)
     imports- : ArrayList.ArrayList;
-    name- : String.String;
+    name- : Object.String8;
     next- : Module;
   END;
 
@@ -23,14 +23,14 @@ BEGIN
     mod := list.array[i](Module);
     IF (m # mod) & ~m.imports.Contains(mod) THEN
       m.imports.Append(mod);
-      Err.String("MODULE "); Err.String(m.name.array^);
-      Err.String(" IMPORTS "); Err.String(mod.name.array^);
+      Err.String("MODULE "); Err.Str(m.name);
+      Err.String(" IMPORTS "); Err.Str(mod.name);
       Err.Ln;
     END;
   END;
 END AddImports;
 
-PROCEDURE ModuleName* (fileName : ARRAY OF CHAR) : String.String;
+PROCEDURE ModuleName* (fileName : ARRAY OF CHAR) : Object.String8;
 (* Extract module name from file name. This is the portion of the file name
 between the last directory separator, and the first extension. Eg:
   "test.h"  -> "test"
@@ -55,10 +55,10 @@ BEGIN
   IF dot < 0 THEN 
     dot := pos			(* no dot between slash and end of string *)
   END;
-  RETURN String.NewRegion(fileName, slash, dot);
+  RETURN Object.NewLatin1Region(fileName, slash, dot);
 END ModuleName;
 
-PROCEDURE FindModule* (name : String.String) : Module;
+PROCEDURE FindModule* (name : Object.String8) : Module;
 VAR m : Module;
 BEGIN
   m := modules;
@@ -71,7 +71,7 @@ BEGIN
   RETURN NIL;
 END FindModule;
 
-PROCEDURE NewModule* (name : String.String) : Module;
+PROCEDURE NewModule* (name : Object.String8) : Module;
 VAR m : Module;
 BEGIN
   NEW(m);

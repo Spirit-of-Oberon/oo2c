@@ -25,7 +25,7 @@ MODULE Err;
    StdChannels.stderr per default (can be redirected by calling SetWriter) *)
    
 IMPORT
-  StdChannels, TextRider;
+  StdChannels, TextRider, Object;
 
 VAR
   writer-: TextRider.Writer;
@@ -71,6 +71,11 @@ PROCEDURE String* (s: ARRAY OF CHAR);
   BEGIN
     writer. WriteString (s)
   END String;
+  
+PROCEDURE Str* (s: Object.String);
+  BEGIN
+    writer. WriteStr (s)
+  END Str;
   
 PROCEDURE Bool* (bool: BOOLEAN);
   BEGIN

@@ -19,7 +19,7 @@ MODULE ADT:StringBuffer [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  S := SYSTEM, RT0, ADT:Storable, ADT:String, IntStr, RealStr,
+  S := SYSTEM, RT0, ADT:Storable, IntStr, RealStr,
   Object;
 
 TYPE
@@ -46,7 +46,7 @@ TYPE
     (Storable.ObjectDesc)
     length-: LONGINT;
     (**The length of the string.  *)
-    array-: String.CharArrayPtr;
+    array-: Object.CharsLatin1;
     (**The content of the string.  @samp{@ofield{array}[@ofield{length}]} is
        always @code{0X}.
 
@@ -82,7 +82,7 @@ PROCEDURE Extend (str: StringBuffer; len: LONGINT; copyOver: BOOLEAN);
    the current size of `str', then `str' is shrunk.  *)
   VAR
     newSize: LONGINT;
-    new: String.CharArrayPtr;
+    new: Object.CharsLatin1;
   BEGIN
     IF (len >= LEN (str. array^)) OR 
        ((LEN (str. array^) > minimumSize) &
@@ -320,12 +320,16 @@ PROCEDURE (str: StringBuffer) Replace* (source: StringBuffer; startPos: LONGINT)
     END
   END Replace;
  
-PROCEDURE (str: StringBuffer) Append* (source: String.String);
+PROCEDURE (str: StringBuffer) Append* (source: Object.String);
 (**Appends @oparam{source} to @oparam{str}. *)
-
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     Extend (str, str. length+source. length, TRUE);
-    source.GetCharsRegion(0, source.length, str.array^, str.length);
+    chars := source(Object.String8).CharsLatin1();
+    S.MOVE(S.ADR(chars^),
+           S.ADR(str.array[str.length]),
+           source.length*SIZE(CHAR));
     INC (str. length, source. length)
   END Append;
 
@@ -458,20 +462,20 @@ PROCEDURE (str : StringBuffer) AppendObject* (object : Object.Object);
 (**Append the string representation of an @otype{Object.Object} to the current
    string. This procedure uses @oproc{Storable.Object.ToString} to obtain a
    textual description of the object. If @oproc{Storable.Object.ToString} does
-   not return a @otype{String.String} (eg. the base method has not been
+   not return a @otype{Object.String} (eg. the base method has not been
    overridden), a canonical description will be generated using the type name
    and address.  *)
 VAR 
-  res : Storable.String;
+  res : Object.String;
   type : RT0.Struct;
   name: ARRAY 256 OF CHAR;
 BEGIN
   IF object = NIL THEN
     str.AppendString("NIL");
-  ELSIF (object IS Storable.Object) THEN
-    res := object(Storable.Object).ToString();
-    IF (res # NIL) & (res IS String.String) THEN
-      str.Append(res(String.String));
+  ELSE
+    res := object.ToString();
+    IF (res # NIL) THEN
+      str.Append(res(Object.String));
     ELSE
       type := RT0.TypeOf(object);
       str.AppendChar("[");
@@ -488,16 +492,22 @@ BEGIN
 <*END*>
       str.AppendChar("]");
     END
-  ELSE
-    str.AppendString("[some Object.Object]");
   END;
 END AppendObject;
  
-PROCEDURE (str : StringBuffer) ToString* () : String.String;
+PROCEDURE (str : StringBuffer) ToString* () : Object.String;
 (**Return an immutable @otype{StringBuffer} representing the current string. *)
 BEGIN
-  RETURN String.NewRegion(str.array^, 0, str.length);
+  RETURN Object.NewLatin1Region(str.array^, 0, str.length);
 END ToString;
+
+PROCEDURE (str : StringBuffer) ToString8* () : Object.String8;
+  VAR
+    s: Object.String;
+  BEGIN
+    s := str.ToString();
+    RETURN s(Object.String8);
+  END ToString8;
 
 PROCEDURE (str: StringBuffer) Load* (r: Storable.Reader);
   BEGIN

@@ -21,7 +21,7 @@ MODULE OOC:Make:TranslateToIA32 [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, Channel, Msg, StdChannels, ADT:String, ADT:Dictionary, 
+  Ascii, Channel, Msg, StdChannels, Object, ADT:Dictionary, 
   OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, Rep := OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
@@ -115,7 +115,7 @@ PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
     translator. SetWriter (w, symTab);
 
     w. Section (".text");
-    w. Label (".Ltext0");
+    w. Label (Object.NewLatin1(".Ltext0"));
     RuntimeData.Write (w, symTab);
                        
     w. Section (".text");
@@ -130,12 +130,12 @@ PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
 
     w. WriteStringData();
     
-    w. Label (".Letext");
+    w. Label (Object.NewLatin1(".Letext"));
     w. Directive (".ident"+Ascii.ht+'"OOC: 0.1"');
   END WriteCodeFile;
 
 
-PROCEDURE Run*(m: Rep.Module; libraryName: String.String;
+PROCEDURE Run*(m: Rep.Module; libraryName: Object.String8;
                writeAST, writeIR: BOOLEAN;
                translator: Translator): Error.List;
 (**Compiles a module, creating the symbol file and the assembler file.  *)

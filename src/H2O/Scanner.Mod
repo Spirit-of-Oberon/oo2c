@@ -24,7 +24,7 @@ MODULE H2O:Scanner [OOC_EXTENSIONS];
 
 IMPORT
   Err, CharClass, TextRider,
-  Object, ADT:String, ADT:StringBuffer,
+  Object, ADT:StringBuffer,
   H2O:Source, H2O:Error;
 
 CONST
@@ -111,7 +111,7 @@ CONST
 TYPE
   Token* = POINTER TO TokenDesc;
   TokenDesc* = RECORD (Object.ObjectDesc)
-    name- : String.String;
+    name- : Object.String8;
     sym- : INTEGER;
     len- : INTEGER;
     base- : INTEGER;
@@ -122,7 +122,7 @@ TYPE
   KeyWord* = POINTER TO KeyWordDesc;
   KeyWordDesc* = RECORD
     next : KeyWord;
-    name : String.String;
+    name : Object.String8;
     value : INTEGER;
   END;
 
@@ -168,7 +168,7 @@ PROCEDURE AddKeyWord* (VAR keywords : KeyWord; a : ARRAY OF CHAR; value : INTEGE
 VAR k : KeyWord;
 BEGIN
   NEW(k);
-  k.name := String.New(a);
+  k.name := Object.NewLatin1(a);
   k.value := value;
   k.next := keywords;
   keywords := k;
@@ -190,8 +190,11 @@ VAR
   END StartToken;
 
   PROCEDURE EndToken;
+    VAR
+      str: Object.String;
   BEGIN
-    token.name := s.buffer.ToString();
+    str := s.buffer.ToString();
+    token.name := str(Object.String8);
   END EndToken;
 
   PROCEDURE NextChar;
@@ -462,8 +465,9 @@ BEGIN
   RETURN new;
 END Copy;
 
-PROCEDURE (t : Token) ToString* () : String.String;
+PROCEDURE (t : Token) ToString* () : Object.String8;
 VAR b : StringBuffer.StringBuffer;
+  str: Object.String;
 BEGIN
   b := StringBuffer.New("TOKEN(");
   b.AppendLongInt(t.sym);
@@ -477,14 +481,15 @@ BEGIN
     b.AppendLongInt(t.value);
   END;
   b.AppendString(")");
-  RETURN b.ToString();
+  str := b.ToString();
+  RETURN str(Object.String8);
 END ToString;
 
 PROCEDURE (t : Token) Write* (wr : TextRider.Writer);
-VAR str : String.String;
+VAR str : Object.String8;
 BEGIN
   str := t.ToString();
-  wr.WriteString(str.array^);
+  wr.WriteStr(str);
 END Write;
 
 PROCEDURE (t : Token) Text* (wr : TextRider.Writer);
@@ -496,15 +501,15 @@ BEGIN
   | comment:
     IF t.value = 0 THEN
       wr.WriteString("/*");
-      wr.WriteString(t.name.array^);
+      wr.WriteStr(t.name);
       wr.WriteString("*/");
     ELSE
       wr.WriteString("//");
-      wr.WriteString(t.name.array^);
+      wr.WriteStr(t.name);
     END;
   ELSE
     IF t.name # NIL THEN
-      wr.WriteString(t.name.array^);
+      wr.WriteStr(t.name);
     ELSE
       t.Write(Err.writer); HALT(0);
     END;

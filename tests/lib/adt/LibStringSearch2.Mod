@@ -1,7 +1,7 @@
 MODULE LibStringSearch2;
 
 IMPORT
-  RT0, Out := Out0, RND := RandomNumbers, Time, ADT:String, StringSearch,
+  RT0, Out := Out0, RND := RandomNumbers, Time, Object, StringSearch,
   StringSearch:SubstringBF, StringSearch:SubstringBM, StringSearch:RegexpDFA;
 
 TYPE
@@ -34,7 +34,7 @@ PROCEDURE Compile (f: StringSearch.Factory;
       Out.String (", ignoreCase");
     END;
     Out.Ln;
-    matcher := f. Compile (String.New (pattern), flags);
+    matcher := f. Compile (Object.NewLatin1 (pattern), flags);
     IF (matcher = NIL) THEN
       Out.String ("### compile failed, aborting"); Out.Ln; HALT(1)
     END;
@@ -353,7 +353,7 @@ PROCEDURE Timing (f: StringSearch.Factory; size: LONGINT);
     start, end: Time.TimeStamp;
     t: Time.Interval;
   BEGIN
-    matcher := f. Compile (String.New ("this is some unlikely string"), {});
+    matcher := f. Compile (Object.NewLatin1 ("this is some unlikely string"), {});
     s := Random (654321, size);
     Out.String ("start search in random..."); Out.Ln;
     Time.GetTime (start);

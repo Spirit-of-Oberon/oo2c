@@ -22,7 +22,7 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 IMPORT
 Log,
   Object, Object:Boxed, Object:BigInt,
-  ADT:ArrayList, ADT:String, ADT:StringBuffer,
+  ADT:ArrayList, ADT:StringBuffer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
@@ -1112,12 +1112,13 @@ PROCEDURE AppendContext(buffer : StringBuffer.StringBuffer; item : Sym.Item);
      END;
   END AppendContext;
 
-PROCEDURE TypeName* (type : Sym.Type) : String.String;
+PROCEDURE TypeName* (type : Sym.Type) : Object.String8;
 (**Return a string describing type @oparam{type}. For named types, this will
    be of the form "module.@{proc.@}type". If there is no name the name of the
    type constructor is used (eg. RECORD, ARRAY). *)
 VAR
-  name : StringBuffer.StringBuffer;
+  name: StringBuffer.StringBuffer;
+  str: Object.String;
 BEGIN
   name := StringBuffer.New("");
   IF type.parent # NIL THEN
@@ -1142,15 +1143,16 @@ BEGIN
       name.AppendString("RECORD")
     END
   END;
-  RETURN name.ToString();
+  str := name.ToString();
+  RETURN str(Object.String8);
 END TypeName;
 
 <*PUSH; Warnings:=FALSE*>
 PROCEDURE LogTypeName(message : ARRAY OF CHAR; type : Sym.Type);
-VAR name : String.String;
+VAR name : Object.String;
 BEGIN
   name := TypeName(type);
-  Log.String(message, name.array^);
+  Log.Str(message, name);
 END LogTypeName;
 <*POP*>
 
@@ -1483,10 +1485,10 @@ PROCEDURE (const: Const) Accept* (v: Visitor);
     v. VisitConst (const)
   END Accept;
 
-PROCEDURE (const: Const) ToString*(): String.String;
+PROCEDURE (const: Const) ToString*(): Object.String;
   BEGIN
     IF (const. value = NIL) THEN
-      RETURN String.New ("NIL");
+      RETURN Object.NewLatin1("NIL");
     ELSE
       RETURN const. value. ToString();
     END;

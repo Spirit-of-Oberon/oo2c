@@ -25,8 +25,7 @@ MODULE Object:BigInt [OOC_EXTENSIONS];
    of course.  *)
    
 IMPORT
-  S := SYSTEM, CharClass, Strings, Object, Object:Boxed, ADT:Storable,
-  ADT:String;
+  S := SYSTEM, CharClass, Strings, Object, Object:Boxed, ADT:Storable;
   
 TYPE
   Digit = INTEGER;
@@ -652,7 +651,7 @@ PROCEDURE (v: BigInt) Mod* (w: BigInt): BigInt;
     RETURN mod;
   END Mod;
 
-PROCEDURE (a: BigInt) Format* (outputBase: Digit): String.String;
+PROCEDURE (a: BigInt) Format* (outputBase: Digit): Object.String8;
 (* Convert a long int object to a string, using a given conversion base.
    Return a string object.  *)
   VAR
@@ -679,7 +678,7 @@ PROCEDURE (a: BigInt) Format* (outputBase: Digit): String.String;
     pos := i;
     
     IF (sizeA = 0) THEN
-      RETURN String.New("0");
+      RETURN Object.NewLatin1("0");
 
     ELSIF (powerOf2[outputBase] > 0) THEN
       baseBits := powerOf2[outputBase];
@@ -709,7 +708,7 @@ PROCEDURE (a: BigInt) Format* (outputBase: Digit): String.String;
         DEC(pos);
         str[pos] := "-";
       END;
-      RETURN String.NewRegion(str^, pos, LEN(str^));
+      RETURN Object.NewLatin1Region(str^, pos, LEN(str^));
       
     ELSE
       (* powbase <- largest power of outputBase that fits in a digit. *)
@@ -759,11 +758,11 @@ PROCEDURE (a: BigInt) Format* (outputBase: Digit): String.String;
         DEC(pos);
         str[pos] := "-";
       END;
-      RETURN String.NewRegion(str^, pos, LEN(str^));
+      RETURN Object.NewLatin1Region(str^, pos, LEN(str^));
     END;
   END Format;
 
-PROCEDURE (a: BigInt) ToString*(): String.String;
+PROCEDURE (a: BigInt) ToString*(): Object.String8;
   BEGIN
     RETURN a.Format(10);
   END ToString;
@@ -819,6 +818,14 @@ PROCEDURE NewString* (str[NO_COPY]: ARRAY OF CHAR; inputBase: LONGINT): BigInt;
   BEGIN
     RETURN NewRegion(str, 0, Strings.Length(str), inputBase);
   END NewString;
+
+PROCEDURE NewStr* (str: Object.String8; inputBase: LONGINT): BigInt;
+  VAR
+    chars: Object.CharsLatin1;
+  BEGIN
+    chars := str.CharsLatin1();
+    RETURN NewRegion(chars^, 0, str.length, inputBase);
+  END NewStr;
 
 PROCEDURE (a: BigInt) Invert*(): BigInt;
 (**Bitwise complement.  The result equals @samp{-(a+1)}.  *)

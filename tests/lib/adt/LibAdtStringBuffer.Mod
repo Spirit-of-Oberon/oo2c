@@ -2,7 +2,6 @@ MODULE LibAdtStringBuffer;
 
 IMPORT 
   Object,
-  S := ADT:String,
   B := ADT:StringBuffer,
   Out := Out0;
 
@@ -12,23 +11,26 @@ TYPE
   END;
 
 VAR
-  a : S.String;
+  a : Object.String8;
   b : B.StringBuffer;
   m : MyObject;
 
-PROCEDURE OutString(s : S.String);
-BEGIN
-  Out.String(s.array^);
-END OutString;
+PROCEDURE OutString(s : Object.String);
+  VAR
+    chars: Object.CharsLatin1;
+  BEGIN
+    chars := s(Object.String8).CharsLatin1();
+    Out.String(chars^);
+  END OutString;
 
 PROCEDURE Test* ();
   BEGIN
     (* Append various primitive types *)
-    a := S.New("");
+    a := Object.NewLatin1("");
     b := B.New("");
     Out.Bool(a.Equals(b)); Out.Ln;
     b.AppendString("Text String,");
-    b.Append(S.New("String Object,"));
+    b.Append(Object.NewLatin1("String Object,"));
     b.AppendSet({1, 3, 5, 7});
     b.AppendLongInt(1234567);
     b.AppendBool(TRUE);

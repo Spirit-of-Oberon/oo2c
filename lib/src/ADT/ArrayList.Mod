@@ -310,10 +310,16 @@ PROCEDURE (l: ArrayList) HashCode* (): LONGINT;
 PROCEDURE (l: ArrayList) Store* (w: Storable.Writer);
   VAR
     i: LONGINT;
+    obj: Object.Object;
   BEGIN
     w. WriteNum (l. size);
     FOR i := 0 TO l. size-1 DO
-      w. WriteObject (l. array[i]);
+      obj := l. array[i];
+      IF (obj = NIL) THEN
+        w. WriteObject (NIL);
+      ELSE
+        w. WriteObject (obj(Storable.Object));
+      END;
     END
   END Store;
 

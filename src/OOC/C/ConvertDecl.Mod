@@ -1,7 +1,7 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
-  Object:BigInt, ADT:String, ADT:Dictionary,
+  Object, Object:BigInt, ADT:Dictionary,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -34,7 +34,7 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
     fct: DeclWriter.Function;
     struct: DeclWriter.Struct;
     trefClass: DeclWriter.TypeRefClass;
-    name: String.String;
+    name: Object.String;
     baseType, srcCodeBaseType: Sym.Type;
     dummy: LONGINT;
 
@@ -217,7 +217,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
   VAR
     sc: DeclWriter.StorageClass;
     tq: DeclWriter.TypeQualifier;
-    name: String.String;
+    name: Object.String;
     ctype: DeclWriter.Type;
     fpars: DeclWriter.Type;
   BEGIN
@@ -278,7 +278,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
              name of the address passed from the caller is extended; this way,
              it can be distinguished from the name of the local copy of the
              value parameter *)
-          name := name. Concat (String.New (Naming.suffixPassPerRef))
+          name := name. Concat (Object.NewLatin1(Naming.suffixPassPerRef))
         END;
 
         IF item. isPassPerReference & ~(item. type IS Sym.Array) THEN
@@ -371,7 +371,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
                 (* ignore forward declaration, or we get duplicates *)
               ELSE
                 decl := ConvertDecl (w, ptr, mode);
-                IF (decl. name. array[0] # "(") THEN
+                IF (decl. name. CharAt(0) # ORD("(")) THEN
                   (* Gross hack: If the declarations name doesn't look like a
                      name, then omit it from the output.  This can (but
                      probably shouldn't ;-) be used to define functions and

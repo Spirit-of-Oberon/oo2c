@@ -23,7 +23,7 @@ MODULE OOC:TestFramework:Processor;
 
 IMPORT
   C, Files, LongStrings, Msg, Out, Strings, TextRider,
-  ADT:String, ADT:StringBuffer, OSFiles := OS:Files,
+  Object, ADT:StringBuffer, OSFiles := OS:Files,
   OS:ProcessManagement, URI:Scheme:File, XMLWriter := XML:Writer,
   XML:Basic:Element,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases;
@@ -45,8 +45,8 @@ CONST
 TYPE
   Processor* = POINTER TO ProcessorDesc;
   ProcessorDesc = RECORD
-    baseDir, modDir, symDir, objDir, binDir, txtDir: String.String;
-    processCmd, filterCmd, diffCmd, rejectCmd: String.String;
+    baseDir, modDir, symDir, objDir, binDir, txtDir: Object.String8;
+    processCmd, filterCmd, diffCmd, rejectCmd: Object.String8;
   END;
 
 TYPE
@@ -60,7 +60,7 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
   VAR
     sb: StringBuffer.StringBuffer;
     
-  PROCEDURE GetPath (subdir: ARRAY OF CHAR): String.String;
+  PROCEDURE GetPath (subdir: ARRAY OF CHAR): Object.String8;
     VAR
       path: FilePath;
     BEGIN
@@ -69,7 +69,7 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
         Strings.Append ("/", path);
         Strings.Append (subdir, path)
       END;
-      RETURN String.New (path)
+      RETURN Object.NewLatin1(path)
     END GetPath;
   
   BEGIN
@@ -90,17 +90,17 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     sb. AppendString (" ");
     sb. AppendString (setup. processor. flags);
     sb. AppendString (" ");
-    proc. processCmd := sb. ToString();
+    proc. processCmd := sb. ToString8();
     
     proc. filterCmd := NIL;
     IF (setup. processor. filterCommand # "") THEN
-      proc. filterCmd := String.New (setup. processor. filterCommand)
+      proc. filterCmd := Object.NewLatin1(setup. processor. filterCommand)
     END;
     IF (setup. processor. diffCommand # "") THEN
-      proc. diffCmd := String.New (setup. processor. diffCommand)
+      proc. diffCmd := Object.NewLatin1(setup. processor. diffCommand)
     END;
     IF (setup. processor. checkRejectCommand # "") THEN
-      proc. rejectCmd := String.New (setup. processor. checkRejectCommand)
+      proc. rejectCmd := Object.NewLatin1(setup. processor. checkRejectCommand)
     END;
   END Init;
 
@@ -114,11 +114,13 @@ PROCEDURE New* (setup: TestSetup.TestSetup): Processor;
   END New;
 
 PROCEDURE (proc: Processor) Setup*;
-  PROCEDURE MakeDir (dir: String.String);
+  PROCEDURE MakeDir (dir: Object.String8);
     VAR
       res: Msg.Msg;
+      chars: Object.CharsLatin1;
     BEGIN
-      OSFiles.makedirs (dir. array^, 7*64, res);
+      chars := dir.CharsLatin1();
+      OSFiles.makedirs (chars^, 7*64, res);
       ASSERT (res = NIL)
     END MakeDir;
   
@@ -195,15 +197,19 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
   VAR
     path: ARRAY 4*1024 OF CHAR;
     exit, status, signal: C.int;
-    moduleName, modPath: String.String;
+    moduleName, modPath: Object.String8;
     runOutFile, runErrFile, runDiffFile: FilePath;
     rejectInfo: Element.Element;
     rejectCount, rejectError: LONGINT;
+    chars: Object.CharsLatin1;
   
   PROCEDURE GetFileName (suffix: ARRAY OF CHAR;
                          VAR path: ARRAY OF CHAR);
+    VAR
+      chars: Object.CharsLatin1;
     BEGIN
-      COPY (proc. txtDir. array^, path);
+      chars := proc.txtDir.CharsLatin1();
+      COPY (chars^, path);
       Strings.Append ("/", path);
       Strings.Append (test. id, path);
       Strings.Append (suffix, path)
@@ -230,12 +236,13 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       END
     END AttrFileRef;
 
-  PROCEDURE CompileModule (moduleName: String.String;
+  PROCEDURE CompileModule (moduleName: Object.String8;
                            path: ARRAY OF CHAR; build: BOOLEAN;
                            VAR status, signal: C.int);
     VAR
       exit: C.int;
       outFile, errFile, filterFile: FilePath;
+      chars: Object.CharsLatin1;
     
     PROCEDURE Copy (file: ARRAY OF CHAR);
       VAR
@@ -277,7 +284,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       IF build THEN
         Strings.Insert ("--make ", 0, path)
       END;
-      Strings.Insert (proc. processCmd. array^, 0, path);
+      chars := proc.processCmd.CharsLatin1();
+      Strings.Insert (chars^, 0, path);
       Strings.Append (" >'", path);
       Strings.Append (outFile, path);
       Strings.Append ("' 2>'", path);
@@ -297,7 +305,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       
       IF (proc. filterCmd # NIL) THEN
         (* pass stdout output through filter *)
-        COPY (proc. filterCmd. array^, path);
+        chars := proc.filterCmd.CharsLatin1();
+        COPY (chars^, path);
         Strings.Insert ("'", 0, path);
         Strings.Append ("' <'", path);
         Strings.Append (outFile, path);
@@ -329,43 +338,46 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       reportWriter. EndTag
     END CompileModule;
   
-  PROCEDURE WriteMainModule (name: String.String): String.String;
+  PROCEDURE WriteMainModule (name: Object.String8): Object.String8;
     VAR
       path: FilePath;
       f: Files.File;
       w: TextRider.Writer;
       res: Msg.Msg;
+      chars: Object.CharsLatin1;
     BEGIN
-      COPY (proc. modDir. array^, path);
+      chars := proc.modDir.CharsLatin1();
+      COPY (chars^, path);
       Strings.Append ("/x", path);
-      Strings.Append (name. array^, path);
+      chars := name.CharsLatin1();
+      Strings.Append (chars^, path);
       Strings.Append (".Mod", path);
       f := Files.New (path, {Files.read, Files.write}, res);
       IF (res = NIL) THEN
         w := TextRider.ConnectWriter (f);
         w. WriteString ("MODULE x");
-        w. WriteString (name. array^);
+        w. WriteStr (name);
         w. WriteString (";");
         w. WriteLn;
-        IF (name. array^ = outModule) THEN
+        IF name.Equals(Object.NewLatin1(outModule)) THEN
           w. WriteString ("IMPORT ");
           w. WriteString (outModule);
         ELSE
           w. WriteString ("IMPORT ");
           w. WriteString (outModule);
           w. WriteString (", ");
-          w. WriteString (name. array^);
+          w. WriteStr (name);
         END;
         w. WriteString (";");
         w. WriteLn;
         w. WriteString ("BEGIN ");
         w. WriteString (outModule);
         w. WriteString (".Open; ");
-        w. WriteString (name. array^);
+        w. WriteStr (name);
         w. WriteString (".Test;");
         w. WriteLn;
         w. WriteString ("END x");
-        w. WriteString (name. array^);
+        w. WriteStr (name);
         w. WriteString (".");
         w. WriteLn;
         
@@ -377,7 +389,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       END;
       
       IF (res = NIL) THEN
-        RETURN String.New (path)
+        RETURN Object.NewLatin1(path)
       ELSE
         RETURN NIL
       END
@@ -387,6 +399,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
     VAR
       errFile: FilePath;
       cmd, str: ARRAY 4*1024 OF CHAR;
+      chars: Object.CharsLatin1;
 
     PROCEDURE Quote (VAR str: ARRAY OF CHAR);
       VAR
@@ -408,7 +421,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
       LongStrings.Short (rejectInfo. msg^, "?", cmd);
       Quote (cmd);
 
-      Strings.Insert (proc. rejectCmd. array^, 0, cmd);
+      chars := proc.rejectCmd.CharsLatin1();
+      Strings.Insert (chars^, 0, cmd);
       LongStrings.Short (rejectInfo. pos^, "?", str);
       Quote (str);
       Strings.Append (str, cmd);
@@ -461,7 +475,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
         result := processMainModuleError;
         Out.String ("--> failed to write main module"); Out.Ln
       ELSE
-        COPY (modPath. array^, path);
+        chars := modPath.CharsLatin1();
+        COPY (chars^, path);
         CompileModule (moduleName, path, TRUE, status, signal);
         Out.String ("--> build result: ");
         IF (status # 0) OR (signal # 0) THEN
@@ -473,9 +488,11 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
           (* run the freshly generated program and see if it aborts *)
           GetFileName (".run.out", runOutFile);
           GetFileName (".run.err", runErrFile);
-          COPY (moduleName. array^, path);
+          chars := moduleName.CharsLatin1();
+          COPY (chars^, path);
           Strings.Insert ("/x", 0, path);
-          Strings.Insert (proc. binDir. array^, 0, path);
+          chars := proc.binDir.CharsLatin1();
+          Strings.Insert (chars^, 0, path);
           Strings.Insert ("'", 0, path);
           Strings.Append ("' >'", path);
           Strings.Append (runOutFile, path);
@@ -497,7 +514,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
               IF (result # processSuccess) THEN
                 GetFileName (".run.diff", runDiffFile);
                 Strings.Insert (" '", 0, path);
-                Strings.Insert (proc. diffCmd. array^, 0, path);
+                chars := proc.diffCmd.CharsLatin1();
+                Strings.Insert (chars^, 0, path);
                 Strings.Append ("' '", path);
                 Strings.Append (runOutFile, path);
                 Strings.Append ("' >'", path);

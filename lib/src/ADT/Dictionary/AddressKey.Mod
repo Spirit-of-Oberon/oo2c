@@ -466,13 +466,24 @@ PROCEDURE (dict: Dictionary) HashCode* (): LONGINT;
 PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer);
   VAR
     i: LONGINT;
+    obj: Object.Object;
   BEGIN
     w. WriteNum (dict. used);
     IF (dict. used # 0) THEN
       FOR i := 0 TO dict. size-1 DO
         IF IsSet (dict. table[i]. key) THEN
-          w. WriteObject (dict. table[i]. key);
-          w. WriteObject (dict. table[i]. value)
+          obj := dict. table[i]. key;
+          IF (obj = NIL) THEN
+            w. WriteObject (NIL);
+          ELSE
+            w. WriteObject (obj(Storable.Object));
+          END;
+          obj := dict. table[i]. value;
+          IF (obj = NIL) THEN
+            w. WriteObject (NIL);
+          ELSE
+            w. WriteObject (obj(Storable.Object));
+          END;
         END
       END
     END

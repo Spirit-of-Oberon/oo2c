@@ -4,11 +4,6 @@
   <test id="libadt_Object" type="run" file="LibAdtObject.Mod">
     Imports the module <code>ADT:Object</code>.
   </test>
-  <test id="libadt_String" type="run"
-        file="LibAdtString.Mod" output="LibAdtString.Ref">
-    Imports the module <code>ADT:String</code>, and performs some
-    operations on string instances.
-  </test>
   <test id="libadt_StringBuffer" type="run"
         file="LibAdtStringBuffer.Mod" output="LibAdtStringBuffer.Ref">
     Imports the module <code>ADT:StringBuffer</code>, and performs

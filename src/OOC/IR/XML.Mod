@@ -22,7 +22,7 @@ MODULE OOC:IR:XML;
 
 
 IMPORT
-  Channel, ADT:String, XML:Writer, XML:UnicodeCodec:Latin1,
+  Channel, Object, XML:Writer, XML:UnicodeCodec:Latin1,
   Sym := OOC:SymbolTable, OOC:IR;
 
 TYPE
@@ -49,21 +49,20 @@ PROCEDURE NewVisitor (w: Writer.Writer): Visitor;
 
 PROCEDURE TypeAttr (w : Writer.Writer; type : Sym.Type);
 (** Output the name of @oparam{type} as attribute "Type" of the current tag. *)
-  VAR
-    name : String.String;
   BEGIN
-    name := IR.TypeName(type);
-    w. AttrStringLatin1("Type", name.array^);
+    w.AttrStr("Type", IR.TypeName(type));
   END TypeAttr;
 
 PROCEDURE (v: Visitor) VisitConst* (const: IR.Const);
   VAR
-    value: String.String;
+    value: Object.String;
+    chars: Object.CharsLatin1;
   BEGIN
     v. w. StartTag ("const", TRUE);
     TypeAttr(v.w, const.type);
     value := const. ToString();
-    v. w. WriteLatin1 (value. array^);
+    chars := value(Object.String8).CharsLatin1();
+    v. w. WriteLatin1 (chars^);
     v. w. EndTag;  (* const *)
   END VisitConst;
 

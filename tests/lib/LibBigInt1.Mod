@@ -1,7 +1,7 @@
 MODULE LibBigInt1;
 
 IMPORT
-  RandomNumbers, Object:BigInt, ADT:String;
+  RandomNumbers, Object, Object:BigInt;
 
 CONST
   shift = 15;
@@ -15,7 +15,7 @@ PROCEDURE Test*;
   VAR
     big, a, b, div, rem, mod, z: BigInt.BigInt;
     i, x0, x1: LONGINT;
-    str: String.String;
+    str: Object.String8;
   BEGIN
     (* conversion LONGINT -> BigInt -> LONGINT *)
     big := BigInt.NewInt(0); ASSERT(big.ToLongInt() = 0);
@@ -149,21 +149,21 @@ PROCEDURE Test*;
     END;
 
     z := BigInt.NewInt(1000); str := z.Format( 10);
-    ASSERT(str.Equals(String.New("1000")));
+    ASSERT(str.Equals(Object.NewLatin1("1000")));
     z := BigInt.NewInt(MAX(LONGINT)); str := z.Format( 16);
-    ASSERT(str.Equals(String.New("7FFFFFFF")));
+    ASSERT(str.Equals(Object.NewLatin1("7FFFFFFF")));
     z := BigInt.NewInt(MIN(LONGINT)); str := z.Format( 16);
-    ASSERT(str.Equals(String.New("-80000000")));
+    ASSERT(str.Equals(Object.NewLatin1("-80000000")));
     z := BigInt.NewInt(127); str := z.Format( 2);
-    ASSERT(str.Equals(String.New("1111111")));
+    ASSERT(str.Equals(Object.NewLatin1("1111111")));
     z := BigInt.NewInt(-1000); str := z.Format( 2);
-    ASSERT(str.Equals(String.New("-1111101000")));
+    ASSERT(str.Equals(Object.NewLatin1("-1111101000")));
     z := BigInt.NewInt(-1000); str := z.Format( 8);
-    ASSERT(str.Equals(String.New("-1750")));
+    ASSERT(str.Equals(Object.NewLatin1("-1750")));
     z := BigInt.NewInt(-1000); str := z.Format( 16);
-    ASSERT(str.Equals(String.New("-3E8")));
+    ASSERT(str.Equals(Object.NewLatin1("-3E8")));
     z := BigInt.NewInt(-1000); str := z.Format( 32);
-    ASSERT(str.Equals(String.New("-V8")));
+    ASSERT(str.Equals(Object.NewLatin1("-V8")));
 
     z := BigInt.NewString("0", 10); ASSERT(z.ToLongInt() = 0);
     z := BigInt.NewString("1", 10); ASSERT(z.ToLongInt() = 1);
@@ -177,7 +177,7 @@ PROCEDURE Test*;
       IF (RandomNumbers.RND(1000) < 500) THEN a := a.Neg(); END;
 
       str := a.Format(10);
-      b := BigInt.NewString(str.array^, 10);
+      b := BigInt.NewStr(str, 10);
       ASSERT(a.Equals(b));
     END;
 

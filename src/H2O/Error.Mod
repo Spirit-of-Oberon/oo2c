@@ -2,7 +2,7 @@ MODULE H2O:Error;
 
 IMPORT 
   Err, H2O:Source, 
-  Object, Object:Boxed, ADT:String, ADT:StringBuffer;
+  Object, Object:Boxed, ADT:StringBuffer;
 
 TYPE 
   Error* = POINTER TO ErrorDesc;
@@ -10,18 +10,19 @@ TYPE
     in : Source.Input;
   END;
 
-PROCEDURE Format(format : String.String; p1, p2, p3 : Object.Object) : String.String;
+PROCEDURE Format(format : Object.String8; p1, p2, p3 : Object.Object) : Object.String8;
 VAR
   b : StringBuffer.StringBuffer;
   ch : CHAR; i : LONGINT;
+  str: Object.String;
 BEGIN
   b := StringBuffer.New("");
   i := 0;
   WHILE i < format.length DO
-    ch := format.GetChar(i);
+    ch := CHR(format.CharAt(i));
     IF ch = "$" THEN
       INC(i);
-      ch := format.GetChar(i);
+      ch := CHR(format.CharAt(i));
       CASE ORD(ch) - ORD('0') OF
       | 0: b.AppendObject(p1);
       | 1: b.AppendObject(p2);
@@ -32,17 +33,18 @@ BEGIN
     END;
     INC(i);
   END;
-  RETURN b.ToString();
+  str := b.ToString();
+  RETURN str(Object.String8);
 END Format;
 
-PROCEDURE (e : Error) MsgString* (msg : String.String; error : BOOLEAN);
+PROCEDURE (e : Error) MsgString* (msg : Object.String8; error : BOOLEAN);
 BEGIN
   IF error THEN
     Err.String("Error: "); 
   ELSE
     Err.String("Warning: ");
   END;
-  Err.String(msg.array^);
+  Err.Str(msg);
   Err.Ln;
   Err.Flush;
   e.in.ShowContext();
@@ -51,17 +53,17 @@ END MsgString;
 
 PROCEDURE (e : Error) Error*(msg : ARRAY OF CHAR);
 BEGIN
-  e.MsgString(String.New(msg), TRUE);
+  e.MsgString(Object.NewLatin1(msg), TRUE);
 END Error;
 
 PROCEDURE (e : Error) ErrorParam* (msg : ARRAY OF CHAR; p1, p2, p3 : Object.Object);
 BEGIN
-  e.MsgString(Format(String.New(msg), p1, p2, p3), TRUE);
+  e.MsgString(Format(Object.NewLatin1(msg), p1, p2, p3), TRUE);
 END ErrorParam;
 
 PROCEDURE (e : Error) MsgParam* (msg : ARRAY OF CHAR; p1, p2, p3 : Object.Object; error : BOOLEAN);
 BEGIN
-  e.MsgString(Format(String.New(msg), p1, p2, p3), error);
+  e.MsgString(Format(Object.NewLatin1(msg), p1, p2, p3), error);
 END MsgParam;
 
 PROCEDURE (e : Error) UnexpectedCharacter* (ch : CHAR);

@@ -19,7 +19,7 @@ MODULE StringSearch:RegexpParser;
 *)
 
 IMPORT
-  Ascii, ADT:String, StringSearch;
+  Ascii, Object, StringSearch;
 
 
 (*
@@ -335,7 +335,7 @@ PROCEDURE NewBuilder* (): Builder;
 
 
 
-PROCEDURE Parse* (b: Builder; pattern: String.String; flags: StringSearch.Flags): Group;
+PROCEDURE Parse* (b: Builder; pattern: Object.String8; flags: StringSearch.Flags): Group;
 (**Parses the regular expression in @oparam{pattern}, modified by the options
    passed in @oparam{flags}.
 
@@ -346,7 +346,7 @@ PROCEDURE Parse* (b: Builder; pattern: String.String; flags: StringSearch.Flags)
    For a short description of regular expression syntax, see
    @omodule{*StringSearch:RegexpDFA}.  *)
   VAR
-    re: String.CharArrayPtr;
+    re: Object.CharsLatin1;
     reEnd: LONGINT;
     regexpGroup: Group;
     
@@ -561,7 +561,7 @@ PROCEDURE Parse* (b: Builder; pattern: String.String; flags: StringSearch.Flags)
     END Regexp;
   
   BEGIN
-    re := pattern. array;
+    re := pattern. CharsLatin1();
     reEnd := pattern. length;
     
     groupCount := -1;

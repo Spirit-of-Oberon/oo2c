@@ -2,7 +2,7 @@ MODULE H2O:Parser [OOC_EXTENSIONS];
 
 IMPORT
   SYSTEM, Out,
-  ADT:String, ADT:StringBuffer, ADT:ArrayList,
+  Object, ADT:StringBuffer, ADT:ArrayList,
   H2O:Error, H2O:Scanner, H2O:Process, H2O:Module, T := H2O:Type;
 
 CONST
@@ -68,7 +68,7 @@ BEGIN
   IF val THEN RETURN 1 ELSE RETURN 0 END
 END BoolInt;
 
-PROCEDURE FindType(name : String.String) : T.Type;
+PROCEDURE FindType(name : Object.String8) : T.Type;
 VAR obj : T.Object;
 BEGIN
   IF T.FindObject(types, name, obj) THEN
@@ -78,7 +78,7 @@ BEGIN
   END;
 END FindType;
 
-PROCEDURE ShowDepend(name : String.String; depend : ArrayList.ArrayList);
+PROCEDURE ShowDepend(name : Object.String8; depend : ArrayList.ArrayList);
 VAR b : StringBuffer.StringBuffer; i : LONGINT;
 BEGIN
   b := StringBuffer.New("");
@@ -86,18 +86,18 @@ BEGIN
   b.AppendString(" depends on [");
   FOR i := 0 TO depend.size-1 DO
     IF i # 0 THEN b.AppendChar(",") END;
-    b.AppendString(depend.array[i](Module.Module).name.array^);
+    b.Append(depend.array[i](Module.Module).name);
   END;
   b.AppendString("]");
   Out.String(b.array^); Out.Ln;
 END ShowDepend;
 
-PROCEDURE Install* (VAR scope : T.Object; tag [NO_COPY] : ARRAY OF CHAR; name : String.String; new : T.Type);
+PROCEDURE Install* (VAR scope : T.Object; tag [NO_COPY] : ARRAY OF CHAR; name : Object.String8; new : T.Type);
 VAR 
   obj : T.Object;
 BEGIN
   IF T.FindObject(scope, name, obj) THEN
-    err.ErrorParam("$0 `$1' already defined as $2", String.New(tag), name, obj.type);
+    err.ErrorParam("$0 `$1' already defined as $2", Object.NewLatin1(tag), name, obj.type);
   ELSE
     new.Depend(depend);
     IF depend.size > 0 THEN ShowDepend(name, depend) END;
@@ -106,13 +106,13 @@ BEGIN
   END;
 END Install;
 
-PROCEDURE InstallType(name : String.String; new : T.Type);
+PROCEDURE InstallType(name : Object.String8; new : T.Type);
 BEGIN
   Install(types, "Type", name, new);
   new.module := process.in.module;
 END InstallType;
 
-PROCEDURE NewNamedType* (class : SHORTINT; name : String.String) : T.Type;
+PROCEDURE NewNamedType* (class : SHORTINT; name : Object.String8) : T.Type;
 VAR 
   new : T.Type;
 BEGIN
@@ -157,7 +157,7 @@ BEGIN
   END;
 END StartsTypeSpecifier;
 
-PROCEDURE ^Declarator(VAR name : String.String; base : T.Type) : T.Type;
+PROCEDURE ^Declarator(VAR name : Object.String8; base : T.Type) : T.Type;
 PROCEDURE ^EvalExpr (VAR result : LONGINT);
 
 PROCEDURE StorageClass (VAR class : INTEGER);
@@ -201,11 +201,11 @@ VAR
      enum ::= "enum" [ ident ] [ "{" Element { "," Element } "}" ].
   *)
   VAR 
-    tag : String.String; 
+    tag : Object.String8; 
     t : T.Type; id : LONGINT;
 
     PROCEDURE Element;
-    VAR name : String.String;
+    VAR name : Object.String8;
     BEGIN
       name := token.name;
       Expect(Scanner.ident);
@@ -255,13 +255,13 @@ VAR
   PROCEDURE StructDecl(class : SHORTINT) : T.Type;
   VAR 
     t : T.Type;
-    tag : String.String;
+    tag : Object.String8;
     id : LONGINT;
 
     PROCEDURE FieldList(t : T.Type);
     VAR 
       t1, t2 : T.Type; 
-      name : String.String;
+      name : Object.String8;
       width : LONGINT;
     BEGIN
       WHILE StartsTypeSpecifier() DO
@@ -388,7 +388,7 @@ BEGIN
   RETURN t;
 END TypeSpecifier;
 
-PROCEDURE Declarator(VAR name : String.String; base : T.Type) : T.Type;
+PROCEDURE Declarator(VAR name : Object.String8; base : T.Type) : T.Type;
 VAR
   t : T.Type;
 
@@ -401,7 +401,7 @@ VAR
     PROCEDURE FuncDecl (func : T.Type);
     VAR
       t : T.Type; void : BOOLEAN; id : LONGINT;
-      name : String.String;
+      name : Object.String8;
   
       PROCEDURE CheckEnd;
       BEGIN
@@ -567,7 +567,7 @@ CONST
 
            PROCEDURE UnaryExpr (VAR result : LONGINT);
            VAR 
-             t : T.Type; name : String.String;
+             t : T.Type; name : Object.String8;
              op : INTEGER; 
              result2 : LONGINT; 
              needClose : BOOLEAN;
@@ -583,9 +583,9 @@ CONST
                END
              ELSIF token.sym = Scanner.number THEN
                result := token.value; GetSym
-             ELSIF (token.sym = Scanner.string) & (token.name.Size() = 3) THEN
+             ELSIF (token.sym = Scanner.string) & (token.name.length = 3) THEN
                (* allow character constants in expressions *)
-               result := ORD(token.name.GetChar(1)); GetSym;
+               result := token.name.CharAt(1); GetSym;
              ELSIF token.sym = Scanner.lbracket THEN
                (* bracket indicates either a nested expression OR a type cast *)
                GetSym;
@@ -851,11 +851,11 @@ END SameTypes;
 
 PROCEDURE Declaration;
 VAR 
-  name : String.String;
+  name : Object.String8;
   class : INTEGER;
   spec, type, t : T.Type;
 
-  PROCEDURE ShowBinding(name : String.String; type : T.Type);
+  PROCEDURE ShowBinding(name : Object.String8; type : T.Type);
   VAR
      b : StringBuffer.StringBuffer;
   BEGIN
@@ -891,7 +891,7 @@ BEGIN
     type := Declarator(name, spec);
     IF name = NIL THEN
       err.Error("Declaration must specify a name");
-      name := String.New("error");
+      name := Object.NewLatin1("error");
     END;
     IF class = T.scTypedef THEN
       t := T.NewType(T.tName, type, type.size, {}); t.name := name;

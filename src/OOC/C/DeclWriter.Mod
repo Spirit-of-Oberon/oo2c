@@ -22,7 +22,7 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 
 IMPORT
   Channel, Err, Files, IntStr, Msg, Strings, TextRider,
-  Object, Object:Boxed, Object:BigInt, ADT:String, ADT:ArrayList,
+  Object, Object:Boxed, Object:BigInt, ADT:ArrayList,
   URI, IO:Memory,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules;
@@ -155,7 +155,7 @@ TYPE
   StructDesc = RECORD
     (TypeDesc)
     isUnion: BOOLEAN;
-    name: String.String;
+    name: Object.String;
     members: ArrayList.ArrayList;        (* of Declaration *)
   END;
 
@@ -172,7 +172,7 @@ TYPE
   TypeRefDesc = RECORD
     (TypeDesc)
     class: TypeRefClass;
-    name: String.String;
+    name: Object.String;
   END;
   
 TYPE
@@ -212,7 +212,7 @@ TYPE
     typeQualifier: TypeQualifier;
     storageClass: StorageClass;
     type: Type;
-    name-: String.String;
+    name-: Object.String;
   END;
 
 TYPE
@@ -268,7 +268,7 @@ CONST
 
 PROCEDURE ^ NewBasicType (id: BasicTypeId; repr: ARRAY OF CHAR): BasicType;
 PROCEDURE ^ (d: Declaration) Write (w: Writer);
-PROCEDURE ^ (w: Writer) NewDeclaration* (name: String.String; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
+PROCEDURE ^ (w: Writer) NewDeclaration* (name: Object.String; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
 
 PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
                       baseURI: URI.HierarchicalURI);
@@ -335,6 +335,11 @@ PROCEDURE (w: Writer) WriteString* (str[NO_COPY]: ARRAY OF CHAR);
   BEGIN
     w. textWriter. WriteString (str)
   END WriteString;
+
+PROCEDURE (w: Writer) WriteStr* (str: Object.String);
+  BEGIN
+    w.textWriter.WriteStr(str);
+  END WriteStr;
 
 PROCEDURE (w: Writer) WriteChar* (ch: CHAR);
   BEGIN
@@ -404,7 +409,6 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
     quotedDelim = '\"';
   VAR
     i, len, charValue: LONGINT;
-    str : String.String;
     s: Object.String;
     
   PROCEDURE WriteOct (ch: LONGINT);
@@ -496,8 +500,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
         END;
         
       | value: Boxed.LongReal DO
-        str := value.ToString();
-        w. WriteString(str.array^);
+        w. WriteStr(value.ToString());
         
       | value: BigInt.BigInt DO
         IF (value. ToLongInt() = MIN (LONGINT)) THEN
@@ -508,8 +511,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
           w. WriteLInt (MAX (LONGINT), 0);
           w. WriteString ("-1)");
         ELSE
-          str := value.ToString();
-          w. WriteString(str.array^);
+          w. WriteStr(value.ToString());
         END;
         
       | value: Boxed.Set DO
@@ -778,14 +780,14 @@ PROCEDURE (fct: Function) WriteRight (w: Writer);
 
 (* -------- *)
 
-PROCEDURE InitStruct (struct: Struct; isUnion: BOOLEAN; name: String.String);
+PROCEDURE InitStruct (struct: Struct; isUnion: BOOLEAN; name: Object.String);
   BEGIN
     struct. isUnion := isUnion;
     struct. members := ArrayList.New (4);
     struct. name := name;
   END InitStruct;
 
-PROCEDURE (w: Writer) NewStruct* (isUnion: BOOLEAN; name: String.String): Struct;
+PROCEDURE (w: Writer) NewStruct* (isUnion: BOOLEAN; name: Object.String): Struct;
   VAR
     struct: Struct;
   BEGIN
@@ -805,7 +807,7 @@ PROCEDURE (struct: Struct) AddPadding* (w: Writer; offset: LONGINT);
   BEGIN
     IntStr.IntToStr (offset, str);
     Strings.Insert ("__pad", 0, str);
-    struct. AddMember (w. NewDeclaration (String.New (str), tqNone, scMember,
+    struct. AddMember (w. NewDeclaration (Object.NewLatin1(str), tqNone, scMember,
                                           w. basicType[char8]));
   END AddPadding;
 
@@ -825,7 +827,7 @@ PROCEDURE (struct: Struct) WriteLeft (w: Writer);
     END;
     IF (struct. name # NIL) THEN
       w. WriteString (" ");
-      w. WriteString (struct. name. array^);
+      w. WriteStr (struct. name);
     END;
     w. WriteString (" {");
     w. Indent (1);
@@ -851,13 +853,13 @@ PROCEDURE (struct: Struct) WriteRight (w: Writer);
 
 (* -------- *)
 
-PROCEDURE InitTypeRef (typeRef: TypeRef; class: TypeRefClass; name: String.String);
+PROCEDURE InitTypeRef (typeRef: TypeRef; class: TypeRefClass; name: Object.String);
   BEGIN
     typeRef. class := class;
     typeRef. name := name;
   END InitTypeRef;
 
-PROCEDURE (w: Writer) NewTypeRef* (class: TypeRefClass; name: String.String): TypeRef;
+PROCEDURE (w: Writer) NewTypeRef* (class: TypeRefClass; name: Object.String): TypeRef;
   VAR
     typeRef: TypeRef;
   BEGIN
@@ -878,7 +880,7 @@ PROCEDURE (typeRef: TypeRef) WriteLeft (w: Writer);
     | refStruct : w. WriteString ("struct ");
     | refUnion  : w. WriteString ("union ");
     END;
-    w. WriteString (typeRef. name. array^);
+    w. WriteStr (typeRef. name);
     w. WriteChar (" ");
   END WriteLeft;
 
@@ -899,7 +901,7 @@ PROCEDURE (w: Writer) WriteType* (t: Type);
 (* Declarations
    ------------------------------------------------------------------------ *)
 
-PROCEDURE InitDeclaration (d: Declaration; name: String.String;
+PROCEDURE InitDeclaration (d: Declaration; name: Object.String;
                            typeQualifier: TypeQualifier;
                            storageClass: StorageClass; type: Type);
   BEGIN
@@ -909,7 +911,7 @@ PROCEDURE InitDeclaration (d: Declaration; name: String.String;
     d. type := type
   END InitDeclaration;
 
-PROCEDURE (w: Writer) NewDeclaration* (name: String.String; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
+PROCEDURE (w: Writer) NewDeclaration* (name: Object.String; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
   VAR
     d: Declaration;
   BEGIN
@@ -940,7 +942,7 @@ PROCEDURE (d: Declaration) Write (w: Writer);
     END;
     WriteTypeQualifier (w, d. typeQualifier);
     WriteLeft (w, d. type, priDeclaration);
-    w. WriteString (d. name. array^);
+    w. WriteStr (d. name);
     WriteRight (w, d. type, priDeclaration)
   END Write;
 
@@ -986,14 +988,14 @@ PROCEDURE (d: IncludeModule) Write (w: Writer);
   END Write;
 
 
-PROCEDURE InitDefine (d: Define; name: String.String;
+PROCEDURE InitDefine (d: Define; name: Object.String;
                       const: Boxed.Object);
   BEGIN
     InitDeclaration (d, name, tqNone, scAuto, NIL);
     d. const := const;
   END InitDefine;
 
-PROCEDURE (w: Writer) NewDefine* (name: String.String;
+PROCEDURE (w: Writer) NewDefine* (name: Object.String;
                                   const: Boxed.Object): Define;
   VAR
     d: Define;
@@ -1006,7 +1008,7 @@ PROCEDURE (w: Writer) NewDefine* (name: String.String;
 PROCEDURE (d: Define) Write (w: Writer);
   BEGIN
     w. WriteString ("#define ");
-    w. WriteString (d. name. array^);
+    w. WriteStr (d. name);
     w. WriteString (" ");
     IF (d. const = NIL) THEN
       w. WriteString (" 0");             (* NULL *)
@@ -1038,7 +1040,7 @@ PROCEDURE Test;
     VAR
       result: ARRAY 4*1024 OF CHAR;
     BEGIN
-      w. WriteDeclaration (w. NewDeclaration (String.New ("x"), tqNone, scAuto, t));
+      w. WriteDeclaration (w. NewDeclaration (Object.NewLatin1("x"), tqNone, scAuto, t));
       w. WriteLn;
       
       r. ReadLine (result);

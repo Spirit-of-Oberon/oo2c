@@ -303,7 +303,7 @@ PROCEDURE (r: Reader) Disconnect*;
 
 
 
-PROCEDURE (w: Writer) WriteObject* (obj: Object.Object);
+PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object);
   VAR
     tref: LONGINT;
     type: RT0.Struct;

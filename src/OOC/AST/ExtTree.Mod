@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  ADT:String, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc;
+  Object, OOC:Scanner:Builder:BasicList, OOC:AST, OOC:Doc;
 
 
 
@@ -700,13 +700,13 @@ PROCEDURE (terminal: Terminal) Accept* (v: Visitor);
     v. VisitTerminal (terminal)
   END Accept;
 
-PROCEDURE (terminal: Terminal) GetString* (stripQuotes: BOOLEAN): String.String;
+PROCEDURE (terminal: Terminal) GetString* (stripQuotes: BOOLEAN): Object.String8;
   BEGIN
     IF stripQuotes THEN
-      RETURN String.NewRegion (terminal. sym. str^,
+      RETURN Object.NewLatin1Region (terminal. sym. str^,
                                1, terminal. sym. len-1)
     ELSE
-      RETURN String.New (terminal. sym. str^)
+      RETURN Object.NewLatin1 (terminal. sym. str^)
     END
   END GetString;
 

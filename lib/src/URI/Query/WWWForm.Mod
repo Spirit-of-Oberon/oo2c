@@ -26,7 +26,7 @@ part, nor are invalid escape sequences detected.  I don't know if this
 query class should be applied to all HTTP URIs.  *)
 
 IMPORT
-  Object, ADT:String, ADT:Dictionary, ADT:ArrayList,
+  Object, ADT:Dictionary, ADT:ArrayList,
   Strings, TextRider, CC := CharClass, 
   URI, URI:Error, StringURI := URI:String, URI:CharClass;
 
@@ -85,7 +85,7 @@ PROCEDURE (query: Query) Copy* (dest: URI.Query);
     END
   END Copy;
 
-PROCEDURE (query: Query) Add* (name, value: String.String);
+PROCEDURE (query: Query) Add* (name, value: Object.String8);
   VAR
     al: ArrayList.ArrayList;
     obj: Object.Object;
@@ -105,7 +105,7 @@ PROCEDURE (query: Query) Add* (name, value: String.String);
 PROCEDURE (query: Query) ParseString* (VAR b: ARRAY OF CHAR; pos, endpos: LONGINT);
   VAR
     str: ARRAY 1024 OF CHAR;
-    n, v: String.String;
+    n, v: Object.String8;
     i: INTEGER;
     
   PROCEDURE Hex (ch: CHAR): INTEGER;
@@ -135,7 +135,7 @@ PROCEDURE (query: Query) ParseString* (VAR b: ARRAY OF CHAR; pos, endpos: LONGIN
         END;
         INC (pos)
       END;
-      n := String.NewRegion (str, 0, i);
+      n := Object.NewLatin1Region (str, 0, i);
       
       IF (pos # endpos) THEN
         INC (pos);                       (* skip "=" *)
@@ -154,13 +154,13 @@ PROCEDURE (query: Query) ParseString* (VAR b: ARRAY OF CHAR; pos, endpos: LONGIN
           END;
           INC (pos)
         END;
-        v := String.NewRegion (str, 0, i);
+        v := Object.NewLatin1Region (str, 0, i);
         
         IF (pos # endpos) THEN  (* skip "&" *)
           INC (pos)
         END
       ELSE
-        v := String.New ("")
+        v := Object.NewLatin1 ("")
       END;
       query. Add (n, v)
 (*Log.String("pn", n. array^);
@@ -190,9 +190,9 @@ PROCEDURE (query: Query) WriteXML* (w: TextRider.Writer);
     w. WriteString (CC.eol+"<query-www-form>");
     FOR i := 0 TO query. names. size-1 DO
       w. WriteString (CC.eol+"  <entry name='");
-      w. WriteString (query. names. array[i](String.String). array^);
+      w. WriteStr (query. names. array[i](Object.String8));
       w. WriteString ("'>");
-      w. WriteString (query. values. array[i](String.String). array^);
+      w. WriteStr (query. values. array[i](Object.String8));
       w. WriteString ("</entry>");
     END;
     w. WriteString ("</query-www-form>");
@@ -201,17 +201,18 @@ PROCEDURE (query: Query) WriteXML* (w: TextRider.Writer);
 PROCEDURE (query: Query) Append* (VAR str: ARRAY OF CHAR);
   VAR
     i: LONGINT;
+    chars: Object.CharsLatin1;
   BEGIN
     Strings.Append ("?", str);
     FOR i := 0 TO query. names. size-1 DO
       IF (i # 0) THEN
         Strings.Append ("&", str)
       END;
-      StringURI.AppendEscaped (query. names. array[i](String.String). array^,
-                               unreservedQChar, str);
+      chars := query. names. array[i](Object.String8).CharsLatin1();
+      StringURI.AppendEscaped (chars^, unreservedQChar, str);
       Strings.Append ("=", str);
-      StringURI.AppendEscaped (query. values. array[i](String.String). array^,
-                               unreservedQChar, str);
+      chars := query. values. array[i](Object.String8).CharsLatin1();
+      StringURI.AppendEscaped (chars^, unreservedQChar, str);
     END
   END Append;
 

@@ -22,7 +22,7 @@ MODULE Out [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  StdChannels, TextRider;
+  StdChannels, TextRider, Object;
 
 VAR
   writer-: TextRider.Writer;
@@ -71,6 +71,11 @@ PROCEDURE String* (s[NO_COPY]: ARRAY OF CHAR);
   BEGIN
     writer. WriteString (s)
   END String;
+  
+PROCEDURE Str* (s: Object.String);
+  BEGIN
+    writer. WriteStr (s)
+  END Str;
   
 PROCEDURE Bool* (bool: BOOLEAN);
   BEGIN

@@ -25,14 +25,14 @@ MODULE OOC:SSA:Allocator;
 IMPORT
   Log,
   <*IF DEBUG_ALLOCATOR THEN*>SYSTEM,Err,<*END*>
-  IntStr, Strings, Object, ADT:ArrayList, ADT:Dictionary, ADT:String,
+  IntStr, Strings, Object, ADT:ArrayList, ADT:Dictionary,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
   OOC:SSA:Schedule, OOC:SSA:IGraph, OOC:C:DeclWriter, OOC:SymbolTable:Predef;
 
 
 TYPE
   BlockList = POINTER TO ARRAY OF Schedule.Block;
-  NameArray = POINTER TO ARRAY OF String.String;
+  NameArray = POINTER TO ARRAY OF Object.String;
   
 TYPE
   RegisterFile = POINTER TO RegisterFileDesc;
@@ -565,7 +565,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
         | DeclWriter.real64:
           Strings.Insert ("d", 0, str);
         END;
-        names[i] := String.New (str);
+        names[i] := Object.NewLatin1(str);
       END;
       rf. names := names;
       
@@ -804,7 +804,7 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
           IF (i # 0) THEN
             w. WriteChar (",");
           END;
-          w. WriteString (names[i]. array^);
+          w. WriteStr (names[i]);
         END;
         w. WriteChar (";");
       END;
@@ -993,7 +993,7 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
       PROCEDURE CheckOpnd (opnd: SSA.Opnd);
         VAR
           obj: Object.Object;
-          defVar: String.String;
+          defVar: Object.String;
           currentValue: SSA.Result;
         BEGIN
           IF registerMap. HasKey (opnd. arg) THEN
@@ -1003,7 +1003,7 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
             IF (obj = markInPlace) THEN
               CheckOpndList (opnd. arg. instr);
             ELSE
-              defVar := obj(String.String);
+              defVar := obj(Object.String);
               ASSERT (state. HasKey (defVar));
               
               (* the current value of the variable must be the expected
