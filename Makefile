@@ -35,16 +35,9 @@ top_builddir=$(OOC_DEV_ROOT)
 
 test_programs=TestScanner TestParser TestSymTab TestConfigSections TestConfigCmdLine TestConfigEnv TestConfigSimple TestInterfaceGen TestTexinfo TestCompile TestH2O TestWebServer TestCodec encdec AllModules RunTests
 
-all: stage1/lib/obj/liboo2c.o
+all: lib/obj/liboo2c.la exe/oo2c
 
-.PHONY: mkdir clean distclean test main-clean oo2c install intall-strip
-
-### `mkdir'
-###      Build all the directories we're going to install oo2c in.   Since
-###      we may be creating several layers of directories, we use mkinstalldirs
-###      instead of mkdir.  Not all systems' mkdir programs have the `-p' flag.
-mkdir: FRC
-	(umask 022; $(OOC_DEV_ROOT)/mkinstalldirs ${bindir} ${oocdir}/lib/src)
+.PHONY: clean distclean test main-clean oo2c install intall-strip
 
 ### `clean'
 ###      Delete all files from the current directory that are normally
@@ -70,9 +63,9 @@ main-clean: doc-clean test-cleanall
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
 distclean: main-clean
-	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
+	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk oo2crc-install.xml rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
 	rm -f lib/src/__config.h config.log config.status
-	rm -Rf autom4te.cache
+	rm -Rf autom4te.cache stage0/exe/.libs
 
 ### `cvs-clean'
 ###      Delete everything that should not appear in the CVS.
@@ -108,15 +101,13 @@ doc:
 	$(PRINT) "Done.  Index file is $(DOC_DIR)/index.html"
 
 
+### Create header file that is used as input for GNU autoconf.
 lib/src/__config.h.in: configure.ac
 	autoheader
 
+### Create configure script using GNU autoconf.
 configure: configure.ac lib/src/__config.h.in
 	autoconf
-
-
-write-libdir: FRC
-	@echo ${libdir}
 
 ### Some variables are defined recursively by configure.  Expanding these
 ### variables is best done by the make utility itself.  This rule puts the
@@ -130,45 +121,41 @@ rsrc/OOC/oo2crc.xml: rsrc/OOC/oo2crc.xml.mk Makefile.config
 	    -e 's:%INSTALL_DATA%:$(INSTALL_DATA):g' \
 		rsrc/OOC/oo2crc.xml.mk >rsrc/OOC/oo2crc.xml
 
-oo2c:
+### This configuration file is used to build and install the compiler and
+### library from scratch.  It must not refer to any stale data that may
+### be present on the target system.
+oo2crc-install.xml: rsrc/OOC/oo2crc.xml
+	sed -e 's:<file-system>:<!--:g' -e 's:</file-system>:-->:g' rsrc/OOC/oo2crc.xml >oo2crc-install.xml
+
+dist: oo2crc-install.xml
 	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj 2>/dev/null
 	$(OOC) --make -O $(OFLAGS) oo2c
-
-dist: oo2c
 	rm -Rf stage0
 	mkdir stage0 stage0/lib
 	ln -s ../src stage0/src
 	ln -s ../../lib/src stage0/lib/src
-	./oo2c --make -r stage0/lib -r stage0 --cc true stage0/src/oo2c.Mod
+	./oo2c --config oo2crc-install.xml --make -r stage0/lib -r stage0 --cc true stage0/src/oo2c.Mod
 	rm -Rf stage0/sym/* stage0/lib/sym/*
 	cd stage0 && $(PERL) $(OOC_DEV_ROOT)/rsrc/OOC/makefilegen.pl >Makefile.ext
 	${MAKE} distclean
 	cd .. && tar  -c -v -j --exclude CVS --exclude '*~' --exclude '.#*' -f ooc2-dist-`date +"%Y%m%d"`.tar.bz2 ooc2
 
-stage0/exe/oo2c:
+### Create initial compiler executable from distributed C sources.
+stage0/oo2c:
 	${MAKE} -C stage0 -f Makefile.ext oo2c
 
-stage1/src/oo2c.Mod:
-	mkdir -p stage1
-	ln -s ../src stage1/src
+### Build library from core modules using the initial compiler executable.
+lib/obj/liboo2c.la: stage0/oo2c oo2crc-install.xml
+	stage0/oo2c --config oo2crc-install.xml -r lib --build-package liboo2c
 
-stage1/lib/src/RT0.Mod:
-	mkdir -p stage1/lib
-	ln -s ../../lib/src stage1/lib/src
+### Build second compiler using the initial compiler executable and the
+### library lib/obj/liboo2c.la.
+exe/oo2c: stage0/oo2c oo2crc-install.xml lib/obj/liboo2c.la
 
-stage1/exe/oo2c: stage0/exe/oo2c stage1/lib/src/RT0.Mod stage1/src/oo2c.Mod rsrc/OOC/oo2crc.xml
-	stage0/oo2c --config rsrc/OOC/oo2crc.xml -r stage1/lib -r stage1 --make stage1/src/oo2c.Mod
-
-stage1/lib/obj/liboo2c.o: stage1/exe/oo2c rsrc/OOC/oo2crc.xml
-	stage1/exe/oo2c --config rsrc/OOC/oo2crc.xml -r stage1/lib --make liboo2c
-	chmod -R a+rX,go-w stage1/lib
-
-install: stage1/lib/obj/liboo2c.o rsrc/OOC/oo2crc.xml mkdir
-	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(oocdir)/lib)
-	cd $(oocdir)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
-	${INSTALL_DATA} stage1/lib/src/*.h $(oocdir)/lib/src
-	${INSTALL_DATA} rsrc/OOC/oo2crc.xml $(oocdir)
-	${INSTALL_PROGRAM} stage1/exe/oo2c $(bindir)
+install: lib/obj/liboo2c.la exe/oo2c
+	stage0/oo2c --config oo2crc-install.xml -r lib --install-program "$(INSTALL_PROGRAM)" --install-package liboo2c
+	stage0/oo2c --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" --install-package oo2c
+	chmod a+x $(oocdir)/install-sh
 
 install-strip:
 	${MAKE} INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
