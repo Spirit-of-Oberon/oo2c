@@ -150,7 +150,7 @@ BEGIN
   IF make. value(BooleanValue.Value). boolean THEN
     mode := Rep.modExecutable
   ELSE
-    mode := Rep.modObjectFile
+    mode := Rep.modCodeFileC
   END;
   
   IF (cfgErrList. msgCount # 0) THEN
