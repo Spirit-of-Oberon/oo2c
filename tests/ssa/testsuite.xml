@@ -20,7 +20,7 @@
   select ="&SetupTestCasesWithOut; rot4">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5">-->
+  select ="&SetupTestCasesWithOut; vtable1 vtable2 vtable4 vtable3 vtable5 generic1 generic41 generic45">-->
 
   &TestSetupWithOut;
     
@@ -1781,6 +1781,7 @@
     <test id="align2" type="reject" file="Align2.Mod">
       Reject case with more than one alignment specified.
     </test>
+
     <test id="callconv1" type = "accept" file="CallConv1.Mod">
       Accept calling conventions flags on procedures and procedure types.
     </test>
@@ -1797,7 +1798,6 @@
       Accept various kinds of strings as POINTER [CSTRING].
     </test>
 
-<!--
     <test id="vtable1" type = "run" file="VTable1.Mod">
       Check that VTABLE flag is accepted for RECORD. This should generate a
       non-zero RECORD size (allowing space for the VTBL pointer).
@@ -1816,7 +1816,6 @@
 	  Recursively call and call-back between Oberon-2 and C++ VTABLE objects.
       This will fail if method table is incorrectly ordered, 
     </test>
--->
   </testcases>
 
   <processor-info processor-name="TestCompile">
@@ -2264,10 +2263,9 @@
 
     <reject-info id="callconv4" pos="%:="
         msg="Expression not compatible with variable type `CallConv1.Proc'"/>
-<!--
+
     <reject-info id="vtable2" pos="BDesc = %RECORD (ADesc)"
         msg="VTABLE flag is inconsistent with base type"/>
--->
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>
