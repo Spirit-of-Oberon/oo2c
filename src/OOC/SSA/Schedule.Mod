@@ -584,6 +584,11 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
              of there block, because their effects in conjunction with
              "collect" take effect at the beginning *)
           RETURN ready;
+        ELSIF (best. instr. opcode = Opcode.collect) THEN
+          (* "collect" instructions must be placed at the end of the block;
+             conceptually, they are tight to their directly following
+             "select" in another block *)
+          best := ready;
         END;
         ready := ready. nextProxy;
       END;
@@ -620,12 +625,6 @@ PROCEDURE TopSort (b: Block): BOOLEAN;
     ClearProxyList (b);
     WHILE (ready # NIL) DO
       proxy := NextInstr (ready);
-      IF (proxy. instr. opcode = Opcode.collect) &
-         (proxy. nextProxy # NIL) THEN
-        (* postpone scheduling of collect instructions until the very end
-           of the block *)
-        proxy := proxy. nextProxy
-      END;
       Remove (ready, proxy);
       
       (* append `proxy' to list of instructions in `b' *)
