@@ -303,7 +303,7 @@ PROCEDURE WriteTypeAndLength (w: Writer; instr: SSA.Instr;
 
 
 PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
-                          pb: SSA.ProcBlock; VAR haveCopyParameter: BOOLEAN);
+                          pb: SSA.ProcBlock);
 (**Writes local declarations of the procedure, most of all local variables.  *)
   VAR
     declMap: Dictionary.Dictionary;
@@ -343,7 +343,6 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
     END GetLocalDecl;
   
   BEGIN
-    haveCopyParameter := FALSE;
     declMap := Dictionary.New();
     instr := pb. instrList;
     WHILE (instr # NIL) DO
@@ -1219,8 +1218,7 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
     END;
   END WriteExpr;
 
-PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
-                                      haveCopyParameter: BOOLEAN);
+PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
   VAR
     proxy: Schedule.InstrProxy;
     instr: SSA.Instr;
@@ -1418,8 +1416,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     END;
   END WriteInstrList;
 
-PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
-                                   haveCopyParameter: BOOLEAN);
+PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
   VAR
     registeredGoto: Schedule.Block;
     (* this is the goto that would have been written at the end of the
@@ -1507,7 +1504,7 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block;
           WriteBlockId (b);
           w. WriteChar (":");
         END;
-        w. WriteInstrList (b, haveCopyParameter);
+        w. WriteInstrList (b);
       END;
       
       WITH b: Schedule.BranchBlock DO
@@ -1581,7 +1578,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     domRoot: Schedule.Block;
     registerMap: Dictionary.Dictionary;
     w: Writer;
-    haveCopyParameter, writeProc: BOOLEAN;
+    writeProc: BOOLEAN;
     destore: Destore.State;
 
   PROCEDURE Write (pre, post: ARRAY OF CHAR);
@@ -1743,7 +1740,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     t. w. Indent (1);
     registerMap := Allocator.AssignRegisters (pb, domRoot, t. w);
     w := NewWriter (t, t. w, pb, registerMap);
-    WriteLocalDecl (t, w, pb, haveCopyParameter);
+    WriteLocalDecl (t, w, pb);
     IF proc.decl.IsModuleBody() THEN
       InitPreloadedVars(t.preloadedVars);
     END;
@@ -1752,7 +1749,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     JumpChaining (domRoot);
     FixCrossJumps (domRoot);
     w. WriteLn;
-    w. WriteBlocks (domRoot, haveCopyParameter);
+    w. WriteBlocks (domRoot);
     w. Newline;
     (* add empty statement to avoid gcc's warning `deprecated use of
        label at end of compound statement'  *)
