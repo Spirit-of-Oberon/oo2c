@@ -31,6 +31,8 @@
     <set name='FunctResult'>TRUE</set>
     <set name='TypeGuard'>TRUE</set>
     <set name='ConformantMode'>FALSE</set>  <!-- not supported -->
+    
+    <set name='TARGET_OS'>@TARGET_OS@</set>  <!-- not defined before 2.0.7 -->
   </pragmas>
 
   <repositories>
