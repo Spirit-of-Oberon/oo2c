@@ -29,10 +29,28 @@ TYPE
   BranchBlock* = POINTER TO BranchBlockDesc;
 
 TYPE
+  Info* = POINTER TO InfoDesc;
+  InfoDesc* = RECORD
+  END;
+  
+TYPE
   Dependent = POINTER TO DependentDesc;
   DependentDesc = RECORD
     next: Dependent;
     block: Block;
+  END;
+
+TYPE
+  Jump* = POINTER TO JumpDesc;
+  JumpDesc = RECORD
+    src-: Block;
+    (**Source block of the jump or branch instruction.  *)
+    
+    dest-: Block;
+    (**Target of the jump.  *)
+    
+    nextTargetUse-: Jump;
+    (**Next entry in target list @ofield{Block.targetUseList}.  *)
   END;
   
 TYPE
@@ -51,14 +69,14 @@ TYPE
     (**The block directory dominating this one.  For the root of the domitor
        tree, this field is @code{NIL}.  *)
        
-    proxyList-, proxyTail: InstrProxy;
+    proxyList-, proxyTail-: InstrProxy;
     (**List with all instructions in this block.  *)
 
     domList-: Block;
     (**Lists all blocks directly dominated by this one.  The blocks are linked
        by @ofield{nextDom}.  *)
 
-    jump-: Block;
+    jump-: Jump;
     (**Default target of control flow when leaving this block.  Only @code{NIL}
        if the block is last in a procedure.  *)
 
@@ -68,11 +86,19 @@ TYPE
     depCount: LONGINT;
     (* number of blocks that should be written before this one can be written*)
     
-    degreeIn-: LONGINT;
-    (**The number of jumps or branches that have this block as target.  *)
-
     isLoopHead-: BOOLEAN;
     (**TRUE iff this block is the head of a loop *)
+
+    targetUseList-: Jump;
+    (**List of all jump or branch instructions that have this block as their
+       target.  List entries are linked through @ofield{Jump.nextTargetUse}.  *)
+    degreeIn-: LONGINT;
+    (**The number of jumps or branches that have this block as target.  This is
+       equivalent to the length of the list in @ofield{targetUseList}.  *)
+    
+    info*: Info;
+    (**Field free for private use within algorithms operating on blocks.
+       See @oproc{Block.SetInfo}.  *)
   END;
   
 TYPE
@@ -80,18 +106,23 @@ TYPE
     (BlockDesc)
     predicate-: SSA.Opnd;
     branchOnTrue-: BOOLEAN;
-    branchTo-: Block;
+    branchTo-: Jump;
   END;
   
 TYPE
   InstrProxyDesc = RECORD
     (SSA.NodeDesc)
-    nextProxy-, prevProxy: InstrProxy;
+    nextProxy-, prevProxy-: InstrProxy;
     block-: Block;
     instr-: SSA.Instr;
   END;
 
-PROCEDURE InitBlock (b: Block; jump: Block);
+
+PROCEDURE InitInfo* (info: Info);
+  BEGIN
+  END InitInfo;
+
+PROCEDURE InitBlock (b: Block);
   BEGIN
     Object.Init (b);
     b. proxyList := NIL;
@@ -99,21 +130,66 @@ PROCEDURE InitBlock (b: Block; jump: Block);
     b. parent := NIL;
     b. nextDom := NIL;
     b. domList := NIL;
-    b. jump := jump;
+    b. jump := NIL;
     b. dependentList := NIL;
     b. depCount := 0;
+    b. targetUseList := NIL;
     b. degreeIn := 0;
     b. isLoopHead := FALSE;
+    b. info := NIL;
   END InitBlock;
 
-PROCEDURE NewBlock (jump: Block): Block;
+PROCEDURE NewBlock(): Block;
   VAR
     b: Block;
   BEGIN
     NEW (b);
-    InitBlock (b, jump);
+    InitBlock (b);
     RETURN b
   END NewBlock;
+
+PROCEDURE (b: Block) SetInfo* (info: Info);
+  VAR
+    nested: Block;
+  BEGIN
+    b. info := info;
+    nested := b. domList;
+    WHILE (nested # NIL) DO
+      nested. SetInfo (info);
+      nested := nested. nextDom
+    END;
+  END SetInfo;
+
+PROCEDURE SetJump (VAR reference: Jump; src, dest: Block);
+  PROCEDURE NewJump (src, dest: Block; nextTargetUse: Jump): Jump;
+    VAR
+      j: Jump;
+    BEGIN
+      NEW (j);
+      j. src := src;
+      j. dest := dest;
+      j. nextTargetUse := nextTargetUse;
+      RETURN j
+    END NewJump;
+
+  PROCEDURE Remove (VAR list: Jump; entry: Jump);
+    BEGIN
+      IF (list = entry) THEN
+        list := list. nextTargetUse
+      ELSE
+        Remove (list. nextTargetUse, entry)
+      END;
+    END Remove;
+  
+  BEGIN
+    IF (reference # NIL) THEN
+      DEC (reference. dest. degreeIn);
+      Remove (reference. dest. targetUseList, reference); 
+    END;
+    INC (dest. degreeIn);
+    reference := NewJump (src, dest, dest. targetUseList);
+    dest. targetUseList := reference
+  END SetJump;
 
 PROCEDURE ClearProxyList (b: Block);
   BEGIN
@@ -121,30 +197,38 @@ PROCEDURE ClearProxyList (b: Block);
     b. proxyTail := NIL;
   END ClearProxyList;
 
-PROCEDURE Dominates (dominator, child: Block);
+PROCEDURE MakeDominator (dominator, child: Block);
   BEGIN
     child. nextDom := dominator. domList;
     dominator. domList := child;
     child. parent := dominator
+  END MakeDominator;
+
+PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
+  BEGIN
+    WHILE (child # NIL) & (child # dominator) DO
+      child := child. parent
+    END;
+    RETURN (child # NIL)
   END Dominates;
 
 
-PROCEDURE InitBranchBlock (b: BranchBlock; jump: Block; predicate: SSA.Opnd;
-                           branchOnTrue: BOOLEAN; branchTo: Block);
+PROCEDURE InitBranchBlock (b: BranchBlock; predicate: SSA.Opnd;
+                           branchOnTrue: BOOLEAN);
   BEGIN
-    InitBlock (b, jump);
+    InitBlock (b);
     b. predicate:= predicate;
     b. branchOnTrue := branchOnTrue;
-    b. branchTo := branchTo;
+    b. branchTo := NIL;
   END InitBranchBlock;
 
-PROCEDURE NewBranchBlock (jump: Block; predicate: SSA.Opnd;
-                          branchOnTrue: BOOLEAN; branchTo: Block): BranchBlock;
+PROCEDURE NewBranchBlock (predicate: SSA.Opnd;
+                          branchOnTrue: BOOLEAN): BranchBlock;
   VAR
     b: BranchBlock;
   BEGIN
     NEW (b);
-    InitBranchBlock (b, jump, predicate, branchOnTrue, branchTo);
+    InitBranchBlock (b, predicate, branchOnTrue);
     RETURN b
   END NewBranchBlock;
 
@@ -300,12 +384,11 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
     
     BEGIN
       oldEnter := enter;
-      path1 := NewBlock (enter);
-      path2 := NewBlock (enter);
+      path1 := NewBlock();
+      path2 := NewBlock();
       in := NewBranchBlock
-          (path2, select. opndList,
-           select. opndList. nextOpnd. arg. IsBooleanConst (TRUE),
-           path1);
+          (select. opndList,
+           select. opndList. nextOpnd. arg. IsBooleanConst (TRUE));
 
       MarkInstructions (enter. proxyList, keepInEnter);
       Move (select. opndList. arg, enter, moveToIn, moveToIn);
@@ -339,14 +422,14 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       exitEnter := DebranchBlock (enter);
       select. opcode := -select. opcode;(* unmask it again *)
 
-      exitPath1. jump := enter;
-      exitPath2. jump := enter;
-      exitIn(BranchBlock). jump := path2;
-      exitIn(BranchBlock). branchTo := path1;
+      SetJump (exitPath1. jump, exitPath1, enter);
+      SetJump (exitPath2. jump, exitPath2, enter);
+      SetJump (exitIn(BranchBlock). jump, exitIn, path2);
+      SetJump (exitIn(BranchBlock). branchTo, exitIn, path1);
       
-      Dominates (in, path1);
-      Dominates (in, path2);
-      Dominates (in, enter);
+      MakeDominator (in, path1);
+      MakeDominator (in, path2);
+      MakeDominator (in, enter);
 
       enter := in;
       ASSERT (exitEnter = oldEnter);
@@ -424,11 +507,8 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
          body: jumps to the old enter, branches to its own beginning  *)
       predicate := loopEnd. NthOpnd (2);
       body := NewBranchBlock
-          (enter, predicate,
-           predicate. nextOpnd. arg. IsBooleanConst (FALSE),
-           NIL);
-      in := NewBlock (body);
-      body(BranchBlock). branchTo := body;
+          (predicate, predicate. nextOpnd. arg. IsBooleanConst (FALSE));
+      in := NewBlock();
       
       (* move all instructions contributing to the "loop-end" or to the forward
          reference from "loop-start" into the `in' block; then, move all
@@ -446,12 +526,12 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       exitEnter := DebranchBlock (enter);
       loopEnd. opcode := -loopEnd. opcode; (* unmask it again *)
       
-      exitIn. jump := body;
-      exitBody(BranchBlock). jump := enter;
-      exitBody(BranchBlock). branchTo := body;
+      SetJump (exitIn. jump, exitIn, body);
+      SetJump (exitBody(BranchBlock). jump, exitBody, enter);
+      SetJump (exitBody(BranchBlock). branchTo, exitBody, body);
       
-      Dominates (in, body);
-      Dominates (body, enter);
+      MakeDominator (in, body);
+      MakeDominator (body, enter);
       
       enter := in;
       ASSERT (exitEnter = oldEnter);
@@ -585,6 +665,17 @@ PROCEDURE SortBlocks (b: Block);
   END SortBlocks;
 
 
+PROCEDURE FollowJump* (jump: Jump): Block;
+(**Returns @code{NIL} if @oparam{jump} is @code{NIL}, and the target of the
+   jump otherwise.  *)
+  BEGIN
+    IF (jump = NIL) THEN
+      RETURN NIL
+    ELSE
+      RETURN jump. dest
+    END;
+  END FollowJump;
+
 PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
 (**Takes a procedure representation in SSA format and converts it into a graph
    representation consisting of basic blocks.  *)
@@ -594,21 +685,6 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     proxy: InstrProxy;
     ok: BOOLEAN;
 
-  PROCEDURE CalculateDegree (b: Block);
-    BEGIN
-      IF (b # NIL) THEN
-        INC (b. degreeIn);
-        IF (b. degreeIn = 1) THEN
-          WITH b: BranchBlock DO
-            CalculateDegree (b. branchTo);
-            CalculateDegree (b. jump);
-          ELSE
-            CalculateDegree (b. jump);
-          END;
-        END;
-      END;
-    END CalculateDegree;
-  
   PROCEDURE ArrangeBlock (b: Block);
   (* arrange children within each block in such way that loop branches have a
      target earlier in the linear chain of blocks, and all other jumps and
@@ -651,11 +727,11 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       
       BEGIN
         WITH b: BranchBlock DO
-          ProcessJump (b. branchTo)
+          ProcessJump (b. branchTo. dest)
         ELSE
         END;
         IF (b. jump # NIL) THEN
-          ProcessJump (b. jump);
+          ProcessJump (b. jump. dest);
         END;
 
         nested := b. domList;
@@ -710,7 +786,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         END;
         
         domBlock. domList := NIL;
-        preferedBlock := domBlock. jump;
+        preferedBlock := FollowJump (domBlock. jump);
         WHILE (ready # NIL) DO
           IF (preferedBlock # NIL) &
              (preferedBlock. parent = domBlock) &
@@ -733,7 +809,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
             END;
             dep := dep. next
           END;
-          preferedBlock := b. jump
+          preferedBlock := FollowJump (b. jump);
         END;
         ASSERT (waiting = NIL)
       END SortBlocks;
@@ -747,8 +823,8 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       END;
 
       (* locate jump and branch instructions in our nested blocks *)
-      IF (b. jump = b) OR
-         (b IS BranchBlock) & (b(BranchBlock). branchTo = b)THEN
+      IF (b. jump # NIL) & (b. jump. dest = b) OR
+         (b IS BranchBlock) & (b(BranchBlock). branchTo. dest = b)THEN
         b. isLoopHead := TRUE
       END;
       nested := b. domList;
@@ -768,7 +844,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     ok := pb. TopSort();
     ASSERT (ok);
     pb. SetMarkers (NIL, -1);
-    b := NewBlock (NIL);
+    b := NewBlock();
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       proxy := NewInstrProxy (instr);
@@ -789,10 +865,6 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
        loop branches have a target earlier in the chain of blocks, and all
        other jumps and branches a target later in the chain *)
     ArrangeBlock (b);
-    
-    (* set the `degreeIn' fields to the number of blocks that jump or branch
-       into the block *)
-    CalculateDegree (b);
     
     RETURN b
   END Schedule;
