@@ -60,24 +60,27 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
       
       CASE arg1. subclass OF
       | Opcode.scSigned8 .. Opcode.scAddress:
-        i1 := arg1. value(Integer.Value);
-        i2 := arg2. value(Integer.Value);
-        
-        CASE instr. opcode OF
-        | Opcode.add     : v := i1.Sum(i2);
-        | Opcode.subtract: v := i1.Difference(i2);
-        | Opcode.multiply: v := i1.Product(i2);
-
-        | Opcode.eql: v := Boolean.New(i1.Compare(i2)  = 0);
-        | Opcode.neq: v := Boolean.New(i1.Compare(i2)  # 0);
-        | Opcode.leq: v := Boolean.New(i1.Compare(i2) <= 0);
-        | Opcode.lss: v := Boolean.New(i1.Compare(i2) <  0);
-        | Opcode.geq: v := Boolean.New(i1.Compare(i2) >= 0);
-        | Opcode.gtr: v := Boolean.New(i1.Compare(i2) >  0);
-        ELSE                             (* not supported *)
-          (*instr. LogOpcode ("not folding (unsupported opcode)");
-          instr. opndList. arg. instr. LogOpcode ("arg1");
-          instr. opndList. nextOpnd. arg. instr. LogOpcode ("arg2");*)
+        IF (arg1.value IS Integer.Value) & (arg1.value IS Integer.Value) THEN
+          (* only dealing with integers for now; FIXME... add set values *)
+          i1 := arg1. value(Integer.Value);
+          i2 := arg2. value(Integer.Value);
+          
+          CASE instr. opcode OF
+          | Opcode.add     : v := i1.Sum(i2);
+          | Opcode.subtract: v := i1.Difference(i2);
+          | Opcode.multiply: v := i1.Product(i2);
+            
+          | Opcode.eql: v := Boolean.New(i1.Compare(i2)  = 0);
+          | Opcode.neq: v := Boolean.New(i1.Compare(i2)  # 0);
+          | Opcode.leq: v := Boolean.New(i1.Compare(i2) <= 0);
+          | Opcode.lss: v := Boolean.New(i1.Compare(i2) <  0);
+          | Opcode.geq: v := Boolean.New(i1.Compare(i2) >= 0);
+          | Opcode.gtr: v := Boolean.New(i1.Compare(i2) >  0);
+          ELSE                             (* not supported *)
+            (*instr. LogOpcode ("not folding (unsupported opcode)");
+               instr. opndList. arg. instr. LogOpcode ("arg1");
+               instr. opndList. nextOpnd. arg. instr. LogOpcode ("arg2");*)
+          END;
         END;
         
       ELSE                               (* not supported *)
