@@ -1,7 +1,30 @@
-KNOWN PROBLEMS:
+Known installation problems (and workarounds):
+
+----
+
+(configure): If configure fails to link against a particular library
+-lfoo, then check config.log for the error message reported by the
+compiler.  Obscure messages reporting a failure determine a type size
+can also be caused by a broken -lfoo entry in LDFLAGS.
+
+----
 
 (MacOSX): When installing from a distribution tar ball, MacOS X users
 need to add "-traditional-cpp" to the gcc options, like
 
   CPPFLAGS="-traditional-cpp" ./configure
 
+----
+
+(Mandrake 9.1, Yellow Dog Linux 3.0): 
+
+  - to compile on YDL3.0 you need GCC 3.3.1
+  - if you are just installing libgc to /usr/local (tarball default):
+      copy gc's include/gc.h to a new directory: /usr/local/gc/gc.h
+      add /usr/local/lib to /etc/ld.so.conf AND run (/sbin/)ldconfig
+  - libgc needs the dlopen symbol, which is in libdl
+  - call configure with 
+
+    CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib -ldl" ./configure
+
+  [hints from Richard Theil]
