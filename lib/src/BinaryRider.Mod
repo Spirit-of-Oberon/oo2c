@@ -3,7 +3,7 @@ MODULE BinaryRider [OOC_EXTENSIONS];
 
 (*
     BinaryRider - Binary-level input/output of Oberon variables.       
-    Copyright (C) 1998, 1999, 2002  Michael van Acken
+    Copyright (C) 1998, 1999, 2002, 2003  Michael van Acken
     Copyright (C) 1997  Michael Griebling
  
     This module is free software; you can redistribute it and/or modify
@@ -419,7 +419,7 @@ PROCEDURE (w: Writer) WriteString*(s[NO_COPY]: ARRAY OF CHAR);
     END
   END WriteString;
 
-PROCEDURE (w: Writer) WriteLString*(s[NO_COPY]: ARRAY OF CHAR);
+PROCEDURE (w: Writer) WriteLString*(s[NO_COPY]: ARRAY OF LONGCHAR);
 (**The terminating @samp{0X} is also written.  *)
   VAR
     i: LONGINT;
