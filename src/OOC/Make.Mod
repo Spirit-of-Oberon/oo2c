@@ -22,7 +22,7 @@ IMPORT
       OOC:Make:WriteMainFileAssembler, SSAtoIA32 := OOC:IA32:WriteAssembler;
 
 TYPE
-  ShellCommand = ARRAY 4*1024 OF CHAR;
+  ShellCommand* = ARRAY 4*1024 OF CHAR;
   ModuleInfo = POINTER TO ModuleInfoDesc;
   ModuleInfoDesc = RECORD
     (Object.ObjectDesc)
