@@ -23,7 +23,7 @@
 MODULE H2O:Scanner [OOC_EXTENSIONS];
 
 IMPORT
-  Err, CharClass, TextRider,
+  Err, CharClass, TextRider, LRealStr,
   Object, ADT:StringBuffer,
   H2O:Source, H2O:Error;
 
@@ -48,6 +48,7 @@ CONST
   comment*=6;
   parameter* = 7;
   whiteSpace* = 8;
+  realNumber* = 9;
 
   (* 100: punctuation *)
 
@@ -113,9 +114,10 @@ TYPE
   TokenDesc* = RECORD (Object.ObjectDesc)
     name- : STRING;
     sym- : INTEGER;
-    len- : INTEGER;
-    base- : INTEGER;
-    value- : LONGINT;
+    len* : INTEGER;
+    base* : INTEGER;
+    value* : LONGINT;
+    rvalue* : LONGREAL;
   END;
  
 TYPE
@@ -226,8 +228,9 @@ VAR
         ELSE
           s.buffer.AppendLatin1Char("*");
         END
+      ELSE
+        AcceptChar;
       END;
-      AcceptChar;
     END
   END Comment;
   
@@ -236,10 +239,45 @@ VAR
     token.sym := comment; token.value := 1;
     WHILE ch # eol DO AcceptChar END;
   END Comment2;
-  
-  PROCEDURE Number;
+
+(*
+> nonzerodigit ::= '1' .. '9'.
+> digit ::= '0' .. '9'.
+> octaldigit ::= '0' .. '7'.
+> hexdigit ::= '0' .. '9' 'A' .. 'F' 'a' .. 'f'.
+> digitsequence ::= digit { digit }.
+>
+> integerconstant ::= 
+>   hexconstant | octalconstant | decimalconstant;
+>
+> hexmarker ::= "0x" | "0X".
+> octalmarker ::= "0".
+> longmarker ::= 'L' | 'l' | 'U' | 'u';
+> hexconstant ::= hexmarker hexdigit { hexdigit } [ longmarker ].
+> octalconstant ::= octalmarker octaldigit { octaldigit } [ longmarker ].
+> decimalconstant ::= nonzerodigit { digit } [ longmarker]
+>
+> dotteddigits ::= 
+>   digitsequence '.' 
+> | digitsequence '.' digitsequence
+> | '.' digitsequence.
+>
+> exponent ::= ( 'e' | 'E') [ '+' | '-' ].
+>
+> floatconst ::= 
+>   digitsequence exponent
+> | dotteddigits  [exponent].
+>
+> number ::= 
+>   integerconstant
+> | floatconstant.
+*)
+
+  PROCEDURE Number(isReal : BOOLEAN);
   VAR
     digit : INTEGER;
+    chars : StringBuffer.CharsLatin1;
+    result : LRealStr.ConvResults;
   
     PROCEDURE Digit() : BOOLEAN;
     BEGIN
@@ -253,10 +291,15 @@ VAR
       digit := ORD(ch) - ORD('0');
       RETURN (digit >= 0) & (digit < token.base);
     END Digit;
-  
+
+    PROCEDURE FloatError;
+    BEGIN
+      s.err.ErrorParam("Invalid floating constant `$0'", s.buffer.ToString(), NIL, NIL);
+    END FloatError;
+
   BEGIN
     token.value := 0;
-    IF ch = '0' THEN
+    IF (ch = '0') & ~isReal THEN
       AcceptChar;
       IF (ch = 'x') OR (ch = 'X') THEN
         token.base := 16;
@@ -271,9 +314,39 @@ VAR
       token.value := token.base * token.value + digit;
       AcceptChar
     END;
-    token.sym := number;
-    IF (ch = "L") OR (ch = "l") OR (ch = "U") OR (ch = "u") THEN
+    IF (ch = '.') & ~isReal THEN
       AcceptChar;
+      isReal := TRUE;
+      WHILE Digit() DO
+        AcceptChar;
+      END;
+    END;
+    IF ((ch = 'e') OR (ch = 'E')) THEN
+      isReal := TRUE;
+      AcceptChar;
+      IF (ch = '+') OR (ch = '-') THEN
+        AcceptChar;
+      END;
+      IF Digit() THEN
+        WHILE Digit() DO
+          AcceptChar;
+        END;
+      ELSE
+        FloatError;
+      END;
+    END;
+    IF ~isReal & ((ch = "L") OR (ch = "l") OR (ch = "U") OR (ch = "u")) THEN
+      AcceptChar;
+    END;
+    IF isReal THEN
+      chars := s.buffer.CharsLatin1();
+      LRealStr.StrToReal(chars^, token.rvalue, result);
+      IF result # LRealStr.strAllRight THEN
+        FloatError;
+      END;
+      token.sym := realNumber;
+    ELSE
+      token.sym := number;
     END;
   END Number;
   
@@ -353,7 +426,7 @@ BEGIN
     | "a".."z", "A".."Z", "_": 
       Ident; 
     | "0".."9": 
-      Number
+      Number(FALSE);
     | '"': GetString('"')
     | "'": GetString("'")
     | "#": SymOp(hash);
@@ -375,6 +448,9 @@ BEGIN
         ELSE
           s.err.Error("Invalid token: '..'");
         END;
+      ELSIF ((ch >= '0') & (ch <= '9')) THEN
+        s.buffer.Clear(); s.buffer.AppendLatin1("0.");
+        Number(TRUE);
       END;
     | '<': 
       AcceptChar; 
