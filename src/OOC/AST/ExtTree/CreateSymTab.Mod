@@ -245,51 +245,53 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     IF (mf # NIL) & (mf. linkSections # NIL) THEN
       FOR i := 0 TO mf. linkSections. len-1 DO
         n := mf. linkSections. n[i];
-        WITH n: ExtTree.LinkFileFlag DO
-          str := n. fileName. GetString (TRUE);
-          chars := str(Object.String8).CharsLatin1();
-          uri := ParserURI.NewURI (chars^, v. baseURI, res);
-          ASSERT (res = NIL);
-          ASSERT (uri # NIL);
-          uri := uri. MakeRelative (v. rootURI);
-          IF (n. prefixOpt # NIL) THEN
-            prefixOption := n. prefixOpt. GetString (FALSE)
-          ELSE
-            prefixOption := NIL
-          END;
-          IF (n. suffixOpt # NIL) THEN
-            suffixOption := n. suffixOpt. GetString (FALSE)
-          ELSE
-            suffixOption := NIL
-          END;
-          moduleDecl. AddLinkFile (uri(URI.HierarchicalURI),
-                                   prefixOption, suffixOption);
-
-        | n: ExtTree.LinkLibFlag DO
-          str := n. libName. GetString (TRUE);
-          IF (n. prefixOpt # NIL) THEN
-            prefixOption := n. prefixOpt. GetString (FALSE)
-          ELSE
-            prefixOption := NIL
-          END;
-          IF (n. suffixOpt # NIL) THEN
-            suffixOption := n. suffixOpt. GetString (FALSE)
-          ELSE
-            suffixOption := NIL
-          END;
-          IF (n. dependencies = NIL) THEN
-            NEW (depList, 0);
-          ELSE
-            NEW (depList, n. dependencies. len DIV 2+1);
-            FOR j := 0 TO n. dependencies. len-1 BY 2 DO
-              depList[j DIV 2] := n. dependencies. n[j](ExtTree.Terminal). GetString (TRUE);
+        IF (n # NIL) THEN  (* skip empty section *)
+          WITH n: ExtTree.LinkFileFlag DO
+            str := n. fileName. GetString (TRUE);
+            chars := str(Object.String8).CharsLatin1();
+            uri := ParserURI.NewURI (chars^, v. baseURI, res);
+            ASSERT (res = NIL);
+            ASSERT (uri # NIL);
+            uri := uri. MakeRelative (v. rootURI);
+            IF (n. prefixOpt # NIL) THEN
+              prefixOption := n. prefixOpt. GetString (FALSE)
+            ELSE
+              prefixOption := NIL
             END;
+            IF (n. suffixOpt # NIL) THEN
+              suffixOption := n. suffixOpt. GetString (FALSE)
+            ELSE
+              suffixOption := NIL
+            END;
+            moduleDecl. AddLinkFile (uri(URI.HierarchicalURI),
+                                     prefixOption, suffixOption);
+            
+          | n: ExtTree.LinkLibFlag DO
+            str := n. libName. GetString (TRUE);
+            IF (n. prefixOpt # NIL) THEN
+              prefixOption := n. prefixOpt. GetString (FALSE)
+            ELSE
+              prefixOption := NIL
+            END;
+            IF (n. suffixOpt # NIL) THEN
+              suffixOption := n. suffixOpt. GetString (FALSE)
+            ELSE
+              suffixOption := NIL
+            END;
+            IF (n. dependencies = NIL) THEN
+              NEW (depList, 0);
+            ELSE
+              NEW (depList, n. dependencies. len DIV 2+1);
+              FOR j := 0 TO n. dependencies. len-1 BY 2 DO
+                depList[j DIV 2] := n. dependencies. n[j](ExtTree.Terminal). GetString (TRUE);
+              END;
+            END;
+            moduleDecl. AddLinkLib (str, depList, prefixOption, suffixOption);
+          ELSE
+            (* ignore list of flags for now *)
           END;
-          moduleDecl. AddLinkLib (str, depList, prefixOption, suffixOption);
-        ELSE
-          (* ignore list of flags for now *)
-        END
-      END
+        END;
+      END;
     END;
     
     v. root := moduleDecl;

@@ -73,7 +73,7 @@ CONST
   illegalFactor = 15;
   invalidFlag = 16;
   expectExternalKW = 17;
-  expectLinkSection = 18;
+  (*expectLinkSection = 18;  unused *)
   fileNameMismatch = 19;
   
 TYPE
@@ -125,8 +125,6 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Invalid flag"
     | expectExternalKW:
       t := "Expected keyword `INTERFACE' or `FOREIGN'"
-    | expectLinkSection:
-      t := "Expected link section"
     | fileNameMismatch:
       t := "Module name does not match access path `${name}'"
     END;
@@ -398,9 +396,9 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         
         BEGIN
           (*S: LinkSection =
-            S:   "FILE" string [Options] |
-            S:   "OBJ" string |
-            S:   "LIB" string ["(" string {"," string} ")"] [Options].
+            S:   [ "FILE" string [Options] |
+            S:     "OBJ" string |
+            S:      "LIB" string ["(" string {"," string} ")"] [Options] ].
             S: Options = "ADD_OPTION" ident ["," ident].  *)
           IF Ident ("FILE") THEN
             kw := CheckSym (Symbol.ident);
@@ -436,7 +434,6 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             RETURN ast. LinkLibFlag (kw, string, lParen, dependences, rParen,
                                     addOptions, addIdent1, addComma, addIdent2)
           ELSE
-            Err (expectLinkSection, sym);
             RETURN NIL
           END
         END LinkSection;
