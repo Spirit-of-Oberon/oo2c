@@ -11,7 +11,7 @@ static void Var8__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
 l3:
   i2=0;
 l4_loop:
-  i3 = _check_index(i2, str_0d, OOC_UINT16, 126);
+  i3 = _check_index(i2, str_0d, OOC_UINT32, 126);
   i4 = i3*1;
   i4 = (OOC_INT32)str+i4;
   *(OOC_UINT8*)i4 = (OOC_CHAR8)'\000';

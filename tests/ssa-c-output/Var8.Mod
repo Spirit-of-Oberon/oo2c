@@ -2,7 +2,7 @@ MODULE Var8;
 
 PROCEDURE Zero (VAR str: ARRAY OF CHAR);
   VAR
-    i: INTEGER;
+    i: LONGINT;
   BEGIN
     FOR i := 0 TO LEN(str)-1 DO
       str[i] := 0X
