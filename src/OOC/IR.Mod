@@ -3745,7 +3745,10 @@ PROCEDURE (b: Builder) NewMoveBlock* (sym: Symbol; source, dest: Expression;
     move: MoveBlock;
   BEGIN
     NEW (move);
-    InitMoveBlock (move, sym, source, dest, size);
+    InitMoveBlock (move, sym,
+                   b.AssertInteger(source),
+                   b.AssertInteger(dest),
+                   b.AssertInteger(size));
     RETURN move
   END NewMoveBlock;
 

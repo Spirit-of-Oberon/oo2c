@@ -1,3 +1,8 @@
+Still missing: The functions BIT, GET, PUT, and NEW are not
+implemented (the question is if they should be implemented...).
+
+
+
 Appendix C: The module SYSTEM
 
 ### ADR(v)
@@ -93,20 +98,20 @@ REJECT
 
 
 
-MOVE(a0,a1,n)
+### MOVE(a0,a1,n)
 
 ACCEPT
 
   1) Check that a local variable of a procedure can be source or
-     target.
+     target.  [Move1]
 
 REJECT
 
-  1) a0, a1, or n is not integer
-  2) type of a0 or a1 is larger than SYSTEM.ADDRESS
+  1) a0, a1, or n is not integer  [untested]
+  2) type of a0 or a1 is larger than SYSTEM.ADDRESS  [don't care ;-]
 
 
-NEW(v,n)
+NEW(v,n)  ...not implemented yet
 
 ACCEPT
 

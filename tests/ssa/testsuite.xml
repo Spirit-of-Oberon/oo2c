@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; lsh1 lsh2 lsh3 rot1 rot2 rot3">-->
+  select ="&SetupTestCasesWithOut; move1">-->
 
   &TestSetupWithOut;
     
@@ -1148,6 +1148,11 @@
     </test>
     <test id="rot3" type="reject" file="Rot3.Mod">
       Calling <code>SYSTEM.ROT</code> with a non-integer offset.
+    </test>
+
+    <test id="move1" type="run" file="Move1.Mod" output="Move1.Ref">
+      Using <code>SYSTEM.MOVE</code> to move the value of one local
+      variable to another.
     </test>
   </testcases>
 
