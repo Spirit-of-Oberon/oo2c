@@ -243,6 +243,11 @@ TYPE
     (GlobalDesc)
     type-: Sym.Type;
   END;
+  ModuleDescr* = POINTER TO ModuleDescrDesc;
+  ModuleDescrDesc = RECORD
+    (**Refers to the address of the module descriptor of the current module.  *)
+    (GlobalDesc)
+  END;
   Const* = POINTER TO ConstDesc;
   ConstDesc = RECORD
     (SelectorDesc)
@@ -639,6 +644,16 @@ PROCEDURE (s: TypeDescr) INIT*(type: Sym.Type);
 PROCEDURE (s: TypeDescr) SameSelector*(sel: Selector): BOOLEAN;
   BEGIN
     RETURN (sel IS TypeDescr) & (s.type = sel(TypeDescr).type);
+  END SameSelector;
+
+PROCEDURE (s: ModuleDescr) INIT*();
+  BEGIN
+    s.INIT^();
+  END INIT;
+
+PROCEDURE (s: ModuleDescr) SameSelector*(sel: Selector): BOOLEAN;
+  BEGIN
+    RETURN (sel IS ModuleDescr);
   END SameSelector;
 
 PROCEDURE (s: Const) INIT*(value: Boxed.Object; type: Sym.PredefId);
@@ -1911,6 +1926,19 @@ PROCEDURE (b: Block) AddAdrTypeDescr*(type: Sym.Type): Result;
     b.Add(instr);
     RETURN instr.AddResult(address);
   END AddAdrTypeDescr;
+
+PROCEDURE (b: Block) AddAdrModuleDescr*(): Result;
+  VAR
+    instr: Instr;
+    designator: Designator;
+  BEGIN
+    instr := NEW(Instr, const);
+    NEW(designator, 1);
+    designator[0] := NEW(ModuleDescr);
+    instr.SetDesignator(designator);
+    b.Add(instr);
+    RETURN instr.AddResult(address);
+  END AddAdrModuleDescr;
 
 PROCEDURE (b: Block) AddFramePointerOffset*(varDecl: Sym.VarDecl): Result;
   VAR

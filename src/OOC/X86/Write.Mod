@@ -432,6 +432,8 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           sb.Append(s.name);
         | s: S.TypeDescr DO
           sb.Append(Naming.NameOfTypeDescriptor(s.type, qtdData));
+        | s: S.ModuleDescr DO
+          sb.Append("_mid");
         END;
       END;
     END Literal;

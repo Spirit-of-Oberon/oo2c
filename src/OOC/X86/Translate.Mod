@@ -57,6 +57,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       controlTrue, memoryTrue, controlFalse, memoryFalse: S.Instr;
       loopStart: S.LoopStartInstr;
       loopEnd: S.Instr;
+      irExpr: IR.Expression;
       
     PROCEDURE SetCC(res: S.Result): S.Result;
       VAR
@@ -272,6 +273,49 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         MemoryCP(instr);
         ControlCP(instr);
       END Copy;
+
+    PROCEDURE TypeTag (design: IR.Expression; value: S.Result;
+                       checkDerefOfNil: BOOLEAN;
+                       derefSym: IR.Symbol): S.Result;
+    (* `design' is the variable designator, `value' its translation to SSA  *)
+      VAR
+        instr: S.Instr;
+        type: Sym.Type;
+      BEGIN
+        type := design.type.Deparam();
+        type := type.Bound();  (* for a type variable, continue with bound *)
+        IF checkDerefOfNil & (type IS Sym.Pointer) THEN
+          (*FIXME... check := AddException (pb, derefSym,
+             S.checkPointer, value. subclass);
+             check. AddOpnd (value, Opnd.arg);
+             value := check;*)
+        END;
+        
+        IF (type IS Sym.Pointer) THEN
+          instr := b.AddInstr1(S.typeTag, value);
+          RETURN instr.AddResult(S.address);
+        ELSIF (design IS IR.Var) &
+              design(IR.Var).decl(Sym.VarDecl).isVarParam &
+              TR.IsRecord(design(IR.Var).decl(Sym.VarDecl).type) THEN
+          (* type tag of a VAR parameter *)
+          ASSERT(FALSE);
+          (*instr.AddOpnd(value.instr.GetArgClass(Opnd.readDesign), Opnd.arg);*)
+        ELSE                             (* static type tag *)
+          RETURN b.AddAdrTypeDescr(type);
+        END;
+      END TypeTag;
+    
+    PROCEDURE FailedCheck(fctName: STRING; pos: LONGINT; arg: S.Result);
+      VAR
+        instr: S.Instr;
+      BEGIN
+        instr := b.AddInstr2(S.call, b.AddAdrRT(fctName), sp);
+        instr.AddOpnd(b.AddAdrModuleDescr());
+        instr.AddOpnd(b.AddConstLength(pos));
+        instr.AddOpnd(arg);
+        MemoryCP(instr);
+        ControlCP(instr);
+      END FailedCheck;
     
     PROCEDURE Expression(expr: IR.Expression): S.Result;
       VAR
@@ -476,37 +520,6 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           
           RETURN instr.resultList;
         END SelectField;
-      
-      PROCEDURE TypeTag (design: IR.Expression; value: S.Result;
-                         checkDerefOfNil: BOOLEAN;
-                         derefSym: IR.Symbol): S.Result;
-      (* `design' is the variable designator, `value' its translation to SSA  *)
-        VAR
-          instr: S.Instr;
-          type: Sym.Type;
-        BEGIN
-          type := design.type.Deparam();
-          type := type.Bound();  (* for a type variable, continue with bound *)
-          IF checkDerefOfNil & (type IS Sym.Pointer) THEN
-            (*FIXME... check := AddException (pb, derefSym,
-                                   S.checkPointer, value. subclass);
-            check. AddOpnd (value, Opnd.arg);
-            value := check;*)
-          END;
-          
-          IF (type IS Sym.Pointer) THEN
-            instr := b.AddInstr1(S.typeTag, value);
-            RETURN instr.AddResult(S.address);
-          ELSIF (design IS IR.Var) &
-                design(IR.Var).decl(Sym.VarDecl).isVarParam &
-                TR.IsRecord(design(IR.Var).decl(Sym.VarDecl).type) THEN
-            (* type tag of a VAR parameter *)
-            ASSERT(FALSE);
-            (*instr.AddOpnd(value.instr.GetArgClass(Opnd.readDesign), Opnd.arg);*)
-          ELSE                             (* static type tag *)
-            RETURN b.AddAdrTypeDescr(type);
-          END;
-        END TypeTag;
       
       PROCEDURE TypeGuard(guard: IR.TypeGuard): S.Result;
         BEGIN  (* FIXME... *)
@@ -799,6 +812,10 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           memoryCP := memoryFalse; controlCP := controlFalse;
           IF (statm.pathFalse # NIL) THEN
             StatmSeq(statm.pathFalse);
+          ELSIF statm.checkMatch THEN
+            irExpr := statm.guard(IR.TypeTest).expr;
+            res := TypeTag(irExpr, Expression(irExpr), TRUE, statm.sym);
+            FailedCheck("RT0__ErrorFailedWith", statm.sym.pos, res);
           END;
           endFalse := AddJump();
           (* finally, pull all the strings together again *)

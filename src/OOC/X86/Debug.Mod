@@ -258,6 +258,8 @@ PROCEDURE (out: Output) WriteFunction*();
         w.WriteObject('adr("'+selector.name+'")');
       | selector: S.TypeDescr DO
         w.WriteObject('adr("'+Naming.NameOfTypeDescriptor(selector.type, NIL)+'")');
+      | selector: S.ModuleDescr DO
+        w.WriteObject('_mid');
       END;
     END WriteConst;
 
@@ -291,6 +293,8 @@ PROCEDURE (out: Output) WriteFunction*();
             w.WriteObject('"'+s.name+'"');
           | s: S.TypeDescr DO
             w.WriteObject(Naming.NameOfTypeDescriptor(s.type, NIL));
+          | s: S.ModuleDescr DO
+            w.WriteString("_mid");
           | s: S.HeapObj DO
             w.WriteObject("heap");
           END;
