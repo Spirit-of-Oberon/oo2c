@@ -1322,7 +1322,7 @@ PROCEDURE (b: Builder) NewSize* (sym: Symbol; type: Expression): Expression;
   BEGIN
     ASSERT (type IS TypeRef);
     RETURN b. NewConst
-        (sym, Predef.GetType (Predef.longint),
+        (sym, Predef.GetType (Predef.lengthType),
          Integer.New (type(TypeRef). decl(Sym.TypeDecl). type. size));
   END NewSize;
 
@@ -3320,9 +3320,18 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
         IF fpar. supplementArgs THEN
           fparType := fpar. type;
           WITH fparType: Sym.Array DO
-            FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
-              newArgs. Append (b. Fold (b. NewLen (arg. sym, arg, i)));
+            IF IsPredefType (fparType. elementType, Predef.byte) THEN
+              (* passing a value to an ARRAY OF BYTE: the length argument
+                 is the size of the passed value *)
+              newArgs. Append (b. NewConst (arg. sym,
+                                            Predef.GetType (Predef.lengthType),
+                                            Integer.New (arg. type. size)));
               newFPars. Append (NIL);
+            ELSE
+              FOR i := 0 TO fparType. GetOpenDimensions()-1 DO
+                newArgs. Append (b. Fold (b. NewLen (arg. sym, arg, i)));
+                newFPars. Append (NIL);
+              END;
             END;
 
           | fparType: Sym.Record DO
