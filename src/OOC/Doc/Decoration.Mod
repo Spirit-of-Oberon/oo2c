@@ -201,7 +201,7 @@ PROCEDURE Remove* (sym: BasicList.Symbol; VAR deco: Decoration): String;
       WHILE (str[i] # 0X) DO
         IF (str[i] = CharClass.eol) THEN
           INC (i);
-          WHILE (str[i] <= " ") DO
+          WHILE (str[i] # 0X) & (str[i] <= " ") DO
             INC (i)
           END;
           WHILE (str[i] = "*") DO
