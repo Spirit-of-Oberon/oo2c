@@ -20,9 +20,13 @@ MODULE OOC:SSA:LoopRewrite;
     Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *)
 
+<*DEFINE OOC_DEBUG_LOOP_REWRITE := FALSE*>
+
 IMPORT
+<*IF OOC_DEBUG_LOOP_REWRITE THEN*>  
   SYSTEM, Err, Log, OOC:SSA:Blocker, IO:StdChannels,
-  Object, ADT:Dictionary, ADT:ArrayList,
+<*END*>  
+  Object, Object:BigInt, ADT:Dictionary, ADT:ArrayList,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 CONST
@@ -64,11 +68,14 @@ TYPE
     (* Number of times this product contributes to the overall sum.  If
        negative, then its value is subtracted.  *)
     factors: Factors;
+    (* List of atomic values that make up the product.  An array of length
+       zero means `1'.  *)
   END;
   PList = POINTER TO PListDesc;
   PListDesc = RECORD
     (* Summation of products.  The elements are sorted by ascending number of
-       factors, and then lexicographically based on their factors' ids.  *)
+       factors, and then lexicographically based on their factors' ids.
+       A `size' means that the PList is `0'.  *)
     prod: POINTER TO ARRAY OF Product;
     size: LONGINT;
   END;
@@ -131,6 +138,10 @@ TYPE
   
 CONST
   zero = NIL;
+  signUnknown = -2;
+  signNotPositive = -1;  (* negative or zero *)
+  signZero = 0;
+  signNotNegative = 1;   (* positive or zero *)
   
 VAR
   one: PList;
@@ -157,6 +168,7 @@ PROCEDURE InitSum(sum: Sum; subclass: Opcode.Subclass; atom: SSA.Result);
     sum.replacement := NIL;
   END InitSum;
 
+<*IF OOC_DEBUG_LOOP_REWRITE THEN*>
 PROCEDURE Res(res: SSA.Result);
   VAR
     ptr: LONGINT;
@@ -237,6 +249,7 @@ PROCEDURE DumpSums(pb: SSA.ProcBlock);
       instr := instr.nextInstr;
     END;
   END DumpSums;
+<*END*>  
 
 
 PROCEDURE Classify(pb: SSA.ProcBlock; loopStart: SSA.Instr);
@@ -420,7 +433,6 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
     VAR
       ce, ptr: CycleElement;
     BEGIN
-      res.LogId("AddInductionValue");
       NEW(ce);
       ce.next := NIL;
       ce.res := res;
@@ -446,7 +458,6 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
       resIndex: LONGINT;
     BEGIN
       IF (res = head) THEN
-        res.LogId("SearchCycle: head");
         cyclic := TRUE;
       ELSIF (res.marker = forwardInductive) THEN
         resIndex := res.ResultIndex();
@@ -463,7 +474,6 @@ PROCEDURE FindInductiveCycles*(loopStart: SSA.Instr);
           cyclic := cyclic OR opndCyclic;
           opnd := opnd.nextOpnd;
         END;
-        res.LogId("SearchCycle: forwardInductive");
         IF cyclic THEN
           AddInductionValue(ic, res);
         END;
@@ -585,7 +595,8 @@ PROCEDURE Flatten*(res: SSA.Result);
     END AddPLists;
   
   PROCEDURE AddSum(a, b: Sum; magnB: LONGINT): Sum;
-  (* Calculate a+magnB*b.  *)
+  (* Calculate a+magnB*b.  Return NIL if a and b have different cycle
+     heads.  *)
     VAR
       sum: Sum;
       subclass: Opcode.Subclass;
@@ -603,9 +614,12 @@ PROCEDURE Flatten*(res: SSA.Result);
         sum.head := b.head;
       ELSIF (b.headFactor = zero) THEN
         sum.head := a.head;
-      ELSE
-        ASSERT(a.head = b.head);
+      ELSIF (a.head = b.head) THEN
         sum.head := a.head;
+      ELSE
+        (* oops, can't do this as long as `Sum' has only room for one
+           induction variable *)
+        RETURN NIL;
       END;
       sum.headFactor := AddPLists(a.headFactor, b.headFactor, magnB);
       sum.loopInvariant := AddPLists(a.loopInvariant, b.loopInvariant, magnB);
@@ -707,6 +721,7 @@ PROCEDURE Flatten*(res: SSA.Result);
         h.loopInvariant := AddPLists(h.loopInvariant, h.constant, 1);
         h.constant := zero;
         mult := AddSum(mult, h, 1);
+        ASSERT(mult # NIL);
       END;
       RETURN mult;
     END MultSum;
@@ -827,12 +842,16 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
         mult: SSA.Instr;
         res: SSA.Result;
       BEGIN
-        res := pb.FixSubclass(f[0].atom, subclass);
-        FOR i := 1 TO LEN(f^)-1 DO
-          mult := pb.AddInstr(Opcode.multiply, subclass);
-          mult.AddOpnd(res, Opnd.arg);
-          mult.AddOpnd(pb.FixSubclass(f[i].atom, subclass), Opnd.arg);
-          res := mult;
+        IF (LEN(f^) = 0) THEN
+          res := pb.FixSubclass(pb.GetConstInt(1), subclass);
+        ELSE
+          res := pb.FixSubclass(f[0].atom, subclass);
+          FOR i := 1 TO LEN(f^)-1 DO
+            mult := pb.AddInstr(Opcode.multiply, subclass);
+            mult.AddOpnd(res, Opnd.arg);
+            mult.AddOpnd(pb.FixSubclass(f[i].atom, subclass), Opnd.arg);
+            res := mult;
+          END;
         END;
         IF (m # 1) THEN
           mult := pb.AddInstr(Opcode.multiply, subclass);
@@ -844,16 +863,19 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       END Multiply;
     
     BEGIN
-      ASSERT(plist.size > 0);
-      res := Multiply(plist.prod[0].magnitude, plist.prod[0].factors);
-      FOR i := 1 TO plist.size-1 DO
-        instr := Multiply(plist.prod[i].magnitude, plist.prod[i].factors);
-        add := pb.AddInstr(Opcode.add, subclass);
-        add.AddOpnd(res, Opnd.arg);
-        add.AddOpnd(instr, Opnd.arg);
-        res := add;
+      IF (plist.size = 0) THEN
+        RETURN pb.FixSubclass(pb.GetConstInt(0), subclass);
+      ELSE
+        res := Multiply(plist.prod[0].magnitude, plist.prod[0].factors);
+        FOR i := 1 TO plist.size-1 DO
+          instr := Multiply(plist.prod[i].magnitude, plist.prod[i].factors);
+          add := pb.AddInstr(Opcode.add, subclass);
+          add.AddOpnd(res, Opnd.arg);
+          add.AddOpnd(instr, Opnd.arg);
+          res := add;
+        END;
+        RETURN res;
       END;
-      RETURN res;
     END Expr;
 
   PROCEDURE RewriteCycle(rc: RewrittenCycle; ce: CycleElement);
@@ -865,8 +887,6 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
       opnd, next: SSA.Opnd;
     BEGIN
       WHILE (ce # NIL) DO
-        ce.res.LogId("RewriteCycle");
-        
         ci := ce.res.instr;
         CASE ci.opcode OF
         | Opcode.add, Opcode.subtract:
@@ -906,7 +926,6 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
             ASSERT(opnd.arg.instr.opcode = Opcode.collect);
             collect := opnd.arg.instr;
             iv := collect.NthArg(resultIndex-1);
-            iv.LogId("  replacing arg");
             ASSERT(replacement.HasKey(iv));
             
             obj := replacement.Get(iv);
@@ -991,16 +1010,12 @@ PROCEDURE Rewrite(pb: SSA.ProcBlock; sum: Sum);
     END EqualAB;
   
   BEGIN
-    Err.String("rewriting sum: "); LogSum(sum);
-    
     ic := sum.head.info(InductionCycle);
     rc := ic.rewrittenCycles;
     WHILE (rc # NIL) & ~EqualAB(sum, rc.origin) DO
-      Log.Msg("  ...");
       rc := rc.next;
     END;
-    IF (rc = NIL) THEN
-      Log.Msg("  ---");
+    IF (rc = NIL) THEN  (* cannot reuse existing rc: create new one *)
       NEW(rc);
       rc.next := ic.rewrittenCycles;
       ic.rewrittenCycles := rc;
@@ -1054,35 +1069,134 @@ PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
     use: SSA.Opnd;
     instr, new: SSA.Instr;
     other, res: SSA.Result;
+    newOpcode: Opcode.Class;
+
+  PROCEDURE SignPList(a: PList): SHORTINT;
+    VAR
+      sign, fSign: SHORTINT;
+      i: LONGINT;
+
+    PROCEDURE SignProduct(a: Product): SHORTINT;
+      VAR
+        sign, aSign: SHORTINT;
+        i: LONGINT;
+
+      PROCEDURE SignAtom(a: Sum): SHORTINT;
+        VAR
+          const: SSA.Const;
+        BEGIN
+          IF (a.atom = NIL) THEN
+            RETURN signUnknown;
+          ELSE
+            CASE a.atom.instr.opcode OF
+            | Opcode.const:
+              const := a.atom(SSA.Const);
+              IF (const.value IS BigInt.BigInt) THEN
+                RETURN SHORT(SHORT(const.value(BigInt.BigInt).Sign()));
+              ELSE
+                RETURN signUnknown;
+              END;
+
+            | Opcode.getLengthHeap, Opcode.getLengthParam:
+              RETURN signNotNegative;
+              
+            ELSE
+              RETURN signUnknown;
+            END;
+          END;
+        END SignAtom;
+      
+      BEGIN
+        IF (a.magnitude = 0) THEN
+          RETURN signZero;
+        ELSE
+          sign := signNotNegative;
+          FOR i := 0 TO LEN(a.factors^)-1 DO
+            aSign := SignAtom(a.factors[i]);
+            IF (aSign = signUnknown) THEN
+              RETURN signUnknown;
+            ELSIF (aSign = signZero) THEN
+              RETURN signZero;
+            ELSIF (aSign = signNotPositive) THEN
+              sign := -sign;
+            END;
+          END;
+          IF (a.magnitude < 0) THEN
+            RETURN -sign;
+          ELSE
+            RETURN sign;
+          END;
+        END;
+      END SignProduct;
+    
+    BEGIN
+      IF (a.size = 0) THEN
+        RETURN signZero;
+      ELSE
+        sign := signZero;
+        FOR i := 0 TO a.size-1 DO
+          fSign := SignProduct(a.prod[i]);
+          IF (fSign = signUnknown) THEN  (* cannot determine sign of sum *)
+            RETURN signUnknown;
+          ELSIF (fSign = signZero) THEN
+            (* keep current sign *)
+          ELSIF (sign = signZero) THEN
+            sign := fSign;
+          ELSIF (sign # fSign) THEN
+            (* both negative and positive term in sum, assume worst *)
+            RETURN signUnknown;
+          END;
+        END;
+        RETURN sign;
+      END;
+    END SignPList;
+  
   BEGIN
     use := ce.res.useList;
     WHILE (use # NIL) DO
       instr := use.instr;
       IF (Opcode.eql <= instr.opcode) & (instr.opcode <= Opcode.geq) THEN
-        new := NIL;
-        CASE use.OpndIndex() OF
-        | 0:
-          other := instr.NthArg(1);
-          IF (other.marker = loopInvariant) THEN
-            new := pb.AddInstr(instr.opcode, rc.origin.subclass);
-            new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
-            new.AddOpnd(InitialValue(pb, rc, other), Opnd.arg);
-          END;
-        | 1:
-          other := instr.NthArg(0);
-          IF (other.marker = loopInvariant) THEN
-            new := pb.AddInstr(instr.opcode, rc.origin.subclass);
-            new.AddOpnd(InitialValue(pb, rc, other), Opnd.arg);
-            new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
+        newOpcode := instr.opcode;
+        IF (newOpcode > Opcode.neq) THEN
+          CASE SignPList(rc.origin.headFactor) OF
+          | signNotNegative, signZero:  (* keep opcode *)
+          | signNotPositive:            (* change sign on opcode *)
+            CASE newOpcode OF
+            | Opcode.lss: newOpcode := Opcode.gtr
+            | Opcode.leq: newOpcode := Opcode.geq
+            | Opcode.gtr: newOpcode := Opcode.lss
+            | Opcode.geq: newOpcode := Opcode.leq
+            END;
+          | signUnknown:                (* cannot replace instruction at all *)
+            newOpcode := -1;
           END;
         END;
 
-        IF dangerous & (new # NIL) THEN
-          IF (instr.info = NIL) THEN
-            instr.info := NewSum(rc.origin.subclass, NIL);
+        IF (newOpcode >= 0) THEN
+          new := NIL;
+          CASE use.OpndIndex() OF
+          | 0:
+            other := instr.NthArg(1);
+            IF (other.marker = loopInvariant) THEN
+              new := pb.AddInstr(newOpcode, rc.origin.subclass);
+              new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
+              new.AddOpnd(InitialValue(pb, rc, other), Opnd.arg);
+            END;
+          | 1:
+            other := instr.NthArg(0);
+            IF (other.marker = loopInvariant) THEN
+              new := pb.AddInstr(newOpcode, rc.origin.subclass);
+              new.AddOpnd(InitialValue(pb, rc, other), Opnd.arg);
+              new.AddOpnd(rc.replacements[ce.id], Opnd.arg);
+            END;
           END;
-          instr.info(Sum).replacement := new;
-          Log.Ptr("... RewriteUses", instr);
+          
+          IF dangerous & (new # NIL) THEN
+            IF (instr.info = NIL) THEN
+              instr.info := NewSum(rc.origin.subclass, NIL);
+            END;
+            instr.info(Sum).replacement := new;
+          END;
         END;
 
       ELSIF (instr.marker # loopInvariant) & (instr.info = NIL) THEN
@@ -1103,7 +1217,6 @@ PROCEDURE RewriteUses(pb: SSA.ProcBlock; rc: RewrittenCycle; ce: CycleElement);
           res := new;
         END;
 
-        Log.Ptr("... RewriteUses: after loop", instr);
         use.ReplaceArg(pb.FixSubclass(res, ce.res.subclass));
       END;
       
@@ -1159,6 +1272,7 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
       END;
     END EnumerateLoops;
 
+<*IF OOC_DEBUG_LOOP_REWRITE THEN*>  
   PROCEDURE DumpMarker(marker: LONGINT);
     VAR
       instr: SSA.Instr;
@@ -1176,6 +1290,7 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
         instr := instr.nextInstr;
       END;
     END DumpMarker;
+<*END*>  
   
   BEGIN
     (* enumerate loops in post order *)
@@ -1187,18 +1302,22 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
     i := 0;
     WHILE (i # loops.size) DO
       loopStart := loops.array[i](SSA.Instr);
+<*IF OOC_DEBUG_LOOP_REWRITE THEN*>  
       Blocker.Write(StdChannels.stderr, pb);
       Log.Ptr("### loopStart", loopStart);
+<*END*>  
       
       (* classify instructions as loopInvariant, forwardInductive, or bottom
          with regard to loop *)
       Classify(pb, loopStart);
+<*IF OOC_DEBUG_LOOP_REWRITE THEN*>  
       Log.Msg("loopInvariant");
       DumpMarker(loopInvariant);
       Log.Msg("forwardInductive");
       DumpMarker(forwardInductive);
       Log.Msg("bottom");
       DumpMarker(bottom);
+<*END*>  
       
       (* locate inductive cycles in loop *)
       FindInductiveCycles(loopStart);
@@ -1213,7 +1332,9 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
         Flatten(opnd.arg.instr);
         opnd := opnd.nextOpnd;
       END;
+<*IF OOC_DEBUG_LOOP_REWRITE THEN*>  
       DumpSums(pb);      
+<*END*>  
 
       (* find all instructions that are computed through a sum involving the
          head of an induction cycle and insert replacement instructions for
@@ -1241,7 +1362,6 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
           ic := res.info(InductionCycle);
           ce := ic.cycleElements;
           WHILE (ce # NIL) DO
-            Log.Ptr("### looking at uses of res", ce.res);
             RewriteUses(pb, ic.rewrittenCycles, ce);
             ce := ce.next;
           END;
@@ -1253,8 +1373,6 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
       instr := pb.instrList;
       WHILE (instr # NIL) DO
         IF (instr.info # NIL) & (instr.info(Sum).replacement # NIL) THEN
-          Log.Ptr("replacing", instr);
-          Log.Ptr("  with", instr.info(Sum).replacement);
           instr.ReplaceUses(instr.info(Sum).replacement);
         END;
         instr := instr.nextInstr;
@@ -1266,6 +1384,9 @@ PROCEDURE Transform*(pb: SSA.ProcBlock);
 
 BEGIN
   NEW(one);
-  NEW(one.prod, 0);
-  one.size := 0;
+  one.size := 1;
+  NEW(one.prod, 1);
+  NEW(one.prod[0]);
+  NEW(one.prod[0].factors, 0);
+  one.prod[0].magnitude := 1;
 END OOC:SSA:LoopRewrite.
