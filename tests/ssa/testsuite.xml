@@ -10,7 +10,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; for1 for2 for3" >-->
+  select ="&SetupTestCasesWithOut; for1 for2 for3 for4 for5 for6 for7
+  for8 for9 for10" >-->
 
   &TestSetupWithOut;
     
@@ -157,6 +158,27 @@
     </test>
     <test id="for3" type="reject" file="For3.Mod">
       Loop variable is of character type.
+    </test>
+    <test id="for4" type="reject" file="For4.Mod">
+      Start of loop is not assignment compatible to loop variable.
+    </test>
+    <test id="for5" type="reject" file="For5.Mod">
+      End of loop is not assignment compatible to loop variable.
+    </test>
+    <test id="for6" type="reject" file="For6.Mod">
+      Type of loop variable does not include step.
+    </test>
+    <test id="for7" type="reject" file="For7.Mod">
+      Step value is not a constant.
+    </test>
+    <test id="for8" type="reject" file="For8.Mod">
+      Step value is zero.
+    </test>
+    <test id="for9" type="run" file="For9.Mod" output="For9.Ref">
+      For loop with positive step value.
+    </test>
+    <test id="for10" type="run" file="For10.Mod" output="For10.Ref">
+      For loop with negative step value.
     </test>
        
     <test id="case1" type="run" file="Case1.Mod" output="Case1.Ref">
@@ -689,6 +711,11 @@
     <reject-info id="for1" pos="a%[0]" msg="Expected symbol `:='"/>
     <reject-info id="for2" pos="FOR %T :=" msg="This must be a variable"/>
     <reject-info id="for3" pos="FOR %x :=" msg="Expression must be of integer type"/>
+    <reject-info id="for4" pos=":= %128" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="for5" pos="TO %128 DO" msg="Type of expression is not compatible with variable type"/>
+    <reject-info id="for6" pos="BY %128 DO" msg="Step value not in type of loop variable"/>
+    <reject-info id="for7" pos="BY %y DO" msg="Expression is not constant"/>
+    <reject-info id="for8" pos="BY %0 DO" msg="Step value must not be zero"/>
         
     <reject-info id="case3" pos="CASE %i " msg="Select expression must be integer or character"/>
     <reject-info id="case4" pos="1..%j" msg="Expression is not constant"/>

@@ -175,17 +175,17 @@ REJECT:
   1) var is not a variable  [For2]
   2) var is a composite designator (i.e., not a single ident)  [For1]
   3) var is not integer  [For3]
-  4) begin is not assignment compatible to var
-  5) end is not assignment compatible to var
-  6) var does not include step
-  7) step is not constant
-  8) step is zero
+  4) begin is not assignment compatible to var  [For4]
+  5) end is not assignment compatible to var  [For5]
+  6) var does not include step  [For6]
+  7) step is not constant  [For7]
+  8) step is zero  [For8]
 
 ACCEPT:
 
   1) begin < end, no step: iterate end-begin+1 times  [Div1.Mod]
-  2) begin < end, positive step
-  3) begin > end, negative step
+  2) begin < end, positive step  [For9.Mod]
+  3) begin > end, negative step  [For10.Mod]
 
 NOTE: There are known problems with overflows and wrap around, for
 example with "FOR i := MIN(LONGINT) TO MAX (LONGINT) DO".  The

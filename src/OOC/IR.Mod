@@ -928,6 +928,8 @@ CONST
   labelNotInSelect = 27;
   duplicateLabel = 28;
   notVariable = 29;
+  invalidStepType = 30;
+  stepIsZero = 31;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1002,6 +1004,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Label already in use"
     | notVariable:
       t := "This must be a variable"
+    | invalidStepType:
+      t := "Step value not in type of loop variable"
+    | stepIsZero:
+      t := "Step value must not be zero"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -2275,7 +2281,7 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
     ELSIF tr.IncludesType(type, expr. type) THEN
       (* Case 1: a < b if the type of 'b' includes the type of 'a'. This
          handles numeric and character inclusion. *)
-      expr := b. NewTypeConv (type, expr);
+      expr := b. Fold (b. NewTypeConv (type, expr));
       RETURN TRUE;
       
     ELSIF tr.IsExtensionOf(expr. type, type) THEN
@@ -2910,6 +2916,16 @@ PROCEDURE (b: Builder) NewForStatm* (sym: Symbol;
       b. ErrSym (notVariable, var. sym);
     ELSIF ~b. typeRules. IsIntegerType (var. type) THEN
       b. ErrSym (notInteger, var. sym);
+    ELSIF ~b. Widen (step, var. type) THEN
+      b. ErrSym (invalidStepType, step. sym);
+    ELSE
+      MakeAssignmentCompatible (b, start. sym, start, var. type);
+      MakeAssignmentCompatible (b, end. sym, end, var. type);
+      step := b. AssertConst (step);
+      IF b. typeRules. IsIntegerType (step. type) &
+         (Integer.zero.Compare (step(Const). value) = 0) THEN
+        b. ErrSym (stepIsZero, step. sym);
+      END;
     END;
     
     NEW (forStatm);
