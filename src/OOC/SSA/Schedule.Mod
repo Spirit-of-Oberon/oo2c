@@ -216,6 +216,8 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       moveToPath2 = 3;
     VAR
       in, path1, path2, exitPath1, exitPath2, exitEnter, exitIn, oldEnter: Block;
+      proxy: InstrProxy;
+      opnd: SSA.Opnd;
 
     PROCEDURE Move (result: SSA.Result; source: Block;
                     primary, secondary: LONGINT);
@@ -225,6 +227,7 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       VAR
         opnd: SSA.Opnd;
         oldBlock, newBlock: LONGINT;
+        proxy: InstrProxy;
       BEGIN
         proxy := result. instr. info(InstrProxy);
         IF (proxy. block = source) THEN
@@ -287,6 +290,25 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       Move (select. opndList. arg, enter, moveToIn, moveToIn);
       Move (select. NthArg (2), enter, moveToPath1, moveToIn);
       Move (select. NthArg (4), enter, moveToPath2, moveToIn);
+
+      (* if there are any instruction in `enter' that depend on results that
+         have been moved to `path1' or `path2', then move these results'
+         instructions into `in' *)
+      proxy := enter. proxyList;
+      WHILE (proxy # NIL) DO
+        IF (proxy. instr. marker = keepInEnter) &
+           (proxy. instr # select) &
+           (proxy. instr. opcode # Opcode.selectReturn) THEN
+          opnd := proxy. instr. opndList;
+          WHILE (opnd # NIL) DO
+            Move (opnd. arg, enter, keepInEnter, moveToIn);
+            opnd := opnd. nextOpnd
+          END;
+        END;
+        proxy := proxy. nextProxy
+      END;
+      
+      (* transfer instructions into target blocks *)
       MoveInstructions (enter. proxyTail, in, path1, path2);
 
       exitPath1 := DebranchBlock (path1);
