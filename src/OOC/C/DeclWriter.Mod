@@ -420,8 +420,17 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value);
       END
     
     | value: Integer.Value DO
-      str := value.ToString();
-      w. WriteString(str.array^);
+      IF (value. ToLInt() = MIN (LONGINT)) THEN
+        (* this assumes that MIN(LONGINT) is also the smallest value of
+           the C type "int"; to avoid overflow errors, we must rewrite
+           the value slightly *)
+        w. WriteString ("(-");
+        w. WriteLInt (MAX (LONGINT), 0);
+        w. WriteString ("-1)");
+      ELSE
+        str := value.ToString();
+        w. WriteString(str.array^);
+      END;
     END
   END WriteConst;
 

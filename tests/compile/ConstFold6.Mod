@@ -8,7 +8,7 @@ CONST
   maxInteger = 32767;
   minInteger = -32768;
   maxLongInt = 2147483647;
-  minLongInt = -2147483647; (* C compiler treats -2147483648 as unsigned ? *)
+  minLongInt = -2147483648; (* this is an overflow with OOC1 *)
 
   offset = 1;
 
