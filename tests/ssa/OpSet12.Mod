@@ -1,0 +1,7 @@
+MODULE OpSet12;
+
+VAR
+  a: SET;
+BEGIN
+  a := LONGINT{};
+END OpSet12.

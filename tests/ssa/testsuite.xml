@@ -5,9 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; iterator1 iterator2 iterator3
-  iterator4 iterator5 iterator6 iterator7 iterator8 iterator9
-  iterator10 iterator11 iterator12">-->
+  select ="&SetupTestCasesWithOut; opSet9 opSet10 opSet11 opSet12">-->
 
   &TestSetupWithOut;
     
@@ -1261,6 +1259,18 @@
       Set range "{a..b}" with some combinations of <code>a</code> and
       <code>b</code>, both constant and variable.
     </test>
+    <test id="opSet9" type="reject" file="OpSet9.Mod">
+      Undefined type name in front of set constructor.
+    </test>
+    <test id="opSet10" type="accept" file="OpSet10.Mod">
+      Using default <code>SET</code> type in front of constructor.
+    </test>
+    <test id="opSet11" type="reject" file="OpSet11.Mod">
+      Integer type name in front of set constructor.
+    </test>
+    <test id="opSet12" type="reject" file="OpSet12.Mod">
+      Integer type name in front of empty set constructor.
+    </test>
   </testcases>
 
   <testcases profile="Module SYSTEM" default-lang="O2">
@@ -2350,6 +2360,12 @@
         msg="Incompatible types for operator"/>
     <reject-info id="opSet7" pos="%IN"
         msg="Incompatible types for operator"/>
+    <reject-info id="opSet9" pos=":= %Karamba"
+        msg="Undeclared identifier"/>
+    <reject-info id="opSet11" pos=":= %LONGINT"
+        msg="Not a set type"/>
+    <reject-info id="opSet12" pos=":= %LONGINT"
+        msg="Not a set type"/>
 
     <reject-info id="adr2" pos="ADR(%123)" 
       msg="This expression has no address"/>

@@ -1214,6 +1214,7 @@ CONST
   notArrayIteratorRange = 76;
   notIteratorObject = 77;
   noNextMethod = 78;
+  notSetType = 79;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1434,6 +1435,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "This expression must produce an iterator object";
     | noNextMethod:
       t := "The iterator object has no Next() method with a valid signature";
+    | notSetType:
+      t := "Not a set type";
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -3021,12 +3024,21 @@ PROCEDURE InitSetRange (range: SetRange; sym: Symbol;
     range.to := to;
   END InitSetRange;
 
-PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to: Expression; isSet : BOOLEAN): Expression;
+PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; type, from, to: Expression;
+                                     isSet : BOOLEAN): Expression;
   VAR
     range: SetRange;
-    set : Sym.Type;
+    set, t: Sym.Type;
   BEGIN
     set := Predef.GetType(Predef.set);
+    IF (type # NIL) THEN
+      t := b.AssertType(type);
+      IF TR.IsSetType(t) THEN
+        set := t;
+      ELSE
+        RETURN b.ErrExpr(notSetType, type.sym);
+      END;
+    END;
     IF (from = NIL) & (to = NIL) THEN  (* empty set *)
       RETURN b. NewConst (sym, set, Boxed.NewSet({}));
     ELSE
