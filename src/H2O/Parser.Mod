@@ -49,6 +49,7 @@ CONST
   configArray = 10006;
   configPointer = 10007;
   configDefault = 10008;
+  configCstring = 10009;
 
 CONST
   varargs = 0;
@@ -96,6 +97,7 @@ VAR
   parserOptions- : Option.Options;
 
   parserOutputDeclarations : Option.Boolean;
+  parserOutputDependencies : Option.Boolean;
 
 PROCEDURE FindType(types : INTEGER; name : STRING) : T.Type;
 VAR obj : T.Object;
@@ -126,8 +128,6 @@ PROCEDURE Install* (scope : INTEGER; mod : T.Module; tag : STRING; name : STRING
 VAR 
   obj : T.Object;
 BEGIN
-  Log.Object("Install", name);
-  Log.Object("InModule", mod.name);
   IF T.FindObjectModule(mod, {scope}, name, obj) THEN
     IF T.AllowedRedefinition(new, obj.type) THEN
       obj.type := new;
@@ -138,7 +138,9 @@ BEGIN
     T.Bind(scope, name, 0, new, mod, tail);
   END;
   new.Depend(depend);
-  IF depend.size > 0 THEN ShowDepend(name, depend) END;
+  IF parserOutputDependencies.value THEN
+    IF depend.size > 0 THEN ShowDepend(name, depend) END;
+  END;
   mod.AddImports(depend);
   mod.AddDefinition();
 END Install;
@@ -152,6 +154,16 @@ PROCEDURE GetModule() : T.Module;
 BEGIN
   RETURN process.in.GetModule();
 END GetModule;
+
+PROCEDURE MakeName(name : STRING; t : T.Type; mod : T.Module) : T.Type;
+VAR 
+  n : T.Type;
+BEGIN
+  n := T.NewType(T.tName, t, t.size, {}); 
+  n.name := name;
+  n.module := mod;
+  RETURN n;
+END MakeName;
 
 PROCEDURE NewNamedType* (class : SHORTINT; name : STRING) : T.Type;
 VAR 
@@ -273,7 +285,7 @@ VAR
 > EnumDecl ::= "enum" [ ident ] [ "{" Element { "," Element } "}" ].
 *)
   VAR 
-    tag : STRING;
+    tag, name : STRING;
     t : T.Type; id : LONGINT;
 
     PROCEDURE Element;
@@ -389,7 +401,7 @@ VAR
       END;
     ELSE
       err.Error("Missing tag in struct/union declaration");
-      t := NewNamedType(class, tag);
+      t := NewNamedType(class, "error");
     END;
     RETURN t;
   END StructDecl;
@@ -1165,9 +1177,7 @@ BEGIN
       END
     ELSE
       IF class = T.scTypedef THEN
-        t := T.NewType(T.tName, type, type.size, {}); 
-		t.name := name;
-        t.module := GetModule();
+        t := MakeName(name, type, mod);
         InstallType(T.typedefs, mod, name, t);
       ELSE
         Install(T.vars, mod, "Object", name, type, TRUE);
@@ -1349,6 +1359,7 @@ PROCEDURE VariantConfig;
         CASE token.sym OF
         | configArray:    GetSym; RETURN Variant.array;
         | configPointer:    GetSym; RETURN Variant.pointer;
+        | configCstring:    GetSym; RETURN Variant.cstring;
         | configDefault:    GetSym; RETURN Variant.default;
         | configVar:      GetSym; RETURN Variant.var;
         | configSet:      GetSym; RETURN Variant.set;
@@ -1449,7 +1460,6 @@ BEGIN
   GetSym;
   WHILE token.sym # Scanner.endFile DO
     EvalExpr(result);
-    Log.Object("result", result);
     Expect(Scanner.semicolon);
   END;
 END Evaluate;
@@ -1526,6 +1536,7 @@ BEGIN
   Scanner.AddKeyWord(configKeyWords, "ARRAY", configArray);
   Scanner.AddKeyWord(configKeyWords, "POINTER", configPointer);
   Scanner.AddKeyWord(configKeyWords, "DEFAULT", configDefault);
+  Scanner.AddKeyWord(configKeyWords, "CSTRING", configCstring);
 END AddConfigKeyWords;
 
 PROCEDURE AddKeyWords;
@@ -1608,6 +1619,7 @@ PROCEDURE InitOptions;
 BEGIN
   parserOptions := NEW(Option.Options);
   parserOutputDeclarations := parserOptions.Boolean("ParserOutputDeclarations", FALSE);
+  parserOutputDependencies := parserOptions.Boolean("ParserOutputDependencies", FALSE);
 END InitOptions;
 
 BEGIN 
