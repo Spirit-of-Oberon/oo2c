@@ -314,11 +314,12 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
   
   PROCEDURE Assert (assert: SSA.Instr);
     BEGIN
+      w. Newline;
       w. WriteString ("_assert(");
       RefList (assert. opndList, Opnd.arg);
       w. WriteString (", ");
       w. WriteString ("0");  (* ... file position missing *)
-      w. WriteChar (")")
+      w. WriteString (");")
     END Assert;
   
   PROCEDURE Call (call: SSA.Instr);
@@ -329,32 +330,12 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       w. WriteString (")")
     END Call;
   
-  PROCEDURE WriteOpcode (instr: SSA.Instr);
-    VAR
-      i: LONGINT;
-      str: ARRAY 32 OF CHAR;
-    CONST
-      padWidth = 11;
-    BEGIN
-      w. WriteString ("/*");
-      instr. GetOpcodeName (str);
-      i := 0;
-      WHILE (str[i] # 0X) DO
-        INC (i);
-      END;
-      WHILE (i < padWidth) DO
-        str[i] := " "; INC (i)
-      END;
-      str[i] := 0X;
-      w. WriteString (str);
-      w. WriteString ("*/ ");
-    END WriteOpcode;
-
   PROCEDURE WriteDyadicOp (instr: SSA.Instr; op: ARRAY OF CHAR);
     BEGIN
       w. Ref (instr. opndList);
       w. WriteString (op);
       w. Ref (instr. opndList. nextOpnd);
+      w. WriteChar (";");
     END WriteDyadicOp;
   
   
@@ -385,6 +366,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       targetVar, sourceVar: Object.Object;
       i: LONGINT;
     BEGIN
+      w. Newline;
+      
       (* first pass: collect all copy instructions transfering from a register
          variable into another *)
       w. ClearSwapData;
@@ -438,15 +421,33 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         opnd := opnd. nextOpnd; res := res. nextResult
       END;
     END WriteCollect;
+
+  PROCEDURE SimpleVarAccess (instr: SSA.Instr; adrClass: Opnd.Class): BOOLEAN;
+    VAR
+      adr: SSA.Result;
+      opnd, design: SSA.Opnd;
+    BEGIN
+      opnd := instr. GetOpndClass (adrClass);
+      adr := opnd. arg;
+      design := opnd. nextOpnd;
+      IF (adr IS SSA.Address) &
+         ((design. nextOpnd = NIL) OR
+          (design. nextOpnd. class # design. class)) THEN
+        (* if this is an access to a variable without any additional selectors
+           or a type cast, then return TRUE *)
+        RETURN TRUE
+      ELSE
+        RETURN FALSE
+      END;
+    END SimpleVarAccess;
   
   BEGIN
     proxy := b. proxyList;
     WHILE (proxy # NIL) DO
       instr := proxy. instr;
-      w. Newline;
-      WriteOpcode (instr);
-
+      
       IF w. registerMap. HasKey (instr) THEN
+        w. Newline;
         target := w. registerMap. Get (instr);
         w. WriteString (target(String.String). array^);
         w. WriteString (" = ");
@@ -478,20 +479,31 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         (* nothing *)
         
       | Opcode.get:
-        w. WriteString ("*(");
-        w. WriteString (w. basicType
-                        [SubclassToBasicType (instr. subclass)]. repr);
-        w. WriteString ("*)");
-        w. Ref (instr. opndList. nextOpnd);
+        IF SimpleVarAccess (instr, Opnd.readAdr) THEN
+          w. Ref (instr. GetOpndClass (Opnd.readDesign))
+        ELSE
+          w. WriteString ("*(");
+          w. WriteString (w. basicType
+                          [SubclassToBasicType (instr. subclass)]. repr);
+          w. WriteString ("*)");
+          w. Ref (instr. opndList. nextOpnd);
+        END;
+        w. WriteChar (";");
         
       | Opcode.set:
-        w. WriteString ("*(");
-        w. WriteString (w. basicType
-                        [SubclassToBasicType (instr. subclass)]. repr);
-        w. WriteString ("*)");
-        w. Ref (instr. opndList. nextOpnd);
+        w. Newline;
+        IF SimpleVarAccess (instr, Opnd.writeAdr) THEN
+          w. Ref (instr. GetOpndClass (Opnd.writeDesign))
+        ELSE
+          w. WriteString ("*(");
+          w. WriteString (w. basicType
+                          [SubclassToBasicType (instr. subclass)]. repr);
+          w. WriteString ("*)");
+          w. Ref (instr. opndList. nextOpnd);
+        END;
         w. WriteString (" = ");
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
+        w. WriteChar (";");
 
       | Opcode.add:
         WriteDyadicOp (instr, "+");
@@ -499,6 +511,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
       | Opcode.negate:
         w. WriteChar ("-");
         w. Ref (instr. opndList);
+        w. WriteChar (";");
         
       | Opcode.eql:
         WriteDyadicOp (instr, "==");
@@ -509,23 +522,29 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
         Assert (instr)
             
       | Opcode.call:
+        IF ~w. registerMap. HasKey (instr) THEN
+          w. Newline
+        END;
         Call (instr);
+        w. WriteChar (";");
             
       | Opcode.return:
+        w. Newline;
         opnd := instr. GetOpndClass (Opnd.functionResult);
         IF (opnd # NIL) THEN
           w. WriteString ("return ");
-          w. Ref (opnd)
+          w. Ref (opnd);
+          w. WriteChar (";");
         ELSE
-          w. WriteString ("return")
+          w. WriteString ("return;")
         END;
         
       | Opcode.selectReturn:
         IF ~AllPathsClosed (instr) THEN
-          w. WriteString ("return")
+          w. Newline;
+          w. WriteString ("return;")
         END;
       END;
-      w. WriteChar (";");
       
       proxy := proxy. nextProxy
     END;
