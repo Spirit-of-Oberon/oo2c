@@ -380,6 +380,7 @@ CONST
      
      @item *OOC:SSA:Opnd.arg
      Number of bytes.
+     @end table
      
      The result is undefined if source and destination overlap, or if
      the size is negative.  *)

@@ -356,7 +356,7 @@ TYPE
   ChangeElement* = POINTER TO ChangeElementDesc;
   ChangeElementDesc = RECORD
     (**Include or exclude a single set element.  Used for @code{INCL}
-       and code{EXCL}.  *)
+       and @code{EXCL}.  *)
     (OperatorDesc)
     variant-: Variant;
     (**One of @oconst{inclElement} or @oconst{exclElement}.  *)
