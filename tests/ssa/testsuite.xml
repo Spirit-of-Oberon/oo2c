@@ -23,7 +23,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module cap1">-->
+  select ="prepare_out_module loop3">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -109,6 +109,11 @@
     <test id="loop2" type="run"
       file="HOTLoop2.Mod" output="HOTLoop2.Ref">
       Loop variant <code>WHILE-DO</code>: Calculate string length.
+    </test>
+    
+    <test id="loop3" type="run"
+      file="HOTLoop3.Mod" output="HOTLoop3.Ref">
+      Loop variant <code>LOOP-EXIT-END</code>: Calculate string length.
     </test>
     
     <test id="varpar1" type="run"
