@@ -77,15 +77,6 @@ TYPE
        @samp{data[length]} having the value @samp{0X}.  *)
   END;
 
-CONST
-  invalidChar* = 100;
-  (**The character cannot be mapped into the character range of the target
-     encoding.  *)
-  invalidData* = 101;
-  (**The input data of an operation is malformed.  For example, a decode
-     instruction operating on 32-bit values is called with a number of bytes
-     that is not a multiple of 4.  *)
-
 VAR
   emptyString-: String;
 
