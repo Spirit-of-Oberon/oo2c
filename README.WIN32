@@ -1,0 +1,176 @@
+
+Using OOC under Win32
+=====================
+
+This document describes options for using OOC on Windows systems.
+
+Currently, OOC requires the GNU C compler (gcc). There are a couple of
+implementations of gcc under Windows:
+
+1) Mingw32  (www.mingw.org)
+2) Cygwin   (www.cygwin.com)
+
+Mingw32 is a "minimalist" implementation of gcc. Mingw32 applications link
+to Microsoft's own C run-time library (MSVCRTL.DLL), which is installed as
+part of every Windows system. Some features of mingw32:
+- Mingw32 environment is compact.
+- Mingw32 applications are compact.
+- Run-time library functions have "Windows" semantics.
+- Some "unix" functionality is not available.
+
+Cygwin is an implementation of the Unix API for Windows. Cygwin
+applications use GCC's run-time library as well as additional "emulation"
+functions in a separate library (CYGWIN.DLL). Some features of cygwin:
+- Cygwin environment is very large.
+- Cygwin applications require an additional large DLL.
+- Run-time library functions have "Unix" semantics.
+
+In many cases, unix source code can run unmodified under Cygwin. Cygwin is
+typically distributed with a large collection of unix utilities, including:
+- C compiler
+- Bash shell
+- ssh and cvs
+- XWindows client libraries
+- XWindows server
+- inetd and friends (supporting ftp and telnet into Windows systems).
+
+In addition, Cygwin supports the generation of mingw applications via the
+"-mno-cygwin" option. 
+
+OOC supports the following options:
+
+- Cygwin
+- Mingw stand-alone
+- Mingw under cygwin
+
+Note: Some of these configurations have not been extensively tested. Please
+report any problems.
+
+Path virtualisation
+===================
+
+The C compiler and associated utilities are Unix applications that have
+been ported to run under Windows. Unix applications cannot be allowed to
+see DOS file names, or they would fail to handle files properly. Each
+application has its own file management procedures that assume unix syntax.
+To port such applications to Windows, the run-time environment MUST map all
+DOS file paths to unix syntax.
+
+Applications compiled with cygwin will see Unix-style paths. Applications
+compiled with mingw (or -mno-cygwin under cygwin) will see Windows paths.
+
+OOC will see different styles of paths according to which environment is
+has been compiled under. However, the C compiler always sees virtual unix
+paths. For OOC and gcc to play nicely together:
+
+  It is ESSENTIAL that OOC and gcc SEE THE SAME PATHS TO SOURCE FILES.
+
+Keep this in mind when installing the system.
+
+Installation
+============
+
+1) Make a directory `c:\usr\local\src', and extract the oo2c files here.
+
+2) Under MSYS or cygwin, ensure that `c:\usr\local' is mapped to the
+   logical path `/usr/local'. Normally, one would do:
+
+     mount c:/usr/local /usr/local
+
+   If you encounter problems with the "mount" tool, see additional comments
+   below.
+
+3) `cd' to the directory containing the compiler source code.
+
+4) To bootstrap the compiler, OOC normally creates symbolic links to its
+   source code from its build directories. 
+   
+   FOR MINGW32 SYSTEMS:
+
+     cp -Rv lib/src stage0/lib
+	 cp -Rv src stage0
+
+5) Configure the package.
+
+    For cygwin or stand-alone mingw32:
+
+	  env CFLAGS=-O2 ./configure --disable-libs
+
+    For mingw32 under cygwin:
+
+	  env CPPFLAGS=-mno-cygwin CFLAGS=-O2 LDFLAGS=-mno-cygwin \
+	    ./configure --disable-libs
+
+6) Type `make' to compile the package.
+
+7) Type `make install' to install the programs and any data files and
+   documentation.  `make install-strip' will additionally remove any 
+   debug information from the installed executables.
+
+8) You can remove the program binaries and object files from the
+   source code directory by typing `make clean'.  To also remove the
+   files that `configure' created (so you can compile the package for
+   a different kind of computer), type `make distclean'.  
+
+Problems?
+=========
+
+1) In at least one version of MSYS it looks like the "mount" tool is
+   broken.  If you keep getting "Function not implemented", you may need to
+   manually edit the msys fstab file (eg. C:\MSYS\1.0\etc\fstab). It should
+   look something like this:
+
+     c:/MinGW /mingw
+     c:/usr/local /usr/local
+
+Implementation Issues
+=====================
+
+1) File rename. 
+
+Windows file semantics do not allow open files to be renamed, or files to
+be renamed over existing files. Cygwin emulates Unix behaviour, but not on
+Win9X platforms. 
+
+- Files.File.Register uses unlink/rename/re-open
+
+- IO:FileChannel uses the Win32 kernel function MoveFileEx to guarantee an
+  atomic rename operation. It is not clear which versions of Windows
+  support MoveFileEx. 
+
+2) ftruncate()
+
+The ftruncate function is unavailable under Windows. This means that
+PosixFileDesrc.Truncate will always return an error.
+
+3) Windows networking.
+
+Windows networking functions are in a separate library, WSOCK32.DLL, which
+is included if the relevant IO modules are used.  The networking library is
+configured as part of the initialisation for module IO:Socket. Note that
+Windows sockets are not file descriptors and require a separate set of
+functions to operate. For portable code, IO:SocketChannel should always be
+used for sockets.
+
+4) system()
+
+There are many issues associtated with the system() run-time function.
+Under unix, system() calls the unix shell as its command interpreter.
+Under windows, system() calls the Windows command interpreter. These
+interpreters differ in their syntax and semantics. In addition, the
+Microsoft C start-up code has its own rules for interpreting the command
+line. 
+
+There appear to be some limitations in the Windows command interpreter that
+prevent OOC passing long command lines to the C compiler (eg. as are
+required for static linking). Therefore, OS:ProcessManagement.system does
+not use the run-time library system() command. Instead, the command-line is
+passed directly to the command using the Win32 kernel CreateProcess
+function.
+
+An option exists to use an external shell `/bin/sh' for the system command.
+This can be enabled by defining USE_SHELL in lib/src/OS/ProcessManagement.c
+but is not currently supported.
+
+-- Stewart Greenhill <sgreenhill@users.sf.net>
+
