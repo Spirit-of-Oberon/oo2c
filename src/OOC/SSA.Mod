@@ -940,6 +940,75 @@ PROCEDURE (instr: Instr) GetCollectTarget* (): Instr;
     END;
   END GetCollectTarget;
 
+PROCEDURE (select: Instr) NumberOfPaths*(): LONGINT;
+(* Return the number of paths leading into the select.
+
+   @precond
+   @oparam{select} is one of @oconst{Opcode.select}, @oconst{Opcode.loopStart},
+   @oconst{Opcode.loopEnd}.
+   @end precond *)
+  BEGIN
+    CASE select.opcode OF
+    | Opcode.select:
+      IF (select.GetOpndClass(OpndClass.labels) = NIL) THEN
+        RETURN (select.CountOpndClass(OpndClass.arg) DIV 2);
+      ELSE
+        RETURN select.CountOpndClass(OpndClass.labels);
+      END;
+    | Opcode.loopStart:
+      RETURN 2;
+    | Opcode.loopEnd:
+      RETURN select.CountOpndClass(OpndClass.storeExit);
+    END;
+  END NumberOfPaths;
+
+PROCEDURE ^ (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
+                                       subclass: Opcode.Subclass): Instr;
+  
+PROCEDURE (select: Instr) GetCollect*(pb: ProcBlock; pathNum: LONGINT): Instr;
+(* Return the "collect" instruction of path @oparam{pathNum} leading
+   into @oparam{select}.  The first path has the number @samp{0}.
+   If no matching "collect" exists, create one.
+
+   @precond
+   @oparam{select} is one of @oconst{Opcode.select}, @oconst{Opcode.loopStart},
+   @oconst{Opcode.loopEnd}.
+   @end precond *)
+  VAR
+    opnd: Opnd;
+    collect, loopEnd: Instr;
+    oldStore: Result;
+  BEGIN
+    CASE select.opcode OF
+    | Opcode.select:
+      opnd := select.NthOpnd(pathNum*2+2);
+      
+    | Opcode.loopEnd:         (* place collect _before_ "exit" *)
+      opnd := select.NthOpnd(pathNum+2);
+      ASSERT(opnd.arg.instr.opcode = Opcode.exit);
+      opnd := opnd.arg.instr.opndList;
+      
+    | Opcode.loopStart:
+      IF (pathNum = 0) THEN
+        opnd := select.NthOpnd(pathNum);
+      ELSE
+        loopEnd := select.GetLoopEnd();
+        opnd := loopEnd.GetOpndClass(OpndClass.backwardFeed);
+      END;
+    END;
+    
+    IF (opnd.arg.instr.opcode = Opcode.collect) THEN
+      RETURN opnd.arg.instr
+    ELSE
+      collect := pb.AddInstr(Opcode.collect, Opcode.scNone);
+      oldStore := opnd.arg;
+      opnd.ReplaceArg(collect.AddResult(ResultClass.store));
+      collect.AddOpnd(oldStore, OpndClass.store);
+      RETURN collect
+    END;
+  END GetCollect;
+
+
 PROCEDURE (instr: Instr) LogOpcode* (msg: ARRAY OF CHAR);
   VAR
     name: ARRAY 64 OF CHAR;
@@ -1045,9 +1114,6 @@ PROCEDURE NewAddress (opcode: Opcode.Class; decl: Sym.Declaration): Address;
 
   (* ---------------------------------------------------------------------- *)
 
-PROCEDURE ^ (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
-                                       subclass: Opcode.Subclass): Instr;
-  
 PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl;
                          checkFunctionResult: BOOLEAN);
   VAR

@@ -32,16 +32,20 @@ IMPORT
 
 PROCEDURE GetSelect(collect: SSA.Instr): SSA.Instr;
   VAR
-    use: SSA.Opnd;
+    instr: SSA.Instr;
   BEGIN
-    use := collect.nextResult.useList;
-    WHILE (use # NIL) & (use.instr.opcode # Opcode.select) DO
-      use := use.nextUse;
-    END;
-    IF (use = NIL) THEN
-      RETURN NIL;
+    instr := collect.GetCollectTarget();
+    CASE instr.opcode OF
+    | Opcode.select:
+      RETURN instr;
+    (*| Opcode.loopStart:
+      IF (instr.opndList.arg.instr = collect) THEN
+        RETURN NIL;
+      ELSE
+        RETURN instr;
+      END;*)
     ELSE
-      RETURN use.instr;
+      RETURN NIL;
     END;
   END GetSelect;
 
@@ -79,8 +83,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
                               undefValue: SSA.Instr);
     VAR
       use, opnd: SSA.Opnd;
-      instr, collect, select, new, equiv, sameInstr, anchor: SSA.Instr;
+      instr, collect, select, new, equiv, sameInstr, anchor, c: SSA.Instr;
       res, selectResult: SSA.Result;
+      i: LONGINT;
       
     PROCEDURE Dominates(res: SSA.Result; instr: SSA.Instr): BOOLEAN;
       BEGIN
@@ -163,16 +168,13 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             
             selectResult := select.AddResultSubclass(Result.selectValue,
                                                      instr.subclass);
-            opnd := select.opndList.nextOpnd;
-            WHILE (opnd # NIL) (*& (opnd.class = Opnd.arg)*) DO
-              opnd := opnd.nextOpnd;
-              ASSERT(opnd.arg.instr.opcode = Opcode.collect);
-              IF (opnd.arg.instr = collect) THEN
+            FOR i := 0 TO select.NumberOfPaths()-1 DO
+              c := select.GetCollect(NIL, i);
+              IF (c = collect) THEN
                 worklist.Append(collect.AddOpndFct(instr, Opnd.arg));
               ELSE
-                opnd.arg.instr.AddOpnd(undefValue, Opnd.arg);
+                c.AddOpnd(undefValue, Opnd.arg);
               END;
-              opnd := opnd.nextOpnd;
             END;
             
             equiv := pb.AddInstr(Opcode.equivPRE, Opcode.scNone);
@@ -193,8 +195,8 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
     VAR
       collect, select, old, c, new, sameInstr: SSA.Instr;
       arg, res: SSA.Result;
-      selOpnd, opnd, h: SSA.Opnd;
-      resultIndex: LONGINT;
+      opnd, h: SSA.Opnd;
+      resultIndex, i: LONGINT;
     BEGIN
       ASSERT(equiv.opcode = Opcode.equivPRE);
       
@@ -210,11 +212,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         equiv.opndList.arg.ReplaceUses(res);
       ELSE
         resultIndex := equiv.opndList.arg.ResultIndex();
-        
-        selOpnd := select.opndList.nextOpnd;
-        WHILE (selOpnd # NIL) DO
-          selOpnd := selOpnd.nextOpnd;
-          c := selOpnd.arg.instr;
+
+        FOR i := 0 TO select.NumberOfPaths()-1 DO
+          c := select.GetCollect(NIL, i);
           ASSERT(c.opcode = Opcode.collect);
           
           IF (c # collect) THEN
@@ -242,8 +242,6 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
             opnd := c.NthOpnd(resultIndex-1);
             opnd.ReplaceArg(new);
           END;
-          
-          selOpnd := selOpnd.nextOpnd;
         END;
         
         old.ReplaceUses(equiv.opndList.arg);

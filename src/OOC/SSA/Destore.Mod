@@ -804,60 +804,6 @@ PROCEDURE (s: State) Transform*;
       opnd: SSA.Opnd;
       replacement, newRes: SSA.Result;
       i: LONGINT;
-      
-    PROCEDURE NumberOfPaths (select: SSA.Instr): LONGINT;
-    (* Return the number of paths leading into the select.  *)
-      BEGIN
-        CASE select. opcode OF
-        | Opcode.select    :
-          IF (select. GetOpndClass (Opnd.labels) = NIL) THEN
-            RETURN (select. CountOpndClass (Opnd.arg) DIV 2);
-          ELSE
-            RETURN select. CountOpndClass (Opnd.labels);
-          END;
-        | Opcode.loopStart : RETURN 2
-        | Opcode.loopEnd   : RETURN select. CountOpndClass (Opnd.storeExit)
-        END;
-      END NumberOfPaths;
-    
-    PROCEDURE GetCollect (select: SSA.Instr; pathNum: LONGINT): SSA.Instr;
-    (* Return the "collect" instruction of path @oparam{pathNum} leading
-       into @oparam{select}.  The first path has the number @samp{0}.
-       If no matching "collect" exists, create one.  *)
-      VAR
-        opnd: SSA.Opnd;
-        collect, loopEnd: SSA.Instr;
-        oldStore: SSA.Result;
-      BEGIN
-        CASE select. opcode OF
-        | Opcode.select:
-          opnd := select. NthOpnd (pathNum*2+2);
-          
-        | Opcode.loopEnd:         (* place collect _before_ "exit" *)
-          opnd := select. NthOpnd (pathNum+2);
-          ASSERT (opnd. arg. instr. opcode = Opcode.exit);
-          opnd := opnd. arg. instr. opndList;
-          
-        | Opcode.loopStart:
-          IF (pathNum = 0) THEN
-            opnd := select. NthOpnd (pathNum);
-          ELSE
-            loopEnd := select. GetLoopEnd();
-            opnd := loopEnd. GetOpndClass (Opnd.backwardFeed);
-          END;
-        END;
-        
-        IF (opnd. arg. instr. opcode = Opcode.collect) THEN
-          RETURN opnd. arg.instr
-        ELSE
-          collect := pb. AddInstr (Opcode.collect, Opcode.scNone);
-          oldStore := opnd. arg;
-          opnd. ReplaceArg (collect. AddResult (Result.store));
-          collect. AddOpnd (oldStore, Opnd.store);
-          RETURN collect
-        END;
-      END GetCollect;
-    
     BEGIN
       replacement := dgate.opndList.nextOpnd.arg;
       IF (replacement.class = Result.dgatePlaceholder) THEN
@@ -867,11 +813,11 @@ PROCEDURE (s: State) Transform*;
         select := dgate.opndList.arg(SSA.Instr);
         opnd := dgate.NthOpnd(2); i := 0;
         WHILE (opnd # NIL) DO
-          collect := GetCollect(select, i);
+          collect := select.GetCollect(pb, i);
           collect.AddOpnd(opnd.arg, Opnd.arg);
           opnd := opnd.nextOpnd; INC(i);
         END;
-        ASSERT(i = NumberOfPaths(select));
+        ASSERT(i = select.NumberOfPaths());
         newRes := select.AddResultSubclass(Result.selectValue, dgate.subclass);
         replacement.ReplaceUses(newRes);
         RETURN newRes;
