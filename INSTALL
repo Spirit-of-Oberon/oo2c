@@ -1,0 +1,137 @@
+The installation package comes in two different version, oo2c_32 and
+oo2c_64.  The first is for targets with a pointer size of 4 bytes,
+like ix86 CPUs, the other for the ones with 8 bytes per pointer, like
+Alpha CPUs.  Pick the one matching the platform you are using.
+
+Requirements:
+
+  GNU C compiler gcc (2.95 or later, 3.2 in known to work)
+  GNU make
+
+Additional requirements for "make test":
+
+  GNU tar
+  perl
+  xsltproc (from the GNOME XML library)
+
+
+Optional Packages
+=================
+
+oo2c can utilize two add-on packages: Hans-J. Boehm's conservative
+garbage collector and GNU libtool (for support of static and shared
+libraries).  It is highly recommended to use the garbage collector.
+
+1. The Boehm Garbage Collector
+
+   The gc can be found at
+
+     http://www.hpl.hp.com/personal/Hans_Boehm/gc/
+
+   At the time of writing, gc6.1 is current.  For instructions on how
+   to install the gc, please refer its README file.
+   
+   To use the gc, configure must be able to link against it with -lgc,
+   and the include file gc/gc.h.  Both must work, or the garbage
+   collector will not be used.  If necessary, pass CPPFLAGS and
+   LDFLAGS explicitly to configure, like this:
+
+     env CPPFLAGS=-I/foo/gc/include LDFLAGS=-L/foo/gc/lib ./configure
+
+   Without a garbage collector, process size during installation
+   typically exceeds 150MB.  If it aborts with an out of memory error,
+   the compiler can still be installed simply be restarting the
+   process as often as necessary.  Please note that in this case no
+   application build with the compiler will garbage collect any heap
+   objects.
+  
+2. GNU libtool
+
+   libtool can be obtained from any GNU server, e.g.
+
+     ftp://ftp.gnu.org/pub/gnu/libtool/
+
+   At the time of writing, libtool 1.4.3 is current.  Follow the
+   directions in the tar to install libtool.
+
+   oo2c's installation process will detect libtool.  It will be used
+   to create a static and, possibly, shared library with the OOC
+   standard modules.
+
+Basic Installation
+==================
+
+The simplest way to compile this package is:
+[check file PROBLEMS if it turns out to be not that simple]
+
+  1. `cd' to the directory containing the package's source code and type
+     `./configure' to configure the package for your system.  If you're
+     using `csh' on an old version of System V, you might need to type
+     `sh ./configure' instead to prevent `csh' from trying to execute
+     `configure' itself.
+
+     Running `configure' takes awhile.  While running, it prints some
+     messages telling which features it is checking for.
+
+  2. Type `make' to compile the package.
+
+  3. Type `make install' to install the programs and any data files and
+     documentation.  `make install-strip' will additionally remove any 
+     debug information from the installed executables.
+
+  4. You can remove the program binaries and object files from the
+     source code directory by typing `make clean'.  To also remove the
+     files that `configure' created (so you can compile the package for
+     a different kind of computer), type `make distclean'.  
+
+Compilers and Options
+=====================
+
+   Some systems require unusual options for compilation or linking that
+the `configure' script does not know about.  You can give `configure'
+initial values for variables by setting them in the environment.  Using
+a Bourne-compatible shell, you can do that on the command line like
+this:
+     CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
+
+Or on systems that have the `env' program, you can do it like this:
+     env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
+
+Installation Names
+==================
+
+   By default, `make install' will install the package's files in
+`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+installation prefix other than `/usr/local' by giving `configure' the
+option `--prefix=PATH'.
+
+   You can specify separate installation prefixes for
+architecture-specific files and architecture-independent files.  If you
+give `configure' the option `--exec-prefix=PATH', the package will use
+PATH as the prefix for installing programs and libraries.
+Documentation and other data files will still use the regular prefix.
+
+   In addition, if you use an unusual directory layout you can give
+options like `--bindir=PATH' to specify different values for particular
+kinds of files.  Run `configure --help' for a list of the directories
+you can set and what kinds of files go in them.
+
+Operation Controls
+==================
+
+   `configure' recognizes the following options to control how it
+operates.
+
+`--help'
+     Print a summary of the options to `configure', and exit.
+
+`--quiet'
+`--silent'
+`-q'
+     Do not print messages saying which checks are being made.
+
+`--version'
+     Print the version of Autoconf used to generate the `configure'
+     script, and exit.
+
+`configure' also accepts some other, not widely useful, options.

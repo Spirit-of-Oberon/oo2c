@@ -1,92 +1,65 @@
-1. Prerequisites
+See file INSTALL for the list of software requirements and
+installation instructions.  See file PROBLEMS if installation turns
+out to be difficult.
 
-  gcc (oo2c v2 uses gcc language extensions, an ANSI compiler won't do)
-  oo2c 1.5.8
-  libxml (from the CVS repository; must be installed)
-  libadt (from the CVS repository; only needs to be available)
-  GNU make
-  GNU libtool 1.4
+oo2c translates Oberon-2 source code into a variant of C supported by
+the gcc family of compilers.  It uses a variant of SSA for its
+intermediate representation, and performs common optimizations like
+common subexpression elimination, invariant code motion, constant
+propagation, algebraic transformations, and dead code removal.
 
-  Optional:
+Operating system, architecture, and gcc combinations that are known to
+work:
 
-  Boehm's gc (libgc must be in library path, gc/gc.h in include path)
-
-  For "make test" and packaging, you will also need perl, GNU tar,
-  and xsltproc.
-
-2. Setting up the Development Environment
-
-Make sure that libxml/src/ and libadt/src/ is in the search path for
-*.Mod and *.c, for example, by editing and including `.oo2crc_local'.
-The easiest way to include `.oo2crc_local' is to have a file
-`~/.oo2crc' with a line `INCLUDE ./.oo2crc_local END'.  The provided
-`.oo2crc_local' assumes that the directories `libxml/', `libadt/', and
-`ooc2/' all reside in the same directory.
-
-For the language specific tests, the Hostess test files are expected
-to reside at `../hostess/hostess/oberon/testcases.xml', as seen from
-the ooc2 top-level directory.
-
-Then, do
-
-  ./configure
-  . ENV
-  make test
-
-If this produces an error other than the one described below, mail me.
-(NOTE: The ". ENV" assumes a Bourne compabtible shell.  This command
-sets the environment variables OOC_DEV_ROOT, MAIN_MAKEFILE, and
-OO2CRC.  If you are running a different shell, you need to do
-something equivalent.)
+  Linux 2.4.19/i386/2.95.4 & 3.2.1
 
 
-KNOWN PROBLEMS:
+Typical installation is quite simple:
 
-"make test" fails under MacOS X if the (default) HFS+ is used, because
-the case-insensive file name confuse the compiler.  Use a UFS
-partition instead.
+  tar xfvj oo2c_32-2.0.0.tar.bz2
+  cd oo2c_32-2.0.0
+  ./configure --prefix ~/mydir
+  make install
 
-If the tests in tests/compile/ produce an "100 Value out of range" for
-the test case `baseline8', make sure you have oo2c-1.5.7.2 installed.
+More information is available in INSTALL.
 
-When installing from a distribution tar ball, MacOS X users need to
-add "-traditional-cpp" to the gcc options, like
-  CPPFLAGS="-traditional-cpp" ./configure
+Building programs is simple as well:
 
---------
+  mkdir /tmp/test
+  cd /tmp/test
+  mkdir src
+  cat >src/T.Mod
+    MODULE T;
+    IMPORT Out;
+    BEGIN
+    Out.String("Hello");Out.Ln;
+    END T.
+  ~/mydir/bin/oo2c --make T
+  
+And then `bin/T' should say `Hello'.  For more information, please
+refer to the man page of oo2c.
 
-An overview over the modules is in src/AllModules.Mod.  Another point
-of entry are the test programs.  Currently, the most "evolved" test
-programs are src/TestSymTab.Mod (tests/symtab/) and
-src/TestInterfaceGen.Mod (tests/interface/).
+I'm mostly interested to hear about installation problems, compiler
+bugs (hangs, crashes, wrong error messages or warnings, or missing
+error messages), and usability issues.  Please use Sourceforge
 
-The general idea of the module structure is: split functionality in
-clearly separated subtrees, and have automated tests for all of them.
-Here is a list of subsystems:
+  https://sourceforge.net/tracker/?atid=103539&group_id=3539
 
-  configuration (Config:*, OOC:Config:*)
-  repository handling (OOC:Repository:*)
-  scanner (OOC:Scanner:*)
-  abstract syntax tree (OOC:AST:*)
-  symbol table (OOC:SymbolTable:*)
-  documentation (OOC:Doc:*)
-  build engine (OOC:Make:*)
-  intermediate code representation (OOC:IR:*)
-  SSA back-end (OOC:SSA:*)
+to report bugs and include the version you are using in the summary
+line.  This ensures that bug reports are not lost, and provides a
+convenient central location to collect information about bugs.  Bug
+reports accompanied by patches fixing the problem at hand are very
+welcome.
 
-Tests are located in the tests/ subdirectory.  The whole set of tests
-is run by doing "make test" in the top-level directory.  Within each
-directory under tests/ with a Makefile, "make test" can be called to
-selectively run only the tests from this directory.
+For miscompiled code, that is, correct input code that produces a
+broken binary, please try to create a small program that will
+reproduce the error.  Ideally this program is a single module with
+just enough lines of code to trigger the bug.  Send me this module,
+together with the information on how the bug manifests itself, how to
+trigger the bug, and the version of oo2c you are using.
 
-For "make doc" to work, the tool xsltproc (from the GNOME XML suite,
-libxslt, AFAIK) must be installed.
-
-"make clean" returns the file tree to a pristine state, removing all
-the files that were produced during compilation and testing.
-
-"make distclean" is more thorough than "make clean", getting rid of
-intermediate files that should not be checked into the CVS.
-
+For input modules that hang or crash the compiler, please send me the
+module or modules that trigger the problem.  This does not need to be
+small.  Don't send me module fragments!
 
 -- Michael van Acken <mia@de.uu.net>

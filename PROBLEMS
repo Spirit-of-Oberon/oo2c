@@ -1,0 +1,7 @@
+KNOWN PROBLEMS:
+
+(MacOSX): When installing from a distribution tar ball, MacOS X users
+need to add "-traditional-cpp" to the gcc options, like
+
+  CPPFLAGS="-traditional-cpp" ./configure
+
