@@ -644,7 +644,7 @@ TYPE
     (**Represents a type variable from the list of formal type parameters of
        a type with @ofield{Type.typePars}.  *)
     (TypeDesc)
-    bound-: Type;
+    bound*: Type;
     (**Lower bound of the set of valid type arguments.  *)
   END;
   
@@ -1853,22 +1853,6 @@ PROCEDURE (typeDecl: TypeDecl) Load* (r: Storable.Reader) RAISES IO.Error;
     typeDecl. type := typeDecl. srcCodeType;
   END Load;
 
-PROCEDURE (typeDecl: TypeDecl) InsertTypeVar*();
-  PROCEDURE NewTypeVar(type: Type; parent: Item): TypeVar;
-    VAR
-      tv: TypeVar;
-    BEGIN
-      NEW(tv);
-      InitType(tv, parent, type.position);
-      tv.bound := type;
-      tv.namingDecl := typeDecl;
-      RETURN tv;
-    END NewTypeVar;
-  
-  BEGIN
-    typeDecl.type := NewTypeVar(typeDecl.type, typeDecl.parent);
-  END InsertTypeVar;
-
 
 PROCEDURE InitRedirect* (redir: Redirect; parent: Item; name: Name;
                          module, ident: Name);
@@ -2770,7 +2754,7 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
         WITH type: PredefType DO
           RETURN NIL
         | type: TypeName DO
-          ASSERT (FALSE)                (* should never happen *)
+          RETURN NIL;   (* should never happen in a correct program *)
         | type: Pointer DO
           RETURN NamespaceOfType (type. baseType, type. srcCodeBaseType)
         | type: FormalPars DO

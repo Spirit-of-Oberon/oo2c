@@ -141,8 +141,22 @@ PROCEDURE (b: Builder) NewTypeDecl* (parent: Sym.Item; name: Sym.Name;
                                      isTypeParameter: BOOLEAN): Sym.TypeDecl;
   VAR
     t: Sym.TypeDecl;
+    
+  PROCEDURE NewTypeVar(bound: Sym.Type; parent: Sym.Item): Sym.TypeVar;
+    VAR
+      tv: Sym.TypeVar;
+    BEGIN
+      NEW(tv);
+      Sym.InitTypeVar(tv, parent, type.position, bound);
+      tv.SetNamingDecl(t);
+      RETURN tv;
+    END NewTypeVar;
+  
   BEGIN
     NEW (t);
+    IF isTypeParameter THEN
+      type := NewTypeVar(type, parent);
+    END;
     Sym.InitTypeDecl (t, parent, name, visibleFrom, exportMark,
                       docString, type, isTypeParameter);
     IF (type. namingDecl = NIL) THEN

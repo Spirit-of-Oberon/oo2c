@@ -7,9 +7,9 @@
   <type_decl id='5' name='ObjDesc' pos='50' line='4' column='2' class='Obj' visible_from='71' export='yes' type_id='4'/>
   <type_pars id='6'>
     <type_name id='7' pos='88' line='5' column='15' ident_name='Obj' ident_pos='88' ident_line='5' ident_column='15'/>
-    <type_decl id='8' name='Base' pos='82' line='5' column='9' visible_from='91' export='no' is_type_parameter='yes' type_id='10'/>
-    <record_type id='9' pos='95' line='5' column='22' type_pars_id='6' base_type='#none' tb_proc_count='0'/>
-    <type_var id='10' pos='28' line='3' column='9' bound_id='2'/>
+    <type_var id='8' pos='88' line='5' column='15' bound_id='2'/>
+    <type_decl id='9' name='Base' pos='82' line='5' column='9' visible_from='91' export='no' is_type_parameter='yes' type_id='8'/>
+    <record_type id='10' pos='95' line='5' column='22' type_pars_id='6' base_type='#none' tb_proc_count='0'/>
   </type_pars>
-  <type_decl id='11' name='BDesc' pos='75' line='5' column='2' visible_from='108' export='yes' type_id='9'/>
+  <type_decl id='11' name='BDesc' pos='75' line='5' column='2' visible_from='108' export='yes' type_id='10'/>
 </module>
