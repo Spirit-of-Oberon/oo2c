@@ -269,6 +269,61 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
       NextSym;
       RETURN node
     END CheckSym;
+
+  PROCEDURE LookingAtQualType(sym: BasicList.Symbol;
+                              requireArgs: BOOLEAN): BasicList.Symbol;
+  (* Implements a king of structured lookahead for the QualType rule.
+     Result is the first symbol after the QualType, or NIL.  *)
+
+    PROCEDURE N();
+      BEGIN
+        REPEAT
+          sym := sym.next;
+        UNTIL (sym.id # Symbol.docComment);
+      END N;
+    
+    BEGIN
+      IF (sym.id # Symbol.ident) THEN
+        RETURN NIL;
+      END;
+      
+      N();
+      IF (sym.id = Symbol.period) THEN
+        N();
+        IF (sym.id = Symbol.ident) THEN
+          N();
+        ELSE
+          RETURN NIL;
+        END;
+      END;
+      
+      IF (sym.id = Symbol.lss) THEN
+        N();
+        IF (sym.id # Symbol.gtr) THEN
+          sym := LookingAtQualType(sym, FALSE);
+          IF (sym = NIL) THEN RETURN NIL; END;
+          WHILE (sym.id = Symbol.comma) DO
+            N();
+            IF (sym.id = Symbol.ident) THEN
+              sym := LookingAtQualType(sym, FALSE);
+              IF (sym = NIL) THEN RETURN NIL; END;
+            ELSE
+              RETURN NIL;
+            END;
+          END;
+        END;
+        IF (sym.id = Symbol.gtr) THEN
+          N();
+          RETURN sym;
+        ELSE
+          RETURN NIL;
+        END;
+      ELSIF requireArgs THEN
+        RETURN NIL;
+      ELSE
+        RETURN sym;
+      END;
+    END LookingAtQualType;
   
   PROCEDURE MultiPartIdent (VAR name: AST.Name): AST.Node;
   (* Reads multi-part identifier, if these are enabled, and a simple identifer
@@ -624,6 +679,45 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
   
   PROCEDURE ^ Expr (): AST.Node;
   
+  PROCEDURE Qualident (): AST.Node;
+    VAR
+      module, period, ident: AST.Node;
+    BEGIN
+      (*S: Qualident = ident ["." ident].  *)
+      module := CheckSym (Symbol.ident);
+      IF (sym. id = Symbol.period) THEN
+        period := CheckSym (Symbol.period);
+        ident := CheckSym (Symbol.ident);
+        RETURN ast. Operator (module, period, ident)
+      ELSE
+        RETURN module
+      END
+    END Qualident;
+  
+  PROCEDURE QualType(): AST.Node;
+    VAR
+      type, left, right: AST.Node;
+      list: AST.NodeList;
+    BEGIN
+      (*S: QualType = Qualident ["<" [QualType {"," QualType}] ">"] *)
+      type :=  Qualident();
+      IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
+        left := CheckSym(Symbol.lss);
+        list := ast.NewNodeList();
+        IF (sym.id # Symbol.gtr) THEN
+          list.Append(QualType());
+          WHILE (sym.id = Symbol.comma) DO
+            list.Append(CheckSym(Symbol.comma));
+            list.Append(QualType());
+          END
+        END;
+        right := CheckSym(Symbol.gtr);
+        RETURN ast.QualType(type, left, list, right);
+      ELSE
+        RETURN type;
+      END;
+    END QualType;
+  
   PROCEDURE Designator (): AST.Node;
     VAR
       x, y, op, left, right: AST.Node;
@@ -631,44 +725,55 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
     BEGIN
       (*S: Designator = ident { "." ident | "^" | 
         S:                      "[" Expr {"," Expr} "]" | 
-        S:                      "(" [Expr {"," Expr}] ")" }.  *)
-      x := CheckSym (Symbol.ident);
-      LOOP
-        CASE sym. id OF
-        | Symbol.period:
-          op := CheckSym (Symbol.period);
-          y := CheckSym (Symbol.ident);
-          x := ast. Operator (x, op, y)
-        | Symbol.arrow:
-          op := CheckSym (Symbol.arrow);
-          x := ast. Operator (x, op, NIL)
-        | Symbol.lBrak:
-          left := CheckSym (Symbol.lBrak);
-          list := ast. NewNodeList();
-          list. Append (Expr());
-          WHILE (sym. id = Symbol.comma) DO
-            list. Append (CheckSym (Symbol.comma));
-            list. Append (Expr())
-          END;
-          right := CheckSym (Symbol.rBrak);
-          x := ast. ArrayIndex (x, left, list, right)
-        | Symbol.lParen:
-          left := CheckSym (Symbol.lParen);
-          list := ast. NewNodeList();
-          IF (sym. id # Symbol.rParen) THEN
+        S:                      "(" [Expr {"," Expr}] ")" } |
+        S:              QualType.
+
+        Note: The ambiguity between a designator and a qualified or unqualified
+        type could be easily resolved if the parser had access to the symbol
+        table.  This partser does not have this access.  Therefore it uses a
+        kind of parsing lookahead to identify a qualified identifier followed
+        by a `<...>' sequence.  *)
+      IF (LookingAtQualType(sym, TRUE) # NIL) THEN
+        RETURN QualType();
+      ELSE
+        x := CheckSym (Symbol.ident);
+        LOOP
+          CASE sym. id OF
+          | Symbol.period:
+            op := CheckSym (Symbol.period);
+            y := CheckSym (Symbol.ident);
+            x := ast. Operator (x, op, y)
+          | Symbol.arrow:
+            op := CheckSym (Symbol.arrow);
+            x := ast. Operator (x, op, NIL)
+          | Symbol.lBrak:
+            left := CheckSym (Symbol.lBrak);
+            list := ast. NewNodeList();
             list. Append (Expr());
             WHILE (sym. id = Symbol.comma) DO
               list. Append (CheckSym (Symbol.comma));
               list. Append (Expr())
-            END
-          END;
-          right := CheckSym (Symbol.rParen);
-          x := ast. FunctionCall (x, left, list, right)
-        ELSE
-          EXIT
-        END
+            END;
+            right := CheckSym (Symbol.rBrak);
+            x := ast. ArrayIndex (x, left, list, right)
+          | Symbol.lParen:
+            left := CheckSym (Symbol.lParen);
+            list := ast. NewNodeList();
+            IF (sym. id # Symbol.rParen) THEN
+              list. Append (Expr());
+              WHILE (sym. id = Symbol.comma) DO
+                list. Append (CheckSym (Symbol.comma));
+                list. Append (Expr())
+              END
+            END;
+            right := CheckSym (Symbol.rParen);
+            x := ast. FunctionCall (x, left, list, right)
+          ELSE
+            EXIT
+          END
+        END;
+        RETURN x
       END;
-      RETURN x
     END Designator;
   
   PROCEDURE Expr (): AST.Node;
@@ -799,46 +904,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
       RETURN x
     END Expr;
 
-  PROCEDURE Qualident (): AST.Node;
-    VAR
-      module, period, ident: AST.Node;
-    BEGIN
-      (*S: Qualident = ident ["." ident].  *)
-      module := CheckSym (Symbol.ident);
-      IF (sym. id = Symbol.period) THEN
-        period := CheckSym (Symbol.period);
-        ident := CheckSym (Symbol.ident);
-        RETURN ast. Operator (module, period, ident)
-      ELSE
-        RETURN module
-      END
-    END Qualident;
-  
   PROCEDURE ^ Type (level: LONGINT): AST.Node;
-  
-  PROCEDURE QualType(): AST.Node;
-    VAR
-      type, left, right: AST.Node;
-      list: AST.NodeList;
-    BEGIN
-      (*S: QualType = Qualident ["<" [QualType {"," QualType}] ">"] *)
-      type :=  Qualident();
-      IF (sym.id = Symbol.lss) & (enableTypeParams IN parseOptions) THEN
-        left := CheckSym(Symbol.lss);
-        list := ast.NewNodeList();
-        IF (sym.id # Symbol.gtr) THEN
-          list.Append(QualType());
-          WHILE (sym.id = Symbol.comma) DO
-            list.Append(CheckSym(Symbol.comma));
-            list.Append(QualType());
-          END
-        END;
-        right := CheckSym(Symbol.gtr);
-        RETURN ast.QualType(type, left, list, right);
-      ELSE
-        RETURN type;
-      END;
-    END QualType;
   
   PROCEDURE FormalPars (): AST.Node;
     VAR
@@ -1481,7 +1547,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             LOOP
               var := Qualident();
               colon := CheckSym (Symbol.colon);
-              type := Qualident();
+              type := QualType();
               guardList. Append (ast. Operator (var, colon, type));
               guardList. Append (CheckSym (Symbol.do));
               guardList. Append (StatementSeq());
