@@ -13,6 +13,11 @@ oo2c \- Oberon-2 compiler
 .I <module>
 .br
 .B oo2c
+.I --uses <ext-ident>
+.RI [ options ]
+.IR <module> ...
+.br
+.B oo2c
 .I --build-package
 .RI [ options ]
 .I <package>
@@ -72,6 +77,14 @@ notion of
 (i.e., parameterless exported procedures, which can be activated
 directly by the user).  Instead, the module body of the main module
 specifies the program's execution sequence.
+
+The command
+.I --uses
+lists using occurences of the given declaration in the source code.
+The modules given on the command line and all their imported modules
+are searched.  The declaration is identified by a module name followed
+by an arbitrary long sequence of names, separated by dots, like
+.IR module.procedure.var .
 
 With 
 .IR --build-package ,

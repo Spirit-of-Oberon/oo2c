@@ -47,7 +47,8 @@ PROCEDURE NewRules(): Rules;
     RETURN r;
   END NewRules;
 
-PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN
+PROCEDURE (r: Rules) CompileModule*(module: Rep.Module;
+                                    analysisOnly: BOOLEAN): BOOLEAN
 RAISES IO.Error;
   VAR
     ast: AST.Node;

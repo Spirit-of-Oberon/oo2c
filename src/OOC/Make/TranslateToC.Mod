@@ -213,7 +213,8 @@ PROCEDURE WriteCodeFile (w, wd: DeclWriter.Writer; m: Repository.Module;
   END WriteCodeFile;
 
 
-PROCEDURE Run*(m: Repository.Module; libraryName: STRING; uses: Uses.Uses;
+PROCEDURE Run*(m: Repository.Module; libraryName: STRING;
+               analysisOnly: BOOLEAN; uses: Uses.Uses;
                writeAST: BOOLEAN; writeIR: BOOLEAN;
                translator: Translator): Error.List
 RAISES IO.Error;
@@ -284,7 +285,7 @@ RAISES IO.Error;
       
       exports := Exports.GetExports (symTab, TRUE);
       
-      IF errList.NoErrors() THEN
+      IF errList.NoErrors() & ~analysisOnly THEN
         (* only attempt to produce output if program compiled without errors *)
 
         wd := NIL;  (* prevent warning for call in next line *)

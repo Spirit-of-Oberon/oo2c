@@ -104,7 +104,6 @@ PROCEDURE NewConfig;
                        "<options>"+
                        "  <set name='listUses'>$1</set>"+
                        "  <set name='command'>1</set>"+  (* --make *)
-                       "  <set name='forceUpdate'>TRUE</set>"+  (* --all *)
                        "</options>");
     Config.AddCmdLine ("--error-style",
                        "<options><set name='errorStyle'>$1</set></options>");
@@ -539,6 +538,7 @@ PROCEDURE WriteHelp();
     Out.String("Usage:"); Out.Ln;
     Out.String("  oo2c [options] <module>..."); Out.Ln;
     Out.String("  oo2c (--make|-M) [options] <module>"); Out.Ln;
+    Out.String("  oo2c --uses <ext-ident> [options] <module> ..."); Out.Ln;
     Out.String("  oo2c --build-package [options] <package>"); Out.Ln;
     Out.String("  oo2c --install-package [options] <package>"); Out.Ln;
     Out.String("  oo2c --uninstall-package [options] <package>"); Out.Ln;

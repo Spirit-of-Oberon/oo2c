@@ -55,11 +55,11 @@ Used by command \\[o2-make].")
   "*Command called with module name to generate the module's exported definition
 from its symbol file.")
 
-(defvar o2-list-uses-command "oocn -v --uses "
+(defvar o2-list-uses-command "oo2c --uses "
   "*Command called with declaration and module name to list all uses of the
 declaration in all modules imported by the given module.")
 
-(defvar o2-moddef-command "oocn -d "
+(defvar o2-moddef-command "oob -x "
   "*Command called with module name to extract the module's exported definition
 from its source code.")
 

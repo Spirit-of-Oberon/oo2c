@@ -463,7 +463,10 @@ RAISES IO.Error;
     RETURN b;
   END SelectBackend;
 
-PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN
+PROCEDURE (r: Rules) CompileModule*(module: Rep.Module;
+                                    analysisOnly: BOOLEAN): BOOLEAN
+(**With @oparam{analysisOnly}, no output files are written.  Note: This is only
+   implemented for the C back-end right now.  *)
 RAISES IO.Error;
   VAR
     success: BOOLEAN;
@@ -490,7 +493,7 @@ RAISES IO.Error;
       t: TranslateToC.Translator;
     BEGIN
       t := SSAtoC.NewTranslator(writeStats, inspectProc, inspectStage);
-      RETURN TranslateToC.Run(module, libraryName, r.uses,
+      RETURN TranslateToC.Run(module, libraryName, analysisOnly, r.uses,
                               writeAST, writeIR, t);
     END DoSSAtoC;
   
@@ -500,7 +503,7 @@ RAISES IO.Error;
       t: TranslateToC.Translator;
     BEGIN
       t := IRtoC.NewTranslator();
-      RETURN TranslateToC.Run(module, libraryName, r.uses,
+      RETURN TranslateToC.Run(module, libraryName, analysisOnly, r.uses,
                               writeAST, writeIR, t);
     END DoIRtoC;
   
@@ -543,7 +546,7 @@ RAISES IO.Error;
       END;
 
       success := (errList = NIL) OR errList.NoErrors();
-      IF success THEN
+      IF success & ~analysisOnly THEN
         (* read symbol file that we have just written *)
         module.SetInterfaceData(NIL, Rep.noInterfaceData, TRUE);
         success := r.GetImports(module);
@@ -563,7 +566,7 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN
 RAISES IO.Error;
   VAR
     i: LONGINT;
-    isUpToDate: BOOLEAN;
+    isUpToDate, dummy: BOOLEAN;
     errList: Error.List;
     err: Error.Msg;
     chars: Object.CharsLatin1;
@@ -624,8 +627,14 @@ RAISES IO.Error;
         ASSERT(module.ifData # NIL);
         module.SetInterfaceData(module. ifData, Rep.completeInterface,
                                 r.CheckAllImports(module));
+
+        IF (r.uses # NIL) THEN
+          (* symbol file is up to date, but we are looking for uses of
+             declarations: compile module in "analysis only" mode *)
+          dummy := r.CompileModule(module, TRUE);
+        END;
       ELSE
-        isUpToDate := r.CompileModule(module);
+        isUpToDate := r.CompileModule(module, FALSE);
       END;
 
       IF isUpToDate THEN
@@ -801,7 +810,7 @@ RAISES IO.Error;
     IF Exists(module, Rep.modModuleSource) THEN
       IF r.forceUpdate OR
          DerivedIsOlder(module, fileId, Rep.modModuleSource) THEN
-        RETURN r.CompileModule(module);
+        RETURN r.CompileModule(module, FALSE);
       ELSE
         RETURN TRUE;
       END;
