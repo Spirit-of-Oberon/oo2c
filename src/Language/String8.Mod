@@ -2,7 +2,7 @@ MODULE Language:String8 [OOC_EXTENSIONS];
 
 IMPORT 
   ADT:Object, ADT:String, ADT:StringBuffer,
-  L := Language, LString := Language:String;
+  L := Language, LString := Language:String, LanguageNew;
 
 TYPE
   Type* = POINTER TO TypeDesc;
@@ -85,7 +85,7 @@ BEGIN
   RETURN New(v.value.Concat(str.value));
 END Concat;
 
-PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
+PROCEDURE (v: Value) Equals* (y: LanguageNew.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Value) & v. value. Equals(y(Value). value)
   END Equals;

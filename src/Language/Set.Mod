@@ -2,7 +2,7 @@ MODULE Language:Set;
 
 IMPORT 
   ADT:Object, ADT:String, ADT:StringBuffer,
-  L := Language, SYSTEM;
+  L := Language, SYSTEM, LanguageNew;
 
 TYPE
   Value* = POINTER TO ValueDesc;
@@ -27,7 +27,7 @@ BEGIN
   RETURN v;
 END New;
 
-PROCEDURE (v : Value) Equals* (y : Object.Object) : BOOLEAN;
+PROCEDURE (v : Value) Equals* (y : LanguageNew.Object) : BOOLEAN;
 BEGIN
   WITH y : Value DO
     RETURN y.value = v.value

@@ -25,7 +25,6 @@ MODULE H2O:Scanner [OOC_EXTENSIONS];
 IMPORT
   Err, CharClass, TextRider,
   ADT:String, ADT:StringBuffer, ADT:Object,
-  OOC:Config,
   H2O:Source, H2O:Error;
 
 CONST
@@ -143,7 +142,7 @@ TYPE
     err- : Error.Error;
     ch- : CHAR;                  (* current character *)
     buffer- : StringBuffer.StringBuffer;
-    valid : BOOLEAN;		(* FIXME! *)
+    (*valid : BOOLEAN;		(* FIXME! *)*)
   END;
 
 PROCEDURE (s : TokenSource) [ABSTRACT] GetToken* (token : Token; options : SET);
@@ -489,7 +488,6 @@ BEGIN
 END Write;
 
 PROCEDURE (t : Token) Text* (wr : TextRider.Writer);
-VAR str : String.String;
 BEGIN
   CASE t.sym OF
   | endLine:

@@ -39,7 +39,7 @@ MODULE ADT:Dictionary;
    @end itemize  *)
 
 IMPORT
-  S := SYSTEM, ADT:Object;
+  S := SYSTEM, ADT:Object, Language:=LanguageNew;
 
 
 TYPE
@@ -442,7 +442,7 @@ PROCEDURE (dict: Dictionary) Values* (): Object.ObjectArrayPtr;
   END Values;
 
 
-PROCEDURE (dict: Dictionary) Equals* (obj: Object.Object): BOOLEAN;
+PROCEDURE (dict: Dictionary) Equals* (obj: Language.Object): BOOLEAN;
   BEGIN
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END Equals;

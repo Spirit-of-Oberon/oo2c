@@ -19,7 +19,7 @@ MODULE ADT:Object [OOC_EXTENSIONS];
 *)
  
 IMPORT
-  S := SYSTEM, Channel, BinaryRider, Msg;
+  Channel, BinaryRider, Msg, Language:=LanguageNew;
 
 
 (**This module consists of two parts.
@@ -58,6 +58,7 @@ TYPE
      and provides functions @oproc{Object.Equals} and @oproc{Object.HashCode}.
 
      It is an abstract class without any state of its own.  *)
+    (Language.ObjectDesc)
   END;
 
 TYPE  (* abstract types, used for persistence mechanism 
@@ -168,90 +169,6 @@ PROCEDURE (obj: Object) ToString * () : String;
 BEGIN
   RETURN NIL;
 END ToString;
-
-PROCEDURE (x: Object) Equals* (y: Object): BOOLEAN;
-(**Indicates whether some other object is "equal to" this one.
-
-   The @oproc{Object.Equals} method implements an equivalence relation:
-
-   @itemize @bullet
-   @item
-   It is reflexive: for any reference value @samp{x}, @samp{x.Equals(x)} should
-   return @code{TRUE}.
-
-   @item
-   It is symmetric: for any reference values @samp{x} and @samp{y},
-   @samp{x.Equals(y)} should return @code{TRUE} if and only if
-   @samp{y.Equals(x)} returns @code{TRUE}.
-
-   @item
-   It is transitive: for any reference values @samp{x}, @samp{y}, and @samp{z},
-   if @samp{x.Equals(y)} returns @code{TRUE} and @samp{y.Equals(z)} returns
-   @code{TRUE}, then @samp{x.Equals(z)} should return @code{TRUE}.
-
-   @item
-   It is consistent: for any reference values @samp{x} and @samp{y}, multiple
-   invocations of @samp{x.Equals(y)} consistently return @code{TRUE} or
-   consistently return @code{FALSE}, provided no information used in equals
-   comparisons on the object is modified.
-
-   @item
-   For any non-null reference value @samp{x}, @samp{x.Equals(NIL)} should
-   return @code{FALSE}.
-   @end itemize
-
-   The @samp{Equals} method for class Object implements the most discriminating
-   possible equivalence relation on objects; that is, for any reference values
-   @samp{x} and @samp{y}, this method returns @code{TRUE} if and only if
-   @samp{x} and @samp{y} refer to the same object (@samp{x=y} has the value
-   @code{TRUE}).  *)
-  BEGIN
-    RETURN (x = y)
-  END Equals;
-
-PROCEDURE (obj: Object) HashCode* (): LONGINT;
-(**Returns a hash code value for the object.  This method is supported for the
-   benefit of dictionaries such as those provided by
-   @omodule{*ADT:Dictionary}..
-
-   The general contract of @oproc{Object.HashCode} is:
-
-   @itemize
-   @item
-   Whenever it is invoked on the same object more than once during an execution
-   of an application, the @oproc{Object.HashCode} method must consistently
-   return the same integer, provided no information used in equals comparisons
-   on the object is modified.  This integer need not remain consistent from one
-   execution of an application to another execution of the same application.
-
-   @item
-   If two objects are equal according to the @oproc{Object.Equals} method, then
-   calling the @oproc{Object.HashCode} method on each of the two objects must
-   produce the same integer result.
-
-   @item
-   It is @emph{not} required that if two objects are unequal according to the
-   @oproc{Object.Equals} method, then calling the @oproc{Object.HashCode}
-   method on each of the two objects must produce distinct integer results.
-   However, the programmer should be aware that producing distinct integer
-   results for unequal objects may improve the performance of dictionaries.
-   @end itemize
-
-   As much as is reasonably practical, the @oproc{Object.HashCode} method
-   defined by class @otype{Object} does return distinct integers for distinct
-   objects.  (This is typically implemented by converting the internal address
-   of the object into an integer, but this implementation technique is not
-   required.)  *)
-  BEGIN
-<*IF TARGET_ADDRESS = 64 THEN*>
-    RETURN S.VAL (LONGINT,
-      S.VAL (SET, SHORT (S.LSH (S.ROT (S.VAL (S.ADDRESS, obj), 32), -32))) /
-      S.VAL (SET, SHORT (S.LSH (S.VAL (S.ADDRESS, obj), -32))))
-<*ELSE*>
-    RETURN S.VAL (LONGINT, obj)
-<*END*>
-  END HashCode;
-
 
 
 (* Externalize/Internalize Methods

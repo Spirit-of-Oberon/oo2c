@@ -19,7 +19,8 @@ MODULE ADT:StringBuffer [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  S := SYSTEM, RT0, ADT:Object, ADT:String, IntStr, RealStr;
+  S := SYSTEM, RT0, ADT:Object, ADT:String, IntStr, RealStr,
+  Language:=LanguageNew;
 
 TYPE
   StringBuffer* = POINTER TO StringBufferDesc;
@@ -158,7 +159,7 @@ PROCEDURE (str: StringBuffer) IsEmpty* (): BOOLEAN;
     RETURN (str. length = 0)
   END IsEmpty;
 
-PROCEDURE (x: StringBuffer) Equals* (y: Object.Object): BOOLEAN;
+PROCEDURE (x: StringBuffer) Equals* (y: Language.Object): BOOLEAN;
 (**Determines if the receiver and the parameter are equal strings.  That is, it
    returns @code{TRUE} if, and only if, @oparam{y} is an instance of
    @otype{StringBuffer} with the same length and content as @oparam{x}.  *)

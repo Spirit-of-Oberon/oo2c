@@ -19,7 +19,7 @@ MODULE ADT:ArrayList;
 *)
 
 IMPORT
-  ADT:Object;
+  ADT:Object, Language:=LanguageNew;
 
 
 TYPE
@@ -297,7 +297,7 @@ PROCEDURE (l: ArrayList) IsEmpty* (): BOOLEAN;
 
 
 
-PROCEDURE (l: ArrayList) Equals* (obj: Object.Object): BOOLEAN;
+PROCEDURE (l: ArrayList) Equals* (obj: Language.Object): BOOLEAN;
   BEGIN
     <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
   END Equals;

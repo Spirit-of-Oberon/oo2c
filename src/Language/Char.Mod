@@ -1,7 +1,7 @@
 MODULE Language:Char [OOC_EXTENSIONS];
 
 IMPORT
-  Ascii, ADT:Object, ADT:String, L := Language;
+  Ascii, ADT:Object, ADT:String, L := Language, LanguageNew;
 
 TYPE
   Type* = POINTER TO TypeDesc;
@@ -43,7 +43,7 @@ PROCEDURE New* (value: LONGINT): Value;
     END;
   END New;
 
-PROCEDURE (v: Value) Equals* (y: Object.Object): BOOLEAN;
+PROCEDURE (v: Value) Equals* (y: LanguageNew.Object): BOOLEAN;
   BEGIN
     RETURN (y IS Value) & (v. value = y(Value). value)
   END Equals;

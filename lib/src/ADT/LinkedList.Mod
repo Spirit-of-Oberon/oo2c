@@ -20,7 +20,7 @@ MODULE ADT:LinkedList;
 *)
 
 IMPORT
-  ADT:Object;
+  ADT:Object, Language:=LanguageNew;
 
 TYPE
   Entry = POINTER TO EntryDesc;
@@ -348,7 +348,7 @@ BEGIN
   RETURN (l. size = 0)
 END IsEmpty;
 
-PROCEDURE (l: LinkedList) Equals* (obj: Object.Object): BOOLEAN;
+PROCEDURE (l: LinkedList) Equals* (obj: Language.Object): BOOLEAN;
 (**Test if an object is equal to this list. To be equal, a list must contain
 the same sequence of objects. In this context, "same" means that the Equals
 test returns true for pairs of objects at equivalent ordinal positions in the

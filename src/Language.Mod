@@ -5,7 +5,7 @@ MODULE Language [OOC_EXTENSIONS];
  * compilers as part of the intermediate representation of a program *)
 
 IMPORT
-  ADT:Object, ADT:String;
+  ADT:Object, ADT:String, LanguageNew;
 
 TYPE
   Type* = POINTER TO TypeDesc;
@@ -35,7 +35,7 @@ PROCEDURE InitValue* (v: Value; type: Type);
     v. type := type
   END InitValue;
 
-PROCEDURE (v: Value) [ABSTRACT] Equals* (y: Object.Object): BOOLEAN;
+PROCEDURE (v: Value) [ABSTRACT] Equals* (y: LanguageNew.Object): BOOLEAN;
   END Equals;
   
 PROCEDURE (v : Value) [ABSTRACT] Compare* (y: Object.Object): LONGINT;
