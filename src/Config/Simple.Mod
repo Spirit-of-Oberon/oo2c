@@ -3,6 +3,7 @@ MODULE Config:Simple;
 IMPORT
   Msg, ProgramArgs, IO:Memory,
   
+  C := Config,
   Config:Parser,
   
   Config:Source,
@@ -25,6 +26,7 @@ CONST
 TYPE
   Config* = POINTER TO ConfigDesc;
   ConfigDesc* = RECORD
+    (C.ConfigDesc)
     cfgFile: Value.StringPtr;
     cfgFileEnvVar: Environment.VariableTemplate;
     cfgFileCmdLineOption: CmdLine.OptionTemplate;
@@ -44,6 +46,8 @@ TYPE
 
 PROCEDURE Init* (config: Config; defaultConfigFile: ARRAY OF CHAR);
   BEGIN
+    C.InitConfig (config);
+    
     IF (defaultConfigFile = "") THEN
       config. cfgFile := NIL
     ELSE
