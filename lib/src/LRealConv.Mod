@@ -137,9 +137,52 @@ PROCEDURE ScanReal*(inputCh: CHAR;
     END
   END ScanReal;
 
-PROCEDURE FormatReal*(str: ARRAY OF CHAR): ConvResults;
+PROCEDURE FormatReal* (str: ARRAY OF CHAR): ConvResults;
+  VAR
+    i: LONGINT;
+    ch: CHAR;
+    state: ScanState;
+    class: ScanClass;
   BEGIN
-    RETURN -1;
+    (* move index `i' over padding characters *)
+    i := 0;
+    state := SR;
+    REPEAT
+      ch := str[i];
+      state.p(ch, class, state);
+      INC (i);
+    UNTIL (class # padding);
+
+    IF (ch = 0X) THEN
+      RETURN strEmpty;
+    ELSE
+      (* scan part before decimal point or exponent *)
+      WHILE (class = valid) & (state # F) & (state # E) DO
+        ch := CAP (str[i]);
+        state.p(ch, class, state);
+        INC (i);
+      END;
+      
+      (* scan fractional part exponent *)
+      WHILE (class = valid) & (state # E) DO
+        ch := CAP (str[i]);
+        state.p(ch, class, state);
+        INC (i);
+      END;
+      
+      (* scan exponent *)
+      WHILE (class = valid) DO
+        ch := str[i];
+        state.p(ch, class, state);
+        INC (i);
+      END;
+
+      IF (class = invalid) OR (ch # 0X) THEN
+        RETURN strWrongFormat;
+      ELSE (* (class = terminator) & (ch = 0X) *)
+        RETURN strAllRight;
+      END;
+    END;
   END FormatReal;
  
 PROCEDURE ValueReal*(str: ARRAY OF CHAR): LONGREAL;
