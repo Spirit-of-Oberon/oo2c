@@ -118,8 +118,10 @@ PROCEDURE InitNamespace (ns: Namespace; da: Sym.DeclarationArray;
     ns. localCount := len
   END InitNamespace;
 
-PROCEDURE (ns: Namespace) IdentifyLocal* (sourceContext: Sym.Item;
-                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
+PROCEDURE (ns: Namespace) IdentifyLocal2*(sourceContext: Sym.Item;
+                                          name: Sym.Name;
+                                          ignorePosition: BOOLEAN;
+                                          VAR baseNotExported: BOOLEAN): Sym.Declaration;
   VAR
     s, e, m: LONGINT;
     decl: Sym.Declaration;
@@ -145,19 +147,22 @@ PROCEDURE (ns: Namespace) IdentifyLocal* (sourceContext: Sym.Item;
       ELSIF (decl. exportMark = Sym.nameNotExported) THEN
         (* query and declaration are in different modules: check if the name
            is exported *)
-        decl := NIL
+        decl := NIL;
+        baseNotExported := TRUE;
       END;
       RETURN decl
     ELSE
       RETURN NIL
     END
-  END IdentifyLocal;
+  END IdentifyLocal2;
 
-PROCEDURE (ns: Namespace) Identify* (sourceContext: Sym.Item;
-                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
+PROCEDURE (ns: Namespace) Identify2*(sourceContext: Sym.Item;
+                                     name: Sym.Name;
+                                     ignorePosition: BOOLEAN;
+                                     VAR baseNotExported: BOOLEAN): Sym.Declaration;
   BEGIN
-    RETURN ns. IdentifyLocal (sourceContext, name, ignorePosition)
-  END Identify;
+    RETURN ns. IdentifyLocal2(sourceContext, name, ignorePosition, baseNotExported)
+  END Identify2;
 
 PROCEDURE ErrDecl (code: Error.Code; decl: Sym.Declaration; errList: Error.List);
   VAR
@@ -241,23 +246,28 @@ PROCEDURE (ns: Nested) SetEnclosingNamespace* (ns0: Namespace);
     ns. nestedIn := ns0
   END SetEnclosingNamespace;
 
-PROCEDURE (ns: Nested) IdentifyLocal* (sourceContext: Sym.Item;
-                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
+PROCEDURE (ns: Nested) IdentifyLocal2*(sourceContext: Sym.Item;
+                                       name: Sym.Name;
+                                       ignorePosition: BOOLEAN;
+                                       VAR baseNotExported: BOOLEAN): Sym.Declaration;
   BEGIN
-    RETURN ns. IdentifyLocal^ (sourceContext, name, ignorePosition)
-  END IdentifyLocal;
+    RETURN ns. IdentifyLocal2^(sourceContext, name, ignorePosition, baseNotExported)
+  END IdentifyLocal2;
 
-PROCEDURE (ns: Nested) Identify* (sourceContext: Sym.Item;
-                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
+PROCEDURE (ns: Nested) Identify2*(sourceContext: Sym.Item;
+                                  name: Sym.Name;
+                                  ignorePosition: BOOLEAN;
+                                  VAR baseNotExported: BOOLEAN): Sym.Declaration;
   VAR
     decl: Sym.Declaration;
   BEGIN
-    decl := ns. IdentifyLocal (sourceContext, name, ignorePosition);
+    decl := ns. IdentifyLocal2(sourceContext, name, ignorePosition, baseNotExported);
     IF (decl = NIL) & (ns. nestedIn # NIL) THEN
-      decl := ns. nestedIn. Identify (sourceContext, name, ignorePosition)
+      decl := ns. nestedIn. Identify2(sourceContext, name, ignorePosition,
+                                      baseNotExported)
     END;
     RETURN decl
-  END Identify;
+  END Identify2;
 
 
 PROCEDURE InitExtended (ns: Extended; 
@@ -282,23 +292,27 @@ PROCEDURE (ns: Extended) SetBaseNamespace* (ns0: Namespace);
     ns. extends := ns0
   END SetBaseNamespace;
 
-PROCEDURE (ns: Extended) IdentifyLocal* (sourceContext: Sym.Item;
-                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
+PROCEDURE (ns: Extended) IdentifyLocal2*(sourceContext: Sym.Item;
+                                         name: Sym.Name;
+                                         ignorePosition: BOOLEAN;
+                                         VAR baseNotExported: BOOLEAN): Sym.Declaration;
   BEGIN
-    RETURN ns. IdentifyLocal^ (sourceContext, name, ignorePosition)
-  END IdentifyLocal;
+    RETURN ns. IdentifyLocal2^(sourceContext, name, ignorePosition, baseNotExported)
+  END IdentifyLocal2;
 
-PROCEDURE (ns: Extended) Identify* (sourceContext: Sym.Item;
-                   name: Sym.Name; ignorePosition: BOOLEAN): Sym.Declaration;
+PROCEDURE (ns: Extended) Identify2*(sourceContext: Sym.Item;
+                                    name: Sym.Name;
+                                    ignorePosition: BOOLEAN;
+                                    VAR baseNotExported: BOOLEAN): Sym.Declaration;
   VAR
     decl: Sym.Declaration;
   BEGIN
-    decl := ns. IdentifyLocal (sourceContext, name, ignorePosition);
+    decl := ns. IdentifyLocal2(sourceContext, name, ignorePosition, baseNotExported);
     IF (decl = NIL) & (ns. extends # NIL) THEN
-      decl := ns. extends. Identify (sourceContext, name, ignorePosition)
+      decl := ns. extends. Identify2(sourceContext, name, ignorePosition, baseNotExported)
     END;
     RETURN decl
-  END Identify;
+  END Identify2;
 
 PROCEDURE (ns: Extended) InsertTBProc* (procDecl: Sym.ProcDecl;
                                         errList: Error.List);
@@ -397,15 +411,22 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
   VAR
     i: LONGINT;
     decl, base: Sym.Declaration;
+    baseNotExported: BOOLEAN;
   BEGIN
     FOR i := 0 TO ns. localCount-1 DO
       decl := ns. localDecl[i];
       WITH decl: Sym.FieldDecl DO
-        IF (ns. extends # NIL) & 
-           (ns. extends. Identify (decl, decl. name, TRUE) # NIL) THEN
-          ErrDecl (definedForBaseType, decl, errList)
+        IF (ns. extends # NIL) THEN
+          baseNotExported := FALSE;
+          base := ns.extends.Identify2(decl, decl.name, TRUE, baseNotExported);
+          IF (base = NIL) THEN
+            decl.shadowsPrivateBase := baseNotExported;
+          ELSE
+            ErrDecl (definedForBaseType, decl, errList)
+          END;
         END
       | decl: Sym.ProcDecl DO
+        baseNotExported := FALSE;
         IF (ns. extends = NIL) THEN
           base := NIL
         ELSE

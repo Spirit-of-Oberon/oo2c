@@ -713,6 +713,10 @@ TYPE
     (**Offset in bytes of this field with respect to the record variable's
        base address.  This field is initially @samp{-1}, and changed to its
        final value when calculating size and alignment of the record type.  *)
+    shadowsPrivateBase*: BOOLEAN;
+    (**If @code{TRUE}, then a record field or type-bound procedure of the
+       same name from another module is shadowed by this declaration.  This
+       information is used to disambiguate member names in C structs.  *)
   END;
 
 TYPE
@@ -752,8 +756,10 @@ PROCEDURE InitNamespace* (ns: Namespace);
   BEGIN
   END InitNamespace;
 
-PROCEDURE (ns: Namespace) [ABSTRACT] IdentifyLocal* (sourceContext: Item;
-                             name: Name; ignorePosition: BOOLEAN): Declaration;
+PROCEDURE (ns: Namespace) [ABSTRACT] IdentifyLocal2*(sourceContext: Item;
+                                                     name: Name;
+                                                     ignorePosition: BOOLEAN;
+                                                     VAR baseNotExported: BOOLEAN): Declaration;
 (**Tries to find a declaration matching the name @oparam{name} in the local
    namespace @oparam{ns}.  The search will @emph{not} continue into any
    enclosing or inherited namespace.
@@ -766,14 +772,49 @@ PROCEDURE (ns: Namespace) [ABSTRACT] IdentifyLocal* (sourceContext: Item;
    position of @oparam{name} and any matching declaration is ignored when
    determining whether the visibility of the declaration at the place of
    the using occurence of @oparam{name}.  This is used to implement the
-   relaxed ording rules for names that are used as pointer base types.  *)
+   relaxed ording rules for names that are used as pointer base types.
+
+   If on entry to this procedure the parameter @oparam{baseNotExported} is
+   @code{FALSE}, then a value of @code{TRUE} on completion signals that a
+   matching declaration exists, but that it is not exported by its defining
+   module.  While this information does not make a difference from the point
+   of view of a program's sementics, it can be of importance during code
+   generation.  *)
+  END IdentifyLocal2;
+
+PROCEDURE (ns: Namespace) IdentifyLocal* (sourceContext: Item;
+                                          name: Name;
+                                          ignorePosition: BOOLEAN): Declaration;
+(**The normal search method within a given namespace.  The parameters are
+   like @oproc{Namespace.IdentifyLocal2}, with the @samp{baseNotExported}
+   information omitted.  *)
+  VAR
+    baseNotExported: BOOLEAN;
+  BEGIN
+    baseNotExported := FALSE;
+    RETURN ns.IdentifyLocal2(sourceContext, name, ignorePosition, baseNotExported);
   END IdentifyLocal;
 
-PROCEDURE (ns: Namespace) [ABSTRACT] Identify* (sourceContext: Item;
-                             name: Name; ignorePosition: BOOLEAN): Declaration;
-(**Similar to @oproc{Namespace.IdentifyLocal}, but continue the search in
+PROCEDURE (ns: Namespace) [ABSTRACT] Identify2* (sourceContext: Item;
+                                                name: Name;
+                                                ignorePosition: BOOLEAN;
+                                                VAR baseNotExported: BOOLEAN): Declaration;
+(**Similar to @oproc{Namespace.IdentifyLocal2}, but continue the search in
    any enclosing or inherited namespace, if the name @oparam{name} cannot
    be resolved in the local namespace.  *)
+  END Identify2;
+
+PROCEDURE (ns: Namespace) Identify* (sourceContext: Item;
+                                     name: Name;
+                                     ignorePosition: BOOLEAN): Declaration;
+(**The normal search method within a set of interrelated namespaces.  The
+   parameters are like @oproc{Namespace.Identify2}, with the
+   @samp{baseNotExported} information omitted.  *)
+  VAR
+    baseNotExported: BOOLEAN;
+  BEGIN
+    baseNotExported := FALSE;
+    RETURN ns.Identify2(sourceContext, name, ignorePosition, baseNotExported);
   END Identify;
 
 
@@ -1632,6 +1673,7 @@ PROCEDURE InitFieldDecl* (fieldDecl: FieldDecl; parent: Item; name: Name;
     fieldDecl. type := type;
     fieldDecl. srcCodeType := type;
     fieldDecl. offset := -1;
+    fieldDecl. shadowsPrivateBase := FALSE;
   END InitFieldDecl;
 
 PROCEDURE (fieldDecl: FieldDecl) Store* (w: Object.Writer);
@@ -1640,6 +1682,7 @@ PROCEDURE (fieldDecl: FieldDecl) Store* (w: Object.Writer);
     (*w. WriteObject (fieldDecl. type);*)
     w. WriteObject (fieldDecl. srcCodeType);
     w. WriteNum (fieldDecl. offset);
+    w. WriteBool (fieldDecl. shadowsPrivateBase);
   END Store;
 
 PROCEDURE (fieldDecl: FieldDecl) Load* (r: Object.Reader);
@@ -1651,6 +1694,7 @@ PROCEDURE (fieldDecl: FieldDecl) Load* (r: Object.Reader);
     fieldDecl. srcCodeType := obj(Type);
     fieldDecl. type := fieldDecl. srcCodeType;
     r. ReadNum (fieldDecl. offset);
+    r. ReadBool (fieldDecl. shadowsPrivateBase);
   END Load;
 
 PROCEDURE (fieldDecl: FieldDecl) SetOffset* (offset: LONGINT);
