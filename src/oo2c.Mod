@@ -333,13 +333,13 @@ RAISES IO.Error;
         i := 0;
         WHILE ok & (i #  LEN(makeRules.imports^)) DO
           m := makeRules.imports[i];
-          IF install THEN
-            IF (m.origin = module.origin) THEN
+          IF (m.origin = module.origin) THEN
+            IF install THEN
               pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modInterfaceDescr), NIL));
               pkg.fileSet.Append(Package.NewFile(m.origin.GetLocalPath(m, Rep.modInterfaceHTML), NIL));
+            ELSE
+              ok := makeRules.Update(m, Rep.modInterfaceHTML);
             END;
-          ELSE
-            ok := makeRules.Update(m, Rep.modInterfaceHTML);
           END;
           INC(i);
         END;
@@ -503,7 +503,7 @@ RAISES IO.Error;
     BEGIN
       ok := makeRules.Update(module, Rep.modSymbolFile);
       
-      list := Make.ModuleClosure(module, NIL);
+      list := Make.ModuleClosure(module);
       i := 0;
       WHILE ok & (i #  LEN(list^)) DO
         IF (list[i].origin = module.origin) THEN
