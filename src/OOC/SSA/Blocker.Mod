@@ -763,6 +763,14 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         END;
         RETURN region;
       END MoveLoopInvariants;
+
+    PROCEDURE Dominates (dom, child: Region): BOOLEAN;
+      BEGIN
+        WHILE (child # NIL) & (child # dom) DO
+          child := child. region;
+        END;
+        RETURN (child # NIL);
+      END Dominates;
     
     BEGIN
       IF (p. instr. opcode = Opcode.loopStart) THEN
@@ -782,10 +790,17 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
                  instructions with such a dependency on the current one
                  have been placed somewhere after it *)
               useRegion := RegionOfUse (use);
-              IF (region = NIL) THEN
-                region := useRegion;
-              ELSE
-                region := Merge (region, useRegion);
+              IF (p. loopAssoc = NIL) OR
+                 Dominates (p. loopAssoc, useRegion) THEN
+                (* if `p' is part of a loop, then ignore all uses in regions
+                   that are not dominated by the loop; they have no impact
+                   on the placement of the instruction, because it must not
+                   be moved outside its loop *)
+                IF (region = NIL) THEN
+                  region := useRegion;
+                ELSE
+                  region := Merge (region, useRegion);
+                END;
               END;
             END;
             use := use. nextUse;
