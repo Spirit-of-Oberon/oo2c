@@ -22,12 +22,13 @@ MODULE OOC:Make:LinkProgramC;
 
 IMPORT
   Out, Strings, URI, URI:Scheme:File, ADT:Object, ADT:String, ADT:Dictionary,
+  ADT:ArrayList,
   OS:ProcessManagement, OOC:Error, OOC:Repository, OOC:Config:CCompiler,
   Sym := OOC:SymbolTable;
 
 PROCEDURE Run*(module: Repository.Module;
                imports: ARRAY OF Repository.Module;
-               forLibrary: BOOLEAN): BOOLEAN;
+               forLibrary: String.String): BOOLEAN;
   VAR
     str: ARRAY 16*1024 OF CHAR;        (* link commands can get _very_ long *)
     path: Repository.URIBuffer;
@@ -35,12 +36,15 @@ PROCEDURE Run*(module: Repository.Module;
     exit, i: LONGINT;
     res: Error.Msg;
     linkDirective: Sym.LinkDirective;
-    libsMap: Dictionary.Dictionary;
+    libsMap, importedLibs: Dictionary.Dictionary;
+    importedLibsList: ArrayList.ArrayList;
     libs: Object.ObjectArrayPtr;
     objectFile, outputFile: Repository.FileId;
+    libraryName: String.String;
+    import: Repository.Module;
   BEGIN
     exit := 0;
-    IF forLibrary THEN
+    IF (forLibrary # NIL) THEN
       objectFile := Repository.modObjectFileLib;
       outputFile := Repository.modLibrary;
     ELSE
@@ -51,32 +55,61 @@ PROCEDURE Run*(module: Repository.Module;
     module. CreateOutputDir (outputFile, res);
     IF (res = NIL) THEN
       CCompiler.LinkProgramCmd
-          (module. GetURI (outputFile), forLibrary, str);
+          (module. GetURI (outputFile), (forLibrary # NIL), str);
 
       libsMap := Dictionary.New();
+      importedLibs := Dictionary.New();
+      importedLibsList := ArrayList.New(4);
       FOR i := 0 TO LEN(imports)-1 DO
-        uri := imports[i]. GetURI (objectFile);
-        uri(File.URI). GetPath (path);
-        Strings.Append (" ", str);
-        Strings.Append (path, str);
-        
-        (* note down any libraries that need to be linked in *)
-        linkDirective := imports[i].ifData.linkDirectives;
-        WHILE (linkDirective # NIL) DO
-          WITH linkDirective: Sym.LinkLib DO
-            libsMap. Set (linkDirective. libraryName, NIL);
-          ELSE                         (* ignore *)
+        ASSERT(imports[i].ifQuality = Repository.completeInterface);
+        libraryName := imports[i].ifData.libraryName;
+        IF (libraryName # NIL) & ~libraryName.Equals(forLibrary) THEN
+          (* object file is part of a library; for each library encountered
+             this way, keep track of one module that it provides *)
+          IF ~importedLibs.HasKey(libraryName) THEN
+            importedLibs.Set(imports[i].ifData.libraryName, NIL);
+            importedLibsList.Append(imports[i]);
           END;
-          linkDirective := linkDirective. next
+        ELSE
+          uri := imports[i]. GetURI (objectFile);
+          uri(File.URI). GetPath (path);
+          Strings.Append (" ", str);
+          Strings.Append (path, str);
+          
+          (* note down any libraries that need to be linked in *)
+          linkDirective := imports[i].ifData.linkDirectives;
+          WHILE (linkDirective # NIL) DO
+            WITH linkDirective: Sym.LinkLib DO
+              libsMap. Set (linkDirective. libraryName, NIL);
+            ELSE                         (* ignore *)
+            END;
+            linkDirective := linkDirective. next
+          END;
         END;
       END;
 
-      IF ~forLibrary THEN
+      IF (forLibrary = NIL) THEN
         (* add file with function main() *)
         uri := module. GetURI (Repository.modMainObjectFile);
         uri(File.URI). GetPath (path);
         Strings.Append (" ", str);
         Strings.Append (path, str);
+      END;
+
+      FOR i := 0 TO importedLibsList.size-1 DO
+        import := importedLibsList.array[i](Repository.Module);
+        IF import.FileExists(Repository.modLibrary) THEN
+          (* looks like an uninstalled library *)
+          uri := import.GetURI(Repository.modLibrary);
+          uri(File.URI). GetPath (path);
+          Strings.Append (" ", str);
+          Strings.Append (path, str);
+        ELSE
+          (* we don't have a .la file, so assume that it's a regularly
+             installed libtool library  *)
+          Strings.Append(" -l", str);
+          Strings.Append(import.ifData.libraryName.array^, str);
+        END;
       END;
       
       (* add "-l" options for the external libraries *)
