@@ -723,16 +723,18 @@ BEGIN
   
   NEW(autoImport[1]);
   autoImport[1].module := N(stringModule);
-  NEW (autoImport[1].exclude, 3);
+  NEW (autoImport[1].exclude, 4);
   autoImport[1].exclude[0] := autoImport[0].module;
   autoImport[1].exclude[1] := autoImport[1].module;
   autoImport[1].exclude[2] := N("Out0");
+  autoImport[1].exclude[3] := N("HashCode");
   
   NEW(autoImport[2]);
   autoImport[2].module := N("Exception");
-  NEW (autoImport[2].exclude, 4);
+  NEW (autoImport[2].exclude, 5);
   autoImport[2].exclude[0] := autoImport[0].module;
   autoImport[2].exclude[1] := autoImport[1].module;
   autoImport[2].exclude[2] := autoImport[2].module;
   autoImport[2].exclude[3] := N("Out0");
+  autoImport[2].exclude[4] := N("HashCode");
 END OOC:SymbolTable:Builder.

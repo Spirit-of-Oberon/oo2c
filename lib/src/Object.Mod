@@ -27,7 +27,11 @@ MODULE Object;
 
 IMPORT
   S := SYSTEM, RT0;
-  
+  (* Because this module is implicitly imported by almost all other modules,
+     normal modules cannot be added to this import list.  Before a module can
+     be imported here, it must be added to the `exclude' list of the
+     `autoImport' entries of all modules importing `Object'.  *)
+     
 TYPE
   Hash* = LONGINT;
   (**The integer type used to store hash values.  *)
