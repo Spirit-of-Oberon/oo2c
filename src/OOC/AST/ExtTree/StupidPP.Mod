@@ -25,8 +25,8 @@ IMPORT
   Log, TextRider, OOC:Scanner:Symbol, OOC:AST, OOC:AST:ExtTree;
   
 PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
-(**Writes the abstract syntax tree @oparam{m} to the output channel 
-   @oparam{ch}.  The result is the content of the source module, with a
+(**Writes the abstract syntax tree @oparam{m} to the output writer
+   @oparam{w}.  The result is the content of the source module, with a
    very rigid formatting and minus any embedded comments or pragmas.  *)
   VAR
     indent: LONGINT;

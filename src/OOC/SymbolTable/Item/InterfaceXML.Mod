@@ -50,7 +50,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
                   module: Item.Module;
                   repositories: Repositories.Section);
 (**Writes the exported parts of the symbol table with root @oparam{module}
-   to the output channel @oparam{ch}.  The result is an XML document that
+   to the output writer @oparam{cw}.  The result is an XML document that
    describes the public interface of the module.
    
    Note: The implementation is incomplete.  Declaration and type flags

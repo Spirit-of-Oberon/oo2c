@@ -7,6 +7,7 @@ IMPORT
 CONST
   defaultWarnings = FALSE;
   defaultAssertions = TRUE;
+  defaultOverflowCheck = FALSE;
   defaultConformantMode = FALSE;
   defaultTargetInteger = 32;
   defaultTargetAddress = 32;
@@ -14,6 +15,7 @@ CONST
 VAR
   warnings-: Pragmas.Pragma;
   assertions-: Pragmas.Pragma;
+  overflowCheck-: Pragmas.Pragma;
   conformantMode-: Pragmas.Pragma;
   targetInteger-: Pragmas.Pragma;
   targetAddress-: Pragmas.Pragma;
@@ -25,6 +27,7 @@ PROCEDURE CreateVariables* (s: Pragmas.Section);
   BEGIN
     warnings := s. Set ("Warnings", Boolean.New (defaultWarnings));
     assertions := s. Set ("Assertions", Boolean.New (defaultAssertions));
+    assertions := s. Set ("OverflowCheck", Boolean.New (defaultOverflowCheck));
     
     conformantMode := s. Set ("ConformantMode", Boolean.New (defaultConformantMode));
 

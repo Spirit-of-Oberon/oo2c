@@ -26,8 +26,8 @@ IMPORT
 
 
 PROCEDURE Write* (cw: Channel.Writer; m: ExtTree.Module);
-(**Writes the abstract syntax tree @oparam{m} to the output channel 
-   @oparam{ch}.  The result is an XML document that describes the
+(**Writes the abstract syntax tree @oparam{m} to the output writer 
+   @oparam{cw}.  The result is an XML document that describes the
    structure of the syntax tree.  The only information lost is formatting,
    comments, and pragmas.  Here is an example of the output for the
    most simple module:

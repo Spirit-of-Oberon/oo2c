@@ -51,7 +51,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
                   module: Item.Module; repositories: Repositories.Section;
                   extensionDict: Dictionary.Dictionary);
 (**Writes the exported parts of the symbol table with root @oparam{module} as
-   XML to the output channel @oparam{ch}.  Includes descriptions for
+   XML to the output writer @oparam{cw}.  Includes descriptions for
    declarations, cross-references, information about class and base classes,
    inherited fields and methods, and so on.  The output document is used as the
    common base for all module documentation output targets.  In particular, the

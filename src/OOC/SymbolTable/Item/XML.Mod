@@ -27,8 +27,8 @@ IMPORT
 
 
 PROCEDURE Write* (cw: Channel.Writer; module: Item.Module);
-(**Writes the symbol table with root @oparam{module} to the output channel 
-   @oparam{ch}.  The result is an XML document that describes the
+(**Writes the symbol table with root @oparam{module} to the output writer 
+   @oparam{cw}.  The result is an XML document that describes the
    structure of the symbol table.  Here is an example of the output for the
    most simple module:
    
