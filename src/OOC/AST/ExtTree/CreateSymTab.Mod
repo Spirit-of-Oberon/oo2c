@@ -314,7 +314,15 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
                 depList[j DIV 2] := n. dependencies. n[j](ExtTree.Terminal). GetString (TRUE);
               END;
             END;
-            moduleDecl. AddLinkLib (str, depList, prefixOption, suffixOption);
+
+           IF n.lib(ExtTree.Terminal).sym.str^="LIB" THEN
+              moduleDecl. AddLinkLib (str, depList, prefixOption, suffixOption,Sym.libTypeStandard);
+            ELSIF n.lib(ExtTree.Terminal).sym.str^="FRAMEWORK" THEN
+              moduleDecl. AddLinkLib (str, depList, prefixOption, suffixOption,Sym.libTypeFramework);
+            ELSE
+              (* This should never happen, precondition in the parser! *)
+              ASSERT(FALSE);
+            END;
           ELSE
             (* ignore list of flags for now *)
           END;

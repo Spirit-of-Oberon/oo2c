@@ -104,7 +104,15 @@ CONST
   flagExtensible* = 12;
   (**This flag is disabled, because it causes a deref of NIL in
      @omodule{*OOC:SymbolTable:InterfaceDescr} due to an unset
-     @ofield{Record.class}.  *)
+     @ofield{Record.className}.  *)
+
+CONST
+  libTypeStandard* = 0;
+  (**Library is a "normal" shared or static link library linked in with the
+     @samp{-l} option.  *)
+  libTypeFramework* = 1;
+  (**Library is a Mac OS X framework library and uses @samp{-framework} for
+     linking.  *)
   
 CONST
   nameNotExported* = 0;
@@ -377,6 +385,7 @@ TYPE
     libraryName-: STRING;
     dependencies-: Object.StringArrayPtr;
     prefixOption-, suffixOption-: STRING;
+    type-: LONGINT;
   END;
 
 CONST
@@ -1533,6 +1542,7 @@ PROCEDURE (l: LinkLib) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteStr (l. libraryName);
     w. WriteStr (l. prefixOption);
     w. WriteStr (l. suffixOption);
+    w. WriteNum (l. type);
     w. WriteNum (LEN (l. dependencies^));
     FOR i := 0 TO LEN (l. dependencies^)-1 DO
       w. WriteStr (l. dependencies[i]);
@@ -1547,6 +1557,7 @@ PROCEDURE (l: LinkLib) Load* (r: Storable.Reader) RAISES IO.Error;
     l.libraryName := ReadString8(r);
     l.prefixOption := ReadString8(r);
     l.suffixOption := ReadString8(r);
+    r. ReadNum (l.type);
     r. ReadNum (len);
     NEW (l. dependencies, len);
     FOR i := 0 TO len-1 DO
@@ -1647,7 +1658,8 @@ PROCEDURE NewLinkFile (file: URI.HierarchicalURI;
 
 PROCEDURE NewLinkLib (libraryName: STRING;
                       dependencies: Object.StringArrayPtr;
-                      prefixOption, suffixOption: STRING): LinkLib;
+                      prefixOption, suffixOption: STRING;
+                      type: LONGINT): LinkLib;
   VAR
     l: LinkLib;
   BEGIN
@@ -1657,6 +1669,7 @@ PROCEDURE NewLinkLib (libraryName: STRING;
     l. dependencies := dependencies;
     l. prefixOption := prefixOption;
     l. suffixOption := suffixOption;
+    l. type := type;
     RETURN l
   END NewLinkLib;
 
@@ -1680,12 +1693,13 @@ PROCEDURE (mod: Module) AddLinkFile* (file: URI.HierarchicalURI;
 
 PROCEDURE (mod: Module) AddLinkLib* (libraryName: STRING;
                                      dependencies: Object.StringArrayPtr;
-                                     prefixOption, suffixOption: STRING);
+                                     prefixOption, suffixOption: STRING;
+                                     type: LONGINT);
   BEGIN
     ASSERT (libraryName # NIL);
     AddLinkDirective (mod. linkDirectives,
                       NewLinkLib (libraryName, dependencies,
-                                  prefixOption, suffixOption))
+                                  prefixOption, suffixOption, type))
   END AddLinkLib;
 
 PROCEDURE (mod: Module) NoObjectFile*(): BOOLEAN;

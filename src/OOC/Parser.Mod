@@ -410,7 +410,7 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             kw := CheckSym (Symbol.ident);
             string := CheckString();
             RETURN ast. LinkObjFlag (kw, string)
-          ELSIF Ident ("LIB") THEN
+          ELSIF Ident("LIB") OR Ident("FRAMEWORK") THEN
             kw := CheckSym (Symbol.ident);
             string := CheckString();
             IF (sym. id = Symbol.lParen) THEN
