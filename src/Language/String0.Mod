@@ -254,6 +254,17 @@ PROCEDURE (b: Buffer) AppendLatin1Region* (data[NO_COPY]: ARRAY OF CHAR;
     INC (b. length, len);
   END AppendLatin1Region;
 
+PROCEDURE (b: Buffer) AppendLatin1Char* (ch: CHAR);
+  BEGIN
+    b. EnsureCapacity(b. length+1);
+    IF (b. data8 # NIL) THEN
+      b.data8[b.length] := ch;
+    ELSE
+      b.data32[b.length] := ORD(ch);
+    END;
+    INC (b. length);
+  END AppendLatin1Char;
+
 PROCEDURE (b: Buffer) AppendUTF32Region* (data[NO_COPY]: ARRAY OF Char;
                                           start, end: LONGINT);
   VAR
