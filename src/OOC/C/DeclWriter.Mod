@@ -980,7 +980,7 @@ PROCEDURE (w: Writer) NewIncludeModule* (module: Repository.Module): IncludeModu
 
 PROCEDURE (d: IncludeModule) Write (w: Writer);
   BEGIN
-    w. WriteInclude (d. module. GetURI (Repository.modHeaderFileC))
+    w. WriteInclude (d. module. GetURI (Repository.modHeaderFileC, FALSE))
   END Write;
 
 

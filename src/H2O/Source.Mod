@@ -121,7 +121,7 @@ BEGIN
       Err.Ln;
       HALT (1)
     ELSE
-      uri := m.GetURI(Repository.modHeaderFileC);
+      uri := m.GetURI(Repository.modHeaderFileC, FALSE);
       uri.GetString(realFileName);
       channel := uri.GetChannel(URI.channelOld, msg);
     END;    

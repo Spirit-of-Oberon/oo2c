@@ -52,7 +52,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
       ast := NIL;
       symTab := NIL;
       pragmaHistory := NIL;
-      uri := m. GetURI (Repository.modModuleSource);
+      uri := m. GetURI (Repository.modModuleSource, TRUE);
       uri. GetString (uriStr);
       errList := Error.NewList (uriStr);
       errList. Append (res)
@@ -86,7 +86,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
       IF (errList. msgCount = 0) THEN
         stb := Builder.New();
         symTab := CreateSymTab.CreateSymTab
-          (ast, stb, libraryName, m. GetURI (Repository.modModuleSource),
+          (ast, stb, libraryName, m. GetURI (Repository.modModuleSource, FALSE),
            m. origin. baseURI);
         IF createNamespace THEN
           IF (errList. msgCount = 0) THEN

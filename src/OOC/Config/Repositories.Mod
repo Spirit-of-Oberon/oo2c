@@ -332,7 +332,7 @@ PROCEDURE (s: Section) GetIncludePaths*(): String.StringArrayPtr;
     NEW (result, c);
     c := 0;
     rep := s. topLevelRep;
-    WHILE (rep # NIL) & Select (rep) DO
+    WHILE (rep # NIL) DO
       IF Select (rep) THEN
         rep. GetDefaultSubdir (Repository.modHeaderFileC, subdir);
         uri := URIParser.NewURI (subdir, rep. baseURI, res);

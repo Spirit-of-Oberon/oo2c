@@ -180,10 +180,10 @@ PROCEDURE (r: Rules) GetModuleInfo* (module: Rep.Module): ModuleInfo;
 PROCEDURE Exists (module: Rep.Module; fileId: Rep.FileId): BOOLEAN;
   BEGIN
     IF module.FileExists(fileId)THEN
-      Logger.ExplainFileMake("file ", module.GetURI(fileId), " exists");
+      Logger.ExplainFileMake("file ", module.GetURI(fileId, TRUE), " exists");
       RETURN TRUE;
     ELSE
-      Logger.ExplainFileMake("file ", module.GetURI(fileId), " does not exist");
+      Logger.ExplainFileMake("file ", module.GetURI(fileId, TRUE), " does not exist");
       RETURN FALSE;
     END;
   END Exists;
@@ -204,18 +204,18 @@ PROCEDURE DerivedIsOlder2 (descendentModule: Rep.Module;
   BEGIN
     descendentModule.GetTimeStamp(descendent, tsDesc);
     IF (tsDesc.days = MAX(LONGINT)) THEN
-      Logger.ExplainFileMake("file ", descendentModule.GetURI(descendent),
+      Logger.ExplainFileMake("file ", descendentModule.GetURI(descendent, TRUE),
                              " does not exist");
       RETURN TRUE;
     ELSE
       ancestorModule.GetTimeStamp(ancestor, tsAncest);
       IF (tsDesc.Cmp(tsAncest) >= 0) THEN
-        Logger.ExplainFilesMake("ts(", descendentModule.GetURI(descendent),
-                                ") >= ts(", ancestorModule.GetURI(ancestor), ")");
+        Logger.ExplainFilesMake("ts(", descendentModule.GetURI(descendent, TRUE),
+                                ") >= ts(", ancestorModule.GetURI(ancestor, TRUE), ")");
         RETURN FALSE;
       ELSE
-        Logger.ExplainFilesMake("ts(", descendentModule.GetURI(descendent),
-                                ") < ts(", ancestorModule.GetURI(ancestor), ")");
+        Logger.ExplainFilesMake("ts(", descendentModule.GetURI(descendent, TRUE),
+                                ") < ts(", ancestorModule.GetURI(ancestor, TRUE), ")");
         RETURN TRUE;
       END;
     END;
@@ -232,12 +232,12 @@ PROCEDURE FingerprintMismatch (descendentModule: Rep.Module;
                                ancestorFP: LONGINT): BOOLEAN;
   BEGIN
     IF (descendentFP = ancestorFP) THEN
-      Logger.ExplainFilesMake("fp(", descendentModule.GetURI(Rep.modSymbolFile),
-                              ") = fp(", ancestorModule.GetURI(Rep.modSymbolFile), ")");
+      Logger.ExplainFilesMake("fp(", descendentModule.GetURI(Rep.modSymbolFile, TRUE),
+                              ") = fp(", ancestorModule.GetURI(Rep.modSymbolFile, TRUE), ")");
       RETURN FALSE;
     ELSE
-      Logger.ExplainFilesMake("fp(", descendentModule.GetURI(Rep.modSymbolFile),
-                              ") # fp(", ancestorModule.GetURI(Rep.modSymbolFile), ")");
+      Logger.ExplainFilesMake("fp(", descendentModule.GetURI(Rep.modSymbolFile, TRUE),
+                              ") # fp(", ancestorModule.GetURI(Rep.modSymbolFile, TRUE), ")");
       RETURN TRUE;
     END;
   END FingerprintMismatch;
@@ -247,7 +247,7 @@ PROCEDURE CreateErrList(module: Rep.Module): Error.List;
     uri: URI.URI;
     uriStr: Rep.URIBuffer;
   BEGIN
-    uri := module.GetURI(Rep.modModuleSource);
+    uri := module.GetURI(Rep.modModuleSource, TRUE);
     uri. GetString(uriStr);
     RETURN Error.NewList (uriStr);
   END CreateErrList;
@@ -584,7 +584,7 @@ PROCEDURE (r: Rules) UpdateInterfaceDescr (module: Rep.Module): BOOLEAN;
           errList.Append (res)
         ELSE
           InterfaceDescr.Write (outputChannel.NewWriter(),
-                                module.GetURI (Rep.modInterfaceDescr),
+                                module.GetURI (Rep.modInterfaceDescr, FALSE),
                                 module.ifData,
                                 Config.repositories, r.extensionDict);
           outputChannel(Files.File).Register;
@@ -631,7 +631,7 @@ PROCEDURE (r: Rules) UpdateInterfaceXML (module: Rep.Module): BOOLEAN;
             errList.Append(res)
           ELSE
             InterfaceXML.Write(outputChannel.NewWriter(),
-                               module.GetURI(Rep.modInterfaceXML),
+                               module.GetURI(Rep.modInterfaceXML, FALSE),
                                symTab, Config.repositories);
             outputChannel(Files.File).Register;
             outputChannel.Close;
@@ -685,13 +685,13 @@ PROCEDURE (r: Rules) UpdateInterfaceHTML(module: Rep.Module): BOOLEAN;
         uri := GetSystemId (Config.repositories);
         uri(File.URI). GetPath (str);
         
-        uri := module. GetURI (Rep.modInterfaceDescr);
+        uri := module. GetURI (Rep.modInterfaceDescr, TRUE);
         uri(File.URI). GetPath (path);
         Strings.Append (" '", str);
         Strings.Append (path, str);
         Strings.Append ("' '", str);
         
-        uri := module. GetURI (Rep.modInterfaceHTML);
+        uri := module. GetURI (Rep.modInterfaceHTML, TRUE);
         uri(File.URI). GetPath (path);
         Strings.Append (path, str);
         Strings.Append ("'", str);
@@ -804,8 +804,8 @@ PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
       IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modAssemblerFile) THEN
         module.CreateOutputDir (Rep.modObjectFile, res);
         IF (res = NIL) THEN
-          Assembler.AssembleFileCmd(module.GetURI(Rep.modAssemblerFile),
-                                    module.GetURI(Rep.modObjectFile), str);
+          Assembler.AssembleFileCmd(module.GetURI(Rep.modAssemblerFile, TRUE),
+                                    module.GetURI(Rep.modObjectFile, TRUE), str);
           Logger.ShellCommand(str);
           success := (ProcessManagement.system (str) = 0);
         ELSE
@@ -819,8 +819,8 @@ PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
       IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modCodeFileC) THEN
         module.CreateOutputDir (Rep.modObjectFile, res);
         IF (res = NIL) THEN
-          CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC),
-                                   module.GetURI(Rep.modObjectFile),
+          CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
+                                   module.GetURI(Rep.modObjectFile, TRUE),
                                    FALSE, str);
           Logger.ShellCommand(str);
           success := (ProcessManagement.system (str) = 0);
@@ -850,9 +850,9 @@ PROCEDURE (r: Rules) UpdateObjectFileLib(module: Rep.Module): BOOLEAN;
     IF DerivedIsOlder(module, Rep.modObjectFileLib, Rep.modCodeFileC) THEN
       module.CreateOutputDir (Rep.modObjectFile, res);
       IF (res = NIL) THEN
-        outputFile := module.GetURI(Rep.modObjectFileLib);
-        CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC),
-                                 module.GetURI(Rep.modObjectFileLib),
+        outputFile := module.GetURI(Rep.modObjectFileLib, TRUE);
+        CCompiler.CompileFileCmd(module.GetURI(Rep.modCodeFileC, TRUE),
+                                 module.GetURI(Rep.modObjectFileLib, TRUE),
                                  TRUE, str);
         Logger.ShellCommand(str);
         success := (ProcessManagement.system (str) = 0);
@@ -947,8 +947,8 @@ PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
                         Rep.modMainFileAssembler) THEN
         module.CreateOutputDir (Rep.modMainObjectFile, res);
         IF (res = NIL) THEN
-          Assembler.AssembleFileCmd(module.GetURI(Rep.modMainFileAssembler),
-                                    module.GetURI(Rep.modMainObjectFile), str);
+          Assembler.AssembleFileCmd(module.GetURI(Rep.modMainFileAssembler, TRUE),
+                                    module.GetURI(Rep.modMainObjectFile, TRUE), str);
           Logger.ShellCommand(str);
           success := (ProcessManagement.system (str) = 0);
         ELSE
@@ -962,8 +962,8 @@ PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
       IF DerivedIsOlder(module, Rep.modMainObjectFile, Rep.modMainFileC) THEN
         module.CreateOutputDir (Rep.modMainObjectFile, res);
         IF (res = NIL) THEN
-          CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC),
-                                   module.GetURI(Rep.modMainObjectFile),
+          CCompiler.CompileFileCmd(module.GetURI(Rep.modMainFileC, TRUE),
+                                   module.GetURI(Rep.modMainObjectFile, TRUE),
                                    FALSE, str);
           Logger.ShellCommand(str);
           success := (ProcessManagement.system (str) = 0);

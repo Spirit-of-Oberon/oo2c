@@ -40,11 +40,10 @@ PROCEDURE AssembleFileCmd* (in, out: URI.URI; VAR cmd: ARRAY OF CHAR);
     BEGIN
       m := Config.repositories. GetModule (Config.runtimeModule);
       ASSERT (m # NIL);  (* ... if this fails, then we have no __oo2c.h *)
-      uri := m. GetURI (Repository.modModuleSource);
+      uri := m. GetURI (Repository.modModuleSource, TRUE);
       f := uri(File.URI);
       f. StripSegments (1);
-      uri := f. MakeRelative (File.GetCwd());
-      RETURN uri(File.URI)
+      RETURN f;
     END GetURIofRT;
   
   BEGIN

@@ -14,8 +14,11 @@ PROCEDURE WriteURI (uri: URI.URI);
   VAR
     str: ARRAY 1024 OF CHAR;
   BEGIN
-    uri := uri.MakeRelative(cwd);
-    uri.GetString(str);
+    WITH uri: File.URI DO
+      uri.GetPath(str);
+    ELSE
+      uri.GetString(str);
+    END;
     Out.String(str);
   END WriteURI;
 

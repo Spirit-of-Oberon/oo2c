@@ -55,7 +55,7 @@ PROCEDURE Run*(module: Repository.Module;
     module. CreateOutputDir (outputFile, res);
     IF (res = NIL) THEN
       CCompiler.LinkProgramCmd
-          (module. GetURI (outputFile), (forLibrary # NIL), str);
+          (module. GetURI (outputFile, TRUE), (forLibrary # NIL), str);
 
       libsMap := Dictionary.New();
       importedLibs := Dictionary.New();
@@ -71,7 +71,7 @@ PROCEDURE Run*(module: Repository.Module;
             importedLibsList.Append(imports[i]);
           END;
         ELSE
-          uri := imports[i]. GetURI (objectFile);
+          uri := imports[i]. GetURI (objectFile, TRUE);
           uri(File.URI). GetPath (path);
           Strings.Append (" ", str);
           Strings.Append (path, str);
@@ -90,7 +90,7 @@ PROCEDURE Run*(module: Repository.Module;
 
       IF (forLibrary = NIL) THEN
         (* add file with function main() *)
-        uri := module. GetURI (Repository.modMainObjectFile);
+        uri := module. GetURI (Repository.modMainObjectFile, TRUE);
         uri(File.URI). GetPath (path);
         Strings.Append (" ", str);
         Strings.Append (path, str);
@@ -100,7 +100,7 @@ PROCEDURE Run*(module: Repository.Module;
         import := importedLibsList.array[i](Repository.Module);
         IF import.FileExists(Repository.modLibrary) THEN
           (* looks like an uninstalled library *)
-          uri := import.GetURI(Repository.modLibrary);
+          uri := import.GetURI(Repository.modLibrary, TRUE);
           uri(File.URI). GetPath (path);
           Strings.Append (" ", str);
           Strings.Append (path, str);

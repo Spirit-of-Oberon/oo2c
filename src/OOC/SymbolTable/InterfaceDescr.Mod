@@ -406,7 +406,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       keys: Object.ObjectArrayPtr;
     BEGIN
       thisModule := repositories. GetModule (module. name. str^);
-      baseURI := thisModule. GetURI (Repository.modInterfaceHTML);
+      baseURI := thisModule. GetURI (Repository.modInterfaceHTML, FALSE);
       
       keys := modList. Keys();
       FOR i := 0 TO LEN (keys^)-1 DO
@@ -417,7 +417,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
 
         w. StartTag ("ref-target", FALSE);
         w. AttrStringLatin1 ("type", "html");
-        remoteURI := remoteMod. GetURI (Repository.modInterfaceHTML);
+        remoteURI := remoteMod. GetURI (Repository.modInterfaceHTML, FALSE);
         relativeURI := remoteURI. MakeRelative (baseURI);
         relativeURI. GetString (str);
         w. AttrStringLatin1 ("relative-uri", str);

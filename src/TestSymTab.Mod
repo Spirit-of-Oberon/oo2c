@@ -77,7 +77,7 @@ PROCEDURE (r: Rules) UpdateSymbolTableXML*(m: Rep.Module): BOOLEAN;
       ParseModule.ParseModule (m, FALSE, r.resolve, FALSE, FALSE, NIL,
                                ast, symTab, pragmaHistory, errList);
       IF (errList. msgCount = 0) THEN
-        outputURI := m. GetURI (Rep.modSymbolTableXML);
+        outputURI := m. GetURI (Rep.modSymbolTableXML, FALSE);
         outputChannel := m. GetOutputChannel (Rep.modSymbolTableXML, FALSE, res);
         IF (outputChannel = NIL) THEN
           errList. Append (res)
