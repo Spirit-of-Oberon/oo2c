@@ -91,7 +91,7 @@ TYPE
 CONST
   pointerGap = 4;
 
-PROCEDURE InitReader (r: Reader; ch: IO.ByteChannel);
+PROCEDURE InitReader*(r: Reader; ch: IO.ByteChannel);
   BEGIN
     Storable.InitReader (r, ch);
     NEW (r. objTab, 128-pointerGap);
@@ -104,7 +104,7 @@ PROCEDURE InitReader (r: Reader; ch: IO.ByteChannel);
     r. typeCounter := 1;
   END InitReader;
 
-PROCEDURE InitWriter (w: Writer; ch: IO.ByteChannel);
+PROCEDURE InitWriter*(w: Writer; ch: IO.ByteChannel);
   BEGIN
     Storable.InitWriter (w, ch);
     w. objCounter := 0;
