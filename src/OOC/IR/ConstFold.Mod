@@ -108,6 +108,10 @@ PROCEDURE (c: ConstFold) VisitProcedureRef* (procRef: IR.ProcedureRef);
   BEGIN
   END VisitProcedureRef;
 
+PROCEDURE (c: ConstFold) VisitTypeRef* (typeRef: IR.TypeRef);
+  BEGIN
+  END VisitTypeRef;
+
 PROCEDURE (c: ConstFold) VisitModuleRef* (modRef: IR.ModuleRef);
   BEGIN
   END VisitModuleRef;

@@ -1,7 +1,7 @@
 MODULE OOC:IR:Operator [OOC_EXTENSIONS];
 
 IMPORT
-  ADT:ArrayList,
+  ADT:ArrayList, Language:Integer,
   OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, Sym := OOC:SymbolTable,
   OOC:IR, OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef;
 
@@ -220,15 +220,16 @@ PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; variant: Variant; left, r
     CASE sym.id OF
     | Symbol.plus, Symbol.minus, Symbol.times:
       (* require two eqivalent numeric types *)
-      ok := b.AdjustTypes(left, right, type) & 
-            tr.IsPredefClass(type, Predef.classNumeric);
+      ok := (b.AdjustTypes(left, right, type) &
+             b. typeRules. IsNumericType(type));
     | Symbol.div, Symbol.mod:
       (* require two equivalent integer types *)
-      ok := b.AdjustTypes(left, right, type) &
-            tr.IsPredefClass(type, Predef.classInteger);
+      ok := (b.AdjustTypes(left, right, type) &
+             b. typeRules. IsIntegerType(type));
     | Symbol.slash:
       (* require two real operands *)
-      IF tr.IsPredefClass(left.type, Predef.classReal) OR tr.IsPredefClass(right.type, Predef.classReal) THEN
+      IF b. typeRules. IsRealType(left. type) OR
+         b. typeRules. IsRealType(right. type) THEN
         (* one operand is already real *)
         ok := b.AdjustTypes(left, right, type);
       ELSE
@@ -418,6 +419,16 @@ PROCEDURE (neg: Negate) Accept* (v: IR.Visitor);
 
 (* -------- *)
 
+PROCEDURE (b: Builder) NewSize* (sym: IR.Symbol; type: IR.Expression): IR.Expression;
+  BEGIN
+    ASSERT (type IS IR.TypeRef);
+    RETURN b. NewConst
+        (sym, Predef.GetType (Predef.longint),
+         Integer.NewLInt (type(IR.TypeRef). decl(Sym.TypeDecl). type. size));
+  END NewSize;
+
+(* -------- *)
+
 PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression): IR.Expression;
 (**Return an IR expression for the given symbol and left/right expressions.
    This procedure handles operator polymorphism, mapping an operator symbol to
@@ -455,8 +466,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
 
   BEGIN
     tr := b.typeRules;
-    isNumeric := tr.IsPredefClass(right.type, Predef.classNumeric);
-    isSet := tr.IsPredefClass(right.type, Predef.classSet);
+    isNumeric := b. typeRules. IsNumericType(right. type);
+    isSet := b. typeRules. IsSetType(right. type);
 
     IF left = NIL THEN 
       (* unary operator *)
@@ -509,9 +520,12 @@ PROCEDURE (b: Builder) NewCall* (design: IR.Expression; arguments: IR.Expression
          method in module OOC:IR:Operator *)
       CASE design. decl(Sym.PredefProc). id OF
       | Predef.len:
-        ASSERT (LEN (arguments^) = 1);
+        ASSERT (LEN (arguments^) = 1);   (* FIXME... needs error msg *)
         RETURN b. NewLen (design. sym, arguments[0], 0)
         
+      | Predef.size:
+        ASSERT (LEN (arguments^) = 1);   (* FIXME... needs error msg *)
+        RETURN b. NewSize (design. sym, arguments[0])
       ELSE
         RETURN b. NewCall^ (design, arguments);
       END

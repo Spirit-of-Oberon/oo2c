@@ -107,6 +107,13 @@ PROCEDURE (v: Visitor) VisitProcedureRef* (procRef: IR.ProcedureRef);
     v. w. EndTag;  (* procedure-reference *)
   END VisitProcedureRef;
 
+PROCEDURE (v: Visitor) VisitTypeRef* (typeRef: IR.TypeRef);
+  BEGIN
+    v. w. StartTag ("type-reference", FALSE);
+    v. w. AttrStringLatin1 ("name", typeRef. decl. name. str^);
+    v. w. EndTag;  (* type-reference *)
+  END VisitTypeRef;
+
 PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
   BEGIN
     v. w. StartTag ("module-reference", FALSE);
