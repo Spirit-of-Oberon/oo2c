@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; cap2">-->
+  select ="&SetupTestCasesWithOut; record11 record12">-->
 
   &TestSetupWithOut;
     
@@ -465,55 +465,50 @@
     <test id="record1" type="run" file="Record1.Mod" output="Record1.Ref">
       Assignments to the fields of a global record variable.
     </test>
-    
     <test id="record2" type="run" file="Record2.Mod" output="Record2.Ref">
       Assignments to the fields of a variable parameter of record type.
     </test>
-    
     <test id="record3" type="run" file="Record3.Mod" output="Record3.Ref">
       Assignments to the fields of a value parameter of record type.
     </test>
-
     <test id="record4" type="run" file="Record4.Mod" output="Record4.Ref">
       Similar to <code>record1</code>, but with part of the record's
       fields taken from a base type.
     </test>
-    
     <test id="record5" type="run" file="Record5.Mod" output="Record5.Ref">
       Similar to <code>record2</code>, but with part of the record's
       fields taken from a base type.
     </test>
-    
     <test id="record6" type="run" file="Record6.Mod" output="Record6.Ref">
       Similar to <code>record3</code>, but with part of the record's
       fields taken from a base type.
     </test>
-    
     <test id="record7" type="run" file="Record7.Mod" output="Record7.Ref">
      Similar to <code>record4</code>, but the variable is allocated
       on the heap.
     </test>
-
     <test id="record8" type="run" file="Record8.Mod" output="Record8.Ref">
       Similar to <code>record5</code>, but the variable is allocated
       on the heap.
     </test>
-
     <test id="record9" type="run" file="Record9.Mod" output="Record9.Ref">
       Similar to <code>record6</code>, but the variable is allocated
       on the heap.
     </test>
-    
     <test id="record10" type="run" file="Record10.Mod">
       An array variable nested within a record.  This test breaks if
       the array length is not computed before the array size is
       calculated. 
     </test>
-    
     <test id="record11" type="error" file="Record11.Mod">
       Assigning to a record variable whose dynamic type does not match
       its static type.
     </test>
+    <test id="record12" type="run" file="Record12.Mod" output="Record12.Ref">
+      Assigning to a record variable whose dynamic type does match
+      its static type.  This test complements <code>record11</code>.
+    </test>
+    
     
     <test id="array1" type="run" file="Array1.Mod" output="Array1.Ref">
       Assignments to an <code>ARRAY 3 OF SHORTINT</code>, and a loop 

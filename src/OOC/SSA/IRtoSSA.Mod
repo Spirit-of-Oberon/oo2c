@@ -232,7 +232,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE Copy (cp: IR.Copy): SSA.Instr;
     VAR
       instr, dynTag, staticTag, neq, failed, select: SSA.Instr;
-      source, dest: SSA.Result;
+      source, dest, okStore: SSA.Result;
     BEGIN
       source := Expression (cp. source);
       dest := Expression (cp. dest);
@@ -245,18 +245,19 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         neq := pb. AddInstr (Opcode.neq, Opcode.scAddress);
         neq. AddOpnd (staticTag, Opnd.arg);
         neq. AddOpnd (dynTag, Opnd.arg);
-
+        okStore := s;
+        
         failed := AddException (pb, cp. dest. sym,
                                 Opcode.failedTypeAssert, Opcode.scNone);
         
         select := pb. AddInstr (Opcode.select, Opcode.scNone);
         select. AddOpnd (neq, Opnd.arg);
         select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
-        select. AddOpnd (failed, Opnd.arg);
-        select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
         select. AddOpnd (s, Opnd.arg);
+        select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
+        select. AddOpnd (okStore, Opnd.arg);
 
-        s := select;
+        s := select. AddResult (Result.store);
       END;
       
       instr := pb. AddInstr (Opcode.copy, Opcode.scNone);
