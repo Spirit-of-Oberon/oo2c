@@ -1070,6 +1070,15 @@ PROCEDURE (pb: ProcBlock) AddInstr* (opcode: Opcode.Class;
     RETURN instr
   END AddInstr;
   
+PROCEDURE ConstBucket (type: Sym.Type): LONGINT;
+  BEGIN
+    WITH type: Sym.PredefType DO
+      RETURN type. id;
+    ELSE
+      RETURN Predef.void;
+    END;
+  END ConstBucket;
+
 PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
 (**Removes @oparam{instr} from list of instructions of @oparam{pb}.  All
    operands are removed.  @emph{Note}: The use lists of the instruction itself
@@ -1077,6 +1086,22 @@ PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
    sure that no result appears in the operand list of any instructions that are
    still live.  *)
   BEGIN
+    (* get rid of any dangling references for "one of its kind" instructions;
+       otherwise, such an instruction may be revived via its dictionary, and
+       subsequently used within a ProcBlock _without_ appearing in the blocks
+       instruction list *)
+    WITH instr: Address DO
+      pb. adrMap. Delete (instr. decl);
+    | instr: Const DO
+      pb. constMap[ConstBucket (instr. type)]. Delete (instr. value);
+    | instr: DeclRef DO
+      pb. objMap. Delete (instr. decl);
+    | instr: TypeRef DO
+      pb. objMap. Delete (instr. type);
+    ELSE
+      (* nothing to do *)
+    END;
+    
     (* get rid of operands and remove them from use lists *)
     WHILE (instr. opndList # NIL) DO
       instr. opndList. DeleteOpnd();
@@ -1105,37 +1130,20 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
     const: Const;
     bucket: LONGINT;
   BEGIN
-    WITH type: Sym.PredefType DO
-      bucket := type. id;
-    ELSE
-      bucket := Predef.void;
-    END;
+    bucket := ConstBucket (type);
     IF (pb. constMap[bucket] = NIL) THEN
       pb. constMap[bucket] := Dictionary.New();
     END;
 
-    IF (value = NIL) THEN
-      IF pb. constMap[bucket]. HasKey (type) THEN
-        obj := pb. constMap[bucket]. Get (type);
-        RETURN obj(Const);
-      ELSE
-        NEW (const);
-        InitConst (const, Opcode.TypeToSubclass (type), value, type);
-        AppendInstr (pb, const);
-        pb. constMap[bucket]. Set (type, const);
-        RETURN const
-      END;
+    IF pb. constMap[bucket]. HasKey (value) THEN
+      obj := pb. constMap[bucket]. Get (value);
+      RETURN obj(Const);
     ELSE
-      IF pb. constMap[bucket]. HasKey (value) THEN
-        obj := pb. constMap[bucket]. Get (value);
-        RETURN obj(Const);
-      ELSE
-        NEW (const);
-        InitConst (const, Opcode.TypeToSubclass (type), value, type);
-        AppendInstr (pb, const);
-        pb. constMap[bucket]. Set (value, const);
-        RETURN const
-      END;
+      NEW (const);
+      InitConst (const, Opcode.TypeToSubclass (type), value, type);
+      AppendInstr (pb, const);
+      pb. constMap[bucket]. Set (value, const);
+      RETURN const
     END;
   END GetConst;
 
