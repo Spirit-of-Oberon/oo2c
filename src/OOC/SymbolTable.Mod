@@ -194,6 +194,41 @@ TYPE
   END;
   DeclarationArray* = POINTER TO ARRAY OF Declaration;
 
+
+TYPE
+  Namespace* = POINTER TO NamespaceDesc;
+  NamespaceDesc* = RECORD [ABSTRACT]
+    (**A namespace is a mechanism that maps names to objects.  It has methods
+       to retrieve an object based on its name.  How this mapping is
+       implemented, and how visibility of identifiers is handled, is not
+       defined in this module.  See @oproc{*OOC:SymbolTable:Namespace}
+       for concrete implementations for module, procedure, and record 
+       namespaces.
+       
+       Namespaces are created by calling
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
+  END;
+
+TYPE
+  TypeDecl* = POINTER TO TypeDeclDesc;
+  TypeDeclArray* = POINTER TO ARRAY OF TypeDecl;
+  TypePars* = POINTER TO TypeParsDesc;
+  TypeParsDesc = RECORD
+    (**This is a formal parameter list of a parameterized type.  All parameters
+       are nested in this item, as well as all items that make up the base
+       type.  *)
+    (ItemDesc)
+    params*: TypeDeclArray;
+    (**The list of formal type parameters.  @samp{LEN(params^)} is the number
+       of parameters.  If there are no parameters at all, this is a reference
+       to an array of length zero.  *)
+    ns-: Namespace;
+    (**A reference to the record's namespace.  Note that the namespace
+       does not exist before
+       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}
+       has been run.  *)
+  END;
+
 CONST
   dynamicSize* = -1;
   (**The size of a variable of this type depends on the concrete instance that
@@ -204,8 +239,6 @@ CONST
   
 TYPE
   Type* = POINTER TO TypeDesc;
-  TypeDecl* = POINTER TO TypeDeclDesc;
-  TypeDeclArray* = POINTER TO ARRAY OF TypeDecl;
   TypeDesc* = RECORD [ABSTRACT]
     (**Common base type of all type definitions.  As far as the symbol table is
        concerned, a type is either a type reference (that is, an instance of
@@ -221,6 +254,9 @@ TYPE
        types, that is, for type constructors that do not appear on the right
        side of a type declaration.  If multiple aliases are defined for a type,
        this field refers to the name of the original declaration.  *)
+    typePars-: TypePars;
+    (**For a parametric type, this field holds a reference to the formal
+       parameter list.  Otherwise, it is @code{NIL}.  *)
     size-: LONGINT;                      (* FIXME... make this `Integer'? *)
     (**Size in bytes of the memory that needs to be allocated to hold a value
        of this type.  For most types, this is a non-negative value.  It is zero
@@ -247,21 +283,6 @@ TYPE
     (**If @code{TRUE}, then this type has an associated type descriptor that is
        available during run-time.  Default is @code{TRUE} for type from
        non-@code{INTERFACE} modules.  *)
-  END;
-
-
-TYPE
-  Namespace* = POINTER TO NamespaceDesc;
-  NamespaceDesc* = RECORD [ABSTRACT]
-    (**A namespace is a mechanism that maps names to objects.  It has methods
-       to retrieve an object based on its name.  How this mapping is
-       implemented, and how visibility of identifiers is handled, is not
-       defined in this module.  See @oproc{*OOC:SymbolTable:Namespace}
-       for concrete implementations for module, procedure, and record 
-       namespaces.
-       
-       Namespaces are created by calling
-       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
   END;
 
 
@@ -615,39 +636,12 @@ TYPE
   TypeVar* = POINTER TO TypeVarDesc;
   TypeVarDesc = RECORD
     (**Represents a type variable from the list of formal type parameters of
-       a @otype{ParametricType}.  *)
+       a type with @ofield{Type.typePars}.  *)
     (TypeDesc)
     bound-: Type;
     (**Lower bound of the set of valid type arguments.  *)
   END;
   
-TYPE
-  ParametricType* = POINTER TO ParametricTypeDesc;
-  ParametricTypeDesc = RECORD
-    (**This is a parameterized type.  It includes the base type and a list
-       of type variables.  All items that make up the base type are nested
-       within this item, as well as the type declarations of the formal
-       type parameters.  *)
-    (TypeDesc)
-    baseType*: Type;                   (*... make this read-only? *)
-    (**The base type of the parametric type.  If this is initially a type name,
-       it is replaced with a reference to the true type after
-       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
-    srcCodeBaseType-: Type;
-    (**Similar to @ofield{baseType}, but if this is initially a type name,
-       it is not changed to a reference to the true type after
-       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
-    params*: TypeDeclArray;
-    (**The list of formal type parameters.  @samp{LEN(params^)} is the number
-       of parameters.  If there are no parameters at all, this is a reference
-       to an array of length zero.  *)
-    ns-: Namespace;
-    (**A reference to the record's namespace.  Note that the namespace
-       does not exist before
-       @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}
-       has been run.  *)
-  END;
-
 TYPE
   QualType* = POINTER TO QualTypeDesc;
   TypeRef = RECORD
@@ -841,9 +835,9 @@ TYPE
        the true type after
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
     isTypeParameter-: BOOLEAN;
-    (**If @code{TRUE}, then this declaration is a formal type parameter of
-       a @otype{ParametricType}.  In this case, @ofield{type} is an instance
-       of @otype{TypeVar}, whose @ofield{TypeVar.bound} is the type from the
+    (**If @code{TRUE}, then this declaration is a formal type parameter of a
+       @otype{TypePars} object.  In this case, @ofield{type} is an instance of
+       @otype{TypeVar}, whose @ofield{TypeVar.bound} is the type from the
        declaration.  *)
   END;
 
@@ -1019,7 +1013,7 @@ PROCEDURE InitItem* (item: Item; parent: Item);
                (parent IS ProcDecl) OR
                (parent IS Record) OR
                (parent IS FormalPars) OR
-               (parent IS ParametricType) );
+               (parent IS TypePars) );
       IF parent.nestedItems = NIL THEN
         parent.nestedItems := item;
       ELSE
@@ -1226,6 +1220,7 @@ PROCEDURE InitType* (type: Type; parent: Item; position: Position);
     InitItem (type, parent);
     type. position := position;
     type. namingDecl := NIL;
+    type. typePars := NIL;
     type. size := unknownSize;
     type. align := 1;
     type. hasDescriptor := TRUE;
@@ -1235,6 +1230,7 @@ PROCEDURE (type: Type) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     type. Store^ (w);
     w. WriteObject (type. namingDecl);
+    w. WriteObject (type. typePars);
     IF ExportTypePosition (type) THEN
       w. WriteObject (type. position);
     END;
@@ -1255,6 +1251,12 @@ PROCEDURE (type: Type) Load* (r: Storable.Reader) RAISES IO.Error;
     ELSE
       type. namingDecl := obj(TypeDecl)
     END;
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      type. typePars := NIL
+    ELSE
+      type. typePars := obj(TypePars)
+    END;
     IF ExportTypePosition (type) THEN
       r. ReadObject (obj);
       type. position := obj(Position);
@@ -1272,6 +1274,12 @@ PROCEDURE (type: Type) SetNamingDecl* (namingDecl: TypeDecl);
   BEGIN
     type. namingDecl := namingDecl
   END SetNamingDecl;
+
+PROCEDURE (type: Type) SetTypePars* (typePars: TypePars);
+(**Sets the field @ofield{type.typePars} to @oparam{typePars}.  *)
+  BEGIN
+    type. typePars := typePars;
+  END SetTypePars;
 
 PROCEDURE (type: Type) SetSize* (size: LONGINT; align: INTEGER);
   BEGIN
@@ -1292,6 +1300,14 @@ PROCEDURE (type: Type) ArrayDimensions*(): LONGINT;
     END;
     RETURN dim
   END ArrayDimensions;
+
+PROCEDURE (type: Type) Deparam*(): Type;
+(**Returns the underlying type of a parametric type.  In particular, it
+   returns @samp{QualType.baseType} for a qualified instance of a parametric
+   type, and @oparam{type} for everything else.  *)
+  BEGIN
+    RETURN type;
+  END Deparam;
 
 
 PROCEDURE InitLinkDirective (l: LinkDirective);
@@ -1830,6 +1846,7 @@ PROCEDURE (typeDecl: TypeDecl) InsertTypeVar*();
       NEW(tv);
       InitType(tv, parent, type.position);
       tv.bound := type;
+      tv.namingDecl := typeDecl;
       RETURN tv;
     END NewTypeVar;
   
@@ -2007,9 +2024,9 @@ PROCEDURE (procDecl: ProcDecl) Class* (): Record;
     class: Item;
   BEGIN
     IF procDecl. isTypeBound THEN
-      class := procDecl. formalPars. receiver. type;
+      class := procDecl.formalPars.receiver.type.Deparam();
       IF (class IS Pointer) THEN
-        class := class(Pointer). baseType
+        class := class(Pointer).baseType.Deparam();
       END;
       IF (class IS Record) THEN
         RETURN class(Record)
@@ -2189,71 +2206,53 @@ PROCEDURE (typeVar: TypeVar) Load* (r: Storable.Reader) RAISES IO.Error;
   END Load;
 
 
-PROCEDURE InitParametricType* (parType: ParametricType; parent: Item;
-                               position: Position);
+PROCEDURE InitTypePars* (typePars: TypePars; parent: Item);
   BEGIN
-    InitType(parType, parent, position);
-    parType.baseType := NIL;
-    parType.srcCodeBaseType := NIL;
-    parType.params := NIL;
-    parType.ns := NIL;
-  END InitParametricType;
+    InitItem(typePars, parent);
+    typePars.params := NIL;
+    typePars.ns := NIL;
+  END InitTypePars;
 
-PROCEDURE (parType: ParametricType) Store* (w: Storable.Writer) RAISES IO.Error;
+PROCEDURE (typePars: TypePars) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
     i: LONGINT;
   BEGIN
-    parType.Store^(w);
-    (*w. WriteObject(parType.baseType);*)
-    w.WriteObject(parType.srcCodeBaseType);
-    IF (parType.params = NIL) THEN
+    typePars.Store^(w);
+    IF (typePars.params = NIL) THEN
       w.WriteNum(-1);
     ELSE
-      w.WriteNum(LEN(parType.params^));
-      FOR i := 0 TO LEN(parType.params^)-1 DO
-        w.WriteObject(parType.params[i]);
+      w.WriteNum(LEN(typePars.params^));
+      FOR i := 0 TO LEN(typePars.params^)-1 DO
+        w.WriteObject(typePars.params[i]);
       END
     END;
     (* ignore field `ns' *)
   END Store;
 
-PROCEDURE (parType: ParametricType) Load* (r: Storable.Reader) RAISES IO.Error;
+PROCEDURE (typePars: TypePars) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
     obj: Storable.Object;
     i, len: LONGINT;
   BEGIN
-    parType.Load^(r);
-    r.ReadObject(obj);
-    IF (obj = NIL) THEN
-      parType.srcCodeBaseType := NIL
-    ELSE
-      parType.srcCodeBaseType := obj(Type);
-    END;
-    parType.baseType := parType.srcCodeBaseType;
+    typePars.Load^(r);
     r.ReadNum(len);
     IF (len < 0) THEN
-      parType.params := NIL;
+      typePars.params := NIL;
     ELSE
-      NEW(parType.params, len);
+      NEW(typePars.params, len);
       FOR i := 0 TO len-1 DO
         r.ReadObject(obj);
-        parType.params[i] := obj(TypeDecl);
+        typePars.params[i] := obj(TypeDecl);
       END
     END;
-    parType.ns := NIL;
+    typePars.ns := NIL;
   END Load;
 
-PROCEDURE (parType: ParametricType) SetNamespace* (ns: Namespace);
-(**Sets the field @ofield{Record.ns} of @oparam{parType} to @oparam{ns}.  *)
+PROCEDURE (typePars: TypePars) SetNamespace* (ns: Namespace);
+(**Sets the field @ofield{Record.ns} of @oparam{typePars} to @oparam{ns}.  *)
   BEGIN
-    parType.ns := ns;
+    typePars.ns := ns;
   END SetNamespace;
-
-PROCEDURE (parType: ParametricType) SetBaseType*(baseType: Type);
-  BEGIN
-    parType.baseType := baseType;
-    parType.srcCodeBaseType := baseType;
-  END SetBaseType;
 
 
 PROCEDURE InitTypeRef*(VAR typeRef: TypeRef; type: Type);
@@ -2316,6 +2315,11 @@ PROCEDURE (qualType: QualType) Load* (r: Storable.Reader) RAISES IO.Error;
       LoadTypeRef(r, qualType.arguments[i]);
     END;
   END Load;
+
+PROCEDURE (qualType: QualType) Deparam*(): Type;
+  BEGIN
+    RETURN qualType.baseType;
+  END Deparam;
 
 
 PROCEDURE InitPointer* (pointer: Pointer; parent: Item; position: Position;
@@ -2565,7 +2569,7 @@ PROCEDURE (item: Record) Namespace* (): Namespace;
     RETURN item. ns
   END Namespace;
 
-PROCEDURE (item: ParametricType) Namespace* (): Namespace;
+PROCEDURE (item: TypePars) Namespace* (): Namespace;
   BEGIN
     RETURN item. ns
   END Namespace;
@@ -2655,7 +2659,10 @@ PROCEDURE (decl: Declaration) GetId*(): NameString;
       IF (type IS FormalPars) & (type. parent IS ProcDecl) THEN
         RETURN type. parent(ProcDecl)
       ELSE
-        ptr := type. parent
+        ptr := type. parent;
+        IF (ptr IS TypePars) THEN
+          ptr := ptr.parent;
+        END;
       END;
       ASSERT ((ptr IS Module) OR
               (ptr IS ProcDecl) OR
@@ -2751,8 +2758,6 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
         | type: Array DO
           RETURN NamespaceOfType (type. elementType, type. srcCodeElementType)
         | type: Record DO
-          RETURN type. ns
-        | type: ParametricType DO
           RETURN type. ns
         | type: TypeVar DO
           RETURN NamespaceOfType (type. bound, srcType)

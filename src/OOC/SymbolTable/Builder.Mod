@@ -298,16 +298,14 @@ PROCEDURE (b: Builder) NewPointer* (parent: Sym.Item;
     RETURN ptr
   END NewPointer;
 
-PROCEDURE (b: Builder) NewParametricType* (parent: Sym.Item;
-                                           position: Sym.Position): Sym.ParametricType;
+PROCEDURE (b: Builder) NewTypePars* (parent: Sym.Item): Sym.TypePars;
   VAR
-    parType: Sym.ParametricType;
+    typePars: Sym.TypePars;
   BEGIN
-    NEW (parType);
-    Sym.InitParametricType(parType, parent, position);
-    EvalContext(b, parType);
-    RETURN parType
-  END NewParametricType;
+    NEW (typePars);
+    Sym.InitTypePars(typePars, parent);
+    RETURN typePars
+  END NewTypePars;
 
 PROCEDURE (b: Builder) NewQualType* (parent: Sym.Item;
                                      position: Sym.Position;

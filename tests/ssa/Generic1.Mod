@@ -22,4 +22,12 @@ VAR
   b1-: B<A1>;
   b2-: B<A2>;
 
+PROCEDURE (b: B) Set*(obj: B.Base);
+  BEGIN
+  END Set;
+
+PROCEDURE (b: B) Get*(): B.Base;
+  BEGIN
+  END Get;
+
 END Generic1.

@@ -281,6 +281,11 @@ RAISES IO.Error;
           WriteNested (item);
           w. EndTag
           
+        | item: Sym.TypePars DO
+          StartTag ("type_pars", Id (item));
+          WriteNested (item);
+          w. EndTag
+          
         | item: Sym.Type DO
           WITH item: Sym.TypeName DO
             element := "type_name"
@@ -294,8 +299,6 @@ RAISES IO.Error;
             element := "procedure_type"
           | item: Sym.PredefType DO
             element := "predef_type"
-          | item: Sym.ParametricType DO
-            element := "parametric_type"
           | item: Sym.TypeVar DO
             element := "type_var"
           | item: Sym.QualType DO
@@ -305,6 +308,9 @@ RAISES IO.Error;
 
           IF ~(item IS Sym.PredefType) THEN
             PositionAttributes (item. position, "");
+          END;
+          IF (item.typePars # NIL) THEN
+            AttribInt("", "type_pars_id", Id(item.typePars));
           END;
           ClassAttributes (item);
           WITH item: Sym.TypeName DO
@@ -338,8 +344,6 @@ RAISES IO.Error;
             END
           | item: Sym.PredefType DO
             (* FIXME... what to write here? *)
-          | item: Sym.ParametricType DO
-            AttribTypeId ("", "base_type_id", item. baseType)
           | item: Sym.TypeVar DO
             AttribTypeId ("", "bound_id", item. bound)
           | item: Sym.QualType DO

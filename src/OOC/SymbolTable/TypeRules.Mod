@@ -50,9 +50,14 @@ PROCEDURE IsScalarType* (type: Sym.Type): BOOLEAN;
    if it is a predefined type, a pointer type, or a procedure type.  Result
    is @code{FALSE} for record and array types.  *)
   BEGIN
-    RETURN (type IS Sym.PredefType) OR
-           (type IS Sym.Pointer) OR
-           (type IS Sym.FormalPars)
+    WITH type: Sym.TypeVar DO
+      RETURN IsScalarType(type.bound);
+    ELSE
+      RETURN
+          (type IS Sym.PredefType) OR
+          (type IS Sym.Pointer) OR
+          (type IS Sym.FormalPars);
+    END;
   END IsScalarType;
 
 PROCEDURE IsCharType* (type: Sym.Type): BOOLEAN;
@@ -283,9 +288,11 @@ PROCEDURE IsValidReceiverType* (type: Sym.Type): BOOLEAN;
    type of a receiver declaration.  *)
   BEGIN
     ASSERT (~(type IS Sym.TypeName));
+    type := type.Deparam();
     RETURN
-      (type IS Sym.Record) OR
-      (type IS Sym.Pointer) & (type(Sym.Pointer). baseType IS Sym.Record)
+        (type IS Sym.Record) OR
+        ((type IS Sym.Pointer) &
+         (type(Sym.Pointer).baseType.Deparam() IS Sym.Record));
   END IsValidReceiverType;
 
 PROCEDURE IsValidResultType* (type: Sym.Type): BOOLEAN;
@@ -293,16 +300,14 @@ PROCEDURE IsValidResultType* (type: Sym.Type): BOOLEAN;
    result type of a formal parameter definition.  This function also 
    return @code{TRUE}, if @oparam{type} is @code{NIL}.  *)
   BEGIN
-    RETURN (type = NIL) OR IsScalarType (type)
+    RETURN (type = NIL) OR IsScalarType(type);
   END IsValidResultType;
 
 PROCEDURE IsValidPointerBaseType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
    base type of a pointer type definition.  *)
   BEGIN
-    WITH type: Sym.ParametricType DO
-      RETURN IsValidPointerBaseType(type.baseType);
-    | type: Sym.QualType DO
+    WITH type: Sym.QualType DO
       RETURN IsValidPointerBaseType(type.baseType);
     ELSE
       RETURN (type IS Sym.Array) OR (type IS Sym.Record)
@@ -725,10 +730,6 @@ PROCEDURE AllocateType* (type: Sym.Type);
         ELSE
           type. SetSize (size, align)
         END;
-
-      | type: Sym.ParametricType DO
-        AllocateType(type.baseType);
-        type.SetSize(type.baseType.size, type.baseType.align);
 
       | type: Sym.TypeVar DO
         AllocateType(type.bound);

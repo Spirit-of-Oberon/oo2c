@@ -211,9 +211,6 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
         dummy := AddFields (struct, type);
         RETURN struct;
 
-      | type: Sym.ParametricType DO
-        RETURN ConvertType(w, type.baseType, type.srcCodeBaseType);
-
       | type: Sym.TypeVar DO
         RETURN ConvertType(w, type.bound, type);
 

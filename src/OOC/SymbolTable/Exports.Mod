@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Exports;
 (*  Marks declarations that are part of the module's symbol file.
-    Copyright (C) 2000, 2001, 2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -100,11 +100,6 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
                 MarkType (type. srcCodeBaseType)
               END;
               MarkList (type)
-            | type: Sym.ParametricType DO
-              IF (type. srcCodeBaseType # NIL) THEN
-                MarkType (type. srcCodeBaseType)
-              END;
-              MarkList (type)
             | type: Sym.TypeVar DO
               (* ignore, the parameter TypeDecl already marks our type *)
             | type: Sym.QualType DO
@@ -112,7 +107,11 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
               FOR i := 0 TO LEN(type.arguments^)-1  DO
                 MarkType(type.arguments[i].srcCodeType);
               END;
-            END
+            END;
+
+            IF (type.typePars # NIL) THEN
+              MarkList(type.typePars);
+            END;
           END
         END MarkType;
 

@@ -5,11 +5,11 @@
   <type_decl id='3' name='Obj' pos='21' line='3' column='2' class='Obj' visible_from='46' export='yes' type_id='2'/>
   <record_type id='4' pos='61' line='4' column='13' class='Obj' base_type='#none' tb_proc_count='0'/>
   <type_decl id='5' name='ObjDesc' pos='50' line='4' column='2' class='Obj' visible_from='71' export='yes' type_id='4'/>
-  <parametric_type id='6' pos='81' line='5' column='8' base_type_id='9'>
+  <type_pars id='6'>
     <type_name id='7' pos='88' line='5' column='15' ident_name='Obj' ident_pos='88' ident_line='5' ident_column='15'/>
     <type_decl id='8' name='Base' pos='82' line='5' column='9' visible_from='91' export='no' is_type_parameter='yes' type_id='10'/>
-    <record_type id='9' pos='95' line='5' column='22' base_type='#none' tb_proc_count='0'/>
+    <record_type id='9' pos='95' line='5' column='22' type_pars_id='6' base_type='#none' tb_proc_count='0'/>
     <type_var id='10' pos='28' line='3' column='9' bound_id='2'/>
-  </parametric_type>
-  <type_decl id='11' name='BDesc' pos='75' line='5' column='2' visible_from='108' export='yes' type_id='6'/>
+  </type_pars>
+  <type_decl id='11' name='BDesc' pos='75' line='5' column='2' visible_from='108' export='yes' type_id='9'/>
 </module>
