@@ -16,6 +16,7 @@ PROCEDURE Len (str: ARRAY OF CHAR): INTEGER;
 PROCEDURE Test* ();
   BEGIN
     Out.Int (Len(""), 0); Out.Ln;
+    Out.Int (Len("a"), 0); Out.Ln;
     Out.Int (Len("abc"), 0); Out.Ln;
   END Test;
 
