@@ -4,6 +4,7 @@ MODULE liboo2c;
 IMPORT
   RT0,
   Out0,
+  Exception,
   
   Ascii,
   BinaryRider,
