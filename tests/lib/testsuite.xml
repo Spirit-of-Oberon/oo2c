@@ -15,6 +15,10 @@
   profile="Test Suite for OOC Core Library"
   select ="prepare_out_module lib_rt1 lib_Exception34 lib_Exception35 lib_Exception36 lib_Exception37">-->
   
+<!--<testsuite-ext
+  profile="Test Suite for OOC Core Library"
+  select ="prepare_out_module lib_Finalize1 lib_Finalize2 lib_WeakRef1">-->
+
   &TestSetupWithOut;
   
   <testcases profile="OOC Core Library" default-lang="O2">
@@ -708,8 +712,25 @@
       Tests most of the functions of the <code>BigInt</code>
       implementation.
     </test>
-    
-  </testcases>
+
+    <test id="lib_Finalize1" type="run" relevance="informal"
+          file="LibFinalize1.Mod" output="LibFinalize1.Ref">
+      A type that implements RT0:ObjectDesc.Finalize is finalized. This test
+      may fail if the GC does not always free all collectable objects.
+    </test>
+   
+    <test id="lib_Finalize2" type="run" relevance="informal"
+          file="LibFinalize2.Mod" output="LibFinalize2.Ref">
+	  A type that does not extend RT0:ObjectDesc is not finalized.
+    </test>
+
+    <test id="lib_WeakRef1" type="run" relevance="informal"
+          file="LibWeakRef1.Mod" output="LibWeakRef1.Ref">
+      Weak references do not prevent a record from being freed, and are cleared
+      when the referenced record is reclaimed by the GC. This test may fail if
+      the GC does not always free all collectable objects.
+    </test>
+    </testcases>
 
   &libadt-testcases;
   &libos-testcases;
