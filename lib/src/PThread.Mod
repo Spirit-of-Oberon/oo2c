@@ -1,13 +1,33 @@
+(* 	$Id$	 *)
 MODULE PThread [FOREIGN "C"; LINK LIB "pthread"; FILE "PThread.c" END];
+(*  Interface for ths POSIX threads library.
+    Copyright (C) 2003  Michael van Acken
+
+    This module is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public License
+    as published by the Free Software Foundation; either version 2 of
+    the License, or (at your option) any later version.
+
+    This module is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with OOC. If not, write to the Free Software Foundation,
+    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
 <*Warnings := FALSE*>
 
 IMPORT
   SYSTEM, RT0, Object, Exception;
 
 (**This is an experimental and preliminary interface to the pthread library.
-   Threads and exceptions are not integrated yet.  The garbage collector must
-   have been compiled with pthread support as well, or the heap may go down in
-   flames.  *)
+   The garbage collector must have been compiled with pthread support as well,
+   or the heap may go down in flames.  See the source code of
+   @file{liboo2c.xml} for on overview of library modules that are not
+   multi-threading safe (most notably, @omodule{*Files} and
+   @omodule{*IO:FileChannel}.  *)
    
 TYPE
   Error* = POINTER TO ErrorDesc;
@@ -19,6 +39,10 @@ TYPE
 TYPE
   Thread* = POINTER TO ThreadDesc;
   ThreadDesc* = RECORD [ABSTRACT]
+    (Object.ObjectDesc)
+    (* Note: Reading an attribute of this object is only safe within its own
+       thread of control.  Accessed from other threads, the results are
+       undefined unless the two threads are explicitky synchronized.  *)
     exceptionState: Exception.ThreadState;
     (* The garbage collector does not see and thread local storage, so
        we must make sure a reference to the current exception is always life
@@ -55,6 +79,10 @@ RAISES Error;
 PROCEDURE (t: Thread) Join*()
 RAISES Error;
 
+PROCEDURE CurrentThread*(): Thread;
+(**Return the current @otype{Thread} object, corresponding to the caller's
+   thread of control.  This is guaranteed to be a non-@code{NIL} value.  *)
+  
 (* ------------------------------------------------------------------------ *)
 
 PROCEDURE (m: Mutex) INIT*();

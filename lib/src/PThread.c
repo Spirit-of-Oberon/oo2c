@@ -98,6 +98,11 @@ void PThread__ThreadDesc_Join(PThread__Thread t) {
   check_error(pthread_join((pthread_t)t->thread, &exit_code), OOC_FALSE);
 }
 
+#define THIS_THREAD ((PThread__Thread)pthread_getspecific(threadobj_key))
+PThread__Thread PThread__CurrentThread() {
+  return THIS_THREAD;
+}
+
 
 
 void PThread__MutexDesc_INIT(PThread__Mutex m) {
@@ -145,7 +150,6 @@ void PThread__ConditionDesc_Destroy(PThread__Condition c) {
 
 
 
-#define THIS_THREAD ((PThread__Thread)pthread_getspecific(threadobj_key))
 static Exception__ThreadStatePtr tls_GetThreadState() {
   return &THIS_THREAD->exceptionState;
 }
