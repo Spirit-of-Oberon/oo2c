@@ -17,6 +17,10 @@ void Out__Int(OOC_INT32 i, OOC_INT32 n) {
   fprintf(stdout, "%*i", n, i);
 }
 
+void Out__Bool(OOC_BOOLEAN b) {
+  fprintf(stdout, b ? "TRUE" : "FALSE");
+}
+
 void Out__Ln() {
   fputc('\n', stdout);
 }

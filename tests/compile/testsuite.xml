@@ -19,7 +19,8 @@
   baseline8 baseline10 baseline11
   function1 function2
   constfold1 constfold2 constfold3 constfold4 constfold5
-  constfold6 constfold7 constfold8 constfold9 constfold10 constfold11">
+  constfold6 constfold7 constfold8 constfold9 constfold10 constfold11
+  constfold12 constfold13 constfold14">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -112,7 +113,22 @@
       file="ConstFold11.Mod" output="ConstFold11.Ref">
       Calls <code>SIZE</code> on an array type.
     </test>
-  </testcases>
+
+    <test id="constfold12" type="run" 
+      file="ConstFold12.Mod" output="ConstFold12.Ref">
+      Tests evaluation of Boolean expressions.
+    </test>
+  
+    <test id="constfold13" type="run" 
+      file="ConstFold13.Mod" output="ConstFold13.Ref">
+      Tests evaluation of Integer compare expressions.
+    </test>
+  
+    <test id="constfold14" type="run" 
+      file="ConstFold14.Mod" output="ConstFold14.Ref">
+      Tests evaluation of String compare expressions.
+    </test>
+   </testcases>
   
   <processor-info processor-name="TestCompile">
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
