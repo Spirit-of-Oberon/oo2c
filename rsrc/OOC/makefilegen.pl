@@ -85,3 +85,6 @@ print "\t\$(CC) \$(CFLAGS) $flags -c $main.c -o $main.o\n\n";
 
 print "$exec: \$(OBJ)\n";
 print "\t\$(CC) \$(LDFLAGS) -o $exec \$(OBJ) -lm \$(LIBS)\n\n";
+
+print "clean:\n";
+print "\trm -f \$(OBJ) $exec $exec.exe\n\n";
