@@ -70,6 +70,11 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
          base type *)
       relativeName := TRUE;
 
+    ELSIF (decl IS Sym.ProcDecl) & (decl(Sym.ProcDecl). linkName # NIL) THEN
+      (* the declaration defines its own linkage name: immediately, return it
+         because collisions with reserved names don't matter here *)
+      RETURN decl(Sym.ProcDecl). linkName;
+      
     ELSIF (decl IS Sym.ProcDecl) & IsInterfaceModule (decl. Module()) THEN
       (* names of procedures declared in interface modules are not mangled
          by default *)

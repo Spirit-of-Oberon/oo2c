@@ -22,7 +22,7 @@ MODULE OOC:AST:ExtTree:CreateSymTab;
 
 IMPORT
   Msg, ADT:String, URI, ParserURI := URI:Parser,
-  OOC:AST, OOC:Scanner:Builder:BasicList, OOC:AST:ExtTree,
+  OOC:Scanner:Symbol, OOC:AST, OOC:Scanner:Builder:BasicList, OOC:AST:ExtTree,
   Sym := OOC:SymbolTable,
   SymTabBuilder := OOC:SymbolTable:Builder;
 
@@ -384,6 +384,24 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
     endPos: Sym.ModulePos;
     i: LONGINT;
     nodePtr: AST.Node;
+
+  PROCEDURE ParseFlags (proc: Sym.ProcDecl; flags: ExtTree.NodeList);
+    VAR
+      i: LONGINT;
+      n: ExtTree.Node;
+    BEGIN
+      FOR i := 0 TO flags. len-1 BY 2 DO
+        n := flags. n[i](ExtTree.Node);
+        WITH n: ExtTree.Terminal DO
+          IF (n. sym. id = Symbol.stringSingle) OR
+             (n. sym. id = Symbol.stringDouble) THEN
+            proc. SetLinkName (n. GetString (TRUE));
+          END;
+        ELSE                             (* ignore for now *)
+        END;
+      END;
+    END ParseFlags;
+  
   BEGIN
     endPos := EndOfType (procDecl. formalPars);
     IF (endPos < 0) THEN
@@ -420,6 +438,9 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
           AcceptParent (v, nodePtr, formalPars)
         END
       END
+    END;
+    IF (procDecl. flags # NIL) THEN
+      ParseFlags (proc, procDecl. flags(ExtTree.Flags). flagList(ExtTree.NodeList));
     END;
     
     IF (procDecl. body # NIL) THEN

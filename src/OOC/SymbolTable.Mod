@@ -525,6 +525,10 @@ TYPE
     formalPars*: FormalPars;             (*... make this read-only? *)
     (**The formal parameters of the procedure.  This is also the type of
        the procedure.  *)
+    linkName*: String.String;
+    (**If the name of the procedure differs between the source code and the
+       low-level binary representation, then this field holds the name of
+       the procedure on the link level.  Otherwise, it is @code{NIL}.  *)
     procAST-: AST.Node;
     (**Refers to the abstract syntax tree of the procedure, for example an
        instance of @otype{*OOC:AST:ExtTree.ProcDecl}.  *)
@@ -1433,6 +1437,7 @@ PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
     procDecl. tbProcIndex := -1;
     procDecl. ns := NIL;
     procDecl. formalPars := NIL;
+    procDecl. linkName := NIL;
     procDecl. procAST := procAST;
   END InitProcDecl;
 
@@ -1443,6 +1448,7 @@ PROCEDURE (procDecl: ProcDecl) Store* (w: Object.Writer);
     w. WriteBool (procDecl. isForwardDecl);
     w. WriteNum (procDecl. tbProcIndex);
     w. WriteObject (procDecl. formalPars);
+    w. WriteObject (procDecl. linkName);
     (* ignore field `ns' & `procAST' *)
   END Store;
 
@@ -1461,6 +1467,12 @@ PROCEDURE (procDecl: ProcDecl) Load* (r: Object.Reader);
     ELSE
       procDecl. formalPars := obj(FormalPars)
     END;
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN
+      procDecl. linkName := NIL
+    ELSE
+      procDecl. linkName := obj(String.String)
+    END;
     procDecl. procAST := NIL;
   END Load;
 
@@ -1469,6 +1481,11 @@ PROCEDURE (procDecl: ProcDecl) SetNamespace* (ns: Namespace);
   BEGIN
     procDecl. ns := ns;
   END SetNamespace;
+
+PROCEDURE (procDecl: ProcDecl) SetLinkName* (name: String.String);
+  BEGIN
+    procDecl. linkName := name;
+  END SetLinkName;
 
 PROCEDURE (procDecl: ProcDecl) CopyTBProcIndex* (redefinition: ProcDecl);
 (**Sets the field @ofield{ProcDecl.tbProcIndex} of @oparam{redefinition} to
