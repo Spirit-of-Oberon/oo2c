@@ -317,9 +317,9 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
       
       BEGIN
         WITH statm: IR.Assert DO
-          IF (statm.predicate = NIL) (*OR
+          IF (statm.predicate = NIL) OR
              ((statm.predicate IS IR.Const) & 
-              Boxed.false.Equals(statm.predicate(IR.Const).value))*) THEN
+              Boxed.false.Equals(statm.predicate(IR.Const).value)) THEN
             def.Unreachable();
           ELSE
             CheckExpr(statm.predicate);

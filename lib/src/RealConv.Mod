@@ -84,17 +84,23 @@ PROCEDURE ValueReal*(str: ARRAY OF CHAR): REAL;
 
 PROCEDURE LengthFloatReal*(real: REAL; sigFigs: INTEGER): INTEGER;
   BEGIN
-    ASSERT (FALSE); RETURN -1;  (* FIXME... *)
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END LengthFloatReal;
  
 PROCEDURE LengthEngReal*(real: REAL; sigFigs: INTEGER): INTEGER;
   BEGIN
-    ASSERT (FALSE); RETURN -1;  (* FIXME... *)
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END LengthEngReal;
  
 PROCEDURE LengthFixedReal*(real: REAL; place: INTEGER): INTEGER;
   BEGIN
-    ASSERT (FALSE); RETURN -1;  (* FIXME... *)
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END LengthFixedReal;
 
 END RealConv.

@@ -775,7 +775,9 @@ PROCEDURE InitType (t: Type);
 
 PROCEDURE (t: Type) Priority (): SHORTINT;
   BEGIN
-    ASSERT (FALSE); RETURN -1;
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END Priority;
 
 PROCEDURE (t: Type) WriteLeft (w: Writer);

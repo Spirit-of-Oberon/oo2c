@@ -117,8 +117,9 @@ PROCEDURE (v: Boolean) Equals*(y: Obj.Object): BOOLEAN;
   
 PROCEDURE (v: Boolean) Cmp*(y: Obj.Object): LONGINT;
   BEGIN
+<*PUSH; Assertions:=TRUE*>
     ASSERT (FALSE);
-    RETURN -1;
+<*POP*>
   END Cmp;
   
 PROCEDURE (v: Boolean) HashCode*(): Obj.Hash;
@@ -325,8 +326,9 @@ END Equals;
 
 PROCEDURE (v: Set) Cmp*(y: Obj.Object): LONGINT;
   BEGIN
+<*PUSH; Assertions:=TRUE*>
     ASSERT (FALSE);
-    RETURN -1;
+<*POP*>
   END Cmp;
   
 PROCEDURE (v: Set) HashCode*(): Obj.Hash;

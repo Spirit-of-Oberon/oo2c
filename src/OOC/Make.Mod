@@ -622,7 +622,9 @@ PROCEDURE (r: Rules) UpdateSymbolTableXML*(module: Rep.Module): BOOLEAN
 RAISES IO.Error;
 (* Must be redefined by application when used.  *)
   BEGIN
-    ASSERT(FALSE); RETURN FALSE;
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END UpdateSymbolTableXML;
 
 PROCEDURE (r: Rules) UpdateInterfaceDescr (module: Rep.Module): BOOLEAN

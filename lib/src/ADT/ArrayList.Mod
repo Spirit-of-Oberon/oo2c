@@ -299,12 +299,16 @@ PROCEDURE (l: ArrayList) IsEmpty* (): BOOLEAN;
 
 PROCEDURE (l: ArrayList) Equals* (obj: Object.Object): BOOLEAN;
   BEGIN
-    <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END Equals;
 
 PROCEDURE (l: ArrayList) HashCode* (): LONGINT;
   BEGIN
-    <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END HashCode;
 
 PROCEDURE (l: ArrayList) Store* (w: Storable.Writer) RAISES IO.Error;

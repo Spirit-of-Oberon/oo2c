@@ -444,12 +444,16 @@ PROCEDURE (dict: Dictionary) Values* (): Object.ObjectArrayPtr;
 
 PROCEDURE (dict: Dictionary) Equals* (obj: Object.Object): BOOLEAN;
   BEGIN
-    <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END Equals;
 
 PROCEDURE (dict: Dictionary) HashCode* (): LONGINT;
   BEGIN
-    <*PUSH; Assertions:=TRUE*>ASSERT(FALSE)<*POP*>
+<*PUSH; Assertions:=TRUE*>
+    ASSERT (FALSE);
+<*POP*>
   END HashCode;
 
 PROCEDURE (dict: Dictionary) Store* (w: Storable.Writer) RAISES IO.Error;

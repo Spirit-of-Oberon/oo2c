@@ -774,7 +774,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
      of a block, like @oconst{Opcode.loopEnd} or @oconst{Opcode.selectReturn},
      even if they are unreachable.  *)
     VAR
-      d, i: LONGINT;
+      d: LONGINT;
       j: Jump;
 
     PROCEDURE ContainsEndOfBlock (b: Block): BOOLEAN;

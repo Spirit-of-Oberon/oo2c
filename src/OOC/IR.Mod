@@ -5082,7 +5082,7 @@ PROCEDURE (b: Builder) NewSelect* (sym: Symbol; var: Expression;
     ELSE
       RETURN b.ErrExpr(notRecord, varRef.sym);
     END
-    END NewSelect;
+  END NewSelect;
 
 PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expression;
 (**Return an IR expression for the given symbol and left/right expressions.
