@@ -397,7 +397,12 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN TypeTest (expr);
         
       | expr: IR.Negate DO
-        instr := pb. AddInstr (Opcode.negate, Opcode.scBoolean);
+        (* FIXME... use a different IR opcode for boolean not *)
+        IF (expr. type = Predef.GetType (Predef.boolean)) THEN
+          instr := pb. AddInstr (Opcode.not, Opcode.scBoolean);
+        ELSE
+          instr := pb. AddInstr (Opcode.negate, Opcode.scBoolean);
+        END;
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr
 

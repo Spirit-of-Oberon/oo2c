@@ -624,6 +624,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
 
   PROCEDURE CopyString (instr: SSA.Instr);
     BEGIN
+      w. Newline;
       w. WriteString ("_copy(");
       w. Ref (instr. GetOpndClass (Opnd.readAdr));
       w. WriteChar (",");
@@ -877,7 +878,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.or:
         WriteDyadicOp (instr, "||");
       | Opcode.not:
-        WriteMonadicOp (instr, "!", "");
+        WriteMonadicOp (instr, "!", ";");
 
       | Opcode.setMember:
         WriteDyadicFct (instr, "_in");
@@ -1158,7 +1159,8 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     Write ("initial", "dce-pre");
     DeadCodeElimination.Transform (pb);
     Write ("dce-post", "destore-pre");
-    Destore.Transform (pb, t. config. typeRules);
+(*    Destore.Transform (pb, t. config. typeRules);
+    Blocker.Write (StdChannels.stdout, pb);*)
     Write ("destore-post", "dce-pre");
     DeadCodeElimination.Transform (pb);
     Write ("dce-post", "final");
