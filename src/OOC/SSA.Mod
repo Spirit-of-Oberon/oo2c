@@ -165,10 +165,14 @@ TYPE
     procDecl-: Sym.ProcDecl;
     (**The procedure declaration to which this code block belongs.  *)
     
-    objMap: Dictionary.Dictionary;
-    (**Maps constant values onto @code{const} instructions, and declarations
-       from the symbol table onto @code{declref} instructions.  See
+    constMap: ARRAY Predef.lastId+1 OF Dictionary.Dictionary;
+    (**Maps constant values onto @code{const} instructions.  See
        @oproc{ProcBlock.GetConst} and @oproc{ProcBlock.GetDeclRef}.  *)
+    
+    objMap: Dictionary.Dictionary;
+    (**Maps declarations
+       from the symbol table onto @code{declref} instructions.  See
+       @oproc{ProcBlock.GetDeclRef}.  *)
     
     adrMap: Dictionary.Dictionary;
     (**Maps items of the symbol table to their @code{adr} instructions.  See
@@ -659,6 +663,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl);
   VAR
     enter: Instr;
     initialStore: Result;
+    i: LONGINT;
   BEGIN
     InitNode (pb);
     pb. instrList := NIL;
@@ -669,7 +674,10 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl);
     enter := pb. AddInstr (Opcode.enter, Opcode.scNone);
     initialStore := enter. AddResult (ResultClass.store);
     pb. selectReturn. AddOpnd (initialStore, OpndClass.store);
-    
+
+    FOR i := 0 TO Predef.lastId DO
+      pb. constMap[i] := NIL;
+    END;
     pb. objMap := Dictionary.New();
     pb. adrMap := Dictionary.New();
   END InitProcBlock;
@@ -743,19 +751,29 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
   VAR
     obj: Object.Object;
     const: Const;
+    bucket: LONGINT;
   BEGIN
     Out.String("");  (* FIXME... *)
     (* this statm is for good luck; don't ask, I don't have an answer :-{
        this occasional failed assert in Dictionary is driving me mad -- mva *)
+
+    WITH type: Sym.PredefType DO
+      bucket := type. id;
+    ELSE
+      bucket := Predef.void;
+    END;
+    IF (pb. constMap[bucket] = NIL) THEN
+      pb. constMap[bucket] := Dictionary.New();
+    END;
     
-    IF pb. objMap. HasKey (value) THEN
-      obj := pb. objMap. Get (value);
+    IF pb. constMap[bucket]. HasKey (value) THEN
+      obj := pb. constMap[bucket]. Get (value);
       RETURN obj(Const);
     ELSE
       NEW (const);
       InitConst (const, Opcode.TypeToSubclass (type), value, type);
       AppendInstr (pb, const);
-      pb. objMap. Set (value, const);
+      pb. constMap[bucket]. Set (value, const);
       RETURN const
     END;
   END GetConst;
