@@ -7,6 +7,8 @@
    operating-system,
    processor,
    test-suite) >
+<!ATTLIST test-setup
+          lang NMTOKEN #REQUIRED>
 
 <!ELEMENT machine EMPTY>
 <!ATTLIST machine
@@ -30,7 +32,8 @@
           command CDATA #REQUIRED
           config-file %URI; #IMPLIED
           flags CDATA #REQUIRED 
-          working-dir CDATA #REQUIRED >
+          working-dir CDATA #REQUIRED
+          filter-command CDATA #IMPLIED >
 
 <!ELEMENT test-suite EMPTY >
 <!ATTLIST test-suite

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
 <!DOCTYPE test-setup SYSTEM "test-setup.dtd">
 
-<test-setup>
+<test-setup lang="O1">
   <machine model="IBM ThinkPad 600E"
 	   cpu="Mobile Pentium II, stepping 10"
 	   ram="288 MB" />
@@ -14,11 +14,12 @@
   </operating-system>
     
   <processor name="oo2c"
-	     version="1.5.5"
+	     version="1.5.5.1"
 	     command="/usr/bin/Oo2c"
 	     config-file="./sample-oo2crc"
 	     flags="-Ov"
-	     working-dir="/tmp/ooc-tests" />
+	     working-dir="/tmp/ooc-tests" 
+	     filter-command="/usr/bin/Ooef" />
 
   <test-suite uri="testsuite.xml" />
 </test-setup>
