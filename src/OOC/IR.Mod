@@ -883,6 +883,7 @@ CONST
   notRecord = 20;
   notPointer = 21;
   illegalFunctionOp = 22;
+  incompatibleAssignment = 23;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -923,6 +924,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Expression may not be passed by reference"
     | incompatibleActualParam:
       t := "Type of actual parameter is not compatible with formal type"
+    | incompatibleAssignment:
+      t := "Type of expression is not compatible with variable type"
     | wrongNumberOfArguments:
       t := "Wrong number of arguments"
     | invalidIntegerConst:
@@ -2303,6 +2306,7 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
 PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
                                        variable, value: Expression): Statement;
   VAR
+    expr : Expression;
     assignment: Assignment;
   BEGIN
     IF b. typeRules. IsStringConst (value. type) THEN
@@ -2315,8 +2319,13 @@ PROCEDURE (b: Builder) NewAssignment* (sym: Symbol;
       (* FIXME... check assignment restrictions *)
       RETURN b. NewCopy (sym, value, variable);
     ELSE
+      expr := b.AssignType(variable.type, value);
+      IF expr = NIL THEN
+        b.ErrSym(incompatibleAssignment, sym);
+        expr := value;
+      END;
       NEW (assignment);
-      InitAssignment (assignment, sym, variable, value);
+      InitAssignment (assignment, sym, variable, expr);
       RETURN assignment
     END;
   END NewAssignment;
@@ -3099,6 +3108,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     END WidenType;
 
   BEGIN
+    nil := Predef.GetType (Predef.nil);
     leftType := left.type; 
     leftIsNumeric := tr.IsNumericType(leftType);
     leftIsInteger := tr.IsIntegerType(leftType);
@@ -3177,18 +3187,13 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       & (leftIsString & rightIsString) THEN
       (* FIXME... handle char array., string *)
       result := b.NewCompare(sym, left, right);
-    ELSIF (id IN {Id.eql, Id.neq}) THEN
-      nil := Predef.GetType (Predef.nil);
-      IF (leftType = nil) & tr. IsNilCompatible (rightType) OR
-         (rightType = nil) & tr. IsNilCompatible (leftType) THEN
-        (* left or right side (or both) are NIL *)
-        result := b.NewCompare(sym, left, right);
-      ELSE 
-        (* FIXME... check types  *)
-        result := b.NewCompare(sym, left, right);
-      END;
     ELSIF (id IN {Id.eql, Id.neq})
-      & ((leftIsBoolean & rightIsBoolean) OR (leftIsSet & rightIsSet)) THEN
+      & ((leftIsBoolean & rightIsBoolean) OR (leftIsSet & rightIsSet) OR
+         (leftType = nil) & tr. IsNilCompatible (rightType) OR
+         (rightType = nil) & tr. IsNilCompatible (leftType) OR
+         (leftType IS Sym.Pointer) & (rightType IS Sym.Pointer) &
+            (tr.IsExtensionOf(leftType, rightType) OR 
+             tr.IsExtensionOf(rightType, leftType))) THEN
       (* FIXME... procedure types *)
       result := b.NewCompare(sym, left, right);
     ELSIF (id = Id.in) & leftIsInteger & rightIsSet THEN
@@ -3212,7 +3217,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     END;
   END NewOperator;
 
-PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList): Expression;
+ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList): Expression;
   VAR
     call: Call;
     targetType: Sym.PredefId;
@@ -3222,7 +3227,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
     formalPars: Sym.VarDeclArray;
     receiver, delta: Expression;
     value: Language.Value;
-    
+ 
   PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
                                       expr: Expression;
                                       type: Sym.Type): Expression;
@@ -3237,7 +3242,7 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
         RETURN expr
       END;
     END MakeAssignmentCompatible;
-  
+
   PROCEDURE MakeParameterCompatible (b: Builder; sym: Symbol;
                                      arg: Expression;
                                      fpar: Sym.VarDecl): Expression;
