@@ -18,10 +18,9 @@ TYPE
     table: Table(K, V);
   END;
 
-PROCEDURE (dict: Dictionary) Resize*(): Table(DictionaryDesc.K,
-                                              DictionaryDesc.V);
+PROCEDURE (dict: Dictionary(K, V)) Resize*(): Table(K, V);
   VAR
-    oldTable, newTable: Table(DictionaryDesc.K, DictionaryDesc.V);
+    oldTable, newTable: Table(K, V);
   BEGIN
     oldTable := dict.table;
     NEW(newTable, 123);

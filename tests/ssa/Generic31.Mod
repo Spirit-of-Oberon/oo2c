@@ -14,7 +14,7 @@ TYPE
 VAR
   bp: B(G.A1);
   
-PROCEDURE (a: A) ProcA*(arg: ADesc.T);
+PROCEDURE (a: A(T)) ProcA*(arg: T);
   BEGIN
   END ProcA;
 

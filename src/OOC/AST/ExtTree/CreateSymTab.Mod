@@ -456,12 +456,25 @@ PROCEDURE (v: Visitor) VisitReceiver* (receiver: ExtTree.Receiver);
   VAR
     type: Sym.Type;
     var: Sym.VarDecl;
+    alias: Sym.TypeDecl;
+    i: LONGINT;
+    nodes: AST.NodeArray;
   BEGIN
     type := GetType (v, receiver. type);
     var := v. stb. NewVarDecl (v. parent, 
       GetName (receiver. ident), EndOfType (receiver. type),
       Sym.nameNotExported, receiver. ident. docString,
-      TRUE, TRUE, receiver. var # NIL, type)
+      TRUE, TRUE, receiver. var # NIL, type);
+
+    IF (receiver.lParenAlias # NIL) THEN
+      var.hasAliasList := TRUE;
+      nodes := receiver.aliasList.n;
+      FOR i := 0 TO receiver.aliasList.len-1 BY 2 DO
+        alias := v.stb.NewTypeDecl
+            (v.parent, GetName(nodes[i]), EndOfType(nodes[i]),
+             Sym.nameNotExported, NIL, NIL, FALSE);
+      END;
+    END;
   END VisitReceiver;
 
 PROCEDURE (v: Visitor) VisitFPSection* (fpSection: ExtTree.FPSection);

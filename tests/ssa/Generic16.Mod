@@ -8,19 +8,19 @@ TYPE
     f-: Base;
   END;
 
-PROCEDURE (p: P) Proc1*(a, b: R.Base);
+PROCEDURE (p: P(Base)) Proc1*(a, b: Base);
   VAR
-    v, w: R.Base;
+    v, w: Base;
     x: G.Object;
     y: G.A1;
     i: LONGINT;
     e: BOOLEAN;
     
-  PROCEDURE NestedProc(p1: R.Base; VAR p2: R.Base);
+  PROCEDURE NestedProc(p1: Base; VAR p2: Base);
     BEGIN
     END NestedProc;
 
-  PROCEDURE NestedFct(p1: R.Base): R.Base;
+  PROCEDURE NestedFct(p1: Base): Base;
     BEGIN
       RETURN p1;
     END NestedFct;

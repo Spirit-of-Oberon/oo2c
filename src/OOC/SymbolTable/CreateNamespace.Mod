@@ -21,6 +21,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
+  Log,
   Msg, IO, ADT:ArrayList, ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:SymbolTable:Uses,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
@@ -59,6 +60,8 @@ CONST
   tooFewTypeArgs = 29;
   tooManyTypeArgs = 30;
   notExtensionOfBound = 31;
+  tooFewTypeAliases = 32;
+  cannotDefineTypeAliases = 33;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -138,6 +141,10 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Too many type arguments"
     | notExtensionOfBound:
       t := "This is not an extension of the type bound"
+    | tooFewTypeAliases:
+      t := "The base record type has ${count} type parameter(s)"
+    | cannotDefineTypeAliases:
+      t := "The base record type has no type parameters"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -275,12 +282,25 @@ RAISES IO.Error;
         c: LONGINT;
         da: Sym.DeclarationArray;
 
-      PROCEDURE IsDeclaration (item: Sym.Item): BOOLEAN;
+      PROCEDURE IsDeclaration (x: Sym.Item): BOOLEAN;
         BEGIN
-          WITH item: Sym.ProcDecl DO
-            RETURN ~(item.IsTypeBound() OR item. isForwardDecl)
+          WITH x: Sym.ProcDecl DO
+            RETURN ~(x.IsTypeBound() OR x. isForwardDecl)
+          | x: Sym.TypeDecl DO
+            IF (x.type = NIL) THEN
+              (* this is an alias type introduced by a receiver; such a
+                 declaration is only added to the namespace of the formal
+                 parameters, _not_ to that of the procedure *)
+              RETURN (item IS Sym.FormalPars);
+            ELSE
+              RETURN TRUE;
+            END;
+          | x: Sym.VarDecl DO
+            (* formal parameters are added to the namespace of the procedure,
+               but _not_ to the namespace of the FormalPars object *)
+            RETURN ~x.isParameter OR ~(item IS Sym.FormalPars);
           ELSE
-            RETURN (item IS Sym.Declaration)
+            RETURN (x IS Sym.Declaration)
           END
         END IsDeclaration;
       
@@ -315,8 +335,7 @@ RAISES IO.Error;
           END;
           ptr := ptr. nextNested
         END;
-        IF (item IS Sym.ProcDecl) (*&
-           (item(Sym.ProcDecl). visibleFrom >= 0) ... *) THEN
+        IF (item IS Sym.ProcDecl) THEN
           (* add formal parameters, but only if the module is not an imported
              symbol file; otherwise, due to the missing visibility information,
              identification of parameter types may wrongly take a parameter
@@ -379,6 +398,8 @@ RAISES IO.Error;
           privateRecords.Set(item, NIL);
         | item: Sym.TypePars DO
           item. SetNamespace (Assemble (item, namespacePType));
+        | item: Sym.FormalPars DO
+          item. SetNamespace (Assemble (item, namespaceNested));
         ELSE  (* no other item is associated with a namespace *)
         END
       END
@@ -420,6 +441,18 @@ RAISES IO.Error;
      Note: Record namespaces are @emph{not} completed by this procedure.  *)
     VAR
       ptr: Sym.Item;
+
+    PROCEDURE SetEnclosingParent(ns: Namespace.Nested; parent: Sym.Item);
+      BEGIN
+        IF (parent IS Sym.Module) THEN
+          ns.SetEnclosingNamespace
+              (parent(Sym.Module).ns(Namespace.Namespace));
+        ELSIF (parent IS Sym.ProcDecl) THEN
+          ns.SetEnclosingNamespace
+              (parent(Sym.ProcDecl).ns(Namespace.Namespace));
+        END
+      END SetEnclosingParent;
+    
     BEGIN
       IF (item # NIL) THEN
         WITH item: Sym.Module DO
@@ -428,25 +461,17 @@ RAISES IO.Error;
               SetEnclosingNamespace (predefModule. ns(Namespace.Namespace))
           END
         | item: Sym.ProcDecl DO
-          IF (item. parent IS Sym.Module) THEN
-            item. ns(Namespace.Nested). 
-              SetEnclosingNamespace (item. parent(Sym.Module). 
-                                       ns(Namespace.Namespace))
-          ELSIF (item. parent IS Sym.ProcDecl) THEN
-            item. ns(Namespace.Nested). 
-              SetEnclosingNamespace (item. parent(Sym.ProcDecl). 
-                                       ns(Namespace.Namespace))
-          END
+          item.ns(Namespace.Nested).SetEnclosingNamespace
+              (item.formalPars.ns(Namespace.Namespace));
         | item: Sym.TypePars DO
-          IF (item. parent IS Sym.Module) THEN
-            item. ns(Namespace.Nested). 
-              SetEnclosingNamespace (item. parent(Sym.Module). 
-                                       ns(Namespace.Namespace))
-          ELSIF (item. parent IS Sym.ProcDecl) THEN
-            item. ns(Namespace.Nested). 
-              SetEnclosingNamespace (item. parent(Sym.ProcDecl). 
-                                       ns(Namespace.Namespace))
-          END
+          SetEnclosingParent(item.ns(Namespace.Nested), item. parent);
+        | item: Sym.FormalPars DO
+          IF (item.parent IS Sym.ProcDecl) &
+             (item.parent(Sym.ProcDecl).formalPars = item) THEN
+            SetEnclosingParent(item.ns(Namespace.Nested), item.parent.parent);
+          ELSE  (* procedure type definition *)
+            SetEnclosingParent(item.ns(Namespace.Nested), item.parent);
+          END;
         ELSE  (* no other item is associated with a namespace *)
         END;      
 
@@ -473,9 +498,7 @@ RAISES IO.Error;
     VAR
       ptr: Sym.Item;
       i, typeDeclCount: LONGINT;
-      receiver: Sym.VarDecl;
       typePars: Sym.TypePars;
-      class: Sym.Record;
       
     PROCEDURE GetTypeByName (typeName: Sym.Type; contextOfUse: Sym.Item; 
                              extendedSearch: BOOLEAN;
@@ -606,6 +629,49 @@ RAISES IO.Error;
           ptr := ptr.nextNested
         END;
       END CollectFormalPars;
+
+    PROCEDURE ResolverReceiver(procDecl: Sym.ProcDecl;
+                               receiver: Sym.VarDecl);
+      VAR
+        class: Sym.Record;
+        ptr: Sym.Item;
+        count: LONGINT;
+      BEGIN
+        receiver.SetType(GetTypeByName(receiver.type, contextOfUse, FALSE,
+                                       FALSE, errList));
+        class := procDecl.Class();
+        procDecl.formalPars.SetTypePars(class.typePars);
+        (*item.formalPars.SetTypePars(receiver.type.typePars);*)
+
+        count := 0;
+        ptr := procDecl.formalPars.nestedItems;
+        WHILE (ptr # NIL) DO
+          WITH ptr: Sym.TypeDecl DO
+            IF (ptr.type = NIL) THEN
+              (* unfinished alias declaration: fixup type reference; if this
+                 is read from the symbol file, the `ptr.type' is alread set *)
+              ptr.type := class.typePars.params[count];
+              ptr.srcCodeType := ptr.type;
+            END;
+            INC(count);
+          ELSE
+            (* ignore *)
+          END;
+          ptr := ptr.nextNested;
+        END;
+
+        IF (class.typePars = NIL) THEN
+          IF receiver.hasAliasList THEN
+            ErrType(cannotDefineTypeAliases, receiver.srcCodeType);
+          END;
+        ELSE
+          IF ~receiver.hasAliasList OR
+             (count # LEN(class.typePars.params^)) THEN
+            ErrType(tooFewTypeAliases, receiver.srcCodeType);
+            lastError.SetIntAttrib("count", LEN(class.typePars.params^));
+          END;
+        END;
+      END ResolverReceiver;
     
     BEGIN
       IF (item # NIL) THEN
@@ -676,12 +742,7 @@ RAISES IO.Error;
           contextOfUse := item
         | item: Sym.ProcDecl DO
           IF (item.formalPars # NIL) & (item.formalPars.receiver # NIL) THEN
-            receiver := item.formalPars.receiver;
-            receiver.SetType(GetTypeByName(receiver.type, contextOfUse, FALSE,
-                                           FALSE, errList));
-            class := item.Class();
-            item.formalPars.SetTypePars(class.typePars);
-            (*item.formalPars.SetTypePars(receiver.type.typePars);*)
+            ResolverReceiver(item, item.formalPars.receiver);
           END;
           contextOfUse := item
         | item: Sym.TypePars DO
@@ -1504,6 +1565,7 @@ RAISES IO.Error;
          function cannot operate properly; only run it if we are clean *)
       CheckExtendedRecords (root, errList);
     END;
+    (*XML.Write(StdChannels.stdout, root);*)
     
     ResolveRef.Resolve (root, errList);
     

@@ -30,17 +30,17 @@ VAR
   b2-: B(A2);
 
 PROCEDURE (obj: Object) Id*(): LONGINT;
-  BEGIN
+ BEGIN
     RETURN 123;
   END Id;
 
-PROCEDURE (b: B) Set*(obj: BDesc.Base);
+PROCEDURE (b: B(Base)) Set*(obj: BDesc.Base);
   VAR
     x: BDesc.Base;
   BEGIN
   END Set;
 
-PROCEDURE (b: B) Get*(): BDesc.Base;
+PROCEDURE (b: B(Base)) Get*(): BDesc.Base;
   VAR
     x: BDesc.Base;
   BEGIN

@@ -12,7 +12,7 @@ TYPE
 VAR
   br: B(G.A1);
   
-PROCEDURE (VAR a: A) ProcA*(arg: A.T);
+PROCEDURE (VAR a: A(T)) ProcA*(arg: T);
   BEGIN
   END ProcA;
 

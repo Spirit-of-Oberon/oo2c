@@ -563,6 +563,15 @@ TYPE
     (**List of exceptions that may be raised by this procedure.
        @samp{LEN(raises^)} is the number of registered types.  If there are
        none, @ofield{raises} is a reference to an array of length zero.  *)
+    ns-: Namespace;
+    (**For a formal parameter list of a type-bound procedure associated with
+       a parametric record type, this namespace holds the local aliases for
+       the variables of the base record's type parameter list.  For all other
+       formal parameter lists, this namespace is currently empty.
+
+       The namespace is nested in the namespace of the enclosing object (that
+       is, in that of the module or procedure), and a procedure's namespace
+       is nested in that of the formal parameters.  *)
   END;
 
 TYPE
@@ -833,6 +842,9 @@ TYPE
     isReceiver-: BOOLEAN;
     (**@code{TRUE}, iff the variable is the receiver of a type-bound 
        procedure.  *)
+    hasAliasList*: BOOLEAN;
+    (**For a receiver, this field is set if it has a (possibly empty) list
+       of type aliases for the base record's type variables.  *)
     isVarParam-: BOOLEAN;
     (**@code{TRUE}, iff the variable is a formal variable parameter, that 
        is, a parameter with the @code{VAR} flag set.  *)
@@ -891,7 +903,7 @@ TYPE
     (**The type of the declaration.  If this is initially a type name,
        it is replaced with a reference to the true type after
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
-    srcCodeType-: Type;
+    srcCodeType*: Type;
     (**Similar to @ofield{type}, but it is not changed to a reference to
        the true type after
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
@@ -1869,6 +1881,7 @@ PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
     varDecl. srcCodeType := type;
     varDecl. isParameter := isParameter;
     varDecl. isReceiver := isReceiver;
+    varDecl. hasAliasList := FALSE;
     varDecl. isVarParam := isVarParam;
     varDecl. permitArgumentNIL := FALSE;
     varDecl. supplementArgs := TRUE;
@@ -1885,6 +1898,7 @@ PROCEDURE (varDecl: VarDecl) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteObject (varDecl. srcCodeType);
     w. WriteBool (varDecl. isParameter);
     w. WriteBool (varDecl. isReceiver);
+    w. WriteBool (varDecl. hasAliasList);
     w. WriteBool (varDecl. isVarParam);
     w. WriteBool (varDecl. isPassPerReference);
     w. WriteBool (varDecl. hasLocalCopy);
@@ -1903,6 +1917,7 @@ PROCEDURE (varDecl: VarDecl) Load* (r: Storable.Reader) RAISES IO.Error;
     varDecl. type := varDecl. srcCodeType;
     r. ReadBool (varDecl. isParameter);
     r. ReadBool (varDecl. isReceiver);
+    r. ReadBool (varDecl. hasAliasList);
     r. ReadBool (varDecl. isVarParam);
     r. ReadBool (varDecl. isPassPerReference);
     r. ReadBool (varDecl. hasLocalCopy);
@@ -2557,6 +2572,7 @@ PROCEDURE InitFormalPars* (formalPars: FormalPars; parent: Item;
     formalPars. anyRestParameters := FALSE;
     formalPars. noReturn := FALSE;
     formalPars. raises := NIL;
+    formalPars. ns := NIL;
   END InitFormalPars;
 
 PROCEDURE (formalPars: FormalPars) EnableRestParameters*;
@@ -2571,6 +2587,13 @@ PROCEDURE (formalPars: FormalPars) SetResultType*(resultType: Type);
     formalPars.resultType := resultType;
     formalPars.srcCodeResultType := resultType;
   END SetResultType;
+
+PROCEDURE (formalPars: FormalPars) SetNamespace* (ns: Namespace);
+(**Sets the field @ofield{FormalPars.ns} of @oparam{formalPars} to
+   @oparam{ns}.  *)
+  BEGIN
+    formalPars. ns := ns;
+  END SetNamespace;
 
 PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer) RAISES IO.Error;
   VAR
@@ -2590,6 +2613,7 @@ PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer) RAISES IO.Error;
         w. WriteObject (formalPars. raises[i])
       END
     END;
+    (* ignore field `ns' *)
   END Store;
 
 PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader) RAISES IO.Error;
@@ -2625,6 +2649,7 @@ PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader) RAISES IO.Error;
         formalPars. raises[i] := obj(ExceptionName)
       END
     END;
+    formalPars. ns := NIL;
   END Load;
 
 
@@ -2803,6 +2828,11 @@ PROCEDURE (item: Module) Namespace* (): Namespace;
   END Namespace;
 
 PROCEDURE (item: ProcDecl) Namespace* (): Namespace;
+  BEGIN
+    RETURN item. ns
+  END Namespace;
+
+PROCEDURE (item: FormalPars) Namespace* (): Namespace;
   BEGIN
     RETURN item. ns
   END Namespace;

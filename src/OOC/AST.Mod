@@ -34,7 +34,7 @@ TYPE
   END;
 
 TYPE
-  NodeArray = POINTER TO ARRAY OF Node;
+  NodeArray* = POINTER TO ARRAY OF Node;
   NodeList* = POINTER TO NodeListDesc;
   NodeListDesc* = RECORD
     (**Defines a simple list of nodes.  This is used to model repetition 
@@ -661,26 +661,41 @@ PROCEDURE (b: Builder) [ABSTRACT] VarDecl* (identList: NodeList; colon, type, se
    @end table  *)
   END VarDecl;
 
-PROCEDURE (b: Builder) [ABSTRACT] Receiver* (lParen, var, ident, colon, type, rParen: Node): Node;
+PROCEDURE (b: Builder) [ABSTRACT] Receiver* (lParen, var, ident, colon, type,
+                                             lParenAlias: Node;
+                                             aliasList: NodeList;
+                                             rParenAlias, rParen: Node): Node;
 (**Receiver of the declaration of a type-bound procedure.
 
    @table @oparam
    @item lParen
    The symbol @samp{(}, result of @oproc{Builder.Terminal}.
-   
+
    @item var
    The keyword @samp{VAR} (created by @oproc{Builder.Terminal}), or @code{NIL}
    if the receiver describes value parameter.
-   
+
    @item ident
    An identifier, created by @oproc{Builder.Terminal}.
-   
+
    @item colon
    The symbol @samp{:}, result of @oproc{Builder.Terminal}.
-   
+
    @item type
    A type name, result of @oproc{Builder.Terminal}.
-   
+
+   @item lParenAlias
+   If the receiver is for a parametric record type, this result of
+   @oproc{Builder.Terminal} introduces the list of aliases for the type
+   parameters.  Otherwise, it is @code{NIL}.
+
+   @item aliasList
+   List of @oproc{Builder.Terminal} values, even elements are identifiers, odd
+   are @samp{,}.
+
+   @item rParenAlias
+   End of the alias list, result of @oproc{Builder.Terminal}.
+
    @item rParen
    The symbol @samp{)}, result of @oproc{Builder.Terminal}.
    @end table  *)

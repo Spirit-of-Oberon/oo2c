@@ -7,9 +7,9 @@ TYPE
   R*(Base: G.Object) = RECORD
   END;
 
-PROCEDURE (p: P) Proc1*(v: G.Object): BOOLEAN;
+PROCEDURE (p: P(Base)) Proc1*(v: G.Object): BOOLEAN;
   BEGIN
-    RETURN (v IS R.Base);
+    RETURN (v IS Base);
   END Proc1;
 
 END Generic19.

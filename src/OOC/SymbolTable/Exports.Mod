@@ -152,7 +152,9 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Sym.Exports;
         WITH ptr: Sym.Declaration DO
           IF (ptr. exportMark # Sym.nameNotExported) OR 
              (ptr IS Sym.VarDecl) & ptr(Sym.VarDecl). isParameter OR
-             (ptr IS Sym.TypeDecl) & ptr(Sym.TypeDecl).isTypeParameter OR
+             (ptr IS Sym.TypeDecl) &
+               (ptr(Sym.TypeDecl).isTypeParameter OR
+                (ptr.parent IS Sym.FormalPars)) OR
              (ptr IS Sym.Import) &
                ((module.class # Sym.mcStandard) OR
                 (ptr.name.str[0] = Builder.prefixAutoImport)) OR

@@ -13,10 +13,10 @@ TYPE
   DictionaryDesc(K: Key; V: Value) = RECORD
   END;
     
-PROCEDURE (dict: Dictionary) Resize (newSize: LONGINT);
+PROCEDURE (dict: Dictionary(K, V)) Resize (newSize: LONGINT);
   VAR
     i: LONGINT;
-    newTable: Table(DictionaryDesc.K, DictionaryDesc.V);
+    newTable: Table(K, V);
   BEGIN
     NEW (newTable, newSize);
     FOR i := 0 TO newSize-1 DO

@@ -13,11 +13,11 @@ TYPE
     (ListDesc(E))
   END;
 
-PROCEDURE (l: List) INIT*(a: INTEGER);
+PROCEDURE (l: List(E)) INIT*(a: INTEGER);
   BEGIN
   END INIT;
 
-PROCEDURE (al: AnotherList) INIT*(a, b: INTEGER);
+PROCEDURE (al: AnotherList(E)) INIT*(a, b: INTEGER);
   BEGIN
     al.INIT^(a);
   END INIT;

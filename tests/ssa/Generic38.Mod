@@ -8,7 +8,7 @@ TYPE
     (G.ObjectDesc)
   END;
 
-PROCEDURE (l: List) Get(i: LONGINT): ListDesc.E;
+PROCEDURE (l: List(E)) Get(i: LONGINT): E;
   BEGIN
     RETURN NIL;
   END Get;

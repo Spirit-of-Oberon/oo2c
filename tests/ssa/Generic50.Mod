@@ -29,7 +29,7 @@ PROCEDURE (o: Node) Type*();
     Out.String("Node"); Out.Ln;
   END Type;
 
-PROCEDURE (w: Wrapper) P();
+PROCEDURE (w: Wrapper(E)) P();
   BEGIN
     w.obj.Type();
   END P;

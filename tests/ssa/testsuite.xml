@@ -12,10 +12,13 @@
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
   generic36 generic37 generic38 generic39 generic40 generic41
-  generic42 generic43 generic44 generic45 generic46 generic47">-->
+  generic42 generic43 generic44 generic45 generic46 generic47
+  generic48 generic48 generic49 generic50 generic52
+  generic53 generic54 generic55">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic52">-->
+  select ="&SetupTestCasesWithOut; generic1 generic53 generic54
+  generic55">-->
 
   &TestSetupWithOut;
     
@@ -1501,6 +1504,18 @@
       Qualified pointer typs and type variables are assignment
       compatible to <code>SYSTEM.PTR</code>.
     </test>
+    <test id="generic53" type="accept" file="Generic53.Mod">
+      Receiver declaration introduces type aliases for the 
+      type parameters of the base record type.
+    </test>
+    <test id="generic54" type="reject" file="Generic54.Mod">
+      One type alias name must be given in the receiver for every type
+      parameter of the base record type.
+    </test>
+    <test id="generic55" type="reject" file="Generic55.Mod">
+      If the base record type is not parametric, no list of alias
+      names must be present.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2075,9 +2090,9 @@
         msg="Undeclared identifier"/>
     <reject-info id="generic17" pos="v %:= a;"
         msg="Expression not compatible with variable type `Base'"/>
-    <reject-info id="generic18" pos="a(R.%Base)"
+    <reject-info id="generic18" pos="a(%Base)"
         msg="Type test requires static type instance"/>
-    <reject-info id="generic19" pos="v IS R.%Base"
+    <reject-info id="generic19" pos="v IS %Base"
         msg="Type test requires static type instance"/>
     <reject-info id="generic20" pos="NEW(%v)"
         msg="This must be a pointer variable"/>
@@ -2107,6 +2122,10 @@
         msg="Not a record pointer type"/>
     <reject-info id="generic46" pos="o1(%List("
         msg="Type must be an extension of the left operand's type"/>
+    <reject-info id="generic54" pos="(a: %A)"
+        msg="The base record type has 2 type parameter(s)"/>
+    <reject-info id="generic55" pos="(a: %A())"
+        msg="The base record type has no type parameters"/>
 
     <warning-info id="undef1" pos="x := %y;"
         msg="Warning: Undefined variable"/>

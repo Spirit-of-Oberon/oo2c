@@ -1216,10 +1216,33 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
         
         PROCEDURE Receiver (): AST.Node;
           VAR
-            lParen, var, ident, colon, type, rParen: AST.Node;
+            lParen, var, ident, colon, type, rParen,
+                lParenAlias, rParenAlias: AST.Node;
+            aliasList: AST.NodeList;
             dummy: AST.Name;
+
+          PROCEDURE AliasList(VAR lParen: AST.Node;
+                              VAR aliasList: AST.NodeList;
+                              VAR rParen: AST.Node);
+            BEGIN  (* pre: sym.id=lParen *)
+              lParen := CheckSym (Symbol.lParen);
+              aliasList := ast.NewNodeList();
+              IF (sym.id = Symbol.ident) THEN
+                LOOP
+                  aliasList.Append(CheckSym(Symbol.ident));
+                  IF (sym.id = Symbol.comma) THEN
+                    aliasList.Append(CheckSym(Symbol.comma));
+                  ELSE
+                    EXIT;
+                  END;
+                END;
+              END;
+              rParen := CheckSym (Symbol.rParen);
+            END AliasList;
+          
           BEGIN
-            (*S: Receiver = "(" ["VAR"] ident ":" ident ")".  *)
+            (*S: AliasList = "(" [ident {"," ident}] ")".
+              S: Receiver = "(" ["VAR"] ident ":" ident  [AliasList] ")".  *)
             lParen := CheckSym (Symbol.lParen);
             IF (sym. id = Symbol.var) THEN
               var := CheckSym (Symbol.var)
@@ -1229,8 +1252,18 @@ PROCEDURE Module* (sym: BasicList.Symbol; ast: AST.Builder;
             ident := IdentDef (0, FALSE, TRUE, dummy);
             colon := CheckSym (Symbol.colon);
             type := CheckSym (Symbol.ident);
+            
+            IF (sym.id = Symbol.lParen) THEN
+              AliasList(lParenAlias, aliasList, rParenAlias);
+            ELSE
+              lParenAlias := NIL;
+              aliasList := NIL;
+              rParenAlias := NIL;
+            END;
+            
             rParen := CheckSym (Symbol.rParen);
-            RETURN ast. Receiver (lParen, var, ident, colon, type, rParen)
+            RETURN ast. Receiver (lParen, var, ident, colon, type,
+                                  lParenAlias, aliasList, rParenAlias, rParen);
           END Receiver;
         
         BEGIN  (* pre: (sym. id = Symbol.procedure) *)

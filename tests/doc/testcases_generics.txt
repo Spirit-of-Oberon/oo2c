@@ -8,13 +8,15 @@ Syntax:
   Type       = QualType|ArrayType|RecordType|PointerType|ProcType.
   RecordType = "RECORD" ["("QualType")"] ... "END".  
   FormalPars = [ "(" [FPSection {";" FPSection}] ")" [":" QualType] ].
+
+  AliasList = "(" [ident {"," ident}] ")".
+  Receiver = "(" ["VAR"] ident ":" ident  [AliasList] ")".
          
 A type declared with a type parameter list like
 `T(t1:B1,t2:B2,...,tn:Bn)' is called a `parametric type'.  The formal
 type Bi of a type parameter declaration is called a type bound.  The
 type bound must be a record pointer.  A type name ti is visible to the
-end of the type declaration, and, if T is a record type, within all
-type-bound procedures of T.
+end of the type declaration.
 
 For a qualified type expression of the form `T(A1,A2,...,An)',
 
@@ -32,11 +34,14 @@ If T is a parametric type as defined above, then the type expression
 type argument equals the corresponding type bound.
 
 
-Within a type-bound procedure, a variable `v:Ti', with ti declarared
-with a type bound `ti:Bi', can for the most part be used like it had
-been declared as `v:Bi'.  The exceptions are that it can only be
-assigned values of type `Ti' (or NIL), and that NEW is not applicable
-to such a variable.
+A type-bound procedure of a parametric type must define a list of type
+names after its receiver type, for example `r: P(T1,T2,...)'.  Each
+name is a type alias for the corresponding type parameter of the
+procedure's base record type.  Within a type-bound procedure, a
+variable `v:Ti', with Ti declarared with a type bound `Ti:Bi', can for
+the most part be used like it had been declared as `v:Bi'.  The
+exceptions are that it can only be assigned values of type `Ti' (or
+NIL), and that NEW is not applicable to such a variable.
 
 A type variable cannot be used on the right hand side of a type test
 or type guard.  For any type argument on the right of a type test or
@@ -99,7 +104,7 @@ ACCEPT
   3) T(A: Object; B: AnotherObject) = RECORD a: A; b: B END  [Generic3]
   4) T() = RECORD END  [Generic3]
   5) Extension of a parametric record type.  [Generic4]
-  6) T.t visible in type-bound procedure.  [Generic1]
+  6) Receiver type alias visible in type-bound procedure.  [Generic1]
   7) Base type of the declaration is one of the type variables.  [Generic21]
 
 REJECT
@@ -142,7 +147,7 @@ REJECT
 Type Variables
 ==============
 
-VAR v, w: T.ti;
+VAR v, w: Ti;
 
 ACCEPT
 

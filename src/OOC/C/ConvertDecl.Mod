@@ -183,8 +183,8 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
         fct.SetNoReturn(type.noReturn);
         ptr := type. nestedItems;
         WHILE (ptr # NIL) DO
-          WITH ptr: Sym.Declaration DO   (* this pics up receiver and params *)
-            ConvertParam (fct, ptr(Sym.VarDecl))
+          WITH ptr: Sym.VarDecl DO   (* this pics up receiver and params *)
+            ConvertParam (fct, ptr)
           ELSE                     (* ignore non-declarations *)
           END;
           ptr := ptr. nextNested

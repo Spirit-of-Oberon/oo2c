@@ -21,6 +21,7 @@ MODULE OOC:Make;
 *)
 
 IMPORT
+  OOC:SymbolTable:XML, StdIO:=IO:StdChannels,
   Channel, Msg, Out, StdChannels, Strings, Time, IO,
 
   Object, ADT:ArrayList, ADT:Dictionary, StringSearch,

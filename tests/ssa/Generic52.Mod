@@ -7,7 +7,7 @@ TYPE
   ADesc*(T: G.Object) = RECORD
   END;
 
-PROCEDURE (a: A) ProcA*(arg1: ADesc.T; arg2: A(G.Object));
+PROCEDURE (a: A(T)) ProcA*(arg1: T; arg2: A(G.Object));
   VAR
     ptr: SYSTEM.PTR;
   BEGIN

@@ -10,7 +10,7 @@ TYPE
     data: E;
   END;
 
-PROCEDURE (l: List) Get(i: LONGINT): ListDesc.E;
+PROCEDURE (l: List(E)) Get(i: LONGINT): E;
   BEGIN
     IF (i = 0) THEN
       RETURN l.data;

@@ -7,9 +7,9 @@ TYPE
   R*(Base: G.Object) = RECORD
   END;
 
-PROCEDURE (p: P) Proc1*(a: G.Object);
+PROCEDURE (p: P(Base)) Proc1*(a: G.Object);
   VAR
-    v: R.Base;
+    v: Base;
   BEGIN
     v := a;
   END Proc1;

@@ -18,7 +18,7 @@ PROCEDURE New* (initialSize: LONGINT): ArrayList;
     RETURN NIL;
   END New;
 
-PROCEDURE (l: ArrayList) Append* (obj: ArrayListDesc.E);
+PROCEDURE (l: ArrayList(E)) Append* (obj: E);
   END Append;
 
 PROCEDURE (d: Document) P*(importDecl: G.A1);

@@ -250,6 +250,9 @@ TYPE
     ident-: IdentDef;
     colon-: AST.Node;
     type-: AST.Node;
+    lParenAlias-: Terminal;
+    aliasList-: NodeList;
+    rParenAlias-: Terminal;
     rParen-: AST.Node;
   END;
 
@@ -1130,7 +1133,10 @@ PROCEDURE (varDecl: VarDecl) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) Receiver* (lParen, var, ident, colon, type, rParen: AST.Node): Node;
+PROCEDURE (b: Builder) Receiver* (lParen, var, ident, colon, type,
+                                  lParenAlias: AST.Node;
+                                  aliasList: AST.NodeList;
+                                  rParenAlias, rParen: AST.Node): Node;
   VAR
     r: Receiver;
   BEGIN
@@ -1140,6 +1146,15 @@ PROCEDURE (b: Builder) Receiver* (lParen, var, ident, colon, type, rParen: AST.N
     r. ident := ident(IdentDef);
     r. colon := colon;
     r. type := type;
+    IF (lParenAlias # NIL) THEN
+      r. lParenAlias := lParenAlias(Terminal);
+      r. aliasList := aliasList(NodeList);
+      r. rParenAlias := rParenAlias(Terminal);
+    ELSE
+      r. lParenAlias := NIL;
+      r. aliasList := NIL;
+      r. rParenAlias := NIL;
+    END;
     r. rParen := rParen;
     RETURN r
   END Receiver;
@@ -1150,7 +1165,7 @@ PROCEDURE (receiver: Receiver) Accept* (v: Visitor);
   END Accept;
 
 
-PROCEDURE (b: Builder) ProcDecl* (proc, arrow, receiver, 
+PROCEDURE (b: Builder) ProcDecl*(proc, arrow, receiver, 
                                  flags, identDef, formalPars, semicolon1,
                                  body, semicolon2: AST.Node): Node;
   VAR

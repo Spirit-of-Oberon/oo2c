@@ -19,12 +19,12 @@ VAR
   l1: List(G.A1);
   l2: AnotherList(G.Object);
 
-PROCEDURE (l: List) INIT*(a: INTEGER);
+PROCEDURE (l: List(E)) INIT*(a: INTEGER);
   BEGIN
     l.a := a;
   END INIT;
 
-PROCEDURE (al: AnotherList) INIT*(a, b: INTEGER);
+PROCEDURE (al: AnotherList(E)) INIT*(a, b: INTEGER);
   BEGIN
     al.INIT^(a);
     al.b := b;

@@ -15,11 +15,11 @@ VAR
   ap: A(G.Object);
   bp: B(G.Object);
   
-PROCEDURE (a: A) ProcA*(arg: ADesc.T);
+PROCEDURE (a: A(T)) ProcA*(arg: T);
   BEGIN
   END ProcA;
 
-PROCEDURE (b: B) ProcB*(arg: BDesc.T);
+PROCEDURE (b: B(T)) ProcB*(arg: T);
   BEGIN
   END ProcB;
 
