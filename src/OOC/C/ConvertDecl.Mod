@@ -3,7 +3,7 @@ MODULE OOC:C:ConvertDecl;
 IMPORT
   Object, Object:BigInt,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
-  OOC:C:Naming, OOC:C:DeclWriter;
+  TR := OOC:SymbolTable:TypeRules, OOC:C:Naming, OOC:C:DeclWriter;
 
 
 CONST
@@ -93,6 +93,7 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
         ptr := type(Sym.Record). nestedItems;
         WHILE (ptr # NIL) DO
           WITH ptr: Sym.FieldDecl DO
+            TR.AllocateType(ptr.type);
             FOR i := offset TO ptr. offset-1 DO
               struct. AddPadding (w, i);
             END;
