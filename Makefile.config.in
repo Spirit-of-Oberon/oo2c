@@ -18,7 +18,7 @@ bindir=@bindir@
 libdir=@libdir@
 
 # Where to install other files needed to run oo2c, like symbol files.
-libdir_oo2c=@libdir@/oo2c
+oocdir=@libdir@/oo2c
 
 # ==================== Utility Programs for the Build ====================
 

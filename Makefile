@@ -44,7 +44,7 @@ all: stage1/lib/obj/liboo2c.o
 ###      we may be creating several layers of directories, we use mkinstalldirs
 ###      instead of mkdir.  Not all systems' mkdir programs have the `-p' flag.
 mkdir: FRC
-	(umask 022; $(OOC_DEV_ROOT)/mkinstalldirs ${bindir} ${libdir_oo2c}/lib/src)
+	(umask 022; $(OOC_DEV_ROOT)/mkinstalldirs ${bindir} ${oocdir}/lib/src)
 
 ### `clean'
 ###      Delete all files from the current directory that are normally
@@ -123,7 +123,7 @@ write-libdir: FRC
 ### expanded values into the OOC configuration file oo2crc.xml.
 rsrc/OOC/oo2crc.xml: rsrc/OOC/oo2crc.xml.mk Makefile.config
 	sed -e 's:%libdir%:$(libdir):g' \
-	    -e 's:%libdir_oo2c%:$(libdir_oo2c):g' \
+	    -e 's:%oocdir%:$(oocdir):g' \
 	    -e 's:%bindir%:$(bindir):g' \
 	    -e 's:%INSTALL%:$(INSTALL):g' \
 	    -e 's:%INSTALL_PROGRAM%:$(INSTALL_PROGRAM):g' \
@@ -164,10 +164,10 @@ stage1/lib/obj/liboo2c.o: stage1/exe/oo2c rsrc/OOC/oo2crc.xml
 	chmod -R a+rX,go-w stage1/lib
 
 install: stage1/lib/obj/liboo2c.o rsrc/OOC/oo2crc.xml mkdir
-	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(libdir_oo2c)/lib)
-	cd $(libdir_oo2c)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
-	${INSTALL_DATA} stage1/lib/src/*.h $(libdir_oo2c)/lib/src
-	${INSTALL_DATA} rsrc/OOC/oo2crc.xml $(libdir_oo2c)
+	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(oocdir)/lib)
+	cd $(oocdir)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
+	${INSTALL_DATA} stage1/lib/src/*.h $(oocdir)/lib/src
+	${INSTALL_DATA} rsrc/OOC/oo2crc.xml $(oocdir)
 	${INSTALL_PROGRAM} stage1/exe/oo2c $(bindir)
 
 install-strip:

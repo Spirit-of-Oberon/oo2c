@@ -14,6 +14,7 @@
     <set name='installProgram'>%INSTALL_PROGRAM%</set>
     <set name='installData'>%INSTALL_DATA%</set>
     <set name='bindir'>%bindir%</set>
+    <set name='oocdir'>%oocdir%</set>
   </options>
 
   <pragmas>
@@ -30,7 +31,7 @@
   </pragmas>
 
   <repositories>
-    <file-system>%libdir_oo2c%/lib</file-system>
+    <file-system>%oocdir%</file-system>
   </repositories>
 </configuration>
 

@@ -26,8 +26,8 @@ IMPORT
   OOC:Config, OOC:Repository;
 
 VAR
-  cc, cppflags, cflags, ldflags, libs-, libtool, libdir: Options.Option;
-  install, installProgram, installData, bindir: Options.Option;
+  cc, cppflags, cflags, ldflags, libs-, libtool, libdir-: Options.Option;
+  install-, installProgram, installData-, bindir-, oocdir-: Options.Option;
   
 PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN;
                            VAR cmd: ARRAY OF CHAR);
@@ -109,6 +109,13 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI; forLibrary: BOOLEAN;
     Strings.Append (ldflags. value(StringValue.Value). string^, cmd);
   END LinkProgramCmd;
 
+PROCEDURE InstallDirectoryCmd*(path: ARRAY OF CHAR; VAR cmd: ARRAY OF CHAR);
+  BEGIN
+    COPY(install.value(StringValue.Value).string^, cmd);
+    Strings.Append(" -d ", cmd);
+    Strings.Append(path, cmd);
+  END InstallDirectoryCmd;
+
 PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
                              VAR cmd: ARRAY OF CHAR);
   VAR
@@ -160,6 +167,7 @@ PROCEDURE RegisterConfig*;
     installData := Config.AddOption ("installData",
                                      StringValue.New ("install -c -m 644"));
     bindir := Config.AddOption ("bindir", StringValue.New ("bindir"));
+    oocdir := Config.AddOption ("oocdir", StringValue.New ("oocdir"));
     Config.AddCmdLine ("--install",
                        "<options><set name='install'>$1</set></options>");
     Config.AddCmdLine ("--install-program",
@@ -168,6 +176,8 @@ PROCEDURE RegisterConfig*;
                        "<options><set name='installData'>$1</set></options>");
     Config.AddCmdLine ("--bindir",
                        "<options><set name='bindir'>$1</set></options>");
+    Config.AddCmdLine ("--oocdir",
+                       "<options><set name='oocdir'>$1</set></options>");
   END RegisterConfig;
 
 END OOC:Config:CCompiler.
