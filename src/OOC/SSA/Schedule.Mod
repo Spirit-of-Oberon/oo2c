@@ -1,5 +1,5 @@
 (* 	$Id$	 *)
-MODULE OOC:SSA:Schedule;
+MODULE OOC:SSA:Schedule [OOC_EXTENSIONS];
 (*  Generates basic block representation and schedules instructions.
     Copyright (C) 2001  Michael van Acken
 
@@ -27,6 +27,8 @@ TYPE
   Block* = POINTER TO BlockDesc;
   InstrProxy* = POINTER TO InstrProxyDesc;
   BranchBlock* = POINTER TO BranchBlockDesc;
+  JumpBlock* = POINTER TO JumpBlockDesc;
+  DeadEndBlock* = POINTER TO DeadEndBlockDesc;
 
 TYPE
   Info* = POINTER TO InfoDesc;
@@ -54,7 +56,7 @@ TYPE
   END;
   
 TYPE
-  BlockDesc = RECORD
+  BlockDesc = RECORD [ABSTRACT]
     (Object.ObjectDesc)
     (**A basic block contains a sequence of instructions, with control flow
        entering at the beginning of the block, and leaving at the end of the
@@ -76,11 +78,6 @@ TYPE
     (**Lists all blocks directly dominated by this one.  The blocks are linked
        by @ofield{nextDom}.  *)
 
-    jump-: Jump;
-    (**Default target of control flow when leaving this block.  Only @code{NIL}
-       if the block is last in a procedure.  *)
-
-    
     dependentList: Dependent;
     (* lists blocks that should be written after this one *)
     depCount: LONGINT;
@@ -104,9 +101,28 @@ TYPE
 TYPE
   BranchBlockDesc = RECORD
     (BlockDesc)
+    jump-: Jump;
+    (**Default target of control flow when leaving this block.
+       This field is never @code{NIL}.  *)
+
     predicate-: SSA.Opnd;
     branchOnTrue-: BOOLEAN;
     branchTo-: Jump;
+  END;
+  
+TYPE
+  JumpBlockDesc = RECORD
+    (BlockDesc)
+    jump-: Jump;
+    (**Target of control flow when leaving this block.
+       This field is never @code{NIL}.  *)
+  END;
+  
+TYPE
+  DeadEndBlockDesc = RECORD
+    (**A block at the very end of the control flow of a procedure.  There is
+       no branch or jump instruction at the end of this block.  *)
+    (BlockDesc)
   END;
   
 TYPE
@@ -117,7 +133,7 @@ TYPE
     instr-: SSA.Instr;
   END;
 
-
+  
 PROCEDURE InitInfo* (info: Info);
   BEGIN
   END InitInfo;
@@ -130,7 +146,6 @@ PROCEDURE InitBlock (b: Block);
     b. parent := NIL;
     b. nextDom := NIL;
     b. domList := NIL;
-    b. jump := NIL;
     b. dependentList := NIL;
     b. depCount := 0;
     b. targetUseList := NIL;
@@ -138,15 +153,6 @@ PROCEDURE InitBlock (b: Block);
     b. isLoopHead := FALSE;
     b. info := NIL;
   END InitBlock;
-
-PROCEDURE NewBlock(): Block;
-  VAR
-    b: Block;
-  BEGIN
-    NEW (b);
-    InitBlock (b);
-    RETURN b
-  END NewBlock;
 
 PROCEDURE (b: Block) SetInfo* (info: Info);
   VAR
@@ -159,6 +165,14 @@ PROCEDURE (b: Block) SetInfo* (info: Info);
       nested := nested. nextDom
     END;
   END SetInfo;
+
+PROCEDURE (b: Block) DefaultTarget*(): Block;
+(**The default target of the control flow when the end of this block is
+   reached.  At the end of the procedure, the result is @code{NIL}.  For
+   blocks that split the control flow, result is the fall through path.  *)
+  BEGIN
+    RETURN NIL
+  END DefaultTarget;
 
 PROCEDURE SetJump (VAR reference: Jump; src, dest: Block);
   PROCEDURE NewJump (src, dest: Block; nextTargetUse: Jump): Jump;
@@ -217,6 +231,7 @@ PROCEDURE InitBranchBlock (b: BranchBlock; predicate: SSA.Opnd;
                            branchOnTrue: BOOLEAN);
   BEGIN
     InitBlock (b);
+    b. jump := NIL;
     b. predicate:= predicate;
     b. branchOnTrue := branchOnTrue;
     b. branchTo := NIL;
@@ -231,6 +246,52 @@ PROCEDURE NewBranchBlock (predicate: SSA.Opnd;
     InitBranchBlock (b, predicate, branchOnTrue);
     RETURN b
   END NewBranchBlock;
+
+PROCEDURE (b: BranchBlock) DefaultTarget*(): Block;
+  BEGIN
+    RETURN b. jump. dest
+  END DefaultTarget;
+
+
+PROCEDURE InitJumpBlock (b: JumpBlock);
+  BEGIN
+    InitBlock (b);
+    b. jump := NIL;
+  END InitJumpBlock;
+
+PROCEDURE NewJumpBlock(): JumpBlock;
+  VAR
+    b: JumpBlock;
+  BEGIN
+    NEW (b);
+    InitJumpBlock (b);
+    RETURN b
+  END NewJumpBlock;
+
+PROCEDURE (b: JumpBlock) DefaultTarget*(): Block;
+  BEGIN
+    RETURN b. jump. dest
+  END DefaultTarget;
+
+
+PROCEDURE InitDeadEndBlock (b: DeadEndBlock);
+  BEGIN
+    InitBlock (b);
+  END InitDeadEndBlock;
+
+PROCEDURE NewDeadEndBlock(): DeadEndBlock;
+  VAR
+    b: DeadEndBlock;
+  BEGIN
+    NEW (b);
+    InitDeadEndBlock (b);
+    RETURN b
+  END NewDeadEndBlock;
+
+PROCEDURE (b: DeadEndBlock) DefaultTarget*(): Block;
+  BEGIN
+    RETURN NIL
+  END DefaultTarget;
 
 
 
@@ -384,8 +445,8 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
     
     BEGIN
       oldEnter := enter;
-      path1 := NewBlock();
-      path2 := NewBlock();
+      path1 := NewJumpBlock();
+      path2 := NewJumpBlock();
       in := NewBranchBlock
           (select. opndList,
            select. opndList. nextOpnd. arg. IsBooleanConst (TRUE));
@@ -422,8 +483,8 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       exitEnter := DebranchBlock (enter);
       select. opcode := -select. opcode;(* unmask it again *)
 
-      SetJump (exitPath1. jump, exitPath1, enter);
-      SetJump (exitPath2. jump, exitPath2, enter);
+      SetJump (exitPath1(JumpBlock). jump, exitPath1, enter);
+      SetJump (exitPath2(JumpBlock). jump, exitPath2, enter);
       SetJump (exitIn(BranchBlock). jump, exitIn, path2);
       SetJump (exitIn(BranchBlock). branchTo, exitIn, path1);
       
@@ -508,7 +569,7 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       predicate := loopEnd. NthOpnd (2);
       body := NewBranchBlock
           (predicate, predicate. nextOpnd. arg. IsBooleanConst (FALSE));
-      in := NewBlock();
+      in := NewJumpBlock();
       
       (* move all instructions contributing to the "loop-end" or to the forward
          reference from "loop-start" into the `in' block; then, move all
@@ -526,7 +587,7 @@ PROCEDURE DebranchBlock (VAR enter: Block): Block;
       exitEnter := DebranchBlock (enter);
       loopEnd. opcode := -loopEnd. opcode; (* unmask it again *)
       
-      SetJump (exitIn. jump, exitIn, body);
+      SetJump (exitIn(JumpBlock). jump, exitIn, body);
       SetJump (exitBody(BranchBlock). jump, exitBody, enter);
       SetJump (exitBody(BranchBlock). branchTo, exitBody, body);
       
@@ -727,13 +788,14 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       
       BEGIN
         WITH b: BranchBlock DO
-          ProcessJump (b. branchTo. dest)
-        ELSE
-        END;
-        IF (b. jump # NIL) THEN
+          ProcessJump (b. branchTo. dest);
           ProcessJump (b. jump. dest);
+        | b: JumpBlock DO
+          ProcessJump (b. jump. dest);
+        | b: DeadEndBlock DO
+          (* nowhere to go *)
         END;
-
+        
         nested := b. domList;
         WHILE (nested # NIL) DO
           LocateJumps (path, nested);
@@ -786,7 +848,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         END;
         
         domBlock. domList := NIL;
-        preferedBlock := FollowJump (domBlock. jump);
+        preferedBlock := domBlock. DefaultTarget();
         WHILE (ready # NIL) DO
           IF (preferedBlock # NIL) &
              (preferedBlock. parent = domBlock) &
@@ -809,7 +871,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
             END;
             dep := dep. next
           END;
-          preferedBlock := FollowJump (b. jump);
+          preferedBlock := b. DefaultTarget();
         END;
         ASSERT (waiting = NIL)
       END SortBlocks;
@@ -823,7 +885,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       END;
 
       (* locate jump and branch instructions in our nested blocks *)
-      IF (b. jump # NIL) & (b. jump. dest = b) OR
+      IF (b. DefaultTarget() = b) OR
          (b IS BranchBlock) & (b(BranchBlock). branchTo. dest = b)THEN
         b. isLoopHead := TRUE
       END;
@@ -844,7 +906,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     ok := pb. TopSort();
     ASSERT (ok);
     pb. SetMarkers (NIL, -1);
-    b := NewBlock();
+    b := NewDeadEndBlock();
     instr := pb. instrList;
     WHILE (instr # NIL) DO
       proxy := NewInstrProxy (instr);

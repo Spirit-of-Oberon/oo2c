@@ -442,9 +442,9 @@ PROCEDURE (w: Writer) WriteBlocks (domRoot: Schedule.Block);
     
     BEGIN
       IF (lastBlock # NIL) &
-         (Schedule.FollowJump (lastBlock. jump) # currentBlock) THEN
+         (lastBlock. DefaultTarget() # currentBlock) THEN
         w. Newline;
-        WriteGoto (lastBlock. jump. dest);
+        WriteGoto (lastBlock. DefaultTarget());
         d := 0;
       ELSE
         d := 1
