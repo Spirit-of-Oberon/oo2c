@@ -344,6 +344,7 @@ CONST
   (** types of operands are not equivalent as required by operator *)
   divideByZero* = 8;
   exprNotConstant* = 9;
+  rangeError* = 10;
 
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -377,6 +378,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "Divisor is zero"
     | exprNotConstant:
       t := "Expression is not constant"
+    | rangeError:
+      t := "Value out of range"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;

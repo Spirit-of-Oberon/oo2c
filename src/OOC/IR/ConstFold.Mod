@@ -10,8 +10,27 @@ TYPE
     (Operator.ConstFoldDesc)
   END;
 
+CONST
+  maxIntegerTypes = 5;
+
+TYPE
+  IntegerType = RECORD
+    low, high : Integers.Integer;
+    id : Sym.PredefId;
+  END;
+
 VAR
   minus1, zero : Integers.Integer;
+  nIntegerTypes : INTEGER;
+  integerType : ARRAY maxIntegerTypes OF IntegerType;
+
+PROCEDURE AddIntegerType(id : Sym.PredefId; low, high : ARRAY OF CHAR);
+BEGIN
+  Integers.ConvertFromString(low, integerType[nIntegerTypes].low);
+  Integers.ConvertFromString(high, integerType[nIntegerTypes].high);
+  integerType[nIntegerTypes].id := id;
+  INC(nIntegerTypes);
+END AddIntegerType;
 
 PROCEDURE InitConstFold (c : ConstFold);
 BEGIN
@@ -28,13 +47,29 @@ END NewConstFold;
 
 PROCEDURE SmallestType(value : Language.Value) : Sym.Type;
 (**Return the smallest type that can represent @oparam{value}. *)
+VAR i : INTEGER;
 BEGIN
-  RETURN Predef.GetType(Predef.integer);  (* FIXME! Not implemented. *)
+  WITH value : Integer.Value DO
+    FOR i := 0 TO nIntegerTypes-1 DO
+      IF (Integers.Compare(value.value, integerType[i].low) >= 0)
+       & (Integers.Compare(value.value, integerType[i].high) <= 0) THEN
+        RETURN Predef.GetType(integerType[i].id)
+      END;
+    END;
+     RETURN NIL; 
+  END;
 END SmallestType;
 
 PROCEDURE (c : ConstFold) ValueConst(value : Language.Value; op : IR.Operator) : IR.Const;
+VAR type : Sym.Type;
 BEGIN
-  RETURN c.builder.NewConst(op.sym, SmallestType(value), value);
+  type := SmallestType(value);
+  IF type = NIL THEN
+    c.builder.ErrSym(IR.rangeError, op.sym);
+    RETURN NIL
+  ELSE
+    RETURN c.builder.NewConst(op.sym, type, value)
+  END
 END ValueConst;
 
 PROCEDURE (c : ConstFold) Accept* (expr : IR.Expression);
@@ -48,7 +83,7 @@ BEGIN
   c.result := NIL;
   expr.Accept(c);
   IF c.result # NIL THEN
-    result := expr(IR.Const).value;
+    result := c.result(IR.Const).value;
     RETURN TRUE;
   END;
   RETURN FALSE;
@@ -181,9 +216,14 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : Operator.Compare);
   END VisitCompare;
 
 PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
+  VAR
+    value : Language.Value;
   BEGIN
-    (* FIXME! *)
-    op. expr. Accept(c);
+    IF c.ValidEval(op.expr, value) THEN
+      c.result := c.builder.NewConst(op.sym, op.type, value)
+    ELSE
+      c.result := NIL;
+    END;
   END VisitTypeConv;
 
 PROCEDURE (c: ConstFold) VisitCall* (call: IR.Call);
@@ -236,6 +276,11 @@ PROCEDURE (c: ConstFold) VisitModule* (module: IR.Module);
   END VisitModule;
 
 BEGIN
+  nIntegerTypes := 0;
+  AddIntegerType(Predef.shortint, "-128", "127");
+  AddIntegerType(Predef.integer, "-32768", "32767");
+  AddIntegerType(Predef.longint, "-2147483648", "2147483647");
+
   zero := Integers.Long(0);
   minus1 := Integers.Long(-1);
 END OOC:IR:ConstFold.
