@@ -644,6 +644,11 @@ PROCEDURE IsUnsigned*(type: Type): BOOLEAN;
     RETURN (unsigned8 <= type) & (type <= unsigned64);
   END IsUnsigned;
 
+PROCEDURE IsFloat*(type: Type): BOOLEAN;
+  BEGIN
+    RETURN (type >= real32);
+  END IsFloat;
+
 PROCEDURE ^ (b: Block) AddInstr1*(opcode: Opcode; arg1: Result): Instr;
 
 PROCEDURE (s: Selector) INIT*();
@@ -1007,6 +1012,12 @@ PROCEDURE (res: Result) IsTrue*(): BOOLEAN;
         (res.instr.opcode = const) &
         ~res.instr.designator[0](Const).value.Equals(BigInt.zero);
   END IsTrue;
+
+PROCEDURE (res: Result) IsFloat*(): BOOLEAN;
+(**Return @code{TRUE} if @oparam{res} is a floating point value.  *)
+  BEGIN
+    RETURN IsFloat(res.type);
+  END IsFloat;
 
 PROCEDURE (res: Result) GetConst*(): Boxed.Object;
 (**If @oparam{res} is a constant value known at compile time, then return the

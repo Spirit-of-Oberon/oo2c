@@ -779,7 +779,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
             Opc("inc");
           ELSE
-            Opc("add");
+            IF instr.resultList.IsFloat() THEN
+              Opc("adds");
+            ELSE
+              Opc("add");
+            END;
             Opnd(instr.opndList.nextOpnd);
             Comma();
           END;
@@ -794,7 +798,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           IF BigInt.one.Equals(instr.opndList.nextOpnd.arg.GetConst()) THEN
             Opc("dec");
           ELSE
-            Opc("sub");
+            IF instr.resultList.IsFloat() THEN
+              Opc("subs");
+            ELSE
+              Opc("sub");
+            END;
             Opnd(instr.opndList.nextOpnd);
             Comma();
           END;
@@ -878,7 +886,11 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
                     instr.resultList);
         | S.set:
           opndWidth := instr.opndList.nextOpnd.arg.type;
-          Opc("mov");
+          IF instr.opndList.nextOpnd.arg.IsFloat() THEN
+            Opc("movs");
+          ELSE
+            Opc("mov");
+          END;
           Opnd(instr.opndList.nextOpnd);
           Comma();
           IF instr.opndList.immediate THEN

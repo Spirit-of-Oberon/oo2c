@@ -374,7 +374,6 @@ PROCEDURE (out: Output) WriteFunction*();
   PROCEDURE WriteBlock(b: S.Block; indent: LONGINT);
     VAR
       instr: S.Instr;
-      res: S.Result;
       dep: S.Dep;
       i: LONGINT;
     BEGIN
