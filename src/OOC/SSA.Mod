@@ -84,8 +84,9 @@ TYPE
        most cases, the result does not correspond to a piece of data that is
        actually computed during run-time, and has therefore the value
        @oconst{Opcode.scNone}.  For an instruction, interpretation depends on
-       the value of @ofield{Instr.opcode} for non-type subclasses.  See
-       @omodule{Opcode}.  *)
+       the value of @ofield{Instr.opcode}.  Use the method
+       @oproc{Instr.GetResultType} to find out if the instruction produces a
+       result value, and of which type.  Also see @omodule{Opcode}.  *)
     
     instr-: Instr;
     (**The instruction to which this result belongs.  *)

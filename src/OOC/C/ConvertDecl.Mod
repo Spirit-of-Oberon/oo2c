@@ -107,7 +107,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       END
     END ConvertType;
 
-  BEGIN  (* pre: (exports. HasKey (ptr) = writeExported) *)
+  BEGIN
     WITH item: Sym.ProcDecl DO
       CASE mode OF
       | modeWriteExported:
