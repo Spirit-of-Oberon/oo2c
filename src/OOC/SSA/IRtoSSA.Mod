@@ -108,8 +108,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         END;
         
       | expr: Operator.Index DO
-        RETURN Index (expr)
-        
+        RETURN Index (expr);
+
+      | expr: Operator.TypeConv DO
+        (* FIXME... right now, we are simply passing through type converted
+           values *)
+        RETURN Expression (expr. expr);
+            
       | expr: Operator.Negate DO
         instr := pb. AddInstr (Opcode.negate,
                                Opcode.TypeToSubclass (expr. operand. type));
