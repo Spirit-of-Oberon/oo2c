@@ -188,9 +188,13 @@ PROCEDURE Transform* (pb: S.FunctionBlock);
       instr.marker := 0;
 
       IF (instr.opcode = S.const) THEN
-        instr.info := instr;
-        instr.resultList.info := instr.resultList;
-        ASSERT(instr.resultList.nextResult = NIL);
+        IF (instr.designator[0] IS S.Const) THEN
+          instr.info := instr;
+          instr.resultList.info := instr.resultList;
+          ASSERT(instr.resultList.nextResult = NIL);
+        ELSE  (* constant at run-tine, but we do not know the value here *)
+          SetInfo(instr, notConstant);
+        END;
       ELSIF (instr.beforeList # NIL) OR (instr.afterList # NIL) THEN
         (* any instruction that accesses memory cannot be constant;
            likewise, any instruction that can branch control flow *)

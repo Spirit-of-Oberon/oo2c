@@ -481,6 +481,58 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN Expression(guard.test.expr);
         END TypeGuard;
 
+      PROCEDURE TypeConv(conv: IR.TypeConv): S.Result;
+        VAR
+          instr: S.Instr;
+          typeSource, typeDest: S.Type;
+(*          const: S.Result;
+          len: LONGINT;
+          fct: STRING;*)
+        BEGIN
+          IF TR.IsSTRING(conv.type) THEN
+            (* converting a character or string constant to STRING *)
+            (*const := Expression(conv.expr);
+            
+            instr := pb.AddInstr(S.preloadedVar, S.address);
+            CASE conv.expr.type(Sym.PredefType).id OF
+            | Predef.char:
+              fct := Object.NewLatin1(Builder.stringModuleC+"__NewLatin1Char");
+            | Predef.stringChar:
+              fct := Object.NewLatin1(Builder.stringModuleC+"__NewLatin1Region");
+            | Predef.longchar:
+              fct := Object.NewLatin1(Builder.stringModuleC+"__NewUTF16Char");
+            | Predef.stringLongChar:
+              fct := Object.NewLatin1(Builder.stringModuleC+"__NewUTF16Region");
+            | Predef.ucs4char:
+              fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS4Char");
+            | Predef.stringUCS4Char:
+              fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS4Region");
+            END;
+            instr.AddOpnd(pb.GetConst(Boxed.NewString(fct), S.scAddress,
+                                      Predef.GetType(Predef.stringChar)),
+                          Opnd.arg);
+            instr.AddOpnd(const, Opnd.arg);
+            IF TR.IsStringConst(conv.expr.type) THEN
+              len := conv.expr(IR.Const).value(Boxed.String).value.length;
+              instr.AddOpnd(pb.GetConstInt(len+1), Opnd.arg); (* array len *)
+              
+              instr.AddOpnd(pb.GetConstInt(0), Opnd.arg); (* start *)
+              instr.AddOpnd(pb.GetConstInt(len), Opnd.arg); (* end *)
+            END;
+            RETURN instr;*)
+              RETURN NIL;
+          ELSE
+            typeDest := S.MapType(conv.type);
+            typeSource := S.MapType(conv.expr.type);
+            IF (typeDest # typeSource) THEN
+              instr := b.AddInstr1(S.typeConv, Expression(conv.expr));
+              RETURN instr.AddResult(typeDest);
+            ELSE
+              RETURN Expression(conv.expr);
+            END;
+          END;
+        END TypeConv;
+      
       PROCEDURE NewObject (new: IR.NewObject): S.Result;
         VAR
           instr, get1, get2: S.Instr;
@@ -519,16 +571,20 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         | expr: IR.Var DO
           varDecl := expr.decl(Sym.VarDecl);
           var := NEW(S.Var, varDecl);
-          IF ~varDecl.isParameter THEN
-            b.AllocateLocalVar(varDecl);
-          END;
-          instr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(varDecl));
-          adr := instr.AddResult(S.address);
-
-          IF (varDecl.type IS Sym.Array) THEN  (* indirect *)
-            instr := b.AddInstr1(S.get, adr);
-            (*MemoryCP(instr);*)
+          IF (varDecl.parent IS Sym.Module) THEN (* global variable *)
+            adr := b.AddAdr(var);
+          ELSE                       (* local variable or parameter *)
+            IF ~varDecl.isParameter THEN
+              b.AllocateLocalVar(varDecl);
+            END;
+            instr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(varDecl));
             adr := instr.AddResult(S.address);
+            
+            IF (varDecl.type IS Sym.Array) THEN  (* indirect *)
+              instr := b.AddInstr1(S.get, adr);
+              (*MemoryCP(instr);*)
+              adr := instr.AddResult(S.address);
+            END;
           END;
           
           NEW(designator, 1);
@@ -569,6 +625,9 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           
         | expr: IR.TypeGuard DO
           RETURN TypeGuard(expr);
+              
+        | expr: IR.TypeConv DO
+          RETURN TypeConv(expr);
               
         | expr: IR.BinaryArith DO
           CASE expr.variant OF
@@ -760,14 +819,14 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       M.ApplyMachineModel(b);
       
       B.ArrangeInstructions(b);
-      D.WriteFunction(b);
       R.AssignRegisters(b);
       D.ValidateAllocation(b);
 
       (*D.WriteFunction(b);*)
+      D.WriteFunction(b);
       w.WriteFunction(b);
     END Procedure;
-  
+
   BEGIN
     returns := NEW(ArrayList.ArrayList(S.Instr), 4);
     loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
@@ -777,7 +836,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       Procedure(p);
     END;
     Procedure(moduleIR.moduleBody);
-
+    
     w.EndFile();
   END Translate;
   

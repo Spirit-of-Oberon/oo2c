@@ -246,6 +246,8 @@ PROCEDURE (out: Output) WriteFunction*();
       | selector: S.Var DO
         IF (selector.decl = NIL) THEN
           w.WriteObject("offset(.)");
+        ELSIF selector.IsGlobalVar() THEN
+          w.WriteObject("adr("+Naming.NameOfDeclaration(selector.decl)+")");
         ELSE
           w.WriteObject("offset("+selector.decl.Name()+")");
         END;
@@ -262,6 +264,7 @@ PROCEDURE (out: Output) WriteFunction*();
     VAR
       opnd: S.Opnd;
       s: S.Selector;
+      i: LONGINT;
     BEGIN
       IF (instr.designator # NIL) THEN
         w.WriteString("<");
@@ -283,7 +286,6 @@ PROCEDURE (out: Output) WriteFunction*();
           | s: S.Field DO
             w.WriteString(".");
             w.WriteString(s.field.name.str^);
-            w.WriteString("]");
           | s: S.ProcName DO
             w.WriteObject('"'+s.name+'"');
           | s: S.TypeDescr DO
@@ -310,7 +312,12 @@ PROCEDURE (out: Output) WriteFunction*();
       CASE instr.opcode OF
       | S.const:
         w.WriteChar(" ");
-        WriteConst(instr.designator[0]);
+        FOR i := 0 TO LEN(instr.designator^)-1 DO
+          IF (i # 0) THEN
+            w.WriteChar("+");
+          END;
+          WriteConst(instr.designator[i]);
+        END;
       ELSE
         (* nothing *)
       END;

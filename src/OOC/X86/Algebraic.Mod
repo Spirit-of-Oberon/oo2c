@@ -3,7 +3,7 @@ MODULE OOC:X86:Algebraic;
 (* FIXME... add more transformations *)
 
 IMPORT
-  Object:Boxed, Object:BigInt, S := OOC:X86:SSA;
+  Object:Boxed, Object:BigInt, S := OOC:X86:SSA, D := OOC:X86:Debug;
 
 TYPE
   Worklist = POINTER TO WorklistDesc;
@@ -140,6 +140,13 @@ PROCEDURE Transform* (pb: S.FunctionBlock; enableSubstitution: BOOLEAN);
         new.AddOpnd(s.opndList.nextOpnd.arg);
         Replace(instr, new.AddResult(instr.resultList.type));
       END ReplaceIndexed;
+
+    PROCEDURE AdrOfGlobalVar(instr: S.Instr): BOOLEAN;
+      BEGIN
+        RETURN (instr.opcode = S.const) &
+            (instr.designator[0] IS S.Var) &
+            instr.designator[0](S.Var).IsGlobalVar();
+      END AdrOfGlobalVar;
     
     BEGIN
       CASE instr. opcode OF
@@ -154,6 +161,13 @@ PROCEDURE Transform* (pb: S.FunctionBlock; enableSubstitution: BOOLEAN);
         ELSIF Scaled(instr.opndList.nextOpnd.arg) THEN
           (* b+i*c = indexed(b,i,c) *)
           ReplaceIndexed(instr, instr.opndList, instr.opndList.nextOpnd);
+        ELSIF AdrOfGlobalVar(instr.opndList.arg.instr) &
+              instr.opndList.nextOpnd.IsConst() THEN
+          (* adr(globalVar)+c = const(adr(globalVar)+c) *)
+          new := pb.AddInstr0(S.const);
+          new.SetDesignator(instr.opndList.arg.instr.designator);
+          new.ExtendDesignator(instr.opndList.nextOpnd.arg.instr.designator[0]);
+          Replace(instr, new.AddResult(instr.resultList.type));
         END;
         
       | S.sub:

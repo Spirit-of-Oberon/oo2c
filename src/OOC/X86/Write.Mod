@@ -188,9 +188,31 @@ PROCEDURE (w: Writer) RuntimeData();
     w.w.WriteObject(sb);
   END RuntimeData;
 
+PROCEDURE (w: Writer) ModuleVariables();
+  VAR
+    item: Sym.Item;
+    name: STRING;
+  BEGIN
+    item := w.module.nestedItems;
+    WHILE (item # NIL) DO
+      WITH item: Sym.VarDecl DO
+        name := Naming.NameOfDeclaration(item);
+        IF (item.exportMark = Sym.nameNotExported) THEN
+          w.w.WriteObject(nlTab+".local "+name);
+        END;
+        w.w.WriteObject(nlTab+".comm "+name+",");
+        w.w.WriteLInt(item.type.size, 0);
+      ELSE
+        (* ignore *)
+      END;
+      item := item.nextNested;
+    END;
+  END ModuleVariables;
+
 PROCEDURE (w: Writer) EndFile*();
   VAR
     name0, name: STRING;
+    
   BEGIN
     name0 := Naming.NameOfModuleInit(w.module, TRUE);
     name := Naming.NameOfModuleInit(w.module, FALSE);
@@ -202,6 +224,7 @@ PROCEDURE (w: Writer) EndFile*();
     w.w.WriteObject(nlTab+".size "+name0+", .-"+name0);
 
     w.RuntimeData();
+    w.ModuleVariables();
     
     w.w.WriteString(nl);
   END EndFile;
@@ -272,9 +295,14 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
      END OpcR;
 
   PROCEDURE OpcRReg(opc[NO_COPY]: ARRAY OF CHAR);
-    BEGIN
+    BEGIN  (* zero or sign extend from instruction type to register type *)
       OpcT(opc, InstrType(), S.signed32);
     END OpcRReg;
+
+  PROCEDURE OpcArgReg(opc[NO_COPY]: ARRAY OF CHAR);
+    BEGIN  (* zero or sign extend from arg type to register type *)
+      OpcT(opc, instr.opndList.arg.type, S.signed32);
+    END OpcArgReg;
 
   PROCEDURE Comma();
     BEGIN
@@ -300,6 +328,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     VAR
       s: S.Selector;
       value: Boxed.Object;
+      i: LONGINT;
 
     PROCEDURE ToHex(n: LONGINT; digits: LONGINT): STRING;
       CONST
@@ -322,27 +351,37 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       END ToHex;
     
     BEGIN
-      s := instr.designator[0];
-      WITH s: S.Const DO
-        value := s.value;
-        WITH value: Boxed.String DO
-          sb.AppendInt(ORD(value.value.CharAt(0)));
-        | value: Boxed.Set DO
-          sb.AppendInt(value.ToLongInt());
-        | value: Boxed.LongReal DO
-          sb.Append("0x");
-          sb.Append(ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
-        ELSE
-          sb.Append(s.value);
+      FOR i := 0 TO LEN(instr.designator^)-1 DO
+        IF (i # 0) THEN
+          sb.AppendLatin1Char("+");
         END;
-      | s: S.Var DO
-        sb.AppendInt(w.fctBlock.Offset(s.decl));
-      | s: S.Proc DO
-        sb.Append(Naming.NameOfDeclaration(s.decl));
-      | s: S.ProcName DO
-        sb.Append(s.name);
-      | s: S.TypeDescr DO
-        sb.Append(Naming.NameOfTypeDescriptor(s.type, qtdData));
+        
+        s := instr.designator[i];
+        WITH s: S.Const DO
+          value := s.value;
+          WITH value: Boxed.String DO
+            sb.AppendInt(ORD(value.value.CharAt(0)));
+          | value: Boxed.Set DO
+            sb.AppendInt(value.ToLongInt());
+          | value: Boxed.LongReal DO
+            sb.Append("0x");
+            sb.Append(ToHex(SYSTEM.VAL(LONGINT, SHORT(value.value)), 8));
+          ELSE
+            sb.Append(s.value);
+          END;
+        | s: S.Var DO
+          IF s.IsGlobalVar() THEN
+            sb.Append(Naming.NameOfDeclaration(s.decl));
+          ELSE
+            sb.AppendInt(w.fctBlock.Offset(s.decl));
+          END;
+        | s: S.Proc DO
+          sb.Append(Naming.NameOfDeclaration(s.decl));
+        | s: S.ProcName DO
+          sb.Append(s.name);
+        | s: S.TypeDescr DO
+          sb.Append(Naming.NameOfTypeDescriptor(s.type, qtdData));
+        END;
       END;
     END Literal;
   
@@ -356,7 +395,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
 
   PROCEDURE Opnd(opnd: S.Opnd);
     VAR
-      argInstr: S.Instr;
+      argInstr1, argInstr2: S.Instr;
 
     PROCEDURE Offset(arg1, arg2: S.Result);
       BEGIN
@@ -378,16 +417,21 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
     
     BEGIN
       IF opnd.immediate THEN
-        argInstr := opnd.arg.instr;
-        CASE argInstr.opcode OF
+        argInstr1 := opnd.arg.instr;
+        CASE argInstr1.opcode OF
         | S.const:
           sb.AppendLatin1Char("$");
-          Literal(argInstr);
+          Literal(argInstr1);
         | S.add:           (* address is register plus displacement *)
-          Offset(argInstr.opndList.arg,
-                 argInstr.opndList.nextOpnd.arg);
+          Offset(argInstr1.opndList.arg,
+                 argInstr1.opndList.nextOpnd.arg);
         | S.get:
-          Opnd(argInstr.opndList);
+          argInstr2 := argInstr1.opndList.arg.instr;
+          IF (argInstr2.opcode = S.const) THEN
+            Literal(argInstr2);
+          ELSE
+            Opnd(argInstr1.opndList);
+          END;
         END;
       ELSE
         Result(opnd.arg);
@@ -601,13 +645,13 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           (* memory *)
         | S.copy, S.typeConv, S.return:
           IF ~SameLocation(instr.opndList.arg, instr.resultList) THEN
-            type := instr.resultList.type;
+            type := instr.opndList.arg.type;
             IF RegisterToRegister(instr.opndList.arg, instr.resultList) THEN
               Opc("movl");
             ELSIF SignExtend(type) THEN
-              OpcRReg("movs");
+              OpcArgReg("movs");
             ELSIF ZeroExtend(type) THEN
-              OpcRReg("movz");
+              OpcArgReg("movz");
             ELSE
               OpcR("mov");
             END;

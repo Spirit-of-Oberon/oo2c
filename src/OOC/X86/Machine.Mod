@@ -33,6 +33,8 @@ PROCEDURE ImmediateOpnd(instr: S.Instr): S.Opnd;
       S.add, S.sub, S.allocateStack:
       (* first opnd is in/out, second may be immediate *)
       n := 1;
+    | S.set:        (* first opnd is memory, second may be immediate *)
+      n := 1;
     | S.setStack:
       n := 2;
     ELSE
@@ -51,8 +53,19 @@ PROCEDURE MemOpnd(instr: S.Instr): S.Opnd;
    Otherwise, result is @code{NIL}.  *)
   VAR
     inout, opnd: S.Opnd;
+    
+  PROCEDURE IsOffset(instr: S.Instr): BOOLEAN;
+    BEGIN
+      RETURN (instr.opcode = S.add);
+    END IsOffset;
+
   BEGIN
-    IF (instr.opcode = S.setStack) THEN
+    CASE instr.opcode OF
+    | S.set, S.get:
+      IF instr.opndList.IsConst() OR IsOffset(instr.opndList.arg.instr) THEN
+        instr.opndList.immediate := TRUE;
+      END;
+    | S.setStack:
       RETURN NIL;
     ELSE
       inout := InOutOpnd(instr);
@@ -75,11 +88,6 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
     opnd, imm, mem: S.Opnd;
     maxSizeCallStack: LONGINT;
     
-  PROCEDURE IsOffset(instr: S.Instr): BOOLEAN;
-    BEGIN
-      RETURN (instr.opcode = S.add);
-    END IsOffset;
-
   PROCEDURE IsConst(opnd: S.Opnd): BOOLEAN;
     BEGIN
       RETURN (opnd.arg.instr.opcode = S.const);
@@ -147,10 +155,6 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
     
     FOR instr IN b.AllInstructions(-1) DO
       CASE instr.opcode OF
-      | S.get, S.set:
-        IF instr.opndList.IsConst() OR IsOffset(instr.opndList.arg.instr) THEN
-          instr.opndList.immediate := TRUE;
-        END;
       | S.gate:
         opnd := instr.opndList;
         WHILE (opnd # NIL) DO

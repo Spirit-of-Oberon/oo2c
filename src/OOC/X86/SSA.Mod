@@ -39,6 +39,13 @@ CONST  (* Addressing Modes of Locations: *)
 CONST  (* Instruction Opcodes: *)
   opcodeArithmetic = 0;
   const* = opcodeArithmetic+0;
+  (**A value that is constant at run-time.  The precise value may or may not be
+     known at compile time.  The instruction's @ofield{Instr.designator} field
+     holds the final value or a symbolic representation thereof.
+
+     Usually, @ofield{Instr.designator} is of length one.  For addresses of
+     global variables, it may have additional entries.  These are integer
+     constants that need to be added to the address at index zero.  *)
   add* = opcodeArithmetic+1;
   sub* = opcodeArithmetic+2;
   mul* = opcodeArithmetic+3;
@@ -70,9 +77,7 @@ CONST  (* Instruction Opcodes: *)
   exit* = opcodeFunctionFraming+1;
   (**The ``exit'' instruction is the mirror image of ``enter''.  Its operands
      describe the processor state immediately before control is returned from
-     the function.  The operand list includes every register that is modified
-     in the function and needs to be changed back to its original value before
-     returning, as well as the function's result value (if any).
+     the function.
 
      In the assembler output, this instruction is translated to a low-level
      ``return'' instruction.  *)
@@ -194,10 +199,19 @@ TYPE
        instruction, this selector refers to a variable, be it local, global, or
        from an enclosing procedure.
 
-       When used as part of @oconst{const} instruction, it refers to the offset
-       of the loval variable or parameter relative to the function's frame
-       pointer.  The special case @code{NIL} means the size of local variable
-       area.  *)
+       When used as part of @oconst{const} instruction, then it refers to the
+       address of a variable.  There are three slightly different
+       interpretations, depending on the sort of variable in the designator:
+
+       @table @asis
+       @item Local variable of a function
+       The result of the @oconst{const} is the offset of the local variable or
+       parameter relative to the function's frame pointer.
+       @item Designator is @code{NIL}
+       This means the size of local variable area of the current function.
+       @item Global variable of a module
+       The address of the variable in the process's address space.
+       @end table  *)
     (GlobalDesc)
     decl-: Sym.VarDecl;
   END;
@@ -568,6 +582,11 @@ PROCEDURE (s: Var) SameSelector*(sel: Selector): BOOLEAN;
   BEGIN
     RETURN (sel IS Var) & (s.decl = sel(Var).decl);
   END SameSelector;
+
+PROCEDURE (s: Var) IsGlobalVar*(): BOOLEAN;
+  BEGIN
+    RETURN (s.decl # NIL) & (s.decl.parent IS Sym.Module);
+  END IsGlobalVar;
 
 PROCEDURE (s: Var) Type*(): Sym.Type;
   BEGIN
