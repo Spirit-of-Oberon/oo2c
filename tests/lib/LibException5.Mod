@@ -15,7 +15,7 @@ PROCEDURE Test*() RAISES Exception.Exception;
       e: Exception.Exception;
     BEGIN
       NEW(e);
-      Exception.Init(e, "Some other exception");
+      e.INIT("Some other exception");
       Exception.Raise(e);
     END P;
   

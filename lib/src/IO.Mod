@@ -155,7 +155,7 @@ TYPE
 
 PROCEDURE InitError*(e: Error; msg: STRING);
   BEGIN
-    Exception.Init(e, msg);
+    e.INIT(msg);
   END InitError;
 
 PROCEDURE NewFormatError*(msg: STRING): FormatError;

@@ -691,7 +691,7 @@
       msg="Type name expected"/>
     <reject-info id="lib_Exception15" pos="Exception.%Foo"
       msg="Undeclared identifier"/>
-    <reject-info id="lib_Exception16" pos="%Exception.Init"
+    <reject-info id="lib_Exception16" pos="%Exception.Clear"
       msg="Data type expected"/>
     <reject-info id="lib_Exception17" pos="RAISES %Exception"
       msg="Type is not an extension of `Exception.Exception'"/>

@@ -12,7 +12,7 @@ PROCEDURE NewException(): Exception.Exception;
     e1: One;
   BEGIN
     NEW(e1);
-    Exception.Init(e1, "Exception message");
+    e1.INIT("Exception message");
     RETURN e1;
   END NewException;
 

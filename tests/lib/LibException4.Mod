@@ -8,7 +8,7 @@ PROCEDURE Test*() RAISES Exception.Exception;
     e: Exception.Exception;
   BEGIN
     NEW(e);
-    Exception.Init(e, "Some exception");
+    e.INIT("Some exception");
     Exception.Raise(e);
   END Test;
 

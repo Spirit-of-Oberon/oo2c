@@ -23,7 +23,7 @@ PROCEDURE NewException(x: SHORTINT): Exception.Exception;
     | 2: NEW(e2); e := e2;
     | 3: NEW(e3); e := e3;
     END;
-    Exception.Init(e, "Exception message");
+    e.INIT("Exception message");
     RETURN e;
   END NewException;
 

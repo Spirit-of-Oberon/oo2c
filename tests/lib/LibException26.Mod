@@ -18,7 +18,7 @@ PROCEDURE NewException(): E;
     e: E;
   BEGIN
     NEW(e);
-    Exception.Init(e, "Buh!");
+    e.INIT("Buh!");
     RETURN e;
   END NewException;
 

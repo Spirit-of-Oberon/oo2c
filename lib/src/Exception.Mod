@@ -122,8 +122,20 @@ TYPE
     next: ContextPtr;
     jmpbuf: SYSTEM.PTR;
   END;
-  
-PROCEDURE Init*(e: Exception; msg: STRING);
+
+TYPE
+  ParseError* = POINTER TO ParseErrorDesc;
+  ParseErrorDesc = RECORD
+    (**Indicates an error while parsing a string value.  *)
+    (ExceptionDesc)
+    offset-: LONGINT;
+    (**The offset relative to the beginning of the parsed text where the
+       error was found.  If this information is not available, then this
+       field is @samp{-1}.  *)
+  END;
+
+
+PROCEDURE (e: Exception) INIT*(msg: STRING);
 (**Initialize exception @oparam{e} and set @oparam{msg} as its message.
    @oparam{msg} may be @code{NIL}, but in this case
    @oproc{Exception.GetMessage} must be redefined to provide a non-@code{NIL}
@@ -175,4 +187,6 @@ PROCEDURE (e: Exception) WriteBacktrace*;
    on how to make function names available to the program.  The tool
    @samp{oobacktrace} may also be able to add function names to the output.  *)
 
+PROCEDURE (e: ParseError) INIT*(msg: STRING; offset: LONGINT);
+  
 END Exception.

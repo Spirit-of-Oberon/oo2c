@@ -13,7 +13,8 @@
 static Exception__Exception current = NULL;
 static Exception__ContextPtr contextStack = NULL;
 
-void Exception__Init(Exception__Exception e, Object__String msg) {
+void Exception__ExceptionDesc_INIT(Exception__Exception e,
+				   Object__String msg) {
   e->msg = msg;
   e->backtraceSize = -1;
 }
@@ -108,6 +109,13 @@ void Exception__ExceptionDesc_WriteBacktrace(Exception__Exception e) {
 
 Object__String Exception__ExceptionDesc_GetMessage(Exception__Exception e) {
   return e->msg;
+}
+
+
+void Exception__ParseErrorDesc_INIT(Exception__ParseError e,
+				    Object__String msg, OOC_INT32 offset) {
+  Exception__ExceptionDesc_INIT((Exception__Exception)e, msg);
+  e->offset = offset;
 }
 
 void OOC_Exception_init(void) {

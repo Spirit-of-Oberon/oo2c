@@ -8,7 +8,7 @@ PROCEDURE NewException(): Exception.Exception;
     e: Exception.Exception;
   BEGIN
     NEW(e);
-    Exception.Init(e, "Exception message");
+    e.INIT("Exception message");
     RETURN e;
   END NewException;
 
