@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opArray7" >-->
+  select ="&SetupTestCasesWithOut; case2 with3 opArray8" >-->
 
   &TestSetupWithOut;
     
@@ -63,6 +63,12 @@
       a parameter, but there is no recursive call involved.  That is,
       a compiler passes this test even if it modifies the signature
       of a procedure within a branch of a <code>WITH</code>.
+    </test>
+    
+    <test id="with3" type="error" file="With3.Mod">
+      Check that a run-time error is reported if none of the guards
+      triggers, and the <code>WITH</code> has no <code>ELSE</code>
+      part.
     </test>
     
     <test id="function4" type="run"
@@ -125,6 +131,12 @@
       <code>CASE</code> statement using branches with one label, two
       labels, a range as a label, and an <code>ELSE</code> part.
       The selector is an integer value.
+    </test>
+    
+    <test id="case2" type="error" file="Case2.Mod">
+      Check that a run-time error is reported if none of the labels
+      matches, and the <code>CASE</code> has no <code>ELSE</code>
+      part.
     </test>
     
     <test id="and1" type="run" file="And1.Mod" output="And1.Ref">
@@ -434,6 +446,10 @@
 
     <test id="opArray7" type="error" file="OpArray7.Mod">
       Accessing an index just after the end of the array.
+    </test>
+
+    <test id="opArray8" type="error" file="OpArray8.Mod">
+      Accessing index <code>-1</code>.
     </test>
 
     <test id="opRecord1" type="run" file="OpRecord1.Mod"

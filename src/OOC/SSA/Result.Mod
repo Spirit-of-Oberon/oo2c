@@ -78,6 +78,7 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | primary: COPY ("primary", name)
     | store: COPY ("store", name)
     | selectValue: COPY ("select-value", name)
+    | exception: COPY ("exception", name)
     END;
   END GetName;
   

@@ -131,7 +131,7 @@ ACCEPT:
 
 ERROR:
 
-  1) abort program if no label matches, and there is no ELSE
+  1) abort program if no label matches, and there is no ELSE [Case2]
 
 
 
@@ -250,7 +250,7 @@ ACCEPT:
 
 ERROR:
 
-  1) no guard evaluates to TRUE, and no ELSE exists
+  1) no guard evaluates to TRUE, and no ELSE exists [With3]
 
 WARN:
 

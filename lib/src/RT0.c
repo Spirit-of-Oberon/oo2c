@@ -10,6 +10,23 @@
   _str.baseTypes = NULL; _str.tbProcs = NULL; \
   _str.size = _size; _str.len = -1; _str.form = _form
 
+#define PREFIX "## "
+#define EXIT_CODE 127
+void NORETURN _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) {
+  (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
+		"Runtime error in module %s at pos " OOC_INT32_FORMAT
+		"\n" PREFIX "%s\n" PREFIX "\n",
+		mid->name, pos, msg);
+  exit(EXIT_CODE);
+}
+
+static NORETURN void _out_of_memory(int size) {
+  (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
+		"Out of memory, failed to allocate %i bytes\n" PREFIX "\n",
+		size);
+  exit(EXIT_CODE);
+}
+
 
 OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   void *var, *ptr;
@@ -21,7 +38,9 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     prefix = ROUND_SIZE(sizeof(RT0__Struct));
     
     ptr = malloc(prefix+size);
-    /* FIXME... check that result is not NULL */
+    if (ptr == NULL) {
+      _out_of_memory(prefix+size);
+    }
     var = (char*)ptr+prefix;
     OOC_TYPE_TAG(var) = td;
     
@@ -29,7 +48,9 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     int size = td->size;
     if (size == 0) size++;
     var = malloc(size);
-    /* FIXME... check that result is not NULL */
+    if (ptr == NULL) {
+      _out_of_memory(size);
+    }
     
   } else {			/* dynamic array */
     va_list ap;
@@ -52,7 +73,9 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     prefix = ROUND_SIZE(td->len*sizeof(OOC_LEN));
     
     ptr = malloc(prefix+size);
-    /* FIXME... check that result is not NULL */
+    if (ptr == NULL) {
+      _out_of_memory(prefix+size);
+    }
     var = (char*)ptr+prefix;
     
     /* set length of dimensions */
@@ -71,7 +94,9 @@ OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
   void *ptr;
   
   ptr = malloc(bytes);		/* GC_malloc_atomic */
-  /* FIXME... check that result is not NULL */
+  if (ptr == NULL) {
+    _out_of_memory(bytes);
+  }
   return (OOC_PTR)ptr;
 }
 
@@ -85,21 +110,23 @@ void RT0__InitVParStack(OOC_INT32 bytes) {
 }
 
 
-#define PREFIX "## "
-void NORETURN _runtime_error(const char* msg, RT0__Module mid, OOC_INT32 pos) {
-  (void)fprintf(stderr, "\n" PREFIX "\n" PREFIX
-		" Runtime error in module %s at pos " OOC_INT32_FORMAT
-		"\n" PREFIX " %s\n" PREFIX "\n",
-		mid->name, pos, msg);
-  exit(127);
-}
-
 void RT0__ErrorIndexOutOfRange (RT0__Module mid, OOC_CHARPOS pos,
 				OOC_LEN index, OOC_LEN length) {
   char s[128];
   (void)sprintf(s, "Array index out of range, " OOC_LEN_FORMAT
 		" not in 0 <= x < " OOC_LEN_FORMAT, index, length);
   _runtime_error(s, mid, pos);
+}
+
+void RT0__ErrorFailedCase (RT0__Module mid, OOC_CHARPOS pos, OOC_INT32 select) {
+  char s[128];
+  (void)sprintf(s, "CASE error, `" OOC_INT32_FORMAT
+		"' does not match any label", select);
+  _runtime_error(s, mid, pos);
+}
+
+void RT0__ErrorFailedWith (RT0__Module mid, OOC_CHARPOS pos) {
+  _runtime_error("WITH error, none of the guards matches", mid, pos);
 }
 
 void RT0__ErrorAssertionFailed (RT0__Module mid, OOC_CHARPOS pos,

@@ -36,7 +36,7 @@ REJECT:
 ERROR:
 
   1) a is a NIL pointer
-  2) e is not in the range 0 <= e < LEN(a)
+  2) e is not in the range 0 <= e < LEN(a) [OpArray7 OpArray8]
 
 
   a[e_1, e_2, ..., e_n]

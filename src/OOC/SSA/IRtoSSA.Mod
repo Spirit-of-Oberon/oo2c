@@ -772,7 +772,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
   PROCEDURE IfStatm (ifStatm: IR.IfStatm);
     VAR
-      select: SSA.Instr;
+      select, instr: SSA.Instr;
       storeAfterGuard: SSA.Result;
     BEGIN
       select := pb. AddInstr (Opcode.select, Opcode.scNone);
@@ -787,6 +787,13 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       IF (ifStatm. pathFalse # NIL) THEN
         select. AddOpnd (StatmSeq (pb, storeAfterGuard, ifStatm. pathFalse),
                          Opnd.arg);
+        
+      ELSIF ifStatm. checkMatch THEN
+        s := storeAfterGuard;
+        instr := AddException (pb, ifStatm. sym,
+                               Opcode.failedWith, Opcode.scNone);
+        select. AddOpnd (s, Opnd.arg)
+        
       ELSE
         select. AddOpnd (storeAfterGuard, Opnd.arg)
       END;
@@ -796,7 +803,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
   PROCEDURE CaseStatm (caseStatm: IR.CaseStatm);
     VAR
-      select: SSA.Instr;
+      select, instr: SSA.Instr;
       storeAfterSelect: SSA.Result;
       i: LONGINT;
 
@@ -839,6 +846,14 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       IF (caseStatm. default # NIL) THEN
         select. AddOpnd (StatmSeq (pb, storeAfterSelect, caseStatm. default),
                          Opnd.labels);
+        
+      ELSIF caseStatm. checkMatch THEN
+        s := storeAfterSelect;
+        instr := AddException (pb, caseStatm. sym,
+                               Opcode.failedCase, Opcode.scNone);
+        instr. AddOpnd (select. opndList. arg, Opnd.arg);
+        select. AddOpnd (s, Opnd.labels);
+        
       ELSE
         select. AddOpnd (storeAfterSelect, Opnd.labels)
       END;

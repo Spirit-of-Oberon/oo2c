@@ -40,9 +40,13 @@
 
 #define _check_index(index,length,utype,pos)              \
   ({ if ((utype)index >= (OOC_ULEN)length) {              \
-       RT0__ErrorIndexOutOfRange(&_mid,pos,index,length);  \
+       RT0__ErrorIndexOutOfRange(&_mid,pos,index,length); \
      }                                                    \
      index; })
+#define _failed_case(select,pos) RT0__ErrorFailedCase(&_mid,pos,select)
+#define _failed_with(pos) RT0__ErrorFailedWith(&_mid,pos)
+
+
 
 /* ASSERT(p) and ASSERT(p,code) */
 #define _assert(p,code,pos) \

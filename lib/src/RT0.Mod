@@ -189,6 +189,8 @@ PROCEDURE InitVParStack* (bytes: LONGINT);
 
 PROCEDURE ErrorIndexOutOfRange* (mid: Module; pos: LONGINT;
                                  index, length: LONGINT);
+PROCEDURE ErrorFailedCase* (mid: Module; pos: LONGINT; select: LONGINT);
+PROCEDURE ErrorFailedWith* (mid: Module; pos: LONGINT);
 PROCEDURE ErrorAssertionFailed* (mid: Module; pos: LONGINT; code: LONGINT);
 
 END RT0.

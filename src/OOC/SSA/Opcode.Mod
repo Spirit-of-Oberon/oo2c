@@ -561,11 +561,14 @@ CONST
      is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
 
-  selectException* = 58;
+  failedCase* = 58;
+  failedWith* = 59;
+  
+  selectException* = 60;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
   
-  labels* = 59;
+  labels* = 61;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -707,6 +710,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
 
     | assert: cstr := "assert";
     | checkIndex: cstr := "check-index";
+    | failedCase: cstr := "failed-case";
+    | failedWith: cstr := "failed-with";
     | selectException: cstr := "select-exception";
     END;
     

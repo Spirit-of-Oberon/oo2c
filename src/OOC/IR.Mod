@@ -736,6 +736,10 @@ TYPE
        statement.  In this case, @ofield{guard} is a type test, and the guard
        asserts that the tested variable is of the right hand side type across
        the whole region of @ofield{pathTrue}.  *)
+    checkMatch-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if the
+       type guard does not evaluate to @code{TRUE}, and there is no @code{ELSE}
+       part.  *)
   END;
 
 TYPE
@@ -757,6 +761,9 @@ TYPE
     select-: Expression;
     caseList-: CaseList;
     default-: StatementSeq;  (* NIL if the CASE statement has no ELSE *)
+    checkMatch-: BOOLEAN;
+    (**If @code{TRUE}, then a run-time error should be reported if none of
+       the labels matches the value of @ofield{select}.  *)
   END;
   
 TYPE
@@ -2822,13 +2829,14 @@ PROCEDURE (forStatm: ForStatm) Accept* (v: Visitor);
 
 PROCEDURE InitIfStatm (ifStatm: IfStatm; sym: Symbol; guard: Expression;
                        pathTrue, pathFalse: StatementSeq;
-                       isWithClause: BOOLEAN);
+                       isWithClause, checkMatch: BOOLEAN);
   BEGIN
     InitStatement (ifStatm, sym);
     ifStatm. guard := guard;
     ifStatm. pathTrue := pathTrue;
     ifStatm. pathFalse := pathFalse;
     ifStatm. isWithClause := isWithClause;
+    ifStatm. checkMatch := checkMatch;
   END InitIfStatm;
 
 PROCEDURE (b: Builder) NewIfStatm* (sym: Symbol; guard: Expression;
@@ -2836,9 +2844,14 @@ PROCEDURE (b: Builder) NewIfStatm* (sym: Symbol; guard: Expression;
                                     isWithClause: BOOLEAN): IfStatm;
   VAR
     ifStatm: IfStatm;
+    checkMatch: BOOLEAN;
   BEGIN
+    checkMatch := isWithClause &
+        GetPragmaValue (b, StdPragmas.typeGuard, sym. pos);
+    
     NEW (ifStatm);
-    InitIfStatm (ifStatm, sym, guard, pathTrue, pathFalse, isWithClause);
+    InitIfStatm (ifStatm, sym, guard, pathTrue, pathFalse,
+                 isWithClause, checkMatch);
     RETURN ifStatm
   END NewIfStatm;
 
@@ -2883,12 +2896,14 @@ PROCEDURE (case: Case) Accept* (v: Visitor);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitCaseStatm (caseStatm: CaseStatm; sym: Symbol; select: Expression;
-                         caseList: CaseList; default: StatementSeq);
+                         caseList: CaseList; default: StatementSeq;
+                         checkMatch: BOOLEAN);
   BEGIN
     InitStatement (caseStatm, sym);
     caseStatm. select := select;
     caseStatm. caseList := caseList;
     caseStatm. default := default;
+    caseStatm. checkMatch := checkMatch;
   END InitCaseStatm;
 
 PROCEDURE (b: Builder) NewCaseStatm* (sym: Symbol; select: Expression;
@@ -2897,7 +2912,8 @@ PROCEDURE (b: Builder) NewCaseStatm* (sym: Symbol; select: Expression;
     caseStatm: CaseStatm;
   BEGIN
     NEW (caseStatm);
-    InitCaseStatm (caseStatm, sym, select, caseList, default);
+    InitCaseStatm (caseStatm, sym, select, caseList, default,
+                   GetPragmaValue (b, StdPragmas.indexCheck, sym. pos));
     RETURN caseStatm
   END NewCaseStatm;
 
