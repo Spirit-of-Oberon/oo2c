@@ -1,7 +1,7 @@
 (*      $Id$       *)
 MODULE ADT:Storable [OOC_EXTENSIONS];
 (*  Base definitions for a persistent object implementation.
-    Copyright (C) 1999-2002  Michael van Acken
+    Copyright (C) 1999-2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -19,7 +19,7 @@ MODULE ADT:Storable [OOC_EXTENSIONS];
 *)
  
 IMPORT
-  Channel, BinaryRider, Msg, Obj := Object;
+  Obj := Object, IO, IO:BinaryRider;
 
 
 (**This module defines the abstract type @otype{Object}, the root type of all
@@ -29,13 +29,14 @@ IMPORT
    procedures @oproc{Object.Store} and @oproc{Object.Load}.
 
    The module also defines new binary rider classes, which are extensions of
-   the ones defined in module @omodule{BinaryRider}.  Concrete implementations
-   of these abstract classes (like module @omodule{*ADT:Object:Storage})
-   provide the mechanisms necessary to externalize and internalize arbitrary
-   data structures.  The riders add some type-bound procedures to the
-   interfaces inherited from @omodule{BinaryRider}, and rely on the type-bound
-   procedures @oproc{Object.Store} and @oproc{Object.Load} to store and
-   load an object's private data.  *)
+   the ones defined in module @omodule{BinaryRider}.  Concrete
+   implementations of these abstract classes (like module
+   @omodule{*ADT:Object:Storage}) provide the mechanisms necessary to
+   externalize and internalize arbitrary data structures.  The riders add some
+   type-bound procedures to the interfaces inherited from
+   @omodule{BinaryRider}, and rely on the type-bound procedures
+   @oproc{Object.Store} and @oproc{Object.Load} to store and load an object's
+   private data.  *)
 
 
 TYPE
@@ -78,52 +79,20 @@ TYPE  (* abstract types, used for persistence mechanism
     (ObjectDesc)
   END;
 
-CONST  (* additional error codes for the riders above: *)
-  cancelled* = -1;
-  (**@oproc{Reader.Cancel} creates an error for the reader using this code.  *)
-  versionMismatch* = -2;
-  (**Set by @oproc{Reader.ReadVersion} in case of a version mismatch.  *)
-  unknownType* = -3;
-  (**The file reader found a type name that could not be resolved.  Either the
-     type's module or the type name are not known.  *)
-  
 TYPE
-  ErrorContext = POINTER TO ErrorContextDesc;
-  ErrorContextDesc* = RECORD
-     (* this record is exported, so that extensions of Channel can access the
-        error descriptions by extending `ErrorContextDesc' *)
-    (Channel.ErrorContextDesc)
+  TypeError* = POINTER TO TypeErrorDesc;
+  TypeErrorDesc = RECORD
+    (IO.ErrorDesc) 
   END;
 
-VAR
-  errorContext: ErrorContext;
-
-PROCEDURE GetError (code: Msg.Code): Msg.Msg;
-  BEGIN
-    RETURN Msg.New (errorContext, code)
-  END GetError;
-
-PROCEDURE (context: ErrorContext) GetTemplate* (msg: Msg.Msg; VAR templ: Msg.LString);
+PROCEDURE NewTypeError*(msg: STRING): TypeError;
   VAR
-    descr: ARRAY 64 OF CHAR;
+    e: TypeError;
   BEGIN
-    IF (msg # NIL) THEN
-      CASE msg. code OF
-      | cancelled: COPY ("Reading was cancelled", descr)
-      | versionMismatch: COPY ("Object version mismatch", descr)
-      | unknownType: COPY ("Unknown type name", descr)
-      ELSE
-         COPY ("", descr)
-      END
-    ELSE
-      COPY ("", descr)
-    END;
-    IF (descr # "") THEN
-      COPY (descr, templ)
-    ELSE
-      context. GetTemplate^ (msg, templ)
-    END
-  END GetTemplate;
+    NEW(e);
+    IO.InitError(e, "Unknown type");
+    RETURN e;
+  END NewTypeError;
 
 
 PROCEDURE Init* (obj: Object);
@@ -154,10 +123,8 @@ PROCEDURE (obj: Object) [ABSTRACT] Store* (w: Writer);
    stored by calling the type-bound procedure @oproc{Writer.WriteObject}.  The
    procedure is not allowed to make any changes to the global state of the
    program, except for calling the @samp{Write} methods of the writer
-   @oparam{w}.  This implies, that changing the position of @oparam{w} by
-   calling @oproc{Writer.SetPos} is not permitted.  Any redefinition of this
-   procedure must include a super call, preferably as the first statement of
-   the procedure body.
+   @oparam{w}.  Any redefinition of this procedure must include a super call,
+   preferably as the first statement of the procedure body.
 
    @precond
    This procedure is either activated by a super call, or from the procedure
@@ -186,14 +153,14 @@ PROCEDURE (obj: Object) [ABSTRACT] Load* (r: Reader);
 (* Methods for extended BinaryRider
    ======================================================================== *)
 
-PROCEDURE InitWriter* (w: Writer; ch: Channel.Channel);
+PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel);
 (**Initializes a new writer instance @oparam{w} for channel @oparam{ch}.
    Little endian byte ordering is used by the writer.  *)
   BEGIN
     BinaryRider.InitWriter (w, ch, BinaryRider.littleEndian);
   END InitWriter;
 
-PROCEDURE InitReader* (r: Reader; ch: Channel.Channel);
+PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel);
 (**Initializes a new reader instance @oparam{r} for channel @oparam{ch}.
    Little endian byte ordering is used by the reader.  *)
   BEGIN
@@ -212,20 +179,12 @@ PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Object);
    @end precond  *)
   END WriteObject;
   
-PROCEDURE (w: Writer) WriteVersion* (version: LONGINT);
-(**Writes a version number to the channel underlying the writer @oparam{w}.  *)
-  BEGIN
-    w. WriteNum (version)
-  END WriteVersion;
-
 PROCEDURE (w: Writer) [ABSTRACT] Disconnect*;
 (**Completes the data written to the channel of writer @oparam{w}, and cleans
    up the internal data structures.  Without calling @oproc{Writer.Disconnect}
    the externalized objects may be left in a invalid state, and no new
    externalization process can be started.  After @oproc{Writer.Disconnect},
-   all operations on @oparam{w} are undefined.  The value of
-   @ofield{BinaryRider.Writer.res} should be checked after disconnecting the
-   writer.  *)
+   all operations on @oparam{w} are undefined.  *)
   END Disconnect;
 
 PROCEDURE (r: Reader) [ABSTRACT] ReadObject* (VAR obj: Object);
@@ -235,33 +194,9 @@ PROCEDURE (r: Reader) [ABSTRACT] ReadObject* (VAR obj: Object);
    @oparam{r}.  *)
   END ReadObject;
   
-PROCEDURE (r: Reader) ReadVersion* (min, max: LONGINT; VAR version: LONGINT);
-(**Reads a version identifier and cancels the current load, if it is not
-   between @oparam{min} and @oparam{max} (that is, if not @samp{@oparam{min} <=
-   @oparam{version} <= @oparam{max}}.  *)
-  BEGIN
-    r. ReadNum (version);
-    IF ((version < min) OR (max < version)) &
-       (r. byteReader. res = BinaryRider.done) THEN
-      r. byteReader. res := GetError (versionMismatch)
-    END
-  END ReadVersion;
-
-PROCEDURE (r: Reader) Cancel*;
-(**Cancels the current internalization process.  After cancellation, all
-   invocations of @oproc{Reader.ReadObject} return @code{NIL}.  *)
-  BEGIN
-    IF (r. byteReader. res = BinaryRider.done) THEN
-      r. byteReader. res := GetError (cancelled)
-    END
-  END Cancel;
-
 PROCEDURE (r: Reader) [ABSTRACT] Disconnect*;
 (**Disconnects reader @oparam{r}, and cleans up the internal data structures.
    Any resources allocated by the reader are freed.  *)
   END Disconnect;
 
-BEGIN
-  NEW (errorContext);
-  Msg.InitContext (errorContext, "ADT:Storable");
 END ADT:Storable.
