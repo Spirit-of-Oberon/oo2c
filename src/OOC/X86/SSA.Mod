@@ -952,7 +952,7 @@ PROCEDURE (instr: Instr) IsLive*(): BOOLEAN;
   BEGIN
     CASE instr.opcode OF
     | enter, exit, return, branch, jump, set, setStack,
-      designatorGate, loopStart, loopExit, loopEnd, loopBackedge:
+      designatorGate, loopStart, loopExit, loopEnd, loopBackedge, call:
       RETURN TRUE;
     ELSE
       RETURN instr.NonImmediateUses();
