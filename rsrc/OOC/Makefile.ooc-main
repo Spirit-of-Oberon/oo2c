@@ -80,6 +80,7 @@ doc:
 .PHONY: test1-setup test1-process test1-report test1-clean test-clean test-runall
 
 test1-setup:
+	$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj
 	$(OOC) -MOv $(TEST_DRIVER)
 ifdef TEST_PROCESSOR
 	$(OOC) -MOv $(TEST_PROCESSOR)
