@@ -106,19 +106,20 @@ CONST
   long* = 11;                            (* LONG *)
   short* = 12;                           (* SHORT *)
   chr* = 13;                             (* CHR *)
-  entier* = 14;                          (* ENTIER *)
-  odd* = 15;                             (* ODD *)
-  ord* = 16;                             (* ORD *)
-  max* = 17;                             (* MAX *)
-  min* = 18;                             (* MIN *)
-  new* = 19;                             (* NEW *)
-  copy* = 20;                            (* COPY *)
+  longchr* = 14;                         (* LONGCHR *)
+  entier* = 15;                          (* ENTIER *)
+  odd* = 16;                             (* ODD *)
+  ord* = 17;                             (* ORD *)
+  max* = 18;                             (* MAX *)
+  min* = 19;                             (* MIN *)
+  new* = 20;                             (* NEW *)
+  copy* = 21;                            (* COPY *)
 
-  adr* = 21;                             (* SYSTEM.ADR *)
-  lsh* = 22;                             (* SYSTEM.LSH *)
-  move* = 23;                            (* SYSTEM.MOVE *)
-  rot* = 24;                             (* SYSTEM.ROT *)
-  val* = 25;                             (* SYSTEM.VAL *)
+  adr* = 22;                             (* SYSTEM.ADR *)
+  lsh* = 23;                             (* SYSTEM.LSH *)
+  move* = 24;                            (* SYSTEM.MOVE *)
+  rot* = 25;                             (* SYSTEM.ROT *)
+  val* = 26;                             (* SYSTEM.VAL *)
   
   
 PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
@@ -252,6 +253,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     PredefProc (stb, module, long, "LONG", 1, 1);
     PredefProc (stb, module, short, "SHORT", 1, 1);
     PredefProc (stb, module, chr, "CHR", 1, 1);
+    PredefProc (stb, module, longchr, "LONGCHR", 1, 1);
     PredefProc (stb, module, entier, "ENTIER", 1, 1);
     PredefProc (stb, module, odd, "ODD", 1, 1);
     PredefProc (stb, module, ord, "ORD", 1, 1);
