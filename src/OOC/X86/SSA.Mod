@@ -69,23 +69,31 @@ CONST  (* Instruction Opcodes: *)
      and its sign is preserved by the shift operation.  *)
   asl* = opcodeArithmetic+7;
   (**Arithmetic (and logical) shift left.  *)
-  indexed* = opcodeArithmetic+8;
-  eql* = opcodeArithmetic+9;
-  neq* = opcodeArithmetic+10;
-  lss* = opcodeArithmetic+11;
-  leq* = opcodeArithmetic+12;
-  gtr* = opcodeArithmetic+13;
-  geq* = opcodeArithmetic+14;
-  setBool* = opcodeArithmetic+15;
+  lsr* = opcodeArithmetic+8;
+  (**Logical shift right.  *)
+  lsl* = opcodeArithmetic+9;
+  (**Logical (and arithmetic) shift left.  *)
+  rr* = opcodeArithmetic+10;
+  (**Rotate right.  *)
+  rl* = opcodeArithmetic+11;
+  (**Rotate left.  *)
+  indexed* = opcodeArithmetic+12;
+  eql* = opcodeArithmetic+13;
+  neq* = opcodeArithmetic+14;
+  lss* = opcodeArithmetic+15;
+  leq* = opcodeArithmetic+16;
+  gtr* = opcodeArithmetic+17;
+  geq* = opcodeArithmetic+18;
+  setBool* = opcodeArithmetic+19;
   (**Set byte to @code{0} or @code{1}, depending on the current state of the
      condition codes.  *)
-  bitTestAndSet* = opcodeArithmetic+16;
-  bitTestAndClear* = opcodeArithmetic+17;
-  typeConv* = opcodeArithmetic+18;
-  fpLoad* = opcodeArithmetic+19;
-  fpStorePop* = opcodeArithmetic+20;
+  bitTestAndSet* = opcodeArithmetic+20;
+  bitTestAndClear* = opcodeArithmetic+21;
+  typeConv* = opcodeArithmetic+22;
+  fpLoad* = opcodeArithmetic+23;
+  fpStorePop* = opcodeArithmetic+24;
   
-  opcodeFunctionFraming = opcodeArithmetic+21;
+  opcodeFunctionFraming = opcodeArithmetic+26;
   enter* = opcodeFunctionFraming+0;
   (**An ``enter'' instruction represents the state of the processor immediately
      after control has passed from the caller to the current function.  Its
@@ -138,12 +146,14 @@ CONST  (* Instruction Opcodes: *)
   set* = opcodeMemory+1;
   (**@code{set} @var{address} @var{value} *)
   copy* = opcodeMemory+2;
-  push* = opcodeMemory+3;
-  pop* = opcodeMemory+4;
-  leave* = opcodeMemory+5;
-  getLengthParam* = opcodeMemory+6;
-  getLengthHeap* = opcodeMemory+7;
-  setStack* = opcodeMemory+8;
+  typeCast* = opcodeMemory+3;
+  loadRegister* = opcodeMemory+4;
+  push* = opcodeMemory+5;
+  pop* = opcodeMemory+6;
+  leave* = opcodeMemory+7;
+  getLengthParam* = opcodeMemory+8;
+  getLengthHeap* = opcodeMemory+9;
+  setStack* = opcodeMemory+10;
   (**Set stack element to the given value.  First argument is the current stack
      pinter, second the offset relative to the top of the stack, and the third
      the value.
@@ -155,9 +165,9 @@ CONST  (* Instruction Opcodes: *)
      This instruction duplicates the memory dependencies of its call
      instruction, and the call in turn has memory dependencies on all its
      @oconst{setStack} instructions.  *)
-  typeTag* = opcodeMemory+9;
+  typeTag* = opcodeMemory+11;
   
-  opcodeControlFlow = opcodeMemory+10;
+  opcodeControlFlow = opcodeMemory+12;
   branch* = opcodeControlFlow+0;
   (**A branch is a place in a function were control may continue to one of two
      (or more) mutually exclusive paths.  Each path is represented by a
@@ -2165,6 +2175,14 @@ PROCEDURE (b: Block) AddFramePointerOffset*(varDecl: Sym.VarDecl): Result;
     b.Add(instr);
     RETURN instr.AddResult(address);
   END AddFramePointerOffset;
+
+PROCEDURE (b: Block) AddLoadRegister*(value: Result; reg: Register): Result;
+  VAR
+    instr: Instr;
+  BEGIN
+    instr := b.AddInstr1(loadRegister, value);
+    RETURN instr.AddResultReg(value.type, reg);
+  END AddLoadRegister;
 
 PROCEDURE (opnd: Opnd) InsertCopy*();
   VAR

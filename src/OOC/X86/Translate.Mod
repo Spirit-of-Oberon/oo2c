@@ -640,19 +640,32 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN instr.AddResult(arg.type);
         END Negate;
       
-      PROCEDURE Abs(expr: IR.Abs): S.Result;
+      PROCEDURE LeftRight(arg: S.Result; argType: Sym.Type;
+                          x: S.Result; xType: Sym.Type;
+                          ifNeg, ifNotNeg: S.Opcode): S.Result;
         VAR
-          arg, valueTrue, valueFalse: S.Result;
+          valueTrue, valueFalse, xNegate: S.Result;
           branch: S.BranchInstr;
           merge: S.MergeInstr;
           gate: S.GateInstr;
           cmp, endTrue, endFalse: S.Instr;
           pathTrue, pathFalse: S.Block;
-        BEGIN
-          arg := Expression(expr.operand);
 
-          (* compare the argument to zero *)
-          cmp := b.AddInstr2(S.lss, arg, b.AddConstZero(expr.type));
+        PROCEDURE Op(opc: S.Opcode; y: S.Result): S.Result;
+          VAR
+            instr: S.Instr;
+          BEGIN
+            IF (opc = -1) THEN
+              RETURN y;
+            ELSE
+              instr := b.AddInstr2(opc, arg, y);
+              RETURN instr.AddResultExpr(argType);
+            END;
+          END Op;
+        
+        BEGIN
+          (* compare the x argument to zero *)
+          cmp := b.AddInstr2(S.lss, x, b.AddConstZero(xType));
           branch := b.AddBranch(SetCC(cmp.AddResultReg(S.noType, S.cc)),
                                 FALSE);
           branch.AddDep(S.depControl, controlCP);
@@ -663,7 +676,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           endTrue := b.AddInstr0(S.jump);
           endTrue.AddDep(S.depMemory, memoryCP);
           endTrue.AddDep(S.depControl, pathTrue);
-          valueTrue := Negate(arg, expr.type);
+          xNegate := Negate(x, xType);
+          valueTrue := Op(ifNeg, xNegate);
           
           (* second, the "false" path: x>=0  *)
           pathFalse := b.AddMerge0(S.guard, b.AddConstBool(FALSE));
@@ -671,7 +685,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           endFalse := b.AddInstr0(S.jump);
           endFalse.AddDep(S.depMemory, memoryCP);
           endFalse.AddDep(S.depControl, pathFalse);
-          valueFalse := arg;
+          valueFalse := Op(ifNotNeg, x);
           
           (* finally, pull all the strings together again *)
           branch.SetPaths2(pathTrue, pathFalse);
@@ -681,8 +695,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           gate.AddOpnd(valueFalse);
           controlCP := merge; memoryCP := merge;
 
-          RETURN gate.AddResult(arg.type);
-        END Abs;
+          RETURN gate.AddResultExpr(argType);
+        END LeftRight;
                       
       PROCEDURE NewObject (new: IR.NewObject): S.Result;
         VAR
@@ -818,7 +832,10 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
               
         | expr: IR.TypeConv DO
           RETURN TypeConv(expr);
-              
+        | expr: IR.TypeCast DO
+          instr := b.AddInstr1(S.typeCast, Expression(expr.expr));
+          RETURN instr.AddResultExpr(expr.type);
+          
         | expr: IR.BinaryArith DO
           CASE expr.variant OF
           | IR.arithAdd : opcode := S.add;
@@ -892,7 +909,23 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN instr.AddResultExpr(expr.type);
 
         | expr: IR.Abs DO
-          RETURN Abs(expr);
+          RETURN LeftRight(NIL, expr.type,
+                           Expression(expr.operand), expr.type, -1, -1);
+        | expr: IR.Ash DO
+          arg1 := Expression(expr.value);
+          arg2 := Expression(expr.exp);
+          RETURN LeftRight(b.FixType(arg1, S.signed32), expr.type,
+                           arg2, expr.exp.type, S.asr, S.asl);
+        | expr: IR.Shift DO
+          arg1 := Expression(expr.value);
+          arg2 := Expression(expr.by);
+          IF expr.rotate THEN
+            RETURN LeftRight(arg1, expr.type,
+                             arg2, expr.by.type, S.rr, S.rl);
+          ELSE
+            RETURN LeftRight(arg1, expr.type,
+                             arg2, expr.by.type, S.lsr, S.lsl);
+          END;
           
         | expr: IR.Call DO
           RETURN Call(expr);

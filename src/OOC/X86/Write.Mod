@@ -1,7 +1,7 @@
 MODULE OOC:X86:Write;
 
 IMPORT
-  SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt,
+  SYSTEM, Ascii, Object, Object:Boxed, Object:BigInt, (*D := OOC:X86:Debug,*)
   ADT:Dictionary, ADT:ArrayList, ADT:StringBuffer, IO, IO:TextRider,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, S := OOC:X86:SSA, OOC:X86:RuntimeData;
@@ -427,6 +427,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
       OpcTT(opc, opndWidth, S.noType);
     END Opc;
 
+  PROCEDURE ShiftOpcode(opcode: S.Opcode);
+    BEGIN
+      CASE opcode OF
+      | S.asr: Opc("sar");
+      | S.asl: Opc("sal");
+      | S.lsr: Opc("shr");
+      | S.lsl: Opc("shl");
+      | S.rl:  Opc("rol");
+      | S.rr:  Opc("ror");
+      END;
+    END ShiftOpcode;
+  
   PROCEDURE RegT(reg: S.Register; type: S.Type);
     VAR
       str: ARRAY 8 OF CHAR;
@@ -763,9 +775,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
     BEGIN
       toType := toReg.type;
       IF (fromType = toType) OR
-         (S.TypeSize(toType) < S.TypeSize(fromType)) THEN
-        (* do nothing when converting a value to a smaller type; FIXME... this
-           operation may cause an overflow *)
+         (S.TypeSize(toType) <= S.TypeSize(fromType)) THEN
+        (* do nothing when converting a value to a smaller type or type of same
+           size; FIXME... this operation may cause an overflow  *)
         IF valueOpnd & (toReg.register = fromMemReg.arg.register) THEN
           RETURN;                        (* copy register onto itself *)
         END;
@@ -780,9 +792,10 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
         ELSE
           OpcTT("mov", fromType, S.noType);
         END;
-      ELSIF (toType < S.unsigned8) THEN  (* to signed type *)
+      ELSIF (toType < S.unsigned8) & (fromType < S.unsigned8) THEN
+        (* from signed to signed type *)
         OpcTT("movs", fromType, toType);
-      ELSE                               (* to unsigned type *)
+      ELSE
         OpcTT("movz", fromType, toType);
       END;
       
@@ -801,6 +814,49 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
         RegT(toReg.register, toType);
       END;
     END MovMemReg;
+
+  PROCEDURE MovMemRegNoX(fromMemReg: S.Opnd; fromType: S.Type;
+                       valueOpnd: BOOLEAN; toReg: S.Result);
+  (* Move from memory or register to register.  If source type `fromType' and
+     destinataion type differ, then extend the value accordingly.
+
+     If `valueOpnd' is TRUE, then `fromMemReg' does designate a value, instead
+     of a memory address.  In this case, it may be a register or immediate
+     operand, and the value is copied into the output register.  *)
+    VAR
+      toType: S.Type;
+    BEGIN
+      toType := toReg.type;
+      IF valueOpnd & (toReg.register = fromMemReg.arg.register) THEN
+        RETURN;                        (* copy register onto itself *)
+      END;
+      fromType := toType;  (* for down conversion *)
+      CASE fromType OF
+      | S.real32, S.real64:
+        IF (toReg.register # S.st0) THEN
+          OpcTT("movs", fromType, S.noType);
+        ELSE
+          OpcTT("fld", fromType, S.noType);
+        END;
+      ELSE
+        OpcTT("mov", fromType, S.noType);
+      END;
+      
+      opndWidth := fromType;
+      IF valueOpnd THEN
+        Opnd(instr.opndList);
+      ELSE
+        IF fromMemReg.immediate THEN
+          DirectOpnd(fromMemReg);
+        ELSE
+          OpndMem(fromMemReg);
+        END;
+      END;
+      IF (toReg.register # S.st0) THEN
+        Comma();
+        RegT(toReg.register, toType);
+      END;
+    END MovMemRegNoX;
 
   PROCEDURE Bounce(from, to: S.Result);
     BEGIN
@@ -899,6 +955,14 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
           Opc("neg");
           Opnd(instr.opndList);
           AssertResultMatch(instr.opndList);
+        | S.asr, S.asl, S.lsr, S.lsl, S.rl, S.rr:
+          ShiftOpcode(instr.opcode);
+          opndWidth := S.signed8;
+          Opnd(instr.opndList.nextOpnd);
+          Comma();
+          opndWidth := instr.resultList.type;
+          Result(instr.resultList);
+          AssertResultMatch(instr.opndList);
         | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq:
           opndWidth := instr.opndList.arg.type;
           IF S.IsFloat(opndWidth) THEN
@@ -951,7 +1015,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
           Opc0("leave");
           
           (* memory *)
-        | S.copy, S.typeConv:
+        | S.copy, S.loadRegister, S.typeConv:
           (* prevent zero or sign extension when switching between integer
              and address type *)
           IF (instr.resultList.type = S.address) &
@@ -966,6 +1030,9 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
             type := instr.opndList.arg.type;
           END;
           MovMemReg(instr.opndList, type, TRUE, instr.resultList);
+        | S.typeCast:
+          type := instr.opndList.arg.type;
+          MovMemRegNoX(instr.opndList, type, TRUE, instr.resultList);
         | S.return:
           IF (instr.resultList.register = S.st0) &
              ~instr.opndList.immediate &

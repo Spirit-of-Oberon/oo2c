@@ -10,7 +10,9 @@ PROCEDURE InOutOpnd*(instr: S.Instr): S.Opnd;
    result is @code{NIL}.  *)
   BEGIN
     CASE instr.opcode OF
-    | S.add, S.sub, S.mul, S.div, S.neg, S.bitTestAndSet, S.bitTestAndClear:
+    | S.add, S.sub, S.mul, S.div, S.neg,
+      S.asr, S.asl, S.lsr, S.lsl, S.rl, S.rr,
+      S.bitTestAndSet, S.bitTestAndClear:
       RETURN instr.opndList;
     ELSE
       RETURN NIL;
@@ -248,6 +250,13 @@ PROCEDURE ApplyMachineModel*(b: S.FunctionBlock);
         WHILE (opnd # NIL) DO
           opnd.immediate := IsConst(opnd);
           opnd := opnd.nextOpnd;
+        END;
+      | S.asr, S.asl, S.lsr, S.lsl, S.rl, S.rr:
+        opnd := instr.opndList.nextOpnd;
+        IF opnd.IsConst() THEN
+          opnd.immediate := TRUE;
+        ELSE                             (* force into register %cl *)
+          opnd.ReplaceArg(b.AddLoadRegister(opnd.arg, S.gp1));
         END;
       ELSE
         imm := ImmediateOpnd(instr);

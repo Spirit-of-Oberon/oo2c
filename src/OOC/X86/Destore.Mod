@@ -32,6 +32,7 @@ PROCEDURE (memAccess: MemAccess) INIT*(type: S.Type; designator: S.Designator;
 PROCEDURE Transform*(fctBlock: S.FunctionBlock);
   VAR
     worklist: Worklist;
+    inWorklist: Dictionary.Dictionary(S.Instr, Object.Object);
     undefValue: S.Result;
     instr: S.Instr;
     gate: S.GateInstr;
@@ -49,10 +50,13 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
     VAR
       entry: Worklist;
     BEGIN
-      NEW(entry);
-      entry.next := worklist;
-      entry.instr := instr;
-      worklist := entry;
+      IF ~inWorklist.HasKey(instr) THEN
+        NEW(entry);
+        entry.next := worklist;
+        entry.instr := instr;
+        worklist := entry;
+        inWorklist.Set(instr, NIL);
+      END;
     END AddToWorklist;
   
   PROCEDURE PropagateInstr(propInstr: S.Instr);
@@ -460,7 +464,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
   
   BEGIN
     worklist := NIL;
-
+    inWorklist := NEW(Dictionary.Dictionary(S.Instr, Object.Object));
     undefValue := fctBlock.enter.AddResult(S.noType);
     
     fctBlock.SetMarkers(NIL, 0);
@@ -503,6 +507,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
     (* visit all "set" instructions and check if they can be eliminated;
        at this place, all obsolete "get"s must have been removed *)
     fctBlock.SetMarkers(NIL, 0);
+    inWorklist.Clear();
     AddToWorklist(fctBlock.enter);
     WHILE (worklist # NIL) DO
       instr := worklist.instr;
@@ -515,6 +520,7 @@ PROCEDURE Transform*(fctBlock: S.FunctionBlock);
     END;
 
     (* turn designatorGate into gate or eliminate instruction *)
+    inWorklist.Clear();
     AddDesignatorGatetoWorklist(fctBlock);
     WHILE (worklist # NIL) DO
       instr := worklist.instr;

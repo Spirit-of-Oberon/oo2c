@@ -54,6 +54,9 @@ PROCEDURE ComputeConst(pb: S.FunctionBlock; instr: S.Instr): S.Result;
           | S.sub: v := i1.Sub(i2);
           | S.mul: v := i1.Mul(i2);
             
+          | S.asr, S.asl, S.lsr, S.lsl, S.rl, S.rr:
+            v := NIL;  (* FIXME... add shift operations *)
+            
           | S.eql: v := Boxed.NewBoolean(i1.Cmp(i2)  = 0);
           | S.neq: v := Boxed.NewBoolean(i1.Cmp(i2)  # 0);
           | S.leq: v := Boxed.NewBoolean(i1.Cmp(i2) <= 0);
