@@ -15,9 +15,9 @@
 <testsuite-ext
   profile="Test Suite for Framework Testing"
   select ="prepare_out_module
-           baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
-           baseline8 baseline10 baseline11">
-
+  baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
+  baseline8 baseline10 baseline11
+  function1 function2">
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="src/Out.Mod">
@@ -30,7 +30,21 @@
   &baseline-testcases;
   <!--&candidate-testcases;
   &hostess-testcases;-->
-
+  
+  <testcases profile="OOC2 Development" default-lang="O1 O2 AO">
+    <test id="function1" type="run"
+      file="HOTFunction1.Mod" output="HOTFunction1.Ref">
+      A very simple function: No input arguments, and a return
+      statement with a constant expression.
+    </test>
+    
+    <test id="function2" type="run"
+      file="HOTFunction2.Mod" output="HOTFunction2.Ref">
+      Another very simple function: The input parameter is used as the
+      function's return value, without any transformation.
+    </test>
+  </testcases>
+  
   <processor-info processor-name="TestCompile">
     <reject-info id="baseline1" pos="\A%\Z" msg="Expected keyword `MODULE'"/>
   </processor-info>
