@@ -1344,6 +1344,7 @@ PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
     chars: Object.CharsLatin1;
     chars16: Object.CharsUTF16;
     s: Object.String;
+    s8: Object.String8;
     i: LONGINT;
   BEGIN
     IF (obj = NIL) THEN
@@ -1361,9 +1362,9 @@ PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
             RETURN;
           END;
         END;
-        FOR i := 0 TO s.length-1 DO
-          w.byteWriter.WriteByte(SHORT(chars16[i]));
-        END;
+        s8 := s.ToString8("?");
+        chars := s8.CharsLatin1();
+        w. byteWriter. WriteBytes (chars^, 0, s8.length);
       END;
       w. res := w. byteWriter. res;
       IF (noBuffering IN w.opt) & (w. res = done) THEN
