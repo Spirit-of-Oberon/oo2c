@@ -2,9 +2,9 @@
 
   gcc (oo2c v2 uses gcc language extensions, an ANSI compiler won't do)
   oo2c 1.5.7.2 (patch at http://pweb.de/vanacken.do/ooc/oo2c-patches/)
-  libadt (from the CVS repository)
-  libxml (from the CVS repository)
-  gaf2 (from the CVS repository)
+  libxml (from the CVS repository; must be installed)
+  libadt (from the CVS repository; only needs to be available)
+  gaf2 (from the CVS repository; only needs to be available)
   GNU make
 
   For "make test" and packaging, you will also need perl and GNU tar,
@@ -13,11 +13,15 @@
 2. Setting up the Development Environment
 
 Make sure that libxml/src/, libadt/src/, and gaf2/src/ is in the
-search path for *.Mod and *.c (for example, by editing and including
-.oo2crc_local).  For the language specific tests, the Hostess test
-files are expected to reside at
-`../hostess/hostess/oberon/testcases.xml', as seen from the ooc2
-top-level directory.
+search path for *.Mod and *.c, for example, by editing and including
+`.oo2crc_local'.  The easiest way to include `.oo2crc_local' is to
+have a file `~/.oo2crc' with a line `INCLUDE ./.oo2crc_local END'.
+The provided `.oo2crc_local' assumes that the directories `libxml/',
+`libadt/', `gaf2/', and `ooc2/' all reside in the same directory.
+
+For the language specific tests, the Hostess test files are expected
+to reside at `../hostess/hostess/oberon/testcases.xml', as seen from
+the ooc2 top-level directory.
 
 Then, do
 
@@ -26,7 +30,7 @@ Then, do
   make test
 
 If this produces an error other than the one described below, mail me.
-(Note: The ". ENV" assumes a Bourne compabtible shell.  This command
+(NOTE: The ". ENV" assumes a Bourne compabtible shell.  This command
 sets the environment variables OOC_DEV_ROOT, MAIN_MAKEFILE, and
 OO2CRC.  If you are running a different shell, you need to do
 something equivalent.)
@@ -39,7 +43,7 @@ the case-insensive file name confuse the compiler.  Use a UFS
 partition instead.
 
 If the tests in tests/compile/ produce an "100 Value out of range" for
-the test case `baseline8', make sure you have oo2c-1.5.7 installed.
+the test case `baseline8', make sure you have oo2c-1.5.7.2 installed.
 
 When installing from a distribution tar ball, MacOS X users need to
 add "-traditional-cpp" to the gcc options, like
