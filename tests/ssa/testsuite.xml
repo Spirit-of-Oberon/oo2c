@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; assign18 opExprCompat15 opExprCompat16">-->
+  select ="&SetupTestCasesWithOut; generic75 generic76">-->
 
   &TestSetupWithOut;
     
@@ -1638,6 +1638,14 @@
       Regression test: Like <code>generic73</code>, but for a record
       parameter.
     </test>
+    <test id="generic75" type="reject" file="Generic75.Mod">
+      Regression test: Defining an <code>INIT</code> procedure with a
+      result type.
+    </test>
+    <test id="generic76" type="reject" file="Generic76.Mod">
+      Regression test: Defining an <code>INIT</code> procedure as
+      <code>ABSTRACT</code>.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2339,6 +2347,10 @@
         msg="The type's INIT procedure must be defined before its use"/>
     <reject-info id="generic71" pos="%A(B)"
         msg="Undeclared identifier"/>
+    <reject-info id="generic75" pos="Alp) %INIT"
+        msg="This must be a non-function procedure"/>
+    <reject-info id="generic76" pos="ABSTRACT] %INIT"
+        msg="This static type-bound procedure cannot be abstract"/>
 
     <reject-info id="align2" pos=", %ALIGN2"
         msg="This modifier flag has no effect here"/>
