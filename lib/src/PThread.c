@@ -11,6 +11,8 @@
 #  include <gc/gc.h>
 #endif
 
+static PThread__Thread main_thread;
+static pthread_key_t threadobj_key;
 
 void PThread__ErrorDesc_INIT(PThread__Error e, Object__String msg,
 			     OOC_INT32 errorCode) {
@@ -55,6 +57,7 @@ static void check_error(int errorCode, int fatal) {
 
 
 void PThread__ThreadDesc_INIT(PThread__Thread t) {
+  Exception__InitThreadState(&t->exceptionState);
   t->thread = NULL;
 }
 
@@ -62,11 +65,21 @@ void PThread__ThreadDesc_Run(PThread__Thread t) {
   /* abstract method */
 }
 
+void PThread__ThreadDesc_RunWrapper(PThread__Thread t) {
+  /* make the thread's object available as thread specific data */
+  pthread_setspecific(threadobj_key, t);
+  
+  /* because the thread's stack of exception handlers is cleared, any
+     exception raised by the Run() method will end up in the default
+     handler of Exception.ActivateContext() */
+  OOC_METHOD(t, PThread__ThreadDesc_Run)(t);
+}
+
 void PThread__ThreadDesc_Start(PThread__Thread t) {
   sigset_t oldmask, newmask;
   int rc;
   void* (*start)(void*) =
-    (void*(*)(void*))OOC_METHOD(t, PThread__ThreadDesc_Run);
+    (void*(*)(void*))OOC_METHOD(t, PThread__ThreadDesc_RunWrapper);
   
   /* Mask all signals in the current thread before creating the new
    * thread.  This causes the new thread to start with all signals
@@ -131,6 +144,17 @@ void PThread__ConditionDesc_Destroy(PThread__Condition c) {
 }
 
 
-void OOC_PThread_init() {
+
+#define THIS_THREAD ((PThread__Thread)pthread_getspecific(threadobj_key))
+static Exception__ThreadStatePtr tls_GetThreadState() {
+  return &THIS_THREAD->exceptionState;
 }
 
+void OOC_PThread_init() {
+  pthread_key_create(&threadobj_key, NULL);
+  Exception__GetThreadState = tls_GetThreadState;
+  
+  main_thread = RT0__NewObject(OOC_TYPE_DESCR(PThread,ThreadDesc));
+  PThread__ThreadDesc_INIT(main_thread);
+  pthread_setspecific(threadobj_key, main_thread);
+}

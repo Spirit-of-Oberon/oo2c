@@ -10,8 +10,7 @@
 
 #define EXCEPTION_EXIT_CODE 126
 
-static Exception__Exception current = NULL;
-static Exception__ContextPtr contextStack = NULL;
+static Exception__ThreadState local_state;
 
 void Exception__ExceptionDesc_INIT(Exception__Exception e,
 				   Object__String msg) {
@@ -20,7 +19,7 @@ void Exception__ExceptionDesc_INIT(Exception__Exception e,
 }
 
 Exception__Exception Exception__Current() {
-  return current;
+  return Exception__GetThreadState()->currentException;
 }
 
 #define SIZE_BUFFER 1024
@@ -61,12 +60,14 @@ void Exception__Abort(Exception__Exception e) {
 }
 
 void Exception__FatalError() {
-  Exception__Abort(current);
+  Exception__Abort(Exception__Current());
 }
 
 void Exception__ActivateContext() {
-  if (contextStack) {
-    longjmp(*(jmp_buf*)contextStack->jmpbuf, 1);
+  Exception__ContextPtr cs = Exception__GetThreadState()->contextStack;
+  
+  if (cs) {
+    longjmp(*(jmp_buf*)cs->jmpbuf, 1);
   } else {
     Exception__FatalError();
   }
@@ -81,29 +82,33 @@ void Exception__Raise(Exception__Exception e) {
 #endif
   }
   
-  current = e;
+  Exception__GetThreadState()->currentException = e;
   Exception__ActivateContext();
 }
 
 void Exception__Clear() {
-  current = NULL;
+  Exception__GetThreadState()->currentException = NULL;
 }
 
 void Exception__ClearFixed(struct Exception__Context *context) {
-  current = context->savedException;
+    Exception__GetThreadState()->currentException = context->savedException;
 }
 
 void Exception__PushContext(struct Exception__Context *context,
 			    OOC_PTR jmpbuf) {
-  context->savedException = current;
-  context->next = contextStack;
+  Exception__ThreadStatePtr ts = Exception__GetThreadState();
+  
+  context->savedException = ts->currentException;
+  context->next = ts->contextStack;
   context->jmpbuf = jmpbuf;
-  contextStack = context;
+  ts->contextStack = context;
 }
 
 void Exception__PopContext(OOC_INT32 n) {
+  Exception__ThreadStatePtr ts = Exception__GetThreadState();
+  
   while (n > 0) {
-    contextStack = contextStack->next;
+    ts->contextStack = ts->contextStack->next;
     n--;
   }
 }
@@ -134,5 +139,16 @@ void Exception__ParseErrorDesc_INIT(Exception__ParseError e,
   e->offset = offset;
 }
 
+void Exception__InitThreadState(Exception__ThreadState *ts) {
+  ts->contextStack = NULL;
+  ts->currentException = NULL;
+}
+
+static Exception__ThreadStatePtr local_GetThreadState() {
+  return &local_state;
+}
+
 void OOC_Exception_init(void) {
+  Exception__InitThreadState(&local_state);
+  Exception__GetThreadState = local_GetThreadState;
 }

@@ -19,6 +19,10 @@ TYPE
 TYPE
   Thread* = POINTER TO ThreadDesc;
   ThreadDesc* = RECORD [ABSTRACT]
+    exceptionState: Exception.ThreadState;
+    (* The garbage collector does not see and thread local storage, so
+       we must make sure a reference to the current exception is always life
+       in an area it @emph{can} see.  *)
     thread: SYSTEM.PTR;
   END;
 
@@ -43,6 +47,8 @@ PROCEDURE (t: Thread) INIT*();
 
 PROCEDURE (t: Thread) [ABSTRACT] Run*();
 
+PROCEDURE (t: Thread) RunWrapper();
+
 PROCEDURE (t: Thread) Start*()
 RAISES Error;
   
@@ -57,8 +63,7 @@ PROCEDURE (m: Mutex) Lock*();
 
 PROCEDURE (m: Mutex) Unlock*();
 
-PROCEDURE (m: Mutex) Destroy*()
-RAISES Error;
+PROCEDURE (m: Mutex) Destroy*();
 
 (* ------------------------------------------------------------------------ *)
 
@@ -70,7 +75,6 @@ PROCEDURE (c: Condition) Broadcast*();
 
 PROCEDURE (c: Condition) Wait*(m: Mutex);
 
-PROCEDURE (c: Condition) Destroy*()
-RAISES Error;
+PROCEDURE (c: Condition) Destroy*();
 
 END PThread.

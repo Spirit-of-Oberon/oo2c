@@ -139,6 +139,20 @@ TYPE
        field is @samp{-1}.  *)
   END;
 
+TYPE
+  ThreadStatePtr* = POINTER TO ThreadState;
+  ThreadState* = RECORD [NO_DESCRIPTOR, NOT_EXTENSIBLE]
+    (**Holds thread local state for the exception module.  *)
+    contextStack: ContextPtr;
+    currentException: Exception;
+  END;
+
+VAR
+  GetThreadState*: PROCEDURE(): ThreadStatePtr;
+  (**Return a pointer to the per-thread data area for exception state.  If
+     the program uses threading, then this function returns a pointer to
+     thread local storage.  *)
+
 
 PROCEDURE (e: Exception) INIT*(msg: STRING);
 (**Initialize exception @oparam{e} and set @oparam{msg} as its message.
@@ -159,11 +173,16 @@ PROCEDURE Raise* [NO_RETURN](e: Exception) RAISES Exception;
    @oparam{e} is not @code{NIL}.
    @end precond  *)
 PROCEDURE Current*(): Exception;
-(**Pointer to the currently active exception.  This is @code{NIL}
-   if no exception has been raised, or when a @code{CATCH} clause has been
-   completed successfully for the last exception.  Within a @code{CATCH}
-   block, the predefined read-only variable @samp{EXCEPTION} holds the
-   same pointer value.  *)
+(**Return the pointer to the currently active exception.  This is @code{NIL} if
+   no exception has been raised, or when a @code{CATCH} clause has been
+   completed successfully for the last exception.  Within a @code{CATCH} block,
+   the predefined read-only variable @samp{EXCEPTION} holds the same pointer
+   value.
+
+   @emph{Note}: Within a @code{CATCH} block, this function's result becomes
+   undefined at the start of the first @code{TRY} statement nested in the
+   @code{CATCH}.  @samp{EXCEPTION} is a defined value over the whole
+   @code{CATCH} block.  *)
   
 PROCEDURE Clear*;
 (**FIXME... Replace this procedure with @oproc{ClearFixed} with the next
@@ -187,7 +206,7 @@ PROCEDURE ActivateContext* [NO_RETURN]();
    If the stack is empty, a message with details of the current exception is
    written to @var{stderr}, and the program is aborted.  This procedure should
    never be called directly.  *)
-
+  
 PROCEDURE (e: Exception) GetMessage*(): STRING;
 (**Return the message string describing the exception @oparam{e}.  *)
 PROCEDURE (e: Exception) WriteBacktrace*;
@@ -205,5 +224,7 @@ PROCEDURE FatalError*[NO_RETURN]();
 (**Write data of current exception to @var{stderr} and abort program.  It is
    an error to call this procedure outside a @code{CATCH} block of a @code{TRY}
    statement.  *)
+
+PROCEDURE InitThreadState*(VAR ts: ThreadState);
   
 END Exception.

@@ -8,6 +8,7 @@ CONST
   iterations = 1024*512;
   blockSize = 1024;
   blockCount = 1024;
+  exceptionIterations = 1024*1024;
   
 TYPE
   Block = POINTER TO ARRAY blockSize OF LONGINT;
@@ -60,7 +61,25 @@ PROCEDURE (t: Thread) Run*();
   VAR
     i, j: LONGINT;
     b: Block;
+    e: Exception.Exception;
   BEGIN
+    (* test exceptions *)
+    Log.Object("Starting exceptions test", t.str);
+    e := NEW(Exception.Exception, "Test123");
+    FOR i := 1 TO exceptionIterations DO
+      TRY
+        RAISE(e);
+      CATCH Exception.Exception:
+        IF (Exception.Current() # e) THEN
+          Log.Ptr("expected exception", e);
+          Log.Ptr("but got exception", Exception.Current());
+          ASSERT(FALSE);
+        END;
+      END;
+    END;
+    Log.Object("Exceptions test completed", t.str);
+    t.Sync();
+    
     (* test mutex *)
     Log.Object("Starting mutex test", t.str);
     FOR i := 1 TO iterations DO
