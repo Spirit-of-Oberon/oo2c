@@ -1,0 +1,661 @@
+MODULE OOC:X86:Translate;
+
+IMPORT
+  Object:Boxed, ADT:ArrayList, IO,
+  Rep := OOC:Repository, Sym := OOC:SymbolTable,
+  TR := OOC:SymbolTable:TypeRules, OOC:IR,
+  S := OOC:X86:SSA, M := OOC:X86:Machine, B := OOC:X86:Block,
+  R := OOC:X86:Register, W := OOC:X86:Write, OOC:X86:Destore,
+  OOC:X86:ConstProp, OOC:X86:Algebraic, D := OOC:X86:Debug;
+
+(*CONST
+  truePath = 0;
+  falsePath = 1;*)
+  
+PROCEDURE Translate*(m: Rep.Module; moduleIR: IR.Module;
+                     ch: IO.ByteChannel);
+  VAR
+    w: W.Writer;
+    p: IR.Procedure;
+
+    (* translator state: *)
+    b: S.FunctionBlock;
+    sp, fp: S.Result;
+    returns, loopExits: ArrayList.ArrayList(S.Instr);
+    controlCP, memoryCP: S.Instr;
+    
+  PROCEDURE ControlCP(instr: S.Instr);
+    BEGIN
+      instr.AddDep(S.depControl, controlCP);
+      controlCP := instr;
+    END ControlCP;
+  
+  PROCEDURE MemoryCP(instr: S.Instr);
+    BEGIN
+      instr.AddDep(S.depMemory, memoryCP);
+      memoryCP := instr;
+    END MemoryCP;
+  
+  PROCEDURE FixAddress(arg: S.Result): S.Result;
+    BEGIN
+      RETURN b.FixType(arg, S.address);
+    END FixAddress;
+  
+  PROCEDURE FixLength(arg: S.Result): S.Result;
+    BEGIN
+      RETURN b.FixType(arg, S.length);
+    END FixLength;
+  
+  PROCEDURE StatmSeq(statmSeq: IR.StatementSeq);
+  (**Translates the statement sequence @oparam{statmSeq} into a straightforward
+     SSA representation.  Instructions are added to the block @ovar{b}.  *)
+    VAR
+      statm: IR.Statement;
+      instr, endTrue, endFalse: S.Instr;
+      merge: S.MergeInstr;
+      res, var: S.Result;
+      controlTrue, memoryTrue, controlFalse, memoryFalse: S.Instr;
+      loopStart: S.LoopStartInstr;
+      loopEnd: S.Instr;
+      
+    PROCEDURE SetCC(res: S.Result): S.Result;
+      VAR
+        instr: S.Instr;
+      BEGIN
+        IF (res.register = S.cc) THEN
+          RETURN res;
+        ELSE
+          instr := b.AddInstr2(S.neq, res, b.AddConstBool(FALSE));
+          RETURN instr.AddResultReg(S.noType, S.cc);
+        END;
+      END SetCC;
+
+    PROCEDURE SetBool(res: S.Result): S.Result;
+      VAR
+        instr: S.Instr;
+      BEGIN
+        IF (res.register = S.cc) THEN
+          instr := b.AddInstr1(S.setBool, res);
+          RETURN instr.AddResult(S.boolean);
+        ELSE
+          RETURN res;
+        END;
+      END SetBool;
+
+    PROCEDURE AddJump(): S.Instr;
+      VAR
+        instr: S.Instr;
+      BEGIN
+        instr := b.AddInstr0(S.jump);
+        ControlCP(instr);
+        MemoryCP(instr);
+        RETURN instr;
+      END AddJump;
+
+    PROCEDURE SplitPaths(bool: S.Result; controlCP, memoryCP: S.Instr;
+                         VAR controlTrue, memoryTrue: S.Instr;
+                         VAR controlFalse, memoryFalse: S.Instr);
+    (**Takes a boolean expression @oparam{bool} and produces the two paths,
+       ``true'' and ``false'', that are traversed depending on the outcome of
+       the boolean expression.
+
+       @oparam{controlCP} and @oparam{memoryCP} are the control and memory
+       checkpoints that are valid after @oparam{bool} has been evaluated.  *)
+      VAR
+        instr: S.Instr;
+        gate: S.GateInstr;
+        merge: S.MergeInstr;
+
+      PROCEDURE SplitValue();
+        VAR
+          pathTrue, pathFalse: S.Block;
+          branch: S.BranchInstr;
+        BEGIN
+          (* case: boolean value *)
+          branch := b.AddBranch(SetCC(bool));
+          branch.AddDep(S.depControl, controlCP);
+          
+          (* first, the "true" path *)
+          pathTrue := b.AddMerge0(S.guard, b.AddConstBool(TRUE));
+          pathTrue.AddDep(S.depControl, branch);
+          controlTrue := pathTrue;
+          memoryTrue := memoryCP;
+          
+          (* second, the "false" path;  *)
+          pathFalse := b.AddMerge0(S.guard, b.AddConstBool(FALSE));
+          pathFalse.AddDep(S.depControl, branch);
+          controlFalse := pathFalse;
+          memoryFalse := memoryCP;
+          
+          branch.SetPaths2(pathTrue, pathFalse);
+        END SplitValue;
+      
+      PROCEDURE SplitAndGate(gate: S.GateInstr; testValue: S.Result;
+                             bailOutPath, testPath: S.Instr);
+        VAR
+          merge: S.MergeInstr;
+          ct, mt, cf, mf, guard, branch, instr: S.Instr;
+        BEGIN
+          SplitPaths(testValue,
+                     testPath.GetBeforeInstr(S.depControl),
+                     testPath.GetBeforeInstr(S.depMemory),
+                     ct, mt, cf, mf);
+
+          guard := bailOutPath.GetBeforeInstr(S.depControl);
+          ASSERT(guard.opcode = S.guard);
+          branch := guard.GetBranchBeforeInstr(S.depControl);
+          ASSERT(branch.opcode = S.branch);
+          controlTrue := ct; memoryTrue := mt;
+
+          instr := b.AddInstr0(S.jump);
+          instr.AddDep(S.depControl, cf);
+          instr.AddDep(S.depMemory, mf);
+          controlFalse := bailOutPath.GetBeforeInstr(S.depControl);
+          memoryFalse := bailOutPath.GetBeforeInstr(S.depMemory);
+          controlFalse(S.MergeInstr).AddJump(instr);
+          
+          (* ditch old gate, its merge, and the jumps into it *)
+          merge := gate.merge(S.MergeInstr);
+          gate.Delete();
+          merge.Delete();
+          bailOutPath.Delete();
+          testPath.Delete();
+        END SplitAndGate;
+      
+      PROCEDURE SplitOrGate(gate: S.GateInstr; testValue: S.Result;
+                            bailOutPath, testPath: S.Instr);
+        VAR
+          merge: S.MergeInstr;
+          ct, mt, cf, mf, guard, branch, instr: S.Instr;
+        BEGIN
+          SplitPaths(testValue,
+                     testPath.GetBeforeInstr(S.depControl),
+                     testPath.GetBeforeInstr(S.depMemory),
+                     ct, mt, cf, mf);
+
+          guard := bailOutPath.GetBeforeInstr(S.depControl);
+          ASSERT(guard.opcode = S.guard);
+          branch := guard.GetBranchBeforeInstr(S.depControl);
+          ASSERT(branch.opcode = S.branch);
+          controlFalse := cf; memoryFalse := mf;
+
+          instr := b.AddInstr0(S.jump);
+          instr.AddDep(S.depControl, ct);
+          instr.AddDep(S.depMemory, mt);
+          controlTrue := bailOutPath.GetBeforeInstr(S.depControl);
+          memoryTrue := bailOutPath.GetBeforeInstr(S.depMemory);
+          controlTrue(S.MergeInstr).AddJump(instr);
+          
+          (* ditch old gate, its merge, and the jumps into it *)
+          merge := gate.merge(S.MergeInstr);
+          gate.Delete();
+          merge.Delete();
+          bailOutPath.Delete();
+          testPath.Delete();
+        END SplitOrGate;
+      
+      BEGIN
+        instr := bool.instr;
+        IF (instr.opcode = S.gate) THEN
+          gate := instr(S.GateInstr);
+          merge := instr(S.GateInstr).merge(S.MergeInstr);
+          IF instr.opndList.nextOpnd.arg.IsFalse() THEN
+            SplitAndGate(gate, instr.opndList.arg,
+                         merge.jumps[1], merge.jumps[0]);
+            RETURN;
+          ELSIF instr.opndList.arg.IsFalse() THEN
+            SplitAndGate(gate, instr.opndList.nextOpnd.arg,
+                         merge.jumps[0], merge.jumps[1]);
+            RETURN;
+          ELSIF instr.opndList.nextOpnd.arg.IsTrue() THEN
+            SplitOrGate(gate, instr.opndList.arg,
+                        merge.jumps[1], merge.jumps[0]);
+            RETURN;
+          ELSIF instr.opndList.arg.IsTrue() THEN
+            SplitOrGate(gate, instr.opndList.nextOpnd.arg,
+                        merge.jumps[0], merge.jumps[1]);
+            RETURN;
+          END;
+        END;
+        (* fall back to most general transformation *)
+        SplitValue();
+      END SplitPaths;
+    
+    PROCEDURE Expression(expr: IR.Expression): S.Result;
+      VAR
+        instr: S.Instr;
+        adr, res, arg1, arg2, baseArray: S.Result;
+        designator: S.Designator;
+        varDecl: Sym.VarDecl;
+        var: S.Var;
+        opcode: S.Opcode;
+        endTrue, endFalse: S.Instr;
+        merge: S.MergeInstr;
+        controlTrue, memoryTrue, controlFalse, memoryFalse: S.Instr;
+        dim: LONGINT;
+
+      PROCEDURE GetIndexBaseArray(indexOp: IR.Expression;
+                                  VAR dim: LONGINT): S.Result;
+        VAR
+          res: S.Result;
+        BEGIN
+          WITH indexOp: IR.Index DO
+            res := GetIndexBaseArray(indexOp.array, dim);
+            INC(dim);
+            RETURN res;
+          ELSE
+            dim := -1;
+            RETURN Expression(indexOp);
+          END;
+        END GetIndexBaseArray;
+      
+      PROCEDURE CalculateLength (pb: S.FunctionBlock; value: IR.Expression;
+                                 dim: LONGINT; baseArray: S.Result): S.Result;
+      (* Calculate the one-dimensional length of the variable @oparam{value} or of
+         one of its elements.  With @oparam{dim=-1}, return the number of elements
+         of the whole variable.  With @oparam{dim>=0}, return the length of an
+         array element of dimension @oparam{dim}.  @oparam{baseArray} holds the
+         (virtual, and dead) @oconst{Opcode.get} instruction on the array variable.  *)
+        VAR
+          type: Sym.Type;
+          i: LONGINT;
+          
+        PROCEDURE RecursiveGetLength (type: Sym.Type; dim: LONGINT): S.Result;
+          VAR
+            len: S.Result;
+            lenp: S.Instr;
+          BEGIN
+            type := type.Deparam();
+            WITH type: Sym.Array DO
+              IF type.isOpenArray THEN
+                len := pb.AddGetLengthInstr (baseArray.instr, dim+1, type);
+              ELSE
+                len := pb.AddConstLength(type.length);
+              END;
+              len := FixLength(len);
+              
+              IF TR.IsArray(type.elementType) THEN
+                lenp := b.AddInstr2 (S.mul, len,
+                                     RecursiveGetLength(type.elementType, dim+1));
+                RETURN lenp.AddResult(S.length);
+              ELSE
+                RETURN len;
+              END;
+            ELSE
+              RETURN pb.AddConstLength(1);
+            END;
+          END RecursiveGetLength;
+        
+        BEGIN
+          (* if `value' is an index expression, normalize it to the array
+             variable  *)
+          WHILE (value IS IR.Index) DO
+            value := value(IR.Index). array;
+            INC (dim);
+          END;
+          
+          (* get type of the value we are interested in *)
+          type := value. type;
+          FOR i := 0 TO dim DO
+            type := type.Deparam();
+            type := type(Sym.Array). elementType;
+          END;
+          
+          RETURN RecursiveGetLength (type, dim);
+        END CalculateLength;
+      
+      PROCEDURE CalculateSize (pb: S.FunctionBlock; value: IR.Expression;
+                               length: S.Result): S.Result;
+      (* Calculate the size of the variable @oparam{value} based on the given
+         length and the (non-array) base type of the index expression
+         @oparam{value}.  *)
+        VAR
+          type: Sym.Type;
+          size: S.Instr;
+        BEGIN
+          (* if `value' is an index expression, normalize it to the array
+             variable  *)
+          WHILE (value IS IR.Index) DO
+            value := value(IR.Index).array;
+          END;
+          
+          (* get type of the value we are interested in *)
+          type := value.type;
+          WHILE TR.IsArrayType(type) DO
+            type := TR.ArrayElementType(type);
+          END;
+          type := type.Deparam();
+          
+          size := pb.AddInstr2(S.mul,
+                               FixAddress(length),
+                               FixAddress(pb.AddConstLength(type.size)));
+          RETURN size.AddResult(S.length);
+        END CalculateSize;
+      
+      PROCEDURE Index (indexOp: IR.Index;
+                       baseArray: S.Result;
+                       elementSize: S.Result;
+                       dim: LONGINT): S.Result;
+      (* Handles a sequence of index operations on an array.  @oapram{indexOp}
+         is the index operation that is to be translated.  @oparam{baseArray}
+         holds the (virtual) @oconst{Opcode.get} operation on the array
+         variable at the very start of the index sequence.
+         @oparam{elementSize} is the size in bytes of the value produced by
+         this index operation.  @oparam{dim} is the dimension of
+         @oparam{baseArray} on which @oparam{indexOp} operates.  *)
+        VAR
+          instr, instr1: S.Instr;
+          newSize, baseResult, elementAdr, scaledIndex,
+              length, index: S.Result;
+          adrOpnd: S.Opnd;
+          elementType, arrayType: Sym.Type;
+        BEGIN
+          arrayType := indexOp.array.type.Deparam();
+          length := b.AddGetLengthInstr(baseArray.instr, dim,
+                                        arrayType(Sym.Array));
+          instr := b.AddInstr2(S.mul, elementSize, FixAddress(length));
+          newSize := instr.AddResult(S.address);
+          
+          IF (indexOp.array IS IR.Index) THEN
+            baseResult := Index(indexOp.array(IR.Index), baseArray,
+                                newSize, dim-1);
+          ELSE
+            baseResult := baseArray;
+            ASSERT(dim = 0);
+          END;
+          INC(dim);
+          ASSERT(baseResult.instr.opcode = S.get);
+          
+          (* take the "get" instruction of the array's designator and change it
+             into a "get" for the array element; the store seen by the index
+             expression is the one that is passed into the old "get", and the
+             new "get" sees the store after the index expression has been
+             evaluated  *)
+          instr := baseResult.instr;
+          (*controlCP := instr.GetBeforeInstr(S.depControl);*)
+          memoryCP := instr.GetBeforeInstr(S.depMemory);
+          index := Expression(indexOp.index);
+(*          IF indexOp. checkIndex THEN
+            check := AddException (pb, indexOp. sym,
+                                   Opcode.checkIndex, index. subclass);
+            check. AddOpnd (index, Opnd.arg);
+            check. AddOpnd (length, Opnd. arg);
+            index := check;
+          END;*)
+          
+          instr.DeleteDep(S.depMemory);
+          MemoryCP(instr);
+          
+          elementType := indexOp.type;
+          instr1 := b.AddInstr2(S.mul, FixAddress(index), elementSize);
+          scaledIndex := instr1.AddResult(S.address);
+          
+          adrOpnd := instr.opndList;
+          instr1 := b.AddInstr2(S.add, adrOpnd.arg, scaledIndex);
+          elementAdr := instr1.AddResult(S.address);
+          adrOpnd.ReplaceArg(elementAdr);
+          instr.resultList.SetType(S.MapType(indexOp.type));
+          
+          instr.ExtendDesignator(NEW(S.Index, b, index));
+          
+          RETURN instr.resultList;
+        END Index;
+      
+      PROCEDURE Call(call: IR.Call): S.Result;
+        VAR
+          instr: S.Instr;
+          i: LONGINT;
+          args: POINTER TO ARRAY OF S.Result;
+        BEGIN
+          (* evaluate arguments right to left, and procedure designator last *)
+          NEW(args, LEN(call.arguments^));
+          FOR i := LEN(call.arguments^)-1 TO 0 BY -1 DO
+            args[i] := Expression(call.arguments[i]);
+          END;
+          
+          instr := b.AddInstr2(S.call, Expression(call.design), sp);
+          FOR i := 0 TO LEN(call.arguments^)-1 DO
+            instr.AddOpnd(args[i]);
+          END;
+
+          MemoryCP(instr);
+          ControlCP(instr);
+          RETURN instr.AddResultExpr(call.type);
+        END Call;
+      
+      BEGIN
+        WITH expr: IR.Const DO
+          IF (expr.value IS Boxed.Boolean) THEN
+            RETURN b.AddConstBool(expr.value(Boxed.Boolean).value);
+          ELSE
+            RETURN b.AddConst(NEW(S.Const, expr.value), expr.type);
+          END;
+          
+        | expr: IR.ProcedureRef DO
+          RETURN b.AddAdr(NEW(S.Proc, expr.decl(Sym.ProcDecl)));
+          
+        | expr: IR.Var DO
+          varDecl := expr.decl(Sym.VarDecl);
+          var := NEW(S.Var, varDecl);
+          IF ~varDecl.isParameter THEN
+            b.AllocateLocalVar(varDecl);
+          END;
+          instr := b.AddInstr2(S.add, fp, b.AddFramePointerOffset(varDecl));
+          adr := instr.AddResult(S.address);
+
+          IF (varDecl.type IS Sym.Array) THEN  (* indirect *)
+            instr := b.AddInstr1(S.get, adr);
+            (*MemoryCP(instr);*)
+            adr := instr.AddResult(S.address);
+          END;
+          
+          NEW(designator, 1);
+          designator[0] := var;
+          instr := b.AddInstr1(S.get, adr);
+          instr.SetDesignator(designator);
+          MemoryCP(instr);
+          RETURN instr.AddResultExpr(expr.type);
+
+        | expr: IR.Index DO
+          baseArray := GetIndexBaseArray(expr, dim);
+          RETURN Index(expr, baseArray,
+                       CalculateSize(b, expr, 
+                                     CalculateLength(b, expr, -1, baseArray)),
+                       dim);
+
+        | expr: IR.BinaryArith DO
+          CASE expr.variant OF
+          | IR.arithAdd : opcode := S.add;
+          | IR.arithSub : opcode := S.sub;
+            (*| IR.arithMul : opcode := S.multiply;
+                                                    | IR.arithMod : opcode := S.modulo;
+                                                                                        | IR.arithDivI: opcode := S.divide;
+                                                                                                                            | IR.arithDivR: opcode := S.divide;*)
+          END;
+          arg1 := Expression(expr.left);
+          arg2 := Expression(expr.right);
+          instr := b.AddInstr2(opcode, arg1, arg2);
+          RETURN instr.AddResultExpr(expr.type);
+          
+        | expr: IR.Negate DO
+          instr := b.AddInstr1(S.neg, Expression(expr.operand));
+          RETURN instr.AddResultExpr(expr.type);
+
+        | expr: IR.Compare DO
+          CASE expr.variant OF
+          | IR.equal: opcode := S.eql;
+          | IR.notEqual: opcode := S.neq;
+          | IR.less: opcode := S.lss;
+          | IR.lessEqual: opcode := S.leq;
+          | IR.greater: opcode := S.gtr;
+          | IR.greaterEqual: opcode := S.geq;
+          END;
+          arg1 := Expression(expr.left);
+          arg2 := Expression(expr.right);
+          instr := b.AddInstr2(opcode, arg1, arg2);
+          RETURN instr.AddResultReg(S.noType, S.cc);
+          
+        | expr: IR.BooleanOp DO          (* shortcut "and" and "or" *)
+          res := Expression(expr.left);
+          SplitPaths(res, controlCP, memoryCP,
+                     controlTrue, memoryTrue,
+                     controlFalse, memoryFalse);
+          (* first, the "true" path *)
+          memoryCP := memoryTrue; controlCP := controlTrue;
+          IF (expr.variant = IR.and) THEN (* TRUE & right is right *)
+            arg1 := SetBool(Expression(expr.right));
+          ELSE                           (* TRUE OR right is TRUE *)
+            arg1 := b.AddConstBool(TRUE);
+          END;
+          endTrue := AddJump();
+          (* second, the "false" path;  *)
+          memoryCP := memoryFalse; controlCP := controlFalse;
+          IF (expr.variant = IR.and) THEN (* FALSE & right is FALSE *)
+            arg2 := b.AddConstBool(FALSE);
+          ELSE                           (* FALSE OR right is right *)
+            arg2 := SetBool(Expression(expr.right));
+          END;
+          endFalse := AddJump();
+          (* finally, pull all the strings together again *)
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          controlCP := merge; memoryCP := merge;
+          
+          (* add the gate that represents the result of the boolean expr *)
+          instr := merge.AddGate(S.gate);
+          instr.AddOpnd(arg1);
+          instr.AddOpnd(arg2);
+          RETURN instr.AddResultExpr(expr.type);
+
+        | expr: IR.Call DO
+          RETURN Call(expr);
+        END;
+      END Expression;
+
+    BEGIN
+      FOR statm IN statmSeq^ DO
+        WITH statm: IR.Assignment DO
+          (* note: oo2c-2 evaluates first var, then value *)
+          res := Expression(statm.value);
+          var := Expression(statm.variable);
+          var.instr.SetOpcode(S.set);
+          var.instr.AddOpnd(res);
+          
+        | statm: IR.IfStatm DO
+          res := Expression(statm.guard);
+          SplitPaths(res, controlCP, memoryCP,
+                     controlTrue, memoryTrue,
+                     controlFalse, memoryFalse);
+          (* first, the "true" path *)
+          memoryCP := memoryTrue; controlCP := controlTrue;
+          StatmSeq(statm.pathTrue); endTrue := AddJump();
+          (* second, the "false" path;  *)
+          memoryCP := memoryFalse; controlCP := controlFalse;
+          IF (statm.pathFalse # NIL) THEN
+            StatmSeq(statm.pathFalse);
+          END;
+          endFalse := AddJump();
+          (* finally, pull all the strings together again *)
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          controlCP := merge; memoryCP := merge;
+          
+        | statm: IR.Return DO
+          instr := b.AddInstr1(S.return, Expression(statm.result));
+          ControlCP(instr); MemoryCP(instr);
+          res := instr.AddResultExpr(statm.result.type);
+          res.adrMode := S.register;
+          res.register := S.resultRegister;
+          returns.Append(instr);
+
+        | statm: IR.LoopStatm DO
+          loopStart := b.AddLoopStart();
+          ControlCP(loopStart); MemoryCP(loopStart);
+          StatmSeq(statm.body);
+          
+          instr := b.AddLoopBackedge(loopStart);
+          instr.AddDep(S.depMemory, memoryCP);
+          instr.AddDep(S.depControl, controlCP);
+          loopStart.SetBackedge(instr);
+          
+          loopEnd := b.AddMerge(S.loopEnd, loopExits.Elements());
+          loopStart.SetEnd(loopEnd);
+          controlCP := loopEnd; memoryCP := loopEnd;
+          loopExits.Clear();
+          
+        | statm: IR.Exit DO
+          instr := b.AddInstr0(S.loopExit);
+          ControlCP(instr); MemoryCP(instr);
+          loopExits.Append(instr);
+        END;
+      END;
+    END StatmSeq;
+  
+  PROCEDURE FctProlog(b: S.FunctionBlock);
+    VAR
+      enter, pushFp, setFp, localVars: S.Instr;
+    BEGIN
+      enter := b.AddInstr0(S.enter);
+      sp := enter.AddResultReg(S.address, S.sp);
+      fp := enter.AddResultReg(S.address, S.fp);
+      controlCP := enter;
+      memoryCP := enter;
+      b.SetEnter(enter);
+      
+      pushFp := b.AddInstr2(S.push, sp, fp);
+      sp := pushFp.AddResultReg(S.address, S.sp);
+      ASSERT(sp.register = S.sp);
+      
+      setFp := b.AddInstr1(S.copy, sp);
+      fp := setFp.AddResultReg(S.address, S.fp);
+      
+      localVars := b.AddInstr2(S.allocateStack,
+                               sp, b.AddFramePointerOffset(NIL));
+      MemoryCP(localVars);
+      sp := localVars.AddResultReg(S.address, S.sp);
+      ASSERT(sp.register = S.sp);
+    END FctProlog;
+  
+  PROCEDURE FctEpilog(b: S.FunctionBlock);
+    VAR
+      leave: S.Instr;
+      exit: S.ExitInstr;
+    BEGIN
+      leave := b.AddInstr2(S.leave, sp, fp);
+      sp := leave.AddResultReg(S.address, S.sp);
+      fp := leave.AddResultReg(S.address, S.fp);
+
+      exit := b.AddExit(sp, fp, returns.Elements());
+      ControlCP(exit);
+      MemoryCP(exit);
+      b.SetExit(exit);
+    END FctEpilog;
+  
+  BEGIN
+    returns := NEW(ArrayList.ArrayList(S.Instr), 4);
+    loopExits := NEW(ArrayList.ArrayList(S.Instr), 4);
+    
+    w := NEW(W.Writer, ch);
+    FOR p IN moduleIR.procList^ DO
+      b := NEW(S.FunctionBlock, p.decl);
+      FctProlog(b);
+      StatmSeq(p.statmSeq);
+      FctEpilog(b);
+
+      Destore.Transform(b);
+      Algebraic.Transform(b, FALSE);
+      ConstProp.Transform(b);
+      b.DeadCodeElimination();
+      
+      M.ApplyMachineModel(b);
+      
+      B.ArrangeInstructions(b);
+      (*D.WriteFunction(b);*)
+      R.AssignRegisters(b);
+      D.ValidateAllocation(b);
+
+      (*D.WriteFunction(b);*)
+      w.WriteFunction(b);
+    END;
+    w.EndFile();
+  END Translate;
+  
+END OOC:X86:Translate.
