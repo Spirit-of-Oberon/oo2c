@@ -2364,10 +2364,10 @@ BEGIN
   WITH base : Sym.PredefType DO
     CASE base.id OF
     | Predef.char:
-      RETURN b.NewConst(sym, left.type, 
+      RETURN b.NewConst(sym, TR.MatchingStringConst(base), 
         l(String8.Value).Concat(r(String8.Value)));
     | Predef.longchar:
-      RETURN b.NewConst(sym, left.type, 
+      RETURN b.NewConst(sym, TR.MatchingStringConst(base), 
         l(String16.Value).Concat(r(String16.Value)));
     END
   END
