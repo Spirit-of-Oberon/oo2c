@@ -897,15 +897,11 @@ PROCEDURE AllocateType* (type: Sym.Type);
         END;
       
         (* determine maximum alignment value, as selected by ALIGN[1248] *)
-        (*IF (t. beFlags*{structAlign1..structAlign8} # {}) THEN
-          i := structAlign8;
-          WHILE ~(i IN t. beFlags) DO
-            DEC (i)
-          END;
-          maxAlign := SHORT (ASH (1, i-structAlign1))
-        ELSE*)
-          maxAlign := MAX (INTEGER);
-        (*END;*)
+        IF type.fieldAlign = 0 THEN
+          maxAlign := MAX (INTEGER)
+        ELSE
+          maxAlign := type.fieldAlign;
+        END;
 
         nested := type. nestedItems;
         WHILE (nested # NIL) DO

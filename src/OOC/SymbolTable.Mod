@@ -102,6 +102,11 @@ CONST
   flagDeprecated* = 10;
   flagOOCExtensions* = 11;
   flagExtensible* = 12;
+  flagAlign1* = 13;
+  flagAlign2* = 14;
+  flagAlign4* = 15;
+  flagAlign8* = 16;
+
   (**This flag is disabled, because it causes a deref of NIL in
      @omodule{*OOC:SymbolTable:InterfaceDescr} due to an unset
      @ofield{Record.className}.  *)
@@ -658,6 +663,8 @@ TYPE
     (**If @code{TRUE}, then this type can serve as a base type for other
        records.  Default is @code{TRUE} for non-
        @code{INTERFACE} modules.  *)
+    fieldAlign* : INTEGER;
+    (** Alignment constraint on fields of this record. *)
     
     className*: Name;                    (* ... make this read-only? *)
     (**If the record has been classified as being part of a @emph{class}
@@ -1244,6 +1251,14 @@ PROCEDURE (item: Item) AddFlag* (name: Name);
       id := flagDeprecated;
     ELSIF (name.str^ = "OOC_EXTENSIONS") THEN
       id := flagOOCExtensions;
+    ELSIF (name.str^ = "ALIGN1") THEN
+      id := flagAlign1;
+    ELSIF (name.str^ = "ALIGN2") THEN
+      id := flagAlign2;
+    ELSIF (name.str^ = "ALIGN4") THEN
+      id := flagAlign4;
+    ELSIF (name.str^ = "ALIGN8") THEN
+      id := flagAlign8;
     ELSE
       id := flagUnknownName;
     END;
@@ -2293,6 +2308,7 @@ PROCEDURE InitRecord* (record: Record; parent: Item; position: Position;
     record. isUnion := FALSE;
     record. isAbstract := FALSE;
     record. isExtensible := TRUE;
+    record. fieldAlign := 0;
     record. className := NIL
   END InitRecord;
 

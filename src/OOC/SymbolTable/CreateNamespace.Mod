@@ -1111,7 +1111,16 @@ RAISES IO.Error;
             InvalidFlag(flag, modifierFlagWithoutEffect);
           END;
         END SetFlag;
-      
+
+      PROCEDURE SetAlign(VAR alignAttribute : INTEGER; newValue : INTEGER);
+        BEGIN
+          IF (alignAttribute = 0) THEN
+            alignAttribute := newValue;
+          ELSE
+            InvalidFlag(flag, modifierFlagWithoutEffect);
+          END;
+        END SetAlign;
+ 
       BEGIN
         IF ~visited.HasKey(item) THEN
           visited.Set(item, NIL);
@@ -1200,6 +1209,14 @@ RAISES IO.Error;
                 SetFlag(item.isExtensible, TRUE);
               | Sym.flagUnion:
                 SetFlag(item.isUnion, TRUE);
+              | Sym.flagAlign1:
+                SetAlign(item.fieldAlign, 1);
+              | Sym.flagAlign2:
+                SetAlign(item.fieldAlign, 2);
+              | Sym.flagAlign4:
+                SetAlign(item.fieldAlign, 4);
+              | Sym.flagAlign8:
+                SetAlign(item.fieldAlign, 8);
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;
