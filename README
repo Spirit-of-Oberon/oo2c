@@ -102,4 +102,25 @@ Use bin/oo2c to do "make install":
 This installs the compiler's data under the configured prefix,
 `/tmp/test' in this example,
 
+
+How to Create a Patch
+=====================
+
+To create a patch file relative to the current state of the CVS, first
+eliminate all derived files in the local working copy:
+
+  make cvsclean
+
+Update the working copy to the current head of the CVS:
+
+  cvs update -dP
+
+Resolve conflicts caused by the update (if any) and run the diff
+command:
+
+  cvs diff -u >../mypatch
+
+If "diff -u" does not work use "diff -c" as fallback.
+
+
 -- Michael van Acken <mva@users.sf.net>
