@@ -1,7 +1,7 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
-  ADT:String, ADT:Dictionary, 
+  ADT:String, ADT:Dictionary, Language:Integer,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -318,6 +318,22 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
           RETURN FALSE;
         END;
       END ExportedVarDecl;
+
+    PROCEDURE AddTypeBoundHelpers (w: DeclWriter.Writer; proc: Sym.ProcDecl);
+      VAR
+        d: DeclWriter.Declaration;
+      BEGIN
+        d := w. NewDefine (Naming.NameOfTypeBoundIndex (proc),
+                           Integer.NewLInt (proc. tbProcIndex));
+        w. AddDeclaration (d);
+
+        d := w. NewDeclaration (Naming.NameOfTypeBoundSignature (proc),
+                                DeclWriter.tqNone,
+                                DeclWriter.scTypedef,
+                                ConvertType (w, proc. formalPars,
+                                             proc. formalPars));
+        w. AddDeclaration (d);
+      END AddTypeBoundHelpers;
     
     BEGIN
       ptr := root. nestedItems;
@@ -332,6 +348,9 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
               END;
             ELSE
               w. AddDeclaration (ConvertDecl (w, ptr, mode));
+              IF (ptr IS Sym.ProcDecl) & ptr(Sym.ProcDecl). isTypeBound THEN
+                AddTypeBoundHelpers (w, ptr(Sym.ProcDecl));
+              END;
             END;
           END
         ELSE                               (* ignore non-declarations *)

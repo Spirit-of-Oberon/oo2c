@@ -42,6 +42,7 @@ CONST  (* predefined types, taken from `OOC:SymbolTable:Predef' *)
   strShortint* = 3;
   strInteger* = 4;
   strLongint* = 5;
+  strPtr* = 11;
 
 CONST
   strArray* = -1;
@@ -120,6 +121,10 @@ TYPE
     (**Array element type, pointer base type, or list of record base types.
        For predefined scalar types this field is @code{NIL}.  *)
     
+    tbProcs-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF SYSTEM.PTR;
+    (**Table of type-bound procedures of a record type.  This field is
+       @code{NIL} for all other types.  *)
+    
     size-: LONGINT;
     (**Size of the data type in bytes.  For an open array type, this field is
        @samp{-1}.  *)
@@ -145,6 +150,7 @@ VAR
   shortint-: StructDesc;
   integer-: StructDesc;
   longint-: StructDesc;
+  ptr-: StructDesc;
 
 PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
 (**Allocates a new array or record variable on the heap, using the type

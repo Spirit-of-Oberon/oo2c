@@ -18,11 +18,12 @@
   inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7
   typetest1 typetest2 typetest3 typetest4
   array1 array2 array3 array4 array5 array6 array7 array8
-  tbproc1 tbproc2 tbproc3 tbproc4">
+  tbproc1 tbproc2 tbproc3 tbproc4 tbproc5 tbproc6">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; tbproc1 tbproc2 tbproc3 tbproc4">-->
+  select ="&SetupTestCasesWithOut; tbproc1 tbproc2 tbproc3 tbproc4
+  tbproc5 tbproc6">-->
   
   &TestSetupWithOut;
   &baseline-testcases;
@@ -321,6 +322,16 @@
     <test id="tbproc4" type="run" file="TBProc4.Mod" output="TBProc4.Ref">
       Calling a type-bound procedure of an implictly dereferenced
       pointer variable.
+    </test>
+    
+    <test id="tbproc5" type="run" file="TBProc5.Mod" output="TBProc5.Ref">
+      Calling a type-bound procedure of a pointer variable.  The
+      procedure is redefined in an extension of the pointer's type.
+    </test>
+    
+    <test id="tbproc6" type="run" file="TBProc6.Mod" output="TBProc6.Ref">
+      Calling a type-bound procedure of a pointer variable.  The
+      procedure is inherited from the pointer's type.
     </test>
   </testcases>
     

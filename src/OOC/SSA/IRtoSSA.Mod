@@ -204,12 +204,6 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END SelectField;
     
-    PROCEDURE SelectProc (selectOp: IR.SelectProc): SSA.Result;
-      BEGIN
-        (* FIXME... handle non-static case *)
-        RETURN pb. GetAddress (selectOp. tbProc);
-      END SelectProc;
-    
     PROCEDURE AddCompareOp (op: IR.Compare; class: Opcode.Class): SSA.Instr;
       VAR
         instr: SSA.Instr;
@@ -318,6 +312,18 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (pb. GetTypeRef (test. referenceType), Opnd.type);
         RETURN instr
       END TypeTest;
+    
+    PROCEDURE SelectProc (selectOp: IR.SelectProc): SSA.Result;
+      BEGIN
+        IF FALSE THEN                    (* static address *)
+          RETURN pb. GetAddress (selectOp. tbProc);
+        ELSE
+          instr := pb. AddInstr (Opcode.tbProcAddress, Opcode.scAddress);
+          instr. AddOpnd (TypeTag (selectOp. receiver), Opnd.arg);
+          instr. AddOpnd (pb. GetDeclRef (selectOp. tbProc), Opnd.arg);
+          RETURN instr;
+        END;
+      END SelectProc;
     
     BEGIN
       WITH expr: IR.Const DO

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Namespace;
 (*  Implements namespaces and semantic checks on them.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -344,6 +344,32 @@ PROCEDURE (ns: Extended) InsertTBProc* (procDecl: Sym.ProcDecl;
       INC (ns. localCount)
     END
   END InsertTBProc;
+
+PROCEDURE (ns: Extended) GetTBProcByIndex* (index: LONGINT): Sym.ProcDecl;
+(**Return the type-bound procedure that has the given @oparam{index} in
+   this namespace.  If the local namespace has no such procedure, the
+   base namespaces are searched.  *)
+  VAR
+    i: LONGINT;
+    decl: Sym.Declaration;
+  BEGIN
+    FOR i := 0 TO ns. localCount-1 DO
+      decl := ns. localDecl[i];
+      WITH decl: Sym.ProcDecl DO
+        IF (decl. tbProcIndex = index) THEN
+          RETURN decl
+        END;
+      ELSE  (* ignore *)
+      END;
+    END;
+
+    IF (ns. extends = NIL) THEN
+      RETURN NIL;
+    ELSE
+      RETURN ns. extends(Extended). GetTBProcByIndex (index);
+    END;
+  END GetTBProcByIndex;
+
 
 PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
                                              tr: TypeRules.Rules;

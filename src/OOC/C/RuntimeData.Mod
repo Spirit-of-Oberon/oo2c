@@ -22,7 +22,7 @@ MODULE OOC:C:RuntimeData;
 
 
 IMPORT
-  TextRider, ADT:String, Sym := OOC:SymbolTable,
+  TextRider, ADT:String, Sym := OOC:SymbolTable, OOC:SymbolTable:Namespace,
   OOC:Auxiliary:Config, OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
@@ -91,7 +91,8 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
           w. WriteString (name. array^);
           w. WriteChar ("}");
-          CNli; w. WriteLInt (-1, 0);     (* size *)
+          CNli; w. WriteString ("NULL"); (* tbProcs *)
+          CNli; w. WriteLInt (-1, 0);    (* size *)
           CNli; w. WriteLInt (array. GetOpenDimensions(), 0); (* len *)
           CNli; WriteForm ("strOpenArray"); (* form *)
         ELSE
@@ -99,6 +100,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
           w. WriteString (name. array^);
           w. WriteChar ("}");
+          CNli; w. WriteString ("NULL"); (* tbProcs *)
           CNli; w.WriteLInt (array. size, 0); (* size *)
           CNli; w. WriteLInt (array. length, 0); (* len *)
           CNli; WriteForm ("strArray");  (* form *)
@@ -131,12 +133,32 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
           RETURN len+1;
         END;
       END BaseTypes;
+
+    PROCEDURE TBProcs (tbProcCount: LONGINT);
+      VAR
+        i: LONGINT;
+        proc: Sym.ProcDecl;
+        name: String.String;
+      BEGIN
+        FOR i := 0 TO tbProcCount-1 DO
+          IF (i # 0) THEN
+            w. WriteChar (",");
+          END;
+          w. WriteString ("(void*)");
+          proc := record. ns(Namespace.Extended). GetTBProcByIndex (i);
+          name := Naming.NameOfDeclaration (proc);
+          w. WriteString (name. array^);
+        END;
+      END TBProcs;
     
     BEGIN
       WriteDescrVariable (record);
       IF ~writeHeader THEN
         w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
         len := BaseTypes (record);
+        w. WriteChar ("}");
+        CNli; w. WriteString ("(void*[]){");   (* tbProcs *)
+        TBProcs (record. tbProcCount);
         w. WriteChar ("}");
         CNli; w. WriteLInt (record. size, 0); (* size *)
         CNli; w. WriteLInt (len, 0); (* len *)
@@ -156,6 +178,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
         w. WriteString (name. array^);
         w. WriteChar ("}");
+        CNli; w. WriteString ("NULL");   (* tbProcs *)
         CNli; w. WriteLInt (pointer. size, 0); (* size *)
         CNli; w. WriteLInt (-1, 0); (* len *)
         CNli; WriteForm ("strPointer"); (* form *)

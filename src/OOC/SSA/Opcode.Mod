@@ -374,6 +374,22 @@ CONST
      @end table
 
      The result of the instruction is a boolean value.  *)
+
+  tbProcAddress* = 38;
+  (**Calculates the address of the procedure that is to be used for a dynamic
+     type-bound call.
+
+     @table @oconst
+     @item *OOC:SSA.Opnd.arg
+     The type tag of the variable that is the call's receiver.
+
+     @item *OOC:SSA.Opnd.arg
+     The static procedure declaration that is used by the call in the source
+     code.  The referenced instruction's opcode is @oconst{declRef}.
+     @end table
+
+     Result of the instruction is the address of the procedure.  *)
+
   
 CONST
   scNone* = 0;
@@ -469,6 +485,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | newObject: cstr := "new-object";
     | typeTag: cstr := "type-tag";
     | typeTest: cstr := "type-test";
+    | tbProcAddress: cstr := "tb-proc-address";
       
     | add: cstr := "add";
     | subtract: cstr := "subtract";

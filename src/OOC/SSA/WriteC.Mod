@@ -437,8 +437,22 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     END Assert;
   
   PROCEDURE Call (call: SSA.Instr);
+    VAR
+      adr: SSA.Instr;
+      decl: Sym.Declaration;
+      name: String.String;
     BEGIN
-      IF ~(call. opndList. arg IS SSA.DeclRef) THEN
+      IF (call. opndList. arg. instr. opcode = Opcode.tbProcAddress) THEN
+        (* calling type bound procedure: cast procedure address *)
+        adr := call. opndList. arg. instr;
+        decl := adr. opndList. nextOpnd. arg. instr(SSA.DeclRef). decl;
+        w. WriteString ("OOC_TBCALL(");
+        w. Ref (call. opndList);
+        w. WriteChar (",");
+        name := Naming.NameOfDeclaration (decl);
+        w. WriteString (name. array^);
+        w. WriteChar (")");
+      ELSIF ~(call. opndList. arg IS SSA.DeclRef) THEN
         (* calling through variable: cast address to function type *)
         w. WriteChar ("(");
         CastToPtr (call. opndList. arg,
@@ -531,7 +545,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         name := Naming.NameOfTypeDescriptor (instr. opndList. arg(SSA.TypeRef). type);
         w. WriteString (name. array^);
       ELSE
-        CastFromPtr (instr);
         w. WriteString ("OOC_TYPE_TAG(");
         w. Ref (instr. opndList);
         w. WriteChar (")");
@@ -552,6 +565,19 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (name. array^);
       w. WriteString (");");
     END TypeTest;
+
+  PROCEDURE TBProcAddress (instr: SSA.Instr);
+    VAR
+      name: String.String;
+    BEGIN
+      CastFromPtr (instr);
+      w. WriteString ("OOC_TBPROC_ADR(");
+      w. Ref (instr. opndList);
+      w. WriteString (", ");
+      name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. arg(SSA.DeclRef). decl);
+      w. WriteString (name. array^);
+      w. WriteString (");");
+    END TBProcAddress;
   
   PROCEDURE CopyParameter (instr: SSA.Address);
     VAR
@@ -801,6 +827,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         TypeTag (instr);
       | Opcode.typeTest:
         TypeTest (instr);
+      | Opcode.tbProcAddress:
+        TBProcAddress (instr);
         
       | Opcode.add:
         WriteDyadicOp (instr, "+");

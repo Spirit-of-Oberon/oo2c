@@ -126,6 +126,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
       | Predef.shortint: str := "shortint"
       | Predef.integer : str := "integer"
       | Predef.longint : str := "longint"
+      | Predef.ptr     : str := "ptr"
       END;
       str2 := Config.runtimeModule;
       Strings.Append ("__", str2);
@@ -141,5 +142,25 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): String.String;
       END;
     END;
   END NameOfTypeDescriptor;
+
+PROCEDURE NameOfTypeBoundIndex* (proc: Sym.ProcDecl): String.String;
+(**Return the name of the C #define that holds the index of this
+   type-bound procedure.  *)
+  VAR
+    name: String.String;
+  BEGIN
+    name := String.New ("_TBN_");
+    RETURN name. Concat (NameOfDeclaration (proc));
+  END NameOfTypeBoundIndex;
+
+PROCEDURE NameOfTypeBoundSignature* (proc: Sym.ProcDecl): String.String;
+(**Return the name of the C typedef that defines the signature of this
+   type-bound procedure.  *)
+  VAR
+    name: String.String;
+  BEGIN
+    name := String.New ("_TBP_");
+    RETURN name. Concat (NameOfDeclaration (proc));
+  END NameOfTypeBoundSignature;
 
 END OOC:C:Naming.

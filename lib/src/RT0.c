@@ -7,7 +7,8 @@
 #define ROUND_SIZE(s) ((s+7) & ~((size_t)7))
 
 #define PS(_str,_form,_size) \
-  _str.baseTypes = NULL; _str.size = _size; _str.len = -1; _str.form = _form
+  _str.baseTypes = NULL; _str.tbProcs = NULL; \
+  _str.size = _size; _str.len = -1; _str.form = _form
 
 
 OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
@@ -72,4 +73,5 @@ void RT0_init() {
   PS(RT0__shortint, RT0__strShortint, sizeof(OOC_INT8));
   PS(RT0__integer , RT0__strInteger , sizeof(OOC_INT16));
   PS(RT0__longint , RT0__strLongint , sizeof(OOC_INT32));
+  PS(RT0__ptr     , RT0__strPtr     , sizeof(OOC_PTR));
 }
