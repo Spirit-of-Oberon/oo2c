@@ -799,6 +799,11 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
           | Opcode.enter:
             (* undefined value, nothing to do *)
             
+          | Opcode.return:
+            (* when we get here from an instruction that is not a
+               select-return, then control never passes from the return to
+               this instruction *)
+            
           | Opcode.select:
             TraceSelect (instr);
 

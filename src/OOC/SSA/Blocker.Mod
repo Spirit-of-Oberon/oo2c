@@ -835,8 +835,12 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
         instr := res. instr;
         IF instr. IsConst() THEN
           WITH instr: SSA.Const DO
-            value := instr. value. ToString();
-            w. WriteString (value. array^);
+            IF (instr. value = NIL) THEN
+              w. WriteString ("NIL");
+            ELSE
+              value := instr. value. ToString();
+              w. WriteString (value. array^);
+            END;
           | instr: SSA.DeclRef DO
             w. WriteString (instr. decl. name. str^);
           | instr: SSA.TypeRef DO

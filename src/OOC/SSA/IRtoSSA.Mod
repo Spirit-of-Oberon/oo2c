@@ -377,11 +377,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN TypeTest (expr);
         
       | expr: IR.Negate DO
-        instr := pb. AddInstr (Opcode.negate,
-                               Opcode.TypeToSubclass (expr. operand. type));
+        instr := pb. AddInstr (Opcode.negate, Opcode.scBoolean);
         instr. AddOpnd (Expression (expr. operand), Opnd.arg);
         RETURN instr
-            
+
+      | expr: IR.SetMember DO
+        instr := pb. AddInstr (Opcode.setMember, Opcode.scBoolean);
+        instr. AddOpnd (Expression (expr. element), Opnd.arg);
+        instr. AddOpnd (Expression (expr. set), Opnd.arg);
+        RETURN instr;
+        
       | expr: IR.Cap DO
         instr := pb. AddInstr (Opcode.cap,
                                Opcode.TypeToSubclass (expr. operand. type));

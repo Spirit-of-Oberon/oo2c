@@ -286,13 +286,19 @@ CONST
   and* = 28;
   or* = 29;
   not* = 30;
+
+  setMember* = 31;
+  (**Set membership test.  First argument is an index, second is the
+     set value.  *)
+  setRange* = 32;
+  (**Set range.  Produces a set with the elements [from, to] inclusive.
+     The range is empty if to<from.  *)
+  cap* = 33;
   
-  cap* = 31;
+  assert* = 34;
+  call* = 35;
   
-  assert* = 32;
-  call* = 33;
-  
-  getLength* = 34;
+  getLength* = 36;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -311,7 +317,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 35;
+  copyParameter* = 37;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -329,7 +335,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 36;
+  newObject* = 38;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -349,7 +355,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 37;
+  typeTag* = 39;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -360,7 +366,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 38;
+  typeTest* = 40;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -376,7 +382,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 39;
+  tbProcAddress* = 41;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -391,7 +397,7 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  labels* = 40;
+  labels* = 42;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -509,7 +515,9 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | and: cstr := "and";
     | or: cstr := "or";
     | not: cstr := "not";
-      
+
+    | setMember: cstr := "set-member";
+    | setRange: cstr := "set-range";
     | cap: cstr := "cap";
       
     | assert: cstr := "assert";
@@ -534,6 +542,7 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       | Predef.shortint: RETURN scSigned8
       | Predef.integer: RETURN scSigned16
       | Predef.longint: RETURN scSigned32
+      | Predef.set: RETURN scUnsigned32
       | Predef.charString: RETURN scAddress
       | Predef.longcharString: RETURN scAddress
       END;

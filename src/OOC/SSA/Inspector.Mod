@@ -84,23 +84,27 @@ PROCEDURE WriteBlock (s: Servlet; b: Schedule.Block);
       VAR
         str: String.String;
       BEGIN
-        WITH value: Boolean.Value DO
-          IF value. value THEN
-            w. WriteLatin1("TRUE")
-          ELSE
-            w. WriteLatin1("FALSE")
+        IF (value = NIL) THEN
+          w. WriteLatin1 ("NIL");
+        ELSE
+          WITH value: Boolean.Value DO
+            IF value. value THEN
+              w. WriteLatin1("TRUE")
+            ELSE
+              w. WriteLatin1("FALSE")
+            END
+          | value: String8.Value DO
+            w. Write ('"');
+            w. WriteLatin1 (value. value. array^);
+            w. Write ('"');
+          | value: Integer.Value DO
+            str := value.ToString();
+            w. WriteLatin1(str.array^);
+          | value: Set.Value DO
+            (* FIXME *)
+            w. WriteLatin1("{set const}");
           END
-        | value: String8.Value DO
-          w. Write ('"');
-          w. WriteLatin1 (value. value. array^);
-          w. Write ('"');
-        | value: Integer.Value DO
-          str := value.ToString();
-          w. WriteLatin1(str.array^);
-        | value: Set.Value DO
-          (* FIXME *)
-          w. WriteLatin1("{set const}");
-        END
+        END;
       END WriteConst;
     
     BEGIN

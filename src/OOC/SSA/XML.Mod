@@ -110,7 +110,11 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
       w. AttrString ("argref", "NIL");
     ELSE
       WITH res: SSA.Const DO
-        value := res. value. ToString();
+        IF (res. value = NIL) THEN
+          value := String.New ("NIL");
+        ELSE
+          value := res. value. ToString();
+        END;
         w. AttrStringLatin1 ("const-value", value. array^);
       | res: SSA.DeclRef DO
         w. AttrStringLatin1 ("declref", res. decl. name. str^);
@@ -179,7 +183,11 @@ PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
     w. AttrInt ("id", w. GetId (instr));
     
     WITH instr: SSA.Const DO
-      value := instr. value. ToString();
+      IF (instr. value = NIL) THEN
+        value := String.New ("NIL");
+      ELSE
+        value := instr. value. ToString();        
+      END;
       w. AttrStringLatin1 ("value", value. array^);
 
     | instr: SSA.Address DO
