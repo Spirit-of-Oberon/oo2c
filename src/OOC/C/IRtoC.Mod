@@ -1,7 +1,7 @@
 MODULE OOC:C:IRtoC;
 
 IMPORT
-  Log, ADT:String, Language:String8,
+  Log, Object:Boxed, ADT:String,
   OOC:IR,  Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:DeclWriter, OOC:C:Naming, OOC:Make:TranslateToC;
 
@@ -82,7 +82,7 @@ PROCEDURE WriteExpr (w: DeclWriter.Writer;
       (* FIXME... there are a lot more variants to LEN than the length
          of a string constant *)
       ASSERT (expr. array. type(Sym.PredefType). id = Predef.charString);
-      w. WriteLInt (expr. array(IR.Const). value(String8.Value). value. length+1, 0);
+      w. WriteLInt (expr. array(IR.Const). value(Boxed.String). value. length+1, 0);
       
     | expr: IR.Negate DO
       w. WriteChar ("-");

@@ -2,6 +2,9 @@ MODULE liboo2c;
 <* Warnings := FALSE *>
 
 IMPORT
+  RT0,
+  Out0,
+  
   Ascii,
   BinaryRider,
   C,
@@ -13,7 +16,6 @@ IMPORT
   In,
   IntConv,
   IntStr,
-  Integers,
   LRealConv,
   LRealMath,
   LRealStr,
@@ -23,7 +25,6 @@ IMPORT
   Out,
   PosixFileDescr,
   ProgramArgs,
-  RT0,
   RandomNumbers,
   Real0,
   RealConv,
@@ -36,8 +37,12 @@ IMPORT
   Termination,
   TextRider,
   Time,
+  
+  Object,
+  Object:Boxed,
+  Object:BigInt,
   URI,
-
+  
   libc,
   libadt,
   libxml;

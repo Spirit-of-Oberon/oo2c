@@ -22,9 +22,7 @@ MODULE OOC:IR:ConstFold;
 
 IMPORT
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
-  TR := OOC:SymbolTable:TypeRules, Language, 
-  Language:Integer, Language:Boolean, LString := Language:String,
-  Language:String8, Language:String16, Language:Set, Language:Real;
+  TR := OOC:SymbolTable:TypeRules, Object, Object:Boxed, Object:BigInt;
 
 TYPE
   ConstFold = POINTER TO ConstFoldDesc;
@@ -51,21 +49,21 @@ BEGIN
   RETURN c
 END NewConstFold;
 
-PROCEDURE SmallestType(value : Language.Value) : Sym.Type;
+PROCEDURE SmallestType(value : Boxed.Object) : Sym.Type;
 (**Return the smallest type that can represent @oparam{value}. *)
 BEGIN
-  WITH value : Integer.Value DO
+  WITH value : BigInt.BigInt DO
     RETURN Predef.SmallestIntType (value);
-  | value : Real.Value DO
+  | value : Boxed.LongReal DO
     (* FIXME! Figure out the appropriate REAL type *)
     RETURN Predef.GetType(Predef.real);
-  | value : Set.Value DO
+  | value : Boxed.Set DO
     (* FIXME! Figure out the appropriate SET type *)
     RETURN Predef.GetType(Predef.set);
   END;
 END SmallestType;
 
-PROCEDURE (c : ConstFold) ValueConst(value : Language.Value; op : IR.Operator) : IR.Const;
+PROCEDURE (c : ConstFold) ValueConst(value : Boxed.Object; op : IR.Operator) : IR.Const;
 VAR type : Sym.Type;
 BEGIN
   type := SmallestType(value);
@@ -79,10 +77,10 @@ END ValueConst;
 
 PROCEDURE (c : ConstFold) BooleanConst(value : BOOLEAN; op : IR.Operator) : IR.Const;
 BEGIN
-  RETURN c.builder.NewConst(op.sym, Predef.GetType(Predef.boolean), Boolean.New(value));
+  RETURN c.builder.NewConst(op.sym, Predef.GetType(Predef.boolean), Boxed.NewBoolean(value));
 END BooleanConst;
 
-PROCEDURE (c : ConstFold) ValidEval (expr : IR.Expression; VAR result : Language.Value) : BOOLEAN;
+PROCEDURE (c : ConstFold) ValidEval (expr : IR.Expression; VAR result : Boxed.Object) : BOOLEAN;
 BEGIN
   c.result := NIL;
   expr.Accept(c);
@@ -130,8 +128,8 @@ PROCEDURE (c: ConstFold) VisitLen* (len: IR.Len);
   BEGIN
     CASE len. variant OF
     | IR.lenStringConst:
-      IF (len.array(IR.Const).value IS LString.Value) THEN
-        length := len.array(IR.Const).value(LString.Value). Length()+1;
+      IF (len.array(IR.Const).value IS Boxed.String) THEN
+        length := len.array(IR.Const).value(Boxed.String). value. length+1;
       ELSE                               (* there was an error with LEN *)
         length := 1;
       END;
@@ -144,7 +142,7 @@ PROCEDURE (c: ConstFold) VisitLen* (len: IR.Len);
       c.result := NIL; RETURN;
     END;
     c.result := c.builder.NewConst(len.sym, Predef.GetType(Predef.lengthType), 
-      Integer.New(length));
+      BigInt.NewInt(length));
   END VisitLen;
 
 PROCEDURE (c: ConstFold) VisitDeref* (deref: IR.Deref);
@@ -164,11 +162,11 @@ PROCEDURE (c: ConstFold) VisitIndex* (index: IR.Index);
 PROCEDURE (c: ConstFold) VisitSetMember* (op: IR.SetMember);
   VAR 
     element : LONGINT; set : SET;
-    e, s : Language.Value;
+    e, s : Boxed.Object;
   BEGIN
     IF c.ValidEval(op.element, e) & c.ValidEval(op.set, s) THEN
-      element := e(Integer.Value).ToInt();
-      set := s(Set.Value).value;
+      element := e(BigInt.BigInt).ToLongInt();
+      set := s(Boxed.Set).value;
       c.result := c.BooleanConst(element IN set, op);
     ELSE
       c.result := NIL;
@@ -178,12 +176,12 @@ PROCEDURE (c: ConstFold) VisitSetMember* (op: IR.SetMember);
 PROCEDURE (c: ConstFold) VisitSetRange* (op: IR.SetRange);
   VAR 
     left, right : LONGINT;
-    l, r : Language.Value;
+    l, r : Boxed.Object;
   BEGIN
     IF c.ValidEval(op.from, l) & c.ValidEval(op.to, r) THEN
-      left := l(Integer.Value).ToInt();
-      right := r(Integer.Value).ToInt();
-      c.result := c.ValueConst(Set.New({left..right}), op);
+      left := l(BigInt.BigInt).ToLongInt();
+      right := r(BigInt.BigInt).ToLongInt();
+      c.result := c.ValueConst(Boxed.NewSet({left..right}), op);
     ELSE
       c.result := NIL;
     END;
@@ -191,13 +189,13 @@ PROCEDURE (c: ConstFold) VisitSetRange* (op: IR.SetRange);
 
 PROCEDURE (c: ConstFold) VisitSetOp* (op: IR.SetOp);
   VAR 
-    l, r : Language.Value; 
+    l, r : Boxed.Object; 
     result : SET;
     left, right : SET; 
   BEGIN
     IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
-      left := l(Set.Value).value; 
-      right := r(Set.Value).value;
+      left := l(Boxed.Set).value; 
+      right := r(Boxed.Set).value;
     
       CASE op.variant OF
       | IR.setUnion:     result := left + right;
@@ -208,7 +206,7 @@ PROCEDURE (c: ConstFold) VisitSetOp* (op: IR.SetOp);
         c.builder.ErrSym(IR.unknownOp, op.sym); 
         c.result := NIL; RETURN
       END;
-      c.result := c.ValueConst(Set.New(result), op);
+      c.result := c.ValueConst(Boxed.NewSet(result), op);
     ELSE
       c.result := NIL;
     END;
@@ -229,18 +227,18 @@ PROCEDURE (c: ConstFold) VisitSelectProc* (sp: IR.SelectProc);
 PROCEDURE (c: ConstFold) VisitNegate* (op: IR.Negate);
 VAR 
   id : Sym.PredefId;
-  value : Language.Value;
+  value : Boxed.Object;
 BEGIN
   IF c.ValidEval(op.operand, value) THEN
     id := op.operand.type(Sym.PredefType).id;
     CASE id OF
     | Predef.shortint .. Predef.real-1:
-      c.result := c.ValueConst(value(Integer.Value).Negate(), op);
+      c.result := c.ValueConst(value(BigInt.BigInt).Neg(), op);
     | Predef.set:
-      c.result := c.ValueConst(Set.New(-value(Set.Value).value), op);
+      c.result := c.ValueConst(Boxed.NewSet(-value(Boxed.Set).value), op);
     | Predef.real, Predef.longreal:
       IF foldReals THEN
-        c.result := c.ValueConst(value(Real.Value).Negate(), op);
+        c.result := c.ValueConst(value(Boxed.LongReal).Negate(), op);
       ELSE
         c.result := NIL;
       END;
@@ -263,10 +261,10 @@ PROCEDURE (c: ConstFold) VisitNewObject* (new: IR.NewObject);
 
 PROCEDURE (c: ConstFold) VisitNot* (op: IR.Not);
 VAR 
-  value : Language.Value;
+  value : Boxed.Object;
 BEGIN
   IF c.ValidEval(op.operand, value) THEN
-    c.result := c.BooleanConst(~value(Boolean.Value).value, op);
+    c.result := c.BooleanConst(~value(Boxed.Boolean).value, op);
   ELSE
     c.result := NIL;
   END;
@@ -279,10 +277,16 @@ PROCEDURE (c: ConstFold) VisitAbs* (op: IR.Abs);
 
 PROCEDURE (c: ConstFold) VisitAsh* (op: IR.Ash);
   VAR
-    v, e: Language.Value;
+    v, e: Boxed.Object;
+    shift: LONGINT;
   BEGIN
     IF c.ValidEval(op.value, v) & c.ValidEval(op.exp, e) THEN
-      c.result := c. ValueConst (v(Integer.Value). Ash (e(Integer.Value)), op);
+      shift := e(BigInt.BigInt).ToLongInt();
+      IF (shift < 0) THEN
+        c.result := c. ValueConst (v(BigInt.BigInt). RShift (-shift), op);
+      ELSE
+        c.result := c. ValueConst (v(BigInt.BigInt). LShift (shift), op);
+      END;
     ELSE
       c.result := NIL;
     END;
@@ -290,14 +294,14 @@ PROCEDURE (c: ConstFold) VisitAsh* (op: IR.Ash);
 
 PROCEDURE (c: ConstFold) VisitCap* (op: IR.Cap);
 VAR 
-  value : Language.Value;
+  value : Boxed.Object;
   str: ARRAY 2 OF CHAR;
 BEGIN
   IF c.ValidEval(op.operand, value) THEN
-    str[0] := CAP (value(String8.Value).value.array[0]);
+    str[0] := CAP(CHR(value(Boxed.String).value.CharAt(0)));
     str[1] := 0X;
     c.result := c.builder.NewConst(op.sym, Predef.GetType(Predef.char), 
-                                   String8.NewString (str));
+                                   Boxed.NewString(Object.NewLatin1(str)));
   ELSE
     c.result := NIL;
   END;
@@ -319,31 +323,31 @@ PROCEDURE (c: ConstFold) VisitShift* (op: IR.Shift);
 
 PROCEDURE (c: ConstFold) VisitBinaryArith* (op: IR.BinaryArith);
 VAR 
-  l, r, result : Language.Value;
+  l, r, result : Boxed.Object;
 
-  PROCEDURE IntegerOp () : Language.Value;
+  PROCEDURE IntegerOp () : Boxed.Object;
   VAR
-    left, right : Integer.Value;
+    left, right : BigInt.BigInt;
   BEGIN
-    left := l(Integer.Value);
-    right := r(Integer.Value);
+    left := l(BigInt.BigInt);
+    right := r(BigInt.BigInt);
     
     CASE op.variant OF
       (* FIXME! Properly check for overflow. *)
-    | IR.arithAdd:  RETURN left.Sum(right);
-    | IR.arithSub:  RETURN left.Difference(right);
-    | IR.arithMul:  RETURN left.Product(right);
+    | IR.arithAdd:  RETURN left.Add(right);
+    | IR.arithSub:  RETURN left.Sub(right);
+    | IR.arithMul:  RETURN left.Mul(right);
     | IR.arithDivI: 
       IF right.Sign() = 0 THEN
         c.builder.ErrSym(IR.divideByZero, op.sym);
       ELSE
-        RETURN left.Quotient(right);
+        RETURN left.Div(right);
       END;
     | IR.arithMod:
       IF right.Sign() = 0 THEN
         c.builder.ErrSym(IR.divideByZero, op.sym);
       ELSE
-        RETURN left.Remainder(right);
+        RETURN left.Mod(right);
       END;
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym);
@@ -351,12 +355,12 @@ VAR
     RETURN NIL;
   END IntegerOp;
 
-  PROCEDURE RealOp () : Language.Value;
+  PROCEDURE RealOp () : Boxed.Object;
   VAR
-    left, right : Real.Value;
+    left, right : Boxed.LongReal;
   BEGIN
-    left := l(Real.Value);
-    right := r(Real.Value);
+    left := l(Boxed.LongReal);
+    right := r(Boxed.LongReal);
     
     CASE op.variant OF
     | IR.arithAdd:  RETURN left.Sum(right);
@@ -398,12 +402,12 @@ END VisitBinaryArith;
 
 PROCEDURE (c: ConstFold) VisitBooleanOp* (op: IR.BooleanOp);
   VAR 
-    l, r : Language.Value;
+    l, r : Boxed.Object;
     left, right, result : BOOLEAN;
   BEGIN
     IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
-      left := l(Boolean.Value).value;
-      right := r(Boolean.Value).value;
+      left := l(Boxed.Boolean).value;
+      right := r(Boxed.Boolean).value;
       CASE op.variant OF
       | IR.and:  result := left & right;
       | IR.or:   result := left OR right;
@@ -417,120 +421,90 @@ PROCEDURE (c: ConstFold) VisitBooleanOp* (op: IR.BooleanOp);
 PROCEDURE (c: ConstFold) VisitConcat* (op: IR.Concat);
   VAR
     i: LONGINT;
-    s8: String8.Value;
-    s16: String16.Value;
+    s: Object.String;
   BEGIN
+    s := Object.emptyString;
     FOR i := 0 TO LEN(op.strings^)-1 DO
-      IF ~(op.strings[i] IS IR.Const) THEN
+      IF (op.strings[i] IS IR.Const) THEN
+        s := s.Concat(op.strings[i](IR.Const).value(Boxed.String).value);
+      ELSE
         c.result := NIL;
         RETURN;
       END;
     END;
-
-    CASE op.type(Sym.PredefType).id OF
-    | Predef.charString:
-      s8 := String8.NewString("");
-      FOR i := 0 TO LEN(op.strings^)-1 DO
-        s8 := s8.Concat(op.strings[i](IR.Const).value(String8.Value));
-      END;
-      c.result := c.builder.NewConst(op.sym, op.type, s8);
-    | Predef.longcharString:
-      s16 := String16.NewString("");
-      FOR i := 0 TO LEN(op.strings^)-1 DO
-        s16 := s16.Concat(op.strings[i](IR.Const).value(String16.Value));
-      END;
-      c.result := c.builder.NewConst(op.sym, op.type, s16);
-    END;
+    c.result := c.builder.NewConst(op.sym, op.type,
+                                   Boxed.NewString(s));
   END VisitConcat;
 
 PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
-  VAR l, r : Language.Value; result : Boolean.Value;
+  VAR l, r : Boxed.Object; result : Boxed.Boolean;
 
-  PROCEDURE StringOp8 () : Boolean.Value;
+  PROCEDURE StringOp () : Boxed.Boolean;
   VAR
-    left, right : String8.Value; result : BOOLEAN;
+    left, right : Boxed.String; result : BOOLEAN;
   BEGIN
-    left := l(String8.Value);
-    right := r(String8.Value);
+    left := l(Boxed.String);
+    right := r(Boxed.String);
     CASE op.variant OF
-    | IR.equal:        result := left.Compare(right) = 0;
-    | IR.notEqual:     result := left.Compare(right) # 0;
-    | IR.less:         result := left.Compare(right) < 0;
-    | IR.lessEqual:    result := left.Compare(right) <= 0;
-    | IR.greater:      result := left.Compare(right) > 0;
-    | IR.greaterEqual: result := left.Compare(right) >= 0;
+    | IR.equal:        result := left.Cmp(right) = 0;
+    | IR.notEqual:     result := left.Cmp(right) # 0;
+    | IR.less:         result := left.Cmp(right) < 0;
+    | IR.lessEqual:    result := left.Cmp(right) <= 0;
+    | IR.greater:      result := left.Cmp(right) > 0;
+    | IR.greaterEqual: result := left.Cmp(right) >= 0;
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boolean.New(result);
-  END StringOp8;
+    RETURN Boxed.NewBoolean(result);
+  END StringOp;
 
-  PROCEDURE StringOp16 () : Boolean.Value;
+  PROCEDURE IntegerOp () : Boxed.Boolean;
   VAR
-    left, right : String16.Value; result : BOOLEAN;
+    left, right : BigInt.BigInt; result : BOOLEAN;
   BEGIN
-    left := l(String16.Value);
-    right := r(String16.Value);
-    CASE op.variant OF
-    | IR.equal:        result := left.Compare(right) = 0;
-    | IR.notEqual:     result := left.Compare(right) # 0;
-    | IR.less:         result := left.Compare(right) < 0;
-    | IR.lessEqual:    result := left.Compare(right) <= 0;
-    | IR.greater:      result := left.Compare(right) > 0;
-    | IR.greaterEqual: result := left.Compare(right) >= 0;
-    ELSE
-      c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
-    END;
-    RETURN Boolean.New(result);
-  END StringOp16;
-
-  PROCEDURE IntegerOp () : Boolean.Value;
-  VAR
-    left, right : Integer.Value; result : BOOLEAN;
-  BEGIN
-    left := l(Integer.Value); 
-    right := r(Integer.Value);
+    left := l(BigInt.BigInt); 
+    right := r(BigInt.BigInt);
     
     CASE op.variant OF
-    | IR.equal:        result := left.Compare(right) = 0;
-    | IR.notEqual:     result := left.Compare(right) # 0;
-    | IR.less:         result := left.Compare(right) < 0;
-    | IR.lessEqual:    result := left.Compare(right) <= 0;
-    | IR.greater:      result := left.Compare(right) > 0;
-    | IR.greaterEqual: result := left.Compare(right) >= 0;
+    | IR.equal:        result := left.Cmp(right) = 0;
+    | IR.notEqual:     result := left.Cmp(right) # 0;
+    | IR.less:         result := left.Cmp(right) < 0;
+    | IR.lessEqual:    result := left.Cmp(right) <= 0;
+    | IR.greater:      result := left.Cmp(right) > 0;
+    | IR.greaterEqual: result := left.Cmp(right) >= 0;
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boolean.New(result);
+    RETURN Boxed.NewBoolean(result);
   END IntegerOp;
 
-  PROCEDURE RealOp () : Boolean.Value;
+  PROCEDURE RealOp () : Boxed.Boolean;
   VAR
-    left, right : Real.Value; result : BOOLEAN;
+    left, right : Boxed.LongReal; result : BOOLEAN;
   BEGIN
-    left := l(Real.Value); 
-    right := r(Real.Value);
+    left := l(Boxed.LongReal); 
+    right := r(Boxed.LongReal);
     
     CASE op.variant OF
-    | IR.equal:        result := left.Compare(right) = 0;
-    | IR.notEqual:     result := left.Compare(right) # 0;
-    | IR.less:         result := left.Compare(right) < 0;
-    | IR.lessEqual:    result := left.Compare(right) <= 0;
-    | IR.greater:      result := left.Compare(right) > 0;
-    | IR.greaterEqual: result := left.Compare(right) >= 0;
+    | IR.equal:        result := left.Cmp(right) = 0;
+    | IR.notEqual:     result := left.Cmp(right) # 0;
+    | IR.less:         result := left.Cmp(right) < 0;
+    | IR.lessEqual:    result := left.Cmp(right) <= 0;
+    | IR.greater:      result := left.Cmp(right) > 0;
+    | IR.greaterEqual: result := left.Cmp(right) >= 0;
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boolean.New(result);
+    RETURN Boxed.NewBoolean(result);
   END RealOp;
 
-  PROCEDURE CharOp () : Boolean.Value;
+  PROCEDURE CharOp () : Boxed.Boolean;
   VAR
-    left, right : CHAR; result : BOOLEAN;
+    left, right : Object.Char; result : BOOLEAN;
   BEGIN
-    left := l(String8.Value).value.GetChar(0);
-    right := r(String8.Value).value.GetChar(0);
-
+    left := l(Boxed.String).value.CharAt(0);
+    right := r(Boxed.String).value.CharAt(0);
+    
     CASE op.variant OF
     | IR.equal:        result := left = right;
     | IR.notEqual:     result := left # right;
@@ -541,15 +515,15 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boolean.New(result);
+    RETURN Boxed.NewBoolean(result);
   END CharOp;
 
-  PROCEDURE BooleanOp () : Boolean.Value;
+  PROCEDURE BooleanOp () : Boxed.Boolean;
   VAR
     left, right : BOOLEAN; result : BOOLEAN;
   BEGIN
-    left := l(Boolean.Value).value;
-    right := r(Boolean.Value).value;
+    left := l(Boxed.Boolean).value;
+    right := r(Boxed.Boolean).value;
 
     CASE op.variant OF
     | IR.equal:        result := left = right;
@@ -557,7 +531,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boolean.New(result);
+    RETURN Boxed.NewBoolean(result);
   END BooleanOp;
 
   BEGIN
@@ -573,10 +547,8 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
         END;
       | Predef.char:
         result := CharOp();
-      | Predef.charString:
-        result := StringOp8(); 
-      | Predef.longcharString:
-        result := StringOp16(); 
+      | Predef.charString, Predef.longcharString:
+        result := StringOp(); 
       | Predef.boolean:
         result := BooleanOp();
       END;
@@ -597,24 +569,14 @@ PROCEDURE (c: ConstFold) VisitTypeCast* (op : IR.TypeCast);
 
 PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
   VAR
-    value: Language.Value;
-    str: LString.Value;
+    value: Boxed.Object;
+    str: Boxed.String;
     
   PROCEDURE IsPredefType(type: Sym.Type; id: Sym.PredefId): BOOLEAN;
     BEGIN
       RETURN (type IS Sym.PredefType) & (type(Sym.PredefType). id = id);
     END IsPredefType;
 
-  PROCEDURE BaseChar (type: Sym.PredefType): Sym.PredefId;
-    BEGIN
-      CASE type. id OF
-      | Predef.char, Predef.charString:
-        RETURN Predef.char
-      | Predef.longchar, Predef.longcharString:
-        RETURN Predef.longchar
-      END;
-    END BaseChar;
-  
   BEGIN
     (* FIXME... this needs to be made "safe": if there is no code
        that performs the required type conversion, then "op"
@@ -626,11 +588,7 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
       IF TR.IsIntegerType (op. type) &
          TR.IsCharType (op. expr. type) THEN
         (* type conversion from character to integer value (ORD) *)
-        IF TR.IsPredefType(op.expr.type, Predef.longchar) THEN
-          value := Integer.New (ORD (value(String16.Value). array[0]));
-        ELSE
-          value := Integer.New (ORD (value(String8.Value). value. array[0]));
-        END;
+        value := BigInt.NewInt(value(Boxed.String).value.CharAt(0));
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
       ELSIF TR.IsCharType (op. type) &
@@ -638,34 +596,27 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         (* type conversion from integer to character value (CHR, LONGCHR) *)
         CASE op. type(Sym.PredefType). id OF
         | Predef.char:
-          value := String8.NewChar (CHR (value(Integer.Value). ToInt()));
+          value := Boxed.NewString(Object.NewLatin1Char(CHR (value(BigInt.BigInt). ToLongInt())));
         | Predef.longchar:
-          value := String16.NewChar (LONGCHR (value(Integer.Value). ToInt()));
+          value := Boxed.NewString(Object.NewUCS2Char(LONGCHR (value(BigInt.BigInt). ToLongInt())));
         END;
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
       ELSIF TR.IsIntegerType(op.expr.type) & TR.IsRealType(op.type) THEN
         (* type conversion integer -> real *)
-        value := Real.New(value(Integer.Value).ToInt());
+        value := Boxed.NewLongReal(value(BigInt.BigInt).ToLongInt());
         c.result := c.builder.NewConst(op.sym, op.type,value);
         
       ELSIF IsPredefType (op. type, Predef.longchar) &
             IsPredefType (op. expr. type, Predef.char) THEN
-        (* type conversion from CHAR to LONGCHAR *)
-        value := String16.NewChar (LONG (value(String8.Value). CharAt (0)));
-        c.result := c. builder. NewConst (op. sym, op. type, value);
+        (* type conversion from CHAR to LONGCHAR is a noop *)
         
       ELSIF TR.IsStringConst (op. type) THEN
         (* handle conversion of character and string constants to string
            constants *)
         ASSERT (TR.IsStringConst (op. expr. type) OR
                 (op. expr IS IR.Const) & TR.IsCharType (op. expr. type));
-        str := op. expr(IR.Const). value(LString.Value);
-        IF (BaseChar (op. expr. type(Sym.PredefType)) <
-            BaseChar (op. type(Sym.PredefType))) THEN
-          str := String16.NewRegion8 (str(String8.Value). value. array^,
-                                      0, str. Length())
-        END;
+        str := op. expr(IR.Const). value(Boxed.String);
         c. result := c. builder. NewConst (op. expr. sym, op. type, str);
         
       ELSE

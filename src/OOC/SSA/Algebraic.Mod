@@ -23,7 +23,7 @@ MODULE OOC:SSA:Algebraic;
 (* FIXME... add more transformations *)
 
 IMPORT
-  Language, Language:Integer, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
+  Object:Boxed, Object:BigInt, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
 
 TYPE
   Worklist = POINTER TO WorklistDesc;
@@ -36,10 +36,10 @@ CONST
   maxPower2 = 63;
   
 VAR
-  intZero, intOne, intTwo: Integer.Value;
-  power2: ARRAY maxPower2+1 OF Integer.Value;
+  intZero, intOne, intTwo: BigInt.BigInt;
+  power2: ARRAY maxPower2+1 OF BigInt.BigInt;
 
-PROCEDURE IsPowerOf2 (value: Integer.Value): LONGINT;
+PROCEDURE IsPowerOf2 (value: BigInt.BigInt): LONGINT;
 (**Returns a non-negative integer if @oparam{value} is a power of two, and
    @samp{-1} otherwise.  *)
   VAR
@@ -47,7 +47,7 @@ PROCEDURE IsPowerOf2 (value: Integer.Value): LONGINT;
   BEGIN
     i := 0;
     WHILE (i <= maxPower2) DO
-      cmp := value. Compare (power2[i]);
+      cmp := value. Cmp (power2[i]);
       IF (cmp = 0) THEN
         RETURN i;
       ELSIF (cmp < 0) THEN
@@ -97,7 +97,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         Replace (instr, with. arg);
       END ReplaceWithOpnd;
 
-    PROCEDURE Equals (opnd: SSA.Opnd; const: Language.Value): BOOLEAN;
+    PROCEDURE Equals (opnd: SSA.Opnd; const: Boxed.Object): BOOLEAN;
       VAR
         arg: SSA.Result;
       BEGIN
@@ -122,7 +122,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
            (res(SSA.Instr). subclass <= Opcode.scAddress) THEN
           instr := res(SSA.Instr);
           IF (instr. opndList. nextOpnd. arg IS SSA.Const) THEN
-            exp := IsPowerOf2 (instr. opndList. nextOpnd. arg(SSA.Const). value(Integer.Value));
+            exp := IsPowerOf2 (instr. opndList. nextOpnd. arg(SSA.Const). value(BigInt.BigInt));
             RETURN (0 <= exp) & (exp <= 3);  (* 1, 2, 4, or 8 *)
           END;
         END;
@@ -176,7 +176,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       | Opcode.divide: (* replace DIV by power of two with right shift *)
         IF (instr. subclass < Opcode.scReal32) &
            (instr. opndList. nextOpnd. arg IS SSA.Const) THEN
-          exp := IsPowerOf2 (instr. opndList. nextOpnd. arg(SSA.Const). value(Integer.Value));
+          exp := IsPowerOf2 (instr. opndList. nextOpnd. arg(SSA.Const). value(BigInt.BigInt));
           IF (exp >= 0) THEN
             new := pb. AddInstr (Opcode.shiftRight, instr. subclass);
             new. AddOpnd (instr. opndList. arg, Opnd.arg);
@@ -211,13 +211,13 @@ PROCEDURE Init ();
   VAR
     i: LONGINT;
   BEGIN
-    intZero := Integer.New (0);
-    intOne := Integer.New (1);
-    intTwo := Integer.New (2);
+    intZero := BigInt.NewInt(0);
+    intOne := BigInt.NewInt(1);
+    intTwo := BigInt.NewInt(2);
     
     power2[0] := intOne;
     FOR i := 1 TO maxPower2 DO
-      power2[i] := power2[i-1]. Product (intTwo);
+      power2[i] := power2[i-1].Mul(intTwo);
     END;
   END Init;
 

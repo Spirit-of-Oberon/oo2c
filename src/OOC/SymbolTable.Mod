@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Language, Msg, Strings,
+  Object:Boxed, Msg, Strings,
   ADT:Storable, ADT:String, ADT:Dictionary, ADT:ArrayList,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
@@ -84,9 +84,6 @@ TYPE
     (**Symbolic id for the flag.  *)
     pos-: Position;
     (**Error messages for the flag should refer to this module position.  *)
-(*    value: Language.Value;
-    (**For flags that include an argument, this field holds the argument's
-       value.  Normally, it is @code{NIL}.  *)*)
   END;
 
 CONST
@@ -649,7 +646,7 @@ TYPE
   ConstDeclDesc = RECORD
     (DeclarationDesc)
     (**This class represents constant declarations.  *)
-    value-: Language.Value;
+    value-: Boxed.Object;
     (**The value of the constant.  For the special value @samp{NIL}, this
        field is @code{NIL}.  *)
     type-: PredefType;
@@ -1511,7 +1508,7 @@ PROCEDURE (import: Import) Load* (r: Storable.Reader);
 PROCEDURE InitConstDecl* (constDecl: ConstDecl; parent: Item; name: Name;
                           visibleFrom: ModulePos; exportMark: ExportMark;
                           docString: Doc.Document;
-                          value: Language.Value; type: PredefType;
+                          value: Boxed.Object; type: PredefType;
                           constExpr: AST.Node);
   BEGIN
     InitDeclaration (constDecl, parent, name, visibleFrom, exportMark,
@@ -1521,7 +1518,7 @@ PROCEDURE InitConstDecl* (constDecl: ConstDecl; parent: Item; name: Name;
     constDecl. constExpr := constExpr;
   END InitConstDecl;
 
-PROCEDURE (constDecl: ConstDecl) SetValueType* (value : Language.Value; type : PredefType);
+PROCEDURE (constDecl: ConstDecl) SetValueType* (value : Boxed.Object; type : PredefType);
   BEGIN
     constDecl.value := value;
     constDecl.type := type;
@@ -1550,7 +1547,7 @@ PROCEDURE (constDecl: ConstDecl) Load* (r: Storable.Reader);
     IF (obj = NIL) THEN
       constDecl. value := NIL
     ELSE
-      constDecl. value := obj(Language.Value)
+      constDecl. value := obj(Boxed.Object)
     END;
     r. ReadNum (id);
     IF (id = -1) THEN                    (* see comment in `Store' above *)

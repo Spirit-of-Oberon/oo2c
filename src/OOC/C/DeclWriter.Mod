@@ -22,11 +22,10 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 
 IMPORT
   Channel, Err, Files, IntStr, Msg, Strings, TextRider,
-  Object, ADT:String, ADT:ArrayList,
-  URI, IO:Memory, 
-  Language, Language:Boolean, Language:String8, Language:String16,
-  Language:Integer, Language:Set, Language:Real,
-  OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
+  Object, Object:Boxed, Object:BigInt, ADT:String, ADT:ArrayList,
+  URI, IO:Memory,
+  OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
+  TR := OOC:SymbolTable:TypeRules;
   
 
 
@@ -231,7 +230,7 @@ TYPE
     (**A special declaration that is translated into a @code{#define} statement
        declaring a symbolic name for a constant.  *)
     (DeclarationDesc)
-    const: Language.Value;
+    const: Boxed.Object;
   END;
   
 TYPE
@@ -396,7 +395,7 @@ PROCEDURE (w: Writer) Close* (VAR res: Msg.Msg);
     END;
   END Close;
 
-PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
+PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
 (**Writes the C representation of the constant value @oparam{value} to
    @oparam{w}.  This procedure handles all necessary translations to get a
    faithful representation of the value in the language of C.  *)
@@ -406,7 +405,8 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
   VAR
     i, len, charValue: LONGINT;
     str : String.String;
-
+    s: Object.String;
+    
   PROCEDURE WriteOct (ch: LONGINT);
     BEGIN
       w. WriteChar (CHR (ch+ORD("0")));
@@ -429,74 +429,78 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
     IF (value = NIL) THEN
       w. WriteString ("0");
     ELSE
-      WITH value: Boolean.Value DO
+      WITH value: Boxed.Boolean DO
         IF value. value THEN
           w. WriteString("OOC_TRUE")
         ELSE
           w. WriteString("OOC_FALSE")
         END
             
-      | value: String8.Value DO
-        IF (type(Sym.PredefType). id = Predef.char) THEN
-           (* note: the character value is cast to OOC_CHAR8 to avoid
-              any problems if characters are interpreted as signed values
-              by default; that is, '\377' is _not_ -1 *)
-          charValue := ORD (value. value. array[0]);
-          w. WriteString ("(OOC_CHAR8)'");
-          WriteChar(charValue);
-          w. WriteChar ("'");
-        ELSE
-          w. WriteChar (delim);
-          i := 0; len := value. value. length;
-          WHILE (i # len) DO
-            IF (value. value. array[i] = delim) THEN
-              w. WriteString (quotedDelim)
-            ELSE  (* note: this is a tidbit slow for large strings *)
-              WriteChar(ORD(value. value. array[i]))
-            END;
-            INC (i)
-          END;
-          w. WriteChar (delim);
-        END;
-
-      | value: String16.Value DO
-        IF (type(Sym.PredefType). id = Predef.longchar) THEN
-          charValue := ORD (value. CharAt (0));
-          w. WriteString ("(OOC_CHAR16)");
-          IF (charValue < ORD (" ")) OR (charValue >= 127) OR
-             (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
-            w. textWriter. WriteLInt (charValue, 0);
+      | value: Boxed.String DO
+        s := value.value;
+        IF TR.IsPredefType(TR.BaseCharType(type), Predef.char) THEN
+          IF (type(Sym.PredefType). id = Predef.char) THEN
+            (* note: the character value is cast to OOC_CHAR8 to avoid
+               any problems if characters are interpreted as signed values
+               by default; that is, '\377' is _not_ -1 *)
+            charValue := s. CharAt(0);
+            w. WriteString ("(OOC_CHAR8)'");
+            WriteChar(charValue);
+            w. WriteChar ("'");
           ELSE
-            w. WriteChar ("'");
-            w. WriteChar (CHR (charValue));
-            w. WriteChar ("'");
+            w. WriteChar (delim);
+            i := 0; len := s. length;
+            WHILE (i # len) DO
+              IF (s.CharAt(i) = ORD(delim)) THEN
+                w. WriteString (quotedDelim)
+              ELSE  (* note: this is a tidbit slow for large strings *)
+                WriteChar(s.CharAt(i))
+              END;
+              INC (i)
+            END;
+            w. WriteChar (delim);
           END;
+
         ELSE
-          (* Interesting bit of C knowledge: An expression like `(T){1,2}'
-             cannot be passed to a cpp macro, because the preprocessor
-             interprets the `,' as its argument separator.  On the other hand,
-             `((T){1,2})' works.  *)
-          w. WriteString ("((OOC_CHAR16[]){");
-          i := 0; len := value. Length();
-          WHILE (i # len) DO
+          IF (type(Sym.PredefType). id = Predef.longchar) THEN
+            charValue := s.CharAt(0);
+            w. WriteString ("(OOC_CHAR16)");
+            IF (charValue < ORD (" ")) OR (charValue >= 127) OR
+               (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
+              w. textWriter. WriteLInt (charValue, 0);
+            ELSE
+              w. WriteChar ("'");
+              w. WriteChar (CHR (charValue));
+              w. WriteChar ("'");
+            END;
+          ELSE
+            (* Interesting bit of C knowledge: An expression like `(T){1,2}'
+               cannot be passed to a cpp macro, because the preprocessor
+               interprets the `,' as its argument separator.  On the other
+               hand, `((T){1,2})' works.  *)
+            w. WriteString ("((OOC_CHAR16[]){");
+            i := 0; len := s.length;
+            WHILE (i # len) DO
+              IF (i # 0) THEN
+                w. WriteChar (",");
+              END;
+              w. textWriter. WriteLInt (s.CharAt(i), 0);
+              INC (i)
+            END;
             IF (i # 0) THEN
               w. WriteChar (",");
             END;
-            w. textWriter. WriteLInt (ORD (value. CharAt (i)), 0);
-            INC (i)
+            w. textWriter. WriteLInt (0, 0);
+            w. WriteString ("})");
           END;
-          IF (i # 0) THEN
-            w. WriteChar (",");
-          END;
-          w. textWriter. WriteLInt (0, 0);
-          w. WriteString ("})");
         END;
         
-      | value: Real.Value DO
+      | value: Boxed.LongReal DO
         str := value.ToString();
         w. WriteString(str.array^);
-      | value: Integer.Value DO
-        IF (value. ToInt() = MIN (LONGINT)) THEN
+        
+      | value: BigInt.BigInt DO
+        IF (value. ToLongInt() = MIN (LONGINT)) THEN
           (* this assumes that MIN(LONGINT) is also the smallest value of
              the C type "int"; to avoid overflow errors, we must rewrite
              the value slightly *)
@@ -507,7 +511,8 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
           str := value.ToString();
           w. WriteString(str.array^);
         END;
-      | value: Set.Value DO
+        
+      | value: Boxed.Set DO
         (* FIXME *)
         IF (value. ToLInt() = MIN (LONGINT)) THEN
           (* this assumes that MIN(LONGINT) is also the smallest value of
@@ -982,14 +987,14 @@ PROCEDURE (d: IncludeModule) Write (w: Writer);
 
 
 PROCEDURE InitDefine (d: Define; name: String.String;
-                      const: Language.Value);
+                      const: Boxed.Object);
   BEGIN
     InitDeclaration (d, name, tqNone, scAuto, NIL);
     d. const := const;
   END InitDefine;
 
 PROCEDURE (w: Writer) NewDefine* (name: String.String;
-                                  const: Language.Value): Define;
+                                  const: Boxed.Object): Define;
   VAR
     d: Define;
   BEGIN

@@ -1,17 +1,13 @@
 MODULE Object;
 
 (**This module provides the definitions for a basic object type used in most of
-   the ADT library, as well as ``boxed'' versions of the language's basic
-   types.
+   the ADT library.
 
    Note: This module is a construction site.  New type definitions and features
-   are added on demand.  If it is not used, it has no place here.  This module
-   will be renamed eventually (maybe to ``Language''?), if it has been fleshed
-   out enough to replace both ``ADT:Object'', @omodule{*Language} and friends
-   (including @omodule{*Language:String0}), and the value objects of
-   @omodule{*Config}.  *)
+   are added on demand.  If it is not used, it has no place here.  *)
 
 IMPORT
+  Out0,
   S := SYSTEM;
   
 TYPE
@@ -93,7 +89,9 @@ CONST
      instruction operating on 32-bit values is called with a number of bytes
      that is not a multiple of 4.  *)
 
-
+VAR
+  emptyString-: String;
+  
 PROCEDURE (x: Object) ToStringN*(): String;
 (**Returns a string representation of the object.  Typically, the string is
    some form of ``natural'' representation of the value.  For complex objects,
@@ -426,6 +424,11 @@ PROCEDURE Concat2* (s1, s2: String): String;
     END;
   END Concat2;
 
+PROCEDURE (s: String) Concat*(t: String): String;
+  BEGIN
+    RETURN Concat2(s, t);
+  END Concat;
+
 PROCEDURE (s: String8) CharsLatin1*(): CharsLatin1;
   BEGIN
     RETURN s.data;
@@ -492,16 +495,21 @@ PROCEDURE (s: String8) Compare*(y: Object): LONGINT;
   VAR
     min, i: LONGINT;
   BEGIN
+      Out0.String("  0");Out0.Ln;
     min := s.length;
     WITH y: String8 DO
+      Out0.String("  a");Out0.Ln;
       IF (y.length < min) THEN min := y.length; END;
       i := 0;
       WHILE (i # min) & (s.data[i] = y.data[i]) DO
+      Out0.String("  b");Out0.Ln;
         INC(i);
       END;
       IF (i = min) THEN
+      Out0.String("  c");Out0.Ln;
         RETURN (s.length - y.length);
       ELSE
+      Out0.String("  d");Out0.Ln;
         RETURN (ORD(s.data[i]) - ORD(y.data[i]));
       END;
     | y: String32 DO
@@ -522,6 +530,7 @@ PROCEDURE (s: String32) Compare*(y: Object): LONGINT;
   VAR
     min, i: LONGINT;
   BEGIN
+      Out0.String("  1");Out0.Ln;
     min := s.length;
     WITH y: String8 DO
       IF (y.length < min) THEN min := y.length; END;
@@ -653,4 +662,6 @@ PROCEDURE (s: String32) IndexOf* (char: Char; pos: LONGINT): LONGINT;
     RETURN -1
   END IndexOf;
 
+BEGIN
+  emptyString := NewLatin1("");
 END Object.

@@ -21,9 +21,8 @@ MODULE OOC:IR [OOC_EXTENSIONS];
 
 IMPORT
 Log,
-  Language, Language:Boolean, Language:Set, LString := Language:String,
-  Language:String8, Language:String16, Language:Integer, Language:Real,
-  Object, ADT:ArrayList, ADT:String, ADT:StringBuffer,
+  Object, Object:Boxed, Object:BigInt,
+  ADT:ArrayList, ADT:String, ADT:StringBuffer,
   Config:Value, BooleanValue := Config:Value:Boolean, 
   Id := OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList, OOC:Error,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
@@ -249,25 +248,28 @@ TYPE
   ConstDesc = RECORD
   (**A constant value, derived from a literal, a reference to a named constant,
      or created as the result of constant folding.  Mapping from Oberon-2 types
-     to instances of @otype{Language.Value}:
+     to instances of @otype{Boxed.Object}:
 
      @table @code
      @item BOOLEAN
-     @otype{*Language:Boolean.Value}
+     @otype{Boxed.Boolean}
 
      @item CHAR string8
-     @otype{*Language:String8.Value}.  Note: String constants can contain any
+     @otype{Boxed.String}.  Note: String constants can contain any
      character, including @code{0X}.  Character constants are mapped onto
      string values of length 1.
 
      @item SHORTINT INTEGER LONGINT HUGEINT
-     @otype{*Language:Integer.Value}
+     @otype{BigInt.BigInt}
 
+     @item REAL LONGINT
+     @otype{Boxed.LongReal}
+     
      @item NIL
      @ofield{value} is @code{NIL}.
      @end table  *)
     (ExpressionDesc)
-    value-: Language.Value;
+    value-: Boxed.Object;
     (**The value of the constant expression, or @code{NIL} if the constant
        represents the literal @code{NIL}.  *)
   END;
@@ -1456,14 +1458,14 @@ PROCEDURE InitExpression* (expr: Expression; sym: Symbol; type: Sym.Type);
    ------------------------------------------------------------------------ *)
 
 PROCEDURE InitConst (const: Const; sym: Symbol; type: Sym.Type;
-                     value: Language.Value);
+                     value: Boxed.Object);
   BEGIN
     InitExpression (const, sym, type);
     const. value := value;
   END InitConst;
 
 PROCEDURE NewConst (sym: Symbol; type: Sym.Type;
-                    value: Language.Value): Const;
+                    value: Boxed.Object): Const;
   VAR
     const: Const;
   BEGIN
@@ -1491,7 +1493,7 @@ PROCEDURE (const: Const) ToString*(): String.String;
   END ToString;
 
 PROCEDURE (b : Builder) NewConst* (sym: Symbol; type: Sym.Type;
-                    value: Language.Value): Const;
+                    value: Boxed.Object): Const;
   BEGIN
     RETURN NewConst(sym, type, value);
   END NewConst;
@@ -1503,18 +1505,18 @@ PROCEDURE (b: Builder) NewStringConst* (sym: Symbol): Expression;
          the symbol includes the string delimiters, the test actually
          checks for a length of exactly 3 characters *)
       RETURN NewConst (sym, Predef.GetType (Predef.char),
-                       String8.ValueOf (sym. str^));
+                       Boxed.ParseString(sym. str^));
     ELSE
       RETURN NewConst (sym, Predef.GetType (Predef.charString),
-                       String8.ValueOf (sym. str^));
+                       Boxed.ParseString(sym. str^));
     END;
   END NewStringConst;
 
 PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
   VAR
-    v: Integer.Value;
+    v: BigInt.BigInt;
   BEGIN
-    v := Integer.ValueOf (sym. str^);
+    v := BigInt.NewString(sym. str^, 10);
     IF (v = NIL) THEN
       b. ErrSym (numberOutOfRange, sym);
       RETURN b. errorExpr
@@ -1525,60 +1527,15 @@ PROCEDURE (b: Builder) NewIntConst10* (sym: Symbol): Expression;
 
 PROCEDURE (b: Builder) NewIntConst16* (sym: Symbol): Expression;
   VAR
-    v: Integer.Value;
-    result: LONGINT;
-    spos, epos: INTEGER;
-      
-  PROCEDURE GetDigit(c: CHAR): INTEGER;
-    VAR
-      d: INTEGER;
-    BEGIN
-      d:=ORD(c);
-      IF (ORD ("0") <= d) & (d <= ORD ("9")) THEN
-        DEC (d, ORD ("0"))
-      ELSE  (* (ORD ("A") <= d) & (d <= ORD ("F")) *)
-        (* the explicit test can be omitted, since this procedure is only 
-           called for numbers with H or X suffix, and the initial REPEAT 
-           loop in `Number' only accepts valid hexadecimal digits from 
-           the ranges "0".."9" and "A".."F" *)
-        DEC (d, ORD ("A")-10)
-      END;
-      RETURN d
-    END GetDigit;
-  
+    v: BigInt.BigInt;
+    epos: LONGINT;
   BEGIN
-    (* FIXME... string conversion should probably put into Language.Integer *)
-    result := 0; spos := 0; epos := -1;
-    WHILE (sym. str[epos+1] # "H") DO
-      INC (epos);
+    epos := 0;
+    WHILE (sym.str[epos] # "H") DO
+      INC(epos);
     END;
-    
-    (* skip leading zeros *)
-    WHILE (sym. str[spos] = "0") DO 
-      INC (spos)
-    END;
-    IF (epos-spos > 7) THEN  (* value has more than 8 significant digits *)
-      ASSERT (FALSE);                 (* number out of range *)
-    ELSIF (spos <= epos) THEN         (* if any non-zero digits follow *)
-      result := GetDigit (sym. str[spos]);
-      INC (spos);
-      IF (epos-spos = 6) & (result >= 8) THEN
-        (* value is beyond MAX(LONGINT)=07FFFFFFFH: correct this by sub-
-           tracting 16 from the value of the most significant digit, creating
-           the negative number that matches the bit pattern *)
-        (* warning: hex const mapped to negative value *)
-        (* FIXME... with HUGEINT, this is no longer true *)
-        DEC (result, 10H)
-      END;
-      WHILE (spos <= epos) DO
-        result := result*10H + GetDigit (sym. str[spos]);
-        INC (spos)
-      END;
-      (* ELSE: number is non-empty sequence of "0", keep result=0 *)
-    END;
-    
-    v := Integer.New (result);
-    RETURN NewConst (sym, Predef.SmallestIntType (v), v)
+    v := BigInt.NewRegion(sym.str^, 0, epos, 16);
+    RETURN NewConst(sym, Predef.SmallestIntType (v), v)
   END NewIntConst16;
 
 PROCEDURE (b: Builder) AssertConst* (expr: Expression): Const;
@@ -1608,7 +1565,7 @@ PROCEDURE (b: Builder) AssertIntConst (expr: Expression; start, end: LONGINT): L
     const := b. AssertConst (expr);
     IF (const # b. errorExpr) THEN
       IF TR.IsIntegerType (const. type) THEN
-        v := const. value(Integer.Value). ToInt();
+        v := const. value(BigInt.BigInt). ToLongInt();
         IF (start <= v) & (v < end) THEN
           RETURN v;
         END;
@@ -1627,13 +1584,13 @@ PROCEDURE (b: Builder) AssertInteger(expr: Expression): Expression;
 (* Generates an error if `expr' is not an integer value.  On success,
    `expr' is returned, and otherwise an integer constant with a value of `1'.*)
   VAR
-    v: Integer.Value;
+    v: BigInt.BigInt;
   BEGIN
     IF ~TR.IsIntegerType(expr.type) THEN
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notInteger, expr.sym);
       END;
-      v := Integer.New(1);
+      v := BigInt.NewInt(1);
       RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
     END;
     RETURN expr;
@@ -1643,13 +1600,13 @@ PROCEDURE (b: Builder) AssertReal(expr: Expression): Expression;
 (* Generates an error if `expr' is not a floating point value.  On success,
    `expr' is returned, and otherwise a REAL constant with a value of `1.0'.*)
   VAR
-    v: Real.Value;
+    v: Boxed.LongReal;
   BEGIN
     IF ~TR.IsRealType(expr.type) THEN
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notReal, expr.sym);
       END;
-      v := Real.New(1);
+      v := Boxed.NewLongReal(1);
       RETURN NewConst(expr.sym, Predef.GetType(Predef.real), v);
     END;
     RETURN expr;
@@ -1659,13 +1616,13 @@ PROCEDURE (b: Builder) AssertNumeric (expr: Expression): Expression;
 (* Generates an error if `expr' is not an integer or real value.  On success,
    `expr' is returned, and otherwise an integer constant with a value of `1'.*)
   VAR
-    v: Integer.Value;
+    v: BigInt.BigInt;
   BEGIN
     IF ~TR.IsNumericType(expr.type) THEN
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notNumeric, expr.sym);
       END;
-      v := Integer.New(1);
+      v := BigInt.NewInt(1);
       RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
     END;
     RETURN expr;
@@ -1676,13 +1633,13 @@ PROCEDURE (b: Builder) AssertChar(expr: Expression): Expression;
    `expr' is returned, and otherwise an character constant with a value of
    "?".*)
   VAR
-    v: String8.Value;
+    v: Boxed.String;
   BEGIN
     IF ~TR.IsCharType(expr.type) THEN
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notCharacter, expr.sym);
       END;
-      v := String8.NewString("a");
+      v := Boxed.NewString(Object.NewLatin1("a"));
       RETURN NewConst(expr.sym, Predef.GetType(Predef.char), v);
     END;
     RETURN expr;
@@ -1692,13 +1649,13 @@ PROCEDURE (b: Builder) AssertSet(expr: Expression): Expression;
 (* Generates an error if `expr' is not a set value.  On success,
    `expr' is returned, and otherwise the empty set.  *)
   VAR
-    v: Set.Value;
+    v: Boxed.Set;
   BEGIN
     IF ~TR.IsSetType(expr.type) THEN
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notSet, expr.sym);
       END;
-      v := Set.New({});
+      v := Boxed.NewSet({});
       RETURN NewConst(expr.sym, Predef.GetType(Predef.set), v);
     END;
     RETURN expr;
@@ -1706,9 +1663,9 @@ PROCEDURE (b: Builder) AssertSet(expr: Expression): Expression;
 
 PROCEDURE (b: Builder) NewRealConst* (sym: Symbol; type: Sym.PredefId): Expression;
   VAR
-    v: Language.Value;
+    v: Boxed.Object;
   BEGIN
-    v := Real.ValueOfLiteral (sym. str^);
+    v := Boxed.ParseLongRealLiteral (sym. str^);
     IF (v = NIL) THEN
       b. ErrSym (numberOutOfRange, sym);
       RETURN b. errorExpr
@@ -1782,10 +1739,10 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
     ELSE
       IF (v <= ORD (Predef.maxChar)) THEN
         RETURN NewConst (sym, Predef.GetType (Predef.char),
-                         String8.NewChar (CHR (v)));
+                         Boxed.NewString(Object.NewLatin1Char(CHR (v))));
       ELSE
         RETURN NewConst (sym, Predef.GetType (Predef.longchar),
-                         String16.NewChar (LONGCHR (v)));
+                         Boxed.NewString(Object.NewUCS2Char(LONGCHR (v))));
       END;
     END
   END NewCharConst16;
@@ -1808,12 +1765,12 @@ PROCEDURE (b: Builder) NewSize* (sym: Symbol; type: Expression): Expression;
       size := t.size;
     END;
     RETURN b. NewConst
-        (sym, Predef.GetType (Predef.lengthType), Integer.New (size));
+        (sym, Predef.GetType (Predef.lengthType), BigInt.NewInt(size));
   END NewSize;
 
 PROCEDURE (b: Builder) GetOne (sym: Symbol; type: Sym.Type): Const;
   BEGIN
-    RETURN b. NewConst (sym, type, Integer.New (1));
+    RETURN b. NewConst (sym, type, BigInt.NewInt(1));
   END GetOne;
 
 PROCEDURE (b : Builder) ValidSetElement(expr : Expression; set : Sym.Type) : Expression;
@@ -1826,8 +1783,8 @@ PROCEDURE (b : Builder) ValidSetElement(expr : Expression; set : Sym.Type) : Exp
    @samp{MIN(set)} is returned. *)
 
   VAR
-    val : Language.Value;
-    element, min, max : Integer.Value;
+    val : Boxed.Object;
+    element, min, max : BigInt.BigInt;
 
   PROCEDURE MinElement() : Expression;
   (**Return a constant for the minimal element of set @oparam{set}. *)
@@ -1836,16 +1793,16 @@ PROCEDURE (b : Builder) ValidSetElement(expr : Expression; set : Sym.Type) : Exp
   END MinElement;
 
   BEGIN
-    val := Predef.GetMin(set); min := val(Integer.Value);
-    val := Predef.GetMax(set); max := val(Integer.Value);
+    val := Predef.GetMin(set); min := val(BigInt.BigInt);
+    val := Predef.GetMax(set); max := val(BigInt.BigInt);
 
     expr := b.AssertInteger(expr);
     WITH expr : Const DO
-      element := expr.value(Integer.Value);
-      IF (element.Compare(min) < 0) OR (element.Compare(max) > 0) THEN
+      element := expr.value(BigInt.BigInt);
+      IF (element.Cmp(min) < 0) OR (element.Cmp(max) > 0) THEN
         b. ErrSym (invalidIntegerConst, expr. sym);
-        b. lastError. SetIntAttrib ("start", min.ToInt());
-        b. lastError. SetIntAttrib ("end", max.ToInt()+1);
+        b. lastError. SetIntAttrib ("start", min.ToLongInt());
+        b. lastError. SetIntAttrib ("end", max.ToLongInt()+1);
 	RETURN MinElement()
       END
     ELSE
@@ -2670,7 +2627,7 @@ PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to: Expression; isSet : 
   BEGIN
     set := Predef.GetType(Predef.set);
     IF (from = NIL) & (to = NIL) THEN  (* empty set *)
-      RETURN b. NewConst (sym, set, Set.New ({}));
+      RETURN b. NewConst (sym, set, Boxed.NewSet({}));
     ELSE
       (* only do semantic checks for SETs and not for labels *)
       IF isSet THEN
@@ -2693,7 +2650,7 @@ PROCEDURE (range: SetRange) Accept* (v: Visitor);
 
 PROCEDURE (range: SetRange) IsEmpty*(): BOOLEAN;
   BEGIN  (* pre: both `from' and `to' are constants *)
-    RETURN (range. from(Const). value. Compare (range. to(Const). value) > 0);
+    RETURN (range. from(Const). value. Cmp (range. to(Const). value) > 0);
   END IsEmpty;
 
 PROCEDURE (range: SetRange) IntersectsWith* (range2: SetRange): BOOLEAN;
@@ -2701,8 +2658,8 @@ PROCEDURE (range: SetRange) IntersectsWith* (range2: SetRange): BOOLEAN;
     (* pre: all `from' and `to' are constants, neither of the
        ranges is empty *)
     RETURN
-        ~((range.to(Const).value. Compare (range2.from(Const).value) < 0) OR
-          (range.from(Const).value. Compare (range2.to(Const).value) > 0))
+        ~((range.to(Const).value. Cmp (range2.from(Const).value) < 0) OR
+          (range.from(Const).value. Cmp (range2.to(Const).value) > 0))
   END IntersectsWith;
 
 (* Operator Class: Shift
@@ -2724,14 +2681,14 @@ PROCEDURE (b: Builder) NewShift (sym: Symbol; value, by: Expression;
     
   PROCEDURE AssertShiftable (expr: Expression): Expression;
     VAR
-      v: Integer.Value;
+      v: BigInt.BigInt;
     BEGIN
       IF (expr # b.errorExpr) THEN
         IF ~(TR.IsIntegerType(expr.type) OR
              TR.IsCharType(expr.type) OR
              TR.IsPredefType(expr.type, Predef.byte)) THEN
           b.ErrSym(invalidOpType, expr.sym);
-          v := Integer.New(1);
+          v := BigInt.NewInt(1);
           RETURN NewConst(expr.sym, Predef.SmallestIntType(v), v);
         END;
       END;
@@ -2935,7 +2892,7 @@ PROCEDURE (b: Builder) WidenForAssign (VAR expr: Expression;
         IF type(Sym.Array). isOpenArray THEN
           RETURN FALSE;
         ELSE
-          RETURN (expr(Const). value(LString.Value). Length() <
+          RETURN (expr(Const). value(Boxed.String). value. length <
                   type(Sym.Array). length);
         END;
       ELSE
@@ -3650,7 +3607,7 @@ PROCEDURE (b: Builder) NewForStatm* (sym: Symbol;
   BEGIN
     IF (step = NIL) THEN
       step := b. NewConst
-          (sym, Predef.GetType (Predef.shortint), Integer.New (1));
+          (sym, Predef.GetType (Predef.shortint), BigInt.NewInt(1));
     END;
 
     IF ~(var IS Var) THEN
@@ -3664,7 +3621,7 @@ PROCEDURE (b: Builder) NewForStatm* (sym: Symbol;
       MakeAssignmentCompatible (b, end. sym, end, var. type);
       step := b. AssertConst (step);
       IF TR.IsIntegerType (step. type) &
-         (Integer.zero.Compare (step(Const). value) = 0) THEN
+         (BigInt.zero.Cmp (step(Const). value) = 0) THEN
         b. ErrSym (stepIsZero, step. sym);
       END;
     END;
@@ -4555,7 +4512,7 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module;
     b. errList := errList;
     b. errorExpr := NewConst (BasicList.NewSymbol (NIL, -1),
                               Predef.GetType(Predef.void),
-                              Boolean.New (FALSE));
+                              Boxed.false);
     b. typeType := NewTypeType (NIL, NIL);
     b. moduleType := NewModuleType (NIL, NIL);
     b. lastError := NIL;
@@ -4912,7 +4869,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     type: Sym.Type;
     formalPars: Sym.VarDeclArray;
     receiver, delta, code: Expression;
-    value: Language.Value;
+    value: Boxed.Object;
  
   PROCEDURE MakeParameterCompatible (b: Builder; sym: Symbol;
                                      VAR arg: Expression;
@@ -5043,7 +5000,7 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
                  is the size of the passed value *)
               newArgs. Append (b. NewConst (arg. sym,
                                             Predef.GetType (Predef.lengthType),
-                                            Integer.New (arg. type. size)));
+                                            BigInt.NewInt(arg. type. size)));
               newFPars. Append (NIL);
             ELSIF (Dimensions (arg.type) >= fparType. GetOpenDimensions()) THEN
               (* only try to add the lengths if there are enough dimensions

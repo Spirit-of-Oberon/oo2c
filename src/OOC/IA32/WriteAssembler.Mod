@@ -30,14 +30,12 @@ MODULE OOC:IA32:WriteAssembler [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, IntStr, Log, Out, StdChannels, Strings, StringSearch, 
-  ADT:String,
+  Object:Boxed, Object:BigInt, ADT:String,
   Rep := OOC:Repository, OOC:IR, Sym := OOC:SymbolTable,OOC:SymbolTable:Predef,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Schedule, 
   OOC:C:Naming, OOC:IA32:Writer, OOC:Make:TranslateToIA32,
   OOC:SSA:IRtoSSA, OOC:SSA:XML,
-  OOC:SSA:DeadCodeElimination, OOC:SSA:Destore,
-  Language, Language:Boolean, Language:Integer, Language:String8,
-  Language:String16, Language:Real, Language:Set;
+  OOC:SSA:DeadCodeElimination, OOC:SSA:Destore;
 
 
 TYPE
@@ -62,36 +60,34 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
       arg: SSA.Result;
       s: String.String;
       
-    PROCEDURE Const (value: Language.Value; type: Sym.Type);
+    PROCEDURE Const (value: Boxed.Object; type: Sym.Type);
       VAR
         s: String.String;
       BEGIN
         IF (value = NIL) THEN
           COPY ("$0", str);
         ELSE
-          WITH value: Boolean.Value DO
+          WITH value: Boxed.Boolean DO
             IF value. value THEN
               COPY ("$1", str);
             ELSE
               COPY ("$0", str);
             END
-          | value: String8.Value DO
+          | value: Boxed.String DO
             IF (type(Sym.PredefType). id = Predef.char) THEN
-              IntStr.IntToStr (ORD (value. value. array[0]), str);
+              IntStr.IntToStr (value. value. CharAt(0), str);
             ELSE
               s := w. GetStringLabel (value);
               s. GetChars (str);
             END;
             Strings.Insert ("$", 0, str);
-          | value: String16.Value DO
+          | value: Boxed.LongReal DO
             ASSERT (FALSE);
-          | value: Real.Value DO
-            ASSERT (FALSE);
-          | value: Integer.Value DO
+          | value: BigInt.BigInt DO
             s := value.ToString();
             s. GetChars (str);
             Strings.Insert ("$", 0, str);
-          | value: Set.Value DO
+          | value: Boxed.Set DO
             ASSERT (FALSE);
           END;
         END;

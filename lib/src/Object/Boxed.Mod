@@ -63,6 +63,9 @@ VAR
 (* Object
    ------------------------------------------------------------------------ *)
 
+PROCEDURE (v: Object) [ABSTRACT] ToString*(): Str.String;
+  END ToString;
+
 PROCEDURE (v: Object) [ABSTRACT] Cmp*(y: Obj.Object): LONGINT;
   END Cmp;
 
@@ -422,39 +425,62 @@ PROCEDURE (v: String) ToString*(): Str.String;
 PROCEDURE (v: String) Store*(w: Storable.Writer);
   VAR
     value: Obj.String;
-    chars: Obj.CharsLatin1;
+    chars8: Obj.CharsLatin1;
+    chars32: Obj.CharsUTF32;
+    i: LONGINT;
   BEGIN
     value := v.value;
     WITH value: Obj.String8 DO
       w.WriteNum(value.length);
-      chars := value.CharsLatin1();
-      w.WriteBytes(chars^, 0, value.length);
-    | value: Obj.String32 DO
+      chars8 := value.CharsLatin1();
+      w.WriteBytes(chars8^, 0, value.length);
+      
+    | value: Obj.String32 DO             (* FIXME... use UTF8 codec *)
       w.WriteNum(-value.length-1);
-      (* FIXME... *)
+      chars32 := value.CharsUTF32();
+      FOR i := 0 TO value.length-1 DO
+        w.WriteNum(chars32[i]);
+      END;
     END;
   END Store;
 
 PROCEDURE (v: String) Load*(r: Storable.Reader);
   CONST
-    sizeBuffer = 1024;
+    sizeBuffer8 = 1024;
+    sizeBuffer32 = 512;
   VAR
     len: LONGINT;
-    buffer: ARRAY sizeBuffer OF CHAR;
-    dynBuffer: POINTER TO ARRAY OF CHAR;
+    buffer8: ARRAY sizeBuffer8 OF CHAR;
+    dynBuffer8: POINTER TO ARRAY OF CHAR;
+    buffer32: ARRAY sizeBuffer32 OF Obj.Char;
+    dynBuffer32: POINTER TO ARRAY OF Obj.Char;
+    i: LONGINT;
   BEGIN
     r.ReadNum(len);
     IF (len >= 0) THEN
-      IF (len < sizeBuffer) THEN
-        r.ReadBytes(buffer, 0, len);
-        v.value := Obj.NewLatin1Region(buffer, 0, len);
+      IF (len < sizeBuffer8) THEN
+        r.ReadBytes(buffer8, 0, len);
+        v.value := Obj.NewLatin1Region(buffer8, 0, len);
       ELSE
-        NEW(dynBuffer, len);
-        r.ReadBytes(dynBuffer^, 0, len);
-        v.value := Obj.NewLatin1Region(dynBuffer^, 0, len);
+        NEW(dynBuffer8, len);
+        r.ReadBytes(dynBuffer8^, 0, len);
+        v.value := Obj.NewLatin1Region(dynBuffer8^, 0, len);
       END;
-    ELSE
-      ASSERT(FALSE);  (* FIXME... *)
+      
+    ELSE  (* this is quite slow; FIXME... use the UTF8 codec instead *)
+      len := -len-1;
+      IF (len < sizeBuffer32) THEN
+        FOR i := 0 TO len-1 DO
+          r.ReadNum(buffer32[i]);
+        END;
+        v.value := Obj.NewUTF32Region(buffer32, 0, len);
+      ELSE
+        NEW(dynBuffer32, len);
+        FOR i := 0 TO len-1 DO
+          r.ReadNum(buffer32[i]);
+        END;
+        v.value := Obj.NewUTF32Region(dynBuffer32^, 0, len);
+      END;
     END;
   END Load;
 

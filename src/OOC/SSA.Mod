@@ -22,8 +22,7 @@ MODULE OOC:SSA;
 
 
 IMPORT
-  SYSTEM, Log, Object, LanguageOld := Language, 
-  Language:Integer, Language:Boolean, ADT:Dictionary,
+  SYSTEM, Log, Object, Object:Boxed, Object:BigInt, ADT:Dictionary,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
@@ -143,7 +142,7 @@ TYPE
 TYPE
   ConstDesc = RECORD
     (InstrDesc)
-    value-: LanguageOld.Value;
+    value-: Boxed.Object;
     (**For a constant representing a @code{NIL} value, this field refers to
        @ovar{nil}.  *)
     type-: Sym.Type;
@@ -215,7 +214,7 @@ TYPE
   END;
 
 VAR
-  nil-: Integer.Value;
+  nil-: BigInt.BigInt;
 
   
 PROCEDURE InitNode* (n: Node);
@@ -343,7 +342,7 @@ PROCEDURE (opnd: Opnd) GetIntConst*(): LONGINT;
    @ofield{opnd.arg} is an integer constant.
    @end precond*)
   BEGIN
-    RETURN opnd. arg(Const). value(Integer.Value). ToInt();
+    RETURN opnd. arg(Const). value(BigInt.BigInt). ToLongInt();
   END GetIntConst;
 
 PROCEDURE (opnd: Opnd) IsScheduleOpnd*(): BOOLEAN;
@@ -485,12 +484,12 @@ PROCEDURE (result: Result) IsBooleanConst* (value: BOOLEAN): BOOLEAN;
 
    @precond
    @samp{@oparam{result} IS @otype{Const}} and the constant value is of type
-   @otype{Boolean.Value}.
+   @otype{Boxed.Boolean}.
    @end precond  *)
   BEGIN
     ASSERT (result IS Const);
-    ASSERT (result(Const). value IS Boolean.Value);
-    RETURN (result(Const). value(Boolean.Value). value = value)
+    ASSERT (result(Const). value IS Boxed.Boolean);
+    RETURN (result(Const). value(Boxed.Boolean). value = value)
   END IsBooleanConst;
 
 PROCEDURE (result: Result) LogId* (msg: ARRAY OF CHAR);
@@ -969,7 +968,7 @@ PROCEDURE (instr: Instr) IsSwitchStatm*(): BOOLEAN;
 (* ---------------------------------------------------------------------- *)
 
 PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
-                     value: LanguageOld.Value; type: Sym.Type);
+                     value: Boxed.Object; type: Sym.Type);
   BEGIN
     InitInstr (const, Opcode.const, subclass);
     ASSERT (value # NIL);
@@ -1123,7 +1122,7 @@ PROCEDURE (pb: ProcBlock) DeleteInstr* (instr: Instr);
     instr. prevInstr := NIL;
   END DeleteInstr;
   
-PROCEDURE (pb: ProcBlock) GetConst* (value: LanguageOld.Value;
+PROCEDURE (pb: ProcBlock) GetConst* (value: Boxed.Object;
                                      type: Sym.Type): Const;
 (**Returns the @code{const} instruction for the value @oparam{value}.  Equal
    values are mapped to the same unique instruction.  *)
@@ -1151,19 +1150,17 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: LanguageOld.Value;
 
 PROCEDURE (pb: ProcBlock) GetConstInt* (int: LONGINT): Const;
   BEGIN
-    RETURN pb. GetConst (Integer.New(int),
-                         Predef.GetType (Predef.integer))
+    RETURN pb.GetConst(BigInt.NewInt(int), Predef.GetType(Predef.integer));
   END GetConstInt;
 
 PROCEDURE (pb: ProcBlock) GetConstBool* (b: BOOLEAN): Const;
   BEGIN
-    RETURN pb. GetConst (Boolean.New (b),
-                         Predef.GetType (Predef.boolean))
+    RETURN pb.GetConst(Boxed.NewBoolean(b), Predef.GetType(Predef.boolean));
   END GetConstBool;
 
 PROCEDURE (pb: ProcBlock) GetConstNil*(): Const;
   BEGIN
-    RETURN pb. GetConst (nil, Predef.GetType (Predef.nil))
+    RETURN pb.GetConst(nil, Predef.GetType(Predef.nil))
   END GetConstNil;
 
 
@@ -1547,5 +1544,5 @@ PROCEDURE (pb: ProcBlock) Destroy*;
   END Destroy;
 
 BEGIN
-  nil := Integer.NewDistinct(0);
+  nil := BigInt.NewInt(0);
 END OOC:SSA.

@@ -22,8 +22,7 @@ MODULE OOC:SymbolTable:Predef;
 
 
 IMPORT
-  Strings, Language, Language:Boolean, Language:Integer, Language:String8,
-  Language:String16, Language:Real,
+  Strings, Object, Object:Boxed, Object:BigInt,
   OOC:Config:Autoconf, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 
@@ -85,7 +84,7 @@ CONST
   minLongchar* = MIN(LONGCHAR); maxLongchar* = MAX(LONGCHAR);
   
 VAR
-  minConst, maxConst: ARRAY lastId+1 OF Language.Value;
+  minConst, maxConst: ARRAY lastId+1 OF Boxed.Object;
   (**Array with the @code{MIN} and @code{MAX} values of the predefined
      types.  An entry @code{NIL} means that the operation is not
      applicable to the type.  *)
@@ -148,7 +147,7 @@ PROCEDURE PredefType (stb: Builder.Builder;
                       id: Sym.PredefId;
                       name: ARRAY OF CHAR;
                       size: LONGINT; align: INTEGER;
-                      minValue, maxValue: Language.Value): Sym.PredefType;
+                      minValue, maxValue: Boxed.Object): Sym.PredefType;
   VAR
     ptype: Sym.PredefType;
     tdecl: Sym.TypeDecl;
@@ -195,7 +194,7 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     ptype: Sym.PredefType;
     redir: Sym.Redirect;
     
-  PROCEDURE PredefConst (name: ARRAY OF CHAR; value: Language.Value;
+  PROCEDURE PredefConst (name: ARRAY OF CHAR; value: Boxed.Object;
                          type: Sym.PredefType);
     VAR
       cdecl: Sym.ConstDecl;
@@ -209,38 +208,38 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
                               Sym.callConvInternal, NIL);
     
     ptype := PredefType (stb, module, boolean, "BOOLEAN", 1, 1, NIL, NIL);
-    PredefConst ("FALSE", Boolean.New (FALSE), ptype);
-    PredefConst ("TRUE", Boolean.New (TRUE), ptype);
+    PredefConst ("FALSE", Boxed.false, ptype);
+    PredefConst ("TRUE", Boxed.true, ptype);
     
     ptype := PredefType (stb, module, char, "CHAR", 1, 1,
-                         String8.NewChar (minChar),
-                         String8.NewChar (maxChar));
+                         Boxed.NewString(Object.NewLatin1Char(minChar)),
+                         Boxed.NewString(Object.NewLatin1Char(maxChar)));
     ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2,
-                         String16.NewChar (minLongchar),
-                         String16.NewChar (maxLongchar));
+                         Boxed.NewString(Object.NewUCS2Char(minLongchar)),
+                         Boxed.NewString(Object.NewUCS2Char(maxLongchar)));
     ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1,
-                         Integer.New (MIN (SHORTINT)),
-                         Integer.New (MAX (SHORTINT)));
+                         BigInt.NewInt(MIN (SHORTINT)),
+                         BigInt.NewInt(MAX (SHORTINT)));
     ptype := PredefType (stb, module, integer, "INTEGER", 2, 2,
-                         Integer.New (MIN (INTEGER)),
-                         Integer.New (MAX (INTEGER)));
+                         BigInt.NewInt(MIN (INTEGER)),
+                         BigInt.NewInt(MAX (INTEGER)));
     ptype := PredefType (stb, module, longint, "LONGINT", 4, 4,
-                         Integer.New (MIN (LONGINT)),
-                         Integer.New (MAX (LONGINT)));
+                         BigInt.NewInt(MIN (LONGINT)),
+                         BigInt.NewInt(MAX (LONGINT)));
     IF (Autoconf.bitsTargetInteger > 32) THEN
       ptype := PredefType (stb, module, hugeint, "HUGEINT", 8, 8,
-                           Integer.NewString ("-9223372036854775808"),
-                           Integer.NewString ("9223372036854775807"));
+                           BigInt.NewString("-9223372036854775808", 10),
+                           BigInt.NewString("9223372036854775807", 10));
     END;
     ptype := PredefType (stb, module, real, "REAL", 4, 4,
-                         Real.New (MIN (REAL)),
-                         Real.New (MAX (REAL)));
+                         Boxed.NewLongReal(MIN (REAL)),
+                         Boxed.NewLongReal(MAX (REAL)));
     ptype := PredefType (stb, module, longreal, "LONGREAL", 8, 8,
-                         Real.New (MIN (LONGREAL)),
-                         Real.New (MAX (LONGREAL)));
+                         Boxed.NewLongReal(MIN (LONGREAL)),
+                         Boxed.NewLongReal(MAX (LONGREAL)));
     ptype := PredefType (stb, module, set, "SET", 4, 4,
-                         Integer.New (MIN (SET)),
-                         Integer.New (MAX (SET)));
+                         BigInt.NewInt(MIN (SET)),
+                         BigInt.NewInt(MAX (SET)));
     
     ptype := PredefType (stb, module, charString, "", Sym.dynamicSize, 1,
                          NIL, NIL);
@@ -313,7 +312,7 @@ PROCEDURE GetType* (id: Sym.PredefId): Sym.PredefType;
     RETURN Sym.predefIdToType[id]
   END GetType;
 
-PROCEDURE GetMin* (type: Sym.Type): Language.Value;
+PROCEDURE GetMin* (type: Sym.Type): Boxed.Object;
   BEGIN
     WITH type: Sym.PredefType DO
       RETURN minConst[type. id];
@@ -322,7 +321,7 @@ PROCEDURE GetMin* (type: Sym.Type): Language.Value;
     END;
   END GetMin;
 
-PROCEDURE GetMax* (type: Sym.Type): Language.Value;
+PROCEDURE GetMax* (type: Sym.Type): Boxed.Object;
   BEGIN
     WITH type: Sym.PredefType DO
       RETURN maxConst[type. id];
@@ -331,14 +330,13 @@ PROCEDURE GetMax* (type: Sym.Type): Language.Value;
     END;
   END GetMax;
 
-PROCEDURE SmallestIntType* (value: Integer.Value): Sym.Type;
+PROCEDURE SmallestIntType* (value: BigInt.BigInt): Sym.Type;
 (**Return the smallest integer type that can represent @oparam{value}. *)
   VAR
     i: INTEGER;
   BEGIN
     FOR i := shortint TO real-1 DO
-      IF (value.Compare(minConst[i](Integer.Value)) >= 0) &
-         (value.Compare(maxConst[i](Integer.Value)) <= 0) THEN
+      IF (value.Cmp(minConst[i]) >= 0) & (value.Cmp(maxConst[i]) <= 0) THEN
         RETURN GetType(i);
       END;
     END;

@@ -25,8 +25,7 @@ IMPORT
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,
   OOC:SymbolTable:Namespace, OOC:SymbolTable:CreateNamespace,
-  <*PUSH; Warnings:=FALSE*>Language:Integer,
-  Language:String8, Language:String16, Language:Set, Language:Real;<*POP*>
+  <*PUSH; Warnings:=FALSE*>Object:Boxed, Object:BigInt;<*POP*>
 
 
 VAR

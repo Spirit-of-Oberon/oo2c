@@ -21,7 +21,7 @@ MODULE OOC:SSA:ConstProp;
 *)
 
 IMPORT
-  Language, Language:Integer, Language:Boolean,
+  Object:Boxed, Object:BigInt,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
   OOC:SSA:DeadCodeElimination;
   
@@ -44,8 +44,8 @@ VAR
 PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
   VAR
     arg1, arg2: SSA.Const;
-    v: Language.Value;
-    i1, i2: Integer.Value;
+    v: Boxed.Object;
+    i1, i2: BigInt.BigInt;
   BEGIN
     IF (instr. SizeOpndList() >= 2) &
        (instr. opcode # Opcode.preloadedVar) &
@@ -60,22 +60,22 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
       
       CASE arg1. subclass OF
       | Opcode.scSigned8 .. Opcode.scAddress:
-        IF (arg1.value IS Integer.Value) & (arg1.value IS Integer.Value) THEN
+        IF (arg1.value IS BigInt.BigInt) & (arg1.value IS BigInt.BigInt) THEN
           (* only dealing with integers for now; FIXME... add set values *)
-          i1 := arg1. value(Integer.Value);
-          i2 := arg2. value(Integer.Value);
+          i1 := arg1. value(BigInt.BigInt);
+          i2 := arg2. value(BigInt.BigInt);
           
           CASE instr. opcode OF
-          | Opcode.add     : v := i1.Sum(i2);
-          | Opcode.subtract: v := i1.Difference(i2);
-          | Opcode.multiply: v := i1.Product(i2);
+          | Opcode.add     : v := i1.Add(i2);
+          | Opcode.subtract: v := i1.Sub(i2);
+          | Opcode.multiply: v := i1.Mul(i2);
             
-          | Opcode.eql: v := Boolean.New(i1.Compare(i2)  = 0);
-          | Opcode.neq: v := Boolean.New(i1.Compare(i2)  # 0);
-          | Opcode.leq: v := Boolean.New(i1.Compare(i2) <= 0);
-          | Opcode.lss: v := Boolean.New(i1.Compare(i2) <  0);
-          | Opcode.geq: v := Boolean.New(i1.Compare(i2) >= 0);
-          | Opcode.gtr: v := Boolean.New(i1.Compare(i2) >  0);
+          | Opcode.eql: v := Boxed.NewBoolean(i1.Cmp(i2)  = 0);
+          | Opcode.neq: v := Boxed.NewBoolean(i1.Cmp(i2)  # 0);
+          | Opcode.leq: v := Boxed.NewBoolean(i1.Cmp(i2) <= 0);
+          | Opcode.lss: v := Boxed.NewBoolean(i1.Cmp(i2) <  0);
+          | Opcode.geq: v := Boxed.NewBoolean(i1.Cmp(i2) >= 0);
+          | Opcode.gtr: v := Boxed.NewBoolean(i1.Cmp(i2) >  0);
           ELSE                             (* not supported *)
             (*instr. LogOpcode ("not folding (unsupported opcode)");
                instr. opndList. arg. instr. LogOpcode ("arg1");
@@ -90,8 +90,8 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
       END;
 
       IF (v # NIL) THEN
-        IF (v IS Boolean.Value) THEN
-          RETURN pb. GetConstBool (v(Boolean.Value). value);
+        IF (v IS Boxed.Boolean) THEN
+          RETURN pb. GetConstBool (v(Boxed.Boolean). value);
         ELSE
           RETURN pb. GetConst (v, arg1. type);
         END;
@@ -167,14 +167,14 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
                             branch: SSA.Opnd): SSA.Opnd;
     (* Return the branch that corresponds to the selector `expr'.  *)
       
-      PROCEDURE InLabelList (expr: Language.Value; opnd: SSA.Opnd): BOOLEAN;
+      PROCEDURE InLabelList (expr: Boxed.Object; opnd: SSA.Opnd): BOOLEAN;
         VAR
-          lower, upper: Language.Value;
+          lower, upper: Boxed.Object;
         BEGIN
           WHILE (opnd # NIL) DO
             lower := opnd. arg(SSA.Const). value;
             upper := opnd. nextOpnd. arg(SSA.Const). value;
-            IF (lower. Compare (expr) <= 0) & (expr. Compare (upper) <= 0) THEN
+            IF (lower. Cmp (expr) <= 0) & (expr. Cmp (upper) <= 0) THEN
               RETURN TRUE;
             END;
             opnd := opnd. nextOpnd. nextOpnd;

@@ -22,8 +22,7 @@ MODULE OOC:IA32:Writer [OOC_EXTENSIONS];
 
 IMPORT
   Ascii, Channel, Files, IntStr, Msg, Strings, TextRider,
-  Object, ADT:String, ADT:Dictionary,
-  LString := Language:String, Language:String8;
+  Object, Object:Boxed, ADT:String, ADT:Dictionary;
 
 TYPE
   Writer* = POINTER TO WriterDesc;
@@ -102,7 +101,7 @@ PROCEDURE (w: Writer) StringLiteral* (str: ARRAY OF CHAR);
     w. textWriter. WriteLn;
   END StringLiteral;
 
-PROCEDURE (w: Writer) GetStringLabel* (value: LString.Value): String.String;
+PROCEDURE (w: Writer) GetStringLabel* (value: Boxed.String): String.String;
   VAR
     obj: Object.Object;
     s: String.String;
@@ -148,6 +147,7 @@ PROCEDURE (w: Writer) WriteStringData* ();
     strings: Object.ObjectArrayPtr;
     label: Object.Object;
     i: LONGINT;
+    chars: Object.CharsLatin1;
   BEGIN
     w. Section (".data");
     w. Section (".section .rodata");
@@ -155,7 +155,8 @@ PROCEDURE (w: Writer) WriteStringData* ();
     FOR i := 0 TO LEN (strings^)-1 DO
       label := w. stringData. Get (strings[i]);
       w. Label (label(String.String). array^);
-      w. StringLiteral (strings[i](String8.Value). value. array^);
+      chars := strings[i](Boxed.String).value(Object.String8).CharsLatin1();
+      w. StringLiteral (chars^);
     END;
   END WriteStringData;
 

@@ -10,14 +10,6 @@ IMPORT
   OOC:Make:WriteMainFileAssembler,
   OOC:Make:LinkProgramC,
   
-  (* Boxed Versions of Builtin Types
-     ---------------------------------------------------------------------- *)
-  Language,
-  Language:Boolean,
-  Language:Integer,
-  Language:String8,
-
-  
 (* Miscellaneous Modules
    ------------------------------------------------------------------------ *)
   OOC:Error,

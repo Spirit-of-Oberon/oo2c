@@ -1,7 +1,7 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
-  ADT:String, ADT:Dictionary, Language:Integer,
+  Object:BigInt, ADT:String, ADT:Dictionary,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -344,7 +344,7 @@ PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
         d: DeclWriter.Declaration;
       BEGIN
         d := w. NewDefine (Naming.NameOfTypeBoundIndex (proc),
-                           Integer.New (proc. tbProcIndex));
+                           BigInt.NewInt(proc. tbProcIndex));
         w. AddDeclaration (d);
 
         d := w. NewDeclaration (Naming.NameOfTypeBoundSignature (proc),

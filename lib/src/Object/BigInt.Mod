@@ -54,8 +54,8 @@ TYPE
   END;
 
 VAR
-  zero: BigInt;
-  one: BigInt;
+  zero-: BigInt;
+  one-: BigInt;
   powerOf2: ARRAY 37 OF SHORTINT;
   
 PROCEDURE NewInstance (size: LONGINT): BigInt;
@@ -212,6 +212,8 @@ PROCEDURE (a: BigInt) Equals* (b: Object.Object): BOOLEAN;
         END;
         RETURN TRUE;
       END;
+    ELSE
+      RETURN FALSE;
     END;
   END Equals;
 
@@ -225,7 +227,7 @@ PROCEDURE (a: BigInt) NonZero*(): BOOLEAN;
     RETURN (a.size # 0);
   END NonZero;
 
-PROCEDURE (a: BigInt) GetLongInt*(): LONGINT;
+PROCEDURE (a: BigInt) ToLongInt*(): LONGINT;
   VAR
     int, i: LONGINT;
   BEGIN
@@ -238,7 +240,7 @@ PROCEDURE (a: BigInt) GetLongInt*(): LONGINT;
     ELSE
       RETURN int;
     END;
-  END GetLongInt;
+  END ToLongInt;
 
 PROCEDURE (a: BigInt) Sign*(): LONGINT;
   BEGIN
@@ -634,6 +636,22 @@ PROCEDURE (v: BigInt) DivMod* (w: BigInt; VAR div, mod: BigInt);
     END;
   END DivMod;
 
+PROCEDURE (v: BigInt) Div* (w: BigInt): BigInt;
+  VAR
+    div, mod: BigInt;
+  BEGIN
+    v.DivMod(w, div, mod);
+    RETURN div;
+  END Div;
+
+PROCEDURE (v: BigInt) Mod* (w: BigInt): BigInt;
+  VAR
+    div, mod: BigInt;
+  BEGIN
+    v.DivMod(w, div, mod);
+    RETURN mod;
+  END Mod;
+
 PROCEDURE (a: BigInt) Format* (outputBase: Digit): String.String;
 (* Convert a long int object to a string, using a given conversion base.
    Return a string object.  *)
@@ -744,6 +762,11 @@ PROCEDURE (a: BigInt) Format* (outputBase: Digit): String.String;
       RETURN String.NewRegion(str^, pos, LEN(str^));
     END;
   END Format;
+
+PROCEDURE (a: BigInt) ToString*(): String.String;
+  BEGIN
+    RETURN a.Format(10);
+  END ToString;
 
 PROCEDURE NewRegion* (str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT;
                       inputBase: LONGINT): BigInt;

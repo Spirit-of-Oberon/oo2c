@@ -21,7 +21,7 @@ MODULE OOC:SSA:IRtoSSA;
 *)
 
 IMPORT
-  Log, Language:String, Language:String8, Language:Integer,
+  Log, Object, Object:Boxed, Object:BigInt,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:SymbolTable:Builder,
   TR := OOC:SymbolTable:TypeRules, OOC:IR, 
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result, OOC:SSA:Allocator;
@@ -625,7 +625,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         const: SSA.Result;
         scSource, scDest: Opcode.Subclass;
         len: LONGINT;
-        fct: String8.Value;
+        fct: Object.String;
       BEGIN
         IF TR.IsSTRING(conv.type) THEN
           (* converting a character or string constant to STRING *)
@@ -634,19 +634,20 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           instr := pb.AddInstr(Opcode.preloadedVar, Opcode.scAddress);
           CASE conv.expr.type(Sym.PredefType).id OF
           | Predef.char:
-            fct := String8.NewString(Builder.stringModuleC+"__NewLatin1Char");
+            fct := Object.NewLatin1(Builder.stringModuleC+"__NewLatin1Char");
           | Predef.charString:
-            fct := String8.NewString(Builder.stringModuleC+"__NewLatin1Region");
+            fct := Object.NewLatin1(Builder.stringModuleC+"__NewLatin1Region");
           | Predef.longchar:
-            fct := String8.NewString(Builder.stringModuleC+"__NewUCS2Char");
+            fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS2Char");
           | Predef.longcharString:
-            fct := String8.NewString(Builder.stringModuleC+"__NewUCS2Region");
+            fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS2Region");
           END;
-          instr.AddOpnd(pb.GetConst(fct, Predef.GetType(Predef.charString)),
+          instr.AddOpnd(pb.GetConst(Boxed.NewString(fct),
+                                    Predef.GetType(Predef.charString)),
                         Opnd.arg);
           instr.AddOpnd(const, Opnd.arg);
           IF TR.IsStringConst(conv.expr.type) THEN
-            len := conv.expr(IR.Const).value(String.Value).Length();
+            len := conv.expr(IR.Const).value(Boxed.String).value.length;
             instr.AddOpnd(pb.GetConstInt(len+1), Opnd.arg); (* array len *)
             
             instr.AddOpnd(pb.GetConstInt(0), Opnd.arg); (* start *)
@@ -739,7 +740,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         
       | expr: IR.Len DO
         IF (expr. variant = IR.lenStringConst) THEN
-          RETURN pb. GetConstInt (expr. arrayVariable(IR.Const). value(String8.Value). value. length+1);
+          RETURN pb. GetConstInt (expr. arrayVariable(IR.Const). value(Boxed.String). value. length+1);
         ELSE
           baseArray := Expression (expr. arrayVariable);
           type := expr. arrayVariable. type(Sym.Array). GetNthElementType (expr. dim);
@@ -1230,7 +1231,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr: SSA.Instr;
         cmpClass: Opcode.Class;
       BEGIN
-        IF (forStatm. step(IR.Const). value(Integer.Value). Sign() >= 0) THEN
+        IF (forStatm. step(IR.Const). value(BigInt.BigInt). Sign() >= 0) THEN
           cmpClass := Opcode.leq;
         ELSE
           cmpClass := Opcode.geq;

@@ -21,7 +21,7 @@ MODULE OOC:AST:ExtTree:CreateIR;
 *)
 
 IMPORT
-  Log, Language:Integer,
+  Log, Object:BigInt,
   OOC:Scanner:Symbol, OOC:Scanner:Builder:BasicList,
   OOC:AST:ExtTree, Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
   OOC:SymbolTable:Predef, OOC:IR;
@@ -617,9 +617,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         IF ~item. isOpenArray THEN
           expr := Expr (item. lengthExpr(ExtTree.Node));
           IF (expr = b. errorExpr) THEN  (* error in array length *)
-            item. SetLength (1);
+            item. SetLength(1);
           ELSE
-            item. SetLength (expr(IR.Const). value(Integer.Value). ToInt());
+            item. SetLength(expr(IR.Const).value(BigInt.BigInt).ToLongInt());
           END;
         END;
 
