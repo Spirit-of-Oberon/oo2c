@@ -136,7 +136,7 @@
 
     <test id="constfold16" type="run" 
       file="ConstFold16.Mod" output="ConstFold16.Ref">
-      Tests evaluation of CHAR compare expressions.
+      Tests evaluation of SET expressions.
     </test>
   </testcases>
   
