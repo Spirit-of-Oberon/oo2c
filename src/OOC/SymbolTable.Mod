@@ -21,8 +21,8 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, Object, Object:Boxed, Msg, Strings,
-  ADT:Storable, ADT:Dictionary, ADT:ArrayList, IO,
+  Object, Object:Boxed, Msg, Strings, ADT:Dictionary:AddressKey,
+  ADT:Storable, ADT:ArrayList, IO,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
 
@@ -34,14 +34,14 @@ TYPE
      @code{CHAR}.  *)
   ModulePos* = InputBuffer.CharPos;
   (**Values of this type store a source position as an integer type.  The
-     very character of the source filex has position 0.  *)
+     very first character of the source file has position 0.  *)
   ModuleLine* = SB.Line;
   (**Line number in the source file, starting at 0.
      See @omodule{*OOC:Scanner:Builder} for more information.  *)
   ModuleColumn* = SB.Column;
   (**Column number in the source file, starting at 0.
      See @omodule{*OOC:Scanner:Builder} for more information.  *)
-
+  Exports* = AddressKey.Dictionary;
 
 TYPE
   Position* = POINTER TO PositionDesc;
@@ -1268,11 +1268,20 @@ PROCEDURE InitType* (type: Type; parent: Item; position: Position);
     type. hasDescriptor := TRUE;
   END InitType;
 
+PROCEDURE (type: Type) PreciousTypePars*(): BOOLEAN;
+  BEGIN
+    RETURN (type.typePars # NIL) & (type.typePars.nestedItems # NIL);
+  END PreciousTypePars;
+
 PROCEDURE (type: Type) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     type. Store^ (w);
     w. WriteObject (type. namingDecl);
-    w. WriteObject (type. typePars);
+    IF type.PreciousTypePars() THEN
+      w.WriteObject(type.typePars);
+    ELSE
+      w.WriteObject(NIL);
+    END;
     IF ExportTypePosition (type) THEN
       w. WriteObject (type. position);
     END;
@@ -2365,40 +2374,6 @@ PROCEDURE (qualType: QualType) Deparam*(): Type;
     RETURN qualType.baseType;
   END Deparam;
 
-PROCEDURE (qualType: QualType) HashCode*(): Object.Hash;
-  VAR
-    hash: Object.Hash;
-    i: LONGINT;
-  BEGIN
-    hash := qualType.baseType.HashCode();
-    FOR i := 0 TO LEN(qualType.arguments^)-1 DO
-<*WITH OverflowCheck:=FALSE DO*>
-      hash := SYSTEM.ROT(hash,3)+qualType.arguments[i].type.HashCode();
-<*END*>
-    END;
-    RETURN hash;
-  END HashCode;
-
-PROCEDURE (qualType: QualType) Equals*(y: Object.Object): BOOLEAN;
-  VAR
-    i: LONGINT;
-  BEGIN
-    WITH y: QualType DO
-      IF qualType.baseType.Equals(y.baseType) THEN
-        FOR i := 0 TO LEN(qualType.arguments^)-1 DO
-          IF ~qualType.arguments[i].type.Equals(y.arguments[i].type) THEN
-            RETURN FALSE;
-          END;
-        END;
-        RETURN TRUE;
-      ELSE
-        RETURN FALSE;
-      END;
-    ELSE
-      RETURN FALSE;
-    END;
-  END Equals;
-
 
 PROCEDURE InitPointer* (pointer: Pointer; parent: Item; position: Position;
                         baseType: Type);
@@ -2647,7 +2622,7 @@ PROCEDURE (item: QualType) Namespace* (): Namespace;
   END Namespace;
 
 
-PROCEDURE Prune* (root: Module; keep: Dictionary.Dictionary);
+PROCEDURE Prune* (root: Module; keep: Exports);
 (**Eliminates all items from the symbol table @oparam{root}, that do not
    appear as a key in @oparam{keep}.  Pruned imports are added to
    @ofield{root.prunedImports}.  *)

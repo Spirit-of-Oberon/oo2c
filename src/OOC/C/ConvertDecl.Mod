@@ -1,7 +1,7 @@
 MODULE OOC:C:ConvertDecl;
 
 IMPORT
-  Object, Object:BigInt, ADT:Dictionary,
+  Object, Object:BigInt,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   OOC:C:Naming, OOC:C:DeclWriter;
 
@@ -326,7 +326,7 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
   END ConvertDecl;
 
 PROCEDURE ConvertSymTab* (w: DeclWriter.Writer; m: Repository.Module;
-                          symTab: Sym.Module; exports: Dictionary.Dictionary;
+                          symTab: Sym.Module; exports: Sym.Exports;
                           writeExported: BOOLEAN);
 (**Translates all declarations of the module to C.  The C declarations are
    emitted to the writer object @oparam{w}.  The parameter @oparam{m}

@@ -21,11 +21,11 @@ MODULE OOC:SymbolTable:Exports;
 *)
 
 IMPORT
-  Log, ADT:Dictionary, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder,
-  OOC:Doc;
+  Log, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder, OOC:Doc,
+  ADT:Dictionary:AddressKey;
 
 
-PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.Dictionary;
+PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Sym.Exports;
 (**Creates a dictionary with all items that appear in the module's symbol file.
 
    With @oparam{forSymbolFile}, additional declarations are included that must
@@ -33,7 +33,7 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
    are not exported themself.  Examples for this are fields of records
    appearing in the public interface.  *)
   VAR
-    dict: Dictionary.Dictionary;
+    dict: Sym.Exports;
   
   PROCEDURE MarkReferencedImports (doc: Doc.Document);
     VAR
@@ -101,7 +101,7 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
               END;
               MarkList (type)
             | type: Sym.TypeVar DO
-              (* ignore, the parameter TypeDecl already marks our type *)
+              MarkType (type. srcCodeBound)
             | type: Sym.QualType DO
               MarkType (type. srcCodeBaseType);
               FOR i := 0 TO LEN(type.arguments^)-1  DO
@@ -109,7 +109,7 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
               END;
             END;
 
-            IF (type.typePars # NIL) THEN
+            IF type.PreciousTypePars() THEN
               dict.Set(type.typePars, NIL);
               MarkList(type.typePars);
             END;
@@ -168,7 +168,7 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
     END MarkList;
   
   BEGIN
-    dict := Dictionary.New();
+    dict := AddressKey.New();
     MarkReferencedImports(module.docString);
     MarkList (module);
     RETURN dict

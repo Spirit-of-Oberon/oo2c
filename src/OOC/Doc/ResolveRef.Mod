@@ -264,7 +264,7 @@ PROCEDURE Resolve* (symTab: Sym.Module;
       VAR
         module: Sym.Module;
         obj: Object.Object;
-        exports: Dictionary.Dictionary;
+        exports: Sym.Exports;
       BEGIN
         IF (decl IS Sym.Module) THEN
           (* export flags don't apply to modules; an module is always public *)
@@ -275,7 +275,7 @@ PROCEDURE Resolve* (symTab: Sym.Module;
             interfaceCache. Set (module, Exports.GetExports (module, FALSE))
           END;
           obj := interfaceCache. Get (module);
-          exports := obj(Dictionary.Dictionary);
+          exports := obj(Sym.Exports);
           RETURN exports. HasKey (decl)
         END
       END Exported;
