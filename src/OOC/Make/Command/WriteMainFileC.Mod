@@ -123,6 +123,8 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
       w. WriteLn;
       
       w. WriteString ("int main (int argc, char *argv[]) {");
+      w. WriteLn; w. WriteString ("  RT0__argc = (OOC_INT32)argc;");
+      w. WriteLn; w. WriteString ("  RT0__argv = (OOC_CHAR8**)argv;");
       IF (sizeVParStack >= 0) THEN
         w. WriteLn;
         w. WriteString ("  RT0__InitVParStack(");

@@ -133,9 +133,17 @@ PROCEDURE WriteFile (cmd: Command; VAR res: Error.Msg);
       Instr("pushl %ebp");
       Instr("movl %esp,%ebp");
       Instr("subl $8,%esp");
+      
+      Instr("movl 8(%ebp),%eax");
+      Instr("movl %eax,RT0__argc");
+      Instr("movl 12(%ebp),%eax");
+      Instr("movl %eax,RT0__argv");
+      
       Instr("addl $-12,%esp");
       Instr("pushl $262144");
       Instr("call RT0__InitVParStack");
+      Instr("addl $16,%esp");
+      
       WriteModules (w, Dictionary.New(), cmd. module, Ascii.ht+"call ", "_init");
       Instr("xorl %eax,%eax");
       Instr("leave");

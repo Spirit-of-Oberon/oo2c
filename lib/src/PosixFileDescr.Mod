@@ -130,14 +130,6 @@ TYPE
 TYPE
   FileDescriptor = C.int;
 
-VAR
-  (* these variables have nothing to do with file descriptors; since nobody
-     should use this module anyway I stuck them here; they are used by the
-     module ProgramArgs *)
-  argc- ["_program_argc"]: C.int;
-  argv- ["_program_argv"]: C.charPtr2d;
-
-
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
   ErrorContextDesc* = RECORD

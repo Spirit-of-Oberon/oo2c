@@ -39,7 +39,7 @@ MODULE ProgramArgs;
 <* ConformantMode := FALSE *>  (* for NewReader/NewWriter *)
 
 IMPORT
-  SYSTEM, Ch := Channel, PosixFileDescr, CharClass, Time, Msg;
+  SYSTEM, RT0, Ch := Channel, PosixFileDescr, CharClass, Time, Msg;
 
   
 CONST
@@ -92,13 +92,13 @@ PROCEDURE (r: Reader) Pos*(): LONGINT;
   VAR
     i, j, count: LONGINT;
   BEGIN
-    IF (r. pos0 = PosixFileDescr.argc) THEN
+    IF (r. pos0 = RT0.argc) THEN
       (* some trickery to get Pos(SetPos(x))=x for x>=ch.Length *)
       RETURN r. pos1
     ELSE
       i := 0; j := 0; count := 0;
       WHILE (i # r. pos0) OR (j # r. pos1) DO
-        IF (PosixFileDescr.argv[i][j] = 0X) THEN
+        IF (RT0.argv[i][j] = 0X) THEN
           INC (i); j := 0
         ELSE
           INC (j)
@@ -134,8 +134,8 @@ PROCEDURE (r: Reader) SetPos* (newPos: LONGINT);
         r. res := GetError (outOfRange)
       ELSIF r. base. open THEN
         i := 0; j := 0; count := 0;
-        WHILE (i < PosixFileDescr.argc) & (count # newPos) DO
-          IF (PosixFileDescr.argv[i][j] = 0X) THEN
+        WHILE (i < RT0.argc) & (count # newPos) DO
+          IF (RT0.argv[i][j] = 0X) THEN
             INC (i); j := 0
           ELSE
             INC (j)
@@ -143,7 +143,7 @@ PROCEDURE (r: Reader) SetPos* (newPos: LONGINT);
           INC (count)
         END;
         r. pos0 := i;
-        IF (i = PosixFileDescr.argc) THEN
+        IF (i = RT0.argc) THEN
           (* some trickery to get Pos(SetPos(x))=x for x>=ch.Length *)
           r. pos1 := newPos
         ELSE
@@ -159,23 +159,23 @@ PROCEDURE (r: Reader) ReadByte* (VAR x: SYSTEM.BYTE);
   BEGIN
     IF (r. res = done) THEN
       IF r. base. open THEN
-        IF (r. pos0 = PosixFileDescr.argc) THEN
+        IF (r. pos0 = RT0.argc) THEN
           r. res := GetError (readAfterEnd)
-        ELSIF (PosixFileDescr.argv[r. pos0][r. pos1] = 0X) THEN
+        ELSIF (RT0.argv[r. pos0][r. pos1] = 0X) THEN
           x := CharClass.eol;
           INC (r. pos0);
-          IF (r. pos0 = PosixFileDescr.argc) THEN
+          IF (r. pos0 = RT0.argc) THEN
             (* some trickery to get Pos(SetPos(x))=x for x>=ch.Length *)
             r. pos1 := r. base. Length()
           ELSE
             r. pos1 := 0
           END
-        ELSIF (PosixFileDescr.argv[r. pos0][r. pos1] = CharClass.eol) THEN
+        ELSIF (RT0.argv[r. pos0][r. pos1] = CharClass.eol) THEN
           (* newline character is turned into space *)
           x := " ";
           INC (r. pos1)
         ELSE
-          x := PosixFileDescr.argv[r. pos0][r. pos1];
+          x := RT0.argv[r. pos0][r. pos1];
           INC (r. pos1)
         END
       ELSE  (* channel has been closed *)
@@ -214,9 +214,9 @@ PROCEDURE (ch: Channel) Length*(): LONGINT;
     i, j, len: LONGINT;
   BEGIN
     i := 0; len := 0;
-    WHILE (i < PosixFileDescr.argc) DO
+    WHILE (i < RT0.argc) DO
       j := 0;
-      WHILE (PosixFileDescr.argv[i][j] # 0X) DO
+      WHILE (RT0.argv[i][j] # 0X) DO
         INC (j)
       END;
       INC (len, j+1);
@@ -229,7 +229,7 @@ PROCEDURE (ch: Channel) ArgNumber* (): LONGINT;
 (**Returns the number of command line arguments (excluding the program name
    itself) passed to the program.  *)
   BEGIN
-    RETURN PosixFileDescr.argc-1
+    RETURN RT0.argc-1
   END ArgNumber;
 
 PROCEDURE (ch: Channel) GetModTime* (VAR mtime: Time.TimeStamp);
