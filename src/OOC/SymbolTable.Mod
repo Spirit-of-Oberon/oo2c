@@ -1046,6 +1046,26 @@ PROCEDURE (ns: Namespace) GetSuperProcByIndex* (index: LONGINT): ProcDecl;
   END GetSuperProcByIndex;
 
 
+PROCEDURE WriteType(w: Storable.Writer; type, srcCodeType: Type)
+RAISES IO.Error;
+  BEGIN
+    w.WriteObject(srcCodeType);
+  END WriteType;
+
+PROCEDURE ReadType(r: Storable.Reader; VAR type, srcCodeType: Type)
+RAISES IO.Error;
+  VAR
+    obj: Storable.Object;
+  BEGIN
+    r.ReadObject(obj);
+    IF (obj = NIL) THEN
+      srcCodeType := NIL;
+      type := NIL;
+    ELSE
+      srcCodeType := obj(Type);
+      type := srcCodeType;
+    END;
+  END ReadType;
 
 PROCEDURE InitPosition* (position: Position; pos: ModulePos;
                          line: ModuleLine; column: ModuleColumn);
@@ -1167,7 +1187,7 @@ PROCEDURE (item: Item) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     WriteItemList(w, item.nestedItems);
     w. WriteObject (item. parent);
-    (* item.flagList is not store *)
+    (* item.flagList is not stored *)
   END Store;
 
 PROCEDURE (item: Item) Load* (r: Storable.Reader) RAISES IO.Error;
@@ -1892,17 +1912,13 @@ PROCEDURE (exceptionName: ExceptionName) Store* (w: Storable.Writer) RAISES IO.E
   BEGIN
     exceptionName. Store^ (w);
     (*w. WriteObject (exceptionName. type);*)
-    w. WriteObject (exceptionName. srcCodeType);
+    WriteType(w, exceptionName.type, exceptionName.srcCodeType);
   END Store;
 
 PROCEDURE (exceptionName: ExceptionName) Load* (r: Storable.Reader) RAISES IO.Error;
-  VAR
-    obj: Storable.Object;
   BEGIN
     exceptionName. Load^ (r);
-    r. ReadObject (obj);
-    exceptionName. srcCodeType := obj(Type);
-    exceptionName. type := exceptionName. srcCodeType;
+    ReadType(r, exceptionName.type, exceptionName.srcCodeType);
   END Load;
 
 
@@ -1950,8 +1966,7 @@ PROCEDURE InitVarDecl* (varDecl: VarDecl; parent: Item; name: Name;
 PROCEDURE (varDecl: VarDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     varDecl. Store^ (w);
-    (*w. WriteObject (varDecl. type);*)
-    w. WriteObject (varDecl. srcCodeType);
+    WriteType(w, varDecl.type, varDecl.srcCodeType);
     w. WriteBool (varDecl. isParameter);
     w. WriteBool (varDecl. isReceiver);
     w. WriteBool (varDecl. hasAliasList);
@@ -1964,13 +1979,9 @@ PROCEDURE (varDecl: VarDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   END Store;
 
 PROCEDURE (varDecl: VarDecl) Load* (r: Storable.Reader) RAISES IO.Error;
-  VAR
-    obj: Storable.Object;
   BEGIN
     varDecl. Load^ (r);
-    r. ReadObject (obj);
-    varDecl. srcCodeType := obj(Type);
-    varDecl. type := varDecl. srcCodeType;
+    ReadType(r, varDecl.type, varDecl.srcCodeType);
     r. ReadBool (varDecl. isParameter);
     r. ReadBool (varDecl. isReceiver);
     r. ReadBool (varDecl. hasAliasList);
@@ -2002,20 +2013,15 @@ PROCEDURE InitTypeDecl* (typeDecl: TypeDecl; parent: Item; name: Name;
 PROCEDURE (typeDecl: TypeDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     typeDecl. Store^ (w);
-    (*w. WriteObject (typeDecl. type);*)
-    w. WriteObject (typeDecl. srcCodeType);
+    WriteType(w, typeDecl.type, typeDecl.srcCodeType);
     w. WriteBool (typeDecl. isTypeParameter);
   END Store;
 
 PROCEDURE (typeDecl: TypeDecl) Load* (r: Storable.Reader) RAISES IO.Error;
-  VAR
-    obj: Storable.Object;
   BEGIN
     typeDecl. Load^ (r);
-    r. ReadObject (obj);
-    typeDecl. srcCodeType := obj(Type);
+    ReadType(r, typeDecl.type, typeDecl.srcCodeType);
     r. ReadBool (typeDecl. isTypeParameter);
-    typeDecl. type := typeDecl. srcCodeType;
   END Load;
 
 PROCEDURE (typeDecl: TypeDecl) HasTypeParameters*(): BOOLEAN;
@@ -2088,20 +2094,15 @@ PROCEDURE InitFieldDecl* (fieldDecl: FieldDecl; parent: Item; name: Name;
 PROCEDURE (fieldDecl: FieldDecl) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     fieldDecl. Store^ (w);
-    (*w. WriteObject (fieldDecl. type);*)
-    w. WriteObject (fieldDecl. srcCodeType);
+    WriteType(w, fieldDecl.type, fieldDecl.srcCodeType);
     w. WriteNum (fieldDecl. offset);
     w. WriteBool (fieldDecl. shadowsPrivateBase);
   END Store;
 
 PROCEDURE (fieldDecl: FieldDecl) Load* (r: Storable.Reader) RAISES IO.Error;
-  VAR
-    obj: Storable.Object;
   BEGIN
     fieldDecl. Load^ (r);
-    r. ReadObject (obj);
-    fieldDecl. srcCodeType := obj(Type);
-    fieldDecl. type := fieldDecl. srcCodeType;
+    ReadType(r, fieldDecl.type, fieldDecl.srcCodeType);
     r. ReadNum (fieldDecl. offset);
     r. ReadBool (fieldDecl. shadowsPrivateBase);
   END Load;
@@ -2326,8 +2327,7 @@ PROCEDURE InitRecord* (record: Record; parent: Item; position: Position;
 PROCEDURE (record: Record) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     record. Store^ (w);
-    (*w. WriteObject (record. baseType);*)
-    w. WriteObject (record. srcCodeBaseType);
+    WriteType(w, record.baseType, record.srcCodeBaseType);
     w. WriteNum (record. tbProcCount);
     w. WriteBool (record. isUnion);
     w. WriteBool (record. isAbstract);
@@ -2342,13 +2342,7 @@ PROCEDURE (record: Record) Load* (r: Storable.Reader) RAISES IO.Error;
     obj: Storable.Object;
   BEGIN
     record. Load^ (r);
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      record. srcCodeBaseType := NIL
-    ELSE
-      record. srcCodeBaseType := obj(Type)
-    END;
-    record. baseType := record. srcCodeBaseType;
+    ReadType(r, record.baseType, record.srcCodeBaseType);
     r. ReadNum (record. tbProcCount);
     record. ns := NIL;
     r. ReadBool (record. isUnion);
@@ -2390,21 +2384,13 @@ PROCEDURE InitTypeVar* (typeVar: TypeVar; parent: Item;
 PROCEDURE (typeVar: TypeVar) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     typeVar.Store^(w);
-    w.WriteObject(typeVar.srcCodeBound);
+    WriteType(w, typeVar.bound, typeVar.srcCodeBound);
   END Store;
 
 PROCEDURE (typeVar: TypeVar) Load* (r: Storable.Reader) RAISES IO.Error;
-  VAR
-    obj: Storable.Object;
   BEGIN
     typeVar.Load^(r);
-    r.ReadObject(obj);
-    IF (obj = NIL) THEN
-      typeVar.srcCodeBound := NIL
-    ELSE
-      typeVar.srcCodeBound := obj(Type);
-    END;
-    typeVar.bound := typeVar.srcCodeBound;
+    ReadType(r, typeVar.bound, typeVar.srcCodeBound);
   END Load;
 
 PROCEDURE (typeVar: TypeVar) Bound*(): Type;
@@ -2488,7 +2474,7 @@ PROCEDURE (qualType: QualType) Store* (w: Storable.Writer) RAISES IO.Error;
     i: LONGINT;
   BEGIN
     qualType.Store^(w);
-    w. WriteObject (qualType.srcCodeBaseType);
+    WriteType(w, qualType.baseType, qualType.srcCodeBaseType);
     w.WriteNum(LEN(qualType.arguments^));
     FOR i := 0 TO LEN(qualType.arguments^)-1 DO
       StoreTypeRef(w, qualType.arguments[i]);
@@ -2497,13 +2483,10 @@ PROCEDURE (qualType: QualType) Store* (w: Storable.Writer) RAISES IO.Error;
 
 PROCEDURE (qualType: QualType) Load* (r: Storable.Reader) RAISES IO.Error;
   VAR
-    obj: Storable.Object;
     i, len: LONGINT;
   BEGIN
     qualType.Load^(r);
-    r. ReadObject (obj);
-    qualType.srcCodeBaseType := obj(Type);
-    qualType.baseType := qualType.srcCodeBaseType;
+    ReadType(r, qualType.baseType, qualType.srcCodeBaseType);
     r.ReadNum(len);
     NEW(qualType.arguments, len);
     FOR i := 0 TO len-1 DO
@@ -2530,20 +2513,15 @@ PROCEDURE InitPointer* (pointer: Pointer; parent: Item; position: Position;
 PROCEDURE (pointer: Pointer) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     pointer. Store^ (w);
-    (*w. WriteObject (pointer. baseType);*)
-    w. WriteObject (pointer. srcCodeBaseType);
+    WriteType(w, pointer.baseType, pointer.srcCodeBaseType);
     w. WriteBool (pointer. doCArrayAssignment);
     w. WriteBool (pointer. isStatic);
   END Store;
 
 PROCEDURE (pointer: Pointer) Load* (r: Storable.Reader) RAISES IO.Error;
-  VAR
-    obj: Storable.Object;
   BEGIN
     pointer. Load^ (r);
-    r. ReadObject (obj);
-    pointer. srcCodeBaseType := obj(Type);
-    pointer. baseType := pointer. srcCodeBaseType;
+    ReadType(r, pointer.baseType, pointer.srcCodeBaseType);
     r. ReadBool (pointer. doCArrayAssignment);
     r. ReadBool (pointer. isStatic);
   END Load;
@@ -2568,22 +2546,17 @@ PROCEDURE (array: Array) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteBool (array. isOpenArray);
     w. WriteBool (array. hasLengthInfo);
     w. WriteBool (array. readOnlyExport);
-    (*w. WriteObject (array. elementType);*)
-    w. WriteObject (array. srcCodeElementType);
+    WriteType(w, array.elementType, array.srcCodeElementType);
     w. WriteNum (array. length);    
   END Store;
 
 PROCEDURE (array: Array) Load* (r: Storable.Reader) RAISES IO.Error;
-  VAR
-    obj: Storable.Object;
   BEGIN
     array. Load^ (r);
     r. ReadBool (array. isOpenArray);
     r. ReadBool (array. hasLengthInfo);
     r. ReadBool (array. readOnlyExport);
-    r. ReadObject (obj);
-    array. srcCodeElementType := obj(Type);
-    array. elementType := array. srcCodeElementType;
+    ReadType(r, array.elementType, array.srcCodeElementType);
     r. ReadNum (array. length);
     array. lengthExpr := NIL;
   END Load;
@@ -2689,8 +2662,7 @@ PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer) RAISES IO.Error;
   BEGIN
     formalPars. Store^ (w);
     w. WriteObject (formalPars. receiver);
-    (*w. WriteObject (formalPars. resultType);*)
-    w. WriteObject (formalPars. srcCodeResultType);
+    WriteType(w, formalPars.resultType, formalPars.srcCodeResultType);
     w. WriteBool (formalPars. anyRestParameters);
     w. WriteBool (formalPars. noReturn);
     w. WriteSInt (formalPars. callConv);
@@ -2717,13 +2689,7 @@ PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader) RAISES IO.Error;
     ELSE
       formalPars. receiver := obj(VarDecl)
     END;
-    r. ReadObject (obj);
-    IF (obj = NIL) THEN
-      formalPars. srcCodeResultType := NIL
-    ELSE
-      formalPars. srcCodeResultType := obj(Type)
-    END;
-    formalPars. resultType := formalPars. srcCodeResultType;
+    ReadType(r, formalPars.resultType, formalPars.srcCodeResultType);
     formalPars. params := NIL;
     r. ReadBool (formalPars. anyRestParameters);
     r. ReadBool (formalPars. noReturn);
