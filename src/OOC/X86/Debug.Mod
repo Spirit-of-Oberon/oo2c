@@ -32,6 +32,12 @@ VAR
 
 CONST
   writeAllInstructions = FALSE;
+  resultPrefix = "";
+  resultSuffix = "";
+  instrPrefix = "";
+  instrSuffix = "";
+  depPrefix = "   [";
+  depSuffix = "]";
   
 PROCEDURE (out: Output) INIT*(b: S.Block; name: STRING);
   BEGIN
@@ -80,7 +86,7 @@ PROCEDURE Type(type: S.Type): STRING;
 
 PROCEDURE Opcode*(instr: S.Instr): STRING;
   VAR
-    str: STRING;
+    str, type: STRING;
   BEGIN
     CASE instr.opcode OF
       (* arithmetic *)
@@ -140,7 +146,12 @@ PROCEDURE Opcode*(instr: S.Instr): STRING;
     | S.loopBackedge:  str := "loopBackedge";
     END;
     IF (instr.resultList # NIL) & (instr.resultList.type # S.noType) THEN
-      RETURN str+"-"+Type(instr.resultList.type);
+      type := Type(instr.resultList.type);
+      IF (instr.opcode = S.const) THEN
+        RETURN type;
+      ELSE
+        RETURN str+"-"+type;
+      END;
     ELSE
       RETURN str;
     END;
@@ -196,11 +207,11 @@ PROCEDURE (out: Output) Label(node: S.Node): STRING;
       RETURN "NIL";
     ELSE
       WITH node: S.Instr DO
-        RETURN "{"+out.GetInstrCode(node)+"}";
+        RETURN instrPrefix+out.GetInstrCode(node)+instrSuffix;
       | node: S.Result DO
         IF (node.instr.resultList.nextResult = NIL) THEN
           (* single result: use short version *)
-          str := "("+out.GetInstrCode(node.instr)+")";
+          str := resultPrefix+out.GetInstrCode(node.instr)+resultSuffix ;
         ELSE
           i := 1;
           res := node.instr.resultList;
@@ -208,7 +219,7 @@ PROCEDURE (out: Output) Label(node: S.Node): STRING;
             INC(i);
             res := res.nextResult;
           END;
-          str := "("+out.GetInstrCode(node.instr)+"."+Boxed.IntToString(i)+")";
+          str := resultPrefix+out.GetInstrCode(node.instr)+"."+Boxed.IntToString(i)+resultSuffix ;
         END;
         RETURN str+Location(node);
       | node: S.Opnd DO
@@ -269,7 +280,8 @@ PROCEDURE (out: Output) WriteFunction*();
       s: S.Selector;
       i: LONGINT;
     BEGIN
-      IF (instr.designator # NIL) THEN
+      w.WriteString("(");
+      IF FALSE & (instr.designator # NIL) THEN
         w.WriteString("<");
         FOR s IN instr.designator^ DO
           WITH s: S.Var DO
@@ -301,14 +313,12 @@ PROCEDURE (out: Output) WriteFunction*();
         END;
         w.WriteString("> ");
       END;
-      
+        
       w.WriteObject(Opcode(instr));
       FOR opnd IN instr.Operands() DO
         w.WriteChar(" ");
         IF opnd.immediate THEN
-          w.WriteChar("{");
           Expr(opnd.arg.instr);
-          w.WriteChar("}");
         ELSE
           w.WriteObject(out.Label(opnd.arg));
         END;
@@ -326,6 +336,7 @@ PROCEDURE (out: Output) WriteFunction*();
       ELSE
         (* nothing *)
       END;
+      w.WriteString(")");
     END Expr;
 
   PROCEDURE WriteBlock(b: S.Block; indent: LONGINT);
@@ -352,21 +363,23 @@ PROCEDURE (out: Output) WriteFunction*();
               w.WriteObject(out.Label(res));
               w.WriteChar(" ");
             END;
+            w.WriteString("<- ");
           END;
-          w.WriteString("<- ");
           Expr(instr);
 
           IF (instr.beforeList # NIL) THEN
-            w.WriteString("    [ ");
+            w.WriteString(depPrefix);
             FOR dep IN instr.BeforeList(S.depAny) DO
+              IF (dep # instr.beforeList) THEN
+                w.WriteChar(" ");
+              END;
               CASE dep.type OF
               | S.depControl: w.WriteString("c:");
               | S.depMemory: w.WriteString("m:");
               END;
               w.WriteObject(out.Label(dep.before));
-              w.WriteChar(" ");
             END;
-            w.WriteString("]");
+            w.WriteString(depSuffix);
           END;
         END;
 
@@ -395,6 +408,11 @@ PROCEDURE UndefState(s: State);
     END;
   END UndefState;
 
+PROCEDURE WriteFunctionAgain*();
+  BEGIN
+    out.WriteFunction();
+  END WriteFunctionAgain;
+
 PROCEDURE WriteFunction*(b: S.FunctionBlock);
   VAR
     name: STRING;
@@ -417,6 +435,12 @@ PROCEDURE Log*(msg: ARRAY OF CHAR; node: S.Node);
   BEGIN
     L.Object(msg, Label(node));
   END Log;
+
+PROCEDURE Log2*(msg1: ARRAY OF CHAR; node1: S.Node;
+                msg2: ARRAY OF CHAR; node2: S.Node);
+  BEGIN
+    L.Object(msg1, Label(node1)+", "+Object.NewLatin1(msg2)+": "+Label(node2));
+  END Log2;
 
 PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
 (**Checks that every read operation on a register, parameter, local variable,

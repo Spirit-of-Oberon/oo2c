@@ -42,17 +42,22 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
         END;
         RETURN next;
       END NextInControlFlow;
+
+    PROCEDURE Prelocate(instr: S.Instr; block: S.Instr);
+      BEGIN
+        instr.info := block;
+      END Prelocate;
     
     BEGIN
       WHILE (instr # NIL) & (instr.opcode # S.loopEnd) DO
         ASSERT(instr.info = NIL);
-        instr.info := b;
+        Prelocate(instr, b);
         
         WITH instr: S.BranchInstr DO
           merge := NIL;
           nonMergeCount := 0;
           FOR path IN instr.paths^ DO
-            path.info := instr;
+            Prelocate(path, instr);
             m := InflateControlFlow(path, NextInControlFlow(path));
             IF (m = NIL) THEN
               INC(nonMergeCount);
@@ -69,9 +74,9 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
 
         | instr: S.LoopStartInstr DO
           m := InflateControlFlow(instr, NextInControlFlow(instr));
-          instr.backedge.info := instr;
-          instr.end.info := b;
-          next := instr.end;
+          Prelocate(instr.backedge, instr);
+          Prelocate(instr.end, b);
+          next := NextInControlFlow(instr.end);
           
         ELSE  (* set next instr for next iteration of the loop *)
           IF (instr.opcode = S.jump) THEN

@@ -334,6 +334,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       RETURN type;
     END InstrType;
   
+  PROCEDURE ArgType(opnd: S.Opnd): S.Type;
+    VAR
+      type: S.Type;
+    BEGIN
+      IF opnd.immediate THEN
+        type := opnd.arg.type;
+      ELSE
+        type := S.signed32;
+      END;
+      RETURN type;
+    END ArgType;
+  
   PROCEDURE OpcR(opc[NO_COPY]: ARRAY OF CHAR);
     BEGIN
       OpcT(opc, InstrType(), -1);
@@ -690,7 +702,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Opnd(instr.opndList);
           AssertResultMatch(instr.opndList);
         | S.eql, S.neq, S.lss, S.leq, S.gtr, S.geq:
-          OpcR("cmp");
+          OpcT("cmp", ArgType(instr.opndList.nextOpnd), -1);
           Opnd(instr.opndList.nextOpnd);
           Comma();
           Opnd(instr.opndList);
