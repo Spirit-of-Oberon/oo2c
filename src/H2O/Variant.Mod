@@ -9,6 +9,9 @@ CONST
   pointer* = 2;
   set* = 3;
   default* = 4;
+  emitted* = 5;
+  cstring* = 6;
+  defined* = 7;
 
   debugMatch = FALSE;
 VAR 
@@ -51,13 +54,13 @@ BEGIN
     CASE t.class OF
     | Type.tPointer, Type.tArray:
       IF par THEN 
-        apply := variant = variant * { array, var, pointer, default };
+        apply := variant = variant * { array, var, pointer, cstring, default };
       ELSE
-        apply := variant = variant * { array, pointer, default };
+        apply := variant = variant * { array, pointer, cstring, default };
       END;
     | Type.tInteger, Type.tUnsigned:
         apply := variant = variant * { set, default };
-    | Type.tQualifier:
+    | Type.tQualifier, Type.tName:
         o.MatchedOp(t.base, obj, par);
         apply := FALSE;
     ELSE
@@ -68,9 +71,9 @@ BEGIN
   IF debugMatch THEN Log.Object("MatchedOpApply", t);
   Log.Set("MatchedOpApply", variant); END;
       IF (obj # NIL) THEN
-        obj .variant := obj .variant + variant * { var };
+        obj .variant := obj .variant + variant * { var } + {defined};
       END;
-      t.variant := t.variant + variant * { array, pointer, default };
+      t.variant := t.variant + variant * { array, pointer, cstring, default } + { defined};
     END
   END;
 END MatchedOp;
