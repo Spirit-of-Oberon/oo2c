@@ -83,13 +83,39 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         ASSERT (FALSE)
       END
     END Designator;
-  
+ 
+  PROCEDURE Range(expr : ExtTree.Node) : IR.Expression; 
+  (* Check for an upto operator ".." or a normal expression. *)
+  BEGIN
+    WITH expr : ExtTree.Operator DO
+      IF (expr. op. sym. id = Symbol.upto) THEN
+        RETURN b.NewRange(expr.op.sym, Expr(expr.left), Expr(expr.right));
+      END;
+    ELSE
+    END;
+    RETURN Expr(expr);
+  END Range;
+
+  PROCEDURE SetConstruct(sc : ExtTree.Set) : IR.Expression;
+  VAR
+    elements: IR.ExpressionList;
+    i, len : LONGINT;
+  BEGIN
+    len := (sc.elementList.len+1) DIV 2; 
+    NEW (elements, len);
+    FOR i := 0 TO len-1 DO
+      elements[i] := Range(sc. elementList. n[i*2](ExtTree.Node));
+    END;
+    RETURN b. NewSetConstruct(sc. lBrace(ExtTree.Terminal). sym, elements);
+  END SetConstruct;
+
   PROCEDURE ^ FunctionCall (call: ExtTree.FunctionCall;
                             isProcCall: BOOLEAN): IR.Expression;
     
   PROCEDURE Expr (expr: ExtTree.Node): IR.Expression;
     VAR
       left, right, res: IR.Expression;
+
     BEGIN
       WITH expr: ExtTree.Terminal DO
         CASE expr. sym. id OF
@@ -108,7 +134,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
             
       | expr: ExtTree.ArrayIndex DO      (* part of designator *)
         res := Designator (expr)
-        
+       
       | expr: ExtTree.Operator DO
         IF (expr. op. sym. id = Symbol.period) THEN
           (* handled as part of designator *)
@@ -126,6 +152,9 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           END;
           res := b. NewOperator (expr. op. sym, left, right);
         END;
+
+      | expr: ExtTree.Set DO
+        res := SetConstruct(expr);
 
       | expr: ExtTree.FunctionCall DO
         res := FunctionCall (expr, FALSE)
@@ -151,7 +180,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       END;
       RETURN b. NewCall (design, arguments)
     END FunctionCall;
-  
+
   PROCEDURE StatementSeq (statmSeq: ExtTree.NodeList): IR.StatementSeq;
     VAR
       i, count: LONGINT;

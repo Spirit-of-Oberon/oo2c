@@ -4,6 +4,7 @@ IMPORT
   Sym := OOC:SymbolTable, OOC:IR, OOC:SymbolTable:Predef,
   Language, 
   Language:Integer, Language:Boolean, Language:String8, Language:Char8,
+  Language:Set,
   ADT:String, Integers;
 
 TYPE
@@ -60,6 +61,9 @@ BEGIN
       END;
     END;
     RETURN NIL; 
+  | value : Set.Value DO
+    (* FIXME! Figure out the appropriate SET type *)
+    RETURN Predef.GetType(Predef.set);
   END;
 END SmallestType;
 
@@ -143,6 +147,37 @@ PROCEDURE (c: ConstFold) VisitIndex* (index: IR.Index);
     (* index. array. Accept (c);
     index. index. Accept (c); *)
   END VisitIndex;
+
+PROCEDURE (c: ConstFold) VisitSetConstruct* (sc: IR.SetConstruct);
+  VAR 
+    i, j : LONGINT; expr : IR.Expression;
+    l, r : Language.Value;
+    result : SET; 
+    const : BOOLEAN;
+  BEGIN
+    result := {};
+    FOR i := 0 TO LEN(sc.elements^)-1 DO
+      expr := sc.elements[i];
+      WITH expr : IR.Range DO
+        const := c.ValidEval(expr.from, l) & c.ValidEval(expr.to, r);
+      ELSE
+        const := c.ValidEval(expr, l); r := l;
+      END;
+      IF const THEN
+        FOR j := l(Integer.Value).ToLInt() TO r(Integer.Value).ToLInt() DO
+	  INCL(result, j);
+	END;
+      ELSE
+        c.result := NIL; RETURN;
+      END;
+    END;    
+    c.result := c.ValueConst(Set.New(result), sc);
+  END VisitSetConstruct;
+
+PROCEDURE (c: ConstFold) VisitSetOp* (sf: IR.SetOp);
+  BEGIN
+    (* FIXME! *)
+  END VisitSetOp;
 
 PROCEDURE (c: ConstFold) VisitSelectField* (sf: IR.SelectField);
   BEGIN
@@ -298,10 +333,10 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
 
   PROCEDURE CharOp () : Boolean.Value;
   VAR
-    left, right : LONGINT; result : BOOLEAN;
+    left, right : CHAR; result : BOOLEAN;
   BEGIN
-    left := l(Char8.Value).value;
-    right := r(Char8.Value).value;
+    left := l(String8.Value).value.GetChar(0);
+    right := r(String8.Value).value.GetChar(0);
 
     CASE op.variant OF
     | IR.equal:        result := left = right;
@@ -369,6 +404,10 @@ PROCEDURE (c: ConstFold) VisitCall* (call: IR.Call);
 PROCEDURE (c: ConstFold) VisitAssert* (assert: IR.Assert);
   BEGIN
   END VisitAssert;
+
+PROCEDURE (c: ConstFold) VisitRange* (return: IR.Range);
+  BEGIN
+  END VisitRange;
 
 PROCEDURE (c: ConstFold) VisitReturn* (return: IR.Return);
   BEGIN

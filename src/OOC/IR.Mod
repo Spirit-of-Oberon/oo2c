@@ -337,6 +337,29 @@ TYPE
   END;
   
 TYPE
+  SetConstruct* = POINTER TO SetConstructDesc;
+  SetConstructDesc = RECORD
+    (**This operator constructs a set from a sequence of elements. The language
+    specifies that:
+      Set = { [Element { "," Element}] }
+      Element = Expr [ ".." Expr ]
+    Component Elements are stored in @ofield{elements}. If there are
+    @code{n} Elements in the Set, @ofield{elements} consists of an array of
+    @code{n} expressions. If an element is a range, the corresponding
+    expression will be a Range operator. *)
+    (OperatorDesc)
+    elements- : ExpressionList;
+  END;
+
+  SetOp* = POINTER TO SetOpDesc;
+  SetOpDesc = RECORD
+    (**This operator represents operations on SET values. *)
+    (OperatorDesc)
+    variant- : Variant;
+    left-, right- : Expression;
+  END;
+
+TYPE
   TypeConv* = POINTER TO TypeConvDesc;
   TypeConvDesc = RECORD
     (**A TypeConv expression represents a type conversion of an expression
@@ -355,6 +378,22 @@ TYPE
        @end itemize  *)
     (OperatorDesc)
     expr- : Expression;
+  END;
+
+TYPE
+  Range* = POINTER TO RangeDesc;
+  RangeDesc = RECORD 
+  (**A Range represents a sub-range of an ordinal type. These occur in SET
+     constructors and CASE label lists. A range consists of a @ofield{from} and
+     @ofield{to} expression which must have the same type. If both values are
+     constant, then @ofield{from} must not be greater than @ofield{to}.
+
+     Technically, Range does not need to be an expression, but having it so
+     allows ranges to be included in ExpressionLists. If Range were not an
+     expression, we would need another way of representing lists that include
+     ranges. *)
+    (OperatorDesc)
+    from-, to- : Expression;
   END;
 
 TYPE
@@ -1111,6 +1150,61 @@ PROCEDURE (sf: SelectField) Accept* (v: Visitor);
     v. VisitSelectField (sf)
   END Accept;
 
+(* Operator Class: SetConstruct
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitSetConstruct (sc : SetConstruct; elements: ExpressionList; sym: Symbol);
+  BEGIN
+    InitOperator (sc, sym, Predef.GetType(Predef.set));
+    sc.elements := elements;
+  END InitSetConstruct;
+
+PROCEDURE (b: Builder) NewSetConstruct* (sym: Symbol; elements: ExpressionList): SetConstruct;
+  VAR
+    sc : SetConstruct;
+  BEGIN
+    NEW (sc);
+    InitSetConstruct (sc, elements, sym);
+    RETURN sc
+  END NewSetConstruct;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitSetConstruct* (sc: SetConstruct);
+  END VisitSetConstruct;
+
+PROCEDURE (sf: SetConstruct) Accept* (v: Visitor);
+  BEGIN
+    v. VisitSetConstruct (sf)
+  END Accept;
+
+(* Operator Class: SetOp
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitSetOp (op: SetOp; sym: Symbol; variant : Variant; left, right: Expression; type : Sym.Type);
+  BEGIN
+    InitOperator (op, sym, type);
+    op.variant := variant;
+    op.left := left;
+    op.right := right;
+  END InitSetOp;
+
+PROCEDURE (b: Builder) NewSetOp (sym: Symbol; variant: Variant; left, right: Expression): Expression;
+  VAR
+    op : SetOp;
+  BEGIN
+    NEW (op);
+    ASSERT(b.typeRules.SameType(left.type, right.type));
+    InitSetOp (op, sym, variant, left, right, left.type);
+    RETURN op;
+  END NewSetOp;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitSetOp* (op: SetOp);
+  END VisitSetOp;
+
+PROCEDURE (op: SetOp) Accept* (v: Visitor);
+  BEGIN
+    v. VisitSetOp (op)
+  END Accept;
+
 (* Operator Class: TypeConv
    ------------------------------------------------------------------------ *)
 
@@ -1525,6 +1619,34 @@ PROCEDURE (v: Visitor) [ABSTRACT] VisitLoopStatm* (loopStatm: LoopStatm);
 PROCEDURE (loopStatm: LoopStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitLoopStatm (loopStatm)
+  END Accept;
+
+(* Statement Class: Range
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitRange (range: Range; sym: Symbol;
+                           from, to : Expression);
+  BEGIN
+    InitOperator (range, sym, from.type);
+    range.from := from;
+    range.to := to;
+  END InitRange;
+
+PROCEDURE (b: Builder) NewRange* (sym: Symbol; from, to : Expression) : Range;
+  VAR
+    range: Range;
+  BEGIN
+    NEW (range);
+    InitRange (range, sym, from, to);
+    RETURN range
+  END NewRange;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitRange* (range: Range);
+  END VisitRange;
+
+PROCEDURE (range: Range) Accept* (v: Visitor);
+  BEGIN
+    v. VisitRange (range)
   END Accept;
 
 (* Statement Class: RepeatStatm
@@ -1986,8 +2108,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       | Id.times: variant := setIntersect;
       | Id.slash: variant := setSymDiff
       END;
-      (* FIXME... RETURN b.NewSetOp(sym, left, right) *)
-      ASSERT(FALSE);
+      WidenType();
+      RETURN b.NewSetOp(sym, variant, left, right);
 
     ELSIF (id IN {Id.and, Id.or}) & leftIsBoolean & rightIsBoolean THEN
       CASE id OF

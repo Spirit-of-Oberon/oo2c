@@ -153,6 +153,18 @@ PROCEDURE (v: Visitor) VisitIndex* (index: IR.Index);
     v. w. EndTag;  (* index *)
   END VisitIndex;
 
+PROCEDURE (v: Visitor) VisitSetConstruct* (sc: IR.SetConstruct);
+  VAR first, second : IR.Expression; i : LONGINT;
+  BEGIN
+    v. w. StartTag ("set-construct", FALSE);
+    FOR i := 0 TO LEN (sc. elements^) -1 DO
+      v. w. StartTag("element", FALSE);
+      sc. elements[i].Accept(v);
+      v. w. EndTag;
+    END;
+    v. w. EndTag;
+  END VisitSetConstruct;
+
 PROCEDURE (v: Visitor) VisitSelectField* (sf: IR.SelectField);
   BEGIN
     v. w. StartTag ("select-field", FALSE);
@@ -199,6 +211,11 @@ PROCEDURE (v : Visitor) VisitCompare* (op : IR.Compare);
     VisitDyadicOp (v, op, op.variant, op.left, op.right, "compare");
   END VisitCompare;
 
+PROCEDURE (v: Visitor) VisitSetOp* (op: IR.SetOp);
+  BEGIN
+    VisitDyadicOp (v, op, op.variant, op.left, op.right, "setOp");
+  END VisitSetOp;
+
 PROCEDURE (v : Visitor) VisitTypeConv* (op : IR.TypeConv);
   BEGIN
     v. w. StartTag("typeConv", FALSE);
@@ -241,6 +258,14 @@ PROCEDURE (v: Visitor) VisitAssert* (assert: IR.Assert);
     assert. predicate. Accept (v);
     v. w. EndTag;  (* assert *)
   END VisitAssert;
+
+PROCEDURE (v: Visitor) VisitRange* (range: IR.Range);
+  BEGIN
+    v. w. StartTag ("range", FALSE);
+    range.from.Accept(v);
+    range.to.Accept(v);
+    v. w. EndTag;  (* range *)
+  END VisitRange;
 
 PROCEDURE (v: Visitor) VisitReturn* (return: IR.Return);
   BEGIN
