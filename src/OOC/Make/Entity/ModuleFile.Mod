@@ -22,7 +22,7 @@ MODULE OOC:Make:Entity:ModuleFile;
 
 
 IMPORT
-  Err, Strings, Files, Time, ADT:String, ADT:StringBuffer, 
+  Out, Strings, Files, Time, ADT:String, ADT:StringBuffer, 
   URI, URI:Scheme:File,
   Make, Make:Entity:Resource, Make:Edge:TimeDep,
   ConfigOOC := OOC:Auxiliary:Config, OOC:Error,
@@ -328,11 +328,11 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
       s: ARRAY 1024 OF CHAR;
     BEGIN
       (* ... FIXME error messages should use the errList mechanism *)
-      Err.String ("Error: File does not exist ");
+      Out.String ("Error: File does not exist ");
       uri := entity. GetURI();
       uri. GetString (s);
-      Err.String (s);
-      Err.Ln;
+      Out.String (s);
+      Out.Ln;
     END MissingFile;
   
   BEGIN
@@ -353,11 +353,19 @@ PROCEDURE (entity: Entity) Discover*(): Make.EntityState;
          module; this implies, that it is invalid if the module source is
          more recent, or if any of the imported symbol files have changed *)
       IF (entity. state = Make.entityUndiscovered) THEN
-        (* add dependence on the source code file *)
-        AddTimeDep (entity. context, entity,
-                    GetEntity (entity. context, entity. module,
-                               Repository.modModuleSource));
-        RETURN entity. state+1
+        IF entity. Exists() & ~Exists (entity, Repository.modModuleSource) THEN
+          (* we have a symbol file, but no source file; because we cannot
+             build a new one, shortcut the validation logic and assume the
+             the symbol file is up to date with respect to the source *)
+          AddImportDeps (entity, Repository.modSymbolFile, TRUE);
+          RETURN Make.entityUndiscovered+2
+        ELSE
+          (* add dependence on the source code file *)
+          AddTimeDep (entity. context, entity,
+                      GetEntity (entity. context, entity. module,
+                                 Repository.modModuleSource));
+          RETURN entity. state+1
+        END
       ELSIF (entity. state = Make.entityUndiscovered+1) THEN
         IF ~entity. HasInvalidAncestor() &
            entity. HasInvalidAncestorEdge() THEN
