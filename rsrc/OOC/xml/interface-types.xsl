@@ -127,6 +127,7 @@
   <xsl:variable name="prefix" select="substring-before($base-string, '?')"/>
   <xsl:variable name="text" select="substring-after($base-string, '?')"/>
   <xsl:variable name="module-name" select="@module"/>
+  <xsl:variable name="class" select="@class"/>
 
   <xsl:value-of select="concat($prefix, '     ?', $text)"/>
   <xsl:if test="$text">
@@ -136,9 +137,9 @@
   <xsl:value-of select="concat($prefix, '  +---&lt;a href=&quot;')"/>
   <xsl:value-of select="concat(/interface-description/module-ref
          [@name=$module-name]/ref-target[@type='html']/@relative-uri, 
-         '#', @class)"/>
+         '#', $class)"/>
   <xsl:value-of select="concat('&quot;>', @module, '.&lt;b>', 
-                               @class, '&lt;/b>&lt;/a>')"/>
+                               $class, '&lt;/b>&lt;/a>')"/>
 
   <xsl:text>&#xA;</xsl:text>
 </xsl:template>

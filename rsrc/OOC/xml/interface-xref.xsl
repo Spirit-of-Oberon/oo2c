@@ -85,9 +85,10 @@
 
   <a>
     <xsl:attribute name="href">
+      <xsl:variable name="fragment" select="substring-after(@href, '#')"/>
       <xsl:value-of select="concat(
         /interface-description/module-ref[@name=$module-name]/ref-target[@type='html']/@relative-uri,
-        '#', substring-after(@href, '#'))"/>
+        '#', $fragment)"/>
     </xsl:attribute>
 
     <xsl:choose>
