@@ -10,7 +10,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opArray1 opArray2 opArray3 opArray4 opArray5 opArray6">-->
+  select ="&SetupTestCasesWithOut; opRecord1 opRecord2 opRecord3 opRecord4
+opPointer1 opPointer2 opPointer3 opPointer4 opPointer5">-->
 
   &TestSetupWithOut;
     
@@ -415,6 +416,45 @@
 
     <test id="opArray6" type="reject" relevance="informal" file="OpArray6.Mod">
       Array designator applied to function result.
+    </test>
+
+    <test id="opRecord1" type="run" file="OpRecord1.Mod"
+       output="OpRecord1.Ref">
+      Excercise RECORD operators.
+    </test>
+
+    <test id="opRecord2" type="reject" file="OpRecord2.Mod">
+      Field selection operator applied to non-RECORD.
+    </test>
+
+    <test id="opRecord3" type="reject" file="OpRecord3.Mod">
+      Select a field that is not bound to a record type.
+    </test>
+
+    <test id="opRecord4" type="reject" file="OpRecord4.Mod">
+      Operator applied to function result.
+    </test>
+
+    <test id="opPointer1" type="reject" file="OpPointer1.Mod">
+      Dereference operator applied to non-pointer.
+    </test>
+
+    <test id="opPointer2" type="reject" file="OpPointer2.Mod">
+      Dereference operator applied to type-bound procedure that does not exist
+      in the base type.
+    </test>
+
+    <test id="opPointer3" type="run" file="OpPointer3.Mod"
+    output="OpPointer3.Ref">
+      Super call.
+    </test>
+
+    <test id="opPointer4" type="reject" file="OpPointer4.Mod">
+      Dereference operator applied to function result.
+    </test>
+
+    <test id="opPointer5" type="reject" file="OpPointer5.Mod">
+      More than one level of "super" call.
     </test>
   </testcases>
     
