@@ -5527,11 +5527,13 @@ PROCEDURE (b: Builder) NewQualType*(type: Expression;
         b.ErrSym(tooFewTypeArgs, rParen);
       ELSE
         FOR i := 0 TO LEN(params^)-1 DO
-          t := arguments[i](TypeRef).qualType;
-          IF (t # NIL) & TR.IsExtensionOf(t, params[i].bound) THEN
-            Sym.InitTypeRef(qualType(Sym.QualType).arguments[i], t);
-          ELSE
-            b.ErrSym(notExtensionOfBound, arguments[i].sym);
+          IF (arguments[i] IS TypeRef) THEN
+            t := arguments[i](TypeRef).qualType;
+            IF (t # NIL) & TR.IsExtensionOf(t, params[i].bound) THEN
+              Sym.InitTypeRef(qualType(Sym.QualType).arguments[i], t);
+            ELSE
+              b.ErrSym(notExtensionOfBound, arguments[i].sym);
+            END;
           END;
         END;
       END;
