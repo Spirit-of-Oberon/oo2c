@@ -532,7 +532,7 @@ PROCEDURE TranslateArgs (VAR file: ARRAY OF CHAR; VAR pos: LONGINT): BOOLEAN;
 
 PROCEDURE WriteHelp;
   BEGIN
-    Out.String ("Usage: oo2c ... | ooef [option]"); Out.Ln;
+    Out.String ("Usage: oo2c --error-style char-pos ... | ooef [option]"); Out.Ln;
     Out.String ("       ooef [option] <module> <pos>"); Out.Ln;
     Out.String ("Options: "); Out.Ln;
     Out.String ("--context, -c   Print errors in source text context (default)."); Out.Ln;
