@@ -485,7 +485,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       list: ArrayList.ArrayList;
       item: Item.Item;
     BEGIN
-      IF extensionDict. HasKey (type) THEN
+      IF (extensionDict # NIL) & extensionDict. HasKey (type) THEN
         obj := extensionDict. Get (type);
         list := obj(ArrayList.ArrayList);
         FOR i := 0 TO list. size-1 DO
