@@ -164,17 +164,27 @@ PROCEDURE MoveProxy (proxy: InstrProxy; to: Block);
   END MoveProxy;
 
 
-PROCEDURE DebranchBlock (b: Block): Block;
-  VAR
-    proxy, next: InstrProxy;
-    domRoot: Block;
+PROCEDURE DebranchBlock (VAR enter: Block): Block;
+(* `enter' is the block that dominates all the instructions in the
+   sequence, and is changed by the function if there is a new
+   dominating block; result is the block whose `jump' field leaves
+   the sequence of instructions; this is always the original value
+   of `enter'
 
-  PROCEDURE SplitSelect (currentBlock: Block; select: SSA.Instr): Block;
+   precond: instructions within the block are topologically sorted *)
+  VAR
+    proxy: InstrProxy;
+
+  PROCEDURE SplitSelect (VAR enter: Block; select: SSA.Instr): Block;
     VAR
-      in, path1, path2: Block;
+      in, path1, path2, exitPath1, exitPath2, exitEnter, exitIn, oldEnter: Block;
 
     PROCEDURE Move (result: SSA.Result; source, primary, secondary: Block);
-    (**Moves the instruction producing @oparam{result} into its target block.  *)
+    (**Recursively moves the instructions producing @oparam{result} into their
+       target blocks.  Order of dependent instructions is kept unchanged.  That
+       is, if an instruction @samp{A} depends on instruction @samp{B}, and
+       @samp{A} is placed after @samp{B} in the original block, then the same
+       holds for the target block.  *)
       VAR
         instr: SSA.Instr;
         opnd: SSA.Opnd;
@@ -205,41 +215,54 @@ PROCEDURE DebranchBlock (b: Block): Block;
       END Move;
     
     BEGIN
-      path1 := NewBlock (currentBlock);
-      path2 := NewBlock (currentBlock);
+      oldEnter := enter;
+      path1 := NewBlock (enter);
+      path2 := NewBlock (enter);
       in := NewBranchBlock
           (path2, select,
            select. opndList. nextOpnd. arg. IsBooleanConst (TRUE),
            path1);
 
-      Move (select. opndList. arg, currentBlock, in, in);
-      Move (select. NthArg (2), currentBlock, path1, in);
-      Move (select. NthArg (4), currentBlock, path2, in);
+      Move (select. opndList. arg, enter, in, in);
+      Move (select. NthArg (2), enter, path1, in);
+      Move (select. NthArg (4), enter, path2, in);
 
+      exitPath1 := DebranchBlock (path1);
+      exitPath2 := DebranchBlock (path2);
+      exitIn := DebranchBlock (in);
+      select. opcode := -select. opcode;(* mask the current select statement *)
+      exitEnter := DebranchBlock (enter);
+      select. opcode := -select. opcode;(* unmask it again *)
+
+(*   exitPath1 := path1;
+   exitPath2 := path2;
+   exitIn := in;
+   exitEnter := enter;*)
+   
+      exitPath1. jump := enter;
+      exitPath2. jump := enter;
+      exitIn(BranchBlock). jump := path2;
+      exitIn(BranchBlock). branchTo := path1;
+      
       Dominates (in, path1);
       Dominates (in, path2);
-      Dominates (in, currentBlock);
+      Dominates (in, enter);
 
-      in := DebranchBlock (in);
-      path1 := DebranchBlock (path1);
-      path2 := DebranchBlock (path2);
-      
-      RETURN in
+      enter := in;
+      ASSERT (exitEnter = oldEnter);
+      RETURN exitEnter
     END SplitSelect;
   
   BEGIN
-    domRoot := b;
-    proxy := b. proxyList;
-    WHILE (proxy # NIL) DO
-      next := proxy. nextProxy;
-      IF (proxy. instr. opcode = Opcode.select) THEN
-        (* calculation of the root of the dominator tree is probably
-           broken ... FIXME *)
-        domRoot := SplitSelect (b, proxy. instr)
-      END;
-      proxy := next
+    proxy := enter. proxyList;
+    WHILE (proxy # NIL) & (proxy. instr. opcode # Opcode.select) DO
+      proxy := proxy. nextProxy
     END;
-    RETURN domRoot
+    IF (proxy # NIL) THEN
+      RETURN SplitSelect (enter, proxy. instr)
+    ELSE
+      RETURN enter
+    END
   END DebranchBlock;
 
 
@@ -359,12 +382,15 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
 (**Takes a procedure representation in SSA format and converts it into a graph
    representation consisting of basic blocks.  *)
   VAR
-    b: Block;
+    b, exit: Block;
     instr: SSA.Instr;
     proxy: InstrProxy;
+    ok: BOOLEAN;
   BEGIN
     (* first, put all instructions into a single block; if we are _very_ lucky,
        we don't need any other blocks and are already done *)
+    ok := pb. TopSort();
+    ASSERT (ok);
     pb. SetMarkers (NIL, -1);
     b := NewBlock (NIL);
     instr := pb. instrList;
@@ -378,7 +404,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     (* second, scan instructions for branches in the control flow; create new
        blocks accordingly, and add links between them representing branches and
        unconditional jumps  *)
-    b := DebranchBlock (b);
+    exit := DebranchBlock (b);
     
     (* third, schedule instructions within each basic block *)
     SortBlocks (b);

@@ -117,9 +117,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       select. AddOpnd (pb. GetConstBool (TRUE), Opnd.arg);
       select. AddOpnd (StatmSeq (pb, s, ifStatm. pathTrue), Opnd.arg);
       
+      select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
       IF (ifStatm. pathFalse # NIL) THEN
-        select. AddOpnd (pb. GetConstBool (FALSE), Opnd.arg);
         select. AddOpnd (StatmSeq (pb, s, ifStatm. pathFalse), Opnd.arg);
+      ELSE
+        select. AddOpnd (s, Opnd.arg)
       END;
 
       s := select. AddResult (Result.store)

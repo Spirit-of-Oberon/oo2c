@@ -772,4 +772,77 @@ PROCEDURE (pb: ProcBlock) AddSetInstr* (get: Instr; sourceValue: Result): Instr;
     RETURN set
   END AddSetInstr;
 
+PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
+(**Topological sort on instructions in @oparam{pb}.  If there are no cyclic
+   dependencies between the instructions, the result is @code{TRUE}.  *)
+  VAR
+    instr, next: Instr;
+    ready, waiting: Instr;
+    res: Result;
+    use: Opnd;
+
+  PROCEDURE Add (VAR list: Instr; instr: Instr);
+    BEGIN
+      instr. prevInstr := NIL;
+      instr. nextInstr := list;
+      IF (list # NIL) THEN
+        list. prevInstr := instr
+      END;
+      list := instr
+    END Add;
+  
+  PROCEDURE Remove (VAR list: Instr; instr: Instr);
+    BEGIN
+      IF (instr. prevInstr = NIL) THEN
+        list := instr. nextInstr
+      ELSE
+        instr. prevInstr. nextInstr := instr. nextInstr
+      END;
+      IF (instr. nextInstr # NIL) THEN
+        instr. nextInstr. prevInstr := instr. prevInstr
+      END
+    END Remove;
+  
+  BEGIN
+    ready := NIL;
+    waiting := NIL;
+    
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      next := instr. nextInstr;
+      instr. marker := instr. SizeOpndList();
+      IF (instr. marker = 0) THEN
+        Add (ready, instr)
+      ELSE
+        Add (waiting, instr)
+      END;
+      instr := next
+    END;
+
+    pb. instrList := NIL;
+    pb. instrTail := NIL;
+    WHILE (ready # NIL) DO
+      instr := ready;
+      Remove (ready, instr);
+      AppendInstr (pb, instr);
+
+      (* decrement marker (=count of blocking results) for all uses of all
+         results of `instr' *)
+      res := instr;
+      WHILE (res # NIL) DO
+        use := res. useList;
+        WHILE (use # NIL) DO
+          DEC (use. instr. marker);
+          IF (use. instr. marker = 0) THEN
+            Remove (waiting, use. instr);
+            Add (ready, use. instr)
+          END;
+          use := use. nextUse
+        END;
+        res := res. nextResult
+      END;
+    END;
+    RETURN (waiting = NIL)
+  END TopSort;
+
 END OOC:SSA.
