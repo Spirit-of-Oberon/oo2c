@@ -302,18 +302,27 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block);
 
       | Opcode.address:
         name := Naming.NameOfDeclaration (instr(SSA.Address). decl);
-        w. WriteChar ("&");
+        IF ~(instr(SSA.Address). decl IS Item.VarDecl) OR
+             ~(instr(SSA.Address). decl(Item.VarDecl). type IS Item.Array) THEN
+          (* charming C: the address of the variable is its name, all
+             others need the address operator *)
+          w. WriteChar ("&");
+        END;
         w. WriteString (name. array^);
 
       | Opcode.get:
-        (* another *very* drastic shortcut... *)
-        name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. nextOpnd. arg(SSA.DeclRef). decl);
-        w. WriteString (name. array^);
+        w. WriteString ("*(");
+        w. WriteString (WriteDecl.basicType
+                        [SubclassToBasicType (instr. subclass)]. repr);
+        w. WriteString ("*)");
+        w. Ref (instr. opndList. nextOpnd);
         
       | Opcode.set:
-        (* another *very* drastic shortcut... *)
-        name := Naming.NameOfDeclaration (instr. opndList. nextOpnd. nextOpnd. arg(SSA.DeclRef). decl);
-        w. WriteString (name. array^);
+        w. WriteString ("*(");
+        w. WriteString (WriteDecl.basicType
+                        [SubclassToBasicType (instr. subclass)]. repr);
+        w. WriteString ("*)");
+        w. Ref (instr. opndList. nextOpnd);
         w. WriteString (" = ");
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
 

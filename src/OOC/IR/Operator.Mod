@@ -1,7 +1,8 @@
 MODULE OOC:IR:Operator [OOC_EXTENSIONS];
 
 IMPORT
-  OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, OOC:IR;
+  OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, OOC:SymbolTable:Item,
+  OOC:IR;
 
 
 TYPE
@@ -16,6 +17,15 @@ TYPE
     (IR.VisitorDesc)
   END;
 
+
+TYPE
+  Index* = POINTER TO IndexDesc;
+  IndexDesc = RECORD
+    (IR.OperatorDesc)
+    (**The index operator selects the element at position @ofield{opnd2} from
+       the array variable @ofield{opnd1}.  *)
+  END;
+  
 TYPE
   Negate* = POINTER TO NegateDesc;
   NegateDesc = RECORD
@@ -50,12 +60,37 @@ PROCEDURE NewBuilder* (pragmaHistory: Pragmas.History; errList: Error.List): Bui
 
 (* -------- *)
 
+PROCEDURE InitIndex (i: Index; sym: IR.Symbol; array, index: IR.Expression);
+  BEGIN
+    IR.InitOperator (i, sym, array. type(Item.Array). elementType,
+                     array, index);
+  END InitIndex;
+
+PROCEDURE (b: Builder) NewIndex* (sym: IR.Symbol; array, index: IR.Expression): Index;
+  VAR
+    i: Index;
+  BEGIN
+    NEW (i);
+    InitIndex (i, sym, array, index);
+    RETURN i
+  END NewIndex;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitIndex* (index: Index);
+  END VisitIndex;
+
+PROCEDURE (index: Index) Accept* (v: IR.Visitor);
+  BEGIN
+    v(Visitor). VisitIndex (index)
+  END Accept;
+
+(* -------- *)
+
 PROCEDURE InitNegate (neg: Negate; sym: IR.Symbol; opnd: IR.Expression);
   BEGIN
     IR.InitOperator (neg, sym, opnd. type, opnd, NIL);
   END InitNegate;
 
-PROCEDURE NewNegate (sym: IR.Symbol; opnd: IR.Expression): Negate;
+PROCEDURE (b: Builder) NewNegate (sym: IR.Symbol; opnd: IR.Expression): Negate;
   VAR
     neg: Negate;
   BEGIN
@@ -79,7 +114,7 @@ PROCEDURE InitAdd (add: Add; sym: IR.Symbol; left, right: IR.Expression);
     IR.InitOperator (add, sym, left. type, left, right);
   END InitAdd;
 
-PROCEDURE NewAdd (sym: IR.Symbol; left, right: IR.Expression): Add;
+PROCEDURE (b: Builder) NewAdd (sym: IR.Symbol; left, right: IR.Expression): Add;
   VAR
     add: Add;
   BEGIN
@@ -103,11 +138,11 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
     CASE sym. id OF
     | Symbol.minus:
       ASSERT (left = NIL);
-      RETURN NewNegate (sym, right)
+      RETURN b. NewNegate (sym, right)
 
     | Symbol.plus:
       ASSERT (left. type = right. type);
-      RETURN NewAdd (sym, left, right)
+      RETURN b. NewAdd (sym, left, right)
     END
   END NewOperator;
 

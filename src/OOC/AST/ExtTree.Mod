@@ -309,10 +309,10 @@ TYPE
   ArrayIndex* = POINTER TO ArrayIndexDesc;
   ArrayIndexDesc = RECORD
     (NodeDesc)
-    design-: AST.Node;
-    lBrak-: AST.Node;
-    indices-: AST.NodeList;
-    rBrak-: AST.Node;
+    design-: Node;
+    lBrak-: Terminal;
+    indices-: NodeList;
+    rBrak-: Terminal;
   END;
 
 TYPE
@@ -1200,10 +1200,10 @@ PROCEDURE (b: Builder) ArrayIndex* (design, lBrak: AST.Node; indices: AST.NodeLi
     ai: ArrayIndex;
   BEGIN
     NEW (ai);
-    ai. design := design;
-    ai. lBrak := lBrak;
-    ai. indices := indices;
-    ai. rBrak := rBrak;
+    ai. design := design(Node);
+    ai. lBrak := lBrak(Terminal);
+    ai. indices := indices(NodeList);
+    ai. rBrak := rBrak(Terminal);
     RETURN ai
   END ArrayIndex;
 

@@ -77,6 +77,14 @@ PROCEDURE (v: Visitor) VisitModuleRef* (modRef: IR.ModuleRef);
     v. w. EndTag;  (* module-reference *)
   END VisitModuleRef;
 
+PROCEDURE (v: Visitor) VisitIndex* (index: Operator.Index);
+  BEGIN
+    v. w. StartTag ("index", FALSE);
+    index. opnd1. Accept (v);
+    index. opnd2. Accept (v);
+    v. w. EndTag;  (* index *)
+  END VisitIndex;
+
 PROCEDURE (v: Visitor) VisitNegate* (neg: Operator.Negate);
   BEGIN
     v. w. StartTag ("negate", FALSE);

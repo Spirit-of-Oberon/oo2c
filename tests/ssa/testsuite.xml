@@ -17,11 +17,11 @@
   select ="prepare_out_module
   baseline1 baseline2 baseline3 baseline4 baseline5 baseline6
   baseline8 baseline10 baseline11
-  function1 function2 function3 if1 if2 if3 function4 function5">
+  function1 function2 function3 if1 if2 if3 function4 function5 designator1">
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="prepare_out_module if1 if2 if3 function4 function5">-->
+  select ="prepare_out_module designator1">-->
   
   <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
     <test id="prepare_out_module" type="accept" file="../compile/src/Out.Mod">
@@ -84,6 +84,13 @@
       file="HOTFunction5.Mod" output="HOTFunction5.Ref">
       Yet another simple function: Increment input value by one and
       return the result.
+    </test>
+    
+    <test id="designator1" type="run"
+      file="HOTDesignator1.Mod" output="HOTDesignator1.Ref">
+      Designator test: access of elements of a character array.
+      The array is passed as a parameter to the function, as is
+      the index.
     </test>
   </testcases>
   

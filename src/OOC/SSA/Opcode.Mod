@@ -236,6 +236,9 @@ PROCEDURE TypeToSubclass* (type: Item.Type): Subclass;
       | Predef.charString: RETURN scAddress
       | Predef.longcharString: RETURN scAddress
       END;
+      
+    | type: Item.Array DO
+      RETURN scNone
     END;
   END TypeToSubclass;
 

@@ -1,7 +1,7 @@
 MODULE OOC:SSA:IRtoSSA;
 
 IMPORT
-  Log, Language:Integer, OOC:IR, OOC:IR:Operator,
+  Log,  OOC:SymbolTable:Item, OOC:SymbolTable:Predef, OOC:IR, OOC:IR:Operator,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result;
 
 
@@ -31,6 +31,34 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE Expression (expr: IR.Expression): SSA.Result;
     VAR
       instr: SSA.Instr;
+
+    PROCEDURE Index (indexOp: Operator.Index): SSA.Result;
+      VAR
+        instr, elementAdr: SSA.Instr;
+        baseResult, index: SSA.Result;
+        adrOpnd: SSA.Opnd;
+      BEGIN
+        (* doesn't calculate size yet... FIXME *)
+        ASSERT (indexOp. type(Item.PredefType). id = Predef.char);
+
+        (* take the "get" instruction of the array's designator and
+           change it into a "get" for the array element *)
+        baseResult := Expression (indexOp. opnd1);
+        ASSERT (baseResult. instr. opcode = Opcode.get);
+        instr := baseResult. instr;
+        index := Expression (indexOp. opnd2);
+
+        adrOpnd := instr. opndList. nextOpnd;
+        elementAdr := pb. AddInstr (Opcode.add, Opcode.scAddress);
+        elementAdr. AddOpnd (adrOpnd. arg, Opnd.arg);
+        elementAdr. AddOpnd (index, Opnd. arg);
+        adrOpnd. ReplaceOpnd (elementAdr);
+        instr. AddOpnd (index, Opnd.readDesign);
+        instr. SetSubclass (Opcode.TypeToSubclass (indexOp. type));
+
+        RETURN instr
+      END Index;
+    
     BEGIN
       WITH expr: IR.Const DO
         RETURN pb. GetConst (expr. value, expr. type)
@@ -44,7 +72,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (pb. GetAddress (expr. decl), Opnd.readAdr);
         instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.readDesign);
         RETURN instr
-            
+
+      | expr: Operator.Index DO
+        RETURN Index (expr)
+        
       | expr: Operator.Negate DO
         instr := pb. AddInstr (Opcode.negate,
                                Opcode.TypeToSubclass (expr. opnd1. type));
