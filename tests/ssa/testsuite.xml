@@ -8,9 +8,9 @@
   profile="Test Suite for Framework Testing"
   select ="&SetupTestCasesWithOut; record10">-->
 
-<!--testsuite-ext
+<!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opExprCompat1 opExprCompat2 opExprCompat3 opExprCompat4 opExprCompat5 opExprCompat6 opExprCompat7 opExprCompat8 opExprCompat9 opExprCompat10 opExprCompat11 opExprCompat12 opExprCompat13 opExprCompat14">-->
+  select ="&SetupTestCasesWithOut" >-->
 
   &TestSetupWithOut;
     
@@ -537,6 +537,7 @@
     <test id="opExprCompat14" type="reject" file="OpExprCompat14.Mod">
       Result of numeric operator is "widened" to largest operand.
     </test>
+
   </testcases>
     
   <processor-info processor-name="TestCompile">
@@ -573,19 +574,19 @@
     <reject-info id="opPointer4" pos="New(1)%"
         msg="Operator may not be applied to function result"/>
     <reject-info id="opExprCompat2" pos=" %+"
-        msg="Invalid type for operator"/>
+        msg="Incompatible types for operator"/>
     <reject-info id="opExprCompat3" pos=" %+"
-        msg="Invalid type for operator"/>
+        msg="Incompatible types for operator"/>
     <reject-info id="opExprCompat4" pos=" %+"
-        msg="Invalid type for operator"/>
+        msg="Incompatible types for operator"/>
     <reject-info id="opExprCompat5" pos=" %DIV"
         msg="Invalid type for operator"/>
     <reject-info id="opExprCompat6" pos=" %="
-        msg="Invalid type for operator"/>
+        msg="Incompatible types for operator"/>
     <reject-info id="opExprCompat7" pos=" %="
-        msg="Invalid type for operator"/>
+        msg="Incompatible types for operator"/>
     <reject-info id="opExprCompat8" pos=" %="
-        msg="Invalid type for operator"/>
+        msg="Incompatible types for operator"/>
     <reject-info id="opExprCompat9" pos=" %:="
         msg="Type of expression is not compatible with variable type"/>
     <reject-info id="opExprCompat10" pos=" %:="

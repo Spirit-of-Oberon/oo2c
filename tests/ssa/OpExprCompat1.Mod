@@ -39,6 +39,4 @@ BEGIN
   Out.String(a2); Out.Ln;
 END Test;
 
-BEGIN
-  Test;
 END OpExprCompat1.
