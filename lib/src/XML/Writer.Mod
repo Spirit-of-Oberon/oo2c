@@ -222,6 +222,18 @@ PROCEDURE (w: Writer) Write* (str[NO_COPY]: ARRAY OF Char);
     w. WriteI (str, 0, LongStrings.Length (str))
   END Write;
 
+PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
+  VAR
+    str: STRING;
+    str8: Object.String8;
+    chars: Object.CharsLatin1;
+  BEGIN
+    str := obj.ToString();
+    str8 := str.ToString8("?");
+    chars := str8.CharsLatin1();
+    w.WriteLatin1I(chars^, 0, str8.length);
+  END WriteObject;
+
 PROCEDURE (w: Writer) WriteLatin1* (str[NO_COPY]: ARRAY OF CHAR);
   BEGIN
     w. WriteLatin1I (str, 0, Strings.Length (str))
