@@ -298,6 +298,21 @@ PROCEDURE WriteTypeAndLength (w: Writer; instr: SSA.Instr;
                               varDecl: Sym.VarDecl; inBytes: BOOLEAN);
   VAR
     type: Sym.Type;
+
+  PROCEDURE ExpandMult(opnd: SSA.Opnd);
+    VAR
+      instr: SSA.Instr;
+    BEGIN
+      instr := opnd.arg.instr;
+      IF (instr.opcode = Opcode.multiply) THEN
+        ExpandMult(instr.opndList);
+        w.WriteChar("*");
+        ExpandMult(instr.opndList.nextOpnd);
+      ELSE
+        w.Ref(opnd);
+      END;
+    END ExpandMult;
+  
   BEGIN
     w. WriteString (",");
     type := varDecl.type.Deparam(); 
@@ -310,7 +325,7 @@ PROCEDURE WriteTypeAndLength (w: Writer; instr: SSA.Instr;
     IF inBytes THEN
       w.Ref(instr.NthOpnd(2));
     ELSE
-      w.Ref(instr.NthOpnd(1));
+      ExpandMult(instr.NthOpnd(1));
     END;
     w. WriteString (")");
   END WriteTypeAndLength;
