@@ -1,7 +1,7 @@
 MODULE OOC:IR:Operator [OOC_EXTENSIONS];
 
 IMPORT
-  Log, Language, Language:IntegerType, Language:Boolean, Language:Integer,
+  Log, Language, Language:Boolean, Language:Integer, Integers,
   OOC:Error, OOC:Config:Pragmas, OOC:Scanner:Symbol, Sym := OOC:SymbolTable,
   OOC:IR, OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef;
 
@@ -92,6 +92,7 @@ TYPE
 
 VAR
   real : Sym.Type;
+  minus1, zero : Integers.Integer;
 
 PROCEDURE InitVisitor* (v: Visitor);
   BEGIN
@@ -220,7 +221,7 @@ BEGIN
 END FoldBinary;
 
 PROCEDURE (b : Builder) FoldUnary(op, operand : IR.Expression) : IR.Expression;
-(**FoldBinary implements simple constant folding for binary operators. If
+(**FoldUnary implements simple constant folding for unary operators. If
    operator @oparam{op} has constant argument @oparam{operand} it is evaluated.
    If evaluation is successful, the constant result is returned. Otherwise,
    the original operator is returned. *)
@@ -250,28 +251,27 @@ VAR
 
   PROCEDURE IntegerOp () : Language.Value;
   VAR
-    result, left, right : LONGINT;
-    type : IntegerType.Type;
+    result, left, right : Integers.Integer;
   BEGIN
-    left := l(IntegerType.Value).value; 
-    right := r(IntegerType.Value).value;
+    left := l(Integer.Value).value; 
+    right := r(Integer.Value).value;
     
     CASE op.variant OF
       (* FIXME! Properly check for overflow. *)
-    | arithAdd:  result := left + right;
-    | arithSub:  result := left - right;
-    | arithMul:  result := left * right;
+    | arithAdd:  result := Integers.Sum(left, right);
+    | arithSub:  result := Integers.Difference(left, right);
+    | arithMul:  result := Integers.Product(left, right);
     | arithDivI: 
-      IF right = 0 THEN
+      IF Integers.Compare(right, zero) = 0 THEN
         env.Exception(IR.statusDivByZero, op, l, r); RETURN NIL;
       ELSE
-        result := left DIV right;
+        result := Integers.Quotient(left, right);
       END;
     | arithMod:
-      IF right = 0 THEN
+      IF Integers.Compare(right, zero) = 0 THEN
         env.Exception(IR.statusDivByZero, op, l, r); RETURN NIL;
       ELSE
-        result := left MOD right;
+        result := Integers.Remainder(left, right);
       END;
     ELSE
       env.Exception(IR.statusInvalidOp, op, l, r); RETURN NIL;
@@ -321,7 +321,7 @@ PROCEDURE (b: Builder) NewBinaryArith (sym: IR.Symbol; left, right: IR.Expressio
       ELSE
         (* Neither operand is real, so try to convert both to real. This
         special case avoids the possibility of generating two TypeConv
-        operators (eg. to widen an integer, the to widen integer to real. *)
+        operators (eg. to widen an integer, then to widen integer to real. *)
 
         left := b.AssignType(real, left); right := b.AssignType(real, right);
         type := real;
@@ -365,18 +365,18 @@ VAR
 
   PROCEDURE IntegerOp () : Language.Value;
   VAR
-    left, right : LONGINT; result : BOOLEAN;
+    left, right : Integers.Integer; result : BOOLEAN;
   BEGIN
-    left := l(IntegerType.Value).value; 
-    right := r(IntegerType.Value).value;
+    left := l(Integer.Value).value; 
+    right := r(Integer.Value).value;
     
     CASE op.variant OF
-    | equal:        result := (left = right);
-    | notEqual:     result := (left # right);
-    | less:         result := (left < right);
-    | lessEqual:    result := (left <= right);
-    | greater:      result := (left > right);
-    | greaterEqual: result := (left <= right);
+    | equal:        result := Integers.Compare(left, right) = 0;
+    | notEqual:     result := Integers.Compare(left, right) # 0;
+    | less:         result := Integers.Compare(left, right) < 0;
+    | lessEqual:    result := Integers.Compare(left, right) <= 0;
+    | greater:      result := Integers.Compare(left, right) > 0;
+    | greaterEqual: result := Integers.Compare(left, right) >= 0;
     ELSE
       env.Exception(IR.statusInvalidOp, op, l, r);
     END;
@@ -475,7 +475,7 @@ BEGIN
   | Predef.boolean:
     RETURN Boolean.type.Value(~value(Boolean.Value).value);
   | Predef.integer:
-    RETURN Integer.type.Value(-value(IntegerType.Value).value);
+    RETURN Integer.type.Value(Integers.Product(minus1, value(Integer.Value).value));
   ELSE
     env.Exception(IR.statusIncompatibleTypes, op, NIL, NIL);
     RETURN NIL;
@@ -580,4 +580,6 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
 
 BEGIN
   real := Predef.GetType(Predef.real);
+  zero := Integers.Long(0);
+  minus1 := Integers.Long(-1);
 END OOC:IR:Operator.

@@ -14,7 +14,6 @@ IMPORT
      ---------------------------------------------------------------------- *)
   Language,
   Language:Boolean,
-  Language:IntegerType,
   Language:Integer,
   Language:String8,
 

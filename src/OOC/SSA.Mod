@@ -736,7 +736,7 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Language.Value;
 
 PROCEDURE (pb: ProcBlock) GetConstInt* (int: LONGINT): Const;
   BEGIN
-    RETURN pb. GetConst (Integer.New (SHORT (int)),  (* ...should be Longint *)
+    RETURN pb. GetConst (Integer.NewLInt(int),  (* ...should be Longint *)
                          Predef.GetType (Predef.integer))
   END GetConstInt;
 

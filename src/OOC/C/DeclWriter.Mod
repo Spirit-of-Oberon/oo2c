@@ -24,7 +24,7 @@ IMPORT
   Channel, Err, Files, Msg, TextRider, ADT:Object, ADT:String, ADT:ArrayList,
   URI, FileURI := URI:Scheme:File, IO:Memory, 
   Language, Language:Boolean, Language:Char8, Language:String8,
-  Language:IntegerType,
+  Language:Integer,
   OOC:Repository;
   
 
@@ -349,6 +349,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value);
     quotedDelim = '\"';
   VAR
     i, len: LONGINT;
+    str : String.String;
 
   PROCEDURE WriteOct (ch: LONGINT);
     BEGIN
@@ -397,9 +398,9 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value);
         w. WriteChar (delim)
       END
     
-    | value: IntegerType.Value DO
-      w. WriteLInt (value. value, 0);
-      
+    | value: Integer.Value DO
+      str := value.ToString();
+      w. WriteString(str.array^);
     END
   END WriteConst;
 
