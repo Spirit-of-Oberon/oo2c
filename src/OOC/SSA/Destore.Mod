@@ -438,7 +438,7 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
         RETURN GetSelectValue (instr);
         
       | Opcode.collect, Opcode.newObject, Opcode.copyParameter, Opcode.loopEnd,
-        Opcode.exit, Opcode.return:
+        Opcode.exit, Opcode.return, Opcode.assert:
         RETURN GetValue (instr. GetArgClass (Opnd.store), get, loopTrace);
 
       | Opcode.loopStart:
