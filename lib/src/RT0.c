@@ -7,7 +7,7 @@
 #define ROUND_SIZE(s) ((s+7) & ~((size_t)7))
 
 #define PS(_str,_form,_size) \
-  _str.base = NULL; _str.size = _size; _str.len = -1; _str.form = _form
+  _str.baseTypes = NULL; _str.size = _size; _str.len = -1; _str.form = _form
 
 
 OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
@@ -15,7 +15,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
 
   if (td->form == RT0__strRecord) { /* record */
     int prefix;
-    int size = td->base->size;
+    int size = td->size;
     if (size == 0) size++;
     prefix = ROUND_SIZE(sizeof(RT0__Struct));
     
@@ -38,7 +38,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     OOC_LEN *dim;
     
     /* calculate size of the block in bytes */
-    size = td->base->size;
+    size = td->baseTypes[0]->size;
     va_start(ap, td);
     for (i=0; i != td->len; i++) {
       size *= va_arg(ap, OOC_LEN);

@@ -505,7 +505,7 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       opnd := instr. GetOpndClass (Opnd.type);
       name := Naming.NameOfTypeDescriptor (opnd. arg(SSA.TypeRef). type);
       w. WriteString (name. array^);
-      w. WriteString (".base");
+      w. WriteString (".baseTypes[0]");
 
       opnd := opnd. nextOpnd;
       WHILE (opnd # NIL) & (opnd. class = Opnd.arg) DO

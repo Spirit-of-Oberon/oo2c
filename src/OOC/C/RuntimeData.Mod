@@ -88,15 +88,17 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
         IF array. isOpenArray THEN
           base := array. GetNonOpenElementType();
           name := Naming.NameOfTypeDescriptor (base);
-          w.WriteChar ("&");
-          w. WriteString (name. array^); (* base *)
-          CNli; w.WriteLInt (-1, 0);     (* size *)
+          w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
+          w. WriteString (name. array^);
+          w. WriteChar ("}");
+          CNli; w. WriteLInt (-1, 0);     (* size *)
           CNli; w. WriteLInt (array. GetOpenDimensions(), 0); (* len *)
           CNli; WriteForm ("strOpenArray"); (* form *)
         ELSE
           name := Naming.NameOfTypeDescriptor (array. elementType);
-          w.WriteChar ("&");
-          w. WriteString (name. array^); (* base *)
+          w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
+          w. WriteString (name. array^);
+          w. WriteChar ("}");
           CNli; w.WriteLInt (array. size, 0); (* size *)
           CNli; w. WriteLInt (array. length, 0); (* len *)
           CNli; WriteForm ("strArray");  (* form *)
@@ -109,28 +111,35 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     VAR
       name: String.String;
       base: Sym.Type;
+      len: LONGINT;
 
     PROCEDURE BaseTypes (t: Sym.Type): LONGINT;
+      VAR
+        len: LONGINT;
+        name: String.String;
       BEGIN
         IF (t = NIL) THEN
-          RETURN 0;
+          RETURN -1;
         ELSE
-          RETURN BaseTypes (t(Sym.Record). baseType)+1;
+          len := BaseTypes (t(Sym.Record). baseType);
+          name := Naming.NameOfTypeDescriptor (t);
+          w. WriteChar ("&");
+          w. WriteString (name. array^);
+          IF (t # record) THEN
+            w. WriteChar (",");
+          END;
+          RETURN len+1;
         END;
       END BaseTypes;
     
     BEGIN
       WriteDescrVariable (record);
       IF ~writeHeader THEN
-        IF (record. baseType = NIL) THEN
-          w. WriteString ("NULL");       (* base *)
-        ELSE
-          name := Naming.NameOfTypeDescriptor (record. baseType);
-          w.WriteChar ("&");
-          w. WriteString (name. array^); (* base *)
-        END;
-        CNli; w.WriteLInt (record. size, 0); (* size *)
-        CNli; w. WriteLInt (BaseTypes (record. baseType), 0); (* len *)
+        w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
+        len := BaseTypes (record);
+        w. WriteChar ("}");
+        CNli; w. WriteLInt (record. size, 0); (* size *)
+        CNli; w. WriteLInt (len, 0); (* len *)
         CNli; WriteForm ("strRecord"); (* form *)
         w. WriteString (" };");
       END;
@@ -144,9 +153,10 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       WriteDescrVariable (pointer);
       IF ~writeHeader THEN
         name := Naming.NameOfTypeDescriptor (pointer. baseType);
-        w.WriteChar ("&");
-        w. WriteString (name. array^); (* base *)
-        CNli; w.WriteLInt (pointer. size, 0); (* size *)
+        w. WriteString ("(RT0__Struct[]){&"); (* baseTypes *)
+        w. WriteString (name. array^);
+        w. WriteChar ("}");
+        CNli; w. WriteLInt (pointer. size, 0); (* size *)
         CNli; w. WriteLInt (-1, 0); (* len *)
         CNli; WriteForm ("strPointer"); (* form *)
         w. WriteString (" };");

@@ -71,7 +71,7 @@ TYPE
        @item @ofield{len} holds the length of the array, for example @samp{123}
        for an @samp{ARRAY 123 OF CHAR}.
 
-       @item @ofield{base} is the type descriptor of the array's
+       @item @samp{@ofield{baseTypes}[0]} is the type descriptor of the array's
        element type, for example @ovar{char} for @samp{ARRAY 123 OF CHAR}.
        @end itemize
 
@@ -84,10 +84,10 @@ TYPE
        @item @ofield{len} holds the number of
        open dimensions, for example @samp{1} for an @samp{ARRAY OF CHAR}.
 
-       @item @ofield{base} is the type descriptor of the array's base type, for
-       example @ovar{char} for @samp{ARRAY OF CHAR} or @samp{ARRAY OF ARRAY OF
-       CHAR}.  The base type always has a known size, that is, it is neven an
-       open array type.
+       @item @samp{@ofield{baseTypes}[0]} is the type descriptor of the array's
+       base type, for example @ovar{char} for @samp{ARRAY OF CHAR} or
+       @samp{ARRAY OF ARRAY OF CHAR}.  The base type always has a known size,
+       that is, it is neven an open array type.
        @end itemize
 
 
@@ -99,8 +99,11 @@ TYPE
        without a base type has a level of @samp{0}.  Every extension level
        increments this level by one.
 
-       @item @ofield{base} is the type descriptor of the record's base type, or
-       @code{NIL} if the record has no base type.
+       @item @ofield{baseTypes} lists the type descriptors of the record's base
+       types.  The array has a length of @samp{@ofield{len}+1}, with
+       @samp{baseTypes[len]} being equal to the type descriptor itself,
+       @samp{baseTypes[len-1]} being the descriptor of the direct base type,
+       and so on.
        @end itemize
 
 
@@ -108,14 +111,15 @@ TYPE
        @itemize @bullet
        @item @ofield{form} equals @oconst{strPointer}.
 
-       @item @ofield{base} is the base type of the pointer.
+       @item @samp{@ofield{baseTypes}[0]} is the base type of the pointer.
        @end itemize
 
        @end table  *)
 
-    base-: Struct;
-    (**Element type, pointer base type, or record base type.  *)
-
+    baseTypes-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF Struct;
+    (**Array element type, pointer base type, or list of record base types.
+       For predefined scalar types this field is @code{NIL}.  *)
+    
     size-: LONGINT;
     (**Size of the data type in bytes.  For an open array type, this field is
        @samp{-1}.  *)
