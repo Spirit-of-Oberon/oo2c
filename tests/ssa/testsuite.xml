@@ -6,7 +6,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
-  select ="&SetupTestCasesWithOut; opTypeGuard1 opTypeGuard2 opTypeGuard3 opTypeGuard4 opTypeGuard5 opTypeGuard6 opTypeGuard7 opTypeGuard8 opTypeGuard9">-->
+  select ="&SetupTestCasesWithOut; opSet1 opSet2 opSet3 opSet4 opSet5 opSet6 opSet7">-->
 
 <!--<testsuite-ext
   profile="Test Suite for Framework Testing"
@@ -843,6 +843,28 @@
       Check argument passing for which string constants must be
       converted to <code>LONGCHAR</code> strings.
     </test>
+    <test id="opSet1" type="reject" file="OpSet1.Mod">
+      Set range constructor with non-integer single argument
+    </test>
+    <test id="opSet2" type="reject" file="OpSet2.Mod">
+      Set constructor with with non-integer second argument 
+    </test>
+    <test id="opSet3" type="reject" file="OpSet3.Mod">
+      Set constructor with two non-integer arguments
+    </test>
+    <test id="opSet4" type="reject" file="OpSet4.Mod">
+      Constructor with arguments outside range MIN(SET)..MAX(SET)
+    </test>
+    <test id="opSet5" type="reject" file="OpSet5.Mod">
+      "a IN b" with a outside range MIN(SET)..MAX(SET)
+    </test>
+    <test id="opSet6" type="reject" file="OpSet6.Mod">
+      "a IN b" with a non-integer
+    </test>
+    <test id="opSet7" type="reject" file="OpSet7.Mod">
+      "a IN b" with b non-set
+    </test>
+    
   </testcases>
     
   <processor-info processor-name="TestCompile">
@@ -972,6 +994,20 @@
         msg="This must be a procedure designator"/>
     <reject-info id="opTypeGuard9" pos=" %a(a)"
         msg="This must be a procedure designator"/>
+    <reject-info id="opSet1" pos="{%TRUE"
+        msg="Expression must be of integer type"/>
+    <reject-info id="opSet2" pos="..%TRUE"
+        msg="Expression must be of integer type"/>
+    <reject-info id="opSet3" pos="{%FALSE"
+        msg="Expression must be of integer type"/>
+    <reject-info id="opSet4" pos="{%-1"
+        msg="Integer constant in the range `0 &lt;= x &lt; 32' required"/>
+    <reject-info id="opSet5" pos="%-1"
+        msg="Integer constant in the range `0 &lt;= x &lt; 32' required"/>
+    <reject-info id="opSet6" pos="%IN"
+        msg="Incompatible types for operator"/>
+    <reject-info id="opSet7" pos="%IN"
+        msg="Incompatible types for operator"/>
 
   </processor-info>
 </testsuite-ext>

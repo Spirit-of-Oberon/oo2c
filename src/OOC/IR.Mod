@@ -1,4 +1,3 @@
-(* 	$Id$	 *)
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
     Copyright (C) 2001, 2002  Michael van Acken, Stewart Greenhill
@@ -1539,6 +1538,47 @@ PROCEDURE (b: Builder) GetOne (sym: Symbol; type: Sym.Type): Const;
     RETURN b. NewConst (sym, type, Integer.New (1));
   END GetOne;
 
+PROCEDURE (b : Builder) ValidSetElement(expr : Expression; set : Sym.Type) : Expression;
+(**Check if @oparam{expr} is a valid element of set type @oparam{set}. The
+   type of @oparam{expr} must be integer. If @oparam{oparam} is constant, it
+   must be included in the range @ocode{MIN(set)..MAX(set)}. 
+
+   This procedure always returns a valid element for @oparam{set}. The
+   original expression is returned if it is valid. Otherwise, the value of
+   @ocode{MIN(set)} is returned. *)
+
+  VAR
+    val : Language.Value;
+    element, min, max : Integer.Value;
+
+  PROCEDURE MinElement() : Expression;
+  (**Return a constant for the minimal element of set @oparam{set}. *)
+  BEGIN
+    RETURN b.NewConst(expr.sym, Predef.GetType(Predef.shortint), min);
+  END MinElement;
+
+  BEGIN
+    val := Predef.GetMin(set); min := val(Integer.Value);
+    val := Predef.GetMax(set); max := val(Integer.Value);
+
+    IF TR.IsIntegerType(expr.type) THEN
+      WITH expr : Const DO
+        element := expr.value(Integer.Value);
+        IF (element.Compare(min) < 0) OR (element.Compare(max) > 0) THEN
+          b. ErrSym (invalidIntegerConst, expr. sym);
+          b. lastError. SetIntAttrib ("start", min.ToInt());
+          b. lastError. SetIntAttrib ("end", max.ToInt()+1);
+	  RETURN MinElement()
+        END
+      ELSE
+      END;
+    ELSE
+      b.ErrSym(notInteger, expr.sym);
+      RETURN MinElement()
+    END;
+    RETURN expr
+  END ValidSetElement;
+
 (* Expression Class: Operator
    ------------------------------------------------------------------------ *)
 
@@ -2164,8 +2204,8 @@ PROCEDURE (b: Builder) NewSetMember* (sym: Symbol; element, set : Expression): E
     op : SetMember;
   BEGIN
     NEW (op);
-    InitSetMember (op, sym, element, set);
-    RETURN op;
+    InitSetMember (op, sym, b.ValidSetElement(element, set.type), set);
+    RETURN op
   END NewSetMember;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitSetMember* (op: SetMember);
@@ -2216,17 +2256,24 @@ PROCEDURE InitSetRange (range: SetRange; sym: Symbol;
     range.to := to;
   END InitSetRange;
 
-PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to: Expression): Expression;
+PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; from, to: Expression; isSet : BOOLEAN): Expression;
   VAR
     range: SetRange;
+    set : Sym.Type;
   BEGIN
+    set := Predef.GetType(Predef.set);
     IF (from = NIL) & (to = NIL) THEN  (* empty set *)
-      RETURN b. NewConst (sym, Predef.GetType (Predef.set), Set.New ({}));
+      RETURN b. NewConst (sym, set, Set.New ({}));
     ELSE
+      (* only do semantic checks for SETs and not for labels *)
+      IF isSet THEN
+        from := b.ValidSetElement(from, set);
+        to := b.ValidSetElement(to, set);
+      END;
       NEW (range);
       InitSetRange (range, sym, from, to);
       RETURN range
-    END;
+    END
   END NewSetRange;
 
 PROCEDURE (v: Visitor) [ABSTRACT] VisitSetRange* (range: SetRange);

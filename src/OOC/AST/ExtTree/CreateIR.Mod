@@ -101,18 +101,18 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
       END
     END Designator;
  
-  PROCEDURE Range(expr : ExtTree.Node) : IR.Expression; 
+  PROCEDURE Range(expr : ExtTree.Node; isSet : BOOLEAN) : IR.Expression; 
   (* Check for an upto operator ".." or a normal expression. *)
   VAR e : IR.Expression;
   BEGIN
     WITH expr : ExtTree.Operator DO
       IF (expr. op. sym. id = Symbol.upto) THEN
-        RETURN b.NewSetRange(expr.op.sym, Expr(expr.left), Expr(expr.right));
+        RETURN b.NewSetRange(expr.op.sym, Expr(expr.left), Expr(expr.right), isSet);
       END;
     ELSE
     END;
     e := Expr(expr);
-    RETURN b.NewSetRange(e.sym, e, e);
+    RETURN b.NewSetRange(e.sym, e, e, isSet);
   END Range;
 
   PROCEDURE SetConstruct(sc : ExtTree.Set) : IR.Expression;
@@ -121,12 +121,12 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     result : IR.Expression;
   BEGIN
     IF (sc. elementList. len = 0) THEN
-      RETURN b. NewSetRange (sc. lBrace. sym, NIL, NIL);
+      RETURN b. NewSetRange (sc. lBrace. sym, NIL, NIL, TRUE);
     ELSE
       len := (sc.elementList.len+1) DIV 2; 
-      result := Range(sc.elementList.n[0](ExtTree.Node));
+      result := Range(sc.elementList.n[0](ExtTree.Node), TRUE);
       FOR i := 1 TO len-1 DO
-        result := b.NewSetOp(NIL, IR.setUnion, result, Range(sc.elementList.n[i*2](ExtTree.Node)));
+        result := b.NewSetOp(NIL, IR.setUnion, result, Range(sc.elementList.n[i*2](ExtTree.Node), TRUE));
       END;
       RETURN result;
     END;
@@ -295,7 +295,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         BEGIN
           NEW (setRanges, (labels. len+1) DIV 2);
           FOR i := 0 TO labels. len-1 BY 2 DO
-            setRanges[i DIV 2] := Range (labels. n[i](ExtTree.Node));
+            setRanges[i DIV 2] := Range (labels. n[i](ExtTree.Node), FALSE);
           END;
           RETURN setRanges;
         END Labels;
