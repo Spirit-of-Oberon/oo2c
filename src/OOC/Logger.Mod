@@ -6,7 +6,10 @@ IMPORT
 VAR
   cwd: File.URI;
   indentMake: LONGINT;
-  
+
+CONST
+  logMake = FALSE;
+      
 PROCEDURE WriteURI (uri: URI.URI);
   VAR
     str: ARRAY 1024 OF CHAR;
@@ -49,76 +52,88 @@ PROCEDURE IndentMake;
 
 PROCEDURE EnterMake*(rule, module: ARRAY OF CHAR);
   BEGIN
-    IndentMake;
-    Out.String("enter ");
-    Out.String(rule);
-    Out.String(" for ");
-    Out.String(module);
-    Out.Ln;
-    INC(indentMake);
+    IF logMake THEN
+      IndentMake;
+      Out.String("enter ");
+      Out.String(rule);
+      Out.String(" for ");
+      Out.String(module);
+      Out.Ln;
+      INC(indentMake);
+    END;
   END EnterMake;
 
 PROCEDURE ExitMake*(rule, module: ARRAY OF CHAR; success: BOOLEAN): BOOLEAN;
   BEGIN
-    DEC(indentMake);
-    IndentMake;
-    Out.String("leave ");
-    Out.String(rule);
-    Out.String(" for ");
-    Out.String(module);
-    IF success THEN
-      Out.String (" (success)");
-    ELSE
-      Out.String (" (failure)");
+    IF logMake THEN
+      DEC(indentMake);
+      IndentMake;
+      Out.String("leave ");
+      Out.String(rule);
+      Out.String(" for ");
+      Out.String(module);
+      IF success THEN
+        Out.String (" (success)");
+      ELSE
+        Out.String (" (failure)");
+      END;
+      Out.Ln;
     END;
-    Out.Ln;
     RETURN success;
   END ExitMake;
 
 PROCEDURE CachedMake*(rule, module: ARRAY OF CHAR; success: BOOLEAN): BOOLEAN;
   BEGIN
-    IndentMake;
-    Out.String("cached result: ");
-    Out.String(rule);
-    Out.String(" for ");
-    Out.String(module);
-    IF success THEN
-      Out.String (" (success)");
-    ELSE
-      Out.String (" (failure)");
+    IF logMake THEN
+      IndentMake;
+      Out.String("cached result: ");
+      Out.String(rule);
+      Out.String(" for ");
+      Out.String(module);
+      IF success THEN
+        Out.String (" (success)");
+      ELSE
+        Out.String (" (failure)");
+      END;
+      Out.Ln;
     END;
-    Out.Ln;
     RETURN success;
   END CachedMake;
 
 PROCEDURE ExplainMake*(s1: ARRAY OF CHAR);
   BEGIN
-    IndentMake;
-    Out.String(s1);
-    Out.Ln;
+    IF logMake THEN
+      IndentMake;
+      Out.String(s1);
+      Out.Ln;
+    END;
   END ExplainMake;
 
 PROCEDURE ExplainFileMake*(s1: ARRAY OF CHAR; uri1: URI.URI;
                            s2: ARRAY OF CHAR);
   BEGIN
-    IndentMake;
-    Out.String(s1);
-    WriteURI(uri1);
-    Out.String(s2);
-    Out.Ln;
+    IF logMake THEN
+      IndentMake;
+      Out.String(s1);
+      WriteURI(uri1);
+      Out.String(s2);
+      Out.Ln;
+    END;
   END ExplainFileMake;
 
 PROCEDURE ExplainFilesMake*(s1: ARRAY OF CHAR; uri1: URI.URI;
                             s2: ARRAY OF CHAR; uri2: URI.URI;
                             s3: ARRAY OF CHAR);
   BEGIN
-    IndentMake;
-    Out.String(s1);
-    WriteURI(uri1);
-    Out.String(s2);
-    WriteURI(uri2);
-    Out.String(s3);
-    Out.Ln;
+    IF logMake THEN
+      IndentMake;
+      Out.String(s1);
+      WriteURI(uri1);
+      Out.String(s2);
+      WriteURI(uri2);
+      Out.String(s3);
+      Out.Ln;
+    END;
   END ExplainFilesMake;
 
 BEGIN
