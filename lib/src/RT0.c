@@ -94,6 +94,7 @@ void HandleFinalize(GC_PTR ptr, GC_PTR client_data) {
 OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   void *var, *ptr;
   OOC_INT8 form = td->form;
+  int flags = td->flags;
   
   if (form == RT0__strQualType) { /* get to base type of qualified type */
     form = td->typeArgs[0]->form;
@@ -103,7 +104,6 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     int allocate;
     int prefix;
     int size = td->size;
-    int flags = td->flags;
 
     if (size == 0) size++;
     prefix = ROUND_SIZE(sizeof(RT0__Struct));
@@ -133,7 +133,11 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
   } else if (form == RT0__strArray) { /* fixed size array */
     int size = td->size;
     if (size == 0) size++;
-    var = GC_MALLOC(size);
+    if (flags & (1<<RT0__flagAtomic)) { 
+      var = GC_MALLOC_ATOMIC(size);
+    } else {
+      var = GC_MALLOC(size);
+    }
     if (var == NULL) {
       _out_of_memory(size);
     } else if (RT0__poisonHeap >= 0) {
@@ -141,6 +145,7 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
     }
     
   } else {			/* dynamic array */
+    int allocate;
     va_list ap;
     int i;
     size_t size, prefix;
@@ -164,11 +169,16 @@ OOC_PTR RT0__NewObject(RT0__Struct td, ...) {
        of any basic type */
     prefix = ROUND_SIZE(td->len*sizeof(OOC_LEN));
     
-    ptr = GC_MALLOC(prefix+size);
+    allocate = prefix + size;
+    if (flags & (1<<RT0__flagAtomic)) { 
+      ptr = GC_MALLOC_ATOMIC(allocate);
+    } else {
+      ptr = GC_MALLOC(allocate);
+    }
     if (ptr == NULL) {
-      _out_of_memory(prefix+size);
+      _out_of_memory(allocate);
     } else if (RT0__poisonHeap >= 0) {
-      memset(ptr, RT0__poisonHeap, prefix+size);
+      memset(ptr, RT0__poisonHeap, allocate);
     }
     var = (char*)ptr+prefix;
     

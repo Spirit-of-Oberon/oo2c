@@ -640,6 +640,9 @@ TYPE
     lengthExpr-: AST.Node;
     (**The part of the abstract syntax tree that defines the length of the
        array.  For an open array type, this field is @code{NIL}.  *)
+    isAtomic*: BOOLEAN;
+    (**If @code{TRUE}, then this type contains no pointers that need to be 
+       considered by the GC. *)
   END;
 
 TYPE
@@ -2649,6 +2652,7 @@ PROCEDURE InitArray* (array: Array; parent: Item; position: Position;
     array. srcCodeElementType := elementType;
     array. length := -1;
     array. lengthExpr := lengthExpr;
+    array. isAtomic := FALSE;
   END InitArray;
 
 PROCEDURE (array: Array) Store* (w: Storable.Writer) RAISES IO.Error;
@@ -2659,6 +2663,7 @@ PROCEDURE (array: Array) Store* (w: Storable.Writer) RAISES IO.Error;
     w. WriteBool (array. readOnlyExport);
     WriteType(w, array.elementType, array.srcCodeElementType);
     w. WriteNum (array. length);    
+    w. WriteBool (array. isAtomic);
   END Store;
 
 PROCEDURE (array: Array) Load* (r: Storable.Reader) RAISES IO.Error;
@@ -2670,6 +2675,7 @@ PROCEDURE (array: Array) Load* (r: Storable.Reader) RAISES IO.Error;
     ReadType(r, array.elementType, array.srcCodeElementType);
     r. ReadNum (array. length);
     array. lengthExpr := NIL;
+    r. ReadBool (array. isAtomic);
   END Load;
 
 PROCEDURE (array: Array) SetLength* (length: LONGINT);

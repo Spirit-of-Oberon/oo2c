@@ -1334,6 +1334,8 @@ RAISES IO.Error;
                 END;
               | Sym.flagReadOnly:
                 SetFlag(item.readOnlyExport, TRUE);
+              | Sym.flagAtomic:
+                SetFlag(item.isAtomic, TRUE);
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;

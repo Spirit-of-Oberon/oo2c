@@ -133,6 +133,10 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           IF ImplementsFinalize(type) THEN
             OutFlag("RT0__flagFinalize");
           END;
+        | type : Sym.Array DO
+          IF type.isAtomic THEN
+            OutFlag("RT0__flagAtomic");
+          END;
         ELSE
         END;
       END;

@@ -957,6 +957,13 @@ PROCEDURE AllocateType* (type: Sym.Type);
                          type. elementType. align);
         END;
 
+		(* If we read an isAtomic=TRUE from the symbol file, then we do not
+		   want to clobber it -- it might be set because the user marked the
+		   type with NO_TRACED_POINTERS.  *)
+
+        IF IsAtomicType(type) THEN
+          type.isAtomic := TRUE;
+        END;
       | type: Sym.Record DO
         (* initialize size and alignment, take base type into account *)
         IF (type. baseType = NIL) THEN 
