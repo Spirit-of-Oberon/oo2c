@@ -130,10 +130,10 @@ first declaration is assigned an id.  -->
 <!--
 
 Some words regarding the class stuff: Oberon-2's notion of classes is
-rather vague.  The border between a class and a record is rather
-fuzzy, and then a class may be based on a pointer type or just on a
-record type.  Additionally, there is no established notation to
-associate a class with its constructors.
+rather vague.  The border between a class and a record is fuzzy, and a
+class may be based on a pointer type or just on a record type.
+Additionally, there is no established notation to associate a class
+with its constructors.
 
 All in all, this situation imposes some problems when one tries to
 extract documentation for a class from source code in an automated
@@ -167,7 +167,7 @@ must be defined in the same module as the procedure.
 5. All normal procedures
   a) whose name is "Init", or whose name begins with "Init", 
   b) whose first argument is of a class type from the same module, and
-  c) and that are not function prcedures,
+  c) and that are not function procedures,
 are assumed to be auxiliary functions or constructors.  They are
 considered to be part of the class definition.
 
