@@ -43,7 +43,7 @@ MODULE ADT:Object:Storage;
    embedded objects, but it does contain @code{NIL} pointers.  *)
 
 IMPORT
-  SYSTEM, RT0, Strings, Channel, BinaryRider, Msg, Object,
+  SYSTEM, RT0, Strings, Channel, BinaryRider, Msg, 
   ADT:Storable, Dictionary := ADT:Dictionary:AddressKey:IntValue;
 
 CONST
@@ -374,7 +374,7 @@ PROCEDURE (w: Writer) WriteObject* (obj: Storable.Object);
           COPY (type. name^, w. charBuffer);
           w. WriteString (w. charBuffer);
         END;
-        obj(Storable.Object). Store (w)
+        obj. Store (w)
       END
     END
   END WriteObject;
