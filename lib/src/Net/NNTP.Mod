@@ -108,17 +108,20 @@ TYPE
     
     async-: BOOLEAN;
     (**If @code{FALSE}, connects and requests are processed synchronously.  A
-       method implementing a request returns only if the status line of the
-       response has been received.  Note: The interface for requests that
-       include a text part is more complicated than this.
+       method issuing a request returns only if the status line of the response
+       has been received.  Note: The interface for requests that include a text
+       part is more complicated than this.
 
        In asynchronous mode, requests are queued for processing and the
-       initiating method returns immediately.  *)
+       initiating method returns immediately after sending the command line to
+       the server.  To get the request's response, the application must call
+       @oproc{Client.RetrieveResponse}.  *)
     blocking-: BOOLEAN;
-    (**If @code{FALSE}, then the socket is switched to non-blocking mode.
-       If an operation reads data from the socket and no more input is
-       available, or if an operation writes to the socket and there is no
-       more room in the kernel buffers, then it returns immediately.  *)
+    (**If @code{FALSE}, then the socket is switched to non-blocking mode.  If a
+       @oproc{Client.RetrieveResponse} or @oproc{Client.RetrieveText} operation
+       discovers that no more input is available, or if an operation writes to
+       the socket and there is no more room in the kernel buffers, then it
+       returns immediately.  *)
 
     welcome-: Object.String8;
     (**The text received from the server after connecting.  *)
@@ -141,7 +144,21 @@ TYPE
     sPos: LONGINT;    (* position of first unsend char in `waiting' *)
     sLen: LONGINT;    (* number of valid bytes in `s'; 0<=sLen<=LEN(s) *)
     s, r: ARRAY bufferCapacity OF CHAR;
-    waiting, sent: Msg;
+    waiting: Msg;
+    (* List of messages or text fragments that have not been transferred into
+       the output buffer @ofield{s} yet, and, by implication, have not been
+       sent to the server.  @oproc{Client.SendRequest} adds messages to this
+       queue, and @oproc{FillSBuffer} removes them when all their data
+       has been copied to @ofield{s}.  *)
+    sent: Msg;
+    (* List of messages that have been moved to the output buffer @ofield{s},
+       for which reply's status line has not been read yet.
+       @oproc{FillSBuffer} adds a message to this list once all its data has
+       been transferred to @ofield{s}, and @oproc{Client.RetrieveResponse}
+       removes a message if its complete status line (but not the message body)
+       has been read and parsed.  This field is initialized with a list
+       containing a pseudo request whose response is the server's welcome
+       message.  *)
   END;
 
 TYPE
@@ -204,11 +221,6 @@ PROCEDURE (cl: Client) LogRequest*(cmd: Object.String8);
 PROCEDURE (cl: Client) LogResponse*(statusLine: Object.String8);
   END LogResponse;
 
-PROCEDURE RaiseProtocolError(msg: STRING) RAISES IO.ProtocolError;
-  BEGIN
-    RAISE(NEW(IO.ProtocolError, msg));
-  END RaiseProtocolError;
-
 PROCEDURE (msg: Msg) INIT*();
   BEGIN
     msg.nextMsg := NIL;
@@ -233,7 +245,10 @@ PROCEDURE (req: Request) INIT*(cmd: Object.String8; long: BOOLEAN);
     req.response := NIL;
   END INIT;
 
-PROCEDURE (req: Request) ParseStatus(resp: Response) RAISES IO.ProtocolError;
+PROCEDURE (req: Request) ParseStatus(resp: Response)
+RAISES IO.ProtocolError;
+(**Parse the status line of the response and incorporate its data into the
+   request handle @oparam{req}.  *)
   BEGIN
   END ParseStatus;
 
@@ -287,63 +302,72 @@ PROCEDURE Append(VAR list: Msg; msg: Msg);
     END;
   END Append;
 
-PROCEDURE SendMsg(cl: Client) RAISES IO.Error;
+PROCEDURE FillSBuffer(cl: Client);
   VAR
-    pos, start, copy, dest, left, i: LONGINT;
     msg, ptr: Msg;
     chars: Object.CharsLatin1;
+    pos, copy, len, left: LONGINT;
   BEGIN
-    pos := cl.sPos; dest := cl.sLen;
-    WHILE (cl.waiting # NIL) DO
-      LOOP
-        msg := cl.waiting;
-        WITH msg: Request DO
-          chars := msg.command.CharsLatin1();
-          copy := msg.command.length-pos;
-          left := LEN(cl.s)-dest;
-          IF (copy+2 > left) THEN
-            (* command line doesn't fit into buffer: copy as much as possible
-               and leave loop *)
-            IF (left < copy) THEN
-              copy := left;
-            END;
-            SYS.MOVE(SYS.ADR(chars^)+pos, SYS.ADR(cl.s)+dest, copy);
-            INC(pos, copy);
-            INC(dest, copy);
-            EXIT;
-          ELSE  (* rest of command plus CRLF fits into buffer *)
-            SYS.MOVE(SYS.ADR(chars^)+pos, SYS.ADR(cl.s)+dest, copy);
-            INC(dest, copy);
-            cl.s[dest] := Ascii.cr;
-            cl.s[dest+1] := Ascii.lf;
-            INC(dest, 2);
-
-            cl.LogRequest(msg.command);
-            ptr := cl.waiting;
-            cl.waiting := cl.waiting.nextMsg;
-            Append(cl.sent, ptr);
-            pos := 0;
-            IF (cl.waiting = NIL) THEN
-              EXIT;
-            END;
+    pos := cl.sPos; len := cl.sLen;
+    LOOP
+      msg := cl.waiting;
+      WITH msg: Request DO
+        chars := msg.command.CharsLatin1();
+        copy := msg.command.length-pos;
+        left := LEN(cl.s)-len;
+        IF (copy+2 > left) THEN
+          (* command line doesn't fit into buffer: copy as much as possible
+             and leave loop *)
+          IF (left < copy) THEN
+            copy := left;
           END;
-        ELSE
-          ASSERT(FALSE);
+          SYS.MOVE(SYS.ADR(chars^)+pos, SYS.ADR(cl.s)+len, copy);
+          INC(pos, copy);
+          INC(len, copy);
+          EXIT;
+        ELSE  (* rest of command plus CRLF fits into buffer *)
+          SYS.MOVE(SYS.ADR(chars^)+pos, SYS.ADR(cl.s)+len, copy);
+          INC(len, copy);
+          cl.s[len] := Ascii.cr;
+          cl.s[len+1] := Ascii.lf;
+          INC(len, 2);
+          
+          cl.LogRequest(msg.command);
+          ptr := cl.waiting;
+          cl.waiting := cl.waiting.nextMsg;
+          Append(cl.sent, ptr);
+          pos := 0;
+          IF (cl.waiting = NIL) THEN
+            EXIT;
+          END;
         END;
+      ELSE
+        ASSERT(FALSE);
       END;
-
-      start := 0;
-      WHILE (start # dest) DO
-        i := cl.channel.Write(cl.s, start, dest-start);
-        ASSERT(i >= 0);
-        INC(start, i);
-      END;
-      dest := 0;
     END;
-    cl.sPos := pos; cl.sLen := dest;
+    cl.sPos := pos; cl.sLen := len;
+  END FillSBuffer;
+
+PROCEDURE SendMsg(cl: Client)
+RAISES IO.Error;
+  VAR
+    start, len: LONGINT;
+  BEGIN
+    ASSERT(cl.blocking);
+    WHILE (cl.waiting # NIL) DO
+      FillSBuffer(cl);
+      
+      len := cl.sLen;
+      start := 0;
+      WHILE (start # len) DO
+        INC(start, cl.channel.Write(cl.s, start, len-start));
+      END;
+      cl.sLen := 0;
+    END;
   END SendMsg;
 
-PROCEDURE (cl: Client) SendRequest(req: Request) RAISES IO.Error;
+PROCEDURE (cl: Client) SendRequest(req: Request)
+RAISES IO.Error;
   BEGIN
     Append(cl.waiting, req);
     SendMsg(cl);
@@ -378,12 +402,13 @@ RAISES IO.ProtocolError;
       resp := NewResponse(cl.r, start, end, status, long);
       RETURN resp;
     ELSE
-      RaiseProtocolError("No status code: "+
-                         Object.NewLatin1Region(cl.r, start, end));
+      RAISE(NEW(IO.ProtocolError, "No status code: "+
+                Object.NewLatin1Region(cl.r, start, end)));
     END;
   END ExtractStatus;
 
-PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error;
+PROCEDURE GetMsg(cl: Client): Msg
+RAISES IO.Error;
 (**Retrieves the next response or chunk of text from the socket.  Undos NNTP
    encoding (CRLF -> LF, ".." --> "." at beginning of line).  Beyond a basic
    check that the status line of a response begins with a 3 digit code, no
@@ -426,7 +451,7 @@ PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error;
             IF (cl.rText.length+(end-line)+1 > LEN(cl.rText.data))  THEN
               (* line does not fit into current text block *)
               IF (end-line > maxLineLength) THEN
-                RaiseProtocolError("Line too long");
+                RAISE(NEW(IO.ProtocolError, "Line too long"));
               ELSE
                 cl.rText.last := FALSE;
                 msg := cl.rText;
@@ -494,7 +519,8 @@ RAISES IO.Error, ErrorResponse;
       resp := msg(Response);
       
       IF (cl.sent = NIL) THEN
-        RaiseProtocolError("Response without prior request: "+resp.statusLine);
+        RAISE(NEW(IO.ProtocolError,
+                  "Response without prior request: "+resp.statusLine));
       ELSE
         ASSERT(req = cl.sent);
         req.response := resp;
@@ -543,6 +569,11 @@ RAISES IO.Error;
 
 PROCEDURE (cl: Client) Connect*()
 RAISES IO.Error, ErrorResponse;
+(**Initiate a connection to the NNTP server.  In synchronous mode, this method
+   retrieves the server's welcome message before returning.  In asynchronous
+   mode, it returns immediately and it is the task of the application to call
+   @oproc{Client.RetrieveResponse} with @ofield{cl.connectRequest} as argument
+   to read the welcome message.  *)
   VAR
     resp: Response;
     connect: Connect;
@@ -561,7 +592,8 @@ RAISES IO.Error, ErrorResponse;
     END;
   END Connect;
 
-PROCEDURE (cl: Client) Close*() RAISES IO.Error;
+PROCEDURE (cl: Client) Close*()
+RAISES IO.Error;
   BEGIN
     cl.channel.Close();
     cl.channel := NIL;
@@ -619,7 +651,7 @@ RAISES IO.ProtocolError;
     
     IntStr.StrToInt(str, i, res);
     IF (res # IntStr.strAllRight) THEN
-      RaiseProtocolError("Invalid number");
+      RAISE(NEW(IO.ProtocolError, "Invalid number"));
     ELSE
       SkipWhitespace(params, pos);
       RETURN i;
@@ -642,7 +674,8 @@ PROCEDURE GetString(params: Object.CharsLatin1; VAR pos: LONGINT): Object.String
 (* Commands
    ------------------------------------------------------------------------ *)
 
-PROCEDURE (req: Group) ParseStatus(resp: Response) RAISES IO.ProtocolError;
+PROCEDURE (req: Group) ParseStatus(resp: Response)
+RAISES IO.ProtocolError;
   VAR
     params: Object.CharsLatin1;
     pos: LONGINT;
@@ -688,7 +721,7 @@ RAISES IO.ProtocolError;
       INC(pos); INC(i);
     END;
     IF (i = LEN(str)) THEN
-      RaiseProtocolError("Message id too long");
+      RAISE(NEW(IO.ProtocolError, "Message id too long"));
     ELSE
       str[i] := 0X;
       IntStr.StrToInt(str, msgId, res);
@@ -707,7 +740,7 @@ RAISES IO.ProtocolError;
           INC(pos);
         END;
       ELSE
-        RaiseProtocolError("Invalid message id");
+        RAISE(NEW(IO.ProtocolError, "Invalid message id"));
       END;
     END;
   END ParseLine;
