@@ -34,15 +34,15 @@ TYPE
   ParamDesc = RECORD
     next : Param;			(* next parameter in linear list *)
     id : INTEGER;			(* parameter identifier *)
-    name : Object.String8;		(* parameter name *)
+    name : STRING;			(* parameter name *)
   END;
 
   Macro* = POINTER TO MacroDesc;
   MacroDesc* = RECORD (Object.ObjectDesc)
-    module- : Module.Module;		(* module for macro definition *)
-    name- : Object.String8;		(* name of macro *)
+    module- : Module.Module;	(* module for macro definition *)
+    name- : STRING;				(* name of macro *)
     nParams : INTEGER;			(* number of formal parameters *)
-    params : Param;			(* list of parameter names *)
+    params : Param;				(* list of parameter names *)
     body : LinkedList.LinkedList;	(* linked list of tokens *)
     function : BOOLEAN;			(* macro requires parameters *)
     selfdefine : BOOLEAN;		(* symbol defined equivalent to self *)
@@ -91,7 +91,7 @@ BEGIN
   Err.Ln;
 END PrintMacro;
 
-PROCEDURE (p : Process) FindMacro(name : Object.String8; VAR result : Macro) : BOOLEAN;
+PROCEDURE (p : Process) FindMacro(name : STRING; VAR result : Macro) : BOOLEAN;
 VAR o : Object.Object;
 BEGIN
   IF p.macro.HasKey(name) THEN
@@ -103,7 +103,7 @@ BEGIN
   END;
 END FindMacro;
 
-PROCEDURE (p : Process) IsDefined*(name : Object.String8) : BOOLEAN;
+PROCEDURE (p : Process) IsDefined*(name : STRING) : BOOLEAN;
 BEGIN
   RETURN p.macro.HasKey(name);
 END IsDefined;
@@ -260,15 +260,13 @@ VAR
     PROCEDURE Include;
     VAR 
       search : BOOLEAN;
-      name : Object.String8;
+      name : STRING;
       buffer : StringBuffer.StringBuffer;
-      str: Object.String;
-      chars: Object.CharsLatin1;
     BEGIN
       GetSymP;
       IF token.sym = Scanner.string THEN
-        str := token.name.Substring(1, token.name.length-2);
-        name := str(Object.String8); search := FALSE;
+        name := token.name.Substring(1, token.name.length-1);
+        search := FALSE;
       ELSIF token.sym = Scanner.lt THEN
         buffer := StringBuffer.New("");
         WHILE p.scanner.ch # ">" DO
@@ -277,15 +275,14 @@ VAR
         END;
         GetSymP;
         ASSERT(token.sym = Scanner.gt);
-        str := buffer.ToString();
-        name := str(Object.String8); search := TRUE;
+        name := buffer.ToString();
+        search := TRUE;
       ELSE
         p.err.Error("Invalid include specification"); RETURN;
       END;
       p.scanner.GetToken(token, {Scanner.optReturnEndLine,Scanner.optDontReadAhead});
       IF token.sym = Scanner.endLine THEN
-        chars := name.CharsLatin1();
-        p.scanner.in.Include(chars^, search);
+        p.scanner.in.Include(name, search);
         (* Re-read endLine symbol *)
         GetSymP; ASSERT(token.sym = Scanner.endLine);
         (* Now get next symbol from input *)
@@ -300,7 +297,7 @@ VAR
 
     PROCEDURE Define;
     VAR
-      name : Object.String8;
+      name : STRING;
       object : Object.Object;
       m : Macro;
       t : Scanner.Token;
@@ -326,7 +323,7 @@ VAR
         GetSymP;
       END AddParameter;
     
-      PROCEDURE FindParam(name : Object.String8; VAR result : Param) : BOOLEAN;
+      PROCEDURE FindParam(name : STRING; VAR result : Param) : BOOLEAN;
       VAR param : Param;
       BEGIN
         param := m.params;

@@ -3,7 +3,7 @@ MODULE TestH2O;
 IMPORT 
   StdChannels, Out,
   H2O:Scanner, E := H2O:Error, H2O:Source, H2O:Process, H2O:Parser,
-  OOC:Config, Config:Section:Arguments,
+  OOC:Config, Config:Section:Arguments, Object,
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   OOC:Error;
 
@@ -14,8 +14,8 @@ VAR
   token : Scanner.Token;
 
   source : Source.Input;		(* input source *)
-  scanner : Scanner.Scanner;		(* scanner *)
-  process : Process.Process;		(* preprocessor *)
+  scanner : Scanner.Scanner;	(* scanner *)
+  process : Process.Process;	(* preprocessor *)
   parser : Parser.Parser;		(* language parser *)
   error : E.Error;
 
@@ -59,7 +59,7 @@ BEGIN
     cfgErrList. Write (StdChannels.stderr);
     HALT (1)
   ELSIF (Config.arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: H2OTestCompile {-r <base-dir>} <file>"); Out.Ln;
+    Out.String ("Usage: TestH2O {-r <base-dir>} <file>"); Out.Ln;
     HALT (1)
   ELSE
     processOptions := {};
@@ -82,7 +82,9 @@ BEGIN
 *)
     arg := Config.arguments. Get(0);
 
-    source := Source.New(); source.Include(arg^, FALSE);
+    source := Source.New(); 
+    source.AppendPath(".");
+	source.Include(Object.NewLatin1(arg^), FALSE);
     error := E.New(source);
     scanner := Scanner.New(source, error);
 

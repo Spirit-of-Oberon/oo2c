@@ -2,7 +2,7 @@ MODULE H2O:Source [OOC_EXTENSIONS];
 
 IMPORT
   H2O:Module,
-  Object, Err, Strings,
+  Object, Err, ADT:ArrayList,
   OOC:Config, OOC:Repository, URI, IO, IO:FileChannel, Exception;
 
 CONST
@@ -16,7 +16,7 @@ CONST
 TYPE
   Source* = POINTER TO SourceDesc;
   SourceDesc = RECORD
-    name : Object.String8;
+    name : STRING;
     pos, line, col : LONGINT;
 	channel : IO.ByteChannel;
     next : Source;
@@ -28,7 +28,13 @@ TYPE
     module- : Module.Module;
     lines, files : LONGINT;
     src : Source;
+    path : ArrayList.ArrayList;
   END;
+
+PROCEDURE (i : Input) AppendPath* (path : STRING);
+BEGIN
+  i.path.Append(path);
+END AppendPath;
 
 PROCEDURE (i : Input) ShowContext*;
 VAR s : Source;
@@ -104,33 +110,43 @@ BEGIN
   END;
 END ReadChar;
 
-PROCEDURE (i : Input) Include* (fileName : ARRAY OF CHAR; search : BOOLEAN);
+PROCEDURE (i : Input) Search(fileName : STRING; VAR path : STRING; VAR channel : IO.ByteChannel) : BOOLEAN;
+VAR 
+  pos : LONGINT;
+  obj : Object.Object;
+BEGIN
+  FOR pos := 0 TO i.path.Size() - 1 DO
+    obj := i.path.Get(pos);
+    path := obj(STRING) + "/" + fileName;
+    TRY
+      channel := FileChannel.Open(path(Object.String8), {FileChannel.read});
+      RETURN TRUE;
+    CATCH IO.Error:
+    END;
+  END;
+  RETURN FALSE;
+END Search;
+
+PROCEDURE (i : Input) Include* (fileName : STRING; search : BOOLEAN);
 VAR
-  realFileName : ARRAY 256 OF CHAR;
-  moduleName : Object.String8;
+  realFileName : STRING;
+  moduleName : STRING;
   module : Module.Module;
   s : Source;
-  m : Repository.Module;
-  uri : URI.HierarchicalURI;
   channel : IO.ByteChannel;
-  e : IO.Error;
+  chars : Object.CharsLatin1;
 BEGIN
   TRY
     IF search THEN
-      m := Config.repositories. GetModule (fileName);
-      IF (m = NIL) THEN
+      IF ~i.Search(fileName, realFileName, channel) THEN
         Err.String ("Error: Cannot locate module ");
-        Err.String (fileName);
+        Err.Object (fileName);
         Err.Ln;
         HALT (1)
-      ELSE
-        uri := m.GetURI(Repository.modHeaderFileC, FALSE);
-        uri.GetString(realFileName);
-        channel := uri.GetChannel(URI.channelOld);
       END;    
     ELSE
-      Strings.Assign(fileName, realFileName);
-      channel := FileChannel.Open(Object.NewLatin1(fileName), {FileChannel.read});
+      realFileName := fileName;
+      channel := FileChannel.Open(fileName(Object.String8), {FileChannel.read});
     END;
   CATCH IO.Error:
 	i.Exception(Exception.Current());
@@ -142,7 +158,7 @@ BEGIN
   s.line := 0;
   s.col := 0;
   s.next := i.src;
-  s.name := Object.NewLatin1(realFileName);
+  s.name := realFileName;
   i.src := s;
   Err.String("<Processing "); Err.Object(s.name); Err.Char(">"); Err.Ln;
 
@@ -153,7 +169,7 @@ BEGIN
     module := Module.NewModule(moduleName);
   END;
   Err.String("MODULE "); Err.Object(moduleName); 
-  Err.String(" for "); Err.String(realFileName);
+  Err.String(" for "); Err.Object(realFileName);
   Err.Ln;
   i.module := module;
   s.module := module;
@@ -173,6 +189,7 @@ BEGIN
   i.src := NIL;
   i.lines := 0;
   i.files := 0;
+  i.path := ArrayList.New(10);
   RETURN i;
 END New;
 

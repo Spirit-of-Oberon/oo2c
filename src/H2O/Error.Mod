@@ -10,11 +10,10 @@ TYPE
     in : Source.Input;
   END;
 
-PROCEDURE Format(format : Object.String8; p1, p2, p3 : Object.Object) : Object.String8;
+PROCEDURE Format(format : STRING; p1, p2, p3 : Object.Object) : STRING;
 VAR
   b : StringBuffer.StringBuffer;
   ch : CHAR; i : LONGINT;
-  str: Object.String;
 BEGIN
   b := StringBuffer.New("");
   i := 0;
@@ -33,11 +32,10 @@ BEGIN
     END;
     INC(i);
   END;
-  str := b.ToString();
-  RETURN str(Object.String8);
+  RETURN b.ToString();
 END Format;
 
-PROCEDURE (e : Error) MsgString* (msg : Object.String8; error : BOOLEAN);
+PROCEDURE (e : Error) MsgString* (msg : STRING; error : BOOLEAN);
 BEGIN
   IF error THEN
     Err.String("Error: "); 
@@ -51,19 +49,19 @@ BEGIN
   IF error THEN HALT(0) END;
 END MsgString;
 
-PROCEDURE (e : Error) Error*(msg : ARRAY OF CHAR);
+PROCEDURE (e : Error) Error*(msg : STRING);
 BEGIN
-  e.MsgString(Object.NewLatin1(msg), TRUE);
+  e.MsgString(msg, TRUE);
 END Error;
 
-PROCEDURE (e : Error) ErrorParam* (msg : ARRAY OF CHAR; p1, p2, p3 : Object.Object);
+PROCEDURE (e : Error) ErrorParam* (msg : STRING ; p1, p2, p3 : Object.Object);
 BEGIN
-  e.MsgString(Format(Object.NewLatin1(msg), p1, p2, p3), TRUE);
+  e.MsgString(Format(msg, p1, p2, p3), TRUE);
 END ErrorParam;
 
-PROCEDURE (e : Error) MsgParam* (msg : ARRAY OF CHAR; p1, p2, p3 : Object.Object; error : BOOLEAN);
+PROCEDURE (e : Error) MsgParam* (msg : STRING; p1, p2, p3 : Object.Object; error : BOOLEAN);
 BEGIN
-  e.MsgString(Format(Object.NewLatin1(msg), p1, p2, p3), error);
+  e.MsgString(Format(msg, p1, p2, p3), error);
 END MsgParam;
 
 PROCEDURE (e : Error) UnexpectedCharacter* (ch : CHAR);

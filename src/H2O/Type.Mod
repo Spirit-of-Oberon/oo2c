@@ -42,13 +42,13 @@ CONST
     size* : LONGINT;
     base* : Type;
     link* : Object;
-    name* : Obj.String8;
+    name* : STRING;
     qualifiers* : SET;
     module* : Module.Module;
   END;
 
   ObjectDesc* = RECORD 
-    name* : Obj.String8;
+    name* : STRING;
     addr* : LONGINT;
     type* : Type;
     qualifiers* : SET;
@@ -118,7 +118,7 @@ BEGIN
   Visit(t);
 END Depend;
 
-PROCEDURE (t : Type) ToString* () : Obj.String8;
+PROCEDURE (t : Type) ToString* () : STRING;
 VAR
   b : StringBuffer.StringBuffer;
   o : Object;
@@ -164,11 +164,10 @@ BEGIN
   ELSE
     IF t.name # NIL THEN b.Append(t.name) ELSE b.Append("?TYPE?") END;
   END;
-  str := b.ToString();
-  RETURN str(Obj.String8);
+  RETURN b.ToString();
 END ToString;
 
-PROCEDURE FindObject* (s : Object; name : Obj.String8; VAR result : Object) : BOOLEAN;
+PROCEDURE FindObject* (s : Object; name : STRING; VAR result : Object) : BOOLEAN;
 BEGIN
   WHILE s # NIL DO
     IF name.Equals(s.name) THEN
@@ -193,7 +192,7 @@ BEGIN
   END;
 END AppendObject;
 
-PROCEDURE NewObject* (name : Obj.String8; addr : LONGINT; type : Type) : Object;
+PROCEDURE NewObject* (name : STRING; addr : LONGINT; type : Type) : Object;
 VAR o : Object;
 BEGIN
   NEW(o);
@@ -205,7 +204,7 @@ BEGIN
   RETURN o;
 END NewObject;
 
-PROCEDURE Bind* (VAR s : Object; name : Obj.String8; addr : LONGINT; type : Type);
+PROCEDURE Bind* (VAR s : Object; name : STRING; addr : LONGINT; type : Type);
 BEGIN
   AppendObject(s, NewObject(name, addr, type));
 END Bind;

@@ -7,7 +7,7 @@ TYPE
   Module* = POINTER TO ModuleDesc;
   ModuleDesc* = RECORD (Object.ObjectDesc)
     imports- : ArrayList.ArrayList;
-    name- : Object.String8;
+    name- : STRING;
     next- : Module;
   END;
 
@@ -30,7 +30,7 @@ BEGIN
   END;
 END AddImports;
 
-PROCEDURE ModuleName* (fileName : ARRAY OF CHAR) : Object.String8;
+PROCEDURE ModuleName* (fileName : STRING) : STRING;
 (* Extract module name from file name. This is the portion of the file name
 between the last directory separator, and the first extension. Eg:
   "test.h"  -> "test"
@@ -43,7 +43,7 @@ VAR
 BEGIN
   pos := 0; slash := 0; dot := -1;
   LOOP
-    ch := fileName[pos];
+    ch := SHORT(SHORT(fileName.CharAt(pos)));
     CASE ch OF
     | 0X:   EXIT;
     | '/':  slash := pos+1; dot := -1;
@@ -55,10 +55,10 @@ BEGIN
   IF dot < 0 THEN 
     dot := pos			(* no dot between slash and end of string *)
   END;
-  RETURN Object.NewLatin1Region(fileName, slash, dot);
+  RETURN fileName.Substring(slash, dot);
 END ModuleName;
 
-PROCEDURE FindModule* (name : Object.String8) : Module;
+PROCEDURE FindModule* (name : STRING) : Module;
 VAR m : Module;
 BEGIN
   m := modules;
@@ -71,7 +71,7 @@ BEGIN
   RETURN NIL;
 END FindModule;
 
-PROCEDURE NewModule* (name : Object.String8) : Module;
+PROCEDURE NewModule* (name : STRING) : Module;
 VAR m : Module;
 BEGIN
   NEW(m);

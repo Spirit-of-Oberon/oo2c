@@ -68,7 +68,7 @@ BEGIN
   IF val THEN RETURN 1 ELSE RETURN 0 END
 END BoolInt;
 
-PROCEDURE FindType(name : Object.String8) : T.Type;
+PROCEDURE FindType(name : STRING) : T.Type;
 VAR obj : T.Object;
 BEGIN
   IF T.FindObject(types, name, obj) THEN
@@ -78,7 +78,7 @@ BEGIN
   END;
 END FindType;
 
-PROCEDURE ShowDepend(name : Object.String8; depend : ArrayList.ArrayList);
+PROCEDURE ShowDepend(name : STRING; depend : ArrayList.ArrayList);
 VAR b : StringBuffer.StringBuffer; i : LONGINT;
 BEGIN
   b := StringBuffer.New("");
@@ -92,12 +92,12 @@ BEGIN
   Out.Object(b); Out.Ln;
 END ShowDepend;
 
-PROCEDURE Install* (VAR scope : T.Object; tag [NO_COPY] : ARRAY OF CHAR; name : Object.String8; new : T.Type);
+PROCEDURE Install* (VAR scope : T.Object; tag : STRING; name : STRING; new : T.Type);
 VAR 
   obj : T.Object;
 BEGIN
   IF T.FindObject(scope, name, obj) THEN
-    err.ErrorParam("$0 `$1' already defined as $2", Object.NewLatin1(tag), name, obj.type);
+    err.ErrorParam("$0 `$1' already defined as $2", tag, name, obj.type);
   ELSE
     new.Depend(depend);
     IF depend.size > 0 THEN ShowDepend(name, depend) END;
@@ -106,13 +106,13 @@ BEGIN
   END;
 END Install;
 
-PROCEDURE InstallType(name : Object.String8; new : T.Type);
+PROCEDURE InstallType(name : STRING; new : T.Type);
 BEGIN
   Install(types, "Type", name, new);
   new.module := process.in.module;
 END InstallType;
 
-PROCEDURE NewNamedType* (class : SHORTINT; name : Object.String8) : T.Type;
+PROCEDURE NewNamedType* (class : SHORTINT; name : STRING) : T.Type;
 VAR 
   new : T.Type;
 BEGIN
@@ -157,7 +157,7 @@ BEGIN
   END;
 END StartsTypeSpecifier;
 
-PROCEDURE ^Declarator(VAR name : Object.String8; base : T.Type) : T.Type;
+PROCEDURE ^Declarator(VAR name : STRING; base : T.Type) : T.Type;
 PROCEDURE ^EvalExpr (VAR result : LONGINT);
 
 PROCEDURE StorageClass (VAR class : INTEGER);
@@ -201,11 +201,11 @@ VAR
      enum ::= "enum" [ ident ] [ "{" Element { "," Element } "}" ].
   *)
   VAR 
-    tag : Object.String8; 
+    tag : STRING;
     t : T.Type; id : LONGINT;
 
     PROCEDURE Element;
-    VAR name : Object.String8;
+    VAR name : STRING;
     BEGIN
       name := token.name;
       Expect(Scanner.ident);
@@ -255,13 +255,13 @@ VAR
   PROCEDURE StructDecl(class : SHORTINT) : T.Type;
   VAR 
     t : T.Type;
-    tag : Object.String8;
+    tag : STRING;
     id : LONGINT;
 
     PROCEDURE FieldList(t : T.Type);
     VAR 
       t1, t2 : T.Type; 
-      name : Object.String8;
+      name : STRING;
       width : LONGINT;
     BEGIN
       WHILE StartsTypeSpecifier() DO
@@ -388,7 +388,7 @@ BEGIN
   RETURN t;
 END TypeSpecifier;
 
-PROCEDURE Declarator(VAR name : Object.String8; base : T.Type) : T.Type;
+PROCEDURE Declarator(VAR name : STRING; base : T.Type) : T.Type;
 VAR
   t : T.Type;
 
@@ -401,7 +401,7 @@ VAR
     PROCEDURE FuncDecl (func : T.Type);
     VAR
       t : T.Type; void : BOOLEAN; id : LONGINT;
-      name : Object.String8;
+      name : STRING;
   
       PROCEDURE CheckEnd;
       BEGIN
@@ -567,7 +567,7 @@ CONST
 
            PROCEDURE UnaryExpr (VAR result : LONGINT);
            VAR 
-             t : T.Type; name : Object.String8;
+             t : T.Type; name : STRING;
              op : INTEGER; 
              result2 : LONGINT; 
              needClose : BOOLEAN;
@@ -851,11 +851,11 @@ END SameTypes;
 
 PROCEDURE Declaration;
 VAR 
-  name : Object.String8;
+  name : STRING;
   class : INTEGER;
   spec, type, t : T.Type;
 
-  PROCEDURE ShowBinding(name : Object.String8; type : T.Type);
+  PROCEDURE ShowBinding(name : STRING; type : T.Type);
   VAR
      b : StringBuffer.StringBuffer;
   BEGIN

@@ -111,7 +111,7 @@ CONST
 TYPE
   Token* = POINTER TO TokenDesc;
   TokenDesc* = RECORD (Object.ObjectDesc)
-    name- : Object.String8;
+    name- : STRING;
     sym- : INTEGER;
     len- : INTEGER;
     base- : INTEGER;
@@ -122,7 +122,7 @@ TYPE
   KeyWord* = POINTER TO KeyWordDesc;
   KeyWordDesc* = RECORD
     next : KeyWord;
-    name : Object.String8;
+    name : STRING;
     value : INTEGER;
   END;
 
@@ -164,11 +164,11 @@ BEGIN
   END;
 END CheckKeyWord;
 
-PROCEDURE AddKeyWord* (VAR keywords : KeyWord; a : ARRAY OF CHAR; value : INTEGER);
+PROCEDURE AddKeyWord* (VAR keywords : KeyWord; a : STRING; value : INTEGER);
 VAR k : KeyWord;
 BEGIN
   NEW(k);
-  k.name := Object.NewLatin1(a);
+  k.name := a;
   k.value := value;
   k.next := keywords;
   keywords := k;
@@ -190,11 +190,8 @@ VAR
   END StartToken;
 
   PROCEDURE EndToken;
-    VAR
-      str: Object.String;
   BEGIN
-    str := s.buffer.ToString();
-    token.name := str(Object.String8);
+    token.name := s.buffer.ToString();
   END EndToken;
 
   PROCEDURE NextChar;
@@ -465,9 +462,8 @@ BEGIN
   RETURN new;
 END Copy;
 
-PROCEDURE (t : Token) ToString* () : Object.String8;
+PROCEDURE (t : Token) ToString* () : STRING;
 VAR b : StringBuffer.StringBuffer;
-  str: Object.String;
 BEGIN
   b := StringBuffer.New("TOKEN(");
   b.AppendInt(t.sym);
@@ -481,8 +477,7 @@ BEGIN
     b.AppendInt(t.value);
   END;
   b.Append(")");
-  str := b.ToString();
-  RETURN str(Object.String8);
+  RETURN b.ToString();
 END ToString;
 
 PROCEDURE (t : Token) Write* (wr : TextRider.Writer);
