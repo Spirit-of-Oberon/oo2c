@@ -70,6 +70,7 @@ IMPORT
   StringSearch:SubstringBF,
   StringSearch:SubstringBM,
   StringSearch:RegexpParser,
-  StringSearch:RegexpDFA;
+  StringSearch:RegexpDFA,
+  StringSearch:NoMatch;
 
 END libadt.
