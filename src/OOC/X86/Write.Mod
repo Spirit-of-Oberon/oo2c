@@ -77,13 +77,12 @@ PROCEDURE AddToIncoming(block: Block; arc: Arc);
     block.incomingList := arc;
   END AddToIncoming;
 
-PROCEDURE (block: Block) SetArc(VAR arc: Arc; to: Block;
-                                type: S.Type; opcode: S.Opcode);
+PROCEDURE (block: Block) SetArc(VAR arc: Arc; to: Block; opcode: S.Opcode);
   BEGIN
     ASSERT(arc = NIL);
     NEW(arc);
     arc.from := block;
-    arc.type := type;
+    arc.type := -1;
     arc.opcode := opcode;
     AddToIncoming(to, arc);
   END SetArc;
@@ -713,15 +712,15 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
       opc := cmp.opcode;
       IF (opc = S.const) THEN      (* condition with constant guard *)
         IF (neg # cmp.resultList.IsTrue()) THEN
-          block.SetArc(block.jump, w.GetBlock(path2), -1, S.jump);
+          block.SetArc(block.jump, w.GetBlock(path2), S.jump);
         ELSE
-          block.SetArc(block.jump, w.GetBlock(path1), -1, S.jump);
+          block.SetArc(block.jump, w.GetBlock(path1), S.jump);
         END;
       ELSE
         IF neg THEN opc := NegateBranch(opc); END;
-        block.SetArc(block.branch, w.GetBlock(path2),
-                     cmp.opndList.arg.type, opc);
-        block.SetArc(block.jump, w.GetBlock(path1), -1, S.jump);
+        block.SetArc(block.branch, w.GetBlock(path2), opc);
+        block.branch.type := cmp.opndList.arg.type;
+        block.SetArc(block.jump, w.GetBlock(path1), S.jump);
       END;
       dummy := w.WriteBlock(path1, NIL);
       dummy := w.WriteBlock(path2, NIL);
@@ -734,7 +733,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
       dummy := w.WriteBlock(instr, NIL);
       
       block := NEW(Block, NIL);
-      dummy.SetArc(dummy.jump, block, -1, S.jump);
+      dummy.SetArc(dummy.jump, block, S.jump);
       sb := NEW(StringBuffer.StringBuffer, 1024);
       block.instructions := sb;
       w.blocks.Append(block);
@@ -1021,8 +1020,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
         | S.branch:                      (* handled below *)
         | S.jump, S.loopExit:
           FixGatedValues(instr);
-          block.SetArc(block.jump, w.GetBlock(instr.MergingTarget()),
-                       -1, S.jump);
+          block.SetArc(block.jump, w.GetBlock(instr.MergingTarget()), S.jump);
           nextInstr := NIL;              (* bail out *)
         | S.gate:                        (* nothing to do *)
         | S.loopStart:
@@ -1030,8 +1028,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
         | S.loopBackedge:
           FixGatedValues(instr);
           block.SetArc(block.jump,
-                       w.GetBlock(instr(S.LoopBackedgeInstr).start),
-                       -1, S.jump);
+                       w.GetBlock(instr(S.LoopBackedgeInstr).start), S.jump);
         | S.loopEnd:
           (* nothing *)
         END;
@@ -1048,7 +1045,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block; label: STRING): Block;
             path := instr.paths[i];
             dummy := w.WriteBlock(path, w.ConstSymbol(path, Predef.void));
             block.caseBranches[i] := NIL;
-            block.SetArc(block.caseBranches[i], dummy, -1, S.branch);
+            block.SetArc(block.caseBranches[i], dummy, S.branch);
           END;
         ELSIF (instr.paths[0](S.MergeInstr).jumps # NIL) THEN
           WriteBranch2(cmp, FALSE, instr.paths[1], instr.paths[0]);
