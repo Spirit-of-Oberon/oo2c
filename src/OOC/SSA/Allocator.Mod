@@ -23,7 +23,7 @@ MODULE OOC:SSA:Allocator;
 <*DEFINE DEBUG_ALLOCATOR := FALSE*>
 
 IMPORT
-  <*IF DEBUG_ALLOCATOR THEN*>Out,SYSTEM,Log,<*END*>
+  <*IF DEBUG_ALLOCATOR THEN*>Out,SYSTEM,Log,Err,<*END*>
   IntStr, Strings, ADT:ArrayList, ADT:Dictionary, ADT:String,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd,
   OOC:SSA:Schedule, OOC:SSA:IGraph, OOC:C:DeclWriter;
@@ -318,10 +318,32 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
         RETURN child;
       END;
     END GetLoop;
+
+  <*IF DEBUG_ALLOCATOR THEN*>
+  PROCEDURE WriteLive (b: Schedule.Block; msg: ARRAY OF CHAR;
+                       g: IGraph.Graph; live: IGraph.Vector);
+    VAR
+      i: LONGINT;
+      res: SSA.Result;
+    BEGIN
+      Err.String (msg);
+      Err.String (" live set: ");
+      Err.Hex (SYSTEM.VAL (LONGINT, b), 8);
+      Err.String ("  ");
+      FOR i := 0 TO rf. resultList. size-1 DO
+        IF g. In (i, live) THEN
+          Err.Char (" ");
+          Err.LongInt (i, 0);
+        END;
+      END;
+      Err.Ln;
+    END WriteLive;
+  <*END*>
   
   BEGIN
     iGraph := rf. iGraph;
-
+    <*IF DEBUG_ALLOCATOR THEN*>WriteLive (b, "end of block", iGraph, live);<*END*>
+    
     WITH b: Schedule.BranchBlock DO
       (* the predicate that is evaluated at the end of a branch block must
          be live at the end of the block *)
@@ -389,6 +411,8 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: Schedule.Block;
     ELSE  (* nothing to do *)
     END;
 
+    <*IF DEBUG_ALLOCATOR THEN*>WriteLive (b, "beg of block", iGraph, live);<*END*>
+    
     IF (loopEnd # NIL) THEN
       loopBlock := GetLoop (loopEnd. block. parent,
                             loopEnd. instr. GetLoopStart());
@@ -539,7 +563,8 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
       END;
     END TraverseBlocks;
 
-  (*PROCEDURE WriteConflicts (rf: RegisterFile);
+  <*IF DEBUG_ALLOCATOR THEN*>
+  PROCEDURE WriteConflicts (rf: RegisterFile);
     VAR
       i, j: LONGINT;
       res: SSA.Result;
@@ -558,8 +583,9 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
         END;
         Err.Ln;
       END;
-    END WriteConflicts;*)
-
+    END WriteConflicts;
+  <*END*>
+  
   BEGIN
     rf. iGraph := IGraph.NewGraph (rf. resultList. size);
     
@@ -570,7 +596,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile;
     live := rf. iGraph. NewVector();
     TraverseBlocks (rf, exitBlock, live);
     rf. iGraph. SymmetricMatrix;
-    (*WriteConflicts (rf);*)
+    <*IF DEBUG_ALLOCATOR THEN*>WriteConflicts (rf);<*END*>
 
     (* calculate a coloring for the resulting graph; use the coloring to
        assign register ids to results *)
@@ -763,6 +789,10 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
   <*END*>
   
   BEGIN
+    <*IF DEBUG_ALLOCATOR THEN*>
+    Log.Ln;
+    Log.String ("### allocating registers", pb. procDecl. name. str^);
+    <*END*>
     exitBlock := pb. selectReturn. info(Schedule.InstrProxy). block;
     enterBlock := domRoot;
     pb. SetMarkers (NIL, -1);
