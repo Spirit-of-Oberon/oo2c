@@ -38,10 +38,6 @@ TYPE
        @samp{localDecl[0..@ofield{localCount}-1]} hold valid references.  *)
     localCount-: LONGINT;
     (* The number of declaration local to the namespace *)
-    sorted: BOOLEAN;
-    (* If TRUE, Declarations are sorted in alphanumeric order, allowing quick
-	   lookup via binary search. Otherwise, Declarations are in declared order.
-       *)
   END;
 
 TYPE
@@ -121,12 +117,11 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 
 PROCEDURE InitNamespace (ns: Namespace; da: Sym.DeclarationArray; 
-                         len: LONGINT; sorted : BOOLEAN);
+                         len: LONGINT);
   BEGIN
     Sym.InitNamespace (ns);
     ns. localDecl := da;
-    ns. localCount := len;
-    ns. sorted := sorted
+    ns. localCount := len
   END InitNamespace;
 
 PROCEDURE (ns: Namespace) IdentifyLocal2*(sourceContext: Sym.Item;
@@ -141,26 +136,17 @@ PROCEDURE (ns: Namespace) IdentifyLocal2*(sourceContext: Sym.Item;
     FOR s := 0 TO ns.localCount-1 DO
       Log.String ("  local", ns.localDecl[s].name.str^);
     END;*)
-
-    IF ns.sorted THEN    
-      (* sorted declarations - use binary search *)
-      s := 0; e := ns. localCount;
-      WHILE (s < e) DO
-        m := (s+e) DIV 2;
-        IF (ns. localDecl[m]. name. str^ < name. str^) THEN
-          s := m+1
-        ELSE
-          e := m
-        END
-      END;
-      ASSERT (s = e);
-    ELSE
-      (* unsorted declarations - use linear search *)
-      s := 0;
-      WHILE (s < ns.localCount) & (ns.localDecl[s].name.str^ # name.str^) DO
-        INC(s);
-      END;
+    
+    s := 0; e := ns. localCount;
+    WHILE (s < e) DO
+      m := (s+e) DIV 2;
+      IF (ns. localDecl[m]. name. str^ < name. str^) THEN
+        s := m+1
+      ELSE
+        e := m
+      END
     END;
+    ASSERT (s = e);
     IF (s < ns. localCount) & (ns. localDecl[s]. name. str^ = name. str^) THEN
       decl := ns. localDecl[s];
       IF (decl. Module() = sourceContext. Module()) THEN
@@ -249,20 +235,19 @@ PROCEDURE (ns: Namespace) CheckLocalUniqueness* (errList: Error.List);
 
 
 
-PROCEDURE InitNested (ns: Nested; da: Sym.DeclarationArray; 
-                      len: LONGINT; sorted : BOOLEAN);
+PROCEDURE InitNested (ns: Nested; 
+                               da: Sym.DeclarationArray; len: LONGINT);
   BEGIN
-    InitNamespace (ns, da, len, sorted);
+    InitNamespace (ns, da, len);
     ns. nestedIn := NIL
   END InitNested;
 
-PROCEDURE NewNested* (da: Sym.DeclarationArray; 
-                      len: LONGINT; sorted : BOOLEAN): Nested;
+PROCEDURE NewNested* (da: Sym.DeclarationArray; len: LONGINT): Nested;
   VAR
     ns: Nested;
   BEGIN
     NEW (ns);
-    InitNested (ns, da, len, sorted);
+    InitNested (ns, da, len);
     RETURN ns
   END NewNested;
 
@@ -297,19 +282,18 @@ PROCEDURE (ns: Nested) Identify2*(sourceContext: Sym.Item;
 
 
 PROCEDURE InitExtended (ns: Extended; 
-                      da: Sym.DeclarationArray; len: LONGINT; sorted : BOOLEAN);
+                        da: Sym.DeclarationArray; len: LONGINT);
   BEGIN
-    InitNamespace (ns, da, len, sorted);
+    InitNamespace (ns, da, len);
     ns. extends := NIL
   END InitExtended;
 
-PROCEDURE NewExtended* (da: Sym.DeclarationArray; 
-                        len: LONGINT; sorted : BOOLEAN): Namespace;
+PROCEDURE NewExtended* (da: Sym.DeclarationArray; len: LONGINT): Namespace;
   VAR
     ns: Extended;
   BEGIN
     NEW (ns);
-    InitExtended (ns, da, len, sorted);
+    InitExtended (ns, da, len);
     RETURN ns
   END NewExtended;
 
@@ -357,21 +341,17 @@ PROCEDURE (ns: Extended) InsertTBProc* (procDecl: Sym.ProcDecl;
     IF (ns. IdentifyLocal (procDecl, procDecl. name, FALSE) # NIL) THEN
       ErrDecl (multipleMemberForName, procDecl, errList)
     ELSE
-      IF ns.sorted THEN
-        s := 0; e := ns. localCount;
-        WHILE (s < e) DO
-          m := (s+e) DIV 2;
-          IF (ns. localDecl[m]. name. str^ < procDecl. name. str^) THEN
-            s := m+1
-          ELSE
-            e := m
-          END
-        END;
-        ASSERT (s = e);
-      ELSE
-        s := ns. localCount;
+      s := 0; e := ns. localCount;
+      WHILE (s < e) DO
+        m := (s+e) DIV 2;
+        IF (ns. localDecl[m]. name. str^ < procDecl. name. str^) THEN
+          s := m+1
+        ELSE
+          e := m
+        END
       END;
       
+      ASSERT (s = e);
       IF (s < ns. localCount) THEN
         ASSERT (ns. localDecl[s]. name. str^ > procDecl. name. str^)
       END;
