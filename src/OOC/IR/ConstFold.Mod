@@ -306,10 +306,6 @@ VAR
       ELSE
         result := Integers.Quotient(left, right);
       END;
-    | IR.arithDivR:
-      (* FIXME... added this as a stop gap measure to get
-         RandomNumbers to compile (minus Random()) --mva *)
-      result := Integers.Long (1);
     | IR.arithMod:
       IF Integers.Compare(right, zero) = 0 THEN
         c.builder.ErrSym(IR.divideByZero, op.sym); RETURN NIL;
@@ -322,12 +318,22 @@ VAR
     RETURN Integer.type.Value(result);
   END IntegerOp;
 
+  PROCEDURE RealOp () : Language.Value;
+  BEGIN
+    (* for now, don't evaulate real operators. - sg *)
+    RETURN NIL;
+  END RealOp;
+
 BEGIN
   (* Evaluate left and right operands. Propagate any errors. *)
   IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
     (* for now, only support integers *)
-    result := IntegerOp();
-
+    CASE op.left.type(Sym.PredefType).id OF
+    | Predef.shortint, Predef.integer, Predef.longint:
+      result := IntegerOp();
+    | Predef.real, Predef.longreal:
+      result := RealOp();
+    END;
     IF result # NIL THEN
       c.result := c.ValueConst(result, op);
       RETURN;
@@ -432,14 +438,25 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     RETURN Boolean.New(result);
   END BooleanOp;
 
+  PROCEDURE RealOp () : Boolean.Value;
+  BEGIN
+    (* FIXME. For now, don't evaulate real comparisons - sg *)
+    RETURN NIL;
+  END RealOp;
+
   BEGIN
     IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
       CASE op.left.type(Sym.PredefType).id OF
       | Predef.shortint, Predef.integer, Predef.longint:
-                             result := IntegerOp();
-      | Predef.char:         result := CharOp();
-      | Predef.charString:   result := StringOp(); 
-      | Predef.boolean:      result := BooleanOp();
+        result := IntegerOp();
+      | Predef.real, Predef.longreal:
+        result := RealOp();
+      | Predef.char:
+        result := CharOp();
+      | Predef.charString:
+        result := StringOp(); 
+      | Predef.boolean:
+        result := BooleanOp();
       END;
       IF result = NIL THEN 
         c.result := NIL
@@ -467,6 +484,9 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         (* type conversion from character to integer value (ORD) *)
         value := Integer.NewLInt (ORD (value(String8.Value). value. array[0]));
         c.result := c. builder. NewConst (op. sym, op. type, value);
+      ELSIF c. builder. typeRules. IsRealType (op. type) &
+            c. builder. typeRules. IsIntegerType (op. expr. type) THEN
+        c.result := NIL;
       END;
       c.result := c.builder.NewConst(op.sym, op.type, value)
     ELSE
