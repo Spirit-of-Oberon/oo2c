@@ -27,12 +27,6 @@ IMPORT
   Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules, OOC:Error,
   OOC:Scanner:Builder:BasicList, OOC:IR, OOC:IR:VisitAll;
 
-(* Possible enhancements:
-   
-   For simple MOVE where source or target is an ADR(), evaluate this
-   instruction like an assignment.  See LRealConv, RealConv, Object:Boxed for
-   examples.  *)
-   
 CONST
   undefined = 0;
   maybeUndefined = 1;
@@ -657,6 +651,7 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
         i: LONGINT;
         defIn, def2: Def;
         obj: Object.Object;
+        expr: IR.Expression;
 
       PROCEDURE CheckWith(defIn: Def; with: IR.WithStatm;
                           prevGuards: ArrayList.ArrayList);
@@ -770,9 +765,22 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
           def.Unreachable();
           
         | statm: IR.MoveBlock DO
-          CheckExpr(statm.source);
-          CheckExpr(statm.dest);
+          IF (statm.source IS IR.Adr) THEN
+            CheckExpr(statm.source(IR.Adr).design);
+          ELSE
+            CheckExpr(statm.source);
+          END;
           CheckExpr(statm.size);
+          
+          expr := statm.dest;
+          IF (expr IS IR.TypeConv) THEN
+            expr := expr(IR.TypeConv).expr;
+          END;
+          IF (expr IS IR.Adr) THEN
+            CheckDesign(expr(IR.Adr).design, write);
+          ELSE
+            CheckExpr(statm.dest);
+          END;
           
         | statm: IR.Raise DO
           CheckExpr(statm.exception);

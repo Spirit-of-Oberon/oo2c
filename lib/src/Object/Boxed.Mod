@@ -243,9 +243,7 @@ PROCEDURE (v: LongReal) HashCode*(): Obj.Hash;
     SYSTEM.MOVE(SYSTEM.ADR(v.value), SYSTEM.ADR(a), size * SIZE(LONGINT));
     hash := {};
     FOR i := 0 TO size-1 DO
-      <*PUSH; Warnings:=FALSE*>
       hash := hash / a[i];
-      <*POP*>
     END;
     RETURN SYSTEM.VAL(Obj.Hash, hash);
   END HashCode;
