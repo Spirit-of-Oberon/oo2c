@@ -169,6 +169,17 @@ PROCEDURE GetType (v: Visitor; node: AST.Node): Sym.Type;
     RETURN t
   END GetType;
 
+PROCEDURE GetTypeParent (v: Visitor; node: AST.Node; newParent: Sym.Item): Sym.Type;
+  VAR
+    t: Sym.Type;
+  BEGIN
+    v. type := NIL;
+    AcceptParent (v, node, newParent);
+    ASSERT (v. type # NIL);
+    t := v. type;
+    RETURN t
+  END GetTypeParent;
+
 PROCEDURE AddFlags (item: Sym.Item; flags: ExtTree.Flags);
   VAR
     i: LONGINT;
@@ -346,14 +357,43 @@ PROCEDURE (v: Visitor) VisitConstDecl* (constDecl: ExtTree.ConstDecl);
         NIL, NIL, constDecl. expr);
   END VisitConstDecl;
 
+PROCEDURE (v: Visitor) VisitTPSection* (tpSection: ExtTree.TPSection);
+  VAR
+    type: Sym.Type;
+    typeDecl: Sym.TypeDecl;
+    i: LONGINT;
+  BEGIN
+    type := GetType (v, tpSection.type);
+    FOR i := 0 TO tpSection.identList.len-1 BY 2 DO
+      typeDecl := v.stb.NewTypeDecl
+          (v.parent, GetName(tpSection.identList.n[i]),
+           EndOfType(tpSection.type), Sym.nameNotExported,
+           tpSection.identList.n[i](ExtTree.IdentDef).docString, type, TRUE);
+    END;
+  END VisitTPSection;
+
 PROCEDURE (v: Visitor) VisitTypeDecl* (typeDecl: ExtTree.TypeDecl);
   VAR
     type: Sym.TypeDecl;
+    base: Sym.Type;
+    parType: Sym.ParametricType;
+    i: LONGINT;
   BEGIN
-    type := v. stb. NewTypeDecl (
-        v. parent, GetName (typeDecl. identDef. ident),
-        EndOfType (typeDecl. type), ExportMark (typeDecl. identDef), 
-        typeDecl. identDef. docString, GetType (v, typeDecl. type))
+    IF (typeDecl.typePars = NIL) THEN
+      base := GetType(v, typeDecl.type);
+    ELSE
+      parType := v.stb.NewParametricType(v.parent,
+                                         GetPosition(typeDecl.typePars.lParen));
+      FOR i := 0 TO typeDecl.typePars.tpSections.len-1 BY 2 DO
+        AcceptParent(v, typeDecl.typePars.tpSections.n[i], parType);
+      END;
+      parType.SetBaseType(GetTypeParent(v, typeDecl.type, parType));
+      base := parType;
+    END;
+    type := v. stb. NewTypeDecl
+        (v.parent, GetName(typeDecl.identDef.ident),
+         EndOfType(typeDecl.type), ExportMark(typeDecl.identDef), 
+         typeDecl.identDef.docString, base, FALSE);
   END VisitTypeDecl;
 
 PROCEDURE (v: Visitor) VisitVarDecl* (varDecl: ExtTree.VarDecl);

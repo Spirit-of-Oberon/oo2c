@@ -21,6 +21,7 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
+  Log,
   Msg, IO, ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:SymbolTable:Uses,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
@@ -357,6 +358,8 @@ RAISES IO.Error;
         | item: Sym.Record DO
           item. SetNamespace (Assemble (item, FALSE));
           privateRecords.Set(item, NIL);
+        | item: Sym.ParametricType DO
+          item. SetNamespace (Assemble (item, TRUE));
         ELSE  (* no other item is associated with a namespace *)
         END
       END
@@ -415,10 +418,20 @@ RAISES IO.Error;
               SetEnclosingNamespace (item. parent(Sym.ProcDecl). 
                                        ns(Namespace.Namespace))
           END
+        | item: Sym.ParametricType DO
+          IF (item. parent IS Sym.Module) THEN
+            item. ns(Namespace.Nested). 
+              SetEnclosingNamespace (item. parent(Sym.Module). 
+                                       ns(Namespace.Namespace))
+          ELSIF (item. parent IS Sym.ProcDecl) THEN
+            item. ns(Namespace.Nested). 
+              SetEnclosingNamespace (item. parent(Sym.ProcDecl). 
+                                       ns(Namespace.Namespace))
+          END
         ELSE  (* no other item is associated with a namespace *)
         END;      
 
-        (* decend into nested objects *)
+        (* descend into nested objects *)
         ptr := item. nestedItems;
         WHILE (ptr # NIL) DO
           ConnectNamespaces (ptr, predefModule, errList);
@@ -469,6 +482,13 @@ RAISES IO.Error;
           item := ns. Identify (contextOfUse, typeName. ident, FALSE);
           IF (item = NIL) & extendedSearch THEN
             item := ns. IdentifyLocal (contextOfUse, typeName. ident, TRUE);
+            IF (item = NIL) & (contextOfUse IS Sym.ParametricType) THEN
+              (* with parametric types, the local namespace may contain just
+                 the formal parameter names; compensate by going one level
+                 higher *)
+              item := ns(Namespace.Nested).nestedIn.IdentifyLocal
+                  (contextOfUse, typeName. ident, TRUE);
+            END;
           END;
 
           IF (item = NIL) THEN
@@ -504,7 +524,10 @@ RAISES IO.Error;
     BEGIN
       IF (item # NIL) THEN
         WITH item: Sym.TypeDecl DO
-          item. type := GetTypeByName (item. type, contextOfUse, FALSE, errList)
+          item.type := GetTypeByName(item.type, contextOfUse, FALSE, errList);
+          IF item.isTypeParameter THEN
+            item.InsertTypeVar();
+          END;
           
         | item: Sym.VarDecl DO
           item. SetType (GetTypeByName (item. type, contextOfUse, FALSE, errList));
@@ -541,6 +564,8 @@ RAISES IO.Error;
         | item: Sym.Module DO
           contextOfUse := item
         | item: Sym.ProcDecl DO
+          contextOfUse := item
+        | item: Sym.ParametricType DO
           contextOfUse := item
         ELSE  (* ignore any other kind items *)
         END;
@@ -1019,24 +1044,24 @@ RAISES IO.Error;
       RETURN
     END;
     
-    (* first pass: create namespace objects for module, procedures, and
-       records (excluding any type-bound procedures and procedure 
+    (* first pass: create namespace objects for module, procedures, records,
+       and parametric type (excluding any type-bound procedures and procedure 
        forward declarations) *)
     privateRecords := Dictionary.New();
     PopulateNamespace (root);
     
-    (* second pass: check local uniqueness constraint for module, procedure, 
-       and record namespaces; note: for records, this checks only a small
-       part of the restrictions placed on their namespaces *)
+    (* second pass: check local uniqueness constraint for module, procedure,
+       record, and parametric type namespaces; note: for records, this checks
+       only a small part of the restrictions placed on their namespaces  *)
     CheckLocalUniqueness (root, errList);
     
-    (* third pass: connect namespace links; the namespaces of procedures are
-       nested into the enclosing procedure/module *)
+    (* third pass: connect namespace links; the namespaces of procedures and
+       parametric types are nested into the enclosing procedure/module  *)
     ConnectNamespaces (root, predefModule, errList);
     
     
-    (* here holds: module and procedure namespaces can be searched for
-                   declarations, ignoring procedure forward declarations *)
+    (* here holds: module, procedure, and parametric type namespaces can be
+       searched for declarations, ignoring procedure forward declarations  *)
     
     
     (* fourth pass: resolve type names in declarations, and fix up namespaces

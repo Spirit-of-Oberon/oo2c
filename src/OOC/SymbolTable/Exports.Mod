@@ -100,6 +100,13 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
                 MarkType (type. srcCodeBaseType)
               END;
               MarkList (type)
+            | type: Sym.ParametricType DO
+              IF (type. srcCodeBaseType # NIL) THEN
+                MarkType (type. srcCodeBaseType)
+              END;
+              MarkList (type)
+            | type: Sym.TypeVar DO
+              (* ignore, the parameter TypeDecl already marks our type *)
             END
           END
         END MarkType;
@@ -140,6 +147,7 @@ PROCEDURE GetExports* (module: Sym.Module; forSymbolFile: BOOLEAN): Dictionary.D
         WITH ptr: Sym.Declaration DO
           IF (ptr. exportMark # Sym.nameNotExported) OR 
              (ptr IS Sym.VarDecl) & ptr(Sym.VarDecl). isParameter OR
+             (ptr IS Sym.TypeDecl) & ptr(Sym.TypeDecl).isTypeParameter OR
              (ptr IS Sym.Import) &
                ((module.class # Sym.mcStandard) OR
                 (ptr.name.str[0] = Builder.prefixAutoImport)) OR

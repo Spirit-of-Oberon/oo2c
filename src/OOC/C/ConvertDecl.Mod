@@ -209,7 +209,13 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
         END;
         struct := w. NewStruct (type. isUnion, name);
         dummy := AddFields (struct, type);
-        RETURN struct
+        RETURN struct;
+
+      | type: Sym.ParametricType DO
+        RETURN ConvertType(w, type.baseType, type.srcCodeBaseType);
+
+      | type: Sym.TypeVar DO
+        RETURN ConvertType(w, type.bound, type);
       END
     END
   END ConvertType;

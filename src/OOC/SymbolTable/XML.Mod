@@ -260,6 +260,9 @@ RAISES IO.Error;
             END
           | item: Sym.ConstDecl DO
           | item: Sym.TypeDecl DO
+            IF item.isTypeParameter THEN
+              AttribBool("", "is_type_parameter", item.isTypeParameter);
+            END;
             AttribTypeId ("", "type_id", item. type)
           | item: Sym.VarDecl DO
             AttribBool ("", "is_parameter", item. isParameter);
@@ -291,6 +294,10 @@ RAISES IO.Error;
             element := "procedure_type"
           | item: Sym.PredefType DO
             element := "predef_type"
+          | item: Sym.ParametricType DO
+            element := "parametric_type"
+          | item: Sym.TypeVar DO
+            element := "type_var"
           END;
           StartTag (element, Id (item));
 
@@ -329,6 +336,10 @@ RAISES IO.Error;
             END
           | item: Sym.PredefType DO
             (* FIXME... what to write here? *)
+          | item: Sym.ParametricType DO
+            AttribTypeId ("", "base_type_id", item. baseType)
+          | item: Sym.TypeVar DO
+            AttribTypeId ("", "bound_id", item. bound)
           END;
           
           WriteNested (item);

@@ -167,7 +167,7 @@ PROCEDURE PredefType (stb: Builder.Builder;
     maxConst[id] := maxValue;
     IF (name # "") THEN
       tdecl := stb. NewTypeDecl (module, GetName (name), 0,
-                                 Sym.nameExported, NIL, ptype)
+                                 Sym.nameExported, NIL, ptype, FALSE)
     END;
     RETURN ptype
   END PredefType;
@@ -179,7 +179,7 @@ PROCEDURE TypeAlias (stb: Builder.Builder;
     tdecl: Sym.TypeDecl;
   BEGIN
     tdecl := stb. NewTypeDecl (module, GetName (name), 0,
-                               Sym.nameExported, NIL, baseType);
+                               Sym.nameExported, NIL, baseType, FALSE);
   END TypeAlias;
 
 PROCEDURE PredefProc (stb: Builder.Builder; module: Sym.Module;

@@ -134,15 +134,17 @@ PROCEDURE (b: Builder) NewConstDecl* (parent: Sym.Item; name: Sym.Name;
   END NewConstDecl;
 
 PROCEDURE (b: Builder) NewTypeDecl* (parent: Sym.Item; name: Sym.Name;
-                                 visibleFrom: Sym.ModulePos;
-                                 exportMark: Sym.ExportMark;
-                                 docString: Doc.Document;
-                                 type: Sym.Type): Sym.TypeDecl;
+                                     visibleFrom: Sym.ModulePos;
+                                     exportMark: Sym.ExportMark;
+                                     docString: Doc.Document;
+                                     type: Sym.Type;
+                                     isTypeParameter: BOOLEAN): Sym.TypeDecl;
   VAR
     t: Sym.TypeDecl;
   BEGIN
     NEW (t);
-    Sym.InitTypeDecl (t, parent, name, visibleFrom, exportMark, docString, type);
+    Sym.InitTypeDecl (t, parent, name, visibleFrom, exportMark,
+                      docString, type, isTypeParameter);
     IF (type. namingDecl = NIL) THEN
       type. SetNamingDecl (t);
     END;
@@ -295,6 +297,17 @@ PROCEDURE (b: Builder) NewPointer* (parent: Sym.Item;
     EvalContext(b, ptr);
     RETURN ptr
   END NewPointer;
+
+PROCEDURE (b: Builder) NewParametricType* (parent: Sym.Item;
+                                           position: Sym.Position): Sym.ParametricType;
+  VAR
+    parType: Sym.ParametricType;
+  BEGIN
+    NEW (parType);
+    Sym.InitParametricType(parType, parent, position);
+    EvalContext(b, parType);
+    RETURN parType
+  END NewParametricType;
 
 PROCEDURE (b: Builder) NewExceptionName*(parent: Sym.Item;
                                          type: Sym.Type): Sym.ExceptionName;

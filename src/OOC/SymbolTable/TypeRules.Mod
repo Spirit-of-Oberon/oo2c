@@ -300,7 +300,11 @@ PROCEDURE IsValidPointerBaseType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be used as the
    base type of a pointer type definition.  *)
   BEGIN
-    RETURN (type IS Sym.Array) OR (type IS Sym.Record)
+    WITH type: Sym.ParametricType DO
+      RETURN IsValidPointerBaseType(type.baseType);
+    ELSE
+      RETURN (type IS Sym.Array) OR (type IS Sym.Record)
+    END;
   END IsValidPointerBaseType;
 
 PROCEDURE IsValidArrayElementType* (type: Sym.Type; isOpenArray: BOOLEAN): BOOLEAN;
@@ -719,6 +723,14 @@ PROCEDURE AllocateType* (type: Sym.Type);
         ELSE
           type. SetSize (size, align)
         END;
+
+      | type: Sym.ParametricType DO
+        AllocateType(type.baseType);
+        type.SetSize(type.baseType.size, type.baseType.align);
+
+      | type: Sym.TypeVar DO
+        AllocateType(type.bound);
+        type.SetSize(type.bound.size, type.bound.align);
       END;
     END;
   END AllocateType;
