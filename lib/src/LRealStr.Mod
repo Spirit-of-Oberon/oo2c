@@ -1,7 +1,7 @@
 MODULE LRealStr;
 
 IMPORT
-  C, CharClass, ConvTypes, LRealConv;
+  C, CharClass, ConvTypes, LRealConv, Strings;
   
 TYPE
   ConvResults* = ConvTypes.ConvResults;
@@ -32,6 +32,32 @@ PROCEDURE IsSign (ch: CHAR): BOOLEAN;
     RETURN (ch = "-") OR (ch = "+")
   END IsSign;
 
+PROCEDURE NormalizeFloat (VAR s: ARRAY OF CHAR);
+  VAR
+    i, d: INTEGER;
+  BEGIN
+    (* massage the output of sprintf to match our requirement; note: this
+       code should also handle "Inf", "Infinity", "NaN", etc., gracefully
+       but this is untested *)
+    IF (s[0] = "+") THEN d := 1; ELSE d := 0; END; (* erase "+" sign *)
+    i := 1;
+    WHILE (s[i] # 0X) DO
+      IF (s[i] = ".") & (s[i+1] = "E") THEN
+        INC (d);             (* eliminate "." if no digits follow *)
+      ELSIF (s[i] = "0") & IsSign (s[i-d-1]) THEN
+        INC (d);           (* eliminate zeros after exponent sign *)
+      ELSE
+        s[i-d] := s[i];
+      END;
+      INC (i);
+    END;
+    IF (s[i-d-2] = "E") THEN
+      s[i-d-2] := 0X;                  (* remove "E+" or "E-" *)
+    ELSE
+      s[i-d] := 0X;
+    END;
+  END NormalizeFloat;
+
 PROCEDURE RealToFloat* (real: LONGREAL; sigFigs: INTEGER;
                         VAR str: ARRAY OF CHAR);
 (**Assign to @oparam{str} the possibly truncated string corresponding to the
@@ -56,36 +82,66 @@ PROCEDURE RealToFloat* (real: LONGREAL; sigFigs: INTEGER;
     s: ARRAY 32 OF CHAR;
     i, d: INTEGER;
   BEGIN
+    IF (sigFigs < 1) OR (sigFigs > 17) THEN sigFigs := 17; END;
     C.sprintf(s, "%-+#.*E", sigFigs-1, real);
-
-    (* massage the output of sprintf to match our requirement; note: this
-       code should also handle "INF", "INFINITY", "NaN", and "NAN" gracefully
-       but this is untested *)
-    IF (s[0] = "+") THEN d := 1; ELSE d := 0; END; (* erase "+" sign *)
-    i := 1;
-    WHILE (s[i] # 0X) DO
-      IF (s[i] = ".") & (s[i+1] = "E") THEN
-        INC (d);             (* eliminate "." if no digits follow *)
-      ELSIF (s[i] = "0") & IsSign (s[i-d-1]) THEN
-        INC (d);           (* eliminate zeros after exponent sign *)
-      ELSE
-        s[i-d] := s[i];
-      END;
-      INC (i);
-    END;
-    IF (s[i-d-2] = "E") THEN
-      s[i-d-2] := 0X;                  (* remove "E+" or "E-" *)
-    ELSE
-      s[i-d] := 0X;
-    END;
-    
+    NormalizeFloat (s);
     COPY (s, str);
   END RealToFloat;
 
 PROCEDURE RealToEng* (real: LONGREAL; sigFigs: INTEGER;
                       VAR str: ARRAY OF CHAR);
+  VAR
+    s: ARRAY 32 OF CHAR;
+    i, d, fract, exp, posExp, offset: INTEGER;
   BEGIN
-    ASSERT(FALSE);
+    IF (sigFigs < 1) OR (sigFigs > 17) THEN sigFigs := 17; END;
+    C.sprintf(s, "%-+#.*E", sigFigs-1, real);
+
+    (* find out how large the exponent is, and how many digits are in the
+       fractional part *)
+    fract := 0; exp := 0;
+    IF CharClass.IsNumeric (s[1]) THEN   (* skip for NaN, Inf *)
+      i := 0; d := 0;
+      WHILE (s[i] # "E") DO
+        fract := fract + d;
+        IF (s[i] = ".") THEN d := 1; END;
+        INC (i);
+      END;
+      INC (i);
+      IF (s[i] = "-") THEN d := -1; ELSE d := 1; END;
+      posExp := i;
+      INC (i);
+      WHILE (s[i] # 0X) DO
+        exp := exp*10 + d*(ORD (s[i]) - ORD ("0"));
+        INC (i);
+      END;
+    END;
+
+    offset := exp MOD 3;
+    IF (offset # 0) THEN
+      WHILE (fract < offset) DO        (* need more zeros before "E" *)
+        Strings.Insert ("0", posExp-1, s); INC (fract); INC (posExp);
+      END;
+      i := 2;
+      WHILE (i < offset+2) DO    (* move "." offset places to right *)
+        s[i] := s[i+1]; INC (i);
+      END;
+      s[i] := ".";
+
+      (* write new exponent *)
+      exp := exp-offset;
+      IF (exp < 0) THEN
+        exp := -exp; s[posExp] := "-";
+      ELSE
+        s[posExp] := "+";
+      END;
+      s[posExp+1] := CHR (exp DIV 100 + ORD("0"));
+      s[posExp+2] := CHR (exp DIV 10 MOD 10 + ORD("0"));
+      s[posExp+3] := CHR (exp MOD 10 + ORD("0"));
+      s[posExp+4] := 0X;
+    END;
+    NormalizeFloat (s);
+    COPY (s, str);
   END RealToEng;
 
 PROCEDURE RealToFixed* (real: LONGREAL; place: INTEGER;
