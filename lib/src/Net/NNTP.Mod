@@ -4,9 +4,40 @@ IMPORT
   SYS:=SYSTEM, Ascii, CharClass, IntStr, Object,
   ADT:StringBuffer, IO, IO:Address, IO:SocketChannel;
 
-(* NNTP client supports synchronous and asynchronous operation, incremental
-   processing of large requests or responses, and multiplexing with other
-   socket connections. *)
+(**This module implements the client side of the NNTP protocol.  It supports
+   three modes of operation:
+
+   @table @asis
+   @item Synchronous Operation
+   One request is send to the NNTP server, and the whole response is retrieved
+   before sending the next request.  That is, at most one request is in
+   progress at any point in time.  For example, a call to @oproc{Client.Group}
+   sends a @samp{group} request returns only if the response has arrived and
+   its data has been stored in the @otype{Group} object.  This mode is the
+   easiest to use.
+
+   @item Asynchronous Operation
+   A sequence of requests can be send to the NNTP server, before starting to
+   retrieve the responses for the requests.  This allows to launch multiple
+   requests back to back, following by reading the responses back to back.  For
+   example, a call to @oproc{Client.Group} writes out the @samp{group} command
+   to the NNTP server and returns without looking for a response.  The response
+   must be read by a separate call to @oproc{Client.RetrieveResponse}.  The
+   advantage of this approach is that it hides most of the latency incurred by
+   a sequence of requests, because the server can process them back to back,
+   without waiting for the next request to arrive.
+
+   Stuffing too many or too large requests into the pipeline before reading any
+   responses may lead to a deadlock, though.  For most applications, the
+   benefits compared to the simple synchronous mode are small.
+
+   @item Non-blocking Asynchronous Operation
+   This is the most complicated usage scenario.  The client's socket is
+   switched to non-blocking mode and data is send to or received from the
+   server as availability allows.  This requires that the application runs a
+   @otype{IO.Selector} loop that detects if data has arrived for reading on the
+   client's socket, or if more data can be written to the socket.  @dots{}
+   @end table  *)
   
 CONST
   textCapacity = 8*1024-32;
@@ -30,7 +61,10 @@ TYPE
        The end of line characters have been stripped.  *)
     status-: LONGINT;
     (**The integer status code.  *)
-    long: BOOLEAN;
+    long-: BOOLEAN;
+    (**If @code{TRUE}, then the response includes a message body.  The body's
+       data is obtained by calling @oproc{Client.RetrieveText}, possibly
+       repeatedly.  *)
   END;
 
 TYPE
@@ -68,6 +102,7 @@ TYPE
   
 TYPE
   Client* = POINTER TO ClientDesc;
+  Connect = POINTER TO ConnectDesc;
   ClientDesc* = RECORD
     serverAddr-: Address.SocketInet;
     
@@ -79,9 +114,19 @@ TYPE
 
        In asynchronous mode, requests are queued for processing and the
        initiating method returns immediately.  *)
+    blocking-: BOOLEAN;
+    (**If @code{FALSE}, then the socket is switched to non-blocking mode.
+       If an operation reads data from the socket and no more input is
+       available, or if an operation writes to the socket and there is no
+       more room in the kernel buffers, then it returns immediately.  *)
 
     welcome-: Object.String8;
     (**The text received from the server after connecting.  *)
+    
+    connectRequest-: Connect;
+    (**When running in asynchronous mode, @oproc{Client.Connect} stores here
+       the pseudo request whose reply is the server's @samp{Welcome} message.
+       In synchronous mode, this field is @code{NIL}.  *)
     
     postingAllowed-: BOOLEAN;
     (**Set to @code{TRUE} if the server's welcome message indicates that
@@ -115,7 +160,6 @@ TYPE
    ------------------------------------------------------------------------ *)
   
 TYPE
-  Connect = POINTER TO ConnectDesc;
   ConnectDesc = RECORD
     (RequestDesc) 
   END;
@@ -165,71 +209,66 @@ PROCEDURE RaiseProtocolError(msg: STRING) RAISES IO.ProtocolError;
     RAISE(NEW(IO.ProtocolError, msg));
   END RaiseProtocolError;
 
-PROCEDURE InitMsg(msg: Msg);
+PROCEDURE (msg: Msg) INIT*();
   BEGIN
     msg.nextMsg := NIL;
-  END InitMsg;
+  END INIT;
 
 PROCEDURE NewText*(): Text;
   VAR
     t: Text;
   BEGIN
     NEW(t);
-    InitMsg(t);
+    t.INIT();
     t.length := 0;
     t.last := FALSE;
     RETURN t;
   END NewText;
 
-PROCEDURE InitRequest(req: Request; cmd: Object.String8; long: BOOLEAN);
+PROCEDURE (req: Request) INIT*(cmd: Object.String8; long: BOOLEAN);
   BEGIN
-    InitMsg(req);
+    req.INIT^();
     req.command := cmd;
     req.long := long;
     req.response := NIL;
-  END InitRequest;
+  END INIT;
 
 PROCEDURE (req: Request) ParseStatus(resp: Response) RAISES IO.ProtocolError;
   BEGIN
   END ParseStatus;
 
-PROCEDURE InitResponse(resp: Response; VAR b: ARRAY OF CHAR;
-                       start, end: LONGINT; status: LONGINT; long: BOOLEAN);
+PROCEDURE (resp: Response) INIT*(VAR b: ARRAY OF CHAR;
+                                 start, end: LONGINT;
+                                 status: LONGINT; long: BOOLEAN);
   BEGIN
-    InitMsg(resp);
+    resp.INIT^();
     resp.statusLine := Object.NewLatin1Region(b, start, end);
     resp.status := status;
     resp.long := long;
-  END InitResponse;
+  END INIT;
 
 PROCEDURE NewResponse(VAR b: ARRAY OF CHAR; start, end: LONGINT;
                       status: LONGINT; long: BOOLEAN): Response;
-  VAR
-    resp: Response;
   BEGIN
-    NEW(resp);
-    InitResponse(resp, b, start, end, status, long);
-    RETURN resp;
+    RETURN NEW(Response, b, start, end, status, long);
   END NewResponse;
 
-PROCEDURE InitClient*(cl: Client; serverAddr: Address.SocketInet;
-                      async: BOOLEAN);
+PROCEDURE (cl: Client) INIT*(serverAddr: Address.SocketInet;
+                             async, blocking: BOOLEAN);
   BEGIN
     cl.serverAddr := serverAddr;
     cl.async := async;
+    cl.blocking := blocking;
     cl.welcome := NIL;
+    cl.connectRequest := NIL;
     cl.postingAllowed := FALSE;
     cl.channel := NIL;
-  END InitClient;
+  END INIT;
 
 PROCEDURE NewClient*(serverAddr: Address.SocketInet;
-                     async: BOOLEAN): Client;
-  VAR
-    cl: Client;
+                     async, blocking: BOOLEAN): Client;
   BEGIN
-    NEW(cl);
-    InitClient(cl, serverAddr, async);
-    RETURN cl;
+    RETURN NEW(Client, serverAddr, async, blocking);
   END NewClient;
 
 PROCEDURE Append(VAR list: Msg; msg: Msg);
@@ -315,8 +354,10 @@ PROCEDURE (cl: Client) SendText(text: Text);
     ASSERT(FALSE);
   END SendText;
 
-PROCEDURE GetResponse(cl: Client; start, end: LONGINT): Response
+PROCEDURE ExtractStatus(cl: Client; start, end: LONGINT): Response
 RAISES IO.ProtocolError;
+(**Create response object from the text of the status line
+   @samp{cl.r[start,end[}.  *)
   VAR
     status: LONGINT;
     long: BOOLEAN;
@@ -340,13 +381,17 @@ RAISES IO.ProtocolError;
       RaiseProtocolError("No status code: "+
                          Object.NewLatin1Region(cl.r, start, end));
     END;
-  END GetResponse;
+  END ExtractStatus;
 
 PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error;
 (**Retrieves the next response or chunk of text from the socket.  Undos NNTP
    encoding (CRLF -> LF, ".." --> "." at beginning of line).  Beyond a basic
    check that the status line of a response begins with a 3 digit code, no
-   parsing is done.  *)
+   parsing is done.
+
+   Result is only @code{NIL} if the client's socket is in non-blocking mode
+   and not a single complete line can be assembled before a read operation
+   on the socket returns @samp{EWOULDBLOCK}.  *)
   VAR
     line, pos, len, end, i, copy: LONGINT;
     msg: Msg;
@@ -400,14 +445,14 @@ PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error;
             END;
           END;
         ELSE                             (* status line of response *)
-          msg := GetResponse(cl, line, end);
+          msg := ExtractStatus(cl, line, end);
           cl.LogResponse(msg(Response).statusLine);
           INC(pos); line := pos;
           EXIT;
         END;
 
       ELSE
-        (* no data or incomplete line: move remaning data to beginning
+        (* no data or incomplete line: move remaining data to beginning
            of buffer and read more from the socket *)
         FOR i := line TO len-1 DO
           cl.r[i-line] := cl.r[i];
@@ -416,8 +461,13 @@ PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error;
         DEC(len, line);
         line := 0;
         i := cl.channel.Read(cl.r, len, LEN(cl.r)-len);
-        ASSERT(i > 0);
-        INC(len, i);
+        IF (i = 0) THEN  (* no more data available from non-blocking socket *)
+          msg := NIL;
+          EXIT;
+        ELSE (* have new data: try again to assemble a complete line  *)
+          ASSERT(i > 0);
+          INC(len, i);
+        END;
       END;
     END;
 
@@ -425,54 +475,70 @@ PROCEDURE GetMsg(cl: Client): Msg RAISES IO.Error;
     RETURN msg;
   END GetMsg;
 
-PROCEDURE (cl: Client) RetrieveResponse*(): Response
+PROCEDURE (cl: Client) RetrieveResponse*(req: Request): Response
 RAISES IO.Error, ErrorResponse;
+(**Retrieve the status line of the next pending request.
+   
+   Result is only @code{NIL} if the client's socket is in non-blocking mode
+   and not a single complete line can be assembled before a read operation
+   on the socket returns @samp{EWOULDBLOCK}.  *)
   VAR
     msg: Msg;
     resp: Response;
-    req: Request;
     e: ErrorResponse;
   BEGIN
     msg := GetMsg(cl);
-    resp := msg(Response);
-    
-    IF (cl.sent = NIL) THEN
-      RaiseProtocolError("Response without prior request: "+resp.statusLine);
+    IF (msg = NIL) THEN
+      RETURN NIL;
     ELSE
-      req := cl.sent(Request);
-      req.response := resp;
-      cl.sent := cl.sent.nextMsg;
-      IF (resp.status >= 300) THEN       (* negative response *)
-        NEW(e);
-        e.INIT(resp.statusLine);
-        e.request := req;
-        RAISE(e);
-      ELSIF (req IS Connect) THEN        (* special case: welcome message *)
-        cl.welcome := resp.statusLine;
-        cl.postingAllowed := (resp.status = 200);
-      ELSE                               (* request specific parsing *)
-        req.ParseStatus(resp);
+      resp := msg(Response);
+      
+      IF (cl.sent = NIL) THEN
+        RaiseProtocolError("Response without prior request: "+resp.statusLine);
+      ELSE
+        ASSERT(req = cl.sent);
+        req.response := resp;
+        cl.sent := cl.sent.nextMsg;
+        IF (resp.status >= 300) THEN     (* negative response *)
+          NEW(e);
+          e.INIT(resp.statusLine);
+          e.request := req;
+          RAISE(e);
+        ELSIF (req IS Connect) THEN (* special case: welcome message *)
+          cl.welcome := resp.statusLine;
+          cl.postingAllowed := (resp.status = 200);
+        ELSE                            (* request specific parsing *)
+          req.ParseStatus(resp);
+        END;
       END;
+      RETURN resp;
     END;
-    RETURN resp;
   END RetrieveResponse;
 
 PROCEDURE (cl: Client) RetrieveText*(): Text
 RAISES IO.Error;
-  (**Retrieves the next text chunk of the current response.  The chunk contains
-     an integral number of lines.  That is, it is either empty, or the first
-     character of the chunk is the first of a line and character
-     @samp{text.data[text.length-1]} is @oconst{eol}.
+(**Retrieves the next text chunk of the current response.  The chunk contains
+   an integral number of lines.  That is, it is either empty, or the first
+   character of the chunk is the first of a line and character
+   @samp{text.data[text.length-1]} is @oconst{eol}.
 
-     @precond
-     The current response is of type ``long'', and no text chunk has been
-     retrieved with a @ofield{Text.last} of @code{TRUE}.
-     @end precond  *)
+   Result is only @code{NIL} if the client's socket is in non-blocking mode
+   and not a single complete line can be assembled before a read operation
+   on the socket returns @samp{EWOULDBLOCK}.
+   
+   @precond
+   The current response is of type ``long'', and no text chunk has been
+   retrieved with a @ofield{Text.last} of @code{TRUE}.
+   @end precond  *)
   VAR
     msg: Msg;
   BEGIN
     msg := GetMsg(cl);
-    RETURN msg(Text);
+    IF (msg = NIL) THEN
+      RETURN NIL;
+    ELSE
+      RETURN msg(Text);
+    END;
   END RetrieveText;
 
 PROCEDURE (cl: Client) Connect*()
@@ -486,11 +552,12 @@ RAISES IO.Error, ErrorResponse;
     cl.rLine := 0; cl.rPos := 0; cl.rLen := 0; cl.rText := NIL;
     cl.waiting := NIL; cl.sent := NIL;
 
-    NEW(connect);
-    InitRequest(connect, NIL, FALSE);
+    connect := NEW(Connect, NIL, FALSE);
     cl.sent := connect;
-    IF ~cl.async THEN
-      resp := cl.RetrieveResponse();
+    IF cl.async THEN
+      cl.connectRequest := connect;
+    ELSE
+      resp := cl.RetrieveResponse(connect);
     END;
   END Connect;
 
@@ -508,7 +575,9 @@ RAISES IO.Error, ErrorResponse;
   BEGIN
     ASSERT(~req.long);
     cl.SendRequest(req);
-    resp := cl.RetrieveResponse();
+    IF ~cl.async THEN
+      resp := cl.RetrieveResponse(req);
+    END;
   END ShortRequest;
 
 PROCEDURE SkipWhitespace(params: Object.CharsLatin1; VAR pos: LONGINT);
@@ -592,9 +661,8 @@ RAISES IO.Error, ErrorResponse;
     req: Group;
     cmd: STRING;
   BEGIN
-    NEW(req);
     cmd := "group "+name;
-    InitRequest(req, cmd(Object.String8), FALSE);
+    req := NEW(Group, cmd(Object.String8), FALSE);
     req.msgCount := -1;
     req.first := -1;
     req.last := -1;
@@ -659,8 +727,7 @@ RAISES IO.Error, ErrorResponse;
     b.AppendInt(upper);
     cmd := b.ToString();
     
-    NEW(req);
-    InitRequest(req, cmd(Object.String8), FALSE);
+    req := NEW(XHdr, cmd(Object.String8), FALSE);
     ShortRequest(cl, req);
     RETURN req;
   END XHdr;
@@ -677,8 +744,7 @@ RAISES IO.Error, ErrorResponse;
     b.AppendInt(msgId);
     cmd := b.ToString();
     
-    NEW(req);
-    InitRequest(req, cmd(Object.String8), FALSE);
+    req := NEW(Article, cmd(Object.String8), FALSE);
     ShortRequest(cl, req);
     RETURN req;
   END Article;
@@ -688,11 +754,8 @@ PROCEDURE (cl: Client) Quit*(): Quit
 RAISES IO.Error, ErrorResponse;
   VAR
     req: Quit;
-    cmd: STRING;
   BEGIN
-    NEW(req);
-    cmd := "quit";
-    InitRequest(req, cmd(Object.String8), FALSE);
+    req := NEW(Quit, "quit", FALSE);
     ShortRequest(cl, req);
     RETURN req;
   END Quit;
