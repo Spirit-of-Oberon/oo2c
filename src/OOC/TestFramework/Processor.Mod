@@ -21,7 +21,7 @@ TYPE
   Processor* = POINTER TO ProcessorDesc;
   ProcessorDesc = RECORD
     baseDir, modDir, symDir, objDir, binDir, txtDir: String.String;
-    processCmd, filterCmd: String.String;
+    processCmd, filterCmd, diffCmd: String.String;
   END;
 
 TYPE
@@ -67,6 +67,9 @@ PROCEDURE Init (proc: Processor; setup: TestSetup.TestSetup);
     proc. filterCmd := NIL;
     IF (setup. processor. filterCommand # "") THEN
       proc. filterCmd := String.New (setup. processor. filterCommand)
+    END;
+    IF (setup. processor. diffCommand # "") THEN
+      proc. diffCmd := String.New (setup. processor. diffCommand)
     END
   END Init;
 
@@ -136,8 +139,14 @@ PROCEDURE (proc: Processor) CompareOutput (referenceFile, outputFile: ARRAY OF C
           result := processCompareFailed
         ELSIF (rr. res # Files.done) & (rr. res. code = Files.readAfterEnd) &
               (or. res # Files.done) & (or. res. code = Files.readAfterEnd)THEN
-          (* both files were read completely: success *)
-          result := processSuccess
+          (* both files were read completely: success; make sure that both
+             files agree on the line fragment if the last line is not
+             terminated with a newline *)
+          IF (rLine # oLine) THEN
+            result := processOutputDifference
+          ELSE
+            result := processSuccess
+          END
         ELSE  (* one file is through, the other has further lines: failure *)
           result := processOutputDifference
         END;
@@ -155,14 +164,14 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
     path: ARRAY 4*1024 OF CHAR;
     exit, status, signal: C.int;
     moduleName, modPath: String.String;
-    runOutFile, runErrFile: FilePath;
+    runOutFile, runErrFile, runDiffFile: FilePath;
   
-  PROCEDURE GetFileName (moduleName: String.String; suffix: ARRAY OF CHAR;
+  PROCEDURE GetFileName (suffix: ARRAY OF CHAR;
                          VAR path: ARRAY OF CHAR);
     BEGIN
       COPY (proc. txtDir. array^, path);
       Strings.Append ("/", path);
-      Strings.Append (moduleName. array^, path);
+      Strings.Append (test. id, path);
       Strings.Append (suffix, path)
     END GetFileName;
   
@@ -219,13 +228,13 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
     BEGIN
       (* determine path for stdout and stderr output *)
       IF build THEN
-        GetFileName (moduleName, ".build.out", outFile);
-        GetFileName (moduleName, ".build.err", errFile);
-        GetFileName (moduleName, ".build.filter", filterFile);
+        GetFileName (".build.out", outFile);
+        GetFileName (".build.err", errFile);
+        GetFileName (".build.filter", filterFile);
       ELSE
-        GetFileName (moduleName, ".compile.out", outFile);
-        GetFileName (moduleName, ".compile.err", errFile);
-        GetFileName (moduleName, ".compile.filter", filterFile);
+        GetFileName (".compile.out", outFile);
+        GetFileName (".compile.err", errFile);
+        GetFileName (".compile.filter", filterFile);
       END;
       
       (* compile test module *)
@@ -302,11 +311,11 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
         w. WriteString (name. array^);
         w. WriteString (";");
         w. WriteLn;
-        w. WriteString ("IMPORT ");
+        w. WriteString ("IMPORT Out, ");
         w. WriteString (name. array^);
         w. WriteString (";");
         w. WriteLn;
-        w. WriteString ("BEGIN ");
+        w. WriteString ("BEGIN Out.Open; ");
         w. WriteString (name. array^);
         w. WriteString (".Test;");
         w. WriteLn;
@@ -358,6 +367,7 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
     IF (result = processAccept) & (test. type >= Testcases.testError) THEN
       (* if the module must be evaluated, create a wrapper that calls the
          exported procedure and build an executable *)
+      runDiffFile := "";
       modPath := WriteMainModule (moduleName);
       IF (modPath = NIL) THEN
         result := processMainModuleError;
@@ -373,8 +383,8 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
           Out.String ("ok"); Out.Ln;
           
           (* run the freshly generated program and see if it aborts *)
-          GetFileName (moduleName, ".run.out", runOutFile);
-          GetFileName (moduleName, ".run.err", runErrFile);
+          GetFileName (".run.out", runOutFile);
+          GetFileName (".run.err", runErrFile);
           COPY (moduleName. array^, path);
           Strings.Insert ("/x", 0, path);
           Strings.Insert (proc. binDir. array^, 0, path);
@@ -393,7 +403,19 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
             result := processSuccess;
             IF (test. type = Testcases.testOutput) THEN
               test. output(File.URI). GetPath (path);
-              result := proc. CompareOutput (path, runOutFile)
+              result := proc. CompareOutput (path, runOutFile);
+              
+              IF (result # processSuccess) THEN
+                GetFileName (".run.diff", runDiffFile);
+                Strings.Insert (" '", 0, path);
+                Strings.Insert (proc. diffCmd. array^, 0, path);
+                Strings.Append ("' '", path);
+                Strings.Append (runOutFile, path);
+                Strings.Append ("' >'", path);
+                Strings.Append (runDiffFile, path);
+                Strings.Append ("'", path);
+                exit := ProcessManagment.system (path);
+              END
             END
           ELSE
             result := processError
@@ -402,6 +424,9 @@ PROCEDURE (proc: Processor) Process* (test: Testcases.Test;
           reportWriter. StartTag ("run-status", FALSE);
           AttrFileRef ("stdout", runOutFile);
           AttrFileRef ("stderr", runErrFile);
+          IF (runDiffFile # "") THEN
+            AttrFileRef ("diff", runDiffFile)
+          END;
           IF (status # 0) THEN
             reportWriter. AttrInt ("status", status)
           END;

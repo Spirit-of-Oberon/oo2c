@@ -49,6 +49,7 @@ TYPE
     flags-: String8;
     workingDir-: URI.URI;
     filterCommand-: String8;
+    diffCommand-: String8;
   END;
 
 TYPE
@@ -249,6 +250,7 @@ PROCEDURE InitProcessor (processor: Processor);
     processor. flags := unknownString8;
     processor. workingDir := NIL;
     processor. filterCommand := "";
+    processor. diffCommand := "";
   END InitProcessor;
 
 PROCEDURE NewProcessor(): Element.Element;
@@ -273,7 +275,8 @@ PROCEDURE (processor: Processor) IsAttributeName* (localName: Element.String): B
            (localName^ = "config-file") OR
            (localName^ = "flags") OR
            (localName^ = "working-dir") OR
-           (localName^ = "filter-command")
+           (localName^ = "filter-command") OR
+           (localName^ = "diff-command")
   END IsAttributeName;
 
 PROCEDURE (processor: Processor) AddAttribute* (localName: Element.String;
@@ -293,6 +296,8 @@ PROCEDURE (processor: Processor) AddAttribute* (localName: Element.String;
       RETURN DataType.GetURIAttr (value, processor. baseURI, processor. workingDir)
     ELSIF (localName^ = "filter-command") THEN
       RETURN DataType.GetStringLatin1Attr (value, processor. filterCommand)
+    ELSIF (localName^ = "diff-command") THEN
+      RETURN DataType.GetStringLatin1Attr (value, processor. diffCommand)
     ELSE
       RETURN FALSE
     END
@@ -311,6 +316,9 @@ PROCEDURE (processor: Processor) Write* (writer: Writer.Writer);
     writer. AttrURI ("working-dir", processor. workingDir, FALSE);
     IF (processor. filterCommand # "") THEN
       writer. AttrStringLatin1 ("filter-command", processor. filterCommand)
+    END;
+    IF (processor. diffCommand # "") THEN
+      writer. AttrStringLatin1 ("diff-command", processor. diffCommand)
     END;
     writer. EndTag
   END Write;
