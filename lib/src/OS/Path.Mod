@@ -19,87 +19,69 @@ MODULE OS:Path;
 *)
 
 IMPORT
-  Object, Strings;
+  Object;
 
-
-PROCEDURE dirname* (path: ARRAY OF CHAR; VAR dirname: ARRAY OF CHAR);
-(**Calculates the directory name of pathname @oparam{path} and returns the
-   result in @oparam{dirname}.  If @oparam{dirname} is not long enough to hold
-   the result, the string is truncated. *)
+CONST
+  sep = "/";
+  
+PROCEDURE DirName*(path: STRING): STRING;
+(**Calculates the directory name of pathname @oparam{path}.  *)
   VAR
-    i, j: INTEGER;
-    len: LONGINT;
+    i, j: LONGINT;
   BEGIN
-    len := LEN (dirname);
-    
-    (* copy anything in path up to and including the final "/" to dirname *)
-    i := Strings.Length (path);
-    WHILE (i > 0) & (path[i-1] # "/") DO
-      DEC (i)
-    END;
-    FOR j := 0 TO i-1 DO
-      IF (j < len) THEN
-        dirname[j] := path[j]
-      END
-    END;
-    IF (i >= len) THEN
-      i := SHORT (len-1)
-    END;
-    dirname[i] := 0X;
-    
-    (* if dirname is not composed exclusively of slashes, remove any
-       trailing "/" characters *)
-    i := -1;
-    j := 0;
-    WHILE (dirname[j] # 0X) DO
-      IF (dirname[j] # "/") THEN
-        i := j
-      END;
-      INC (j)
-    END;
+    i := path.LastIndexOf(sep, path.length);
     IF (i >= 0) THEN
-      dirname[i+1] := 0X
-    END
-  END dirname;
-
-PROCEDURE basename* (path: ARRAY OF CHAR; VAR basename: ARRAY OF CHAR);
-(**Calculates the basename of pathname @oparam{path} and returns the result in
-   @oparam{basename}.  The basename is the last pathname component of path.  It
-   will never contain a slash.  If path ends with a slash, then the basename is
-   the empty string.  If path does not contain a slash, then the basename
-   equals path.  If @oparam{basename} is not long enough to hold the result,
-   the string is truncated.  *)
-  VAR
-    i: INTEGER;
-  BEGIN
-    i := Strings.Length (path);
-    WHILE (i > 0) & (path[i-1] # "/") DO
-      DEC (i)
+      (* if dirname is not composed exclusively of slashes, remove any
+         trailing "/" characters *)
+      j := i;
+      WHILE (j > 0) & (path.CharAt(j-1) = sep) DO
+        DEC(j);
+      END;
+      IF (j = 0) THEN     (* include path separator at position `i' *)
+        INC(i);
+      ELSE                       (* discard all trailing separators *)
+        i := j;
+      END;
+      RETURN path.Substring(0, i);
+    ELSE                      (* plain file name, no directory part *)
+      RETURN "";
     END;
-    Strings.Extract (path, i, MAX (INTEGER), basename)
-  END basename;
+  END DirName;
 
-PROCEDURE splitext* (path: ARRAY OF CHAR; VAR root, ext: ARRAY OF CHAR);
+PROCEDURE BaseName* (path: STRING): STRING;
+(**Calculates the basename of pathname @oparam{path}.  The basename is the last
+   pathname component of @oparam{path}.  It never contains a slash.  If
+   @oparam{path} ends with a slash, then the basename is the empty string.  If
+   path does not contain a slash, then the basename equals path.  *)
+  VAR
+    i: LONGINT;
+  BEGIN
+    i := path.LastIndexOf(sep, path.length);
+    IF (i >= 0) THEN
+      RETURN path.Substring(i+1, path.length);
+    ELSE
+      RETURN path;
+    END;
+  END BaseName;
+
+PROCEDURE SplitExt* (path: STRING; VAR root, ext: STRING);
 (**Splits the pathname @oparam{path} into a pair @samp{(@oparam{root},
    @oparam{ext})} such that @samp{concat(@oparam{root},@oparam{ext}) =
    @oparam{path}}.  The extension @oparam{ext} is empty or begins with a period
    and contains at most one period.  The extension string does not contain a
    slash character.  *)
   VAR
-    i: INTEGER;
+    i: LONGINT;
   BEGIN
-    i := Strings.Length (path);
-    WHILE (i > 0) & (path[i-1] # "/") & (path[i] # ".") DO
-      DEC (i)
-    END;
-    IF (path[i] = ".") THEN
-      Strings.Extract (path, 0, i, root);
-      Strings.Extract (path, i, MAX (INTEGER), ext)
+    i := path.LastIndexOf(".", path.length);
+    IF (i >= 0) & (path.IndexOf(sep, i) < 0) THEN
+      root := path.Substring(0, i);
+      ext := path.Substring(i, path.length);
     ELSE
-      COPY (path, root);
-      COPY ("", ext)
-    END
-  END splitext;
+      root := path;
+      ext := "";
+    END;
+  END SplitExt;
 
 
 PROCEDURE Encode*(path: STRING): Object.CharsLatin1;

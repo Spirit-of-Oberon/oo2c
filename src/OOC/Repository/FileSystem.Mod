@@ -306,13 +306,13 @@ RAISES IO.Error;
 PROCEDURE (m: Module) CreateOutputDir* (fileId: Rep.FileId)
 RAISES IO.Error;
   VAR
-    path, str: Rep.URIBuffer;
+    path: Rep.URIBuffer;
     uri: URI.URI;
   BEGIN
     uri := m. GetURI (fileId, TRUE);
     uri(FileURI.URI). GetPath (path);
-    Path.dirname (path, str);
-    OSFiles.MakeDirs(Object.NewLatin1(str), OSFiles.defaultMode);
+    OSFiles.MakeDirs(Path.DirName(Object.NewLatin1(path)),
+                     OSFiles.defaultMode);
   END CreateOutputDir;
 
 PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId;

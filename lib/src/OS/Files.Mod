@@ -23,8 +23,7 @@ MODULE OS:Files [FOREIGN "C"; LINK FILE "Files.c";
 
 (**This is a subset of the @samp{Files & Directories} section of Python's
    @samp{os} package.  If you want to add to this module, use the Python
-   function signature and add a parameter @samp{res} instead of raising
-   an exception.  *)
+   function signature where appropriate.  *)
 
 IMPORT
   Object, OS:Path, IO, IO:StdChannels;

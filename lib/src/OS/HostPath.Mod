@@ -90,37 +90,15 @@ MODULE OS:HostPath [FOREIGN "C"; LINK FILE "HostPath.c" END];
 
 IMPORT
 <*WITH Warnings:=FALSE DO*>
-  Msg, LongStrings, CharClass, C;
+  CharClass, C, IO, IO:StdChannels;
 <*END*>
 
-TYPE
-  Result* = Msg.Msg;
-  Path* = ARRAY OF CHAR;
 
-CONST
-  done* = NIL;
-  (**Value of parameter @samp{res} after successful completion.  *)
-
-CONST
-  pathTooLong* = 0;
-  (**The buffer passed to @oproc{Normalize} or @oproc{Denormalize} is too small
-     to hold the string representation of the transformed path. *)
-
- TYPE
-  ErrorContext = POINTER TO ErrorContextDesc;
-  ErrorContextDesc = RECORD
-    (Msg.ContextDesc)
-  END;
-
-VAR
-<*WITH Warnings:=FALSE DO*>
-  errorContext: ErrorContext;
-<*END*>
-
-PROCEDURE Normalize* (VAR path : ARRAY OF CHAR; VAR res : Msg.Msg);
+PROCEDURE Normalize*(path: STRING): STRING
+RAISES IO.Error;
 (**Convert path from host OS to normal form. *)
 
-PROCEDURE Denormalize* (VAR path : ARRAY OF CHAR; VAR res : Msg.Msg);
+PROCEDURE Denormalize*(path: STRING): STRING;
 (**Convert path from normal to host OS form. *)
 
 END OS:HostPath.

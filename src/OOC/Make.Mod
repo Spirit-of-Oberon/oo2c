@@ -780,8 +780,8 @@ RAISES IO.Error;
         sb.AppendLatin1(path);
 
         (* create directory for HTML file, if it does not exist *)
-        Path.dirname (path, path);
-        OSFiles.MakeDirs (Object.NewLatin1(path), OSFiles.defaultMode);
+        OSFiles.MakeDirs (Path.DirName(Object.NewLatin1(path)),
+                          OSFiles.defaultMode);
         
         (* append file name of style sheet *)
         uri := GetSystemId (Config.repositories);

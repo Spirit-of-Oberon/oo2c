@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE Object;
 (*  Low-level object and string implementation.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002,2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -780,23 +780,7 @@ PROCEDURE (s: String) [ABSTRACT] IndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT
    @end precond *)
   END IndexOf;
 
-PROCEDURE (s: String8) IndexOf* (char: UCS4CHAR; pos: LONGINT): LONGINT;
-  VAR
-    endpos: LONGINT;
-  BEGIN
-    IF (char <= MAX(CHAR)) THEN
-      endpos := s.length;
-      WHILE (pos # endpos) DO
-        IF (s.data[pos] = char) THEN
-          RETURN pos;
-        END;
-        INC (pos)
-      END;
-    END;
-    RETURN -1
-  END IndexOf;
-
-PROCEDURE (s: String32) IndexOf* (char: UCS4CHAR; pos: LONGINT): LONGINT;
+PROCEDURE (s: String8) IndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT;
   VAR
     endpos: LONGINT;
   BEGIN
@@ -805,10 +789,58 @@ PROCEDURE (s: String32) IndexOf* (char: UCS4CHAR; pos: LONGINT): LONGINT;
       IF (s.data[pos] = char) THEN
         RETURN pos;
       END;
-      INC (pos)
+      INC (pos);
     END;
     RETURN -1
   END IndexOf;
+
+PROCEDURE (s: String32) IndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT;
+  VAR
+    endpos: LONGINT;
+  BEGIN
+    endpos := s.length;
+    WHILE (pos # endpos) DO
+      IF (s.data[pos] = char) THEN
+        RETURN pos;
+      END;
+      INC(pos);
+    END;
+    RETURN -1
+  END IndexOf;
+
+
+PROCEDURE (s: String) [ABSTRACT] LastIndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT;
+(**Return the index of the last character matching @oparam{char}.  Search
+   starts with the character before @oparam{pos} and progresses to the
+   beginning of the string @oparam{s}.  If no matching character is found,
+   result is @samp{-1}.
+
+   @precond
+   @samp{0 <= @oparam{pos} <= @ofield{s.length}}
+   @end precond  *)
+  END LastIndexOf;
+
+PROCEDURE (s: String8) LastIndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT;
+  BEGIN
+    WHILE (pos > 0) DO
+      DEC(pos);
+      IF (s.data[pos] = char) THEN
+        RETURN pos;
+      END;
+    END;
+    RETURN -1;
+  END LastIndexOf;
+
+PROCEDURE (s: String32) LastIndexOf*(char: UCS4CHAR; pos: LONGINT): LONGINT;
+  BEGIN
+    WHILE (pos > 0) DO
+      DEC(pos);
+      IF (s.data[pos] = char) THEN
+        RETURN pos;
+      END;
+    END;
+    RETURN -1;
+  END LastIndexOf;
 
 
 PROCEDURE (s: String) EndsWith*(suffix: String): BOOLEAN;

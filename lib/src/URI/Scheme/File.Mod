@@ -75,7 +75,8 @@ PROCEDURE (file: URI) GetPath* (VAR filePath: ARRAY OF CHAR);
    system, this is identical to the URI's path component.  *)
   VAR
     segm: Hierarchical.Segment;
-    res : Msg.Msg;
+    str: STRING;
+    chars: Object.CharsLatin1;
   BEGIN
     COPY ("", filePath);
     segm := file. pathList;
@@ -86,7 +87,10 @@ PROCEDURE (file: URI) GetPath* (VAR filePath: ARRAY OF CHAR);
       Strings.Append (segm. string^, filePath);
       segm := segm. next
     END;
-    HostPath.Denormalize(filePath, res);
+    
+    str := HostPath.Denormalize(Object.NewLatin1(filePath));
+    chars := str(Object.String8).CharsLatin1();
+    COPY(chars^, filePath);
   END GetPath;
 
 PROCEDURE (file: URI) GetChannel* (mode: URI0.ChannelMode): IO.ByteChannel
@@ -122,24 +126,25 @@ PROCEDURE GetCwd*(): URI;
    returned.  *)
   VAR
     uri: URI0.URI;
-    path, uriString: ARRAY 4*1024 OF CHAR;
+    uriString: ARRAY 4*1024 OF CHAR;
+    chars: Object.CharsLatin1;
     res: Msg.Msg;
+    cwd: STRING;
   BEGIN
-    ProcessParameters.getcwd (path, res);
-    IF (res = NIL) THEN 
-      HostPath.Normalize(path, res) 
-    END;
-    IF (res = NIL) THEN
+    TRY
+      cwd := HostPath.Normalize(ProcessParameters.GetCwd());
+      chars := cwd(Object.String8).CharsLatin1();
       uriString := "file:";
-      String.AppendEscaped (path, CharClass.unreservedPChar+"/", uriString);
+      String.AppendEscaped (chars^, CharClass.unreservedPChar+"/", uriString);
       IF (uriString[Strings.Length (uriString)-1] # "/") THEN
         Strings.Append ("/", uriString)
       END;
       uri := Parser.NewURI (uriString, NIL, res);
       ASSERT (uri # NIL);
-      RETURN uri(URI)
+      RETURN uri(URI);
+    CATCH IO.Error:
+      RETURN NIL;
     END;
-    RETURN NIL
   END GetCwd;
 
 PROCEDURE ToURI* (filePath: ARRAY OF CHAR): URI;
@@ -149,24 +154,31 @@ PROCEDURE ToURI* (filePath: ARRAY OF CHAR): URI;
     uri: URI0.URI;
     uriString, normPath: ARRAY 4*1024 OF CHAR;
     res: Msg.Msg;
+    str: STRING;
+    chars: Object.CharsLatin1;
   BEGIN
-    COPY(filePath, normPath);
-    HostPath.Normalize(normPath, res);
-    IF res # NIL THEN RETURN NIL END;
-    IF (normPath[0] = "/") THEN
-      uriString := "file:";
-      String.AppendEscaped (normPath, CharClass.unreservedPChar+"/", uriString);
-      uri := Parser.NewURI (uriString, NIL, res)
-    ELSE
-      uriString := "";
-      String.AppendEscaped (normPath, CharClass.unreservedChar+"/", uriString);
-      uri := Parser.NewURI (uriString, GetCwd(), res)
+    TRY
+      str := HostPath.Normalize(Object.NewLatin1(filePath));
+      chars := str(Object.String8).CharsLatin1();
+      COPY(chars^, normPath);
+      
+      IF (normPath[0] = "/") THEN
+        uriString := "file:";
+        String.AppendEscaped (normPath, CharClass.unreservedPChar+"/", uriString);
+        uri := Parser.NewURI (uriString, NIL, res)
+      ELSE
+        uriString := "";
+        String.AppendEscaped (normPath, CharClass.unreservedChar+"/", uriString);
+        uri := Parser.NewURI (uriString, GetCwd(), res)
+      END;
+      IF (uri = NIL) THEN
+        RETURN NIL
+      ELSE
+        RETURN uri(URI)
+      END;
+    CATCH IO.Error:
+      RETURN NIL;
     END;
-    IF (uri = NIL) THEN
-      RETURN NIL
-    ELSE
-      RETURN uri(URI)
-    END
   END ToURI;
 
 BEGIN

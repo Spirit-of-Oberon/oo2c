@@ -4,84 +4,84 @@ IMPORT OS:Path;
 
 PROCEDURE Test*;
   VAR
-    str, root, ext: ARRAY 1024 OF CHAR;
+    s, root, ext: STRING;
   BEGIN
     (* dirname
        --------------------------------------------------------------------- *)
-    Path.dirname("", str);
-    ASSERT (str = "");
+    s := Path.DirName("");
+    ASSERT (s.Equals(""));
 
-    Path.dirname("/", str);
-    ASSERT (str = "/");
+    s := Path.DirName("/");
+    ASSERT (s.Equals("/"));
 
-    Path.dirname("//", str);
-    ASSERT (str = "//");
+    s := Path.DirName("//");
+    ASSERT (s.Equals("//"));
 
-    Path.dirname("abc", str);
-    ASSERT (str = "");
+    s := Path.DirName("abc");
+    ASSERT (s.Equals(""));
 
-    Path.dirname("/abc", str);
-    ASSERT (str = "/");
+    s := Path.DirName("/abc");
+    ASSERT (s.Equals("/"));
 
-    Path.dirname("~", str);
-    ASSERT (str = "");
+    s := Path.DirName("~");
+    ASSERT (s.Equals(""));
 
-    Path.dirname("~/", str);
-    ASSERT (str = "~");
+    s := Path.DirName("~/");
+    ASSERT (s.Equals("~"));
 
-    Path.dirname("~foo/", str);
-    ASSERT (str = "~foo");
+    s := Path.DirName("~foo/");
+    ASSERT (s.Equals("~foo"));
 
-    Path.dirname("abc/", str);
-    ASSERT (str = "abc");
+    s := Path.DirName("abc/");
+    ASSERT (s.Equals("abc"));
 
-    Path.dirname("abc///", str);
-    ASSERT (str = "abc");
+    s := Path.DirName("abc///");
+    ASSERT (s.Equals("abc"));
     
     
     (* Path.basename
        --------------------------------------------------------------------- *)
-    Path.basename("", str);
-    ASSERT (str = "");
+    s := Path.BaseName("");
+    ASSERT (s.Equals(""));
     
-    Path.basename("/", str);
-    ASSERT (str = "");
+    s := Path.BaseName("/");
+    ASSERT (s.Equals(""));
     
-    Path.basename("abc/", str);
-    ASSERT (str = "");
+    s := Path.BaseName("abc/");
+    ASSERT (s.Equals(""));
     
-    Path.basename("abc", str);
-    ASSERT (str = "abc");
+    s := Path.BaseName("abc");
+    ASSERT (s.Equals("abc"));
     
-    Path.basename("abc/x", str);
-    ASSERT (str = "x");
+    s := Path.BaseName("abc/x");
+    ASSERT (s.Equals("x"));
     
     
     (* Path.splitext
        --------------------------------------------------------------------- *)
-    Path.splitext("", root, ext);
-    ASSERT (root = ""); ASSERT (ext = "");
+    Path.SplitExt("", root, ext);
+    ASSERT (root.Equals("")); ASSERT (ext.Equals(""));
     
-    Path.splitext("/", root, ext);
-    ASSERT (root = "/"); ASSERT (ext = "");
+    Path.SplitExt("/", root, ext);
+    ASSERT (root.Equals("/")); ASSERT (ext.Equals(""));
     
-    Path.splitext(".", root, ext);
-    ASSERT (root = ""); ASSERT (ext = ".");
+    Path.SplitExt(".", root, ext);
+    ASSERT (root.Equals("")); ASSERT (ext.Equals("."));
     
-    Path.splitext("/.", root, ext);
-    ASSERT (root = "/"); ASSERT (ext = ".");
+    Path.SplitExt("/.", root, ext);
+    ASSERT (root.Equals("/")); ASSERT (ext.Equals("."));
     
-    Path.splitext("./", root, ext);
-    ASSERT (root = "./"); ASSERT (ext = "");
+    Path.SplitExt("./", root, ext);
+    ASSERT (root.Equals("./")); ASSERT (ext.Equals(""));
     
-    Path.splitext("a.", root, ext);
-    ASSERT (root = "a"); ASSERT (ext = ".");
+    Path.SplitExt("a.", root, ext);
+    ASSERT (root.Equals("a")); ASSERT (ext.Equals("."));
     
-    Path.splitext("a.b", root, ext);
-    ASSERT (root = "a"); ASSERT (ext = ".b");
+    Path.SplitExt("a.b", root, ext);
+    ASSERT (root.Equals("a")); ASSERT (ext.Equals(".b"));
     
-    Path.splitext("a.b.c", root, ext);
-    ASSERT (root = "a.b"); ASSERT (ext = ".c");
+    Path.SplitExt("a.b.c", root, ext);
+    ASSERT (root.Equals("a.b")); ASSERT (ext.Equals(".c"));
     
   END Test;
 

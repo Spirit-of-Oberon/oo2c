@@ -153,6 +153,16 @@ TYPE
   (**This exception is raised if a C function returns a @samp{EBUSY} error. *)
     (ErrorDesc)
   END;
+  InvalidArgument* = POINTER TO InvalidArgumentDesc;
+  InvalidArgumentDesc = RECORD
+  (**This exception is raised if a C function returns a @samp{EINVAL} error. *)
+    (ErrorDesc)
+  END;
+  OutOfRange* = POINTER TO OutOfRangeDesc;
+  OutOfRangeDesc = RECORD
+  (**This exception is raised if a C function returns a @samp{ERANGE} error. *)
+    (ErrorDesc)
+  END;
 
 TYPE
   NotImplemented* = POINTER TO NotImplementedDesc;

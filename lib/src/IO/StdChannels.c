@@ -35,6 +35,10 @@ void IO_StdChannels__IOError(Object__String suffix) {
     e_type = OOC_TYPE_DESCR(IO,FileExistsDesc); break;
   case EBUSY:
     e_type = OOC_TYPE_DESCR(IO,FileBusyDesc); break;
+  case EINVAL:
+    e_type = OOC_TYPE_DESCR(IO,InvalidArgumentDesc); break;
+  case ERANGE:
+    e_type = OOC_TYPE_DESCR(IO,OutOfRangeDesc); break;
   default:
     e_type = OOC_TYPE_DESCR(IO,ErrorDesc);
   }

@@ -543,7 +543,9 @@ PROCEDURE ValidModuleName* (moduleName: ARRAY OF CHAR): BOOLEAN;
 PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BOOLEAN): Module;
   VAR
     relURI: URI.URI;
-    str, subdir, ext: URIBuffer;
+    str, subdir: URIBuffer;
+    s, ext: STRING;
+    chars: Object.CharsLatin1;
     i: INTEGER;
     m: Module;
   BEGIN
@@ -552,10 +554,11 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
     IF force THEN
       (* force: take basename of uri minus extension as module name *)
       uri. GetString (str);
-      Path.basename(str, str);
-      Path.splitext(str, str, ext);
-      IF ValidModuleName (str) THEN
-        m := rep. GetModule (str, uri)
+      s := Path.BaseName(Object.NewLatin1(str));
+      Path.SplitExt(s, s, ext);
+      chars := s(Object.String8).CharsLatin1();
+      IF ValidModuleName (chars^) THEN
+        m := rep. GetModule (chars^, uri)
       END
     ELSE
 
