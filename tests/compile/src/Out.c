@@ -21,7 +21,7 @@ void Out__Bool(OOC_BOOLEAN b) {
   fprintf(stdout, b ? "TRUE" : "FALSE");
 }
 
-void Out__Set(OOC_SET32 set) {
+void Out__Set(OOC_UINT32 set) {
 #define MAXSET 31
   int bit, comma, begin;
 
