@@ -54,7 +54,6 @@ MODULE libadt;
 
 IMPORT
   ADT:Storable,
-  ADT:String,
   ADT:StringBuffer,
   ADT:ArrayList,
   ADT:LinkedList,
