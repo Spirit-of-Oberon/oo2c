@@ -366,6 +366,22 @@ PROCEDURE Transform* (pb: SSA.ProcBlock; tr: TypeRules.Rules);
               RETURN TraceF (lastDefinition,
                             instr. GetResultStore())
             END;
+
+          | Opcode.copyString:
+            alias := Aliasing.DesignatorAlias (tr, originWriteDesign, instr. GetOpndClass (Opnd.writeDesign));
+            IF (alias # Aliasing.noAliasing) THEN
+              (* this string copy does not overwrite completely the original
+                 set, or no static aliasing calculation can be done: we must
+                 keep the write operation alive, but its static visibility ends
+                 here *)
+              RETURN TRUE
+            ELSE
+              (* this "set" and "origin" work on different variables, and
+                 cannot interfere with each other: continue trace through
+                 `instr' *)
+              RETURN TraceF (lastDefinition,
+                            instr. GetResultStore())
+            END;
             
           | Opcode.select, Opcode.selectExit:
             IF (instr. info = NIL) THEN

@@ -621,6 +621,17 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (name. array^);
       WriteTypeAndSize
     END CopyParameter;
+
+  PROCEDURE CopyString (instr: SSA.Instr);
+    BEGIN
+      w. WriteString ("_copy(");
+      w. Ref (instr. GetOpndClass (Opnd.readAdr));
+      w. WriteChar (",");
+      w. Ref (instr. GetOpndClass (Opnd.writeAdr));
+      w. WriteChar (",");
+      w. Ref (instr. GetOpndClass (Opnd.arg));
+      w. WriteString (");");
+    END CopyString;
   
   PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;
   (* Returns TRUE if all paths into the "select-return" end with a
@@ -822,6 +833,9 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         w. Ref (instr. GetOpndClass (Opnd.sourceValue));
         w. WriteChar (";");
 
+      | Opcode.copyString:
+        CopyString (instr);
+        
       | Opcode.getLength:
         GetLength (instr);
         

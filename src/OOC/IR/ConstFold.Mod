@@ -563,6 +563,10 @@ PROCEDURE (c: ConstFold) VisitCopyParameter* (cp: IR.CopyParameter);
   BEGIN
   END VisitCopyParameter;
 
+PROCEDURE (c: ConstFold) VisitCopyString* (cp: IR.CopyString);
+  BEGIN
+  END VisitCopyString;
+
 
 PROCEDURE (c: ConstFold) VisitProcedure* (procedure: IR.Procedure);
   BEGIN

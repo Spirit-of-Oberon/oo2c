@@ -52,7 +52,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
   PROCEDURE Chain (instr: SSA.Instr);
     BEGIN
-      IF (instr. opcode = Opcode.set) OR (instr. opcode = Opcode.newObject) THEN
+      IF (instr. opcode = Opcode.set) OR
+         (instr. opcode = Opcode.copyString) OR
+         (instr. opcode = Opcode.newObject) THEN
         instr. opndList. ReplaceArg (s);
       ELSE
         instr. AddOpnd (s, Opnd.store);
@@ -826,6 +828,47 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       s := instr. AddResult (Result.store);
     END CopyParameter;
   
+  PROCEDURE CopyString (cp: IR.CopyString): SSA.Instr;
+    VAR
+      instr: SSA.Instr;
+      source, dest, maxLength: SSA.Result;
+      opnd: SSA.Opnd;
+    BEGIN
+      instr := pb. AddInstr (Opcode.copyString, Opcode.scNone);
+
+      source := Expression (cp. source);
+      dest := Expression (cp. dest);
+      maxLength := Expression (cp. maxLength);
+
+      instr. AddOpnd (s, Opnd.store);
+      IF (cp. source IS IR.Const) THEN
+        (* copying a string constant *)
+        instr. AddOpnd (source, Opnd.readAdr);
+      ELSE
+        opnd := source. instr. opndList;
+        WHILE (opnd # NIL) DO
+          IF (opnd. class = Opnd.readAdr) OR
+             (opnd. class = Opnd.readDesign) THEN
+            instr. AddOpnd (opnd. arg, opnd. class);
+          END;
+          opnd := opnd. nextOpnd;
+        END;
+      END;
+      
+      opnd := dest. instr. opndList;
+      WHILE (opnd # NIL) DO
+        IF (opnd. class = Opnd.readAdr) THEN
+          instr. AddOpnd (opnd. arg, Opnd.writeAdr);
+        ELSIF (opnd. class = Opnd.readDesign) THEN
+          instr. AddOpnd (opnd. arg, Opnd.writeDesign);
+        END;
+        opnd := opnd. nextOpnd;
+      END;
+      instr. AddOpnd (maxLength, Opnd.arg);
+
+      RETURN instr;
+    END CopyString;
+  
   BEGIN
     FOR i := 0 TO LEN (statmSeq^)-1 DO
       statm := statmSeq[i];
@@ -866,6 +909,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         
       | statm: IR.CopyParameter DO
         CopyParameter (statm);
+            
+      | statm: IR.CopyString DO
+        Chain (CopyString (statm));
             
       ELSE
         Log.Type("++ Unknown statement class in StatmSeq", statm);

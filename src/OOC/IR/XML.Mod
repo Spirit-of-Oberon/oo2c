@@ -480,6 +480,21 @@ PROCEDURE (v: Visitor) VisitCopyParameter* (cp: IR.CopyParameter);
     v. w. EndTag;  (* copy-parameter *)
   END VisitCopyParameter;
 
+PROCEDURE (v: Visitor) VisitCopyString* (cp: IR.CopyString);
+  BEGIN
+    v. w. StartTag ("copy-string", FALSE);
+    v. w. StartTag ("source", FALSE);
+    cp. source. Accept (v);
+    v. w. EndTag;  (* source *)
+    v. w. StartTag ("dest", FALSE);
+    cp. dest. Accept (v);
+    v. w. EndTag;  (* dest *)
+    v. w. StartTag ("max-length", FALSE);
+    cp. maxLength. Accept (v);
+    v. w. EndTag;  (* max-length *)
+    v. w. EndTag;  (* copy-string *)
+  END VisitCopyString;
+
 
 PROCEDURE VisitProcedureList (v: Visitor; procList: IR.ProcedureList);
   VAR
