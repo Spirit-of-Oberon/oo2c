@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; bugLoopRewrite3">-->
+  select ="&SetupTestCasesWithOut; undef1">-->
 
   &TestSetupWithOut;
     
@@ -1301,6 +1301,11 @@
     </test>
   </testcases>
   
+  <!--<testcases profile="Tests for Warnings" default-lang="OOC O2">
+    <test id="undef1" type="accept" file="Undef1.Mod">
+    </test>
+  </testcases>-->
+  
   <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC O2">
     <test id="bugDestore1" type="accept" file="BugDestore1.Mod">
       The test statements caused the module
@@ -1696,5 +1701,8 @@
         msg="Abstract procedure must be exported"/>
     <reject-info id="abstract9" pos="R1 = %RECORD"
         msg="Inherited procedure `Proc' is still abstract"/>
+
+    <!--<warning-info id="undef1" pos="x := %y;"
+        msg="Warning: Undefined variable"/>-->
   </processor-info>
 </testsuite-ext>

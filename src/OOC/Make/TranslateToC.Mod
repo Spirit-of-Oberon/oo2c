@@ -25,7 +25,7 @@ IMPORT
   OOC:Config, OOC:Config:Pragmas, OOC:Auxiliary:ParseModule,
   OOC:Auxiliary:WriteSymbolFile, OOC:Error, OOC:Repository, OOC:AST,
   OOC:AST:ExtTree, OOC:AST:ExtTree:CreateIR, ASTtoXML := OOC:AST:ExtTree:XML, 
-  OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold,
+  OOC:IR, IRtoXML := OOC:IR:XML, OOC:IR:ConstFold, OOC:IR:CheckUses,
   Sym := OOC:SymbolTable, OOC:SymbolTable:Exports, 
   OOC:C:DeclWriter, OOC:C:ConvertDecl, OOC:C:RuntimeData;
 
@@ -274,6 +274,10 @@ RAISES IO.Error;
                                    IR.NewBuilder (symTab, pragmaHistory,
                                                   errList, 
                                                   ConstFold.NewConstFold()));
+      IF errList.NoErrors() THEN
+        CheckUses.CheckUses(module, errList);
+      END;
+      
       IF writeIR THEN
         IRtoXML.Write (StdChannels.stdout, module);
       END;
