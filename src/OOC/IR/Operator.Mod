@@ -502,6 +502,25 @@ PROCEDURE (b: Builder) NewOperator* (sym: IR.Symbol; left, right: IR.Expression)
     RETURN b.ErrExpr(IR.unknownOp, sym);  (* shouldn't get here *)
   END NewOperator;
 
+PROCEDURE (b: Builder) NewCall* (design: IR.Expression; arguments: IR.ExpressionList): IR.Expression;
+  BEGIN
+    WITH design: IR.PredefProc DO
+      (* note: predefined functions are handled by a specialization of thie
+         method in module OOC:IR:Operator *)
+      CASE design. decl(Sym.PredefProc). id OF
+      | Predef.len:
+        ASSERT (LEN (arguments^) = 1);
+        RETURN b. NewLen (design. sym, arguments[0], 0)
+        
+      ELSE
+        RETURN b. NewCall^ (design, arguments);
+      END
+    ELSE
+      RETURN b. NewCall^ (design, arguments);
+    END
+  END NewCall;
+
+
 (* -------- *)
 
 PROCEDURE (b: Builder) TransformArgs* (sym: IR.Symbol;

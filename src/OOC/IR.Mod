@@ -957,14 +957,16 @@ PROCEDURE (b: Builder) NewCall* (design: Expression; arguments: ExpressionList):
   VAR
     call: Call;
   BEGIN
-    NEW (call);
     WITH design: PredefProc DO
+      (* note: predefined functions are handled by a specialization of thie
+         method in module OOC:IR:Operator *)
       CASE design. decl(Sym.PredefProc). id OF
       | Predef.assert:
         RETURN b. NewAssert (design. sym, arguments,
                    GetPragmaValue (b, StdPragmas.assertions, design. sym. pos))
       END
     ELSE
+      NEW (call);
       arguments := b. TransformArgs (design. sym,
                                      design. type(Sym.FormalPars). params,
                                      arguments);
