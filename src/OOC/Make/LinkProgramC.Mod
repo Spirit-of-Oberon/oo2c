@@ -26,7 +26,8 @@ IMPORT
   OS:ProcessManagement, OOC:Error, OOC:Repository, OOC:Config:CCompiler,
   Sym := OOC:SymbolTable;
 
-PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module): String.StringArrayPtr;
+PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
+                           thisLibrary: String.String): String.StringArrayPtr;
   VAR
     i, j: LONGINT;
     linkDirective: Sym.LinkDirective;
@@ -64,6 +65,12 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module): String.Strin
         INC (pos);
       END;
     END AddLibrary;
+
+  PROCEDURE IncludeModule(module: Repository.Module): BOOLEAN;
+    BEGIN
+      RETURN (module.ifData.libraryName = NIL) OR
+          module.ifData.libraryName.Equals(thisLibrary);
+    END IncludeModule;
   
   BEGIN
     (* In the a first pass over all object files, pick up any references
@@ -71,7 +78,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module): String.Strin
        libraries themselves.  *)
     libDeps := Dictionary.New();
     FOR i := 0 TO LEN(moduleList)-1 DO
-      IF (moduleList[i].ifData.libraryName = NIL) THEN
+      IF IncludeModule(moduleList[i]) THEN
         (* note down any libraries that need to be linked in *)
         linkDirective := moduleList[i].ifData.linkDirectives;
         WHILE (linkDirective # NIL) DO
@@ -94,7 +101,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module): String.Strin
     visited := Dictionary.New();
     j := 0;
     FOR i := 0 TO LEN(moduleList)-1 DO
-      IF (moduleList[i].ifData.libraryName = NIL) THEN
+      IF IncludeModule(moduleList[i]) THEN
         (* note down any libraries that need to be linked in *)
         linkDirective := moduleList[i].ifData.linkDirectives;
         WHILE (linkDirective # NIL) DO
@@ -186,7 +193,7 @@ PROCEDURE Run*(module: Repository.Module;
       
       (* add "-l" options for the external libraries, most specific library
          first *)
-      extLibs := GetExternalLibs(imports);
+      extLibs := GetExternalLibs(imports, forLibrary);
       FOR i := LEN (extLibs^)-1 TO 0 BY -1 DO
         Strings.Append (" -l", str);
         Strings.Append (extLibs[i]. array^, str);
