@@ -10,8 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; abstract1 abstract2 abstract3
-  abstract4 abstract5 abstract6 abstract7 abstract8 abstract9">-->
+  select ="&SetupTestCasesWithOut; record12 record13 record14 record15">-->
 
   &TestSetupWithOut;
     
@@ -714,6 +713,19 @@
       Assigning to a record variable whose dynamic type does match
       its static type.  This test complements <code>record11</code>.
     </test>
+    <test id="record13" type="reject" file="Record13.Mod">
+      Declaring two fields of the same name within a record.
+    </test>
+    <test id="record14" type="reject" file="Record14.Mod">
+      Declaring two fields of the same name, one in the base record
+      and one in an extension.
+    </test>
+    <test id="record15" type="run" file="Record15.Mod">
+      Declaring two fields of the same name, one in the base record
+      and one in an extension in another module.  Since the field in
+      the base record is not exported, this module should compile
+      fine.
+    </test>
     
     
     <test id="array1" type="run" file="Array1.Mod" output="Array1.Ref">
@@ -1263,7 +1275,7 @@
     </test>
   </testcases>
   
-  <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC">
+  <testcases profile="Regression Tests for OOC Bugs" default-lang="OOC O2">
     <test id="bugDestore1" type="accept" file="BugDestore1.Mod">
       The test statements caused the module
       <code>OOC:SSA:Destore</code> to place a reference to a
@@ -1333,6 +1345,11 @@
       msg="This variable has no dynamic type"/>
     <reject-info id="with7" pos="WITH r: %R1"
       msg="Type must be an extension of the left operand's type"/>
+    
+    <reject-info id="record13" pos=", %x:"
+      msg="Multiple declaration of same name"/>
+    <reject-info id="record14" pos="%x:"
+      msg="This name is already defined in the record's base type"/>
     
     <reject-info id="typetest5" pos="IS %LONGINT"
       msg="Type must be an extension of the left operand's type"/>

@@ -4,7 +4,7 @@ IMPORT
   Out := Out0;
   
 TYPE
-  R0 = RECORD      x: INTEGER; END;
+  R0*= RECORD      x: INTEGER; END;
   R1 = RECORD (R0) y: INTEGER; END;
   
 VAR

@@ -67,7 +67,7 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): String.String;
       (* use relative names for record fields, as long as there are no
          collisions between a local field and one inherited from a
          base type *)
-      relativeName := TRUE;  (* FIXME... check for collision *)
+      relativeName := ~decl(Sym.FieldDecl).shadowsPrivateBase;
 
     ELSIF (decl IS Sym.ProcDecl) & (decl(Sym.ProcDecl). linkName # NIL) THEN
       (* the declaration defines its own linkage name: immediately, return it
