@@ -60,8 +60,11 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): STRING;
     relativeName := FALSE;
     
     IF (decl IS Sym.VarDecl) &
-       (decl(Sym.VarDecl). isParameter OR ~(decl. parent IS Sym.Module)) THEN
-      (* use relative names for parameters and for variables of procedures *)
+       (decl(Sym.VarDecl). isParameter OR
+        ~(decl. parent IS Sym.Module) OR
+        IsInterfaceModule (decl. Module())) THEN
+      (* use relative names for parameters and for variables of procedures,
+         and do not mangle variable names in INTERFACE modules *)
       relativeName := TRUE;
       
     ELSIF (decl IS Sym.FieldDecl) THEN
