@@ -17,8 +17,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 ">-->
-  &TestSetupWithOut;
+  select ="prepare_out_module lib_rt1 lib_Exception23 lib_Exception28">
+  &TestSetupWithOut;-->
   
   <testcases profile="OOC Core Library" default-lang="O2">
     <test id="lib_rt1" type="run" file="LibRT1.Mod">
@@ -640,7 +640,7 @@
       It is only a warning if an exception is not caught within a
       module body.
     </test>
-    <test id="lib_Exception23" type="accept" file="LibException23.Mod"
+    <test id="lib_Exception23" type="run" file="LibException23.Mod"
       output="LibException23.Ref">
       Like <code>lib_Exception1</code>, but use the predefined
       procedure <code>RAISE</code> to raise an exception.
@@ -661,6 +661,10 @@
       In the C output, both variables should be flagged
       <code>volatile</code>.  This test should be in
       <code>tests/ssa-c-output/</code>.
+    </test>
+    <test id="lib_Exception28" type="run" file="LibException28.Mod"
+      output="LibException28.Ref">
+      Re-raising an exception with a <code>CATCH</code> block.
     </test>
     
     <test id="lib_BigInt1" type="run" file="LibBigInt1.Mod">
