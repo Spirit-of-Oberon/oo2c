@@ -28,7 +28,7 @@ MODULE Object:Boxed;
    it during their lifetime.  *)
 
 IMPORT
-  IntStr, RealStr, LRealStr, Strings,
+  SYSTEM, IntStr, RealStr, LRealStr, Strings,
   HashCode, Obj := Object, IO, ADT:Storable, ADT:StringBuffer;
 
 TYPE
@@ -510,6 +510,11 @@ PROCEDURE (v: Set) ToString*(): STRING;
     
     RETURN Obj.NewLatin1(str);
   END ToString;
+
+PROCEDURE (v: Set) ToLongInt*(): LONGINT;
+  BEGIN
+    RETURN SYSTEM.VAL(LONGINT, v.value);
+  END ToLongInt;
 
 PROCEDURE (v: Set) Store*(w: Storable.Writer) RAISES IO.Error;
   BEGIN
