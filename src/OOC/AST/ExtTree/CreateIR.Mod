@@ -571,13 +571,30 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
      in the source code.  This works fine, as long as no forward references
      can appear in the resolved expressions.  *)
     VAR
-      nested: Sym.Item;
       expr: IR.Expression;
+      oldNamespace: Sym.Namespace;
+      oldSourceContext: Sym.Item;
+
+    PROCEDURE TraverseNested (item: Sym.Item);
+      VAR
+        nested: Sym.Item;
+      BEGIN
+        nested := item. nestedItems;
+        WHILE (nested # NIL) DO
+          TranslateEmbeddedExpr (nested);
+          nested := nested. nextNested
+        END;
+      END TraverseNested;
+    
     BEGIN
       WITH item: Sym.Array DO
         IF ~item. isOpenArray THEN
           expr := Expr (item. lengthExpr(ExtTree.Node));
-          item. SetLength (expr(IR.Const). value(Integer.Value). ToLInt());
+          IF (expr = b. errorExpr) THEN  (* error in array length *)
+            item. SetLength (1);
+          ELSE
+            item. SetLength (expr(IR.Const). value(Integer.Value). ToLInt());
+          END;
         END;
 
       | item: Sym.ConstDecl DO
@@ -592,11 +609,19 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         END;
       ELSE  (* ignore *)  
       END;
-      
-      nested := item. nestedItems;
-      WHILE (nested # NIL) DO
-        TranslateEmbeddedExpr (nested);
-        nested := nested. nextNested
+
+      WITH item: Sym.ProcDecl DO
+        oldNamespace := currentNamespace;
+        oldSourceContext := currentSourceContext;
+        currentNamespace := item. ns;
+        currentSourceContext := item;
+        
+        TraverseNested (item);
+        
+        currentNamespace := oldNamespace;
+        currentSourceContext := oldSourceContext;
+      ELSE
+        TraverseNested (item);
       END;
     END TranslateEmbeddedExpr;
   
