@@ -9,14 +9,14 @@ L1__f:
 	pushl %esi
 	pushl %ebx
 	subl $12, %esp
-	mov $0, %edx
+	movl $0, %edx
 .L1:
 	movl %edx, %eax
 	movl 8(%ebp), %ecx
 	cmpb $0, (%ecx,%eax)
 	jne .L3
 .L2:
-	mov %edx, %eax
+	movl %edx, %eax
 	jmp .L4
 .L3:
 	incl %edx

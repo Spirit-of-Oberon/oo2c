@@ -12,9 +12,8 @@ T4__f:
 	cmpb $0, 8(%ebp)
 	je .L2
 .L1:
-	movl 12(%ebp), %ecx
-	addl 16(%ebp), %ecx
-	mov %ecx, %eax
+	movl 12(%ebp), %eax
+	addl 16(%ebp), %eax
 	jmp .L3
 .L2:
 	movl 12(%ebp), %eax

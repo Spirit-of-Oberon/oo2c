@@ -2,7 +2,7 @@ MODULE OOC:X86:Register;
 
 IMPORT
   Object, ADT:ArrayList, ADT:Dictionary, S := OOC:X86:SSA,
-  M := OOC:X86:Machine, OOC:SSA:IGraph;
+  M := OOC:X86:Machine, OOC:SSA:IGraph(*, Log, D := OOC:X86:Debug, Err*);
   
 CONST
   gpRegisters = 0;
@@ -175,7 +175,6 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: S.Block; instr: S.Instr;
    The merging block @var{i} has been reached, and the live set @oparam{live}
    represents the state right after the block.
    @end table  *)
-
   VAR
     iGraph: IGraph.Graph;
     res: S.Result;
@@ -201,6 +200,12 @@ PROCEDURE SweepLiveSet (rf: RegisterFile; b: S.Block; instr: S.Instr;
 
   BEGIN
     iGraph := rf.iGraph;
+    (* write current set of live results
+    FOR i := 0 TO rf.resultList.Size()-1 DO
+      IF iGraph.In(i, live) THEN
+        D.Log("   >>> in live", rf.resultList.array[i]);
+      END;
+    END;*)
     
     WHILE (instr # NIL) DO
       CASE instr.opcode OF
@@ -345,6 +350,19 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       END IsFreeRegister;
     
     BEGIN
+      (* for coalesced values, assign the color of the representative to
+         all life ranges that have been coalesced with it *)
+      FOR i := 0 TO LEN(colors^)-1 DO
+        res := rf.resultList.array[i];
+        j := res.marker;
+        IF (j < 0) THEN
+          REPEAT
+            j := rf.resultList.array[-j-1].marker;
+          UNTIL (j >= 0);
+          colors[i] := colors[j];
+        END;
+      END;
+      
       (* find out the maximum of all assigned colors *)
       maxColor := -1;
       FOR c IN colors^ DO
@@ -356,10 +374,10 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       rf.maxColor := maxColor;
 
       (*FOR i := 0 TO maxColor DO
-        Out.String("color="); Out.Int(i, 0); Out.Ln;
+        Log.Int("color", i);
         FOR j := 0 TO LEN(colors^)-1 DO
           IF (colors[j] = i) THEN
-            out.Result("  ", rf.resultList.array[j]);
+            D.Log("  ", rf.resultList.array[j]);
             maxColor := c;
           END;
         END;
@@ -388,21 +406,11 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       (* assign each result the name of "its" register *)
       FOR i := 0 TO LEN(colors^)-1 DO
         res := rf.resultList.array[i];
-        IF (res.marker < 0) THEN
-          j := res.marker;
-          WHILE (j < 0) DO
-            j := rf.resultList.array[-j-1].marker;
-          END;
-          res.adrMode := S.register;
-          res.register := colorToRegister[colors[j]];
-        ELSE
-          j := i;
-          IF (res.adrMode # S.noLocation) THEN
-            ASSERT(res.register = colorToRegister[colors[j]]);
-          END;
-          res.adrMode := S.register;
-          res.register := colorToRegister[colors[j]];
+        IF (res.adrMode # S.noLocation) THEN
+          ASSERT(res.register = colorToRegister[colors[i]]);
         END;
+        res.adrMode := S.register;
+        res.register := colorToRegister[colors[i]];
       END;
     END AssignRegisterNames;
 
@@ -412,6 +420,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
       mergedBlock: S.Block;
       opnd: S.Opnd;
       i: LONGINT;
+      ldJump: LiveData;
     BEGIN
       FOR i := 0 TO LEN(merge.jumps^)-1 DO
         jump := merge.jumps[i];
@@ -420,14 +429,29 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
         IF (merge.opcode = S.loopEnd) THEN
           position := position.prevInstr;
         END;
-        ld := NEW(LiveData, mergedBlock, position, 0,
-                  rf.iGraph.CopyVector(ld.live));
+        ldJump := NEW(LiveData, mergedBlock, position, 0,
+                      rf.iGraph.CopyVector(ld.live));
         FOR opnd IN jump.GateOperands() DO
-          AddResToLive(opnd.arg, ld.live);
+          AddResToLive(opnd.arg, ldJump.live);
         END;
-        ldReady.Append(ld);
+        ldReady.Append(ldJump);
       END;
     END MergeJumps;
+
+(*  PROCEDURE DumpMatrix(rf: RegisterFile);
+    VAR
+      i, j: LONGINT;
+    BEGIN
+      FOR i := 0 TO rf.resultList.Size()-1 DO
+        Err.Object("conflict "+D.Label(rf.resultList.array[i])+":"); 
+        FOR j := 0 TO rf.resultList.Size()-1 DO
+          IF rf.iGraph.Conflicts(i, j) THEN
+            Err.Object(" "+D.Label(rf.resultList.array[j]));
+          END;
+        END;
+        Err.Ln;
+      END;
+    END DumpMatrix;*)
   
   BEGIN
     (*out := NEW(D.Output, b, "AssignRegisterFile");
@@ -507,6 +531,7 @@ PROCEDURE AssignRegisterFile (rf: RegisterFile; b: S.FunctionBlock): LONGINT;
     END;
     ASSERT(ldWaiting.Size() = 0);
     rf.iGraph.SymmetricMatrix;
+(*    DumpMatrix(rf);*)
     
     (* coalesce fixed locations so that all results assigned to a given
        register are given the same color *)
