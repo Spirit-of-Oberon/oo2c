@@ -25,4 +25,6 @@ CONST
   hugeint* = 7;
   address* = @ooc_target_address_type@;
 
+  haveLibM* = @ooc_have_lib_m@;  (* used by TestCompile *)
+
 END OOC:Config:Autoconf.

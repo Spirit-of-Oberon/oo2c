@@ -5,7 +5,7 @@ IMPORT
   Config:Section:Arguments,
   Config:Section:Options, BooleanValue := Config:Value:Boolean,
   StringValue := Config:Value:String, 
-  OOC:Config, OOC:Config:CCompiler,
+  OOC:Config, OOC:Config:Pragmas, OOC:Config:CCompiler, OOC:Config:Autoconf,
   OOC:SymbolTable:Builder, OOC:Error, Rep := OOC:Repository, OOC:Make;
 
 VAR
@@ -45,6 +45,8 @@ PROCEDURE OptionToMatcher (option: Options.Option; cmdLineName: ARRAY OF CHAR): 
   END OptionToMatcher;
 
 PROCEDURE NewConfig;
+  VAR
+    haveLibM: Pragmas.Pragma;
   BEGIN
     errorStyle := Config.AddOption("errorStyle",
                                    StringValue.New("file:line:column"));
@@ -74,6 +76,9 @@ PROCEDURE NewConfig;
     Config.AddCmdLine ("--inspect",
                  "<options><set name='inspect-proc'>$1</set><set name='inspect-stage'>$2</set></options>");
 
+    haveLibM := Config.pragmas.Set("HAVE_LIB_M", (* added for module RT0 *)
+                                   BooleanValue.New(Autoconf.haveLibM));
+    
     CCompiler.RegisterConfig;
   END NewConfig;
 
