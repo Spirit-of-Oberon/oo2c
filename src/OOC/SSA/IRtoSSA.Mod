@@ -720,8 +720,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       END Concat;
 
     PROCEDURE Constructor(expr: IR.Constructor): SSA.Result;
+      VAR
+        obj, call: SSA.Result;
       BEGIN
-        RETURN NewObject(expr.alloc);
+        obj := NewObject(expr.alloc);
+        IF (expr.init # NIL) THEN
+          call := Expression(expr.init);
+          call.instr.opndList.nextOpnd.ReplaceArg(obj);  (* fixup receiver *)
+        END;
+        RETURN obj;
       END Constructor;
     
     BEGIN

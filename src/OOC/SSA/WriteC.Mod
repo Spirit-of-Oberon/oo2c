@@ -607,6 +607,7 @@ PROCEDURE CastToPtr (w: Writer; var: SSA.Result; type: Sym.Type;
   VAR
     name: STRING;
   BEGIN
+    type := type.Deparam();
     IF (var. instr. opcode = Opcode.typeTag) THEN
       w. WriteString ("(RT0__Struct)");
     ELSIF (type IS Sym.Pointer) OR

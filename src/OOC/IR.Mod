@@ -414,9 +414,18 @@ TYPE
   NewObject* = POINTER TO NewObjectDesc;
   Call* = POINTER TO CallDesc;
   ConstructorDesc = RECORD
+  (**Combination of @code{NEW} and a call to a initialization function.  The
+     result of this operation is the initialized pointer.  The new object's
+     pointer value not stored in a public place before the initialization is
+     completed.  *)
     (OperatorDesc)
     alloc-: NewObject;
+    (**The call to @otype{NewObject} that creates the object on the heap.  *)
     init-: Call;
+    (**Call to the @samp{INIT} method.  If there is no such method, then this
+       field is @code{NIL}.  Otherwise, it is a regular @otype{Call} with a
+       receiver argument of @code{NIL}.  The back-end must replace the receiver
+       with the result of @ofield{alloc}.  *)
   END;
   
 TYPE
@@ -1609,6 +1618,11 @@ PROCEDURE ^ (b: Builder) NewCall* (design: Expression;
 PROCEDURE ^ (b: Builder) NewNewObject (sym: Symbol; type: Sym.Type;
                                        args: ExpressionList): NewObject;
   
+PROCEDURE ^ (b: Builder) NewSelectProc (sym: Symbol; receiver: Expression;
+                                        recordType: Sym.Type;
+                                        tbProc: Sym.ProcDecl;
+                                        tbProcSym: Symbol;
+                                        isStaticCall: BOOLEAN): SelectProc;
 PROCEDURE ^ (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
 
 PROCEDURE (b : Builder) CheckFunctionOp(expr : Expression; op : Symbol);
@@ -2341,13 +2355,16 @@ PROCEDURE InitConstructor (cons: Constructor; sym: Symbol;
 
 PROCEDURE (b: Builder) NewConstructor* (sym: Symbol; type: Expression;
                                         arguments: ExpressionList;
-                                        context: Sym.Item): Expression;
+                                        context: Sym.Item;
+                                        endOfArgsSym: Symbol): Expression;
   VAR
     cons: Constructor;
-    consType, ptr: Sym.Type;
+    consType, ptr, qualRecord: Sym.Type;
     consClass: Sym.Record;
     n: Sym.Name;
     initDecl: Sym.Declaration;
+    expr, pseudoDesign: Expression;
+    init: Call;
   BEGIN
     (* determine class instance *)
     IF ~(type IS TypeRef) OR ~TR.IsRecordPointer(type(TypeRef).qualType) THEN
@@ -2355,20 +2372,32 @@ PROCEDURE (b: Builder) NewConstructor* (sym: Symbol; type: Expression;
     END;
     consType := type(TypeRef).qualType;
     ptr := TR.PointerBaseType(consType);
+    qualRecord := consType.Closure(ptr);
     ptr := ptr.Deparam();
     consClass := ptr(Sym.Record);
-
+    
     (* find out if an INIT method exists *)
     n := b.GetName2(sym, Predef.initMethod);
     initDecl := consClass.ns.Identify(context, n, FALSE);
     Uses.Mark(initDecl, b.uses, n);
-    IF (initDecl = NIL) & (LEN(arguments^) # 0) THEN
-      RETURN b.ErrExpr(tooManyArguments, arguments[0].sym);
+    init := NIL;
+    IF (initDecl = NIL) OR ~(initDecl IS Sym.ProcDecl) THEN
+      IF (LEN(arguments^) # 0) THEN
+        RETURN b.ErrExpr(tooManyArguments, arguments[0].sym);
+      END;
+    ELSE
+      pseudoDesign := b.NewNil(sym);
+      pseudoDesign := b.NewSelectProc(sym, pseudoDesign, qualRecord,
+                                      initDecl(Sym.ProcDecl), sym, TRUE);
+      expr := b.NewCall(pseudoDesign, arguments, FALSE, context, endOfArgsSym);
+      IF (expr IS Call) THEN
+        init := expr(Call);
+      END;
     END;
          
     NEW (cons);
     InitConstructor (cons, sym, b.NewNewObject(sym, TR.Expand(consType), NIL),
-                     NIL);
+                     init);
     RETURN cons;
   END NewConstructor;
 
@@ -6121,7 +6150,8 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
         RETURN b.NewTypeGuard(arguments[0]. sym, design,
                               arguments[0](TypeRef));
       ELSIF (design.type = b.typeType) THEN
-        RETURN b.NewConstructor(design.sym, design, arguments, context);
+        RETURN b.NewConstructor(design.sym, design, arguments, context,
+                                endOfArgsSym);
       ELSIF ~(design.type.Deparam() IS Sym.FormalPars) THEN
         RETURN b. ErrExpr (notProcedure, design. sym);
       ELSE
