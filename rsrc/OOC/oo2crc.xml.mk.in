@@ -8,7 +8,11 @@
     <set name='libs'>@LIBS@</set>
 
     <set name='libtool'>@LIBTOOL@</set>
-    <set name='libdir'>@libdir_expanded@</set>
+    <set name='libdir'>%libdir%</set>
+
+    <set name='install'>%INSTALL%</set>
+    <set name='installProgram'>%INSTALL_PROGRAM%</set>
+    <set name='installData'>%INSTALL_DATA%</set>
   </options>
 
   <pragmas>
@@ -25,7 +29,7 @@
   </pragmas>
 
   <repositories>
-    <file-system>@prefix@/lib/oo2c/lib</file-system>
+    <file-system>%libdir_oo2c%/lib</file-system>
   </repositories>
 </configuration>
 

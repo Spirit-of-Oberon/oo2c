@@ -70,7 +70,7 @@ main-clean: doc-clean test-cleanall
 ###      `make distclean' should leave only the files that were in the
 ###      distribution.
 distclean: main-clean
-	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.temp rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
+	rm -f ENV Makefile.config rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.mk rsrc/OOC/TestFramework/config.xml src/OOC/Config/Autoconf.Mod
 	rm -f lib/src/__config.h config.log config.status
 	rm -Rf autom4te.cache
 
@@ -118,6 +118,17 @@ configure: configure.ac lib/src/__config.h.in
 write-libdir: FRC
 	@echo ${libdir}
 
+### Some variables are defined recursively by configure.  Expanding these
+### variables is best done by the make utility itself.  This rule puts the
+### expanded values into the OOC configuration file oo2crc.xml.
+rsrc/OOC/oo2crc.xml: rsrc/OOC/oo2crc.xml.mk Makefile.config
+	sed -e 's:%libdir%:$(libdir):g' \
+	    -e 's:%libdir_oo2c%:$(libdir_oo2c):g' \
+	    -e 's:%INSTALL%:$(INSTALL):g' \
+	    -e 's:%INSTALL_PROGRAM%:$(INSTALL_PROGRAM):g' \
+	    -e 's:%INSTALL_DATA%:$(INSTALL_DATA):g' \
+		rsrc/OOC/oo2crc.xml.mk >rsrc/OOC/oo2crc.xml
+
 oo2c:
 	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj 2>/dev/null
 	$(OOC) --make -O $(OFLAGS) oo2c
@@ -144,14 +155,14 @@ stage1/lib/src/RT0.Mod:
 	mkdir -p stage1/lib
 	ln -s ../../lib/src stage1/lib/src
 
-stage1/exe/oo2c: stage0/exe/oo2c stage1/lib/src/RT0.Mod stage1/src/oo2c.Mod
+stage1/exe/oo2c: stage0/exe/oo2c stage1/lib/src/RT0.Mod stage1/src/oo2c.Mod rsrc/OOC/oo2crc.xml
 	stage0/oo2c --config rsrc/OOC/oo2crc.xml -r stage1/lib -r stage1 --make stage1/src/oo2c.Mod
 
-stage1/lib/obj/liboo2c.o: stage1/exe/oo2c
+stage1/lib/obj/liboo2c.o: stage1/exe/oo2c rsrc/OOC/oo2crc.xml
 	stage1/exe/oo2c --config rsrc/OOC/oo2crc.xml -r stage1/lib --make liboo2c
 	chmod -R a+rX,go-w stage1/lib
 
-install: stage1/lib/obj/liboo2c.o mkdir
+install: stage1/lib/obj/liboo2c.o rsrc/OOC/oo2crc.xml mkdir
 	(umask 022; cp -R stage1/lib/sym stage1/lib/obj $(libdir_oo2c)/lib)
 	cd $(libdir_oo2c)/lib/obj && rm -f *.[cd] */*.[cd] */*/*.[cd] */*/*/*.[cd]
 	${INSTALL_DATA} stage1/lib/src/*.h $(libdir_oo2c)/lib/src

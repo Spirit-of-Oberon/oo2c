@@ -4114,7 +4114,7 @@ done
 
 
 
-ac_config_files="$ac_config_files ENV Makefile.config rsrc/OOC/oo2crc.xml src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml"
+ac_config_files="$ac_config_files ENV Makefile.config rsrc/OOC/oo2crc.xml.mk src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4589,7 +4589,7 @@ do
   # Handling of arguments.
   "ENV" ) CONFIG_FILES="$CONFIG_FILES ENV" ;;
   "Makefile.config" ) CONFIG_FILES="$CONFIG_FILES Makefile.config" ;;
-  "rsrc/OOC/oo2crc.xml" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/oo2crc.xml" ;;
+  "rsrc/OOC/oo2crc.xml.mk" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/oo2crc.xml.mk" ;;
   "src/OOC/Config/Autoconf.Mod" ) CONFIG_FILES="$CONFIG_FILES src/OOC/Config/Autoconf.Mod" ;;
   "rsrc/OOC/TestFramework/config.xml" ) CONFIG_FILES="$CONFIG_FILES rsrc/OOC/TestFramework/config.xml" ;;
   "lib/src/__config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS lib/src/__config.h" ;;
@@ -5140,8 +5140,3 @@ if test "$no_create" != yes; then
   $ac_cs_success || { (exit 1); exit 1; }
 fi
 
-
-
-mv rsrc/OOC/oo2crc.xml rsrc/OOC/oo2crc.xml.temp
-sed -e "s:@libdir_expanded@:`make write-libdir`:g" rsrc/OOC/oo2crc.xml.temp >rsrc/OOC/oo2crc.xml
-rm -f rsrc/OOC/oo2crc.xml.temp
