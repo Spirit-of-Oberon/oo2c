@@ -20,6 +20,7 @@ PROCEDURE ^ ConvertDecl (w: DeclWriter.Writer;
 PROCEDURE ConvertType (w: DeclWriter.Writer;
                        resolvedType, type: Sym.Type): DeclWriter.Type;
   VAR
+x:String.String;
     ptr: Sym.Item;
     fct: DeclWriter.Function;
     struct: DeclWriter.Struct;
@@ -84,23 +85,15 @@ PROCEDURE ConvertType (w: DeclWriter.Writer;
 
         (* nothing *)
       | type: Sym.TypeName DO
-        IF (type. module = NIL) THEN
-          RETURN ConvertType (w, resolvedType, resolvedType)
+        WITH resolvedType: Sym.PredefType DO
+          RETURN ConvertType (w, resolvedType, resolvedType);
         ELSE
-          ASSERT (FALSE);
+          x := Naming.NameOfType (resolvedType);
+          ASSERT (x.array[0]#"#");
+          RETURN w. NewTypeRef (DeclWriter.refTypedef,
+                                Naming.NameOfType (resolvedType));
         END;
-(*              IF (type. module = NIL) THEN
-          decl := module. ns. IdentifyLocal (root, type. ident, TRUE)
-           * this may be NIL if we are looking at the name of a
-             predefined type; in this case, we are done *
-        ELSE
-          decl := module. ns. IdentifyLocal (root, type. module, TRUE);
-          ASSERT (decl # NIL)
-        END;
-        IF (decl # NIL) THEN
-          ConvertDecl (decl)
-        END*)
-
+        
       | type: Sym.Pointer DO
         ASSERT (FALSE);
         (*ConvertType (type. srcCodeBaseType);*)
@@ -302,28 +295,33 @@ PROCEDURE GetTypeRef* (w: DeclWriter.Writer;
                        type: Sym.Type): DeclWriter.Type;
 (**Creates a C type expression for the object @oparam{type}.  *)
   BEGIN
-    RETURN ConvertType (w, type, type)
+    IF (type. namingDecl # NIL) & ~(type IS Sym.PredefType) THEN
+      RETURN w. NewTypeRef (DeclWriter.refTypedef,
+                            Naming.NameOfType (type));
+    ELSE
+      RETURN ConvertType (w, type, type);
+    END;
   END GetTypeRef;
 
 PROCEDURE GetPointerDecl* (w: DeclWriter.Writer;
                            paramDecl: Sym.VarDecl): DeclWriter.Declaration;
-(**Produces a declaration that defines a pointer to the element type of
-   @oparam{paramDecl}.
-
-   @precond
-   @oparam{paramDecl} is a parameter declaration of array type
-   @end precond  *)
+(**Produces a declaration that defines a pointer either to the element type of
+   @oparam{paramDecl} (if it is an array), or a pointer to the type of
+   @oparam{paramDecl} (otherwise).  *)
   VAR
     elemType: Sym.Type;
   BEGIN
-    elemType := paramDecl. type(Sym.Array). GetNonOpenElementType();
+    IF (paramDecl. type IS Sym.Array) THEN
+      elemType := paramDecl. type(Sym.Array). GetNonOpenElementType();
+    ELSE
+      elemType := paramDecl. type;
+    END;
     
     RETURN w. NewDeclaration
         (Naming.NameOfDeclaration (paramDecl),
          DeclWriter.tqNone,
          DeclWriter.scAuto,
-         w. NewPointer (DeclWriter.tqNone,
-                        ConvertType (w, elemType, elemType)))
+         w. NewPointer (DeclWriter.tqNone, GetTypeRef (w, elemType)));
   END GetPointerDecl;
 
 END OOC:C:ConvertDecl.

@@ -84,4 +84,13 @@ PROCEDURE NameOfLengthParam* (param: Sym.VarDecl; dim: LONGINT): String.String;
     RETURN String.New (str)
   END NameOfLengthParam;
 
+PROCEDURE NameOfType* (type: Sym.Type): String.String;
+(**@precond
+   @samp{type. namingDecl # NIL}
+   @end precond *)
+  BEGIN
+    ASSERT (type. namingDecl # NIL);
+    RETURN NameOfDeclaration (type. namingDecl);
+  END NameOfType;
+
 END OOC:C:Naming.

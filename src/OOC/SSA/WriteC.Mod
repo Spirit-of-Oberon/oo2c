@@ -299,10 +299,13 @@ PROCEDURE (w: Writer) Ref (opnd: SSA.Opnd);
     | arg: SSA.Address DO
       name := Naming.NameOfDeclaration (arg. decl);
       WriteTypeCast (w, DeclWriter.ptr);
-      IF ~(arg. decl IS Sym.VarDecl) OR
-         ~(arg. decl(Sym.VarDecl). type IS Sym.Array) THEN
-        (* charming C: the address of the variable is its name, all
-           others need the address operator *)
+      IF ~(((arg. decl IS Sym.VarDecl) &
+            (arg. decl(Sym.VarDecl). type IS Sym.Array)) OR
+           ((arg. decl IS Sym.VarDecl) &
+            arg. decl(Sym.VarDecl). isPassPerReference)) THEN
+        (* charming C: the address of the variable is its name; all
+           others need the address operator unless we are looking at
+           a pass by reference parameter *)
         w. WriteChar ("&");
       END;
       w. WriteString (name. array^);
@@ -408,7 +411,11 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
     PROCEDURE WriteTypeAndSize ();
       BEGIN
         w. WriteString (",");
-        w. TypeRef (varDecl. type(Sym.Array). GetNonOpenElementType());
+        IF (varDecl. type IS Sym.Array) THEN
+          w. TypeRef (varDecl. type(Sym.Array). GetNonOpenElementType());
+        ELSE
+          w. TypeRef (varDecl. type);
+        END;
         w. WriteString (",");
         IF (size = NIL) THEN
           w. WriteString ("1")

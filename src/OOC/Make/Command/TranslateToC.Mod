@@ -184,7 +184,12 @@ PROCEDURE WriteCodeFile (w: DeclWriter.Writer; m: Repository.Module;
         
       | expr: IR.Var DO
         name := Naming.NameOfDeclaration (expr. decl);
-        w. WriteString (name. array^)
+        w. WriteString (name. array^);
+        
+      | expr: Operator.Adr DO
+        (* FIXME... this is a workaround to get addresses of string constants
+           translated properly; breaks horribly for all other cases *)
+        WriteExpr (w, expr. design);
         
       | expr: Operator.Len DO
         (* FIXME... there are a lot more variants to LEN than the length
