@@ -279,6 +279,27 @@ PROCEDURE WriteTypeCast (w: DeclWriter.Writer; ctype: DeclWriter.BasicTypeId);
     END;
   END WriteTypeCast;
 
+PROCEDURE ^ (w: Writer) TypeRef (type: Sym.Type);
+PROCEDURE ^ (w: Writer) Ref (opnd: SSA.Opnd);
+
+PROCEDURE WriteTypeAndLength (w: Writer; instr: SSA.Instr;
+                              varDecl: Sym.VarDecl; inBytes: BOOLEAN);
+  BEGIN
+    w. WriteString (",");
+    IF (varDecl. type IS Sym.Array) THEN
+      w.TypeRef(varDecl.type(Sym.Array).GetInnermostElementType());
+    ELSE
+      w.TypeRef(varDecl.type);
+    END;
+    w. WriteString (",");
+    IF inBytes THEN
+      w.Ref(instr.NthOpnd(2));
+    ELSE
+      w.Ref(instr.NthOpnd(1));
+    END;
+    w. WriteString (")");
+  END WriteTypeAndLength;
+
 
 
 PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
@@ -290,6 +311,7 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
     decl: Sym.VarDecl;
     cDecl: DeclWriter.Declaration;
     item: Sym.Item;
+    name: String.String;
     
   PROCEDURE GetLocalDecl (instr: SSA.Instr): Sym.VarDecl;
     VAR
@@ -332,15 +354,13 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
         decl := GetLocalDecl (instr);
         IF (decl # NIL) & ~declMap. HasKey (decl) THEN
           IF (instr. opcode = Opcode.copyParameter) THEN
-            cDecl := ConvertDecl.GetPointerDecl (w, decl);
-            haveCopyParameter := TRUE
+            name := Naming.NameOfDeclaration(decl);
+            w. Newline;
+            w. WriteString ("OOC_ALLOCATE_VPAR(");
+            w. WriteString (name. array^);
+            WriteTypeAndLength(w, instr, decl, FALSE);
           ELSIF ~decl. isParameter THEN
             cDecl := ConvertDecl.GetDecl (w, decl);
-          ELSE
-            cDecl := NIL;
-          END;
-
-          IF (cDecl # NIL) THEN
             w. Newline;
             w. WriteDeclaration (cDecl);
             w. WriteChar (";");
@@ -351,7 +371,7 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
       instr := instr. nextInstr
     END;
 
-    (* pick up any additional variable declarations that are not touch
+    (* pick up any additional variable declarations that are not touched
        by the body of the current procedure, but are referenced by
        local procedures of it *)
     item := pb. procDecl. nestedItems;
@@ -385,15 +405,8 @@ PROCEDURE WriteLocalDecl (t: Translator; w: Writer;
       END;
       item := item. nextNested;
     END;
-    
-    IF haveCopyParameter THEN
-      w. Newline;
-      w. WriteString ("OOC_PUSH_VPAR_STACK");
-    END;
   END WriteLocalDecl;
 
-
-PROCEDURE ^ (w: Writer) Ref (opnd: SSA.Opnd);
 
 PROCEDURE (w: Writer) LengthExprHeap (instr: SSA.Instr);
   BEGIN
@@ -775,7 +788,6 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
   
   PROCEDURE NewBlock (instr: SSA.Instr);
     VAR
-      name: String.String;
       opnd: SSA.Opnd;
     BEGIN
       CastFromPtr (instr);
@@ -865,38 +877,17 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
   PROCEDURE CopyParameter (instr: SSA.Address);
     VAR
       varDecl: Sym.VarDecl;
-      size: SSA.Opnd;
       name: String.String;
-
-    PROCEDURE WriteTypeAndSize ();
-      BEGIN
-        w. WriteString (",");
-        IF (varDecl. type IS Sym.Array) THEN
-          w. TypeRef (varDecl. type(Sym.Array). GetNonOpenElementType());
-        ELSE
-          w. TypeRef (varDecl. type);
-        END;
-        w. WriteString (",");
-        w. Ref (size);
-        w. WriteString (")");
-      END WriteTypeAndSize;
-    
     BEGIN
       varDecl := instr. decl(Sym.VarDecl);
-      size := instr. GetOpndClass (Opnd.arg);
       name := Naming.NameOfDeclaration (varDecl);
-      
-      w. Newline;
-      w. WriteString ("OOC_ALLOCATE_VPAR(");
-      w. WriteString (name. array^);
-      WriteTypeAndSize;
       
       w. Newline;
       w. WriteString ("OOC_INITIALIZE_VPAR(");
       w. WriteString (name. array^);
       w. WriteString (Naming.suffixPassPerRef+",");
       w. WriteString (name. array^);
-      WriteTypeAndSize
+      WriteTypeAndLength(w, instr, varDecl, TRUE);
     END CopyParameter;
   
   PROCEDURE Copy (instr: SSA.Instr);
@@ -1306,10 +1297,6 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
   (**Called before every "return" instruction.  *)
     BEGIN
       w. Newline;
-      IF haveCopyParameter THEN
-        w. WriteString ("OOC_POP_VPAR_STACK");
-        w. Newline
-      END;
     END PrefixReturn;
   
   PROCEDURE AllPathsClosed (selectReturn: SSA.Instr): BOOLEAN;

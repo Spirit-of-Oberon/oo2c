@@ -3,10 +3,8 @@
 
 static OOC_INT16 Var7b__Len(const OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
   register OOC_INT32 i0,i1;
-  OOC_CHAR8 *str;
-  OOC_PUSH_VPAR_STACK
-
   OOC_ALLOCATE_VPAR(str,OOC_CHAR8 ,str_0d)
+
   OOC_INITIALIZE_VPAR(str__ref,str,OOC_CHAR8 ,str_0d)
   i0=-1;
 l1_loop:
@@ -16,7 +14,6 @@ l1_loop:
   i1 = i1==(OOC_CHAR8)'\000';
   if (!i1) goto l1_loop;
 l5:
-  OOC_POP_VPAR_STACK
   return i0;
   ;
 }

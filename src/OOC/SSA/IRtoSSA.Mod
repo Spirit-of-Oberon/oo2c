@@ -73,33 +73,42 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE ^ Call (call: IR.Call): SSA.Instr;
   PROCEDURE ^ Expression (expr: IR.Expression): SSA.Result;
     
-  PROCEDURE CalculateSize (pb: SSA.ProcBlock; value: IR.Expression;
-                           dim: LONGINT; baseArray: SSA.Result): SSA.Instr;
-  (* Calculate the size of the variable @oparam{value} or of one of its
-     elements.  With @oparam{dim=-1}, return the size of the whole variable.
-     With @oparam{dim>=0}, return the size of an array element of dimension
-     @oparam{dim}.  @oparam{baseArray} holds the (virtual, and dead)
-     @oconst{Opcode.get} instruction on the array variable.  *)
+  PROCEDURE CalculateLength (pb: SSA.ProcBlock; value: IR.Expression;
+                             dim: LONGINT; baseArray: SSA.Result): SSA.Instr;
+  (* Calculate the one-dimensional length of the variable @oparam{value} or of
+     one of its elements.  With @oparam{dim=-1}, return the number of elements
+     of the whole variable.  With @oparam{dim>=0}, return the length of an
+     array element of dimension @oparam{dim}.  @oparam{baseArray} holds the
+     (virtual, and dead) @oconst{Opcode.get} instruction on the array variable.  *)
     VAR
       type: Sym.Type;
       i: LONGINT;
       
-    PROCEDURE RecursiveGetSize (type: Sym.Type; dim: LONGINT): SSA.Instr;
+    PROCEDURE RecursiveGetLength (type: Sym.Type; dim: LONGINT): SSA.Instr;
       VAR
-        size: SSA.Instr;
+        len, lenp: SSA.Instr;
       BEGIN
-        IF (type IS Sym.Array) & type(Sym.Array). isOpenArray THEN
-          size := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
-          size. AddOpnd (pb. AddGetLengthInstr (baseArray(SSA.Instr),
-                                                dim+1, type(Sym.Array)),
-                         Opnd.arg);
-          size. AddOpnd (RecursiveGetSize (type(Sym.Array). elementType,
-                                           dim+1), Opnd.arg);
-          RETURN size;
+        WITH type: Sym.Array DO
+          IF type.isOpenArray THEN
+            len := pb.AddGetLengthInstr (baseArray(SSA.Instr),
+                                         dim+1, type(Sym.Array));
+          ELSE
+            len := pb.GetConstInt(type.length);
+          END;
+
+          IF (type.elementType IS Sym.Array) THEN
+            lenp := pb. AddInstr (Opcode.multiply, Opcode.scAddress);
+            lenp. AddOpnd (len, Opnd.arg);
+            lenp. AddOpnd (RecursiveGetLength (type.elementType, dim+1),
+                           Opnd.arg);
+            RETURN lenp;
+          ELSE
+            RETURN len;
+          END;
         ELSE
-          RETURN pb. GetConstInt (type. size);
+          RETURN pb.GetConstInt(1);
         END;
-      END RecursiveGetSize;
+      END RecursiveGetLength;
     
     BEGIN
       (* if `value' is an index expression, normalize it to the array
@@ -115,7 +124,34 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         type := type(Sym.Array). elementType;
       END;
       
-      RETURN RecursiveGetSize (type, dim);
+      RETURN RecursiveGetLength (type, dim);
+    END CalculateLength;
+  
+  PROCEDURE CalculateSize (pb: SSA.ProcBlock; value: IR.Expression;
+                           length: SSA.Instr): SSA.Instr;
+  (* Calculate the size of the variable @oparam{value} based on the given
+     length and the (non-array) base type of the index expression
+     @oparam{value}.  *)
+    VAR
+      type: Sym.Type;
+      size: SSA.Instr;
+    BEGIN
+      (* if `value' is an index expression, normalize it to the array
+         variable  *)
+      WHILE (value IS IR.Index) DO
+        value := value(IR.Index).array;
+      END;
+      
+      (* get type of the value we are interested in *)
+      type := value.type;
+      WHILE (type IS Sym.Array) DO
+        type := type(Sym.Array).elementType;
+      END;
+      
+      size := pb.AddInstr (Opcode.multiply, Opcode.scAddress);
+      size.AddOpnd(length, Opnd.arg);
+      size.AddOpnd(pb.GetConstInt(type.size), Opnd.arg);
+      RETURN size;
     END CalculateSize;
   
   PROCEDURE TypeOfString (type: Sym.Type): Sym.Type;
@@ -716,7 +752,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         
       | expr: IR.Index DO
         baseArray := GetIndexBaseArray (expr, dim);
-        RETURN Index (expr, baseArray, CalculateSize (pb, expr, -1, baseArray), dim);
+        RETURN Index (expr, baseArray,
+                      CalculateSize(pb, expr, 
+                                    CalculateLength(pb, expr, -1, baseArray)),
+                      dim);
 
       | expr: IR.SelectField DO
         RETURN SelectField (expr);
@@ -1316,11 +1355,11 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   
   PROCEDURE CopyParameter (cp: IR.CopyParameter);
     VAR
-      instr: SSA.Instr;
+      instr, len: SSA.Instr;
     BEGIN
-      instr := pb. AddCopyParameter
-          (cp. param. decl(Sym.VarDecl), s,
-           CalculateSize (pb, cp. param, -1, Expression (cp. param)));
+      len := CalculateLength(pb, cp.param, -1, Expression (cp.param));
+      instr := pb. AddCopyParameter(cp. param. decl(Sym.VarDecl), s, len,
+                                    CalculateSize(pb, cp.param, len));
       s := instr. AddResult (Result.store);
     END CopyParameter;
   

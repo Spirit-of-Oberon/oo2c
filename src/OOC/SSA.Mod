@@ -1227,8 +1227,9 @@ PROCEDURE (pb: ProcBlock) GetAddress* (decl: Sym.Declaration): Address;
     END;
   END GetAddress;
 
-PROCEDURE (pb: ProcBlock) AddCopyParameter*
-  (param: Sym.VarDecl; storeIn: Result; size: Result): Address;
+PROCEDURE (pb: ProcBlock) AddCopyParameter*(param: Sym.VarDecl;
+                                            storeIn: Result;
+                                            length, size: Result): Address;
 (**Creates a @oconst{Opcode.copyParameter} instruction for the parameter
    @oparam{param}.  Subsequent calls to @oproc{pb.GetAddress} will return
    the @code{copy-parameter} instruction as the address of @oparam{param}.  *)
@@ -1237,6 +1238,7 @@ PROCEDURE (pb: ProcBlock) AddCopyParameter*
   BEGIN
     address := NewAddress (Opcode.copyParameter, param);
     address. AddOpnd (storeIn, OpndClass.store);
+    address. AddOpnd (length, OpndClass.arg);
     address. AddOpnd (size, OpndClass.arg);
     AppendInstr (pb, address);
     pb. SetAddress (param, address);

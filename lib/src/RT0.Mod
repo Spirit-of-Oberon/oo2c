@@ -188,7 +188,6 @@ VAR
   argc-: LONGINT;
   argv-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF
                       POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
-  sizeVParStack-: LONGINT;
 
 PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
 (**Allocates a new array or record variable on the heap, using the type

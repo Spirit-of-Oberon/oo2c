@@ -496,6 +496,11 @@ CONST
      The current value of the @var{store}.
 
      @item *OOC:SSA.Opnd.arg
+     Number of elements in the array.  For multi-dimensional arrays, this
+     is the product of the lengths of all dimensions, of both open and fixed
+     size dimensions.  For non-array variables, this is @samp{1}.
+     
+     @item *OOC:SSA.Opnd.arg
      The size of the parameter in bytes.
      @end table
 

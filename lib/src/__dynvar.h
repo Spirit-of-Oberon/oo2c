@@ -23,25 +23,9 @@
 
 /* Note: all libc functions used here must be prototyped in __libc.h */
 
-extern void* _ooc_top_vs;  /* top of value stack; defined in __oo2c.c */
-extern void* _ooc_end_vs;  /* end of value stack; defined in __oo2c.c */
-
-/* allocate value stack; defined in __oo2c.c */
-extern void OOC_INIT_VPAR_STACK(int size);
-
-#define OOC_PUSH_VPAR_STACK void* _ooc_old_top_vs = _ooc_top_vs;
-#define OOC_POP_VPAR_STACK _ooc_top_vs = _ooc_old_top_vs;
-
-/* when allocating space on the privately managed stack _ooc_top_vs, always
-   allocate multiples of OOC_ALIGN+1 */
-#define OOC_ALIGN 7
-
-#define OOC_ALLOCATE_VPAR(_dest,_basetype,_size) \
-  _dest = _ooc_top_vs; \
-  _ooc_top_vs += ((_size)+OOC_ALIGN) & ~OOC_ALIGN;
+#define OOC_ALLOCATE_VPAR(_dest,_basetype,_len) _basetype _dest[_len];
 
 #define OOC_INITIALIZE_VPAR(_source,_dest,_basetype,_size) \
   memcpy((_dest),(_source),(_size));
-
 
 #endif  /* __dynvar__ */

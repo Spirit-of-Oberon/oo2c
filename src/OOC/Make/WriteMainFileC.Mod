@@ -23,11 +23,6 @@ MODULE OOC:Make:WriteMainFileC;
 IMPORT
   Channel, Files, TextRider, OOC:Error, OOC:Repository;
 
-CONST
-  sizeVParStack* = 256*1024;
-  (* this should come from config data; until we switch to alloca() or
-     something similar, use a value that is >>128k *)
-
   
 PROCEDURE WriteFile*(module: Repository.Module;
                      imports: ARRAY OF Repository.Module;
@@ -79,12 +74,6 @@ PROCEDURE WriteFile*(module: Repository.Module;
       w. WriteString ("int main (int argc, char *argv[]) {");
       w. WriteLn; w. WriteString ("  RT0__argc = (OOC_INT32)argc;");
       w. WriteLn; w. WriteString ("  RT0__argv = (OOC_CHAR8**)argv;");
-      IF (sizeVParStack >= 0) THEN
-        w. WriteLn;
-        w. WriteString ("  RT0__sizeVParStack = ");
-        w. WriteLInt (sizeVParStack, 0);
-        w. WriteString (";");
-      END;
       w. WriteLn;
       WriteModules (w, "  ", "_init0();");
       w. WriteString ("  return 0;  /* _program_exit_code */");

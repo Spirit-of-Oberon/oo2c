@@ -298,9 +298,6 @@ void RT0_init() {
   GC_register_displacement(24);
 #endif
   
-  _ooc_top_vs = (void*)GC_malloc(RT0__sizeVParStack);
-  _ooc_end_vs = (char*)_ooc_top_vs+(RT0__sizeVParStack);
-  
   modules = RT0__NewBlock(sizeModules*sizeof(RT0__Module));
   
   PS(RT0__boolean , "BOOLEAN",  RT0__strBoolean , sizeof(OOC_BOOLEAN));
