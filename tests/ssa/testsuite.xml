@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1">-->
+  select ="&SetupTestCasesWithOut; generic1 generic2 generic3 generic4">-->
 
   &TestSetupWithOut;
     
@@ -1297,11 +1297,45 @@
   </testcases>
   
   <testcases profile="OOC2 Development: Generics Extension"
-    default-lang="OOC">
+    default-lang="OOC O2">
     <test id="generic1" type="accept" file="Generic1.Mod">
       Generics syntax: declaration of parameterized types, declaration
-      of variables using a parameterized type.
+      of variables using a parameterized type.  This module also
+      exports some types that are used in later tests.
     </test>
+    <test id="generic2" type="accept" file="Generic2.Mod">
+      Parametric types derived from arrays.
+    </test>
+    <test id="generic3" type="accept" file="Generic3.Mod">
+      Declarations and instances of parametric record types.
+    </test>
+    <test id="generic4" type="accept" file="Generic4.Mod">
+      Extending a parametric record type.
+    </test>
+<!--
+    <test id="generic5" type="reject" file="Generic5.Mod">
+      Type bound is not a record pointer.
+    </test>
+    <test id="generic6" type="reject" file="Generic6.Mod">
+      Reference to type variable after its enclosing type
+      declaration.
+    </test>
+    <test id="generic7" type="reject" file="Generic7.Mod">
+      Reference to type variable that only exists in the base type.
+    </test>
+    <test id="generic8" type="reject" file="Generic8.Mod">
+      Base type of qualified type is not parametric.
+    </test>
+    <test id="generic9" type="reject" file="Generic9.Mod">
+      Qualified type with too few arguments.
+    </test>
+    <test id="generic10" type="reject" file="Generic10.Mod">
+      Qualified type with too many arguments.
+    </test>
+    <test id="generic11" type="reject" file="Generic11.Mod">
+      Type argument is not an extension of the type bound.
+    </test>
+-->
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">

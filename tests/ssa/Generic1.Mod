@@ -1,8 +1,14 @@
 MODULE Generic1;
 
 TYPE
+  Object* = POINTER TO ObjectDesc;
+  ObjectDesc* = RECORD
+  END;
+  
+TYPE
   A1* = POINTER TO A1Desc;
   A1Desc* = RECORD
+    (ObjectDesc)
   END;
 
 TYPE

@@ -1,0 +1,65 @@
+Syntax:
+
+  TPSection  = ident {"," ident} ":" Qualident.
+  TypePars   = "<" [TPSection {";" TPSection} ] ">".
+  TypeDecl   = IdentDef [TypePars] "=" Type ";".
+
+  QualType   = Qualident ["<" [QualType {"," QualType}] ">"].
+  Type       = QualType|ArrayType|RecordType|PointerType|ProcType.
+  RecordType = "RECORD" ["("QualType")"] ... "END".  
+
+A type declared with a type parameter list like
+`T<t1:B1,t2:B2,...,tn:Bn>' is called a `parametric type'.  The formal
+type Bi of a type parameter declaration is called a type bound.  It
+must be a record pointer.  The type name ti is visible to the end of
+the type declaration.
+
+For a qualified type expression of the form `T<A1,A2,...,An>',
+
+  a) the type T must be a parametric type,
+
+  b) it must have the same number of type arguments as there are type
+      parameters, and
+
+  c) each actual type parameter Ai must be an extension of the
+     corresponding type bound Bi.
+
+If T is a parametric type as defined above, then the type expression
+`T' is equivalent to the qualified type `T<B1,B2,...,Bn>', where each
+type argument equals the corresponding type bound.
+
+
+Type Declarations
+=================
+
+TYPE T<...> = ...;
+
+ACCEPT
+
+  1) T<A: Object> = ARRAY OF A  [Generic2]
+  2) T<A, B: Object> = RECORD a: A; b: B END  [Generic3]
+  3) T<A: Object; B: AnotherObject> = RECORD a: A; b: B END  [Generic3]
+  4) T<> = RECORD END  [Generic3]
+  5) Extension of a parametric record type.  [Generic4]
+
+REJECT
+
+  1) Type bound is not a record pointer.  [Generic5]
+  2) Reference to type variable after declaration.  [Generic6]
+  3) Reference to type variable in extended type.  [Generic7]
+
+Qualified Types
+===============
+
+VAR x: T<...>;
+
+ACCEPT
+
+  1) Instance of record and types with arguments.  [Generic2 Generic3]
+  2) Instance of parametric type without arguments.  [Generic3]
+
+REJECT
+
+  1) T is not a parametric type.  [Generic8]
+  2) Too few or too many type arguments.  [Generic9 Generic10]
+  3) Type argument is not an extension of the type bound.  [Generic11]
