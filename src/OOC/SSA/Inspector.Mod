@@ -1,10 +1,11 @@
 MODULE OOC:SSA:Inspector;
 
 IMPORT
-  Ascii, IntStr, Log, Strings, ADT:Object, ADT:String, ADT:Dictionary,
+  Ascii, Channel, Files, IntStr, Log, Msg, Strings,
+  ADT:Object, ADT:String, ADT:Dictionary,
   Language, Language:Boolean, Language:String8,
   Language:Integer, Language:Set,
-  XML:Writer, XML:UnicodeCodec:Latin1,
+  URI, URI:Scheme:File, XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Config:Repositories, OOC:IR, OOC:SSA, OOC:SSA:Schedule,
   OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd,
   OOC:Auxiliary:HTTPServer, Net:HTTP, Net:HTTP:Server;
@@ -368,12 +369,54 @@ PROCEDURE AssignNames (dict: Dictionary.Dictionary; b: Schedule.Block;
     END;
   END AssignNames;
 
+PROCEDURE ReturnFile (s: Servlet; resp: Server.Response;
+                      package, fileName, contentType: ARRAY OF CHAR);
+  CONST
+    sizeBuffer = 8*1024;
+  VAR
+    path: ARRAY 1024 OF CHAR;
+    buffer: ARRAY sizeBuffer OF CHAR;
+    str: ARRAY 32 OF CHAR;
+    f: Files.File;
+    w: Channel.Writer;
+    r: Files.Reader;
+    uri: URI.URI;
+    res: Msg.Msg;
+  BEGIN
+    resp. SetStatus (HTTP.scOk);
+    resp. SetHeader (String.New ("Content-Type"), String.New (contentType));
+    uri := s. repositories. GetResource (package, fileName);
+    IF (uri = NIL) THEN
+      (* if there is no such file, simply return an empty document *)
+      resp. SetHeader (String.New ("Content-Length"), String.New ("0"));
+    ELSE
+      uri(File.URI). GetPath (path);
+      f := Files.Old (path, {Files.read}, res);
+      IntStr.IntToStr (f. Length(), str);
+      resp. SetHeader (String.New ("Content-Length"), String.New (str));
+      w := resp. GetWriter();
+      r := f. NewReader();
+      WHILE (r. res = Files.done) & (w. res = Files.done) DO
+        r. ReadBytes (buffer, 0, sizeBuffer);
+        w. WriteBytes (buffer, 0, r. bytesRead);
+      END;
+      (* ignore any errors *)
+    END;
+  END ReturnFile;
+
 PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
   VAR
     w: Writer.Writer;
     uriString: ARRAY 256 OF CHAR;
     count, blockCount: LONGINT;
   BEGIN
+    req. uri. GetString (uriString);
+    Log.Msg (uriString);
+    IF (uriString = "http:/inspector.css") THEN
+      ReturnFile (s, resp, "OOC", "inspector.css", "text/css");
+      RETURN;
+    END;
+    
     s. resultNames := Dictionary.New();
     count := 1; blockCount := 1;
     AssignNames (s. resultNames, s. root, count, blockCount);
@@ -389,28 +432,11 @@ PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
                Ascii.lf);
     w. StartTag ("html", FALSE);
     w. StartTag ("head", FALSE);
-    (* w. StartTag ("link", FALSE);
-       w. AttrString ("rel", "stylesheet");
-       w. AttrString ("type", "text/css");
-       w. AttrString ("href", "/inspector.css");
-       w. EndTag;*)
-    w. StartTag ("style", TRUE);
+    w. StartTag ("link", FALSE);
+    w. AttrString ("rel", "stylesheet");
     w. AttrString ("type", "text/css");
-    w. Write ("body { background-color: white; font-family: sans-serif }");
-    w. Write ("table.ssaCode { border-collapse: collapse; border: thin solid black }");
-    w. Write ("td.ssaBlockHead { border: medium solid }");
-    w. Write ("td.ssaRes { text-align: right; }");
-    w. Write ("td.ssaInstr { text-align: left; }");
-    w. Write ("td.ssaJump { border: 0 dashed; border-top-width: thin; }");
-    w. Write ("td.ssaBranch { border: 0 dashed; border-top-width: thin; }");
-    w. Write ("td.filler { border: thin dotted black }");
-    w. Write ("tr.normal0 { background-color:#E0FFE0 }");
-    w. Write ("tr.normal1 { background-color:#D0D0FF }");
-    w. Write (".highlight { background-color:#FF9999 }");
-    w. Write ("a.resRef:hover { background-color:#FF9999 }");
-    w. Write ("a.blockRef { color: black }");
-    w. Write ("td table { width: 100% }");
-    w. EndTag;  (* style *)
+    w. AttrString ("href", "/inspector.css");
+    w. EndTag;
     w. StartTag ("script", TRUE);
     w. AttrString ("type", "text/javascript");
 
@@ -425,8 +451,6 @@ PROCEDURE (s: Servlet) DoGET* (req: Server.Request; resp: Server.Response);
     w. EndTag;  (* head *)
     
     w. StartTag ("body", FALSE);
-    req. uri. GetString (uriString);
-    Log.Msg (uriString);
     IF (uriString = "http:/exit") THEN
       w. StartTag ("p", TRUE);
       w. WriteLatin1 ("Bye!");
