@@ -592,7 +592,7 @@ VAR
   (* Post: x>y, RETURN 1; x=y, RETURN 0; x<y RETURN -1 *)
   BEGIN
     IF x[0]#y[0] THEN RETURN x[0] (* if x<0 and y>0 then x<y and vice versa *)
-    ELSE RETURN UCompare(x^, y^)  (* signs are the same *)
+    ELSE RETURN UCompare(x^, y^) * x[0]  (* signs are the same *)
     END
   END Compare;
   
