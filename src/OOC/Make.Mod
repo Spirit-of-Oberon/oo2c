@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make;
 (*  Builds object files, libraries, binaries, and the like.
-    Copyright (C) 2002, 2003  Michael van Acken
+    Copyright (C) 2002, 2003, 2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -565,7 +565,7 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN
 RAISES IO.Error;
   VAR
     i: LONGINT;
-    isUpToDate, dummy: BOOLEAN;
+    isUpToDate, sourceExists, dummy: BOOLEAN;
     errList: Error.List;
     err: Error.Msg;
     chars: Object.CharsLatin1;
@@ -576,7 +576,8 @@ RAISES IO.Error;
     ELSIF r.GetImports(module) THEN
       (* tentatively mark file as up to date if the source file does not
          exist, or if the symbol file is not older than the source *)
-      isUpToDate := ~Exists(module, Rep.modModuleSource) OR
+      sourceExists := Exists(module, Rep.modModuleSource);
+      isUpToDate := ~sourceExists OR
           ~DerivedIsOlder(module, Rep.modSymbolFile, Rep.modModuleSource);
       
       IF (r.libraryName # NIL) & (module.origin = r.localRepository) THEN
@@ -631,7 +632,7 @@ RAISES IO.Error;
         module.SetInterfaceData(module. ifData, Rep.completeInterface,
                                 r.CheckAllImports(module));
 
-        IF (r.uses # NIL) & r.uses.TrackingDeclarations() THEN
+        IF (r.uses # NIL) & sourceExists & r.uses.TrackingDeclarations() THEN
           (* symbol file is up to date, but we are looking for uses of
              declarations: compile module in "analysis only" mode *)
           dummy := r.CompileModule(module, TRUE);
