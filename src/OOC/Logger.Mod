@@ -43,6 +43,13 @@ PROCEDURE WriteFile* (uri: URI.URI);
     Out.Ln;
   END WriteFile;
 
+PROCEDURE WriteFileName* (fileName: ARRAY OF CHAR);
+  BEGIN
+    Out.String("+ ");
+    Out.String(fileName);
+    Out.Ln;
+  END WriteFileName;
+
 PROCEDURE ShellCommand* (str: ARRAY OF CHAR);
   BEGIN
     Out.String (str);
