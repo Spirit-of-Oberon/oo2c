@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
 <!DOCTYPE testsuite-ext
-          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" >
+          SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
+<!ENTITY libadt-testcases SYSTEM "adt/testcases.xml">
+]>
 
 <testsuite-ext
   profile="Test Suite for OOC Core Library">
@@ -11,7 +13,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_RandomNumbers">-->
+  select ="prepare_out_module libadt_Object">-->
 
   &TestSetupWithOut;
   
@@ -490,4 +492,7 @@
     </test>
     
   </testcases>
+
+  &libadt-testcases;
+
 </testsuite-ext>
