@@ -13,17 +13,17 @@
 
 <testsuite profile="Test Suite for Framework Testing">
   <testcases profile="dummy" default-lang="O1 O2 AO">
-    <test id="empty" type="accept" file="Empty.Mod">
+    <test id="empty" type="accept" file="src/Empty.Mod">
     </test>
   </testcases>
   
-  <!--<testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
-    <test id="prepare_out_module" type="accept" file="Out.Mod">
+  <testcases profile="Test Suite Setup" default-lang="O1 O2 AO">
+    <test id="prepare_out_module" type="accept" file="src/Out.Mod">
       This is not a test case.  Rather, it prepares an Oakwood
       compliant module <code>Out</code> to supersede OOC's differing
       module of the same name.
     </test>
-  </testcases>-->
+  </testcases>
   
   <!--&baseline-testcases;-->
   <!--&candidate-testcases;-->
