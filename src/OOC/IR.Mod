@@ -2012,6 +2012,31 @@ PROCEDURE (shift: Shift) Accept* (v: Visitor);
     v. VisitShift (shift)
   END Accept;
 
+(* Operator Class: StringAppend
+   ------------------------------------------------------------------------ *)
+
+(* In Oberon-2, the string append operator is only defined for string constants
+so it can be evaluated immediately, returning a constant string result. *)
+
+PROCEDURE (b : Builder) NewStringAppend(sym : Symbol; left, right : Expression) : Expression;
+VAR
+  base : Sym.Type;
+  l, r : Language.Value;
+BEGIN
+  base := b.typeRules.BaseCharType(left.type);
+  l := left(Const).value; r := right(Const).value;
+  WITH base : Sym.PredefType DO
+    CASE base.id OF
+    | Predef.char:
+      RETURN b.NewConst(sym, left.type, 
+        String8.New(l(String8.Value).value.Concat(r(String8.Value).value)));
+    | Predef.longchar:
+      (* FIXME! Implement longstring concatenation *)
+      ASSERT(FALSE);
+    END
+  END
+END NewStringAppend;
+
 (* Operator Class: TypeCast
    ------------------------------------------------------------------------ *)
 
@@ -3365,7 +3390,11 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq}) 
             & IsString(left.type) & IsString(right.type) THEN
         result := b.NewCompare(sym, left, right);
-        
+
+      ELSIF (id IN {Id.plus}) & (left IS Const) & (right IS Const) 
+            & (isChar OR tr.IsStringConst(left.type)) THEN
+	result := b.NewStringAppend(sym, left, right);
+
       ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
             & (isNumeric OR isChar) THEN
         result := b.NewCompare(sym, left, right);
