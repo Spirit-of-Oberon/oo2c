@@ -22,7 +22,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 
 IMPORT
   IntStr, Err, Out, Strings, StringSearch, IO, IO:StdChannels,
-  Object, Object:Boxed, ADT:Dictionary, ADT:ArrayList,
+  Object, Object:Boxed, ADT:Dictionary, IntDict := ADT:Dictionary:IntValue,
   Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
   OOC:SymbolTable:Builder,
@@ -57,7 +57,7 @@ TYPE
     (* The keys of this dictionary are variables that are accessed from
        a nested procedure within the procedure in which they are declared.  *)
     
-    preloadedVars: ArrayList.ArrayList;
+    preloadedVars: IntDict.Dictionary;
   END;
 
 TYPE
@@ -629,6 +629,20 @@ PROCEDURE CastToPtr (w: Writer; var: SSA.Result; type: Sym.Type;
     END;
   END CastToPtr;
 
+PROCEDURE GetPreloadId(preloadedVars: IntDict.Dictionary;
+                       instr: SSA.Instr): LONGINT;
+  VAR
+    id: LONGINT;
+  BEGIN
+    IF preloadedVars.HasKey(instr) THEN
+      id := preloadedVars.Get(instr);
+    ELSE
+      id := preloadedVars.Size();
+      preloadedVars.Set(instr, id);
+    END;
+    RETURN id;
+  END GetPreloadId;
+
 PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
   VAR
     opnd: SSA.Opnd;
@@ -1085,18 +1099,18 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
   PROCEDURE PreloadedVar (instr: SSA.Instr);
     VAR
       wd: DeclWriter.Writer;
+      id: LONGINT;
     BEGIN
+      id := GetPreloadId(w.translator.preloadedVars, instr);
       CastFromPtr(instr);
       w.WriteString(prefixPreloadVar);
-      w.textWriter.WriteLInt(w.translator.preloadedVars.size, 0);
+      w.textWriter.WriteLInt(id, 0);
 
       wd := w.translator.wd;
       wd.Newline;
       wd.WriteString("static void* "+prefixPreloadVar);
-      wd.textWriter.WriteLInt(w.translator.preloadedVars.size, 0);
+      wd.textWriter.WriteLInt(id, 0);
       wd.WriteString(";");
-      
-      w.translator.preloadedVars.Append(instr);
     END PreloadedVar;
   
   BEGIN
@@ -1676,7 +1690,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     w: Writer;
     writeProc: BOOLEAN;
     destore: Destore.State;
-    oldSize: LONGINT;
+    dummy: LONGINT;
 
   PROCEDURE WriteJmpBufDecl(jmpbufMap: Dictionary.Dictionary);
     VAR
@@ -1796,19 +1810,28 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
       END;
     END FixCrossJumps;
 
-  PROCEDURE InitPreloadedVars (vars: ArrayList.ArrayList);
+  PROCEDURE InitPreloadedVars (vars: IntDict.Dictionary);
     VAR
       i, count: LONGINT;
       opnd: SSA.Opnd;
       chars: Object.CharsLatin1;
+      instrList, varList: Object.ObjectArrayPtr;
     BEGIN
-      FOR i := 0 TO vars.size-1 DO
+      instrList := vars.Keys();
+
+      (* sort `instrList' by id *)
+      NEW(varList, LEN(instrList^));
+      FOR i := 0 TO LEN(instrList^)-1 DO
+        varList[vars.Get(instrList[i])] := instrList[i];
+      END;
+      
+      FOR i := 0 TO LEN(varList^)-1 DO
         w.Newline;
         w.WriteString(prefixPreloadVar);
         w.textWriter.WriteLInt(i, 0);
         w.WriteString(" = ");
 
-        opnd := vars.array[i](SSA.Instr). opndList;
+        opnd := varList[i](SSA.Instr). opndList;
         chars := opnd.arg(SSA.Const).value(Boxed.String).value(Object.String8).CharsLatin1();
         w.WriteString(chars^);
         w.WriteString("(");
@@ -1903,19 +1926,15 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     IF proc.decl.IsModuleBody() THEN
       (* pick up any preloaded-var instructions in the module body, so that
          we can write them out at the beginning of the init function *)
-      oldSize := t.preloadedVars.Size();
       instr := pb.instrList;
       WHILE (instr # NIL) DO
         IF (instr.opcode = Opcode.preloadedVar) THEN
-          t.preloadedVars.Append(instr);
+          dummy := GetPreloadId(t.preloadedVars, instr);
         END;
         instr := instr.nextInstr;
       END;
       
       InitPreloadedVars(t.preloadedVars);
-
-      (* now undo the changes we caused to t.preloadedVars *)
-      t.preloadedVars.RemoveRange(oldSize, t.preloadedVars.Size());
     END;
     t. WriteNestedProcedures();          (* up call *)
     
@@ -1942,7 +1961,7 @@ PROCEDURE InitTranslator* (t: Translator; writeStats: BOOLEAN;
     t. inspectStage := inspectStage;
     t. writeStats := writeStats;
     t. nonLocalAccess := NIL;
-    t. preloadedVars := ArrayList.New(16);
+    t. preloadedVars := IntDict.New();
   END InitTranslator;
 
 PROCEDURE NewTranslator* (writeStats: BOOLEAN;
