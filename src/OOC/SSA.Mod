@@ -158,6 +158,11 @@ TYPE
        block's instructions are summarized---directly or indirectly---in this
        instruction's operand list.  See @oconst{Opcode.selectReturn}.  *)
     
+    selectExit-: Instr;
+    (**Represents the exit paths of the currently open @code{LOOP} statement,
+       or is @code{NIL} if there is no @code{LOOP}.  See
+       @oconst{Opcode.selectExit}.  *)
+    
     instrList-, instrTail: Instr;
     (**Set of instructions that make up the procedure block.  The instructions
        are linked with @ofield{Instr.nextInstr} and @ofield{Instr.nextInstr}.
@@ -622,6 +627,18 @@ PROCEDURE (instr: Instr) LogOpcode* (msg: ARRAY OF CHAR);
     Log.String (msg, name)
   END LogOpcode;
 
+PROCEDURE (instr: Instr) IsLoopEndWithExits (): BOOLEAN;
+  VAR
+    opnd: Opnd;
+  BEGIN
+    IF (instr. opcode = Opcode.loopEnd) THEN
+      opnd := instr. NthOpnd (2);
+      RETURN (opnd. arg(Instr). opcode = Opcode.selectExit);
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsLoopEndWithExits;
+
   (* ---------------------------------------------------------------------- *)
 
 PROCEDURE InitConst (const: Const; subclass: Opcode.Subclass;
@@ -675,6 +692,7 @@ PROCEDURE InitProcBlock (pb: ProcBlock; procDecl: Sym.ProcDecl);
     initialStore := enter. AddResult (ResultClass.store);
     pb. selectReturn. AddOpnd (initialStore, OpndClass.store);
 
+    pb. selectExit := NIL;
     FOR i := 0 TO Predef.lastId DO
       pb. constMap[i] := NIL;
     END;
@@ -922,6 +940,38 @@ PROCEDURE (pb: ProcBlock) AddGetLengthInstr* (get: Instr; dimension: Result): In
     RETURN getLength
   END AddGetLengthInstr;
 
+PROCEDURE (pb: ProcBlock) SetSelectExit* (selectExit: Instr): Instr;
+  VAR
+    old: Instr;
+  BEGIN
+    old := pb. selectExit;
+    pb. selectExit := selectExit;
+    RETURN old
+  END SetSelectExit;
+
+
+PROCEDURE Add (VAR list: Instr; instr: Instr);
+  BEGIN
+    instr. prevInstr := NIL;
+    instr. nextInstr := list;
+    IF (list # NIL) THEN
+      list. prevInstr := instr
+    END;
+    list := instr
+  END Add;
+
+PROCEDURE Remove (VAR list: Instr; instr: Instr);
+  BEGIN
+    IF (instr. prevInstr = NIL) THEN
+      list := instr. nextInstr
+    ELSE
+      instr. prevInstr. nextInstr := instr. nextInstr
+    END;
+    IF (instr. nextInstr # NIL) THEN
+      instr. nextInstr. prevInstr := instr. prevInstr
+    END
+  END Remove;
+
 PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
 (**Topological sort on instructions in @oparam{pb}.  If there are no cyclic
    dependencies between the instructions, the result is @code{TRUE}.  *)
@@ -931,29 +981,6 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
     res: Result;
     use, opnd: Opnd;
     opndCount: LONGINT;
-
-  PROCEDURE Add (VAR list: Instr; instr: Instr);
-    BEGIN
-      instr. prevInstr := NIL;
-      instr. nextInstr := list;
-      IF (list # NIL) THEN
-        list. prevInstr := instr
-      END;
-      list := instr
-    END Add;
-  
-  PROCEDURE Remove (VAR list: Instr; instr: Instr);
-    BEGIN
-      IF (instr. prevInstr = NIL) THEN
-        list := instr. nextInstr
-      ELSE
-        instr. prevInstr. nextInstr := instr. nextInstr
-      END;
-      IF (instr. nextInstr # NIL) THEN
-        instr. nextInstr. prevInstr := instr. prevInstr
-      END
-    END Remove;
-  
   BEGIN
     ready := NIL;
     waiting := NIL;
@@ -962,6 +989,12 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
     WHILE (instr # NIL) DO
       next := instr. nextInstr;
 
+      IF instr. IsLoopEndWithExits() THEN
+        (* insert a temporary operand pointing from the loop-end instruction
+           to the originating instruction of the back edge of the loop *)
+        instr. AddOpnd (instr. opndList. arg(Instr). GetArgClass (OpndClass.forwardRef), OpndClass.tempOpnd)
+      END;
+      
       opndCount := 0;
       opnd := instr. opndList;
       WHILE (opnd # NIL) DO
@@ -987,6 +1020,12 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
       Remove (ready, instr);
       AppendInstr (pb, instr);
 
+      IF instr. IsLoopEndWithExits() THEN
+        (* get rid of the temporary operand *)
+        opnd := instr. GetOpndClass (OpndClass.tempOpnd);
+        opnd. DeleteOpnd;
+      END;
+      
       (* decrement marker (=count of blocking results) for all uses of all
          results of `instr' *)
       res := instr;
@@ -1007,6 +1046,22 @@ PROCEDURE (pb: ProcBlock) TopSort* (): BOOLEAN;
     END;
     RETURN (waiting = NIL)
   END TopSort;
+
+PROCEDURE (pb: ProcBlock) Reverse*;
+(**Reverse order of instructions in @oparam{pb}.  *)
+  VAR
+    instr, next: Instr;
+    newList: Instr;
+  BEGIN
+    newList := NIL;
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      next := instr. nextInstr;
+      Add (newList, instr);
+      instr := next
+    END;
+    pb. instrList := newList;
+  END Reverse;
 
 PROCEDURE (pb: ProcBlock) GetEnter*(): Instr;
   VAR
