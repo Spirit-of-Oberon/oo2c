@@ -110,7 +110,7 @@ PROCEDURE Write*();
             best := i;
           END;
         END;
-        IF (stList[0].count[o[best]] = 0) THEN
+        IF (LEN(stList^) = 0) OR (stList[0].count[o[best]] = 0) THEN
           RETURN -1;
         ELSE
           RETURN best;
