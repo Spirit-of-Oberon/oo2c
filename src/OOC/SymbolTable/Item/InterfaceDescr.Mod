@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Item:InterfaceDescr;
 (*  Writes a description of a module's interface as XML.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -47,7 +47,7 @@ PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
     END
   END GetSystemId;
 
-PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
+PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
                   module: Item.Module; repositories: Repositories.Section;
                   extensionDict: Dictionary.Dictionary);
 (**Writes the exported parts of the symbol table with root @oparam{module} as
@@ -503,7 +503,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
   BEGIN
     moduleDict := Dictionary.New();
     declDict := Dictionary.New();
-    w := Writer.New (ch, Latin1.factory, TRUE, 2);
+    w := Writer.New (cw, Latin1.factory, TRUE, 2);
     w. SetBaseURI (baseURI);
     w. WriteTextDecl ("1.0", "no");
     w. NewLine;

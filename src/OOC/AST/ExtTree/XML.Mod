@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree:XML;
 (*  Writes an abstract syntax tree into an XML document.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -25,7 +25,7 @@ IMPORT
   XML:UnicodeCodec:Latin1, OOC:Doc, DocXML := OOC:Doc:Output:XML;
 
 
-PROCEDURE Write* (ch: Channel.Channel; m: ExtTree.Module);
+PROCEDURE Write* (cw: Channel.Writer; m: ExtTree.Module);
 (**Writes the abstract syntax tree @oparam{m} to the output channel 
    @oparam{ch}.  The result is an XML document that describes the
    structure of the syntax tree.  The only information lost is formatting,
@@ -426,7 +426,7 @@ PROCEDURE Write* (ch: Channel.Channel; m: ExtTree.Module);
     END Node;
 
   BEGIN
-    w := Writer.New (ch, Latin1.factory, TRUE, 2);
+    w := Writer.New (cw, Latin1.factory, TRUE, 2);
     w. WriteTextDecl ("1.0", "yes");
     Node (m);
     w. EndOfText

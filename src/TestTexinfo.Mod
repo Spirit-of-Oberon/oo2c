@@ -73,7 +73,8 @@ BEGIN
           ELSE
             CASE mode OF
             | modeXML:
-              XML.Write (StdChannels.stdout, document, NIL, NIL, NIL, NIL)
+              XML.Write (StdChannels.stdout.NewWriter(), document,
+                         NIL, NIL, NIL, NIL)
             | modeText:
               s := Text.Convert (document, 0, 71, 3);
               Out.String (s^)

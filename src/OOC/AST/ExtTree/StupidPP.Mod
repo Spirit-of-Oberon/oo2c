@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree:StupidPP;
 (*  A simple pretty printer: it writes the syntax tree, omitting any comments.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,14 +22,13 @@ MODULE OOC:AST:ExtTree:StupidPP;
 
 
 IMPORT
-  Log, Channel, TextRider, OOC:Scanner:Symbol, OOC:AST, OOC:AST:ExtTree;
+  Log, TextRider, OOC:Scanner:Symbol, OOC:AST, OOC:AST:ExtTree;
   
-PROCEDURE Write* (ch: Channel.Channel; m: ExtTree.Module);
+PROCEDURE Write* (w: TextRider.Writer; m: ExtTree.Module);
 (**Writes the abstract syntax tree @oparam{m} to the output channel 
    @oparam{ch}.  The result is the content of the source module, with a
    very rigid formatting and minus any embedded comments or pragmas.  *)
   VAR
-    w: TextRider.Writer;
     indent: LONGINT;
     
   PROCEDURE NewLine;
@@ -586,7 +585,6 @@ PROCEDURE Write* (ch: Channel.Channel; m: ExtTree.Module);
     END Node;
 
   BEGIN
-    w := TextRider.ConnectWriter (ch);
     indent := 0;
     Node (m)
   END Write;

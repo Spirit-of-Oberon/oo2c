@@ -59,9 +59,10 @@ BEGIN
           
           CASE mode OF
           | modeXML:
-            XML.Write (StdChannels.stdout, ast(ExtTree.Module))
+            XML.Write (StdChannels.stdout. NewWriter(), ast(ExtTree.Module))
           | modeStupidPP:
-            StupidPP.Write (StdChannels.stdout, ast(ExtTree.Module))
+            StupidPP.Write (TextRider.ConnectWriter (StdChannels.stdout),
+                            ast(ExtTree.Module))
           END;
           IF (errList. msgCount # 0) THEN
             errList. Write (StdChannels.stderr);

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Item:InterfaceXML;
 (*  Writes the exported interface of a module into an XML document.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -46,7 +46,7 @@ PROCEDURE GetSystemId (repositories: Repositories.Section): URI.URI;
     END
   END GetSystemId;
 
-PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
+PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
                   module: Item.Module;
                   repositories: Repositories.Section);
 (**Writes the exported parts of the symbol table with root @oparam{module}
@@ -270,7 +270,7 @@ PROCEDURE Write* (ch: Channel.Channel; baseURI: URI.HierarchicalURI;
     END WriteItem;
 
   BEGIN
-    w := Writer.New (ch, Latin1.factory, TRUE, 2);
+    w := Writer.New (cw, Latin1.factory, TRUE, 2);
     w. WriteTextDecl ("1.0", "yes");
     w. SetBaseURI (baseURI);
     w. NewLine;

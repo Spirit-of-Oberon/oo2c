@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Item:XML;
 (*  Converts symbol table to XML document.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -26,7 +26,7 @@ IMPORT
   DocXML := OOC:Doc:Output:XML;
 
 
-PROCEDURE Write* (ch: Channel.Channel; module: Item.Module);
+PROCEDURE Write* (cw: Channel.Writer; module: Item.Module);
 (**Writes the symbol table with root @oparam{module} to the output channel 
    @oparam{ch}.  The result is an XML document that describes the
    structure of the symbol table.  Here is an example of the output for the
@@ -310,7 +310,7 @@ PROCEDURE Write* (ch: Channel.Channel; module: Item.Module);
     END WriteItem;
 
   BEGIN
-    w := Writer.New (ch, Latin1.factory, TRUE, 2);
+    w := Writer.New (cw, Latin1.factory, TRUE, 2);
     w. WriteTextDecl ("1.0", "yes");
     
     counter := 0;

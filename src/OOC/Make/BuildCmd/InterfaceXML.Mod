@@ -40,7 +40,7 @@ PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
       IF (outputChannel = NIL) THEN
         errList. Append (res)
       ELSE
-        InterfaceXML.Write (outputChannel, outputURI, symTab,
+        InterfaceXML.Write (outputChannel.NewWriter(), outputURI, symTab,
                             n. dg. config. repositories);
         outputChannel(Files.File). Register;
         outputChannel. Close;

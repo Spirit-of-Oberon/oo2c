@@ -59,7 +59,7 @@ PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
     IF (outputChannel = NIL) THEN
       errList. Append (res)
     ELSE
-      InterfaceDescr.Write (outputChannel, outputURI, symTab,
+      InterfaceDescr.Write (outputChannel.NewWriter(), outputURI, symTab,
                             n. dg. config. repositories,
                             GetExtensionDict (n));
       outputChannel(Files.File). Register;

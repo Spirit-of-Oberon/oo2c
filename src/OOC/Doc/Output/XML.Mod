@@ -220,7 +220,7 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
     w. EndTag
   END WriteOberonDoc;
 
-PROCEDURE Write* (ch: Channel.Channel; document: Doc.Document;
+PROCEDURE Write* (cw: Channel.Writer; document: Doc.Document;
                   localModule: Item.Module;
                   rewriteMap: Dictionary.Dictionary;
                   repositories: Repositories.Section;
@@ -228,7 +228,7 @@ PROCEDURE Write* (ch: Channel.Channel; document: Doc.Document;
   VAR
     w: Writer.Writer;
   BEGIN
-    w := Writer.New (ch, Latin1.factory, TRUE, 2);
+    w := Writer.New (cw, Latin1.factory, TRUE, 2);
     w. WriteTextDecl ("1.0", "yes");
     WriteOberonDoc (w, document, localModule, rewriteMap,
                     repositories, moduleDict);

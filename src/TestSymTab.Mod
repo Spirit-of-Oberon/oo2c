@@ -65,7 +65,7 @@ PROCEDURE (cmd: BuildCmd) Build* (n: Make.Node): Make.BuildResult;
       IF (outputChannel = NIL) THEN
         errList. Append (res)
       ELSE
-        XML.Write (outputChannel, symTab);
+        XML.Write (outputChannel.NewWriter(), symTab);
         outputChannel. Close;
         IF (outputChannel. res # Channel.done) THEN
           errList. Append (outputChannel. res)
