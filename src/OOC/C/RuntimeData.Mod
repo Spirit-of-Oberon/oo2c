@@ -25,7 +25,7 @@ IMPORT
   IO:TextRider, ADT:ArrayList, ADT:StringBuffer,
   OOC:Config, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, TR := OOC:SymbolTable:TypeRules,
-  OOC:C:Naming, OOC:C:DeclWriter, RT0, Strings;
+  OOC:C:Naming, OOC:C:DeclWriter, Strings;
 
 CONST
   structTypeDesc = Config.runtimeModule+"__StructDesc";
@@ -53,76 +53,94 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
       w. WriteString (", ");
     END CNli;
   
+  PROCEDURE WriteFlags(type : Sym.Type);
+    (* Output any special run-time flags associated with type @oparam{type}. *)
 
-  PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
-    (* This should be declared public somewhere since it is used from various
-       places: SymbolTable:Builder, SymbolTable.Predef, here, ... *)
     VAR
-      n: Sym.Name;
-      str: Sym.NameString;
-    BEGIN
-      NEW (n);
-      NEW (str, Strings.Length (name)+1);
-      COPY (name, str^);
-      Sym.InitName (n, str, 0, 1, 0);
-      RETURN n
-    END GetName;
+      output : BOOLEAN;    (* TRUE iff output has been generated yet. *)
+
+    PROCEDURE GetName (name: ARRAY OF CHAR): Sym.Name;
+      (* This should be declared public somewhere since it is used from various
+         places: SymbolTable:Builder, SymbolTable.Predef, here, ... *)
+      VAR
+        n: Sym.Name;
+        str: Sym.NameString;
+      BEGIN
+        NEW (n);
+        NEW (str, Strings.Length (name)+1);
+        COPY (name, str^);
+        Sym.InitName (n, str, 0, 1, 0);
+        RETURN n
+      END GetName;
+    
+    PROCEDURE ImplementsFinalize(t : Sym.Record) : BOOLEAN;
+      (* Determine if record @oparam{t} overrides RT0:ObjectDesc.Finalize. *) 
+      CONST
+        name = "Finalize";
+        class = "ObjectDesc";
+        module = "RT0";
+      VAR 
+        decl : Sym.Declaration;   (* method declaration *)
+        root : Sym.Type;          (* root class for @oparam{t} *)
+        impl : Sym.Type;          (* implementing class for Finalize method *)
+      BEGIN
+        decl := t.ns.Identify(t, GetName(name), TRUE);
+        IF (decl # NIL) & (decl IS Sym.ProcDecl) THEN
+          (* @oparam{t} implements procedure Finalize *)
   
-  PROCEDURE ImplementsFinalize(t : Sym.Record) : BOOLEAN;
-    (* Determine if record @oparam{t} overrides RT0:ObjectDesc.Finalize. *) 
-    CONST
-      name = "Finalize";
-      class = "ObjectDesc";
-      module = "RT0";
-    VAR 
-      decl : Sym.Declaration;   (* method declaration *)
-      root : Sym.Type;          (* root class for @oparam{t} *)
-      impl : Sym.Type;          (* implementing class for Finalize method *)
-    BEGIN
-      decl := t.ns.Identify(t, GetName(name), TRUE);
-      IF (decl # NIL) & (decl IS Sym.ProcDecl) THEN
-        (* @oparam{t} implements procedure Finalize *)
-
-        (* Find the root type that this record implements. *)
-        root := t.Deparam();
-        WHILE (root IS Sym.Record) & (root(Sym.Record).baseType # NIL) DO
-          root := root(Sym.Record).baseType.Deparam();
+          (* Find the root type that this record implements. *)
+          root := t.Deparam();
+          WHILE (root IS Sym.Record) & (root(Sym.Record).baseType # NIL) DO
+            root := root(Sym.Record).baseType.Deparam();
+          END;
+  
+          (* Find the record type to which Finalize is bound. *) 
+          impl := decl(Sym.ProcDecl).formalPars.receiver.type.Deparam();
+          impl := impl(Sym.Pointer).baseType.Deparam();
+  
+          RETURN (impl # root) &
+            (root.namingDecl.name.str^ = class) &
+            (root.namingDecl.parent IS Sym.Module) &
+            (root.namingDecl.parent(Sym.Module).name.str^ = module);
+        ELSE
+          RETURN FALSE;
         END;
-
-        (* Find the record type to which Finalize is bound. *) 
-        impl := decl(Sym.ProcDecl).formalPars.receiver.type.Deparam();
-        impl := impl(Sym.Pointer).baseType.Deparam();
-
-        RETURN (impl # root) &
-          (root.namingDecl.name.str^ = class) &
-          (root.namingDecl.parent IS Sym.Module) &
-          (root.namingDecl.parent(Sym.Module).name.str^ = module);
-      ELSE
-        RETURN FALSE;
-      END;
-    END ImplementsFinalize;
-
-  PROCEDURE RecordFlags(record : Sym.Record) : LONGINT;
-    (* Return the run-time type decriptor flags for this record type. *)
-    VAR
-      flags : LONGINT;
+      END ImplementsFinalize;
+  
+    PROCEDURE OutFlag(name : ARRAY OF CHAR);
+      BEGIN
+        IF output THEN
+          w.WriteString("|");
+        END;
+        w.WriteString("(1<<");
+        w.WriteString(name);
+        w.WriteString(")");
+        output := TRUE;
+      END OutFlag;
+  
     BEGIN
-      flags := 0;
-
-      IF record.isVtable THEN
-        INC(flags, ASH(1, RT0.flagVTable));
+      output := FALSE;
+      IF type # NIL THEN
+        WITH type : Sym.Record DO
+          IF type.isVtable THEN
+            OutFlag("RT0__flagVTable");
+          END;
+    
+          IF type.isAtomic THEN
+            OutFlag("RT0__flagAtomic");
+          END;
+    
+          IF ImplementsFinalize(type) THEN
+            OutFlag("RT0__flagFinalize");
+          END;
+        ELSE
+        END;
       END;
-
-      IF record.isAtomic THEN
-        INC(flags, ASH(1, RT0.flagAtomic));
+      IF ~output THEN
+        w.WriteString("0");
       END;
+    END WriteFlags; 
 
-      IF ImplementsFinalize(record) THEN
-        INC(flags, ASH(1, RT0.flagFinalize));
-      END;
-      RETURN flags;
-    END RecordFlags;
-   
   PROCEDURE WriteForm (form: ARRAY OF CHAR);
     BEGIN
       w. WriteString (Config.runtimeModule+"__");
@@ -197,7 +215,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           ASSERT(base.size >= 0);
           CNli; w. WriteLInt (base. size, 0); (* size *)
           CNli; w. WriteLInt (array. GetOpenDimensions(), 0); (* len *)
-          CNli; w. WriteLInt (0, 0); (* flags *)
+          CNli; WriteFlags(array);          (* flags *)
           CNli; WriteForm ("strOpenArray"); (* form *)
         ELSE
           w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
@@ -209,7 +227,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           WriteName (array);             (* name *)
           CNli; w.WriteLInt (array. size, 0); (* size *)
           CNli; w. WriteLInt (array. length, 0); (* len *)
-          CNli; w. WriteLInt (0, 0); ; (* flags *)
+          CNli; WriteFlags(array);       (* flags *)
           CNli; WriteForm ("strArray");  (* form *)
         END;
         w. WriteString (" };");
@@ -273,7 +291,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         CNli; w. WriteLInt (record. size, 0); (* size *)
         CNli; w. WriteLInt (len, 0);     (* len *)
 
-        CNli; w. WriteLInt (RecordFlags(record), 0); ; (* flags *)
+        CNli; WriteFlags(record);        (* flags *)
         CNli; WriteForm ("strRecord");   (* form *)
         w. WriteString (" };");
       END;
@@ -292,7 +310,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         WriteName (pointer);             (* name *)
         CNli; w. WriteLInt (pointer. size, 0); (* size *)
         CNli; w. WriteLInt (-1, 0);      (* len *)
-        CNli; w. WriteLInt (0, 0); ; (* flags *)
+        CNli; WriteFlags(pointer);       (* flags *)
         CNli; WriteForm ("strPointer");  (* form *)
         w. WriteString (" };");
       END;
@@ -342,7 +360,6 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
   PROCEDURE QualTypeDescr(qtdData: Naming.QualTypeData);
     VAR
       i: LONGINT;
-      flags : LONGINT;
 
     PROCEDURE QualTypeName(t: Sym.Type): STRING;
       VAR
@@ -414,7 +431,6 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           record := qtd.type.baseType(Sym.Record);
           TBProcs(record, record.tbProcCount);
           w. WriteChar ("}");
-          flags := RecordFlags(record);
         ELSE  (* IS Sym.Pointer *)
           len := 0;
           w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
@@ -424,7 +440,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           w.WriteObject(name);
           w. WriteChar ("}");
           CNli; w.WriteString("NULL");   (* tbProcs *)
-          flags := 0;
+          record := NIL;
         END;
         
         CNli; w.WriteString("(RT0__Struct[]){"); (* typeArgs *)
@@ -443,7 +459,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         
         CNli; w.WriteLInt(qtd.type.size, 0); (* size *)
         CNli; w.WriteLInt(len, 0);       (* len *)
-        CNli; w. WriteLInt (flags, 0); ; (* flags *)
+        CNli; WriteFlags(record);        (* flags *)
         CNli; WriteForm("strQualType");   (* form *)
         w.WriteString(" };");
       END WriteQualTypeDescr;
