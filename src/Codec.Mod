@@ -123,9 +123,16 @@ PROCEDURE InitDecoder* (dec: Decoder);
   BEGIN
   END InitDecoder;
 
-PROCEDURE InitEncoder* (enc: Encoder);
-  BEGIN
-  END InitEncoder;
+PROCEDURE (dec: Decoder) Start*;
+(**Allocates and initializes all resources required for the decoder instance.
+   This method must be called once before @oproc{dec.DecodeIncr}.  The default
+   implementation is a no-op.
+
+   The amount of memory allocated in this step differs significantly across the
+   different kinds of decoders.  For example, the space requirements of a
+   Unicode codec are virtually none, while a compression decoder may require
+   several hundreds of KBytes.  *)
+  END Start;
 
 PROCEDURE (dec: Decoder) [ABSTRACT] DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
                                                  start, end: LONGINT;
@@ -137,8 +144,38 @@ PROCEDURE (dec: Decoder) [ABSTRACT] DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
 
    @precond
    @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{data})}.
+   @oproc{dec.Start} has been called.
    @end precond  *)
   END DecodeIncr;
+
+PROCEDURE (dec: Decoder) Reset*;
+(**Resets the decoder's state to that created by the initial @oproc{dec.Start}.
+   All allocated resources are kept.  Using this method, it is possible to
+   use one and the same decoder for several different data streams.  *)
+  END Reset;
+
+PROCEDURE (dec: Decoder) End*;
+(**The complement operation to @oproc{dec.Start}, freeing all resources
+   allocated earlier.  After this method has been called, no other methods of
+   this decoder must be called, except for @oproc{dec.Start}.  The default
+   implementation is a no-op.  *)
+  END End;
+
+
+PROCEDURE InitEncoder* (enc: Encoder);
+  BEGIN
+  END InitEncoder;
+
+PROCEDURE (enc: Encoder) Start*;
+(**Allocates and initializes all resources required for the encoder instance.
+   This method must be called once before @oproc{enc.EncodeIncr}.  The default
+   implementation is a no-op.
+
+   The amount of memory allocated in this step differs significantly across the
+   different kinds of decoders.  For example, the space requirements of a
+   Unicode codec are virtually none, while a compression decoder may require
+   several MBytes of memory.  *)
+  END Start;
 
 PROCEDURE (enc: Encoder) [ABSTRACT] EncodeIncr*(s: String0.String;
                                                 start, end: LONGINT;
@@ -150,9 +187,10 @@ PROCEDURE (enc: Encoder) [ABSTRACT] EncodeIncr*(s: String0.String;
    encoder's state after the last byte of the sequence has been processed.
 
    @precond
-   @samp{0 <= @oparam{start} <= @oparam{end} <= @oparam{s}.length}.  All code
-   points in @samp{data[start, end-1]} are valid.  That is, neither is out of
-   range nor from the surrogate areas.
+   @samp{0 <= @oparam{start} <= @oparam{end} <= @oparam{s}.length}.
+   @oproc{enc.Start} has been called.  All code points in @samp{data[start,
+   end-1]} are valid.  That is, neither is out of range nor from the surrogate
+   areas.
    @end precond  *)
   END EncodeIncr;
 
@@ -163,6 +201,20 @@ PROCEDURE (enc: Encoder) [ABSTRACT] Closure*(b: String0.Buffer);
    on blocks of data, and for which the last and possibly incomplete block must
    be handled specially.  *)
   END Closure;
+
+PROCEDURE (enc: Encoder) Reset*;
+(**Resets the encoder's state to that created by the initial @oproc{enc.Start}.
+   All allocated resources are kept.  Using this method, it is possible to use
+   one and the same encoder for several different data streams.  *)
+  END Reset;
+
+PROCEDURE (enc: Encoder) End*;
+(**The complement operation to @oproc{enc.Start}, freeing all resources
+   allocated earlier.  After this method has been called, no other methods of
+   this encoder must be called, except for @oproc{enc.Start}.  The default
+   implementation is a no-op.  *)
+  END End;
+
 
 PROCEDURE InitCodec* (codec: Codec; class: CodecClass;
                       preferredName: ARRAY OF CHAR);
@@ -200,7 +252,9 @@ PROCEDURE (codec: Codec) DecodeRegion*(data[NO_COPY]: ARRAY OF CHAR;
   BEGIN
     dec := codec. NewDecoder();
     b := String0.NewBuffer(end-start);
+    dec. Start;
     dec. DecodeIncr (data, start, end, b);
+    dec. End;
     RETURN b. ToString();
   END DecodeRegion;
 
@@ -234,7 +288,9 @@ PROCEDURE (codec: Codec) EncodeRegion*(s: String0.String;
   BEGIN
     enc := codec. NewEncoder();
     b := String0.NewBuffer (end-start);
+    enc. Start;
     enc. EncodeIncr (s, start, end, b);
+    enc. End;
     s8 := b. ToString();
     RETURN s8(String0.String8);
   END EncodeRegion;

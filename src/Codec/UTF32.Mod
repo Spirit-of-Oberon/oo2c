@@ -109,6 +109,12 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
     END;
   END DecodeIncr;
   
+PROCEDURE (dec: Decoder) Reset*;
+  BEGIN
+    dec.incompleteSize := 0;
+  END Reset;
+
+
 PROCEDURE (c: UTF32) EncodeRegion*(s: String.String;
                                    start, end: LONGINT): String.String8;
   VAR

@@ -278,14 +278,18 @@ BEGIN
       enc.SetKey(key(String.String8));
     ELSE
     END;
+    enc.Start;
     Encode (enc, r, w);
+    enc.End;
   | decode:
     dec := codec1.NewDecoder();
     WITH dec: Codec.CryptoDecoder DO
       dec.SetKey(key(String.String8));
     ELSE
     END;
+    dec.Start;
     Decode (dec, r, w);
+    dec.End;
   | decodeFiles:
     DecodeFiles (r);
   END;

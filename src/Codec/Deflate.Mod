@@ -67,28 +67,15 @@ PROCEDURE (c: Deflate) NewDecoder*(): Decoder;
     dec.strm.zalloc := NIL;
     dec.strm.zfree := NIL;
     dec.strm.opaque := NIL;
-    
-    CheckErr(zlib.inflateInit_(dec.strm, 
-                               zlib.ZLIB_VERSION, SIZE(zlib.z_stream_s)),
-             "inflateInit_");
     RETURN dec;
   END NewDecoder;
 
-PROCEDURE (c: Deflate) NewEncoder*(): Encoder;
-  VAR
-    enc: Encoder;
+PROCEDURE (dec: Decoder) Start*;
   BEGIN
-    NEW (enc);
-    Codec.InitEncoder (enc);
-    enc.strm.zalloc := NIL;
-    enc.strm.zfree := NIL;
-    enc.strm.opaque := NIL;
-
-    CheckErr(zlib.deflateInit_(enc.strm, zlib.Z_DEFAULT_COMPRESSION,
+    CheckErr(zlib.inflateInit_(dec.strm, 
                                zlib.ZLIB_VERSION, SIZE(zlib.z_stream_s)),
-             "deflateInit_");
-    RETURN enc;
-  END NewEncoder;
+             "inflateInit_");
+  END Start;
 
 PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
                                       start, end: LONGINT;
@@ -104,7 +91,7 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
       dec.strm.next_out := SYSTEM.ADR(d);
       dec.strm.avail_out := sizeBuffer;
       err := zlib.inflate(dec.strm, zlib.Z_NO_FLUSH);
-      IF (err = zlib.Z_STREAM_END) THEN
+      IF (err = zlib.Z_STREAM_END) OR (dec.strm.avail_in = 0) THEN
         b.AppendLatin1Region (d, 0, sizeBuffer-dec.strm.avail_out);
         EXIT;
       ELSE
@@ -112,8 +99,37 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
         b.AppendLatin1Region (d, 0, sizeBuffer-dec.strm.avail_out);
       END;
     END;
-    CheckErr(zlib.inflateEnd(dec.strm), "inflateEnd");
   END DecodeIncr;
+
+PROCEDURE (dec: Decoder) End*;
+  BEGIN
+    CheckErr(zlib.inflateEnd(dec.strm), "inflateEnd");
+  END End;
+
+PROCEDURE (dec: Decoder) Reset*;
+  BEGIN
+    CheckErr(zlib.inflateReset(dec.strm), "inflateReset");
+  END Reset;
+
+
+PROCEDURE (c: Deflate) NewEncoder*(): Encoder;
+  VAR
+    enc: Encoder;
+  BEGIN
+    NEW (enc);
+    Codec.InitEncoder (enc);
+    enc.strm.zalloc := NIL;
+    enc.strm.zfree := NIL;
+    enc.strm.opaque := NIL;
+    RETURN enc;
+  END NewEncoder;
+
+PROCEDURE (enc: Encoder) Start*;
+  BEGIN
+    CheckErr(zlib.deflateInit_(enc.strm, zlib.Z_DEFAULT_COMPRESSION,
+                               zlib.ZLIB_VERSION, SIZE(zlib.z_stream_s)),
+             "deflateInit_");
+  END Start;
 
 PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
                                      start, end: LONGINT;
@@ -151,8 +167,17 @@ PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
         b.AppendLatin1Region (d, 0, sizeBuffer-enc.strm.avail_out);
       END;
     END;
-    CheckErr(zlib.deflateEnd(enc.strm), "deflateEnd");
   END Closure;
+
+PROCEDURE (enc: Encoder) End*;
+  BEGIN
+    CheckErr(zlib.deflateEnd(enc.strm), "deflateEnd");
+  END End;
+
+PROCEDURE (enc: Encoder) Reset*;
+  BEGIN
+    CheckErr(zlib.deflateReset(enc.strm), "deflateReset");
+  END Reset;
 
 PROCEDURE Register*;
   BEGIN

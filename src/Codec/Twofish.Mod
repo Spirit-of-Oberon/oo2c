@@ -162,6 +162,11 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
     dec.incompleteSize := end-start;
   END DecodeIncr;
 
+PROCEDURE (dec: Decoder) Reset*;
+  BEGIN
+    dec. incompleteSize := 0;
+  END Reset;
+
 PROCEDURE (enc: Encoder) EncodeIncr*(s: String.String;
                                      start, end: LONGINT;
                                      b: String.Buffer);
@@ -236,6 +241,11 @@ PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
       b.AppendLatin1Region (d, 0, blockSize);
     END;
   END Closure;
+
+PROCEDURE (enc: Encoder) Reset*;
+  BEGIN
+    enc. incompleteSize := 0;
+  END Reset;
 
 PROCEDURE Register*;
   BEGIN

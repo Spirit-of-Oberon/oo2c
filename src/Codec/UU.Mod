@@ -76,7 +76,7 @@ PROCEDURE (c: UU) NewDecoder*(): Decoder;
     dec: Decoder;
   BEGIN
     NEW (dec);
-    String.InitDecoder (dec);
+    Codec.InitDecoder (dec);
     dec. incompleteSize := 0;
     RETURN dec;
   END NewDecoder;
@@ -86,7 +86,7 @@ PROCEDURE (c: UU) NewEncoder*(): Encoder;
     enc: Encoder;
   BEGIN
     NEW (enc);
-    String.InitEncoder (enc);
+    Codec.InitEncoder (enc);
     enc. incompleteSize := 0;
     RETURN enc;
   END NewEncoder;
@@ -310,6 +310,11 @@ PROCEDURE (dec: Decoder) DecodeIncr* (data[NO_COPY]: ARRAY OF CHAR;
     b.AppendLatin1Region (d, 0, dpos);
   END DecodeIncr;
 
+PROCEDURE (dec: Decoder) Reset*;
+  BEGIN
+    dec. incompleteSize := 0;
+  END Reset;
+
 PROCEDURE EncodeByte (b: LONGINT): CHAR;
   BEGIN
     IF (b = 0) THEN
@@ -412,6 +417,11 @@ PROCEDURE (enc: Encoder) Closure*(b: String.Buffer);
     END;
   END Closure;
 
+PROCEDURE (enc: Encoder) Reset*;
+  BEGIN
+    enc. incompleteSize := 0;
+  END Reset;
+
 PROCEDURE Register*;
   BEGIN
     Codec.Register (uu, "uu");
@@ -419,5 +429,5 @@ PROCEDURE Register*;
 
 BEGIN
   NEW (uu);
-  String.InitCodec (uu, Codec.transport, "uu");
+  Codec.InitCodec (uu, Codec.transport, "uu");
 END Codec:UU.
