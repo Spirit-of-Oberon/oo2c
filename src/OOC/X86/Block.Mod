@@ -309,6 +309,31 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
         END;
       END;
     END SortBlock;
+
+  PROCEDURE FixupMergeDeps(b: S.Block);
+  (* Make every using instruction of a @oconst{S.gate} within a
+     @oconst{S.merge} depend on the merge instruction.  This introduces
+     additional dependencies of type @oconst{S.depRegion} between intructions.
+     FIXME... this avoids scheduling of instructions before a merge that
+     depend on results computed bx one of its gates, but it does seem like
+     a hack *)
+    VAR
+      instr, merge: S.Instr;
+      use: S.Opnd;
+    BEGIN
+      FOR instr IN b.AllInstructions(S.gate) DO
+        merge := instr(S.GateInstr).merge;
+        IF (merge.opcode = S.merge) THEN
+          FOR use IN instr.resultList.Uses() DO
+            IF (use.instr.opcode # S.gate) OR
+               ((use.instr(S.GateInstr).merge.opcode # S.loopStart) &
+                (use.instr(S.GateInstr).merge.opcode # S.loopEnd)) THEN
+              use.instr.AddDep(S.depRegion, merge);
+            END;
+          END;
+        END;
+      END;
+    END FixupMergeDeps;
   
   BEGIN
     fctBlock.SetMarkers(NIL, 0);
@@ -322,6 +347,7 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
        is put into `waiting' *)
     ready := NEW(S.Block, -1);
     waiting := NEW(S.Block, -1);
+    FixupMergeDeps(fctBlock);
     SetUseCount(fctBlock);
     ClearBlock(fctBlock);
     
@@ -337,7 +363,12 @@ PROCEDURE ArrangeInstructions* (fctBlock: S.FunctionBlock);
       block.AddInFront(instr);
     END;
     IF waiting.instrList#NIL THEN
-      Log.Object("waiting", D.Label(waiting.instrList));
+      instr := waiting.instrList;
+      WHILE (instr # NIL) DO
+        Log.Object("waiting", D.Label(instr));
+        Log.Int("  marker", instr.marker);
+        instr := instr.nextInstr;
+      END;
     END;
     ASSERT(waiting.instrList = NIL);
     
