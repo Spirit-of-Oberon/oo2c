@@ -353,6 +353,37 @@ TYPE
   END;
 
 TYPE
+  Concat* = POINTER TO ConcatDesc;
+  ConcatDesc = RECORD
+    (**String concatentation.  The type of the result depends on the types of
+       the operands:
+
+       @itemize @bullet
+       @item
+       If an operand is of type @code{STRING}, then the result is of type
+       @code{STRING}.
+
+       @item
+       If an operand is a character constant of type @code{LONGCHAR}, or a
+       string constant based on @code{LONGCHAR}, then the result is a
+       @code{LONGCHAR} string constant @oconst{Predef.longcharString}.
+
+       @item
+       Otherweise, result is a @code{CHAR} string constant
+       @oconst{Predef.charString}.
+       @end itemize  *)
+    (OperatorDesc)
+    strings-: ExpressionList;
+    (**List of string values that are to be concatenated together.  The entries
+       are restricted to values of type @oconst{Predef.charString},
+       @oconst{Predef.longcharString}, and @ofield{Builder.stringType}.  All
+       entries are of the same type, @ofield{type}.
+
+       Right now, this list is always 2 elements long, but this is likely to
+       change in the future to an arbitrary length greater than 1.  *)
+  END;
+  
+TYPE
   ChangeElement* = POINTER TO ChangeElementDesc;
   ChangeElementDesc = RECORD
     (**Include or exclude a single set element.  Used for @code{INCL}
@@ -1316,6 +1347,8 @@ PROCEDURE ^ (b: Builder) NewCall* (design: Expression;
                                    isFunctionCall: BOOLEAN;
                                    endOfArgsSym: Symbol): Expression;
 
+PROCEDURE ^ (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
+
 PROCEDURE (b : Builder) CheckFunctionOp(expr : Expression; op : Symbol);
 (**Check that the operator @oparam{op} is not applied to an expression
    @oparam{expr} that is a function result. This restriction is applied to
@@ -1839,6 +1872,74 @@ PROCEDURE (op: Compare) Accept* (v: Visitor);
     v. VisitCompare (op)
   END Accept;
 
+(* Operator Class: Concat
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitConcat (op: Concat; sym: Symbol; type: Sym.Type;
+                      strings: ExpressionList);
+  BEGIN
+    InitOperator (op, sym, type);
+    op.strings := strings;
+  END InitConcat;
+
+PROCEDURE (b: Builder) NewConcat (sym: Symbol; strings: ExpressionList): Concat;
+  VAR
+    op: Concat;
+    id, tid: INTEGER;
+    i: LONGINT;
+    type: Sym.Type;
+    dummy: BOOLEAN;
+  BEGIN
+    id := -1;
+    FOR i := 0 TO LEN(strings^)-1 DO
+      type := strings[i].type;
+      
+      tid := MAX(INTEGER);
+      IF TR.IsStringConst(type) THEN     (* string constant *)
+        tid := type(Sym.PredefType).id;
+      ELSIF TR.IsCharType(type) THEN     (* convert char to string constant *)
+        IF b.Widen(strings[i], TR.MatchingStringConst(type)) THEN
+          tid := strings[i].type(Sym.PredefType).id;
+        ELSE
+          b.ErrSym(incompatibleTypes, sym);
+        END;
+      ELSIF (type # b.stringType) THEN   (* not STRING value?  error! *)
+        b.ErrSym(incompatibleTypes, sym);
+      END;
+      IF (tid > id) THEN
+        id := tid;
+      END;
+    END;
+    IF (id < MAX(INTEGER)) THEN
+      type := Predef.GetType(id);
+      FOR i := 0 TO LEN(strings^)-1 DO
+        dummy := b.Widen(strings[i], type);
+        ASSERT(dummy);
+      END;
+    ELSE
+      type := b.stringType;
+      FOR i := 0 TO LEN(strings^)-1 DO
+        IF TR.IsStringConst(strings[i].type) THEN
+          (* don't try this if this operand is in error *)
+          dummy := b.Widen(strings[i], type);
+          ASSERT(dummy);
+        END;
+      END;
+    END;
+    
+    NEW (op);
+    InitConcat (op, sym, type, strings);
+    RETURN op;
+  END NewConcat;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitConcat* (op: Concat);
+  END VisitConcat;
+
+PROCEDURE (op: Concat) Accept* (v: Visitor);
+  BEGIN
+    v. VisitConcat (op)
+  END Accept;
+
 (* Operator Class: Deref
    ------------------------------------------------------------------------ *)
 
@@ -2347,31 +2448,6 @@ PROCEDURE (shift: Shift) Accept* (v: Visitor);
   BEGIN
     v. VisitShift (shift)
   END Accept;
-
-(* Operator Class: StringAppend
-   ------------------------------------------------------------------------ *)
-
-(* In Oberon-2, the string append operator is only defined for string constants
-so it can be evaluated immediately, returning a constant string result. *)
-
-PROCEDURE (b : Builder) NewStringAppend(sym : Symbol; left, right : Expression) : Expression;
-VAR
-  base : Sym.Type;
-  l, r : Language.Value;
-BEGIN
-  base := TR.BaseCharType(left.type);
-  l := left(Const).value; r := right(Const).value;
-  WITH base : Sym.PredefType DO
-    CASE base.id OF
-    | Predef.char:
-      RETURN b.NewConst(sym, TR.MatchingStringConst(base), 
-        l(String8.Value).Concat(r(String8.Value)));
-    | Predef.longchar:
-      RETURN b.NewConst(sym, TR.MatchingStringConst(base), 
-        l(String16.Value).Concat(r(String16.Value)));
-    END
-  END
-END NewStringAppend;
 
 (* Operator Class: TypeCast
    ------------------------------------------------------------------------ *)
@@ -4062,7 +4138,8 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
     result : Expression;
     variant : Variant;
     isNumeric, isSet, isInteger, isBoolean, isChar, dummy : BOOLEAN;
-
+    exprList: ExpressionList;
+    
   PROCEDURE IsString(type : Sym.Type) : BOOLEAN;
   BEGIN
     RETURN
@@ -4138,7 +4215,10 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
 
       ELSIF (id IN {Id.plus}) & (left IS Const) & (right IS Const) 
             & (isChar OR TR.IsStringConst(left.type)) THEN
-	result := b.NewStringAppend(sym, left, right);
+        NEW(exprList, 2);
+        exprList[0] := left;
+        exprList[1] := right;
+	result := b.NewConcat(sym, exprList);
 
       ELSIF (id IN {Id.eql, Id.neq, Id.lss, Id.leq, Id.gtr, Id.geq})
             & (isNumeric OR isChar) THEN

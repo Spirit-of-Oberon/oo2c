@@ -78,6 +78,15 @@ PROCEDURE (v: Visitor) VisitCap* (cap: IR.Cap);
     cap. operand. Accept (v);
   END VisitCap;
 
+PROCEDURE (v: Visitor) VisitConcat* (op: IR.Concat);
+  VAR
+    i: LONGINT;
+  BEGIN
+    FOR i := 0 TO LEN(op.strings^)-1 DO
+      op.strings[i].Accept(v);
+    END;
+  END VisitConcat;
+
 PROCEDURE (v: Visitor) VisitCompare* (op: IR.Compare);
   BEGIN
     op. left. Accept (v);
