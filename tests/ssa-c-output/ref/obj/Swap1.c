@@ -4,10 +4,10 @@
 static void Swap1__Swap() {
   register OOC_INT32 i0,i1;
 
-  i0 = Swap1__x;
-  i1 = Swap1__y;
-  Swap1__x = i1;
-  Swap1__y = i0;
+  i0 = Swap1__y;
+  i1 = Swap1__x;
+  Swap1__x = i0;
+  Swap1__y = i1;
 }
 
 void Swap1__Test() {

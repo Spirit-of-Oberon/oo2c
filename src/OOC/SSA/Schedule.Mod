@@ -770,6 +770,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     END MarkBackedges;
   
   PROCEDURE CheckCollects (b: Block);
+  (* Sanity check: `collect' instructions may not appear in a branch block.  *)
     VAR
       nested: Block;
       proxy: InstrProxy;
@@ -812,6 +813,9 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
        other jumps and branches a target later in the chain *)
     ArrangeBlock (b);
 
+    (* remove anti-dependency pseudo operands *)
+    Blocker.RemoveAntiDeps (pb);
+    
     CheckCollects(b);
 
     b. degreeIn := 1;  (* the root block is reached by exactly one edge *)

@@ -21,21 +21,35 @@ MODULE OOC:SSA:Blocker;
 *)
 
 IMPORT
+  Log,
   Channel, TextRider, ADT:String, Dictionary := ADT:Dictionary:IntValue,
-  OOC:SSA, OOC:SSA:Opcode;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd;
   
 (**
 
-This module rearranges a flat list of SSA instructions into a
-``blocked'' hierarchy of instructions.  The idea is that a block
-contains a list of instructions that are evaluated under the same
-guarding predicate.  The blocked representation is primarly used to
-visualize SSA code, so that the code is better suited for human
-interpretation.  Additionally, it is intended that is serves as the
-starting point for creating the assembler output, where control flow
-is realized by jump and branch instructions.
+   This module rearranges a flat list of SSA instructions into a ``blocked''
+   hierarchy of instructions.  The idea is that a block contains a list of
+   instructions that are evaluated under the same guarding predicate.  The
+   blocked representation is primarly used to visualize SSA code, so that the
+   code is better suited for human interpretation.  Additionally, it is
+   intended that is serves as the starting point for creating the assembler
+   output, where control flow is realized by jump and branch instructions.
 
-**)
+   Anti-dependencies are also resolved by @oproc{ArrangeInstructions}.  The
+   basic assumption is, that whenever an instruction @var{u} changes the
+   current store, the set of read operations @var{r} that operate on the
+   ``old'' store is a subset of the using instructions of the ``old'' store.
+   For every @var{u}, the instructions from its corresponding read set @var{r}
+   are added as @oconst{Opnd.antiDependency} operands to its operand list.
+   Because the algorithm of @oproc{ArrangeInstructions} only places an
+   instruction in a region if all its uses have been placed already, this
+   ensures that the instructions from @var{r} are all put into a region after
+   the writing instruction @var{u} has been placed.  Within the region, the
+   anti-dependency operands guarantee proper scheduling.  For this to work,
+   operands of the class @oconst{Opnd.antiDependency} must be ignored when
+   calculating the region where an instruction should be placed, because they
+   do not propagate real values and may conflict with the control flow between
+   instructions.  *)
 
 (*
    
@@ -297,6 +311,7 @@ PROCEDURE GetProxy (instr: SSA.Instr): Proxy;
   END GetProxy;
 
 PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
+(**Don't forget to call @oproc{RemoveAntiDeps} when done!  *)
   VAR
     instr, enter: SSA.Instr;
     res: SSA.Result;
@@ -445,6 +460,15 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
       END;
     END AttachToLoop;
   
+  PROCEDURE IsWrite (instr: SSA.Instr): BOOLEAN;
+    BEGIN
+      RETURN
+          (instr. GetResultStore() # NIL) &
+          ((instr. opcode = Opcode.set) OR
+           (instr. opcode = Opcode.copy) OR
+           (instr. opcode = Opcode.call))
+    END IsWrite;
+  
   PROCEDURE IgnoredUse (use: SSA.Opnd): BOOLEAN;
     BEGIN
       (* skip all but the first operand of "select-exit", and all of
@@ -457,6 +481,23 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
             (use. instr. opndList # use)
     END IgnoredUse;
 
+  PROCEDURE AddAntiDeps (update: SSA.Instr; storeIn: SSA.Result);
+    VAR
+      use: SSA.Opnd;
+    BEGIN
+      use := storeIn. useList;
+      WHILE (use # NIL) DO
+        IF ~IgnoredUse (use) & (use. instr. GetResultStore() = NIL) THEN
+          (* the using instruction reads the state described by `storeIn',
+             but it does not change it; it must be scheduled before any
+             instruction that destroys `storeIn' *)
+          (* FIXME... only add opnd if it aliases with the using instruction *)
+          update. AddOpnd (use. instr, Opnd.antiDependency);
+        END;
+        use := use. nextUse;
+      END;
+    END AddAntiDeps;
+  
   PROCEDURE UpdateDefs (p: Proxy);
     VAR
       opnd: SSA.Opnd;
@@ -615,7 +656,11 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
         WHILE (res # NIL) DO
           use := res. useList;
           WHILE (use # NIL) DO
-            IF ~IgnoredUse (use) THEN
+            IF ~IgnoredUse (use) & (use. class # Opnd.antiDependency) THEN
+              (* anti dependencies are not considered when determing the
+                 placement of the instruction: we know that all writing
+                 instructions with such a dependency on the current one
+                 have been placed somewhere after it *)
               useRegion := RegionOfUse (use);
               IF (region = NIL) THEN
                 region := useRegion;
@@ -662,6 +707,19 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     SortNestedLoops (mainLoop);
     (*WriteLoops (mainLoop, 0);*)
     AttachToLoop (mainLoop);
+
+    (* add pseudo operands to `set' instructions that make ant-dependencies
+       between these and any `get's working on the same store explicit *)
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      IF IsWrite (instr) THEN
+        res := instr. GetArgStore();
+        IF (res # NIL) THEN
+          AddAntiDeps (instr, res);
+        END;
+      END;
+      instr := instr. nextInstr;
+    END;
     
     (* for every instruction, write the number of uses into its `marker'
        field; instructions with no uses are placed in `ready', the rest
@@ -694,7 +752,7 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     END;
 
     (* the `ready' list must contain the "select-return" instruction;
-       elimiate this instruction from the ready list *)
+       eliminate this instruction from the list and make it the root region *)
     p := ready. first;
     WHILE (p # NIL) & (p. instr. opcode # Opcode.selectReturn) DO
       p := p. nextProxy;
@@ -717,6 +775,23 @@ PROCEDURE ArrangeInstructions* (pb: SSA.ProcBlock): Region;
     RETURN root
   END ArrangeInstructions;
 
+PROCEDURE RemoveAntiDeps* (pb: SSA.ProcBlock);
+  VAR
+    instr: SSA.Instr;
+    opnd, next: SSA.Opnd;
+  BEGIN
+    instr := pb. instrList;
+    WHILE (instr # NIL) DO
+      opnd := instr. GetOpndClass (Opnd.antiDependency);
+      WHILE (opnd # NIL) & (opnd. class = Opnd.antiDependency) DO
+        next := opnd. nextOpnd;
+        opnd. DeleteOpnd;
+        opnd := next;
+      END;
+      instr := instr. nextInstr;
+    END;
+  END RemoveAntiDeps;
+    
 PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
   VAR
     w: TextRider.Writer;
@@ -834,6 +909,9 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
             IF (opnd # instr. opndList) THEN
               w. WriteChar (",");
             END;
+            IF (opnd. class = Opnd.antiDependency) THEN
+              w. WriteString ("ad");
+            END;
             WriteResultId (opnd. arg);
             opnd := opnd. nextOpnd
           END;
@@ -875,6 +953,8 @@ PROCEDURE Write* (c: Channel.Channel; pb: SSA.ProcBlock);
     w. WriteString (pb. procDecl. name. str^);
     w. WriteLn;
     WriteRegion (root);
+
+    RemoveAntiDeps (pb);
   END Write;
 
 END OOC:SSA:Blocker.

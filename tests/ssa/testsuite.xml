@@ -15,7 +15,7 @@
   designator1 function6 loop1 loop2 loop3 loop4 and1 or1 varpar1
   record1 record2 record3 record4 record5 record6 record7 record8
   record9 procvar1 procvar2 procvar3 procvar4 procvar5
-  inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7
+  inc1 dec1 cap1 len1 len2 len3 len4 len5 len6 len7 antidep1
   typetest1 typetest2 typetest3 typetest4
   array1 array2 array3 array4 array5 array6 array7 array8
   tbproc1 tbproc2 tbproc3 tbproc4 tbproc5 tbproc6 tbproc7
@@ -174,6 +174,14 @@
   </testcases>
   
     
+  <testcases profile="OOC2 Development: Checking Anti-Dependencies"
+             default-lang="O1 O2 AO">
+    <test id="antidep1" type="run" file="AntiDep1.Mod" output="AntiDep1.Ref">
+      The record field must be read before it is overwritten.
+    </test>
+  </testcases>
+  
+      
   <testcases profile="OOC2 Development: Data Types" default-lang="O1 O2 AO">
     <test id="record1" type="run" file="Record1.Mod" output="Record1.Ref">
       Assignments to the fields of a global record variable.
