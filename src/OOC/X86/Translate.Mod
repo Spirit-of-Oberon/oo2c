@@ -294,6 +294,13 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN instr.AddResultExpr(call.type);
         END;
       END Call;
+
+    PROCEDURE Designator2Address(resultOfGet: S.Result): S.Result;
+      BEGIN
+        ASSERT(resultOfGet.instr.opcode = S.get);
+        memoryCP := resultOfGet.instr.GetBeforeInstr(S.depMemory);
+        RETURN resultOfGet.instr.opndList.arg;
+      END Designator2Address;
     
     PROCEDURE Copy(copy: IR.Copy);
       VAR
@@ -301,18 +308,16 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         instr: S.Instr;
       BEGIN
         size := b.AddConstLength(copy.dest.type.size);
-        from := Expression(copy.source);
-        to := Expression(copy.dest);
+        from := Designator2Address(Expression(copy.source));
+        to := Designator2Address(Expression(copy.dest));
         
         IF copy.checkDynamicType THEN
           (* FIXME... *)
         END;
         
         instr := b.AddInstr2(S.call, b.AddAdrRT("memcpy"), sp);
-        ASSERT(to.instr.opcode = S.get);
-        instr.AddOpnd(to.instr.opndList.arg);
-        ASSERT(from.instr.opcode = S.get);
-        instr.AddOpnd(from.instr.opndList.arg);
+        instr.AddOpnd(to);
+        instr.AddOpnd(from);
         instr.AddOpnd(size);
         
         MemoryCP(instr);
@@ -337,14 +342,19 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         ControlCP(instr);
       END MoveBlock;
 
-    PROCEDURE TypeTag (design: IR.Expression; value: S.Result;
+    PROCEDURE TypeTag (design: IR.Expression; 
                        checkDerefOfNil: BOOLEAN;
                        derefSym: IR.Symbol): S.Result;
-    (* `design' is the variable designator, `value' its translation to SSA  *)
+    (* `design' is the variable designator *)
       VAR
         instr: S.Instr;
         type: Sym.Type;
+        value: S.Result;
       BEGIN
+        (* Note: expression evaluates to a "get" on the tested variable.
+           For a record, this must be corrected later.  *)
+        value := Expression(design);
+        
         type := design.type.Deparam();
         type := type.Bound();  (* for a type variable, continue with bound *)
         IF checkDerefOfNil & (type IS Sym.Pointer) THEN
@@ -363,7 +373,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           (* type tag of a VAR parameter *)
           ASSERT(FALSE);
           (*instr.AddOpnd(value.instr.GetArgClass(Opnd.readDesign), Opnd.arg);*)
-        ELSE                             (* static type tag *)
+        ELSE  (* static type tag; need to get rid of "get" on record *)
+          value := Designator2Address(value);
           RETURN b.AddAdrTypeDescr(type);
         END;
       END TypeTag;
@@ -417,7 +428,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             type := type.Deparam();
             WITH type: Sym.Array DO
               IF type.isOpenArray THEN
-                len := pb.AddGetLengthInstr (baseArray.instr, dim+1, type);
+                len := pb.AddGetLengthInstr (baseArray.instr, dim+1, type, fp);
               ELSE
                 len := pb.AddConstLength(type.length);
               END;
@@ -481,10 +492,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN size.AddResult(S.length);
         END CalculateSize;
       
-      PROCEDURE Index (indexOp: IR.Index;
-                       baseArray: S.Result;
-                       elementSize: S.Result;
-                       dim: LONGINT): S.Result;
+      PROCEDURE Index(indexOp: IR.Index; baseArray: S.Result;
+                      elementSize: S.Result; dim: LONGINT): S.Result;
       (* Handles a sequence of index operations on an array.  @oapram{indexOp}
          is the index operation that is to be translated.  @oparam{baseArray}
          holds the (virtual) @oconst{Opcode.get} operation on the array
@@ -501,7 +510,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         BEGIN
           arrayType := indexOp.array.type.Deparam();
           length := b.AddGetLengthInstr(baseArray.instr, dim,
-                                        arrayType(Sym.Array));
+                                        arrayType(Sym.Array), fp);
           instr := b.AddInstr2(S.mul, elementSize, FixAddress(length));
           newSize := instr.AddResult(S.address);
           
@@ -557,7 +566,8 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           adrOpnd: S.Opnd;
         BEGIN
           (* take the "get" instruction of the record's designator and
-             change it into a "get" for the record field *)
+             change it into a "get" for the record field; memoryCP
+             is not changed and continues to refer to the old "get" *)
           baseResult := Expression(selectOp.record);
           ASSERT (baseResult.instr.opcode = S.get);
           instr := baseResult.instr;
@@ -789,13 +799,15 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           instr := b.AddInstr1(S.get, adr);
           instr.SetDesignator(designator);
           MemoryCP(instr);
-          ControlCP(instr);
+          (*ControlCP(instr);
+             FIXME... this is not handled by Designator2Address *)
           RETURN instr.AddResultExpr(expr.type);
           
         | expr: IR.Adr DO
           res := Expression(expr.design);
           IF (res.instr.opcode = S.get) THEN
-            RETURN b.FixType(res.instr.opndList.arg, S.address);
+            res := Designator2Address(res);
+            RETURN b.FixType(res, S.address);
           ELSE
             (* must be a string constant; currently, this is its own address
                FIXME... we should probably introduce an address opcode here *)
@@ -808,20 +820,19 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
                                     value(Boxed.String).value.length+1);
           ELSE
             baseArray := Expression(expr.arrayVariable);
+            memoryCP := baseArray.instr.GetBeforeInstr(S.depMemory);
             type := expr.arrayVariable.type.Deparam();
             type := type(Sym.Array).GetNthElementType(expr.dim);
             RETURN b.AddGetLengthInstr(baseArray.instr, expr.dim,
-                                       type(Sym.Array));
+                                       type(Sym.Array), fp);
           END;
               
         | expr: IR.TypeTag DO
-          RETURN TypeTag(expr.design, Expression(expr.design),
-                         FALSE, expr.sym);
+          RETURN TypeTag(expr.design, FALSE, expr.sym);
               
         | expr: IR.TypeTest DO
           instr := b.AddInstr2(S.call, b.AddAdrRT("RT0__TypeTest"), sp);
-          instr.AddOpnd(TypeTag (expr.expr, Expression(expr.expr),
-                                 expr.checkPointer, expr.sym));
+          instr.AddOpnd(TypeTag (expr.expr, expr.checkPointer, expr.sym));
           instr.AddOpnd(b.AddAdrTypeDescr(expr.referenceType));
           MemoryCP(instr);
           ControlCP(instr);
@@ -936,6 +947,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
 
     PROCEDURE Assign(getInstr: S.Result; newValue: S.Result);
       BEGIN
+        ASSERT(memoryCP = getInstr.instr);
         getInstr.instr.SetOpcode(S.set);
         getInstr.instr.AddOpnd(newValue);
         getInstr.DeleteResult();
@@ -1128,7 +1140,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
             StatmSeq(statm.pathFalse);
           ELSIF statm.checkMatch THEN
             irExpr := statm.guard(IR.TypeTest).expr;
-            res := TypeTag(irExpr, Expression(irExpr), TRUE, statm.sym);
+            res := TypeTag(irExpr, TRUE, statm.sym);
             FailedCheck("RT0__ErrorFailedWith", statm.sym.pos, res);
           END;
           endFalse := AddJump();
