@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE test-setup SYSTEM "../../rsrc/OOC/TestFramework/test-setup.dtd">
+
+<test-setup lang="O2">
+  <machine model="IBM ThinkPad 600E"
+	   cpu="Mobile Pentium II, stepping 10"
+	   ram="288 MB" />
+  
+  <operating-system name="Linux"
+		    version="2.4.8 i686 unknown">
+    <os-component name="libc">/lib/libc-2.2.2.so</os-component>
+    <os-component name="libgc">unknown</os-component>
+    <os-component name="cc">gcc 2.95.2</os-component>
+  </operating-system>
+    
+  <processor name="TestCompile"
+	     version="devel"
+	     command="../../../TestCompile"
+	     config-file=""
+	     working-dir="./wd" 
+	     flags="--make -r ."
+	     filter-command="/usr/bin/Ooef" 
+	     diff-command="diff -u" />
+
+  <test-suite uri="testsuite.xml" />
+</test-setup>
