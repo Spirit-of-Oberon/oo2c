@@ -881,12 +881,17 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   PROCEDURE Return (return: IR.Return);
     VAR
       instr: SSA.Instr;
-      store: SSA.Result;
+      expr, store: SSA.Result;
     BEGIN
-      instr := pb. AddInstr (Opcode.return, Opcode.scNone);
-      instr. AddOpnd (s, Opnd.store);
       IF (return. result # NIL) THEN
-        instr. AddOpnd (Expression (return. result), Opnd.functionResult);
+        expr := Expression (return. result);
+        
+        instr := pb. AddInstr (Opcode.return, Opcode.scNone);
+        instr. AddOpnd (s, Opnd.store);
+        instr. AddOpnd (expr, Opnd.functionResult);
+      ELSE
+        instr := pb. AddInstr (Opcode.return, Opcode.scNone);
+        instr. AddOpnd (s, Opnd.store);
       END;
       
       store := instr. AddResult (Result.store);
