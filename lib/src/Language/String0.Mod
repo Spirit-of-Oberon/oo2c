@@ -336,6 +336,16 @@ PROCEDURE NewLatin1Region*(str[NO_COPY]: ARRAY OF CHAR; start, end: LONGINT): St
     RETURN NewString8(SYSTEM.ADR(str[start]), end-start);
   END NewLatin1Region;
 
+PROCEDURE NewLatin1Char*(ch: CHAR): String8;
+(**Create a string value of length 1 from @samp{ch} without any translation.
+
+   @precond
+   @oparam{ch} is a Latin-1 code point.
+   @end precond  *)
+  BEGIN
+    RETURN NewString8(SYSTEM.ADR(ch), 1);
+  END NewLatin1Char;
+
 PROCEDURE NewUCS2*(str[NO_COPY]: ARRAY OF LONGCHAR): String;
 (**Create a string value from @oparam{str} without any translation.
 
@@ -363,6 +373,52 @@ PROCEDURE NewUCS2*(str[NO_COPY]: ARRAY OF LONGCHAR): String;
     RETURN s;
   END NewUCS2;
 
+PROCEDURE NewUCS2Region*(str[NO_COPY]: ARRAY OF LONGCHAR; start, end: LONGINT): String;
+(**Create a string value from @samp{str[start, end-1]} without any
+   translation.
+
+   @precond
+   @samp{0 <= @oparam{start} <= @oparam{end} <= LEN(@oparam{str})}.
+   The characters in @oparam{str} are Unicode 3.1 code points outside the
+   surrogate areas.
+   @end precond  *)
+  VAR
+    i, j: LONGINT;
+    s: String32;
+    d: CharsUTF32;
+  BEGIN
+    i := end-start;
+    NEW(s);
+    NEW(d, i+1);
+    s. length := i;
+    s. data := d;
+    FOR j := start TO end-1 DO
+      d[j-start] := ORD(str[j]);
+    END;
+    d[i-1] := 0;
+    RETURN s;
+  END NewUCS2Region;
+
+PROCEDURE NewUCS2Char*(ch: LONGCHAR): String;
+(**Create a string value of length 1 from @samp{ch} without any translation.
+
+   @precond
+   @oparam{ch} is a Unicode 3.1 code point outside the
+   surrogate areas.
+   @end precond  *)
+  VAR
+    s: String32;
+    d: CharsUTF32;
+  BEGIN
+    NEW(s);
+    NEW(d, 2);
+    s. length := 1;
+    s. data := d;
+    d[0] := ORD(ch);
+    d[1] := 0;
+    RETURN s;
+  END NewUCS2Char;
+
 PROCEDURE NewUTF32Region*(str[NO_COPY]: ARRAY OF Char;
                           start, end: LONGINT): String;
 (**Create a string value from @samp{str[start, end]} without any translation.
@@ -374,6 +430,16 @@ PROCEDURE NewUTF32Region*(str[NO_COPY]: ARRAY OF Char;
   BEGIN
     RETURN NewString32 (SYSTEM.ADR(str[start]), end-start);
   END NewUTF32Region;
+
+PROCEDURE NewUTF32Char*(ch: Char): String;
+(**Create a string value of length 1 from @samp{ch} without any translation.
+
+   @precond
+   @oparam{ch} is a Unicode 3.1 code point.
+   @end precond  *)
+  BEGIN
+    RETURN NewString32(SYSTEM.ADR(ch), 1);
+  END NewUTF32Char;
 
 PROCEDURE NewUTF32*(str[NO_COPY]: ARRAY OF Char): String;
 (**Create a string value from @oparam{str} without any translation.
