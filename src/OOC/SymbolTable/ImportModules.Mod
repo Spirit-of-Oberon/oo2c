@@ -21,7 +21,6 @@ MODULE OOC:SymbolTable:ImportModules;
 *)
 
 IMPORT
-  OOC:SymbolTable:XML, IO:StdChannels,
   Msg, IO, OOC:Config, OOC:Error, Sym := OOC:SymbolTable, OOC:Repository;
 
 

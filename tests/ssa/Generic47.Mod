@@ -24,7 +24,7 @@ PROCEDURE (l: ArrayList(E)) Append* (obj: E);
 PROCEDURE (d: Document) P*(importDecl: G.A1);
   BEGIN
     IF (d. usedImportsList = NIL) THEN
-      d. usedImportsList := ArrayList.New (2)
+      d. usedImportsList := New(2);
     END;
     (* ... *)
     d. usedImportsList. Append (importDecl)

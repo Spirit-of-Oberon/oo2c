@@ -6,7 +6,7 @@ TYPE
   R1*(B: G.Object) = RECORD END;
   R2*(D: G.Object) = RECORD (R1(D)) END;
 
-PROCEDURE (VAR r: R2) F*(x: R1.B);
+PROCEDURE (VAR r: R2(X)) F*(x: R2.D);
   BEGIN
   END F;
 

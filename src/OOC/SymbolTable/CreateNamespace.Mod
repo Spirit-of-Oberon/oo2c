@@ -21,7 +21,6 @@ MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Log,
   Msg, IO, ADT:ArrayList, ADT:Dictionary, OOC:Error, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:SymbolTable:Uses,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Builder,
@@ -272,7 +271,6 @@ RAISES IO.Error;
     CONST
       namespaceNested = 0;
       namespaceExtended = 1;
-      namespacePType = 2;
     VAR
       ptr: Sym.Item;
 
@@ -377,7 +375,6 @@ RAISES IO.Error;
         CASE nsType OF
         | namespaceNested  : RETURN Namespace.NewNested(da, c);
         | namespaceExtended: RETURN Namespace.NewExtended(da, c);
-        | namespacePType   : RETURN Namespace.NewPType(da, c);
         END
       END Assemble;
 
@@ -397,7 +394,7 @@ RAISES IO.Error;
           item. SetNamespace (Assemble (item, namespaceExtended));
           privateRecords.Set(item, NIL);
         | item: Sym.TypePars DO
-          item. SetNamespace (Assemble (item, namespacePType));
+          item. SetNamespace (Assemble (item, namespaceNested));
         | item: Sym.FormalPars DO
           item. SetNamespace (Assemble (item, namespaceNested));
         ELSE  (* no other item is associated with a namespace *)
@@ -528,10 +525,6 @@ RAISES IO.Error;
             IF (item = NIL) THEN
               Err (undeclaredModule, typeName);
               RETURN typeName
-            ELSIF (item IS Sym.TypeDecl) &
-                  (item(Sym.TypeDecl).type.typePars # NIL) THEN
-              ns := item(Sym.TypeDecl).type.typePars.ns;
-              ASSERT(ns # NIL);
             ELSIF ~(item IS Sym.Import) THEN
               Err (notModule, typeName);
               RETURN typeName

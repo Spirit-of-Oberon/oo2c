@@ -6,7 +6,7 @@ TYPE
   P*(A: G.Object) = POINTER TO R(A);
   R*(B: G.Object) = RECORD END;
 
-PROCEDURE (p: P) F*(x: P.B);
+PROCEDURE (p: P(B)) F*(x: A);
   BEGIN
   END F;
 

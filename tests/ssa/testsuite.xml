@@ -17,8 +17,7 @@
   generic53 generic54 generic55">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic53 generic54
-  generic55">-->
+  select ="&SetupTestCasesWithOut; generic1 generic15">-->
 
   &TestSetupWithOut;
     
@@ -1360,8 +1359,8 @@
       variable of the pointer's base type.
     </test>
     <test id="generic15" type="reject" file="Generic15.Mod">
-      Type-bound procedure refers to a type variable of the record's
-      base type.
+      Type-bound procedure refers to a type variable of the record
+      using a qualified identifier.
     </test>
     <test id="generic16" type="accept" file="Generic16.Mod">
       Checks the things one can do with variables whose type is a type
@@ -2084,10 +2083,10 @@
         msg="This is not an extension of the type bound"/>
     <reject-info id="generic13" pos="POINTER TO %B"
         msg="Illegal pointer base type"/>
-    <reject-info id="generic14" pos="P.%B"
+    <reject-info id="generic14" pos=": %A"
         msg="Undeclared identifier"/>
-    <reject-info id="generic15" pos="R1.%B"
-        msg="Undeclared identifier"/>
+    <reject-info id="generic15" pos="%R2.D"
+        msg="This is not a module name"/>
     <reject-info id="generic17" pos="v %:= a;"
         msg="Expression not compatible with variable type `Base'"/>
     <reject-info id="generic18" pos="a(%Base)"

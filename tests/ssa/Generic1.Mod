@@ -34,15 +34,15 @@ PROCEDURE (obj: Object) Id*(): LONGINT;
     RETURN 123;
   END Id;
 
-PROCEDURE (b: B(Base)) Set*(obj: BDesc.Base);
+PROCEDURE (b: B(Base)) Set*(obj: Base);
   VAR
-    x: BDesc.Base;
+    x: Base;
   BEGIN
   END Set;
 
-PROCEDURE (b: B(Base)) Get*(): BDesc.Base;
+PROCEDURE (b: B(Base)) Get*(): Base;
   VAR
-    x: BDesc.Base;
+    x: Base;
   BEGIN
   END Get;
 

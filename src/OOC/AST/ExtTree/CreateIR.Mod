@@ -57,10 +57,6 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
           RETURN b. NewQualident (currentNamespace, left, currentSourceContext,
                                   design. right(ExtTree.Terminal). sym);
 
-        | left: IR.TypeRef DO  (* type variable T.V *)
-          RETURN b. NewTypeVar(currentNamespace, left, currentSourceContext,
-                               design. right(ExtTree.Terminal). sym);
-          
         ELSE                             (* field or tb procedure selector *)
           IF (left = b.errorExpr) THEN
             RETURN b. errorExpr;           (* left side has errors *)
