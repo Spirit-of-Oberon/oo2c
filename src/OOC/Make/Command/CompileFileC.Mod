@@ -21,9 +21,9 @@ MODULE OOC:Make:Command:CompileFileC;
 *)
 
 IMPORT
-  Channel, Make, Out, ADT:String, OS:ProcessManagment,
-  OOC:Make:Entity:ModuleFile,
-  OOC:Error, OOC:Repository, OOC:Config:CCompiler, OOC:Auxiliary:Config;
+  Channel, Make, Msg, Out, ADT:String, OS:ProcessManagment, URI,
+  OOC:Make:Entity:ModuleFile, OOC:Error, OOC:Repository, 
+  OOC:SymbolTable:Item, OOC:Config:CCompiler, OOC:Auxiliary:Config;
 
 TYPE
   Command* = POINTER TO CommandDesc;
@@ -32,6 +32,8 @@ TYPE
     module: Repository.Module;
     fileId: Repository.FileId;
     sourceId: Repository.FileId;
+    sourceURI: URI.HierarchicalURI;
+    externalSource: BOOLEAN;
   END;
 
 PROCEDURE New* (context: Make.Context; module: Repository.Module;
@@ -39,16 +41,32 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
   VAR
     cmd: Command;
     src: Repository.FileId;
+    symTab: Item.Module;
+    res: Msg.Msg;
   BEGIN
     NEW (cmd);
     Make.InitCommand (cmd, context);
     cmd. module := module;
     cmd. fileId := fileId;
+    
+    (* first, assume that this is a normal module *)
+    cmd. externalSource := FALSE;
     CASE cmd. fileId OF
     | Repository.modObjectFile    : src := Repository.modCodeFileC
     | Repository.modMainObjectFile: src := Repository.modMainFileC
     END;
+    cmd. sourceURI := cmd. module. GetURI (src);
     cmd. sourceId := src;
+    
+    (* revise data if the module is FOREIGN: use externally provided C file *)
+    IF (fileId = Repository.modObjectFile) THEN
+      symTab := module. GetSymbolTable (res);
+      IF (res = NIL) & (symTab. class = Item.mcForeign) THEN
+        cmd. externalSource := TRUE;
+        cmd. sourceURI := symTab. GetExternalSource()
+      END
+    END;
+    
     RETURN cmd
   END New;
 
@@ -59,7 +77,7 @@ PROCEDURE (cmd: Command) Id* (): String.String;
 
 PROCEDURE (cmd: Command) Discover* (): Make.CommandState;
   BEGIN
-    IF (cmd. state = Make.commandUndiscovered) THEN
+    IF (cmd. state = Make.commandUndiscovered) & ~cmd. externalSource THEN
       cmd. AddAncestor (ModuleFile.GetEntity (cmd. context, cmd. module,
                                               cmd. sourceId));
       RETURN cmd. state+1
@@ -86,9 +104,8 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     
     cmd. module. CreateOutputDir (cmd. fileId, res);
     IF (res = NIL) THEN
-      CCompiler.CompileFileCmd (config. options, 
-                            cmd. module. GetURI (cmd. sourceId),
-                            cmd. module. GetURI (cmd. fileId), str);
+      CCompiler.CompileFileCmd (config, cmd. sourceURI,
+                                cmd. module. GetURI (cmd. fileId), str);
       Out.String (str);
       Out.Ln;
       exit := ProcessManagment.system (str)
