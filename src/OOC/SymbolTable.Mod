@@ -23,15 +23,8 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 IMPORT
   Language, Msg, Strings, ADT:Object, ADT:String, ADT:Dictionary,
   URI, ParserURI := URI:Parser,
-  OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc;
+  OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;
 
-TYPE
-  TempNode* = POINTER TO TempNodeDesc;
-  TempNodeDesc* = RECORD [ABSTRACT]
-    (* this is a temporary workaround to avoid cyclic imports between
-       SymbolTable and AST... FIXME *)
-  END;
-  
 TYPE
   NameString* = InputBuffer.CharArray;
   (**This type is used to store names as character arrays.  The string is
@@ -280,6 +273,10 @@ TYPE
     linkDirectives: LinkDirective;
     (**List of @samp{FILE}, @samp{OBJ}, and @samp{LIB} link directives from
        the module header.  *)
+
+    moduleAST-: AST.Node;
+    (**Refers to the abstract syntax tree of the module, for example an
+       instance of @otype{*OOC:AST:ExtTree.Module}.  *)
   END;
 
 TYPE
@@ -404,7 +401,7 @@ TYPE
        translated to IR.  Until then, this field holds a negative value.
        (It's probably a good idea to change this field to `Integer' at
        some later time.)  *)
-    lengthExpr-: TempNode;
+    lengthExpr-: AST.Node;
     (**The part of the abstract syntax tree that defines the length of the
        array.  For an open array type, this field is @code{NIL}.  *)
   END;
@@ -477,6 +474,9 @@ TYPE
     formalPars*: FormalPars;             (*... make this read-only? *)
     (**The formal parameters of the procedure.  This is also the type of
        the procedure.  *)
+    procAST-: AST.Node;
+    (**Refers to the abstract syntax tree of the procedure, for example an
+       instance of @otype{*OOC:AST:ExtTree.ProcDecl}.  *)
   END;
 
 TYPE
@@ -494,7 +494,7 @@ TYPE
     (**This class represents constant declarations.  *)
     value-: Language.Value;
     type-: PredefType;
-    constExpr-: TempNode;
+    constExpr-: AST.Node;
     (**The part of the abstract syntax tree that defines the value of the
        constant.  *)
   END;
@@ -899,13 +899,15 @@ PROCEDURE (l: LinkFile) Load* (r: Object.Reader);
 
 
 PROCEDURE InitModule* (mod: Module; name: Name; docString: Doc.Document;
-                       class: ModuleClass; callConv: CallConv);
+                       class: ModuleClass; callConv: CallConv;
+                       moduleAST: AST.Node);
   BEGIN
     InitDeclaration (mod, NIL, name, 0, nameNotExported, docString);
     mod. ns := NIL;
     mod. class := class;
     mod. callConv := callConv;
     mod. linkDirectives := NIL;
+    mod. moduleAST := moduleAST;
   END InitModule;
 
 PROCEDURE (mod: Module) Store* (w: Object.Writer);
@@ -930,7 +932,8 @@ PROCEDURE (mod: Module) Load* (r: Object.Reader);
       mod. linkDirectives := NIL
     ELSE
       mod. linkDirectives := obj(LinkDirective)
-    END
+    END;
+    mod. moduleAST := NIL;
   END Load;
 
 PROCEDURE (mod: Module) SetNamespace* (ns: Namespace);
@@ -1052,7 +1055,7 @@ PROCEDURE InitConstDecl* (constDecl: ConstDecl; parent: Item; name: Name;
                           visibleFrom: ModulePos; exportMark: ExportMark;
                           docString: Doc.Document;
                           value: Language.Value; type: PredefType;
-                          constExpr: TempNode);
+                          constExpr: AST.Node);
   BEGIN
     InitDeclaration (constDecl, parent, name, visibleFrom, exportMark,
                      docString);
@@ -1099,6 +1102,7 @@ PROCEDURE (constDecl: ConstDecl) Load* (r: Object.Reader);
       constDecl. type := predefIdToType[id];
       ASSERT (constDecl. type # NIL)
     END;
+    constDecl. constExpr := NIL;
   END Load;
 
 
@@ -1231,14 +1235,16 @@ PROCEDURE (proc: PredefProc) Load* (r: Object.Reader);
 PROCEDURE InitProcDecl* (procDecl: ProcDecl; parent: Item; name: Name;
                          visibleFrom: ModulePos; exportMark: ExportMark;
                          docString: Doc.Document;
-                         isTypeBound, isForwardDecl: BOOLEAN);
+                         isTypeBound, isForwardDecl: BOOLEAN;
+                         procAST: AST.Node);
   BEGIN
     InitDeclaration (procDecl, parent, name, visibleFrom, exportMark, docString);
     procDecl. isTypeBound := isTypeBound;
     procDecl. isForwardDecl := isForwardDecl;
     procDecl. tbProcIndex := -1;
     procDecl. ns := NIL;
-    procDecl. formalPars := NIL
+    procDecl. formalPars := NIL;
+    procDecl. procAST := procAST;
   END InitProcDecl;
 
 PROCEDURE (procDecl: ProcDecl) Store* (w: Object.Writer);
@@ -1248,7 +1254,7 @@ PROCEDURE (procDecl: ProcDecl) Store* (w: Object.Writer);
     w. WriteBool (procDecl. isForwardDecl);
     w. WriteNum (procDecl. tbProcIndex);
     w. WriteObject (procDecl. formalPars);
-    (* ignore field `ns' *)
+    (* ignore field `ns' & `procAST' *)
   END Store;
 
 PROCEDURE (procDecl: ProcDecl) Load* (r: Object.Reader);
@@ -1265,7 +1271,8 @@ PROCEDURE (procDecl: ProcDecl) Load* (r: Object.Reader);
       procDecl. formalPars := NIL
     ELSE
       procDecl. formalPars := obj(FormalPars)
-    END
+    END;
+    procDecl. procAST := NIL;
   END Load;
 
 PROCEDURE (procDecl: ProcDecl) SetNamespace* (ns: Namespace);
@@ -1454,7 +1461,7 @@ PROCEDURE (pointer: Pointer) Load* (r: Object.Reader);
 
 PROCEDURE InitArray* (array: Array; parent: Item; position: Position; 
                       isOpenArray: BOOLEAN; elementType: Type;
-                      lengthExpr: TempNode);
+                      lengthExpr: AST.Node);
   BEGIN
     InitType (array, parent, position);
     array. isOpenArray := isOpenArray;

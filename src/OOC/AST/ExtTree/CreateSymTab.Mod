@@ -206,7 +206,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: ExtTree.Module);
     END;
     
     moduleDecl := v. stb. NewModule (moduleName, module. name. docString,
-                                     class, callConv);
+                                     class, callConv, module);
     IF (mf # NIL) & (mf. linkSections # NIL) THEN
       FOR i := 0 TO mf. linkSections. len-1 DO
         n := mf. linkSections. n[i];
@@ -369,8 +369,7 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
       GetName (procDecl. identDef. ident), endPos,
       ExportMark (procDecl. identDef),
       procDecl. identDef. docString,
-      procDecl. receiver # NIL, procDecl. arrow # NIL);
-    procDecl. SetSymTabEntry (proc);
+      procDecl. receiver # NIL, procDecl. arrow # NIL, procDecl);
     
     IF (procDecl. formalPars # NIL) &
        (procDecl. formalPars(ExtTree.FormalPars). result # NIL) THEN

@@ -22,7 +22,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 
 IMPORT
   Strings, Channel, Language, ADT:Object, ADT:Object:Storage,
-  OOC:Doc, Sym := OOC:SymbolTable;
+  OOC:Doc, OOC:AST, Sym := OOC:SymbolTable;
 
 
 TYPE
@@ -53,12 +53,13 @@ PROCEDURE New* (): Builder;
 
 PROCEDURE (b: Builder) NewModule* (name: Sym.Name; docString: Doc.Document;
                                    class: Sym.ModuleClass;
-                                   callConv: Sym.CallConv): Sym.Module;
+                                   callConv: Sym.CallConv;
+                                   moduleAST: AST.Node): Sym.Module;
   VAR
     mod: Sym.Module;
   BEGIN
     NEW (mod);
-    Sym.InitModule (mod, name, docString, class, callConv);
+    Sym.InitModule (mod, name, docString, class, callConv, moduleAST);
     RETURN mod
   END NewModule;
 
@@ -80,7 +81,7 @@ PROCEDURE (b: Builder) NewConstDecl* (parent: Sym.Item; name: Sym.Name;
                                       docString: Doc.Document;
                                       value: Language.Value;
                                       type: Sym.PredefType;
-                                      constExpr: Sym.TempNode): Sym.ConstDecl;
+                                      constExpr: AST.Node): Sym.ConstDecl;
 (**Note: If the value and type of the constant are not known yet, then
    @oparam{value} and @oparam{type} are @code{NIL}.  When creating the symbol
    table from source code, then this information is not available initially and
@@ -149,16 +150,17 @@ PROCEDURE (b: Builder) NewPredefProc* (parent: Sym.Item; name: Sym.Name; id: Sym
   END NewPredefProc;
 
 PROCEDURE (b: Builder) NewProcDecl* (parent: Sym.Item; name: Sym.Name;
-                           visibleFrom: Sym.ModulePos;
-                           exportMark: Sym.ExportMark;
-                           docString: Doc.Document;
-                           isTypeBound, isForwardDecl: BOOLEAN): Sym.ProcDecl;
+                                     visibleFrom: Sym.ModulePos;
+                                     exportMark: Sym.ExportMark;
+                                     docString: Doc.Document;
+                                     isTypeBound, isForwardDecl: BOOLEAN;
+                                     procAST: AST.Node): Sym.ProcDecl;
   VAR
     procDecl: Sym.ProcDecl;
   BEGIN
     NEW (procDecl);
     Sym.InitProcDecl (procDecl, parent, name, visibleFrom, exportMark, 
-                       docString, isTypeBound, isForwardDecl);
+                       docString, isTypeBound, isForwardDecl, procAST);
     RETURN procDecl
   END NewProcDecl;
 
@@ -198,7 +200,7 @@ PROCEDURE (b: Builder) NewRecord* (parent: Sym.Item;
 PROCEDURE (b: Builder) NewArray* (parent: Sym.Item; 
                                   position: Sym.Position;
                                   isOpenArray: BOOLEAN;
-                                  lengthExpr: Sym.TempNode;
+                                  lengthExpr: AST.Node;
                                   elementType: Sym.Type): Sym.Array;
   VAR
     array: Sym.Array;

@@ -244,13 +244,6 @@ TYPE
     semicolon1-: AST.Node;
     body-: Body;  (* can be NIL *)
     semicolon2-: AST.Node;
-    
-    symTabEntry-: Sym.ProcDecl;
-    (**Refers to the symbol table entry corresponding to this procedure
-       declaration.  This field is @code{NIL} until the symbol table is
-       constructed.  It is used to transfer information that is derived
-       from the AST when translating the procedure body to the
-       declaration object.  *)
   END;
 
 TYPE
@@ -1044,8 +1037,6 @@ PROCEDURE (b: Builder) ProcDecl* (proc, arrow, receiver,
       pd. body := body(Body)
     END;
     pd. semicolon2 := semicolon2;
-    
-    pd. symTabEntry := NIL;
     RETURN pd
   END ProcDecl;
 
@@ -1053,11 +1044,6 @@ PROCEDURE (procDecl: ProcDecl) Accept* (v: Visitor);
   BEGIN
     v. VisitProcDecl (procDecl)
   END Accept;
-
-PROCEDURE (procDecl: ProcDecl) SetSymTabEntry* (item: Sym.Item);
-  BEGIN
-    procDecl. symTabEntry := item(Sym.ProcDecl)
-  END SetSymTabEntry;
 
 
 PROCEDURE (b: Builder) ImportList* (import: AST.Node;

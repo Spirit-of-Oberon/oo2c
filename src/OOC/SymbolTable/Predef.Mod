@@ -123,7 +123,8 @@ PROCEDURE CreatePredef* (stb: Builder.Builder): Sym.Module;
     END PredefConst;
   
   BEGIN
-    module := stb. NewModule (GetName ("#predef"), NIL, Sym.mcInternal, Sym.callConvInternal);
+    module := stb. NewModule (GetName ("#predef"), NIL, Sym.mcInternal,
+                              Sym.callConvInternal, NIL);
     
     ptype := PredefType (stb, module, boolean, "BOOLEAN");
     PredefConst ("FALSE", Boolean.New (FALSE), ptype);
@@ -155,7 +156,8 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
     module: Sym.Module;
     ptype: Sym.PredefType;
   BEGIN
-    module := stb. NewModule (GetName ("SYSTEM"), NIL, Sym.mcInternal, Sym.callConvInternal);
+    module := stb. NewModule (GetName ("SYSTEM"), NIL, Sym.mcInternal,
+                              Sym.callConvInternal, NIL);
     
     ptype := PredefType (stb, module, address, "ADDRESS");
     ptype := PredefType (stb, module, byte, "BYTE");

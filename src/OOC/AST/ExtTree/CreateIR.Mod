@@ -285,7 +285,8 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
   END ConstDecl;
    
 <* PUSH; Warnings := FALSE *>
-  PROCEDURE ProcDecl (procDecl: ExtTree.ProcDecl): IR.Procedure;
+  PROCEDURE ProcDecl (procDecl: Sym.ProcDecl;
+                      procCode: ExtTree.ProcDecl): IR.Procedure;
     VAR
       statmSeq: IR.StatementSeq;
       oldNamespace: Sym.Namespace;
@@ -293,75 +294,86 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     BEGIN
       oldNamespace := currentNamespace;
       oldSourceContext := currentSourceContext;
-      currentNamespace := procDecl. symTabEntry. ns;
-      currentSourceContext := procDecl. symTabEntry;
+      currentNamespace := procDecl. ns;
+      currentSourceContext := procDecl;
       
-      IF (procDecl. body = NIL) OR (procDecl. body. statmSeq = NIL) THEN
+      IF (procCode. body = NIL) OR (procCode. body. statmSeq = NIL) THEN
         NEW (statmSeq, 0)
       ELSE
-        statmSeq := StatementSeq (procDecl. body. statmSeq)
+        statmSeq := StatementSeq (procCode. body. statmSeq)
       END;
       
       currentNamespace := oldNamespace;
       currentSourceContext := oldSourceContext;
-      RETURN b. NewProcedure (procDecl. proc. sym, 
-                              procDecl. symTabEntry, statmSeq)
+      RETURN b. NewProcedure (procCode. proc. sym, procDecl, statmSeq)
     END ProcDecl;
 <* POP *>
   
-  PROCEDURE Module (module: ExtTree.Module): IR.Module;
+  PROCEDURE Module (moduleDecl: Sym.Module;
+                    moduleAST: ExtTree.Module): IR.Module;
     VAR
       declSeq: ExtTree.NodeList;
-      i, count: LONGINT;
-      n: ExtTree.Node;
+      count: LONGINT;
       procList: IR.ProcedureList;
       statmSeq: IR.StatementSeq;
 
-    PROCEDURE IsProc (n: ExtTree.Node): BOOLEAN;
+    PROCEDURE IsProc (procDecl: Sym.ProcDecl): BOOLEAN;
       BEGIN
-        RETURN (n IS ExtTree.ProcDecl)
+        RETURN ~procDecl. isForwardDecl
       END IsProc;
 
-    BEGIN
-      declSeq := module. body. declSeq;
-
-(*      (* fixup the parts of the symbol table that could not be handled when
-         creating the symbol table; as long as forward references to constant
-         declarations are not allowed, we can simply resolve declarations in
-         the same order as the appear in the source code *)
-      FOR i := 0 TO declSeq. len-1 DO
-        n := declSeq. n[i](ExtTree.Node);
-        WITH n: ExtTree.ConstDecl DO
-	  ConstDecl(n);
-        ELSE  (* nothing to do *)
+    PROCEDURE CountProcs (item: Sym.Item): LONGINT;
+      VAR
+        nested: Sym.Item;
+        count: LONGINT;
+      BEGIN
+        IF (item IS Sym.ProcDecl) & IsProc (item(Sym.ProcDecl)) THEN
+          count := 1
+        ELSE
+          count := 0;
         END;
-      END;*)
-      
-      (* count number of procedures, allocate array to hold IR of procs *)
+        
+        nested := item. nestedItems;
+        WHILE (nested # NIL) DO
+          INC (count, CountProcs (nested));
+          nested := nested. nextNested
+        END;
+        RETURN count
+      END CountProcs;
+
+    PROCEDURE TraverseProcedures (item: Sym.Item);
+      VAR
+        nested: Sym.Item;
+      BEGIN
+        WITH item: Sym.ProcDecl DO
+          IF IsProc (item) THEN
+            procList[count] := ProcDecl (item, item.procAST(ExtTree.ProcDecl));
+            INC (count)
+          END;
+        ELSE                             (* ignore *)
+        END;
+        
+        nested := item. nestedItems;
+        WHILE (nested # NIL) DO
+          TraverseProcedures (nested);
+          nested := nested. nextNested
+        END;
+      END TraverseProcedures;
+    
+    BEGIN
+      declSeq := moduleAST. body. declSeq;
+
+      NEW (procList, CountProcs (moduleDecl));
       count := 0;
-      FOR i := 0 TO declSeq. len-1 DO
-        n := declSeq. n[i](ExtTree.Node);
-        IF IsProc (n) THEN
-          INC (count)
-        END
-      END;
-      NEW (procList, count);
-      count := 0;
-      FOR i := 0 TO declSeq. len-1 DO
-        n := declSeq. n[i](ExtTree.Node);
-        IF IsProc (n) THEN
-          procList[count] := ProcDecl (n(ExtTree.ProcDecl));
-          INC (count)
-	END;
-      END;
+      TraverseProcedures (moduleDecl);
       
-      IF (module. body = NIL) OR (module. body. statmSeq = NIL) THEN
+      IF (moduleAST. body = NIL) OR (moduleAST. body. statmSeq = NIL) THEN
         NEW (statmSeq, 0)
       ELSE
-        statmSeq := StatementSeq (module. body. statmSeq)
+        statmSeq := StatementSeq (moduleAST. body. statmSeq)
       END;
       
-      RETURN b. NewModule (module. module. sym, module. moduleName,
+      RETURN b. NewModule (moduleAST. module. sym, moduleAST. moduleName,
                            procList, statmSeq)
     END Module;
 
@@ -398,7 +410,7 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
     currentSourceContext := symTab;
     currentNamespace := symTab. ns;
     TranslateEmbeddedExpr (symTab);
-    RETURN Module (module)
+    RETURN Module (symTab, module)
   END CreateIR;
 
 END OOC:AST:ExtTree:CreateIR.
