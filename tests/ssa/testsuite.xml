@@ -17,7 +17,7 @@
   generic53 generic54 generic55 generic56 generic57 generic58">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; tbproc9 tbproc10 tbproc11 tbproc12">-->
+  select ="&SetupTestCasesWithOut; generic64">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
   select ="&SetupTestCasesWithOut; callconv1 callconv2 callconv3 callconv4 cstring1">-->
@@ -1570,6 +1570,7 @@
       The type parameter of a parametric type can be a forward
       reference to a pointer type defined later.
     </test>
+    <!-- generic64 is part of the "Warnings" tests -->
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -1717,6 +1718,11 @@
     <test id="deprecated10" type="accept" file="Deprecated10.Mod">
       Using a type-bound procedure that redefines a
       <code>DEPRECATED</code> procedure.
+    </test>
+
+    <test id="generic64" type="accept" file="Generic64.Mod">
+      A <code>INIT</code> procedure without a super-call to the base
+      type's <code>INIT</code>.
     </test>
   </testcases>
   
@@ -2288,5 +2294,8 @@
         msg="Warning: Use of deprecated object"/>
     <warning-info id="deprecated10" pos="b.%TBProc"
         msg="Warning: Use of deprecated object"/>
+    
+    <warning-info id="generic64" pos="(b: B) %INIT"
+        msg="Warning: No call to the base type's INIT procedure"/>
   </processor-info>
 </testsuite-ext>

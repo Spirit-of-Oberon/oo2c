@@ -1187,6 +1187,7 @@ CONST
   tooManyTypeArgs = 71;             (* used as in CreateNamespace *)
   notExtensionOfBound = 72;         (* used as in CreateNamespace *)
   notRecordPointerType = 73;
+  initWithoutSuperCall = 74;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1397,6 +1398,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "This is not an extension of the type bound"
     | notRecordPointerType:
       t := "Not a record pointer type"
+    | initWithoutSuperCall:
+      t := Error.warningPrefix+"No call to the base type's INIT procedure"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -4563,6 +4566,8 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
     (* Number of enclosing TRY statements.  *)
     enclosingTryLastLoop: LONGINT;
     (* Number of enclosing TRY statements of the nearest LOOP.  *)
+    initWithoutSuper: BOOLEAN;
+    procClass: Sym.Record;
     
   PROCEDURE CheckException(exception: Sym.Type; sym: Symbol);
     VAR
@@ -4717,6 +4722,23 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
         oldEnclTryLastLoop: LONGINT;
         fpars: Sym.FormalPars;
         type: Sym.Type;
+
+      PROCEDURE IsInitSuper(design: Expression): BOOLEAN;
+        BEGIN
+          WITH design: SelectProc DO
+            IF ~design.isSuperCall OR
+               ~(design.receiver IS Var) OR
+               (design.receiver(Var).decl # procDecl.formalPars.receiver) THEN
+              (* not a super call to this method's receiver *)
+              RETURN FALSE;
+            ELSE
+              RETURN (design.tbProc.name.str^ = Predef.initMethod);
+            END;
+          ELSE
+            RETURN FALSE;
+          END;
+        END IsInitSuper;
+      
       BEGIN
         WITH statm: Assert DO
           CheckExpr(statm.predicate);
@@ -4725,6 +4747,11 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           CheckExpr(statm.value)
         | statm: Call DO
           CheckExpr(statm.design);
+
+          IF initWithoutSuper & IsInitSuper(statm.design) THEN
+            initWithoutSuper := FALSE;
+          END;
+          
           FOR i := 0 TO LEN(statm.arguments^)-1 DO
             CheckExpr(statm.arguments[i]);
           END;
@@ -4839,7 +4866,19 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
     currentTry := NIL;
     enclosingTry := 0;
     enclosingTryLastLoop := 0;
+
+    initWithoutSuper := FALSE;
+    procClass := procDecl.Class();
+    initWithoutSuper := (procClass # NIL) & (procClass.baseType # NIL) &
+        (procClass.baseType IS Sym.Record) &
+        (procDecl.name.str^ = Predef.initMethod) &
+        (procDecl.tbProcIndex < procClass.baseType(Sym.Record).tbProcCount);
+    
     CheckStatmSeq (statmSeq);
+
+    IF initWithoutSuper THEN
+      b.WarnName(initWithoutSuperCall, procDecl.name);
+    END;
   END CheckExit;
 
 PROCEDURE InitProcedure* (p: Procedure; sym: Symbol; 
