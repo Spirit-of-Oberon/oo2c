@@ -1,20 +1,3 @@
-OPTIONS
-  verbose := FALSE;
-  errorMessages := "/usr/lib/Oo2c/Errors.short";
-  optimize := FALSE;
-
-  cc := "gcc";
-  cflags := "-pipe";
-  coptflags := "-O3";
-  ldflags := "-L/usr/lib";
-  gcflags := "-lgc";
-  valueStack := -1;
-
-  libtoolCmd := "/usr/bin/libtool";
-  installCmd := "/usr/bin/install -c -m 644  ";
-  libpath := "/usr/lib";
-END
-
 PRAGMAS
   Warnings := FALSE;
   Assertions := TRUE;
