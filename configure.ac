@@ -19,6 +19,7 @@ AC_PATH_PROG(PERL,perl,perl)
 
 dnl checks for libraries
 AC_CHECK_LIB(gc,GC_malloc)
+AC_CHECK_LIB(xnet,socket)
 
 dnl checks for header files
 AC_HEADER_STDC
@@ -41,6 +42,6 @@ AC_CHECK_FUNCS(gettimeofday settimeofday)
 
 dnl checks for system services
 
-AC_CONFIG_FILES(ENV rsrc/OOC/Makefile.config rsrc/OOC/oo2crc.xml
-                src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml)
+AC_CONFIG_FILES([ENV Makefile.config rsrc/OOC/oo2crc.xml
+		 src/OOC/Config/Autoconf.Mod rsrc/OOC/TestFramework/config.xml])
 AC_OUTPUT
