@@ -10,7 +10,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; array11 array12">-->
+  select ="&SetupTestCasesWithOut; procvar7">-->
 
   &TestSetupWithOut;
     
@@ -801,6 +801,18 @@
     </test>
     <test id="procvar6" type="accept" file="ProcVar6.Mod">
       Assign <code>NIL</code> to a procedure variable.
+    </test>
+    <test id="procvar7" type="run" file="ProcVar7.Mod" output="ProcVar7.Ref">
+      Passing a local procedure to a procedure variable and calling it
+      from another global procedure.  The current implementation of
+      the C back-end actually allows this: gcc inserts trampoline code
+      that restores the context for the nested function before calling
+      the function itself.  For this to work, the context must still
+      be active, of course.  I'm not sure if allowing the procedure
+      assignment is a feature that should stay, or if it should be
+      turned into an error.  It is nice to implement iterators,
+      though, because the enclosing procedure can hold the state of
+      the function called from the iterator.
     </test>
 
     
