@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:IR:CheckUses;
 (*  Warn about uninitialized variables and unreachable code, 
-    Copyright (C) 2003  Michael van Acken, Stewart Greenhill
+    Copyright (C) 2003, 2004  Michael van Acken, Stewart Greenhill
 
     This file is part of OOC.
 
@@ -800,6 +800,11 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
           CheckExpr(statm.end);
           CheckDesign(statm.var, write);
           (* `step' is a constant and cannot be undefined *)
+          CheckStatmSeq(def, statm.body);
+          
+        | statm: IR.IterateArrayStatm DO
+          CheckExpr(statm.range);
+          CheckDesign(statm.var, write);
           CheckStatmSeq(def, statm.body);
           
         | statm: IR.IfStatm DO

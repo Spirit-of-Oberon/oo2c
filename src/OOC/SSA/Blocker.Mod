@@ -691,6 +691,30 @@ PROCEDURE WriteBlocks (c: IO.ByteChannel; pb: SSA.ProcBlock; root: Region;
     WriteRegion (root);
   END WriteBlocks;
 
+(*
+PROCEDURE WriteRegion (r: Region; level: LONGINT);
+  VAR
+    proxy: Proxy;
+    opnd: SSA.Opnd;
+    i: LONGINT;
+  BEGIN
+    proxy := r. first;
+    WHILE (proxy # NIL) DO
+      IF (proxy. instr # NIL) THEN
+        FOR i := 1 TO level DO
+          Err.String("    ");
+        END;
+        proxy.instr.LogOpcode("instr");
+      END;
+      
+      IF (proxy IS Region) THEN
+        WriteRegion(proxy(Region), level+1);
+      END;
+      proxy := proxy. nextProxy;
+    END;
+  END WriteRegion;
+*)
+
 PROCEDURE AntiDepViolation (pb: SSA.ProcBlock; root: Region): BOOLEAN;
   VAR
     get: SSA.Instr;

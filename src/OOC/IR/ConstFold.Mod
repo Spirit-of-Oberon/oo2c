@@ -678,6 +678,10 @@ PROCEDURE (c: ConstFold) VisitForStatm* (forStatm: IR.ForStatm);
   BEGIN
   END VisitForStatm;
 
+PROCEDURE (c: ConstFold) VisitIterateArrayStatm* (iterStatm: IR.IterateArrayStatm);
+  BEGIN
+  END VisitIterateArrayStatm;
+
 PROCEDURE (c: ConstFold) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN
   END VisitIfStatm;

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:CreateIR;
 (*  Creates an IR representation from the abstract syntax tree.
-    Copyright (C) 2001-2003  Michael van Acken
+    Copyright (C) 2001-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -434,6 +434,14 @@ PROCEDURE CreateIR* (module: AST.Module;
                                StatementSeq (forStatm. statmSeq));
       END ForStatm;
   
+    PROCEDURE IterateStatm (iterStatm: AST.IterateStatm): IR.Statement;
+      BEGIN
+        RETURN b. NewIterateArrayStatm (iterStatm. for. sym,
+                               Designator (iterStatm. ident),
+                               Expr (iterStatm. range),
+                               StatementSeq (iterStatm. statmSeq));
+      END IterateStatm;
+  
     PROCEDURE LoopStatm (loopStatm: AST.LoopStatm): IR.Statement;
       BEGIN
         RETURN b. NewLoopStatm (loopStatm. loop. sym,
@@ -508,6 +516,9 @@ PROCEDURE CreateIR* (module: AST.Module;
 
           | n: AST.ForStatm DO
             statm := ForStatm (n);
+
+          | n: AST.IterateStatm DO
+            statm := IterateStatm (n);
 
           | n: AST.LoopStatm DO
             statm := LoopStatm (n);

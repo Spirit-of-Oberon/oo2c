@@ -1,0 +1,10 @@
+MODULE Iterator3;
+
+VAR
+  x: ARRAY 10, 10 OF LONGCHAR;
+  c: LONGCHAR;
+
+BEGIN
+  FOR c IN x DO
+  END;
+END Iterator3.

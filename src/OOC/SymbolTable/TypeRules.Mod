@@ -565,6 +565,17 @@ PROCEDURE IsExtensionOfNoParams* (type, base: Sym.Type): BOOLEAN;
     RETURN FALSE
   END IsExtensionOfNoParams;
 
+PROCEDURE IsValidArrayIteratorRange* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
+   range value of an array iterator.  *)
+  BEGIN
+    IF IsArray(type) THEN
+      RETURN IsValidResultType(ArrayElementType(type));
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsValidArrayIteratorRange;
+
 PROCEDURE FunctionResultType*(formalPars: Sym.Type): Sym.Type;
 (**Return closure of the result type of @oparam{formalPars}.  *)
   VAR

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
-    Copyright (C) 2001-2003  Michael van Acken, Stewart Greenhill
+    Copyright (C) 2001-2004  Michael van Acken, Stewart Greenhill
 
     This file is part of OOC.
 
@@ -889,6 +889,16 @@ TYPE
   END;
   
 TYPE
+  IterateArrayStatm* = POINTER TO IterateArrayStatmDesc;
+  IterateArrayStatmDesc = RECORD
+    (**Holds an @code{FOR-BY} iterator statement over an array.  *)
+    (StatementDesc)
+    var-: Expression;
+    range-: Expression;
+    body-: StatementSeq;
+  END;
+  
+TYPE
   IfStatm* = POINTER TO IfStatmDesc;
   IfStatmDesc = RECORD
     (**Holds an @code{IF-ELSE-END} statement.  If there is no @code{ELSE}, then
@@ -1189,6 +1199,7 @@ CONST
   notRecordPointerType = 73;
   initWithoutSuperCall = 74;
   forwardReferenceToInit = 75;
+  notArrayIteratorRange = 76;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1403,6 +1414,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := Error.warningPrefix+"No call to the base type's INIT procedure"
     | forwardReferenceToInit:
       t := "The type's INIT procedure must be defined before its use";
+    | notArrayIteratorRange:
+      t := "Iterator requires array elements of scalar type";
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -4099,6 +4112,51 @@ PROCEDURE (forStatm: ForStatm) Accept* (v: Visitor);
     v. VisitForStatm (forStatm)
   END Accept;
 
+(* Statement Class: ForStatm
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitIterateArrayStatm (iterStatm: IterateArrayStatm; sym: Symbol;
+                                 var, range: Expression;
+                                 body: StatementSeq);
+  BEGIN
+    InitStatement (iterStatm, sym);
+    iterStatm. var := var;
+    iterStatm. range := range;
+    iterStatm. body := body;
+  END InitIterateArrayStatm;
+
+PROCEDURE (b: Builder) NewIterateArrayStatm* (sym: Symbol;
+                                              var, range: Expression;
+                                              body: StatementSeq): IterateArrayStatm;
+  VAR
+    iterStatm: IterateArrayStatm;
+    v: BigInt.BigInt;
+    elem: Expression;
+  BEGIN
+    IF ~(var IS Var) THEN
+      b.ErrSym(notVariable, var.sym);
+    ELSIF ~TR.IsValidArrayIteratorRange(range.type) THEN
+      b.ErrSym(notArrayIteratorRange, range.sym);
+    ELSE  (* array element assignment compatible to variable? *)
+      v := BigInt.NewInt(0);
+      elem := b.NewIndex(sym, range,
+                         NewConst(sym, Predef.SmallestIntType(v), v));
+      MakeAssignmentCompatible(b, range.sym, elem, var.type);
+    END;
+    
+    NEW (iterStatm);
+    InitIterateArrayStatm(iterStatm, sym, var, range, body);
+    RETURN iterStatm;
+  END NewIterateArrayStatm;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitIterateArrayStatm* (iterStatm: IterateArrayStatm);
+  END VisitIterateArrayStatm;
+
+PROCEDURE (iterStatm: IterateArrayStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitIterateArrayStatm (iterStatm)
+  END Accept;
+
 (* Statement Class: IfStatm
    ------------------------------------------------------------------------ *)
 
@@ -4800,6 +4858,10 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
           CheckExpr(statm.end);
           CheckExpr(statm.step);
           CheckStatmSeq (statm. body);
+        | statm: IterateArrayStatm DO
+          CheckExpr(statm.var);
+          CheckExpr(statm.range);
+          CheckStatmSeq (statm. body);
         | statm: IfStatm DO
           CheckExpr(statm.guard);
           CheckStatmSeq (statm. pathTrue);
@@ -5241,6 +5303,10 @@ PROCEDURE (m: Module) Destroy*;
           E(n.start);
           E(n.end);
           E(n.step);
+          SSeq(n.body);
+        | n: IterateArrayStatm DO
+          E(n.var);
+          E(n.range);
           SSeq(n.body);
         | n: IfStatm DO
           E(n.guard);

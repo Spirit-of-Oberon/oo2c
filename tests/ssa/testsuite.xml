@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic75 generic76">-->
+  select ="&SetupTestCasesWithOut; iterator1 iterator2 iterator3 iterator4">-->
 
   &TestSetupWithOut;
     
@@ -1646,6 +1646,21 @@
       Regression test: Defining an <code>INIT</code> procedure as
       <code>ABSTRACT</code>.
     </test>
+
+    <test id="iterator1" type="run" file="Iterator1.Mod"
+          output="Iterator1.Ref">
+      Iterator over a character array taken from a value parameter.
+    </test>
+    <test id="iterator2" type="run" file="Iterator2.Mod"
+          output="Iterator2.Ref">
+      Like <code>iterator1</code>, but the array has a length of zero.
+    </test>
+    <test id="iterator3" type="reject" file="Iterator3.Mod">
+      Array elements to be iterated over must be of scalar type.
+    </test>
+    <test id="iterator4" type="reject" file="Iterator4.Mod">
+      Array elements not assignment compatible to variable.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -2351,6 +2366,11 @@
         msg="This must be a non-function procedure"/>
     <reject-info id="generic76" pos="ABSTRACT] %INIT"
         msg="This static type-bound procedure cannot be abstract"/>
+
+    <reject-info id="iterator3" pos="IN %x"
+        msg="Iterator requires array elements of scalar type"/>
+    <reject-info id="iterator4" pos="IN %x"
+        msg="Expression not compatible with variable type `CHAR'"/>
 
     <reject-info id="align2" pos=", %ALIGN2"
         msg="This modifier flag has no effect here"/>

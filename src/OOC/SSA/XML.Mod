@@ -132,7 +132,7 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
 
 PROCEDURE Omit (instr: SSA.Instr): BOOLEAN;
   BEGIN
-    RETURN instr. IsConst();
+    RETURN FALSE & instr. IsConst();
   END Omit;
 
 PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);
