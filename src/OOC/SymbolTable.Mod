@@ -1338,6 +1338,7 @@ PROCEDURE NewLinkLib (libraryName: String.String;
 PROCEDURE AddLinkDirective (VAR list: LinkDirective; l: LinkDirective);
   BEGIN
     IF (list = NIL) THEN
+      l. next := NIL;
       list := l
     ELSE
       AddLinkDirective (list. next, l)

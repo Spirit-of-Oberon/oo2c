@@ -455,6 +455,17 @@ TYPE
   END;
 
 TYPE
+  NewBlock* = POINTER TO NewBlockDesc;
+  NewBlockDesc = RECORD
+    (**Implements @code{SYSTEM.NEW}: Allocates a new object on the heap and
+       returns a pointer to it.  The object's data is not tracked by the
+       garbage collector.  *)
+    (OperatorDesc)
+    size-: Expression;
+    (**Size of the heap block in bytes.  *)
+  END;
+
+TYPE
   NewObject* = POINTER TO NewObjectDesc;
   NewObjectDesc = RECORD
     (**Allocates a new object on the heap and returns a pointer to it.
@@ -2327,6 +2338,34 @@ PROCEDURE (neg: Negate) Accept* (v: Visitor);
     v. VisitNegate (neg)
   END Accept;
 
+(* Operator Class: NewBlock
+   ------------------------------------------------------------------------ *)
+
+PROCEDURE InitNewBlock (new: NewBlock; sym: Symbol; type: Sym.Type;
+                        size: Expression);
+  BEGIN
+    InitOperator (new, sym, type);
+    new. size := size;
+  END InitNewBlock;
+
+PROCEDURE (b: Builder) NewNewBlock (sym: Symbol; type: Sym.Type;
+                                    size: Expression): Expression;
+  VAR
+    new: NewBlock;
+  BEGIN
+    NEW (new);
+    InitNewBlock (new, sym, type, size);
+    RETURN new;
+  END NewNewBlock;
+
+PROCEDURE (v: Visitor) [ABSTRACT] VisitNewBlock* (new: NewBlock);
+  END VisitNewBlock;
+
+PROCEDURE (new: NewBlock) Accept* (v: Visitor);
+  BEGIN
+    v. VisitNewBlock (new)
+  END Accept;
+
 (* Operator Class: NewObject
    ------------------------------------------------------------------------ *)
 
@@ -3390,7 +3429,7 @@ PROCEDURE (b: Builder) NewCopy* (sym: Symbol; source, dest: Expression): Copy;
 
   PROCEDURE HasDynamicType (dest: Expression): BOOLEAN;
     BEGIN
-      IF (dest. type IS Sym.Record) THEN
+      IF (dest. type IS Sym.Record) & dest.type(Sym.Record).hasDescriptor THEN
         IF (dest IS Deref) THEN
           RETURN TRUE;
         ELSIF (dest IS Var) THEN
@@ -4245,6 +4284,8 @@ PROCEDURE (m: Module) Destroy*;
             n.dim := 0;
           | n: Negate DO
             E(n.operand);
+          | n: NewBlock DO
+            E(n.size);
           | n: NewObject DO
             EList(n.length);
           | n: Not DO
@@ -5214,6 +5255,19 @@ PROCEDURE (b: Builder) NewOperator* (sym: Symbol; left, right: Expression): Expr
       | Predef.move:
         RETURN b. NewMoveBlock (design. sym,
                                 arguments[0], arguments[1], arguments[2]);
+        
+      | Predef.systemNew:
+        IF (arguments[0].type IS Sym.Pointer) OR
+          TR.IsPredefType(arguments[0].type, Predef.ptr) THEN
+          b.AssertVar(arguments[0]);
+          type := arguments[0].type;
+          RETURN b. NewAssignment
+              (design. sym, arguments[0],
+               b. NewNewBlock (design.sym, arguments[0].type, arguments[1]));
+        ELSE
+          b.ErrSym(notPointerVar, arguments[0].sym);
+        END;
+        RETURN b. errorExpr;
         
       (* SYSTEM functions: *)
       | Predef.adr:

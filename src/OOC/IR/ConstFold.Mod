@@ -253,6 +253,10 @@ BEGIN
   END;
 END VisitNegate;
 
+PROCEDURE (c: ConstFold) VisitNewBlock* (new: IR.NewBlock);
+  BEGIN
+  END VisitNewBlock;
+
 PROCEDURE (c: ConstFold) VisitNewObject* (new: IR.NewObject);
   BEGIN
   END VisitNewObject;

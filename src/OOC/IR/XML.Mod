@@ -171,6 +171,14 @@ PROCEDURE (v: Visitor) VisitNegate* (neg: IR.Negate);
     v. w. EndTag;  (* negate *)
   END VisitNegate;
 
+PROCEDURE (v: Visitor) VisitNewBlock* (new: IR.NewBlock);
+  BEGIN
+    v. w. StartTag ("new-block", FALSE);
+    (* FIXME... write type *)
+    new. size. Accept (v);
+    v. w. EndTag;  (* new-block *)
+  END VisitNewBlock;
+
 PROCEDURE (v: Visitor) VisitNewObject* (new: IR.NewObject);
   VAR
     i: LONGINT;

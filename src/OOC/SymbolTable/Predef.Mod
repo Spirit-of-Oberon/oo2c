@@ -118,8 +118,9 @@ CONST
   adr* = 22;                             (* SYSTEM.ADR *)
   lsh* = 23;                             (* SYSTEM.LSH *)
   move* = 24;                            (* SYSTEM.MOVE *)
-  rot* = 25;                             (* SYSTEM.ROT *)
-  val* = 26;                             (* SYSTEM.VAL *)
+  systemNew* = 25;                       (* SYSTEM.NEW *)
+  rot* = 26;                             (* SYSTEM.ROT *)
+  val* = 27;                             (* SYSTEM.VAL *)
 
 CONST
   minExitCode* = 0;
@@ -294,6 +295,7 @@ PROCEDURE CreateSYSTEM* (stb: Builder.Builder): Sym.Module;
     PredefProc (stb, module, adr, "ADR", 1, 1);
     PredefProc (stb, module, lsh, "LSH", 2, 2);
     PredefProc (stb, module, move, "MOVE", 3, 3);
+    PredefProc (stb, module, systemNew, "NEW", 2, 2);
     PredefProc (stb, module, rot, "ROT", 2, 2);
     PredefProc (stb, module, val, "VAL", 2, 2);
     

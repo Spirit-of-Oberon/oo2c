@@ -119,6 +119,11 @@ PROCEDURE (v: Visitor) VisitNegate* (neg: IR.Negate);
     neg. operand. Accept (v);
   END VisitNegate;
 
+PROCEDURE (v: Visitor) VisitNewBlock* (new: IR.NewBlock);
+  BEGIN
+    new.size.Accept(v);
+  END VisitNewBlock;
+
 PROCEDURE (v: Visitor) VisitNewObject* (new: IR.NewObject);
   VAR
     i: LONGINT;

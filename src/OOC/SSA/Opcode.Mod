@@ -522,7 +522,24 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 60;
+  newBlock* = 60;
+  (**Allocates an untyped block of heap space.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.store
+     The current value of the @var{store}.
+
+     @item *OOC:SSA:Opnd.type
+     The type of the pointer to which the new object will be assigned.
+
+     @item *OOC:SSA.Opnd.arg
+     The size of the block in bytes.
+     @end table
+
+     The result of the instruction is the address of the new object.  An
+     additional result is the new value of @var{store}.  *)
+  
+  typeTag* = 61;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -533,7 +550,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 61;
+  typeTest* = 62;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -549,7 +566,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 62;
+  tbProcAddress* = 63;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -564,10 +581,10 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  assert* = 63;
-  halt* = 64;
+  assert* = 64;
+  halt* = 65;
   
-  checkIndex* = 65;
+  checkIndex* = 66;
   (**Ensures that an index is value with respect to a given array length.  An
      exception is raised if the index is negative, or less or equal to the
      array's length.
@@ -586,7 +603,7 @@ CONST
      The result of the instruction is the checked index.  One additional result
      is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  checkPointer* = 66;
+  checkPointer* = 67;
   (**Raise an exception if the pointer value is @code{NIL}.
 
      @table @oconst
@@ -600,7 +617,7 @@ CONST
      The result of the instruction is the checked pointer.  One additional
      result is the new value of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
-  typeGuard* = 67;
+  typeGuard* = 68;
   (**Raise an exception if the given type is not an extension of the type tag.
 
      @table @oconst
@@ -624,15 +641,15 @@ CONST
      of @var{store}, another one is of class
      @oconst{*OOC:SSA:Result.exception}.  *)
 
-  failedCase* = 68;
-  failedWith* = 69;
-  failedTypeAssert* = 70;
+  failedCase* = 69;
+  failedWith* = 70;
+  failedTypeAssert* = 71;
   
-  selectException* = 71;
+  selectException* = 72;
   (**Joins all possible exception paths within the procedure body.  Note:
      This instruction is not implemented yet.  *)
 
-  preloadedVar* = 72;
+  preloadedVar* = 73;
   (**Value of a variable that is defined as part of the module's
      initialization.  The instruction is both a placeholder for the value,
      and a description how the actual value is computed during run-time.
@@ -640,7 +657,7 @@ CONST
      type cast prefix, followed by the arguments that should be passed to
      the function.  All arguments are constants.  *)
      
-  labels* = 73;
+  labels* = 74;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  Every
      range and every single value is represented by two consecutive operands,
      the lower and the upper bound.  All operands are of class
@@ -752,6 +769,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | getLengthParam: cstr := "get-length-param";
     | copyParameter: cstr := "copy-parameter";
     | newObject: cstr := "new-object";
+    | newBlock: cstr := "new-block";
     | typeTag: cstr := "type-tag";
     | typeTest: cstr := "type-test";
     | tbProcAddress: cstr := "tb-proc-address";
