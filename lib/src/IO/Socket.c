@@ -31,9 +31,9 @@
 typedef unsigned short uint16_t;
 #endif
 
-#include "__oo2c.h"
-#include "__config.h"
-#include "IO/Socket.d"
+#include <__oo2c.h>
+#include <__config.h>
+#include <IO/Socket.d>
 
 int IO_Socket__AF_INET = AF_INET;
 int IO_Socket__AF_UNIX = AF_UNIX;

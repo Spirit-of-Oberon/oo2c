@@ -19,7 +19,7 @@
 
 /* This file is #included into RT0.c, and therefore compiled into RT0.o */
 
-#include "__oo2c.h"
+#include <__oo2c.h>
 
 /* --- string compare */
 OOC_INT32 _cmp8(const OOC_CHAR8* l, const OOC_CHAR8* r) {

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "Out0.d"
+#include <Out0.d>
 #define BUFFER 1024
 
 void Out0__Open() {

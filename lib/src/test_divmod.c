@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "__oo2c.h"
+#include <__oo2c.h>
 
 void p(int y) {
   int x;

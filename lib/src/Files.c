@@ -26,8 +26,8 @@
 #include <string.h>
 #include <limits.h>
 
-#include "__oo2c.h"
-#include "__config.h"
+#include <__oo2c.h>
+#include <__config.h>
 
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
@@ -51,7 +51,7 @@
 #endif
 
 #define _MODULE_libc_ /* don't pull in declaration from the `libc' module */
-#include "Files.d"
+#include <Files.d>
 
 
 /* this is the currently active umask of the process; it is used by procedure

@@ -25,8 +25,8 @@
 #include <limits.h>
 #include <string.h>
 
-#include "__oo2c.h"
-#include "__config.h"
+#include <__oo2c.h>
+#include <__config.h>
 
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
@@ -63,7 +63,7 @@ typedef int ssize_t;
 #endif
 
 #define _MODULE_libc_ /* don't pull in declaration from the `libc' module */
-#include "PosixFileDescr.d"
+#include <PosixFileDescr.d>
 
 /* keep track whether the file descriptors 0-2 refer to the standard IO
    descriptors passed from the shell, or should be treated like any other

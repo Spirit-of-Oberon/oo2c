@@ -27,9 +27,9 @@
    string.h */
 #include <string.h>
 #endif
-#include "__oo2c.h"
-#include "__config.h"
-#include "IO/Select.d"
+#include <__oo2c.h>
+#include <__config.h>
+#include <IO/Select.d>
 
 int IO_Select__FD_SETSIZE = FD_SETSIZE;
 

@@ -19,8 +19,8 @@
 */
 #include <errno.h>
 
-#include "SysClock.d"
-#include "__config.h"
+#include <SysClock.d>
+#include <__config.h>
 
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>

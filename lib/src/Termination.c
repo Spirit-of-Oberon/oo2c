@@ -21,8 +21,8 @@
 #include <signal.h>
 #include <sys/types.h>
 
-#include "Termination.d"
-#include "__config.h"
+#include <Termination.d>
+#include <__config.h>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>

@@ -28,9 +28,9 @@
 #include <sys/ioctl.h>
 
 
-#include "__oo2c.h"
-#include "__config.h"
-#include "IO/PFD.d"
+#include <__oo2c.h>
+#include <__config.h>
+#include <IO/PFD.d>
 
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
