@@ -640,6 +640,7 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
         
       ELSIF TR.IsCharType(op.type) & TR.IsCharType(op.expr.type) THEN
         (* type conversion between character types is a noop *)
+        c. result := c. builder. NewConst (op. expr. sym, op. type, value);
         
       ELSIF TR.IsStringConst (op. type) THEN
         (* handle conversion of character and string constants to string
