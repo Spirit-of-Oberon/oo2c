@@ -21,9 +21,8 @@ MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  SYSTEM, Channel, Err, Files, IntStr, Msg, Strings, TextRider,
-  Object, Object:Boxed, Object:BigInt, ADT:ArrayList,
-  URI, IO:Memory,
+  SYSTEM, IntStr, Strings, IO, IO:TextRider, IO:FileChannel,
+  Object, Object:Boxed, Object:BigInt, ADT:ArrayList, URI, 
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef,
   TR := OOC:SymbolTable:TypeRules;
   
@@ -244,7 +243,7 @@ TYPE
        additional knowledge about C declarations, definitions, and literals.
        Its main purpose is to act as an abstraction layer for the not so easy
        task of writing C type expressions.  *)
-    ch: Channel.Channel;
+    ch: IO.ByteChannel;
     baseURI: URI.HierarchicalURI;
     textWriter-: TextRider.Writer;
     
@@ -274,7 +273,7 @@ PROCEDURE ^ NewBasicType (id: BasicTypeId; repr: ARRAY OF CHAR): BasicType;
 PROCEDURE ^ (d: Declaration) Write (w: Writer);
 PROCEDURE ^ (w: Writer) NewDeclaration* (name: STRING; typeQualifier: TypeQualifier; storageClass: StorageClass; type: Type): Declaration;
 
-PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
+PROCEDURE InitWriter (w: Writer; ch: IO.ByteChannel;
                       baseURI: URI.HierarchicalURI);
   PROCEDURE CreateBasicType (id: BasicTypeId; repr: ARRAY OF CHAR);
     BEGIN
@@ -309,7 +308,7 @@ PROCEDURE InitWriter (w: Writer; ch: Channel.Channel;
     CreateBasicType (typeTagType, "RT0__Struct");
   END InitWriter;
 
-PROCEDURE NewWriter* (ch: Channel.Channel;
+PROCEDURE NewWriter* (ch: IO.ByteChannel;
                       baseURI: URI.HierarchicalURI): Writer;
   (**Creates a new writer with an output target of @oparam{ch}.  If
      @oparam{baseURI} is non-@code{NIL}, then the file names in include
@@ -351,7 +350,7 @@ PROCEDURE (w: Writer) WriteChar* (ch: CHAR);
     w. textWriter. WriteChar (ch)
   END WriteChar;
 
-PROCEDURE (w: Writer) WriteLn*;
+PROCEDURE (w: Writer) WriteLn*();
   BEGIN
     w. textWriter. WriteLn
   END WriteLn;
@@ -367,7 +366,7 @@ PROCEDURE (w: Writer) Indent* (delta: LONGINT);
     INC (w. indentation, delta);
   END Indent;
 
-PROCEDURE (w: Writer) Newline*;
+PROCEDURE (w: Writer) Newline*();
   VAR
     i: LONGINT;
   BEGIN
@@ -387,21 +386,14 @@ PROCEDURE (w: Writer) WriteInclude* (includePath: ARRAY OF CHAR);
     w. WriteLn
   END WriteInclude;
   
-PROCEDURE (w: Writer) Close* (VAR res: Msg.Msg);
-(**Closes the writer's output channel.  Any error in the text writer, while
-   registering the file, or closing the channel is reported back in
-   @oparam{res}.  A @oparam{res} of @code{NIL} indicates success.  *)
+PROCEDURE (w: Writer) Close* ()
+RAISES IO.Error;
+(**Closes the writer's output channel.  *)
   BEGIN
-    res := w. textWriter. res;
-    IF (w. ch IS Files.File) THEN
-      w. ch(Files.File). Register;
-    END;
-    IF (w. ch. res # NIL) & (res = NIL) THEN
-      res := w. ch. res
-    END;
-    w. ch. Close();
-    IF (w. ch. res # NIL) & (res = NIL) THEN
-      res := w. ch. res
+    IF (w. ch IS FileChannel.Channel) THEN
+      w. ch(FileChannel.Channel). CloseAndRegister;
+    ELSE
+      w. ch. Close();
     END;
   END Close;
 
@@ -556,13 +548,13 @@ PROCEDURE (w: Writer) AddDeclaration* (d: Declaration);
     END;
   END AddDeclaration;
 
-PROCEDURE (w: Writer) WriteDeclarationList*;
+PROCEDURE (w: Writer) WriteDeclarationList*();
 (**Writes out all declarations that have been registered with
    @oproc{w.AddDeclaration}.  All include statements are written first
    (omitting duplicates), followed by the other declarations in the order in
    which they were added.  *)
   
-  PROCEDURE WriteIncludes;
+  PROCEDURE WriteIncludes();
     VAR
       i: LONGINT;
     BEGIN
@@ -571,7 +563,7 @@ PROCEDURE (w: Writer) WriteDeclarationList*;
       END
     END WriteIncludes;
   
-  PROCEDURE WriteDeclarations;
+  PROCEDURE WriteDeclarations();
     VAR
       i: LONGINT;
       d: Declaration;
@@ -1066,6 +1058,7 @@ PROCEDURE (w: Writer) WriteTypeCast* (t: Type);
   END WriteTypeCast;
 
 
+(*
 <*PUSH; Warnings:=FALSE*>
 PROCEDURE Test;
   VAR
@@ -1097,7 +1090,7 @@ PROCEDURE Test;
     Err.String ("Running OOC:C:WriteDecl.Test...");
     Err.Ln;
 
-    w := NewWriter(Memory.Tmp("", {Memory.write, Memory.read}, res), NIL);
+    w := NewWriter(Memory.Open(), NIL);
     ASSERT (w. ch # NIL);
     r := TextRider.ConnectReader (w. ch);
     ASSERT (r # NIL);
@@ -1135,6 +1128,7 @@ PROCEDURE Test;
     Err.String ("no errors"); Err.Ln
   END Test;
 <*POP*>
+*)*)*)*)*)
 
 BEGIN
   (*Test;*)

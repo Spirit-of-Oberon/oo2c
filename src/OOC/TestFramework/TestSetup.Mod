@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:TestFramework:TestSetup;
 (*  Parser for XML test-setup elements.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,7 +22,7 @@ MODULE OOC:TestFramework:TestSetup;
 
 
 IMPORT
-  Ch := Channel, URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
+  IO, URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
   XML:Basic:Parser, XML:Basic:DataType, XML:Writer;
 
 
@@ -502,7 +502,8 @@ PROCEDURE (testSetup: TestSetup) Write* (writer: Writer.Writer);
 
 
 
-PROCEDURE Read* (byteReader: Ch.Reader; baseURI: URI.URI; VAR errList: XMLError.List): TestSetup;
+PROCEDURE Read* (byteReader: IO.ByteChannel; baseURI: URI.URI; VAR errList: XMLError.List): TestSetup
+RAISES IO.Error;
   VAR
     elem: Element.Element;
   BEGIN

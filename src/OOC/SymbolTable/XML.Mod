@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:XML;
 (*  Converts symbol table to XML document.
-    Copyright (C) 2000, 2001, 2002  Michael van Acken
+    Copyright (C) 2000, 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,12 +21,12 @@ MODULE OOC:SymbolTable:XML;
 *)
 
 IMPORT
-  Channel, Strings, Object, XML:Writer, XML:UnicodeCodec:Latin1,
+  Strings, Object, IO, XML:Writer, XML:UnicodeCodec:Latin1,
   Sym := OOC:SymbolTable, OOC:SymbolTable:GetClass,
   DocXML := OOC:Doc:Output:XML;
 
 
-PROCEDURE Write* (cw: Channel.Writer; module: Sym.Module);
+PROCEDURE Write* (cw: IO.ByteChannel; module: Sym.Module);
 (**Writes the symbol table with root @oparam{module} to the output writer 
    @oparam{cw}.  The result is an XML document that describes the
    structure of the symbol table.  Here is an example of the output for the

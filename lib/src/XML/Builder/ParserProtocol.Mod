@@ -1,7 +1,7 @@
 (*      $Id$   *)
 MODULE XML:Builder:ParserProtocol [OOC_EXTENSIONS];
 (*  Translates XML document to canonical XML.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,7 +20,7 @@ MODULE XML:Builder:ParserProtocol [OOC_EXTENSIONS];
 
 
 IMPORT
-  Channel, IntStr, URI, URI:Scheme:File,
+  IntStr, IO, URI, URI:Scheme:File,
   Codec := XML:UnicodeCodec, XML:DTD, B := XML:Builder,
   XML:Writer, XML:Locator;
 
@@ -397,14 +397,14 @@ PROCEDURE (b: Builder) Comment* (VAR chars: DTD.StringVar;
   END Comment;
 
 
-PROCEDURE New* (outputChannel: Channel.Channel;
+PROCEDURE New* (outputChannel: IO.ByteChannel;
                 codecFactory: Codec.Factory): Builder;
   VAR
     b: Builder;
   BEGIN
     NEW (b);
     B.Init (b);
-    b. w := Writer.New (outputChannel. NewWriter(), codecFactory, TRUE, 2);
+    b. w := Writer.New (outputChannel, codecFactory, TRUE, 2);
     b. w. WriteTextDecl ("1.0", "");
     b. w. SetBaseURI (File.GetCwd());
     RETURN b

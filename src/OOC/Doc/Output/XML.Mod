@@ -1,7 +1,7 @@
 MODULE OOC:Doc:Output:XML;
 
 IMPORT
-  Channel, Strings, Object, ADT:Dictionary,
+  Strings, Object, ADT:Dictionary, IO,
   XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:Config:Repositories, OOC:Repository, OOC:Doc, Sym := OOC:SymbolTable;
   
@@ -234,7 +234,7 @@ PROCEDURE WriteOberonDoc* (w: Writer.Writer; document: Doc.Document;
     w. EndTag
   END WriteOberonDoc;
 
-PROCEDURE Write* (cw: Channel.Writer; document: Doc.Document;
+PROCEDURE Write* (cw: IO.ByteChannel; document: Doc.Document;
                   localModule: Sym.Module;
                   rewriteMap: Dictionary.Dictionary;
                   repositories: Repositories.Section;

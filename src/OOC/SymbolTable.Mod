@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Object, Object:Boxed, Msg, Strings,
+  Object, Object:Boxed, Msg, Strings, 
   ADT:Storable, ADT:Dictionary, ADT:ArrayList,
   URI, ParserURI := URI:Parser, URI:Scheme:File,
   OOC:Scanner:InputBuffer, SB := OOC:Scanner:Builder, OOC:Doc, OOC:AST;

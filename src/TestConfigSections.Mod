@@ -72,7 +72,7 @@ PROCEDURE WriteConfig (node: Parser.Node);
     END
   END WriteConfig;
 
-BEGIN
+BEGIN  <*Warnings:=FALSE*>
   IF (ProgramArgs.args. ArgNumber() = 0) OR
      (ProgramArgs.args. ArgNumber() > 1) THEN
     Out.String ("Usage: TestConfigSections <config-file>"); Out.Ln;
@@ -82,7 +82,7 @@ BEGIN
     argReader. ReadLine (arg);           (* skip command name *)
     argReader. ReadLine (configFile);
     
-    p := Parser.NewFile (configFile, res);
+    p := Parser.NewFile (configFile);
     ASSERT (res = NIL);
     p. ParseDocument;
     

@@ -1,7 +1,7 @@
 MODULE XML:UnicodeBuffer [OOC_EXTENSIONS];
 
 IMPORT
-  SYSTEM, Channel, Msg, Strings, LongStrings,
+  SYSTEM, Msg, Strings, LongStrings, Exception, IO,
   XML:InputBuffer, Codec := XML:UnicodeCodec;
 
 
@@ -87,9 +87,8 @@ TYPE
     codec-: Codec.Codec;
     (**Any encoding errors are signalled by incrementing
        @ofield{Codec.Codec.invalidChars}.  *)
-    writer-: Channel.Writer;
-    (**Write errors will set the field @ofield{Channel.Writer.res} to 
-       something that isn't @oconst{Channel.done}.  *)
+    writer-: IO.ByteChannel;
+    error-: IO.Error;
     
     byteBuffer: POINTER TO ARRAY sizeOutputByteBuffer OF CHAR;
     byteStart, byteEnd: LONGINT;
@@ -206,7 +205,8 @@ PROCEDURE AutodetectEnc (input: Input; VAR enc: ARRAY OF CHAR): LONGINT;
     Out.Ln;
   END WriteBuffer;*)
 
-PROCEDURE (in: Input) NextBlock* (): BOOLEAN;
+PROCEDURE (in: Input) NextBlock* (): BOOLEAN
+RAISES IO.Error;
 (**Tries to read additional data from @oparam{in}'s channel.  If at least one
    character could be read, result is @code{TRUE}.  @code{FALSE} means
    that not a single character was added to the buffer, either because the end
@@ -276,7 +276,7 @@ PROCEDURE (in: Input) NextBlock* (): BOOLEAN;
     END
   END NextBlock;
 
-PROCEDURE (in: Input) Close*;
+PROCEDURE (in: Input) Close*() RAISES IO.Error;
 (**Closes the channel associated with buffer @oparam{in}.  Afterwards, no
    further operations are permitted on @oparam{in}, except for reading the
    field @ofield{Input.errList}.  *)
@@ -287,7 +287,8 @@ PROCEDURE (in: Input) Close*;
     in. chars := NIL;
   END Close;
 
-PROCEDURE (in: Input) SetCodec* (cf: Codec.Factory; autoDetect: BOOLEAN);
+PROCEDURE (in: Input) SetCodec* (cf: Codec.Factory; autoDetect: BOOLEAN)
+RAISES IO.Error;
 (* pre: in.byteBuffer.offsetFromPos0=0 *)
   VAR
     dummy: BOOLEAN;
@@ -306,8 +307,9 @@ PROCEDURE (in: Input) SetCodec* (cf: Codec.Factory; autoDetect: BOOLEAN);
   END SetCodec;
 
 PROCEDURE InitInput* (input: Input; new: BOOLEAN;
-                      reader: Channel.Reader; codecFactory: Codec.Factory;
-                      errList: Msg.MsgList);
+                      reader: IO.ByteChannel; codecFactory: Codec.Factory;
+                      errList: Msg.MsgList)
+RAISES IO.Error;
   VAR
     encoding: ARRAY 256 OF CHAR;
     skip: LONGINT;
@@ -349,8 +351,9 @@ PROCEDURE InitInput* (input: Input; new: BOOLEAN;
     InitInput (input, FALSE, reader, codecFactory, errList)
   END Reset;*)
 
-PROCEDURE NewInput* (reader: Channel.Reader; codecFactory: Codec.Factory;
-                     errList: Msg.MsgList): Input;
+PROCEDURE NewInput* (reader: IO.ByteChannel; codecFactory: Codec.Factory;
+                     errList: Msg.MsgList): Input
+RAISES IO.Error;
 (**Create new input buffer for reader @oparam{reader} and try to read the first
    block of data from it.  Returns an initialized input buffer with up to
    @oconst{sizeOfInputBuffer} characters of input.  *)
@@ -365,8 +368,16 @@ PROCEDURE NewInput* (reader: Channel.Reader; codecFactory: Codec.Factory;
 (* ------------------------------------------------------------------------ *)
 
 PROCEDURE FlushBytes (out: Output);
+  VAR
+    d: LONGINT;
+    e: Exception.Exception;
   BEGIN
-    out. writer. WriteBytes (out. byteBuffer^, 0, out. byteEnd);
+    TRY
+      d := out. writer. Write (out. byteBuffer^, 0, out. byteEnd);
+    CATCH IO.Error:
+      e := Exception.Current();
+      out.error := e(IO.Error);
+    END;
     out. byteEnd := 0
   END FlushBytes;
 
@@ -476,11 +487,11 @@ PROCEDURE (out: Output) Flush*;
   BEGIN
     Encode (out, TRUE);
     FlushBytes (out);
-    out. writer. base. Flush
+    out. writer. Flush
   END Flush;
 
 PROCEDURE InitOutput* (out: Output; new: BOOLEAN;
-                       writer: Channel.Writer;
+                       writer: IO.ByteChannel;
                        codecFactory: Codec.Factory; createBOM: BOOLEAN);
   BEGIN
     IF new THEN
@@ -491,6 +502,7 @@ PROCEDURE InitOutput* (out: Output; new: BOOLEAN;
     out. codecFactory := codecFactory;
     out. codec := codecFactory. NewCodec();
     out. writer := writer;
+    out. error := NIL;
     out. byteStart := 0; out. byteEnd := 0;
     out. unicodeEnd := 0;
     
@@ -514,7 +526,7 @@ PROCEDURE InitOutput* (out: Output; new: BOOLEAN;
     InitOutput (output, FALSE, writer, codecFactory, createBOM)
   END Reset;*)
 
-PROCEDURE NewOutput* (writer: Channel.Writer; codecFactory: Codec.Factory;
+PROCEDURE NewOutput* (writer: IO.ByteChannel; codecFactory: Codec.Factory;
                       createBOM: BOOLEAN): Output;
 (**Creates new output buffer for writer @oparam{writer}.  *)
   VAR

@@ -1,7 +1,7 @@
 MODULE Config:Source [OOC_EXTENSIONS];
 
 IMPORT
-  Channel, Msg, Config:Parser;
+  IO, Config:Parser;
 
 
 TYPE
@@ -15,9 +15,9 @@ PROCEDURE Init* (src: Source);
     
   END Init;
 
-PROCEDURE (source: Source) [ABSTRACT] Write* (ch: Channel.Channel;
-                                              rootTag: Parser.String;
-                                              VAR res: Msg.Msg);
+PROCEDURE (source: Source) [ABSTRACT] Write* (ch: IO.ByteChannel;
+                                              rootTag: Parser.String)
+RAISES IO.Error;
   END Write;
   
 END Config:Source.

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Repository:FileSystem;
 (*  Implementation of a repository in the local file system.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,8 +21,8 @@ MODULE OOC:Repository:FileSystem;
 *)
 
 IMPORT
-  Msg, Channel, Files, TextRider, Strings, Time, OSFiles := OS:Files, OS:Path,
-  Object, URI, URIParser := URI:Parser, URIError := URI:Error,
+  Msg, Files, TextRider, Strings, Time, OSFiles := OS:Files, OS:Path,
+  Object, IO, URI, URIParser := URI:Parser, URIError := URI:Error,
   FileURI := URI:Scheme:File,
   OOC:Logger, OOC:Error, OOC:Scanner:InputBuffer, Rep := OOC:Repository;
 
@@ -280,9 +280,10 @@ PROCEDURE (m: Module) FileExists* (fileId: Rep.FileId): BOOLEAN;
     RETURN Files.Exists(path);
   END FileExists;
 
-PROCEDURE (m: Module) GetInputBuffer* (VAR res: Msg.Msg): InputBuffer.Buffer;
+PROCEDURE (m: Module) GetInputBuffer* (): InputBuffer.Buffer
+RAISES IO.Error;
   VAR
-    file: Channel.Channel;
+    file: IO.ByteChannel;
     errList: Error.List;
     str: Rep.URIBuffer;
     modURI: URI.URI;
@@ -297,41 +298,43 @@ PROCEDURE (m: Module) GetInputBuffer* (VAR res: Msg.Msg): InputBuffer.Buffer;
     errList := Error.NewList (str);
     
     (* open file for reading *)
-    file := modURI. GetChannel (URI.channelOld, res);
-    IF (file = NIL) THEN
-      RETURN NIL
-    ELSE
-      Logger.ReadFile(modURI);
-      RETURN InputBuffer.New (file, errList)
-    END
+    file := modURI. GetChannel (URI.channelOld);
+    Logger.ReadFile(modURI);
+    RETURN InputBuffer.New (file, errList);
   END GetInputBuffer;
 
-PROCEDURE (m: Module) CreateOutputDir* (fileId: Rep.FileId; VAR res: Msg.Msg);
+PROCEDURE (m: Module) CreateOutputDir* (fileId: Rep.FileId)
+RAISES IO.Error;
   VAR
     path, str: Rep.URIBuffer;
     uri: URI.URI;
+    res: Msg.Msg;
+    e: IO.Error;
   BEGIN
     uri := m. GetURI (fileId, TRUE);
     uri(FileURI.URI). GetPath (path);
     Path.dirname (path, str);
-    OSFiles.makedirs(str, OSFiles.defaultMode, res)
+    OSFiles.makedirs(str, OSFiles.defaultMode, res);
+    IF (res # NIL) THEN
+      NEW(e);
+      IO.InitError(e, "Failed to create directory");
+      RAISE(e);
+    END;
   END CreateOutputDir;
 
-PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId; makeTmp: BOOLEAN; VAR res: Msg.Msg): Channel.Channel;
+PROCEDURE (m: Module) GetOutputChannel* (fileId: Rep.FileId;
+                                         makeTmp: BOOLEAN): IO.ByteChannel
+RAISES IO.Error;
   VAR
     uri: URI.URI;
   BEGIN
-    m. CreateOutputDir (fileId, res);
-    IF (res = OSFiles.done) THEN
-      uri := m. GetURI (fileId, TRUE);
-      Logger.WriteFile(uri);
-      IF makeTmp THEN
-        RETURN uri. GetChannel (URI.channelTmp, res)
-      ELSE
-        RETURN uri. GetChannel (URI.channelNew, res)
-      END
+    m. CreateOutputDir (fileId);
+    uri := m. GetURI (fileId, TRUE);
+    Logger.WriteFile(uri);
+    IF makeTmp THEN
+      RETURN uri. GetChannel (URI.channelTmp)
     ELSE
-      RETURN NIL
+      RETURN uri. GetChannel (URI.channelNew)
     END
   END GetOutputChannel;
 

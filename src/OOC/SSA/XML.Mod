@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:XML;
 (*  Produces a canonical representation of SSA code in XML.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,7 +22,7 @@ MODULE OOC:SSA:XML;
 
 
 IMPORT
-  Channel, Object, Dictionary := ADT:Dictionary:IntValue, 
+  Object, IO, Dictionary := ADT:Dictionary:IntValue, 
   ADT:StringBuffer, WriterXML := XML:Writer, XML:UnicodeCodec:Latin1,
   OOC:SSA:Opcode, OOC:SSA:Result, OOC:SSA:Opnd, OOC:SSA, OOC:SSA:Schedule;
 
@@ -38,13 +38,13 @@ TYPE
        the instruction has not been scheduled for writing yet *)
   END;
   
-PROCEDURE InitWriter* (w: Writer; cw: Channel.Writer);
+PROCEDURE InitWriter* (w: Writer; cw: IO.ByteChannel);
   BEGIN
     WriterXML.Init (w, cw, Latin1.factory, TRUE, 2);
     w. sb := StringBuffer.New("");
   END InitWriter;
 
-PROCEDURE NewWriter* (cw: Channel.Writer): Writer;
+PROCEDURE NewWriter* (cw: IO.ByteChannel): Writer;
   VAR
     w: Writer;
   BEGIN
@@ -310,7 +310,7 @@ PROCEDURE (w: Writer) WriteProcBody* (pb: SSA.ProcBlock;
     w. EndOfText
   END WriteProcBody;
 
-PROCEDURE Write* (cw: Channel.Writer; pb: SSA.ProcBlock;
+PROCEDURE Write* (cw: IO.ByteChannel; pb: SSA.ProcBlock;
                   includeDeadCode: BOOLEAN);
 (**Note: If @oparam{includeDeadCode} is set and the block contains instructions
    that are dead, then the output depends on the order of instructions in the
@@ -387,7 +387,7 @@ PROCEDURE (w: Writer) WriteSchedule* (domRoot: Schedule.Block);
     w. EndOfText
   END WriteSchedule;
 
-PROCEDURE WriteSchedule* (cw: Channel.Writer; domRoot: Schedule.Block);
+PROCEDURE WriteSchedule* (cw: IO.ByteChannel; domRoot: Schedule.Block);
   VAR
     w: Writer;
   BEGIN

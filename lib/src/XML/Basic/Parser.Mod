@@ -8,7 +8,7 @@ MODULE XML:Basic:Parser [OOC_EXTENSIONS];
    This version of the ``basic'' parser does not support namespaces.  *)
 
 IMPORT
-  Ch := Channel, Msg, URI,
+  Msg, IO, URI,
   XMLError := XML:Error, XML:DTD, XML:Builder, XML:UnicodeCodec, 
   XML:Locator, XML:Parser, XML:Builder:Validation, XML:Error,
   XML:Basic:Element;
@@ -264,13 +264,14 @@ PROCEDURE (b: Build) EndElement* (namespaceDecl: DTD.NamespaceDeclaration; local
     byteReader. SetPos (textReader. Pos())
   END ParseMIMEHeader;*)
 
-PROCEDURE Parse* (byteReader: Ch.Reader;
+PROCEDURE Parse* (byteReader: IO.ByteChannel;
                   baseURI: URI.URI;
                   unicodeFactory: UnicodeCodec.Factory;
                   rootFactory: Element.RootFactory;
                   maxNestingDepth: LONGINT;
                   flags: SET;
-                  VAR errList: XMLError.List): Element.Element;
+                  VAR errList: XMLError.List): Element.Element
+RAISES IO.Error;
 (**Parses an XML document from reader @samp{byteReader} request.  If
    @oparam{baseURI} is not @code{NIL}, or if @oconst{validate} is in
    @oparam{flags}, external references in the XML document are followed.  In
@@ -302,7 +303,7 @@ PROCEDURE Parse* (byteReader: Ch.Reader;
       builder := b
     END;
     
-    parser := Parser.NewReader (byteReader, baseURI, unicodeFactory, NIL, builder);
+    parser := Parser.NewChannel (byteReader, baseURI, unicodeFactory, NIL, builder);
     (* ... should disable XMLDecl and DoctypeDecl if flags are set *)
     parser. followExternalRef := (validate IN flags) OR (baseURI # NIL);
     parser. validating := (validate IN flags);

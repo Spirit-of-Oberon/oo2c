@@ -1,7 +1,7 @@
 MODULE TestSymTab;
 
 IMPORT
-  StdChannels, Out, Err, Msg, Channel, URI,
+  StdChannels, Out, Err, Msg, Channel, IO, URI,
   Config:Section:Arguments, OOC:Config, 
   Config:Section:Options, IntegerValue := Config:Value:Integer,
   BooleanValue := Config:Value:Boolean, OOC:Config:Pragmas,
@@ -47,7 +47,8 @@ PROCEDURE NewRules(): Rules;
     RETURN r;
   END NewRules;
 
-PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
+PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN
+RAISES IO.Error;
   VAR
     ast: AST.Node;
     symTab: Sym.Module;
@@ -61,7 +62,8 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
     RETURN (errList. msgCount = 0)
   END CompileModule;
 
-PROCEDURE (r: Rules) UpdateSymbolTableXML*(m: Rep.Module): BOOLEAN;
+PROCEDURE (r: Rules) UpdateSymbolTableXML*(m: Rep.Module): BOOLEAN
+RAISES IO.Error;
 (**Writes the description of the module's public interface as an XML document.
    *)
   VAR
@@ -69,7 +71,7 @@ PROCEDURE (r: Rules) UpdateSymbolTableXML*(m: Rep.Module): BOOLEAN;
     symTab: Sym.Module;
     errList: Error.List;
     res: Msg.Msg;
-    outputChannel: Channel.Channel;
+    outputChannel: IO.ByteChannel;
     outputURI: URI.HierarchicalURI;
     pragmaHistory: Pragmas.History;
   BEGIN
@@ -78,15 +80,12 @@ PROCEDURE (r: Rules) UpdateSymbolTableXML*(m: Rep.Module): BOOLEAN;
                                ast, symTab, pragmaHistory, errList);
       IF (errList. msgCount = 0) THEN
         outputURI := m. GetURI (Rep.modSymbolTableXML, FALSE);
-        outputChannel := m. GetOutputChannel (Rep.modSymbolTableXML, FALSE, res);
+        outputChannel := m. GetOutputChannel (Rep.modSymbolTableXML, FALSE);
         IF (outputChannel = NIL) THEN
           errList. Append (res)
         ELSE
-          XML.Write (outputChannel.NewWriter(), symTab);
+          XML.Write (outputChannel, symTab);
           outputChannel. Close;
-          IF (outputChannel. res # Channel.done) THEN
-            errList. Append (outputChannel. res)
-          END
         END
       END;
       IF (errList.msgCount # 0) THEN

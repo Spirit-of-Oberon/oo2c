@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Doc [OOC_EXTENSIONS];
 (*  Defines the data structure used to store documentation strings.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 

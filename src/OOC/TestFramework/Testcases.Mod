@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:TestFramework:Testcases;
 (*  Parser for XML testsuite and testcases elements.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,7 +22,7 @@ MODULE OOC:TestFramework:Testcases;
 
 
 IMPORT
-  Ch := Channel, LongStrings, Strings, Object,
+  LongStrings, Strings, Object, IO,
   URI, XMLError := XML:Error, XML:Locator, XML:Basic:Element,
   XML:Basic:Parser, XML:Basic:DataType, XML:Writer,
   OOC:TestFramework:TestSetup;
@@ -695,7 +695,8 @@ PROCEDURE (testSuite: TestSuite) SelectedTest* (test: Test): BOOLEAN;
   END SelectedTest;
   
 
-PROCEDURE Read* (byteReader: Ch.Reader; baseURI: URI.URI; VAR errList: XMLError.List): TestSuite;
+PROCEDURE Read* (byteReader: IO.ByteChannel; baseURI: URI.URI; VAR errList: XMLError.List): TestSuite
+RAISES IO.Error;
   VAR
     elem: Element.Element;
   BEGIN

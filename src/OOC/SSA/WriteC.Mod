@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 (*  Translates a set of scheduled SSA instructions to plain C.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  IntStr, Out, StdChannels, Strings, StringSearch,
+  IntStr, Out, Strings, StringSearch, IO:PFD,
   Object, Object:Boxed, ADT:Dictionary, ADT:ArrayList,
   Sym := OOC:SymbolTable,
   TR := OOC:SymbolTable:TypeRules, OOC:SymbolTable:Predef,
@@ -1681,7 +1681,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
         Out.String (":");
         Out.Ln;
         Out.Flush;
-        XML.Write (StdChannels.stdout. NewWriter(), pb, TRUE);
+        XML.Write (PFD.stdout, pb, TRUE);
         Out.Flush;
       END;
     END Write;
@@ -1819,7 +1819,7 @@ PROCEDURE (t: Translator) WriteProcBody* (proc: IR.Procedure);
     IF writeProc THEN
       IF (t. inspectStage. MatchChars ("schedule", 0, -1) # NIL) THEN
         (* write schedule SSA code to stdout *)
-        XML.WriteSchedule (StdChannels.stdout. NewWriter(), domRoot);
+        XML.WriteSchedule (PFD.stdout, domRoot);
         Out.Flush
       END;
     END;

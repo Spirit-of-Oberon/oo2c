@@ -1,7 +1,8 @@
 MODULE TestParser;
 
 IMPORT
-  StdChannels, ProgramArgs, TextRider, Out, Files, Msg,
+  StdChannels, ProgramArgs, TextRider, Out, Msg,
+  Object, IO:FileChannel, IO:PFD,
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:Builder:BasicList, OOC:Parser, OOC:AST, 
   OOC:AST:ExtTree, OOC:AST:ExtTree:XML, OOC:AST:ExtTree:StupidPP;
@@ -12,7 +13,7 @@ CONST
   
 VAR
   argReader: TextRider.Reader;
-  file: Files.File;
+  file: FileChannel.Channel;
   arg, msgText: ARRAY 1024 OF CHAR;
   res: Msg.Msg;
   errList: Error.List;
@@ -41,7 +42,7 @@ BEGIN
       ELSIF (arg = "--stupid-pp") THEN
         mode := modeStupidPP
       ELSE
-        file := Files.Old (arg, {Files.read}, res);
+        file := FileChannel.Open(Object.NewLatin1(arg), {FileChannel.read});
         IF (file = NIL) THEN
           res. GetText (msgText);
           Out.String ("Error opening "); Out.String (arg); Out.Ln;
@@ -59,7 +60,7 @@ BEGIN
           
           CASE mode OF
           | modeXML:
-            XML.Write (StdChannels.stdout. NewWriter(), ast(ExtTree.Module))
+            XML.Write (PFD.stdout, ast(ExtTree.Module))
           | modeStupidPP:
             StupidPP.Write (TextRider.ConnectWriter (StdChannels.stdout),
                             ast(ExtTree.Module))

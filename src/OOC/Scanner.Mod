@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Scanner;
 (*  Convert a character sequence into a stream of Oberon-2 symbols.
-    Copyright (C) 2000, 2001, 2002  Michael van Acken
+    Copyright (C) 2000, 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:Scanner;
 *)
 
 IMPORT
-  Ascii, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol,
+  Ascii, IO, OOC:Error, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol,
   OOC:Scanner:Builder, OOC:Scanner:Pragma, OOC:Config:Pragmas;
 
 
@@ -121,7 +121,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
   END GetTemplate;
 
 PROCEDURE ScanInput* (builder: Builder.Builder;
-                      defaultPragmas: Pragmas.Section; scanOptions: SET);
+                      defaultPragmas: Pragmas.Section; scanOptions: SET)
+RAISES IO.Error;
 (**Reads sequence of characters from input buffer @samp{builder. inputBuffer}
    and emits a sequence of symbols to @oparam{builder}.  The generated symbol
    sequence includes the whole text of the input buffer.  The last symbol has
@@ -177,7 +178,7 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
       lastError. SetIntAttrib ("column", cpos-currLinePos+currLineTab)
     END ErrPos;
     
-  PROCEDURE NextBlock (): BOOLEAN;
+  PROCEDURE NextBlock (): BOOLEAN RAISES IO.Error;
     VAR
       oldOffset: InputBuffer.CharPos;
       res: BOOLEAN;
@@ -202,7 +203,7 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
       END
     END EndOfLine;
   
-  PROCEDURE Lookahead (len: LONGINT);
+  PROCEDURE Lookahead (len: LONGINT) RAISES IO.Error;
     VAR
       i: InputBuffer.CharPos;
     BEGIN
@@ -213,7 +214,7 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
       END
     END Lookahead;
   
-  PROCEDURE LookaheadChar(): CHAR;
+  PROCEDURE LookaheadChar(): CHAR RAISES IO.Error;
     BEGIN
       Lookahead (1);
       RETURN chars[cpos+1]

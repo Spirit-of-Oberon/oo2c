@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:IR:XML;
 (*  Write an IR data structure as an XML document.
-    Copyright (C) 2001, 2002  Michael van Acken, Stewart Greenhill
+    Copyright (C) 2001, 2002, 2003  Michael van Acken, Stewart Greenhill
 
     This file is part of OOC.
 
@@ -22,7 +22,7 @@ MODULE OOC:IR:XML;
 
 
 IMPORT
-  Channel, Object, XML:Writer, XML:UnicodeCodec:Latin1,
+  Object, IO, XML:Writer, XML:UnicodeCodec:Latin1,
   Sym := OOC:SymbolTable, OOC:IR;
 
 TYPE
@@ -652,7 +652,7 @@ PROCEDURE (v: Visitor) VisitModule* (module: IR.Module);
   END VisitModule;
 
 
-PROCEDURE Write* (cw: Channel.Writer; module: IR.Module);
+PROCEDURE Write* (cw: IO.ByteChannel; module: IR.Module);
   VAR
     w: Writer.Writer;
     v: Visitor;

@@ -1,7 +1,7 @@
 (*      $Id$   *)
 MODULE XML:Parser;
 (*  Implements the XML parser.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000, 2001, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,7 +20,7 @@ MODULE XML:Parser;
 
 
 IMPORT
-  Out, Ascii, Channel, Msg, LongStrings, URI, URI:Scheme:File,
+  Out, Ascii, Msg, LongStrings, IO, URI, URI:Scheme:File,
   Codec := XML:UnicodeCodec, XML:Locator, XML:EntityResolver,
   <*PUSH; Warnings:=FALSE*>XML:UnicodeCodec:UTF8,XML:UnicodeCodec:UTF16,<*POP*>
   Buffer := XML:UnicodeBuffer, XML:Error, XML:DTD, XML:Builder;
@@ -535,7 +535,7 @@ PROCEDURE (el: ErrorListener) Error* (context: Error.Context; code: Error.Code;
   END Error;
 
 
-PROCEDURE (p: Parser) ParseDocument*;
+PROCEDURE (p: Parser) ParseDocument*() RAISES IO.Error;
 (**Parses the document, issuing callbacks to @otype{Builder.Builder} as
    it goes along.  After completion, any errors are reported in
    @ofield{p.errList}.  *)
@@ -727,17 +727,18 @@ PROCEDURE (p: Parser) ParseDocument*;
       RETURN string
     END GetString;
   
-  PROCEDURE GetBuffer (entity: DTD.ExternalEntity): Buffer.Input;
+  PROCEDURE GetBuffer (entity: DTD.ExternalEntity): Buffer.Input
+  RAISES IO.Error;
     VAR
       res: Msg.Msg;
-      ch: Channel.Channel;
+      ch: IO.ByteChannel;
       in: Buffer.Input;
       str: ARRAY 2*1024 OF CHAR;
     BEGIN
       IF (entity. baseURI = NIL) THEN
         RETURN NIL
       ELSE
-        ch := entity. baseURI. GetChannel (URI.channelOld, res);
+        ch := entity. baseURI. GetChannel (URI.channelOld);
         IF (ch = NIL) THEN
           Err (accessError);
           entity. baseURI. GetString (str);
@@ -745,7 +746,7 @@ PROCEDURE (p: Parser) ParseDocument*;
           p. lastError. SetMsgAttrib ("channel_error", res);
           RETURN NIL
         ELSE
-          in := Buffer.NewInput (ch. NewReader(), NIL, p. errList);
+          in := Buffer.NewInput (ch, NIL, p. errList);
           entity. SetCodecFactory (in. codecFactory);
           RETURN in
         END
@@ -764,7 +765,8 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END CheckInvalidChars;
   
-  PROCEDURE Internalize (entity: DTD.ExternalEntity): DTD.String;
+  PROCEDURE Internalize (entity: DTD.ExternalEntity): DTD.String
+  RAISES IO.Error;
     VAR
       in: Buffer.Input;
       len, i, delta: Buffer.CharPos;
@@ -810,7 +812,8 @@ PROCEDURE (p: Parser) ParseDocument*;
       RETURN str
     END Internalize;
   
-  PROCEDURE PushEntity (entity: DTD.Entity; syncEntity: BOOLEAN);
+  PROCEDURE PushEntity (entity: DTD.Entity; syncEntity: BOOLEAN)
+  RAISES IO.Error;
   (* `syncEntity=TRUE' means that the resolved entity is matched against
      a grammar production (extParsedPE, externalSubset) and is not
      inserted at an arbitrary place in the external subset or an entity
@@ -888,7 +891,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       cpos := 0; cdelta := 0; cstart := 0
     END PushEntity;
   
-  PROCEDURE PopEntity;
+  PROCEDURE PopEntity() RAISES IO.Error;
     VAR
       i: LONGINT;
     BEGIN
@@ -933,7 +936,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END PopEntity;
   
-  PROCEDURE NextBlock;
+  PROCEDURE NextBlock() RAISES IO.Error;
     VAR
       oldOffset: Buffer.CharPos;
       res: BOOLEAN;
@@ -991,7 +994,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END Tab;
   
-  PROCEDURE LookingAtS(): BOOLEAN;
+  PROCEDURE LookingAtS(): BOOLEAN RAISES IO.Error;
   (* pre: chars[cpos] is valid *)
     BEGIN
       IF (chars[cpos] <= " ") THEN
@@ -1030,7 +1033,8 @@ PROCEDURE (p: Parser) ParseDocument*;
      valid if such a procedure is done.  Conversely, all procedure can 
      depend on @samp{chars[cpos]} when activated.  *)
   
-  PROCEDURE LookingAt (str: ARRAY OF CHAR; followedBy: SHORTINT): BOOLEAN;
+  PROCEDURE LookingAt (str: ARRAY OF CHAR; followedBy: SHORTINT): BOOLEAN
+  RAISES IO.Error;
   (* pre: `str' does not contain any whitespace characters
      post: ~result & (chars[cpos] # Buffer.markerEOB) OR
            result & (chars[cpos..cpos+Length(str)] # Buffer.markerEOB)
@@ -1066,7 +1070,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END LookingAt;
   
-  PROCEDURE NextChar;
+  PROCEDURE NextChar() RAISES IO.Error;
     BEGIN
       IF (chars[cpos] # Buffer.markerEOD) THEN
         INC (cpos);
@@ -1076,7 +1080,8 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END NextChar;
   
-  PROCEDURE Nmtoken (checkForQName, noColon: BOOLEAN): DTD.String;
+  PROCEDURE Nmtoken (checkForQName, noColon: BOOLEAN): DTD.String
+  RAISES IO.Error;
   (* pre: chars[cpos] # Buffer.markerEOB *)
     VAR
       string: DTD.String;
@@ -1134,7 +1139,8 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END Nmtoken;
   
-  PROCEDURE Name (noColon: BOOLEAN): DTD.String;
+  PROCEDURE Name (noColon: BOOLEAN): DTD.String
+  RAISES IO.Error;
   (* pre: chars[cpos] # Buffer.markerEOB *)
     BEGIN
       IF IsNameChar0 (chars[cpos]) THEN
@@ -1146,7 +1152,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END Name;
   
-  PROCEDURE CheckChar (ch: CHAR);
+  PROCEDURE CheckChar (ch: CHAR) RAISES IO.Error;
   (* Compare the current character with @oparam{ch}, and report an error if
      they don't match.  *)
     VAR
@@ -1166,8 +1172,8 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END CheckChar;
   
-  PROCEDURE ^ XMLDecl (entity: DTD.ExternalEntity);
-  PROCEDURE ^ extSubsetDecl;
+  PROCEDURE ^ XMLDecl (entity: DTD.ExternalEntity) RAISES IO.Error;
+  PROCEDURE ^ extSubsetDecl() RAISES IO.Error;
   
   PROCEDURE SkippedEntity (name: DTD.String);
   (* if name=NIL, then the external subset of the DTD is skipped *)
@@ -1178,7 +1184,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END SkippedEntity;
   
-  PROCEDURE PEReference (declSep: BOOLEAN);
+  PROCEDURE PEReference (declSep: BOOLEAN) RAISES IO.Error;
     VAR
       name: DTD.String;
       decl: DTD.Declaration;
@@ -1248,7 +1254,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END PEReference;
   
-  PROCEDURE OptS (noPE: BOOLEAN);
+  PROCEDURE OptS (noPE: BOOLEAN) RAISES IO.Error;
   (* Matches the syntax rule "S?".  This procedure is used only @emph{outside}
      the document element, and never as part of an entity or attribute value.
      This means that the characters skipped by this rule are never reported
@@ -1294,7 +1300,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END OptS;
   
-  PROCEDURE S;
+  PROCEDURE S() RAISES IO.Error;
     BEGIN
       IF LookingAtS() THEN
         OptS (FALSE)
@@ -1303,7 +1309,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END S;
 
-  PROCEDURE SnoPE;
+  PROCEDURE SnoPE() RAISES IO.Error;
     BEGIN
       IF LookingAtSnoPE() THEN
         OptS (TRUE)
@@ -1312,7 +1318,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END SnoPE;
 
-  PROCEDURE ControlChar (eolReplacement: DTD.Char);
+  PROCEDURE ControlChar (eolReplacement: DTD.Char) RAISES IO.Error;
   (* @precond
      @itemize
      @item
@@ -1376,7 +1382,7 @@ PROCEDURE (p: Parser) ParseDocument*;
     END ControlChar;
   
   
-  PROCEDURE String (type: SHORTINT): DTD.String;
+  PROCEDURE String (type: SHORTINT): DTD.String RAISES IO.Error;
     VAR
       pos: Locator.Position;
       endChar: DTD.Char;
@@ -1476,13 +1482,13 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END String;
 
-  PROCEDURE Eq;
+  PROCEDURE Eq() RAISES IO.Error;
   (* post: chars[cpos] # Buffer.markerEOB *)
     BEGIN
       OptS (TRUE); CheckChar ("="); OptS (TRUE)
     END Eq;
   
-  PROCEDURE XMLDecl (entity: DTD.ExternalEntity);
+  PROCEDURE XMLDecl (entity: DTD.ExternalEntity) RAISES IO.Error;
   (* pre: cpos=0 and looking at "<?xml"+NonName *)
     VAR
       string: DTD.String;
@@ -1573,7 +1579,7 @@ PROCEDURE (p: Parser) ParseDocument*;
     END CheckCurrentEntity;
   
   
-  PROCEDURE PI;
+  PROCEDURE PI() RAISES IO.Error;
   (* pre: looking at "<?" *)
     VAR
       currentEntity: DTD.Entity;
@@ -1629,7 +1635,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END PI;
 
-  PROCEDURE Comment;
+  PROCEDURE Comment() RAISES IO.Error;
   (* pre: looking at "<!--" *)
     VAR
       currentEntity: DTD.Entity;
@@ -1662,7 +1668,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       DiscardPreviousInput
     END Comment;
 
-  PROCEDURE CDSect;
+  PROCEDURE CDSect() RAISES IO.Error;
   (* pre: looking at "<![CDATA[" *)
     BEGIN
       StorePosition (p. l^);
@@ -1694,7 +1700,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END CDSect;
   
-  PROCEDURE CharRef;
+  PROCEDURE CharRef() RAISES IO.Error;
   (* Parses the character references and writes the result to 
      `chars[cpos-cdelta]'.  If `cstart=cpos-cdelta' when this procedure
      is invoked, then `chars[cstart,cpos-cdelta[' is the replacement
@@ -1773,7 +1779,8 @@ PROCEDURE (p: Parser) ParseDocument*;
       DEC (cdelta, ToUnicode (cval))
     END CharRef;
 
-  PROCEDURE EntityRef (enforceDecl, permitExternal: BOOLEAN): DTD.EntityRef;
+  PROCEDURE EntityRef (enforceDecl, permitExternal: BOOLEAN): DTD.EntityRef
+  RAISES IO.Error;
   (* pre: (chars[cpos] = "&") & (chars[cpos] # "#")
      post: `cstart' is preserved *)
     VAR
@@ -1812,7 +1819,8 @@ PROCEDURE (p: Parser) ParseDocument*;
       RETURN dtd. NewEntityRef (name, entity)
     END EntityRef;
 
-  PROCEDURE AttValue (isAttDecl: BOOLEAN): DTD.AttValue;
+  PROCEDURE AttValue (isAttDecl: BOOLEAN): DTD.AttValue
+  RAISES IO.Error;
   (* Parses an attribute value string and returns a data structure containing
      character sequences and general entity references.  The attribute is
      partially normalized by replacing newlines with spaces.  No non-CDATA
@@ -1875,15 +1883,16 @@ PROCEDURE (p: Parser) ParseDocument*;
       RETURN attValue
     END AttValue;
 
-  PROCEDURE Expand (attValue: DTD.AttValue);
+  PROCEDURE Expand (attValue: DTD.AttValue) RAISES IO.Error;
     VAR
       fragment: DTD.Fragment;
       decl: DTD.Declaration;
       entity: DTD.Entity;
 
-    PROCEDURE ^ExpandAttValue (entity: DTD.Entity): DTD.AttValue;
+    PROCEDURE ^ExpandAttValue (entity: DTD.Entity): DTD.AttValue
+    RAISES IO.Error;
     
-    PROCEDURE IsRecursive (entity: DTD.Entity): BOOLEAN;
+    PROCEDURE IsRecursive (entity: DTD.Entity): BOOLEAN RAISES IO.Error;
       VAR
         fragment: DTD.Fragment;
       BEGIN
@@ -1911,7 +1920,8 @@ PROCEDURE (p: Parser) ParseDocument*;
         END
       END IsRecursive;
 
-    PROCEDURE ExpandAttValue (entity: DTD.Entity): DTD.AttValue;
+    PROCEDURE ExpandAttValue (entity: DTD.Entity): DTD.AttValue
+    RAISES IO.Error;
       VAR
         attValue: DTD.AttValue;
 
@@ -1992,12 +2002,12 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END Expand;
 
-  PROCEDURE ^element;
+  PROCEDURE ^element() RAISES IO.Error;
   
-  PROCEDURE content;
+  PROCEDURE content() RAISES IO.Error;
   (* post: chars[cpos] # Buffer.markerEOB *)
 
-    PROCEDURE CharData;
+    PROCEDURE CharData() RAISES IO.Error;
     (* This procedure matches character data and character references.  The
        latter are included for efficiency reasons.  A text sequence with
        with embedded character references will cause only a single up 
@@ -2082,7 +2092,7 @@ PROCEDURE (p: Parser) ParseDocument*;
         END
       END CharData;
 
-    PROCEDURE FollowEntityRef (entityRef: DTD.EntityRef);
+    PROCEDURE FollowEntityRef (entityRef: DTD.EntityRef) RAISES IO.Error;
       VAR
         decl: DTD.Declaration;
         entity: DTD.Entity;
@@ -2159,7 +2169,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END content;
 
-  PROCEDURE element;
+  PROCEDURE element() RAISES IO.Error;
     VAR
       emptyElementTag: BOOLEAN;
       startName, endName: DTD.String;
@@ -2197,7 +2207,8 @@ PROCEDURE (p: Parser) ParseDocument*;
         RETURN FALSE
       END AttributeNameUsed;
     
-    PROCEDURE AddDefaultAttributes (elemDecl: DTD.ElementDecl);
+    PROCEDURE AddDefaultAttributes (elemDecl: DTD.ElementDecl)
+    RAISES IO.Error;
       VAR
         decl: DTD.Declaration;
         attrDecl: DTD.AttrDecl;
@@ -2316,7 +2327,7 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END element;
   
-  PROCEDURE MiscRep;
+  PROCEDURE MiscRep() RAISES IO.Error;
   (* post: chars[cpos] # Buffer.markerEOB *)
     BEGIN
       LOOP
@@ -2340,7 +2351,8 @@ PROCEDURE (p: Parser) ParseDocument*;
     END MiscRep;
   
   PROCEDURE ExternalID (optionJustPubid: BOOLEAN;
-                        VAR public, system: DTD.String; VAR baseURI: URI.URI);
+                        VAR public, system: DTD.String; VAR baseURI: URI.URI)
+  RAISES IO.Error;
   (* pre: ExternalID is optionally followed by S *)
     VAR
       res: Msg.Msg;
@@ -2378,8 +2390,9 @@ PROCEDURE (p: Parser) ParseDocument*;
       END
     END ExternalID;
 
-  PROCEDURE markupdecl;
-    PROCEDURE elementdecl (currentEntity: DTD.Entity);
+  PROCEDURE markupdecl() RAISES IO.Error;
+    PROCEDURE elementdecl (currentEntity: DTD.Entity)
+    RAISES IO.Error;
     (* pre: looking at "<!ELEMENT"+NonName *)
       VAR
         elementName: DTD.String;
@@ -2387,11 +2400,13 @@ PROCEDURE (p: Parser) ParseDocument*;
         elementDecl: DTD.ElementDecl;
         decl: DTD.Declaration;
         
-      PROCEDURE contentspec(): DTD.CP;
+      PROCEDURE contentspec(): DTD.CP
+      RAISES IO.Error;
         VAR
           currentEntity: DTD.Entity;
           
-        PROCEDURE Mixed (currentEntity: DTD.Entity): DTD.CP;
+        PROCEDURE Mixed (currentEntity: DTD.Entity): DTD.CP
+        RAISES IO.Error;
         (* pre: looking at "#PCDATA"+nonNameChar *)
           VAR
             hasAlternative: BOOLEAN;
@@ -2420,12 +2435,13 @@ PROCEDURE (p: Parser) ParseDocument*;
             END
           END Mixed;
 
-        PROCEDURE children (currentEntity: DTD.Entity): DTD.CP;
+        PROCEDURE children (currentEntity: DTD.Entity): DTD.CP
+        RAISES IO.Error;
         (* pre: character before chars[cpos] was "("+S? *)
           VAR
             cp: DTD.CP;
 
-          PROCEDURE Quantifier(): DTD.CPModeType;
+          PROCEDURE Quantifier(): DTD.CPModeType RAISES IO.Error;
           (* pre: chars[cpos] # markerEOB *)
             BEGIN
               CASE chars[cpos] OF
@@ -2437,13 +2453,14 @@ PROCEDURE (p: Parser) ParseDocument*;
               END
             END Quantifier;
 
-          PROCEDURE choiceseq (currentEntity: DTD.Entity): DTD.CP;
+          PROCEDURE choiceseq (currentEntity: DTD.Entity): DTD.CP
+          RAISES IO.Error;
           (* pre: character before chars[cpos] was "("+S? *)
             VAR
               class: DTD.Char;
               first, last: DTD.CP;
 
-            PROCEDURE cp(): DTD.CP;
+            PROCEDURE cp(): DTD.CP RAISES IO.Error;
             (* pre: chars[cpos] # markerEOB *)
               VAR
                 cp: DTD.CP;
@@ -2540,7 +2557,8 @@ PROCEDURE (p: Parser) ParseDocument*;
         CheckChar (">")
       END elementdecl;
 
-    PROCEDURE AttListDecl (currentEntity: DTD.Entity);
+    PROCEDURE AttListDecl (currentEntity: DTD.Entity)
+    RAISES IO.Error;
     (* pre: looking at "<!ATTLIST"+NonName *)
       VAR
         elementName, attrName: DTD.String;
@@ -2551,10 +2569,12 @@ PROCEDURE (p: Parser) ParseDocument*;
         attrDecl: DTD.AttrDecl;
 
       PROCEDURE AttType (VAR attrType: DTD.AttributeType;
-                         VAR enum: DTD.Enumeration);
+                         VAR enum: DTD.Enumeration)
+      RAISES IO.Error;
       (* post: chars[cpos] # Buffer.markerEOB *)
 
-        PROCEDURE Enumeration (attrType: DTD.AttributeType): DTD.Enumeration;
+        PROCEDURE Enumeration (attrType: DTD.AttributeType): DTD.Enumeration
+        RAISES IO.Error;
           BEGIN
             enum := dtd. NewEnumeration();
             CheckChar ("(");
@@ -2622,7 +2642,8 @@ PROCEDURE (p: Parser) ParseDocument*;
 
       PROCEDURE DefaultDecl (attrType: DTD.AttributeType;
                              VAR default: DTD.DefaultType;
-                             VAR defaultValue: DTD.AttValue);
+                             VAR defaultValue: DTD.AttValue)
+      RAISES IO.Error;
         BEGIN
           defaultValue := NIL;
           IF LookingAt ("#REQUIRED", followedByNonName) THEN
@@ -2671,7 +2692,8 @@ PROCEDURE (p: Parser) ParseDocument*;
         CheckChar (">")
       END AttListDecl;
 
-    PROCEDURE EntityDecl (currentEntity: DTD.Entity);
+    PROCEDURE EntityDecl (currentEntity: DTD.Entity)
+    RAISES IO.Error;
     (* pre: looking at "<!ENTITY"+NonName *)
       VAR
         name: DTD.String;
@@ -2682,7 +2704,8 @@ PROCEDURE (p: Parser) ParseDocument*;
         entityType: DTD.EntityType;
         dummy: BOOLEAN;
 
-      PROCEDURE EntityValue (isPEntity: BOOLEAN): DTD.String;
+      PROCEDURE EntityValue (isPEntity: BOOLEAN): DTD.String
+      RAISES IO.Error;
       (* pre: chars[cpos] # Buffer.markerEOB *)
         VAR
           endChar: DTD.Char;
@@ -2820,7 +2843,8 @@ PROCEDURE (p: Parser) ParseDocument*;
         END
       END EntityDecl;
 
-    PROCEDURE NotationDecl (currentEntity: DTD.Entity);
+    PROCEDURE NotationDecl (currentEntity: DTD.Entity)
+    RAISES IO.Error;
     (* pre: looking at "<!NOTATION"+NonName *)
       VAR
         name, public, system: DTD.String;
@@ -2860,12 +2884,12 @@ PROCEDURE (p: Parser) ParseDocument*;
       DiscardPreviousInput
     END markupdecl;
 
-  PROCEDURE extSubsetDecl;
+  PROCEDURE extSubsetDecl() RAISES IO.Error;
     VAR
       pos: Locator.Position;
       currentEntity: DTD.Entity;
       
-    PROCEDURE ignoreSectContents;
+    PROCEDURE ignoreSectContents() RAISES IO.Error;
       VAR
         level: LONGINT;
       BEGIN
@@ -2946,8 +2970,8 @@ PROCEDURE (p: Parser) ParseDocument*;
       END;
     END extSubsetDecl;
 
-  PROCEDURE prolog;
-    PROCEDURE doctypedecl;
+  PROCEDURE prolog() RAISES IO.Error;
+    PROCEDURE doctypedecl() RAISES IO.Error;
       VAR
         rootName, public, system: DTD.String;
         baseURI: URI.URI;
@@ -2955,7 +2979,7 @@ PROCEDURE (p: Parser) ParseDocument*;
         decl: DTD.Declaration;
         attr: DTD.AttrDecl;
       
-      PROCEDURE CheckGeneralEntities;
+      PROCEDURE CheckGeneralEntities() RAISES IO.Error;
         VAR
           decl: DTD.Declaration;
           oldBuilder: Builder.Builder;
@@ -3118,11 +3142,12 @@ PROCEDURE (p: Parser) ParseDocument*;
 
 
 PROCEDURE Init (p: Parser; new: BOOLEAN;
-                reader: Channel.Reader;
+                reader: IO.ByteChannel;
                 baseURI: URI.URI;
                 codecFactory: Codec.Factory;
                 entityResolver: EntityResolver.Resolver;
-                builder: Builder.Builder);
+                builder: Builder.Builder)
+RAISES IO.Error;
   BEGIN
     p. errList := Error.NewList();
     IF new THEN
@@ -3182,11 +3207,12 @@ PROCEDURE Init (p: Parser; new: BOOLEAN;
     Init (p, FALSE, reader, baseURI, codecFactory, entityResolver, builder)
   END Reset;*)
 
-PROCEDURE NewChannel* (ch: Channel.Channel;
+PROCEDURE NewChannel* (ch: IO.ByteChannel;
                        baseURI: URI.URI; 
                        codecFactory: Codec.Factory;
                        entityResolver: EntityResolver.Resolver;
-                       builder: Builder.Builder): Parser;
+                       builder: Builder.Builder): Parser
+RAISES IO.Error;
 (**Creates a new parser for the input channel @oparam{ch}.  @oparam{baseURI} is
    the absolute URI of the document entity, as computed by the method of
    RFC 2396, if that is known.  If this value is @code{NIL}, or refers to an
@@ -3207,37 +3233,20 @@ PROCEDURE NewChannel* (ch: Channel.Channel;
     p: Parser;
   BEGIN
     NEW (p);
-    Init (p, TRUE, ch. NewReader(), 
-                   baseURI, codecFactory, entityResolver, builder);
+    Init (p, TRUE, ch, baseURI, codecFactory, entityResolver, builder);
     RETURN p
   END NewChannel;
-
-PROCEDURE NewReader* (reader: Channel.Reader;
-                      baseURI: URI.URI; 
-                      codecFactory: Codec.Factory;
-                      entityResolver: EntityResolver.Resolver;
-                      builder: Builder.Builder): Parser;
-(**Like @oproc{NewChannel}, but takes the data from the reader @oparam{reader}.
-   *)
-  VAR
-    p: Parser;
-  BEGIN
-    NEW (p);
-    Init (p, TRUE, reader, baseURI, codecFactory, entityResolver, builder);
-    RETURN p
-  END NewReader;
 
 PROCEDURE NewURI* (uri, baseURI: URI.URI; 
                    codecFactory: Codec.Factory;
                    entityResolver: EntityResolver.Resolver;
-                   builder: Builder.Builder; VAR res: Msg.Msg): Parser;
-(**Like @oproc{NewChannel}, but opens the channel on the URI @oparam{uri}.  If
-   the channel cannot be opened, result is @code{NIL} and @oparam{res} holds
-   the error message.  *)
+                   builder: Builder.Builder): Parser
+RAISES IO.Error;
+(**Like @oproc{NewChannel}, but opens the channel on the URI @oparam{uri}.  *)
   VAR
-    ch: Channel.Channel;
+    ch: IO.ByteChannel;
   BEGIN
-    ch := uri. GetChannel (URI.channelOld, res);
+    ch := uri. GetChannel (URI.channelOld);
     IF (ch = NIL) THEN
       RETURN NIL
     ELSE
@@ -3248,18 +3257,19 @@ PROCEDURE NewURI* (uri, baseURI: URI.URI;
 PROCEDURE NewFile* (filePath: ARRAY OF CHAR; baseURI: URI.URI; 
                     codecFactory: Codec.Factory;
                     entityResolver: EntityResolver.Resolver;
-                    builder: Builder.Builder; VAR res: Msg.Msg): Parser;
+                    builder: Builder.Builder): Parser RAISES IO.Error;
 (**Like @oproc{NewURI}, using the file @oparam{filePath}.  *)
   BEGIN
     RETURN NewURI (File.ToURI (filePath), baseURI, codecFactory,
-                   entityResolver, builder, res)
+                   entityResolver, builder)
   END NewFile;
 
 PROCEDURE NewExternalID* (public, system: ARRAY OF DTD.Char;
                           systemBaseURI: URI.URI; 
                           codecFactory: Codec.Factory;
                           entityResolver: EntityResolver.Resolver;
-                          builder: Builder.Builder; VAR res: Msg.Msg): Parser;
+                          builder: Builder.Builder; VAR res: Msg.Msg): Parser
+RAISES IO.Error;
 (**Like @oproc{NewURI}, using the given public or system identifier.  The
    external identifiers are mapped to an absolute URI using
    @oparam{entityResolver}.  *)
@@ -3285,7 +3295,7 @@ PROCEDURE NewExternalID* (public, system: ARRAY OF DTD.Char;
     IF (uri = NIL) THEN
       RETURN NIL
     ELSE
-      RETURN NewURI (uri, NIL, codecFactory, entityResolver, builder, res)
+      RETURN NewURI (uri, NIL, codecFactory, entityResolver, builder)
     END
   END NewExternalID;
 

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:WriteMainFileAssembler;
 (*  Generates the main file of a program as i386 assembler code.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,13 +21,13 @@ MODULE OOC:Make:WriteMainFileAssembler;
 *)
 
 IMPORT
-  Ascii, Channel, Files, TextRider, OOC:Error, OOC:Repository;
+  Ascii, IO, IO:TextRider, IO:FileChannel, OOC:Repository;
 
 PROCEDURE WriteFile*(module: Repository.Module;
-                     imports: ARRAY OF Repository.Module;
-                     VAR res: Error.Msg);
+                     imports: ARRAY OF Repository.Module)
+RAISES IO.Error;
   VAR
-    ch: Channel.Channel;
+    ch: IO.ByteChannel;
     w: TextRider.Writer;
     
   PROCEDURE WriteModuleName (w: TextRider.Writer; 
@@ -75,46 +75,40 @@ PROCEDURE WriteFile*(module: Repository.Module;
     END Instr;
   
   BEGIN
-    ch := module.GetOutputChannel(Repository.modMainFileAssembler, TRUE, res);
-    IF (res = Channel.done) THEN
-      w := TextRider.ConnectWriter (ch);
-      Directive(".text");
-      Directive(".Ltext0:");
-      Instr(".align 4");
-      Directive(".globl main");
-      Instr(".type "+Ascii.ht+" main,@function");
-      Directive("main:");
-      Instr("pushl %ebp");
-      Instr("movl %esp,%ebp");
-      Instr("subl $8,%esp");
-      
-      Instr("movl 8(%ebp),%eax");
-      Instr("movl %eax,RT0__argc");
-      Instr("movl 12(%ebp),%eax");
-      Instr("movl %eax,RT0__argv");
-      
-      (*Instr("addl $-12,%esp");  function has been removed
-      Instr("pushl $262144");
-      Instr("call RT0__InitVParStack");  
-      Instr("addl $16,%esp");*)
-      
-      WriteModules (w, Ascii.ht+"call OOC_", "_init0");
-      Instr("xorl %eax,%eax");
-      Instr("leave");
-      Instr("ret");
-      Directive(".Lfe1:");
-      Instr(".size"+Ascii.ht+" main,.Lfe1-main");
-      Directive(".Lscope0:");
-      Instr(".text");
-      Directive("Letext:");
-      Instr(".ident"+Ascii.ht+'"OOC: 0.1"');
-      
-      res := w. res;
-      ch(Files.File). Register;
-      IF (ch. res # NIL) & (res = NIL) THEN
-        res := ch. res
-      END
-    END
+    ch := module.GetOutputChannel(Repository.modMainFileAssembler, TRUE);
+    w := TextRider.ConnectWriter (ch);
+    Directive(".text");
+    Directive(".Ltext0:");
+    Instr(".align 4");
+    Directive(".globl main");
+    Instr(".type "+Ascii.ht+" main,@function");
+    Directive("main:");
+    Instr("pushl %ebp");
+    Instr("movl %esp,%ebp");
+    Instr("subl $8,%esp");
+    
+    Instr("movl 8(%ebp),%eax");
+    Instr("movl %eax,RT0__argc");
+    Instr("movl 12(%ebp),%eax");
+    Instr("movl %eax,RT0__argv");
+    
+    (*Instr("addl $-12,%esp");  function has been removed
+       Instr("pushl $262144");
+       Instr("call RT0__InitVParStack");  
+       Instr("addl $16,%esp");*)
+    
+    WriteModules (w, Ascii.ht+"call OOC_", "_init0");
+    Instr("xorl %eax,%eax");
+    Instr("leave");
+    Instr("ret");
+    Directive(".Lfe1:");
+    Instr(".size"+Ascii.ht+" main,.Lfe1-main");
+    Directive(".Lscope0:");
+    Instr(".text");
+    Directive("Letext:");
+    Instr(".ident"+Ascii.ht+'"OOC: 0.1"');
+    
+    ch(FileChannel.Channel). CloseAndRegister;
   END WriteFile;
 
 END OOC:Make:WriteMainFileAssembler.

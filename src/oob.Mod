@@ -1,3 +1,4 @@
+(* 	$Id$	 *)
 MODULE oob;
 (*  Symbol file browser.
     Copyright (C) 2002, 2003  Michael van Acken

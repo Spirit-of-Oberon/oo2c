@@ -1,7 +1,7 @@
 MODULE Config:Source:Environment;
 
 IMPORT
-  Channel, TextRider, Msg, Strings, LongStrings, RT0,
+  Msg, Strings, LongStrings, RT0, IO, Writer := IO:TextRider,
   Config:Value, Config:Source, Config:Parser;
 
 
@@ -126,17 +126,16 @@ PROCEDURE (env: Environment) Parse*(): Msg.Msg;
     RETURN NIL
   END Parse;
 
-PROCEDURE (env: Environment) Write* (ch: Channel.Channel;
-                                     rootTag: Parser.String;
-                                     VAR res: Msg.Msg);
+PROCEDURE (env: Environment) Write* (ch: IO.ByteChannel;
+                                     rootTag: Parser.String);
   VAR
-    w: TextRider.Writer;
+    w: Writer.Writer;
     i, j: LONGINT;
     command: Command;
     pattern: Value.StringPtr;
     root8: ARRAY 1024 OF CHAR;
     
-  PROCEDURE WriteQuoted (w: TextRider.Writer; VAR str: ARRAY OF CHAR);
+  PROCEDURE WriteQuoted (w: Writer.Writer; VAR str: ARRAY OF CHAR);
     VAR
       s, e, last: LONGINT;
     BEGIN
@@ -149,7 +148,7 @@ PROCEDURE (env: Environment) Write* (ch: Channel.Channel;
               (str[s] # "'") & (str[s] # '"') DO
           INC (s)
         END;
-        w. byteWriter. WriteBytes (str, last, s-last);
+        w. WriteStringRegion (str, last, s);
         IF (s # e) THEN
           CASE str[s] OF
           | "&": w. WriteString ("&amp;")
@@ -164,11 +163,7 @@ PROCEDURE (env: Environment) Write* (ch: Channel.Channel;
     END WriteQuoted;
 
   BEGIN
-    w := TextRider.ConnectWriter (ch);
-    IF (w = NIL) THEN
-      res := w. res;
-      RETURN
-    END;
+    w := Writer.ConnectWriter (ch);
     
     IF (rootTag # "") THEN
       (* don't forget to import the XML codec for the encoding you use! *)
@@ -193,11 +188,11 @@ PROCEDURE (env: Environment) Write* (ch: Channel.Channel;
           END;
 
           IF (pattern[i] = "$") & (pattern[i+1] = "1") THEN
-            w. byteWriter. WriteBytes (pattern^, j, i-j);
+            w. WriteStringRegion (pattern^, j, i);
             WriteQuoted (w, command. argument^);
             INC (i, 2)
           ELSE
-            w. byteWriter. WriteBytes (pattern^, j, i-j)
+            w. WriteStringRegion (pattern^, j, i)
           END
         END;
         w. WriteLn
@@ -211,7 +206,6 @@ PROCEDURE (env: Environment) Write* (ch: Channel.Channel;
       w. WriteString (">");
       w. WriteLn
     END;
-    res := w. res
   END Write;
 
 END Config:Source:Environment.

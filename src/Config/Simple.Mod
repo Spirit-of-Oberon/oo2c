@@ -1,7 +1,7 @@
 MODULE Config:Simple;
 
 IMPORT
-  Msg, ProgramArgs, IO:Memory,
+  Msg, ProgramArgs, IO, IO:Memory,
   
   C := Config,
   Config:Parser,
@@ -21,7 +21,6 @@ IMPORT
 
 CONST
   rootName = "configuration";
-  bufferName = "/#Config_Simple#";
   
 TYPE
   Config* = POINTER TO ConfigDesc;
@@ -95,59 +94,49 @@ PROCEDURE (config: Config) ConfigFileCmdLineOption* (optionTemplate: CmdLine.Opt
   END ConfigFileCmdLineOption;
 
 
-PROCEDURE (config: Config) Read* (errList: Msg.MsgList);
+PROCEDURE (config: Config) Read* (errList: Msg.MsgList) RAISES IO.Error;
   VAR
     errMsg: Msg.Msg;
     cmdEnv: Environment.Command;
     cmdCmdLine: CmdLine.Command;
     
-  PROCEDURE EvaluateFile (fileName: Value.StringPtr);
+  PROCEDURE EvaluateFile (fileName: Value.StringPtr) RAISES IO.Error;
     VAR
       p: Parser.Parser;
-      res: Msg.Msg;
     BEGIN
       (* create parser for `fileName' *)
-      p := Parser.NewFile (fileName^, res);
-      IF (res # NIL) THEN
-        errList. Append (res)
+      p := Parser.NewFile (fileName^);
+      (* parse the XML document in `buffer'; if the XML parser does not
+         report any errors, process the elements of the document;
+         otherwise, transfer the error messages into `errList' *)
+      p. ParseDocument();
+      IF (p. errList. msgCount = 0) THEN
+        config. sectionList. ProcessElements (p. root, rootName, p) 
       ELSE
-        (* parse the XML document in `buffer'; if the XML parser does not
-           report any errors, process the elements of the document;
-           otherwise, transfer the error messages into `errList' *)
-        p. ParseDocument();
-        IF (p. errList. msgCount = 0) THEN
-          config. sectionList. ProcessElements (p. root, rootName, p) 
-        ELSE
-          errList. AppendList (p. errList)
-        END
-      END
+        errList. AppendList (p. errList)
+      END;
     END EvaluateFile;
   
-  PROCEDURE EvaluateSource (source: Source.Source);
+  PROCEDURE EvaluateSource (source: Source.Source) RAISES IO.Error;
     VAR
       buffer: Memory.Channel;
-      errMsg: Msg.Msg;
       p: Parser.Parser;
     BEGIN
-      buffer := Memory.New (bufferName, {Memory.read, Memory.write}, errMsg);
-      IF  (errMsg = NIL) THEN
-        source. Write (buffer, rootName, errMsg);
-        IF (errMsg = NIL) THEN
-          (* create parser for `buffer' *)
-          p := Parser.NewChannel (buffer);
-          
-          (* parse the XML document in `buffer'; if the XML parser does not
-             report any errors, process the elements of the document;
-             otherwise, transfer the error messages into `errList' *)
-          p. ParseDocument();
-          IF (p. errList. msgCount = 0) THEN
-            config. sectionList. ProcessElements (p. root, rootName, p) 
-          ELSE
-            errList. AppendList (p. errList)
-          END
-        END
+      buffer := Memory.Open();
+      source. Write (buffer, rootName);
+      buffer.SetPosition(0);
+      
+      (* create parser for `buffer' *)
+      p := Parser.NewChannel (buffer);
+      
+      (* parse the XML document in `buffer'; if the XML parser does not
+         report any errors, process the elements of the document;
+         otherwise, transfer the error messages into `errList' *)
+      p. ParseDocument();
+      IF (p. errList. msgCount = 0) THEN
+        config. sectionList. ProcessElements (p. root, rootName, p) 
       ELSE
-        errList. Append (errMsg)
+        errList. AppendList (p. errList)
       END
     END EvaluateSource;
   

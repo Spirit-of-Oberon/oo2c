@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 (*  Defines a builder class with factory methods for symbol table entries.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:Builder [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Out, Strings, Channel, Object:Boxed, ADT:Storable, ADT:Object:Storage,
+  Out, Strings, Object:Boxed, ADT:Storable, ADT:Object:Storage, IO,
   OOC:Doc, OOC:AST, Sym := OOC:SymbolTable;
 
 
@@ -544,7 +544,8 @@ PROCEDURE (b: Builder) Finalize* (module: Sym.Module);
     END;
   END Finalize;
 
-PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Sym.Module; VAR res: Channel.Result);
+PROCEDURE (b: Builder) WriteSymbolTable* (ch: IO.ByteChannel;
+                                          symTab: Sym.Module);
   VAR
     writer: Storage.Writer;
   BEGIN
@@ -553,14 +554,9 @@ PROCEDURE (b: Builder) WriteSymbolTable* (ch: Channel.Channel; symTab: Sym.Modul
        written by OOC:Auxiliary:WriteSymbolFile.WriteSymbolFile *)
     writer := Storage.ConnectWriter (ch);
     writer. WriteObject (symTab);
-    res := writer. res;
-    IF (res = Channel.done) THEN
-      res := ch. res
-    END
   END WriteSymbolTable;
 
-PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel;
-                                         VAR res: Channel.Result): Sym.Module;
+PROCEDURE (b: Builder) ReadSymbolTable* (ch: IO.ByteChannel): Sym.Module;
   VAR
     obj: Storable.Object;
     reader: Storage.Reader;
@@ -594,7 +590,6 @@ PROCEDURE (b: Builder) ReadSymbolTable* (ch: Channel.Channel;
     END;
     
     reader. ReadObject (obj);
-    res := reader. res;
     IF (obj = NIL) THEN
       RETURN NIL
     ELSE

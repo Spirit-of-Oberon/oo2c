@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:LinkProgramC;
 (*  Links object files and libraries to create an executable file.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:Make:LinkProgramC;
 *)
 
 IMPORT
-  Out, Strings, URI, URI:Scheme:File, Object, ADT:Dictionary,
+  Out, Strings, IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
   ADT:ArrayList, Config:Value, StringValue := Config:Value:String,
   OS:ProcessManagement, OOC:Error, OOC:Repository, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
@@ -166,13 +166,13 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
 
 PROCEDURE Run*(module: Repository.Module;
                imports: ARRAY OF Repository.Module;
-               forLibrary: STRING): BOOLEAN;
+               forLibrary: STRING): BOOLEAN
+RAISES IO.Error;
   VAR
     str: ARRAY 16*1024 OF CHAR;        (* link commands can get _very_ long *)
     path: Repository.URIBuffer;
     uri: URI.URI;
     exit, i: LONGINT;
-    res: Error.Msg;
     importedLibs: Dictionary.Dictionary;
     importedLibsList: ArrayList.ArrayList;
     objectFile, outputFile: Repository.FileId;
@@ -190,73 +190,69 @@ PROCEDURE Run*(module: Repository.Module;
       outputFile := Repository.modExecutable;
     END;
     
-    module. CreateOutputDir (outputFile, res);
-    IF (res = NIL) THEN
-      CCompiler.LinkProgramCmd
-          (module. GetURI (outputFile, TRUE), (forLibrary # NIL), str);
+    module. CreateOutputDir (outputFile);
+    CCompiler.LinkProgramCmd
+        (module. GetURI (outputFile, TRUE), (forLibrary # NIL), str);
 
-      importedLibs := Dictionary.New();
-      importedLibsList := ArrayList.New(4);
-      FOR i := 0 TO LEN(imports)-1 DO
-        ASSERT(imports[i].ifQuality = Repository.completeInterface);
-        libraryName := imports[i].ifData.libraryName;
-        IF (libraryName # NIL) & ~libraryName.Equals(forLibrary) THEN
-          (* object file is part of a library; for each library encountered
-             this way, keep track of one module that it provides *)
-          IF ~importedLibs.HasKey(libraryName) THEN
-            importedLibs.Set(imports[i].ifData.libraryName, NIL);
-            importedLibsList.Append(imports[i]);
-          END;
-        ELSIF ~imports[i].ifData.NoObjectFile() THEN
-          uri := imports[i]. GetURI (objectFile, TRUE);
-          uri(File.URI). GetPath (path);
-          Strings.Append (" ", str);
-          Strings.Append (path, str);
+    importedLibs := Dictionary.New();
+    importedLibsList := ArrayList.New(4);
+    FOR i := 0 TO LEN(imports)-1 DO
+      ASSERT(imports[i].ifQuality = Repository.completeInterface);
+      libraryName := imports[i].ifData.libraryName;
+      IF (libraryName # NIL) & ~libraryName.Equals(forLibrary) THEN
+        (* object file is part of a library; for each library encountered
+           this way, keep track of one module that it provides *)
+        IF ~importedLibs.HasKey(libraryName) THEN
+          importedLibs.Set(imports[i].ifData.libraryName, NIL);
+          importedLibsList.Append(imports[i]);
         END;
-      END;
-
-      IF (forLibrary = NIL) THEN
-        (* add file with function main() *)
-        uri := module. GetURI (Repository.modMainObjectFile, TRUE);
+      ELSIF ~imports[i].ifData.NoObjectFile() THEN
+        uri := imports[i]. GetURI (objectFile, TRUE);
         uri(File.URI). GetPath (path);
         Strings.Append (" ", str);
         Strings.Append (path, str);
       END;
-
-      FOR i := 0 TO importedLibsList.size-1 DO
-        import := importedLibsList.array[i](Repository.Module);
-        IF import.FileExists(Repository.modLibrary) THEN
-          (* looks like an uninstalled library *)
-          uri := import.GetURI(Repository.modLibrary, TRUE);
-          uri(File.URI). GetPath (path);
-          Strings.Append (" ", str);
-          Strings.Append (path, str);
-        ELSE
-          (* we don't have a .la file, so assume that it's a regularly
-             installed libtool library  *)
-          Strings.Append(" -l", str);
-          chars := import.ifData.libraryName(Object.String8).CharsLatin1();
-          Strings.Append(chars^, str);
-        END;
-      END;
-      
-      (* add "-l" options for the external libraries, most specific library
-         first *)
-      extLibs := GetExternalLibs(imports, forLibrary);
-      FOR i := LEN (extLibs^)-1 TO 0 BY -1 DO
-        chars := extLibs[i](Object.String8).CharsLatin1();
-        Strings.Append (chars^, str);
-      END;
-      Strings.Append (" ", str);
-      Strings.Append (CCompiler.libs.value(StringValue.Value).string^, str);
     END;
-    IF (res = NIL) THEN
-      Out.String (str);
-      Out.Ln;
-      exit := ProcessManagement.system (str)
+
+    IF (forLibrary = NIL) THEN
+      (* add file with function main() *)
+      uri := module. GetURI (Repository.modMainObjectFile, TRUE);
+      uri(File.URI). GetPath (path);
+      Strings.Append (" ", str);
+      Strings.Append (path, str);
+    END;
+
+    FOR i := 0 TO importedLibsList.size-1 DO
+      import := importedLibsList.array[i](Repository.Module);
+      IF import.FileExists(Repository.modLibrary) THEN
+        (* looks like an uninstalled library *)
+        uri := import.GetURI(Repository.modLibrary, TRUE);
+        uri(File.URI). GetPath (path);
+        Strings.Append (" ", str);
+        Strings.Append (path, str);
+      ELSE
+        (* we don't have a .la file, so assume that it's a regularly
+           installed libtool library  *)
+        Strings.Append(" -l", str);
+        chars := import.ifData.libraryName(Object.String8).CharsLatin1();
+        Strings.Append(chars^, str);
+      END;
     END;
     
-    RETURN (res = NIL) & (exit = 0)
+    (* add "-l" options for the external libraries, most specific library
+       first *)
+    extLibs := GetExternalLibs(imports, forLibrary);
+    FOR i := LEN (extLibs^)-1 TO 0 BY -1 DO
+      chars := extLibs[i](Object.String8).CharsLatin1();
+      Strings.Append (chars^, str);
+    END;
+    Strings.Append (" ", str);
+    Strings.Append (CCompiler.libs.value(StringValue.Value).string^, str);
+    
+    Out.String (str);
+    Out.Ln;
+    exit := ProcessManagement.system (str);
+    RETURN (exit = 0)
   END Run;
 
 BEGIN

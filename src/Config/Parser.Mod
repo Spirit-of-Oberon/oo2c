@@ -1,7 +1,7 @@
 MODULE Config:Parser;
 
 IMPORT
-  Channel, Msg, LongStrings,
+  IO, LongStrings,
   XML:EntityResolver, XMLBuilder := XML:Builder, XML:DTD, XML:Error,
   Locator := XML:Locator, XMLParser := XML:Parser,
   <*PUSH; Warnings:=FALSE*>XML:UnicodeCodec:Latin1<*POP*>;
@@ -229,18 +229,20 @@ PROCEDURE (b: Builder) Characters* (VAR chars: DTD.StringVar;
 
 
 
-PROCEDURE NewFile* (filePath: ARRAY OF CHAR; VAR res: Msg.Msg): Parser;
+PROCEDURE NewFile* (filePath: ARRAY OF CHAR): Parser
+RAISES IO.Error;
   VAR
     p: Parser;
   BEGIN
     NEW (p);
     p. builder := NewBuilder();
     p. xmlParser := XMLParser.NewFile (filePath, NIL, NIL, NIL,
-                                       p. builder, res);
+                                       p. builder);
     RETURN p
   END NewFile;
 
-PROCEDURE NewChannel* (ch: Channel.Channel): Parser;
+PROCEDURE NewChannel* (ch: IO.ByteChannel): Parser
+RAISES IO.Error;
   VAR
     p: Parser;
   BEGIN
@@ -250,7 +252,7 @@ PROCEDURE NewChannel* (ch: Channel.Channel): Parser;
     RETURN p
   END NewChannel;
 
-PROCEDURE (p: Parser) ParseDocument*;
+PROCEDURE (p: Parser) ParseDocument*() RAISES IO.Error;
   BEGIN
     p. xmlParser. ParseDocument();
     p. root := p. builder. root;

@@ -1,11 +1,11 @@
 (* 	$Id$	 *)
 MODULE XML:InputBuffer;
 (*  Defines input buffer for OOC's scanner.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 *)
 
 IMPORT
-  SYSTEM, Channel, Msg;
+  SYSTEM, Msg, IO;
 
 TYPE
   Char* = CHAR;
@@ -26,7 +26,7 @@ CONST
 TYPE
   Buffer* = POINTER TO BufferDesc;
   BufferDesc = RECORD
-    r: Channel.Reader;
+    r: IO.ByteChannel;
     chars-: CharArray;
     (**Character data from input channel.  *)
     offsetFromPos0-: CharPos;
@@ -53,7 +53,7 @@ CONST
      required *)
   
 
-PROCEDURE (b: Buffer) NextBlock* (): BOOLEAN;
+PROCEDURE (b: Buffer) NextBlock* (): BOOLEAN RAISES IO.Error;
 (**Tries to read additional data from @oparam{b}'s channel.  If at least one
    byte could be read, result is @code{TRUE}.  @code{FALSE} means that not
    a single byte was added to the buffer, either because the end of the file
@@ -67,61 +67,54 @@ PROCEDURE (b: Buffer) NextBlock* (): BOOLEAN;
   VAR
     len: CharPos;
     nChars: CharArray;
+    d: LONGINT;
   BEGIN
     ASSERT (b. chars[b. endOfBuffer] = markerEOB);
-    IF (b. r. res # Channel.done) THEN
-      IF (b. r. res. code # Channel.readAfterEnd) THEN
-        b. errList. Append (b. r. res)
-      END;
+    ASSERT (b. chars[b. endOfBuffer] = markerEOB);
+    IF (b. discardable >= bytesPerRead) THEN
+      (* move data to beginning of buffer *)
+      len := b. endOfBuffer - b. discardable;
+      IF (len < b. discardable) THEN
+        (* can use MOVE only when the memory areas do not intersect; the 
+           chance that we cannot MOVE is so small, that we simply ignore 
+           this case and add more memory to the buffer if it ever happens *)
+        SYSTEM.MOVE (SYSTEM.ADR (b. chars[b. discardable]), 
+                     SYSTEM.ADR (b. chars^),
+                     len+1);
+        INC (b. offsetFromPos0, b. discardable);
+        b. endOfBuffer := len;
+        b. discardable := 0
+      END
+    END;
+    ASSERT (b. chars[b. endOfBuffer] = markerEOB);
+    
+    IF (b. endOfBuffer+bytesPerRead >= LEN (b. chars^)) THEN
+      (* extend buffer so that it can hold b. endOfBuffer+bytesPerRead+1 
+         bytes *)
+      len := LEN (b. chars^);
+      REPEAT
+        INC (len, bytesPerRead)
+      UNTIL (b. endOfBuffer+bytesPerRead < len);
+      NEW (nChars, len);
+      SYSTEM.MOVE (SYSTEM.ADR (b. chars^),
+                   SYSTEM.ADR (nChars^),
+                   b. endOfBuffer+1);
+      b. chars := nChars
+    END;
+    
+    (* append additional input to the buffer; read only multiple of
+       bytesPerRead  *)
+    len := LEN (b. chars^) - b. endOfBuffer - 1;
+    len := (len DIV bytesPerRead)*bytesPerRead;
+    d := b. r. Read (b. chars^, b. endOfBuffer, len);
+    IF (d = -1) THEN
       ASSERT (b. chars[b. endOfBuffer] = markerEOB);
       RETURN FALSE
     ELSE
+      INC (b. endOfBuffer, d);
+      b. chars[b. endOfBuffer] := markerEOB;
       ASSERT (b. chars[b. endOfBuffer] = markerEOB);
-      IF (b. discardable >= bytesPerRead) THEN
-        (* move data to beginning of buffer *)
-        len := b. endOfBuffer - b. discardable;
-        IF (len < b. discardable) THEN
-          (* can use MOVE only when the memory areas do not intersect; the 
-             chance that we cannot MOVE is so small, that we simply ignore 
-             this case and add more memory to the buffer if it ever happens *)
-          SYSTEM.MOVE (SYSTEM.ADR (b. chars[b. discardable]), 
-                       SYSTEM.ADR (b. chars^),
-                       len+1);
-          INC (b. offsetFromPos0, b. discardable);
-          b. endOfBuffer := len;
-          b. discardable := 0
-        END
-      END;
-      ASSERT (b. chars[b. endOfBuffer] = markerEOB);
-
-      IF (b. endOfBuffer+bytesPerRead >= LEN (b. chars^)) THEN
-        (* extend buffer so that it can hold b. endOfBuffer+bytesPerRead+1 
-           bytes *)
-        len := LEN (b. chars^);
-        REPEAT
-          INC (len, bytesPerRead)
-        UNTIL (b. endOfBuffer+bytesPerRead < len);
-        NEW (nChars, len);
-        SYSTEM.MOVE (SYSTEM.ADR (b. chars^),
-                     SYSTEM.ADR (nChars^),
-                     b. endOfBuffer+1);
-        b. chars := nChars
-      END;
-      
-      (* append additional input to the buffer; read only multiple of
-         bytesPerRead  *)
-      len := LEN (b. chars^) - b. endOfBuffer - 1;
-      len := (len DIV bytesPerRead)*bytesPerRead;
-      b. r. ReadBytes (b. chars^, b. endOfBuffer, len);
-      IF (b. r. bytesRead = 0) THEN
-        ASSERT (b. chars[b. endOfBuffer] = markerEOB);
-        RETURN FALSE
-      ELSE
-        INC (b. endOfBuffer, b. r. bytesRead);
-        b. chars[b. endOfBuffer] := markerEOB;
-        ASSERT (b. chars[b. endOfBuffer] = markerEOB);
-        RETURN TRUE
-      END
+      RETURN TRUE
     END
   END NextBlock;
 
@@ -140,18 +133,19 @@ PROCEDURE (b: Buffer) EndOfBuffer* (cpos: CharPos): BOOLEAN;
     RETURN (cpos = b. endOfBuffer)
   END EndOfBuffer;
 
-PROCEDURE (b: Buffer) Close*;
+PROCEDURE (b: Buffer) Close*() RAISES IO.Error;
 (**Closes the channel associated with buffer @oparam{b}.  Afterwards, no
    further operations are permitted on @oparam{b}, except for reading the
    field @ofield{Buffer.errList}.  *)
   BEGIN
-    b. r. base. Close;
+    b. r. Close();
     b. r := NIL;
     b. chars := NIL;
   END Close;
 
 PROCEDURE Init (b: Buffer; new: BOOLEAN;
-                reader: Channel.Reader; errList: Msg.MsgList);
+                reader: IO.ByteChannel; errList: Msg.MsgList)
+RAISES IO.Error;
   VAR
     dummy: BOOLEAN;
   BEGIN
@@ -179,7 +173,8 @@ PROCEDURE Init (b: Buffer; new: BOOLEAN;
     Init (b, FALSE, reader, errList)
   END Reset;*)
 
-PROCEDURE New* (reader: Channel.Reader; errList: Msg.MsgList): Buffer;
+PROCEDURE New* (reader: IO.ByteChannel; errList: Msg.MsgList): Buffer
+RAISES IO.Error;
 (**Creates a new input buffer for reader @oparam{reader} and tries to read the
    first block of data from it.  Returns an initialized input buffer with up to
    @oconst{sizeOfBuffer} characters of input.  *)

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:IA32:Writer [OOC_EXTENSIONS];
 (*  Write assembler file.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:IA32:Writer [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Ascii, Channel, Files, IntStr, Msg, Strings, TextRider,
+  Ascii, IntStr, Strings, IO, IO:TextRider, IO:FileChannel,
   Object, Object:Boxed, ADT:Dictionary;
 
 TYPE
@@ -31,14 +31,14 @@ TYPE
        additional knowledge about C declarations, definitions, and literals.
        Its main purpose is to act as an abstraction layer for the not so easy
        task of writing C type expressions.  *)
-    ch: Channel.Channel;
-    textWriter: TextRider.Writer;
+    ch: IO.ByteChannel;
+    textWriter-: TextRider.Writer;
     stringData: Dictionary.Dictionary;
     stringDataCount: LONGINT;
   END;
 
 
-PROCEDURE InitWriter (w: Writer; ch: Channel.Channel);
+PROCEDURE InitWriter (w: Writer; ch: IO.ByteChannel);
   BEGIN
     w. ch := ch;
     w. textWriter := TextRider.ConnectWriter (ch);
@@ -46,7 +46,7 @@ PROCEDURE InitWriter (w: Writer; ch: Channel.Channel);
     w. stringDataCount := 1;
   END InitWriter;
 
-PROCEDURE NewWriter* (ch: Channel.Channel): Writer;
+PROCEDURE NewWriter* (ch: IO.ByteChannel): Writer;
   VAR
     w: Writer;
   BEGIN
@@ -165,21 +165,16 @@ PROCEDURE (w: Writer) WriteStringData* ();
     END;
   END WriteStringData;
 
-PROCEDURE (w: Writer) Close* (VAR res: Msg.Msg);
-(**Closes the writer's output channel.  Any error in the text writer, while
-   registering the file, or closing the channel is reported back in
-   @oparam{res}.  A @oparam{res} of @code{NIL} indicates success.  *)
+PROCEDURE (w: Writer) Close* () RAISES IO.Error;
+(**Closes the writer's output channel.  *)
   BEGIN
-    res := w. textWriter. res;
-    IF (w. ch IS Files.File) THEN
-      w. ch(Files.File). Register;
+    IF (w.textWriter.error # NIL) THEN
+      RAISE(w.textWriter.error);
     END;
-    IF (w. ch. res # NIL) & (res = NIL) THEN
-      res := w. ch. res
-    END;
-    w. ch. Close();
-    IF (w. ch. res # NIL) & (res = NIL) THEN
-      res := w. ch. res
+    IF (w. ch IS FileChannel.Channel) THEN
+      w. ch(FileChannel.Channel). CloseAndRegister;
+    ELSE
+      w. ch. Close();
     END;
   END Close;
 

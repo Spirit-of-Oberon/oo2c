@@ -1,7 +1,7 @@
 MODULE OOC:Config;
 
 IMPORT
-  RT0, Msg, Config:Value, Config:Value:String, Config:Source:CmdLine,
+  RT0, Msg, IO, Config:Value, Config:Value:String, Config:Source:CmdLine,
   Config:Section:Options, Config:Section:Arguments, Config:Simple,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas, OOC:Config:Autoconf,
   OOC:Config:Repositories,
@@ -69,7 +69,7 @@ PROCEDURE InitConfig (defaultConfigFile: ARRAY OF CHAR);
                 "<options><set name='xsltproc'>$1</set></options>");
   END InitConfig;
 
-PROCEDURE Read* (errList: Msg.MsgList);
+PROCEDURE Read* (errList: Msg.MsgList) RAISES IO.Error;
   BEGIN
     config. Read (errList);
   END Read;

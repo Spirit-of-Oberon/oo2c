@@ -1,8 +1,28 @@
+(* 	$Id$	 *)
 MODULE oo2c;
+(*  Main module for the Oberon-2 to C translator.
+    Copyright (C) 2002,2003  Michael van Acken
+
+    This file is part of OOC.
+
+    OOC is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.  
+
+    OOC is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+    License for more details. 
+
+    You should have received a copy of the GNU General Public License
+    along with OOC. If not, write to the Free Software Foundation, 59
+    Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*)
 
 IMPORT
   Msg, StdChannels, Strings, Out, Err, Object, URI, URI:Scheme:File,
-  ADT:StringBuffer,
+  ADT:StringBuffer, IO,
   OS:ProcessManagement, Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
@@ -98,7 +118,8 @@ PROCEDURE GetModule (moduleName: STRING): Rep.Module;
   END GetModule;
 
 PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
-                       install: BOOLEAN): BOOLEAN;
+                       install: BOOLEAN): BOOLEAN
+RAISES IO.Error;
   VAR
     ok: BOOLEAN;
     i: LONGINT;
@@ -287,7 +308,8 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
     END InstallFiles;
 
   PROCEDURE BuildDocs(module: Rep.Module; makeRules: Make.Rules;
-                      install: BOOLEAN): BOOLEAN;
+                      install: BOOLEAN): BOOLEAN
+  RAISES IO.Error;
     VAR
       m: Rep.Module;
       ok: BOOLEAN;
@@ -359,8 +381,7 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
 
     IF ok & install THEN
       Package.WritePackage(pkg,
-                           CCompiler.oocdir.value(StringValue.Value).string^,
-                           res);
+                           CCompiler.oocdir.value(StringValue.Value).string^);
       IF (res # NIL) THEN
         res.GetText(str);
         Out.String(str); Out.Ln;
@@ -458,14 +479,16 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
     UninstallPkgInfo(pkg);
   END UninstallPackage;
 
-PROCEDURE BuildPackageDoc(pkg: Package.Package): BOOLEAN;
+PROCEDURE BuildPackageDoc(pkg: Package.Package): BOOLEAN
+RAISES IO.Error;
   VAR
     ok: BOOLEAN;
     i: LONGINT;
     lib: Package.Library;
     exec: Package.Executable;
 
-  PROCEDURE BuildDocs(module: Rep.Module): BOOLEAN;
+  PROCEDURE BuildDocs(module: Rep.Module): BOOLEAN
+  RAISES IO.Error;
     VAR
       ok: BOOLEAN;
       i: LONGINT;
@@ -520,7 +543,7 @@ PROCEDURE WriteHelp();
     Out.String("  --error-style <string>"); Out.Ln;
   END WriteHelp;
 
-BEGIN
+BEGIN  <*Warnings:=FALSE*>
   Error.minErrorDistance := 16;
   Builder.doAutoImport := Builder.fullAutoImport;
   cfgErrList := Error.NewList ("");

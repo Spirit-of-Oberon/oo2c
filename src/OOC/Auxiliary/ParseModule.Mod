@@ -1,7 +1,7 @@
 MODULE OOC:Auxiliary:ParseModule;
 
 IMPORT
-  Msg, URI,
+  Msg, IO, URI,
   OOC:Config, OOC:Config:Pragmas, OOC:Repository,
   
   OOC:Error, OOC:Scanner:InputBuffer, 
@@ -20,7 +20,8 @@ PROCEDURE ParseModule* (m: Repository.Module;
                         VAR ast: AST.Node;
                         VAR symTab: Sym.Module;
                         VAR pragmaHistory: Pragmas.History;
-                        VAR errList: Error.List);
+                        VAR errList: Error.List)
+RAISES IO.Error;
 (**If this function is called multiple times for the same module while
    evaluating a build command, only on of these calls should pass @code{TRUE}
    to @oparam{writeSymbolFile}.  Otherwise the build logic implemented in
@@ -47,7 +48,7 @@ PROCEDURE ParseModule* (m: Repository.Module;
     uriStr: Repository.URIBuffer;
     scannerFlags, parserFlags: SET;
   BEGIN
-    inputBuffer := m. GetInputBuffer (res);
+    inputBuffer := m. GetInputBuffer();
     IF (inputBuffer = NIL) THEN
       ast := NIL;
       symTab := NIL;

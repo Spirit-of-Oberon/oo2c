@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE Config:Source:CmdLine;
 (*  Command line parser for OOC's configuration system.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -20,6 +20,7 @@ MODULE Config:Source:CmdLine;
 
 IMPORT
   CharClass, Strings, LongStrings, Msg, Channel, TextRider,
+  IO, Writer := IO:TextRider,
   Config:Value, Config:Source, Config:Parser;
 
 CONST
@@ -539,12 +540,12 @@ PROCEDURE (cmdLine: CmdLine) Parse* (ch: Channel.Channel): Msg.Msg;
     RETURN NIL
   END Parse;
 
-PROCEDURE (cmdLine: CmdLine) Write* (ch: Channel.Channel;
-                                     rootTag: Parser.String;
-                                     VAR res: Msg.Msg);
+PROCEDURE (cmdLine: CmdLine) Write* (ch: IO.ByteChannel;
+                                     rootTag: Parser.String)
+RAISES IO.Error;
 (**Writes the parsed command line arguments as a sequence of XML elements to
    the output channel @oparam{ch}.  Options are represented by their
-   replacement text, with the argument references of the transformation string
+   replacement text, with argument references of the transformation string
    exchanged for the actual argument values.  Non-option arguments are written
    in an XML element @samp{arguments}, with every nested element
    @samp{argument} corresponding to one command line argument.
@@ -589,13 +590,13 @@ PROCEDURE (cmdLine: CmdLine) Write* (ch: Channel.Channel;
    successfully for @oparam{cmdLine}.
    @end precond *)
   VAR
-    w: TextRider.Writer;
+    w: Writer.Writer;
     i, j: LONGINT;
     command: Command;
     pattern: Value.StringPtr;
     root8: ARRAY 1024 OF CHAR;
     
-  PROCEDURE WriteQuoted (w: TextRider.Writer; VAR str: ARRAY OF CHAR);
+  PROCEDURE WriteQuoted (w: Writer.Writer; VAR str: ARRAY OF CHAR);
     VAR
       s, e, last: LONGINT;
     BEGIN
@@ -608,7 +609,7 @@ PROCEDURE (cmdLine: CmdLine) Write* (ch: Channel.Channel;
               (str[s] # "'") & (str[s] # '"') DO
           INC (s)
         END;
-        w. byteWriter. WriteBytes (str, last, s-last);
+        w. WriteStringRegion (str, last, s);
         IF (s # e) THEN
           CASE str[s] OF
           | "&": w. WriteString ("&amp;")
@@ -623,11 +624,7 @@ PROCEDURE (cmdLine: CmdLine) Write* (ch: Channel.Channel;
     END WriteQuoted;
 
   BEGIN
-    w := TextRider.ConnectWriter (ch);
-    IF (w = NIL) THEN
-      res := w. res;
-      RETURN
-    END;
+    w := Writer.ConnectWriter(ch);
     
     IF (rootTag # "") THEN
       (* don't forget to import the XML codec for the encoding you use! *)
@@ -653,15 +650,15 @@ PROCEDURE (cmdLine: CmdLine) Write* (ch: Channel.Channel;
 
           IF (pattern[i] = "$") THEN
             IF ("1" <= pattern[i+1]) & (pattern[i+1] <= "9") THEN
-              w. byteWriter. WriteBytes (pattern^, j, i-j);
+              w. WriteStringRegion(pattern^, j, i);
               WriteQuoted (w, command. argList[ORD (pattern[i+1])-ORD("1")]^);
               INC (i, 2)
             ELSE
               INC (i);
-              w. byteWriter. WriteBytes (pattern^, j, i-j)
+              w. WriteStringRegion(pattern^, j, i)
             END
           ELSE
-            w. byteWriter. WriteBytes (pattern^, j, i-j)
+            w. WriteStringRegion(pattern^, j, i)
           END
         END;
         w. WriteLn
@@ -688,7 +685,10 @@ PROCEDURE (cmdLine: CmdLine) Write* (ch: Channel.Channel;
       w. WriteString (">");
       w. WriteLn
     END;
-    res := w. res
+
+    IF (w.error # NIL) THEN
+      RAISE(w.error);
+    END;
   END Write;
 
 BEGIN

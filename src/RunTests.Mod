@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE RunTests;
 (*  Applies a test schedule to an OOC compiler and produces an XML report.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,9 +22,9 @@ MODULE RunTests;
 
 
 IMPORT
-  Channel, Err, Files, Msg, Out, ProgramArgs, LongStrings, TextRider, 
-  Strings, SysClock,
-  URI,
+  Err, Msg, Out, ProgramArgs, LongStrings, 
+  Strings, 
+  Object, IO, IO:FileChannel, TextRider, URI,
   StdChannels, XMLError := XML:Error, XML:UnicodeCodec:Latin1,
   XML:Basic:Element, XMLWriter := XML:Writer, URI:Scheme:File,
   OOC:TestFramework:TestSetup, OOC:TestFramework:Testcases,
@@ -74,7 +74,8 @@ PROCEDURE CheckError (msg: Msg.Msg);
 
 PROCEDURE ReadConfig (VAR setup: TestSetup.TestSetup;
                       VAR suite: Testcases.TestSuite;
-                      VAR stopOnError: BOOLEAN);
+                      VAR stopOnError: BOOLEAN)
+RAISES IO.Error;
   CONST
     testSetup = 0;
     testCases = 1;
@@ -82,40 +83,26 @@ PROCEDURE ReadConfig (VAR setup: TestSetup.TestSetup;
     r: TextRider.Reader;
     arg: ARRAY 1024 OF CHAR;
     elem: Element.Element;
-    res: Msg.Msg;
-    reportFile: Files.File;
+    reportFile: FileChannel.Channel;
     
-  PROCEDURE ReadURI (uri: URI.URI; parser: SHORTINT): Element.Element;
+  PROCEDURE ReadURI (uri: URI.URI; parser: SHORTINT): Element.Element
+  RAISES IO.Error;
     VAR
-      ch: Channel.Channel;
-      br: Channel.Reader;
-      res: Msg.Msg;
+      ch: IO.ByteChannel;
       errList: XMLError.List;
       elem: Element.Element;
-      str: ARRAY 1024 OF CHAR;
     BEGIN
       elem := NIL;
-      ch := uri. GetChannel (URI.channelOld, res);
-      IF (res = Channel.done) THEN
-        br := ch. NewReader();
-        CASE parser OF
-        | testSetup:
-          elem := TestSetup.Read (br, uri, errList)
-        | testCases:
-          elem := Testcases.Read (br, uri, errList)
-        END;
-        IF (elem = NIL) THEN
-          errList. Write (StdChannels.stderr);
-          HALT(1)
-        END
-      ELSE
-        uri. GetString (str);
-        Err.String ("Error while parsing ");
-        Err.String (str);
-        Err.String (": ");
-        Err.Ln;
-        CheckErrorFile (res, str);
-        HALT (1)
+      ch := uri. GetChannel (URI.channelOld);
+      CASE parser OF
+      | testSetup:
+        elem := TestSetup.Read (ch, uri, errList)
+      | testCases:
+        elem := Testcases.Read (ch, uri, errList)
+      END;
+      IF (elem = NIL) THEN
+        errList. Write (StdChannels.stderr);
+        HALT(1)
       END;
       RETURN elem
     END ReadURI;
@@ -147,10 +134,10 @@ PROCEDURE ReadConfig (VAR setup: TestSetup.TestSetup;
       suite := elem(Testcases.TestSuite);
       
       r. ReadLine (arg);
-      reportFile := Files.New (arg, {Files.write}, res);
-      CheckError (res);
-      reportWriter := XMLWriter.New (reportFile. NewWriter(),
-                                     Latin1.factory, TRUE, 4)
+      reportFile := FileChannel.Open(Object.NewLatin1(arg),
+                                     {FileChannel.write, FileChannel.create,
+                                      FileChannel.truncate});
+      reportWriter := XMLWriter.New (reportFile, Latin1.factory, TRUE, 4)
     END
   END ReadConfig;
 

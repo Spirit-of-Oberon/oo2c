@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:WriteMainFileC;
 (*  Generates the main file of a program.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,14 +21,14 @@ MODULE OOC:Make:WriteMainFileC;
 *)
 
 IMPORT
-  Channel, Files, TextRider, OOC:Error, OOC:Config, OOC:Repository;
+  IO, IO:TextRider, IO:FileChannel, OOC:Config, OOC:Repository;
 
   
 PROCEDURE WriteFile*(module: Repository.Module;
-                     imports: ARRAY OF Repository.Module;
-                     VAR res: Error.Msg);
+                     imports: ARRAY OF Repository.Module)
+RAISES IO.Error;
   VAR
-    ch: Channel.Channel;
+    ch: IO.ByteChannel;
     w: TextRider.Writer;
   
   PROCEDURE WriteModuleName (w: TextRider.Writer; 
@@ -63,31 +63,28 @@ PROCEDURE WriteFile*(module: Repository.Module;
     END WriteModules;
   
   BEGIN
-    ch := module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
-    IF (res = Channel.done) THEN
-      w := TextRider.ConnectWriter (ch);
-      w. WriteString ('#include <'+Config.runtimeModule+
-                      Repository.headerSuffix+'>');
-      w. WriteLn;
-      WriteModules (w, "extern void OOC_", "_init0(void);");
-      w. WriteLn;
-      
-      w. WriteString ("int main (int argc, char *argv[]) {");
-      w. WriteLn; w. WriteString ("  RT0__argc = (OOC_INT32)argc;");
-      w. WriteLn; w. WriteString ("  RT0__argv = (OOC_CHAR8**)argv;");
-      w. WriteLn;
-      WriteModules (w, "  OOC_", "_init0();");
-      w. WriteString ("  return 0;  /* _program_exit_code */");
-      w. WriteLn;
-      w. WriteString ("}");
-      w. WriteLn;
-      
-      res := w. res;
-      ch(Files.File). Register;
-      IF (ch. res # NIL) & (res = NIL) THEN
-        res := ch. res
-      END
-    END
+    ch := module. GetOutputChannel (Repository.modMainFileC, TRUE);
+    w := TextRider.ConnectWriter (ch);
+    w. WriteString ('#include <'+Config.runtimeModule+
+                    Repository.headerSuffix+'>');
+    w. WriteLn;
+    WriteModules (w, "extern void OOC_", "_init0(void);");
+    w. WriteLn;
+    
+    w. WriteString ("int main (int argc, char *argv[]) {");
+    w. WriteLn; w. WriteString ("  RT0__argc = (OOC_INT32)argc;");
+    w. WriteLn; w. WriteString ("  RT0__argv = (OOC_CHAR8**)argv;");
+    w. WriteLn;
+    WriteModules (w, "  OOC_", "_init0();");
+    w. WriteString ("  return 0;  /* _program_exit_code */");
+    w. WriteLn;
+    w. WriteString ("}");
+    w. WriteLn;
+    
+    IF (w.error # NIL) THEN
+      RAISE(w.error);
+    END;
+    ch(FileChannel.Channel). CloseAndRegister;
   END WriteFile;
 
 END OOC:Make:WriteMainFileC.

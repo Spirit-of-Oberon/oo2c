@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:C:RuntimeData;
 (*  Writes C code for run-time data like type descriptors.
-    Copyright (C) 2002  Michael van Acken
+    Copyright (C) 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -22,7 +22,7 @@ MODULE OOC:C:RuntimeData;
 
 
 IMPORT
-  TextRider, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
+  IO:TextRider, ADT:ArrayList, OOC:Config, Sym := OOC:SymbolTable,
   OOC:SymbolTable:Namespace, OOC:C:Naming, OOC:C:DeclWriter;
 
 CONST
@@ -34,7 +34,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
     w: TextRider.Writer;
     tdNames: ArrayList.ArrayList;
     
-  PROCEDURE Nli ();                      (* new line and indent *)
+  PROCEDURE Nli();       (* new line and indent *)
     BEGIN
       (*w. WriteLn;
       w. WriteString ("  ");*)
@@ -42,7 +42,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer;
       w. WriteChar (" ");
     END Nli;
   
-  PROCEDURE CNli ();                     (* comma, new line and indent *)
+  PROCEDURE CNli();   (* comma, new line and indent *)
     BEGIN
       (*w. WriteChar (",");
       w. WriteLn;

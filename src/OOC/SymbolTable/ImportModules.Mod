@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:ImportModules;
 (*  Retrieve exported symbol data for imported modules.
-    Copyright (C) 2000, 2001, 2002  Michael van Acken
+    Copyright (C) 2000, 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,7 +21,7 @@ MODULE OOC:SymbolTable:ImportModules;
 *)
 
 IMPORT
-  Msg, OOC:Config, OOC:Error, Sym := OOC:SymbolTable, OOC:Repository;
+  Msg, IO, OOC:Config, OOC:Error, Sym := OOC:SymbolTable, OOC:Repository;
 
 
 CONST
@@ -54,7 +54,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
 
 PROCEDURE ImportModules* (systemModule: Sym.Module;
                           symTab: Sym.Module;
-                          errList: Error.List);
+                          errList: Error.List)
+RAISES IO.Error;
   VAR
     ptr: Sym.Item;
     lastError: Error.Msg;
@@ -69,7 +70,8 @@ PROCEDURE ImportModules* (systemModule: Sym.Module;
       errList. Append (lastError)
     END Err;
   
-  PROCEDURE ReadSymbolFile (import: Sym.Import);
+  PROCEDURE ReadSymbolFile (import: Sym.Import)
+  RAISES IO.Error;
     VAR
       m: Repository.Module;
       res: Msg.Msg;
@@ -87,7 +89,7 @@ PROCEDURE ImportModules* (systemModule: Sym.Module;
             symTab := m.ifData;
             res := NIL;
           ELSE
-            symTab := m.ReadSymbolFile (res);
+            symTab := m.ReadSymbolFile();
           END;
           IF (res # NIL) THEN
             Err (readErrorSymbolFile, import. moduleName);

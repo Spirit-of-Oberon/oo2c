@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Repository [OOC_EXTENSIONS];
 (*  Abstraction of storage of source, intermediate, and target code.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001, 2002, 2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -21,9 +21,9 @@ MODULE OOC:Repository [OOC_EXTENSIONS];
 *)
 
 IMPORT
-  Msg, Channel, TextRider, Strings, Time,
+  Msg, TextRider, Strings, Time,
   Object, ADT:ArrayList,
-  URI, OS:Path, OOC:Logger,
+  URI, IO, OS:Path, OOC:Logger,
   OOC:Scanner:InputBuffer, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
 CONST
@@ -392,7 +392,8 @@ PROCEDURE (rep: Repository) [ABSTRACT] GetLocalPath*(m: Module; fileId: FileId;
    repositories base URI.  *)
   END GetLocalPath;
 
-PROCEDURE (m: Module) [ABSTRACT] GetInputBuffer* (VAR msg: Msg.Msg): InputBuffer.Buffer;
+PROCEDURE (m: Module) [ABSTRACT] GetInputBuffer* (): InputBuffer.Buffer
+RAISES IO.Error;
 (* result is NIL in case of error, with msg holding the error message *)
   END GetInputBuffer;
 
@@ -433,10 +434,13 @@ PROCEDURE (m: Module) [ABSTRACT] GetTimeStamp* (fileId: FileId; VAR ts: Time.Tim
 PROCEDURE (m: Module) [ABSTRACT] FileExists* (fileId: FileId): BOOLEAN;
   END FileExists;
 
-PROCEDURE (m: Module) [ABSTRACT] CreateOutputDir* (fileId: FileId; VAR res: Msg.Msg);
+PROCEDURE (m: Module) [ABSTRACT] CreateOutputDir* (fileId: FileId)
+RAISES IO.Error;
   END CreateOutputDir;
 
-PROCEDURE (m: Module) [ABSTRACT] GetOutputChannel* (fileId: FileId; makeTmp: BOOLEAN; VAR res: Msg.Msg): Channel.Channel;
+PROCEDURE (m: Module) [ABSTRACT] GetOutputChannel* (fileId: FileId;
+                                                    makeTmp: BOOLEAN): IO.ByteChannel
+RAISES IO.Error;
   END GetOutputChannel;
 
 PROCEDURE (rep: Repository) GetDefaultSubdir* (id: FileId; VAR subdir: ARRAY OF CHAR);
@@ -593,7 +597,8 @@ PROCEDURE (rep: Repository) GetModuleByURI* (uri: URI.HierarchicalURI; force: BO
     RETURN m
   END GetModuleByURI;
 
-PROCEDURE (m: Module) ReadSymbolFile*(VAR res: Msg.Msg): Sym.Module;
+PROCEDURE (m: Module) ReadSymbolFile*(): Sym.Module
+RAISES IO.Error;
 (**Locates and reads the symbol table of module @oparam{m}.  The symbol file's
    fingerprint value is set in the returned object.  In general, any type
    references in the returned symbol table are @emph{not} resolved.  This must
@@ -606,26 +611,20 @@ PROCEDURE (m: Module) ReadSymbolFile*(VAR res: Msg.Msg): Sym.Module;
    knows about the quality of the imported data.  *)
   VAR
     stb: Builder.Builder;
-    ch: Channel.Channel;
+    ch: IO.ByteChannel;
     uri: URI.URI;
     symTab: Sym.Module;
   BEGIN
     IF (m.ifQuality = completeInterface) THEN
-      res := NIL;
       RETURN m.ifData;
     ELSE
       uri := m. GetURI (modSymbolFile, TRUE);
-      ch := uri. GetChannel (URI.channelOld, res);
-      IF (res = NIL) THEN
-        Logger.ReadFile(uri);
-        stb := Builder.New();
-        symTab := stb. ReadSymbolTable (ch, res);
-        ch. Close;
-        IF (res = NIL) THEN
-          RETURN symTab
-        END
-      END;
-      RETURN NIL
+      ch := uri. GetChannel (URI.channelOld);
+      Logger.ReadFile(uri);
+      stb := Builder.New();
+      symTab := stb. ReadSymbolTable (ch);
+      ch. Close;
+      RETURN symTab;
     END;
   END ReadSymbolFile;
 
