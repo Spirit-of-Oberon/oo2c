@@ -163,12 +163,6 @@ TYPE
   (**This exception is raised if a C function returns a @samp{ERANGE} error. *)
     (ErrorDesc)
   END;
-  NegativeReply* = POINTER TO NegativeReplyDesc;
-  NegativeReplyDesc = RECORD
-  (**Raised if the remote side of a conversation sends a reply with an error
-     status code.  *)
-    (ErrorDesc)
-  END;
 
 TYPE
   NotImplemented* = POINTER TO NotImplementedDesc;
@@ -185,6 +179,22 @@ TYPE
      or because the data is syntactically wrong.  *)
     (ErrorDesc) 
   END;
+  ProtocolError* = POINTER TO ProtocolErrorDesc;
+  ProtocolErrorDesc = RECORD
+  (**Raised if malformed data is received from the remote side of a
+     conversation.  This is @emph{not} used for responses that indicate failure
+     to process a request.  An example for a protocol error is an NNTP response
+     message that does not begin with a three digit status code.  After such an
+     error, the connection should be closed immediately.  *)
+    (ErrorDesc)
+  END;
+  ErrorResponse* = POINTER TO ErrorResponseDesc;
+  ErrorResponseDesc* = RECORD
+  (**Raised if the remote side of a conversation sends a reply with an error
+     status code.  *)
+    (ErrorDesc)
+  END;
+
 
 PROCEDURE (e: Error) INIT*(msg: STRING);
   BEGIN
