@@ -99,11 +99,11 @@ PROCEDURE LString* (msg[NO_COPY]: ARRAY OF CHAR; s[NO_COPY]: ARRAY OF LONGCHAR);
     writer. WriteLn
   END LString;
 
-PROCEDURE Str* (msg[NO_COPY]: ARRAY OF CHAR; s: Object.String);
+PROCEDURE Str* (msg[NO_COPY]: ARRAY OF CHAR; obj: Object.String);
   BEGIN
     writer. WriteString (msg);
     writer. WriteString (": ");
-    writer. WriteStr (s);
+    writer. WriteStr (obj);
     writer. WriteLn
   END Str;
 

@@ -72,9 +72,9 @@ PROCEDURE String* (s[NO_COPY]: ARRAY OF CHAR);
     writer. WriteString (s)
   END String;
   
-PROCEDURE Str* (s: Object.String);
+PROCEDURE Str* (obj: Object.String);
   BEGIN
-    writer. WriteStr (s)
+    writer. WriteStr (obj)
   END Str;
   
 PROCEDURE Bool* (bool: BOOLEAN);
