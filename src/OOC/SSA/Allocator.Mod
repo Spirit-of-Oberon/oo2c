@@ -27,7 +27,7 @@ IMPORT
   <*IF DEBUG_ALLOCATOR THEN*>SYSTEM,Err,<*END*>
   IntStr, Strings, ADT:Object, ADT:ArrayList, ADT:Dictionary, ADT:String,
   OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
-  OOC:SSA:Schedule, OOC:SSA:IGraph, OOC:C:DeclWriter;
+  OOC:SSA:Schedule, OOC:SSA:IGraph, OOC:C:DeclWriter, OOC:SymbolTable:Predef;
 
 
 TYPE
@@ -206,8 +206,12 @@ PROCEDURE RegisterType* (ctype: DeclWriter.BasicTypeId): DeclWriter.BasicTypeId;
    entry must appear in the output of @oproc{GetRegisterFiles} below.  *)
   BEGIN
     CASE ctype OF
-    | DeclWriter.ptr,
-      DeclWriter.int8 .. DeclWriter.int32,
+    | DeclWriter.ptr:
+      CASE Predef.address OF
+      | Predef.hugeint: RETURN DeclWriter.int64;
+      | Predef.longint: RETURN DeclWriter.int32;
+      END;
+    | DeclWriter.int8 .. DeclWriter.int32,
       DeclWriter.uint8 .. DeclWriter.uint32:
       RETURN DeclWriter.int32
     | DeclWriter.real32:
