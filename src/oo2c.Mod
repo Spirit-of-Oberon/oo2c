@@ -2,6 +2,7 @@ MODULE oo2c;
 
 IMPORT
   Msg, StdChannels, Strings, Out, Err, Object, URI, URI:Scheme:File,
+  ADT:StringBuffer,
   OS:ProcessManagement, Config:Section:Arguments, Config:Section:Options,
   Config:Value:Boolean, Config:Value:Integer, StringValue:=Config:Value:String,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
@@ -80,12 +81,12 @@ PROCEDURE NewConfig;
     CCompiler.RegisterConfig;
   END NewConfig;
 
-PROCEDURE GetModule (moduleName: Object.String8): Rep.Module;
+PROCEDURE GetModule (moduleName: STRING): Rep.Module;
   VAR
     m: Rep.Module;
     chars: Object.CharsLatin1;
   BEGIN
-    chars := moduleName.CharsLatin1();
+    chars := moduleName(Object.String8).CharsLatin1();
     m := Config.repositories.GetModule(chars^);
     IF (m = NIL) THEN
       Err.String ("Error: Cannot locate module ");
@@ -95,14 +96,6 @@ PROCEDURE GetModule (moduleName: Object.String8): Rep.Module;
     END;
     RETURN m;
   END GetModule;
-
-PROCEDURE AppendStr(s: Object.String8; VAR str: ARRAY OF CHAR);
-  VAR
-    chars: Object.CharsLatin1;
-  BEGIN
-    chars := s.CharsLatin1();
-    Strings.Append(chars^, str);
-  END AppendStr;
 
 PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
                        install: BOOLEAN): BOOLEAN;
@@ -200,16 +193,17 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
   PROCEDURE InstallFiles(list: Package.FileData): BOOLEAN;
     VAR
       end: Package.FileData;
-      dir: Object.String8;
+      dir: STRING;
       string: Object.String;
       sourcePrefix: Rep.URIBuffer;
-      cmd: Make.ShellCommand;
+      cmd: StringBuffer.StringBuffer;
       baseURI: URI.URI;
       chars: Object.CharsLatin1;
+      charsCmd: StringBuffer.CharsLatin1;
       
     PROCEDURE SameDirectory(a, b: Package.File): BOOLEAN;
       VAR
-        sa, sb: Object.String8;
+        sa, sb: STRING;
         i, j: LONGINT;
       BEGIN
         sa := a.destName; sb := b.destName;
@@ -262,27 +256,27 @@ PROCEDURE BuildPackage(pkg: Package.Package; rep: Rep.Repository;
         string := dir.Substring(0, i);
         dir := string(Object.String8);
 
-        chars := dir.CharsLatin1();
+        chars := dir(Object.String8).CharsLatin1();
         IF InstallDirectory(CCompiler.oocdir.value(StringValue.Value).string^,
                             chars^) THEN
-          COPY(CCompiler.installData.value(StringValue.Value).string^, cmd);
+          cmd := StringBuffer.NewLatin1(CCompiler.installData.value(StringValue.Value).string^);
           WHILE (list # end) DO
-            Strings.Append(" ", cmd);
-            Strings.Append(sourcePrefix, cmd);
-            AppendStr(list(Package.File).name, cmd);
+            cmd.Append(" ");
+            cmd.AppendLatin1(sourcePrefix);
+            cmd.Append(list(Package.File).name);
             list := list.nextFileData;
           END;
 
-          Strings.Append(" ", cmd);
+          cmd.Append(" ");
           IF (CCompiler.oocdir.value(StringValue.Value).string^ # "") THEN
-            Strings.Append(CCompiler.oocdir.value(StringValue.Value).string^,
-                           cmd);
-            Strings.Append("/", cmd);
+            cmd.AppendLatin1(CCompiler.oocdir.value(StringValue.Value).string^);
+            cmd.Append("/");
           END;
-          AppendStr(dir, cmd);
+          cmd.Append(dir);
 
-          Logger.ShellCommand(cmd);
-          IF (ProcessManagement.system(cmd) # 0) THEN
+          charsCmd := cmd.CharsLatin1();
+          Logger.ShellCommand(charsCmd^);
+          IF (ProcessManagement.system(charsCmd^) # 0) THEN
             RETURN FALSE;
           END;
         ELSE
@@ -385,14 +379,14 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
   PROCEDURE UninstallLibrary(library: Package.Library);
     VAR
       str: Make.ShellCommand;
-      path: Rep.URIBuffer;
       ok: BOOLEAN;
+      b: StringBuffer.StringBuffer;
     BEGIN
-      COPY(CCompiler.libdir.value(StringValue.Value).string^, path);
-      Strings.Append("/lib", path);
-      AppendStr(library.name, path);
-      Strings.Append(".la", path);
-      CCompiler.UninstallProgramCmd(path, TRUE, str);
+      b := StringBuffer.NewLatin1(CCompiler.libdir.value(StringValue.Value).string^);
+      b.Append("/lib");
+      b.Append(library.name);
+      b.Append(".la");
+      CCompiler.UninstallProgramCmd(b.ToString(), TRUE, str);
       Logger.ShellCommand(str);
       ok := (ProcessManagement.system(str) = 0);
     END UninstallLibrary;
@@ -400,32 +394,33 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
   PROCEDURE UninstallExecutable(executable: Package.Executable);
     VAR
       str: Make.ShellCommand;
-      path: Rep.URIBuffer;
       ok: BOOLEAN;
+      b: StringBuffer.StringBuffer;
     BEGIN
-      COPY(CCompiler.bindir.value(StringValue.Value).string^, path);
-      Strings.Append("/", path);
-      AppendStr(executable.mainModule, path);
-      CCompiler.UninstallProgramCmd(path, FALSE, str);
+      b := StringBuffer.NewLatin1(CCompiler.bindir.value(StringValue.Value).string^);
+      b.Append("/");
+      b.Append(executable.mainModule);
+      CCompiler.UninstallProgramCmd(b.ToString(), FALSE, str);
       Logger.ShellCommand(str);
       ok := (ProcessManagement.system(str) = 0);
     END UninstallExecutable;
 
   PROCEDURE UninstallFiles(list: Package.FileData);
     VAR
-      cmd: Make.ShellCommand;
+      cmd: StringBuffer.CharsLatin1;
       ok: BOOLEAN;
+      b: StringBuffer.StringBuffer;
     BEGIN
       WHILE (list # NIL) DO
-        COPY(CCompiler.uninstall.value(StringValue.Value).string^, cmd);
-        Strings.Append(" ", cmd);
-        Strings.Append(CCompiler.oocdir.value(StringValue.Value).string^,
-                       cmd);
-        Strings.Append("/", cmd);
-        AppendStr(list(Package.File).destName, cmd);
-        
-        Logger.ShellCommand(cmd);
-        ok := (ProcessManagement.system(cmd) = 0);
+        b := StringBuffer.NewLatin1(CCompiler.uninstall.value(StringValue.Value).string^);
+        b.Append(" ");
+        b.AppendLatin1(CCompiler.oocdir.value(StringValue.Value).string^);
+        b.Append("/");
+        b.Append(list(Package.File).destName);
+
+        cmd := b.CharsLatin1();
+        Logger.ShellCommand(cmd^);
+        ok := (ProcessManagement.system(cmd^) = 0);
         list := list.nextFileData;
       END;
     END UninstallFiles;

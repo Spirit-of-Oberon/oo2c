@@ -22,7 +22,7 @@ VAR
   tdPrefix: Object.String;
   (* prefix of the type descriptor namespace *)
 
-PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): Object.String8;
+PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): STRING;
   VAR
     relativeId: Sym.NameString;
     str: Buffer;
@@ -112,16 +112,16 @@ PROCEDURE NameOfDeclaration* (decl: Sym.Declaration): Object.String8;
     name := Object.NewLatin1(str);
     IF keywords. HasKey (name) THEN
       obj := keywords. Get (name);
-      RETURN obj(Object.String8);
+      RETURN obj(STRING);
     ELSIF IsReservedName (str) THEN
       string := rwPrefix. Concat (name);
-      RETURN string(Object.String8);
+      RETURN string;
     ELSE
       RETURN name;
     END;
   END NameOfDeclaration;
 
-PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): Object.String8;
+PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): STRING;
   VAR
     str: Buffer;
     i: LONGINT;
@@ -141,31 +141,20 @@ PROCEDURE NameOfModuleInit* (m: Sym.Module; rtWrapper: BOOLEAN): Object.String8;
     RETURN Object.NewLatin1(str)
   END NameOfModuleInit;
 
-PROCEDURE NameOfLengthParam* (param: Sym.VarDecl; dim: LONGINT): Object.String8;
+PROCEDURE NameOfLengthParam* (param: Sym.VarDecl; dim: LONGINT): STRING;
   VAR
-    str: Buffer;
-    name: Object.String8;
-    chars: Object.CharsLatin1;
+    str: ARRAY 16 OF CHAR;
   BEGIN
-    name := NameOfDeclaration (param);
     IntStr.IntToStr (dim, str);
-    Strings.Insert ("_", 0, str);
-    Strings.Append ("d", str);
-    chars := name.CharsLatin1();
-    Strings.Insert (chars^, 0, str);
-    RETURN Object.NewLatin1(str)
+    RETURN NameOfDeclaration(param)+"_"+Object.NewLatin1(str)+"d";
   END NameOfLengthParam;
 
-PROCEDURE NameOfTypeTagParam* (param: Sym.VarDecl): Object.String8;
-  VAR
-    name: Object.String;
+PROCEDURE NameOfTypeTagParam* (param: Sym.VarDecl): STRING;
   BEGIN
-    name := NameOfDeclaration(param);
-    name := name.Concat(Object.NewLatin1("__tag"));
-    RETURN name(Object.String8);
+    RETURN NameOfDeclaration(param)+"__tag";
   END NameOfTypeTagParam;
 
-PROCEDURE NameOfType* (type: Sym.Type): Object.String8;
+PROCEDURE NameOfType* (type: Sym.Type): STRING;
 (**@precond
    @samp{type. namingDecl # NIL}
    @end precond *)
@@ -174,7 +163,7 @@ PROCEDURE NameOfType* (type: Sym.Type): Object.String8;
     RETURN NameOfDeclaration (type. namingDecl);
   END NameOfType;
 
-PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): Object.String8;
+PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): STRING;
 (**@precond
    @samp{type. namingDecl # NIL}
    @end precond *)
@@ -206,34 +195,26 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type): Object.String8;
         string := tdPrefix. Concat (NameOfDeclaration (type. Module()));
         IntStr.IntToStr (type. position. pos, str);
         string := string. Concat (Object.NewLatin1(str));
-        RETURN string(Object.String8);
+        RETURN string;
       ELSE
         string := tdPrefix. Concat (NameOfType (type));
-        RETURN string(Object.String8);
+        RETURN string;
       END;
     END;
   END NameOfTypeDescriptor;
 
-PROCEDURE NameOfTypeBoundIndex* (proc: Sym.ProcDecl): Object.String8;
+PROCEDURE NameOfTypeBoundIndex* (proc: Sym.ProcDecl): STRING;
 (**Return the name of the C #define that holds the index of this
    type-bound procedure.  *)
-  VAR
-    name: Object.String;
   BEGIN
-    name := Object.NewLatin1("_TBN_");
-    name := name. Concat (NameOfDeclaration (proc));
-    RETURN name(Object.String8);
+    RETURN "_TBN_"+NameOfDeclaration (proc);
   END NameOfTypeBoundIndex;
 
-PROCEDURE NameOfTypeBoundSignature* (proc: Sym.ProcDecl): Object.String8;
+PROCEDURE NameOfTypeBoundSignature* (proc: Sym.ProcDecl): STRING;
 (**Return the name of the C typedef that defines the signature of this
    type-bound procedure.  *)
-  VAR
-    name: Object.String;
   BEGIN
-    name := Object.NewLatin1("_TBP_");
-    name := name. Concat (NameOfDeclaration (proc));
-    RETURN name(Object.String8);
+    RETURN "_TBP_"+NameOfDeclaration (proc);
   END NameOfTypeBoundSignature;
 
 PROCEDURE Init ();

@@ -216,7 +216,7 @@ PROCEDURE (rep: Repository) GetLocalPath*(m: Rep.Module; fileId: Rep.FileId;
     IF (fileId = Rep.modLibrary) THEN
       ASSERT(m.ifQuality = Rep.completeInterface);
       Strings.Append("lib", path);
-      chars := m.ifData.libraryName.CharsLatin1();
+      chars := m.ifData.libraryName(Object.String8).CharsLatin1();
       COPY(chars^, str);
     ELSE
       ModuleToFileName (str);

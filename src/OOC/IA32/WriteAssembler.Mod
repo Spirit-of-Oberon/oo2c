@@ -58,7 +58,7 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
   PROCEDURE Value (opnd: SSA.Opnd; VAR str: ARRAY OF CHAR);
     VAR
       arg: SSA.Result;
-      s: Object.String8;
+      s: STRING;
       chars: Object.CharsLatin1;
       
     PROCEDURE Const (value: Boxed.Object; type: Sym.Type);
@@ -105,7 +105,7 @@ PROCEDURE WriteInstrList (w: Writer.Writer; b: Schedule.Block);
         
       | arg: SSA.Address DO
         s := Naming.NameOfDeclaration (arg. decl);
-        chars := s.CharsLatin1();
+        chars := s(Object.String8).CharsLatin1();
         COPY(chars^, str);
 
       ELSE

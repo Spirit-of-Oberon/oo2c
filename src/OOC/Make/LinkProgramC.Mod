@@ -27,10 +27,10 @@ IMPORT
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
 VAR
-  empty, space: Object.String;
+  empty, space: STRING;
   
 PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
-                           thisLibrary: Object.String): Object.StringArrayPtr;
+                           thisLibrary: STRING): Object.StringArrayPtr;
   VAR
     i, j: LONGINT;
     linkDirective: Sym.LinkDirective;
@@ -38,9 +38,9 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
     depArray: ArrayList.ArrayList;
     extLibs: Object.StringArrayPtr;
     option: Dictionary.Dictionary;
-    prev, new: Object.String;
+    prev, new: STRING;
 
-  PROCEDURE GetDepArray (libName: Object.String): ArrayList.ArrayList;
+  PROCEDURE GetDepArray (libName: STRING): ArrayList.ArrayList;
     VAR
       obj: Object.Object;
       list: ArrayList.ArrayList;
@@ -55,7 +55,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
       END;
     END GetDepArray;
 
-  PROCEDURE AddLibrary (libName: Object.String; VAR pos: LONGINT);
+  PROCEDURE AddLibrary (libName: STRING; VAR pos: LONGINT);
     VAR
       depArray: ArrayList.ArrayList;
       i: LONGINT;
@@ -68,7 +68,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
           AddLibrary(depArray.array[i](Object.String), pos);
         END;
         obj := option.Get(libName);
-        extLibs[pos] := obj(Object.String);
+        extLibs[pos] := obj(STRING);
         INC (pos);
       END;
     END AddLibrary;
@@ -79,14 +79,14 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
           module.ifData.libraryName.Equals(thisLibrary);
     END IncludeModule;
 
-  PROCEDURE Option(libraryName: Object.String): Object.String;
+  PROCEDURE Option(libraryName: STRING): STRING;
     VAR
       obj: Object.Object;
-      str: Object.String;
+      str: STRING;
     BEGIN
       IF option.HasKey(libraryName) THEN
         obj := option.Get(libraryName);
-        RETURN obj(Object.String);
+        RETURN obj(STRING);
       ELSE
         str := Object.NewLatin1(" -l");
         str := str.Concat(libraryName);
@@ -95,12 +95,12 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
       END;
     END Option;
 
-  PROCEDURE LookupValue(optionName: Object.String8): Object.String;
+  PROCEDURE LookupValue(optionName: STRING): STRING;
     VAR
       v: Value.Value;
       chars: Object.CharsLatin1;
     BEGIN
-      chars := optionName.CharsLatin1();
+      chars := optionName(Object.String8).CharsLatin1();
       v := Config.options.GetValue(chars^);
       IF (v # NIL) & (v IS StringValue.Value) THEN
         RETURN Object.NewLatin1(v(StringValue.Value).string^);
@@ -167,7 +167,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
 
 PROCEDURE Run*(module: Repository.Module;
                imports: ARRAY OF Repository.Module;
-               forLibrary: Object.String): BOOLEAN;
+               forLibrary: STRING): BOOLEAN;
   VAR
     str: ARRAY 16*1024 OF CHAR;        (* link commands can get _very_ long *)
     path: Repository.URIBuffer;
@@ -177,7 +177,7 @@ PROCEDURE Run*(module: Repository.Module;
     importedLibs: Dictionary.Dictionary;
     importedLibsList: ArrayList.ArrayList;
     objectFile, outputFile: Repository.FileId;
-    libraryName: Object.String;
+    libraryName: STRING;
     import: Repository.Module;
     extLibs: Object.StringArrayPtr;
     chars: Object.CharsLatin1;
@@ -236,7 +236,7 @@ PROCEDURE Run*(module: Repository.Module;
           (* we don't have a .la file, so assume that it's a regularly
              installed libtool library  *)
           Strings.Append(" -l", str);
-          chars := import.ifData.libraryName.CharsLatin1();
+          chars := import.ifData.libraryName(Object.String8).CharsLatin1();
           Strings.Append(chars^, str);
         END;
       END;

@@ -323,16 +323,16 @@ TYPE
   LinkFileDesc = RECORD
     (LinkDirectiveDesc)
     file: URI.HierarchicalURI;
-    prefixOption, suffixOption: Object.String8;
+    prefixOption, suffixOption: STRING;
   END;
 
 TYPE
   LinkLib* = POINTER TO LinkLibDesc;
   LinkLibDesc = RECORD
     (LinkDirectiveDesc)
-    libraryName-: Object.String8;
+    libraryName-: STRING;
     dependencies-: Object.StringArrayPtr;
-    prefixOption-, suffixOption-: Object.String8;
+    prefixOption-, suffixOption-: STRING;
   END;
 
 CONST
@@ -359,7 +359,7 @@ TYPE
     class-: ModuleClass;
     (**Identifies the class of the module.  It is one of @oconst{mcStandard},
        @oconst{mcInternal}, @oconst{mcForeign}, or @oconst{mcInterface}.  *)
-    libraryName-: Object.String8;
+    libraryName-: STRING;
     (**If the module is compiled to be part of a (static or shared) library,
        then this field holds the name of the target library.  For a module that
        is compiled to a standalone object file, @ofield{libraryName} is
@@ -617,7 +617,7 @@ TYPE
     formalPars*: FormalPars;             (*... make this read-only? *)
     (**The formal parameters of the procedure.  This is also the type of
        the procedure.  *)
-    linkName*: Object.String8;
+    linkName*: STRING;
     (**If the name of the procedure differs between the source code and the
        low-level binary representation, then this field holds the name of
        the procedure on the link level.  Otherwise, it is @code{NIL}.  *)
@@ -1218,15 +1218,15 @@ PROCEDURE (l: LinkFile) Store* (w: Storable.Writer);
     w. WriteStr (l. suffixOption);
   END Store;
 
-PROCEDURE ReadString8(r: Storable.Reader): Object.String8;
+PROCEDURE ReadString8(r: Storable.Reader): STRING;
   VAR
-    str: Object.String;
+    str: STRING;
   BEGIN
     r.ReadStr(str);
     IF (str = NIL) THEN
       RETURN NIL;
     ELSE
-      RETURN str(Object.String8);
+      RETURN str;
     END;
   END ReadString8;
 
@@ -1335,34 +1335,34 @@ PROCEDURE (mod: Module) SetNamespace* (ns: Namespace);
     mod. ns := ns;
   END SetNamespace;
 
-PROCEDURE (mod: Module) SetLibraryName* (name: Object.String8);
+PROCEDURE (mod: Module) SetLibraryName* (name: STRING);
   BEGIN
     mod.libraryName := name;
   END SetLibraryName;
 
-PROCEDURE (mod: Module) ClassToString*(): Object.String8;
+PROCEDURE (mod: Module) ClassToString*(): STRING;
   BEGIN
     CASE mod. class OF
-    | mcStandard : RETURN Object.NewLatin1("standard")
-    | mcInternal : RETURN Object.NewLatin1("internal")
-    | mcForeign  : RETURN Object.NewLatin1("foreign")
-    | mcInterface: RETURN Object.NewLatin1("interface")
+    | mcStandard : RETURN "standard"
+    | mcInternal : RETURN "internal"
+    | mcForeign  : RETURN "foreign"
+    | mcInterface: RETURN "interface"
     END
   END ClassToString;
 
-PROCEDURE (mod: Module) CallConvToString*(): Object.String8;
+PROCEDURE (mod: Module) CallConvToString*(): STRING;
   BEGIN
     CASE mod. callConv OF
-    | callConvInvalid : RETURN Object.NewLatin1("--invalid--")
-    | callConvDefault : RETURN Object.NewLatin1("default")
-    | callConvInternal: RETURN Object.NewLatin1("internal")
-    | callConvC       : RETURN Object.NewLatin1("C")
-    | callConvPascal  : RETURN Object.NewLatin1("Pascal")
+    | callConvInvalid : RETURN "--invalid--"
+    | callConvDefault : RETURN "default"
+    | callConvInternal: RETURN "internal"
+    | callConvC       : RETURN "C"
+    | callConvPascal  : RETURN "Pascal"
     END
   END CallConvToString;
 
 PROCEDURE NewLinkFile (file: URI.HierarchicalURI;
-                       prefixOption, suffixOption: Object.String8): LinkFile;
+                       prefixOption, suffixOption: STRING): LinkFile;
   VAR
     l: LinkFile;
   BEGIN
@@ -1374,9 +1374,9 @@ PROCEDURE NewLinkFile (file: URI.HierarchicalURI;
     RETURN l
   END NewLinkFile;
 
-PROCEDURE NewLinkLib (libraryName: Object.String8;
+PROCEDURE NewLinkLib (libraryName: STRING;
                       dependencies: Object.StringArrayPtr;
-                      prefixOption, suffixOption: Object.String8): LinkLib;
+                      prefixOption, suffixOption: STRING): LinkLib;
   VAR
     l: LinkLib;
   BEGIN
@@ -1400,16 +1400,16 @@ PROCEDURE AddLinkDirective (VAR list: LinkDirective; l: LinkDirective);
   END AddLinkDirective;
 
 PROCEDURE (mod: Module) AddLinkFile* (file: URI.HierarchicalURI;
-                                    prefixOption, suffixOption: Object.String8);
+                                    prefixOption, suffixOption: STRING);
   BEGIN
     ASSERT (file # NIL);
     AddLinkDirective (mod. linkDirectives,
                       NewLinkFile (file, prefixOption, suffixOption))
   END AddLinkFile;
 
-PROCEDURE (mod: Module) AddLinkLib* (libraryName: Object.String8;
+PROCEDURE (mod: Module) AddLinkLib* (libraryName: STRING;
                                      dependencies: Object.StringArrayPtr;
-                                     prefixOption, suffixOption: Object.String8);
+                                     prefixOption, suffixOption: STRING);
   BEGIN
     ASSERT (libraryName # NIL);
     AddLinkDirective (mod. linkDirectives,
@@ -1460,11 +1460,11 @@ PROCEDURE (mod: Module) GetExternalSource* (rootURI: URI.HierarchicalURI): URI.H
     END;
   END GetExternalSource;
 
-PROCEDURE StringToCallConv*(str: Object.String): CallConv;
+PROCEDURE StringToCallConv*(str: STRING): CallConv;
   BEGIN
-    IF str.Equals(Object.NewLatin1("C")) THEN
+    IF str.Equals("C") THEN
       RETURN callConvC
-    ELSIF str.Equals(Object.NewLatin1("Pascal")) THEN
+    ELSIF str.Equals("Pascal") THEN
       RETURN callConvPascal
     ELSE
       RETURN callConvInvalid
@@ -1815,7 +1815,7 @@ PROCEDURE (procDecl: ProcDecl) SetNamespace* (ns: Namespace);
     procDecl. ns := ns;
   END SetNamespace;
 
-PROCEDURE (procDecl: ProcDecl) SetLinkName* (name: Object.String8);
+PROCEDURE (procDecl: ProcDecl) SetLinkName* (name: STRING);
   BEGIN
     procDecl. linkName := name;
   END SetLinkName;

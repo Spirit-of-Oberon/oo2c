@@ -57,9 +57,9 @@ TYPE
   Rules* = POINTER TO RulesDesc;
   RulesDesc* = RECORD
     backend: LONGINT;
-    libraryName: Object.String8;
+    libraryName: STRING;
     (**If set, then all modules are compiled for this library.  *)
-    libraryVersion: Object.String8;
+    libraryVersion: STRING;
     (**When building a library, then version used in the final link step
        is taken from this field.  *)
     checkAllImportsModule: Rep.Module;
@@ -164,7 +164,7 @@ PROCEDURE (r: Rules) SetBackend* (backend: LONGINT);
     r.backend := backend;
   END SetBackend;
 
-PROCEDURE (r: Rules) SetLibraryName* (name, version: Object.String8);
+PROCEDURE (r: Rules) SetLibraryName* (name, version: STRING);
 (**Calling this method with empty string as @oparam{name} clears all
    library specific data from @oparam{r}.  *)
   BEGIN
@@ -446,9 +446,9 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
     success: BOOLEAN;
     mInfo: ModuleInfo;
     errList: Error.List;
-    libraryName: Object.String8;
+    libraryName: STRING;
     
-  PROCEDURE DoEmptyBackend(libraryName: Object.String8): Error.List;
+  PROCEDURE DoEmptyBackend(libraryName: STRING): Error.List;
     VAR
       ast: AST.Node;
       symTab: Sym.Module;
@@ -460,7 +460,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       RETURN errList;
     END DoEmptyBackend;
   
-  PROCEDURE DoSSAtoC(libraryName: Object.String8): Error.List;
+  PROCEDURE DoSSAtoC(libraryName: STRING): Error.List;
     VAR
       t: TranslateToC.Translator;
     BEGIN
@@ -468,7 +468,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
     END DoSSAtoC;
   
-  PROCEDURE DoIRtoC(libraryName: Object.String8): Error.List;
+  PROCEDURE DoIRtoC(libraryName: STRING): Error.List;
     VAR
       t: TranslateToC.Translator;
     BEGIN
@@ -476,7 +476,7 @@ PROCEDURE (r: Rules) CompileModule*(module: Rep.Module): BOOLEAN;
       RETURN TranslateToC.Run(module, libraryName, writeAST, writeIR, t);
     END DoIRtoC;
   
-  PROCEDURE DoSSAtoIA32(libraryName: Object.String8): Error.List;
+  PROCEDURE DoSSAtoIA32(libraryName: STRING): Error.List;
     VAR
       t: TranslateToIA32.Translator;
     BEGIN
@@ -562,7 +562,7 @@ PROCEDURE (r: Rules) UpdateSymbolFile(module: Rep.Module): BOOLEAN;
              the same repository; assume that this is not intended and
              report a fatal error *)
           err := Error.New (makeContext, partOfAnotherLibrary);
-          chars := module.ifData.libraryName.CharsLatin1();
+          chars := module.ifData.libraryName(Object.String8).CharsLatin1();
           err. SetStringAttrib ("name", Msg.GetStringPtr(chars^));
           r.WriteError(module, err);
           RETURN FALSE;
@@ -1053,7 +1053,7 @@ PROCEDURE (r: Rules) UpdateMainObjectFile (module: Rep.Module): BOOLEAN;
     RETURN success;
   END UpdateMainObjectFile;
 
-PROCEDURE ModuleClosure*(module: Rep.Module; restrictToLibrary: Object.String8): ModuleList;
+PROCEDURE ModuleClosure*(module: Rep.Module; restrictToLibrary: STRING): ModuleList;
   VAR
     i: LONGINT;
     dict: Dictionary.Dictionary;

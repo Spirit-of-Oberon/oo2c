@@ -105,7 +105,7 @@ PROCEDURE Write* (cw: Channel.Writer; module: Sym.Module);
   PROCEDURE WriteItem (item: Sym.Item);
     VAR
       element: ARRAY 32 OF CHAR;
-      str: Object.String8;
+      str: STRING;
       chars: Object.CharsLatin1;
       
     PROCEDURE StartTag (str: ARRAY OF CHAR; id: LONGINT);
@@ -236,16 +236,16 @@ PROCEDURE Write* (cw: Channel.Writer; module: Sym.Module);
           WITH item: Sym.Module DO
             str := item. ClassToString();
             IF ~str.Equals(Object.NewLatin1("standard")) THEN
-              chars := str.CharsLatin1();
+              chars := str(Object.String8).CharsLatin1();
               AttribString ("", "class", chars^)
             END;
             IF (item.libraryName # NIL) THEN
-              chars := item.libraryName.CharsLatin1();
+              chars := item.libraryName(Object.String8).CharsLatin1();
               AttribString("", "library_name", chars^);
             END;
             str := item. CallConvToString();
             IF ~str.Equals(Object.NewLatin1("default")) THEN
-              chars := str.CharsLatin1();
+              chars := str(Object.String8).CharsLatin1();
               AttribString ("", "call_conv", chars^)
             END
             

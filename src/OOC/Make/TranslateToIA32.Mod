@@ -135,7 +135,7 @@ PROCEDURE WriteCodeFile (w: Writer.Writer; m: Rep.Module; symTab: Sym.Module;
   END WriteCodeFile;
 
 
-PROCEDURE Run*(m: Rep.Module; libraryName: Object.String8;
+PROCEDURE Run*(m: Rep.Module; libraryName: STRING;
                writeAST, writeIR: BOOLEAN;
                translator: Translator): Error.List;
 (**Compiles a module, creating the symbol file and the assembler file.  *)

@@ -155,8 +155,10 @@ PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN;
     END;
   END InstallProgramCmd;
 
-PROCEDURE UninstallProgramCmd*(path: ARRAY OF CHAR; asLibrary: BOOLEAN;
+PROCEDURE UninstallProgramCmd*(path: STRING; asLibrary: BOOLEAN;
                                VAR cmd: ARRAY OF CHAR);
+  VAR
+    chars: Object.CharsLatin1;
   BEGIN
     IF HaveLibtool() THEN
       COPY (libtool.value(StringValue.Value).string^, cmd);
@@ -167,7 +169,8 @@ PROCEDURE UninstallProgramCmd*(path: ARRAY OF CHAR; asLibrary: BOOLEAN;
     
     Strings.Append(uninstall.value(StringValue.Value).string^, cmd);
     Strings.Append(" ", cmd);
-    Strings.Append(path, cmd);
+    chars := path(Object.String8).CharsLatin1();
+    Strings.Append(chars^, cmd);
   END UninstallProgramCmd;
 
 PROCEDURE RegisterConfig*;

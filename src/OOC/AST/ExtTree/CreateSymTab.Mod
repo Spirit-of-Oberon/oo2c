@@ -607,7 +607,7 @@ PROCEDURE (v: Visitor) VisitProcType* (procType: ExtTree.ProcType);
 
 
 PROCEDURE CreateSymTab* (module: AST.Node; stb: SymTabBuilder.Builder;
-                         libraryName: Object.String8;
+                         libraryName: STRING;
                          baseURI, rootURI: URI.HierarchicalURI): Sym.Module;
 (**Creates a symbol table from the abstract syntax tree in @oparam{module}.
    The elements of the symbol table are created by calling appropriate 

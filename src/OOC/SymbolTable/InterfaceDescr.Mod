@@ -173,7 +173,7 @@ PROCEDURE Write* (cw: Channel.Writer; baseURI: URI.HierarchicalURI;
       i: Sym.Item;
       element: ARRAY 32 OF CHAR;
       moduleRepository: Repository.Module;
-      str: Object.String8;
+      str: STRING;
     
     PROCEDURE StartDecl (tag: ARRAY OF CHAR; decl: Sym.Declaration);
       BEGIN
