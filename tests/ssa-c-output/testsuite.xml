@@ -136,5 +136,11 @@
       there is no need to retrieve either the global variable nor the
       variable parameter from memory.
     </test>
+
+
+    <test id="quicksort1" type="run"
+          file="Quicksort1.Mod" output="Quicksort1.Ref">
+      A compact quicksort implementation.
+    </test>
   </testcases>
 </testsuite-ext>
