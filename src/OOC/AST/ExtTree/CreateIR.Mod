@@ -398,6 +398,13 @@ PROCEDURE CreateIR* (module: ExtTree.Module;
         
       ELSE  (* ignore *)
       END;
+
+      WITH item: Sym.Type DO
+        IF ~(item IS Sym.TypeName) THEN
+          b. typeRules. AllocateType (item)
+        END;
+      ELSE  (* ignore *)  
+      END;
       
       nested := item. nestedItems;
       WHILE (nested # NIL) DO
