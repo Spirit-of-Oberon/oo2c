@@ -25,15 +25,18 @@ MODULE OS:ProcessManagement [FOREIGN "C"; LINK FILE "ProcessManagement.c" END];
    an exception.  *)
 
 IMPORT
-  C;
+  C, Object, OS:Path;
 
-PROCEDURE system* (command[NIL_COMPAT]: ARRAY OF CHAR): C.int;
+PROCEDURE system* (command: STRING): C.int;
 (**Executes the command in a subshell.  This is implemented by calling the
    Standard C function @samp{system()}, and has the same limitations.  The
    return value is the exit status of the process encoded in the format
    specified for @samp{wait()}.  Note that POSIX does not specify the meaning
    of the return value of the C @samp{system()} function, so the return value
-   of this Oberon-2 function is system-dependent.  *)
+   of this Oberon-2 function is system-dependent.
+
+   @oproc{Path.Encode} is used to calculate the character array that is passed
+   to the OS.  *)
 
 PROCEDURE ExitStatus* (status : C.int) : C.int;
 (**Returns the exit status for the command executed by @samp{system()}. If the

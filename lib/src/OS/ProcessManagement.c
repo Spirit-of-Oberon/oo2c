@@ -143,13 +143,23 @@ int OS_ProcessManagement__system(const OOC_CHAR8* command, OOC_LEN command_0d) {
 }
 
 #else
-int OS_ProcessManagement__system(const OOC_CHAR8* command, OOC_LEN command_0d) {
-  return new_system((const char*)command);
+int OS_ProcessManagement__system(Object__String command) {
+  if (command == NULL) {
+    return new_system(NULL);
+  } else {
+    Object__String8 cmd8 = OS_Path__Encode(command);
+    return new_system((char*)OOC_METHOD(cmd8,Object__String8Desc_CharsLatin1)(cmd8));
+  }
 }
 #endif
 #else
-int OS_ProcessManagement__system(const OOC_CHAR8* command, OOC_LEN command_0d) {
-  return system((const char*)command);
+int OS_ProcessManagement__system(Object__String command) {
+  if (command == NULL) {
+    return system(NULL);
+  } else {
+    Object__String8 cmd8 = OS_Path__Encode(command);
+    return system((char*)OOC_METHOD(cmd8,Object__String8Desc_CharsLatin1)(cmd8));
+  }
 }
 #endif
 
