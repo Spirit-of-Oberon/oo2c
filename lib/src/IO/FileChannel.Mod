@@ -99,6 +99,7 @@ PROCEDURE (ch: Channel) CloseAndRegister*() RAISES IO.Error;
 
 PROCEDURE (ch: Channel) SetPos*(pos: LONGINT) RAISES IO.Error;
 
+PROCEDURE (ch: Channel) Length*(): LONGINT RAISES IO.Error;
 
 PROCEDURE (ch: Channel) FileDescriptor*(): IO.FileDescriptor;
 

@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #ifdef __MINGW32__
 #include <windows.h>
@@ -244,6 +245,15 @@ void IO_FileChannel__ChannelDesc_SetPos(IO_FileChannel__Channel ch,
   if (lseek(ch->fd, (off_t)pos, SEEK_SET) < 0) {
     IO_StdChannels__IOError(ch->tmpIndex<0?(Object__String)ch->tmpName:ch->origName);
   }
+}
+
+OOC_INT32 IO_FileChannel__ChannelDesc_Length(IO_FileChannel__Channel ch) {
+  struct stat buf;
+  
+  if (fstat(ch->fd, &buf) < 0) {
+    IO_StdChannels__IOError(ch->tmpIndex<0?(Object__String)ch->tmpName:ch->origName);
+  }
+  return (OOC_INT32)buf.st_size;
 }
 
 OOC_INT32 IO_FileChannel__ChannelDesc_FileDescriptor(IO_FileChannel__Channel ch) {
