@@ -21,8 +21,8 @@ MODULE OOC:IR:CheckUses;
 *)
 
 IMPORT
-  Object, Object:Boxed, ADT:Dictionary, ADT:ArrayList,
-  Config:Value, Config:Value:Boolean,
+  Object, Object:Boxed, ADT:Dictionary, DictInt := ADT:Dictionary:IntValue,
+  ADT:ArrayList, Config:Value, Config:Value:Boolean,
   OOC:Config:Pragmas, OOC:Config:Pragmas:StdPragmas,
   Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules, OOC:Error,
   OOC:Scanner:Builder:BasicList, OOC:IR, OOC:IR:VisitAll;
@@ -34,17 +34,21 @@ IMPORT
    With passing an argument to a VAR parameter, distinguish between IN,
    OUT, and IN/OUT parameters.  *)
   
+CONST
+  undefined = 0;
+  maybeUndefined = 1;
+  defined = 2;
+  
 TYPE
   Def = POINTER TO DefDesc;
   DefDesc = RECORD
     (Object.ObjectDesc)
-    undefined: Dictionary.Dictionary;
-    (* Set of variables that are undefined at a given point in the
-       statement sequence.  *)
-    maybeUndefined: Dictionary.Dictionary;
-    (* Set of variables that are only defined on some of the paths leading
-       to a given point in the statement sequence.  *)
+    class: DictInt.Dictionary;
+    (* Set of variables that haven been seen at a given point in the
+       statement sequence.  Each variables is classified as either
+       @oconst{undefined}, @oconst{maybeUndefined}, or @oconst{defined}.  *)
     unreachable: BOOLEAN;
+    (* If TRUE, then there is no path of control leading to this point.  *)
   END;
 
 CONST
@@ -56,6 +60,7 @@ TYPE
   Visitor = POINTER TO VisitorDesc;
   VisitorDesc = RECORD
     (VisitAll.VisitorDesc)
+    localProc: Sym.ProcDecl;
     def: Def;
     errList: Error.List;
     pragmaHistory: Pragmas.History;
@@ -103,8 +108,7 @@ PROCEDURE NewDef(): Def;
     def: Def;
   BEGIN
     NEW(def);
-    def.maybeUndefined := Dictionary.New();
-    def.undefined := Dictionary.New();
+    def.class := DictInt.New();
     def.unreachable := FALSE;
     RETURN def;
   END NewDef;
@@ -114,48 +118,63 @@ PROCEDURE (def: Def) Copy(): Def;
     def2: Def;
   BEGIN
     NEW(def2);
-    def2.maybeUndefined := def.maybeUndefined.Copy();
-    def2.undefined := def.undefined.Copy();
+    def2.class := def.class.Copy();
     def2.unreachable := def.unreachable;
     RETURN def2;
   END Copy;
 
+PROCEDURE (def: Def) GetClass(var: Sym.VarDecl): LONGINT;
+  BEGIN
+    IF def.class.HasKey(var) THEN
+      RETURN def.class.Get(var);
+    ELSE
+      RETURN undefined;
+    END;
+  END GetClass;
+
+PROCEDURE (def: Def) SetClass(var: Sym.VarDecl; class: LONGINT);
+  BEGIN
+    def.class.Set(var, class);
+  END SetClass;
+
 PROCEDURE (def: Def) Merge(def2: Def);
   VAR
     k: Object.ObjectArrayPtr;
+    v: Sym.VarDecl;
     i: LONGINT;
+
+  PROCEDURE Merge(a, b: LONGINT): LONGINT;
+    BEGIN
+      IF (a = b) & (a # maybeUndefined) THEN
+        RETURN a;
+      ELSE
+        RETURN maybeUndefined;
+      END;
+    END Merge;
+  
   BEGIN
     IF def.unreachable THEN
-      def^ := def2^;
-    ELSIF ~def2.unreachable THEN
-      k := def.undefined.Keys();
+      def.class := def2.class.Copy();
+      def.unreachable := def2.unreachable;
+    ELSIF ~def2.unreachable THEN  (* & ~def.unreachable *)
+      k := def.class.Keys();
       FOR i := 0 TO LEN(k^)-1 DO
-        IF ~def2.undefined.HasKey(k[i]) THEN
-          def.undefined.Delete(k[i]);
-          def.maybeUndefined.Set(k[i], NIL);
-        END;
+        v := k[i](Sym.VarDecl);
+        def.SetClass(v, Merge(def.GetClass(v), def2.GetClass(v)));
       END;
       
-      k := def2.undefined.Keys();
+      k := def2.class.Keys();
       FOR i := 0 TO LEN(k^)-1 DO
-        IF ~def.undefined.HasKey(k[i]) THEN
-          def.maybeUndefined.Set(k[i], NIL);
-        END;
+        v := k[i](Sym.VarDecl);
+        def.SetClass(v, Merge(def.GetClass(v), def2.GetClass(v)));
       END;
-      
-      k := def2.maybeUndefined.Keys();
-      FOR i := 0 TO LEN(k^)-1 DO
-        def.maybeUndefined.Set(k[i], NIL);
-      END;
-
-      def.unreachable := def.unreachable & def2.unreachable;
+    (* ELSE: ~def.unreachable & def2.unreachable *)
     END;
   END Merge;
 
 PROCEDURE (def: Def) Unreachable();
   BEGIN
-    def.maybeUndefined.Clear();
-    def.undefined.Clear();
+    def.class.Clear();
     def.unreachable := TRUE;
   END Unreachable;
 
@@ -184,20 +203,34 @@ PROCEDURE WarnSymV(v: Visitor;
   END WarnSymV;
 
 
+
 PROCEDURE (v: Visitor) VisitVar* (var: IR.Var);
+  VAR
+    varDecl: Sym.VarDecl;
+    class: LONGINT;
+
+  PROCEDURE LocalVar(varDecl: Sym.VarDecl): BOOLEAN;
+    BEGIN
+      RETURN ~varDecl.isParameter &
+          (varDecl.Procedure() = v.localProc);
+    END LocalVar;
+  
   BEGIN
-    IF v.def.undefined.HasKey(var.decl) THEN
+    varDecl := var.decl(Sym.VarDecl);
+
+    IF LocalVar(varDecl) THEN
       IF (v.mode = read) THEN
-        WarnSymV(v, var.sym, undefinedVar);
-      ELSE
-        v.def.undefined.Delete(var.decl);
-      END;
-    END;
-    IF v.def.maybeUndefined.HasKey(var.decl) THEN
-      IF (v.mode = read) THEN
-        WarnSymV(v, var.sym, maybeUndefinedVar);
-      ELSE
-        v.def.maybeUndefined.Delete(var.decl);
+        class := v.def.GetClass(varDecl);
+        CASE class OF
+        | undefined:
+          WarnSymV(v, var.sym, undefinedVar);
+        | maybeUndefined:
+          WarnSymV(v, var.sym, maybeUndefinedVar);
+        | defined:
+          (* ignore *)
+        END;
+      ELSE  (* var.mode = write *)
+        v.def.SetClass(varDecl, defined);
       END;
     END;
   END VisitVar;
@@ -439,22 +472,6 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
       END;
     END CheckStatmSeq;
   
-  PROCEDURE CreateDef(procDecl: Sym.ProcDecl): Def;
-    VAR
-      decl: Sym.Item;
-      def: Def;
-    BEGIN
-      def := NewDef();
-      decl := procDecl.nestedItems;
-      WHILE (decl # NIL) DO
-        IF (decl IS Sym.VarDecl) & ~decl(Sym.VarDecl).isParameter THEN
-          def.undefined.Set(decl, NIL);
-        END;
-        decl := decl.nextNested;
-      END;
-      RETURN def;
-    END CreateDef;
-
   PROCEDURE CheckedFunction(procDecl: Sym.ProcDecl): BOOLEAN;
     BEGIN
       RETURN (procDecl.formalPars.resultType # NIL) &
@@ -471,8 +488,9 @@ PROCEDURE CheckUses*(module: IR.Module; pragmaHistory: Pragmas.History;
 
     FOR i := 0 TO LEN (module.procList^)-1 DO
       proc := module.procList[i];
+      v.localProc := proc.decl;
       IF (proc.endOfProc # NIL) THEN
-        def := CreateDef(proc.decl);
+        def := NewDef();
         CheckStatmSeq(def, proc.statmSeq);
         IF ~def.unreachable & CheckedFunction(proc.decl) THEN
           WarnSym(errList, pragmaHistory, proc.endOfProc, endOfFunction);
