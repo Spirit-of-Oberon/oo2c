@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Scanner;
 (*  Convert a character sequence into a stream of Oberon-2 symbols.
-    Copyright (C) 2000  Michael van Acken
+    Copyright (C) 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -47,6 +47,12 @@ CONST
      source file.  Instead, text that is skipped because of this, is reported
      as @oconst{Symbol.pragma}.  Like comments, such a symbol can span 
      multiple lines and must be treated as whitespace.  *)
+  enableCharPosAdjust* = 4;
+  (**If set, then change the @otype{Error.ErrList} instance so that it 
+     reports a character position that is decremented by the line number of
+     the error.  This fixes CR/LF reporting for editors that count this as a
+     single end of line character.  *)
+  
   
   enableAll* = {MIN(SET)..MAX(SET)};
   (**Enables all available add-on symbols.  *)
@@ -147,6 +153,10 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
     sym: Symbol.Id;
     lastError: Error.Msg;
     strPtr: Error.StringPtr;
+    eolIsCRLF: BOOLEAN;
+    (* initialized to FALSE, set to TRUE with the first CR/LF combination
+       encountered *)
+       
     
   PROCEDURE Err (code: Error.Code);
     BEGIN
@@ -184,7 +194,10 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
       INC (cpos, sizeEOL);
       INC (currLine);
       currLinePos := cpos;
-      currLineTab := 0
+      currLineTab := 0;
+      IF (sizeEOL = 2) THEN
+        eolIsCRLF := TRUE
+      END
     END EndOfLine;
   
   PROCEDURE Lookahead (len: LONGINT);
@@ -256,6 +269,7 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
     currLinePos := cpos;
     currLineTab := 0;
     inputMode := Pragma.inputText;
+    eolIsCRLF := FALSE;
     Pragma.Init (pragma, builder, defaultPragmas);
     
     LOOP
@@ -487,7 +501,7 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
               IF (chars[cpos+1] = InputBuffer.markerEOB) THEN
                 dummy := NextBlock()  (* ensure that next character is valid *)
               END;
-              IF (chars[cpos] = Ascii.lf) THEN
+              IF (chars[cpos+1] = Ascii.lf) THEN
                 EndOfLine (2)
               ELSE
                 EndOfLine (1)
@@ -617,6 +631,9 @@ PROCEDURE ScanInput* (builder: Builder.Builder;
     ELSE
       builder. AddSymbol (Symbol.endOfFile, cpos, cpos,
                           currLine, cpos-currLinePos+currLineTab)
+    END;
+    IF (enableCharPosAdjust IN scanOptions) & eolIsCRLF THEN
+      b. errList. SetAdjustCharPos (TRUE)
     END
   END ScanInput;
 

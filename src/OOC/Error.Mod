@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Error;
 (*  Creates lists of error messages and converts them to text.
-    Copyright (C) 1999, 2000  Michael van Acken
+    Copyright (C) 1999, 2000, 2001  Michael van Acken
 
     This file is part of OOC.
 
@@ -49,6 +49,8 @@ TYPE
     (**Any error messages appended to this list refer to the source text
        obtained from this file name.  It is prefixed to the output when
        writing the list of error messages to the output channel.  *)
+    adjustCharPos: BOOLEAN;
+    (* if TRUE, then subtract the line number from the character position *)
   END;
 
 VAR
@@ -73,6 +75,7 @@ PROCEDURE NewList* (fileName: ARRAY OF CHAR): List;
     NEW (list);
     M.InitMsgList (list);
     COPY (fileName, list. fileName);
+    list. adjustCharPos := FALSE;
     RETURN list
   END NewList;
 
@@ -108,6 +111,16 @@ PROCEDURE (c: Context) BaseTemplate* (msg: Msg; text: LString; VAR templ: LStrin
     END
   END BaseTemplate;
 
+PROCEDURE (errList: List) SetAdjustCharPos* (adjust: BOOLEAN);
+(**If set to @code{TRUE}, then decrement the character position reported in a
+   error message by the number of lines.  This has the effect that CR/LF
+   character pairs, the end of line symbol under DOS based systems, are counted
+   as a single character.  This has the effect that editors that count likewise
+   display error positions correctly.  *)
+  BEGIN
+    errList. adjustCharPos := adjust
+  END SetAdjustCharPos;
+
 PROCEDURE (errList: List) Write* (ch: Channel.Channel);
 (**Writes the list of error messages to the ouput channel @oparam{ch}.  The
    channel must be writable.  The generated list is prefixed by the name
@@ -116,6 +129,7 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
     writer: TextRider.Writer;
     msg: Msg;
     text: ARRAY 8*1024 OF CHAR;
+    attrPos, attrLine: M.Attribute;
   BEGIN
     writer := TextRider.ConnectWriter (ch);
     ASSERT (writer # NIL);
@@ -130,6 +144,17 @@ PROCEDURE (errList: List) Write* (ch: Channel.Channel);
     msg := errList. msgList;
     WHILE (msg # NIL) DO
       msg. GetText (text);
+      
+      IF errList. adjustCharPos THEN  (* adjust character position *)
+        attrPos := msg. GetAttribute ("pos");
+        attrLine := msg. GetAttribute ("line");
+        IF (attrPos # NIL) & (attrLine # NIL) THEN
+          msg. SetIntAttrib ("pos", attrPos(M.IntAttribute). int-
+                                    attrLine(M.IntAttribute). int);
+          msg. GetText (text);
+          msg. SetIntAttrib ("pos", attrPos(M.IntAttribute). int)
+        END
+      END;
       writer. WriteString (text);
       writer. WriteLn;
       msg := msg. nextMsg
