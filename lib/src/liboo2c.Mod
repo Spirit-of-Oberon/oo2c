@@ -1,11 +1,21 @@
 MODULE liboo2c;
 <* Warnings := FALSE *>
 
+(* Modules marked with @samp{mgs} have mutable global state and therefore
+   may pose a problem in a multi-threaded application.  Most of them are
+   usually used in a not critical way.  Things are different for modules
+   @omodule{Files} and @omodule{FileChannel}.  Both keep track of open files
+   that should be removed on program termination, and these lists may be hosed
+   by concurrent open and close operations.
+
+   Note: Contrary to modules, @emph{no} object is multi-threading safe unless
+   stated otherwise.  *)
+
 IMPORT
-  RT0,
+  RT0,               (* mgs (RegisterModule) *)
   Out0,
   HashCode,
-  Exception,
+  Exception,         (* mt-safe if PThread is imported *)
   
   Ascii,
   BinaryRider,
@@ -13,21 +23,21 @@ IMPORT
   Channel,
   CharClass,
   ConvTypes,
-  Err,
-  Files,
-  In,
+  Err,               (* mgs (writer, SetWriter) *)
+  Files,             (* mgs (New, Old, Tmp, Close) *)
+  In,                (* mgs (reader, SetReader) *)
   IntConv,
   IntStr,
   LRealConv,
   LRealMath,
   LRealStr,
-  Log,
+  Log,               (* mgs (writer, SetWriter) *)
   LongStrings,
   Msg,
-  Out,
-  PosixFileDescr,
+  Out,               (* mgs (writer, SetWriter) *)
+  PosixFileDescr,    (* mgs (Init) *)
   ProgramArgs,
-  RandomNumbers,
+  RandomNumbers,     (* mgs (seed) *)
   Real0,
   RealConv,
   RealMath,
@@ -36,7 +46,7 @@ IMPORT
   StringSearch,
   Strings,
   SysClock,
-  Termination,
+  Termination,       (* mgs (proc_list, Register, Unregister) *)
   TextRider,
   Time,
 
@@ -51,7 +61,7 @@ IMPORT
   IO,
   IO:Address,
   IO:Socket,
-  IO:FileChannel,
+  IO:FileChannel,    (* mgs (tmp_files, Open, OpenUnbuffered, Close) *)
   IO:SocketChannel,
   IO:Memory,
   IO:Buffer,
@@ -67,6 +77,6 @@ IMPORT
   
   libc,
   libadt,
-  libxml;
+  libxml;            (* mgs -- unknown *)
 
 END liboo2c.
