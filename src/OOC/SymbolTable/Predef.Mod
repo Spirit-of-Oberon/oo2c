@@ -45,8 +45,11 @@ CONST
   charString* = 12;
   longcharString* = 13;
   void* = 14;
-  lastId = void;
-
+  
+  lastId* = void;
+  (**Id of last predefined type.  Typically used in client modules
+     to declare variables @code{ARRAY @oconst{lastId}+1 OF @dots{}}.  *)
+  
   lengthType* = 5;
   (**Alias for the integer type used to represent the length of an array.
      This is also the result type of the predefined function @code{LEN}.
