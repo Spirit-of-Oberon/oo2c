@@ -236,7 +236,7 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         SplitValue();
       END SplitPaths;
     
-    PROCEDURE LoopEnd();
+    PROCEDURE LoopEnd(loopStart: S.LoopStartInstr);
       VAR
         instr, loopEnd: S.Instr;
       BEGIN
@@ -819,14 +819,81 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
         END;
       END Expression;
 
+    PROCEDURE Assign(getInstr: S.Result; newValue: S.Result);
+      BEGIN
+        getInstr.instr.SetOpcode(S.set);
+        getInstr.instr.AddOpnd(newValue);
+        getInstr.DeleteResult();
+      END Assign;
+        
+    PROCEDURE ForStatm(statm: IR.ForStatm);
+      VAR
+        endValue, stepValue, v, res: S.Result;
+        instr, endTrue, endFalse: S.Instr;
+        loopStart: S.LoopStartInstr;
+        controlTrue, memoryTrue, controlFalse, memoryFalse: S.Instr;
+
+      PROCEDURE Guard(bound: S.Result): S.Result;
+        VAR
+          instr: S.Instr;
+          cmpClass: S.Opcode;
+        BEGIN
+          IF statm.PositiveStep() THEN
+            cmpClass := S.leq;
+          ELSE
+            cmpClass := S.geq;
+          END;
+          instr := b.AddInstr2(cmpClass, Expression (statm. var), bound);
+          RETURN instr.AddResultReg(S.noType, S.cc);
+        END Guard;
+      
+      BEGIN
+        (* "FOR v := beg TO end BY step DO s END"  is translated to
+           temp := end; v := beg;
+           LOOP IF v<=temp THEN ELSE EXIT END; s; v:=v+step END (if step>0)
+           LOOP IF v>=temp THEN ELSE EXIT END; s; v:=v+step END (if step<0)  *)
+        (* "WHILE e DO s END"  is translated to
+           "LOOP IF e THEN EXIT END; s END" *)
+        endValue := Expression(statm.end);
+        stepValue := Expression(statm.step);
+        v := Expression(statm.var);
+        Assign(v, Expression(statm.start));
+        
+        loopStart := b.AddLoopStart();
+        ControlCP(loopStart); MemoryCP(loopStart);
+        
+        res := Guard(endValue);
+        SplitPaths(res, controlCP, memoryCP,
+                   controlTrue, memoryTrue,
+                   controlFalse, memoryFalse);
+        (* first, the "true" path *)
+        memoryCP := memoryTrue; controlCP := controlTrue;
+        endTrue := AddJump();
+        (* second, the "false" path;  *)
+        memoryCP := memoryFalse; controlCP := controlFalse;
+        instr := b.AddInstr0(S.loopExit);
+        ControlCP(instr); MemoryCP(instr);
+        loopExits.Append(instr);
+        endFalse := AddJump();
+        (* finally, pull all the strings together again *)
+        merge := b.AddMerge2(S.merge, endTrue, endFalse);
+        controlCP := merge; memoryCP := merge;
+        
+        StatmSeq(statm.body);
+        v := Expression(statm.var);
+        instr := b.AddInstr2(S.add, v, stepValue);
+        Assign(Expression(statm.var), instr.AddResult(v.type));
+        
+        LoopEnd(loopStart);
+      END ForStatm;
+        
     BEGIN
       FOR statm IN statmSeq^ DO
         WITH statm: IR.Assignment DO
           (* note: oo2c-2 evaluates first var, then value *)
           res := Expression(statm.value);
           var := Expression(statm.variable);
-          var.instr.SetOpcode(S.set);
-          var.instr.AddOpnd(res);
+          Assign(var, res);
         | statm: IR.Copy DO
           Copy(statm);
         | statm: IR.MoveBlock DO
@@ -890,9 +957,11 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           loopStart := b.AddLoopStart();
           ControlCP(loopStart); MemoryCP(loopStart);
           StatmSeq(statm.body);
-          LoopEnd();
+          LoopEnd(loopStart);
           
         | statm: IR.RepeatStatm DO
+          (* "REPEAT s UNTIL e"  is translated to
+             "LOOP s; IF e THEN EXIT END END" *)
           loopStart := b.AddLoopStart();
           ControlCP(loopStart); MemoryCP(loopStart);
           StatmSeq(statm.body);
@@ -914,9 +983,11 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           merge := b.AddMerge2(S.merge, endTrue, endFalse);
           controlCP := merge; memoryCP := merge;
           
-          LoopEnd();
+          LoopEnd(loopStart);
           
         | statm: IR.WhileStatm DO  (* FIXME... change to if & repeat *)
+          (* "WHILE e DO s END"  is translated to
+             "LOOP IF e THEN EXIT END; s END" *)
           loopStart := b.AddLoopStart();
           ControlCP(loopStart); MemoryCP(loopStart);
           
@@ -938,7 +1009,10 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           controlCP := merge; memoryCP := merge;
           
           StatmSeq(statm.body);
-          LoopEnd();
+          LoopEnd(loopStart);
+
+        | statm: IR.ForStatm DO
+          ForStatm(statm);
           
         | statm: IR.Exit DO
           instr := b.AddInstr0(S.loopExit);
