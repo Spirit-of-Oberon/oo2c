@@ -171,7 +171,7 @@ BEGIN
         END
       
     | Conv.invalid:
-      IF (prev = Conv.padding) THEN
+      IF (prev = Conv.padding) & (ch = 0X) THEN
         RETURN strEmpty;
       ELSE
         RETURN strWrongFormat;
