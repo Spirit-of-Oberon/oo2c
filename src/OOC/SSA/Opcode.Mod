@@ -668,7 +668,29 @@ CONST
      the lower and the upper bound.  All operands are of class
      @oconst{*OOC:SSA:Opnd.arg}  *)
   
-  
+  dgate* = 75;
+  (**Represents a value of a designator at the position of an instruction that
+     selects from different flows of control.  This opcode is used internally
+     by @omodule{*OOC:SSA:Destore}, and should not appear outside this module.
+
+     @table @oconst
+     @item *OOC:SSA:Opnd.dgateBase
+     The associated @oconst{select}, @oconst{loopStart}, or @oconst{loopEnd}
+     instruction.
+
+     @item *OOC:SSA.Opnd.arg
+     Replacement value.  This is either the @var{store} result of the
+     associated instruction, a @var{store} originating elsewhere, a reference
+     to a @oconst{*OOC:SSA:Result.dgatePlaceholder} result of the
+     @oconst{dgate} instruction itself (signalling that the final replacement
+     value is a gated value), or a valid value.
+
+     @item *OOC:SSA.Opnd.arg
+     For each path into the selecting instruction, the value of the designator
+     for this path.  This is either a @var{store}, a reference to a
+     @oconst{dgate}, or a valid value.
+     @end table  *)
+
 CONST
   scNone* = 0;
   (**The operation has no variants.  *)
@@ -831,6 +853,8 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | failedTypeAssert: cstr := "failed-type-assert";
     | selectException: cstr := "select-exception";
     | preloadedVar: cstr := "preloaded-var";
+
+    | dgate: cstr := "dgate";
     END;
     
     COPY (cstr, name);

@@ -69,6 +69,8 @@ CONST
   (**Marks the possible branch of control flow from the instruction to a
      @oconst{*OOC:SSA:Opcode.selectException} instruction.  *)
 
+  dgatePlaceholder* = 23;
+  
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of a result class.  *)
   BEGIN
@@ -79,6 +81,7 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | store: COPY ("store", name)
     | selectValue: COPY ("select-value", name)
     | exception: COPY ("exception", name)
+    | dgatePlaceholder: COPY ("dgate-placeholder", name)
     END;
   END GetName;
   

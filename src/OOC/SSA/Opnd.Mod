@@ -132,7 +132,10 @@ CONST
   (**Used by @omodule{*OOC:SSA:Blocker} to make dependencies between regions
      and instructions, or regions and regions, explicit on the level of the
      common domination region of the two.  *)
-
+  
+  dgateBase* = 21;
+  dgateRef* = 22;
+  
 PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
 (**Retrieves the symbolic name of an operand class.  *)
   BEGIN
@@ -155,6 +158,8 @@ PROCEDURE GetName* (class: Class; VAR name: ARRAY OF CHAR);
     | loopExternalDef: COPY ("loop-external-def", name);
     | antiDependency: COPY ("anti-dependency", name);
     | regionDependency: COPY ("region-dependency", name);
+    | dgateBase: COPY ("dgate-base", name);
+    | dgateRef: COPY ("dgate-ref", name);
     END;
   END GetName;
   
