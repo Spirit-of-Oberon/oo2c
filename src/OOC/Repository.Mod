@@ -34,7 +34,7 @@ TYPE
   RepositoryDesc* = RECORD [ABSTRACT]
     baseRep-: Repository;
     baseURI-: URI.HierarchicalURI;
-    packageInfo-: Package.Package;
+    packageInfo-: Package.PkgInfo;
   END;
 
 TYPE
@@ -248,7 +248,7 @@ PROCEDURE InitModule* (m: Module; origin: Repository; name: ModuleName;
   END InitModule;
 
 
-PROCEDURE (rep: Repository) SetPackageInfo* (packageInfo: Package.Package);
+PROCEDURE (rep: Repository) SetPackageInfo* (packageInfo: Package.PkgInfo);
   BEGIN
     rep.packageInfo := packageInfo;
   END SetPackageInfo;

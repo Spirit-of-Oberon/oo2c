@@ -1,9 +1,9 @@
 MODULE OOC:Package;
 
 IMPORT
-  Files, IntStr, LongStrings, Msg, Strings,
+  Files, IntStr, LongStrings, Msg, Out, StdChannels, Strings,
   ADT:Object, ADT:String, ADT:ArrayList, OSFiles := OS:Files,
-  XML:UnicodeCodec:Latin1,
+  OS:ProcessManagement, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,
   Config:Parser, StringValue := Config:Value:String, Config:Section:Options,
   OOC:Logger, OOC:Error;
@@ -13,7 +13,9 @@ TYPE
 
 CONST
   rootPackage = "package";
+  rootRepository = "repository";
   pkgInfoSubdir = "/pkginfo";
+  pkgInfoFile = "/pkginfo.xml";
   
 TYPE
   Version = POINTER TO VersionDesc;
@@ -67,10 +69,17 @@ TYPE
     (Object.ObjectDesc)
     key-, value-: String.String;
   END;
+
+TYPE
+  PkgInfo* = POINTER TO PkgInfoDesc;
+  PkgInfoDesc = RECORD
+    options-, pragmas-: ArrayList.ArrayList;  (* of KeyValue *)
+  END;
   
 TYPE
   Package* = POINTER TO PackageDesc;
   PackageDesc = RECORD
+    (PkgInfoDesc)
     name-: String.String;
     version: Version;
     library-: ArrayList.ArrayList;
@@ -79,8 +88,13 @@ TYPE
     fileSet-: FileSet;
     (**This is a reference to a file set with a source and destination
        path of @samp{.}.  *)
+  END;
 
-    options-, pragmas-: ArrayList.ArrayList;  (* of KeyValue *)
+TYPE
+  Repository* = POINTER TO RepositoryDesc;
+  RepositoryDesc = RECORD
+    (PkgInfoDesc)
+    installedPkgs-: ArrayList.ArrayList;  (* of String.String *)
   END;
   
 CONST
@@ -232,22 +246,13 @@ PROCEDURE NewKeyValue*(key, value: String.String): KeyValue;
     RETURN kv;
   END NewKeyValue;
 
-PROCEDURE NewPackage(): Package;
-  VAR
-    p: Package;
+PROCEDURE InitPkgInfo(pkgInfo: PkgInfo);
   BEGIN
-    NEW(p);
-    p.name := NIL;
-    p.version := NIL;
-    p.library := ArrayList.New(4);
-    p.executable := ArrayList.New(4);
-    p.fileSet := NIL;
-    p.options := ArrayList.New(4);
-    p.pragmas := ArrayList.New(4);
-    RETURN p;
-  END NewPackage;
+    pkgInfo.options := ArrayList.New(4);
+    pkgInfo.pragmas := ArrayList.New(4);
+  END InitPkgInfo;
 
-PROCEDURE (pkg: Package) MergeConfig*(options, pragmas: Options.Section);
+PROCEDURE (pkg: PkgInfo) MergeConfig*(options, pragmas: Options.Section);
   VAR
     i: LONGINT;
     kv: KeyValue;
@@ -262,6 +267,46 @@ PROCEDURE (pkg: Package) MergeConfig*(options, pragmas: Options.Section);
       o := pragmas.Set(kv.key.array^, StringValue.New(kv.value.array^));
     END;
   END MergeConfig;
+
+PROCEDURE NewPackage(): Package;
+  VAR
+    p: Package;
+  BEGIN
+    NEW(p);
+    InitPkgInfo(p);
+    p.name := NIL;
+    p.version := NIL;
+    p.library := ArrayList.New(4);
+    p.executable := ArrayList.New(4);
+    p.fileSet := NIL;
+    RETURN p;
+  END NewPackage;
+
+PROCEDURE NewRepository(): Repository;
+  VAR
+    r: Repository;
+  BEGIN
+    NEW(r);
+    InitPkgInfo(r);
+    r.installedPkgs := ArrayList.New(4);
+    RETURN r;
+  END NewRepository;
+
+PROCEDURE (r: Repository) MergePackage(pkg: Package);
+  VAR
+    i: LONGINT;
+    kv: KeyValue;
+  BEGIN
+    r.installedPkgs.Append(pkg.name);
+    FOR i := 0 TO pkg.options.size-1 DO
+      kv := pkg.options.array[i](KeyValue);
+      r.options.Append(kv);
+    END;
+    FOR i := 0 TO pkg.pragmas.size-1 DO
+      kv := pkg.pragmas.array[i](KeyValue);
+      r.pragmas.Append(kv);
+    END;
+  END MergePackage;
 
 PROCEDURE Normalize*(fileSet: FileSet): FileSet;
 (**Converts a hierarchy of file sets and files into a flat list of files.
@@ -476,6 +521,25 @@ PROCEDURE Normalize*(fileSet: FileSet): FileSet;
     RETURN norm;
   END Normalize;
 
+PROCEDURE StringAttr(att: Builder.Attribute): String.String;
+  VAR
+    str: DTD.String;
+    buffer: POINTER TO ARRAY OF CHAR;
+  BEGIN
+    str := att.value.Flatten(att.attrDecl);
+    NEW(buffer, LEN(str^));
+    LongStrings.Short(str^, "?", buffer^);
+    RETURN String.New(buffer^);
+  END StringAttr;
+
+PROCEDURE AtElement(node: Parser.Node;
+                    elementName: ARRAY OF LONGCHAR): BOOLEAN;
+  BEGIN
+    RETURN (node # NIL) &
+        (node IS Parser.Element) &
+        (node(Parser.Element).name^ = elementName);
+  END AtElement;
+
 PROCEDURE ProcessPackage (root: Parser.Element;
                           errorListener: Locator.ErrorListener;
                           errList: Error.List): Package;
@@ -493,17 +557,6 @@ PROCEDURE ProcessPackage (root: Parser.Element;
       errList.Append(lastError);
     END Err;
 
-  PROCEDURE StringAttr(att: Builder.Attribute): String.String;
-    VAR
-      str: DTD.String;
-      buffer: POINTER TO ARRAY OF CHAR;
-    BEGIN
-      str := att.value.Flatten(att.attrDecl);
-      NEW(buffer, LEN(str^));
-      LongStrings.Short(str^, "?", buffer^);
-      RETURN String.New(buffer^);
-    END StringAttr;
-  
   PROCEDURE SkipWS(VAR node: Parser.Node);
     BEGIN
       WHILE (node # NIL) & (node IS Parser.CharData) DO
@@ -513,14 +566,6 @@ PROCEDURE ProcessPackage (root: Parser.Element;
         node := node.nextNode;
       END;
     END SkipWS;
-
-  PROCEDURE AtElement(node: Parser.Node;
-                      elementName: ARRAY OF LONGCHAR): BOOLEAN;
-    BEGIN
-      RETURN (node # NIL) &
-          (node IS Parser.Element) &
-          (node(Parser.Element).name^ = elementName);
-    END AtElement;
 
   PROCEDURE ParseVersion(elem: Parser.Element): Version;
   (* pre: element.name="version" *)
@@ -863,7 +908,131 @@ PROCEDURE ProcessPackage (root: Parser.Element;
     RETURN pkg;
   END ProcessPackage;
 
-PROCEDURE ParseFile* (fileName: ARRAY OF CHAR; VAR errList: Error.List): Package;
+PROCEDURE ProcessRepository (root: Parser.Element;
+                             errorListener: Locator.ErrorListener;
+                             errList: Error.List): Repository;
+  VAR
+    lastError: Msg.Msg;
+    node: Parser.Node;
+    rep: Repository;
+    att: Builder.Attribute;
+    
+  PROCEDURE Err(code: Msg.Code; xmlNode: Parser.Node);
+    BEGIN
+      lastError := errorListener.Error(packageContext, code, FALSE,
+                                       xmlNode. pos);
+      errList.Append(lastError);
+    END Err;
+
+  PROCEDURE SkipWS(VAR node: Parser.Node);
+    BEGIN
+      WHILE (node # NIL) & (node IS Parser.CharData) DO
+        IF ~node.IsWhitespace() THEN
+          Err(invalidCharData, node);
+        END;
+        node := node.nextNode;
+      END;
+    END SkipWS;
+
+  PROCEDURE ParseKeyValue(elem: Parser.Element; list: ArrayList.ArrayList);
+  (* pre: element.name="options" or "pragmas" *)
+    VAR
+      node: Parser.Node;
+      
+    PROCEDURE ParseSet(elem: Parser.Element): KeyValue;
+    (* pre: element.name="set" *)
+      VAR
+        i: LONGINT;
+        node: Parser.Node;
+        name, value: String.String;
+        str: ARRAY 1024 OF CHAR;
+      BEGIN
+        name := NIL;
+        FOR i := 0 TO elem.attrList.len-1 DO
+          att := elem.attrList.attr[i];
+          IF (att.localName^ = "name") THEN
+            name := StringAttr(att);
+          ELSE
+            Err(invalidAttribute, elem);
+            lastError.SetLStringAttrib("name", Msg.GetLStringPtr(att.localName^));
+          END
+        END;
+        IF (name = NIL) THEN
+          Err(requireNameAttribute, elem);
+        END;
+        
+        value := String.New("");
+        node := elem.content;
+        WHILE (node # NIL) DO
+          WITH node: Parser.CharData DO
+            LongStrings.Short(node.string^, "?", str);
+            value := value.Concat(String.New(str));
+          ELSE
+            Err(requireCharacterData, node);
+          END;
+          node := node.nextNode;
+        END;
+        
+        RETURN NewKeyValue(name, value);
+      END ParseSet;
+    
+    BEGIN
+      IF (elem.attrList.len # 0) THEN
+        Err(invalidAttribute, elem);
+        lastError.SetLStringAttrib("name", Msg.GetLStringPtr(att.localName^));
+      END;
+      
+      node := elem.content;
+      SkipWS(node);
+      WHILE (node # NIL) DO
+        IF AtElement(node, "set") THEN
+          list.Append(ParseSet(node(Parser.Element)));
+          node := node.nextNode;
+        ELSE
+          Err(requireSet, node);
+          node := node.nextNode;
+        END;
+        SkipWS(node);
+      END;
+    END ParseKeyValue;
+  
+  BEGIN
+    IF (root.name^ # rootRepository) THEN
+      Err (invalidRootName, root);
+      lastError.SetLStringAttrib("name", Msg.GetLStringPtr(rootRepository));
+    END;
+
+    rep := NewRepository();
+    node := root.content;
+    SkipWS(node);
+    WHILE AtElement(node, "installed") DO
+      node := node.nextNode;
+      SkipWS(node);
+    END;
+    
+    IF AtElement(node, "options") THEN
+      ParseKeyValue(node(Parser.Element), rep.options);
+      node := node.nextNode;
+      SkipWS(node);
+    END;
+    
+    IF AtElement(node, "pragmas") THEN
+      ParseKeyValue(node(Parser.Element), rep.pragmas);
+      node := node.nextNode;
+      SkipWS(node);
+    END;
+    
+    IF (node # NIL) THEN
+      Err(junkAtEndOfElement, node);
+    END;
+    IF (errList.msgCount # 0) THEN
+      rep := NIL;
+    END;
+    RETURN rep;
+  END ProcessRepository;
+
+PROCEDURE ParseFile* (fileName: ARRAY OF CHAR; requirePackage: BOOLEAN;
+                      VAR errList: Error.List): PkgInfo;
   VAR
     p: Parser.Parser;
     res: Msg.Msg;
@@ -875,13 +1044,34 @@ PROCEDURE ParseFile* (fileName: ARRAY OF CHAR; VAR errList: Error.List): Package
     ELSE
       p.ParseDocument();
       IF (p.errList.msgCount = 0) THEN
-        RETURN ProcessPackage(p.root, p.errorListener, errList);
+        IF ~requirePackage & (p.root.name^ = rootRepository) THEN
+          RETURN ProcessRepository(p.root, p.errorListener, errList);
+        ELSE
+          RETURN ProcessPackage(p.root, p.errorListener, errList);
+        END;
       ELSE
         errList.AppendList(p.errList)
       END
     END;
     RETURN NIL;
   END ParseFile;
+
+PROCEDURE WriteKeyValue(w: Writer.Writer;
+                        tag: ARRAY OF CHAR; list: ArrayList.ArrayList);
+  VAR
+    i: LONGINT;
+    kv: KeyValue;
+  BEGIN
+    w.StartTagLatin1(tag, FALSE);
+    FOR i := 0 TO list.size-1 DO
+      kv := list.array[i](KeyValue);
+      w.StartTag("set", TRUE);
+      w.AttrStringLatin1("name", kv.key.array^);
+      w.WriteLatin1(kv.value.array^);
+      w.EndTag();  (* set *)
+    END;
+    w.EndTag();
+  END WriteKeyValue;
 
 PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
                         VAR res: Msg.Msg);
@@ -950,26 +1140,9 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
       w.EndTag();  (* file-set *)
     END WriteFileSet;
 
-  PROCEDURE WriteKeyValue(tag: ARRAY OF CHAR; list: ArrayList.ArrayList);
-    VAR
-      i: LONGINT;
-      kv: KeyValue;
-    BEGIN
-      w.StartTagLatin1(tag, FALSE);
-      FOR i := 0 TO list.size-1 DO
-        kv := list.array[i](KeyValue);
-        w.StartTag("set", TRUE);
-        w.AttrStringLatin1("name", kv.key.array^);
-        w.WriteLatin1(kv.value.array^);
-        w.EndTag();  (* set *)
-      END;
-      w.EndTag();
-    END WriteKeyValue;
-  
   BEGIN
     COPY(targetDir, fileName);
     Strings.Append(pkgInfoSubdir, fileName);
-    OSFiles.makedirs(fileName, OSFiles.defaultMode, res);
     IF (res = NIL) THEN
       Strings.Append("/", fileName);
       Strings.Append(pkg.name.array^, fileName);
@@ -982,8 +1155,8 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
         w.StartTag("package", FALSE);
         w.AttrStringLatin1("name", pkg.name.array^);
         WriteVersion(w, pkg.version);
-        WriteKeyValue("options", pkg.options);
-        WriteKeyValue("pragmas", pkg.pragmas);
+        WriteKeyValue(w, "options", pkg.options);
+        WriteKeyValue(w, "pragmas", pkg.pragmas);
         FOR i := 0 TO pkg.library.size-1 DO
           WriteLibrary(w, pkg.library.array[i](Library));
         END;
@@ -995,13 +1168,64 @@ PROCEDURE WritePackage*(pkg: Package; targetDir: ARRAY OF CHAR;
         w.EndOfText();
         
         res := w.writer.res;
+        f.Close();
+        IF (res = NIL) THEN
+          res := f.res;
+        END;
+        IF (res = NIL) THEN
+          Strings.Insert("chmod 644 ", 0, fileName);
+          Logger.ShellCommand(fileName);
+          i := ProcessManagement.system(fileName);
+        END;
       END;
+    END;
+  END WritePackage;
+
+PROCEDURE WriteRepository*(rep: Repository; targetDir: ARRAY OF CHAR;
+                           VAR res: Msg.Msg);
+  VAR
+    fileName: URIBuffer;
+    f: Files.File;
+    w: Writer.Writer;
+    i: LONGINT;
+
+  PROCEDURE WriteInstalledPkg(w: Writer.Writer; pkgName: String.String);
+    BEGIN
+      w.StartTag("installed", FALSE);
+      w.AttrStringLatin1("package", pkgName.array^);
+      w.EndTag();  (* pkgName *)
+    END WriteInstalledPkg;
+
+  BEGIN
+    COPY(targetDir, fileName);
+    Strings.Append(pkgInfoFile, fileName);
+
+    Logger.WriteFileName(fileName);
+    f := Files.New(fileName, {Files.write}, res);
+    IF (res = NIL) THEN
+      w := Writer.New(f.NewWriter(), Latin1.factory, TRUE, 2);
+      
+      w.StartTag("repository", FALSE);
+      FOR i := 0 TO rep.installedPkgs.size-1 DO
+        WriteInstalledPkg(w, rep.installedPkgs.array[i](String.String));
+      END;
+      WriteKeyValue(w, "options", rep.options);
+      WriteKeyValue(w, "pragmas", rep.pragmas);
+      w.EndTag();  (* repository *)
+      w.EndOfText();
+      
+      res := w.writer.res;
       f.Close();
       IF (res = NIL) THEN
         res := f.res;
       END;
+      IF (res = NIL) THEN
+        Strings.Insert("chmod 644 ", 0, fileName);
+        Logger.ShellCommand(fileName);
+        i := ProcessManagement.system(fileName);
+      END;
     END;
-  END WritePackage;
+  END WriteRepository;
 
 PROCEDURE RemovePkgInfoCmd*(pkg: Package; targetDir, uninstall: ARRAY OF CHAR;
                             VAR cmd: ARRAY OF CHAR);
@@ -1019,17 +1243,81 @@ PROCEDURE GetPkgInfo*(targetDir, pkgName: ARRAY OF CHAR;
                       VAR errList: Error.List): Package;
   VAR
     fileName: URIBuffer;
+    pkgInfo: PkgInfo;
   BEGIN
-    errList := Error.NewList(fileName);
-    
     COPY(targetDir, fileName);
     Strings.Append(pkgInfoSubdir, fileName);
     Strings.Append("/", fileName);
     Strings.Append(pkgName, fileName);
     Strings.Append(".xml", fileName);
-
-    RETURN ParseFile(fileName, errList);
+    
+    errList := Error.NewList(fileName);
+    pkgInfo := ParseFile(fileName, TRUE, errList);
+    IF (pkgInfo # NIL) THEN
+      RETURN pkgInfo(Package);
+    ELSE
+      RETURN NIL;
+    END;
   END GetPkgInfo;
+
+PROCEDURE UpdateRepository*(targetDir: ARRAY OF CHAR): BOOLEAN;
+  VAR
+    dirName, fileName: URIBuffer;
+    files: OSFiles.NameArray;
+    res: Msg.Msg;
+    i: LONGINT;
+    errList: Error.List;
+    pkg: PkgInfo;
+    repository: Repository;
+    
+  PROCEDURE IsPkgInfo(name: ARRAY OF CHAR): BOOLEAN;
+    VAR
+      found: BOOLEAN;
+      pos: INTEGER;
+    BEGIN
+      Strings.FindPrev(".xml", name, MAX(INTEGER), found, pos);
+      RETURN found & (pos = Strings.Length(name)-4);
+    END IsPkgInfo;
+  
+  BEGIN
+    COPY(targetDir, dirName);
+    Strings.Append(pkgInfoSubdir, dirName);
+
+    files := OSFiles.listdir(dirName, res);
+    IF (res = NIL) THEN
+      repository := NewRepository();
+      FOR i := 0 TO LEN(files^)-1 DO
+        IF IsPkgInfo(files[i]^) THEN
+          COPY(dirName, fileName);
+          Strings.Append("/", fileName);
+          Strings.Append(files[i]^, fileName);
+          
+          errList := Error.NewList(fileName);
+          pkg := ParseFile(fileName, TRUE, errList);
+          IF (errList.msgCount # 0) THEN
+            errList.Write(StdChannels.stdout);
+            RETURN FALSE;
+          ELSE
+            repository.MergePackage(pkg(Package));
+          END;
+        END;
+      END;
+      
+      WriteRepository(repository, targetDir, res);
+      IF (res # NIL) THEN
+        Out.String("Error: Write error for ");
+        Out.String(fileName);
+        Out.Ln;
+        RETURN FALSE;
+      END;
+      RETURN TRUE;
+    ELSE
+      Out.String("Error: No such directory ");
+      Out.String(dirName);
+      Out.Ln;
+      RETURN FALSE;
+    END;
+  END UpdateRepository;
 
 BEGIN
   NEW (packageContext);
