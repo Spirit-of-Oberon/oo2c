@@ -1,6 +1,6 @@
 /*      $Id$        */
 /*  Run-time system for C back-ends of OOC2
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -183,6 +183,9 @@ extern OOC_INT32 _cmp32(const OOC_CHAR32* l, const OOC_CHAR32* r);
 #define OOC_TBPROC_ADR(_tag,_name) (((RT0__Struct)(_tag))->tbProcs[_TBN_##_name])
 
 #define OOC_TBCALL(_adr,_name) ((_TBP_##_name)(_adr))
+
+#define OOC_METHOD(_obj,_name) \
+  ((_TBP_##_name)OOC_TBPROC_ADR(OOC_TYPE_TAG(_obj),_name))
 
 
 #define STATIC_TBCALL(_module,_type_name,_tb_proc_name,_receiver,_param_list) \
