@@ -264,8 +264,10 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
   (* `design' is the variable designator, `value' its translation to SSA *)
     VAR
       instr, check: SSA.Instr;
+      type: Sym.Type;
     BEGIN
-      IF checkDerefOfNil & (design. type IS Sym.Pointer) THEN
+      type := design.type.Deparam();
+      IF checkDerefOfNil & (type IS Sym.Pointer) THEN
         check := AddException (pb, derefSym,
                                Opcode.checkPointer, value. subclass);
         check. AddOpnd (value, Opnd.arg);
@@ -273,15 +275,15 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       END;
       
       instr := pb. AddInstr (Opcode.typeTag, Opcode.scAddress);
-      IF (design. type IS Sym.Pointer) THEN
+      IF (type IS Sym.Pointer) THEN
         instr. AddOpnd (value, Opnd.arg);
       ELSIF (design IS IR.Var) &
             design(IR.Var). decl(Sym.VarDecl). isVarParam &
-            (design(IR.Var). decl(Sym.VarDecl). type IS Sym.Record) THEN
+            TR.IsRecord(design(IR.Var).decl(Sym.VarDecl).type) THEN
         (* type tag of a VAR parameter *)
         instr. AddOpnd (value. instr. GetArgClass (Opnd.readDesign), Opnd.arg);
       ELSE                             (* static type tag *)
-        instr. AddOpnd (pb. GetTypeRef (design. type), Opnd.arg);
+        instr. AddOpnd (pb. GetTypeRef (type), Opnd.arg);
       END;
       RETURN instr;
     END TypeTag;
