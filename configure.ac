@@ -25,7 +25,6 @@ AC_CHECK_HEADERS(sys/time.h unistd.h io.h pwd.h utime.h gc/gc.h)
 AC_HEADER_TIME
 
 dnl checks for types
-OOC_CHECK_LONG_SIZE_T()
 OOC_CHECK_INT64_T()
 
 dnl checks for structures
@@ -41,5 +40,6 @@ AC_CHECK_FUNCS(gettimeofday settimeofday)
 
 dnl checks for system services
 
-AC_CONFIG_FILES(ENV rsrc/OOC/Makefile.config rsrc/OOC/TestFramework/config.xml)
+AC_CONFIG_FILES(ENV rsrc/OOC/Makefile.config rsrc/OOC/oo2crc.xml
+                rsrc/OOC/TestFramework/config.xml)
 AC_OUTPUT

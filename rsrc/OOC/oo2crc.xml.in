@@ -1,0 +1,7 @@
+<!-- -*-mode: xml-*- -->
+<configuration>
+  <!--<options>
+    <set name='cc'>@CC@</set>
+    <set name='cflags'>@CFLAGS@</set>
+  </options>-->
+</configuration>
