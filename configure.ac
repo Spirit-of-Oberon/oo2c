@@ -41,7 +41,7 @@ AC_CHECK_FUNCS(atexit raise)
 dnl   BSD functions:
 AC_CHECK_FUNCS(gettimeofday settimeofday)
 dnl   GNU extensions:
-AC_CHECK_FUNCS(backtrace_symbols)
+AC_CHECK_FUNCS(backtrace_symbols readdir_r)
 
 dnl checks for system services
 
