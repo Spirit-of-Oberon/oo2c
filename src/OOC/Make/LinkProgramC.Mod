@@ -22,10 +22,13 @@ MODULE OOC:Make:LinkProgramC;
 
 IMPORT
   Out, Strings, URI, URI:Scheme:File, ADT:Object, ADT:String, ADT:Dictionary,
-  ADT:ArrayList, StringValue := Config:Value:String,
-  OS:ProcessManagement, OOC:Error, OOC:Repository, OOC:Config:CCompiler,
-  Sym := OOC:SymbolTable;
+  ADT:ArrayList, Config:Value, StringValue := Config:Value:String,
+  OS:ProcessManagement, OOC:Error, OOC:Repository, OOC:Config,
+  OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
+VAR
+  empty, space: String.String;
+  
 PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
                            thisLibrary: String.String): String.StringArrayPtr;
   VAR
@@ -34,6 +37,8 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
     libDeps, visited: Dictionary.Dictionary;
     depArray: ArrayList.ArrayList;
     extLibs: String.StringArrayPtr;
+    option: Dictionary.Dictionary;
+    prev, new: String.String;
 
   PROCEDURE GetDepArray (libName: String.String): ArrayList.ArrayList;
     VAR
@@ -54,6 +59,7 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
     VAR
       depArray: ArrayList.ArrayList;
       i: LONGINT;
+      obj: Object.Object;
     BEGIN
       IF ~visited.HasKey(libName) & libDeps.HasKey(libName) THEN
         visited.Set(libName, NIL);
@@ -61,7 +67,8 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
         FOR i := 0 TO depArray.size-1 DO
           AddLibrary(depArray.array[i](String.String), pos);
         END;
-        extLibs[pos] := libName;
+        obj := option.Get(libName);
+        extLibs[pos] := obj(String.String);
         INC (pos);
       END;
     END AddLibrary;
@@ -71,12 +78,41 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
       RETURN (module.ifData.libraryName = NIL) OR
           module.ifData.libraryName.Equals(thisLibrary);
     END IncludeModule;
+
+  PROCEDURE Option(libraryName: String.String): String.String;
+    VAR
+      obj: Object.Object;
+      str: String.String;
+    BEGIN
+      IF option.HasKey(libraryName) THEN
+        obj := option.Get(libraryName);
+        RETURN obj(String.String);
+      ELSE
+        str := String.New("-l");
+        str := str.Concat(libraryName);
+        option.Set(libraryName, str);
+        RETURN str;
+      END;
+    END Option;
+
+  PROCEDURE LookupValue(optionName: String.String): String.String;
+    VAR
+      v: Value.Value;
+    BEGIN
+      v := Config.options.GetValue(optionName.array^);
+      IF (v # NIL) & (v IS StringValue.Value) THEN
+        RETURN String.New(v(StringValue.Value).string^);
+      ELSE
+        RETURN empty;
+      END;
+    END LookupValue;
   
   BEGIN
     (* In the a first pass over all object files, pick up any references
        to external libraries.  Ignore any modules that have been put into
        libraries themselves.  *)
     libDeps := Dictionary.New();
+    option := Dictionary.New();
     FOR i := 0 TO LEN(moduleList)-1 DO
       IF IncludeModule(moduleList[i]) THEN
         (* note down any libraries that need to be linked in *)
@@ -86,6 +122,16 @@ PROCEDURE GetExternalLibs (moduleList: ARRAY OF Repository.Module;
             depArray := GetDepArray(linkDirective.libraryName);
             FOR j := 0 TO LEN(linkDirective.dependencies^)-1 DO
               depArray.Append(linkDirective.dependencies[j]);
+            END;
+            IF (linkDirective.prefixOption # NIL) THEN
+              prev := space.Concat(Option(linkDirective.libraryName));
+              new := LookupValue(linkDirective.prefixOption);
+              option.Set(linkDirective.libraryName, new.Concat(prev));
+            END;
+            IF (linkDirective.suffixOption # NIL) THEN
+              prev := Option(linkDirective.libraryName);
+              new := space.Concat(LookupValue(linkDirective.suffixOption));
+              option.Set(linkDirective.libraryName, prev.Concat(new));
             END;
           ELSE                         (* ignore *)
           END;
@@ -195,7 +241,6 @@ PROCEDURE Run*(module: Repository.Module;
          first *)
       extLibs := GetExternalLibs(imports, forLibrary);
       FOR i := LEN (extLibs^)-1 TO 0 BY -1 DO
-        Strings.Append (" -l", str);
         Strings.Append (extLibs[i]. array^, str);
       END;
       Strings.Append (" ", str);
@@ -210,4 +255,7 @@ PROCEDURE Run*(module: Repository.Module;
     RETURN (res = NIL) & (exit = 0)
   END Run;
 
+BEGIN
+  empty := String.New("");
+  space := String.New(" ");
 END OOC:Make:LinkProgramC.
