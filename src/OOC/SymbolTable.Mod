@@ -684,6 +684,18 @@ TYPE
     (**The arguments of the parametric type.  *)
   END;
 
+TYPE
+  TypeClosure* = POINTER TO TypeClosureDesc;
+  TypeClosureDesc = RECORD
+    (TypeDesc)
+    baseType-: Type;
+    params: TypeVarArray;
+    arguments: TypeRefArray;
+  END;
+
+VAR
+  emptyClosure: TypeClosure;
+
 
 (* Objects
    ------------------------------------------------------------------------ *)
@@ -1372,13 +1384,15 @@ PROCEDURE (type: Type) Bound*(): Type;
     RETURN type;
   END Bound;
 
+PROCEDURE ^ Expand*(type: Type): Type;
+
 PROCEDURE (type: Type) Closure*(subType: Type): Type;
 (**If @oparam{type} is a closure and @oparam{subType} a parametric type, then
    apply the bindings of @oparam{type} to the parameters of @oparam{subType}
    and return the resulting type.  Otherwise, return @oparam{subType}
    unchanged.  *)
   BEGIN
-    RETURN subType;
+    RETURN Expand(subType);
   END Closure;
 
 
@@ -2592,6 +2606,167 @@ PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader) RAISES IO.Error;
   END Load;
 
 
+PROCEDURE InitTypeClosure(tc: TypeClosure; position: Position;
+                          baseType: Type;
+                          params: TypeVarArray;
+                          arguments: TypeRefArray);
+  BEGIN
+    ASSERT(LEN(params^) = LEN(arguments^));
+    InitType(tc, NIL, position);
+    tc.baseType := baseType;
+    tc.params := params;
+    tc.arguments := arguments;
+  END InitTypeClosure;
+
+PROCEDURE NewTypeClosure*(position: Position; baseType: Type;
+                          params: TypeVarArray;
+                          arguments: TypeRefArray): TypeClosure;
+  VAR
+    tc: TypeClosure;
+  BEGIN
+    NEW(tc);
+    InitTypeClosure(tc, position, baseType, params, arguments);
+    RETURN tc;
+  END NewTypeClosure;
+
+PROCEDURE (typeClosure: TypeClosure) Deparam*(): Type;
+  BEGIN
+    RETURN typeClosure.baseType;
+  END Deparam;
+
+PROCEDURE (typeClosure: TypeClosure) Lookup*(tv, default: TypeVar): Type;
+(**If @oparam{tv} is bound in @oparam{typeClosure}, then return the value it is
+   bound to.  Otherwise, return @oparam{default}.  *)
+  VAR
+    i: LONGINT;
+  BEGIN
+    ASSERT(LEN(typeClosure.params^) = LEN(typeClosure.arguments^));
+    i := 0;
+    WHILE (i # LEN(typeClosure.params^)) & (typeClosure.params[i] # tv)  DO
+      INC(i);
+    END;
+    IF (i = LEN(typeClosure.params^)) THEN
+      (* variable is unbound in the given context, for example because it is
+         a variable of the class definition appearing in a variable declaration
+         of a method of the class *)
+      RETURN default;
+    ELSE
+      RETURN typeClosure.arguments[i].type;
+    END;
+  END Lookup;
+
+PROCEDURE (closure: TypeClosure) Closure*(type: Type): Type;
+  VAR
+    i: LONGINT;
+    args: TypeRefArray;
+    nextType: Type;
+  BEGIN
+    IF (type = NIL) THEN
+      (* pathological closure used for void function, record base types, etc *)
+      RETURN NIL;
+    END;
+    
+    LOOP
+      WITH type: QualType DO
+        ASSERT(LEN(type.arguments^) = LEN(type.baseType.typePars.params^));
+        NEW(args, LEN(type.baseType.typePars.params^));
+        FOR i := 0 TO LEN(args^)-1 DO
+          InitTypeRef(args[i], closure.Closure(type.arguments[i].type));
+        END;
+        closure := NewTypeClosure(type.position, NIL,
+                                  type.baseType.typePars.params, args);
+        nextType := type.baseType;
+        
+      | type: TypeVar DO
+        nextType := closure.Lookup(type, NIL);
+        IF (nextType = NIL) THEN
+          RETURN type;
+        ELSE
+          closure := emptyClosure;
+        END;
+        
+      ELSE
+        IF (type.typePars = NIL) THEN
+          (* no type variables in this type, and it is not a qualified type *)
+          RETURN type;
+        ELSE
+          EXIT;
+        END;
+      END;
+      type := nextType;
+    END;
+    RETURN NewTypeClosure(closure.position, type,
+                          closure.params, closure.arguments);
+  END Closure;
+
+PROCEDURE (closure: TypeClosure) ArgumentsInduced*(type: Type): BOOLEAN;
+(**Return @code{TRUE} if the type arguments of @oparam{closure} are fully
+   induced by the type arguments of @oparam{type}.  That is, given a variable
+   of type @oparam{type}, all type arguments of @oparam{closure} are defined
+   if @oparam{closure} is an extension of @oparam{type}.  *)
+  VAR
+    i, j: LONGINT;
+  BEGIN
+    IF (type = NIL) THEN
+      RETURN (LEN(closure.arguments^) = 0);
+    ELSE
+      WITH type: QualType DO
+        FOR i := 0 TO LEN(closure.params^)-1 DO
+          j := 0;
+          WHILE (j # LEN(type.arguments^)) &
+                (type.arguments[j].type # closure.params[i]) DO
+            INC(j);
+          END;
+          IF (j = LEN(type.arguments^)) THEN
+            RETURN FALSE;
+          END;
+        END;
+        RETURN TRUE;
+      ELSE
+        RETURN (LEN(closure.arguments^) = 0);
+      END;
+    END;
+  END ArgumentsInduced;
+
+(*PROCEDURE (typeClosure: TypeClosure) Log*();
+  VAR
+    i: LONGINT;
+  BEGIN
+    Log.Ln;
+    Log.Msg("TypeClosure");
+    FOR i := 0 TO LEN(typeClosure.params^)-1 DO
+      Log.LongInt("pos", i);
+      Log.Ptr("  param.adr", typeClosure.params[i]);
+      Log.LongInt("  param.pos", typeClosure.params[i].position.pos);
+      Log.Msg("  --->");
+      Log.Type("  arg.type", typeClosure.arguments[i].type);
+      Log.Ptr("  arg.adr", typeClosure.arguments[i].type);
+      IF (typeClosure.arguments[i].type IS TypeVar) THEN
+        Log.LongInt("  arg.pos", typeClosure.arguments[i].type.position.pos);
+      END;
+      IF (typeClosure.arguments[i].type.namingDecl # NIL) THEN
+        Log.String("  arg.name", typeClosure.arguments[i].type.namingDecl.name.str^);
+      END;
+    END;
+  END Log;*)
+
+PROCEDURE Expand*(type: Type): Type;
+(**@precond
+   The type @oparam{type} contains unbound type variables that need to be bound
+   to a particular value in the current context.
+   @end precond
+
+   @postcond
+   The result is not an instance of @otype{QualType}.  If the result is a
+   @samp{TypeClosure}, then this statement holds for the expression's base
+   type.
+   @end postcond  *)
+  BEGIN
+    RETURN emptyClosure.Closure(type);
+  END Expand;
+
+
+
 PROCEDURE (item: Item) Namespace* (): Namespace;
 (**Returns the namespace instance associated with @oparam{item}.
    If @oparam{item} has no namespace, that is, if it is no module, procedure,
@@ -2840,9 +3015,22 @@ PROCEDURE (decl: Declaration) GetEmbeddedNamespace* (followTypeNames: BOOLEAN): 
     END
   END GetEmbeddedNamespace;
 
+PROCEDURE Init();
+  VAR
+    params: TypeVarArray;
+    arguments: TypeRefArray;
+  BEGIN
+    predefIdToType := NIL;
+    emptyBaseURI := File.ToURI("/");
+    NEW (importPosition);
+    InitPosition (importPosition, posImportedName, -1, -1);
+    
+    NEW(params, 0);
+    NEW(arguments, 0);
+    NEW(emptyClosure);
+    InitTypeClosure(emptyClosure, NIL, NIL, params, arguments);
+  END Init;
+
 BEGIN
-  predefIdToType := NIL;
-  emptyBaseURI := File.ToURI("/");
-  NEW (importPosition);
-  InitPosition (importPosition, posImportedName, -1, -1);
+  Init;
 END OOC:SymbolTable.

@@ -31,179 +31,6 @@ IMPORT
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
 
 
-TYPE
-  TypeClosure = POINTER TO TypeClosureDesc;
-  TypeClosureDesc = RECORD
-    (Sym.TypeDesc)
-    baseType: Sym.Type;
-    params: Sym.TypeVarArray;
-    arguments: Sym.TypeRefArray;
-  END;
-
-VAR
-  emptyClosure: TypeClosure;
-
-
-PROCEDURE InitTypeClosure(tc: TypeClosure; position: Sym.Position;
-                          baseType: Sym.Type;
-                          params: Sym.TypeVarArray;
-                          arguments: Sym.TypeRefArray);
-  BEGIN
-    ASSERT(LEN(params^) = LEN(arguments^));
-    Sym.InitType(tc, NIL, position);
-    tc.baseType := baseType;
-    tc.params := params;
-    tc.arguments := arguments;
-  END InitTypeClosure;
-
-PROCEDURE NewTypeClosure*(position: Sym.Position; baseType: Sym.Type;
-                          params: Sym.TypeVarArray;
-                          arguments: Sym.TypeRefArray): TypeClosure;
-  VAR
-    tc: TypeClosure;
-  BEGIN
-    NEW(tc);
-    InitTypeClosure(tc, position, baseType, params, arguments);
-    RETURN tc;
-  END NewTypeClosure;
-
-PROCEDURE (typeClosure: TypeClosure) Deparam*(): Sym.Type;
-  BEGIN
-    RETURN typeClosure.baseType;
-  END Deparam;
-
-PROCEDURE Lookup(context: TypeClosure; tv, default: Sym.TypeVar): Sym.Type;
-(**If @oparam{tv} is bound in @oparam{context}, then return the value it
-   is bound to.  Otherwise, return @oparam{default}.  *)
-  VAR
-    i: LONGINT;
-  BEGIN
-    ASSERT(LEN(context.params^) = LEN(context.arguments^));
-    i := 0;
-    WHILE (i # LEN(context.params^)) & (context.params[i] # tv)  DO
-      INC(i);
-    END;
-    IF (i = LEN(context.params^)) THEN
-      (* variable is unbound in the given context, for example because it is
-         a variable of the class definition appearing in a variable declaration
-         of a method of the class *)
-      RETURN default;
-    ELSE
-      RETURN context.arguments[i].type;
-    END;
-  END Lookup;
-
-PROCEDURE (closure: TypeClosure) Closure*(type: Sym.Type): Sym.Type;
-  VAR
-    i: LONGINT;
-    args: Sym.TypeRefArray;
-    nextType: Sym.Type;
-  BEGIN
-    IF (type = NIL) THEN
-      (* pathological closure used for void function, record base types, etc *)
-      RETURN NIL;
-    END;
-    
-    LOOP
-      WITH type: Sym.QualType DO
-        ASSERT(LEN(type.arguments^) = LEN(type.baseType.typePars.params^));
-        NEW(args, LEN(type.baseType.typePars.params^));
-        FOR i := 0 TO LEN(args^)-1 DO
-          Sym.InitTypeRef(args[i], closure.Closure(type.arguments[i].type));
-        END;
-        closure := NewTypeClosure(type.position, NIL,
-                                  type.baseType.typePars.params, args);
-        nextType := type.baseType;
-        
-      | type: Sym.TypeVar DO
-        nextType := Lookup(closure, type, NIL);
-        IF (nextType = NIL) THEN
-          RETURN type;
-        ELSE
-          closure := emptyClosure;
-        END;
-        
-      ELSE
-        IF (type.typePars = NIL) THEN
-          (* no type variables in this type, and it is not a qualified type *)
-          RETURN type;
-        ELSE
-          EXIT;
-        END;
-      END;
-      type := nextType;
-    END;
-    RETURN NewTypeClosure(closure.position, type,
-                          closure.params, closure.arguments);
-  END Closure;
-
-PROCEDURE (closure: TypeClosure) ArgumentsInduced(type: Sym.Type): BOOLEAN;
-(**Return @code{TRUE} if the type arguments of @oparam{closure} are fully
-   induced by the type arguments of @oparam{type}.  That is, given a variable
-   of type @oparam{type}, all type arguments of @oparam{closure} are defined
-   if @oparam{closure} is an extension of @oparam{type}.  *)
-  VAR
-    i, j: LONGINT;
-  BEGIN
-    IF (type = NIL) THEN
-      RETURN (LEN(closure.arguments^) = 0);
-    ELSE
-      WITH type: Sym.QualType DO
-        FOR i := 0 TO LEN(closure.params^)-1 DO
-          j := 0;
-          WHILE (j # LEN(type.arguments^)) &
-                (type.arguments[j].type # closure.params[i]) DO
-            INC(j);
-          END;
-          IF (j = LEN(type.arguments^)) THEN
-            RETURN FALSE;
-          END;
-        END;
-        RETURN TRUE;
-      ELSE
-        RETURN (LEN(closure.arguments^) = 0);
-      END;
-    END;
-  END ArgumentsInduced;
-
-(*PROCEDURE (typeClosure: TypeClosure) Log*();
-  VAR
-    i: LONGINT;
-  BEGIN
-    Log.Ln;
-    Log.Msg("TypeClosure");
-    FOR i := 0 TO LEN(typeClosure.params^)-1 DO
-      Log.LongInt("pos", i);
-      Log.Ptr("  param.adr", typeClosure.params[i]);
-      Log.LongInt("  param.pos", typeClosure.params[i].position.pos);
-      Log.Msg("  --->");
-      Log.Type("  arg.type", typeClosure.arguments[i].type);
-      Log.Ptr("  arg.adr", typeClosure.arguments[i].type);
-      IF (typeClosure.arguments[i].type IS Sym.TypeVar) THEN
-        Log.LongInt("  arg.pos", typeClosure.arguments[i].type.position.pos);
-      END;
-      IF (typeClosure.arguments[i].type.namingDecl # NIL) THEN
-        Log.String("  arg.name", typeClosure.arguments[i].type.namingDecl.name.str^);
-      END;
-    END;
-  END Log;*)
-
-PROCEDURE Expand*(type: Sym.Type): Sym.Type;
-(**@precond
-   The type @oparam{type} contains unbound type variables that need to be bound
-   to a particular value in the current context.
-   @end precond
-
-   @postcond
-   The result is not an instance of @otype{Sym.QualType}.  If the result is a
-   @samp{TypeClosure}, then this statement holds for the expression's base
-   type.
-   @end postcond  *)
-  BEGIN
-    RETURN emptyClosure.Closure(type);
-  END Expand;
-
-
 PROCEDURE IsNamedType* (type: Sym.Type): BOOLEAN;
 (**Returns @code{TRUE}, iff the type @oparam{type} can be accessed through
    a type name.  *)
@@ -554,15 +381,15 @@ PROCEDURE SameType* (a, b: Sym.Type): BOOLEAN;
     
     IF (a = b) & ~IsOpenArrayType (a) THEN
       RETURN TRUE;
-    ELSIF (a IS TypeClosure) & (b IS TypeClosure) THEN
-      baseA := a(TypeClosure).baseType;
-      baseB := b(TypeClosure).baseType;
+    ELSIF (a IS Sym.TypeClosure) & (b IS Sym.TypeClosure) THEN
+      baseA := a(Sym.TypeClosure).baseType;
+      baseB := b(Sym.TypeClosure).baseType;
       IF SameType(baseA, baseB) THEN
         ASSERT(baseA.typePars = baseB.typePars);
         FOR i := 0 TO LEN(baseA.typePars.params^)-1 DO
           tv := baseA.typePars.params[i];
-          IF ~SameType(Lookup(a(TypeClosure), tv, tv),
-                       Lookup(b(TypeClosure), tv, tv)) THEN
+          IF ~SameType(a(Sym.TypeClosure).Lookup(tv, tv),
+                       b(Sym.TypeClosure).Lookup(tv, tv)) THEN
             RETURN FALSE;
           END;
         END;
@@ -678,8 +505,8 @@ PROCEDURE IsInducedExtensionOf* (type, base: Sym.Type;
           ptr := type.Deparam();
           qualBase := ptr(Sym.Record).baseType;
           
-          IF ensureInduction & (type IS TypeClosure) &
-             ~type(TypeClosure).ArgumentsInduced(qualBase) THEN
+          IF ensureInduction & (type IS Sym.TypeClosure) &
+             ~type(Sym.TypeClosure).ArgumentsInduced(qualBase) THEN
             RETURN FALSE;
           END;
           
@@ -1124,17 +951,4 @@ PROCEDURE AllocateType* (type: Sym.Type);
     END;
   END AllocateType;
 
-PROCEDURE Init();
-  VAR
-    params: Sym.TypeVarArray;
-    arguments: Sym.TypeRefArray;
-  BEGIN
-    NEW(params, 0);
-    NEW(arguments, 0);
-    NEW(emptyClosure);
-    InitTypeClosure(emptyClosure, NIL, NIL, params, arguments);
-  END Init;
-
-BEGIN
-  Init;
 END OOC:SymbolTable:TypeRules.

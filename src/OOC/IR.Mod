@@ -2396,7 +2396,7 @@ PROCEDURE (b: Builder) NewConstructor* (sym: Symbol; type: Expression;
     END;
          
     NEW (cons);
-    InitConstructor (cons, sym, b.NewNewObject(sym, TR.Expand(consType), NIL),
+    InitConstructor (cons, sym, b.NewNewObject(sym, Sym.Expand(consType), NIL),
                      init);
     RETURN cons;
   END NewConstructor;
@@ -3367,7 +3367,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       RETURN b. errorExpr;
     ELSIF (refType IS Sym.TypeVar) THEN
       RETURN b.ErrExpr(notTypeInstance, referenceType.sym);
-    ELSIF ~TR.IsInducedExtensionOf(TR.Expand(refType), expr.type, TRUE) THEN
+    ELSIF ~TR.IsInducedExtensionOf(Sym.Expand(refType), expr.type, TRUE) THEN
       RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
     ELSIF ~HasDynamicType(expr) THEN
       (* The test for TR.IsExtensionOf restricts the type of the variable to
@@ -3375,7 +3375,7 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
          a dynamic type that can differ from its static one.  *)
       RETURN b. ErrExpr (noDynamicType, expr.sym);
     ELSE
-      IF TR.SameType(TR.Expand(refType), expr.type) THEN
+      IF TR.SameType(Sym.Expand(refType), expr.type) THEN
         b.WarnSym(redundantTypeTest, referenceType.sym);
       END;
       
@@ -3430,7 +3430,7 @@ BEGIN
   test := b.NewTypeTest(sym, design, ref);
   IF test IS TypeTest THEN
     NEW(guard);
-    InitTypeGuard(guard, sym, TR.Expand(guardType), test(TypeTest),
+    InitTypeGuard(guard, sym, Sym.Expand(guardType), test(TypeTest),
                   GetPragmaValue(b, StdPragmas.derefCheck, sym.pos),
                   GetPragmaValue(b, StdPragmas.typeGuard, sym.pos));
     RETURN guard;
@@ -3628,12 +3628,12 @@ PROCEDURE (b: Builder) NewVar* (name: Symbol; decl: Sym.VarDecl): Var;
         END;
       END;
 
-      type := TR.NewTypeClosure(decl.type.position, decl.type,
-                                decl.type.typePars.params, args);
+      type := Sym.NewTypeClosure(decl.type.position, decl.type,
+                                 decl.type.typePars.params, args);
     ELSE
-      type := TR.Expand(decl.type);
+      type := Sym.Expand(decl.type);
     END;
-    InitVar (var, name, TR.Expand(type), decl);
+    InitVar (var, name, Sym.Expand(type), decl);
     RETURN var
   END NewVar;
 
@@ -4740,7 +4740,7 @@ PROCEDURE (b: Builder) CheckExit (procDecl: Sym.ProcDecl;
               b. ErrSym (returnWithoutResult, statm. sym);
             ELSE
               MakeAssignmentCompatible (b, statm. result. sym, statm. result,
-                                        TR.Expand(procDecl.formalPars.resultType));
+                                        Sym.Expand(procDecl.formalPars.resultType));
             END;
           END;
           statm. popExceptionContext := enclosingTry;

@@ -12,10 +12,10 @@
   generic24 generic25 generic26 generic27 generic28 generic29
   generic30 generic31 generic32 generic33 generic34 generic35
   generic36 generic37 generic38 generic39 generic40 generic41
-  generic42 generic43 generic44 generic45 generic46">-->
+  generic42 generic43 generic44 generic45 generic46 generic47">-->
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic1 generic40">-->
+  select ="&SetupTestCasesWithOut; generic1 generic47">-->
 
   &TestSetupWithOut;
     
@@ -1478,6 +1478,10 @@
       In a type guard, the compiler must be able to derive the type
       arguments of the reference type from the static type of the
       variable.
+    </test>
+    <test id="generic47" type="accept" file="Generic47.Mod">
+      Parametric types may appear somewhere in a designator, even if
+      the top-level variable is a normal type.
     </test>
   </testcases>
 

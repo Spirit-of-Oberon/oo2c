@@ -1504,7 +1504,7 @@ RAISES IO.Error;
          function cannot operate properly; only run it if we are clean *)
       CheckExtendedRecords (root, errList);
     END;
-
+    
     ResolveRef.Resolve (root, errList);
     
     IF (uses # NIL) & errList.NoErrors() THEN

@@ -468,7 +468,7 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               
               NEW(qualType);
               Sym.InitQualType(qualType, NIL, rec.position, rec, args);
-              rec := TR.Expand(qualType);
+              rec := Sym.Expand(qualType);
 
               WHILE (rec.Deparam() # base.Class()) DO
                 ptr := rec.Deparam();
