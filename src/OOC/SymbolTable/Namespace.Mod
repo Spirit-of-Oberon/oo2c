@@ -23,7 +23,7 @@ MODULE OOC:SymbolTable:Namespace;
 
 IMPORT
   OOC:Error, Sym := OOC:SymbolTable, TR := OOC:SymbolTable:TypeRules,
-  OOC:SymbolTable:Uses;
+  OOC:SymbolTable:Predef, OOC:SymbolTable:Uses;
 
 
 TYPE
@@ -81,6 +81,7 @@ CONST
   invalidRedefintion = 6;
   redefinitionBeforeBase = 7;
   staticMethodNotExported = 8;
+  notProcedure = 9;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -113,6 +114,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "This procedure redefines a procedure that is declared later"
     | staticMethodNotExported:
       t := "This static type-bound procedure must be exported"
+    | notProcedure:
+      t := "This must be a non-function procedure"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -485,9 +488,14 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               IF (decl. name. pos < base. visibleFrom) THEN
                 ErrDecl (redefinitionBeforeBase, decl, errList)
               END;
-              IF (decl.procClass = Sym.staticMethod) &
-                 (decl.exportMark = Sym.nameNotExported) THEN
-                ErrDecl (staticMethodNotExported, decl, errList);
+              IF (decl.procClass = Sym.staticMethod) THEN
+                IF (decl.exportMark = Sym.nameNotExported) THEN
+                  ErrDecl (staticMethodNotExported, decl, errList);
+                END;
+                IF (decl.name.str^ = Predef.initMethod) &
+                   (decl.formalPars.resultType # NIL) THEN
+                  ErrDecl(notProcedure, decl, errList);
+                END;
               END;
 
               decl.deprecated := decl.deprecated OR base.deprecated;
