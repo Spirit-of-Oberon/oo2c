@@ -148,7 +148,20 @@ lib/obj/liboo2c.la: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml
 bin/oo2c: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml lib/obj/liboo2c.la
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package oo2c
 
-install: lib/obj/liboo2c.la bin/oo2c
+### Remove manual pages.
+uninstall-man:
+	for i in oo2c ooef oowhereis; do \
+	  rm -f $(mandir)/$$i$(manext) $(mandir)/$$i$(manext).gz; \
+	done
+
+### Install manual pages.
+install-man: uninstall-man
+	$(INSTALL) -d $(mandir)
+	for i in oo2c ooef oowhereis; do \
+	  $(INSTALL_DATA) man/$$i.1 $(mandir)/$$i$(manext); \
+	done
+
+install: lib/obj/liboo2c.la bin/oo2c install-man
 	$(INSTALL) -d $(oocdir)/pkginfo
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
@@ -157,7 +170,7 @@ install: lib/obj/liboo2c.la bin/oo2c
 install-strip:
 	${MAKE} INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
-uninstall: FRC
+uninstall: uninstall-man FRC
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml $(OFLAGS) --uninstall-package oo2c liboo2c
 
 ifdef MAIN_MAKEFILE
