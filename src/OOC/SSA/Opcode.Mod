@@ -635,6 +635,7 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       | Predef.set: RETURN scUnsigned32
       | Predef.charString: RETURN scAddress
       | Predef.longcharString: RETURN scAddress
+      | Predef.nil: RETURN scAddress
       END;
       
     | type: Sym.Array DO
