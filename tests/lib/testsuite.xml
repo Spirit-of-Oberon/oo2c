@@ -2,6 +2,7 @@
 <!DOCTYPE testsuite-ext
           SYSTEM "../../rsrc/OOC/TestFramework/testcases-ext.dtd" [
 <!ENTITY libadt-testcases SYSTEM "adt/testcases.xml">
+<!ENTITY libos-testcases SYSTEM "os/testcases.xml">
 ]>
 
 <testsuite-ext
@@ -510,5 +511,5 @@
   </testcases>
 
   &libadt-testcases;
-
+  &libos-testcases;
 </testsuite-ext>
