@@ -80,7 +80,7 @@ TestInterfaceGen, is actually a test program and lacks the polish of
 an application destined for end users.
 
 It is assumed that you have some XSLT processor installed (for example
-Xalan from apache.org).
+Xalan from apache.org or xsltproc from the GNOME libxslt).
 
 Download the ooc2 and libadt sources from the SourceForge project OOC
 (http://sourceforge.net/projects/ooc).  Adjust the script
