@@ -37,6 +37,7 @@ END-INFO-DIR-ENTRY
 * Introduction::                
 * Programs::                    
 * Library Modules::             
+* Doc Comments::                
 * Built-in Type STRING::        
 * Exceptions::                  
 * Parametric Types::            
@@ -113,7 +114,7 @@ executables, and auxiliary files from the meta data of a
 Please refer to the man page of @code{oo2c} for the details.
 
 
-@node Library Modules, Built-in Type STRING, Programs, Top
+@node Library Modules, Doc Comments, Programs, Top
 @chapter Library Modules
 
 With the switch from oo2c v1 to v2 a number of highly specialized and
@@ -165,7 +166,165 @@ namespaces and validation.
 @end table
 
 
-@node Built-in Type STRING, Exceptions, Library Modules, Top
+@node Doc Comments, Built-in Type STRING, Library Modules, Top
+@chapter Doc Comments
+
+Documentation describing the public interface of a module can embedded
+into the source code using @dfn{doc comments}.  Such comments start
+with a special delimiter @samp{(**}, like @samp{(**Some
+explanation. *)}, and refer to the declaration preceding them.
+Within doc comments, a subset of the GNU Texinfo command set can be
+used to mark up the text.
+
+The following sections summarise the commands implemented by the OOC
+parser.  Please refer to the Texinfo manual for a more thorough
+description of the their syntax and intended use.
+
+@menu
+* Inline Commands::             
+* Block Commands::              
+* Glyphs::                      
+@end menu
+
+@node Inline Commands, Block Commands, Doc Comments, Doc Comments
+@section Inline Commands
+
+Inline commands take a single argument in curly braces like
+@samp{@@code@{ABS()@}}.
+
+@subsubheading Font and style commands:
+
+@table @code
+@item @@asis
+used with @code{@@table} for entries without added highlighting
+@item @@cite
+name of a book (with no cross reference link available)
+@item @@code
+syntactic tokens
+@item @@command
+command names
+@item @@dfn 
+introductory or defining use of a technical term
+@item @@emph
+emphasis; produces @emph{italics} in printout
+@item @@file
+file name
+@item @@kbd 
+input to be typed by users
+@item @@samp
+literal example or sequence of characters
+@item @@strong
+stronger emphasis than @code{@@emph}; produces @strong{bold} in printout
+@item @@var 
+meta-syntactic variables (for example, formal procedure parameters)
+@end table
+
+@subsubheading References:
+
+@table @code
+@item @@email
+an email address
+@item @@url 
+indicate a uniform resource locator (URL)
+@item @@uref
+reference to a uniform resource locator (URL)
+@end table
+
+@subsubheading Referencing Oberon declarations:
+
+@table @code
+@item @@omodule
+module name
+@item @@oconst
+name of a constant
+@item @@ofield
+designator referring to a record field
+@item @@oparam
+parameter name
+@item @@oproc
+designator referring to a procedure (normal or type-bound)
+@item @@otype
+type name
+@item @@ovar
+variable name
+@end table
+
+Designators can contain arbitrary @samp{.member} parts, referring to
+members of modules, procedures, or records.  For example,
+@samp{@@oparam@{MyModule.MyPointer.MyProc.param@}} would refer to the
+parameter @samp{param} of the type-bound procedure @samp{MyProc} from
+module @samp{MyModule} that has @samp{MyPointer} as its receiver
+type.  Unless prefixed by a @samp{*}, names and designators must refer
+to existing declarations and the class of the indicated object must
+match the command name.  If the designator is prefixed with a
+@samp{*}, then the designator is not checked by the compiler.  In this
+case, it must begin with a fully qualified module name.  This variant
+should only be used to refer to an object from another module if the
+module is not part of the @code{IMPORT} list.
+
+@node Block Commands, Glyphs, Inline Commands, Doc Comments
+@section Block Commands
+
+Block commands start with the command @samp{@@cmd} on a line of its
+own, often followed by one or more arguments, and end with @samp{@@end
+cmd}, also on a line of its own.
+
+@subsubheading Lists and tables:
+
+@table @code
+@item @@enumerate
+enumerated lists, using numbers or letters
+@item @@itemize
+itemised lists with and without bullets
+@item @@table
+two-column tables with highlighting
+@item @@item, @@itemx
+used with the above lists and tables for each entry
+@end table
+
+@subsubheading Paragraph formatting:
+
+@table @code
+@item @@example
+example that is not part of the running text (fixed font)
+@item @@noindent
+prevents paragraph indentation
+@end table
+
+@subsubheading Pre- and post-conditions:
+
+@table @code
+@item @@precond
+pre-conditions of a procedure
+@item @@postcond
+post-conditions of a procedure
+@end table
+
+@node Glyphs,  , Block Commands, Doc Comments
+@section Glyphs
+
+@table @code
+@item @@@@
+the character @samp{@@}
+@item @@@{
+the character @samp{@{}
+@item @@@}
+the character @samp{@}}
+@item @@dots@{@}
+ellipsis @samp{@dots{}}
+@item @@bullet@{@}
+a @samp{@bullet{}}, typically used with @code{@@itemize}
+@item @@minus@{@}
+a minus sign, @samp{@minus{}}
+@item @@result@{@}
+result of evaluating an expression, @samp{@result{}}
+@item -@code{-}-
+an em-dash for text `---'
+@end table
+
+
+
+@node Built-in Type STRING, Exceptions, Doc Comments, Top
 @chapter Built-in Type STRING
 
 The predefined identifier @code{STRING} is an alias for the type
