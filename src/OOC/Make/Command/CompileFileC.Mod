@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:Command:CompileFileC;
 (*  Translates a C file into an object file.
-    Copyright (C) 2001  Michael van Acken
+    Copyright (C) 2001, 2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -32,8 +32,15 @@ TYPE
     module: Repository.Module;
     fileId: Repository.FileId;
     sourceId: Repository.FileId;
+    
     sourceURI: URI.HierarchicalURI;
+    (* Identifies the C input file.  For an INTERFACE file without a FILE
+       directive, this may be NIL.  In this case, nothing needs to be done. *)
+    
     externalSource: BOOLEAN;
+    (* If TRUE, then the C source file is provided "as is", and is not created
+       by the compiler.  As a consequence of this, it does not depend on any
+       other entities and can be compiled immediately.  *)
   END;
 
 PROCEDURE New* (context: Make.Context; module: Repository.Module;
@@ -58,10 +65,14 @@ PROCEDURE New* (context: Make.Context; module: Repository.Module;
     cmd. sourceURI := cmd. module. GetURI (src);
     cmd. sourceId := src;
     
-    (* revise data if the module is FOREIGN: use externally provided C file *)
+    (* revise data if the module is FOREIGN or INTERFACE: use externally
+       provided C file; as a rule, these file must provide exactly one C code
+       file  *)
     IF (fileId = Repository.modObjectFile) THEN
       symTab := module. GetSymbolTable (res);
-      IF (res = NIL) & (symTab. class = Sym.mcForeign) THEN
+      IF (res = NIL) &
+         ((symTab. class = Sym.mcForeign) OR
+          (symTab. class = Sym.mcInterface)) THEN
         cmd. externalSource := TRUE;
         cmd. sourceURI := symTab. GetExternalSource()
       END
@@ -99,6 +110,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     config: Config.Config;
   BEGIN
     exit := 0;
+    
     m := cmd. module;
     config := cmd. context. config(Config.Config);
     
