@@ -11,4 +11,8 @@
     Parses an invalid XML document and writes an error message to
     <code>stdout</code>.
   </test>
+  <test id="libxml3" type="run" file="LibXml3.Mod" output="LibXml3.Ref">
+    A simplified version of the DTD of <code>libxml2</code>, with a
+    valid document.
+  </test>
 </testcases>

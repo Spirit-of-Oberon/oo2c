@@ -1,0 +1,5 @@
+<!DOCTYPE elem [
+<!ELEMENT a EMPTY>
+<!ELEMENT elem (a,a)> 
+]>
+<elem><a/><a/></elem>
