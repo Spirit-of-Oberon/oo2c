@@ -15,9 +15,10 @@ IMPORT
   URI:String,
   FragmentUnparsed := URI:Fragment:Unparsed,
   QueryUnparsed := URI:Query:Unparsed,
+  URI:Query:WWWForm,
   URI:Scheme:CurrentDoc,
   URI:Scheme:File,
-  (*URI:Scheme:HTTP, defunct *)
+  URI:Scheme:HTTP,
   URI:Scheme:Hierarchical,
   URI:Scheme:MailTo,
   URI:Scheme:Opaque,
