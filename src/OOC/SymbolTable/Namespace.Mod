@@ -197,7 +197,7 @@ PROCEDURE (ns: Namespace) CheckLocalUniqueness* (errList: Error.List);
         j := i+1;
         WHILE (j < ns. localCount) & 
               (da[i]. name. str^ = da[j]. name. str^) DO
-          IF (da[j]. name. pos < da[i]. name. pos) THEN
+          IF (da[j]. name. pos < da[min]. name. pos) THEN
             min := j
           END;
           INC (j)
