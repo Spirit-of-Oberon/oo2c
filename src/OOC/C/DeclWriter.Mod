@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 (*  Defines classes to handle C declarations, types, and include statements.
-    Copyright (C) 2001, 2002  Michael van Acken
+    Copyright (C) 2001-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -151,6 +151,7 @@ TYPE
     resultType: Type;
     parameters: ArrayList.ArrayList;
     restParameters: BOOLEAN;
+    noReturn: BOOLEAN;
   END;
 
 TYPE
@@ -740,6 +741,7 @@ PROCEDURE InitFunction (fct: Function; resultType: Type; restParameters: BOOLEAN
     fct. resultType := resultType;
     fct. parameters := ArrayList.New (4);
     fct. restParameters := restParameters;
+    fct. noReturn := FALSE;
   END InitFunction;
 
 PROCEDURE (w: Writer) NewFunction* (resultType: Type; restParameters: BOOLEAN): Function;
@@ -750,6 +752,11 @@ PROCEDURE (w: Writer) NewFunction* (resultType: Type; restParameters: BOOLEAN): 
     InitFunction (fct, resultType, restParameters);
     RETURN fct
   END NewFunction;
+
+PROCEDURE (fct: Function) SetNoReturn* (noReturn: BOOLEAN);
+  BEGIN
+    fct.noReturn := noReturn;
+  END SetNoReturn;
 
 PROCEDURE (fct: Function) AddParameter* (param: Declaration);
   BEGIN
@@ -778,6 +785,9 @@ PROCEDURE (fct: Function) Priority (): SHORTINT;
 PROCEDURE (fct: Function) WriteLeft (w: Writer);
   BEGIN
     WriteLeft (w, fct. resultType, priFunction);
+    IF fct.noReturn THEN
+      w.WriteString("NORETURN ");
+    END;
   END WriteLeft;
 
 PROCEDURE (fct: Function) WriteRight (w: Writer);
@@ -795,7 +805,10 @@ PROCEDURE (fct: Function) WriteRight (w: Writer);
       w. WriteString (", ...");
     END;
     w. WriteChar(")");
-    WriteRight (w, fct. resultType, priFunction)
+    WriteRight (w, fct. resultType, priFunction);
+    IF fct.noReturn THEN
+      w.WriteString(" NORETURN2");
+    END;
   END WriteRight;
 
 (* -------- *)

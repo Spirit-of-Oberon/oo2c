@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -97,6 +97,7 @@ CONST
   flagNilCompat* = 6;
   flagUnion* = 7;
   flagReadOnly* = 8;
+  flagNoReturn* = 9;
   
 CONST
   nameNotExported* = 0;
@@ -517,6 +518,9 @@ TYPE
     anyRestParameters-: BOOLEAN;
     (**If the last formal parameter is the special rest parameter @samp{...},
        then this field is set to @code{TRUE}.  Otherwise it is @code{FALSE}. *)
+    noReturn*: BOOLEAN;
+    (**If set, then it is guaranteed that this procedure never returns.
+       Default is @code{FALSE}.  *)
     raises*: ExceptionNameArray;
     (**List of exceptions that may be raised by this procedure.
        @samp{LEN(raises^)} is the number of registered types.  If there are
@@ -1054,6 +1058,8 @@ PROCEDURE (item: Item) AddFlag* (name: Name);
       id := flagUnion;
     ELSIF (name.str^ = "READ_ONLY") THEN
       id := flagReadOnly;
+    ELSIF (name.str^ = "NO_RETURN") THEN
+      id := flagNoReturn;
     ELSE
       id := flagUnknownName;
     END;
@@ -2184,6 +2190,7 @@ PROCEDURE InitFormalPars* (formalPars: FormalPars; parent: Item;
     formalPars. srcCodeResultType := resultType;
     formalPars. params := NIL;
     formalPars. anyRestParameters := FALSE;
+    formalPars. noReturn := FALSE;
     formalPars. raises := NIL;
   END InitFormalPars;
 
@@ -2211,6 +2218,7 @@ PROCEDURE (formalPars: FormalPars) Store* (w: Storable.Writer);
       END
     END;
     w. WriteBool (formalPars. anyRestParameters);
+    w. WriteBool (formalPars. noReturn);
     IF (formalPars. raises = NIL) THEN
       w. WriteNum (-1)
     ELSE
@@ -2251,6 +2259,7 @@ PROCEDURE (formalPars: FormalPars) Load* (r: Storable.Reader);
       END
     END;
     r. ReadBool (formalPars. anyRestParameters);
+    r. ReadBool (formalPars. noReturn);
     
     r. ReadNum (len);
     IF (len < 0) THEN

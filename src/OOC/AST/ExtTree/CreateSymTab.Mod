@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:ExtTree:CreateSymTab;
 (*  Creates symbol table from abstract syntax tree of module `ExtTree'.
-    Copyright (C) 2000, 2001, 2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -467,6 +467,7 @@ PROCEDURE (v: Visitor) VisitProcDecl* (procDecl: ExtTree.ProcDecl);
     END;
     IF (procDecl. formalPars # NIL) THEN
       fpar := procDecl. formalPars(ExtTree.FormalPars);
+      AddFlags(formalPars, fpar.flags);
       IF (fpar. fpSections # NIL) THEN
         FOR i := 0 TO fpar. fpSections. len-1 BY 2 DO
           nodePtr := fpar. fpSections. n[i];

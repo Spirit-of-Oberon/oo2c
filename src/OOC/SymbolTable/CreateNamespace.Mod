@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:CreateNamespace [OOC_EXTENSIONS];
 (*  Creates namespaces for module, and resolves type names in declarations.
-    Copyright (C) 2000-2002  Michael van Acken
+    Copyright (C) 2000-2003  Michael van Acken
 
     This file is part of OOC.
 
@@ -882,6 +882,14 @@ PROCEDURE CreateNamespace* (root: Sym.Module;
               CASE flag.id OF
               | Sym.flagCString:
                 SetFlag(item.doCArrayAssignment, TRUE);
+              ELSE
+                InvalidFlag(flag, invalidModifierFlag);
+              END;
+
+            | item: Sym.FormalPars DO
+              CASE flag.id OF
+              | Sym.flagNoReturn:
+                SetFlag(item.noReturn, TRUE);
               ELSE
                 InvalidFlag(flag, invalidModifierFlag);
               END;

@@ -178,6 +178,7 @@ PROCEDURE ConvertType* (w: DeclWriter.Writer;
         fct := w. NewFunction
             (ConvertType (w, type. resultType, type. srcCodeResultType),
              type. anyRestParameters);
+        fct.SetNoReturn(type.noReturn);
         ptr := type. nestedItems;
         WHILE (ptr # NIL) DO
           WITH ptr: Sym.Declaration DO   (* this pics up receiver and params *)
@@ -247,6 +248,10 @@ PROCEDURE ConvertDecl (w: DeclWriter.Writer;
       
       IF item.hasTryStatm THEN
         fpars(DeclWriter.Function).MakeParametersVolatile;
+      END;
+      IF (mode # modeWriteExported) THEN
+        (* write NORETURN only in header file *)
+        fpars(DeclWriter.Function).SetNoReturn(FALSE);
       END;
       
       RETURN w. NewDeclaration
