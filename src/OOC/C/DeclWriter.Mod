@@ -24,7 +24,7 @@ IMPORT
   Channel, Err, Files, IntStr, Msg, Strings, TextRider,
   ADT:Object, ADT:String, ADT:ArrayList,
   URI, FileURI := URI:Scheme:File, IO:Memory, 
-  Language, Language:Boolean, Language:String8,
+  Language, Language:Boolean, Language:String8, Language:String16,
   Language:Integer, Language:Set, Language:Real,
   OOC:Repository, Sym := OOC:SymbolTable, OOC:SymbolTable:Predef;
   
@@ -443,7 +443,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
             
       | value: String8.Value DO
         IF (type(Sym.PredefType). id = Predef.char) THEN
-           (* note: the character value is casted to OOC_CHAR8 to avoid
+           (* note: the character value is cast to OOC_CHAR8 to avoid
               any problems if characters are interpreted as signed values
               by default; that is, '\377' is _not_ -1 *)
           charValue := ORD (value. value. array[0]);
@@ -471,6 +471,32 @@ PROCEDURE (w: Writer) WriteConst* (value: Language.Value; type: Sym.Type);
           END;
           w. WriteChar (delim);
         END;
+
+      | value: String16.Value DO
+        IF (type(Sym.PredefType). id = Predef.longchar) THEN
+          charValue := ORD (value. CharAt (0));
+          w. WriteString ("(OOC_CHAR16)");
+          IF (charValue < ORD (" ")) OR (charValue >= 127) OR
+             (charValue = ORD ("'")) OR (charValue = ORD ("\")(*"*)) THEN
+            w. textWriter. WriteLInt (charValue, 0);
+          ELSE
+            w. WriteChar ("'");
+            w. WriteChar (CHR (charValue));
+            w. WriteChar ("'");
+          END;
+        ELSE
+          w. WriteString ("(OOC_CHAR16[]){");
+          i := 0; len := value. Length();
+          WHILE (i # len) DO
+            IF (i # 0) THEN
+              w. WriteChar (",");
+            END;
+            w. textWriter. WriteLInt (ORD (value. CharAt (i)), 0);
+            INC (i)
+          END;
+          w. WriteChar ("}");
+        END;
+        
       | value: Real.Value DO
         str := value.ToString();
         w. WriteString(str.array^);
