@@ -1,6 +1,6 @@
 (* 	$Id$	 *)
 MODULE OOC:Make:Command:CompileModule;
-(*  Compiles a module file.
+(*  Parses a module file, no further translation.  A misnomer...
     Copyright (C) 2001  Michael van Acken
 
     This file is part of OOC.

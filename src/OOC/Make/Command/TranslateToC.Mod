@@ -349,7 +349,7 @@ PROCEDURE (cmd: Command) Run*(): BOOLEAN;
     IF (errList. msgCount = 0) THEN
       module := CreateIR.CreateIR (ast(ExtTree.Module), symTab, 
                                  Operator.NewBuilder (pragmaHistory, errList));
-      XML.Write (StdChannels.stdout. NewWriter(), module);
+(*      XML.Write (StdChannels.stdout. NewWriter(), module);*)
       
       exports := Exports.GetExports (symTab);
       converter := ConvertDecl.NewConverter (m, symTab, exports);
