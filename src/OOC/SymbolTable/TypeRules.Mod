@@ -321,7 +321,7 @@ PROCEDURE (tr: Rules) IsArrayCompatible* (argType, fparType: Sym.Type): BOOLEAN;
   BEGIN
     ASSERT (~(argType IS Sym.PredefType) OR
             (argType(Sym.PredefType). id # Predef.charString));
-    WHILE tr. IsOpenArrayType (argType) & (fparType IS Sym.Array) DO
+    WHILE tr. IsOpenArrayType (fparType) & (argType IS Sym.Array) DO
       argType := argType(Sym.Array). elementType;
       fparType := fparType(Sym.Array). elementType
     END;
