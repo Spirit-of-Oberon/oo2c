@@ -820,6 +820,18 @@ PROCEDURE (r: Rules) UpdateObjectFile(module: Rep.Module): BOOLEAN;
     str: ShellCommand;
     success: BOOLEAN;
   BEGIN
+    IF ~CCompiler.HaveLibtool() &
+       ~Exists(module, Rep.modModuleSource) &
+       Exists(module, Rep.modObjectFile) THEN
+      (* Without libtool, we have no static or shared libraries and everything
+         is done with plain object files.  In this case, the object files are
+         installed without their source code, and cannot be rebuild.  In fact,
+         testing if they need to be rebuild leads to errors.  So shortcut the
+         process for this special case.  *)
+      Logger.ExplainMake("no source code available, and object file exists");
+      RETURN TRUE;
+    END;
+    
     IF (r.SelectBackend(module) = backendSSAtoIA32) THEN
       success := r.Update(module, Rep.modAssemblerFile);
       IF DerivedIsOlder(module, Rep.modObjectFile, Rep.modAssemblerFile) THEN
