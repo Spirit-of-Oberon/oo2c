@@ -90,9 +90,11 @@ PROCEDURE GetImports* (m: Rep.Module;
       item := m. symbolTable. nestedItems;
       WHILE (item # NIL) DO
         WITH item: Sym.Import DO
-          import := repositories. GetModule (item. moduleName. str^);
-          ASSERT (import # NIL);
-          m. AddImport (import);
+          IF ~item. IsInternalImport() THEN
+            import := repositories. GetModule (item. moduleName. str^);
+            ASSERT (import # NIL);
+            m. AddImport (import);
+          END;
         ELSE                             (* ignore *)
         END;
         item := item. nextNested
