@@ -26,7 +26,8 @@ IMPORT
   Sym := OOC:SymbolTable, OOC:SymbolTable:Predef, OOC:IR,
   OOC:SSA:Opcode, ResultClass := OOC:SSA:Result, OpndClass := OOC:SSA:Opnd;
 
-  
+<*DEFINE OOC_CHECK_ARGS:=FALSE*>
+
 TYPE
   Node* = POINTER TO NodeDesc;
   Opnd* = POINTER TO OpndDesc;
@@ -317,14 +318,16 @@ PROCEDURE (opnd: Opnd) DeleteOpnd*;
     opnd. instr := NIL
   END DeleteOpnd;
 
-(*PROCEDURE CheckArg(instr: Instr; arg: Result);
+<*IF OOC_CHECK_ARGS THEN*>
+PROCEDURE CheckArg(instr: Instr; arg: Result);
   BEGIN
     CASE instr.opcode OF
     | Opcode.add, Opcode.subtract, Opcode.multiply:
       ASSERT(arg.subclass = instr.subclass);
     ELSE
     END;
-  END CheckArg;*)
+  END CheckArg;
+<*END*>
 
 PROCEDURE (opnd: Opnd) ReplaceArg* (arg: Result);
 (**Replaces the current argument of the operand with @oparam{arg}.
@@ -333,7 +336,9 @@ PROCEDURE (opnd: Opnd) ReplaceArg* (arg: Result);
    @samp{arg # @code{NIL}}
    @end precond  *)
   BEGIN
-    (*IF (opnd.class=OpndClass.arg) THEN CheckArg(opnd.instr, arg) END;*)
+<*IF OOC_CHECK_ARGS THEN*>
+    IF (opnd.class=OpndClass.arg) THEN CheckArg(opnd.instr, arg) END;
+<*END*>
     DeleteUse (opnd);
     SetUse (arg, opnd)
   END ReplaceArg;
@@ -578,7 +583,9 @@ PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
    @samp{arg # @code{NIL}}
    @end precond  *)
   BEGIN
-    (*IF (class=OpndClass.arg) THEN CheckArg(instr, arg) END;*)
+<*IF OOC_CHECK_ARGS THEN*>
+    IF (class=OpndClass.arg) THEN CheckArg(instr, arg) END;
+<*END*>
     AddOpnd (instr, NewOpnd (arg, class));
   END AddOpnd;
 
@@ -1420,6 +1427,37 @@ PROCEDURE (pb: ProcBlock) SetLoopContext* (loopContext: Instr): Instr;
     pb. loopContext := loopContext;
     RETURN old
   END SetLoopContext;
+
+PROCEDURE (pb: ProcBlock) FixSubclass*(arg: Result;
+                                       subclass: Opcode.Subclass): Result;
+(**If @oparam{arg} is not of the indicated subclass, then add a type conversion
+   instruction for it and return this instruction.  Otherwise, return
+   @oparam{arg}.  *)
+  VAR
+    instr: Instr;
+  BEGIN
+    IF (arg.subclass # subclass) THEN
+      IF (arg IS Const) &
+         ((arg.subclass < Opcode.scReal32) = (subclass < Opcode.scReal32)) THEN
+        RETURN pb.GetConst(arg(Const).value, subclass, NIL);
+      ELSE
+        instr := pb.AddInstr(Opcode.typeConv, subclass);
+        instr. AddOpnd (arg, OpndClass.arg);
+        RETURN instr;
+      END;
+    ELSE
+      RETURN arg;
+    END;
+  END FixSubclass;
+
+PROCEDURE (pb: ProcBlock) FixSubclassInstr*(instr: Instr;
+                                            subclass: Opcode.Subclass): Instr;
+  VAR
+    res: Result;
+  BEGIN
+    res := pb.FixSubclass(instr, subclass);
+    RETURN res(Instr);
+  END FixSubclassInstr;
 
 
 PROCEDURE Add (VAR list: Instr; instr: Instr);
