@@ -3224,10 +3224,14 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
    implements @emph{all} rules where an explicit type conversion must be added,
    and a large part of the common subset of the above notion of compatibility.  *)
   BEGIN
-    ASSERT (expr.type # NIL);
     ASSERT (type # NIL);
-    
-    IF TR.SameType(type, expr. type) THEN (* Case 0a *)
+
+    IF (expr.type = NIL) THEN
+      (* this might happen if the right hand side of the assigment is the name
+         of a predefined function, like MAX  *)
+      RETURN FALSE;
+      
+    ELSIF TR.SameType(type, expr. type) THEN (* Case 0a *)
       (* Case 0a: a < b if a and b are the same type. *)
       RETURN TRUE;
 
@@ -3328,7 +3332,10 @@ PROCEDURE (b: Builder) WidenForAssign (VAR expr: Expression;
   
   BEGIN
     oldExpr := expr;
-    IF (type IS Sym.TypeVar) &
+    IF (type = NIL) THEN
+      expr := b.errorExpr;
+      RETURN FALSE;
+    ELSIF (type IS Sym.TypeVar) &
        ~((type = expr.type) OR IsPredefType (expr.type, Predef.nil)) THEN
       (* Generics extension: instances of type variables are only assignment
          compatible to variables of the same type variable *)
@@ -3401,6 +3408,10 @@ PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
     IF ~b. WidenForAssign (expr, type) & (expr # b.errorExpr) THEN
       b.ErrSym(incompatibleAssignment, sym);
       b.SetNameToType(type);
+      
+      IF (expr.type = NIL) THEN          (* prevent followup error *)
+        expr := b.errorExpr;
+      END;
     END;
   END MakeAssignmentCompatible;
 
@@ -3822,7 +3833,9 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
 
 PROCEDURE (b: Builder) AssertVar (expr: Expression);
   BEGIN
-    IF TR.IsReadOnlyType(b.module, expr.type) THEN
+    IF (expr.type = NIL) THEN
+      b. ErrSym (notVariable, expr. sym);
+    ELSIF TR.IsReadOnlyType(b.module, expr.type) THEN
       b. ErrSym (importedReadOnly, expr. sym);
     ELSE
       WITH expr: Var DO

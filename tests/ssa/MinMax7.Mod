@@ -1,0 +1,4 @@
+MODULE MinMax7;
+   VAR x: LONGINT;
+BEGIN x := MAX;
+END MinMax7.
