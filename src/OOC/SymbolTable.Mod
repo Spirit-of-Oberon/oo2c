@@ -1025,7 +1025,11 @@ PROCEDURE (decl: Declaration) Store* (w: Object.Writer);
     w. WriteObject (decl. name);
     (*w. WriteNum (decl. visibleFrom);*)
     w. WriteNum (decl. exportMark);
-    (* note: decl.docString is not saved *)
+    IF (decl. exportMark # nameNotExported) THEN
+      w. WriteObject (decl. docString);  
+    ELSE  
+      w. WriteObject (NIL);  
+    END;
   END Store;
 
 PROCEDURE (decl: Declaration) Load* (r: Object.Reader);
@@ -1044,7 +1048,12 @@ PROCEDURE (decl: Declaration) Load* (r: Object.Reader);
        for formal parameter declarations; the latter are fixed in 
        @oproc{VarDecl.Load} *)
     r. ReadNum (i); decl. exportMark := SHORT (SHORT (i));
-    decl.docString := NIL;
+    r. ReadObject (obj);
+    IF (obj = NIL) THEN  
+      decl. docString := NIL  
+    ELSE  
+      decl. docString := obj(Doc.Document)  
+    END;
     decl. cachedId := NIL;
     decl. usageCount := 0;
   END Load;
