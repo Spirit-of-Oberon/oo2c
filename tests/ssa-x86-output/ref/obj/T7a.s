@@ -5,10 +5,10 @@
 T7a__f:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
 	cmpb $0, 8(%ebp)
 	jne .L4
 .L1:
@@ -23,6 +23,7 @@ T7a__f:
 .L4:
 	movl $9, %eax
 .L5:
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -34,10 +35,11 @@ T7a__f:
 OOC_T7a_init:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi

@@ -65,7 +65,7 @@ PROCEDURE MemOpnd(instr: S.Instr): S.Opnd;
       IF instr.opndList.IsConst() OR IsOffset(instr.opndList.arg.instr) THEN
         instr.opndList.immediate := TRUE;
       END;
-    | S.setStack:
+    | S.setStack, S.typeTag:
       RETURN NIL;
     ELSE
       inout := InOutOpnd(instr);

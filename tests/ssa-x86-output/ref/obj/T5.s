@@ -5,10 +5,10 @@
 T5__f:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $4, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $4, %esp
 	movl 12(%ebp), %eax
 	movl 8(%ebp), %ecx
 	cmpl %ecx, 12(%ebp)
@@ -18,6 +18,7 @@ T5__f:
 .L2:
 	subl %eax, %ecx
 	movl %ecx, %eax
+	addl $4, %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -29,10 +30,11 @@ T5__f:
 OOC_T5_init:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi

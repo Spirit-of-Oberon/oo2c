@@ -673,6 +673,15 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           RETURN TypeTag(expr.design, Expression(expr.design),
                          FALSE, expr.sym);
               
+        | expr: IR.TypeTest DO
+          instr := b.AddInstr2(S.call, b.AddAdrRT("RT0__TypeTest"), sp);
+          instr.AddOpnd(TypeTag (expr.expr, Expression(expr.expr),
+                                 expr.checkPointer, expr.sym));
+          instr.AddOpnd(b.AddAdrTypeDescr(expr.referenceType));
+          MemoryCP(instr);
+          ControlCP(instr);
+          RETURN instr.AddResult(S.boolean);
+          
         | expr: IR.TypeGuard DO
           RETURN TypeGuard(expr);
               
@@ -761,6 +770,24 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
           Copy(statm);
           
         | statm: IR.IfStatm DO
+          res := Expression(statm.guard);
+          SplitPaths(res, controlCP, memoryCP,
+                     controlTrue, memoryTrue,
+                     controlFalse, memoryFalse);
+          (* first, the "true" path *)
+          memoryCP := memoryTrue; controlCP := controlTrue;
+          StatmSeq(statm.pathTrue); endTrue := AddJump();
+          (* second, the "false" path;  *)
+          memoryCP := memoryFalse; controlCP := controlFalse;
+          IF (statm.pathFalse # NIL) THEN
+            StatmSeq(statm.pathFalse);
+          END;
+          endFalse := AddJump();
+          (* finally, pull all the strings together again *)
+          merge := b.AddMerge2(S.merge, endTrue, endFalse);
+          controlCP := merge; memoryCP := merge;
+          
+        | statm: IR.WithStatm DO
           res := Expression(statm.guard);
           SplitPaths(res, controlCP, memoryCP,
                      controlTrue, memoryTrue,
@@ -872,7 +899,6 @@ PROCEDURE Translate*(m: Rep.Module; symTab: Sym.Module; moduleIR: IR.Module;
       R.AssignRegisters(b);
       D.ValidateAllocation(b);
 
-      (*D.WriteFunction(b);*)
       D.WriteFunction(b);
       w.WriteFunction(b);
     END Procedure;

@@ -36,6 +36,7 @@ TYPE
 
     strings: ARRAY 3 OF StringToLabel;
     stringList: ARRAY 3 OF ArrayList.ArrayList(STRING);
+    allocatedStack: S.Opnd;
     
     (* current function: *)
     fctBlock: S.FunctionBlock;
@@ -176,6 +177,7 @@ PROCEDURE (w: Writer) INIT*(module: Sym.Module; ch: IO.ByteChannel);
       w.strings[i] := NEW(StringToLabel);
       w.stringList[i] := NEW(ArrayList.ArrayList(STRING), 8);
     END;
+    w.allocatedStack := NIL;
   END INIT;
 
 PROCEDURE (w: Writer) GetBlock(b: S.Block): Block;
@@ -650,17 +652,18 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Result(instr.resultList);
           AssertResultMatch(instr.opndList);
         | S.sub, S.allocateStack:
+          IF (instr.opcode = S.allocateStack) THEN
+            sb.AppendLatin1(nlTab+"pushl %edi");
+            sb.AppendLatin1(nlTab+"pushl %esi");
+            sb.AppendLatin1(nlTab+"pushl %ebx");
+            w.allocatedStack := instr.opndList.nextOpnd;
+          END;
           OpcR("sub");
           Opnd(instr.opndList.nextOpnd);
           Comma();
           Result(instr.resultList);
           AssertResultMatch(instr.opndList);
 
-          IF (instr.opcode = S.allocateStack) THEN
-            sb.AppendLatin1(nlTab+"pushl %edi");
-            sb.AppendLatin1(nlTab+"pushl %esi");
-            sb.AppendLatin1(nlTab+"pushl %ebx");
-          END;
         | S.mul:
           OpcR("imul");
           Opnd(instr.opndList.nextOpnd);
@@ -691,6 +694,7 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           Opc("call");
           DirectOpnd(instr.opndList);
         | S.leave:
+          Opc("addl"); Opnd(w.allocatedStack); sb.Append(", %esp");
           sb.AppendLatin1(nlTab+"popl %ebx");
           sb.AppendLatin1(nlTab+"popl %esi");
           sb.AppendLatin1(nlTab+"popl %edi");
@@ -755,6 +759,13 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
           sb.Append(", ");
           Literal(instr.opndList.nextOpnd.arg.instr);
           sb.Append("(%esp)");
+        | S.typeTag:
+          Opc("movl");
+          sb.Append("-4(");
+          Opnd(instr.opndList);
+          sb.Append(")");
+          Comma();
+          Result(instr.resultList);
           
           (* control flow *)
         | S.branch:                      (* handled below *)

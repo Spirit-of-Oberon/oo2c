@@ -5,10 +5,10 @@
 T6__f:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
 	cmpb $0, 8(%ebp)
 	je .L3
 .L1:
@@ -20,6 +20,7 @@ T6__f:
 .L3:
 	movl $-9, %eax
 .L4:
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -31,10 +32,11 @@ T6__f:
 OOC_T6_init:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi

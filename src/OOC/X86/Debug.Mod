@@ -424,6 +424,8 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
     block: S.Block;
     dep: S.Dep;
     waiting: Dictionary.Dictionary(S.Instr, State);
+    keys: Object.ObjectArrayPtr(S.Instr);
+    instr: S.Instr;
   
   PROCEDURE ValidateBlock(s: State);
    (**Track changes to the state @oparam{s} performed by the sequence of
@@ -605,6 +607,13 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
         | S.loopStart:
           PushBlock(s, s.instr(S.Block));
         END;
+      ELSIF (s.block.opcode = S.merge) THEN
+        (* continue at the place of the merge in the merge's surrounding
+           block *)
+        s.instr := s.block;
+        s.block := s.block.block;
+        s.controlCP := s.instr;
+        PushState(s);
       ELSE
         FOR dep IN s.controlCP.AfterList(S.depControl) DO
           IF (dep.instr IS S.MergeInstr) THEN
@@ -613,7 +622,13 @@ PROCEDURE ValidateAllocation*(b: S.FunctionBlock);
         END;
       END;
     END;
-    ASSERT(waiting.Size() = 0);
+    IF (waiting.Size() # 0) THEN
+      keys := waiting.Keys();
+      FOR instr IN keys^ DO
+        Log("waiting", instr);
+      END;
+      ASSERT(waiting.Size() = 0);
+    END;
   END ValidateAllocation;
 
 END OOC:X86:Debug.

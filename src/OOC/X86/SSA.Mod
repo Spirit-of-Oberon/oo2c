@@ -519,7 +519,12 @@ TYPE
   END;
   MergeInstrDesc = RECORD
     (**Used for both @oconst{merge}, @oconst{loopEnd} @emph{and}
-       @oconst{guard}.  *)
+       @oconst{guard}.
+
+       Merging instructions of opcode @oconst{merge} (and no other merges) are
+       unusual in the sense that they do not end with a jump instruction.
+       Instead, control passes on to the region that contains the merge and its
+       associated branch instruction.  *)
     (BlockDesc)
     jumps-: InstrList;
     (**The @oconst{jump} instructions that end up in this block.  This list

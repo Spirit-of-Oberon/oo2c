@@ -5,10 +5,10 @@
 L1__f:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $4, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $4, %esp
 	mov $0, %edx
 .L1:
 	movl %edx, %eax
@@ -20,6 +20,7 @@ L1__f:
 	jmp .L1
 .L3:
 	movl %edx, %eax
+	addl $4, %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -31,10 +32,11 @@ L1__f:
 OOC_L1_init:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi

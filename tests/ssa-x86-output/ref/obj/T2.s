@@ -5,12 +5,13 @@
 T2__f:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
 	movl 8(%ebp), %eax
 	subl 12(%ebp), %eax
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -22,10 +23,11 @@ T2__f:
 OOC_T2_init:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi

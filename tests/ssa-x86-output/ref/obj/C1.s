@@ -4,12 +4,13 @@
 C1__Sub:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
 	movl 8(%ebp), %eax
 	subl 12(%ebp), %eax
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -22,15 +23,16 @@ C1__Sub:
 C1__f:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $8, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $8, %esp
 	movl 12(%ebp), %eax
 	movl 8(%ebp), %ecx
 	movl %ecx, 0(%esp)
 	movl %eax, 4(%esp)
 	call C1__Sub
+	addl $8, %esp
 	popl %ebx
 	popl %esi
 	popl %edi
@@ -42,10 +44,11 @@ C1__f:
 OOC_C1_init:
 	pushl %ebp
 	movl %esp, %ebp
-	subl $0, %esp
 	pushl %edi
 	pushl %esi
 	pushl %ebx
+	subl $0, %esp
+	addl $0, %esp
 	popl %ebx
 	popl %esi
 	popl %edi
