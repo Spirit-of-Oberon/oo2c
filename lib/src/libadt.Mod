@@ -57,6 +57,7 @@ IMPORT
   ADT:String,
   ADT:StringBuffer,
   ADT:ArrayList,
+  ADT:LinkedList,
   ADT:Dictionary,
   ADT:Dictionary:IntValue,
   ADT:Dictionary:AddressKey,
