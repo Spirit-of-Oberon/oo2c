@@ -144,7 +144,8 @@ TYPE
     (InstrDesc)
     value-: Boxed.Object;
     (**For a constant representing a @code{NIL} value, this field refers to
-       @ovar{nil}.  *)
+       @ovar{nil}.  Otherwise, it is an instance of BigInt, Boxed.LongReal,
+       or Boxed.String.  *)
     stringType-: Sym.Type;
     (**For a string constant, the instructions @ofield{subclass} is
        @oconst{Opcode.scAddress}, and this field is used to disambiguate the
@@ -316,6 +317,15 @@ PROCEDURE (opnd: Opnd) DeleteOpnd*;
     opnd. instr := NIL
   END DeleteOpnd;
 
+(*PROCEDURE CheckArg(instr: Instr; arg: Result);
+  BEGIN
+    CASE instr.opcode OF
+    | Opcode.add, Opcode.subtract, Opcode.multiply:
+      ASSERT(arg.subclass = instr.subclass);
+    ELSE
+    END;
+  END CheckArg;*)
+
 PROCEDURE (opnd: Opnd) ReplaceArg* (arg: Result);
 (**Replaces the current argument of the operand with @oparam{arg}.
 
@@ -323,6 +333,7 @@ PROCEDURE (opnd: Opnd) ReplaceArg* (arg: Result);
    @samp{arg # @code{NIL}}
    @end precond  *)
   BEGIN
+    (*IF (opnd.class=OpndClass.arg) THEN CheckArg(opnd.instr, arg) END;*)
     DeleteUse (opnd);
     SetUse (arg, opnd)
   END ReplaceArg;
@@ -490,12 +501,12 @@ PROCEDURE (result: Result) IsBooleanConst* (value: BOOLEAN): BOOLEAN;
 
    @precond
    @samp{@oparam{result} IS @otype{Const}} and the constant value is of type
-   @otype{Boxed.Boolean}.
+   @otype{BigInt.BigInt}.
    @end precond  *)
   BEGIN
     ASSERT (result IS Const);
-    ASSERT (result(Const). value IS Boxed.Boolean);
-    RETURN (result(Const). value(Boxed.Boolean). value = value)
+    ASSERT (result(Const).value IS BigInt.BigInt);
+    RETURN (result(Const).value.Equals(BigInt.zero) # value)
   END IsBooleanConst;
 
 PROCEDURE (result: Result) LogId* (msg: ARRAY OF CHAR);
@@ -567,6 +578,7 @@ PROCEDURE (instr: Instr) AddOpnd* (arg: Result; class: OpndClass.Class);
    @samp{arg # @code{NIL}}
    @end precond  *)
   BEGIN
+    (*IF (class=OpndClass.arg) THEN CheckArg(instr, arg) END;*)
     AddOpnd (instr, NewOpnd (arg, class));
   END AddOpnd;
 
@@ -1132,9 +1144,17 @@ PROCEDURE (pb: ProcBlock) GetConst* (value: Boxed.Object;
     obj: Object.Object;
     const: Const;
   BEGIN
-    IF (stringType # NIL) THEN
+    (*IF (stringType # NIL) THEN
       ASSERT(subclass = Opcode.scAddress);
     END;
+    (* check permitted value, kind of an ASSERT *)
+    WITH value: BigInt.BigInt DO
+      ASSERT(subclass < Opcode.scReal32);
+    | value: Boxed.LongReal DO
+      ASSERT(subclass >= Opcode.scReal32);
+    | value: Boxed.String DO
+      ASSERT(stringType # NIL);
+    END;*)
     
     IF (pb. constMap[subclass] = NIL) THEN
       pb. constMap[subclass] := Dictionary.New();
@@ -1167,10 +1187,15 @@ PROCEDURE (pb: ProcBlock) GetConstInt* (int: LONGINT): Const;
   END GetConstInt;
 
 PROCEDURE (pb: ProcBlock) GetConstBool* (b: BOOLEAN): Const;
+  VAR
+    x: BigInt.BigInt;
   BEGIN
-    RETURN pb.GetConst(Boxed.NewBoolean(b),
-                       Opcode.TypeToSubclass(Predef.GetType(Predef.boolean)),
-                       NIL);
+    IF b THEN
+      x := BigInt.one;
+    ELSE
+      x := BigInt.zero;
+    END;
+    RETURN pb.GetConst(x, Opcode.scBoolean, NIL);
   END GetConstBool;
 
 PROCEDURE (pb: ProcBlock) GetConstNil*(): Const;
