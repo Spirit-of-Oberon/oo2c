@@ -16,7 +16,7 @@ l1_loop:
   i1 = *(OOC_UINT8*)i2;
   i1 = i1==(OOC_CHAR8)'\000';
   if (!i1) goto l1_loop;
-l7:
+l6:
   OOC_POP_VPAR_STACK
   return i0;
 }

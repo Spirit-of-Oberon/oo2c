@@ -7,7 +7,7 @@ static OOC_INT16 Var10__F(OOC_CHAR8 b) {
   i0 = b;
 l2:
   if (!i0) goto l2;
-l7:
+l6:
   return 1;
 }
 

@@ -7,14 +7,14 @@ static void Var9__Zero(OOC_CHAR8 str[], OOC_LEN str_0d) {
   i0=0;
 l1_loop:
   i1 = i0!=str_0d;
-  if (!i1) goto l7;
+  if (!i1) goto l6;
   i2 = _check_index(i0, str_0d, OOC_UINT16, 169);
   i3 = (OOC_INT32)str+i2;
   *(OOC_UINT8*)i3 = (OOC_CHAR8)'\000';
   i0 = i0+1;
   
   goto l1_loop;
-l7:
+l6:
   return;
 }
 

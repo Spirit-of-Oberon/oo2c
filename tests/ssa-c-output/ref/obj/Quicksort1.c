@@ -7,7 +7,7 @@ void Quicksort1__Sort(OOC_INT32 a[], OOC_LEN a_0d, OOC_INT32 m, OOC_INT32 n) {
   i0 = n;
   i1 = m;
   i2 = i0>i1;
-  if (!i2) goto l25;
+  if (!i2) goto l22;
   i3 = i0*4;
   i3 = (OOC_INT32)a+i3;
   i4 = *(OOC_INT32*)i3;
@@ -20,29 +20,29 @@ l5_loop:
   i8 = *(OOC_INT32*)i7;
   i9 = i8>=i4;
   if (!i9) goto l5_loop;
-l12_loop:
+l11_loop:
   i6 = i6-1;
   i9 = i6*4;
   i9 = (OOC_INT32)a+i9;
   i10 = *(OOC_INT32*)i9;
   i11 = i10<=i4;
-  if (!i11) goto l12_loop;
-l18:
+  if (!i11) goto l11_loop;
+l16:
   i11 = i5>=i6;
-  if (i11) goto l24;
-l23:
+  if (i11) goto l21;
+l19:
   *(OOC_INT32*)i7 = i10;
   *(OOC_INT32*)i9 = i8;
   
   goto l5_loop;
-l24:
+l21:
   i4 = *(OOC_INT32*)i3;
   *(OOC_INT32*)i7 = i4;
   *(OOC_INT32*)i3 = i8;
   Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, i1, i6);
   i1 = i5+1;
   Quicksort1__Sort((void*)(OOC_INT32)a, a_0d, i1, i0);
-l25:
+l22:
   return;
 }
 
@@ -51,7 +51,7 @@ void Quicksort1__Test() {
   OOC_INT32 a[64];
 
   i0 = 0<=63;
-  if (!i0) goto l11;
+  if (!i0) goto l10;
   i1=0;
 l4_loop:
   i2 = i1*4;
@@ -60,23 +60,23 @@ l4_loop:
   i4 = RandomNumbers__RND(64);
   *(OOC_INT32*)i2 = i4;
   i1 = i3<=63;
-  if (!i1) goto l11;
-l9:
+  if (!i1) goto l10;
+l8:
   i1=i3;
   goto l4_loop;
-l11:
+l10:
   Quicksort1__Sort((void*)(OOC_INT32)a, 64, 0, 63);
-  if (!i0) goto l22;
+  if (!i0) goto l20;
   i1=0;
-l15_loop:
+l14_loop:
   i2 = i1*4;
   i2 = (OOC_INT32)a+i2;
   i2 = *(OOC_INT32*)i2;
   i1 = i1+1;
   Out0__Int(i2, 4);
   i2 = i1<=63;
-  if (i2) goto l15_loop;
-l22:
+  if (i2) goto l14_loop;
+l20:
   Out0__Ln();
   return;
 }
