@@ -657,10 +657,14 @@ PROCEDURE (w: Writer) WriteBlock(b: S.Block): Block;
       toType: S.Type;
     BEGIN
       toType := toReg.type;
-      IF (fromType = toType) THEN
+      IF (fromType = toType) OR
+         (S.TypeSize(toType) < S.TypeSize(fromType)) THEN
+        (* do nothing when converting a value to a smaller type; FIXME... this
+           operation may cause an overflow *)
         IF valueOpnd & (toReg.register = fromMemReg.arg.register) THEN
           RETURN;                        (* copy register onto itself *)
         END;
+        fromType := toType;  (* for down conversion *)
         OpcTT("mov", fromType, S.noType);
       ELSIF (toType < S.unsigned8) THEN  (* to signed type *)
         OpcTT("movs", fromType, toType);
