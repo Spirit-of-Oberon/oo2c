@@ -3,6 +3,10 @@ MODULE ConstFold16;
 IMPORT Out;
 
 CONST
+  MINSET = 0;
+  MAXSET = 31;
+
+CONST
   a = {1, 2, 5..9};
   b = {2, 4, 6, 8};
 
@@ -19,6 +23,8 @@ BEGIN
   Out.Set(diff); Out.Ln;
   Out.Set(intersect); Out.Ln;
   Out.Set(xor); Out.Ln;
+  Out.Set({MINSET..MAXSET}); Out.Ln;
+  Out.Set(-a); Out.Ln;
 END Test;
 
 END ConstFold16.
