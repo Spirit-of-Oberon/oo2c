@@ -89,7 +89,10 @@ void Exception__PushContext(struct Exception__Context *context,
 }
 
 void Exception__PopContext(OOC_INT32 n) {
-  contextStack = contextStack->next;
+  while (n > 0) {
+    contextStack = contextStack->next;
+    n--;
+  }
 }
 
 void Exception__ExceptionDesc_WriteBacktrace(Exception__Exception e) {
