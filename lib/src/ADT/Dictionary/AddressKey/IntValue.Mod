@@ -114,7 +114,6 @@ VAR
 PROCEDURE Init* (dict: Dictionary);
 (**Initializes @oparam{dict} to an empty dictionary.  *)
   BEGIN
-    Storable.Init (dict);
     dict. size := 0;
     dict. poly := 0;
     dict. table := NIL;

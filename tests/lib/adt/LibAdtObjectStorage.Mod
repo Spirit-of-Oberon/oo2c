@@ -58,7 +58,6 @@ PROCEDURE GenData(): Data;
       d: Data;
     BEGIN
       NEW (d);
-      Storable.Init(d);
       d.next := NIL;
       COPY(name, d.name);
       d.num := num;

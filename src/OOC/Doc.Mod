@@ -287,7 +287,6 @@ PROCEDURE SetPosition* (VAR pos: Position; char: InputBuffer.CharPos;
 
 PROCEDURE InitElement (e: Element);
   BEGIN
-    Storable.Init (e);
     e. pos. char := -1;
     e. pos. line := -1;
     e. pos. column := -1;
@@ -1527,7 +1526,6 @@ PROCEDURE NewDocument* (blockList: BlockElement;
     d: Document;
   BEGIN
     NEW (d);
-    Storable.Init (d);
     d. blockList := blockList;
     d. summary := NIL;
     d. decoration := decoration;

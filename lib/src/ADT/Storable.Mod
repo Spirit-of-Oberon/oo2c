@@ -22,13 +22,7 @@ IMPORT
   Obj := Object, IO, IO:BinaryRider;
 
 
-(**This module defines the abstract type @otype{Object}, the root type of all
-   classes that can be externalized.  Every object has an initialization
-   function @oproc{Init}, and (optionally) a cleanup function
-   @oproc{Object.Destroy}.  For persistence, it supports the type-bound
-   procedures @oproc{Object.Store} and @oproc{Object.Load}.
-
-   The module also defines new binary rider classes, which are extensions of
+(**The module defines new binary rider classes, which are extensions of
    the ones defined in module @omodule{BinaryRider}.  Concrete
    implementations of these abstract classes (like module
    @omodule{*ADT:Object:Storage}) provide the mechanisms necessary to
@@ -70,14 +64,6 @@ TYPE  (* abstract types, used for persistence mechanism
      @otype{*ADT:Object:Storage.Writer}.  *)
     (BinaryRider.WriterDesc)
   END;
-  String* = POINTER TO StringDesc;
-  StringDesc* = RECORD [ABSTRACT] 
-    (**FIXME... get rid of this type.  @otype{String} defines an empty type,
-       which other string types may extend.  Its main purpose here is to allow
-       @oproc{Object.ToString} to return a value that is compatible with the
-       string type defined in @omodule{*ADT:String}.  *)
-    (ObjectDesc)
-  END;
 
 TYPE
   TypeError* = POINTER TO TypeErrorDesc;
@@ -89,26 +75,6 @@ PROCEDURE RaiseTypeError*(msg: STRING) RAISES TypeError;
   BEGIN
     RAISE(NEW(TypeError, msg));
   END RaiseTypeError;
-
-
-PROCEDURE Init* (obj: Object);
-(**Initializes object @oparam{obj} to a valid state.  Extensions of class
-   @otype{Object} are expected to provide their own initialization procedure
-   @oproc{Init}, which calls its direct baseclass' @oproc{Init} in turn.  *)
-  END Init;
-
-PROCEDURE (obj: Object) Destroy* ;
-(**Returns @oparam{obj} to an undefined state.  No operations on @oparam{obj}
-   are allowed until @oparam{obj} is initialized again.  This procedure is only
-   of use for systems with a conservative garbage collector.  It typically
-   removes all external references from @oparam{obj}, reducing the chance that
-   a misjudged reference into the data of @oparam{obj} keeps large parts of the
-   data structure alive.  This can also serve as a crude tool to detect
-   unwanted sharing of objects, if destroying an object breaks the state of
-   another one.  @emph{Please note:} This procedure does not free any allocated
-   memory by itself, even if memory is known to be private to @oparam{obj},
-   because OOC has no facility to free memory blocks.  *)
-  END Destroy;
 
 
 (* Externalize/Internalize Methods
@@ -163,7 +129,8 @@ PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel);
     BinaryRider.InitReader (r, ch, BinaryRider.littleEndian)
   END InitReader;
 
-PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Object) RAISES IO.Error;
+PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Object)
+RAISES IO.Error;
 (**Writes object to the channel underlying the writer @oparam{w}.  The
    externalization framework is provided by the concrete instance of writer
    @oparam{w}.  The object itself is required to provide the necessary
@@ -183,7 +150,8 @@ PROCEDURE (w: Writer) [ABSTRACT] Disconnect*;
    all operations on @oparam{w} are undefined.  *)
   END Disconnect;
 
-PROCEDURE (r: Reader) [ABSTRACT] ReadObject* (VAR obj: Object) RAISES IO.Error;
+PROCEDURE (r: Reader) [ABSTRACT] ReadObject* (VAR obj: Object)
+RAISES IO.Error;
 (**Reads an object reference from the channel underlying the reader @oparam{r}.
    The object @oparam{obj} itself is required to provide the necessary
    type-bound procedure @oproc{Object.Load} to restore its own data from

@@ -1050,7 +1050,6 @@ PROCEDURE (ns: Namespace) GetSuperProcByIndex* (index: LONGINT): ProcDecl;
 PROCEDURE InitPosition* (position: Position; pos: ModulePos;
                          line: ModuleLine; column: ModuleColumn);
   BEGIN
-    Storable.Init (position);
     position. pos := pos;
     position. line := line;
     position. column := column
@@ -1116,7 +1115,6 @@ PROCEDURE InitItem* (item: Item; parent: Item);
     END Append;
  
   BEGIN
-    Storable.Init (item);
     item. nextNested := NIL;
     item. nestedItems := NIL;
     item. parent := parent;
@@ -1482,7 +1480,6 @@ PROCEDURE (type: Type) Closure*(subType: Type): Type;
 
 PROCEDURE InitLinkDirective (l: LinkDirective);
   BEGIN
-    Storable.Init (l);
     l. next := NIL;
   END InitLinkDirective;
 

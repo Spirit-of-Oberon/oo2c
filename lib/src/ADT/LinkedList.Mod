@@ -65,7 +65,6 @@ PROCEDURE Init* (l: LinkedList);
 VAR
   e : Entry;
 BEGIN
-  Storable.Init (l);
   e := NewEntry(NIL, NIL, NIL); e.next := e; e.previous := e; 
   l.elements := e;
   l.size := 0

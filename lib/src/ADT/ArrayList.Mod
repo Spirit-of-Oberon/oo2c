@@ -62,7 +62,6 @@ PROCEDURE (l: ArrayList(E)) CreateArray (size: LONGINT; old: ArrayList(E));
 PROCEDURE (l: ArrayList(E)) INIT*(initialSize: LONGINT);
 (**Initializes a list with the stated initial size.  *)
   BEGIN
-    Storable.Init (l);
     l. CreateArray (initialSize, NIL);
     l. size := 0
   END INIT;
