@@ -21,6 +21,7 @@ MODULE OOC:SSA:Schedule [OOC_EXTENSIONS];
 *)
 
 IMPORT
+  Log,Err,SYSTEM,
   ADT:Object, OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Blocker;
 
 TYPE
@@ -70,7 +71,10 @@ TYPE
        block.  There are no jumps into the block, nor are there any jump or
        branch instructions except at the very end.  Please note that exceptions
        like failed run-time checks are @emph{not} treated as jumps or branches
-       in this context.  *)
+       in this context.
+
+       See the code of procedure @samp{Schedule.Check} for some of the
+       invariants of the structure of the block hierarchy.  *)
     nextDom-: Block;
     (**Link for list of @ofield{Block.domList}.  *)
 
@@ -83,7 +87,8 @@ TYPE
 
     domList-: Block;
     (**Lists all blocks directly dominated by this one.  The blocks are linked
-       by @ofield{nextDom}.  *)
+       by @ofield{nextDom}.  Note: With the exception of @otype{SwitchBlock},
+       the order of the blocks in this list is undefined.  *)
 
     dependentList: Dependent;
     (* lists blocks that should be written after this one *)
@@ -139,11 +144,14 @@ TYPE
 
 TYPE
   SwitchBlockDesc = RECORD
-    (**This block is translated into C's @code{switch} statement.  *)
+    (**This block is translated into C's @code{switch} statement.  The
+       @ofield{domList} contains exactly @samp{LEN(@ofield{jump}^)+1} blocks,
+       one for each switch path, followed by the block immediately following
+       the whole switch.  *)
     (BlockDesc)
     expr-: SSA.Opnd;
     jump-: POINTER TO ARRAY OF Jump;
-    path: POINTER TO ARRAY OF JumpBlock;
+    endOfPath: POINTER TO ARRAY OF JumpBlock;
     caseValues-: POINTER TO ARRAY OF SSA.Opnd;
   END;
   
@@ -202,19 +210,22 @@ PROCEDURE (b: Block) DefaultTarget*(): Block;
     RETURN NIL
   END DefaultTarget;
 
-PROCEDURE SetJump* (VAR reference: Jump; src, dest: Block);
-  PROCEDURE NewJump (src, dest: Block; nextTargetUse: Jump): Jump;
-    VAR
-      j: Jump;
-    BEGIN
-      NEW (j);
-      j. src := src;
-      j. dest := dest;
-      j. nextTargetUse := nextTargetUse;
-      j. isLoopBackedge := (reference # NIL) & reference. isLoopBackedge;
-      RETURN j
-    END NewJump;
+PROCEDURE RevertDomList (b: Block);
+  VAR
+    new, old, next: Block;
+  BEGIN
+    new := NIL;
+    old := b. domList;
+    WHILE (old # NIL) DO
+      next := old. nextDom;
+      old. nextDom := new;
+      new := old;
+      old := next;
+    END;
+    b. domList := new;
+  END RevertDomList;
 
+PROCEDURE ClearJump (reference: Jump);
   PROCEDURE Remove (VAR list: Jump; entry: Jump);
     BEGIN
       IF (list = entry) THEN
@@ -225,14 +236,52 @@ PROCEDURE SetJump* (VAR reference: Jump; src, dest: Block);
     END Remove;
   
   BEGIN
-    IF (reference # NIL) THEN
-      DEC (reference. dest. degreeIn);
-      Remove (reference. dest. targetUseList, reference); 
-    END;
+    ASSERT (reference # NIL);
+    DEC (reference. dest. degreeIn);
+    Remove (reference. dest. targetUseList, reference); 
+  END ClearJump;
+
+PROCEDURE SetJump (VAR reference: Jump; src, dest: Block);
+  PROCEDURE NewJump (src, dest: Block; nextTargetUse: Jump): Jump;
+    VAR
+      j: Jump;
+    BEGIN
+      NEW (j);
+      j. src := src;
+      j. dest := dest;
+      j. nextTargetUse := nextTargetUse;
+      j. isLoopBackedge := FALSE;
+      RETURN j
+    END NewJump;
+  
+  BEGIN
+    ASSERT (reference = NIL);
     INC (dest. degreeIn);
     reference := NewJump (src, dest, dest. targetUseList);
     dest. targetUseList := reference
   END SetJump;
+
+PROCEDURE ChangeJumpTarget* (reference: Jump; dest: Block);
+  BEGIN
+    ASSERT (reference # NIL);
+    
+    ClearJump (reference);
+    
+    INC (dest. degreeIn);
+    reference. dest := dest;
+    reference. nextTargetUse := dest. targetUseList;
+    dest. targetUseList := reference
+  END ChangeJumpTarget;
+
+PROCEDURE ChangeTargets (oldTarget, newTarget: Block);
+(**Change all jumps to @oparam{oldTarget} to go to @oparam{newTarget}.  *)
+  BEGIN
+    ASSERT (oldTarget # newTarget);
+
+    WHILE (oldTarget. targetUseList # NIL) DO
+      ChangeJumpTarget (oldTarget. targetUseList, newTarget);
+    END;
+  END ChangeTargets;
 
 PROCEDURE Dominates* (dominator, child: Block): BOOLEAN;
   BEGIN
@@ -323,10 +372,10 @@ PROCEDURE InitSwitchBlock (b: SwitchBlock; dominator: Block;
     InitBlock (b, dominator);
     b. expr := expr;
     NEW (b. jump, paths);
-    NEW (b. path, paths);
+    NEW (b. endOfPath, paths);
     NEW (b. caseValues, paths);
     FOR i := 0 TO paths-1 DO
-      b. jump[i] := NIL; b. path[i] := NIL; b. caseValues[i] := NIL;
+      b. jump[i] := NIL; b. endOfPath[i] := NIL; b. caseValues[i] := NIL;
     END;
   END InitSwitchBlock;
 
@@ -380,6 +429,13 @@ PROCEDURE AppendProxy (b: Block; proxy: InstrProxy);
 
 
 PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpBlock;
+(**Transfers all instructions in @oparam{region} into @oparam{block}.  The
+   given @oparam{block} directly dominates @oparam{region}.  That is, any
+   path of control leading up to @oparam{region}'s instructions end with
+   @oparam{block}.
+
+   Result is the instruction block that directly dominates any instructions
+   following @oparam{region}.  *)
   VAR
     bProxy: Blocker.Proxy;
     proxy: InstrProxy;
@@ -389,7 +445,7 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
     VAR
       branch: BranchBlock;
       switch: SwitchBlock;
-      path1, path2, out: JumpBlock;
+      path1, path2, path, out: JumpBlock;
       paths, i: LONGINT;
       opnd: SSA.Opnd;
     BEGIN
@@ -403,17 +459,18 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
         FOR i := 0 TO paths-1 DO
           switch. caseValues[i] := opnd;
           
-          switch. path[i] := NewJumpBlock (switch);
-          SetJump (switch. jump[i], switch, switch. path[i]);
-          switch. path[i] := TransferInstructions (select. paths[i],
-                                                   switch. path[i]);
+          path := NewJumpBlock (switch);
+          SetJump (switch. jump[i], switch, path);
+          switch. endOfPath[i] := TransferInstructions (select.paths[i], path);
           opnd := opnd. nextOpnd. nextOpnd;
         END;
-
+        
         out := NewJumpBlock (switch);
         FOR i := 0 TO paths-1 DO
-          SetJump (switch. path[i]. jump, switch. path[i], out);
+          SetJump (switch. endOfPath[i]. jump, switch. endOfPath[i], out);
         END;
+        RevertDomList (switch);
+        
         RETURN out
       ELSE                               (* a "normal" IF statement *)
         branch := NewBranchBlock
@@ -452,13 +509,15 @@ PROCEDURE TransferInstructions (region: Blocker.Region; block: JumpBlock): JumpB
       ASSERT (loopEnd # NIL);
       SetJump (bodyEnd. jump, bodyEnd, body);
       
-      (* fixup blocks with exit instructions to jump to the end of the
-         loop *)
-      out := NewJumpBlock (block);
+      (* fixup blocks with exit instructions to jump to the end of the loop;
+         the end of the loop `out' is dominated by the beginning of the loop
+         body, although flow of control must pass through one of the loop's
+         exit paths before it ends up there  *)
+      out := NewJumpBlock (body);
       opnd := loopEnd. NthOpnd (2);
       WHILE (opnd # NIL) & (opnd. class = Opnd.storeExit) DO
         exit := opnd. arg. instr. info(InstrProxy). block(JumpBlock);
-        SetJump (exit. jump, exit, out);
+        ChangeJumpTarget (exit. jump, out);
         opnd := opnd. nextOpnd;
       END;
       RETURN out;
@@ -513,8 +572,8 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       
     PROCEDURE LocateJumps (path: Block; b: Block);
     (* find all jumps in or below `b' that have the parent of `path' as
-       target; for every jump, add a dependency from `path' to
-       the child of `path.parent' containg the jump target *)
+       the parent of their target; for every jump, add a dependency from `path'
+       to the child of `path.parent' containg the jump target *)
       VAR
         nested: Block;
         i: LONGINT;
@@ -523,6 +582,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         PROCEDURE WriteBefore (VAR dependentList: Dependent; b: Block);
           BEGIN
             IF (dependentList = NIL) THEN
+              ASSERT (b. parent = path. parent);
               NEW (dependentList);
               dependentList. block := b;
               dependentList. next := NIL;
@@ -533,9 +593,7 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
           END WriteBefore;
         
         BEGIN
-          IF (target = path. parent) THEN
-            path. parent. isLoopHead := TRUE
-          ELSE
+          IF (target # path. parent) THEN
             WHILE (target # NIL) & (target. parent # path. parent) DO
               target := target. parent
             END;
@@ -591,6 +649,17 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         END;
       END RemoveFromList;
 
+    PROCEDURE In (list: Block; b: Block): BOOLEAN;
+      VAR
+        ptr: Block;
+      BEGIN
+        ptr := list;
+        WHILE (ptr # NIL) & (ptr # b) DO
+          ptr := ptr. nextDom;
+        END;
+        RETURN (ptr # NIL);
+      END In;
+
     PROCEDURE SortBlocks (domBlock: Block);
     (* sort nested blocks of `domBlock' topologically: if block A contains
        a jump to block B, then place block A before block B *)
@@ -613,15 +682,14 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         domBlock. domList := NIL;
         preferedBlock := domBlock. DefaultTarget();
         WHILE (ready # NIL) DO
-          IF (preferedBlock # NIL) &
-             (preferedBlock. parent = domBlock) &
-             (preferedBlock. depCount = 0) THEN
+          IF (preferedBlock # NIL) & In (ready, preferedBlock) THEN
             b := preferedBlock
           ELSE
             b := ready
           END;
           
           RemoveFromList (ready, b);
+          ASSERT (b. parent = domBlock);
           AppendToList (domBlock. domList, b);
           b. depCount := -1;
           
@@ -647,19 +715,24 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         nested := nested. nextDom
       END;
 
-      (* locate jump and branch instructions in our nested blocks *)
-      IF (b. DefaultTarget() = b) OR
-         (b IS BranchBlock) & (b(BranchBlock). branchTo. dest = b)THEN
-        b. isLoopHead := TRUE
+      (* sort nested blocks, but leave the relative ordering of children
+         of switch blocks as it is *)
+      IF ~(b IS SwitchBlock) THEN
+        nested := b. domList;
+        WHILE (nested # NIL) DO
+          nested. dependentList := NIL;
+          nested. depCount := 0;
+          nested := nested. nextDom
+        END;
+        
+        nested := b. domList;
+        WHILE (nested # NIL) DO
+          LocateJumps (nested, nested);
+          nested := nested. nextDom
+        END;
+        
+        SortBlocks (b);
       END;
-      nested := b. domList;
-      WHILE (nested # NIL) DO
-        LocateJumps (nested, nested);
-        nested := nested. nextDom
-      END;
-
-      (* sort nested blocks *)
-      SortBlocks (b);
     END ArrangeBlock;
 
   PROCEDURE MarkBackedges (b: Block);
@@ -669,7 +742,10 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
 
     PROCEDURE Check (jump: Jump);
       BEGIN
-        jump. isLoopBackedge := Dominates (jump. dest, b)
+        jump. isLoopBackedge := Dominates (jump. dest, b);
+        IF jump. isLoopBackedge THEN
+          jump. dest. isLoopHead := TRUE;
+        END;
       END Check;
     
     BEGIN
@@ -693,6 +769,88 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
       END;
     END MarkBackedges;
 
+  PROCEDURE RemoveUnreachable (VAR b: Block);
+    VAR
+      d, i: LONGINT;
+
+    PROCEDURE ContainsEndOfBlock (b: Block): BOOLEAN;
+      VAR
+        proxy: InstrProxy;
+      BEGIN
+        proxy := b. proxyList;
+        WHILE (proxy # NIL) DO
+          CASE proxy. instr. opcode OF
+          | Opcode.selectReturn, Opcode.loopEnd:
+            RETURN TRUE;
+          ELSE
+          END;
+          proxy := proxy. nextProxy;
+        END;
+        RETURN FALSE;
+      END ContainsEndOfBlock;
+    
+    BEGIN
+      IF (b # NIL) THEN
+        d := b. degreeIn;
+        IF (d = 0) & ContainsEndOfBlock (b) THEN
+          (* the block may be unreachable, but the current C back-end needs
+             it (or rather, the "select-return" and "loop-end") to get its
+             stuff right *)
+          INC (d);
+        END;
+        
+        IF (d = 0) THEN
+          ASSERT (b. targetUseList = NIL);
+          
+          (* the block has no incoming jumps, that is, it is unreachable *)
+          WITH b: JumpBlock DO
+            ClearJump (b. jump);
+          | b: BranchBlock DO
+            ClearJump (b. jump);
+            ClearJump (b. branchTo);
+          | b: SwitchBlock DO
+            ASSERT (FALSE);
+            FOR i := 0 TO LEN (b. jump^)-1 DO
+              ClearJump (b. jump[i]);
+            END;
+          | b: DeadEndBlock DO
+            (* nothing *)
+          END;
+        END;
+        
+        RemoveUnreachable (b. domList);
+        RemoveUnreachable (b. nextDom);
+        
+        IF (d = 0) THEN
+          ASSERT (b. domList = NIL);
+          b := b. nextDom;
+        END;
+      END;
+    END RemoveUnreachable;
+  
+  PROCEDURE RemoveEmpty (VAR b: Block);
+    BEGIN
+      IF (b # NIL) THEN
+        RemoveEmpty (b. domList);
+        RemoveEmpty (b. nextDom);
+        
+        IF (b IS JumpBlock) &
+           (b. proxyList = NIL) &
+           (b(JumpBlock). jump. dest # b) THEN
+          ChangeTargets (b, b(JumpBlock). jump. dest);
+          ASSERT (b. targetUseList = NIL);
+          IF (b. domList # NIL) THEN
+            ASSERT (b. domList. nextDom = NIL);
+            b. domList. nextDom := b. nextDom;
+            b. domList. parent := b. parent;
+            b := b. domList;
+          ELSE
+            b := b. nextDom;
+          END;
+        END;
+      END;
+    END RemoveEmpty;
+  
   PROCEDURE NumberBlocks (b: Block; VAR count: LONGINT);
     VAR
       nested: Block;
@@ -706,35 +864,140 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
         nested := nested. nextDom
       END;
     END NumberBlocks;
-  
-  PROCEDURE CheckCollects (b: Block);
-  (* Sanity check: `collect' instructions may not appear in a branch block.  *)
+
+  PROCEDURE WriteBlocks (b: Block; indent: LONGINT);
     VAR
       nested: Block;
-      proxy: InstrProxy;
+      i: LONGINT;
     BEGIN
-      WITH b: JumpBlock DO
-      | b: BranchBlock DO
+      IF b. isLoopHead THEN
+        Err.String ("L ");
+      ELSE
+        Err.String ("  ");
+      END;
+      Err.Hex (SYSTEM.VAL (LONGINT, b), 8);
+      FOR i := 1 TO indent DO
+        Err.String ("  ");
+      END;
+      Log.Type ("+ block", b);
+
+      proxy := b. proxyList;
+      WHILE (proxy # NIL) DO
+        Err.String ("  ");
+        Err.Hex (0, 8);
+        FOR i := 1 TO indent DO
+          Err.String ("  ");
+        END;
+        Err.String ("  ");
+        proxy. instr. LogOpcode ("instr");
+        proxy := proxy. nextProxy;
+      END;
+      
+      nested := b. domList;
+      WHILE (nested # NIL) DO
+        WriteBlocks (nested, indent+1);
+        nested := nested. nextDom;
+      END;
+    END WriteBlocks;
+  
+  PROCEDURE Check (b: Block);
+  (* Sanity checks on the generated blocks, their instructions, and their
+     domination topology.  *)
+    VAR
+      nested: Block;
+      proxy, select: InstrProxy;
+      i: LONGINT;
+    BEGIN
+      (* `collect' instructions may not appear in a branch block.  *)
+      IF ~(b IS JumpBlock) THEN
         proxy := b. proxyList;
         WHILE (proxy # NIL) DO
           ASSERT (proxy. instr. opcode # Opcode.collect);
           proxy := proxy. nextProxy
         END;
-      | b: DeadEndBlock DO
-      | b: SwitchBlock DO
+      END;
+      
+      (* If the block merges control flow, that is, if it has an inbound degree
+         larger than 1, then it must contain exactly one instruction that
+         identifies all incoming paths of control.  *)
+      IF (b. degreeIn > 1) THEN
+        select := NIL;
         proxy := b. proxyList;
         WHILE (proxy # NIL) DO
-          ASSERT (proxy. instr. opcode # Opcode.collect);
+          CASE proxy. instr. opcode OF
+          | Opcode.select, Opcode.loopStart, Opcode.loopEnd:
+            ASSERT (select = NIL);
+            select := proxy;
+          ELSE
+          END;
           proxy := proxy. nextProxy
         END;
       END;
 
+      WITH b: SwitchBlock DO
+        (* A switch statement directly dominates exactly as many blocks as
+           there are paths through the switch, plus one block for the code
+           following the switch.  *)
+        (*nested := b. domList;
+        FOR i := 0 TO LEN (b. jump^)-1 DO
+          Log.Ptr("nested",nested);
+          Log.Ptr("jump[i].dest", b.jump[i].dest);
+          Log.Ptr("endOfPath[i]",b.endOfPath[i]);
+          nested := nested. nextDom;
+        END;*)
+        nested := b. domList;
+        FOR i := 0 TO LEN (b. jump^)-1 DO
+          ASSERT (b. jump[i]. dest = nested);
+          nested := nested. nextDom;
+        END;
+        ASSERT (nested # NIL);
+        ASSERT (nested. nextDom = NIL);
+
+      | b: JumpBlock DO
+        IF b. jump. isLoopBackedge THEN
+          (* A block ending with a jump to the beginning of a loop dominates
+             no other blocks.  *)
+          ASSERT (b. domList = NIL);
+        ELSIF (b. domList # NIL) THEN
+          IF b. isLoopHead THEN
+            (* A loop always begins with a jump block containing the prefix
+               of the loop body (which includes at least the "loop-start"
+               instruction).  This block jumps to the rest of the loop
+               body, and therefore dominates it directly.  The second block
+               dominates by the loop block holds the code that follows the
+               loop.  There are not other blocks that are directly dominated
+               by a loop block.
+
+               The second block may be eliminated, if the loop prefix jumps
+               back unconditionally to the loop beginning, or there is no
+               code that follows the loop. *)
+            IF (b. domList. nextDom # NIL) THEN
+              ASSERT (b. domList. nextDom. nextDom = NIL);
+            END;
+          ELSE
+            (* For a non-loop jump block (that isn't a loop back-edge),
+               at most one other block dominated by it.  This block is
+               also the target of the jump, unless the nested block is
+               unreachable (e.g., because it follows an EXIT or RETURN).  *)
+            ASSERT (b. domList. nextDom = NIL);
+            IF (b. domList. degreeIn # 0) THEN
+              ASSERT (b. jump. dest = b. domList);
+            END;
+          END;
+        END;
+
+      | b: DeadEndBlock DO
+        (* A dead end dominates nothing.  *)
+        ASSERT (b. domList = NIL);
+      ELSE
+      END;
+      
       nested := b. domList;
       WHILE (nested # NIL) DO
-        CheckCollects (nested);
+        Check (nested);
         nested := nested. nextDom
       END;
-    END CheckCollects;
+    END Check;
 
   PROCEDURE MoveSelectReturn (root: Blocker.Region; block: Block);
     VAR
@@ -758,6 +1021,19 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     
     (* mark jump instructions that are loop backedges *)
     MarkBackedges (b);
+
+    (* remove unreachable and empty blocks *)
+(*    Log.String ("pre", pb. procDecl. name. str^);
+    WriteBlocks(b,0);*)
+    Check(b);
+    RemoveUnreachable (b. domList);
+    Check(b);
+(*    Log.String ("post RemoveUnreachable", pb. procDecl. name. str^);
+    WriteBlocks(b,0);
+    RemoveEmpty (b. domList);
+    Log.String ("post RemoveEmpty", pb. procDecl. name. str^);
+    WriteBlocks(b,0);
+    Check(b);*)
     
     (* note: if ArrangeInstructions does not return a valid schedule, then
        the instructions within each basic block must be reordered here *)
@@ -775,8 +1051,6 @@ PROCEDURE Schedule* (pb: SSA.ProcBlock): Block;
     (* remove anti-dependency pseudo operands *)
     Blocker.RemoveAntiDeps (pb);
     
-    CheckCollects(b);
-
     b. degreeIn := 1;  (* the root block is reached by exactly one edge *)
     RETURN b
   END Schedule;
