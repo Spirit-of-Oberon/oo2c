@@ -262,6 +262,7 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object) RAISES IO.Error;
           IF (type = string8) OR (type = string16) THEN
             r.ReadStr(str);
             r.objTab[ref] := str;
+            obj := str;
           ELSE
             obj := SYSTEM.VAL(Object.Object, RT0.NewObject(type));
             r.objTab[ref] := obj;
