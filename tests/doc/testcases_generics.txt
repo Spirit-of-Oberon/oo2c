@@ -11,8 +11,9 @@ Syntax:
 A type declared with a type parameter list like
 `T<t1:B1,t2:B2,...,tn:Bn>' is called a `parametric type'.  The formal
 type Bi of a type parameter declaration is called a type bound.  It
-must be a record pointer.  The type name ti is visible to the end of
-the type declaration.
+must be a record pointer.  A type name ti is visible to the end of the
+type declaration, and within all type-bound procedures whose receiver
+type is T.
 
 For a qualified type expression of the form `T<A1,A2,...,An>',
 
@@ -42,12 +43,15 @@ ACCEPT
   3) T<A: Object; B: AnotherObject> = RECORD a: A; b: B END  [Generic3]
   4) T<> = RECORD END  [Generic3]
   5) Extension of a parametric record type.  [Generic4]
+  6) T.t visible in type-bound procedure.  [Generic1]
 
 REJECT
 
   1) Type bound is not a record pointer.  [Generic5]
   2) Reference to type variable after declaration.  [Generic6]
   3) Reference to type variable in extended type.  [Generic7]
+  4) Reference to type var of pointer base in type-bound proc.  [Generic14]
+  5) Reference to type var in type-bound proc of extension.  [Generic15]
 
 Qualified Types
 ===============
