@@ -274,24 +274,25 @@ CONST
      multiplying an index with the size of the element, then the result is
      a value of type @oconst{scAddress}.  *)
   divide* = 20;
+  modulo* = 21;
 
-  eql* = 21;
-  neq* = 22;
-  lss* = 23;
-  leq* = 24;
-  gtr* = 25;
-  geq* = 26;
+  eql* = 22;
+  neq* = 23;
+  lss* = 24;
+  leq* = 25;
+  gtr* = 26;
+  geq* = 27;
 
-  and* = 27;
-  or* = 28;
-  not* = 29;
+  and* = 28;
+  or* = 29;
+  not* = 30;
   
-  cap* = 30;
+  cap* = 31;
   
-  assert* = 31;
-  call* = 32;
+  assert* = 32;
+  call* = 33;
   
-  getLength* = 33;
+  getLength* = 34;
   (**Retrieves the length of an open array variable for a given dimension.
      Result is the signed integer of the type corresponding to
      @oconst{Predef.lengthType}.  The operands of the instruction resemble that
@@ -310,7 +311,7 @@ CONST
 
      The instruction itself represents the result of the operation.  *)
   
-  copyParameter* = 34;
+  copyParameter* = 35;
   (**Allocates space for a local copy of a value parameter that was passed to
      the procedure as a reference, and initialiazes the local copy using the
      data of the caller's argument.  Instructions of this type are a
@@ -328,7 +329,7 @@ CONST
      The result of the instruction is the address of the new copy.  An
      additional result is the new value of @var{store}.  *)
 
-  newObject* = 35;
+  newObject* = 36;
   (**Allocates space for an array or record object on the heap.  This opcode is
      used for both fixed size arrays, arrays with open dimensions, and records.
 
@@ -348,7 +349,7 @@ CONST
      The result of the instruction is the address of the new object.  An
      additional result is the new value of @var{store}.  *)
   
-  typeTag* = 36;
+  typeTag* = 37;
   (**Returns the type tag of a pointer variable or of a variable parameter.
 
      @table @oconst
@@ -359,7 +360,7 @@ CONST
 
      The result of the instruction is the address of the type descriptor.  *)
   
-  typeTest* = 37;
+  typeTest* = 38;
   (**Performs a type test on a given type tag.
 
      @table @oconst
@@ -375,7 +376,7 @@ CONST
 
      The result of the instruction is a boolean value.  *)
 
-  tbProcAddress* = 38;
+  tbProcAddress* = 39;
   (**Calculates the address of the procedure that is to be used for a dynamic
      type-bound call.
 
@@ -390,7 +391,7 @@ CONST
 
      Result of the instruction is the address of the procedure.  *)
 
-  labels* = 39;
+  labels* = 40;
   (**Pseudo instruction listing all labels of a @code{CASE} branch.  *)
   
   
@@ -496,6 +497,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | negate: cstr := "negate";
     | multiply: cstr := "multiply";
     | divide: cstr := "divide";
+    | modulo: cstr := "modulo";
 
     | eql: cstr := "eql";
     | neq: cstr := "neq";

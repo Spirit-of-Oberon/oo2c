@@ -839,6 +839,10 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
         WriteMonadicOp (instr, "-", ";");
       | Opcode.multiply:
         WriteDyadicOp (instr, "*");
+      | Opcode.divide:
+        WriteDyadicOp (instr, "/");
+      | Opcode.modulo:
+        WriteDyadicOp (instr, "%");
 
       | Opcode.and:
         WriteDyadicOp (instr, "&&");

@@ -133,6 +133,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
     VAR
       instr: SSA.Instr;
       res: SSA.Result;
+      opcode: Opcode.Class;
 
     PROCEDURE Deref (deref: IR.Deref): SSA.Result;
       VAR
@@ -389,23 +390,18 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
             
       | expr: IR.BinaryArith DO
         CASE expr.variant OF
-        | IR.arithAdd:
-          instr := pb. AddInstr (Opcode.add,
-                                 Opcode.TypeToSubclass (expr. left. type));
-
-        | IR.arithSub:
-          instr := pb. AddInstr (Opcode.subtract,
-                                 Opcode.TypeToSubclass (expr. left. type));
-          
-        | IR.arithMul:
-          instr := pb. AddInstr (Opcode.multiply,
-                                 Opcode.TypeToSubclass (expr. left. type));
-          
+        | IR.arithAdd : opcode := Opcode.add;
+        | IR.arithSub : opcode := Opcode.subtract;
+        | IR.arithMul : opcode := Opcode.multiply;
+        | IR.arithMod : opcode := Opcode.modulo;
+        | IR.arithDivI: opcode := Opcode.divide;
+        | IR.arithDivR: opcode := Opcode.divide;
         ELSE
           Log.Int("++ Unknown variant of BinaryArith in Expression",
                   expr. variant);
           ASSERT (FALSE);
         END;
+        instr := pb. AddInstr (opcode, Opcode.TypeToSubclass (expr.left.type));
         instr. AddOpnd (Expression (expr. left), Opnd.arg);
         instr. AddOpnd (Expression (expr. right), Opnd.arg);
         RETURN instr
