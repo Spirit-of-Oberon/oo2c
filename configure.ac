@@ -1,6 +1,6 @@
 dnl Autoconf requirements
 AC_PREREQ(2.53)
-AC_INIT(OOC,2.0.3,mia@de.uu.net)
+AC_INIT(OOC,2.0.4,mia@de.uu.net)
 AC_CONFIG_SRCDIR(src/OOC/Parser.Mod)
 AC_CONFIG_HEADER(lib/src/__config.h)
 
