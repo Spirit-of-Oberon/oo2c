@@ -480,7 +480,11 @@ BEGIN
       COPY (type.name^, name);
       str.AppendString(name);
       str.AppendChar("@");
+<*IF TARGET_ADDRESS = 64 THEN*>
+      str.AppendString("???");
+<*ELSE*>
       str.AppendLongInt(S.VAL(LONGINT, object));
+<*END*>
       str.AppendChar("]");
     END
   END;
