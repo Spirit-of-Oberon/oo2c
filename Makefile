@@ -35,6 +35,7 @@ mkdir: FRC
 ###      with them.
 clean: doc-clean test-clean
 	for i in sym obj; do rm -Rf ${top_builddir}/$$i/*; done
+	for i in lib/sym lib/obj; do rm -Rf ${top_builddir}/$$i; done
 	rm -f src/XML
 	for i in ${test_programs}; do rm -f $$i; done
 	for i in ${subdirs}; do cd $$i && ${MAKE} clean; done
