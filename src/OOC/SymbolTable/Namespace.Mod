@@ -482,6 +482,8 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
                 ErrDecl (redefinitionBeforeBase, decl, errList)
               END;
 
+              decl.deprecated := decl.deprecated OR base.deprecated;
+              
               Uses.Mark(base, uses, decl.name);
             ELSE
               ErrDecl (invalidRedefintion, decl, errList)

@@ -200,11 +200,13 @@ PROCEDURE (r: Rules) SetForceUpdate*(forceUpdate: BOOLEAN);
     r.forceUpdate := forceUpdate;
   END SetForceUpdate;
 
-PROCEDURE (r: Rules) ListUsesOf*(extIdent: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE (r: Rules) UsageTracking*(extIdent: ARRAY OF CHAR): BOOLEAN;
+  VAR
+    syntaxError: BOOLEAN;
   BEGIN
-    r.uses := Uses.New(extIdent);
-    RETURN (r.uses # NIL);
-  END ListUsesOf;
+    r.uses := Uses.New(extIdent, syntaxError);
+    RETURN ~syntaxError;
+  END UsageTracking;
 
 PROCEDURE (r: Rules) SetExtensionDict*(dict: Dictionary.Dictionary);
   BEGIN
@@ -628,7 +630,7 @@ RAISES IO.Error;
         module.SetInterfaceData(module. ifData, Rep.completeInterface,
                                 r.CheckAllImports(module));
 
-        IF (r.uses # NIL) THEN
+        IF (r.uses # NIL) & r.uses.TrackingDeclarations() THEN
           (* symbol file is up to date, but we are looking for uses of
              declarations: compile module in "analysis only" mode *)
           dummy := r.CompileModule(module, TRUE);

@@ -564,12 +564,11 @@ BEGIN  <*Warnings:=FALSE*>
     makeRules.SetErrOut(StdChannels.stderr);
   END;
   makeRules.SetForceUpdate(forceUpdate.value(Boolean.Value).boolean);
-  IF (listUses.value(StringValue.Value).string^ # "") THEN
-    IF ~makeRules.ListUsesOf(listUses.value(StringValue.Value).string^) THEN
-      Err.String ("Error: Invalid selector string for `--uses'");
-      Err.Ln;
-      HALT (1)
-    END;
+  ok := makeRules.UsageTracking(listUses.value(StringValue.Value).string^);
+  IF ~ok THEN
+    Err.String ("Error: Invalid selector string for `--uses'");
+    Err.Ln;
+    HALT (1)
   END;
   Make.writeStats := writeStats.value(Boolean.Value).boolean;
       

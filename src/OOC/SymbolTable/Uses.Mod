@@ -31,7 +31,7 @@ TYPE
     decl: Sym.Declaration;
   END;
   UsesDesc = RECORD
-    selector: Selector;
+    selector: Selector;  (* if NIL, then skip any usage checks *)
     errList: Error.List;
     pattern: Sym.Declaration;
     
@@ -44,6 +44,7 @@ CONST
   (*noMatch = 0;*)
   useOfObject = 1;
   definition = 2;
+  deprecated = 3;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -65,6 +66,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := prefix+"Use"
     | definition:
       t := prefix+"Definition"
+    | deprecated:
+      t := Error.warningPrefix+"Use of deprecated object"
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -81,7 +84,10 @@ PROCEDURE InitUses(u: Uses; selector: Selector);
     NEW(u.storedUses, 8);
   END InitUses;
 
-PROCEDURE New*(extIdent: ARRAY OF CHAR): Uses;
+PROCEDURE New*(extIdent: ARRAY OF CHAR; VAR syntaxError: BOOLEAN): Uses;
+(**If @oparam{extIdent} is the empty string, then no usage tracking of a
+   particular declaration is done.  In this case, this module only implements
+   warnings for using occurences of deprecated declarations.  *)
   VAR
     u: Uses;
     selector: Selector;
@@ -143,15 +149,23 @@ PROCEDURE New*(extIdent: ARRAY OF CHAR): Uses;
     END ParseIdent;
   
   BEGIN
-    selector := ParseIdent(extIdent);
-    IF (selector = NIL) THEN
-      RETURN NIL;
+    IF (extIdent = "") THEN
+      selector := NIL;
+      syntaxError := FALSE;
     ELSE
-      NEW(u);
-      InitUses(u, selector);
-      RETURN u;
+      selector := ParseIdent(extIdent);
+      syntaxError := (selector = NIL);
     END;
+    
+    NEW(u);
+    InitUses(u, selector);
+    RETURN u;
   END New;
+
+PROCEDURE (u: Uses) TrackingDeclarations*(): BOOLEAN;
+  BEGIN
+    RETURN (u.selector # NIL);
+  END TrackingDeclarations;
 
 PROCEDURE (u: Uses) StartModule*(symTab: Sym.Module; errList: Error.List);
 (**Signal that module @oparam{symTab} is about to be processed.  No attempt
@@ -159,7 +173,11 @@ PROCEDURE (u: Uses) StartModule*(symTab: Sym.Module; errList: Error.List);
    @oproc{Uses.RegisterSymTab} is called.  *)
   BEGIN
     u.errList := errList;
-    u.storeUses := (symTab.name.str^ = u.selector[0].str^);
+    IF u.TrackingDeclarations() THEN
+      u.storeUses := (symTab.name.str^ = u.selector[0].str^);
+    ELSE
+      u.storeUses := FALSE;
+    END;
   END StartModule;
 
 PROCEDURE AddMsg(u: Uses; ident: Sym.Name; code: Error.Code);
@@ -303,44 +321,62 @@ PROCEDURE (u: Uses) RegisterSymTab*(symTab: Sym.Module);
     END Resolve;
   
   BEGIN
-    u.pattern := Resolve();
-    IF (u.pattern # NIL) & (u.pattern.name.pos >= 0) THEN
-      AddMsg(u, u.pattern.name, definition);
-    END;
-    
-    FOR i := 0 TO u.storedUsesCount-1 DO
-      IF u.Matches(u.storedUses[i].decl) THEN
-        AddMsg(u, u.storedUses[i].ident, useOfObject);
+    IF u.TrackingDeclarations() THEN
+      u.pattern := Resolve();
+      IF (u.pattern # NIL) & (u.pattern.name.pos >= 0) THEN
+        AddMsg(u, u.pattern.name, definition);
       END;
-      u.storedUses[i].ident := NIL;
-      u.storedUses[i].decl := NIL;
+      
+      FOR i := 0 TO u.storedUsesCount-1 DO
+        IF u.Matches(u.storedUses[i].decl) THEN
+          AddMsg(u, u.storedUses[i].ident, useOfObject);
+        END;
+        u.storedUses[i].ident := NIL;
+        u.storedUses[i].decl := NIL;
+      END;
+      u.storedUsesCount := 0;
+      u.storeUses := FALSE;
     END;
-    u.storedUsesCount := 0;
-    u.storeUses := FALSE;
   END RegisterSymTab;
 
 PROCEDURE Mark*(decl: Sym.Declaration; uses: Uses; ident: Sym.Name);
   VAR
     new: StoredUses;
     i: LONGINT;
+
+  PROCEDURE Deprecated(decl: Sym.Declaration): BOOLEAN;
+    BEGIN
+      WITH decl: Sym.Import DO
+        RETURN decl.externalSymTab.deprecated;
+      ELSE
+        RETURN decl.deprecated;
+      END;
+    END Deprecated;
+  
   BEGIN
     IF (decl # NIL) THEN
       decl.IncrUsageCounter();
 
       IF (uses # NIL) & (ident.pos > 0) THEN
-        IF uses.storeUses THEN
-          IF (uses.storedUsesCount = LEN(uses.storedUses^)) THEN
-            NEW(new, uses.storedUsesCount*2);
-            FOR i := 0 TO uses.storedUsesCount-1 DO
-              new[i] := uses.storedUses[i];
+        IF Deprecated(decl) THEN
+          AddMsg(uses, ident, deprecated);
+        END;
+
+        IF (uses # NIL) & uses.TrackingDeclarations() THEN
+          IF uses.storeUses THEN
+            IF (uses.storedUsesCount = LEN(uses.storedUses^)) THEN
+              NEW(new, uses.storedUsesCount*2);
+              FOR i := 0 TO uses.storedUsesCount-1 DO
+                new[i] := uses.storedUses[i];
+              END;
+              uses.storedUses := new;
             END;
-            uses.storedUses := new;
+            uses.storedUses[uses.storedUsesCount].ident := ident;
+            uses.storedUses[uses.storedUsesCount].decl := decl;
+            INC(uses.storedUsesCount);
+          ELSIF uses.Matches(decl) THEN
+            AddMsg(uses, ident, useOfObject);
           END;
-          uses.storedUses[uses.storedUsesCount].ident := ident;
-          uses.storedUses[uses.storedUsesCount].decl := decl;
-          INC(uses.storedUsesCount);
-        ELSIF uses.Matches(decl) THEN
-          AddMsg(uses, ident, useOfObject);
         END;
       END;
     END;

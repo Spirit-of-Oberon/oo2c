@@ -124,6 +124,7 @@ BEGIN
       makeRules.SetBackend(Make.backendIRtoC);
     END;
     makeRules.SetErrOut(StdChannels.stderr);
+    ok := makeRules.UsageTracking("");  (* for deprecation warnings *)
     
     ok := TRUE;
     FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
