@@ -405,8 +405,11 @@ CONST
   logicalOr* = 35;
   logicalXor* = 36;
   logicalComplement* = 37;
-  (* 38 unused *)
   
+  typeCast* = 38;
+  (**Type cast.  Takes one argument, the value that should be
+     casted.  The result type of the convertion is the instructions's
+     subclass, the source type that of the first argument.  *)
   typeConv* = 39;
   (**Type conversion operation.  Takes one argument, the value that should be
      converted.  The result type of the convertion is the instructions's
@@ -662,6 +665,7 @@ PROCEDURE GetName* (class: Class; subclass: Subclass; VAR name: ARRAY OF CHAR);
     | logicalXor: cstr := "logical-xor";
     | logicalComplement: cstr := "logical-complement";
       
+    | typeCast: cstr := "type-cast";
     | typeConv: cstr := "type-conv";
     | setMember: cstr := "set-member";
     | setRange: cstr := "set-range";
@@ -698,6 +702,7 @@ PROCEDURE TypeToSubclass* (type: Sym.Type): Subclass;
       | Predef.longreal: RETURN scReal64
       | Predef.set: RETURN scUnsigned32
       | Predef.byte: RETURN scUnsigned8
+      | Predef.ptr: RETURN scAddress
       | Predef.charString: RETURN scAddress
       | Predef.longcharString: RETURN scAddress
       | Predef.nil: RETURN scAddress

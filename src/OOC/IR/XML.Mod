@@ -291,6 +291,14 @@ PROCEDURE (v: Visitor) VisitSetOp* (op: IR.SetOp);
     VisitDyadicOp (v, op, op.variant, op.left, op.right, "setOp");
   END VisitSetOp;
 
+PROCEDURE (v : Visitor) VisitTypeCast* (op : IR.TypeCast);
+  BEGIN
+    v. w. StartTag("type-cast", FALSE);
+    (* FIXME! Write type. How? *)
+    op. expr. Accept(v);
+    v. w. EndTag;
+  END VisitTypeCast;
+
 PROCEDURE (v : Visitor) VisitTypeConv* (op : IR.TypeConv);
   BEGIN
     v. w. StartTag("type-conv", FALSE);

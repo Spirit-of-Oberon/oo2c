@@ -615,6 +615,17 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       w. WriteString (");");
     END NewObject;
   
+  PROCEDURE TypeCast (instr: SSA.Instr);
+    BEGIN
+      w. WriteString ("_type_cast(");
+      w. WriteString (w. basicType[Allocator.SubclassToBasicType (instr. subclass)]. repr);
+      w. WriteString (", ");
+      w. WriteString (w. basicType[Allocator.SubclassToBasicType (instr. opndList. arg. instr. subclass)]. repr);
+      w. WriteString (", ");
+      w. Ref (instr. opndList);
+      w. WriteString (");");
+    END TypeCast;
+
   PROCEDURE TypeTag (instr: SSA.Instr);
     VAR
       name: String.String;
@@ -986,6 +997,8 @@ PROCEDURE (w: Writer) WriteInstrList (b: Schedule.Block;
       | Opcode.tbProcAddress:
         TBProcAddress (instr);
 
+      | Opcode.typeCast:
+        TypeCast (instr);
       | Opcode.typeConv:
         w. Ref (instr. opndList);
         w. WriteChar (";");

@@ -123,9 +123,14 @@ extern OOC_INT32 _cmp16(const OOC_CHAR8* l, const OOC_CHAR8* r);
   if ((_x<0) && (_y>0) && (_rem != 0)) _rem += _y;   \
   _rem; })
 
-
 /* i IN s */
 #define _in(_i,_s) (((_s)>>(_i))&1)
+
+/* SYSTEM.VAL */
+#define _type_cast(_destType, _sourceType, _x) \
+  ({ _sourceType y = (_sourceType)_x; *(_destType*)&y; })
+
+
 
 /* run-time meta data: type tags, dynamic array length, type test */
 #define OOC_ARRAY_LENGTH(_adr,_dim) (((OOC_LEN*)(_adr))[-(_dim)-1])

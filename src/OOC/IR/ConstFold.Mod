@@ -526,6 +526,11 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     END
   END VisitCompare;
 
+PROCEDURE (c: ConstFold) VisitTypeCast* (op : IR.TypeCast);
+  BEGIN
+    (* it's probably best to not fold any casts at all *)
+  END VisitTypeCast;
+
 PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
   VAR
     value : Language.Value;

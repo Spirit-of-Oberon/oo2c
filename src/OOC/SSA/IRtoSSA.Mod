@@ -429,6 +429,17 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN instr
       END TypeTest;
     
+    PROCEDURE TypeCast (cast: IR.TypeCast): SSA.Result;
+      VAR
+        instr: SSA.Instr;
+        scDest: Opcode.Subclass;
+      BEGIN
+        scDest := Opcode.TypeToSubclass (cast. type);
+        instr := pb. AddInstr (Opcode.typeCast, scDest);
+        instr. AddOpnd (Expression (cast. expr), Opnd.arg);
+        RETURN instr;
+      END TypeCast;
+    
     PROCEDURE TypeConv (conv: IR.TypeConv): SSA.Result;
       VAR
         instr: SSA.Instr;
@@ -476,6 +487,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         instr. AddOpnd (pb. GetDeclRef (expr. decl), Opnd.readDesign);
         RETURN instr
 
+      | expr: IR.TypeRef DO
+        RETURN pb. GetTypeRef (expr. decl(Sym.TypeDecl). type);
+        
       | expr: IR.Adr DO
         res := Expression (expr. design);
         IF (res. instr. opcode = Opcode.get) THEN
@@ -501,7 +515,9 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         
       | expr: IR.SelectProc DO
         RETURN SelectProc (expr);
-        
+
+      | expr: IR.TypeCast DO
+        RETURN TypeCast (expr);
       | expr: IR.TypeConv DO
         RETURN TypeConv (expr);
       | expr: IR.TypeTag DO

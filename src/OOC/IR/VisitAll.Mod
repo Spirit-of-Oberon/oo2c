@@ -159,6 +159,11 @@ PROCEDURE (v: Visitor) VisitSetRange* (range: IR.SetRange);
     range. to. Accept (v);
   END VisitSetRange;
 
+PROCEDURE (v: Visitor) VisitTypeCast* (op: IR.TypeCast);
+  BEGIN
+    op. expr. Accept (v);
+  END VisitTypeCast;
+
 PROCEDURE (v: Visitor) VisitTypeConv* (op: IR.TypeConv);
   BEGIN
     op. expr. Accept (v);
