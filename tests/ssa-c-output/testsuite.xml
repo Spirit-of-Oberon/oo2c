@@ -5,7 +5,7 @@
 <testsuite-ext profile="Tests code emitted by SSA/C back-end">
 <!--<testsuite-ext
   profile="Tests code emitted by SSA/C back-end"
-  select ="&SetupTestCasesWithOut; alloc1">-->
+  select ="&SetupTestCasesWithOut; const1 quicksort1 const2 const3 const4">-->
   
   &TestSetupWithOut;
     
@@ -162,6 +162,24 @@
     <test id="cse3" type="run" file="Cse3.Mod" output="Cse3.Ref">
       Check that common expressions are detected properly if a value
       contributes multiple times to an instruction.
+    </test>
+
+    <test id="const1" type="run" file="Const1.Mod" output="Const1.Ref">
+      Unreachable code should be eliminated.
+    </test>
+    <test id="const2" type="run" file="Const2.Mod" output="Const2.Ref">
+      Unreachable code containing a <code>RETURN</code> should be eliminated.
+    </test>
+    <test id="const3" type="run" file="Const3.Mod" output="Const3.Ref">
+      Unreachable code containing an <code>EXIT</code> should be
+      eliminated.  After the <code>EXIT</code> is removed, one other
+      <code>EXIT</code> is left.
+    </test>
+    <test id="const4" type="accept" file="Const4.Mod">
+      Unreachable code containing an <code>EXIT</code> should be
+      eliminated.  After the <code>EXIT</code> is removed, <em>no</em>
+      other <code>EXIT</code> remains, making the loop an infinite
+      one.
     </test>
 
     <test id="alloc1" type="run" file="Alloc1.Mod" output="Alloc1.Ref">

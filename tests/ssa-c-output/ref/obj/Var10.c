@@ -5,8 +5,8 @@ static OOC_INT16 Var10__F(OOC_CHAR8 b) {
   register OOC_INT32 i0;
 
   i0 = b;
-l2:
-  if (!i0) goto l2;
+l1_loop:
+  if (!i0) goto l1_loop;
 l5:
   return 1;
 }

@@ -22,7 +22,8 @@ MODULE OOC:SSA:ConstProp;
 
 IMPORT
   Language, Language:Integer, Language:Boolean,
-  OOC:SSA, OOC:SSA:Opcode;
+  OOC:SSA, OOC:SSA:Opcode, OOC:SSA:Opnd, OOC:SSA:Result,
+  OOC:SSA:DeadCodeElimination;
   
 (* FIXME... check for overflows, and don't do folding if an overflow
    happens *)
@@ -119,37 +120,126 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
         res := res. nextResult;
       END;
     END SetInfo;
+
+  PROCEDURE AddUsesToWorklist (res: SSA.Result);
+    VAR
+      use: SSA.Opnd;
+      useInstr: SSA.Instr;
+    BEGIN
+      use := res. useList;
+      WHILE (use # NIL) DO
+        useInstr := use. instr;
+        IF (useInstr. info = unclassified) THEN
+          AddToWorklist (useInstr);
+        END;
+        use := use. nextUse;
+      END;
+    END AddUsesToWorklist;
   
   PROCEDURE UpdateInfo (instr: SSA.Instr; info: SSA.Result);
     VAR
       res: SSA.Result;
-      use: SSA.Opnd;
-      useInstr: SSA.Instr;
     BEGIN
       res := instr;
       WHILE (res # NIL) DO
         res. info := info;
-        use := res. useList;
-        WHILE (use # NIL) DO
-          useInstr := use. instr;
-          IF (useInstr. info = unclassified) THEN
-            AddToWorklist (useInstr);
-          END;
-          use := use. nextUse;
-        END;
+        AddUsesToWorklist (res);
         res := res. nextResult;
       END;
     END UpdateInfo;
   
   PROCEDURE ClassifyInstr (instr: SSA.Instr);
+  (* Try to classify `instr' as `notConstant', or as a constant value.  *)
     VAR
       state, const: SSA.Result;
       opnd: SSA.Opnd;
+
+    PROCEDURE MatchingPath (expr: SSA.Const; isSwitch: BOOLEAN;
+                            branch: SSA.Opnd): SSA.Opnd;
+    (* Return the branch that corresponds to the selector `expr'.  *)
+      
+      PROCEDURE InLabelList (expr: Language.Value; opnd: SSA.Opnd): BOOLEAN;
+        VAR
+          lower, upper: Language.Value;
+        BEGIN
+          WHILE (opnd # NIL) DO
+            lower := opnd. arg(SSA.Const). value;
+            upper := opnd. nextOpnd. arg(SSA.Const). value;
+            IF (lower. Compare (expr) <= 0) & (expr. Compare (upper) <= 0) THEN
+              RETURN TRUE;
+            END;
+            opnd := opnd. nextOpnd. nextOpnd;
+          END;
+          RETURN FALSE;
+        END InLabelList;
+      
+      BEGIN
+        WHILE (branch # NIL) & (branch. class = Opnd.arg) DO
+          IF isSwitch THEN
+            IF (branch. arg IS SSA.Const) (* default branch *)  OR
+               InLabelList (expr. value, branch. arg(SSA.Instr). opndList) THEN
+              RETURN branch. nextOpnd;
+            END;
+          ELSE
+            IF expr. value. Equals (branch. arg(SSA.Const). value) THEN
+              RETURN branch. nextOpnd;
+            END;
+          END;
+          branch := branch. nextOpnd. nextOpnd;
+        END;
+        ASSERT (FALSE);
+      END MatchingPath;
+
+    PROCEDURE ReplaceSelect (select: SSA.Instr; branch: SSA.Opnd);
+      VAR
+        opnd: SSA.Opnd;
+        res: SSA.Result;
+      BEGIN
+        res := select. nextResult;
+        IF (branch. arg. instr. opcode = Opcode.collect) THEN
+          (* replace every result of the "select" with the corresponding
+             argument of the "collect" *)
+          opnd := branch. arg. instr. opndList;
+          WHILE (res # NIL) DO
+            AddUsesToWorklist (res);
+            res. ReplaceUses (opnd. arg);
+            res := res. nextResult;
+            opnd := opnd. nextOpnd;
+          END;
+          
+        ELSE  (* only need to replace the "store" result *)
+          AddUsesToWorklist (res);
+          res. ReplaceUses (branch. arg);
+        END;
+      END ReplaceSelect;
+    
     BEGIN
-      IF (instr. opcode = Opcode.select) THEN
-        ASSERT (instr. useList = NIL);
-        (* ... *)
-        UpdateInfo (instr, notConstant);
+      CASE instr. opcode OF
+      | Opcode.collect, Opcode.select:
+        (* both "collect" and "select" remain unclassified until all their
+           operands have been classified *)
+        opnd := instr. opndList;
+        WHILE (opnd # NIL) & (opnd. arg. info # unclassified) DO
+          opnd := opnd. nextOpnd;
+        END;
+
+        IF (opnd = NIL) THEN             (* all operands are classified *)
+          ASSERT (instr. useList = NIL);
+          ASSERT (instr. nextResult. class = Result.store);
+          IF (instr. opcode = Opcode.select) &
+             (instr. opndList. arg. info # notConstant) THEN
+            (* the selecting expression of the "select" is a constant: replace
+               "select" with the matching path *)
+            ReplaceSelect (instr,
+                           MatchingPath(instr. opndList. arg. info(SSA.Const),
+                                        instr. IsSwitchStatm(),
+                                        instr. opndList. nextOpnd));
+          ELSE
+            UpdateInfo (instr, notConstant);
+          END;
+        (* ELSE: at least one operand is unclassified, more luck next time *)
+        END;
+        
       ELSE
         state := instr;
         opnd := instr. opndList;
@@ -237,6 +327,9 @@ PROCEDURE Transform* (pb: SSA.ProcBlock);
       END;
       instr := instr. nextInstr;
     END;
+
+    (* force DCE to get rid of dangling `store' results *)
+    DeadCodeElimination.Transform (pb);
   END Transform;
 
 BEGIN
