@@ -71,7 +71,7 @@ PROCEDURE WriteFile*(module: Repository.Module;
     ch := module. GetOutputChannel (Repository.modMainFileC, TRUE, res);
     IF (res = Channel.done) THEN
       w := TextRider.ConnectWriter (ch);
-      w. WriteString ('#include "RT0.h"');
+      w. WriteString ('#include "RT0'+Repository.headerSuffix+'"');
       w. WriteLn;
       WriteModules (w, "extern void ", "_init0(void);");
       w. WriteLn;

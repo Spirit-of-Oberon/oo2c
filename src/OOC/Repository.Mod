@@ -25,6 +25,8 @@ IMPORT
   URI, OS:Path, OOC:Logger,
   OOC:Scanner:InputBuffer, Sym := OOC:SymbolTable, OOC:SymbolTable:Builder;
 
+CONST
+  headerSuffix* = ".oh";
 
 TYPE
   URIBuffer* = ARRAY 1024 OF CHAR;
@@ -465,7 +467,7 @@ PROCEDURE (rep: Repository) GetDefaultSuffix* (id: FileId; VAR suffix: ARRAY OF 
     | modDeclFileC:
       COPY (".d", suffix)
     | modHeaderFileC:
-      COPY (".h", suffix)
+      COPY (headerSuffix, suffix);
     | modAssemblerFile:
       COPY (".s", suffix)
     | modMainFileC:

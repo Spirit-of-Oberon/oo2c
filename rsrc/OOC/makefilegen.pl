@@ -13,9 +13,9 @@ my $startup_cwd = cwd();
 my %header = ();
 my %repository = ();
 sub get_header() {
-  if(/\.h$/){
+  if(/\.oh$/){
     my $header = "$File::Find::dir/$_";
-    my ($rep, $file) = ($header =~ m:^(.*/)obj/(.*)\.h$:);
+    my ($rep, $file) = ($header =~ m:^(.*/)obj/(.*)\.oh$:);
     my $module = $file;
     my $source = "${rep}src/$file.Mod";
     
@@ -62,7 +62,7 @@ sub get_c_source {
 find(\&get_header, ".");
 for my $m (keys %header) {
   my $file = $header{$m}{header};
-  $file =~ s:\.h$:\.c:;
+  $file =~ s:\.oh$:\.c:;
   if (not -f $file) {
     $file = get_c_source($header{$m}{source});
   }

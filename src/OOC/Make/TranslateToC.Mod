@@ -159,7 +159,7 @@ PROCEDURE WriteHeaderFile (w: DeclWriter.Writer; m: Repository.Module;
 
     (* pull in type definitions for the run-time meta data: module descriptor,
        type descriptor, and so on.  *)
-    w. WriteString ('#include "'+Config.runtimeModule+'.h"');
+    w. WriteString ('#include "'+Config.runtimeModule+Repository.headerSuffix+'"');
     w. WriteLn;
     
     ConvertDecl.ConvertSymTab (w, m, symTab, exports, TRUE);
