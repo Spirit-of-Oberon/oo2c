@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:TypeRules;
 (*  Defines the type rules of the language.
-    Copyright (C) 2000, 2001  Michael van Acken
+    Copyright (C) 2000-2002  Michael van Acken
 
     This file is part of OOC.
 
@@ -92,6 +92,7 @@ PROCEDURE (tr: Rules) IsOpenArrayType* (type: Sym.Type): BOOLEAN;
     ASSERT (~(type IS Sym.TypeName));
     RETURN (type IS Sym.Array) & type(Sym.Array). isOpenArray
   END IsOpenArrayType;
+
 
 
 PROCEDURE (tr: Rules) IsValidRecordBaseType* (type: Sym.Type): BOOLEAN;
@@ -252,5 +253,60 @@ PROCEDURE (tr: Rules) IsValidForwardDecl* (forward, proc: Sym.FormalPars): BOOLE
       RETURN tr. FormalParamsMatch (proc, forward, FALSE)
     END
   END IsValidForwardDecl;
+
+
+
+PROCEDURE (tr: Rules) IsArrayType* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff @oparam{type} is an array type. *)
+  BEGIN
+    ASSERT (~(type IS Sym.TypeName));
+    RETURN (type IS Sym.Array)
+  END IsArrayType;
+
+PROCEDURE (tr: Rules) IsArrayCompatible* (a, b: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff @oparam{a} is array compatible to @oparam{b}.  *)
+  BEGIN
+    WHILE tr. IsOpenArrayType (a) & (b IS Sym.Array) DO
+      a := a(Sym.Array). elementType; b := b(Sym.Array). elementType
+    END;
+    RETURN tr. SameType (a, b)
+  END IsArrayCompatible;
+
+PROCEDURE (tr: Rules) IsComponentOf* (subType, superType: Sym.Type;
+                                      arrayCompat: BOOLEAN): BOOLEAN;
+(**Returns @code{TRUE} iff type @oparam{superType} is equal to or contains a
+   subtype of type @oparam{subType}.  If @oparam{arrayCompat} is @code{TRUE}
+   also returns @code{TRUE} if a subtype of @oparam{superType} is array
+   compatible to @oparam{subType}.  *)
+  VAR 
+    field: Sym.Item;
+  BEGIN
+    IF tr. EqualTypes (superType, subType) OR 
+       tr. IsExtensionOf (superType, subType) THEN
+      RETURN TRUE
+    ELSIF arrayCompat & tr. IsArrayCompatible (subType, superType) THEN
+      RETURN TRUE
+    ELSIF (superType IS Sym.Array) THEN
+      RETURN tr. IsComponentOf (subType, superType(Sym.Array). elementType,
+                            arrayCompat)
+    ELSIF (superType IS Sym.Record) THEN
+      (* inspect types of all fields of all base types *)
+      WHILE (superType # NIL) DO
+        field := superType. nestedItems;
+        WHILE (field # NIL) DO
+          WITH field: Sym.FieldDecl DO
+            IF tr. IsComponentOf (subType, field. type, arrayCompat) THEN
+              RETURN TRUE
+            END
+          END;
+          field := field. nextNested
+        END;
+        superType := superType(Sym.Record). baseType
+      END;
+      RETURN FALSE
+    ELSE
+      RETURN FALSE
+    END
+  END IsComponentOf;
 
 END OOC:SymbolTable:TypeRules.
