@@ -68,13 +68,14 @@ TYPE
     stripPrefix- : Option.StringList;
     outputName- : Option.String;
     interfaceType- : Option.String;
-    prolog- : Option.String;
-    epilog- : Option.String;
+    prolog- : Option.String; doneProlog* : BOOLEAN;
+    epilog- : Option.String; doneEpilog* : BOOLEAN;
     linkFramework- : Option.StringList;
     linkLib- : Option.StringList;
     linkFile- : Option.StringList;
     defaultVar- : Option.Boolean;
     translate- : Option.Boolean;
+    merge- : Option.Boolean;
     visited* : BOOLEAN;
   END;
 
@@ -738,12 +739,15 @@ BEGIN
   m.outputName := m.options.String("OutputName", m.name);
   m.interfaceType := m.options.String("InterfaceType", "C");
   m.prolog := m.options.String("Prolog", "");
+  m.doneProlog := FALSE;
   m.epilog := m.options.String("Epilog", "");
+  m.doneEpilog := FALSE;
   m.linkFramework := m.options.StringList("LinkFramework");
   m.linkLib := m.options.StringList("LinkLib");
   m.linkFile := m.options.StringList("LinkFile");
   m.defaultVar := m.options.Boolean("DefaultVar", FALSE);
   m.translate := m.options.Boolean("Translate", TRUE);
+  m.merge := m.options.Boolean("Merge", FALSE);
   m.visited := FALSE;
   m.vars := NIL;
   m.types := NIL;

@@ -254,17 +254,22 @@ BEGIN
 
   realFileName := realFileName.ToString8("_");
   moduleName := Type.ModuleName(realFileName);
-  module := Type.FindModule(moduleName);
-  IF module = NIL THEN
-    Err.String("NEW ");
-    module := Type.NewModule(moduleName);
+  IF (i.src # NIL) & (i.src.module.merge.value) THEN
+    module := i.src.module;
+  ELSE
+    module := Type.FindModule(moduleName);
+    IF module = NIL THEN
+      Err.String("NEW ");
+      module := Type.NewModule(moduleName);
+    END;
   END;
   Err.String("MODULE "); Err.Object(moduleName); 
   Err.String(" for "); Err.Object(realFileName);
   Err.Ln;
   i.PushSource(channel, realFileName, module, TRUE);
   prolog := module.prolog.value;
-  IF prolog.length > 0 THEN
+  IF (prolog.length > 0) & ~module.doneProlog THEN
+    module.doneProlog := TRUE;
     i.PushProlog(prolog, module, "Prolog");
   END;
 END Include;
@@ -299,7 +304,8 @@ BEGIN
 
             (* check for module epilog *)
             epilog := src.module.epilog.value ;
-            IF src.isFile & (epilog.length > 0)  THEN
+            IF src.isFile & (epilog.length > 0) & ~src.module.doneEpilog THEN
+              src.module.doneEpilog := TRUE;
               i.PushProlog(epilog, src.module, "Epilog")
             END;
           END
