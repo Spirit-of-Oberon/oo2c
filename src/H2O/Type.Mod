@@ -194,8 +194,8 @@ PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module); src : Module);
     IF t.visited THEN RETURN END;
     t.visited := TRUE;
 
-    IF t.module # src THEN
-      Accumulate(t.module);
+    Accumulate(t.module);
+    IF (t.module # src) & (t.module # NIL) THEN
     ELSE
       CASE t.class OF
       | tFunction, tArray, tPointer, tName:
