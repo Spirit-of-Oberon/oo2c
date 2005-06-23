@@ -633,11 +633,12 @@ TRY
   e.WriteString(' [ INTERFACE "');
   e.WriteObject(m.interfaceType.value);
   e.WriteString('"');
-  IF (m.linkFramework.value.size > 0) OR (m.linkLib.value.size > 0) THEN
+  IF (m.linkFramework.value.size > 0) OR (m.linkLib.value.size > 0) OR (m.linkFile.value.size > 0) THEN
     e.WriteString("; LINK ");
     depCount := 0;
     ListDependencies(depCount, "FRAMEWORK", m.linkFramework);
     ListDependencies(depCount, "LIB", m.linkLib);
+    ListDependencies(depCount, "FILE", m.linkFile);
     e.WriteString(" END");
   END;
   e.WriteString(" ];");

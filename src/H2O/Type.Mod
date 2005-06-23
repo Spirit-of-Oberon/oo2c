@@ -72,6 +72,7 @@ TYPE
     epilog- : Option.String;
     linkFramework- : Option.StringList;
     linkLib- : Option.StringList;
+    linkFile- : Option.StringList;
     defaultVar- : Option.Boolean;
     translate- : Option.Boolean;
     visited* : BOOLEAN;
@@ -740,6 +741,7 @@ BEGIN
   m.epilog := m.options.String("Epilog", "");
   m.linkFramework := m.options.StringList("LinkFramework");
   m.linkLib := m.options.StringList("LinkLib");
+  m.linkFile := m.options.StringList("LinkFile");
   m.defaultVar := m.options.Boolean("DefaultVar", FALSE);
   m.translate := m.options.Boolean("Translate", TRUE);
   m.visited := FALSE;
