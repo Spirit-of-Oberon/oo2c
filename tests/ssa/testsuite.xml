@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; proc15">-->
+  select ="&SetupTestCasesWithOut; generic82">-->
 
   &TestSetupWithOut;
     
@@ -1862,6 +1862,9 @@
       Regression test: <code>WITH</code> statement must propagate the
       correct type value.
     </test>
+    <test id="generic82" type="reject" file="Generic82.Mod">
+      Regression test: Too many type parameters for receiver.
+    </test>
 
     <test id="iterator1" type="run" file="Iterator1.Mod"
           output="Iterator1.Ref">
@@ -2643,6 +2646,8 @@
         msg="This static type-bound procedure cannot be abstract"/>
     <reject-info id="generic78" pos="x %# l.elements"
         msg="Incompatible types for operator"/>
+    <reject-info id="generic82" pos="a: %Alp(T, E)"
+        msg="The base record type has 1 type parameter(s)"/>
 
     <reject-info id="iterator3" pos="IN %x"
         msg="Iterator requires array elements of scalar type"/>
