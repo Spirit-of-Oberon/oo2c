@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic77 generic78 generic79 generic80">-->
+  select ="&SetupTestCasesWithOut; proc15">-->
 
   &TestSetupWithOut;
     
@@ -245,6 +245,9 @@
     <test id="proc14" type="accept" file="Proc14.Mod">
       Any pointer type can be passed to a formal <code>VAR</code>
       parameter of type <code>PTR</code>.
+    </test>
+    <test id="proc15" type="reject" file="Proc15.Mod">
+      Passing a set constant to an integer parameter.
     </test>
 
     <test id="function1" type="run"
@@ -2200,6 +2203,8 @@
       msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
     <reject-info id="proc12" pos="P(%x);"
       msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
+    <reject-info id="proc15" pos="Test({%1, 2})"
+      msg="Argument not compatible with formal type `INTEGER'"/>
     <reject-info id="function8" pos=":= %P(" msg="This is not a function procedure"/>
 
     <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>

@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:AST:CreateIR;
 (*  Creates an IR representation from the abstract syntax tree.
-    Copyright (C) 2001-2004  Michael van Acken
+    Copyright (C) 2001-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -139,7 +139,7 @@ PROCEDURE CreateIR* (module: AST.Module;
       len := (sc.elementList.len+1) DIV 2; 
       result := Range(type, sc.elementList.n[0], TRUE);
       FOR i := 1 TO len-1 DO
-        result := b.NewSetOp(NIL, IR.setUnion, result,
+        result := b.NewSetOp(result.sym, IR.setUnion, result,
                              Range(type, sc.elementList.n[i*2], TRUE));
       END;
       RETURN result;
