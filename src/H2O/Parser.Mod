@@ -448,7 +448,7 @@ compiler, but it doesn't strictly follow the language definition. *)
     | long:
       IF size = long THEN size := longlong ELSE size := long END;
       GetSym;
-    | void, char, int, float, double: 
+    | void, char, wchar, int, float, double: 
       type := sym; GetSym;
     | enum:
       type := enum; t := EnumDecl();
@@ -472,7 +472,7 @@ compiler, but it doesn't strictly follow the language definition. *)
   IF (size = short) & (type # int) OR 
      (size = long) & (type # int) & (type # double) OR
      (size = longlong) & (type # int) OR
-     (sign # 0) & (type # int) & (type # char) THEN
+     (sign # 0) & (type # int) & (type # char) & (type # wchar) THEN
     err.Error("Invalid type specification");
   END;
 
@@ -494,6 +494,8 @@ compiler, but it doesn't strictly follow the language definition. *)
     END;
   | char:
     t := CondType(sign = unsigned, T.unsignedCharType, T.charType);
+  | wchar:
+    t := CondType(sign = unsigned, T.unsignedWCharType, T.wCharType);
   | void:
     t := T.voidType;
   ELSE
@@ -688,6 +690,8 @@ BEGIN
     size := Max(size, arg.size);
   ELSE
     Log.Object("AdjustSize", arg);
+    radix := 10;
+    size := 8;
   END;
 END AdjustSize;
 
@@ -1534,6 +1538,7 @@ BEGIN
     IF macro.module = mod THEN
       IF debugProgress THEN Log.Object("macro: ", macro.name); END;
       ParseMacro(e, items.Get(i));
+      IF debugProgress THEN Log.Object("done macro: ", macro.name); END;
     END;
   END;
 END ParseMacros;
