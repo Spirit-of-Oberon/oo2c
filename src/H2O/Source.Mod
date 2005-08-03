@@ -3,7 +3,8 @@ MODULE H2O:Source [OOC_EXTENSIONS];
 IMPORT
   H2O:Type, H2O:Option,
   Object, Err, Log, ADT:Dictionary,
-  IO, IO:FileChannel, IO:Memory, OS:Files, OS:Path, Exception;
+  IO, IO:FileChannel, IO:Memory, OS:Files, OS:Path, Exception,
+  ADT:ArrayList;
 
 CONST
   cr = 0DX;
@@ -222,6 +223,32 @@ BEGIN
   END;
 END PushProlog;
 
+PROCEDURE AddImports (module : Type.Module);
+VAR 
+  i : LONGINT;
+  list : ArrayList.ArrayList(STRING);
+  mods : ArrayList.ArrayList(Type.Module);
+  mod2 : Type.Module;
+  name : STRING;
+BEGIN
+  Log.Msg("AddImports");
+  list := module.userImport.value;
+  mods := NEW(ArrayList.ArrayList(Type.Module), 4);
+  FOR i := 0 TO list.Size() -1 DO
+    name := list.Get(i);
+    mod2 := Type.FindModule(name);
+    IF mod2 = NIL THEN
+      Err.String("USER IMPORT MODULE NOT FOUND:"); Err.Object(name); Err.Ln;
+    ELSE
+      Err.String("ADDED USER IMPORT MODULE:"); Err.Object(name); Err.Ln;
+      mods.Append(module);
+    END;
+  END;
+  IF mods.Size() > 0 THEN
+    module.AddImports(mods);
+  END;
+END AddImports;
+
 PROCEDURE (i : Input) Include* (fileName : STRING; search : BOOLEAN);
 VAR
   found : BOOLEAN;
@@ -266,6 +293,7 @@ BEGIN
   Err.String("MODULE "); Err.Object(moduleName); 
   Err.String(" for "); Err.Object(realFileName);
   Err.Ln;
+  AddImports(module);
   i.PushSource(channel, realFileName, module, TRUE);
   prolog := module.prolog.value;
   IF (prolog.length > 0) & ~module.doneProlog THEN
