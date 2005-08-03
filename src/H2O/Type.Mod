@@ -73,6 +73,7 @@ TYPE
     linkFramework- : Option.StringList;
     linkLib- : Option.StringList;
     linkFile- : Option.StringList;
+    userImport- : Option.StringList;
     defaultVar- : Option.Boolean;
     translate- : Option.Boolean;
     merge- : Option.Boolean;
@@ -113,12 +114,14 @@ VAR
   longLongType-, unsignedLongLongType-,
   floatType-, doubleType-, longDoubleType-,
   charType-, unsignedCharType-, voidType- : Type;
+  wCharType-, unsignedWCharType- : Type;
 
   modules- : Module;
   reserved- : ArrayList.ArrayList(STRING);
 
   options* : Option.Options;
   allowRedefinedProc : Option.Boolean;
+  allowRedefined : Option.Boolean;
 
 CONST
   pointerSize* = 4;
@@ -497,7 +500,8 @@ BEGIN
   RETURN 
     (new.class = old.class) & (
        ((new.class IN {tStruct, tUnion}) & (old.link = NIL))
-    OR ((new.class = tFunction) & allowRedefinedProc.value & SameTypes(new, old, FALSE)));
+    OR ((new.class = tFunction) & allowRedefinedProc.value & SameTypes(new, old, FALSE)))
+    OR allowRedefined.value;
 END AllowedRedefinition;
 
 (* Determine if a name is a valid output symbol *)
@@ -745,6 +749,7 @@ BEGIN
   m.linkFramework := m.options.StringList("LinkFramework");
   m.linkLib := m.options.StringList("LinkLib");
   m.linkFile := m.options.StringList("LinkFile");
+  m.userImport := m.options.StringList("Import");
   m.defaultVar := m.options.Boolean("DefaultVar", FALSE);
   m.translate := m.options.Boolean("Translate", TRUE);
   m.merge := m.options.Boolean("Merge", FALSE);
@@ -811,6 +816,8 @@ BEGIN
 
   charType := BaseType(tInteger, 1, "char");  
   unsignedCharType := BaseType(tUnsigned, 1, "unsigned char");
+  wCharType := BaseType(tInteger, 2, "wchar_t");  
+  unsignedWCharType := BaseType(tUnsigned, 2, "unsigned wchar_t");
   shortType := BaseType(tInteger, 2, "short");
   unsignedShortType := BaseType(tUnsigned, 2, "unsigned short");
   longType := BaseType(tInteger, 4, "long");
@@ -825,5 +832,6 @@ BEGIN
 
   options := NEW(Option.Options);
   allowRedefinedProc := options.Boolean("AllowRedefinedProc", FALSE);
+  allowRedefined := options.Boolean("AllowRedefined", FALSE);
 END H2O:Type.
 
