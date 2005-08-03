@@ -121,8 +121,10 @@ BEGIN
       buf := StringBuffer.New("");
       buf.Append(autoPrefix.value);
       CASE t.class OF
+      | Type.tArray:    
+          buf.Append("Array");
+          IF t.size # -1 THEN buf.AppendInt(t.size) END;
       | Type.tPointer:  buf.Append("Ptr");
-      | Type.tArray:    buf.Append("Array");
       | Type.tFunction: buf.Append("Procedure");
       | Type.tEnum:     buf.Append("Enum");
       END;
