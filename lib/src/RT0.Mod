@@ -14,7 +14,7 @@ MODULE RT0 [
     <*IF HAVE_LIB_M THEN*>LIB "m";<*END*>
   END ];
 (*  Proxy module for the run-time system of C back-ends of OOC2
-    Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
+    Copyright (C) 2001, 2002, 2003, 2004, 2005  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -261,6 +261,8 @@ TYPE
     low-, high-: LONGINT;
     jmp-: SYSTEM.PTR;
   END;
+  charPtr1d* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
+  charPtr2d* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF charPtr1d;
   
 VAR
   boolean-: StructDesc;
@@ -279,8 +281,7 @@ VAR
 
 VAR
   argc-: LONGINT;
-  argv-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF
-                      POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
+  argv-: charPtr2d;
   poisonHeap*: LONGINT;
   (**If set to a non-negative value, then memory allocated through
      @oproc{NewObject} and @oproc{NewBlock} is filled with this byte value.
