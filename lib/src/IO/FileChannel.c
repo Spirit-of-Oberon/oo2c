@@ -84,7 +84,7 @@ static void cleanup_tmp_files() {
 IO_FileChannel__Channel IO_FileChannel__OpenUnbuffered(Object__String xfile,
 						       OOC_UINT32 mode) {
   int flags = 0;
-  char* fname = OS_Path__Encode(xfile);
+  char* fname = (char*)OS_Path__Encode(xfile);
   int fd;
   Object__String8 tmpName = NULL;
   
@@ -220,8 +220,8 @@ void IO_FileChannel__ChannelDesc_CloseAndRegister(IO_FileChannel__Channel ch) {
     IO__ChannelDesc_Close((IO__Channel)ch);
     
     if (ch->tmpIndex >= 0) {
-      char* fname = OS_Path__Encode(ch->origName);
-      char* tname = OS_Path__Encode((Object__String)ch->tmpName);
+      char* fname = (char*)OS_Path__Encode(ch->origName);
+      char* tname = (char*)OS_Path__Encode((Object__String)ch->tmpName);
 #ifdef __MINGW32__
         if (MoveFileEx(tname, fname, MOVEFILE_REPLACE_EXISTING) == 0)
           res = GetLastError();

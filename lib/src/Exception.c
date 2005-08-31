@@ -4,6 +4,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #if HAVE_BACKTRACE_SYMBOLS
 #  include <execinfo.h>
 #endif
@@ -29,8 +30,8 @@ void Exception__Abort(Exception__Exception e) {
     OOC_TBCALL(OOC_TBPROC_ADR(td,Exception__ExceptionDesc_GetMessage),
 	       Exception__ExceptionDesc_GetMessage)(e);
   /* if the type name ends with "Desc", then drop the last 4 characters */
-  int len = strlen(td->name);
-  if ((len >= 4) && (strcmp(td->name + (len-4), "Desc") == 0)) {
+  int len = strlen((char*)td->name);
+  if ((len >= 4) && (strcmp((char*)td->name + (len-4), "Desc") == 0)) {
     len -= 4;
   }
   fprintf(stderr, "## Exception: %s.%.*s", td->module->name, len, td->name);
@@ -145,13 +146,13 @@ Object__String8 Exception__ExceptionDesc_Name(Exception__Exception e) {
   char b[B];
   
   /* if the type name ends with "Desc", then drop the last 4 characters */
-  int len = strlen(td->name);
-  if ((len >= 4) && (strcmp(td->name + (len-4), "Desc") == 0)) {
+  int len = strlen((char*)td->name);
+  if ((len >= 4) && (strcmp((char*)td->name + (len-4), "Desc") == 0)) {
     len -= 4;
   }
   /* this may cause a buffer overflow for _very_ long module/type names */
   sprintf(b, "%s.%.*s", td->module->name, len, td->name);
-  return Object__NewLatin1Region(b, B, 0, strlen(b));
+  return Object__NewLatin1Region((OOC_CHAR8*)b, B, 0, strlen(b));
 }
 
 

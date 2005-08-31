@@ -156,7 +156,7 @@ int OS_ProcessManagement__system(Object__String command) {
   if (command == NULL) {
     return system(NULL);
   } else {
-    return system(OS_Path__Encode(command));
+    return system((char*)OS_Path__Encode(command));
   }
 }
 #endif

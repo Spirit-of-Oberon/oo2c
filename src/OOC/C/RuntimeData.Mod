@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:C:RuntimeData;
 (*  Writes C code for run-time data like type descriptors.
-    Copyright (C) 2002, 2003, 2004  Michael van Acken
+    Copyright (C) 2002, 2003, 2004, 2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -133,7 +133,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
       IF (type. namingDecl = NIL) THEN
         w. WriteString ("NULL");
       ELSE
-        w. WriteChar ('"');
+        w. WriteString ('(OOC_CHAR8*)"');
         w. WriteString (type. namingDecl. name. str^);
         w. WriteChar ('"');
       END;
@@ -409,7 +409,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         
         CNli; w.WriteString("&_mid");    (* module *)
         
-        CNli; w.WriteChar('"');          (* name *)
+        CNli; w.WriteString('(OOC_CHAR8*)"'); (* name *)
         w.WriteObject(QualTypeName(qtd.type));
         w.WriteChar('"');
         

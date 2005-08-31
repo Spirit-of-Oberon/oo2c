@@ -340,7 +340,8 @@ void RT0__UnregisterModule(RT0__Module mid) {
 
 RT0__Module RT0__ThisModule(const OOC_CHAR8 name__ref[], OOC_LEN name_0d) {
   int i=0;
-  while ((i != moduleCount) && strcmp(name__ref, modules[i]->name)) {
+  while ((i != moduleCount) && strcmp((char*)name__ref,
+				      (char*)modules[i]->name)) {
     i++;
   }
   if (i == moduleCount) {
@@ -355,20 +356,20 @@ RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN 
   
   td = mid->typeDescriptors;
   while (*td) {
-    if (!strcmp(name__ref, (*td)->name)) {
+    if (!strcmp((char*)name__ref, (char*)(*td)->name)) {
       return *td;
     } else {
       td++;
     }
   }
   
-  if (strchr(name__ref, '(')) {
+  if (strchr((char*)name__ref, '(')) {
     /* name of qualified type: search _all_ modules for a match */
     int i=0;
     while (i != moduleCount) {
       td = modules[i]->typeDescriptors;
       while (*td) {
-	if (!strcmp(name__ref, (*td)->name)) {
+	if (!strcmp((char*)name__ref, (char*)(*td)->name)) {
 	  return *td;
 	} else {
 	  td++;

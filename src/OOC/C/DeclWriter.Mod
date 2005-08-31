@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 (*  Defines classes to handle C declarations, types, and include statements.
-    Copyright (C) 2001-2004  Michael van Acken
+    Copyright (C) 2001-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -459,6 +459,7 @@ PROCEDURE (w: Writer) WriteConst* (value: Boxed.Object; type: Sym.Type);
             WriteChar(charValue);
             w. WriteChar ("'");
           ELSE
+            w. WriteString ("(OOC_CHAR8[])");
             w. WriteChar (delim);
             i := 0; len := s. length;
             WHILE (i # len) DO
@@ -681,6 +682,7 @@ PROCEDURE (w: Writer) WriteStringConst* (value: Boxed.Object; type: Sym.Type);
   BEGIN
     s := value(Boxed.String).value;
     IF TR.IsPredefType(TR.BaseCharType(type), Predef.char) THEN
+      w. WriteString ("(OOC_CHAR8*)");
       w. WriteChar (delim);
       i := 0; len := s. length;
       WHILE (i # len) DO
