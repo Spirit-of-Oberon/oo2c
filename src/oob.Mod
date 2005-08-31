@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE oob;
 (*  Symbol file browser.
-    Copyright (C) 2002-2004  Michael van Acken
+    Copyright (C) 2002-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -160,7 +160,37 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
 
   PROCEDURE ^ VarDecl(varDecl: Sym.VarDecl);
   PROCEDURE ^ ProcDecl(procDecl: Sym.ProcDecl);
-    
+  PROCEDURE ^ Type(type, srcCodeType: Sym.Type; VAR declDoc: Sym.Declaration);
+
+  PROCEDURE FormalPars(type: Sym.FormalPars);
+    VAR
+      i: LONGINT;
+    BEGIN
+      Out.String("(");
+      FOR i := 0 TO LEN(type.params^)-1 DO
+        IF (i # 0) THEN
+          Out.String("; ");
+        END;
+        VarDecl(type.params[i]);
+      END;
+      IF type.anyRestParameters THEN
+        Out.String("; ...");
+      END;
+      Out.String(")");
+      IF (type.resultType # NIL) THEN
+        Out.String(": ");
+        Type(type.resultType, type.srcCodeResultType, noDeclDoc);
+      END;
+      FOR i := 0 TO LEN(type.raises^)-1 DO
+        IF (i = 0) THEN
+          Out.String(" RAISES ");
+        ELSE
+          Out.String(", ");
+        END;
+        Type(type.raises[i].type, type.raises[i].srcCodeType, noDeclDoc);
+      END;
+    END FormalPars;
+  
   PROCEDURE Type(type, srcCodeType: Sym.Type; VAR declDoc: Sym.Declaration);
   (* If @oparam{declDoc} is not @code{NIL} and there is a suitable place
      to put the documentation, then write it and set the parameter to
@@ -237,29 +267,8 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         Type(type.baseType, type.srcCodeBaseType, noDeclDoc);
         
       | type: Sym.FormalPars DO
-        Out.String("(");
-        FOR i := 0 TO LEN(type.params^)-1 DO
-          IF (i # 0) THEN
-            Out.String("; ");
-          END;
-          VarDecl(type.params[i]);
-        END;
-        IF type.anyRestParameters THEN
-          Out.String("; ...");
-        END;
-        Out.String(")");
-        IF (type.resultType # NIL) THEN
-          Out.String(": ");
-          Type(type.resultType, type.srcCodeResultType, noDeclDoc);
-        END;
-        FOR i := 0 TO LEN(type.raises^)-1 DO
-          IF (i = 0) THEN
-            Out.String(" RAISES ");
-          ELSE
-            Out.String(", ");
-          END;
-          Type(type.raises[i].type, type.raises[i].srcCodeType, noDeclDoc);
-        END;
+        Out.String("PROCEDURE");
+        FormalPars(type);
         
       | type: Sym.Array DO
         IF type.isOpenArray THEN
@@ -416,7 +425,7 @@ PROCEDURE WriteSymTab(symTab: Sym.Module);
         Out.String(") ");
       END;
       IdentDef(procDecl);
-      Type(procDecl.formalPars, procDecl.formalPars, noDeclDoc);
+      FormalPars(procDecl.formalPars);
     END ProcDecl;
 
   PROCEDURE WriteTopLevel(item: Sym.Item): BOOLEAN;
