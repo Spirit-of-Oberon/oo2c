@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SSA:IRtoSSA;
 (*  Converts the IR of a procedure into its SSA representation.
-    Copyright (C) 2001-2004  Michael van Acken
+    Copyright (C) 2001-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -599,6 +599,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       VAR
         design: SSA.Result;
         tag, instr, adr: SSA.Instr;
+        opnd: SSA.Opnd;
 
       PROCEDURE NewTypeGuard (adr, tag: SSA.Result): SSA.Instr;
         VAR
@@ -615,33 +616,39 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       
       BEGIN
         design := Expression (guard. test. expr);
-        ASSERT (design. instr. opcode = Opcode.get);
 
         IF guard. checkType THEN
-          tag := TypeTag (guard. test. expr, design,
-                          guard. checkPointer, guard. sym);
-          IF (guard. test. origExpr IS IR.Var) &
-             (guard. test. origExpr. type IS Sym.Record) THEN
-            (* applying type guard to a record VAR parameter: replace the
-               address _input_ of the get with the type guard instruction *)
-            design. instr. opndList. nextOpnd. ReplaceArg
-                (NewTypeGuard (design. instr. opndList. nextOpnd. arg, tag));
+          IF (design.instr.opcode = Opcode.typeGuard) THEN (* stacked guards *)
+            opnd := design.instr.NthOpnd(3);
+            opnd.ReplaceArg(pb.GetTypeRef(guard.test.referenceType));
             RETURN design;
-          ELSIF (guard.test.origExpr IS IR.Deref) THEN
-            (* need to dereference the tested pointer, because TypeTest
-               dropped this *)
-            adr := NewTypeGuard (design, tag);
-            instr := pb.AddInstr(Opcode.get,
-                                 Opcode.TypeToSubclass(guard.type));
-            instr.AddOpnd(s, Opnd.store);
-            instr.AddOpnd(adr, Opnd.readAdr);
-            instr.AddOpnd(pb.GetTypeRef(guard.test.expr.type),
-                          Opnd.readDesign);
-            instr.AddOpnd(adr, Opnd.readDesign);
-            Chain (instr);
-            RETURN instr;
           ELSE
-            RETURN NewTypeGuard (design, tag);
+            ASSERT (design. instr. opcode = Opcode.get);
+            tag := TypeTag (guard. test. expr, design,
+                            guard. checkPointer, guard. sym);
+            IF (guard. test. origExpr IS IR.Var) &
+               (guard. test. origExpr. type IS Sym.Record) THEN
+              (* applying type guard to a record VAR parameter: replace the
+                 address _input_ of the get with the type guard instruction *)
+              design. instr. opndList. nextOpnd. ReplaceArg
+                  (NewTypeGuard (design. instr. opndList. nextOpnd. arg, tag));
+              RETURN design;
+            ELSIF (guard.test.origExpr IS IR.Deref) THEN
+              (* need to dereference the tested pointer, because TypeTest
+                 dropped this *)
+              adr := NewTypeGuard (design, tag);
+              instr := pb.AddInstr(Opcode.get,
+                                   Opcode.TypeToSubclass(guard.type));
+              instr.AddOpnd(s, Opnd.store);
+              instr.AddOpnd(adr, Opnd.readAdr);
+              instr.AddOpnd(pb.GetTypeRef(guard.test.expr.type),
+                            Opnd.readDesign);
+              instr.AddOpnd(adr, Opnd.readDesign);
+              Chain (instr);
+              RETURN instr;
+            ELSE
+              RETURN NewTypeGuard (design, tag);
+            END;
           END;
         ELSE
           RETURN design;

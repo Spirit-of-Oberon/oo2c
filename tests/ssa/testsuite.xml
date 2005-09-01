@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic82">-->
+  select ="&SetupTestCasesWithOut; opTypeGuard11">-->
 
   &TestSetupWithOut;
     
@@ -1240,6 +1240,9 @@
     </test>
     <test id="opTypeGuard10" type="reject" file="OpTypeGuard10.Mod">
       Applying a type guard type to a value parameter.
+    </test>
+    <test id="opTypeGuard11" type="accept" file="OpTypeGuard11.Mod">
+      Stacked type guards.
     </test>
 
     <test id="opExprCompat1" type="run" file="OpExprCompat1.Mod"
