@@ -8,7 +8,7 @@ static void Const6__P(OOC_CHAR8 b) {
   i0 = b;
 l1_loop:
   if (!i0) goto l1_loop;
-  Out0__String("bar", 4);
+  Out0__String((OOC_CHAR8*)"bar", 4);
   return;
   ;
 }

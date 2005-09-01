@@ -7,10 +7,10 @@ static void Const8__Tand(OOC_CHAR8 b) {
 
   i0 = b;
   if (i0) goto l3;
-  Out0__String("FALSE ", 7);
+  Out0__String((OOC_CHAR8*)"FALSE ", 7);
   goto l4;
 l3:
-  Out0__String("TRUE ", 6);
+  Out0__String((OOC_CHAR8*)"TRUE ", 6);
 l4:
   return;
   ;
@@ -18,14 +18,14 @@ l4:
 
 static void Const8__Fand(OOC_CHAR8 b) {
 
-  Out0__String("FALSE ", 7);
+  Out0__String((OOC_CHAR8*)"FALSE ", 7);
   return;
   ;
 }
 
 static void Const8__Tor(OOC_CHAR8 b) {
 
-  Out0__String("TRUE ", 6);
+  Out0__String((OOC_CHAR8*)"TRUE ", 6);
   return;
   ;
 }
@@ -35,10 +35,10 @@ static void Const8__For(OOC_CHAR8 b) {
 
   i0 = b;
   if (i0) goto l3;
-  Out0__String("FALSE ", 7);
+  Out0__String((OOC_CHAR8*)"FALSE ", 7);
   goto l4;
 l3:
-  Out0__String("TRUE ", 6);
+  Out0__String((OOC_CHAR8*)"TRUE ", 6);
 l4:
   return;
   ;

@@ -21,10 +21,10 @@ l5:
 void Var7c__Test(void) {
   register OOC_INT32 i0;
 
-  i0 = Var7c__Len("", 1);
+  i0 = Var7c__Len((OOC_CHAR8*)"", 1);
   Out0__Int(i0, 0);
   Out0__Ln();
-  i0 = Var7c__Len("abc", 4);
+  i0 = Var7c__Len((OOC_CHAR8*)"abc", 4);
   Out0__Int(i0, 0);
   Out0__Ln();
   return;
