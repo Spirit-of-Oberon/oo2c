@@ -800,9 +800,9 @@ END TestMap.
 @appendix Document History
 
 @table @emph
-@item 1.6
-A type variable can now be used on the right hand side of a type test
-or type guard.
+@item 1.7
+A type variable can be used on the right hand side of a type test or
+type guard.  Introduced with @code{oo2c-2.1.9}.
 
 @item 1.5
 Adds information regarding ``checked'' vs ``unchecked'' exceptions,
