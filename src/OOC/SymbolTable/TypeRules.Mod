@@ -150,6 +150,26 @@ PROCEDURE IsSTRING* (type: Sym.Type): BOOLEAN;
     RETURN ExtendsLibType(type, "Object", "StringDesc");
   END IsSTRING;
 
+PROCEDURE IsTypeVar*(type: Sym.Type): BOOLEAN;
+(**Return @code{TRUE} if @oparam{type} is a type variable, or if it is
+   a qualified type with a variable type argument.  *)
+  VAR
+    i: LONGINT;
+  BEGIN
+    WITH type: Sym.TypeVar DO
+      RETURN TRUE;
+    | type: Sym.TypeClosure DO
+      FOR i := 0 TO LEN(type.arguments^)-1 DO
+        IF IsTypeVar(type.arguments[i].type) THEN
+          RETURN TRUE;
+        END;
+      END;
+      RETURN FALSE;
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsTypeVar;
+  
 PROCEDURE BaseCharType* (type: Sym.Type): Sym.PredefType;
 (**For any of the types that are characters, or are derived from characters,
    return the character type they are based on.

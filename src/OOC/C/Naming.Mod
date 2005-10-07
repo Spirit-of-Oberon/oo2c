@@ -14,7 +14,8 @@ TYPE
     name-: STRING;
     (* Name of the variable that holds the type descriptor.  Initially
        @code{NIL}.  *)
-    type-: Sym.TypeClosure;
+    type-: Sym.Type;
+    (**@otype{Sym.TypeClosure} or @otype{Sym.TypeVar}.  *)
   END;
   QualTypeData* = POINTER TO QualTypeDataDesc;
   QualTypeDataDesc = RECORD
@@ -41,10 +42,11 @@ VAR
   (* prefix of the type descriptor namespace *)
 
 
-PROCEDURE (qtd: QualTypeDescr) INIT*(id: LONGINT; type: Sym.TypeClosure);
+PROCEDURE (qtd: QualTypeDescr) INIT*(id: LONGINT; type: Sym.Type);
   VAR
     str: ARRAY 16 OF CHAR;
   BEGIN
+    ASSERT((type IS Sym.TypeClosure) OR (type IS Sym.TypeVar));
     IntStr.IntToStr(id, str);
     qtd.name := "_td__qtd"+Object.NewLatin1(str);
     qtd.type := type;
@@ -218,19 +220,40 @@ PROCEDURE NameOfType* (type: Sym.Type): STRING;
 
 PROCEDURE NameOfTypeDescriptor* (type: Sym.Type;
                                  qtdData: QualTypeData): STRING;
-(**@precond
+(**Side effect: If @oparam{type} requires a special type descriptor that does
+   not exist by default, then an entry for it is added to @oparam{qtdData}.
+
+   @precond
    @samp{type. namingDecl # NIL}
-   @end precond *)
+   @end precond  *)
   VAR
     string: STRING;
     str, str2: ARRAY 32 OF CHAR;
-    i: LONGINT;
-    qtd: QualTypeDescr;
     base: Sym.Type;
     dummy: STRING;
+
+  PROCEDURE AddToQtd(type: Sym.Type): STRING;
+    VAR
+      i: LONGINT;
+      qtd: QualTypeDescr;
+    BEGIN
+      FOR i := 0 TO qtdData.list.size-1 DO
+        IF TR.SameType(type, qtdData.list.array[i].type) THEN
+          RETURN qtdData.list.array[i].name;
+        END;
+      END;
+      
+      qtd := NEW(QualTypeDescr, qtdData.list.size, type);
+      qtdData.list.Append(qtd);
+      RETURN qtd.name;
+    END AddToQtd;
+  
   BEGIN
     WITH type: Sym.QualType DO
       RETURN NameOfTypeDescriptor(Sym.Expand(type), qtdData);
+
+    | type: Sym.TypeVar DO
+      RETURN AddToQtd(type);
       
     | type: Sym.TypeClosure DO
       base := type.baseType;
@@ -247,12 +270,6 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type;
         RETURN NameOfTypeDescriptor(base, qtdData);
       END;
       
-      FOR i := 0 TO qtdData.list.size-1 DO
-        IF TR.SameType(type, qtdData.list.array[i].type) THEN
-          RETURN qtdData.list.array[i].name;
-        END;
-      END;
-         
       WITH base: Sym.Pointer DO
         dummy := NameOfTypeDescriptor(TR.PointerBaseType(type), qtdData);
       | base: Sym.Record DO
@@ -263,10 +280,7 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type;
       ELSE
         (* ignore *)
       END;
-         
-      qtd := NEW(QualTypeDescr, qtdData.list.size, type);
-      qtdData.list.Append(qtd);
-      RETURN qtd.name;
+      RETURN AddToQtd(type);
 
     | type: Sym.FormalPars DO
       RETURN Config.runtimeModule+"__procedure";

@@ -583,15 +583,27 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
         RETURN select. AddResultSubclass (Result.selectValue, Opcode.scBoolean)
       END ShortcutOr;
 
+    PROCEDURE ReceiverTypeTag(receiver: IR.Expression;
+                              referenceType: Sym.Type): SSA.Instr;
+      BEGIN
+        IF (receiver = NIL) OR ~TR.IsTypeVar(referenceType) THEN
+          RETURN pb.GetConstNil();
+        ELSE
+          RETURN TypeTag(receiver, Expression(receiver), FALSE, NIL);
+        END;
+      END ReceiverTypeTag;
+      
     PROCEDURE TypeTest (test: IR.TypeTest): SSA.Instr;
       VAR
-        instr: SSA.Instr; 
+        instr, tt: SSA.Instr; 
       BEGIN
+        tt := ReceiverTypeTag(test.receiver, test.origType.qualType);
         instr := pb. AddInstr (Opcode.typeTest, Opcode.scBoolean);
         instr. AddOpnd (TypeTag (test. expr, Expression (test. expr),
                                  test. checkPointer, test. sym),
                         Opnd.arg);
         instr. AddOpnd (pb. GetTypeRef (test. referenceType), Opnd.type);
+        instr. AddOpnd (tt, Opnd.arg);
         RETURN instr
       END TypeTest;
     
@@ -603,14 +615,16 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
 
       PROCEDURE NewTypeGuard (adr, tag: SSA.Result): SSA.Instr;
         VAR
-          instr: SSA.Instr;
+          instr, tt: SSA.Instr;
         BEGIN
+          tt := ReceiverTypeTag(guard.test.receiver, guard.test.origType.qualType);
           instr := AddException (pb, guard. test. origType. sym,
                                  Opcode.typeGuard, adr. instr. subclass);
           instr. AddOpnd (adr, Opnd.arg);
           instr. AddOpnd (tag, Opnd.arg);
           instr. AddOpnd (pb. GetTypeRef (guard. test. referenceType),
                           Opnd.type);
+          instr. AddOpnd (tt, Opnd.arg);
           RETURN instr;
         END NewTypeGuard;
       

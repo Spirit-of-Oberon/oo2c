@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; opTypeGuard11">-->
+  select ="&SetupTestCasesWithOut; generic83">-->
 
   &TestSetupWithOut;
     
@@ -1616,11 +1616,11 @@
       If the left hand side of an assignment is a variable type, the
       right hand side must be of the same type.
     </test>
-    <test id="generic18" type="reject" file="Generic18.Mod">
-      Cannot use a type variable in a type guard.
+    <test id="generic18" type="accept" file="Generic18.Mod">
+      Can use a type variable in a type guard.
     </test>
-    <test id="generic19" type="reject" file="Generic19.Mod">
-      Cannot use a type variable in a type test.
+    <test id="generic19" type="accept" file="Generic19.Mod">
+      Cann use a type variable in a type test.
     </test>
     <test id="generic20" type="reject" file="Generic20.Mod">
       Cannot use <code>NEW</code> on a variable based on a type
@@ -1861,12 +1861,18 @@
       Regression test: <code>WITH</code> statement must propagate the
       correct type value.
     </test>
-    <test id="generic80" type="accept" file="Generic79.Mod">
+    <test id="generic80" type="accept" file="Generic80.Mod">
       Regression test: <code>WITH</code> statement must propagate the
       correct type value.
     </test>
+    <test id="generic81" type="accept" file="Generic81.Mod">
+      Right hand side of type test can contain a variable.
+    </test>
     <test id="generic82" type="reject" file="Generic82.Mod">
       Regression test: Too many type parameters for receiver.
+    </test>
+    <test id="generic83" type="run" file="Generic83.Mod"
+          output="Generic83.Ref">
     </test>
 
     <test id="iterator1" type="run" file="Iterator1.Mod"
@@ -2649,6 +2655,8 @@
         msg="This static type-bound procedure cannot be abstract"/>
     <reject-info id="generic78" pos="x %# l.elements"
         msg="Incompatible types for operator"/>
+    <reject-info id="generic81" pos="y: %Alp(T)"
+        msg="Type test requires static type instance"/>
     <reject-info id="generic82" pos="a: %Alp(T, E)"
         msg="The base record type has 1 type parameter(s)"/>
 

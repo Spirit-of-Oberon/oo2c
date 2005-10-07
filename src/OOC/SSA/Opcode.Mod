@@ -595,6 +595,10 @@ CONST
      The type of which the first operand must be an extension of.  The argument
      is an instance of @otype{*OOC:SSA.TypeRef}.  This type is either equal to
      the one of the first operand, or an extension of it.
+     
+     @item *OOC:SSA.Opnd.arg
+     Either NIL or the type tag of the receiver if the type test involves
+     type variables.
      @end table
 
      The result of the instruction is a boolean value.  *)
@@ -667,6 +671,10 @@ CONST
      The type of which the first operand must be an extension of.  The argument
      is an instance of @otype{*OOC:SSA.TypeRef}.  This type is either equal to
      the one of the first operand, or an extension of it.
+
+     @item *OOC:SSA.Opnd.arg
+     Either NIL or the type tag of the receiver if the type test involves
+     type variables.
      @end table
 
      The result of the instruction is the checked variable address, that is,

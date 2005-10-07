@@ -704,6 +704,7 @@ RAISES IO.Error;
                 IF (count < LEN(class.typePars.params^)) THEN
                   ptr.type := class.typePars.params[count];
                   ptr.srcCodeType := ptr.type;
+                  ptr.type(Sym.TypeVar).SetParameterIndex(count);
                 ELSE  (* too many params: need to fill in something here *)
                   ptr.type := receiver.type;
                   ptr.srcCodeType := receiver.srcCodeType;

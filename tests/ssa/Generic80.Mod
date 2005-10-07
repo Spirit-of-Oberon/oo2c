@@ -11,11 +11,12 @@ TYPE
 
   LinkedList*(E : Object.Object) = POINTER TO LinkedListDesc(E);
   LinkedListDesc*(E : Object.Object) = RECORD
+    (Object.ObjectDesc)
     elements : Entry(E);
     size-: LONGINT;
   END;
 
-PROCEDURE (l: LinkedList(E)) Equals* (obj: Object.Object);
+PROCEDURE (l: LinkedList(E)) Equals* (obj: Object.Object): BOOLEAN;
   VAR
     e2 : Entry(E);
   BEGIN

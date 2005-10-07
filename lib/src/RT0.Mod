@@ -90,6 +90,10 @@ CONST
      single type descriptor @ovar{procedure}, even though they may differ in
      the number, type or mode of their parameters, or their result type.  *)
   
+  strTypeVar* = -7;
+  (**A type variable, for example used in a type test within in a type-bound
+     procedure.  *)
+
 CONST
   flagAtomic* = 0;
   (**Indicates that this record type does not contain any references that
@@ -317,7 +321,7 @@ PROCEDURE TypeOf* (ptr: SYSTEM.PTR): Struct;
    @oparam{ptr} must be a previous result of @oproc{NewObject}.  Result is
    undefined if @oparam{ptr} is not a reference to a record object.  *)
 
-PROCEDURE TypeTest* (tag, td: Struct): BOOLEAN;
+PROCEDURE TypeTest* (tag, td, receiverTag: Struct): BOOLEAN;
 (**Return @code{TRUE} if the type tag @oparam{tag} belongs to an object that is
    an instance of the type @oparam{td}.  For normal (that is, non-qualified)
    types, this is a constant type operation that is basically a pointer
@@ -328,6 +332,8 @@ PROCEDURE TypeTest* (tag, td: Struct): BOOLEAN;
 
    @precond
    @oparam{tag} and @oparam{td} is the type descriptor of a @samp{RECORD} type.
+     If not @code{NIL}, @oparam{receiverTag} is the type descriptor of the
+     record to which the procedure is bound.
    @end precond  *)
 
 PROCEDURE NewBlock* (bytes: LONGINT): SYSTEM.PTR;
