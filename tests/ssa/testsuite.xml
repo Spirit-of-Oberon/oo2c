@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic83">-->
+  select ="&SetupTestCasesWithOut; generic81">-->
 
   &TestSetupWithOut;
     
@@ -1865,7 +1865,8 @@
       Regression test: <code>WITH</code> statement must propagate the
       correct type value.
     </test>
-    <test id="generic81" type="accept" file="Generic81.Mod">
+    <test id="generic81" type="run" file="Generic81.Mod"
+          output="Generic81.Ref">
       Right hand side of type test can contain a variable.
     </test>
     <test id="generic82" type="reject" file="Generic82.Mod">
