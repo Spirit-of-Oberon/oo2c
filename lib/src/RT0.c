@@ -198,9 +198,10 @@ RT0__Struct RT0__TypeOf(OOC_PTR ptr) {
   return OOC_TYPE_TAG(ptr);
 }
 
-/* Note: Type arguments are always of pointer type. */
+/* Note: Type arguments are always of pointer type, but the type descriptor
+         stored in the typeArgs array is of the underlying record type. */
 #define RESOLVE_TYPE_VAR(t,r) \
-  if (t->form == RT0__strTypeVar) t = r->typeArgs[t->len + 1]->baseTypes[0]
+  if (t->form == RT0__strTypeVar) t = r->typeArgs[t->len + 1]
 
 static OOC_BOOLEAN SameType(RT0__Struct t1, RT0__Struct t2,
 			    RT0__Struct receiverTag) {

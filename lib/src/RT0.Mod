@@ -205,7 +205,9 @@ TYPE
     typeArgs-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF Struct;
     (**For a qualified type @oconst{strQualType}, this array holds the base
        type followed by the type arguments applied to the base type, followed
-       by @code{NIL}.  For all other types, this field is @code{NIL}.  *)
+       by @code{NIL}.  For the type arguments, the type descriptor of the
+       record base type is stored, @emph{not} that of the pointer type.
+       For types other than @oconst{strQualType}, this field is @code{NIL}.  *)
     
     module-: Module;
     (**The module that defines this type descriptor.  For predefined types,

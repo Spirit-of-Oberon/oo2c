@@ -1,7 +1,7 @@
 (* 	$Id$	 *)
 MODULE OOC:SymbolTable:TypeRules;
 (*  Defines the type rules of the language.
-    Copyright (C) 2000-2004  Michael van Acken
+    Copyright (C) 2000-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -159,6 +159,13 @@ PROCEDURE IsTypeVar*(type: Sym.Type): BOOLEAN;
     WITH type: Sym.TypeVar DO
       RETURN TRUE;
     | type: Sym.TypeClosure DO
+      FOR i := 0 TO LEN(type.arguments^)-1 DO
+        IF IsTypeVar(type.arguments[i].type) THEN
+          RETURN TRUE;
+        END;
+      END;
+      RETURN FALSE;
+    | type: Sym.QualType DO
       FOR i := 0 TO LEN(type.arguments^)-1 DO
         IF IsTypeVar(type.arguments[i].type) THEN
           RETURN TRUE;

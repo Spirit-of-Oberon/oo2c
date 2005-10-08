@@ -144,7 +144,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
       name: STRING;
     BEGIN
       type := type.Deparam();
-      IF (type IS Sym.TypeVar) THEN
+      IF (type IS Sym.TypeVar) & (type(Sym.TypeVar).parameterIndex < 0) THEN
         type := type(Sym.TypeVar).bound;
       END;
       IF type.hasDescriptor THEN
@@ -421,7 +421,11 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
           WriteTDRef(qtd.type(Sym.TypeClosure).baseType);
           FOR i := 0 TO LEN(qtd.type(Sym.TypeClosure).arguments^)-1 DO
             CNli;
-            WriteTDRef(qtd.type(Sym.TypeClosure).arguments[i].type);
+            type := qtd.type(Sym.TypeClosure).arguments[i].type;
+            IF ~(type IS Sym.TypeVar) & TR.IsPointer(type) THEN
+              type := TR.PointerBaseType(type);
+            END;
+            WriteTDRef(type);
           END;
           w.WriteString(", NULL}");
           

@@ -687,8 +687,7 @@ TYPE
     receiver-: Expression;
     (**If the reference type is a type variable or a type that takes a variable
        as input, then this field refers to the receiver
-       variable that provides the actual value for the type variable.  If there
-       are no type variables involved, then this field is @code{NIL}.  *)
+       variable that provides the actual value for the type variable.  *)
     
     origExpr-: Expression;
     (**Unnormalized value of @ofield{expr}.  *)
