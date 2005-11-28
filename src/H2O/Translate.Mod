@@ -128,7 +128,7 @@ BEGIN
       | Type.tFunction: buf.Append("Procedure");
       | Type.tEnum:     buf.Append("Enum");
       END;
-      IF Type.IsNamedType(base) THEN
+      IF (base # NIL) & Type.IsNamedType(base) THEN
         buf.Append(GetName(base))
       ELSE
         buf.AppendInt(seq); INC(seq);
