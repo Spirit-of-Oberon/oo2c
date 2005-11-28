@@ -1025,6 +1025,7 @@ VAR
           result := Value.zeroLongInt;
           err.MsgParam("Treating undefined symbol '$0' as constant 0", token.name, NIL, NIL, FALSE);
         ELSE
+          result := Value.zeroLongInt;
           err.ErrorParam("Identifier `$0' is undefined", token.name, NIL, NIL);
         END;
         GetSym
