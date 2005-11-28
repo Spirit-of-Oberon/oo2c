@@ -334,7 +334,10 @@ VAR
         Element;
         WHILE token.sym = Scanner.comma DO
           GetSym;
-          Element;
+          (* allow this (ffmpeg) :  enum foo { a=1, b=2, c=3, }; *)
+          IF token.sym # Scanner.rbrace THEN
+            Element;
+          END;
         END
       END;
       Expect(Scanner.rbrace);
