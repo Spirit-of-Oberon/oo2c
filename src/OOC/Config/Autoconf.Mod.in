@@ -28,5 +28,6 @@ CONST
   haveLibM* = @ooc_have_lib_m@;  (* used by TestCompile *)
   haveLibDL* = @ooc_have_lib_dl@;  (* used by TestCompile *)
   haveLibGC* = @ooc_have_lib_gc@;  (* used by TestCompile *)
+  haveLibPThread* = @ooc_have_lib_pthread@;  (* used by TestCompile *)
 
 END OOC:Config:Autoconf.
