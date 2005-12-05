@@ -1138,13 +1138,22 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
     END MoveBlock;
   
   PROCEDURE Shift (instr: SSA.Instr; rotate: BOOLEAN);
+    VAR
+      btOrig, btUnsigned: DeclWriter.BasicTypeId;
     BEGIN
       IF rotate THEN
         w. WriteString ("_rot(");
       ELSE
         w. WriteString ("_lsh(");
       END;
-      w. WriteString (w. basicType[Allocator.SubclassToBasicType (instr. subclass)]. repr);
+      btOrig := Allocator.SubclassToBasicType (instr. subclass);
+      btUnsigned := btOrig;
+      IF (btUnsigned < DeclWriter.uint8) THEN  (* map to unsigned *)
+        INC(btUnsigned, DeclWriter.uint8-DeclWriter.int8);
+      END;
+      w. WriteString (w. basicType[btOrig]. repr);
+      w. WriteString (", ");
+      w. WriteString (w. basicType[btUnsigned]. repr);
       w. WriteString (", ");
       w. Ref (instr. opndList);
       w. WriteString (", ");
