@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; lsh4">-->
+  select ="&SetupTestCasesWithOut; bugExport3">-->
 
   &TestSetupWithOut;
     
@@ -2117,6 +2117,10 @@
       Regression test: Create an alias for a predefined type name and
       export it.  Import of this type name should not crash the
       compiler.
+    </test>
+    <test id="bugExport3" type="run" file="BugExport3.Mod">
+      Regression test: Exporting an unnamed variable of record type
+      should generate valid GCC code.
     </test>
 
     <test id="bugTypeDescr1" type="run" file="BugTypeDescr1.Mod">
