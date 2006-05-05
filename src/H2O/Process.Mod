@@ -580,10 +580,15 @@ VAR
       IF result = 0 THEN SkipTo(0) END;
     END If;
 
-(*
     PROCEDURE Pragma;
     BEGIN
-      GetSym0;
+      GetSymP;
+      IF (token.sym = Scanner.ident) THEN
+        p.err.MsgParam("pragma '$0' ignored", token.name, NIL, NIL, FALSE);
+      END;
+      WHILE token.sym # Scanner.endLine DO GetSymP END; 
+      End();
+(*
       IF (sym = ident) & Strings.Equal("pack", identName) THEN
         GetSym0;
         Expect(lbracket);
@@ -613,9 +618,10 @@ VAR
         Err.String("Pack is now "); Err.LongInt(pack,0); Err.Ln;
       ELSE
       END;
-      WHILE sym # endLine DO GetSym0 END;
+      WHILE sym # endLine DO GetSym0 END; 
+*)
     END Pragma;
-*)    
+
   BEGIN
     GetSymP;
     IF token.sym = Scanner.ident THEN
@@ -631,7 +637,7 @@ VAR
     | endif: Endif
     | if: If
     | elif: Elif
-(*    | pragma: Pragma *)
+    | pragma: Pragma
     ELSE
       p.err.ErrorParam("Unknown preprocessor directive: $0", token, NIL, NIL);
     END;
