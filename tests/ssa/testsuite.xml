@@ -5,7 +5,8 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; bugExport3">-->
+  select ="&SetupTestCasesWithOut; noDescriptor2 noDescriptor3
+  noDescriptor4 noDescriptor5">-->
 
   &TestSetupWithOut;
     
@@ -1500,6 +1501,18 @@
       Applying a type test of a <code>NO_DESCRIPTOR</code> record
       type.
     </test>
+    <test id="noDescriptor3" type="reject" file="NoDescriptor3.Mod">
+      Applying <code>NEW</code> to a <code>NO_DESCRIPTOR</code> record
+      pointer.
+    </test>
+    <test id="noDescriptor4" type="reject" file="NoDescriptor4.Mod">
+      Applying <code>NEW</code> to a <code>NO_DESCRIPTOR</code> array
+      pointer.
+    </test>
+    <test id="noDescriptor5" type="reject" file="NoDescriptor5.Mod">
+      Applying <code>NEW</code> to a <code>NO_LENGTH_INFO</code> array
+      pointer.
+    </test>
 
     <test id="notExtensible1" type="reject" file="NotExtensible1.Mod">
       Trying to extend a <code>NOT_EXTENSIBLE</code> record type.
@@ -2560,6 +2573,12 @@
     
     <reject-info id="noDescriptor2" pos="IF %r IS"
         msg="This variable has no dynamic type"/>
+    <reject-info id="noDescriptor3" pos="NEW(%ptr"
+        msg="Builtin NEW() is not applicable to this pointer type"/>
+    <reject-info id="noDescriptor4" pos="NEW(%ptr"
+        msg="Builtin NEW() is not applicable to this pointer type"/>
+    <reject-info id="noDescriptor5" pos="NEW(%ptr"
+        msg="Builtin NEW() is not applicable to this pointer type"/>
     
     <reject-info id="notExtensible1" pos="(%R1)"
         msg="This type cannot be used as a record base type"/>
