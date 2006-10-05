@@ -132,9 +132,9 @@ dist: $(OOC_DEV_ROOT)/oo2crc-install.xml configure config.status
 	cd .. && rm -f $(DISTDIR) && ln -s ooc2 $(DISTDIR) && tar -c -v --exclude CVS --exclude '*~' --exclude '.#*' -f - $(DISTDIR)/* | bzip2 -9 >$(DISTDIR).tar.bz2 && rm -f $(DISTDIR)
 
 dist64:
-	sed -e 's:@ooc_target_integer@,[0-9]*:@ooc_target_integer@,64:' \
-	    -e 's:@ooc_target_address@,[0-9]*:@ooc_target_address@,64:' \
-	    -e 's:@ooc_target_address_type@,[a-z]*:@ooc_target_address_type@,hugeint:' \
+	sed -e '/^s,@ooc_target_integer@,/ s:32:64:' \
+	    -e '/^s,@ooc_target_address@,/ s:32:64:' \
+	    -e '/^s,@ooc_target_address_type@,/ s:longint:hugeint:' \
 		config.status >config.status64
 	/bin/sh config.status64
 	${MAKE} dist DISTDIR=oo2c_64-$(PACKAGE_VERSION)
