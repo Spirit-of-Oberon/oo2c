@@ -23,6 +23,7 @@ CONST
   int* = 820;
   char* = 821;
   wchar* = 823;
+  int64* = 824;
   
   long* = 830;
   short* = 831;
@@ -218,7 +219,7 @@ BEGIN
   CASE token.sym OF
   | const, volatile, cdecl, stdcall,
     unsigned, short, long, longlong,
-    int, char, float, double, wchar,
+    int, int64, char, float, double, wchar,
     enum, void, struct, union:
     RETURN TRUE;
   | Scanner.ident:
@@ -451,8 +452,8 @@ compiler, but it doesn't strictly follow the language definition. *)
     | long:
       IF size = long THEN size := longlong ELSE size := long END;
       GetSym;
-    | void, char, wchar, int, float, double: 
-      type := sym; GetSym;
+    | void, char, wchar, int, int64, float, double: 
+      type := sym; GetSym; EXIT;
     | enum:
       type := enum; t := EnumDecl();
     | struct:
@@ -475,7 +476,7 @@ compiler, but it doesn't strictly follow the language definition. *)
   IF (size = short) & (type # int) OR 
      (size = long) & (type # int) & (type # double) OR
      (size = longlong) & (type # int) OR
-     (sign # 0) & (type # int) & (type # char) & (type # wchar) THEN
+     (sign # 0) & (type # int) & (type # int64) & (type # char) & (type # wchar) THEN
     err.Error("Invalid type specification");
   END;
 
@@ -495,6 +496,8 @@ compiler, but it doesn't strictly follow the language definition. *)
     | longlong:
       t := CondType(sign = unsigned, T.unsignedLongLongType, T.longLongType);
     END;
+  | int64:
+      t := CondType(sign = unsigned, T.unsignedLongLongType, T.longLongType);
   | char:
     t := CondType(sign = unsigned, T.unsignedCharType, T.charType);
   | wchar:
@@ -1585,7 +1588,7 @@ BEGIN
   Scanner.AddKeyWord(keyWords,"double", double);
   Scanner.AddKeyWord(keyWords,"char", char); 
   Scanner.AddKeyWord(keyWords,"int", int); 
-  Scanner.AddKeyWord(keyWords,"__int64", longlong); 
+  Scanner.AddKeyWord(keyWords,"__int64", int64); 
   Scanner.AddKeyWord(keyWords,"wchar_t", wchar);
   Scanner.AddKeyWord(keyWords,"long", long); 
   Scanner.AddKeyWord(keyWords,"short", short);
