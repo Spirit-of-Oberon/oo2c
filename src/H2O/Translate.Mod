@@ -348,8 +348,11 @@ BEGIN
 END WriteArrayType;
 
 PROCEDURE WriteRecordType(e : Emitter.Emitter; t : Type.Type; mod : Type.Module; level : INTEGER);
-VAR obj : Type.Object;
+VAR 
+  obj : Type.Object;
+  namelessCount : LONGINT;
 BEGIN
+  namelessCount := 0;
   e.WriteString("RECORD"); 
   IF t.class = Type.tUnion THEN
     e.WriteString(" [UNION]");
@@ -359,7 +362,13 @@ BEGIN
     obj := t.link;
     WHILE obj # NIL DO
       e.Indent(level+1);
-      e.WriteObject(obj.name); e.WriteString("* : ");
+      IF obj.name = NIL THEN
+        e.WriteString("nameless"); e.WriteInt(namelessCount);
+        INC(namelessCount);
+      ELSE
+        e.WriteObject(obj.name); 
+      END;
+      e.WriteString("* : ");
       WriteType(e, obj.type, mod, level+1);
       e.WriteString(";"); e.WriteLn;
       obj := obj.next;
@@ -694,8 +703,8 @@ PROCEDURE ProcessModule(m : Type.Module);
   END TranslateImportedModules;
 
 BEGIN
-  TranslateImportedModules;
   m.visited := TRUE;
+  TranslateImportedModules;
   Log.Object("Processing", m.name);
 
   seq := 0;
