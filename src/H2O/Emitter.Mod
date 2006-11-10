@@ -52,6 +52,7 @@ BEGIN
   IF (value <= 0) OR (o.radix = 10) THEN
     e.wr.WriteLInt(value, 0);
   ELSE
+    e.wr.WriteChar('0');
     e.wr.WriteHex(value, o.size);
     e.wr.WriteChar('H');
   END;
