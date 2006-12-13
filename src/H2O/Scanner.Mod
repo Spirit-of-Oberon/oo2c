@@ -353,14 +353,41 @@ VAR
       token.sym := number;
     END;
   END Number;
-  
+ 
+  PROCEDURE IsOctalDigit (ch : CHAR) : BOOLEAN;
+  BEGIN
+    RETURN (ch >= '0') & (ch <= '7');
+  END IsOctalDigit;
+
   PROCEDURE GetString(term : CHAR);
+  VAR
+    value : LONGINT;
   BEGIN
     StartToken;
     token.sym := string;
     AcceptChar;
     WHILE ch # term DO
-      AcceptChar;
+      IF ch = '\' THEN
+        NextChar;
+        IF IsOctalDigit(ch) THEN
+          value := 0;
+          WHILE IsOctalDigit(ch) DO
+            value := value * 8 + ORD(ch) - ORD('0');
+            NextChar();
+          END;
+          s.buffer.AppendLatin1Char(CHR(value));
+        ELSE
+          CASE ch OF 
+          | 'r': ch := 0DX;
+          | 'n': ch := 0AX;
+          | 't': ch := 08X;
+          ELSE
+          END;
+          AcceptChar;
+        END
+      ELSE
+        AcceptChar;
+      END;
     END;
     AcceptChar;
   END GetString;
