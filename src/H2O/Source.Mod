@@ -31,6 +31,7 @@ TYPE
     path : Option.StringList;
     exclude : Option.StringList;
     frameworks : Option.StringList;
+    searchPathAfterLocal : Option.Boolean;
 
 (* frameworkMap associates each framework with the path to its Headers
    directory. *)
@@ -271,11 +272,16 @@ BEGIN
       realFileName := Path.DirName(i.src.name) + "/" + fileName;
     END;
     found := i.SearchFile(realFileName, channel);
+    IF ~found & i.searchPathAfterLocal.value THEN
+      found := i.SearchPath(fileName, realFileName, channel) OR
+        i.SearchFrameworks(fileName, realFileName, channel);
+    END;
   END;
   IF ~found THEN
     Err.String ("Error: Cannot locate module ");
     Err.Object (fileName);
     Err.Ln;
+    i.ShowContext();
     HALT (1)
   END;    
 
@@ -378,6 +384,7 @@ BEGIN
   i.path := i.options.StringList("Include");
   i.exclude := i.options.StringList("Exclude");
   i.frameworks := i.options.StringList("Framework");
+  i.searchPathAfterLocal := options.Boolean("SearchPathAfterLocal", FALSE);
   i.frameworkMap := NEW(Dictionary.Dictionary(STRING,STRING));
   i.frameworkLength := 0;
   RETURN i;
