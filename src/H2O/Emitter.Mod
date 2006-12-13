@@ -21,7 +21,7 @@
 
 MODULE H2O:Emitter;
 
-IMPORT IO:TextRider, H2O:Value, Object;
+IMPORT IO:TextRider, H2O:Value, Object, CharClass;
 
 CONST
   (* Declaration types *)
@@ -44,6 +44,12 @@ BEGIN
   e.wr.WriteString(s);
 END WriteString;
 
+PROCEDURE (e : Emitter) WriteHex* (i : LONGINT);
+BEGIN
+  e.lineFull := TRUE;
+  e.wr.WriteHex(i,0);
+END WriteHex;
+
 PROCEDURE (e : Emitter) WriteValueLongInt(o : Value.LongInt);
 VAR
   value : LONGINT;
@@ -58,10 +64,45 @@ BEGIN
   END;
 END WriteValueLongInt;
 
+PROCEDURE (e : Emitter) WriteValueString(o : Value.String);
+
+VAR 
+  value : STRING;
+  chr : CHAR;
+  pos : LONGINT;
+  inQuote : BOOLEAN;
+BEGIN
+  value := o.value;
+  pos := 0; 
+  inQuote := TRUE;
+  e.WriteString('"'); 
+  WHILE pos < value.length DO
+    chr := CHR(ORD(value.CharAt(pos)));
+    IF CharClass.IsControl(chr) THEN
+      IF inQuote THEN e.WriteString('"') END;
+      inQuote := FALSE;
+      IF pos > 0 THEN e.WriteString("+"); END;
+      e.wr.WriteHex(ORD(chr), 2);
+      e.WriteString("H");
+    ELSE
+      IF ~inQuote THEN 
+        IF pos > 0 THEN e.WriteString("+"); END;
+        e.WriteString('"');
+      END;
+      e.wr.WriteChar(chr);
+      inQuote := TRUE;
+    END;
+    INC(pos);
+  END;
+  IF inQuote THEN e.WriteString('"'); END;
+END WriteValueString;
+
 PROCEDURE (e : Emitter) WriteObject* (o : Object.Object);
 BEGIN
   WITH o : Value.LongInt DO
     e.WriteValueLongInt(o);
+  | o : Value.String DO
+    e.WriteValueString(o);
   ELSE
     e.wr.WriteObject(o);
   END;
@@ -72,12 +113,6 @@ BEGIN
   e.lineFull := TRUE;
   e.wr.WriteLInt(i,0);
 END WriteInt;
-
-PROCEDURE (e : Emitter) WriteHex* (i : LONGINT);
-BEGIN
-  e.lineFull := TRUE;
-  e.wr.WriteHex(i,0);
-END WriteHex;
 
 PROCEDURE (e : Emitter) WriteChar* (ch : CHAR);
 BEGIN
