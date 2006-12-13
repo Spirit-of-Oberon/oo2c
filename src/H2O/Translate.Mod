@@ -94,13 +94,8 @@ BEGIN
   RETURN b.ToString();
 END QualName;
 
-PROCEDURE DeclareType(VAR t : Type.Type; mod : Type.Module);
-VAR 
-  alias, base : Type.Type;
-  buf : StringBuffer.StringBuffer;
-  name : STRING;
+PROCEDURE AdjustAliasType(VAR t : Type.Type);
 BEGIN
-  IF t.IsConstructor() THEN
     CASE t.class OF
     | Type.tPointer:
       IF Variant.array IN t.variant THEN 
@@ -113,6 +108,26 @@ BEGIN
       END;
     ELSE
     END;
+END AdjustAliasType;
+
+PROCEDURE AliasExists(t : Type.Type; mod : Type.Module) : BOOLEAN;
+VAR
+  t2 : Type.Type;
+BEGIN
+  NEW(t2);
+  t2^ := t^;
+  AdjustAliasType(t2);
+  RETURN Type.FindAliasTypeModule(mod, t2, FALSE) # NIL;
+END AliasExists;
+
+PROCEDURE DeclareType(VAR t : Type.Type; mod : Type.Module);
+VAR 
+  alias, base : Type.Type;
+  buf : StringBuffer.StringBuffer;
+  name : STRING;
+BEGIN
+  IF Type.IsTypeConstructor(t) THEN
+    AdjustAliasType(t);
     alias := Type.FindAliasTypeModule(mod, t, FALSE);
     IF alias # NIL THEN
       t := alias;
@@ -149,8 +164,10 @@ BEGIN
     IF (o # NIL) THEN
       IF (t.class = Type.tPointer) THEN
         IF ~(Variant.defined IN o.variant)
+          & mod.defaultVar.value 
           & ~Type.IsPointerBaseType(t.base.Base())
-          & mod.defaultVar.value THEN
+          & Type.IsVarBaseType(t.base.Base()) 
+          & ~AliasExists(t, mod) THEN
           o.variant := o.variant + {Variant.defined, Variant.var};
         END;
         IF (Variant.var IN o.variant)
@@ -159,7 +176,7 @@ BEGIN
         ELSE
           DeclareType(t, mod)
         END
-      ELSE
+      ELSIF t.class # Type.tEnum THEN
         DeclareType(t, mod)
       END
     ELSE
@@ -175,7 +192,13 @@ BEGIN
     EliminateConstructors(t.base, NIL, mod);
     o := t.link;
     WHILE o # NIL DO
-      EliminateConstructors(o.type, o, mod);
+(* Some type constructors are OK in parameter lists. While we COULD rewrite
+   array types, we would probably have to convert them to pointers. This is
+   because open array types are allowed in parameter lists, but not in type
+   declarations. *)
+      IF ~Type.IsAllowedParameterTypeConstructor(o.type) THEN
+        EliminateConstructors(o.type, o, mod);
+      END;
       o := o.next;
     END;
   END;
@@ -380,6 +403,12 @@ BEGIN
   e.WriteString("END");
 END WriteRecordType;
 
+PROCEDURE WriteEnumType(e : Emitter.Emitter; t : Type.Type; mod : Type.Module; level : INTEGER);
+BEGIN
+  e.WriteObject(mapEnum.value);
+  e.WriteString(" (* enumerated type *)");
+END WriteEnumType;
+
 PROCEDURE WriteType(e : Emitter.Emitter; t : Type.Type; mod : Type.Module; level : INTEGER);
 BEGIN
   CASE t.class OF
@@ -407,8 +436,11 @@ BEGIN
   | Type.tArray:
     WriteArrayType(e, t, mod, level);
   | Type.tEnum:
-    e.WriteObject(mapEnum.value);
-    e.WriteString(" (* enumerated type *)");
+    IF (t.name # NIL) THEN
+      e.WriteObject(QualName(t, mod));
+    ELSE
+      WriteEnumType(e, t, mod, level);
+    END;
   | Type.tVoid:
     e.WriteObject(mapVoid.value);
   ELSE
@@ -419,8 +451,11 @@ END WriteType;
 
 PROCEDURE WriteTypeDeclaration(e : Emitter.Emitter; t : Type.Type; mod : Type.Module; level : INTEGER);
 BEGIN
-  IF t.class IN {Type.tStruct, Type.tUnion} THEN
+  CASE t.class OF 
+  | Type.tStruct, Type.tUnion:
     WriteRecordType(e, t, mod, level);
+  | Type.tEnum:
+    WriteEnumType(e, t, mod, level);
   ELSE
     WriteType(e, t, mod, level);
   END;
@@ -453,7 +488,7 @@ BEGIN
   DeclName(e, name, mod);
   (* always dereference "Name" types *)
   IF type.class = Type.tName THEN
-    WriteTypeDeclaration(e, type.base, mod, 1);
+    WriteType(e, type.base, mod, 1);
   ELSE
     WriteTypeDeclaration(e, type, mod, 1);
   END;
