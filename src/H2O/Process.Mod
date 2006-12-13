@@ -130,6 +130,7 @@ END Undefine;
 PROCEDURE (p : Process) GetToken* (token : Scanner.Token; options : SET);
 VAR
   m : Macro;
+  continue : BOOLEAN;
 
   PROCEDURE GetSym;
   (* Get next symbol from input. If tokens are queued resulting from macro
@@ -154,7 +155,7 @@ VAR
     END;
   END Expect;
 
-  PROCEDURE ExpandMacro(m : Macro);
+  PROCEDURE ExpandMacro(m : Macro) : BOOLEAN;
   VAR 
     params : POINTER TO ARRAY OF TokenList;
     i, size, paste : LONGINT;
@@ -211,9 +212,15 @@ VAR
     IF debugExpand IN moduleOptions THEN
       Err.String("ExpandMacro("); Err.Object(m.name); Err.String(")");
     END;
+    t := token.Copy();
     GetSym;
     params := NIL;
     IF m.function THEN
+      IF token.sym # Scanner.lbracket THEN
+        p.expanded.Prepend(token.Copy());
+        p.expanded.Prepend(t);
+        RETURN FALSE;
+      END;
       Expect(Scanner.lbracket);
       (* allocate an array of actual parameters *)
       NEW(params, m.nParams);
@@ -271,6 +278,7 @@ VAR
     WHILE result.Size() > 0 DO
       p.expanded.Prepend(result.RemoveLast());
     END;
+    RETURN TRUE;
   END ExpandMacro;
   
   PROCEDURE GetSymP;
@@ -650,8 +658,9 @@ BEGIN
   ELSE
     LOOP
       IF (token.sym = Scanner.ident) & p.FindMacro(token.name, m) & ~m.selfdefine THEN
-        ExpandMacro(m);
+        continue := ExpandMacro(m);
         GetSym;
+        IF ~continue THEN RETURN END;
       ELSIF token.sym = Scanner.hash THEN
         Directive;
       ELSE
