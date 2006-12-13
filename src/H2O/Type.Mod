@@ -134,20 +134,6 @@ PROCEDURE (v : Visitor) AcceptPost* (VAR t : Type; mod : Module);
 BEGIN
 END AcceptPost;
 
-PROCEDURE (t : Type) IsConstructor* () : BOOLEAN;
-BEGIN
-  CASE t.class OF
-  tFunction,
-  tEnum, 
-  tStruct, tUnion,
-  tArray,
-  tPointer:
-    RETURN TRUE;
-  ELSE
-    RETURN FALSE;
-  END;
-END IsConstructor;
-
 PROCEDURE (t : Type) Size* () : LONGINT;
 VAR size, sum, max : LONGINT;
 
@@ -230,6 +216,19 @@ PROCEDURE (t : Type) ToString* () : STRING;
 VAR
   b : StringBuffer.StringBuffer;
   o : Object;
+
+  PROCEDURE AppendStructElems(o : Object);
+  BEGIN
+    b.AppendLatin1Char("{");
+    WHILE o # NIL DO
+      IF o.name = NIL THEN b.Append("<NIL>") ELSE b.Append(o.name) END;
+      b.Append(" : ");
+      b.Append(o.type.ToString());
+      o := o.next;
+    END;
+    b.AppendLatin1Char("}");
+  END AppendStructElems;
+
 BEGIN
   b := StringBuffer.New("");
   CASE t.class OF
@@ -564,13 +563,30 @@ BEGIN
   RETURN t.class IN { tArray, tStruct, tUnion };
 END IsPointerBaseType;
 
+(* Deterine if a type is OK as a VAR parameter type *)
+
+PROCEDURE IsVarBaseType* (t : Type) : BOOLEAN;
+BEGIN
+  RETURN ~(t.class IN {tFunction, tVoid});
+END IsVarBaseType;
+
 (* Determine if a type is a type constructor *)
 
 PROCEDURE IsTypeConstructor* (t : Type) : BOOLEAN;
 BEGIN
   RETURN t.class IN { tFunction, tEnum, tStruct, tUnion, tArray, tPointer };
 END IsTypeConstructor;
-  
+
+(* Determine if a constructor type is allowed in procedure parameter lists:
+   Must be an open array constructor whose base type is not a constructor.
+*)
+ 
+PROCEDURE IsAllowedParameterTypeConstructor* (t : Type) : BOOLEAN;
+BEGIN
+  RETURN (t.class IN { tArray }) & (t.size < 0) &
+    ~IsTypeConstructor(t.base);
+END IsAllowedParameterTypeConstructor;
+ 
 (* Find a declared type that is a equivalent to a given type constructor *)
 
 PROCEDURE FindAliasTypeLocal* (obj : Object; t : Type; structural : BOOLEAN) : Type;
