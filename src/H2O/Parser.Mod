@@ -1014,7 +1014,6 @@ VAR
         GetSym;
         IF StartsTypeSpecifier() THEN
           (* type cast *)
-          GetSym;
           name := NIL;
           t := Declarator(name, TypeSpecifier());
           Expect(Scanner.rbracket);
