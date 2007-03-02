@@ -24,6 +24,7 @@ VAR
   strictUndefine : Options.Option;
   debugDefine : Options.Option;
   text : Options.Option;
+  componentPascal : Options.Option;
 
   processOptions : SET; 
 
@@ -35,6 +36,7 @@ PROCEDURE NewConfig;
     text := Config.AddOption("text", CfgData.NewBooleanVar(FALSE));
     preprocess := Config.AddOption("preprocess", CfgData.NewBooleanVar(FALSE)); 
     evaluate := Config.AddOption("evaluate", CfgData.NewBooleanVar(FALSE)); 
+    componentPascal := Config.AddOption("componentPascal", CfgData.NewBooleanVar(FALSE)); 
 
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
@@ -50,6 +52,8 @@ PROCEDURE NewConfig;
                  "<options><set name='debugDefine'>TRUE</set></options>");
     Config.AddCmdLine ("--text",
                  "<options><set name='text'>TRUE</set></options>");
+    Config.AddCmdLine ("--componentPascal,-cp",
+                 "<options><set name='componentPascal'>TRUE</set></options>");
   END NewConfig;
 
 BEGIN
@@ -78,6 +82,10 @@ BEGIN
       INCL(processOptions, Process.strictRedefine);
     END;
     Process.Init(processOptions);
+
+    IF componentPascal.value(CfgData.BooleanVar).boolean THEN
+      Translate.InitCP;
+    END;
 
 (*
     FOR i := 0 TO Config.arguments. ArgNumber()-1 DO
