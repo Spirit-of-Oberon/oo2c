@@ -45,6 +45,11 @@ VAR
   renameProcedures : Option.Boolean;
   tagSuffix : Option.String;
   autoPrefix : Option.String;
+  varTag : Option.String;
+  arrayTag : Option.String;
+  unionTag : Option.String;
+  recordTag : Option.String;
+  oocHeader : Option.Boolean;
 
 (*
 Elimination of type constructors:
@@ -273,6 +278,14 @@ BEGIN
   END;
 END RewriteAliasesList;
 
+PROCEDURE OutTag(e : Emitter.Emitter; value : STRING);
+BEGIN
+  IF (value # NIL) & (value.length > 0) THEN
+    e.WriteObject(value);
+    e.WriteChar(' ');
+  END;
+END OutTag;
+
 PROCEDURE MapNumber(e : Emitter.Emitter;
   size : LONGINT; m1, m2, m4, m8 : Option.String);
 BEGIN
@@ -311,10 +324,11 @@ BEGIN
       name := buf.ToString();
     END;
     e.WriteObject(name);
+    e.WriteString(" ");
     IF var THEN
-      e.WriteString(" [NIL_COMPAT]");
+      OutTag(e, varTag.value);
     END;
-    e.WriteString(" : ");
+    e.WriteString(": ");
     IF var THEN
       WriteType(e, obj.type.base, mod, level);
     ELSE
@@ -355,7 +369,9 @@ BEGIN
     IF Variant.cstring IN t.variant THEN
       e.WriteString("[CSTRING] ");
     END;
-    e.WriteString("TO ARRAY OF ");
+    e.WriteString("TO ARRAY ");
+    OutTag(e, arrayTag.value);
+    e.WriteString("OF ");
     WriteType(e, t.base, mod, level);
   END;
 END WritePointerType;
@@ -363,6 +379,7 @@ END WritePointerType;
 PROCEDURE WriteArrayType(e : Emitter.Emitter; t : Type.Type; mod : Type.Module; level : INTEGER);
 BEGIN
   e.WriteString("ARRAY ");
+  OutTag(e, arrayTag.value);
   IF t.size >= 0 THEN
     e.WriteInt(t.size); e.WriteChar(" ");
   END;
@@ -376,9 +393,11 @@ VAR
   namelessCount : LONGINT;
 BEGIN
   namelessCount := 0;
-  e.WriteString("RECORD"); 
+  e.WriteString("RECORD "); 
   IF t.class = Type.tUnion THEN
-    e.WriteString(" [UNION]");
+    OutTag(e, unionTag.value);
+  ELSE
+    OutTag(e, recordTag.value);
   END;
   IF t.link # NIL THEN
     e.WriteLn;
@@ -588,8 +607,11 @@ VAR
       IF count > 0 THEN
         e.WriteString("; ");
       END;
-      e.WriteObject(type);
-      e.WriteString(' "');
+      IF type.length > 0 THEN
+        e.WriteObject(type);
+        e.WriteChar(" ");
+      END;
+      e.WriteString('"');
       e.WriteObject(list.value.Get(i));
       e.WriteString('"');
       INC(count);
@@ -676,16 +698,21 @@ TRY
   e := NEW(Emitter.Emitter, writer);
   e.WriteString("MODULE ");
   e.WriteObject(m.outputName.value);
-  e.WriteString(' [ INTERFACE "');
-  e.WriteObject(m.interfaceType.value);
-  e.WriteString('"');
-  IF (m.linkFramework.value.size > 0) OR (m.linkLib.value.size > 0) OR (m.linkFile.value.size > 0) THEN
-    e.WriteString("; LINK ");
-    depCount := 0;
-    ListDependencies(depCount, "FRAMEWORK", m.linkFramework);
-    ListDependencies(depCount, "LIB", m.linkLib);
-    ListDependencies(depCount, "FILE", m.linkFile);
-    e.WriteString(" END");
+  depCount := 0;
+  e.WriteString(" [ ");
+  IF oocHeader.value THEN
+    e.WriteString('INTERFACE "');
+    e.WriteObject(m.interfaceType.value);
+    e.WriteString('"');
+    IF (m.linkFramework.value.size > 0) OR (m.linkLib.value.size > 0) OR (m.linkFile.value.size > 0) THEN
+      e.WriteString("; LINK ");
+      ListDependencies(depCount, "FRAMEWORK", m.linkFramework);
+      ListDependencies(depCount, "LIB", m.linkLib);
+      ListDependencies(depCount, "FILE", m.linkFile);
+      e.WriteString(" END");
+    END;
+  ELSE
+    ListDependencies(depCount, "", m.linkLib);
   END;
   e.WriteString(" ];");
   e.WriteLn;
@@ -766,17 +793,44 @@ BEGIN
   END;
 END Translate;
 
+(* Initialise the translator to generate Component Pascal source code. *)
+
+PROCEDURE InitCP*;
+BEGIN
+  mapCharType.value := "SHORTCHAR";
+  mapUnsignedCharType.value := mapCharType.value;
+  mapShortType.value := "SHORTINT";
+  mapUnsignedShortType.value := mapUnsignedShortType.value;
+  mapLongType.value := "INTEGER";
+  mapUnsignedLongType.value := mapLongType.value;
+  mapLongLongType.value := "LONGINT";
+  mapUnsignedLongLongType.value := mapUnsignedLongLongType.value;
+  mapFloatType.value := "SHORTREAL";
+  mapDoubleType.value := "REAL";
+  mapLongDoubleType.value := "LONGDOUBLE";
+  mapPointer.value := "ANYPTR";
+  mapEnum.value := "INTEGER";
+  mapVoid.value := "";
+  varTag.value := "[nil]";
+  arrayTag.value := "[untagged]";
+  unionTag.value := "[union]";
+  recordTag.value := "[untagged]";
+  oocHeader.value := FALSE;
+END InitCP;
+
+(* Create options with defaults for OOC output *)
+
 PROCEDURE InitOptions;
 BEGIN
   options := NEW(Option.Options);
   mapCharType := options.String("MapChar", "CHAR");
-  mapUnsignedCharType := options.String("MapUnsignedChar", "CHAR");
+  mapUnsignedCharType := options.String("MapUnsignedChar", mapCharType.value);
   mapShortType := options.String("MapShort", "INTEGER");
-  mapUnsignedShortType := options.String("MapUnsignedShort", "INTEGER");
+  mapUnsignedShortType := options.String("MapUnsignedShort", mapShortType.value);
   mapLongType := options.String("MapLong", "LONGINT");
-  mapUnsignedLongType := options.String("MapUnsignedLong", "LONGINT");
+  mapUnsignedLongType := options.String("MapUnsignedLong", mapLongType.value);
   mapLongLongType := options.String("MapLongLong", "HUGEINT");
-  mapUnsignedLongLongType := options.String("MapUnsignedLongLong", "HUGEINT");
+  mapUnsignedLongLongType := options.String("MapUnsignedLongLong", mapLongLongType.value);
   mapFloatType := options.String("MapFloat", "REAL");
   mapDoubleType := options.String("MapDouble", "LONGREAL");
   mapLongDoubleType := options.String("MapLongDouble", "LONGDOUBLE");
@@ -788,7 +842,11 @@ BEGIN
   renameProcedures := options.Boolean("RenameProcedures", TRUE);
   tagSuffix := options.String("TagSuffix", "_tag");
   autoPrefix := options.String("AutoPrefix", "Auto");
-
+  varTag := options.String("VarTag", "[NIL_COMPAT]");
+  arrayTag := options.String("ArrayTag", "");
+  unionTag := options.String("UnionTag", "[UNION]");
+  recordTag := options.String("RecordTag", "");
+  oocHeader := options.Boolean("OOCHeader", TRUE);
   moduleSuffix := options.String("ModuleSuffix", "Mod");
 END InitOptions;
 
