@@ -68,7 +68,18 @@ paths. For OOC and gcc to play nicely together:
 
   It is ESSENTIAL that OOC and gcc SEE THE SAME PATHS TO SOURCE FILES.
 
-Keep this in mind when installing the system.
+Keep this in mind when installing the system. Try to avoid paths like "C:" and
+"/C/" as these won't match between the two envionments. Use a mount to unify
+the path names. For example, in the msys /etc/fstab, add an entry like:
+
+  c:/myname /myname
+
+This allows you to completely omit the drive specifier in paths. Then to
+configure pass "--prefix=/myname/local". Use the same prefix when installing
+libraries like the GC. To tell the compiler where they are, use:
+
+  export LDFLAGS=-L/myname/local/lib
+  export CPPFLAGS=-I/myname/local/include
 
 Note that OOC does not quote file names that are passed as arguments to the
 C compiler, so:
