@@ -5,11 +5,11 @@
 static void StringSearch_NoMatch__InitMatcher(StringSearch_NoMatch__Matcher matcher, Object__String8 pattern, OOC_UINT32 flags, OOC_INT32 groups) {
   register OOC_INT32 i0,i1,i2,i3;
 
-  i0 = (OOC_INT32)matcher;
-  i1 = (OOC_INT32)pattern;
-  i2 = flags;
-  i3 = groups;
-  StringSearch__InitMatcher((StringSearch__Matcher)i0, (Object__String8)i1, i2, i3);
+  i0 = groups;
+  i1 = flags;
+  i2 = (OOC_INT32)pattern;
+  i3 = (OOC_INT32)matcher;
+  StringSearch__InitMatcher((StringSearch__Matcher)i3, (Object__String8)i2, i1, i0);
   return;
   ;
 }
@@ -18,9 +18,9 @@ static StringSearch_NoMatch__Matcher StringSearch_NoMatch__NewMatcher(Object__St
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_StringSearch_NoMatch__Matcher.baseTypes[0]);
-  i1 = (OOC_INT32)pattern;
-  i2 = flags;
-  StringSearch_NoMatch__InitMatcher((StringSearch_NoMatch__Matcher)i0, (Object__String8)i1, i2, 0);
+  i1 = flags;
+  i2 = (OOC_INT32)pattern;
+  StringSearch_NoMatch__InitMatcher((StringSearch_NoMatch__Matcher)i0, (Object__String8)i2, i1, 0);
   return (StringSearch_NoMatch__Matcher)i0;
   ;
 }

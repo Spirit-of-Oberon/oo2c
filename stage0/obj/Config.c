@@ -178,8 +178,8 @@ void Config__IntegerVarDesc_StringToValue(Config__IntegerVar v, Object__String s
   Object__String strip;
   Object__String8 str8;
   Object__CharsLatin1 chars;
-  OOC_INT32 _int;
   OOC_INT8 res;
+  OOC_INT32 _int;
 
   i = 0;
   i0 = (OOC_INT32)str;
@@ -363,10 +363,10 @@ l4:
 void Config__SetPrototype(ADT_Dictionary__Dictionary map, Object__String name, Config__Variable prototype) {
   register OOC_INT32 i0,i1,i2;
 
-  i0 = (OOC_INT32)map;
+  i0 = (OOC_INT32)prototype;
   i1 = (OOC_INT32)name;
-  i2 = (OOC_INT32)prototype;
-  ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i0, (Object__Object)i1, (Object__Object)i2);
+  i2 = (OOC_INT32)map;
+  ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i2, (Object__Object)i1, (Object__Object)i0);
   return;
   ;
 }
@@ -375,9 +375,9 @@ Config__Variable Config__GetClone(ADT_Dictionary__Dictionary map, Object__String
   register OOC_INT32 i0,i1;
   Config__Variable ptr;
 
-  i0 = (OOC_INT32)map;
-  i1 = (OOC_INT32)prototypeName;
-  i0 = (OOC_INT32)ADT_Dictionary__DictionaryDesc_Get((ADT_Dictionary__Dictionary)i0, (Object__Object)i1);
+  i0 = (OOC_INT32)prototypeName;
+  i1 = (OOC_INT32)map;
+  i0 = (OOC_INT32)ADT_Dictionary__DictionaryDesc_Get((ADT_Dictionary__Dictionary)i1, (Object__Object)i0);
   ptr = (Config__Variable)i0;
   i1 = i0==(OOC_INT32)0;
   if (i1) goto l3;

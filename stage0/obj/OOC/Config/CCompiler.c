@@ -7,10 +7,10 @@ OOC_CHAR8 OOC_Config_CCompiler__HaveLibtool(void) {
 
   i0 = (OOC_INT32)OOC_Config_CCompiler__libtool;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 1344))+8);
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1359)))), &_td_Config__StringVarDesc, 1359)), 1369));
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 1344))+8);
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 1359)))), &_td_Config__StringVarDesc, 1359)), 1369));
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1376)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i0, (Object__Object)((OOC_INT32)_c0));
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1359)))), &_td_Config__StringVarDesc, 1359)), 1369));
+  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 1376)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i1, (Object__Object)((OOC_INT32)_c0));
   return (!i0);
   ;
 }

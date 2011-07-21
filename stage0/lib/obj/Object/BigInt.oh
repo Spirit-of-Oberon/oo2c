@@ -101,12 +101,12 @@ extern RT0__StructDesc _td_Object_BigInt__1485;
 extern RT0__StructDesc _td_Object_BigInt__DigitArray;
 extern RT0__StructDesc _td_Object_BigInt__BigIntDesc;
 extern RT0__StructDesc _td_Object_BigInt__2156;
-extern RT0__StructDesc _td_Object_BigInt__11319;
-extern RT0__StructDesc _td_Object_BigInt__11370;
-extern RT0__StructDesc _td_Object_BigInt__16888;
-extern RT0__StructDesc _td_Object_BigInt__16877;
-extern RT0__StructDesc _td_Object_BigInt__19766;
-extern RT0__StructDesc _td_Object_BigInt__20929;
+extern RT0__StructDesc _td_Object_BigInt__11375;
+extern RT0__StructDesc _td_Object_BigInt__11426;
+extern RT0__StructDesc _td_Object_BigInt__16944;
+extern RT0__StructDesc _td_Object_BigInt__16933;
+extern RT0__StructDesc _td_Object_BigInt__19822;
+extern RT0__StructDesc _td_Object_BigInt__20985;
 #endif /* _MODULE_Object_BigInt_ */
 
 /* --- */

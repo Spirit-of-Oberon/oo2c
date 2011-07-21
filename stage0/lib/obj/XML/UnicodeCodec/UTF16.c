@@ -5,10 +5,10 @@
 static void XML_UnicodeCodec_UTF16__InitBE(XML_UnicodeCodec_UTF16__Codec codec, OOC_INT8 bom) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)codec;
-  i1 = bom;
-  XML_UnicodeCodec__Init((XML_UnicodeCodec__Codec)i0, i1);
-  *(OOC_UINT8*)((_check_pointer(i0, 1002))+8) = 1u;
+  i0 = bom;
+  i1 = (OOC_INT32)codec;
+  XML_UnicodeCodec__Init((XML_UnicodeCodec__Codec)i1, i0);
+  *(OOC_UINT8*)((_check_pointer(i1, 1002))+8) = 1u;
   return;
   ;
 }
@@ -26,10 +26,10 @@ static XML_UnicodeCodec_UTF16__Codec XML_UnicodeCodec_UTF16__NewBE(OOC_INT8 bom)
 static void XML_UnicodeCodec_UTF16__InitLE(XML_UnicodeCodec_UTF16__Codec codec, OOC_INT8 bom) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)codec;
-  i1 = bom;
-  XML_UnicodeCodec__Init((XML_UnicodeCodec__Codec)i0, i1);
-  *(OOC_UINT8*)((_check_pointer(i0, 1257))+8) = 0u;
+  i0 = bom;
+  i1 = (OOC_INT32)codec;
+  XML_UnicodeCodec__Init((XML_UnicodeCodec__Codec)i1, i0);
+  *(OOC_UINT8*)((_check_pointer(i1, 1257))+8) = 0u;
   return;
   ;
 }

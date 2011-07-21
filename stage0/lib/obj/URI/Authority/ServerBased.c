@@ -23,11 +23,11 @@ URI_Authority_ServerBased__Authority URI_Authority_ServerBased__New(Object__Stri
   register OOC_INT32 i0,i1,i2,i3,i4;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_URI_Authority_ServerBased__Authority.baseTypes[0]);
-  i1 = (OOC_INT32)userinfo;
-  i2 = (OOC_INT32)host;
-  i3 = port;
-  i4 = defaultPort;
-  URI_Authority_ServerBased__Init((URI_Authority_ServerBased__Authority)i0, (Object__String)i1, (Object__String)i2, i3, i4);
+  i1 = defaultPort;
+  i2 = port;
+  i3 = (OOC_INT32)host;
+  i4 = (OOC_INT32)userinfo;
+  URI_Authority_ServerBased__Init((URI_Authority_ServerBased__Authority)i0, (Object__String)i4, (Object__String)i3, i2, i1);
   return (URI_Authority_ServerBased__Authority)i0;
   ;
 }

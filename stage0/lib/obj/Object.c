@@ -193,9 +193,9 @@ l9:
 Object__String8 Object__NewLatin1Region(const OOC_CHAR8 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end) {
   register OOC_INT32 i0,i1;
 
-  i0 = start;
-  i1 = end;
-  i0 = (OOC_INT32)Object__NewString8(((OOC_INT32)str+i0), (i1-i0));
+  i0 = end;
+  i1 = start;
+  i0 = (OOC_INT32)Object__NewString8(((OOC_INT32)str+i1), (i0-i1));
   return (Object__String8)i0;
   ;
 }
@@ -611,9 +611,9 @@ l40:
 Object__String Object__StringDesc_Concat(Object__String s, Object__String t) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)s;
-  i1 = (OOC_INT32)t;
-  i0 = (OOC_INT32)Object__Concat2((Object__String)i0, (Object__String)i1);
+  i0 = (OOC_INT32)t;
+  i1 = (OOC_INT32)s;
+  i0 = (OOC_INT32)Object__Concat2((Object__String)i1, (Object__String)i0);
   return (Object__String)i0;
   ;
 }
@@ -1663,9 +1663,9 @@ OOC_INT32 Object__String8Desc_HashCode(Object__String8 s) {
   i0 = (OOC_INT32)s;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25100))+4);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25100))+4);
-  i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 25105)), 0);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 25105)), 0);
   i0 = *(OOC_INT32*)(_check_pointer(i0, 25112));
-  i0 = HashCode__CharRegion((void*)(_check_pointer(i1, 25105)), i2, 0, i0);
+  i0 = HashCode__CharRegion((void*)(_check_pointer(i2, 25105)), i1, 0, i0);
   return i0;
   ;
 }
@@ -1676,9 +1676,9 @@ OOC_INT32 Object__String16Desc_HashCode(Object__String16 s) {
   i0 = (OOC_INT32)s;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25226))+4);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25226))+4);
-  i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 25231)), 0);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 25231)), 0);
   i0 = *(OOC_INT32*)(_check_pointer(i0, 25238));
-  i0 = HashCode__LongCharRegion((void*)(_check_pointer(i1, 25231)), i2, 0, i0);
+  i0 = HashCode__LongCharRegion((void*)(_check_pointer(i2, 25231)), i1, 0, i0);
   return i0;
   ;
 }

@@ -96,9 +96,9 @@ IO__ByteChannel URI__URIDesc_GetChannel(URI__URI uri, OOC_INT8 mode) {
 void URI__InitOpaqueURI(URI__OpaqueURI uri, Object__String schemeId) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)uri;
-  i1 = (OOC_INT32)schemeId;
-  URI__InitURI((URI__URI)i0, (Object__String)i1);
+  i0 = (OOC_INT32)schemeId;
+  i1 = (OOC_INT32)uri;
+  URI__InitURI((URI__URI)i1, (Object__String)i0);
   return;
   ;
 }
@@ -184,13 +184,13 @@ void URI__QueryDesc_Append(URI__Query query, ADT_StringBuffer__StringBuffer sb) 
 void URI__InitHierarchicalURI(URI__HierarchicalURI uri, Object__String schemeId, URI__Authority authority, URI__Query query) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)uri;
-  i1 = (OOC_INT32)schemeId;
-  URI__InitURI((URI__URI)i0, (Object__String)i1);
-  i1 = (OOC_INT32)authority;
-  *(OOC_INT32*)((_check_pointer(i0, 12971))+4) = i1;
-  i1 = (OOC_INT32)query;
-  *(OOC_INT32*)((_check_pointer(i0, 13004))+8) = i1;
+  i0 = (OOC_INT32)schemeId;
+  i1 = (OOC_INT32)uri;
+  URI__InitURI((URI__URI)i1, (Object__String)i0);
+  i0 = (OOC_INT32)authority;
+  *(OOC_INT32*)((_check_pointer(i1, 12971))+4) = i0;
+  i0 = (OOC_INT32)query;
+  *(OOC_INT32*)((_check_pointer(i1, 13004))+8) = i0;
   return;
   ;
 }
@@ -204,35 +204,35 @@ OOC_CHAR8 URI__HierarchicalURIDesc_AuthorityMandatory(URI__HierarchicalURI uri) 
 void URI__HierarchicalURIDesc_Copy(URI__HierarchicalURI uri, URI__URI dest) {
   register OOC_INT32 i0,i1,i2,i3;
 
-  i0 = (OOC_INT32)uri;
-  i1 = (OOC_INT32)dest;
-  URI__URIDesc_Copy((URI__URI)i0, (URI__URI)i1);
-  i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 13542)))), &_td_URI__HierarchicalURIDesc);
+  i0 = (OOC_INT32)dest;
+  i1 = (OOC_INT32)uri;
+  URI__URIDesc_Copy((URI__URI)i1, (URI__URI)i0);
+  i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13542)))), &_td_URI__HierarchicalURIDesc);
   if (i2) goto l3;
-  _failed_with(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 13533)))), 13533);
+  _failed_with(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13533)))), 13533);
   goto l12;
 l3:
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13576))+4);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13576))+4);
   i2 = i2!=(OOC_INT32)0;
   if (i2) goto l6;
-  *(OOC_INT32*)((_check_pointer(i1, 13674))+4) = (OOC_INT32)0;
+  *(OOC_INT32*)((_check_pointer(i0, 13674))+4) = (OOC_INT32)0;
   goto l7;
 l6:
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13630))+4);
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13630))+4);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13630))+4);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13630))+4);
   i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 13641)))), URI__AuthorityDesc_Clone)),URI__AuthorityDesc_Clone)((URI__Authority)i3);
-  *(OOC_INT32*)((_check_pointer(i1, 13612))+4) = i2;
+  *(OOC_INT32*)((_check_pointer(i0, 13612))+4) = i2;
 l7:
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13717))+8);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13717))+8);
   i2 = i2!=(OOC_INT32)0;
   if (i2) goto l10;
-  *(OOC_INT32*)((_check_pointer(i1, 13803))+8) = (OOC_INT32)0;
+  *(OOC_INT32*)((_check_pointer(i0, 13803))+8) = (OOC_INT32)0;
   goto l12;
 l10:
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13763))+8);
-  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13763))+8);
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 13770)))), URI__QueryDesc_Clone)),URI__QueryDesc_Clone)((URI__Query)i0);
-  *(OOC_INT32*)((_check_pointer(i1, 13749))+8) = i0;
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13763))+8);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13763))+8);
+  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 13770)))), URI__QueryDesc_Clone)),URI__QueryDesc_Clone)((URI__Query)i1);
+  *(OOC_INT32*)((_check_pointer(i0, 13749))+8) = i1;
 l12:
   return;
   ;
@@ -327,9 +327,9 @@ URI__URI URI__HierarchicalURIDesc_MakeRelative(URI__HierarchicalURI uri, URI__Hi
   if (i1) goto l21;
   i1 = (OOC_INT32)uri;
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 16626));
-  i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 16650));
-  i4 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 16626));
-  i2 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 16635)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i4, (Object__Object)i3);
+  i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 16626));
+  i4 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 16650));
+  i2 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 16635)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i3, (Object__Object)i4);
   i2 = !i2;
   if (i2) goto l19;
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16766))+4);
@@ -353,9 +353,9 @@ URI__URI URI__HierarchicalURIDesc_MakeRelative(URI__HierarchicalURI uri, URI__Hi
   i3 = *(OOC_INT32*)((_check_pointer(i1, 17311))+4);
   i0 = i0!=i3;
   if (i0) goto l11;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 17332)))), ADT_StringBuffer__StringBufferDesc_ToString)),ADT_StringBuffer__StringBufferDesc_ToString)((ADT_StringBuffer__StringBuffer)i2);
-  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17347)))), ADT_StringBuffer__StringBufferDesc_ToString)),ADT_StringBuffer__StringBufferDesc_ToString)((ADT_StringBuffer__StringBuffer)i1);
-  i0 = URI__HierarchicalURIDesc_MakeRelative_Equal((Object__String)i0, (Object__String)i1);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17347)))), ADT_StringBuffer__StringBufferDesc_ToString)),ADT_StringBuffer__StringBufferDesc_ToString)((ADT_StringBuffer__StringBuffer)i1);
+  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 17332)))), ADT_StringBuffer__StringBufferDesc_ToString)),ADT_StringBuffer__StringBufferDesc_ToString)((ADT_StringBuffer__StringBuffer)i2);
+  i0 = URI__HierarchicalURIDesc_MakeRelative_Equal((Object__String)i1, (Object__String)i0);
   i0 = !i0;
   
   goto l13;
@@ -505,12 +505,12 @@ void URI__RegisterScheme(URI__URI scheme) {
       i0 = (OOC_INT32)*list;
       i1 = i0==(OOC_INT32)0;
       if (i1) goto l7;
-      i1 = (OOC_INT32)scheme;
-      i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 21314));
-      i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21345))+4);
-      i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i3, 21352));
-      i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 21314));
-      i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 21323)))), Object__StringDesc_EqualsIgnoreCase)),Object__StringDesc_EqualsIgnoreCase)((Object__String)i1, (Object__Object)i3);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21345))+4);
+      i2 = (OOC_INT32)scheme;
+      i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 21314));
+      i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 21352));
+      i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 21314));
+      i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 21323)))), Object__StringDesc_EqualsIgnoreCase)),Object__StringDesc_EqualsIgnoreCase)((Object__String)i2, (Object__Object)i1);
       if (i1) goto l5;
       URI__RegisterScheme_Append((void*)(_check_pointer(i0, 21430)));
       goto l8;
@@ -547,10 +547,10 @@ URI__URI URI__GetScheme(Object__String name) {
   i1=0u;
   goto l5;
 l3:
-  i1 = (OOC_INT32)name;
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21857))+4);
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 21864));
-  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 21833)))), Object__StringDesc_EqualsIgnoreCase)),Object__StringDesc_EqualsIgnoreCase)((Object__String)i1, (Object__Object)i2);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21857))+4);
+  i2 = (OOC_INT32)name;
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 21864));
+  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 21833)))), Object__StringDesc_EqualsIgnoreCase)),Object__StringDesc_EqualsIgnoreCase)((Object__String)i2, (Object__Object)i1);
   i1 = !i1;
   
 l5:

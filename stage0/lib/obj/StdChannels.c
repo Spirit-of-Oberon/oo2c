@@ -5,9 +5,9 @@
 static Msg__Msg StdChannels__GetError(OOC_INT32 code) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)StdChannels__errorContext;
-  i1 = code;
-  i0 = (OOC_INT32)Msg__New((Msg__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)StdChannels__errorContext;
+  i0 = (OOC_INT32)Msg__New((Msg__Context)i1, i0);
   return (Msg__Msg)i0;
   ;
 }

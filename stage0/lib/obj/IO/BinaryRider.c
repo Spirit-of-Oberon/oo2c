@@ -531,11 +531,11 @@ void IO_BinaryRider__WriterDesc_WriteLChar(IO_BinaryRider__Writer w, OOC_CHAR16 
 void IO_BinaryRider__WriterDesc_WriteString(IO_BinaryRider__Writer w, const OOC_CHAR8 s[], OOC_LEN s_0d) {
   register OOC_INT32 i0,i1,i2;
 
-  i0 = (OOC_INT32)w;
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9385))+4);
-  i2 = Strings__Length((void*)(OOC_INT32)s, s_0d);
-  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9385))+4);
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9393)))), IO__ByteChannelDesc_Write)),IO__ByteChannelDesc_Write)((IO__ByteChannel)i0, (void*)(OOC_INT32)s, (-1), 0, (i2+1));
+  i0 = Strings__Length((void*)(OOC_INT32)s, s_0d);
+  i1 = (OOC_INT32)w;
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9385))+4);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9385))+4);
+  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 9393)))), IO__ByteChannelDesc_Write)),IO__ByteChannelDesc_Write)((IO__ByteChannel)i1, (void*)(OOC_INT32)s, (-1), 0, (i0+1));
   return;
   ;
 }

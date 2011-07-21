@@ -35,9 +35,9 @@ URI__URI URI_Scheme_CurrentDoc__CurrentDocDesc_Clone(URI_Scheme_CurrentDoc__Curr
 void URI_Scheme_CurrentDoc__CurrentDocDesc_Copy(URI_Scheme_CurrentDoc__CurrentDoc uri, URI__URI dest) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)uri;
-  i1 = (OOC_INT32)dest;
-  URI__URIDesc_Copy((URI__URI)i0, (URI__URI)i1);
+  i0 = (OOC_INT32)dest;
+  i1 = (OOC_INT32)uri;
+  URI__URIDesc_Copy((URI__URI)i1, (URI__URI)i0);
   return;
   ;
 }

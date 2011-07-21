@@ -76,8 +76,8 @@ void OOC_Doc_TextBuffer__BufferDesc_Append(OOC_Doc_TextBuffer__Buffer b, const O
 l4:
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 1840));
   i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 1840));
-  i3 = OOC_ARRAY_LENGTH((_check_pointer(i3, 1845)), 0);
-  Strings__Append((void*)(OOC_INT32)str, str_0d, (void*)(_check_pointer(i2, 1845)), i3);
+  i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 1845)), 0);
+  Strings__Append((void*)(OOC_INT32)str, str_0d, (void*)(_check_pointer(i3, 1845)), i2);
   i2 = *(OOC_INT32*)((_check_pointer(i1, 1859))+4);
   *(OOC_INT32*)((_check_pointer(i1, 1859))+4) = (i2+i0);
   return;
@@ -514,9 +514,9 @@ l27:
   i2 = *(OOC_INT32*)((_check_pointer(i2, 6130))+4);
   i0 = OOC_Doc_TextBuffer__FormatBlock_LastWord((OOC_Scanner_InputBuffer__CharArray)i1, i2, i0, (i4-i3));
   end = i0;
-  i1 = (OOC_INT32)dest;
-  i2 = indent;
-  OOC_Doc_TextBuffer__BufferDesc_AppendSpaces((OOC_Doc_TextBuffer__Buffer)i1, i2);
+  i1 = indent;
+  i2 = (OOC_INT32)dest;
+  OOC_Doc_TextBuffer__BufferDesc_AppendSpaces((OOC_Doc_TextBuffer__Buffer)i2, i1);
   
   goto l41;
 l33:
@@ -551,10 +551,10 @@ l40:
 l41:
   i1 = (OOC_INT32)s;
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i1, 6254)), 0);
-  i3 = (OOC_INT32)dest;
-  i4 = start;
-  OOC_Doc_TextBuffer__BufferDesc_AppendSubstring((OOC_Doc_TextBuffer__Buffer)i3, (void*)(_check_pointer(i1, 6254)), i2, i4, i0);
-  OOC_Doc_TextBuffer__BufferDesc_AppendEOL((OOC_Doc_TextBuffer__Buffer)i3);
+  i3 = start;
+  i4 = (OOC_INT32)dest;
+  OOC_Doc_TextBuffer__BufferDesc_AppendSubstring((OOC_Doc_TextBuffer__Buffer)i4, (void*)(_check_pointer(i1, 6254)), i2, i3, i0);
+  OOC_Doc_TextBuffer__BufferDesc_AppendEOL((OOC_Doc_TextBuffer__Buffer)i4);
   i = i0;
   
 l42:

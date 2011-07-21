@@ -654,10 +654,10 @@ OOC_Repository__Module OOC_Repository__RepositoryDesc_GetModuleByURI(OOC_Reposit
   m = (OOC_Repository__Module)(OOC_INT32)0;
   i0 = force;
   if (i0) goto l43;
-  i0 = (OOC_INT32)uri;
-  i1 = (OOC_INT32)rep;
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 21285))+4);
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 21266)))), URI__HierarchicalURIDesc_MakeRelative)),URI__HierarchicalURIDesc_MakeRelative)((URI__HierarchicalURI)i0, (URI__HierarchicalURI)i2);
+  i0 = (OOC_INT32)rep;
+  i1 = (OOC_INT32)uri;
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21285))+4);
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 21266)))), URI__HierarchicalURIDesc_MakeRelative)),URI__HierarchicalURIDesc_MakeRelative)((URI__HierarchicalURI)i1, (URI__HierarchicalURI)i2);
   relURI = (URI__URI)i2;
   i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 21313));
   i3 = i3==(OOC_INT32)0;
@@ -667,7 +667,7 @@ OOC_Repository__Module OOC_Repository__RepositoryDesc_GetModuleByURI(OOC_Reposit
 l5:
   i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 21389)))), URI__URIDesc_ToString)),URI__URIDesc_ToString)((URI__URI)i2);
   s = (Object__String)i2;
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 21423)))), OOC_Repository__RepositoryDesc_GetDefaultSubdir)),OOC_Repository__RepositoryDesc_GetDefaultSubdir)((OOC_Repository__Repository)i1, 0);
+  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 21423)))), OOC_Repository__RepositoryDesc_GetDefaultSubdir)),OOC_Repository__RepositoryDesc_GetDefaultSubdir)((OOC_Repository__Repository)i0, 0);
   subdir = (Object__String8)i2;
   i3 = *(OOC_INT32*)(_check_pointer(i2, 21687));
   _assert((i3!=0), 127, 21673);
@@ -732,21 +732,18 @@ l28:
   if (i3) goto l20_loop;
 l32:
   *(OOC_UINT8*)((OOC_INT32)str+(_check_index(i2, 1024, OOC_UINT32, 22294))) = 0u;
-  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 22324)))), OOC_Repository__RepositoryDesc_GetModule)),OOC_Repository__RepositoryDesc_GetModule)((OOC_Repository__Repository)i1, (void*)(OOC_INT32)str, 1024, (URI__HierarchicalURI)(OOC_INT32)0);
-  m = (OOC_Repository__Module)i1;
-  i2 = i1!=(OOC_INT32)0;
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 22324)))), OOC_Repository__RepositoryDesc_GetModule)),OOC_Repository__RepositoryDesc_GetModule)((OOC_Repository__Repository)i0, (void*)(OOC_INT32)str, 1024, (URI__HierarchicalURI)(OOC_INT32)0);
+  m = (OOC_Repository__Module)i0;
+  i2 = i0!=(OOC_INT32)0;
   if (i2) goto l35;
-  i0=0u;
+  i1=0u;
   goto l37;
 l35:
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 22375)))), OOC_Repository__ModuleDesc_MatchesURI)),OOC_Repository__ModuleDesc_MatchesURI)((OOC_Repository__Module)i1, 0, (URI__URI)i0);
-  i0 = !i0;
+  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 22375)))), OOC_Repository__ModuleDesc_MatchesURI)),OOC_Repository__ModuleDesc_MatchesURI)((OOC_Repository__Module)i0, 0, (URI__URI)i1);
+  i1 = !i1;
   
 l37:
-  if (i0) goto l39;
-  i0=i1;
-  goto l48;
-l39:
+  if (!i1) goto l48;
   i0=(OOC_INT32)0;
   goto l48;
 l43:

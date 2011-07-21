@@ -82,11 +82,11 @@ l17:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 4109)), 0);
   i1 = (((i1-i2)-1)>>12)*4096;
   len = i1;
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 4192));
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 4204))+4);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 4204))+4);
+  i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 4192));
   i4 = *(OOC_INT32*)((_check_pointer(i0, 4215))+12);
   i5 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 4192));
-  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 4195)))), IO__ByteChannelDesc_Read)),IO__ByteChannelDesc_Read)((IO__ByteChannel)i5, (void*)(_check_pointer(i3, 4211)), (-1), i4, i1);
+  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 4195)))), IO__ByteChannelDesc_Read)),IO__ByteChannelDesc_Read)((IO__ByteChannel)i5, (void*)(_check_pointer(i2, 4211)), (-1), i4, i1);
   d = i1;
   i2 = i1==(-1);
   if (i2) goto l20;
@@ -177,9 +177,9 @@ XML_InputBuffer__Buffer XML_InputBuffer__New(IO__ByteChannel reader, Msg__MsgLis
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_InputBuffer__Buffer.baseTypes[0]);
-  i1 = (OOC_INT32)reader;
-  i2 = (OOC_INT32)errList;
-  XML_InputBuffer__Init((XML_InputBuffer__Buffer)i0, 1u, (IO__ByteChannel)i1, (Msg__MsgList)i2);
+  i1 = (OOC_INT32)errList;
+  i2 = (OOC_INT32)reader;
+  XML_InputBuffer__Init((XML_InputBuffer__Buffer)i0, 1u, (IO__ByteChannel)i2, (Msg__MsgList)i1);
   return (XML_InputBuffer__Buffer)i0;
   ;
 }

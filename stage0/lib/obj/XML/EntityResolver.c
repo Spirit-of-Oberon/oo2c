@@ -6,9 +6,9 @@ XML_DTD__StringURI XML_EntityResolver__NormalizeURI(XML_UnicodeBuffer__CharArray
   register OOC_INT32 i0,i1,i2,i3,i4,i5;
   OOC_INT16 len16;
   XML_UnicodeCodec__Codec codec;
-  OOC_CHAR8 str8[8192];
-  OOC_INT32 srcDone;
   OOC_INT32 destDone;
+  OOC_INT32 srcDone;
+  OOC_CHAR8 str8[8192];
   OOC_INT16 i;
   OOC_CHAR8 repl[4];
   auto OOC_CHAR8 XML_EntityResolver__NormalizeURI_ToHex(OOC_INT16 i);

@@ -29,17 +29,17 @@ Object__String ADT_StringBuffer__StringBufferDesc_ToString(ADT_StringBuffer__Str
   if (i1) goto l3;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2282))+12);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2282))+12);
-  i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 2289)), 0);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 2289)), 0);
   i0 = *(OOC_INT32*)((_check_pointer(i0, 2296))+4);
-  i0 = (OOC_INT32)Object__NewUTF16Region((void*)(_check_pointer(i1, 2289)), i2, 0, i0);
+  i0 = (OOC_INT32)Object__NewUTF16Region((void*)(_check_pointer(i2, 2289)), i1, 0, i0);
   return (Object__String)i0;
   goto l4;
 l3:
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2214))+8);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2214))+8);
-  i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 2220)), 0);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 2220)), 0);
   i0 = *(OOC_INT32*)((_check_pointer(i0, 2227))+4);
-  i0 = (OOC_INT32)Object__NewLatin1Region((void*)(_check_pointer(i1, 2220)), i2, 0, i0);
+  i0 = (OOC_INT32)Object__NewLatin1Region((void*)(_check_pointer(i2, 2220)), i1, 0, i0);
   return (Object__String)i0;
 l4:
   _failed_function(2121); return 0;
@@ -318,9 +318,9 @@ l9:
 void ADT_StringBuffer__StringBufferDesc_AppendLatin1(ADT_StringBuffer__StringBuffer b, const OOC_CHAR8 data[], OOC_LEN data_0d) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)b;
-  i1 = ADT_StringBuffer__Length((void*)(OOC_INT32)data, data_0d);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6584)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1Region)),ADT_StringBuffer__StringBufferDesc_AppendLatin1Region)((ADT_StringBuffer__StringBuffer)i0, (void*)(OOC_INT32)data, data_0d, 0, i1);
+  i0 = ADT_StringBuffer__Length((void*)(OOC_INT32)data, data_0d);
+  i1 = (OOC_INT32)b;
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6584)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1Region)),ADT_StringBuffer__StringBufferDesc_AppendLatin1Region)((ADT_StringBuffer__StringBuffer)i1, (void*)(OOC_INT32)data, data_0d, 0, i0);
   return;
   ;
 }

@@ -247,9 +247,9 @@ static void OOC_SymbolTable_Uses__AddMsg(OOC_SymbolTable_Uses__Uses u, OOC_Symbo
   register OOC_INT32 i0,i1,i2;
   Msg__Msg e;
 
-  i0 = (OOC_INT32)OOC_SymbolTable_Uses__usesContext;
-  i1 = code;
-  i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)OOC_SymbolTable_Uses__usesContext;
+  i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i0);
   e = (Msg__Msg)i0;
   i1 = (OOC_INT32)ident;
   i2 = *(OOC_INT32*)(_check_pointer(i1, 5003));
@@ -529,8 +529,8 @@ l17:
       i3 = OOC_ARRAY_LENGTH(i1, 0);
       i1 = (OOC_INT32)*(OOC_INT32*)(i1+(_check_index(i4, i3, OOC_UINT32, 8003))*4);
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 8006))+12);
-      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 8010)), 0);
-      Err__String((void*)(_check_pointer(i2, 8010)), i1);
+      i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 8010)), 0);
+      Err__String((void*)(_check_pointer(i1, 8010)), i2);
       Err__String("\047 of --uses", 12);
       Err__Ln();
       _halt(1);

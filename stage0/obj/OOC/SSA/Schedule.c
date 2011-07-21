@@ -252,15 +252,15 @@ l8:
 static void OOC_SSA_Schedule__InitBranchBlock(OOC_SSA_Schedule__BranchBlock b, OOC_SSA_Schedule__Block dominator, OOC_SSA__Opnd predicate, OOC_CHAR8 branchOnTrue) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)b;
-  i1 = (OOC_INT32)dominator;
-  OOC_SSA_Schedule__InitBlock((OOC_SSA_Schedule__Block)i0, (OOC_SSA_Schedule__Block)i1);
-  *(OOC_INT32*)((_check_pointer(i0, 9062))+48) = (OOC_INT32)0;
-  i1 = (OOC_INT32)predicate;
-  *(OOC_INT32*)((_check_pointer(i0, 9082))+52) = i1;
-  i1 = branchOnTrue;
-  *(OOC_UINT8*)((_check_pointer(i0, 9112))+56) = i1;
-  *(OOC_INT32*)((_check_pointer(i0, 9149))+60) = (OOC_INT32)0;
+  i0 = (OOC_INT32)dominator;
+  i1 = (OOC_INT32)b;
+  OOC_SSA_Schedule__InitBlock((OOC_SSA_Schedule__Block)i1, (OOC_SSA_Schedule__Block)i0);
+  *(OOC_INT32*)((_check_pointer(i1, 9062))+48) = (OOC_INT32)0;
+  i0 = (OOC_INT32)predicate;
+  *(OOC_INT32*)((_check_pointer(i1, 9082))+52) = i0;
+  i0 = branchOnTrue;
+  *(OOC_UINT8*)((_check_pointer(i1, 9112))+56) = i0;
+  *(OOC_INT32*)((_check_pointer(i1, 9149))+60) = (OOC_INT32)0;
   return;
   ;
 }
@@ -269,10 +269,10 @@ static OOC_SSA_Schedule__BranchBlock OOC_SSA_Schedule__NewBranchBlock(OOC_SSA_Sc
   register OOC_INT32 i0,i1,i2,i3;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SSA_Schedule__BranchBlock.baseTypes[0]);
-  i1 = (OOC_INT32)dominator;
+  i1 = branchOnTrue;
   i2 = (OOC_INT32)predicate;
-  i3 = branchOnTrue;
-  OOC_SSA_Schedule__InitBranchBlock((OOC_SSA_Schedule__BranchBlock)i0, (OOC_SSA_Schedule__Block)i1, (OOC_SSA__Opnd)i2, i3);
+  i3 = (OOC_INT32)dominator;
+  OOC_SSA_Schedule__InitBranchBlock((OOC_SSA_Schedule__BranchBlock)i0, (OOC_SSA_Schedule__Block)i3, (OOC_SSA__Opnd)i2, i1);
   return (OOC_SSA_Schedule__BranchBlock)i0;
   ;
 }
@@ -311,10 +311,10 @@ l8:
 static void OOC_SSA_Schedule__InitJumpBlock(OOC_SSA_Schedule__JumpBlock b, OOC_SSA_Schedule__Block dominator) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)b;
-  i1 = (OOC_INT32)dominator;
-  OOC_SSA_Schedule__InitBlock((OOC_SSA_Schedule__Block)i0, (OOC_SSA_Schedule__Block)i1);
-  *(OOC_INT32*)((_check_pointer(i0, 9831))+48) = (OOC_INT32)0;
+  i0 = (OOC_INT32)dominator;
+  i1 = (OOC_INT32)b;
+  OOC_SSA_Schedule__InitBlock((OOC_SSA_Schedule__Block)i1, (OOC_SSA_Schedule__Block)i0);
+  *(OOC_INT32*)((_check_pointer(i1, 9831))+48) = (OOC_INT32)0;
   return;
   ;
 }
@@ -342,9 +342,9 @@ OOC_SSA_Schedule__Block OOC_SSA_Schedule__JumpBlockDesc_DefaultTarget(OOC_SSA_Sc
 static void OOC_SSA_Schedule__InitDeadEndBlock(OOC_SSA_Schedule__DeadEndBlock b, OOC_SSA_Schedule__Block dominator) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)b;
-  i1 = (OOC_INT32)dominator;
-  OOC_SSA_Schedule__InitBlock((OOC_SSA_Schedule__Block)i0, (OOC_SSA_Schedule__Block)i1);
+  i0 = (OOC_INT32)dominator;
+  i1 = (OOC_INT32)b;
+  OOC_SSA_Schedule__InitBlock((OOC_SSA_Schedule__Block)i1, (OOC_SSA_Schedule__Block)i0);
   return;
   ;
 }
@@ -369,35 +369,35 @@ static void OOC_SSA_Schedule__InitSwitchBlock(OOC_SSA_Schedule__SwitchBlock b, O
   register OOC_INT32 i0,i1,i2,i3,i4;
   OOC_INT32 i;
 
-  i0 = (OOC_INT32)b;
-  i1 = (OOC_INT32)dominator;
-  OOC_SSA_Schedule__InitBlock((OOC_SSA_Schedule__Block)i0, (OOC_SSA_Schedule__Block)i1);
-  i1 = (OOC_INT32)expr;
-  *(OOC_INT32*)((_check_pointer(i0, 10734))+48) = i1;
-  i1 = paths;
-  *(OOC_INT32*)((_check_pointer(i0, 10760))+52) = ((OOC_INT32)RT0__NewObject(_td_OOC_SSA_Schedule__5412.baseTypes[0], i1));
-  *(OOC_INT32*)((_check_pointer(i0, 10786))+56) = ((OOC_INT32)RT0__NewObject(_td_OOC_SSA_Schedule__5453.baseTypes[0], i1));
-  *(OOC_INT32*)((_check_pointer(i0, 10817))+60) = ((OOC_INT32)RT0__NewObject(_td_OOC_SSA_Schedule__5501.baseTypes[0], i1));
+  i0 = (OOC_INT32)dominator;
+  i1 = (OOC_INT32)b;
+  OOC_SSA_Schedule__InitBlock((OOC_SSA_Schedule__Block)i1, (OOC_SSA_Schedule__Block)i0);
+  i0 = (OOC_INT32)expr;
+  *(OOC_INT32*)((_check_pointer(i1, 10734))+48) = i0;
+  i0 = paths;
+  *(OOC_INT32*)((_check_pointer(i1, 10760))+52) = ((OOC_INT32)RT0__NewObject(_td_OOC_SSA_Schedule__5412.baseTypes[0], i0));
+  *(OOC_INT32*)((_check_pointer(i1, 10786))+56) = ((OOC_INT32)RT0__NewObject(_td_OOC_SSA_Schedule__5453.baseTypes[0], i0));
+  *(OOC_INT32*)((_check_pointer(i1, 10817))+60) = ((OOC_INT32)RT0__NewObject(_td_OOC_SSA_Schedule__5501.baseTypes[0], i0));
   i = 0;
-  i2 = 0<i1;
+  i2 = 0<i0;
   if (!i2) goto l8;
   i2=0;
 l3_loop:
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10875))+52);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10875))+52);
   i3 = _check_pointer(i3, 10881);
   i4 = OOC_ARRAY_LENGTH(i3, 0);
   *(OOC_INT32*)(i3+(_check_index(i2, i4, OOC_UINT32, 10881))*4) = (OOC_INT32)0;
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10894))+56);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10894))+56);
   i3 = _check_pointer(i3, 10905);
   i4 = OOC_ARRAY_LENGTH(i3, 0);
   *(OOC_INT32*)(i3+(_check_index(i2, i4, OOC_UINT32, 10905))*4) = (OOC_INT32)0;
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10918))+60);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10918))+60);
   i3 = _check_pointer(i3, 10930);
   i4 = OOC_ARRAY_LENGTH(i3, 0);
   *(OOC_INT32*)(i3+(_check_index(i2, i4, OOC_UINT32, 10930))*4) = (OOC_INT32)0;
   i2 = i2+1;
   i = i2;
-  i3 = i2<i1;
+  i3 = i2<i0;
   if (i3) goto l3_loop;
 l8:
   return;
@@ -408,10 +408,10 @@ static OOC_SSA_Schedule__SwitchBlock OOC_SSA_Schedule__NewSwitchBlock(OOC_SSA_Sc
   register OOC_INT32 i0,i1,i2,i3;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SSA_Schedule__SwitchBlock.baseTypes[0]);
-  i1 = (OOC_INT32)dominator;
+  i1 = paths;
   i2 = (OOC_INT32)expr;
-  i3 = paths;
-  OOC_SSA_Schedule__InitSwitchBlock((OOC_SSA_Schedule__SwitchBlock)i0, (OOC_SSA_Schedule__Block)i1, (OOC_SSA__Opnd)i2, i3);
+  i3 = (OOC_INT32)dominator;
+  OOC_SSA_Schedule__InitSwitchBlock((OOC_SSA_Schedule__SwitchBlock)i0, (OOC_SSA_Schedule__Block)i3, (OOC_SSA__Opnd)i2, i1);
   return (OOC_SSA_Schedule__SwitchBlock)i0;
   ;
 }
@@ -493,15 +493,15 @@ static OOC_SSA_Schedule__JumpBlock OOC_SSA_Schedule__TransferInstructions(OOC_SS
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 12833))+8);
       i1 = OOC_SSA__InstrDesc_IsSwitchStatm((OOC_SSA__Instr)i1);
       if (i1) goto l3;
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13836))+8);
-      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13874))+8);
-      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 13881))+24);
-      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 13891))+8);
-      i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 13901));
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13843))+24);
-      i2 = OOC_SSA__ResultDesc_IsBooleanConst((OOC_SSA__Result)i2, 1u);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13874))+8);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13881))+24);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 13891))+8);
+      i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 13901));
+      i1 = OOC_SSA__ResultDesc_IsBooleanConst((OOC_SSA__Result)i1, 1u);
+      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13836))+8);
+      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 13843))+24);
       i3 = (OOC_INT32)block;
-      i1 = (OOC_INT32)OOC_SSA_Schedule__NewBranchBlock((OOC_SSA_Schedule__Block)i3, (OOC_SSA__Opnd)i1, i2);
+      i1 = (OOC_INT32)OOC_SSA_Schedule__NewBranchBlock((OOC_SSA_Schedule__Block)i3, (OOC_SSA__Opnd)i2, i1);
       branch = (OOC_SSA_Schedule__BranchBlock)i1;
       OOC_SSA_Schedule__SetJump((void*)((_check_pointer(i3, 13954))+48), (OOC_SSA_Schedule__Block)i3, (OOC_SSA_Schedule__Block)i1);
       i2 = (OOC_INT32)OOC_SSA_Schedule__NewJumpBlock((OOC_SSA_Schedule__Block)i1);
@@ -580,15 +580,15 @@ l11:
       if (!i4) goto l19;
       i3=0;
 l14_loop:
-      i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 13570))+56);
-      i4 = _check_pointer(i4, 13581);
+      i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 13598))+56);
+      i4 = _check_pointer(i4, 13609);
       i5 = OOC_ARRAY_LENGTH(i4, 0);
-      i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i3, i5, OOC_UINT32, 13581))*4);
-      i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 13598))+56);
-      i5 = _check_pointer(i5, 13609);
-      i6 = OOC_ARRAY_LENGTH(i5, 0);
-      i5 = (OOC_INT32)*(OOC_INT32*)(i5+(_check_index(i3, i6, OOC_UINT32, 13609))*4);
-      OOC_SSA_Schedule__SetJump((void*)((_check_pointer(i4, 13584))+48), (OOC_SSA_Schedule__Block)i5, (OOC_SSA_Schedule__Block)i0);
+      i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 13570))+56);
+      i6 = _check_pointer(i6, 13581);
+      i7 = OOC_ARRAY_LENGTH(i6, 0);
+      i6 = (OOC_INT32)*(OOC_INT32*)(i6+(_check_index(i3, i7, OOC_UINT32, 13581))*4);
+      i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i3, i5, OOC_UINT32, 13609))*4);
+      OOC_SSA_Schedule__SetJump((void*)((_check_pointer(i6, 13584))+48), (OOC_SSA_Schedule__Block)i4, (OOC_SSA_Schedule__Block)i0);
       i3 = i3+1;
       i = i3;
       i4 = i3<i1;

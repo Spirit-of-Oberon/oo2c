@@ -1,4 +1,4 @@
-(* 	$Id: ConstProp.Mod,v 1.12 2003/02/27 04:23:56 mva Exp $	 *)
+(* 	$Id: ConstProp.Mod,v 1.13 2004/05/23 18:24:52 mva Exp $	 *)
 MODULE OOC:SSA:ConstProp;
 (*  Constant propagation and unreachable code elimination.
     Copyright (C) 2002, 2003  Michael van Acken
@@ -67,7 +67,7 @@ PROCEDURE ComputeConst (pb: SSA.ProcBlock; instr: SSA.Instr): SSA.Const;
       
       CASE arg1. subclass OF
       | Opcode.scSigned8 .. Opcode.scAddress:
-        IF (arg1.value IS BigInt.BigInt) & (arg1.value IS BigInt.BigInt) THEN
+        IF (arg1.value IS BigInt.BigInt) & (arg2.value IS BigInt.BigInt) THEN
           (* only dealing with integers for now; FIXME... add set values *)
           i1 := arg1. value(BigInt.BigInt);
           i2 := arg2. value(BigInt.BigInt);

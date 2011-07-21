@@ -1,4 +1,4 @@
-(* 	$Id: IGraph.Mod,v 1.5 2003/02/28 05:25:13 mva Exp $	 *)
+(* 	$Id: IGraph.Mod,v 1.6 2004/05/21 13:45:40 mva Exp $	 *)
 MODULE OOC:SSA:IGraph;
 (*  Manipulation of interference graph of values' life ranges.
     Copyright (C) 2001-2003  Michael van Acken
@@ -36,7 +36,7 @@ CONST
 TYPE
   Graph* = POINTER TO GraphDesc;
   GraphDesc = RECORD
-    m: BitMatrix;
+    m-: BitMatrix;
     (**This matrix holds the interference matrix of live ranges of values in
        the current region.  If @var{i} and @var{j} are nodes in the graph, then
        @samp{(j MOD bitsPerSet) IN m[i, j DIV bitsPerSet]} indicates that there
@@ -49,7 +49,7 @@ TYPE
        they are kept in different register files, and are therefore handled in
        different graphs.  *)
 
-    size: LONGINT;
+    size-: LONGINT;
     (**Logically, the matrix @ofield{m} is @ofield{size}x@ofield{size}.  The
        size is the number of nodes of the graph, and also the number of columns
        and rows in the matrix.  It holds: @samp{LEN(@ofield{m},0) =

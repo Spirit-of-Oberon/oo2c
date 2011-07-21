@@ -477,8 +477,8 @@ l38:
   i0 = (OOC_INT32)sym;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6567))+8);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6567))+8);
-  i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 6572)), 0);
-  i1 = Strings__Length((void*)(_check_pointer(i1, 6572)), i2);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 6572)), 0);
+  i1 = Strings__Length((void*)(_check_pointer(i2, 6572)), i1);
   i1 = (OOC_INT32)RT0__NewObject(_td_OOC_Scanner_InputBuffer__CharArray.baseTypes[0], (i1+1));
   str = (OOC_Scanner_InputBuffer__CharArray)i1;
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6592))+8);

@@ -5,12 +5,12 @@
 void URI_Scheme_Opaque__Init(URI_Scheme_Opaque__Generic uri, Object__String schemeId, Object__String opaque) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)uri;
-  i1 = (OOC_INT32)schemeId;
-  URI__InitOpaqueURI((URI__OpaqueURI)i0, (Object__String)i1);
-  i1 = (OOC_INT32)opaque;
-  _assert((i1!=(OOC_INT32)0), 127, 1299);
-  *(OOC_INT32*)((_check_pointer(i0, 1329))+4) = i1;
+  i0 = (OOC_INT32)schemeId;
+  i1 = (OOC_INT32)uri;
+  URI__InitOpaqueURI((URI__OpaqueURI)i1, (Object__String)i0);
+  i0 = (OOC_INT32)opaque;
+  _assert((i0!=(OOC_INT32)0), 127, 1299);
+  *(OOC_INT32*)((_check_pointer(i1, 1329))+4) = i0;
   return;
   ;
 }
@@ -19,9 +19,9 @@ URI_Scheme_Opaque__Generic URI_Scheme_Opaque__New(Object__String schemeId, Objec
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_URI_Scheme_Opaque__Generic.baseTypes[0]);
-  i1 = (OOC_INT32)schemeId;
-  i2 = (OOC_INT32)opaque;
-  URI_Scheme_Opaque__Init((URI_Scheme_Opaque__Generic)i0, (Object__String)i1, (Object__String)i2);
+  i1 = (OOC_INT32)opaque;
+  i2 = (OOC_INT32)schemeId;
+  URI_Scheme_Opaque__Init((URI_Scheme_Opaque__Generic)i0, (Object__String)i2, (Object__String)i1);
   return (URI_Scheme_Opaque__Generic)i0;
   ;
 }
@@ -41,16 +41,16 @@ URI_Scheme_Opaque__Generic URI_Scheme_Opaque__GenericDesc_Clone(URI_Scheme_Opaqu
 void URI_Scheme_Opaque__GenericDesc_Copy(URI_Scheme_Opaque__Generic uri, URI__URI dest) {
   register OOC_INT32 i0,i1,i2;
 
-  i0 = (OOC_INT32)uri;
-  i1 = (OOC_INT32)dest;
-  URI__URIDesc_Copy((URI__URI)i0, (URI__URI)i1);
-  i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1759)))), &_td_URI_Scheme_Opaque__GenericDesc);
+  i0 = (OOC_INT32)dest;
+  i1 = (OOC_INT32)uri;
+  URI__URIDesc_Copy((URI__URI)i1, (URI__URI)i0);
+  i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 1759)))), &_td_URI_Scheme_Opaque__GenericDesc);
   if (i2) goto l3;
-  _failed_with(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1750)))), 1750);
+  _failed_with(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 1750)))), 1750);
   goto l4;
 l3:
-  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 1797))+4);
-  *(OOC_INT32*)((_check_pointer(i1, 1782))+4) = i0;
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 1797))+4);
+  *(OOC_INT32*)((_check_pointer(i0, 1782))+4) = i1;
 l4:
   return;
   ;

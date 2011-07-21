@@ -5,11 +5,11 @@
 void URI_Scheme_File__Init(URI_Scheme_File__URI file, Object__String schemeId, URI__Authority authority, URI__Query query) {
   register OOC_INT32 i0,i1,i2,i3;
 
-  i0 = (OOC_INT32)file;
-  i1 = (OOC_INT32)schemeId;
-  i2 = (OOC_INT32)authority;
-  i3 = (OOC_INT32)query;
-  URI_Scheme_Hierarchical__Init((URI_Scheme_Hierarchical__Generic)i0, (Object__String)i1, (URI__Authority)i2, (URI__Query)i3);
+  i0 = (OOC_INT32)query;
+  i1 = (OOC_INT32)authority;
+  i2 = (OOC_INT32)schemeId;
+  i3 = (OOC_INT32)file;
+  URI_Scheme_Hierarchical__Init((URI_Scheme_Hierarchical__Generic)i3, (Object__String)i2, (URI__Authority)i1, (URI__Query)i0);
   return;
   ;
 }
@@ -18,10 +18,10 @@ URI_Scheme_File__URI URI_Scheme_File__New(Object__String schemeId, URI__Authorit
   register OOC_INT32 i0,i1,i2,i3;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_URI_Scheme_File__URI.baseTypes[0]);
-  i1 = (OOC_INT32)schemeId;
+  i1 = (OOC_INT32)query;
   i2 = (OOC_INT32)authority;
-  i3 = (OOC_INT32)query;
-  URI_Scheme_File__Init((URI_Scheme_File__URI)i0, (Object__String)i1, (URI__Authority)i2, (URI__Query)i3);
+  i3 = (OOC_INT32)schemeId;
+  URI_Scheme_File__Init((URI_Scheme_File__URI)i0, (Object__String)i3, (URI__Authority)i2, (URI__Query)i1);
   return (URI_Scheme_File__URI)i0;
   ;
 }

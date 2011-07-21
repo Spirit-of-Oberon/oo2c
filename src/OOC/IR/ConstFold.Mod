@@ -1,4 +1,4 @@
-(* 	$Id: ConstFold.Mod,v 1.82 2004/03/21 22:33:00 mva Exp $	 *)
+(* 	$Id: ConstFold.Mod,v 1.83 2004/05/23 18:26:35 mva Exp $	 *)
 MODULE OOC:IR:ConstFold;
 (*  Constant folding on IR expressions.
     Copyright (C) 2002, 2003, 2004  Stewart Greenhill, Michael van Acken
@@ -549,6 +549,23 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     RETURN Boxed.NewBoolean(result);
   END BooleanOp;
 
+  PROCEDURE SetOp(): Boxed.Boolean;
+    VAR
+      left, right: Boxed.Set;
+      result: BOOLEAN;
+    BEGIN
+      left := l(Boxed.Set);
+      right := r(Boxed.Set);
+      
+      CASE op.variant OF
+      | IR.equal:        result := left.Equals(right);
+      | IR.notEqual:     result := ~left.Equals(right);
+      ELSE
+        c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
+      END;
+      RETURN Boxed.NewBoolean(result);
+    END SetOp;
+
   BEGIN
     IF c.ValidEval(op.left, l) & c.ValidEval(op.right, r) THEN
       CASE op.left.type(Sym.PredefType).id OF
@@ -566,6 +583,8 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
         result := StringOp(); 
       | Predef.boolean:
         result := BooleanOp();
+      | Predef.set:
+        result := SetOp();
       END;
       IF result = NIL THEN 
         c.result := NIL

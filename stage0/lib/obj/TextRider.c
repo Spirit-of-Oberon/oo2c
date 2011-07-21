@@ -5,9 +5,9 @@
 static Msg__Msg TextRider__GetError(OOC_INT32 code) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)TextRider__errorContext;
-  i1 = code;
-  i0 = (OOC_INT32)Msg__New((Msg__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)TextRider__errorContext;
+  i0 = (OOC_INT32)Msg__New((Msg__Context)i1, i0);
   return (Msg__Msg)i0;
   ;
 }
@@ -1304,8 +1304,8 @@ l8:
 void TextRider__ReaderDesc_ReadLReal(TextRider__Reader r, OOC_REAL64 *lreal) {
   register OOC_INT32 i0,i1,i2,i3;
   OOC_INT16 pos;
-  OOC_INT8 _class;
   ConvTypes__ScanState state;
+  OOC_INT8 _class;
   OOC_CHAR8 str[1024];
   OOC_INT8 res;
 
@@ -1343,8 +1343,8 @@ l11_loop:
   i2 = !i2;
   if (i2) goto l23;
   i2 = (OOC_INT32)state;
-  i3 = *(OOC_UINT8*)(((_check_pointer(i0, 27742))+21)+(_check_index(0, 2, OOC_UINT8, 27746)));
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 27737));
+  i3 = *(OOC_UINT8*)(((_check_pointer(i0, 27742))+21)+(_check_index(0, 2, OOC_UINT8, 27746)));
   ((void (*)(OOC_CHAR8 ch, OOC_INT8 *cl, ConvTypes__ScanState *st))i2)(i3, (void*)(OOC_INT32)&_class, (void*)(OOC_INT32)&state);
   i2 = _class;
   i2 = i2==1;
@@ -2367,10 +2367,10 @@ void TextRider__WriterDesc_WriteString(TextRider__Writer w, const OOC_CHAR8 s[],
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 39817));
   i1 = i1==0;
   if (!i1) goto l10;
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 39843))+8);
-  i2 = Strings__Length((void*)(OOC_INT32)s, s_0d);
+  i1 = Strings__Length((void*)(OOC_INT32)s, s_0d);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 39843))+8);
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 39843))+8);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 39855)))), Channel__WriterDesc_WriteBytes)),Channel__WriterDesc_WriteBytes)((Channel__Writer)i3, (void*)(OOC_INT32)s, (-1), 0, i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 39855)))), Channel__WriterDesc_WriteBytes)),Channel__WriterDesc_WriteBytes)((Channel__Writer)i3, (void*)(OOC_INT32)s, (-1), 0, i1);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 39913))+8);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 39925))+4);
   *(OOC_INT32*)(_check_pointer(i0, 39903)) = i1;
@@ -2661,8 +2661,8 @@ void TextRider__WriterDesc_WriteLReal(TextRider__Writer w, OOC_REAL64 lreal, OOC
   register OOC_REAL64 d0;
   OOC_CHAR8 val[128];
 
-  d0 = lreal;
   i0 = k;
+  d0 = lreal;
   LRealStr__RealToFloat(d0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -2678,8 +2678,8 @@ void TextRider__WriterDesc_WriteReal(TextRider__Writer w, OOC_REAL32 real, OOC_I
   register OOC_REAL32 f0;
   OOC_CHAR8 val[128];
 
-  f0 = real;
   i0 = k;
+  f0 = real;
   RealStr__RealToFloat(f0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -2695,8 +2695,8 @@ void TextRider__WriterDesc_WriteLRealFix(TextRider__Writer w, OOC_REAL64 *lreal,
   register OOC_REAL64 d0;
   OOC_CHAR8 val[128];
 
-  d0 = *lreal;
   i0 = k;
+  d0 = *lreal;
   LRealStr__RealToFixed(d0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -2712,8 +2712,8 @@ void TextRider__WriterDesc_WriteRealFix(TextRider__Writer w, OOC_REAL32 real, OO
   register OOC_REAL32 f0;
   OOC_CHAR8 val[128];
 
-  f0 = real;
   i0 = k;
+  f0 = real;
   RealStr__RealToFixed(f0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -2729,8 +2729,8 @@ void TextRider__WriterDesc_WriteLRealEng(TextRider__Writer w, OOC_REAL64 *lreal,
   register OOC_REAL64 d0;
   OOC_CHAR8 val[128];
 
-  d0 = *lreal;
   i0 = k;
+  d0 = *lreal;
   LRealStr__RealToEng(d0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -2746,8 +2746,8 @@ void TextRider__WriterDesc_WriteRealEng(TextRider__Writer w, OOC_REAL32 real, OO
   register OOC_REAL32 f0;
   OOC_CHAR8 val[128];
 
-  f0 = real;
   i0 = k;
+  f0 = real;
   RealStr__RealToEng(f0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;

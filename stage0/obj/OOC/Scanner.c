@@ -77,9 +77,9 @@ void OOC_Scanner__ScanInput(OOC_Scanner_SymList__Builder builder, OOC_Config_Pra
     void OOC_Scanner__ScanInput_Err(OOC_INT32 code) {
       register OOC_INT32 i0,i1,i2;
 
-      i0 = (OOC_INT32)OOC_Scanner__scannerContext;
-      i1 = code;
-      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i0, i1);
+      i0 = code;
+      i1 = (OOC_INT32)OOC_Scanner__scannerContext;
+      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i0);
       lastError = (Msg__Msg)i0;
       i1 = (OOC_INT32)b;
       i1 = *(OOC_INT32*)((_check_pointer(i1, 6247))+8);
@@ -106,11 +106,11 @@ void OOC_Scanner__ScanInput(OOC_Scanner_SymList__Builder builder, OOC_Config_Pra
 
       i0 = code;
       OOC_Scanner__ScanInput_Err(i0);
-      i0 = (OOC_INT32)lastError;
-      i1 = (OOC_INT32)b;
-      i1 = *(OOC_INT32*)((_check_pointer(i1, 6582))+8);
+      i0 = (OOC_INT32)b;
+      i1 = (OOC_INT32)lastError;
+      i0 = *(OOC_INT32*)((_check_pointer(i0, 6582))+8);
       i2 = cpos;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6553)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, (i2+i1));
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6553)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "pos", 4, (i2+i0));
       i0 = (OOC_INT32)lastError;
       i1 = currLinePos;
       i3 = currLineTab;
@@ -651,9 +651,9 @@ l103:
     if (!i2) goto l431;
     i2 = (OOC_INT32)*(OOC_INT32*)(((OOC_INT32)OOC_Scanner__kwStr+(_check_index(i0, 256, OOC_UINT32, 12270))*8)+(_check_index(0, 2, OOC_UINT8, 12272))*4);
     i3 = (OOC_INT32)*(OOC_INT32*)(((OOC_INT32)OOC_Scanner__kwStr+(_check_index(i0, 256, OOC_UINT32, 12270))*8)+(_check_index(0, 2, OOC_UINT8, 12272))*4);
-    i3 = OOC_ARRAY_LENGTH((_check_pointer(i3, 12276)), 0);
+    i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 12276)), 0);
     i4 = cstart;
-    i2 = OOC_Scanner__ScanInput_CompareIdent(i4, (void*)(_check_pointer(i2, 12276)), i3);
+    i2 = OOC_Scanner__ScanInput_CompareIdent(i4, (void*)(_check_pointer(i3, 12276)), i2);
     if (i2) goto l117;
     i2 = *(OOC_INT8*)(((OOC_INT32)OOC_Scanner__kwSym+(_check_index(i0, 256, OOC_UINT32, 12337))*2)+(_check_index(1, 2, OOC_UINT8, 12339)));
     i2 = i2>=0;
@@ -663,8 +663,8 @@ l103:
 l111:
     i2 = (OOC_INT32)*(OOC_INT32*)(((OOC_INT32)OOC_Scanner__kwStr+(_check_index(i0, 256, OOC_UINT32, 12379))*8)+(_check_index(1, 2, OOC_UINT8, 12381))*4);
     i3 = (OOC_INT32)*(OOC_INT32*)(((OOC_INT32)OOC_Scanner__kwStr+(_check_index(i0, 256, OOC_UINT32, 12379))*8)+(_check_index(1, 2, OOC_UINT8, 12381))*4);
-    i3 = OOC_ARRAY_LENGTH((_check_pointer(i3, 12385)), 0);
-    i2 = OOC_Scanner__ScanInput_CompareIdent(i4, (void*)(_check_pointer(i2, 12385)), i3);
+    i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 12385)), 0);
+    i2 = OOC_Scanner__ScanInput_CompareIdent(i4, (void*)(_check_pointer(i3, 12385)), i2);
     
 l113:
     if (i2) goto l115;

@@ -73,8 +73,8 @@ l26:
       i2 = i;
       i2 = (OOC_INT32)Object__NewLatin1Region((void*)(OOC_INT32)str, str_0d, i1, i2);
       substr = (Object__String8)i2;
-      i3 = (OOC_INT32)hierURI;
       i2 = (OOC_INT32)Object__String8Desc_CharsLatin1((Object__String8)i2);
+      i3 = (OOC_INT32)hierURI;
       OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 2144)))), URI__HierarchicalURIDesc_ParsePath)),URI__HierarchicalURIDesc_ParsePath)((URI__HierarchicalURI)i3, (Object__CharsLatin1)i2, i0, i1);
       return;
       ;
@@ -432,8 +432,8 @@ l167:
 l171:
   i2 = (OOC_INT32)Object__NewLatin1Region((void*)(OOC_INT32)str, str_0d, i0, i2);
   substr = (Object__String8)i2;
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4891))+4);
   i2 = (OOC_INT32)Object__String8Desc_CharsLatin1((Object__String8)i2);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4891))+4);
   i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4891))+4);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 4901)))), URI__AuthorityDesc_ParseAuthority)),URI__AuthorityDesc_ParseAuthority)((URI__Authority)i4, (Object__CharsLatin1)i2, i0);
   i0 = i;
@@ -501,8 +501,8 @@ l196:
 l200:
   i2 = (OOC_INT32)Object__NewLatin1Region((void*)(OOC_INT32)str, str_0d, i1, i2);
   substr = (Object__String8)i2;
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6146))+8);
   i2 = (OOC_INT32)Object__String8Desc_CharsLatin1((Object__String8)i2);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6146))+8);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6146))+8);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 6152)))), URI__QueryDesc_ParseQuery)),URI__QueryDesc_ParseQuery)((URI__Query)i0, (Object__CharsLatin1)i2, i1);
   goto l203;

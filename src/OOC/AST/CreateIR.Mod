@@ -1,4 +1,4 @@
-(* 	$Id: CreateIR.Mod,v 1.4 2004/04/13 21:08:20 mva Exp $	 *)
+(* 	$Id: CreateIR.Mod,v 1.5 2004/05/21 13:46:56 mva Exp $	 *)
 MODULE OOC:AST:CreateIR;
 (*  Creates an IR representation from the abstract syntax tree.
     Copyright (C) 2001-2004  Michael van Acken
@@ -704,7 +704,7 @@ PROCEDURE CreateIR* (module: AST.Module;
       
       WITH item: Sym.Array DO
         IF ~item. isOpenArray THEN
-          expr := Expr (item. lengthExpr);
+          expr := b.AssertConst(Expr(item.lengthExpr));
           IF (expr = b. errorExpr) THEN  (* error in array length *)
             item. SetLength(1);
           ELSE

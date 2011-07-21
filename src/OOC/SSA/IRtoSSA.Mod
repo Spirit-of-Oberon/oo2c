@@ -1,4 +1,4 @@
-(* 	$Id: IRtoSSA.Mod,v 1.132 2004/03/21 22:33:00 mva Exp $	 *)
+(* 	$Id: IRtoSSA.Mod,v 1.133 2004/05/23 23:36:51 mva Exp $	 *)
 MODULE OOC:SSA:IRtoSSA;
 (*  Converts the IR of a procedure into its SSA representation.
     Copyright (C) 2001-2004  Michael van Acken
@@ -1045,7 +1045,14 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
       fpar: Sym.VarDecl;
       type: Sym.Type;
       isVarParam: BOOLEAN;
+      args: POINTER TO ARRAY OF SSA.Result;
     BEGIN
+      (* evaluate arguments right to left, and procedure designator last *)
+      NEW(args, LEN(call.arguments^));
+      FOR i := LEN (call. arguments^)-1 TO 0 BY -1 DO
+        args[i] := Expression (call. arguments[i]);
+      END;
+      
       instr := pb. AddInstr (Opcode.call, Opcode.TypeToSubclass (call. type));
       instr. AddTypedOpnd (Expression (call. design), Opnd.procAdr,
                            call. design. type, FALSE);
@@ -1058,8 +1065,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           type := call. arguments[i]. type;
           isVarParam := FALSE;
         END;
-        instr. AddTypedOpnd (Expression (call. arguments[i]),
-                             Opnd.arg, type, isVarParam);
+        instr. AddTypedOpnd (args[i], Opnd.arg, type, isVarParam);
       END;
       RETURN instr
     END Call;

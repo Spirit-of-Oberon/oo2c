@@ -51,8 +51,8 @@ l3_loop:
   mr = (OOC_SymbolTable__ModuleRef)i7;
   i8 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i7, 1415));
   i9 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i7, 1415));
-  i9 = OOC_ARRAY_LENGTH((_check_pointer(i9, 1420)), 0);
-  i8 = Strings__Length((void*)(_check_pointer(i8, 1420)), i9);
+  i8 = OOC_ARRAY_LENGTH((_check_pointer(i8, 1420)), 0);
+  i8 = Strings__Length((void*)(_check_pointer(i9, 1420)), i8);
   len = i8;
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 1431)))), IO_BinaryRider__WriterDesc_WriteNum)),IO_BinaryRider__WriterDesc_WriteNum)((IO_BinaryRider__Writer)i4, i8);
   i9 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i7, 1468));

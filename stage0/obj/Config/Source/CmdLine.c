@@ -42,9 +42,9 @@ l9:
 static Msg__Msg Config_Source_CmdLine__Error(OOC_INT32 code) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)Config_Source_CmdLine__cmdLineContext;
-  i1 = code;
-  i0 = (OOC_INT32)Msg__New((Msg__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)Config_Source_CmdLine__cmdLineContext;
+  i0 = (OOC_INT32)Msg__New((Msg__Context)i1, i0);
   return (Msg__Msg)i0;
   ;
 }
@@ -53,9 +53,9 @@ static Msg__Msg Config_Source_CmdLine__ErrorReason(OOC_INT32 code, Msg__Msg reas
   register OOC_INT32 i0,i1;
   Msg__Msg err;
 
-  i0 = (OOC_INT32)Config_Source_CmdLine__cmdLineContext;
-  i1 = code;
-  i0 = (OOC_INT32)Msg__New((Msg__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)Config_Source_CmdLine__cmdLineContext;
+  i0 = (OOC_INT32)Msg__New((Msg__Context)i1, i0);
   err = (Msg__Msg)i0;
   i1 = (OOC_INT32)reason;
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5189)))), Msg__MsgDesc_SetMsgAttrib)),Msg__MsgDesc_SetMsgAttrib)((Msg__Msg)i0, "reason", 7, (Msg__Msg)i1);
@@ -68,9 +68,9 @@ static Msg__Msg Config_Source_CmdLine__ErrorString(OOC_INT32 code, Object__Strin
   Msg__Msg err;
   Object__CharsLatin1 chars;
 
-  i0 = (OOC_INT32)Config_Source_CmdLine__cmdLineContext;
-  i1 = code;
-  i0 = (OOC_INT32)Msg__New((Msg__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)Config_Source_CmdLine__cmdLineContext;
+  i0 = (OOC_INT32)Msg__New((Msg__Context)i1, i0);
   err = (Msg__Msg)i0;
   i1 = (OOC_INT32)string;
   i1 = (OOC_INT32)Object__String8Desc_CharsLatin1((Object__String8)i1);
@@ -87,9 +87,9 @@ static Msg__Msg Config_Source_CmdLine__ErrorStringNum(OOC_INT32 code, Object__St
   Msg__Msg err;
   Object__CharsLatin1 chars;
 
-  i0 = (OOC_INT32)Config_Source_CmdLine__cmdLineContext;
-  i1 = code;
-  i0 = (OOC_INT32)Msg__New((Msg__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)Config_Source_CmdLine__cmdLineContext;
+  i0 = (OOC_INT32)Msg__New((Msg__Context)i1, i0);
   err = (Msg__Msg)i0;
   i1 = (OOC_INT32)string;
   i1 = (OOC_INT32)Object__String8Desc_CharsLatin1((Object__String8)i1);

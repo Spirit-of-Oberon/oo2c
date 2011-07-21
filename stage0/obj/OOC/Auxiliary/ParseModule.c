@@ -48,8 +48,8 @@ l9:
   if (!i5) goto l12;
   i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2592))+4);
   i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2592))+4);
-  i6 = OOC_ARRAY_LENGTH((_check_pointer(i6, 2598)), 0);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2574)))), OOC_AST__BuilderDesc_SetModuleName)),OOC_AST__BuilderDesc_SetModuleName)((OOC_AST__Builder)i1, (void*)(_check_pointer(i5, 2598)), i6);
+  i5 = OOC_ARRAY_LENGTH((_check_pointer(i5, 2598)), 0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2574)))), OOC_AST__BuilderDesc_SetModuleName)),OOC_AST__BuilderDesc_SetModuleName)((OOC_AST__Builder)i1, (void*)(_check_pointer(i6, 2598)), i5);
 l12:
   parserFlags = (-33u);
   if (i4) goto l15;
@@ -70,11 +70,11 @@ l17:
   if (!i3) goto l35;
   i3 = (OOC_INT32)OOC_SymbolTable_Builder__New();
   stb = (OOC_SymbolTable_Builder__Builder)i3;
-  i4 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3101)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, 0, 0u);
-  i5 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 3159));
-  i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i5, 3167))+4);
+  i4 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 3159));
+  i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i4, 3167))+4);
+  i5 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3101)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, 0, 0u);
   i6 = (OOC_INT32)libraryName;
-  i1 = (OOC_INT32)OOC_AST_CreateSymTab__CreateSymTab((OOC_AST__Node)i1, (OOC_SymbolTable_Builder__Builder)i3, (Object__String)i6, (URI__HierarchicalURI)i4, (URI__HierarchicalURI)i5);
+  i1 = (OOC_INT32)OOC_AST_CreateSymTab__CreateSymTab((OOC_AST__Node)i1, (OOC_SymbolTable_Builder__Builder)i3, (Object__String)i6, (URI__HierarchicalURI)i5, (URI__HierarchicalURI)i4);
   *symTab = (OOC_SymbolTable__Module)i1;
   i3 = createNamespace;
   if (!i3) goto l35;

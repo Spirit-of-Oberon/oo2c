@@ -7,9 +7,9 @@ static void OOC_Config_Pragmas__Init(OOC_Config_Pragmas__Section s, const Config
   OOC_ALLOCATE_VPAR(id,OOC_CHAR16 ,id_0d)
 
   OOC_INITIALIZE_VPAR(id__ref,id,OOC_CHAR16 ,(id_0d*2))
-  i0 = (OOC_INT32)s;
-  i1 = (OOC_INT32)prototypeMap;
-  Config_Section_Options__Init((Config_Section_Options__Section)i0, (void*)(OOC_INT32)id, id_0d, (ADT_Dictionary__Dictionary)i1);
+  i0 = (OOC_INT32)prototypeMap;
+  i1 = (OOC_INT32)s;
+  Config_Section_Options__Init((Config_Section_Options__Section)i1, (void*)(OOC_INT32)id, id_0d, (ADT_Dictionary__Dictionary)i0);
   return;
   ;
 }
@@ -34,9 +34,9 @@ OOC_Config_Pragmas__Section OOC_Config_Pragmas__New(void) {
 void OOC_Config_Pragmas__SectionDesc_Copy(OOC_Config_Pragmas__Section s, Config_Section_Options__Section dest) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)s;
-  i1 = (OOC_INT32)dest;
-  Config_Section_Options__SectionDesc_Copy((Config_Section_Options__Section)i0, (Config_Section_Options__Section)i1);
+  i0 = (OOC_INT32)dest;
+  i1 = (OOC_INT32)s;
+  Config_Section_Options__SectionDesc_Copy((Config_Section_Options__Section)i1, (Config_Section_Options__Section)i0);
   return;
   ;
 }
@@ -301,10 +301,10 @@ void OOC_Config_Pragmas__HistoryDesc_SetValue(OOC_Config_Pragmas__History h, Obj
   register OOC_INT32 i0,i1,i2,i3,i4,i5;
   OOC_Config_Pragmas__Variable var;
 
-  i0 = (OOC_INT32)h;
-  i1 = charPos;
-  OOC_Config_Pragmas__LastCharPos((OOC_Config_Pragmas__History)i0, i1);
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6025))+4);
+  i0 = charPos;
+  i1 = (OOC_INT32)h;
+  OOC_Config_Pragmas__LastCharPos((OOC_Config_Pragmas__History)i1, i0);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 6025))+4);
   var = (OOC_Config_Pragmas__Variable)i2;
   i3 = i2!=(OOC_INT32)0;
   if (i3) goto l3;
@@ -339,23 +339,23 @@ l13:
 l17:
   i3 = i2==(OOC_INT32)0;
   if (i3) goto l20;
-  i0=i2;
+  i1=i2;
   goto l21;
 l20:
   i2 = (OOC_INT32)RT0__NewObject(_td_OOC_Config_Pragmas__Variable.baseTypes[0]);
   var = (OOC_Config_Pragmas__Variable)i2;
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6283))+4);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 6283))+4);
   *(OOC_INT32*)(_check_pointer(i2, 6272)) = i3;
   i3 = (OOC_INT32)name;
   *(OOC_INT32*)((_check_pointer(i2, 6303))+4) = i3;
   *(OOC_INT32*)((_check_pointer(i2, 6333))+8) = ((OOC_INT32)RT0__NewObject(_td_OOC_Config_Pragmas__ValueArray.baseTypes[0], 4));
   *(OOC_INT32*)((_check_pointer(i2, 6371))+12) = ((OOC_INT32)RT0__NewObject(_td_OOC_Config_Pragmas__CharPosArray.baseTypes[0], 4));
   *(OOC_INT32*)((_check_pointer(i2, 6406))+16) = 0;
-  *(OOC_INT32*)((_check_pointer(i0, 6438))+4) = i2;
-  i0=i2;
+  *(OOC_INT32*)((_check_pointer(i1, 6438))+4) = i2;
+  i1=i2;
 l21:
   i2 = (OOC_INT32)value;
-  OOC_Config_Pragmas__SetValue((OOC_Config_Pragmas__Variable)i0, i1, (Config__Variable)i2);
+  OOC_Config_Pragmas__SetValue((OOC_Config_Pragmas__Variable)i1, i0, (Config__Variable)i2);
   return;
   ;
 }
@@ -418,16 +418,16 @@ void OOC_Config_Pragmas__HistoryDesc_Pop(OOC_Config_Pragmas__History h, OOC_INT3
   OOC_Config_Pragmas__Variable var;
   Config__Variable oldValue;
 
-  i0 = (OOC_INT32)h;
-  i1 = charPos;
-  OOC_Config_Pragmas__LastCharPos((OOC_Config_Pragmas__History)i0, i1);
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 7143))+12);
+  i0 = charPos;
+  i1 = (OOC_INT32)h;
+  OOC_Config_Pragmas__LastCharPos((OOC_Config_Pragmas__History)i1, i0);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 7143))+12);
   i2 = _check_pointer(i2, 7151);
-  i3 = *(OOC_INT32*)((_check_pointer(i0, 7153))+16);
+  i3 = *(OOC_INT32*)((_check_pointer(i1, 7153))+16);
   i4 = OOC_ARRAY_LENGTH(i2, 0);
   i2 = *(OOC_INT32*)(i2+(_check_index((i3-1), i4, OOC_UINT32, 7151))*4);
   pushPos = i2;
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 7181))+4);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 7181))+4);
   var = (OOC_Config_Pragmas__Variable)i3;
   i4 = i3!=(OOC_INT32)0;
   if (!i4) goto l14;
@@ -439,19 +439,19 @@ l3_loop:
   i4 = *(OOC_INT32*)(i4+(_check_index((i5-1), i6, OOC_UINT32, 7240))*4);
   i4 = i4>i2;
   if (!i4) goto l9;
-  i4 = (OOC_INT32)OOC_Config_Pragmas__GetValue((OOC_Config_Pragmas__History)i0, (OOC_Config_Pragmas__Variable)i3, i2);
+  i4 = (OOC_INT32)OOC_Config_Pragmas__GetValue((OOC_Config_Pragmas__History)i1, (OOC_Config_Pragmas__Variable)i3, i2);
   oldValue = (Config__Variable)i4;
   i5 = i4!=(OOC_INT32)0;
   if (!i5) goto l9;
-  OOC_Config_Pragmas__SetValue((OOC_Config_Pragmas__Variable)i3, i1, (Config__Variable)i4);
+  OOC_Config_Pragmas__SetValue((OOC_Config_Pragmas__Variable)i3, i0, (Config__Variable)i4);
 l9:
   i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i3, 7541));
   var = (OOC_Config_Pragmas__Variable)i3;
   i4 = i3!=(OOC_INT32)0;
   if (i4) goto l3_loop;
 l14:
-  i1 = *(OOC_INT32*)((_check_pointer(i0, 7572))+16);
-  *(OOC_INT32*)((_check_pointer(i0, 7572))+16) = (i1-1);
+  i0 = *(OOC_INT32*)((_check_pointer(i1, 7572))+16);
+  *(OOC_INT32*)((_check_pointer(i1, 7572))+16) = (i0-1);
   return;
   ;
 }

@@ -24,18 +24,18 @@ static Object__StringArrayPtr OOC_Make_LinkProgramC__GetExternalLibs(const OOC_R
     ADT_ArrayList__ArrayList OOC_Make_LinkProgramC__GetExternalLibs_GetDepArray(Object__String libName) {
       register OOC_INT32 i0,i1,i2;
 
-      i0 = (OOC_INT32)libDeps;
-      i1 = (OOC_INT32)libName;
-      i0 = ADT_Dictionary__DictionaryDesc_HasKey((ADT_Dictionary__Dictionary)i0, (Object__Object)i1);
-      if (i0) goto l3;
-      i0 = (OOC_INT32)ADT_ArrayList__New(4);
+      i0 = (OOC_INT32)libName;
+      i1 = (OOC_INT32)libDeps;
+      i1 = ADT_Dictionary__DictionaryDesc_HasKey((ADT_Dictionary__Dictionary)i1, (Object__Object)i0);
+      if (i1) goto l3;
+      i1 = (OOC_INT32)ADT_ArrayList__New(4);
       i2 = (OOC_INT32)libDeps;
-      ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i2, (Object__Object)i1, (Object__Object)i0);
-      return (ADT_ArrayList__ArrayList)i0;
+      ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i2, (Object__Object)i0, (Object__Object)i1);
+      return (ADT_ArrayList__ArrayList)i1;
       goto l4;
 l3:
-      i0 = (OOC_INT32)libDeps;
-      i0 = (OOC_INT32)ADT_Dictionary__DictionaryDesc_Get((ADT_Dictionary__Dictionary)i0, (Object__Object)i1);
+      i1 = (OOC_INT32)libDeps;
+      i0 = (OOC_INT32)ADT_Dictionary__DictionaryDesc_Get((ADT_Dictionary__Dictionary)i1, (Object__Object)i0);
       return (ADT_ArrayList__ArrayList)i0;
 l4:
       _failed_function(1653); return 0;
@@ -49,30 +49,30 @@ l4:
       OOC_INT32 i;
       Object__Object obj;
 
-      i0 = (OOC_INT32)visited;
-      i1 = (OOC_INT32)libName;
-      i0 = ADT_Dictionary__DictionaryDesc_HasKey((ADT_Dictionary__Dictionary)i0, (Object__Object)i1);
-      i0 = !i0;
-      if (i0) goto l3;
-      i0=0u;
+      i0 = (OOC_INT32)libName;
+      i1 = (OOC_INT32)visited;
+      i1 = ADT_Dictionary__DictionaryDesc_HasKey((ADT_Dictionary__Dictionary)i1, (Object__Object)i0);
+      i1 = !i1;
+      if (i1) goto l3;
+      i1=0u;
       goto l5;
 l3:
-      i0 = (OOC_INT32)libDeps;
-      i0 = ADT_Dictionary__DictionaryDesc_HasKey((ADT_Dictionary__Dictionary)i0, (Object__Object)i1);
+      i1 = (OOC_INT32)libDeps;
+      i1 = ADT_Dictionary__DictionaryDesc_HasKey((ADT_Dictionary__Dictionary)i1, (Object__Object)i0);
       
 l5:
-      if (!i0) goto l15;
-      i0 = (OOC_INT32)visited;
-      ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i0, (Object__Object)i1, (Object__Object)(OOC_INT32)0);
-      i0 = (OOC_INT32)OOC_Make_LinkProgramC__GetExternalLibs_GetDepArray((Object__String)i1);
-      depArray = (ADT_ArrayList__ArrayList)i0;
+      if (!i1) goto l15;
+      i1 = (OOC_INT32)visited;
+      ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i1, (Object__Object)i0, (Object__Object)(OOC_INT32)0);
+      i1 = (OOC_INT32)OOC_Make_LinkProgramC__GetExternalLibs_GetDepArray((Object__String)i0);
+      depArray = (ADT_ArrayList__ArrayList)i1;
       i = 0;
-      i2 = *(OOC_INT32*)((_check_pointer(i0, 2297))+4);
+      i2 = *(OOC_INT32*)((_check_pointer(i1, 2297))+4);
       i3 = 0<i2;
       if (!i3) goto l14;
       i3=0;
 l9_loop:
-      i4 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 2337));
+      i4 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 2337));
       i4 = _check_pointer(i4, 2343);
       i5 = OOC_ARRAY_LENGTH(i4, 0);
       i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i3, i5, OOC_UINT32, 2343))*4);
@@ -82,8 +82,8 @@ l9_loop:
       i4 = i3<i2;
       if (i4) goto l9_loop;
 l14:
-      i0 = (OOC_INT32)option;
-      i0 = (OOC_INT32)ADT_Dictionary__DictionaryDesc_Get((ADT_Dictionary__Dictionary)i0, (Object__Object)i1);
+      i1 = (OOC_INT32)option;
+      i0 = (OOC_INT32)ADT_Dictionary__DictionaryDesc_Get((ADT_Dictionary__Dictionary)i1, (Object__Object)i0);
       obj = (Object__Object)i0;
       i1 = (OOC_INT32)extLibs;
       i1 = _check_pointer(i1, 2433);
@@ -106,11 +106,11 @@ l15:
       i1 = i1==(OOC_INT32)0;
       if (i1) goto l3;
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2645))+12);
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 2652))+56);
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2645))+12);
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2652))+56);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 2652))+56);
       i2 = (OOC_INT32)thisLibrary;
-      i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2664)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i0, (Object__Object)i2);
+      i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2664)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i1, (Object__Object)i2);
       
       goto l4;
 l3:
@@ -246,14 +246,14 @@ l18:
   i2 = i2!=(OOC_INT32)0;
   if (!i2) goto l21;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4450))+12);
-  i2 = (OOC_INT32)OOC_Make_LinkProgramC__space;
   i1 = (OOC_INT32)OOC_Make_LinkProgramC__GetExternalLibs_LookupValue((Object__String)i1);
+  i2 = (OOC_INT32)OOC_Make_LinkProgramC__space;
   i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i2, (Object__String)i1);
   _new = (Object__String)i1;
+  i2 = (OOC_INT32)prev;
+  i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i1, (Object__String)i2);
   i2 = (OOC_INT32)linkDirective;
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 4505))+4);
-  i4 = (OOC_INT32)prev;
-  i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i1, (Object__String)i4);
   i4 = (OOC_INT32)option;
   ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i4, (Object__Object)i3, (Object__Object)i1);
   i1 = (OOC_INT32)OOC_Make_LinkProgramC__GetExternalLibs_Option((OOC_SymbolTable__LinkLib)i2);
@@ -264,14 +264,14 @@ l21:
   i2 = i2!=(OOC_INT32)0;
   if (!i2) goto l25;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4728))+16);
-  i2 = (OOC_INT32)OOC_Make_LinkProgramC__space;
   i1 = (OOC_INT32)OOC_Make_LinkProgramC__GetExternalLibs_LookupValue((Object__String)i1);
+  i2 = (OOC_INT32)OOC_Make_LinkProgramC__space;
   i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i2, (Object__String)i1);
   _new = (Object__String)i1;
+  i2 = (OOC_INT32)prev;
+  i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i2, (Object__String)i1);
   i2 = (OOC_INT32)linkDirective;
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 4783))+4);
-  i3 = (OOC_INT32)prev;
-  i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i3, (Object__String)i1);
   i3 = (OOC_INT32)option;
   ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i3, (Object__Object)i2, (Object__Object)i1);
 l25:

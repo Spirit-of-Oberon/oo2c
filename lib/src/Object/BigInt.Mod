@@ -1,7 +1,7 @@
-(*	$Id: BigInt.Mod,v 1.6 2003/07/03 23:17:36 mva Exp $	*)
+(*	$Id: BigInt.Mod,v 1.7 2004/05/23 18:25:26 mva Exp $	*)
 MODULE Object:BigInt [OOC_EXTENSIONS];
 (*  Implements integer values of arbitrary magnitude.
-    Copyright (C) 2002,2003  Michael van Acken
+    Copyright (C) 2002-2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -223,6 +223,10 @@ PROCEDURE (a: BigInt) Equals* (b: Object.Object): BOOLEAN;
   VAR
     i: LONGINT;
   BEGIN
+    IF (b = NIL) THEN
+      RETURN FALSE;
+    END;
+    
     WITH b: BigInt DO
       IF (a.size # b.size) THEN
         RETURN FALSE;

@@ -5,9 +5,9 @@
 void IO__ErrorDesc_INIT(IO__Error e, Object__String msg) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)e;
-  i1 = (OOC_INT32)msg;
-  Exception__ExceptionDesc_INIT((Exception__Exception)i0, (Object__String)i1);
+  i0 = (OOC_INT32)msg;
+  i1 = (OOC_INT32)e;
+  Exception__ExceptionDesc_INIT((Exception__Exception)i1, (Object__String)i0);
   return;
   ;
 }
@@ -368,7 +368,7 @@ void IO__ChannelDesc_SetBlocking(IO__Channel ch, OOC_CHAR8 block) {
 }
 
 void IO__ChannelDesc_Close(IO__Channel ch) {
-  register OOC_INT32 i0,i1,i2,i3,i4;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5;
   OOC_INT32 i;
 
   i = 0;
@@ -384,12 +384,12 @@ l3_loop:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 14454))+4);
   i2 = _check_pointer(i2, 14459);
   i3 = OOC_ARRAY_LENGTH(i2, 0);
+  i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 14454))+4);
+  i4 = _check_pointer(i4, 14459);
+  i5 = OOC_ARRAY_LENGTH(i4, 0);
+  i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i1, i5, OOC_UINT32, 14459))*4);
   i2 = (OOC_INT32)*(OOC_INT32*)(i2+(_check_index(i1, i3, OOC_UINT32, 14459))*4);
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 14454))+4);
-  i3 = _check_pointer(i3, 14459);
-  i4 = OOC_ARRAY_LENGTH(i3, 0);
-  i3 = (OOC_INT32)*(OOC_INT32*)(i3+(_check_index(i1, i4, OOC_UINT32, 14459))*4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 14462)))), IO__SelectionKeyDesc_Cancel)),IO__SelectionKeyDesc_Cancel)((IO__SelectionKey)i3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 14462)))), IO__SelectionKeyDesc_Cancel)),IO__SelectionKeyDesc_Cancel)((IO__SelectionKey)i2);
   i1 = i1+1;
   i = i1;
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 14427))+4);

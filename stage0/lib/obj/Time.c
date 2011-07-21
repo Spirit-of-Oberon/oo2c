@@ -15,8 +15,8 @@ void Time__InitTimeStamp(struct Time__TimeStamp *t, RT0__Struct t__tag, OOC_INT3
 
 void Time__GetTime(struct Time__TimeStamp *t, RT0__Struct t__tag) {
   register OOC_INT32 i0,i1;
-  OOC_INT32 sec;
   OOC_INT32 usec;
+  OOC_INT32 sec;
 
   i0 = SysClock__GetTimeOfDay((void*)(OOC_INT32)&sec, (void*)(OOC_INT32)&usec);
   i0 = sec;

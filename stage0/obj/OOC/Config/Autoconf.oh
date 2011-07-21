@@ -10,7 +10,7 @@
 #define OOC_Config_Autoconf__nameTargetOS "Unix"
 #define OOC_Config_Autoconf__bitsTargetInteger 64
 #define OOC_Config_Autoconf__bitsTargetAddress 32
-#define OOC_Config_Autoconf__compilerVersion "2.1.1"
+#define OOC_Config_Autoconf__compilerVersion "2.1.2"
 #define OOC_Config_Autoconf__compilerMajor 2
 #define OOC_Config_Autoconf__compilerMinor 1
 #define OOC_Config_Autoconf__longint 6

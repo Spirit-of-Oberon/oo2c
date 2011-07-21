@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; opSet9 opSet10 opSet11 opSet12">-->
+  select ="&SetupTestCasesWithOut; constfold20">-->
 
   &TestSetupWithOut;
     
@@ -105,6 +105,15 @@
     <test id="constfold18" type="run"
       file="ConstFold18.Mod" output="ConstFold18.Ref">
       <code>ENTIER</code> should be folded as well.
+    </test>
+    
+    <test id="constfold19" type="reject" file="ConstFold19.Mod">
+      Regression test: Produce accurate error message of the length of
+      an <code>ARRAY</code> definition is not a constant expression.
+    </test>
+
+    <test id="constfold20" type="accept" file="ConstFold20.Mod">
+      Regression test: Fold comparison of sets.
     </test>
   </testcases>
   
@@ -2045,6 +2054,8 @@
     <reject-info id="constfold4" pos="c=%a" msg="Expression is not constant"/>
     <reject-info id="constfold6" pos="minLongInt%-offset"
       msg="Argument not compatible with formal type `LONGINT'"/>
+    <reject-info id="constfold19" pos="ARRAY self%.n"
+      msg="Expression is not constant"/>
 
     <reject-info id="assign1" pos="%c :=" msg="This must be a variable"/>
     <reject-info id="assign2" pos="r%. TBProc :=" msg="This must be a variable"/>

@@ -1,6 +1,6 @@
 dnl Autoconf requirements
 AC_PREREQ(2.53)
-AC_INIT(OOC,2.1.1,mva@users.sf.net)
+AC_INIT(OOC,2.1.2,mva@users.sf.net)
 AC_CONFIG_SRCDIR(src/OOC/Parser.Mod)
 AC_CONFIG_HEADER(lib/src/__config.h)
 
@@ -54,7 +54,7 @@ fi
 
 dnl checks for header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(sys/time.h unistd.h io.h pwd.h utime.h stdint.h gc/gc.h)
+AC_CHECK_HEADERS(sys/time.h unistd.h io.h pwd.h utime.h stdint.h inttypes.h gc/gc.h)
 AC_HEADER_TIME
 
 dnl checks for types

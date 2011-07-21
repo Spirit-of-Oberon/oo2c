@@ -78,9 +78,9 @@ static OOC_SSA__Opnd OOC_SSA__NewOpnd(OOC_SSA__Result arg, OOC_INT8 _class) {
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SSA__Opnd.baseTypes[0]);
-  i1 = (OOC_INT32)arg;
-  i2 = _class;
-  OOC_SSA__InitOpnd((OOC_SSA__Opnd)i0, (OOC_SSA__Result)i1, i2);
+  i1 = _class;
+  i2 = (OOC_INT32)arg;
+  OOC_SSA__InitOpnd((OOC_SSA__Opnd)i0, (OOC_SSA__Result)i2, i1);
   return (OOC_SSA__Opnd)i0;
   ;
 }
@@ -88,14 +88,14 @@ static OOC_SSA__Opnd OOC_SSA__NewOpnd(OOC_SSA__Result arg, OOC_INT8 _class) {
 static void OOC_SSA__InitTypedOpnd(OOC_SSA__TypedOpnd opnd, OOC_SSA__Result arg, OOC_INT8 _class, OOC_SymbolTable__Type type, OOC_CHAR8 passByReference) {
   register OOC_INT32 i0,i1,i2;
 
-  i0 = (OOC_INT32)opnd;
+  i0 = _class;
   i1 = (OOC_INT32)arg;
-  i2 = _class;
-  OOC_SSA__InitOpnd((OOC_SSA__Opnd)i0, (OOC_SSA__Result)i1, i2);
-  i1 = (OOC_INT32)type;
-  *(OOC_INT32*)((_check_pointer(i0, 10240))+20) = i1;
-  i1 = passByReference;
-  *(OOC_UINT8*)((_check_pointer(i0, 10264))+24) = i1;
+  i2 = (OOC_INT32)opnd;
+  OOC_SSA__InitOpnd((OOC_SSA__Opnd)i2, (OOC_SSA__Result)i1, i0);
+  i0 = (OOC_INT32)type;
+  *(OOC_INT32*)((_check_pointer(i2, 10240))+20) = i0;
+  i0 = passByReference;
+  *(OOC_UINT8*)((_check_pointer(i2, 10264))+24) = i0;
   return;
   ;
 }
@@ -104,11 +104,11 @@ static OOC_SSA__Opnd OOC_SSA__NewTypedOpnd(OOC_SSA__Result arg, OOC_INT8 _class,
   register OOC_INT32 i0,i1,i2,i3,i4;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SSA__TypedOpnd.baseTypes[0]);
-  i1 = (OOC_INT32)arg;
-  i2 = _class;
-  i3 = (OOC_INT32)type;
-  i4 = passByReference;
-  OOC_SSA__InitTypedOpnd((OOC_SSA__TypedOpnd)i0, (OOC_SSA__Result)i1, i2, (OOC_SymbolTable__Type)i3, i4);
+  i1 = passByReference;
+  i2 = (OOC_INT32)type;
+  i3 = _class;
+  i4 = (OOC_INT32)arg;
+  OOC_SSA__InitTypedOpnd((OOC_SSA__TypedOpnd)i0, (OOC_SSA__Result)i4, i3, (OOC_SymbolTable__Type)i2, i1);
   return (OOC_SSA__Opnd)i0;
   ;
 }
@@ -294,10 +294,10 @@ OOC_SSA__Result OOC_SSA__NewResult(OOC_SSA__Instr instr, OOC_INT8 _class, OOC_IN
   register OOC_INT32 i0,i1,i2,i3;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SSA__Result.baseTypes[0]);
-  i1 = (OOC_INT32)instr;
+  i1 = subclass;
   i2 = _class;
-  i3 = subclass;
-  OOC_SSA__InitResult((OOC_SSA__Result)i0, (OOC_SSA__Instr)i1, i2, i3);
+  i3 = (OOC_INT32)instr;
+  OOC_SSA__InitResult((OOC_SSA__Result)i0, (OOC_SSA__Instr)i3, i2, i1);
   return (OOC_SSA__Result)i0;
   ;
 }
@@ -435,11 +435,11 @@ void OOC_SSA__ResultDesc_LogId(OOC_SSA__Result result, const OOC_CHAR8 msg__ref[
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 17722)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)msg, msg_0d);
   i0 = (OOC_INT32)Log__writer;
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 17757)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, ": ", 3);
-  i0 = (OOC_INT32)Log__writer;
-  i1 = (OOC_INT32)result;
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 17910))+8);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 17871)))), TextRider__WriterDesc_WriteHex)),TextRider__WriterDesc_WriteHex)((TextRider__Writer)i0, (_type_cast_fast(OOC_INT32, OOC_INT32, i2)), 8);
-  i0 = OOC_SSA__ResultDesc_ResultIndex((OOC_SSA__Result)i1);
+  i0 = (OOC_INT32)result;
+  i1 = (OOC_INT32)Log__writer;
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 17910))+8);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17871)))), TextRider__WriterDesc_WriteHex)),TextRider__WriterDesc_WriteHex)((TextRider__Writer)i1, (_type_cast_fast(OOC_INT32, OOC_INT32, i2)), 8);
+  i0 = OOC_SSA__ResultDesc_ResultIndex((OOC_SSA__Result)i0);
   i = i0;
   i1 = i0!=0;
   if (!i1) goto l4;
@@ -457,16 +457,16 @@ l4:
 static void OOC_SSA__InitInstr(OOC_SSA__Instr instr, OOC_INT8 opcode, OOC_INT8 subclass) {
   register OOC_INT32 i0,i1,i2;
 
-  i0 = (OOC_INT32)instr;
-  i1 = subclass;
-  OOC_SSA__InitResult((OOC_SSA__Result)i0, (OOC_SSA__Instr)i0, (-1), i1);
-  *(OOC_INT32*)((_check_pointer(i0, 18347))+24) = (OOC_INT32)0;
-  *(OOC_INT32*)((_check_pointer(i0, 18375))+28) = (OOC_INT32)0;
-  *(OOC_INT32*)((_check_pointer(i0, 18404))+32) = (OOC_INT32)0;
+  i0 = subclass;
+  i1 = (OOC_INT32)instr;
+  OOC_SSA__InitResult((OOC_SSA__Result)i1, (OOC_SSA__Instr)i1, (-1), i0);
+  *(OOC_INT32*)((_check_pointer(i1, 18347))+24) = (OOC_INT32)0;
+  *(OOC_INT32*)((_check_pointer(i1, 18375))+28) = (OOC_INT32)0;
+  *(OOC_INT32*)((_check_pointer(i1, 18404))+32) = (OOC_INT32)0;
   i2 = opcode;
-  *(OOC_INT8*)((_check_pointer(i0, 18433))+36) = i2;
-  *(OOC_INT8*)((_check_pointer(i0, 18462))+5) = i1;
-  *(OOC_INT32*)((_check_pointer(i0, 18495))+40) = (-1);
+  *(OOC_INT8*)((_check_pointer(i1, 18433))+36) = i2;
+  *(OOC_INT8*)((_check_pointer(i1, 18462))+5) = i0;
+  *(OOC_INT32*)((_check_pointer(i1, 18495))+40) = (-1);
   return;
   ;
 }
@@ -526,9 +526,9 @@ l13:
 void OOC_SSA__InstrDesc_AddOpnd(OOC_SSA__Instr instr, OOC_SSA__Result arg, OOC_INT8 _class) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)arg;
-  i1 = _class;
-  i0 = (OOC_INT32)OOC_SSA__NewOpnd((OOC_SSA__Result)i0, i1);
+  i0 = _class;
+  i1 = (OOC_INT32)arg;
+  i0 = (OOC_INT32)OOC_SSA__NewOpnd((OOC_SSA__Result)i1, i0);
   i1 = (OOC_INT32)instr;
   OOC_SSA__AddOpnd((OOC_SSA__Instr)i1, (OOC_SSA__Opnd)i0);
   return;
@@ -538,9 +538,9 @@ void OOC_SSA__InstrDesc_AddOpnd(OOC_SSA__Instr instr, OOC_SSA__Result arg, OOC_I
 OOC_SSA__Opnd OOC_SSA__InstrDesc_AddOpndFct(OOC_SSA__Instr instr, OOC_SSA__Result arg, OOC_INT8 _class) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)arg;
-  i1 = _class;
-  i0 = (OOC_INT32)OOC_SSA__NewOpnd((OOC_SSA__Result)i0, i1);
+  i0 = _class;
+  i1 = (OOC_INT32)arg;
+  i0 = (OOC_INT32)OOC_SSA__NewOpnd((OOC_SSA__Result)i1, i0);
   i1 = (OOC_INT32)instr;
   OOC_SSA__AddOpnd((OOC_SSA__Instr)i1, (OOC_SSA__Opnd)i0);
   return (OOC_SSA__Opnd)i0;
@@ -609,11 +609,11 @@ l24:
 void OOC_SSA__InstrDesc_AddTypedOpnd(OOC_SSA__Instr instr, OOC_SSA__Result arg, OOC_INT8 _class, OOC_SymbolTable__Type type, OOC_CHAR8 passByReference) {
   register OOC_INT32 i0,i1,i2,i3;
 
-  i0 = (OOC_INT32)arg;
-  i1 = _class;
-  i2 = (OOC_INT32)type;
-  i3 = passByReference;
-  i0 = (OOC_INT32)OOC_SSA__NewTypedOpnd((OOC_SSA__Result)i0, i1, (OOC_SymbolTable__Type)i2, i3);
+  i0 = passByReference;
+  i1 = (OOC_INT32)type;
+  i2 = _class;
+  i3 = (OOC_INT32)arg;
+  i0 = (OOC_INT32)OOC_SSA__NewTypedOpnd((OOC_SSA__Result)i3, i2, (OOC_SymbolTable__Type)i1, i0);
   i1 = (OOC_INT32)instr;
   OOC_SSA__AddOpnd((OOC_SSA__Instr)i1, (OOC_SSA__Opnd)i0);
   return;
@@ -625,41 +625,41 @@ OOC_SSA__Result OOC_SSA__InstrDesc_AddResultSubclass(OOC_SSA__Instr instr, OOC_I
   OOC_SSA__Result res;
   OOC_SSA__Result prev;
 
-  i0 = (OOC_INT32)instr;
+  i0 = subclass;
   i1 = _class;
-  i2 = subclass;
-  i1 = (OOC_INT32)OOC_SSA__NewResult((OOC_SSA__Instr)i0, i1, i2);
-  res = (OOC_SSA__Result)i1;
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 21511));
-  i2 = i2==0;
-  if (i2) goto l12;
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 21595));
-  prev = (OOC_SSA__Result)i0;
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 21626));
+  i2 = (OOC_INT32)instr;
+  i0 = (OOC_INT32)OOC_SSA__NewResult((OOC_SSA__Instr)i2, i1, i0);
+  res = (OOC_SSA__Result)i0;
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 21511));
+  i1 = i1==0;
+  if (i1) goto l12;
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 21595));
+  prev = (OOC_SSA__Result)i1;
+  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 21626));
   i2 = i2!=0;
   if (!i2) goto l11;
 l6_loop:
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 21669));
-  prev = (OOC_SSA__Result)i0;
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 21626));
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 21669));
+  prev = (OOC_SSA__Result)i1;
+  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 21626));
   i2 = i2!=0;
   if (i2) goto l6_loop;
 l11:
-  *(OOC_INT32*)(_check_pointer(i0, 21703)) = i1;
+  *(OOC_INT32*)(_check_pointer(i1, 21703)) = i0;
   goto l13;
 l12:
-  *(OOC_INT32*)(_check_pointer(i0, 21547)) = i1;
+  *(OOC_INT32*)(_check_pointer(i2, 21547)) = i0;
 l13:
-  return (OOC_SSA__Result)i1;
+  return (OOC_SSA__Result)i0;
   ;
 }
 
 OOC_SSA__Result OOC_SSA__InstrDesc_AddResult(OOC_SSA__Instr instr, OOC_INT8 _class) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)instr;
-  i1 = _class;
-  i0 = (OOC_INT32)OOC_SSA__InstrDesc_AddResultSubclass((OOC_SSA__Instr)i0, i1, 0);
+  i0 = _class;
+  i1 = (OOC_INT32)instr;
+  i0 = (OOC_INT32)OOC_SSA__InstrDesc_AddResultSubclass((OOC_SSA__Instr)i1, i0, 0);
   return (OOC_SSA__Result)i0;
   ;
 }
@@ -1009,9 +1009,9 @@ void OOC_SSA__InstrDesc_GetOpcodeName(OOC_SSA__Instr instr, OOC_CHAR8 name[], OO
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)instr;
-  i1 = *(OOC_INT8*)((_check_pointer(i0, 26909))+36);
-  i0 = *(OOC_INT8*)((_check_pointer(i0, 26924))+5);
-  OOC_SSA_Opcode__GetName(i1, i0, (void*)(OOC_INT32)name, name_0d);
+  i1 = *(OOC_INT8*)((_check_pointer(i0, 26924))+5);
+  i0 = *(OOC_INT8*)((_check_pointer(i0, 26909))+36);
+  OOC_SSA_Opcode__GetName(i0, i1, (void*)(OOC_INT32)name, name_0d);
   return;
   ;
 }
@@ -1410,14 +1410,14 @@ l4:
 static void OOC_SSA__InitConst(OOC_SSA__Const _const, OOC_INT8 subclass, Object_Boxed__Object value, OOC_SymbolTable__Type stringType) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)_const;
-  i1 = subclass;
-  OOC_SSA__InitInstr((OOC_SSA__Instr)i0, 0, i1);
-  i1 = (OOC_INT32)value;
-  _assert((i1!=(OOC_INT32)0), 127, 34644);
-  *(OOC_INT32*)((_check_pointer(i0, 34675))+44) = i1;
-  i1 = (OOC_INT32)stringType;
-  *(OOC_INT32*)((_check_pointer(i0, 34702))+48) = i1;
+  i0 = subclass;
+  i1 = (OOC_INT32)_const;
+  OOC_SSA__InitInstr((OOC_SSA__Instr)i1, 0, i0);
+  i0 = (OOC_INT32)value;
+  _assert((i0!=(OOC_INT32)0), 127, 34644);
+  *(OOC_INT32*)((_check_pointer(i1, 34675))+44) = i0;
+  i0 = (OOC_INT32)stringType;
+  *(OOC_INT32*)((_check_pointer(i1, 34702))+48) = i0;
   return;
   ;
 }
@@ -1447,11 +1447,11 @@ static void OOC_SSA__InitTypeRef(OOC_SSA__TypeRef typeRef, OOC_SymbolTable__Type
 static void OOC_SSA__InitAddress(OOC_SSA__Address address, OOC_INT8 opcode, OOC_SymbolTable__Declaration decl) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)address;
-  i1 = opcode;
-  OOC_SSA__InitInstr((OOC_SSA__Instr)i0, i1, 9);
-  i1 = (OOC_INT32)decl;
-  *(OOC_INT32*)((_check_pointer(i0, 35273))+44) = i1;
+  i0 = opcode;
+  i1 = (OOC_INT32)address;
+  OOC_SSA__InitInstr((OOC_SSA__Instr)i1, i0, 9);
+  i0 = (OOC_INT32)decl;
+  *(OOC_INT32*)((_check_pointer(i1, 35273))+44) = i0;
   return;
   ;
 }
@@ -1460,9 +1460,9 @@ static OOC_SSA__Address OOC_SSA__NewAddress(OOC_INT8 opcode, OOC_SymbolTable__De
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SSA__Address.baseTypes[0]);
-  i1 = opcode;
-  i2 = (OOC_INT32)decl;
-  OOC_SSA__InitAddress((OOC_SSA__Address)i0, i1, (OOC_SymbolTable__Declaration)i2);
+  i1 = (OOC_INT32)decl;
+  i2 = opcode;
+  OOC_SSA__InitAddress((OOC_SSA__Address)i0, i2, (OOC_SymbolTable__Declaration)i1);
   return (OOC_SSA__Address)i0;
   ;
 }
@@ -1515,9 +1515,9 @@ OOC_SSA__ProcBlock OOC_SSA__NewProcBlock(OOC_IR__Procedure proc) {
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SSA__ProcBlock.baseTypes[0]);
   pb = (OOC_SSA__ProcBlock)i0;
   i1 = (OOC_INT32)proc;
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 36626))+4);
-  i1 = *(OOC_UINT8*)((_check_pointer(i1, 36638))+12);
-  OOC_SSA__InitProcBlock((OOC_SSA__ProcBlock)i0, (OOC_SymbolTable__ProcDecl)i2, i1);
+  i2 = *(OOC_UINT8*)((_check_pointer(i1, 36638))+12);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 36626))+4);
+  OOC_SSA__InitProcBlock((OOC_SSA__ProcBlock)i0, (OOC_SymbolTable__ProcDecl)i1, i2);
   return (OOC_SSA__ProcBlock)i0;
   ;
 }
@@ -1549,9 +1549,9 @@ OOC_SSA__Instr OOC_SSA__ProcBlockDesc_AddInstr(OOC_SSA__ProcBlock pb, OOC_INT8 o
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SSA__Instr.baseTypes[0]);
-  i1 = opcode;
-  i2 = subclass;
-  OOC_SSA__InitInstr((OOC_SSA__Instr)i0, i1, i2);
+  i1 = subclass;
+  i2 = opcode;
+  OOC_SSA__InitInstr((OOC_SSA__Instr)i0, i2, i1);
   i1 = (OOC_INT32)pb;
   OOC_SSA__AppendInstr((OOC_SSA__ProcBlock)i1, (OOC_SSA__Instr)i0);
   return (OOC_SSA__Instr)i0;
@@ -1711,10 +1711,10 @@ OOC_SSA__Const OOC_SSA__ProcBlockDesc_GetConstNil(OOC_SSA__ProcBlock pb) {
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)OOC_SymbolTable_Predef__GetType(16);
-  i1 = (OOC_INT32)OOC_SSA__nil;
   i0 = OOC_SSA_Opcode__TypeToSubclass((OOC_SymbolTable__Type)i0);
-  i2 = (OOC_INT32)pb;
-  i0 = (OOC_INT32)OOC_SSA__ProcBlockDesc_GetConst((OOC_SSA__ProcBlock)i2, (Object_Boxed__Object)i1, i0, (OOC_SymbolTable__Type)(OOC_INT32)0);
+  i1 = (OOC_INT32)pb;
+  i2 = (OOC_INT32)OOC_SSA__nil;
+  i0 = (OOC_INT32)OOC_SSA__ProcBlockDesc_GetConst((OOC_SSA__ProcBlock)i1, (Object_Boxed__Object)i2, i0, (OOC_SymbolTable__Type)(OOC_INT32)0);
   return (OOC_SSA__Const)i0;
   ;
 }
@@ -2147,10 +2147,10 @@ OOC_SSA__Instr OOC_SSA__ProcBlockDesc_FixSubclassInstr(OOC_SSA__ProcBlock pb, OO
   register OOC_INT32 i0,i1,i2;
   OOC_SSA__Result res;
 
-  i0 = (OOC_INT32)pb;
+  i0 = subclass;
   i1 = (OOC_INT32)instr;
-  i2 = subclass;
-  i0 = (OOC_INT32)OOC_SSA__ProcBlockDesc_FixSubclass((OOC_SSA__ProcBlock)i0, (OOC_SSA__Result)i1, i2);
+  i2 = (OOC_INT32)pb;
+  i0 = (OOC_INT32)OOC_SSA__ProcBlockDesc_FixSubclass((OOC_SSA__ProcBlock)i2, (OOC_SSA__Result)i1, i0);
   res = (OOC_SSA__Result)i0;
   return (OOC_SSA__Instr)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 49348)))), &_td_OOC_SSA__InstrDesc, 49348));
   ;

@@ -82,11 +82,11 @@ l17:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 5087)), 0);
   i1 = (((i1-i2)-1)>>12)*4096;
   len = i1;
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 5170));
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5182))+4);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5182))+4);
+  i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 5170));
   i4 = *(OOC_INT32*)((_check_pointer(i0, 5193))+12);
   i5 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 5170));
-  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 5173)))), IO__ByteChannelDesc_Read)),IO__ByteChannelDesc_Read)((IO__ByteChannel)i5, (void*)(_check_pointer(i3, 5189)), (-1), i4, i1);
+  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 5173)))), IO__ByteChannelDesc_Read)),IO__ByteChannelDesc_Read)((IO__ByteChannel)i5, (void*)(_check_pointer(i2, 5189)), (-1), i4, i1);
   d = i1;
   i2 = i1<=0;
   if (i2) goto l20;

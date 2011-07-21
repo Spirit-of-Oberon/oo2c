@@ -180,8 +180,8 @@ void Msg__MsgDesc_GetLText(Msg__Msg msg, Msg__LString text, OOC_LEN text_0d) {
   register OOC_INT32 i0,i1,i2,i3;
   Msg__Attribute attr;
   OOC_CHAR16 attrName[131];
-  OOC_CHAR8 found;
   OOC_INT16 pos;
+  OOC_CHAR8 found;
   OOC_INT16 len;
   OOC_CHAR16 insert[16384];
   OOC_CHAR8 num[48];
@@ -376,10 +376,10 @@ void Msg__MsgDesc_SetIntAttrib(Msg__Msg msg, const Msg__String name__ref, OOC_LE
   OOC_ALLOCATE_VPAR(name,OOC_CHAR8 ,name_0d)
 
   OOC_INITIALIZE_VPAR(name__ref,name,OOC_CHAR8 ,name_0d)
-  i0 = (OOC_INT32)msg;
-  i1 = value;
-  i1 = (OOC_INT32)Msg__NewIntAttrib((void*)(OOC_INT32)name, name_0d, i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 15509)))), Msg__MsgDesc_SetAttribute)),Msg__MsgDesc_SetAttribute)((Msg__Msg)i0, (Msg__Attribute)i1);
+  i0 = value;
+  i0 = (OOC_INT32)Msg__NewIntAttrib((void*)(OOC_INT32)name, name_0d, i0);
+  i1 = (OOC_INT32)msg;
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 15509)))), Msg__MsgDesc_SetAttribute)),Msg__MsgDesc_SetAttribute)((Msg__Msg)i1, (Msg__Attribute)i0);
   return;
   ;
 }
@@ -416,10 +416,10 @@ void Msg__MsgDesc_SetStringAttrib(Msg__Msg msg, const Msg__String name__ref, OOC
   OOC_ALLOCATE_VPAR(name,OOC_CHAR8 ,name_0d)
 
   OOC_INITIALIZE_VPAR(name__ref,name,OOC_CHAR8 ,name_0d)
-  i0 = (OOC_INT32)msg;
-  i1 = (OOC_INT32)value;
-  i1 = (OOC_INT32)Msg__NewStringAttrib((void*)(OOC_INT32)name, name_0d, (Msg__StringPtr)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16164)))), Msg__MsgDesc_SetAttribute)),Msg__MsgDesc_SetAttribute)((Msg__Msg)i0, (Msg__Attribute)i1);
+  i0 = (OOC_INT32)value;
+  i0 = (OOC_INT32)Msg__NewStringAttrib((void*)(OOC_INT32)name, name_0d, (Msg__StringPtr)i0);
+  i1 = (OOC_INT32)msg;
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 16164)))), Msg__MsgDesc_SetAttribute)),Msg__MsgDesc_SetAttribute)((Msg__Msg)i1, (Msg__Attribute)i0);
   return;
   ;
 }
@@ -454,10 +454,10 @@ void Msg__MsgDesc_SetLStringAttrib(Msg__Msg msg, const Msg__String name__ref, OO
   OOC_ALLOCATE_VPAR(name,OOC_CHAR8 ,name_0d)
 
   OOC_INITIALIZE_VPAR(name__ref,name,OOC_CHAR8 ,name_0d)
-  i0 = (OOC_INT32)msg;
-  i1 = (OOC_INT32)value;
-  i1 = (OOC_INT32)Msg__NewLStringAttrib((void*)(OOC_INT32)name, name_0d, (Msg__LStringPtr)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16774)))), Msg__MsgDesc_SetAttribute)),Msg__MsgDesc_SetAttribute)((Msg__Msg)i0, (Msg__Attribute)i1);
+  i0 = (OOC_INT32)value;
+  i0 = (OOC_INT32)Msg__NewLStringAttrib((void*)(OOC_INT32)name, name_0d, (Msg__LStringPtr)i0);
+  i1 = (OOC_INT32)msg;
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 16774)))), Msg__MsgDesc_SetAttribute)),Msg__MsgDesc_SetAttribute)((Msg__Msg)i1, (Msg__Attribute)i0);
   return;
   ;
 }
@@ -492,10 +492,10 @@ void Msg__MsgDesc_SetMsgAttrib(Msg__Msg msg, const Msg__String name__ref, OOC_LE
   OOC_ALLOCATE_VPAR(name,OOC_CHAR8 ,name_0d)
 
   OOC_INITIALIZE_VPAR(name__ref,name,OOC_CHAR8 ,name_0d)
-  i0 = (OOC_INT32)msg;
-  i1 = (OOC_INT32)value;
-  i1 = (OOC_INT32)Msg__NewMsgAttrib((void*)(OOC_INT32)name, name_0d, (Msg__Msg)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 17350)))), Msg__MsgDesc_SetAttribute)),Msg__MsgDesc_SetAttribute)((Msg__Msg)i0, (Msg__Attribute)i1);
+  i0 = (OOC_INT32)value;
+  i0 = (OOC_INT32)Msg__NewMsgAttrib((void*)(OOC_INT32)name, name_0d, (Msg__Msg)i0);
+  i1 = (OOC_INT32)msg;
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17350)))), Msg__MsgDesc_SetAttribute)),Msg__MsgDesc_SetAttribute)((Msg__Msg)i1, (Msg__Attribute)i0);
   return;
   ;
 }

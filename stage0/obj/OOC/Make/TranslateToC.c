@@ -187,22 +187,22 @@ l14:
 static void OOC_Make_TranslateToC__WriteHeaderFile(OOC_C_DeclWriter__Writer w, OOC_Repository__Module m, OOC_SymbolTable__Module symTab, ADT_Dictionary_AddressKey__Dictionary exports, OOC_C_Naming__QualTypeData qtdData) {
   register OOC_INT32 i0,i1,i2,i3;
 
-  i0 = (OOC_INT32)w;
-  i1 = (OOC_INT32)m;
-  OOC_Make_TranslateToC__WriteModuleName((OOC_C_DeclWriter__Writer)i0, "#ifndef _MODULE_", 17, (OOC_Repository__Module)i1, "_", 2, 1u);
-  OOC_Make_TranslateToC__WriteModuleName((OOC_C_DeclWriter__Writer)i0, "#define _MODULE_", 17, (OOC_Repository__Module)i1, "_", 2, 1u);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5244)))), OOC_C_DeclWriter__WriterDesc_WriteLn)),OOC_C_DeclWriter__WriterDesc_WriteLn)((OOC_C_DeclWriter__Writer)i0);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5364)))), OOC_C_DeclWriter__WriterDesc_WriteString)),OOC_C_DeclWriter__WriterDesc_WriteString)((OOC_C_DeclWriter__Writer)i0, "#include <__typemap.h>", 23);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5411)))), OOC_C_DeclWriter__WriterDesc_WriteLn)),OOC_C_DeclWriter__WriterDesc_WriteLn)((OOC_C_DeclWriter__Writer)i0);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5546)))), OOC_C_DeclWriter__WriterDesc_WriteString)),OOC_C_DeclWriter__WriterDesc_WriteString)((OOC_C_DeclWriter__Writer)i0, "#include <RT0.oh>", 18);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5630)))), OOC_C_DeclWriter__WriterDesc_WriteLn)),OOC_C_DeclWriter__WriterDesc_WriteLn)((OOC_C_DeclWriter__Writer)i0);
+  i0 = (OOC_INT32)m;
+  i1 = (OOC_INT32)w;
+  OOC_Make_TranslateToC__WriteModuleName((OOC_C_DeclWriter__Writer)i1, "#ifndef _MODULE_", 17, (OOC_Repository__Module)i0, "_", 2, 1u);
+  OOC_Make_TranslateToC__WriteModuleName((OOC_C_DeclWriter__Writer)i1, "#define _MODULE_", 17, (OOC_Repository__Module)i0, "_", 2, 1u);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5244)))), OOC_C_DeclWriter__WriterDesc_WriteLn)),OOC_C_DeclWriter__WriterDesc_WriteLn)((OOC_C_DeclWriter__Writer)i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5364)))), OOC_C_DeclWriter__WriterDesc_WriteString)),OOC_C_DeclWriter__WriterDesc_WriteString)((OOC_C_DeclWriter__Writer)i1, "#include <__typemap.h>", 23);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5411)))), OOC_C_DeclWriter__WriterDesc_WriteLn)),OOC_C_DeclWriter__WriterDesc_WriteLn)((OOC_C_DeclWriter__Writer)i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5546)))), OOC_C_DeclWriter__WriterDesc_WriteString)),OOC_C_DeclWriter__WriterDesc_WriteString)((OOC_C_DeclWriter__Writer)i1, "#include <RT0.oh>", 18);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5630)))), OOC_C_DeclWriter__WriterDesc_WriteLn)),OOC_C_DeclWriter__WriterDesc_WriteLn)((OOC_C_DeclWriter__Writer)i1);
   i2 = (OOC_INT32)symTab;
   i3 = (OOC_INT32)exports;
-  OOC_C_ConvertDecl__ConvertSymTab((OOC_C_DeclWriter__Writer)i0, (OOC_Repository__Module)i1, (OOC_SymbolTable__Module)i2, (ADT_Dictionary_AddressKey__Dictionary)i3, 1u);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5712)))), OOC_C_DeclWriter__WriterDesc_WriteDeclarationList)),OOC_C_DeclWriter__WriterDesc_WriteDeclarationList)((OOC_C_DeclWriter__Writer)i0);
+  OOC_C_ConvertDecl__ConvertSymTab((OOC_C_DeclWriter__Writer)i1, (OOC_Repository__Module)i0, (OOC_SymbolTable__Module)i2, (ADT_Dictionary_AddressKey__Dictionary)i3, 1u);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5712)))), OOC_C_DeclWriter__WriterDesc_WriteDeclarationList)),OOC_C_DeclWriter__WriterDesc_WriteDeclarationList)((OOC_C_DeclWriter__Writer)i1);
   i3 = (OOC_INT32)qtdData;
-  OOC_C_RuntimeData__Write((OOC_C_DeclWriter__Writer)i0, (OOC_SymbolTable__Module)i2, (OOC_C_Naming__QualTypeData)i3, 1u);
-  OOC_Make_TranslateToC__WriteModuleName((OOC_C_DeclWriter__Writer)i0, "#endif /* _MODULE_", 19, (OOC_Repository__Module)i1, "_ */", 5, 1u);
+  OOC_C_RuntimeData__Write((OOC_C_DeclWriter__Writer)i1, (OOC_SymbolTable__Module)i2, (OOC_C_Naming__QualTypeData)i3, 1u);
+  OOC_Make_TranslateToC__WriteModuleName((OOC_C_DeclWriter__Writer)i1, "#endif /* _MODULE_", 19, (OOC_Repository__Module)i0, "_ */", 5, 1u);
   return;
   ;
 }
@@ -276,11 +276,11 @@ l11:
 }
 
 OOC_Error__List OOC_Make_TranslateToC__Run(OOC_Repository__Module m, Object__String libraryName, OOC_CHAR8 analysisOnly, OOC_SymbolTable_Uses__Uses uses, OOC_CHAR8 writeAST, OOC_CHAR8 writeIR, OOC_Make_TranslateToC__Translator translator) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
-  OOC_AST__Node ast;
-  OOC_SymbolTable__Module symTab;
-  OOC_Config_Pragmas__History pragmaHistory;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5;
   OOC_Error__List errList;
+  OOC_Config_Pragmas__History pragmaHistory;
+  OOC_SymbolTable__Module symTab;
+  OOC_AST__Node ast;
   OOC_IR__Module module;
   ADT_Dictionary_AddressKey__Dictionary exports;
   OOC_C_DeclWriter__Writer wd;
@@ -354,10 +354,10 @@ l6:
     }
 
 
-  i0 = (OOC_INT32)m;
+  i0 = (OOC_INT32)uses;
   i1 = (OOC_INT32)libraryName;
-  i2 = (OOC_INT32)uses;
-  OOC_Auxiliary_ParseModule__ParseModule((OOC_Repository__Module)i0, 1u, 1u, 0u, 0u, (Object__String)i1, (OOC_SymbolTable_Uses__Uses)i2, (void*)(OOC_INT32)&ast, (void*)(OOC_INT32)&symTab, (void*)(OOC_INT32)&pragmaHistory, (void*)(OOC_INT32)&errList);
+  i2 = (OOC_INT32)m;
+  OOC_Auxiliary_ParseModule__ParseModule((OOC_Repository__Module)i2, 1u, 1u, 0u, 0u, (Object__String)i1, (OOC_SymbolTable_Uses__Uses)i0, (void*)(OOC_INT32)&ast, (void*)(OOC_INT32)&symTab, (void*)(OOC_INT32)&pragmaHistory, (void*)(OOC_INT32)&errList);
   i1 = (OOC_INT32)errList;
   i1 = OOC_Error__ListDesc_NoErrors((OOC_Error__List)i1);
   if (!i1) goto l33;
@@ -367,42 +367,43 @@ l6:
   i3 = (OOC_INT32)IO_StdChannels__stdout;
   OOC_AST_XML__Write((IO__ByteChannel)i3, (OOC_AST__Module)(_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9273)))), &_td_OOC_AST__ModuleDesc, 9273)));
 l5:
-  i1 = (OOC_INT32)ast;
+  i1 = (OOC_INT32)OOC_IR_ConstFold__NewConstFold();
   i3 = (OOC_INT32)symTab;
   i4 = (OOC_INT32)pragmaHistory;
   i5 = (OOC_INT32)errList;
-  i6 = (OOC_INT32)OOC_IR_ConstFold__NewConstFold();
-  i2 = (OOC_INT32)OOC_IR__NewBuilder((OOC_SymbolTable__Module)i3, (OOC_SymbolTable_Uses__Uses)i2, (OOC_Config_Pragmas__History)i4, (OOC_Error__List)i5, (OOC_IR__ConstFold)i6);
-  i1 = (OOC_INT32)OOC_AST_CreateIR__CreateIR((OOC_AST__Module)(_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9337)))), &_td_OOC_AST__ModuleDesc, 9337)), (OOC_SymbolTable__Module)i3, (OOC_IR__Builder)i2);
-  module = (OOC_IR__Module)i1;
-  i2 = (OOC_INT32)errList;
-  i3 = OOC_Error__ListDesc_NoErrors((OOC_Error__List)i2);
+  i0 = (OOC_INT32)OOC_IR__NewBuilder((OOC_SymbolTable__Module)i3, (OOC_SymbolTable_Uses__Uses)i0, (OOC_Config_Pragmas__History)i4, (OOC_Error__List)i5, (OOC_IR__ConstFold)i1);
+  i1 = (OOC_INT32)ast;
+  i3 = (OOC_INT32)symTab;
+  i0 = (OOC_INT32)OOC_AST_CreateIR__CreateIR((OOC_AST__Module)(_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9337)))), &_td_OOC_AST__ModuleDesc, 9337)), (OOC_SymbolTable__Module)i3, (OOC_IR__Builder)i0);
+  module = (OOC_IR__Module)i0;
+  i1 = (OOC_INT32)errList;
+  i3 = OOC_Error__ListDesc_NoErrors((OOC_Error__List)i1);
   if (!i3) goto l8;
   i3 = (OOC_INT32)pragmaHistory;
   i4 = (OOC_INT32)symTab;
-  OOC_IR_CheckUses__CheckUses((OOC_IR__Module)i1, (OOC_SymbolTable__Module)i4, (OOC_Config_Pragmas__History)i3, (OOC_Error__List)i2);
+  OOC_IR_CheckUses__CheckUses((OOC_IR__Module)i0, (OOC_SymbolTable__Module)i4, (OOC_Config_Pragmas__History)i3, (OOC_Error__List)i1);
 l8:
-  i2 = writeIR;
-  if (!i2) goto l11;
-  i2 = (OOC_INT32)IO_StdChannels__stdout;
-  OOC_IR_XML__Write((IO__ByteChannel)i2, (OOC_IR__Module)i1);
+  i1 = writeIR;
+  if (!i1) goto l11;
+  i1 = (OOC_INT32)IO_StdChannels__stdout;
+  OOC_IR_XML__Write((IO__ByteChannel)i1, (OOC_IR__Module)i0);
 l11:
-  i1 = (OOC_INT32)symTab;
-  i1 = (OOC_INT32)OOC_SymbolTable_Exports__GetExports((OOC_SymbolTable__Module)i1, 1u);
-  exports = (ADT_Dictionary_AddressKey__Dictionary)i1;
-  i1 = (OOC_INT32)errList;
-  i1 = OOC_Error__ListDesc_NoErrors((OOC_Error__List)i1);
-  if (i1) goto l14;
-  i1=0u;
+  i0 = (OOC_INT32)symTab;
+  i0 = (OOC_INT32)OOC_SymbolTable_Exports__GetExports((OOC_SymbolTable__Module)i0, 1u);
+  exports = (ADT_Dictionary_AddressKey__Dictionary)i0;
+  i0 = (OOC_INT32)errList;
+  i0 = OOC_Error__ListDesc_NoErrors((OOC_Error__List)i0);
+  if (i0) goto l14;
+  i0=0u;
   goto l16;
 l14:
-  i1 = analysisOnly;
-  i1 = !i1;
+  i0 = analysisOnly;
+  i0 = !i0;
   
 l16:
-  if (!i1) goto l32;
-  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10009)))), OOC_Repository__ModuleDesc_GetOutputChannel)),OOC_Repository__ModuleDesc_GetOutputChannel)((OOC_Repository__Module)i0, 12, 1u);
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10095)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, 12, 0u);
+  if (!i0) goto l32;
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 10095)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i2, 12, 0u);
+  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 10009)))), OOC_Repository__ModuleDesc_GetOutputChannel)),OOC_Repository__ModuleDesc_GetOutputChannel)((OOC_Repository__Module)i2, 12, 1u);
   i0 = (OOC_INT32)OOC_C_DeclWriter__NewWriter((IO__ByteChannel)i1, (URI__HierarchicalURI)i0);
   wd = (OOC_C_DeclWriter__Writer)i0;
   i0 = (OOC_INT32)OOC_Make_TranslateToC__Run_WriteFile(13);
@@ -430,11 +431,11 @@ l25:
   if (!i0) goto l28;
   i0 = (OOC_INT32)translator;
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10454))+16);
-  i1 = (OOC_INT32)symTab;
-  i2 = (OOC_INT32)exports;
+  i1 = (OOC_INT32)exports;
+  i2 = (OOC_INT32)symTab;
   i3 = (OOC_INT32)m;
   i4 = (OOC_INT32)wd;
-  OOC_Make_TranslateToC__WriteDeclFile((OOC_C_DeclWriter__Writer)i4, (OOC_Repository__Module)i3, (OOC_SymbolTable__Module)i1, (ADT_Dictionary_AddressKey__Dictionary)i2, (OOC_C_Naming__QualTypeData)i0);
+  OOC_Make_TranslateToC__WriteDeclFile((OOC_C_DeclWriter__Writer)i4, (OOC_Repository__Module)i3, (OOC_SymbolTable__Module)i2, (ADT_Dictionary_AddressKey__Dictionary)i1, (OOC_C_Naming__QualTypeData)i0);
 l28:
   i0 = (OOC_INT32)errList;
   i1 = OOC_Error__ListDesc_NoErrors((OOC_Error__List)i0);

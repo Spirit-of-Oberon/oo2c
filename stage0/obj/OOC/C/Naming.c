@@ -415,16 +415,16 @@ Object__String OOC_C_Naming__NameOfTypeDescriptor(OOC_SymbolTable__Type type, OO
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8649))+24);
   i1 = i1==0;
   if (i1) goto l9;
-  i1 = (OOC_INT32)OOC_C_Naming__tdPrefix;
   i0 = (OOC_INT32)OOC_C_Naming__NameOfType((OOC_SymbolTable__Type)i0);
+  i1 = (OOC_INT32)OOC_C_Naming__tdPrefix;
   i0 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i1, (Object__String)i0);
   return (Object__String)i0;
   goto l62;
 l9:
-  i1 = (OOC_INT32)OOC_C_Naming__tdPrefix;
-  i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8735)))), OOC_SymbolTable__ItemDesc_Module)),OOC_SymbolTable__ItemDesc_Module)((OOC_SymbolTable__Item)i0);
-  i2 = (OOC_INT32)OOC_C_Naming__NameOfDeclaration((OOC_SymbolTable__Declaration)i2);
-  i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i1, (Object__String)i2);
+  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8735)))), OOC_SymbolTable__ItemDesc_Module)),OOC_SymbolTable__ItemDesc_Module)((OOC_SymbolTable__Item)i0);
+  i1 = (OOC_INT32)OOC_C_Naming__NameOfDeclaration((OOC_SymbolTable__Declaration)i1);
+  i2 = (OOC_INT32)OOC_C_Naming__tdPrefix;
+  i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i2, (Object__String)i1);
   string = (Object__String)i1;
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8780))+20);
   i0 = *(OOC_INT32*)(_check_pointer(i0, 8790));
@@ -597,10 +597,10 @@ static void OOC_C_Naming__Init(void) {
 
       OOC_INITIALIZE_VPAR(str__ref,str,OOC_CHAR8 ,str_0d)
       i0 = (OOC_INT32)Object__NewLatin1((void*)(OOC_INT32)str, str_0d);
-      i1 = (OOC_INT32)OOC_C_Naming__keywords;
-      i2 = (OOC_INT32)OOC_C_Naming__rwPrefix;
-      i2 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i2, (Object__String)i0);
-      ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i1, (Object__Object)i0, (Object__Object)i2);
+      i1 = (OOC_INT32)OOC_C_Naming__rwPrefix;
+      i1 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i1, (Object__String)i0);
+      i2 = (OOC_INT32)OOC_C_Naming__keywords;
+      ADT_Dictionary__DictionaryDesc_Set((ADT_Dictionary__Dictionary)i2, (Object__Object)i0, (Object__Object)i1);
       return;
       ;
     }

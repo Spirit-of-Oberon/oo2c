@@ -199,9 +199,9 @@ XML_DTD__EntityRef XML_DTD__BuilderDesc_NewEntityRef(XML_DTD__Builder b, XML_Uni
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__EntityRef.baseTypes[0]);
-  i1 = (OOC_INT32)name;
-  i2 = (OOC_INT32)entity;
-  XML_DTD__InitEntityRef((XML_DTD__EntityRef)i0, (XML_UnicodeBuffer__CharArray)i1, (XML_DTD__Entity)i2);
+  i1 = (OOC_INT32)entity;
+  i2 = (OOC_INT32)name;
+  XML_DTD__InitEntityRef((XML_DTD__EntityRef)i0, (XML_UnicodeBuffer__CharArray)i2, (XML_DTD__Entity)i1);
   return (XML_DTD__EntityRef)i0;
   ;
 }
@@ -291,8 +291,8 @@ l11:
   if (i2) goto l14;
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 19045))+4);
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 19045))+4);
-  i3 = OOC_ARRAY_LENGTH((_check_pointer(i3, 19051)), 0);
-  i2 = LongStrings__Length((void*)(_check_pointer(i2, 19051)), i3);
+  i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 19051)), 0);
+  i2 = LongStrings__Length((void*)(_check_pointer(i3, 19051)), i2);
   i1 = i1+(i2+2);
   len = i1;
   
@@ -392,10 +392,10 @@ l3_loop:
 l8:
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20888))+4);
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20888))+4);
-      i3 = *(OOC_INT32*)((_check_pointer(i0, 20900))+8);
-      i0 = *(OOC_INT32*)((_check_pointer(i0, 20916))+12);
-      i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 20896)), 0);
-      XML_DTD__AttValueDesc_FlattenValue_Append_Copy((void*)(_check_pointer(i1, 20896)), i2, i3, i0);
+      i3 = *(OOC_INT32*)((_check_pointer(i0, 20916))+12);
+      i0 = *(OOC_INT32*)((_check_pointer(i0, 20900))+8);
+      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 20896)), 0);
+      XML_DTD__AttValueDesc_FlattenValue_Append_Copy((void*)(_check_pointer(i2, 20896)), i1, i0, i3);
       goto l15;
 l10:
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20631))+8);
@@ -403,14 +403,14 @@ l10:
       if (i1) goto l13;
       XML_DTD__AttValueDesc_FlattenValue_Append_Copy(((OOC_CHAR16[]){38,0}), 2, 0, 1);
       i0 = (OOC_INT32)f;
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20757))+4);
+      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20790))+4);
+      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20790))+4);
+      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 20796)), 0);
+      i1 = LongStrings__Length((void*)(_check_pointer(i2, 20796)), i1);
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20757))+4);
-      i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20790))+4);
-      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20790))+4);
-      i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 20796)), 0);
-      i0 = LongStrings__Length((void*)(_check_pointer(i3, 20796)), i0);
+      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20757))+4);
       i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 20763)), 0);
-      XML_DTD__AttValueDesc_FlattenValue_Append_Copy((void*)(_check_pointer(i1, 20763)), i2, 0, i0);
+      XML_DTD__AttValueDesc_FlattenValue_Append_Copy((void*)(_check_pointer(i0, 20763)), i2, 0, i1);
       XML_DTD__AttValueDesc_FlattenValue_Append_Copy(((OOC_CHAR16[]){59,0}), 2, 0, 1);
       goto l15;
 l13:
@@ -587,21 +587,21 @@ l17:
 void XML_DTD__InitAttrDecl(XML_DTD__AttrDecl attrDecl, XML_UnicodeBuffer__CharArray elementName, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_DTD__Enumeration _enum, OOC_INT8 _default, XML_DTD__AttValue defaultValue, OOC_CHAR8 externalMarkupDecl) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)attrDecl;
-  i1 = (OOC_INT32)name;
-  XML_DTD__InitDeclaration((XML_DTD__Declaration)i0, (XML_UnicodeBuffer__CharArray)i1);
-  i1 = (OOC_INT32)elementName;
-  *(OOC_INT32*)((_check_pointer(i0, 23904))+8) = i1;
-  i1 = type;
-  *(OOC_INT8*)((_check_pointer(i0, 23946))+12) = i1;
-  i1 = externalMarkupDecl;
-  *(OOC_UINT8*)((_check_pointer(i0, 23974))+13) = i1;
-  i1 = (OOC_INT32)_enum;
-  *(OOC_INT32*)((_check_pointer(i0, 24030))+16) = i1;
-  i1 = _default;
-  *(OOC_INT8*)((_check_pointer(i0, 24065))+20) = i1;
-  i1 = (OOC_INT32)defaultValue;
-  *(OOC_INT32*)((_check_pointer(i0, 24099))+24) = i1;
+  i0 = (OOC_INT32)name;
+  i1 = (OOC_INT32)attrDecl;
+  XML_DTD__InitDeclaration((XML_DTD__Declaration)i1, (XML_UnicodeBuffer__CharArray)i0);
+  i0 = (OOC_INT32)elementName;
+  *(OOC_INT32*)((_check_pointer(i1, 23904))+8) = i0;
+  i0 = type;
+  *(OOC_INT8*)((_check_pointer(i1, 23946))+12) = i0;
+  i0 = externalMarkupDecl;
+  *(OOC_UINT8*)((_check_pointer(i1, 23974))+13) = i0;
+  i0 = (OOC_INT32)_enum;
+  *(OOC_INT32*)((_check_pointer(i1, 24030))+16) = i0;
+  i0 = _default;
+  *(OOC_INT8*)((_check_pointer(i1, 24065))+20) = i0;
+  i0 = (OOC_INT32)defaultValue;
+  *(OOC_INT32*)((_check_pointer(i1, 24099))+24) = i0;
   return;
   ;
 }
@@ -610,14 +610,14 @@ XML_DTD__AttrDecl XML_DTD__BuilderDesc_NewAttrDecl(XML_DTD__Builder b, XML_Unico
   register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__AttrDecl.baseTypes[0]);
-  i1 = (OOC_INT32)elementName;
-  i2 = (OOC_INT32)name;
-  i3 = type;
+  i1 = externalMarkupDecl;
+  i2 = (OOC_INT32)defaultValue;
+  i3 = _default;
   i4 = (OOC_INT32)_enum;
-  i5 = _default;
-  i6 = (OOC_INT32)defaultValue;
-  i7 = externalMarkupDecl;
-  XML_DTD__InitAttrDecl((XML_DTD__AttrDecl)i0, (XML_UnicodeBuffer__CharArray)i1, (XML_UnicodeBuffer__CharArray)i2, i3, (XML_DTD__Enumeration)i4, i5, (XML_DTD__AttValue)i6, i7);
+  i5 = type;
+  i6 = (OOC_INT32)name;
+  i7 = (OOC_INT32)elementName;
+  XML_DTD__InitAttrDecl((XML_DTD__AttrDecl)i0, (XML_UnicodeBuffer__CharArray)i7, (XML_UnicodeBuffer__CharArray)i6, i5, (XML_DTD__Enumeration)i4, i3, (XML_DTD__AttValue)i2, i1);
   return (XML_DTD__AttrDecl)i0;
   ;
 }
@@ -664,9 +664,9 @@ l3_loop:
   attrDecl = (XML_DTD__AttrDecl)i1;
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 25306));
   ptr = (XML_DTD__Declaration)i2;
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25336))+12);
-  i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 25369))+8);
-  i3 = (OOC_INT32)XML_DTD__NamespaceDesc_Get((XML_DTD__Namespace)i3, (XML_UnicodeBuffer__CharArray)i4);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 25369))+8);
+  i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25336))+12);
+  i3 = (OOC_INT32)XML_DTD__NamespaceDesc_Get((XML_DTD__Namespace)i4, (XML_UnicodeBuffer__CharArray)i3);
   decl = (XML_DTD__Declaration)i3;
   i4 = i3==(OOC_INT32)0;
   if (i4) goto l21;
@@ -716,17 +716,17 @@ l27:
 static void XML_DTD__InitEntity(XML_DTD__Entity ent, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_UnicodeBuffer__CharArray entityValue, OOC_CHAR8 externalMarkupDecl) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)ent;
-  i1 = (OOC_INT32)name;
-  XML_DTD__InitDeclaration((XML_DTD__Declaration)i0, (XML_UnicodeBuffer__CharArray)i1);
-  i1 = type;
-  *(OOC_INT8*)((_check_pointer(i0, 26383))+8) = i1;
-  i1 = externalMarkupDecl;
-  *(OOC_UINT8*)((_check_pointer(i0, 26406))+16) = i1;
-  i1 = (OOC_INT32)entityValue;
-  *(OOC_INT32*)((_check_pointer(i0, 26457))+12) = i1;
-  *(OOC_UINT8*)((_check_pointer(i0, 26494))+17) = 0u;
-  *(OOC_INT32*)((_check_pointer(i0, 26523))+20) = (OOC_INT32)0;
+  i0 = (OOC_INT32)name;
+  i1 = (OOC_INT32)ent;
+  XML_DTD__InitDeclaration((XML_DTD__Declaration)i1, (XML_UnicodeBuffer__CharArray)i0);
+  i0 = type;
+  *(OOC_INT8*)((_check_pointer(i1, 26383))+8) = i0;
+  i0 = externalMarkupDecl;
+  *(OOC_UINT8*)((_check_pointer(i1, 26406))+16) = i0;
+  i0 = (OOC_INT32)entityValue;
+  *(OOC_INT32*)((_check_pointer(i1, 26457))+12) = i0;
+  *(OOC_UINT8*)((_check_pointer(i1, 26494))+17) = 0u;
+  *(OOC_INT32*)((_check_pointer(i1, 26523))+20) = (OOC_INT32)0;
   return;
   ;
 }
@@ -760,12 +760,12 @@ OOC_CHAR8 XML_DTD__EntityDesc_IsDocumentEntity(XML_DTD__Entity entity) {
 static void XML_DTD__InitInternalEntity(XML_DTD__InternalEntity ent, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_UnicodeBuffer__CharArray entityValue, OOC_CHAR8 externalMarkupDecl) {
   register OOC_INT32 i0,i1,i2,i3,i4;
 
-  i0 = (OOC_INT32)ent;
-  i1 = (OOC_INT32)name;
+  i0 = externalMarkupDecl;
+  i1 = (OOC_INT32)entityValue;
   i2 = type;
-  i3 = (OOC_INT32)entityValue;
-  i4 = externalMarkupDecl;
-  XML_DTD__InitEntity((XML_DTD__Entity)i0, (XML_UnicodeBuffer__CharArray)i1, i2, (XML_UnicodeBuffer__CharArray)i3, i4);
+  i3 = (OOC_INT32)name;
+  i4 = (OOC_INT32)ent;
+  XML_DTD__InitEntity((XML_DTD__Entity)i4, (XML_UnicodeBuffer__CharArray)i3, i2, (XML_UnicodeBuffer__CharArray)i1, i0);
   return;
   ;
 }
@@ -774,11 +774,11 @@ XML_DTD__InternalEntity XML_DTD__BuilderDesc_NewInternalEntity(XML_DTD__Builder 
   register OOC_INT32 i0,i1,i2,i3,i4;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__InternalEntity.baseTypes[0]);
-  i1 = (OOC_INT32)name;
-  i2 = type;
-  i3 = (OOC_INT32)entityValue;
-  i4 = externalMarkupDecl;
-  XML_DTD__InitInternalEntity((XML_DTD__InternalEntity)i0, (XML_UnicodeBuffer__CharArray)i1, i2, (XML_UnicodeBuffer__CharArray)i3, i4);
+  i1 = externalMarkupDecl;
+  i2 = (OOC_INT32)entityValue;
+  i3 = type;
+  i4 = (OOC_INT32)name;
+  XML_DTD__InitInternalEntity((XML_DTD__InternalEntity)i0, (XML_UnicodeBuffer__CharArray)i4, i3, (XML_UnicodeBuffer__CharArray)i2, i1);
   return (XML_DTD__InternalEntity)i0;
   ;
 }
@@ -863,22 +863,22 @@ l32:
 static void XML_DTD__InitExternalEntity(XML_DTD__ExternalEntity ent, XML_UnicodeBuffer__CharArray name, OOC_INT8 type, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, XML_UnicodeBuffer__CharArray ndata, URI__URI baseURI, OOC_CHAR8 externalMarkupDecl) {
   register OOC_INT32 i0,i1,i2,i3;
 
-  i0 = (OOC_INT32)ent;
-  i1 = (OOC_INT32)name;
-  i2 = type;
-  i3 = externalMarkupDecl;
-  XML_DTD__InitEntity((XML_DTD__Entity)i0, (XML_UnicodeBuffer__CharArray)i1, i2, (XML_UnicodeBuffer__CharArray)(OOC_INT32)0, i3);
-  i1 = (OOC_INT32)_public;
-  *(OOC_INT32*)((_check_pointer(i0, 28887))+24) = i1;
-  i1 = (OOC_INT32)system;
-  *(OOC_INT32*)((_check_pointer(i0, 28914))+28) = i1;
-  i1 = (OOC_INT32)baseURI;
-  *(OOC_INT32*)((_check_pointer(i0, 28941))+36) = i1;
-  i1 = (OOC_INT32)ndata;
-  *(OOC_INT32*)((_check_pointer(i0, 28970))+32) = i1;
-  *(OOC_INT32*)((_check_pointer(i0, 28995))+40) = (OOC_INT32)0;
-  *(OOC_INT32*)((_check_pointer(i0, 29020))+44) = (OOC_INT32)0;
-  *(OOC_INT8*)((_check_pointer(i0, 29046))+48) = 3;
+  i0 = externalMarkupDecl;
+  i1 = type;
+  i2 = (OOC_INT32)name;
+  i3 = (OOC_INT32)ent;
+  XML_DTD__InitEntity((XML_DTD__Entity)i3, (XML_UnicodeBuffer__CharArray)i2, i1, (XML_UnicodeBuffer__CharArray)(OOC_INT32)0, i0);
+  i0 = (OOC_INT32)_public;
+  *(OOC_INT32*)((_check_pointer(i3, 28887))+24) = i0;
+  i0 = (OOC_INT32)system;
+  *(OOC_INT32*)((_check_pointer(i3, 28914))+28) = i0;
+  i0 = (OOC_INT32)baseURI;
+  *(OOC_INT32*)((_check_pointer(i3, 28941))+36) = i0;
+  i0 = (OOC_INT32)ndata;
+  *(OOC_INT32*)((_check_pointer(i3, 28970))+32) = i0;
+  *(OOC_INT32*)((_check_pointer(i3, 28995))+40) = (OOC_INT32)0;
+  *(OOC_INT32*)((_check_pointer(i3, 29020))+44) = (OOC_INT32)0;
+  *(OOC_INT8*)((_check_pointer(i3, 29046))+48) = 3;
   return;
   ;
 }
@@ -887,14 +887,14 @@ XML_DTD__ExternalEntity XML_DTD__BuilderDesc_NewExternalEntity(XML_DTD__Builder 
   register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__ExternalEntity.baseTypes[0]);
-  i1 = (OOC_INT32)name;
-  i2 = type;
-  i3 = (OOC_INT32)_public;
+  i1 = externalMarkupDecl;
+  i2 = (OOC_INT32)baseURI;
+  i3 = (OOC_INT32)ndata;
   i4 = (OOC_INT32)system;
-  i5 = (OOC_INT32)ndata;
-  i6 = (OOC_INT32)baseURI;
-  i7 = externalMarkupDecl;
-  XML_DTD__InitExternalEntity((XML_DTD__ExternalEntity)i0, (XML_UnicodeBuffer__CharArray)i1, i2, (XML_UnicodeBuffer__CharArray)i3, (XML_UnicodeBuffer__CharArray)i4, (XML_UnicodeBuffer__CharArray)i5, (URI__URI)i6, i7);
+  i5 = (OOC_INT32)_public;
+  i6 = type;
+  i7 = (OOC_INT32)name;
+  XML_DTD__InitExternalEntity((XML_DTD__ExternalEntity)i0, (XML_UnicodeBuffer__CharArray)i7, i6, (XML_UnicodeBuffer__CharArray)i5, (XML_UnicodeBuffer__CharArray)i4, (XML_UnicodeBuffer__CharArray)i3, (URI__URI)i2, i1);
   return (XML_DTD__ExternalEntity)i0;
   ;
 }
@@ -952,10 +952,10 @@ XML_DTD__ExternalEntity XML_DTD__BuilderDesc_NewExternalDTD(XML_DTD__Builder b, 
   register OOC_INT32 i0,i1,i2,i3;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__ExternalEntity.baseTypes[0]);
-  i1 = (OOC_INT32)_public;
+  i1 = (OOC_INT32)baseURI;
   i2 = (OOC_INT32)system;
-  i3 = (OOC_INT32)baseURI;
-  XML_DTD__InitExternalEntity((XML_DTD__ExternalEntity)i0, (XML_UnicodeBuffer__CharArray)(OOC_INT32)0, 6, (XML_UnicodeBuffer__CharArray)i1, (XML_UnicodeBuffer__CharArray)i2, (XML_UnicodeBuffer__CharArray)(OOC_INT32)0, (URI__URI)i3, 0u);
+  i3 = (OOC_INT32)_public;
+  XML_DTD__InitExternalEntity((XML_DTD__ExternalEntity)i0, (XML_UnicodeBuffer__CharArray)(OOC_INT32)0, 6, (XML_UnicodeBuffer__CharArray)i3, (XML_UnicodeBuffer__CharArray)i2, (XML_UnicodeBuffer__CharArray)(OOC_INT32)0, (URI__URI)i1, 0u);
   return (XML_DTD__ExternalEntity)i0;
   ;
 }
@@ -976,15 +976,15 @@ XML_DTD__ExternalEntity XML_DTD__BuilderDesc_NewDocumentEntity(XML_DTD__Builder 
 static void XML_DTD__InitNotation(XML_DTD__Notation notation, XML_UnicodeBuffer__CharArray name, XML_UnicodeBuffer__CharArray _public, XML_UnicodeBuffer__CharArray system, URI__URI baseURI) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)notation;
-  i1 = (OOC_INT32)name;
-  XML_DTD__InitDeclaration((XML_DTD__Declaration)i0, (XML_UnicodeBuffer__CharArray)i1);
-  i1 = (OOC_INT32)_public;
-  *(OOC_INT32*)((_check_pointer(i0, 31255))+8) = i1;
-  i1 = (OOC_INT32)system;
-  *(OOC_INT32*)((_check_pointer(i0, 31287))+12) = i1;
-  i1 = (OOC_INT32)baseURI;
-  *(OOC_INT32*)((_check_pointer(i0, 31319))+16) = i1;
+  i0 = (OOC_INT32)name;
+  i1 = (OOC_INT32)notation;
+  XML_DTD__InitDeclaration((XML_DTD__Declaration)i1, (XML_UnicodeBuffer__CharArray)i0);
+  i0 = (OOC_INT32)_public;
+  *(OOC_INT32*)((_check_pointer(i1, 31255))+8) = i0;
+  i0 = (OOC_INT32)system;
+  *(OOC_INT32*)((_check_pointer(i1, 31287))+12) = i0;
+  i0 = (OOC_INT32)baseURI;
+  *(OOC_INT32*)((_check_pointer(i1, 31319))+16) = i0;
   return;
   ;
 }
@@ -993,11 +993,11 @@ XML_DTD__Notation XML_DTD__BuilderDesc_NewNotation(XML_DTD__Builder b, XML_Unico
   register OOC_INT32 i0,i1,i2,i3,i4;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__Notation.baseTypes[0]);
-  i1 = (OOC_INT32)name;
-  i2 = (OOC_INT32)_public;
-  i3 = (OOC_INT32)system;
-  i4 = (OOC_INT32)baseURI;
-  XML_DTD__InitNotation((XML_DTD__Notation)i0, (XML_UnicodeBuffer__CharArray)i1, (XML_UnicodeBuffer__CharArray)i2, (XML_UnicodeBuffer__CharArray)i3, (URI__URI)i4);
+  i1 = (OOC_INT32)baseURI;
+  i2 = (OOC_INT32)system;
+  i3 = (OOC_INT32)_public;
+  i4 = (OOC_INT32)name;
+  XML_DTD__InitNotation((XML_DTD__Notation)i0, (XML_UnicodeBuffer__CharArray)i4, (XML_UnicodeBuffer__CharArray)i3, (XML_UnicodeBuffer__CharArray)i2, (URI__URI)i1);
   return (XML_DTD__Notation)i0;
   ;
 }
@@ -1036,11 +1036,11 @@ void XML_DTD__CPDesc_SetMode(XML_DTD__CP cp, OOC_INT8 cpMode) {
 void XML_DTD__InitChoiceCP(XML_DTD__ChoiceCP choiceCP, OOC_INT8 cpMode, XML_DTD__CP list) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)choiceCP;
-  i1 = cpMode;
-  XML_DTD__InitCP((XML_DTD__CP)i0, i1);
-  i1 = (OOC_INT32)list;
-  *(OOC_INT32*)((_check_pointer(i0, 32165))+8) = i1;
+  i0 = cpMode;
+  i1 = (OOC_INT32)choiceCP;
+  XML_DTD__InitCP((XML_DTD__CP)i1, i0);
+  i0 = (OOC_INT32)list;
+  *(OOC_INT32*)((_check_pointer(i1, 32165))+8) = i0;
   return;
   ;
 }
@@ -1049,9 +1049,9 @@ XML_DTD__ChoiceCP XML_DTD__BuilderDesc_NewChoiceCP(XML_DTD__Builder b, OOC_INT8 
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__ChoiceCP.baseTypes[0]);
-  i1 = cpMode;
-  i2 = (OOC_INT32)list;
-  XML_DTD__InitChoiceCP((XML_DTD__ChoiceCP)i0, i1, (XML_DTD__CP)i2);
+  i1 = (OOC_INT32)list;
+  i2 = cpMode;
+  XML_DTD__InitChoiceCP((XML_DTD__ChoiceCP)i0, i2, (XML_DTD__CP)i1);
   return (XML_DTD__ChoiceCP)i0;
   ;
 }
@@ -1059,11 +1059,11 @@ XML_DTD__ChoiceCP XML_DTD__BuilderDesc_NewChoiceCP(XML_DTD__Builder b, OOC_INT8 
 void XML_DTD__InitSeqCP(XML_DTD__SeqCP seqCP, OOC_INT8 cpMode, XML_DTD__CP list) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)seqCP;
-  i1 = cpMode;
-  XML_DTD__InitCP((XML_DTD__CP)i0, i1);
-  i1 = (OOC_INT32)list;
-  *(OOC_INT32*)((_check_pointer(i0, 32532))+8) = i1;
+  i0 = cpMode;
+  i1 = (OOC_INT32)seqCP;
+  XML_DTD__InitCP((XML_DTD__CP)i1, i0);
+  i0 = (OOC_INT32)list;
+  *(OOC_INT32*)((_check_pointer(i1, 32532))+8) = i0;
   return;
   ;
 }
@@ -1072,9 +1072,9 @@ XML_DTD__SeqCP XML_DTD__BuilderDesc_NewSeqCP(XML_DTD__Builder b, OOC_INT8 cpMode
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__SeqCP.baseTypes[0]);
-  i1 = cpMode;
-  i2 = (OOC_INT32)list;
-  XML_DTD__InitSeqCP((XML_DTD__SeqCP)i0, i1, (XML_DTD__CP)i2);
+  i1 = (OOC_INT32)list;
+  i2 = cpMode;
+  XML_DTD__InitSeqCP((XML_DTD__SeqCP)i0, i2, (XML_DTD__CP)i1);
   return (XML_DTD__SeqCP)i0;
   ;
 }
@@ -1082,11 +1082,11 @@ XML_DTD__SeqCP XML_DTD__BuilderDesc_NewSeqCP(XML_DTD__Builder b, OOC_INT8 cpMode
 void XML_DTD__InitNameCP(XML_DTD__NameCP nameCP, OOC_INT8 cpMode, XML_UnicodeBuffer__CharArray name) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)nameCP;
-  i1 = cpMode;
-  XML_DTD__InitCP((XML_DTD__CP)i0, i1);
-  i1 = (OOC_INT32)name;
-  *(OOC_INT32*)((_check_pointer(i0, 32878))+8) = i1;
+  i0 = cpMode;
+  i1 = (OOC_INT32)nameCP;
+  XML_DTD__InitCP((XML_DTD__CP)i1, i0);
+  i0 = (OOC_INT32)name;
+  *(OOC_INT32*)((_check_pointer(i1, 32878))+8) = i0;
   return;
   ;
 }
@@ -1095,9 +1095,9 @@ XML_DTD__NameCP XML_DTD__BuilderDesc_NewNameCP(XML_DTD__Builder b, OOC_INT8 cpMo
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__NameCP.baseTypes[0]);
-  i1 = cpMode;
-  i2 = (OOC_INT32)name;
-  XML_DTD__InitNameCP((XML_DTD__NameCP)i0, i1, (XML_UnicodeBuffer__CharArray)i2);
+  i1 = (OOC_INT32)name;
+  i2 = cpMode;
+  XML_DTD__InitNameCP((XML_DTD__NameCP)i0, i2, (XML_UnicodeBuffer__CharArray)i1);
   return (XML_DTD__NameCP)i0;
   ;
 }
@@ -1105,65 +1105,65 @@ XML_DTD__NameCP XML_DTD__BuilderDesc_NewNameCP(XML_DTD__Builder b, OOC_INT8 cpMo
 void XML_DTD__InitElementDecl(XML_DTD__ElementDecl elemDecl, XML_UnicodeBuffer__CharArray name, XML_DTD__CP contentModel, XML_DTD__Namespace attrNamespace, OOC_CHAR8 externalMarkupDecl) {
   register OOC_INT32 i0,i1,i2;
 
-  i0 = (OOC_INT32)elemDecl;
-  i1 = (OOC_INT32)name;
-  XML_DTD__InitDeclaration((XML_DTD__Declaration)i0, (XML_UnicodeBuffer__CharArray)i1);
-  i1 = (OOC_INT32)contentModel;
-  *(OOC_INT32*)((_check_pointer(i0, 33315))+8) = i1;
-  *(OOC_INT8*)((_check_pointer(i0, 33359))+16) = 1;
-  *(OOC_INT32*)((_check_pointer(i0, 33400))+12) = (OOC_INT32)0;
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 33438))+8);
+  i0 = (OOC_INT32)name;
+  i1 = (OOC_INT32)elemDecl;
+  XML_DTD__InitDeclaration((XML_DTD__Declaration)i1, (XML_UnicodeBuffer__CharArray)i0);
+  i0 = (OOC_INT32)contentModel;
+  *(OOC_INT32*)((_check_pointer(i1, 33315))+8) = i0;
+  *(OOC_INT8*)((_check_pointer(i1, 33359))+16) = 1;
+  *(OOC_INT32*)((_check_pointer(i1, 33400))+12) = (OOC_INT32)0;
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 33438))+8);
   i2 = i2!=(OOC_INT32)0;
   if (!i2) goto l27;
-  i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 33488)))), &_td_XML_DTD__NameCPDesc);
+  i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 33488)))), &_td_XML_DTD__NameCPDesc);
   if (i2) goto l17;
-  i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 33841)))), &_td_XML_DTD__ChoiceCPDesc);
+  i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 33841)))), &_td_XML_DTD__ChoiceCPDesc);
   if (i2) goto l7;
-  *(OOC_INT8*)((_check_pointer(i0, 34114))+16) = 3;
+  *(OOC_INT8*)((_check_pointer(i1, 34114))+16) = 3;
   goto l27;
 l7:
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 33879))+8);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 33879))+8);
   i2 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 33886)))), &_td_XML_DTD__NameCPDesc);
   if (i2) goto l10;
-  i1=0u;
+  i0=0u;
   goto l12;
 l10:
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 33923))+8);
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 33930)))), &_td_XML_DTD__NameCPDesc, 33930)), 33937))+8);
-  i1 = (
-  _cmp16((const void*)(_check_pointer(i1, 33943)),(const void*)((OOC_CHAR16[]){35,80,67,68,65,84,65,0})))==0;
+  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 33923))+8);
+  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 33930)))), &_td_XML_DTD__NameCPDesc, 33930)), 33937))+8);
+  i0 = (
+  _cmp16((const void*)(_check_pointer(i0, 33943)),(const void*)((OOC_CHAR16[]){35,80,67,68,65,84,65,0})))==0;
   
 l12:
-  if (i1) goto l14;
-  *(OOC_INT8*)((_check_pointer(i0, 34042))+16) = 3;
+  if (i0) goto l14;
+  *(OOC_INT8*)((_check_pointer(i1, 34042))+16) = 3;
   goto l27;
 l14:
-  *(OOC_INT8*)((_check_pointer(i0, 33981))+16) = 2;
+  *(OOC_INT8*)((_check_pointer(i1, 33981))+16) = 2;
   goto l27;
 l17:
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 33524))+8);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 33524))+8);
   i2 = (
   _cmp16((const void*)(_check_pointer(i2, 33530)),(const void*)((OOC_CHAR16[]){69,77,80,84,89,0})))==0;
   if (i2) goto l24;
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 33623))+8);
-  i1 = (
-  _cmp16((const void*)(_check_pointer(i1, 33629)),(const void*)((OOC_CHAR16[]){65,78,89,0})))==0;
-  if (i1) goto l22;
-  *(OOC_INT8*)((_check_pointer(i0, 33722))+16) = 1;
+  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 33623))+8);
+  i0 = (
+  _cmp16((const void*)(_check_pointer(i0, 33629)),(const void*)((OOC_CHAR16[]){65,78,89,0})))==0;
+  if (i0) goto l22;
+  *(OOC_INT8*)((_check_pointer(i1, 33722))+16) = 1;
   goto l27;
 l22:
-  *(OOC_INT8*)((_check_pointer(i0, 33663))+16) = 1;
+  *(OOC_INT8*)((_check_pointer(i1, 33663))+16) = 1;
   goto l27;
 l24:
-  *(OOC_INT8*)((_check_pointer(i0, 33566))+16) = 0;
+  *(OOC_INT8*)((_check_pointer(i1, 33566))+16) = 0;
 l27:
-  i1 = externalMarkupDecl;
-  *(OOC_UINT8*)((_check_pointer(i0, 34178))+17) = i1;
-  *(OOC_UINT8*)((_check_pointer(i0, 34234))+18) = 0u;
-  i1 = (OOC_INT32)attrNamespace;
-  *(OOC_INT32*)((_check_pointer(i0, 34271))+20) = i1;
-  *(OOC_INT32*)((_check_pointer(i0, 34317))+24) = (OOC_INT32)0;
-  *(OOC_INT32*)((_check_pointer(i0, 34346))+28) = (OOC_INT32)0;
+  i0 = externalMarkupDecl;
+  *(OOC_UINT8*)((_check_pointer(i1, 34178))+17) = i0;
+  *(OOC_UINT8*)((_check_pointer(i1, 34234))+18) = 0u;
+  i0 = (OOC_INT32)attrNamespace;
+  *(OOC_INT32*)((_check_pointer(i1, 34271))+20) = i0;
+  *(OOC_INT32*)((_check_pointer(i1, 34317))+24) = (OOC_INT32)0;
+  *(OOC_INT32*)((_check_pointer(i1, 34346))+28) = (OOC_INT32)0;
   return;
   ;
 }
@@ -1244,9 +1244,9 @@ XML_DTD__NamespaceDeclaration XML_DTD__NewNamespaceDeclaration(XML_UnicodeBuffer
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_DTD__NamespaceDeclaration.baseTypes[0]);
-  i1 = (OOC_INT32)prefix;
-  i2 = (OOC_INT32)uri;
-  XML_DTD__InitNamespaceDeclaration((XML_DTD__NamespaceDeclaration)i0, (XML_UnicodeBuffer__CharArray)i1, (XML_DTD__StringURI)i2);
+  i1 = (OOC_INT32)uri;
+  i2 = (OOC_INT32)prefix;
+  XML_DTD__InitNamespaceDeclaration((XML_DTD__NamespaceDeclaration)i0, (XML_UnicodeBuffer__CharArray)i2, (XML_DTD__StringURI)i1);
   return (XML_DTD__NamespaceDeclaration)i0;
   ;
 }

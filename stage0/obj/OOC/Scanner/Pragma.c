@@ -117,16 +117,16 @@ static OOC_INT8 OOC_Scanner_Pragma__ParsePragma(struct OOC_Scanner_Pragma__State
     void OOC_Scanner_Pragma__ParsePragma_AppendErr(OOC_Scanner_SymList__Symbol sym) {
       register OOC_INT32 i0,i1,i2;
 
-      i0 = (OOC_INT32)lastError;
-      i1 = (OOC_INT32)sym;
-      i2 = *(OOC_INT32*)((_check_pointer(i1, 6250))+16);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6224)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, i2);
-      i0 = (OOC_INT32)lastError;
-      i2 = *(OOC_INT32*)((_check_pointer(i1, 6300))+20);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6273)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "line", 5, i2);
-      i0 = (OOC_INT32)lastError;
-      i1 = *(OOC_INT32*)((_check_pointer(i1, 6353))+24);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6324)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, i1);
+      i0 = (OOC_INT32)sym;
+      i1 = (OOC_INT32)lastError;
+      i2 = *(OOC_INT32*)((_check_pointer(i0, 6250))+16);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6224)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "pos", 4, i2);
+      i1 = (OOC_INT32)lastError;
+      i2 = *(OOC_INT32*)((_check_pointer(i0, 6300))+20);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6273)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "line", 5, i2);
+      i1 = (OOC_INT32)lastError;
+      i0 = *(OOC_INT32*)((_check_pointer(i0, 6353))+24);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6324)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "column", 7, i0);
       i0 = (OOC_INT32)*(OOC_INT32*)(OOC_INT32)state;
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6383))+20);
       i1 = (OOC_INT32)lastError;
@@ -139,9 +139,9 @@ static OOC_INT8 OOC_Scanner_Pragma__ParsePragma(struct OOC_Scanner_Pragma__State
     void OOC_Scanner_Pragma__ParsePragma_Err(OOC_INT32 code, OOC_Scanner_SymList__Symbol sym) {
       register OOC_INT32 i0,i1;
 
-      i0 = (OOC_INT32)OOC_Scanner_Pragma__pragmaContext;
-      i1 = code;
-      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i0, i1);
+      i0 = code;
+      i1 = (OOC_INT32)OOC_Scanner_Pragma__pragmaContext;
+      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i0);
       lastError = (Msg__Msg)i0;
       i0 = (OOC_INT32)sym;
       OOC_Scanner_Pragma__ParsePragma_AppendErr((OOC_Scanner_SymList__Symbol)i0);
@@ -255,9 +255,9 @@ l3:
 l6:
       OOC_Scanner_Pragma__ParsePragma_Err(3, (OOC_Scanner_SymList__Symbol)i0);
 l7:
-      i0 = (OOC_INT32)lastError;
-      i1 = (OOC_INT32)Msg__GetStringPtr((void*)((OOC_INT32)OOC_Scanner_Symbol__representation+((_check_index(i2, 81, OOC_UINT8, 7645))*10)), 10);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7544)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i0, "sym_name", 9, (Msg__StringPtr)i1);
+      i0 = (OOC_INT32)Msg__GetStringPtr((void*)((OOC_INT32)OOC_Scanner_Symbol__representation+((_check_index(i2, 81, OOC_UINT8, 7645))*10)), 10);
+      i1 = (OOC_INT32)lastError;
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7544)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "sym_name", 9, (Msg__StringPtr)i0);
       i0 = (OOC_INT32)sym;
       i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 7671));
       i0 = i0!=0;
@@ -341,7 +341,7 @@ l8:
               auto void OOC_Scanner_Pragma__ParsePragma_Expression_SimpleExpr_Term_Factor(OOC_CHAR8 eval, struct OOC_Scanner_Pragma__ParsePragma_Value *value, RT0__Struct value__tag);
                 
                 void OOC_Scanner_Pragma__ParsePragma_Expression_SimpleExpr_Term_Factor(OOC_CHAR8 eval, struct OOC_Scanner_Pragma__ParsePragma_Value *value, RT0__Struct value__tag) {
-                  register OOC_INT32 i0,i1,i2,i3;
+                  register OOC_INT32 i0,i1,i2;
                   OOC_INT32 _int;
                   auto Msg__Msg OOC_Scanner_Pragma__ParsePragma_Expression_SimpleExpr_Term_Factor_ConvertInt(OOC_Scanner_InputBuffer__CharArray str, OOC_INT32 base, OOC_INT32 *_int);
                     
@@ -403,13 +403,12 @@ l7:
                     OOC_Scanner_Pragma__ParsePragma_CheckName((OOC_Scanner_SymList__Symbol)i0);
                     i0 = (OOC_INT32)sym;
                     i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9906))+8);
-                    i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9906))+8);
+                    i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9906))+8);
+                    i0 = *(OOC_INT32*)((_check_pointer(i0, 9917))+16);
+                    i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 9910)), 0);
+                    i1 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i2, 9910)), i1);
                     i2 = (OOC_INT32)*(OOC_INT32*)((OOC_INT32)state+36);
-                    i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 9910)), 0);
-                    i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i1, 9910)), i0);
-                    i1 = (OOC_INT32)sym;
-                    i1 = *(OOC_INT32*)((_check_pointer(i1, 9917))+16);
-                    i0 = (OOC_INT32)OOC_Config_Pragmas__HistoryDesc_GetValue((OOC_Config_Pragmas__History)i2, (Object__String)i0, i1);
+                    i0 = (OOC_INT32)OOC_Config_Pragmas__HistoryDesc_GetValue((OOC_Config_Pragmas__History)i2, (Object__String)i1, i0);
                     i1 = i0!=0;
                     if (i1) goto l14;
                     i0 = eval;
@@ -458,14 +457,14 @@ l25:
                     goto l30;
                   case 43:
                   case 44:
-                    i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10958))+8);
+                    i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 11026))+8);
+                    i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 11026))+8);
+                    i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 11030)), 0);
+                    i1 = Strings__Length((void*)(_check_pointer(i2, 11030)), i1);
                     i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10958))+8);
-                    i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 11026))+8);
-                    i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 11026))+8);
-                    i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 11030)), 0);
-                    i0 = Strings__Length((void*)(_check_pointer(i3, 11030)), i0);
+                    i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10958))+8);
                     i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 10962)), 0);
-                    i0 = (OOC_INT32)Object__NewLatin1Region((void*)(_check_pointer(i1, 10962)), i2, 1, (i0-1));
+                    i0 = (OOC_INT32)Object__NewLatin1Region((void*)(_check_pointer(i0, 10962)), i2, 1, (i1-1));
                     i0 = (OOC_INT32)Config__NewStringVar((Object__String8)i0);
                     *(OOC_INT32*)(OOC_INT32)value = i0;
                     OOC_Scanner_Pragma__ParsePragma_NextSym();
@@ -886,14 +885,13 @@ l3:
       goto l45;
 l6:
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16385))+8);
-      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16385))+8);
+      i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16385))+8);
+      i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 16390)), 0);
+      i0 = *(OOC_INT32*)((_check_pointer(i0, 16397))+16);
+      i2 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i3, 16390)), i2);
       i3 = (OOC_INT32)state+36;
       i4 = (OOC_INT32)*(OOC_INT32*)i3;
-      i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 16390)), 0);
-      i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i2, 16390)), i0);
-      i2 = (OOC_INT32)sym;
-      i2 = *(OOC_INT32*)((_check_pointer(i2, 16397))+16);
-      i0 = (OOC_INT32)OOC_Config_Pragmas__HistoryDesc_GetValue((OOC_Config_Pragmas__History)i4, (Object__String)i0, i2);
+      i0 = (OOC_INT32)OOC_Config_Pragmas__HistoryDesc_GetValue((OOC_Config_Pragmas__History)i4, (Object__String)i2, i0);
       varValue = (Config__Variable)i0;
       i2 = (OOC_INT32)sym;
       pos = (OOC_Scanner_SymList__Symbol)i2;
@@ -950,13 +948,12 @@ l36:
       err = (!(OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 17077)))), &_td_Config__BooleanVarDesc)));
 l37:
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 17417))+8);
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 17417))+8);
-      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 17421)), 0);
+      i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 17417))+8);
+      i2 = *(OOC_INT32*)((_check_pointer(i2, 17429))+16);
+      i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 17421)), 0);
+      i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i4, 17421)), i0);
       i3 = (OOC_INT32)*(OOC_INT32*)i3;
-      i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i0, 17421)), i1);
-      i1 = *(OOC_INT32*)((_check_pointer(i2, 17429))+16);
-      i2 = (OOC_INT32)*(OOC_INT32*)(OOC_INT32)&value;
-      OOC_Config_Pragmas__HistoryDesc_SetValue((OOC_Config_Pragmas__History)i3, (Object__String)i0, i1, (Config__Variable)i2);
+      OOC_Config_Pragmas__HistoryDesc_SetValue((OOC_Config_Pragmas__History)i3, (Object__String)i0, i2, (Config__Variable)i1);
       i0 = err;
       if (!i0) goto l45;
       i0 = (OOC_INT32)*(OOC_INT32*)((OOC_INT32)&value+4);
@@ -964,13 +961,12 @@ l37:
       goto l45;
 l41:
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 16939))+8);
-      i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 16939))+8);
-      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 16943)), 0);
+      i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 16939))+8);
+      i2 = *(OOC_INT32*)((_check_pointer(i2, 16951))+16);
+      i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 16943)), 0);
+      i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i4, 16943)), i0);
       i3 = (OOC_INT32)*(OOC_INT32*)i3;
-      i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i0, 16943)), i1);
-      i1 = *(OOC_INT32*)((_check_pointer(i2, 16951))+16);
-      i2 = (OOC_INT32)*(OOC_INT32*)(OOC_INT32)&value;
-      OOC_Config_Pragmas__HistoryDesc_SetValue((OOC_Config_Pragmas__History)i3, (Object__String)i0, i1, (Config__Variable)i2);
+      OOC_Config_Pragmas__HistoryDesc_SetValue((OOC_Config_Pragmas__History)i3, (Object__String)i0, i2, (Config__Variable)i1);
 l45:
       return;
       ;
@@ -1263,9 +1259,9 @@ void OOC_Scanner_Pragma__AddSymbol(struct OOC_Scanner_Pragma__State *state, RT0_
     void OOC_Scanner_Pragma__AddSymbol_Err(OOC_INT32 code) {
       register OOC_INT32 i0,i1,i2;
 
-      i0 = (OOC_INT32)OOC_Scanner_Pragma__pragmaContext;
-      i1 = code;
-      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i0, i1);
+      i0 = code;
+      i1 = (OOC_INT32)OOC_Scanner_Pragma__pragmaContext;
+      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i0);
       lastError = (Msg__Msg)i0;
       i1 = (OOC_INT32)*(OOC_INT32*)(OOC_INT32)state;
       i1 = *(OOC_INT32*)((_check_pointer(i1, 21664))+8);
@@ -1289,9 +1285,9 @@ void OOC_Scanner_Pragma__AddSymbol(struct OOC_Scanner_Pragma__State *state, RT0_
     void OOC_Scanner_Pragma__AddSymbol_ErrSym(OOC_INT32 code, OOC_Scanner_SymList__Symbol sym) {
       register OOC_INT32 i0,i1,i2;
 
-      i0 = (OOC_INT32)OOC_Scanner_Pragma__pragmaContext;
-      i1 = code;
-      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i0, i1);
+      i0 = code;
+      i1 = (OOC_INT32)OOC_Scanner_Pragma__pragmaContext;
+      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i0);
       lastError = (Msg__Msg)i0;
       i1 = (OOC_INT32)sym;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 22007))+16);
@@ -1382,11 +1378,11 @@ l10:
       OOC_Scanner_Pragma__AddSymbol_ErrSym(17, (OOC_Scanner_SymList__Symbol)i0);
 l12:
       i0 = (OOC_INT32)*(OOC_INT32*)((OOC_INT32)state+4);
-      i1 = cstart;
-      i2 = cend;
-      i3 = line;
-      i4 = column;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 23339)))), OOC_Scanner_SymList__BuilderDesc_AddSymbol)),OOC_Scanner_SymList__BuilderDesc_AddSymbol)((OOC_Scanner_SymList__Builder)i0, 72, i1, i2, i3, i4);
+      i1 = column;
+      i2 = line;
+      i3 = cend;
+      i4 = cstart;
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 23339)))), OOC_Scanner_SymList__BuilderDesc_AddSymbol)),OOC_Scanner_SymList__BuilderDesc_AddSymbol)((OOC_Scanner_SymList__Builder)i0, 72, i4, i3, i2, i1);
       goto l33;
     default:
       _failed_case(i0, 22794);

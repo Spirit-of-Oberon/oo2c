@@ -99,7 +99,7 @@ void OOC_IR_VisitAll__VisitorDesc_VisitCap(OOC_IR_VisitAll__Visitor v, OOC_IR__C
 }
 
 void OOC_IR_VisitAll__VisitorDesc_VisitConcat(OOC_IR_VisitAll__Visitor v, OOC_IR__Concat op) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
   OOC_INT32 i;
 
   i0 = (OOC_INT32)op;
@@ -114,12 +114,12 @@ l3_loop:
   i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2348))+8);
   i4 = _check_pointer(i4, 2356);
   i5 = OOC_ARRAY_LENGTH(i4, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2348))+8);
+  i6 = _check_pointer(i6, 2356);
+  i7 = OOC_ARRAY_LENGTH(i6, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)(i6+(_check_index(i3, i7, OOC_UINT32, 2356))*4);
   i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i3, i5, OOC_UINT32, 2356))*4);
-  i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2348))+8);
-  i5 = _check_pointer(i5, 2356);
-  i6 = OOC_ARRAY_LENGTH(i5, 0);
-  i5 = (OOC_INT32)*(OOC_INT32*)(i5+(_check_index(i3, i6, OOC_UINT32, 2356))*4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 2359)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i5, (OOC_IR__Visitor)i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 2359)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i4, (OOC_IR__Visitor)i2);
   i3 = i3+1;
   i = i3;
   i4 = i3<i1;
@@ -243,7 +243,7 @@ void OOC_IR_VisitAll__VisitorDesc_VisitNewBlock(OOC_IR_VisitAll__Visitor v, OOC_
 }
 
 void OOC_IR_VisitAll__VisitorDesc_VisitNewObject(OOC_IR_VisitAll__Visitor v, OOC_IR__NewObject _new) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
   OOC_INT32 i;
 
   i0 = (OOC_INT32)_new;
@@ -261,12 +261,12 @@ l5_loop:
   i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 3711))+8);
   i4 = _check_pointer(i4, 3719);
   i5 = OOC_ARRAY_LENGTH(i4, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 3711))+8);
+  i6 = _check_pointer(i6, 3719);
+  i7 = OOC_ARRAY_LENGTH(i6, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)(i6+(_check_index(i3, i7, OOC_UINT32, 3719))*4);
   i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i3, i5, OOC_UINT32, 3719))*4);
-  i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 3711))+8);
-  i5 = _check_pointer(i5, 3719);
-  i6 = OOC_ARRAY_LENGTH(i5, 0);
-  i5 = (OOC_INT32)*(OOC_INT32*)(i5+(_check_index(i3, i6, OOC_UINT32, 3719))*4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 3722)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i5, (OOC_IR__Visitor)i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 3722)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i4, (OOC_IR__Visitor)i2);
   i3 = i3+1;
   i = i3;
   i4 = i3<i1;
@@ -489,7 +489,7 @@ void OOC_IR_VisitAll__VisitorDesc_VisitVar(OOC_IR_VisitAll__Visitor v, OOC_IR__V
 }
 
 static void OOC_IR_VisitAll__VisitStatementSeq(OOC_IR_VisitAll__Visitor v, OOC_IR__StatementSeq statmSeq) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
   OOC_INT32 i;
 
   i0 = (OOC_INT32)statmSeq;
@@ -502,11 +502,11 @@ static void OOC_IR_VisitAll__VisitStatementSeq(OOC_IR_VisitAll__Visitor v, OOC_I
 l3_loop:
   i4 = _check_pointer(i0, 6091);
   i5 = OOC_ARRAY_LENGTH(i4, 0);
+  i6 = _check_pointer(i0, 6091);
+  i7 = OOC_ARRAY_LENGTH(i6, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)(i6+(_check_index(i3, i7, OOC_UINT32, 6091))*4);
   i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i3, i5, OOC_UINT32, 6091))*4);
-  i5 = _check_pointer(i0, 6091);
-  i6 = OOC_ARRAY_LENGTH(i5, 0);
-  i5 = (OOC_INT32)*(OOC_INT32*)(i5+(_check_index(i3, i6, OOC_UINT32, 6091))*4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 6094)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i5, (OOC_IR__Visitor)i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 6094)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i4, (OOC_IR__Visitor)i2);
   i3 = i3+1;
   i = i3;
   i4 = i3<i1;
@@ -563,7 +563,7 @@ void OOC_IR_VisitAll__VisitorDesc_VisitAssignOp(OOC_IR_VisitAll__Visitor v, OOC_
 }
 
 void OOC_IR_VisitAll__VisitorDesc_VisitCall(OOC_IR_VisitAll__Visitor v, OOC_IR__Call call) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
   OOC_INT32 i;
 
   i0 = (OOC_INT32)call;
@@ -581,12 +581,12 @@ l3_loop:
   i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6814))+12);
   i4 = _check_pointer(i4, 6825);
   i5 = OOC_ARRAY_LENGTH(i4, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6814))+12);
+  i6 = _check_pointer(i6, 6825);
+  i7 = OOC_ARRAY_LENGTH(i6, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)(i6+(_check_index(i2, i7, OOC_UINT32, 6825))*4);
   i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i2, i5, OOC_UINT32, 6825))*4);
-  i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6814))+12);
-  i5 = _check_pointer(i5, 6825);
-  i6 = OOC_ARRAY_LENGTH(i5, 0);
-  i5 = (OOC_INT32)*(OOC_INT32*)(i5+(_check_index(i2, i6, OOC_UINT32, 6825))*4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 6828)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i5, (OOC_IR__Visitor)i3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 6828)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i4, (OOC_IR__Visitor)i3);
   i2 = i2+1;
   i = i2;
   i4 = i2<i1;
@@ -726,7 +726,7 @@ l4:
 }
 
 void OOC_IR_VisitAll__VisitorDesc_VisitCase(OOC_IR_VisitAll__Visitor v, OOC_IR__Case _case) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
   OOC_INT32 i;
 
   i0 = (OOC_INT32)_case;
@@ -741,12 +741,12 @@ l3_loop:
   i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8558))+8);
   i4 = _check_pointer(i4, 8566);
   i5 = OOC_ARRAY_LENGTH(i4, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8558))+8);
+  i6 = _check_pointer(i6, 8566);
+  i7 = OOC_ARRAY_LENGTH(i6, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)(i6+(_check_index(i3, i7, OOC_UINT32, 8566))*4);
   i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i3, i5, OOC_UINT32, 8566))*4);
-  i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8558))+8);
-  i5 = _check_pointer(i5, 8566);
-  i6 = OOC_ARRAY_LENGTH(i5, 0);
-  i5 = (OOC_INT32)*(OOC_INT32*)(i5+(_check_index(i3, i6, OOC_UINT32, 8566))*4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 8569)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i5, (OOC_IR__Visitor)i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 8569)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i4, (OOC_IR__Visitor)i2);
   i3 = i3+1;
   i = i3;
   i4 = i3<i1;

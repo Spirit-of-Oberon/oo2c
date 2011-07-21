@@ -435,8 +435,8 @@ void IO_TextRider__WriterDesc_WriteLReal(IO_TextRider__Writer w, OOC_REAL64 lrea
   register OOC_REAL64 d0;
   OOC_CHAR8 val[128];
 
-  d0 = lreal;
   i0 = k;
+  d0 = lreal;
   LRealStr__RealToFloat(d0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -452,8 +452,8 @@ void IO_TextRider__WriterDesc_WriteReal(IO_TextRider__Writer w, OOC_REAL32 real,
   register OOC_REAL32 f0;
   OOC_CHAR8 val[128];
 
-  f0 = real;
   i0 = k;
+  f0 = real;
   RealStr__RealToFloat(f0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -469,8 +469,8 @@ void IO_TextRider__WriterDesc_WriteLRealFix(IO_TextRider__Writer w, OOC_REAL64 *
   register OOC_REAL64 d0;
   OOC_CHAR8 val[128];
 
-  d0 = *lreal;
   i0 = k;
+  d0 = *lreal;
   LRealStr__RealToFixed(d0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -486,8 +486,8 @@ void IO_TextRider__WriterDesc_WriteRealFix(IO_TextRider__Writer w, OOC_REAL32 re
   register OOC_REAL32 f0;
   OOC_CHAR8 val[128];
 
-  f0 = real;
   i0 = k;
+  f0 = real;
   RealStr__RealToFixed(f0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -503,8 +503,8 @@ void IO_TextRider__WriterDesc_WriteLRealEng(IO_TextRider__Writer w, OOC_REAL64 *
   register OOC_REAL64 d0;
   OOC_CHAR8 val[128];
 
-  d0 = *lreal;
   i0 = k;
+  d0 = *lreal;
   LRealStr__RealToEng(d0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -520,8 +520,8 @@ void IO_TextRider__WriterDesc_WriteRealEng(IO_TextRider__Writer w, OOC_REAL32 re
   register OOC_REAL32 f0;
   OOC_CHAR8 val[128];
 
-  f0 = real;
   i0 = k;
+  f0 = real;
   RealStr__RealToEng(f0, i0, (void*)(OOC_INT32)val, 128);
   i0 = Strings__Length((void*)(OOC_INT32)val, 128);
   i1 = n;
@@ -1185,8 +1185,8 @@ l33:
   *(OOC_UINT8*)(i2+(_check_index(i1, i3, OOC_UINT32, 20212))) = 0u;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20243))+8);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 20243))+8);
-  i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 20247)), 0);
-  IntStr__StrToInt((void*)(_check_pointer(i1, 20247)), i0, (void*)(OOC_INT32)lint, (void*)(OOC_INT32)&res);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 20247)), 0);
+  IntStr__StrToInt((void*)(_check_pointer(i0, 20247)), i1, (void*)(OOC_INT32)lint, (void*)(OOC_INT32)&res);
   i0 = res;
   i1 = i0!=0;
   if (!i1) goto l40;
@@ -1590,8 +1590,8 @@ l19:
   *(OOC_UINT8*)(i2+(_check_index(i1, i3, OOC_UINT32, 25583))) = 0u;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25611))+8);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25611))+8);
-  i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 25615)), 0);
-  i0 = IO_TextRider__HexToInt((void*)(_check_pointer(i1, 25615)), i0, (void*)(OOC_INT32)_int);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 25615)), 0);
+  i0 = IO_TextRider__HexToInt((void*)(_check_pointer(i0, 25615)), i1, (void*)(OOC_INT32)_int);
   i0 = !i0;
   if (!i0) goto l22;
   IO__RaiseFormatError((Object__String)((OOC_INT32)_c17));

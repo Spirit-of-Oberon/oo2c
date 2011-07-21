@@ -16,9 +16,9 @@ void OOC_Error__InitContext(OOC_Error__Context c, const Msg__String id__ref, OOC
 Msg__Msg OOC_Error__New(OOC_Error__Context context, OOC_INT32 code) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)context;
-  i1 = code;
-  i0 = (OOC_INT32)Msg__New((Msg__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)context;
+  i0 = (OOC_INT32)Msg__New((Msg__Context)i1, i0);
   return (Msg__Msg)i0;
   ;
 }
@@ -44,8 +44,8 @@ OOC_Error__List OOC_Error__NewList(Object__String fileName) {
 static OOC_CHAR8 OOC_Error__IsWarning(Msg__Msg msg) {
   register OOC_INT32 i0,i1,i2;
   OOC_CHAR16 _template[128];
-  OOC_CHAR8 found;
   OOC_INT16 pos;
+  OOC_CHAR8 found;
 
   i0 = (OOC_INT32)msg;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 3388))+12);
@@ -279,9 +279,9 @@ l25:
       
 l27:
       if (!i0) goto l30;
-      i0 = (OOC_INT32)writer;
-      i1 = (OOC_INT32)errList;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7850)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (void*)((_check_pointer(i1, 7872))+12), 256);
+      i0 = (OOC_INT32)errList;
+      i1 = (OOC_INT32)writer;
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7850)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i1, (void*)((_check_pointer(i0, 7872))+12), 256);
 l30:
       i0 = (OOC_INT32)writer;
       OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7921)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (void*)(OOC_INT32)text, 8192);

@@ -39,8 +39,8 @@ void XML_Error__ContextDesc_WriteTemplate(XML_Error__Context context, Msg__Msg m
   _copy_16((const void*)((OOC_CHAR16[]){87,104,105,108,101,32,101,120,112,97,110,100,105,110,103,32,101,110,116,105,116,121,32,96,0}),(void*)(OOC_INT32)templ,templ_0d);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2933)))), &_td_Msg__LStringAttributeDesc, 2933)), 2950))+8);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2933)))), &_td_Msg__LStringAttributeDesc, 2933)), 2950))+8);
-  i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 2958)), 0);
-  LongStrings__Append((void*)(_check_pointer(i1, 2958)), i0, (void*)(OOC_INT32)templ, templ_0d);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 2958)), 0);
+  LongStrings__Append((void*)(_check_pointer(i0, 2958)), i1, (void*)(OOC_INT32)templ, templ_0d);
   LongStrings__Append(((OOC_CHAR16[]){39,58,32,0}), 4, (void*)(OOC_INT32)templ, templ_0d);
   goto l4;
 l3:
@@ -96,9 +96,9 @@ l17:
 l20:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 3460))+8);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 3460))+8);
-  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 3466)), 0);
+  i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 3466)), 0);
   i3 = (OOC_INT32)msg;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3437)))), XML_Error__ContextDesc_WriteTemplate)),XML_Error__ContextDesc_WriteTemplate)((XML_Error__Context)i0, (Msg__Msg)i3, (void*)(_check_pointer(i2, 3466)), i1, (void*)(OOC_INT32)templ, templ_0d);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3437)))), XML_Error__ContextDesc_WriteTemplate)),XML_Error__ContextDesc_WriteTemplate)((XML_Error__Context)i0, (Msg__Msg)i3, (void*)(_check_pointer(i1, 3466)), i2, (void*)(OOC_INT32)templ, templ_0d);
 l21:
   return;
   ;
@@ -154,9 +154,9 @@ l8:
 Msg__Msg XML_Error__New(XML_Error__Context context, OOC_INT32 code) {
   register OOC_INT32 i0,i1;
 
-  i0 = (OOC_INT32)context;
-  i1 = code;
-  i0 = (OOC_INT32)Msg__New((Msg__Context)i0, i1);
+  i0 = code;
+  i1 = (OOC_INT32)context;
+  i0 = (OOC_INT32)Msg__New((Msg__Context)i1, i0);
   return (Msg__Msg)i0;
   ;
 }
@@ -197,8 +197,8 @@ void XML_Error__ListDesc_Write(volatile XML_Error__List errList, volatile Channe
       register OOC_INT32 i0,i1;
       OOC_ALLOCATE_VPAR(pattern,OOC_CHAR8 ,pattern_0d)
       OOC_ALLOCATE_VPAR(repl,OOC_CHAR8 ,repl_0d)
-      OOC_CHAR8 found;
       OOC_INT16 pos;
+      OOC_CHAR8 found;
 
       OOC_INITIALIZE_VPAR(pattern__ref,pattern,OOC_CHAR8 ,pattern_0d)
       OOC_INITIALIZE_VPAR(repl__ref,repl,OOC_CHAR8 ,repl_0d)

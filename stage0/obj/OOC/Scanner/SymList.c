@@ -21,9 +21,9 @@ OOC_Scanner_SymList__Builder OOC_Scanner_SymList__New(OOC_Scanner_InputBuffer__B
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_Scanner_SymList__Builder.baseTypes[0]);
-  i1 = (OOC_INT32)buffer;
-  i2 = includeDocComments;
-  OOC_Scanner_SymList__Init((OOC_Scanner_SymList__Builder)i0, (OOC_Scanner_InputBuffer__Buffer)i1, i2);
+  i1 = includeDocComments;
+  i2 = (OOC_INT32)buffer;
+  OOC_Scanner_SymList__Init((OOC_Scanner_SymList__Builder)i0, (OOC_Scanner_InputBuffer__Buffer)i2, i1);
   return (OOC_Scanner_SymList__Builder)i0;
   ;
 }

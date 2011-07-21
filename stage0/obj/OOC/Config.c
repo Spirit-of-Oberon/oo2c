@@ -50,16 +50,18 @@ static void OOC_Config__InitConfig(Object__String8 defaultConfigFile) {
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 1889))+24);
   OOC_Config__options = (Config_Section_Options__Section)i1;
   i0 = (OOC_INT32)Config__NewStringVar((Object__String8)i0);
+  i1 = (OOC_INT32)OOC_Config__options;
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1926)))), Config_Section_Options__SectionDesc_Set)),Config_Section_Options__SectionDesc_Set)((Config_Section_Options__Section)i1, (Object__String)((OOC_INT32)_c2), (Config__Variable)i0);
   configFile = (Config_Section_Options__Option)i0;
+  i0 = (OOC_INT32)OOC_Config__cmdLine;
+  i0 = (OOC_INT32)Config_Source_CmdLine__CmdLineDesc_AddOptionTemplate((Config_Source_CmdLine__CmdLine)i0, "--config", 9, "<option><set name=\047config-file\047>$1</set></option>", 50);
+  i1 = (OOC_INT32)OOC_Config__config;
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2031)))), Config_Simple__ConfigDesc_ConfigFileCmdLineOption)),Config_Simple__ConfigDesc_ConfigFileCmdLineOption)((Config_Simple__Config)i1, (Config_Source_CmdLine__OptionTemplate)i0);
   i0 = (OOC_INT32)OOC_Config__config;
-  i1 = (OOC_INT32)OOC_Config__cmdLine;
-  i1 = (OOC_INT32)Config_Source_CmdLine__CmdLineDesc_AddOptionTemplate((Config_Source_CmdLine__CmdLine)i1, "--config", 9, "<option><set name=\047config-file\047>$1</set></option>", 50);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2031)))), Config_Simple__ConfigDesc_ConfigFileCmdLineOption)),Config_Simple__ConfigDesc_ConfigFileCmdLineOption)((Config_Simple__Config)i0, (Config_Source_CmdLine__OptionTemplate)i1);
-  i0 = (OOC_INT32)OOC_Config__config;
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2196))+12);
-  i1 = (OOC_INT32)Config_Source_Environment__EnvironmentDesc_AddVariableTemplate((Config_Source_Environment__Environment)i1, (Object__String8)((OOC_INT32)_c3), (Object__String8)((OOC_INT32)_c4));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2171)))), Config_Simple__ConfigDesc_ConfigFileEnvVar)),Config_Simple__ConfigDesc_ConfigFileEnvVar)((Config_Simple__Config)i0, (Config_Source_Environment__VariableTemplate)i1);
+  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2196))+12);
+  i0 = (OOC_INT32)Config_Source_Environment__EnvironmentDesc_AddVariableTemplate((Config_Source_Environment__Environment)i0, (Object__String8)((OOC_INT32)_c3), (Object__String8)((OOC_INT32)_c4));
+  i1 = (OOC_INT32)OOC_Config__config;
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2171)))), Config_Simple__ConfigDesc_ConfigFileEnvVar)),Config_Simple__ConfigDesc_ConfigFileEnvVar)((Config_Simple__Config)i1, (Config_Source_Environment__VariableTemplate)i0);
   i0 = (OOC_INT32)OOC_Config_Pragmas__New();
   OOC_Config__pragmas = (OOC_Config_Pragmas__Section)i0;
   i1 = (OOC_INT32)OOC_Config__config;
@@ -95,10 +97,10 @@ OOC_CHAR8 OOC_Config__HaveXsltProc(void) {
 
   i0 = (OOC_INT32)OOC_Config__xsltproc;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2867))+8);
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2881)))), &_td_Config__StringVarDesc, 2881)), 2891));
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2867))+8);
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2881)))), &_td_Config__StringVarDesc, 2881)), 2891));
-  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2898)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i0, (Object__Object)((OOC_INT32)_c7));
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2881)))), &_td_Config__StringVarDesc, 2881)), 2891));
+  i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2898)))), Object__StringDesc_Equals)),Object__StringDesc_Equals)((Object__String)i1, (Object__Object)((OOC_INT32)_c7));
   return (!i0);
   ;
 }

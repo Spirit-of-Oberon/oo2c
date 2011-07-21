@@ -40,9 +40,9 @@ void IO_Buffer__ChannelDesc_Flush(IO_Buffer__Channel ch) {
   i1 = *(OOC_INT32*)((_check_pointer(i0, 1943))+16);
   _assert((i1==0), 127, 1934);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 1969))+8);
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 1969))+8);
-  i3 = *(OOC_INT32*)((_check_pointer(i0, 1997))+20);
-  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1974)))), IO__ByteChannelDesc_Write)),IO__ByteChannelDesc_Write)((IO__ByteChannel)i2, (void*)((_check_pointer(i0, 1983))+24), 8192, 0, i3);
+  i2 = *(OOC_INT32*)((_check_pointer(i0, 1997))+20);
+  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 1969))+8);
+  i1 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1974)))), IO__ByteChannelDesc_Write)),IO__ByteChannelDesc_Write)((IO__ByteChannel)i3, (void*)((_check_pointer(i0, 1983))+24), 8192, 0, i2);
   d = i1;
   i2 = *(OOC_INT32*)((_check_pointer(i0, 2033))+20);
   _assert((i1==i2), 127, 2020);
@@ -212,9 +212,9 @@ l9:
   i2 = i1!=i2;
   if (i2) goto l6_loop;
 l14:
-  i1 = *(OOC_INT32*)((_check_pointer(i0, 5266))+16);
-  i2 = *(OOC_INT32*)((_check_pointer(i0, 5274))+20);
-  i1 = (OOC_INT32)ADT_StringBuffer__NewLatin1Region((void*)((_check_pointer(i0, 5255))+24), 8192, i1, i2);
+  i1 = *(OOC_INT32*)((_check_pointer(i0, 5274))+20);
+  i2 = *(OOC_INT32*)((_check_pointer(i0, 5266))+16);
+  i1 = (OOC_INT32)ADT_StringBuffer__NewLatin1Region((void*)((_check_pointer(i0, 5255))+24), 8192, i2, i1);
   sb = (ADT_StringBuffer__StringBuffer)i1;
 l15_loop:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5311))+8);

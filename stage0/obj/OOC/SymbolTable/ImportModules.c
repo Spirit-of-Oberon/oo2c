@@ -36,9 +36,9 @@ void OOC_SymbolTable_ImportModules__ImportModules(OOC_SymbolTable__Module system
     void OOC_SymbolTable_ImportModules__ImportModules_Err(OOC_INT32 code, OOC_SymbolTable__Name name) {
       register OOC_INT32 i0,i1,i2;
 
-      i0 = (OOC_INT32)OOC_SymbolTable_ImportModules__importModulesContext;
-      i1 = code;
-      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i0, i1);
+      i0 = code;
+      i1 = (OOC_INT32)OOC_SymbolTable_ImportModules__importModulesContext;
+      i0 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i0);
       lastError = (Msg__Msg)i0;
       i1 = (OOC_INT32)name;
       i2 = *(OOC_INT32*)(_check_pointer(i1, 2015));
@@ -49,12 +49,12 @@ void OOC_SymbolTable_ImportModules__ImportModules(OOC_SymbolTable__Module system
       i0 = (OOC_INT32)lastError;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 2120))+8);
       OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2090)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, i2);
-      i0 = (OOC_INT32)lastError;
-      i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 2195))+12);
+      i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 2195))+12);
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 2195))+12);
-      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 2200)), 0);
-      i1 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i2, 2200)), i1);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2146)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i0, "name", 5, (Msg__StringPtr)i1);
+      i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 2200)), 0);
+      i0 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i1, 2200)), i0);
+      i1 = (OOC_INT32)lastError;
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2146)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "name", 5, (Msg__StringPtr)i0);
       i0 = (OOC_INT32)errList;
       i1 = (OOC_INT32)lastError;
       OOC_Error__ListDesc_Append((OOC_Error__List)i0, (Msg__Msg)i1);
@@ -74,9 +74,9 @@ void OOC_SymbolTable_ImportModules__ImportModules(OOC_SymbolTable__Module system
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 2532))+12);
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2520))+48);
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 2532))+12);
-      i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 2537)), 0);
+      i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 2537)), 0);
       i3 = (OOC_INT32)OOC_Config__repositories;
-      i1 = (OOC_INT32)OOC_Config_Repositories__SectionDesc_GetModule((OOC_Config_Repositories__Section)i3, (void*)(_check_pointer(i1, 2537)), i2);
+      i1 = (OOC_INT32)OOC_Config_Repositories__SectionDesc_GetModule((OOC_Config_Repositories__Section)i3, (void*)(_check_pointer(i2, 2537)), i1);
       m = (OOC_Repository__Module)i1;
       i2 = i1==(OOC_INT32)0;
       if (i2) goto l9;

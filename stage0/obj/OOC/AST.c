@@ -15,7 +15,7 @@ void OOC_AST__InitVisitor(OOC_AST__Visitor v) {
 }
 
 void OOC_AST__VisitorDesc_VisitNodeList(OOC_AST__Visitor v, OOC_AST__NodeList nl) {
-  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6;
+  register OOC_INT32 i0,i1,i2,i3,i4,i5,i6,i7;
   OOC_INT32 i;
 
   i0 = (OOC_INT32)nl;
@@ -35,12 +35,12 @@ l3_loop:
   i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16950))+4);
   i4 = _check_pointer(i4, 16953);
   i5 = OOC_ARRAY_LENGTH(i4, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16950))+4);
+  i6 = _check_pointer(i6, 16953);
+  i7 = OOC_ARRAY_LENGTH(i6, 0);
+  i6 = (OOC_INT32)*(OOC_INT32*)(i6+(_check_index(i3, i7, OOC_UINT32, 16953))*4);
   i4 = (OOC_INT32)*(OOC_INT32*)(i4+(_check_index(i3, i5, OOC_UINT32, 16953))*4);
-  i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 16950))+4);
-  i5 = _check_pointer(i5, 16953);
-  i6 = OOC_ARRAY_LENGTH(i5, 0);
-  i5 = (OOC_INT32)*(OOC_INT32*)(i5+(_check_index(i3, i6, OOC_UINT32, 16953))*4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 16956)))), OOC_AST__NodeDesc_Accept)),OOC_AST__NodeDesc_Accept)((OOC_AST__Node)i5, (OOC_AST__Visitor)i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 16956)))), OOC_AST__NodeDesc_Accept)),OOC_AST__NodeDesc_Accept)((OOC_AST__Node)i4, (OOC_AST__Visitor)i2);
 l6:
   i3 = i3+1;
   i = i3;
@@ -482,20 +482,20 @@ Object__String OOC_AST__TerminalDesc_GetString(OOC_AST__Terminal terminal, OOC_C
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 23874))+8);
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 23869));
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 23874))+8);
-  i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 23879)), 0);
-  i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i1, 23879)), i0);
+  i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 23879)), 0);
+  i0 = (OOC_INT32)Object__NewLatin1((void*)(_check_pointer(i0, 23879)), i1);
   return (Object__String)i0;
   goto l4;
 l3:
   i0 = (OOC_INT32)terminal;
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 23752));
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 23757))+8);
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 23807));
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 23752));
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 23757))+8);
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 23807));
-  i0 = *(OOC_INT32*)((_check_pointer(i0, 23812))+12);
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 23752));
+  i1 = *(OOC_INT32*)((_check_pointer(i1, 23812))+12);
+  i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 23757))+8);
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 23762)), 0);
-  i0 = (OOC_INT32)Object__NewLatin1Region((void*)(_check_pointer(i1, 23762)), i2, 1, (i0-1));
+  i0 = (OOC_INT32)Object__NewLatin1Region((void*)(_check_pointer(i0, 23762)), i2, 1, (i1-1));
   return (Object__String)i0;
 l4:
   _failed_function(23632); return 0;
