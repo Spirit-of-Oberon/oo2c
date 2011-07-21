@@ -12,14 +12,14 @@ static RT0__Struct ADT_Object_Storage__string16;
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_ADT_Object_Storage__2084 = { (RT0__Struct[]){&_td_ADT_Object_Storage__2084}, (void*[]){}, NULL, &_mid, NULL, 12, 0, 0, RT0__strRecord };
-RT0__StructDesc _td_ADT_Object_Storage__2075 = { (RT0__Struct[]){&_td_ADT_Object_Storage__2084}, NULL, NULL, &_mid, NULL, 12, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_ADT_Object_Storage__TypeRefMap = { (RT0__Struct[]){&_td_ADT_Object_Storage__2075}, NULL, NULL, &_mid, (OOC_CHAR8*)"TypeRefMap", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_ADT_Object_Storage__2185 = { (RT0__Struct[]){&_td_Object__Object}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_ADT_Object_Storage__ObjectArray = { (RT0__Struct[]){&_td_ADT_Object_Storage__2185}, NULL, NULL, &_mid, (OOC_CHAR8*)"ObjectArray", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_ADT_Object_Storage__2243 = { (RT0__Struct[]){&_td_ADT_Object_Storage__2243}, (void*[]){}, NULL, &_mid, NULL, 12, 0, 0, RT0__strRecord };
-RT0__StructDesc _td_ADT_Object_Storage__2234 = { (RT0__Struct[]){&_td_ADT_Object_Storage__2243}, NULL, NULL, &_mid, NULL, 12, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_ADT_Object_Storage__TypeArray = { (RT0__Struct[]){&_td_ADT_Object_Storage__2234}, NULL, NULL, &_mid, (OOC_CHAR8*)"TypeArray", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_ADT_Object_Storage__2090 = { (RT0__Struct[]){&_td_ADT_Object_Storage__2090}, (void*[]){}, NULL, &_mid, NULL, 12, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_ADT_Object_Storage__2081 = { (RT0__Struct[]){&_td_ADT_Object_Storage__2090}, NULL, NULL, &_mid, NULL, 12, 1, 0, RT0__strOpenArray };
+RT0__StructDesc _td_ADT_Object_Storage__TypeRefMap = { (RT0__Struct[]){&_td_ADT_Object_Storage__2081}, NULL, NULL, &_mid, (OOC_CHAR8*)"TypeRefMap", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_ADT_Object_Storage__2191 = { (RT0__Struct[]){&_td_Object__Object}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
+RT0__StructDesc _td_ADT_Object_Storage__ObjectArray = { (RT0__Struct[]){&_td_ADT_Object_Storage__2191}, NULL, NULL, &_mid, (OOC_CHAR8*)"ObjectArray", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_ADT_Object_Storage__2249 = { (RT0__Struct[]){&_td_ADT_Object_Storage__2249}, (void*[]){}, NULL, &_mid, NULL, 12, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_ADT_Object_Storage__2240 = { (RT0__Struct[]){&_td_ADT_Object_Storage__2249}, NULL, NULL, &_mid, NULL, 12, 1, 0, RT0__strOpenArray };
+RT0__StructDesc _td_ADT_Object_Storage__TypeArray = { (RT0__Struct[]){&_td_ADT_Object_Storage__2240}, NULL, NULL, &_mid, (OOC_CHAR8*)"TypeArray", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_ADT_Object_Storage__CharBuffer = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, (OOC_CHAR8*)"CharBuffer", 256, 256, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_ADT_Object_Storage__Reader = { (RT0__Struct[]){&_td_ADT_Object_Storage__ReaderDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"Reader", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_ADT_Object_Storage__ReaderDesc = { (RT0__Struct[]){&_td_IO_BinaryRider__ReaderDesc,&_td_ADT_Storable__ReaderDesc,&_td_ADT_Object_Storage__ReaderDesc}, (void*[]){(void*)IO_BinaryRider__ReaderDesc_SetPos,(void*)IO_BinaryRider__ReaderDesc_ReadBytes,(void*)IO_BinaryRider__ReaderDesc_ReadBytesOrdered,(void*)IO_BinaryRider__ReaderDesc_ReadBool,(void*)IO_BinaryRider__ReaderDesc_ReadChar,(void*)IO_BinaryRider__ReaderDesc_ReadLChar,(void*)IO_BinaryRider__ReaderDesc_ReadString,(void*)IO_BinaryRider__ReaderDesc_ReadLString,(void*)IO_BinaryRider__ReaderDesc_ReadSInt,(void*)IO_BinaryRider__ReaderDesc_ReadInt,(void*)IO_BinaryRider__ReaderDesc_ReadLInt,(void*)IO_BinaryRider__ReaderDesc_ReadNum,(void*)IO_BinaryRider__ReaderDesc_ReadReal,(void*)IO_BinaryRider__ReaderDesc_ReadLReal,(void*)IO_BinaryRider__ReaderDesc_ReadSet,(void*)IO_BinaryRider__ReaderDesc_ReadStr,(void*)IO_BinaryRider__ReaderDesc_SetByteOrder,(void*)ADT_Object_Storage__ReaderDesc_INIT,(void*)ADT_Object_Storage__ReaderDesc_ReadObject,(void*)ADT_Object_Storage__ReaderDesc_Disconnect}, NULL, &_mid, (OOC_CHAR8*)"ReaderDesc", 280, 2, 0, RT0__strRecord };

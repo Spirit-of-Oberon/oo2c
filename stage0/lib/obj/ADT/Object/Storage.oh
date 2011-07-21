@@ -75,13 +75,13 @@ extern void OOC_ADT_Object_Storage_destroy(void);
 extern void OOC_ADT_Object_Storage_close(RT0__Module client);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_ADT_Object_Storage__2084;
-extern RT0__StructDesc _td_ADT_Object_Storage__2075;
+extern RT0__StructDesc _td_ADT_Object_Storage__2090;
+extern RT0__StructDesc _td_ADT_Object_Storage__2081;
 extern RT0__StructDesc _td_ADT_Object_Storage__TypeRefMap;
-extern RT0__StructDesc _td_ADT_Object_Storage__2185;
+extern RT0__StructDesc _td_ADT_Object_Storage__2191;
 extern RT0__StructDesc _td_ADT_Object_Storage__ObjectArray;
-extern RT0__StructDesc _td_ADT_Object_Storage__2243;
-extern RT0__StructDesc _td_ADT_Object_Storage__2234;
+extern RT0__StructDesc _td_ADT_Object_Storage__2249;
+extern RT0__StructDesc _td_ADT_Object_Storage__2240;
 extern RT0__StructDesc _td_ADT_Object_Storage__TypeArray;
 extern RT0__StructDesc _td_ADT_Object_Storage__CharBuffer;
 extern RT0__StructDesc _td_ADT_Object_Storage__Reader;

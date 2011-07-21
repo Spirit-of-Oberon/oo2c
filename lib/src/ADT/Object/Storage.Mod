@@ -1,7 +1,7 @@
-(*	$Id: Storage.Mod,v 1.18 2004/11/21 20:31:44 mva Exp $	*)
+(*	$Id: Storage.Mod,v 1.19 2006/06/27 19:11:38 mva Exp $	*)
 MODULE ADT:Object:Storage;
 (*  Implements a framework for persistent objects.
-    Copyright (C) 2000, 2001, 2003, 2004  Michael van Acken
+    Copyright (C) 2000, 2001, 2003, 2004, 2006  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -196,7 +196,7 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object) RAISES IO.Error;
         module := RT0.ThisModule (r. name);
         IF (module = NIL) THEN
           len := Strings.Length (r. name)+1;
-          NEW (r. typeTab[tref]. moduleName, len);
+          SYSTEM.NEW (r. typeTab[tref]. moduleName, len);
           FOR i := 0 TO len-1 DO
             r.typeTab[tref].moduleName[i] := r.name[i];
           END;
@@ -209,7 +209,7 @@ PROCEDURE (r: Reader) ReadObject* (VAR obj: Object.Object) RAISES IO.Error;
         END;
         IF (tp = NIL) THEN
           len := Strings.Length (r. name)+1;
-          NEW (r. typeTab[tref]. typeName, len);
+          SYSTEM.NEW (r. typeTab[tref]. typeName, len);
           FOR i := 0 TO len-1 DO
             r.typeTab[tref].typeName[i] := r.name[i];
           END;

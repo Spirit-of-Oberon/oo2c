@@ -1,9 +1,9 @@
-(*	$Id: TextRider.Mod,v 1.9 2005/02/26 17:30:19 mva Exp $	*)
+(*	$Id: TextRider.Mod,v 1.10 2006/10/05 08:39:27 mva Exp $	*)
 MODULE IO:TextRider [OOC_EXTENSIONS];
 
 (*
     TextRider -  Text-based input/output of Oberon variables.
-    Copyright (C) 1998, 1999, 2002, 2003  Michael van Acken
+    Copyright (C) 1998, 1999, 2002, 2003, 2006  Michael van Acken
     Copyright (C) 1997  Michael Griebling
     Copyright (C) 2003  Tim Teulings
 
@@ -198,6 +198,8 @@ PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
     chars: Object.CharsLatin1;
     s: Object.String;
     i: LONGINT;
+    chars16: Object.CharsUTF16;
+    s8: Object.String8;
   BEGIN
     IF (obj = NIL) THEN
       w.WriteString("<NIL>");
@@ -208,7 +210,16 @@ PROCEDURE (w: Writer) WriteObject*(obj: Object.Object);
           chars := s.CharsLatin1();
           i := w.channel.Write(chars^, 0, s.length);
         | s: Object.String16 DO
-          w.WriteString("[IO:TextRider.WriteObject: String16 not implemented]");
+          chars16 := s.CharsUTF16();
+          FOR i := 0 TO s.length-1 DO
+            IF (chars16[i] >= 100X) THEN
+              w.WriteString("[IO:TextRider.WriteObject: String16 not implemented]");
+              RETURN;
+            END;
+          END;
+          s8 := s.ToString8("?");
+          chars := s8.CharsLatin1();
+          i := w.channel.Write(chars^, 0, s8.length);
         END;
       CATCH IO.Error:
         SetError(w);

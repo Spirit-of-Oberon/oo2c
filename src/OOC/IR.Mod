@@ -1,7 +1,7 @@
-(* 	$Id: IR.Mod,v 1.289 2005/10/08 15:52:24 mva Exp $	 *)
+(* 	$Id: IR.Mod,v 1.290 2006/06/27 19:12:52 mva Exp $	 *)
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
-    Copyright (C) 2001-2005  Michael van Acken, Stewart Greenhill
+    Copyright (C) 2001-2006  Michael van Acken, Stewart Greenhill
 
     This file is part of OOC.
 
@@ -1220,6 +1220,7 @@ CONST
   notIteratorObject = 77;
   noNextMethod = 78;
   notSetType = 79;
+  newNotApplicable = 80;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -1444,6 +1445,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "The iterator object has no Next() method with a valid signature";
     | notSetType:
       t := "Not a set type";
+    | newNotApplicable:
+      t := "Builtin NEW() is not applicable to this pointer type";
     END;
     context. BaseTemplate (msg, t, templ)
   END GetTemplate;
@@ -6319,6 +6322,10 @@ PROCEDURE (b: Builder) NewCall* (design: Expression;
         ELSIF (type IS Sym.Pointer) THEN
           b.AssertVar(arguments[0]);
           type := type(Sym.Pointer).baseType.Deparam();
+          IF ~type.hasDescriptor OR
+             (type IS Sym.Array) & ~type(Sym.Array).hasLengthInfo THEN
+            b.ErrSym(newNotApplicable, arguments[0].sym);
+          END;
           IF (type IS Sym.Array) THEN
             dim := 1+type(Sym.Array).GetOpenDimensions();
             IF CheckNumberOfArguments (dim, dim) THEN
