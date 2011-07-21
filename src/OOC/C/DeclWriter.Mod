@@ -1,4 +1,4 @@
-(* 	$Id: DeclWriter.Mod,v 1.68 2003/10/05 14:30:52 mva Exp $	 *)
+(* 	$Id: DeclWriter.Mod,v 1.69 2004/04/05 06:17:42 sgreenhill Exp $	 *)
 MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 (*  Defines classes to handle C declarations, types, and include statements.
     Copyright (C) 2001-2003  Michael van Acken
@@ -975,6 +975,8 @@ PROCEDURE (fct: Function) WriteLeft (w: Writer);
       (* w.WriteString("__attribute__ ((cdecl)) "); *)
     | Sym.callConvPascal:
       w.WriteString("__attribute__ ((stdcall)) ");
+    | Sym.callConvFastcall:
+      w.WriteString("__attribute__ ((fastcall)) ");
     ELSE
     END;
   END WriteLeft;

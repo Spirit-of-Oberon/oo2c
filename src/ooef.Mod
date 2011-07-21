@@ -1,4 +1,4 @@
-(* 	$Id: ooef.Mod,v 1.8 2004/02/14 14:55:38 mva Exp $	 *)
+(* 	$Id: ooef.Mod,v 1.9 2004/04/01 20:36:12 mva Exp $	 *)
 MODULE ooef;  
 (*  Filter to convert error messages emitted by oo2c into other formats.
     Copyright (C) 1995-1999, 2002, 2003, 2004  Michael van Acken
@@ -21,8 +21,8 @@ MODULE ooef;
 *)
 
 IMPORT
-  In, Out, StdChannels, Str := Strings, IntConv, Channel, Files, Ascii,
-  CharClass, IntStr, Object, 
+  In, Out, Str := Strings, IntConv, Channel, Files, Ascii,
+  CharClass, IntStr, Object, IO:StdChannels, 
   CfgData := Config, Config:Section:Options,
   OOC:Config, OOC:Config:CCompiler, E := OOC:Error, OOC:Repository;
 

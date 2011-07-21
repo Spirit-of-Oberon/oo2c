@@ -1,4 +1,4 @@
-(* 	$Id: Statistics.Mod,v 1.2 2003/08/24 00:03:57 mva Exp $	 *)
+(* 	$Id: Statistics.Mod,v 1.3 2004/04/01 20:36:12 mva Exp $	 *)
 MODULE OOC:Scanner:Statistics;
 (*  Displays statistics about the symbols of a module.
     Copyright (C) 2000  Michael van Acken
@@ -25,7 +25,7 @@ symbol, it lists how often it appears in the input text, and how many
 characters are used by these symbols.  *)
 
 IMPORT
-  Channel, TextRider, Strings, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol,
+  IO, IO:TextRider, Strings, OOC:Scanner:InputBuffer, OOC:Scanner:Symbol,
   B := OOC:Scanner:SymList;
 
 CONST
@@ -41,7 +41,7 @@ TYPE
     symPerId, sizePerId: ARRAY maxSymbols OF LONGINT;
   END;
 
-PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: Channel.Channel);
+PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: IO.ByteChannel);
   VAR
     i: LONGINT;
   BEGIN
@@ -55,7 +55,7 @@ PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: Channel.Channel);
     END
   END Init;
 
-PROCEDURE New* (buffer: InputBuffer.Buffer; ch: Channel.Channel): Builder;
+PROCEDURE New* (buffer: InputBuffer.Buffer; ch: IO.ByteChannel): Builder;
   VAR
     b: Builder;
   BEGIN

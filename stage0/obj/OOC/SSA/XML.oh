@@ -79,9 +79,9 @@ extern RT0__StructDesc _td_OOC_SSA_XML__Writer;
 extern RT0__StructDesc _td_OOC_SSA_XML__WriterDesc;
 extern RT0__StructDesc _td_OOC_SSA_XML__2193;
 extern RT0__StructDesc _td_OOC_SSA_XML__2248;
-extern RT0__StructDesc _td_OOC_SSA_XML__4184;
-extern RT0__StructDesc _td_OOC_SSA_XML__4398;
-extern RT0__StructDesc _td_OOC_SSA_XML__4861;
+extern RT0__StructDesc _td_OOC_SSA_XML__4192;
+extern RT0__StructDesc _td_OOC_SSA_XML__4406;
+extern RT0__StructDesc _td_OOC_SSA_XML__4869;
 #endif /* _MODULE_OOC_SSA_XML_ */
 
 /* --- */

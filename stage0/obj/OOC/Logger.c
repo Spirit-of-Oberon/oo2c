@@ -302,6 +302,8 @@ l7:
 void OOC_OOC_Logger_init(void) {
   register OOC_INT32 i0;
 
+  i0 = (OOC_INT32)URI_Scheme_File__NewPrototype();
+  URI__RegisterScheme((URI__URI)i0);
   i0 = (OOC_INT32)URI_Scheme_File__GetCwd();
   OOC_Logger__cwd = (URI_Scheme_File__URI)i0;
   OOC_Logger__indentMake = 0;

@@ -409,11 +409,11 @@ extern RT0__StructDesc _td_OOC_SSA__TypeRefDesc;
 extern RT0__StructDesc _td_OOC_SSA__AddressDesc;
 extern RT0__StructDesc _td_OOC_SSA__ProcBlock;
 extern RT0__StructDesc _td_OOC_SSA__ProcBlockDesc;
-extern RT0__StructDesc _td_OOC_SSA__7838;
-extern RT0__StructDesc _td_OOC_SSA__17664;
-extern RT0__StructDesc _td_OOC_SSA__26683;
-extern RT0__StructDesc _td_OOC_SSA__31937;
-extern RT0__StructDesc _td_OOC_SSA__31969;
+extern RT0__StructDesc _td_OOC_SSA__7836;
+extern RT0__StructDesc _td_OOC_SSA__17662;
+extern RT0__StructDesc _td_OOC_SSA__26681;
+extern RT0__StructDesc _td_OOC_SSA__31935;
+extern RT0__StructDesc _td_OOC_SSA__31967;
 #endif /* _MODULE_OOC_SSA_ */
 
 /* --- */

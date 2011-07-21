@@ -62,7 +62,7 @@ typedef struct OOC_SSA_WriteC__VisitorDesc {
   ADT_Dictionary__Dictionary nonLocalAccess;
 } OOC_SSA_WriteC__VisitorDesc;
 extern void OOC_SSA_WriteC__VisitorDesc_VisitProcedure(OOC_SSA_WriteC__Visitor v, OOC_IR__Procedure procedure);
-#define _TBN_OOC_SSA_WriteC__VisitorDesc_VisitProcedure 58
+#define _TBN_OOC_SSA_WriteC__VisitorDesc_VisitProcedure 60
 typedef void (*_TBP_OOC_SSA_WriteC__VisitorDesc_VisitProcedure)(OOC_SSA_WriteC__Visitor v, OOC_IR__Procedure procedure);
 extern void OOC_SSA_WriteC__VisitorDesc_VisitVar(OOC_SSA_WriteC__Visitor v, OOC_IR__Var var);
 #define _TBN_OOC_SSA_WriteC__VisitorDesc_VisitVar 36

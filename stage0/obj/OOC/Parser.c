@@ -2903,19 +2903,24 @@ l13:
                   OOC_AST__Node _for;
                   OOC_AST__Node ident;
                   OOC_AST__Node becomes;
+                  OOC_AST__Node range;
+                  OOC_AST__Node _do;
+                  OOC_AST__NodeList statmSeq;
+                  OOC_AST__Node end;
                   OOC_AST__Node startValue;
                   OOC_AST__Node to;
                   OOC_AST__Node endValue;
                   OOC_AST__Node by;
                   OOC_AST__Node step;
-                  OOC_AST__Node _do;
-                  OOC_AST__NodeList statmSeq;
-                  OOC_AST__Node end;
 
                   i0 = (OOC_INT32)OOC_Parser__Module_CheckSym(57);
                   _for = (OOC_AST__Node)i0;
                   i1 = (OOC_INT32)OOC_Parser__Module_CheckSym(45);
                   ident = (OOC_AST__Node)i1;
+                  i2 = (OOC_INT32)sym;
+                  i2 = *(OOC_INT8*)((_check_pointer(i2, 52807))+4);
+                  i2 = i2==15;
+                  if (i2) goto l7;
                   i2 = (OOC_INT32)OOC_Parser__Module_CheckSym(36);
                   becomes = (OOC_AST__Node)i2;
                   i3 = (OOC_INT32)OOC_Parser__Module_Expr();
@@ -2925,20 +2930,20 @@ l13:
                   i5 = (OOC_INT32)OOC_Parser__Module_Expr();
                   endValue = (OOC_AST__Node)i5;
                   i6 = (OOC_INT32)sym;
-                  i6 = *(OOC_INT8*)((_check_pointer(i6, 52901))+4);
+                  i6 = *(OOC_INT8*)((_check_pointer(i6, 53365))+4);
                   i6 = i6==31;
-                  if (i6) goto l3;
+                  if (i6) goto l5;
                   by = (OOC_AST__Node)(OOC_INT32)0;
                   step = (OOC_AST__Node)(OOC_INT32)0;
                   i6=(OOC_INT32)0;i7=(OOC_INT32)0;
-                  goto l4;
-l3:
+                  goto l6;
+l5:
                   i6 = (OOC_INT32)OOC_Parser__Module_CheckSym(31);
                   by = (OOC_AST__Node)i6;
                   i7 = (OOC_INT32)OOC_Parser__Module_Expr();
                   step = (OOC_AST__Node)i7;
                   
-l4:
+l6:
                   i8 = (OOC_INT32)OOC_Parser__Module_CheckSym(29);
                   _do = (OOC_AST__Node)i8;
                   i9 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq();
@@ -2946,8 +2951,25 @@ l4:
                   i10 = (OOC_INT32)OOC_Parser__Module_CheckSym(48);
                   end = (OOC_AST__Node)i10;
                   i11 = (OOC_INT32)ast;
-                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i11, 53224)))), OOC_AST__BuilderDesc_ForStatm)),OOC_AST__BuilderDesc_ForStatm)((OOC_AST__Builder)i11, (OOC_AST__Node)i0, (OOC_AST__Node)i1, (OOC_AST__Node)i2, (OOC_AST__Node)i3, (OOC_AST__Node)i4, (OOC_AST__Node)i5, (OOC_AST__Node)i6, (OOC_AST__Node)i7, (OOC_AST__Node)i8, (OOC_AST__NodeList)i9, (OOC_AST__Node)i10);
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i11, 53708)))), OOC_AST__BuilderDesc_ForStatm)),OOC_AST__BuilderDesc_ForStatm)((OOC_AST__Builder)i11, (OOC_AST__Node)i0, (OOC_AST__Node)i1, (OOC_AST__Node)i2, (OOC_AST__Node)i3, (OOC_AST__Node)i4, (OOC_AST__Node)i5, (OOC_AST__Node)i6, (OOC_AST__Node)i7, (OOC_AST__Node)i8, (OOC_AST__NodeList)i9, (OOC_AST__Node)i10);
                   return (OOC_AST__Node)i0;
+                  goto l8;
+l7:
+                  i2 = (OOC_INT32)OOC_Parser__Module_CheckSym(15);
+                  becomes = (OOC_AST__Node)i2;
+                  i3 = (OOC_INT32)OOC_Parser__Module_Expr();
+                  range = (OOC_AST__Node)i3;
+                  i4 = (OOC_INT32)OOC_Parser__Module_CheckSym(29);
+                  _do = (OOC_AST__Node)i4;
+                  i5 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq();
+                  statmSeq = (OOC_AST__NodeList)i5;
+                  i6 = (OOC_INT32)OOC_Parser__Module_CheckSym(48);
+                  end = (OOC_AST__Node)i6;
+                  i7 = (OOC_INT32)ast;
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i7, 53059)))), OOC_AST__BuilderDesc_IterateStatm)),OOC_AST__BuilderDesc_IterateStatm)((OOC_AST__Builder)i7, (OOC_AST__Node)i0, (OOC_AST__Node)i1, (OOC_AST__Node)i2, (OOC_AST__Node)i3, (OOC_AST__Node)i4, (OOC_AST__NodeList)i5, (OOC_AST__Node)i6);
+                  return (OOC_AST__Node)i0;
+l8:
+                  _failed_function(52318); return 0;
                   ;
                 }
 
@@ -2965,7 +2987,7 @@ l4:
                   i2 = (OOC_INT32)OOC_Parser__Module_CheckSym(48);
                   end = (OOC_AST__Node)i2;
                   i3 = (OOC_INT32)ast;
-                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 53729)))), OOC_AST__BuilderDesc_LoopStatm)),OOC_AST__BuilderDesc_LoopStatm)((OOC_AST__Builder)i3, (OOC_AST__Node)i0, (OOC_AST__NodeList)i1, (OOC_AST__Node)i2);
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 54233)))), OOC_AST__BuilderDesc_LoopStatm)),OOC_AST__BuilderDesc_LoopStatm)((OOC_AST__Builder)i3, (OOC_AST__Node)i0, (OOC_AST__NodeList)i1, (OOC_AST__Node)i2);
                   return (OOC_AST__Node)i0;
                   ;
                 }
@@ -2982,10 +3004,10 @@ l4:
                   OOC_AST__Node end;
 
                   i0 = (OOC_INT32)ast;
-                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54181)))), OOC_AST__BuilderDesc_NewNodeList)),OOC_AST__BuilderDesc_NewNodeList)((OOC_AST__Builder)i0);
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54685)))), OOC_AST__BuilderDesc_NewNodeList)),OOC_AST__BuilderDesc_NewNodeList)((OOC_AST__Builder)i0);
                   guardList = (OOC_AST__NodeList)i0;
                   i1 = (OOC_INT32)OOC_Parser__Module_CheckSym(58);
-                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54219)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54723)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
 l1_loop:
                   i1 = (OOC_INT32)OOC_Parser__Module_Qualident();
                   var = (OOC_AST__Node)i1;
@@ -2994,21 +3016,21 @@ l1_loop:
                   i3 = (OOC_INT32)OOC_Parser__Module_QualType();
                   type = (OOC_AST__Node)i3;
                   i4 = (OOC_INT32)ast;
-                  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 54423)))), OOC_AST__BuilderDesc_Operator)),OOC_AST__BuilderDesc_Operator)((OOC_AST__Builder)i4, (OOC_AST__Node)i1, (OOC_AST__Node)i2, (OOC_AST__Node)i3);
-                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54410)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+                  i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 54927)))), OOC_AST__BuilderDesc_Operator)),OOC_AST__BuilderDesc_Operator)((OOC_AST__Builder)i4, (OOC_AST__Node)i1, (OOC_AST__Node)i2, (OOC_AST__Node)i3);
+                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54914)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
                   i1 = (OOC_INT32)OOC_Parser__Module_CheckSym(29);
-                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54478)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54982)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
                   i1 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq();
-                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54534)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 55038)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
                   i1 = (OOC_INT32)sym;
-                  i2 = *(OOC_INT8*)((_check_pointer(i1, 54582))+4);
+                  i2 = *(OOC_INT8*)((_check_pointer(i1, 55086))+4);
                   i2 = i2==47;
                   if (!i2) goto l6;
                   i1 = (OOC_INT32)OOC_Parser__Module_CheckSym(47);
-                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 54631)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 55135)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
                   goto l1_loop;
 l6:
-                  i1 = *(OOC_INT8*)((_check_pointer(i1, 54758))+4);
+                  i1 = *(OOC_INT8*)((_check_pointer(i1, 55262))+4);
                   i1 = i1==49;
                   if (i1) goto l9;
                   _else = (OOC_AST__Node)(OOC_INT32)0;
@@ -3025,7 +3047,7 @@ l10:
                   i3 = (OOC_INT32)OOC_Parser__Module_CheckSym(48);
                   end = (OOC_AST__Node)i3;
                   i4 = (OOC_INT32)ast;
-                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 55033)))), OOC_AST__BuilderDesc_WithStatm)),OOC_AST__BuilderDesc_WithStatm)((OOC_AST__Builder)i4, (OOC_AST__NodeList)i0, (OOC_AST__Node)i1, (OOC_AST__NodeList)i2, (OOC_AST__Node)i3);
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 55537)))), OOC_AST__BuilderDesc_WithStatm)),OOC_AST__BuilderDesc_WithStatm)((OOC_AST__Builder)i4, (OOC_AST__NodeList)i0, (OOC_AST__Node)i1, (OOC_AST__NodeList)i2, (OOC_AST__Node)i3);
                   return (OOC_AST__Node)i0;
                   ;
                 }
@@ -3038,7 +3060,7 @@ l10:
                   i0 = (OOC_INT32)OOC_Parser__Module_CheckSym(60);
                   exit = (OOC_AST__Node)i0;
                   i1 = (OOC_INT32)ast;
-                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 55323)))), OOC_AST__BuilderDesc_ExitStatm)),OOC_AST__BuilderDesc_ExitStatm)((OOC_AST__Builder)i1, (OOC_AST__Node)i0);
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 55827)))), OOC_AST__BuilderDesc_ExitStatm)),OOC_AST__BuilderDesc_ExitStatm)((OOC_AST__Builder)i1, (OOC_AST__Node)i0);
                   return (OOC_AST__Node)i0;
                   ;
                 }
@@ -3052,7 +3074,7 @@ l10:
                   i0 = (OOC_INT32)OOC_Parser__Module_CheckSym(61);
                   _return = (OOC_AST__Node)i0;
                   i1 = (OOC_INT32)sym;
-                  i1 = *(OOC_INT8*)((_check_pointer(i1, 55605))+4);
+                  i1 = *(OOC_INT8*)((_check_pointer(i1, 56109))+4);
                   i1 = i1<46;
                   if (i1) goto l3;
                   expr = (OOC_AST__Node)(OOC_INT32)0;
@@ -3064,7 +3086,7 @@ l3:
                   
 l4:
                   i2 = (OOC_INT32)ast;
-                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 55746)))), OOC_AST__BuilderDesc_ReturnStatm)),OOC_AST__BuilderDesc_ReturnStatm)((OOC_AST__Builder)i2, (OOC_AST__Node)i0, (OOC_AST__Node)i1);
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 56250)))), OOC_AST__BuilderDesc_ReturnStatm)),OOC_AST__BuilderDesc_ReturnStatm)((OOC_AST__Builder)i2, (OOC_AST__Node)i0, (OOC_AST__Node)i1);
                   return (OOC_AST__Node)i0;
                   ;
                 }
@@ -3093,7 +3115,7 @@ l4:
                       i1 = (OOC_INT32)OOC_Parser__Module_Qualident();
                       type = (OOC_AST__Node)i1;
                       i2 = (OOC_INT32)sym;
-                      i2 = *(OOC_INT8*)((_check_pointer(i2, 56244))+4);
+                      i2 = *(OOC_INT8*)((_check_pointer(i2, 56748))+4);
                       i2 = i2==32;
                       if (i2) goto l3;
                       lParen = (OOC_AST__Node)(OOC_INT32)0;
@@ -3115,7 +3137,7 @@ l4:
                       i6 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq();
                       statmSeq = (OOC_AST__NodeList)i6;
                       i7 = (OOC_INT32)ast;
-                      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i7, 56664)))), OOC_AST__BuilderDesc_Catch)),OOC_AST__BuilderDesc_Catch)((OOC_AST__Builder)i7, (OOC_AST__Node)i0, (OOC_AST__Node)i1, (OOC_AST__Node)i2, (OOC_AST__Node)i3, (OOC_AST__Node)i4, (OOC_AST__Node)i5, (OOC_AST__NodeList)i6);
+                      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i7, 57168)))), OOC_AST__BuilderDesc_Catch)),OOC_AST__BuilderDesc_Catch)((OOC_AST__Builder)i7, (OOC_AST__Node)i0, (OOC_AST__Node)i1, (OOC_AST__Node)i2, (OOC_AST__Node)i3, (OOC_AST__Node)i4, (OOC_AST__Node)i5, (OOC_AST__NodeList)i6);
                       return (OOC_AST__Node)i0;
                       ;
                     }
@@ -3126,18 +3148,18 @@ l4:
                   i0 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq();
                   statmSeq = (OOC_AST__NodeList)i0;
                   i0 = (OOC_INT32)ast;
-                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 57079)))), OOC_AST__BuilderDesc_NewNodeList)),OOC_AST__BuilderDesc_NewNodeList)((OOC_AST__Builder)i0);
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 57583)))), OOC_AST__BuilderDesc_NewNodeList)),OOC_AST__BuilderDesc_NewNodeList)((OOC_AST__Builder)i0);
                   catchList = (OOC_AST__NodeList)i0;
                   i0 = (OOC_INT32)sym;
-                  i0 = *(OOC_INT8*)((_check_pointer(i0, 57117))+4);
+                  i0 = *(OOC_INT8*)((_check_pointer(i0, 57621))+4);
                   i0 = i0==26;
                   if (!i0) goto l8;
 l3_loop:
                   i0 = (OOC_INT32)catchList;
                   i1 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq_Statement_TryStatm_Catch();
-                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 57163)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+                  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 57667)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
                   i0 = (OOC_INT32)sym;
-                  i0 = *(OOC_INT8*)((_check_pointer(i0, 57117))+4);
+                  i0 = *(OOC_INT8*)((_check_pointer(i0, 57621))+4);
                   i0 = i0==26;
                   if (i0) goto l3_loop;
 l8:
@@ -3147,14 +3169,14 @@ l8:
                   i2 = (OOC_INT32)_try;
                   i3 = (OOC_INT32)statmSeq;
                   i4 = (OOC_INT32)catchList;
-                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 57261)))), OOC_AST__BuilderDesc_TryStatm)),OOC_AST__BuilderDesc_TryStatm)((OOC_AST__Builder)i1, (OOC_AST__Node)i2, (OOC_AST__NodeList)i3, (OOC_AST__NodeList)i4, (OOC_AST__Node)i0);
+                  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 57765)))), OOC_AST__BuilderDesc_TryStatm)),OOC_AST__BuilderDesc_TryStatm)((OOC_AST__Builder)i1, (OOC_AST__Node)i2, (OOC_AST__NodeList)i3, (OOC_AST__NodeList)i4, (OOC_AST__Node)i0);
                   return (OOC_AST__Node)i0;
                   ;
                 }
 
 
               i0 = (OOC_INT32)sym;
-              i0 = *(OOC_INT8*)((_check_pointer(i0, 57593))+4);
+              i0 = *(OOC_INT8*)((_check_pointer(i0, 58097))+4);
               switch (i0) {
               case 45:
                 i0 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq_Statement_ProcCallOrAssignment();
@@ -3211,22 +3233,22 @@ l14:
 
 
           i0 = (OOC_INT32)ast;
-          i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 58403)))), OOC_AST__BuilderDesc_NewNodeList)),OOC_AST__BuilderDesc_NewNodeList)((OOC_AST__Builder)i0);
+          i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 58907)))), OOC_AST__BuilderDesc_NewNodeList)),OOC_AST__BuilderDesc_NewNodeList)((OOC_AST__Builder)i0);
           list = (OOC_AST__NodeList)i0;
           i1 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq_Statement();
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 58432)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 58936)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
           i0 = (OOC_INT32)sym;
-          i0 = *(OOC_INT8*)((_check_pointer(i0, 58474))+4);
+          i0 = *(OOC_INT8*)((_check_pointer(i0, 58978))+4);
           i0 = i0==46;
           if (!i0) goto l8;
 l3_loop:
           i0 = (OOC_INT32)list;
           i1 = (OOC_INT32)OOC_Parser__Module_CheckSym(46);
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 58516)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 59020)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
           i1 = (OOC_INT32)OOC_Parser__Module_Body_StatementSeq_Statement();
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 58570)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 59074)))), OOC_AST__NodeListDesc_Append)),OOC_AST__NodeListDesc_Append)((OOC_AST__NodeList)i0, (OOC_AST__Node)i1);
           i0 = (OOC_INT32)sym;
-          i0 = *(OOC_INT8*)((_check_pointer(i0, 58474))+4);
+          i0 = *(OOC_INT8*)((_check_pointer(i0, 58978))+4);
           i0 = i0==46;
           if (i0) goto l3_loop;
 l8:
@@ -3240,7 +3262,7 @@ l8:
           register OOC_INT32 i0,i1;
 
           i0 = (OOC_INT32)errList;
-          i0 = *(OOC_INT32*)(_check_pointer(i0, 58755));
+          i0 = *(OOC_INT32*)(_check_pointer(i0, 59259));
           i0 = i0==0;
           if (i0) goto l3;
           i0=0u;
@@ -3249,15 +3271,15 @@ l3:
           i0 = (OOC_INT32)head;
           i1 = (OOC_INT32)tail;
           i0 = (
-          _cmp8((const void*)(_check_pointer(i0, 58778)),(const void*)(_check_pointer(i1, 58786))))!=0;
+          _cmp8((const void*)(_check_pointer(i0, 59282)),(const void*)(_check_pointer(i1, 59290))))!=0;
           
 l5:
           if (!i0) goto l7;
           i0 = (OOC_INT32)sym;
           OOC_Parser__Module_Err(5, (OOC_Scanner_SymList__Symbol)i0);
           i0 = (OOC_INT32)head;
-          i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 58868)), 0);
-          OOC_Parser__Module_ErrStringAttrib("name", 5, (void*)(_check_pointer(i0, 58868)), i1);
+          i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 59372)), 0);
+          OOC_Parser__Module_ErrStringAttrib("name", 5, (void*)(_check_pointer(i0, 59372)), i1);
 l7:
           return;
           ;
@@ -3267,7 +3289,7 @@ l7:
       i0 = (OOC_INT32)OOC_Parser__Module_Body_DeclSeq();
       declSeq = (OOC_AST__NodeList)i0;
       i0 = (OOC_INT32)sym;
-      i0 = *(OOC_INT8*)((_check_pointer(i0, 59029))+4);
+      i0 = *(OOC_INT8*)((_check_pointer(i0, 59533))+4);
       i0 = i0==65;
       if (i0) goto l3;
       begin = (OOC_AST__Node)(OOC_INT32)0;
@@ -3294,7 +3316,7 @@ l4:
       i3 = (OOC_INT32)statmSeq;
       i4 = (OOC_INT32)end;
       i5 = (OOC_INT32)name;
-      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 59354)))), OOC_AST__BuilderDesc_Body)),OOC_AST__BuilderDesc_Body)((OOC_AST__Builder)i0, (OOC_AST__NodeList)i1, (OOC_AST__Node)i2, (OOC_AST__NodeList)i3, (OOC_AST__Node)i4, (OOC_AST__Node)i5);
+      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 59858)))), OOC_AST__BuilderDesc_Body)),OOC_AST__BuilderDesc_Body)((OOC_AST__Builder)i0, (OOC_AST__NodeList)i1, (OOC_AST__Node)i2, (OOC_AST__NodeList)i3, (OOC_AST__Node)i4, (OOC_AST__Node)i5);
       return (OOC_AST__Body)i0;
       ;
     }
@@ -3304,13 +3326,13 @@ l4:
   prevSym = (OOC_Scanner_SymList__Symbol)(OOC_INT32)0;
   lastIdentDef = (OOC_AST__Node)(OOC_INT32)0;
   i0 = (OOC_INT32)sym;
-  i1 = *(OOC_INT8*)((_check_pointer(i0, 59505))+4);
+  i1 = *(OOC_INT8*)((_check_pointer(i0, 60009))+4);
   i1 = i1==78;
   if (!i1) goto l8;
 l3_loop:
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 59550));
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 60054));
   sym = (OOC_Scanner_SymList__Symbol)i0;
-  i1 = *(OOC_INT8*)((_check_pointer(i0, 59505))+4);
+  i1 = *(OOC_INT8*)((_check_pointer(i0, 60009))+4);
   i1 = i1==78;
   if (i1) goto l3_loop;
 l8:
@@ -3321,26 +3343,26 @@ l8:
   i0 = (OOC_INT32)OOC_Parser__Module_MultiPartIdent((void*)(OOC_INT32)&headName);
   name = (OOC_AST__Node)i0;
   i0 = (OOC_INT32)ast;
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 59754));
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 60258));
   i1 = i1!=(OOC_INT32)0;
   if (i1) goto l11;
   i0=0u;
   goto l13;
 l11:
   i1 = (OOC_INT32)headName;
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 59807));
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 60311));
   i0 = (
-  _cmp8((const void*)(_check_pointer(i1, 59800)),(const void*)(_check_pointer(i0, 59827))))!=0;
+  _cmp8((const void*)(_check_pointer(i1, 60304)),(const void*)(_check_pointer(i0, 60331))))!=0;
   
 l13:
   if (!i0) goto l15;
   i0 = (OOC_INT32)nameSym;
   OOC_Parser__Module_Err(19, (OOC_Scanner_SymList__Symbol)i0);
   i0 = (OOC_INT32)ast;
-  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 59908));
-  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 59908));
-  i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 59928)), 0);
-  OOC_Parser__Module_ErrStringAttrib("name", 5, (void*)(_check_pointer(i1, 59928)), i0);
+  i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 60412));
+  i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 60412));
+  i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 60432)), 0);
+  OOC_Parser__Module_ErrStringAttrib("name", 5, (void*)(_check_pointer(i1, 60432)), i0);
 l15:
   i0 = (OOC_INT32)name;
   lastIdentDef = (OOC_AST__Node)i0;
@@ -3349,7 +3371,7 @@ l15:
   i0 = (OOC_INT32)OOC_Parser__Module_CheckSym(46);
   scolon = (OOC_AST__Node)i0;
   i0 = (OOC_INT32)sym;
-  i0 = *(OOC_INT8*)((_check_pointer(i0, 60069))+4);
+  i0 = *(OOC_INT8*)((_check_pointer(i0, 60573))+4);
   i0 = i0==70;
   if (i0) goto l18;
   import = (OOC_AST__Node)(OOC_INT32)0;
@@ -3385,7 +3407,7 @@ l23:
   i6 = (OOC_INT32)body;
   i7 = (OOC_INT32)period;
   i8 = (OOC_INT32)headName;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 60407)))), OOC_AST__BuilderDesc_Module)),OOC_AST__BuilderDesc_Module)((OOC_AST__Builder)i0, (OOC_AST__Terminal)i1, (OOC_AST__Node)i2, (OOC_AST__Flags)i3, (OOC_AST__Node)i4, (OOC_AST__Node)i5, (OOC_AST__Body)i6, (OOC_AST__Node)i7, (OOC_Scanner_InputBuffer__CharArray)i8);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 60911)))), OOC_AST__BuilderDesc_Module)),OOC_AST__BuilderDesc_Module)((OOC_AST__Builder)i0, (OOC_AST__Terminal)i1, (OOC_AST__Node)i2, (OOC_AST__Flags)i3, (OOC_AST__Node)i4, (OOC_AST__Node)i5, (OOC_AST__Body)i6, (OOC_AST__Node)i7, (OOC_Scanner_InputBuffer__CharArray)i8);
   return (OOC_AST__Node)i0;
   ;
 }

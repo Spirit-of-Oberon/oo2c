@@ -1,4 +1,4 @@
-(* 	$Id: Aliasing.Mod,v 1.9 2003/09/28 10:15:50 mva Exp $	 *)
+(* 	$Id: Aliasing.Mod,v 1.10 2004/05/09 16:10:26 mva Exp $	 *)
 MODULE OOC:SSA:Aliasing;
 (*  Calculates aliasing between instructions.
     Copyright (C) 2002,2003  Michael van Acken
@@ -231,7 +231,7 @@ PROCEDURE DesignatorAlias* (instr, reference: SSA.Opnd): Id;
     IF IsVariable (instr) & IsVariable (reference) THEN
       (* both designators begin with a variable name (this excludes variable
          parameters, but includes value parameters); this is probably one
-         of the most common cases, and a very simply one *)
+         of the most common cases, and a very simple one *)
       IF (instr. arg(SSA.DeclRef). decl =
           reference. arg(SSA.DeclRef). decl) THEN
         (* both designators begin with the same variable: inspect selectors *)

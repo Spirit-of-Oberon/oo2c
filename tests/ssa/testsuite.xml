@@ -5,10 +5,109 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; assign18 opExprCompat15 opExprCompat16">-->
+  select ="&SetupTestCasesWithOut; opSet9 opSet10 opSet11 opSet12">-->
 
   &TestSetupWithOut;
     
+  <testcases profile="Old IR Tests" default-lang="O1 O2 AO">
+    <test id="constfold1" type="run"
+      file="ConstFold1.Mod" output="ConstFold1.Ref">
+      Simple function involving a constant but no operators.
+    </test>
+
+    <test id="constfold2" type="run"
+      file="ConstFold2.Mod" output="ConstFold2.Ref">
+      A function involving a constant with an operator.
+    </test>
+
+    <test id="constfold3" type="reject" file="ConstFold3.Mod">
+      Incompatible types for operator.
+    </test>
+
+    <test id="constfold4" type="reject" file="ConstFold4.Mod">
+      CONST expression is not constant.
+    </test>
+
+    <test id="constfold5" type="run" 
+      file="ConstFold5.Mod" output="ConstFold5.Ref">
+      ConstFold5 and 6 check that the evaluation of a constant expression
+      assigns the correct type based on the value of the result. In both
+      cases, the most meaningful output is the IR which indicates assigned
+      types. In this example arithmetic operators return MIN/MAX SHORTINT,
+      INTEGER, LONGINT.  
+    </test>
+
+    <test id="constfold6" type="reject" file="ConstFold6.Mod">
+      In this example arithmetic operators return values just outside MIN/MAX
+      SHORTINT,INTEGER,LONGINT. The result type should be larger than the
+      operand types. In the case of LONGINT, the result is a "value out of
+      range error"
+    </test>
+
+    <test id="constfold7" type="run" 
+      file="ConstFold7.Mod" output="ConstFold7.Ref">
+      Define an array type of fixed length, and write out the length
+      using the <code>LEN</code> function.
+    </test>
+    
+    <test id="constfold8" type="run" 
+      file="ConstFold8.Mod" output="ConstFold8.Ref">
+      Define an array type of fixed length and declare a constant
+      using its <code>LEN</code>.
+    </test>
+    
+    <test id="constfold9" type="run" 
+      file="ConstFold9.Mod" output="ConstFold9.Ref">
+      Similar to <code>constfold7</code>, but the array type's length
+      is taken from a declared constant.
+    </test>
+    
+    <test id="constfold10" type="run" 
+      file="ConstFold10.Mod" output="ConstFold10.Ref">
+      Calls <code>SIZE</code> on the predefined type <code>CHAR</code>.
+    </test>
+    
+    <test id="constfold11" type="run" 
+      file="ConstFold11.Mod" output="ConstFold11.Ref">
+      Calls <code>SIZE</code> on an array type.
+    </test>
+
+    <test id="constfold12" type="run" 
+      file="ConstFold12.Mod" output="ConstFold12.Ref">
+      Tests evaluation of Boolean expressions.
+    </test>
+  
+    <test id="constfold13" type="run" 
+      file="ConstFold13.Mod" output="ConstFold13.Ref">
+      Tests evaluation of Integer compare expressions.
+    </test>
+  
+    <test id="constfold14" type="run" 
+      file="ConstFold14.Mod" output="ConstFold14.Ref">
+      Tests evaluation of String compare expressions.
+    </test>
+
+    <test id="constfold15" type="run" 
+      file="ConstFold15.Mod" output="ConstFold15.Ref">
+      Tests evaluation of CHAR compare expressions.
+    </test>
+
+    <test id="constfold16" type="run" 
+      file="ConstFold16.Mod" output="ConstFold16.Ref">
+      Tests evaluation of SET expressions.
+    </test>
+
+    <test id="constfold17" type="run"
+      file="ConstFold17.Mod" output="ConstFold17.Ref">
+      Initial test for REAL.
+    </test>
+
+    <test id="constfold18" type="run"
+      file="ConstFold18.Mod" output="ConstFold18.Ref">
+      <code>ENTIER</code> should be folded as well.
+    </test>
+  </testcases>
+  
   <testcases profile="OOC2 Development" default-lang="O2">
     <test id="assign1" type="reject" file="Assign1.Mod">
       Left side of an assignment is a constant.
@@ -134,12 +233,12 @@
     </test>
 
     <test id="function1" type="run"
-      file="../compile/HOTFunction1.Mod" output="../compile/HOTFunction1.Ref">
+      file="HOTFunction1.Mod" output="HOTFunction1.Ref">
       A very simple function: No input arguments, and a return
       statement with a constant expression.
     </test>
     <test id="function2" type="run"
-      file="../compile/HOTFunction2.Mod" output="../compile/HOTFunction2.Ref">
+      file="HOTFunction2.Mod" output="HOTFunction2.Ref">
       Another very simple function: The input parameter is used as the
       function's return value, without any transformation.
     </test>
@@ -1160,6 +1259,18 @@
       Set range "{a..b}" with some combinations of <code>a</code> and
       <code>b</code>, both constant and variable.
     </test>
+    <test id="opSet9" type="reject" file="OpSet9.Mod">
+      Undefined type name in front of set constructor.
+    </test>
+    <test id="opSet10" type="accept" file="OpSet10.Mod">
+      Using default <code>SET</code> type in front of constructor.
+    </test>
+    <test id="opSet11" type="reject" file="OpSet11.Mod">
+      Integer type name in front of set constructor.
+    </test>
+    <test id="opSet12" type="reject" file="OpSet12.Mod">
+      Integer type name in front of empty set constructor.
+    </test>
   </testcases>
 
   <testcases profile="Module SYSTEM" default-lang="O2">
@@ -1638,6 +1749,60 @@
       Regression test: Like <code>generic73</code>, but for a record
       parameter.
     </test>
+    <test id="generic75" type="reject" file="Generic75.Mod">
+      Regression test: Defining an <code>INIT</code> procedure with a
+      result type.
+    </test>
+    <test id="generic76" type="reject" file="Generic76.Mod">
+      Regression test: Defining an <code>INIT</code> procedure as
+      <code>ABSTRACT</code>.
+    </test>
+
+    <test id="iterator1" type="run" file="Iterator1.Mod"
+          output="Iterator1.Ref">
+      Iterator over a character array taken from a value parameter.
+    </test>
+    <test id="iterator2" type="run" file="Iterator2.Mod"
+          output="Iterator2.Ref">
+      Like <code>iterator1</code>, but the array has a length of zero.
+    </test>
+    <test id="iterator3" type="reject" file="Iterator3.Mod">
+      Array elements to be iterated over must be of scalar type.
+    </test>
+    <test id="iterator4" type="reject" file="Iterator4.Mod">
+      Array elements not assignment compatible to variable.
+    </test>
+    <test id="iterator5" type="run" file="Iterator5.Mod"
+          output="Iterator5.Ref">
+      Iterating over an iterator's <code>Next()</code> method.
+    </test>
+    <test id="iterator6" type="run" file="Iterator6.Mod"
+          output="Iterator6.Ref">
+      Like <code>iterator5</code>, but the first call to
+      <code>Next()</code> returns <code>NIL</code>,
+    </test>
+    <test id="iterator7" type="reject" file="Iterator7.Mod">
+      Iterator factory expression produces a record value.
+    </test>
+    <test id="iterator8" type="reject" file="Iterator8.Mod">
+      Iterator's <code>Next()</code> method defines a value parameter.
+    </test>
+    <test id="iterator9" type="reject" file="Iterator9.Mod">
+      Iterator's <code>Next()</code> method does not return
+      <code>BOOLEAN</code>.
+    </test>
+    <test id="iterator10" type="reject" file="Iterator10.Mod">
+      Iterator's <code>Next()</code> method has more than one
+      parameter.
+    </test>
+    <test id="iterator11" type="reject" file="Iterator11.Mod">
+      Type of variable does not match that of the <code>Next()</code>
+      method's variable parameter.
+    </test>
+    <test id="iterator12" type="reject" file="Iterator12.Mod">
+      Iterator factory expression does not produce an object with a 
+      <code>Next()</code> method.
+    </test>
   </testcases>
 
   <testcases profile="Tests for Warnings" default-lang="OOC O2">
@@ -1876,6 +2041,11 @@
   </testcases>
 
   <processor-info processor-name="TestCompile">
+    <reject-info id="constfold3" pos="c=1%+" msg="Incompatible types for operator"/>
+    <reject-info id="constfold4" pos="c=%a" msg="Expression is not constant"/>
+    <reject-info id="constfold6" pos="minLongInt%-offset"
+      msg="Argument not compatible with formal type `LONGINT'"/>
+
     <reject-info id="assign1" pos="%c :=" msg="This must be a variable"/>
     <reject-info id="assign2" pos="r%. TBProc :=" msg="This must be a variable"/>
     <reject-info id="assign3" pos="AssignRO.%x :=" msg="This variable is read-only"/>
@@ -2190,6 +2360,12 @@
         msg="Incompatible types for operator"/>
     <reject-info id="opSet7" pos="%IN"
         msg="Incompatible types for operator"/>
+    <reject-info id="opSet9" pos=":= %Karamba"
+        msg="Undeclared identifier"/>
+    <reject-info id="opSet11" pos=":= %LONGINT"
+        msg="Not a set type"/>
+    <reject-info id="opSet12" pos=":= %LONGINT"
+        msg="Not a set type"/>
 
     <reject-info id="adr2" pos="ADR(%123)" 
       msg="This expression has no address"/>
@@ -2339,6 +2515,27 @@
         msg="The type's INIT procedure must be defined before its use"/>
     <reject-info id="generic71" pos="%A(B)"
         msg="Undeclared identifier"/>
+    <reject-info id="generic75" pos="Alp) %INIT"
+        msg="This must be a non-function procedure"/>
+    <reject-info id="generic76" pos="ABSTRACT] %INIT"
+        msg="This static type-bound procedure cannot be abstract"/>
+
+    <reject-info id="iterator3" pos="IN %x"
+        msg="Iterator requires array elements of scalar type"/>
+    <reject-info id="iterator4" pos="IN %x"
+        msg="Expression not compatible with variable type `CHAR'"/>
+    <reject-info id="iterator7" pos="IN %iter"
+        msg="This expression must produce an iterator object"/>
+    <reject-info id="iterator8" pos="IN %iter"
+        msg="The iterator object has no Next() method with a valid signature"/>
+    <reject-info id="iterator9" pos="IN %iter"
+        msg="The iterator object has no Next() method with a valid signature"/>
+    <reject-info id="iterator10" pos="IN %iter"
+        msg="The iterator object has no Next() method with a valid signature"/>
+    <reject-info id="iterator11" pos="FOR %c IN"
+        msg="Argument not compatible with formal VAR parameter `CHAR'"/>
+    <reject-info id="iterator12" pos="IN %b"
+        msg="The iterator object has no Next() method with a valid signature"/>
 
     <reject-info id="align2" pos=", %ALIGN2"
         msg="This modifier flag has no effect here"/>

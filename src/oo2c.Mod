@@ -1,4 +1,4 @@
-(* 	$Id: oo2c.Mod,v 1.70 2004/02/14 14:55:38 mva Exp $	 *)
+(* 	$Id: oo2c.Mod,v 1.73 2004/04/03 14:44:47 mva Exp $	 *)
 MODULE oo2c;
 (*  Main module for the Oberon-2 to C translator.
     Copyright (C) 2002-2004  Michael van Acken
@@ -21,7 +21,7 @@ MODULE oo2c;
 *)
 
 IMPORT
-  StdChannels, Out, Err, Object, URI, URI:Scheme:File, CfgData := Config,
+  IO:StdChannels, Out, Err, Object, URI, URI:Scheme:File, CfgData := Config,
   ADT:StringBuffer, IO, OS:ProcessManagement, OS:Path, OS:Files,
   Config:Section:Options,
   OOC:Logger, OOC:Config, OOC:Config:CCompiler, OOC:Package,
@@ -45,7 +45,7 @@ VAR
   arg: STRING;
   mode: SHORTINT;
   command, forceUpdate, listUses, useStderr, writeStats,
-      errorStyle, showHelp, showVersion: Options.Option;
+      verbose, errorStyle, showHelp, showVersion: Options.Option;
   makeRules: Make.Rules;
   rep: Rep.Repository;
   r: Package.Repository;
@@ -61,6 +61,7 @@ PROCEDURE NewConfig;
     listUses := Config.AddOption("listUses", CfgData.NewStringVar(""));
     useStderr := Config.AddOption("useStderr", CfgData.NewBooleanVar(FALSE));
     writeStats := Config.AddOption("writeStats", CfgData.NewBooleanVar(FALSE));
+    verbose := Config.AddOption("verbose", CfgData.NewBooleanVar(FALSE));
     errorStyle := Config.AddOption("errorStyle",
                                  CfgData.NewStringVar("file:line:column"));
     showHelp := Config.AddOption("showHelp", CfgData.NewBooleanVar(FALSE));
@@ -102,7 +103,8 @@ PROCEDURE NewConfig;
                        "  <set name='FunctResult'>FALSE</set>"+
                        "  <set name='TypeGuard'>FALSE</set>"+
                        "</pragmas>");
-    Config.AddCmdLine ("--verbose,-v", "");  (* ignored for now *)
+    Config.AddCmdLine ("--verbose,-v",
+                       "<options><set name='verbose'>TRUE</set></options>");
     Config.AddCmdLine ("--warnings,-w", ""); (* ignored for now *)
     
     Config.AddCmdLine ("-A,--all",
@@ -575,7 +577,8 @@ BEGIN  <*Warnings:=FALSE*>
     HALT (1)
   END;
   Make.writeStats := writeStats.value(CfgData.BooleanVar).boolean;
-      
+  Logger.silence := ~verbose.value(CfgData.BooleanVar).boolean;
+  
   CASE command.value(CfgData.IntegerVar).integer OF
   | 0:
     mode := Rep.modCodeFileC;

@@ -1,4 +1,4 @@
-(* 	$Id: TypeRules.Mod,v 1.72 2004/03/01 12:17:26 mva Exp $	 *)
+(* 	$Id: TypeRules.Mod,v 1.73 2004/03/21 16:09:17 mva Exp $	 *)
 MODULE OOC:SymbolTable:TypeRules;
 (*  Defines the type rules of the language.
     Copyright (C) 2000-2004  Michael van Acken
@@ -564,6 +564,17 @@ PROCEDURE IsExtensionOfNoParams* (type, base: Sym.Type): BOOLEAN;
     END;
     RETURN FALSE
   END IsExtensionOfNoParams;
+
+PROCEDURE IsValidArrayIteratorRange* (type: Sym.Type): BOOLEAN;
+(**Returns @code{TRUE}, iff the type @oparam{type} can be used for the
+   range value of an array iterator.  *)
+  BEGIN
+    IF IsArray(type) THEN
+      RETURN IsValidResultType(ArrayElementType(type));
+    ELSE
+      RETURN FALSE;
+    END;
+  END IsValidArrayIteratorRange;
 
 PROCEDURE FunctionResultType*(formalPars: Sym.Type): Sym.Type;
 (**Return closure of the result type of @oparam{formalPars}.  *)

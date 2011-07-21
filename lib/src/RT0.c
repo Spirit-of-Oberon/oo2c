@@ -375,8 +375,11 @@ RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN 
   return NULL;
 }
 
+/* Objects of type RT0.Object are not registered for finalisation, so this
+ * procedure is never directly called by the GC. However, it may be called via
+ * a super-call. */
+
 void RT0__ObjectDesc_Finalize(RT0__Object o) {
-  (void)fprintf(stderr, "RT0.ObjectDesc.Finalize(%p)\n", o);
 }
 
 void OOC_RT0_init() {

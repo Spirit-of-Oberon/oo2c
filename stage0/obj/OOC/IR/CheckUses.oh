@@ -108,7 +108,7 @@ extern RT0__StructDesc _td_OOC_IR_CheckUses__VisitorCalls;
 extern RT0__StructDesc _td_OOC_IR_CheckUses__VisitorCallsDesc;
 extern RT0__StructDesc _td_OOC_IR_CheckUses__ErrorContext;
 extern RT0__StructDesc _td_OOC_IR_CheckUses__ErrorContextDesc;
-extern RT0__StructDesc _td_OOC_IR_CheckUses__4964;
+extern RT0__StructDesc _td_OOC_IR_CheckUses__4970;
 #endif /* _MODULE_OOC_IR_CheckUses_ */
 
 /* --- */

@@ -1,7 +1,7 @@
 MODULE TestInterfaceGen;
 
 IMPORT
-  Object, StdChannels, Out, Err, ADT:Dictionary, ADT:ArrayList,
+  Object, IO:StdChannels, Out, Err, ADT:Dictionary, ADT:ArrayList,
   CfgData := Config, Config:Section:Options,
   OOC:Config, OOC:SymbolTable:InterfaceDescr,
   OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable, OOC:Make;

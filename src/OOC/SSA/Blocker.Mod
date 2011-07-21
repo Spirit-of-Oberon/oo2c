@@ -1,4 +1,4 @@
-(* 	$Id: Blocker.Mod,v 1.49 2004/03/01 16:55:23 mva Exp $	 *)
+(* 	$Id: Blocker.Mod,v 1.50 2004/03/21 16:09:17 mva Exp $	 *)
 MODULE OOC:SSA:Blocker;
 (*  Imposes a block structure on a flat list of SSA instructions.
     Copyright (C) 2002-2004  Michael van Acken
@@ -690,6 +690,30 @@ PROCEDURE WriteBlocks (c: IO.ByteChannel; pb: SSA.ProcBlock; root: Region;
     w. WriteLn;
     WriteRegion (root);
   END WriteBlocks;
+
+(*
+PROCEDURE WriteRegion (r: Region; level: LONGINT);
+  VAR
+    proxy: Proxy;
+    opnd: SSA.Opnd;
+    i: LONGINT;
+  BEGIN
+    proxy := r. first;
+    WHILE (proxy # NIL) DO
+      IF (proxy. instr # NIL) THEN
+        FOR i := 1 TO level DO
+          Err.String("    ");
+        END;
+        proxy.instr.LogOpcode("instr");
+      END;
+      
+      IF (proxy IS Region) THEN
+        WriteRegion(proxy(Region), level+1);
+      END;
+      proxy := proxy. nextProxy;
+    END;
+  END WriteRegion;
+*)
 
 PROCEDURE AntiDepViolation (pb: SSA.ProcBlock; root: Region): BOOLEAN;
   VAR

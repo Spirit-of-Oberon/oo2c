@@ -1,7 +1,7 @@
-(* 	$Id: Namespace.Mod,v 1.23 2003/09/15 19:24:16 mva Exp $	 *)
+(* 	$Id: Namespace.Mod,v 1.24 2004/03/19 19:17:13 mva Exp $	 *)
 MODULE OOC:SymbolTable:Namespace;
 (*  Implements namespaces and semantic checks on them.
-    Copyright (C) 2000-2003  Michael van Acken
+    Copyright (C) 2000-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -75,7 +75,8 @@ CONST
   invalidRedefintion = 6;
   redefinitionBeforeBase = 7;
   staticMethodNotExported = 8;
-  notProcedure = 9;
+  staticMethodAbstract = 9;
+  notProcedure = 10;
   
 TYPE
   ErrorContext = POINTER TO ErrorContextDesc;
@@ -108,6 +109,8 @@ PROCEDURE (context: ErrorContext) GetTemplate* (msg: Error.Msg; VAR templ: Error
       t := "This procedure redefines a procedure that is declared later"
     | staticMethodNotExported:
       t := "This static type-bound procedure must be exported"
+    | staticMethodAbstract:
+      t := "This static type-bound procedure cannot be abstract"
     | notProcedure:
       t := "This must be a non-function procedure"
     END;
@@ -480,15 +483,6 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               IF (decl. name. pos < base. visibleFrom) THEN
                 ErrDecl (redefinitionBeforeBase, decl, errList)
               END;
-              IF (decl.procClass = Sym.staticMethod) THEN
-                IF (decl.exportMark = Sym.nameNotExported) THEN
-                  ErrDecl (staticMethodNotExported, decl, errList);
-                END;
-                IF (decl.name.str^ = Predef.initMethod) &
-                   (decl.formalPars.resultType # NIL) THEN
-                  ErrDecl(notProcedure, decl, errList);
-                END;
-              END;
 
               decl.deprecated := decl.deprecated OR base.deprecated;
               
@@ -497,7 +491,20 @@ PROCEDURE (ns: Extended) CheckRestrictions* (record: Sym.Record;
               ErrDecl (invalidRedefintion, decl, errList)
             END;
           END;
-        END
+        END;
+
+        IF (decl.procClass = Sym.staticMethod) THEN
+          IF (decl.exportMark = Sym.nameNotExported) THEN
+            ErrDecl (staticMethodNotExported, decl, errList);
+          END;
+          IF (decl.name.str^ = Predef.initMethod) &
+             (decl.formalPars.resultType # NIL) THEN
+            ErrDecl(notProcedure, decl, errList);
+          END;
+          IF decl.isAbstract THEN
+            ErrDecl (staticMethodAbstract, decl, errList);
+          END;
+        END;
       END
     END
   END CheckRestrictions;

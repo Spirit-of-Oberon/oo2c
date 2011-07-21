@@ -1,4 +1,4 @@
-(* 	$Id: File.Mod,v 1.12 2003/06/05 22:09:35 mva Exp $	 *)
+(* 	$Id: File.Mod,v 1.13 2004/04/03 14:43:17 mva Exp $	 *)
 MODULE URI:Scheme:File;
 (*  Implementation of the "file" URI scheme.
     Copyright (C) 2000, 2003  Michael van Acken
@@ -125,7 +125,12 @@ PROCEDURE NewPrototype*(): URI;
 PROCEDURE GetCwd*(): URI;
 (**Creates an absolute file URI for the current working directory.  If the
    current working directory cannot be determined, the value @code{NIL} is
-   returned.  *)
+   returned.
+
+   @precond
+   The URL scheme ``file'' must have been registered with
+   @oproc{*URI.RegisterScheme}.
+   @end precond  *)
   VAR
     uri: URI0.URI;
     uriString: StringBuffer.StringBuffer;

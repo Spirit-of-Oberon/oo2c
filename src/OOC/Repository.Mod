@@ -1,4 +1,4 @@
-(* 	$Id: Repository.Mod,v 1.44 2003/11/13 23:02:08 mva Exp $	 *)
+(* 	$Id: Repository.Mod,v 1.45 2004/03/01 22:12:11 mva Exp $	 *)
 MODULE OOC:Repository [OOC_EXTENSIONS];
 (*  Abstraction of storage of source, intermediate, and target code.
     Copyright (C) 2001, 2002, 2003  Michael van Acken

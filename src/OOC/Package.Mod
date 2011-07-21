@@ -1,7 +1,7 @@
 MODULE OOC:Package;
 
 IMPORT
-  IntStr, LongStrings, Msg, StdChannels, Strings, IO, IO:FileChannel,
+  IntStr, LongStrings, Msg, Strings, IO, IO:FileChannel, IO:StdChannels, 
   Exception, Object, ADT:ArrayList, ADT:StringBuffer, OSFiles := OS:Files,
   OS:ProcessManagement, URI, FileURI:=URI:Scheme:File, XML:UnicodeCodec:Latin1,
   XMLError := XML:Error, XML:Locator, XML:DTD, XML:Builder, XML:Writer,

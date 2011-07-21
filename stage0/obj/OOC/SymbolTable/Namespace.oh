@@ -86,7 +86,7 @@ extern RT0__StructDesc _td_OOC_SymbolTable_Namespace__Extended;
 extern RT0__StructDesc _td_OOC_SymbolTable_Namespace__ExtendedDesc;
 extern RT0__StructDesc _td_OOC_SymbolTable_Namespace__ErrorContext;
 extern RT0__StructDesc _td_OOC_SymbolTable_Namespace__ErrorContextDesc;
-extern RT0__StructDesc _td_OOC_SymbolTable_Namespace__3125;
+extern RT0__StructDesc _td_OOC_SymbolTable_Namespace__3154;
 #endif /* _MODULE_OOC_SymbolTable_Namespace_ */
 
 /* --- */

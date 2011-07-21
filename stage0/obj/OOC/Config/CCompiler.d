@@ -49,11 +49,13 @@ static void* _c47;
 static void* _c48;
 static void* _c49;
 static void* _c50;
+static void* _c51;
 #include <OOC/Config/CCompiler.oh>
 #include <Object.oh>
 #include <ADT/StringBuffer.oh>
 #include <URI/Scheme/File.oh>
 #include <Config.oh>
+#include <OOC/Logger.oh>
 #include <OOC/Config.oh>
 #include <OOC/Repository.oh>
 static Config_Section_Options__Option OOC_Config_CCompiler__cc;

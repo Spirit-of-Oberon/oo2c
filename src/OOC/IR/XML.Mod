@@ -1,4 +1,4 @@
-(* 	$Id: XML.Mod,v 1.76 2004/01/02 16:20:07 mva Exp $	 *)
+(* 	$Id: XML.Mod,v 1.78 2004/03/21 22:33:00 mva Exp $	 *)
 MODULE OOC:IR:XML;
 (*  Write an IR data structure as an XML document.
     Copyright (C) 2001-2004  Michael van Acken, Stewart Greenhill
@@ -432,26 +432,59 @@ PROCEDURE (v: Visitor) VisitExit* (exit: IR.Exit);
     v. w. EndTag;  (* exit *)
   END VisitExit;
 
-PROCEDURE (v: Visitor) VisitForStatm* (whileStatm: IR.ForStatm);
+PROCEDURE (v: Visitor) VisitForStatm* (forStatm: IR.ForStatm);
   BEGIN
-    v. w. StartTag ("while-statm", FALSE);
+    v. w. StartTag ("for-statm", FALSE);
     v. w. StartTag ("variable", FALSE);
-    whileStatm. var. Accept (v);
+    forStatm. var. Accept (v);
     v. w. EndTag;  (* variable *)
     v. w. StartTag ("start-value", FALSE);
-    whileStatm. start. Accept (v);
+    forStatm. start. Accept (v);
     v. w. EndTag;  (* start-value *)
     v. w. StartTag ("end-value", FALSE);
-    whileStatm. end. Accept (v);
+    forStatm. end. Accept (v);
     v. w. EndTag;  (* end-value *)
     v. w. StartTag ("step", FALSE);
-    whileStatm. step. Accept (v);
+    forStatm. step. Accept (v);
     v. w. EndTag;  (* step *)
     v. w. StartTag ("body", FALSE);
-    VisitStatementSeq (v, whileStatm. body);
+    VisitStatementSeq (v, forStatm. body);
     v. w. EndTag;  (* body *)
-    v. w. EndTag;  (* while-statm *)
+    v. w. EndTag;  (* for-statm *)
   END VisitForStatm;
+
+PROCEDURE (v: Visitor) VisitIterateArrayStatm* (iterStatm: IR.IterateArrayStatm);
+  BEGIN
+    v. w. StartTag ("iterate-array-statm", FALSE);
+    v. w. StartTag ("variable", FALSE);
+    iterStatm. var. Accept (v);
+    v. w. EndTag;  (* variable *)
+    v. w. StartTag ("range", FALSE);
+    iterStatm. range. Accept (v);
+    v. w. EndTag;  (* range *)
+    v. w. StartTag ("body", FALSE);
+    VisitStatementSeq (v, iterStatm. body);
+    v. w. EndTag;  (* body *)
+    v. w. EndTag;  (* iterate-array-statm *)
+  END VisitIterateArrayStatm;
+
+PROCEDURE (v: Visitor) VisitIterateObjectStatm* (iterStatm: IR.IterateObjectStatm);
+  BEGIN
+    v. w. StartTag ("iterate-object-statm", FALSE);
+    v. w. StartTag ("variable", FALSE);
+    iterStatm. var. Accept (v);
+    v. w. EndTag;  (* variable *)
+    v. w. StartTag ("iterator-factory", FALSE);
+    iterStatm. iteratorFactory. Accept (v);
+    v. w. EndTag;  (* iterator-factory *)
+    v. w. StartTag ("stepper-call", TRUE);
+    iterStatm. stepperCall. Accept (v);
+    v. w. EndTag;  (* stepper-call *)
+    v. w. StartTag ("body", FALSE);
+    VisitStatementSeq (v, iterStatm. body);
+    v. w. EndTag;  (* body *)
+    v. w. EndTag;  (* iterate-array-statm *)
+  END VisitIterateObjectStatm;
 
 PROCEDURE (v: Visitor) VisitIfStatm* (ifStatm: IR.IfStatm);
   BEGIN

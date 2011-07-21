@@ -1475,6 +1475,18 @@ void OOC_IR_ConstFold__ConstFoldDesc_VisitForStatm(OOC_IR_ConstFold__ConstFold c
   ;
 }
 
+void OOC_IR_ConstFold__ConstFoldDesc_VisitIterateArrayStatm(OOC_IR_ConstFold__ConstFold c, OOC_IR__IterateArrayStatm iterStatm) {
+
+  return;
+  ;
+}
+
+void OOC_IR_ConstFold__ConstFoldDesc_VisitIterateObjectStatm(OOC_IR_ConstFold__ConstFold c, OOC_IR__IterateObjectStatm iterStatm) {
+
+  return;
+  ;
+}
+
 void OOC_IR_ConstFold__ConstFoldDesc_VisitIfStatm(OOC_IR_ConstFold__ConstFold c, OOC_IR__IfStatm ifStatm) {
 
   return;

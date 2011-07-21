@@ -1,4 +1,4 @@
-(* 	$Id: Identity.Mod,v 1.2 2003/08/24 00:03:57 mva Exp $	 *)
+(* 	$Id: Identity.Mod,v 1.3 2004/04/01 20:36:12 mva Exp $	 *)
 MODULE OOC:Scanner:Identity;
 (*  Passes string representation of scanned symbols to output channel.
     Copyright (C) 2000  Michael van Acken
@@ -28,24 +28,24 @@ or malformed symbols.  Note that the scanner also passes whitespace to
 the builder.  *)
 
 IMPORT
-  Channel, OOC:Scanner:Symbol, OOC:Scanner:InputBuffer, 
+  Exception, IO, OOC:Scanner:Symbol, OOC:Scanner:InputBuffer, 
   B := OOC:Scanner:SymList;
 
 TYPE
   Builder* = POINTER TO BuilderDesc;
   BuilderDesc = RECORD
     (B.BuilderDesc)
-    writer: Channel.Writer;
+    writer: IO.ByteChannel;
   END;
   
 
-PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: Channel.Channel);
+PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: IO.ByteChannel);
   BEGIN
     B.Init (b, buffer, TRUE);
-    b. writer := ch. NewWriter ()
+    b. writer := ch;
   END Init;
 
-PROCEDURE New* (buffer: InputBuffer.Buffer; ch: Channel.Channel): Builder;
+PROCEDURE New* (buffer: InputBuffer.Buffer; ch: IO.ByteChannel): Builder;
   VAR
     b: Builder;
   BEGIN
@@ -57,8 +57,14 @@ PROCEDURE New* (buffer: InputBuffer.Buffer; ch: Channel.Channel): Builder;
 PROCEDURE (b: Builder) AddSymbol* (id: Symbol.Id;
                                    cstart, cend: B.Pos;
                                    line, column: LONGINT);
+  VAR
+    d: LONGINT;
   BEGIN
-    b. writer. WriteBytes (b. inputBuffer. chars^, cstart, cend-cstart)
+    TRY
+      d := b. writer. Write (b. inputBuffer. chars^, cstart, cend-cstart);
+    CATCH IO.Error(e):
+      Exception.Abort(e);
+    END;
   END AddSymbol;
 
 END OOC:Scanner:Identity.

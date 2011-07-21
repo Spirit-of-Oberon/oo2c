@@ -1,4 +1,4 @@
-/*	$Id: PosixFileDescr.c,v 1.9 2003/10/05 14:30:52 mva Exp $	*/
+/*	$Id: PosixFileDescr.c,v 1.10 2004/05/10 02:43:50 sgreenhill Exp $	*/
 /*  Generalized access to POSIX-style file descriptors.
     Copyright (C) 1997-2000, 2002  Michael van Acken
 
@@ -51,7 +51,6 @@
 #endif
 
 #ifdef __MINGW32__
-typedef int ssize_t;
 #include <fcntl.h>
 #endif
 

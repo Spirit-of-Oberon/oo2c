@@ -1,4 +1,4 @@
-/*	$Id: Termination.c,v 1.3 2002/12/28 13:21:27 mva Exp $	*/
+/*	$Id: Termination.c,v 1.4 2004/05/10 02:43:50 sgreenhill Exp $	*/
 /*  Provides procedures for program finalization.
     Copyright (C) 1997, 1999, 2000, 2002  Michael van Acken
 
@@ -28,7 +28,6 @@
 #include <unistd.h>
 #elif HAVE_IO_H
 #include <io.h>
-typedef int ssize_t;
 #endif
 
 

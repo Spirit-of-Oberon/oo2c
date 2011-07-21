@@ -1,4 +1,4 @@
-(* 	$Id: Opcode.Mod,v 1.104 2003/09/16 03:27:13 sgreenhill Exp $	 *)
+(* 	$Id: Opcode.Mod,v 1.106 2004/04/02 20:42:18 mva Exp $	 *)
 MODULE OOC:SSA:Opcode;
 (*  This modules defines opcodes for SSA instructions.
     Copyright (C) 2001-2003  Michael van Acken
@@ -178,7 +178,7 @@ CONST
      @end table  *)
 
   exit* = 9;
-  (**This instruction marks the place where control flow exists the
+  (**This instruction marks the place where control flow exits the
      @code{LOOP}.  The instruction has one operand:
 
      @table @oconst
@@ -805,23 +805,23 @@ CONST
   scNone* = 0;
   (**The operation has no variants.  *)
   scSigned8* = 1;
-  (**Designates a signed 8 bit result or operands.  *)
+  (**Designates a signed 8 bit result or operand.  *)
   scSigned16* = 2;
-  (**Designates a signed 16 bit result or operands.  *)
+  (**Designates a signed 16 bit result or operand.  *)
   scSigned32* = 3;
-  (**Designates a signed 32 bit result or operands.  *)
+  (**Designates a signed 32 bit result or operand.  *)
   scSigned64* = 4;
-  (**Designates a signed 64 bit result or operands.  *)
+  (**Designates a signed 64 bit result or operand.  *)
   scUnsigned8* = 5;
-  (**Designates an unsigned 8 bit result or operands.  *)
+  (**Designates an unsigned 8 bit result or operand.  *)
   scUnsigned16* = 6;
-  (**Designates an unsigned 16 bit result or operands.  *)
+  (**Designates an unsigned 16 bit result or operand.  *)
   scUnsigned32* = 7;
-  (**Designates an unsigned 32 bit result or operands.  *)
+  (**Designates an unsigned 32 bit result or operand.  *)
   scUnsigned64* = 8;
-  (**Designates an unsigned 64 bit result or operands.  *)
+  (**Designates an unsigned 64 bit result or operand.  *)
   scAddress* = 9;
-  (**Designates an address or pointer result or operands.  *)
+  (**Designates an address or pointer result or operand.  *)
   scBoolean* = scUnsigned8;
   (**Maps to the integer type that is used to store boolean values.  *)
   scLength* = scSigned32;

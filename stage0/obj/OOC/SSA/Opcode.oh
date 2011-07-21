@@ -124,10 +124,10 @@ extern void OOC_OOC_SSA_Opcode_init(void);
 extern void OOC_OOC_SSA_Opcode_init0(void);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_SSA_Opcode__34364;
-extern RT0__StructDesc _td_OOC_SSA_Opcode__34450;
-extern RT0__StructDesc _td_OOC_SSA_Opcode__35036;
-extern RT0__StructDesc _td_OOC_SSA_Opcode__35139;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__34347;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__34433;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__35019;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__35122;
 #endif /* _MODULE_OOC_SSA_Opcode_ */
 
 /* --- */

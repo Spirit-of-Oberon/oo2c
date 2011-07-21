@@ -1,4 +1,4 @@
-(* 	$Id: oob.Mod,v 1.21 2004/02/14 14:55:38 mva Exp $	 *)
+(* 	$Id: oob.Mod,v 1.22 2004/04/01 20:36:12 mva Exp $	 *)
 MODULE oob;
 (*  Symbol file browser.
     Copyright (C) 2002-2004  Michael van Acken
@@ -21,7 +21,7 @@ MODULE oob;
 *)
 
 IMPORT
-  Ascii, Err, Out, StdChannels, Strings, Object, IO, OOC:Config:CCompiler,
+  Ascii, Err, Out, Strings, Object, IO, IO:StdChannels, OOC:Config:CCompiler,
   CfgData := Config, Config:Section:Options,
   OOC:Config, E := OOC:Error, Rep := OOC:Repository, Sym := OOC:SymbolTable,
   OOC:Logger, OOC:Doc, OOC:Doc:Output:Text, OOC:SymbolTable:ImportModules,

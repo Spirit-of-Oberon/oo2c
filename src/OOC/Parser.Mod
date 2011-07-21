@@ -1,7 +1,7 @@
-(* 	$Id: Parser.Mod,v 1.26 2003/08/26 14:05:22 mva Exp $	 *)
+(* 	$Id: Parser.Mod,v 1.27 2004/03/21 16:09:18 mva Exp $	 *)
 MODULE OOC:Parser;
 (*  Parses an Oberon-2 module and creates an abstract syntax tree.
-    Copyright (C) 1999-2003  Michael van Acken
+    Copyright (C) 1999-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -1487,29 +1487,40 @@ PROCEDURE Module* (sym: SymList.Symbol; ast: AST.Builder;
         PROCEDURE ForStatm (): AST.Node;
           VAR
             for, ident, becomes, startValue, to, endValue, 
-            by, step, do, end: AST.Node;
+            by, step, range, do, end: AST.Node;
             statmSeq: AST.NodeList;
           BEGIN
-            (*S: ForStatm = "FOR" ident ":=" Expr "TO" Expr ["BY" Expr] 
+            (*S: ForStatm = "FOR" ident (":=" Expr "TO" Expr ["BY" Expr] |
+              S:                         "IN" Expr )
               S:            "DO" StatementSeq "END".  *)
             for := CheckSym (Symbol.for);
             ident := CheckSym (Symbol.ident);
-            becomes := CheckSym (Symbol.becomes);
-            startValue := Expr();
-            to := CheckSym (Symbol.to);
-            endValue := Expr();
-            IF (sym. id = Symbol.by) THEN
-              by := CheckSym (Symbol.by);
-              step := Expr()
+            IF (sym.id = Symbol.in) THEN
+              becomes := CheckSym (Symbol.in);
+              range := Expr();
+              do := CheckSym (Symbol.do);
+              statmSeq := StatementSeq();
+              end := CheckSym (Symbol.end);
+              RETURN ast. IterateStatm (for, ident, becomes, range,
+                                        do, statmSeq, end);
             ELSE
-              by := NIL;
-              step := NIL
+              becomes := CheckSym (Symbol.becomes);
+              startValue := Expr();
+              to := CheckSym (Symbol.to);
+              endValue := Expr();
+              IF (sym. id = Symbol.by) THEN
+                by := CheckSym (Symbol.by);
+                step := Expr()
+              ELSE
+                by := NIL;
+                step := NIL
+              END;
+              do := CheckSym (Symbol.do);
+              statmSeq := StatementSeq();
+              end := CheckSym (Symbol.end);
+              RETURN ast. ForStatm (for, ident, becomes, startValue, to, 
+                                    endValue, by, step, do, statmSeq, end);
             END;
-            do := CheckSym (Symbol.do);
-            statmSeq := StatementSeq();
-            end := CheckSym (Symbol.end);
-            RETURN ast. ForStatm (for, ident, becomes, startValue, to, 
-                                  endValue, by, step, do, statmSeq, end)
           END ForStatm;
         
         PROCEDURE LoopStatm (): AST.Node;

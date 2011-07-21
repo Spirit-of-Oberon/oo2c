@@ -48,7 +48,7 @@ extern void OOC_URI_Scheme_File_init0(void);
 /* run-time meta data */
 extern RT0__StructDesc _td_URI_Scheme_File__URI;
 extern RT0__StructDesc _td_URI_Scheme_File__URIDesc;
-extern RT0__StructDesc _td_URI_Scheme_File__4491;
+extern RT0__StructDesc _td_URI_Scheme_File__4610;
 #endif /* _MODULE_URI_Scheme_File_ */
 
 /* --- */

@@ -7,7 +7,7 @@
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
-#define OOC_Config_StdPragmas__defaultCompilerVersion "2.1"
+#define OOC_Config_StdPragmas__defaultCompilerVersion "2.1.1"
 #define OOC_Config_StdPragmas__defaultTargetArch "gcc"
 extern Config_Section_Options__Option OOC_Config_StdPragmas__warnings;
 extern Config_Section_Options__Option OOC_Config_StdPragmas__assertions;

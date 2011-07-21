@@ -1,4 +1,4 @@
-(* 	$Id: XML.Mod,v 1.27 2003/05/31 16:51:53 mva Exp $	 *)
+(* 	$Id: XML.Mod,v 1.28 2004/03/21 16:09:17 mva Exp $	 *)
 MODULE OOC:SSA:XML;
 (*  Produces a canonical representation of SSA code in XML.
     Copyright (C) 2001, 2002, 2003  Michael van Acken
@@ -132,7 +132,7 @@ PROCEDURE (w: Writer) AttrRef* (res: SSA.Result);
 
 PROCEDURE Omit (instr: SSA.Instr): BOOLEAN;
   BEGIN
-    RETURN instr. IsConst();
+    RETURN FALSE & instr. IsConst();
   END Omit;
 
 PROCEDURE (w: Writer) WriteInstr (instr: SSA.Instr);

@@ -29,10 +29,8 @@ TEST_SUBDIRS=\
   tests/interface \
   tests/oberon-doc \
   tests/h2o \
-  tests/compile \
   tests/ssa \
   tests/lib \
-  tests/ia32 \
   tests/ssa-c-output \
 
 top_builddir=$(OOC_DEV_ROOT)
@@ -119,12 +117,12 @@ config.status: configure
 
 dist: $(OOC_DEV_ROOT)/oo2crc-install.xml configure config.status
 	-$(MKDIR) $(OOC_DEV_ROOT)/sym $(OOC_DEV_ROOT)/obj $(OOC_DEV_ROOT)/bin 2>/dev/null
-	$(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml --make $(OFLAGS) oo2c
+	$(OOC) --config $(OOC_DEV_ROOT)/oo2crc-install.xml -v --make $(OFLAGS) oo2c
 	rm -Rf stage0
 	mkdir stage0 stage0/lib
 	ln -s ../src stage0/src
 	ln -s ../../lib/src stage0/lib/src
-	bin/oo2c --config oo2crc-install.xml --make -r stage0/lib -r stage0 --cc "" $(OFLAGS) stage0/src/oo2c.Mod
+	bin/oo2c --config oo2crc-install.xml -v --make -r stage0/lib -r stage0 --cc "" $(OFLAGS) stage0/src/oo2c.Mod
 	rm -Rf stage0/sym/* stage0/lib/sym/*
 	cd stage0 && $(PERL) $(OOC_DEV_ROOT)/rsrc/OOC/makefilegen.pl >Makefile.ext
 	${MAKE} distclean
@@ -144,12 +142,12 @@ stage0/oo2c:
 
 ### Build library from core modules using the initial compiler executable.
 lib/obj/liboo2c.la: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package liboo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -v -r lib -r . $(OFLAGS) --build-package liboo2c
 
 ### Build second compiler using the initial compiler executable and the
 ### library lib/obj/liboo2c.la.
 bin/oo2c: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml lib/obj/liboo2c.la
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -r lib -r . $(OFLAGS) --build-package oo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -v -r lib -r . $(OFLAGS) --build-package oo2c
 
 ### Remove manual pages.
 uninstall-man:
@@ -169,8 +167,8 @@ install-man: uninstall-man
 ### parameter `prefix'.
 install: lib/obj/liboo2c.la bin/oo2c install-man
 	$(INSTALL) -d $(oocdir)/pkginfo
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml --bindir "$(bindir)" --libdir "$(libdir)" --oocdir "$(oocdir)" -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml --bindir "$(bindir)" --libdir "$(libdir)" --oocdir "$(oocdir)" -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -v --bindir "$(bindir)" --libdir "$(libdir)" --oocdir "$(oocdir)" -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -v --bindir "$(bindir)" --libdir "$(libdir)" --oocdir "$(oocdir)" -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
 	$(INSTALL_SCRIPT) rsrc/OOC/oobacktrace $(bindir)/oobacktrace
 	chmod a+x $(oocdir)/install-sh
 
@@ -178,7 +176,7 @@ install-strip:
 	${MAKE} INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
 uninstall: uninstall-man FRC
-	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml $(OFLAGS) --uninstall-package oo2c liboo2c
+	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -v $(OFLAGS) --uninstall-package oo2c liboo2c
 	rm -f $(bindir)/oobacktrace $(oocdir)/pkginfo.xml
 
 ifdef MAIN_MAKEFILE

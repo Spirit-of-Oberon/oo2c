@@ -1,7 +1,7 @@
-(* 	$Id: AST.Mod,v 1.20 2003/08/26 14:05:23 mva Exp $	 *)
+(* 	$Id: AST.Mod,v 1.21 2004/03/21 16:09:19 mva Exp $	 *)
 MODULE OOC:AST [OOC_EXTENSIONS];
 (*  Creates extended abstract syntax tree from the parser output.
-    Copyright (C) 2000-2003  Michael van Acken
+    Copyright (C) 2000-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -552,6 +552,19 @@ TYPE
   END;
 
 TYPE
+  IterateStatm* = POINTER TO IterateStatmDesc;
+  IterateStatmDesc = RECORD
+    (NodeDesc)
+    for-: Terminal;
+    ident-: Node;
+    in-: Terminal;
+    range-: Node;
+    do-: Terminal;
+    statmSeq-: NodeList;
+    end-: Terminal;
+  END;
+
+TYPE
   LoopStatm* = POINTER TO LoopStatmDesc;
   LoopStatmDesc = RECORD
     (NodeDesc)
@@ -818,6 +831,9 @@ PROCEDURE (v: Visitor) VisitRepeatStatm* (repeatStatm: RepeatStatm);
 
 PROCEDURE (v: Visitor) VisitForStatm* (forStatm: ForStatm);
   END VisitForStatm;
+
+PROCEDURE (v: Visitor) VisitIterateStatm* (iterStatm: IterateStatm);
+  END VisitIterateStatm;
 
 PROCEDURE (v: Visitor) VisitLoopStatm* (loopStatm: LoopStatm);
   END VisitLoopStatm;
@@ -2516,6 +2532,51 @@ PROCEDURE (b: Builder) ForStatm* (for, ident, becomes, startValue, to, endValue,
 PROCEDURE (forStatm: ForStatm) Accept* (v: Visitor);
   BEGIN
     v. VisitForStatm (forStatm)
+  END Accept;
+
+
+PROCEDURE (b: Builder) IterateStatm* (for, ident, in, range, do: Node; statmSeq: NodeList; end: Node): Node;
+(**@code{FOR} loop.
+
+   @table @oparam
+   @item for
+   The keyword @samp{FOR}.
+   
+   @item ident
+   A variable identifier, result of @oproc{Builder.Terminal}.
+   
+   @item in
+   The symbol @samp{IN}.
+   
+   @item range
+   An expression.
+   
+   @item do
+   The keyword @samp{DO}.
+   
+   @item statmSeq
+   The statement sequence of the loop.
+   
+   @item end
+   The keyword @samp{END}.
+   @end table  *)
+  VAR
+    f: IterateStatm;
+  BEGIN
+    NEW (f);
+    f. for := for(Terminal);
+    f. ident := ident;
+    f. in := in(Terminal);
+    f. range := range;
+    f. do := do(Terminal);
+    f. statmSeq := statmSeq;
+    f. end := end(Terminal);
+    RETURN f
+  END IterateStatm;
+
+PROCEDURE (iterStatm: IterateStatm) Accept* (v: Visitor);
+  BEGIN
+    v. VisitIterateStatm (iterStatm)
   END Accept;
 
 

@@ -1,7 +1,7 @@
-(* 	$Id: CheckUses.Mod,v 1.21 2003/08/24 00:03:57 mva Exp $	 *)
+(* 	$Id: CheckUses.Mod,v 1.25 2004/05/08 13:34:46 mva Exp $	 *)
 MODULE OOC:IR:CheckUses;
 (*  Warn about uninitialized variables and unreachable code, 
-    Copyright (C) 2003  Michael van Acken, Stewart Greenhill
+    Copyright (C) 2003, 2004  Michael van Acken, Stewart Greenhill
 
     This file is part of OOC.
 
@@ -802,6 +802,17 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
           (* `step' is a constant and cannot be undefined *)
           CheckStatmSeq(def, statm.body);
           
+        | statm: IR.IterateArrayStatm DO
+          CheckExpr(statm.range);
+          CheckDesign(statm.var, write);
+          CheckStatmSeq(def, statm.body);
+          
+        | statm: IR.IterateObjectStatm DO
+          CheckExpr(statm.iteratorFactory);
+          CheckExpr(statm.stepperCall);
+          CheckDesign(statm.var, write);
+          CheckStatmSeq(def, statm.body);
+          
         | statm: IR.IfStatm DO
           CheckExpr(statm.guard);
           def2 := def.Copy();
@@ -957,7 +968,14 @@ PROCEDURE CheckUses*(module: IR.Module; moduleDecl: Sym.Module;
           END;
         | item: Sym.Type DO
           nonlocalWrites := TRUE;
-          pd.SetWriteFlag(item, doesWrite);
+          IF (item # any) THEN
+            (* For item=any (aka Predef.void), the assertion oldFlag>newFlag in
+               SetWriteFlag() may fail.  I don't know if it the right action to
+               simply skip it.  Given that `any' seems to be used as a target
+               that is never read, and therefore might be complete redundant,
+               this change should do no harm.  *)
+            pd.SetWriteFlag(item, doesWrite);
+          END;
         END;
       END;
 

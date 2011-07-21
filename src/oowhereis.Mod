@@ -20,7 +20,7 @@ MODULE oowhereis;
 *)
 
 IMPORT
-  Out, StdChannels, Object, ADT:StringBuffer, URI, URI:Scheme:File,
+  Out, Object, ADT:StringBuffer, IO:StdChannels, URI, URI:Scheme:File,
   CfgData := Config, Config:Section:Options,
   OOC:Config, OOC:Config:CCompiler, E := OOC:Error, OOC:Repository;
 

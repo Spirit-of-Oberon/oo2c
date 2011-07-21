@@ -1,4 +1,4 @@
-(* 	$Id: LinkProgramC.Mod,v 1.27 2003/10/16 20:33:36 mva Exp $	 *)
+(* 	$Id: LinkProgramC.Mod,v 1.29 2004/04/04 07:35:45 mva Exp $	 *)
 MODULE OOC:Make:LinkProgramC;
 (*  Links object files and libraries to create an executable file.
     Copyright (C) 2001-2004  Michael van Acken
@@ -21,9 +21,9 @@ MODULE OOC:Make:LinkProgramC;
 *)
 
 IMPORT
-  Out, IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
+  IO, URI, URI:Scheme:File, Object, ADT:Dictionary,
   ADT:ArrayList, ADT:StringBuffer, CfgData := Config,
-  OS:ProcessManagement, OOC:Package, OOC:Repository, OOC:Config,
+  OS:ProcessManagement, OOC:Package, OOC:Repository, OOC:Logger, OOC:Config,
   OOC:Config:CCompiler, Sym := OOC:SymbolTable;
 
 VAR
@@ -249,8 +249,7 @@ RAISES IO.Error;
     sb.Append(CCompiler.libs.value);
 
     cmd := sb.ToString();
-    Out.Object(cmd);
-    Out.Ln;
+    Logger.ShellCommand(cmd);
     exit := ProcessManagement.system(cmd);
     RETURN (exit = 0)
   END Run;

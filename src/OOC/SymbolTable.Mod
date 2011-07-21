@@ -1,4 +1,4 @@
-(* 	$Id: SymbolTable.Mod,v 1.121 2004/01/20 06:59:57 sgreenhill Exp $	 *)
+(* 	$Id: SymbolTable.Mod,v 1.123 2004/04/13 21:07:11 mva Exp $	 *)
 MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
     Copyright (C) 2000-2004  Michael van Acken
@@ -379,6 +379,12 @@ CONST
   callConvPascal* = 3;
   (**`Pascal' calling convention.  The callee removes arguments.  This is 
      the default calling convention under Win32.  *)  
+  callConvFastcall* = 4;
+  (**The Microsoft `Fastcall' calling convention for x86. Arguments to
+	functions are passed in registers "whenever possible". The first two
+	LONGINT or smaller arguments are passed in the ECX and EDX registers; all
+	other arguments are passed right to left on the stack. The callee removes
+	arguments from the stack. *)
 
 TYPE
   LinkDirective* = POINTER TO LinkDirectiveDesc;
@@ -1437,6 +1443,13 @@ PROCEDURE (decl: Declaration) Load* (r: Storable.Reader) RAISES IO.Error;
     decl. usageCount := 0;
   END Load;
 
+PROCEDURE (decl: Declaration) Name*(): STRING;
+(**As long as the symbol table code does not use @code{STRING}, this function
+   can be used to get the declaration's name as a string.  *)
+  BEGIN
+    RETURN Object.NewLatin1(decl.name.str^);
+  END Name;
+
 PROCEDURE (decl: Declaration) IncrUsageCounter*;
   BEGIN
     INC(decl.usageCount);
@@ -1780,6 +1793,7 @@ PROCEDURE (mod: Module) CallConvToString*(): STRING;
     | callConvInternal: RETURN "internal"
     | callConvC       : RETURN "C"
     | callConvPascal  : RETURN "Pascal"
+    | callConvFastcall  : RETURN "Fastcall"
     END
   END CallConvToString;
 
@@ -1891,7 +1905,9 @@ PROCEDURE StringToCallConv*(str: STRING): CallConv;
       RETURN callConvC
     ELSIF str.Equals("Pascal") THEN
       RETURN callConvPascal
-    ELSE
+    ELSIF str.Equals("Fastcall") THEN
+      RETURN callConvFastcall
+	ELSE
       RETURN callConvInvalid
     END
   END StringToCallConv;

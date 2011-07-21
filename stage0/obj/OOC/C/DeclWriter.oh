@@ -318,7 +318,7 @@ extern RT0__StructDesc _td_OOC_C_DeclWriter__Type;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__TypeDesc;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__BasicType;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__BasicTypeDesc;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__4949;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__4956;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__Pointer;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__PointerDesc;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__Array;
@@ -337,14 +337,14 @@ extern RT0__StructDesc _td_OOC_C_DeclWriter__Define;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__DefineDesc;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__Writer;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__WriterDesc;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__8880;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__9213;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__9586;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__11669;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__12570;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__25882;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__26039;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__30936;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__8887;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__9220;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__9593;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__11676;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__12577;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__25889;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__26046;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__31023;
 #endif /* _MODULE_OOC_C_DeclWriter_ */
 
 /* --- */

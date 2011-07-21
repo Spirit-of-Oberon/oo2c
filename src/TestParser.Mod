@@ -1,8 +1,8 @@
 MODULE TestParser;
 
 IMPORT
-  StdChannels, ProgramArgs, TextRider, Out, Msg,
-  Object, IO, IO:FileChannel, Std:=IO:StdChannels,
+  ProgramArgs, TR := TextRider, Out, Msg,
+  Object, IO, IO:FileChannel, IO:StdChannels, IO:TextRider, 
   OOC:Config:Pragmas, OOC:Error, OOC:Scanner:InputBuffer, 
   OOC:Scanner, OOC:Scanner:SymList, OOC:Parser, 
   OOC:AST, OOC:AST:XML, OOC:AST:StupidPP;
@@ -12,7 +12,7 @@ CONST
   modeStupidPP = 1;
   
 VAR
-  argReader: TextRider.Reader;
+  argReader: TR.Reader;
   file: IO.ByteChannel;
   arg, msgText: ARRAY 1024 OF CHAR;
   res: Msg.Msg;
@@ -29,11 +29,11 @@ BEGIN
     HALT (1)
   ELSE
     mode := modeXML;
-    argReader := TextRider.ConnectReader (ProgramArgs.args);
+    argReader := TR.ConnectReader (ProgramArgs.args);
     argReader. ReadLine (arg);           (* skip command name *)
     LOOP
       argReader. ReadLine (arg);
-      IF (argReader. res # TextRider.done) THEN
+      IF (argReader. res # TR.done) THEN
         EXIT
       END;
       
@@ -60,7 +60,7 @@ BEGIN
           
           CASE mode OF
           | modeXML:
-            XML.Write (Std.stdout, ast(AST.Module))
+            XML.Write (StdChannels.stdout, ast(AST.Module))
           | modeStupidPP:
             StupidPP.Write (TextRider.ConnectWriter (StdChannels.stdout),
                             ast(AST.Module))

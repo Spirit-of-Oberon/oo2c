@@ -1,7 +1,7 @@
 MODULE TestSymTab;
 
 IMPORT
-  Object, StdChannels, Out, Err, IO, URI,
+  Object, Out, Err, IO, IO:StdChannels, URI,
   CfgData := Config, Config:Section:Options, OOC:Config, OOC:Config:Pragmas,
   OOC:Error, OOC:AST, Sym := OOC:SymbolTable, Rep := OOC:Repository,
   XML := OOC:SymbolTable:XML, OOC:Auxiliary:ParseModule, OOC:Make;

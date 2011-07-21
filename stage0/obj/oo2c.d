@@ -22,8 +22,9 @@ static void* _c20;
 static void* _c21;
 static void* _c22;
 static void* _c23;
+static void* _c24;
 #include <oo2c.oh>
-#include <StdChannels.oh>
+#include <IO/StdChannels.oh>
 #include <Out.oh>
 #include <Err.oh>
 #include <Object.oh>
@@ -65,6 +66,7 @@ static Config_Section_Options__Option oo2c__forceUpdate;
 static Config_Section_Options__Option oo2c__listUses;
 static Config_Section_Options__Option oo2c__useStderr;
 static Config_Section_Options__Option oo2c__writeStats;
+static Config_Section_Options__Option oo2c__verbose;
 static Config_Section_Options__Option oo2c__errorStyle;
 static Config_Section_Options__Option oo2c__showHelp;
 static Config_Section_Options__Option oo2c__showVersion;

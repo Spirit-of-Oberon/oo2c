@@ -1,7 +1,7 @@
-(* 	$Id: CreateIR.Mod,v 1.1 2003/08/26 14:05:22 mva Exp $	 *)
+(* 	$Id: CreateIR.Mod,v 1.4 2004/04/13 21:08:20 mva Exp $	 *)
 MODULE OOC:AST:CreateIR;
 (*  Creates an IR representation from the abstract syntax tree.
-    Copyright (C) 2001-2003  Michael van Acken
+    Copyright (C) 2001-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -107,32 +107,40 @@ PROCEDURE CreateIR* (module: AST.Module;
       END
     END Designator;
  
-  PROCEDURE Range(expr : AST.Node; isSet : BOOLEAN) : IR.Expression; 
+  PROCEDURE Range(type: IR.Expression; expr: AST.Node;
+                  isSet: BOOLEAN) : IR.Expression; 
   (* Check for an upto operator ".." or a normal expression. *)
   VAR e : IR.Expression;
   BEGIN
     WITH expr : AST.Operator DO
       IF (expr. op. sym. id = Symbol.upto) THEN
-        RETURN b.NewSetRange(expr.op.sym, Expr(expr.left), Expr(expr.right), isSet);
+        RETURN b.NewSetRange(expr.op.sym, type,
+                             Expr(expr.left), Expr(expr.right), isSet);
       END;
     ELSE
     END;
     e := Expr(expr);
-    RETURN b.NewSetRange(e.sym, e, e, isSet);
+    RETURN b.NewSetRange(e.sym, type, e, e, isSet);
   END Range;
 
   PROCEDURE SetConstruct(sc : AST.Set) : IR.Expression;
   VAR
     i, len : LONGINT;
-    result : IR.Expression;
+    result, type: IR.Expression;
   BEGIN
+    IF (sc.type = NIL) THEN
+      type := NIL;
+    ELSE
+      type := Designator(sc.type);
+    END;
     IF (sc. elementList. len = 0) THEN
-      RETURN b. NewSetRange (sc. lBrace. sym, NIL, NIL, TRUE);
+      RETURN b.NewSetRange(sc.lBrace.sym, type, NIL, NIL, TRUE);
     ELSE
       len := (sc.elementList.len+1) DIV 2; 
-      result := Range(sc.elementList.n[0], TRUE);
+      result := Range(type, sc.elementList.n[0], TRUE);
       FOR i := 1 TO len-1 DO
-        result := b.NewSetOp(NIL, IR.setUnion, result, Range(sc.elementList.n[i*2], TRUE));
+        result := b.NewSetOp(NIL, IR.setUnion, result,
+                             Range(type, sc.elementList.n[i*2], TRUE));
       END;
       RETURN result;
     END;
@@ -326,7 +334,7 @@ PROCEDURE CreateIR* (module: AST.Module;
         BEGIN
           NEW (setRanges, (labels. len+1) DIV 2);
           FOR i := 0 TO labels. len-1 BY 2 DO
-            setRanges[i DIV 2] := Range (labels. n[i], FALSE);
+            setRanges[i DIV 2] := Range (NIL, labels. n[i], FALSE);
           END;
           RETURN setRanges;
         END Labels;
@@ -434,6 +442,14 @@ PROCEDURE CreateIR* (module: AST.Module;
                                StatementSeq (forStatm. statmSeq));
       END ForStatm;
   
+    PROCEDURE IterateStatm (iterStatm: AST.IterateStatm): IR.Statement;
+      BEGIN
+        RETURN b. NewIterateStatm (iterStatm. for. sym, currentSourceContext,
+                                   Designator (iterStatm. ident),
+                                   Expr (iterStatm. range),
+                                   StatementSeq (iterStatm. statmSeq));
+      END IterateStatm;
+  
     PROCEDURE LoopStatm (loopStatm: AST.LoopStatm): IR.Statement;
       BEGIN
         RETURN b. NewLoopStatm (loopStatm. loop. sym,
@@ -508,6 +524,9 @@ PROCEDURE CreateIR* (module: AST.Module;
 
           | n: AST.ForStatm DO
             statm := ForStatm (n);
+
+          | n: AST.IterateStatm DO
+            statm := IterateStatm (n);
 
           | n: AST.LoopStatm DO
             statm := LoopStatm (n);

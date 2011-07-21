@@ -131,7 +131,7 @@ Threading issues:
 
 In summary, for MingW32/MSYS the following options are likely to be required
 by the GC in order to build OOC:
-	"CPPFLAGS=-I/usr/local/include -DGC_WIN32_THREADS \
+	"CPPFLAGS=-I/usr/local/include -DGC_WIN32_THREADS" \
 	LDFLAGS=-L/usr/local/lib 
 
 Installation 
@@ -162,7 +162,7 @@ Installation
 	    "INSTALL=c:/msys/1.0/bin/install.exe" \
 	    LDFLAGS=-L/usr/local/lib \
 	    CFLAGS=-O2 \
-		"CPPFLAGS=-I/usr/local/include -DGC_WIN32_THREADS \
+		"CPPFLAGS=-I/usr/local/include -DGC_WIN32_THREADS" \
         ./configure --disable-libs
 
     For Mingw32 under Cygwin:
@@ -239,6 +239,16 @@ This section discusses features of OOC relevant to the Win32 platform.
   removes any parameters from the stack before returning from the
   procedure.  In "C" calling convention (or "cdecl"), the caller removes
   the parameters which permits the use of variable argument lists.
+
+  The "fastcall" calling convention is implemented by Microsoft's C compiler as
+  well as recent versions of GCC. Specifying "Fastcall" causes arguments to
+  functions to be passed in registers "where possible". For the x86, the first
+  two LONGINT or smaller arguments are passed (left to right) in the ECX and
+  EDX registers; all other arguments are passed right to left on the stack. The
+  callee removes arguments from the stack. On modern machines, the speed
+  benefits of fastcall are probably negligible, but it is occasionally used in
+  third-party application binary interfaces (ABIs) so it is included here for
+  compatibility with these libraries.
 
   OOC allows calling convention to be specified in both Module declarations
   and procedure declarations. For example, an interface module for a Win32

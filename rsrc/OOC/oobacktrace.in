@@ -1,5 +1,5 @@
 #!@PERL@ -w
-# $Id: oobacktrace.in,v 1.1 2002/12/08 15:51:07 mva Exp $
+# $Id: oobacktrace.in,v 1.2 2004/05/09 16:11:25 mva Exp $
 # 
 # Wrapper to map backtrace information onto function names
 # Copyright (C) 1999, 2001  Michael van Acken
@@ -59,7 +59,7 @@ if (-s $tmp) {
   # get symbol data from command by running nm on the command name
   open F, "$nm_prog -n -l $ARGV[0] |" or die "Failed to call nm: $!";
   my @nm = grep {$_->[0] =~ /[0-9a-f]+/} 
-    map {[ m:^(.+) .? ([a-zA-Z0-9_.@-]+)(\t.*)?$: ]} <F>;
+    map {[ m:^(.+) .? ([a-zA-Z0-9_.\@-]+)(\t.*)?$: ]} <F>;
   close F;
   for (@nm) {  # normalize address values to 64 bit
     $_->[0] = "0" x (16 - length($_->[0])) . $_->[0];

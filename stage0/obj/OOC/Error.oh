@@ -3,7 +3,7 @@
 
 #include <__typemap.h>
 #include <RT0.oh>
-#include <Channel.oh>
+#include <IO.oh>
 #include <Msg.oh>
 #include <RT0.oh>
 #include <Object.oh>
@@ -53,9 +53,9 @@ typedef void (*_TBP_OOC_Error__ContextDesc_BaseTemplate)(OOC_Error__Context c, M
 extern void OOC_Error__ListDesc_SetAdjustCharPos(OOC_Error__List errList, OOC_CHAR8 adjust);
 #define _TBN_OOC_Error__ListDesc_SetAdjustCharPos 4
 typedef void (*_TBP_OOC_Error__ListDesc_SetAdjustCharPos)(OOC_Error__List errList, OOC_CHAR8 adjust);
-extern void OOC_Error__ListDesc_Write(OOC_Error__List errList, Channel__Channel ch);
+extern void OOC_Error__ListDesc_Write(OOC_Error__List errList, IO__ByteChannel ch);
 #define _TBN_OOC_Error__ListDesc_Write 5
-typedef void (*_TBP_OOC_Error__ListDesc_Write)(OOC_Error__List errList, Channel__Channel ch);
+typedef void (*_TBP_OOC_Error__ListDesc_Write)(OOC_Error__List errList, IO__ByteChannel ch);
 extern void OOC_OOC_Error_init(void);
 extern void OOC_OOC_Error_init0(void);
 
@@ -64,10 +64,10 @@ extern RT0__StructDesc _td_OOC_Error__Context;
 extern RT0__StructDesc _td_OOC_Error__ContextDesc;
 extern RT0__StructDesc _td_OOC_Error__List;
 extern RT0__StructDesc _td_OOC_Error__ListDesc;
-extern RT0__StructDesc _td_OOC_Error__1377;
-extern RT0__StructDesc _td_OOC_Error__3352;
-extern RT0__StructDesc _td_OOC_Error__4998;
-extern RT0__StructDesc _td_OOC_Error__6584;
+extern RT0__StructDesc _td_OOC_Error__1375;
+extern RT0__StructDesc _td_OOC_Error__3350;
+extern RT0__StructDesc _td_OOC_Error__4991;
+extern RT0__StructDesc _td_OOC_Error__6576;
 #endif /* _MODULE_OOC_Error_ */
 
 /* --- */

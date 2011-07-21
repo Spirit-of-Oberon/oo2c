@@ -27,9 +27,9 @@ static void* _c25;
 #include <OOC/Package.oh>
 #include <IntStr.oh>
 #include <LongStrings.oh>
-#include <StdChannels.oh>
 #include <Strings.oh>
 #include <IO/FileChannel.oh>
+#include <IO/StdChannels.oh>
 #include <Exception.oh>
 #include <ADT/StringBuffer.oh>
 #include <OS/Files.oh>
@@ -89,7 +89,7 @@ static void OOC_Package__WriteKeyValue(XML_Writer__Writer w, const OOC_CHAR8 tag
 static RT0__ModuleDesc _mid;
 RT0__StructDesc _td_OOC_Package__Version = { (RT0__Struct[]){&_td_OOC_Package__VersionDesc}, NULL, NULL, &_mid, "Version", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_Package__VersionDesc = { (RT0__Struct[]){&_td_OOC_Package__VersionDesc}, (void*[]){}, NULL, &_mid, "VersionDesc", 44, 0, (1<<RT0__flagAtomic), RT0__strRecord };
-RT0__StructDesc _td_OOC_Package__715 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_Package__719 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_Package__Executable = { (RT0__Struct[]){&_td_OOC_Package__ExecutableDesc}, NULL, NULL, &_mid, "Executable", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_Package__ExecutableDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_Package__ExecutableDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode}, NULL, &_mid, "ExecutableDesc", 4, 2, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_Package__Library = { (RT0__Struct[]){&_td_OOC_Package__LibraryDesc}, NULL, NULL, &_mid, "Library", 4, -1, 0, RT0__strPointer };
@@ -108,17 +108,17 @@ RT0__StructDesc _td_OOC_Package__Repository = { (RT0__Struct[]){&_td_OOC_Package
 RT0__StructDesc _td_OOC_Package__RepositoryDesc = { (RT0__Struct[]){&_td_OOC_Repository__PkgInfoDesc,&_td_OOC_Package__RepositoryDesc}, (void*[]){(void*)OOC_Package__RepositoryDesc_MergePackage,(void*)OOC_Package__RepositoryDesc_PackageInstalled}, NULL, &_mid, "RepositoryDesc", 12, 1, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_Package__ErrorContext = { (RT0__Struct[]){&_td_OOC_Package__ErrorContextDesc}, NULL, NULL, &_mid, "ErrorContext", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_Package__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_XML_Error__ContextDesc,&_td_OOC_Package__ErrorContextDesc}, (void*[]){(void*)OOC_Package__ErrorContextDesc_GetTemplate,(void*)XML_Error__ContextDesc_WriteTemplate,(void*)XML_Error__ContextDesc_SetString}, NULL, &_mid, "ErrorContextDesc", 8, 2, 0, RT0__strRecord };
-RT0__StructDesc _td_OOC_Package__2993 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 256, 128, (1<<RT0__flagAtomic), RT0__strArray };
-RT0__StructDesc _td_OOC_Package__8665 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_Package__8654 = { (RT0__Struct[]){&_td_OOC_Package__8665}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_Package__14041 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_Package__14030 = { (RT0__Struct[]){&_td_OOC_Package__14041}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_Package__14308 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_Package__15871 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1024, 1024, (1<<RT0__flagAtomic), RT0__strArray };
-RT0__StructDesc _td_OOC_Package__19006 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
-RT0__StructDesc _td_OOC_Package__19208 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 128, 128, (1<<RT0__flagAtomic), RT0__strArray };
-RT0__StructDesc _td_OOC_Package__32116 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_Package__32234 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_Package__2997 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 256, 128, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_Package__8669 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_Package__8658 = { (RT0__Struct[]){&_td_OOC_Package__8669}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_Package__14045 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_Package__14034 = { (RT0__Struct[]){&_td_OOC_Package__14045}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_Package__14312 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_Package__15875 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1024, 1024, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_Package__19010 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_Package__19212 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 128, 128, (1<<RT0__flagAtomic), RT0__strArray };
+RT0__StructDesc _td_OOC_Package__32120 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_Package__32238 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 32, 32, (1<<RT0__flagAtomic), RT0__strArray };
 static RT0__StructDesc _td__qtd0 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd0}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_ArrayList__ArrayListDesc_Equals,(void*)ADT_ArrayList__ArrayListDesc_HashCode,(void*)ADT_ArrayList__ArrayListDesc_Store,(void*)ADT_ArrayList__ArrayListDesc_Load,(void*)ADT_ArrayList__ArrayListDesc_CreateArray,(void*)ADT_ArrayList__ArrayListDesc_INIT,(void*)ADT_ArrayList__ArrayListDesc_Destroy,(void*)ADT_ArrayList__ArrayListDesc_Copy,(void*)ADT_ArrayList__ArrayListDesc_EnsureCapacity,(void*)ADT_ArrayList__ArrayListDesc_Clear,(void*)ADT_ArrayList__ArrayListDesc_Append,(void*)ADT_ArrayList__ArrayListDesc_Insert,(void*)ADT_ArrayList__ArrayListDesc_Get,(void*)ADT_ArrayList__ArrayListDesc_Set,(void*)ADT_ArrayList__ArrayListDesc_RemoveRange,(void*)ADT_ArrayList__ArrayListDesc_Remove,(void*)ADT_ArrayList__ArrayListDesc_TrimToSize,(void*)ADT_ArrayList__ArrayListDesc_Size,(void*)ADT_ArrayList__ArrayListDesc_Contains,(void*)ADT_ArrayList__ArrayListDesc_IndexOf,(void*)ADT_ArrayList__ArrayListDesc_LastIndexOf,(void*)ADT_ArrayList__ArrayListDesc_IsEmpty,(void*)ADT_ArrayList__ArrayListDesc_Sort,(void*)ADT_ArrayList__ArrayListDesc_Elements}, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayListDesc, &_td_OOC_Package__Library, NULL}, &_mid, "ADT:ArrayList.ArrayListDesc(OOC:Package.Library)", 8, 3, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd1 = { (RT0__Struct[]){&_td__qtd0}, NULL, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayList, &_td_OOC_Package__Library, NULL}, &_mid, "ADT:ArrayList.ArrayList(OOC:Package.Library)", 4, 0, 0, RT0__strQualType };
 static RT0__StructDesc _td__qtd2 = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_ADT_Storable__ObjectDesc,&_td__qtd2}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)ADT_ArrayList__ArrayListDesc_Equals,(void*)ADT_ArrayList__ArrayListDesc_HashCode,(void*)ADT_ArrayList__ArrayListDesc_Store,(void*)ADT_ArrayList__ArrayListDesc_Load,(void*)ADT_ArrayList__ArrayListDesc_CreateArray,(void*)ADT_ArrayList__ArrayListDesc_INIT,(void*)ADT_ArrayList__ArrayListDesc_Destroy,(void*)ADT_ArrayList__ArrayListDesc_Copy,(void*)ADT_ArrayList__ArrayListDesc_EnsureCapacity,(void*)ADT_ArrayList__ArrayListDesc_Clear,(void*)ADT_ArrayList__ArrayListDesc_Append,(void*)ADT_ArrayList__ArrayListDesc_Insert,(void*)ADT_ArrayList__ArrayListDesc_Get,(void*)ADT_ArrayList__ArrayListDesc_Set,(void*)ADT_ArrayList__ArrayListDesc_RemoveRange,(void*)ADT_ArrayList__ArrayListDesc_Remove,(void*)ADT_ArrayList__ArrayListDesc_TrimToSize,(void*)ADT_ArrayList__ArrayListDesc_Size,(void*)ADT_ArrayList__ArrayListDesc_Contains,(void*)ADT_ArrayList__ArrayListDesc_IndexOf,(void*)ADT_ArrayList__ArrayListDesc_LastIndexOf,(void*)ADT_ArrayList__ArrayListDesc_IsEmpty,(void*)ADT_ArrayList__ArrayListDesc_Sort,(void*)ADT_ArrayList__ArrayListDesc_Elements}, (RT0__Struct[]){&_td_ADT_ArrayList__ArrayListDesc, &_td_OOC_Package__Executable, NULL}, &_mid, "ADT:ArrayList.ArrayListDesc(OOC:Package.Executable)", 8, 3, 0, RT0__strQualType };

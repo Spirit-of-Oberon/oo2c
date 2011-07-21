@@ -1,4 +1,4 @@
-(* 	$Id: CCompiler.Mod,v 1.33 2003/08/02 07:25:56 mva Exp $	 *)
+(* 	$Id: CCompiler.Mod,v 1.35 2004/04/04 07:35:45 mva Exp $	 *)
 MODULE OOC:Config:CCompiler;
 (*  Generates command lines for the C compiler and linker.
     Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
@@ -23,7 +23,7 @@ MODULE OOC:Config:CCompiler;
 IMPORT
   Object, ADT:StringBuffer, URI, URI:Scheme:File,
   CfgData := Config, Config:Section:Options,
-  OOC:Config, OOC:Package, OOC:Repository;
+  OOC:Logger, OOC:Config, OOC:Package, OOC:Repository;
 
 VAR
   cc, cppflags, cflags, ldflags, libs-, libtool, libdir-: Options.Option;
@@ -52,6 +52,9 @@ PROCEDURE SetCommand(mode: STRING): StringBuffer.StringBuffer;
       sb.Append(" --mode=");
       sb.Append(mode);
       sb.Append(" ");
+      IF Logger.silence THEN
+        sb.Append("--quiet ");
+      END;
     END;
     sb.Append(cc.value);
     sb.Append(" ");

@@ -13,7 +13,8 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_Exception34 lib_Exception35 lib_Exception36 lib_Exception37">-->
+  select ="prepare_out_module lib_rt1 lib_Exception34 lib_Exception35
+  lib_Exception36 lib_Exception37 lib_Exception38">-->
   
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
@@ -707,6 +708,10 @@
       All exceptions derived from <code>Exception.Checked</code>
       inherit the "checked" property.
     </test>
+    <test id="lib_Exception38" type="reject" file="LibException38.Mod">
+      Iterator's <code>Next()</code> methoed raises an unhandled
+      exception of type <code>Exception.Checked</code>.
+    </test>
     
     <test id="lib_BigInt1" type="run" file="LibBigInt1.Mod">
       Tests most of the functions of the <code>BigInt</code>
@@ -766,5 +771,7 @@
       msg="Undeclared identifier"/>
     <reject-info id="lib_Exception37" pos="%RAISE"
       msg="Exception `LibException37.E' neither caught nor passed up"/>
+    <reject-info id="lib_Exception38" pos="%FOR"
+      msg="Exception `Exception.Checked' neither caught nor passed up"/>
   </processor-info>
 </testsuite-ext>

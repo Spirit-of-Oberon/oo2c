@@ -1,7 +1,7 @@
 MODULE TestCompile;
 
 IMPORT
-  StdChannels, Out, Err, Object, StringSearch, StringSearch:RegexpDFA,
+  IO:StdChannels, Out, Err, Object, StringSearch, StringSearch:RegexpDFA,
   CfgData := Config, Config:Section:Options, OOC:Config,
   OOC:Config:Pragmas, OOC:Config:CCompiler, OOC:Config:Autoconf,
   OOC:SymbolTable:Builder, OOC:Error, Rep := OOC:Repository, OOC:Make;
@@ -21,7 +21,6 @@ VAR
   writeAST: Options.Option;
   writeIR: Options.Option;
   useSSA: Options.Option;
-  translateIA32: Options.Option;
   inspectProc: Options.Option;
   inspectStage: Options.Option;
   
@@ -52,7 +51,6 @@ PROCEDURE NewConfig;
     writeAST := Config.AddOption ("write-ast",CfgData.NewBooleanVar(FALSE));
     writeIR := Config.AddOption ("write-ir",CfgData.NewBooleanVar(FALSE));
     useSSA := Config.AddOption ("use-ssa",CfgData.NewBooleanVar(FALSE));
-    translateIA32 := Config.AddOption ("translate-ia32",CfgData.NewBooleanVar(FALSE));
     inspectProc := Config.AddOption ("inspect-proc",CfgData.NewStringVar("$"));
     inspectStage := Config.AddOption ("inspect-stage",CfgData.NewStringVar("$"));
     
@@ -91,8 +89,6 @@ BEGIN
   
   IF make. value(CfgData.BooleanVar). boolean THEN
     mode := Rep.modExecutable
-  ELSIF translateIA32. value(CfgData.BooleanVar). boolean THEN
-    mode := Rep.modObjectFile;
   ELSE
     mode := Rep.modCodeFileC
   END;
@@ -113,16 +109,12 @@ BEGIN
     HALT (1)
   END;*)
   IF (Config.arguments. ArgNumber() = 0) THEN
-    Out.String ("Usage: TestCompile [--config <cfg-file>] {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa|--ia32][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
+    Out.String ("Usage: TestCompile [--config <cfg-file>] {-r <base-dir>} [--make][--write-ast][--write-ir][--use-ssa][--inspect <proc-regexp> <stage-regexp>] <file>"); Out.Ln;
     HALT (1)
   ELSE
     makeRules := Make.NewRules();
-    IF translateIA32.value(CfgData.BooleanVar).boolean THEN
-      makeRules.SetBackend(Make.backendSSAtoIA32);
-    ELSIF useSSA.value(CfgData.BooleanVar).boolean THEN
+    IF useSSA.value(CfgData.BooleanVar).boolean THEN
       makeRules.SetBackend(Make.backendSSAtoC);
-    ELSE
-      makeRules.SetBackend(Make.backendIRtoC);
     END;
     makeRules.SetErrOut(StdChannels.stderr);
     ok := makeRules.UsageTracking("");  (* for deprecation warnings *)

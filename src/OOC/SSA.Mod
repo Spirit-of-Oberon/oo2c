@@ -1,4 +1,4 @@
-(* 	$Id: SSA.Mod,v 1.82 2003/07/15 18:49:04 mva Exp $	 *)
+(* 	$Id: SSA.Mod,v 1.83 2004/04/02 20:42:19 mva Exp $	 *)
 MODULE OOC:SSA;
 (*  Data structures for SSA code representation.
     Copyright (C) 2001-2003  Michael van Acken
@@ -51,7 +51,7 @@ TYPE
        value.  *)
 
     class-: OpndClass.Class;
-   (**Identifies the function of the operand.  See @omodule{OpndClass}.  *)
+    (**Identifies the function of the operand.  See @omodule{OpndClass}.  *)
     
     nextOpnd-: Opnd;
     (**This field refers to the next element in the list of operands of an
@@ -87,7 +87,7 @@ TYPE
        list.  *)
     
     class-: ResultClass.Class;
-    (**Identifies the function of the operand.  See @omodule{ResultClass}.  *)
+    (**Identifies the function of the result.  See @omodule{ResultClass}.  *)
     
     subclass*: Opcode.Subclass;
     (**Subclass id of the result.  For a non-instruction result, this value
@@ -123,7 +123,7 @@ TYPE
     (ResultDesc)
     opndList-: Opnd;
     (**The instruction's operand list.  The operands are linked with
-       @ofield{Opnd.  nextOpnd}.  Order of operands is significant.  Each
+       @ofield{Opnd.nextOpnd}.  Order of operands is significant.  Each
        operand has an index, starting at @code{0}.  *)
     
     nextInstr-, prevInstr-: Instr;

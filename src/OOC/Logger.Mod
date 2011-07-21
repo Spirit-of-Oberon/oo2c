@@ -172,6 +172,7 @@ PROCEDURE ExplainFilesMake*(s1: ARRAY OF CHAR; uri1: URI.URI;
   END ExplainFilesMake;
 
 BEGIN
+  URI.RegisterScheme(File.NewPrototype());
   cwd := File.GetCwd();
   indentMake := 0;
   silence := FALSE;

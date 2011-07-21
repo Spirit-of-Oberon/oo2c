@@ -1,4 +1,4 @@
-(* 	$Id: XML.Mod,v 1.2 2003/08/24 00:03:57 mva Exp $	 *)
+(* 	$Id: XML.Mod,v 1.3 2004/04/01 20:36:12 mva Exp $	 *)
 MODULE OOC:Scanner:XML;
 (*  Creates XML document from a scanned symbol sequence.
     Copyright (C) 2000  Michael van Acken
@@ -54,7 +54,7 @@ produces this XML document
 *)
 
 IMPORT
-  Channel, TextRider,
+  Exception, IO, IO:TextRider,
   OOC:Scanner:Symbol, OOC:Scanner:InputBuffer, B := OOC:Scanner:SymList;
 
 TYPE
@@ -65,13 +65,13 @@ TYPE
   END;
   
 
-PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: Channel.Channel);
+PROCEDURE Init* (b: Builder; buffer: InputBuffer.Buffer; ch: IO.ByteChannel);
   BEGIN
     B.Init (b, buffer, TRUE);
     b. w := TextRider.ConnectWriter (ch);
   END Init;
 
-PROCEDURE New* (buffer: InputBuffer.Buffer; ch: Channel.Channel): Builder;
+PROCEDURE New* (buffer: InputBuffer.Buffer; ch: IO.ByteChannel): Builder;
   VAR
     b: Builder;
   BEGIN
@@ -89,7 +89,7 @@ PROCEDURE (b: Builder) AddSymbol* (id: Symbol.Id;
                                    line, column: LONGINT);
   PROCEDURE WriteQuoted (w: TextRider.Writer; VAR str: ARRAY OF CHAR; s, e: LONGINT);
     VAR
-      last: LONGINT;
+      last, d: LONGINT;
     BEGIN
       WHILE (s # e) DO
         last := s;
@@ -98,7 +98,11 @@ PROCEDURE (b: Builder) AddSymbol* (id: Symbol.Id;
               (str[s] # 09X) & (str[s] # 0AX) & (str[s] # 0DX) DO
           INC (s)
         END;
-        w. byteWriter. WriteBytes (str, last, s-last);
+        TRY
+          d := w. channel. Write (str, last, s-last);
+        CATCH IO.Error(e):
+          Exception.Abort(e);
+        END;
         IF (s # e) THEN
           CASE str[s] OF
           | "&": w. WriteString ("&amp;")

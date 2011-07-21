@@ -286,6 +286,16 @@ typedef struct OOC_AST__ForStatmDesc {
   OOC_AST__NodeList statmSeq;
   OOC_AST__Terminal end;
 } OOC_AST__ForStatmDesc;
+typedef struct OOC_AST__IterateStatmDesc *OOC_AST__IterateStatm;
+typedef struct OOC_AST__IterateStatmDesc {
+  OOC_AST__Terminal _for;
+  OOC_AST__Node ident;
+  OOC_AST__Terminal in;
+  OOC_AST__Node range;
+  OOC_AST__Terminal _do;
+  OOC_AST__NodeList statmSeq;
+  OOC_AST__Terminal end;
+} OOC_AST__IterateStatmDesc;
 typedef struct OOC_AST__LoopStatmDesc *OOC_AST__LoopStatm;
 typedef struct OOC_AST__LoopStatmDesc {
   OOC_AST__Terminal loop;
@@ -500,41 +510,44 @@ typedef void (*_TBP_OOC_AST__VisitorDesc_VisitRepeatStatm)(OOC_AST__Visitor v, O
 extern void OOC_AST__VisitorDesc_VisitForStatm(OOC_AST__Visitor v, OOC_AST__ForStatm forStatm);
 #define _TBN_OOC_AST__VisitorDesc_VisitForStatm 34
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitForStatm)(OOC_AST__Visitor v, OOC_AST__ForStatm forStatm);
+extern void OOC_AST__VisitorDesc_VisitIterateStatm(OOC_AST__Visitor v, OOC_AST__IterateStatm iterStatm);
+#define _TBN_OOC_AST__VisitorDesc_VisitIterateStatm 35
+typedef void (*_TBP_OOC_AST__VisitorDesc_VisitIterateStatm)(OOC_AST__Visitor v, OOC_AST__IterateStatm iterStatm);
 extern void OOC_AST__VisitorDesc_VisitLoopStatm(OOC_AST__Visitor v, OOC_AST__LoopStatm loopStatm);
-#define _TBN_OOC_AST__VisitorDesc_VisitLoopStatm 35
+#define _TBN_OOC_AST__VisitorDesc_VisitLoopStatm 36
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitLoopStatm)(OOC_AST__Visitor v, OOC_AST__LoopStatm loopStatm);
 extern void OOC_AST__VisitorDesc_VisitWithStatm(OOC_AST__Visitor v, OOC_AST__WithStatm withStatm);
-#define _TBN_OOC_AST__VisitorDesc_VisitWithStatm 36
+#define _TBN_OOC_AST__VisitorDesc_VisitWithStatm 37
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitWithStatm)(OOC_AST__Visitor v, OOC_AST__WithStatm withStatm);
 extern void OOC_AST__VisitorDesc_VisitExitStatm(OOC_AST__Visitor v, OOC_AST__ExitStatm exitStatm);
-#define _TBN_OOC_AST__VisitorDesc_VisitExitStatm 37
+#define _TBN_OOC_AST__VisitorDesc_VisitExitStatm 38
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitExitStatm)(OOC_AST__Visitor v, OOC_AST__ExitStatm exitStatm);
 extern void OOC_AST__VisitorDesc_VisitReturnStatm(OOC_AST__Visitor v, OOC_AST__ReturnStatm returnStatm);
-#define _TBN_OOC_AST__VisitorDesc_VisitReturnStatm 38
+#define _TBN_OOC_AST__VisitorDesc_VisitReturnStatm 39
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitReturnStatm)(OOC_AST__Visitor v, OOC_AST__ReturnStatm returnStatm);
 extern void OOC_AST__VisitorDesc_VisitCatch(OOC_AST__Visitor v, OOC_AST__Catch _catch);
-#define _TBN_OOC_AST__VisitorDesc_VisitCatch 39
+#define _TBN_OOC_AST__VisitorDesc_VisitCatch 40
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitCatch)(OOC_AST__Visitor v, OOC_AST__Catch _catch);
 extern void OOC_AST__VisitorDesc_VisitTryStatm(OOC_AST__Visitor v, OOC_AST__TryStatm tryStatm);
-#define _TBN_OOC_AST__VisitorDesc_VisitTryStatm 40
+#define _TBN_OOC_AST__VisitorDesc_VisitTryStatm 41
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitTryStatm)(OOC_AST__Visitor v, OOC_AST__TryStatm tryStatm);
 extern void OOC_AST__VisitorDesc_VisitFlags(OOC_AST__Visitor v, OOC_AST__Flags flags);
-#define _TBN_OOC_AST__VisitorDesc_VisitFlags 41
+#define _TBN_OOC_AST__VisitorDesc_VisitFlags 42
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitFlags)(OOC_AST__Visitor v, OOC_AST__Flags flags);
 extern void OOC_AST__VisitorDesc_VisitProcIdFlag(OOC_AST__Visitor v, OOC_AST__ProcIdFlag procIdFlag);
-#define _TBN_OOC_AST__VisitorDesc_VisitProcIdFlag 42
+#define _TBN_OOC_AST__VisitorDesc_VisitProcIdFlag 43
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitProcIdFlag)(OOC_AST__Visitor v, OOC_AST__ProcIdFlag procIdFlag);
 extern void OOC_AST__VisitorDesc_VisitModuleFlags(OOC_AST__Visitor v, OOC_AST__ModuleFlags moduleFlags);
-#define _TBN_OOC_AST__VisitorDesc_VisitModuleFlags 43
+#define _TBN_OOC_AST__VisitorDesc_VisitModuleFlags 44
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitModuleFlags)(OOC_AST__Visitor v, OOC_AST__ModuleFlags moduleFlags);
 extern void OOC_AST__VisitorDesc_VisitLinkFileFlag(OOC_AST__Visitor v, OOC_AST__LinkFileFlag linkFileFlag);
-#define _TBN_OOC_AST__VisitorDesc_VisitLinkFileFlag 44
+#define _TBN_OOC_AST__VisitorDesc_VisitLinkFileFlag 45
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitLinkFileFlag)(OOC_AST__Visitor v, OOC_AST__LinkFileFlag linkFileFlag);
 extern void OOC_AST__VisitorDesc_VisitLinkObjFlag(OOC_AST__Visitor v, OOC_AST__LinkObjFlag linkObjFlag);
-#define _TBN_OOC_AST__VisitorDesc_VisitLinkObjFlag 45
+#define _TBN_OOC_AST__VisitorDesc_VisitLinkObjFlag 46
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitLinkObjFlag)(OOC_AST__Visitor v, OOC_AST__LinkObjFlag linkObjFlag);
 extern void OOC_AST__VisitorDesc_VisitLinkLibFlag(OOC_AST__Visitor v, OOC_AST__LinkLibFlag linkLibFlag);
-#define _TBN_OOC_AST__VisitorDesc_VisitLinkLibFlag 46
+#define _TBN_OOC_AST__VisitorDesc_VisitLinkLibFlag 47
 typedef void (*_TBP_OOC_AST__VisitorDesc_VisitLinkLibFlag)(OOC_AST__Visitor v, OOC_AST__LinkLibFlag linkLibFlag);
 extern void OOC_AST__Init(OOC_AST__Builder b);
 extern OOC_AST__Builder OOC_AST__New(void);
@@ -766,77 +779,83 @@ typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_ForStatm)(OOC_AST__Builder b, 
 extern void OOC_AST__ForStatmDesc_Accept(OOC_AST__ForStatm forStatm, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__ForStatmDesc_Accept 0
 typedef void (*_TBP_OOC_AST__ForStatmDesc_Accept)(OOC_AST__ForStatm forStatm, OOC_AST__Visitor v);
+extern OOC_AST__Node OOC_AST__BuilderDesc_IterateStatm(OOC_AST__Builder b, OOC_AST__Node _for, OOC_AST__Node ident, OOC_AST__Node in, OOC_AST__Node range, OOC_AST__Node _do, OOC_AST__NodeList statmSeq, OOC_AST__Node end);
+#define _TBN_OOC_AST__BuilderDesc_IterateStatm 36
+typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_IterateStatm)(OOC_AST__Builder b, OOC_AST__Node _for, OOC_AST__Node ident, OOC_AST__Node in, OOC_AST__Node range, OOC_AST__Node _do, OOC_AST__NodeList statmSeq, OOC_AST__Node end);
+extern void OOC_AST__IterateStatmDesc_Accept(OOC_AST__IterateStatm iterStatm, OOC_AST__Visitor v);
+#define _TBN_OOC_AST__IterateStatmDesc_Accept 0
+typedef void (*_TBP_OOC_AST__IterateStatmDesc_Accept)(OOC_AST__IterateStatm iterStatm, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_LoopStatm(OOC_AST__Builder b, OOC_AST__Node loop, OOC_AST__NodeList statmSeq, OOC_AST__Node end);
-#define _TBN_OOC_AST__BuilderDesc_LoopStatm 36
+#define _TBN_OOC_AST__BuilderDesc_LoopStatm 37
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_LoopStatm)(OOC_AST__Builder b, OOC_AST__Node loop, OOC_AST__NodeList statmSeq, OOC_AST__Node end);
 extern void OOC_AST__LoopStatmDesc_Accept(OOC_AST__LoopStatm loopStatm, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__LoopStatmDesc_Accept 0
 typedef void (*_TBP_OOC_AST__LoopStatmDesc_Accept)(OOC_AST__LoopStatm loopStatm, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_WithStatm(OOC_AST__Builder b, OOC_AST__NodeList guardList, OOC_AST__Node _else, OOC_AST__NodeList elseStatmSeq, OOC_AST__Node end);
-#define _TBN_OOC_AST__BuilderDesc_WithStatm 37
+#define _TBN_OOC_AST__BuilderDesc_WithStatm 38
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_WithStatm)(OOC_AST__Builder b, OOC_AST__NodeList guardList, OOC_AST__Node _else, OOC_AST__NodeList elseStatmSeq, OOC_AST__Node end);
 extern void OOC_AST__WithStatmDesc_Accept(OOC_AST__WithStatm withStatm, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__WithStatmDesc_Accept 0
 typedef void (*_TBP_OOC_AST__WithStatmDesc_Accept)(OOC_AST__WithStatm withStatm, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_ExitStatm(OOC_AST__Builder b, OOC_AST__Node exit);
-#define _TBN_OOC_AST__BuilderDesc_ExitStatm 38
+#define _TBN_OOC_AST__BuilderDesc_ExitStatm 39
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_ExitStatm)(OOC_AST__Builder b, OOC_AST__Node exit);
 extern void OOC_AST__ExitStatmDesc_Accept(OOC_AST__ExitStatm exitStatm, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__ExitStatmDesc_Accept 0
 typedef void (*_TBP_OOC_AST__ExitStatmDesc_Accept)(OOC_AST__ExitStatm exitStatm, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_ReturnStatm(OOC_AST__Builder b, OOC_AST__Node _return, OOC_AST__Node expr);
-#define _TBN_OOC_AST__BuilderDesc_ReturnStatm 39
+#define _TBN_OOC_AST__BuilderDesc_ReturnStatm 40
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_ReturnStatm)(OOC_AST__Builder b, OOC_AST__Node _return, OOC_AST__Node expr);
 extern void OOC_AST__ReturnStatmDesc_Accept(OOC_AST__ReturnStatm returnStatm, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__ReturnStatmDesc_Accept 0
 typedef void (*_TBP_OOC_AST__ReturnStatmDesc_Accept)(OOC_AST__ReturnStatm returnStatm, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_Catch(OOC_AST__Builder b, OOC_AST__Node _catch, OOC_AST__Node type, OOC_AST__Node lParen, OOC_AST__Node ident, OOC_AST__Node rParen, OOC_AST__Node colon, OOC_AST__NodeList statmSeq);
-#define _TBN_OOC_AST__BuilderDesc_Catch 40
+#define _TBN_OOC_AST__BuilderDesc_Catch 41
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_Catch)(OOC_AST__Builder b, OOC_AST__Node _catch, OOC_AST__Node type, OOC_AST__Node lParen, OOC_AST__Node ident, OOC_AST__Node rParen, OOC_AST__Node colon, OOC_AST__NodeList statmSeq);
 extern void OOC_AST__CatchDesc_Accept(OOC_AST__Catch _catch, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__CatchDesc_Accept 0
 typedef void (*_TBP_OOC_AST__CatchDesc_Accept)(OOC_AST__Catch _catch, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_TryStatm(OOC_AST__Builder b, OOC_AST__Node _try, OOC_AST__NodeList statmSeq, OOC_AST__NodeList catchList, OOC_AST__Node end);
-#define _TBN_OOC_AST__BuilderDesc_TryStatm 41
+#define _TBN_OOC_AST__BuilderDesc_TryStatm 42
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_TryStatm)(OOC_AST__Builder b, OOC_AST__Node _try, OOC_AST__NodeList statmSeq, OOC_AST__NodeList catchList, OOC_AST__Node end);
 extern void OOC_AST__TryStatmDesc_Accept(OOC_AST__TryStatm tryStatm, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__TryStatmDesc_Accept 0
 typedef void (*_TBP_OOC_AST__TryStatmDesc_Accept)(OOC_AST__TryStatm tryStatm, OOC_AST__Visitor v);
 extern OOC_AST__Flags OOC_AST__BuilderDesc_Flags(OOC_AST__Builder b, OOC_INT8 context, OOC_AST__Node lBrak, OOC_AST__NodeList flagList, OOC_AST__Node rBrak);
-#define _TBN_OOC_AST__BuilderDesc_Flags 42
+#define _TBN_OOC_AST__BuilderDesc_Flags 43
 typedef OOC_AST__Flags (*_TBP_OOC_AST__BuilderDesc_Flags)(OOC_AST__Builder b, OOC_INT8 context, OOC_AST__Node lBrak, OOC_AST__NodeList flagList, OOC_AST__Node rBrak);
 extern OOC_CHAR8 OOC_AST__BuilderDesc_ProcWithoutBody(OOC_AST__Builder b, OOC_AST__Node moduleFlags, OOC_AST__Node procFlags);
-#define _TBN_OOC_AST__BuilderDesc_ProcWithoutBody 43
+#define _TBN_OOC_AST__BuilderDesc_ProcWithoutBody 44
 typedef OOC_CHAR8 (*_TBP_OOC_AST__BuilderDesc_ProcWithoutBody)(OOC_AST__Builder b, OOC_AST__Node moduleFlags, OOC_AST__Node procFlags);
 extern void OOC_AST__FlagsDesc_Accept(OOC_AST__Flags flags, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__FlagsDesc_Accept 0
 typedef void (*_TBP_OOC_AST__FlagsDesc_Accept)(OOC_AST__Flags flags, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_ProcIdFlag(OOC_AST__Builder b, OOC_AST__Node procId, OOC_AST__Node equal, OOC_AST__Node number);
-#define _TBN_OOC_AST__BuilderDesc_ProcIdFlag 44
+#define _TBN_OOC_AST__BuilderDesc_ProcIdFlag 45
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_ProcIdFlag)(OOC_AST__Builder b, OOC_AST__Node procId, OOC_AST__Node equal, OOC_AST__Node number);
 extern void OOC_AST__ProcIdFlagDesc_Accept(OOC_AST__ProcIdFlag procIdFlag, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__ProcIdFlagDesc_Accept 0
 typedef void (*_TBP_OOC_AST__ProcIdFlagDesc_Accept)(OOC_AST__ProcIdFlag procIdFlag, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_ModuleFlags(OOC_AST__Builder b, OOC_AST__Node external, OOC_AST__Node callConv, OOC_AST__NodeList moduleFlags, OOC_AST__Node semicolon, OOC_AST__Node link, OOC_AST__NodeList linkSections, OOC_AST__Node end);
-#define _TBN_OOC_AST__BuilderDesc_ModuleFlags 45
+#define _TBN_OOC_AST__BuilderDesc_ModuleFlags 46
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_ModuleFlags)(OOC_AST__Builder b, OOC_AST__Node external, OOC_AST__Node callConv, OOC_AST__NodeList moduleFlags, OOC_AST__Node semicolon, OOC_AST__Node link, OOC_AST__NodeList linkSections, OOC_AST__Node end);
 extern void OOC_AST__ModuleFlagsDesc_Accept(OOC_AST__ModuleFlags moduleFlags, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__ModuleFlagsDesc_Accept 0
 typedef void (*_TBP_OOC_AST__ModuleFlagsDesc_Accept)(OOC_AST__ModuleFlags moduleFlags, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_LinkFileFlag(OOC_AST__Builder b, OOC_AST__Node file, OOC_AST__Node fileName, OOC_AST__Node addOption, OOC_AST__Node prefixOpt, OOC_AST__Node comma, OOC_AST__Node suffixOpt);
-#define _TBN_OOC_AST__BuilderDesc_LinkFileFlag 46
+#define _TBN_OOC_AST__BuilderDesc_LinkFileFlag 47
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_LinkFileFlag)(OOC_AST__Builder b, OOC_AST__Node file, OOC_AST__Node fileName, OOC_AST__Node addOption, OOC_AST__Node prefixOpt, OOC_AST__Node comma, OOC_AST__Node suffixOpt);
 extern void OOC_AST__LinkFileFlagDesc_Accept(OOC_AST__LinkFileFlag linkFileFlag, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__LinkFileFlagDesc_Accept 0
 typedef void (*_TBP_OOC_AST__LinkFileFlagDesc_Accept)(OOC_AST__LinkFileFlag linkFileFlag, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_LinkObjFlag(OOC_AST__Builder b, OOC_AST__Node obj, OOC_AST__Node fileName);
-#define _TBN_OOC_AST__BuilderDesc_LinkObjFlag 47
+#define _TBN_OOC_AST__BuilderDesc_LinkObjFlag 48
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_LinkObjFlag)(OOC_AST__Builder b, OOC_AST__Node obj, OOC_AST__Node fileName);
 extern void OOC_AST__LinkObjFlagDesc_Accept(OOC_AST__LinkObjFlag linkObjFlag, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__LinkObjFlagDesc_Accept 0
 typedef void (*_TBP_OOC_AST__LinkObjFlagDesc_Accept)(OOC_AST__LinkObjFlag linkObjFlag, OOC_AST__Visitor v);
 extern OOC_AST__Node OOC_AST__BuilderDesc_LinkLibFlag(OOC_AST__Builder b, OOC_AST__Node lib, OOC_AST__Node libName, OOC_AST__Node lParen, OOC_AST__NodeList dependencies, OOC_AST__Node rParen, OOC_AST__Node addOption, OOC_AST__Node prefixOpt, OOC_AST__Node comma, OOC_AST__Node suffixOpt);
-#define _TBN_OOC_AST__BuilderDesc_LinkLibFlag 48
+#define _TBN_OOC_AST__BuilderDesc_LinkLibFlag 49
 typedef OOC_AST__Node (*_TBP_OOC_AST__BuilderDesc_LinkLibFlag)(OOC_AST__Builder b, OOC_AST__Node lib, OOC_AST__Node libName, OOC_AST__Node lParen, OOC_AST__NodeList dependencies, OOC_AST__Node rParen, OOC_AST__Node addOption, OOC_AST__Node prefixOpt, OOC_AST__Node comma, OOC_AST__Node suffixOpt);
 extern void OOC_AST__LinkLibFlagDesc_Accept(OOC_AST__LinkLibFlag linkLibFlag, OOC_AST__Visitor v);
 #define _TBN_OOC_AST__LinkLibFlagDesc_Accept 0
@@ -924,6 +943,8 @@ extern RT0__StructDesc _td_OOC_AST__RepeatStatm;
 extern RT0__StructDesc _td_OOC_AST__RepeatStatmDesc;
 extern RT0__StructDesc _td_OOC_AST__ForStatm;
 extern RT0__StructDesc _td_OOC_AST__ForStatmDesc;
+extern RT0__StructDesc _td_OOC_AST__IterateStatm;
+extern RT0__StructDesc _td_OOC_AST__IterateStatmDesc;
 extern RT0__StructDesc _td_OOC_AST__LoopStatm;
 extern RT0__StructDesc _td_OOC_AST__LoopStatmDesc;
 extern RT0__StructDesc _td_OOC_AST__WithStatm;
@@ -949,7 +970,7 @@ extern RT0__StructDesc _td_OOC_AST__LinkLibFlag;
 extern RT0__StructDesc _td_OOC_AST__LinkLibFlagDesc;
 extern RT0__StructDesc _td_OOC_AST__Visitor;
 extern RT0__StructDesc _td_OOC_AST__VisitorDesc;
-extern RT0__StructDesc _td_OOC_AST__21163;
+extern RT0__StructDesc _td_OOC_AST__21500;
 #endif /* _MODULE_OOC_AST_ */
 
 /* --- */
