@@ -58,6 +58,7 @@ main-clean: test-cleanall
 	rm -Rf stage1 stage2 tests/lib-TestCompile tests/lib-oo2c gmon.out
 	${MAKE} -C tests/hostess-ooc1 test-clean
 	${MAKE} -C tests/benchmark clean
+	${MAKE} -C rsrc/OOC/emacs clean
 
 ### `distclean'
 ###      Delete all files from the current directory that are created by
@@ -154,32 +155,32 @@ bin/oo2c: $(BOOTSTRAP_COMPILER) $(OOC_DEV_ROOT)/oo2crc-install.xml lib/obj/liboo
 ### Remove manual pages.
 uninstall-man:
 	for i in oo2c oob ooef oowhereis; do \
-	  rm -f $(mandir)/$$i$(manext) $(mandir)/$$i$(manext).gz; \
+	  rm -f "$(mandir)/$$i$(manext)" "$(mandir)/$$i$(manext).gz"; \
 	done
 
 ### Install manual pages.
 install-man: uninstall-man
-	$(INSTALL) -d $(mandir)
+	$(INSTALL) -d "$(mandir)"
 	for i in oo2c oob ooef oowhereis; do \
-	  $(INSTALL_DATA) man/$$i.1 $(mandir)/$$i$(manext); \
+	  $(INSTALL_DATA) "man/$$i.1" "$(mandir)/$$i$(manext)"; \
 	done
 
 ### Install binaries and support files.  To place the files into a directory
 ### different from the targets supplied during configuration, override the
 ### parameter `prefix'.
 install: lib/obj/liboo2c.la bin/oo2c install-man
-	$(INSTALL) -d $(oocdir)/pkginfo
+	$(INSTALL) -d "$(oocdir)/pkginfo"
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -v --bindir "$(bindir)" --libdir "$(libdir)" --oocdir "$(oocdir)" -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package liboo2c
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -v --bindir "$(bindir)" --libdir "$(libdir)" --oocdir "$(oocdir)" -r lib -r . --install-program "$(INSTALL_PROGRAM)" $(OFLAGS) --install-package oo2c
-	$(INSTALL_SCRIPT) rsrc/OOC/oobacktrace $(bindir)/oobacktrace
-	chmod a+x $(oocdir)/install-sh
+	$(INSTALL_SCRIPT) rsrc/OOC/oobacktrace "$(bindir)/oobacktrace"
+	chmod a+x "$(oocdir)/install-sh"
 
 install-strip:
 	${MAKE} INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
 uninstall: uninstall-man FRC
 	$(BOOTSTRAP_COMPILER) --config oo2crc-install.xml -v $(OFLAGS) --uninstall-package oo2c liboo2c
-	rm -f $(bindir)/oobacktrace $(oocdir)/pkginfo.xml
+	rm -f "$(bindir)/oobacktrace" "$(oocdir)/pkginfo.xml"
 
 ifdef MAIN_MAKEFILE
 include $(MAIN_MAKEFILE)

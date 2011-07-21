@@ -14,8 +14,8 @@ static void OOC_SSA_IRtoSSA__AddStoreBackwardFeed(OOC_SSA__ProcBlock pb, OOC_SSA
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_OOC_SSA_IRtoSSA__39287 = { (RT0__Struct[]){&_td_OOC_SSA__Result}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_OOC_SSA_IRtoSSA__39276 = { (RT0__Struct[]){&_td_OOC_SSA_IRtoSSA__39287}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_IRtoSSA__39289 = { (RT0__Struct[]){&_td_OOC_SSA__Result}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
+RT0__StructDesc _td_OOC_SSA_IRtoSSA__39278 = { (RT0__Struct[]){&_td_OOC_SSA_IRtoSSA__39289}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:IRtoSSA", (RT0__Struct[]) { NULL } };
 
 extern void OOC_OOC_SSA_IRtoSSA_init0() {

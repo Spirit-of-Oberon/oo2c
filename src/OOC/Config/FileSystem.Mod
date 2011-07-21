@@ -1,4 +1,4 @@
-(* 	$Id: FileSystem.Mod,v 1.3 2003/06/05 22:09:32 mva Exp $	 *)
+(* 	$Id: FileSystem.Mod,v 1.4 2004/11/10 08:45:45 mva Exp $	 *)
 MODULE OOC:Config:FileSystem;
 (*  Implements "file-system" element of XML repository configuration.
     Copyright (C) 2001  Michael van Acken
@@ -21,7 +21,8 @@ MODULE OOC:Config:FileSystem;
 *)
 
 IMPORT
-  Msg, LongStrings, Strings, Exception, URI, URIParser := URI:Parser,
+  Msg, LongStrings, Strings, Exception,
+  URI, URIParser := URI:Parser, URI:Scheme:File,
   XML:DTD, XMLBuilder := XML:Builder, XML:Locator,
   Config:Parser, CS := Config:Section, 
   OOC:Config:Repositories, OOC:Repository,
@@ -83,7 +84,7 @@ PROCEDURE (re: RepositoryEntry) ProcessElement* (
     parserString: DTD.String;
     att: XMLBuilder.Attribute;
     lastError: Msg.Msg;
-    uri: URI.URI;
+    relativeUri, uri: URI.URI;
     str8: ARRAY 4*1024 OF CHAR;
     i: LONGINT;
     
@@ -104,11 +105,15 @@ PROCEDURE (re: RepositoryEntry) ProcessElement* (
     ELSE
       parserString := node. GetCharDataContent();
       LongStrings.Short (parserString^, "?", str8);
-      IF (str8 = "") OR (str8[Strings.Length (str8)-1] # "/") THEN
-        Strings.Append ("/", str8)
+      IF (str8 = "") THEN
+        str8 := "./";
+      ELSIF (str8[Strings.Length (str8)-1] # "/") THEN
+        Strings.Append ("/", str8);
       END;
+      relativeUri := File.ToURI(str8);   (* transform into URI for quoting *)
       TRY
-        uri := URIParser.NewURILatin1(str8, FileSystemRepository.baseURI);
+        uri := URIParser.NewURI(relativeUri.ToString(),
+                                FileSystemRepository.baseURI);
         RETURN FileSystemRepository.New (baseRep, uri(URI.HierarchicalURI));
       CATCH Exception.ParseError:
         Err (invalidURI, node);

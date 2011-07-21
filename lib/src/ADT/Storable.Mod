@@ -1,7 +1,7 @@
-(*      $Id: Storable.Mod,v 1.10 2003/07/06 09:09:05 mva Exp $       *)
+(*      $Id: Storable.Mod,v 1.11 2004/11/21 20:31:50 mva Exp $       *)
 MODULE ADT:Storable [OOC_EXTENSIONS];
 (*  Base definitions for a persistent object implementation.
-    Copyright (C) 1999-2003  Michael van Acken
+    Copyright (C) 1999-2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -115,19 +115,19 @@ PROCEDURE (obj: Object) [ABSTRACT] Load* (r: Reader) RAISES IO.Error;
 (* Methods for extended BinaryRider
    ======================================================================== *)
 
-PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel);
+PROCEDURE (w: Writer) INIT*(ch: IO.ByteChannel);
 (**Initializes a new writer instance @oparam{w} for channel @oparam{ch}.
    Little endian byte ordering is used by the writer.  *)
   BEGIN
-    BinaryRider.InitWriter (w, ch, BinaryRider.littleEndian);
-  END InitWriter;
+    w.INIT^(ch, BinaryRider.littleEndian);
+  END INIT;
 
-PROCEDURE InitReader* (r: Reader; ch: IO.ByteChannel);
+PROCEDURE (r: Reader) INIT*(ch: IO.ByteChannel);
 (**Initializes a new reader instance @oparam{r} for channel @oparam{ch}.
    Little endian byte ordering is used by the reader.  *)
   BEGIN
-    BinaryRider.InitReader (r, ch, BinaryRider.littleEndian)
-  END InitReader;
+    r.INIT^(ch, BinaryRider.littleEndian)
+  END INIT;
 
 PROCEDURE (w: Writer) [ABSTRACT] WriteObject* (obj: Obj.Object)
 RAISES IO.Error;

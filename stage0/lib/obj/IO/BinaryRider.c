@@ -722,14 +722,14 @@ l4:
   ;
 }
 
-void IO_BinaryRider__InitReader(IO_BinaryRider__Reader r, IO__ByteChannel ch, OOC_INT8 byteOrder) {
+void IO_BinaryRider__ReaderDesc_INIT(IO_BinaryRider__Reader r, IO__ByteChannel ch, OOC_INT8 byteOrder) {
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)r;
   i1 = byteOrder;
-  *(OOC_INT8*)(_check_pointer(i0, 12059)) = i1;
+  *(OOC_INT8*)(_check_pointer(i0, 12053)) = i1;
   i1 = (OOC_INT32)ch;
-  *(OOC_INT32*)((_check_pointer(i0, 12090))+4) = i1;
+  *(OOC_INT32*)((_check_pointer(i0, 12084))+4) = i1;
   return;
   ;
 }
@@ -739,19 +739,19 @@ IO_BinaryRider__Reader IO_BinaryRider__ConnectReader(IO__ByteChannel ch) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_IO_BinaryRider__Reader.baseTypes[0]);
   i1 = (OOC_INT32)ch;
-  IO_BinaryRider__InitReader((IO_BinaryRider__Reader)i0, (IO__ByteChannel)i1, 1);
+  IO_BinaryRider__ReaderDesc_INIT((IO_BinaryRider__Reader)i0, (IO__ByteChannel)i1, 1);
   return (IO_BinaryRider__Reader)i0;
   ;
 }
 
-void IO_BinaryRider__InitWriter(IO_BinaryRider__Writer w, IO__ByteChannel ch, OOC_INT8 byteOrder) {
+void IO_BinaryRider__WriterDesc_INIT(IO_BinaryRider__Writer w, IO__ByteChannel ch, OOC_INT8 byteOrder) {
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)w;
   i1 = byteOrder;
-  *(OOC_INT8*)(_check_pointer(i0, 12817)) = i1;
+  *(OOC_INT8*)(_check_pointer(i0, 12756)) = i1;
   i1 = (OOC_INT32)ch;
-  *(OOC_INT32*)((_check_pointer(i0, 12847))+4) = i1;
+  *(OOC_INT32*)((_check_pointer(i0, 12786))+4) = i1;
   return;
   ;
 }
@@ -761,7 +761,7 @@ IO_BinaryRider__Writer IO_BinaryRider__ConnectWriter(IO__ByteChannel ch) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_IO_BinaryRider__Writer.baseTypes[0]);
   i1 = (OOC_INT32)ch;
-  IO_BinaryRider__InitWriter((IO_BinaryRider__Writer)i0, (IO__ByteChannel)i1, 1);
+  IO_BinaryRider__WriterDesc_INIT((IO_BinaryRider__Writer)i0, (IO__ByteChannel)i1, 1);
   return (IO_BinaryRider__Writer)i0;
   ;
 }
@@ -769,7 +769,7 @@ IO_BinaryRider__Writer IO_BinaryRider__ConnectWriter(IO__ByteChannel ch) {
 static void IO_BinaryRider__SetDefaultByteOrder(OOC_CHAR8 x[], OOC_LEN x_0d) {
   register OOC_INT32 i0;
 
-  i0 = *(OOC_UINT8*)((OOC_INT32)x+(_check_index(0, x_0d, OOC_UINT8, 13212)));
+  i0 = *(OOC_UINT8*)((OOC_INT32)x+(_check_index(0, x_0d, OOC_UINT8, 13102)));
   i0 = (_type_cast_fast(OOC_UINT8, OOC_UINT8, i0))==1u;
   if (i0) goto l3;
   IO_BinaryRider__systemByteOrder = 2;

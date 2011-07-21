@@ -1,7 +1,7 @@
-(*	$Id: ArrayList.Mod,v 1.15 2003/07/27 21:34:36 mva Exp $	*)
+(*	$Id: ArrayList.Mod,v 1.16 2004/11/14 20:02:51 mva Exp $	*)
 MODULE ADT:ArrayList;
 (*  Implements a resizable list of objects.
-    Copyright (C) 2000, 2003  Michael van Acken
+    Copyright (C) 2000, 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -34,6 +34,13 @@ TYPE
     size-: LONGINT;
     (**Number of elements in the array.  This value is always less or equal to
        @samp{LEN(@ofield{array})}.  *)
+  END;
+  
+TYPE
+  IterElements*(E: Object.Object) = POINTER TO IterElementsDesc(E);
+  IterElementsDesc(E: Object.Object) = RECORD
+    list: ArrayList(E);
+    pos: LONGINT;
   END;
 
 
@@ -388,4 +395,33 @@ PROCEDURE (l: ArrayList(E)) Elements*(): Object.ObjectArrayPtr(E);
     RETURN a;
   END Elements;
 
+
+PROCEDURE (iter: IterElements(E)) INIT*(list: ArrayList(E));
+  BEGIN
+    iter.list := list;
+    iter.pos := 0;
+  END INIT;
+  
+PROCEDURE (l: ArrayList(E)) IterElements*(): IterElements(E);
+(**Returns an iterator that traverses the elements of @oparam{l} sequentially.
+   It produces the elements at indices @code{0}, @code{1}, @code{2}, and so on,
+   until index @ofield{l.size} is reached.
+
+   Behaviour of the iterator is undefined if the array is changed while the
+   iterator is traversing it.  *)
+  BEGIN
+    RETURN NEW(IterElements(E), l);
+  END IterElements;
+
+PROCEDURE (iter: IterElements(E)) Next*(VAR elem: E): BOOLEAN;
+  BEGIN
+    IF (iter.pos >= iter.list.size) THEN
+      RETURN FALSE;
+    ELSE
+      elem := iter.list.array[iter.pos];
+      INC(iter.pos);
+      RETURN TRUE;
+    END;
+  END Next;
+  
 END ADT:ArrayList.

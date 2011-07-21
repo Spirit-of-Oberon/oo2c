@@ -1,7 +1,7 @@
-(* 	$Id: Object.Mod,v 1.29 2004/07/01 19:09:02 mva Exp $	 *)
+(* 	$Id: Object.Mod,v 1.30 2004/11/14 20:31:00 mva Exp $	 *)
 MODULE Object;
 (*  Low-level object and string implementation.
-    Copyright (C) 2002,2003  Michael van Acken
+    Copyright (C) 2002,2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -337,7 +337,7 @@ PROCEDURE NewLatin1Char*(ch: CHAR): String8;
     RETURN NewString8(S.ADR(ch), 1);
   END NewLatin1Char;
 
-PROCEDURE NewUTF16*(str[NO_COPY]: ARRAY OF LONGCHAR): String;
+PROCEDURE NewUTF16*(str[NO_COPY]: ARRAY OF LONGCHAR): String16;
 (**Create a string value from @oparam{str} without any translation.
 
    @precond
@@ -364,7 +364,7 @@ PROCEDURE NewUTF16*(str[NO_COPY]: ARRAY OF LONGCHAR): String;
     RETURN s;
   END NewUTF16;
 
-PROCEDURE NewUTF16Region*(str[NO_COPY]: ARRAY OF LONGCHAR; start, end: LONGINT): String;
+PROCEDURE NewUTF16Region*(str[NO_COPY]: ARRAY OF LONGCHAR; start, end: LONGINT): String16;
 (**Create a string value from @samp{str[start, end-1]} without any
    translation.
 
@@ -390,7 +390,7 @@ PROCEDURE NewUTF16Region*(str[NO_COPY]: ARRAY OF LONGCHAR; start, end: LONGINT):
     RETURN s;
   END NewUTF16Region;
 
-PROCEDURE NewUTF16Char*(ch: LONGCHAR): String;
+PROCEDURE NewUTF16Char*(ch: LONGCHAR): String16;
 (**Create a string value of length 1 from @samp{ch} without any translation.
 
    @precond
@@ -1133,6 +1133,34 @@ PROCEDURE (s: String) StartsWith*(prefix: String): BOOLEAN;
       RETURN FALSE;
     END;
   END StartsWith;
+
+
+PROCEDURE (s: String) [ABSTRACT] ToUppercaseLatin1*(): String;
+(**Apply @code{CAP()} to all characters of the string.  Characters with a code
+   of 256 or greater remain unchanged.  *)
+  END ToUppercaseLatin1;
+
+PROCEDURE (s: String8) ToUppercaseLatin1*(): String8;
+  VAR
+    i: LONGINT;
+  BEGIN
+    s := NewLatin1Region(s.data^, 0, s.length);
+    FOR i := 0 TO s.length-1 DO
+      s.data[i] := CAP(s.data[i]);
+    END;
+    RETURN s;
+  END ToUppercaseLatin1;
+
+PROCEDURE (s: String16) ToUppercaseLatin1*(): String16;
+  VAR
+    i: LONGINT;
+  BEGIN
+    s := NewUTF16Region(s.data^, 0, s.length);
+    FOR i := 0 TO s.length-1 DO
+      s.data[i] := CAP(s.data[i]);
+    END;
+    RETURN s;
+  END ToUppercaseLatin1;
 
 BEGIN
   emptyString := NewLatin1("");

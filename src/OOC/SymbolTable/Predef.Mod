@@ -1,4 +1,4 @@
-(* 	$Id: Predef.Mod,v 1.59 2004/06/06 20:33:44 mva Exp $	 *)
+(* 	$Id: Predef.Mod,v 1.60 2004/11/24 17:39:05 mva Exp $	 *)
 MODULE OOC:SymbolTable:Predef;
 (*  Defines symbol table of pseudo module with predefined entities.
     Copyright (C) 2000-2004  Michael van Acken
@@ -235,14 +235,14 @@ PROCEDURE CreatePredef* (stb: Builder.Builder;
     PredefConst ("TRUE", Boxed.true, ptype);
     
     ptype := PredefType (stb, module, char, "CHAR", 1, 1,
-                         Boxed.NewString(Object.NewLatin1Char(minChar)),
-                         Boxed.NewString(Object.NewLatin1Char(maxChar)));
+                         NEW(Boxed.String, Object.NewLatin1Char(minChar)),
+                         NEW(Boxed.String, Object.NewLatin1Char(maxChar)));
     ptype := PredefType (stb, module, longchar, "LONGCHAR", 2, 2,
-                         Boxed.NewString(Object.NewUTF16Char(minLongChar)),
-                         Boxed.NewString(Object.NewUTF16Char(maxLongChar)));
+                         NEW(Boxed.String, Object.NewUTF16Char(minLongChar)),
+                         NEW(Boxed.String, Object.NewUTF16Char(maxLongChar)));
     ptype := PredefType (stb, module, ucs4char, "UCS4CHAR", 4, 4,
-                         Boxed.NewString(Object.NewUCS4Char(minUCS4Char)),
-                         Boxed.NewString(Object.NewUCS4Char(maxUCS4Char)));
+                         NEW(Boxed.String, Object.NewUCS4Char(minUCS4Char)),
+                         NEW(Boxed.String, Object.NewUCS4Char(maxUCS4Char)));
     ptype := PredefType (stb, module, shortint, "SHORTINT", 1, 1,
                          BigInt.NewInt(MIN (SHORTINT)),
                          BigInt.NewInt(MAX (SHORTINT)));
@@ -258,11 +258,11 @@ PROCEDURE CreatePredef* (stb: Builder.Builder;
                            BigInt.NewLatin1("9223372036854775807", 10));
     END;
     ptype := PredefType (stb, module, real, "REAL", 4, 4,
-                         Boxed.NewLongReal(MIN (REAL)),
-                         Boxed.NewLongReal(MAX (REAL)));
+                         NEW(Boxed.LongReal, MIN(REAL)),
+                         NEW(Boxed.LongReal, MAX(REAL)));
     ptype := PredefType (stb, module, longreal, "LONGREAL", 8, 8,
-                         Boxed.NewLongReal(MIN (LONGREAL)),
-                         Boxed.NewLongReal(MAX (LONGREAL)));
+                         NEW(Boxed.LongReal, MIN(LONGREAL)),
+                         NEW(Boxed.LongReal, MAX(LONGREAL)));
     ptype := PredefType (stb, module, set, "SET", 4, 4,
                          BigInt.NewInt(MIN (SET)),
                          BigInt.NewInt(MAX (SET)));

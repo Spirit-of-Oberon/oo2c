@@ -656,10 +656,10 @@ typedef struct OOC_SymbolTable__ReaderDesc {
   ADT_Object_Storage__Reader docReader;
 } OOC_SymbolTable__ReaderDesc;
 extern void OOC_SymbolTable__WriterDesc_INIT(OOC_SymbolTable__Writer w, IO__ByteChannel ch, IO__ByteChannel chDoc);
-#define _TBN_OOC_SymbolTable__WriterDesc_INIT 19
+#define _TBN_OOC_SymbolTable__WriterDesc_INIT 17
 typedef void (*_TBP_OOC_SymbolTable__WriterDesc_INIT)(OOC_SymbolTable__Writer w, IO__ByteChannel ch, IO__ByteChannel chDoc);
 extern void OOC_SymbolTable__ReaderDesc_INIT(OOC_SymbolTable__Reader r, IO__ByteChannel ch, IO__ByteChannel chDoc);
-#define _TBN_OOC_SymbolTable__ReaderDesc_INIT 19
+#define _TBN_OOC_SymbolTable__ReaderDesc_INIT 17
 typedef void (*_TBP_OOC_SymbolTable__ReaderDesc_INIT)(OOC_SymbolTable__Reader r, IO__ByteChannel ch, IO__ByteChannel chDoc);
 extern void OOC_SymbolTable__InitNamespace(OOC_SymbolTable__Namespace ns);
 extern OOC_SymbolTable__Declaration OOC_SymbolTable__NamespaceDesc_IdentifyLocal2(OOC_SymbolTable__Namespace ns, OOC_SymbolTable__Item sourceContext, OOC_SymbolTable__Name name, OOC_CHAR8 ignorePosition, OOC_CHAR8 *baseNotExported);
@@ -1158,7 +1158,7 @@ extern RT0__StructDesc _td_OOC_SymbolTable__Writer;
 extern RT0__StructDesc _td_OOC_SymbolTable__WriterDesc;
 extern RT0__StructDesc _td_OOC_SymbolTable__Reader;
 extern RT0__StructDesc _td_OOC_SymbolTable__ReaderDesc;
-extern RT0__StructDesc _td_OOC_SymbolTable__64557;
+extern RT0__StructDesc _td_OOC_SymbolTable__64529;
 #endif /* _MODULE_OOC_SymbolTable_ */
 
 /* --- */

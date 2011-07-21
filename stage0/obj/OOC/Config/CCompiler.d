@@ -54,6 +54,7 @@ static void* _c51;
 #include <Object.oh>
 #include <ADT/StringBuffer.oh>
 #include <URI/Scheme/File.oh>
+#include <OS/Path.oh>
 #include <Config.oh>
 #include <OOC/Logger.oh>
 #include <OOC/Config.oh>

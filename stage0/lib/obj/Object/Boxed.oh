@@ -44,6 +44,9 @@ typedef Object__String (*_TBP_Object_Boxed__ObjectDesc_ToString)(Object_Boxed__O
 extern OOC_INT32 Object_Boxed__ObjectDesc_Cmp(Object_Boxed__Object v, Object__Object y);
 #define _TBN_Object_Boxed__ObjectDesc_Cmp 6
 typedef OOC_INT32 (*_TBP_Object_Boxed__ObjectDesc_Cmp)(Object_Boxed__Object v, Object__Object y);
+extern void Object_Boxed__BooleanDesc_INIT(Object_Boxed__Boolean v, OOC_CHAR8 value);
+#define _TBN_Object_Boxed__BooleanDesc_INIT 7
+typedef void (*_TBP_Object_Boxed__BooleanDesc_INIT)(Object_Boxed__Boolean v, OOC_CHAR8 value);
 extern Object_Boxed__Boolean Object_Boxed__NewBoolean(OOC_CHAR8 value);
 extern Object_Boxed__Boolean Object_Boxed__ParseBoolean(const OOC_CHAR8 str[], OOC_LEN str_0d);
 extern Object__String Object_Boxed__BooleanToString(OOC_CHAR8 value);
@@ -65,6 +68,9 @@ typedef void (*_TBP_Object_Boxed__BooleanDesc_Store)(Object_Boxed__Boolean v, AD
 extern void Object_Boxed__BooleanDesc_Load(Object_Boxed__Boolean v, ADT_Storable__Reader r);
 #define _TBN_Object_Boxed__BooleanDesc_Load 5
 typedef void (*_TBP_Object_Boxed__BooleanDesc_Load)(Object_Boxed__Boolean v, ADT_Storable__Reader r);
+extern void Object_Boxed__LongIntDesc_INIT(Object_Boxed__LongInt v, OOC_INT32 val);
+#define _TBN_Object_Boxed__LongIntDesc_INIT 7
+typedef void (*_TBP_Object_Boxed__LongIntDesc_INIT)(Object_Boxed__LongInt v, OOC_INT32 val);
 extern Object_Boxed__LongInt Object_Boxed__NewLongInt(OOC_INT32 val);
 extern Object_Boxed__LongInt Object_Boxed__ParseLongInt(const OOC_CHAR8 s__ref[], OOC_LEN s_0d);
 extern Object__String Object_Boxed__IntToString(OOC_INT32 value);
@@ -84,29 +90,32 @@ extern Object__String Object_Boxed__LongIntDesc_ToString(Object_Boxed__LongInt v
 #define _TBN_Object_Boxed__LongIntDesc_ToString 1
 typedef Object__String (*_TBP_Object_Boxed__LongIntDesc_ToString)(Object_Boxed__LongInt v);
 extern Object_Boxed__LongInt Object_Boxed__LongIntDesc_Add(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
-#define _TBN_Object_Boxed__LongIntDesc_Add 7
+#define _TBN_Object_Boxed__LongIntDesc_Add 8
 typedef Object_Boxed__LongInt (*_TBP_Object_Boxed__LongIntDesc_Add)(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
 extern Object_Boxed__LongInt Object_Boxed__LongIntDesc_Sub(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
-#define _TBN_Object_Boxed__LongIntDesc_Sub 8
+#define _TBN_Object_Boxed__LongIntDesc_Sub 9
 typedef Object_Boxed__LongInt (*_TBP_Object_Boxed__LongIntDesc_Sub)(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
 extern Object_Boxed__LongInt Object_Boxed__LongIntDesc_Mul(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
-#define _TBN_Object_Boxed__LongIntDesc_Mul 9
+#define _TBN_Object_Boxed__LongIntDesc_Mul 10
 typedef Object_Boxed__LongInt (*_TBP_Object_Boxed__LongIntDesc_Mul)(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
 extern Object_Boxed__LongInt Object_Boxed__LongIntDesc_Div(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
-#define _TBN_Object_Boxed__LongIntDesc_Div 10
+#define _TBN_Object_Boxed__LongIntDesc_Div 11
 typedef Object_Boxed__LongInt (*_TBP_Object_Boxed__LongIntDesc_Div)(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
 extern Object_Boxed__LongInt Object_Boxed__LongIntDesc_Mod(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
-#define _TBN_Object_Boxed__LongIntDesc_Mod 11
+#define _TBN_Object_Boxed__LongIntDesc_Mod 12
 typedef Object_Boxed__LongInt (*_TBP_Object_Boxed__LongIntDesc_Mod)(Object_Boxed__LongInt v, Object_Boxed__LongInt right);
 extern OOC_INT32 Object_Boxed__LongIntDesc_Cmp(Object_Boxed__LongInt v, Object__Object right);
 #define _TBN_Object_Boxed__LongIntDesc_Cmp 6
 typedef OOC_INT32 (*_TBP_Object_Boxed__LongIntDesc_Cmp)(Object_Boxed__LongInt v, Object__Object right);
 extern OOC_INT32 Object_Boxed__LongIntDesc_Sign(Object_Boxed__LongInt v);
-#define _TBN_Object_Boxed__LongIntDesc_Sign 12
+#define _TBN_Object_Boxed__LongIntDesc_Sign 13
 typedef OOC_INT32 (*_TBP_Object_Boxed__LongIntDesc_Sign)(Object_Boxed__LongInt v);
 extern Object_Boxed__LongInt Object_Boxed__LongIntDesc_Neg(Object_Boxed__LongInt v);
-#define _TBN_Object_Boxed__LongIntDesc_Neg 13
+#define _TBN_Object_Boxed__LongIntDesc_Neg 14
 typedef Object_Boxed__LongInt (*_TBP_Object_Boxed__LongIntDesc_Neg)(Object_Boxed__LongInt v);
+extern void Object_Boxed__LongRealDesc_INIT(Object_Boxed__LongReal v, OOC_REAL64 val);
+#define _TBN_Object_Boxed__LongRealDesc_INIT 7
+typedef void (*_TBP_Object_Boxed__LongRealDesc_INIT)(Object_Boxed__LongReal v, OOC_REAL64 val);
 extern Object_Boxed__LongReal Object_Boxed__NewLongReal(OOC_REAL64 val);
 extern Object_Boxed__LongReal Object_Boxed__ParseLongReal(const OOC_CHAR8 s__ref[], OOC_LEN s_0d);
 extern Object__String Object_Boxed__LongRealToString(OOC_REAL64 value);
@@ -127,29 +136,32 @@ extern Object__String Object_Boxed__LongRealDesc_ToString(Object_Boxed__LongReal
 #define _TBN_Object_Boxed__LongRealDesc_ToString 1
 typedef Object__String (*_TBP_Object_Boxed__LongRealDesc_ToString)(Object_Boxed__LongReal v);
 extern OOC_REAL64 Object_Boxed__LongRealDesc_ToLongReal(Object_Boxed__LongReal v);
-#define _TBN_Object_Boxed__LongRealDesc_ToLongReal 7
+#define _TBN_Object_Boxed__LongRealDesc_ToLongReal 8
 typedef OOC_REAL64 (*_TBP_Object_Boxed__LongRealDesc_ToLongReal)(Object_Boxed__LongReal v);
 extern Object_Boxed__LongReal Object_Boxed__LongRealDesc_Add(Object_Boxed__LongReal v, Object_Boxed__LongReal right);
-#define _TBN_Object_Boxed__LongRealDesc_Add 8
+#define _TBN_Object_Boxed__LongRealDesc_Add 9
 typedef Object_Boxed__LongReal (*_TBP_Object_Boxed__LongRealDesc_Add)(Object_Boxed__LongReal v, Object_Boxed__LongReal right);
 extern Object_Boxed__LongReal Object_Boxed__LongRealDesc_Sub(Object_Boxed__LongReal v, Object_Boxed__LongReal right);
-#define _TBN_Object_Boxed__LongRealDesc_Sub 9
+#define _TBN_Object_Boxed__LongRealDesc_Sub 10
 typedef Object_Boxed__LongReal (*_TBP_Object_Boxed__LongRealDesc_Sub)(Object_Boxed__LongReal v, Object_Boxed__LongReal right);
 extern Object_Boxed__LongReal Object_Boxed__LongRealDesc_Mul(Object_Boxed__LongReal v, Object_Boxed__LongReal right);
-#define _TBN_Object_Boxed__LongRealDesc_Mul 10
+#define _TBN_Object_Boxed__LongRealDesc_Mul 11
 typedef Object_Boxed__LongReal (*_TBP_Object_Boxed__LongRealDesc_Mul)(Object_Boxed__LongReal v, Object_Boxed__LongReal right);
 extern Object_Boxed__LongReal Object_Boxed__LongRealDesc_Div(Object_Boxed__LongReal v, Object_Boxed__LongReal right);
-#define _TBN_Object_Boxed__LongRealDesc_Div 11
+#define _TBN_Object_Boxed__LongRealDesc_Div 12
 typedef Object_Boxed__LongReal (*_TBP_Object_Boxed__LongRealDesc_Div)(Object_Boxed__LongReal v, Object_Boxed__LongReal right);
 extern OOC_INT32 Object_Boxed__LongRealDesc_Cmp(Object_Boxed__LongReal v, Object__Object right);
 #define _TBN_Object_Boxed__LongRealDesc_Cmp 6
 typedef OOC_INT32 (*_TBP_Object_Boxed__LongRealDesc_Cmp)(Object_Boxed__LongReal v, Object__Object right);
 extern OOC_INT32 Object_Boxed__LongRealDesc_Sign(Object_Boxed__LongReal v);
-#define _TBN_Object_Boxed__LongRealDesc_Sign 12
+#define _TBN_Object_Boxed__LongRealDesc_Sign 13
 typedef OOC_INT32 (*_TBP_Object_Boxed__LongRealDesc_Sign)(Object_Boxed__LongReal v);
 extern Object_Boxed__LongReal Object_Boxed__LongRealDesc_Neg(Object_Boxed__LongReal v);
-#define _TBN_Object_Boxed__LongRealDesc_Neg 13
+#define _TBN_Object_Boxed__LongRealDesc_Neg 14
 typedef Object_Boxed__LongReal (*_TBP_Object_Boxed__LongRealDesc_Neg)(Object_Boxed__LongReal v);
+extern void Object_Boxed__SetDesc_INIT(Object_Boxed__Set v, OOC_UINT32 value);
+#define _TBN_Object_Boxed__SetDesc_INIT 7
+typedef void (*_TBP_Object_Boxed__SetDesc_INIT)(Object_Boxed__Set v, OOC_UINT32 value);
 extern Object_Boxed__Set Object_Boxed__NewSet(OOC_UINT32 value);
 extern Object__String Object_Boxed__SetToString(OOC_UINT32 value);
 extern OOC_CHAR8 Object_Boxed__SetDesc_Equals(Object_Boxed__Set v, Object__Object y);
@@ -165,7 +177,7 @@ extern Object__String Object_Boxed__SetDesc_ToString(Object_Boxed__Set v);
 #define _TBN_Object_Boxed__SetDesc_ToString 1
 typedef Object__String (*_TBP_Object_Boxed__SetDesc_ToString)(Object_Boxed__Set v);
 extern OOC_INT32 Object_Boxed__SetDesc_ToLongInt(Object_Boxed__Set v);
-#define _TBN_Object_Boxed__SetDesc_ToLongInt 7
+#define _TBN_Object_Boxed__SetDesc_ToLongInt 8
 typedef OOC_INT32 (*_TBP_Object_Boxed__SetDesc_ToLongInt)(Object_Boxed__Set v);
 extern void Object_Boxed__SetDesc_Store(Object_Boxed__Set v, ADT_Storable__Writer w);
 #define _TBN_Object_Boxed__SetDesc_Store 4
@@ -173,6 +185,9 @@ typedef void (*_TBP_Object_Boxed__SetDesc_Store)(Object_Boxed__Set v, ADT_Storab
 extern void Object_Boxed__SetDesc_Load(Object_Boxed__Set v, ADT_Storable__Reader r);
 #define _TBN_Object_Boxed__SetDesc_Load 5
 typedef void (*_TBP_Object_Boxed__SetDesc_Load)(Object_Boxed__Set v, ADT_Storable__Reader r);
+extern void Object_Boxed__StringDesc_INIT(Object_Boxed__String v, Object__String value);
+#define _TBN_Object_Boxed__StringDesc_INIT 7
+typedef void (*_TBP_Object_Boxed__StringDesc_INIT)(Object_Boxed__String v, Object__String value);
 extern Object_Boxed__String Object_Boxed__NewString(Object__String value);
 extern OOC_INT32 Object_Boxed__StringDesc_Cmp(Object_Boxed__String v, Object__Object str);
 #define _TBN_Object_Boxed__StringDesc_Cmp 6
@@ -210,16 +225,16 @@ extern RT0__StructDesc _td_Object_Boxed__Set;
 extern RT0__StructDesc _td_Object_Boxed__SetDesc;
 extern RT0__StructDesc _td_Object_Boxed__String;
 extern RT0__StructDesc _td_Object_Boxed__StringDesc;
-extern RT0__StructDesc _td_Object_Boxed__2968;
-extern RT0__StructDesc _td_Object_Boxed__4608;
-extern RT0__StructDesc _td_Object_Boxed__5643;
-extern RT0__StructDesc _td_Object_Boxed__7093;
-extern RT0__StructDesc _td_Object_Boxed__7672;
-extern RT0__StructDesc _td_Object_Boxed__9128;
-extern RT0__StructDesc _td_Object_Boxed__11318;
-extern RT0__StructDesc _td_Object_Boxed__11407;
-extern RT0__StructDesc _td_Object_Boxed__13257;
-extern RT0__StructDesc _td_Object_Boxed__13835;
+extern RT0__StructDesc _td_Object_Boxed__3083;
+extern RT0__StructDesc _td_Object_Boxed__4785;
+extern RT0__StructDesc _td_Object_Boxed__5824;
+extern RT0__StructDesc _td_Object_Boxed__7348;
+extern RT0__StructDesc _td_Object_Boxed__7931;
+extern RT0__StructDesc _td_Object_Boxed__9391;
+extern RT0__StructDesc _td_Object_Boxed__11700;
+extern RT0__StructDesc _td_Object_Boxed__11789;
+extern RT0__StructDesc _td_Object_Boxed__13747;
+extern RT0__StructDesc _td_Object_Boxed__14325;
 #endif /* _MODULE_Object_Boxed_ */
 
 /* --- */

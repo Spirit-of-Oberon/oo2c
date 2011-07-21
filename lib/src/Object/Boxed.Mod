@@ -1,4 +1,4 @@
-(*	$Id: Boxed.Mod,v 1.17 2004/06/04 08:54:27 mva Exp $	*)
+(*	$Id: Boxed.Mod,v 1.19 2004/11/21 16:30:37 mva Exp $	*)
 MODULE Object:Boxed;
 (*  Implements object representations for predefined types.
     Copyright (C) 2002-2004  Michael van Acken
@@ -100,13 +100,15 @@ PROCEDURE (v: Object) [ABSTRACT] Cmp*(y: Obj.Object): LONGINT;
 (* Boolean
    ------------------------------------------------------------------------ *)
 
-PROCEDURE NewBoolean*(value: BOOLEAN): Boolean;
-  VAR
-    v: Boolean;
+PROCEDURE (v: Boolean) INIT*(value: BOOLEAN);
   BEGIN
-    NEW(v);
     v.value := value;
-    RETURN v;
+  END INIT;
+
+PROCEDURE [DEPRECATED] NewBoolean*(value: BOOLEAN): Boolean;
+(**Deprecated.  Use NEW(Boolean, ...) instead.  *)
+  BEGIN
+    RETURN NEW(Boolean, value);
   END NewBoolean;
 
 PROCEDURE ParseBoolean*(str[NO_COPY]: ARRAY OF CHAR): Boolean;
@@ -126,7 +128,7 @@ PROCEDURE BooleanToString*(value: BOOLEAN): STRING;
   VAR
     v: Boolean;
   BEGIN
-    v := NewBoolean(value);
+    v := NEW(Boolean, value);
     RETURN v.ToString();
   END BooleanToString;
 
@@ -176,14 +178,15 @@ PROCEDURE (v: Boolean) Load*(r: Storable.Reader) RAISES IO.Error;
 (* LongInt
    ------------------------------------------------------------------------ *)
 
-PROCEDURE NewLongInt*(val: LONGINT): LongInt;
-(** Return a @otype{LongInt} for @oparam{val}. *)
-  VAR 
-    v: LongInt;
+PROCEDURE (v: LongInt) INIT*(val: LONGINT);
   BEGIN
-    NEW(v);
     v.value := val;
-    RETURN v;
+  END INIT;
+
+PROCEDURE [DEPRECATED] NewLongInt*(val: LONGINT): LongInt;
+(**Deprecated.  Use NEW(Longint, ...) instead.  *)
+  BEGIN
+    RETURN NEW(LongInt, val);
   END NewLongInt;
 
 PROCEDURE ParseLongInt*(s: ARRAY OF CHAR): LongInt;
@@ -193,7 +196,7 @@ PROCEDURE ParseLongInt*(s: ARRAY OF CHAR): LongInt;
   BEGIN
     IntStr.StrToInt(s, int, res);
     IF res = IntStr.strAllRight THEN
-      RETURN NewLongInt(int);
+      RETURN NEW(LongInt, int);
     ELSE
       RETURN NIL;
     END;
@@ -205,7 +208,7 @@ PROCEDURE IntToString*(value: LONGINT): STRING;
   VAR
     v: LongInt;
   BEGIN
-    v := NewLongInt(value);
+    v := NEW(LongInt, value);
     RETURN v.ToString();
   END IntToString;
 
@@ -239,27 +242,27 @@ PROCEDURE (v: LongInt) ToString*(): STRING;
 
 PROCEDURE (v: LongInt) Add*(right: LongInt): LongInt;
   BEGIN
-    RETURN NewLongInt(v.value + right.value);
+    RETURN NEW(LongInt, v.value + right.value);
   END Add;
 
 PROCEDURE (v: LongInt) Sub*(right: LongInt): LongInt;
   BEGIN
-    RETURN NewLongInt(v.value - right.value);
+    RETURN NEW(LongInt, v.value - right.value);
   END Sub;
 
 PROCEDURE (v: LongInt) Mul*(right: LongInt): LongInt;
   BEGIN
-    RETURN NewLongInt(v.value * right.value);
+    RETURN NEW(LongInt, v.value * right.value);
   END Mul;
 
 PROCEDURE (v: LongInt) Div*(right: LongInt): LongInt;
   BEGIN
-    RETURN NewLongInt(v.value DIV right.value);
+    RETURN NEW(LongInt, v.value DIV right.value);
   END Div;
 
 PROCEDURE (v: LongInt) Mod*(right: LongInt): LongInt;
   BEGIN
-    RETURN NewLongInt(v.value MOD right.value);
+    RETURN NEW(LongInt, v.value MOD right.value);
   END Mod;
 
 PROCEDURE (v: LongInt) Cmp*(right: Obj.Object): LONGINT;
@@ -280,20 +283,21 @@ PROCEDURE (v: LongInt) Sign*(): LONGINT;
 
 PROCEDURE (v: LongInt) Neg*(): LongInt;
   BEGIN
-    RETURN NewLongInt(-v.value);
+    RETURN NEW(LongInt, -v.value);
   END Neg;
 
 (* LongReal
    ------------------------------------------------------------------------ *)
 
-PROCEDURE NewLongReal*(val: LONGREAL): LongReal;
-(** Return a @otype{LongReal} for @oparam{val}. *)
-  VAR 
-    v: LongReal;
+PROCEDURE (v: LongReal) INIT*(val: LONGREAL);
   BEGIN
-    NEW(v);
     v.value := val;
-    RETURN v;
+  END INIT;
+
+PROCEDURE [DEPRECATED] NewLongReal*(val: LONGREAL): LongReal;
+(**Deprecated.  Use NEW(LongReal, ...) instead.  *)
+  BEGIN
+    RETURN NEW(LongReal, val);
   END NewLongReal;
 
 PROCEDURE ParseLongReal*(s: ARRAY OF CHAR): LongReal;
@@ -303,7 +307,7 @@ PROCEDURE ParseLongReal*(s: ARRAY OF CHAR): LongReal;
   BEGIN
     LRealStr.StrToReal(s, real, res);
     IF res = LRealStr.strAllRight THEN
-      RETURN NewLongReal(real);
+      RETURN NEW(LongReal, real);
     ELSE
       RETURN NIL;
     END;
@@ -315,7 +319,7 @@ PROCEDURE LongRealToString*(value: LONGREAL): STRING;
   VAR
     v: LongReal;
   BEGIN
-    v := NewLongReal(value);
+    v := NEW(LongReal, value);
     RETURN v.ToString();
   END LongRealToString;
 
@@ -342,12 +346,12 @@ PROCEDURE ParseLongRealLiteral*(s: ARRAY OF CHAR): LongReal;
       s[i] := "E";
       LRealStr.StrToReal(s, longreal, res);
       IF res = LRealStr.strAllRight THEN
-        v := NewLongReal(longreal);
+        v := NEW(LongReal, longreal);
       END;
     ELSE
       RealStr.StrToReal(s, real, res);
       IF res = LRealStr.strAllRight THEN
-        v := NewLongReal(real);
+        v := NEW(LongReal, real);
       END;
     END;
     RETURN v;
@@ -388,22 +392,22 @@ PROCEDURE (v: LongReal) ToLongReal*(): LONGREAL;
 
 PROCEDURE (v: LongReal) Add*(right: LongReal): LongReal;
   BEGIN
-    RETURN NewLongReal(v.value + right.value);
+    RETURN NEW(LongReal, v.value + right.value);
   END Add;
 
 PROCEDURE (v: LongReal) Sub*(right: LongReal): LongReal;
   BEGIN
-    RETURN NewLongReal(v.value - right.value);
+    RETURN NEW(LongReal, v.value - right.value);
   END Sub;
 
 PROCEDURE (v: LongReal) Mul*(right: LongReal): LongReal;
   BEGIN
-    RETURN NewLongReal(v.value * right.value);
+    RETURN NEW(LongReal, v.value * right.value);
   END Mul;
 
 PROCEDURE (v: LongReal) Div*(right: LongReal): LongReal;
   BEGIN
-    RETURN NewLongReal(v.value / right.value);
+    RETURN NEW(LongReal, v.value / right.value);
   END Div;
 
 PROCEDURE (v: LongReal) Cmp*(right: Obj.Object): LONGINT;
@@ -426,18 +430,21 @@ PROCEDURE (v: LongReal) Sign*(): LONGINT;
 
 PROCEDURE (v: LongReal) Neg*(): LongReal;
   BEGIN
-    RETURN NewLongReal(-v.value);
+    RETURN NEW(LongReal, -v.value);
   END Neg;
 
 (* Set
    ------------------------------------------------------------------------ *)
 
-PROCEDURE NewSet*(value: SET): Set;
-  VAR v: Set;
+PROCEDURE (v: Set) INIT*(value: SET);
   BEGIN
-    NEW(v);
     v.value := value;
-    RETURN v;
+  END INIT;
+
+PROCEDURE [DEPRECATED] NewSet*(value: SET): Set;
+(**Deprecated.  Use NEW(Set, ...) instead.  *)
+  BEGIN
+    RETURN NEW(Set, value);
   END NewSet;
 
 PROCEDURE SetToString*(value: SET): STRING;
@@ -446,7 +453,7 @@ PROCEDURE SetToString*(value: SET): STRING;
   VAR
     v: Set;
   BEGIN
-    v := NewSet(value);
+    v := NEW(Set, value);
     RETURN v.ToString();
   END SetToString;
 
@@ -529,16 +536,18 @@ PROCEDURE (v: Set) Load*(r: Storable.Reader) RAISES IO.Error;
 (* String
    ------------------------------------------------------------------------ *)
 
-PROCEDURE NewString*(value: STRING): String;
-  VAR
-    v: String;
+PROCEDURE (v: String) INIT*(value: STRING);
+  BEGIN
+    v.value := value;
+  END INIT;
+
+PROCEDURE [DEPRECATED] NewString*(value: STRING): String;
+(**Deprecated.  Use NEW(String, ...) instead.  *)
   BEGIN
     IF (value. length = 0) THEN
       RETURN emptyString;
     ELSE
-      NEW(v);
-      v.value := value;
-      RETURN v;
+      RETURN NEW(String, value);
     END
   END NewString;
 
@@ -594,17 +603,18 @@ PROCEDURE ParseString*(str[NO_COPY]: ARRAY OF CHAR): String;
       INC (i)
     END;
     IF (i >= 2) & (str[0] = str[i-1]) & ((str[0] = '"') OR (str[0] = "'")) THEN
-      RETURN NewString(Obj.NewLatin1Region(str, 1, i-1));
+      RETURN NEW(String, Obj.NewLatin1Region(str, 1, i-1));
     ELSE  (* string is not delimited properly *)
       RETURN NIL;
     END
   END ParseString;
 
 BEGIN
-  true := NewBoolean(TRUE); trueString := Obj.NewLatin1("TRUE");
-  false := NewBoolean(FALSE); falseString := Obj.NewLatin1("FALSE");
+  true := NEW(Boolean, TRUE); trueString := Obj.NewLatin1("TRUE");
+  false := NEW(Boolean, FALSE); falseString := Obj.NewLatin1("FALSE");
   
-  zeroLongReal := NewLongReal(0.0);
+  zeroLongReal := NEW(LongReal, 0.0);
+  zeroLongInt := NEW(LongInt, 0);
 
   NEW(emptyString);
   emptyString.value := Obj.NewLatin1("");

@@ -1,4 +1,4 @@
-(* 	$Id: SymbolTable.Mod,v 1.124 2004/06/06 20:32:01 mva Exp $	 *)
+(* 	$Id: SymbolTable.Mod,v 1.125 2004/11/21 20:31:43 mva Exp $	 *)
 MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
     Copyright (C) 2000-2004  Michael van Acken
@@ -1021,13 +1021,13 @@ TYPE
 PROCEDURE (w: Writer) INIT*(ch, chDoc: IO.ByteChannel);
   BEGIN
     ASSERT(chDoc # NIL);
-    Storage.InitWriter(w, ch);
+    w.INIT^(ch);
     w.docWriter := Storage.ConnectWriter(chDoc);
   END INIT;
 
 PROCEDURE (r: Reader) INIT*(ch, chDoc: IO.ByteChannel);
   BEGIN
-    Storage.InitReader(r, ch);
+    r.INIT^(ch);
     IF (chDoc = NIL) THEN
       r.docReader := NIL;
     ELSE

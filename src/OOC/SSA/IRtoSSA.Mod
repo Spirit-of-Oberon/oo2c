@@ -1,4 +1,4 @@
-(* 	$Id: IRtoSSA.Mod,v 1.135 2004/07/07 19:14:46 mva Exp $	 *)
+(* 	$Id: IRtoSSA.Mod,v 1.136 2004/11/24 17:39:05 mva Exp $	 *)
 MODULE OOC:SSA:IRtoSSA;
 (*  Converts the IR of a procedure into its SSA representation.
     Copyright (C) 2001-2004  Michael van Acken
@@ -686,7 +686,7 @@ PROCEDURE StatmSeq* (pb: SSA.ProcBlock; s: SSA.Result;
           | Predef.stringUCS4Char:
             fct := Object.NewLatin1(Builder.stringModuleC+"__NewUCS4Region");
           END;
-          instr.AddOpnd(pb.GetConst(Boxed.NewString(fct), Opcode.scAddress,
+          instr.AddOpnd(pb.GetConst(NEW(Boxed.String, fct), Opcode.scAddress,
                                     Predef.GetType(Predef.stringChar)),
                         Opnd.arg);
           instr.AddOpnd(const, Opnd.arg);

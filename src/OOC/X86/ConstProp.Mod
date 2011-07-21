@@ -57,12 +57,12 @@ PROCEDURE ComputeConst(pb: S.FunctionBlock; instr: S.Instr): S.Result;
           | S.asr, S.asl, S.lsr, S.lsl, S.rl, S.rr:
             v := NIL;  (* FIXME... add shift operations *)
             
-          | S.eql: v := Boxed.NewBoolean(i1.Cmp(i2)  = 0);
-          | S.neq: v := Boxed.NewBoolean(i1.Cmp(i2)  # 0);
-          | S.leq: v := Boxed.NewBoolean(i1.Cmp(i2) <= 0);
-          | S.lss: v := Boxed.NewBoolean(i1.Cmp(i2) <  0);
-          | S.geq: v := Boxed.NewBoolean(i1.Cmp(i2) >= 0);
-          | S.gtr: v := Boxed.NewBoolean(i1.Cmp(i2) >  0);
+          | S.eql: v := NEW(Boxed.Boolean, i1.Cmp(i2)  = 0);
+          | S.neq: v := NEW(Boxed.Boolean, i1.Cmp(i2)  # 0);
+          | S.leq: v := NEW(Boxed.Boolean, i1.Cmp(i2) <= 0);
+          | S.lss: v := NEW(Boxed.Boolean, i1.Cmp(i2) <  0);
+          | S.geq: v := NEW(Boxed.Boolean, i1.Cmp(i2) >= 0);
+          | S.gtr: v := NEW(Boxed.Boolean, i1.Cmp(i2) >  0);
           END;
         END;
         

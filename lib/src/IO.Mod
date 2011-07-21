@@ -1,7 +1,7 @@
-(*	$Id: IO.Mod,v 1.14 2003/09/30 17:40:50 mva Exp $	*)
+(*	$Id: IO.Mod,v 1.15 2004/11/21 20:31:50 mva Exp $	*)
 MODULE IO;
 (*  Defines common behaviour of I/O channel and selector.
-    Copyright (C) 2003  Michael van Acken
+    Copyright (C) 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -219,9 +219,9 @@ RAISES NotImplemented;
     RAISE(NEW(NotImplemented, NIL));
   END RaiseNotImplemented;
 
-PROCEDURE InitSelectionKey*(k: SelectionKey; fd: FileDescriptor;
-                            selector: Selector; channel: Channel;
-                            ops: SET; attachment: Object.Object);
+PROCEDURE (k: SelectionKey) INIT*(fd: FileDescriptor;
+                                  selector: Selector; channel: Channel;
+                                  ops: SET; attachment: Object.Object);
   BEGIN
     k.fd := fd;
     k.interestOps := ops;
@@ -229,7 +229,7 @@ PROCEDURE InitSelectionKey*(k: SelectionKey; fd: FileDescriptor;
     k.selector := selector;
     k.channel := channel;
     k.cancel := FALSE;
-  END InitSelectionKey;
+  END INIT;
 
 PROCEDURE (k: SelectionKey) Attach*(obj: Object.Object);
 (**Set @ofield{k.attachment} to @oparam{obj}.  *)
@@ -256,11 +256,11 @@ PROCEDURE (k: SelectionKey) SetInterestOps*(ops: SET);
   END SetInterestOps;
 
 
-PROCEDURE InitSelector*(s: Selector);
+PROCEDURE (s: Selector) INIT*();
   BEGIN
     s.keys := NIL;
     s.cancel := FALSE;
-  END InitSelector;
+  END INIT;
 
 PROCEDURE (s: Selector) Close*();
 (**Cancel all selection keys registered for the selector @oparam{s} and close
@@ -336,12 +336,12 @@ PROCEDURE (s: Selector) RemoveCanceled*();
   END RemoveCanceled;
 
 
-PROCEDURE InitChannel*(ch: Channel);
+PROCEDURE (ch: Channel) INIT*();
   BEGIN
     ch.readyOps := {};
     NEW(ch.keys, 2);
     ch.keys[0] := NIL;
-  END InitChannel;
+  END INIT;
 
 PROCEDURE (ch: Channel) [ABSTRACT] FileDescriptor*(): FileDescriptor;
 (**Return the file descriptor of the channel.  This is the integer number
@@ -430,10 +430,10 @@ RAISES Error;
     ch.Close();
   END CloseAndRegister;
 
-PROCEDURE InitByteChannel*(ch: ByteChannel);
+PROCEDURE (ch: ByteChannel) INIT*();
   BEGIN
-    InitChannel(ch);
-  END InitByteChannel;
+    ch.INIT^();
+  END INIT;
 
 PROCEDURE (ch: Channel) SetPos*(pos: LONGINT)
 RAISES Error;

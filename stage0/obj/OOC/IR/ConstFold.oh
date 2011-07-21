@@ -215,7 +215,7 @@ extern void OOC_OOC_IR_ConstFold_init0(void);
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_IR_ConstFold__ConstFold;
 extern RT0__StructDesc _td_OOC_IR_ConstFold__ConstFoldDesc;
-extern RT0__StructDesc _td_OOC_IR_ConstFold__8432;
+extern RT0__StructDesc _td_OOC_IR_ConstFold__8440;
 #endif /* _MODULE_OOC_IR_ConstFold_ */
 
 /* --- */

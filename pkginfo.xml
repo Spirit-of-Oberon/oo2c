@@ -23,6 +23,8 @@
     <file-set source-dir="rsrc/OOC/emacs" dest-dir="emacs">
       <file name="oberon2.el"/>
       <file name="o2-default.el"/>
+      <file name="o2-indent.el"/>
+      <file name="o2-insert.el"/>
     </file-set>
   </file-set>
 </package>

@@ -112,69 +112,77 @@ typedef void (*_TBP_IO__ErrorDesc_INIT)(IO__Error e, Object__String msg);
 extern IO__FormatError IO__NewFormatError(Object__String msg);
 extern void NORETURN IO__RaiseFormatError(Object__String msg) NORETURN2;
 extern void NORETURN IO__RaiseNotImplemented(void) NORETURN2;
-extern void IO__InitSelectionKey(IO__SelectionKey k, OOC_INT32 fd, IO__Selector selector, IO__Channel channel, OOC_UINT32 ops, Object__Object attachment);
+extern void IO__SelectionKeyDesc_INIT(IO__SelectionKey k, OOC_INT32 fd, IO__Selector selector, IO__Channel channel, OOC_UINT32 ops, Object__Object attachment);
+#define _TBN_IO__SelectionKeyDesc_INIT 4
+typedef void (*_TBP_IO__SelectionKeyDesc_INIT)(IO__SelectionKey k, OOC_INT32 fd, IO__Selector selector, IO__Channel channel, OOC_UINT32 ops, Object__Object attachment);
 extern void IO__SelectionKeyDesc_Attach(IO__SelectionKey k, Object__Object obj);
-#define _TBN_IO__SelectionKeyDesc_Attach 4
+#define _TBN_IO__SelectionKeyDesc_Attach 5
 typedef void (*_TBP_IO__SelectionKeyDesc_Attach)(IO__SelectionKey k, Object__Object obj);
 extern void IO__SelectionKeyDesc_Cancel(IO__SelectionKey k);
-#define _TBN_IO__SelectionKeyDesc_Cancel 5
+#define _TBN_IO__SelectionKeyDesc_Cancel 6
 typedef void (*_TBP_IO__SelectionKeyDesc_Cancel)(IO__SelectionKey k);
 extern void IO__SelectionKeyDesc_SetInterestOps(IO__SelectionKey k, OOC_UINT32 ops);
-#define _TBN_IO__SelectionKeyDesc_SetInterestOps 6
+#define _TBN_IO__SelectionKeyDesc_SetInterestOps 7
 typedef void (*_TBP_IO__SelectionKeyDesc_SetInterestOps)(IO__SelectionKey k, OOC_UINT32 ops);
-extern void IO__InitSelector(IO__Selector s);
+extern void IO__SelectorDesc_INIT(IO__Selector s);
+#define _TBN_IO__SelectorDesc_INIT 4
+typedef void (*_TBP_IO__SelectorDesc_INIT)(IO__Selector s);
 extern void IO__SelectorDesc_Close(IO__Selector s);
-#define _TBN_IO__SelectorDesc_Close 4
+#define _TBN_IO__SelectorDesc_Close 5
 typedef void (*_TBP_IO__SelectorDesc_Close)(IO__Selector s);
 extern OOC_INT32 IO__SelectorDesc_Select(IO__Selector s, OOC_INT32 sec, OOC_INT32 usec);
-#define _TBN_IO__SelectorDesc_Select 5
+#define _TBN_IO__SelectorDesc_Select 6
 typedef OOC_INT32 (*_TBP_IO__SelectorDesc_Select)(IO__Selector s, OOC_INT32 sec, OOC_INT32 usec);
 extern IO__SelectionKey IO__SelectorDesc_NextKey(IO__Selector s);
-#define _TBN_IO__SelectorDesc_NextKey 6
+#define _TBN_IO__SelectorDesc_NextKey 7
 typedef IO__SelectionKey (*_TBP_IO__SelectorDesc_NextKey)(IO__Selector s);
 extern IO__SelectionKey IO__SelectorDesc_AddSelectionKey(IO__Selector s, OOC_INT32 fd, IO__Channel channel, OOC_UINT32 ops, Object__Object attachment);
-#define _TBN_IO__SelectorDesc_AddSelectionKey 7
+#define _TBN_IO__SelectorDesc_AddSelectionKey 8
 typedef IO__SelectionKey (*_TBP_IO__SelectorDesc_AddSelectionKey)(IO__Selector s, OOC_INT32 fd, IO__Channel channel, OOC_UINT32 ops, Object__Object attachment);
 extern void IO__SelectorDesc_RemoveSelectionKey(IO__Selector s, IO__SelectionKey k);
-#define _TBN_IO__SelectorDesc_RemoveSelectionKey 8
+#define _TBN_IO__SelectorDesc_RemoveSelectionKey 9
 typedef void (*_TBP_IO__SelectorDesc_RemoveSelectionKey)(IO__Selector s, IO__SelectionKey k);
 extern void IO__SelectorDesc_RemoveCanceled(IO__Selector s);
-#define _TBN_IO__SelectorDesc_RemoveCanceled 9
+#define _TBN_IO__SelectorDesc_RemoveCanceled 10
 typedef void (*_TBP_IO__SelectorDesc_RemoveCanceled)(IO__Selector s);
-extern void IO__InitChannel(IO__Channel ch);
+extern void IO__ChannelDesc_INIT(IO__Channel ch);
+#define _TBN_IO__ChannelDesc_INIT 0
+typedef void (*_TBP_IO__ChannelDesc_INIT)(IO__Channel ch);
 extern OOC_INT32 IO__ChannelDesc_FileDescriptor(IO__Channel ch);
-#define _TBN_IO__ChannelDesc_FileDescriptor 0
+#define _TBN_IO__ChannelDesc_FileDescriptor 1
 typedef OOC_INT32 (*_TBP_IO__ChannelDesc_FileDescriptor)(IO__Channel ch);
 extern IO__SelectionKey IO__ChannelDesc_RegisterWithSelector(IO__Channel ch, IO__Selector sel, OOC_UINT32 ops, Object__Object attachment);
-#define _TBN_IO__ChannelDesc_RegisterWithSelector 1
+#define _TBN_IO__ChannelDesc_RegisterWithSelector 2
 typedef IO__SelectionKey (*_TBP_IO__ChannelDesc_RegisterWithSelector)(IO__Channel ch, IO__Selector sel, OOC_UINT32 ops, Object__Object attachment);
 extern IO__SelectionKey IO__ChannelDesc_KeyForSelector(IO__Channel ch, IO__Selector sel);
-#define _TBN_IO__ChannelDesc_KeyForSelector 2
+#define _TBN_IO__ChannelDesc_KeyForSelector 3
 typedef IO__SelectionKey (*_TBP_IO__ChannelDesc_KeyForSelector)(IO__Channel ch, IO__Selector sel);
 extern void IO__ChannelDesc_SetBlocking(IO__Channel ch, OOC_CHAR8 block);
-#define _TBN_IO__ChannelDesc_SetBlocking 3
+#define _TBN_IO__ChannelDesc_SetBlocking 4
 typedef void (*_TBP_IO__ChannelDesc_SetBlocking)(IO__Channel ch, OOC_CHAR8 block);
 extern void IO__ChannelDesc_Close(IO__Channel ch);
-#define _TBN_IO__ChannelDesc_Close 4
+#define _TBN_IO__ChannelDesc_Close 5
 typedef void (*_TBP_IO__ChannelDesc_Close)(IO__Channel ch);
 extern void IO__ChannelDesc_CloseAndRegister(IO__Channel ch);
-#define _TBN_IO__ChannelDesc_CloseAndRegister 5
+#define _TBN_IO__ChannelDesc_CloseAndRegister 6
 typedef void (*_TBP_IO__ChannelDesc_CloseAndRegister)(IO__Channel ch);
-extern void IO__InitByteChannel(IO__ByteChannel ch);
+extern void IO__ByteChannelDesc_INIT(IO__ByteChannel ch);
+#define _TBN_IO__ByteChannelDesc_INIT 0
+typedef void (*_TBP_IO__ByteChannelDesc_INIT)(IO__ByteChannel ch);
 extern void IO__ChannelDesc_SetPos(IO__Channel ch, OOC_INT32 pos);
-#define _TBN_IO__ChannelDesc_SetPos 6
+#define _TBN_IO__ChannelDesc_SetPos 7
 typedef void (*_TBP_IO__ChannelDesc_SetPos)(IO__Channel ch, OOC_INT32 pos);
 extern OOC_INT32 IO__ByteChannelDesc_Read(IO__ByteChannel ch, OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
-#define _TBN_IO__ByteChannelDesc_Read 7
+#define _TBN_IO__ByteChannelDesc_Read 8
 typedef OOC_INT32 (*_TBP_IO__ByteChannelDesc_Read)(IO__ByteChannel ch, OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
 extern OOC_INT32 IO__ByteChannelDesc_Write(IO__ByteChannel ch, const OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
-#define _TBN_IO__ByteChannelDesc_Write 8
+#define _TBN_IO__ByteChannelDesc_Write 9
 typedef OOC_INT32 (*_TBP_IO__ByteChannelDesc_Write)(IO__ByteChannel ch, const OOC_CHAR8 buffer[], OOC_LEN buffer_0d, OOC_INT32 start, OOC_INT32 length);
 extern void IO__ByteChannelDesc_Flush(IO__ByteChannel ch);
-#define _TBN_IO__ByteChannelDesc_Flush 9
+#define _TBN_IO__ByteChannelDesc_Flush 10
 typedef void (*_TBP_IO__ByteChannelDesc_Flush)(IO__ByteChannel ch);
 extern OOC_INT32 IO__ByteChannelDesc_TransferTo(IO__ByteChannel ch, OOC_INT32 length, IO__ByteChannel target);
-#define _TBN_IO__ByteChannelDesc_TransferTo 10
+#define _TBN_IO__ByteChannelDesc_TransferTo 11
 typedef OOC_INT32 (*_TBP_IO__ByteChannelDesc_TransferTo)(IO__ByteChannel ch, OOC_INT32 length, IO__ByteChannel target);
 extern void OOC_IO_init(void);
 extern void OOC_IO_init0(void);
@@ -182,7 +190,7 @@ extern void OOC_IO_init0(void);
 /* run-time meta data */
 extern RT0__StructDesc _td_IO__Channel;
 extern RT0__StructDesc _td_IO__SelectionKey;
-extern RT0__StructDesc _td_IO__2046;
+extern RT0__StructDesc _td_IO__2052;
 extern RT0__StructDesc _td_IO__SelectionKeyList;
 extern RT0__StructDesc _td_IO__ChannelDesc;
 extern RT0__StructDesc _td_IO__ByteChannel;
@@ -212,9 +220,9 @@ extern RT0__StructDesc _td_IO__ProtocolError;
 extern RT0__StructDesc _td_IO__ProtocolErrorDesc;
 extern RT0__StructDesc _td_IO__ErrorResponse;
 extern RT0__StructDesc _td_IO__ErrorResponseDesc;
-extern RT0__StructDesc _td_IO__15224;
-extern RT0__StructDesc _td_IO__16552;
-extern RT0__StructDesc _td_IO__17904;
+extern RT0__StructDesc _td_IO__15171;
+extern RT0__StructDesc _td_IO__16499;
+extern RT0__StructDesc _td_IO__17851;
 #endif /* _MODULE_IO_ */
 
 /* --- */

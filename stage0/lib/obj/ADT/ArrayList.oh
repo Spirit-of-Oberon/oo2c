@@ -16,6 +16,11 @@ typedef struct ADT_ArrayList__ArrayListDesc {
   ADT_ArrayList__Array array;
   OOC_INT32 size;
 } ADT_ArrayList__ArrayListDesc;
+typedef struct ADT_ArrayList__IterElementsDesc *ADT_ArrayList__IterElements;
+typedef struct ADT_ArrayList__IterElementsDesc {
+  ADT_ArrayList__ArrayList list;
+  OOC_INT32 pos;
+} ADT_ArrayList__IterElementsDesc;
 extern void ADT_ArrayList__ArrayListDesc_CreateArray(ADT_ArrayList__ArrayList l, OOC_INT32 size, ADT_ArrayList__ArrayList old);
 #define _TBN_ADT_ArrayList__ArrayListDesc_CreateArray 6
 typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_CreateArray)(ADT_ArrayList__ArrayList l, OOC_INT32 size, ADT_ArrayList__ArrayList old);
@@ -89,14 +94,25 @@ typedef void (*_TBP_ADT_ArrayList__ArrayListDesc_Sort)(ADT_ArrayList__ArrayList 
 extern Object__ObjectArrayPtr ADT_ArrayList__ArrayListDesc_Elements(ADT_ArrayList__ArrayList l);
 #define _TBN_ADT_ArrayList__ArrayListDesc_Elements 25
 typedef Object__ObjectArrayPtr (*_TBP_ADT_ArrayList__ArrayListDesc_Elements)(ADT_ArrayList__ArrayList l);
+extern void ADT_ArrayList__IterElementsDesc_INIT(ADT_ArrayList__IterElements iter, ADT_ArrayList__ArrayList list);
+#define _TBN_ADT_ArrayList__IterElementsDesc_INIT 0
+typedef void (*_TBP_ADT_ArrayList__IterElementsDesc_INIT)(ADT_ArrayList__IterElements iter, ADT_ArrayList__ArrayList list);
+extern ADT_ArrayList__IterElements ADT_ArrayList__ArrayListDesc_IterElements(ADT_ArrayList__ArrayList l);
+#define _TBN_ADT_ArrayList__ArrayListDesc_IterElements 26
+typedef ADT_ArrayList__IterElements (*_TBP_ADT_ArrayList__ArrayListDesc_IterElements)(ADT_ArrayList__ArrayList l);
+extern OOC_CHAR8 ADT_ArrayList__IterElementsDesc_Next(ADT_ArrayList__IterElements iter, Object__Object *elem);
+#define _TBN_ADT_ArrayList__IterElementsDesc_Next 1
+typedef OOC_CHAR8 (*_TBP_ADT_ArrayList__IterElementsDesc_Next)(ADT_ArrayList__IterElements iter, Object__Object *elem);
 extern void OOC_ADT_ArrayList_init(void);
 extern void OOC_ADT_ArrayList_init0(void);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_ADT_ArrayList__1011;
+extern RT0__StructDesc _td_ADT_ArrayList__1017;
 extern RT0__StructDesc _td_ADT_ArrayList__Array;
 extern RT0__StructDesc _td_ADT_ArrayList__ArrayList;
 extern RT0__StructDesc _td_ADT_ArrayList__ArrayListDesc;
+extern RT0__StructDesc _td_ADT_ArrayList__IterElements;
+extern RT0__StructDesc _td_ADT_ArrayList__IterElementsDesc;
 #endif /* _MODULE_ADT_ArrayList_ */
 
 /* --- */

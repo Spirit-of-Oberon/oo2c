@@ -1,8 +1,8 @@
 MODULE H2O:Parser [OOC_EXTENSIONS];
 
 IMPORT
-  SYSTEM, Out,
-  Object, ADT:StringBuffer, ADT:ArrayList,
+  SYSTEM, Out, Log,
+  Object, Object:Boxed, ADT:StringBuffer, ADT:ArrayList,
   H2O:Error, H2O:Scanner, H2O:Process, H2O:Module, T := H2O:Type;
 
 CONST
@@ -40,6 +40,13 @@ CONST
 
 CONST
   varargs = 0;
+  debugExpr = FALSE;
+  L = 0;
+  R = 1;
+
+  typeInvalid = 0;
+  typeInteger = 1;
+  typeReal = 2;
 
 TYPE
   Parser* = POINTER TO ParserDesc;
@@ -47,26 +54,31 @@ TYPE
     (*state : SET;*)
   END;
 
+TYPE
+  Operator = POINTER TO OperatorDesc;
+  OperatorDesc = RECORD
+    sym, sym2 : INTEGER;
+    priority : INTEGER;
+    args : INTEGER;
+	assoc : INTEGER;
+    next : Operator;
+  END;
+
 CONST
   (* Expr options *)
-  resultKnown* = 0;
-  testValid* = 1;
+  allowUndefined* = 0;
 
 VAR
+  operators : Operator;
+
   keyWords : Scanner.KeyWord;
   process : Process.Process;
   err : Error.Error;
   token : Scanner.Token;
   options : SET;
-  exprState : SET;
   parser : Parser;
   scope, types : T.Object;
   depend : ArrayList.ArrayList;
-
-PROCEDURE BoolInt (val : BOOLEAN) : LONGINT;
-BEGIN
-  IF val THEN RETURN 1 ELSE RETURN 0 END
-END BoolInt;
 
 PROCEDURE FindType(name : STRING) : T.Type;
 VAR obj : T.Object;
@@ -158,10 +170,13 @@ BEGIN
 END StartsTypeSpecifier;
 
 PROCEDURE ^Declarator(VAR name : STRING; base : T.Type) : T.Type;
-PROCEDURE ^EvalExpr (VAR result : LONGINT);
+PROCEDURE ^EvalExpr (VAR result : Boxed.Object);
+PROCEDURE ^EvalIntExpr (VAR result : LONGINT);
 
 PROCEDURE StorageClass (VAR class : INTEGER);
-(* StorageClass ::= [ "extern" | "static" | "typedef" ] *)
+(* 
+> StorageClass ::= [ "extern" | "static" | "typedef" ].
+*)
 BEGIN
   CASE token.sym OF
   | extern:
@@ -176,7 +191,9 @@ BEGIN
 END StorageClass;
 
 PROCEDURE TypeQualifiers (VAR qualifiers : SET);
-(* TypeQualifier ::= { "const" | "volatile" | "__cdecl" | "__stdcall" } *)
+(* 
+> TypeQualifier ::= { "const" | "volatile" | "__cdecl" | "__stdcall" }.
+*)
 BEGIN
   LOOP
     CASE token.sym OF
@@ -190,6 +207,19 @@ BEGIN
   END;
 END TypeQualifiers;
 
+(*
+> TypeSpecifier ::= 
+>   { Qualifier }
+>   (EnumDecl | StructDecl | IntDecl | FloatDecl | TypedefName | VoidDecl).
+> Qualifier ::= "const" | "volatile".
+> SignedIntDecl ::= 
+>   "char" | "int" | "short" [ "int" ] | "long" [ "long" ] [ "int" ].
+> IntDecl ::=  SignedIntDecl | "unsigned" [ SignedIntDecl ].
+> FloatDecl ::= "float" | "long" "float " | "double" | 
+> TypedefName ::= ident.
+> VoidDecl ::= "void".
+*)
+
 PROCEDURE TypeSpecifier() : T.Type;
 VAR
   sym, sign, size, type : INTEGER;
@@ -197,21 +227,23 @@ VAR
   s, t : T.Type;
 
   PROCEDURE EnumDecl() : T.Type;
-  (* element ::= ident [ "=" Expr].
-     enum ::= "enum" [ ident ] [ "{" Element { "," Element } "}" ].
-  *)
+(*
+> Element ::= ident [ "=" Expr].
+> EnumDecl ::= "enum" [ ident ] [ "{" Element { "," Element } "}" ].
+*)
   VAR 
     tag : STRING;
     t : T.Type; id : LONGINT;
 
     PROCEDURE Element;
-    VAR name : STRING;
+    VAR name : STRING; assignToken : Scanner.Token;
     BEGIN
       name := token.name;
       Expect(Scanner.ident);
       IF token.sym = Scanner.assign THEN
+        assignToken := token;
         GetSym;
-        EvalExpr(id);
+        EvalIntExpr(id);
       ELSE
         INC(id);
       END;
@@ -252,6 +284,17 @@ VAR
     RETURN t;
   END EnumDecl;
 
+(*
+> StructDecl ::= StructureDefinition | StructureRefecence.
+> StructUnion ::= "struct" | "union".
+> StructureDefinition ::= StructUnion [ ident ] "{" FieldList "}".
+> StructureReference ::= StructUnion ident.
+> FieldList ::= { TypeSpecifier FieldDeclaratorList ";" }.
+> FieldDeclaratorList ::= FieldDeclarator { "," FieldDeclarator }.
+> FieldDeclarator ::= Declarator [ ":" FieldWidth ].
+> FieldWidth ::= Expr.
+*)
+
   PROCEDURE StructDecl(class : SHORTINT) : T.Type;
   VAR 
     t : T.Type;
@@ -272,7 +315,7 @@ VAR
           T.Bind(t.link, name, id, t2);
           IF token.sym = Scanner.colon THEN
             GetSym;
-            EvalExpr(width);
+            EvalIntExpr(width);
           END;
           IF token.sym = Scanner.comma THEN
             GetSym
@@ -316,6 +359,9 @@ VAR
   END CondType;
 
 BEGIN
+(* Note: This implementation is a little wierd and probably needs some
+further thought. I've modelled it on the implementation in the "lcc"
+compiler, but it doesn't strictly follow the language definition. *)
   sign := 0; size := 0; type := 0; qualifiers := {}; 
   t := NIL;
   LOOP
@@ -332,7 +378,7 @@ BEGIN
     | long:
       IF size = long THEN size := longlong ELSE size := long END;
       GetSym;
-    | void, char, int, float: 
+    | void, char, int, float, double: 
       type := sym; GetSym;
     | enum:
       type := enum; t := EnumDecl();
@@ -387,6 +433,19 @@ BEGIN
   END;
   RETURN t;
 END TypeSpecifier;
+
+(*
+> Declarator ::= 
+>   SimpleDeclarator 
+> | "(" Declarator ")" | 
+> | FunctionDeclarator
+> | ArrayDeclarator
+> | PointerDeclarator.
+> SimpleDeclarator ::= ident.
+> FunctionDeclarator ::= Declarator "(" [ ParameterList ] ")".
+> ArrayDeclarator ::= Declarator "[" [ Expr ] "]".
+> PointerDeclarator ::= "*" { Qualifiers } Declarator.
+*)
 
 PROCEDURE Declarator(VAR name : STRING; base : T.Type) : T.Type;
 VAR
@@ -482,7 +541,7 @@ VAR
         IF token.sym = Scanner.rsqbracket THEN
           size := -1;
         ELSE
-          EvalExpr(size);
+          EvalIntExpr(size);
           IF size < 0 THEN
             err.Error("Array size may not be negative");
             size := 0;
@@ -515,276 +574,416 @@ BEGIN
   RETURN base;
 END Declarator;
 
-PROCEDURE Expr (VAR result : LONGINT);
-VAR a, b, c : LONGINT;
+(* Miscellaneous type conversion *)
 
-CONST
- optPreprocessor = {Scanner.optDontExpand, Scanner.optReturnEndLine};
+PROCEDURE IntSet(i : LONGINT) : SET;
+BEGIN
+  RETURN SYSTEM.VAL(SET, i);
+END IntSet;
 
- PROCEDURE GetSym0;
- BEGIN
-   process.GetToken(token, optPreprocessor);
- END GetSym0;
+PROCEDURE SetInt(s : SET) : LONGINT;
+BEGIN
+  RETURN SYSTEM.VAL(LONGINT, s);
+END SetInt;
 
- PROCEDURE Expect0(sym : INTEGER);
- BEGIN
-   IF token.sym = sym THEN
-     GetSym0;
-   ELSE
-     err.ExpectedToken(Scanner.NewToken(sym),token);
-   END;
- END Expect0;
+PROCEDURE BoolInt(b : BOOLEAN) : LONGINT;
+BEGIN
+  IF b THEN RETURN 1 ELSE RETURN 0 END
+END BoolInt;
 
- PROCEDURE OrExpr (VAR result : LONGINT);
- VAR a, b : LONGINT;
+PROCEDURE TypeOf(arg : Boxed.Object; VAR i : LONGINT; VAR r : LONGREAL) : INTEGER;
+BEGIN
+  WITH arg: Boxed.LongInt DO
+    i := arg.value; r := i; 
+    RETURN typeInteger;
+  | arg: Boxed.LongReal DO
+    r := arg.value;
+    RETURN typeReal;
+  END;
+END TypeOf;
 
-  PROCEDURE AndExpr (VAR result : LONGINT);
-  VAR a, b : LONGINT;
+PROCEDURE Max(a, b : INTEGER) : INTEGER;
+BEGIN
+  IF a > b THEN RETURN a ELSE RETURN b END;
+END Max;
 
-   PROCEDURE BitOrExpr (VAR result : LONGINT);
-   VAR a, b : SET; i : LONGINT;
+PROCEDURE TypeError(op : Scanner.Token) : Boxed.Object;
+BEGIN
+  err.ErrorParam("Invalid types for operator `$0'", op.name, NIL, NIL);
+  RETURN Boxed.zeroLongInt;
+END TypeError;
 
-    PROCEDURE BitXorExpr (VAR result : LONGINT);
-    VAR a, b : SET; i : LONGINT;
+(* Ternary operators *)
+PROCEDURE Operate3(op : Scanner.Token; arg1, arg2, arg3 : Boxed.Object) : Boxed.Object;
+VAR 
+  ai, bi, ci : LONGINT;
+  ar, br, cr : LONGREAL;
+  opType : INTEGER;
 
-     PROCEDURE BitAndExpr (VAR result : LONGINT);
-     VAR a, b : SET; i : LONGINT;
-
-      PROCEDURE EquExpr (VAR result : LONGINT);
-      VAR a, b : LONGINT; op : INTEGER;
-
-       PROCEDURE RelExpr (VAR result : LONGINT);
-       VAR a, b : LONGINT; op : INTEGER;
-
-        PROCEDURE ShiftExpr (VAR result : LONGINT);
-        VAR a, b : LONGINT; op : INTEGER;
-
-         PROCEDURE AddExpr (VAR result : LONGINT);
-         VAR a, b : LONGINT; op : INTEGER;
-
-          PROCEDURE MultExpr (VAR result : LONGINT);
-          VAR a, b : LONGINT; op : INTEGER;
-
-           PROCEDURE UnaryExpr (VAR result : LONGINT);
-           VAR 
-             t : T.Type; name : STRING;
-             op : INTEGER; 
-             result2 : LONGINT; 
-             needClose : BOOLEAN;
-           BEGIN
-             IF (token.sym = Scanner.not) OR (token.sym = Scanner.sub) OR (token.sym = Scanner.add) OR (token.sym = Scanner.bitNot) THEN
-               op := token.sym; GetSym;
-               UnaryExpr(result2);
-               CASE op OF
-               | Scanner.not: IF result2 = 0 THEN result := 1 ELSE result := 0 END
-               | Scanner.sub: result := - result2;
-               | Scanner.add:
-               | Scanner.bitNot: result := SYSTEM.VAL(LONGINT, - SYSTEM.VAL(SET, result2))
-               END
-             ELSIF token.sym = Scanner.number THEN
-               result := token.value; GetSym
-             ELSIF (token.sym = Scanner.string) & (token.name.length = 3) THEN
-               (* allow character constants in expressions *)
-               result := ORD(token.name.CharAt(1)); GetSym;
-             ELSIF token.sym = Scanner.lbracket THEN
-               (* bracket indicates either a nested expression OR a type cast *)
-               GetSym;
-               IF StartsTypeSpecifier() THEN
-                 name := NIL;
-                 t := Declarator(name, TypeSpecifier());
-                 Expect(Scanner.rbracket);
-                 Expr(result); 
-               ELSE
-                 Expr(result);
-                 Expect(Scanner.rbracket)
-               END;
-             ELSIF token.sym = defined THEN
-               (* allow both "defined (symbol)" and "defined symbol" forms *)
-               GetSym0;
-               IF token.sym = Scanner.lbracket THEN
-                 GetSym0; needClose := TRUE;
-               ELSE
-                 needClose := FALSE
-               END;
-               IF token.sym = Scanner.ident THEN
-                 result := BoolInt(process.IsDefined(token.name));
-               ELSE 
-               END;
-               GetSym0;
-               IF needClose THEN Expect0(Scanner.rbracket); END;
-             ELSIF token.sym = sizeof THEN
-               GetSym;
-               Expect(Scanner.lbracket);
-               err.MsgParam("In sizeof, token=$0", token, NIL, NIL, FALSE);
-               IF StartsTypeSpecifier() THEN
-                 name := NIL;
-                 t := Declarator(name, TypeSpecifier());
-                 result := t.size;
-                 IF result <= 0 THEN
-                   result := 0;
-                   err.ErrorParam("Size of type `$0' is unknown", t, NIL, NIL);
-                 END;
-               ELSE
-                 err.ErrorParam("Token $0 is not a type specifier", token, NIL, NIL);
-               END;
-               Expect(Scanner.rbracket); 
-             ELSIF (token.sym = Scanner.ident) THEN (* P.EnumConst(Scanner.identName, result) THEN
-                 GetSym;
-               ELSIF *) IF (resultKnown IN exprState) THEN
-                 err.MsgParam("Treating undefined symbol '$0' as constant since result is unaffected", token.name, NIL, NIL, FALSE);
-               ELSE
-                 err.ErrorParam("Identifier `$0' is undefined", token.name, NIL, NIL);
-               END;
-               result := 0;
-               GetSym;
-             ELSE err.UnexpectedToken(token);
-             END
-           END UnaryExpr;
-           
-          BEGIN
-            UnaryExpr(a);
-            WHILE (token.sym = Scanner.mul) OR (token.sym = Scanner.div) OR (token.sym = Scanner.mod) DO
-              op := token.sym;
-              GetSym;
-              MultExpr(b);
-              CASE op OF
-              | Scanner.mul: a := a * b 
-              | Scanner.div: a := a DIV b
-              | Scanner.mod: a := a MOD b
-              END
-            END;
-            result := a;
-          END MultExpr;
-
-         BEGIN
-           MultExpr(a);
-           WHILE (token.sym = Scanner.add) OR (token.sym = Scanner.sub) DO
-             op := token.sym;
-             GetSym;
-             MultExpr(b);
-             CASE op OF
-             | Scanner.add: a := a + b 
-             | Scanner.sub: a := a - b
-             END
-           END;
-           result := a;
-         END AddExpr;
-
-        BEGIN
-          AddExpr(a);
-          WHILE (token.sym = Scanner.lsh) OR (token.sym = Scanner.rsh) DO
-            op := token.sym;
-            GetSym;
-            AddExpr(b);
-            CASE op OF
-            | Scanner.lsh: a := SYSTEM.LSH(a, b)
-            | Scanner.rsh: a := SYSTEM.LSH(a, -b)
-            END
-          END;
-          result := a;
-        END ShiftExpr;
-        
-       BEGIN
-         ShiftExpr(a);
-         WHILE (token.sym = Scanner.lt) OR (token.sym = Scanner.leq) OR (token.sym = Scanner.gt) OR (token.sym = Scanner.geq) DO
-           op := token.sym;
-           GetSym;
-           ShiftExpr(b);
-           CASE op OF
-           | Scanner.lt:  a := BoolInt(a < b)
-           | Scanner.leq: a := BoolInt(a <= b)
-           | Scanner.gt:  a := BoolInt(a > b)
-           | Scanner.geq: a := BoolInt(a >= b)
-           END
-         END;
-         result := a;
-       END RelExpr;
-
-      BEGIN
-        RelExpr(a);
-        WHILE (token.sym = Scanner.eq) OR (token.sym = Scanner.notEq) DO
-          op := token.sym;
-          GetSym;
-          RelExpr(b);
-          CASE op OF
-          | Scanner.eq:    a := BoolInt(a = b)
-          | Scanner.notEq: a := BoolInt(a # b)
-          END
-        END;
-        result := a;
-      END EquExpr;
-
-     BEGIN
-       EquExpr(i); a := SYSTEM.VAL(SET, i);
-       WHILE token.sym = Scanner.bitAnd DO
-         GetSym;
-         EquExpr(i); b := SYSTEM.VAL(SET, i);
-         a := a * b;
-       END;
-       result := SYSTEM.VAL(LONGINT, a);
-     END BitAndExpr;
-     
-    BEGIN
-      BitAndExpr(i); a := SYSTEM.VAL(SET, i);
-      WHILE token.sym = Scanner.xor DO
-        GetSym;
-        BitAndExpr(i); b := SYSTEM.VAL(SET, i);
-        a := a / b;
-      END;
-      result := SYSTEM.VAL(LONGINT, a);
-    END BitXorExpr;
-
-   BEGIN
-     BitXorExpr(i); a := SYSTEM.VAL(SET, i);
-     WHILE token.sym = Scanner.bitOr DO
-       GetSym;
-       BitXorExpr(i); b := SYSTEM.VAL(SET, i);
-       a := a + b
-     END;
-     result := SYSTEM.VAL(LONGINT, a);
-   END BitOrExpr;
-    
-  BEGIN
-    BitOrExpr(a);
-    WHILE token.sym = Scanner.and DO
-      GetSym;
-      IF a = 0 THEN INCL(exprState, resultKnown) END;
-      BitOrExpr(b);
-      a := BoolInt((a # 0) & (b # 0))
+BEGIN
+  ai := 0; bi := 0; ci := 0;
+  ar := 0; br := 0; cr := 0;
+  opType := TypeOf(arg1, ai, ar);
+  opType := Max(opType, TypeOf(arg2, bi, br));
+  opType := Max(opType, TypeOf(arg3, ci, cr));
+  
+  CASE opType OF
+  | typeInteger:
+    CASE op.sym OF
+    | Scanner.condIf:
+      IF ai # 0 THEN ai := bi ELSE ai := ci END;
+    ELSE
+      RETURN TypeError(op);
     END;
-    result := a
-  END AndExpr;
+    RETURN NEW(Boxed.LongInt, ai);
+  ELSE
+    RETURN TypeError(op);
+  END;
+END Operate3;
 
- BEGIN
-   AndExpr(a);
-   WHILE token.sym = Scanner.or DO
-     GetSym;
-     IF a # 0 THEN INCL(exprState, resultKnown) END;
-     AndExpr(b);
-     a := BoolInt((a # 0) OR (b # 0))
-   END;
-   result := a
- END OrExpr;
+(* Binary operators *)
+PROCEDURE Operate2(op : Scanner.Token; arg1, arg2 : Boxed.Object) : Boxed.Object;
+VAR 
+  ai, bi : LONGINT;
+  ar, br : LONGREAL;
+  opType : INTEGER;
+
+BEGIN
+  ai := 0; bi := 0;
+  ar := 0; br := 0;
+  opType := TypeOf(arg1, ai, ar);
+  opType := Max(opType, TypeOf(arg2, bi, br));
+  CASE opType OF
+  | typeInteger:
+    CASE op.sym OF
+    | Scanner.add:    ai := ai + bi;
+    | Scanner.sub:    ai := ai - bi;
+    | Scanner.div:    ai := ai DIV bi;
+    | Scanner.mul:    ai := ai * bi;
+    | Scanner.mod:    ai := ai MOD bi;
+
+    | Scanner.lt:     ai := BoolInt(ai < bi);
+    | Scanner.leq:    ai := BoolInt(ai <= bi);
+    | Scanner.gt:     ai := BoolInt(ai > bi);
+    | Scanner.geq:    ai := BoolInt(ai >= bi);
+    | Scanner.eq:     ai := BoolInt(ai = bi);
+    | Scanner.notEq:  ai := BoolInt(ai # bi);
+
+    | Scanner.bitAnd: ai := SetInt(IntSet(ai) * IntSet(bi));
+    | Scanner.bitOr:  ai := SetInt(IntSet(ai) + IntSet(bi));
+    | Scanner.xor:    ai := SetInt(IntSet(ai) / IntSet(bi));
+  
+    | Scanner.and:    ai := BoolInt((bi # 0) & (ai # 0));
+    | Scanner.or:     ai := BoolInt((bi # 0) OR (ai # 0));
+    ELSE
+      RETURN TypeError(op);
+    END;
+    RETURN NEW(Boxed.LongInt, ai);
+
+  | typeReal:
+    CASE op.sym OF
+    | Scanner.add:    ar := ar + br;
+    | Scanner.sub:    ar := ar - br;
+    | Scanner.div:    ar := ar / br;
+    | Scanner.mul:    ar := ar * br;
+  
+    | Scanner.lt:     ar := BoolInt(ar < br);
+    | Scanner.leq:    ar := BoolInt(ar <= br);
+    | Scanner.gt:     ar := BoolInt(ar > br);
+    | Scanner.geq:    ar := BoolInt(ar >= br);
+    | Scanner.eq:     ar := BoolInt(ar = br);
+    | Scanner.notEq:  ar := BoolInt(ar # br);
+    ELSE
+      RETURN TypeError(op);
+    END;
+    RETURN NEW(Boxed.LongReal, ar);
+
+  ELSE
+    RETURN TypeError(op);
+  END
+END Operate2;
+
+(* Unary operators *)
+PROCEDURE Operate1(op : Scanner.Token; arg1 : Boxed.Object) : Boxed.Object;
+VAR 
+  ai : LONGINT;
+  ar : LONGREAL;
+  opType : INTEGER;
+
+BEGIN
+  ai := 0; ar := 0;
+  opType := TypeOf(arg1, ai, ar);
+  CASE opType OF
+  | typeInteger:
+    CASE op.sym OF
+    | Scanner.add:
+    | Scanner.sub:    ai := -ai;
+    | Scanner.bitNot: ai := SetInt(-IntSet(ai));
+    | Scanner.not:    IF ai = 0 THEN ai := 1 ELSE ai := 0 END;
+    ELSE
+      RETURN TypeError(op);
+    END;
+    RETURN NEW(Boxed.LongInt, ai);
+
+  | typeReal:
+    CASE op.sym OF
+    | Scanner.add:
+    | Scanner.sub:    ar := -ar;
+    ELSE
+      RETURN TypeError(op);
+    END;
+    RETURN NEW(Boxed.LongReal, ar);
+
+  ELSE
+    RETURN TypeError(op);
+  END
+END Operate1;
+
+PROCEDURE FindOperator(sym : INTEGER; args : INTEGER) : Operator;
+VAR op : Operator;
+BEGIN
+  op := operators;
+  WHILE op # NIL DO
+    IF (sym = op.sym) & (args = op.args) THEN
+      RETURN op;
+    END;
+    op := op.next
+  END;
+  RETURN NIL
+END FindOperator;
+
+
+(* Expression parsing.
+
+This implementation is based on a technique described as "precedence
+climbing". Its more flexible that straight recursive descent and simpler than
+the classic "shunting" algorithm. The algorithm is succinctly explained by
+Theodore S. Norvell here:
+  http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm
+He in turn attributes the approach to Keith Clarke who describes it in a 
+posting to comp.compilers.
+
+Advantages of this approach: 
+- any number of operators can be defined without changing the parser code
+- operators have configurable precedence and associativity
+This is particularly important for "C", which defines 15 (!!!) operator
+precedence levels.
+*)
+
+(*
+> Expr ::= 
+>   ConditionalExpr | BinaryExpr | UnaryExpr | PrimaryExpr.
+> ConditionalExpr ::= Expr "?" Expr ":" Expr.
+> BinaryExpr ::= Expr BinaryOperator Expr.
+> BinaryOperator ::= 
+>   BitwiseOperator | RelationalOperator | ShiftOperator 
+> | ArithmeticOperator | LocigalOperator.
+> BitwiseOperator ::= "&" | "|" | "^".
+> RelationalOperator ::= "<" | "<=" | ">" | ">=" | "==" | "!=".
+> ShiftOperator ::= "<<" | ">>".
+> ArithmeticOperator ::= "+" | "-" | "*" | "/" | "%".
+> LogicalOperator ::= "&&" | "||".
+> UnaryExpr ::= 
+>   CastExpr | SizeofExpr | UnaryOperator Expr.
+> SizeofExpr ::= "sizeof" "(" TypeName ")".
+> CastExpr ::= "(" TypeName ")" Expr.
+> UnaryOperator ::= "-" | "~" | "!".
+> PrimaryExpr ::=
+>   number | reaNumber | string | ParenthesisedExpr | DefinedExpr.
+> ParenthesisedExpr ::= "(" Expr ")".
+> DefinedExpr ::=
+>   "defined" "(" ident ")"
+> | "defined" ident.
+> TypeName ::=
+>   TypeSpecifier AbstractDeclarator.
+> (* FIXME! Implement abstract declarator. *)
+> AbstractDeclarator ::= Declarator.
+*)
+ 
+PROCEDURE Expr(priority : INTEGER) : Boxed.Object;
+VAR 
+  result, arg2, arg3 : Boxed.Object;
+  q : INTEGER;
+  op : Operator;
+  t2 : Scanner.Token;
+
+  PROCEDURE Term() : Boxed.Object;
+  VAR
+    result : Boxed.Object;
+    q : INTEGER;
+    op : Operator;
+    t2 : Scanner.Token;
+     
+ 
+    PROCEDURE Factor() : Boxed.Object;
+    CONST
+      optPreprocessor = {Scanner.optDontExpand, Scanner.optReturnEndLine};
+    VAR 
+      t : T.Type; name : STRING;
+      result : Boxed.Object; 
+      size : LONGINT;
+      needClose : BOOLEAN;
+      t2 : Scanner.Token;
+      op : Operator;
+
+      PROCEDURE GetSym0;
+      BEGIN
+        process.GetToken(token, optPreprocessor);
+      END GetSym0;
+       
+      PROCEDURE Expect0(sym : INTEGER);
+      BEGIN
+        IF token.sym = sym THEN
+          GetSym0;
+        ELSE
+          err.ExpectedToken(Scanner.NewToken(sym),token);
+        END;
+      END Expect0;
+
+    BEGIN
+      op := FindOperator(token.sym, 1);
+      IF op # NIL THEN
+        (* unary operator *)
+        t2 := token.Copy();
+        GetSym();
+        result := Expr(op.priority);
+		result := Operate1(t2, result);
+
+      ELSIF token.sym = Scanner.number THEN
+        (* constant integer *)
+        result := NEW(Boxed.LongInt, token.value); GetSym;
+
+      ELSIF token.sym = Scanner.realNumber THEN
+        (* constant real *)
+        result := NEW(Boxed.LongReal, token.rvalue); GetSym;
+
+      ELSIF (token.sym = Scanner.string) & (token.name.length = 3) THEN
+        (* constant character *)
+        result := NEW(Boxed.LongInt, ORD(token.name.CharAt(1))); GetSym;
+
+      ELSIF token.sym = Scanner.lbracket THEN
+        (* bracket indicates either a nested expression OR a type cast *)
+        IF StartsTypeSpecifier() THEN
+          (* type cast *)
+          GetSym;
+          name := NIL;
+          t := Declarator(name, TypeSpecifier());
+          Expect(Scanner.rbracket);
+          result := Factor();
+        ELSE
+          (* nested expression *)
+          GetSym;
+          result := Expr(0);
+          Expect(Scanner.rbracket);
+        END
+
+      ELSIF token.sym = defined THEN
+        (* defined: allow both "defined (symbol)" and "defined symbol" forms *)
+        GetSym0;
+        IF token.sym = Scanner.lbracket THEN
+          GetSym0; needClose := TRUE;
+        ELSE
+          needClose := FALSE
+        END;
+        IF token.sym = Scanner.ident THEN
+          result := NEW(Boxed.LongInt, BoolInt(process.IsDefined(token.name)));
+        ELSE 
+          err.MsgParam("Warning: defined() applied to non-identifier '$0'. Returning 0", token.name, NIL, NIL, FALSE);
+          result := Boxed.zeroLongInt
+        END;
+        GetSym0;
+        IF needClose THEN Expect0(Scanner.rbracket); END;
+
+      ELSIF token.sym = sizeof THEN
+        (* sizeof: *)
+        GetSym;
+        Expect(Scanner.lbracket);
+        err.MsgParam("In sizeof, token=$0", token, NIL, NIL, FALSE);
+        IF StartsTypeSpecifier() THEN
+          name := NIL;
+          t := Declarator(name, TypeSpecifier());
+          size := t.size;
+          IF size <= 0 THEN
+            size := 0;
+            err.ErrorParam("Size of type `$0' is unknown", t, NIL, NIL);
+          END;
+          result := NEW(Boxed.LongInt, size)
+        ELSE
+          err.ErrorParam("Token `$0' is not a type specifier", token.name, NIL, NIL);
+          result := Boxed.zeroLongInt
+        END;
+        Expect(Scanner.rbracket); 
+
+      ELSIF (token.sym = Scanner.ident) THEN 
+		(* identifier is usually a defined symbol. However, if this expression
+           is a clause in a preprocesor directive (eg. #if) undefined symbols
+           are treated as false (ie. 0) constants. *)
+        (* P.EnumConst(Scanner.identName, result) THEN GetSym; ELSIF *) 
+        IF allowUndefined IN options THEN
+          err.MsgParam("Treating undefined symbol '$0' as constant 0", token.name, NIL, NIL, FALSE);
+        ELSE
+          err.ErrorParam("Identifier `$0' is undefined", token.name, NIL, NIL);
+        END;
+        result := Boxed.zeroLongInt;
+        GetSym
+      ELSE 
+        err.UnexpectedToken(token);
+        result := Boxed.zeroLongInt
+      END;
+      RETURN result
+    END Factor;
+  
+  BEGIN
+    result := Factor();
+    (* handle binary operators *)
+    op := FindOperator(token.sym, 2);
+
+    WHILE (op # NIL) & (op.priority >= priority) DO
+      t2 := token.Copy(); GetSym;
+      q := op.priority;
+      IF op.assoc = L THEN INC(q) END;
+      result := Operate2(t2, result, Expr(q));
+      op := FindOperator(token.sym, 2);
+    END;
+    RETURN result;
+  END Term;
   
 BEGIN
-  OrExpr(a);
-  IF token.sym = Scanner.condIf THEN
-    GetSym;
-    OrExpr(b);
-    Expect(Scanner.colon);
-    OrExpr(c);
-    IF a # 0 THEN result := b ELSE result := c END
-  ELSE
-    result := a;
-  END
+  result := Term();
+  (* handle ternary operators *)
+  op := FindOperator(token.sym, 3);
+
+  WHILE (op # NIL) & (op.priority >= priority) DO
+    t2 := token.Copy(); GetSym;
+    q := op.priority;
+    IF op.assoc = L THEN INC(q) END;
+    arg2 := Expr(q);
+    IF op.sym2 # 0 THEN Expect(op.sym2) END;
+    arg3 := Expr(q);
+    result := Operate3(t2, result, arg2, arg3);
+    op := FindOperator(token.sym, 2);
+  END;
+  RETURN result;
 END Expr;
 
-PROCEDURE EvalExpr (VAR result : LONGINT);
+PROCEDURE EvalExpr* (VAR result : Boxed.Object);
 BEGIN
-  exprState := {};
-  Expr(result);
+  result := Expr(0);
 END EvalExpr;
- 
+
+PROCEDURE EvalIntExpr(VAR result : LONGINT);
+VAR 
+  obj : Boxed.Object;
+BEGIN
+  EvalExpr(obj);
+  WITH obj : Boxed.LongInt DO
+    result := obj.value
+  ELSE
+    result := 0;
+    err.Error("Expression must have integer type");
+  END;
+END EvalIntExpr;
+
 PROCEDURE (p : Parser) Evaluate* (inToken : Scanner.Token; inOptions : SET; VAR result : LONGINT);
 VAR
   oldOptions : SET;
@@ -794,10 +993,10 @@ BEGIN
   been checked against defined keywords. *)
 
   oldToken := token; oldOptions := options;
-  token := inToken; options := inOptions;
+  token := inToken; options := inOptions + {allowUndefined};
 
   Scanner.CheckKeyWord(keyWords, token);
-  EvalExpr(result);
+  EvalIntExpr(result);
 
   token := oldToken; options := oldOptions;
 END Evaluate;
@@ -847,6 +1046,16 @@ BEGIN
     RETURN TRUE;
   END;
 END SameTypes;
+*)
+
+(*
+> OuterDeclaration ::= Declaration FunctionDefinition.
+> Declaration ::=
+>   StorageClass TypeSpecifier DeclarationList.
+> DeclarationList ::= Declarator { "," Declarator }.
+> FunctionDefinition ::=
+>   StorageClass TypeSpecifier Declarator [ FunctionBody ].
+> FunctionBody ::= "{" FunctionBody | ANY "}"
 *)
 
 PROCEDURE Declaration;
@@ -914,6 +1123,10 @@ BEGIN
   END;
 END Declaration;
 
+(*
+> Body ::= { Declaration ";" }.
+*)
+
 PROCEDURE Body*;
 BEGIN
   GetSym;
@@ -922,6 +1135,17 @@ BEGIN
     Expect(Scanner.semicolon);
   END;
 END Body;
+
+PROCEDURE Evaluate*;
+VAR result : Boxed.Object;
+BEGIN
+  GetSym;
+  WHILE token.sym # Scanner.endFile DO
+    EvalExpr(result);
+    Log.Object("result", result);
+    Expect(Scanner.semicolon);
+  END;
+END Evaluate;
 
 PROCEDURE Init* (proc: Process.Process);
 BEGIN
@@ -967,10 +1191,56 @@ BEGIN
   Scanner.AddKeyWord(keyWords,"defined", defined);
 END AddKeyWords;
 
+PROCEDURE AddOp3(sym, sym2, priority, assoc, args : INTEGER);
+VAR o : Operator;
+BEGIN
+  NEW(o);
+  o.sym := sym;
+  o.sym2 := sym2;
+  o.priority := priority;
+  o.assoc := assoc;
+  o.args := args;
+  o.next := operators;
+  operators := o;
+END AddOp3;
+
+PROCEDURE AddOp(sym, priority, assoc, args : INTEGER);
+BEGIN
+  AddOp3(sym, 0, priority, assoc, args);
+END AddOp;
+
+PROCEDURE AddOperators;
+BEGIN
+  operators := NIL;
+  AddOp(Scanner.bitNot, 14, L, 1);
+  AddOp(Scanner.not, 14, L, 1);
+  AddOp(Scanner.sub, 14, L, 1);
+  AddOp(Scanner.mul, 13, L, 2);
+  AddOp(Scanner.div, 13, L, 2);
+  AddOp(Scanner.mod, 13, L, 2);
+  AddOp(Scanner.add, 12, L, 2);
+  AddOp(Scanner.sub, 12, L, 2);
+  AddOp(Scanner.lsh, 11, L, 2);
+  AddOp(Scanner.rsh, 11, L, 2);
+  AddOp(Scanner.lt, 10, L, 2);
+  AddOp(Scanner.gt, 10, L, 2);
+  AddOp(Scanner.leq, 10, L, 2);
+  AddOp(Scanner.geq, 10, L, 2);
+  AddOp(Scanner.eq, 9, L, 2);
+  AddOp(Scanner.notEq, 9, L, 2);
+  AddOp(Scanner.bitAnd, 8, L, 2);
+  AddOp(Scanner.xor, 7, L, 2);
+  AddOp(Scanner.bitOr, 6, L, 2);
+  AddOp(Scanner.and, 5, L, 2);
+  AddOp(Scanner.or, 4, L, 2);
+  AddOp3(Scanner.condIf, Scanner.colon, 1, R, 3);
+END AddOperators;
+
 BEGIN 
   NEW(parser);
   keyWords := NIL;
   AddKeyWords;
+  AddOperators;
   options := {}; token := Scanner.NewToken(Scanner.endFile);
   types := NIL; scope := NIL;
   depend := ArrayList.New(10);

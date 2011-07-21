@@ -1,3 +1,5 @@
 MODULE M;  (* -*-Mode: oberon-2-*- *)
-BEGIN
+
+(* Foo bar! *)
+
 END M.

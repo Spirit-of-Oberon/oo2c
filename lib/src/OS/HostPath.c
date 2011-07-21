@@ -194,8 +194,8 @@ Object__String OS_HostPath__Denormalize(Object__String pathString) {
   result = (char *) malloc (strlen(path)+1);
 
   if ( (path[0] == '/') && isalpha(path[1]) && (path[2] == '$')) {
-    /* path[2] = ':'; */
-    memmove(result, path+3, strlen(path+3)+1);
+    memmove(result, path+1, strlen(path+1)+1);
+    result[1] = ':';
   } else {
     strcpy(result, path);
   }

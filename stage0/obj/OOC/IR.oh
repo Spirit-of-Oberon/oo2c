@@ -1518,8 +1518,8 @@ extern RT0__StructDesc _td_OOC_IR__41077;
 extern RT0__StructDesc _td_OOC_IR__41285;
 extern RT0__StructDesc _td_OOC_IR__49323;
 extern RT0__StructDesc _td_OOC_IR__52287;
-extern RT0__StructDesc _td_OOC_IR__62399;
-extern RT0__StructDesc _td_OOC_IR__62764;
+extern RT0__StructDesc _td_OOC_IR__62405;
+extern RT0__StructDesc _td_OOC_IR__62770;
 #endif /* _MODULE_OOC_IR_ */
 
 /* --- */

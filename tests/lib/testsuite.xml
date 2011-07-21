@@ -13,7 +13,7 @@
 
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"
-  select ="prepare_out_module lib_rt1 lib_STRING8">-->
+  select ="prepare_out_module lib_rt1 libadt_ArrayList">-->
   
 <!--<testsuite-ext
   profile="Test Suite for OOC Core Library"

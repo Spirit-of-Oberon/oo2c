@@ -43,61 +43,63 @@ extern IO__ProtocolError IO_TextRider__NewProtocolError(Object__String msg);
 extern void NORETURN IO_TextRider__RaiseProtocolError(Object__String msg) NORETURN2;
 extern IO_TextRider__OverflowError IO_TextRider__NewOverflowError(Object__String msg);
 extern void NORETURN IO_TextRider__RaiseOverflowError(Object__String msg) NORETURN2;
-extern void IO_TextRider__InitWriter(IO_TextRider__Writer w, IO__ByteChannel ch);
+extern void IO_TextRider__WriterDesc_INIT(IO_TextRider__Writer w, IO__ByteChannel ch);
+#define _TBN_IO_TextRider__WriterDesc_INIT 0
+typedef void (*_TBP_IO_TextRider__WriterDesc_INIT)(IO_TextRider__Writer w, IO__ByteChannel ch);
 extern IO_TextRider__Writer IO_TextRider__ConnectWriter(IO__ByteChannel ch);
 extern void IO_TextRider__WriterDesc_SetEol(IO_TextRider__Writer w, const OOC_CHAR8 marker__ref[], OOC_LEN marker_0d, OOC_INT16 markerLen);
-#define _TBN_IO_TextRider__WriterDesc_SetEol 0
+#define _TBN_IO_TextRider__WriterDesc_SetEol 1
 typedef void (*_TBP_IO_TextRider__WriterDesc_SetEol)(IO_TextRider__Writer w, const OOC_CHAR8 marker__ref[], OOC_LEN marker_0d, OOC_INT16 markerLen);
 extern void IO_TextRider__WriterDesc_WriteString(volatile IO_TextRider__Writer w, const OOC_CHAR8 s[], volatile OOC_LEN s_0d);
-#define _TBN_IO_TextRider__WriterDesc_WriteString 1
+#define _TBN_IO_TextRider__WriterDesc_WriteString 2
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteString)(IO_TextRider__Writer w, const OOC_CHAR8 s[], OOC_LEN s_0d);
 extern void IO_TextRider__WriterDesc_WriteStringRegion(volatile IO_TextRider__Writer w, const OOC_CHAR8 s[], volatile OOC_LEN s_0d, volatile OOC_INT32 start, volatile OOC_INT32 end);
-#define _TBN_IO_TextRider__WriterDesc_WriteStringRegion 2
+#define _TBN_IO_TextRider__WriterDesc_WriteStringRegion 3
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteStringRegion)(IO_TextRider__Writer w, const OOC_CHAR8 s[], OOC_LEN s_0d, OOC_INT32 start, OOC_INT32 end);
 extern void IO_TextRider__WriterDesc_WriteObject(volatile IO_TextRider__Writer w, volatile Object__Object obj);
-#define _TBN_IO_TextRider__WriterDesc_WriteObject 3
+#define _TBN_IO_TextRider__WriterDesc_WriteObject 4
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteObject)(IO_TextRider__Writer w, Object__Object obj);
 extern void IO_TextRider__WriterDesc_WriteBool(IO_TextRider__Writer w, OOC_CHAR8 _bool);
-#define _TBN_IO_TextRider__WriterDesc_WriteBool 4
+#define _TBN_IO_TextRider__WriterDesc_WriteBool 5
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteBool)(IO_TextRider__Writer w, OOC_CHAR8 _bool);
 extern void IO_TextRider__WriterDesc_WriteChar(volatile IO_TextRider__Writer w, volatile OOC_CHAR8 ch);
-#define _TBN_IO_TextRider__WriterDesc_WriteChar 5
+#define _TBN_IO_TextRider__WriterDesc_WriteChar 6
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteChar)(IO_TextRider__Writer w, OOC_CHAR8 ch);
 extern void IO_TextRider__WriterDesc_WriteLInt(IO_TextRider__Writer w, OOC_INT32 lint, OOC_INT32 n);
-#define _TBN_IO_TextRider__WriterDesc_WriteLInt 6
+#define _TBN_IO_TextRider__WriterDesc_WriteLInt 7
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteLInt)(IO_TextRider__Writer w, OOC_INT32 lint, OOC_INT32 n);
 extern void IO_TextRider__WriterDesc_WriteSInt(IO_TextRider__Writer w, OOC_INT8 sint, OOC_INT32 n);
-#define _TBN_IO_TextRider__WriterDesc_WriteSInt 7
+#define _TBN_IO_TextRider__WriterDesc_WriteSInt 8
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteSInt)(IO_TextRider__Writer w, OOC_INT8 sint, OOC_INT32 n);
 extern void IO_TextRider__WriterDesc_WriteInt(IO_TextRider__Writer w, OOC_INT16 _int, OOC_INT32 n);
-#define _TBN_IO_TextRider__WriterDesc_WriteInt 8
+#define _TBN_IO_TextRider__WriterDesc_WriteInt 9
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteInt)(IO_TextRider__Writer w, OOC_INT16 _int, OOC_INT32 n);
 extern void IO_TextRider__WriterDesc_WriteHex(IO_TextRider__Writer w, OOC_INT32 lint, OOC_INT32 d);
-#define _TBN_IO_TextRider__WriterDesc_WriteHex 9
+#define _TBN_IO_TextRider__WriterDesc_WriteHex 10
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteHex)(IO_TextRider__Writer w, OOC_INT32 lint, OOC_INT32 d);
 extern void IO_TextRider__WriterDesc_WriteLReal(IO_TextRider__Writer w, OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
-#define _TBN_IO_TextRider__WriterDesc_WriteLReal 10
+#define _TBN_IO_TextRider__WriterDesc_WriteLReal 11
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteLReal)(IO_TextRider__Writer w, OOC_REAL64 lreal, OOC_INT32 n, OOC_INT32 k);
 extern void IO_TextRider__WriterDesc_WriteReal(IO_TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
-#define _TBN_IO_TextRider__WriterDesc_WriteReal 11
+#define _TBN_IO_TextRider__WriterDesc_WriteReal 12
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteReal)(IO_TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
 extern void IO_TextRider__WriterDesc_WriteLRealFix(IO_TextRider__Writer w, OOC_REAL64 *lreal, OOC_INT32 n, OOC_INT32 k);
-#define _TBN_IO_TextRider__WriterDesc_WriteLRealFix 12
+#define _TBN_IO_TextRider__WriterDesc_WriteLRealFix 13
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteLRealFix)(IO_TextRider__Writer w, OOC_REAL64 *lreal, OOC_INT32 n, OOC_INT32 k);
 extern void IO_TextRider__WriterDesc_WriteRealFix(IO_TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
-#define _TBN_IO_TextRider__WriterDesc_WriteRealFix 13
+#define _TBN_IO_TextRider__WriterDesc_WriteRealFix 14
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteRealFix)(IO_TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
 extern void IO_TextRider__WriterDesc_WriteLRealEng(IO_TextRider__Writer w, OOC_REAL64 *lreal, OOC_INT32 n, OOC_INT32 k);
-#define _TBN_IO_TextRider__WriterDesc_WriteLRealEng 14
+#define _TBN_IO_TextRider__WriterDesc_WriteLRealEng 15
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteLRealEng)(IO_TextRider__Writer w, OOC_REAL64 *lreal, OOC_INT32 n, OOC_INT32 k);
 extern void IO_TextRider__WriterDesc_WriteRealEng(IO_TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
-#define _TBN_IO_TextRider__WriterDesc_WriteRealEng 15
+#define _TBN_IO_TextRider__WriterDesc_WriteRealEng 16
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteRealEng)(IO_TextRider__Writer w, OOC_REAL32 real, OOC_INT32 n, OOC_INT32 k);
 extern void IO_TextRider__WriterDesc_WriteSet(IO_TextRider__Writer w, OOC_UINT32 s);
-#define _TBN_IO_TextRider__WriterDesc_WriteSet 16
+#define _TBN_IO_TextRider__WriterDesc_WriteSet 17
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteSet)(IO_TextRider__Writer w, OOC_UINT32 s);
 extern void IO_TextRider__WriterDesc_WriteLn(IO_TextRider__Writer w);
-#define _TBN_IO_TextRider__WriterDesc_WriteLn 17
+#define _TBN_IO_TextRider__WriterDesc_WriteLn 18
 typedef void (*_TBP_IO_TextRider__WriterDesc_WriteLn)(IO_TextRider__Writer w);
 extern void IO_TextRider__ReaderDesc_INIT(IO_TextRider__Reader r, IO__ByteChannel ch);
 #define _TBN_IO_TextRider__ReaderDesc_INIT 0
@@ -158,21 +160,21 @@ extern RT0__StructDesc _td_IO_TextRider__2565;
 extern RT0__StructDesc _td_IO_TextRider__Buffer;
 extern RT0__StructDesc _td_IO_TextRider__Reader;
 extern RT0__StructDesc _td_IO_TextRider__ReaderDesc;
-extern RT0__StructDesc _td_IO_TextRider__4758;
-extern RT0__StructDesc _td_IO_TextRider__5664;
-extern RT0__StructDesc _td_IO_TextRider__5913;
-extern RT0__StructDesc _td_IO_TextRider__7527;
-extern RT0__StructDesc _td_IO_TextRider__8990;
-extern RT0__StructDesc _td_IO_TextRider__9359;
-extern RT0__StructDesc _td_IO_TextRider__9798;
-extern RT0__StructDesc _td_IO_TextRider__10175;
-extern RT0__StructDesc _td_IO_TextRider__10615;
-extern RT0__StructDesc _td_IO_TextRider__10990;
-extern RT0__StructDesc _td_IO_TextRider__17274;
-extern RT0__StructDesc _td_IO_TextRider__21188;
-extern RT0__StructDesc _td_IO_TextRider__22505;
-extern RT0__StructDesc _td_IO_TextRider__22892;
-extern RT0__StructDesc _td_IO_TextRider__25952;
+extern RT0__StructDesc _td_IO_TextRider__4703;
+extern RT0__StructDesc _td_IO_TextRider__5609;
+extern RT0__StructDesc _td_IO_TextRider__5858;
+extern RT0__StructDesc _td_IO_TextRider__7472;
+extern RT0__StructDesc _td_IO_TextRider__8935;
+extern RT0__StructDesc _td_IO_TextRider__9304;
+extern RT0__StructDesc _td_IO_TextRider__9743;
+extern RT0__StructDesc _td_IO_TextRider__10120;
+extern RT0__StructDesc _td_IO_TextRider__10560;
+extern RT0__StructDesc _td_IO_TextRider__10935;
+extern RT0__StructDesc _td_IO_TextRider__17219;
+extern RT0__StructDesc _td_IO_TextRider__21133;
+extern RT0__StructDesc _td_IO_TextRider__22450;
+extern RT0__StructDesc _td_IO_TextRider__22837;
+extern RT0__StructDesc _td_IO_TextRider__25897;
 #endif /* _MODULE_IO_TextRider_ */
 
 /* --- */

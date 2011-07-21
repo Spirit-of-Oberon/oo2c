@@ -25,22 +25,22 @@ void ADT_Storable__ObjectDesc_Load(ADT_Storable__Object obj, ADT_Storable__Reade
   ;
 }
 
-void ADT_Storable__InitWriter(ADT_Storable__Writer w, IO__ByteChannel ch) {
+void ADT_Storable__WriterDesc_INIT(ADT_Storable__Writer w, IO__ByteChannel ch) {
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)ch;
   i1 = (OOC_INT32)w;
-  IO_BinaryRider__InitWriter((IO_BinaryRider__Writer)i1, (IO__ByteChannel)i0, 1);
+  IO_BinaryRider__WriterDesc_INIT((IO_BinaryRider__Writer)i1, (IO__ByteChannel)i0, 1);
   return;
   ;
 }
 
-void ADT_Storable__InitReader(ADT_Storable__Reader r, IO__ByteChannel ch) {
+void ADT_Storable__ReaderDesc_INIT(ADT_Storable__Reader r, IO__ByteChannel ch) {
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)ch;
   i1 = (OOC_INT32)r;
-  IO_BinaryRider__InitReader((IO_BinaryRider__Reader)i1, (IO__ByteChannel)i0, 1);
+  IO_BinaryRider__ReaderDesc_INIT((IO_BinaryRider__Reader)i1, (IO__ByteChannel)i0, 1);
   return;
   ;
 }

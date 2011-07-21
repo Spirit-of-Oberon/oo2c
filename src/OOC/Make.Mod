@@ -1,4 +1,4 @@
-(* 	$Id: Make.Mod,v 1.70 2004/06/02 08:55:41 mva Exp $	 *)
+(* 	$Id: Make.Mod,v 1.71 2004/11/24 03:56:09 sgreenhill Exp $	 *)
 MODULE OOC:Make;
 (*  Builds object files, libraries, binaries, and the like.
     Copyright (C) 2002, 2003, 2004  Michael van Acken
@@ -763,7 +763,7 @@ RAISES IO.Error;
         sb.Append(" -o ");
         uri := module. GetURI (Rep.modInterfaceHTML, TRUE);
         path := uri(File.URI).GetPath();
-        sb.Append(path);
+        sb.Append(Path.QuoteForShell(path));
 
         (* create directory for HTML file, if it does not exist *)
         OSFiles.MakeDirs (Path.DirName(path), OSFiles.defaultMode);
@@ -771,12 +771,12 @@ RAISES IO.Error;
         (* append file name of style sheet *)
         uri := GetSystemId (Config.repositories);
         sb.Append(" ");
-        sb.Append(uri(File.URI).GetPath());
+        sb.Append(Path.QuoteForShell(uri(File.URI).GetPath()));
         
         (* append name of XML file *)
         uri := module. GetURI (Rep.modInterfaceDescr, TRUE);
         sb.Append(" ");
-        sb.Append(uri(File.URI).GetPath());
+        sb.Append(Path.QuoteForShell(uri(File.URI).GetPath()));
         
         cmd := sb.ToString();
         Logger.ShellCommand(cmd);

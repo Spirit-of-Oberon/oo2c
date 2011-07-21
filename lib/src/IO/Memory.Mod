@@ -1,7 +1,7 @@
-(*	$Id: Memory.Mod,v 1.6 2003/06/23 20:54:40 mva Exp $	*)
+(*	$Id: Memory.Mod,v 1.7 2004/11/21 20:31:44 mva Exp $	*)
 MODULE IO:Memory;
 (*  Memory backed byte channel.
-    Copyright (C) 2003  Michael van Acken
+    Copyright (C) 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -34,21 +34,17 @@ TYPE
 CONST
   offset = 16;
   
-PROCEDURE Init(ch: Channel);
+PROCEDURE (ch: Channel) INIT*();
   BEGIN
-    IO.InitByteChannel(ch);
+    ch.INIT^();
     NEW(ch.data, 4*1024-offset);
     ch.pos := 0;
     ch.length := 0;
-  END Init;
+  END INIT;
 
 PROCEDURE Open*(): Channel;
-  VAR
-    ch: Channel;
   BEGIN
-    NEW(ch);
-    Init(ch);
-    RETURN ch;
+    RETURN NEW(Channel);
   END Open;
 
 PROCEDURE (ch: Channel) SetBlocking*(block: BOOLEAN);

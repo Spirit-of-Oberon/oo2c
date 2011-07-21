@@ -1,4 +1,4 @@
-(* 	$Id: CCompiler.Mod,v 1.35 2004/04/04 07:35:45 mva Exp $	 *)
+(* 	$Id: CCompiler.Mod,v 1.36 2004/11/24 03:56:10 sgreenhill Exp $	 *)
 MODULE OOC:Config:CCompiler;
 (*  Generates command lines for the C compiler and linker.
     Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
@@ -21,7 +21,7 @@ MODULE OOC:Config:CCompiler;
 *)
 
 IMPORT
-  Object, ADT:StringBuffer, URI, URI:Scheme:File,
+  Object, ADT:StringBuffer, URI, URI:Scheme:File, OS:Path,
   CfgData := Config, Config:Section:Options,
   OOC:Logger, OOC:Config, OOC:Package, OOC:Repository;
 
@@ -99,18 +99,18 @@ PROCEDURE CompileFileCmd* (in, out: URI.URI; forLibrary: BOOLEAN): STRING;
        src/ directory, putting this first should be safe.   *)
     f := GetURIofRT();
     sb.Append(" -I");
-    sb.Append(f.GetPath());
+    sb.Append(Path.QuoteForShell(f.GetPath()));
     
     include := Config.repositories. GetIncludePaths();
     FOR i := 0 TO LEN (include^)-1 DO
       sb.Append(" -I");
-      sb.Append(include[i]);
+      sb.Append(Path.QuoteForShell(include[i]));
     END;
     
     sb.Append(" -c ");
-    sb.Append(in(File.URI).GetPath());
+    sb.Append(Path.QuoteForShell(in(File.URI).GetPath()));
     sb.Append(" -o ");
-    sb.Append(out(File.URI).GetPath());
+    sb.Append(Path.QuoteForShell(out(File.URI).GetPath()));
     RETURN sb.ToString();
   END CompileFileCmd;
 
@@ -121,12 +121,12 @@ PROCEDURE LinkProgramCmd* (execFile: URI.URI;
   BEGIN
     sb := SetCommand("link");
     sb.Append("-o ");
-    sb.Append(execFile(File.URI).GetPath());
+    sb.Append(Path.QuoteForShell(execFile(File.URI).GetPath()));
     IF (forLibrary # NIL) & HaveLibtool() THEN
       sb.Append(" -version-info ");
       sb.AppendLatin1(forLibrary.version.tuple);
       sb.Append(" -rpath ");
-      sb.Append(libdir.value);
+      sb.Append(Path.QuoteForShell(libdir.value.ToString()));
     END;
     sb.Append(" ");
     sb.Append(ldflags.value);
@@ -139,7 +139,7 @@ PROCEDURE InstallDirectoryCmd*(path: STRING): STRING;
   BEGIN
     sb := StringBuffer.New(install.value.ToString());
     sb.Append(" -d ");
-    sb.Append(path);
+    sb.Append(Path.QuoteForShell(path));
     RETURN sb.ToString();
   END InstallDirectoryCmd;
 
@@ -155,12 +155,12 @@ PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN): STRING;
     
     sb.Append(installProgram.value);
     sb.Append(" ");
-    sb.Append(file(File.URI).GetPath());
+    sb.Append(Path.QuoteForShell(file(File.URI).GetPath()));
     sb.Append(" ");
     IF asLibrary THEN
-      sb.Append(libdir.value);
+      sb.Append(Path.QuoteForShell(libdir.value.ToString()));
     ELSE
-      sb.Append(bindir.value);
+      sb.Append(Path.QuoteForShell(bindir.value.ToString()));
     END;
     RETURN sb.ToString();
   END InstallProgramCmd;
@@ -177,7 +177,7 @@ PROCEDURE UninstallProgramCmd*(path: STRING; asLibrary: BOOLEAN): STRING;
     
     sb.Append(uninstall.value);
     sb.Append(" ");
-    sb.Append(path);
+    sb.Append(Path.QuoteForShell(path));
     RETURN sb.ToString();
   END UninstallProgramCmd;
 

@@ -3,6 +3,7 @@ static void* _c1;
 #include <OOC/Config/Assembler.oh>
 #include <ADT/StringBuffer.oh>
 #include <URI/Scheme/File.oh>
+#include <OS/Path.oh>
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;

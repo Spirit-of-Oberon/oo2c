@@ -129,9 +129,13 @@ typedef void (*_TBP_IO_BinaryRider__WriterDesc_WriteStr)(IO_BinaryRider__Writer 
 extern void IO_BinaryRider__WriterDesc_SetByteOrder(IO_BinaryRider__Writer w, OOC_INT8 order);
 #define _TBN_IO_BinaryRider__WriterDesc_SetByteOrder 16
 typedef void (*_TBP_IO_BinaryRider__WriterDesc_SetByteOrder)(IO_BinaryRider__Writer w, OOC_INT8 order);
-extern void IO_BinaryRider__InitReader(IO_BinaryRider__Reader r, IO__ByteChannel ch, OOC_INT8 byteOrder);
+extern void IO_BinaryRider__ReaderDesc_INIT(IO_BinaryRider__Reader r, IO__ByteChannel ch, OOC_INT8 byteOrder);
+#define _TBN_IO_BinaryRider__ReaderDesc_INIT 17
+typedef void (*_TBP_IO_BinaryRider__ReaderDesc_INIT)(IO_BinaryRider__Reader r, IO__ByteChannel ch, OOC_INT8 byteOrder);
 extern IO_BinaryRider__Reader IO_BinaryRider__ConnectReader(IO__ByteChannel ch);
-extern void IO_BinaryRider__InitWriter(IO_BinaryRider__Writer w, IO__ByteChannel ch, OOC_INT8 byteOrder);
+extern void IO_BinaryRider__WriterDesc_INIT(IO_BinaryRider__Writer w, IO__ByteChannel ch, OOC_INT8 byteOrder);
+#define _TBN_IO_BinaryRider__WriterDesc_INIT 17
+typedef void (*_TBP_IO_BinaryRider__WriterDesc_INIT)(IO_BinaryRider__Writer w, IO__ByteChannel ch, OOC_INT8 byteOrder);
 extern IO_BinaryRider__Writer IO_BinaryRider__ConnectWriter(IO__ByteChannel ch);
 extern void OOC_IO_BinaryRider_init(void);
 extern void OOC_IO_BinaryRider_init0(void);
@@ -155,7 +159,7 @@ extern RT0__StructDesc _td_IO_BinaryRider__8111;
 extern RT0__StructDesc _td_IO_BinaryRider__8402;
 extern RT0__StructDesc _td_IO_BinaryRider__9257;
 extern RT0__StructDesc _td_IO_BinaryRider__9498;
-extern RT0__StructDesc _td_IO_BinaryRider__13156;
+extern RT0__StructDesc _td_IO_BinaryRider__13046;
 #endif /* _MODULE_IO_BinaryRider_ */
 
 /* --- */

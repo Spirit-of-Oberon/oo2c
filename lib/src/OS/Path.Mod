@@ -1,4 +1,4 @@
-(* 	$Id: Path.Mod,v 1.4 2003/05/18 18:38:48 mva Exp $	 *)
+(* 	$Id: Path.Mod,v 1.5 2004/11/24 03:53:09 sgreenhill Exp $	 *)
 MODULE OS:Path;
 (*  Manipulation of file and directory names.
     Copyright (C) 2000, 2001, 2003  Michael van Acken
@@ -19,7 +19,7 @@ MODULE OS:Path;
 *)
 
 IMPORT
-  Object;
+  Object, ADT:StringBuffer;
 
 CONST
   sep = "/";
@@ -105,5 +105,52 @@ PROCEDURE Decode*(path[NO_COPY]: ARRAY OF CHAR): STRING;
   BEGIN
     RETURN Object.NewLatin1(path);
   END Decode;
+
+PROCEDURE QuoteForShell* (path : STRING) : STRING;
+(**Convert a path to a form suitable for passing as a command-line argument to
+   a system command. Certain characters cannot be directly used in command-line
+   path arguments because the characters have special significance to the
+   system shell. For example, spaces are used to separate arguments in command
+   lines, so a path containing spaces must be quoted to cause the shell to
+   treat it as a literal.
+   
+   This function determines if @oparam{path} needs to be quoted. If so, it
+   returns a quoted version. Otherwise, the original @oparam{path} is returned.
+   *)
+
+ CONST
+    escapeChar = "\";
+    quoteChars = escapeChar + '"';
+
+  PROCEDURE EscapeReservedChars(s, reserved : STRING; escape : CHAR) : STRING;
+  VAR
+    i : LONGINT;
+    sb : StringBuffer.StringBuffer;
+    c : UCS4CHAR;
+    needQuote : BOOLEAN;
+  BEGIN
+    needQuote := FALSE;
+    sb := StringBuffer.New('"');
+    FOR i := 0 TO s.length - 1 DO
+      c := s.CharAt(i);
+      IF reserved.IndexOf(c, 0) >= 0 THEN
+        sb.AppendLatin1Char(escape);
+        needQuote := TRUE;
+      ELSIF c = ' ' THEN
+        needQuote := TRUE;
+      END;
+      sb.AppendChar(c);
+    END;
+    sb.AppendChar('"');
+    IF needQuote THEN
+      RETURN sb.ToString();
+    ELSE
+      RETURN s;
+    END;
+  END EscapeReservedChars;
+
+  BEGIN
+    RETURN EscapeReservedChars(path, quoteChars, escapeChar);
+  END QuoteForShell;
 
 END OS:Path.

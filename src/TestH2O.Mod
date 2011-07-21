@@ -18,6 +18,7 @@ VAR
   error : E.Error;
 
   preprocess : Options.Option;
+  evaluate : Options.Option;
   strictRedefine : Options.Option;
   strictUndefine : Options.Option;
   debugDefine : Options.Option;
@@ -32,11 +33,14 @@ PROCEDURE NewConfig;
     debugDefine := Config.AddOption("debugDefine", CfgData.NewBooleanVar(FALSE));
     text := Config.AddOption("text", CfgData.NewBooleanVar(FALSE));
     preprocess := Config.AddOption("preprocess", CfgData.NewBooleanVar(FALSE)); 
+    evaluate := Config.AddOption("evaluate", CfgData.NewBooleanVar(FALSE)); 
 
     Config.AddCmdLine ("--repository,-r",
                  "<repositories><file-system>$1</file-system></repositories>");
     Config.AddCmdLine ("--preprocess",
                  "<options><set name='preprocess'>TRUE</set></options>");
+    Config.AddCmdLine ("--evaluate",
+                 "<options><set name='evaluate'>TRUE</set></options>");
     Config.AddCmdLine ("--strictRedefine",
                  "<options><set name='strictRedefine'>TRUE</set></options>");
     Config.AddCmdLine ("--strictUndefine",
@@ -84,6 +88,7 @@ BEGIN
 
     source := Source.New(); 
     source.AppendPath(".");
+    source.AppendFrameworkPath("/System/Library");
 	source.Include(arg, FALSE);
     error := E.New(source);
     scanner := Scanner.New(source, error);
@@ -105,6 +110,9 @@ BEGIN
           token.Write(Out.writer); Out.Ln;
         UNTIL token.sym = Scanner.endFile;
       END;
+    ELSIF evaluate. value(CfgData.BooleanVar). boolean THEN
+      (* for debugging, evaluate exprsesions *)
+      Parser.Evaluate();
     ELSE
       Parser.Body();
     END;

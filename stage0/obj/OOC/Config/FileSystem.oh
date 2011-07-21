@@ -36,8 +36,8 @@ extern RT0__StructDesc _td_OOC_Config_FileSystem__RepositoryEntry;
 extern RT0__StructDesc _td_OOC_Config_FileSystem__RepositoryEntryDesc;
 extern RT0__StructDesc _td_OOC_Config_FileSystem__ErrorContext;
 extern RT0__StructDesc _td_OOC_Config_FileSystem__ErrorContextDesc;
-extern RT0__StructDesc _td_OOC_Config_FileSystem__1689;
-extern RT0__StructDesc _td_OOC_Config_FileSystem__2617;
+extern RT0__StructDesc _td_OOC_Config_FileSystem__1708;
+extern RT0__StructDesc _td_OOC_Config_FileSystem__2649;
 #endif /* _MODULE_OOC_Config_FileSystem_ */
 
 /* --- */

@@ -14,8 +14,8 @@ extern void OOC_OOC_SSA_IRtoSSA_init(void);
 extern void OOC_OOC_SSA_IRtoSSA_init0(void);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__39287;
-extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__39276;
+extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__39289;
+extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__39278;
 #endif /* _MODULE_OOC_SSA_IRtoSSA_ */
 
 /* --- */

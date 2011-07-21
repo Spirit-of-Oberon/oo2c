@@ -1,7 +1,7 @@
-(*	$Id: Dictionary.Mod,v 1.15 2003/08/03 12:18:29 mva Exp $	*)
+(*	$Id: Dictionary.Mod,v 1.16 2004/11/14 20:05:40 mva Exp $	*)
 MODULE ADT:Dictionary;
 (*  A dictionary implementation using objects' HashCode() as keys.
-    Copyright (C) 2000, 2001, 2003  Michael van Acken
+    Copyright (C) 2000, 2001, 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -101,6 +101,18 @@ TYPE
        when it is filled to two thirds.  *)
   END;
 
+TYPE
+  IterKeys*(K: Key; V: Value) = POINTER TO IterKeysDesc(K, V);
+  IterKeysDesc(K: Key; V: Value) = RECORD
+    dict: Dictionary(K, V);
+    pos: LONGINT;
+  END;
+  IterValues*(K: Key; V: Value) = POINTER TO IterValuesDesc(K, V);
+  IterValuesDesc(K: Key; V: Value) = RECORD
+    dict: Dictionary(K, V);
+    pos: LONGINT;
+  END;
+  
 TYPE
   Dummy = POINTER TO DummyDesc;
   DummyDesc = RECORD (Object.ObjectDesc) END;
@@ -513,6 +525,84 @@ PROCEDURE (dict: Dictionary(K, V)) Load* (r: Storable.Reader) RAISES IO.Error;
     END
   END Load;
 
+
+PROCEDURE (iter: IterKeys(K, V)) INIT*(dict: Dictionary(K, V));
+  BEGIN
+    iter.dict := dict;
+    iter.pos := 0;
+  END INIT;
+  
+PROCEDURE (dict: Dictionary(K, V)) IterKeys*(): IterKeys(K, V);
+(**Returns an iterator that traverses the keys of @oparam{dict} in no
+   particular.  If no changes are made two the dictionary in between, then two
+   iterations over the keys will return the key objects in the same order.
+   Beyond this, no ordering guarantees are made.
+
+   Behaviour of the iterator is undefined if the dictionary is changed while
+   the iterator is traversing it.  *)
+  BEGIN
+    RETURN NEW(IterKeys(K, V), dict);
+  END IterKeys;
+
+PROCEDURE (iter: IterKeys(K, V)) Next*(VAR key: K): BOOLEAN;
+  VAR
+    d: Dictionary(K, V);
+    i: LONGINT;
+  BEGIN
+    d := iter.dict;
+    i := iter.pos;
+    WHILE (i # d.size) & ~IsSet(d.table[i].key) DO
+      INC(i);
+    END;
+    IF (i = d.size) THEN
+      iter.pos := i;
+      RETURN FALSE;
+    ELSE
+      iter.pos := i+1;
+      key := d.table[i].key;
+      RETURN TRUE;
+    END;
+  END Next;
+  
+
+PROCEDURE (iter: IterValues(K, V)) INIT*(dict: Dictionary(K, V));
+  BEGIN
+    iter.dict := dict;
+    iter.pos := 0;
+  END INIT;
+  
+PROCEDURE (dict: Dictionary(K, V)) IterValues*(): IterValues(K, V);
+(**Returns an iterator that traverses the values of @oparam{dict} in no
+   particular.  If no changes are made two the dictionary in between, then two
+   iterations over the values will return the value objects in the same order.
+   Beyond this, no ordering guarantees are made.
+
+   Behaviour of the iterator is undefined if the dictionary is changed while
+   the iterator is traversing it.  *)
+  BEGIN
+    RETURN NEW(IterValues(K, V), dict);
+  END IterValues;
+
+PROCEDURE (iter: IterValues(K, V)) Next*(VAR value: V): BOOLEAN;
+  VAR
+    d: Dictionary(K, V);
+    i: LONGINT;
+  BEGIN
+    d := iter.dict;
+    i := iter.pos;
+    WHILE (i # d.size) & ~IsSet(d.table[i].key) DO
+      INC(i);
+    END;
+    IF (i = d.size) THEN
+      iter.pos := i;
+      RETURN FALSE;
+    ELSE
+      iter.pos := i+1;
+      value := d.table[i].value;
+      RETURN TRUE;
+    END;
+  END Next;
+  
 
 PROCEDURE (dummy: Dummy) Destroy*;
   END Destroy;

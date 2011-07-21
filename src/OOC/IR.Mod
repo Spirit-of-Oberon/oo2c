@@ -1,4 +1,4 @@
-(* 	$Id: IR.Mod,v 1.282 2004/06/29 09:04:29 mva Exp $	 *)
+(* 	$Id: IR.Mod,v 1.285 2004/11/24 17:39:14 mva Exp $	 *)
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
     Copyright (C) 2001-2004  Michael van Acken, Stewart Greenhill
@@ -1855,7 +1855,7 @@ PROCEDURE (b: Builder) AssertReal(expr: Expression): Expression;
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notReal, expr.sym);
       END;
-      v := Boxed.NewLongReal(1);
+      v := NEW(Boxed.LongReal, 1);
       RETURN NewConst(expr.sym, Predef.GetType(Predef.real), v);
     END;
     RETURN expr;
@@ -1888,7 +1888,7 @@ PROCEDURE (b: Builder) AssertChar(expr: Expression): Expression;
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notCharacter, expr.sym);
       END;
-      v := Boxed.NewString("a");
+      v := NEW(Boxed.String, "a");
       RETURN NewConst(expr.sym, Predef.GetType(Predef.char), v);
     END;
     RETURN expr;
@@ -1904,7 +1904,7 @@ PROCEDURE (b: Builder) AssertSet(expr: Expression): Expression;
       IF (expr # b.errorExpr) THEN
         b.ErrSym(notSet, expr.sym);
       END;
-      v := Boxed.NewSet({});
+      v := NEW(Boxed.Set, {});
       RETURN NewConst(expr.sym, Predef.GetType(Predef.set), v);
     END;
     RETURN expr;
@@ -1998,7 +1998,7 @@ PROCEDURE (b: Builder) NewCharConst16* (sym: Symbol): Expression;
         type := Predef.ucs4char;
         str := Object.NewUCS4Char(UCS4CHR(v));
       END;
-      RETURN NewConst(sym, Predef.GetType(type), Boxed.NewString(str));
+      RETURN NewConst(sym, Predef.GetType(type), NEW(Boxed.String, str));
     END
   END NewCharConst16;
 
@@ -3040,7 +3040,7 @@ PROCEDURE (b: Builder) NewSetRange* (sym: Symbol; type, from, to: Expression;
       END;
     END;
     IF (from = NIL) & (to = NIL) THEN  (* empty set *)
-      RETURN b. NewConst (sym, set, Boxed.NewSet({}));
+      RETURN b. NewConst (sym, set, NEW(Boxed.Set, {}));
     ELSE
       (* only do semantic checks for SETs and not for labels *)
       IF isSet THEN
@@ -3224,10 +3224,14 @@ PROCEDURE (b: Builder) Widen (VAR expr: Expression; type: Sym.Type): BOOLEAN;
    implements @emph{all} rules where an explicit type conversion must be added,
    and a large part of the common subset of the above notion of compatibility.  *)
   BEGIN
-    ASSERT (expr.type # NIL);
     ASSERT (type # NIL);
-    
-    IF TR.SameType(type, expr. type) THEN (* Case 0a *)
+
+    IF (expr.type = NIL) THEN
+      (* this might happen if the right hand side of the assigment is the name
+         of a predefined function, like MAX  *)
+      RETURN FALSE;
+      
+    ELSIF TR.SameType(type, expr. type) THEN (* Case 0a *)
       (* Case 0a: a < b if a and b are the same type. *)
       RETURN TRUE;
 
@@ -3328,7 +3332,10 @@ PROCEDURE (b: Builder) WidenForAssign (VAR expr: Expression;
   
   BEGIN
     oldExpr := expr;
-    IF (type IS Sym.TypeVar) &
+    IF (type = NIL) THEN
+      expr := b.errorExpr;
+      RETURN FALSE;
+    ELSIF (type IS Sym.TypeVar) &
        ~((type = expr.type) OR IsPredefType (expr.type, Predef.nil)) THEN
       (* Generics extension: instances of type variables are only assignment
          compatible to variables of the same type variable *)
@@ -3401,6 +3408,10 @@ PROCEDURE MakeAssignmentCompatible (b: Builder; sym: Symbol;
     IF ~b. WidenForAssign (expr, type) & (expr # b.errorExpr) THEN
       b.ErrSym(incompatibleAssignment, sym);
       b.SetNameToType(type);
+      
+      IF (expr.type = NIL) THEN          (* prevent followup error *)
+        expr := b.errorExpr;
+      END;
     END;
   END MakeAssignmentCompatible;
 
@@ -3822,7 +3833,9 @@ PROCEDURE InitAssignment* (assignment: Assignment; sym: Symbol;
 
 PROCEDURE (b: Builder) AssertVar (expr: Expression);
   BEGIN
-    IF TR.IsReadOnlyType(b.module, expr.type) THEN
+    IF (expr.type = NIL) THEN
+      b. ErrSym (notVariable, expr. sym);
+    ELSIF TR.IsReadOnlyType(b.module, expr.type) THEN
       b. ErrSym (importedReadOnly, expr. sym);
     ELSE
       WITH expr: Var DO
@@ -4202,22 +4215,24 @@ PROCEDURE (b: Builder) NewIterateStatm* (sym: Symbol; context: Sym.Item;
     elem, pseudoDesign, expr: Expression;
     stepperCall: Call;
     stepper: Sym.ProcDecl;
-    class: Sym.Record;
+    class: Sym.Type;
     arguments: ExpressionList;
     
-  PROCEDURE GetStepper(type: Sym.Type; VAR class: Sym.Record): Sym.ProcDecl;
+  PROCEDURE GetStepper(type: Sym.Type; VAR class: Sym.Type): Sym.ProcDecl;
     VAR
       decl: Sym.Declaration;
       n: Sym.Name;
       fp: Sym.FormalPars;
+      record: Sym.Record;
     BEGIN
       IF TR.IsPointer(type) THEN
         type := TR.PointerBaseType(type);
       END;
+      class := type;
       type := type.Deparam();
-      class := type(Sym.Record);
+      record := type(Sym.Record);
       n := b.GetName2(sequence.sym, "Next");
-      decl := class.ns.Identify(context, n, FALSE);
+      decl := record.ns.Identify(context, n, FALSE);
       IF (decl # NIL) THEN
         WITH decl: Sym.ProcDecl DO
           fp := decl.formalPars;

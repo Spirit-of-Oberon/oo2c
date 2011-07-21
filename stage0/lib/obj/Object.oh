@@ -47,9 +47,9 @@ typedef OOC_INT32 (*_TBP_Object__ObjectDesc_HashCode)(Object__Object x);
 extern Object__String8 Object__NewLatin1(const OOC_CHAR8 str[], OOC_LEN str_0d);
 extern Object__String8 Object__NewLatin1Region(const OOC_CHAR8 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end);
 extern Object__String8 Object__NewLatin1Char(OOC_CHAR8 ch);
-extern Object__String Object__NewUTF16(const OOC_CHAR16 str[], OOC_LEN str_0d);
-extern Object__String Object__NewUTF16Region(const OOC_CHAR16 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end);
-extern Object__String Object__NewUTF16Char(OOC_CHAR16 ch);
+extern Object__String16 Object__NewUTF16(const OOC_CHAR16 str[], OOC_LEN str_0d);
+extern Object__String16 Object__NewUTF16Region(const OOC_CHAR16 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end);
+extern Object__String16 Object__NewUTF16Char(OOC_CHAR16 ch);
 extern Object__String Object__NewUCS4Char(OOC_CHAR32 ch);
 extern Object__String Object__NewUCS4Region(const OOC_CHAR32 str[], OOC_LEN str_0d, OOC_INT32 start, OOC_INT32 end);
 extern Object__String Object__NewUCS4(const OOC_CHAR32 str[], OOC_LEN str_0d);
@@ -58,10 +58,10 @@ extern Object__String Object__StringDesc_Concat(Object__String s, Object__String
 #define _TBN_Object__StringDesc_Concat 4
 typedef Object__String (*_TBP_Object__StringDesc_Concat)(Object__String s, Object__String t);
 extern Object__CharsLatin1 Object__String8Desc_CharsLatin1(Object__String8 s);
-#define _TBN_Object__String8Desc_CharsLatin1 17
+#define _TBN_Object__String8Desc_CharsLatin1 18
 typedef Object__CharsLatin1 (*_TBP_Object__String8Desc_CharsLatin1)(Object__String8 s);
 extern Object__CharsUTF16 Object__String16Desc_CharsUTF16(Object__String16 s);
-#define _TBN_Object__String16Desc_CharsUTF16 17
+#define _TBN_Object__String16Desc_CharsUTF16 18
 typedef Object__CharsUTF16 (*_TBP_Object__String16Desc_CharsUTF16)(Object__String16 s);
 extern Object__String Object__StringDesc_ToString(Object__String s);
 #define _TBN_Object__StringDesc_ToString 1
@@ -180,6 +180,15 @@ typedef OOC_CHAR8 (*_TBP_Object__StringDesc_EndsWith)(Object__String s, Object__
 extern OOC_CHAR8 Object__StringDesc_StartsWith(Object__String s, Object__String prefix);
 #define _TBN_Object__StringDesc_StartsWith 16
 typedef OOC_CHAR8 (*_TBP_Object__StringDesc_StartsWith)(Object__String s, Object__String prefix);
+extern Object__String Object__StringDesc_ToUppercaseLatin1(Object__String s);
+#define _TBN_Object__StringDesc_ToUppercaseLatin1 17
+typedef Object__String (*_TBP_Object__StringDesc_ToUppercaseLatin1)(Object__String s);
+extern Object__String8 Object__String8Desc_ToUppercaseLatin1(Object__String8 s);
+#define _TBN_Object__String8Desc_ToUppercaseLatin1 17
+typedef Object__String8 (*_TBP_Object__String8Desc_ToUppercaseLatin1)(Object__String8 s);
+extern Object__String16 Object__String16Desc_ToUppercaseLatin1(Object__String16 s);
+#define _TBN_Object__String16Desc_ToUppercaseLatin1 17
+typedef Object__String16 (*_TBP_Object__String16Desc_ToUppercaseLatin1)(Object__String16 s);
 extern void OOC_Object_init(void);
 extern void OOC_Object_init0(void);
 
@@ -192,22 +201,22 @@ extern RT0__StructDesc _td_Object__String;
 extern RT0__StructDesc _td_Object__StringArray;
 extern RT0__StructDesc _td_Object__StringArrayPtr;
 extern RT0__StructDesc _td_Object__StringDesc;
-extern RT0__StructDesc _td_Object__4312;
+extern RT0__StructDesc _td_Object__4318;
 extern RT0__StructDesc _td_Object__CharsLatin1;
-extern RT0__StructDesc _td_Object__4509;
+extern RT0__StructDesc _td_Object__4515;
 extern RT0__StructDesc _td_Object__CharsUTF16;
 extern RT0__StructDesc _td_Object__String8;
 extern RT0__StructDesc _td_Object__String8Desc;
 extern RT0__StructDesc _td_Object__String16;
 extern RT0__StructDesc _td_Object__String16Desc;
-extern RT0__StructDesc _td_Object__5755;
-extern RT0__StructDesc _td_Object__6221;
-extern RT0__StructDesc _td_Object__11226;
-extern RT0__StructDesc _td_Object__11599;
-extern RT0__StructDesc _td_Object__12265;
-extern RT0__StructDesc _td_Object__12815;
-extern RT0__StructDesc _td_Object__14579;
-extern RT0__StructDesc _td_Object__15657;
+extern RT0__StructDesc _td_Object__5761;
+extern RT0__StructDesc _td_Object__6227;
+extern RT0__StructDesc _td_Object__11232;
+extern RT0__StructDesc _td_Object__11605;
+extern RT0__StructDesc _td_Object__12271;
+extern RT0__StructDesc _td_Object__12823;
+extern RT0__StructDesc _td_Object__14591;
+extern RT0__StructDesc _td_Object__15669;
 #endif /* _MODULE_Object_ */
 
 /* --- */

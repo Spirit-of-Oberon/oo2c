@@ -42,19 +42,23 @@ typedef void (*_TBP_ADT_Storable__ObjectDesc_Store)(ADT_Storable__Object obj, AD
 extern void ADT_Storable__ObjectDesc_Load(ADT_Storable__Object obj, ADT_Storable__Reader r);
 #define _TBN_ADT_Storable__ObjectDesc_Load 5
 typedef void (*_TBP_ADT_Storable__ObjectDesc_Load)(ADT_Storable__Object obj, ADT_Storable__Reader r);
-extern void ADT_Storable__InitWriter(ADT_Storable__Writer w, IO__ByteChannel ch);
-extern void ADT_Storable__InitReader(ADT_Storable__Reader r, IO__ByteChannel ch);
+extern void ADT_Storable__WriterDesc_INIT(ADT_Storable__Writer w, IO__ByteChannel ch);
+#define _TBN_ADT_Storable__WriterDesc_INIT 17
+typedef void (*_TBP_ADT_Storable__WriterDesc_INIT)(ADT_Storable__Writer w, IO__ByteChannel ch);
+extern void ADT_Storable__ReaderDesc_INIT(ADT_Storable__Reader r, IO__ByteChannel ch);
+#define _TBN_ADT_Storable__ReaderDesc_INIT 17
+typedef void (*_TBP_ADT_Storable__ReaderDesc_INIT)(ADT_Storable__Reader r, IO__ByteChannel ch);
 extern void ADT_Storable__WriterDesc_WriteObject(ADT_Storable__Writer w, Object__Object obj);
-#define _TBN_ADT_Storable__WriterDesc_WriteObject 17
+#define _TBN_ADT_Storable__WriterDesc_WriteObject 18
 typedef void (*_TBP_ADT_Storable__WriterDesc_WriteObject)(ADT_Storable__Writer w, Object__Object obj);
 extern void ADT_Storable__WriterDesc_Disconnect(ADT_Storable__Writer w);
-#define _TBN_ADT_Storable__WriterDesc_Disconnect 18
+#define _TBN_ADT_Storable__WriterDesc_Disconnect 19
 typedef void (*_TBP_ADT_Storable__WriterDesc_Disconnect)(ADT_Storable__Writer w);
 extern void ADT_Storable__ReaderDesc_ReadObject(ADT_Storable__Reader r, Object__Object *obj);
-#define _TBN_ADT_Storable__ReaderDesc_ReadObject 17
+#define _TBN_ADT_Storable__ReaderDesc_ReadObject 18
 typedef void (*_TBP_ADT_Storable__ReaderDesc_ReadObject)(ADT_Storable__Reader r, Object__Object *obj);
 extern void ADT_Storable__ReaderDesc_Disconnect(ADT_Storable__Reader r);
-#define _TBN_ADT_Storable__ReaderDesc_Disconnect 18
+#define _TBN_ADT_Storable__ReaderDesc_Disconnect 19
 typedef void (*_TBP_ADT_Storable__ReaderDesc_Disconnect)(ADT_Storable__Reader r);
 extern void OOC_ADT_Storable_init(void);
 extern void OOC_ADT_Storable_init0(void);

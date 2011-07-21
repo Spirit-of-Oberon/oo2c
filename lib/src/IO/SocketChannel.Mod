@@ -1,7 +1,7 @@
-(*	$Id: SocketChannel.Mod,v 1.6 2003/07/13 21:51:28 mva Exp $	*)
+(*	$Id: SocketChannel.Mod,v 1.7 2004/11/21 20:31:44 mva Exp $	*)
 MODULE IO:SocketChannel;
 (*  Access to TCP connections through channel objects.
-    Copyright (C) 2003  Michael van Acken
+    Copyright (C) 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -105,7 +105,7 @@ PROCEDURE Open*(): Channel RAISES IO.Error;
   BEGIN
     NEW(ch);
     ch.socket := Socket.New();
-    IO.InitByteChannel(ch);
+    ch.INIT^();
     ch.blocking := TRUE;
     ch.connected := FALSE;
     ch.connectionPending := FALSE;
@@ -136,7 +136,7 @@ PROCEDURE OpenServer*(): ServerChannel RAISES IO.Error;
   BEGIN
     NEW(ch);
     ch.socket := Socket.NewServer();
-    IO.InitChannel(ch);
+    ch.INIT^();
     RETURN ch;
   END OpenServer;
 
@@ -162,7 +162,7 @@ PROCEDURE (ch: ServerChannel) Accept*(): Channel RAISES IO.Error;
       RETURN NIL;
     ELSE
       NEW(client);
-      IO.InitChannel(client);
+      client.INIT^();
       client.socket := socket;
       client.connected := TRUE;
       client.connectionPending := FALSE;

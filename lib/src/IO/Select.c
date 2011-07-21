@@ -21,23 +21,23 @@ static const OOC_UINT32 write_mask = ((1U<<IO__opWrite)|
 				      (1U<<IO__opConnect));
 
 
-void IO_Select__Init(IO_Select__Selector s) {
-  IO__InitSelector((IO__Selector)s);
+void IO_Select__SelectorDesc_INIT(IO_Select__Selector s) {
+  IO__SelectorDesc_INIT((IO__Selector)s);
   s->sets = RT0__NewBlock(sizeof(struct fdsets));
   s->current = NULL;
 }
 
 IO_Select__Selector IO_Select__Open() {
   IO_Select__Selector s = RT0__NewObject(OOC_TYPE_DESCR(IO_Select,SelectorDesc));
-  IO_Select__Init(s);
+  IO_Select__SelectorDesc_INIT(s);
   return s;
 }
 
 IO__SelectionKey IO_Select__SelectorDesc_AddSelectionKey(IO_Select__Selector s, OOC_INT32 fd, IO__Channel channel, OOC_UINT32 ops, Object__Object attachment) {
   struct fdsets* fds = (struct fdsets*)s->sets;
   IO_Select__SelectionKey k = RT0__NewObject(OOC_TYPE_DESCR(IO_Select,SelectionKeyDesc));
-  IO__InitSelectionKey((IO__SelectionKey)k, fd, (IO__Selector)s,
-			channel, ops, attachment);
+  IO__SelectionKeyDesc_INIT((IO__SelectionKey)k, fd, (IO__Selector)s,
+			    channel, ops, attachment);
   k->nextKey = s->keys;
   s->keys = (IO__SelectionKey)k;
   return (IO__SelectionKey)k;

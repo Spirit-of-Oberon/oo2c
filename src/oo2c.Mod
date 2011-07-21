@@ -1,4 +1,4 @@
-(* 	$Id: oo2c.Mod,v 1.73 2004/04/03 14:44:47 mva Exp $	 *)
+(* 	$Id: oo2c.Mod,v 1.74 2004/11/24 03:57:57 sgreenhill Exp $	 *)
 MODULE oo2c;
 (*  Main module for the Oberon-2 to C translator.
     Copyright (C) 2002-2004  Michael van Acken
@@ -297,19 +297,18 @@ RAISES IO.Error;
           cmd := StringBuffer.New(CCompiler.installData.value(CfgData.StringVar).string);
           WHILE (list # end) DO
             cmd.Append(" ");
-            cmd.Append(sourcePrefix);
-            cmd.Append(list(Package.File).name);
+            cmd.Append(Path.QuoteForShell(sourcePrefix+list(Package.File).name));
             list := list.nextFileData;
           END;
 
           cmd.Append(" ");
           IF (CCompiler.oocdir.value(CfgData.StringVar).string.length # 0) THEN
-            cmd.Append(CCompiler.oocdir.value(CfgData.StringVar).string);
+            cmd.Append(Path.QuoteForShell(CCompiler.oocdir.value(CfgData.StringVar).string));
             IF (dir.length # 0) THEN
               cmd.Append("/");
             END;
           END;
-          cmd.Append(dir);
+          cmd.Append(Path.QuoteForShell(dir));
 
           str := cmd.ToString();
           Logger.ShellCommand(str);
@@ -445,7 +444,7 @@ PROCEDURE UninstallPackage(pkg: Package.Package);
       WHILE (list # NIL) DO
         b := StringBuffer.New(CCompiler.uninstall.value(CfgData.StringVar).string);
         b.Append(" ");
-        b.Append(CCompiler.oocdir.value(CfgData.StringVar).string);
+        b.Append(Path.QuoteForShell(CCompiler.oocdir.value(CfgData.StringVar).string));
         b.Append("/");
         b.Append(list(Package.File).destName);
 

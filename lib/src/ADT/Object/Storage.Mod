@@ -1,7 +1,7 @@
-(*	$Id: Storage.Mod,v 1.17 2003/07/06 11:38:20 mva Exp $	*)
+(*	$Id: Storage.Mod,v 1.18 2004/11/21 20:31:44 mva Exp $	*)
 MODULE ADT:Object:Storage;
 (*  Implements a framework for persistent objects.
-    Copyright (C) 2000, 2001, 2003  Michael van Acken
+    Copyright (C) 2000, 2001, 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -95,9 +95,9 @@ VAR
   object: RT0.Module;
   string8, string16: RT0.Struct;
   
-PROCEDURE InitReader*(r: Reader; ch: IO.ByteChannel);
+PROCEDURE (r: Reader) INIT*(ch: IO.ByteChannel);
   BEGIN
-    Storable.InitReader (r, ch);
+    r.INIT^(ch);
     NEW (r. objTab, 128-pointerGap);
     r. objTab[0] := NIL;
     r. objCounter := 1;
@@ -106,16 +106,16 @@ PROCEDURE InitReader*(r: Reader; ch: IO.ByteChannel);
     r. typeTab[0]. moduleName := NIL;
     r. typeTab[0]. typeName := NIL;
     r. typeCounter := 1;
-  END InitReader;
+  END INIT;
 
-PROCEDURE InitWriter*(w: Writer; ch: IO.ByteChannel);
+PROCEDURE (w: Writer) INIT*(ch: IO.ByteChannel);
   BEGIN
-    Storable.InitWriter (w, ch);
+    w.INIT^(ch);
     w. objCounter := 0;
     NEW (w. typeRefMap, 16-pointerGap);
     w. typeRefSize := 0;
     w. objHash := Dictionary.New();
-  END InitWriter;
+  END INIT;
 
 
 PROCEDURE ConnectReader* (ch: IO.ByteChannel): Reader;
@@ -124,7 +124,7 @@ PROCEDURE ConnectReader* (ch: IO.ByteChannel): Reader;
     r: Reader;
   BEGIN
     NEW (r);
-    InitReader (r, ch);
+    r.INIT(ch);
     IF (r. channel = NIL) THEN  (* initialization of BinaryRider.Reader failed *)
       RETURN NIL
     ELSE
@@ -138,7 +138,7 @@ PROCEDURE ConnectWriter* (ch: IO.ByteChannel): Writer;
     w: Writer;
   BEGIN
     NEW (w);
-    InitWriter (w, ch);
+    w.INIT(ch);
     IF (w. channel = NIL) THEN  (* initialization of BinaryRider.Writer failed *)
       RETURN NIL
     ELSE

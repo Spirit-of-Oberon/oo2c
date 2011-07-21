@@ -32,6 +32,16 @@ typedef struct ADT_Dictionary__DictionaryDesc {
   OOC_INT32 poly;
   ADT_Dictionary__Table table;
 } ADT_Dictionary__DictionaryDesc;
+typedef struct ADT_Dictionary__IterKeysDesc *ADT_Dictionary__IterKeys;
+typedef struct ADT_Dictionary__IterKeysDesc {
+  ADT_Dictionary__Dictionary dict;
+  OOC_INT32 pos;
+} ADT_Dictionary__IterKeysDesc;
+typedef struct ADT_Dictionary__IterValuesDesc *ADT_Dictionary__IterValues;
+typedef struct ADT_Dictionary__IterValuesDesc {
+  ADT_Dictionary__Dictionary dict;
+  OOC_INT32 pos;
+} ADT_Dictionary__IterValuesDesc;
 typedef struct ADT_Dictionary__DummyDesc *ADT_Dictionary__Dummy;
 typedef struct ADT_Dictionary__DummyDesc {
   char __dummy;
@@ -94,6 +104,24 @@ typedef void (*_TBP_ADT_Dictionary__DictionaryDesc_Store)(ADT_Dictionary__Dictio
 extern void ADT_Dictionary__DictionaryDesc_Load(ADT_Dictionary__Dictionary dict, ADT_Storable__Reader r);
 #define _TBN_ADT_Dictionary__DictionaryDesc_Load 5
 typedef void (*_TBP_ADT_Dictionary__DictionaryDesc_Load)(ADT_Dictionary__Dictionary dict, ADT_Storable__Reader r);
+extern void ADT_Dictionary__IterKeysDesc_INIT(ADT_Dictionary__IterKeys iter, ADT_Dictionary__Dictionary dict);
+#define _TBN_ADT_Dictionary__IterKeysDesc_INIT 0
+typedef void (*_TBP_ADT_Dictionary__IterKeysDesc_INIT)(ADT_Dictionary__IterKeys iter, ADT_Dictionary__Dictionary dict);
+extern ADT_Dictionary__IterKeys ADT_Dictionary__DictionaryDesc_IterKeys(ADT_Dictionary__Dictionary dict);
+#define _TBN_ADT_Dictionary__DictionaryDesc_IterKeys 21
+typedef ADT_Dictionary__IterKeys (*_TBP_ADT_Dictionary__DictionaryDesc_IterKeys)(ADT_Dictionary__Dictionary dict);
+extern OOC_CHAR8 ADT_Dictionary__IterKeysDesc_Next(ADT_Dictionary__IterKeys iter, Object__Object *key);
+#define _TBN_ADT_Dictionary__IterKeysDesc_Next 1
+typedef OOC_CHAR8 (*_TBP_ADT_Dictionary__IterKeysDesc_Next)(ADT_Dictionary__IterKeys iter, Object__Object *key);
+extern void ADT_Dictionary__IterValuesDesc_INIT(ADT_Dictionary__IterValues iter, ADT_Dictionary__Dictionary dict);
+#define _TBN_ADT_Dictionary__IterValuesDesc_INIT 0
+typedef void (*_TBP_ADT_Dictionary__IterValuesDesc_INIT)(ADT_Dictionary__IterValues iter, ADT_Dictionary__Dictionary dict);
+extern ADT_Dictionary__IterValues ADT_Dictionary__DictionaryDesc_IterValues(ADT_Dictionary__Dictionary dict);
+#define _TBN_ADT_Dictionary__DictionaryDesc_IterValues 22
+typedef ADT_Dictionary__IterValues (*_TBP_ADT_Dictionary__DictionaryDesc_IterValues)(ADT_Dictionary__Dictionary dict);
+extern OOC_CHAR8 ADT_Dictionary__IterValuesDesc_Next(ADT_Dictionary__IterValues iter, Object__Object *value);
+#define _TBN_ADT_Dictionary__IterValuesDesc_Next 1
+typedef OOC_CHAR8 (*_TBP_ADT_Dictionary__IterValuesDesc_Next)(ADT_Dictionary__IterValues iter, Object__Object *value);
 extern void ADT_Dictionary__DummyDesc_Destroy(ADT_Dictionary__Dummy dummy);
 #define _TBN_ADT_Dictionary__DummyDesc_Destroy 4
 typedef void (*_TBP_ADT_Dictionary__DummyDesc_Destroy)(ADT_Dictionary__Dummy dummy);
@@ -102,16 +130,20 @@ extern void OOC_ADT_Dictionary_init0(void);
 
 /* run-time meta data */
 extern RT0__StructDesc _td_ADT_Dictionary__Entry;
-extern RT0__StructDesc _td_ADT_Dictionary__2652;
+extern RT0__StructDesc _td_ADT_Dictionary__2658;
 extern RT0__StructDesc _td_ADT_Dictionary__Table;
 extern RT0__StructDesc _td_ADT_Dictionary__Item;
-extern RT0__StructDesc _td_ADT_Dictionary__2791;
+extern RT0__StructDesc _td_ADT_Dictionary__2797;
 extern RT0__StructDesc _td_ADT_Dictionary__ItemArrayPtr;
 extern RT0__StructDesc _td_ADT_Dictionary__Dictionary;
 extern RT0__StructDesc _td_ADT_Dictionary__DictionaryDesc;
+extern RT0__StructDesc _td_ADT_Dictionary__IterKeys;
+extern RT0__StructDesc _td_ADT_Dictionary__IterKeysDesc;
+extern RT0__StructDesc _td_ADT_Dictionary__IterValues;
+extern RT0__StructDesc _td_ADT_Dictionary__IterValuesDesc;
 extern RT0__StructDesc _td_ADT_Dictionary__Dummy;
 extern RT0__StructDesc _td_ADT_Dictionary__DummyDesc;
-extern RT0__StructDesc _td_ADT_Dictionary__4316;
+extern RT0__StructDesc _td_ADT_Dictionary__4652;
 #endif /* _MODULE_ADT_Dictionary_ */
 
 /* --- */

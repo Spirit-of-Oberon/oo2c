@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; array4">-->
+  select ="&SetupTestCasesWithOut; minmax7 minmax8">-->
 
   &TestSetupWithOut;
     
@@ -753,6 +753,12 @@
     </test>
     <test id="minmax6" type="reject" file="MinMax6.Mod">
       Calling <code>MIN</code> for <code>BOOLEAN</code>.
+    </test>
+    <test id="minmax7" type="reject" file="MinMax7.Mod">
+      Assigning <code>MAX</code> to a variable.
+    </test>
+    <test id="minmax8" type="reject" file="MinMax8.Mod">
+      Assigning a value to <code>MAX</code>.
     </test>
 
     <test id="odd1" type="run" file="Odd1.Mod" output="Odd1.Ref">
@@ -2295,6 +2301,10 @@
       msg="MIN/MAX is not applicable to this type"/>
     <reject-info id="minmax6" pos="MAX(%BOOLEAN)"
       msg="MIN/MAX is not applicable to this type"/>
+    <reject-info id="minmax7" pos="x %:= MAX"
+      msg="Expression not compatible with variable type `LONGINT'"/>
+    <reject-info id="minmax8" pos="%MAX :="
+      msg="This must be a variable"/>
     
     <reject-info id="odd2" pos="ODD(%0X)"
       msg="Expression must be of integer type"/>

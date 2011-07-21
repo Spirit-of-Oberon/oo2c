@@ -1,4 +1,4 @@
-(* 	$Id: ConstFold.Mod,v 1.84 2004/07/25 09:38:58 mva Exp $	 *)
+(* 	$Id: ConstFold.Mod,v 1.85 2004/11/24 17:39:06 mva Exp $	 *)
 MODULE OOC:IR:ConstFold;
 (*  Constant folding on IR expressions.
     Copyright (C) 2002, 2003, 2004  Stewart Greenhill, Michael van Acken
@@ -77,7 +77,7 @@ END ValueConst;
 
 PROCEDURE (c : ConstFold) BooleanConst(value : BOOLEAN; op : IR.Operator) : IR.Const;
 BEGIN
-  RETURN c.builder.NewConst(op.sym, Predef.GetType(Predef.boolean), Boxed.NewBoolean(value));
+  RETURN c.builder.NewConst(op.sym, Predef.GetType(Predef.boolean), NEW(Boxed.Boolean, value));
 END BooleanConst;
 
 PROCEDURE (c : ConstFold) ValidEval (expr : IR.Expression; VAR result : Boxed.Object) : BOOLEAN;
@@ -189,7 +189,7 @@ PROCEDURE (c: ConstFold) VisitSetRange* (op: IR.SetRange);
     IF c.ValidEval(op.from, l) & c.ValidEval(op.to, r) THEN
       left := l(BigInt.BigInt).ToLongInt();
       right := r(BigInt.BigInt).ToLongInt();
-      c.result := c.ValueConst(Boxed.NewSet({left..right}), op);
+      c.result := c.ValueConst(NEW(Boxed.Set, {left..right}), op);
     ELSE
       c.result := NIL;
     END;
@@ -214,7 +214,7 @@ PROCEDURE (c: ConstFold) VisitSetOp* (op: IR.SetOp);
         c.builder.ErrSym(IR.unknownOp, op.sym); 
         c.result := NIL; RETURN
       END;
-      c.result := c.ValueConst(Boxed.NewSet(result), op);
+      c.result := c.ValueConst(NEW(Boxed.Set, result), op);
     ELSE
       c.result := NIL;
     END;
@@ -243,7 +243,7 @@ BEGIN
     | Predef.shortint .. Predef.real-1:
       c.result := c.ValueConst(value(BigInt.BigInt).Neg(), op);
     | Predef.set:
-      c.result := c.ValueConst(Boxed.NewSet(-value(Boxed.Set).value), op);
+      c.result := c.ValueConst(NEW(Boxed.Set, -value(Boxed.Set).value), op);
     | Predef.real, Predef.longreal:
       IF foldReals THEN
         c.result := c.ValueConst(value(Boxed.LongReal).Neg(), op);
@@ -309,7 +309,7 @@ BEGIN
     str[0] := CAP(SHORT(SHORT(value(Boxed.String).value.CharAt(0))));
     str[1] := 0X;
     c.result := c.builder.NewConst(op.sym, Predef.GetType(Predef.char), 
-                                   Boxed.NewString(Object.NewLatin1(str)));
+                                   NEW(Boxed.String, Object.NewLatin1(str)));
   ELSE
     c.result := NIL;
   END;
@@ -448,7 +448,7 @@ PROCEDURE (c: ConstFold) VisitConcat* (op: IR.Concat);
       END;
     END;
     c.result := c.builder.NewConst(op.sym, op.type,
-                                   Boxed.NewString(s));
+                                   NEW(Boxed.String, s));
   END VisitConcat;
 
 PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
@@ -470,7 +470,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boxed.NewBoolean(result);
+    RETURN NEW(Boxed.Boolean, result);
   END StringOp;
 
   PROCEDURE IntegerOp () : Boxed.Boolean;
@@ -490,7 +490,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boxed.NewBoolean(result);
+    RETURN NEW(Boxed.Boolean, result);
   END IntegerOp;
 
   PROCEDURE RealOp () : Boxed.Boolean;
@@ -510,7 +510,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boxed.NewBoolean(result);
+    RETURN NEW(Boxed.Boolean, result);
   END RealOp;
 
   PROCEDURE CharOp () : Boxed.Boolean;
@@ -530,7 +530,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boxed.NewBoolean(result);
+    RETURN NEW(Boxed.Boolean, result);
   END CharOp;
 
   PROCEDURE BooleanOp () : Boxed.Boolean;
@@ -546,7 +546,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
     ELSE
       c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
     END;
-    RETURN Boxed.NewBoolean(result);
+    RETURN NEW(Boxed.Boolean, result);
   END BooleanOp;
 
   PROCEDURE SetOp(): Boxed.Boolean;
@@ -563,7 +563,7 @@ PROCEDURE (c: ConstFold) VisitCompare* (op : IR.Compare);
       ELSE
         c.builder.ErrSym(IR.unknownOp, op.sym); RETURN NIL;
       END;
-      RETURN Boxed.NewBoolean(result);
+      RETURN NEW(Boxed.Boolean, result);
     END SetOp;
 
   BEGIN
@@ -625,17 +625,17 @@ PROCEDURE (c: ConstFold) VisitTypeConv* (op : IR.TypeConv);
            UCS4CHAR) *)
         CASE op. type(Sym.PredefType). id OF
         | Predef.char:
-          value := Boxed.NewString(Object.NewLatin1Char(CHR (value(BigInt.BigInt). ToLongInt())));
+          value := NEW(Boxed.String, Object.NewLatin1Char(CHR (value(BigInt.BigInt). ToLongInt())));
         | Predef.longchar:
-          value := Boxed.NewString(Object.NewUTF16Char(LONGCHR (value(BigInt.BigInt). ToLongInt())));
+          value := NEW(Boxed.String, Object.NewUTF16Char(LONGCHR (value(BigInt.BigInt). ToLongInt())));
         | Predef.ucs4char:
-          value := Boxed.NewString(Object.NewUCS4Char(UCS4CHR (value(BigInt.BigInt). ToLongInt())));
+          value := NEW(Boxed.String, Object.NewUCS4Char(UCS4CHR (value(BigInt.BigInt). ToLongInt())));
         END;
         c.result := c. builder. NewConst (op. sym, op. type, value);
         
       ELSIF TR.IsIntegerType(op.expr.type) & TR.IsRealType(op.type) THEN
         (* type conversion integer -> real *)
-        value := Boxed.NewLongReal(value(BigInt.BigInt).ToLongInt());
+        value := NEW(Boxed.LongReal, value(BigInt.BigInt).ToLongInt());
         c.result := c.builder.NewConst(op.sym, op.type,value);
         
       ELSIF TR.IsCharType(op.type) & TR.IsCharType(op.expr.type) THEN

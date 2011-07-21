@@ -1,4 +1,4 @@
-(*	$Id: TextRider.Mod,v 1.7 2003/09/03 20:03:38 mva Exp $	*)
+(*	$Id: TextRider.Mod,v 1.8 2004/11/21 20:31:44 mva Exp $	*)
 MODULE IO:TextRider [OOC_EXTENSIONS];
 
 (*
@@ -108,7 +108,7 @@ PROCEDURE RaiseOverflowError*(msg: STRING) RAISES OverflowError;
     RAISE(NewOverflowError(msg));
   END RaiseOverflowError;
 
-PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel);
+PROCEDURE (w: Writer) INIT*(ch: IO.ByteChannel);
   VAR
     i: INTEGER;
   BEGIN
@@ -118,18 +118,14 @@ PROCEDURE InitWriter* (w: Writer; ch: IO.ByteChannel);
     FOR i := 0 TO w. eolLen-1 DO
       w. eol[i] := CharClass.systemEol[i]
     END
-  END InitWriter;
+  END INIT;
 
 PROCEDURE ConnectWriter*(ch: IO.ByteChannel): Writer;
 (**@precond
    @oparam{ch} is in blocking mode.
    @end precond *)
-  VAR
-    w: Writer;
   BEGIN
-    NEW(w);
-    InitWriter (w, ch);
-    RETURN w;
+    RETURN NEW(Writer, ch);
   END ConnectWriter;
 
 

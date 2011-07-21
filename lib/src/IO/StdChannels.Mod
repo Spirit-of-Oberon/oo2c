@@ -1,7 +1,7 @@
-(*	$Id: StdChannels.Mod,v 1.1 2003/02/05 21:31:58 mva Exp $	*)
+(*	$Id: StdChannels.Mod,v 1.2 2004/11/21 20:31:44 mva Exp $	*)
 MODULE IO:StdChannels [FOREIGN "C"; LINK FILE "StdChannels.c" END];
 (*  Provides standard channels stdin, stdout, and stderr.
-    Copyright (C) 2003  Michael van Acken
+    Copyright (C) 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -33,7 +33,7 @@ TYPE
 VAR
   stdin-, stdout-, stderr-: IO.ByteChannel;
   
-PROCEDURE Init*(ch: Channel; fd: IO.FileDescriptor);
+PROCEDURE (ch: Channel) INIT*(fd: IO.FileDescriptor);
 
 PROCEDURE (ch: Channel) Read*(VAR buffer: ARRAY OF SYSTEM.BYTE;
                               start, length: LONGINT): LONGINT

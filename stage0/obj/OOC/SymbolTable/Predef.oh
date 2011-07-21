@@ -94,7 +94,7 @@ extern RT0__StructDesc _td_OOC_SymbolTable_Predef__6930;
 extern RT0__StructDesc _td_OOC_SymbolTable_Predef__7348;
 extern RT0__StructDesc _td_OOC_SymbolTable_Predef__7687;
 extern RT0__StructDesc _td_OOC_SymbolTable_Predef__8476;
-extern RT0__StructDesc _td_OOC_SymbolTable_Predef__15068;
+extern RT0__StructDesc _td_OOC_SymbolTable_Predef__15084;
 #endif /* _MODULE_OOC_SymbolTable_Predef_ */
 
 /* --- */

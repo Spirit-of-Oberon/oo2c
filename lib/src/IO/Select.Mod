@@ -1,9 +1,9 @@
-(*	$Id: Select.Mod,v 1.6 2003/05/12 03:56:36 sgreenhill Exp $	*)
+(*	$Id: Select.Mod,v 1.7 2004/11/21 20:31:44 mva Exp $	*)
 MODULE IO:Select [FOREIGN "C"; LINK FILE "Select.c" 
   <* IF HAVE_LIB_WSOCK32 THEN *> ; LIB "wsock32" <* END *>
 END];
 (*  Selector implementation based on the select() function.
-    Copyright (C) 2003  Michael van Acken
+    Copyright (C) 2003, 2004  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -38,7 +38,7 @@ TYPE
     current: SelectionKey;
   END;
 
-PROCEDURE Init*(s: Selector);
+PROCEDURE (s: Selector) INIT*();
 PROCEDURE Open*(): Selector;
 PROCEDURE (s: Selector) AddSelectionKey*(fd: IO.FileDescriptor;
                                          channel: IO.Channel;
