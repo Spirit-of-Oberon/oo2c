@@ -87,7 +87,7 @@ void OOC_OOC_Config_StdPragmas_init(void) {
   _c10 = Object__NewLatin1Region("RangeCheck", 11, 0, 10);
   _c11 = Object__NewLatin1Region("OOC", 4, 0, 3);
   _c12 = Object__NewLatin1Region("COMPILER", 9, 0, 8);
-  _c13 = Object__NewLatin1Region("2.1.4", 6, 0, 5);
+  _c13 = Object__NewLatin1Region("2.1.5", 6, 0, 5);
   _c14 = Object__NewLatin1Region("COMPILER_VERSION", 17, 0, 16);
   _c15 = Object__NewLatin1Region("COMPILER_MAJOR", 15, 0, 14);
   _c16 = Object__NewLatin1Region("COMPILER_MINOR", 15, 0, 14);

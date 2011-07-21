@@ -1,7 +1,7 @@
-(* 	$Id: DeclWriter.Mod,v 1.69 2004/04/05 06:17:42 sgreenhill Exp $	 *)
+(* 	$Id: DeclWriter.Mod,v 1.70 2004/10/17 18:43:11 mva Exp $	 *)
 MODULE OOC:C:DeclWriter [OOC_EXTENSIONS];
 (*  Defines classes to handle C declarations, types, and include statements.
-    Copyright (C) 2001-2003  Michael van Acken
+    Copyright (C) 2001-2004  Michael van Acken
 
     This file is part of OOC.
 
@@ -177,6 +177,13 @@ TYPE
     (TypeDesc)
     class: TypeRefClass;
     name: STRING;
+  END;
+  
+TYPE
+  TypeOf* = POINTER TO TypeOfDesc;
+  TypeOfDesc = RECORD                    (* typeof(), a gcc specialty *)
+    (TypeDesc)
+    arg: STRING;
   END;
   
 TYPE
@@ -1113,6 +1120,38 @@ PROCEDURE (typeRef: TypeRef) WriteLeft (w: Writer);
   END WriteLeft;
 
 PROCEDURE (typeRef: TypeRef) WriteRight (w: Writer);
+  BEGIN
+  END WriteRight;
+
+(* -------- *)
+
+PROCEDURE InitTypeOf (typeOf: TypeOf; arg: STRING);
+  BEGIN
+    typeOf. arg := arg;
+  END InitTypeOf;
+
+PROCEDURE (w: Writer) NewTypeOf* (arg: STRING): TypeOf;
+  VAR
+    typeOf: TypeOf;
+  BEGIN
+    NEW (typeOf);
+    InitTypeOf (typeOf, arg);
+    RETURN typeOf
+  END NewTypeOf;
+
+PROCEDURE (typeOf: TypeOf) Priority (): SHORTINT;
+  BEGIN
+    RETURN priName
+  END Priority;
+
+PROCEDURE (typeOf: TypeOf) WriteLeft (w: Writer);
+  BEGIN
+    w. WriteString ("typeof(");
+    w. WriteObject (typeOf. arg);
+    w. WriteString (") ");
+  END WriteLeft;
+
+PROCEDURE (typeOf: TypeOf) WriteRight (w: Writer);
   BEGIN
   END WriteRight;
 

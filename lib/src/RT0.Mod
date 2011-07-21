@@ -1,4 +1,4 @@
-(* 	$Id: RT0.Mod,v 1.47 2004/07/19 22:40:04 mva Exp $	 *)
+(* 	$Id: RT0.Mod,v 1.49 2004/10/27 07:48:25 mva Exp $	 *)
 MODULE RT0 [
   FOREIGN "C";
   LINK
@@ -85,6 +85,11 @@ CONST
   (**A qualified type, specifying type arguments for a parametric type's
      parameter list.  *)
 
+  strProcedure* = -6;
+  (**A procedure type.  Currently, all procedure types are mapped onto the
+     single type descriptor @ovar{procedure}, even though they may differ in
+     the number, type or mode of their parameters, or their result type.  *)
+  
 CONST
   flagAtomic* = 0;
   (**Indicates that this record type does not contain any references that
@@ -97,9 +102,9 @@ CONST
 
   flagFinalize* = 2;
   (**Indicates that this record type has a Finalize procedure which should be
-	 called by the run-time system upon collection by the GC. This flag is set
-	 by the compiler for record types that override the method
-	 @oproc{ObjectDesc.Finalize}. *)
+     called by the run-time system upon collection by the GC. This flag is set
+     by the compiler for record types that override the method
+     @oproc{ObjectDesc.Finalize}.  *)
 
 TYPE
   Object* = POINTER TO ObjectDesc;
@@ -265,6 +270,7 @@ VAR
   set32-: StructDesc;
   byte-: StructDesc;
   ptr-: StructDesc;
+  procedure-: StructDesc;
 
 VAR
   argc-: LONGINT;
@@ -276,19 +282,23 @@ VAR
      Otherwise, the memory is left as provided by the used libc or libgc
      library.  This is the default.  *)
 
-PROCEDURE (o : Object) Finalize*;
-(**This procedure is called by the run-time system immediately before an
-   object is collected by the garbage collector. This procedure may be used to
-   reclaim any system resources (other than GC-managed memory) associated with
-   this object (eg. OS handles). Any type that overrides this method is
+PROCEDURE (o: Object) Finalize*;
+(**This procedure is called by the run-time system immediately before an object
+   is collected by the garbage collector. This procedure may be used to reclaim
+   any system resources (other than GC-managed memory) associated with this
+   object (eg. OS handles). Any type that overrides this method is
    automatically registered for finalization by the run-time system.
-   
+
    The Boehm GC finalizes objects in @emph{topological order}. That is, if
    @var{A} points to @var{B}, and both are registered for finalization, it is
-   guaranteed the @var{A} will be finalized first. This usually guarantees
-   that finalization procedures see only unfinalized objects. For more details
-   on finalization, see:
-   @url{http://www.hpl.hp.com/personal/Hans_Boehm/gc/finalization.html}. *)
+   guaranteed the @var{A} will be finalized first. This usually guarantees that
+   finalization procedures see only unfinalized objects. For more details on
+   finalization, see:
+   @url{http://www.hpl.hp.com/personal/Hans_Boehm/gc/finalization.html}.
+
+   @strong{Important}: Program behaviour is undefined if this procedure raises
+   an exception and passes it on to its caller.  In this case, the caller is
+   the garbage collector and it is not prepared to handle exceptions.  *)
 
 PROCEDURE NewObject* (td: Struct; ...): SYSTEM.PTR;
 (**Allocates a new array or record variable on the heap, using the type

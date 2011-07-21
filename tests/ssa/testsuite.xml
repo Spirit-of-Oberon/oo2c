@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; abs0">-->
+  select ="&SetupTestCasesWithOut; array4">-->
 
   &TestSetupWithOut;
     
@@ -2072,6 +2072,11 @@
       Regression test: Create an alias for a predefined type name and
       export it.  Import of this type name should not crash the
       compiler.
+    </test>
+
+    <test id="bugTypeDescr1" type="run" file="BugTypeDescr1.Mod">
+      Regression test: Create a type descriptor for an array of
+      procedure variables.  The output should be valid C code.
     </test>
   </testcases>
   

@@ -20,6 +20,7 @@
 #define RT0__strRecord (-3)
 #define RT0__strPointer (-4)
 #define RT0__strQualType (-5)
+#define RT0__strProcedure (-6)
 #define RT0__flagAtomic 0
 #define RT0__flagVTable 1
 #define RT0__flagFinalize 2
@@ -62,6 +63,7 @@ extern struct RT0__StructDesc RT0__longreal;
 extern struct RT0__StructDesc RT0__set32;
 extern struct RT0__StructDesc RT0__byte;
 extern struct RT0__StructDesc RT0__ptr;
+extern struct RT0__StructDesc RT0__procedure;
 extern OOC_INT32 RT0__argc;
 extern OOC_CHAR8 **RT0__argv;
 extern OOC_INT32 RT0__poisonHeap;
@@ -98,17 +100,17 @@ extern RT0__StructDesc _td_RT0__ObjectDesc;
 extern RT0__StructDesc _td_RT0__Name;
 extern RT0__StructDesc _td_RT0__Module;
 extern RT0__StructDesc _td_RT0__Struct;
-extern RT0__StructDesc _td_RT0__6480;
-extern RT0__StructDesc _td_RT0__6700;
-extern RT0__StructDesc _td_RT0__6894;
+extern RT0__StructDesc _td_RT0__6744;
+extern RT0__StructDesc _td_RT0__6964;
+extern RT0__StructDesc _td_RT0__7158;
 extern RT0__StructDesc _td_RT0__ModuleDesc;
-extern RT0__StructDesc _td_RT0__8671;
+extern RT0__StructDesc _td_RT0__8935;
 extern RT0__StructDesc _td_RT0__CaseRange;
-extern RT0__StructDesc _td_RT0__9434;
-extern RT0__StructDesc _td_RT0__9360;
-extern RT0__StructDesc _td_RT0__13803;
-extern RT0__StructDesc _td_RT0__14009;
-extern RT0__StructDesc _td_RT0__14355;
+extern RT0__StructDesc _td_RT0__9724;
+extern RT0__StructDesc _td_RT0__9650;
+extern RT0__StructDesc _td_RT0__14317;
+extern RT0__StructDesc _td_RT0__14523;
+extern RT0__StructDesc _td_RT0__14869;
 #endif /* _MODULE_RT0_ */
 
 /* --- */

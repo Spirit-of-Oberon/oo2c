@@ -20,6 +20,17 @@ upgrade to gcc 3.3.
 
 ----
 
+(xsltproc) If the xsltproc binary is present but chokes on the
+documentation XML written by the compiler, then building the compiler
+fails.  A workaround is to do disable xsltproc manually.
+To do this, change the xsltproc entry in rsrc/OOC/oo2crc.xml.mk to 
+
+  <set name='xsltproc'>no</set>
+
+_after_ running configure, but _before_ running make.
+
+----
+
 (MacOSX): When installing from a distribution tar ball, MacOS X users
 need to add "-traditional-cpp" to the gcc options, like
 

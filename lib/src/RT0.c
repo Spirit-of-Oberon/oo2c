@@ -411,16 +411,17 @@ void OOC_RT0_init() {
   
   modules = RT0__NewBlock(sizeModules*sizeof(RT0__Module));
   
-  PS(RT0__boolean , "BOOLEAN",  RT0__strBoolean , sizeof(OOC_BOOLEAN));
-  PS(RT0__char    , "CHAR",     RT0__strChar    , sizeof(OOC_CHAR8));
-  PS(RT0__longchar, "LONGCHAR", RT0__strLongchar, sizeof(OOC_CHAR16));
-  PS(RT0__ucs4char, "UCS4CHAR", RT0__strUCS4Char, sizeof(OOC_CHAR32));
-  PS(RT0__shortint, "SHORTINT", RT0__strShortint, sizeof(OOC_INT8));
-  PS(RT0__integer , "INTEGER",  RT0__strInteger , sizeof(OOC_INT16));
-  PS(RT0__longint , "LONGINT",  RT0__strLongint , sizeof(OOC_INT32));
-  PS(RT0__real ,    "REAL",     RT0__strReal ,    sizeof(OOC_REAL32));
-  PS(RT0__longreal, "LONGREAL", RT0__strLongreal, sizeof(OOC_REAL64));
-  PS(RT0__set32   , "SET",      RT0__strSet32   , sizeof(OOC_UINT32));
-  PS(RT0__byte    , "BYTE",     RT0__strByte    , sizeof(OOC_BYTE));
-  PS(RT0__ptr     , "PTR",      RT0__strPtr     , sizeof(OOC_PTR));
+  PS(RT0__boolean  , "BOOLEAN",  RT0__strBoolean  , sizeof(OOC_BOOLEAN));
+  PS(RT0__char     , "CHAR",     RT0__strChar     , sizeof(OOC_CHAR8));
+  PS(RT0__longchar , "LONGCHAR", RT0__strLongchar , sizeof(OOC_CHAR16));
+  PS(RT0__ucs4char , "UCS4CHAR", RT0__strUCS4Char , sizeof(OOC_CHAR32));
+  PS(RT0__shortint , "SHORTINT", RT0__strShortint , sizeof(OOC_INT8));
+  PS(RT0__integer  , "INTEGER",  RT0__strInteger  , sizeof(OOC_INT16));
+  PS(RT0__longint  , "LONGINT",  RT0__strLongint  , sizeof(OOC_INT32));
+  PS(RT0__real     , "REAL",     RT0__strReal     , sizeof(OOC_REAL32));
+  PS(RT0__longreal , "LONGREAL", RT0__strLongreal , sizeof(OOC_REAL64));
+  PS(RT0__set32    , "SET",      RT0__strSet32    , sizeof(OOC_UINT32));
+  PS(RT0__byte     , "BYTE",     RT0__strByte     , sizeof(OOC_BYTE));
+  PS(RT0__ptr      , "PTR",      RT0__strPtr      , sizeof(OOC_PTR));
+  PS(RT0__procedure, "$PROC",    RT0__strProcedure, sizeof(OOC_PTR));
 }

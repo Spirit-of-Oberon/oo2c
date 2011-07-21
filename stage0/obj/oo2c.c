@@ -1379,7 +1379,7 @@ l136:
   Out__String("oo2c/", 6);
   Out__String("gcc", 4);
   Out__String(" ", 2);
-  Out__String("2.1.4", 6);
+  Out__String("2.1.5", 6);
   Out__Ln();
   _halt(0);
   goto l139;

@@ -258,37 +258,38 @@ PROCEDURE NameOfTypeDescriptor* (type: Sym.Type;
       qtd := NEW(QualTypeDescr, qtdData.list.size, type);
       qtdData.list.Append(qtd);
       RETURN qtd.name;
-      
+
+    | type: Sym.FormalPars DO
+      RETURN Config.runtimeModule+"__procedure";
+
+    | type: Sym.PredefType DO
+      CASE type. id OF
+      | Predef.boolean : str := "boolean"
+      | Predef.char    : str := "char"
+      | Predef.longchar: str := "longchar"
+      | Predef.ucs4char: str := "ucs4char"
+      | Predef.shortint: str := "shortint"
+      | Predef.integer : str := "integer"
+      | Predef.longint : str := "longint"
+      | Predef.real    : str := "real"
+      | Predef.longreal: str := "longreal"
+      | Predef.set     : str := "set32"
+      | Predef.byte    : str := "byte"
+      | Predef.ptr     : str := "ptr"
+      END;
+      str2 := Config.runtimeModule;
+      Strings.Append ("__", str2);
+      Strings.Append (str, str2);
+      RETURN Object.NewLatin1(str2);
     ELSE
-      WITH type: Sym.PredefType DO
-        CASE type. id OF
-        | Predef.boolean : str := "boolean"
-        | Predef.char    : str := "char"
-        | Predef.longchar: str := "longchar"
-        | Predef.ucs4char: str := "ucs4char"
-        | Predef.shortint: str := "shortint"
-        | Predef.integer : str := "integer"
-        | Predef.longint : str := "longint"
-        | Predef.real    : str := "real"
-        | Predef.longreal: str := "longreal"
-        | Predef.set     : str := "set32"
-        | Predef.byte    : str := "byte"
-        | Predef.ptr     : str := "ptr"
-        END;
-        str2 := Config.runtimeModule;
-        Strings.Append ("__", str2);
-        Strings.Append (str, str2);
-        RETURN Object.NewLatin1(str2);
+      IF (type. namingDecl = NIL) THEN
+        string := tdPrefix. Concat (NameOfDeclaration (type. Module()));
+        IntStr.IntToStr (type. position. pos, str);
+        string := string. Concat (Object.NewLatin1(str));
+        RETURN string;
       ELSE
-        IF (type. namingDecl = NIL) THEN
-          string := tdPrefix. Concat (NameOfDeclaration (type. Module()));
-          IntStr.IntToStr (type. position. pos, str);
-          string := string. Concat (Object.NewLatin1(str));
-          RETURN string;
-        ELSE
-          string := tdPrefix. Concat (NameOfType (type));
-          RETURN string;
-        END;
+        string := tdPrefix. Concat (NameOfType (type));
+        RETURN string;
       END;
     END;
   END NameOfTypeDescriptor;

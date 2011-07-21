@@ -10,11 +10,13 @@
 ;; any later version.
        
 
-(if (or (> emacs-major-version 19) 
-	(and (= emacs-major-version 19) (> emacs-minor-version 32)))
-    ;; workaround to avoid problems with 19.28
-    (require 'c-mode))
-(require 'compile)
+;; Compatibility with 19.28 is not so important any more, and this breaks with
+;; 21.3.1:
+;; (if (or (> emacs-major-version 19) 
+;; 	(and (= emacs-major-version 19) (> emacs-minor-version 32)))
+;;     ;; workaround to avoid problems with 19.28
+;;     (require 'c-mode))
+;; (require 'compile)
 
 
 (defvar o2-indent 2 
