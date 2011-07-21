@@ -191,13 +191,13 @@ static void OOC_SymbolTable_Namespace__ErrDecl(OOC_INT32 code, OOC_SymbolTable__
   i1 = (OOC_INT32)decl;
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 6378))+20);
   i2 = *(OOC_INT32*)(_check_pointer(i2, 6384));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6351)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6351)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"pos", 4, i2);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 6433))+20);
   i2 = *(OOC_INT32*)((_check_pointer(i2, 6439))+4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6405)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "line", 5, i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6405)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"line", 5, i2);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 6491))+20);
   i1 = *(OOC_INT32*)((_check_pointer(i1, 6497))+8);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6461)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6461)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"column", 7, i1);
   i1 = (OOC_INT32)errList;
   OOC_Error__ListDesc_Append((OOC_Error__List)i1, (Msg__Msg)i0);
   return;
@@ -876,7 +876,7 @@ l70:
   i7 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i6, 16972))+20);
   i7 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i7, 16977))+12);
   i7 = (
-  _cmp8((const void*)(_check_pointer(i7, 16981)),(const void*)"INIT"))==0;
+  _cmp8((const void*)(_check_pointer(i7, 16981)),(const void*)(OOC_CHAR8*)"INIT"))==0;
   if (i7) goto l73;
   i7=0u;
   goto l75;
@@ -925,7 +925,7 @@ void OOC_OOC_SymbolTable_Namespace_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SymbolTable_Namespace__ErrorContext.baseTypes[0]);
   OOC_SymbolTable_Namespace__namespaceContext = (OOC_SymbolTable_Namespace__ErrorContext)i0;
-  OOC_Error__InitContext((OOC_Error__Context)i0, "OOC:SymbolTable:Namespace", 26);
+  OOC_Error__InitContext((OOC_Error__Context)i0, (OOC_CHAR8*)"OOC:SymbolTable:Namespace", 26);
   return;
   ;
 }

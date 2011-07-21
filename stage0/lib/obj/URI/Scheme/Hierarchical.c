@@ -49,11 +49,11 @@ void URI_Scheme_Hierarchical__ParameterDesc_WriteXML(URI_Scheme_Hierarchical__Pa
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3194)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<parameter>", 13);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3194)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<parameter>", 13);
   i1 = (OOC_INT32)param;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 3257))+4);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3237)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3273)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</parameter>", 13);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 3273)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</parameter>", 13);
   return;
   ;
 }
@@ -64,7 +64,7 @@ void URI_Scheme_Hierarchical__ParameterDesc_Append(URI_Scheme_Hierarchical__Para
   i0 = (OOC_INT32)param;
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 3428))+4);
   i1 = (OOC_INT32)sb;
-  URI_String__AppendEscaped((Object__String)i0, ":@&=+$,", 8, (ADT_StringBuffer__StringBuffer)i1);
+  URI_String__AppendEscaped((Object__String)i0, (OOC_CHAR8*)":@&=+$,", 8, (ADT_StringBuffer__StringBuffer)i1);
   return;
   ;
 }
@@ -163,12 +163,12 @@ void URI_Scheme_Hierarchical__SegmentDesc_WriteXML(URI_Scheme_Hierarchical__Segm
   URI_Scheme_Hierarchical__Parameter param;
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4835)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<segment>", 11);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4876)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<value>", 9);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4835)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<segment>", 11);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4876)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<value>", 9);
   i1 = (OOC_INT32)segm;
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4934))+4);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4915)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i2);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4950)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</value>", 9);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4950)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</value>", 9);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4995))+12);
   param = (URI_Scheme_Hierarchical__Parameter)i1;
   i2 = i1!=(OOC_INT32)0;
@@ -180,7 +180,7 @@ l3_loop:
   i2 = i1!=(OOC_INT32)0;
   if (i2) goto l3_loop;
 l8:
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5103)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012</segment>", 12);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5103)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012</segment>", 12);
   return;
   ;
 }
@@ -192,7 +192,7 @@ void URI_Scheme_Hierarchical__SegmentDesc_Append(URI_Scheme_Hierarchical__Segmen
   i0 = (OOC_INT32)segm;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5287))+4);
   i2 = (OOC_INT32)sb;
-  URI_String__AppendEscaped((Object__String)i1, ":@&=+$,", 8, (ADT_StringBuffer__StringBuffer)i2);
+  URI_String__AppendEscaped((Object__String)i1, (OOC_CHAR8*)":@&=+$,", 8, (ADT_StringBuffer__StringBuffer)i2);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5346))+12);
   param = (URI_Scheme_Hierarchical__Parameter)i0;
   i1 = i0!=(OOC_INT32)0;
@@ -926,15 +926,15 @@ void URI_Scheme_Hierarchical__GenericDesc_WriteXML(URI_Scheme_Hierarchical__Gene
   URI_Scheme_Hierarchical__Segment segm;
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14044)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<hierarchical-uri>", 20);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14044)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<hierarchical-uri>", 20);
   i1 = (OOC_INT32)uri;
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 14100));
   i2 = i2!=0;
   if (!i2) goto l3;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14130)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<scheme>", 10);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14130)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<scheme>", 10);
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 14190));
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14172)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i2);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14210)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</scheme>", 10);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14210)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</scheme>", 10);
 l3:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 14259))+4);
   i2 = i2!=0;
@@ -945,10 +945,10 @@ l3:
 l6:
   i2 = *(OOC_UINT8*)((_check_pointer(i1, 14337))+16);
   if (i2) goto l9;
-  _copy_8((const void*)"\012<relative-path>",(void*)(OOC_INT32)pathTag,32);
+  _copy_8((const void*)(OOC_CHAR8*)"\012<relative-path>",(void*)(OOC_INT32)pathTag,32);
   goto l10;
 l9:
-  _copy_8((const void*)"\012<absolute-path>",(void*)(OOC_INT32)pathTag,32);
+  _copy_8((const void*)(OOC_CHAR8*)"\012<absolute-path>",(void*)(OOC_INT32)pathTag,32);
 l10:
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14464)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)pathTag, 32);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 14504))+12);
@@ -964,10 +964,10 @@ l13_loop:
 l18:
   i2 = *(OOC_UINT8*)((_check_pointer(i1, 14612))+16);
   if (i2) goto l21;
-  _copy_8((const void*)"\012</relative-path>",(void*)(OOC_INT32)pathTag,32);
+  _copy_8((const void*)(OOC_CHAR8*)"\012</relative-path>",(void*)(OOC_INT32)pathTag,32);
   goto l22;
 l21:
-  _copy_8((const void*)"\012</absolute-path>",(void*)(OOC_INT32)pathTag,32);
+  _copy_8((const void*)(OOC_CHAR8*)"\012</absolute-path>",(void*)(OOC_INT32)pathTag,32);
 l22:
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14741)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)pathTag, 32);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 14777))+8);
@@ -977,7 +977,7 @@ l22:
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 14806))+8);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 14813)))), URI__QueryDesc_WriteXML)),URI__QueryDesc_WriteXML)((URI__Query)i1, (TextRider__Writer)i0);
 l25:
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14842)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012</hierarchical-uri>", 21);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14842)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012</hierarchical-uri>", 21);
   return;
   ;
 }
@@ -1063,20 +1063,20 @@ l14:
 
 void OOC_URI_Scheme_Hierarchical_init(void) {
   _c0 = Object__NewLatin1Char(59u);
-  _c1 = Object__NewLatin1Region("", 1, 0, 0);
-  _c2 = Object__NewLatin1Region("", 1, 0, 0);
-  _c3 = Object__NewLatin1Region("Illegal character in path component of the URI", 47, 0, 46);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"Illegal character in path component of the URI", 47, 0, 46);
   _c4 = Object__NewLatin1Char(46u);
-  _c5 = Object__NewLatin1Region("", 1, 0, 0);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
   _c6 = Object__NewLatin1Char(46u);
-  _c7 = Object__NewLatin1Region("..", 3, 0, 2);
-  _c8 = Object__NewLatin1Region("..", 3, 0, 2);
-  _c9 = Object__NewLatin1Region("", 1, 0, 0);
-  _c10 = Object__NewLatin1Region("..", 3, 0, 2);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"..", 3, 0, 2);
+  _c8 = Object__NewLatin1Region((OOC_CHAR8*)"..", 3, 0, 2);
+  _c9 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c10 = Object__NewLatin1Region((OOC_CHAR8*)"..", 3, 0, 2);
   _c11 = Object__NewLatin1Char(47u);
   _c12 = Object__NewLatin1Char(47u);
-  _c13 = Object__NewLatin1Region("", 1, 0, 0);
-  _c14 = Object__NewLatin1Region("//", 3, 0, 2);
+  _c13 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c14 = Object__NewLatin1Region((OOC_CHAR8*)"//", 3, 0, 2);
 
   return;
   ;

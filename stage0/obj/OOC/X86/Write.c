@@ -272,7 +272,7 @@ void OOC_X86_Write__WriterDesc_INIT(OOC_X86_Write__Writer w, OOC_SymbolTable__Mo
   *(OOC_INT32*)((_check_pointer(i0, 4274))+4) = i1;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 4314))+4);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 4314))+4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4316)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i2, "\011.arch pentium4", 16);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4316)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i2, (OOC_CHAR8*)"\011.arch pentium4", 16);
   *(OOC_INT32*)((_check_pointer(i0, 4374))+16) = 0;
   *(OOC_INT32*)((_check_pointer(i0, 4398))+20) = 0;
   i = 0;
@@ -685,7 +685,7 @@ void OOC_X86_Write__WriterDesc_EndFile(OOC_X86_Write__Writer w) {
   OOC_X86_Write__WriterDesc_Constants((OOC_X86_Write__Writer)i0);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9812))+4);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9812))+4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9814)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, "\012", 2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9814)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (OOC_CHAR8*)"\012", 2);
   return;
   ;
 }
@@ -781,7 +781,7 @@ l14:
 
 
       i0 = (OOC_INT32)sb;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11355)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, "\012\011", 3);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11355)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)"\012\011", 3);
       i0 = (OOC_INT32)sb;
       OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11385)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (void*)(OOC_INT32)opc, opc_0d);
       i0 = type1;
@@ -794,7 +794,7 @@ l14:
       i0 = (OOC_INT32)sb;
       OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11500)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (void*)(OOC_INT32)suffix, 3);
       i0 = (OOC_INT32)sb;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11531)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, " ", 2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11531)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)" ", 2);
       return;
       ;
     }
@@ -824,22 +824,22 @@ l14:
       i0 = opcode;
       switch (i0) {
       case 6:
-        OOC_X86_Write__WriterDesc_WriteBlock_Opc("sar", 4);
+        OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"sar", 4);
         goto l9;
       case 7:
-        OOC_X86_Write__WriterDesc_WriteBlock_Opc("sal", 4);
+        OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"sal", 4);
         goto l9;
       case 8:
-        OOC_X86_Write__WriterDesc_WriteBlock_Opc("shr", 4);
+        OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"shr", 4);
         goto l9;
       case 9:
-        OOC_X86_Write__WriterDesc_WriteBlock_Opc("shl", 4);
+        OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"shl", 4);
         goto l9;
       case 11:
-        OOC_X86_Write__WriterDesc_WriteBlock_Opc("rol", 4);
+        OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"rol", 4);
         goto l9;
       case 10:
-        OOC_X86_Write__WriterDesc_WriteBlock_Opc("ror", 4);
+        OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"ror", 4);
         goto l9;
       default:
         _failed_case(i0, 11968);
@@ -862,16 +862,16 @@ l9:
         i0 = reg;
         switch (i0) {
         case 3:
-          _copy_8((const void*)"%al",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%al",(void*)(OOC_INT32)str,8);
           goto l48;
         case 4:
-          _copy_8((const void*)"%cl",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%cl",(void*)(OOC_INT32)str,8);
           goto l48;
         case 5:
-          _copy_8((const void*)"%dl",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%dl",(void*)(OOC_INT32)str,8);
           goto l48;
         case 6:
-          _copy_8((const void*)"%bl",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%bl",(void*)(OOC_INT32)str,8);
           goto l48;
         default:
           _failed_case(i0, 12405);
@@ -883,28 +883,28 @@ l9:
         i0 = reg;
         switch (i0) {
         case 0:
-          _copy_8((const void*)"%sp",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%sp",(void*)(OOC_INT32)str,8);
           goto l48;
         case 1:
-          _copy_8((const void*)"%bp",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%bp",(void*)(OOC_INT32)str,8);
           goto l48;
         case 3:
-          _copy_8((const void*)"%ax",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%ax",(void*)(OOC_INT32)str,8);
           goto l48;
         case 4:
-          _copy_8((const void*)"%cx",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%cx",(void*)(OOC_INT32)str,8);
           goto l48;
         case 5:
-          _copy_8((const void*)"%dx",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%dx",(void*)(OOC_INT32)str,8);
           goto l48;
         case 6:
-          _copy_8((const void*)"%bx",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%bx",(void*)(OOC_INT32)str,8);
           goto l48;
         case 7:
-          _copy_8((const void*)"%si",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%si",(void*)(OOC_INT32)str,8);
           goto l48;
         case 8:
-          _copy_8((const void*)"%di",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%di",(void*)(OOC_INT32)str,8);
           goto l48;
         default:
           _failed_case(i0, 12710);
@@ -917,28 +917,28 @@ l9:
         i0 = reg;
         switch (i0) {
         case 0:
-          _copy_8((const void*)"%esp",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%esp",(void*)(OOC_INT32)str,8);
           goto l48;
         case 1:
-          _copy_8((const void*)"%ebp",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%ebp",(void*)(OOC_INT32)str,8);
           goto l48;
         case 3:
-          _copy_8((const void*)"%eax",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%eax",(void*)(OOC_INT32)str,8);
           goto l48;
         case 4:
-          _copy_8((const void*)"%ecx",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%ecx",(void*)(OOC_INT32)str,8);
           goto l48;
         case 5:
-          _copy_8((const void*)"%edx",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%edx",(void*)(OOC_INT32)str,8);
           goto l48;
         case 6:
-          _copy_8((const void*)"%ebx",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%ebx",(void*)(OOC_INT32)str,8);
           goto l48;
         case 7:
-          _copy_8((const void*)"%esi",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%esi",(void*)(OOC_INT32)str,8);
           goto l48;
         case 8:
-          _copy_8((const void*)"%edi",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%edi",(void*)(OOC_INT32)str,8);
           goto l48;
         default:
           _failed_case(i0, 13034);
@@ -950,31 +950,31 @@ l9:
         i0 = reg;
         switch (i0) {
         case 9:
-          _copy_8((const void*)"%st",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%st",(void*)(OOC_INT32)str,8);
           goto l48;
         case 10:
-          _copy_8((const void*)"%xmm0",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%xmm0",(void*)(OOC_INT32)str,8);
           goto l48;
         case 11:
-          _copy_8((const void*)"%xmm1",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%xmm1",(void*)(OOC_INT32)str,8);
           goto l48;
         case 12:
-          _copy_8((const void*)"%xmm2",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%xmm2",(void*)(OOC_INT32)str,8);
           goto l48;
         case 13:
-          _copy_8((const void*)"%xmm3",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%xmm3",(void*)(OOC_INT32)str,8);
           goto l48;
         case 14:
-          _copy_8((const void*)"%xmm4",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%xmm4",(void*)(OOC_INT32)str,8);
           goto l48;
         case 15:
-          _copy_8((const void*)"%xmm5",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%xmm5",(void*)(OOC_INT32)str,8);
           goto l48;
         case 16:
-          _copy_8((const void*)"%xmm6",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%xmm6",(void*)(OOC_INT32)str,8);
           goto l48;
         case 17:
-          _copy_8((const void*)"%xmm7",(void*)(OOC_INT32)str,8);
+          _copy_8((const void*)(OOC_CHAR8*)"%xmm7",(void*)(OOC_INT32)str,8);
           goto l48;
         default:
           _failed_case(i0, 13349);
@@ -1018,7 +1018,7 @@ l48:
       register OOC_INT32 i0;
 
       i0 = (OOC_INT32)sb;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14042)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, ", ", 3);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 14042)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)", ", 3);
       return;
       ;
     }
@@ -1110,7 +1110,7 @@ l33:
       i7 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 14475))+4);
       i7 = *(OOC_INT8*)((_check_pointer(i7, 14486))+12);
       type = i7;
-      i8 = i6!=0;
+      i8 = i6!=(OOC_INT32)0;
       if (i8) goto l36;
       i8=0u;
       goto l38;
@@ -1122,7 +1122,7 @@ l38:
       i8 = *(OOC_INT16*)((_check_pointer(i5, 14623))+4);
       i8 = i8>=0;
       if (i8) goto l62;
-      i8 = i6==0;
+      i8 = i6==(OOC_INT32)0;
       if (i8) goto l60;
       i8 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 14841)))), &_td_Object_Boxed__StringDesc);
       if (i8) goto l58;
@@ -1523,10 +1523,10 @@ l50:
       opndWidth = i3;
       i3 = OOC_X86_SSA__IsFloat(i3);
       if (i3) goto l53;
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("mov", 4);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"mov", 4);
       goto l54;
 l53:
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("movs", 5);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"movs", 5);
 l54:
       i3 = _check_pointer(i1, 19658);
       i4 = OOC_ARRAY_LENGTH(i3, 0);
@@ -1557,7 +1557,7 @@ l60:
       i0 = (OOC_INT32)*(OOC_INT32*)((i0+(_check_index(0, i2, OOC_UINT8, 20271))*8)+4);
       i0 = *(OOC_INT8*)((_check_pointer(i0, 20278))+12);
       opndWidth = i0;
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("xchg", 5);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"xchg", 5);
       i0 = _check_pointer(i1, 20321);
       i2 = OOC_ARRAY_LENGTH(i0, 0);
       i0 = (OOC_INT32)*(OOC_INT32*)(i0+(_check_index(0, i2, OOC_UINT8, 20321))*8);
@@ -1690,10 +1690,10 @@ l9:
       
 l11:
       if (i3) goto l13;
-      OOC_X86_Write__WriterDesc_WriteBlock_OpcTT("movz", 5, i2, i1);
+      OOC_X86_Write__WriterDesc_WriteBlock_OpcTT((OOC_CHAR8*)"movz", 5, i2, i1);
       goto l30;
 l13:
-      OOC_X86_Write__WriterDesc_WriteBlock_OpcTT("movs", 5, i2, i1);
+      OOC_X86_Write__WriterDesc_WriteBlock_OpcTT((OOC_CHAR8*)"movs", 5, i2, i1);
       goto l30;
 l15:
       if (i4) goto l17;
@@ -1717,13 +1717,13 @@ l21:
         i2 = *(OOC_INT8*)((_check_pointer(i0, 22617))+13);
         i2 = i2!=9;
         if (i2) goto l26;
-        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT("fld", 4, i1, 0);
+        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT((OOC_CHAR8*)"fld", 4, i1, 0);
         goto l29;
 l26:
-        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT("movs", 5, i1, 0);
+        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT((OOC_CHAR8*)"movs", 5, i1, 0);
         goto l29;
       default:
-        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT("mov", 4, i1, 0);
+        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT((OOC_CHAR8*)"mov", 4, i1, 0);
         goto l29;
       }
 l29:
@@ -1785,13 +1785,13 @@ l7:
         i3 = *(OOC_INT8*)((_check_pointer(i0, 24242))+13);
         i3 = i3!=9;
         if (i3) goto l12;
-        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT("fld", 4, i1, 0);
+        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT((OOC_CHAR8*)"fld", 4, i1, 0);
         goto l15;
 l12:
-        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT("movs", 5, i1, 0);
+        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT((OOC_CHAR8*)"movs", 5, i1, 0);
         goto l15;
       default:
-        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT("mov", 4, i1, 0);
+        OOC_X86_Write__WriterDesc_WriteBlock_OpcTT((OOC_CHAR8*)"mov", 4, i1, 0);
         goto l15;
       }
 l15:
@@ -1825,14 +1825,14 @@ l26:
     void OOC_X86_Write__WriterDesc_WriteBlock_Bounce(OOC_X86_SSA__Result from, OOC_X86_SSA__Result to) {
       register OOC_INT32 i0;
 
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("movs", 5);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"movs", 5);
       i0 = (OOC_INT32)from;
       OOC_X86_Write__WriterDesc_WriteBlock_Result((OOC_X86_SSA__Result)i0);
       i0 = (OOC_INT32)sb;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 24910)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, ", (%esp)", 9);
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("fld", 4);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 24910)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)", (%esp)", 9);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"fld", 4);
       i0 = (OOC_INT32)sb;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 24963)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, "(%esp)", 7);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 24963)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)"(%esp)", 7);
       return;
       ;
     }
@@ -1896,7 +1896,7 @@ l12:
       i0 = *(OOC_INT8*)((_check_pointer(i0, 25764))+13);
       i0 = i0==9;
       if (i0) goto l19;
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("movs", 5);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"movs", 5);
       i0 = (OOC_INT32)instr;
       OOC_X86_Write__WriterDesc_WriteBlock_Literal((OOC_X86_SSA__Instr)i0);
       OOC_X86_Write__WriterDesc_WriteBlock_Comma();
@@ -1905,12 +1905,12 @@ l12:
       OOC_X86_Write__WriterDesc_WriteBlock_Result((OOC_X86_SSA__Result)i0);
       goto l131;
 l19:
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("fld", 4);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"fld", 4);
       i0 = (OOC_INT32)instr;
       OOC_X86_Write__WriterDesc_WriteBlock_Literal((OOC_X86_SSA__Instr)i0);
       goto l131;
     default:
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("mov", 4);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"mov", 4);
       i0 = (OOC_INT32)sb;
       OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 26162)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1Char)),ADT_StringBuffer__StringBufferDesc_AppendLatin1Char)((ADT_StringBuffer__StringBuffer)i0, 36u);
       i0 = (OOC_INT32)instr;
@@ -1933,10 +1933,10 @@ l19:
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 26440))+4);
     i0 = OOC_X86_SSA__ResultDesc_IsFloat((OOC_X86_SSA__Result)i0);
     if (i0) goto l28;
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("add", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"add", 4);
     goto l29;
 l28:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("adds", 5);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"adds", 5);
 l29:
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 26576));
@@ -1945,7 +1945,7 @@ l29:
     OOC_X86_Write__WriterDesc_WriteBlock_Comma();
     goto l31;
 l30:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("inc", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"inc", 4);
 l31:
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 26655))+4);
@@ -1960,9 +1960,9 @@ l31:
     i9 = i9==32;
     if (!i9) goto l35;
     i9 = (OOC_INT32)sb;
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 26813)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, "\012\011pushl %edi", 13);
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 26862)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, "\012\011pushl %esi", 13);
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 26911)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, "\012\011pushl %ebx", 13);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 26813)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, (OOC_CHAR8*)"\012\011pushl %edi", 13);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 26862)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, (OOC_CHAR8*)"\012\011pushl %esi", 13);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 26911)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, (OOC_CHAR8*)"\012\011pushl %ebx", 13);
 l35:
     i9 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 26997));
     i9 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i9, 27006))+4);
@@ -1974,10 +1974,10 @@ l35:
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 27096))+4);
     i0 = OOC_X86_SSA__ResultDesc_IsFloat((OOC_X86_SSA__Result)i0);
     if (i0) goto l40;
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("sub", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"sub", 4);
     goto l41;
 l40:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("subs", 5);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"subs", 5);
 l41:
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 27232));
@@ -1986,7 +1986,7 @@ l41:
     OOC_X86_Write__WriterDesc_WriteBlock_Comma();
     goto l43;
 l42:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("dec", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"dec", 4);
 l43:
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 27311))+4);
@@ -1996,7 +1996,7 @@ l43:
     OOC_X86_Write__WriterDesc_WriteBlock_AssertResultMatch((OOC_X86_SSA__Opnd)i0);
     goto l131;
   case 3:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("imul", 5);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"imul", 5);
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 27431));
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 27440))+4);
@@ -2010,7 +2010,7 @@ l43:
     OOC_X86_Write__WriterDesc_WriteBlock_AssertResultMatch((OOC_X86_SSA__Opnd)i0);
     goto l131;
   case 5:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("neg", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"neg", 4);
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 27611));
     OOC_X86_Write__WriterDesc_WriteBlock_Opnd((OOC_X86_SSA__Opnd)i0);
@@ -2054,10 +2054,10 @@ l43:
     opndWidth = i0;
     i0 = OOC_X86_SSA__IsFloat(i0);
     if (i0) goto l50;
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("cmp", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"cmp", 4);
     goto l51;
 l50:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("ucomis", 7);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"ucomis", 7);
 l51:
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 28216));
@@ -2086,7 +2086,7 @@ l51:
     OOC_X86_Write__WriterDesc_WriteBlock_Opnd((OOC_X86_SSA__Opnd)i0);
     goto l131;
   case 20:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("bts", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"bts", 4);
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 28551));
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 28560))+4);
@@ -2100,7 +2100,7 @@ l51:
     OOC_X86_Write__WriterDesc_WriteBlock_AssertResultMatch((OOC_X86_SSA__Opnd)i0);
     goto l131;
   case 21:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("btr", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"btr", 4);
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 28743));
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 28752))+4);
@@ -2116,21 +2116,21 @@ l51:
   case 26:
     goto l131;
   case 27:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc0("ret", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc0((OOC_CHAR8*)"ret", 4);
     goto l131;
   case 29:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc0("call", 5);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc0((OOC_CHAR8*)"call", 5);
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 29060));
     OOC_X86_Write__WriterDesc_WriteBlock_DirectOpnd((OOC_X86_SSA__Opnd)i0);
     goto l131;
   case 30:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("fstp", 5);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"fstp", 5);
     i0 = (OOC_INT32)sb;
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 29133)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, "(%esp)", 7);
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("movs", 5);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 29133)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)"(%esp)", 7);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"movs", 5);
     i0 = (OOC_INT32)sb;
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 29193)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, "(%esp), ", 9);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 29193)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)"(%esp), ", 9);
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 29242))+4);
     OOC_X86_Write__WriterDesc_WriteBlock_Result((OOC_X86_SSA__Result)i0);
@@ -2140,11 +2140,11 @@ l51:
     i9 = (OOC_INT32)sb;
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 29356))+184);
     OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29344)))), ADT_StringBuffer__StringBufferDesc_Append)),ADT_StringBuffer__StringBufferDesc_Append)((ADT_StringBuffer__StringBuffer)i9, (Object__Object)((OOC_INT32)Object__Concat2((void*)((OOC_INT32)Object__Concat2((void*)i6,(void*)i0)),(void*)i7)));
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29385)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, "\012\011lea -12(%ebp), %esp", 22);
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29441)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, "\012\011popl %ebx", 12);
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29487)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, "\012\011popl %esi", 12);
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29533)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, "\012\011popl %edi", 12);
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc0("leave", 6);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29385)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, (OOC_CHAR8*)"\012\011lea -12(%ebp), %esp", 22);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29441)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, (OOC_CHAR8*)"\012\011popl %ebx", 12);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29487)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, (OOC_CHAR8*)"\012\011popl %esi", 12);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i9, 29533)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i9, (OOC_CHAR8*)"\012\011popl %edi", 12);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc0((OOC_CHAR8*)"leave", 6);
     goto l131;
   case 36:
   case 38:
@@ -2258,7 +2258,7 @@ l97:
     i9 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i9, 30671));
     OOC_X86_Write__WriterDesc_WriteBlock_Bounce((OOC_X86_SSA__Result)i9, (OOC_X86_SSA__Result)i0);
 l98:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc0("jmp", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc0((OOC_CHAR8*)"jmp", 4);
     i0 = (OOC_INT32)w;
     i9 = (OOC_INT32)sb;
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 30880))+184);
@@ -2282,10 +2282,10 @@ l98:
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 31125));
     i0 = OOC_X86_SSA__ResultDesc_IsFloat((OOC_X86_SSA__Result)i0);
     if (i0) goto l103;
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("mov", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"mov", 4);
     goto l104;
 l103:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("movs", 5);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"movs", 5);
 l104:
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 31244));
@@ -2309,7 +2309,7 @@ l107:
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 31498));
     i0 = *(OOC_INT8*)((_check_pointer(i0, 31502))+12);
     opndWidth = i0;
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("push", 5);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"push", 5);
     i0 = (OOC_INT32)instr;
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 31552));
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 31561))+4);
@@ -2331,14 +2331,14 @@ l107:
       i0 = *(OOC_INT8*)((_check_pointer(i0, 31790))+13);
       i0 = i0==9;
       if (i0) goto l115;
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("movs", 5);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"movs", 5);
       goto l118;
 l115:
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("fstp", 5);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"fstp", 5);
       omitStackArg = 1u;
       goto l118;
     default:
-      OOC_X86_Write__WriterDesc_WriteBlock_Opc("mov", 4);
+      OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"mov", 4);
       goto l118;
     }
 l118:
@@ -2360,7 +2360,7 @@ l121:
     OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 32158)))), ADT_StringBuffer__StringBufferDesc_Append)),ADT_StringBuffer__StringBufferDesc_Append)((ADT_StringBuffer__StringBuffer)i0, (Object__Object)i4);
     goto l131;
   case 44:
-    OOC_X86_Write__WriterDesc_WriteBlock_Opc("mov", 4);
+    OOC_X86_Write__WriterDesc_WriteBlock_Opc((OOC_CHAR8*)"mov", 4);
     i0 = (OOC_INT32)sb;
     OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 32232)))), ADT_StringBuffer__StringBufferDesc_Append)),ADT_StringBuffer__StringBufferDesc_Append)((ADT_StringBuffer__StringBuffer)i0, (Object__Object)i2);
     i0 = (OOC_INT32)instr;
@@ -2464,7 +2464,7 @@ l150:
   OOC_X86_Write__WriterDesc_WriteBlock_WriteBranch2((OOC_X86_SSA__Instr)i9, 0u, (OOC_X86_SSA__Block)i0, (OOC_X86_SSA__Block)i10);
   goto l161;
 l152:
-  OOC_X86_Write__WriterDesc_WriteBlock_Opc0("jmp *", 6);
+  OOC_X86_Write__WriterDesc_WriteBlock_Opc0((OOC_CHAR8*)"jmp *", 6);
   opndWidth = 9;
   i0 = (OOC_INT32)instr;
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 33213));
@@ -2728,7 +2728,7 @@ l41_loop:
       if (!i4) goto l44;
       i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 36459))+4);
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 36459))+4);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 36461)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i2, "\012.L", 4);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 36461)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i2, (OOC_CHAR8*)"\012.L", 4);
       i2 = (OOC_INT32)w;
       i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 36495))+4);
       i5 = *(OOC_INT32*)((_check_pointer(i3, 36513))+24);
@@ -2737,7 +2737,7 @@ l41_loop:
       i2 = (OOC_INT32)w;
       i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 36536))+4);
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 36536))+4);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 36538)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i2, ":", 2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 36538)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i2, (OOC_CHAR8*)":", 2);
 l44:
       i2 = (OOC_INT32)w;
       i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 36579))+4);
@@ -2812,67 +2812,67 @@ l56:
 
 void OOC_OOC_X86_Write_init(void) {
   _c0 = Object__NewLatin1Char(101u);
-  _c1 = Object__NewLatin1Region("ne", 3, 0, 2);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"ne", 3, 0, 2);
   _c2 = Object__NewLatin1Char(98u);
-  _c3 = Object__NewLatin1Region("be", 3, 0, 2);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"be", 3, 0, 2);
   _c4 = Object__NewLatin1Char(97u);
-  _c5 = Object__NewLatin1Region("ae", 3, 0, 2);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"ae", 3, 0, 2);
   _c6 = Object__NewLatin1Char(101u);
-  _c7 = Object__NewLatin1Region("ne", 3, 0, 2);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"ne", 3, 0, 2);
   _c8 = Object__NewLatin1Char(108u);
-  _c9 = Object__NewLatin1Region("le", 3, 0, 2);
+  _c9 = Object__NewLatin1Region((OOC_CHAR8*)"le", 3, 0, 2);
   _c10 = Object__NewLatin1Char(103u);
-  _c11 = Object__NewLatin1Region("ge", 3, 0, 2);
-  _c12 = Object__NewLatin1Region("mp", 3, 0, 2);
-  _c13 = Object__NewLatin1Region("\012\011j", 4, 0, 3);
-  _c14 = Object__NewLatin1Region(" .L", 4, 0, 3);
-  _c15 = Object__NewLatin1Region("\012\011.local ", 10, 0, 9);
-  _c16 = Object__NewLatin1Region("\012\011.comm ", 9, 0, 8);
+  _c11 = Object__NewLatin1Region((OOC_CHAR8*)"ge", 3, 0, 2);
+  _c12 = Object__NewLatin1Region((OOC_CHAR8*)"mp", 3, 0, 2);
+  _c13 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011j", 4, 0, 3);
+  _c14 = Object__NewLatin1Region((OOC_CHAR8*)" .L", 4, 0, 3);
+  _c15 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.local ", 10, 0, 9);
+  _c16 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.comm ", 9, 0, 8);
   _c17 = Object__NewLatin1Char(44u);
-  _c18 = Object__NewLatin1Region(".LC", 4, 0, 3);
+  _c18 = Object__NewLatin1Region((OOC_CHAR8*)".LC", 4, 0, 3);
   _c19 = Object__NewLatin1Char(10u);
   _c20 = Object__NewLatin1Char(58u);
-  _c21 = Object__NewLatin1Region("\012\011.string \"", 12, 0, 11);
-  _c22 = Object__NewLatin1Region("\012\011.long 0x", 11, 0, 10);
-  _c23 = Object__NewLatin1Region("\012\011.long 0x", 11, 0, 10);
-  _c24 = Object__NewLatin1Region("\012\011.long 0x", 11, 0, 10);
-  _c25 = Object__NewLatin1Region("\012\011.long ", 9, 0, 8);
-  _c26 = Object__NewLatin1Region("\012\011.long ", 9, 0, 8);
-  _c27 = Object__NewLatin1Region("\012\011.long ", 9, 0, 8);
-  _c28 = Object__NewLatin1Region("\012\011.long ", 9, 0, 8);
-  _c29 = Object__NewLatin1Region("\012\011.long ", 9, 0, 8);
-  _c30 = Object__NewLatin1Region("\012\011.long ", 9, 0, 8);
+  _c21 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.string \"", 12, 0, 11);
+  _c22 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long 0x", 11, 0, 10);
+  _c23 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long 0x", 11, 0, 10);
+  _c24 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long 0x", 11, 0, 10);
+  _c25 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long ", 9, 0, 8);
+  _c26 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long ", 9, 0, 8);
+  _c27 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long ", 9, 0, 8);
+  _c28 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long ", 9, 0, 8);
+  _c29 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long ", 9, 0, 8);
+  _c30 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.long ", 9, 0, 8);
   _c31 = Object__NewLatin1Char(34u);
-  _c32 = Object__NewLatin1Region("\012.global ", 10, 0, 9);
-  _c33 = Object__NewLatin1Region("\012\011.type ", 9, 0, 8);
-  _c34 = Object__NewLatin1Region(", @function", 12, 0, 11);
+  _c32 = Object__NewLatin1Region((OOC_CHAR8*)"\012.global ", 10, 0, 9);
+  _c33 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.type ", 9, 0, 8);
+  _c34 = Object__NewLatin1Region((OOC_CHAR8*)", @function", 12, 0, 11);
   _c35 = Object__NewLatin1Char(10u);
   _c36 = Object__NewLatin1Char(58u);
-  _c37 = Object__NewLatin1Region("\012\011call ", 8, 0, 7);
-  _c38 = Object__NewLatin1Region("\012\011ret", 6, 0, 5);
-  _c39 = Object__NewLatin1Region("\012\011.size ", 9, 0, 8);
-  _c40 = Object__NewLatin1Region(", .-", 5, 0, 4);
+  _c37 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011call ", 8, 0, 7);
+  _c38 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011ret", 6, 0, 5);
+  _c39 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.size ", 9, 0, 8);
+  _c40 = Object__NewLatin1Region((OOC_CHAR8*)", .-", 5, 0, 4);
   _c41 = Object__NewLatin1Char(48u);
-  _c42 = Object__NewLatin1Region("_mid", 5, 0, 4);
+  _c42 = Object__NewLatin1Region((OOC_CHAR8*)"_mid", 5, 0, 4);
   _c43 = Object__NewLatin1Char(10u);
   _c44 = Object__NewLatin1Char(58u);
-  _c45 = Object__NewLatin1Region("set", 4, 0, 3);
-  _c46 = Object__NewLatin1Region("-4(", 4, 0, 3);
-  _c47 = Object__NewLatin1Region(", ", 3, 0, 2);
-  _c48 = Object__NewLatin1Region("(%esp)", 7, 0, 6);
+  _c45 = Object__NewLatin1Region((OOC_CHAR8*)"set", 4, 0, 3);
+  _c46 = Object__NewLatin1Region((OOC_CHAR8*)"-4(", 4, 0, 3);
+  _c47 = Object__NewLatin1Region((OOC_CHAR8*)", ", 3, 0, 2);
+  _c48 = Object__NewLatin1Region((OOC_CHAR8*)"(%esp)", 7, 0, 6);
   _c49 = Object__NewLatin1Char(32u);
   _c50 = Object__NewLatin1Char(10u);
   _c51 = Object__NewLatin1Char(58u);
   _c52 = Object__NewLatin1Char(41u);
-  _c53 = Object__NewLatin1Region("\012\011.p2align 4,,15", 17, 0, 16);
-  _c54 = Object__NewLatin1Region("\012.global ", 10, 0, 9);
-  _c55 = Object__NewLatin1Region("\012\011.type ", 9, 0, 8);
-  _c56 = Object__NewLatin1Region(", @function", 12, 0, 11);
+  _c53 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.p2align 4,,15", 17, 0, 16);
+  _c54 = Object__NewLatin1Region((OOC_CHAR8*)"\012.global ", 10, 0, 9);
+  _c55 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.type ", 9, 0, 8);
+  _c56 = Object__NewLatin1Region((OOC_CHAR8*)", @function", 12, 0, 11);
   _c57 = Object__NewLatin1Char(10u);
   _c58 = Object__NewLatin1Char(58u);
-  _c59 = Object__NewLatin1Region(".LE_", 5, 0, 4);
-  _c60 = Object__NewLatin1Region("\012\011.size ", 9, 0, 8);
-  _c61 = Object__NewLatin1Region(", .-", 5, 0, 4);
+  _c59 = Object__NewLatin1Region((OOC_CHAR8*)".LE_", 5, 0, 4);
+  _c60 = Object__NewLatin1Region((OOC_CHAR8*)"\012\011.size ", 9, 0, 8);
+  _c61 = Object__NewLatin1Region((OOC_CHAR8*)", .-", 5, 0, 4);
 
   return;
   ;

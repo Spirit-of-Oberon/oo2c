@@ -94,7 +94,7 @@ l3:
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 3209));
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 3214))+8);
   i0 = (
-  _cmp8((const void*)(_check_pointer(i0, 3219)),(const void*)"*"))==0;
+  _cmp8((const void*)(_check_pointer(i0, 3219)),(const void*)(OOC_CHAR8*)"*"))==0;
   if (i0) goto l8;
   return 2;
   goto l12;
@@ -391,13 +391,13 @@ l13:
   i6 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i6, 6870));
   i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i6, 6875))+8);
   i6 = (
-  _cmp8((const void*)(_check_pointer(i6, 6880)),(const void*)"FOREIGN"))==0;
+  _cmp8((const void*)(_check_pointer(i6, 6880)),(const void*)(OOC_CHAR8*)"FOREIGN"))==0;
   if (i6) goto l20;
   i6 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i8, 6954));
   i6 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i6, 6964));
   i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i6, 6969))+8);
   i6 = (
-  _cmp8((const void*)(_check_pointer(i6, 6974)),(const void*)"INTERFACE"))==0;
+  _cmp8((const void*)(_check_pointer(i6, 6974)),(const void*)(OOC_CHAR8*)"INTERFACE"))==0;
   if (!i6) goto l21;
   _class = 3;
   i5=3;
@@ -570,13 +570,13 @@ l84:
   i6 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i6, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i6, 9706)))), &_td_OOC_AST__TerminalDesc, 9706)), 9715));
   i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i6, 9719))+8);
   i6 = (
-  _cmp8((const void*)(_check_pointer(i6, 9723)),(const void*)"LIB"))==0;
+  _cmp8((const void*)(_check_pointer(i6, 9723)),(const void*)(OOC_CHAR8*)"LIB"))==0;
   if (i6) goto l91;
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 9856));
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9865)))), &_td_OOC_AST__TerminalDesc, 9865)), 9874));
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9878))+8);
   i1 = (
-  _cmp8((const void*)(_check_pointer(i1, 9882)),(const void*)"FRAMEWORK"))==0;
+  _cmp8((const void*)(_check_pointer(i1, 9882)),(const void*)(OOC_CHAR8*)"FRAMEWORK"))==0;
   if (i1) goto l89;
   _assert(0u, 127, 10108);
   goto l112;
@@ -1364,7 +1364,7 @@ l35:
   i6 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i6, 18826));
   i6 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i6, 18831))+8);
   _assert(((
-  _cmp8((const void*)(_check_pointer(i6, 18836)),(const void*)"..."))==0), 127, 18811);
+  _cmp8((const void*)(_check_pointer(i6, 18836)),(const void*)(OOC_CHAR8*)"..."))==0), 127, 18811);
   OOC_SymbolTable__FormalParsDesc_EnableRestParameters((OOC_SymbolTable__FormalPars)i2);
 l36:
   i5 = i5+2;

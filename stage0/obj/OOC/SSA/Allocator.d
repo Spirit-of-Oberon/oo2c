@@ -43,17 +43,17 @@ static void OOC_SSA_Allocator__CollectCrossLoopResults(OOC_SSA_Allocator__Regist
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
 RT0__StructDesc _td_OOC_SSA_Allocator__1233 = { (RT0__Struct[]){&_td_OOC_SSA_Schedule__Block}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_OOC_SSA_Allocator__BlockList = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__1233}, NULL, NULL, &_mid, "BlockList", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_Allocator__BlockList = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__1233}, NULL, NULL, &_mid, (OOC_CHAR8*)"BlockList", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_Allocator__1283 = { (RT0__Struct[]){&_td_Object__String}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_OOC_SSA_Allocator__NameArray = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__1283}, NULL, NULL, &_mid, "NameArray", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFile = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__RegisterFileDesc}, NULL, NULL, &_mid, "RegisterFile", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_Allocator__NameArray = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__1283}, NULL, NULL, &_mid, (OOC_CHAR8*)"NameArray", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFile = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__RegisterFileDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"RegisterFile", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_Allocator__1383 = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__RegisterFile}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFiles = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__1383}, NULL, NULL, &_mid, "RegisterFiles", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFileDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_SSA__NodeDesc,&_td_OOC_SSA_Allocator__RegisterFileDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode}, NULL, &_mid, "RegisterFileDesc", 24, 3, 0, RT0__strRecord };
-RT0__StructDesc _td_OOC_SSA_Allocator__LiveData = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__LiveDataDesc}, NULL, NULL, &_mid, "LiveData", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_SSA_Allocator__LiveDataDesc = { (RT0__Struct[]){&_td_OOC_SSA_Schedule__InfoDesc,&_td_OOC_SSA_Allocator__LiveDataDesc}, (void*[]){}, NULL, &_mid, "LiveDataDesc", 12, 1, 0, RT0__strRecord };
-RT0__StructDesc _td_OOC_SSA_Allocator__BlockInfo = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__BlockInfoDesc}, NULL, NULL, &_mid, "BlockInfo", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_SSA_Allocator__BlockInfoDesc = { (RT0__Struct[]){&_td_OOC_SSA_Schedule__InfoDesc,&_td_OOC_SSA_Allocator__BlockInfoDesc}, (void*[]){}, NULL, &_mid, "BlockInfoDesc", 28, 1, 0, RT0__strRecord };
+RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFiles = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__1383}, NULL, NULL, &_mid, (OOC_CHAR8*)"RegisterFiles", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_Allocator__RegisterFileDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_SSA__NodeDesc,&_td_OOC_SSA_Allocator__RegisterFileDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode}, NULL, &_mid, (OOC_CHAR8*)"RegisterFileDesc", 24, 3, 0, RT0__strRecord };
+RT0__StructDesc _td_OOC_SSA_Allocator__LiveData = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__LiveDataDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"LiveData", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_Allocator__LiveDataDesc = { (RT0__Struct[]){&_td_OOC_SSA_Schedule__InfoDesc,&_td_OOC_SSA_Allocator__LiveDataDesc}, (void*[]){}, NULL, &_mid, (OOC_CHAR8*)"LiveDataDesc", 12, 1, 0, RT0__strRecord };
+RT0__StructDesc _td_OOC_SSA_Allocator__BlockInfo = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__BlockInfoDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"BlockInfo", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_Allocator__BlockInfoDesc = { (RT0__Struct[]){&_td_OOC_SSA_Schedule__InfoDesc,&_td_OOC_SSA_Allocator__BlockInfoDesc}, (void*[]){}, NULL, &_mid, (OOC_CHAR8*)"BlockInfoDesc", 28, 1, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_SSA_Allocator__3161 = { (RT0__Struct[]){&_td_OOC_SSA__Instr}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
 RT0__StructDesc _td_OOC_SSA_Allocator__3150 = { (RT0__Struct[]){&_td_OOC_SSA_Allocator__3161}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_OOC_SSA_Allocator__3205 = { (RT0__Struct[]){&_td_ADT_Dictionary__Dictionary}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };

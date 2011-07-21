@@ -789,7 +789,7 @@ XML_UnicodeCodec__Codec XML_UnicodeCodec_UTF8__FactoryDesc_NewCodecBOM(XML_Unico
 
 void XML_UnicodeCodec_UTF8__FactoryDesc_GetEncodingName(XML_UnicodeCodec_UTF8__Factory f, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"UTF-8",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"UTF-8",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -801,7 +801,7 @@ void OOC_XML_UnicodeCodec_UTF8_init(void) {
   XML_UnicodeCodec_UTF8__factory = (XML_UnicodeCodec_UTF8__Factory)i0;
   XML_UnicodeCodec_UTF8__InitFactory((XML_UnicodeCodec_UTF8__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_UTF8__factory;
-  XML_UnicodeCodec__Register("UTF-8", 6, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"UTF-8", 6, (XML_UnicodeCodec__Factory)i0);
   return;
   ;
 }

@@ -385,8 +385,8 @@ void OOC_IntConv_init(void) {
   *(OOC_INT32*)(_check_pointer(i0, 8362)) = (OOC_INT32)&IntConv__SState;
   *(OOC_INT32*)(_check_pointer(i1, 8375)) = (OOC_INT32)&IntConv__WState;
   *(OOC_INT32*)(_check_pointer(i2, 8389)) = (OOC_INT32)&IntConv__ScanInt;
-  _copy_8((const void*)"2147483648",(void*)(OOC_INT32)IntConv__minInt,11);
-  _copy_8((const void*)"2147483647",(void*)(OOC_INT32)IntConv__maxInt,11);
+  _copy_8((const void*)(OOC_CHAR8*)"2147483648",(void*)(OOC_INT32)IntConv__minInt,11);
+  _copy_8((const void*)(OOC_CHAR8*)"2147483647",(void*)(OOC_INT32)IntConv__maxInt,11);
   return;
   ;
 }

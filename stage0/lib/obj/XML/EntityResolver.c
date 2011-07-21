@@ -38,7 +38,7 @@ l4:
   codec = (XML_UnicodeCodec__Codec)i2;
   i3 = i1!=0;
   if (i3) goto l3;
-  _copy_8((const void*)"",(void*)(OOC_INT32)str8,8192);
+  _copy_8((const void*)(OOC_CHAR8*)"",(void*)(OOC_INT32)str8,8192);
   goto l7;
 l3:
   i3 = OOC_ARRAY_LENGTH((_check_pointer(i0, 2176)), 0);
@@ -105,7 +105,7 @@ l28:
   
   goto l31;
 l30:
-  _copy_8((const void*)"%HH",(void*)(OOC_INT32)repl,4);
+  _copy_8((const void*)(OOC_CHAR8*)"%HH",(void*)(OOC_INT32)repl,4);
   i1 = *(OOC_UINT8*)((OOC_INT32)str8+(_check_index(i0, 8192, OOC_UINT16, 2875)));
   i1 = XML_EntityResolver__NormalizeURI_ToHex((i1>>4));
   *(OOC_UINT8*)((OOC_INT32)repl+(_check_index(1, 4, OOC_UINT8, 2852))) = i1;
@@ -166,7 +166,7 @@ l8:
     chars = (Object__CharsLatin1)i1;
     i2 = OOC_ARRAY_LENGTH((_check_pointer(i1, 4662)), 0);
     i1 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i1, 4662)), i2);
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4613)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i0, "reason", 7, (Msg__StringPtr)i1);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4613)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"reason", 7, (Msg__StringPtr)i1);
     *res = (Msg__Msg)i0;
 l9:
     Exception__Clear();
@@ -208,9 +208,9 @@ XML_EntityResolver__Resolver XML_EntityResolver__New(void) {
 void OOC_XML_EntityResolver_init(void) {
   register OOC_INT32 i0;
 
-  i0 = (OOC_INT32)XML_Error__NewContext("XML:EntityResolver", 19);
+  i0 = (OOC_INT32)XML_Error__NewContext((OOC_CHAR8*)"XML:EntityResolver", 19);
   XML_EntityResolver__resolverContext = (XML_Error__Context)i0;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4896)))), XML_Error__ContextDesc_SetString)),XML_Error__ContextDesc_SetString)((XML_Error__Context)i0, 1, "Invalid URI: ${reason}", 23);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4896)))), XML_Error__ContextDesc_SetString)),XML_Error__ContextDesc_SetString)((XML_Error__Context)i0, 1, (OOC_CHAR8*)"Invalid URI: ${reason}", 23);
   return;
   ;
 }

@@ -1,7 +1,7 @@
-(* 	$Id: WriteC.Mod,v 1.174 2004/07/08 19:01:40 mva Exp $	 *)
+(* 	$Id: WriteC.Mod,v 1.175 2005/10/07 08:35:41 mva Exp $	 *)
 MODULE OOC:SSA:WriteC [OOC_EXTENSIONS];
 (*  Translates a set of scheduled SSA instructions to plain C.
-    Copyright (C) 2001-2004  Michael van Acken
+    Copyright (C) 2001-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -752,12 +752,16 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
       opnd := typeGuard. GetOpndClass (Opnd.type);
       type := opnd. arg(SSA.TypeRef). type;
       
-      IF (type IS Sym.TypeClosure) THEN  (* slower but more powerful *)
+      IF (type IS Sym.TypeClosure) OR TR.IsTypeVar(type) THEN
+        (* slower but more powerful *)
         w. WriteString ("_type_guard_q(");
+        RefList (typeGuard. opndList. nextOpnd, Opnd.arg);
       ELSE
         w. WriteString ("_type_guard(");
+        w. Ref (typeGuard.opndList.nextOpnd);
+        w. WriteString (", ");
+        w. Ref (typeGuard.opndList.nextOpnd.nextOpnd);
       END;
-      RefList (typeGuard. opndList. nextOpnd, Opnd.arg);
       w. WriteString (", &");
       name := Naming.NameOfTypeDescriptor (type, w.translator.qtdData);
       w. WriteObject (name);
@@ -961,22 +965,34 @@ PROCEDURE WriteExpr (w: Writer; instr: SSA.Instr);
   
   PROCEDURE TypeTest (instr: SSA.Instr);
     VAR
-      name: STRING;
       opnd: SSA.Opnd;
       type: Sym.Type;
+
+    PROCEDURE TypeDescr();
+      VAR
+        name: STRING;
+      BEGIN
+        w. WriteString (", &");
+        name := Naming.NameOfTypeDescriptor (type, w.translator.qtdData);
+        w. WriteObject (name);
+      END TypeDescr;
+    
     BEGIN
       opnd := instr. opndList. nextOpnd;
       type := opnd. arg(SSA.TypeRef). type;
 
-      IF (type IS Sym.TypeClosure) THEN  (* slower but more powerful *)
-        w.WriteString("RT0__TypeTest((OOC_PTR)");
+      IF (type IS Sym.TypeClosure) OR TR.IsTypeVar(type) THEN
+        (* slower but more powerful *)
+        w.WriteString("OOC_TYPE_TEST_Q(");
+        w. Ref (instr. opndList);
+        TypeDescr();
+        w. WriteString (", ");
+        w. Ref (instr.NthOpnd(2));
       ELSE
         w.WriteString("OOC_TYPE_TEST(");
+        w. Ref (instr. opndList);
+        TypeDescr();
       END;
-      w. Ref (instr. opndList);
-      w. WriteString (", &");
-      name := Naming.NameOfTypeDescriptor (type, w.translator.qtdData);
-      w. WriteObject (name);
       w. WriteString (")");
     END TypeTest;
 

@@ -309,7 +309,7 @@ l3_loop:
 l6:
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10675)))), &_td_OOC_Doc__TextDesc, 10675)), 10680))+16);
   i3 = (
-  _cmp8((const void*)(_check_pointer(i3, 10688)),(const void*)""))==0;
+  _cmp8((const void*)(_check_pointer(i3, 10688)),(const void*)(OOC_CHAR8*)""))==0;
   
 l8:
   if (i3) goto l10;
@@ -437,25 +437,25 @@ void OOC_Doc__GlyphDesc_NodeName(OOC_Doc__Glyph glyph, OOC_CHAR8 name[], OOC_LEN
   i0 = *(OOC_INT32*)((_check_pointer(i0, 12671))+16);
   switch (i0) {
   case 0:
-    _copy_8((const void*)"bullet",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"bullet",(void*)(OOC_INT32)name,name_0d);
     goto l10;
   case 1:
-    _copy_8((const void*)"dots",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"dots",(void*)(OOC_INT32)name,name_0d);
     goto l10;
   case 2:
-    _copy_8((const void*)"minus",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"minus",(void*)(OOC_INT32)name,name_0d);
     goto l10;
   case 3:
-    _copy_8((const void*)"em-dash",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"em-dash",(void*)(OOC_INT32)name,name_0d);
     goto l10;
   case 4:
-    _copy_8((const void*)"result",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"result",(void*)(OOC_INT32)name,name_0d);
     goto l10;
   case 5:
-    _copy_8((const void*)"left-quote",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"left-quote",(void*)(OOC_INT32)name,name_0d);
     goto l10;
   case 6:
-    _copy_8((const void*)"right-quote",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"right-quote",(void*)(OOC_INT32)name,name_0d);
     goto l10;
   default:
     _failed_case(i0, 12661);
@@ -522,7 +522,7 @@ OOC_Doc__Text OOC_Doc__NewText(OOC_CHAR8 string[], OOC_LEN string_0d, struct OOC
 
 void OOC_Doc__TextDesc_NodeName(OOC_Doc__Text text, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"text",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"text",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -932,61 +932,61 @@ void OOC_Doc__MarkedInlineDesc_NodeName(OOC_Doc__MarkedInline mi, OOC_CHAR8 name
   i0 = *(OOC_INT32*)((_check_pointer(i0, 16812))+16);
   switch (i0) {
   case 0:
-    _copy_8((const void*)"asis",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"asis",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 1:
-    _copy_8((const void*)"cite",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"cite",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 2:
-    _copy_8((const void*)"code",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"code",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 3:
-    _copy_8((const void*)"command",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"command",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 4:
-    _copy_8((const void*)"dfn",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"dfn",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 5:
-    _copy_8((const void*)"emph",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"emph",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 6:
-    _copy_8((const void*)"file",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"file",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 7:
-    _copy_8((const void*)"kbd",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"kbd",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 8:
-    _copy_8((const void*)"samp",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"samp",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 9:
-    _copy_8((const void*)"strong",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"strong",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 10:
-    _copy_8((const void*)"var",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"var",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 11:
-    _copy_8((const void*)"url",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"url",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 12:
-    _copy_8((const void*)"oberon-module",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"oberon-module",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 13:
-    _copy_8((const void*)"oberon-const",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"oberon-const",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 14:
-    _copy_8((const void*)"oberon-field",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"oberon-field",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 15:
-    _copy_8((const void*)"oberon-param",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"oberon-param",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 16:
-    _copy_8((const void*)"oberon-proc",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"oberon-proc",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 17:
-    _copy_8((const void*)"oberon-type",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"oberon-type",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   case 18:
-    _copy_8((const void*)"oberon-var",(void*)(OOC_INT32)name,name_0d);
+    _copy_8((const void*)(OOC_CHAR8*)"oberon-var",(void*)(OOC_INT32)name,name_0d);
     goto l22;
   default:
     _failed_case(i0, 16805);
@@ -1163,7 +1163,7 @@ OOC_Doc__Email OOC_Doc__NewEmail(OOC_Doc__InlineElement address, OOC_Doc__Inline
 
 void OOC_Doc__EmailDesc_NodeName(OOC_Doc__Email email, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"email",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"email",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1252,7 +1252,7 @@ OOC_Doc__Uref OOC_Doc__NewUref(OOC_Doc__InlineElement url, OOC_Doc__InlineElemen
 
 void OOC_Doc__UrefDesc_NodeName(OOC_Doc__Uref uref, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"uref",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"uref",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1353,7 +1353,7 @@ OOC_Doc__Paragraph OOC_Doc__NewParagraph(OOC_CHAR8 padAfter, OOC_Doc__InlineElem
 
 void OOC_Doc__ParagraphDesc_NodeName(OOC_Doc__Paragraph p, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"p",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"p",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1429,7 +1429,7 @@ OOC_Doc__Example OOC_Doc__NewExample(OOC_CHAR8 padAfter, OOC_Doc__InlineElement 
 
 void OOC_Doc__ExampleDesc_NodeName(OOC_Doc__Example ex, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"example",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"example",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1497,7 +1497,7 @@ OOC_Doc__PreCond OOC_Doc__NewPreCond(OOC_CHAR8 padAfter, OOC_Doc__BlockElement b
 
 void OOC_Doc__PreCondDesc_NodeName(OOC_Doc__PreCond pc, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"pre-cond",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"pre-cond",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1569,7 +1569,7 @@ OOC_Doc__PostCond OOC_Doc__NewPostCond(OOC_CHAR8 padAfter, OOC_Doc__BlockElement
 
 void OOC_Doc__PostCondDesc_NodeName(OOC_Doc__PostCond pc, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"post-cond",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"post-cond",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1641,7 +1641,7 @@ OOC_Doc__Item OOC_Doc__NewItem(OOC_CHAR8 padAfter, OOC_Doc__BlockElement blockLi
 
 void OOC_Doc__ItemDesc_NodeName(OOC_Doc__Item item, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"item",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"item",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1722,7 +1722,7 @@ OOC_Doc__Itemize OOC_Doc__NewItemize(OOC_CHAR8 padAfter, OOC_Doc__InlineElement 
 
 void OOC_Doc__ItemizeDesc_NodeName(OOC_Doc__Itemize i, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"itemize",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"itemize",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1836,7 +1836,7 @@ OOC_Doc__Enumerate OOC_Doc__NewEnumerate(OOC_CHAR8 padAfter, OOC_INT8 mode, OOC_
 
 void OOC_Doc__EnumerateDesc_NodeName(OOC_Doc__Enumerate e, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"enumerate",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"enumerate",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -1933,7 +1933,7 @@ OOC_Doc__FirstColumn OOC_Doc__NewFirstColumn(OOC_CHAR8 padAfter, OOC_Doc__Inline
 
 void OOC_Doc__FirstColumnDesc_NodeName(OOC_Doc__FirstColumn fc, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"table-first-column",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"table-first-column",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -2010,7 +2010,7 @@ OOC_Doc__TableRow OOC_Doc__NewTableRow(OOC_CHAR8 padAfter, OOC_Doc__BlockElement
 
 void OOC_Doc__TableRowDesc_NodeName(OOC_Doc__TableRow tr, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"table-row",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"table-row",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -2098,7 +2098,7 @@ OOC_Doc__Table OOC_Doc__NewTable(OOC_CHAR8 padAfter, OOC_Doc__BlockElement rowLi
 
 void OOC_Doc__TableDesc_NodeName(OOC_Doc__Table t, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"table",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"table",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }

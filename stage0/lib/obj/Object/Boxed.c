@@ -38,10 +38,10 @@ Object_Boxed__Boolean Object_Boxed__ParseBoolean(const OOC_CHAR8 str[], OOC_LEN 
   register OOC_INT32 i0;
 
   i0 = (
-  _cmp8((const void*)(OOC_INT32)str,(const void*)"TRUE"))==0;
+  _cmp8((const void*)(OOC_INT32)str,(const void*)(OOC_CHAR8*)"TRUE"))==0;
   if (i0) goto l7;
   i0 = (
-  _cmp8((const void*)(OOC_INT32)str,(const void*)"FALSE"))==0;
+  _cmp8((const void*)(OOC_INT32)str,(const void*)(OOC_CHAR8*)"FALSE"))==0;
   if (i0) goto l5;
   return (Object_Boxed__Boolean)(OOC_INT32)0;
   goto l8;
@@ -768,7 +768,7 @@ Object__String Object_Boxed__SetDesc_ToString(Object_Boxed__Set v) {
 
   i0 = (OOC_INT32)v;
   i0 = *(OOC_UINT32*)(_check_pointer(i0, 11876));
-  _copy_8((const void*)"{",(void*)(OOC_INT32)str,131);
+  _copy_8((const void*)(OOC_CHAR8*)"{",(void*)(OOC_INT32)str,131);
   i1=0;i2=0u;
 l1_loop:
   i3 = _in(i1,i0);
@@ -802,7 +802,7 @@ l17:
   if (i4) goto l12_loop;
 l22:
   if (!i2) goto l24;
-  Strings__Append(",", 2, (void*)(OOC_INT32)str, 131);
+  Strings__Append((OOC_CHAR8*)",", 2, (void*)(OOC_INT32)str, 131);
 l24:
   IntStr__IntToStr(i1, (void*)(OOC_INT32)num, 8);
   Strings__Append((void*)(OOC_INT32)num, 8, (void*)(OOC_INT32)str, 131);
@@ -810,10 +810,10 @@ l24:
   if (!i2) goto l31;
   i1 = i3==(i1+1);
   if (i1) goto l29;
-  Strings__Append("..", 3, (void*)(OOC_INT32)str, 131);
+  Strings__Append((OOC_CHAR8*)"..", 3, (void*)(OOC_INT32)str, 131);
   goto l30;
 l29:
-  Strings__Append(",", 2, (void*)(OOC_INT32)str, 131);
+  Strings__Append((OOC_CHAR8*)",", 2, (void*)(OOC_INT32)str, 131);
 l30:
   IntStr__IntToStr(i3, (void*)(OOC_INT32)num, 8);
   Strings__Append((void*)(OOC_INT32)num, 8, (void*)(OOC_INT32)str, 131);
@@ -826,7 +826,7 @@ l32:
   {register OOC_INT32 h0=i1;i1=i2;i2=h0;}
   goto l1_loop;
 l36:
-  Strings__Append("}", 2, (void*)(OOC_INT32)str, 131);
+  Strings__Append((OOC_CHAR8*)"}", 2, (void*)(OOC_INT32)str, 131);
   i0 = (OOC_INT32)Object__NewLatin1((void*)(OOC_INT32)str, 131);
   return (Object__String)i0;
   ;
@@ -948,10 +948,10 @@ Object__String Object_Boxed__StringDesc_ToString(Object_Boxed__String v) {
   i = i1;
   i1 = i1<0;
   if (i1) goto l3;
-  _copy_8((const void*)"\047",(void*)(OOC_INT32)delim,2);
+  _copy_8((const void*)(OOC_CHAR8*)"\047",(void*)(OOC_INT32)delim,2);
   goto l4;
 l3:
-  _copy_8((const void*)"\"",(void*)(OOC_INT32)delim,2);
+  _copy_8((const void*)(OOC_CHAR8*)"\"",(void*)(OOC_INT32)delim,2);
 l4:
   i1 = (OOC_INT32)Object__NewLatin1((void*)(OOC_INT32)delim, 2);
   i1 = (OOC_INT32)ADT_StringBuffer__New((Object__String)i1);
@@ -1044,12 +1044,12 @@ void OOC_Object_Boxed_init(void) {
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__Boolean.baseTypes[0]);
   Object_Boxed__BooleanDesc_INIT((Object_Boxed__Boolean)i0, 1u);
   Object_Boxed__true = (Object_Boxed__Boolean)i0;
-  i0 = (OOC_INT32)Object__NewLatin1("TRUE", 5);
+  i0 = (OOC_INT32)Object__NewLatin1((OOC_CHAR8*)"TRUE", 5);
   Object_Boxed__trueString = (Object__String)i0;
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__Boolean.baseTypes[0]);
   Object_Boxed__BooleanDesc_INIT((Object_Boxed__Boolean)i0, 0u);
   Object_Boxed__false = (Object_Boxed__Boolean)i0;
-  i0 = (OOC_INT32)Object__NewLatin1("FALSE", 6);
+  i0 = (OOC_INT32)Object__NewLatin1((OOC_CHAR8*)"FALSE", 6);
   Object_Boxed__falseString = (Object__String)i0;
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__LongReal.baseTypes[0]);
   Object_Boxed__LongRealDesc_INIT((Object_Boxed__LongReal)i0, 0.0000000000000000);
@@ -1065,7 +1065,7 @@ void OOC_Object_Boxed_init(void) {
   Object_Boxed__oneLongInt = (Object_Boxed__LongInt)i0;
   i0 = (OOC_INT32)RT0__NewObject(_td_Object_Boxed__String.baseTypes[0]);
   Object_Boxed__emptyString = (Object_Boxed__String)i0;
-  i1 = (OOC_INT32)Object__NewLatin1("", 1);
+  i1 = (OOC_INT32)Object__NewLatin1((OOC_CHAR8*)"", 1);
   *(OOC_INT32*)(_check_pointer(i0, 15049)) = i1;
   return;
   ;

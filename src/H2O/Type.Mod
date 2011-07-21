@@ -68,12 +68,15 @@ TYPE
     stripPrefix- : Option.StringList;
     outputName- : Option.String;
     interfaceType- : Option.String;
-    prolog- : Option.String;
-    epilog- : Option.String;
+    prolog- : Option.String; doneProlog* : BOOLEAN;
+    epilog- : Option.String; doneEpilog* : BOOLEAN;
     linkFramework- : Option.StringList;
     linkLib- : Option.StringList;
+    linkFile- : Option.StringList;
+    userImport- : Option.StringList;
     defaultVar- : Option.Boolean;
     translate- : Option.Boolean;
+    merge- : Option.Boolean;
     visited* : BOOLEAN;
   END;
 
@@ -86,6 +89,7 @@ TYPE
     qualifiers* : SET;
     variant* : SET;
     module* : Module;
+    visited* : BOOLEAN;
   END;
 
   ObjectDesc* = RECORD 
@@ -110,9 +114,14 @@ VAR
   longLongType-, unsignedLongLongType-,
   floatType-, doubleType-, longDoubleType-,
   charType-, unsignedCharType-, voidType- : Type;
+  wCharType-, unsignedWCharType- : Type;
 
   modules- : Module;
   reserved- : ArrayList.ArrayList(STRING);
+
+  options* : Option.Options;
+  allowRedefinedProc : Option.Boolean;
+  allowRedefined : Option.Boolean;
 
 CONST
   pointerSize* = 4;
@@ -175,7 +184,7 @@ BEGIN
   END;
 END Size;
 
-PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module));
+PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module); src : Module);
 
   PROCEDURE Accumulate(module : Module);
   BEGIN
@@ -187,8 +196,11 @@ PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module));
   PROCEDURE Visit(t : Type);
   VAR o : Object;
   BEGIN
-    IF t.module # NIL THEN
-      Accumulate(t.module);
+    IF t.visited THEN RETURN END;
+    t.visited := TRUE;
+
+    Accumulate(t.module);
+    IF (t.module # src) & (t.module # NIL) THEN
     ELSE
       CASE t.class OF
       | tFunction, tArray, tPointer, tName:
@@ -205,7 +217,8 @@ PROCEDURE (t : Type) Depend* (list : ArrayList.ArrayList(Module));
         END
       ELSE
       END
-    END
+    END;
+    t.visited := FALSE;
   END Visit;
 
 BEGIN
@@ -406,6 +419,7 @@ BEGIN
   t.qualifiers := qual;
   t.module := NIL;
   t.variant := {};
+  t.visited := FALSE;
 
   RETURN t;
 END NewType;
@@ -417,17 +431,6 @@ BEGIN
   t.name := Obj.NewLatin1(name);
   RETURN t;
 END BaseType;
-
-(* In some situations a type may be redefined. In particular, this is allowed
-if a structure or union is defined as an opaque type, and is later redefined.
-*)
-
-PROCEDURE AllowedRedefinition* (new, old : Type) : BOOLEAN;
-BEGIN
-  RETURN (new.class = old.class) &
-    ((new.class = tStruct) OR (new.class = tUnion)) &
-    (old.link = NIL);
-END AllowedRedefinition;
 
 (* Some declarations are OK without defining a name. This is because they have
    a type tag which generates a declaration as a side-effect. *)
@@ -488,6 +491,19 @@ BEGIN
   END;
 END SameTypes;
 
+(* In some situations a type may be redefined. In particular, this is allowed
+if a structure or union is defined as an opaque type, and is later redefined.
+*)
+
+PROCEDURE AllowedRedefinition* (new, old : Type) : BOOLEAN;
+BEGIN
+  RETURN 
+    (new.class = old.class) & (
+       ((new.class IN {tStruct, tUnion}) & (old.link = NIL))
+    OR ((new.class = tFunction) & allowRedefinedProc.value & SameTypes(new, old, FALSE)))
+    OR allowRedefined.value;
+END AllowedRedefinition;
+
 (* Determine if a name is a valid output symbol *)
 
 PROCEDURE IsLetter* (c : UCS4CHAR) : BOOLEAN;
@@ -513,11 +529,39 @@ BEGIN
   RETURN FALSE
 END ValidOutputSymbol;
 
+PROCEDURE IsValidParameterType(t : Type) : BOOLEAN;
+BEGIN
+  RETURN ~ (t.class IN { tStruct, tUnion, tFunction });
+END IsValidParameterType;
+
+PROCEDURE IsValidResultType(t : Type) : BOOLEAN;
+BEGIN
+  RETURN ~ (t.class IN { tStruct, tUnion, tFunction, tArray });
+END IsValidResultType;
+
+PROCEDURE IsValidProcedureType* (t : Type) : BOOLEAN;
+VAR o : Object;
+BEGIN
+  ASSERT(t.class = tFunction);
+  IF IsValidResultType(t.base.Base()) THEN
+    o := t.link;
+    WHILE o # NIL DO
+      IF ~IsValidParameterType(o.type.Base()) THEN
+        RETURN FALSE
+      END;
+      o := o.next;
+    END;
+    RETURN TRUE;
+  ELSE
+    RETURN FALSE;
+  END;
+END IsValidProcedureType;
+
 (* Determine if a type is OK as a pointer base type *)
 
 PROCEDURE IsPointerBaseType* (t : Type) : BOOLEAN;
 BEGIN
-  RETURN t.class IN { tArray, tStruct, tUnion};
+  RETURN t.class IN { tArray, tStruct, tUnion };
 END IsPointerBaseType;
 
 (* Determine if a type is a type constructor *)
@@ -699,11 +743,16 @@ BEGIN
   m.outputName := m.options.String("OutputName", m.name);
   m.interfaceType := m.options.String("InterfaceType", "C");
   m.prolog := m.options.String("Prolog", "");
+  m.doneProlog := FALSE;
   m.epilog := m.options.String("Epilog", "");
+  m.doneEpilog := FALSE;
   m.linkFramework := m.options.StringList("LinkFramework");
   m.linkLib := m.options.StringList("LinkLib");
+  m.linkFile := m.options.StringList("LinkFile");
+  m.userImport := m.options.StringList("Import");
   m.defaultVar := m.options.Boolean("DefaultVar", FALSE);
   m.translate := m.options.Boolean("Translate", TRUE);
+  m.merge := m.options.Boolean("Merge", FALSE);
   m.visited := FALSE;
   m.vars := NIL;
   m.types := NIL;
@@ -767,6 +816,8 @@ BEGIN
 
   charType := BaseType(tInteger, 1, "char");  
   unsignedCharType := BaseType(tUnsigned, 1, "unsigned char");
+  wCharType := BaseType(tInteger, 2, "wchar_t");  
+  unsignedWCharType := BaseType(tUnsigned, 2, "unsigned wchar_t");
   shortType := BaseType(tInteger, 2, "short");
   unsignedShortType := BaseType(tUnsigned, 2, "unsigned short");
   longType := BaseType(tInteger, 4, "long");
@@ -779,5 +830,8 @@ BEGIN
   longDoubleType := BaseType(tReal, 8, "long double");
   voidType := BaseType(tVoid, 0, "void");
 
+  options := NEW(Option.Options);
+  allowRedefinedProc := options.Boolean("AllowRedefinedProc", FALSE);
+  allowRedefined := options.Boolean("AllowRedefined", FALSE);
 END H2O:Type.
 

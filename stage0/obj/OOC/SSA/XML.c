@@ -470,7 +470,7 @@ l18:
 
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8119)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, "1.0", 4, "no", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8119)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, (OOC_CHAR8*)"1.0", 4, (OOC_CHAR8*)"no", 3);
   i1 = (OOC_INT32)ADT_Dictionary_IntValue__New();
   *(OOC_INT32*)((_check_pointer(i0, 8279))+76) = i1;
   instrCount = 1;
@@ -657,7 +657,7 @@ l19:
 
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10853)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, "1.0", 4, "no", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10853)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, (OOC_CHAR8*)"1.0", 4, (OOC_CHAR8*)"no", 3);
   i1 = (OOC_INT32)ADT_Dictionary_IntValue__New();
   *(OOC_INT32*)((_check_pointer(i0, 10890))+76) = i1;
   instrCount = 1;
@@ -688,10 +688,10 @@ void OOC_SSA_XML__WriteSchedule(IO__ByteChannel cw, OOC_SSA_Schedule__Block domR
 }
 
 void OOC_OOC_SSA_XML_init(void) {
-  _c0 = Object__NewLatin1Region("", 1, 0, 0);
-  _c1 = Object__NewLatin1Region("NIL", 4, 0, 3);
-  _c2 = Object__NewLatin1Region("[Object.String16]", 18, 0, 17);
-  _c3 = Object__NewLatin1Region("NIL", 4, 0, 3);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"NIL", 4, 0, 3);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"[Object.String16]", 18, 0, 17);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"NIL", 4, 0, 3);
 
   return;
   ;

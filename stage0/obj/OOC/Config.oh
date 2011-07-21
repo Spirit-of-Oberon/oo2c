@@ -17,7 +17,7 @@ extern Config_Section_Options__Section OOC_Config__options;
 extern Config_Section_Arguments__Section OOC_Config__arguments;
 extern OOC_Config_Pragmas__Section OOC_Config__pragmas;
 extern OOC_Config_Repositories__Section OOC_Config__repositories;
-#define OOC_Config__runtimeModule "RT0"
+#define OOC_Config__runtimeModule (OOC_CHAR8[])"RT0"
 extern Config_Section_Options__Option OOC_Config__xsltproc;
 extern Config_Section_Options__Option OOC_Config__AddOption(Object__String name, Config__Variable init);
 extern void OOC_Config__AddCmdLine(const OOC_CHAR8 options__ref[], OOC_LEN options_0d, const OOC_CHAR8 _template__ref[], OOC_LEN _template_0d);

@@ -11,12 +11,12 @@ static void* _c4;
 #include <OOC/SymbolTable/Predef.oh>
 #include <OOC/SymbolTable/Namespace.oh>
 #include <OOC/SymbolTable/TypeRules.oh>
-#define OOC_C_RuntimeData__structTypeDesc "RT0__StructDesc"
+#define OOC_C_RuntimeData__structTypeDesc (OOC_CHAR8[])"RT0__StructDesc"
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_OOC_C_RuntimeData__2012 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_OOC_C_RuntimeData__2889 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_C_RuntimeData__2018 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
+RT0__StructDesc _td_OOC_C_RuntimeData__2895 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:C:RuntimeData", (RT0__Struct[]) { NULL }, 0 };
 
 extern void OOC_OOC_C_RuntimeData_open(RT0__Module client) {

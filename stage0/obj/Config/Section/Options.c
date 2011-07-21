@@ -309,7 +309,7 @@ void Config_Section_Options__SectionDesc_ProcessElements(volatile Config_Section
       i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 4938)), 0);
       i0 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i0, 4938)), i1);
       i1 = (OOC_INT32)lastError;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4889)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "reason", 7, (Msg__StringPtr)i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4889)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"reason", 7, (Msg__StringPtr)i0);
       return;
       ;
     }
@@ -349,7 +349,7 @@ l13:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 8160)), 0);
   i0 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i0, 8160)), i1);
   i1 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 8106)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, "name", 5, (Msg__LStringPtr)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 8106)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i0);
   goto l98;
 l18:
   name = (XML_UnicodeBuffer__CharArray)(OOC_INT32)0;
@@ -383,7 +383,7 @@ l21_loop:
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 6810)), 0);
   i1 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i1, 6810)), i2);
   i2 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 6749)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i2, "name", 5, (Msg__LStringPtr)i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 6749)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i2, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i1);
   goto l29;
 l26:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 6653))+8);
@@ -461,7 +461,7 @@ l53:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 7588)), 0);
   i0 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i0, 7588)), i1);
   i1 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7537)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, "type", 5, (Msg__LStringPtr)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7537)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"type", 5, (Msg__LStringPtr)i0);
   goto l98;
 l55:
   Config_Section_Options__SectionDesc_ProcessElements_Err(6, (Config_Parser__Node)i2);
@@ -469,7 +469,7 @@ l55:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 7333)), 0);
   i0 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i0, 7333)), i1);
   i1 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7282)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, "name", 5, (Msg__LStringPtr)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7282)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i0);
   goto l98;
 l57:
   Config_Section_Options__SectionDesc_ProcessElements_Err(5, (Config_Parser__Node)i2);
@@ -509,7 +509,7 @@ l67_loop:
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 5472)), 0);
   i1 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i1, 5472)), i2);
   i2 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 5411)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i2, "name", 5, (Msg__LStringPtr)i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 5411)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i2, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i1);
   goto l71;
 l70:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 5315))+8);
@@ -571,7 +571,7 @@ l91:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 5914)), 0);
   i0 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i0, 5914)), i1);
   i1 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5863)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, "name", 5, (Msg__LStringPtr)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5863)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i0);
   goto l98;
 l93:
   Config_Section_Options__SectionDesc_ProcessElements_Err(5, (Config_Parser__Node)i1);
@@ -604,22 +604,22 @@ void Config_Section_Options__SectionDesc_DumpContent(Config_Section_Options__Sec
   i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 8585));
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 8591)), 0);
   LongStrings__Short((void*)(_check_pointer(i3, 8591)), i2, 63u, (void*)(OOC_INT32)str8, 2048);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8611)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "<", 2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8611)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"<", 2);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8637)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)str8, 2048);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8664)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, ">", 2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8664)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)">", 2);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8686)))), TextRider__WriterDesc_WriteLn)),TextRider__WriterDesc_WriteLn)((TextRider__Writer)i0);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 8709))+4);
   opt = (Config_Section_Options__Option)i2;
   i3 = i2!=0;
   if (!i3) goto l8;
 l3_loop:
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8755)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "  <value name=\047", 16);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8755)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"  <value name=\047", 16);
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 8815))+4);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8797)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i3);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8831)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\047>", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8831)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\047>", 3);
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 8884))+8);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8867)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i3);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8907)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</value>", 9);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8907)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</value>", 9);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8942)))), TextRider__WriterDesc_WriteLn)),TextRider__WriterDesc_WriteLn)((TextRider__Writer)i0);
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i2, 8969));
   opt = (Config_Section_Options__Option)i2;
@@ -630,9 +630,9 @@ l8:
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 9009));
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 9015)), 0);
   LongStrings__Short((void*)(_check_pointer(i1, 9015)), i2, 63u, (void*)(OOC_INT32)str8, 2048);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9035)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9035)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</", 3);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9062)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)str8, 2048);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9089)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, ">", 2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9089)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)">", 2);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9111)))), TextRider__WriterDesc_WriteLn)),TextRider__WriterDesc_WriteLn)((TextRider__Writer)i0);
   return;
   ;
@@ -643,7 +643,7 @@ void OOC_Config_Section_Options_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_Config_Section_Options__ErrorContext.baseTypes[0]);
   Config_Section_Options__optionsContext = (Config_Section_Options__ErrorContext)i0;
-  Msg__InitContext((Msg__Context)i0, "Config:Section:Options", 23);
+  Msg__InitContext((Msg__Context)i0, (OOC_CHAR8*)"Config:Section:Options", 23);
   return;
   ;
 }

@@ -92,11 +92,11 @@ void URI_Authority_Unparsed__AuthorityDesc_WriteXML(URI_Authority_Unparsed__Auth
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2644)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<authority-unparsed>", 22);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2644)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<authority-unparsed>", 22);
   i1 = (OOC_INT32)auth;
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 2715));
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2696)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2733)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</authority-unparsed>", 22);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2733)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</authority-unparsed>", 22);
   return;
   ;
 }
@@ -114,8 +114,8 @@ void URI_Authority_Unparsed__AuthorityDesc_Append(URI_Authority_Unparsed__Author
 }
 
 void OOC_URI_Authority_Unparsed_init(void) {
-  _c0 = Object__NewLatin1Region("Illegal character in authority component", 41, 0, 40);
-  _c1 = Object__NewLatin1Region("//", 3, 0, 2);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"Illegal character in authority component", 41, 0, 40);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"//", 3, 0, 2);
 
   return;
   ;

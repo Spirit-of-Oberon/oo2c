@@ -55,18 +55,18 @@ void URI_Authority_ServerBased__AuthorityDesc_Copy(URI_Authority_ServerBased__Au
 l3:
   i1 = (OOC_INT32)auth;
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 2866));
-  i2 = i2!=0;
+  i2 = i2!=(OOC_INT32)0;
   if (i2) goto l6;
-  *(OOC_INT32*)(_check_pointer(i0, 2953)) = 0;
+  *(OOC_INT32*)(_check_pointer(i0, 2953)) = (OOC_INT32)0;
   goto l7;
 l6:
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 2919));
   *(OOC_INT32*)(_check_pointer(i0, 2901)) = i2;
 l7:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 2996))+4);
-  i2 = i2!=0;
+  i2 = i2!=(OOC_INT32)0;
   if (i2) goto l10;
-  *(OOC_INT32*)((_check_pointer(i0, 3071))+4) = 0;
+  *(OOC_INT32*)((_check_pointer(i0, 3071))+4) = (OOC_INT32)0;
   goto l11;
 l10:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 3041))+4);
@@ -428,7 +428,7 @@ l27:
 l29:
   if (i1) goto l31;
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 6422)), 0);
-  i1 = URI_CharClass__SkipMember((void*)(_check_pointer(i0, 6422)), i1, (void*)(OOC_INT32)&i, ";:&=+$,", 8);
+  i1 = URI_CharClass__SkipMember((void*)(_check_pointer(i0, 6422)), i1, (void*)(OOC_INT32)&i, (OOC_CHAR8*)";:&=+$,", 8);
   
   goto l33;
 l31:
@@ -448,7 +448,7 @@ l38:
 l40:
   if (i1) goto l42;
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 6422)), 0);
-  i1 = URI_CharClass__SkipMember((void*)(_check_pointer(i0, 6422)), i1, (void*)(OOC_INT32)&i, ";:&=+$,", 8);
+  i1 = URI_CharClass__SkipMember((void*)(_check_pointer(i0, 6422)), i1, (void*)(OOC_INT32)&i, (OOC_CHAR8*)";:&=+$,", 8);
   
   goto l44;
 l42:
@@ -619,30 +619,30 @@ void URI_Authority_ServerBased__AuthorityDesc_WriteXML(URI_Authority_ServerBased
   OOC_CHAR8 str[32];
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8141)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<authority-server-based>", 26);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8141)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<authority-server-based>", 26);
   i1 = (OOC_INT32)auth;
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 8204));
   i2 = i2!=0;
   if (!i2) goto l3;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8234)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<userinfo>", 12);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8234)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<userinfo>", 12);
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 8297));
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8278)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i2);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8317)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</userinfo>", 12);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8317)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</userinfo>", 12);
 l3:
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8362)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<host>", 8);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8362)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<host>", 8);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 8419))+4);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8400)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i2);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8433)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</host>", 8);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8433)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</host>", 8);
   i2 = *(OOC_INT32*)((_check_pointer(i1, 8472))+8);
   i2 = i2>=0;
   if (!i2) goto l6;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8497)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<port>", 8);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8497)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<port>", 8);
   i1 = *(OOC_INT32*)((_check_pointer(i1, 8557))+8);
   IntStr__IntToStr(i1, (void*)(OOC_INT32)str, 32);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8578)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)str, 32);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8606)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</port>", 8);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8606)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</port>", 8);
 l6:
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8647)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012</authority-server-based>", 27);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8647)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012</authority-server-based>", 27);
   return;
   ;
 }
@@ -658,7 +658,7 @@ void URI_Authority_ServerBased__AuthorityDesc_Append(URI_Authority_ServerBased__
   i2 = i2!=0;
   if (!i2) goto l3;
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 8910));
-  URI_String__AppendEscaped((Object__String)i2, ";:&=+$,", 8, (ADT_StringBuffer__StringBuffer)i0);
+  URI_String__AppendEscaped((Object__String)i2, (OOC_CHAR8*)";:&=+$,", 8, (ADT_StringBuffer__StringBuffer)i0);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8964)))), ADT_StringBuffer__StringBufferDesc_Append)),ADT_StringBuffer__StringBufferDesc_Append)((ADT_StringBuffer__StringBuffer)i0, (Object__Object)((OOC_INT32)_c7));
 l3:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9005))+4);
@@ -685,13 +685,13 @@ l10:
 }
 
 void OOC_URI_Authority_ServerBased_init(void) {
-  _c0 = Object__NewLatin1Region("Malformed IPv4 address in authority component", 46, 0, 45);
-  _c1 = Object__NewLatin1Region("Malformed host name in authority component", 43, 0, 42);
-  _c2 = Object__NewLatin1Region("Illegal character in user info part of authority component", 59, 0, 58);
-  _c3 = Object__NewLatin1Region("Host name in authority component is empty", 42, 0, 41);
-  _c4 = Object__NewLatin1Region("Port number out of range in authority component", 48, 0, 47);
-  _c5 = Object__NewLatin1Region("Junk after authority component", 31, 0, 30);
-  _c6 = Object__NewLatin1Region("//", 3, 0, 2);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"Malformed IPv4 address in authority component", 46, 0, 45);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"Malformed host name in authority component", 43, 0, 42);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"Illegal character in user info part of authority component", 59, 0, 58);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"Host name in authority component is empty", 42, 0, 41);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"Port number out of range in authority component", 48, 0, 47);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"Junk after authority component", 31, 0, 30);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"//", 3, 0, 2);
   _c7 = Object__NewLatin1Char(64u);
   _c8 = Object__NewLatin1Char(58u);
 

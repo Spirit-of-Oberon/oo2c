@@ -39,13 +39,13 @@ static void* _c26;
 #define OOC_Config_StdPragmas__defaultFunctionResultCheck OOC_TRUE
 #define OOC_Config_StdPragmas__defaultTypeGuard OOC_TRUE
 #define OOC_Config_StdPragmas__defaultRangeCheck OOC_FALSE
-#define OOC_Config_StdPragmas__defaultCompiler "OOC"
+#define OOC_Config_StdPragmas__defaultCompiler (OOC_CHAR8[])"OOC"
 #define OOC_Config_StdPragmas__defaultCompilerMajor 2
 #define OOC_Config_StdPragmas__defaultCompilerMinor 1
-#define OOC_Config_StdPragmas__defaultTargetOS "Unix"
+#define OOC_Config_StdPragmas__defaultTargetOS (OOC_CHAR8[])"Unix"
 #define OOC_Config_StdPragmas__defaultTargetInteger 64
 #define OOC_Config_StdPragmas__defaultTargetAddress 32
-#define OOC_Config_StdPragmas__defaultTargetArchMinor ""
+#define OOC_Config_StdPragmas__defaultTargetArchMinor (OOC_CHAR8[])""
 Config_Section_Options__Option OOC_Config_StdPragmas__warnings;
 Config_Section_Options__Option OOC_Config_StdPragmas__assertions;
 Config_Section_Options__Option OOC_Config_StdPragmas__stackCheck;

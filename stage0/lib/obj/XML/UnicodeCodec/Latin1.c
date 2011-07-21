@@ -210,7 +210,7 @@ XML_UnicodeCodec_Latin1__Codec XML_UnicodeCodec_Latin1__FactoryDesc_NewCodecBOM(
 
 void XML_UnicodeCodec_Latin1__FactoryDesc_GetEncodingName(XML_UnicodeCodec_Latin1__Factory f, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"ISO-8859-1",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"ISO-8859-1",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -222,23 +222,23 @@ void OOC_XML_UnicodeCodec_Latin1_init(void) {
   XML_UnicodeCodec_Latin1__factory = (XML_UnicodeCodec_Latin1__Factory)i0;
   XML_UnicodeCodec_Latin1__InitFactory((XML_UnicodeCodec_Latin1__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("ISO_8859-1:1987", 16, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"ISO_8859-1:1987", 16, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("iso-ir-100", 11, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"iso-ir-100", 11, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("ISO_8859-1", 11, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"ISO_8859-1", 11, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("ISO-8859-1", 11, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"ISO-8859-1", 11, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("latin1", 7, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"latin1", 7, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("l1", 3, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"l1", 3, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("IBM819", 7, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"IBM819", 7, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("CP819", 6, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"CP819", 6, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_Latin1__factory;
-  XML_UnicodeCodec__Register("csISOLatin1", 12, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"csISOLatin1", 12, (XML_UnicodeCodec__Factory)i0);
   return;
   ;
 }

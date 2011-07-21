@@ -19,8 +19,8 @@ static OOC_SSA_Stats__Stats OOC_SSA_Stats__NewStats(void);
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_OOC_SSA_Stats__Stats = { (RT0__Struct[]){&_td_OOC_SSA_Stats__StatsDesc}, NULL, NULL, &_mid, "Stats", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_SSA_Stats__StatsDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_SSA_Stats__StatsDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode}, NULL, &_mid, "StatsDesc", 4272, 2, (1<<RT0__flagAtomic), RT0__strRecord };
+RT0__StructDesc _td_OOC_SSA_Stats__Stats = { (RT0__Struct[]){&_td_OOC_SSA_Stats__StatsDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"Stats", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_Stats__StatsDesc = { (RT0__Struct[]){&_td_RT0__ObjectDesc,&_td_Object__ObjectDesc,&_td_OOC_SSA_Stats__StatsDesc}, (void*[]){(void*)RT0__ObjectDesc_Finalize,(void*)Object__ObjectDesc_ToString,(void*)Object__ObjectDesc_Equals,(void*)Object__ObjectDesc_HashCode}, NULL, &_mid, (OOC_CHAR8*)"StatsDesc", 4272, 2, (1<<RT0__flagAtomic), RT0__strRecord };
 RT0__StructDesc _td_OOC_SSA_Stats__329 = { (RT0__Struct[]){&RT0__longint}, NULL, NULL, &_mid, NULL, 4272, 1068, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_SSA_Stats__1297 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 64, 64, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_SSA_Stats__1338 = { (RT0__Struct[]){&_td_OOC_SSA_Stats__Stats}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };

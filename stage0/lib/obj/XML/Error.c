@@ -32,7 +32,7 @@ void XML_Error__ContextDesc_WriteTemplate(XML_Error__Context context, Msg__Msg m
 
   OOC_INITIALIZE_VPAR(msgText__ref,msgText,OOC_CHAR16 ,(msgText_0d*2))
   i0 = (OOC_INT32)msg;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2751)))), Msg__MsgDesc_GetAttribute)),Msg__MsgDesc_GetAttribute)((Msg__Msg)i0, "entity_name", 12);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2751)))), Msg__MsgDesc_GetAttribute)),Msg__MsgDesc_GetAttribute)((Msg__Msg)i0, (OOC_CHAR8*)"entity_name", 12);
   entityName = (Msg__Attribute)i0;
   i1 = i0==(OOC_INT32)0;
   if (i1) goto l3;
@@ -232,10 +232,10 @@ l8:
       i0 = (OOC_INT32)m0;
       i1 = i0==(OOC_INT32)0;
       if (i1) goto l23;
-      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5881)))), Msg__MsgDesc_GetAttribute)),Msg__MsgDesc_GetAttribute)((Msg__Msg)i0, "char", 5);
+      i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5881)))), Msg__MsgDesc_GetAttribute)),Msg__MsgDesc_GetAttribute)((Msg__Msg)i0, (OOC_CHAR8*)"char", 5);
       p0 = (Msg__Attribute)i0;
       i1 = (OOC_INT32)m1;
-      i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5922)))), Msg__MsgDesc_GetAttribute)),Msg__MsgDesc_GetAttribute)((Msg__Msg)i1, "char", 5);
+      i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5922)))), Msg__MsgDesc_GetAttribute)),Msg__MsgDesc_GetAttribute)((Msg__Msg)i1, (OOC_CHAR8*)"char", 5);
       p1 = (Msg__Attribute)i1;
       i2 = i0!=(OOC_INT32)0;
       if (i2) goto l5;
@@ -311,7 +311,7 @@ l24:
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6611))+12);
   i0 = (OOC_INT32)URI_Scheme_File__URIDesc_GetPath((URI_Scheme_File__URI)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6624)))), &_td_URI_Scheme_File__URIDesc, 6624)));
   XML_Error__ListDesc_Write_Copy((Object__String)i0, (void*)(OOC_INT32)repl2, 1024);
-  Strings__Insert("file_name=", 11, 0, (void*)(OOC_INT32)repl2, 1024);
+  Strings__Insert((OOC_CHAR8*)"file_name=", 11, 0, (void*)(OOC_INT32)repl2, 1024);
   prev = (Msg__Msg)(OOC_INT32)0;
   prevURI = (Msg__StringPtr)(OOC_INT32)0;
   i0 = (OOC_INT32)errList;
@@ -327,7 +327,7 @@ l3_loop:
   i0 = XML_Error__ListDesc_Write_DistanceOk((Msg__Msg)i3, (Msg__Msg)i0);
   if (!i0) goto l23;
   i0 = (OOC_INT32)msg;
-  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6844)))), Msg__MsgDesc_GetAttribute)),Msg__MsgDesc_GetAttribute)((Msg__Msg)i0, "baseURI", 8);
+  i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6844)))), Msg__MsgDesc_GetAttribute)),Msg__MsgDesc_GetAttribute)((Msg__Msg)i0, (OOC_CHAR8*)"baseURI", 8);
   uriAttr = (Msg__Attribute)i0;
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6894)))), &_td_Msg__StringAttributeDesc, 6894)), 6910))+8);
   i4 = (OOC_INT32)prevURI;
@@ -372,9 +372,9 @@ l20:
 l21:;
   }
   i0 = (OOC_INT32)writer;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7440)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "In file ", 9);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7440)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"In file ", 9);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7484)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)text, 8192);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7522)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, ": ", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7522)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)": ", 3);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7560)))), TextRider__WriterDesc_WriteLn)),TextRider__WriterDesc_WriteLn)((TextRider__Writer)i0);
 l22:
   i0 = (OOC_INT32)uriAttr;
@@ -382,8 +382,8 @@ l22:
   prevURI = (Msg__StringPtr)i0;
   i0 = (OOC_INT32)msg;
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7657)))), Msg__MsgDesc_GetText)),Msg__MsgDesc_GetText)((Msg__Msg)i0, (void*)(OOC_INT32)text, 8192);
-  XML_Error__ListDesc_Write_Replace((void*)(OOC_INT32)text, 8192, (void*)(OOC_INT32)repl1, 1024, "file:", 6);
-  XML_Error__ListDesc_Write_Replace((void*)(OOC_INT32)text, 8192, (void*)(OOC_INT32)repl2, 1024, "file_name=", 11);
+  XML_Error__ListDesc_Write_Replace((void*)(OOC_INT32)text, 8192, (void*)(OOC_INT32)repl1, 1024, (OOC_CHAR8*)"file:", 6);
+  XML_Error__ListDesc_Write_Replace((void*)(OOC_INT32)text, 8192, (void*)(OOC_INT32)repl2, 1024, (OOC_CHAR8*)"file_name=", 11);
   i0 = (OOC_INT32)writer;
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7774)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)text, 8192);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7810)))), TextRider__WriterDesc_WriteLn)),TextRider__WriterDesc_WriteLn)((TextRider__Writer)i0);
@@ -402,7 +402,7 @@ l28:
 
 void OOC_XML_Error_init(void) {
   register OOC_INT32 i0;
-  _c0 = Object__NewLatin1Region("file://", 8, 0, 7);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"file://", 8, 0, 7);
   _c1 = Object__NewLatin1Char(47u);
 
   i0 = (OOC_INT32)URI_Scheme_File__NewPrototype();

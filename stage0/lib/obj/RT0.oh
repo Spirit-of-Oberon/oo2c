@@ -21,6 +21,7 @@
 #define RT0__strPointer (-4)
 #define RT0__strQualType (-5)
 #define RT0__strProcedure (-6)
+#define RT0__strTypeVar (-7)
 #define RT0__flagAtomic 0
 #define RT0__flagVTable 1
 #define RT0__flagFinalize 2
@@ -52,6 +53,8 @@ typedef struct RT0__CaseRange {
   OOC_INT32 high;
   OOC_PTR jmp;
 } RT0__CaseRange;
+typedef OOC_CHAR8 *RT0__charPtr1d;
+typedef RT0__charPtr1d *RT0__charPtr2d;
 extern struct RT0__StructDesc RT0__boolean;
 extern struct RT0__StructDesc RT0__char;
 extern struct RT0__StructDesc RT0__longchar;
@@ -66,14 +69,14 @@ extern struct RT0__StructDesc RT0__byte;
 extern struct RT0__StructDesc RT0__ptr;
 extern struct RT0__StructDesc RT0__procedure;
 extern OOC_INT32 RT0__argc;
-extern OOC_CHAR8 **RT0__argv;
+extern RT0__charPtr2d RT0__argv;
 extern OOC_INT32 RT0__poisonHeap;
 extern void RT0__ObjectDesc_Finalize(RT0__Object o);
 #define _TBN_RT0__ObjectDesc_Finalize 0
 typedef void (*_TBP_RT0__ObjectDesc_Finalize)(RT0__Object o);
 extern OOC_PTR RT0__NewObject(RT0__Struct td, ...);
 extern RT0__Struct RT0__TypeOf(OOC_PTR ptr);
-extern OOC_CHAR8 RT0__TypeTest(RT0__Struct tag, RT0__Struct td);
+extern OOC_CHAR8 RT0__TypeTest(RT0__Struct tag, RT0__Struct td, RT0__Struct receiverTag);
 extern OOC_PTR RT0__NewBlock(OOC_INT32 bytes);
 extern void RT0__FreeBlock(OOC_PTR ptr);
 extern void RT0__CollectGarbage(void);
@@ -104,17 +107,17 @@ extern RT0__StructDesc _td_RT0__ObjectDesc;
 extern RT0__StructDesc _td_RT0__Name;
 extern RT0__StructDesc _td_RT0__Module;
 extern RT0__StructDesc _td_RT0__Struct;
-extern RT0__StructDesc _td_RT0__6744;
-extern RT0__StructDesc _td_RT0__6964;
-extern RT0__StructDesc _td_RT0__7158;
+extern RT0__StructDesc _td_RT0__6868;
+extern RT0__StructDesc _td_RT0__7088;
+extern RT0__StructDesc _td_RT0__7282;
 extern RT0__StructDesc _td_RT0__ModuleDesc;
-extern RT0__StructDesc _td_RT0__8935;
+extern RT0__StructDesc _td_RT0__9059;
 extern RT0__StructDesc _td_RT0__CaseRange;
-extern RT0__StructDesc _td_RT0__9949;
-extern RT0__StructDesc _td_RT0__9875;
-extern RT0__StructDesc _td_RT0__14694;
-extern RT0__StructDesc _td_RT0__14900;
-extern RT0__StructDesc _td_RT0__15246;
+extern RT0__StructDesc _td_RT0__charPtr1d;
+extern RT0__StructDesc _td_RT0__charPtr2d;
+extern RT0__StructDesc _td_RT0__14981;
+extern RT0__StructDesc _td_RT0__15187;
+extern RT0__StructDesc _td_RT0__15533;
 #endif /* _MODULE_RT0_ */
 
 /* --- */

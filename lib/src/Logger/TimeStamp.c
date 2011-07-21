@@ -18,14 +18,14 @@ void Logger_TimeStamp__GmtNow(OOC_CHAR8 *str, OOC_LEN str_len,
 			const OOC_CHAR8* template, OOC_LEN template_len) {
   time_t t = time(NULL);
   struct tm *now = gmtime(&t);  /* not reentrant... FIXME */
-  strftime(str, str_len, template, now);
+  strftime((char*)str, str_len, (char*)template, now);
 }
 
 void Logger_TimeStamp__LocalNow(OOC_CHAR8 *str, OOC_LEN str_len,
 			  const OOC_CHAR8* template, OOC_LEN template_len) {
   time_t t = time(NULL);
   struct tm *now = localtime(&t);  /* not reentrant... FIXME */
-  strftime(str, str_len, template, now);
+  strftime((char*)str, str_len, (char*)template, now);
 }
 
 void OOC_Logger_TimeStamp_init() {

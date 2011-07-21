@@ -6,11 +6,11 @@
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
-#define OOC_Config_Autoconf__configFile "/tmp/oo2c/lib/oo2c/oo2crc.xml"
-#define OOC_Config_Autoconf__nameTargetOS "Unix"
+#define OOC_Config_Autoconf__configFile (OOC_CHAR8[])"/usr/home/ooc-devel/local-ooc2/lib/oo2c/oo2crc.xml"
+#define OOC_Config_Autoconf__nameTargetOS (OOC_CHAR8[])"Unix"
 #define OOC_Config_Autoconf__bitsTargetInteger 64
 #define OOC_Config_Autoconf__bitsTargetAddress 32
-#define OOC_Config_Autoconf__compilerVersion "2.1.8"
+#define OOC_Config_Autoconf__compilerVersion (OOC_CHAR8[])"2.1.9"
 #define OOC_Config_Autoconf__compilerMajor 2
 #define OOC_Config_Autoconf__compilerMinor 1
 #define OOC_Config_Autoconf__longint 6

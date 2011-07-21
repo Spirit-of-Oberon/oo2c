@@ -1,6 +1,6 @@
-/*      $Id: __oo2c.h,v 1.46 2003/09/12 08:06:11 sgreenhill Exp $        */
+/*      $Id: __oo2c.h,v 1.47 2005/10/07 08:35:42 mva Exp $        */
 /*  Run-time system for C back-ends of OOC2
-    Copyright (C) 2001-2003  Michael van Acken
+    Copyright (C) 2001-2003, 2005  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -64,8 +64,8 @@
        RT0__ErrorFailedTypeGuard(&_mid,pos,(RT0__Struct)tag);   \
      }                                                          \
      adr; })
-#define _type_guard_q(adr,tag,guard,pos)                        \
-  ({ if (!RT0__TypeTest((RT0__Struct)tag,(RT0__Struct)guard)) { \
+#define _type_guard_q(adr,tag,receiver,guard,pos)                        \
+  ({ if (!RT0__TypeTest((RT0__Struct)tag,(RT0__Struct)guard,(RT0__Struct)receiver)) { \
        RT0__ErrorFailedTypeGuard(&_mid,pos,(RT0__Struct)tag);   \
      }                                                          \
      adr; })
@@ -199,6 +199,8 @@ extern OOC_INT32 _cmp32(const OOC_CHAR32* l, const OOC_CHAR32* r);
 #define OOC_TYPE_TEST(_tag,_td) \
   ((((RT0__Struct)(_tag))->len >= (_td)->len) && \
    (((RT0__Struct)(_tag))->baseTypes[(_td)->len] == (_td)))
+#define OOC_TYPE_TEST_Q(_tag,_td,_receiver) \
+  RT0__TypeTest((RT0__Struct)_tag, (RT0__Struct)_td, (RT0__Struct)_receiver)
 
 #define OOC_TBPROC_ADR(_tag,_name) (((RT0__Struct)(_tag))->tbProcs[_TBN_##_name])
 

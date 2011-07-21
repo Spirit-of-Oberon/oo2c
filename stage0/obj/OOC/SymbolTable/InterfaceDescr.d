@@ -9,8 +9,8 @@
 #include <OOC/SymbolTable/GetClass.oh>
 #include <OOC/SymbolTable/Namespace.oh>
 #include <OOC/Doc/Output/XML.oh>
-#define OOC_SymbolTable_InterfaceDescr__dtdPackageName "OOC"
-#define OOC_SymbolTable_InterfaceDescr__dtdResourcePath "xml/interface-description.dtd"
+#define OOC_SymbolTable_InterfaceDescr__dtdPackageName (OOC_CHAR8[])"OOC"
+#define OOC_SymbolTable_InterfaceDescr__dtdResourcePath (OOC_CHAR8[])"xml/interface-description.dtd"
 static URI__URI OOC_SymbolTable_InterfaceDescr__dtdSystemId;
 OOC_CHAR8 OOC_SymbolTable_InterfaceDescr__absoluteDtdSystemId;
 static URI__URI OOC_SymbolTable_InterfaceDescr__GetSystemId(OOC_Config_Repositories__Section repositories);

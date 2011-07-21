@@ -21,8 +21,8 @@ static Config_Source_CmdLine__CmdLine OOC_Config__cmdLine;
 Config_Section_Arguments__Section OOC_Config__arguments;
 OOC_Config_Pragmas__Section OOC_Config__pragmas;
 OOC_Config_Repositories__Section OOC_Config__repositories;
-#define OOC_Config__configEnvVar "OO2CRC"
-#define OOC_Config__repositoryListEnvVar "OOC_REPS"
+#define OOC_Config__configEnvVar (OOC_CHAR8[])"OO2CRC"
+#define OOC_Config__repositoryListEnvVar (OOC_CHAR8[])"OOC_REPS"
 static Config_Simple__Config OOC_Config__config;
 Config_Section_Options__Option OOC_Config__xsltproc;
 static void OOC_Config__InitConfig(Object__String8 defaultConfigFile);

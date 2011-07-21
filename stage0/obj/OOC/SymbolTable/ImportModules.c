@@ -42,19 +42,19 @@ void OOC_SymbolTable_ImportModules__ImportModules(OOC_SymbolTable__Module system
       lastError = (Msg__Msg)i0;
       i1 = (OOC_INT32)name;
       i2 = *(OOC_INT32*)(_check_pointer(i1, 2015));
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 1988)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, i2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 1988)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"pos", 4, i2);
       i0 = (OOC_INT32)lastError;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 2066))+4);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2038)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "line", 5, i2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2038)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"line", 5, i2);
       i0 = (OOC_INT32)lastError;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 2120))+8);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2090)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, i2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2090)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"column", 7, i2);
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 2195))+12);
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 2195))+12);
       i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 2200)), 0);
       i0 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i1, 2200)), i0);
       i1 = (OOC_INT32)lastError;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2146)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "name", 5, (Msg__StringPtr)i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2146)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"name", 5, (Msg__StringPtr)i0);
       i0 = (OOC_INT32)errList;
       i1 = (OOC_INT32)lastError;
       OOC_Error__ListDesc_Append((OOC_Error__List)i0, (Msg__Msg)i1);
@@ -138,7 +138,7 @@ void OOC_OOC_SymbolTable_ImportModules_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SymbolTable_ImportModules__ErrorContext.baseTypes[0]);
   OOC_SymbolTable_ImportModules__importModulesContext = (OOC_SymbolTable_ImportModules__ErrorContext)i0;
-  OOC_Error__InitContext((OOC_Error__Context)i0, "OOC:SymbolTable:ImportModules", 30);
+  OOC_Error__InitContext((OOC_Error__Context)i0, (OOC_CHAR8*)"OOC:SymbolTable:ImportModules", 30);
   return;
   ;
 }

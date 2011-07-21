@@ -138,6 +138,12 @@ Object__String CharsToString(Object__CharsLatin1 chars) {
   ;
 }
 
+static Object__CharsLatin1 AllocString(OOC_INT32 size) {
+  return (Object__CharsLatin1)((OOC_INT32)RT0__NewObject(_td_Object__CharsLatin1
+.baseTypes[0], size));
+  ;
+}
+ 
 Object__String OS_HostPath__Normalize(Object__String pathString) {
   char newpath [4096]; 
   int drive, pos;
@@ -153,7 +159,7 @@ Object__String OS_HostPath__Normalize(Object__String pathString) {
       /* drive identifier with relative path. */
       drive = tolower(path[0]) - 'a' + 1;
       if (_getdcwd(drive, newpath, sizeof(newpath))) {
-        result = (char *) malloc (strlen(newpath)+strlen(path)+3);
+        result = (char *) AllocString (strlen(newpath)+strlen(path)+3);
         if (!endsWithSeparator(newpath)) {
           strcat(result, "/");
         }
@@ -163,14 +169,14 @@ Object__String OS_HostPath__Normalize(Object__String pathString) {
       }
     } else {
       /* drive identifier with absolute path */
-      result = (char *) malloc(strlen(path)+3);
+      result = (char *) AllocString(strlen(path)+3);
       strcpy(result, path);
     }
     result[1] = '$';
     memmove(result+1, result, strlen(result)+1);
     result[0] = '/';
   } else {
-    result = (char *) malloc(strlen(path)+1);
+    result = (char *) AllocString(strlen(path)+1);
     strcpy(result, path);
   }
   pos = 0;
@@ -181,7 +187,6 @@ Object__String OS_HostPath__Normalize(Object__String pathString) {
     ++pos;
   }
   resultString = CharsToString((Object__CharsLatin1) result);
-  free(result);
   return resultString;
 }
 
@@ -191,7 +196,7 @@ Object__String OS_HostPath__Denormalize(Object__String pathString) {
   Object__String resultString;
 
   path = StringToChars(pathString);
-  result = (char *) malloc (strlen(path)+1);
+  result = (char *) AllocString (strlen(path)+1);
 
   if ( (path[0] == '/') && isalpha(path[1]) && (path[2] == '$')) {
     memmove(result, path+1, strlen(path+1)+1);
@@ -200,7 +205,6 @@ Object__String OS_HostPath__Denormalize(Object__String pathString) {
     strcpy(result, path);
   }
   resultString = CharsToString((Object__CharsLatin1) result);
-  free(result);
   return resultString;
 }
 

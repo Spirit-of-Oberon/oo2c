@@ -362,9 +362,9 @@ extern RT0__StructDesc _td_OOC_C_DeclWriter__9368;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__9741;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__11824;
 extern RT0__StructDesc _td_OOC_C_DeclWriter__12725;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__26037;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__26194;
-extern RT0__StructDesc _td_OOC_C_DeclWriter__31171;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__26122;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__26279;
+extern RT0__StructDesc _td_OOC_C_DeclWriter__31593;
 #endif /* _MODULE_OOC_C_DeclWriter_ */
 
 /* --- */

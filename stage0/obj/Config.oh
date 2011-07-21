@@ -30,9 +30,9 @@ typedef struct Config__StringVarDesc {
   Object__String string;
 } Config__StringVarDesc;
 typedef ADT_Dictionary__Dictionary Config__PrototypeMap;
-#define Config__outOfRange "Value out of range"
-#define Config__wrongFormat "Invalid format"
-#define Config__empty "Value is empty"
+#define Config__outOfRange (OOC_CHAR8[])"Value out of range"
+#define Config__wrongFormat (OOC_CHAR8[])"Invalid format"
+#define Config__empty (OOC_CHAR8[])"Value is empty"
 extern void Config__InitConfig(Config__Config config);
 extern void Config__VariableDesc_StringToValue(Config__Variable v, Object__String str);
 #define _TBN_Config__VariableDesc_StringToValue 4

@@ -13,11 +13,11 @@ static void XML_UnicodeBuffer__Encode(XML_UnicodeBuffer__Output out, OOC_CHAR8 a
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
 RT0__StructDesc _td_XML_UnicodeBuffer__268 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
-RT0__StructDesc _td_XML_UnicodeBuffer__CharArray = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__268}, NULL, NULL, &_mid, "CharArray", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_XML_UnicodeBuffer__Input = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__InputDesc}, NULL, NULL, &_mid, "Input", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_XML_UnicodeBuffer__InputDesc = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__InputDesc}, (void*[]){(void*)XML_UnicodeBuffer__InputDesc_NextBlock,(void*)XML_UnicodeBuffer__InputDesc_Close,(void*)XML_UnicodeBuffer__InputDesc_SetCodec}, NULL, &_mid, "InputDesc", 40, 0, 0, RT0__strRecord };
-RT0__StructDesc _td_XML_UnicodeBuffer__Output = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__OutputDesc}, NULL, NULL, &_mid, "Output", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_XML_UnicodeBuffer__OutputDesc = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__OutputDesc}, (void*[]){(void*)XML_UnicodeBuffer__OutputDesc_Write16I,(void*)XML_UnicodeBuffer__OutputDesc_Write8I,(void*)XML_UnicodeBuffer__OutputDesc_Write16,(void*)XML_UnicodeBuffer__OutputDesc_Write8,(void*)XML_UnicodeBuffer__OutputDesc_Flush}, NULL, &_mid, "OutputDesc", 36, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_XML_UnicodeBuffer__CharArray = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__268}, NULL, NULL, &_mid, (OOC_CHAR8*)"CharArray", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_XML_UnicodeBuffer__Input = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__InputDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"Input", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_XML_UnicodeBuffer__InputDesc = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__InputDesc}, (void*[]){(void*)XML_UnicodeBuffer__InputDesc_NextBlock,(void*)XML_UnicodeBuffer__InputDesc_Close,(void*)XML_UnicodeBuffer__InputDesc_SetCodec}, NULL, &_mid, (OOC_CHAR8*)"InputDesc", 40, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_XML_UnicodeBuffer__Output = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__OutputDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"Output", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_XML_UnicodeBuffer__OutputDesc = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__OutputDesc}, (void*[]){(void*)XML_UnicodeBuffer__OutputDesc_Write16I,(void*)XML_UnicodeBuffer__OutputDesc_Write8I,(void*)XML_UnicodeBuffer__OutputDesc_Write16,(void*)XML_UnicodeBuffer__OutputDesc_Write8,(void*)XML_UnicodeBuffer__OutputDesc_Flush}, NULL, &_mid, (OOC_CHAR8*)"OutputDesc", 36, 0, 0, RT0__strRecord };
 RT0__StructDesc _td_XML_UnicodeBuffer__3530 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 8192, 8192, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_XML_UnicodeBuffer__3519 = { (RT0__Struct[]){&_td_XML_UnicodeBuffer__3530}, NULL, NULL, &_mid, NULL, 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_XML_UnicodeBuffer__3629 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 16384, 8192, (1<<RT0__flagAtomic), RT0__strArray };

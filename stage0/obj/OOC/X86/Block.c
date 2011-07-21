@@ -768,9 +768,9 @@ l8:
   if (!i2) goto l19;
 l13_loop:
   i2 = (OOC_INT32)OOC_X86_Debug__Label((OOC_X86_SSA__Node)i1);
-  Log__Object("waiting", 8, (Object__Object)i2);
+  Log__Object((OOC_CHAR8*)"waiting", 8, (Object__Object)i2);
   i2 = *(OOC_INT32*)((_check_pointer(i1, 9958))+44);
-  Log__Int("  marker", 9, i2);
+  Log__Int((OOC_CHAR8*)"  marker", 9, i2);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9990))+8);
   instr = (OOC_X86_SSA__Instr)i1;
   i2 = i1!=(OOC_INT32)0;

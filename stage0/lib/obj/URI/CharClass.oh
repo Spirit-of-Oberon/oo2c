@@ -6,10 +6,10 @@
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
-#define URI_CharClass__unreservedChar "@&=+$,"
-#define URI_CharClass__unreservedPChar ":@&=+$,"
-#define URI_CharClass__unreservedUserinfo ";:&=+$,"
-#define URI_CharClass__reserved ";/?:@&=+$,[]"
+#define URI_CharClass__unreservedChar (OOC_CHAR8[])"@&=+$,"
+#define URI_CharClass__unreservedPChar (OOC_CHAR8[])":@&=+$,"
+#define URI_CharClass__unreservedUserinfo (OOC_CHAR8[])";:&=+$,"
+#define URI_CharClass__reserved (OOC_CHAR8[])";/?:@&=+$,[]"
 extern OOC_CHAR8 URI_CharClass__IsAlpha(OOC_CHAR8 ch);
 extern OOC_CHAR8 URI_CharClass__SkipAlpha(const OOC_CHAR8 str[], OOC_LEN str_0d, OOC_INT16 *pos);
 extern OOC_CHAR8 URI_CharClass__IsDigit(OOC_CHAR8 ch);

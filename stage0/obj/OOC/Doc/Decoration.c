@@ -614,7 +614,7 @@ l5:
   *(OOC_UINT8*)(i0+(_check_index((i1-1), i3, OOC_UINT32, 7852))) = 0u;
 l7:
   i0 = OOC_ARRAY_LENGTH((_check_pointer(i2, 7905)), 0);
-  Strings__Append("  *)", 5, (void*)(_check_pointer(i2, 7905)), i0);
+  Strings__Append((OOC_CHAR8*)"  *)", 5, (void*)(_check_pointer(i2, 7905)), i0);
   i0 = _check_pointer(i2, 7924);
   i1 = (OOC_INT32)d;
   i3 = *(OOC_INT32*)((_check_pointer(i1, 7926))+8);
@@ -633,7 +633,7 @@ l10:
   
 l12:
   if (i0) goto l14;
-  _copy_8((const void*)"(*x",(void*)(OOC_INT32)ins,4);
+  _copy_8((const void*)(OOC_CHAR8*)"(*x",(void*)(OOC_INT32)ins,4);
   *(OOC_UINT8*)((OOC_INT32)ins+(_check_index(2, 4, OOC_UINT8, 8089))) = 10u;
   i0 = OOC_ARRAY_LENGTH((_check_pointer(i2, 8143)), 0);
   Strings__Insert((void*)(OOC_INT32)ins, 4, 0, (void*)(_check_pointer(i2, 8143)), i0);

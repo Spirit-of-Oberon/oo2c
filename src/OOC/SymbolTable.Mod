@@ -1,7 +1,7 @@
-(* 	$Id: SymbolTable.Mod,v 1.126 2004/12/15 11:27:00 mva Exp $	 *)
+(* 	$Id: SymbolTable.Mod,v 1.127 2005/10/07 08:35:42 mva Exp $	 *)
 MODULE OOC:SymbolTable [OOC_EXTENSIONS];
 (*  Defines structure and entries of the symbol table.
-    Copyright (C) 2000-2004  Michael van Acken
+    Copyright (C) 2000-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -743,6 +743,10 @@ TYPE
     srcCodeBound-: Type;
     (**Similar to @ofield{bound}, but it is not changed by
        @oproc{*OOC:SymbolTable:CreateNamespace.CreateNamespace}.  *)
+    parameterIndex-: LONGINT;
+    (**For a type variable that appears in the receiver type of a type-bound
+       procedure, this is the parameters index in the type parameter list.
+       For all other type variables, this field is @code{-1}.  *)
   END;
   
 TYPE
@@ -2523,6 +2527,7 @@ PROCEDURE InitTypeVar* (typeVar: TypeVar; parent: Item;
     InitType(typeVar, parent, position);
     typeVar.bound := bound;
     typeVar.srcCodeBound := bound;
+    typeVar.parameterIndex := -1;
   END InitTypeVar;
 
 PROCEDURE (typeVar: TypeVar) Store* (w: Storable.Writer) RAISES IO.Error;
@@ -2535,12 +2540,18 @@ PROCEDURE (typeVar: TypeVar) Load* (r: Storable.Reader) RAISES IO.Error;
   BEGIN
     typeVar.Load^(r);
     ReadType(r, typeVar.bound, typeVar.srcCodeBound);
+    typeVar.parameterIndex := -1;
   END Load;
 
 PROCEDURE (typeVar: TypeVar) Bound*(): Type;
   BEGIN
     RETURN typeVar.bound;
   END Bound;
+
+PROCEDURE (typeVar: TypeVar) SetParameterIndex*(parameterIndex: LONGINT);
+  BEGIN
+    typeVar.parameterIndex := parameterIndex;
+  END SetParameterIndex;
 
 
 PROCEDURE InitTypePars* (typePars: TypePars; parent: Item);

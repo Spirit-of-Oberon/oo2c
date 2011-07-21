@@ -21,18 +21,18 @@ static void Config_Source_CmdLine__Init(Config_Source_CmdLine__CmdLine cmdLine);
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_Config_Source_CmdLine__OptionTemplate = { (RT0__Struct[]){&_td_Config_Source_CmdLine__OptionTemplateDesc}, NULL, NULL, &_mid, "OptionTemplate", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_Config_Source_CmdLine__OptionTemplate = { (RT0__Struct[]){&_td_Config_Source_CmdLine__OptionTemplateDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"OptionTemplate", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_Config_Source_CmdLine__1178 = { (RT0__Struct[]){&_td_Object__String8}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_Config_Source_CmdLine__NameArray = { (RT0__Struct[]){&_td_Config_Source_CmdLine__1178}, NULL, NULL, &_mid, "NameArray", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_Config_Source_CmdLine__OptionTemplateDesc = { (RT0__Struct[]){&_td_Config_Source_CmdLine__OptionTemplateDesc}, (void*[]){}, NULL, &_mid, "OptionTemplateDesc", 16, 0, 0, RT0__strRecord };
-RT0__StructDesc _td_Config_Source_CmdLine__Command = { (RT0__Struct[]){&_td_Config_Source_CmdLine__CommandDesc}, NULL, NULL, &_mid, "Command", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_Config_Source_CmdLine__NameArray = { (RT0__Struct[]){&_td_Config_Source_CmdLine__1178}, NULL, NULL, &_mid, (OOC_CHAR8*)"NameArray", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_Config_Source_CmdLine__OptionTemplateDesc = { (RT0__Struct[]){&_td_Config_Source_CmdLine__OptionTemplateDesc}, (void*[]){}, NULL, &_mid, (OOC_CHAR8*)"OptionTemplateDesc", 16, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_Config_Source_CmdLine__Command = { (RT0__Struct[]){&_td_Config_Source_CmdLine__CommandDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"Command", 4, -1, 0, RT0__strPointer };
 RT0__StructDesc _td_Config_Source_CmdLine__1406 = { (RT0__Struct[]){&_td_Object__String8}, NULL, NULL, &_mid, NULL, 4, 1, 0, RT0__strOpenArray };
-RT0__StructDesc _td_Config_Source_CmdLine__ArgList = { (RT0__Struct[]){&_td_Config_Source_CmdLine__1406}, NULL, NULL, &_mid, "ArgList", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_Config_Source_CmdLine__CommandDesc = { (RT0__Struct[]){&_td_Config_Source_CmdLine__CommandDesc}, (void*[]){(void*)Config_Source_CmdLine__CommandDesc_DoNotWrite}, NULL, &_mid, "CommandDesc", 16, 0, 0, RT0__strRecord };
-RT0__StructDesc _td_Config_Source_CmdLine__CmdLine = { (RT0__Struct[]){&_td_Config_Source_CmdLine__CmdLineDesc}, NULL, NULL, &_mid, "CmdLine", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_Config_Source_CmdLine__CmdLineDesc = { (RT0__Struct[]){&_td_Config_Source__SourceDesc,&_td_Config_Source_CmdLine__CmdLineDesc}, (void*[]){(void*)Config_Source_CmdLine__CmdLineDesc_Write,(void*)Config_Source_CmdLine__CmdLineDesc_AddOptionTemplate,(void*)Config_Source_CmdLine__CmdLineDesc_EnableDashDash,(void*)Config_Source_CmdLine__CmdLineDesc_EnableExpandToSingleChar,(void*)Config_Source_CmdLine__CmdLineDesc_OptionsStartWithDash,(void*)Config_Source_CmdLine__CmdLineDesc_Parse}, NULL, &_mid, "CmdLineDesc", 16, 1, 0, RT0__strRecord };
-RT0__StructDesc _td_Config_Source_CmdLine__ErrorContext = { (RT0__Struct[]){&_td_Config_Source_CmdLine__ErrorContextDesc}, NULL, NULL, &_mid, "ErrorContext", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_Config_Source_CmdLine__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_Config_Source_CmdLine__ErrorContextDesc}, (void*[]){(void*)Config_Source_CmdLine__ErrorContextDesc_GetTemplate}, NULL, &_mid, "ErrorContextDesc", 4, 1, 0, RT0__strRecord };
+RT0__StructDesc _td_Config_Source_CmdLine__ArgList = { (RT0__Struct[]){&_td_Config_Source_CmdLine__1406}, NULL, NULL, &_mid, (OOC_CHAR8*)"ArgList", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_Config_Source_CmdLine__CommandDesc = { (RT0__Struct[]){&_td_Config_Source_CmdLine__CommandDesc}, (void*[]){(void*)Config_Source_CmdLine__CommandDesc_DoNotWrite}, NULL, &_mid, (OOC_CHAR8*)"CommandDesc", 16, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_Config_Source_CmdLine__CmdLine = { (RT0__Struct[]){&_td_Config_Source_CmdLine__CmdLineDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"CmdLine", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_Config_Source_CmdLine__CmdLineDesc = { (RT0__Struct[]){&_td_Config_Source__SourceDesc,&_td_Config_Source_CmdLine__CmdLineDesc}, (void*[]){(void*)Config_Source_CmdLine__CmdLineDesc_Write,(void*)Config_Source_CmdLine__CmdLineDesc_AddOptionTemplate,(void*)Config_Source_CmdLine__CmdLineDesc_EnableDashDash,(void*)Config_Source_CmdLine__CmdLineDesc_EnableExpandToSingleChar,(void*)Config_Source_CmdLine__CmdLineDesc_OptionsStartWithDash,(void*)Config_Source_CmdLine__CmdLineDesc_Parse}, NULL, &_mid, (OOC_CHAR8*)"CmdLineDesc", 16, 1, 0, RT0__strRecord };
+RT0__StructDesc _td_Config_Source_CmdLine__ErrorContext = { (RT0__Struct[]){&_td_Config_Source_CmdLine__ErrorContextDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"ErrorContext", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_Config_Source_CmdLine__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_Config_Source_CmdLine__ErrorContextDesc}, (void*[]){(void*)Config_Source_CmdLine__ErrorContextDesc_GetTemplate}, NULL, &_mid, (OOC_CHAR8*)"ErrorContextDesc", 4, 1, 0, RT0__strRecord };
 RT0__StructDesc _td_Config_Source_CmdLine__4195 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 256, 128, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_Config_Source_CmdLine__6746 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_Config_Source_CmdLine__6809 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };

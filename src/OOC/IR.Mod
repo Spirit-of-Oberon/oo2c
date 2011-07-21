@@ -1,7 +1,7 @@
-(* 	$Id: IR.Mod,v 1.287 2004/12/06 18:54:14 mva Exp $	 *)
+(* 	$Id: IR.Mod,v 1.288 2005/10/07 08:35:42 mva Exp $	 *)
 MODULE OOC:IR [OOC_EXTENSIONS];
 (*  High-level intermediate code representation.
-    Copyright (C) 2001-2004  Michael van Acken, Stewart Greenhill
+    Copyright (C) 2001-2005  Michael van Acken, Stewart Greenhill
 
     This file is part of OOC.
 
@@ -684,7 +684,12 @@ TYPE
     checkPointer-: BOOLEAN;
     (**If @code{TRUE}, then a run-time error should be reported if the
        left side of the type test is @code{NIL}.  *)
-
+    receiver-: Expression;
+    (**If the reference type is a type variable or a type that takes a variable
+       as input, then this field refers to the receiver
+       variable that provides the actual value for the type variable.  If there
+       are no type variables involved, then this field is @code{NIL}.  *)
+    
     origExpr-: Expression;
     (**Unnormalized value of @ofield{expr}.  *)
     origType-: TypeRef;
@@ -1089,6 +1094,7 @@ TYPE
   BuilderDesc* = RECORD
     module: Sym.Module;
     (* The symbol table of the module that is being processed.  *)
+    currentReceiver: Expression;
     
     pragmaHistory: Pragmas.History;
     errList: Error.List;
@@ -1227,13 +1233,15 @@ VAR
 
 PROCEDURE AppendContext(buffer : StringBuffer.StringBuffer; item : Sym.Item);
   BEGIN
-    WITH item : Sym.Declaration DO
+    WITH item: Sym.Declaration DO
       IF item.parent # NIL THEN
         AppendContext(buffer, item.parent);
       END;
       buffer.AppendLatin1(item.name.str^);
       buffer.AppendLatin1Char(".");
-     END;
+    | item: Sym.TypePars DO
+      buffer.AppendLatin1("(TypePars)");
+    END;
   END AppendContext;
 
 PROCEDURE TypeName* (type : Sym.Type) : STRING;
@@ -3424,7 +3432,7 @@ PROCEDURE InitTypeTag (tag: TypeTag; sym: Symbol; design: Expression);
     tag. design := design;
   END InitTypeTag;
 
-PROCEDURE (b: Builder) NewTypeTag (sym: Symbol; design: Expression): Expression;
+PROCEDURE (b: Builder) NewTypeTag*(sym: Symbol; design: Expression): TypeTag;
   VAR
     tag: TypeTag;
     type: Sym.Type;
@@ -3453,17 +3461,20 @@ PROCEDURE (tag: TypeTag) Accept* (v: Visitor);
 PROCEDURE InitTypeTest (test: TypeTest; sym: Symbol;
                         expr: Expression; referenceType: Sym.Type;
                         checkPointer: BOOLEAN;
+                        receiver: Expression;
                         origExpr: Expression; origType: TypeRef);
   BEGIN
     InitOperator (test, sym, Predef.GetType(Predef.boolean));
     test. expr := expr;
     test. referenceType := referenceType;
     test. checkPointer := checkPointer;
+    test. receiver := receiver;
     test. origExpr := origExpr;
     test. origType := origType;
   END InitTypeTest;
 
-PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expression): Expression;
+PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol;
+                                     expr, referenceType: Expression): Expression;
   VAR
     test: TypeTest;
     refType: Sym.Type;
@@ -3493,8 +3504,6 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
     refType := Sym.Expand(b.AssertType(referenceType));
     IF (refType = NIL) THEN
       RETURN b. errorExpr;
-    ELSIF (refType IS Sym.TypeVar) THEN
-      RETURN b.ErrExpr(notTypeInstance, referenceType.sym);
     ELSIF ~TR.IsExtensionOf(refType, expr.type) THEN
       RETURN b. ErrExpr (notExtensionOfLHS, referenceType. sym);
     ELSIF ~HasDynamicType(expr) THEN
@@ -3512,7 +3521,11 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       IF (expr IS Deref) THEN
         expr := expr(Deref). pointer;
       ELSIF (expr.type IS Sym.Pointer) OR (expr.type IS Sym.TypeVar) THEN
-        refType := TR.PointerBaseType(refType);
+        IF ~(refType IS Sym.TypeVar) THEN
+          (* is the type on the rhs is a variable, then we have no
+             base type with a handy type descriptor *)
+          refType := TR.PointerBaseType(refType);
+        END;
       END;
       NEW (test);
       IF (referenceType IS TypeRef) THEN
@@ -3520,7 +3533,8 @@ PROCEDURE (b: Builder) NewTypeTest* (sym: Symbol; expr, referenceType: Expressio
       ELSE
         typeRef := NIL;
       END;
-      InitTypeTest(test, sym, expr, refType, checkPointer, origExpr, typeRef);
+      InitTypeTest(test, sym, expr, refType, checkPointer,
+                   b.currentReceiver, origExpr, typeRef);
       RETURN test;
     END;
   END NewTypeTest;
@@ -5582,6 +5596,7 @@ PROCEDURE InitBuilder* (b: Builder; module: Sym.Module; uses: Uses.Uses;
     ELSE
       b. stringType := string(Sym.TypeDecl).type;
     END;
+    b.currentReceiver := NIL;
   END InitBuilder;
 
 PROCEDURE NewBuilder* (module: Sym.Module; uses: Uses.Uses;
@@ -5595,7 +5610,11 @@ PROCEDURE NewBuilder* (module: Sym.Module; uses: Uses.Uses;
     RETURN b
   END NewBuilder;
 
-
+PROCEDURE (b: Builder) SetCurrentReceiver*(design: Expression);
+  BEGIN
+    b.currentReceiver := design;
+  END SetCurrentReceiver;
+  
 PROCEDURE (b: Builder) StartTypeGuard* (typeTest: TypeTest;
                                         VAR namespace: Sym.Namespace);
   VAR

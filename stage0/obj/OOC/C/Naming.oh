@@ -12,16 +12,16 @@
 typedef struct OOC_C_Naming__QualTypeDescrDesc *OOC_C_Naming__QualTypeDescr;
 typedef struct OOC_C_Naming__QualTypeDescrDesc {
   Object__String name;
-  OOC_SymbolTable__TypeClosure type;
+  OOC_SymbolTable__Type type;
 } OOC_C_Naming__QualTypeDescrDesc;
 typedef struct OOC_C_Naming__QualTypeDataDesc *OOC_C_Naming__QualTypeData;
 typedef struct OOC_C_Naming__QualTypeDataDesc {
   ADT_ArrayList__ArrayList list;
 } OOC_C_Naming__QualTypeDataDesc;
-#define OOC_C_Naming__suffixPassPerRef "__ref"
-extern void OOC_C_Naming__QualTypeDescrDesc_INIT(OOC_C_Naming__QualTypeDescr qtd, OOC_INT32 id, OOC_SymbolTable__TypeClosure type);
+#define OOC_C_Naming__suffixPassPerRef (OOC_CHAR8[])"__ref"
+extern void OOC_C_Naming__QualTypeDescrDesc_INIT(OOC_C_Naming__QualTypeDescr qtd, OOC_INT32 id, OOC_SymbolTable__Type type);
 #define _TBN_OOC_C_Naming__QualTypeDescrDesc_INIT 4
-typedef void (*_TBP_OOC_C_Naming__QualTypeDescrDesc_INIT)(OOC_C_Naming__QualTypeDescr qtd, OOC_INT32 id, OOC_SymbolTable__TypeClosure type);
+typedef void (*_TBP_OOC_C_Naming__QualTypeDescrDesc_INIT)(OOC_C_Naming__QualTypeDescr qtd, OOC_INT32 id, OOC_SymbolTable__Type type);
 extern void OOC_C_Naming__QualTypeDataDesc_INIT(OOC_C_Naming__QualTypeData qtdData);
 #define _TBN_OOC_C_Naming__QualTypeDataDesc_INIT 0
 typedef void (*_TBP_OOC_C_Naming__QualTypeDataDesc_INIT)(OOC_C_Naming__QualTypeData qtdData);
@@ -44,11 +44,11 @@ extern RT0__StructDesc _td_OOC_C_Naming__QualTypeDescr;
 extern RT0__StructDesc _td_OOC_C_Naming__QualTypeDescrDesc;
 extern RT0__StructDesc _td_OOC_C_Naming__QualTypeData;
 extern RT0__StructDesc _td_OOC_C_Naming__QualTypeDataDesc;
-extern RT0__StructDesc _td_OOC_C_Naming__1605;
-extern RT0__StructDesc _td_OOC_C_Naming__2151;
-extern RT0__StructDesc _td_OOC_C_Naming__5732;
-extern RT0__StructDesc _td_OOC_C_Naming__6728;
-extern RT0__StructDesc _td_OOC_C_Naming__9807;
+extern RT0__StructDesc _td_OOC_C_Naming__1650;
+extern RT0__StructDesc _td_OOC_C_Naming__2260;
+extern RT0__StructDesc _td_OOC_C_Naming__5841;
+extern RT0__StructDesc _td_OOC_C_Naming__6993;
+extern RT0__StructDesc _td_OOC_C_Naming__10235;
 #endif /* _MODULE_OOC_C_Naming_ */
 
 /* --- */

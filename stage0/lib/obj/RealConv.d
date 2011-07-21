@@ -2,7 +2,7 @@
 #include <libc.oh>
 #include <CharClass.oh>
 #include <Real0.oh>
-#define RealConv__maxValue "340282347"
+#define RealConv__maxValue (OOC_CHAR8[])"340282347"
 #define RealConv__maxExp 38
 
 /* run-time meta data */

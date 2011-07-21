@@ -84,13 +84,13 @@ void OOC_Scanner__ScanInput(OOC_Scanner_SymList__Builder builder, OOC_Config_Pra
       i1 = (OOC_INT32)b;
       i1 = *(OOC_INT32*)((_check_pointer(i1, 6247))+8);
       i2 = cstart;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6216)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, (i2+i1));
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6216)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"pos", 4, (i2+i1));
       i0 = (OOC_INT32)lastError;
       i1 = startLine;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6281)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "line", 5, i1);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6281)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"line", 5, i1);
       i0 = (OOC_INT32)lastError;
       i1 = startColumn;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6332)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, i1);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6332)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"column", 7, i1);
       i0 = (OOC_INT32)b;
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 6379))+20);
       i1 = (OOC_INT32)lastError;
@@ -110,11 +110,11 @@ void OOC_Scanner__ScanInput(OOC_Scanner_SymList__Builder builder, OOC_Config_Pra
       i1 = (OOC_INT32)lastError;
       i0 = *(OOC_INT32*)((_check_pointer(i0, 6582))+8);
       i2 = cpos;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6553)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "pos", 4, (i2+i0));
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 6553)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"pos", 4, (i2+i0));
       i0 = (OOC_INT32)lastError;
       i1 = currLinePos;
       i3 = currLineTab;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6616)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, ((i2-i1)+i3));
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6616)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"column", 7, ((i2-i1)+i3));
       return;
       ;
     }
@@ -346,7 +346,7 @@ l12_loop:
       if (i3) goto l12_loop;
 l17:
       i1 = (OOC_INT32)lastError;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 8770)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "char_code", 10, (Msg__StringPtr)i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 8770)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"char_code", 10, (Msg__StringPtr)i0);
       return;
       ;
     }
@@ -483,7 +483,7 @@ l32:
     i3 = OOC_ARRAY_LENGTH(i2, 0);
     *(OOC_UINT8*)(i2+(_check_index(1, i3, OOC_UINT8, 11454))) = 0u;
     i2 = (OOC_INT32)lastError;
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 11484)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i2, "sym_string", 11, (Msg__StringPtr)i0);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 11484)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i2, (OOC_CHAR8*)"sym_string", 11, (Msg__StringPtr)i0);
     cpos = (i6+1);
     goto l431;
 l38_loop:
@@ -1482,7 +1482,7 @@ l422:
     i3 = OOC_ARRAY_LENGTH(i2, 0);
     *(OOC_UINT8*)(i2+(_check_index(1, i3, OOC_UINT8, 20125))) = 0u;
     i2 = (OOC_INT32)lastError;
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 20153)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i2, "sym_string", 11, (Msg__StringPtr)i0);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 20153)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i2, (OOC_CHAR8*)"sym_string", 11, (Msg__StringPtr)i0);
     cpos = (i6+1);
     goto l431;
   }
@@ -1635,43 +1635,43 @@ l1_loop:
   i1 = i0<=255;
   if (i1) goto l1_loop;
 l5:
-  OOC_Scanner__InitKeywords_KW("ARRAY", 6, 62);
-  OOC_Scanner__InitKeywords_KW("BEGIN", 6, 65);
-  OOC_Scanner__InitKeywords_KW("BY", 3, 31);
-  OOC_Scanner__InitKeywords_KW("CASE", 5, 53);
-  OOC_Scanner__InitKeywords_KW("CONST", 6, 66);
-  OOC_Scanner__InitKeywords_KW("DIV", 4, 3);
-  OOC_Scanner__InitKeywords_KW("DO", 3, 29);
-  OOC_Scanner__InitKeywords_KW("ELSE", 5, 49);
-  OOC_Scanner__InitKeywords_KW("ELSIF", 6, 50);
-  OOC_Scanner__InitKeywords_KW("END", 4, 48);
-  OOC_Scanner__InitKeywords_KW("EXIT", 5, 60);
-  OOC_Scanner__InitKeywords_KW("FOR", 4, 57);
-  OOC_Scanner__InitKeywords_KW("IF", 3, 52);
-  OOC_Scanner__InitKeywords_KW("IMPORT", 7, 70);
-  OOC_Scanner__InitKeywords_KW("IN", 3, 15);
-  OOC_Scanner__InitKeywords_KW("IS", 3, 16);
-  OOC_Scanner__InitKeywords_KW("LOOP", 5, 56);
-  OOC_Scanner__InitKeywords_KW("MOD", 4, 4);
-  OOC_Scanner__InitKeywords_KW("MODULE", 7, 71);
-  OOC_Scanner__InitKeywords_KW("NIL", 4, 42);
-  OOC_Scanner__InitKeywords_KW("OF", 3, 25);
-  OOC_Scanner__InitKeywords_KW("OR", 3, 8);
-  OOC_Scanner__InitKeywords_KW("POINTER", 8, 64);
-  OOC_Scanner__InitKeywords_KW("PROCEDURE", 10, 69);
-  OOC_Scanner__InitKeywords_KW("RECORD", 7, 63);
-  OOC_Scanner__InitKeywords_KW("REPEAT", 7, 55);
-  OOC_Scanner__InitKeywords_KW("RETURN", 7, 61);
-  OOC_Scanner__InitKeywords_KW("THEN", 5, 28);
-  OOC_Scanner__InitKeywords_KW("TO", 3, 30);
-  OOC_Scanner__InitKeywords_KW("TYPE", 5, 67);
-  OOC_Scanner__InitKeywords_KW("UNTIL", 6, 51);
-  OOC_Scanner__InitKeywords_KW("VAR", 4, 68);
-  OOC_Scanner__InitKeywords_KW("WHILE", 6, 54);
-  OOC_Scanner__InitKeywords_KW("WITH", 5, 58);
-  OOC_Scanner__InitKeywords_KW("TRY", 4, 59);
-  OOC_Scanner__InitKeywords_KW("CATCH", 6, 26);
-  OOC_Scanner__InitKeywords_KW("RAISES", 7, 27);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"ARRAY", 6, 62);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"BEGIN", 6, 65);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"BY", 3, 31);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"CASE", 5, 53);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"CONST", 6, 66);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"DIV", 4, 3);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"DO", 3, 29);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"ELSE", 5, 49);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"ELSIF", 6, 50);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"END", 4, 48);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"EXIT", 5, 60);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"FOR", 4, 57);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"IF", 3, 52);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"IMPORT", 7, 70);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"IN", 3, 15);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"IS", 3, 16);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"LOOP", 5, 56);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"MOD", 4, 4);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"MODULE", 7, 71);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"NIL", 4, 42);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"OF", 3, 25);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"OR", 3, 8);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"POINTER", 8, 64);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"PROCEDURE", 10, 69);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"RECORD", 7, 63);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"REPEAT", 7, 55);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"RETURN", 7, 61);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"THEN", 5, 28);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"TO", 3, 30);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"TYPE", 5, 67);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"UNTIL", 6, 51);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"VAR", 4, 68);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"WHILE", 6, 54);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"WITH", 5, 58);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"TRY", 4, 59);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"CATCH", 6, 26);
+  OOC_Scanner__InitKeywords_KW((OOC_CHAR8*)"RAISES", 7, 27);
   return;
   ;
 }
@@ -1681,7 +1681,7 @@ void OOC_OOC_Scanner_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_Scanner__ErrorContext.baseTypes[0]);
   OOC_Scanner__scannerContext = (OOC_Scanner__ErrorContext)i0;
-  OOC_Error__InitContext((OOC_Error__Context)i0, "OOC:Scanner", 12);
+  OOC_Error__InitContext((OOC_Error__Context)i0, (OOC_CHAR8*)"OOC:Scanner", 12);
   OOC_Scanner__InitKeywords();
   return;
   ;

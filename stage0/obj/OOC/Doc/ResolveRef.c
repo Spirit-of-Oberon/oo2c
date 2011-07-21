@@ -108,13 +108,13 @@ l8:
       i1 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i2);
       lastError = (Msg__Msg)i1;
       i2 = *(OOC_INT32*)(_check_pointer(i0, 3531));
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3505)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "pos", 4, i2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3505)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"pos", 4, i2);
       i1 = (OOC_INT32)lastError;
       i2 = *(OOC_INT32*)((_check_pointer(i0, 3587))+4);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3560)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "line", 5, i2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3560)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"line", 5, i2);
       i1 = (OOC_INT32)lastError;
       i0 = *(OOC_INT32*)((_check_pointer(i0, 3645))+8);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3616)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "column", 7, i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3616)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"column", 7, i0);
       i0 = (OOC_INT32)errList;
       i1 = (OOC_INT32)lastError;
       OOC_Error__ListDesc_Append((OOC_Error__List)i0, (Msg__Msg)i1);
@@ -246,7 +246,7 @@ l16:
       *(OOC_UINT8*)((OOC_INT32)str+(_check_index(1, 2, OOC_UINT8, 4648))) = 0u;
       i0 = (OOC_INT32)Msg__GetStringPtr((void*)(OOC_INT32)str, 2);
       i1 = (OOC_INT32)lastError;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4674)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "char", 5, (Msg__StringPtr)i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4674)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"char", 5, (Msg__StringPtr)i0);
       return;
       ;
     }
@@ -470,13 +470,13 @@ void OOC_Doc_ResolveRef__Resolve(OOC_SymbolTable__Module symTab, OOC_Error__List
           i1 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i2);
           lastError = (Msg__Msg)i1;
           i2 = *(OOC_INT32*)(_check_pointer(i0, 7630));
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7604)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "pos", 4, i2);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7604)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"pos", 4, i2);
           i1 = (OOC_INT32)lastError;
           i2 = *(OOC_INT32*)((_check_pointer(i0, 7688))+4);
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7661)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "line", 5, i2);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7661)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"line", 5, i2);
           i1 = (OOC_INT32)lastError;
           i0 = *(OOC_INT32*)((_check_pointer(i0, 7748))+8);
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7719)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "column", 7, i0);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 7719)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"column", 7, i0);
           i0 = (OOC_INT32)errList;
           i1 = (OOC_INT32)lastError;
           OOC_Error__ListDesc_Append((OOC_Error__List)i0, (Msg__Msg)i1);
@@ -708,7 +708,7 @@ l98:
       i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 10975)), 0);
       i0 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i0, 10975)), i1);
       i1 = (OOC_INT32)lastError;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 10870)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "ident", 6, (Msg__StringPtr)i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 10870)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"ident", 6, (Msg__StringPtr)i0);
       goto l122;
 l100:
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer((_type_guard(i2, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 8864)))), &_td_OOC_Doc__TextDesc, 8864)), 8869))+16);
@@ -737,7 +737,7 @@ l109:
       i3 = (OOC_INT32)RT0__NewObject(_td_OOC_Scanner_InputBuffer__CharArray.baseTypes[0], i3);
       id = (OOC_Scanner_InputBuffer__CharArray)i3;
       i4 = OOC_ARRAY_LENGTH((_check_pointer(i3, 9150)), 0);
-      _copy_8((const void*)"",(void*)(_check_pointer(i3, 9150)),i4);
+      _copy_8((const void*)(OOC_CHAR8*)"",(void*)(_check_pointer(i3, 9150)),i4);
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 9175))+12);
       ptr = (OOC_Doc__InlineElement)i2;
       i4 = i2!=0;
@@ -753,7 +753,7 @@ l112_loop:
       i4 = i2!=0;
       if (!i4) goto l116;
       i5 = OOC_ARRAY_LENGTH((_check_pointer(i3, 9383)), 0);
-      Strings__Append(".", 2, (void*)(_check_pointer(i3, 9383)), i5);
+      Strings__Append((OOC_CHAR8*)".", 2, (void*)(_check_pointer(i3, 9383)), i5);
 l116:
       if (i4) goto l112_loop;
 l120:
@@ -994,7 +994,7 @@ void OOC_OOC_Doc_ResolveRef_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_Doc_ResolveRef__ErrorContext.baseTypes[0]);
   OOC_Doc_ResolveRef__resolveContext = (OOC_Doc_ResolveRef__ErrorContext)i0;
-  OOC_Error__InitContext((OOC_Error__Context)i0, "OOC:Doc:ResolveRef", 19);
+  OOC_Error__InitContext((OOC_Error__Context)i0, (OOC_CHAR8*)"OOC:Doc:ResolveRef", 19);
   return;
   ;
 }

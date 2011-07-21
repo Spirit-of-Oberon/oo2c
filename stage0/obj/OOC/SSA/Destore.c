@@ -346,7 +346,7 @@ l8:
   case 77:
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10153))+24);
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 10162));
-    i0 = OOC_SSA_Destore__StateDesc_ClobberedBy_ModuleVariable((OOC_SSA__Result)i0, "Exception", 10);
+    i0 = OOC_SSA_Destore__StateDesc_ClobberedBy_ModuleVariable((OOC_SSA__Result)i0, (OOC_CHAR8*)"Exception", 10);
     return i0;
     goto l8;
   case 18:
@@ -870,7 +870,7 @@ l10:
               return (OOC_SymbolTable__VarDecl)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 21614)))), &_td_OOC_SymbolTable__VarDeclDesc, 21614));
               goto l13;
 l12:
-              return (OOC_SymbolTable__VarDecl)0;
+              return (OOC_SymbolTable__VarDecl)(OOC_INT32)0;
 l13:
               _failed_function(20869); return 0;
               ;

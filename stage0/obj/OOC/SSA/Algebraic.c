@@ -46,7 +46,7 @@ l5:
   goto l9;
 l7:
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 1974));
-  i1 = i1==0;
+  i1 = i1==(OOC_INT32)0;
   
 l9:
   if (i1) goto l11;

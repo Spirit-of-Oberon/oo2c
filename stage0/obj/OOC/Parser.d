@@ -26,8 +26,8 @@ static OOC_Parser__ErrorContext OOC_Parser__parserContext;
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_OOC_Parser__ErrorContext = { (RT0__Struct[]){&_td_OOC_Parser__ErrorContextDesc}, NULL, NULL, &_mid, "ErrorContext", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_Parser__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_OOC_Error__ContextDesc,&_td_OOC_Parser__ErrorContextDesc}, (void*[]){(void*)OOC_Parser__ErrorContextDesc_GetTemplate,(void*)OOC_Error__ContextDesc_BaseTemplate}, NULL, &_mid, "ErrorContextDesc", 4, 2, 0, RT0__strRecord };
+RT0__StructDesc _td_OOC_Parser__ErrorContext = { (RT0__Struct[]){&_td_OOC_Parser__ErrorContextDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"ErrorContext", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_Parser__ErrorContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_OOC_Error__ContextDesc,&_td_OOC_Parser__ErrorContextDesc}, (void*[]){(void*)OOC_Parser__ErrorContextDesc_GetTemplate,(void*)OOC_Error__ContextDesc_BaseTemplate}, NULL, &_mid, (OOC_CHAR8*)"ErrorContextDesc", 4, 2, 0, RT0__strRecord };
 RT0__StructDesc _td_OOC_Parser__3176 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 256, 128, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_OOC_Parser__7704 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };
 RT0__StructDesc _td_OOC_Parser__7728 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1, 1, (1<<RT0__flagAtomic), RT0__strOpenArray };

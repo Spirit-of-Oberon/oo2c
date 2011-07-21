@@ -1798,7 +1798,7 @@ l82:
   return (Object__String8)i0;
   goto l85;
 l84:
-  i0 = (OOC_INT32)Object__NewLatin1("0", 2);
+  i0 = (OOC_INT32)Object__NewLatin1((OOC_CHAR8*)"0", 2);
   return (Object__String8)i0;
 l85:
   _failed_function(16650); return 0;

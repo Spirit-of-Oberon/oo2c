@@ -561,7 +561,7 @@ l18:
 
 void XML_UnicodeCodec_UTF16__FactoryDesc_GetEncodingName(XML_UnicodeCodec_UTF16__Factory f, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"UTF-16",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"UTF-16",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -633,7 +633,7 @@ l18:
 
 void XML_UnicodeCodec_UTF16__FactoryLEDesc_GetEncodingName(XML_UnicodeCodec_UTF16__FactoryLE f, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"UTF-16LE",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"UTF-16LE",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -705,7 +705,7 @@ l18:
 
 void XML_UnicodeCodec_UTF16__FactoryBEDesc_GetEncodingName(XML_UnicodeCodec_UTF16__FactoryBE f, OOC_CHAR8 name[], OOC_LEN name_0d) {
 
-  _copy_8((const void*)"UTF-16BE",(void*)(OOC_INT32)name,name_0d);
+  _copy_8((const void*)(OOC_CHAR8*)"UTF-16BE",(void*)(OOC_INT32)name,name_0d);
   return;
   ;
 }
@@ -717,17 +717,17 @@ void OOC_XML_UnicodeCodec_UTF16_init(void) {
   XML_UnicodeCodec_UTF16__factory = (XML_UnicodeCodec_UTF16__Factory)i0;
   XML_UnicodeCodec_UTF16__InitFactory((XML_UnicodeCodec_UTF16__Factory)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_UTF16__factory;
-  XML_UnicodeCodec__Register("UTF-16", 7, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"UTF-16", 7, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_UnicodeCodec_UTF16__FactoryLE.baseTypes[0]);
   XML_UnicodeCodec_UTF16__factoryLE = (XML_UnicodeCodec_UTF16__FactoryLE)i0;
   XML_UnicodeCodec_UTF16__InitFactoryLE((XML_UnicodeCodec_UTF16__FactoryLE)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_UTF16__factoryLE;
-  XML_UnicodeCodec__Register("UTF-16LE", 9, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"UTF-16LE", 9, (XML_UnicodeCodec__Factory)i0);
   i0 = (OOC_INT32)RT0__NewObject(_td_XML_UnicodeCodec_UTF16__FactoryBE.baseTypes[0]);
   XML_UnicodeCodec_UTF16__factoryBE = (XML_UnicodeCodec_UTF16__FactoryBE)i0;
   XML_UnicodeCodec_UTF16__InitFactoryBE((XML_UnicodeCodec_UTF16__FactoryBE)i0);
   i0 = (OOC_INT32)XML_UnicodeCodec_UTF16__factoryBE;
-  XML_UnicodeCodec__Register("UTF-16BE", 9, (XML_UnicodeCodec__Factory)i0);
+  XML_UnicodeCodec__Register((OOC_CHAR8*)"UTF-16BE", 9, (XML_UnicodeCodec__Factory)i0);
   return;
   ;
 }

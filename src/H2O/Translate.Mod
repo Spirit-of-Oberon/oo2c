@@ -7,6 +7,9 @@ IMPORT
   H2O:Type, H2O:Scanner, H2O:Emitter, H2O:Value, H2O:Process, H2O:Parser,
   H2O:Variant;
 
+CONST
+  debugProgress = FALSE;
+
 TYPE
   EnumProc = PROCEDURE(obj : Type.Object; e : Emitter.Emitter);
 
@@ -41,6 +44,7 @@ VAR
   renameVariables : Option.Boolean;
   renameProcedures : Option.Boolean;
   tagSuffix : Option.String;
+  autoPrefix : Option.String;
 
 (*
 Elimination of type constructors:
@@ -66,14 +70,29 @@ ARRAY OF T (parameter)
 *)
 
 PROCEDURE GetName(t : Type.Type) : STRING;
+VAR
+  name : STRING;
 BEGIN
   ASSERT(Type.IsNamedType(t));
   IF Type.IsTaggedType(t) THEN
-    RETURN t.name + tagSuffix.value
+    name := t.name + tagSuffix.value
   ELSE
-    RETURN t.name;
+    name := t.name;
   END;
+  RETURN t.module.MapName(name);
 END GetName;
+
+PROCEDURE QualName(t : Type.Type; mod : Type.Module) : STRING;
+VAR b : StringBuffer.StringBuffer;
+BEGIN
+  b := StringBuffer.New("");
+  IF t.module # mod THEN
+    b.Append(t.module.outputName.value);
+    b.AppendLatin1(".");
+  END;
+  b.Append(GetName(t));
+  RETURN b.ToString();
+END QualName;
 
 PROCEDURE DeclareType(VAR t : Type.Type; mod : Type.Module);
 VAR 
@@ -99,10 +118,13 @@ BEGIN
       t := alias;
     ELSE
       base := t.base;
-      buf := StringBuffer.New("Auto");
+      buf := StringBuffer.New("");
+      buf.Append(autoPrefix.value);
       CASE t.class OF
+      | Type.tArray:    
+          buf.Append("Array");
+          IF t.size # -1 THEN buf.AppendInt(t.size) END;
       | Type.tPointer:  buf.Append("Ptr");
-      | Type.tArray:    buf.Append("Array");
       | Type.tFunction: buf.Append("Procedure");
       | Type.tEnum:     buf.Append("Enum");
       END;
@@ -266,6 +288,9 @@ BEGIN
       name := buf.ToString();
     END;
     e.WriteObject(name);
+    IF var THEN
+      e.WriteString(" [NIL_COMPAT]");
+    END;
     e.WriteString(" : ");
     IF var THEN
       WriteType(e, obj.type.base, mod, level);
@@ -359,17 +384,13 @@ BEGIN
   | Type.tReal:
     MapNumber(e, t.size, NIL, NIL, mapFloatType, mapDoubleType);
   | Type.tStruct, Type.tUnion:
-    IF (t.name # NIL) & (Variant.emitted IN t.variant) THEN
-      e.WriteObject(GetName(t))
+    IF (t.name # NIL) THEN
+      e.WriteObject(QualName(t, mod));
     ELSE
       WriteRecordType(e, t, mod, level);
     END;
   | Type.tName:
-    IF t.module # mod THEN
-      e.WriteObject(t.module.outputName.value);
-      e.WriteChar(".");
-    END;
-    e.WriteObject(t.module.MapName(t.name));
+    e.WriteObject(QualName(t, mod));
   | Type.tPointer:
     WritePointerType(e, t, mod, level);
   | Type.tQualifier:
@@ -387,6 +408,15 @@ BEGIN
   END;
 END WriteType;
 
+PROCEDURE WriteTypeDeclaration(e : Emitter.Emitter; t : Type.Type; mod : Type.Module; level : INTEGER);
+BEGIN
+  IF t.class IN {Type.tStruct, Type.tUnion} THEN
+    WriteRecordType(e, t, mod, level);
+  ELSE
+    WriteType(e, t, mod, level);
+  END;
+END WriteTypeDeclaration;
+
 PROCEDURE DeclName(e : Emitter.Emitter; name : STRING; mod : Type.Module);
 BEGIN
   e.WriteObject(mod.MapName(name));
@@ -403,7 +433,6 @@ BEGIN
       RETURN
     END;
   END;
-
   base := type.Base();
   canConvert := ~((base.class = Type.tVoid) OR (base.class = Type.tFunction));
 
@@ -415,9 +444,9 @@ BEGIN
   DeclName(e, name, mod);
   (* always dereference "Name" types *)
   IF type.class = Type.tName THEN
-    WriteType(e, type.base, mod, 1);
+    WriteTypeDeclaration(e, type.base, mod, 1);
   ELSE
-    WriteType(e, type, mod, 1);
+    WriteTypeDeclaration(e, type, mod, 1);
   END;
   e.WriteChar(";");
   IF ~canConvert THEN
@@ -467,15 +496,19 @@ END TranslateVar;
 PROCEDURE TranslateProc(obj : Type.Object; e : Emitter.Emitter);
 VAR
   t : Type.Type;
+  validProcType : BOOLEAN;
 BEGIN
   t := obj.type;
   IF t.class = Type.tFunction THEN
-     e.Indent(1);
-     e.WriteString("PROCEDURE ");
-     DeclNameFlags(e, obj.name, obj.module, TRUE, renameProcedures.value);
-     WriteParams(e, obj.type, obj.module, 1);
-     e.WriteChar(";");
-     e.WriteLn;
+    validProcType := Type.IsValidProcedureType(t);
+    e.Indent(1);
+    IF ~validProcType THEN e.WriteString("(* ") END;
+    e.WriteString("PROCEDURE ");
+    DeclNameFlags(e, obj.name, obj.module, TRUE, renameProcedures.value);
+    WriteParams(e, obj.type, obj.module, 1);
+    e.WriteChar(";");
+    IF ~validProcType THEN e.WriteString(" *)") END;
+    e.WriteLn;
   END;
 END TranslateProc;
 
@@ -533,9 +566,10 @@ VAR
       ELSE
         EmitReferencedTypes(t.base);
       END;
-    ELSIF t.class IN {Type.tFunction, Type.tArray, Type.tQualifier} THEN
+    ELSIF t.class IN {Type.tName, Type.tFunction, Type.tArray, Type.tQualifier} THEN
       EmitReferencedTypes(t.base);
-    ELSIF Type.IsNamedType(t) THEN
+    END;
+    IF Type.IsNamedType(t) THEN
       IF (t.module = m) THEN
         EmitTypeDeclaration(GetName(t), t, t.module, e);
       END;
@@ -578,8 +612,7 @@ VAR
         elem := t.link;
         WHILE elem # NIL DO
           e.Indent(1);
-          e.WriteObject(elem.name);
-          e.WriteString("* = ");
+          DeclName(e, elem.name, o.module);
           e.WriteInt(elem.addr);
           e.WriteString(";");
           e.WriteLn;
@@ -602,11 +635,12 @@ TRY
   e.WriteString(' [ INTERFACE "');
   e.WriteObject(m.interfaceType.value);
   e.WriteString('"');
-  IF (m.linkFramework.value.size > 0) OR (m.linkLib.value.size > 0) THEN
+  IF (m.linkFramework.value.size > 0) OR (m.linkLib.value.size > 0) OR (m.linkFile.value.size > 0) THEN
     e.WriteString("; LINK ");
     depCount := 0;
     ListDependencies(depCount, "FRAMEWORK", m.linkFramework);
     ListDependencies(depCount, "LIB", m.linkLib);
+    ListDependencies(depCount, "FILE", m.linkFile);
     e.WriteString(" END");
   END;
   e.WriteString(" ];");
@@ -622,12 +656,18 @@ TRY
   END;
   e.WriteChar(";");
   e.WriteLn;
+  IF debugProgress THEN Log.Msg("ParseMacros") END;
   Parser.ParseMacros(e, m);
+  IF debugProgress THEN Log.Msg("EmitEnums"); END;
   EmitEnums(m.types);
 
+  IF debugProgress THEN Log.Msg("EmitTypes"); END;
   EmitTypes(m.types);
+  IF debugProgress THEN Log.Msg("EmitTypeDefs"); END;
   EmitTypes(m.typedefs);
+  IF debugProgress THEN Log.Msg("TranslateVar"); END;
   Enum(m.vars, e, TranslateVar);
+  IF debugProgress THEN Log.Msg("TranslateProc"); END;
   Enum(m.vars, e, TranslateProc);
   
   e.WriteString("END ");
@@ -703,6 +743,7 @@ BEGIN
   renameVariables := options.Boolean("RenameVariables", FALSE);
   renameProcedures := options.Boolean("RenameProcedures", TRUE);
   tagSuffix := options.String("TagSuffix", "_tag");
+  autoPrefix := options.String("AutoPrefix", "Auto");
 
   moduleSuffix := options.String("ModuleSuffix", "Mod");
 END InitOptions;

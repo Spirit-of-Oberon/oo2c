@@ -1,6 +1,6 @@
-/*	$Id: Files.c,v 1.9 2004/12/15 11:27:03 mva Exp $	*/
+/*	$Id: Files.c,v 1.10 2005/08/31 11:57:24 mva Exp $	*/
 /*  Access to files and file attributes.
-    Copyright (C) 1997-2000, 2002  Michael van Acken
+    Copyright (C) 1997-2000, 2002, 2005  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -129,7 +129,7 @@ void Files__ErrorContextDesc_GetTemplate (Files__ErrorContext context,
   } 
 
   if (str) {
-    _copy_8to16(str, templ, templ_0d);
+    _copy_8to16((OOC_CHAR8*)str, templ, templ_0d);
     if (msg->attribList) {
       Msg__Attribute attr;
       OOC_CHAR16 eol[2] = {(OOC_CHAR16)CharClass__eol, (OOC_CHAR16)0};
@@ -139,13 +139,13 @@ void Files__ErrorContextDesc_GetTemplate (Files__ErrorContext context,
       attr = msg->attribList;
       while (attr) {
 	LongStrings__Append(eol, 2, templ, templ_0d);
-	_copy_8to16((char*)attr->name, str16, strlen((char*)attr->name)+1);
+	_copy_8to16((OOC_CHAR8*)attr->name, str16, strlen((char*)attr->name)+1);
 	LongStrings__Append(str16, Msg__sizeAttrName+1, templ, templ_0d);
-	_copy_8to16("=${", str16, Msg__sizeAttrName+1);
+	_copy_8to16((OOC_CHAR8*)"=${", str16, Msg__sizeAttrName+1);
 	LongStrings__Append(str16, Msg__sizeAttrName+1, templ, templ_0d);
-	_copy_8to16((char*)attr->name, str16, Msg__sizeAttrName+1);
+	_copy_8to16((OOC_CHAR8*)attr->name, str16, Msg__sizeAttrName+1);
 	LongStrings__Append(str16, Msg__sizeAttrName+1, templ, templ_0d);
-	_copy_8to16("}", str16, Msg__sizeAttrName+1);
+	_copy_8to16((OOC_CHAR8*)"}", str16, Msg__sizeAttrName+1);
 	LongStrings__Append(str16, Msg__sizeAttrName+1, templ, templ_0d);
 	attr = attr->nextAttrib;
       }
@@ -175,9 +175,9 @@ static Files__Result get_error(Msg__Code code, int use_errno, Files__File f) {
   }
   if (f) {
     if (f->tmpName) {
-      add_msg_attribute(msg, "file_name", f->tmpName);
+      add_msg_attribute(msg, "file_name", (char*)f->tmpName);
     } else if (f->name) {
-      add_msg_attribute(msg, "file_name", f->name);
+      add_msg_attribute(msg, "file_name", (char*)f->name);
     }
   }
 
@@ -494,10 +494,10 @@ static Files__File create_file(const OOC_CHAR8* name, OOC_UINT32 flags,
   if (fd == -3) {
     /* couldn't get the requested access rights */
     *res = get_error(Files__accessDenied, 0, NULL);
-    add_msg_attribute(*res, "file_name", name);
+    add_msg_attribute(*res, "file_name", (char*)name);
   } else if (fd == -1) {
     /* some other error */
-    *res = file_error(name, NULL);
+    *res = file_error((char*)name, NULL);
   } else {
     /* file was opened with the requested access rights */
     ch = RT0__NewObject(OOC_TYPE_DESCR(Files,FileDesc));

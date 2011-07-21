@@ -1039,7 +1039,7 @@ l143:
 }
 
 void OOC_OOC_SSA_IGraph_init(void) {
-  _c0 = Object__NewLatin1Region("", 1, 0, 0);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
 
   return;
   ;

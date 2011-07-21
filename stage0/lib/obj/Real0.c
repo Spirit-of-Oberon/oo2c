@@ -880,7 +880,7 @@ l30:
 l35:
   {register OOC_INT32 h0=i1;i1=i2;i2=h0;}
 l36_loop:
-  Strings__Insert("0", 2, (i1-1), (void*)(OOC_INT32)s, s_0d);
+  Strings__Insert((OOC_CHAR8*)"0", 2, (i1-1), (void*)(OOC_INT32)s, s_0d);
   i2 = i2+1;
   i1 = i1+1;
   i4 = i2<i3;
@@ -1042,7 +1042,7 @@ l46:
   
   goto l51;
 l49:
-  Strings__Insert("1", 2, 1, (void*)(OOC_INT32)s, s_0d);
+  Strings__Insert((OOC_CHAR8*)"1", 2, 1, (void*)(OOC_INT32)s, s_0d);
   i1 = i1+1;
   
 l51:

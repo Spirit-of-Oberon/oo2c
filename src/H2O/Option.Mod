@@ -50,6 +50,9 @@ BEGIN
   WITH value : Value.Boolean DO
     b.value := value.value;
     RETURN TRUE;
+  | value : Value.LongInt DO
+    b.value := value.value # 0;
+    RETURN TRUE;
   ELSE
     RETURN FALSE;
   END;

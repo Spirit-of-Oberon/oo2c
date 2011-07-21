@@ -126,10 +126,10 @@ extern void OOC_OOC_SSA_Opcode_destroy(void);
 extern void OOC_OOC_SSA_Opcode_close(RT0__Module client);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_SSA_Opcode__34347;
-extern RT0__StructDesc _td_OOC_SSA_Opcode__34433;
-extern RT0__StructDesc _td_OOC_SSA_Opcode__35019;
-extern RT0__StructDesc _td_OOC_SSA_Opcode__35122;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__34602;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__34688;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__35274;
+extern RT0__StructDesc _td_OOC_SSA_Opcode__35377;
 #endif /* _MODULE_OOC_SSA_Opcode_ */
 
 /* --- */

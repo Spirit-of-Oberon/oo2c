@@ -195,6 +195,11 @@ VAR
         | Scanner.rbracket:
           DEC(bracketLevel);
           IF (bracketLevel < 0) THEN EXIT END;
+        | Scanner.endFile:
+          IF (braceLevel = 0) & (bracketLevel = 0) THEN EXIT
+          ELSE
+            p.err.Error("Unexpected end of input during macro parameter");
+          END;
         ELSE
         END;
         list.Append(token.Copy());

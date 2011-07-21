@@ -436,7 +436,7 @@ void OOC_ProgramArgs_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_ProgramArgs__ErrorContext.baseTypes[0]);
   ProgramArgs__errorContext = (ProgramArgs__ErrorContext)i0;
-  Msg__InitContext((Msg__Context)i0, "OOC:Core:ProgramArgs", 21);
+  Msg__InitContext((Msg__Context)i0, (OOC_CHAR8*)"OOC:Core:ProgramArgs", 21);
   i0 = (OOC_INT32)RT0__NewObject(_td_ProgramArgs__Channel.baseTypes[0]);
   ProgramArgs__args = (ProgramArgs__Channel)i0;
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7227)))), Channel__ChannelDesc_ClearError)),Channel__ChannelDesc_ClearError)((Channel__Channel)i0);

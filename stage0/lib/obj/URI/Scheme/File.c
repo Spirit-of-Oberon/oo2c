@@ -166,7 +166,7 @@ l7:
     cwd = (Object__String)i0;
     i1 = (OOC_INT32)ADT_StringBuffer__New((Object__String)((OOC_INT32)_c4));
     uriString = (ADT_StringBuffer__StringBuffer)i1;
-    URI_String__AppendEscaped((Object__String)i0, ":@&=+$,/", 9, (ADT_StringBuffer__StringBuffer)i1);
+    URI_String__AppendEscaped((Object__String)i0, (OOC_CHAR8*)":@&=+$,/", 9, (ADT_StringBuffer__StringBuffer)i1);
     i0 = *(OOC_INT32*)((_check_pointer(i1, 4260))+4);
     i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4243)))), ADT_StringBuffer__StringBufferDesc_CharAt)),ADT_StringBuffer__StringBufferDesc_CharAt)((ADT_StringBuffer__StringBuffer)i1, (i0-1));
     i0 = i0!=47u;
@@ -242,7 +242,7 @@ l11:
     if (i1) goto l14;
     i1 = (OOC_INT32)ADT_StringBuffer__New((Object__String)((OOC_INT32)_c6));
     uriString = (ADT_StringBuffer__StringBuffer)i1;
-    URI_String__AppendEscaped((Object__String)i0, "@&=+$,/", 8, (ADT_StringBuffer__StringBuffer)i1);
+    URI_String__AppendEscaped((Object__String)i0, (OOC_CHAR8*)"@&=+$,/", 8, (ADT_StringBuffer__StringBuffer)i1);
     i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5374)))), ADT_StringBuffer__StringBufferDesc_ToString)),ADT_StringBuffer__StringBufferDesc_ToString)((ADT_StringBuffer__StringBuffer)i1);
     str = (Object__String)i0;
     i1 = (OOC_INT32)URI_Scheme_File__GetCwd();
@@ -253,7 +253,7 @@ l11:
 l14:
     i1 = (OOC_INT32)ADT_StringBuffer__New((Object__String)((OOC_INT32)_c7));
     uriString = (ADT_StringBuffer__StringBuffer)i1;
-    URI_String__AppendEscaped((Object__String)i0, ":@&=+$,/", 9, (ADT_StringBuffer__StringBuffer)i1);
+    URI_String__AppendEscaped((Object__String)i0, (OOC_CHAR8*)":@&=+$,/", 9, (ADT_StringBuffer__StringBuffer)i1);
     i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 5145)))), ADT_StringBuffer__StringBufferDesc_ToString)),ADT_StringBuffer__StringBufferDesc_ToString)((ADT_StringBuffer__StringBuffer)i1);
     str = (Object__String)i0;
     i0 = (OOC_INT32)URI_Parser__NewURI((Object__String8)(_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5199)))), &_td_Object__String8Desc, 5199)), (URI__HierarchicalURI)(OOC_INT32)0);
@@ -270,14 +270,14 @@ l16:;
 }
 
 void OOC_URI_Scheme_File_init(void) {
-  _c0 = Object__NewLatin1Region("", 1, 0, 0);
-  _c1 = Object__NewLatin1Region("", 1, 0, 0);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
   _c2 = Object__NewLatin1Char(47u);
-  _c3 = Object__NewLatin1Region("file", 5, 0, 4);
-  _c4 = Object__NewLatin1Region("file://", 8, 0, 7);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"file", 5, 0, 4);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"file://", 8, 0, 7);
   _c5 = Object__NewLatin1Char(47u);
-  _c6 = Object__NewLatin1Region("", 1, 0, 0);
-  _c7 = Object__NewLatin1Region("file://", 8, 0, 7);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"file://", 8, 0, 7);
 
   return;
   ;

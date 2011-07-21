@@ -28,7 +28,7 @@ void OOC_Logger__ReadFile(URI__URI uri) {
   i0 = OOC_Logger__silence;
   i0 = !i0;
   if (!i0) goto l4;
-  Out__String("- ", 3);
+  Out__String((OOC_CHAR8*)"- ", 3);
   i0 = (OOC_INT32)uri;
   OOC_Logger__WriteURI((URI__URI)i0);
   Out__Ln();
@@ -44,7 +44,7 @@ void OOC_Logger__ReadFileName(Object__String fileName) {
   i0 = OOC_Logger__silence;
   i0 = !i0;
   if (!i0) goto l4;
-  Out__String("- ", 3);
+  Out__String((OOC_CHAR8*)"- ", 3);
   i0 = (OOC_INT32)fileName;
   Out__Object((Object__Object)i0);
   Out__Ln();
@@ -60,7 +60,7 @@ void OOC_Logger__WriteFile(URI__URI uri) {
   i0 = OOC_Logger__silence;
   i0 = !i0;
   if (!i0) goto l4;
-  Out__String("+ ", 3);
+  Out__String((OOC_CHAR8*)"+ ", 3);
   i0 = (OOC_INT32)uri;
   OOC_Logger__WriteURI((URI__URI)i0);
   Out__Ln();
@@ -76,7 +76,7 @@ void OOC_Logger__WriteFileName(Object__String fileName) {
   i0 = OOC_Logger__silence;
   i0 = !i0;
   if (!i0) goto l4;
-  Out__String("+ ", 3);
+  Out__String((OOC_CHAR8*)"+ ", 3);
   i0 = (OOC_INT32)fileName;
   Out__Object((Object__Object)i0);
   Out__Ln();
@@ -104,13 +104,13 @@ l4:
 static void OOC_Logger__IndentMake(void) {
   register OOC_INT32 i0,i1,i2;
 
-  Out__String("[make]", 7);
+  Out__String((OOC_CHAR8*)"[make]", 7);
   i0 = OOC_Logger__indentMake;
   i1 = 1<=i0;
   if (!i1) goto l8;
   i1=1;
 l3_loop:
-  Out__String("  ", 3);
+  Out__String((OOC_CHAR8*)"  ", 3);
   i1 = i1+1;
   i2 = i1<=i0;
   if (i2) goto l3_loop;
@@ -136,9 +136,9 @@ l3:
 l5:
   if (!i0) goto l7;
   OOC_Logger__IndentMake();
-  Out__String("enter ", 7);
+  Out__String((OOC_CHAR8*)"enter ", 7);
   Out__String((void*)(OOC_INT32)rule, rule_0d);
-  Out__String(" for ", 6);
+  Out__String((OOC_CHAR8*)" for ", 6);
   Out__String((void*)(OOC_INT32)module, module_0d);
   Out__Ln();
   i0 = OOC_Logger__indentMake;
@@ -168,15 +168,15 @@ l4:
   i0 = OOC_Logger__indentMake;
   OOC_Logger__indentMake = (i0-1);
   OOC_Logger__IndentMake();
-  Out__String("leave ", 7);
+  Out__String((OOC_CHAR8*)"leave ", 7);
   Out__String((void*)(OOC_INT32)rule, rule_0d);
-  Out__String(" for ", 6);
+  Out__String((OOC_CHAR8*)" for ", 6);
   Out__String((void*)(OOC_INT32)module, module_0d);
   if (i1) goto l9;
-  Out__String(" (failure)", 11);
+  Out__String((OOC_CHAR8*)" (failure)", 11);
   goto l10;
 l9:
-  Out__String(" (success)", 11);
+  Out__String((OOC_CHAR8*)" (success)", 11);
 l10:
   Out__Ln();
 l11:
@@ -202,15 +202,15 @@ l4:
   i1 = success;
   if (!i0) goto l11;
   OOC_Logger__IndentMake();
-  Out__String("cached result: ", 16);
+  Out__String((OOC_CHAR8*)"cached result: ", 16);
   Out__String((void*)(OOC_INT32)rule, rule_0d);
-  Out__String(" for ", 6);
+  Out__String((OOC_CHAR8*)" for ", 6);
   Out__String((void*)(OOC_INT32)module, module_0d);
   if (i1) goto l9;
-  Out__String(" (failure)", 11);
+  Out__String((OOC_CHAR8*)" (failure)", 11);
   goto l10;
 l9:
-  Out__String(" (success)", 11);
+  Out__String((OOC_CHAR8*)" (success)", 11);
 l10:
   Out__Ln();
 l11:

@@ -264,10 +264,10 @@ l57:
 }
 
 void OOC_Config_Simple_init(void) {
-  _c0 = Object__NewLatin1Region("", 1, 0, 0);
-  _c1 = Object__NewLatin1Region("string", 7, 0, 6);
-  _c2 = Object__NewLatin1Region("integer", 8, 0, 7);
-  _c3 = Object__NewLatin1Region("boolean", 8, 0, 7);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"string", 7, 0, 6);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"integer", 8, 0, 7);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"boolean", 8, 0, 7);
 
   return;
   ;

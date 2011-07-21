@@ -2,6 +2,7 @@
 #include <__config.h>
 #include <IO/Address.d>
 
+#include <stdio.h>
 #include <sys/types.h>
 #ifdef __MINGW32__
 #include <winsock.h>
@@ -70,7 +71,7 @@ Object__String IO_Address__Inet4Desc_ToString(IO_Address__Inet4 addr) {
   inaddr.s_addr = htonl(addr->addr);
   a = inet_ntoa(inaddr);
   len = strlen(a);
-  return (Object__String)Object__NewLatin1Region(a, len, 0, len);
+  return (Object__String)Object__NewLatin1Region((OOC_CHAR8*)a, len, 0, len);
 }
 
 OOC_CHAR8 IO_Address__Inet4Desc_Equals(IO_Address__Inet4 addr, Object__Object y) {
@@ -112,7 +113,7 @@ Object__String IO_Address__SocketInetDesc_ToString(IO_Address__SocketInet s) {
   host = OOC_METHOD(obj,Object__ObjectDesc_ToString)(obj);
   len = sprintf(str, ":%d", s->port);
   return Object__Concat2
-    (host, (Object__String)Object__NewLatin1Region(str, len, 0, len));
+    (host, (Object__String)Object__NewLatin1Region((OOC_CHAR8*)str, len, 0, len));
 }
 
 OOC_CHAR8 IO_Address__SocketInetDesc_Equals(IO_Address__SocketInet s, Object__Object y) {

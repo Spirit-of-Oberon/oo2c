@@ -34,7 +34,7 @@ typedef struct OOC_Error__ListDesc {
 #define OOC_Error__styleAttributes 2
 extern OOC_INT8 OOC_Error__style;
 extern OOC_INT32 OOC_Error__minErrorDistance;
-#define OOC_Error__warningPrefix "Warning: "
+#define OOC_Error__warningPrefix (OOC_CHAR8[])"Warning: "
 extern void OOC_Error__InitContext(OOC_Error__Context c, const Msg__String id__ref, OOC_LEN id_0d);
 extern Msg__Msg OOC_Error__New(OOC_Error__Context context, OOC_INT32 code);
 extern OOC_Error__List OOC_Error__NewList(Object__String fileName);

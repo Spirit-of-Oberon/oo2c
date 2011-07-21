@@ -7,8 +7,8 @@
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
-#define OOC_Config_StdPragmas__defaultCompilerVersion "2.1.8"
-#define OOC_Config_StdPragmas__defaultTargetArch "gcc"
+#define OOC_Config_StdPragmas__defaultCompilerVersion (OOC_CHAR8[])"2.1.9"
+#define OOC_Config_StdPragmas__defaultTargetArch (OOC_CHAR8[])"gcc"
 extern Config_Section_Options__Option OOC_Config_StdPragmas__warnings;
 extern Config_Section_Options__Option OOC_Config_StdPragmas__assertions;
 extern Config_Section_Options__Option OOC_Config_StdPragmas__stackCheck;

@@ -811,7 +811,7 @@ l195:
   i1 = (OOC_INT32)cw;
   i0 = (OOC_INT32)XML_Writer__New((IO__ByteChannel)i1, (XML_UnicodeCodec__Factory)i0, 1u, 2);
   w = (XML_Writer__Writer)i0;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12616)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, "1.0", 4, "yes", 4);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12616)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, (OOC_CHAR8*)"1.0", 4, (OOC_CHAR8*)"yes", 4);
   i0 = (OOC_INT32)m;
   OOC_AST_XML__Write_Node((OOC_AST__Node)i0);
   i0 = (OOC_INT32)w;

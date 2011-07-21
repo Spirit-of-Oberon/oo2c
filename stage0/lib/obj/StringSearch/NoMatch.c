@@ -80,7 +80,7 @@ void OOC_StringSearch_NoMatch_init(void) {
 
   i0 = (OOC_INT32)StringSearch_NoMatch__NewFactory();
   StringSearch_NoMatch__factory = (StringSearch_NoMatch__Factory)i0;
-  i0 = (OOC_INT32)Object__NewLatin1("", 1);
+  i0 = (OOC_INT32)Object__NewLatin1((OOC_CHAR8*)"", 1);
   i0 = (OOC_INT32)StringSearch_NoMatch__NewMatcher((Object__String8)i0, 0u, 0);
   StringSearch_NoMatch__matcher = (StringSearch_NoMatch__Matcher)i0;
   return;

@@ -705,21 +705,21 @@ l8:
 
 void OOC_ADT_Object_Storage_init(void) {
   register OOC_INT32 i0;
-  _c0 = Object__NewLatin1Region("Type count mismatch", 20, 0, 19);
-  _c1 = Object__NewLatin1Region("Invalid type reference", 23, 0, 22);
-  _c2 = Object__NewLatin1Region("Object count mismatch", 22, 0, 21);
-  _c3 = Object__NewLatin1Region("Failed to resolve type name", 28, 0, 27);
-  _c4 = Object__NewLatin1Region("Invalid object reference", 25, 0, 24);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"Type count mismatch", 20, 0, 19);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"Invalid type reference", 23, 0, 22);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"Object count mismatch", 22, 0, 21);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"Failed to resolve type name", 28, 0, 27);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"Invalid object reference", 25, 0, 24);
 
-  i0 = (OOC_INT32)RT0__ThisModule("Object", 7);
+  i0 = (OOC_INT32)RT0__ThisModule((OOC_CHAR8*)"Object", 7);
   ADT_Object_Storage__object = (RT0__Module)i0;
-  i0 = (OOC_INT32)RT0__ThisType((RT0__Module)i0, "String8", 8);
+  i0 = (OOC_INT32)RT0__ThisType((RT0__Module)i0, (OOC_CHAR8*)"String8", 8);
   ADT_Object_Storage__string8 = (RT0__Struct)i0;
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 11632));
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 11642));
   ADT_Object_Storage__string8 = (RT0__Struct)i0;
   i0 = (OOC_INT32)ADT_Object_Storage__object;
-  i0 = (OOC_INT32)RT0__ThisType((RT0__Module)i0, "String16", 9);
+  i0 = (OOC_INT32)RT0__ThisType((RT0__Module)i0, (OOC_CHAR8*)"String16", 9);
   ADT_Object_Storage__string16 = (RT0__Struct)i0;
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 11717));
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 11727));

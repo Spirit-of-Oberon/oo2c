@@ -159,7 +159,7 @@ l30:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 4167)), 0);
   i0 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i0, 4167)), i1);
   i1 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4113)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, "name", 5, (Msg__LStringPtr)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 4113)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i0);
   goto l38;
 l33:
   i2 = (OOC_INT32)s;
@@ -211,9 +211,9 @@ l4:
   i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 4749));
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 4755)), 0);
   LongStrings__Short((void*)(_check_pointer(i3, 4755)), i2, 63u, (void*)(OOC_INT32)str8, 2048);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4775)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "<", 2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4775)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"<", 2);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4801)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)str8, 2048);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4828)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, ">", 2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4828)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)">", 2);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4850)))), TextRider__WriterDesc_WriteLn)),TextRider__WriterDesc_WriteLn)((TextRider__Writer)i0);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4873))+4);
   OOC_Config_Repositories__SectionDesc_DumpContent_Write((OOC_Repository__Repository)i0);
@@ -223,9 +223,9 @@ l4:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 4919)), 0);
   LongStrings__Short((void*)(_check_pointer(i0, 4919)), i1, 63u, (void*)(OOC_INT32)str8, 2048);
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4939)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4939)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</", 3);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4966)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (void*)(OOC_INT32)str8, 2048);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4993)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, ">", 2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4993)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)">", 2);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5015)))), TextRider__WriterDesc_WriteLn)),TextRider__WriterDesc_WriteLn)((TextRider__Writer)i0);
   return;
   ;
@@ -588,7 +588,7 @@ void OOC_OOC_Config_Repositories_init(void) {
   URI__RegisterScheme((URI__URI)i0);
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_Config_Repositories__ErrorContext.baseTypes[0]);
   OOC_Config_Repositories__repositoriesContext = (OOC_Config_Repositories__ErrorContext)i0;
-  Msg__InitContext((Msg__Context)i0, "OOC:Config:Repositories", 24);
+  Msg__InitContext((Msg__Context)i0, (OOC_CHAR8*)"OOC:Config:Repositories", 24);
   OOC_Config_Repositories__repositoryEntries = (OOC_Config_Repositories__RepositoryEntry)(OOC_INT32)0;
   return;
   ;

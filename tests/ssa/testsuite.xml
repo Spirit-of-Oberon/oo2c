@@ -5,7 +5,7 @@
 <testsuite-ext profile="Test Suite for Translation Patterns">
 
 <!--<testsuite-ext profile="Test Suite for Translation Patterns"
-  select ="&SetupTestCasesWithOut; generic77 generic78 generic79 generic80">-->
+  select ="&SetupTestCasesWithOut; generic83">-->
 
   &TestSetupWithOut;
     
@@ -245,6 +245,9 @@
     <test id="proc14" type="accept" file="Proc14.Mod">
       Any pointer type can be passed to a formal <code>VAR</code>
       parameter of type <code>PTR</code>.
+    </test>
+    <test id="proc15" type="reject" file="Proc15.Mod">
+      Passing a set constant to an integer parameter.
     </test>
 
     <test id="function1" type="run"
@@ -1238,6 +1241,9 @@
     <test id="opTypeGuard10" type="reject" file="OpTypeGuard10.Mod">
       Applying a type guard type to a value parameter.
     </test>
+    <test id="opTypeGuard11" type="accept" file="OpTypeGuard11.Mod">
+      Stacked type guards.
+    </test>
 
     <test id="opExprCompat1" type="run" file="OpExprCompat1.Mod"
       output="OpExprCompat1.Ref">
@@ -1610,11 +1616,11 @@
       If the left hand side of an assignment is a variable type, the
       right hand side must be of the same type.
     </test>
-    <test id="generic18" type="reject" file="Generic18.Mod">
-      Cannot use a type variable in a type guard.
+    <test id="generic18" type="accept" file="Generic18.Mod">
+      Can use a type variable in a type guard.
     </test>
-    <test id="generic19" type="reject" file="Generic19.Mod">
-      Cannot use a type variable in a type test.
+    <test id="generic19" type="accept" file="Generic19.Mod">
+      Cann use a type variable in a type test.
     </test>
     <test id="generic20" type="reject" file="Generic20.Mod">
       Cannot use <code>NEW</code> on a variable based on a type
@@ -1855,9 +1861,18 @@
       Regression test: <code>WITH</code> statement must propagate the
       correct type value.
     </test>
-    <test id="generic80" type="accept" file="Generic79.Mod">
+    <test id="generic80" type="accept" file="Generic80.Mod">
       Regression test: <code>WITH</code> statement must propagate the
       correct type value.
+    </test>
+    <test id="generic81" type="accept" file="Generic81.Mod">
+      Right hand side of type test can contain a variable.
+    </test>
+    <test id="generic82" type="reject" file="Generic82.Mod">
+      Regression test: Too many type parameters for receiver.
+    </test>
+    <test id="generic83" type="run" file="Generic83.Mod"
+          output="Generic83.Ref">
     </test>
 
     <test id="iterator1" type="run" file="Iterator1.Mod"
@@ -2080,6 +2095,10 @@
       Regression test: Flatten modified operand of sum when adding two
       flattened summations.
     </test>
+    <test id="bugUnreachable1" type="accept" file="BugUnreachable1.Mod">
+      Regression test: Unreachable code after a loop should not cause
+      checks in the Allocator module to fail.
+    </test>
 
     <test id="bugDeclC1" type="run" file="BugDeclC1.Mod">
       Declaring a pointer to a type alias of a record type might cause
@@ -2196,6 +2215,8 @@
       msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
     <reject-info id="proc12" pos="P(%x);"
       msg="Argument not compatible with formal VAR parameter `ARRAY'"/>
+    <reject-info id="proc15" pos="Test({%1, 2})"
+      msg="Argument not compatible with formal type `INTEGER'"/>
     <reject-info id="function8" pos=":= %P(" msg="This is not a function procedure"/>
 
     <reject-info id="if4" pos="IF %b THEN" msg="Expression must be of type BOOLEAN"/>
@@ -2634,6 +2655,10 @@
         msg="This static type-bound procedure cannot be abstract"/>
     <reject-info id="generic78" pos="x %# l.elements"
         msg="Incompatible types for operator"/>
+    <reject-info id="generic81" pos="y: %Alp(T)"
+        msg="Type test requires static type instance"/>
+    <reject-info id="generic82" pos="a: %Alp(T, E)"
+        msg="The base record type has 1 type parameter(s)"/>
 
     <reject-info id="iterator3" pos="IN %x"
         msg="Iterator requires array elements of scalar type"/>

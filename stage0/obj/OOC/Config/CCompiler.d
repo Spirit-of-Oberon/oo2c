@@ -72,6 +72,7 @@ Config_Section_Options__Option OOC_Config_CCompiler__installData;
 Config_Section_Options__Option OOC_Config_CCompiler__uninstall;
 Config_Section_Options__Option OOC_Config_CCompiler__bindir;
 Config_Section_Options__Option OOC_Config_CCompiler__oocdir;
+#define OOC_Config_CCompiler__libtoolTag (OOC_CHAR8[])" --tag=CXX"
 static ADT_StringBuffer__StringBuffer OOC_Config_CCompiler__SetCommand(Object__String mode);
 
 /* run-time meta data */

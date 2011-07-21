@@ -237,7 +237,7 @@ l9:
     goto l17;
 l14:
     i0 = (OOC_INT32)w;
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6502)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, "[IO:TextRider.WriteObject: String16 not implemented]", 53);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6502)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (OOC_CHAR8*)"[IO:TextRider.WriteObject: String16 not implemented]", 53);
     goto l17;
 l16:
     i1 = (OOC_INT32)Object__String8Desc_CharsLatin1((Object__String8)i0);
@@ -255,7 +255,7 @@ l18:;
   goto l20;
 l19:
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6267)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, "<NIL>", 6);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6267)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (OOC_CHAR8*)"<NIL>", 6);
 l20:
   return;
   ;
@@ -267,11 +267,11 @@ void IO_TextRider__WriterDesc_WriteBool(IO_TextRider__Writer w, OOC_CHAR8 _bool)
   i0 = _bool;
   if (i0) goto l3;
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6776)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, "FALSE", 6);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6776)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (OOC_CHAR8*)"FALSE", 6);
   goto l4;
 l3:
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6743)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, "TRUE", 5);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6743)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (OOC_CHAR8*)"TRUE", 5);
 l4:
   return;
   ;
@@ -582,13 +582,13 @@ l22:
   i3=1u;
   goto l25;
 l24:
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11598)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, ", ", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11598)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (OOC_CHAR8*)", ", 3);
   
 l25:
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11651)))), IO_TextRider__WriterDesc_WriteInt)),IO_TextRider__WriterDesc_WriteInt)((IO_TextRider__Writer)i0, i2, 0);
   i2 = i2<i4;
   if (!i2) goto l28;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11703)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, "..", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11703)))), IO_TextRider__WriterDesc_WriteString)),IO_TextRider__WriterDesc_WriteString)((IO_TextRider__Writer)i0, (OOC_CHAR8*)"..", 3);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 11724)))), IO_TextRider__WriterDesc_WriteInt)),IO_TextRider__WriterDesc_WriteInt)((IO_TextRider__Writer)i0, i4, 0);
 l28:
   i2=i3;i3=i4;
@@ -1351,10 +1351,10 @@ void IO_TextRider__ReaderDesc_ReadBool(IO_TextRider__Reader r, OOC_CHAR8 *_bool)
   i0 = (OOC_INT32)r;
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 22480)))), IO_TextRider__ReaderDesc_ReadIdentifier)),IO_TextRider__ReaderDesc_ReadIdentifier)((IO_TextRider__Reader)i0, (void*)(OOC_INT32)ident, 8);
   i0 = (
-  _cmp8((const void*)(OOC_INT32)ident,(const void*)"TRUE"))==0;
+  _cmp8((const void*)(OOC_INT32)ident,(const void*)(OOC_CHAR8*)"TRUE"))==0;
   if (i0) goto l7;
   i0 = (
-  _cmp8((const void*)(OOC_INT32)ident,(const void*)"FALSE"))==0;
+  _cmp8((const void*)(OOC_INT32)ident,(const void*)(OOC_CHAR8*)"FALSE"))==0;
   if (i0) goto l5;
   IO__RaiseFormatError((Object__String)((OOC_INT32)_c14));
   goto l8;
@@ -1690,25 +1690,25 @@ l22:
 }
 
 void OOC_IO_TextRider_init(void) {
-  _c0 = Object__NewLatin1Region("Short file", 11, 0, 10);
-  _c1 = Object__NewLatin1Region("Short file", 11, 0, 10);
-  _c2 = Object__NewLatin1Region("Short file", 11, 0, 10);
-  _c3 = Object__NewLatin1Region("No string found", 16, 0, 15);
-  _c4 = Object__NewLatin1Region("No quote mark until line end", 29, 0, 28);
-  _c5 = Object__NewLatin1Region("Illegal character in string", 28, 0, 27);
-  _c6 = Object__NewLatin1Region("buffer too small", 17, 0, 16);
-  _c7 = Object__NewLatin1Region("No valid number found", 22, 0, 21);
-  _c8 = Object__NewLatin1Region("No valid number found", 22, 0, 21);
-  _c9 = Object__NewLatin1Region("Value out of range", 19, 0, 18);
-  _c10 = Object__NewLatin1Region("read value out of range", 24, 0, 23);
-  _c11 = Object__NewLatin1Region("read value out of range", 24, 0, 23);
-  _c12 = Object__NewLatin1Region("No identifier value found", 26, 0, 25);
-  _c13 = Object__NewLatin1Region("buffer too small", 17, 0, 16);
-  _c14 = Object__NewLatin1Region("No bool value found", 20, 0, 19);
-  _c15 = Object__NewLatin1Region("Hex number does not start with digit", 37, 0, 36);
-  _c16 = Object__NewLatin1Region("Hex number does not end with character \047H\047", 43, 0, 42);
-  _c17 = Object__NewLatin1Region("No valid hex number found", 26, 0, 25);
-  _c18 = Object__NewLatin1Region("buffer too small", 17, 0, 16);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"Short file", 11, 0, 10);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"Short file", 11, 0, 10);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"Short file", 11, 0, 10);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"No string found", 16, 0, 15);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"No quote mark until line end", 29, 0, 28);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"Illegal character in string", 28, 0, 27);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"buffer too small", 17, 0, 16);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"No valid number found", 22, 0, 21);
+  _c8 = Object__NewLatin1Region((OOC_CHAR8*)"No valid number found", 22, 0, 21);
+  _c9 = Object__NewLatin1Region((OOC_CHAR8*)"Value out of range", 19, 0, 18);
+  _c10 = Object__NewLatin1Region((OOC_CHAR8*)"read value out of range", 24, 0, 23);
+  _c11 = Object__NewLatin1Region((OOC_CHAR8*)"read value out of range", 24, 0, 23);
+  _c12 = Object__NewLatin1Region((OOC_CHAR8*)"No identifier value found", 26, 0, 25);
+  _c13 = Object__NewLatin1Region((OOC_CHAR8*)"buffer too small", 17, 0, 16);
+  _c14 = Object__NewLatin1Region((OOC_CHAR8*)"No bool value found", 20, 0, 19);
+  _c15 = Object__NewLatin1Region((OOC_CHAR8*)"Hex number does not start with digit", 37, 0, 36);
+  _c16 = Object__NewLatin1Region((OOC_CHAR8*)"Hex number does not end with character \047H\047", 43, 0, 42);
+  _c17 = Object__NewLatin1Region((OOC_CHAR8*)"No valid hex number found", 26, 0, 25);
+  _c18 = Object__NewLatin1Region((OOC_CHAR8*)"buffer too small", 17, 0, 16);
 
   return;
   ;

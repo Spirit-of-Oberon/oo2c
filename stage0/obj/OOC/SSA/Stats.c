@@ -346,7 +346,7 @@ l3_loop:
   if (i4) goto l3_loop;
 l8:
   OOC_SSA_Stats__Write_Pad(6, 21);
-  Out__String("Opcode", 7);
+  Out__String((OOC_CHAR8*)"Opcode", 7);
   i0 = (OOC_INT32)OOC_SSA_Stats__labels;
   i0 = *(OOC_INT32*)((_check_pointer(i0, 3841))+4);
   i = 0;
@@ -440,7 +440,7 @@ l36:
 l40:
   OOC_SSA_Stats__Write_Sep();
   OOC_SSA_Stats__Write_Pad(5, 21);
-  Out__String("TOTAL", 6);
+  Out__String((OOC_CHAR8*)"TOTAL", 6);
   i0 = (OOC_INT32)OOC_SSA_Stats__labels;
   i0 = *(OOC_INT32*)((_check_pointer(i0, 4712))+4);
   i = 0;
@@ -465,7 +465,7 @@ l48:
 
 void OOC_OOC_SSA_Stats_init(void) {
   register OOC_INT32 i0;
-  _c0 = Object__NewLatin1Region("-post", 6, 0, 5);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"-post", 6, 0, 5);
 
   i0 = (OOC_INT32)ADT_Dictionary__New();
   OOC_SSA_Stats__stage = (ADT_Dictionary__Dictionary)i0;

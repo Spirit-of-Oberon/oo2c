@@ -453,7 +453,7 @@ l70:
       i3 = i3-1;
       i6=0;
 l5_loop:
-      i7 = (OOC_INT32)OOC_SSA__InstrDesc_GetCollect((OOC_SSA__Instr)i2, (OOC_SSA__ProcBlock)0, i6);
+      i7 = (OOC_INT32)OOC_SSA__InstrDesc_GetCollect((OOC_SSA__Instr)i2, (OOC_SSA__ProcBlock)(OOC_INT32)0, i6);
       c = (OOC_SSA__Instr)i7;
       i8 = *(OOC_INT8*)((_check_pointer(i7, 7914))+36);
       _assert((i8==6), 127, 7906);
@@ -466,7 +466,7 @@ l5_loop:
       _new = (OOC_SSA__Instr)i8;
       i9 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i4, 8065))+24);
       opnd = (OOC_SSA__Opnd)i9;
-      i10 = i9!=0;
+      i10 = i9!=(OOC_INT32)0;
       if (!i10) goto l19;
 l10_loop:
       i10 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i9, 8132));
@@ -488,20 +488,20 @@ l13:
 l14:
       i9 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i9, 8379))+8);
       opnd = (OOC_SSA__Opnd)i9;
-      i10 = i9!=0;
+      i10 = i9!=(OOC_INT32)0;
       if (i10) goto l10_loop;
 l19:
       i9 = (OOC_INT32)dd;
       i10 = (OOC_INT32)OOC_SSA_Blocker__DependenceDataDesc_GetSameInstr((OOC_SSA_Blocker__DependenceData)i9, (OOC_SSA__Instr)i7, (OOC_SSA__Instr)i8);
       sameInstr = (OOC_SSA__Instr)i10;
-      i11 = i10!=0;
+      i11 = i10!=(OOC_INT32)0;
       if (i11) goto l22;
       OOC_SSA_Blocker__DependenceDataDesc_SetRegion((OOC_SSA_Blocker__DependenceData)i9, (OOC_SSA__Instr)i7, (OOC_SSA__Instr)i8);
       
       goto l23;
 l22:
       i9 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i8, 8559))+12);
-      _assert((i9==0), 127, 8549);
+      _assert((i9==(OOC_INT32)0), 127, 8549);
       i9 = (OOC_INT32)pb;
       OOC_SSA__ProcBlockDesc_DeleteInstr((OOC_SSA__ProcBlock)i9, (OOC_SSA__Instr)i8);
       _new = (OOC_SSA__Instr)i10;
@@ -527,11 +527,11 @@ l30:
 l31:
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8917))+12);
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 8925))+16);
-      _assert((i1==0), 127, 8905);
+      _assert((i1==(OOC_INT32)0), 127, 8905);
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8953))+12);
       OOC_SSA__OpndDesc_DeleteOpnd((OOC_SSA__Opnd)i1);
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8994))+12);
-      _assert((i1==0), 127, 8982);
+      _assert((i1==(OOC_INT32)0), 127, 8982);
       i1 = (OOC_INT32)pb;
       OOC_SSA__ProcBlockDesc_DeleteInstr((OOC_SSA__ProcBlock)i1, (OOC_SSA__Instr)i0);
       return;

@@ -20,17 +20,17 @@ void TextRider__ErrorContextDesc_GetTemplate(TextRider__ErrorContext context, Ms
   i1 = *(OOC_INT32*)((_check_pointer(i0, 7849))+8);
   switch (i1) {
   case 1:
-    _copy_8((const void*)"Number exceeded limits or string was too long",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Number exceeded limits or string was too long",(void*)(OOC_INT32)str,128);
     goto l4;
   default:
-    _copy_8((const void*)"",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"",(void*)(OOC_INT32)str,128);
     i1 = (OOC_INT32)context;
     Msg__ContextDesc_GetTemplate((Msg__Context)i1, (Msg__Msg)i0, (void*)(OOC_INT32)templ, templ_0d);
     goto l4;
   }
 l4:
   i0 = (
-  _cmp8((const void*)(OOC_INT32)str,(const void*)""))!=0;
+  _cmp8((const void*)(OOC_INT32)str,(const void*)(OOC_CHAR8*)""))!=0;
   if (!i0) goto l7;
   _copy_8to16((const void*)(OOC_INT32)str,(void*)(OOC_INT32)templ,templ_0d);
 l7:
@@ -887,10 +887,10 @@ void TextRider__ReaderDesc_ReadBool(TextRider__Reader r, OOC_CHAR8 *_bool) {
   i1 = i1==0;
   if (!i1) goto l11;
   i1 = (
-  _cmp8((const void*)(OOC_INT32)ident,(const void*)"TRUE"))==0;
+  _cmp8((const void*)(OOC_INT32)ident,(const void*)(OOC_CHAR8*)"TRUE"))==0;
   if (i1) goto l9;
   i1 = (
-  _cmp8((const void*)(OOC_INT32)ident,(const void*)"FALSE"))==0;
+  _cmp8((const void*)(OOC_INT32)ident,(const void*)(OOC_CHAR8*)"FALSE"))==0;
   if (i1) goto l7;
   i1 = (OOC_INT32)TextRider__GetError(8);
   *(OOC_INT32*)(_check_pointer(i0, 20145)) = i1;
@@ -2120,10 +2120,10 @@ l23:
     goto l31;
 l25:
     i1 = (
-    _cmp8((const void*)((_check_pointer(i0, 36487))+41),(const void*)"TRUE"))==0;
+    _cmp8((const void*)((_check_pointer(i0, 36487))+41),(const void*)(OOC_CHAR8*)"TRUE"))==0;
     if (i1) goto l28;
     i1 = (
-    _cmp8((const void*)((_check_pointer(i0, 36511))+41),(const void*)"FALSE"))==0;
+    _cmp8((const void*)((_check_pointer(i0, 36511))+41),(const void*)(OOC_CHAR8*)"FALSE"))==0;
     
     goto l31;
 l28:
@@ -2134,7 +2134,7 @@ l31:
     goto l54;
 l33:
     *(OOC_UINT8*)((_check_pointer(i0, 36550))+304) = ((
-    _cmp8((const void*)((_check_pointer(i0, 36562))+41),(const void*)"TRUE"))==0);
+    _cmp8((const void*)((_check_pointer(i0, 36562))+41),(const void*)(OOC_CHAR8*)"TRUE"))==0);
     TextRider__ScannerDesc_Scan_SetType(4);
     goto l54;
   case 43u:
@@ -2433,7 +2433,7 @@ l12_loop:
   i5 = *(OOC_UINT16*)(i5+(_check_index(i4, i6, OOC_UINT32, 40632))*2);
   i5 = (OOC_UINT16)i5>=(OOC_UINT16)256u;
   if (!i5) goto l15;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 40663)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i1, "[TextRider.WriteObject: String16 not implemented]", 50);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 40663)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i1, (OOC_CHAR8*)"[TextRider.WriteObject: String16 not implemented]", 50);
   return;
 l15:
   i4 = i4+1;
@@ -2481,7 +2481,7 @@ l28:
   goto l33;
 l32:
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 40306)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "<NIL>", 6);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 40306)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"<NIL>", 6);
 l33:
   return;
   ;
@@ -2493,11 +2493,11 @@ void TextRider__WriterDesc_WriteBool(TextRider__Writer w, OOC_CHAR8 _bool) {
   i0 = _bool;
   if (i0) goto l3;
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 41206)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "FALSE", 6);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 41206)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"FALSE", 6);
   goto l4;
 l3:
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 41173)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "TRUE", 5);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 41173)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"TRUE", 5);
 l4:
   return;
   ;
@@ -2808,13 +2808,13 @@ l22:
   i3=1u;
   goto l25;
 l24:
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 46181)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, ", ", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 46181)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)", ", 3);
   
 l25:
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 46234)))), TextRider__WriterDesc_WriteInt)),TextRider__WriterDesc_WriteInt)((TextRider__Writer)i0, i2, 0);
   i2 = i2<i4;
   if (!i2) goto l28;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 46286)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "..", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 46286)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"..", 3);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 46307)))), TextRider__WriterDesc_WriteInt)),TextRider__WriterDesc_WriteInt)((TextRider__Writer)i0, i4, 0);
 l28:
   i2=i3;i3=i4;
@@ -2981,7 +2981,7 @@ void OOC_TextRider_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_TextRider__ErrorContext.baseTypes[0]);
   TextRider__errorContext = (TextRider__ErrorContext)i0;
-  Msg__InitContext((Msg__Context)i0, "OOC:Core:TextRider", 19);
+  Msg__InitContext((Msg__Context)i0, (OOC_CHAR8*)"OOC:Core:TextRider", 19);
   return;
   ;
 }

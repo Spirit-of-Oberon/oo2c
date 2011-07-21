@@ -808,7 +808,7 @@ OOC_SymbolTable__ProcDecl OOC_X86_SSA__ResultDesc_CalledProc(OOC_X86_SSA__Result
   i1 = *(OOC_INT8*)((_check_pointer(i1, 36177))+20);
   i1 = i1==0;
   if (i1) goto l3;
-  return (OOC_SymbolTable__ProcDecl)0;
+  return (OOC_SymbolTable__ProcDecl)(OOC_INT32)0;
   goto l4;
 l3:
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 36221))+4);
@@ -932,7 +932,7 @@ l3:
   
 l5:
   if (i1) goto l7;
-  return (Object_Boxed__Object)0;
+  return (Object_Boxed__Object)(OOC_INT32)0;
   goto l8;
 l7:
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 37320))+4);
@@ -3691,7 +3691,7 @@ l7:
       
 l9:
       if (i1) goto l11;
-      return (OOC_SymbolTable__VarDecl)0;
+      return (OOC_SymbolTable__VarDecl)(OOC_INT32)0;
       goto l12;
 l11:
       i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 75237))+28);

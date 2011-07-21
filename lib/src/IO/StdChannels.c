@@ -18,7 +18,7 @@ void IO_StdChannels__IOError(Object__String suffix) {
 #else
   char* err = strerror(errno);
 #endif
-  Object__String8 msg = Object__NewLatin1(err, size_buffer);
+  Object__String8 msg = Object__NewLatin1((OOC_CHAR8*)err, size_buffer);
   Object__String str;
   Exception__Exception e;
 
@@ -41,8 +41,9 @@ void IO_StdChannels__IOError(Object__String suffix) {
   e = RT0__NewObject(e_type);
   
   if (suffix) {
-    str = Object__Concat2((Object__String)Object__NewLatin1Region(": ",3,0,2),
-			  suffix);
+    str = Object__Concat2
+      ((Object__String)Object__NewLatin1Region((OOC_CHAR8*)": ",3,0,2),
+       suffix);
     str = Object__Concat2((Object__String)msg, str);
   } else {
     str = (Object__String)msg;

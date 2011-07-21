@@ -1,7 +1,7 @@
-(* 	$Id: XML.Mod,v 1.78 2004/03/21 22:33:00 mva Exp $	 *)
+(* 	$Id: XML.Mod,v 1.79 2005/10/07 08:35:42 mva Exp $	 *)
 MODULE OOC:IR:XML;
 (*  Write an IR data structure as an XML document.
-    Copyright (C) 2001-2004  Michael van Acken, Stewart Greenhill
+    Copyright (C) 2001-2005  Michael van Acken, Stewart Greenhill
 
     This file is part of OOC.
 
@@ -344,8 +344,8 @@ PROCEDURE (v : Visitor) VisitTypeTag* (op : IR.TypeTag);
 PROCEDURE (v : Visitor) VisitTypeTest* (op : IR.TypeTest);
   BEGIN
     v. w. StartTag("type-test", FALSE);
-    op. expr. Accept(v);
     TypeAttr(v.w, op.type);
+    op. expr. Accept(v);
     v. w. EndTag;
   END VisitTypeTest;
 

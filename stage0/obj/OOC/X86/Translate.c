@@ -1082,7 +1082,7 @@ l4:
 
               i0 = (OOC_INT32)guard;
               i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 22423))+8);
-              i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 22428))+20);
+              i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 22428))+24);
               i0 = (OOC_INT32)OOC_X86_Translate__Translate_StatmSeq_Expression((OOC_IR__Expression)i0);
               return (OOC_X86_SSA__Result)i0;
               ;
@@ -1383,7 +1383,7 @@ l59:
           i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 36217))+8);
           i2 = (OOC_INT32)OOC_X86_Translate__Translate_StatmSeq_Expression((OOC_IR__Expression)i2);
           i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 36168))+4);
-          i0 = (OOC_INT32)OOC_X86_Translate__Translate_StatmSeq_Expression_LeftRight((OOC_X86_SSA__Result)0, (OOC_SymbolTable__Type)i0, (OOC_X86_SSA__Result)i2, (OOC_SymbolTable__Type)i1, (-1), (-1));
+          i0 = (OOC_INT32)OOC_X86_Translate__Translate_StatmSeq_Expression_LeftRight((OOC_X86_SSA__Result)(OOC_INT32)0, (OOC_SymbolTable__Type)i0, (OOC_X86_SSA__Result)i2, (OOC_SymbolTable__Type)i1, (-1), (-1));
           return (OOC_X86_SSA__Result)i0;
           goto l158;
 l61:
@@ -2738,17 +2738,17 @@ l8:
 }
 
 void OOC_OOC_X86_Translate_init(void) {
-  _c0 = Object__NewLatin1Region("memcpy", 7, 0, 6);
-  _c1 = Object__NewLatin1Region("RT0__ErrorFailedTypeAssert", 27, 0, 26);
-  _c2 = Object__NewLatin1Region("memcpy", 7, 0, 6);
-  _c3 = Object__NewLatin1Region("RT0__NewObject", 15, 0, 14);
-  _c4 = Object__NewLatin1Region("RT0__TypeTest", 14, 0, 13);
-  _c5 = Object__NewLatin1Region("RT0__ScanCaseRanges", 20, 0, 19);
-  _c6 = Object__NewLatin1Region("RT0__ErrorFailedCase", 21, 0, 20);
-  _c7 = Object__NewLatin1Region("RT0__ErrorAssertionFailed", 26, 0, 25);
-  _c8 = Object__NewLatin1Region("RT0__Halt", 10, 0, 9);
-  _c9 = Object__NewLatin1Region("RT0__ErrorFailedWith", 21, 0, 20);
-  _c10 = Object__NewLatin1Region("RT0__ErrorFailedFunction", 25, 0, 24);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"memcpy", 7, 0, 6);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__ErrorFailedTypeAssert", 27, 0, 26);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"memcpy", 7, 0, 6);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__NewObject", 15, 0, 14);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__TypeTest", 14, 0, 13);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__ScanCaseRanges", 20, 0, 19);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__ErrorFailedCase", 21, 0, 20);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__ErrorAssertionFailed", 26, 0, 25);
+  _c8 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__Halt", 10, 0, 9);
+  _c9 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__ErrorFailedWith", 21, 0, 20);
+  _c10 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__ErrorFailedFunction", 25, 0, 24);
 
   return;
   ;

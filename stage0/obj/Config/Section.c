@@ -207,7 +207,7 @@ void Config_Section__SectionListDesc_ProcessElements(Config_Section__SectionList
   Config_Section__SectionListDesc_ProcessElements_Err(1, (Config_Parser__Node)i0);
   i0 = (OOC_INT32)Msg__GetLStringPtr((void*)(OOC_INT32)rootElementName, rootElementName_0d);
   i1 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3436)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, "name", 5, (Msg__LStringPtr)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3436)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i0);
 l3:
   i0 = (OOC_INT32)root;
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 3531))+36);
@@ -242,7 +242,7 @@ l14:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 3903)), 0);
   i0 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i0, 3903)), i1);
   i1 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3846)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, "name", 5, (Msg__LStringPtr)i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 3846)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i0);
   
   goto l21;
 l17:
@@ -292,7 +292,7 @@ void OOC_Config_Section_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_Config_Section__ErrorContext.baseTypes[0]);
   Config_Section__sectionContext = (Config_Section__ErrorContext)i0;
-  Msg__InitContext((Msg__Context)i0, "Config:Section", 15);
+  Msg__InitContext((Msg__Context)i0, (OOC_CHAR8*)"Config:Section", 15);
   return;
   ;
 }

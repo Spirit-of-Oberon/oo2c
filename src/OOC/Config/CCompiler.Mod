@@ -1,7 +1,7 @@
-(* 	$Id: CCompiler.Mod,v 1.36 2004/11/24 03:56:10 sgreenhill Exp $	 *)
+(* 	$Id: CCompiler.Mod,v 1.37 2005/08/31 12:05:37 mva Exp $	 *)
 MODULE OOC:Config:CCompiler;
 (*  Generates command lines for the C compiler and linker.
-    Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
+    Copyright (C) 2001-2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -30,6 +30,9 @@ VAR
   install-, installProgram, installData-, uninstall-: Options.Option;
   bindir-, oocdir-: Options.Option;
 
+CONST
+  libtoolTag = " --tag=CXX";
+  
 PROCEDURE HaveLibtool*(): BOOLEAN;
   BEGIN
     RETURN ~libtool.value(CfgData.StringVar).string.Equals("no");
@@ -49,7 +52,7 @@ PROCEDURE SetCommand(mode: STRING): StringBuffer.StringBuffer;
     sb := StringBuffer.New("");
     IF (mode.length # 0) & HaveLibtool() THEN
       sb.Append(libtool.value);
-      sb.Append(" --mode=");
+      sb.Append(libtoolTag+" --mode=");
       sb.Append(mode);
       sb.Append(" ");
       IF Logger.silence THEN
@@ -150,7 +153,7 @@ PROCEDURE InstallProgramCmd*(file: URI.URI; asLibrary: BOOLEAN): STRING;
     sb := StringBuffer.New("");
     IF HaveLibtool() THEN
       sb.Append(libtool.value);
-      sb.Append(" --mode=install ");
+      sb.Append(libtoolTag+" --mode=install ");
     END;
     
     sb.Append(installProgram.value);
@@ -172,7 +175,7 @@ PROCEDURE UninstallProgramCmd*(path: STRING; asLibrary: BOOLEAN): STRING;
     sb := StringBuffer.New("");
     IF HaveLibtool() THEN
       sb.Append(libtool.value);
-      sb.Append(" --mode=uninstall ");
+      sb.Append(libtoolTag+" --mode=uninstall ");
     END;
     
     sb.Append(uninstall.value);

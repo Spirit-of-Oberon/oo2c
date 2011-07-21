@@ -26,7 +26,7 @@ OOC_INT8 OOC_SSA_Aliasing__DesignatorAlias(OOC_SSA__Opnd instr, OOC_SSA__Opnd re
       
 l4:
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5100))+8);
-      i1 = i1==0;
+      i1 = i1==(OOC_INT32)0;
       if (i1) goto l7;
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 5126))+8);
       i1 = *(OOC_INT8*)((_check_pointer(i1, 5136))+4);
@@ -42,7 +42,7 @@ l9:
       return (OOC_SSA__Opnd)i0;
       goto l12;
 l11:
-      return (OOC_SSA__Opnd)0;
+      return (OOC_SSA__Opnd)(OOC_INT32)0;
 l12:
       _failed_function(4917); return 0;
       ;

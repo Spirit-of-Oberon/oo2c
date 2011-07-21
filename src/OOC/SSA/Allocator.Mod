@@ -1,4 +1,4 @@
-(* 	$Id: Allocator.Mod,v 1.36 2003/04/05 18:55:58 mva Exp $	 *)
+(* 	$Id: Allocator.Mod,v 1.37 2005/03/20 15:12:25 mva Exp $	 *)
 MODULE OOC:SSA:Allocator;
 (*  A register allocator for the C back-end.
     Copyright (C) 2001-2003  Michael van Acken
@@ -880,7 +880,8 @@ PROCEDURE AssignRegisters* (pb: SSA.ProcBlock; domRoot: Schedule.Block;
             bi. initState := Dictionary.New();
           ELSE
             ASSERT ((b. domList = NIL) OR
-                    (b. domList IS Schedule.DeadEndBlock));
+                    (b. domList IS Schedule.DeadEndBlock) OR
+                    (b. domList IS Schedule.BranchBlock)); (*of infinite loop*)
           END;
         ELSE
           (* Note: Due to the presence of unreachable blocks, it is possible

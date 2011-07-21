@@ -445,7 +445,7 @@ void URI__ReferenceDesc_WriteXML(URI__Reference ref, TextRider__Writer w) {
   register OOC_INT32 i0,i1,i2,i3;
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19922)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<uri-reference>", 17);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 19922)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<uri-reference>", 17);
   i1 = (OOC_INT32)ref;
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 19978));
   i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 19978));
@@ -457,7 +457,7 @@ void URI__ReferenceDesc_WriteXML(URI__Reference ref, TextRider__Writer w) {
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 20042))+4);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 20052)))), URI__FragmentDesc_WriteXML)),URI__FragmentDesc_WriteXML)((URI__Fragment)i1, (TextRider__Writer)i0);
 l4:
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 20081)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012</uri-reference>", 18);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 20081)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012</uri-reference>", 18);
   return;
   ;
 }
@@ -587,9 +587,9 @@ l21:
 
 void OOC_URI_init(void) {
   _c0 = Object__NewLatin1Char(58u);
-  _c1 = Object__NewLatin1Region("", 1, 0, 0);
-  _c2 = Object__NewLatin1Region("", 1, 0, 0);
-  _c3 = Object__NewLatin1Region("", 1, 0, 0);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
 
   URI__schemeList = (URI__List)(OOC_INT32)0;
   return;

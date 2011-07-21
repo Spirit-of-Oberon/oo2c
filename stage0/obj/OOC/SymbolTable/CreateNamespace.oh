@@ -31,7 +31,7 @@ extern void OOC_OOC_SymbolTable_CreateNamespace_close(RT0__Module client);
 /* run-time meta data */
 extern RT0__StructDesc _td_OOC_SymbolTable_CreateNamespace__ErrorContext;
 extern RT0__StructDesc _td_OOC_SymbolTable_CreateNamespace__ErrorContextDesc;
-extern RT0__StructDesc _td_OOC_SymbolTable_CreateNamespace__2715;
+extern RT0__StructDesc _td_OOC_SymbolTable_CreateNamespace__2708;
 #endif /* _MODULE_OOC_SymbolTable_CreateNamespace_ */
 
 /* --- */

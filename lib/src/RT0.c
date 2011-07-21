@@ -198,7 +198,15 @@ RT0__Struct RT0__TypeOf(OOC_PTR ptr) {
   return OOC_TYPE_TAG(ptr);
 }
 
-static OOC_BOOLEAN SameType(RT0__Struct t1, RT0__Struct t2) {
+/* Note: Type arguments are always of pointer type. */
+#define RESOLVE_TYPE_VAR(t,r) \
+  if (t->form == RT0__strTypeVar) t = r->typeArgs[t->len + 1]->baseTypes[0]
+
+static OOC_BOOLEAN SameType(RT0__Struct t1, RT0__Struct t2,
+			    RT0__Struct receiverTag) {
+  RESOLVE_TYPE_VAR(t1, receiverTag);
+  RESOLVE_TYPE_VAR(t2, receiverTag);
+  
   if (t1 == t2) {
     return OOC_TRUE;
   } else if ((t1->form == RT0__strQualType) &&
@@ -206,7 +214,7 @@ static OOC_BOOLEAN SameType(RT0__Struct t1, RT0__Struct t2) {
 	     (t1->typeArgs[0] == t2->typeArgs[0])) {
     int i=1;
     while ((t1->typeArgs[i] != NULL) &&
-	   SameType(t1->typeArgs[i], t2->typeArgs[i])) {
+	   SameType(t1->typeArgs[i], t2->typeArgs[i], receiverTag)) {
       i++;
     }
     return (t1->typeArgs[i] == NULL);
@@ -215,8 +223,11 @@ static OOC_BOOLEAN SameType(RT0__Struct t1, RT0__Struct t2) {
   }
 }
 
-OOC_BOOLEAN RT0__TypeTest(RT0__Struct tag, RT0__Struct td) {
-  return (tag->len >= td->len) && SameType(tag->baseTypes[td->len], td);
+OOC_BOOLEAN RT0__TypeTest(RT0__Struct tag, RT0__Struct td,
+                          RT0__Struct receiverTag) {
+  RESOLVE_TYPE_VAR(td, receiverTag);
+  return (tag->len >= td->len) &&
+    SameType(tag->baseTypes[td->len], td, receiverTag);
 }
 
 OOC_PTR RT0__NewBlock(OOC_INT32 bytes) {
@@ -340,7 +351,8 @@ void RT0__UnregisterModule(RT0__Module mid) {
 
 RT0__Module RT0__ThisModule(const OOC_CHAR8 name__ref[], OOC_LEN name_0d) {
   int i=0;
-  while ((i != moduleCount) && strcmp(name__ref, modules[i]->name)) {
+  while ((i != moduleCount) && strcmp((char*)name__ref,
+				      (char*)modules[i]->name)) {
     i++;
   }
   if (i == moduleCount) {
@@ -355,20 +367,20 @@ RT0__Struct RT0__ThisType(RT0__Module mid, const OOC_CHAR8 name__ref[], OOC_LEN 
   
   td = mid->typeDescriptors;
   while (*td) {
-    if (!strcmp(name__ref, (*td)->name)) {
+    if (!strcmp((char*)name__ref, (char*)(*td)->name)) {
       return *td;
     } else {
       td++;
     }
   }
   
-  if (strchr(name__ref, '(')) {
+  if (strchr((char*)name__ref, '(')) {
     /* name of qualified type: search _all_ modules for a match */
     int i=0;
     while (i != moduleCount) {
       td = modules[i]->typeDescriptors;
       while (*td) {
-	if (!strcmp(name__ref, (*td)->name)) {
+	if (!strcmp((char*)name__ref, (char*)(*td)->name)) {
 	  return *td;
 	} else {
 	  td++;

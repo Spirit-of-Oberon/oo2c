@@ -71,7 +71,7 @@ l9:
     }
 
 
-  _copy_8((const void*)"<",(void*)(OOC_INT32)str,280);
+  _copy_8((const void*)(OOC_CHAR8*)"<",(void*)(OOC_INT32)str,280);
   i = 1;
   i0 = (OOC_INT32)x;
   i0 = (OOC_INT32)RT0__TypeOf((void*)i0);
@@ -2372,7 +2372,7 @@ l8:
 void OOC_Object_init(void) {
   register OOC_INT32 i0;
 
-  i0 = (OOC_INT32)Object__NewLatin1("", 1);
+  i0 = (OOC_INT32)Object__NewLatin1((OOC_CHAR8*)"", 1);
   Object__emptyString = (Object__String)i0;
   return;
   ;

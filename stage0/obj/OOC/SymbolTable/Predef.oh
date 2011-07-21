@@ -71,7 +71,7 @@
 #define OOC_SymbolTable_Predef__minExitCode 0
 #define OOC_SymbolTable_Predef__maxExitCode 128
 #define OOC_SymbolTable_Predef__defaultAssertCode 127
-#define OOC_SymbolTable_Predef__initMethod "INIT"
+#define OOC_SymbolTable_Predef__initMethod (OOC_CHAR8[])"INIT"
 extern OOC_SymbolTable__Name OOC_SymbolTable_Predef__nameStringModule;
 extern OOC_SymbolTable__Name OOC_SymbolTable_Predef__nameStringType;
 extern OOC_SymbolTable__Name OOC_SymbolTable_Predef__GetName(const OOC_CHAR8 name__ref[], OOC_LEN name_0d);

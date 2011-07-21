@@ -4,7 +4,7 @@
 
 void Const5__Test(void) {
 
-  Out0__String("bar", 4);
+  Out0__String((OOC_CHAR8*)"bar", 4);
   Out0__Ln();
   return;
   ;

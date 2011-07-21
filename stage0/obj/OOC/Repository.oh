@@ -15,7 +15,7 @@
 #include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
-#define OOC_Repository__headerSuffix ".oh"
+#define OOC_Repository__headerSuffix (OOC_CHAR8[])".oh"
 typedef OOC_CHAR8 OOC_Repository__URIBuffer[1024];
 typedef struct OOC_Repository__PkgInfoDesc *OOC_Repository__PkgInfo;
 typedef struct OOC_Repository__PkgInfoDesc {

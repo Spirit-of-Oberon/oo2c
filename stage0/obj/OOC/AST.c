@@ -1816,7 +1816,7 @@ l15:
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i2, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 71990)))), &_td_OOC_AST__TerminalDesc, 71990)), 71999));
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 72004))+8);
   i2 = (
-  _cmp8((const void*)(_check_pointer(i2, 72009)),(const void*)"HAS_BODY"))==0;
+  _cmp8((const void*)(_check_pointer(i2, 72009)),(const void*)(OOC_CHAR8*)"HAS_BODY"))==0;
   
 l17:
   if (!i2) goto l19;

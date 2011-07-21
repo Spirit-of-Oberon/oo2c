@@ -16,8 +16,8 @@ extern void OOC_OOC_C_RuntimeData_destroy(void);
 extern void OOC_OOC_C_RuntimeData_close(RT0__Module client);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_C_RuntimeData__2012;
-extern RT0__StructDesc _td_OOC_C_RuntimeData__2889;
+extern RT0__StructDesc _td_OOC_C_RuntimeData__2018;
+extern RT0__StructDesc _td_OOC_C_RuntimeData__2895;
 #endif /* _MODULE_OOC_C_RuntimeData_ */
 
 /* --- */

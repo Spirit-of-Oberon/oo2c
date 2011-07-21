@@ -170,7 +170,7 @@ l29_loop:
   i7 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 14630))+48);
   i7 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i7, 14641))+12);
   *(OOC_UINT8*)((i5+((_check_index(i4, i6, OOC_UINT32, 14605))*16))+8) = ((
-  _cmp8((const void*)(_check_pointer(i7, 14645)),(const void*)"SYSTEM"))==0);
+  _cmp8((const void*)(_check_pointer(i7, 14645)),(const void*)(OOC_CHAR8*)"SYSTEM"))==0);
   i5 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 14671))+20);
   i5 = _check_pointer(i5, 14684);
   i6 = OOC_ARRAY_LENGTH(i5, 0);
@@ -820,34 +820,34 @@ l11:
 }
 
 void OOC_OOC_Repository_init(void) {
-  _c0 = Object__NewLatin1Region("src", 4, 0, 3);
-  _c1 = Object__NewLatin1Region("sym", 4, 0, 3);
-  _c2 = Object__NewLatin1Region("oocdoc/xml", 11, 0, 10);
-  _c3 = Object__NewLatin1Region("oocdoc/html", 12, 0, 11);
-  _c4 = Object__NewLatin1Region("obj", 4, 0, 3);
-  _c5 = Object__NewLatin1Region("obj", 4, 0, 3);
-  _c6 = Object__NewLatin1Region("bin", 4, 0, 3);
-  _c7 = Object__NewLatin1Region("obj", 4, 0, 3);
-  _c8 = Object__NewLatin1Region("rsrc", 5, 0, 4);
-  _c9 = Object__NewLatin1Region(".Mod", 5, 0, 4);
-  _c10 = Object__NewLatin1Region(".Sym", 5, 0, 4);
-  _c11 = Object__NewLatin1Region(".Doc", 5, 0, 4);
-  _c12 = Object__NewLatin1Region("_symtab.xml", 12, 0, 11);
-  _c13 = Object__NewLatin1Region("_sym.xml", 9, 0, 8);
-  _c14 = Object__NewLatin1Region(".xml", 5, 0, 4);
-  _c15 = Object__NewLatin1Region(".html", 6, 0, 5);
-  _c16 = Object__NewLatin1Region("_op.xml", 8, 0, 7);
-  _c17 = Object__NewLatin1Region(".o", 3, 0, 2);
-  _c18 = Object__NewLatin1Region(".lo", 4, 0, 3);
-  _c19 = Object__NewLatin1Region(".c", 3, 0, 2);
-  _c20 = Object__NewLatin1Region(".d", 3, 0, 2);
-  _c21 = Object__NewLatin1Region(".oh", 4, 0, 3);
-  _c22 = Object__NewLatin1Region(".s", 3, 0, 2);
-  _c23 = Object__NewLatin1Region("_.c", 4, 0, 3);
-  _c24 = Object__NewLatin1Region("_.s", 4, 0, 3);
-  _c25 = Object__NewLatin1Region("_.o", 4, 0, 3);
-  _c26 = Object__NewLatin1Region("", 1, 0, 0);
-  _c27 = Object__NewLatin1Region(".la", 4, 0, 3);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"src", 4, 0, 3);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"sym", 4, 0, 3);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"oocdoc/xml", 11, 0, 10);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"oocdoc/html", 12, 0, 11);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"obj", 4, 0, 3);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"obj", 4, 0, 3);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"bin", 4, 0, 3);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"obj", 4, 0, 3);
+  _c8 = Object__NewLatin1Region((OOC_CHAR8*)"rsrc", 5, 0, 4);
+  _c9 = Object__NewLatin1Region((OOC_CHAR8*)".Mod", 5, 0, 4);
+  _c10 = Object__NewLatin1Region((OOC_CHAR8*)".Sym", 5, 0, 4);
+  _c11 = Object__NewLatin1Region((OOC_CHAR8*)".Doc", 5, 0, 4);
+  _c12 = Object__NewLatin1Region((OOC_CHAR8*)"_symtab.xml", 12, 0, 11);
+  _c13 = Object__NewLatin1Region((OOC_CHAR8*)"_sym.xml", 9, 0, 8);
+  _c14 = Object__NewLatin1Region((OOC_CHAR8*)".xml", 5, 0, 4);
+  _c15 = Object__NewLatin1Region((OOC_CHAR8*)".html", 6, 0, 5);
+  _c16 = Object__NewLatin1Region((OOC_CHAR8*)"_op.xml", 8, 0, 7);
+  _c17 = Object__NewLatin1Region((OOC_CHAR8*)".o", 3, 0, 2);
+  _c18 = Object__NewLatin1Region((OOC_CHAR8*)".lo", 4, 0, 3);
+  _c19 = Object__NewLatin1Region((OOC_CHAR8*)".c", 3, 0, 2);
+  _c20 = Object__NewLatin1Region((OOC_CHAR8*)".d", 3, 0, 2);
+  _c21 = Object__NewLatin1Region((OOC_CHAR8*)".oh", 4, 0, 3);
+  _c22 = Object__NewLatin1Region((OOC_CHAR8*)".s", 3, 0, 2);
+  _c23 = Object__NewLatin1Region((OOC_CHAR8*)"_.c", 4, 0, 3);
+  _c24 = Object__NewLatin1Region((OOC_CHAR8*)"_.s", 4, 0, 3);
+  _c25 = Object__NewLatin1Region((OOC_CHAR8*)"_.o", 4, 0, 3);
+  _c26 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c27 = Object__NewLatin1Region((OOC_CHAR8*)".la", 4, 0, 3);
 
   OOC_Repository__readDocStrings = 0u;
   return;

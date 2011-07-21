@@ -33,7 +33,7 @@ static OOC_Config_FileSystem__RepositoryEntry OOC_Config_FileSystem__NewReposito
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_Config_FileSystem__RepositoryEntry.baseTypes[0]);
-  OOC_Config_Repositories__InitRepositoryEntry((OOC_Config_Repositories__RepositoryEntry)i0, "file-system", 12);
+  OOC_Config_Repositories__InitRepositoryEntry((OOC_Config_Repositories__RepositoryEntry)i0, (OOC_CHAR8*)"file-system", 12);
   return (OOC_Config_FileSystem__RepositoryEntry)i0;
   ;
 }
@@ -87,7 +87,7 @@ l3_loop:
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 3064)), 0);
   i1 = (OOC_INT32)Msg__GetLStringPtr((void*)(_check_pointer(i1, 3064)), i2);
   i2 = (OOC_INT32)lastError;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 3003)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i2, "name", 5, (Msg__LStringPtr)i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 3003)))), Msg__MsgDesc_SetLStringAttrib)),Msg__MsgDesc_SetLStringAttrib)((Msg__Msg)i2, (OOC_CHAR8*)"name", 5, (Msg__LStringPtr)i1);
   i1 = i;
   i1 = i1+1;
   i = i1;
@@ -103,16 +103,16 @@ l8:
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 3256)), 0);
   LongStrings__Short((void*)(_check_pointer(i0, 3256)), i1, 63u, (void*)(OOC_INT32)str8, 4096);
   i0 = (
-  _cmp8((const void*)(OOC_INT32)str8,(const void*)""))==0;
+  _cmp8((const void*)(OOC_INT32)str8,(const void*)(OOC_CHAR8*)""))==0;
   if (i0) goto l16;
   i0 = Strings__Length((void*)(OOC_INT32)str8, 4096);
   i0 = *(OOC_UINT8*)((OOC_INT32)str8+(_check_index((i0-1), 4096, OOC_UINT16, 3336)));
   i0 = i0!=47u;
   if (!i0) goto l17;
-  Strings__Append("/", 2, (void*)(OOC_INT32)str8, 4096);
+  Strings__Append((OOC_CHAR8*)"/", 2, (void*)(OOC_INT32)str8, 4096);
   goto l17;
 l16:
-  _copy_8((const void*)"./",(void*)(OOC_INT32)str8,4096);
+  _copy_8((const void*)(OOC_CHAR8*)"./",(void*)(OOC_INT32)str8,4096);
 l17:
   i0 = (OOC_INT32)URI_Scheme_File__ToURI((void*)(OOC_INT32)str8, 4096);
   relativeUri = (URI__URI)i0;
@@ -155,7 +155,7 @@ void OOC_OOC_Config_FileSystem_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_Config_FileSystem__ErrorContext.baseTypes[0]);
   OOC_Config_FileSystem__repositoriesContext = (OOC_Config_FileSystem__ErrorContext)i0;
-  Msg__InitContext((Msg__Context)i0, "OOC:Config:FileSystem", 22);
+  Msg__InitContext((Msg__Context)i0, (OOC_CHAR8*)"OOC:Config:FileSystem", 22);
   i0 = (OOC_INT32)OOC_Config_FileSystem__NewRepositoryEntry();
   OOC_Config_Repositories__AddRepositoryEntry((OOC_Config_Repositories__RepositoryEntry)i0);
   return;

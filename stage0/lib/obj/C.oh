@@ -4,6 +4,7 @@
 #include <__typemap.h>
 #include <RT0.oh>
 #include <RT0.oh>
+#include <RT0.oh>
 #include <Object.oh>
 #include <Exception.oh>
 typedef OOC_CHAR8 C__char;
@@ -23,8 +24,8 @@ typedef OOC_INT32 C__FILE;
 typedef OOC_INT32 C__size_t;
 typedef OOC_INT32 C__uid_t;
 typedef OOC_INT32 C__gid_t;
-typedef OOC_CHAR8 *C__charPtr1d;
-typedef C__charPtr1d *C__charPtr2d;
+typedef RT0__charPtr1d C__charPtr1d;
+typedef RT0__charPtr2d C__charPtr2d;
 typedef OOC_INT32 *C__intPtr1d;
 typedef OOC_CHAR8 *C__string;
 typedef void (*C__Proc)(void);

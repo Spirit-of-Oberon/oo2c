@@ -368,7 +368,7 @@ OOC_SymbolTable__Module OOC_SymbolTable_Builder__BuilderDesc_NewModule(OOC_Symbo
   i1 = (OOC_INT32)RT0__NewObject(_td_OOC_Scanner_InputBuffer__CharArray.baseTypes[0], 32);
   str = (OOC_Scanner_InputBuffer__CharArray)i1;
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i1, 13006)), 0);
-  _copy_8((const void*)"_MODULE_BODY",(void*)(_check_pointer(i1, 13006)),i2);
+  _copy_8((const void*)(OOC_CHAR8*)"_MODULE_BODY",(void*)(_check_pointer(i1, 13006)),i2);
   OOC_SymbolTable__InitName((OOC_SymbolTable__Name)i0, (OOC_Scanner_InputBuffer__CharArray)i1, (-1), (-1), (-1));
   i1 = (OOC_INT32)b;
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 13073)))), OOC_SymbolTable_Builder__BuilderDesc_NewProcDecl)),OOC_SymbolTable_Builder__BuilderDesc_NewProcDecl)((OOC_SymbolTable_Builder__Builder)i1, (OOC_SymbolTable__Item)(OOC_INT32)0, (OOC_SymbolTable__Name)i0, 0, 0, (OOC_Doc__Document)(OOC_INT32)0, 0, 0u, (OOC_AST__Node)(OOC_INT32)0);
@@ -917,7 +917,7 @@ l46:
           i2 = prefix;
           if (!i2) goto l4;
           i2 = OOC_ARRAY_LENGTH((_check_pointer(i1, 21106)), 0);
-          Strings__Insert("-", 2, 0, (void*)(_check_pointer(i1, 21106)), i2);
+          Strings__Insert((OOC_CHAR8*)"-", 2, 0, (void*)(_check_pointer(i1, 21106)), i2);
 l4:
           OOC_SymbolTable__InitName((OOC_SymbolTable__Name)i0, (OOC_Scanner_InputBuffer__CharArray)i1, 0, 0, 0);
           return (OOC_SymbolTable__Name)i0;
@@ -1154,7 +1154,7 @@ OOC_SymbolTable__Module OOC_SymbolTable_Builder__BuilderDesc_ReadSymbolTable(OOC
   i1 = (
   _cmp8((const void*)(OOC_INT32)mn,(const void*)(OOC_INT32)OOC_SymbolTable_Builder__magicNumber))!=0;
   if (!i1) goto l3;
-  Out__String("Fatal error: Symbol file does not start with required magic number.", 68);
+  Out__String((OOC_CHAR8*)"Fatal error: Symbol file does not start with required magic number.", 68);
   Out__Ln();
   _halt(1);
 l3:
@@ -1233,7 +1233,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   register OOC_INT32 i0,i1,i2,i3,i4;
 
   OOC_SymbolTable_Builder__doAutoImport = 0;
-  _copy_8((const void*)"OOC9",(void*)(OOC_INT32)OOC_SymbolTable_Builder__magicNumber,5);
+  _copy_8((const void*)(OOC_CHAR8*)"OOC9",(void*)(OOC_INT32)OOC_SymbolTable_Builder__magicNumber,5);
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SymbolTable_Builder__3208.baseTypes[0], 3);
   OOC_SymbolTable_Builder__autoImport = (void*)i0;
   i1 = _check_pointer(i0, 25140);
@@ -1242,7 +1242,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   i0 = _check_pointer(i0, 25158);
   i1 = OOC_ARRAY_LENGTH(i0, 0);
   i0 = (OOC_INT32)*(OOC_INT32*)(i0+(_check_index(0, i1, OOC_UINT8, 25158))*4);
-  i1 = (OOC_INT32)OOC_SymbolTable_Builder__N("RT0", 4);
+  i1 = (OOC_INT32)OOC_SymbolTable_Builder__N((OOC_CHAR8*)"RT0", 4);
   *(OOC_INT32*)(_check_pointer(i0, 25161)) = i1;
   i0 = (OOC_INT32)OOC_SymbolTable_Builder__autoImport;
   i1 = _check_pointer(i0, 25199);
@@ -1266,7 +1266,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25283))+4);
   i0 = _check_pointer(i0, 25291);
   i1 = OOC_ARRAY_LENGTH(i0, 0);
-  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N("Out0", 5);
+  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N((OOC_CHAR8*)"Out0", 5);
   *(OOC_INT32*)(i0+(_check_index(1, i1, OOC_UINT8, 25291))*4) = i2;
   i0 = (OOC_INT32)OOC_SymbolTable_Builder__autoImport;
   i1 = _check_pointer(i0, 25328);
@@ -1275,7 +1275,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   i0 = _check_pointer(i0, 25346);
   i1 = OOC_ARRAY_LENGTH(i0, 0);
   i0 = (OOC_INT32)*(OOC_INT32*)(i0+(_check_index(1, i1, OOC_UINT8, 25346))*4);
-  i1 = (OOC_INT32)OOC_SymbolTable_Builder__N("Object", 7);
+  i1 = (OOC_INT32)OOC_SymbolTable_Builder__N((OOC_CHAR8*)"Object", 7);
   *(OOC_INT32*)(_check_pointer(i0, 25349)) = i1;
   i0 = (OOC_INT32)OOC_SymbolTable_Builder__autoImport;
   i1 = _check_pointer(i0, 25394);
@@ -1310,7 +1310,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25530))+4);
   i0 = _check_pointer(i0, 25538);
   i1 = OOC_ARRAY_LENGTH(i0, 0);
-  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N("Out0", 5);
+  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N((OOC_CHAR8*)"Out0", 5);
   *(OOC_INT32*)(i0+(_check_index(2, i1, OOC_UINT8, 25538))*4) = i2;
   i0 = (OOC_INT32)OOC_SymbolTable_Builder__autoImport;
   i0 = _check_pointer(i0, 25568);
@@ -1319,7 +1319,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25571))+4);
   i0 = _check_pointer(i0, 25579);
   i1 = OOC_ARRAY_LENGTH(i0, 0);
-  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N("HashCode", 9);
+  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N((OOC_CHAR8*)"HashCode", 9);
   *(OOC_INT32*)(i0+(_check_index(3, i1, OOC_UINT8, 25579))*4) = i2;
   i0 = (OOC_INT32)OOC_SymbolTable_Builder__autoImport;
   i1 = _check_pointer(i0, 25620);
@@ -1328,7 +1328,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   i0 = _check_pointer(i0, 25638);
   i1 = OOC_ARRAY_LENGTH(i0, 0);
   i0 = (OOC_INT32)*(OOC_INT32*)(i0+(_check_index(2, i1, OOC_UINT8, 25638))*4);
-  i1 = (OOC_INT32)OOC_SymbolTable_Builder__N("Exception", 10);
+  i1 = (OOC_INT32)OOC_SymbolTable_Builder__N((OOC_CHAR8*)"Exception", 10);
   *(OOC_INT32*)(_check_pointer(i0, 25641)) = i1;
   i0 = (OOC_INT32)OOC_SymbolTable_Builder__autoImport;
   i1 = _check_pointer(i0, 25685);
@@ -1374,7 +1374,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25873))+4);
   i0 = _check_pointer(i0, 25881);
   i1 = OOC_ARRAY_LENGTH(i0, 0);
-  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N("Out0", 5);
+  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N((OOC_CHAR8*)"Out0", 5);
   *(OOC_INT32*)(i0+(_check_index(3, i1, OOC_UINT8, 25881))*4) = i2;
   i0 = (OOC_INT32)OOC_SymbolTable_Builder__autoImport;
   i0 = _check_pointer(i0, 25911);
@@ -1383,7 +1383,7 @@ void OOC_OOC_SymbolTable_Builder_init(void) {
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 25914))+4);
   i0 = _check_pointer(i0, 25922);
   i1 = OOC_ARRAY_LENGTH(i0, 0);
-  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N("HashCode", 9);
+  i2 = (OOC_INT32)OOC_SymbolTable_Builder__N((OOC_CHAR8*)"HashCode", 9);
   *(OOC_INT32*)(i0+(_check_index(4, i1, OOC_UINT8, 25922))*4) = i2;
   return;
   ;

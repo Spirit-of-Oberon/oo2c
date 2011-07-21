@@ -129,7 +129,7 @@ void OOC_StdChannels_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_StdChannels__ErrorContext.baseTypes[0]);
   StdChannels__errorContext = (StdChannels__ErrorContext)i0;
-  Msg__InitContext((Msg__Context)i0, "OOC:Core:StdChannels", 21);
+  Msg__InitContext((Msg__Context)i0, (OOC_CHAR8*)"OOC:Core:StdChannels", 21);
   i0 = (OOC_INT32)RT0__NewObject(_td_PosixFileDescr__Channel.baseTypes[0]);
   StdChannels__fd = (PosixFileDescr__Channel)i0;
   PosixFileDescr__Init((PosixFileDescr__Channel)i0, 0, 0);

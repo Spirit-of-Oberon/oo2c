@@ -253,11 +253,11 @@ static void OOC_SymbolTable_Uses__AddMsg(OOC_SymbolTable_Uses__Uses u, OOC_Symbo
   e = (Msg__Msg)i0;
   i1 = (OOC_INT32)ident;
   i2 = *(OOC_INT32*)(_check_pointer(i1, 5003));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4977)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4977)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"pos", 4, i2);
   i2 = *(OOC_INT32*)((_check_pointer(i1, 5042))+4);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5015)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "line", 5, i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5015)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"line", 5, i2);
   i1 = *(OOC_INT32*)((_check_pointer(i1, 5084))+8);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5055)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5055)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"column", 7, i1);
   i1 = (OOC_INT32)u;
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 5099))+4);
   OOC_Error__ListDesc_AppendWarning((OOC_Error__List)i1, (Msg__Msg)i0);
@@ -516,7 +516,7 @@ l14:
       return (OOC_SymbolTable__Declaration)0;
       goto l19;
 l17:
-      Err__String("Error: Cannot resolve member `", 31);
+      Err__String((OOC_CHAR8*)"Error: Cannot resolve member `", 31);
       i1 = (OOC_INT32)u;
       i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 7994));
       i2 = _check_pointer(i2, 8003);
@@ -531,7 +531,7 @@ l17:
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 8006))+12);
       i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 8010)), 0);
       Err__String((void*)(_check_pointer(i1, 8010)), i2);
-      Err__String("\047 of --uses", 12);
+      Err__String((OOC_CHAR8*)"\047 of --uses", 12);
       Err__Ln();
       _halt(1);
 l19:
@@ -771,7 +771,7 @@ void OOC_OOC_SymbolTable_Uses_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_SymbolTable_Uses__ErrorContext.baseTypes[0]);
   OOC_SymbolTable_Uses__usesContext = (OOC_SymbolTable_Uses__ErrorContext)i0;
-  OOC_Error__InitContext((OOC_Error__Context)i0, "OOC:SymbolTable:Uses", 21);
+  OOC_Error__InitContext((OOC_Error__Context)i0, (OOC_CHAR8*)"OOC:SymbolTable:Uses", 21);
   return;
   ;
 }

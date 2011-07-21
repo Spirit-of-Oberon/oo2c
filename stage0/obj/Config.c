@@ -392,14 +392,14 @@ l4:
 }
 
 void OOC_Config_init(void) {
-  _c0 = Object__NewLatin1Region("TRUE", 5, 0, 4);
-  _c1 = Object__NewLatin1Region("FALSE", 6, 0, 5);
-  _c2 = Object__NewLatin1Region("Invalid format", 15, 0, 14);
-  _c3 = Object__NewLatin1Region("FALSE", 6, 0, 5);
-  _c4 = Object__NewLatin1Region("TRUE", 5, 0, 4);
-  _c5 = Object__NewLatin1Region("Invalid format", 15, 0, 14);
-  _c6 = Object__NewLatin1Region("Value out of range", 19, 0, 18);
-  _c7 = Object__NewLatin1Region("Value is empty", 15, 0, 14);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"TRUE", 5, 0, 4);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"FALSE", 6, 0, 5);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"Invalid format", 15, 0, 14);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"FALSE", 6, 0, 5);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"TRUE", 5, 0, 4);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"Invalid format", 15, 0, 14);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"Value out of range", 19, 0, 18);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"Value is empty", 15, 0, 14);
 
   return;
   ;

@@ -54,7 +54,7 @@ static void OOC_Config__InitConfig(Object__String8 defaultConfigFile) {
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 1926)))), Config_Section_Options__SectionDesc_Set)),Config_Section_Options__SectionDesc_Set)((Config_Section_Options__Section)i1, (Object__String)((OOC_INT32)_c2), (Config__Variable)i0);
   configFile = (Config_Section_Options__Option)i0;
   i0 = (OOC_INT32)OOC_Config__cmdLine;
-  i0 = (OOC_INT32)Config_Source_CmdLine__CmdLineDesc_AddOptionTemplate((Config_Source_CmdLine__CmdLine)i0, "--config", 9, "<option><set name=\047config-file\047>$1</set></option>", 50);
+  i0 = (OOC_INT32)Config_Source_CmdLine__CmdLineDesc_AddOptionTemplate((Config_Source_CmdLine__CmdLine)i0, (OOC_CHAR8*)"--config", 9, (OOC_CHAR8*)"<option><set name=\047config-file\047>$1</set></option>", 50);
   i1 = (OOC_INT32)OOC_Config__config;
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 2031)))), Config_Simple__ConfigDesc_ConfigFileCmdLineOption)),Config_Simple__ConfigDesc_ConfigFileCmdLineOption)((Config_Simple__Config)i1, (Config_Source_CmdLine__OptionTemplate)i0);
   i0 = (OOC_INT32)OOC_Config__config;
@@ -77,7 +77,7 @@ static void OOC_Config__InitConfig(Object__String8 defaultConfigFile) {
   i0 = (OOC_INT32)Config__NewStringVar((Object__String8)((OOC_INT32)_c5));
   i0 = (OOC_INT32)OOC_Config__AddOption((Object__String)((OOC_INT32)_c6), (Config__Variable)i0);
   OOC_Config__xsltproc = (Config_Section_Options__Option)i0;
-  OOC_Config__AddCmdLine("--xsltproc", 11, "<options><set name=\047xsltproc\047>$1</set></options>", 49);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--xsltproc", 11, (OOC_CHAR8*)"<options><set name=\047xsltproc\047>$1</set></options>", 49);
   return;
   ;
 }
@@ -106,15 +106,15 @@ OOC_CHAR8 OOC_Config__HaveXsltProc(void) {
 }
 
 void OOC_OOC_Config_init(void) {
-  _c0 = Object__NewLatin1Region("OOC_REPS", 9, 0, 8);
-  _c1 = Object__NewLatin1Region("<repositories><file-system>$1</file-system></repositories>", 59, 0, 58);
-  _c2 = Object__NewLatin1Region("config-file", 12, 0, 11);
-  _c3 = Object__NewLatin1Region("OO2CRC", 7, 0, 6);
-  _c4 = Object__NewLatin1Region("<option><set name=\047config-file\047>$1</set></option>", 50, 0, 49);
-  _c5 = Object__NewLatin1Region("xsltproc", 9, 0, 8);
-  _c6 = Object__NewLatin1Region("xsltproc", 9, 0, 8);
-  _c7 = Object__NewLatin1Region("no", 3, 0, 2);
-  _c8 = Object__NewLatin1Region("/tmp/oo2c/lib/oo2c/oo2crc.xml", 30, 0, 29);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"OOC_REPS", 9, 0, 8);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"<repositories><file-system>$1</file-system></repositories>", 59, 0, 58);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"config-file", 12, 0, 11);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"OO2CRC", 7, 0, 6);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"<option><set name=\047config-file\047>$1</set></option>", 50, 0, 49);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"xsltproc", 9, 0, 8);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"xsltproc", 9, 0, 8);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"no", 3, 0, 2);
+  _c8 = Object__NewLatin1Region((OOC_CHAR8*)"/usr/home/ooc-devel/local-ooc2/lib/oo2c/oo2crc.xml", 51, 0, 50);
 
   OOC_Config__InitConfig((Object__String8)((OOC_INT32)_c8));
   RT0__poisonHeap = 85;

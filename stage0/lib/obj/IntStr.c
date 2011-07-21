@@ -68,7 +68,7 @@ l11:
   IntStr__Reverse((void*)(OOC_INT32)b, 12, i0, (i1-1));
   goto l13;
 l12:
-  _copy_8((const void*)"-2147483648",(void*)(OOC_INT32)b,12);
+  _copy_8((const void*)(OOC_CHAR8*)"-2147483648",(void*)(OOC_INT32)b,12);
 l13:
   _copy_8((const void*)(OOC_INT32)b,(void*)(OOC_INT32)str,str_0d);
   return;

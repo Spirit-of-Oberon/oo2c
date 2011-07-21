@@ -30,7 +30,7 @@ OOC_SymbolTable__Name OOC_SymbolTable_GetClass__GetClass(OOC_SymbolTable__Item i
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 1666))+20);
       i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 1672))+12);
       i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 1677)), 0);
-      Strings__FindNext("Init", 5, (void*)(_check_pointer(i2, 1677)), i1, 0, (void*)(OOC_INT32)&found, (void*)(OOC_INT32)&pos);
+      Strings__FindNext((OOC_CHAR8*)"Init", 5, (void*)(_check_pointer(i2, 1677)), i1, 0, (void*)(OOC_INT32)&found, (void*)(OOC_INT32)&pos);
       i1 = found;
       if (i1) goto l3;
       i1=0u;

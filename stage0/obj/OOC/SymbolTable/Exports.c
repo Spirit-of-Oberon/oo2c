@@ -231,7 +231,7 @@ l72:
           if (i1) goto l20;
           i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5017)))), &_td_OOC_SymbolTable__RedirectDesc);
           if (i1) goto l31;
-          Log__Type("-- [OOC:SymbolTable:Exports]: Unknown type of `item\047", 53, (void*)i0);
+          Log__Type((OOC_CHAR8*)"-- [OOC:SymbolTable:Exports]: Unknown type of `item\047", 53, (void*)i0);
           _assert(0u, 127, 5206);
           goto l31;
 l20:

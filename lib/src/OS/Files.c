@@ -47,7 +47,7 @@ static void extend_result(OS_Files__NameArray *result, int *result_len,
 #define DIRENT_BUFFER 1024
 OS_Files__NameArray OS_Files__ListDir(Object__String path) {
   DIR* dir;
-  char* fname = OS_Path__Encode(path);
+  char* fname = (char*)OS_Path__Encode(path);
   
   dir = opendir(fname);
   if (dir != NULL) {
@@ -81,7 +81,8 @@ OS_Files__NameArray OS_Files__ListDir(Object__String path) {
 	  extend_result(&result, &result_len, buffer, i);
 	  i = 0;
 	}
-	buffer[i] = OS_Path__Decode(de->d_name, strlen(de->d_name)+1);
+	buffer[i] = OS_Path__Decode((OOC_CHAR8*)de->d_name,
+				    strlen(de->d_name)+1);
 	i++;
       }
     }
@@ -96,7 +97,7 @@ OS_Files__NameArray OS_Files__ListDir(Object__String path) {
 
 void OS_Files__MkDir(Object__String path, OS_Files__Mode mode) {
   int rc;
-  char* fname = OS_Path__Encode(path);
+  char* fname = (char*)OS_Path__Encode(path);
 
 #ifdef __MINGW32__
   rc = mkdir(fname);
@@ -111,7 +112,7 @@ void OS_Files__MkDir(Object__String path, OS_Files__Mode mode) {
 void OS_Files__MakeDirs(Object__String path, OS_Files__Mode mode) {
   int rc;
   struct stat sbuf;
-  char* fname = OS_Path__Encode(path);
+  char* fname = (char*)OS_Path__Encode(path);
   
   if (fname[0] == '\000') {	/* empty path --> no operation */
     return;
@@ -131,17 +132,19 @@ void OS_Files__MakeDirs(Object__String path, OS_Files__Mode mode) {
     }
     ppath[last] = '\000';
     OS_Files__MakeDirs(OS_Path__Decode(ppath, BUFFER_SIZE), mode);
-    OS_Files__MkDir(OS_Path__Decode(fname, OOC_ARRAY_LENGTH(fname,0)), mode);
+    OS_Files__MkDir(OS_Path__Decode((OOC_CHAR8*)fname,
+				    OOC_ARRAY_LENGTH(fname,0)), mode);
     
   } else if (!S_ISDIR(sbuf.st_mode)) {
     /* path is not directory: let mkdir get the error message */
-    OS_Files__MkDir(OS_Path__Decode(fname, OOC_ARRAY_LENGTH(fname,0)), mode);
+    OS_Files__MkDir(OS_Path__Decode((OOC_CHAR8*)fname,
+				    OOC_ARRAY_LENGTH(fname,0)), mode);
   }
 }
 
 void OS_Files__Remove(Object__String path) {
   int rc;
-  char* fname = OS_Path__Encode(path);
+  char* fname = (char*)OS_Path__Encode(path);
 
   rc = unlink(fname);
   if (rc) {
@@ -152,14 +155,14 @@ void OS_Files__Remove(Object__String path) {
 OOC_BOOLEAN OS_Files__Exists(Object__String path) {
   struct stat buf;
   
-  return (stat(OS_Path__Encode(path), &buf) == 0);
+  return (stat((char*)OS_Path__Encode(path), &buf) == 0);
 }
 
 OS_Files__Time OS_Files__MTime(Object__String path) {
   struct stat buf;
   int rc;
   
-  rc = stat(OS_Path__Encode(path), &buf);
+  rc = stat((char*)OS_Path__Encode(path), &buf);
   if (rc) {
     IO_StdChannels__IOError(path);
   } else {

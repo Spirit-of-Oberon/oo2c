@@ -606,7 +606,7 @@ l24:
   if (!i3) goto l31;
   i2 = i4==(i2+1);
   if (i2) goto l29;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10510)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, "..", 3);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10510)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)"..", 3);
   goto l30;
 l29:
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10458)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1Char)),ADT_StringBuffer__StringBufferDesc_AppendLatin1Char)((ADT_StringBuffer__StringBuffer)i0, 44u);
@@ -633,11 +633,11 @@ void ADT_StringBuffer__StringBufferDesc_AppendBool(ADT_StringBuffer__StringBuffe
   i0 = val;
   if (i0) goto l3;
   i0 = (OOC_INT32)b;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10889)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, "FALSE", 6);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10889)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)"FALSE", 6);
   goto l4;
 l3:
   i0 = (OOC_INT32)b;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10851)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, "TRUE", 5);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10851)))), ADT_StringBuffer__StringBufferDesc_AppendLatin1)),ADT_StringBuffer__StringBufferDesc_AppendLatin1)((ADT_StringBuffer__StringBuffer)i0, (OOC_CHAR8*)"TRUE", 5);
 l4:
   return;
   ;
@@ -905,8 +905,8 @@ l27:
 }
 
 void OOC_ADT_StringBuffer_init(void) {
-  _c0 = Object__NewLatin1Region("NIL", 4, 0, 3);
-  _c1 = Object__NewLatin1Region("NIL", 4, 0, 3);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"NIL", 4, 0, 3);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"NIL", 4, 0, 3);
 
   return;
   ;

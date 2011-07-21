@@ -46,7 +46,7 @@ void URI_Scheme_CurrentDoc__CurrentDocDesc_WriteXML(URI_Scheme_CurrentDoc__Curre
   register OOC_INT32 i0;
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 1757)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<current-document/>", 21);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 1757)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<current-document/>", 21);
   return;
   ;
 }
@@ -58,7 +58,7 @@ Object__String8 URI_Scheme_CurrentDoc__CurrentDocDesc_ToString(URI_Scheme_Curren
 }
 
 void OOC_URI_Scheme_CurrentDoc_init(void) {
-  _c0 = Object__NewLatin1Region("", 1, 0, 0);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
 
   return;
   ;

@@ -1,4 +1,4 @@
-/* 	$Id: ProcessManagement.c,v 1.10 2004/12/15 11:27:01 mva Exp $	 */
+/* 	$Id: ProcessManagement.c,v 1.11 2005/08/31 11:57:24 mva Exp $	 */
 #include <stdlib.h>
 #include <stdio.h>
 #include <__oo2c.h>
@@ -156,7 +156,7 @@ int OS_ProcessManagement__system(Object__String command) {
   if (command == NULL) {
     return system(NULL);
   } else {
-    return system(OS_Path__Encode(command));
+    return system((char*)OS_Path__Encode(command));
   }
 }
 #endif

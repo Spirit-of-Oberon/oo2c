@@ -16,8 +16,8 @@ extern void OOC_OOC_SSA_IRtoSSA_destroy(void);
 extern void OOC_OOC_SSA_IRtoSSA_close(RT0__Module client);
 
 /* run-time meta data */
-extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__39289;
-extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__39278;
+extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__40225;
+extern RT0__StructDesc _td_OOC_SSA_IRtoSSA__40214;
 #endif /* _MODULE_OOC_SSA_IRtoSSA_ */
 
 /* --- */

@@ -1,4 +1,4 @@
-(* 	$Id: Opcode.Mod,v 1.106 2004/04/02 20:42:18 mva Exp $	 *)
+(* 	$Id: Opcode.Mod,v 1.107 2005/10/07 08:35:41 mva Exp $	 *)
 MODULE OOC:SSA:Opcode;
 (*  This modules defines opcodes for SSA instructions.
     Copyright (C) 2001-2003  Michael van Acken
@@ -595,6 +595,10 @@ CONST
      The type of which the first operand must be an extension of.  The argument
      is an instance of @otype{*OOC:SSA.TypeRef}.  This type is either equal to
      the one of the first operand, or an extension of it.
+     
+     @item *OOC:SSA.Opnd.arg
+     Either NIL or the type tag of the receiver if the type test involves
+     type variables.
      @end table
 
      The result of the instruction is a boolean value.  *)
@@ -667,6 +671,10 @@ CONST
      The type of which the first operand must be an extension of.  The argument
      is an instance of @otype{*OOC:SSA.TypeRef}.  This type is either equal to
      the one of the first operand, or an extension of it.
+
+     @item *OOC:SSA.Opnd.arg
+     Either NIL or the type tag of the receiver if the type test involves
+     type variables.
      @end table
 
      The result of the instruction is the checked variable address, that is,

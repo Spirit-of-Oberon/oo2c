@@ -505,7 +505,7 @@ l16:
               i1 = (OOC_INT32)*(OOC_INT32*)(i1+(_check_index(0, i2, OOC_UINT8, 9312))*4);
               i1 = OOC_TYPE_TEST(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9316)))), &_td_OOC_X86_SSA__VarDesc);
               if (i1) goto l3;
-              return (OOC_SymbolTable__VarDecl)0;
+              return (OOC_SymbolTable__VarDecl)(OOC_INT32)0;
               goto l4;
 l3:
               i0 = _check_pointer(i0, 9360);

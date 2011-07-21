@@ -16,7 +16,7 @@ OOC_INT8 RealConv__FormatReal(const OOC_CHAR8 str__ref[], OOC_LEN str_0d) {
   OOC_ALLOCATE_VPAR(str,OOC_CHAR8 ,str_0d)
 
   OOC_INITIALIZE_VPAR(str__ref,str,OOC_CHAR8 ,str_0d)
-  i0 = Real0__FormatReal((void*)(OOC_INT32)str, str_0d, 38, "340282347", 10);
+  i0 = Real0__FormatReal((void*)(OOC_INT32)str, str_0d, 38, (OOC_CHAR8*)"340282347", 10);
   return i0;
   ;
 }
@@ -41,7 +41,7 @@ l4_loop:
   i1 = CharClass__IsWhiteSpace(i1);
   if (i1) goto l4_loop;
 l9:
-  i0 = sscanf(((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT32, 2518))), "%f", (OOC_INT32)&value);
+  i0 = sscanf(((OOC_INT32)str+(_check_index(i0, str_0d, OOC_UINT32, 2518))), (OOC_CHAR8*)"%f", (OOC_INT32)&value);
   i0 = i0==1;
   if (i0) goto l12;
   return 0.0000000000000000f;

@@ -202,10 +202,10 @@ l21:
 }
 
 void OOC_OS_Path_init(void) {
-  _c0 = Object__NewLatin1Region("", 1, 0, 0);
-  _c1 = Object__NewLatin1Region("", 1, 0, 0);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
   _c2 = Object__NewLatin1Char(34u);
-  _c3 = Object__NewLatin1Region("\134\"", 3, 0, 2);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"\134\"", 3, 0, 2);
 
   return;
   ;

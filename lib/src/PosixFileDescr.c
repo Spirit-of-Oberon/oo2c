@@ -1,6 +1,6 @@
-/*	$Id: PosixFileDescr.c,v 1.11 2004/12/15 11:27:03 mva Exp $	*/
+/*	$Id: PosixFileDescr.c,v 1.12 2005/08/31 11:57:24 mva Exp $	*/
 /*  Generalized access to POSIX-style file descriptors.
-    Copyright (C) 1997-2000, 2002  Michael van Acken
+    Copyright (C) 1997-2000, 2002, 2005  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -94,13 +94,13 @@ void PosixFileDescr__ErrorContextDesc_GetTemplate(PosixFileDescr__ErrorContext c
     attr = msg->attribList;
     while (attr) {
       LongStrings__Append(eol, 2, templ, templ_0d);
-      _copy_8to16((char*)attr->name, str16, strlen((char*)attr->name)+1);
+      _copy_8to16((OOC_CHAR8*)attr->name, str16, strlen((char*)attr->name)+1);
       LongStrings__Append(str16, Msg__sizeAttrName+1, templ, templ_0d);
-      _copy_8to16("=${", str16, Msg__sizeAttrName+1);
+      _copy_8to16((OOC_CHAR8*)"=${", str16, Msg__sizeAttrName+1);
       LongStrings__Append(str16, Msg__sizeAttrName+1, templ, templ_0d);
-      _copy_8to16((char*)attr->name, str16, Msg__sizeAttrName+1);
+      _copy_8to16((OOC_CHAR8*)attr->name, str16, Msg__sizeAttrName+1);
       LongStrings__Append(str16, Msg__sizeAttrName+1, templ, templ_0d);
-      _copy_8to16("}", str16, Msg__sizeAttrName+1);
+      _copy_8to16((OOC_CHAR8*)"}", str16, Msg__sizeAttrName+1);
       LongStrings__Append(str16, Msg__sizeAttrName+1, templ, templ_0d);
       attr = attr->nextAttrib;
     }

@@ -579,7 +579,7 @@ l69:
   
 l71:
   if (!i5) goto l74;
-  i5 = (OOC_INT32)Object__NewLatin1("__ref", 6);
+  i5 = (OOC_INT32)Object__NewLatin1((OOC_CHAR8*)"__ref", 6);
   i3 = (OOC_INT32)Object__StringDesc_Concat((Object__String)i3, (Object__String)i5);
   name = (Object__String)i3;
   
@@ -991,8 +991,8 @@ l4:
 }
 
 void OOC_OOC_C_ConvertDecl_init(void) {
-  _c0 = Object__NewLatin1Region("RT0__Module", 12, 0, 11);
-  _c1 = Object__NewLatin1Region("client", 7, 0, 6);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"RT0__Module", 12, 0, 11);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"client", 7, 0, 6);
 
   return;
   ;

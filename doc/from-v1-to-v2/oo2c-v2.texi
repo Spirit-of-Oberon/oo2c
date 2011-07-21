@@ -20,7 +20,7 @@ END-INFO-DIR-ENTRY
 
 @titlepage
 @title New Features of oo2c v2
-@subtitle $Revision: 1.5 $ covering oo2c-2.0.15
+@subtitle $Revision: 1.7 $ covering oo2c-2.1.9
 @author Michael van Acken @email{mva@@users.sf.net}
 @end titlepage
 @page
@@ -601,9 +601,6 @@ as @samp{v: Bi}.  The exceptions are that it can only be assigned
 values of type @var{Ti} (or @code{NIL}), and that @code{NEW} is not
 applicable to such a variable.
 
-A type variable cannot be used on the right hand side of a type test
-or type guard.
-
 Two qualified types are considered to be the same type, if they have
 the same base type and if their corresponding type arguments are of
 the same type.
@@ -803,6 +800,10 @@ END TestMap.
 @appendix Document History
 
 @table @emph
+@item 1.7
+A type variable can be used on the right hand side of a type test or
+type guard.  Introduced with @code{oo2c-2.1.9}.
+
 @item 1.5
 Adds information regarding ``checked'' vs ``unchecked'' exceptions,
 which were introduced with @code{oo2c-2.0.13}.  Covers

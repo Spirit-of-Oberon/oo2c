@@ -229,7 +229,7 @@ URI__URI OOC_Repository_FileSystem__RepositoryDesc_GetResource(volatile OOC_Repo
   OOC_INITIALIZE_VPAR(package__ref,package,OOC_CHAR8 ,package_0d)
   OOC_INITIALIZE_VPAR(path__ref,path,OOC_CHAR8 ,path_0d)
   i0 = (
-  _cmp8((const void*)(OOC_INT32)package,(const void*)""))==0;
+  _cmp8((const void*)(OOC_INT32)package,(const void*)(OOC_CHAR8*)""))==0;
   if (i0) goto l10;
   i0 = (OOC_INT32)rep;
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 4958)))), OOC_Repository__RepositoryDesc_GetDefaultSubdir)),OOC_Repository__RepositoryDesc_GetDefaultSubdir)((OOC_Repository__Repository)i0, 21);
@@ -299,13 +299,13 @@ void OOC_Repository_FileSystem__RepositoryDesc_DumpContent(OOC_Repository_FileSy
   register OOC_INT32 i0,i1,i2;
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5701)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "  <file-system>", 16);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5701)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"  <file-system>", 16);
   i1 = (OOC_INT32)rep;
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 5759))+4);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 5759))+4);
   i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 5767)))), URI__URIDesc_ToString)),URI__URIDesc_ToString)((URI__URI)i1);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5741)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5786)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</file-system>", 15);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5786)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</file-system>", 15);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 5825)))), TextRider__WriterDesc_WriteLn)),TextRider__WriterDesc_WriteLn)((TextRider__Writer)i0);
   return;
   ;
@@ -543,12 +543,12 @@ l4:
 
 void OOC_OOC_Repository_FileSystem_init(void) {
   register OOC_INT32 i0;
-  _c0 = Object__NewLatin1Region("..", 3, 0, 2);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"..", 3, 0, 2);
   _c1 = Object__NewLatin1Char(47u);
   _c2 = Object__NewLatin1Char(47u);
   _c3 = Object__NewLatin1Char(47u);
   _c4 = Object__NewLatin1Char(47u);
-  _c5 = Object__NewLatin1Region("lib", 4, 0, 3);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"lib", 4, 0, 3);
 
   i0 = (OOC_INT32)URI_Scheme_File__GetCwd();
   OOC_Repository_FileSystem__baseURI = (URI__HierarchicalURI)i0;

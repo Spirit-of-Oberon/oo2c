@@ -2,7 +2,7 @@
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_SysClock__DateTime = { (RT0__Struct[]){&_td_SysClock__DateTime}, (void*[]){}, NULL, &_mid, "DateTime", 12, 0, (1<<RT0__flagAtomic), RT0__strRecord };
+RT0__StructDesc _td_SysClock__DateTime = { (RT0__Struct[]){&_td_SysClock__DateTime}, (void*[]){}, NULL, &_mid, (OOC_CHAR8*)"DateTime", 12, 0, (1<<RT0__flagAtomic), RT0__strRecord };
 static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"SysClock", (RT0__Struct[]) { &_td_SysClock__DateTime, NULL }, 0 };
 
 extern void OOC_SysClock_open(RT0__Module client) {

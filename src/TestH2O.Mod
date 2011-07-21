@@ -2,7 +2,7 @@ MODULE TestH2O;
 IMPORT 
   Out,
   H2O:Scanner, E := H2O:Error, H2O:Source, H2O:Process, 
-  H2O:Parser, H2O:Translate, H2O:Option,
+  H2O:Parser, H2O:Translate, H2O:Option, H2O:Type,
   CfgData := Config, Config:Section:Options, OOC:Config, OOC:Error;
 
 VAR
@@ -102,6 +102,7 @@ BEGIN
     configOptions.Merge(source.options);
     configOptions.Merge(Parser.parserOptions);
     configOptions.Merge(Source.options);
+    configOptions.Merge(Type.options);
     Parser.Init(process, configOptions);
 
     tokenSource := process;

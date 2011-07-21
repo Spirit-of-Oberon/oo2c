@@ -15,12 +15,12 @@ OOC_INT32 XML_Error__errMsgCharPosBase;
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_XML_Error__Mapping = { (RT0__Struct[]){&_td_XML_Error__MappingDesc}, NULL, NULL, &_mid, "Mapping", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_XML_Error__MappingDesc = { (RT0__Struct[]){&_td_XML_Error__MappingDesc}, (void*[]){}, NULL, &_mid, "MappingDesc", 12, 0, 0, RT0__strRecord };
-RT0__StructDesc _td_XML_Error__Context = { (RT0__Struct[]){&_td_XML_Error__ContextDesc}, NULL, NULL, &_mid, "Context", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_XML_Error__ContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_XML_Error__ContextDesc}, (void*[]){(void*)XML_Error__ContextDesc_GetTemplate,(void*)XML_Error__ContextDesc_WriteTemplate,(void*)XML_Error__ContextDesc_SetString}, NULL, &_mid, "ContextDesc", 8, 1, 0, RT0__strRecord };
-RT0__StructDesc _td_XML_Error__List = { (RT0__Struct[]){&_td_XML_Error__ListDesc}, NULL, NULL, &_mid, "List", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_XML_Error__ListDesc = { (RT0__Struct[]){&_td_Msg__MsgListDesc,&_td_XML_Error__ListDesc}, (void*[]){(void*)Msg__MsgListDesc_Append,(void*)Msg__MsgListDesc_AppendList,(void*)XML_Error__ListDesc_Write}, NULL, &_mid, "ListDesc", 16, 1, 0, RT0__strRecord };
+RT0__StructDesc _td_XML_Error__Mapping = { (RT0__Struct[]){&_td_XML_Error__MappingDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"Mapping", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_XML_Error__MappingDesc = { (RT0__Struct[]){&_td_XML_Error__MappingDesc}, (void*[]){}, NULL, &_mid, (OOC_CHAR8*)"MappingDesc", 12, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_XML_Error__Context = { (RT0__Struct[]){&_td_XML_Error__ContextDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"Context", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_XML_Error__ContextDesc = { (RT0__Struct[]){&_td_Msg__ContextDesc,&_td_XML_Error__ContextDesc}, (void*[]){(void*)XML_Error__ContextDesc_GetTemplate,(void*)XML_Error__ContextDesc_WriteTemplate,(void*)XML_Error__ContextDesc_SetString}, NULL, &_mid, (OOC_CHAR8*)"ContextDesc", 8, 1, 0, RT0__strRecord };
+RT0__StructDesc _td_XML_Error__List = { (RT0__Struct[]){&_td_XML_Error__ListDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"List", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_XML_Error__ListDesc = { (RT0__Struct[]){&_td_Msg__MsgListDesc,&_td_XML_Error__ListDesc}, (void*[]){(void*)Msg__MsgListDesc_Append,(void*)Msg__MsgListDesc_AppendList,(void*)XML_Error__ListDesc_Write}, NULL, &_mid, (OOC_CHAR8*)"ListDesc", 16, 1, 0, RT0__strRecord };
 RT0__StructDesc _td_XML_Error__3911 = { (RT0__Struct[]){&RT0__longchar}, NULL, NULL, &_mid, NULL, 2048, 1024, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_XML_Error__5115 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 8192, 8192, (1<<RT0__flagAtomic), RT0__strArray };
 RT0__StructDesc _td_XML_Error__5212 = { (RT0__Struct[]){&RT0__char}, NULL, NULL, &_mid, NULL, 1024, 1024, (1<<RT0__flagAtomic), RT0__strArray };

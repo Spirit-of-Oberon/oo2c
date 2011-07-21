@@ -234,16 +234,16 @@ void OOC_IR_XML__VisitorDesc_VisitLen(OOC_IR_XML__Visitor v, OOC_IR__Len len) {
   i2 = *(OOC_INT8*)((_check_pointer(i1, 3594))+8);
   switch (i2) {
   case 16:
-    _copy_8((const void*)"string-const",(void*)(OOC_INT32)str,32);
+    _copy_8((const void*)(OOC_CHAR8*)"string-const",(void*)(OOC_INT32)str,32);
     goto l7;
   case 17:
-    _copy_8((const void*)"fixed-array",(void*)(OOC_INT32)str,32);
+    _copy_8((const void*)(OOC_CHAR8*)"fixed-array",(void*)(OOC_INT32)str,32);
     goto l7;
   case 18:
-    _copy_8((const void*)"open-array-param",(void*)(OOC_INT32)str,32);
+    _copy_8((const void*)(OOC_CHAR8*)"open-array-param",(void*)(OOC_INT32)str,32);
     goto l7;
   case 19:
-    _copy_8((const void*)"open-array-heap",(void*)(OOC_INT32)str,32);
+    _copy_8((const void*)(OOC_CHAR8*)"open-array-heap",(void*)(OOC_INT32)str,32);
     goto l7;
   default:
     _failed_case(i2, 3586);
@@ -667,7 +667,7 @@ void OOC_IR_XML__VisitorDesc_VisitBinaryArith(OOC_IR_XML__Visitor v, OOC_IR__Bin
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8189))+12);
   i3 = *(OOC_INT8*)((_check_pointer(i0, 8177))+8);
   i4 = (OOC_INT32)v;
-  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, "binaryArith", 12);
+  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, (OOC_CHAR8*)"binaryArith", 12);
   return;
   ;
 }
@@ -680,7 +680,7 @@ void OOC_IR_XML__VisitorDesc_VisitBooleanOp(OOC_IR_XML__Visitor v, OOC_IR__Boole
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8354))+12);
   i3 = *(OOC_INT8*)((_check_pointer(i0, 8342))+8);
   i4 = (OOC_INT32)v;
-  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, "booleanOp", 10);
+  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, (OOC_CHAR8*)"booleanOp", 10);
   return;
   ;
 }
@@ -692,7 +692,7 @@ void OOC_IR_XML__VisitorDesc_VisitConcat(OOC_IR_XML__Visitor v, OOC_IR__Concat o
   i0 = (OOC_INT32)v;
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 8496));
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 8496));
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 8498)))), XML_Writer__WriterDesc_StartTagLatin1)),XML_Writer__WriterDesc_StartTagLatin1)((XML_Writer__Writer)i2, "concat", 7, 0u);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 8498)))), XML_Writer__WriterDesc_StartTagLatin1)),XML_Writer__WriterDesc_StartTagLatin1)((XML_Writer__Writer)i2, (OOC_CHAR8*)"concat", 7, 0u);
   i1 = (OOC_INT32)op;
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 8556))+8);
   i = 0;
@@ -730,7 +730,7 @@ void OOC_IR_XML__VisitorDesc_VisitCompare(OOC_IR_XML__Visitor v, OOC_IR__Compare
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8791))+12);
   i3 = *(OOC_INT8*)((_check_pointer(i0, 8779))+8);
   i4 = (OOC_INT32)v;
-  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, "compare", 8);
+  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, (OOC_CHAR8*)"compare", 8);
   return;
   ;
 }
@@ -743,7 +743,7 @@ void OOC_IR_XML__VisitorDesc_VisitChangeElement(OOC_IR_XML__Visitor v, OOC_IR__C
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 8956))+12);
   i3 = *(OOC_INT8*)((_check_pointer(i0, 8944))+8);
   i4 = (OOC_INT32)v;
-  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, "change-element", 15);
+  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, (OOC_CHAR8*)"change-element", 15);
   return;
   ;
 }
@@ -756,7 +756,7 @@ void OOC_IR_XML__VisitorDesc_VisitSetOp(OOC_IR_XML__Visitor v, OOC_IR__SetOp op)
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 9119))+12);
   i3 = *(OOC_INT8*)((_check_pointer(i0, 9107))+8);
   i4 = (OOC_INT32)v;
-  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, "setOp", 6);
+  OOC_IR_XML__VisitDyadicOp((OOC_IR_XML__Visitor)i4, (OOC_IR__Operator)i0, i3, (OOC_IR__Expression)i2, (OOC_IR__Expression)i1, (OOC_CHAR8*)"setOp", 6);
   return;
   ;
 }
@@ -816,8 +816,8 @@ void OOC_IR_XML__VisitorDesc_VisitTypeGuard(OOC_IR_XML__Visitor v, OOC_IR__TypeG
   OOC_IR_XML__TypeAttr((XML_Writer__Writer)i3, (OOC_SymbolTable__Type)i2);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9709))+8);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9709))+8);
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9715))+20);
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 9715))+20);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9715))+24);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i2, 9715))+24);
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9725)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i2, (OOC_IR__Visitor)i0);
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 9743));
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 9743));
@@ -852,12 +852,12 @@ void OOC_IR_XML__VisitorDesc_VisitTypeTest(OOC_IR_XML__Visitor v, OOC_IR__TypeTe
   i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 10021));
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 10024)))), XML_Writer__WriterDesc_StartTag)),XML_Writer__WriterDesc_StartTag)((XML_Writer__Writer)i2, ((OOC_CHAR16[]){116,121,112,101,45,116,101,115,116,0}), 10, 0u);
   i1 = (OOC_INT32)op;
-  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10062))+8);
-  i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10062))+8);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 10068)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i3, (OOC_IR__Visitor)i0);
-  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10101))+4);
-  i2 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 10095));
-  OOC_IR_XML__TypeAttr((XML_Writer__Writer)i2, (OOC_SymbolTable__Type)i1);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10076))+4);
+  i3 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 10070));
+  OOC_IR_XML__TypeAttr((XML_Writer__Writer)i3, (OOC_SymbolTable__Type)i2);
+  i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10090))+8);
+  i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 10090))+8);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i2, 10096)))), OOC_IR__NodeDesc_Accept)),OOC_IR__NodeDesc_Accept)((OOC_IR__Node)i1, (OOC_IR__Visitor)i0);
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 10114));
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 10114));
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 10117)))), XML_Writer__WriterDesc_EndTag)),XML_Writer__WriterDesc_EndTag)((XML_Writer__Writer)i0);
@@ -1850,7 +1850,7 @@ void OOC_IR_XML__Write(IO__ByteChannel cw, OOC_IR__Module module) {
   i1 = (OOC_INT32)cw;
   i0 = (OOC_INT32)XML_Writer__New((IO__ByteChannel)i1, (XML_UnicodeCodec__Factory)i0, 1u, 2);
   w = (XML_Writer__Writer)i0;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 21214)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, "1.0", 4, "yes", 4);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 21214)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, (OOC_CHAR8*)"1.0", 4, (OOC_CHAR8*)"yes", 4);
   i1 = (OOC_INT32)OOC_IR_XML__NewVisitor((XML_Writer__Writer)i0);
   v = (OOC_IR_XML__Visitor)i1;
   i2 = (OOC_INT32)module;

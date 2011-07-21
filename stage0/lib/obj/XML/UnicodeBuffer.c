@@ -12,7 +12,7 @@ static OOC_INT32 XML_UnicodeBuffer__AutodetectEnc(XML_UnicodeBuffer__Input input
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 4797));
   i1 = *(OOC_INT32*)((_check_pointer(i1, 4809))+8);
   _assert((i1==0), 127, 4784);
-  _copy_8((const void*)"UTF-8",(void*)(OOC_INT32)str,16);
+  _copy_8((const void*)(OOC_CHAR8*)"UTF-8",(void*)(OOC_INT32)str,16);
   skip = 0;
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 4878));
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 4890))+4);
@@ -84,10 +84,10 @@ l24:
     
 l26:
     if (!i0) goto l30;
-    _copy_8((const void*)"UTF16-LE",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UTF16-LE",(void*)(OOC_INT32)str,16);
     goto l30;
 l29:
-    _copy_8((const void*)"UCS-4-3412",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UCS-4-3412",(void*)(OOC_INT32)str,16);
 l30:
     i0=0;
     goto l161;
@@ -155,19 +155,19 @@ l54:
     i0=0;
     goto l161;
 l56:
-    _copy_8((const void*)"UCS-4-2143",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UCS-4-2143",(void*)(OOC_INT32)str,16);
     i0=4;
     goto l161;
 l58:
-    _copy_8((const void*)"UCS-4-1234",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UCS-4-1234",(void*)(OOC_INT32)str,16);
     i0=4;
     goto l161;
 l60:
-    _copy_8((const void*)"UCS-4-2143",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UCS-4-2143",(void*)(OOC_INT32)str,16);
     i0=0;
     goto l161;
 l62:
-    _copy_8((const void*)"UCS-4-1234",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UCS-4-1234",(void*)(OOC_INT32)str,16);
     i0=0;
     goto l161;
   case 60u:
@@ -201,7 +201,7 @@ l74:
     
 l76:
     if (!i0) goto l95;
-    _copy_8((const void*)"UTF-8",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UTF-8",(void*)(OOC_INT32)str,16);
     goto l95;
 l79:
     i0 = _check_pointer(i1, 5773);
@@ -234,10 +234,10 @@ l88:
     
 l90:
     if (!i0) goto l95;
-    _copy_8((const void*)"UTF-16LE",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UTF-16LE",(void*)(OOC_INT32)str,16);
     goto l95;
 l93:
-    _copy_8((const void*)"UCS-4-4321",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UCS-4-4321",(void*)(OOC_INT32)str,16);
 l95:
     i0=0;
     goto l161;
@@ -267,7 +267,7 @@ l103:
     
 l105:
     if (!i0) goto l107;
-    _copy_8((const void*)"EBCDIC",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"EBCDIC",(void*)(OOC_INT32)str,16);
 l107:
     i0=0;
     goto l161;
@@ -290,7 +290,7 @@ l113:
     i0=0;
     goto l161;
 l115:
-    _copy_8((const void*)"UTF-8",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UTF-8",(void*)(OOC_INT32)str,16);
     i0=3;
     goto l161;
   case 254u:
@@ -335,11 +335,11 @@ l131:
     i0=0;
     goto l161;
 l133:
-    _copy_8((const void*)"UCS-4-3412",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UCS-4-3412",(void*)(OOC_INT32)str,16);
     i0=4;
     goto l161;
 l135:
-    _copy_8((const void*)"UTF-16BE",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UTF-16BE",(void*)(OOC_INT32)str,16);
     i0=2;
     goto l161;
   case 255u:
@@ -384,11 +384,11 @@ l152:
     i0=0;
     goto l161;
 l154:
-    _copy_8((const void*)"UCS-4-4321",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UCS-4-4321",(void*)(OOC_INT32)str,16);
     i0=4;
     goto l161;
 l156:
-    _copy_8((const void*)"UTF-16LE",(void*)(OOC_INT32)str,16);
+    _copy_8((const void*)(OOC_CHAR8*)"UTF-16LE",(void*)(OOC_INT32)str,16);
     i0=2;
     goto l161;
   default:

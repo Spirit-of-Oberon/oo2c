@@ -1,7 +1,7 @@
-(* 	$Id: RuntimeData.Mod,v 1.29 2004/12/15 13:07:20 mva Exp $	 *)
+(* 	$Id: RuntimeData.Mod,v 1.31 2005/10/07 08:35:42 mva Exp $	 *)
 MODULE OOC:C:RuntimeData;
 (*  Writes C code for run-time data like type descriptors.
-    Copyright (C) 2002, 2003, 2004  Michael van Acken
+    Copyright (C) 2002, 2003, 2004, 2005  Michael van Acken
 
     This file is part of OOC.
 
@@ -133,7 +133,7 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
       IF (type. namingDecl = NIL) THEN
         w. WriteString ("NULL");
       ELSE
-        w. WriteChar ('"');
+        w. WriteString ('(OOC_CHAR8*)"');
         w. WriteString (type. namingDecl. name. str^);
         w. WriteChar ('"');
       END;
@@ -144,6 +144,9 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
       name: STRING;
     BEGIN
       type := type.Deparam();
+      IF (type IS Sym.TypeVar) THEN
+        type := type(Sym.TypeVar).bound;
+      END;
       IF type.hasDescriptor THEN
         w.WriteString("&");
         name := Naming.NameOfTypeDescriptor(type, qtdData);
@@ -367,9 +370,10 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         i, len: LONGINT;
         name: STRING;
         record: Sym.Record;
+        type: Sym.Type;
       BEGIN
         tdNames.Append(qtd.name);       (* add to td list in module *)
-        
+
         w.WriteLn;
         w.WriteString("static ");
         w.WriteString(structTypeDesc);
@@ -378,45 +382,60 @@ PROCEDURE Write* (declWriter: DeclWriter.Writer; symTab: Sym.Module;
         w.WriteString(" = {");
         Nli;
 
-        IF (qtd.type.Deparam() IS Sym.Record) THEN
-          w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
-          len := BaseTypes (qtd.type, qtd.type);
-          w. WriteChar ("}");
-          
-          CNli; w. WriteString ("(void*[]){"); (* tbProcs *)
-          record := qtd.type.baseType(Sym.Record);
-          TBProcs(record, record.tbProcCount);
-          w. WriteChar ("}");
-        ELSE  (* IS Sym.Pointer *)
-          len := 0;
-          w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
-          w.WriteString("&");
-          name := Naming.NameOfTypeDescriptor(TR.PointerBaseType(qtd.type),
-                                              qtdData);
-          w.WriteObject(name);
-          w. WriteChar ("}");
+        IF (qtd.type IS Sym.TypeVar) THEN
+          w. WriteString ("NULL"); (* baseTypes *)
           CNli; w.WriteString("NULL");   (* tbProcs *)
-          record := NIL;
+          CNli; w.WriteString("NULL"); (* typeArgs *)
+          
+          CNli; w.WriteString("&_mid");    (* module *)
+          CNli; w.WriteString('(OOC_CHAR8*)"'); (* name *)
+          w.WriteObject(QualTypeName(qtd.type));
+          w.WriteChar('"');
+          
+          CNli; w.WriteLInt(qtd.type.size, 0); (* size *)
+          CNli; w.WriteLInt(qtd.type(Sym.TypeVar).parameterIndex, 0); (* len *)
+          CNli; WriteFlags(qtd.type);       (* flags *)
+          CNli; WriteForm("strTypeVar");   (* form *)
+        ELSE
+          IF (qtd.type.Deparam() IS Sym.Record) THEN
+            w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
+            len := BaseTypes (qtd.type, qtd.type);
+            w. WriteChar ("}");
+            
+            CNli; w. WriteString ("(void*[]){"); (* tbProcs *)
+            record := qtd.type(Sym.TypeClosure).baseType(Sym.Record);
+            TBProcs(record, record.tbProcCount);
+            w. WriteChar ("}");
+          ELSE  (* IS Sym.Pointer *)
+            len := 0;
+            w. WriteString ("(RT0__Struct[]){"); (* baseTypes *)
+            w.WriteString("&");
+            name := Naming.NameOfTypeDescriptor(TR.PointerBaseType(qtd.type), qtdData);
+            w.WriteObject(name);
+            w. WriteChar ("}");
+            CNli; w.WriteString("NULL");   (* tbProcs *)
+            record := NIL;
+          END;
+          
+          CNli; w.WriteString("(RT0__Struct[]){"); (* typeArgs *)
+          WriteTDRef(qtd.type(Sym.TypeClosure).baseType);
+          FOR i := 0 TO LEN(qtd.type(Sym.TypeClosure).arguments^)-1 DO
+            CNli;
+            WriteTDRef(qtd.type(Sym.TypeClosure).arguments[i].type);
+          END;
+          w.WriteString(", NULL}");
+          
+          CNli; w.WriteString("&_mid");    (* module *)
+          
+          CNli; w.WriteString('(OOC_CHAR8*)"'); (* name *)
+          w.WriteObject(QualTypeName(qtd.type));
+          w.WriteChar('"');
+          
+          CNli; w.WriteLInt(qtd.type.size, 0); (* size *)
+          CNli; w.WriteLInt(len, 0);       (* len *)
+          CNli; WriteFlags(record);        (* flags *)
+          CNli; WriteForm("strQualType");   (* form *)
         END;
-        
-        CNli; w.WriteString("(RT0__Struct[]){"); (* typeArgs *)
-        WriteTDRef(qtd.type.baseType);
-        FOR i := 0 TO LEN(qtd.type.arguments^)-1 DO
-          CNli;
-          WriteTDRef(qtd.type.arguments[i].type);
-        END;
-        w.WriteString(", NULL}");
-        
-        CNli; w.WriteString("&_mid");    (* module *)
-        
-        CNli; w.WriteChar('"');          (* name *)
-        w.WriteObject(QualTypeName(qtd.type));
-        w.WriteChar('"');
-        
-        CNli; w.WriteLInt(qtd.type.size, 0); (* size *)
-        CNli; w.WriteLInt(len, 0);       (* len *)
-        CNli; WriteFlags(record);        (* flags *)
-        CNli; WriteForm("strQualType");   (* form *)
         w.WriteString(" };");
       END WriteQualTypeDescr;
     

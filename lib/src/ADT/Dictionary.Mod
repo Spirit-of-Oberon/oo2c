@@ -1,7 +1,7 @@
-(*	$Id: Dictionary.Mod,v 1.16 2004/11/14 20:05:40 mva Exp $	*)
+(*	$Id: Dictionary.Mod,v 1.17 2005/07/05 16:35:58 mva Exp $	*)
 MODULE ADT:Dictionary;
 (*  A dictionary implementation using objects' HashCode() as keys.
-    Copyright (C) 2000, 2001, 2003, 2004  Michael van Acken
+    Copyright (C) 2000-2005  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -172,7 +172,7 @@ PROCEDURE IsSet (key: Key): BOOLEAN;
     RETURN (key # NIL) & (key # dummy)
   END IsSet;
 
-PROCEDURE (dict: Dictionary(K, V)) Lookup (key: K; hash: Hash): LONGINT;
+PROCEDURE (dict: Dictionary(K, V)) InternalLookup (key: K; hash: Hash): LONGINT;
 (* Looks up the given (key, hash) pair in the dictionary.  Result is a valid
    index that either refers to an existing entry entry equal to `key', or an
    unused slot that can be filled with `key'.
@@ -236,7 +236,7 @@ PROCEDURE (dict: Dictionary(K, V)) Lookup (key: K; hash: Hash): LONGINT;
         (* this will implicitly clear the highest bit *)
       END
     END
-  END Lookup;
+  END InternalLookup;
 
 PROCEDURE (dict: Dictionary(K, V)) Insert (key: K; hash: Hash; value: V);
 (**Internal procedure to insert a new item into the table.  Used both by the
@@ -244,7 +244,7 @@ PROCEDURE (dict: Dictionary(K, V)) Insert (key: K; hash: Hash; value: V);
   VAR
     i: LONGINT;
   BEGIN
-    i := dict.Lookup(key, hash);
+    i := dict.InternalLookup(key, hash);
     IF IsSet (dict. table[i]. key) THEN  (* replacing old value *)
       dict. table[i]. value := value
     ELSE                                 (* inserting new value *)
@@ -311,7 +311,7 @@ PROCEDURE (dict: Dictionary(K, V)) HasKey* (key: K): BOOLEAN;
     IF (dict. used = 0) THEN
       RETURN FALSE
     ELSE
-      index := dict.Lookup(key, key.HashCode());
+      index := dict.InternalLookup(key, key.HashCode());
       RETURN IsSet (dict. table[index]. key)
     END
   END HasKey;
@@ -335,10 +335,35 @@ PROCEDURE (dict: Dictionary(K, V)) Get* (key: K): V;
   BEGIN
     ASSERT (key # NIL);
     ASSERT (dict. used # 0);
-    i := dict.Lookup(key, key. HashCode());
+    i := dict.InternalLookup(key, key. HashCode());
     ASSERT (IsSet (dict. table[i]. key));
     RETURN dict. table[i]. value
   END Get;
+
+PROCEDURE (dict: Dictionary(K, V)) Lookup* (key: K; VAR value: V): BOOLEAN;
+(**If @oparam{key} exists in the dictionary @oparam{dict}, then the procedure
+   assigns the value of @oparam{key} to @oparam{value} and returns @code{TRUE};
+   otherwise, it returns @code{FALSE} and @oparam{value} is undefined.
+
+   @precond
+   @oparam{key} is not @code{NIL}.
+   @end precond  *)
+  VAR
+    i: LONGINT;
+  BEGIN
+    ASSERT (key # NIL);
+    IF dict. used = 0 THEN
+      RETURN FALSE
+    ELSE
+      i := dict.InternalLookup(key, key. HashCode());
+      IF IsSet (dict. table[i]. key) THEN
+        value := dict. table[i]. value;
+        RETURN TRUE
+      ELSE
+        RETURN FALSE
+      END
+    END
+  END Lookup;
 
 PROCEDURE (dict: Dictionary(K, V)) Set* (key: K; value: V);
 (**Sets the value for key @oparam{key} in the dictionary @oparam{dict} to
@@ -391,7 +416,7 @@ PROCEDURE (dict: Dictionary(K, V)) Delete* (key: K);
   BEGIN
     ASSERT (key # NIL);
     ASSERT (dict. used # 0);
-    i := dict.Lookup(key, key. HashCode());
+    i := dict.InternalLookup(key, key. HashCode());
     ASSERT (IsSet (dict. table[i]. key));
     (* replace key with dummy, _not_ NIL *)
     dict.table[i].key := S.VAL(K, dummy);

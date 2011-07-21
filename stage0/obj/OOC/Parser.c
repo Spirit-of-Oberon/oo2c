@@ -118,13 +118,13 @@ OOC_AST__Node OOC_Parser__Module(OOC_Scanner_SymList__Symbol sym, OOC_AST__Build
       lastError = (Msg__Msg)i0;
       i1 = (OOC_INT32)sym;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 6893))+16);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6867)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, i2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6867)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"pos", 4, i2);
       i0 = (OOC_INT32)lastError;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 6943))+20);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6916)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "line", 5, i2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6916)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"line", 5, i2);
       i0 = (OOC_INT32)lastError;
       i1 = *(OOC_INT32*)((_check_pointer(i1, 6996))+24);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6967)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, i1);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 6967)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"column", 7, i1);
       i0 = (OOC_INT32)errList;
       i1 = (OOC_INT32)lastError;
       OOC_Error__ListDesc_Append((OOC_Error__List)i0, (Msg__Msg)i1);
@@ -143,14 +143,14 @@ OOC_AST__Node OOC_Parser__Module(OOC_Scanner_SymList__Symbol sym, OOC_AST__Build
       i1 = (OOC_INT32)sym;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 7481))+16);
       i3 = *(OOC_INT32*)((_check_pointer(i1, 7490))+12);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7455)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, (i2+i3));
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7455)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"pos", 4, (i2+i3));
       i0 = (OOC_INT32)lastError;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 7540))+20);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7513)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "line", 5, i2);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7513)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"line", 5, i2);
       i0 = (OOC_INT32)lastError;
       i2 = *(OOC_INT32*)((_check_pointer(i1, 7593))+24);
       i1 = *(OOC_INT32*)((_check_pointer(i1, 7605))+12);
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7564)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, (i2+i1));
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7564)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"column", 7, (i2+i1));
       i0 = (OOC_INT32)errList;
       i1 = (OOC_INT32)lastError;
       OOC_Error__ListDesc_Append((OOC_Error__List)i0, (Msg__Msg)i1);
@@ -271,7 +271,7 @@ l13:
 l16:
       i0 = (OOC_INT32)Msg__GetStringPtr((void*)((OOC_INT32)OOC_Scanner_Symbol__representation+((_check_index(i2, 81, OOC_UINT8, 10054))*10)), 10);
       i1 = (OOC_INT32)lastError;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9952)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "sym_name", 9, (Msg__StringPtr)i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9952)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"sym_name", 9, (Msg__StringPtr)i0);
       goto l22;
 l17:
       OOC_Parser__Module_Err(1, (OOC_Scanner_SymList__Symbol)i0);
@@ -283,7 +283,7 @@ l21:
       OOC_Parser__Module_Err(2, (OOC_Scanner_SymList__Symbol)i0);
       i0 = (OOC_INT32)Msg__GetStringPtr((void*)((OOC_INT32)OOC_Scanner_Symbol__representation+((_check_index(i2, 81, OOC_UINT8, 9324))*10)), 10);
       i1 = (OOC_INT32)lastError;
-      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9222)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, "sym_name", 9, (Msg__StringPtr)i0);
+      OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9222)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"sym_name", 9, (Msg__StringPtr)i0);
 l22:
       i0 = i2==36;
       if (i0) goto l25;
@@ -415,7 +415,7 @@ l62:
           i3 = OOC_ARRAY_LENGTH((_check_pointer(i1, 11520)), 0);
           _copy_8((const void*)(_check_pointer(i0, 11516)),(void*)(_check_pointer(i1, 11520)),i3);
           i0 = OOC_ARRAY_LENGTH((_check_pointer(i1, 11554)), 0);
-          Strings__Append(":", 2, (void*)(_check_pointer(i1, 11554)), i0);
+          Strings__Append((OOC_CHAR8*)":", 2, (void*)(_check_pointer(i1, 11554)), i0);
           i0 = OOC_ARRAY_LENGTH((_check_pointer(i2, 11588)), 0);
           i3 = OOC_ARRAY_LENGTH((_check_pointer(i1, 11592)), 0);
           Strings__Append((void*)(_check_pointer(i2, 11588)), i0, (void*)(_check_pointer(i1, 11592)), i3);
@@ -517,7 +517,7 @@ l4:
           i2=0u;
           goto l5;
 l3:
-          i2 = OOC_Parser__Module_Flags_Ident("PROC_ID", 8);
+          i2 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"PROC_ID", 8);
           
 l5:
           if (i2) goto l31;
@@ -632,7 +632,7 @@ l4:
                   addIdent1 = (OOC_AST__Node)(OOC_INT32)0;
                   addComma = (OOC_AST__Node)(OOC_INT32)0;
                   addIdent2 = (OOC_AST__Node)(OOC_INT32)0;
-                  i0 = OOC_Parser__Module_Flags_Ident("ADD_OPTION", 11);
+                  i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"ADD_OPTION", 11);
                   if (!i0) goto l6;
                   i0 = (OOC_INT32)OOC_Parser__Module_CheckSym(45);
                   addOptions = (OOC_AST__Node)i0;
@@ -652,13 +652,13 @@ l6:
                 }
 
 
-              i0 = OOC_Parser__Module_Flags_Ident("FILE", 5);
+              i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"FILE", 5);
               if (i0) goto l25;
-              i0 = OOC_Parser__Module_Flags_Ident("OBJ", 4);
+              i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"OBJ", 4);
               if (i0) goto l23;
-              i0 = OOC_Parser__Module_Flags_Ident("LIB", 4);
+              i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"LIB", 4);
               if (i0) goto l7;
-              i0 = OOC_Parser__Module_Flags_Ident("FRAMEWORK", 10);
+              i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"FRAMEWORK", 10);
               
               goto l9;
 l7:
@@ -744,17 +744,17 @@ l26:
             }
 
 
-          i0 = OOC_Parser__Module_Flags_Ident("OOC_EXTENSIONS", 15);
+          i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"OOC_EXTENSIONS", 15);
           if (i0) goto l36;
-          i0 = OOC_Parser__Module_Flags_Ident("DEPRECATED", 11);
+          i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"DEPRECATED", 11);
           if (i0) goto l34;
-          i0 = OOC_Parser__Module_Flags_Ident("INTERFACE", 10);
+          i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"INTERFACE", 10);
           i0 = !i0;
           if (i0) goto l7;
           i0=0u;
           goto l9;
 l7:
-          i0 = OOC_Parser__Module_Flags_Ident("FOREIGN", 8);
+          i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"FOREIGN", 8);
           i0 = !i0;
           
 l9:
@@ -799,7 +799,7 @@ l19:
 l22:
           i0 = (OOC_INT32)OOC_Parser__Module_CheckSym(46);
           semicolon = (OOC_AST__Node)i0;
-          i0 = OOC_Parser__Module_Flags_Ident("LINK", 5);
+          i0 = OOC_Parser__Module_Flags_Ident((OOC_CHAR8*)"LINK", 5);
           if (i0) goto l25;
           i0 = (OOC_INT32)sym;
           OOC_Parser__Module_Err(16, (OOC_Scanner_SymList__Symbol)i0);
@@ -3305,7 +3305,7 @@ l5:
           OOC_Parser__Module_Err(5, (OOC_Scanner_SymList__Symbol)i0);
           i0 = (OOC_INT32)head;
           i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 59372)), 0);
-          OOC_Parser__Module_ErrStringAttrib("name", 5, (void*)(_check_pointer(i0, 59372)), i1);
+          OOC_Parser__Module_ErrStringAttrib((OOC_CHAR8*)"name", 5, (void*)(_check_pointer(i0, 59372)), i1);
 l7:
           return;
           ;
@@ -3388,7 +3388,7 @@ l13:
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 60412));
   i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i0, 60412));
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 60432)), 0);
-  OOC_Parser__Module_ErrStringAttrib("name", 5, (void*)(_check_pointer(i0, 60432)), i1);
+  OOC_Parser__Module_ErrStringAttrib((OOC_CHAR8*)"name", 5, (void*)(_check_pointer(i0, 60432)), i1);
 l15:
   i0 = (OOC_INT32)name;
   lastIdentDef = (OOC_AST__Node)i0;
@@ -3443,7 +3443,7 @@ void OOC_OOC_Parser_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_Parser__ErrorContext.baseTypes[0]);
   OOC_Parser__parserContext = (OOC_Parser__ErrorContext)i0;
-  OOC_Error__InitContext((OOC_Error__Context)i0, "OOC:Parser", 11);
+  OOC_Error__InitContext((OOC_Error__Context)i0, (OOC_CHAR8*)"OOC:Parser", 11);
   return;
   ;
 }

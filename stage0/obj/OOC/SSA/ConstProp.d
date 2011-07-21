@@ -16,8 +16,8 @@ static OOC_SSA__Const OOC_SSA_ConstProp__ComputeConst(OOC_SSA__ProcBlock pb, OOC
 
 /* run-time meta data */
 static RT0__ModuleDesc _mid;
-RT0__StructDesc _td_OOC_SSA_ConstProp__Worklist = { (RT0__Struct[]){&_td_OOC_SSA_ConstProp__WorklistDesc}, NULL, NULL, &_mid, "Worklist", 4, -1, 0, RT0__strPointer };
-RT0__StructDesc _td_OOC_SSA_ConstProp__WorklistDesc = { (RT0__Struct[]){&_td_OOC_SSA_ConstProp__WorklistDesc}, (void*[]){}, NULL, &_mid, "WorklistDesc", 8, 0, 0, RT0__strRecord };
+RT0__StructDesc _td_OOC_SSA_ConstProp__Worklist = { (RT0__Struct[]){&_td_OOC_SSA_ConstProp__WorklistDesc}, NULL, NULL, &_mid, (OOC_CHAR8*)"Worklist", 4, -1, 0, RT0__strPointer };
+RT0__StructDesc _td_OOC_SSA_ConstProp__WorklistDesc = { (RT0__Struct[]){&_td_OOC_SSA_ConstProp__WorklistDesc}, (void*[]){}, NULL, &_mid, (OOC_CHAR8*)"WorklistDesc", 8, 0, 0, RT0__strRecord };
 static RT0__ModuleDesc _mid = { (OOC_CHAR8*)"OOC:SSA:ConstProp", (RT0__Struct[]) { &_td_OOC_SSA_ConstProp__Worklist, &_td_OOC_SSA_ConstProp__WorklistDesc, NULL }, 0 };
 
 extern void OOC_OOC_SSA_ConstProp_open(RT0__Module client) {

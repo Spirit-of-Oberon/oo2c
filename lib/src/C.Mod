@@ -1,7 +1,7 @@
-(* 	$Id: C.Mod,v 1.7 2002/11/29 23:17:19 mva Exp $	 *)
+(* 	$Id: C.Mod,v 1.8 2005/08/31 06:49:48 mva Exp $	 *)
 MODULE C [INTERFACE "C"];
 (*  Basic data types for interfacing to C code.
-    Copyright (C) 1997-1998  Michael van Acken
+    Copyright (C) 1997-1998, 2005  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -19,7 +19,7 @@ MODULE C [INTERFACE "C"];
 *)
  
 IMPORT
-  SYSTEM;
+  SYSTEM, RT0;
   
 (**The types from this module are intended to be equivalent to their C
    counterparts.  They may vary depending on your system, but as long as you
@@ -55,8 +55,8 @@ TYPE
 
 
 TYPE  (* some commonly used C array types *)
-  charPtr1d* = POINTER TO ARRAY OF char;
-  charPtr2d* = POINTER TO ARRAY OF charPtr1d;
+  charPtr1d* = RT0.charPtr1d;
+  charPtr2d* = RT0.charPtr2d;
   intPtr1d* = POINTER TO ARRAY OF int;
 
 TYPE  (* C string type, assignment compatible with character arrays and

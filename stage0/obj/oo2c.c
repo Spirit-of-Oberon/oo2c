@@ -33,26 +33,26 @@ static void oo2c__NewConfig(void) {
   i0 = (OOC_INT32)OOC_Config__AddOption((Object__String)((OOC_INT32)_c10), (Config__Variable)i0);
   oo2c__showVersion = (Config_Section_Options__Option)i0;
   OOC_Config__AddRepositoryListEnv();
-  OOC_Config__AddCmdLine("--repository,-r", 16, "<repositories><file-system>$1</file-system></repositories>", 59);
-  OOC_Config__AddCmdLine("--make,-M", 10, "<options><set name=\047command\047>1</set></options>", 47);
-  OOC_Config__AddCmdLine("--build-package", 16, "<options><set name=\047command\047>2</set></options>", 47);
-  OOC_Config__AddCmdLine("--install-package", 18, "<options><set name=\047command\047>3</set></options>", 47);
-  OOC_Config__AddCmdLine("--uninstall-package", 20, "<options><set name=\047command\047>4</set></options>", 47);
-  OOC_Config__AddCmdLine("--update-repository", 20, "<options><set name=\047command\047>5</set></options>", 47);
-  OOC_Config__AddCmdLine("--get-option", 13, "<options><set name=\047command\047>6</set></options>", 47);
-  OOC_Config__AddCmdLine("--build-pkg-doc", 16, "<options><set name=\047command\047>7</set></options>", 47);
-  OOC_Config__AddCmdLine("--package-installed", 20, "<options><set name=\047command\047>8</set></options>", 47);
-  OOC_Config__AddCmdLine("--list-packages", 16, "<options><set name=\047command\047>9</set></options>", 47);
-  OOC_Config__AddCmdLine("-h,--help", 10, "<options><set name=\047showHelp\047>TRUE</set></options>", 51);
-  OOC_Config__AddCmdLine("--version", 10, "<options><set name=\047showVersion\047>TRUE</set></options>", 54);
-  OOC_Config__AddCmdLine("--no-rtc", 9, "<pragmas>  <set name=\047Assertions\047>FALSE</set>  <set name=\047IndexCheck\047>FALSE</set>  <set name=\047DerefCheck\047>FALSE</set>  <set name=\047OverflowCheck\047>FALSE</set>  <set name=\047CaseSelectCheck\047>FALSE</set>  <set name=\047FunctResult\047>FALSE</set>  <set name=\047TypeGuard\047>FALSE</set></pragmas>", 280);
-  OOC_Config__AddCmdLine("--verbose,-v", 13, "<options><set name=\047verbose\047>TRUE</set></options>", 50);
-  OOC_Config__AddCmdLine("--warnings,-w", 14, "", 1);
-  OOC_Config__AddCmdLine("-A,--all", 9, "<options><set name=\047forceUpdate\047>TRUE</set></options>", 54);
-  OOC_Config__AddCmdLine("--uses", 7, "<options>  <set name=\047listUses\047>$1</set>  <set name=\047command\047>1</set></options>", 80);
-  OOC_Config__AddCmdLine("--error-style", 14, "<options><set name=\047errorStyle\047>$1</set></options>", 51);
-  OOC_Config__AddCmdLine("--use-stderr", 13, "<options><set name=\047useStderr\047>TRUE</set></options>", 52);
-  OOC_Config__AddCmdLine("--stats", 8, "<options><set name=\047writeStats\047>TRUE</set></options>", 53);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--repository,-r", 16, (OOC_CHAR8*)"<repositories><file-system>$1</file-system></repositories>", 59);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--make,-M", 10, (OOC_CHAR8*)"<options><set name=\047command\047>1</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--build-package", 16, (OOC_CHAR8*)"<options><set name=\047command\047>2</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--install-package", 18, (OOC_CHAR8*)"<options><set name=\047command\047>3</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--uninstall-package", 20, (OOC_CHAR8*)"<options><set name=\047command\047>4</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--update-repository", 20, (OOC_CHAR8*)"<options><set name=\047command\047>5</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--get-option", 13, (OOC_CHAR8*)"<options><set name=\047command\047>6</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--build-pkg-doc", 16, (OOC_CHAR8*)"<options><set name=\047command\047>7</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--package-installed", 20, (OOC_CHAR8*)"<options><set name=\047command\047>8</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--list-packages", 16, (OOC_CHAR8*)"<options><set name=\047command\047>9</set></options>", 47);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"-h,--help", 10, (OOC_CHAR8*)"<options><set name=\047showHelp\047>TRUE</set></options>", 51);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--version", 10, (OOC_CHAR8*)"<options><set name=\047showVersion\047>TRUE</set></options>", 54);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--no-rtc", 9, (OOC_CHAR8*)"<pragmas>  <set name=\047Assertions\047>FALSE</set>  <set name=\047IndexCheck\047>FALSE</set>  <set name=\047DerefCheck\047>FALSE</set>  <set name=\047OverflowCheck\047>FALSE</set>  <set name=\047CaseSelectCheck\047>FALSE</set>  <set name=\047FunctResult\047>FALSE</set>  <set name=\047TypeGuard\047>FALSE</set></pragmas>", 280);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--verbose,-v", 13, (OOC_CHAR8*)"<options><set name=\047verbose\047>TRUE</set></options>", 50);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--warnings,-w", 14, (OOC_CHAR8*)"", 1);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"-A,--all", 9, (OOC_CHAR8*)"<options><set name=\047forceUpdate\047>TRUE</set></options>", 54);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--uses", 7, (OOC_CHAR8*)"<options>  <set name=\047listUses\047>$1</set>  <set name=\047command\047>1</set></options>", 80);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--error-style", 14, (OOC_CHAR8*)"<options><set name=\047errorStyle\047>$1</set></options>", 51);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--use-stderr", 13, (OOC_CHAR8*)"<options><set name=\047useStderr\047>TRUE</set></options>", 52);
+  OOC_Config__AddCmdLine((OOC_CHAR8*)"--stats", 8, (OOC_CHAR8*)"<options><set name=\047writeStats\047>TRUE</set></options>", 53);
   OOC_Config_CCompiler__RegisterConfig();
   return;
   ;
@@ -75,7 +75,7 @@ static OOC_Repository__Module oo2c__GetModule(Object__String moduleName) {
   m = (OOC_Repository__Module)i1;
   i2 = i1==(OOC_INT32)0;
   if (!i2) goto l4;
-  Err__String("Error: Cannot locate module ", 29);
+  Err__String((OOC_CHAR8*)"Error: Cannot locate module ", 29);
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i0, 5948)), 0);
   Err__String((void*)(_check_pointer(i0, 5948)), i2);
   Err__Ln();
@@ -611,7 +611,7 @@ static void oo2c__UninstallPackage(OOC_Package__Package pkg) {
       register OOC_INT32 i0,i1;
       ADT_StringBuffer__StringBuffer b;
 
-      i0 = (OOC_INT32)ADT_StringBuffer__NewLatin1("", 1);
+      i0 = (OOC_INT32)ADT_StringBuffer__NewLatin1((OOC_CHAR8*)"", 1);
       b = (ADT_StringBuffer__StringBuffer)i0;
       i1 = (OOC_INT32)OOC_Config_CCompiler__libdir;
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 14608))+8);
@@ -635,7 +635,7 @@ static void oo2c__UninstallPackage(OOC_Package__Package pkg) {
       register OOC_INT32 i0,i1;
       ADT_StringBuffer__StringBuffer b;
 
-      i0 = (OOC_INT32)ADT_StringBuffer__NewLatin1("", 1);
+      i0 = (OOC_INT32)ADT_StringBuffer__NewLatin1((OOC_CHAR8*)"", 1);
       b = (ADT_StringBuffer__StringBuffer)i0;
       i1 = (OOC_INT32)OOC_Config_CCompiler__bindir;
       i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 15121))+8);
@@ -936,37 +936,37 @@ l30:
 
 static void oo2c__WriteHelp(void) {
 
-  Out__String("Usage:", 7);
+  Out__String((OOC_CHAR8*)"Usage:", 7);
   Out__Ln();
-  Out__String("  oo2c [options] <module>...", 29);
+  Out__String((OOC_CHAR8*)"  oo2c [options] <module>...", 29);
   Out__Ln();
-  Out__String("  oo2c (--make|-M) [options] <module>", 38);
+  Out__String((OOC_CHAR8*)"  oo2c (--make|-M) [options] <module>", 38);
   Out__Ln();
-  Out__String("  oo2c --uses <ext-ident> [options] <module> ...", 49);
+  Out__String((OOC_CHAR8*)"  oo2c --uses <ext-ident> [options] <module> ...", 49);
   Out__Ln();
-  Out__String("  oo2c --build-package [options] <package>", 43);
+  Out__String((OOC_CHAR8*)"  oo2c --build-package [options] <package>", 43);
   Out__Ln();
-  Out__String("  oo2c --install-package [options] <package>", 45);
+  Out__String((OOC_CHAR8*)"  oo2c --install-package [options] <package>", 45);
   Out__Ln();
-  Out__String("  oo2c --uninstall-package [options] <package>", 47);
+  Out__String((OOC_CHAR8*)"  oo2c --uninstall-package [options] <package>", 47);
   Out__Ln();
-  Out__String("  oo2c --build-pkg-doc [options] <package>", 43);
+  Out__String((OOC_CHAR8*)"  oo2c --build-pkg-doc [options] <package>", 43);
   Out__Ln();
-  Out__String("  oo2c --package-installed [options] <package>", 47);
+  Out__String((OOC_CHAR8*)"  oo2c --package-installed [options] <package>", 47);
   Out__Ln();
-  Out__String("  oo2c --list-packages [options]", 33);
+  Out__String((OOC_CHAR8*)"  oo2c --list-packages [options]", 33);
   Out__Ln();
-  Out__String("Options:", 9);
+  Out__String((OOC_CHAR8*)"Options:", 9);
   Out__Ln();
-  Out__String("  --config <file>", 18);
+  Out__String((OOC_CHAR8*)"  --config <file>", 18);
   Out__Ln();
-  Out__String("  --repository <directory>, -r <directory>", 43);
+  Out__String((OOC_CHAR8*)"  --repository <directory>, -r <directory>", 43);
   Out__Ln();
-  Out__String("  --no-rtc", 11);
+  Out__String((OOC_CHAR8*)"  --no-rtc", 11);
   Out__Ln();
-  Out__String("  (--all|-A)", 13);
+  Out__String((OOC_CHAR8*)"  (--all|-A)", 13);
   Out__Ln();
-  Out__String("  --error-style (file:line:column|char-pos|attributes)", 55);
+  Out__String((OOC_CHAR8*)"  --error-style (file:line:column|char-pos|attributes)", 55);
   Out__Ln();
   return;
   ;
@@ -974,31 +974,31 @@ static void oo2c__WriteHelp(void) {
 
 void OOC_oo2c_init(void) {
   register OOC_INT32 i0,i1,i2,i3;
-  _c0 = Object__NewLatin1Region("command", 8, 0, 7);
-  _c1 = Object__NewLatin1Region("forceUpdate", 12, 0, 11);
-  _c2 = Object__NewLatin1Region("", 1, 0, 0);
-  _c3 = Object__NewLatin1Region("listUses", 9, 0, 8);
-  _c4 = Object__NewLatin1Region("useStderr", 10, 0, 9);
-  _c5 = Object__NewLatin1Region("writeStats", 11, 0, 10);
-  _c6 = Object__NewLatin1Region("verbose", 8, 0, 7);
-  _c7 = Object__NewLatin1Region("file:line:column", 17, 0, 16);
-  _c8 = Object__NewLatin1Region("errorStyle", 11, 0, 10);
-  _c9 = Object__NewLatin1Region("showHelp", 9, 0, 8);
-  _c10 = Object__NewLatin1Region("showVersion", 12, 0, 11);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"command", 8, 0, 7);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"forceUpdate", 12, 0, 11);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"listUses", 9, 0, 8);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"useStderr", 10, 0, 9);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"writeStats", 11, 0, 10);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"verbose", 8, 0, 7);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"file:line:column", 17, 0, 16);
+  _c8 = Object__NewLatin1Region((OOC_CHAR8*)"errorStyle", 11, 0, 10);
+  _c9 = Object__NewLatin1Region((OOC_CHAR8*)"showHelp", 9, 0, 8);
+  _c10 = Object__NewLatin1Region((OOC_CHAR8*)"showVersion", 12, 0, 11);
   _c11 = Object__NewLatin1Char(47u);
-  _c12 = Object__NewLatin1Region("", 1, 0, 0);
-  _c13 = Object__NewLatin1Region("", 1, 0, 0);
+  _c12 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c13 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
   _c14 = Object__NewLatin1Char(32u);
   _c15 = Object__NewLatin1Char(32u);
   _c16 = Object__NewLatin1Char(47u);
-  _c17 = Object__NewLatin1Region("/lib", 5, 0, 4);
-  _c18 = Object__NewLatin1Region(".la", 4, 0, 3);
+  _c17 = Object__NewLatin1Region((OOC_CHAR8*)"/lib", 5, 0, 4);
+  _c18 = Object__NewLatin1Region((OOC_CHAR8*)".la", 4, 0, 3);
   _c19 = Object__NewLatin1Char(47u);
   _c20 = Object__NewLatin1Char(32u);
   _c21 = Object__NewLatin1Char(47u);
-  _c22 = Object__NewLatin1Region("", 1, 0, 0);
-  _c23 = Object__NewLatin1Region("file:line:column", 17, 0, 16);
-  _c24 = Object__NewLatin1Region("char-pos", 9, 0, 8);
+  _c22 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
+  _c23 = Object__NewLatin1Region((OOC_CHAR8*)"file:line:column", 17, 0, 16);
+  _c24 = Object__NewLatin1Region((OOC_CHAR8*)"char-pos", 9, 0, 8);
 
   OOC_Error__minErrorDistance = 16;
   OOC_SymbolTable_Builder__doAutoImport = 2;
@@ -1029,7 +1029,7 @@ l3:
   oo2c__ok = i0;
   i0 = !i0;
   if (!i0) goto l6;
-  Err__String("Error: Invalid selector string for `--uses\047", 44);
+  Err__String((OOC_CHAR8*)"Error: Invalid selector string for `--uses\047", 44);
   Err__Ln();
   _halt(1);
 l6:
@@ -1163,7 +1163,7 @@ l52_loop:
     oo2c__doInstall = (i1==(-2));
     i0 = (OOC_INT32)OOC_Package__GetPackage((Object__String)i0, (void*)(OOC_INT32)&oo2c__rep);
     oo2c__pkg = (OOC_Package__Package)i0;
-    i0 = i0==0;
+    i0 = i0==(OOC_INT32)0;
     if (i0) goto l67;
     i0 = oo2c__doInstall;
     if (!i0) goto l66;
@@ -1173,7 +1173,7 @@ l52_loop:
     i1 = (OOC_INT32)oo2c__arg;
     i0 = (OOC_INT32)OOC_Package__GetPkgInfo((Object__String)i0, (Object__String)i1, (void*)(OOC_INT32)&oo2c__errList);
     oo2c__pkgInfo = (OOC_Package__Package)i0;
-    i1 = i0!=0;
+    i1 = i0!=(OOC_INT32)0;
     if (i1) goto l61;
     i1=0u;
     goto l63;
@@ -1195,7 +1195,7 @@ l66:
     oo2c__forceUpdateRepository = i0;
     goto l96;
 l67:
-    Err__String("Error: Cannot locate package ", 30);
+    Err__String((OOC_CHAR8*)"Error: Cannot locate package ", 30);
     i0 = (OOC_INT32)oo2c__arg;
     Err__Object((Object__Object)i0);
     Err__Ln();
@@ -1215,13 +1215,13 @@ l67:
     OOC_Error__ListDesc_Write((OOC_Error__List)i0, (IO__ByteChannel)i1);
 l72:
     i0 = (OOC_INT32)oo2c__pkg;
-    i1 = i0==0;
+    i1 = i0==(OOC_INT32)0;
     if (i1) goto l75;
     oo2c__UninstallPackage((OOC_Package__Package)i0);
     oo2c__forceUpdateRepository = 1u;
     goto l96;
 l75:
-    Err__String("Error: Cannot locate package ", 30);
+    Err__String((OOC_CHAR8*)"Error: Cannot locate package ", 30);
     i0 = (OOC_INT32)oo2c__arg;
     Err__Object((Object__Object)i0);
     Err__Ln();
@@ -1231,27 +1231,27 @@ l75:
     i1 = (OOC_INT32)OOC_Config__options;
     i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 22900)))), Config_Section_Options__SectionDesc_Get)),Config_Section_Options__SectionDesc_Get)((Config_Section_Options__Section)i1, (Object__String)i0);
     oo2c__option = (Config_Section_Options__Option)i0;
-    i1 = i0==0;
+    i1 = i0==(OOC_INT32)0;
     if (i1) goto l80;
     i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 23022))+8);
     i0 = (OOC_INT32)*(OOC_INT32*)(_check_pointer((_type_guard(i0, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 23037)))), &_td_Config__StringVarDesc, 23037)), 23047));
     Out__Object((Object__Object)i0);
     goto l81;
 l80:
-    Out__String("(none)", 7);
+    Out__String((OOC_CHAR8*)"(none)", 7);
 l81:
     Out__Ln();
     goto l96;
   case (-6):
     i0 = (OOC_INT32)OOC_Package__GetPackage((Object__String)i0, (void*)(OOC_INT32)&oo2c__rep);
     oo2c__pkg = (OOC_Package__Package)i0;
-    i1 = i0==0;
+    i1 = i0==(OOC_INT32)0;
     if (i1) goto l85;
     i0 = oo2c__BuildPackageDoc((OOC_Package__Package)i0);
     oo2c__ok = i0;
     goto l96;
 l85:
-    Err__String("Error: Cannot locate package ", 30);
+    Err__String((OOC_CHAR8*)"Error: Cannot locate package ", 30);
     i0 = (OOC_INT32)oo2c__arg;
     Err__Object((Object__Object)i0);
     Err__Ln();
@@ -1290,7 +1290,7 @@ l95:
     i0 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 23884)))), OOC_Make__RulesDesc_Update)),OOC_Make__RulesDesc_Update)((OOC_Make__Rules)i0, (OOC_Repository__Module)i2, i1);
     oo2c__ok = i0;
     i0 = (OOC_INT32)oo2c__makeRules;
-    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 23926)))), OOC_Make__RulesDesc_SetAllImportsModule)),OOC_Make__RulesDesc_SetAllImportsModule)((OOC_Make__Rules)i0, (OOC_Repository__Module)0);
+    OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 23926)))), OOC_Make__RulesDesc_SetAllImportsModule)),OOC_Make__RulesDesc_SetAllImportsModule)((OOC_Make__Rules)i0, (OOC_Repository__Module)(OOC_INT32)0);
     goto l96;
   }
 l96:
@@ -1379,10 +1379,10 @@ l134:
   oo2c__WriteHelp();
   goto l139;
 l136:
-  Out__String("oo2c/", 6);
-  Out__String("gcc", 4);
-  Out__String(" ", 2);
-  Out__String("2.1.8", 6);
+  Out__String((OOC_CHAR8*)"oo2c/", 6);
+  Out__String((OOC_CHAR8*)"gcc", 4);
+  Out__String((OOC_CHAR8*)" ", 2);
+  Out__String((OOC_CHAR8*)"2.1.9", 6);
   Out__Ln();
   _halt(0);
   goto l139;

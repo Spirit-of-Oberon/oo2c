@@ -1,0 +1,11 @@
+MODULE Proc15;
+
+
+PROCEDURE Test(p: INTEGER);
+BEGIN
+
+END Test;
+
+BEGIN
+ Test({1, 2});
+END Proc15.

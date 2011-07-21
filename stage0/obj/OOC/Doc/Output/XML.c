@@ -52,9 +52,9 @@ l16:
       _copy_8((const void*)(_check_pointer(i1, 2046)),(void*)(OOC_INT32)str,2048);
       goto l18;
 l17:
-      _copy_8((const void*)"",(void*)(OOC_INT32)str,2048);
+      _copy_8((const void*)(OOC_CHAR8*)"",(void*)(OOC_INT32)str,2048);
 l18:
-      Strings__Append("#", 2, (void*)(OOC_INT32)str, 2048);
+      Strings__Append((OOC_CHAR8*)"#", 2, (void*)(OOC_INT32)str, 2048);
       i0 = (OOC_INT32)id;
       i1 = OOC_ARRAY_LENGTH((_check_pointer(i0, 2122)), 0);
       Strings__Append((void*)(_check_pointer(i0, 2122)), i1, (void*)(OOC_INT32)str, 2048);
@@ -516,7 +516,7 @@ void OOC_Doc_Output_XML__Write(IO__ByteChannel cw, OOC_Doc__Document document, O
   i1 = (OOC_INT32)cw;
   i0 = (OOC_INT32)XML_Writer__New((IO__ByteChannel)i1, (XML_UnicodeCodec__Factory)i0, 1u, 2);
   w = (XML_Writer__Writer)i0;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8285)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, "1.0", 4, "yes", 4);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8285)))), XML_Writer__WriterDesc_WriteTextDecl)),XML_Writer__WriterDesc_WriteTextDecl)((XML_Writer__Writer)i0, (OOC_CHAR8*)"1.0", 4, (OOC_CHAR8*)"yes", 4);
   i1 = (OOC_INT32)document;
   i2 = (OOC_INT32)localModule;
   i3 = (OOC_INT32)rewriteMap;

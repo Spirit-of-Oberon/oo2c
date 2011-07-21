@@ -1,4 +1,4 @@
-(* 	$Id: RT0.Mod,v 1.51 2004/12/15 13:07:21 mva Exp $	 *)
+(* 	$Id: RT0.Mod,v 1.53 2005/10/07 08:35:42 mva Exp $	 *)
 MODULE RT0 [
   FOREIGN "C";
   LINK
@@ -14,7 +14,7 @@ MODULE RT0 [
     <*IF HAVE_LIB_M THEN*>LIB "m";<*END*>
   END ];
 (*  Proxy module for the run-time system of C back-ends of OOC2
-    Copyright (C) 2001, 2002, 2003, 2004  Michael van Acken
+    Copyright (C) 2001, 2002, 2003, 2004, 2005  Michael van Acken
 
     This module is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public License
@@ -90,6 +90,10 @@ CONST
      single type descriptor @ovar{procedure}, even though they may differ in
      the number, type or mode of their parameters, or their result type.  *)
   
+  strTypeVar* = -7;
+  (**A type variable, for example used in a type test within in a type-bound
+     procedure.  *)
+
 CONST
   flagAtomic* = 0;
   (**Indicates that this record type does not contain any references that
@@ -261,6 +265,8 @@ TYPE
     low-, high-: LONGINT;
     jmp-: SYSTEM.PTR;
   END;
+  charPtr1d* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
+  charPtr2d* = POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF charPtr1d;
   
 VAR
   boolean-: StructDesc;
@@ -279,8 +285,7 @@ VAR
 
 VAR
   argc-: LONGINT;
-  argv-: POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF
-                      POINTER TO ARRAY [NO_LENGTH_INFO, NO_DESCRIPTOR] OF CHAR;
+  argv-: charPtr2d;
   poisonHeap*: LONGINT;
   (**If set to a non-negative value, then memory allocated through
      @oproc{NewObject} and @oproc{NewBlock} is filled with this byte value.
@@ -316,7 +321,7 @@ PROCEDURE TypeOf* (ptr: SYSTEM.PTR): Struct;
    @oparam{ptr} must be a previous result of @oproc{NewObject}.  Result is
    undefined if @oparam{ptr} is not a reference to a record object.  *)
 
-PROCEDURE TypeTest* (tag, td: Struct): BOOLEAN;
+PROCEDURE TypeTest* (tag, td, receiverTag: Struct): BOOLEAN;
 (**Return @code{TRUE} if the type tag @oparam{tag} belongs to an object that is
    an instance of the type @oparam{td}.  For normal (that is, non-qualified)
    types, this is a constant type operation that is basically a pointer
@@ -327,6 +332,8 @@ PROCEDURE TypeTest* (tag, td: Struct): BOOLEAN;
 
    @precond
    @oparam{tag} and @oparam{td} is the type descriptor of a @samp{RECORD} type.
+     If not @code{NIL}, @oparam{receiverTag} is the type descriptor of the
+     record to which the procedure is bound.
    @end precond  *)
 
 PROCEDURE NewBlock* (bytes: LONGINT): SYSTEM.PTR;

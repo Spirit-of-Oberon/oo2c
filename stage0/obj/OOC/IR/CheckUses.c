@@ -331,7 +331,7 @@ static Msg__Msg OOC_IR_CheckUses__WarnSymE(OOC_Error__List errList, OOC_Config_P
   value = (Config__Variable)i1;
   i1 = *(OOC_UINT8*)(_check_pointer((_type_guard(i1, ((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9044)))), &_td_Config__BooleanVarDesc, 9044)), 9055));
   if (i1) goto l3;
-  return (Msg__Msg)0;
+  return (Msg__Msg)(OOC_INT32)0;
   goto l4;
 l3:
   i1 = (OOC_INT32)OOC_IR_CheckUses__checkUsesContext;
@@ -339,11 +339,11 @@ l3:
   i1 = (OOC_INT32)OOC_Error__New((OOC_Error__Context)i1, i2);
   e = (Msg__Msg)i1;
   i2 = *(OOC_INT32*)((_check_pointer(i0, 9146))+16);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9122)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "pos", 4, i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9122)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"pos", 4, i2);
   i2 = *(OOC_INT32*)((_check_pointer(i0, 9185))+20);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9160)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "line", 5, i2);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9160)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"line", 5, i2);
   i0 = *(OOC_INT32*)((_check_pointer(i0, 9227))+24);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9200)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, "column", 7, i0);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9200)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i1, (OOC_CHAR8*)"column", 7, i0);
   i0 = (OOC_INT32)errList;
   OOC_Error__ListDesc_Append((OOC_Error__List)i0, (Msg__Msg)i1);
   return (Msg__Msg)i1;
@@ -392,7 +392,7 @@ l5:
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 9850))+12);
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 9854)), 0);
   i1 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i1, 9854)), i2);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9796)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i0, "name", 5, (Msg__StringPtr)i1);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9796)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"name", 5, (Msg__StringPtr)i1);
 l7:
   return;
   ;
@@ -1338,7 +1338,7 @@ l19:
               i4 = (OOC_INT32)def;
               OOC_IR_CheckUses__DefDesc_Merge((OOC_IR_CheckUses__Def)i4, (OOC_IR_CheckUses__Def)i1);
               i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21665))+16);
-              i1 = i1!=0;
+              i1 = i1!=(OOC_INT32)0;
               if (!i1) goto l30;
               i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 21712))+16);
               i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 21722)), 0);
@@ -2138,7 +2138,7 @@ void OOC_OOC_IR_CheckUses_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_IR_CheckUses__ErrorContext.baseTypes[0]);
   OOC_IR_CheckUses__checkUsesContext = (OOC_IR_CheckUses__ErrorContext)i0;
-  OOC_Error__InitContext((OOC_Error__Context)i0, "OOC:IR:CheckUses", 17);
+  OOC_Error__InitContext((OOC_Error__Context)i0, (OOC_CHAR8*)"OOC:IR:CheckUses", 17);
   i0 = (OOC_INT32)OOC_SymbolTable_Predef__GetType(17);
   OOC_IR_CheckUses__any = (OOC_SymbolTable__Type)i0;
   return;

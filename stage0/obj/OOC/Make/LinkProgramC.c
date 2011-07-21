@@ -499,12 +499,12 @@ l49:
 
 void OOC_OOC_Make_LinkProgramC_init(void) {
   register OOC_INT32 i0;
-  _c0 = Object__NewLatin1Region(" -l", 4, 0, 3);
-  _c1 = Object__NewLatin1Region(" -framework ", 13, 0, 12);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)" -l", 4, 0, 3);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)" -framework ", 13, 0, 12);
   _c2 = Object__NewLatin1Char(32u);
   _c3 = Object__NewLatin1Char(32u);
   _c4 = Object__NewLatin1Char(32u);
-  _c5 = Object__NewLatin1Region(" -l", 4, 0, 3);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)" -l", 4, 0, 3);
   _c6 = Object__NewLatin1Char(32u);
   _c7 = Object__NewLatin1Char(32u);
 

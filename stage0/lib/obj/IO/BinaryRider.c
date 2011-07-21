@@ -791,15 +791,15 @@ static void IO_BinaryRider__Init(void) {
 }
 
 void OOC_IO_BinaryRider_init(void) {
-  _c0 = Object__NewLatin1Region("Short file", 11, 0, 10);
-  _c1 = Object__NewLatin1Region("Short file", 11, 0, 10);
-  _c2 = Object__NewLatin1Region("Short file", 11, 0, 10);
-  _c3 = Object__NewLatin1Region("Value out of range", 19, 0, 18);
-  _c4 = Object__NewLatin1Region("Short file", 11, 0, 10);
-  _c5 = Object__NewLatin1Region("Short file", 11, 0, 10);
-  _c6 = Object__NewLatin1Region("String not terminated", 22, 0, 21);
-  _c7 = Object__NewLatin1Region("String not terminated", 22, 0, 21);
-  _c8 = Object__NewLatin1Region("Overflow", 9, 0, 8);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"Short file", 11, 0, 10);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"Short file", 11, 0, 10);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"Short file", 11, 0, 10);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"Value out of range", 19, 0, 18);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"Short file", 11, 0, 10);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"Short file", 11, 0, 10);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"String not terminated", 22, 0, 21);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"String not terminated", 22, 0, 21);
+  _c8 = Object__NewLatin1Region((OOC_CHAR8*)"Overflow", 9, 0, 8);
 
   IO_BinaryRider__Init();
   return;

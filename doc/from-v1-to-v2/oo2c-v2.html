@@ -1,23 +1,24 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                      "http://www.w3.org/TR/html40/loose.dtd">
 <HTML>
-<!-- Created on November, 29  2003 by texi2html 1.65 -->
-<!-- 
+<!-- Created on October, 7 2005 by texi2html 1.66 -->
+<!--
 Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
             Olaf Bachmann <obachman@mathematik.uni-kl.de>
             and many others.
-Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
-Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
- 
+Maintained by: Many creative people <dev@texi2html.cvshome.org>
+Send bugs and suggestions to <users@texi2html.cvshome.org>
+
 -->
 <HEAD>
-<TITLE>New Features of oo2c v2: </TITLE>
+<TITLE>New Features of oo2c v2</TITLE>
 
-<META NAME="description" CONTENT="New Features of oo2c v2: ">
-<META NAME="keywords" CONTENT="New Features of oo2c v2: ">
+<META NAME="description" CONTENT="New Features of oo2c v2">
+<META NAME="keywords" CONTENT="New Features of oo2c v2">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
-<META NAME="Generator" CONTENT="texi2html 1.65">
+<META NAME="Generator" CONTENT="texi2html 1.66">
 
 </HEAD>
 
@@ -30,9 +31,12 @@ Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
 </TR></TABLE>
-<H1>New Features of oo2c v2</H1></P><P>
+<H1>New Features of oo2c v2</H1>
 
-<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<P>
+
+</P>
+<TABLE BORDER="0" CELLSPACING="0">
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC1">1. Introduction</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC2">2. Programs</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC3">3. Library Modules</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
@@ -43,7 +47,7 @@ Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC20">8. Initialization Functions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC21">A. Example Module</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC22">B. Document History</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
-</TABLE></BLOCKQUOTE>
+</TABLE>
 <P>
 
 <HR SIZE=1>
@@ -66,7 +70,8 @@ Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
 
 <CODE>oo2c</CODE> v2 is a complete rewrite of the compiler and associated
 tools.  Some highlights are
-</P><P>
+</P>
+<P>
 
 <UL>
 <LI>
@@ -103,7 +108,8 @@ some of the more esoteric features and library modules have been
 dropped.  The following sections summarize the omissions and
 additions.  For the most part, the language extensions are
 experimental in nature and should not be considered final.
-</P><P>
+</P>
+<P>
 
 <A NAME="Programs"></A>
 <HR SIZE="6">
@@ -134,7 +140,8 @@ particular module, all configured repositories are searched.  Output
 files for a particular module (symbol file, C files, objects files,
 and so on) are placed into the repository that holds the module's
 source code.
-</P><P>
+</P>
+<P>
 
 The tool <CODE>oocn</CODE> is gone.  Part of its functionality have been
 moved into the compiler <CODE>oo2c</CODE>: converting a module's public
@@ -145,10 +152,12 @@ dealing with packages: build, install, uninstall, etc.  Packages allow
 to install a set of library modules, module documentation,
 executables, and auxiliary files from the meta data of a
 `<TT>pkginfo.xml</TT>' file.
-</P><P>
+</P>
+<P>
 
 Please refer to the man page of <CODE>oo2c</CODE> for the details.
-</P><P>
+</P>
+<P>
 
 <A NAME="Library Modules"></A>
 <HR SIZE="6">
@@ -172,13 +181,15 @@ With the switch from oo2c v1 to v2 a number of highly specialized and
 rarely used library modules were dropped, while at the same time whole
 families of modules were included that were distributed separately in
 the past.
-</P><P>
+</P>
+<P>
 
 Replaced by other modules: <CODE>Filenames</CODE> (use <CODE>OS:Path</CODE>
 instead), <CODE>Integers</CODE> (use <CODE>Object:BigInt</CODE>), <CODE>Kernel</CODE>
 and <CODE>Types</CODE> (functionality covered by <CODE>RT0</CODE>), and <CODE>Rts</CODE>
 (see <CODE>OS:ProcessManagement</CODE>).
-</P><P>
+</P>
+<P>
 
 Removed without replacement: <CODE>ComplexMath</CODE>, <CODE>JulianDay</CODE>,
 <CODE>LComplexMath</CODE>, <CODE>LocNumConv</CODE>, <CODE>LocNumStr</CODE>,
@@ -186,9 +197,11 @@ Removed without replacement: <CODE>ComplexMath</CODE>, <CODE>JulianDay</CODE>,
 <CODE>Locales</CODE>, <CODE>LongInts</CODE>, <CODE>LowLReal</CODE>, <CODE>LowReal</CODE>,
 <CODE>OakFiles</CODE>, <CODE>OakIn</CODE>, <CODE>OakMath</CODE>, <CODE>OakMathL</CODE>,
 <CODE>OakStrings</CODE>, <CODE>Reals</CODE>, <CODE>Signal</CODE>, and <CODE>Strings2</CODE>.
-</P><P>
+</P>
+<P>
 
 New modules:
+</P>
 <DL COMPACT>
 <DT><CODE>ADT:*</CODE>
 <DD>A set of abstract data types, most importantly <CODE>ArrayList</CODE> and
@@ -196,6 +209,7 @@ New modules:
 arbitrary graphs of objects.
 <P>
 
+</P>
 <DT><CODE>IO:*</CODE>
 <DD>IO modules for files and sockets, providing an interface that is
 closer to the I/O capabilities provided by <CODE>libc</CODE>.  Also mappers
@@ -203,6 +217,7 @@ based on the new classes, and an abstraction for the `<SAMP>select()</SAMP>'
 function.
 <P>
 
+</P>
 <DT><CODE>OS:*</CODE>
 <DD>Various low-level modules dealing with file systems, file names, and
 processes.
@@ -212,12 +227,14 @@ processes.
 Preliminary modules (their interface might change significantly in the
 future, although their general functionality will continue to be part
 of the core distribution):
+</P>
 <DL COMPACT>
 <DT><CODE>URI:*</CODE>
 <DD>Data types representing Uniform Resource Identifiers (both
 hierarchical and opaque), plus an URI parser.
 <P>
 
+</P>
 <DT><CODE>XML:*</CODE>
 <DD>A call-back based XML 1.0 parser.  Also includes support for XML
 namespaces and validation.
@@ -248,18 +265,20 @@ with a special delimiter `<SAMP>(**</SAMP>', like `<SAMP>(**Some
 explanation. *)</SAMP>', and refer to the declaration preceding them.
 Within doc comments, a subset of the GNU Texinfo command set can be
 used to mark up the text.
-</P><P>
+</P>
+<P>
 
 The following sections summarise the commands implemented by the OOC
 parser.  Please refer to the Texinfo manual for a more thorough
 description of the their syntax and intended use.
-</P><P>
+</P>
+<P>
 
-<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TABLE BORDER="0" CELLSPACING="0">
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC5">4.1 Inline Commands</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC9">4.2 Block Commands</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC13">4.3 Glyphs</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
-</TABLE></BLOCKQUOTE>
+</TABLE>
 <P>
 
 <A NAME="Inline Commands"></A>
@@ -282,13 +301,15 @@ description of the their syntax and intended use.
 
 Inline commands take a single argument in curly braces like
 `<SAMP>@code{ABS()}</SAMP>'.
-</P><P>
+</P>
+<P>
 
 <A NAME="SEC6"></A>
 <H4> Font and style commands: </H4>
 <!--docid::SEC6::-->
 <P>
 
+</P>
 <DL COMPACT>
 <DT><CODE>@asis</CODE>
 <DD>used with <CODE>@table</CODE> for entries without added highlighting
@@ -320,6 +341,7 @@ Inline commands take a single argument in curly braces like
 <!--docid::SEC7::-->
 <P>
 
+</P>
 <DL COMPACT>
 <DT><CODE>@email</CODE>
 <DD>an email address
@@ -335,6 +357,7 @@ Inline commands take a single argument in curly braces like
 <!--docid::SEC8::-->
 <P>
 
+</P>
 <DL COMPACT>
 <DT><CODE>@omodule</CODE>
 <DD>module name
@@ -366,7 +389,8 @@ begin with a fully qualified module name and use the canonical
 designator for the indicated object.  This variant should only be used
 to refer to an object from another module if the module is not part of
 the <CODE>IMPORT</CODE> list.
-</P><P>
+</P>
+<P>
 
 <A NAME="Block Commands"></A>
 <HR SIZE="6">
@@ -389,13 +413,15 @@ the <CODE>IMPORT</CODE> list.
 Block commands start with the command `<SAMP>@cmd</SAMP>' on a line of its
 own, often followed by one or more arguments, and end with `<SAMP>@end
 cmd</SAMP>', also on a line of its own.
-</P><P>
+</P>
+<P>
 
 <A NAME="SEC10"></A>
 <H4> Lists and tables: </H4>
 <!--docid::SEC10::-->
 <P>
 
+</P>
 <DL COMPACT>
 <DT><CODE>@enumerate</CODE>
 <DD>enumerated lists, using numbers or letters
@@ -413,6 +439,7 @@ cmd</SAMP>', also on a line of its own.
 <!--docid::SEC11::-->
 <P>
 
+</P>
 <DL COMPACT>
 <DT><CODE>@example</CODE>
 <DD>example that is not part of the running text (fixed font)
@@ -426,6 +453,7 @@ cmd</SAMP>', also on a line of its own.
 <!--docid::SEC12::-->
 <P>
 
+</P>
 <DL COMPACT>
 <DT><CODE>@precond</CODE>
 <DD>pre-conditions of a procedure
@@ -452,6 +480,7 @@ cmd</SAMP>', also on a line of its own.
 <!--docid::SEC13::-->
 <P>
 
+</P>
 <DL COMPACT>
 <DT><CODE>@@</CODE>
 <DD>the character `<SAMP>@</SAMP>'
@@ -497,7 +526,8 @@ of this type are defined for the most part by the regular module
 compiler converts string constants to instances of <CODE>STRING</CODE>
 automatically, and the operator `<SAMP>+</SAMP>' performs string
 concatenation.
-</P><P>
+</P>
+<P>
 
 String constants are assignment compatible with variables of type
 `<SAMP>Object.Object</SAMP>'.  Such an assignment automatically converts the
@@ -507,18 +537,21 @@ a procedure argument passed to a value parameter, and as a function
 result.  The string object is created once, as part of the module's
 initialization code, <EM>not</EM> each time its surrounding code is
 evaluated.
-</P><P>
+</P>
+<P>
 
 The operator `<SAMP>+</SAMP>' is defined for string operands and returns the
 concatenation of its operands.  The result is of type <CODE>STRING</CODE>.
-</P><P>
+</P>
+<P>
 
 Please note that comparison of string values is done by means of the
 type-bound procedure `<SAMP>String.Equals</SAMP>'.  The definition of the
 operators `<SAMP>=</SAMP>' and `<SAMP>#</SAMP>' has <EM>not</EM> been changed.  That is,
 they test for object identity by comparing the strings' pointer
 values.
-</P><P>
+</P>
+<P>
 
 <A NAME="Exceptions"></A>
 <HR SIZE="6">
@@ -539,7 +572,8 @@ values.
 <P>
 
 There are four user visible parts to exceptions:
-</P><P>
+</P>
+<P>
 
 <UL>
 <LI>
@@ -557,11 +591,11 @@ which checked (or unchecked) exception can be raised by a procedure.
 </UL>
 <P>
 
-<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TABLE BORDER="0" CELLSPACING="0">
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC16">6.1 <CODE>TRY</CODE> and <CODE>RAISE</CODE></A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC17">6.2 Checked vs Unchecked Exceptions</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
 <TR><TD ALIGN="left" VALIGN="TOP"><A HREF="oo2c-v2.html#SEC18">6.3 Implementation Notes</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
-</TABLE></BLOCKQUOTE>
+</TABLE>
 <P>
 
 <A NAME="TRY and RAISE"></A>
@@ -584,7 +618,8 @@ which checked (or unchecked) exception can be raised by a procedure.
 
 Exceptions behave pretty much like their counterparts in Python or
 Java.  The statement
-</P><P>
+</P>
+<P>
 
 <TABLE><tr><td>&nbsp;</td><td class=example><pre>TRY
   S
@@ -593,10 +628,11 @@ CATCH T1(t1):
 CATCH T2(t2):
   C2
 END;
-</pre></td></tr></table></P><P>
+</pre></td></tr></table><P>
 
 is roughly equivalent to
-</P><P>
+</P>
+<P>
 
 <OL>
 <LI>
@@ -604,6 +640,7 @@ Push exception handler for this <CODE>TRY</CODE> block
 (`<SAMP>Exception.PushContext</SAMP>').
 <P>
 
+</P>
 <LI>
 Evaluate <VAR>S</VAR>, followed by `<SAMP>Exception.PopContext</SAMP>'.  If there
 are any <CODE>RETURN</CODE> or <CODE>EXIT</CODE> statements within <VAR>S</VAR> that
@@ -611,6 +648,7 @@ would cause control flow to leave the <CODE>TRY</CODE> statement, then they
 also do an implicit `<SAMP>PopContext</SAMP>' as part of the non-local exit.
 <P>
 
+</P>
 <LI>
 If an exception is raised during <VAR>S</VAR>, then do
 <P>
@@ -635,19 +673,22 @@ an instance of `<SAMP>Exception</SAMP>'.  This passes control to the nearest
 <CODE>CATCH</CODE> clause whose type is an extension of the raised exception, if
 such a clause exist.  Otherwise, the exception is written to <VAR>stderr</VAR>
 and the program is aborted.
-</P><P>
+</P>
+<P>
 
 Within a <CODE>CATCH</CODE>, the optional name given in parenthesis refers to the
 current exception that triggered the <CODE>CATCH</CODE>.  Its type is the one
 from the <CODE>CATCH</CODE> clause.  The variable is read-only.
-</P><P>
+</P>
+<P>
 
 Within the module body no exceptions can be passed up, because there
 is no caller.  As a consequence, any exception that is not caught
 explicitly is written to <VAR>stderr</VAR> and aborts the program.  For
 checked exceptions, the compiler emits a warning if they are not caught
 in the module body.
-</P><P>
+</P>
+<P>
 
 <A NAME="Checked vs Unchecked Exceptions"></A>
 <HR SIZE="6">
@@ -671,24 +712,28 @@ There are two kinds of exceptions, checked and unchecked.  The
 compiler enforces a stricter set of restrictions on the usage of
 checked exceptions.  During program run-time, there is no difference
 between the two.
-</P><P>
+</P>
+<P>
 
 A <EM>checked</EM> exception <VAR>E</VAR> must either be caught within a
 procedure, or the procedure must declare that it may pass an exception
 of type <VAR>E</VAR> up to its caller.  For example,
-</P><P>
+</P>
+<P>
 
 <TABLE><tr><td>&nbsp;</td><td class=example><pre>PROCEDURE P() RAISES E;
-</pre></td></tr></table></P><P>
+</pre></td></tr></table><P>
 
 declares that evaluation of `<SAMP>P</SAMP>' may raise an exception of type <VAR>E</VAR>,
 or an extension thereof.
-</P><P>
+</P>
+<P>
 
-An exception is of the "checked" variant if it is an extension of
+An exception is of the &quot;checked&quot; variant if it is an extension of
 the class `<SAMP>Exception.Checked</SAMP>'.  The base class
-`<SAMP>Exception.Exception</SAMP>' is also treated as "checked".
-</P><P>
+`<SAMP>Exception.Exception</SAMP>' is also treated as &quot;checked&quot;.
+</P>
+<P>
 
 On the other hand, an <EM>unchecked</EM> exception can be raised anytime,
 without the need to declare or catch it.  It is possible to add an
@@ -696,16 +741,18 @@ unchecked exception to the `<SAMP>RAISES</SAMP>' list of a procedure
 declaration for documentation purposes.  In this case, it is
 <EM>not</EM> a compile time error if the caller does not catch this
 exception, and does not declare to pass it on.  An exception is
-"unchecked" if it is an extension of the class
+&quot;unchecked&quot; if it is an extension of the class
 `<SAMP>Exception.Unchecked</SAMP>'.
-</P><P>
+</P>
+<P>
 
 Please note that the record type of the exception class,
 `<SAMP>Exception.ExceptionDesc</SAMP>', is no longer exported.  This means
 that it is not possible to extend it directly.  Applications must use
 either `<SAMP>Exception.CheckedDesc</SAMP>' or `<SAMP>Exception.UncheckedDesc</SAMP>'
 to create specialized exception classes.
-</P><P>
+</P>
+<P>
 
 <A NAME="Implementation Notes"></A>
 <HR SIZE="6">
@@ -732,14 +779,16 @@ For example, on a `<SAMP>ix86</SAMP>' processor, only 72 bytes are stored,
 while on a `<SAMP>PPC</SAMP>' this is 768 bytes.  As a consequence, the work
 done by the program within a <CODE>TRY</CODE> should be large enough to
 amortize the costs of the <CODE>TRY</CODE> for all possible targets.
-</P><P>
+</P>
+<P>
 
 On some systems<A NAME="DOCF2" HREF="oo2c-v2.html#FOOT2">(2)</A>, raising an exception also stores
 information about the top 20 activation frames on the call stack.
 This means that raising an exception can be moderately expensive as
 well.  Therefore they should only be used to report exceptional
 conditions that are rarely triggered.
-</P><P>
+</P>
+<P>
 
 <A NAME="Parametric Types"></A>
 <HR SIZE="6">
@@ -766,13 +815,15 @@ parametric type is used in a particular context.  There are two
 restrictions on type parameters and type arguments: the parameter must
 be based on a record pointer, and the argument must be an extension of
 the parameter's base type.
-</P><P>
+</P>
+<P>
 
 Take for example the type `<SAMP>ArrayList</SAMP>'.  The element type of the
 list can be any type derived from `<SAMP>Object</SAMP>', like
 `<SAMP>MyElementType</SAMP>', which is provided when creating an
 `<SAMP>ArrayList</SAMP>' variable:
-</P><P>
+</P>
+<P>
 
 <TABLE><tr><td>&nbsp;</td><td class=example><pre>TYPE
   ArrayList*(E: Object.Object) = POINTER TO ArrayListDesc(E);
@@ -781,16 +832,18 @@ list can be any type derived from `<SAMP>Object</SAMP>', like
   END;
 <small>...</small>
 VAR myList: ArrayList(MyElementType);
-</pre></td></tr></table></P><P>
+</pre></td></tr></table><P>
 
 The compiler statically detects any uses of `<SAMP>myList</SAMP>' or of its
 methods that are incompatible with the declared element type
 `<SAMP>MyElementType</SAMP>'.
-</P><P>
+</P>
+<P>
 
 The implementation of parametric types extends the syntax in three
 places:
-</P><P>
+</P>
+<P>
 
 <UL>
 <LI>
@@ -812,22 +865,26 @@ A type declared with a type parameter list like
 The formal type <VAR>Bi</VAR> of a type parameter declaration is called
 its type bound.  The type bound must be a record pointer.  A type name
 <VAR>ti</VAR> is visible to the end of the type declaration.
-</P><P>
+</P>
+<P>
 
 For a qualified type expression of the form
 `<SAMP>T(A1,A2,<small>...</small>,An)</SAMP>',
-</P><P>
+</P>
+<P>
 
 <OL>
 <LI>
 the type <VAR>T</VAR> must be a parametric type,
 <P>
 
+</P>
 <LI>
 it must have the same number of type arguments as there are type
 parameters, and
 <P>
 
+</P>
 <LI>
 each actual type parameter <VAR>Ai</VAR> is either an extension of the
 corresponding type bound <VAR>Bi</VAR>, or <VAR>Ai</VAR> is a type variable
@@ -840,14 +897,16 @@ expression `<SAMP>T</SAMP>' (without any type arguments) is equivalent to the
 qualified type ``<SAMP>T(B1,B2,<small>...</small>,Bn)</SAMP>', where each type argument
 equals the corresponding type bound.  <VAR>Bi</VAR> and `<SAMP>Ai</SAMP>' can be
 forward references to types that are defined later.
-</P><P>
+</P>
+<P>
 
 A type-bound procedure of a parametric type must define a list of type
 names after its receiver type, for example
-</P><P>
+</P>
+<P>
 
 <TABLE><tr><td>&nbsp;</td><td class=example><pre>PROCEDURE (r: P(T1,T2,<small>...</small>)) TBProc(<small>...</small>);
-</pre></td></tr></table></P><P>
+</pre></td></tr></table><P>
 
 Each name is a type alias for the corresponding type parameter of the
 procedure's <EM>base record</EM> type.  Within a type-bound procedure, a
@@ -856,42 +915,42 @@ variable `<SAMP>v: Ti</SAMP>', with <VAR>Ti</VAR> declared with a type bound
 as `<SAMP>v: Bi</SAMP>'.  The exceptions are that it can only be assigned
 values of type <VAR>Ti</VAR> (or <CODE>NIL</CODE>), and that <CODE>NEW</CODE> is not
 applicable to such a variable.
-</P><P>
-
-A type variable cannot be used on the right hand side of a type test
-or type guard.
-</P><P>
+</P>
+<P>
 
 Two qualified types are considered to be the same type, if they have
 the same base type and if their corresponding type arguments are of
 the same type.
-</P><P>
+</P>
+<P>
 
 <CODE>NIL</CODE> is assignment compatible with a parametric type if it is
 assignment compatible with the type's base type.
-</P><P>
+</P>
+<P>
 
 `<SAMP>NEW()</SAMP>' is applicable to a variable of parametric type if its
 base type is a pointer.
-</P><P>
+</P>
+<P>
 
 Syntax:
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>TPSection  = ident {"," ident} ":" Qualident.
-TypePars   = "(" [TPSection {";" TPSection}] ")".
-TypeDecl   = IdentDef [TypePars] "=" Type ";".
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>TPSection  = ident {&quot;,&quot; ident} &quot;:&quot; Qualident.
+TypePars   = &quot;(&quot; [TPSection {&quot;;&quot; TPSection}] &quot;)&quot;.
+TypeDecl   = IdentDef [TypePars] &quot;=&quot; Type &quot;;&quot;.
 
-QualType   = Qualident ["(" [QualType {"," QualType}] ")"].
+QualType   = Qualident [&quot;(&quot; [QualType {&quot;,&quot; QualType}] &quot;)&quot;].
 Type       = QualType|ArrayType|RecordType|PointerType|ProcType.
-RecordType = "RECORD" ["("QualType")"] <small>...</small> "END".  
-FormalPars = ["(" [FPSection {";" FPSection}] ")" [":" QualType]].
+RecordType = &quot;RECORD&quot; [&quot;(&quot;QualType&quot;)&quot;] <small>...</small> &quot;END&quot;.  
+FormalPars = [&quot;(&quot; [FPSection {&quot;;&quot; FPSection}] &quot;)&quot; [&quot;:&quot; QualType]].
 
-AliasList = "(" [ident {"," ident}] ")".
-Receiver = "(" ["VAR"] ident ":" ident  [AliasList] ")".
+AliasList = &quot;(&quot; [ident {&quot;,&quot; ident}] &quot;)&quot;.
+Receiver = &quot;(&quot; [&quot;VAR&quot;] ident &quot;:&quot; ident  [AliasList] &quot;)&quot;.
 </pre></td></tr></table>         
 <EM>Note</EM>: Polymorphic procedures, where free type parameters are
 added to a formal parameter list to place an additional restriction on
 the acceptable argument lists of calls, are currently not supported.
-</P><P>
+<P>
 
 <A NAME="Initialization Functions"></A>
 <HR SIZE="6">
@@ -916,51 +975,58 @@ procedure for an object, to redefine the initialization procedure
 within an extended type, and to call this procedure automatically when
 creating an object.  For this, a class may provide a type-bound
 procedure <CODE>INIT</CODE>, like
-</P><P>
+</P>
+<P>
 
 <TABLE><tr><td>&nbsp;</td><td class=example><pre>PROCEDURE (l: List) INIT*(initialSize: LONGINT);
-</pre></td></tr></table></P><P>
+</pre></td></tr></table><P>
 
 Such a procedure has the special property that a call to it always
 binds to the procedure bound to the <EM>static</EM> type of the
 receiver, <EM>not</EM> the dynamic one.  In this it behaves like a call
 to a normal procedure, where the actual code to be evaluated is known
 at compile time.
-</P><P>
+</P>
+<P>
 
 <CODE>INIT</CODE> must not return a result, and it must be exported.  Its
 formal parameters do not need to match the parameter list inherited
 from the base type, if one exists.  If the base type provides an
 `<SAMP>INIT</SAMP>' procedure, but there is no super call like
 `<SAMP>l.INIT^(<small>...</small>)</SAMP>', then the compiler produces a warning.
-</P><P>
+</P>
+<P>
 
 As a shortcut to create an object is to use `<SAMP>NEW()</SAMP>' as a
 function, passing the type of the the new object as its first
 argument.  `<SAMP>v := NEW(T,a1,a2,<small>...</small>)</SAMP>' is equivalent to
-</P><P>
+</P>
+<P>
 
 <TABLE><tr><td>&nbsp;</td><td class=example><pre>VAR temp: T;
 <small>...</small>
 NEW(temp);
 temp.INIT(a1,a2,<small>...</small>);
 v := temp;
-</pre></td></tr></table></P><P>
+</pre></td></tr></table><P>
 
 The initialization call is omitted if `<SAMP>T</SAMP>' does not define an
 `<SAMP>INIT</SAMP>' procedure.
-</P><P>
+</P>
+<P>
 
 <EM>Note</EM>: The definition of `<SAMP>NEW(v)</SAMP>' when called as a
 procedure has not changed.  That is, with this use of `<SAMP>NEW</SAMP>' the
 `<SAMP>INIT()</SAMP>' procedure is <EM>not</EM> called implicitly for the new
 object.
-</P><P>
+</P>
+<P>
 
 <EM>Possible changes</EM>: Right now, the type argument of `<SAMP>NEW()</SAMP>'
 must be a record pointer.  This might be relaxed to any pointer type
 in the future.
-</P><P>
+</P>
+<P>
 
 <A NAME="Example Module"></A>
 <HR SIZE="6">
@@ -982,9 +1048,10 @@ in the future.
 
 The modules below exercise most of the features described above:
 strings, parametric types, exceptions, and initialization functions.
-</P><P>
+</P>
+<P>
 
-<TABLE><tr><td>&nbsp;</td><td class=smallexample><FONT SIZE=-1><pre>MODULE Example:Map;
+<TABLE><tr><td>&nbsp;</td><td class=smallexample><pre><FONT SIZE=-1>MODULE Example:Map;
 (**A simple parametric map type using linked lists. *)
 
 IMPORT Object, E := Exception;
@@ -1032,7 +1099,7 @@ BEGIN
     entry := entry.next;
   END;
   RAISE(NEW(E.Exception, 
-            "Map '"+map.name +"' undefined for '"+key.ToString()+"'"));
+            &quot;Map '&quot;+map.name +&quot;' undefined for '&quot;+key.ToString()+&quot;'&quot;));
 END Get;
 
 PROCEDURE (map: Map(K, V)) INIT*(name: STRING);
@@ -1042,9 +1109,9 @@ BEGIN
 END INIT;
 
 END Example:Map.
-</FONT></pre></td></tr></table></P><P>
+</FONT></pre></td></tr></table><P>
 
-<TABLE><tr><td>&nbsp;</td><td class=smallexample><FONT SIZE=-1><pre>MODULE TestMap;
+<TABLE><tr><td>&nbsp;</td><td class=smallexample><pre><FONT SIZE=-1>MODULE TestMap;
 
 IMPORT 
   Example:Map, Object, Object:Boxed, E := Exception, Out;
@@ -1059,9 +1126,9 @@ VAR
 BEGIN
   TRY
     value := map.Get(key);
-    Out.Object("The value for "+key+" is "+value.ToString()); 
+    Out.Object(&quot;The value for &quot;+key+&quot; is &quot;+value.ToString()); 
   CATCH E.Exception(e):
-    Out.Object("Exception: "+e.GetMessage());
+    Out.Object(&quot;Exception: &quot;+e.GetMessage());
   END;
   Out.Ln
 END ShowEntry;
@@ -1070,22 +1137,22 @@ PROCEDURE Test;
 VAR
   map: Map.Map(Key, Value);
 BEGIN
-  map := NEW(Map.Map(Key,Value), "my map");
+  map := NEW(Map.Map(Key,Value), &quot;my map&quot;);
 
-  map.Put("one",  Boxed.NewLongReal(1.0));
-  map.Put("pi",   Boxed.NewLongReal(3.14159265358979));
-  map.Put("true", Boxed.NewBoolean(TRUE));
-  map.Put("a rose", "a rose");
+  map.Put(&quot;one&quot;,  Boxed.NewLongReal(1.0));
+  map.Put(&quot;pi&quot;,   Boxed.NewLongReal(3.14159265358979));
+  map.Put(&quot;true&quot;, Boxed.NewBoolean(TRUE));
+  map.Put(&quot;a rose&quot;, &quot;a rose&quot;);
 
-  ShowEntry(map, "a rose");
-  ShowEntry(map, "one");
-  ShowEntry(map, "two");
+  ShowEntry(map, &quot;a rose&quot;);
+  ShowEntry(map, &quot;one&quot;);
+  ShowEntry(map, &quot;two&quot;);
 END Test;
 
 BEGIN
   Test;
 END TestMap.
-</FONT></pre></td></tr></table></P><P>
+</FONT></pre></td></tr></table><P>
 
 <A NAME="Document History"></A>
 <HR SIZE="6">
@@ -1095,7 +1162,7 @@ END TestMap.
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt; ]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC21"> &lt;&lt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> Up </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
@@ -1105,13 +1172,21 @@ END TestMap.
 <!--docid::SEC22::-->
 <P>
 
+</P>
 <DL COMPACT>
+<DT><EM>1.7</EM>
+<DD>A type variable can be used on the right hand side of a type test or
+type guard.  Introduced with <CODE>oo2c-2.1.9</CODE>.
+<P>
+
+</P>
 <DT><EM>1.5</EM>
-<DD>Adds information regarding "checked" vs "unchecked" exceptions,
+<DD>Adds information regarding &quot;checked&quot; vs &quot;unchecked&quot; exceptions,
 which were introduced with <CODE>oo2c-2.0.13</CODE>.  Covers
 <CODE>oo2c-2.0.15</CODE>.
 <P>
 
+</P>
 <DT><EM>1.4</EM>
 <DD>First release.  Covers <CODE>oo2c-2.0.12</CODE>.
 </DL>
@@ -1222,10 +1297,10 @@ systems running with GNU <CODE>libc</CODE> and implementing the
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="oo2c-v2.html#SEC_About"> ? </A>]</TD>
 </TR></TABLE>
 <H1>About this document</H1>
-This document was generated 
-using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
-"><I>texi2html</I></A>
-<P></P>  
+This document was generated
+by 
+using <A HREF="http://texi2html.cvshome.org"><I>texi2html</I></A>
+<P></P>
 The buttons in the navigation panels have the following meaning:
 <P></P>
 <table border = "1">
@@ -1268,10 +1343,10 @@ next section in reading order
 FastBack
 </TD>
 <TD>
-previous or up-and-previous section 
+beginning of this chapter or previous chapter
 </TD>
 <TD>
-1.1
+1
 </TD>
 </TR>
 <TR>
@@ -1294,10 +1369,10 @@ up section
 FastForward
 </TD>
 <TD>
-next or up-and-next section
+next chapter
 </TD>
 <TD>
-1.3
+2
 </TD>
 </TR>
 <TR>
@@ -1353,40 +1428,42 @@ this page
 </TD>
 </TR>
 </TABLE>
-<P></P>
-where the <STRONG> Example </STRONG> assumes that the current position 
-is at <STRONG> Subsubsection One-Two-Three </STRONG> of a document of 
-the following structure:
-<UL>
-<LI> 1. Section One  </LI>
-<UL>
-<LI>1.1 Subsection One-One</LI>
-<UL>
-<LI> ... </LI>
-</UL>
-<LI>1.2 Subsection One-Two</LI>
-<UL>
-<LI>1.2.1 Subsubsection One-Two-One
-</LI><LI>1.2.2 Subsubsection One-Two-Two
-</LI><LI>1.2.3 Subsubsection One-Two-Three &nbsp; &nbsp; <STRONG>
-&lt;== Current Position </STRONG>
-</LI><LI>1.2.4 Subsubsection One-Two-Four
-</LI></UL>
-<LI>1.3 Subsection One-Three</LI>
-<UL>
-<LI> ... </LI>
-</UL>
-<LI>1.4 Subsection One-Four</LI>
-</UL>
-</UL>
+    <P>
+      where the <STRONG> Example </STRONG> assumes that the current position
+      is at <STRONG> Subsubsection One-Two-Three </STRONG> of a document of
+      the following structure:</P>
+    <UL>
+      <LI> 1. Section One
+        <UL>
+          <LI>1.1 Subsection One-One
+            <UL>
+              <LI>...</LI>
+            </UL>
+          <LI>1.2 Subsection One-Two
+            <UL>
+              <LI>1.2.1 Subsubsection One-Two-One</LI>
+              <LI>1.2.2 Subsubsection One-Two-Two</LI>
+              <LI>1.2.3 Subsubsection One-Two-Three &nbsp; &nbsp;
+                <STRONG>&lt;== Current Position </STRONG></LI>
+              <LI>1.2.4 Subsubsection One-Two-Four</LI>
+            </UL>
+          </LI>
+          <LI>1.3 Subsection One-Three
+            <UL>
+              <LI>...</LI>
+            </UL>
+          </LI>
+          <LI>1.4 Subsection One-Four</LI>
+        </UL>
+      </LI>
+    </UL>
 
 <HR SIZE=1>
-<BR>  
+<BR>
 <FONT SIZE="-1">
 This document was generated
-by <I>Michael van Acken</I> on <I>November, 29  2003</I>
-using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
-"><I>texi2html</I></A>
+by <I>Michael van Acken</I> on <I>October, 7 2005</I>
+using <A HREF="http://texi2html.cvshome.org"><I>texi2html</I></A>
 </FONT>
 
 </BODY>

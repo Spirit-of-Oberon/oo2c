@@ -23,8 +23,8 @@ Object__String OOC_Config_Assembler__AssembleFileCmd(URI__URI in, URI__URI out) 
 }
 
 void OOC_OOC_Config_Assembler_init(void) {
-  _c0 = Object__NewLatin1Region("as ", 4, 0, 3);
-  _c1 = Object__NewLatin1Region(" -o ", 5, 0, 4);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"as ", 4, 0, 3);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)" -o ", 5, 0, 4);
 
   return;
   ;

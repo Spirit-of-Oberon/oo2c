@@ -1,7 +1,7 @@
-(* 	$Id: Parser.Mod,v 1.27 2004/03/21 16:09:18 mva Exp $	 *)
+(* 	$Id: Parser.Mod,v 1.28 2005/10/07 08:35:42 mva Exp $	 *)
 MODULE OOC:Parser;
 (*  Parses an Oberon-2 module and creates an abstract syntax tree.
-    Copyright (C) 1999-2004  Michael van Acken
+    Copyright (C) 1999-2005  Michael van Acken
 
     This file is part of OOC.
 

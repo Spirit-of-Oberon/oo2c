@@ -20,46 +20,46 @@ void Channel__ErrorContextDesc_GetTemplate(Channel__ErrorContext context, Msg__M
   i0 = *(OOC_INT32*)((_check_pointer(i0, 12179))+8);
   switch (i0) {
   case 1:
-    _copy_8((const void*)"Invalid channel descriptor",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Invalid channel descriptor",(void*)(OOC_INT32)str,128);
     goto l16;
   case 2:
-    _copy_8((const void*)"Write error",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Write error",(void*)(OOC_INT32)str,128);
     goto l16;
   case 3:
-    _copy_8((const void*)"No space left on device",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"No space left on device",(void*)(OOC_INT32)str,128);
     goto l16;
   case 4:
-    _copy_8((const void*)"Trying to set invalid position",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Trying to set invalid position",(void*)(OOC_INT32)str,128);
     goto l16;
   case 5:
-    _copy_8((const void*)"Trying to read past the end of the file",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Trying to read past the end of the file",(void*)(OOC_INT32)str,128);
     goto l16;
   case 6:
-    _copy_8((const void*)"Channel has been closed",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Channel has been closed",(void*)(OOC_INT32)str,128);
     goto l16;
   case 7:
-    _copy_8((const void*)"Read error",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Read error",(void*)(OOC_INT32)str,128);
     goto l16;
   case 8:
-    _copy_8((const void*)"Invalid token type in input stream",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Invalid token type in input stream",(void*)(OOC_INT32)str,128);
     goto l16;
   case 9:
-    _copy_8((const void*)"No read permission for channel",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"No read permission for channel",(void*)(OOC_INT32)str,128);
     goto l16;
   case 10:
-    _copy_8((const void*)"No write permission for channel",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"No write permission for channel",(void*)(OOC_INT32)str,128);
     goto l16;
   case 11:
-    _copy_8((const void*)"Error while closing the channel",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Error while closing the channel",(void*)(OOC_INT32)str,128);
     goto l16;
   case 12:
-    _copy_8((const void*)"No modification time available",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"No modification time available",(void*)(OOC_INT32)str,128);
     goto l16;
   case 13:
-    _copy_8((const void*)"Failed to create unique name for temporary file",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"Failed to create unique name for temporary file",(void*)(OOC_INT32)str,128);
     goto l16;
   default:
-    _copy_8((const void*)"[unknown error code]",(void*)(OOC_INT32)str,128);
+    _copy_8((const void*)(OOC_CHAR8*)"[unknown error code]",(void*)(OOC_INT32)str,128);
     goto l16;
   }
 l16:
@@ -214,7 +214,7 @@ void OOC_Channel_init(void) {
 
   i0 = (OOC_INT32)RT0__NewObject(_td_Channel__ErrorContext.baseTypes[0]);
   Channel__errorContext = (Channel__ErrorContext)i0;
-  Msg__InitContext((Msg__Context)i0, "OOC:Core:Channel", 17);
+  Msg__InitContext((Msg__Context)i0, (OOC_CHAR8*)"OOC:Core:Channel", 17);
   return;
   ;
 }

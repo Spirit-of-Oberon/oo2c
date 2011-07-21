@@ -92,11 +92,11 @@ void URI_Query_Unparsed__QueryDesc_WriteXML(URI_Query_Unparsed__Query query, Tex
   register OOC_INT32 i0,i1;
 
   i0 = (OOC_INT32)w;
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2587)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "\012<query-unparsed>", 18);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2587)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"\012<query-unparsed>", 18);
   i1 = (OOC_INT32)query;
   i1 = (OOC_INT32)*(OOC_INT32*)(_check_pointer(i1, 2655));
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2635)))), TextRider__WriterDesc_WriteObject)),TextRider__WriterDesc_WriteObject)((TextRider__Writer)i0, (Object__Object)i1);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2673)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, "</query-unparsed>", 18);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 2673)))), TextRider__WriterDesc_WriteString)),TextRider__WriterDesc_WriteString)((TextRider__Writer)i0, (OOC_CHAR8*)"</query-unparsed>", 18);
   return;
   ;
 }
@@ -114,7 +114,7 @@ void URI_Query_Unparsed__QueryDesc_Append(URI_Query_Unparsed__Query query, ADT_S
 }
 
 void OOC_URI_Query_Unparsed_init(void) {
-  _c0 = Object__NewLatin1Region("Illegal character in query component", 37, 0, 36);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"Illegal character in query component", 37, 0, 36);
   _c1 = Object__NewLatin1Char(63u);
 
   return;

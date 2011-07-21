@@ -215,12 +215,12 @@ static OOC_CHAR8 OOC_Make__Exists(OOC_Repository__Module module, OOC_INT8 fileId
   i2 = OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7649)))), OOC_Repository__ModuleDesc_FileExists)),OOC_Repository__ModuleDesc_FileExists)((OOC_Repository__Module)i0, i1);
   if (i2) goto l3;
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7825)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, i1, 1u);
-  OOC_Logger__ExplainFileMake("file ", 6, (URI__URI)i0, " does not exist", 16);
+  OOC_Logger__ExplainFileMake((OOC_CHAR8*)"file ", 6, (URI__URI)i0, (OOC_CHAR8*)" does not exist", 16);
   return 0u;
   goto l4;
 l3:
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 7718)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, i1, 1u);
-  OOC_Logger__ExplainFileMake("file ", 6, (URI__URI)i0, " exists", 8);
+  OOC_Logger__ExplainFileMake((OOC_CHAR8*)"file ", 6, (URI__URI)i0, (OOC_CHAR8*)" exists", 8);
   return 1u;
 l4:
   _failed_function(7570); return 0;
@@ -247,18 +247,18 @@ static OOC_CHAR8 OOC_Make__DerivedIsOlder2(OOC_Repository__Module descendentModu
   if (i2) goto l5;
   i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 9147)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i3, i4, 1u);
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9063)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, i1, 1u);
-  OOC_Logger__ExplainFilesMake("ts(", 4, (URI__URI)i0, ") < ts(", 8, (URI__URI)i2, ")", 2);
+  OOC_Logger__ExplainFilesMake((OOC_CHAR8*)"ts(", 4, (URI__URI)i0, (OOC_CHAR8*)") < ts(", 8, (URI__URI)i2, (OOC_CHAR8*)")", 2);
   return 1u;
   goto l8;
 l5:
   i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i3, 8944)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i3, i4, 1u);
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8859)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, i1, 1u);
-  OOC_Logger__ExplainFilesMake("ts(", 4, (URI__URI)i0, ") >= ts(", 9, (URI__URI)i2, ")", 2);
+  OOC_Logger__ExplainFilesMake((OOC_CHAR8*)"ts(", 4, (URI__URI)i0, (OOC_CHAR8*)") >= ts(", 9, (URI__URI)i2, (OOC_CHAR8*)")", 2);
   return 0u;
   goto l8;
 l7:
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 8603)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, i1, 1u);
-  OOC_Logger__ExplainFileMake("file ", 6, (URI__URI)i0, " does not exist", 16);
+  OOC_Logger__ExplainFileMake((OOC_CHAR8*)"file ", 6, (URI__URI)i0, (OOC_CHAR8*)" does not exist", 16);
   return 1u;
 l8:
   _failed_function(7922); return 0;
@@ -287,7 +287,7 @@ static OOC_CHAR8 OOC_Make__FingerprintMismatch(OOC_Repository__Module descendent
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 10067)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, 1, 1u);
   i1 = (OOC_INT32)descendentModule;
   i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9978)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i1, 1, 1u);
-  OOC_Logger__ExplainFilesMake("fp(", 4, (URI__URI)i1, ") # fp(", 8, (URI__URI)i0, ")", 2);
+  OOC_Logger__ExplainFilesMake((OOC_CHAR8*)"fp(", 4, (URI__URI)i1, (OOC_CHAR8*)") # fp(", 8, (URI__URI)i0, (OOC_CHAR8*)")", 2);
   return 1u;
   goto l4;
 l3:
@@ -295,7 +295,7 @@ l3:
   i0 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 9856)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i0, 1, 1u);
   i1 = (OOC_INT32)descendentModule;
   i1 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i1, 9767)))), OOC_Repository__ModuleDesc_GetURI)),OOC_Repository__ModuleDesc_GetURI)((OOC_Repository__Module)i1, 1, 1u);
-  OOC_Logger__ExplainFilesMake("fp(", 4, (URI__URI)i1, ") = fp(", 8, (URI__URI)i0, ")", 2);
+  OOC_Logger__ExplainFilesMake((OOC_CHAR8*)"fp(", 4, (URI__URI)i1, (OOC_CHAR8*)") = fp(", 8, (URI__URI)i0, (OOC_CHAR8*)")", 2);
   return 0u;
 l4:
   _failed_function(9440); return 0;
@@ -353,7 +353,7 @@ static void OOC_Make__WriteImports(OOC_Repository__Module module) {
   i0 = (OOC_INT32)module;
   i1 = *(OOC_INT8*)((_check_pointer(i0, 10890))+16);
   _assert((i1>=2), 127, 10877);
-  Out__String("> IMPORT of ", 13);
+  Out__String((OOC_CHAR8*)"> IMPORT of ", 13);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10971))+4);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 10971))+4);
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 10976)), 0);
@@ -382,7 +382,7 @@ l3_loop:
   import = (OOC_Repository__Module)i3;
   i4 = i3==0;
   if (i4) goto l6;
-  Out__String("> ", 3);
+  Out__String((OOC_CHAR8*)"> ", 3);
   i4 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i3, 11321))+4);
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i3, 11321))+4);
   i4 = OOC_ARRAY_LENGTH((_check_pointer(i4, 11326)), 0);
@@ -390,7 +390,7 @@ l3_loop:
   Out__Ln();
   goto l7;
 l6:
-  Out__String("> no such module: ", 19);
+  Out__String((OOC_CHAR8*)"> no such module: ", 19);
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 11214))+20);
   i3 = _check_pointer(i3, 11227);
   i4 = OOC_ARRAY_LENGTH(i3, 0);
@@ -445,16 +445,16 @@ OOC_CHAR8 OOC_Make__RulesDesc_GetImports(OOC_Make__Rules r, OOC_Repository__Modu
           pos = 0;
           i2=0;
 l4:
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12347)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "pos", 4, i2);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12347)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"pos", 4, i2);
           i2 = *(OOC_INT32*)((_check_pointer(i1, 12420))+4);
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12393)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "line", 5, i2);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12393)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"line", 5, i2);
           i2 = *(OOC_INT32*)((_check_pointer(i1, 12475))+8);
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12446)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, "column", 7, i2);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12446)))), Msg__MsgDesc_SetIntAttrib)),Msg__MsgDesc_SetIntAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"column", 7, i2);
           i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 12550))+12);
           i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 12550))+12);
           i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 12555)), 0);
           i1 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i1, 12555)), i2);
-          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12503)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i0, "name", 5, (Msg__StringPtr)i1);
+          OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 12503)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i0, (OOC_CHAR8*)"name", 5, (Msg__StringPtr)i1);
           i1 = (OOC_INT32)errList;
           OOC_Error__ListDesc_Append((OOC_Error__List)i1, (Msg__Msg)i0);
           return;
@@ -522,7 +522,7 @@ l15:
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13086))+4);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13086))+4);
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 13091)), 0);
-  OOC_Logger__EnterMake("GetImports", 11, (void*)(_check_pointer(i2, 13091)), i1);
+  OOC_Logger__EnterMake((OOC_CHAR8*)"GetImports", 11, (void*)(_check_pointer(i2, 13091)), i1);
   i1 = *(OOC_INT8*)((_check_pointer(i0, 13109))+16);
   i1 = i1!=1;
   if (i1) goto l14;
@@ -559,11 +559,11 @@ l9:
   OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 13774)))), OOC_Repository__ModuleDesc_SetInterfaceData)),OOC_Repository__ModuleDesc_SetInterfaceData)((OOC_Repository__Module)i0, (OOC_SymbolTable__Module)i2, 2, i1);
   goto l15;
 l14:
-  OOC_Logger__ExplainMake("using cached value", 19);
+  OOC_Logger__ExplainMake((OOC_CHAR8*)"using cached value", 19);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13245))+4);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i0, 13245))+4);
   i1 = OOC_ARRAY_LENGTH((_check_pointer(i1, 13250)), 0);
-  i0 = OOC_Logger__ExitMake("GetImports", 11, (void*)(_check_pointer(i0, 13250)), i1, 1u);
+  i0 = OOC_Logger__ExitMake((OOC_CHAR8*)"GetImports", 11, (void*)(_check_pointer(i0, 13250)), i1, 1u);
   return i0;
 l15:
   i0 = (OOC_INT32)errList;
@@ -580,7 +580,7 @@ l18:
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 14448))+4);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 14448))+4);
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 14453)), 0);
-  i0 = OOC_Logger__ExitMake("GetImports", 11, (void*)(_check_pointer(i1, 14453)), i2, i0);
+  i0 = OOC_Logger__ExitMake((OOC_CHAR8*)"GetImports", 11, (void*)(_check_pointer(i1, 14453)), i2, i0);
   return i0;
   ;
 }
@@ -700,7 +700,7 @@ OOC_CHAR8 OOC_Make__RulesDesc_CompileModule(OOC_Make__Rules r, OOC_Repository__M
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16586))+4);
   i3 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 16586))+4);
   i2 = OOC_ARRAY_LENGTH((_check_pointer(i2, 16591)), 0);
-  OOC_Logger__EnterMake("CompileModule", 14, (void*)(_check_pointer(i3, 16591)), i2);
+  OOC_Logger__EnterMake((OOC_CHAR8*)"CompileModule", 14, (void*)(_check_pointer(i3, 16591)), i2);
   i2 = (OOC_INT32)OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i0, 16618)))), OOC_Make__RulesDesc_LibraryName)),OOC_Make__RulesDesc_LibraryName)((OOC_Make__Rules)i0);
   libraryName = (Object__String)i2;
   i3 = i2!=(OOC_INT32)0;
@@ -771,11 +771,11 @@ l31:
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i3, 17813))+4);
   i2 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i3, 17813))+4);
   i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 17818)), 0);
-  i0 = OOC_Logger__ExitMake("CompileModule", 14, (void*)(_check_pointer(i2, 17818)), i0, i1);
+  i0 = OOC_Logger__ExitMake((OOC_CHAR8*)"CompileModule", 14, (void*)(_check_pointer(i2, 17818)), i0, i1);
   return i0;
   goto l33;
 l32:
-  OOC_Logger__ExplainMake("cached result: CompileModule", 29);
+  OOC_Logger__ExplainMake((OOC_CHAR8*)"cached result: CompileModule", 29);
   i0 = *(OOC_UINT8*)((_check_pointer(i2, 16515))+45);
   return i0;
 l33:
@@ -845,12 +845,12 @@ l13:
   chars = (Object__CharsLatin1)i5;
   i6 = OOC_ARRAY_LENGTH((_check_pointer(i5, 19399)), 0);
   i5 = (OOC_INT32)Msg__GetStringPtr((void*)(_check_pointer(i5, 19399)), i6);
-  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 19350)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i4, "name", 5, (Msg__StringPtr)i5);
+  OOC_TBCALL(((OOC_INT32)OOC_TBPROC_ADR(((OOC_INT32)OOC_TYPE_TAG((_check_pointer(i4, 19350)))), Msg__MsgDesc_SetStringAttrib)),Msg__MsgDesc_SetStringAttrib)((Msg__Msg)i4, (OOC_CHAR8*)"name", 5, (Msg__StringPtr)i5);
   OOC_Make__RulesDesc_WriteError((OOC_Make__Rules)i1, (OOC_Repository__Module)i0, (Msg__Msg)i4);
   return 0u;
   goto l23;
 l21:
-  OOC_Logger__ExplainMake("module is not part of a library", 32);
+  OOC_Logger__ExplainMake((OOC_CHAR8*)"module is not part of a library", 32);
   isUpToDate = 0u;
   i3=0u;
 l23:
@@ -1095,11 +1095,11 @@ OOC_CHAR8 OOC_Make__RulesDesc_UpdateInterfaceHTML(OOC_Make__Rules r, OOC_Reposit
       goto l7;
 l3:
       i0 = (OOC_INT32)repositories;
-      i0 = (OOC_INT32)OOC_Config_Repositories__SectionDesc_GetResource((OOC_Config_Repositories__Section)i0, "OOC", 4, "xml/interface-description.xsl", 30);
+      i0 = (OOC_INT32)OOC_Config_Repositories__SectionDesc_GetResource((OOC_Config_Repositories__Section)i0, (OOC_CHAR8*)"OOC", 4, (OOC_CHAR8*)"xml/interface-description.xsl", 30);
       OOC_Make__stylesheetSystemId = (URI__URI)i0;
       i0 = i0==(OOC_INT32)0;
       if (!i0) goto l6;
-      Out__String("Error: Cannot locate stylesheet xml/interface-description.xsl from package OOC in any of the configured repositories.", 118);
+      Out__String((OOC_CHAR8*)"Error: Cannot locate stylesheet xml/interface-description.xsl from package OOC in any of the configured repositories.", 118);
       Out__Ln();
       _halt(1);
 l6:
@@ -1285,7 +1285,7 @@ l8:
   return i0;
   goto l12;
 l10:
-  OOC_Logger__ExplainMake("module\047s C code provided by user", 33);
+  OOC_Logger__ExplainMake((OOC_CHAR8*)"module\047s C code provided by user", 33);
   return 1u;
 l12:
   _failed_function(28703); return 0;
@@ -1319,7 +1319,7 @@ l8:
   return i0;
   goto l12;
 l10:
-  OOC_Logger__ExplainMake("module\047s C code provided by user", 33);
+  OOC_Logger__ExplainMake((OOC_CHAR8*)"module\047s C code provided by user", 33);
   return 1u;
 l12:
   _failed_function(29180); return 0;
@@ -1350,7 +1350,7 @@ l7:
   
 l9:
   if (!i0) goto l11;
-  OOC_Logger__ExplainMake("no source code available, and object file exists", 49);
+  OOC_Logger__ExplainMake((OOC_CHAR8*)"no source code available, and object file exists", 49);
   return 1u;
 l11:
   i0 = (OOC_INT32)r;
@@ -2067,7 +2067,7 @@ l23:
   return i0;
   goto l27;
 l24:
-  Out__String("Error: Cyclic dependency in module ", 36);
+  Out__String((OOC_CHAR8*)"Error: Cyclic dependency in module ", 36);
   i0 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 42391))+4);
   i1 = (OOC_INT32)*(OOC_INT32*)((_check_pointer(i1, 42391))+4);
   i0 = OOC_ARRAY_LENGTH((_check_pointer(i0, 42396)), 0);
@@ -2089,7 +2089,7 @@ l27:
 
 void OOC_OOC_Make_init(void) {
   register OOC_INT32 i0;
-  _c0 = Object__NewLatin1Region(" -o ", 5, 0, 4);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)" -o ", 5, 0, 4);
   _c1 = Object__NewLatin1Char(32u);
   _c2 = Object__NewLatin1Char(32u);
 
@@ -2100,25 +2100,25 @@ void OOC_OOC_Make_init(void) {
   OOC_Make__writeIR = 0u;
   OOC_Make__writeStats = 0u;
   OOC_Make__stylesheetSystemId = (URI__URI)(OOC_INT32)0;
-  _copy_8((const void*)"Executable",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(18, 22, OOC_UINT8, 44138))*24)),24);
-  _copy_8((const void*)"Library",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(19, 22, OOC_UINT8, 44188))*24)),24);
-  _copy_8((const void*)"MainObjectFile",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(17, 22, OOC_UINT8, 44232))*24)),24);
-  _copy_8((const void*)"MainFileC",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(15, 22, OOC_UINT8, 44290))*24)),24);
-  _copy_8((const void*)"ObjectFile",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(7, 22, OOC_UINT8, 44338))*24)),24);
-  _copy_8((const void*)"ObjectFileLib",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(8, 22, OOC_UINT8, 44388))*24)),24);
-  _copy_8((const void*)"CodeFileC",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(11, 22, OOC_UINT8, 44444))*24)),24);
-  _copy_8((const void*)"DeclFileC",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(12, 22, OOC_UINT8, 44492))*24)),24);
-  _copy_8((const void*)"HeaderFileC",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(13, 22, OOC_UINT8, 44540))*24)),24);
-  _copy_8((const void*)"InterfaceDescr",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(4, 22, OOC_UINT8, 44592))*24)),24);
-  _copy_8((const void*)"InterfaceXML",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(3, 22, OOC_UINT8, 44650))*24)),24);
-  _copy_8((const void*)"InterfaceHTML",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(5, 22, OOC_UINT8, 44704))*24)),24);
-  _copy_8((const void*)"SymbolFile",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(1, 22, OOC_UINT8, 44760))*24)),24);
-  _copy_8((const void*)"SymbolTableXML",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(2, 22, OOC_UINT8, 44810))*24)),24);
-  _copy_8((const void*)"AssemblerFile",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(14, 22, OOC_UINT8, 44868))*24)),24);
-  _copy_8((const void*)"MainFileAssembler",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(16, 22, OOC_UINT8, 44924))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"Executable",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(18, 22, OOC_UINT8, 44138))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"Library",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(19, 22, OOC_UINT8, 44188))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"MainObjectFile",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(17, 22, OOC_UINT8, 44232))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"MainFileC",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(15, 22, OOC_UINT8, 44290))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"ObjectFile",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(7, 22, OOC_UINT8, 44338))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"ObjectFileLib",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(8, 22, OOC_UINT8, 44388))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"CodeFileC",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(11, 22, OOC_UINT8, 44444))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"DeclFileC",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(12, 22, OOC_UINT8, 44492))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"HeaderFileC",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(13, 22, OOC_UINT8, 44540))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"InterfaceDescr",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(4, 22, OOC_UINT8, 44592))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"InterfaceXML",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(3, 22, OOC_UINT8, 44650))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"InterfaceHTML",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(5, 22, OOC_UINT8, 44704))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"SymbolFile",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(1, 22, OOC_UINT8, 44760))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"SymbolTableXML",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(2, 22, OOC_UINT8, 44810))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"AssemblerFile",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(14, 22, OOC_UINT8, 44868))*24)),24);
+  _copy_8((const void*)(OOC_CHAR8*)"MainFileAssembler",(void*)((OOC_INT32)OOC_Make__fileIdNames+((_check_index(16, 22, OOC_UINT8, 44924))*24)),24);
   i0 = (OOC_INT32)RT0__NewObject(_td_OOC_Make__ErrorContext.baseTypes[0]);
   OOC_Make__makeContext = (OOC_Make__ErrorContext)i0;
-  OOC_Error__InitContext((OOC_Error__Context)i0, "OOC:Make", 9);
+  OOC_Error__InitContext((OOC_Error__Context)i0, (OOC_CHAR8*)"OOC:Make", 9);
   return;
   ;
 }

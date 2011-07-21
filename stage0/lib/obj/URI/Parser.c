@@ -83,7 +83,7 @@ l26:
 
   OOC_INITIALIZE_VPAR(str__ref,str,OOC_CHAR8 ,str_0d)
   i0 = (
-  _cmp8((const void*)(OOC_INT32)str,(const void*)""))==0;
+  _cmp8((const void*)(OOC_INT32)str,(const void*)(OOC_CHAR8*)""))==0;
   if (!i0) goto l3;
   i0 = (OOC_INT32)URI_Scheme_CurrentDoc__New();
   return (URI__URI)i0;
@@ -187,7 +187,7 @@ l51:
   if (!i1) goto l70;
   i1 = URI_CharClass__SkipAlphaNum((void*)(OOC_INT32)str, str_0d, (void*)(OOC_INT32)&i);
   if (i1) goto l56;
-  i1 = URI_CharClass__SkipMember((void*)(OOC_INT32)str, str_0d, (void*)(OOC_INT32)&i, "+-.", 4);
+  i1 = URI_CharClass__SkipMember((void*)(OOC_INT32)str, str_0d, (void*)(OOC_INT32)&i, (OOC_CHAR8*)"+-.", 4);
   
   goto l58;
 l56:
@@ -197,7 +197,7 @@ l58:
 l60_loop:
   i1 = URI_CharClass__SkipAlphaNum((void*)(OOC_INT32)str, str_0d, (void*)(OOC_INT32)&i);
   if (i1) goto l63;
-  i1 = URI_CharClass__SkipMember((void*)(OOC_INT32)str, str_0d, (void*)(OOC_INT32)&i, "+-.", 4);
+  i1 = URI_CharClass__SkipMember((void*)(OOC_INT32)str, str_0d, (void*)(OOC_INT32)&i, (OOC_CHAR8*)"+-.", 4);
   
   goto l65;
 l63:
@@ -633,17 +633,17 @@ URI__Reference URI_Parser__NewReference(Object__String8 str, URI__HierarchicalUR
 
 void OOC_URI_Parser_init(void) {
   register OOC_INT32 i0;
-  _c0 = Object__NewLatin1Region("Illegal character in scheme component", 38, 0, 37);
-  _c1 = Object__NewLatin1Region("Cannot resolve relative URI reference without known base URI", 61, 0, 60);
-  _c2 = Object__NewLatin1Region("The opaque part of an URI must not be empty", 44, 0, 43);
-  _c3 = Object__NewLatin1Region("Expected opaque URI component, not a slash `/\047", 47, 0, 46);
-  _c4 = Object__NewLatin1Region("Expected absolute or net path beginning with a slash `/\047", 57, 0, 56);
-  _c5 = Object__NewLatin1Region("The URI does must include an authority component", 49, 0, 48);
-  _c6 = Object__NewLatin1Region("The URI scheme name must be followed by a slash `/\047", 52, 0, 51);
-  _c7 = Object__NewLatin1Region("This URI scheme does not support an authority component", 56, 0, 55);
-  _c8 = Object__NewLatin1Region("This URI scheme does not support a query component", 51, 0, 50);
-  _c9 = Object__NewLatin1Region("Junk after URI", 15, 0, 14);
-  _c10 = Object__NewLatin1Region("", 1, 0, 0);
+  _c0 = Object__NewLatin1Region((OOC_CHAR8*)"Illegal character in scheme component", 38, 0, 37);
+  _c1 = Object__NewLatin1Region((OOC_CHAR8*)"Cannot resolve relative URI reference without known base URI", 61, 0, 60);
+  _c2 = Object__NewLatin1Region((OOC_CHAR8*)"The opaque part of an URI must not be empty", 44, 0, 43);
+  _c3 = Object__NewLatin1Region((OOC_CHAR8*)"Expected opaque URI component, not a slash `/\047", 47, 0, 46);
+  _c4 = Object__NewLatin1Region((OOC_CHAR8*)"Expected absolute or net path beginning with a slash `/\047", 57, 0, 56);
+  _c5 = Object__NewLatin1Region((OOC_CHAR8*)"The URI does must include an authority component", 49, 0, 48);
+  _c6 = Object__NewLatin1Region((OOC_CHAR8*)"The URI scheme name must be followed by a slash `/\047", 52, 0, 51);
+  _c7 = Object__NewLatin1Region((OOC_CHAR8*)"This URI scheme does not support an authority component", 56, 0, 55);
+  _c8 = Object__NewLatin1Region((OOC_CHAR8*)"This URI scheme does not support a query component", 51, 0, 50);
+  _c9 = Object__NewLatin1Region((OOC_CHAR8*)"Junk after URI", 15, 0, 14);
+  _c10 = Object__NewLatin1Region((OOC_CHAR8*)"", 1, 0, 0);
 
   i0 = (OOC_INT32)URI_Scheme_Hierarchical__New((Object__String)(OOC_INT32)0, (URI__Authority)(OOC_INT32)0, (URI__Query)(OOC_INT32)0);
   URI_Parser__defaultHierarchical = (URI__HierarchicalURI)i0;
